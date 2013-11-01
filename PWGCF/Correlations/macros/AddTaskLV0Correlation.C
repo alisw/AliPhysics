@@ -1,5 +1,6 @@
 AliLeadingV0Correlation* AddTaskLV0Correlation(TString  fListName                = "LV0Correlation",
 											   TString	fCollisiontype           = "PP",
+											   TString  ftriggertype             = "Alltrigs",
 											   Bool_t	fAnalysisMC              = 0,
 											   Int_t    fCase                    = 2,
 											   Bool_t   fRemovePileUP            = 0,
@@ -30,7 +31,7 @@ AliLeadingV0Correlation* AddTaskLV0Correlation(TString  fListName               
     if (!mgr) {Error("AddTaskLV0Correlation.C", "No Analysis Manager ");return 0;}
 	
 	//PVz Binning for pool PP or PbPb	
-	Double_t pvzbinlimits[] = {-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10};
+	Double_t pvzbinlimits[] = {-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12};
 	Int_t pvzbinnumb = sizeof(pvzbinlimits)/sizeof(Double_t) - 1;
 	
 	//Mult Binning for pool	pp 
@@ -56,6 +57,7 @@ AliLeadingV0Correlation* AddTaskLV0Correlation(TString  fListName               
 	AliLeadingV0Correlation *myTask = new AliLeadingV0Correlation(fListName.Data());
 	
 	myTask->SetCollidingSystem(fCollisiontype);
+	myTask->SetTriggerType(ftriggertype);
 	myTask->SetMCAnalysis(fAnalysisMC);
 	myTask->SetCase(fCase);
 	myTask->SetRemovePileUp(fRemovePileUP);
@@ -65,7 +67,7 @@ AliLeadingV0Correlation* AddTaskLV0Correlation(TString  fListName               
 	myTask->SetMinEventsToMix(fMinEventsToMix);
 	myTask->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
 	if(fCollisiontype=="PP")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPP,cent_mult_binlimitsPP);
-	if(fCollisiontype=="PbPb2010"||fCollisiontype=="PbPb2011")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);
+	if(fCollisiontype=="PbPb"||fCollisiontype=="PbPb")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);
 	myTask->SetPrimeryVertexCut(fPVzCut);
 	myTask->SetEatCut(fEtaCut);
 	myTask->SetFilterBit(fFilterBit);

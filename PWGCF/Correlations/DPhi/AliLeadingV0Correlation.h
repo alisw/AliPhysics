@@ -54,6 +54,7 @@ public:
 	}
 	
 	void SetCollidingSystem(TString system){fcollidingSys = system;}
+	void SetTriggerType(TString triggertype){ftriggertype = triggertype;}
 	void SetPrimeryVertexCut(Double_t pvzcut){fpvzcut = pvzcut;}
 	void SetEatCut(Double_t  TrackEtaCut){fTrackEtaCut = TrackEtaCut;}
 	void SetFilterBit(UInt_t  filterBit){fFilterBit = filterBit;}
@@ -125,7 +126,8 @@ private:
 	Int_t fNCentBins;                            // number of centrality bins
 	Double_t fCentBins[100];                     // [fNCentBinsDim]
 	
-	TString         fcollidingSys;               // "PP" or "PbPb2010,2011"
+	TString         fcollidingSys;               // "PP" or "PbPb"
+	TString         ftriggertype;                // "Leading" or "Alltrigs"
 	Double_t        fpvzcut;                     // PVz cut of event
     Double_t      	fTrackEtaCut;                // Eta cut on particles
     UInt_t         	fFilterBit;                  // Select tracks from an specific track cut (default 0xFF all track selected)

@@ -37,10 +37,8 @@
 
 #include "AliLeadingV0Correlation.h"
 
-#define CorrBinsX 240
-#define CorrBinsY 260
-using std::endl;
-using std::cout;
+#define CorrBinsX 24
+#define CorrBinsY 26
 
 
 Double_t PI =TMath::Pi();
@@ -61,6 +59,7 @@ AliLeadingV0Correlation::AliLeadingV0Correlation()
 	fNzVtxBins(0), 
 	fNCentBins(0),
 	fcollidingSys(""),
+	ftriggertype(""),
 	fpvzcut(0),
 	fTrackEtaCut(0),
 	fFilterBit(128),
@@ -126,6 +125,7 @@ AliLeadingV0Correlation::AliLeadingV0Correlation(const char *name)
 	fNzVtxBins(0), 
 	fNCentBins(0),
 	fcollidingSys(""),
+	ftriggertype(""),
 	fpvzcut(0),
     fTrackEtaCut(0),
     fFilterBit(128),
@@ -199,10 +199,10 @@ void AliLeadingV0Correlation::UserCreateOutputObjects()
 	
 	//---------------------------------------------- Events histograms -----------------------------------------------------//
 	//0-PVx,1-PVy,2-PVz,3-MULT,4-CENT
-	const Int_t ndimsEV = 5;
-	Int_t    binsEV[ndimsEV] = { 100,  100, 200, 1000,100};
-	Double_t xminEV[ndimsEV] = {-0.5, -0.5,-20 ,    0,  0};
-	Double_t xmaxEV[ndimsEV] = { 0.5,  0.5, 20 ,20000,100};
+	const Int_t ndimsEV = 3;
+	Int_t    binsEV[ndimsEV] = { 200, 1000,100};
+	Double_t xminEV[ndimsEV] = {-20 ,    0,  0};
+	Double_t xmaxEV[ndimsEV] = { 20 ,20000,100};
 	
 	fHistEventViceGen= new THnSparseD("fHistEventViceGen", "fHistEventViceGen", ndimsEV, binsEV, xminEV, xmaxEV);
 	fOutputList->Add(fHistEventViceGen);
@@ -229,33 +229,37 @@ void AliLeadingV0Correlation::UserCreateOutputObjects()
 	fHistMCGenK0   = new THnSparseD("fHistMCGenK0"  , "fHistMCGenK0"  , ndimsGenMC, binsGenMCK0, xminGenMCK0, xmaxGenMCK0);
 	fOutputList->Add(fHistMCGenK0);
 	
-	const Int_t ndims=10;    //MK0  mLA  MALA DCAP DCAN  RV0 DVD   CPA  PT   cent
-	Int_t    bins[ndims] = {  200,  140,  140, 500, 500, 110,110,   200,240  ,100};
-	Double_t xmin[ndims] = {  0.4, 1.06, 1.06,   0,   0,   0,  0, 0.997,  0  ,  0};
-	Double_t xmax[ndims] = {  0.6,  1.2,  1.2,  10,  10, 110,1.1, 1.007, 12  ,100};	
+	const Int_t ndims=3;    //MK0  mLA  MALA PT   cent
+	Int_t    binsK0[ndims] = {  200, 240  ,100};
+	Double_t xminK0[ndims] = {  0.4,  0   ,  0};
+	Double_t xmaxK0[ndims] = {  0.6, 12   ,100};
+	 
+	Int_t    binsLA[ndims] = {  140, 240  ,100};
+	Double_t xminLA[ndims] = { 1.06,   0  ,  0};
+	Double_t xmaxLA[ndims] = {  1.2,  12  ,100};
 	
 	
-	fHistReconstK0= new THnSparseD("fHistReconstK0"  , "fHistReconstK0",  ndims, bins, xmin, xmax);
+	fHistReconstK0= new THnSparseD("fHistReconstK0"  , "fHistReconstK0",  ndims, binsK0, xminK0, xmaxK0);
 	fHistReconstK0->Sumw2();
 	fOutputList->Add(fHistReconstK0);
 	
-	fHistReconstLA= new THnSparseD("fHistReconstLA"  , "fHistReconstLA",  ndims, bins, xmin, xmax);
+	fHistReconstLA= new THnSparseD("fHistReconstLA"  , "fHistReconstLA",  ndims, binsLA, xminLA, xmaxLA);
 	fHistReconstLA->Sumw2();
 	fOutputList->Add(fHistReconstLA);
 	
-	fHistReconstALA= new THnSparseD("fHistReconstALA", "fHistReconstALA", ndims, bins, xmin, xmax);
+	fHistReconstALA= new THnSparseD("fHistReconstALA", "fHistReconstALA", ndims, binsLA, xminLA, xmaxLA);
 	fHistReconstALA->Sumw2();
 	fOutputList->Add(fHistReconstALA);
 	
-	fHistMCAssoK0= new THnSparseD("fHistMCAssoK0"   , "fHistMCAssoK0"   , ndims, bins, xmin, xmax);
+	fHistMCAssoK0= new THnSparseD("fHistMCAssoK0"   , "fHistMCAssoK0"   , ndims, binsK0, xminK0, xmaxK0);
 	fHistMCAssoK0->Sumw2();
 	fOutputList->Add(fHistMCAssoK0);
 	
-	fHistMCAssoLA= new THnSparseD("fHistMCAssoLA"   , "fHistMCAssoLA"   , ndims, bins, xmin, xmax);
+	fHistMCAssoLA= new THnSparseD("fHistMCAssoLA"   , "fHistMCAssoLA"   , ndims, binsLA, xminLA, xmaxLA);
 	fHistMCAssoLA->Sumw2();
 	fOutputList->Add(fHistMCAssoLA);
 	
-	fHistMCAssoALA= new THnSparseD("fHistMCAssoALA" , "fHistMCAssoALA" ,  ndims, bins, xmin, xmax);
+	fHistMCAssoALA= new THnSparseD("fHistMCAssoALA" , "fHistMCAssoALA" ,  ndims, binsLA, xminLA, xmaxLA);
 	fHistMCAssoALA->Sumw2();
 	fOutputList->Add(fHistMCAssoALA);
 	
@@ -342,7 +346,7 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 	Double_t CentPecentMC = -1;
 	Double_t CentPecentAfterPhySel   = -1;
 	
-	if(fcollidingSys=="PbPb2010" || fcollidingSys=="PbPb2011"){   
+	if(fcollidingSys=="PbPb"){   
 	AliCentrality *centralityObjMC = fAODEvent->GetHeader()->GetCentralityP();
 		CentPecentMC  = centralityObjMC->GetCentralityPercentileUnchecked("V0M");
 		if ((CentPecentMC < 0.)||(CentPecentMC > 90)) return;
@@ -353,7 +357,7 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 	Double_t poolmax    = CentBins[fNCentBins];
 	
 	
-	Double_t  dimEventviceMC[5];
+	Double_t  dimEventviceMC[3];
 	if(fAnalysisMC)    //Efficency denomenator comes before the physics selection
 	{
 		AliAODMCHeader *aodMCheader = (AliAODMCHeader*)fAODEvent->FindListObject(AliAODMCHeader::StdBranchName());
@@ -361,27 +365,28 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 		
 		if (TMath::Abs(mcZv) >= fpvzcut) return;
 		
-		dimEventviceMC[0]=aodMCheader->GetVtxX();
-		dimEventviceMC[1]=aodMCheader->GetVtxY();
-		dimEventviceMC[2]=aodMCheader->GetVtxZ();
+		dimEventviceMC[0]=aodMCheader->GetVtxZ();
 		
 		TClonesArray *mcArray = (TClonesArray*)fAODEvent->FindListObject(AliAODMCParticle::StdBranchName());
 		if(!mcArray)return;
 		
-		TObjArray *selectedTracksLeadingMC=fAnalyseUE->FindLeadingObjects(mcArray);
+		TObjArray* selectedTracksLeadingMC = 0;
+		if(ftriggertype=="Leading")selectedTracksLeadingMC=fAnalyseUE->FindLeadingObjects(mcArray);
+		if(ftriggertype=="Alltrigs")selectedTracksLeadingMC = fAnalyseUE->GetAcceptedParticles(mcArray, 0, kTRUE, -1, kTRUE);
 		if(!selectedTracksLeadingMC) return;
 		selectedTracksLeadingMC->SetOwner(kTRUE);
+		
 		
 		TObjArray * selectedV0sMC =new TObjArray;
 		selectedV0sMC->SetOwner(kTRUE);
 		
 		Int_t nMCTracks = mcArray->GetEntriesFast();
 		
-		if(fcollidingSys=="PbPb2010" || fcollidingSys=="PbPb2011") multiplicityMC=CentPecentMC;
+		if(fcollidingSys=="PbPb") multiplicityMC=CentPecentMC;
 		if(fcollidingSys=="PP")   multiplicityMC=nMCTracks;
 		
-		dimEventviceMC[3]=nMCTracks;
-		dimEventviceMC[4]=CentPecentMC;
+		dimEventviceMC[1]=nMCTracks;
+		dimEventviceMC[2]=CentPecentMC;
 		fHistEventViceGen->Fill(dimEventviceMC);
 		
 		for (Int_t iMC = 0; iMC<nMCTracks; iMC++)
@@ -448,12 +453,12 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 	if(fRemovePileUP)
 	if(fAODEvent->IsPileupFromSPD()) return;
 	
-	Double_t  dimEventviceReal[5];
+	Double_t  dimEventviceReal[3];
 	Double_t  lPrimaryVtxPosition[3];
 	Double_t  lV0Position[3];
 	
 	
-	if(fcollidingSys=="PbPb2010" || fcollidingSys=="PbPb2011"){  //
+	if(fcollidingSys=="PbPb"){  //
 	AliCentrality *centralityObj = fAODEvent->GetHeader()->GetCentralityP();
 		CentPecentAfterPhySel  = centralityObj->GetCentralityPercentileUnchecked("V0M");
 		if ((CentPecentAfterPhySel < 0.)||(CentPecentAfterPhySel > 90)) return;
@@ -469,20 +474,18 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 	
 	if ((TMath::Abs(lPVz)) >= fpvzcut) return ;
 	if (TMath::Abs(lPVx)<10e-5 && TMath::Abs(lPVy)<10e-5 && TMath::Abs(lPVz)<10e-5) return;
-	
-	dimEventviceReal[0]=lPVx;
-    dimEventviceReal[1]=lPVy;
-    dimEventviceReal[2]=lPVz;
+
+    dimEventviceReal[0]=lPVz;
 	
 	multiplicity = fAODEvent->GetNTracks();
 	
-	dimEventviceReal[3]=multiplicity;
-	dimEventviceReal[4]=CentPecentAfterPhySel;
+	dimEventviceReal[1]=multiplicity;
+	dimEventviceReal[2]=CentPecentAfterPhySel;
 	
 	fHistEventViceReconst->Fill(dimEventviceReal);
 	
 	if(fcollidingSys=="PP")MultipOrCent=multiplicity;
-	if(fcollidingSys=="PbPb2010" || fcollidingSys=="PbPb2011")MultipOrCent=CentPecentAfterPhySel;
+	if(fcollidingSys=="PbPb")MultipOrCent=CentPecentAfterPhySel;
 
 	//---------------------------------------------------------------------------------------------
 	
@@ -497,7 +500,9 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 	Double_t lPzV0s       = 0; Double_t lAlphaV0 = 0, lPtArmV0           = 0;
 	Double_t lPV0s        = 0;
 	
-	TObjArray *selectedTracksLeading=fAnalyseUE->FindLeadingObjects(fAODEvent);
+	TObjArray *selectedTracksLeading=0;
+	if(ftriggertype=="Leading")selectedTracksLeading=fAnalyseUE->FindLeadingObjects(fAODEvent);
+	if(ftriggertype=="Alltrigs")selectedTracksLeading = fAnalyseUE->GetAcceptedParticles(fAODEvent, 0, kTRUE, -1, kTRUE);
 	if(!selectedTracksLeading) return;
 	selectedTracksLeading->SetOwner(kTRUE);
 	
@@ -574,7 +579,7 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
         if (pPid)
         {
             Double_t pdMom = pPid->GetTPCmomentum();
-            if (pdMom<1.0 && (fcollidingSys=="PbPb2010"||fcollidingSys=="PbPb2011"))
+            if (pdMom<1.0 && (fcollidingSys=="PbPb"))
             {
                 nSigmaPosPion   = fPIDResponse->NumberOfSigmasTPC(myTrackPos, AliPID::kPion);
                 nSigmaPosProton = fPIDResponse->NumberOfSigmasTPC(myTrackPos, AliPID::kProton);
@@ -590,7 +595,7 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
         if (nPid)
         {
             Double_t ndMom = nPid->GetTPCmomentum();
-            if (ndMom<1.0 && (fcollidingSys=="PbPb2010"||fcollidingSys=="PbPb2011"))
+            if (ndMom<1.0 && (fcollidingSys=="PbPb"))
             {
                 nSigmaNegPion   = fPIDResponse->NumberOfSigmasTPC(myTrackNeg, AliPID::kPion);
                 nSigmaNegProton = fPIDResponse->NumberOfSigmasTPC(myTrackNeg, AliPID::kProton);
@@ -628,14 +633,15 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 		Bool_t laRapcut = (TMath::Abs(lRapLambda)     < fRapidityCut);
 		Bool_t alaRapcut= (TMath::Abs(lRapAntiLambda) < fRapidityCut);
 		
+		if(fcollidingSys=="PbPb")if(lV0Radius>=100) continue;
 		
 		Bool_t k0cutset = IsAcseptedK0(lV0Radius,lDcaPosToPrimVertex,lDcaNegToPrimVertex,lDcaV0Daughters,lV0cosPointAngle,lInvMassLambda,lInvMassAntiLambda);
 		Bool_t lacutset = IsAcseptedLA(lV0Radius,lDcaPosToPrimVertex,lDcaNegToPrimVertex,lDcaV0Daughters,lV0cosPointAngle,lInvMassK0);
 		Bool_t alacutset= IsAcseptedLA(lV0Radius,lDcaNegToPrimVertex,lDcaPosToPrimVertex,lDcaV0Daughters,lV0cosPointAngle,lInvMassK0);
 		
-		Double_t spK0[10] = {lInvMassK0, lInvMassLambda,lInvMassAntiLambda,lDcaPosToPrimVertex,lDcaNegToPrimVertex,lV0Radius,lDcaV0Daughters,lV0cosPointAngle,lPtV0s,MultipOrCent};
-		Double_t spLa[10] = {lInvMassK0, lInvMassLambda,lInvMassAntiLambda,lDcaPosToPrimVertex,lDcaNegToPrimVertex,lV0Radius,lDcaV0Daughters,lV0cosPointAngle,lPtV0s,MultipOrCent};
-		Double_t spAl[10] = {lInvMassK0, lInvMassLambda,lInvMassAntiLambda,lDcaPosToPrimVertex,lDcaNegToPrimVertex,lV0Radius,lDcaV0Daughters,lV0cosPointAngle,lPtV0s,MultipOrCent};
+		Double_t spK0[3] = {lInvMassK0, lPtV0s,MultipOrCent};
+		Double_t spLa[3] = {lInvMassLambda,lPtV0s,MultipOrCent};
+		Double_t spAl[3] = {lInvMassAntiLambda,lPtV0s,MultipOrCent};
 	
 		switch (fCase) {
 			case 1:
@@ -720,9 +726,9 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 			Int_t MotherPdg  = mcPosMother->GetPdgCode();
 			Bool_t IsPrime   = mcPosMother->IsPhysicalPrimary();
 			
-			Double_t rcK0[10] = {lInvMassK0, lInvMassLambda,lInvMassAntiLambda,lDcaPosToPrimVertex,lDcaNegToPrimVertex,lV0Radius,lDcaV0Daughters,lV0cosPointAngle,lPtV0s,MultipOrCent};
-			Double_t rcLa[10] = {lInvMassK0, lInvMassLambda,lInvMassAntiLambda,lDcaPosToPrimVertex,lDcaNegToPrimVertex,lV0Radius,lDcaV0Daughters,lV0cosPointAngle,lPtV0s,MultipOrCent};
-			Double_t rcAl[10] = {lInvMassK0, lInvMassLambda,lInvMassAntiLambda,lDcaPosToPrimVertex,lDcaNegToPrimVertex,lV0Radius,lDcaV0Daughters,lV0cosPointAngle,lPtV0s,MultipOrCent};
+			Double_t rcK0[3] = {lInvMassK0, lPtV0s,MultipOrCent};
+			Double_t rcLa[3] = {lInvMassLambda,lPtV0s,MultipOrCent};
+			Double_t rcAl[3] = {lInvMassAntiLambda,lPtV0s,MultipOrCent};
 			
 			switch (fCase) {
 				case 1:
@@ -962,8 +968,40 @@ void AliLeadingV0Correlation::FillCorrelationSibling(Double_t MultipOrCent,
 		
 		if(triggerPt<6.0||triggerPt>12.0)continue;
 		counterSibMCA++;
+		if(ftriggertype=="Leading")
+		{
 		if(counterSibMCA==triggerArray->GetEntriesFast()){
 			
+			binsTrigSib[0]=triggerPt;
+			binsTrigSib[1]=triggerPhi;
+			binsTrigSib[2]=triggerEta;
+			binsTrigSib[3]=MultipOrCent;
+			
+			if(triggerHist)triggerHist->Fill(binsTrigSib);
+			
+			for (Int_t j=0; j<selectedV0Array->GetEntriesFast(); j++){
+				
+				V0Correlationparticle* associate = (V0Correlationparticle*) selectedV0Array->At(j);
+				if(!associate)continue;
+				
+				binsv0CORR[0]= associate->Pt();
+				binsv0CORR[1]= associate->Phi();
+				binsv0CORR[2]= associate->Eta();
+				
+				if(binsv0CORR[0]>triggerPt) continue;
+				
+				binsv0CORR[3]=RangePhi(triggerPhi-binsv0CORR[1]);
+				binsv0CORR[4]=triggerEta-binsv0CORR[2];
+				binsv0CORR[5]= associate->WhichCandidate();
+				binsv0CORR[6]= MultipOrCent;
+				
+				associateHist->Fill(binsv0CORR);
+			}
+		  }
+		}
+		
+		if(ftriggertype=="Alltrigs")
+		{
 			binsTrigSib[0]=triggerPt;
 			binsTrigSib[1]=triggerPhi;
 			binsTrigSib[2]=triggerEta;
@@ -1005,7 +1043,7 @@ void AliLeadingV0Correlation::FillCorrelationMixing(Double_t MultipOrCentMix,
 	if(TMath::Abs(pvxMix)>=fpvzcut || MultipOrCentMix>poolmax || MultipOrCentMix < poolmin)
 	{
 		if(fcollidingSys=="PP")AliInfo(Form("pp Event with Zvertex = %.2f cm and multiplicity = %.0f out of pool bounds, SKIPPING",pvxMix,MultipOrCentMix));
-		if(fcollidingSys=="PbPb2010" || fcollidingSys=="PbPb2011") AliInfo(Form("PbPb Event with Zvertex = %.2f cm and centrality = %.1f  out of pool bounds, SKIPPING",pvxMix,MultipOrCentMix));
+		if(fcollidingSys=="PbPb") AliInfo(Form("PbPb Event with Zvertex = %.2f cm and centrality = %.1f  out of pool bounds, SKIPPING",pvxMix,MultipOrCentMix));
 		return;
 	}
 	
@@ -1036,9 +1074,40 @@ void AliLeadingV0Correlation::FillCorrelationMixing(Double_t MultipOrCentMix,
 				
 				if(trigPt<6.0||trigPt>12.0)continue;
 				counterMix++;
-				
+				if(ftriggertype=="Leading")
+				{
 				if(counterMix==triggerArray->GetEntriesFast()){
 					
+					binsTrigMix[0]=trigPt;
+					binsTrigMix[1]=trigPhi;
+					binsTrigMix[2]=trigEta;
+					binsTrigMix[3]=MultipOrCentMix;
+					
+					if(triggerHist)triggerHist->Fill(binsTrigMix);
+					
+					for (Int_t j=0; j<mixEvents->GetEntriesFast(); j++){
+						
+						V0Correlationparticle* associate = (V0Correlationparticle*) mixEvents->At(j);
+						if(!associate)continue;
+						
+						binsv0CORRMix[0]= associate->Pt();
+						binsv0CORRMix[1]= associate->Phi();
+						binsv0CORRMix[2]= associate->Eta();
+						
+						if(binsv0CORRMix[0]>trigPt) continue;
+						
+						binsv0CORRMix[3]=RangePhi(trigPhi-binsv0CORRMix[1]);
+						binsv0CORRMix[4]=trigEta-binsv0CORRMix[2];
+						binsv0CORRMix[5]=associate->WhichCandidate();
+						binsv0CORRMix[6]=MultipOrCentMix;
+						
+						associateHist->Fill(binsv0CORRMix);
+					}
+				  }
+				}
+				
+				if(ftriggertype=="Alltrigs")
+				{
 					binsTrigMix[0]=trigPt;
 					binsTrigMix[1]=trigPhi;
 					binsTrigMix[2]=trigEta;
