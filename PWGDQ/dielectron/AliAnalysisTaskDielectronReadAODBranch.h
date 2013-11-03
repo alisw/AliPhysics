@@ -20,6 +20,7 @@
 class TNtuple;
 class TH1F;
 class TH2F;
+class AliDielectronPair;
 
 class AliAnalysisTaskDielectronReadAODBranch : public AliAnalysisTaskSE
 {
@@ -34,7 +35,6 @@ class AliAnalysisTaskDielectronReadAODBranch : public AliAnalysisTaskSE
 		virtual void LocalInit() {Init();}
 		virtual void UserExec(Option_t *option);
 		virtual void Terminate(Option_t *option);
- 		Bool_t MatchToMC(Int_t pdgabs,const TObjArray *mcArray,const Int_t *dgLabels,Int_t ndg,Int_t ndgCk,const Int_t *pdgDg) const;
               
                 //setters
                 void SetPtLeg(Double_t cutPt){ fPtCut = cutPt;} 
@@ -99,6 +99,7 @@ class AliAnalysisTaskDielectronReadAODBranch : public AliAnalysisTaskSE
                 Double_t  *fInvMassSignalLimits;     // invariant mass signal region to extract psproper distribution
                 Double_t  *fInvMassSideBandsLimits;  // invariant mass sideband region to extract psproper distribution 
 
+                Int_t     fSecondary;                // 1(0) to select secondary (prompt) jpsi
 		ClassDef(AliAnalysisTaskDielectronReadAODBranch,2); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
