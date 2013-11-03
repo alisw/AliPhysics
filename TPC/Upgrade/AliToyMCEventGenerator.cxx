@@ -50,6 +50,7 @@ AliToyMCEventGenerator::AliToyMCEventGenerator()
   ,fUseMaterialBudget(kFALSE)
   ,fIsLaser(kTRUE)
   ,fPrereadSCList(kFALSE)
+  ,fCalculateScaling(kTRUE)
 {
   fTPCParam = AliTPCcalibDB::Instance()->GetParameters();
   fTPCParam->ReadGeoMatrices();
@@ -73,6 +74,7 @@ AliToyMCEventGenerator::AliToyMCEventGenerator(const AliToyMCEventGenerator &gen
   ,fUseMaterialBudget(gen.fUseMaterialBudget)
   ,fIsLaser(gen.fIsLaser)
   ,fPrereadSCList(gen.fPrereadSCList)
+  ,fCalculateScaling(gen.fCalculateScaling)
 {
   //
   gRandom->SetSeed();
@@ -771,7 +773,7 @@ void AliToyMCEventGenerator::SetSCScalingFactor()
   // between the fluctuation map and the average map
   //
 
-  if ( !(HasSCList() && fTPCCorrection && fTPCCorrectionAv && fEvent) ) return;
+  if ( !(fCalculateScaling && HasSCList() && fTPCCorrection && fTPCCorrectionAv && fEvent) ) return;
 
   // loop over several z, r and phi bins and find a factor that minimises
   // the distortions between the current map and the average map

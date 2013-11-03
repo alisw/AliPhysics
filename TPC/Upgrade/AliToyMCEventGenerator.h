@@ -82,6 +82,9 @@ class AliToyMCEventGenerator : public TObject {
   Bool_t GetPrereadSCList() const        { return fPrereadSCList;         }
   Bool_t HasSCList() const               { return  !fSCListFile.IsNull(); }
 
+  void SetCalculateScaling(Bool_t  val) { fCalculateScaling = val; }
+  Bool_t  GetCalculateScaling() const { return fCalculateScaling; }
+
   static Float_t GetSCScalingFactor(AliTPCCorrection *corr, AliTPCCorrection *averageCorr, Float_t &chi2);
   static void SetCorrectionFromFile(TString file, AliTPCCorrection* &corr);
   
@@ -115,10 +118,11 @@ class AliToyMCEventGenerator : public TObject {
   Bool_t fUseMaterialBudget;             // use material budget in tracking?
   Bool_t fIsLaser;                       // is a laser event?
   Bool_t fPrereadSCList;                 // preread all SC files from the SC list
+  Bool_t fCalculateScaling;              // calculate scaling factor
 
   void InitSpaceChargeList();
   
-  ClassDef(AliToyMCEventGenerator, 1)
+  ClassDef(AliToyMCEventGenerator, 2)
   
 };
 

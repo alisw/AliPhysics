@@ -6,6 +6,7 @@
 #include <TClonesArray.h>
 #include <TExMap.h>
 #include <TVectorFfwd.h>
+#include <THn.h>
 
 class TTree;
 
@@ -193,6 +194,8 @@ public:
 
   TExMap fMapTrackEvent;          // map global track number -> event number
   TExMap fMapTrackTrackInEvent;   // map global track number -> track in event
+
+  THn    *fHnDelta;               // histogram with residuals
 
   Bool_t fIsAC;                     // if we are tracking with sector arrays running from 0-36 rather than 0-18
    

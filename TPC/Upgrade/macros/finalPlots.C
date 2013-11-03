@@ -193,6 +193,27 @@ void finalPlots(const char* filesEps20, TString saveDir="")
   cResParams->cd(6);
   leg->Draw();
   SaveCanvas(cResParams);
+
+  TCanvas *cResRPhi=GetCanvas("ResRPhi","Resolution of rPhi");
+  TLegend *leg2=new TLegend(.12,.7,.48,.95);
+  TObjArray arr;
+  Int_t i=0;
+  for (Int_t it=0; it<3; ++it) {
+    TH1F *hResParams=new TH1F(Form("hResParams_%d_%d",i,it),
+                              Form(";%s;#tracks",titles[i].Data()),
+                              100,min[i],max[i]);
+    drawStr=Form("%strackITS2.fP[%d]-tRealITS2.fP[%d]",type[it].Data(),i,i);
+    tEps20->Draw(drawStr+Form(">>hResParams_%d_%d",i,it),"","goff");
+    hResParams->SetLineColor(colors[it]);
+    arr.Add(hResParams);
+  }
+  leg2->AddEntry(arr.At(0),"no distortions (ideal)","l");
+  leg2->AddEntry(arr.At(1),"distorted/corrected (t_{0})","l");
+  leg2->AddEntry(arr.At(2),"distorted/corrected (t_{0}^{seed})","l");
+  DrawOnTop(cResRPhi,arr,kTRUE);
+  leg2->Draw("same");
+  SaveCanvas(cResRPhi);
+  
 }
 
 
@@ -257,7 +278,7 @@ void SetStyle()
 {
   const Int_t NCont=255;
   //const Int_t NCont=50;
-  
+  TH1::AddDirectory();
   TStyle *st = new TStyle("mystyle","mystyle");
   gROOT->GetStyle("Plain")->Copy((*st));
   st->SetTitleX(0.1);

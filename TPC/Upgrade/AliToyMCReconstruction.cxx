@@ -65,6 +65,7 @@ AliToyMCReconstruction::AliToyMCReconstruction() : TObject()
 , fAllClusters("AliTPCclusterMI",10000)
 , fMapTrackEvent(10000)
 , fMapTrackTrackInEvent(10000)
+, fHnDelta(0x0)
 , fIsAC(kFALSE)
 {
   //
@@ -152,6 +153,14 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
   const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
   
   Double_t lastT0=0;
+
+  // residuals
+  // binning r, phi, z, delta
+  const Int_t nbins=4;
+  Int_t bins[nbins]    = {16, 18*5, 50, 80};
+  Double_t xmin[nbins] = {86. , 0.,           -250., -2.};
+  Double_t xmax[nbins] = {250., 2*TMath::Pi(), 250.,  2.};
+  fHnDelta = new THnF("hn", "hn", nbins, bins, xmin, xmax);
   
   for (Int_t iev=0; iev<maxev; ++iev){
     printf("==============  Processing Event %6d =================\n",iev);
@@ -356,6 +365,9 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
     lastT0=t0;
   }
 
+  fStreamer->GetFile()->cd();
+  fHnDelta->Write();
+  
   delete arrClustRes;
   Cleanup();
 }
@@ -1255,6 +1267,8 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
   
   // create track
   AliExternalTrackParam *track = new AliExternalTrackParam(*seed);
+  // track copy for propagation
+  AliExternalTrackParam trCopy(*tr);
 
   Int_t ncls=(fClusterType == 0)?tr->GetNumberOfSpacePoints():tr->GetNumberOfDistSpacePoints();
 
@@ -1272,6 +1286,9 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
   const Double_t refX = tr->GetX();
   
   const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+
+  // parametrised track resolution
+  Double_t trackRes=gRandom->Gaus();
   
   // loop over all other points and add to the track
   for (Int_t ipoint=ncls-1; ipoint>=0; --ipoint){
@@ -1338,6 +1355,23 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
       clRes->SetY((track->GetY()-prot.GetY())/( sqrt ( prot.GetCov()[3] + track->GetSigmaY2()) )  );
       clRes->SetZ((track->GetZ()-prot.GetZ())/( sqrt ( prot.GetCov()[5] + track->GetSigmaZ2()) )  );
     }
+
+    // fill cluster residuals to ideal track for calibration studies
+    // ideal cluster position
+    trCopy.Rotate(track->GetAlpha());
+    AliTrackerBase::PropagateTrackTo(&trCopy,prot.GetX(),kMass,5,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
+    // binning r, phi, z, delta (0=rphi, 1=z)
+    // resolution parametrisation
+    Double_t oneOverPt = TMath::Abs(trCopy.GetSigned1Pt());
+    Double_t radius    = trCopy.GetX();
+    Double_t resRphi   = 0.004390 + oneOverPt*(-0.136403) + oneOverPt*radius*(0.002266) + oneOverPt*radius*radius*(-0.000006);
+
+    Double_t resRphiRandom = resRphi*trackRes;
+    Double_t deviation     = track->GetY()+resRphiRandom-prot.GetY();
+
+    // rphi residuals
+    Double_t xx[4]={prot.GetX(), trCopy.Phi(), trCopy.GetZ(),deviation};
+    fHnDelta->Fill(xx);
     
     Double_t pointPos[2]={0,0};
     Double_t pointCov[3]={0,0,0};
@@ -2578,7 +2612,9 @@ void AliToyMCReconstruction::Cleanup()
   
   delete fEvent;
   fEvent = 0x0;
-  
+
+  delete fHnDelta;
+  fHnDelta=0x0;
 //   delete fTree;
   fTree=0x0;
   
