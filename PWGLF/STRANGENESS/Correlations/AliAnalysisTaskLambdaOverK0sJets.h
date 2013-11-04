@@ -36,8 +36,32 @@ const float  kPtBinV0[kN1+1] = {2.0,2.25,2.5,2.75,3.0,3.5,4.0,5.0,7.0};
 const int    kNVtxZ = 10; 
 const double kBinVtxZ[kNVtxZ+1] = {-10.,-8.,-6.,-4.,-2.,0.,2.,4.,6.,8.,10.};
 
-const int    kNCent  = 6;
-const double kBinCent[kNCent+1] = {0.0,5.0,10.0,20.0,40.0,60.0,90.0};
+const int    kNCent  = 4;
+const double kBinCent[kNCent+1] = {0.0,5.0,10.0,20.0,40.0};
+
+//  ------------------------------------
+//  Inv. Mass width as function os the centrality
+//  Linear polimomial dependence: sigma(pt) = a0 * a1*pt
+
+const double kCteK0s2010[kNCent] = {0.00367, 0.00363, 0.00358, 0.00348};
+const double kLinearK0s2010[kNCent] = {6.148E-4, 5.937E-4, 5.741E-4, 5.693E-4};
+
+const double kCteK0s2011[kNCent] = {0.00354, 0.00348, 0.00360, 0.00352};
+const double kLinearK0s2011[kNCent] = {6.526E-4, 6.497E-4, 5.853E-4, 5.808E-4};
+
+const double kCteLambda2010[kNCent] = {0.00113, 0.00114, 0.00119, 0.00119};
+const double kLinearLambda2010[kNCent] = {3.062E-4, 2.900E-4, 2.629E-4, 2.440E-4};
+
+const double kCteLambda2011[kNCent] = {9.81E-4, 9.212E-4, 9.876E-4, 0.00106};
+const double kLinearLambda2011[kNCent] = {3.878E-4, 3.965E-4, 3.611E-4 , 3.351E-4};
+
+const double kCteAntiLambda2010[kNCent] = {0.00109, 0.00134, 0.00117, 0.00116};
+const double kLinearAntiLambda2010[kNCent] = {3.245E-4, 2.308E-4, 2.707E-4, 2.562E-4};
+
+const double kCteAntiLambda2011[kNCent] = {9.859E-4, 0.00111, 0.00104, 0.00110};
+const double kLinearAntiLambda2011[kNCent] = {3.881E-4, 3.379E-4, 3.490E-4, 3.166E-4};
+
+// -------------------------------------
 
 class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
 
@@ -229,9 +253,9 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fK0sDCADaugToPrimVtx;          //! K0s: DCA to primary vertex of daughters vs leading particle's pt inside a radio wrt the near-side peak
   TH3F*   fK0sSpatialRes;                //! K0s: Spatial resolution  
    
-  TH3F*   fK0sdPhidEtaMC[kNCent*kN1];           //! K0s MC: Delta phi,Delta eta vs Z vertex position
-  TH3F*   fK0sdPhidEtaPtL[kNCent*kN1];          //! K0s: Delta phi,Delta eta vs Z vertex position
-  TH3F*   fK0sdPhidEtaPtLBckg[kNCent*kN1];      //! K0s background: Delta phi,Delta eta vs Z vertex position
+  TH3F*   fK0sdPhidEtaMC[kNCent*kN1];             //! K0s MC: Delta phi,Delta eta vs Z vertex position
+  TH3F*   fK0sdPhidEtaPtL[kNVtxZ*kNCent*kN1];     //! K0s: Delta phi,Delta eta vs Z vertex position
+  //TH3F*   fK0sdPhidEtaPtLBckg[kNCent*kN1];      //! K0s background: Delta phi,Delta eta vs Z vertex position
  
   TH2F*   fK0sBckgDecLength;             //! K0s background: Decay lenght vs leading particle's pt inside a radio wrt the near-side peak
   TH3F*   fK0sBckgDCADaugToPrimVtx;      //! K0s background: DCA to primary vrtex of daughters vs leading particle's pt inside a radio wrt the near-side peak
@@ -254,9 +278,9 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fLambdaDCADaugToPrimVtx;       //! Lambda: DCA to primary vrtex of daughters vs leading particle's pt inside a radio wrt the near-side peak
   TH3F*   fLambdaSpatialRes;             //! Lambda: Spatial resolution  
 
-  TH3F*   fLambdadPhidEtaMC[kNCent*kN1];          //! Lambda MC: Delta phi,Delta eta vs Z vertex position
-  TH3F*   fLambdadPhidEtaPtL[kNCent*kN1];         //! Lambda: Delta phi,Delta eta vs Z vertex position
-  TH3F*   fLambdadPhidEtaPtLBckg[kNCent*kN1];     //! Lambda background: Delta phi,Delta eta vs Z vertex position
+  TH3F*   fLambdadPhidEtaMC[kNCent*kN1];            //! Lambda MC: Delta phi,Delta eta vs Z vertex position
+  TH3F*   fLambdadPhidEtaPtL[kNVtxZ*kNCent*kN1];    //! Lambda: Delta phi,Delta eta vs Z vertex position
+  //TH3F*   fLambdadPhidEtaPtLBckg[kNCent*kN1];     //! Lambda background: Delta phi,Delta eta vs Z vertex position
  
 
   TH2F*   fLambdaBckgDecLength;            //! Lambda background: Decay lenght vs leading particle's pt inside a radio wrt the near-side peak
@@ -279,9 +303,9 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fAntiLambdaDCADaugToPrimVtx;         //! AntiLambda: DCA to primary vrtex of daughters vs leading particle's pt inside a radio wrt the near-side peak
   TH3F*   fAntiLambdaSpatialRes;               //! AntiLambda: Spatial resolution  
 
-  TH3F*   fAntiLambdadPhidEtaMC[kNCent*kN1];          //! AntiLambda MC: Delta phi,Delta eta vs Z vertex position
-  TH3F*   fAntiLambdadPhidEtaPtL[kNCent*kN1];         //! AntiLambda: Delta phi,Delta eta vs pt of the leading particle
-  TH3F*   fAntiLambdadPhidEtaPtLBckg[kNCent*kN1];     //! AntiLambda background: Delta phi,Delta eta vs Z vertex position
+  TH3F*   fAntiLambdadPhidEtaMC[kNCent*kN1];            //! AntiLambda MC: Delta phi,Delta eta vs Z vertex position
+  TH3F*   fAntiLambdadPhidEtaPtL[kNVtxZ*kNCent*kN1];    //! AntiLambda: Delta phi,Delta eta vs pt of the leading particle
+  //TH3F*   fAntiLambdadPhidEtaPtLBckg[kNCent*kN1];     //! AntiLambda background: Delta phi,Delta eta vs Z vertex position
 
   TH2F*   fAntiLambdaBckgDecLength;            //! AntiLambda background: Decay lenght vs leading particle's pt inside a radio wrt the near-side peak
   TH3F*   fAntiLambdaBckgDCADaugToPrimVtx;     //! AntiLambda background: DCA to primary vrtex of daughters vs leading particle's pt inside a radio wrt the near-side peak
