@@ -138,7 +138,7 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType,
       reader->SwitchOnStack();
       reader->SwitchOffAODMCParticles();
     }
-    else if(kInputDataType == "AOD")
+    else if(inputDataType == "AOD")
     {
       reader->SwitchOffStack();
       reader->SwitchOnAODMCParticles();
