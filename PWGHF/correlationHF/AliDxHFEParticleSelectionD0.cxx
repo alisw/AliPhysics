@@ -55,6 +55,8 @@ AliDxHFEParticleSelectionD0::AliDxHFEParticleSelectionD0(const char* opt)
   , fD0InvMass(0.0)
   , fPtBin(-1)
   , fHistoList(NULL)
+  , fUseD0Efficiency(kFALSE)
+  , fD0EffMap(NULL)
 {
   // constructor
   // 
@@ -83,6 +85,7 @@ AliDxHFEParticleSelectionD0::~AliDxHFEParticleSelectionD0()
     delete fHistoList;
     fHistoList=NULL;
   }
+  fD0EffMap=NULL;
 
   // Note: external object deleted elsewhere  
   fCuts=NULL;
@@ -242,14 +245,18 @@ int AliDxHFEParticleSelectionD0::HistogramParticleProperties(AliVParticle* p, in
   Double_t KProperties[]={prongneg->Pt(),prongneg->Phi(),(Double_t)fPtBin, fD0InvMass,prongneg->Eta()};
   Double_t piProperties[]={prongpos->Pt(),prongpos->Phi(),(Double_t)fPtBin,fD0InvMass,prongpos->Eta()};
 
-
+  Double_t D0eff=1;
+  if(fUseD0Efficiency){
+    D0eff=GetD0Eff(p);
+    //    cout << "D0 eff: " << D0eff << endl;
+  }
   // Fills only for D0 or both.. 
   if ((selectionCode==1 || selectionCode==3) && fFillOnlyD0D0bar<2) {
 
     if(fD0Properties && ParticleProperties()) {
       memset(ParticleProperties(), 0, GetDimTHnSparse()*sizeof(ParticleProperties()[0]));
       FillParticleProperties(p, ParticleProperties(), GetDimTHnSparse());
-      fD0Properties->Fill(ParticleProperties());
+      fD0Properties->Fill(ParticleProperties(),1./D0eff);
     }
     if(fD0Daughter0) fD0Daughter0->Fill(piProperties);
     if(fD0Daughter1) fD0Daughter1->Fill(KProperties);
@@ -261,7 +268,7 @@ int AliDxHFEParticleSelectionD0::HistogramParticleProperties(AliVParticle* p, in
     if(fD0Properties && ParticleProperties()) {
       memset(ParticleProperties(), 0, GetDimTHnSparse()*sizeof(ParticleProperties()[0]));
       FillParticleProperties(p, ParticleProperties(), GetDimTHnSparse());
-      fD0Properties->Fill(ParticleProperties());
+      fD0Properties->Fill(ParticleProperties(),1./D0eff);
     }
     if(fD0Daughter0) fD0Daughter0->Fill(piProperties);
     if(fD0Daughter1) fD0Daughter1->Fill(KProperties);
@@ -435,6 +442,11 @@ int AliDxHFEParticleSelectionD0::ParseArguments(const char* arguments)
       }
       continue;
     }
+   if(argument.BeginsWith("useD0Eff")){
+      fUseD0Efficiency=true;
+      AliInfo("Applying Correction for D0 efficiency");
+      continue;
+    }
     // forwarding of single argument works, unless key-option pairs separated
     // by blanks are introduced
     AliDxHFEParticleSelection::ParseArguments(argument);
@@ -453,4 +465,20 @@ AliVParticle *AliDxHFEParticleSelectionD0::CreateParticle(AliVParticle* track)
 
   return part;
 
+}
+
+double AliDxHFEParticleSelectionD0::GetD0Eff(AliVParticle* tr){
+
+  AliReducedParticle *track=(AliReducedParticle*)tr;
+  if (!track) return -ENODATA;
+  Double_t pt=track->Pt();
+
+  Double_t D0eff=1;
+  Int_t bin=fD0EffMap->FindBin(pt);
+  if(fD0EffMap->IsBinUnderflow(bin)|| fD0EffMap->IsBinOverflow(bin)) 
+    D0eff = 1.;
+  else 
+    D0eff = fD0EffMap->GetBinContent(bin);
+
+  return D0eff;
 }

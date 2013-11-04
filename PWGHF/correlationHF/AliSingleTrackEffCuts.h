@@ -84,7 +84,13 @@ class AliSingleTrackEffCuts : public TObject
   void SetNumberOfClusters(Int_t nITS, Int_t nTPC, Int_t nTOF, Int_t nMUON){
     fnClusITS = nITS; fnClusTPC = nTPC; fnClusTOF = nTOF; fnClusMUON = nMUON;
   }
- 
+  void SetMaxRadius(Double_t rad) {fMaxRadius=rad;}
+  void SetUseIsPhysicalPrimary(bool t){fRemoveSecondary=t;}
+  void SetRejectPileup(bool reject){fRejectPileup=reject;}
+  void SetUsePhysicsSelection(bool phys){fUsePhysicsSelection =phys;}
+
+  bool GetUseIsPhysicalPrimary() const {return fRemoveSecondary;}
+
  protected:
 
   Bool_t IsVertexSelected(AliVEvent *event);
@@ -117,6 +123,10 @@ class AliSingleTrackEffCuts : public TObject
 
   Int_t fCutOnZVertexSPD; // 0: no cut, 1: |zvtx-SPD - zvtx-TPC|<0.5cm
 
+  Double_t fMaxRadius;  // Cut away all tracks with radius bigger than fRadius
+  Bool_t fRemoveSecondary; // Remove secondary tracks (using IsPhysicalPrimary())
+  Bool_t fRejectPileup;   // Reject pileup
+  Bool_t fUsePhysicsSelection; // Use Physics selection
 
   ClassDef(AliSingleTrackEffCuts,1)  // base class for cuts on AOD reconstructed heavy-flavour decays
 };

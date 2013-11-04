@@ -175,6 +175,7 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   if(fUseMC) fD0s=new AliDxHFEParticleSelectionMCD0(fOption);
   else fD0s=new AliDxHFEParticleSelectionD0(fOption);
   fD0s->SetCuts(fCutsD0,AliDxHFEParticleSelectionD0::kCutD0);
+  if(fD0EffMapP) { std::cout << "SETTING PROMPT efficiency for particle selection D0" << std::endl; fD0s->SetEffMap(fD0EffMapP,AliDxHFEParticleSelectionD0::kD0Prompt);}
   iResult=fD0s->Init();
   if (iResult<0) {
     AliFatal(Form("initialization of worker class instance fD0s failed with error %d", iResult));
@@ -308,13 +309,11 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   AliRDHFCutsD0toKpi* copyfCuts=new AliRDHFCutsD0toKpi(dynamic_cast<AliRDHFCutsD0toKpi&>(*fCutsD0));
   const char* nameoutput=GetOutputSlot(2)->GetContainer()->GetName();
   copyfCuts->SetName(nameoutput);
-
   // all tasks must post data once for all outputs
   PostData(1, fOutput);
   PostData(2,copyfCuts);
   PostData(3,fListHFE);
   PostData(4,fCuts);
-
 }
 
 void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)

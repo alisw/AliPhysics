@@ -170,6 +170,9 @@ class AliDxHFEParticleSelection : public TNamed {
   
   Int_t GetSystem() const {return fSystem;}
 
+  virtual void SetEffMap(TH1* /*eff*/, int /*whichMap*/){}
+
+
  protected:
   /// add control object to list, the base class becomes owner of the object
   int AddControlObject(TObject* pObj);
