@@ -52,6 +52,7 @@ AliToyMCReconstruction::AliToyMCReconstruction() : TObject()
 , fUseT0list(kFALSE)
 , fUseZ0list(kFALSE)
 , fForceAlpha(kFALSE)
+, fRecoInfo(-1)
 , fStreamer(0x0)
 , fInputFile(0x0)
 , fTree(0x0)
@@ -176,28 +177,40 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
 //       printf(" > ======  Processing Track %6d ========  \n",itr);
       const AliToyMCTrack *tr=fEvent->GetTrack(itr);
       tOrig = *tr;
-      // ideal track propagated to ITS reference points
-      tOrigITS  = *tr;
-      tOrigITS1 = *tr;
-      tOrigITS2 = *tr;
+
       // propagate original track to ITS comparison points
-      AliTrackerBase::PropagateTrackTo(&tOrigITS, lastLayerITS,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
-      AliTrackerBase::PropagateTrackTo(&tOrigITS1,betweeTPCITS,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
-      AliTrackerBase::PropagateTrackTo(&tOrigITS2,iFCRadius,   kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+      if (fRecoInfo<0 || (fRecoInfo&kFillITS) ==kFillITS  ) {
+        tOrigITS  = *tr;
+        AliTrackerBase::PropagateTrackTo(&tOrigITS, lastLayerITS,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+        tRealITS  = resetParam;
+      }
+      if (fRecoInfo<0 || (fRecoInfo&kFillITS1)==kFillITS1 ) {
+        tOrigITS1 = *tr;
+        AliTrackerBase::PropagateTrackTo(&tOrigITS1,betweeTPCITS,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+        tRealITS1 = resetParam;
+      }
+      if (fRecoInfo<0 || (fRecoInfo&kFillITS2)==kFillITS2 ) {
+        tOrigITS2 = *tr;
+        AliTrackerBase::PropagateTrackTo(&tOrigITS2,iFCRadius,   kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+        tRealITS2 = resetParam;
+      }
 
       // realistic ITS track propagated to reference points
-      tRealITS  = resetParam;
-      tRealITS1 = resetParam;
-      tRealITS2 = resetParam;
       dummy = GetTrackRefit(tr,kITS);
       if (dummy){
-        tRealITS = *dummy;
-        tRealITS1 = *dummy;
-        tRealITS2 = *dummy;
         // propagate realistic track to ITS comparison points
-        AliTrackerBase::PropagateTrackTo(&tRealITS, lastLayerITS,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
-        AliTrackerBase::PropagateTrackTo(&tRealITS1,betweeTPCITS,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
-        AliTrackerBase::PropagateTrackTo(&tRealITS2,iFCRadius,   kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+        if (fRecoInfo<0 || (fRecoInfo&kFillITS) ==kFillITS  ) {
+          tRealITS = *dummy;
+          AliTrackerBase::PropagateTrackTo(&tRealITS, lastLayerITS,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+        }
+        if (fRecoInfo<0 || (fRecoInfo&kFillITS1)==kFillITS1 ) {
+          tRealITS1 = *dummy;
+          AliTrackerBase::PropagateTrackTo(&tRealITS1,betweeTPCITS,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+        }
+        if (fRecoInfo<0 || (fRecoInfo&kFillITS2)==kFillITS2 ) {
+          tRealITS2 = *dummy;
+          AliTrackerBase::PropagateTrackTo(&tRealITS2,iFCRadius,   kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+        }
         //
         delete dummy;
         dummy=0x0;
@@ -209,9 +222,10 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
       t0seed    = resetParam;
       seed      = resetParam;
       track     = resetParam;
-      trackITS  = resetParam;
-      trackITS1 = resetParam;
-      trackITS2 = resetParam;
+      
+      if (fRecoInfo<0 || (fRecoInfo&kFillITS) ==kFillITS  ) trackITS  = resetParam;
+      if (fRecoInfo<0 || (fRecoInfo&kFillITS1)==kFillITS1 ) trackITS1 = resetParam;
+      if (fRecoInfo<0 || (fRecoInfo&kFillITS2)==kFillITS2 ) trackITS2 = resetParam;
       
       Float_t vDrift=GetVDrift();
       Float_t zLength=GetZLength(0);
@@ -248,20 +262,16 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
         if (dummy) {
           seed = *dummy;
           delete dummy;
+          dummy=0x0;
 
           // create fitted track
           if (fDoTrackFit){
 //             printf("track\n");
             dummy = GetFittedTrackFromSeed(tr, &seed, arrClustRes);
             track = *dummy;
+            dummy=0x0;
             delete dummy;
           }
-
-          // Copy original track and fitted track
-          // for extrapolation to ITS last layer
-          trackITS  = track;
-          trackITS1 = track;
-          trackITS2 = track;
           
           // propagate seed to 0
           AliTrackerBase::PropagateTrackTo(&seed,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
@@ -271,25 +281,34 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
           //
           
           // rotate fitted track to the frame of the original track and propagate to same reference
-          AliTrackerBase::PropagateTrackTo(&trackITS,lastLayerITS,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
-          trackITS.Rotate(tOrigITS.GetAlpha());
-          AliTrackerBase::PropagateTrackTo(&trackITS,lastLayerITS,kMass,1,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
+          if (fRecoInfo<0 || (fRecoInfo&kFillITS) ==kFillITS  ){
+            trackITS  = track;
+            AliTrackerBase::PropagateTrackTo(&trackITS,lastLayerITS,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+            trackITS.Rotate(tOrigITS.GetAlpha());
+            AliTrackerBase::PropagateTrackTo(&trackITS,lastLayerITS,kMass,1,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
+          }
 
           // rotate fitted track to the frame of the original track and propagate to same reference
-          AliTrackerBase::PropagateTrackTo(&trackITS1,betweeTPCITS,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
-          trackITS1.Rotate(tOrigITS1.GetAlpha());
-          AliTrackerBase::PropagateTrackTo(&trackITS1,betweeTPCITS,kMass,1,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
+          if (fRecoInfo<0 || (fRecoInfo&kFillITS1)==kFillITS1 ){
+            trackITS1 = track;
+            AliTrackerBase::PropagateTrackTo(&trackITS1,betweeTPCITS,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+            trackITS1.Rotate(tOrigITS1.GetAlpha());
+            AliTrackerBase::PropagateTrackTo(&trackITS1,betweeTPCITS,kMass,1,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
+          }
 
           // rotate fitted track to the frame of the original track and propagate to same reference
-          AliTrackerBase::PropagateTrackTo(&trackITS2,iFCRadius,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
-          trackITS2.Rotate(tOrigITS2.GetAlpha());
-          AliTrackerBase::PropagateTrackTo(&trackITS2,iFCRadius,kMass,1,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
+          if (fRecoInfo<0 || (fRecoInfo&kFillITS2)==kFillITS2 ){
+            trackITS2 = track;
+            AliTrackerBase::PropagateTrackTo(&trackITS2,iFCRadius,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+            trackITS2.Rotate(tOrigITS2.GetAlpha());
+            AliTrackerBase::PropagateTrackTo(&trackITS2,iFCRadius,kMass,1,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
+          }
         }
       }
 
       Int_t ctype(fCorrectionType);
-      
-      if (fStreamer) {
+
+      if (fRecoInfo && fStreamer){
         (*fStreamer) << "Tracks" <<
         "iev="         << iev             <<
         "z0="          << z0              <<
@@ -307,19 +326,30 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
         "seed.="       << &seed           <<
         
         "tOrig.="      << &tOrig          <<
-        "track.="      << &track          <<
+        "track.="      << &track;
+
+        
         // ITS match
-        "tOrigITS.="   << &tOrigITS       <<
-        "tOrigITS1.="  << &tOrigITS1      <<
-        "tOrigITS2.="  << &tOrigITS2      <<
+        if (fRecoInfo<0 || (fRecoInfo&kFillITS) ==kFillITS  ){
+          (*fStreamer) << "Tracks" <<
+          "tOrigITS.="   << &tOrigITS       <<
+          "tRealITS.="   << &tRealITS       <<
+          "trackITS.="   << &trackITS;
+        }
         
-        "tRealITS.="   << &tRealITS       <<
-        "tRealITS1.="  << &tRealITS1      <<
-        "tRealITS2.="  << &tRealITS2      <<
-        
-        "trackITS.="   << &trackITS       <<
-        "trackITS1.="  << &trackITS1      <<
-        "trackITS2.="  << &trackITS2;
+        if (fRecoInfo<0 || (fRecoInfo&kFillITS1) ==kFillITS1  ){
+          (*fStreamer) << "Tracks" <<
+          "tOrigITS1.="  << &tOrigITS1      <<
+          "tRealITS1.="  << &tRealITS1      <<
+          "trackITS1.="  << &trackITS1;
+        }
+
+        if (fRecoInfo<0 || (fRecoInfo&kFillITS) ==kFillITS  ){
+          (*fStreamer) << "Tracks" <<
+          "tOrigITS2.="  << &tOrigITS2      <<
+          "tRealITS2.="  << &tRealITS2      <<
+          "trackITS2.="  << &trackITS2;
+        }
 
         if (arrClustRes) {
           const Int_t nCl=arrClustRes->GetEntriesFast();
@@ -1358,20 +1388,23 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
 
     // fill cluster residuals to ideal track for calibration studies
     // ideal cluster position
-    trCopy.Rotate(track->GetAlpha());
-    AliTrackerBase::PropagateTrackTo(&trCopy,prot.GetX(),kMass,5,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
-    // binning r, phi, z, delta (0=rphi, 1=z)
-    // resolution parametrisation
-    Double_t oneOverPt = TMath::Abs(trCopy.GetSigned1Pt());
-    Double_t radius    = trCopy.GetX();
-    Double_t resRphi   = 0.004390 + oneOverPt*(-0.136403) + oneOverPt*radius*(0.002266) + oneOverPt*radius*radius*(-0.000006);
+    // require at least 2 TRD points
+    if (tr->GetNumberOfTRDPoints()>=2){
+      trCopy.Rotate(track->GetAlpha());
+      AliTrackerBase::PropagateTrackTo(&trCopy,prot.GetX(),kMass,5,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
+      // binning r, phi, z, delta (0=rphi, 1=z)
+      // resolution parametrisation
+      Double_t oneOverPt = TMath::Abs(trCopy.GetSigned1Pt());
+      Double_t radius    = trCopy.GetX();
+      Double_t resRphi   = 0.004390 + oneOverPt*(-0.136403) + oneOverPt*radius*(0.002266) + oneOverPt*radius*radius*(-0.000006);
 
-    Double_t resRphiRandom = resRphi*trackRes;
-    Double_t deviation     = track->GetY()+resRphiRandom-prot.GetY();
+      Double_t resRphiRandom = resRphi*trackRes;
+      Double_t deviation     = track->GetY()+resRphiRandom-prot.GetY();
 
-    // rphi residuals
-    Double_t xx[4]={prot.GetX(), trCopy.Phi(), trCopy.GetZ(),deviation};
-    fHnDelta->Fill(xx);
+      // rphi residuals
+      Double_t xx[4]={prot.GetX(), trCopy.Phi(), trCopy.GetZ(),deviation};
+      fHnDelta->Fill(xx);
+    }
     
     Double_t pointPos[2]={0,0};
     Double_t pointCov[3]={0,0,0};

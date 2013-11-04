@@ -41,6 +41,16 @@ public:
     kTPC,
     kTRD
   };
+
+  enum ERecoFill {
+    kFillSeed = 0x01,
+    kFillOrig = 0x02,
+    kFillTrack= 0x04,
+    
+    kFillITS  = 0x08,
+    kFillITS1 = 0x10,
+    kFillITS2 = 0x20
+  };
   
   void RunReco(const char* file, Int_t nmaxEv=-1);
   void RunRecoAllClusters(const char* file, Int_t nmaxEv=-1);
@@ -81,6 +91,9 @@ public:
   
   void   SetForceAlpha(Bool_t use)       { fForceAlpha=use;    }
   Bool_t GetForceAlpha()  const          { return fForceAlpha; }
+
+  void SetRecoInfo(Long64_t val) { fRecoInfo = val; }
+  Long64_t GetRecoInfo() const { return fRecoInfo; }
   
   void   SetTree(TTree *tree) { fTree=tree; }
   TTree* GetTree() const { return fTree; }
@@ -176,6 +189,7 @@ public:
   Bool_t   fUseT0list;           // if the list of T0 information should be used to guess the T0
   Bool_t   fUseZ0list;           // if the list of Z vertex information should be used to guess the T0
   Bool_t   fForceAlpha;          // force the correct alpha for the t0 seed extrapolation
+  Long64_t fRecoInfo;            // what information to fill in the output trees
   
   TTreeSRedirector *fStreamer;   // debug streamer
   TFile *fInputFile;             // input file
