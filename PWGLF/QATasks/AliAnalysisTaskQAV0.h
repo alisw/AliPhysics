@@ -80,7 +80,10 @@ class AliAnalysisTaskQAV0 : public AliAnalysisTaskSE {
   void SetV0SelectionMinRadius      ( Double_t lParameter ){ fV0Sels[5] = lParameter; }
   void SetV0SelectionMaxRadius      ( Double_t lParameter ){ fV0Sels[6] = lParameter; }
 //---------------------------------------------------------------------------------------
-  
+//Setters for dE/dx selection
+  void SetTPCdEdxSelection ( Double_t lParameter ) { fdEdxCut = lParameter; }
+//---------------------------------------------------------------------------------------  
+
  private:
 				// Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
 				// your data member object is created on the worker nodes and streaming is not needed.
@@ -140,6 +143,9 @@ class AliAnalysisTaskQAV0 : public AliAnalysisTaskSE {
   Double_t  fV0VertexerSels[7];     // Array to store the 7 values for the different selections V0 related
   Double_t  fV0Sels[7];           // Array to store the 7 values for the different selections V0 related
 
+  //Variables controlling task behaviour (don't "//!" them!)
+  //For setting a dEdx cut: can be strict... (will anyhow depend on analysis!) 
+  Double_t fdEdxCut; 
 
    AliAnalysisTaskQAV0(const AliAnalysisTaskQAV0&);            // not implemented
    AliAnalysisTaskQAV0& operator=(const AliAnalysisTaskQAV0&); // not implemented

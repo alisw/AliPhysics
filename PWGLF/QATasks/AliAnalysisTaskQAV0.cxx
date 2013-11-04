@@ -120,7 +120,8 @@ AliAnalysisTaskQAV0::AliAnalysisTaskQAV0()
 
   //Task Control / Utils
   fPIDResponse(0),
-  fkRunV0Vertexer ( kFALSE )
+  fkRunV0Vertexer ( kFALSE ),
+  fdEdxCut (3) 
 {
   // Dummy Constructor
   for(Int_t iV0selIdx   = 0; iV0selIdx   < 7; iV0selIdx++   ) { fV0Sels          [iV0selIdx   ] = -1.; }
@@ -164,7 +165,8 @@ AliAnalysisTaskQAV0::AliAnalysisTaskQAV0(const char *name)
 
   //Task Control / Utils
   fPIDResponse(0),
-  fkRunV0Vertexer ( kFALSE )
+  fkRunV0Vertexer ( kFALSE ),
+  fdEdxCut (3) 
 {
   // Constructor
   //VERTEXER CUTS
@@ -223,7 +225,7 @@ void AliAnalysisTaskQAV0::UserCreateOutputObjects()
   fHistTopDCANegToPV        = new TH1D( "fHistTopDCANegToPV",";DCA Neg. Daughter to PV (cm);Counts",200,0,1); 
   fHistTopDCAPosToPV        = new TH1D( "fHistTopDCAPosToPV",";DCA Pos. Daughter to PV (cm);Counts",200,0,1); 
   fHistTopDCAV0Daughters    = new TH1D( "fHistTopDCAV0Daughters",";DCA V0 Daughters (#sigma);Counts",200,0,2); 
-  fHistTopCosinePA          = new TH1D( "fHistTopCosinePA",";Cosine of PA;Counts",200,-1,1); 
+  fHistTopCosinePA          = new TH1D( "fHistTopCosinePA",";Cosine of PA;Counts",10010,-1.001,1.001); 
   fHistTopV0Radius          = new TH1D( "fHistTopV0Radius",";Decay Radius (cm);Counts",200,0.,10);
 
   fOutput->Add( fHistTopDCANegToPV     );
@@ -236,7 +238,7 @@ void AliAnalysisTaskQAV0::UserCreateOutputObjects()
   fHistSelectedTopDCANegToPV        = new TH1D( "fHistSelectedTopDCANegToPV",";DCA Neg. Daughter to PV (cm);Counts",200,fV0Sels[1],1); 
   fHistSelectedTopDCAPosToPV        = new TH1D( "fHistSelectedTopDCAPosToPV",";DCA Pos. Daughter to PV (cm);Counts",200,fV0Sels[2],1); 
   fHistSelectedTopDCAV0Daughters    = new TH1D( "fHistSelectedTopDCAV0Daughters",";DCA V0 Daughters (#sigma);Counts",200,0,fV0Sels[3]); 
-  fHistSelectedTopCosinePA          = new TH1D( "fHistSelectedTopCosinePA",";Cosine of PA;Counts",200,fV0Sels[4],1); 
+  fHistSelectedTopCosinePA          = new TH1D( "fHistSelectedTopCosinePA",";Cosine of PA;Counts",400,fV0Sels[4],1); 
   fHistSelectedTopV0Radius          = new TH1D( "fHistSelectedTopV0Radius",";Decay Radius (cm);Counts",200,fV0Sels[5],10);
 
   fOutput->Add( fHistSelectedTopDCANegToPV     );
@@ -633,12 +635,9 @@ void AliAnalysisTaskQAV0::UserExec(Option_t *)
     }
 
     //Specific fV0Sel selection level, dE/dx applied
-    if ( TMath::Abs(lNSigmasPosPion)   < 5 && TMath::Abs(lNSigmasNegPion)   < 5 )    f2dHistInvMassWithdEdxK0Short       -> Fill ( lPt , lInvMassK0s        )   ;
-    if ( TMath::Abs(lNSigmasPosProton) < 5 && TMath::Abs(lNSigmasNegPion)   < 5 )    f2dHistInvMassWithdEdxLambda        -> Fill ( lPt , lInvMassLambda     )   ;
-    if ( TMath::Abs(lNSigmasPosPion)   < 5 && TMath::Abs(lNSigmasNegProton) < 5 )    f2dHistInvMassWithdEdxAntiLambda    -> Fill ( lPt , lInvMassAntiLambda )   ;
-
-    
-
+    if ( TMath::Abs(lNSigmasPosPion)   < fdEdxCut && TMath::Abs(lNSigmasNegPion)   < fdEdxCut )    f2dHistInvMassWithdEdxK0Short       -> Fill ( lPt , lInvMassK0s        )   ;
+    if ( TMath::Abs(lNSigmasPosProton) < fdEdxCut && TMath::Abs(lNSigmasNegPion)   < fdEdxCut )    f2dHistInvMassWithdEdxLambda        -> Fill ( lPt , lInvMassLambda     )   ;
+    if ( TMath::Abs(lNSigmasPosPion)   < fdEdxCut && TMath::Abs(lNSigmasNegProton) < fdEdxCut )    f2dHistInvMassWithdEdxAntiLambda    -> Fill ( lPt , lInvMassAntiLambda )   ;
 
   }
 
