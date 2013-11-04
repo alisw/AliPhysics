@@ -565,14 +565,14 @@ void AliCFSingleTrackEfficiencyTask::CheckReconstructedParticles()
     containerInputMC[3] = mcPart->Theta();
 
     if (!fMCCuts->IsMCParticleGenerated(mcPart)) continue;
-    //    cout<< "MC matching did work"<<endl;
+    cout<< "MC matching did work"<<endl;
 
 
     // for filter bit selection
     AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*>(track);
     if(isAOD && !aodTrack) continue;
     if(isAOD && fSetFilterBit) if (!aodTrack->TestFilterMask(BIT(fbit))) continue;
-    //    cout<<" Filter bit check passed"<<endl;
+    cout<<" Filter bit check passed"<<endl;
 
     Bool_t isESDtrack = track->IsA()->InheritsFrom("AliESDtrack");
     AliESDtrack *tmptrack = NULL;
@@ -596,6 +596,7 @@ void AliCFSingleTrackEfficiencyTask::CheckReconstructedParticles()
       if(isAOD) delete tmptrack;
       continue;
     }
+    cout<<" analysis cuts passed"<<endl;
     fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepReconstructedMC);
     fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoQualityCuts);
     if(isAOD) delete tmptrack;
