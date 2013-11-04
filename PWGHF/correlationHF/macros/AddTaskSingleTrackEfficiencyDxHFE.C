@@ -83,7 +83,8 @@ const Double_t zvtxmin =  -10.0 ;
 const Double_t zvtxmax =  10.0 ;
 const Double_t dcamin = 0;  // micron
 const Double_t dcamax = 600;  // micron
-
+const Double_t sourcemin=-1;
+const Double_t sourcemax=8;
 
 // Mutliplicity
 const Float_t multmin_0_20 = 0;
@@ -117,15 +118,10 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   Int_t minclustersITS=4;
   Int_t ITSreq=AliESDtrackCuts::kFirst;
   TString extraname="";
-  Bool_t bclustersTPCPID=kTRUE;
-  Bool_t bTPCratio=kTRUE;
-  Bool_t brequireTOF=kTRUE;
-  Int_t filterbit=0;
+
   Int_t bUsePID=kTRUE;
   Int_t bUseTOFPID=kTRUE;
   Int_t bUseTPCPID=kTRUE;
-  Double_t maxTOFpt=999.;
-  Bool_t bTOFwhenpresent=kFALSE;
 
 
   if (configuration.IsNull() && gDirectory) {
@@ -146,59 +142,40 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
 	  if (argument.BeginsWith("file=")) {
 	    argument.ReplaceAll("file=", "");
 	    ofilename=argument;
+	    continue;
 	  }
 	  else if (argument.BeginsWith("name=")) {
 	    argument.ReplaceAll("name=", "");
 	    analysisName=argument;
+	    continue;
 	  }
 	  if (argument.BeginsWith("cutname=")) {
 	    argument.ReplaceAll("cutname=", "");
 	    TrackCutsfilename=argument;
-	  }
-	  if(argument.BeginsWith("filterbit=")){
-	    argument.ReplaceAll("filterbit=", "");
-	    filterbit=argument.Atoi();
-	    ::Info("AddTaskSingleTrackEfficiencyDxHFE",Form("Setting filterbit to %d",filterbit));
+	    continue;
 	  }
 	  if(argument.BeginsWith("tpcclusters=")){
 	    argument.ReplaceAll("tpcclusters=", "");
 	    minclustersTPC=argument.Atoi();
-	    ::Info("AddTaskSingleTrackEfficiencyDxHFE",Form("Setting nr TPC clusters to %d",NrTPCclusters));
-	  }
-	  if (argument.BeginsWith("notTPCratio")){
-	    ::Info("AddTaskSingleTrackEfficiencyDxHFE", "No requirement on tpc clusters /findable");
-	    bTPCratio=kFALSE;	    
-	  }
-	  if (argument.BeginsWith("notrequireTOF")){
-	    ::Info("AddTaskSingleTrackEfficiencyDxHFE", "No requirement on TOF");
-	    brequireTOF=kFALSE;	    
-	  }
-	  if (argument.BeginsWith("notclustersTPCPID")){
-	    ::Info("AddTaskSingleTrackEfficiencyDxHFE", "No requirement on nr clusters for TPC PID");
-	    bclustersTPCPID=kFALSE;	    
-	  }
-	  if(argument.BeginsWith("maxTOFpt=")){
-	    argument.ReplaceAll("maxTOFpt=", "");
-	    maxTOFpt=argument.Atof();
-	    ::Info("AddTaskSingleTrackEfficiencyDxHFE",Form("Setting max pt for TOF PID to %f",maxTOFpt));
-	  }
-	  if(argument.BeginsWith("TOFwhenpresent")){
-	    bTOFwhenpresent=kTRUE;
-	    ::Info("AddTaskSingleTrackEfficiencyDxHFE","Only use TOF when it's present");
+	    ::Info("AddTaskSingleTrackEfficiencyDxHFE",Form("Setting nr TPC clusters to %d",minclustersTPC));
+	    continue;
 	  }
 	  if (argument.BeginsWith("PbPb") ||
 	      argument.BeginsWith("system=1") ||
 	      argument.BeginsWith("Pb-Pb")) {
 	    system=1;
 	    taskOptions+=" system=Pb-Pb";
+	    continue;
 	  }
 	  if(argument.BeginsWith("extraname=")){
 	    argument.ReplaceAll("extraname=", "");
 	    extraname=argument;
+	    continue;
 	  }
 	  if(argument.BeginsWith("itsclusters=")){
 	    argument.ReplaceAll("itsclusters=", "");
 	    minclustersITS=argument.Atoi();
+	    continue;
 	  }
 	  if(argument.BeginsWith("itsreq=")){
 	    argument.ReplaceAll("itsreq=", "");
@@ -207,7 +184,10 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
 	    else if(argument.CompareTo("kNone")==0) ITSreq=AliESDtrackCuts::kNone;
 	    else if(argument.CompareTo("kOff")==0) ITSreq=AliESDtrackCuts::kOff;
 	    cout << "Cluster requirement: " << ITSreq << endl; 
+	    continue;
 	  }
+	  cout << "Adding argument " << argument << endl;
+	  taskOptions+=" "+argument;
 	  
 	}	
       }
@@ -215,20 +195,21 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
     }
   }
 
+  cout << "Arguments to task: " << taskOptions.Data() << endl;
   cout << "Cluster requirement: " << ITSreq << endl; 
   cout << "Nr ITS: " << minclustersITS << endl;
 
   Info("AliCFSingleTrackEfficiencyTask","SETUP CONTAINER");
 
   const Int_t nvar   = 5 ; //number of variables on the grid:pt,y,phi
-  UInt_t nstep = 11; //number of selection steps MC
+  UInt_t nstep = 10; //number of selection steps MC
 
   const UInt_t ipt = 0;
   const UInt_t iy  = 1;
   const UInt_t iphi = 2;
   const UInt_t itheta  = 3;
   const UInt_t izvtx  = 4;
-  // const UInt_t imult = 5;
+  const UInt_t isource = 5;
   
   
 
@@ -244,6 +225,7 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   const Int_t nbin3  = 18 ; //bins in phi
   const Int_t nbin4  = 18 ; //bins in theta
   const Int_t nbin5  = 20 ; //bins in zvtx
+  const Int_t nbin6  = 10 ; //bins for el source
 
   //A3. Bins for multiplicity
   const Int_t nbinmult = 48;  //bins in multiplicity (total number)	
@@ -259,6 +241,7 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   iBin[2]=nbin3;
   iBin[3]=nbin4;
   iBin[4]=nbin5;
+  //iBin[5]=nbin6;
   //  iBin[5]=nbinmult_0_20 +  nbinmult_20_50 +  nbinmult_50_102  ;
 
   
@@ -268,6 +251,7 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   Double_t *binLim3=new Double_t[iBin[2]+1];
   Double_t *binLim4=new Double_t[iBin[3]+1];
   Double_t *binLim5=new Double_t[iBin[4]+1];
+  // Double_t *binLim6=new Double_t[iBin[5]+1];
   //  Double_t *binLimmult=new Double_t[iBin[5]+1];
 
   // pt
@@ -282,6 +266,7 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   for(Int_t i=0; i<=nbin3; i++) binLim3[i]=(Double_t)phimin + (phimax-phimin)/nbin3*(Double_t)i ;
   for(Int_t i=0; i<=nbin4; i++) binLim4[i]=(Double_t)thetamin  + (thetamax-thetamin)  /nbin4*(Double_t)i ;
   for(Int_t i=0; i<=nbin5; i++) binLim5[i]=(Double_t)zvtxmin  + (zvtxmax-zvtxmin)  /nbin5*(Double_t)i ;
+  //for(Int_t i=0; i<=nbin6; i++) binLim6[i]=(Double_t)sourcemin  + (sourcemax-sourcemin)  /nbin6*(Double_t)i ;
 
   
   /*
@@ -299,7 +284,7 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   container -> SetBinLimits(iphi,binLim3);//phi
   container -> SetBinLimits(itheta,binLim4);//theta
   container -> SetBinLimits(izvtx,binLim5);//Zvtx
-  //  container -> SetBinLimits(imult,binLimmult);
+  //container -> SetBinLimits(isource,binLim6);
 
   //Variable Titles 
   container -> SetVarTitle(ipt,"pt");
@@ -307,7 +292,7 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   container -> SetVarTitle(iphi,"phi");
   container -> SetVarTitle(itheta, "theta");
   container -> SetVarTitle(izvtx, "Zvtx");
-  // container -> SetVarTitle(imult, "Multiplicity");
+  //  container -> SetVarTitle(isource, "Electron source");
 
   //Variable Titles 
   container -> SetStepTitle(0, " MC Particle with Generated Cuts");
@@ -315,12 +300,14 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   container -> SetStepTitle(2, " MC Particle with Track Ref Acceptance Cuts");
   container -> SetStepTitle(3, " Total Reconstructed  Particle ");
   container -> SetStepTitle(4, " Reco Particle With Kine Acceptance Cuts");
-  container -> SetStepTitle(5, " Reco Particle to MC True pt particles First track cuts");
-  container -> SetStepTitle(6, " Reco Particle With First Quality Cuts");
-  container -> SetStepTitle(7, " Reco Particle to MC True pt particles ");
-  container -> SetStepTitle(8, " Reco Particle With All Quality Cuts");
-  container -> SetStepTitle(9, " Reco Particle to MC True pt particles after PID");
-  container -> SetStepTitle(10, " Reco Particle after PID");
+  //container -> SetStepTitle(5, " Reco Particle to MC True pt particles First track cuts");
+  container -> SetStepTitle(5, " Reco Particle With First Quality Cuts");
+  //container -> SetStepTitle(7, " Reco Particle to MC True pt particles ");
+  container -> SetStepTitle(6, " Reco Particle With All Quality Cuts");
+  container -> SetStepTitle(7, " Reco Particle to MC True pt particles after PID");
+  container -> SetStepTitle(8, " Reco Particle after PID");
+  //  container -> SetStepTitle(8, " Reco Particle to MC True pt particle after inv mass cut");
+  container -> SetStepTitle(9, " Reco Particle after inv mass cut");
 
 
   // SET TLIST FOR QA HISTOS
@@ -346,6 +333,11 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   man->SetParticleCutsList(6,emptyList);//fPIDCutList);
   man->SetParticleCutsList(7,emptyList);//fPIDCutList);
   man->SetParticleCutsList(8,emptyList);//fPIDCutList);
+  man->SetParticleCutsList(9,emptyList);//fPIDCutList);
+  /*man->SetParticleCutsList(10,emptyList);//fPIDCutList);
+  man->SetParticleCutsList(11,emptyList);//fPIDCutList);
+  man->SetParticleCutsList(12,emptyList);//fPIDCutList);*/
+  //  man->SetParticleCutsList(13,emptyList);//fPIDCutList);
 
   
   // Simulated particle & event cuts
@@ -414,21 +406,10 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   //CREATE THE TASK
   printf("CREATE CF Single track task\n");
   
-  AliCFSingleTrackEfficiencyTask *task = new AliCFSingleTrackEfficiencyTask("AliCFSingleTrackEfficiencyTask",QualityCuts,cuts);
+  AliCFSingleTrackEfficiencyTask *task = new AliCFSingleTrackEfficiencyTask(taskOptions,"AliCFSingleTrackEfficiencyTask",QualityCuts,cuts);
   task->SetFilterBit(kTRUE);
-  task->SetFilterType(filterbit); //0=standard TPConly tracks, 1=ITSstandalone, 2=PixelOR (necessary for e), 3=PID for electrons, 4=standardwithlooseDCA, 5=standardwithtightDCA, 6=standard with tight DCA but with requiring first SDD instead of SPD cluster tracks, 7=TPC only tracks constrained to SPD vertex 
+  //task->SetFilterType(filterbit); //0=standard TPConly tracks, 1=ITSstandalone, 2=PixelOR (necessary for e), 3=PID for electrons, 4=standardwithlooseDCA, 5=standardwithtightDCA, 6=standard with tight DCA but with requiring first SDD instead of SPD cluster tracks, 7=TPC only tracks constrained to SPD vertex 
   task->SelectCollisionCandidates(AliVEvent::kAnyINT);
-
-  // Specifically for electrons DxHFE:
-  if(bclustersTPCPID) task->SetMinNClustersTPCPID(80);
-  if(bTPCratio) task->SetMinRatioTPCclusters(0.6); 	//Default = 0.6
-  if(brequireTOF) task->SetRequireTOF(kTRUE);
-
-  //PID Settings:
-  task->SetUsePID(bUsePID);
-  task->SetUseTOFPID(bUseTOFPID,maxTOFpt);
-  task->SetUseTPCPID(bUseTPCPID);
-  task->SetUseTOFWhenPresent(bTOFwhenpresent);
 
   task->SetCFManager(man); //here is set the CF manager
   
@@ -447,12 +428,13 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   // Check this using the analysis manager.
   //===============================================================================
   TString type = mgr->GetInputEventHandler()->GetDataType();
+  cout << "DataType: " << type<< endl;
   if (!type.Contains("ESD") && !type.Contains("AOD")) {
     ::Error("AddSingleTrackEfficiencyTask", "AliCFSingleTrackEfficiency task needs the manager to have an ESD or AOD input handler.");
     return NULL;
   } 
 
-  if(bUsePID){
+  if(bUsePID ){
     // check for existence of PID task and add if not available
     const char* pidTaskName="PIDResponseTask";
     const char* pidTaskMacro="$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C";

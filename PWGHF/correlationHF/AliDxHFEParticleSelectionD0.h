@@ -51,6 +51,12 @@ class AliDxHFEParticleSelectionD0 : public AliDxHFEParticleSelection {
     kNCutLabels
   };
 
+  enum {
+    kD0Prompt=0,
+    kD0FeedDown=1
+  };
+
+
   /// overloaded from AliDxHFEParticleSelection: init the control objects
   virtual int InitControlObjects();
   virtual THnSparse* DefineTHnSparse();
@@ -65,19 +71,23 @@ class AliDxHFEParticleSelectionD0 : public AliDxHFEParticleSelection {
   virtual TObjArray* Select(TObjArray* particles, const AliVEvent* pEvent);
   using AliDxHFEParticleSelection::Select;
 
+  // Get the D0 efficiency
+  virtual double GetD0Eff(AliVParticle* tr);
+
   /// overloaded from AliDxHFEParticleSelection: check particle
   virtual int IsSelected(AliVParticle* p, const AliVEvent *pEvent=NULL);
   /// overloaded from AliDxHFEParticleSelection: set cuts
   virtual void SetCuts(TObject* /*cuts*/, int level=0);
   void SetInvMass(Double_t mass){fD0InvMass=mass;}
   void SetPtBin(Int_t ptbin){fPtBin=ptbin;}
+  virtual void SetEffMap(TH1* eff, int whichMap=kD0Prompt){if(whichMap==kD0Prompt) fD0EffMap=eff;}
 
   //AliRDHFCutsD0toKpi GetCuts()const {return fCuts;}
   Int_t  GetFillOnlyD0D0bar() const {return fFillOnlyD0D0bar;}
   Int_t GetPtBin() const {return fPtBin;}
   Double_t GetInvMass() const {return fD0InvMass;}
   AliRDHFCuts *GetHFCuts() const {return fCuts;}
-
+  //const TH1* GetEffMap() const {return fD0EffMap;}
 
  protected:
   /// overloaded from AliDxHFEParticleSelection: histogram particle properties
@@ -100,6 +110,10 @@ class AliDxHFEParticleSelectionD0 : public AliDxHFEParticleSelection {
   Double_t  fD0InvMass;         // D0InvMass
   Int_t     fPtBin;             // Pt Bin
   TList*    fHistoList;         // list of histograms
+  Bool_t    fUseD0Efficiency;   // Whether or not to correct for D0 efficiency
+
+  TH1*      fD0EffMap;          //! Eff map for D0 
+
 
   static const char* fgkDgTrackControlBinNames[]; //! bin labels for track control histogram
   static const char* fgkCutBinNames[];            //! bin labels for cut histogram
