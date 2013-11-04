@@ -224,7 +224,8 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTask(const Bool_t readAO
   printf("CREATE CF Single track task\n");
 
   AliCFSingleTrackEfficiencyTask *task = new AliCFSingleTrackEfficiencyTask("AliCFSingleTrackEfficiencyTask",QualityCuts,cuts);
-  task->SetFilterBit(kTRUE);
+  if(readAOD) task->SetFilterBit(kTRUE);
+  else task->SetFilterBit(kFALSE);
   task->SetFilterType(fBit);
   task->SelectCollisionCandidates(AliVEvent::kMB);
   task->SetCFManager(man); //here is set the CF manager
