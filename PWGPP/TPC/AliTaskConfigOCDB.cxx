@@ -19,6 +19,7 @@
 #include <TFile.h>
 #include <TGeoGlobalMagField.h>
 #include "TGeoManager.h"
+#include <TRegexp.h>
  
 #include "AliAnalysisManager.h"
 #include "AliGeomManager.h"
@@ -173,6 +174,31 @@ void AliTaskConfigOCDB::Exec(Option_t* /*option*/)
 //______________________________________________________________________________
 void AliTaskConfigOCDB::Terminate(Option_t *)
 {
-// Initialize CDB also in Terminate
-//   CreateOutputObjects();
+  // Initialize CDB also in Terminate
+  //   CreateOutputObjects();
 }
+
+Int_t AliTaskConfigOCDB::guessRunNumber(TString path)
+{
+  //guess the runnumber from datapath
+  //works also on the LEGO train where the data path looks like this:
+  //workdir/testdata/__alice__data__2010__LHC10b__000114924__ESDs__pass2_root_archive_AliESDs_2/10000114924018.100/root_archive.zip
+  TObjArray* a = path.Tokenize("/_");
+  TRegexp r("^000[0-9][0-9][0-9][0-9][0-9][0-9]$");
+  TString sub;
+  for (Int_t i=0; i<a->GetEntries();i++)
+  {
+    TObjString* subobj = (TObjString*)a->At(i);
+    TString subtmp = subobj->GetString();
+    if (subtmp.Contains(r)) 
+    {
+      sub=subtmp;
+      break;
+    }
+  }
+  Int_t runNumber=sub.Atoi();
+  AliInfo(Form("guessed run: %i\n",runNumber));
+  a->Delete();
+  delete a;
+  return runNumber;
+}       

@@ -42,6 +42,7 @@ public:
   virtual Bool_t            Notify();
   virtual void              Exec(Option_t *option);
   virtual void              Terminate(Option_t *option);
+  Int_t guessRunNumber(TString path);
     
   ClassDef(AliTaskConfigOCDB,1)  // Class giving CDB connectivity
 };
