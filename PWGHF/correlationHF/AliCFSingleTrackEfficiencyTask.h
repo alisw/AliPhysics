@@ -42,6 +42,12 @@ class AliESDVertex;
 class AliVVertex;
 class AliVParticle;
 class AliPID;
+class AliSelectNonHFE;
+class AliDxHFEParticleSelection;
+class AliDxHFEParticleSelectionMCEl;
+class AliVertexingHFUtils;
+class AliAODMCHeader;
+
 
 
 class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
@@ -53,16 +59,38 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
     kStepMCAccpCut        = 2,
     kStepReconstructed    = 3,
     kStepRecoKineCuts     = 4,
-    kStepReconstructedFirstTrackCutsMC= 5,
-    kStepRecoFirstQualityCuts  = 6,
-    kStepReconstructedMC  = 7,
-    kStepRecoQualityCuts  = 8,
-    kStepRecoPIDMC  = 9,
-    kStepRecoPID  = 10
+    //kStepReconstructedFirstTrackCutsMC= 5,
+    kStepRecoFirstQualityCuts  = 5,
+    //kStepReconstructedMC  = 7,
+    kStepRecoQualityCuts  = 6,
+    kStepRecoPIDMC  = 7,
+    kStepRecoPID  = 8,
+    //    kStepRecoInvMassMC=8,
+    kStepRecoInvMass=9,
+    /*    kStepRecoHFEMC=13,
+    kStepRecoHFE=14,
+    kStepRecononHFEMC=15,
+    kStepRecononHFE=16*/
   };
 
-  AliCFSingleTrackEfficiencyTask();
-  AliCFSingleTrackEfficiencyTask(const Char_t* name, AliESDtrackCuts *trackcuts, AliSingleTrackEffCuts * mccuts);
+  enum {
+    kAll=-1,
+    kHF,
+    kHFPythia,
+    kHFHijing,
+    kHFGen0,
+    knonHF,
+    knonHFPythia,
+    knonHFHijing,
+    knonHFGen0,
+    kConvEl,
+    kConvElPythia,
+    kConvElHijing,
+    kConvElGen0
+  };
+
+  AliCFSingleTrackEfficiencyTask(const char* opt="");
+  AliCFSingleTrackEfficiencyTask(const char* opt,const Char_t* name, AliESDtrackCuts *trackcuts, AliSingleTrackEffCuts * mccuts);
   AliCFSingleTrackEfficiencyTask& operator= (const AliCFSingleTrackEfficiencyTask& c);
   AliCFSingleTrackEfficiencyTask(const AliCFSingleTrackEfficiencyTask& c);
   virtual ~AliCFSingleTrackEfficiencyTask();
@@ -82,6 +110,7 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
   // Data types
   Bool_t IsReadTPCTracks() const {return fReadTPCTracks;}
   Bool_t IsReadAODData()   const {return fReadAODData;}
+  int CheckBackgroundSource(AliVParticle* track, const AliVEvent* pEvent,Bool_t useMCarray=kFALSE);
 
   //Setters
   void   SetReadTPCTracks (Bool_t flag=kTRUE) {fReadTPCTracks=flag;}
@@ -104,13 +133,20 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
   ULong64_t GetTriggerMask(){ return fTriggerMask; }
   AliESDtrackCuts *GetTrackCuts(){ return (AliESDtrackCuts*)fTrackCuts; }  
   AliSingleTrackEffCuts *GetSingleTrackEffCuts(){ return (AliSingleTrackEffCuts*)fMCCuts; }
-
+  void GetTrackPrimaryGenerator(AliAODTrack *track,AliAODMCHeader *header,AliVEvent *arrayMC,TString &nameGen);
+  void GetTrackPrimaryGenerator(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC,TString &nameGen);
+  TString GetGenerator(Int_t label, AliAODMCHeader* header);
 
  protected:
 
   void CheckESDParticles();
   void CheckAODParticles();
+
+  int ParseArguments(const char* arguments);
+
   AliESDtrack* ConvertTrack(AliAODTrack *track);
+
+  TString fOption;                       //  option string
 
   Bool_t          fReadTPCTracks ; // flag to loop on TPC tracks only (ESD mode only)
   Bool_t          fReadAODData ;   // flag for AOD/ESD input files
@@ -120,6 +156,10 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
   AliESDtrackCuts *fTrackCuts;      // track cuts (reconstructed level)
   ULong64_t fTriggerMask;           // trigger mask
   AliSingleTrackEffCuts *fMCCuts;   // Cuts used
+  AliSelectNonHFE* fSelNHFE;        // AliSelectNonHFE, inv-mass selection
+  AliDxHFEParticleSelectionMCEl* fElectrons; //  selection of electrons
+  AliDxHFEParticleSelectionMCEl* fElectronsKine; //  selection of electrons
+  AliVertexingHFUtils *fVertUtil;   // to get generators
 
   Bool_t          fSetFilterBit ; // 
   Int_t           fbit ;   // 
@@ -136,12 +176,24 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
   Bool_t          fUseTOFPID;       // Whether or not to use TOF PID
   Double_t        fMaxPtForTOFPID;  // At which Pt to stop using TOF
   Bool_t          fUseTOFonlyWhenPresent; // use tof only when it's there
+  Double_t        fInvMassLow;      // Value for invariant mass cut on electron pairs
+  Double_t        fMaxRadius;       // max radius of particles
+  Int_t           fOriginMotherReco;// Origin of mother, reco level
+  Int_t           fOriginMotherKine;// Origin of mother, kine level
+  Int_t           fSelectElSource;  // which source to select
+  Bool_t          fUseGenerator;    // If using generator
 
 
   //Number of events
   TH1I  *fHistEventsProcessed;     //! simple histo for monitoring the number of events processed
   TH1F  *fElectronPt;              //! histo with final selected electron pt
   TH1F  *fElectronPtStart;         //! histo with final selected electron pt
+  TH1F  *fHistInvMassLS;           //! histo with LS distribution invariant mass
+  TH1F  *fHistInvMassULS;          //! histo with ULS distribution invariant mass
+  TH1F  *fhGenerator;              //! histo for showing which generator
+  TH1F  *fhOriginKine;             //! histo for Origin Kine level
+  TH1F  *fhOriginReco;             //! histo for Origin Reco level
+  TH1F  *fhElGenerator;            //! histo for showing which generator + source of electron
 
   ClassDef(AliCFSingleTrackEfficiencyTask,1);
 

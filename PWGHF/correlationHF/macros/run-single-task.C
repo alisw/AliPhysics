@@ -816,6 +816,7 @@ void run_single_task(const char* mode,
   }
   if (nevents<0) nevents=1000000000;
   pManager->PrintStatus();
+  //  pManager->AddClassDebug("AliCFSingleTrackEfficiencyTask",3);
   if (!bRunAnalysis) return;
   if (bRunLocal) {
     pManager->StartAnalysis("local", chain, nevents);

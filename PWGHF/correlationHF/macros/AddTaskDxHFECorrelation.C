@@ -110,6 +110,7 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
   TString D0EffMapFeedDown="";
   TString extraname="";
   TString cutFilename="";
+  Bool_t addPIDqa=kFALSE;
 
   cout << endl << "===============================================" << endl;
   cout << "Setting up Correlation task: " << configuration << endl;
@@ -238,6 +239,11 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
 	    else if (argument.CompareTo("electron")==0) triggerParticle=AliDxHFECorrelation::kElectron;
 	    continue;
 	  }
+	  if(argument.BeginsWith("addPIDqa")){
+	    addPIDqa=kTRUE;
+	    continue;
+	  }
+
 	  if (argument.CompareTo("runD0MassReference")==0){
 	    bRunD0MassReference=kTRUE;
 	    continue;
@@ -303,6 +309,10 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
 					      pidTaskName, pidTaskMacro));
       return 0;
     }
+    if(addPIDqa){
+      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");
+      AliAnalysisTaskPIDqa *pidQA = AddTaskPIDqa();
+    }
   } else {
     // TODO: would like to check if the PID task was set up
     // with consistent parameters, however there are no getters at the moment
@@ -353,8 +363,8 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
   if (system==0) {
   RDHFD0toKpi->SetStandardCutsPP2010();
 
-  RDHFD0toKpi->SetTriggerMask(triggerMask);
-  RDHFD0toKpi->SetTriggerClass(""); //pPb
+  //RDHFD0toKpi->SetTriggerMask(triggerMask);
+  //RDHFD0toKpi->SetTriggerClass(""); //pPb
   }
 
   //Pb-Pb

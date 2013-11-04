@@ -48,6 +48,9 @@ class AliDxHFEParticleSelectionMCEl : public AliDxHFEParticleSelectionEl {
   /// check MC criteria
   int CheckMC(AliVParticle* p, const AliVEvent* pEvent);
 
+  /// Return the result on check on initial quark
+  int GetOriginMother() const {return fOriginMother;}
+
   /// clear internal memory
   virtual void Clear(const char* option="");
 
@@ -92,6 +95,7 @@ class AliDxHFEParticleSelectionMCEl : public AliDxHFEParticleSelectionEl {
   Bool_t fStoreOnlyMCElectrons;        // Store only MC truth electrons, discard hadrons
   Int_t fMCInfo;                       // What to check and in which order
   Bool_t fRemoveEfromD0;               // Removing electrons decaying from a D0
+  Bool_t fRemoveSecondary;             // whether or not to remove secondary tracks
 
 
   ClassDef(AliDxHFEParticleSelectionMCEl, 4);

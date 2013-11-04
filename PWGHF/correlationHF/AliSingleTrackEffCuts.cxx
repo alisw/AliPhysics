@@ -66,7 +66,11 @@ AliSingleTrackEffCuts::AliSingleTrackEffCuts():
   fnClusTPC(0),
   fnClusTOF(0),
   fnClusMUON(0),
-  fCutOnZVertexSPD(0)
+  fCutOnZVertexSPD(0),
+  fMaxRadius(999),
+  fRemoveSecondary(kTRUE),
+  fRejectPileup(kTRUE),
+  fUsePhysicsSelection(kTRUE)
 {
   // Default constructor
 }
@@ -94,7 +98,11 @@ AliSingleTrackEffCuts::AliSingleTrackEffCuts(const AliSingleTrackEffCuts &source
   fnClusTPC(source.fnClusTPC),
   fnClusTOF(source.fnClusTOF),
   fnClusMUON(source.fnClusMUON),
-  fCutOnZVertexSPD(source.fCutOnZVertexSPD)
+  fCutOnZVertexSPD(source.fCutOnZVertexSPD),
+  fMaxRadius(source.fMaxRadius),
+  fRemoveSecondary(source.fRemoveSecondary),
+  fRejectPileup(source.fRejectPileup),
+  fUsePhysicsSelection(source.fUsePhysicsSelection)
 {
   // Copy constructor
 }
@@ -129,7 +137,10 @@ AliSingleTrackEffCuts &AliSingleTrackEffCuts::operator=(const AliSingleTrackEffC
   fnClusTOF = source.fnClusTOF;
   fnClusMUON = source.fnClusMUON;
   fCutOnZVertexSPD = source.fCutOnZVertexSPD;
-
+  fMaxRadius=source.fMaxRadius;
+  fRemoveSecondary=source.fRemoveSecondary;
+  fRejectPileup=source.fRejectPileup;
+  fUsePhysicsSelection=source.fUsePhysicsSelection;
   return *this;
 }
 
@@ -192,7 +203,6 @@ Bool_t AliSingleTrackEffCuts::IsMCEventSelected(TObject* obj)
 //____________________| Step 1. MC Particle Generation Cuts|__________________
 Bool_t AliSingleTrackEffCuts::IsMCParticleGenerated(TObject* obj)
 {
-  
           //  AliMCParticle*  OR AliAODMCParticle*;
           if (!obj) return  kFALSE;
 	  if (!obj->InheritsFrom("AliVParticle")) AliError("object must derived from AliVParticle !");
@@ -203,6 +213,8 @@ Bool_t AliSingleTrackEffCuts::IsMCParticleGenerated(TObject* obj)
 	  
        	  // Pdg Code
 	  if( fIsPdgCode && TMath::Abs( particle->PdgCode() )!= fPdgCode) isSelected = kFALSE;
+
+	  //Should also test for HF for electrons
 	  
 	  // Charge selection
 	  if(fIsCharged && !(particle->Charge()!=0)) isSelected = kFALSE;
@@ -216,12 +228,12 @@ Bool_t AliSingleTrackEffCuts::IsMCParticleGenerated(TObject* obj)
 	    AliStack* stack = ((AliMCEvent*)fMCinfo)->Stack();
 
 	    AliMCParticle* mcPart = dynamic_cast<AliMCParticle *>(obj);	     
-	    if (!stack->IsPhysicalPrimary(mcPart->GetLabel())) isSelected = kFALSE;
+	    if(fRemoveSecondary) {if (!stack->IsPhysicalPrimary(mcPart->GetLabel())) isSelected = kFALSE;}
 	    
 	  } else {
 	    // cout <<" I am selecting Physics Primary only in AODs"<< endl;
 	    AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle *>(obj);	    
-	    if (!mcPart->IsPhysicalPrimary()) isSelected = kFALSE;
+	    if(fRemoveSecondary) {if (!mcPart->IsPhysicalPrimary()) isSelected = kFALSE;}
 
 	  }
 	    
@@ -251,6 +263,14 @@ Bool_t AliSingleTrackEffCuts::IsMCParticleInKineAcceptance(TObject *obj)
 	  
 	  // Cuts on pt
 	  if( particle->Pt() < fPtMin || particle->Pt() > fPtMax ) isSelected = kFALSE;
+
+	  //cut on radius
+	  AliAODMCParticle *mcPart=dynamic_cast<AliAODMCParticle*>(particle);
+	  Double_t x=mcPart->Xv();
+	  Double_t y=mcPart->Yv();
+	  Double_t radius=TMath::Sqrt((x*x)+(y*y));
+	  if(radius > fMaxRadius) {isSelected=kFALSE;}
+	  //else cout << "x: " << x << " y: " << y<< " radius " << radius << " is fine, below " << fMaxRadius << endl;
 	  
 	  return isSelected;
 }
@@ -313,20 +333,26 @@ Bool_t AliSingleTrackEffCuts::IsRecoEventSelected(TObject* obj)
   Bool_t isSelected = kTRUE;
 	  
   //a) Physics selection
-  UInt_t trigFired = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  Bool_t isEvtSelected = (trigFired & fTriggerMask);
-  if(!isEvtSelected) {
-    isSelected = kFALSE;
-  }  
+  if(fUsePhysicsSelection){
+    UInt_t trigFired = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+    Bool_t isEvtSelected = (trigFired & fTriggerMask);
+    if(!isEvtSelected) {
+      cout << "cut on physics selection" << endl;
+      isSelected = kFALSE;
+    }  
+  }
   //b) Vertex selection
   Bool_t isVtxSelected = IsVertexSelected(event);
-  if(!isVtxSelected) isSelected = kFALSE;
+  if(!isVtxSelected) {//cout << "cut on vertex seelction" << endl; 
+    isSelected = kFALSE;}
 
-  Int_t cutc=3;
-  Double_t cutz=0.6;
-  if(event->IsPileupFromSPD(cutc,cutz,3.,2.,10.)) {
-    isSelected=kFALSE;
-  }	  
+  if(fRejectPileup){
+    Int_t cutc=3;
+    Double_t cutz=0.6;
+    if(event->IsPileupFromSPD(cutc,cutz,3.,2.,10.)) {
+      isSelected=kFALSE;
+    }	  
+  }
 	  
   //c) Cut on Multiplicity ?
   //d) others cuts?
@@ -357,7 +383,15 @@ Bool_t AliSingleTrackEffCuts::IsRecoParticleKineAcceptance(TObject *obj)
   // Cuts on pt
     if( track->Pt()  < fPtMin  || track->Pt()  > fPtMax ) isSelected = kFALSE;
     
-
+    //cut on radius
+    AliAODMCParticle *mcPart=dynamic_cast<AliAODMCParticle*>(track);
+    //    AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle *>(obj);
+    /*Double_t x=mcPart->Xv();
+    Double_t y=mcPart->Yv();
+    double radius=TMath::Sqrt(x*x+y*y);
+    if(radius > fMaxRadius) {cout << "Radius is bigger" << endl; isSelected=kFALSE;}
+    else cout << "radius is fine, below " << fMaxRadius << endl;
+    */	  
 
     return isSelected;
 
