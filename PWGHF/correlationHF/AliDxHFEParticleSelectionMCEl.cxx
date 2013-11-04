@@ -58,6 +58,7 @@ AliDxHFEParticleSelectionMCEl::AliDxHFEParticleSelectionMCEl(const char* opt)
   , fStoreOnlyMCElectrons(kFALSE)
   , fMCInfo(kMCLast)
   , fRemoveEfromD0(kFALSE)
+  , fRemoveSecondary(kTRUE)
 {
   // constructor
   // 
@@ -72,13 +73,18 @@ AliDxHFEParticleSelectionMCEl::AliDxHFEParticleSelectionMCEl(const char* opt)
   // This is also checked in AddTasks, but just for safety! 
   if(fUseMCReco && fUseKine) AliFatal("CAN'T SET BOTH usekine AND elmcreco AT THE SAME TIME");
 
+  bool kineTools=kFALSE;
+  TString strOption(opt);
+  cout << strOption << endl;
+  if (strOption.Contains("OnlyKineTools")) kineTools=kTRUE;
+
   // TODO: argument scan, build tool options accordingly
   // e.g. set mc mode first/last, skip control histograms
   TString toolopt("pdg=11");
   if(fMCInfo==kMCLast) toolopt+=" mc-last";
   if(fMCInfo==kMCOnly) toolopt+=" mc-first";
   if(fMCInfo==kMCFirst) toolopt+=" mc-first";
-  if(fUseKine) toolopt+=" usekine";
+  if(fUseKine || kineTools){cout << "sending usekine to tools " << endl; toolopt+=" usekine";}
   new (&fMCTools) AliDxHFEToolsMC(toolopt);
 }
 
@@ -298,6 +304,7 @@ int AliDxHFEParticleSelectionMCEl::CheckMC(AliVParticle* p, const AliVEvent* pEv
   if (!p || !pEvent){
     return -EINVAL;
   }
+  fOriginMother=-1;
   int iResult=0;
 
   if (!fMCTools.IsInitialized() && (iResult=fMCTools.InitMCParticles(pEvent))<0) {
@@ -314,7 +321,9 @@ int AliDxHFEParticleSelectionMCEl::CheckMC(AliVParticle* p, const AliVEvent* pEv
     // TODO: remove delta e? also remove E<300MeV?
     // Should also mark dalitz decay and gamma conversion..
     AliAODMCParticle *mcp=dynamic_cast<AliAODMCParticle*>(p);
-    if(!mcp || !mcp->IsPhysicalPrimary()) return 0; 
+    if(!mcp ) return 0;
+    if(fRemoveSecondary)
+      if(!mcp->IsPhysicalPrimary()) return 0; 
     if(TMath::Abs(mcp->Eta())>0.8){ return 0;}
 
   }
@@ -374,6 +383,7 @@ int AliDxHFEParticleSelectionMCEl::CheckMC(AliVParticle* p, const AliVEvent* pEv
     }
 
   }
+
 
   // Checks on the electrons, to return only specific sources
   if(fOriginMother >= AliDxHFEToolsMC::kOriginNone && fOriginMother <= AliDxHFEToolsMC::kOriginStrange)
@@ -482,6 +492,11 @@ int AliDxHFEParticleSelectionMCEl::ParseArguments(const char* arguments)
       else if(argument.CompareTo("Onlyb")==0){ fElSelection=kOnlyb;}
       else AliFatal(Form("unknown argument '%s'", argument.Data()));
       AliInfo(Form("Selecting only source %d",fElSelection));
+      continue;
+    }
+    if (argument.BeginsWith("notusePhysPrim")){
+      AliInfo("Not Use IsPhysicalPrimary()");
+      fRemoveSecondary=kFALSE;
       continue;
     }
     if(argument.BeginsWith("mc-only")){
