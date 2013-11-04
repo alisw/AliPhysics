@@ -120,7 +120,14 @@ void AliTaskConfigOCDB::CreateOutputObjects()
   }   
   // Try to get event number before the first event is read (this has precedence
   // over existing fRun)
-  Int_t run = mgr->GetRunFromPath();
+  TTree* inputTree = mgr->GetTree();
+  if (!inputTree) { AliError("no input tree"); return; }
+  TFile* inputFile = inputTree->GetCurrentFile();
+  if (!inputFile) { AliError("no input file"); return; }
+  TString inputFileName(inputFile->GetName());
+  Int_t run = guessRunNumber(inputFileName);
+  mgr->SetRunFromPath(run);
+
   if (!run && !fRun) {
      AliError("AliTaskConfigOCDB: Run not set - no CDB connection");
      return;
