@@ -49,7 +49,10 @@ public:
     
     kFillITS  = 0x08,
     kFillITS1 = 0x10,
-    kFillITS2 = 0x20
+    kFillITS2 = 0x20,
+
+    kFillDeltas = 0x40,
+    kFillNoTrackInfo= 0x80
   };
   
   void RunReco(const char* file, Int_t nmaxEv=-1);

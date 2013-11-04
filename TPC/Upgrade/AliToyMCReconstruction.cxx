@@ -308,7 +308,7 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
 
       Int_t ctype(fCorrectionType);
 
-      if (fRecoInfo && fStreamer){
+      if (fRecoInfo && ((fRecoInfo&kFillNoTrackInfo)!=kFillNoTrackInfo) && fStreamer){
         (*fStreamer) << "Tracks" <<
         "iev="         << iev             <<
         "z0="          << z0              <<
@@ -1389,21 +1389,52 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
     // fill cluster residuals to ideal track for calibration studies
     // ideal cluster position
     // require at least 2 TRD points
-    if (tr->GetNumberOfTRDPoints()>=2){
+    if (fRecoInfo<0 || (fRecoInfo&kFillDeltas) ==kFillDeltas  ) {
       trCopy.Rotate(track->GetAlpha());
       AliTrackerBase::PropagateTrackTo(&trCopy,prot.GetX(),kMass,5,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
       // binning r, phi, z, delta (0=rphi, 1=z)
       // resolution parametrisation
-      Double_t oneOverPt = TMath::Abs(trCopy.GetSigned1Pt());
-      Double_t radius    = trCopy.GetX();
-      Double_t resRphi   = 0.004390 + oneOverPt*(-0.136403) + oneOverPt*radius*(0.002266) + oneOverPt*radius*radius*(-0.000006);
+      Float_t soneOverPt= trCopy.GetSigned1Pt();
+      Float_t oneOverPt = TMath::Abs(soneOverPt);
+      Float_t radius    = trCopy.GetX();
+      Float_t trackY    = trCopy.GetY();
+      Float_t trackZ    = trCopy.GetZ();
+      Float_t trackPhi  = trCopy.Phi();
 
-      Double_t resRphiRandom = resRphi*trackRes;
-      Double_t deviation     = track->GetY()+resRphiRandom-prot.GetY();
+      Float_t pointY    = prot.GetY();
+      Float_t pointZ    = prot.GetZ();
+
+      Float_t resRphi   = 0.004390 + oneOverPt*(-0.136403) + oneOverPt*radius*(0.002266) + oneOverPt*radius*radius*(-0.000006);
+
+      Float_t resRphiRandom = resRphi*trackRes;
+      Float_t deviation     = trackY+resRphiRandom-pointY;
+      Short_t    npTRD         = tr->GetNumberOfTRDPoints();
 
       // rphi residuals
-      Double_t xx[4]={prot.GetX(), trCopy.Phi(), trCopy.GetZ(),deviation};
-      fHnDelta->Fill(xx);
+      Double_t xx[4]={radius, trackPhi ,deviation};
+      if (npTRD>=2){
+        fHnDelta->Fill(xx);
+      }
+
+      Short_t event=fTree->GetReadEntry();
+
+      if (fStreamer) {
+        (*fStreamer) << "delta" <<
+        "soneOverPt=" << soneOverPt <<
+        "r="          << radius    <<
+        "trackPhi="   << trackPhi  <<
+        "trackY="     << trackY    <<
+        "trackZ="     << trackZ    <<
+        "resRphi="    << resRphi   <<
+        "trackRes="   << trackRes  <<
+        "pointY="     << pointY    <<
+        "pointZ="     << pointZ    <<
+        "npTRD="      << npTRD     <<
+        "event="      << event     <<
+        "\n";
+//           "point.="    << &prot     <<
+//           "track.="    << track     <<
+      }
     }
     
     Double_t pointPos[2]={0,0};
