@@ -1411,7 +1411,7 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
       Short_t    npTRD         = tr->GetNumberOfTRDPoints();
 
       // rphi residuals
-      Double_t xx[4]={radius, trackPhi ,deviation};
+      Double_t xx[4]={radius, trackPhi, trackZ ,deviation};
       if (npTRD>=2){
         fHnDelta->Fill(xx);
       }
