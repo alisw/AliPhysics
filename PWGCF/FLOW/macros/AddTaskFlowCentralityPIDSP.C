@@ -109,11 +109,11 @@ void AddTaskFlowCentralityPIDSP(Int_t centralitysel,
   cutsRP->SetPtRange(0.2,5.);
   // side A
   if(side < 0)
-    cutsPOI->SetEtaRange(etamin,etamax);
+    cutsRP->SetEtaRange(etamin,0.);
 
   // side C
   else if(side > 0)
-    cutsPOI->SetEtaRange(etamin,etamax);
+    cutsRP->SetEtaRange(0.,etamax);
 
   else
     cutsRP->SetEtaRange(etamin,etamax);
