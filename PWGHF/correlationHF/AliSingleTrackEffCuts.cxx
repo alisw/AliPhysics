@@ -55,7 +55,7 @@ AliSingleTrackEffCuts::AliSingleTrackEffCuts():
   fYMax(12),
   fPtMin(-15),
   fPtMax(15),
-  fIsCharged(kTRUE),
+  fIsCharged(kCharged),
   fRequireVtxCuts(kFALSE),
   fMCinfo(0),
   fTriggerMask(AliVEvent::kAny),
@@ -217,8 +217,10 @@ Bool_t AliSingleTrackEffCuts::IsMCParticleGenerated(TObject* obj)
 	  //Should also test for HF for electrons
 	  
 	  // Charge selection
-	  if(fIsCharged && !(particle->Charge()!=0)) isSelected = kFALSE;
-	 
+	  if(fIsCharged==kCharged && !(particle->Charge()!=0)) isSelected = kFALSE;
+	  if(fIsCharged==kNeutral && !(particle->Charge()==0)) isSelected = kFALSE;
+	  if(fIsCharged==kPositive && !(particle->Charge()>0)) isSelected = kFALSE;	  
+	  if(fIsCharged==kNegative && !(particle->Charge()<0)) isSelected = kFALSE;
 
 	  // Physical Primary 
 	  if(!fisAOD) { 
