@@ -175,7 +175,7 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
   // User Exec
   //
 
-  Info("UserExec","") ;
+  Info("UserExec","Start of method") ;
 
   AliVEvent* event = fInputEvent;
 
@@ -254,7 +254,7 @@ void AliCFSingleTrackEfficiencyTask::Terminate(Option_t*)
   // Terminate
   //
 
-  Info("Terminate","");
+  Info("Terminate","Start and end of Method");
   AliAnalysisTaskSE::Terminate();
 
   /*
