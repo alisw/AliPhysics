@@ -592,7 +592,7 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
 	    Float_t dphistar1 = GetDPhiStar(phi1rad, firstPt, charge1, phi2rad, secondPt[j], charge2, 0.8, bSign);
 	    Float_t dphistar2 = GetDPhiStar(phi1rad, firstPt, charge1, phi2rad, secondPt[j], charge2, 2.5, bSign);
 	    
-	    const Float_t kLimit = 0.02 * 3;
+	    const Float_t kLimit = fHBTCutValue * 3;
 	    
 	    Float_t dphistarminabs = 1e5;
 	    Float_t dphistarmin = 1e5;
@@ -608,7 +608,7 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
 		}
 	      }
 	      
-	      if (dphistarminabs < 0.02 && TMath::Abs(deta) < 0.02) {
+	      if (dphistarminabs < fHBTCutValue && TMath::Abs(deta) < fHBTCutValue) {
 		//AliInfo(Form("HBT: Removed track pair %d %d with [[%f %f]] %f %f %f | %f %f %d %f %f %d %f", i, j, deta, dphi, dphistarminabs, dphistar1, dphistar2, phi1rad, pt1, charge1, phi2rad, pt2, charge2, bSign));
 		continue;
 	      }
