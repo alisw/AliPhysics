@@ -66,7 +66,7 @@ const Int_t    mintrackrefsMUON = 0 ;
 //const Int_t    minclustersITS = 2 ;
 Bool_t   TPCRefit = kTRUE;
 Bool_t   ITSRefit = kTRUE;
-const Bool_t   charge  = kTRUE ;
+Int_t   charge  = AliSingleTrackEffCuts::kCharged;
 const Int_t    fBit;
 
 
@@ -170,6 +170,16 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
 	  if(argument.BeginsWith("extraname=")){
 	    argument.ReplaceAll("extraname=", "");
 	    extraname=argument;
+	    continue;
+	  }
+	  if(argument.BeginsWith("charge=")){
+	    argument.ReplaceAll("charge=", "");
+	    if(argument.CompareTo("all")==0) charge=AliSingleTrackEffCuts::kAll;
+	    else if(argument.CompareTo("neutral")==0) charge=AliSingleTrackEffCuts::kNeutral;
+	    else if(argument.CompareTo("charged")==0) charge=AliSingleTrackEffCuts::kCharged;
+	    else if(argument.CompareTo("positive")==0) charge=AliSingleTrackEffCuts::kPositive;
+	    else if(argument.CompareTo("negative")==0) charge=AliSingleTrackEffCuts::kNegative;
+	    cout << "Charge requirement: " << charge << endl; 
 	    continue;
 	  }
 	  if(argument.BeginsWith("itsclusters=")){
