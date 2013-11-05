@@ -61,7 +61,7 @@ class AliSingleTrackEffCuts : public TObject
   void SetPtRange(Float_t ptmin, Float_t ptmax){fPtMin=ptmin; fPtMax=ptmax; }
 
   void SetPdgCode(Int_t pdgCode){ fPdgCode = pdgCode; fIsPdgCode=kTRUE; }
-  void SetIsCharged(Bool_t charge){ fIsCharged=charge; }
+  void SetIsCharged(Int_t charge=kCharged){ fIsCharged=charge; }
 
   void SetMinVtxType(Int_t type=3) {fMinVtxType=type;}  
   void SetUseEventsWithOnlySPDVertex(Bool_t flag=kTRUE){ 
@@ -91,6 +91,14 @@ class AliSingleTrackEffCuts : public TObject
 
   bool GetUseIsPhysicalPrimary() const {return fRemoveSecondary;}
 
+  enum{
+    kAll=-1,
+    kNeutral=0,
+    kCharged=1,
+    kPositive=2,
+    kNegative=3
+  };
+
  protected:
 
   Bool_t IsVertexSelected(AliVEvent *event);
@@ -106,7 +114,7 @@ class AliSingleTrackEffCuts : public TObject
   Float_t fYMax;
   Float_t fPtMin;
   Float_t fPtMax;
-  Bool_t  fIsCharged;
+  Int_t   fIsCharged;
   Bool_t  fRequireVtxCuts ; //The type of trigger to be checked
   AliMCEvent  * fMCinfo;          //! MC event handler
 
