@@ -315,6 +315,7 @@ Bool_t AliSingleTrackEffCuts::IsMCParticleGenerated(TObject* obj)
     }
   } else { // Check on AODs
     AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle *>(obj);	    
+    if (!mcPart) return kFALSE;
     if(!mcPart->IsPhysicalPrimary()) isSelected = kFALSE;
   }
 
