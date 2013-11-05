@@ -450,6 +450,8 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
       
       if (!fMCCuts->IsMCParticleGenerated(mcPart)) continue;
       AliAODMCParticle *mcPart2=dynamic_cast<AliAODMCParticle*>(mcPart);
+      
+      if((aodtrack->Charge() != -1) && (aodtrack->Charge() != 1)) cout << "charge: " << aodtrack->Charge() << endl;
 
       Bool_t selected=kTRUE;
 
@@ -484,14 +486,18 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 	}
       }
 
-      if(selected)
-	fhOriginReco->Fill(fOriginMotherReco);
-
+      if(!selected) continue;
+      
+      fhOriginReco->Fill(fOriginMotherReco);
+	
       Double_t x=mcPart2->Xv();
       Double_t y=mcPart2->Yv();
       double radius=TMath::Sqrt(x*x+y*y);
-      if(radius > fMaxRadius) { selected=false;}
-      //else cout << "radius is fine, below " << fMaxRadius << endl;
+      if(radius > fMaxRadius) { continue;}
+      
+      
+      //if(!selected) cout << "radius: " << radius << "    fMaxr: " << fMaxRadius << endl; 
+
 	 	   
       // for filter bit selection
       AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*>(track);
@@ -520,15 +526,17 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 
 
       // Step 7. Track that are recostructed + Quality + Kine criteria filling
-      if(! fTrackCuts->IsSelected(tmptrack) )
+      if(! fTrackCuts->IsSelected(tmptrack) ){
 	selected=kFALSE;
+	continue;
+      }
       if(selected){
-	//	cout << "trall" << endl;
 
 	AliDebug(2,"Reconstructed track pass first quality criteria\n");
 	//fCFManager->GetParticleContainer()->Fill(containerInputMC, kStepReconstructedFirstTrackCutsMC);
 	fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoFirstQualityCuts);
       }else {
+	//cout <<"Not passing first " << endl;
 	AliDebug(3,"Reconstructed track not passing first quality criteria\n");
       }
 
@@ -594,7 +602,6 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 	   
       // PID requirement
       if(selected){
-	//cout << "before PID" << endl;
 	//also check for pdg first????
 	if(fUseTPCPID){
 	  Float_t tpcNsigma = pidResponse->NumberOfSigmasTPC(vtrack, AliPID::kElectron); // change to particle
