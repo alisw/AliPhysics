@@ -1400,6 +1400,7 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
       Float_t trackY    = trCopy.GetY();
       Float_t trackZ    = trCopy.GetZ();
       Float_t trackPhi  = trCopy.Phi();
+      Float_t alpha     = trCopy.GetAlpha();
 
       Float_t pointY    = prot.GetY();
       Float_t pointZ    = prot.GetZ();
@@ -1425,6 +1426,7 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
         "trackPhi="   << trackPhi  <<
         "trackY="     << trackY    <<
         "trackZ="     << trackZ    <<
+        "alpha="      << alpha     <<
         "resRphi="    << resRphi   <<
         "trackRes="   << trackRes  <<
         "pointY="     << pointY    <<
