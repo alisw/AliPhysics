@@ -1217,9 +1217,9 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
    Double_t pTJet   = 0.0;
    Double_t areaJet = 0.0;
    Double_t phiJet  = 0.0;
-   Int_t indexLeadingJet     = -1;
-   Double_t pTLeadingJet     = -10.0; 
-   Double_t areaLeadingJet   = -10.0;
+   //Int_t indexLeadingJet     = -1;
+   //Double_t pTLeadingJet     = -10.0; 
+   //Double_t areaLeadingJet   = -10.0;
   
    for(Int_t ij=0; ij<fListJets->GetEntries(); ij++){
       AliAODJet* jet = (AliAODJet*)(fListJets->At(ij));
