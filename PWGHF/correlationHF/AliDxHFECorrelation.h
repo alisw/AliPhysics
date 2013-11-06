@@ -103,7 +103,7 @@ class AliDxHFECorrelation : public TNamed {
   // Tests the particle
   virtual Bool_t TestParticle(AliVParticle* /*as*/, Int_t /*id*/);
   // Get the D0 efficiency
-  virtual double GetD0Eff(AliVParticle* tr);
+  virtual double GetD0Eff(AliVParticle* tr, Double_t evMult);
 
   virtual void SetCuts(AliAnalysisCuts* cuts) {fCuts=cuts;}
   virtual void SetUseMC(Bool_t useMC){fUseMC=useMC;}
@@ -113,7 +113,6 @@ class AliDxHFECorrelation : public TNamed {
   // TODO: SetEventType only needed for MC. How to avoid this?
   virtual void SetEventType(int type){fEventType=type;}
   void SetRunFullMode(bool fullmode=kTRUE){fRunFullMode=fullmode;}
-  virtual void SetD0EffMap(TH1* eff, int whichMap=kPrompt){if(whichMap==kPrompt) fD0EffMap=eff;}
 
   Bool_t GetUseMC() const {return fUseMC;}
   const TList* GetControlObjects() const {return fControlObjects;}
@@ -122,7 +121,7 @@ class AliDxHFECorrelation : public TNamed {
   Double_t GetDeltaPhi() const {return fDeltaPhi;}
   Double_t GetDeltaEta() const {return fDeltaEta;}
   inline int GetDimTHnSparse() const {return fDimThn;}
-  const TH1* GetD0EffMap() const {return fD0EffMap;}
+  AliAnalysisCuts* GetCuts() const {return fCuts;}
   Int_t GetTriggerParticleType() const {return fTriggerParticleType;}
   Bool_t RunFullMode() const {return fRunFullMode;}
 
@@ -178,7 +177,6 @@ class AliDxHFECorrelation : public TNamed {
   Bool_t fUseTrackEfficiency;    // Whether or not to correct for single track efficiency
   Bool_t fUseD0Efficiency;       // Whether or not to correct for D0 efficiency
   Bool_t fRunFullMode;           // If run in full mode (bigger thnsparse)
-  TH1* fD0EffMap;                //! Eff map for D0 
 
   static const char* fgkEventControlBinNames[];
 

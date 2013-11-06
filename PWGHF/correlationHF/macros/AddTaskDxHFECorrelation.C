@@ -354,7 +354,6 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
     {
   ///______________________________________________________________________
   /// Cuts For D0
-
   AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
   // TODO: we might want to move this to separate functions if more data
   // sets are going to be handled
@@ -393,7 +392,6 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
     //warning, no system set
   }
   
-
   ///______________________________________________________________________
   /// Cuts for HFE
   TString hfeCutsName;
@@ -568,20 +566,7 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
     taskName));
     return 0;
     }*/
-  
-  AliAnalysisTaskDxHFECorrelation *pTask=new AliAnalysisTaskDxHFECorrelation(taskOptions);
-  if (!pTask) {
-    ::Error("AddTaskDxHFECorrelation", "failed to create task.");
-    return 0;
-  }
-  //TODO: Could also consider putting RDHFD0toKpi in a list (ParticleSelectionD0 allows it)
-  pTask->SetCutsD0(RDHFD0toKpi);
-  pTask->SetCutsHFE(listHFE);
-  pTask->SetCuts(poolConfiguration);
-
-  pManager->AddTask(pTask);
-
-
+ 
   // ******************************** OPENING THE EFFICIENCY MAPS  ************************************
   if(bUseTrackEff){
     //********************
@@ -622,9 +607,9 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
     }
     TCanvas *c1 = (TCanvas*)fileeffD0Prompt->Get("c1");
     if(!c1) {::Fatal("AddTaskDxHFECorrelation", Form("No canvas inside D0 eff map file for prompt")); return 0;}
-    TH1D *hEff = (TH1D*)c1->FindObject("h_Eff");
+    TH2D *hEff = (TH2D*)c1->FindObject("h_Eff");
     if(!hEff) {::Fatal("AddTaskDxHFECorrelation", Form("No efficiency histo for Prompt D0")); return 0;}
-    pTask->SetD0EffMap(hEff, AliDxHFECorrelation::kPrompt);
+    poolConfiguration->AliHFAssociatedTrackCuts::SetTriggerEffWeightMap(hEff); 
 
     if(bUseMC){
       //Only Add feeddown correction for MC      
@@ -635,12 +620,30 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
       }
       TCanvas *c2 = (TCanvas*)fileeffD0FeedDown->Get("c2");
       if(!c2) {::Fatal("AddTaskDxHFECorrelation", Form("No canvas inside D0 eff map file for feeddown")); return 0;}
-      TH1D *hEff2 = (TH1D*)c2->FindObject("h_Eff");
+      TH2D *hEff2 = (TH2D*)c2->FindObject("h_Eff");
       if(!hEff2) {::Fatal("AddTaskDxHFECorrelation", Form("No efficiency histo for Feeddown D0")); return 0;}
-      pTask->SetD0EffMap(hEff2,AliDxHFECorrelation::kFeedDown);
+      poolConfiguration->AliHFAssociatedTrackCuts::SetTriggerEffWeightMapB(hEff2); 
     }
 
   }
+
+ 
+  AliAnalysisTaskDxHFECorrelation *pTask=new AliAnalysisTaskDxHFECorrelation(taskOptions);
+  if (!pTask) {
+    ::Error("AddTaskDxHFECorrelation", "failed to create task.");
+    return 0;
+  }
+
+  TList *listD0 = new TList;
+  listD0->Add(RDHFD0toKpi);
+  if(bUseD0Eff) listD0->Add(poolConfiguration);
+
+  pTask->SetCutsD0(listD0);
+  pTask->SetCutsHFE(listHFE);
+  pTask->SetCuts(poolConfiguration);
+
+  pManager->AddTask(pTask);
+
 
   // The AnalysisManager handles the output file name in the following way:
   // The output file names are set by the function SetOutputFiles

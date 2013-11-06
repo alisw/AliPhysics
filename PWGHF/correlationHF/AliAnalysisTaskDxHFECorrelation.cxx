@@ -92,8 +92,6 @@ AliAnalysisTaskDxHFECorrelation::AliAnalysisTaskDxHFECorrelation(const char* opt
   , fUseKine(kFALSE)
   , fMCArray(NULL)
   , fCorrelationArguments("")
-  , fD0EffMapP(NULL)
-  , fD0EffMapFD(NULL)
   , fStoreSeparateOrigins(kFALSE)
 {
   // constructor
@@ -153,8 +151,6 @@ AliAnalysisTaskDxHFECorrelation::~AliAnalysisTaskDxHFECorrelation()
   fListHFE=NULL;
   if(fMCArray) delete fMCArray;
   fMCArray=NULL;
-  fD0EffMapFD=NULL; //external object, do not delete
-  fD0EffMapP=NULL; //external object, do not delete
 
 
 }
@@ -174,8 +170,7 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   // D0s ===============================================
   if(fUseMC) fD0s=new AliDxHFEParticleSelectionMCD0(fOption);
   else fD0s=new AliDxHFEParticleSelectionD0(fOption);
-  fD0s->SetCuts(fCutsD0,AliDxHFEParticleSelectionD0::kCutD0);
-  if(fD0EffMapP) { std::cout << "SETTING PROMPT efficiency for particle selection D0" << std::endl; fD0s->SetEffMap(fD0EffMapP,AliDxHFEParticleSelectionD0::kD0Prompt);}
+  fD0s->SetCuts(fCutsD0,AliDxHFEParticleSelectionD0::kCutList);
   iResult=fD0s->Init();
   if (iResult<0) {
     AliFatal(Form("initialization of worker class instance fD0s failed with error %d", iResult));
@@ -196,8 +191,6 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   else fCorrelation=new AliDxHFECorrelation;
   fCorrelation->SetCuts(fCuts);
   iResult=fCorrelation->Init(fOption);
-  if(fD0EffMapP) { std::cout << "SETTINGPROMPT" << std::endl; fCorrelation->SetD0EffMap(fD0EffMapP,AliDxHFECorrelation::kPrompt);}
-  if(fD0EffMapFD) {std::cout << "SETTINGFEEDDOWN" << std::endl; fCorrelation->SetD0EffMap(fD0EffMapFD,AliDxHFECorrelation::kFeedDown);}
   if (iResult<0) {
     AliFatal(Form("initialization of worker class instance fCorrelation failed with error %d", iResult));
   }
@@ -210,7 +203,6 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
     fCorrelationCharm->SetCuts(fCuts);
     option=fOption+" storeoriginD=charm storeoriginEl=charm";
     iResult=fCorrelationCharm->Init(option);
-    if(fD0EffMapP) fCorrelationCharm->SetD0EffMap(fD0EffMapP,AliDxHFECorrelation::kPrompt);
     if (iResult<0) {
       AliFatal(Form("initialization of worker class instance fCorrelation failed with error %d", iResult));
     }
@@ -220,7 +212,6 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
     fCorrelationBeauty->SetCuts(fCuts);
     option=fOption+" storeoriginD=beauty storeoriginEl=beauty";
     iResult=fCorrelationBeauty->Init(option);
-    if(fD0EffMapFD) fCorrelationBeauty->SetD0EffMap(fD0EffMapFD,AliDxHFECorrelation::kFeedDown);
     if (iResult<0) {
       AliFatal(Form("initialization of worker class instance fCorrelation failed with error %d", iResult));
     }
@@ -230,8 +221,6 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
     fCorrelationNonHF->SetCuts(fCuts);
     option=fOption+" storeoriginD=HF storeoriginEl=nonHF";
     iResult=fCorrelationNonHF->Init(option);
-    if(fD0EffMapP) fCorrelationNonHF->SetD0EffMap(fD0EffMapP,AliDxHFECorrelation::kPrompt);
-    if(fD0EffMapFD) fCorrelationNonHF->SetD0EffMap(fD0EffMapFD,AliDxHFECorrelation::kFeedDown);
     if (iResult<0) {
       AliFatal(Form("initialization of worker class instance fCorrelation failed with error %d", iResult));
     }
@@ -241,8 +230,6 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
     fCorrelationHadron->SetCuts(fCuts);
     option=fOption+" storeoriginD=HF storeoriginEl=hadrons";
     iResult=fCorrelationHadron->Init(option);
-    if(fD0EffMapP) fCorrelationHadron->SetD0EffMap(fD0EffMapP,AliDxHFECorrelation::kPrompt);
-    if(fD0EffMapFD) fCorrelationHadron->SetD0EffMap(fD0EffMapFD,AliDxHFECorrelation::kFeedDown);
     if (iResult<0) {
       AliFatal(Form("initialization of worker class instance fCorrelation failed with error %d", iResult));
     }
@@ -297,16 +284,19 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
     fOutput->Add(obj);
 
   if (!fCutsD0) {
-    AliFatal(Form("cut object for D0 missing"));
+    AliFatal(Form("cut object list for D0 missing"));
     return;
   }
  
-  if (!dynamic_cast<AliRDHFCutsD0toKpi*>(fCutsD0)) {
-    AliFatal(Form("cut object %s is of incorrect type %s, expecting AliRDHFCutsD0toKpi", fCutsD0->GetName(), fCutsD0->ClassName()));
-    return;
+  // Fetching out the RDHF-cut objects for D0 to store in output stream
+  TObject *obj2=NULL;
+  TIter next2(fCutsD0);
+  obj2 = next2();
+  AliRDHFCutsD0toKpi* copyfCuts=new AliRDHFCutsD0toKpi(dynamic_cast<AliRDHFCutsD0toKpi&>(*obj2));
+  if(!copyfCuts){
+    AliFatal(Form("cut object is of incorrect type %s, expecting AliRDHFCutsD0toKpi", obj->ClassName()));
   }
-  // that's the copy for the output stream
-  AliRDHFCutsD0toKpi* copyfCuts=new AliRDHFCutsD0toKpi(dynamic_cast<AliRDHFCutsD0toKpi&>(*fCutsD0));
+
   const char* nameoutput=GetOutputSlot(2)->GetContainer()->GetName();
   copyfCuts->SetName(nameoutput);
   // all tasks must post data once for all outputs
@@ -356,8 +346,11 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
     AliDebug(2,"Rejected at GetPrimaryvertex");
     return;
   }
-
-  AliRDHFCuts* cutsd0=dynamic_cast<AliRDHFCuts*>(fCutsD0);
+  TObject *obj2=NULL;
+  TIter next2(fCutsD0);
+  obj2 = next2();
+  AliRDHFCuts* cutsd0=dynamic_cast<AliRDHFCuts*>(obj2);
+  //  AliRDHFCutsD0toKpi* cutsd0=dynamic_cast<AliRDHFCutsD0toKpi&>(*obj2);
   if (!cutsd0) return; // Fatal thrown already in initialization
 
   if(!cutsd0->IsEventSelected(pEvent)) {

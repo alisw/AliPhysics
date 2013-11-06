@@ -19,6 +19,7 @@
 class AliVEvent;
 class AliRDHFCuts;
 class TList;
+class AliAnalysisCuts;
 
 /**
  * @class AliDxHFEParticleSelectionD0
@@ -68,7 +69,7 @@ class AliDxHFEParticleSelectionD0 : public AliDxHFEParticleSelection {
   virtual int InitControlObjectsDaughters(TString name, int daughter);
 
   //Overloaded from AliDxHFEParticleSelection
-  virtual TObjArray* Select(TObjArray* particles, const AliVEvent* pEvent);
+  virtual TObjArray* Select(TObjArray* particles, AliVEvent* pEvent);
   using AliDxHFEParticleSelection::Select;
 
   // Get the D0 efficiency
@@ -80,14 +81,14 @@ class AliDxHFEParticleSelectionD0 : public AliDxHFEParticleSelection {
   virtual void SetCuts(TObject* /*cuts*/, int level=0);
   void SetInvMass(Double_t mass){fD0InvMass=mass;}
   void SetPtBin(Int_t ptbin){fPtBin=ptbin;}
-  virtual void SetEffMap(TH1* eff, int whichMap=kD0Prompt){if(whichMap==kD0Prompt) fD0EffMap=eff;}
 
   //AliRDHFCutsD0toKpi GetCuts()const {return fCuts;}
   Int_t  GetFillOnlyD0D0bar() const {return fFillOnlyD0D0bar;}
   Int_t GetPtBin() const {return fPtBin;}
   Double_t GetInvMass() const {return fD0InvMass;}
   AliRDHFCuts *GetHFCuts() const {return fCuts;}
-  //const TH1* GetEffMap() const {return fD0EffMap;}
+  Double_t GetEventMult() const {return fMultEv;}
+  AliAnalysisCuts *GetEffCutObject() const{ return fD0Eff;}
 
  protected:
   /// overloaded from AliDxHFEParticleSelection: histogram particle properties
@@ -106,14 +107,13 @@ class AliDxHFEParticleSelectionD0 : public AliDxHFEParticleSelection {
   THnSparse* fD0Daughter0;      //  the particle properties of selected particles
   THnSparse* fD0Daughter1;      //  the particle properties of selected particles
   AliRDHFCuts* fCuts;           //! pointer to external cuts object 
+  AliAnalysisCuts *fD0Eff;      //! Object holding D0 eff maps 
   Int_t     fFillOnlyD0D0bar;   //  flag to set what to fill (0 = both, 1 = D0 only, 2 = D0bar only)
   Double_t  fD0InvMass;         // D0InvMass
   Int_t     fPtBin;             // Pt Bin
   TList*    fHistoList;         // list of histograms
   Bool_t    fUseD0Efficiency;   // Whether or not to correct for D0 efficiency
-
-  TH1*      fD0EffMap;          //! Eff map for D0 
-
+  Double_t  fMultEv;            // multiplicity of event
 
   static const char* fgkDgTrackControlBinNames[]; //! bin labels for track control histogram
   static const char* fgkCutBinNames[];            //! bin labels for cut histogram

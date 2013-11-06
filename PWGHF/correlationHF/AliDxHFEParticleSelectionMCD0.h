@@ -39,6 +39,9 @@ class AliDxHFEParticleSelectionMCD0 : public AliDxHFEParticleSelectionD0 {
   virtual int FillParticleProperties(AliVParticle* p, Double_t* date, int dimension) const;
   virtual AliVParticle* CreateParticle(AliVParticle* track);
 
+  // Get the D0 efficiency
+  virtual double GetD0Eff(AliVParticle* tr);
+
   /// check MC criteria
   int CheckMC(AliVParticle* p, const AliVEvent* pEvent);
 

@@ -31,9 +31,11 @@
 //#include "AliCFContainer.h"        // required dependency libCORRFW.so
 #include "AliAODRecoDecayHF2Prong.h" // libPWGHFvertexingHF
 #include "AliRDHFCutsD0toKpi.h"
+#include "AliVertexingHFUtils.h"
 #include "TObjArray.h"
 #include "THnSparse.h"
 #include "AliReducedParticle.h"
+#include "AliHFAssociatedTrackCuts.h"
 #include "TAxis.h"
 #include "TString.h"
 #include <iostream>
@@ -51,12 +53,13 @@ AliDxHFEParticleSelectionD0::AliDxHFEParticleSelectionD0(const char* opt)
   , fD0Daughter0(NULL)
   , fD0Daughter1(NULL)
   , fCuts(NULL)
+  , fD0Eff(NULL)
   , fFillOnlyD0D0bar(0)
   , fD0InvMass(0.0)
   , fPtBin(-1)
   , fHistoList(NULL)
   , fUseD0Efficiency(kFALSE)
-  , fD0EffMap(NULL)
+  , fMultEv(0)
 {
   // constructor
   // 
@@ -85,10 +88,10 @@ AliDxHFEParticleSelectionD0::~AliDxHFEParticleSelectionD0()
     delete fHistoList;
     fHistoList=NULL;
   }
-  fD0EffMap=NULL;
 
   // Note: external object deleted elsewhere  
   fCuts=NULL;
+  fD0Eff=NULL;
 }
 
 const char* AliDxHFEParticleSelectionD0::fgkDgTrackControlBinNames[]={
@@ -247,8 +250,7 @@ int AliDxHFEParticleSelectionD0::HistogramParticleProperties(AliVParticle* p, in
 
   Double_t D0eff=1;
   if(fUseD0Efficiency){
-    D0eff=GetD0Eff(p);
-    //    cout << "D0 eff: " << D0eff << endl;
+    D0eff=GetD0Eff(part);
   }
   // Fills only for D0 or both.. 
   if ((selectionCode==1 || selectionCode==3) && fFillOnlyD0D0bar<2) {
@@ -279,11 +281,14 @@ int AliDxHFEParticleSelectionD0::HistogramParticleProperties(AliVParticle* p, in
   return 0;
 }
 
-TObjArray* AliDxHFEParticleSelectionD0::Select(TObjArray* pTracks, const AliVEvent *pEvent)
+TObjArray* AliDxHFEParticleSelectionD0::Select(TObjArray* pTracks, AliVEvent *pEvent)
 {
   /// create selection, array contains only pointers but does not own the objects
   /// object array needs to be deleted by caller
   if (!pTracks) return NULL;
+  AliAODEvent *aod = dynamic_cast<AliAODEvent*> (pEvent);
+  fMultEv = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.));
+
   TObjArray* selectedTracks=new TObjArray;
   if (!selectedTracks) return NULL;
   selectedTracks->SetOwner(kFALSE);
@@ -388,6 +393,7 @@ int AliDxHFEParticleSelectionD0::IsSelected(AliVParticle* p, const AliVEvent* pE
 
 void AliDxHFEParticleSelectionD0::SetCuts(TObject* cuts, int level)
 {
+
   /// set cuts objects
   if (level==kCutD0) {
     fCuts=dynamic_cast<AliRDHFCuts*>(cuts);
@@ -411,6 +417,11 @@ void AliDxHFEParticleSelectionD0::SetCuts(TObject* cuts, int level)
 	  fCuts=dynamic_cast<AliRDHFCuts*>(obj);
 	  if (!fCuts) 
 	    AliError(Form("Cut object is not of required type AliRDHFCuts but %s", obj->ClassName()));
+	}
+	if(iii==2) {
+	  fD0Eff=dynamic_cast<AliHFAssociatedTrackCuts*>(obj);
+	  if (!fD0Eff) 
+	    AliError(Form("Cut object is not of required type AliHFAssociatedTrackCuts but %s", obj->ClassName()));
 	}
       }
     }
@@ -466,19 +477,20 @@ AliVParticle *AliDxHFEParticleSelectionD0::CreateParticle(AliVParticle* track)
   return part;
 
 }
-
 double AliDxHFEParticleSelectionD0::GetD0Eff(AliVParticle* tr){
 
   AliReducedParticle *track=(AliReducedParticle*)tr;
   if (!track) return -ENODATA;
   Double_t pt=track->Pt();
 
-  Double_t D0eff=1;
-  Int_t bin=fD0EffMap->FindBin(pt);
-  if(fD0EffMap->IsBinUnderflow(bin)|| fD0EffMap->IsBinOverflow(bin)) 
-    D0eff = 1.;
-  else 
-    D0eff = fD0EffMap->GetBinContent(bin);
+  AliHFAssociatedTrackCuts* cuts=dynamic_cast<AliHFAssociatedTrackCuts*>(fD0Eff);
+  if (!cuts) {
+    if (fD0Eff)
+      AliError(Form("cuts object of wrong type %s, required AliHFAssociatedTrackCuts", fCuts->ClassName()));
+    else
+      AliError("mandatory cuts object missing");
+    return -EINVAL;
+  }
 
-  return D0eff;
+  return cuts->GetTrigWeight(pt,fMultEv);;
 }
