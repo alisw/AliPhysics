@@ -103,7 +103,12 @@ Double_t ptmax_1_4   = 4.0;
 Double_t ptmin_4_10  = 4.0;
 Double_t ptmax_4_10  = 10.0;
 
-
+enum{
+  kProtonProton=0,
+  kPbPb=1,
+  kProtonPb=2,
+  kPbPbUpgrade=3
+};
 
 
 int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysisName="PWGHFCJ_TrackEff_DxHFE")
@@ -112,7 +117,7 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   const Bool_t readAOD=kTRUE;
   TString TrackCutsfilename =  "";
   TString ofilename;
-  Int_t system=0;
+  Int_t system=kProtonProton;
   TString taskOptions;
   Int_t minclustersTPC=120; // quick fix for problem sending hfe track cut object to addtask
   Int_t minclustersITS=4;
@@ -164,8 +169,15 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
 	  if (argument.BeginsWith("PbPb") ||
 	      argument.BeginsWith("system=1") ||
 	      argument.BeginsWith("Pb-Pb")) {
-	    system=1;
+	    system=kPbPb;
 	    taskOptions+=" system=Pb-Pb";
+	    continue;
+	  }
+	  if(argument.BeginsWith("UpgradesPbPb") || argument.BeginsWith("upgradestudiesPbPb") || argument.BeginsWith("upgradesPbPb") ){
+	    system=kPbPbUpgrade;
+	    cutOnClusters=kFALSE;
+	    taskOptions+=" invmasscut=0.05";
+	    cout << "Use settings for upgrade studies PbPb "  << endl; 
 	    continue;
 	  }
 	  if(argument.BeginsWith("extraname=")){
@@ -432,7 +444,7 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   AliCFSingleTrackEfficiencyTask *task = new AliCFSingleTrackEfficiencyTask(taskOptions,"AliCFSingleTrackEfficiencyTask",QualityCuts,cuts);
   task->SetFilterBit(kTRUE);
   //task->SetFilterType(filterbit); //0=standard TPConly tracks, 1=ITSstandalone, 2=PixelOR (necessary for e), 3=PID for electrons, 4=standardwithlooseDCA, 5=standardwithtightDCA, 6=standard with tight DCA but with requiring first SDD instead of SPD cluster tracks, 7=TPC only tracks constrained to SPD vertex 
-  task->SelectCollisionCandidates(AliVEvent::kAnyINT);
+  if(system!=kPbPbUpgrade) task->SelectCollisionCandidates(AliVEvent::kAnyINT);
 
   task->SetCFManager(man); //here is set the CF manager
   

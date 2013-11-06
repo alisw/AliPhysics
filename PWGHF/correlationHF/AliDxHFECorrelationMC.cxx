@@ -34,6 +34,7 @@
 //#include "AliAODRecoDecayHF2Prong.h"   // libPWGHFvertexingHF
 #include "TObjArray.h"
 #include "AliDxHFECorrelation.h"
+#include "AliHFAssociatedTrackCuts.h"
 #include "TMath.h"
 #include "TFile.h"
 #include "TH1.h"
@@ -58,8 +59,6 @@ AliDxHFECorrelationMC::AliDxHFECorrelationMC(const char* name)
   , fMCEventType(0)
   , fStoreOriginEl(kAll)
   , fStoreOriginD(kAll)
-  , fD0EffMapP(NULL)
-  , fD0EffMapFD(NULL)
 {
   // default constructor
   // 
@@ -73,9 +72,6 @@ AliDxHFECorrelationMC::~AliDxHFECorrelationMC()
   // destructor
   //
   //
-  fD0EffMapFD=NULL;
-  fD0EffMapP=NULL;
-
 }
 
 THnSparse* AliDxHFECorrelationMC::DefineTHnSparse()
@@ -147,7 +143,7 @@ Bool_t AliDxHFECorrelationMC::TestParticle(AliVParticle* p, Int_t id){
 
   Bool_t selected = kTRUE;
   Bool_t isCharm=(part->GetOriginMother()==AliDxHFEToolsMC::kOriginCharm || 
-		  part->GetOriginMother()==AliDxHFEToolsMC::kOriginGluonCharm);
+  		  part->GetOriginMother()==AliDxHFEToolsMC::kOriginGluonCharm);
   Bool_t isBeauty=(part->GetOriginMother()==AliDxHFEToolsMC::kOriginBeauty || 
 		   part->GetOriginMother()==AliDxHFEToolsMC::kOriginGluonBeauty);
 
@@ -255,7 +251,7 @@ int AliDxHFECorrelationMC::Fill(const TObjArray* triggerCandidates, TObjArray* a
   return AliDxHFECorrelation::Fill(triggerCandidates,associatedTracks,pEvent);
 }
 
-double AliDxHFECorrelationMC::GetD0Eff(AliVParticle* tr){
+double AliDxHFECorrelationMC::GetD0Eff(AliVParticle* tr, Double_t evMult){
 
   Double_t D0eff=1;
   AliReducedParticle *track=(AliReducedParticle*)tr;
@@ -263,35 +259,26 @@ double AliDxHFECorrelationMC::GetD0Eff(AliVParticle* tr){
   Double_t pt=track->Pt();
   Double_t origin=track->GetOriginMother();
 
-  Bool_t isCharm=(origin==AliDxHFEToolsMC::kOriginCharm || 
-		  origin==AliDxHFEToolsMC::kOriginGluonCharm);
+  //  Bool_t isCharm=(origin==AliDxHFEToolsMC::kOriginCharm || 
+  //		  origin==AliDxHFEToolsMC::kOriginGluonCharm);
   Bool_t isBeauty=(origin==AliDxHFEToolsMC::kOriginBeauty || 
 		   origin==AliDxHFEToolsMC::kOriginGluonBeauty);
 
-  TH1F* effMap=NULL;
-  // TODO: redefine how D0 origin is set, so for now only say that on uses 
-  // Feeddown correction when it's defined as beauty, for the rest apply
-  // Prompt correction
+  AliHFAssociatedTrackCuts* cuts=dynamic_cast<AliHFAssociatedTrackCuts*>(GetCuts());
+  if (!cuts) {
+    if (GetCuts())
+      AliError(Form("cuts object of wrong type %s, required AliHFAssociatedTrackCuts", fCuts->ClassName()));
+    else
+      AliError("mandatory cuts object missing");
+    return -EINVAL;
+  }
+
   if(isBeauty)
-    effMap=(TH1F*)fD0EffMapFD;
+    D0eff=cuts->GetTrigWeightB(pt,evMult);
   else
-    effMap=(TH1F*)fD0EffMapP;
+    D0eff=cuts->GetTrigWeight(pt,evMult);
 
-  if(isCharm) {cout << "isCharm"<< endl; AliDebug(2, "Correcting for Prompt D0");}
-  else {cout << "isBeauty" << endl; AliDebug(2, "Correcting for Feeddown D0");}
-  
-  Int_t bin=effMap->FindBin(pt);
-  if(effMap->IsBinUnderflow(bin)|| effMap->IsBinOverflow(bin)) 
-    D0eff = 1.;
-  else 
-    D0eff = effMap->GetBinContent(bin);
   return D0eff;
-}
-
-void AliDxHFECorrelationMC::SetD0EffMap(TH1* eff, int whichMap){
-
-  if(whichMap==AliDxHFECorrelation::kPrompt) {fD0EffMapP=(TH1F*)eff; }
-  if(whichMap==AliDxHFECorrelation::kFeedDown) { fD0EffMapFD=(TH1F*)eff;}
 }
 
 
