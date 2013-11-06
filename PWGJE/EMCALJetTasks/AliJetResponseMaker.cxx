@@ -1650,7 +1650,6 @@ Bool_t AliJetResponseMaker::FillHistograms()
       FillJetHisto(jet2->Phi(), jet2->Eta(), jet2->Pt(), jet2->Area(), jet2->NEF(), jet2->MaxPartPt()/jet2->Pt(), 
 		   jet2->Pt() - jets2->GetRhoVal() * jet2->Area(), jet2->MCPt(), 2);
 
-    // Verify accept jet
     if (jets2->AcceptJet(jet2))
       FillJetHisto(jet2->Phi(), jet2->Eta(), jet2->Pt(), jet2->Area(), jet2->NEF(), jet2->MaxPartPt()/jet2->Pt(), 
 		   jet2->Pt() - jets2->GetRhoVal() * jet2->Area(), jet2->MCPt(), 3);
@@ -1693,6 +1692,5 @@ Bool_t AliJetResponseMaker::FillHistograms()
     FillJetHisto(jet1->Phi(), jet1->Eta(), jet1->Pt(), jet1->Area(), jet1->NEF(), jet1->MaxPartPt()/jet1->Pt(), 
 		 jet1->Pt() - jets1->GetRhoVal() * jet1->Area(), jet1->MCPt(), 1);
   }
-
   return kTRUE;
 }

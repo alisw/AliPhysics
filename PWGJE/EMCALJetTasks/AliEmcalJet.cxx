@@ -24,6 +24,7 @@ AliEmcalJet::AliEmcalJet() :
   fAreaPhi(0),       
   fAreaEmc(-1), 
   fAxisInEmcal(0), 
+  fFlavourTagging(0),
   fMaxCPt(0), 
   fMaxNPt(0), 
   fMCPt(0),
@@ -60,6 +61,7 @@ AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz) :
   fAreaPhi(0),       
   fAreaEmc(-1), 
   fAxisInEmcal(0),
+  fFlavourTagging(0),
   fMaxCPt(0), 
   fMaxNPt(0), 
   fMCPt(0),
@@ -102,6 +104,7 @@ AliEmcalJet::AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
   fAreaPhi(0),       
   fAreaEmc(-1), 
   fAxisInEmcal(0),
+  fFlavourTagging(0),
   fMaxCPt(0), 
   fMaxNPt(0),
   fMCPt(0),
@@ -141,6 +144,7 @@ AliEmcalJet::AliEmcalJet(const AliEmcalJet &jet) :
   fAreaPhi(jet.fAreaPhi),       
   fAreaEmc(jet.fAreaEmc), 
   fAxisInEmcal(jet.fAxisInEmcal),
+  fFlavourTagging(jet.fFlavourTagging),
   fMaxCPt(jet.fMaxCPt), 
   fMaxNPt(jet.fMaxNPt), 
   fMCPt(jet.fMCPt),
@@ -181,6 +185,7 @@ AliEmcalJet &AliEmcalJet::operator=(const AliEmcalJet &jet)
     fAreaPhi            = jet.fAreaPhi; 
     fAreaEmc            = jet.fAreaEmc; 
     fAxisInEmcal        = jet.fAxisInEmcal; 
+    fFlavourTagging     = jet.fFlavourTagging;
     fMaxCPt             = jet.fMaxCPt; 
     fMaxNPt             = jet.fMaxNPt;
     fMCPt               = jet.fMCPt;
@@ -260,7 +265,8 @@ AliVParticle* AliEmcalJet::GetLeadingTrack(TClonesArray *tracks) const
   for (Int_t i = 0; i < GetNumberOfTracks(); i++) {
     AliVParticle *track = TrackAt(i, tracks);
     if (!track) {
-      AliError(Form("Unable to find jet track %d in collection %s (pos in collection %d, max %d)",i,tracks->GetName(),TrackAt(i),tracks->GetEntriesFast()));
+      AliError(Form("Unable to find jet track %d in collection %s (pos in collection %d, max %d)",
+		    i,tracks->GetName(),TrackAt(i),tracks->GetEntriesFast()));
       continue;
     }
     if (!maxTrack || track->Pt() > maxTrack->Pt()) 
@@ -277,7 +283,8 @@ AliVCluster* AliEmcalJet::GetLeadingCluster(TClonesArray *clusters) const
   for (Int_t i = 0; i < GetNumberOfClusters(); i++) {
     AliVCluster *cluster = ClusterAt(i, clusters);
     if (!cluster) {
-      AliError(Form("Unable to find jet cluster %d in collection %s (pos in collection %d, max %d)",i,clusters->GetName(),ClusterAt(i),clusters->GetEntriesFast()));
+      AliError(Form("Unable to find jet cluster %d in collection %s (pos in collection %d, max %d)",
+		    i,clusters->GetName(),ClusterAt(i),clusters->GetEntriesFast()));
       continue;
     }
     if (!maxCluster || cluster->E() > maxCluster->E()) 

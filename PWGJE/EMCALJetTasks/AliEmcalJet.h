@@ -15,6 +15,12 @@
 class AliEmcalJet : public AliVParticle
 {
  public:
+     enum EFlavourTag{
+       kDStar = 1<<0,
+       kD0 = 1<<1
+       //.....
+    }; 
+ 
   AliEmcalJet();
   AliEmcalJet(Double_t px, Double_t py, Double_t pz);
   AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m);
@@ -81,8 +87,10 @@ class AliEmcalJet : public AliVParticle
   Short_t           TrackAt(Int_t idx)           const { return fTrackIDs.At(idx);         }
   AliVParticle     *TrackAt(Int_t idx, TClonesArray *ta)   const { if (!ta) return 0; return dynamic_cast<AliVParticle*>(ta->At(TrackAt(idx))); } 
   AliVParticle     *GetLeadingTrack(TClonesArray *tracks) const;
-
+  Int_t             GetFlavour()                 const { return fFlavourTagging;           } 
+  
   void              AddClusterAt(Int_t clus, Int_t idx){ fClusterIDs.AddAt(clus, idx);     }
+  void              AddFlavourTag(Int_t tag)           { fFlavourTagging |= tag; }
   void              AddTrackAt(Int_t track, Int_t idx) { fTrackIDs.AddAt(track, idx);      }
   void              Clear(Option_t */*option*/="")     { fClusterIDs.Set(0); fTrackIDs.Set(0); fClosestJets[0] = 0; fClosestJets[1] = 0; 
                                                          fClosestJetsDist[0] = 0; fClosestJetsDist[1] = 0; fMatched = 0; fPtSub = 0; }
@@ -91,6 +99,7 @@ class AliEmcalJet : public AliVParticle
   void              SetAreaPhi(Double_t a)             { fAreaPhi = a;                     }
   void              SetAreaEmc(Double_t a)             { fAreaEmc = a;                     }
   void              SetAxisInEmcal(Bool_t b)           { fAxisInEmcal = b;                 }
+  void              SetFlavour(Int_t flavour)          { fFlavourTagging = flavour;        }
   void              SetMaxNeutralPt(Double32_t t)      { fMaxNPt  = t;                     }
   void              SetMaxChargedPt(Double32_t t)      { fMaxCPt  = t;                     }
   void              SetNEF(Double_t nef)               { fNEF     = nef;                   }
@@ -100,10 +109,11 @@ class AliEmcalJet : public AliVParticle
   void              SetNumberOfNeutrals(Int_t n)       { fNn = n;                          }
   void              SetMCPt(Double_t p)                { fMCPt = p;                        }
   void              SortConstituents();
-  void              SetNEmc(Int_t n)                                { fNEmc           = n;      }
-  void              SetPtEmc(Double_t pt)                           { fPtEmc          = pt;     }
-  void              SetPtSub(Double_t ps)                           { fPtSub          = ps;     } 
-  void              SetPtSubVect(Double_t ps)                       { fPtVectSub      = ps;     }
+  void              SetNEmc(Int_t n)                   { fNEmc           = n;              }
+  void              SetPtEmc(Double_t pt)              { fPtEmc          = pt;             }
+  void              SetPtSub(Double_t ps)              { fPtSub          = ps;             } 
+  void              SetPtSubVect(Double_t ps)          { fPtVectSub      = ps;             }
+  Bool_t            TestFlavourTag(Int_t tag)          { return (Bool_t)((tag & fFlavourTagging) !=0); }
 
   // Trigger
   Bool_t            IsTriggerJet(UInt_t trigger=AliVEvent::kEMCEJE) const   { return (Bool_t)((fTriggers & trigger) != 0); }
@@ -134,6 +144,7 @@ class AliEmcalJet : public AliVParticle
   Double32_t        fAreaPhi;             //[0,0,12]   area phi
   Double32_t        fAreaEmc;             //[0,0,12]   area on EMCAL surface (determined from ghosts)
   Bool_t            fAxisInEmcal;         //           =true if jet axis inside EMCAL acceptance
+  Int_t             fFlavourTagging;      // tag jet with a falvour, bit 0 = no tag; bit 1= Dstar; bit 2 = D0
   Double32_t        fMaxCPt;              //[0,0,12]   pt of maximum charged constituent
   Double32_t        fMaxNPt;              //[0,0,12]   pt of maximum neutral constituent
   Double32_t        fMCPt;                //           pt from MC particles contributing to the jet
@@ -151,6 +162,6 @@ class AliEmcalJet : public AliVParticle
   Double_t          fPtVectSub;           //!          background vector subtracted pt (not stored set from outside) 
   UInt_t            fTriggers;            //!          triggers that the jet might have fired (AliVEvent::EOfflineTriggerTypes)
 
-  ClassDef(AliEmcalJet,10) // Emcal jet class in cylindrical coordinates
+  ClassDef(AliEmcalJet,11) // Emcal jet class in cylindrical coordinates
 };
 #endif
