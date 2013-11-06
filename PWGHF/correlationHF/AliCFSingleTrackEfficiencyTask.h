@@ -28,8 +28,8 @@
 #define AliCFSINGLETRACKEFFICIENCYTASK_H
 
 #include "AliAnalysisTaskSE.h"
-#include "AliSingleTrackEffCuts.h"
 
+class AliSingleTrackEffCuts;
 class TH1I;
 class TParticle ;
 class TFile ;

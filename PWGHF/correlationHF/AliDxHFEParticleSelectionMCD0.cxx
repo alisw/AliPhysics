@@ -24,6 +24,7 @@
 
 #include "AliDxHFEParticleSelectionMCD0.h"
 #include "AliAODRecoDecayHF2Prong.h"
+#include "AliHFAssociatedTrackCuts.h"
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
 #include "AliRDHFCuts.h"
@@ -238,9 +239,9 @@ int AliDxHFEParticleSelectionMCD0::IsSelected(AliVParticle* p, const AliVEvent* 
 	fMCTools.FindMotherPDG(p);
 	fOriginMother=fMCTools.GetOriginMother();
 	if(fRequireD0toKpi){
-	  AliAODRecoDecayHF2Prong *particle = dynamic_cast<AliAODRecoDecayHF2Prong*>(p);
+	  //	  AliAODRecoDecayHF2Prong *particle = dynamic_cast<AliAODRecoDecayHF2Prong*>(p);
 
-	  Int_t pdgDgD0toKpi[2]={AliDxHFEToolsMC::kPDGkaon,AliDxHFEToolsMC::kPDGpion};
+	  //Int_t pdgDgD0toKpi[2]={AliDxHFEToolsMC::kPDGkaon,AliDxHFEToolsMC::kPDGpion};
 	  TClonesArray* fMCArray = dynamic_cast<TClonesArray*>(fMCTools.GetMCArray());
 	  if(!fMCArray) {cout << "no array" << endl; return 0;}
 
@@ -411,4 +412,36 @@ int AliDxHFEParticleSelectionMCD0::ParseArguments(const char* arguments)
     AliDxHFEParticleSelection::ParseArguments(argument);
   }
   return 0;
+}
+
+double AliDxHFEParticleSelectionMCD0::GetD0Eff(AliVParticle* tr){
+
+
+  Double_t D0eff=1;
+  AliReducedParticle *track=(AliReducedParticle*)tr;
+  if (!track) return -ENODATA;
+  Double_t pt=track->Pt();
+  Double_t origin=track->GetOriginMother();
+
+  //  Bool_t isCharm=(origin==AliDxHFEToolsMC::kOriginCharm || 
+  //		  origin==AliDxHFEToolsMC::kOriginGluonCharm);
+  Bool_t isBeauty=(origin==AliDxHFEToolsMC::kOriginBeauty || 
+		   origin==AliDxHFEToolsMC::kOriginGluonBeauty);
+
+  AliHFAssociatedTrackCuts* cuts=dynamic_cast<AliHFAssociatedTrackCuts*>(GetEffCutObject());
+  if (!cuts) {
+    if (GetEffCutObject())
+      AliError(Form("cuts object of wrong type %s, required AliHFAssociatedTrackCuts", fCuts->ClassName()));
+    else
+      AliError("mandatory cuts object missing");
+    return -EINVAL;
+  }
+
+  if(isBeauty)
+    D0eff=cuts->GetTrigWeightB(pt,GetEventMult());
+  else
+    D0eff=cuts->GetTrigWeight(pt,GetEventMult());
+
+  return D0eff;
+
 }
