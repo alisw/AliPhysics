@@ -308,7 +308,7 @@ TObjArray* AliDxHFEParticleSelection::Select(const AliVEvent* pEvent)
   return selectedTracks;
 }
 
-TObjArray* AliDxHFEParticleSelection::Select(TObjArray* pParticles, const AliVEvent* pEvent)
+TObjArray* AliDxHFEParticleSelection::Select(TObjArray* pParticles, AliVEvent* pEvent)
 {
   /// create selection from the array of particles,
   /// array contains only pointers but does not own the objects

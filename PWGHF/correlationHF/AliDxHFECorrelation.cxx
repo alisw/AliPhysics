@@ -33,6 +33,7 @@
 #include "TObjArray.h"
 #include "AliHFCorrelator.h"
 #include "AliHFAssociatedTrackCuts.h"
+#include "AliVertexingHFUtils.h"
 #include "AliAODEvent.h"
 #include "AliAODVertex.h"
 #include "TH1D.h"
@@ -76,7 +77,6 @@ AliDxHFECorrelation::AliDxHFECorrelation(const char* name)
   , fUseTrackEfficiency(kFALSE)
   , fUseD0Efficiency(kFALSE)
   , fRunFullMode(kTRUE)
-  , fD0EffMap(NULL)
 {
   // default constructor
   // 
@@ -109,7 +109,6 @@ AliDxHFECorrelation::~AliDxHFECorrelation()
   fCorrelator=NULL;
   if(fCorrArray) delete fCorrArray;
   fCorrArray=NULL;
-  fD0EffMap=NULL;
 
   // NOTE: the external object is deleted elsewhere
   fCuts=NULL;
@@ -278,6 +277,11 @@ int AliDxHFECorrelation::ParseArguments(const char* arguments)
       AliInfo("Running in Reduced mode");
       continue;
     }
+    if (argument.BeginsWith("FullMode") || argument.BeginsWith("fullmode")){
+      fRunFullMode=true;
+      AliInfo("Running in Full mode");
+      continue;
+    }
     if (argument.BeginsWith("useD0Eff")){
       fUseD0Efficiency=true;
       AliInfo("Applying Correction for D0 efficiency");
@@ -320,33 +324,55 @@ THnSparse* AliDxHFECorrelation::DefineTHnSparse()
 {
   //
   //Defines the THnSparse. For now, only calls CreateControlTHnSparse
-  AliDebug(1, "Creating Corr THnSparse");
+  if(RunFullMode())
+    AliDebug(1, "Creating Full Corr THnSparse");
+  else
+    AliDebug(1, "Creating Reduced Corr THnSparse");
   // here is the only place to change the dimension
   static const int sizeEventdphi = 7;  
+  static const int sizeEventdphiReduced = 5;  
   InitTHnSparseArray(sizeEventdphi);
   const double pi=TMath::Pi();
-
-  //TODO: add phi for electron??
-  // 			                        0           1       2      3         4     5      6   
-  // 			                      D0invmass   PtD0    PhiD0  PtbinD0    Pte   dphi   deta   
-  int         binsEventdphi[sizeEventdphi] = {   200,      1000,   100,    21,     1000,   100,    100};
-  double      minEventdphi [sizeEventdphi] = { 1.5648,      0,       0,     0,       0,  fMinPhi, -2};
-  double      maxEventdphi [sizeEventdphi] = { 2.1648,     100,   2*pi,    20,      100, fMaxPhi, 2};
-  const char* nameEventdphi[sizeEventdphi] = {
-    "D0InvMass",
-    "PtD0",
-    "PhiD0",
-    "PtBinD0",
-    "PtEl",
-    "#Delta#Phi", 
-    "#Delta#eta"
-  };
+  THnSparse* thn=NULL;
 
   TString name;
   name.Form("%s info", GetName());
 
+  if(RunFullMode()){
 
-  return CreateControlTHnSparse(name,sizeEventdphi,binsEventdphi,minEventdphi,maxEventdphi,nameEventdphi);
+    // 			                        0           1       2      3         4     5      6   
+    // 			                      D0invmass   PtD0    PhiD0  PtbinD0    Pte   dphi   deta   
+    int         binsEventdphi[sizeEventdphi] = {   200,      1000,   100,    21,     1000,   100,    100};
+    double      minEventdphi [sizeEventdphi] = { 1.5648,      0,       0,     0,       0,  fMinPhi, -2};
+    double      maxEventdphi [sizeEventdphi] = { 2.1648,     100,   2*pi,    20,      100, fMaxPhi, 2};
+    const char* nameEventdphi[sizeEventdphi] = {
+      "D0InvMass",
+      "PtD0",
+      "PhiD0",
+      "PtBinD0",
+      "PtEl",
+      "#Delta#Phi", 
+      "#Delta#eta"
+    };
+    thn=(THnSparse*)CreateControlTHnSparse(name,sizeEventdphi,binsEventdphi,minEventdphi,maxEventdphi,nameEventdphi);
+  }
+  else{
+    // 			                                   0          1      2       3      4 
+    // 			                                D0invmass   PtD0     Pte   dphi   deta   
+    int         binsEventdphiRed[sizeEventdphiReduced] = {   200,      500,   100,    64,    100};
+    double      minEventdphiRed [sizeEventdphiReduced] = { 1.5648,      0,      0,  fMinPhi,  -2};
+    double      maxEventdphiRed [sizeEventdphiReduced] = { 2.1648,      50,    10,  fMaxPhi,   2};
+    const char* nameEventdphiRed[sizeEventdphiReduced] = {
+      "D0InvMass",
+      "PtD0",
+      "PtEl",
+      "#Delta#Phi", 
+      "#Delta#eta"
+    };
+    thn=(THnSparse*)CreateControlTHnSparse(name,sizeEventdphiReduced,binsEventdphiRed,minEventdphiRed,maxEventdphiRed,nameEventdphiRed);
+
+  }
+  return thn;
 
 }
 
@@ -430,6 +456,7 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
     return -EINVAL;
   }
   AliAODEvent *AOD= (AliAODEvent*)(pEvent);
+  Double_t multEv = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(AOD,-1.,1.));
 
   fCorrelator->SetAODEvent(dynamic_cast<AliAODEvent*>(const_cast<AliVEvent*>(pEvent))); 
 
@@ -518,10 +545,10 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
 	}
 	if(fUseD0Efficiency){
 	  Double_t D0eff=1;
-	  if(AliDxHFECorrelation::GetTriggerParticleType()==kD) 
-	    D0eff=GetD0Eff(ptrigger);
+	  if(AliDxHFECorrelation::GetTriggerParticleType()==kD)
+ 	    D0eff=GetD0Eff(ptrigger, multEv);
 	  else
-	    D0eff=GetD0Eff(assoc);
+	    D0eff=GetD0Eff(assoc, multEv);
 	  weight=weight*D0eff;
 	  AliDebug(2,Form("D0eff: %f, combined efficiency: %f",D0eff, weight));
 	}
@@ -544,19 +571,23 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
   return 0;
 }
 
-double AliDxHFECorrelation::GetD0Eff(AliVParticle* tr){
+double AliDxHFECorrelation::GetD0Eff(AliVParticle* tr, Double_t evMult){
 
   AliReducedParticle *track=(AliReducedParticle*)tr;
   if (!track) return -ENODATA;
   Double_t pt=track->Pt();
 
-  Double_t D0eff=1;
-  Int_t bin=fD0EffMap->FindBin(pt);
-  if(fD0EffMap->IsBinUnderflow(bin)|| fD0EffMap->IsBinOverflow(bin)) 
-    D0eff = 1.;
-  else 
-    D0eff = fD0EffMap->GetBinContent(bin);
-  return D0eff;
+  AliHFAssociatedTrackCuts* cuts=dynamic_cast<AliHFAssociatedTrackCuts*>(fCuts);
+  if (!cuts) {
+    if (fCuts)
+      AliError(Form("cuts object of wrong type %s, required AliHFAssociatedTrackCuts", fCuts->ClassName()));
+    else
+      AliError("mandatory cuts object missing");
+    return -EINVAL;
+  }
+
+  return cuts->GetTrigWeight(pt,evMult);
+
 }
 
 
@@ -575,15 +606,15 @@ int AliDxHFECorrelation::FillParticleProperties(AliVParticle* tr, AliVParticle *
   if(fTriggerParticleType==kD){
     data[i++]=ptrigger->GetInvMass();
     data[i++]=ptrigger->Pt();
-    data[i++]=ptrigger->Phi();
-    data[i++]=ptrigger->GetPtBin(); 
+    if(RunFullMode()) data[i++]=ptrigger->Phi();
+    if(RunFullMode()) data[i++]=ptrigger->GetPtBin(); 
     data[i++]=assoc->Pt();
   } 
   else{
     data[i++]=assoc->GetInvMass();
     data[i++]=assoc->Pt();
-    data[i++]=assoc->Phi();
-    data[i++]=assoc->GetPtBin(); 
+    if(RunFullMode()) data[i++]=assoc->Phi();
+    if(RunFullMode()) data[i++]=assoc->GetPtBin(); 
     data[i++]=ptrigger->Pt();
   }
   data[i++]=GetDeltaPhi();

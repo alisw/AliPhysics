@@ -676,8 +676,8 @@ int AliCFSingleTrackEfficiencyTask::CheckBackgroundSource(AliVParticle* track, c
   // cout << "here " << endl;
   //cout <<  track->GetLabel() << endl;
   int res=0;
-  if(useMCarray) res=fElectronsKine->CheckMC(track, const_cast<AliVEvent*>(pEvent));
-  else res=fElectrons->CheckMC(track, const_cast<AliVEvent*>(pEvent));
+  if(useMCarray) res=fElectronsKine->CheckMC(track, (AliVEvent*)pEvent);
+  else res=fElectrons->CheckMC(track, (AliVEvent*)pEvent);
   //cout << "here2 " << endl;
   int origin=-1;
   if(useMCarray){
@@ -1048,7 +1048,13 @@ int AliCFSingleTrackEfficiencyTask::ParseArguments(const char* arguments)
       fMinRatioTPCcluster=argument.Atof();	    
       AliInfo(Form("tpc clusters /findable %f",fMinRatioTPCcluster));
       continue;
-    }	  
+    }
+   if (argument.BeginsWith("invmasscut=")){
+      argument.ReplaceAll("invmasscut=", "");
+      fInvMassLow=argument.Atof();	    
+      AliInfo(Form("Invariant mass cut %f",fInvMassLow));
+      continue;
+    }	   
     if (argument.BeginsWith("notrequireTOF")){
       AliInfo("No requirement on TOF");
       fRequireTOF=kFALSE;	    
@@ -1089,8 +1095,7 @@ int AliCFSingleTrackEfficiencyTask::ParseArguments(const char* arguments)
       if(argument.CompareTo("HFEPythia")==0){ cout << " setting HFE as source from Pythia " << endl; fUseGenerator=kTRUE; fSelectElSource=kHFPythia;}
       else if(argument.CompareTo("nonHFEHijing")==0) {cout << " setting nonHFE as source from Hijing" << endl; fUseGenerator=kTRUE; fSelectElSource=knonHFHijing;}
       else if(argument.CompareTo("convHijing")==0){ cout << " setting conv as source from Hijing" << endl; fUseGenerator=kTRUE; fSelectElSource=kConvElHijing; }
-      
-      if(argument.CompareTo("HFE")==0){ cout << " setting HFE as source " << endl; fSelectElSource=kHF;}
+      else if(argument.CompareTo("HFE")==0){ cout << " setting HFE as source " << endl; fSelectElSource=kHF;}
       else if(argument.CompareTo("nonHFE")==0) {cout << " setting nonHFE as source " << endl; fSelectElSource=knonHF;}
       else if(argument.CompareTo("conv")==0){ cout << " setting conv as source " << endl; fSelectElSource=kConvEl; }
 

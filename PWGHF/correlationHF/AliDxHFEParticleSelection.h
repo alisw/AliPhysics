@@ -78,7 +78,7 @@ class AliDxHFEParticleSelection : public TNamed {
   /// create selection from the array of particles,
   /// array contains only pointers but does not own the objects
   /// object array needs to be deleted by caller
-  virtual TObjArray* Select(TObjArray* particles, const AliVEvent* pEvent);
+  virtual TObjArray* Select(TObjArray* particles, AliVEvent* pEvent);
 
   virtual void SetPIDResponse(const AliPIDResponse* /*const pidresp*/){}
 
