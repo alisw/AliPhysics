@@ -18,23 +18,18 @@
 // -----------------------------------------------------------------------
 //  Author: Misha Veldhoen (misha.veldhoen@cern.ch)
 
+#include "AliHistToolsDiHadronPID.h"
+
 #include <iostream>
-#include "TCanvas.h"
+using namespace std;
+
 #include "TLegend.h"
 #include "TMath.h"
 #include "TF1.h"
-#include "TF2.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TH3F.h"
 #include "THn.h"
 #include "TObjArray.h"
 #include "TStyle.h"
 #include "TArray.h"
-
-#include "AliHistToolsDiHadronPID.h"
-
-using namespace std;
 
 // -----------------------------------------------------------------------
 TH1F* AliHistToolsDiHadronPID::RebinVariableBinning(
@@ -181,6 +176,16 @@ TH1F* AliHistToolsDiHadronPID::RebinVariableBinning(const TH1F* histIn, const TH
 
 	// Rebins histogram histIn to the x-axis of histAxis
 	TAxis* xaxis = histAxis->GetXaxis();
+	Int_t nbinsx = xaxis->GetNbins();
+	const Double_t* binsx = (xaxis->GetXbins())->GetArray();
+	return RebinVariableBinning(histIn, const_cast<Double_t*>(binsx), nbinsx, density);
+
+}
+
+// -----------------------------------------------------------------------
+TH1F* AliHistToolsDiHadronPID::RebinVariableBinning(const TH1F* histIn, const TAxis* xaxis, const Bool_t density) {
+
+	// Rebins histogram histIn to the x-axis of histAxis
 	Int_t nbinsx = xaxis->GetNbins();
 	const Double_t* binsx = (xaxis->GetXbins())->GetArray();
 	return RebinVariableBinning(histIn, const_cast<Double_t*>(binsx), nbinsx, density);
@@ -362,7 +367,7 @@ TCanvas* AliHistToolsDiHadronPID::CreateSpectraComparison(const char* name,
 	spectra[0]->GetXaxis()->SetLabelSize(0);
 	spectra[0]->GetYaxis()->SetLabelSize(0.05);
 	spectra[0]->GetYaxis()->SetTitleSize(0.05);
-	spectra[0]->GetYaxis()->SetTitleOffset(1.1);
+	spectra[0]->GetYaxis()->SetTitleOffset(0.8);
 	//Double_t labelsize = spectra[0]->GetYaxis()->GetLabelSize();
 	spectra[1]->Draw("same e");
 	p2->cd();
@@ -372,7 +377,7 @@ TCanvas* AliHistToolsDiHadronPID::CreateSpectraComparison(const char* name,
 	division->GetXaxis()->SetTitleOffset(0.6);
 	division->GetYaxis()->SetLabelSize(0.1);
 	division->GetYaxis()->SetTitleSize(0.12);
-	division->GetYaxis()->SetTitleOffset(0.3);
+	division->GetYaxis()->SetTitleOffset(0.25);
 	division->Draw("e");
 
 	//c->UseCurrentStyle();

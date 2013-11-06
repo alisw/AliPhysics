@@ -22,16 +22,14 @@ public:
 	virtual void Terminate(Option_t*);	
 
 // Mismatch related functions.
-	Bool_t LoadExternalMismatchHistos(Int_t /*mismatchmethod*/);			// For each mismatch method, external histo's are needed.
-	Double_t GenerateRandomHit(Int_t /*mismatchmethod*/, Double_t eta);		// Generates a random time for a certain eta.
+	Bool_t LoadExternalMismatchHistos();			// For each mismatch method, external histo's are needed.
+	Double_t GenerateRandomHit(Double_t eta);		// Generates a random time for a certain eta.
 
 // Run over MC or not.
-	void SetMC(Bool_t isMC = kTRUE) {fIsMC = isMC;} 
-	void SetVerbose(Bool_t verbose = kTRUE) {fVerbose = verbose;}
-	void SetCalculateTOFMismatch(Bool_t calculatetofmismatch = kTRUE, Int_t method = 0) {
-		fCalculateTOFMismatch = calculatetofmismatch;
-		fMismatchMethod = method;		// 0 = Roberto's method, 1 - From the inclusive times.
-	}
+	void SetMC(const Bool_t isMC = kTRUE) {fIsMC = isMC;} 
+	void SetVerbose(const Bool_t verbose = kTRUE) {fVerbose = verbose;}
+	void SetCalculateTOFMismatch(const Bool_t calculatetofmismatch = kTRUE/* const Int_t method*/) {fCalculateTOFMismatch = calculatetofmismatch;}
+	void SetUseMismatchFileFromGridHomeDir(const Bool_t usefromhomedir = kTRUE) {fUseMismatchFileFromHomeDir = usefromhomedir;}
 
 // Managing Event Cuts.
     void SetEventCuts(AliAODEventCutsDiHadronPID* eventcuts) {
@@ -54,6 +52,8 @@ public:
     	fTrackCuts->AddLast(trackcuts);
     }
 
+	void SetDebugLevel(const Int_t debuglvl);
+
 private:
 	void FillGlobalTracksArray();
 	AliAODTrack* GetGlobalTrack(AliAODTrack* track);
@@ -70,7 +70,7 @@ private:
 	Bool_t							fIsMC;						// ran over MC or not.
 	Bool_t							fVerbose;					// Verbose mode.
 	Bool_t 							fCalculateTOFMismatch;		// Compute mismatch or not. (Needs input histograms!)
-	Int_t							fMismatchMethod;			// 0 - Roberto's method, 1 - From inclusive times.
+	Bool_t							fUseMismatchFileFromHomeDir;// Take TOFmistmachHistos.root from the home dir, or take the one copied when submitting jobs
 
 	// Event Cut Object (streamed!).
 	AliAODEventCutsDiHadronPID*		fEventCuts;					// Event Cuts.
@@ -84,6 +84,7 @@ private:
 	// TOF mismatch stuff.
 	TH1F*							fT0Fill;					//
 	TH2F*							fLvsEta;					//
+	TH2F*							fGlobalPtvsTPCPt;			//
 	TObjArray*						fLvsEtaProjections;			//	
 
 

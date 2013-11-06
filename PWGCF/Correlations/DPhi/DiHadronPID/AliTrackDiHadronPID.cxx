@@ -18,22 +18,11 @@
 // -----------------------------------------------------------------------
 //  Author: Misha Veldhoen (misha.veldhoen@cern.ch)
 
-#include <iostream>
-using namespace std;
-
-// AOD includes.
-#include "AliAODTrack.h"
-#include "AliAODEvent.h"
-#include "AliAODVertex.h"
-#include "AliAODMCParticle.h"
-
-// PID includes.
-#include "AliPID.h"
-#include "AliPIDResponse.h"
-#include "AliTPCPIDResponse.h"
-
-// Class header.
 #include "AliTrackDiHadronPID.h"
+
+#include "AliAODVertex.h"
+#include "AliPID.h"
+#include "AliTPCPIDResponse.h"
 
 ClassImp(AliTrackDiHadronPID);
 
@@ -64,7 +53,7 @@ AliTrackDiHadronPID::AliTrackDiHadronPID():
 	fDCAz(-999.),
 	fDCAxy(-999.),
 	fTOFsignal(-999.),
-	fIsTOFmismatch(kFALSE),
+	fTOFMatchingStatus(-1),
 	fTPCsignal(-999.),
 	fTPCmomentum(-999.),
 	fITSClusterMap(0),
@@ -98,6 +87,10 @@ AliTrackDiHadronPID::AliTrackDiHadronPID():
 		fITSHits[iITSlayer] = kFALSE;
 	}
 
+	for (Int_t iN = 0; iN < 3; ++iN) {
+		fTOFLabel[iN] = -1;	// Same convention as in ESDs
+	}
+
 }
 
 // -----------------------------------------------------------------------
@@ -127,7 +120,7 @@ AliTrackDiHadronPID::AliTrackDiHadronPID(AliAODTrack* track, AliAODTrack* global
 	fDCAz(-999.),
 	fDCAxy(-999.),
 	fTOFsignal(-999.),
-	fIsTOFmismatch(kFALSE),
+	fTOFMatchingStatus(-1),
 	fTPCsignal(-999.),
 	fTPCmomentum(-999.),
 	fITSClusterMap(0),	
@@ -158,6 +151,10 @@ AliTrackDiHadronPID::AliTrackDiHadronPID(AliAODTrack* track, AliAODTrack* global
 
 	for (Int_t iITSlayer = 0; iITSlayer < 6; iITSlayer++) {
 		fITSHits[iITSlayer] = kFALSE;
+	}
+
+	for (Int_t iN = 0; iN < 3; ++iN) {
+		fTOFLabel[iN] = -1;	// Same convention as in ESDs
 	}
 
 	if (track) {
@@ -251,14 +248,14 @@ Bool_t AliTrackDiHadronPID::CopyFlags() {
 
 	// Copy Flags
 	fFlags = fAODGlobalTrack->GetFlags();
-
+/*
 	// Is TOF mismatch?
 	if (AliAODTrack::kTOFmismatch&fFlags) {
-		fIsTOFmismatch = kTRUE;
+		fTOFMatchingStatus = kTRUE;
 		//cout<<"Found TOF mismatch!"<<endl;
 	}
-	else fIsTOFmismatch = kFALSE; 
-
+	else fTOFMatchingStatus = kFALSE; 
+*/
 	fFlagsAvailable = kTRUE;
 	return fFlagsAvailable;
 
@@ -368,6 +365,23 @@ Bool_t AliTrackDiHadronPID::CopyTOFInfo() {
 	fTOFNsigma[2] = fPIDResponse->NumberOfSigmasTOF(fAODGlobalTrack, AliPID::kProton);	
 
 	fTOFInfoAvailable = kTRUE;
+
+	// Q: what do the different TOF labels mean?
+	// It seems that in AOD090 the TOF labels aren't copied properly.
+	//Int_t TOFlabeltmp[3] = {0};
+	fAODGlobalTrack->GetTOFLabel(fTOFLabel);
+	//for (Int_t iN = 0; iN < 3; ++iN) {fTOFLabel[iN] = TOFlabeltmp[iN];}
+
+	if (fTOFLabel[1] == fLabel || fTOFLabel[2] == fLabel) {
+		cout<<"fLabel = " << fLabel << " fTOFLabel =  {" << fTOFLabel[0] << "," << fTOFLabel[1] << "," << fTOFLabel[2] <<"}"<<endl; 
+	}
+
+	// The following will only work in an AOD production with the fTOFlabels set.
+	// If it wasn't set, then every track will be labeled as no match.
+	if (fTOFLabel[0] == -1) {fTOFMatchingStatus = 2;} 			// TPC Track was not matched to any TOF hit.
+	else if (fLabel == fTOFLabel[0]) {fTOFMatchingStatus = 0;}	// TPC Track was correctly matched to a TOF hit.
+	else {fTOFMatchingStatus = 1;}								// TPC Track was mismatched.
+
 	return fTOFInfoAvailable;
 
 }

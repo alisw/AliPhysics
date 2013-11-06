@@ -4,7 +4,10 @@
 * See cxx source for full Copyright notice */ 
 /* $Id$ */
 
-class TCanvas;
+#include "TCanvas.h"
+#include "TMath.h"
+
+//class TCanvas;
 
 class AliFunctionsDiHadronPID {
 

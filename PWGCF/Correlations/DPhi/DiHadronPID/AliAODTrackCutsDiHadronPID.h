@@ -9,6 +9,7 @@
 #include "TH2F.h"
 #include "TH3F.h"
 #include "TList.h"
+#include "AliTrackDiHadronPID.h"
 
 class AliAODTrackCutsDiHadronPID : public TNamed 
 
@@ -152,6 +153,7 @@ public:
 
 // Setters (Settings)
 	void SetIsMC(Bool_t ismc = kTRUE) {fIsMC = ismc;}
+	void SetLowPtNSigmaTOFOnly(Bool_t lowptnsigmatofonly = kFALSE) {fLowPtNSigmaTOFOnly = lowptnsigmatofonly;}
 
 	void SetDebugLevel(Int_t debuglevel) {fDebug = debuglevel;}
 
@@ -245,6 +247,7 @@ private:
 	void InitializeDefaultHistoNamesAndAxes();
 
 	TH1F* InitializePtSpectrum(const char* name, Int_t histoclass);
+	TH2F* InitializeRecPtGenPt(const char* name, Int_t histoclass);
 	TH3F* InitializePhiEtaPt(const char* name, Int_t histoclass);
 	TH1F* InitializeNTracksHisto(const char* name, Int_t histoclass);
 	TH1F* InitializeDCAxyHisto(const char* name, Int_t histoclass);
@@ -255,6 +258,7 @@ private:
 
 	TH3F* InitializePIDHisto(const char* name, Int_t histoclass, Int_t expspecies, Int_t ptclass);
 	TH2F* InitializeTOFMismatchHisto(const char* name, Int_t histoclass, Int_t expspecies, Int_t ptclass);
+	TH2F* InitializeTOFHisto(const char* name, Int_t histoclass, Int_t expspecies, Int_t ptclass);
 
 // -----------------------------------------------------------------------
 //  Data members.
@@ -275,6 +279,7 @@ private:
 
 // Settings
 	Bool_t					fIsMC;							// Is the current event MC or not.
+	Bool_t					fLowPtNSigmaTOFOnly;			//
 
 // Requested Histograms;
 	Bool_t					fHistRequested[12];				//
@@ -287,7 +292,7 @@ private:
 	Bool_t 					fTestMaxEta;					//
 	Bool_t					fTestMaxRapidity;				//
 	Bool_t 					fTestFlags;						//
-	Bool_t					fTestNumberOfTPCClusters;					//
+	Bool_t					fTestNumberOfTPCClusters;		//
 	Bool_t					fTestSPDAny;					//
 	Bool_t 					fTestTOFmismatch;				//
 	Bool_t 					fTestPtDeptDCAcut;				//
@@ -306,25 +311,36 @@ private:
 	TH2F*					fHistTOFMismatch[3][3][5];		//! TOF Mismatch histograms, [charge][mass assumption][ptclass]
 	TH3F*					fHistTPCTOFMismatch[3][3][5];	//! TPC/TOF mismatch histograms (Same as TOF, but now the TPC hit of the track is included.)
 
+// QA histograms for all reconstructed MC tracks.
+	TH1F*					fTOFMatchingStat;					//
+
 // QA histograms for Primary Reconstructed MC tracks.
 	TList*					fPrimRecMCTrackQAHistos;		//
 	TH1F*					fHistPrimRecMCPt[12];			//! Pt distribution of reconstructed MC track passing this cut.
+	TH3F*					fHistPrimRecMCPhiEtaPt[12];		//! Pt, Eta, Phi distribution.
 	TH1F*					fHistPrimRecNTracks[12];		//!
 	TH2F*					fHistPrimRecMCDCA[12];			//! DCA_xy distribution of reconstructed MC track passing this cut.
+	TH2F*					fHistPrimRecPtGenPt[12];		//! Reconstructed Pt versus Generated Pt.
+
+	TH2F* 					fHistPrimRecPID[3][3][5];		//! TPC/TOF v.s. pT, [charge][mass assumption][ptclass]
+	TH2F*					fHistPrimRecMismatch[3][3][5];	//! Tracks with the same ->Label(), as ->TOFLabel().
 
 // QA histograms for Primary Generated MC particles.
 	TList*					fPrimGenMCTrackQAHistos;		//
 	TH1F*					fHistPrimGenMCPt[12];			//! Pt distribution of generated MC particles passing this cut.
+	TH3F*					fHistPrimGenMCPhiEtaPt[12];		//! Pt, Eta, Phi distribution.
 
 // QA histograms for Secondary Reconstructed MC tracks.
 	TList*					fSecRecMCTrackQAHistos;			//
 	TH1F*					fHistSecRecMCPt[12];			//! Pt distribution of reconstructed MC track passing this cut.
+	TH3F*					fHistSecRecMCPhiEtaPt[12];		//! Pt, Eta, Phi distribution.
 	TH2F*					fHistSecRecMCDCAMat[12];		//! DCA_xy distribution of material decay particles.
 	TH2F*					fHistSecRecMCDCAWeak[12];		//! DCA_xy distribution of weak decay.
 
 // QA histograms for Secondary Generated MC particles.
 	TList*					fSecGenMCTrackQAHistos;			//
 	TH1F*					fHistSecGenMCPt[12];			//! Pt distribution of generated MC particles passing this cut.
+	TH3F*					fHistSecGenMCPhiEtaPt[12];		//! Pt, Eta, Phi distribution.
 
 // Binning of all the histograms.
 	Double_t				fPtAxis[57];					// Pt axis used in all histograms, except PID and Mismatch histograms.
@@ -351,7 +367,7 @@ private:
 
 	Int_t 					fDebug;							// Debug flag.
 
-	ClassDef(AliAODTrackCutsDiHadronPID,5);
+	ClassDef(AliAODTrackCutsDiHadronPID,7);
 
 };
 
