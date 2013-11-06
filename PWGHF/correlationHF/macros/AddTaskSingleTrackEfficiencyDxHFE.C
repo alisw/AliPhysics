@@ -119,9 +119,10 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   Int_t ITSreq=AliESDtrackCuts::kFirst;
   TString extraname="";
 
-  Int_t bUsePID=kTRUE;
-  Int_t bUseTOFPID=kTRUE;
-  Int_t bUseTPCPID=kTRUE;
+  Bool_t bUsePID=kTRUE;
+  Bool_t bUseTOFPID=kTRUE;
+  Bool_t bUseTPCPID=kTRUE;
+  Bool_t cutOnClusters=kTRUE;
 
 
   if (configuration.IsNull() && gDirectory) {
@@ -170,6 +171,11 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
 	  if(argument.BeginsWith("extraname=")){
 	    argument.ReplaceAll("extraname=", "");
 	    extraname=argument;
+	    continue;
+	  }
+	  if(argument.BeginsWith("TPCcrossedrows")){
+	    cutOnClusters=kFALSE;
+	    cout << "Cut on TPC crossed rows "  << endl; 
 	    continue;
 	  }
 	  if(argument.BeginsWith("charge=")){
@@ -401,7 +407,14 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
     // Track Quality cuts for general methods
     QualityCuts->SetRequireSigmaToVertex(kFALSE);
     QualityCuts->SetDCAToVertex2D(kFALSE);
-    QualityCuts->SetMinNClustersTPC(minclustersTPC);
+    // TPC  
+    if(cutOnClusters)  QualityCuts->SetMinNClustersTPC(minclustersTPC);
+    else {
+      QualityCuts->SetMinNCrossedRowsTPC(minclustersTPC);
+      QualityCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+    }
+
+    //QualityCuts->SetMinNClustersTPC(minclustersTPC);
     QualityCuts->SetMinNClustersITS(minclustersITS);
     QualityCuts->SetMaxChi2PerClusterTPC(4);
     QualityCuts->SetMaxDCAToVertexXY(1);
