@@ -82,6 +82,7 @@
 #include "TClonesArray.h"
 #include "AliHFENonPhotonicElectron.h"
 
+ClassImp(AliAnalysisTaskFlowTPCTOFEPSP)
 
 //____________________________________________________________________
 AliAnalysisTaskFlowTPCTOFEPSP::AliAnalysisTaskFlowTPCTOFEPSP() :
@@ -2115,6 +2116,7 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
       AliDebug(2,Form("A: Number of tracks %d",fflowEvent->NumberOfTracks()));
       for(Int_t iRPs=0; iRPs< fflowEvent->NumberOfTracks(); iRPs++) {
 	AliFlowTrack *iRP = (AliFlowTrack*) (fflowEvent->GetTrack(iRPs));
+	if(!iRP) continue;
 	//if(!iRP->InRPSelection()) continue;
 	if( TMath::Abs(idtrack) == TMath::Abs(iRP->GetID()) ) {
 	  iRP->SetForPOISelection(kTRUE);
