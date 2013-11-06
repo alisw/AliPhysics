@@ -25,6 +25,7 @@ AliJetContainer::AliJetContainer():
   fJetRadius(0),
   fRhoName(),
   fLocalRhoName(),
+  fFlavourSelection(0),
   fPtBiasJetTrack(0),
   fPtBiasJetClus(0),
   fJetPtCut(1),
@@ -63,6 +64,7 @@ AliJetContainer::AliJetContainer(const char *name):
   fJetRadius(0),
   fRhoName(),
   fLocalRhoName(),
+  fFlavourSelection(0),
   fPtBiasJetTrack(0),
   fPtBiasJetClus(0),
   fJetPtCut(1),
@@ -298,45 +300,49 @@ Bool_t AliJetContainer::AcceptBiasJet(AliEmcalJet *jet) const
 //________________________________________________________________________
 Bool_t AliJetContainer::AcceptJet(AliEmcalJet *jet) const
 {   
-  // Return true if jet is accepted.
-  if (!jet)
-    return kFALSE;
 
-  if (jet->TestBits(fJetBitMap) != (Int_t)fJetBitMap)
-    return kFALSE;
+   // Return true if jet is accepted.
 
-  if (jet->Pt() <= fJetPtCut) 
-    return kFALSE;
- 
-  if (jet->Area() <= fJetAreaCut) 
-    return kFALSE;
+   if (!jet)
+      return kFALSE;
 
-  if (jet->AreaEmc() < fAreaEmcCut)
-    return kFALSE;
+   if (jet->TestBits(fJetBitMap) != (Int_t)fJetBitMap)
+      return kFALSE;
 
-  if (fZLeadingChCut < 1 && GetZLeadingCharged(jet) > fZLeadingChCut)
-    return kFALSE;
+   if (jet->Pt() <= fJetPtCut) 
+      return kFALSE;
 
-  if (fZLeadingEmcCut < 1 && GetZLeadingEmc(jet) > fZLeadingEmcCut)
-    return kFALSE;
+   if (jet->Area() <= fJetAreaCut) 
+      return kFALSE;
 
-  if (jet->NEF() < fNEFMinCut || jet->NEF() > fNEFMaxCut)
-    return kFALSE;
+   if (jet->AreaEmc() < fAreaEmcCut)
+      return kFALSE;
+   
+   if (fZLeadingChCut < 1 && GetZLeadingCharged(jet) > fZLeadingChCut)
+      return kFALSE;
+   
+   if (fZLeadingEmcCut < 1 && GetZLeadingEmc(jet) > fZLeadingEmcCut)
+      return kFALSE;
 
-  if (!AcceptBiasJet(jet))
-    return kFALSE;
-  
-  if (jet->MaxTrackPt() > fMaxTrackPt || jet->MaxClusterPt() > fMaxClusterPt)
-    return kFALSE;
-
- 
-  Double_t jetPhi = jet->Phi();
-  Double_t jetEta = jet->Eta();
-  
-  if (fJetMinPhi < 0) // if limits are given in (-pi, pi) range
-    jetPhi -= TMath::Pi() * 2;
-
-  return (Bool_t)(jetEta > fJetMinEta && jetEta < fJetMaxEta && jetPhi > fJetMinPhi && jetPhi < fJetMaxPhi);
+   if (jet->NEF() < fNEFMinCut || jet->NEF() > fNEFMaxCut)
+      return kFALSE;
+   
+   if (!AcceptBiasJet(jet))
+      return kFALSE;
+   
+   if (jet->MaxTrackPt() > fMaxTrackPt || jet->MaxClusterPt() > fMaxClusterPt)
+      return kFALSE;
+   
+   if (fFlavourSelection != 0 && !jet->TestFlavourTag(fFlavourSelection))
+      return kFALSE;
+   
+   Double_t jetPhi = jet->Phi();
+   Double_t jetEta = jet->Eta();
+   
+   if (fJetMinPhi < 0) // if limits are given in (-pi, pi) range
+      jetPhi -= TMath::Pi() * 2;
+   
+   return (Bool_t)(jetEta > fJetMinEta && jetEta < fJetMaxEta && jetPhi > fJetMinPhi && jetPhi < fJetMaxPhi);
 }
 
 //________________________________________________________________________
