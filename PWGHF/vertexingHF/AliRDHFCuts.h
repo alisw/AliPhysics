@@ -61,7 +61,11 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetMinSPDMultiplicity(Int_t mult=0) {fMinSPDMultiplicity=mult;}  
 
   void SetTriggerMask(ULong64_t mask=0) {fTriggerMask=mask;}
-  void SetUseAnyTrigger(){fTriggerMask=AliVEvent::kAny;}
+  void SetUseOnlyOneTrigger(Bool_t onlyOne) {fUseOnlyOneTrigger=onlyOne;}
+  ULong64_t GetTriggerMask() {return fTriggerMask;}
+  Bool_t GetUseOnlyOneTrigger() {return fUseOnlyOneTrigger;}
+
+  void SetUseAnyTrigger() {fTriggerMask=AliVEvent::kAny;}
   void EnableMBTrigger(){
     fTriggerMask|=AliVEvent::kMB;
     fUseOnlyOneTrigger=kFALSE;
@@ -108,6 +112,73 @@ class AliRDHFCuts : public AliAnalysisCuts
   } 
   void SetUseEMCALTriggerExclusively(){
     fTriggerMask=(AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);
+    fUseOnlyOneTrigger=kTRUE;
+  }
+  //
+  //  Setters (helpers) for pp 2012 data
+  void SetUseInt1TriggerExclusivelyPP2012(){
+    fTriggerMask=AliVEvent::kMB;
+    fTriggerClass[0]="CINT1";
+    fUseOnlyOneTrigger=kTRUE;
+  }
+  void SetUseInt7TriggerExclusivelyPP2012(){
+    fTriggerMask=AliVEvent::kINT7;
+    fTriggerClass[0]="CINT7";
+    fUseOnlyOneTrigger=kTRUE;
+  }
+  void SetUseInt8TriggerExclusivelyPP2012(){
+    fTriggerMask=AliVEvent::kINT8;
+    fTriggerClass[0]="CINT8";
+    fUseOnlyOneTrigger=kTRUE;
+  }
+  void SetUseEMCAL7TriggerExclusivelyPP2012(){
+    fTriggerMask=AliVEvent::kEMC7;
+    fTriggerClass[0]="CEMC7";
+    fUseOnlyOneTrigger=kTRUE;
+  }
+  void SetUseEMCAL8TriggerExclusivelyPP2012(){
+    fTriggerMask=AliVEvent::kEMC8;
+    fTriggerClass[0]="CEMC8";
+    fUseOnlyOneTrigger=kTRUE;
+  }
+  void SetUseEMCALJET7TriggerExclusivelyPP2012(){
+    fTriggerMask=AliVEvent::kEMCEJE;
+    fTriggerClass[0]="CEMC7EJE";
+    fUseOnlyOneTrigger=kTRUE;
+  }
+  void SetUseEMCALJET8TriggerExclusivelyPP2012(){
+    fTriggerMask=AliVEvent::kEMCEJE;
+    fTriggerClass[0]="CEMC8EJE";
+    fUseOnlyOneTrigger=kTRUE;
+  }
+  void SetUseEMCALGA7TriggerExclusivelyPP2012(){
+    fTriggerMask=AliVEvent::kEMCEGA;
+    fTriggerClass[0]="CEMC7EGA";
+    fUseOnlyOneTrigger=kTRUE;
+  }
+  void SetUseEMCALGA8TriggerExclusivelyPP2012(){
+    fTriggerMask=AliVEvent::kEMCEGA;
+    fTriggerClass[0]="CEMC8EGA";
+    fUseOnlyOneTrigger=kTRUE;
+  }
+  void SetUseSPI7TriggerExclusivelyPP2012(){
+    fTriggerMask=AliVEvent::kSPI7;
+    fTriggerClass[0]="CSPI7";
+    fUseOnlyOneTrigger=kTRUE;
+  }
+  void SetUseSPI8TriggerExclusivelyPP2012(){
+    fTriggerMask=AliVEvent::kSPI;
+    fTriggerClass[0]="CSPI8";
+    fUseOnlyOneTrigger=kTRUE;
+  }
+  void SetUseHighMult7TriggerExclusivelyPP2012(){
+    fTriggerMask=AliVEvent::kHighMult;
+    fTriggerClass[0]="CSHM7";
+    fUseOnlyOneTrigger=kTRUE;
+  }
+  void SetUseHighMult8TriggerExclusivelyPP2012(){
+    fTriggerMask=AliVEvent::kHighMult;
+    fTriggerClass[0]="CSHM8";
     fUseOnlyOneTrigger=kTRUE;
   }
 
