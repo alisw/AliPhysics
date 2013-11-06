@@ -19,16 +19,13 @@
 // -----------------------------------------------------------------------
 //  Author: Misha Veldhoen (misha.veldhoen@cern.ch)
 
-#include <iostream>
-
-#include "AliExternalTrackParam.h"
-#include "TCanvas.h"
-#include "TMath.h"
-#include "TF1.h"
-
 #include "AliFunctionsDiHadronPID.h"
 
+#include <iostream>
 using namespace std;
+
+#include "AliExternalTrackParam.h"
+#include "TF1.h"
 
 // -----------------------------------------------------------------------
 AliFunctionsDiHadronPID::AliFunctionsDiHadronPID()

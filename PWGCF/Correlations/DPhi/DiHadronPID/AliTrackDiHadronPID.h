@@ -82,6 +82,7 @@ public:
 
 	Int_t GetID() const {return fID;}
 	Int_t GetLabel() const {return fLabel;}
+	void GetTOFLabel(Int_t* label) const {label[0] = fTOFLabel[0]; label[1] = fTOFLabel[1]; label[2] = fTOFLabel[2];}
 	Short_t Charge() const {return fCharge;}
 	Int_t GetNclsTPC() const {return fNclsTPC;}
 
@@ -117,7 +118,11 @@ public:
 		}
 		return fTPCNsigma[species];
 	}
-	Bool_t IsTOFmismatch() const {return fIsTOFmismatch;}
+	Int_t GetTOFMatchingStatus() const {return fTOFMatchingStatus;}
+	Bool_t IsTOFMismatch() const {
+		if (fTOFMatchingStatus==1) {return kTRUE;}
+		else {return kFALSE;}
+	}
 
 	Double_t GetTPCsignal() const {return fTPCsignal;}
 	Double_t GetTPCsignalMinusExpected(Int_t species) const {return fTPCsignalMinusExpected[species];}
@@ -192,6 +197,7 @@ private:
 
 	Short_t				fID;				// Track ID.
 	Int_t 				fLabel;				// Track Label.
+	Int_t				fTOFLabel[3];		// Track TOF label.
 
 	Short_t				fCharge;			// Charge (is a Char_t in AliAODTrack)
 	Int_t				fNclsTPC;			// Number of clusters in TPC.
@@ -204,7 +210,7 @@ private:
 	Double_t			fTOFsignal;
 	Double_t			fTOFsignalMinusExpected[3];
 	Double_t			fTOFNsigma[3];
-	Bool_t				fIsTOFmismatch;
+	Int_t				fTOFMatchingStatus;		// 0 -> match, 1 -> mismatch, 2 -> no TOF hit.
 	Double_t			fTPCsignal;
 	Double_t			fTPCsignalMinusExpected[3];
 	Double_t			fTPCNsigma[3];

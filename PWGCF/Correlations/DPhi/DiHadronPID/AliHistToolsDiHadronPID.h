@@ -4,12 +4,20 @@
 * See cxx source for full Copyright notice */ 
 /* $Id$ */
 
+/*
 class TF2;
 class TH1F;
 class TH2;
 class TH2F;
 class TH3F;
 class TCanvas;
+*/
+
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TH3F.h"
+#include "TF2.h"
+#include "TCanvas.h"
 
 class AliHistToolsDiHadronPID {
 
@@ -24,6 +32,7 @@ public:
 	// Histogram Manipulation.
 	static TH1F* RebinVariableBinning(const TH1F* histIn, const Double_t* binsx, const Int_t Nbinsx, const Bool_t density = kTRUE);
 	static TH1F* RebinVariableBinning(const TH1F* histIn, const TH1F* histAxis, const Bool_t density = kTRUE);
+	static TH1F* RebinVariableBinning(const TH1F* histIn, const TAxis* xaxis, const Bool_t density = kTRUE);
 	static TH1F* TrimHisto(const TH1F* histo, const Int_t firstbin, const Int_t lastbin);
 	static void ConstMinusHist(TH1F* histo, const Float_t cc = 1);
 	static TH3F* MakeHist3D(const char* name, const char* title, 
