@@ -33,15 +33,49 @@ void jetFlowTools() {
     Double_t binsY[81];
     for(Int_t i(0); i < 81; i++) binsY[i] = (double)(30+i);
     BinsRec = new TArrayD(sizeof(binsY)/sizeof(binsY[0]), binsY);
-    // ext 
-    // setup the class
+
+    // create an instance of the Tools class
     AliJetFlowTools* tools = new AliJetFlowTools();
-    tools->SetInputList(l);
+    // set some common variables
+    tools->SetCentralityBin(2);
     tools->SetDetectorResponse(detres);
-    tools->CreateOutputList(TString("R04_combined"));
     tools->SetBinsTrue(BinsTrue);
     tools->SetBinsRec(BinsRec);
+ 
+    // connect input
+    tools->SetInputList(l0);
+
+    // unfold using different parameters
+    tools->CreateOutputList(TString("R04_beta01_kCombined"));
+    tools->SetBeta(0.01);
     tools->Make();
+
+    tools->CreateOutputList(TString("R04_beta005_kCombined"));
+    tools->SetBeta(0.005);
+    tools->Make();
+
+    tools->CreateOutputList(TString("R04_beta002_kCombined"));
+    tools->SetBeta(0.002);
+    tools->Make();
+
+    // add another input list
+    tools->SetInputList(l1);
+ 
+    // unfold using different parametrs
+    tools->CreateOutputList(TString("R04_beta01_kNoFit"));
+    tools->SetBeta(0.01);
+    tools->Make();
+
+    tools->CreateOutputList(TString("R04_beta005_kNoFit"));
+    tools->SetBeta(0.005);
+    tools->Make();
+
+
+    tools->CreateOutputList(TString("R04_beta002_kNoFit"));
+    tools->SetBeta(0.002);
+    tools->Make();
+
+    // finish the unfolding
     tools->Finish();
 }
 
@@ -78,6 +112,6 @@ void Load() {
     gSystem->AddIncludePath("-I$ALICE_ROOT/JETAN -I$ALICE_ROOT/JETAN/fastjet");
 
     // compile unfolding class
-    gROOT->LoadMacro("AliJetFlowTools.cxx++g");
+    gROOT->LoadMacro("$ALICE_ROOT/PWG/FLOW/Tasks/AliJetFlowTools.cxx++g");
 }
 //_____________________________________________________________________________

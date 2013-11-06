@@ -19,7 +19,7 @@
 // Tools class for Jet Flow Analysis, replaces 'extractJetFlow.C' macro
 // Class is designed to manipulate the raw output of the jet flow
 // tasks in PWG and PWGJE 
-// to use this class, see $ALICE_ROOT/PWGCF/FLOW/macros/jetFlow.C
+// to use this class, see $ALICE_ROOT/PWGCF/FLOW/macros/jetFlowTools.C
 
 // root includes
 #include "TF1.h"
@@ -34,7 +34,7 @@
 #include "TStyle.h"
 #include "TGraphErrors.h"
 #include "TLine.h"
-#include "TObjArray.h"
+#include "TMath.h"
 // aliroot include
 #include "AliUnfolding.h"
 #include "AliAnaChargedJetResponseMaker.h"
@@ -46,17 +46,20 @@ using namespace std;
 //_____________________________________________________________________________
 AliJetFlowTools::AliJetFlowTools() :
     fActiveString       (""),
+    fActiveDir          (0x0),
     fInputList          (0x0),
-    fOutputList         (0x0),
-    fOutputArray        (0x0),
     fOutputFileName     ("UnfoldedSpectra.root"),
+    fOutputFile         (0x0),
     fCentralityBin      (0),
     fdPhidPt            (kTRUE),
     fDetectorResponse   (0x0),
     fBeta               (.001),
     fBetaPerDOF         (.0005),
+    fAvoidRoundingError (kFALSE),
     fBinsTrue           (0x0),
     fBinsRec            (0x0),
+    fDeltaPtDeltaPhi    (0x0),
+    fJetPtDeltaPhi      (0x0),
     fSpectrumIn         (0x0),
     fSpectrumOut        (0x0),
     fDptInDist          (0x0),
@@ -66,19 +69,15 @@ AliJetFlowTools::AliJetFlowTools() :
     fFullResponseIn     (0x0),
     fFullResponseOut    (0x0),
     fUnfoldedIn         (0x0),
-    fUnfoldedOut        (0x0) {
-        printf("\n\n > AliJetFlowTools < \n ");
-        printf("Connect output of AliAnalysisTaskRhoVnModulation via \n");
-        printf(" - SetInputList(TList*) \n - SetDetectorResponse(TH2D*) \n");
-        printf("Use additional setters to define the unfolding procedure, and finally \n");
-        printf("do \n - Make() \n to start the extraction routine. Type \n");
-        printf(" - Finish() \nto write the output to file. \n\n\n");
-        fOutputArray = new TObjArray();
-}
+    fUnfoldedOut        (0x0) { /* constructor */ }
 //_____________________________________________________________________________
 void AliJetFlowTools::Make() {
-    // core function
+    // core function of the class
+    // 1) manipulates input  histograms to prepare them for the unfolding procedure
+    // 2) calls the unfolding routine
+    // 3) writes output to file
     
+    // 1) manipulation of input histograms
     // check if the input variables are present
     if(!PrepareForUnfolding()) {
         printf(" AliJetFlowTools::Make() Fatal error \n - couldn't prepare for unfolding ! \n");
@@ -131,62 +130,94 @@ void AliJetFlowTools::Make() {
     kinematicEfficiencyIn->SetNameTitle("kin_eff_IN","kin_eff_IN");
     kinematicEfficiencyOut->SetNameTitle("kin_eff_OUT", "kin_eff_OUT");
 
-    // call the actual unfolding
-    fUnfoldedIn = UnfoldSpectrum(
+    // 2, 3) call the actual unfolding. results and transient objects are stored in a dedicated TDirectoryFile
+    fActiveDir->cd();                   // select active dir
+    TDirectoryFile* dirIn = new TDirectoryFile(Form("InPlane___%s", fActiveString.Data()), Form("InPlane___%s", fActiveString.Data()));
+    dirIn->cd();                        // select inplane subdir
+    Bool_t convergedIn = UnfoldSpectrum(       // do the inplane unfolding
             resizedJetPtIn,
             resizedResonseIn,
             kinematicEfficiencyIn,
-            unfoldingTemplateIn, 
+            unfoldingTemplateIn,
+            fUnfoldedIn, 
             TString("in"));
-    fUnfoldedOut = UnfoldSpectrum(
+    fSpectrumIn->SetNameTitle("JetSpectrum", "Jet spectrum, in plane");
+    fSpectrumIn->Write();
+    fDptInDist->SetNameTitle("DeltaPt", "#delta p_{T} distribution, in plane");
+    fDptInDist->Write();
+    fDptIn->SetNameTitle("DeltaPtMatrix","#delta p_{T} matrix, in plane");
+    fDptIn->Write();
+    fFullResponseIn->SetNameTitle("ResponseMatrix", "Response matrix, in plane");
+    fFullResponseIn->Write();
+    fullResponseRebinnedIn->SetNameTitle("ResponseMatrixRebinned", "Rebinned response matrix, in plane");
+    fullResponseRebinnedIn->Write();
+    resizedResonseIn->Write();
+    kinematicEfficiencyIn->SetNameTitle("KinematicEfficiency","Kinematic efficiency, in plane");
+    kinematicEfficiencyIn->Write();
+    fDetectorResponse->SetNameTitle("DetectorResponse", "Detector response matrix");
+    fDetectorResponse->Write();
+
+    fActiveDir->cd();
+    TDirectoryFile* dirOut = new TDirectoryFile(Form("OutOfPlane___%s", fActiveString.Data()), Form("OutOfPlane___%s", fActiveString.Data()));
+    dirOut->cd();
+    Bool_t convergedOut = UnfoldSpectrum(
             resizedJetPtOut,
             resizedResonseOut,
             kinematicEfficiencyOut,
             unfoldingTemplateOut,
+            fUnfoldedOut,
             TString("out"));
-
-    // push to output buffer
-    fOutputList->Add(fSpectrumIn);
-    fOutputList->Add(fSpectrumOut);
-    fOutputList->Add(fDptInDist);
-    fOutputList->Add(fDptOutDist);
-    fOutputList->Add(fDptIn);
-    fOutputList->Add(fDptOut);
-    fOutputList->Add(fFullResponseIn);
-    fOutputList->Add(fFullResponseOut);
-    fOutputList->Add(fullResponseRebinnedIn);
-    fOutputList->Add(fullResponseRebinnedOut);
-    fOutputList->Add(resizedResonseIn);
-    fOutputList->Add(resizedResonseOut);
-    fOutputList->Add(kinematicEfficiencyIn);
-    fOutputList->Add(kinematicEfficiencyOut);
-    for(Int_t i(0); i < fOutputArray->GetEntries(); i++) {
-        TH1* temp = dynamic_cast<TH1*>(fOutputArray->At(i));
-        if(temp) {
-            temp->SetName(Form("%s_%s", temp->GetName(), fActiveString.Data()));
-            temp->SetTitle(Form("%s_%s", temp->GetTitle(), fActiveString.Data()));
-        }
-    }
-    GetRatios();
-    fOutputList->Sort();
+    fSpectrumOut->SetNameTitle("JetSpectrum", "Jet spectrum, Out plane");
+    fSpectrumOut->Write();
+    fDptOutDist->SetNameTitle("DeltaPt", "#delta p_{T} distribution, Out plane");
+    fDptOutDist->Write();
+    fDptOut->SetNameTitle("DeltaPtMatrix","#delta p_{T} matrix, Out plane");
+    fDptOut->Write();
+    fFullResponseOut->SetNameTitle("ResponseMatrix", "Response matrix, Out plane");
+    fFullResponseOut->Write();
+    fullResponseRebinnedOut->SetNameTitle("ResponseMatrixRebinned", "Rebinned response matrix, Out plane");
+    fullResponseRebinnedOut->Write();
+    resizedResonseOut->Write();
+    kinematicEfficiencyOut->SetNameTitle("KinematicEfficiency","Kinematic efficiency, Out plane");
+    kinematicEfficiencyOut->Write();
+    fDetectorResponse->SetNameTitle("DetectorResponse", "Detector response matrix");
+    fDetectorResponse->Write();
+    
+    fActiveDir->cd();
+    TGraphErrors* ratio = GetRatio((TH1D*)fUnfoldedIn->Clone("hUnfolded_in"), (TH1D*)fUnfoldedOut->Clone("hUnfolded_out"));
+    ratio->SetNameTitle("RatioInOutPlane", "Ratio in plane, out of plane jet spectrum");
+    ratio->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    ratio->GetYaxis()->SetTitle("yield IN / yield OUT");
+    ratio->Write();
+    fDeltaPtDeltaPhi->Write();
+    fJetPtDeltaPhi->Write();
+    TH1F* beta = new TH1F("UnfoldingConfiguration","UnfoldingConfiguration", 6, -.5, 5.5);
+    beta->SetBinContent(1, fBeta);
+    beta->GetXaxis()->SetBinLabel(1, "fBeta");
+    beta->SetBinContent(2, fBetaPerDOF);
+    beta->GetXaxis()->SetBinLabel(2, "fBetaPerDOF");
+    beta->SetBinContent(3, fCentralityBin);
+    beta->GetXaxis()->SetBinLabel(3, "fCentralityBin");
+    beta->SetBinContent(4, (int)convergedIn);
+    beta->GetXaxis()->SetBinLabel(4, "convergedIn");
+    beta->SetBinContent(5, (int)convergedOut);
+    beta->GetXaxis()->SetBinLabel(5, "convergedOut");
+    beta->SetBinContent(6, (int)fAvoidRoundingError);
+    beta->GetXaxis()->SetBinLabel(6, "fAvoidRoundingError");
+    beta->Write();
 }
 //_____________________________________________________________________________
-void AliJetFlowTools::GetRatios() {
-    TH1D* in  = (TH1D*)fUnfoldedIn->Clone("hUnfolded_in");
-    TH1D* out = (TH1D*)fUnfoldedOut->Clone("hUnfolded_out");
-    in->Divide(in, out);
-    if(in) fOutputList->Add(in);
-}
-//_____________________________________________________________________________
-TH1D* AliJetFlowTools::UnfoldSpectrum(
+Bool_t AliJetFlowTools::UnfoldSpectrum(
         TH1D* resizedJetPt, 
         TH2D* resizedResonse,
         TH1D* kinematicEfficiency,
         TH1D* unfoldingTemplate,
+        TH1D *&unfolded,
         TString suffix)
 {
     /* the following is inspired by Marta Verweij's unfolding twiki */
 
+    Bool_t converged = kFALSE;
     // step 1) clone all input histograms
     TH1D *fh1RawJetsCurrentOrig = (TH1D*)resizedJetPt->Clone(Form("fh1RawJetsCurrentOrig_%s", suffix.Data()));
     // full response matrix and kinematic efficiency
@@ -217,28 +248,35 @@ TH1D* AliJetFlowTools::UnfoldSpectrum(
         iret = AliUnfolding::Unfold(h2ResponseMatrix, hEfficiency,fh1RawJetsCurrent ,hInitial ,hUnfolded);
         niter++;
     }
-    Int_t errMat = gMinuit->fISW[1];
+    Int_t errMat(gMinuit->fISW[1]);
     if(iret==0 && errMat==3) {
-        TVirtualFitter *fitter = TVirtualFitter::GetFitter();
+        TVirtualFitter *fitter(TVirtualFitter::GetFitter());
         double arglist[1] = {0.};
         fitter->ExecuteCommand("SHOW COV", arglist, 1);
         TMatrixD covmatrix(hUnfolded->GetNbinsX(),hUnfolded->GetNbinsX(),fitter->GetCovarianceMatrix());
-        TMatrixD *pearson = (TMatrixD*)CalculatePearsonCoefficients(&covmatrix);
-        TH2D *hPearson = new TH2D(*pearson);
+        TMatrixD *pearson((TMatrixD*)CalculatePearsonCoefficients(&covmatrix));
+        TH2D *hPearson(new TH2D(*pearson));
         hPearson->SetYTitle("bin number");
         hPearson->SetXTitle("bin number");
-        hPearson->SetName(Form("hPearson_%s", suffix.Data()));
+        hPearson->SetNameTitle("PearsonCoefficients", Form("Pearson coefficients, %s plane", suffix.Data()));
         hPearson->SetMinimum(-1.);
         hPearson->SetMaximum(1.);
         hPearson->GetZaxis()->SetLabelSize(0.06);
-        fOutputList->Add(hPearson);
+        hPearson->Write();
+        converged = kTRUE;
     }  
-    AliAnaChargedJetResponseMaker *corr = new AliAnaChargedJetResponseMaker();
-    TH1D *hFolded = corr->MultiplyResponseGenerated(hUnfolded,h2ResponseMatrix,hEfficiency);
-    fOutputList->Add(hFolded);
-    fOutputList->Add(hUnfolded);
-    fOutputList->Add(divide_histos(hFolded,fh1RawJetsCurrent));
-    return hUnfolded;
+    AliAnaChargedJetResponseMaker *corr(new AliAnaChargedJetResponseMaker());
+    TH1D *hFolded(corr->MultiplyResponseGenerated(hUnfolded,h2ResponseMatrix,hEfficiency));
+    hFolded->SetNameTitle("RefoldedSpectrum", Form("Refolded jet spectrum, %s plane", suffix.Data()));
+    hFolded->Write();
+    hUnfolded->SetNameTitle("UnfoldedSpectrum", Form("Unfolded jet spectrum, %s plane", suffix.Data()));
+    hUnfolded->Write();
+    unfolded = hUnfolded;
+    TGraphErrors* ratio(GetRatio(hFolded,fh1RawJetsCurrent, kTRUE, fBinsTrue->At(0), fBinsTrue->At(fBinsTrue->GetSize()-1)));
+    ratio->SetNameTitle("RatioRefoldedMeasured", Form("Ratio refolded and measured spectrum %s plane", suffix.Data()));
+    ratio->Write();
+    
+    return converged;
 }
 //_____________________________________________________________________________
 Bool_t AliJetFlowTools::PrepareForUnfolding()
@@ -254,57 +292,61 @@ Bool_t AliJetFlowTools::PrepareForUnfolding()
     }
     // check if the pt bin for true and rec have been set
     if(!fBinsTrue) {
-        printf(" AliJetFlowTools::PrepareForUnfolding() \n - warning: fBinsTrue nog set, using defaults ! \n");
+        printf(" \n AliJetFlowTools::PrepareForUnfolding() \n - warning: fBinsTrue nog set, using defaults ! \n");
         const Double_t ptBins[] = {20, 22.5, 25, 27.5, 30,32.5, 35, 37.5, 40, 42.5, 45, 47.5, 50,52.5, 55, 57.5, 60};
         fBinsTrue = new TArrayD(sizeof(ptBins)/sizeof(ptBins[0]), ptBins);
     }
     if(!fBinsRec) {
-        printf(" AliJetFlowTools::PrepareForUnfolding() \n - warning: fBinsRec not set, using defaults ! \n");
+        printf(" \n AliJetFlowTools::PrepareForUnfolding() \n - warning: fBinsRec not set, using defaults ! \n");
         Double_t binsY[81];
         for(Int_t i(0); i < 81; i++) binsY[i] = (double)(30+i);
         fBinsRec = new TArrayD(sizeof(binsY)/sizeof(binsY[0]), binsY);
     }
     // extract the spectra
     TString spectrumName(Form("fHistJetPsi2Pt_%i", fCentralityBin));
-    TH2D* spectrum((TH2D*)fInputList->FindObject(spectrumName.Data()));
-    if(!spectrum) {
+    fJetPtDeltaPhi = ((TH2D*)fInputList->FindObject(spectrumName.Data()));
+    if(!fJetPtDeltaPhi) {
         printf(" Couldn't find spectrum %s ! \n", spectrumName.Data());
         return kFALSE;
     }
     // in plane spectrum
-    fSpectrumIn = spectrum->ProjectionY("_py_ina", 1, 10);
-    fSpectrumIn->Add(spectrum->ProjectionY("_py_inb", 31, 40));
+    fSpectrumIn = fJetPtDeltaPhi->ProjectionY(Form("_py_ina_%s", spectrumName.Data()), 1, 10);
+    fSpectrumIn->Add(fJetPtDeltaPhi->ProjectionY(Form("_py_inb_%s", spectrumName.Data()), 31, 40));
     // out of plane spectrum
-    fSpectrumOut = spectrum->ProjectionY("_py_out", 11, 30);
+    fSpectrumOut = fJetPtDeltaPhi->ProjectionY(Form("_py_out_%s", spectrumName.Data()), 11, 30);
 
     // extract the delta pt matrices
     TString deltaptName(Form("fHistDeltaPtDeltaPhi2_%i", fCentralityBin));
-    TH2D* deltapt((TH2D*)fInputList->FindObject(deltaptName.Data()));
-    if(!deltapt) {
+    fDeltaPtDeltaPhi = ((TH2D*)fInputList->FindObject(deltaptName.Data()));
+    if(!fDeltaPtDeltaPhi) {
         printf(" Couldn't find delta pt matrix %s ! \n", deltaptName.Data());
     }
     if(fdPhidPt) {
         // in plane delta pt distribution
-        fDptInDist = deltapt->ProjectionY("_py_ina",1, 10);
-        fDptInDist->Add(deltapt->ProjectionY("_py_inb", 31, 40));
+        fDptInDist = fDeltaPtDeltaPhi->ProjectionY(Form("_py_ina_%s", deltaptName.Data()), 1, 10);
+        fDptInDist->Add(fDeltaPtDeltaPhi->ProjectionY(Form("_py_inb_%s", deltaptName.Data()), 31, 40));
         // out of plane delta pt distribution
-        fDptOutDist = deltapt->ProjectionY("_py_out", 11, 30);
+        fDptOutDist = fDeltaPtDeltaPhi->ProjectionY(Form("_py_out_%s", deltaptName.Data()), 11, 30);
     } else {
-        fDptInDist = deltapt->ProjectionY("_pyFULLa");
-        fDptOutDist = deltapt->ProjectionY("_pyFULLb");
+        fDptInDist = fDeltaPtDeltaPhi->ProjectionY("_pyFULLa");
+        fDptOutDist = fDeltaPtDeltaPhi->ProjectionY("_pyFULLb");
     }
     
     // create a rec - true smeared response matrix
     TMatrixD* rfIn = new TMatrixD(-50, 249, -50, 249);
     for(Int_t j(-50); j < 250; j++) {   // loop on pt true slices j
+        Bool_t skip = kFALSE;
         for(Int_t k(-50); k < 250; k++) {       // loop on pt gen slices k
-            (*rfIn)(k, j) = fDptInDist->GetBinContent(fDptInDist->GetXaxis()->FindBin(k-j));
+            (*rfIn)(k, j) = (skip) ? 0. : fDptInDist->GetBinContent(fDptInDist->GetXaxis()->FindBin(k-j));
+            if(fAvoidRoundingError && k > j && TMath::AreEqualAbs(fDptInDist->GetBinContent(fDptInDist->GetXaxis()->FindBin(k-j)), 0, 1e-8)) skip = kTRUE;
         }
     }
     TMatrixD* rfOut = new TMatrixD(-50, 249, -50, 249);
     for(Int_t j(-50); j < 250; j++) {   // loop on pt true slices j
+        Bool_t skip = kFALSE;
         for(Int_t k(-50); k < 250; k++) {       // loop on pt gen slices k
-            (*rfOut)(k, j) = fDptOutDist->GetBinContent(fDptOutDist->GetXaxis()->FindBin(k-j));
+            (*rfOut)(k, j) = (skip) ? 0. : fDptOutDist->GetBinContent(fDptOutDist->GetXaxis()->FindBin(k-j));
+            if(fAvoidRoundingError && k > j && TMath::AreEqualAbs(fDptOutDist->GetBinContent(fDptOutDist->GetXaxis()->FindBin(k-j)), 0, 1e-8)) skip = kTRUE;
         }
     }
     fDptIn = new TH2D(*rfIn);
@@ -549,41 +591,39 @@ TH1D* AliJetFlowTools::NormalizeTH1D(TH1D* histo, Double_t scale) {
 TMatrixD* AliJetFlowTools::CalculatePearsonCoefficients(TMatrixD* covmat) 
 {
     // Calculate pearson coefficients from covariance matrix
-    TMatrixD *pearsonCoefs = (TMatrixD*)covmat->Clone("pearsonCoefs");
-    Int_t nrows = covmat->GetNrows();
-    Int_t ncols = covmat->GetNcols();
-    Double_t pearson = 0.;
+    TMatrixD *pearsonCoefs((TMatrixD*)covmat->Clone("pearsonCoefs"));
+    Int_t nrows(covmat->GetNrows()), ncols (covmat->GetNcols());
+    Double_t pearson(0.);
     if(nrows==0 && ncols==0) return 0x0;
     for(int row = 0; row<nrows; row++) {
         for(int col = 0; col<ncols; col++) {
         if((*covmat)(row,row)!=0. && (*covmat)(col,col)!=0.) pearson = (*covmat)(row,col)/TMath::Sqrt((*covmat)(row,row)*(*covmat)(col,col));
         (*pearsonCoefs)(row,col) = pearson;
-    
         }
     }
     return pearsonCoefs;
 }
 //_____________________________________________________________________________
-TGraphErrors* AliJetFlowTools::divide_histos(TH1 *h1, TH1* h2, Double_t xmax) 
+TGraphErrors* AliJetFlowTools::GetRatio(TH1 *h1, TH1* h2, Bool_t appendFit, Double_t low, Double_t up) 
 {
-    TGraphErrors *gr = new TGraphErrors();
-    float binCent = 0.;
-    int j = 0;
-    float ratio = 0.;
-    float error2 = 0.;
-    float binWidth = 0.;
-    for(int i=1; i<=h1->GetNbinsX(); i++) {
+    TGraphErrors *gr(new TGraphErrors());
+    Int_t j(0);
+    Float_t binCent(0.), ratio(0.), error2(0.), binWidth(0.);
+    for(Int_t i(1); i < h1->GetNbinsX(); i++) {
         binCent = h1->GetXaxis()->GetBinCenter(i);
-        if(xmax>0. && binCent>xmax) continue;
         j = h2->FindBin(binCent);
         binWidth = h1->GetXaxis()->GetBinWidth(i);
-        if(h2->GetBinContent(j)>0.) {
+        if(h2->GetBinContent(j) > 0.) {
             ratio = h1->GetBinContent(i)/h2->GetBinContent(j);
             Double_t A = 1./h2->GetBinContent(j)*h1->GetBinError(i);
             error2 = A*A;
             gr->SetPoint(gr->GetN(),binCent,ratio);
             gr->SetPointError(gr->GetN()-1,0.5*binWidth,TMath::Sqrt(error2));
         }
+    }
+    if(appendFit) {
+        TF1* fit = new TF1("name", "pol1", low, up);
+        gr->Fit(fit);
     }
     return gr;
 }
