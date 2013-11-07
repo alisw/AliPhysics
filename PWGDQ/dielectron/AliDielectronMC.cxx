@@ -44,6 +44,7 @@
 #include "AliDielectronSignalMC.h"
 #include "AliDielectronMC.h"
 
+
 ClassImp(AliDielectronMC)
 
 AliDielectronMC* AliDielectronMC::fgInstance=0x0;
@@ -869,6 +870,23 @@ Bool_t AliDielectronMC::ComparePDG(Int_t particlePDG, Int_t requiredPDG, Bool_t 
       if(requiredPDG<0) result = particlePDG>=-5499 && particlePDG<=-5000;
     }
     break;
+  case 902:      // // open charm,beauty  mesons and baryons together
+    if(checkBothCharges)
+      result = (TMath::Abs(particlePDG)>=400 && TMath::Abs(particlePDG)<=439) ||
+	(TMath::Abs(particlePDG)>=4000 && TMath::Abs(particlePDG)<=4399) ||
+	(TMath::Abs(particlePDG)>=500 && TMath::Abs(particlePDG)<=549) ||
+	(TMath::Abs(particlePDG)>=5000 && TMath::Abs(particlePDG)<=5499);
+    else {
+      if(requiredPDG>0) result = (particlePDG>=400 && particlePDG<=439) ||
+			  (particlePDG>=4000 && particlePDG<=4399)      ||
+			  (particlePDG>=500 && particlePDG<=549)        ||
+			  (particlePDG>=5000 && particlePDG<=5499);
+      if(requiredPDG<0) result = (particlePDG>=-439 && particlePDG<=-400) ||
+			  (particlePDG>=-4399 && particlePDG<=-4000)      ||
+			  (particlePDG>=-549 && particlePDG<=-500)        ||
+			  (particlePDG>=-5499 && particlePDG<=-5000);
+    }
+    break;
   default:          // all specific cases
     if(checkBothCharges)
       result = (absRequiredPDG==TMath::Abs(particlePDG));
@@ -879,7 +897,6 @@ Bool_t AliDielectronMC::ComparePDG(Int_t particlePDG, Int_t requiredPDG, Bool_t 
   if(absRequiredPDG!=0 && pdgExclusion) result = !result;
   return result;
 }
-
 
 //________________________________________________________________________________
 Bool_t AliDielectronMC::IsPhysicalPrimary(Int_t label) const {
@@ -1035,7 +1052,7 @@ Bool_t AliDielectronMC::IsMCTruth(Int_t label, AliDielectronSignalMC* signalMC, 
       mcMother = GetMCTrackFromMCEvent(mLabel);
     }
     if(!mcMother && !signalMC->GetMotherPDGexclude(branch)) return kFALSE;
-
+    
     if(!ComparePDG((mcMother ? mcMother->PdgCode() : 0),signalMC->GetMotherPDG(branch),signalMC->GetMotherPDGexclude(branch),signalMC->GetCheckBothChargesMothers(branch))) return kFALSE;
     if(!CheckParticleSource(mLabel, signalMC->GetMotherSource(branch))) return kFALSE;
 
