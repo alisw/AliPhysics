@@ -61,8 +61,8 @@ ClassImp(AliCalorimeterUtils)
     fRemoveBadChannels(kFALSE),       fPHOSBadChannelMap(0x0), 
     fNCellsFromPHOSBorder(0),
     fNMaskCellColumns(0),             fMaskCellColumns(0x0),
-    fRecalibration(kFALSE),           fRunDependentCorrection(kFALSE), fPHOSRecalibrationFactors(),
-    fEMCALRecoUtils(new AliEMCALRecoUtils),
+    fRecalibration(kFALSE),           fRunDependentCorrection(kFALSE),
+    fPHOSRecalibrationFactors(),      fEMCALRecoUtils(new AliEMCALRecoUtils),
     fRecalculatePosition(kFALSE),     fCorrectELinearity(kFALSE),
     fRecalculateMatching(kFALSE),
     fCutR(20),                        fCutZ(20),
@@ -70,7 +70,8 @@ ClassImp(AliCalorimeterUtils)
     fLocMaxCutE(0),                   fLocMaxCutEDiff(0),
     fPlotCluster(0),                  fOADBSet(kFALSE),
     fOADBForEMCAL(kFALSE),            fOADBForPHOS(kFALSE),
-    fOADBFilePathEMCAL(""),           fOADBFilePathPHOS("")
+    fOADBFilePathEMCAL(""),           fOADBFilePathPHOS(""),
+    fImportGeometryFromFile(),        fImportGeometryFilePath("")
 {
   //Ctor
   
