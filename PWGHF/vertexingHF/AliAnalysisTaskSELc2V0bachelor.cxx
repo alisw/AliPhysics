@@ -984,19 +984,21 @@ void AliAnalysisTaskSELc2V0bachelor::CheckEventSelection(AliAODEvent *aodEvent) 
   //
 
   TClonesArray *arrayLctopKos=0;
-  if (!aodEvent && AODEvent() && IsStandardAOD()) {
-    // In case there is an AOD handler writing a standard AOD, use the AOD 
-    // event in memory rather than the input (ESD) event.    
-    aodEvent = dynamic_cast<AliAODEvent*> (AODEvent());
-    // in this case the braches in the deltaAOD (AliAOD.VertexingHF.root)
-    // have to taken from the AOD event hold by the AliAODExtension
-    AliAODHandler* aodHandler = (AliAODHandler*) 
-      ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+  if (!aodEvent){
+    if(AODEvent() && IsStandardAOD()) {
+      // In case there is an AOD handler writing a standard AOD, use the AOD 
+      // event in memory rather than the input (ESD) event.    
+      aodEvent = dynamic_cast<AliAODEvent*> (AODEvent());
+      // in this case the braches in the deltaAOD (AliAOD.VertexingHF.root)
+      // have to taken from the AOD event hold by the AliAODExtension
+      AliAODHandler* aodHandler = (AliAODHandler*) 
+	((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
 
-    if (aodHandler->GetExtensions()) {
-      AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
-      AliAODEvent *aodFromExt = ext->GetAOD();
-      arrayLctopKos=(TClonesArray*)aodFromExt->GetList()->FindObject("CascadesHF");
+      if (aodHandler->GetExtensions()) {
+	AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
+	AliAODEvent *aodFromExt = ext->GetAOD();
+	arrayLctopKos=(TClonesArray*)aodFromExt->GetList()->FindObject("CascadesHF");
+      }
     }
   } else {
     arrayLctopKos=(TClonesArray*)aodEvent->GetList()->FindObject("CascadesHF");
@@ -1020,12 +1022,13 @@ void AliAnalysisTaskSELc2V0bachelor::CheckEventSelection(AliAODEvent *aodEvent) 
       if (fUseMCInfo) {
 	// MC array need for maching
 	mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-	if (fAdditionalChecks) ((TH1F*)(fOutput->FindObject("hZ4")))->Fill(zVertex);
 
 	if (mcArray) {
 	  // load MC header
+	  if (fAdditionalChecks) ((TH1F*)(fOutput->FindObject("hZ4")))->Fill(zVertex);
 	  mcHeader = (AliAODMCHeader*)aodEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-	  if (fAdditionalChecks) ((TH1F*)(fOutput->FindObject("hZ5")))->Fill(zVertex);
+
+	  if (mcHeader && fAdditionalChecks) ((TH1F*)(fOutput->FindObject("hZ5")))->Fill(zVertex);
 
 	  // check on MC Lc Daughter
 	  if (fAdditionalChecks) {
@@ -1738,8 +1741,12 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
     Int_t pdgDgV0toDaughters0[2]={211,211};
     Int_t mcLabel0 = part->MatchToMC(pdgCand0,pdgDgLctoV0bachelor0[1],pdgDgLctoV0bachelor0,pdgDgV0toDaughters0,mcArray,kTRUE);
     AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel0));
-    AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
-    xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
+    if(partLc){
+      AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
+      if(partLcDaug0){
+	xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
+      }
+    }
   } else if (isLc2LBarpi || isLc2Lpi) {
     AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel));
     AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
