@@ -592,7 +592,7 @@ protected:
     Int_t err;
     Long_t ret = gROOT->Macro(cmd.Data(), &err, false);
     if (!ret) { 
-      Error("AddTask", "Failed to execute %s", cmd.Data());
+      Error("AddTask", "Failed to execute %s (%ld)", cmd.Data(), ret);
       return 0;
     }
     return reinterpret_cast<AliAnalysisTask*>(ret);
