@@ -18,7 +18,7 @@
 #include <AliAnaConvCorrBase.h>
 #include <AliLog.h>
 #include <AliAnalysisCuts.h>
-class AliAnaConvIsolation;
+class AliAnaConvCorrPion;
 class AliConversionCuts;
 class AliConversionMesonCuts;
 class AliV0ReaderV1;
@@ -66,33 +66,23 @@ private:
   Int_t GetBin(TAxis &axis, Double_t value);
   THnSparseF * GetMEHistogram(Int_t binz, Int_t binc, TObjArray * array);
   AliAnaConvCorrBase * GetCorrObject(Int_t binz, Int_t binc, TObjArray * array);
-  void Process(TObjArray * gammas, TObjArray * tracks, Int_t vertexBin, Int_t centBin);
+  void Process(TObjArray * gammas, TObjArray * tracks, Float_t cent, Float_t vtxz);
   void FindDeltaAODBranchName(AliVEvent * event);
   
   TList * fHistograms; //histograms
-  TList * fHistoGamma; //gamma histo
-  TList * fHistoPion; //pion histo
-
 
   AliV0ReaderV1 * fV0Reader; // V0 reader
-  Bool_t fSaveReaderHists;
+  Bool_t fSaveReaderHists; // save histograms from v0 reader
   AliConversionCuts * fV0Filter; //additional v0 filter on top of v0 reader
   AliConversionCuts * fPhotonFilter; //additional v0 filter for photons only
   AliConversionMesonCuts * fMesonFilter; //additional meson filter behind fv0filter
   AliAnalysisCuts * fTrackCuts; //Cuts for corr tracks
 
-  TObjArray * fGammas; //gammas
-  TObjArray * fPions; //poins
-
-  TObjArray * hMETracks; //mixed event tracks
-  TObjArray * hMEPhotons; //photons
-  TObjArray * hMEPions; //pions
   TH2I * hMEvents; //event histrogam
   TH2I * hTrackCent; //event histrogam
 
-  TObjArray * fPhotonCorr; //photon
-  TObjArray * fPionCorr; //poin
-
+  AliAnaConvCorrBase * fPhotonCorr; //photon
+  AliAnaConvCorrPion * fPionCorr; //poin
 
   TString fDeltaAODBranchName; //comment
 
@@ -103,11 +93,13 @@ private:
   TAxis fAxisCent; //comment
   TAxis fAxisZ; //comment
   TAxis fAxisPiM; //comment
+
+  Bool_t fDoPhoton; // do photon analysis?
   
   AliAnalysisTaskdPhi(const AliAnalysisTaskdPhi&); // not implemented
   AliAnalysisTaskdPhi& operator=(const AliAnalysisTaskdPhi&); // not implemented
   
-  ClassDef(AliAnalysisTaskdPhi, 4); 
+  ClassDef(AliAnalysisTaskdPhi, 5); 
 };
 
 inline THnSparseF * AliAnalysisTaskdPhi::GetMEHistogram(Int_t binz, Int_t binc, TObjArray * array) {
