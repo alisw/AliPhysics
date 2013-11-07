@@ -1627,7 +1627,7 @@ goSubmitBatch()
     mkdir -p $targetDirectory
     mkdir -p $targetDirectory/logs
     [[ ! -f $targetDirectory/${self##*/} ]] && cp -f $self $targetDirectory
-    submit "$JOBID6" 1 1 "$LASTJOB" "$self" "MakeSummary $configFile $targetDirectory $commonOutputPath"
+    submit "$JOBID6" 1 1 "$LASTJOB" "$self" "makeSummary $configFile $targetDirectory $commonOutputPath"
   fi
   ################################################################################
   
