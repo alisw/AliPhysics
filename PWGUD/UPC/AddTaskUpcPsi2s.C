@@ -1,4 +1,4 @@
-AliAnalysisTaskUpcPsi2s *AddTaskUpcPsi2s(){
+AliAnalysisTaskUpcPsi2s *AddTaskUpcPsi2s(Bool_t runTree = kTRUE,Bool_t runHist = kTRUE){
 
   
   //--- get the current analysis manager ---//
@@ -19,6 +19,8 @@ AliAnalysisTaskUpcPsi2s *AddTaskUpcPsi2s(){
   
   // Create tasks
   AliAnalysisTaskUpcPsi2s *task = new AliAnalysisTaskUpcPsi2s(inputDataType.Data());
+  task->SetRunTree(runTree);
+  task->SetRunHist(runHist);
   mgr->AddTask(task);
 
 
@@ -27,13 +29,14 @@ AliAnalysisTaskUpcPsi2s *AddTaskUpcPsi2s(){
   AliAnalysisDataContainer *coutput = mgr->CreateContainer("JPsiTree", TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:UpcTree", AliAnalysisManager::GetCommonFileName()));
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("Psi2sTree", TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:UpcTree", AliAnalysisManager::GetCommonFileName()));
   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("Counter", TH1I::Class(), AliAnalysisManager::kOutputContainer, Form("%s:UpcTree", AliAnalysisManager::GetCommonFileName()));
-    
+  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("ListQA", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:UpcTree", AliAnalysisManager::GetCommonFileName()));  
 
   // Connect input/output
   mgr->ConnectInput(task, 0, cinput);
   mgr->ConnectOutput(task, 1, coutput);
   mgr->ConnectOutput(task, 2, coutput2);
   mgr->ConnectOutput(task, 3, coutput3);
+  mgr->ConnectOutput(task, 4, coutput4);
 
 return task;
 }
