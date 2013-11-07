@@ -71,11 +71,11 @@ AliAnalysisTask* AddTaskQAHighPtDeDx(Bool_t AnalysisMC = kFALSE,
   // task.  Get and connect other common input/output containers via
   // the manager as below
   //=======================================================================
-  
+  TString outputFileName = AliAnalysisManager::GetCommonFileName();
+    
   AliAnalysisDataContainer *cout_histdedx;
-  
   cout_histdedx=0;
-  cout_histdedx = mgr->CreateContainer("outputdedx", TList::Class(), AliAnalysisManager::kOutputContainer, "QAHighPtDeDx.root");
+  cout_histdedx = mgr->CreateContainer("outputdedx", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
   mgr->ConnectInput (taskHighPtDeDx, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskHighPtDeDx, 1, cout_histdedx);
   
