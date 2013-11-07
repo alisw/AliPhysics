@@ -135,7 +135,7 @@ TList * AliConversionTrackCuts::CreateHistograms() {
   fHistograms->SetName("trackCuts");
 
   fhPhi = new TH2F("phi", "phi", kNCuts+2, kPreCut -0.5, kNCuts + 0.5, 
-				   128, 0, TMath::TwoPi());
+				   32, 0, TMath::TwoPi());
   TAxis * xax = fhPhi->GetXaxis();
   for(Int_t i = 0; i < kNCuts; i++){
 	xax->SetBinLabel(xax->FindFixBin(i), fgkCutNames[i]);
@@ -145,7 +145,7 @@ TList * AliConversionTrackCuts::CreateHistograms() {
 
 
   fhPt = new TH2F("pt", "pt", kNCuts+2, kPreCut -0.5, kNCuts + 0.5, 
-				  100, 0., 100.);
+				  20, 0., 20.);
   xax = fhPt->GetXaxis();
   for(Int_t i = 0; i < kNCuts; i++){
 	xax->SetBinLabel(xax->FindFixBin(i), fgkCutNames[i]);
@@ -164,10 +164,10 @@ TList * AliConversionTrackCuts::CreateHistograms() {
   fhdca = new TH2F("dca", "dca", 60, -3, 3, 60, -3, 3);
   fHistograms->Add(fhdca);
 
-  fhnclpt = new TH2F("nclstpcvspt", "nclstpcvspt", 20, 0, 20, 100, 0, 200);
+  fhnclpt = new TH2F("nclstpcvspt", "nclstpcvspt", 20, 0, 20, 50, 0, 100);
   fHistograms->Add(fhnclpt);
 
-  fhnclsfpt = new TH2F("nclsfpt", "nclsfpt", 20, 0, 20, 100, 0, 1.2);
+  fhnclsfpt = new TH2F("nclsfpt", "nclsfpt", 20, 0, 20, 60, 0, 1.2);
   fHistograms->Add(fhnclsfpt);
   
   return fHistograms;

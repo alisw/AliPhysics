@@ -15,12 +15,8 @@
 #include "TH1.h"
 #include <THnSparse.h>
 
-class TH1F;
-class TH3F;
-class TH2F;
 class AliAODConversionParticle;
 class TClonesArray;
-class TNtuple;
 class TString;
 
 class AliAnaConvCorrBase : public TNamed {
@@ -33,15 +29,6 @@ public:
   AliAnaConvCorrBase(TString name, TString title); 
   virtual ~AliAnaConvCorrBase();
   
-  //Set and get min pt for triggers
-  // void SetTriggerPt(Float_t pt) { fTriggerPt = pt; }
-  // inline Float_t GetTriggerPt() const {return fTriggerPt; }
-
-
-  // //Set and get min pt for correlation particles
-  // void SetCorrelatedPt(Float_t pt) { fCorrelatedPt = pt; }
-  // inline Float_t GetCorrelatedPt() const {return fCorrelatedPt; }
-
   //CreateHistograms
   void CreateBaseHistograms();
   //To be overrriden by children. Should always call CreateBaseHistograms()
@@ -61,17 +48,16 @@ public:
     else return ( (dPhi>0)? dPhi - TMath::TwoPi() : dPhi + TMath::TwoPi() ); 
   }
 
-  void PrintStatistics();
-
-  void CorrelateWithTracks(AliAODConversionParticle * particle, TObjArray * tracks, const Int_t tIDs[4], Int_t isolated);
-  void FillCounters(TObjArray * particles, TObjArray * tracks);
+  void CorrelateWithTracks(AliAODConversionParticle * particle, TObjArray * tracks, const Int_t tIDs[4], Float_t cent, Float_t vtxz);
+  void FillCounters(TObjArray * particles, TObjArray * tracks, Float_t cent, Float_t vtxz);
 
   TAxis& GetAxistPt()       { return fAxistPt;   }
   TAxis& GetAxiscPt()       { return fAxiscPt;   }
   TAxis& GetAxisdEta()      { return fAxisdEta;  }
   TAxis& GetAxisdPhi()      { return fAxisdPhi;  }
   TAxis& GetAxisIso()       { return fAxisIso;   }
-
+  TAxis& GetAxisCent()      { return fAxisCent;  }
+  TAxis& GetAxisZ()         { return fAxisZ;     }
   TAxis& GetAxisMEEta()     { return fAxisMEEta; }
   TAxis& GetAxisMEPhi()     { return fAxisMEPhi; }
 
@@ -99,6 +85,8 @@ private:
   TAxis fAxisdEta; //delta eta axis
   TAxis fAxisdPhi; //delta phi axis
   TAxis fAxisIso; //Isolated particle axis
+  TAxis fAxisCent; //Centrality
+  TAxis fAxisZ; //vtx
   
   TAxis fAxisMEEta ; //Eta axis for ME
   TAxis fAxisMEPhi ; //Phi axis for ME
@@ -112,7 +100,7 @@ private:
   AliAnaConvCorrBase(const AliAnaConvCorrBase&); // not implemented
   AliAnaConvCorrBase& operator=(const AliAnaConvCorrBase&); // not implemented
 
-  ClassDef(AliAnaConvCorrBase, 5); // example of analysis
+  ClassDef(AliAnaConvCorrBase, 6); // example of analysis
 
 };
 
