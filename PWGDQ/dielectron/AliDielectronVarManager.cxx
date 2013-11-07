@@ -194,6 +194,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"MomAsymDau2",            "#it{p}^{leg2}/#it{p}^{pair}",                        ""},
   {"EffPair",                "A#times#epsilon",                                    ""},
   {"OneOverEffPair",         "(A#times#epsilon)^{-1}",                             ""},
+  {"RndmPair",               "P",                                                  ""},
   //
   {"X",                      "x_{prim.vtx}",                                       "(cm)"},
   {"Y",                      "y_{prim.vtx}",                                       "(cm)"},
@@ -420,6 +421,7 @@ AliDielectronVarManager::AliDielectronVarManager() :
   for(Int_t i=0; i<2; ++i) {
     for(Int_t j=0; j<2; ++j) fgVZERORecentering[i][j] = 0x0;
   }
+  gRandom->SetSeed();
 }
 
 //________________________________________________________________
@@ -439,6 +441,7 @@ AliDielectronVarManager::AliDielectronVarManager(const char* name, const char* t
   for(Int_t i=0; i<2; ++i)
     for(Int_t j=0; j<2; ++j) 
       fgVZERORecentering[i][j] = 0x0;
+  gRandom->SetSeed();
 }
 
 //________________________________________________________________

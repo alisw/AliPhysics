@@ -1106,11 +1106,12 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
     for (Int_t itrack2=0; itrack2<end; ++itrack2){
       //create the pair
       candidate->SetTracks(static_cast<AliVTrack*>(arrTracks1.UncheckedAt(itrack1)), fPdgLeg1,
-                             static_cast<AliVTrack*>(arrTracks2.UncheckedAt(itrack2)), fPdgLeg2);
+			   static_cast<AliVTrack*>(arrTracks2.UncheckedAt(itrack2)), fPdgLeg2);
       candidate->SetType(pairIndex);
       Int_t label=AliDielectronMC::Instance()->GetLabelMotherWithPdg(candidate,fPdgMother);
       candidate->SetLabel(label);
       if (label>-1) candidate->SetPdgCode(fPdgMother);
+      else candidate->SetPdgCode(0);
 
       // check for gamma kf particle
       label=AliDielectronMC::Instance()->GetLabelMotherWithPdg(candidate,22);

@@ -29,6 +29,7 @@
 #include <TDatabasePDG.h>
 #include <TKey.h>
 #include <TBits.h>
+#include <TRandom3.h>
 
 #include <AliVEvent.h>
 #include <AliESDEvent.h>
@@ -251,6 +252,7 @@ public:
     kMomAsymDau2,            // momentum fraction of daughter2
     kPairEff,                // pair efficiency
     kOneOverPairEff,         // 1 / pair efficiency (correction factor)
+    kRndmPair,               // radomly created number (used to apply special signal reduction cuts)
     kPairMax,                 //
   // Event specific variables
     kXvPrim=kPairMax,        // prim vertex
@@ -1504,6 +1506,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
     values[AliDielectronVarManager::kOneOverPairEff] = (values[AliDielectronVarManager::kPairEff]>0.0 ? 1./values[AliDielectronVarManager::kPairEff] : 0.0);
 
   }
+  values[AliDielectronVarManager::kRndmPair] = gRandom->Rndm();
 }
 
 inline void AliDielectronVarManager::FillVarKFParticle(const AliKFParticle *particle, Double_t * const values)
