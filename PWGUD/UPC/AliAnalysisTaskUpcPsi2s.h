@@ -8,6 +8,8 @@
 class TClonesArray;
 class TTree;
 class TH1;
+class TH2;
+class TList;
 
 #define ntrg 17
 #include "AliAnalysisTaskSE.h"
@@ -21,13 +23,18 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   virtual void Init();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
-  virtual void RunAOD();
+  virtual void RunAODhist();
+  virtual void RunAODtree();
   virtual void RunESD();
   virtual void Terminate(Option_t *);
+  void SetRunTree(Bool_t runTree){fRunTree = runTree;}
+  void SetRunHist(Bool_t runHist){fRunHist = runHist;}
 
  private:
  
   Int_t fType; // 0 - ESD, 1 - AOD
+  Bool_t fRunTree; 
+  Bool_t fRunHist;
   
   //counter
   TH1I *hCounter; //!
@@ -55,6 +62,19 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   TClonesArray *fJPsiESDTracks; 
   TClonesArray *fPsi2sAODTracks;
   TClonesArray *fPsi2sESDTracks;
+  
+  TList *fListQA;
+  TH1D *fHistNeventsJPsi; 
+  TH2D *fHistTPCsignalJPsi;
+  TH2D *fHistDiLeptonPtJPsi;
+  TH1D *fHistDiElectronMass;
+  TH1D *fHistDiMuonMass;
+  
+  TH1D *fHistNeventsPsi2s;
+  TH2D *fHistPsi2sMassVsPt;
+  TH1D *fHistPsi2sMassCoherent;
+  
+  TH1D *fHistK0sMass;
   
   AliAnalysisTaskUpcPsi2s(const AliAnalysisTaskUpcPsi2s&); //not implemented
   AliAnalysisTaskUpcPsi2s& operator =(const AliAnalysisTaskUpcPsi2s&); //not implemented
