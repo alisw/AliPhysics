@@ -38,6 +38,7 @@ ULong_t AliForwardUtil::AliROOTRevision()
 //____________________________________________________________________
 ULong_t AliForwardUtil::AliROOTBranch()
 {
+  // Do something here when we switch to git - sigh!
 #ifdef ALIROOT_SVN_BRANCH
   static ULong_t ret = 0;
   if (ret != 0) return ret;
@@ -667,9 +668,9 @@ namespace {
     Double_t xiP         = pp[AliForwardUtil::ELossFitter::kXi];
     Double_t sigmaP      = pp[AliForwardUtil::ELossFitter::kSigma];
     Double_t cS          = pp[AliForwardUtil::ELossFitter::kSigma+1];
-    Double_t deltaS      = pp[AliForwardUtil::ELossFitter::kSigma+2];
-    Double_t xiS         = pp[AliForwardUtil::ELossFitter::kSigma+3];
-    Double_t sigmaS      = pp[AliForwardUtil::ELossFitter::kSigma+4];
+    Double_t deltaS      = deltaP; // pp[AliForwardUtil::ELossFitter::kSigma+2];
+    Double_t xiS         = pp[AliForwardUtil::ELossFitter::kSigma+2/*3*/];
+    Double_t sigmaS      = sigmaP; // pp[AliForwardUtil::ELossFitter::kSigma+4];
 
     return (cP * AliForwardUtil::LandauGaus(x,deltaP,xiP,sigmaP,0) + 
 	    cS * AliForwardUtil::LandauGaus(x,deltaS,xiS,sigmaS,0));
@@ -1188,6 +1189,12 @@ AliForwardUtil::ELossFitter::Fit1Particle(TH1* dist, Double_t sigman)
   if (fDebug) 
     ::Info("Fit1Particle", "Fitting in the range %f,%f", minE, maxE);
   TFitResultPtr r = dist->Fit(landau1, FIT_OPTIONS, "", minE, maxE);
+  if (!r.Get()) { 
+    ::Warning("Fit1Particle", 
+	      "No fit returned when processing %s in the range [%f,%f] "
+	      "options %s", dist->GetName(), minE, maxE, FIT_OPTIONS);
+    return 0;
+  }
   // landau1->SetRange(minE, fMaxRange);
   fFitResults.AddAtAndExpand(new TFitResult(*r), 0);
   fFunctions.AddAtAndExpand(landau1, 0);
@@ -1361,6 +1368,24 @@ AliForwardUtil::ELossFitter::FitComposite(TH1* dist, Double_t sigman)
   /* TFitResultPtr r = */ dist->Fit(seed, FIT_OPTIONS, "", minE, maxE);
 
   maxE = dist->GetXaxis()->GetXmax();
+#if 1
+  TF1* comp = new TF1("composite", landauGausComposite, 
+		      minE, maxE, kSigma+1+2);
+  comp->SetParNames("C",       "#Delta_{p}",       "#xi",       "#sigma",
+		    "C#prime", "#xi#prime");
+  comp->SetParameters(0.8 * seed->GetParameter(kC),  // 0 Primary weight 
+		      seed->GetParameter(kDelta),    // 1 Primary Delta
+		      seed->GetParameter(kDelta)/10, // 2 primary Xi
+		      seed->GetParameter(kDelta)/5,  // 3 primary sigma
+		      1.20 * seed->GetParameter(kC), // 5 Secondary weight
+		      seed->GetParameter(kXi));      // 7 secondary Xi
+  // comp->SetParLimits(kC,       minE, fMaxRange); // C
+  comp->SetParLimits(kDelta,      minE, fMaxRange); // Delta
+  comp->SetParLimits(kXi,         0.00, fMaxRange); // Xi 
+  comp->SetParLimits(kSigma,      1e-5, fMaxRange); // Sigma
+  // comp->SetParLimits(kSigma+1, minE, fMaxRange); // C
+  comp->SetParLimits(kSigma+2,    0.00, fMaxRange); // Xi'
+#else
   TF1* comp = new TF1("composite", landauGausComposite, 
 		      minE, maxE, kSigma+1+4);
   comp->SetParNames("C",       "#Delta_{p}",       "#xi",       "#sigma",
@@ -1373,7 +1398,6 @@ AliForwardUtil::ELossFitter::FitComposite(TH1* dist, Double_t sigman)
 		      seed->GetParameter(kDelta),    // 6 secondary Delta
 		      seed->GetParameter(kXi),       // 7 secondary Xi
 		      seed->GetParameter(kSigma));   // 8 secondary sigma
-		      
   // comp->SetParLimits(kC,       minE, fMaxRange); // C
   comp->SetParLimits(kDelta,      minE, fMaxRange); // Delta
   comp->SetParLimits(kXi,         0.00, fMaxRange); // Xi 
@@ -1382,6 +1406,7 @@ AliForwardUtil::ELossFitter::FitComposite(TH1* dist, Double_t sigman)
   comp->SetParLimits(kSigma+2,    minE/10, fMaxRange); // Delta
   comp->SetParLimits(kSigma+3,    0.00,    fMaxRange); // Xi 
   comp->SetParLimits(kSigma+4,    1e-6,    fMaxRange); // Sigma
+#endif		      
   comp->SetLineColor(kRed+1);
   comp->SetLineWidth(3);
   
@@ -1517,11 +1542,11 @@ AliForwardUtil::Histos::ReInit(const TAxis& etaAxis)
   // Parameters:
   //    etaAxis Eta axis to use 
   //
-  RebinEta(fFMD1i, etaAxis);
-  RebinEta(fFMD2i, etaAxis);
-  RebinEta(fFMD2o, etaAxis);
-  RebinEta(fFMD3i, etaAxis);
-  RebinEta(fFMD3o, etaAxis);
+  if (!fFMD1i) fFMD1i = Make(1, 'i', etaAxis); else RebinEta(fFMD1i, etaAxis);
+  if (!fFMD2i) fFMD2i = Make(2, 'i', etaAxis); else RebinEta(fFMD2i, etaAxis);
+  if (!fFMD2o) fFMD2o = Make(2, 'o', etaAxis); else RebinEta(fFMD2o, etaAxis);
+  if (!fFMD3i) fFMD3i = Make(3, 'i', etaAxis); else RebinEta(fFMD3i, etaAxis);
+  if (!fFMD3o) fFMD3o = Make(3, 'o', etaAxis); else RebinEta(fFMD3o, etaAxis);
 }
 
 //____________________________________________________________________
