@@ -48,9 +48,9 @@ void AddTaskFlowHigherOrdersAllPID(Int_t triggerSelectionString,
   Bool_t  UsePhysicsSelection = kTRUE;
 
   // QA
-  Bool_t runQAtask=kFALSE;
-  Bool_t FillQAntuple=kFALSE;
-  Bool_t DoQAcorrelations=kFALSE;
+//  Bool_t runQAtask=kFALSE;
+//  Bool_t FillQAntuple=kFALSE;
+//  Bool_t DoQAcorrelations=kFALSE;
 
   // RUN SETTINGS
   // Flow analysis method can be:(set to kTRUE or kFALSE)
@@ -180,6 +180,17 @@ cutsRP->SetQA(doQA);
     if (charge>0) outputSlotName[harmonic-3]+="+";
   }
 
+//  TString QASlotName[] = {"","",""};
+
+//  for(int harmonic=3;harmonic<6;harmonic++){  //for v3,v4 and v5
+//    QASlotName[harmonic-3]+="qa";
+//    QASlotName[harmonic-3]+=Form("%i",harmonic);
+//    QASlotName[harmonic-3]+="_";
+//    QASlotName[harmonic-3]+=Form("_%.0f-",centrMin);
+//    QASlotName[harmonic-3]+=Form("%.0f_",centrMax);
+//    }
+
+
   TString fileName(fileNameBase);
   fileName.Append(".root");
 
@@ -264,6 +275,7 @@ cutsRP->SetQA(doQA);
   //===========================================================================
   AliAnalysisTaskScalarProduct *taskSP[3];
   AliAnalysisTaskQCumulants *taskQC[3];
+  AliAnalysisTaskPIDqa *taskQA[3];
   for(int i=0;i<3;i++){
   if (SP){
     taskSP[i] = new AliAnalysisTaskScalarProduct(Form("TaskScalarProduct_%s",outputSlotName[i].Data()),WEIGHTS[0]);
@@ -288,6 +300,10 @@ cutsRP->SetQA(doQA);
     taskQC[i]->SetFillMultipleControlHistograms(kFALSE);     
     mgr->AddTask(taskQC[i]);
   }
+
+//  taskQA[i] = new AliAnalysisTaskPIDqa(Form("TaskQA_%s",QASlotName[i].Data()));
+//  mgr->AddTask(taskQA[i]);
+
 }
   // Create the output container for the data produced by the task
   // Connect to the input and output containers
@@ -315,6 +331,7 @@ cutsRP->SetQA(doQA);
   AliAnalysisDataContainer *cinputWeights[3];
   AliAnalysisDataContainer *coutputSP[3]; 
   AliAnalysisDataContainer *coutputQC[3]; 
+  AliAnalysisDataContainer *coutputQA[3];
   for(int i=0;i<3;i++) {
     if (useWeights) {    
       cinputWeights[i] = mgr->CreateContainer(Form("Weights_%s",outputSlotName[i].Data()),TList::Class(),AliAnalysisManager::kInputContainer); 
@@ -348,40 +365,41 @@ cutsRP->SetQA(doQA);
 	cinputWeights[i]->SetData(weightsList);
       }
     }
+    TString outputQA = "";
+    outputQA +="outputQA";
+    coutputQA[i] = mgr->CreateContainer(Form("QA",QASlotName[i].Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputQA);
+    mgr->ConnectInput(taskQA[i],0,coutputFE[i]);
+    mgr->ConnectOutput(taskQA[i],1,coutputQA[i]);
+
   }
   
-  /////////////////////////////////////////////////////////////////////
-  AliAnalysisTaskQAflow* taskQAflow[3];
-  AliAnalysisDataContainer* coutputQAtask[3]; 
-  AliAnalysisDataContainer* coutputQAtaskTree[3];
-  TString taskQAoutputFileName[3]={"","",""};
+//=============================================================================
+  AliAnalysisTaskPIDqa* taskPIDQA[3];
+  AliAnalysisDataContainer* coutputPIDQAtask[3]; 
+
+  TString taskPIDQAoutputFileName[3]={"","",""};
   for(int i=0;i<3;i++) {
-    if (runQAtask) {
-      taskQAflow[i] = new AliAnalysisTaskQAflow(Form("TaskQAflow_%s",outputSlotName[i].Data()));
-      taskQAflow[i]->SelectCollisionCandidates(triggerSelectionString);
-      taskQAflow[i]->SetEventCuts(cutsEvent);
-      taskQAflow[i]->SetTrackCuts(cutsRP);
-      taskQAflow[i]->SetFillNTuple(FillQAntuple);
-      taskQAflow[i]->SetDoCorrelations(DoQAcorrelations);
-      mgr->AddTask(taskQAflow[i]);
+    if (doQA) {
+     
+      taskPIDQA[i] = new AliAnalysisTaskPIDqa(Form("TaskPIDQA_%s",outputSlotName[i].Data()));
+      taskPIDQA[i]->SelectCollisionCandidates(triggerSelectionString);
+     
+      mgr->AddTask(taskPIDQA[i]);
       
       Printf("outputSlotName_%s",outputSlotName[i].Data());
-      taskQAoutputFileName[i](fileNameBase);
-      taskQAoutputFileName[i].Append("_QA.root");
-      coutputQAtask[i] = mgr->CreateContainer(Form("flowQA_%s",outputSlotName[i].Data()),
-					      TObjArray::Class(),
-					      AliAnalysisManager::kOutputContainer,
-					      taskQAoutputFileName[i]);
-      coutputQAtaskTree[i] = mgr->CreateContainer(Form("flowQAntuple_%s",outputSlotName[i].Data()),
-						  TNtuple::Class(),
-						  AliAnalysisManager::kOutputContainer,
-						  taskQAoutputFileName[i]);
-      mgr->ConnectInput(taskQAflow[i],0,mgr->GetCommonInputContainer());
-      mgr->ConnectInput(taskQAflow[i],1,coutputFE[i]);
-      mgr->ConnectOutput(taskQAflow[i],1,coutputQAtask[i]);
-      if (FillQAntuple) mgr->ConnectOutput(taskQAflow[i],2,coutputQAtaskTree[i]);
-    }
+      taskPIDQAoutputFileName[i](fileNameBase);
+      taskPIDQAoutputFileName[i].Append("_PIDQA.root");
+      coutputPIDQAtask[i] = mgr->CreateContainer(Form("PIDQA_%s",outputSlotName[i].Data()),
+                TObjArray::Class(),
+                AliAnalysisManager::kOutputContainer,
+                taskPIDQAoutputFileName[i]);
+      mgr->ConnectInput(taskPIDQA[i],0,mgr->GetCommonInputContainer());
+      mgr->ConnectInput(taskPIDQA[i],1,coutputFE[i]);
+      mgr->ConnectOutput(taskPIDQA[i],1,coutputPIDQAtask[i]);
+      }
   }
+
+
 }
 
 
