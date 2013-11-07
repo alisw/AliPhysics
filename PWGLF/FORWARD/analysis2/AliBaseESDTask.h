@@ -105,6 +105,10 @@ public:
    */
   virtual Bool_t Connect(const char* sumFile=0, const char* resFile=0);
   /** 
+   * Called when initializing the train 
+   */
+  virtual Bool_t Setup() { return true; }
+  /** 
    * Book output objects. Derived class should define this to book
    * output objects on the processing output list @c fList before the
    * actual event processing.  This is called on the master and on
@@ -270,23 +274,23 @@ protected:
   /** 
    * Initialize the task 
    */
-  virtual void Init() { fFirstEvent = true; }
+  void LocalInit();
   /** 
    * Create output objects 
    */
-  virtual void UserCreateOutputObjects();
+  void UserCreateOutputObjects();
   /** 
    * Process each event 
    *
    * @param option Not used
    */  
-  virtual void UserExec(Option_t* option);
+  void UserExec(Option_t* option);
   /** 
    * End of job
    * 
    * @param option Not used 
    */
-  virtual void Terminate(Option_t* option);
+  void Terminate(Option_t* option);
   /** 
    * @} 
    */

@@ -67,18 +67,30 @@ AliBaseESDTask::Connect(const char* sumFile,
   if      (sumFile && sumFile[0] != '\0') sumOut = sumFile;
   if      (resFile && resFile[0] != '\0') resOut = resFile;
   else if (sumFile && sumFile[0] != '\0') resOut = sumFile;
-  if (sumOut.IsNull()) sumOut = AliAnalysisManager::GetCommonFileName();
-  if (resOut.IsNull()) resOut = AliAnalysisManager::GetCommonFileName();
+  // If the string is null or 'default' connect to standard output file 
+  if (sumOut.IsNull() || sumOut.EqualTo("default", TString::kIgnoreCase)) 
+    sumOut = AliAnalysisManager::GetCommonFileName();
+  // If the string is null or 'default' connect to standard output file 
+  if (resOut.IsNull() || resOut.EqualTo("default", TString::kIgnoreCase)) 
+    resOut = AliAnalysisManager::GetCommonFileName();
 
-  AliAnalysisDataContainer* sumCon = 
-    mgr->CreateContainer(Form("%sSums", GetName()), TList::Class(), 
-			 AliAnalysisManager::kOutputContainer, sumOut);
-  AliAnalysisDataContainer* resCon = 
-    mgr->CreateContainer(Form("%sResults", GetName()), TList::Class(), 
-			 AliAnalysisManager::kParamContainer, resOut);
+  // Always connect input 
   mgr->ConnectInput(this, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(this, 1, sumCon);
-  mgr->ConnectOutput(this, 2, resCon);
+
+  // Connect sum list unless the output 'none' is specified
+  if (!sumOut.EqualTo("none", TString::kIgnoreCase)) {
+    AliAnalysisDataContainer* sumCon = 
+      mgr->CreateContainer(Form("%sSums", GetName()), TList::Class(), 
+			   AliAnalysisManager::kOutputContainer, sumOut);
+    mgr->ConnectOutput(this, 1, sumCon);
+  }
+  // Connect the result list unless the output 'none' is specified
+  if (!resOut.EqualTo("none", TString::kIgnoreCase)) {
+    AliAnalysisDataContainer* resCon = 
+      mgr->CreateContainer(Form("%sResults", GetName()), TList::Class(), 
+			   AliAnalysisManager::kParamContainer, resOut);
+    mgr->ConnectOutput(this, 2, resCon);
+  }
   
   return true;
 }
@@ -122,6 +134,15 @@ AliBaseESDTask::Configure(const char* macro)
  
  return true;
 }
+
+//____________________________________________________________________
+void 
+AliBaseESDTask::LocalInit() 
+{ 
+  fFirstEvent = true; 
+  Setup(); 
+}
+
 //____________________________________________________________________
 void
 AliBaseESDTask::UserCreateOutputObjects()
@@ -144,7 +165,8 @@ AliBaseESDTask::UserCreateOutputObjects()
   GetEventInspector().CreateOutputObjects(fList);
 
   if (!Book()) AliFatalF("Failed to book output objects for %s", GetName());
-  
+
+  // gSystem->Exec("root-config --version --prefix");
   PostData(1, fList);
 }
 

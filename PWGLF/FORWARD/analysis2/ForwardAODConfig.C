@@ -184,7 +184,14 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   //   kDistance Only bins that are more than half the size of it neighbors
   task->GetHistCollector().SetFiducialMethod(AliFMDHistCollector::kByCut);
   // Additional diagnostics output - off by default
+  // 
+  // If this option is enabled, then the summed per-vertex, per-ring
+  // d2N/detadphi histograms will be stored in the output, as well as
+  // copies of the secondary maps
   // task->GetHistCollector().SetMakeBGHitMaps(true);
+  //
+  // If this option is enabled, then a 3D histogram will be made for
+  // each ring, summing dN/deta for each centrality bin.
   // task->GetHistCollector().SetMakeCentralitySums(true);
 
   // --- Eventplane Finder -------------------------------------------

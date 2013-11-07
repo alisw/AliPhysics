@@ -19,25 +19,22 @@
 /**
  * This is the macro to include the FMD energy fitter in a train.  
  * 
- * @param mc        Assume MC input 
- * @param useCent   Use centrality information 
- * @param onlyMB    Only collect statistics for MB (INEL) events
+ * @param useTuple  If true, create NTuple of hits
  * @param debug     Debug level
- * @param residuals If set, also do residuals 
  *
  * @return Newly created task 
  *
  * @ingroup pwglf_forward_eloss
  */
 AliAnalysisTask*
-AddTaskFMDELoss(Bool_t        mc, 
-		Bool_t        useCent,
-		Bool_t        onlyMB=false, 
-		Int_t         debug=0,
-		const Char_t* residuals="")
+AddTaskFMDMCHit(Bool_t useTuple=false, 
+		Int_t  debug=0)
 {
   // --- Load libraries ----------------------------------------------
-  gROOT->LoadClass("AliAODForwardMult", "libPWGLFforward2");
+  gROOT->LoadClass("AliFMDDigit",             "FMDbase");
+  gROOT->LoadClass("AliFMDHit",               "FMDsim");
+  gROOT->LoadClass("AliAODForwardMult",       "PWGLFforward2");
+  gROOT->LoadClass("AliFMDMCHitEnergyFitter", "PWGLFforwardhit");
 
   // --- Get analysis manager ----------------------------------------
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -45,9 +42,11 @@ AddTaskFMDELoss(Bool_t        mc,
     Error("AddTaskFMDELoss", "No analysis manager to connect to.");
     return NULL;
   }   
-  
+
   // --- Make the task and add it to the manager ---------------------
-  AliFMDEnergyFitterTask* task = new AliFMDEnergyFitterTask("ForwardELoss");
+  AliFMDMCHitEnergyFitterTask* task = 
+    new AliFMDMCHitEnergyFitterTask("ForwardHitELoss", 
+				    useTuple);
   // --- Set parameters on the algorithms ----------------------------
   // Set the number of SPD tracklets for which we consider the event a
   // low flux event
@@ -57,7 +56,7 @@ AddTaskFMDELoss(Bool_t        mc,
   // Set the eta axis to use - note, this overrides whatever is used
   // by the rest of the algorithms - but only for the energy fitter
   // algorithm. 
-  task->GetEnergyFitter().SetEtaAxis(200, -4, 6);
+  task->GetEnergyFitter().SetEtaAxis(100, -4, 6);
   // Set maximum energy loss to consider 
   task->GetEnergyFitter().SetMaxE(15); 
   // Set number of energy loss bins 
@@ -67,35 +66,22 @@ AddTaskFMDELoss(Bool_t        mc,
   // Set whether to do fit the energy distributions 
   task->GetEnergyFitter().SetDoFits(kTRUE);
   // Set whether to make the correction object 
-  task->GetEnergyFitter().SetDoMakeObject(kTRUE);
+  // task->GetEnergyFitter().SetDoMakeObject(kTRUE);
   // Set the low cut used for energy
-  task->GetEnergyFitter().SetLowCut(0.4);
+  task->GetEnergyFitter().SetLowCut(0.05);
   // Set the number of bins to subtract from maximum of distributions
   // to get the lower bound of the fit range
   task->GetEnergyFitter().SetFitRangeBinWidth(4);
   // Set the maximum number of landaus to try to fit (max 5)
-  task->GetEnergyFitter().SetNParticles(5);
+  task->GetEnergyFitter().SetNParticles(1);
   // Set the minimum number of entries in the distribution before
   // trying to fit to the data - 10K seems the absolute minimum
-  task->GetEnergyFitter().SetMinEntries(10000);
+  task->GetEnergyFitter().SetMinEntries(3000 /*10000*/);
   // If set, only collect statistics for MB.  This is to prevent a
   // bias when looping over data where the MB trigger is downscaled.
-  task->SetOnlyMB(onlyMB);
+  // task->SetOnlyMB(onlyMB);
   // Debug
   task->SetDebug(debug);
-
-  TString resi(residuals);
-  resi.ToUpper();
-  AliFMDEnergyFitter::EResidualMethod rm = AliFMDEnergyFitter::kNoResiduals;
-  if (!resi.IsNull() && !resi.BeginsWith("no")) {
-    if (resi.BeginsWith("square")) 
-      rm = AliFMDEnergyFitter::kResidualSquareDifference;
-    else if (resi.BeginsWith("scale")) 
-      rm = AliFMDEnergyFitter::kResidualScaledDifference;
-    else // Anything else gives plain difference and errors in errors
-      rm = AliFMDEnergyFitter::kResidualDifference;
-  }
-  task->GetEnergyFitter().SetStoreResiduals(rm);
 
   // --- Set limits on fits the energy -------------------------------
   // DO NOT CHANGE THESE UNLESS YOU KNOW WHAT YOU ARE DOING
@@ -108,6 +94,14 @@ AddTaskFMDELoss(Bool_t        mc,
   
   // --- Make the output container and connect it --------------------
   task->Connect(0,0);
+  if (useTuple) { 
+    AliAnalysisDataContainer* tuple = 
+      mgr->CreateContainer("tuple", TNtuple::Class(), 
+			   AliAnalysisManager::kOutputContainer,
+			   "forward_tuple.root"
+			   /*AliAnalysisManager::GetCommonFileName()*/);
+    mgr->ConnectOutput(task, 3, tuple);
+  }
 
   Printf("Returning task %p", task);
   return task;
