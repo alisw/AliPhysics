@@ -105,6 +105,14 @@ AliForwardQATask::DefaultVertexAxis() const
 
 //____________________________________________________________________
 Bool_t
+AliForwardQATask::Setup()
+{
+  fEnergyFitter.Init();
+  return true;
+}
+
+//____________________________________________________________________
+Bool_t
 AliForwardQATask::Book()
 {
   // 
