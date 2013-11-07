@@ -222,7 +222,7 @@ main(int argc, char** argv)
 
   // --- Setup script path -------------------------------------------
   const char* aliPath  = gSystem->ExpandPathName("$ALICE_ROOT");
-  const char* fwdPath  = gSystem->ExpandPathName("$ALICE_ROOT/PWGLF/FORWARD/");
+  const char* fwdPath  = gSystem->ExpandPathName("$ALICE_ROOT/PWGLF/FORWARD");
   AppendPath(aliPath);
   AppendPath(Form("%s/include",          aliPath));
   AppendPath(Form("%s/trains",           fwdPath));
