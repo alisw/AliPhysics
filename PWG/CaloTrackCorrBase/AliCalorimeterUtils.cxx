@@ -71,7 +71,7 @@ ClassImp(AliCalorimeterUtils)
     fPlotCluster(0),                  fOADBSet(kFALSE),
     fOADBForEMCAL(kFALSE),            fOADBForPHOS(kFALSE),
     fOADBFilePathEMCAL(""),           fOADBFilePathPHOS(""),
-    fImportGeometryFromFile(),        fImportGeometryFilePath("")
+    fImportGeometryFromFile(0),       fImportGeometryFilePath("")
 {
   //Ctor
   
