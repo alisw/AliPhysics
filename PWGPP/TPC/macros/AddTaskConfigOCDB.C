@@ -11,7 +11,7 @@ AliTaskCDBconnect* AddTaskConfigOCDB(const char *path, Int_t run=0)
        return NULL;
     }   
     
-    AliTaskCDBconnect *task= new AliTaskCDBconnect("CDBconnect", path, run);
+    AliTaskConfigOCDB *task= new AliTaskConfigOCDB("CDBconnect", path, run);
     mgr->AddTask(task);
     AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();    
     mgr->ConnectInput(task,  0, cinput1);
