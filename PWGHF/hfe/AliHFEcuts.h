@@ -366,7 +366,7 @@ void AliHFEcuts::CreateStandardCuts(){
   fProdVtx[1] = 3;
   fProdVtx[2] = 0;
   fProdVtx[3] = 3;
-  fProdVtxZ[0] = 0;
+  fProdVtxZ[0] = -5;
   fProdVtxZ[1] = 5;
   //SetRequireDCAToVertex();
   //fDCAtoVtx[0] = 0.5;
