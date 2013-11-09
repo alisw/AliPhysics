@@ -37,6 +37,10 @@
 #include "AliAlignObjParams.h"
 #include "AliLog.h"
 #include "TGraphErrors.h"
+#include "AliTPCcalibDB.h"
+#include "AliMathBase.h"
+
+TObjArray *AliTPCParam::fBBParam = 0;
 
 ClassImp(AliTPCParam)
 
@@ -147,6 +151,7 @@ AliTPCParam::AliTPCParam()
 
   SetTitle("75x40_100x60_150x60");
   SetDefault();  
+  if (!fBBParam) fBBParam= new TObjArray(1000);
 }
 
 AliTPCParam::~AliTPCParam()
@@ -509,13 +514,7 @@ void AliTPCParam::SetDefault()
   //
   SetComposition(0.9,0.,0.1,0.,0.,0.);// Ne-CO2 90/10
   //
-  TVectorD *v = new TVectorD(5);
-  (*v)(0)=0.76176e-1;
-  (*v)(1)=10.632;
-  (*v)(2)=0.13279e-4;
-  (*v)(3)=1.8631;
-  (*v)(4)=1.9479;
-  SetBetheBloch(v);
+  SetBetheBloch(GetBetheBlochParamAlice());
   //
   //set electronivc parameters  
   //
@@ -903,4 +902,62 @@ void AliTPCParam::SetNominalGainSlopes(){
   fGainSlopesPT = new TGraphErrors(72,sector,gainPT,0,0);
   fGainSlopesHV->SetName("GainSlopesHV");
   fGainSlopesPT->SetName("GainSlopesPT");
+}
+
+
+TVectorD * AliTPCParam::GetBetheBlochParamNa49(){
+  //
+  //  Parameters of the BB for the Aleph parametrization AliMathBase::BetheBlochAleph
+  //  Na49 parameters were used as first set of parameters for ALICE simulation
+  //  (see TPC TDR for details)
+  TVectorD v(5);
+  v(0)=0.76176e-1;
+  v(1)=10.632;
+  v(2)=0.13279e-4;
+  v(3)=1.8631;
+  v(4)=1.9479;
+  return new TVectorD(v);
+}
+
+TVectorD * AliTPCParam::GetBetheBlochParamAlice(){
+  //
+  //
+  //  Parameters of the BB for the Aleph parametrization AliMathBase::BetheBlochAleph
+  //  Na49 parameters were used as first set of parameters for ALICE simulation
+  //  Second set was obtained from ALICE 2009-2013 data taking 
+  //  (see TPC TDR for details)
+  //  
+  TVectorD v(5);
+  v[0] = 0.0851148;
+  v[1] = 9.25771;
+  v[2] = 2.6558e-05;
+  v[3] = 2.32742;
+  v[4] = 1.83039;
+  return new TVectorD(v);
+}
+
+
+Double_t  AliTPCParam::BetheBlochAleph(Double_t bg, Int_t type){
+  //
+  //  GetBetheBloch retur values for the parametrs regieter at poition type 
+  //  Used for visualization and comparison purposes
+  TVectorD * paramBB =0;
+  if (type==0) {
+    AliTPCParam* param = AliTPCcalibDB::Instance()->GetParameters();
+    if (param) paramBB=param->GetBetheBlochParameters();
+  } 
+  if (type>0){
+    paramBB = (TVectorD*)fBBParam->At(type);
+  }
+  if (!paramBB) return 0;
+  //
+  return AliMathBase::BetheBlochAleph(bg,(*paramBB)(0),(*paramBB)(1),(*paramBB)(2),(*paramBB)(3),(*paramBB)(4)); 
+}
+
+
+void AliTPCParam::RegisterBBParam(TVectorD* param, Int_t position){
+  //
+  // 
+  //
+  fBBParam->AddAt(param,position);
 }

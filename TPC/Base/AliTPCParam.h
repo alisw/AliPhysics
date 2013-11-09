@@ -198,8 +198,13 @@ public:
   void   SetExp(Float_t exp){fExp=exp;}
   void   SetEend(Float_t end){fEend=end;}
   void   SetBetheBloch(TVectorD *v){
-    fBetheBloch=v;
+    if (fBetheBloch) delete fBetheBloch;
+    fBetheBloch=0;
+    if (v) fBetheBloch=new TVectorD(*v);
   }
+  static TVectorD * GetBetheBlochParamNa49();
+  static TVectorD * GetBetheBlochParamAlice();
+  static void RegisterBBParam(TVectorD* param, Int_t position);
   //
   //set electronivc parameters  
   //
@@ -336,7 +341,8 @@ public:
   Float_t  GetWmean()const {return fWmean;}
   Float_t  GetExp()const {return fExp;}
   Float_t  GetEend()const {return fEend;}
-  TVectorD* GetBetheBloch(){return fBetheBloch;} 
+  TVectorD* GetBetheBlochParameters(){return fBetheBloch;} 
+  static Double_t BetheBlochAleph(Double_t bb, Int_t type=0);
   //
   //get Electronic parameters
   //
@@ -522,8 +528,9 @@ protected :
   Float_t fL1Delay;         //Delay of L1 arrival for the TPC readout 
   UShort_t fNTBinsBeforeL1; //Number of time bins before L1 arrival which are being read out 
   Float_t fNTBinsL1;        //Overall L1 delay in time bins
-
-private:
+ protected:
+  static TObjArray *fBBParam; // array of the Bethe-Bloch parameters. 
+ private:
   AliTPCParam(const AliTPCParam &);
   AliTPCParam & operator=(const AliTPCParam &);
 

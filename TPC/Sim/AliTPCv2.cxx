@@ -2341,20 +2341,18 @@ void AliTPCv2::StepManager()
     Float_t ptot=mom.Rho();
     Float_t betaGamma = ptot/gMC->TrackMass();
 
-    Int_t pid=gMC->TrackPid();
-    if((pid==kElectron || pid==kPositron) && ptot > 0.002)
-      { 
-        pp = prim*1.58; // electrons above 20 MeV/c are on the plateau!
-      }
-    else
-      {
-
-        betaGamma = TMath::Max(betaGamma,(Float_t)7.e-3); // protection against too small bg
-        TVectorD *bbpar = fTPCParam->GetBetheBloch(); //get parametrization from OCDB
-        pp=prim*AliMathBase::BetheBlochAleph(betaGamma,(*bbpar)(0),(*bbpar)(1),(*bbpar)(2),(*bbpar)(3),(*bbpar)(4)); 
-       
-   
-    }
+    //Int_t pid=gMC->TrackPid();
+    // if((pid==kElectron || pid==kPositron) && ptot > 0.002)
+    //       { 
+    //         pp = prim*1.58; // electrons above 20 MeV/c are on the plateau!
+    //       }
+    //     else
+    //       {
+    
+    betaGamma = TMath::Max(betaGamma,(Float_t)7.e-3); // protection against too small bg
+    TVectorD *bbpar = fTPCParam->GetBetheBlochParameters(); //get parametrization from OCDB
+    pp=prim*AliMathBase::BetheBlochAleph(betaGamma,(*bbpar)(0),(*bbpar)(1),(*bbpar)(2),(*bbpar)(3),(*bbpar)(4));         
+    //     }
   
     Double_t rnd = gMC->GetRandom()->Rndm();
   
