@@ -536,7 +536,7 @@ protected :
 
   void CleanGeoMatrices();
 
-  ClassDef(AliTPCParam,7)  //parameter  object for set:TPC
+  ClassDef(AliTPCParam,8)  //parameter  object for set:TPC
 };
 
  
