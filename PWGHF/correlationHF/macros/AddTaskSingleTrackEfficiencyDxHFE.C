@@ -484,11 +484,14 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
 							  pidTaskName, pidTaskMacro));
 	return 0;
       }
+      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");
+      AliAnalysisTaskPIDqa *pidQA = AddTaskPIDqa();
     } else {
       // TODO: would like to check if the PID task was set up
       // with consistent parameters, however there are no getters at the moment
       ::Info("AddTaskSingleTrackEfficiencyDxHFE", Form("PID task '%s' already existing", pidTaskName));
     }
+
   }
   
   printf(" Create the output container\n");
