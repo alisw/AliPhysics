@@ -153,19 +153,20 @@ void AddTasksFlavourJet(const Int_t iCandType = 1 /*0 = D0, 1=Dstar...*/,
       	 taskMCDmesonCJ->SetForceBeamType(uBeamType);
       	 taskMCDmesonCJ->SetAnaType(uAnaType);
       	 taskMCDmesonCJ->SetLeadingHadronType(iLeading);
+      	 //  taskDmesonCJ->SelectCollisionCandidates(uTriggerMask);
+      	 
+      	 // definition of correction map
+      	 Int_t tag=0;
+      	 if(iCandType == 0) tag=AliEmcalJet::kD0;
+      	 if(iCandType == 1) tag=AliEmcalJet::kDStar;
+      	 Printf("************** tag = %d", tag&0x1);
+      	 AliJetResponseMaker* taskResp=AddTaskJetResponseMaker(
+      	    sUsedTrks.Data(),sUsedClus.Data(),taskFJ->GetName(),"",aRadius[i],
+      	    sInputTrkMC.Data(),"",taskMCJ->GetName(),"",aRadius[i],dJetPtCut,dJetAreaCut,5,0,AliJetResponseMaker::kGeometrical, 0.25,0.25,"TPC",-999,-999,-999,"AliJetResponseMaker", kFALSE, 0, -10,10, tag );
+      	 taskResp->SetMinJetMCPt(0); //added to bypass a return not needed (feature of PrepareJetTask)
+      	 //taskResp->SetHistoType(1);
+      	 
       }
-      //  taskDmesonCJ->SelectCollisionCandidates(uTriggerMask);
-      
-      // definition of correction map
-      Int_t tag=0;
-      if(iCandType == 0) tag=AliEmcalJet::kD0;
-      if(iCandType == 1) tag=AliEmcalJet::kDStar;
-      Printf("************** tag = %d", tag&0x1);
-      AliJetResponseMaker* taskResp=AddTaskJetResponseMaker(
-      	 sUsedTrks.Data(),sUsedClus.Data(),taskFJ->GetName(),"",aRadius[i],
-      	 sInputTrkMC.Data(),"",taskMCJ->GetName(),"",aRadius[i],dJetPtCut,dJetAreaCut,5,0,AliJetResponseMaker::kGeometrical, 0.25,0.25,"TPC",-999,-999,-999,"AliJetResponseMaker", kFALSE, 0, -10,10, tag );
-      taskResp->SetMinJetMCPt(0); //added to bypass a return not needed (feature of PrepareJetTask)
-      //taskResp->SetHistoType(1);
    }
    
    return;
