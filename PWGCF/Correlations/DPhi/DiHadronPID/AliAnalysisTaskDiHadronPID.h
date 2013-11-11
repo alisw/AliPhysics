@@ -54,6 +54,8 @@ public:
 	void SetTOFIntervalFactorTOFTPC(Double_t factor = 1.) {fTOFIntervalFactorTOFTPC = factor;}
 	void SetExtendPtAxis(Bool_t extendptaxis) {fExtendPtAxis = extendptaxis;}
 
+	void SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB);
+
 	// Getters.
 	Int_t GetNDEtaBins() const {return fNDEtaBins;}
 	Int_t GetNDPhiBins() const {return fNDPhiBins;}
