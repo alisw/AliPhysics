@@ -145,6 +145,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fPhoElecPtM20(0)
   ,fSameElecPt(0)
   ,fSameElecPtM20(0)
+  ,fSemiElecPtM20(0)
   ,fTrackPtBefTrkCuts(0)	 
   ,fTrackPtAftTrkCuts(0)
   ,fTPCnsigma(0)
@@ -288,6 +289,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fPhoElecPtM20(0)
   ,fSameElecPt(0)
   ,fSameElecPtM20(0)
+  ,fSemiElecPtM20(0)
   ,fTrackPtBefTrkCuts(0)	 
   ,fTrackPtAftTrkCuts(0)	 	  
   ,fTPCnsigma(0)
@@ -895,6 +897,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
        ftimingEle->Fill(pt,emctof); 
        if(fFlagPhotonicElec) fPhoElecPtM20->Fill(cent,pt);
        if(fFlagConvinatElec) fSameElecPtM20->Fill(cent,pt);
+       if(!fFlagPhotonicElec) fSemiElecPtM20->Fill(cent,pt);
      }
     
  
@@ -1192,6 +1195,9 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
 
   fSameElecPtM20 = new TH2F("fSameElecPtM20", "Same-inclusive electron pt with M20",200,0,100,100,0,50);
   fOutputList->Add(fSameElecPtM20);
+
+  fSemiElecPtM20 = new TH2F("fSemiElecPtM20", "Semi-inclusive electron pt with M20",200,0,100,100,0,50);
+  fOutputList->Add(fSemiElecPtM20);
 
   fCent = new TH1F("fCent","Centrality",200,0,100) ;
   fOutputList->Add(fCent);
