@@ -653,8 +653,8 @@ DrawV0QAPlots01(Bool_t lAttemptInvMassFit = kTRUE){
   TH2D *f2dHistResponsePionFromLambda      = (TH2D*)clist->FindObject("f2dHistResponsePionFromLambda");
   TH2D *f2dHistResponseProtonFromLambda    = (TH2D*)clist->FindObject("f2dHistResponseProtonFromLambda");
 
-  f2dHistdEdxSignalPionFromLambda->Rebin2D(1,5);
-  f2dHistdEdxSignalProtonFromLambda->Rebin2D(1,5);
+  f2dHistdEdxSignalPionFromLambda->Rebin2D(2,10);
+  f2dHistdEdxSignalProtonFromLambda->Rebin2D(2,10);
     
   
   TH1D *fLowPtPionResponse = (TH1D*) f2dHistResponsePionFromLambda->ProjectionY( "fLowPtPionResponse", 
