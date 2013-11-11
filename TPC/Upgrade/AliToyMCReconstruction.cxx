@@ -162,6 +162,10 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
   Double_t xmin[nbins] = {86. , 0.,           -250., -2.};
   Double_t xmax[nbins] = {250., 2*TMath::Pi(), 250.,  2.};
   fHnDelta = new THnF("hn", "hn", nbins, bins, xmin, xmax);
+
+  // fill streamer?
+  Bool_t fillStreamer=(fStreamer!=0x0);
+  if (fRecoInfo>-1 && ((fRecoInfo&kFillNoTrackInfo)==kFillNoTrackInfo)) fillStreamer=kFALSE;
   
   for (Int_t iev=0; iev<maxev; ++iev){
     printf("==============  Processing Event %6d =================\n",iev);
@@ -308,7 +312,7 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
 
       Int_t ctype(fCorrectionType);
 
-      if (fRecoInfo && ((fRecoInfo&kFillNoTrackInfo)!=kFillNoTrackInfo) && fStreamer){
+      if (fillStreamer){
         (*fStreamer) << "Tracks" <<
         "iev="         << iev             <<
         "z0="          << z0              <<
