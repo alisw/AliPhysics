@@ -2251,7 +2251,7 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
   for(Int_t itracks=0; itracks < nESDTracks; itracks++) {
     esd->GetTrack(itracks)->ResetBit(kSecBit|kRejBit); //reset bits used for flagging secondaries and rejected tracks in case they were changed before this analysis
   }
-  const Int_t maxid = nESDTracks+1; // used to define bool array for check multiple associations of tracklets to one track. array starts at 0.
+  const Int_t maxid = nESDTracks; // used to define bool array for check multiple associations of tracklets to one track. array starts at 0.
   
   // bit mask for esd tracks, to check if multiple tracklets are associated to it
   TBits globalBits(maxid), pureITSBits(maxid);
@@ -2313,7 +2313,7 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
           tracksITSSA++;
           pureITSBits.SetBitNumber(itracks);
         }
-        else track->SetBit(kRejBit);
+        else track->SetBit(kSecBit);
       }
       else track->SetBit(kRejBit);
     }
@@ -2344,7 +2344,7 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
         (tr1 &&  tr1->TestBit(kRejBit)) ) {  // count tracklet as bad quality track
           if(!bUsedInGlobal){
             ++trackletsITSTPC_complementary;
-            if(id1>0) globalBits.SetBitNumber(id1); // mark global track linked to this tracklet as "associated"
+            if(id1>=0) globalBits.SetBitNumber(id1); // mark global track linked to this tracklet as "associated"
           }
       }
       else if(id1<0) {
@@ -2356,7 +2356,7 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
         (tr3 &&  tr3->TestBit(kRejBit)) ) { // count tracklet as bad quality track
         if(!bUsedInPureITS) {
           ++trackletsITSSA_complementary;
-          if(id3>0) pureITSBits.SetBitNumber(id3); // mark global track linked to this tracklet as "associated"
+          if(id3>=0) pureITSBits.SetBitNumber(id3); // mark global track linked to this tracklet as "associated"
         }
       }
       else if(id3<0) {
