@@ -765,24 +765,16 @@ void AliThreePionRadii::UserCreateOutputObjects()
   fOutputList->Add(fAvgMult);
   TH2D *fAvgMultHisto2D = new TH2D("fAvgMultHisto2D","",fMbins,.5,fMbins+.5, 1000,0.5,2000.5);
   fOutputList->Add(fAvgMultHisto2D);
-  
+  TH2D *fAvgMultHisto2DV0C = new TH2D("fAvgMultHisto2DV0C","",fMbins,.5,fMbins+.5, 1000,0.5,2000.5);
+  fOutputList->Add(fAvgMultHisto2DV0C);
+  TH2D *fAvgMultHisto2DV0AplusC = new TH2D("fAvgMultHisto2DV0AplusC","",fMbins,.5,fMbins+.5, 1000,0.5,2000.5);
+  fOutputList->Add(fAvgMultHisto2DV0AplusC);
 
   TH2D *fTrackChi2NDF = new TH2D("fTrackChi2NDF","",20,0,100, 100,0,10);
   fOutputList->Add(fTrackChi2NDF);
   TH2D *fTrackTPCncls = new TH2D("fTrackTPCncls","",20,0,100, 110,50,160);
   fOutputList->Add(fTrackTPCncls);
 
-
-  TH3D *fTPNRejects1 = new TH3D("fTPNRejects1","",fQbins,0,fQupperBound, fQbins,0,fQupperBound, fQbins,0,fQupperBound);
-  fOutputList->Add(fTPNRejects1);
-  TH3D *fTPNRejects2 = new TH3D("fTPNRejects2","",fQbins,0,fQupperBound, fQbins,0,fQupperBound, fQbins,0,fQupperBound);
-  fOutputList->Add(fTPNRejects2);
-  TH3D *fTPNRejects3 = new TH3D("fTPNRejects3","",fQbins,0,fQupperBound, fQbins,0,fQupperBound, fQbins,0,fQupperBound);
-  fOutputList->Add(fTPNRejects3);
-  TH3D *fTPNRejects4 = new TH3D("fTPNRejects4","",fQbins,0,fQupperBound, fQbins,0,fQupperBound, fQbins,0,fQupperBound);
-  fOutputList->Add(fTPNRejects4);
-  TH3D *fTPNRejects5 = new TH3D("fTPNRejects5","",fQbins,0,fQupperBound, fQbins,0,fQupperBound, fQbins,0,fQupperBound);
-  fOutputList->Add(fTPNRejects5);
 
 
   TH3D *fKt3DistTerm1 = new TH3D("fKt3DistTerm1","",fMbins,.5,fMbins+.5, 20,0,1, 20,0,0.2);
@@ -868,6 +860,12 @@ void AliThreePionRadii::UserCreateOutputObjects()
 		
 		Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fExplicit2 = new TH2D(nameEx2->Data(),"Two Particle Distribution",20,0,1, fQbinsC2,0,fQlimitC2);
 		fOutputList->Add(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fExplicit2);
+		//
+		TString *nameMeanKt=new TString(nameEx2->Data());
+		nameMeanKt->Append("_MeanKt");
+		Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fMeanKt = new TH1D(nameMeanKt->Data(),"Two Particle Distribution",200,0,1);
+		fOutputList->Add(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fMeanKt);
+		//
 		TString *nameEx2QW=new TString(nameEx2->Data());
 		nameEx2QW->Append("_QW");
 		Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fExplicit2QW = new TH2D(nameEx2QW->Data(),"Two Particle Distribution",20,0,1, fQbinsC2,0,fQlimitC2);
@@ -976,6 +974,10 @@ void AliThreePionRadii::UserCreateOutputObjects()
 		      Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fTerms3 = new TH3D(name3DQ->Data(),"", fQbins,0,fQupperBound, fQbins,0,fQupperBound, fQbins,0,fQupperBound);
 		      fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fTerms3);
 		      //
+		      TString *nameMeanKt=new TString(namePC3->Data());
+		      nameMeanKt->Append("_MeanKt");
+		      Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fMeanKt = new TH1D(nameMeanKt->Data(),"", 200,0,1);
+		      fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fMeanKt);
 		      
 		      if(sc==0 && fMCcase==kTRUE){
 			TString *name3DMomResIdeal=new TString(namePC3->Data());
@@ -1052,7 +1054,7 @@ void AliThreePionRadii::Exec(Option_t *)
     isSelected[1] = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAnyINT);
     isSelected[2] = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7);
     isSelected[3] = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kHighMult);
-    if(!isSelected[fTriggerType]) return;
+    if(!isSelected[fTriggerType] && !fMCcase) return;
   }
   
   
@@ -1412,13 +1414,14 @@ void AliThreePionRadii::Exec(Option_t *)
     else fFSIindex = 8;//90-100%
   }else fFSIindex = 9;// pp and pPb
   
+  
   if(fV0Mbinning){
     Bool_t useV0=kFALSE;
     if(fPbPbcase) useV0=kTRUE;
     if(!fPbPbcase && fAOD->GetRunNumber() >= 195344 && fAOD->GetRunNumber() <= 195677) useV0=kTRUE;
     if(useV0){
       AliAODVZERO *vZero = fAOD->GetVZEROData();
-      Float_t vZeroAmp = vZero->GetMTotV0A() + vZero->GetMTotV0C();
+      Float_t vZeroAmp = vZero->GetMTotV0A();
       centrality = fAOD->GetCentrality();
       centralityPercentile = centrality->GetCentralityPercentile("V0M");
       for(Int_t i=0; i<fCentBins; i++){
@@ -1426,19 +1429,25 @@ void AliThreePionRadii::Exec(Option_t *)
       }
       ((TH1D*)fOutputList->FindObject("fV0TotSignal"))->Fill(vZeroAmp);
       //cout<<centralityPercentile<<"  "<<vZeroAmp<<"  "<<fMbin<<endl;
+      //
+      Int_t fMbinV0C=-1;
+      vZeroAmp = vZero->GetMTotV0C();
+      for(Int_t i=0; i<fCentBins; i++){
+	if(vZeroAmp/4.4 >= fMultLimits[i] && vZeroAmp/4.4 < fMultLimits[i+1]) {fMbinV0C = fCentBins-i-1; break;}
+      }
+      //
+      Int_t fMbinV0AplusC=-1;
+      vZeroAmp = vZero->GetMTotV0A() + vZero->GetMTotV0C();
+      for(Int_t i=0; i<fCentBins; i++){
+	if(vZeroAmp/4.4 >= fMultLimits[i] && vZeroAmp/4.4 < fMultLimits[i+1]) {fMbinV0AplusC = fCentBins-i-1; break;}
+      }
+      ((TH2D*)fOutputList->FindObject("fAvgMultHisto2DV0C"))->Fill(fMbinV0C+1., pionCount);
+      ((TH2D*)fOutputList->FindObject("fAvgMultHisto2DV0AplusC"))->Fill(fMbinV0AplusC+1., pionCount);
     }
-    
   }
 
   if(fMbin==-1) {cout<<pionCount<<"  Bad Mbin+++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl; return;}
-  if(fMbin < fCentBinLowLimit || fMbin > fCentBinHighLimit) {cout<<"Mult out of range"<<endl; return;}
-  
-  //////////////////////////////////////////////////
-  fEDbin=0;// Extra Dimension bin (Kt, (Kt-Psi),....)
-  //////////////////////////////////////////////////
-  
-  //cout<<fMbin<<"  "<<pionCount<<endl;
-  
+
   ((TH1F*)fOutputList->FindObject("fEvents1"))->Fill(fMbin+1);
   ((TProfile*)fOutputList->FindObject("fAvgMult"))->Fill(fMbin+1., pionCount);
   ((TH2D*)fOutputList->FindObject("fAvgMultHisto2D"))->Fill(fMbin+1., pionCount);
@@ -1451,8 +1460,18 @@ void AliThreePionRadii::Exec(Option_t *)
   if(fPbPbcase){
     ((TH2D*)fOutputList->FindObject("fdCentVsNchdEta"))->Fill(fMbin+1, pow(trackletMult,1/3.));
   }
+
+  // Mult cut
+  if(fMbin < fCentBinLowLimit || fMbin > fCentBinHighLimit) {cout<<"Mult out of range"<<endl; return;}
   
-  //cout<<trackletMult<<"  "<<mcNchdEta<<endl;
+  //////////////////////////////////////////////////
+  fEDbin=0;// Extra Dimension bin (Kt, (Kt-Psi),....)
+  //////////////////////////////////////////////////
+
+  
+
+  //return;// un-comment for a run to calculate Nrec to Nch Mapping 
+
   
   ////////////////////////////////////
   // Add event to buffer if > 0 tracks
@@ -1776,7 +1795,8 @@ void AliThreePionRadii::Exec(Option_t *)
 	Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fExplicit2QW->Fill(transK12, qinv12, qinv12);
 	Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fAvgP->Fill(transK12, qinv12, (fEvt)->fTracks[i].fMom);
 	Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fAvgP->Fill(transK12, qinv12, (fEvt+en2)->fTracks[j].fMom);
-	
+	//
+	if(qinv12<fQupperBound) Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fMeanKt->Fill(transK12);
 	
 	//////////////////////////////////////////
 	
@@ -2136,7 +2156,7 @@ void AliThreePionRadii::Exec(Option_t *)
 	// 2-particle term
 	Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fExplicit2->Fill(transK12, qinv12);
 	Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fExplicit2QW->Fill(transK12, qinv12, qinv12);
-	
+	if(qinv12<fQupperBound) Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fMeanKt->Fill(transK12);
 	
 	//////////////////////////////////////////
 
@@ -2604,7 +2624,9 @@ void AliThreePionRadii::Exec(Option_t *)
 	    
 	    
 	    // if all three pair cuts are the same then the case (config=2 && term=2) never reaches here.
-	    
+	    Float_t Kt12 = sqrt( pow(pVect1[1]+pVect2[1],2) + pow(pVect1[2]+pVect2[2],2))/2.;
+	    Float_t Kt13 = sqrt( pow(pVect1[1]+pVect3[1],2) + pow(pVect1[2]+pVect3[2],2))/2.;
+	    Float_t Kt23 = sqrt( pow(pVect2[1]+pVect3[1],2) + pow(pVect2[2]+pVect3[2],2))/2.;
 	    q3 = sqrt(pow(qinv12,2) + pow(qinv13,2) + pow(qinv23,2));
 	    transK3 = sqrt( pow(pVect1[1]+pVect2[1]+pVect3[1],2) + pow(pVect1[2]+pVect2[2]+pVect3[2],2))/3.;
 	    if(fKt3bins==1) fEDbin=0;
@@ -2634,6 +2656,10 @@ void AliThreePionRadii::Exec(Option_t *)
 		////
 		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fTermsQ3->Fill(q3, WInput);
 		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fTerms3->Fill(firstQ, secondQ, thirdQ, WInput);
+		//
+		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fMeanKt->Fill(Kt12);
+		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fMeanKt->Fill(Kt13);
+		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fMeanKt->Fill(Kt23);
 		////
 		//
 		if(fillIndex3==0 && ch1==ch2 && ch1==ch3 && fMCcase==kFALSE){
@@ -2662,7 +2688,10 @@ void AliThreePionRadii::Exec(Option_t *)
 		  ////
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].fTermsQ3->Fill(q3, WInput);
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].fTerms3->Fill(firstQ, secondQ, thirdQ, WInput);
-		  
+		  //
+		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].fMeanKt->Fill(Kt12);
+		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].fMeanKt->Fill(Kt13);
+		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].fMeanKt->Fill(Kt23);
 		}
 	      }
 	      
@@ -2678,6 +2707,10 @@ void AliThreePionRadii::Exec(Option_t *)
 		ArrangeQs(fillIndex3, key1, key2, key3, ch1, ch2, ch3, qinv12, qinv13, qinv23, part, 5, firstQ, secondQ, thirdQ);
 		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].fTermsQ3->Fill(q3);
 		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].fTerms3->Fill(firstQ, secondQ, thirdQ);
+		//
+		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].fMeanKt->Fill(Kt12);
+		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].fMeanKt->Fill(Kt13);
+		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].fMeanKt->Fill(Kt23);
 	      }
 	      
 	      
