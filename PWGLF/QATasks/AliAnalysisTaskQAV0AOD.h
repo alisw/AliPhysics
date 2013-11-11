@@ -123,12 +123,6 @@ class AliAnalysisTaskQAV0AOD : public AliAnalysisTaskSE {
 
 
   //Objects Controlling Task Behaviour 
-  
-  Bool_t fkIsNuclear;   // if true, replace multiplicity est. by centrality (default FALSE) 
-  Bool_t fkLowEnergyPP; // if true, skip FASTOnly (default FALSE)
-  Bool_t fkUseOnTheFly; // if true, will use On-the-fly V0s instead of Offline V0s (default FALSE)
-
-
   AliPIDResponse *fPIDResponse;     // PID response object
 
   //Objects Controlling Task Behaviour: has to be streamed! 
