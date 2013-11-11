@@ -76,6 +76,7 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
   fhNCellMassELowNLocMaxNMCPi0(0),           fhNCellM02ELowNLocMaxNMCPi0(0),
   fhAnglePairPrimPi0RecoNLocMax1(0),         fhAnglePairPrimPi0RecoNLocMax2(0),         fhAnglePairPrimPi0RecoNLocMaxN(0),
   fhAnglePairPrimPi0vsRecoNLocMax1(0),       fhAnglePairPrimPi0vsRecoNLocMax2(0),       fhAnglePairPrimPi0vsRecoNLocMaxN(0),
+  fhAnglePairPrimPi0OverM02NLocMax1(0),      fhAnglePairPrimPi0OverM02NLocMax2(0),      fhAnglePairPrimPi0OverM02NLocMaxN(0),
   fhCentralityPi0NLocMax1(0),                fhCentralityEtaNLocMax1(0),
   fhCentralityPi0NLocMax2(0),                fhCentralityEtaNLocMax2(0),
   fhCentralityPi0NLocMaxN(0),                fhCentralityEtaNLocMaxN(0),
@@ -196,6 +197,14 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
       fhAnglePairM02NLocMax1      [i][j] = 0;
       fhAnglePairM02NLocMax2      [i][j] = 0;
       fhAnglePairM02NLocMaxN      [i][j] = 0;
+      
+      fhAnglePairOverM02NLocMax1  [i][j] = 0;
+      fhAnglePairOverM02NLocMax2  [i][j] = 0;
+      fhAnglePairOverM02NLocMaxN  [i][j] = 0;
+      
+      fhAnglePairOverM02NLocMax1Overlap0[i][j] = 0;
+      fhAnglePairOverM02NLocMax2Overlap0[i][j] = 0;
+      fhAnglePairOverM02NLocMaxNOverlap0[i][j] = 0;
       
       fhCosThStarNLocMax1         [i][j] = 0;
       fhCosThStarNLocMax2         [i][j] = 0;
@@ -1272,11 +1281,11 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   
 }
 
-//_____________________________________________________________________________________________________________________
-void AliAnaInsideClusterInvariantMass::FillAngleHistograms(const Int_t nMax, const Bool_t matched, const Int_t mcIndex,
-                                                           const Float_t en, const Float_t angle, const Float_t mass,
+//_____________________________________________________________________________________________________________________________
+void AliAnaInsideClusterInvariantMass::FillAngleHistograms(const Int_t   nMax,      const Bool_t  matched, const Int_t mcIndex,
+                                                           const Float_t en,        const Float_t angle,   const Float_t mass,
                                                            const Float_t anglePrim, const Float_t m02,
-                                                           const Float_t asym,      const Int_t pid)
+                                                           const Float_t asym,      const Int_t   pid,     const Int_t noverlaps)
 {
   // Fill histograms related to opening angle
   
@@ -1294,6 +1303,12 @@ void AliAnaInsideClusterInvariantMass::FillAngleHistograms(const Int_t nMax, con
     if(pid==AliCaloPID::kPi0)
       fhAnglePairPi0NLocMax1[0][matched]->Fill(en,angle);
     
+    if(m02 > 0)
+    {
+      fhAnglePairOverM02NLocMax1[0][matched]->Fill(en,angle/m02);
+      if(noverlaps == 0) fhAnglePairOverM02NLocMax1Overlap0[0][matched]->Fill(en,angle/m02);
+    }
+    
     if( en > 15 )
     {
       fhAnglePairMassNLocMax1[0][matched]->Fill(mass,angle);
@@ -1309,6 +1324,12 @@ void AliAnaInsideClusterInvariantMass::FillAngleHistograms(const Int_t nMax, con
     if(pid==AliCaloPID::kPi0)
       fhAnglePairPi0NLocMax2[0][matched]->Fill(en,angle);
     
+    if(m02 > 0)
+    {
+      fhAnglePairOverM02NLocMax2[0][matched]->Fill(en,angle/m02);
+      if(noverlaps == 0) fhAnglePairOverM02NLocMax2Overlap0[0][matched]->Fill(angle/m02,en);
+    }
+    
     if( en > fHistoECut )
     {
       fhAnglePairMassNLocMax2[0][matched]->Fill(mass,angle);
@@ -1323,6 +1344,12 @@ void AliAnaInsideClusterInvariantMass::FillAngleHistograms(const Int_t nMax, con
       fhAnglePairAfterCutsNLocMaxN[0][matched]->Fill(en,angle);
     if(pid==AliCaloPID::kPi0)
       fhAnglePairPi0NLocMaxN[0][matched]->Fill(en,angle);
+    
+    if(m02 > 0)
+    {
+      fhAnglePairOverM02NLocMaxN[0][matched]->Fill(en,angle/m02);
+      if(noverlaps == 0) fhAnglePairOverM02NLocMaxNOverlap0[0][matched]->Fill(angle/m02,en);
+    }
     
     if( en > fHistoECut )
     {
@@ -1346,9 +1373,16 @@ void AliAnaInsideClusterInvariantMass::FillAngleHistograms(const Int_t nMax, con
       if(pid==AliCaloPID::kPi0)
          fhAnglePairPi0NLocMax1[mcIndex][matched]->Fill(en,angle);
       
+      if(m02 > 0)
+      {
+        fhAnglePairOverM02NLocMax1[mcIndex][matched]->Fill(en,angle/m02);
+        if(noverlaps == 0) fhAnglePairOverM02NLocMax1Overlap0[mcIndex][matched]->Fill(angle/m02,en);
+      }
+      
       if((mcIndex == kmcPi0 || mcIndex == kmcPi0Conv) && !matched && anglePrim > 0)
       {
         fhAnglePairPrimPi0RecoNLocMax1->Fill(en,angle/anglePrim);
+        if(m02>0)fhAnglePairPrimPi0OverM02NLocMax1->Fill(en,anglePrim/m02);
         if(en > 15) fhAnglePairPrimPi0vsRecoNLocMax1->Fill(anglePrim,angle);
 
       }
@@ -1367,9 +1401,16 @@ void AliAnaInsideClusterInvariantMass::FillAngleHistograms(const Int_t nMax, con
       if(pid==AliCaloPID::kPi0)
         fhAnglePairPi0NLocMax2[mcIndex][matched]->Fill(en,angle);
       
+      if(m02 > 0)
+      {
+        fhAnglePairOverM02NLocMax2[mcIndex][matched]->Fill(en,angle/m02);
+        if(noverlaps == 0) fhAnglePairOverM02NLocMax2Overlap0[mcIndex][matched]->Fill(angle/m02,en);
+      }
+      
       if((mcIndex == kmcPi0 || mcIndex == kmcPi0Conv) && !matched && anglePrim > 0)
       {
         fhAnglePairPrimPi0RecoNLocMax2->Fill(en,angle/anglePrim);
+        if(m02>0)fhAnglePairPrimPi0OverM02NLocMax2->Fill(en,anglePrim/m02);
         if(en > 10) fhAnglePairPrimPi0vsRecoNLocMax2->Fill(anglePrim,angle);
       }
     }
@@ -1386,9 +1427,16 @@ void AliAnaInsideClusterInvariantMass::FillAngleHistograms(const Int_t nMax, con
       if(pid==AliCaloPID::kPi0)
         fhAnglePairPi0NLocMaxN[mcIndex][matched]->Fill(en,angle);
       
+      if(m02 > 0)
+      {
+        fhAnglePairOverM02NLocMaxN[mcIndex][matched]->Fill(en,angle/m02);
+        if(noverlaps == 0) fhAnglePairOverM02NLocMaxNOverlap0[mcIndex][matched]->Fill(angle/m02,en);
+      }
+      
       if((mcIndex == kmcPi0 || mcIndex == kmcPi0Conv) && !matched && anglePrim > 0)
       {
         fhAnglePairPrimPi0RecoNLocMaxN->Fill(en,angle/anglePrim);
+        if(m02>0)fhAnglePairPrimPi0OverM02NLocMaxN->Fill(en,anglePrim/m02);
         if(en > 10) fhAnglePairPrimPi0vsRecoNLocMaxN->Fill(anglePrim,angle);
       }
     }
@@ -4306,6 +4354,50 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
         fhAnglePairM02NLocMaxN[i][j]->SetYTitle("#alpha (rad)");
         outputContainer->Add(fhAnglePairM02NLocMaxN[i][j]) ;
 
+        fhAnglePairOverM02NLocMax1[i][j]  = new TH2F(Form("hAnglePairOverM02NLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
+                                              Form("Opening angle split sub-clusters  / M02 of cluster NLM=1 vs pair Energy, %s, %s",ptype[i].Data(),sMatched[j].Data()),
+                                              nptbins,ptmin,ptmax,200,0,0.2);
+        fhAnglePairOverM02NLocMax1[i][j]->SetYTitle("#alpha / #lambda_{0}^{2}");
+        fhAnglePairOverM02NLocMax1[i][j]->SetXTitle("E (GeV)");
+        outputContainer->Add(fhAnglePairOverM02NLocMax1[i][j]) ;
+        
+        fhAnglePairOverM02NLocMax2[i][j]  = new TH2F(Form("hAnglePairOverM02NLocMax2%s%s",pname[i].Data(),sMatched[j].Data()),
+                                              Form("Opening angle split sub-clusters  / M02 of cluster NLM=2 cells vs Energy, %s, %s",ptype[i].Data(),sMatched[j].Data()),
+                                              nptbins,ptmin,ptmax,200,0,0.2);
+        fhAnglePairOverM02NLocMax2[i][j]->SetYTitle("#alpha / #lambda_{0}^{2}");
+        fhAnglePairOverM02NLocMax2[i][j]->SetXTitle("E (GeV)");
+        outputContainer->Add(fhAnglePairOverM02NLocMax2[i][j]) ;
+        
+        fhAnglePairOverM02NLocMaxN[i][j]  = new TH2F(Form("hAnglePairOverM02NLocMaxN%s%s",pname[i].Data(),sMatched[j].Data()),
+                                              Form("Opening angle split sub-clusters  / M02  of cluster NLM>2 vs Energy, %s, %s",ptype[i].Data(),sMatched[j].Data()),
+                                              nptbins,ptmin,ptmax,200,0,0.2);
+        fhAnglePairOverM02NLocMaxN[i][j]->SetYTitle("#alpha / #lambda_{0}^{2}");
+        fhAnglePairOverM02NLocMaxN[i][j]->SetXTitle("E (GeV)");
+        outputContainer->Add(fhAnglePairOverM02NLocMaxN[i][j]) ;
+
+        
+        fhAnglePairOverM02NLocMax1Overlap0[i][j]  = new TH2F(Form("hAnglePairOverM02NLocMax1Overlap0%s%s",pname[i].Data(),sMatched[j].Data()),
+                                                     Form("Opening angle split sub-clusters  / M02  of cluster NLM=1 vs pair Energy, no overlap, %s, %s",ptype[i].Data(),sMatched[j].Data()),
+                                                     nptbins,ptmin,ptmax,200,0,0.2);
+        fhAnglePairOverM02NLocMax1Overlap0[i][j]->SetYTitle("#alpha / #lambda_{0}^{2}");
+        fhAnglePairOverM02NLocMax1Overlap0[i][j]->SetXTitle("E (GeV)");
+        outputContainer->Add(fhAnglePairOverM02NLocMax1Overlap0[i][j]) ;
+        
+        fhAnglePairOverM02NLocMax2Overlap0[i][j]  = new TH2F(Form("hAnglePairOverM02NLocMax2Overlap0%s%s",pname[i].Data(),sMatched[j].Data()),
+                                                     Form("Opening angle split sub-clusters / M02 of cluster NLM=2 cells vs Energy, no overlap, %s, %s",ptype[i].Data(),sMatched[j].Data()),
+                                                     nptbins,ptmin,ptmax,200,0,0.2);
+        fhAnglePairOverM02NLocMax2Overlap0[i][j]->SetYTitle("#alpha / #lambda_{0}^{2}");
+        fhAnglePairOverM02NLocMax2Overlap0[i][j]->SetXTitle("E (GeV)");
+        outputContainer->Add(fhAnglePairOverM02NLocMax2Overlap0[i][j]) ;
+        
+        fhAnglePairOverM02NLocMaxNOverlap0[i][j]  = new TH2F(Form("hAnglePairOverM02NLocMaxNOverlap0%s%s",pname[i].Data(),sMatched[j].Data()),
+                                                     Form("Opening angle split sub-clusters  / M02  of cluster NLM>2 vs Energy, no overlap, %s, %s",ptype[i].Data(),sMatched[j].Data()),
+                                                     nptbins,ptmin,ptmax,200,0,0.2);
+        fhAnglePairOverM02NLocMaxNOverlap0[i][j]->SetYTitle("#alpha / #lambda_{0}^{2}");
+        fhAnglePairOverM02NLocMaxNOverlap0[i][j]->SetXTitle("E (GeV)");
+        outputContainer->Add(fhAnglePairOverM02NLocMaxNOverlap0[i][j]) ;
+
+        
       }
     }
     
@@ -4354,6 +4446,28 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
       fhAnglePairPrimPi0vsRecoNLocMaxN->SetXTitle("#alpha_{gen} (rad)");
       outputContainer->Add(fhAnglePairPrimPi0vsRecoNLocMaxN) ;
       
+      
+      fhAnglePairPrimPi0OverM02NLocMax1  = new TH2F("fhAnglePairPrimPi0OverM02NLocMax1",
+                                                 "Primary Opening angle split neutral sub-clusters reconstructed / Over vs cluster Energy, NLM=1",
+                                                 nptbins,ptmin,ptmax,200,0,0.2);
+      fhAnglePairPrimPi0OverM02NLocMax1->SetYTitle("#alpha_{gen} / #lambda_{0}^{2}");
+      fhAnglePairPrimPi0OverM02NLocMax1->SetXTitle("E (GeV)");
+      outputContainer->Add(fhAnglePairPrimPi0OverM02NLocMax1) ;
+      
+      fhAnglePairPrimPi0OverM02NLocMax2  = new TH2F("fhAnglePairPrimPi0OverM02NLocMax2",
+                                                 "Primary Opening angle split neutral sub-clusters reconstructed / Over vs cluster Energy, NLM=2",
+                                                 nptbins,ptmin,ptmax,200,0,0.2);
+      fhAnglePairPrimPi0OverM02NLocMax2->SetYTitle("#alpha_{gen} / #lambda_{0}^{2}");
+      fhAnglePairPrimPi0OverM02NLocMax2->SetXTitle("E (GeV)");
+      outputContainer->Add(fhAnglePairPrimPi0OverM02NLocMax2) ;
+      
+      fhAnglePairPrimPi0OverM02NLocMaxN  = new TH2F("fhAnglePairPrimPi0OverM02NLocMaxN",
+                                                 "Primary Opening angle split neutral sub-clusters reconstructed / M02 vs cluster Energy, NLM>2",
+                                                 nptbins,ptmin,ptmax,200,0,0.2);
+      fhAnglePairPrimPi0OverM02NLocMaxN->SetYTitle("#alpha_{gen} / #lambda_{0}^{2}");
+      fhAnglePairPrimPi0OverM02NLocMaxN->SetXTitle("E (GeV)");
+      outputContainer->Add(fhAnglePairPrimPi0OverM02NLocMaxN) ;
+
     }
   }
  
@@ -6003,7 +6117,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     //
     
     if(fFillAngleHisto)
-      FillAngleHistograms(nMax,matched,mcindex,en,angle,mass,angleGen,l0, asym,pidTag);
+      FillAngleHistograms(nMax,matched,mcindex,en,angle,mass,angleGen,l0, asym,pidTag,noverlaps);
 
     if(fFillArmenterosHisto && ebin >= 0)
       FillArmenterosHistograms(nMax, ebin, mcindex, en, lv1, lv2, l0, pidTag);
