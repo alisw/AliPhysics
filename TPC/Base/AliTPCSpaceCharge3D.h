@@ -44,6 +44,7 @@ public:
   void ForceInitSpaceCharge3DDistortion() { fInitLookUp=kFALSE; InitSpaceCharge3DDistortion(); }
 
   void  InitSpaceCharge3DPoisson(Int_t kRows, Int_t kColumns, Int_t kPhiSlices, Int_t kIterations);
+  void ForceInitSpaceCharge3DPoisson(Int_t kRows, Int_t kColumns, Int_t kPhiSlices, Int_t kIterations) { fInitLookUp=kFALSE; InitSpaceCharge3DPoisson(kRows,kColumns,kPhiSlices,kIterations); }
   Float_t GetSpaceChargeDensity(Float_t r, Float_t phi, Float_t z, Int_t mode);
   TH2F* CreateHistoSCinXY(Float_t z, Int_t nx=100, Int_t ny=100, Int_t mode=0);
   TH2F* CreateHistoSCinZR(Float_t phi, Int_t nz=100, Int_t nr=100, Int_t mode=0);
