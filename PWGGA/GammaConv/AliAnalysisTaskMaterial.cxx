@@ -174,7 +174,7 @@ void AliAnalysisTaskMaterial::UserCreateOutputObjects()
       
       fTreeMaterialAllGamma = new TTree("AllGamma","AllGamma");   
       fTreeMaterialAllGamma->Branch("pt",&fGammaMCPt,"fGammaMCPt/F");
-      fTreeMaterialAllGamma->Branch("theta",&fGammaMCTheta,"fGammaMCTheta/I");
+      fTreeMaterialAllGamma->Branch("theta",&fGammaMCTheta,"fGammaMCTheta/F");
       fAllMCGammaList->Add(fTreeMaterialAllGamma);
       
       fAllMCConvGammaList = new TList();

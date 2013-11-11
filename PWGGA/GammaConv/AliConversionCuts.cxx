@@ -3226,7 +3226,7 @@ Bool_t AliConversionCuts::VertexZCut(AliVEvent *event){
    if (fIsHeavyIon == 2){
      if(fUtils->IsFirstEventInChunk(event)) return kFALSE;
      if(!fUtils->IsVertexSelected2013pA(event)) return kFALSE;
-
+     if(fUtils->IsPileUpEvent(event)) return kFALSE;
    }
 
    return kTRUE;
