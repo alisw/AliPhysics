@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskHFEQA(Bool_t useMC, Bool_t isAOD, Int_t icollisionsystem = 2, Int_t icent = 2){
+AliAnalysisTask *AddTaskHFEQA(Bool_t useMC, Bool_t isAOD, Int_t icollisionsystem = 2, Int_t icent = 2,Int_t debuglevel = 4){
 
    // Name
   TString appendixx("HFEQA");
@@ -14,6 +14,7 @@ AliAnalysisTask *AddTaskHFEQA(Bool_t useMC, Bool_t isAOD, Int_t icollisionsystem
   AliAnalysisTaskHFEQA *task = ConfigHFEQA(useMC,isAOD,icollisionsystem,icent);  
 
   mgr->AddTask(task);
+  mgr->AddClassDebug("AliAnalysisTaskHFEQA",debuglevel);
 
   TString containerName = mgr->GetCommonFileName();
   containerName += ":";
