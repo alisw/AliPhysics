@@ -297,6 +297,7 @@ Int_t AliHFEpidTRD::IsSelected2D(const AliHFEpidObject *track, AliHFEpidQAmanage
 
   if(fkPIDResponse->IdentifiedAsElectronTRD(track->GetRecTrack(),fElectronEfficiency,centrality,AliTRDPIDResponse::kLQ2D)){
       AliDebug(2, Form("Electron effi: %f %i %i %f\n", fElectronEfficiency,track->GetCentrality(),centralitybin,centrality));
+      if(pidqa) pidqa->ProcessTrack(track, AliHFEpid::kTRDpid, AliHFEdetPIDqa::kAfterPID); 
       return 11;
   } else return 211;
 

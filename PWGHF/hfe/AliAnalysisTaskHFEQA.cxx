@@ -343,6 +343,8 @@ void AliAnalysisTaskHFEQA::UserExec(Option_t */*option*/)
 
   AliMCEvent *mcEvent = MCEvent();
  
+
+  AliDebug(2,"MC info");
   // MC info
   Bool_t mcthere = kTRUE;
   if(fAODAnalysis) {
@@ -375,7 +377,7 @@ void AliAnalysisTaskHFEQA::UserExec(Option_t */*option*/)
   ////////////////////////////////////
   // Number of contributors
   ///////////////////////////////////
-   
+  AliDebug(2,"Number of contributors");
   Int_t ncontribVtx = 0;
   if(fAODAnalysis) {
     AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(fInputEvent);
@@ -399,6 +401,7 @@ void AliAnalysisTaskHFEQA::UserExec(Option_t */*option*/)
       ncontribVtx = priVtx->GetNContributors();
     }
   }
+  AliDebug(2,Form("Number of contributors %d",ncontribVtx));
 
 
   /////////////////////////////////
@@ -424,6 +427,7 @@ void AliAnalysisTaskHFEQA::UserExec(Option_t */*option*/)
     if((90.0< cntr) && (cntr<100.0)) binct = 10.5;
     if(binct > 11.0) return;
   }
+  AliDebug(2,Form("Centrality %f with %s",binct,fCentralityEstimator.Data()));
  
   //////////////////////
   // run number
@@ -453,7 +457,7 @@ void AliAnalysisTaskHFEQA::UserExec(Option_t */*option*/)
   //////////
   // PID
   //////////
- 
+  AliDebug(2,"PID response");
   AliPIDResponse *pidResponse = fInputHandler->GetPIDResponse();
   if(!pidResponse){
     AliDebug(2,"No PID response set");
@@ -467,7 +471,7 @@ void AliAnalysisTaskHFEQA::UserExec(Option_t */*option*/)
   //////////////////
   // Event cut
   //////////////////
-  //printf("Event cut\n");
+  AliDebug(2,"Event cut");
   if(!fHFECuts->CheckEventCuts("fEvRecCuts", fInputEvent)) {
     AliDebug(2,"Does not pass the event cut");
     PostData(1, fListHist);
@@ -478,41 +482,40 @@ void AliAnalysisTaskHFEQA::UserExec(Option_t */*option*/)
   // Loop over track
   //////////////////////////
   Int_t nbtracks = fInputEvent->GetNumberOfTracks();
-  //printf("There are %d tracks \n",nbtracks);
+  AliDebug(2,Form("Number of tracks %d",nbtracks));
   for(Int_t k = 0; k < nbtracks; k++){
       
     AliVTrack *track = (AliVTrack *) fInputEvent->GetTrack(k);
     if(!track) continue;
     Double_t pt = track->Pt();     
 
-    //printf("test 0\n");
+    AliDebug(2,"test 0\n");
     
     // RecKine: ITSTPC cuts  
     if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepRecKineITSTPC + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
-    //printf("test 1\n");
+    AliDebug(2,"test 1\n");
 
     // RecPrim
     if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepRecPrim + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
-    //printf("test 2\n");
+    AliDebug(2,"test 2\n");
 
     // HFEcuts: ITS layers cuts
     if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepHFEcutsITS + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
-    //printf("test 3\n");
+    AliDebug(2,"test 3\n");
 
     // HFE cuts: TOF and mismatch flag
     if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepHFEcutsTOF + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
-    //printf("test 4\n");
+    AliDebug(2,"test 4\n");
 
     // HFE cuts: TPC PID cleanup
     if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepHFEcutsTPC + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
-    //printf("test 5\n");
+    AliDebug(2,"test 5\n");
 
     // HFEcuts: Nb of tracklets TRD0
     if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepHFEcutsTRD + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
-    //printf("test 6\n");
-
+    
     AliDebug(2,"Survived");
-    //printf("Survived track cuts\n");
+    
 
     ////////////////////////
     // Apply PID
@@ -539,16 +542,20 @@ void AliAnalysisTaskHFEQA::UserExec(Option_t */*option*/)
     if(fPIDTPConly->IsSelected(&hfetrack,0x0,"recTrackCont",0x0)) {
       fTPConly->Fill(pt);
     }
+    AliDebug(2,"TPC only PID\n");
+	    
     
     // Complete PID TPC TOF 
     if(fPIDTOFTPC->IsSelected(&hfetrack,0x0,"recTrackCont",fPIDqaTOFTPC)) {
       fTOFTPC->Fill(pt);
+      AliDebug(2,"TOF TPC PID\n");
     }
     
     // Complete PID TPC TRD 
     if(fPIDTPCTRD->IsSelected(&hfetrack,0x0,"recTrackCont",fPIDqaTPCTRD)) {
       fTPCTRD->Fill(pt);
     }
+    AliDebug(2,"TPC TRD PID\n");
 
 
 
@@ -558,6 +565,7 @@ void AliAnalysisTaskHFEQA::UserExec(Option_t */*option*/)
 	fTPCEMCal->Fill(pt);
       }
     }
+    AliDebug(2,"TPC EMCal PID\n");
     
     
   }

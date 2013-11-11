@@ -96,8 +96,8 @@ AliAnalysisTaskHFEQA* ConfigHFEQA(Bool_t useMC, Bool_t isAOD, Int_t icollisionsy
   AliHFEpidTRD *trdpid = pidTPCTRD->GetDetPID(AliHFEpid::kTRDpid);
   trdpid->SetTRD2DPID();
   trdpid->SetElectronEfficiency(0.80);   // efficiency
-  trdpid->SetNTracklets(5);      // ntracklets threshold
-  trdpid->SetCutNTracklets(5, kTRUE);
+  trdpid->SetNTracklets(6);      // ntracklets threshold
+  trdpid->SetCutNTracklets(6, kTRUE);
 
   // change E/p cuts
   AliHFEpidEMCAL *emcpid = pidTPCEMCal->AliHFEpid::GetDetPID(AliHFEpid::kEMCALpid);
