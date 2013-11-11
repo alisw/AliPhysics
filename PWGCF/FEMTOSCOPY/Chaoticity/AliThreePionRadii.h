@@ -134,6 +134,7 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
     TH1D *fTermsQ3; //!
     TH1D *fIdeal; //!
     TH1D *fSmeared; //!
+    TH1D *fMeanKt; //!
   };
   struct St5 {
     TH2D *fExplicit2; //!
@@ -141,6 +142,7 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
     TProfile2D *fAvgP; //!
     TH2D *fIdeal; //!
     TH2D *fSmeared; //!
+    TH1D *fMeanKt; //!
     //
     TH1D *fMCqinv; //!
     TH1D *fMCqinvQW; //!
