@@ -158,29 +158,29 @@ cutsRP->SetQA(doQA);
 //  Int_t sourcePID = 2;
 //  Int_t particleType = 2; //2 or 3 or 4 for kPion, kKaon and kProton 
  
-  TString outputSlotName[] = {"","",""};
+  TString outputSlotName[] = {"","","",""};
 
-  for(int harmonic=3;harmonic<6;harmonic++){  //for v3,v4 and v5
-    outputSlotName[harmonic-3]+=uniqueStr;
-    outputSlotName[harmonic-3]+=Form("%i",harmonic);
-    outputSlotName[harmonic-3]+=cutsRP->GetName();
-    outputSlotName[harmonic-3]+="_";
-    outputSlotName[harmonic-3]+=cutsPOI->GetName();
-    outputSlotName[harmonic-3]+=Form("_%.0f-",centrMin);
-    outputSlotName[harmonic-3]+=Form("%.0f_",centrMax);
+  for(int harmonic=2;harmonic<6;harmonic++){  //for v3,v4 and v5
+    outputSlotName[harmonic-2]+=uniqueStr;
+    outputSlotName[harmonic-2]+=Form("%i",harmonic);
+    outputSlotName[harmonic-2]+=cutsRP->GetName();
+    outputSlotName[harmonic-2]+="_";
+    outputSlotName[harmonic-2]+=cutsPOI->GetName();
+    outputSlotName[harmonic-2]+=Form("_%.0f-",centrMin);
+    outputSlotName[harmonic-2]+=Form("%.0f_",centrMax);
     if(isPID){
-      outputSlotName[harmonic-3]+=AliFlowTrackCuts::PIDsourceName(sourcePID);//sourcePID
-      outputSlotName[harmonic-3]+="_";
-      outputSlotName[harmonic-3]+=AliPID::ParticleName(particleType);//particleType
+      outputSlotName[harmonic-2]+=AliFlowTrackCuts::PIDsourceName(sourcePID);//sourcePID
+      outputSlotName[harmonic-2]+="_";
+      outputSlotName[harmonic-2]+=AliPID::ParticleName(particleType);//particleType
     }
     else{
-      outputSlotName[harmonic-3]+="AllCharged";
+      outputSlotName[harmonic-2]+="AllCharged";
     }
-    if (charge<0) outputSlotName[harmonic-3]+="-";
-    if (charge>0) outputSlotName[harmonic-3]+="+";
+    if (charge<0) outputSlotName[harmonic-2]+="-";
+    if (charge>0) outputSlotName[harmonic-2]+="+";
   }
 
-//  TString QASlotName[] = {"","",""};
+//  TString QASlotName[] = {"","","",""};
 
 //  for(int harmonic=3;harmonic<6;harmonic++){  //for v3,v4 and v5
 //    QASlotName[harmonic-3]+="qa";
@@ -235,8 +235,8 @@ cutsRP->SetQA(doQA);
    
   // Create the flow event task, add it to the manager.
   //===========================================================================
-  AliAnalysisTaskFlowEvent *taskFE[3];
-  for(int i=0;i<3;i++){
+  AliAnalysisTaskFlowEvent *taskFE[4];
+  for(int i=0;i<4;i++){
   if(useAfterBurner)
       { 
       taskFE[i] = new AliAnalysisTaskFlowEvent(Form("TaskFlowEvent_%s",outputSlotName[i].Data()),"",doQA,1);
@@ -273,13 +273,13 @@ cutsRP->SetQA(doQA);
   }
   // Create the analysis tasks, add them to the manager.
   //===========================================================================
-  AliAnalysisTaskScalarProduct *taskSP[3];
-  AliAnalysisTaskQCumulants *taskQC[3];
-  AliAnalysisTaskPIDqa *taskQA[3];
-  for(int i=0;i<3;i++){
+  AliAnalysisTaskScalarProduct *taskSP[4];
+  AliAnalysisTaskQCumulants *taskQC[4];
+  AliAnalysisTaskPIDqa *taskQA[4];
+  for(int i=0;i<4;i++){
   if (SP){
     taskSP[i] = new AliAnalysisTaskScalarProduct(Form("TaskScalarProduct_%s",outputSlotName[i].Data()),WEIGHTS[0]);
-    taskSP[i]->SetHarmonic(i+3);
+    taskSP[i]->SetHarmonic(i+2);
     taskSP[i]->SelectCollisionCandidates(triggerSelectionString);
     taskSP[i]->SetRelDiffMsub(1.0);
     taskSP[i]->SetApplyCorrectionForNUA(kTRUE);
@@ -295,7 +295,7 @@ cutsRP->SetQA(doQA);
     taskQC[i]->SetnBinsMult(10000);
     taskQC[i]->SetMinMult(0.);
     taskQC[i]->SetMaxMult(10000.);
-    taskQC[i]->SetHarmonic(i+3);
+    taskQC[i]->SetHarmonic(i+2);
     taskQC[i]->SetApplyCorrectionForNUA(kFALSE);
     taskQC[i]->SetFillMultipleControlHistograms(kFALSE);     
     mgr->AddTask(taskQC[i]);
@@ -308,10 +308,10 @@ cutsRP->SetQA(doQA);
   // Create the output container for the data produced by the task
   // Connect to the input and output containers
   //===========================================================================
-  AliAnalysisDataContainer *cinput1[3];
-  AliAnalysisDataContainer *coutputFE[3];
-  AliAnalysisDataContainer* coutputFEQA[3];
-  for(int i=0; i<3; i++) {
+  AliAnalysisDataContainer *cinput1[4];
+  AliAnalysisDataContainer *coutputFE[4];
+  AliAnalysisDataContainer* coutputFEQA[4];
+  for(int i=0; i<4; i++) {
     cinput1[i] = mgr->GetCommonInputContainer();
     
     coutputFE[i] = mgr->CreateContainer(Form("FlowEventSimple_%s",outputSlotName[i].Data()),AliFlowEventSimple::Class(),AliAnalysisManager::kExchangeContainer);
@@ -328,11 +328,11 @@ cutsRP->SetQA(doQA);
   // Create the output containers for the data produced by the analysis tasks
   // Connect to the input and output containers
   //===========================================================================
-  AliAnalysisDataContainer *cinputWeights[3];
-  AliAnalysisDataContainer *coutputSP[3]; 
-  AliAnalysisDataContainer *coutputQC[3]; 
-  AliAnalysisDataContainer *coutputQA[3];
-  for(int i=0;i<3;i++) {
+  AliAnalysisDataContainer *cinputWeights[4];
+  AliAnalysisDataContainer *coutputSP[4]; 
+  AliAnalysisDataContainer *coutputQC[4]; 
+  AliAnalysisDataContainer *coutputQA[4];
+  for(int i=0;i<4;i++) {
     if (useWeights) {    
       cinputWeights[i] = mgr->CreateContainer(Form("Weights_%s",outputSlotName[i].Data()),TList::Class(),AliAnalysisManager::kInputContainer); 
     }
@@ -365,20 +365,21 @@ cutsRP->SetQA(doQA);
 	cinputWeights[i]->SetData(weightsList);
       }
     }
-    TString outputQA = "";
-    outputQA +="outputQA";
-    coutputQA[i] = mgr->CreateContainer(Form("QA",QASlotName[i].Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputQA);
-    mgr->ConnectInput(taskQA[i],0,coutputFE[i]);
-    mgr->ConnectOutput(taskQA[i],1,coutputQA[i]);
-
+    if(doQA){
+      TString outputQA = "";
+      outputQA +="outputQA";
+      coutputQA[i] = mgr->CreateContainer(Form("QA",QASlotName[i].Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputQA);
+      mgr->ConnectInput(taskQA[i],0,coutputFE[i]);
+      mgr->ConnectOutput(taskQA[i],1,coutputQA[i]);
+    }
   }
   
 //=============================================================================
-  AliAnalysisTaskPIDqa* taskPIDQA[3];
-  AliAnalysisDataContainer* coutputPIDQAtask[3]; 
+  AliAnalysisTaskPIDqa* taskPIDQA[4];
+  AliAnalysisDataContainer* coutputPIDQAtask[4]; 
 
-  TString taskPIDQAoutputFileName[3]={"","",""};
-  for(int i=0;i<3;i++) {
+  TString taskPIDQAoutputFileName[4]={"","","",""};
+  for(int i=0;i<4;i++) {
     if (doQA) {
      
       taskPIDQA[i] = new AliAnalysisTaskPIDqa(Form("TaskPIDQA_%s",outputSlotName[i].Data()));
