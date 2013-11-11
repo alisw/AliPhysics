@@ -43,9 +43,9 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   void         GetMCPrimaryKine(AliVCluster* cluster, const Int_t mcindex, const Int_t mcTag, const Bool_t matched,
                                 Float_t & eprim, Float_t & asymGen, Float_t & angleGen, Int_t & noverlaps );
   
-  void         FillAngleHistograms(const Int_t nMax,  const Bool_t matched, const Int_t mcindex,
-                                   const Float_t en,  const Float_t angle,  const Float_t mass, const Float_t anglePrim,
-                                   const Float_t m02, const Float_t asym,   const Int_t pid);
+  void         FillAngleHistograms(const Int_t   nMax,  const Bool_t  matched, const Int_t   mcindex,
+                                   const Float_t en,    const Float_t angle,   const Float_t mass,   const Float_t anglePrim,
+                                   const Float_t m02,   const Float_t asym,    const Int_t   pid,    const Int_t   noverlaps);
   
 
   void         FillArmenterosHistograms(const Int_t nMax, const Int_t ebin, const Int_t mcindex,
@@ -469,6 +469,18 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhAnglePairPrimPi0vsRecoNLocMax1;        //! pair opening angle pi0 generated vs reconstructed
   TH2F       * fhAnglePairPrimPi0vsRecoNLocMax2;        //! pair opening angle pi0 generated vs reconstructed
   TH2F       * fhAnglePairPrimPi0vsRecoNLocMaxN;        //! pair opening angle pi0 generated vs reconstructed
+  
+  TH2F       * fhAnglePairOverM02NLocMax1[7][2];        //! pair opening angle / m02 vs E, NLM=1
+  TH2F       * fhAnglePairOverM02NLocMax2[7][2];        //! pair opening angle / m02 vs E, NLM=2
+  TH2F       * fhAnglePairOverM02NLocMaxN[7][2];        //! pair opening angle / m02 vs E, NLM=N
+  
+  TH2F       * fhAnglePairOverM02NLocMax1Overlap0[7][2];//! pair opening angle / m02 vs E, NLM=1
+  TH2F       * fhAnglePairOverM02NLocMax2Overlap0[7][2];//! pair opening angle / m02 vs E, NLM=2
+  TH2F       * fhAnglePairOverM02NLocMaxNOverlap0[7][2];//! pair opening angle / m02 vs E, NLM=N
+
+  TH2F       * fhAnglePairPrimPi0OverM02NLocMax1;       //! pair opening angle / m02 vs E, NLM=1, prim pi0
+  TH2F       * fhAnglePairPrimPi0OverM02NLocMax2;       //! pair opening angle / m02 vs E, NLM=2, prim pi0
+  TH2F       * fhAnglePairPrimPi0OverM02NLocMaxN;       //! pair opening angle / m02 vs E, NLM=N, prim pi0
   
   TH2F       * fhArmNLocMax1[7][4]  ;                   //! Armenteros of 2 highest energy cells when 1 local max vs E, 1-6 for different MC particle types
   TH2F       * fhArmNLocMax2[7][4]  ;                   //! Armenteros of 2 cells local maxima vs E,  1-6 for different MC particle types
