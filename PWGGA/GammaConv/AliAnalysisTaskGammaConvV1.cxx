@@ -344,6 +344,7 @@ void AliAnalysisTaskGammaConvV1::InitBack(){
             collisionSystem == 9){
             centMin = centMin*10;
             centMax = centMax*10; 
+            if(centMax ==0 && centMax!=centMin) centMax=100;
          }
          else if(collisionSystem == 3 || collisionSystem == 6){
             centMin = centMin*5;
