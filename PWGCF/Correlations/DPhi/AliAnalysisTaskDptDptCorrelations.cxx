@@ -75,8 +75,6 @@
 #include "AliPIDResponse.h"
 #include "AliAODpidUtil.h"
 #include "AliPIDCombined.h"
-using std::endl;
-using std::cout;
 
 
 ClassImp(AliAnalysisTaskDptDptCorrelations)
@@ -1188,8 +1186,8 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
   float vertexXY = -999;
   //float dcaX     = -999;
   //float dcaY     = -999;
-  //float dcaZ     = -999;
-  //float dcaXY    = -999;
+  float dcaZ     = -999;
+  float dcaXY    = -999;
   float centrality = -999;
   //Double_t nSigma =-999;   
 
@@ -1451,19 +1449,22 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
           eta      <   _max_eta_2)  
         {
 	  	  
-	  //dcaXY = t->DCA(); //new change Prabhat                                        
-	  //dcaZ  = t->ZAtDCA(); //new change Prabhat  
+	  dcaXY = t->DCA(); //new change Prabhat                                        
+	  dcaZ  = t->ZAtDCA(); //new change Prabhat  
 	  
 	  //if (dcaZ > _dcaZMax) continue;
 	  //cout <<"Prabhat=============="<<"  "<<_dcaZMax<<"    "<<dcaZ<<endl;
 
-	  /*
+	  //Check dca cuts for systematics
+	  //Comment this portion when not required
 	  if (dcaZ     <  _dcaZMin || 
 	      dcaZ     >   _dcaZMax || 
 	      dcaXY    <  _dcaXYMin || 
 	      dcaXY    >   _dcaXYMax)
 	    continue; //track does not have a valid DCA
-	  */
+	  //===========================================
+	  _dcaz->Fill(dcaZ);
+	  _dcaxy->Fill(dcaXY);
 
 	  iPhi   = int( phi/_width_phi_2);
 	  
@@ -1783,7 +1784,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 void   AliAnalysisTaskDptDptCorrelations::FinishTaskOutput()
 {
   AliInfo("AliAnalysisTaskDptDptCorrelations::FinishTaskOutput() Starting.");
-  AliInfo("= 0 ====================================================================");
+  Printf("= 0 ====================================================================");
   finalizeHistograms();
   AliInfo("= 1 ====================================================================");
   PostData(0,_outputHistoList);
