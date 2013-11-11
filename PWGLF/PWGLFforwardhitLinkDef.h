@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
  * USA
  */
-#if defined(__CINT__) && defined(__MAKECINT__)
+#if defined(__CINT__)
 /**
  * @file   PWGLFforward2LinkDef.h
  * @author Christian Holm Christensen <cholm@master.hehi.nbi.dk>
@@ -37,8 +37,6 @@
 #endif
 #pragma link C++ class AliFMDMCHitEnergyFitterTask+;
 
-#else
-# error Not for compilation 
 #endif
 //
 // EOF
