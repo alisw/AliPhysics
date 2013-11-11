@@ -816,6 +816,20 @@ void AliAnalysisTaskDiHadronPID::UserExec(Option_t*) {
 }
 
 // -----------------------------------------------------------------------
+void AliAnalysisTaskDiHadronPID::SelectCollisionCandidates(UInt_t offlineTriggerMask) {
+
+	// Overrides the method defined in AliAnalysisTaskSE. This is needed because
+	// the event selection is not done in the task, but in the AliAODEventCutsDiHadronPID class.
+
+	if (fDebug > 0) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (!fEventCuts) {cout << Form("%s -> ERROR: No AliAODEventCutsDiHadronPID class created for the analysis...",__func__) << endl; return;}
+
+	//fOfflineTriggerMask = offlineTriggerMask;
+	fEventCuts->SetTrigger(offlineTriggerMask);
+
+}
+
+// -----------------------------------------------------------------------
 Bool_t AliAnalysisTaskDiHadronPID::LoadExtMismatchHistos() {
 
 	//

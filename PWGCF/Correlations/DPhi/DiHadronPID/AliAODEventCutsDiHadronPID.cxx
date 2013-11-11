@@ -287,13 +287,13 @@ Bool_t AliAODEventCutsDiHadronPID::IsSelected(AliAODEvent* event) {
 
 		// Get the centrality object.
 	    CurrentCentrality = event->GetCentrality();
-	    cout<<"Centrality object: "<<CurrentCentrality<<endl;
+	    //cout<<"Centrality object: "<<CurrentCentrality<<endl;
 	    if (!CurrentCentrality) {select = kFALSE; return select;}
 
 	    // Check the quality of the centrality estimation.
 	    // If 0 then quality is OK, c.f. TOF/PbPb276/macros/TOFmatchEff.C
 	    CurrentCentralityQuality = CurrentCentrality->GetQuality();
-	    cout<<"Centrality: "<<CurrentCentrality->GetCentralityPercentile(fCentralityEstimator.Data())<<" Quality: "<<CurrentCentrality->GetQuality()<<endl;
+	    //cout<<"Centrality: "<<CurrentCentrality->GetCentralityPercentile(fCentralityEstimator.Data())<<" Quality: "<<CurrentCentrality->GetQuality()<<endl;
 	    if (CurrentCentralityQuality) select = kFALSE;
 
 		// Test Centrality.
