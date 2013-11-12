@@ -24,9 +24,7 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorr_dca1
  double dcaXYMin               = -2.4,
  double dcaXYMax               =  2.4,
  int nCentrality               =  4,
- char *inputHistogramFileName  = "alien:///alice/cern.ch/user/p/prabhat/CalibFiles/PbPbCalib_dca1.root",
- char *OutputFileName          = "AnaDptphase2dca_2"
- )
+ char *inputHistogramFileName  = "alien:///alice/cern.ch/user/p/prabhat/CalibFiles/PbPbCalib_dca1.root")
   
 {
   // Set Default Configuration of this analysis
@@ -326,7 +324,7 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorr_dca1
       taskOutputContainer = analysisManager->CreateContainer(listName, 
                                                              TList::Class(),    
                                                              AliAnalysisManager::kOutputContainer, 
-                                                             Form("%s.root:Histos", OutputFileName));
+                                                             Form("%s:Histos2", AliAnalysisManager::GetCommonFileName()));
       //cout << "Add task to analysis manager and connect it to input and output containers" << endl;
       analysisManager->AddTask(task);
       analysisManager->ConnectInput( task,  0, analysisManager->GetCommonInputContainer());

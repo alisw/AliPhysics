@@ -23,8 +23,8 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptWeight_dca1(int    system          
 							 double dcaZMax                =  2.0,
 							 double dcaXYMin               = -2.4,
 							 double dcaXYMax               =  2.4,
-							 int nCentrality               =  4,
-							 char *OutputFileName          = "AnadptWeightdca_2")
+							 int nCentrality               =  4)
+							 
 
 {
   // Set Default Configuration of this analysis
@@ -291,7 +291,7 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptWeight_dca1(int    system          
       taskOutputContainer = analysisManager->CreateContainer(listName, 
                                                              TList::Class(),    
                                                              AliAnalysisManager::kOutputContainer, 
-                                                             Form("%s.root:Histos", OutputFileName));
+                                                             Form("%s:Histos1", AliAnalysisManager::GetCommonFileName()));
       cout << "Add task to analysis manager and connect it to input and output containers" << endl;
       analysisManager->AddTask(task);
       analysisManager->ConnectInput( task,  0, analysisManager->GetCommonInputContainer());
