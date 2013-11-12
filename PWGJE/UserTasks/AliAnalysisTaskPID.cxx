@@ -1021,7 +1021,8 @@ Int_t AliAnalysisTaskPID::FindBinWithinRange(TAxis* axis, Double_t value) const
 
   
 //_____________________________________________________________________________
-Int_t AliAnalysisTaskPID::FindFirstBinAboveIn3dSubset(const TH3* hist, const Double_t threshold, const Double_t yBin, const Double_t zBin) const
+Int_t AliAnalysisTaskPID::FindFirstBinAboveIn3dSubset(const TH3* hist, const Double_t threshold, const Int_t yBin,
+                                                      const Int_t zBin) const
 {
   // Kind of projects a TH3 to 1 bin combination in y and z
   // and looks for the first x bin above a threshold for this projection.
@@ -1041,7 +1042,8 @@ Int_t AliAnalysisTaskPID::FindFirstBinAboveIn3dSubset(const TH3* hist, const Dou
 
 
 //_____________________________________________________________________________
-Int_t AliAnalysisTaskPID::FindLastBinAboveIn3dSubset(const TH3* hist, const Double_t threshold, const Double_t yBin, const Double_t zBin) const
+Int_t AliAnalysisTaskPID::FindLastBinAboveIn3dSubset(const TH3* hist, const Double_t threshold, const Int_t yBin,
+                                                     const Int_t zBin) const
 {
   // Kind of projects a TH3 to 1 bin combination in y and z 
   // and looks for the last x bin above a threshold for this projection.

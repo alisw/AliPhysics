@@ -202,8 +202,8 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   inline Double_t FastGaus(const Double_t x, const Double_t mean, const Double_t sigma) const;
   inline Double_t FastNormalisedGaus(const Double_t x, const Double_t mean, const Double_t sigma) const;
   Int_t FindBinWithinRange(TAxis* axis, Double_t value) const;
-  Int_t FindFirstBinAboveIn3dSubset(const TH3* hist, const Double_t threshold, const Double_t yValue, const Double_t zValue) const;
-  Int_t FindLastBinAboveIn3dSubset(const TH3* hist, const Double_t threshold, const Double_t yValue, const Double_t zValue) const;
+  Int_t FindFirstBinAboveIn3dSubset(const TH3* hist, const Double_t threshold, const Int_t yValue, const Int_t zValue) const;
+  Int_t FindLastBinAboveIn3dSubset(const TH3* hist, const Double_t threshold, const Int_t yValue, const Int_t zValue) const;
   virtual void SetUpGenHist(THnSparse* hist, Double_t* binsPt, Double_t* binsDeltaPrime, Double_t* binsCent, Double_t* binsJetPt) const;
   virtual void SetUpGenYieldHist(THnSparse* hist, Double_t* binsPt, Double_t* binsCent, Double_t* binsJetPt) const;
   virtual void SetUpHist(THnSparse* hist, Double_t* binsPt, Double_t* binsDeltaPrime, Double_t* binsCent, Double_t* binsJetPt) const;
