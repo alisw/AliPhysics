@@ -51,6 +51,9 @@ set ( SRCS
     UserTasks/AliAnalysisTaskJetShape.cxx
     UserTasks/AliAnalysisTaskJetsTriggerTRD.cxx
     UserTasks/AliAnalysisTaskJetProtonCorr.cxx
+    UserTasks/AliAnalysisTaskPIDV0base.cxx
+    UserTasks/AliAnalysisTaskPID.cxx
+    UserTasks/AliAnalysisTaskIDFragmentationFunction.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
