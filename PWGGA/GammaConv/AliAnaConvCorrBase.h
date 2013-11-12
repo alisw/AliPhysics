@@ -58,7 +58,8 @@ public:
   TAxis& GetAxisIso()       { return fAxisIso;   }
   TAxis& GetAxisCent()      { return fAxisCent;  }
   TAxis& GetAxisZ()         { return fAxisZ;     }
-  TAxis& GetAxisMEEta()     { return fAxisMEEta; }
+  TAxis& GetAxisTrigEta()   { return fAxisTrigEta; }
+  TAxis& GetAxisAssEta()    { return fAxisAssEta; }
   TAxis& GetAxisMEPhi()     { return fAxisMEPhi; }
 
   TList& GetAxisList()      { return fAxesList;  }
@@ -88,7 +89,8 @@ private:
   TAxis fAxisCent; //Centrality
   TAxis fAxisZ; //vtx
   
-  TAxis fAxisMEEta ; //Eta axis for ME
+  TAxis fAxisTrigEta ; //Eta axis for ME
+  TAxis fAxisAssEta ; //Eta axis for ME
   TAxis fAxisMEPhi ; //Phi axis for ME
 
   THnSparseF * fCorrSparse; // Sparse for corr
@@ -100,7 +102,7 @@ private:
   AliAnaConvCorrBase(const AliAnaConvCorrBase&); // not implemented
   AliAnaConvCorrBase& operator=(const AliAnaConvCorrBase&); // not implemented
 
-  ClassDef(AliAnaConvCorrBase, 6); // example of analysis
+  ClassDef(AliAnaConvCorrBase, 7); // example of analysis
 
 };
 

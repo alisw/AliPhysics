@@ -36,16 +36,19 @@ public:
 
   virtual void   UserCreateOutputObjects();
   virtual void   SetUpCorrObjects();
+  virtual void   SetUpCorrAxes(AliAnaConvCorrBase * corr);
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
-  TAxis& GetAxistPt()   { return fAxistPt;   }
-  TAxis& GetAxiscPt()   { return fAxiscPt;   }
-  TAxis& GetAxisEta()  { return fAxisEta;  }
-  TAxis& GetAxisPhi()  { return fAxisPhi;  }
-  TAxis& GetAxisZ()    { return fAxisZ;    }
-  TAxis& GetAxisCent() { return fAxisCent; }
-  TAxis& GetAxisPiMass() { return fAxisPiM; }
+  TAxis& GetAxistPt()     { return fAxistPt;      }
+  TAxis& GetAxiscPt()     { return fAxiscPt;      }
+  TAxis& GetAxisdEta()    { return fAxisdEta;     }
+  TAxis& GetAxisTrigEta() { return fAxisTrigEta;  }
+  TAxis& GetAxisAssEta()  { return fAxisAssEta;   }
+  TAxis& GetAxisPhi()     { return fAxisPhi;      }
+  TAxis& GetAxisZ()       { return fAxisZ;        }
+  TAxis& GetAxisCent()    { return fAxisCent;     }
+  TAxis& GetAxisPiMass()  { return fAxisPiM;      }
 
   void SetV0Filter(AliConversionCuts * filter) { fV0Filter = filter; }
   
@@ -88,7 +91,9 @@ private:
 
   TAxis fAxistPt; //comment
   TAxis fAxiscPt; //comment
-  TAxis fAxisEta; //comment
+  TAxis fAxisdEta; //comment
+  TAxis fAxisTrigEta; //comment
+  TAxis fAxisAssEta; //comment
   TAxis fAxisPhi; //comment
   TAxis fAxisCent; //comment
   TAxis fAxisZ; //comment
@@ -99,7 +104,7 @@ private:
   AliAnalysisTaskdPhi(const AliAnalysisTaskdPhi&); // not implemented
   AliAnalysisTaskdPhi& operator=(const AliAnalysisTaskdPhi&); // not implemented
   
-  ClassDef(AliAnalysisTaskdPhi, 5); 
+  ClassDef(AliAnalysisTaskdPhi, 6); 
 };
 
 inline THnSparseF * AliAnalysisTaskdPhi::GetMEHistogram(Int_t binz, Int_t binc, TObjArray * array) {

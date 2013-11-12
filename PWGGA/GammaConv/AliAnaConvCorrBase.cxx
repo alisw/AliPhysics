@@ -49,7 +49,8 @@ AliAnaConvCorrBase::AliAnaConvCorrBase(TString name, TString title = "title") : 
   fAxisIso(), 
   fAxisCent(), 
   fAxisZ(),
-  fAxisMEEta(), 
+  fAxisTrigEta(), 
+  fAxisAssEta(), 
   fAxisMEPhi(),
   fCorrSparse(NULL),
   fTrigSparse(NULL),
@@ -59,7 +60,6 @@ AliAnaConvCorrBase::AliAnaConvCorrBase(TString name, TString title = "title") : 
   fAxesList.SetOwner(kFALSE);
   fTrackAxisList.SetOwner(kFALSE);
   fTrigAxisList.SetOwner(kFALSE);
-
   SetUpDefaultBins();
  
 }
@@ -81,6 +81,12 @@ void AliAnaConvCorrBase::SetUpDefaultBins() {
   fAxisdEta.Set(32, -1.6, 1.6);
   fAxisdEta.SetNameTitle("dEta", "delta eta");
 
+  fAxisTrigEta.SetNameTitle("tEta", "Eta");
+  fAxisTrigEta.Set(320, -0.8, 0.8);
+
+  fAxisAssEta.SetNameTitle("aEta", "Eta");
+  fAxisAssEta.Set(360, -0.9, 0.9);
+
   fAxisdPhi.Set(32, -TMath::PiOver2(), 3*TMath::PiOver2());
   fAxisdPhi.SetNameTitle("dPhi", "delta Phi");
 
@@ -88,12 +94,15 @@ void AliAnaConvCorrBase::SetUpDefaultBins() {
   fAxistPt.Set(13, tptbins);
   fAxistPt.SetNameTitle("tPt", "trigger Pt");
 
-  Double_t cptbins[19] = {0.7, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 8.0, 10.0, 12.5, 15, 20, 25, 30, 50, 100};
+  Double_t cptbins[19] = {0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 8.0, 10.0, 12.5, 15, 20, 25, 30, 50, 100};
   fAxiscPt.Set(18, cptbins);
   fAxiscPt.SetNameTitle("cPt", "track Pt");
 
   fAxisCent.SetNameTitle("centrality", "centrality");
+  fAxisCent.Set(1, -999, 999);
   fAxisZ.SetNameTitle("vtxz", "vtxz");
+  Double_t zbins[6] = {-10, -5, -1.5, 1.5, 5, 10 }; 
+  fAxisZ.Set(5, zbins);
 
   fAxisIso.Set(1, -0.5, 2.5);
   fAxisIso.SetNameTitle("iso", "isolation");
@@ -105,16 +114,13 @@ void AliAnaConvCorrBase::SetUpDefaultBins() {
   fAxesList.AddAt(&fAxisCent, 4);
   fAxesList.AddAt(&fAxisZ, 5);
 
-  fAxisMEEta.Set(320, -0.8, 0.8);
-  fAxisMEEta.SetNameTitle("eta", "eta");
-
-  fTrackAxisList.AddAt(&fAxisMEEta, 0);
+  fTrackAxisList.AddAt(&fAxisAssEta, 0);
   fTrackAxisList.AddAt(&fAxistPt, 1);
   fTrackAxisList.AddAt(&fAxiscPt, 2);
   fTrackAxisList.AddAt(&fAxisCent, 3);
   fTrackAxisList.AddAt(&fAxisZ, 4);
 
-  fTrigAxisList.AddAt(&fAxisMEEta, 0);
+  fTrigAxisList.AddAt(&fAxisTrigEta, 0);
   fTrigAxisList.AddAt(&fAxistPt, 1);
   fTrigAxisList.AddAt(&fAxisCent, 2);
   fTrigAxisList.AddAt(&fAxisZ, 3);

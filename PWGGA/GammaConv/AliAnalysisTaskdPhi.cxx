@@ -63,7 +63,9 @@ AliAnalysisTaskdPhi::AliAnalysisTaskdPhi(const char *name) : AliAnalysisTaskSE(n
   fDeltaAODBranchName("AliAODGammaConversion_gamma"), 
   fAxistPt(),
   fAxiscPt(),
-  fAxisEta(),
+  fAxisdEta(),
+  fAxisTrigEta(),
+  fAxisAssEta(),
   fAxisPhi(),
   fAxisCent(),
   fAxisZ(), 
@@ -71,14 +73,23 @@ AliAnalysisTaskdPhi::AliAnalysisTaskdPhi(const char *name) : AliAnalysisTaskSE(n
   fDoPhoton(kFALSE)
 {
   //constructor
+                                                                                                                                                                                   
+  Double_t tptbins[10] = {0.1, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 15, 50, 100};                                                                                                        
   fAxistPt.SetNameTitle("tPtAxis", "tPt");
-  fAxistPt.Set(20, 0, 100);
+  fAxistPt.Set(9, tptbins);
 
+  Double_t cptbins[13] = {0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 8.0, 10.0, 25, 50, 100};                                                                                         
   fAxiscPt.SetNameTitle("cPtAxis", "cPt");
-  fAxiscPt.Set(20, 0, 100);
+  fAxiscPt.Set(12, cptbins);
 
-  fAxisEta.SetNameTitle("EtaAxis", "Eta");
-  fAxisEta.Set(180, -0.9, 0.9);
+  fAxisdEta.SetNameTitle("dEtaAxis", "Eta");
+  fAxisdEta.Set(36, -1.8, 1.8);
+
+  fAxisTrigEta.SetNameTitle("TrigEtaAxis", "Eta");
+  fAxisTrigEta.Set(320, -0.8, 0.8);
+
+  fAxisAssEta.SetNameTitle("AssEtaAxis", "Eta");
+  fAxisAssEta.Set(360, -0.9, 0.9);
 
   fAxisPhi.SetNameTitle("PhiAxis", "Phi");
   fAxisPhi.Set(128, 0, TMath::TwoPi());
@@ -130,36 +141,40 @@ AliAnalysisTaskdPhi::~AliAnalysisTaskdPhi(){
 
 ///________________________________________________________________________
 void AliAnalysisTaskdPhi::SetUpCorrObjects() {
-  ///Creat corr obj
-  //  fIsoAna = new AliAnaConvIsolation();
-  
+  //Set up corr objects
   AliDebug(AliLog::kDebug + 5, "Set Up corr objects");
-
-  
-
 
   if(fDoPhoton) {
     fPhotonCorr = new AliAnaConvCorrPhoton("PhotonCorr","photon %s");
-    fPhotonCorr->GetAxisCent().Set(fAxisCent.GetNbins(), fAxisCent.GetXbins()->GetArray());
-    fPhotonCorr->GetAxisZ().Set(fAxisZ.GetNbins(), fAxisZ.GetXbins()->GetArray());
-    fPhotonCorr->GetAxistPt().Set(fAxistPt.GetNbins(), fAxistPt.GetXbins()->GetArray());
-    fPhotonCorr->GetAxiscPt().Set(fAxiscPt.GetNbins(), fAxiscPt.GetXbins()->GetArray());
+    SetUpCorrAxes(fPhotonCorr);
     fPhotonCorr->CreateHistograms();
     fHistograms->Add(fPhotonCorr->GetHistograms());
   }
   
   fPionCorr = new AliAnaConvCorrPion("PionCorr", "pion");
-  fPionCorr->GetAxisCent().Set(fAxisCent.GetNbins(), fAxisCent.GetXbins()->GetArray());
-  fPionCorr->GetAxisZ().Set(fAxisZ.GetNbins(), fAxisZ.GetXbins()->GetArray());
-  fPionCorr->GetAxistPt().Set(fAxistPt.GetNbins(), fAxistPt.GetXbins()->GetArray());
-  fPionCorr->GetAxiscPt().Set(fAxiscPt.GetNbins(), fAxiscPt.GetXbins()->GetArray());
+  SetUpCorrAxes(fPionCorr);
   fPionCorr->GetAxisM().Set(fAxisPiM.GetNbins(), fAxisPiM.GetXbins()->GetArray());
   fPionCorr->CreateHistograms();
   fHistograms->Add(fPionCorr->GetHistograms());
 }
 
-    
-    
+///________________________________________________________________________    
+void AliAnalysisTaskdPhi::SetUpCorrAxes(AliAnaConvCorrBase * corr) {
+  ///Set up axes in corr object
+  corr->GetAxisCent().Set(fAxisCent.GetNbins(), fAxisCent.GetXbins()->GetArray());
+  const Double_t * zbins = fAxisZ.GetXbins()->GetArray();
+  if(zbins) {
+    corr->GetAxisZ().Set(fAxisZ.GetNbins(), fAxisZ.GetXbins()->GetArray());
+  } else {
+    corr->GetAxisZ().Set(fAxisZ.GetNbins(), fAxisZ.GetBinLowEdge(1), fAxisZ.GetBinUpEdge(fAxisZ.GetNbins()));
+  }
+  
+  corr->GetAxistPt().Set(fAxistPt.GetNbins(), fAxistPt.GetXbins()->GetArray());
+  corr->GetAxiscPt().Set(fAxiscPt.GetNbins(), fAxiscPt.GetXbins()->GetArray());
+  corr->GetAxisdEta().Set(fAxisdEta.GetNbins(), fAxisdEta.GetBinLowEdge(1), fAxisdEta.GetBinUpEdge(fAxisdEta.GetNbins()));
+  corr->GetAxisTrigEta().Set(fAxisTrigEta.GetNbins(), fAxisTrigEta.GetBinLowEdge(1), fAxisTrigEta.GetBinUpEdge(fAxisTrigEta.GetNbins()));
+  corr->GetAxisAssEta().Set(fAxisAssEta.GetNbins(), fAxisAssEta.GetBinLowEdge(1), fAxisAssEta.GetBinUpEdge(fAxisAssEta.GetNbins()));
+}    
 	
 	  
 
@@ -244,7 +259,7 @@ void AliAnalysisTaskdPhi::UserCreateOutputObjects() {
   MEHistograms->Add(hMEvents);
 
   hTrackCent = new TH2I("hTrackCent", "N accepted tracks vs centrality",
-			fAxisCent.GetNbins() > 2 ? 100 : 1, -999, 999,
+			fAxisCent.GetNbins() > 2 ? 100 : 1, fAxisCent.GetBinLowEdge(1), fAxisCent.GetBinUpEdge(fAxisCent.GetNbins()),
 			750, 0, 1500);
   MEHistograms->Add(hTrackCent);
 
@@ -443,7 +458,7 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
   
   ///create track array
   TObjArray tracks;
-  const Double_t etalim[2] = { fAxisEta.GetBinLowEdge(1), fAxisEta.GetBinUpEdge(fAxisEta.GetNbins())};
+  const Double_t etalim[2] = { fAxisTrigEta.GetBinLowEdge(1), fAxisTrigEta.GetBinUpEdge(fAxisTrigEta.GetNbins())};
   for(Int_t iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); iTrack++) {
     AliVTrack * track = static_cast<AliVTrack*>(fInputEvent->GetTrack(iTrack));
     if(track->Pt() < fAxiscPt.GetBinLowEdge(1) ) continue;
@@ -464,7 +479,7 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 void AliAnalysisTaskdPhi::Process(TObjArray * gammas, TObjArray * tracks, const Float_t cent, const Float_t vtxz) {
   ///Process stuff
 
-  const Double_t etalim[2] = { fAxisEta.GetBinLowEdge(1), fAxisEta.GetBinUpEdge(fAxisEta.GetNbins())};
+  const Double_t etalim[2] = { fAxisTrigEta.GetBinLowEdge(1), fAxisTrigEta.GetBinUpEdge(fAxisTrigEta.GetNbins())};
   if(DebugLevel() > 4) printf("Number of accepted gammas, tracks %d  %d \n", gammas->GetEntriesFast(), tracks->GetEntriesFast());
  
   AliAnaConvCorrBase * gCorr = fPhotonCorr; //GetCorrObject(vertexBin, centBin, fPhotonCorr);
