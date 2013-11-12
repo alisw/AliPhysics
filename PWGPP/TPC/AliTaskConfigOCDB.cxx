@@ -35,6 +35,7 @@ ClassImp(AliTaskConfigOCDB)
 AliTaskConfigOCDB::AliTaskConfigOCDB():
            AliAnalysisTask(),
            fRun(0),
+           fOCDBstorage(),
            fRunChanged(kFALSE),
            fESDhandler(NULL),
            fESD(NULL),
@@ -47,6 +48,7 @@ AliTaskConfigOCDB::AliTaskConfigOCDB():
 AliTaskConfigOCDB::AliTaskConfigOCDB(const char* name, const char *storage, Int_t run)
           :AliAnalysisTask(name, "configure OCDB field geom"),
            fRun(run),
+           fOCDBstorage(storage),
            fRunChanged(kFALSE),
            fESDhandler(NULL),
            fESD(NULL),
@@ -134,13 +136,12 @@ void AliTaskConfigOCDB::CreateOutputObjects()
   }
   // Create CDB manager
   AliCDBManager *cdb = AliCDBManager::Instance();
-  // If CDB is already locked, return
-  if (cdb->GetLock()) return;
-  // SetDefault storage. Specific storages must be set by TaskCDBconnectSupply::Init()
-  //  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-//  if (!cdb->GetRaw()) {
-//     cdb->SetDefaultStorage("raw://");
-//  }   
+  // If CDB is unlocked, set the def storage
+  if (!cdb->GetLock())
+  {
+    cdb->SetDefaultStorage(fOCDBstorage);
+  }
+
   if (run && (run != fRun)) {
      fRunChanged = kTRUE;
      fRun = run;
