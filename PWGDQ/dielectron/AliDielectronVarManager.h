@@ -618,7 +618,8 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
       values[AliDielectronVarManager::kPdgCode]           =mc->GetMCTrack(particle)->PdgCode();
       values[AliDielectronVarManager::kHasCocktailMother] =mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kDirect);
       values[AliDielectronVarManager::kPdgCodeMother]     =mc->GetMotherPDG(particle);
-      values[AliDielectronVarManager::kPdgCodeGrandMother]=mc->GetPdgFromLabel(mc->GetMothersLabel(trkLbl));
+      AliMCParticle *motherMC=mc->GetMCTrackMother(particle); //mother
+      if(motherMC) values[AliDielectronVarManager::kPdgCodeGrandMother]=mc->GetMotherPDG(motherMC);
     }
     values[AliDielectronVarManager::kNumberOfDaughters]=mc->NumberOfDaughters(particle);
   } //if(mc->HasMC())
@@ -937,7 +938,8 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
       values[AliDielectronVarManager::kPdgCode]           =mc->GetMCTrack(particle)->PdgCode();
       values[AliDielectronVarManager::kHasCocktailMother] =mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kDirect);
       values[AliDielectronVarManager::kPdgCodeMother]     =mc->GetMotherPDG(particle);
-      values[AliDielectronVarManager::kPdgCodeGrandMother]=mc->GetPdgFromLabel(mc->GetMothersLabel(trkLbl));
+      AliAODMCParticle *motherMC=mc->GetMCTrackMother(particle); //mother
+      if(motherMC) values[AliDielectronVarManager::kPdgCodeGrandMother]=mc->GetMotherPDG(motherMC);
     }
     values[AliDielectronVarManager::kNumberOfDaughters]=mc->NumberOfDaughters(particle);
   } //if(mc->HasMC())
@@ -1004,7 +1006,9 @@ inline void AliDielectronVarManager::FillVarMCParticle(const AliMCParticle *part
   values[AliDielectronVarManager::kPdgCode]           = particle->PdgCode();
   values[AliDielectronVarManager::kHasCocktailMother] = mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kDirect);
   values[AliDielectronVarManager::kPdgCodeMother]     = mc->GetMotherPDG(particle);
-  values[AliDielectronVarManager::kPdgCodeGrandMother]= mc->GetPdgFromLabel(mc->GetMothersLabel(trkLbl));
+  AliMCParticle *motherMC=mc->GetMCTrackMother(particle); //mother
+  if(motherMC) values[AliDielectronVarManager::kPdgCodeGrandMother]=mc->GetMotherPDG(motherMC);
+
 
   values[AliDielectronVarManager::kIsJpsiPrimary] = mc->IsJpsiPrimary(particle);
   values[AliDielectronVarManager::kNumberOfDaughters]=mc->NumberOfDaughters(particle);
@@ -1165,7 +1169,9 @@ inline void AliDielectronVarManager::FillVarAODMCParticle(const AliAODMCParticle
   values[AliDielectronVarManager::kPdgCode]           = particle->PdgCode();
   values[AliDielectronVarManager::kHasCocktailMother] = mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kDirect);
   values[AliDielectronVarManager::kPdgCodeMother]     = mc->GetMotherPDG(particle);
-  values[AliDielectronVarManager::kPdgCodeGrandMother]= mc->GetPdgFromLabel(mc->GetMothersLabel(trkLbl));
+  AliAODMCParticle *motherMC=mc->GetMCTrackMother(particle); //mother
+  if(motherMC) values[AliDielectronVarManager::kPdgCodeGrandMother]=mc->GetMotherPDG(motherMC);
+
 
   values[AliDielectronVarManager::kIsJpsiPrimary] = mc->IsJpsiPrimary(particle);
   values[AliDielectronVarManager::kNumberOfDaughters]=mc->NumberOfDaughters(particle);
