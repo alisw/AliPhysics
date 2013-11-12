@@ -17,6 +17,7 @@ class AliESDInputHandler;
 class AliTaskConfigOCDB : public AliAnalysisTask {
 private:
   Int_t                     fRun;            // Current run
+  TString                   fOCDBstorage;    // ocdbStorage
   Bool_t                    fRunChanged;     //! Flag for run change.
   AliESDInputHandler       *fESDhandler;     //! Pointer to ESD input handler
   AliESDEvent              *fESD;            //! Pointer to current ESD event
