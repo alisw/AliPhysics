@@ -34,6 +34,8 @@ class AliFMDFloatMap;
  * that impinges on the detector in such a way that it deposite energy 
  * into two or more strips. 
  *
+ * @image html alice-int-2012-040-share_fraction.png "Energy loss sharing"
+ *
  * @par Input: 
  *    - AliESDFMD object  - from reconstruction
  *

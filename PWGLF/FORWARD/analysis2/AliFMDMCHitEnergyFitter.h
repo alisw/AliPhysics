@@ -9,6 +9,12 @@ class AliESDEvent;
 class TNtuple;
 class TClonesArray;
 
+/**
+ * Class to fit the simulated energy loss in the FMD
+ * 
+ * @ingroup pwglf_forward_mc
+ * @ingroup pwglf_forward_eloss
+ */
 class AliFMDMCHitEnergyFitter : public AliFMDEnergyFitter
 {
 public:
@@ -49,6 +55,7 @@ public:
    * 
    * @param esdInput ESD input 
    * @param mcInput  MC input
+   * @param handler  Handler of additional input
    * 
    * @return true
    */

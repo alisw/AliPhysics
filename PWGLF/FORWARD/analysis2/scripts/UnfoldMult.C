@@ -1,10 +1,12 @@
 /**
- * @file   Unfolding.C
+ * @file   UnfoldMult.C
  * @author Valentina Zaccolo
  * @date   Tue Mar 05 12:56:56 2013
  * 
  * @brief  Bayesian Method Unfolding Script
  *
+ * @ingroup pwglf_forward_scripts
+ * @ingroup pwglf_forward_multdist
  */
 #include <iostream>
 #include <TList.h>
@@ -18,7 +20,11 @@
 #include "RooUnfoldBayes.h"
 #include "RooUnfoldResponse.h"
 #include <TMath.h>
-
+/** 
+ * @defgroup pwglf_forward_scripts_unfoldmult UnfoldMult stuff 
+ *
+ * @ingroup pwglf_forward_multdist
+ */
 /** 
  * Get an object from a directory 
  * 
@@ -26,6 +32,8 @@
  * @param name  Name of object 
  * 
  * @return Pointer to object or null if not found 
+ *
+ * @ingroup pwglf_forward_scripts_unfoldmult
  */
 TObject* GetObject(TDirectory* d, const char* name)
 {
@@ -43,6 +51,8 @@ TObject* GetObject(TDirectory* d, const char* name)
  * @param name  Name of object
  * 
  * @return Pointer to object or null if not found 
+ *
+ * @ingroup pwglf_forward_scripts_unfoldmult
  */
 TObject* GetObject(TCollection* d, const char* name)
 {
@@ -61,6 +71,8 @@ TObject* GetObject(TCollection* d, const char* name)
  * @param name  Name of collection
  * 
  * @return Pointer to collection or null 
+ *
+ * @ingroup pwglf_forward_scripts_unfoldmult
  */
 TCollection* GetCollection(TDirectory* d, const char* name)
 {
@@ -73,6 +85,8 @@ TCollection* GetCollection(TDirectory* d, const char* name)
  * @param name  Name of collection
  * 
  * @return Pointer to collection or null 
+ *
+ * @ingroup pwglf_forward_scripts_unfoldmult
  */
 TCollection* GetCollection(TCollection* d, const char* name)
 {
@@ -85,6 +99,8 @@ TCollection* GetCollection(TCollection* d, const char* name)
  * @param name  Name of histogram 
  * 
  * @return Pointer to histogram or null 
+ *
+ * @ingroup pwglf_forward_scripts_unfoldmult
  */
 TH1* GetH1(TDirectory* d, const char* name)
 {
@@ -97,6 +113,8 @@ TH1* GetH1(TDirectory* d, const char* name)
  * @param name  Name of histogram 
  * 
  * @return Pointer to histogram or null 
+ *
+ * @ingroup pwglf_forward_scripts_unfoldmult
  */
 TH1* GetH1(TCollection* d, const char* name)
 {
@@ -121,6 +139,8 @@ TH2* GetH2(TDirectory* d, const char* name)
  * @param name  Name of histogram 
  * 
  * @return Pointer to histogram or null 
+ *
+ * @ingroup pwglf_forward_scripts_unfoldmult
  */
 TH2* GetH2(TCollection* d, const char* name)
 {
@@ -133,6 +153,8 @@ TH2* GetH2(TCollection* d, const char* name)
  * @param readNotWrite  If true, open read-only
  * 
  * @return Pointer to file, or null
+ *
+ * @ingroup pwglf_forward_scripts_unfoldmult
  */
 TFile* OpenFile(const char* filename, Bool_t readNotWrite)
 {
@@ -143,7 +165,11 @@ TFile* OpenFile(const char* filename, Bool_t readNotWrite)
   }
   return ret;
 }
-/** A type definition to make it easier to switch to TDirectory structure */
+/** 
+ * A type definition to make it easier to switch to TDirectory structure 
+ *
+ * @ingroup pwglf_forward_scripts_unfoldmult
+ */
 typedef TCollection Dir;
 
 /** 
@@ -155,6 +181,8 @@ typedef TCollection Dir;
  * @param resp     Directory containing response matrices 
  * @param data     Directory containing data histogram 
  * @param out      Output directory  
+ *
+ * @ingroup pwglf_forward_scripts_unfoldmult
  */
 void GetHistos(Double_t    lowLim, 
 	       Double_t    highLim, 
@@ -168,8 +196,10 @@ void GetHistos(Double_t    lowLim,
  * @param measured   Measured distribution
  * @param mcHist     MC truth distribution
  * @param esdHist    MC distribution after ESD event selection
+ *
+ * @ingroup pwglf_forward_scripts_unfoldmult
  */
-void ProcessUnfold(TH2* response, TH1* measured, TH1* MCHist, TH1* ESDHist); 
+void ProcessUnfold(TH2* response, TH1* measured, TH1* mcHist, TH1* esdHist); 
 /** 
  * Caclulate the trigger bias correction 
  * 
@@ -177,6 +207,8 @@ void ProcessUnfold(TH2* response, TH1* measured, TH1* MCHist, TH1* ESDHist);
  * @param esdHist    MC distribution after ESD event selection
  * 
  * @return  Histogram of trigger bias correction
+ *
+ * @ingroup pwglf_forward_scripts_unfoldmult
  */
 TH1* GetTriggerBias(TH1* mcHist, TH1* esdHist);
 /** 
@@ -195,6 +227,8 @@ void DoCorrection(TH1* unfoldBefore, TH1* triggerBias, TH1* mcHist);
  * @param respFile File containing response matrices 
  * @param dataFile File containing measured distributions
  * @param outFile  Output file 
+ *
+ * @ingroup pwglf_forward_scripts_unfoldmult
  */
 void UnfoldMult(const char* respFile="forward_response.root", 
 		const char* dataFile="forward_multiplicy.root", 

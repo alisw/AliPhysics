@@ -43,16 +43,16 @@ public:
    * 
    * @param out    Output file name on return 
    * @param prefix Prefix of the file name 
+   */
+  static void MakeFileName(TString&        out,
+			   const TString&  prefix)
+  /*
    * @param runNo  Run Number
    * @param sys    Collision system 
    * @param sNN    Center of mass energy 
    * @param field  L3 Field 
    * @param mc     Simulations or not
    * @param sat    Satellite interactions or not 
-   */
-  static void MakeFileName(TString&        out,
-			   const TString&  prefix)
-  /*
 			   ULong_t         runNo, 
 			   UShort_t        sys, 
 			   UShort_t        sNN, 
@@ -123,7 +123,6 @@ public:
    * @param field   L3 Field 
    * @param mc      Simulations or not
    * @param sat     Satellite interactions or not 
-   * @param options Options
    * @param local   Local database file 
    */
   void Run(UShort_t    what, 
@@ -274,7 +273,6 @@ public:
    * @param field   L3 magnetic field
    * @param mc      Simulation flag
    * @param sat     Satellite interaction flag
-   * @param options Options 
    * @param local   Local storage
    */
   virtual void Summarize(UShort_t    what, 

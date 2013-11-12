@@ -13,10 +13,10 @@
 
 //====================================================================
 /**
- * Analysis train to make @f$ dN/d\eta@f$
+ * Analysis train to make @f$ P(N_{ch})@f$
  * 
  *
- * @ingroup pwglf_forward_dndeta
+ * @ingroup pwglf_forward_multdists
  * @ingroup pwglf_forward_trains_specific
  */
 class MakeMultDistsTrain : public TrainSetup

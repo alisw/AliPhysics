@@ -1,3 +1,13 @@
+/**
+ * @file   UnfoldMultDists.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Tue Nov 12 09:25:52 2013
+ * 
+ * @brief  A class to do unfolding 
+ * 
+ * 
+ * @ingroup pwglf_forward_multdist
+ */
 #include <TFile.h>
 #include <TList.h>
 #include <TH1.h>
@@ -18,6 +28,7 @@
 /**
  * Class to do unfolding of raw histograms produced by AliForwardMultDists 
  * 
+ * @ingroup pwglf_forward_multdist
  */
 struct Unfolder
 {

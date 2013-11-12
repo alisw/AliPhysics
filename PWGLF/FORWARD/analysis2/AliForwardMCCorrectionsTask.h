@@ -24,17 +24,23 @@ class TList;
 
 
 /** 
- * Calculate the corrections in the forward regions
+ * Calculate the simulation-based corrections in the forward regions
  * 
+ * @image html alice-int-2012-040-secondary_origin.png "Fraction of secondaries"
+ *
  * @par Inputs: 
- *   - AliESDEvent 
+ *   - AliESDEvent (for steering only)
+ *   - AliTrackReference
+ *   - Kinematics 
+ *   - Geometry 
  *
  * @par Outputs: 
- *   - AliAODForwardMult 
+ *   - AliFMDCorrSecondaryMap
  * 
  * @par Histograms 
  *   
  * @par Corrections used 
+ *   - None
  * 
  * @ingroup pwglf_forward_tasks
  * @ingroup pwglf_forward_mc

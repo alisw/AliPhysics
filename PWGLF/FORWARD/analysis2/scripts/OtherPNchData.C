@@ -1,5 +1,10 @@
 #include <TGraphAsymmErrors.h>
 
+/**
+ * Class that holds information on other @f$ P(N_{ch})@f$ results
+ * 
+ * @ingroup pwglf_forward_multdist
+ */
 struct OtherPNch 
 {
   /* ===================================================================
