@@ -3,6 +3,11 @@
 #include <TKey.h>
 #include <TList.h>
 
+/**
+ * Class to draw summary of unfolding
+ * 
+ * @ingroup pwglf_forward_multdist
+ */
 struct SummaryUnfoldedDrawer : public SummaryDrawer
 {
 

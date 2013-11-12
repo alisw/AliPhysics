@@ -21,6 +21,8 @@ class TH1D;
 /**
  * Tasks to determine @f$ dN/d\eta@f$ in the forward regions
  *
+ * @image html alice-int-2012-040-performance_spdfmdvzero.png "dN/deta in PbPb"
+ * 
  * @ingroup pwglf_forward_tasks_dndeta
  * @ingroup pwglf_forward_dndeta
  */

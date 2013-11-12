@@ -7,6 +7,10 @@ class AliAODForwardMult;
 class AliAODCentralMult;
 class TList;
 
+/**
+ * Base class for reading in AOD stuff 
+ * 
+ */
 class AliBaseAODTask : public AliAnalysisTaskSE
 {
 public:

@@ -274,7 +274,7 @@ UShort_t AliForwardUtil::CheckForAOD()
 {
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
   if (dynamic_cast<AliAODInputHandler*>(am->GetInputEventHandler())) {
-    /// ::Info("CheckForAOD", "Found AOD Input handler");
+    // ::Info("CheckForAOD", "Found AOD Input handler");
     return 1;
   }
   if (dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler())) {

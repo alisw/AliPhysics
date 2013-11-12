@@ -41,7 +41,8 @@ class TArrayD;
  * @par Corrections used: 
  *    - None
  *
- *
+ * @image html alice-int-2012-040-eloss_fits.png "Summary of fits"
+ * 
  * @ingroup pwglf_forward_algo
  * @ingroup pwglf_forward_eloss
  */
@@ -456,7 +457,7 @@ protected:
      * Fill histogram 
      * 
      * @param empty  True if event is empty
-     * @param ieta   Eta bin (0 based)
+     * @param eta    @f$ Eta@f$
      * @param icent  Centrality bin (1 based)
      * @param mult   Signal 
      */
@@ -556,8 +557,8 @@ protected:
      * @f$ [b_{min}-\Delta b,N(\Delta_1+\xi_1\log(N))+2N\xi@f$
      * 
      * @param dist        Histogram to fit 
-     * @param bin         Bin number
      * @param lowCut      Lower cut @f$ E_{min}@f$ on signal 
+     * @param minEntries  Least number of entries required
      * @param nParticles  Max number @f$ N@f$ of convolved landaus to fit
      * @param minusBins   Number of bins @f$ \Delta b@f$ from peak to 
      *                    subtract to get the fit range 
