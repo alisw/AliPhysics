@@ -142,7 +142,7 @@ Double_t AliTrackerBase::MeanMaterialBudget(const Double_t *start, const Double_
   for (Int_t i=0;i<6;i++) bparam[i]=0;
 
   if (!gGeoManager) {
-    AliErrorClass("No TGeo\n");
+    AliFatalClass("No TGeo\n");
     return 0.;
   }
   //
