@@ -72,7 +72,9 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   task->GetEventInspector().SetCentralityMethod("V0M");
 
   // --- Sharing filter ----------------------------------------------
-  // Set the low cut used for sharing - overrides settings in eloss fits
+  // If the following is uncommented, then the merging of shared
+  // signals is disabled completely
+  // task->GetSharingFilter().SetDisableMerging(true);
   // Enable use of angle corrected signals in the algorithm 
   task->GetSharingFilter().SetUseAngleCorrectedSignals(true);
   // Disable use of angle corrected signals in the algorithm 
