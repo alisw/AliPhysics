@@ -18,7 +18,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: October 14th, 2013.								  //
+	//		version: November 11th, 2013.								  //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -180,6 +180,7 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fNTracks(0)
 ,fNClusters(0)
 ,fTPCNcls_EoverP(0)
+,fTPCNcls_pid(0)
 ,fEta(0)
 ,fPhi(0)
 ,fR(0)
@@ -412,6 +413,7 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fNTracks(0)
 ,fNClusters(0)
 ,fTPCNcls_EoverP(0)
+,fTPCNcls_pid(0)
 ,fEta(0)
 ,fPhi(0)
 ,fR(0)
@@ -955,6 +957,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fTPCnsigma_eta = new TH2F("fTPCnsigma_eta",";Pseudorapidity #eta; TPC signal - <TPC signal>_{elec} (#sigma)",200,-0.9,0.9,200,-15,15);
 	fTPCnsigma_phi = new TH2F("fTPCnsigma_phi",";Azimuthal Angle #phi; TPC signal - <TPC signal>_{elec} (#sigma)",200,0,2*TMath::Pi(),200,-15,15);
 	
+	fTPCNcls_pid= new TH2F("fTPCNcls_pid","fTPCNcls_pid;NCls;NCls for PID",159,0,159,159,0,159);	
 	
 	fNcells_pt=new TH2F("fNcells_pt","fNcells_pt",1000, 0,20,100,0,30);
 	fEoverP_pt_pions= new TH2F("fEoverP_pt_pions","fEoverP_pt_pions",1000,0,30,500,0,2);
@@ -977,6 +980,9 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	
 	fOutputList->Add(fEoverP_pt_pions2);
 	fOutputList->Add(fEoverP_pt_hadrons);
+	
+	fOutputList->Add(fTPCNcls_pid);
+
 	
 		//__________________________________________________________________
 		//Efficiency studies
@@ -1480,6 +1486,11 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		
 		
 		Float_t TPCNcls = track->GetTPCNcls();
+		//TPC Ncls for pid
+		Float_t TPCNcls_pid = track->GetTPCsignalN();
+		fTPCNcls_pid->Fill(TPCNcls, TPCNcls_pid);
+		
+		
 		Float_t pos[3]={0,0,0};
 		
 		Double_t fEMCflag = kFALSE;
@@ -2200,9 +2211,16 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 								
 								
 								if(fMCparticle->Eta()>=fEtaCutMin && fMCparticle->Eta()<=fEtaCutMax ){
-										//check
-									if(fIsHFE1) fPtMCelectronAfterAll->Fill(fMCparticle->Pt()); //numerator for the total efficiency
-									
+										
+									if(!fUseShowerShapeCut){
+										if(fIsHFE1) fPtMCelectronAfterAll->Fill(fMCparticle->Pt()); //numerator for the total efficiency AOD
+									}
+									//November 11 for efficiency of triggered data
+									if(fUseShowerShapeCut){
+										if(M02 >= fM02CutMin && M02<=fM02CutMax && M20>=fM20CutMin && M20<=fM20CutMax){
+											if(fIsHFE1) fPtMCelectronAfterAll->Fill(fMCparticle->Pt()); //numerator for the total efficiency AOD
+										}
+									}
 									
 									Bool_t MotherFound = FindMother(track->GetLabel());
 									if(MotherFound){
@@ -2247,7 +2265,20 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 								if(MotherFound)
 								{
 									if(fMCtrack->Eta()>=fEtaCutMin && fMCtrack->Eta()<=fEtaCutMax){
-										if(fIsHFE1) fPtMCelectronAfterAll->Fill(fMCtrack->Pt()); //numerator for the total efficiency
+										
+										
+										if(!fUseShowerShapeCut){
+											if(fIsHFE1) fPtMCelectronAfterAll->Fill(fMCtrack->Pt()); //numerator for the total efficiency ESD
+										}
+										//November 11 for efficiency of triggered data
+										if(fUseShowerShapeCut){
+											if(M02 >= fM02CutMin && M02<=fM02CutMax && M20>=fM20CutMin && M20<=fM20CutMax){
+												if(fIsHFE1) fPtMCelectronAfterAll->Fill(fMCtrack->Pt()); //numerator for the total efficiency ESD
+											}
+										}
+										
+										
+										
 									}
 								}
 								
