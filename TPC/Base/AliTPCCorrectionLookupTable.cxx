@@ -438,7 +438,7 @@ void AliTPCCorrectionLookupTable::MergePhiTables(const char* files)
   //check of all phi bins are initialised
   for (Int_t iPhi=0; iPhi<fNPhi; ++iPhi) {
     if (!fLookUpDxCorr[iPhi]) {
-      AliError(Form("Phi bin '%d' not initialised from files!",iPhi));
+      AliFatal(Form("Phi bin '%d' not initialised from files!",iPhi));
     }
   }
   
