@@ -8,7 +8,6 @@
 
   .x $HOME/NimStyle.C
   .L $ALICE_ROOT/TPC/Upgrade/macros/fastToyMCMI.C+
-  testExtrapolation();
  
 */
 #include "TStyle.h"
@@ -39,9 +38,15 @@
 
 
 void testdEdxGEM(const Int_t ntracks=10000, Double_t clNoise=2, Double_t corrNoiseAdd=0.15, Double_t sigmaLandau=0.26);
-void testExtrapolationError(Int_t ntracks);
+void testExtrapolationError(Int_t ntracks, Int_t useGeo=kFALSE, Int_t seed=0);
 
 
+void fastToyMCMI(Int_t action=1, Float_t arg0=200, Float_t arg1=0, Float_t arg2=0){
+  //
+  //
+  //
+  if (action==1)  testExtrapolationError(arg0,arg1,arg2); 
+}
 
 
 void testdEdxGEM(const Int_t ntracks, Double_t clNoise, Double_t corrNoiseAdd, Double_t sigmaLandau){
@@ -157,7 +162,7 @@ void testdEdxGEM(const Int_t ntracks, Double_t clNoise, Double_t corrNoiseAdd, D
   
 }
 
-void testExtrapolationError(Int_t ntracks){
+void testExtrapolationError(Int_t ntracks, Int_t useGeo, Int_t seed){
   //
   // check the extrapolation error
   // 2 scenarios 
@@ -165,16 +170,21 @@ void testExtrapolationError(Int_t ntracks){
   //     - ITS + TRD interpolation
   //
   //
+  gRandom->SetSeed(seed);
   const char *  ocdbpath = "local://$ALICE_ROOT/OCDB/";  
   AliCDBManager * man = AliCDBManager::Instance();
   man->SetDefaultStorage(ocdbpath);
   man->SetRun(0);
   TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1., AliMagF::k5kG,       AliMagF::kBeamTypepp, 2.76/2.));
   Double_t   bz=AliTrackerBase::GetBz(); 
-  AliGeomManager::LoadGeometry();
+  if ( useGeo)   AliGeomManager::LoadGeometry("geometry.root");
+  if (!useGeo)   AliGeomManager::LoadGeometry();
   //
-  Double_t rpoints[13]={2.2,   2.8,   3.6,   20,    22,    41,     43,       300,315,330,345,360,375};
+  //  Double_t rpoints[13]={2.2,   2.8,   3.6,   20,    22,    41,     43,       300,315,330,345,360,375};
   Double_t spoints[13]={0.0004,0.0004,0.0004,0.0004,0.0004,0.0004, 0.0004,   0.02,0.02,0.02,0.02,0.02,0.02}; // ITS layers R poition (http://arxiv.org/pdf/1304.1306v3.pdf - pixel scenario) 
+  //
+  Double_t rpoints[13]={2.32,   3.13,   3.91,   19.41,    24.71,    35.33,     40.53,       300,315,330,345,360,375};
+
   //
   // 
   //
@@ -202,10 +212,10 @@ void testExtrapolationError(Int_t ntracks){
     for (Int_t itrack=0; itrack<ntracks; itrack++){
       //
       //Double_t phi = gRandom->Uniform(0.0, 2*TMath::Pi());
-      if (itrack%100==0) printf("processing\t%d\n", itrack);
-      Double_t phi = 0;// gRandom->Uniform(0.0, 2*TMath::Pi());
+      if (itrack%20==0) printf("processing\t%d\n", itrack);
+      Double_t phi = (gRandom->Rndm()-1)*TMath::Pi()/18;
       Double_t eta = gRandom->Uniform(-1, 1);
-      Double_t pt = 2./(gRandom->Rndm()+0.00001);   
+      Double_t pt = 1./(gRandom->Rndm()+0.00001);   
       Double_t theta = 2*TMath::ATan(TMath::Exp(-eta))-TMath::Pi()/2.;
       Double_t pxyz[3];
       pxyz[0]=pt*TMath::Cos(phi);
@@ -213,6 +223,8 @@ void testExtrapolationError(Int_t ntracks){
       pxyz[2]=pt*TMath::Tan(theta);
       Short_t psign=(gRandom->Rndm()>0.5)? -1.:1.;
       AliExternalTrackParam *track= new AliExternalTrackParam(vertex, pxyz, cv, psign);   
+      Double_t alpha=TMath::ATan2(pxyz[1],pxyz[0]);
+      track->Rotate(alpha);
       //
       // 0.) Estimate the error using the ITS extrapolation and ITS+TRD interpolation - neglecting the MS -inf. momanta tracks
       // 
@@ -361,6 +373,9 @@ void testExtrapolationError(Int_t ntracks){
   gStyle->SetOptTitle(0);
   f = TFile::Open("testExtrapolationErr.root","update");
   TTree * tree = (TTree*)f->Get("extrapol");
+  tree->SetMarkerStyle(25);
+  tree->SetMarkerSize(0.3);
+
   //
   TGraphErrors * grITS0    = TStatToolkit::MakeGraphErrors(tree,"10*vecITSErr0.fElements:vecR.fElements","",25,4,0);
   TGraphErrors * grITSTRD0 = TStatToolkit::MakeGraphErrors(tree,"10*vecITSTRDErr0.fElements:vecR.fElements","",21,2,0);
@@ -403,9 +418,8 @@ void testExtrapolationError(Int_t ntracks){
     legendQpt->Draw();
   }
   //
-  tree->SetMarkerStyle(25);
-  tree->SetMarkerSize(0.4);
-  TCanvas *canvasResolution = new TCanvas("canvasResolution","canvasResolution",800,800);
+  //
+  TCanvas *canvasResolution = new TCanvas("canvasResolution","canvasResolution",600,600);
   canvasResolution->Divide(1,3);
   //
   canvasResolution->cd(1);
@@ -416,4 +430,63 @@ void testExtrapolationError(Int_t ntracks){
   tree->Draw("vecITSTRDErrY.fElements/vecITSErrY.fElements:verRKalman.fElements:abs(track.fP[4])","","colz");
   canvasResolution->SaveAs("canvasResolution.pdf");
   canvasResolution->SaveAs("canvasResolution.png");
+  //
+  //
+  //
+  TStatToolkit toolkit;
+  Double_t chi2=0;
+  Int_t    npoints=0;
+  TVectorD param;
+  TMatrixD covar;  
+  //
+  TCut cut="";
+  TString  fstringITS="";
+  fstringITS+="abs(track.fP[4])*(verRKalman.fElements-40)^2++";   
+  fstringITS+="(verRKalman.fElements-40)^2++";   
+  TString * fitErrITS = TStatToolkit::FitPlane(tree,"vecITSErrY.fElements:(0.1+track.fP[4]**2)", fstringITS.Data(),"verRKalman.fElements>0", chi2,npoints,param,covar,-1,0,180000 , kFALSE);
+  tree->SetAlias("fitErrITS",fitErrITS->Data());
+  fitErrITS->Tokenize("++")->Print();
+  tree->Draw("vecITSErrY.fElements/fitErrITS:verRKalman.fElements:abs(track.fP[4])","","colz");
+  //
+  //
+  TString  fstringITSTRD="";
+  fstringITSTRD+="abs(track.fP[4])++";   
+  fstringITSTRD+="abs(track.fP[4]*verRKalman.fElements)++";   
+  fstringITSTRD+="abs(track.fP[4]*verRKalman.fElements**2)++";   
+  for (Int_t iter=0; iter<3; iter++){
+    TCut cutOut="1";
+    if (iter>0) cutOut="abs(vecITSTRDErrY.fElements/fitErrITSTRD-1)<0.8";
+    TString * fitErrITSTRD = TStatToolkit::FitPlane(tree,"vecITSTRDErrY.fElements:(0.1+track.fP[4]**2)", fstringITSTRD.Data(),"verRKalman.fElements>0"+cutOut, chi2,npoints,param,covar,-1,0,180000 , kFALSE);
+    tree->SetAlias("fitErrITSTRD",fitErrITSTRD->Data());
+    fitErrITSTRD->Tokenize("++")->Print();
+  }
+  tree->Draw("vecITSTRDErrY.fElements/fitErrITSTRD:verRKalman.fElements:abs(track.fP[4])","","colz");
+
+  
+  TCanvas *canvasResolutionFit = new TCanvas("canvasResolutionFit","canvasResolutionFit",700,700);
+  canvasResolutionFit->Divide(1,3);
+  canvasResolutionFit->cd(1);
+  tree->Draw("fitErrITS:verRKalman.fElements:abs(track.fP[4])>>hITS","","colz"); 
+  htemp = (TH2F*)gPad->GetPrimitive("hITS")->Clone();
+  htemp->GetXaxis()->SetTitle("#it{r} (cm)");
+  htemp->GetYaxis()->SetTitle("#sigma_{r#phi} (cm) ITS");
+  htemp->GetZaxis()->SetTitle("q/#it{p_{t}} (#it{c}/GeV)");
+  htemp->Draw("colz");
+  canvasResolutionFit->cd(2);
+  tree->Draw("fitErrITSTRD:verRKalman.fElements:abs(track.fP[4])>>hITSTRD","","colz");
+  htemp = (TH2F*)gPad->GetPrimitive("hITSTRD")->Clone();
+  htemp->GetXaxis()->SetTitle("#it{r} (cm)");
+  htemp->GetYaxis()->SetTitle("#sigma_{r#phi} (cm) ITS+TRD");
+  htemp->GetZaxis()->SetTitle("q/#it{p_{t}} (#it{c}/GeV)");
+  htemp->Draw("colz");
+  canvasResolutionFit->cd(3);
+  tree->Draw("fitErrITSTRD:verRKalman.fElements:abs(track.fP[4])>>hITSTRD","","colz");
+  htemp = (TH2F*)gPad->GetPrimitive("hITSTRD")->Clone();
+  htemp->GetXaxis()->SetTitle("#it{r} (cm)");
+  htemp->GetYaxis()->SetTitle("#sigma_{r#phi} (cm) ITS+TRD");
+  htemp->GetZaxis()->SetTitle("q/#it{p_{t}} (#it{c}/GeV)");
+  htemp->Draw("colz");
+  canvasResolutionFit->SaveAs("canvasResolutionFit.pdf");
+  canvasResolutionFit->SaveAs("canvasResolutionFit.png");
+
 }
