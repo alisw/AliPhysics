@@ -26,6 +26,7 @@
 # include <TFileCollection.h>
 # include <THashList.h>
 # include <TKey.h>
+# include <TRegexp.h>
 # include <fstream>
 #else 
 class TString;
@@ -619,6 +620,7 @@ struct ChainBuilder
   {
     // Assume failure 
     Bool_t ret = false;
+    TRegexp wild(pattern, true);
 
     // Get list of files, and go back to old working directory
     TString oldDir(gSystem->WorkingDirectory());
@@ -681,8 +683,9 @@ struct ChainBuilder
       }
 
       // If this file does not contain AliESDs, ignore 
-      if (!name.Contains(pattern)) { 
-	Info("ChainBuilder::ScanDirectory", "%s does not match pattern %s", 
+      if (!name.Contains(wild)) { 
+	Info("ChainBuilder::ScanDirectory", 
+	     "%s does not match pattern %s", 
 	     name.Data(), pattern.Data());
 	continue;
       }
@@ -710,3 +713,6 @@ struct ChainBuilder
   }
 };
 #endif
+//
+// EOF
+//
