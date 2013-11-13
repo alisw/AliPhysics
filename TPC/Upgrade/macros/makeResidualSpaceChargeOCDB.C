@@ -176,8 +176,8 @@ void makeResidualSpaceChargeOCDB(const char *ocdbInName="ocdb.root",const char *
     if (TMath::Abs(AliTPCCorrection::GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z0,2,2))>50) continue;
     //
     //
-    xvalue[0]=AliTPCCorrection::GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z0,0,2);
-    fitterR.AddPoint(xvalue,AliTPCCorrection::GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z0,0,1));
+    xvalue[0]=AliTPCCorrection::GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z0,1,2);
+    fitterR.AddPoint(xvalue,AliTPCCorrection::GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z0,1,1));
   }
   fitterR->Eval();
   TVectorD weights(2);
@@ -189,25 +189,57 @@ void makeResidualSpaceChargeOCDB(const char *ocdbInName="ocdb.root",const char *
   //
   //
   //
-  TF1 *fSC = new TF1("fSC","AliTPCCorrection::GetCorrXYZ(x,0,10,0,4)",85,245);  
-  TF1 *fSCW = new TF1("fSCW","AliTPCCorrection::GetCorrXYZ(x,0,10,0,5)",85,245);
+  TF1 *fSC = new TF1("fSC","AliTPCCorrection::GetCorrXYZ(x,0,10,1,4)",85,245);  
+  TF1 *fSCW = new TF1("fSCW","AliTPCCorrection::GetCorrXYZ(x,0,10,1,5)",85,245);
   fSC->SetLineColor(2);
   fSC->SetLineColor(4);
   fSC->GetXaxis()->SetTitle(" R (cm)");
-  fSC->GetYaxis()->SetTitle(" #Delta_{R} (cm)");
-  TLegend * legend = new TLegend(0.5,0.5,0.89,0.89,"Residual #Delta_{R} distortions");
-  legend->SetBorderSize(0);
+  fSC->GetYaxis()->SetTitle(" #Delta_{R#phi} (cm)");
+  TCanvas * canvasDist = new TCanvas("canvasDist","canvasDist",600,500);
+  TF1 *f1sc = new TF1("f1sc","[0]+[1]*x+[2]*x**2",85,245);
+  TF1 *f1scw = new TF1("f1scw","[0]+[1]*x+[2]*x**2",85,245);
+
   {
     fSC->Draw();
-    fSC->GetHistogram()->Fit("pol2");
-    fSCW->GetHistogram()->Fit("pol2");
+    fSCW->Draw();
+    fSC->SetMinimum(-1);
+    fSC->SetMaximum(2.);
+    fSC->GetHistogram()->SetLineColor(2);
+    fSCW->GetHistogram()->SetLineColor(4);
+    //
+    f1sc->SetLineColor(2);
+    f1scw->SetLineColor(4);
+    f1sc->SetLineWidth(0.5);
+    f1scw->SetLineWidth(0.5);
+    //
+    fSC->GetHistogram()->Fit(f1sc);
+    fSCW->GetHistogram()->Fit(f1scw);
+    //
     fSC->GetHistogram()->Draw("");
     fSCW->GetHistogram()->Draw("same");
+    //
+    TF1 *f1scp=new TF1(*f1sc);
+    TF1 *f1scm=new TF1(*f1sc);
+    f1scp->SetLineStyle(2); f1scm->SetLineStyle(2);
+    f1scp->SetParameter(0, f1sc->GetParameter(0)+ 0.3);
+    f1scm->SetParameter(0, f1sc->GetParameter(0)- 0.3);
+    f1scp->Draw("same");
+    f1scm->Draw("same");
+    //
+    TF1 *f1scwp=new TF1(*f1scw);
+    TF1 *f1scwm=new TF1(*f1scw);
+    f1scwp->SetLineStyle(2); f1scwm->SetLineStyle(2);
+    f1scwp->SetParameter(0, f1scw->GetParameter(0)+ 0.3);
+    f1scwm->SetParameter(0, f1scw->GetParameter(0)- 0.3);
+    f1scwp->Draw("same");
+    f1scwm->Draw("same");
   }
-  legend->AddEntry(fSC,"#Delta_{Rc}-#Delta_{Rmean} (cm)");
-  legend->AddEntry(fSCW,"#Delta_{Rc}-k_{fit}#Delta_{Rmean} (cm)");
+  TLegend * legend = new TLegend(0.3,0.5,0.89,0.89,"Residual #Delta_{R#phi} distortions and helix fit");
+  legend->SetBorderSize(0);
+  legend->AddEntry(fSC->GetHistogram(),"Stage 0: #Delta_{R#phic}-#Delta_{R#phimean}");
+  legend->AddEntry(fSCW->GetHistogram(),"Stage 1: #Delta_{R#phic}-k_{fit}#Delta_{R#phimean}");
   legend->Draw();
-  gPad->SaveAs("residualMap.pdf");
+  gPad->SaveAs("residualMapTrackFit.pdf");
   
   //
   //
