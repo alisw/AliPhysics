@@ -1613,7 +1613,8 @@ TH1F* AliAnalysisTaskRhoVnModulation::CorrectForResolutionDiff(TH1F* v, detector
     Double_t res(1./r->GetBinContent(1+r->FindBin(c)));
     TF1* line = new TF1("line", "pol0", 0, 200);
     line->SetParameter(0, res);
-    return (v->Multiply(line)) ? v : 0x0;
+    v->Multiply(line);
+    return v;
 }
 //_____________________________________________________________________________
 TH1F* AliAnalysisTaskRhoVnModulation::CorrectForResolutionInt(TH1F* v, detectorType det, TArrayD* cen, Int_t h)
@@ -1622,7 +1623,8 @@ TH1F* AliAnalysisTaskRhoVnModulation::CorrectForResolutionInt(TH1F* v, detectorT
     // correct the supplied intetrated vn histogram v for detector resolution
     // integrated vn must have the same centrality binning as the resolotion correction
     TH1F* r(GetResolutionFromOuptutFile(det, h, cen));
-    return (v->Divide(v, r)) ? v : 0x0;
+    v->Divide(v, r);
+    return v;
 }
 //_____________________________________________________________________________
 TH1F* AliAnalysisTaskRhoVnModulation::GetDifferentialQC(TProfile* refCumulants, TProfile* diffCumlants, TArrayD* ptBins, Int_t h)
