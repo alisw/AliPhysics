@@ -910,7 +910,17 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack,
   tFemtoTrack->SetTPCSharedMap(tAodTrack->GetTPCSharedMap());
 
   float globalPositionsAtRadii[9][3];
+
+  float s = fEvent->GetMagneticField();
+  if(s>0)
+    fMagFieldSign = 1;
+  else if(s<0)
+    fMagFieldSign = -1;
+  else
+    fMagFieldSign = 0;
+
   float bfield = 5*fMagFieldSign;
+
   GetGlobalPositionAtGlobalRadiiThroughTPC(tAodTrack,bfield,globalPositionsAtRadii);
   double tpcEntrance[3]={globalPositionsAtRadii[0][0],globalPositionsAtRadii[0][1],globalPositionsAtRadii[0][2]};
   double **tpcPositions;
