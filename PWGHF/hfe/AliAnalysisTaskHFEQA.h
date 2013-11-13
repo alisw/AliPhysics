@@ -62,6 +62,10 @@ public:
   virtual void  UserExec(Option_t */*option*/);
   virtual void  UserCreateOutputObjects();
 
+  void SetDoTPConly(Bool_t tpconlydo)   { fTPConlydo = tpconlydo; };
+  void SetDoTOFTPC(Bool_t toftpcdo)   { fTOFTPCdo = toftpcdo; };
+  void SetDoTPCTRD(Bool_t tpctrddo)   { fTPCTRDdo = tpctrddo; };
+  void SetDoTPCEMCal(Bool_t tpcemcaldo)   { fTPCEMCaldo = tpcemcaldo; };
   void SetAODAnalysis(Bool_t aodAnalysis)   { fAODAnalysis = aodAnalysis; };
   void SetCentralityEstimator(const char *estimator) { fCentralityEstimator = estimator; }
   void SetppAnalysis(){
@@ -117,14 +121,20 @@ public:
   TH1F *fTOFTPC;                      // TOF TPC  electron yield
   TH1F *fTPCTRD;                      // TPC TRD  electron yield
   TH1F *fTPCEMCal;                      // TPC EMCal electron yield
- 
+
+  // Do PID or not
+  Bool_t fTPConlydo;                   // Do TPC only PID
+  Bool_t fTOFTPCdo;                    // Do TOF TPC 
+  Bool_t fTPCTRDdo;                    // Do TPC TRD 
+  Bool_t fTPCEMCaldo;                    // Do TPC EMCal 
+
   
   // Debuging Cuts step by step all centrality together: pt, step (6)
   //THnSparseF *fTrackingCuts; //! Tracking Cuts
 
   
   
-  ClassDef(AliAnalysisTaskHFEQA, 1); // analysisclass
+  ClassDef(AliAnalysisTaskHFEQA, 2); // analysisclass
 };
 
 #endif

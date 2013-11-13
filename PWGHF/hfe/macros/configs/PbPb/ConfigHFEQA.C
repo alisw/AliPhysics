@@ -1,4 +1,4 @@
-AliAnalysisTaskHFEQA* ConfigHFEQA(Bool_t useMC, Bool_t isAOD, Int_t icollisionsystem = 2, Int_t icent = 2){
+AliAnalysisTaskHFEQA* ConfigHFEQA(Bool_t useMC, Bool_t isAOD, Int_t icollisionsystem = 2, Int_t icent = 2,Bool_t tpconlydo = kTRUE,Bool_t toftpcdo = kTRUE,Bool_t tpctrddo = kTRUE,Bool_t tpcemcaldo = kTRUE){
   
   //***************************************//
   //        Setting up the HFE cuts        //
@@ -33,13 +33,8 @@ AliAnalysisTaskHFEQA* ConfigHFEQA(Bool_t useMC, Bool_t isAOD, Int_t icollisionsy
 
   AliAnalysisTaskHFEQA *task = new AliAnalysisTaskHFEQA("taskHFEQA");
   printf("task %p\n", task);
-  //task->SetpPbAnalysis();
-  //if(!isAOD) task->SetRemoveFirstEventInChunk();
-  //task->SetRemovePileUp(kFALSE);
   task->SetHFECuts(hfecuts);
-  //task->GetPIDQAManager()->SetHighResolutionHistos();
-  //task->SetRejectKinkMother(kFALSE);
-
+  
   // Collision system
   if (icollisionsystem == 2) task->SetPbPbAnalysis();
   else if (icollisionsystem == 1) task->SetpPbAnalysis();
@@ -56,6 +51,15 @@ AliAnalysisTaskHFEQA* ConfigHFEQA(Bool_t useMC, Bool_t isAOD, Int_t icollisionsy
   //***************************************//
   //          Configure the PID            //
   //***************************************//
+
+  if(tpconlydo) task->SetDoTPConly(kTRUE);
+  if(toftpcdo) task->SetDoTOFTPC(kTRUE);
+  if(tpctrddo) task->SetDoTPCTRD(kTRUE);
+  if(tpcemcaldo) task->SetDoTPCEMCal(kTRUE);
+
+  AliHFEpid *pidTPConly = task->GetPIDTPConly();
+  if(useMC) pidTPConly->SetHasMCData(kTRUE);
+  pidTPConly->AddDetector("TPC", 0);
 
   AliHFEpid *pidTOFTPC = task->GetPIDTOFTPC();
   if(useMC) pidTOFTPC->SetHasMCData(kTRUE);
@@ -84,10 +88,12 @@ AliAnalysisTaskHFEQA* ConfigHFEQA(Bool_t useMC, Bool_t isAOD, Int_t icollisionsy
     Double_t tpcparamlowEMCal[1]={paramsTPCdEdxcutlowEMCal[a]};
     Double_t tpcparamlow[1]={paramsTPCdEdxcutlow[a]};
     Float_t tpcparamhigh=paramsTPCdEdxcuthigh[a];
+    pidTPConly->ConfigureTPCcentralityCut(a,cutmodel,tpcparamlow,tpcparamhigh);
     pidTOFTPC->ConfigureTPCcentralityCut(a,cutmodel,tpcparamlow,tpcparamhigh);
     pidTPCTRD->ConfigureTPCcentralityCut(a,cutmodel,tpcparamlow,tpcparamhigh);
     pidTPCEMCal->ConfigureTPCcentralityCut(a,cutmodel,tpcparamlowEMCal,tpcparamhigh);
   }
+  pidTPConly->ConfigureTPCdefaultCut(cutmodel,paramsTPCdEdxcutlow,paramsTPCdEdxcuthigh[0]); 
   pidTOFTPC->ConfigureTPCdefaultCut(cutmodel,paramsTPCdEdxcutlow,paramsTPCdEdxcuthigh[0]); 
   pidTPCTRD->ConfigureTPCdefaultCut(cutmodel,paramsTPCdEdxcutlow,paramsTPCdEdxcuthigh[0]); 
   pidTPCEMCal->ConfigureTPCdefaultCut(cutmodel,paramsTPCdEdxcutlowEMCal,paramsTPCdEdxcuthigh[0]); 

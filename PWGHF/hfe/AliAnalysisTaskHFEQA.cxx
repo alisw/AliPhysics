@@ -86,7 +86,11 @@ AliAnalysisTaskHFEQA::AliAnalysisTaskHFEQA() :
   fTPConly(0),
   fTOFTPC(0),
   fTPCTRD(0),
-  fTPCEMCal(0)
+  fTPCEMCal(0),
+  fTPConlydo(kFALSE),
+  fTOFTPCdo(kFALSE),
+  fTPCTRDdo(kFALSE),
+  fTPCEMCaldo(kFALSE)
 {
   // Constructor
    
@@ -111,7 +115,11 @@ AliAnalysisTaskHFEQA:: AliAnalysisTaskHFEQA(const char *name) :
   fTPConly(0),
   fTOFTPC(0),
   fTPCTRD(0),
-  fTPCEMCal(0)
+  fTPCEMCal(0),
+  fTPConlydo(kFALSE),
+  fTOFTPCdo(kFALSE),
+  fTPCTRDdo(kFALSE),
+  fTPCEMCaldo(kFALSE)
 {
   //
   // named ctor
@@ -152,7 +160,11 @@ AliAnalysisTaskHFEQA::AliAnalysisTaskHFEQA(const AliAnalysisTaskHFEQA &ref):
   fTPConly(ref.fTPConly),
   fTOFTPC(ref.fTOFTPC),
   fTPCTRD(ref.fTPCTRD),
-  fTPCEMCal(ref.fTPCEMCal)
+  fTPCEMCal(ref.fTPCEMCal),
+  fTPConlydo(ref.fTPConlydo),
+  fTOFTPCdo(ref.fTOFTPCdo),
+  fTPCTRDdo(ref.fTPCTRDdo),
+  fTPCEMCaldo(ref.fTPCEMCaldo)
 {
   //
   // Copy Constructor
@@ -195,6 +207,10 @@ void AliAnalysisTaskHFEQA::Copy(TObject &o) const {
   target.fTOFTPC = fTOFTPC;
   target.fTPCTRD = fTPCTRD;
   target.fTPCEMCal = fTPCEMCal;
+  target.fTPConlydo = fTPConlydo;
+  target.fTOFTPCdo = fTOFTPCdo;
+  target.fTPCTRDdo = fTPCTRDdo;
+  target.fTPCEMCaldo = fTPCEMCaldo;
   	 
 
 }
@@ -539,30 +555,37 @@ void AliAnalysisTaskHFEQA::UserExec(Option_t */*option*/)
     //printf("test 7\n");
 
     // Complete PID TPC alone
-    if(fPIDTPConly->IsSelected(&hfetrack,0x0,"recTrackCont",0x0)) {
-      fTPConly->Fill(pt);
+    if(fTPConlydo) {
+      if(fPIDTPConly->IsSelected(&hfetrack,0x0,"recTrackCont",0x0)) {
+	fTPConly->Fill(pt);
+      }
     }
     AliDebug(2,"TPC only PID\n");
 	    
     
     // Complete PID TPC TOF 
-    if(fPIDTOFTPC->IsSelected(&hfetrack,0x0,"recTrackCont",fPIDqaTOFTPC)) {
-      fTOFTPC->Fill(pt);
-      AliDebug(2,"TOF TPC PID\n");
+    if(fTOFTPCdo) {
+      if(fPIDTOFTPC->IsSelected(&hfetrack,0x0,"recTrackCont",fPIDqaTOFTPC)) {
+	fTOFTPC->Fill(pt);
+      }
     }
+    AliDebug(2,"TOF TPC PID\n");
     
     // Complete PID TPC TRD 
-    if(fPIDTPCTRD->IsSelected(&hfetrack,0x0,"recTrackCont",fPIDqaTPCTRD)) {
-      fTPCTRD->Fill(pt);
+    if(fTPCTRDdo) {
+      if(fPIDTPCTRD->IsSelected(&hfetrack,0x0,"recTrackCont",fPIDqaTPCTRD)) {
+	fTPCTRD->Fill(pt);
+      }
     }
     AliDebug(2,"TPC TRD PID\n");
 
 
-
-    if(!fAODAnalysis) {
-      // Complete PID TPC TRD 
-      if(fPIDTPCEMCal->IsSelected(&hfetrack,0x0,"recTrackCont",fPIDqaTPCEMCal)) {
-	fTPCEMCal->Fill(pt);
+    if(fTPCEMCaldo) {
+      if(!fAODAnalysis) {
+	// Complete PID TPC TRD 
+	if(fPIDTPCEMCal->IsSelected(&hfetrack,0x0,"recTrackCont",fPIDqaTPCEMCal)) {
+	  fTPCEMCal->Fill(pt);
+	}
       }
     }
     AliDebug(2,"TPC EMCal PID\n");
