@@ -52,6 +52,9 @@ public:
    virtual void  SetNonStdFile(char* c){fNonStdFile = c;} 
    virtual void  SetSystem(Int_t sys) { fSystem = sys; } 
    virtual void  SetJetR(Float_t jR) { fJetParamR = jR; }
+   virtual void  SetBgJetR(Float_t bgjR) { fBgJetParamR = bgjR; }
+   virtual void  SetBgMaxJetPt(Float_t mpt){ fBgMaxJetPt = mpt;}
+   virtual void  SetBgConeR(Float_t cr){ fBgConeR = cr; } 
    virtual void  SetOfflineTrgMask(AliVEvent::EOfflineTriggerTypes mask) { fOfflineTrgMask = mask; } 
    virtual void  SetMinContribVtx(Int_t n) { fMinContribVtx = n; } 
    virtual void  SetVtxZMin(Float_t z) { fVtxZMin = z; }
@@ -69,17 +72,19 @@ public:
    virtual void  SetEventNumberRangeHigh(Int_t rh){ fEventNumberRangeHigh=rh;}  
    virtual void  SetTriggerPtRangeLow(Float_t tl){ fTriggerPtRangeLow=tl;}   
    virtual void  SetTriggerPtRangeHigh(Float_t th){ fTriggerPtRangeHigh=th;}  
-
+   virtual void  SetFillResponseMatrix(Bool_t brm){ fFillRespMx = brm;}
 
    Double_t RelativePhi(Double_t angle1, Double_t angle2); 
 
 private:
    //private member functions
-   Int_t   GetListOfTracks(TList *list); //returns index of trig and track list 
-   //Double_t GetBackgroundInPerpCone(Float_t jetR, Double_t jetPhi, Double_t jetEta, TList* trkList); //sums pT in the cone perp in phi to jet
+   Int_t   GetListOfTracks(TList *list); //returns index of trig and track list
+
    Bool_t SelectMCGenTracks(AliVParticle *trk, TList *trkList, Double_t &ptLeading, Int_t &index, Int_t counter);
    void FillEffHistos(TList *recList, TList *genList);
-   void EstimateBgRhoAlaCMS(TList *listJetBg, TList *listJet, Double_t &rhoMedian, Double_t& rhoImprovedCMS);//CMS method to estimate bg
+   
+   void EstimateBgRhoMedian(TList *listJet, TList* listPart, Double_t &rhoMedian);//median method to estimate bg
+   void EstimateBgCone(TList *listJet, TList* listPart, Double_t &rhoPerpCone);//perp cone method to estimate bg
    void ReadTClonesArray(TString bname, TList *list); //init jets lists
    //private member objects
    AliESDEvent *fESD;    //! ESD object
@@ -96,8 +101,8 @@ private:
    TList  *fListJets;      //! jet list reconstructed level
    TList  *fListJetsGen;   //! jet list generator level 
    TList  *fListJetsGenFull; //! jet list generator level full jets 
-   TList  *fListJetsBg;      //! bg jet list reconstructed level
-   TList  *fListJetsBgGen;   //! bg jet list generator level  
+   TList  *fListJetsBg;      //! jet list reconstructed level to be removed from bg
+   TList  *fListJetsBgGen;   //! jet list generator level to be removed from bg  
 
 
    TString fNonStdFile;    // name of delta aod file to catch the extension
@@ -105,6 +110,9 @@ private:
    // event selection
    Int_t   fSystem;        // collision system  pp=0, pPb=1  
    Float_t fJetParamR;     // jet cone resolution (radius) R 
+   Float_t fBgJetParamR;   // jet cone resolution (radius) R of jet to be removed from bg
+   Float_t fBgMaxJetPt;    // max pt of jets accepted in bg 
+   Float_t fBgConeR;       //perp cone R used to assess bg
    AliVEvent::EOfflineTriggerTypes fOfflineTrgMask; // mask of offline trigs 
    Int_t   fMinContribVtx; // min numb of trk contrib for prim vertex 
    Float_t fVtxZMin;	   // lower bound on vertex z 
@@ -124,12 +132,12 @@ private:
    TH2F      *fh2Ntriggers;     //trigger pT versus centrality 
    THnSparse *fHJetSpec;      //Recoil jet spectrum  
    THnSparse *fHJetSpecSubUeMedian; //Recoil jet spectrum, jet pT corrected by kT median  
-   THnSparse *fHJetSpecSubUeCMS;  //Recoil jet spectrum, jet pT corrected by weighted kT median ala CMS 
+   THnSparse *fHJetSpecSubUeCone;  //Recoil jet spectrum, jet pT corrected by perp cone rho 
    
    //Diagnostics
    THnSparse *fHJetUeMedian;   //UE background from kT median
-   THnSparse *fHJetUeCMS;      //UE background from weighted kT median ala CMS
-   THnSparse *fHRhoUeMedianVsCMS;    //EBE UE from Median vs CMS  
+   THnSparse *fHJetUeCone;      //UE background from perp cone 
+   THnSparse *fHRhoUeMedianVsCone;    //EBE UE from perp cone
    //THnSparse *fHJetDensity;       //density of jet with A>0.07  //fk
    //THnSparse *fHJetDensityA4;     //density of jets with A>0.4 //fk
    TH2D *fhJetPhi;     //Azimuthal distribution of jets
@@ -152,22 +160,22 @@ private:
    //MC generator level
    TH2D      *fhJetPtGenVsJetPtRec; //jet respose matrix  
    TH2D      *fhJetPtGenVsJetPtRecSubUeMedian; //jet respose matrix both pT with subtracted kT median bg 
-   TH2D      *fhJetPtGenVsJetPtRecSubUeCMS; //jet respose matrix both pT with subtracted weighted kT median bg 
+   TH2D      *fhJetPtGenVsJetPtRecSubUeCone; //jet respose matrix both pT with subtracted weighted kT median bg 
    TH1D      *fhJetPtGen;           //generated pT spectrum of jets  
    TH1D      *fhJetPtSubUeMedianGen; //generated pT spectrum of jets with subtracted kT median  
-   TH1D      *fhJetPtSubUeCMSGen;    //generated pT spectrum of jets withe subtr weighted kT median ala CMS
+   TH1D      *fhJetPtSubUeConeGen;    //generated pT spectrum of jets with perp cone
    TH2D      *fhJetPtGenChargVsJetPtGenFull; //generated pT spectrum of full jets
    TH1D      *fhJetPtGenFull; // generated pT spectrum of full jets
    TH2F      *fh2NtriggersGen; //trigger pT versus centrality in generator level
    THnSparse *fHJetSpecGen;    //Recoil jet spectrum at generator level 
    THnSparse *fHJetSpecSubUeMedianGen;  //Recoil jet spectrum at gen level, jet pT corrected by kT median 
-   THnSparse *fHJetSpecSubUeCMSGen; //Recoil jet spectrum at gen level, jet pT corrected by weighted kT median ala CMS
+   THnSparse *fHJetSpecSubUeConeGen; //Recoil jet spectrum at gen level, jet pT corrected with rho from cone
    THnSparse *fHJetUeMedianGen;   //UE background from kT median
-   THnSparse *fHJetUeCMSGen;      //UE background from weighted kT median ala CMS 
+   THnSparse *fHJetUeConeGen;      //UE background from Perp Cone 
    TH2D      *fhPtTrkTruePrimRec; // pt spectrum of true reconstructed primary tracks    
    TH2D      *fhPtTrkTruePrimGen; // pt spectrum of true generated primary track    
    TH2D      *fhPtTrkSecOrFakeRec; // pt spectrum of reconstructed fake or secondary tracks    
-   THnSparse *fHRhoUeMedianVsCMSGen; //EBE UE from Median vs CMS generator level 
+   THnSparse *fHRhoUeMedianVsConeGen; //EBE UE from Median vs Perp Cone  generator level 
    
    Bool_t fIsChargedMC;   //flag analysis on MC data with true and on the real data false
    Bool_t fIsFullMC;   //flag analysis on MC data with true and on the real data false
@@ -191,9 +199,19 @@ private:
    Float_t fTriggerPtRangeLow;   // lower range of selected trigger pt
    Float_t fTriggerPtRangeHigh;  // upper range of selected trigger pt
 
-   TRandom3* fRandom;           // TRandom3 
+   Bool_t  fFillRespMx;    //fill response matrix files
 
-   ClassDef(AliAnalysisTaskJetCorePP, 8);  //has to end with number larger than 0
+
+   TRandom3* fRandom;           // TRandom3 
+   const Int_t fnTrials;  //number of random trials to measure cell area
+   const Int_t  fnPhi; //number of cells in phi
+   const Int_t  fnEta; //number of cells in eta
+   const Double_t fEtaSize; //cell size in eta 
+   const Double_t fPhiSize; //cell size in phi
+   const Double_t fCellArea; //cell area
+   Double_t fSafetyMargin; //enlarge a bit the jet size to avoid contamination of UE
+
+   ClassDef(AliAnalysisTaskJetCorePP, 9);  //has to end with number larger than 0
 };
 
 #endif

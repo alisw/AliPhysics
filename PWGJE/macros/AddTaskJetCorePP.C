@@ -6,7 +6,10 @@ AliAnalysisTaskJetCorePP* AddTaskJetCorePP(
    Float_t jetParameterR = 0.4,  //jet R 
    UInt_t  trkFilterMask = 272, 
    Float_t trackLowPtCut = 0.15,
-   const Char_t* jetbgAlgo="KT",    //background jet algo
+   const Char_t* jetbgAlgo="ANTIKT",    //background jet algo
+   Float_t bgjetParameterR = 0.3,  //R of jet to be removed while bg calc 
+   Float_t bgMaxJetPt = 8.0, //max jet pt to be accepted to bg 
+   Float_t bgConeR = 0.4,  //R of perp cone jet R 
    Int_t   collisionSystem = 0, //pp=0, pPb=1
    Int_t   offlineTriggerMask=AliVEvent::kMB, //MinBias=0 
    Int_t   minContribVtx = 1,
@@ -19,6 +22,7 @@ AliAnalysisTaskJetCorePP* AddTaskJetCorePP(
    const Char_t* nonStdFile="",
    const Char_t* mcFullFlag="",  // real="", all jets= "MC"    
    const Char_t* mcChargFlag="",  // real="", charged jets = "MC2" 
+   Bool_t bfillrespmx=0,  // 0=dont fill resp mx histos, 1=fill histos
    Int_t triggerType=0,  //0=single incl trigger, 1=leading track, 2=hadron pt>10 
    Int_t evtRangeLow=0,   //last digit of range of ESD event number
    Int_t evtRangeHigh=9,  //first digit of range of ESD event number
@@ -57,8 +61,8 @@ AliAnalysisTaskJetCorePP* AddTaskJetCorePP(
    TString jet="";
    TString jetbg="";
    TString otherparams="";
-   jet   = jet   + "_" + stJetAlgo + Form("%02d",(Int_t) (10*jetParameterR));
-   jetbg = jetbg + "_" + stJetBgAlgo + Form("%02d",(Int_t) (10*jetParameterR));
+   jet   = jet   + "_" + stJetAlgo   + Form("%02d",(Int_t) (10*jetParameterR));
+   jetbg = jetbg + "_" + stJetBgAlgo + Form("%02d",(Int_t) (10*bgjetParameterR));
    
    otherparams = otherparams + "_B0"; //bg mode
    otherparams = otherparams + Form("_Filter%05d",(UInt_t) trkFilterMask);
@@ -99,6 +103,9 @@ AliAnalysisTaskJetCorePP* AddTaskJetCorePP(
    task->SetNonStdFile(nonStdFile);
    task->SetSystem(collisionSystem); 
    task->SetJetR(jetParameterR);
+   task->SetBgJetR(bgjetParameterR);
+   task->SetBgMaxJetPt(bgMaxJetPt);
+   task->SetBgConeR(bgConeR); 
    task->SetOfflineTrgMask(offlineTriggerMask);
    task->SetMinContribVtx(minContribVtx);
    task->SetVtxZMin(vtxZMin);
@@ -116,17 +123,17 @@ AliAnalysisTaskJetCorePP* AddTaskJetCorePP(
    task->SetEventNumberRangeHigh(evtRangeHigh);
    task->SetTriggerPtRangeLow(trigRangeLow);
    task->SetTriggerPtRangeHigh(trigRangeHigh); 
-
+   task->SetFillResponseMatrix(bfillrespmx);
 
    task->SetDebugLevel(0); //No debug messages 0
    mgr->AddTask(task);
    //E=  range of last two decimal numbers in event numbers
    //Ptt range of the cosidered trigger bin
    AliAnalysisDataContainer *coutputJetCorePP = mgr->CreateContainer(
-      Form("pwgjejetcorepp_%s_%s_%s_%d_T%d_E%d_%d_Ptt%.0f_%.0f",analBranch.Data(),jetbgAlgo,mcChargSuffix.Data(),offlineTriggerMask,triggerType,evtRangeLow,evtRangeHigh,trigRangeLow,trigRangeHigh), 
+      Form("pwgjejetcorepp_%s_%s%02d_%s_%d_T%d_E%d_%d_Ptt%.0f_%.0f",analBranch.Data(),jetbgAlgo,TMath::Nint(10*bgjetParameterR),mcChargSuffix.Data(),offlineTriggerMask,triggerType,evtRangeLow,evtRangeHigh,trigRangeLow,trigRangeHigh), 
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
-      Form("%s:PWGJE_jetcorepp_%s_%s_%s_%d_T%d_E%d_%d_Ptt%.0f_%.0f",AliAnalysisManager::GetCommonFileName(),analBranch.Data(),jetbgAlgo,mcChargSuffix.Data(),offlineTriggerMask,triggerType,evtRangeLow,evtRangeHigh,trigRangeLow,trigRangeHigh)
+      Form("%s:PWGJE_jetcorepp_%s_%s%02d_%s_%d_T%d_E%d_%d_Ptt%.0f_%.0f",AliAnalysisManager::GetCommonFileName(),analBranch.Data(),jetbgAlgo,TMath::Nint(10*bgjetParameterR),mcChargSuffix.Data(),offlineTriggerMask,triggerType,evtRangeLow,evtRangeHigh,trigRangeLow,trigRangeHigh)
    );
 
    mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer());
