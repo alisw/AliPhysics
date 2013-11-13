@@ -542,7 +542,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
                 if (aodtrack->Eta() < 0.8)
                   tNormMult++;
       }
-    }
+     }
 
     CopyAODtoFemtoTrack(aodtrack, trackCopy);
 
@@ -662,7 +662,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
         // if (tPart->IsPhysicalPrimary()){
         //   tInfo->SetPartOrigin(0);
         //   // trackCopy->SetImpactDprim(impact[0]);
-        //   // cout << "Read prim" << endl;
+        //   //cout << "Read prim" << endl;
         // }
         // else if (tPart->IsSecondaryFromWeakDecay()) {
         //   tInfo->SetPartOrigin(1);
@@ -696,8 +696,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
     }
     //    }
 
-
-    tEvent->TrackCollection()->push_back(trackCopy);//adding track to analysis
+   tEvent->TrackCollection()->push_back(trackCopy);//adding track to analysis
     realnofTracks++;//real number of tracks
   }
 
@@ -820,6 +819,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack,
 
   double pxyz[3];
   tAodTrack->PxPyPz(pxyz);//reading noconstrained momentum
+
   AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
   tFemtoTrack->SetP(v);//setting momentum
   tFemtoTrack->SetPt(sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]));
@@ -1073,16 +1073,16 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0, AliFemtoV0 *tFem
     double tpcExitNeg[3]={globalPositionsAtRadiiNeg[8][0],globalPositionsAtRadiiNeg[8][1],globalPositionsAtRadiiNeg[8][2]};
 
     AliFemtoThreeVector tmpVec;
-    tmpVec.SetX(tpcEntrancePos[0]); tmpVec.SetX(tpcEntrancePos[1]); tmpVec.SetX(tpcEntrancePos[2]);
+    tmpVec.SetX(tpcEntrancePos[0]); tmpVec.SetY(tpcEntrancePos[1]); tmpVec.SetZ(tpcEntrancePos[2]);
     tFemtoV0->SetNominalTpcEntrancePointPos(tmpVec);
 
-    tmpVec.SetX(tpcExitPos[0]); tmpVec.SetX(tpcExitPos[1]); tmpVec.SetX(tpcExitPos[2]);
+    tmpVec.SetX(tpcExitPos[0]); tmpVec.SetY(tpcExitPos[1]); tmpVec.SetZ(tpcExitPos[2]);
     tFemtoV0->SetNominalTpcExitPointPos(tmpVec);
 
-    tmpVec.SetX(tpcEntranceNeg[0]); tmpVec.SetX(tpcEntranceNeg[1]); tmpVec.SetX(tpcEntranceNeg[2]);
+    tmpVec.SetX(tpcEntranceNeg[0]); tmpVec.SetY(tpcEntranceNeg[1]); tmpVec.SetZ(tpcEntranceNeg[2]);
     tFemtoV0->SetNominalTpcEntrancePointNeg(tmpVec);
 
-    tmpVec.SetX(tpcExitNeg[0]); tmpVec.SetX(tpcExitNeg[1]); tmpVec.SetX(tpcExitNeg[2]);
+    tmpVec.SetX(tpcExitNeg[0]); tmpVec.SetY(tpcExitNeg[1]); tmpVec.SetZ(tpcExitNeg[2]);
     tFemtoV0->SetNominalTpcExitPointNeg(tmpVec);
 
     AliFemtoThreeVector vecTpcPos[9];
