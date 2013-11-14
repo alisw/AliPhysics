@@ -63,6 +63,10 @@ AliGenDPMjet::AliGenDPMjet()
      fDecayAll(0),
      fGenImpPar(0.),
      fProcess(kDpmMb),
+     fTriggerParticle(0),
+     fTriggerEta(0.9),     
+     fTriggerMinPt(-1),  
+     fTriggerMaxPt(1000),  
      fTriggerMultiplicity(0),
      fTriggerMultiplicityEta(0),
      fTriggerMultiplicityPtMin(0),
@@ -98,6 +102,10 @@ AliGenDPMjet::AliGenDPMjet(Int_t npart)
      fDecayAll(0),
      fGenImpPar(0.),
      fProcess(kDpmMb),
+     fTriggerParticle(0),
+     fTriggerEta(0.9),     
+     fTriggerMinPt(-1),  
+     fTriggerMaxPt(1000),  
      fTriggerMultiplicity(0),
      fTriggerMultiplicityEta(0),
      fTriggerMultiplicityPtMin(0),
@@ -138,6 +146,10 @@ AliGenDPMjet::AliGenDPMjet(const AliGenDPMjet &/*Dpmjet*/)
      fDecayAll(0),
      fGenImpPar(0.),
      fProcess(kDpmMb),
+     fTriggerParticle(0),
+     fTriggerEta(0.9),     
+     fTriggerMinPt(-1),  
+     fTriggerMaxPt(1000),  
      fTriggerMultiplicity(0),
      fTriggerMultiplicityEta(0),
      fTriggerMultiplicityPtMin(0),
@@ -259,6 +271,21 @@ void AliGenDPMjet::Generate()
 	Printf("Triggered on event with multiplicity of %d >= %d", multiplicity, fTriggerMultiplicity);
       }    
 
+  //Trigger on the presence of a given particle in some phase space
+    if (fTriggerParticle) {
+	Bool_t triggered = kFALSE;
+	    for (Long_t i = 0; i < np; i++) {
+	        TParticle *  iparticle = (TParticle *) fParticles.At(i);
+	        kf = CheckPDGCode(iparticle->GetPdgCode());
+	        if (kf != fTriggerParticle) continue;
+	        if (iparticle->Pt() == 0.) continue;
+	        if (TMath::Abs(iparticle->Eta()) > fTriggerEta) continue;
+	        if ( iparticle->Pt() > fTriggerMaxPt || iparticle->Pt() < fTriggerMinPt ) continue;
+	        triggered = kTRUE;
+	        break;
+	    }
+      if (!triggered) continue; 
+    }
 
       if(fkTuneForDiff && ( (TMath::Abs(fEnergyCMS - 900) < 1) || (TMath::Abs(fEnergyCMS - 2760) < 1) || (TMath::Abs(fEnergyCMS - 7000) < 1)) ) {
 	if(!CheckDiffraction() ) continue;
