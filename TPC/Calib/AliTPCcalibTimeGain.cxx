@@ -194,6 +194,9 @@ AliTPCcalibTimeGain::AliTPCcalibTimeGain()
    fCutRequireITSrefit(0),
    fCutMaxDcaXY(0),
    fCutMaxDcaZ(0),
+   fMinMomentumMIP(0),
+   fMaxMomentumMIP(0),
+   fAlephParameters(),
    fUseMax(0),
    fLowerTrunc(0),
    fUpperTrunc(0),
@@ -223,6 +226,9 @@ AliTPCcalibTimeGain::AliTPCcalibTimeGain(const Text_t *name, const Text_t *title
    fCutRequireITSrefit(0),
    fCutMaxDcaXY(0),
    fCutMaxDcaZ(0),
+   fMinMomentumMIP(0),
+   fMaxMomentumMIP(0),
+   fAlephParameters(),
    fUseMax(0),
    fLowerTrunc(0),
    fUpperTrunc(0),
@@ -264,6 +270,15 @@ AliTPCcalibTimeGain::AliTPCcalibTimeGain(const Text_t *name, const Text_t *title
   fCutRequireITSrefit = kFALSE;
   fCutMaxDcaXY = 3.5;
   fCutMaxDcaZ  = 25.;
+
+  // default values for MIP window selection
+  fMinMomentumMIP = 0.4;
+  fMaxMomentumMIP = 0.6;
+  fAlephParameters[0] = 0.07657; // the following parameters work for most of the periods and are therefore default
+  fAlephParameters[1] = 10.6654; // but they can be overwritten in the train setup of cpass0
+  fAlephParameters[2] = 2.51466e-14;
+  fAlephParameters[3] = 2.05379;
+  fAlephParameters[4] = 1.84288;
 
   // default values for dE/dx
   fMIP = 50.;
@@ -442,19 +457,25 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
 
     if (seed) {
       Int_t particleCase = 0;
-      if (meanP < 0.55 && meanP > 0.5)  particleCase = 2; // MIP pions
+      if (meanP < fMaxMomentumMIP && meanP > fMinMomentumMIP)  particleCase = 2; // MIP pions
       if (meanP < 0.57 && meanP > 0.56) particleCase = 3; // protons 1
       if (meanP < 0.66 && meanP > 0.65) particleCase = 4; // protons 2
       //
       if (fLowMemoryConsumption && particleCase == 0) continue;
       //
       Double_t tpcSignal = GetTPCdEdx(seed);
-      /*
-      if (particleCalse == 0) {
-	Float_t corrFactor = AliExternalTrackParam::BetheBlochAleph(x/0.13957);
-	  tpcSignal /= corrFactor; 
-      }
-      */
+      //
+      // flattens signal in MIP window
+      //
+      if (particleCase == 0) {
+	Float_t corrFactor = AliExternalTrackParam::BetheBlochAleph(meanP/0.13957, 
+								    fAlephParameters[0], 
+								    fAlephParameters[1], 
+								    fAlephParameters[2], 
+								    fAlephParameters[3],
+								    fAlephParameters[4]);
+	tpcSignal /= corrFactor; 
+      }	
       fHistDeDxTotal->Fill(meanP, tpcSignal);
       //
       //dE/dx, time, type (1-muon cosmic,2-pion beam data, 3&4 protons), momenta, runNumner, eta
@@ -500,7 +521,7 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
       }    
       if (seed) { 
 	if (fLowMemoryConsumption) {
-	  if (meanP > 0.5 || meanP < 0.4) continue;
+	  if (meanP > fMaxMomentumMIP || meanP < fMinMomentumMIP) continue;
 	  meanP = 0.45; // set all momenta to one in order to save memory
       }
 	Double_t tpcSignal = GetTPCdEdx(seed);

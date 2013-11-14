@@ -83,6 +83,9 @@ AliTPCcalibGainMult::AliTPCcalibGainMult()
    fCutRequireITSrefit(0),
    fCutMaxDcaXY(0),
    fCutMaxDcaZ(0),
+   fMinMomentumMIP(0),
+   fMaxMomentumMIP(0),
+   fAlephParameters(),
    fHistNTracks(0),
    fHistClusterShape(0),
    fHistQA(0),
@@ -114,6 +117,9 @@ AliTPCcalibGainMult::AliTPCcalibGainMult(const Text_t *name, const Text_t *title
    fCutRequireITSrefit(0),
    fCutMaxDcaXY(0),
    fCutMaxDcaZ(0),
+   fMinMomentumMIP(0),
+   fMaxMomentumMIP(0),
+   fAlephParameters(),
    fHistNTracks(0),
    fHistClusterShape(0),
    fHistQA(0),
@@ -145,6 +151,14 @@ AliTPCcalibGainMult::AliTPCcalibGainMult(const Text_t *name, const Text_t *title
   fCutRequireITSrefit = kFALSE;
   fCutMaxDcaXY = 3.5;
   fCutMaxDcaZ  = 25.;
+  // default values for MIP window selection
+  fMinMomentumMIP = 0.4;
+  fMaxMomentumMIP = 0.6;
+  fAlephParameters[0] = 0.07657; // the following parameters work for most of the periods and are therefore default
+  fAlephParameters[1] = 10.6654; // but they can be overwritten in the train setup of cpass0
+  fAlephParameters[2] = 2.51466e-14;
+  fAlephParameters[3] = 2.05379;
+  fAlephParameters[4] = 1.84288;
 
   //
   fHistNTracks = new TH1F("ntracks","Number of Tracks per Event; number of tracks per event; number of tracks",1001,-0.5,1000.5);
@@ -274,7 +288,7 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
   //const Double_t kMaxEta=0.8; // maximal eta fo the track to be accepted
   //const Double_t kMaxDCAR=10; // maximal DCA R of the track
   //const Double_t kMaxDCAZ=5;  // maximal DCA Z of the track
-  const Double_t kMIPPt=0.525; // MIP pt
+  //  const Double_t kMIPPt=0.525; // MIP pt
   
   if (!event) {
     Printf("ERROR: ESD not available");
@@ -319,6 +333,15 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
     Int_t ncls = track->GetTPCNcls();
     Int_t nCrossedRows = track->GetTPCCrossedRows();
 
+    // correction factor of dE/dx in MIP window
+    Float_t corrFactorMip = AliExternalTrackParam::BetheBlochAleph(meanP/0.13957, 
+								   fAlephParameters[0], 
+								   fAlephParameters[1], 
+								   fAlephParameters[2], 
+								   fAlephParameters[3],
+								   fAlephParameters[4]);
+    if (TMath::Abs(corrFactorMip) < 1e-10) continue;
+    
     if (nCrossedRows < fCutCrossRows) continue;     
     // exclude tracks which do not look like primaries or are simply too short or on wrong sectors
     if (TMath::Abs(trackIn->Eta()) > fCutEtaWindow) continue;
@@ -393,36 +416,39 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
       fHistQA->Fill(meanP, signal, 3);
       fHistQA->Fill(meanP, mipSignalOroc, 4);
       //
-      // "dEdxRatioMax","dEdxRatioTot","padType","mult","driftlength", "1_pt"
-      Float_t meanMax = (1/3.)*(signalArrayMax[0] + signalArrayMax[1] + signalArrayMax[2]);
-      Float_t meanTot = (1/3.)*(signalArrayTot[0] + signalArrayTot[1] + signalArrayTot[2]); 
+      // normalize pad regions to their common mean
+      //
+      Float_t meanMax = (63./159)*signalArrayMax[0] + (64./159)*signalArrayMax[1] + (32./159)*signalArrayMax[2];
+      Float_t meanTot = (63./159)*signalArrayTot[0] + (64./159)*signalArrayTot[1] + (32./159)*signalArrayTot[2]; 
       if (meanMax < 1e-5 || meanTot < 1e-5) continue;
+      //
       for(Int_t ipad = 0; ipad < 4; ipad ++) {
+	// "dEdxRatioMax","dEdxRatioTot","padType","mult","driftlength", "1_pt"
 	Double_t vecPadEqual[5] = {signalArrayMax[ipad]/meanMax, signalArrayTot[ipad]/meanTot, ipad, nContributors, meanDrift};
-	if ( TMath::Abs(meanP-kMIPPt)<0.025 ) fHistPadEqual->Fill(vecPadEqual);
+	if (fMinMomentumMIP > meanP && meanP < fMaxMomentumMIP) fHistPadEqual->Fill(vecPadEqual);
       }
       //
-      //      if (meanP > 0.4 && meanP < 0.55) {
-      if ( TMath::Abs(meanP-kMIPPt)<0.025 ) {
-	Double_t vecMult[6] = {seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,1,row0,row1),
-			       seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,0,row0,row1),
+      //
+      if (meanP < fMaxMomentumMIP && meanP > fMinMomentumMIP) {
+	Double_t vecMult[6] = {seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,1,row0,row1)/corrFactorMip,
+			       seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,0,row0,row1)/corrFactorMip,
 			       meanDrift,
 			       3,
 			       nContributors,
 			       ncls};
 	//
 	fHistGainMult->Fill(vecMult);
-	vecMult[0]=mipSignalShort; vecMult[1]=mipSignalShort; vecMult[3]=0;
+	vecMult[0]=mipSignalShort/corrFactorMip; vecMult[1]=mipSignalShort/corrFactorMip; vecMult[3]=0;
 	fHistGainMult->Fill(vecMult);
-	vecMult[0]=mipSignalMed; vecMult[1]=mipSignalMed; vecMult[3]=1;
+	vecMult[0]=mipSignalMed/corrFactorMip; vecMult[1]=mipSignalMed/corrFactorMip; vecMult[3]=1;
 	fHistGainMult->Fill(vecMult);
-	vecMult[0]=mipSignalLong; vecMult[1]=mipSignalLong; vecMult[3]=2;
+	vecMult[0]=mipSignalLong/corrFactorMip; vecMult[1]=mipSignalLong/corrFactorMip; vecMult[3]=2;
 	fHistGainMult->Fill(vecMult);
 	//
       }
       //
       //
-      if ( TMath::Abs(meanP-kMIPPt)>0.025 ) continue;  // only MIP pions
+      if (fMinMomentumMIP < meanP || meanP > fMaxMomentumMIP) continue;  // only MIP pions
       //if (meanP > 0.5 || meanP < 0.4) continue; // only MIP pions
       //
       // for each track, we look at the three different pad regions, split it into tracklets, check if the sector does not change and fill the histogram
@@ -450,7 +476,7 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
       //
       //                        MIP, sect,  pad,   run
       //
-      Double_t vecMip[5] = {mipSignalShort, mipSignalMed, mipSignalLong, signal, mipSignalOroc};
+      Double_t vecMip[5] = {mipSignalShort/corrFactorMip, mipSignalMed/corrFactorMip, mipSignalLong/corrFactorMip, signal/corrFactorMip, mipSignalOroc/corrFactorMip};
       //
       for(Int_t ipad = 0; ipad < 3; ipad++) {
 	// AK. -  run Number To be removed - not needed 

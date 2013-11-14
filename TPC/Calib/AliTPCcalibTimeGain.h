@@ -66,7 +66,9 @@ public:
   void SetCutMaxDcaXY(Float_t maxXY){fCutMaxDcaXY = maxXY;}; 
   void SetCutMaxDcaZ(Float_t maxZ){fCutMaxDcaZ = maxZ;}; 
   //
-
+  void SetMinMomentumMIP(Float_t minMom = 0.4){fMinMomentumMIP = minMom;};
+  void SetMaxMomentumMIP(Float_t maxMom = 0.6){fMaxMomentumMIP = maxMom;};
+  void SetAlephParameters(Float_t * parameters){for(Int_t j=0;j<5;j++) fAlephParameters[j] = parameters[j];};
 
   static void SetMergeEntriesCut(Double_t entriesCut){fgMergeEntriesCut = entriesCut;}
 
@@ -93,6 +95,12 @@ private:
   Float_t fCutMaxDcaXY;                 // max dca_xy (only TPConly resolution is guaranteed!)
   Float_t fCutMaxDcaZ;                  // max dca_z  (dangerous if vDrift is not calibrated)
   //
+  // definition of MIP window
+  //
+  Float_t fMinMomentumMIP;              // minimum momentum of MIP region, e.g. 400 MeV
+  Float_t fMaxMomentumMIP;              // maximum momentum of MIP region, e.g. 600 MeV
+  Float_t fAlephParameters[5];          // parameters for equalization in MIP window, parameter set should be =1 at MIP
+  //
   //
   Bool_t  fUseMax;                      // true: use max charge for dE/dx calculation, false: use total charge for dE/dx calculation
   Float_t fLowerTrunc;                  // lower truncation of dE/dx ; at most 5%
@@ -110,7 +118,7 @@ private:
   void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
   void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
 
-  ClassDef(AliTPCcalibTimeGain, 1); 
+  ClassDef(AliTPCcalibTimeGain, 2);
 };
 
 #endif
