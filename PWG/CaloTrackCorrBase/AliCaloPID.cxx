@@ -323,6 +323,11 @@ void AliCaloPID::InitParameters()
   fSplitEFracMin[1]   = 0.0 ; // 0.96
   fSplitEFracMin[2]   = 0.0 ; // 0.7
 
+  fSubClusterEMin[0]  = 0.0; // 3 GeV
+  fSubClusterEMin[1]  = 0.0; // 1 GeV
+  fSubClusterEMin[2]  = 0.0; // 1 GeV
+  
+  
   fSplitWidthSigma = 3. ;
   
 }
@@ -826,9 +831,21 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   if(nMax < 3)  splitFracCut = fSplitEFracMin[nMax-1];
   else          splitFracCut = fSplitEFracMin[2];
   if((e1+e2)/eClus < splitFracCut) return kNeutralUnknown ;
-  
+
   if(fDebug > 0) printf("\t pass Split E frac cut\n");
-    
+  
+  // Consider sub-clusters with minimum energy
+  Float_t minECut = fSubClusterEMin[2];
+  if     (nMax == 2)  minECut = fSubClusterEMin[1];
+  else if(nMax == 1)  minECut = fSubClusterEMin[0];
+  if(e1 < minECut || e2 < minECut)
+  {
+    //printf("Reject: e1 %2.1f, e2 %2.1f, cut %2.1f\n",e1,e2,minECut);
+    return kNeutralUnknown ;
+  }
+
+  if(fDebug > 0) printf("\t pass min sub-cluster E cut\n");
+  
   // Asymmetry of cluster
   Float_t asy =-10;
   if(e1+e2 > 0) asy = (e1-e2) / (e1+e2);

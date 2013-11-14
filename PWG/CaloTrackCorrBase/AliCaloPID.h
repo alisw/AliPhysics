@@ -227,8 +227,11 @@ class AliCaloPID : public TObject {
   void    SetClusterSplittingMinNCells(Int_t c) { fSplitMinNCells = c         ; }
   Int_t   GetClusterSplittingMinNCells() const  { return fSplitMinNCells      ; }
   
-  void    SetSplitEnergyFractionMinimum(Int_t i, Float_t min){ if (i < 3 && i >=0 ) fSplitEFracMin[i]  = min   ; }
-  Float_t GetSplitEnergyFractionMinimum(Int_t i) const       { if( i < 3 && i >=0 ) return fSplitEFracMin[i]   ;  else return 0 ; }
+  void    SetSplitEnergyFractionMinimum(Int_t i, Float_t min){ if (i < 3 && i >=0 ) fSplitEFracMin[i]  = min ; }
+  Float_t GetSplitEnergyFractionMinimum(Int_t i) const       { if( i < 3 && i >=0 ) return fSplitEFracMin[i] ;  else return 0 ; }
+
+  void    SetSubClusterEnergyMinimum   (Int_t i, Float_t min){ if (i < 3 && i >=0 ) fSubClusterEMin[i] = min ; }
+  Float_t GetSubClusterEnergyMinimum   (Int_t i) const       { if( i < 3 && i >=0 ) return fSubClusterEMin[i];  else return 0 ; }
   
   Float_t GetPi0MinMass()                const { return fMassPi0Min           ; } // Simple cut case
   Float_t GetEtaMinMass()                const { return fMassEtaMin           ; } // Simple cut case
@@ -323,13 +326,14 @@ private:
   Float_t   fAsyMinParam[2][4] ;                // 3 param for fit on asymmetry minimum, for 2 cases, NLM=1 and NLM>=2
   Float_t   fSplitEFracMin[3]  ;                // Do not use clusters with too large energy in cluster compared
                                                 // to energy in splitted clusters, depeding on NLM
+  Float_t   fSubClusterEMin[3]  ;               // Do not use sub-clusters with too low energy depeding on NLM
   Float_t   fSplitWidthSigma;                   // Cut on mass+-width*fSplitWidthSigma
   Float_t   fMassShiftHighECell;                // Shift cuts 5 MeV for Ecell > 150 MeV, default Ecell > 50 MeV
 
   AliCaloPID & operator = (const AliCaloPID & cpid) ; // cpy assignment
   AliCaloPID(              const AliCaloPID & cpid) ; // cpy ctor
   
-  ClassDef(AliCaloPID,20)
+  ClassDef(AliCaloPID,21)
   
 } ;
 

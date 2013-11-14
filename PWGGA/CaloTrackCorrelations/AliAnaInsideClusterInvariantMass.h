@@ -235,21 +235,33 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhSplitEFractionvsAsyNLocMax2[2] ;       //! sum of splitted cluster energy / cluster energy for N Local Maxima = 2 vs |A|
   TH2F       * fhSplitEFractionvsAsyNLocMaxN[2] ;       //! sum of splitted cluster energy / cluster energy for N Local Maxima > 2 vs |A|  
 
-  TH2F       * fhMassAsyCutNLocMax1  ;                  //! Asy(E) selection, not matched, Mass of split clusters, NLM = 1
-  TH2F       * fhMassAsyCutNLocMax2  ;                  //! Asy(E) selection, not matched, Mass of split clusters, NLM = 1
-  TH2F       * fhMassAsyCutNLocMaxN  ;                  //! Asy(E) selection, not matched, Mass of split clusters, NLM > 2
+  TH2F       * fhMassAsyCutNLocMax1  ;                  //! Mass(E) asym selection, not matched, Mass of split clusters, NLM = 1
+  TH2F       * fhMassAsyCutNLocMax2  ;                  //! Mass(E) asym selection, not matched, Mass of split clusters, NLM = 1
+  TH2F       * fhMassAsyCutNLocMaxN  ;                  //! Mass(E) asym selection, not matched, Mass of split clusters, NLM > 2
   
-  TH2F       * fhM02AsyCutNLocMax1  ;                   //! Asy(E) selection, not matched, M02, NLM = 1
-  TH2F       * fhM02AsyCutNLocMax2  ;                   //! Asy(E) selection, not matched, M02, NLM = 2
-  TH2F       * fhM02AsyCutNLocMaxN  ;                   //! Asy(E) selection, not matched, M02, NLM > 2
+  TH2F       * fhM02AsyCutNLocMax1  ;                   //! M02(E) asym selection, not matched, M02, NLM = 1
+  TH2F       * fhM02AsyCutNLocMax2  ;                   //! M02(E) asym selection, not matched, M02, NLM = 2
+  TH2F       * fhM02AsyCutNLocMaxN  ;                   //! M02(E) asym selection, not matched, M02, NLM > 2
   
-  TH2F       * fhMassM02CutNLocMax1  ;                  //! M02(E) selection, not matched, Mass of split clusters, NLM = 1
-  TH2F       * fhMassM02CutNLocMax2  ;                  //! M02(E) selection, not matched, Mass of split clusters, NLM = 1
-  TH2F       * fhMassM02CutNLocMaxN  ;                  //! M02(E) selection, not matched, Mass of split clusters, NLM > 2
+  TH2F       * fhMassM02CutNLocMax1  ;                  //! Mass(E) M02 selection, not matched, Mass of split clusters, NLM = 1
+  TH2F       * fhMassM02CutNLocMax2  ;                  //! Mass(E) M02 selection, not matched, Mass of split clusters, NLM = 1
+  TH2F       * fhMassM02CutNLocMaxN  ;                  //! Mass(E) M02 selection, not matched, Mass of split clusters, NLM > 2
 
-  TH2F       * fhAsymM02CutNLocMax1  ;                  //! M02(E) selection, not matched, energy asymmetry of split clusters, NLM = 1
-  TH2F       * fhAsymM02CutNLocMax2  ;                  //! M02(E) selection, not matched, energy asymmetry of split clusters, NLM = 2
-  TH2F       * fhAsymM02CutNLocMaxN  ;                  //! M02(E) selection, not matched, energy asymmetry of split clusters, NLM > 2
+  TH2F       * fhAsymM02CutNLocMax1  ;                  //! Asym(E) M02 selection, not matched, energy asymmetry of split clusters, NLM = 1
+  TH2F       * fhAsymM02CutNLocMax2  ;                  //! Asym(E) M02 selection, not matched, energy asymmetry of split clusters, NLM = 2
+  TH2F       * fhAsymM02CutNLocMaxN  ;                  //! Asym(E) M02 selection, not matched, energy asymmetry of split clusters, NLM > 2
+  
+  TH2F       * fhMassEnCutNLocMax1  ;                   //! Mass(E) E sub-cluster cut selection, not matched, Mass of split clusters, NLM = 1
+  TH2F       * fhMassEnCutNLocMax2  ;                   //! Mass(E) E sub-cluster cut selection, not matched, Mass of split clusters, NLM = 1
+  TH2F       * fhMassEnCutNLocMaxN  ;                   //! Mass(E) E sub-cluster cut selection, not matched, Mass of split clusters, NLM > 2
+
+  TH2F       * fhM02EnCutNLocMax1  ;                    //! M02(E) E sub-cluster cut selection, not matched, Mass of split clusters, NLM = 1
+  TH2F       * fhM02EnCutNLocMax2  ;                    //! M02(E) E sub-cluster cut selection, not matched, Mass of split clusters, NLM = 1
+  TH2F       * fhM02EnCutNLocMaxN  ;                    //! M02(E) E sub-cluster cut selection, not matched, Mass of split clusters, NLM > 2
+
+  TH2F       * fhAsymEnCutNLocMax1  ;                   //! Asym(E) E sub-cluster cut selection, not matched, Mass of split clusters, NLM = 1
+  TH2F       * fhAsymEnCutNLocMax2  ;                   //! Asym(E) E sub-cluster cut selection, not matched, Mass of split clusters, NLM = 1
+  TH2F       * fhAsymEnCutNLocMaxN  ;                   //! Asym(E) E sub-cluster cut selection, not matched, Mass of split clusters, NLM > 2
   
   TH2F       * fhMassSplitECutNLocMax1 ;                //! 85% of split energy, not matched, Mass of split clusters, NLM = 1
   TH2F       * fhMassSplitECutNLocMax2 ;                //! 85% of split energy, not matched, Mass of split clusters, NLM = 1
@@ -728,7 +740,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & split) ; // cpy ctor
   AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & split) ; // cpy assignment
   
-  ClassDef(AliAnaInsideClusterInvariantMass,26)
+  ClassDef(AliAnaInsideClusterInvariantMass,27)
   
 } ;
 
