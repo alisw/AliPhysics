@@ -86,7 +86,7 @@ class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet
   void FillHistogramsD0JetCorr(AliAODRecoDecayHF* candidate, Double_t dPhi, Double_t z, Double_t ptD, Double_t ptj, Double_t deltaR, AliAODEvent* aodEvent);
 
   void FillHistogramsDstarJetCorr(AliAODRecoCascadeHF* dstar, Double_t dPhi, Double_t z, Double_t ptD, Double_t ptj,Double_t deltaR);
-  void FillHistogramsMCGenDJetCorr(Double_t ptD,Double_t ptjet,Double_t deltaR);
+  void FillHistogramsMCGenDJetCorr(Double_t dPhi, Double_t z,Double_t ptD,Double_t ptjet,Double_t deltaR);
   void SideBandBackground(AliAODRecoCascadeHF *candDstar, AliEmcalJet *jet);
   void MCBackground(AliAODRecoDecayHF *candbg, AliEmcalJet *jet);
   void FillMassHistograms(Double_t mass,Double_t ptD, Double_t deltaR);
