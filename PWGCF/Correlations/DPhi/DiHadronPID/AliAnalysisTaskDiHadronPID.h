@@ -54,7 +54,9 @@ public:
 	void SetTOFIntervalFactorTOFTPC(Double_t factor = 1.) {fTOFIntervalFactorTOFTPC = factor;}
 	void SetExtendPtAxis(Bool_t extendptaxis) {fExtendPtAxis = extendptaxis;}
 
+	// Overrides methods from AliAnalyisTaskSE.
 	void SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB);
+	void SetDebugLevel(Int_t level);
 
 	// Getters.
 	Int_t GetNDEtaBins() const {return fNDEtaBins;}

@@ -371,11 +371,11 @@ Bool_t AliTrackDiHadronPID::CopyTOFInfo() {
 	//Int_t TOFlabeltmp[3] = {0};
 	fAODGlobalTrack->GetTOFLabel(fTOFLabel);
 	//for (Int_t iN = 0; iN < 3; ++iN) {fTOFLabel[iN] = TOFlabeltmp[iN];}
-
+	/*
 	if (fTOFLabel[1] == fLabel || fTOFLabel[2] == fLabel) {
 		cout<<"fLabel = " << fLabel << " fTOFLabel =  {" << fTOFLabel[0] << "," << fTOFLabel[1] << "," << fTOFLabel[2] <<"}"<<endl; 
 	}
-
+	*/
 	// The following will only work in an AOD production with the fTOFlabels set.
 	// If it wasn't set, then every track will be labeled as no match.
 	if (fTOFLabel[0] == -1) {fTOFMatchingStatus = 2;} 			// TPC Track was not matched to any TOF hit.
