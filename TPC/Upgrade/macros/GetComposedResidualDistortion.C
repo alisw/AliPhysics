@@ -25,19 +25,22 @@ AliTPCComposedCorrection* GetComposedResidualDistortion(TString fluctuationMap, 
   fAverage.Close();
 
   TObjArray *arrMaps = new TObjArray(2);
-  arrMaps->Add(corrFluct);   // distortion with the fluctuation Map
+  // !!!!! In AliTPCComposedCorrection::GetDistortion MakeInverseIterator is called !!!!
+  // for this reason we have to add the maps in the wrong order
+  
   arrMaps->Add(corrAverage); // correction with the average Map
+  arrMaps->Add(corrFluct);   // distortion with the fluctuation Map
 
   // create the composed correction
   // if the weight are set to +1 and -1, the first map will be responsible for the distortions
   // The second map for the corrections
   AliTPCComposedCorrection *residualDistortion = new AliTPCComposedCorrection(arrMaps, AliTPCComposedCorrection::kQueueResidual);
   TVectorD weights(2);
-  weights(0)=+1.;
-  weights(1)=-1.;
+  weights(1)=+1.;
+  weights(0)=-1.;
   if (rescale) {
     Float_t dummy=0;
-    weights(1)=-AliToyMCEventGenerator::GetSCScalingFactor(corrFluct, corrAverage,dummy);
+    weights(0)=-AliToyMCEventGenerator::GetSCScalingFactor(corrFluct, corrAverage,dummy);
   }
   residualDistortion->SetWeights(&weights);
 

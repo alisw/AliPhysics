@@ -322,8 +322,8 @@ void DumpHn(THn *hn, TTreeSRedirector &stream)
         Double_t cr   = ar->GetBinCenter(ir+1);
         Double_t cphi = aphi->GetBinCenter(iphi+1);
         Double_t cz   = az->GetBinCenter(iz+1);
-        hProj->SetNameTitle(Form("h_%02d_%02d_%d02",iz+1, iphi+1, ir+1),
-                            Form("z,phi,r: %02d,%02d,%d02 (%.2f, %.2f, %.2f)",iz+1,iphi+1,ir+1, cr, cphi, cz )
+        hProj->SetNameTitle(Form("h_%02d_%02d_%02d",iz+1, iphi+1, ir+1),
+                            Form("z,phi,r: %02d,%02d,%02d (%.2f, %.2f, %.2f)",iz+1,iphi+1,ir+1, cz, cphi, cr )
         );
         hProj->Fit(&fg,"QR");
         arrFits.Add(hProj);
