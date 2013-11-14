@@ -48,6 +48,7 @@ class AliHelperPID;
 class AliAnalysisUtils;
 class TFormula;
 class TMap;
+class AliGenEventHeader;
 
 
 class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
@@ -139,6 +140,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void RemoveDuplicates(TObjArray* tracks);
     void CleanUp(TObjArray* tracks, TObject* mcObj, Int_t maxLabel);
     void SelectCharge(TObjArray* tracks);
+    AliGenEventHeader* GetFirstHeader();
 
     // General configuration
     Int_t               fDebug;           //  Debug flag
