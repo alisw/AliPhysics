@@ -119,6 +119,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         void FillLeadingJetPtRho(Double_t jetPt, Double_t rho);
         void DoNEFQAPlots(Bool_t doNEFAna);
         void DoNEFAnalysis(Double_t nefCut, Double_t signalCut, TClonesArray *jetList, Int_t *indexJetList, Int_t nIndexJetList, TObjArray *clusterList, TClonesArray *orgClusterList, AliVEvent *event, AliEMCALGeometry *geometry, AliEMCALRecoUtils *recoUtils, AliVCaloCells *cells);
+        void FillMiscJetStats(TClonesArray *jetList, Int_t *indexJetList, Int_t nIndexJetList, TClonesArray *trackList, TClonesArray *clusterList);
         
         // Setters
         void SetName(const char *name);
@@ -186,13 +187,16 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         // Profiles
         TProfile *fpRho; //!
         TProfile *fpLJetRho; //!
-
+        TH2D *fhJetConstituentPt; //!
+        TH2D *fhJetPtArea; //!
+        
         // Histograms for Neutral Energy Fraction
         TList *fNEFOutput; //! NEF QA Plots
         
         TH1D *fhNEF; //!
         TH1D *fhNEFSignal; //!
         TH2D *fhNEFJetPt; //!
+        TH2D *fhNEFJetPtSignal; //!
         
         TH2D *fhNEFEtaPhi; //!
         TH2D *fhNEFEtaPhiSignal; //!
@@ -276,7 +280,6 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     void ClusterHisto();
     void InitChargedJets();
     void InitFullJets();
-    void JetPtArea();
     void GenerateTPCRandomConesPt();
     void GenerateEMCalRandomConesPt();
     
@@ -430,8 +433,6 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     TH2D *fhClusterEtaPhi; //!
     TH2D *fhClusterPhiPt;  //!
     TH2D *fhClusterEtaPt;  //!
-    TH2D *fhJetPtArea; //! Jet Area distribution vs Pt
-    TH2D *fhJetConstituentPt; //! Pt distribution of jet constituents
     TH2D *fhRhoScale;  //!
     
     TH3D *fhTrackEtaPhiPt;  //!
@@ -460,12 +461,12 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     AlipAJetHistos *fRhoCharged0;  //!
     AlipAJetHistos *fRhoCharged1;  //!
     AlipAJetHistos *fRhoCharged2;  //!
-    AlipAJetHistos *fRhoChargedScale;  //!
+    AlipAJetHistos *fRhoChargedN;  //!
     AlipAJetHistos *fRhoChargedkT;  //!
     AlipAJetHistos *fRhoChargedkTScale;  //!
     AlipAJetHistos *fRhoChargedCMS;  //!
     */
-    AlipAJetHistos *fRhoChargedN;  //!
+    AlipAJetHistos *fRhoChargedScale;  //!
     AlipAJetHistos *fRhoChargedCMSScale;  //!
 
     AlipAJetData *fTPCJet;  //!
