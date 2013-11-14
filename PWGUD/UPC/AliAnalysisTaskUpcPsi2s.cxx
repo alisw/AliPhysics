@@ -66,7 +66,7 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s()
     fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
     fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),
-    fListQA(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),
+    fListHist(0),fHistTriggersPerRun(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),
     fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0),
     fHistK0sMass(0)
 
@@ -84,7 +84,7 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s(const char *name)
     fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
     fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),
-    fListQA(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),
+    fListHist(0),fHistTriggersPerRun(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),
     fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0),
     fHistK0sMass(0)
 
@@ -127,9 +127,9 @@ AliAnalysisTaskUpcPsi2s::~AliAnalysisTaskUpcPsi2s()
      delete hCounter;
      hCounter = 0x0;
   }
-  if(fListQA){
-     delete fListQA;
-     fListQA = 0x0;
+  if(fListHist){
+     delete fListHist;
+     fListHist = 0x0;
   }
 
 }//~AliAnalysisTaskUpcPsi2s
@@ -202,52 +202,55 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
     fPsi2sTree ->Branch("fPsi2sAODTracks", &fPsi2sAODTracks);
   }
   
-  fListQA = new TList();
-  fListQA ->SetOwner();
+  fListHist = new TList();
+  fListHist ->SetOwner();
+  
+  fHistTriggersPerRun = new TH1D("fHistTriggersPerRun", "fHistTriggersPerRun", 3000, 167000.5, 170000.5);
+  fListHist->Add(fHistTriggersPerRun);
   
   TString CutNameJPsi[12] = {"Analyzed","Triggered","Vertex cut","V0 decision","Two good tracks",
   				"Like sign","Oposite sign","One p_{T}>1", "Both p_{T}>1","PID","Dimuom","Dielectron"};
   fHistNeventsJPsi = new TH1D("fHistNeventsJPsi","fHistNeventsPsi2s",12,0.5,12.5);
   for (Int_t i = 0; i<12; i++) fHistNeventsJPsi->GetXaxis()->SetBinLabel(i+1,CutNameJPsi[i].Data());
-  fListQA->Add(fHistNeventsJPsi);
+  fListHist->Add(fHistNeventsJPsi);
   
   fHistTPCsignalJPsi = new TH2D("fHistTPCsignalJPsi","fHistTPCsignalJPsi",240,0,120,240,0,120);
-  fListQA->Add(fHistTPCsignalJPsi);
+  fListHist->Add(fHistTPCsignalJPsi);
   
   fHistDiLeptonPtJPsi = new TH2D("fHistDiLeptonPtJPsi","fHistDiLeptonPtJPsi",350,0,3.5,350,0,3.5);
-  fListQA->Add(fHistDiLeptonPtJPsi);
+  fListHist->Add(fHistDiLeptonPtJPsi);
 
   fHistDiElectronMass = new TH1D("fHistDiElectronMass","Invariant mass of J/#psi candidates",100,2,5);
   fHistDiElectronMass->GetXaxis()->SetTitle("Invariant mass(e^{+}e^{-}) (GeV/c)");
-  fListQA->Add(fHistDiElectronMass);
+  fListHist->Add(fHistDiElectronMass);
   
   fHistDiMuonMass = new TH1D("fHistDiMuonMass","Invariant mass of J/#psi candidates",100,2,5);
   fHistDiMuonMass->GetXaxis()->SetTitle("Invariant mass(#mu^{+}#mu^{-}) (GeV/c)");
-  fListQA->Add(fHistDiMuonMass);
+  fListHist->Add(fHistDiMuonMass);
 
   TString CutNamePsi2s[13] = {"Analyzed","Triggered","Vertex cut","V0 decision","Four good tracks",
   				"DiLepton - DiPion","Like sign leptons","Like sign pions","Like sign both","Oposite sign","PID","Dimuom","Dielectron"};
 
   fHistNeventsPsi2s = new TH1D("fHistNeventsPsi2s","fHistNeventsPsi2s",13,0.5,13.5);
   for (Int_t i = 0; i<13; i++) fHistNeventsPsi2s->GetXaxis()->SetBinLabel(i+1,CutNamePsi2s[i].Data());
-  fListQA->Add(fHistNeventsPsi2s);
+  fListHist->Add(fHistNeventsPsi2s);
 
   fHistPsi2sMassVsPt = new TH2D("fHistPsi2sMassVsPt","Mass vs p_{T} of #psi(2s) candidates",100,3,6,50,0,5);
   fHistPsi2sMassVsPt->GetXaxis()->SetTitle("Invariant mass(l^{+}l^{-}#pi^{+}#pi^{-}) (GeV/c)");
   fHistPsi2sMassVsPt->GetYaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-  fListQA->Add(fHistPsi2sMassVsPt);
+  fListHist->Add(fHistPsi2sMassVsPt);
   
   fHistPsi2sMassCoherent = new TH1D("fHistPsi2sMassAllCoherent","Invariant mass of coherent #psi(2s) candidates",100,3,6);
   fHistPsi2sMassCoherent->GetXaxis()->SetTitle("Invariant mass(l^{+}l^{-}#pi^{+}#pi^{-}) (GeV/c)");
-  fListQA->Add(fHistPsi2sMassCoherent);
+  fListHist->Add(fHistPsi2sMassCoherent);
   
   fHistK0sMass = new TH1D("fHistK0sMass","fHistK0sMass",200,0.4,0.6);
-  fListQA->Add(fHistK0sMass);
+  fListHist->Add(fHistK0sMass);
   
   PostData(1, fJPsiTree);
   PostData(2, fPsi2sTree);
   PostData(3, hCounter);
-  PostData(4, fListQA);
+  PostData(4, fListHist);
 
 }//UserCreateOutputObjects
 
@@ -290,6 +293,9 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
   TString trigger = aod->GetFiredTriggerClasses();
   
   if( !trigger.Contains("CCUP4-B") ) return;
+  
+  fRunNum = aod ->GetRunNumber();
+  fHistTriggersPerRun->Fill(fRunNum);
   
   fHistNeventsJPsi->Fill(2);
   fHistNeventsPsi2s->Fill(2);
@@ -474,7 +480,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
 		}
   }
   
-  PostData(4, fListQA);
+  PostData(4, fListHist);
 
 }
 

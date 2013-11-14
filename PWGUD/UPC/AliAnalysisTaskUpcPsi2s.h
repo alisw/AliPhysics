@@ -31,7 +31,6 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   void SetRunHist(Bool_t runHist){fRunHist = runHist;}
 
  private:
- 
   Int_t fType; // 0 - ESD, 1 - AOD
   Bool_t fRunTree; 
   Bool_t fRunHist;
@@ -63,7 +62,8 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   TClonesArray *fPsi2sAODTracks;
   TClonesArray *fPsi2sESDTracks;
   
-  TList *fListQA;
+  TList *fListHist;
+  TH1D *fHistTriggersPerRun;
   TH1D *fHistNeventsJPsi; 
   TH2D *fHistTPCsignalJPsi;
   TH2D *fHistDiLeptonPtJPsi;

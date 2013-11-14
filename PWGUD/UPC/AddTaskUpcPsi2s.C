@@ -29,7 +29,7 @@ AliAnalysisTaskUpcPsi2s *AddTaskUpcPsi2s(Bool_t runTree = kTRUE,Bool_t runHist =
   AliAnalysisDataContainer *coutput = mgr->CreateContainer("JPsiTree", TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:UpcTree", AliAnalysisManager::GetCommonFileName()));
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("Psi2sTree", TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:UpcTree", AliAnalysisManager::GetCommonFileName()));
   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("Counter", TH1I::Class(), AliAnalysisManager::kOutputContainer, Form("%s:UpcTree", AliAnalysisManager::GetCommonFileName()));
-  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("ListQA", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:UpcTree", AliAnalysisManager::GetCommonFileName()));  
+  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("ListHist", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:UpcTree", AliAnalysisManager::GetCommonFileName()));  
 
   // Connect input/output
   mgr->ConnectInput(task, 0, cinput);
