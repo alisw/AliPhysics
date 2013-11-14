@@ -113,43 +113,15 @@ public:
 	Bool_t RequestQAHistos(const Int_t histoclass, const Bool_t Enable3DSpectra = kFALSE, const Bool_t EnablePIDHistos = kFALSE);
 	
 	// Setters (Cuts)
-	void SetPtRange(Double_t minpt, Double_t maxpt) {
-		fMinPt = minpt;
-		fMaxPt = maxpt;
-		fTestPt = kTRUE;
-	}
-	void SetFilterMask(UInt_t filtermask) {
-		fFilterMask = filtermask;
-		fTestFilterMask = kTRUE;
-	}
-	void SetMaxEta(Double_t maxeta) {
-		fMaxEta = maxeta;
-		fTestMaxEta = kTRUE;
-	}
-	void SetMaxRapidity(Double_t maxrapidity) {
-		fMaxRapidity = maxrapidity;
-		fTestMaxRapidity = kTRUE;
-	}
-	void SetDemandNoMismatch() {
-		fTestTOFmismatch = kTRUE;
-	}
-	void SetDemandFlags(ULong_t demandedflags) {
-		fDemandedFlags = demandedflags;
-		fTestFlags = kTRUE;
-	}
-	void SetMinimumNumberOfTPCClusters(Int_t minimumnumberoftpcclusters) {
-		fMinimumNumberOfTPCClusters = minimumnumberoftpcclusters;
-		fTestNumberOfTPCClusters = kTRUE;
-	}
-	void SetDemandSPDCluster() {
-		fTestSPDAny = kTRUE;
-	}
-	void SetPtDeptDCACut(TFormula* DCAxyCutFormula, Double_t DCAzCut, UInt_t MinSPDHits = 1) {
-		fPtDeptDCAxyCutFormula = DCAxyCutFormula;
-		fDCAzCut = DCAzCut;
-		fMinSPDHitsForPtDeptDCAcut = MinSPDHits;
-		fTestPtDeptDCAcut = kTRUE;
-	}
+	void SetPtRange(Double_t minpt, Double_t maxpt);
+	void SetFilterMask(UInt_t filtermask);
+	void SetMaxEta(Double_t maxeta);
+	void SetMaxRapidity(Double_t maxrapidity);
+	void SetDemandNoMismatch();
+	void SetDemandFlags(ULong_t demandedflags);
+	void SetMinimumNumberOfTPCClusters(Int_t minimumnumberoftpcclusters);
+	void SetDemandSPDCluster();
+	void SetPtDeptDCACut(TFormula* DCAxyCutFormula, Double_t DCAzCut, UInt_t MinSPDHits = 1);
 
 // Setters (Settings)
 	void SetIsMC(Bool_t ismc = kTRUE) {fIsMC = ismc;}
@@ -190,48 +162,14 @@ public:
 private:
 
 // Checks, return kTRUE if track passes the cut.
-	Bool_t CheckPt(Double_t pt) const {
-		// TODO: TO IMPLEMENTATION.		
-		if (!fTestPt) return kTRUE;
-		if ((pt > fMinPt) && (pt < fMaxPt)) return kTRUE;
-		return kFALSE;
-	}
-	Bool_t CheckMaxEta(Double_t eta) const {
-		if (!fTestMaxEta) return kTRUE;				// Accepted if there is no check on this parameter.
-		if (TMath::Abs(eta) < fMaxEta) return kTRUE;
-		return kFALSE;
-	}
-	Bool_t CheckRapidity(Double_t rap) const {
-		if (!fTestMaxRapidity) return kTRUE;
-		if (TMath::Abs(rap) < fMaxRapidity) return kTRUE;
-		return kFALSE;
-	}
-	Bool_t CheckFilterMask(UInt_t filtermap) const {
-		if (!fTestFilterMask) return kTRUE;
-		if ((fFilterMask & filtermap) == fFilterMask) return kTRUE;
-		return kFALSE;
-	}
-	Bool_t CheckFlags(ULong_t flags) const {
-		if (!fTestFlags) return kTRUE;
-		if ((flags & fDemandedFlags) == fDemandedFlags) return kTRUE;
-		return kFALSE;
-	}
-	Bool_t CheckNclsTPC(Int_t ncls) const {
-		if (!fTestNumberOfTPCClusters) return kTRUE;
-		if (ncls > fMinimumNumberOfTPCClusters) return kTRUE;
-		return kFALSE;
-	}
-	Bool_t CheckTOFmismatch(Bool_t ismismatch) const {
-		if (!fTestTOFmismatch) return kTRUE; // if we're not cutting on mismatch, then it's accepted.
-		if (!ismismatch) return kTRUE; 		// so if the track is not a mismatch, then it is accepted.
-		return kFALSE; 						// if it is a mismatch, then it's not accepted.
-	}
-	Bool_t CheckPtDeptDCACut(Double_t dcaz, Double_t dcaxy, Double_t pt, UInt_t SPDhits) const {
-		if (!fTestPtDeptDCAcut) return kTRUE;
-		if (SPDhits < fMinSPDHitsForPtDeptDCAcut) return kTRUE; // If there are not enough SPD hits to do the cut.
-		if ((dcaz < fDCAzCut) && (dcaxy < fPtDeptDCAxyCutFormula->Eval(pt))) return kTRUE;
-		return kFALSE;
-	}
+	Bool_t CheckPt(Double_t pt) const;
+	Bool_t CheckMaxEta(Double_t eta) const;
+	Bool_t CheckRapidity(Double_t rap) const;
+	Bool_t CheckFilterMask(UInt_t filtermap) const;
+	Bool_t CheckFlags(ULong_t flags) const;
+	Bool_t CheckNclsTPC(Int_t ncls) const;
+	Bool_t CheckTOFmismatch(Bool_t ismismatch) const;
+	Bool_t CheckPtDeptDCACut(Double_t dcaz, Double_t dcaxy, Double_t pt, UInt_t SPDhits) const;
 
 // Filling QA histograms.
 	Bool_t FillDataHistos(Int_t histoclass, AliTrackDiHadronPID* track);
@@ -246,6 +184,8 @@ private:
 
 	void InitializeDefaultHistoNamesAndAxes();
 
+	TH1F* InitializeAcceptedFilterBits(const char* name);
+	void SetXaxisAcceptedFilterBits();
 	TH1F* InitializePtSpectrum(const char* name, Int_t histoclass);
 	TH2F* InitializeRecPtGenPt(const char* name, Int_t histoclass);
 	TH3F* InitializePhiEtaPt(const char* name, Int_t histoclass);
@@ -254,7 +194,6 @@ private:
 	TH1F* InitializeDCAzHisto(const char* name, Int_t histoclass);
 	TH3F* InitializeAcceptanceHisto(const char* /*name*/, Int_t /*histoclass*/); // TO BE IMPLEMENTED.
 	TH2F* InitializeDCASpectrum(const char* name, Int_t histoclass);
-
 
 	TH3F* InitializePIDHisto(const char* name, Int_t histoclass, Int_t expspecies, Int_t ptclass);
 	TH2F* InitializeTOFMismatchHisto(const char* name, Int_t histoclass, Int_t expspecies, Int_t ptclass);
@@ -299,6 +238,8 @@ private:
 
 // QA histograms for Data.
 	TList*					fDataTrackQAHistos;				// 
+	TH1F*					fHistAcceptedFilterBits;		//! Histogram with the number of accepted tracks as function of filtermask.
+	TArrayI*				fRelevantBitsArray;				//! See method: InitializeAcceptedFilterBits().
 	TH1F*					fHistDataPt[3];					//! Pt distribution of tracks passing this cut.
 	TH3F*					fHistDataPhiEtaPt[3];			//! Pt, Eta, Phi distribution.
 	TH1F*					fHistDataNTracks[3];			//! Number of tracks passing the cut per event (filling by EventIsDone()).
@@ -312,7 +253,7 @@ private:
 	TH3F*					fHistTPCTOFMismatch[3][3][5];	//! TPC/TOF mismatch histograms (Same as TOF, but now the TPC hit of the track is included.)
 
 // QA histograms for all reconstructed MC tracks.
-	TH1F*					fTOFMatchingStat;					//
+	TH1F*					fTOFMatchingStat;				//
 
 // QA histograms for Primary Reconstructed MC tracks.
 	TList*					fPrimRecMCTrackQAHistos;		//
@@ -367,7 +308,7 @@ private:
 
 	Int_t 					fDebug;							// Debug flag.
 
-	ClassDef(AliAODTrackCutsDiHadronPID,7);
+	ClassDef(AliAODTrackCutsDiHadronPID,8);
 
 };
 

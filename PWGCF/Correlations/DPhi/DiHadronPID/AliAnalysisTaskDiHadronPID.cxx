@@ -830,6 +830,20 @@ void AliAnalysisTaskDiHadronPID::SelectCollisionCandidates(UInt_t offlineTrigger
 }
 
 // -----------------------------------------------------------------------
+void AliAnalysisTaskDiHadronPID::SetDebugLevel(Int_t level) {
+
+	// Also propagates this setting to the track and event cuts.
+	if (fDebug > 0) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	fDebug = level;
+
+	if (fEventCuts) {fEventCuts->SetDebugLevel(level);}
+	if (fTrackCutsTrigger) {fTrackCutsTrigger->SetDebugLevel(level);}
+	if (fTrackCutsAssociated) {fTrackCutsAssociated->SetDebugLevel(level);}
+
+} 
+
+// -----------------------------------------------------------------------
 Bool_t AliAnalysisTaskDiHadronPID::LoadExtMismatchHistos() {
 
 	//
