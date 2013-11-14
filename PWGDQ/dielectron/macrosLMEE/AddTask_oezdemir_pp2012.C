@@ -54,14 +54,6 @@ eventCuts->SetMinVtxContributors(1);
   task->AddDielectron(lowmass0);
   printf("add: %s\n",lowmass0->GetName());
 
-  AliDielectron *lowmass1=Configpp2012Oezdemir(1,hasMC);
-  task->AddDielectron(lowmass1);
-  printf("add: %s\n",lowmass1->GetName());
-
-  AliDielectron *lowmass2=Configpp2012Oezdemir(2,hasMC);
-  task->AddDielectron(lowmass2);
-  printf("add: %s\n",lowmass2->GetName());
-
 	//create output container
   AliAnalysisDataContainer *coutput1 =
     mgr->CreateContainer("oezdemir_pp2012_tree",
