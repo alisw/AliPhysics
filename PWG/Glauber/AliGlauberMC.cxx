@@ -170,8 +170,8 @@ AliGlauberMC::AliGlauberMC(Option_t* NA, Option_t* NB, Double_t xsect) :
   fDoFluc(kFALSE),
   fOmega(0),
   fSig0(0),
-  fSigFluc(0),
-  fLambda(0)
+  fLambda(0),
+  fSigFluc(0)
 {
   //ctor
   for (UInt_t i=0; i<(sizeof(fdNdEtaParam)/sizeof(fdNdEtaParam[0])); i++)
@@ -320,8 +320,8 @@ AliGlauberMC::AliGlauberMC(const AliGlauberMC& in):
   fDoFluc(in.fDoFluc),
   fOmega(in.fOmega),
   fSig0(in.fSig0),
-  fSigFluc(in.fSigFluc),
-  fLambda(in.fLambda)
+  fLambda(in.fLambda),
+  fSigFluc(in.fSigFluc)
 {
   //copy ctor
   memcpy(fdNdEtaParam,in.fdNdEtaParam,sizeof(fdNdEtaParam));
