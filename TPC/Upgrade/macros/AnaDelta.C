@@ -14,6 +14,12 @@
 #include <TGraphErrors.h>
 #include <TTreeStream.h>
 
+#include <AliExternalTrackParam.h>
+#include <AliTPCComposedCorrection.h>
+#include <AliTPCCorrectionLookupTable.h>
+
+#include <AliToyMCEventGenerator.h>
+
 /*
 
 .L $ALICE_ROOT/TPC/Upgrade/macros/AnaDelta.C+g
@@ -207,6 +213,86 @@ void AnaDeltaTree2(TString file/*, TString outDir="."*/)
   // do fits and fill tree
 }
 
+void AnaDeltaResiduals(TString fluctuationMap, TString averageMap, TString outFile="deltas_residuals.root")
+{
+  //
+  //
+  //
+
+  TFile fFluct(fluctuationMap);
+  AliTPCCorrectionLookupTable *corrFluct = (AliTPCCorrectionLookupTable*)fFluct.Get("map");
+  fFluct.Close();
+  
+  TFile fAverage(averageMap);
+  AliTPCCorrectionLookupTable *corrAverage = (AliTPCCorrectionLookupTable*)fAverage.Get("map");
+  fAverage.Close();
+  
+  TObjArray *arrMaps = new TObjArray(2);
+  arrMaps->Add(corrFluct);   // distortion with the fluctuation Map
+  arrMaps->Add(corrAverage); // correction with the average Map
+  
+  // create the composed correction
+  // if the weight are set to +1 and -1, the first map will be responsible for the distortions
+  // The second map for the corrections
+  AliTPCComposedCorrection *residualDistortion = new AliTPCComposedCorrection(arrMaps, AliTPCComposedCorrection::kQueueResidual);
+  Float_t dummy=0;
+  TVectorD weights(2);
+  weights(0)=+1.;
+  weights(1)=-AliToyMCEventGenerator::GetSCScalingFactor(corrFluct, corrAverage,dummy);
+  residualDistortion->SetWeights(&weights);
+
+  TVectorD *vR   = MakeLinBinning(10,86.,250.);
+  TVectorD *vPhi = MakeLinBinning(18*8,0.,2*TMath::Pi());
+  TVectorD *vZ   = MakeLinBinning(50,-250.,250.);
+  
+  const Int_t nbins=4;
+  Int_t bins[nbins]    = {vR->GetNrows()-1, vPhi->GetNrows()-1, vZ->GetNrows()-1, 80};
+  //   Int_t bins[nbins]    = {16, 18*5, 50, 80};
+  Double_t xmin[nbins] = {86. , 0.,           -250., -2.};
+  Double_t xmax[nbins] = {250., 2*TMath::Pi(), 250.,  2.};
+  THnF *hn = new THnF("hn", "hn", nbins, bins, xmin, xmax);
+  
+  hn->GetAxis(0)->Set(vR  ->GetNrows()-1, vR  ->GetMatrixArray());
+  hn->GetAxis(1)->Set(vPhi->GetNrows()-1, vPhi->GetMatrixArray());
+  hn->GetAxis(2)->Set(vZ  ->GetNrows()-1, vZ  ->GetMatrixArray());
+  
+  AliExternalTrackParam vv;
+  
+  for (Float_t iz=-245; iz<=245; iz+=1) {
+    Short_t roc=(iz>=0)?0:18;
+    for (Float_t ir=86; ir<250; ir+=1) {
+      for (Float_t iphi=0; iphi<TMath::TwoPi(); iphi+=1*TMath::DegToRad()){
+        Float_t x=ir*(Float_t)TMath::Cos(iphi);
+        Float_t y=ir*(Float_t)TMath::Sin(iphi);
+        Float_t x3[3]    = {x,y,iz};
+        Float_t dx3[3]   = {0.,0.,0.};
+        residualDistortion->GetDistortion(x3,roc,dx3);
+
+        Double_t ddx3[3]={dx3[0], dx3[1], dx3[2]};
+        vv.Global2LocalPosition(ddx3,iphi);
+
+        Double_t xx[4]={ir, iphi, iz ,ddx3[1]};
+        hn->Fill(xx);
+        
+      }
+    }
+  }
+
+  TTreeSRedirector stream(outFile.Data());
+  gROOT->cd();
+  
+  DumpHn(hn, stream);
+  
+  stream.GetFile()->cd();
+  hn->Write();
+  
+  delete hn;
+  delete vR;
+  delete vPhi;
+  delete vZ;
+  
+  delete residualDistortion;
+}
 
 void DumpHn(THn *hn, TTreeSRedirector &stream)
 {
@@ -406,3 +492,5 @@ void PlotFromTree(TTree *d, TString outDir=".")
   c->SaveAs(Form("%s/meanErr_oneZ_r_onePhi.png",outDir.Data()));
   
 }
+
+
