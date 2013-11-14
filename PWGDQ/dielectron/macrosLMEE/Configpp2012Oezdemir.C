@@ -7,12 +7,12 @@
    void EnableMC();
    AliESDtrackCuts *SetupESDtrackCuts(Int_t cutDefinition);
 
-   TString names=("Base;TOF;noPID");
+   TString names=("MixEvt");
    TObjArray *arrNames=names.Tokenize(";");
    const Int_t nDie=arrNames->GetEntries();
    Bool_t MCenabled=kFALSE;
 
-   Bool_t kMix = 0; 
+   Bool_t kMix = 1; 
 
    AliDielectron* Configpp2012Oezdemir(Int_t cutDefinition,Bool_t hasMC=kFALSE)
    {
@@ -103,13 +103,6 @@
 	   die->GetTrackFilter().AddCuts(cgTrackFilterPIDTPC);	
 	}
 
-	if ( cutDefinition ==1 ) {
-	   die->GetTrackFilter().AddCuts(cgTrackFilterPIDTOF);	
-	}
-
-	if ( cutDefinition ==2 ) {
-	   die->GetTrackFilter().AddCuts(cgTrackFilternoPID);	
-	}
    }
    //______________________________________________________________________________________
 
@@ -120,7 +113,7 @@
 	 //
 	 
 	
-	if(cutDefinition >= 0){
+	if(cutDefinition == 0){
 
 	AliDielectronTrackCuts *noconv=new AliDielectronTrackCuts("noConv","conversion tagging");
 	noconv->SetV0DaughterCut(AliPID::kElectron,kTRUE);
