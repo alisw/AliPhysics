@@ -10,6 +10,8 @@ class TObjArray;
 class AliTPCParam;
 class AliTPCCorrection;
 class AliTrackPointArray;
+class AliTrackPoint;
+class AliTPCclusterMI;
 
 class AliToyMCTrack;
 class AliToyMCEvent;
