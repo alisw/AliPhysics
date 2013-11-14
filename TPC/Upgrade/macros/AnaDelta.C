@@ -8,6 +8,9 @@
 #include <TObjArray.h>
 #include <TObject.h>
 #include <TString.h>
+#include <TVectorT.h>
+#include <TCanvas.h>
+#include <TProfile2D.h>
 #include <TTreeStream.h>
 
 /*
@@ -16,6 +19,11 @@
 
 
 */
+TVectorD* MakeLogBinning(Int_t nbinsX, Double_t xmin, Double_t xmax);
+TVectorD* MakeLinBinning(Int_t nbinsX, Double_t xmin, Double_t xmax);
+TVectorD* MakeArbitraryBinning(const char* bins);
+
+void DumpHn(THn *hn, TTreeSRedirector &stream);
 
 void AnaDelta(TString file, TString outDir=".")
 {
@@ -31,10 +39,180 @@ void AnaDelta(TString file, TString outDir=".")
   TFile f(file);
   THn *hn=(THn*)f.Get("hn");
 
+  DumpHn(hn, stream);
+
+  delete hn;
+}
+
+
+void AnaDeltaTree(TString file, TString outFile="deltas_tree.root")
+{
+  TFile f(file);
+  gROOT->cd();
+  TTree *t = (TTree*)f.Get("delta");
+  Float_t soneOverPt=0.;
+  Float_t radius=0.;
+  Float_t trackPhi=0.;
+  Float_t trackY=0.;
+  Float_t trackZ=0.;
+  Float_t resRphi=0.;
+  Double_t trackRes=0.;
+  Float_t pointY=0.;
+  Float_t pointZ=0.;
+  Short_t npTRD=0.;
+  Short_t event=0.;
+  
+  t->SetBranchAddress("soneOverPt" , &soneOverPt);
+  t->SetBranchAddress("r"          , &radius);
+  t->SetBranchAddress("trackPhi"   , &trackPhi);
+  t->SetBranchAddress("trackY"     , &trackY);
+  t->SetBranchAddress("trackZ"     , &trackZ);
+  t->SetBranchAddress("resRphi"    , &resRphi);
+  t->SetBranchAddress("trackRes"   , &trackRes);
+  t->SetBranchAddress("pointY"     , &pointY);
+  t->SetBranchAddress("pointZ"     , &pointZ);
+  t->SetBranchAddress("npTRD"      , &npTRD);
+  t->SetBranchAddress("event"      , &event);
+  
+  // make binning
+  TVectorD *vR   = MakeLinBinning(10,86.,250.);
+  TVectorD *vPhi = MakeLinBinning(18*8,0.,2*TMath::Pi());
+  TVectorD *vZ   = MakeLinBinning(50,-250.,250.);
+
+  const Int_t nbins=4;
+  Int_t bins[nbins]    = {vR->GetNrows()-1, vPhi->GetNrows()-1, vZ->GetNrows()-1, 80};
+//   Int_t bins[nbins]    = {16, 18*5, 50, 80};
+  Double_t xmin[nbins] = {86. , 0.,           -250., -2.};
+  Double_t xmax[nbins] = {250., 2*TMath::Pi(), 250.,  2.};
+  THnF *hn = new THnF("hn", "hn", nbins, bins, xmin, xmax);
+
+  hn->GetAxis(0)->Set(vR  ->GetNrows()-1, vR  ->GetMatrixArray());
+  hn->GetAxis(1)->Set(vPhi->GetNrows()-1, vPhi->GetMatrixArray());
+  hn->GetAxis(2)->Set(vZ  ->GetNrows()-1, vZ  ->GetMatrixArray());
+  
+  
+  for (Int_t iev=0; iev<t->GetEntries(); ++iev) {
+    t->GetEntry(iev);
+    
+    // cuts
+    // -- on trd
+    if (npTRD<2) continue;
+    Double_t pt=1./TMath::Abs(soneOverPt);
+    if (pt<0.8) continue;
+    
+    Float_t resRphiRandom = resRphi*trackRes;
+    Float_t deviation     = trackY+resRphiRandom-pointY;
+    
+    Double_t xx[4]={radius, trackPhi, trackZ ,deviation};
+    hn->Fill(xx);
+  }
+  
+  // do fits and fill tree
+  TTreeSRedirector stream(outFile.Data());
+  gROOT->cd();
+
+  DumpHn(hn, stream);
+
+  stream.GetFile()->cd();
+  hn->Write();
+  
+  delete hn;
+  delete vR;
+  delete vPhi;
+  delete vZ;
+}
+
+
+void AnaDeltaTree2(TString file, TString outDir=".")
+{
+  //
+  // NOTE: not finished
+  //
+  TFile f(file);
+  gROOT->cd();
+  TTree *t = (TTree*)f.Get("delta");
+  Float_t soneOverPt=0.;
+  Float_t radius=0.;
+  Float_t trackPhi=0.;
+  Float_t trackY=0.;
+  Float_t trackZ=0.;
+  Float_t resRphi=0.;
+  Float_t trackRes=0.;
+  Float_t pointY=0.;
+  Float_t pointZ=0.;
+  Float_t npTRD=0.;
+  Float_t event=0.;
+  
+  t->SetBranchAddress("soneOverPt" , &soneOverPt);
+  t->SetBranchAddress("r"          , &radius);
+  t->SetBranchAddress("trackPhi"   , &trackPhi);
+  t->SetBranchAddress("trackY"     , &trackY);
+  t->SetBranchAddress("trackZ"     , &trackZ);
+  t->SetBranchAddress("resRphi"    , &resRphi);
+  t->SetBranchAddress("trackRes"   , &trackRes);
+  t->SetBranchAddress("pointY"     , &pointY);
+  t->SetBranchAddress("pointZ"     , &pointZ);
+  t->SetBranchAddress("npTRD"      , &npTRD);
+  t->SetBranchAddress("event"      , &event);
+
+  // make binning
+  TVectorD *vZ   = MakeLinBinning(50,-250.,250.);
+  TVectorD *vPhi = MakeLinBinning(18*8,0.,TMath::Pi());
+  TVectorD *vR   = MakeLinBinning(16,86.,250.);
+
+  TObjArray arrZ(vZ->GetNrows()-1);
+  arrZ.SetOwner();
+  
+  for (Int_t iev=0; iev<t->GetEntries(); ++iev) {
+    t->GetEntry(iev);
+    
+    // cuts
+    // -- on trd
+    if (npTRD<2) continue;
+
+    Float_t resRphiRandom=resRphi*trackRes;
+
+    Int_t binZ   = TMath::BinarySearch(vZ->GetNrows(),vZ->GetMatrixArray(),(Double_t)trackZ);
+    Int_t binPhi = TMath::BinarySearch(vPhi->GetNrows(),vPhi->GetMatrixArray(),(Double_t)trackPhi);
+    Int_t binR   = TMath::BinarySearch(vR->GetNrows(),vR->GetMatrixArray(),(Double_t)radius);
+
+    if (binZ<0)   binZ=0;
+    if (binPhi<0) binPhi=0;
+    if (binR<0)   binR=0;
+
+    TObjArray *arrPhi=(TObjArray*)arrZ.UncheckedAt(binZ);
+    if (!arrPhi) {
+      arrPhi=new TObjArray(vPhi->GetNrows()-1);
+      arrZ.AddAt(arrPhi,binZ);
+    }
+
+    TObjArray *arrR=(TObjArray*)arrPhi->UncheckedAt(binPhi);
+    if (!arrR) {
+      arrR=new TObjArray(vR->GetNrows()-1);
+      arrPhi->AddAt(arrR,binPhi);
+    }
+
+    TH1S *h = (TH1S*)arrR->UncheckedAt(binR);
+    if (!h) {
+      h = new TH1S(Form("h_%02d_%02d_%d02",binZ, binPhi, binR),
+                   Form("z,phi,r: %02d,%02d,%d02; #Delta r#phi (cm)",binZ, binPhi, binR),
+                   80, -2., 2.);
+      arrR->AddAt(h, binR);
+    }
+
+    h->Fill(trackY+resRphiRandom-pointY);
+  }
+
+  // do fits and fill tree
+}
+
+
+void DumpHn(THn *hn, TTreeSRedirector &stream)
+{
   TAxis *ar   = hn->GetAxis(0);
   TAxis *aphi = hn->GetAxis(1);
   TAxis *az   = hn->GetAxis(2);
-
+  
   
   for (Int_t iz=0; iz<az->GetNbins(); ++iz) {
     az->SetRange(iz+1,iz+1);
@@ -46,19 +224,20 @@ void AnaDelta(TString file, TString outDir=".")
       ar->SetRange(ir+1,ir+1);
       for (Int_t iphi=0; iphi<aphi->GetNbins(); ++iphi) {
         aphi->SetRange(iphi+1,iphi+1);
-      
+        
         TH1 *hProj = hn->Projection(3);
         if (hProj->GetEntries()<1) {
           delete hProj;
           continue;
         }
-
+        
         TF1 fg("fg","gaus",-2,2);
         Double_t cr   = ar->GetBinCenter(ir+1);
         Double_t cphi = aphi->GetBinCenter(iphi+1);
         Double_t cz   = az->GetBinCenter(iz+1);
         hProj->SetNameTitle(Form("h_%02d_%02d_%d02",iz+1, iphi+1, ir+1),
-                         Form("z,phi,r: %02d,%02d,%d02 (%.2f, %.2f, %.2f)",iz+1,iphi+1,ir+1, cr, cphi, cz ));
+                            Form("z,phi,r: %02d,%02d,%d02 (%.2f, %.2f, %.2f)",iz+1,iphi+1,ir+1, cr, cphi, cz )
+        );
         hProj->Fit(&fg,"QR");
         arrFits.Add(hProj);
 
@@ -68,7 +247,7 @@ void AnaDelta(TString file, TString outDir=".")
         Double_t sigmaErr = fg.GetParError(2);
         Int_t    entries  = hProj->GetEntries();
         Double_t chi2ndf  = fg.GetChisquare()/fg.GetNDF();
-        
+
         stream << "d" <<
         "ir="        << ir       <<
         "iphi="      << iphi     <<
@@ -89,7 +268,140 @@ void AnaDelta(TString file, TString outDir=".")
     arrFits.Write(0x0,TObject::kSingleKey);
     gROOT->cd();
   }
-
-  delete hn;
+  
 }
 
+//______________________________________________________________________________
+TVectorD* MakeLogBinning(Int_t nbinsX, Double_t xmin, Double_t xmax)
+{
+  //
+  // Make logarithmic binning
+  // the user has to delete the array afterwards!!!
+  //
+  
+  //check limits
+  if (xmin<1e-20 || xmax<1e-20){
+    printf("For Log binning xmin and xmax must be > 1e-20. Using linear binning instead!");
+    return MakeLinBinning(nbinsX, xmin, xmax);
+  }
+  if (xmax<xmin){
+    Double_t tmp=xmin;
+    xmin=xmax;
+    xmax=tmp;
+  }
+  TVectorD *binLim=new TVectorD(nbinsX+1);
+  Double_t first=xmin;
+  Double_t last=xmax;
+  Double_t expMax=TMath::Log(last/first);
+  for (Int_t i=0; i<nbinsX+1; ++i){
+    (*binLim)[i]=first*TMath::Exp(expMax/nbinsX*(Double_t)i);
+  }
+  return binLim;
+}
+
+//______________________________________________________________________________
+TVectorD* MakeLinBinning(Int_t nbinsX, Double_t xmin, Double_t xmax)
+{
+  //
+  // Make linear binning
+  // the user has to delete the array afterwards!!!
+  //
+  if (xmax<xmin){
+    Double_t tmp=xmin;
+    xmin=xmax;
+    xmax=tmp;
+  }
+  TVectorD *binLim=new TVectorD(nbinsX+1);
+  Double_t first=xmin;
+  Double_t last=xmax;
+  Double_t binWidth=(last-first)/nbinsX;
+  for (Int_t i=0; i<nbinsX+1; ++i){
+    (*binLim)[i]=first+binWidth*(Double_t)i;
+  }
+  return binLim;
+}
+
+//_____________________________________________________________________________
+TVectorD* MakeArbitraryBinning(const char* bins)
+{
+  //
+  // Make arbitrary binning, bins separated by a ','
+  //
+  TString limits(bins);
+  if (limits.IsNull()){
+    printf("Bin Limit string is empty, cannot add the variable");
+    return 0x0;
+  }
+  
+  TObjArray *arr=limits.Tokenize(",");
+  Int_t nLimits=arr->GetEntries();
+  if (nLimits<2){
+    printf("Need at leas 2 bin limits, cannot add the variable");
+    delete arr;
+    return 0x0;
+  }
+  
+  TVectorD *binLimits=new TVectorD(nLimits);
+  for (Int_t iLim=0; iLim<nLimits; ++iLim){
+    (*binLimits)[iLim]=(static_cast<TObjString*>(arr->At(iLim)))->GetString().Atof();
+  }
+  
+  delete arr;
+  return binLimits;
+}
+
+void PlotFromTree(TTree *d, TString outDir=".")
+{
+  TCanvas *c=new TCanvas;
+  gStyle->SetOptStat(0);
+  d->SetMarkerStyle(20);
+  d->SetMarkerSize(1);
+  
+  TProfile2D pRZ("pRZ",";z (cm); r(cm)",50,-250,250,10,85,250);
+  d->Draw("entries:cr:cz>>pRZ","","profcolz");
+  pRZ.GetZaxis()->UnZoom();
+  c->SaveAs(Form("%s/entries_average.png",outDir.Data()));
+  d->Draw("entries:cr:cz>>pRZ","iphi==2","profcolz");
+  c->SaveAs(Form("%s/entries_onePhi.png",outDir.Data()));
+  
+  pRZ.SetMaximum(0.04);
+  d->Draw("meanErr:cr:cz>>pRZ","","profcolz");
+  c->SaveAs(Form("%s/meanErr_average.png",outDir.Data()));
+  d->Draw("meanErr:cr:cz>>pRZ","iphi==2","profcolz");
+  c->SaveAs(Form("%s/meanErr_onePhi.png",outDir.Data()));
+  
+  
+  d->Draw("mean:cphi:cr","iz==25","colz");
+  c->SaveAs(Form("%s/mean_oneZ_phi_allR.png",outDir.Data()));
+  d->Draw("mean:meanErr:cphi","iz==25&&ir==2","goff");
+  TGraphErrors grmean_phi(d->GetSelectedRows(),d->GetV3(),d->GetV1(),0,d->GetV2());
+  grmean_phi->SetTitle(";#varphi;#LT#Delta r#varphi#GT");
+  grmean_phi->SetMarkerStyle(20);
+  grmean_phi->SetMarkerSize(1);
+  grmean_phi->Draw("ap");
+  c->SaveAs(Form("%s/mean_oneZ_phi_oneR.png",outDir.Data()));
+  
+  d->Draw("mean:cr:cphi","iz==25","colz");
+  c->SaveAs(Form("%s/mean_oneZ_r_allPhi.png",outDir.Data()));
+  
+  d->Draw("mean:meanErr:cr","iz==25&&iphi==2","goff");
+  TGraphErrors grmean_r(d->GetSelectedRows(),d->GetV3(),d->GetV1(),0,d->GetV2());
+  grmean_r->SetTitle(";r (cm);#LT#Delta r#varphi#GT");
+  grmean_r->SetMarkerStyle(20);
+  grmean_r->SetMarkerSize(1);
+  grmean_r->Draw("ap");
+  c->SaveAs(Form("%s/mean_oneZ_r_onePhi.png",outDir.Data()));
+  
+  
+  d->Draw("meanErr:cphi:cr","iz==25","colz");
+  c->SaveAs(Form("%s/meanErr_oneZ_phi_allR.png",outDir.Data()));
+  d->Draw("meanErr:cphi","iz==25&&ir==2");
+  c->SaveAs(Form("%s/meanErr_oneZ_phi_oneR.png",outDir.Data()));
+  
+  d->Draw("meanErr:cr:cphi","iz==25","colz");
+  c->SaveAs(Form("%s/meanErr_oneZ_r_allPhi.png",outDir.Data()));
+  
+  d->Draw("meanErr:cr","iz==25&&iphi==2");
+  c->SaveAs(Form("%s/meanErr_oneZ_r_onePhi.png",outDir.Data()));
+  
+}
