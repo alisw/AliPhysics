@@ -1652,6 +1652,7 @@ void AliTPCtracker::GetTailValue(const Float_t ampfactor,Double_t &ionTailMax, D
   Double_t rmsPad1          = (cl1->GetSigmaY2()==0)?kMinPRF:(TMath::Sqrt(cl1->GetSigmaY2())/padWidth);
   Double_t rmsPad0          = (cl0->GetSigmaY2()==0)?kMinPRF:(TMath::Sqrt(cl0->GetSigmaY2())/padWidth);
  
+  
   Double_t sumAmp1=0.;
   for (Int_t idelta =-2; idelta<=2;idelta++){
     sumAmp1+=TMath::Exp(-idelta*idelta/(2*rmsPad1));
@@ -1682,6 +1683,7 @@ void AliTPCtracker::GetTailValue(const Float_t ampfactor,Double_t &ionTailMax, D
         }
     }
     if (!graphRes[ampIndex]) continue;
+    if (deltaTimebin+2 > graphRes[ampIndex]->GetN()) continue;
     if (graphRes[ampIndex]->GetY()[deltaTimebin+2]>=0) continue;
      
     for (Int_t ipad0=padcl0-padScan; ipad0<=padcl0+padScan; ipad0++) {
@@ -3239,19 +3241,7 @@ void AliTPCtracker::ReadSeeds(const AliESDEvent *const event, Int_t direction)
     //  MarkSeedFree( seed );
     //  continue;    
     //}
-    if ( direction ==2 &&(status & AliESDtrack::kTRDrefit) > 0 )  {
-      Double_t par0[5],par1[5],alpha,x;
-      esd->GetInnerExternalParameters(alpha,x,par0);
-      esd->GetExternalParameters(x,par1);
-      Double_t delta1 = TMath::Abs(par0[4]-par1[4])/(0.000000001+TMath::Abs(par0[4]+par1[4]));
-      Double_t delta2 = TMath::Abs(par0[3]-par1[3]);
-      Double_t trdchi2=0;
-      if (esd->GetTRDncls()>0) trdchi2 = esd->GetTRDchi2()/esd->GetTRDncls();
-      //reset covariance if suspicious 
-      if ( (delta1>0.1) || (delta2>0.006) ||trdchi2>7.)
-	seed->ResetCovariance(10.);
-    }
-
+    
     //
     //
     // rotate to the local coordinate system
