@@ -12,17 +12,17 @@
 void AddTaskFlowHigherOrdersAllPID(Int_t triggerSelectionString,
 				   Float_t centrMin=0.,
 				   Float_t centrMax=100.,
+                                   Float_t etamin=-0.8,
+                                   Float_t etamax=0.8,
 				   TString fileNameBase="output",
-				   Bool_t isPID = kTRUE,
+				   TString uniqueStr="",
 				   Int_t AODfilterBitRP = 768,
 				   Int_t AODfilterBitPOI = 768,
-				   AliPID::EParticleType particleType=AliPID::kPion,
-				   AliFlowTrackCuts::PIDsource sourcePID = AliFlowTrackCuts::kTOFbayesian,
 				   Int_t charge=0,
 				   Bool_t doQA=kFALSE,
-				   Float_t etamin=-0.8,
-				   Float_t etamax=0.8,	 
-				   TString uniqueStr="" ) {
+                                   Bool_t isPID = kTRUE,
+                                   AliPID::EParticleType particleType=AliPID::kPion,
+                                   AliFlowTrackCuts::PIDsource sourcePID = AliFlowTrackCuts::kTOFbayesian) {
   // Define the range for eta subevents (for SP method)
   Double_t minA = -0.8;//
   Double_t maxA = 0.8;//
@@ -180,15 +180,15 @@ cutsRP->SetQA(doQA);
     if (charge>0) outputSlotName[harmonic-2]+="+";
   }
 
-//  TString QASlotName[] = {"","","",""};
+  TString QASlotName[] = {"","","",""};
 
-//  for(int harmonic=3;harmonic<6;harmonic++){  //for v3,v4 and v5
-//    QASlotName[harmonic-3]+="qa";
-//    QASlotName[harmonic-3]+=Form("%i",harmonic);
-//    QASlotName[harmonic-3]+="_";
-//    QASlotName[harmonic-3]+=Form("_%.0f-",centrMin);
-//    QASlotName[harmonic-3]+=Form("%.0f_",centrMax);
-//    }
+  for(int harmonic=2;harmonic<6;harmonic++){  //for v3,v4 and v5
+    QASlotName[harmonic-2]+="qa";
+    QASlotName[harmonic-2]+=Form("%i",harmonic);
+    QASlotName[harmonic-2]+="_";
+    QASlotName[harmonic-2]+=Form("_%.0f-",centrMin);
+    QASlotName[harmonic-2]+=Form("%.0f_",centrMax);
+  }
 
 
   TString fileName(fileNameBase);
