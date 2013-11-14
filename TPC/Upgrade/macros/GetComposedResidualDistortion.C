@@ -36,11 +36,11 @@ AliTPCComposedCorrection* GetComposedResidualDistortion(TString fluctuationMap, 
   // The second map for the corrections
   AliTPCComposedCorrection *residualDistortion = new AliTPCComposedCorrection(arrMaps, AliTPCComposedCorrection::kQueueResidual);
   TVectorD weights(2);
-  weights(1)=+1.;
-  weights(0)=-1.;
+  weights(0)=+1.;
+  weights(1)=-1.;
   if (rescale) {
     Float_t dummy=0;
-    weights(0)=-AliToyMCEventGenerator::GetSCScalingFactor(corrFluct, corrAverage,dummy);
+    weights(1)=-AliToyMCEventGenerator::GetSCScalingFactor(corrFluct, corrAverage,dummy);
   }
   residualDistortion->SetWeights(&weights);
 

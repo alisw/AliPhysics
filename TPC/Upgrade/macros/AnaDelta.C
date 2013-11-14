@@ -240,8 +240,8 @@ void AnaDeltaResiduals(TString fluctuationMap, TString averageMap, TString outFi
   AliTPCComposedCorrection *residualDistortion = new AliTPCComposedCorrection(arrMaps, AliTPCComposedCorrection::kQueueResidual);
   Float_t dummy=0;
   TVectorD weights(2);
-  weights(1)=+1.;
-  weights(0)=-AliToyMCEventGenerator::GetSCScalingFactor(corrFluct, corrAverage,dummy);
+  weights(0)=+1.;
+  weights(1)=-AliToyMCEventGenerator::GetSCScalingFactor(corrFluct, corrAverage,dummy);
   residualDistortion->SetWeights(&weights);
 
   TVectorD *vR   = MakeLinBinning(10,86.,250.);
