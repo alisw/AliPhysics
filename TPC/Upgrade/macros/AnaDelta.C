@@ -11,6 +11,7 @@
 #include <TVectorT.h>
 #include <TCanvas.h>
 #include <TProfile2D.h>
+#include <TGraphErrors.h>
 #include <TTreeStream.h>
 
 /*
@@ -123,7 +124,7 @@ void AnaDeltaTree(TString file, TString outFile="deltas_tree.root")
 }
 
 
-void AnaDeltaTree2(TString file, TString outDir=".")
+void AnaDeltaTree2(TString file/*, TString outDir="."*/)
 {
   //
   // NOTE: not finished
@@ -374,7 +375,7 @@ void PlotFromTree(TTree *d, TString outDir=".")
   d->Draw("mean:cphi:cr","iz==25","colz");
   c->SaveAs(Form("%s/mean_oneZ_phi_allR.png",outDir.Data()));
   d->Draw("mean:meanErr:cphi","iz==25&&ir==2","goff");
-  TGraphErrors grmean_phi(d->GetSelectedRows(),d->GetV3(),d->GetV1(),0,d->GetV2());
+  TGraphErrors *grmean_phi=new TGraphErrors(d->GetSelectedRows(),d->GetV3(),d->GetV1(),0,d->GetV2());
   grmean_phi->SetTitle(";#varphi;#LT#Delta r#varphi#GT");
   grmean_phi->SetMarkerStyle(20);
   grmean_phi->SetMarkerSize(1);
@@ -385,7 +386,7 @@ void PlotFromTree(TTree *d, TString outDir=".")
   c->SaveAs(Form("%s/mean_oneZ_r_allPhi.png",outDir.Data()));
   
   d->Draw("mean:meanErr:cr","iz==25&&iphi==2","goff");
-  TGraphErrors grmean_r(d->GetSelectedRows(),d->GetV3(),d->GetV1(),0,d->GetV2());
+  TGraphErrors *grmean_r=new TGraphErrors(d->GetSelectedRows(),d->GetV3(),d->GetV1(),0,d->GetV2());
   grmean_r->SetTitle(";r (cm);#LT#Delta r#varphi#GT");
   grmean_r->SetMarkerStyle(20);
   grmean_r->SetMarkerSize(1);
