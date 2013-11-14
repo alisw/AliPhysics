@@ -602,7 +602,7 @@ void AliTPCcalibDB::UpdateNonRec(){
 
 }
 
-void AliTPCcalibDB::GetTailcancelationGraphs(Int_t sector, TGraphErrors ** graphRes, Float_t * indexAmpGraphs){
+Bool_t AliTPCcalibDB::GetTailcancelationGraphs(Int_t sector, TGraphErrors ** graphRes, Float_t * indexAmpGraphs){
  
 // 
 //   Read OCDB entry object of Iontail (TObjArray of TGraphErrors of TRFs)
@@ -615,6 +615,13 @@ void AliTPCcalibDB::GetTailcancelationGraphs(Int_t sector, TGraphErrors ** graph
 //   Float_t rocVoltage=GetChamberHighVoltageMedian(sector);                      // Get the voltage from OCDB, new function from Jens
  
   Int_t nominalVoltage = (sector<36) ? 1240 : 1470 ;     // nominal voltage of 2012 when the TRF functions were produced
+
+  if ( rocVoltage < nominalVoltage/2. || rocVoltage > nominalVoltage*2. )
+  {
+    AliInfo(Form("rocVoltage out of range: roc: %.2f, nominal: %i", rocVoltage, nominalVoltage));
+    return kFALSE;
+  }
+
   Int_t tempVoltage = 0;                                 
   Int_t trackAngle  = 4;                                 // (1=first, 2=second, 3=third, 4=first+second, 5=all tracks) note: 3rd is distorted by low freq
   TString rocType   = (sector<36) ? "iroc" : "oroc";     
@@ -704,6 +711,7 @@ void AliTPCcalibDB::GetTailcancelationGraphs(Int_t sector, TGraphErrors ** graph
     }
   delete objArr1;
   }
+  return kTRUE;
 }
 
 void AliTPCcalibDB::CreateObjectList(const Char_t *filename, TObjArray *calibObjects)

@@ -53,7 +53,7 @@ class AliTPCcalibDB : public TObject
   void   Update();  //update entries
   void   UpdateRunInformations(Int_t run, Bool_t force=kFALSE);
   void   UpdateNonRec();
-  void   GetTailcancelationGraphs(Int_t sector, TGraphErrors ** graphRes, Float_t * indexAmpGraphs);
+  Bool_t   GetTailcancelationGraphs(Int_t sector, TGraphErrors ** graphRes, Float_t * indexAmpGraphs);
   //
   Long64_t GetRun() const {return fRun;}
   //

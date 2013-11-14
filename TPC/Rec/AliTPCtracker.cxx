@@ -1517,7 +1517,10 @@ void  AliTPCtracker::ApplyTailCancellation(){
           indexAmpGraphs[icache] = 0;
         }
         /////////////////////////////  --> position fo sie loop
-        AliTPCcalibDB::Instance()->GetTailcancelationGraphs(sec+36*secType+18*iside,graphRes,indexAmpGraphs);
+        if (!AliTPCcalibDB::Instance()->GetTailcancelationGraphs(sec+36*secType+18*iside,graphRes,indexAmpGraphs))
+        {
+          continue;
+        }
         
         AliTPCtrackerSector &sector= (secType==0)?fInnerSec[sec]:fOuterSec[sec];  
         Int_t nrows     = sector.GetNRows();                                       // number of rows
