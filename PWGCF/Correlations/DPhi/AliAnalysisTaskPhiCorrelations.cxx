@@ -49,6 +49,7 @@
 #include "AliAODMCHeader.h"
 #include "AliGenCocktailEventHeader.h"
 #include "AliGenEventHeader.h"
+#include "AliCollisionGeometry.h"
 
 #include "AliEventPoolManager.h"
 
@@ -451,26 +452,50 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   
   if (fCentralityMethod.Length() > 0)
   {
-    AliCentrality *centralityObj = 0;
-    if (fAOD)
-      centralityObj = fAOD->GetHeader()->GetCentralityP();
-    else if (fESD)
-      centralityObj = fESD->GetCentrality();
-    
-    if (centralityObj)
+    if (fCentralityMethod == "MC_b")
     {
-      if (fMCUseUncheckedCentrality)
-	centrality = centralityObj->GetCentralityPercentileUnchecked(fCentralityMethod);
-      else
-	centrality = centralityObj->GetCentralityPercentile(fCentralityMethod);
+      AliGenEventHeader* eventHeader = GetFirstHeader();
+      if (!eventHeader)
+      {
+	// We avoid AliFatal here, because the AOD productions sometimes have events where the MC header is missing 
+	// (due to unreadable Kinematics) and we don't want to loose the whole job because of a few events
+	AliError("Event header not found. Skipping this event.");
+	fHistos->FillEvent(0, AliUEHist::kCFStepAnaTopology);
+	return;
+      }
       
-      AliInfo(Form("Centrality is %f", centrality));
+      AliCollisionGeometry* collGeometry = dynamic_cast<AliCollisionGeometry*> (eventHeader);
+      if (!collGeometry)
+      {
+	eventHeader->Dump();
+	AliFatal("Asking for MC_b centrality, but event header has no collision geometry information");
+      }
+      
+      centrality = collGeometry->ImpactParameter();
     }
     else
     {
-      Printf("WARNING: Centrality object is 0");
-      centrality = -1;
-     }
+      AliCentrality *centralityObj = 0;
+      if (fAOD)
+	centralityObj = fAOD->GetHeader()->GetCentralityP();
+      else if (fESD)
+	centralityObj = fESD->GetCentrality();
+      
+      if (centralityObj)
+      {
+	if (fMCUseUncheckedCentrality)
+	  centrality = centralityObj->GetCentralityPercentileUnchecked(fCentralityMethod);
+	else
+	  centrality = centralityObj->GetCentralityPercentile(fCentralityMethod);
+      }
+      else
+      {
+	Printf("WARNING: Centrality object is 0");
+	centrality = -1;
+      }
+    }
+
+    AliInfo(Form("Centrality is %f", centrality));
   }
   
   // Support for ESD and AOD based analysis
@@ -879,6 +904,35 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   if (tracksMC != tracksCorrelateMC)
     delete tracksCorrelateMC;
   delete tracksMC;
+}
+
+//____________________________________________________________________
+AliGenEventHeader* AliAnalysisTaskPhiCorrelations::GetFirstHeader()
+{
+  // get first MC header from either ESD/AOD (including cocktail header if available)
+  
+  if (fMcEvent)
+  {
+    // ESD
+    AliHeader* header = (AliHeader*) fMcEvent->Header();
+    if (!header)
+      return 0;
+      
+    AliGenCocktailEventHeader* cocktailHeader = dynamic_cast<AliGenCocktailEventHeader*> (header->GenEventHeader());
+    if (cocktailHeader)
+      return dynamic_cast<AliGenEventHeader*> (cocktailHeader->GetHeaders()->First());
+
+    return dynamic_cast<AliGenEventHeader*> (header);
+  }
+  else
+  {
+    // AOD
+    AliAODMCHeader* header = (AliAODMCHeader*) fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+    if (!header)
+      return 0;
+    
+    return header->GetCocktailHeader(0);
+  }
 }
 
 //____________________________________________________________________
