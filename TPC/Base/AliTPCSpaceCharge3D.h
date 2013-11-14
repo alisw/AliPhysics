@@ -56,6 +56,8 @@ public:
   // MI - Add the "real" 3D histogram as an optional input (26.06.2013)
   //
   void    SetInputSpaceCharge(TH3 * hisSpaceCharge3D, TH2 * hisRPhi, TH2* hisRZ, Double_t norm);
+  void    SetInputSpaceCharge3D(TH3 * hisSpaceCharge3D){fSpaceChargeHistogram3D= hisSpaceCharge3D;}
+
   const TH3 *   GetInputSpaceCharge3D(){return fSpaceChargeHistogram3D;}       // MI add 
   const TH2 *   GetInputSpaceChargeRPhi(){return fSpaceChargeHistogramRPhi;}       // MI add 
   const TH2 *   GetInputSpaceChargeRZ(){return fSpaceChargeHistogramRZ;}       // MI add 

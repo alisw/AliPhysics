@@ -267,7 +267,7 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
 
   if (fInitLookUp) {
     AliInfo("Lookup table was already initialized!  Doing it again anyway ...");
-    //    return;
+    return;
   }
   
   // ------------------------------------------------------------------------------------------------------
