@@ -3127,6 +3127,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
           fhAsymM02CutNLocMaxN->SetYTitle("(E_{1}-E_{2})/(E_{1}+E_{2})");
           fhAsymM02CutNLocMaxN->SetXTitle("E (GeV)");
           outputContainer->Add(fhAsymM02CutNLocMaxN) ;
+          
           if(splitOn)
           {
             fhMassSplitECutNLocMax1  = new TH2F("hMassSplitECutNLocMax1","Invariant mass of splitted cluster with NLM=1 vs E, (E1+E2)/E cut, M02 cut, no TM",
@@ -3188,123 +3189,65 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
           outputContainer->Add(fhM02AsyCutNLocMaxN) ;
         }
         
+        if(GetCaloPID()->GetSubClusterEnergyMinimum(0) > 0.1)
         {
-          if(m02On)
-          {
-            fhMassM02CutNLocMax1  = new TH2F("hMassM02CutNLocMax1","Invariant mass of splitted cluster with NLM=1 vs E, M02 cut, no TM",
-                                             nptbins,ptmin,ptmax,mbins,mmin,mmax);
-            fhMassM02CutNLocMax1->SetYTitle("M (GeV/c^{2})");
-            fhMassM02CutNLocMax1->SetXTitle("E (GeV)");
-            outputContainer->Add(fhMassM02CutNLocMax1) ;
-            
-            fhMassM02CutNLocMax2  = new TH2F("hMassM02CutNLocMax2","Invariant mass of splitted cluster with NLM=2 vs E, M02 cut, no TM",
-                                             nptbins,ptmin,ptmax,mbins,mmin,mmax);
-            fhMassM02CutNLocMax2->SetYTitle("M (GeV/c^{2})");
-            fhMassM02CutNLocMax2->SetXTitle("E (GeV)");
-            outputContainer->Add(fhMassM02CutNLocMax2) ;
-            
-            fhMassM02CutNLocMaxN  = new TH2F("hMassM02CutNLocMaxN","Invariant mass of splitted cluster with NLM>2 vs E, M02 cut, no TM",
-                                             nptbins,ptmin,ptmax,mbins,mmin,mmax);
-            fhMassM02CutNLocMaxN->SetYTitle("M (GeV/c^{2})");
-            fhMassM02CutNLocMaxN->SetXTitle("E (GeV)");
-            outputContainer->Add(fhMassM02CutNLocMaxN) ;
-            
-            fhAsymM02CutNLocMax1  = new TH2F("hAsymM02CutNLocMax1","Asymmetry of NLM=1  vs cluster Energy, M02Cut, no TM", nptbins,ptmin,ptmax,200,-1,1);
-            fhAsymM02CutNLocMax1->SetYTitle("(E_{1}-E_{2})/(E_{1}+E_{2})");
-            fhAsymM02CutNLocMax1->SetXTitle("E (GeV)");
-            outputContainer->Add(fhAsymM02CutNLocMax1) ;
-            
-            fhAsymM02CutNLocMax2  = new TH2F("hAsymM02CutNLocMax2","Asymmetry of NLM=2  vs cluster Energy, M02Cut, no TM", nptbins,ptmin,ptmax,200,-1,1);
-            fhAsymM02CutNLocMax2->SetYTitle("(E_{1}-E_{2})/(E_{1}+E_{2})");
-            fhAsymM02CutNLocMax2->SetXTitle("E (GeV)");
-            outputContainer->Add(fhAsymM02CutNLocMax2) ;
-            
-            fhAsymM02CutNLocMaxN  = new TH2F("hAsymM02CutNLocMaxN","Asymmetry of NLM>2  vs cluster Energy, M02Cut, no TM", nptbins,ptmin,ptmax,200,-1,1);
-            fhAsymM02CutNLocMaxN->SetYTitle("(E_{1}-E_{2})/(E_{1}+E_{2})");
-            fhAsymM02CutNLocMaxN->SetXTitle("E (GeV)");
-            outputContainer->Add(fhAsymM02CutNLocMaxN) ;
-            
-            if(splitOn)
-            {
-              fhMassSplitECutNLocMax1  = new TH2F("hMassSplitECutNLocMax1","Invariant mass of splitted cluster with NLM=1 vs E, (E1+E2)/E cut, M02 cut, no TM",
-                                                  nptbins,ptmin,ptmax,mbins,mmin,mmax);
-              fhMassSplitECutNLocMax1->SetYTitle("M (GeV/c^{2})");
-              fhMassSplitECutNLocMax1->SetXTitle("E (GeV)");
-              outputContainer->Add(fhMassSplitECutNLocMax1) ;
-              
-              fhMassSplitECutNLocMax2  = new TH2F("hMassSplitECutNLocMax2","Invariant mass of splitted cluster with NLM=2 vs E, (E1+E2)/E cut, M02 cut, no TM",
-                                                  nptbins,ptmin,ptmax,mbins,mmin,mmax);
-              fhMassSplitECutNLocMax2->SetYTitle("M (GeV/c^{2})");
-              fhMassSplitECutNLocMax2->SetXTitle("E (GeV)");
-              outputContainer->Add(fhMassSplitECutNLocMax2) ;
-              
-              fhMassSplitECutNLocMaxN  = new TH2F("hMassSplitECutNLocMaxN","Invariant mass of splitted cluster with NLM>2 vs E, (E1+E2)/E cut, M02 cut, no TM",
-                                                  nptbins,ptmin,ptmax,mbins,mmin,mmax);
-              fhMassSplitECutNLocMaxN->SetYTitle("M (GeV/c^{2})");
-              fhMassSplitECutNLocMaxN->SetXTitle("E (GeV)");
-              outputContainer->Add(fhMassSplitECutNLocMaxN) ;
-            }
-          }//m02on
+          fhMassEnCutNLocMax1  = new TH2F("hMassEnCutNLocMax1",Form("Invariant mass of splitted cluster with NLM=1 vs E, E > %1.1f GeV, no TM",GetCaloPID()->GetSubClusterEnergyMinimum(0)),
+                                          nptbins,ptmin,ptmax,mbins,mmin,mmax);
+          fhMassEnCutNLocMax1->SetYTitle("M (GeV/c^{2})");
+          fhMassEnCutNLocMax1->SetXTitle("E (GeV)");
+          outputContainer->Add(fhMassEnCutNLocMax1) ;
           
-          if(GetCaloPID()->GetSubClusterEnergyMinimum(0) > 0.1)
-          {
-            fhMassEnCutNLocMax1  = new TH2F("hMassEnCutNLocMax1",Form("Invariant mass of splitted cluster with NLM=1 vs E, E > %1.1f GeV, no TM",GetCaloPID()->GetSubClusterEnergyMinimum(0)),
-                                             nptbins,ptmin,ptmax,mbins,mmin,mmax);
-            fhMassEnCutNLocMax1->SetYTitle("M (GeV/c^{2})");
-            fhMassEnCutNLocMax1->SetXTitle("E (GeV)");
-            outputContainer->Add(fhMassEnCutNLocMax1) ;
-            
-            fhMassEnCutNLocMax2  = new TH2F("hMassEnCutNLocMax2",Form("Invariant mass of splitted cluster with NLM=2 vs E, E > %1.1f GeV, no TM",GetCaloPID()->GetSubClusterEnergyMinimum(1)),
-                                             nptbins,ptmin,ptmax,mbins,mmin,mmax);
-            fhMassEnCutNLocMax2->SetYTitle("M (GeV/c^{2})");
-            fhMassEnCutNLocMax2->SetXTitle("E (GeV)");
-            outputContainer->Add(fhMassEnCutNLocMax2) ;
-            
-            fhMassEnCutNLocMaxN  = new TH2F("hMassEnCutNLocMaxN",Form("Invariant mass of splitted cluster with NLM>2 vs E, E > %1.1f GeV, no TM",GetCaloPID()->GetSubClusterEnergyMinimum(2)),
-                                             nptbins,ptmin,ptmax,mbins,mmin,mmax);
-            fhMassEnCutNLocMaxN->SetYTitle("M (GeV/c^{2})");
-            fhMassEnCutNLocMaxN->SetXTitle("E (GeV)");
-            outputContainer->Add(fhMassEnCutNLocMaxN) ;
-            
-            fhM02EnCutNLocMax1  = new TH2F("hM02EnCutNLocMax1",Form("#lambda_{0}^{2} of NLM=1  vs cluster Energy, E > %1.1f GeV, no TM",GetCaloPID()->GetSubClusterEnergyMinimum(0)),
-                                            nptbins,ptmin,ptmax, ssbins,ssmin,ssmax);
-            fhM02EnCutNLocMax1->SetYTitle("#lambda_{0}^{2}");
-            fhM02EnCutNLocMax1->SetXTitle("E (GeV)");
-            outputContainer->Add(fhM02EnCutNLocMax1) ;
-            
-            fhM02EnCutNLocMax2  = new TH2F("hM02EnCutNLocMax2",Form("#lambda_{0}^{2} of NLM=2  vs cluster Energy, E > %1.1f GeV, no TM",GetCaloPID()->GetSubClusterEnergyMinimum(1)),
-                                            nptbins,ptmin,ptmax, ssbins,ssmin,ssmax);
-            fhM02EnCutNLocMax2->SetYTitle("#lambda_{0}^{2}");
-            fhM02EnCutNLocMax2->SetXTitle("E (GeV)");
-            outputContainer->Add(fhM02EnCutNLocMax2) ;
-            
-            fhM02EnCutNLocMaxN  = new TH2F("hM02EnCutNLocMaxN",Form("#lambda_{0}^{2} of NLM>2  vs cluster Energy, E > %1.1f GeV, no TM",GetCaloPID()->GetSubClusterEnergyMinimum(2)),
-                                            nptbins,ptmin,ptmax, ssbins,ssmin,ssmax);
-            fhM02EnCutNLocMaxN->SetYTitle("#lambda_{0}^{2}");
-            fhM02EnCutNLocMaxN->SetXTitle("E (GeV)");
-            outputContainer->Add(fhM02EnCutNLocMaxN) ;
-            
-            fhAsymEnCutNLocMax1  = new TH2F("hAsymEnCutNLocMax1",Form("Asymmetry of NLM=1  vs cluster Energy, E > %1.1f GeV, no TM",GetCaloPID()->GetSubClusterEnergyMinimum(0))
-                                            , nptbins,ptmin,ptmax,200,-1,1);
-            fhAsymEnCutNLocMax1->SetYTitle("(E_{1}-E_{2})/(E_{1}+E_{2})");
-            fhAsymEnCutNLocMax1->SetXTitle("E (GeV)");
-            outputContainer->Add(fhAsymEnCutNLocMax1) ;
-            
-            fhAsymEnCutNLocMax2  = new TH2F("hAsymEnCutNLocMax2",Form("Asymmetry of NLM=2  vs cluster Energy, E > %1.1f GeV, no TM",GetCaloPID()->GetSubClusterEnergyMinimum(1))
-                                            , nptbins,ptmin,ptmax,200,-1,1);
-            fhAsymEnCutNLocMax2->SetYTitle("(E_{1}-E_{2})/(E_{1}+E_{2})");
-            fhAsymEnCutNLocMax2->SetXTitle("E (GeV)");
-            outputContainer->Add(fhAsymEnCutNLocMax2) ;
-            
-            fhAsymEnCutNLocMaxN  = new TH2F("hAsymEnCutNLocMaxN",Form("Asymmetry of NLM>2  vs cluster Energy, E > %1.1f GeV, no TM",GetCaloPID()->GetSubClusterEnergyMinimum(2))
-                                            , nptbins,ptmin,ptmax,200,-1,1);
-            fhAsymEnCutNLocMaxN->SetYTitle("(E_{1}-E_{2})/(E_{1}+E_{2})");
-            fhAsymEnCutNLocMaxN->SetXTitle("E (GeV)");
-            outputContainer->Add(fhAsymEnCutNLocMaxN) ;
-
-          }
+          fhMassEnCutNLocMax2  = new TH2F("hMassEnCutNLocMax2",Form("Invariant mass of splitted cluster with NLM=2 vs E, E > %1.1f GeV, no TM",GetCaloPID()->GetSubClusterEnergyMinimum(1)),
+                                          nptbins,ptmin,ptmax,mbins,mmin,mmax);
+          fhMassEnCutNLocMax2->SetYTitle("M (GeV/c^{2})");
+          fhMassEnCutNLocMax2->SetXTitle("E (GeV)");
+          outputContainer->Add(fhMassEnCutNLocMax2) ;
+          
+          fhMassEnCutNLocMaxN  = new TH2F("hMassEnCutNLocMaxN",Form("Invariant mass of splitted cluster with NLM>2 vs E, E > %1.1f GeV, no TM",GetCaloPID()->GetSubClusterEnergyMinimum(2)),
+                                          nptbins,ptmin,ptmax,mbins,mmin,mmax);
+          fhMassEnCutNLocMaxN->SetYTitle("M (GeV/c^{2})");
+          fhMassEnCutNLocMaxN->SetXTitle("E (GeV)");
+          outputContainer->Add(fhMassEnCutNLocMaxN) ;
+          
+          fhM02EnCutNLocMax1  = new TH2F("hM02EnCutNLocMax1",Form("#lambda_{0}^{2} of NLM=1  vs cluster Energy, E > %1.1f GeV, no TM",GetCaloPID()->GetSubClusterEnergyMinimum(0)),
+                                         nptbins,ptmin,ptmax, ssbins,ssmin,ssmax);
+          fhM02EnCutNLocMax1->SetYTitle("#lambda_{0}^{2}");
+          fhM02EnCutNLocMax1->SetXTitle("E (GeV)");
+          outputContainer->Add(fhM02EnCutNLocMax1) ;
+          
+          fhM02EnCutNLocMax2  = new TH2F("hM02EnCutNLocMax2",Form("#lambda_{0}^{2} of NLM=2  vs cluster Energy, E > %1.1f GeV, no TM",GetCaloPID()->GetSubClusterEnergyMinimum(1)),
+                                         nptbins,ptmin,ptmax, ssbins,ssmin,ssmax);
+          fhM02EnCutNLocMax2->SetYTitle("#lambda_{0}^{2}");
+          fhM02EnCutNLocMax2->SetXTitle("E (GeV)");
+          outputContainer->Add(fhM02EnCutNLocMax2) ;
+          
+          fhM02EnCutNLocMaxN  = new TH2F("hM02EnCutNLocMaxN",Form("#lambda_{0}^{2} of NLM>2  vs cluster Energy, E > %1.1f GeV, no TM",GetCaloPID()->GetSubClusterEnergyMinimum(2)),
+                                         nptbins,ptmin,ptmax, ssbins,ssmin,ssmax);
+          fhM02EnCutNLocMaxN->SetYTitle("#lambda_{0}^{2}");
+          fhM02EnCutNLocMaxN->SetXTitle("E (GeV)");
+          outputContainer->Add(fhM02EnCutNLocMaxN) ;
+          
+          fhAsymEnCutNLocMax1  = new TH2F("hAsymEnCutNLocMax1",Form("Asymmetry of NLM=1  vs cluster Energy, E > %1.1f GeV, no TM",GetCaloPID()->GetSubClusterEnergyMinimum(0))
+                                          , nptbins,ptmin,ptmax,200,-1,1);
+          fhAsymEnCutNLocMax1->SetYTitle("(E_{1}-E_{2})/(E_{1}+E_{2})");
+          fhAsymEnCutNLocMax1->SetXTitle("E (GeV)");
+          outputContainer->Add(fhAsymEnCutNLocMax1) ;
+          
+          fhAsymEnCutNLocMax2  = new TH2F("hAsymEnCutNLocMax2",Form("Asymmetry of NLM=2  vs cluster Energy, E > %1.1f GeV, no TM",GetCaloPID()->GetSubClusterEnergyMinimum(1))
+                                          , nptbins,ptmin,ptmax,200,-1,1);
+          fhAsymEnCutNLocMax2->SetYTitle("(E_{1}-E_{2})/(E_{1}+E_{2})");
+          fhAsymEnCutNLocMax2->SetXTitle("E (GeV)");
+          outputContainer->Add(fhAsymEnCutNLocMax2) ;
+          
+          fhAsymEnCutNLocMaxN  = new TH2F("hAsymEnCutNLocMaxN",Form("Asymmetry of NLM>2  vs cluster Energy, E > %1.1f GeV, no TM",GetCaloPID()->GetSubClusterEnergyMinimum(2))
+                                          , nptbins,ptmin,ptmax,200,-1,1);
+          fhAsymEnCutNLocMaxN->SetYTitle("(E_{1}-E_{2})/(E_{1}+E_{2})");
+          fhAsymEnCutNLocMaxN->SetXTitle("E (GeV)");
+          outputContainer->Add(fhAsymEnCutNLocMaxN) ;
+          
         }
-      }
+        
+      } // no MC
       
       if(asyOn || m02On)
       {
