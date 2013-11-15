@@ -35,23 +35,24 @@ using namespace std;
 
 bool SaveFiles=kFALSE;
 const int ChProdBOI=0;// 0=SameCharge, 1=MixedCharge
-const int KT3Bin=0;// Kt3 bin. 0=low Kt3 bin.  1=high Kt3 bin
+const int KT3Bin=0;// Kt3 bin. 0-2
 bool IncludeEW=kFALSE;
 bool AddedCC=kTRUE;// Charge Conjugate already added?
 //
-int MbinMaxPbPb=15;
-int MbinMinpPb=11;
-int MbinMinpp=13;
-int CutOffPbPb=15;
-int CutOffpPb=11;
-int CutOffpp=12;
+int MbinMaxPbPb=15;// 15
+int MbinMinpPb=13;// 13
+int MbinMinpp=14;// 14 
+int MbinMinPbPb=0;// 0
+int MbinMaxpPb=18;// 18
 //
 //
+//
+const int MaxKT3Bins=2;
 int TextFont=42;// 63, or 42
 float SizeLabel=0.08;// 20(63 font), 0.08(42 font)
 float SizeLegend=0.07;// 
 float SizeTitle=0.08;// 
-float SizeSpecif=0.08;// 
+float SizeSpecif=0.06;// 
 float SF1=2/3.*0.95;
 float SF2=1/2.*0.95;
 
@@ -84,33 +85,52 @@ void Plot_plotsTPR(){
   TList *MyList;
   //
   NrecMapFile = new TFile("Results/NrecMapping_12a17a.root","READ");
+  //NrecMapFile = new TFile("Results/NrecMapping_12a11a.root","READ");// MC variation
+  //NrecMapFile = new TFile("Results/NrecMapping_12a17a_FB5and7overlap.root","READ");
   MyList=(TList*)NrecMapFile->Get("MyList");
   NrecMap = (TH2D*)MyList->FindObject("fNchTrueDist");
-  for(int bin=1; bin<=2; bin++){
+  for(int bin=1; bin<=2; bin++){// 1 to 2 (FB7),  1 to 1 (AMPT),  1 to 4 (FB5and7overlap)
     NrecMap->GetXaxis()->SetRangeUser(bin,bin);
     if(NrecMap->GetMean(2)>0) meanNchPbPb[bin-1] = log10(NrecMap->GetMean(2));
   }
   NrecMapFile->Close();
   //
   NrecMapFile = new TFile("Results/NrecMapping_12a17e.root","READ");
+  //NrecMapFile = new TFile("Results/NrecMapping_12a11b.root","READ");// MC variation
+  //NrecMapFile = new TFile("Results/NrecMapping_12a17e_FB5and7overlap.root","READ");
   MyList=(TList*)NrecMapFile->Get("MyList");
   NrecMap = (TH2D*)MyList->FindObject("fNchTrueDist");
-  for(int bin=3; bin<=10; bin++){
+  for(int bin=3; bin<=10; bin++){// 3 to 10 (FB7),  2 to 3 (AMPT), 5 to 12 (FB5and7overlap)
     NrecMap->GetXaxis()->SetRangeUser(bin,bin);
     if(NrecMap->GetMean(2)>0) meanNchPbPb[bin-1] = log10(NrecMap->GetMean(2));
   }
   NrecMapFile->Close();
   //
-  NrecMapFile = new TFile("Results/NrecMapping_12a17c.root","READ");
+  ////////////////////// extra for AMPT 
+  /*NrecMapFile = new TFile("Results/NrecMapping_12a11d.root","READ");
   MyList=(TList*)NrecMapFile->Get("MyList");
   NrecMap = (TH2D*)MyList->FindObject("fNchTrueDist");
-  for(int bin=11; bin<=19; bin++){
+  for(int bin=4; bin<=7; bin++){// 4 to 7 (AMPT)
+    NrecMap->GetXaxis()->SetRangeUser(bin,bin);
+    if(NrecMap->GetMean(2)>0) meanNchPbPb[bin-1] = log10(NrecMap->GetMean(2));
+  }
+  NrecMapFile->Close();*/
+  //////////////////////////////////////////
+  //
+  NrecMapFile = new TFile("Results/NrecMapping_12a17c.root","READ");
+  //NrecMapFile = new TFile("Results/NrecMapping_12a11g.root","READ");// MC variation
+  //NrecMapFile = new TFile("Results/NrecMapping_12a17c_FB5and7overlap.root","READ");
+  MyList=(TList*)NrecMapFile->Get("MyList");
+  NrecMap = (TH2D*)MyList->FindObject("fNchTrueDist");
+  for(int bin=11; bin<=19; bin++){// 11 to 19 (FB7),  1 to 1 (AMPT), 13 to 19 (FB5and7overlap)
     NrecMap->GetXaxis()->SetRangeUser(bin,bin);
     if(NrecMap->GetMean(2)>0) meanNchPbPb[bin-1] = log10(NrecMap->GetMean(2));
   }
   NrecMapFile->Close();
   //
   NrecMapFile = new TFile("Results/PDC_13b2_efix_p1_R2.root","READ");
+  //NrecMapFile = new TFile("Results/NrecMapping_13b3.root","READ");// MC variation
+  //NrecMapFile = new TFile("Results/NrecMapping_13b2_efix_p1_FB5and7overlap.root","READ");
   MyList=(TList*)NrecMapFile->Get("MyList");
   NrecMap = (TH2D*)MyList->FindObject("fNchTrueDist");
   for(int bin=10; bin<=20; bin++){
@@ -120,6 +140,8 @@ void Plot_plotsTPR(){
   NrecMapFile->Close();
   //
   NrecMapFile = new TFile("Results/PDC_10f6a_R2.root","READ");
+  //NrecMapFile = new TFile("Results/NrecMapping_10f6.root","READ");// MC variation
+  //NrecMapFile = new TFile("Results/NrecMapping_10f6a_FB5and7overlap.root","READ");
   MyList=(TList*)NrecMapFile->Get("MyList");
   NrecMap = (TH2D*)MyList->FindObject("fNchTrueDist");
   for(int bin=10; bin<=20; bin++){
@@ -128,11 +150,11 @@ void Plot_plotsTPR(){
   }
   NrecMapFile->Close();
   
-  //for(int i=0; i<20; i++) cout<<meanNchPbPb[i]<<endl;
+  //for(int i=0; i<20; i++) cout<<pow(10,meanNchPbPb[i])<<endl;
   //cout<<"+++++++++++++++"<<endl;
-  //for(int i=0; i<20; i++) cout<<meanNchpPb[i]<<endl;
+  //for(int i=0; i<20; i++) cout<<pow(10,meanNchpPb[i])<<endl;
   //cout<<"+++++++++++++++"<<endl;
-  //for(int i=0; i<20; i++) cout<<meanNchpp[i]<<endl;
+  //for(int i=0; i<20; i++) cout<<pow(10,meanNchpp[i])<<endl;
 
   TFile *ExRangeFile=new TFile("Results/ExtendedQ3rangeM0.root","READ");
   TList *ExList=(TList*)ExRangeFile->Get("MyList");
@@ -191,7 +213,7 @@ void Plot_plotsTPR(){
 	*name_c3 += par;
 	//Parameters_c3[ct][par] = new TH1D(name->Data(),"",20,0.5,20.5);
 	//for(int cb=0; cb<20; cb++) Parameters_c3[ct][par]->GetXaxis()->SetBinLabel(cb+1,labels[cb]);
-	Parameters_C2[ct][kt3][par] = new TH1D(name_C2->Data(),"",2900,0.6,3.4);
+	Parameters_C2[ct][kt3][par] = new TH1D(name_C2->Data(),"",2900,0.6,3.4);// 2900,0.6,3.4
 	Parameters_c3[ct][kt3][par] = new TH1D(name_c3->Data(),"",2900,0.6,3.4);
       }
     }
@@ -207,19 +229,21 @@ void Plot_plotsTPR(){
   double radius_2 = 0, radius_2_e=0;
   double EW1_2 = 0, EW1_2_e=0;
   double EW2_2 = 0, EW2_2_e=0;
-  
+ 
   // Start File access
   for(int ct=0; ct<3; ct++){
-    for(int dt=0; dt<2; dt++){// data type (Real or Monte Carlo)
+    for(int dt=0; dt<1; dt++){// data type (Real or Monte Carlo)
       if(ct==0 && dt==1) continue; // no MC for PbPb
       for(int cb=0; cb<20; cb++){
+	if(ct==0 && cb<MbinMinPbPb) continue;
 	if(ct==0 && cb>MbinMaxPbPb) continue;
+	if(ct==1 && cb>MbinMaxpPb) continue;
 	if(ct==1 && cb<MbinMinpPb) continue;
 	if(ct==2 && cb<MbinMinpp) continue;
 	if(ct==2 && dt==1 && cb<=13) continue;// no Pythia data for cb=13
 	for(int ChComb=0; ChComb<2; ChComb++) {// SC or MC
 	  for(int ch=0; ch<1; ch++) {// - or +
-	    for(int KT3=0; KT3<3; KT3++) {// Kt3 bin
+	    for(int KT3=0; KT3<MaxKT3Bins; KT3++) {// Kt3 bin
 	      if(dt==1 && KT3>0) continue;// no MC data yet for higher kt3
 	      TString *name3 = new TString("OutFiles/OutFile");
 	      if(ct==0) name3->Append("PbPb");
@@ -430,7 +454,7 @@ void Plot_plotsTPR(){
 		  MixedChargeSysFit->SetParameter(0,1);
 		  MixedChargeSysFit->SetParameter(1,.1);
 		  MixedChargeSysFit->SetParameter(2,1);
-		  c3[ct][0][ChComb][KT3][cb]->Fit(MixedChargeSysFit,"IMENQ","",0.01,0.5);
+		  c3[ct][0][ChComb][KT3][cb]->Fit(MixedChargeSysFit,"IMNQ","",0.01,0.5);
 		  for(int i=1; i<=c3[ct][0][ChComb][KT3][cb]->GetNbinsX(); i++) {
 		    float Q3=(i-0.5)*0.01;
 		    // SameCharge
@@ -454,8 +478,14 @@ void Plot_plotsTPR(){
       if(dt==0){
 	for(int KT3=0; KT3<3; KT3++){
 	  for(int par=0; par<5; par++){
-	    Parameters_C2[ct][KT3][par]->SetMarkerStyle(24+ct);
-	    Parameters_c3[ct][KT3][par]->SetMarkerStyle(20+ct);
+	    if(ct<2){
+	      Parameters_C2[ct][KT3][par]->SetMarkerStyle(24+ct);
+	      Parameters_c3[ct][KT3][par]->SetMarkerStyle(20+ct);
+	    }else{
+	      Parameters_C2[ct][KT3][par]->SetMarkerStyle(28);
+	      Parameters_c3[ct][KT3][par]->SetMarkerStyle(34);
+	    }
+
 	    if(ct==0){
 	      Parameters_C2[ct][KT3][par]->SetMarkerColor(1); 
 	      Parameters_C2[ct][KT3][par]->SetLineColor(1);
@@ -481,7 +511,8 @@ void Plot_plotsTPR(){
 	    if(par==3) Parameters_c3[ct][KT3][par]->GetYaxis()->SetTitle("#kappa_{3}");
 	    if(par==4) Parameters_c3[ct][KT3][par]->GetYaxis()->SetTitle("#kappa_{4}");
 	    Parameters_c3[ct][KT3][par]->GetXaxis()->SetTitle("log_{10}(N_{ch})");
-	    
+
+
 	  }// par
 	}// KT3
       }
@@ -493,13 +524,13 @@ void Plot_plotsTPR(){
   Unity->SetLineStyle(2);
   Unity->SetLineColor(1);
   
+ 
 
-
-  /*
+  
   ////////////////////////////////////////////////////
   ////////////////////////////////////////////////////
   // Progaganda Plot
-
+  /*
   TCanvas *can2 = new TCanvas("can2", "can2",10,0,600,600);// 11,53,700,500
   can2->SetHighLightColor(2);
   gStyle->SetOptFit(0111);
@@ -533,18 +564,21 @@ void Plot_plotsTPR(){
   int Mb_pp=18;
   int Mb_pPb=13;
   int Mb_PbPb=0;
-  c3[2][0][0][Mb_pp]->GetXaxis()->SetLabelSize(SizeLabel*SF2); c3[2][0][0][Mb_pp]->GetYaxis()->SetLabelSize(SizeLabel*SF2);
-  c3[2][0][0][Mb_pp]->GetXaxis()->SetNdivisions(808);
+  c3[2][0][0][0][Mb_pp]->GetXaxis()->SetLabelSize(SizeLabel*SF2); c3[2][0][0][0][Mb_pp]->GetYaxis()->SetLabelSize(SizeLabel*SF2);
+  c3[2][0][0][0][Mb_pp]->GetXaxis()->SetNdivisions(808);
   //
-  c3[2][0][0][Mb_pp]->GetYaxis()->SetTitle("#bf{c}_{3}");
-  c3[2][0][0][Mb_pp]->GetYaxis()->SetTitleOffset(1.);
-  c3[2][0][0][Mb_pp]->Draw();
+  c3[2][0][0][0][Mb_pp]->GetYaxis()->SetTitle("#font[12]{#bf{c}}_{3}");
+  c3[2][0][0][0][Mb_pp]->GetXaxis()->SetTitle("#font[12]{Q}_{3} (GeV/#font[12]{c})");
+  c3[2][0][0][0][Mb_pp]->GetYaxis()->SetTitleOffset(1.1);
+  c3[2][0][0][0][Mb_pp]->GetYaxis()->SetTitleSize(0.05);
+  c3[2][0][0][0][Mb_pp]->SetMinimum(0.9);
+  c3[2][0][0][0][Mb_pp]->Draw();
   //legend3->AddEntry(c3[2][0][0][Mb_pp],"N_{ch} = 9#pm0.2, pp #sqrt{s}=7 TeV","p");
   //legend3->AddEntry(c3[1][0][0][Mb_pPb],"N_{ch} = 59#pm2, p-Pb #sqrt{s_{NN}}=5.02 TeV","p");
   //legend3->AddEntry(c3[0][0][0][Mb_PbPb],"N_{ch} = 1922#pm135, Pb-Pb #sqrt{s_{NN}}=2.76 TeV","p");
-  legend3->AddEntry(c3[2][0][0][Mb_pp],"Low N_{ch}, pp #sqrt{s}=7 TeV","p");
-  legend3->AddEntry(c3[1][0][0][Mb_pPb],"Mid N_{ch}, p-Pb #sqrt{s_{NN}}=5.02 TeV","p");
-  legend3->AddEntry(c3[0][0][0][Mb_PbPb],"High N_{ch}, Pb-Pb #sqrt{s_{NN}}=2.76 TeV","p");
+  legend3->AddEntry(c3[2][0][0][0][Mb_pp],"Low N_{ch}, pp #sqrt{#font[12]{s}}=7 TeV","p");
+  legend3->AddEntry(c3[1][0][0][0][Mb_pPb],"Mid N_{ch}, p-Pb #sqrt{#font[12]{s_{NN}}}=5.02 TeV","p");
+  legend3->AddEntry(c3[0][0][0][0][Mb_PbPb],"High N_{ch}, Pb-Pb #sqrt{#font[12]{s_{NN}}}=2.76 TeV","p");
   //
   //TH1D *FillerHist = new TH1D("FillerHist","",50,0,0.5);
   for(int i=1; i<=50; i++) {
@@ -553,27 +587,27 @@ void Plot_plotsTPR(){
       //FillerHist->SetBinContent(i,10.0); FillerHist->SetBinError(i,.0001);
     }else {
       //FillerHist->SetBinContent(i,1.0); FillerHist->SetBinError(i,.0001);
-      c3[0][0][0][Mb_PbPb]->SetBinContent(i,10.0);
-      c3_Sys[0][0][0][Mb_PbPb]->SetBinContent(i,10.0);
+      c3[0][0][0][0][Mb_PbPb]->SetBinContent(i,10.0);
+      c3_Sys[0][0][0][0][Mb_PbPb]->SetBinContent(i,10.0);
     }
   }
   //FillerHist->SetMarkerStyle(24);
   //
-  c3_Sys[2][0][0][Mb_pp]->Draw("E2 same");
-  c3_Sys[1][0][0][Mb_pPb]->Draw("E2 same");
-  c3_Sys[0][0][0][Mb_PbPb]->Draw("E2 same");
-  c3[2][0][0][Mb_pp]->Draw("same");
-  c3[1][0][0][Mb_pPb]->Draw("same");
-  c3[0][0][0][Mb_PbPb]->Draw("same");
+  c3_Sys[2][0][0][0][Mb_pp]->Draw("E2 same");
+  c3_Sys[1][0][0][0][Mb_pPb]->Draw("E2 same");
+  c3_Sys[0][0][0][0][Mb_PbPb]->Draw("E2 same");
+  c3[2][0][0][0][Mb_pp]->Draw("same");
+  c3[1][0][0][0][Mb_pPb]->Draw("same");
+  c3[0][0][0][0][Mb_PbPb]->Draw("same");
   //FillerHist->Draw("same");
   ExRangeTerm1->Draw("same");
   
-  TLatex *Specif_Kt3_1 = new TLatex(0.5,0.59,"0.16<K_{t,3}<1.0 GeV/c");
+  TLatex *Specif_Kt3_1 = new TLatex(0.5,0.59,"0.16<#font[12]{K}_{T,3}<1.0 GeV/#font[12]{c}");
   Specif_Kt3_1->SetNDC();
   Specif_Kt3_1->SetTextFont(TextFont);
   Specif_Kt3_1->SetTextSize(SizeSpecif*SF2);
   Specif_Kt3_1->Draw("same");
-  TLatex *Specif_Kinematics_1 = new TLatex(0.5,0.52,"|#eta|<0.8, 0.16<p_{T}<1.0 GeV/c");
+  TLatex *Specif_Kinematics_1 = new TLatex(0.5,0.52,"|#eta|<0.8, 0.16<#font[12]{p}_{T}<1.0 GeV/#font[12]{c}");
   Specif_Kinematics_1->SetNDC();
   Specif_Kinematics_1->SetTextFont(TextFont);
   Specif_Kinematics_1->SetTextSize(SizeSpecif*SF2);
@@ -604,8 +638,6 @@ void Plot_plotsTPR(){
   can3->SetFrameBorderMode(0);
   can3->cd();
   TPad *pad3 = new TPad("pad3","pad3",0.0,0.0,1.,1.);
-  gPad->SetGridx(1);
-  gPad->SetGridy(1);
   gPad->SetTickx();
   gPad->SetTicky();
   pad3->SetTopMargin(0.02);//0.05
@@ -624,22 +656,20 @@ void Plot_plotsTPR(){
   gPad->SetRightMargin(RightMargin); gPad->SetLeftMargin(0.12);
   gPad->SetBottomMargin(0.1);
   gPad->SetTickx(); gPad->SetTicky();
-  gPad->SetGridx(); gPad->SetGridy();
-  int ktbin=2;
-  TH1D *RadiiPbPb=(TH1D*)Parameters_c3[0][ktbin][2]->Clone();
-  TH1D *RadiipPb=(TH1D*)Parameters_c3[1][ktbin][2]->Clone();
-  TH1D *Radiipp=(TH1D*)Parameters_c3[2][ktbin][2]->Clone();
+  //gPad->SetGridx(); gPad->SetGridy();
+  TH1D *RadiiPbPb=(TH1D*)Parameters_c3[0][KT3Bin][2]->Clone();
+  TH1D *RadiipPb=(TH1D*)Parameters_c3[1][KT3Bin][2]->Clone();
+  TH1D *Radiipp=(TH1D*)Parameters_c3[2][KT3Bin][2]->Clone();
   RadiiPbPb->GetXaxis()->SetLabelFont(TextFont); RadiiPbPb->GetYaxis()->SetLabelFont(TextFont); 
   RadiiPbPb->GetXaxis()->SetLabelSize(SizeLabel*SF1); RadiiPbPb->GetYaxis()->SetLabelSize(SizeLabel*SF1);
   RadiiPbPb->GetXaxis()->SetNdivisions(808);
   RadiiPbPb->GetXaxis()->SetTitleOffset(1.3);
-  RadiiPbPb->GetYaxis()->SetTitleOffset(1.2);
+  RadiiPbPb->GetYaxis()->SetTitleOffset(1.1);
   RadiiPbPb->GetYaxis()->SetTitleFont(TextFont); RadiiPbPb->GetYaxis()->SetTitleSize(SizeTitle*SF1);
   if(IncludeEW) RadiiPbPb->GetYaxis()->SetTitle("R_{inv,3}^{Ew} (fm)");
   RadiiPbPb->SetMinimum(0); RadiiPbPb->SetMaximum(11.5);
   
   RadiiPbPb->Draw();
-
   //
   double xAxis_e[20]={0};
   double yAxisPbPb[20]={0};
@@ -665,10 +695,10 @@ void Plot_plotsTPR(){
     if(Radiipp->GetBinContent(binpp)==0) {yAxispp[cb]=100; yAxispp_e[cb]=100;}
     else {yAxispp[cb]=Radiipp->GetBinContent(binpp); yAxispp_e[cb]=Rsyspp;}
     // Nch systematics
-    // log10((0.93 + 0.05*(cb/19))*pow(10,<Nch>))
-    // 7% discrepancy max for central PbPb, 2% for pp and pPb.
-    if(cb<13) xAxis_e[cb]=fabs(meanNchPbPb[cb] - log10((0.93 + 0.05*(cb/19.))*pow(10,meanNchPbPb[cb])));
-    else xAxis_e[cb]=fabs(meanNchpPb[cb] - log10((0.93 + 0.05*(cb/19.))*pow(10,meanNchpPb[cb])));
+    // old method: log10((0.93 + 0.05*(cb/19))*pow(10,<Nch>)), 7% discrepancy max for central PbPb, 2% for pp and pPb.
+    // Now 5% for all bins
+    if(cb<13) xAxis_e[cb]=fabs(meanNchPbPb[cb] - log10((0.95)*pow(10,meanNchPbPb[cb])));
+    else xAxis_e[cb]=fabs(meanNchpPb[cb] - log10((0.95)*pow(10,meanNchpPb[cb])));
   }
   TGraphErrors *grRadiiSys_PbPb=new TGraphErrors(20,meanNchPbPb,yAxisPbPb,xAxis_e,yAxisPbPb_e);
   TGraphErrors *grRadiiSys_pPb=new TGraphErrors(20,meanNchpPb,yAxispPb,xAxis_e,yAxispPb_e);
@@ -678,9 +708,9 @@ void Plot_plotsTPR(){
   grRadiiSys_PbPb->SetMarkerSize(0); grRadiiSys_PbPb->SetFillStyle(1000); grRadiiSys_PbPb->SetFillColor(kGray);
   
   // C2 
-  TH1D *RadiiC2PbPb=(TH1D*)Parameters_C2[0][ktbin][2]->Clone();
-  TH1D *RadiiC2pPb=(TH1D*)Parameters_C2[1][ktbin][2]->Clone();
-  TH1D *RadiiC2pp=(TH1D*)Parameters_C2[2][ktbin][2]->Clone();
+  TH1D *RadiiC2PbPb=(TH1D*)Parameters_C2[0][KT3Bin][2]->Clone();
+  TH1D *RadiiC2pPb=(TH1D*)Parameters_C2[1][KT3Bin][2]->Clone();
+  TH1D *RadiiC2pp=(TH1D*)Parameters_C2[2][KT3Bin][2]->Clone();
   for(int cb=0; cb<20; cb++){
     int binPbPb = RadiiC2PbPb->GetXaxis()->FindBin(meanNchPbPb[cb]);
     int binpPb = RadiiC2pPb->GetXaxis()->FindBin(meanNchpPb[cb]);
@@ -702,8 +732,8 @@ void Plot_plotsTPR(){
   grRadiiC2Sys_pPb->SetMarkerSize(0); grRadiiC2Sys_pPb->SetFillStyle(3001); grRadiiC2Sys_pPb->SetFillColor(kRed-10);
   grRadiiC2Sys_PbPb->SetMarkerSize(0); grRadiiC2Sys_PbPb->SetFillStyle(3001); grRadiiC2Sys_PbPb->SetFillColor(kGray);
   //
-  grRadiiC2Sys_pp->Draw("E2 p");
-  grRadiiC2Sys_pPb->Draw("E2 p");
+  //grRadiiC2Sys_pp->Draw("E2 p");
+  //grRadiiC2Sys_pPb->Draw("E2 p");
   grRadiiC2Sys_PbPb->Draw("E2 p");
   grRadiiSys_pp->Draw("E2 p");
   grRadiiSys_pPb->Draw("E2 p");
@@ -711,49 +741,71 @@ void Plot_plotsTPR(){
   RadiiPbPb->Draw("same");
   RadiipPb->Draw("same");
   Radiipp->Draw("same");
-  
+  //
+  TF1 *PbPbFit=new TF1("PbPbFit","pol1",2.1,3.6); PbPbFit->SetLineColor(1);
+  //RadiiPbPb->Fit(PbPbFit,"IMENQ","",2.1,3.6);
+  //PbPbFit->Draw("same");
+  //cout<<"PbPb: "<<PbPbFit->GetParameter(0)<<", "<<PbPbFit->GetParameter(1)<<endl;
+  TF1 *pPbFit=new TF1("pPbFit","pol1",0.8,1.8); pPbFit->SetLineColor(2);
+  //RadiipPb->Fit(pPbFit,"IMENQ","",0.8,1.8);
+  //pPbFit->Draw("same");
+  //cout<<"pPb: "<<pPbFit->GetParameter(0)<<", "<<pPbFit->GetParameter(1)<<endl;
+  TF1 *ppFit=new TF1("ppFit","pol1",0,1.5); ppFit->SetLineColor(4);
+  //Radiipp->Fit(ppFit,"IMENQ","",0,1.5);
+  //ppFit->Draw("same");
+  //cout<<"pp: "<<ppFit->GetParameter(0)<<", "<<ppFit->GetParameter(1)<<endl;
+  //
+  double parsPbPb[3][2]={{-5.34719, 4.30537},{-4.52015, 3.95295},{-4.02046, 3.59879}};// FB7 values of pol1 fit (3 Kt3 bins)
+  double parspPb[3][2]={{0.622312, 0.911277},{0.403686, 1.04216},{0.430842, 0.904828}};
+  double parspp[3][2]={{0.717018, 0.777676},{0.754759, 0.691637},{0.756552, 0.611244}};
+  PbPbFit->FixParameter(0,parsPbPb[KT3Bin][0]); PbPbFit->FixParameter(1,parsPbPb[KT3Bin][1]);
+  pPbFit->FixParameter(0,parspPb[KT3Bin][0]); pPbFit->FixParameter(1,parspPb[KT3Bin][1]);
+  ppFit->FixParameter(0,parspp[KT3Bin][0]); ppFit->FixParameter(1,parspp[KT3Bin][1]);
+  //PbPbFit->Draw("same"); pPbFit->Draw("same"); ppFit->Draw("same");
+  //
   RadiiC2PbPb->Draw("same");
-  RadiiC2pPb->Draw("same");
-  RadiiC2pp->Draw("same");
+  //RadiiC2pPb->Draw("same");
+  //RadiiC2pp->Draw("same");
   
   legend4->AddEntry(Radiipp,"pp #sqrt{s}=7 TeV","p");
   legend4->AddEntry(RadiipPb,"p-Pb #sqrt{s_{NN}}=5.02 TeV","p");
   legend4->AddEntry(RadiiPbPb,"Pb-Pb #sqrt{s_{NN}}=2.76 TeV","p");
 
-  TLatex *Specif_Marker_1 = new TLatex(0.2,0.67,"Hollow=R_{inv,2}  Solid=R_{inv,3}");
+  TLatex *Specif_Marker_1 = new TLatex(0.57,0.23,"Hollow=R_{inv,2}  Solid=R_{inv,3}");
   Specif_Marker_1->SetNDC();
   Specif_Marker_1->SetTextFont(TextFont);
   Specif_Marker_1->SetTextSize(SizeSpecif*SF1);
   Specif_Marker_1->Draw("same");
-  TLatex *Specif_kappas = new TLatex(0.2,0.6,"#kappa_{3}=0.12, #kappa_{4}=0.43");
+  TLatex *Specif_kappas = new TLatex(0.57,0.16,"#kappa_{3}=0.12, #kappa_{4}=0.43");
   Specif_kappas->SetNDC();
   Specif_kappas->SetTextFont(TextFont);
   Specif_kappas->SetTextSize(SizeSpecif*SF1);
   if(IncludeEW) Specif_kappas->Draw("same");
-  TLatex *Specif_Gauss = new TLatex(0.2,0.6,"Gaussian Radii");
+  TLatex *Specif_Gauss = new TLatex(0.57,0.16,"Gaussian Radii");
   Specif_Gauss->SetNDC();
   Specif_Gauss->SetTextFont(TextFont);
   Specif_Gauss->SetTextSize(SizeSpecif*SF1);
   if(!IncludeEW) Specif_Gauss->Draw("same");
 
-  TLatex *Specif_Kinematics_2 = new TLatex(0.2,0.53,"|#eta|<0.8, 0.16<p_{T}<1.0 GeV/c");
+  TLatex *Specif_Kinematics_2 = new TLatex(0.57,0.16,"|#eta|<0.8, 0.16<p_{T}<1.0 GeV/c");
   Specif_Kinematics_2->SetNDC();
   Specif_Kinematics_2->SetTextFont(TextFont);
   Specif_Kinematics_2->SetTextSize(SizeSpecif*SF1);
-  Specif_Kinematics_2->Draw("same");
+  //Specif_Kinematics_2->Draw("same");
 
   legend4->SetTextFont(TextFont);
   legend4->SetTextSize(SizeLegend*SF1);
   legend4->Draw("same");
+  
   ///////////////////////////////////////////////////////////////////
   pad3->cd(2);
   gPad->SetRightMargin(RightMargin); gPad->SetLeftMargin(0.12);
   gPad->SetBottomMargin(0.1); gPad->SetTopMargin(0.02);
   gPad->SetTickx(); gPad->SetTicky();
-  gPad->SetGridx(); gPad->SetGridy();
-  TH1D *LambdaPbPb=(TH1D*)Parameters_c3[0][ktbin][1]->Clone();
-  TH1D *LambdapPb=(TH1D*)Parameters_c3[1][ktbin][1]->Clone();
-  TH1D *Lambdapp=(TH1D*)Parameters_c3[2][ktbin][1]->Clone();
+  //gPad->SetGridx(); gPad->SetGridy();
+  TH1D *LambdaPbPb=(TH1D*)Parameters_c3[0][KT3Bin][1]->Clone();
+  TH1D *LambdapPb=(TH1D*)Parameters_c3[1][KT3Bin][1]->Clone();
+  TH1D *Lambdapp=(TH1D*)Parameters_c3[2][KT3Bin][1]->Clone();
   
   LambdaPbPb->GetXaxis()->SetLabelFont(TextFont); LambdaPbPb->GetYaxis()->SetLabelFont(TextFont); 
   LambdaPbPb->GetXaxis()->SetLabelSize(SizeLabel*SF1); LambdaPbPb->GetYaxis()->SetLabelSize(SizeLabel*SF1);
@@ -761,7 +813,7 @@ void Plot_plotsTPR(){
   LambdaPbPb->GetYaxis()->SetTitleFont(TextFont); LambdaPbPb->GetYaxis()->SetTitleSize(SizeTitle*SF1);
   LambdaPbPb->SetMaximum(2.0);
   LambdaPbPb->GetXaxis()->SetTitleOffset(1.3);
-  LambdaPbPb->GetYaxis()->SetTitleOffset(1.2);
+  LambdaPbPb->GetYaxis()->SetTitleOffset(1.1);
   
   LambdaPbPb->Draw();
   
@@ -786,9 +838,9 @@ void Plot_plotsTPR(){
   grLambdaSys_pPb->SetMarkerSize(0); grLambdaSys_pPb->SetFillStyle(1000); grLambdaSys_pPb->SetFillColor(kRed-10);
   grLambdaSys_PbPb->SetMarkerSize(0); grLambdaSys_PbPb->SetFillStyle(1000); grLambdaSys_PbPb->SetFillColor(kGray);
   // C2 sys
-  TH1D *LambdaC2PbPb=(TH1D*)Parameters_C2[0][ktbin][1]->Clone();
-  TH1D *LambdaC2pPb=(TH1D*)Parameters_C2[1][ktbin][1]->Clone();
-  TH1D *LambdaC2pp=(TH1D*)Parameters_C2[2][ktbin][1]->Clone();
+  TH1D *LambdaC2PbPb=(TH1D*)Parameters_C2[0][KT3Bin][1]->Clone();
+  TH1D *LambdaC2pPb=(TH1D*)Parameters_C2[1][KT3Bin][1]->Clone();
+  TH1D *LambdaC2pp=(TH1D*)Parameters_C2[2][KT3Bin][1]->Clone();
   for(int cb=0; cb<20; cb++){
     int binPbPb = LambdaC2PbPb->GetXaxis()->FindBin(meanNchPbPb[cb]);
     int binpPb = LambdaC2pPb->GetXaxis()->FindBin(meanNchpPb[cb]);
@@ -810,8 +862,8 @@ void Plot_plotsTPR(){
   grLambdaC2Sys_pPb->SetMarkerSize(0); grLambdaC2Sys_pPb->SetFillStyle(3001); grLambdaC2Sys_pPb->SetFillColor(kRed-10);
   grLambdaC2Sys_PbPb->SetMarkerSize(0); grLambdaC2Sys_PbPb->SetFillStyle(3001); grLambdaC2Sys_PbPb->SetFillColor(kGray);
   //
-  grLambdaC2Sys_pp->Draw("E2 p");
-  grLambdaC2Sys_pPb->Draw("E2 p");
+  //grLambdaC2Sys_pp->Draw("E2 p");
+  //grLambdaC2Sys_pPb->Draw("E2 p");
   grLambdaC2Sys_PbPb->Draw("E2 p");
 
   grLambdaSys_pp->Draw("E2 p");
@@ -824,19 +876,21 @@ void Plot_plotsTPR(){
   Lambdapp->Draw("same");
   //
   LambdaC2PbPb->Draw("same");
-  LambdaC2pPb->Draw("same");
-  LambdaC2pp->Draw("same");
+  //LambdaC2pPb->Draw("same");
+  //LambdaC2pp->Draw("same");
   
-  TLatex *Specif_Marker_2 = new TLatex(0.2,0.9,"Hollow=#lambda  Solid=#lambda_{3}");
+  TLatex *Specif_Marker_2 = new TLatex(0.57,0.9,"Hollow=#lambda  Solid=#lambda_{3}");
   Specif_Marker_2->SetNDC();
   Specif_Marker_2->SetTextFont(TextFont);
   Specif_Marker_2->SetTextSize(SizeSpecif*SF1);
   Specif_Marker_2->Draw("same");
   TLatex *Specif_Kt3;
   TLatex *Specif_kt;
-  if(ktbin==0) {Specif_Kt3 = new TLatex(0.2, 0.83,"0.16<K_{t,3}<0.25 GeV/c"); Specif_kt = new TLatex(0.2, 0.76,"0.2<k_{T}<0.3 GeV/c");}
-  if(ktbin==1) {Specif_Kt3 = new TLatex(0.2, 0.83,"0.25<K_{t,3}<0.35 GeV/c"); Specif_kt = new TLatex(0.2, 0.76,"0.3<k_{T}<0.4 GeV/c");}
-  if(ktbin==2) {Specif_Kt3 = new TLatex(0.2, 0.83,"0.35<K_{t,3}<1.0 GeV/c"); Specif_kt = new TLatex(0.2, 0.76,"0.4<k_{T}<0.5 GeV/c");}
+  if(KT3Bin==0) {Specif_Kt3 = new TLatex(0.57, 0.83,"0.16<K_{T,3}<0.3, <k_{T}>=0.3 GeV/c"); Specif_kt = new TLatex(0.57, 0.76,"0.3<k_{T}<0.4, <k_{T}>=0.32 GeV/c");}
+  if(KT3Bin==1) {Specif_Kt3 = new TLatex(0.57, 0.83,"0.3<K_{T,3}<1.0, <k_{T}>=0.4 GeV/c"); Specif_kt = new TLatex(0.57, 0.76,"0.4<k_{T}<0.5, <k_{T}>=0.42 GeV/c");}
+  //if(KT3Bin==0) {Specif_Kt3 = new TLatex(0.57, 0.83,"0.16<K_{T,3}<0.25 GeV/c"); Specif_kt = new TLatex(0.57, 0.76,"0.2<k_{T}<0.3 GeV/c");}
+  //if(KT3Bin==1) {Specif_Kt3 = new TLatex(0.57, 0.83,"0.25<K_{T,3}<0.35 GeV/c"); Specif_kt = new TLatex(0.57, 0.76,"0.3<k_{T}<0.4 GeV/c");}
+  //if(KT3Bin==2) {Specif_Kt3 = new TLatex(0.57, 0.83,"0.35<K_{T,3}<1.0 GeV/c"); Specif_kt = new TLatex(0.57, 0.76,"0.4<k_{T}<0.5 GeV/c");}
   Specif_Kt3->SetTextFont(TextFont); Specif_kt->SetTextFont(TextFont);
   Specif_Kt3->SetTextSize(SizeSpecif*SF1); Specif_kt->SetTextSize(SizeSpecif*SF1);
   Specif_Kt3->SetNDC(); Specif_kt->SetNDC();
@@ -846,7 +900,7 @@ void Plot_plotsTPR(){
   if(SaveFiles && !IncludeEW) can3->SaveAs("ThreePionFitParametersGauss.eps");
   if(SaveFiles && IncludeEW) can3->SaveAs("ThreePionFitParametersEW.eps");
   
-  /*
+  
   ////////////////////////////////////////////////////
   ////////////////////////////////////////////////////
   // Correlation functions and Monte Carlo
@@ -880,48 +934,47 @@ void Plot_plotsTPR(){
   gPad->SetRightMargin(0.03); gPad->SetLeftMargin(0.12);
   gPad->SetBottomMargin(0.1); gPad->SetTopMargin(0.02);
   //
-  int System_proof=1;
-  int ChComb_proof=1;
-  int Mb_proof=18;// 0 and 12 for PbPb
+  int System_proof=0;
+  int ChComb_proof=0;
+  int Mb_proof=2;// 0 and 12 for PbPb
   
-  
-  C3[System_proof][0][ChComb_proof][Mb_proof]->SetMinimum(0.9); C3[System_proof][0][ChComb_proof][Mb_proof]->SetMaximum(3.0);
-  if(System_proof==0 && Mb_proof<10) C3[System_proof][0][ChComb_proof][Mb_proof]->SetMaximum(2.0);
+  C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->SetMinimum(0.9); C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->SetMaximum(3.0);
+  if(System_proof==0 && Mb_proof<10) C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->SetMaximum(2.0);
   //
-  c3[2][0][0][Mb_pp]->GetXaxis()->SetLabelSize(SizeLabel*SF2); c3[2][0][0][Mb_pp]->GetYaxis()->SetLabelSize(SizeLabel*SF2);
-  c3[2][0][0][Mb_pp]->GetXaxis()->SetNdivisions(808);
-  c3[2][0][0][Mb_pp]->GetYaxis()->SetTitleSize(SizeTitle*SF1);
-  C3[System_proof][0][ChComb_proof][Mb_proof]->GetYaxis()->SetTitle("C_{3} or #bf{c}_{3}");
-  C3[System_proof][0][ChComb_proof][Mb_proof]->GetXaxis()->SetTitleOffset(1.2); C3[System_proof][0][ChComb_proof][Mb_proof]->GetYaxis()->SetTitleOffset(1.2);
-  C3[System_proof][0][ChComb_proof][Mb_proof]->GetXaxis()->SetNdivisions(808);
+  //c3[2][0][0][KT3Bin][Mb_pp]->GetXaxis()->SetLabelSize(SizeLabel*SF2); c3[2][0][0][KT3Bin][Mb_pp]->GetYaxis()->SetLabelSize(SizeLabel*SF2);
+  //c3[2][0][0][KT3Bin][Mb_pp]->GetXaxis()->SetNdivisions(808);
+  //c3[2][0][0][KT3Bin][Mb_pp]->GetYaxis()->SetTitleSize(SizeTitle*SF1);
+  C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetYaxis()->SetTitle("#font[12]{C}_{3} or #font[12]{#bf{c}}_{3}");
+  C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetXaxis()->SetTitleOffset(1.2); C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetYaxis()->SetTitleOffset(1.2);
+  C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetXaxis()->SetNdivisions(808);
   double Q3Limit;
   if(System_proof==0) Q3Limit = 0.1 + 0.1*Mb_proof/16.;
   else Q3Limit = 0.3 + 0.2*fabs(Mb_proof-10)/9.;
-  C3[System_proof][0][ChComb_proof][Mb_proof]->GetXaxis()->SetRangeUser(0,Q3Limit);
-  C3[System_proof][0][ChComb_proof][Mb_proof]->Draw();
+  C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetXaxis()->SetRangeUser(0,Q3Limit);
+  C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->Draw();
   
-  
-  C3_Sys[System_proof][0][ChComb_proof][Mb_proof]->Draw("E2 same");
-  c3_Sys[System_proof][0][ChComb_proof][Mb_proof]->Draw("E2 same");
-  C3[System_proof][0][ChComb_proof][Mb_proof]->Draw("same");
-  c3[System_proof][0][ChComb_proof][Mb_proof]->Draw("same");
-  if(System_proof!=0) c3[System_proof][1][ChComb_proof][Mb_proof]->Draw("same");
+
+  C3_Sys[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->Draw("E2 same");
+  c3_Sys[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->Draw("E2 same");
+  C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->Draw("same");
+  c3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->Draw("same");
+  if(System_proof!=0) c3[System_proof][1][ChComb_proof][KT3Bin][Mb_proof]->Draw("same");
   if(ChComb_proof==0){
-    legend5->AddEntry(C3[System_proof][0][ChComb_proof][Mb_proof],"C_{3}^{#pm#pm#pm}","p");
-    legend5->AddEntry(c3[System_proof][0][ChComb_proof][Mb_proof],"#bf{c}_{3}^{#pm#pm#pm}","p");
-    if(System_proof==1) legend5->AddEntry(c3[System_proof][1][ChComb_proof][Mb_proof],"DPMJET #bf{c}_{3}^{#pm#pm#pm}","p");
-    if(System_proof==2) legend5->AddEntry(c3[System_proof][1][ChComb_proof][Mb_proof],"Pythia Perugia 6 #bf{c}_{3}^{#pm#pm#pm}","p");
+    legend5->AddEntry(C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof],"#font[12]{C}_{3}^{#pm#pm#pm}","p");
+    legend5->AddEntry(c3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof],"#font[12]{#bf{c}}_{3}^{#pm#pm#pm}","p");
+    if(System_proof==1) legend5->AddEntry(c3[System_proof][1][ChComb_proof][KT3Bin][Mb_proof],"DPMJET #font[12]{#bf{c}}_{3}^{#pm#pm#pm}","p");
+    if(System_proof==2) legend5->AddEntry(c3[System_proof][1][ChComb_proof][KT3Bin][Mb_proof],"Pythia Perugia 6 #font[12]{#bf{c}}_{3}^{#pm#pm#pm}","p");
   }else{
-    legend5->AddEntry(C3[System_proof][0][ChComb_proof][Mb_proof],"C_{3}^{#pm#pm#mp}","p");
-    legend5->AddEntry(c3[System_proof][0][ChComb_proof][Mb_proof],"#bf{c}_{3}^{#pm#pm#mp}","p");
-    if(System_proof==1) legend5->AddEntry(c3[System_proof][1][ChComb_proof][Mb_proof],"DPMJET #bf{c}_{3}^{#pm#pm#mp}","p");
-    if(System_proof==2) legend5->AddEntry(c3[System_proof][1][ChComb_proof][Mb_proof],"Pythia Perugia 6 #bf{c}_{3}^{#pm#pm#mp}","p");
+    legend5->AddEntry(C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof],"#font[12]{C}_{3}^{#pm#pm#mp}","p");
+    legend5->AddEntry(c3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof],"#font[12]{#bf{c}}_{3}^{#pm#pm#mp}","p");
+    if(System_proof==1) legend5->AddEntry(c3[System_proof][1][ChComb_proof][KT3Bin][Mb_proof],"DPMJET #font[12]{#bf{c}}_{3}^{#pm#pm#mp}","p");
+    if(System_proof==2) legend5->AddEntry(c3[System_proof][1][ChComb_proof][KT3Bin][Mb_proof],"Pythia Perugia 6 #font[12]{#bf{c}}_{3}^{#pm#pm#mp}","p");
   } 
   
   if(ChComb_proof==0) {
-    c3_fit[System_proof][ChComb_proof][Mb_proof]->Draw("c same");
-    if(!IncludeEW) legend5->AddEntry(c3_fit[System_proof][ChComb_proof][Mb_proof],"Gaussian Fit to #bf{c}_{3}^{#pm#pm#pm}","l");
-    if(IncludeEW) legend5->AddEntry(c3_fit[System_proof][ChComb_proof][Mb_proof],"Edgeworth Fit to #bf{c}_{3}^{#pm#pm#pm}","l");
+    //c3_fit[System_proof][ChComb_proof][KT3Bin][Mb_proof]->Draw("c same");
+    if(!IncludeEW) legend5->AddEntry(c3_fit[System_proof][ChComb_proof][KT3Bin][Mb_proof],"Gaussian Fit to #font[12]{#bf{c}}_{3}^{#pm#pm#pm}","l");
+    if(IncludeEW) legend5->AddEntry(c3_fit[System_proof][ChComb_proof][KT3Bin][Mb_proof],"Edgeworth Fit to #font[12]{#bf{c}}_{3}^{#pm#pm#pm}","l");
   }
   
   TLatex *CTLabel;
@@ -940,7 +993,7 @@ void Plot_plotsTPR(){
   else Nch = pow(10,meanNchpp[Mb_proof]);
   *nameCh += int(Nch);
   nameCh->Append(" #pm ");
-  float SysPercent = 0.07 - 0.05*(Mb_proof/19.);
+  float SysPercent = 0.05;
   int SigFig=0;
   if(SysPercent*Nch < 1) {nameCh->Append("0."); SigFig=int(10*SysPercent*Nch + 0.5);}
   else {SigFig=int(SysPercent*Nch + 0.5);}
@@ -953,16 +1006,16 @@ void Plot_plotsTPR(){
   MLabel->Draw("same");
   
 
-  TLatex *Specif_Kt3_3 = new TLatex(0.55,0.59,"0.16<K_{t,3}<1.0 GeV/c");
+  TLatex *Specif_Kt3_3 = new TLatex(0.55,0.59,"0.16<K_{T,3}<0.3 GeV/c");
   Specif_Kt3_3->SetNDC();
   Specif_Kt3_3->SetTextFont(TextFont);
-  Specif_Kt3_3->SetTextSize(SizeSpecif*SF2);
+  Specif_Kt3_3->SetTextSize(SizeTitle*SF2);
   Specif_Kt3_3->Draw("same");
   TLatex *Specif_Kinematics_3 = new TLatex(0.55,0.52,"|#eta|<0.8, 0.16<p_{T}<1.0 GeV/c");
   Specif_Kinematics_3->SetNDC();
   Specif_Kinematics_3->SetTextFont(TextFont);
   Specif_Kinematics_3->SetTextSize(SizeSpecif*SF2);
-  Specif_Kinematics_3->Draw("same");
+  //Specif_Kinematics_3->Draw("same");
 
   //TString *nameCh=new TString("N_{rec}: ");
   //nameCh->Append(labels[Mb_proof]);
@@ -1033,19 +1086,19 @@ void Plot_plotsTPR(){
   gPad->SetBottomMargin(0.1); gPad->SetTopMargin(0.02);
   //
   int Mbin_SysCompPbPb=15;// 15
-  int Mbin_SysComppPb=16;// 14, 16, 18
-  int Mbin_SysComppp=15;// 13, 15, 18
-  TH1D *c3_PbPb=(TH1D*)c3[0][0][0][Mbin_SysCompPbPb]->Clone();
-  TH1D *c3_pPb=(TH1D*)c3[1][0][0][Mbin_SysComppPb]->Clone();
-  TH1D *c3_pp=(TH1D*)c3[2][0][0][Mbin_SysComppp]->Clone();
+  int Mbin_SysComppPb=18;// 14, 16, 18
+  int Mbin_SysComppp=18;// 13, 15, 18
+  TH1D *c3_PbPb=(TH1D*)c3[0][0][0][KT3Bin][Mbin_SysCompPbPb]->Clone();
+  TH1D *c3_pPb=(TH1D*)c3[1][0][0][KT3Bin][Mbin_SysComppPb]->Clone();
+  TH1D *c3_pp=(TH1D*)c3[2][0][0][KT3Bin][Mbin_SysComppp]->Clone();
 
   c3_pp->GetYaxis()->SetTitle("#bf{c}_{3}^{#pm#pm#pm}");
   c3_pp->GetXaxis()->SetRangeUser(0,0.5);
   c3_pp->Draw();
   //
-  c3_Sys[2][0][0][Mbin_SysComppp]->Draw("E2 same");
-  c3_Sys[1][0][0][Mbin_SysComppPb]->Draw("E2 same");
-  //c3_Sys[0][0][0][Mbin_SysCompPbPb]->Draw("E2 same");
+  c3_Sys[2][0][0][KT3Bin][Mbin_SysComppp]->Draw("E2 same");
+  c3_Sys[1][0][0][KT3Bin][Mbin_SysComppPb]->Draw("E2 same");
+  //c3_Sys[0][0][0][KT3Bin][Mbin_SysCompPbPb]->Draw("E2 same");
   c3_pp->Draw("same");
   c3_pPb->Draw("same");
   //c3_PbPb->Draw("same");
@@ -1053,27 +1106,27 @@ void Plot_plotsTPR(){
   //legend6->AddEntry(c3_pp,"N_{ch} = 48#pm1.7 pp #sqrt{s}=7 TeV","p");// Mpp=13
   //legend6->AddEntry(c3_pPb,"N_{ch} = 46#pm1.5 p-Pb #sqrt{s_{NN}}=5.02 TeV","p");// MpPb=14
   //legend6->AddEntry(c3_PbPb,"N_{ch} = 39#pm1.2 Pb-Pb #sqrt{s_{NN}}=2.76 TeV","p");// MPbPb=15
-  legend6->AddEntry(c3_pp,"N_{ch} = 24#pm0.5 pp #sqrt{s}=7 TeV","p");// Mpp=15
-  legend6->AddEntry(c3_pPb,"N_{ch} = 20#pm0.4 p-Pb #sqrt{s_{NN}}=5.02 TeV","p");// MpPb=16
-  //legend6->AddEntry(c3_pp,"N_{ch} = 8.8#pm0.2 pp #sqrt{s}=7 TeV","p");// Mpp=18
-  //legend6->AddEntry(c3_pPb,"N_{ch} = 10.2#pm0.2 p-Pb #sqrt{s_{NN}}=5.02 TeV","p");// MpPb=18
+  //legend6->AddEntry(c3_pp,"N_{ch} = 24#pm1.2 pp #sqrt{s}=7 TeV","p");// Mpp=15
+  //legend6->AddEntry(c3_pPb,"N_{ch} = 20#pm1.0 p-Pb #sqrt{s_{NN}}=5.02 TeV","p");// MpPb=16
+  legend6->AddEntry(c3_pp,"N_{ch} = 8.8#pm0.4 pp #sqrt{s}=7 TeV","p");// Mpp=18
+  legend6->AddEntry(c3_pPb,"N_{ch} = 10.2#pm0.5 p-Pb #sqrt{s_{NN}}=5.02 TeV","p");// MpPb=18
 
-  //c3_fit[0][0][Mbin_SysCompPbPb]->Draw("c same");
-  c3_fit[1][0][Mbin_SysComppPb]->Draw("c same");
-  c3_fit[2][0][Mbin_SysComppp]->Draw("c same");
+  //c3_fit[0][0][KT3Bin][Mbin_SysCompPbPb]->Draw("c same");
+  c3_fit[1][0][KT3Bin][Mbin_SysComppPb]->Draw("c same");
+  c3_fit[2][0][KT3Bin][Mbin_SysComppp]->Draw("c same");
   legend6->Draw("same");
 
   
-  TLatex *Specif_Kt3_4 = new TLatex(0.55,0.59,"0.16<K_{t,3}<1.0 GeV/c");
+  TLatex *Specif_Kt3_4 = new TLatex(0.55,0.59,"0.16<K_{T,3}<0.3 GeV/c");
   Specif_Kt3_4->SetNDC();
   Specif_Kt3_4->SetTextFont(TextFont);
-  Specif_Kt3_4->SetTextSize(SizeSpecif*SF2);
+  Specif_Kt3_4->SetTextSize(SizeTitle*SF2);
   Specif_Kt3_4->Draw("same");
   TLatex *Specif_Kinematics_4 = new TLatex(0.55,0.52,"|#eta|<0.8, 0.16<p_{T}<1.0 GeV/c");
   Specif_Kinematics_4->SetNDC();
   Specif_Kinematics_4->SetTextFont(TextFont);
   Specif_Kinematics_4->SetTextSize(SizeSpecif*SF2);
-  Specif_Kinematics_4->Draw("same");
+  //Specif_Kinematics_4->Draw("same");
 
   //
   if(SaveFiles) {
@@ -1087,7 +1140,7 @@ void Plot_plotsTPR(){
   }
   
 
-
+  /*
   ////////////////////////////////////////////////////
   ////////////////////////////////////////////////////
   // C2 correlation functions
@@ -1213,8 +1266,7 @@ void DrawALICELogo(Bool_t prel, Float_t x1, Float_t y1, Float_t x2, Float_t y2)
   myPadLogo->SetBottomMargin(0);
   myPadLogo->Draw();
   myPadLogo->cd();
-  //TASImage *myAliceLogo = new TASImage((prel) ? "~/Pictures/Preliminary_Logo.png" : "~/Pictures/alice_logo_performance.eps");
-  TASImage *myAliceLogo = new TASImage("~/Pictures/2011-Nov-24-ALICE_PRELIMARY_logo_BLACK_small_usage_design.eps");
+  TASImage *myAliceLogo = new TASImage((prel) ? "~/Pictures/2011-Nov-24-ALICE_PRELIMARY_logo_BLACK_small_usage_design.eps" : "~/Pictures/2011-Nov-24-ALICE_PERFORMANCE_logo_BLACK_small_usage_design.eps");
   myAliceLogo->Draw();
 }
 
