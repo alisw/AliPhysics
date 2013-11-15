@@ -144,8 +144,12 @@ void AliAnalysisTaskPIDV0base::UserCreateOutputObjects()
   AliAnalysisManager* man = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = dynamic_cast<AliInputEventHandler*>(man->GetInputEventHandler());
   
-  if (!inputHandler)
+  if (!inputHandler) {
     AliFatal("Input handler needed");
+    fPIDResponse = 0x0;
+    
+    return;
+  }
 
   // PID response object
   fPIDResponse = inputHandler->GetPIDResponse();

@@ -244,6 +244,8 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction()
 
    ,fRandom(0)
    
+   ,fOnlyLeadingJets(kFALSE)
+   
    // PID framework
    ,fNumInclusivePIDtasks(0)
    ,fNumJetPIDtasks(0)
@@ -460,6 +462,7 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fProNtracksLeadingJetRecSecS(0)  
   ,fProNtracksLeadingJetRecSecSsc(0)
   ,fRandom(0)
+  ,fOnlyLeadingJets(kFALSE)
   // PID framework
   ,fNumInclusivePIDtasks(0)
   ,fNumJetPIDtasks(0)
@@ -678,6 +681,7 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fProNtracksLeadingJetRecSecS(copy.fProNtracksLeadingJetRecSecS)  
   ,fProNtracksLeadingJetRecSecSsc(copy.fProNtracksLeadingJetRecSecSsc)
   ,fRandom(copy.fRandom)
+  ,fOnlyLeadingJets(copy.fOnlyLeadingJets)
   // PID framework
   ,fNumInclusivePIDtasks(copy.fNumInclusivePIDtasks)
   ,fNumJetPIDtasks(copy.fNumJetPIDtasks)
@@ -939,6 +943,7 @@ AliAnalysisTaskIDFragmentationFunction& AliAnalysisTaskIDFragmentationFunction::
     fProNtracksLeadingJetRecSecS   = o.fProNtracksLeadingJetRecSecS;  
     fProNtracksLeadingJetRecSecSsc = o.fProNtracksLeadingJetRecSecSsc;
     fRandom                        = o.fRandom;
+    fOnlyLeadingJets               = o.fOnlyLeadingJets;
     
     // PID framework
    fUseInclusivePIDtask            = o.fUseInclusivePIDtask;
@@ -2639,13 +2644,17 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
   
   AliPIDResponse* pidResponse = 0x0;
   if (fUseJetPIDtask || fUseInclusivePIDtask) {
-    if (!inputHandler)
+    if (!inputHandler) {
       AliFatal("Input handler needed");
+      return;
+    }
     else {
       // PID response object
       pidResponse = inputHandler->GetPIDResponse();
-      if (!pidResponse)
+      if (!pidResponse) {
         AliFatal("PIDResponse object was not created");
+        return;
+      }
     }
   }
   
@@ -2847,7 +2856,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
       
       if(fQAMode&2 && (ij==0)) fQAJetHistosGenLeading->FillJetQA( jet->Eta(), TVector2::Phi_0_2pi(jet->Phi()), jet->Pt() );
 
-      if((ij==0) || 1){ // leading jet //TODO all jets
+      if((ij==0) || !fOnlyLeadingJets){ // leading jets or all jets
         TList* jettracklist = new TList();
         Double_t sumPt      = 0.;
         Bool_t isBadJet     = kFALSE;
@@ -2990,7 +2999,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
       if(fQAMode&2) fQAJetHistosRecCuts->FillJetQA( jet->Eta(), TVector2::Phi_0_2pi(jet->Phi()), jet->Pt());
       if(fQAMode&2 && (ij==0)) fQAJetHistosRecCutsLeading->FillJetQA( jet->Eta(), TVector2::Phi_0_2pi(jet->Phi()), jet->Pt() );
       
-      if((ij==0) || 1){ // leading jet //TODO all jets
+      if((ij==0) || !fOnlyLeadingJets){ // leading jets or all jets
 	
 	Double_t ptFractionEmbedded = 0; 
 	AliAODJet* embeddedJet = 0; 
@@ -3195,7 +3204,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
 	  delete jettracklist;	
 
 	} // end: cut embedded ratio
-      } // end: leading jet
+      } // end: leading jet or all jets
     } // end: rec. jets after cuts
   } // end: QA, FF and intra-jet
 
@@ -3260,7 +3269,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
       Bool_t isBadJetRec     = kFALSE;
     
 
-      if((ij==0) || 1){ // leading jet //TODO all jets
+      if((ij==0) || !fOnlyLeadingJets){ // leading jets or all jets
 	
 	// for efficiency: gen tracks from pointing with gen/rec jet
 	TList* jettracklistGenPrim = new TList();
@@ -4640,7 +4649,7 @@ void AliAnalysisTaskIDFragmentationFunction::GetClusterTracksMedian(TList* outpu
   
   normFactor = 0;
 
-  Int_t nBckgClusters = fBckgJetsRec->GetEntries(); // not 'recCuts': use all clusters in full eta range
+  const Int_t nBckgClusters = fBckgJetsRec->GetEntries(); // not 'recCuts': use all clusters in full eta range
 
   if(nBckgClusters<3) return; // need at least 3 clusters (skipping 2 highest)
 
