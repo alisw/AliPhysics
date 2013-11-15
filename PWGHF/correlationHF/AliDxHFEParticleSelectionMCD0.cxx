@@ -421,12 +421,12 @@ double AliDxHFEParticleSelectionMCD0::GetD0Eff(AliVParticle* tr){
   AliReducedParticle *track=(AliReducedParticle*)tr;
   if (!track) return -ENODATA;
   Double_t pt=track->Pt();
-  Double_t origin=track->GetOriginMother();
+  //  Double_t origin=track->GetOriginMother();
 
-  //  Bool_t isCharm=(origin==AliDxHFEToolsMC::kOriginCharm || 
-  //		  origin==AliDxHFEToolsMC::kOriginGluonCharm);
-  Bool_t isBeauty=(origin==AliDxHFEToolsMC::kOriginBeauty || 
-		   origin==AliDxHFEToolsMC::kOriginGluonBeauty);
+  //  Bool_t isCharm=(fOriginMother==AliDxHFEToolsMC::kOriginCharm || 
+  //		  fOriginMother==AliDxHFEToolsMC::kOriginGluonCharm);
+  Bool_t isBeauty=(fOriginMother==AliDxHFEToolsMC::kOriginBeauty || 
+		   fOriginMother==AliDxHFEToolsMC::kOriginGluonBeauty);
 
   AliHFAssociatedTrackCuts* cuts=dynamic_cast<AliHFAssociatedTrackCuts*>(GetEffCutObject());
   if (!cuts) {
