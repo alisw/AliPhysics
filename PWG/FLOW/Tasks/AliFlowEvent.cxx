@@ -119,9 +119,9 @@ AliFlowEvent& AliFlowEvent::operator=(const AliFlowEvent& event)
       for(Int_t j(0); j < 2; j++) {
           for(Int_t k(0); k < 2; k++) {
               fMeanQ[i][j][k] = event.fMeanQ[i][j][k]; 
-              fWidthQ[i][j][k] = fWidthQ[i][j][k];  
-              fMeanQv3[i][j][k] = fMeanQv3[i][j][k]; 
-              fWidthQv3[i][j][k] = fWidthQv3[i][j][k];
+              fWidthQ[i][j][k] = event.fWidthQ[i][j][k];  
+              fMeanQv3[i][j][k] = event.fMeanQv3[i][j][k]; 
+              fWidthQv3[i][j][k] = event.fWidthQv3[i][j][k];
           }
       }
   }
