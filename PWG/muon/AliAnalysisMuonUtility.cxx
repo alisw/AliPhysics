@@ -45,6 +45,7 @@
 #include "AliESDMuonTrack.h"
 #include "AliVVertex.h"
 #include "AliLog.h"
+#include "AliStack.h"
 
 // CORRFW includes
 #include "AliCFGridSparse.h"
@@ -304,6 +305,13 @@ Bool_t AliAnalysisMuonUtility::IsAODMCTrack( const AliVParticle* mcParticle )
   return ( mcParticle->IsA() == AliAODMCParticle::Class() );
 }
 
+//________________________________________________________________________
+Bool_t AliAnalysisMuonUtility::IsMCTrack( const AliVParticle* mcParticle )
+{
+  /// Check if track is MC track
+  return ( mcParticle->IsA() == AliAODMCParticle::Class() || mcParticle->IsA() == AliMCParticle::Class() );
+}
+
 
 //________________________________________________________________________
 Double_t AliAnalysisMuonUtility::GetMCVertexZ ( const AliVEvent* event, const AliMCEvent* mcEvent )
@@ -368,6 +376,37 @@ Bool_t AliAnalysisMuonUtility::IsPrimary ( const AliVParticle* mcParticle, const
   return isPrimary;
 }
 
+//________________________________________________________________________
+UInt_t AliAnalysisMuonUtility::GetMCProcess ( const AliVParticle* mcParticle )
+{
+  /// Get MC process
+  /// WARNING: the method may fail when running on AODs for old MC production,
+  /// the information was propagated to the AOD level only recently
+  UInt_t mcProcess = 0;
+  if ( IsAODMCTrack(mcParticle) ) {
+    mcProcess = const_cast<AliAODMCParticle*>(static_cast<const AliAODMCParticle*>(mcParticle))->GetMCProcessCode();
+  }
+  else if ( mcParticle->IsA() == AliMCParticle::Class() ) {
+    mcProcess = static_cast<const AliMCParticle*>(mcParticle)->Particle()->GetUniqueID();
+  }
+  else AliWarningClass("There is no MC info");
+  return mcProcess;
+}
+
+//________________________________________________________________________
+UInt_t AliAnalysisMuonUtility::GetStatusCode ( const AliVParticle* mcParticle )
+{
+  /// Get particle status code
+  UInt_t statusCode = 0;
+  if ( IsAODMCTrack(mcParticle) ) {
+    statusCode = static_cast<const AliAODMCParticle*>(mcParticle)->GetStatus();
+  }
+  else if ( mcParticle->IsA() == AliMCParticle::Class() ) {
+    statusCode = static_cast<const AliMCParticle*>(mcParticle)->Particle()->GetStatusCode();
+  }
+  else AliWarningClass("There is no MC info");
+  return statusCode;
+}
 
 //________________________________________________________________________
 AliVVertex* AliAnalysisMuonUtility::GetVertexSPD ( const AliVEvent* event )
@@ -484,7 +523,7 @@ Int_t AliAnalysisMuonUtility::GetPassNumber ( const char* str )
 }
 
 //________________________________________________________________________
-TString AliAnalysisMuonUtility::GetTrackHistory ( const AliVParticle* track, const AliMCEvent* mcEvent )
+TString AliAnalysisMuonUtility::GetTrackHistory ( const AliVParticle* track, const AliMCEvent* mcEvent, Bool_t verbose )
 {
   //
   /// Get string containing particle history
@@ -492,14 +531,18 @@ TString AliAnalysisMuonUtility::GetTrackHistory ( const AliVParticle* track, con
   //
   TString trackHistory = "";
   if ( ! mcEvent ) return trackHistory;
-  Int_t imother = track->GetLabel();
+  Int_t fakeMother = 999999999;
+  Int_t imother = IsMCTrack(track) ? fakeMother : track->GetLabel();
+
   while ( imother >= 0 ) {
-    AliVParticle* part = mcEvent->GetTrack(imother);
+    const AliVParticle* part = ( imother == fakeMother ) ? track : mcEvent->GetTrack(imother);
     if ( ! part ) break; // In principle not needed...but for some old MC it breaks sometimes
     TParticlePDG* partPdg = TDatabasePDG::Instance()->GetParticle(part->PdgCode());
     TString pname = ( partPdg ) ? partPdg->GetName() : Form("%i",part->PdgCode());
     if ( ! trackHistory.IsNull() ) trackHistory.Append(" <- ");
-    trackHistory.Append(Form("%i (%s)", imother, pname.Data()));
+    if ( imother != fakeMother ) trackHistory.Append(Form("%i ", imother));
+    trackHistory.Append(Form("(%s)", pname.Data()));
+    if ( verbose ) trackHistory.Append(Form(" [vz %g  mc %i]", part->Zv(), GetMCProcess(part)));
     imother = AliAnalysisMuonUtility::GetMotherIndex(part);
   }
   return trackHistory;

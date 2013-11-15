@@ -237,9 +237,9 @@ void AliAnalysisTaskSingleMu::ProcessEvent(TString physSel, const TObjArray& sel
             continue;
           }
         }
-      }      
+      }
       
-      Int_t trackSrc = ( istep == kStepReconstructed ) ? GetParticleType(track) : RecoTrackMother(track);
+      Int_t trackSrc = GetParticleType(track);
       
       Double_t thetaAbsEndDeg = 0;
       if ( istep == kStepReconstructed ) {
@@ -273,9 +273,9 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   //
   /// Draw some histograms at the end.
   //
-
+  
   AliVAnalysisMuon::Terminate("");
-
+  
   if ( ! fMergeableCollection ) return;
   
   TString physSel = fTerminateOptions->At(0)->GetName();
@@ -291,7 +291,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
     if ( currName.Contains("-B-") || currName.Contains("ANY") ) minBiasTrig = currName;
   }
   delete optArr;
-
+  
   furtherOpt.ToUpper();
   Bool_t plotChargeAsymmetry = furtherOpt.Contains("ASYM");
   
@@ -303,14 +303,14 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   
   AliCFGridSparse* gridSparseArray[3] = {effSparse->GetNum(), effSparse->GetDen(), effSparse};
   TString gridSparseName[3] = {cfContainer->GetStepTitle(kStepReconstructed), cfContainer->GetStepTitle(kStepGeneratedMC), "Efficiency"};
-
-  Int_t srcColors[kNtrackSources] = {kBlack, kRed, kSpring, kTeal, kBlue, kViolet, kMagenta, kOrange};
-//  TString allSrcNames = "";
-//  for ( Int_t isrc=0; isrc<kNtrackSources; ++isrc ) {
-//    if ( ! allSrcNames.IsNull() ) allSrcNames.Append(" ");
-//    allSrcNames += fSrcKeys->At(isrc)->GetName();
-//  }
-
+  
+  Int_t srcColors[kNtrackSources] = {kBlack, kRed, kSpring, kTeal, kBlue, kViolet, kMagenta, kOrange, kGray};
+  //  TString allSrcNames = "";
+  //  for ( Int_t isrc=0; isrc<kNtrackSources; ++isrc ) {
+  //    if ( ! allSrcNames.IsNull() ) allSrcNames.Append(" ");
+  //    allSrcNames += fSrcKeys->At(isrc)->GetName();
+  //  }
+  
   TCanvas* can = 0x0;
   Int_t xshift = 100;
   Int_t yshift = 100;
@@ -318,9 +318,17 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   Int_t igroup2 = 0;
   
   Bool_t isMC = furtherOpt.Contains("MC");
-  Int_t firstSrc = ( isMC ) ? 0 : kUnidentified;
-  Int_t lastSrc  = ( isMC ) ? kNtrackSources - 1 : kUnidentified;
-  if ( ! isMC ) srcColors[kUnidentified] = 1;
+  
+  TAxis* srcAxis = gridSparseArray[0]->GetAxis(kHvarMotherType);
+  Int_t unIdBin = srcAxis->GetNbins();
+  for ( Int_t ibin=1; ibin<=srcAxis->GetNbins(); ibin++ ) {
+    currName = srcAxis->GetBinLabel(ibin);
+    if ( currName.Contains("Unidentified") ) unIdBin = ibin;
+  }
+  
+  Int_t firstSrcBin = ( isMC ) ? 1 : unIdBin;
+  Int_t lastSrcBin  = ( isMC ) ? srcAxis->GetNbins() - 1 : unIdBin;
+  if ( ! isMC ) srcColors[unIdBin-1] = 1;
   
   ////////////////
   // Kinematics //
@@ -330,7 +338,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   for ( Int_t icharge=0; icharge<3; icharge++ ) {
     histoList[icharge].SetName(chargeNames[icharge].Data());
   }
-  for ( Int_t isrc = firstSrc; isrc <= lastSrc; ++isrc ) {
+  for ( Int_t isrc = firstSrcBin; isrc <= lastSrcBin; ++isrc ) {
     for ( Int_t icharge=0; icharge<3; ++icharge ) {
       Int_t icharge1 = ( icharge < 2 ) ? icharge : 0;
       Int_t icharge2 = ( icharge < 2 ) ? icharge : 1;
@@ -338,15 +346,15 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
         if ( gridSparseArray[igrid]->GetEntries() == 0. ) break;
         if ( gridSparseArray[igrid]->IsA() != AliCFEffGrid::Class() ) {
           SetSparseRange(gridSparseArray[igrid], kHvarEta, "", -3.999, -2.501);
-          SetSparseRange(gridSparseArray[igrid], kHvarMotherType, "", isrc+1, isrc+1, "USEBIN");
+          SetSparseRange(gridSparseArray[igrid], kHvarMotherType, "", isrc, isrc, "USEBIN");
           SetSparseRange(gridSparseArray[igrid], kHvarCharge, "", icharge1+1, icharge2+1, "USEBIN");
         }
         TH1* histo = gridSparseArray[igrid]->Project(kHvarPt, kHvarEta);
-        histo->SetName(Form("hPtEta_%s_%s_%s", gridSparseName[igrid].Data(), fSrcKeys->At(isrc)->GetName(), chargeNames[icharge].Data()));
+        histo->SetName(Form("hPtEta_%s_%s_%s", gridSparseName[igrid].Data(), srcAxis->GetBinLabel(isrc), chargeNames[icharge].Data()));
         if ( histo->Integral() > 0 ) histoList[icharge].Add(histo);
         for ( Int_t iproj=0; iproj<4; ++iproj ) {
           histo = gridSparseArray[igrid]->Project(iproj);
-          histo->SetName(Form("proj%i_%s_%s_%s", iproj, gridSparseName[igrid].Data(), fSrcKeys->At(isrc)->GetName(), chargeNames[icharge].Data()));
+          histo->SetName(Form("proj%i_%s_%s_%s", iproj, gridSparseName[igrid].Data(), srcAxis->GetBinLabel(isrc), chargeNames[icharge].Data()));
           if ( histo->Integral() > 0 ) histoList[icharge].Add(histo);
         } // loop on projections
       } // loop on grid sparse
@@ -369,7 +377,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
     if ( ! auxHisto ) continue;
     histoName.ReplaceAll(fChargeKeys->At(baseCharge)->GetName(),basePlotName.Data());
     TH1* histo = static_cast<TH1*> (obj->Clone(histoName.Data()));
-   if ( plotChargeAsymmetry ) {
+    if ( plotChargeAsymmetry ) {
       histo->Add(auxHisto, -1.);
       // h2 + h1 = 2xh2 + (h1-h2)
       auxHisto->Add(auxHisto, histo, 2.);
@@ -396,10 +404,10 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
       TCanvas* canKine = 0x0;
       TLegend* legKine = 0x0;
       for ( Int_t iproj=0; iproj<4; ++iproj ) {
-        for ( Int_t isrc = firstSrc; isrc <= lastSrc; ++isrc ) {
+        for ( Int_t isrc = firstSrcBin; isrc <= lastSrcBin; ++isrc ) {
           for ( Int_t icharge=0; icharge<nCharges; ++icharge ) {
             if ( itype == 0 ) currList = &histoList[icharge];
-            histoName = Form("proj%i_%s_%s_%s", iproj, gridSparseName[igrid].Data(), fSrcKeys->At(isrc)->GetName(), currList->GetName());
+            histoName = Form("proj%i_%s_%s_%s", iproj, gridSparseName[igrid].Data(), srcAxis->GetBinLabel(isrc), currList->GetName());
             TH1* histo = static_cast<TH1*>(currList->FindObject(histoName.Data()));
             if ( ! histo ) continue;
             if ( ! canKine ) {
@@ -416,15 +424,15 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
             }
             Bool_t isFirst = ( gPad->GetListOfPrimitives()->GetEntries() == 0 );
             drawOpt = isFirst ? "e" : "esames";
-            histo->SetLineColor(srcColors[isrc]);
-            histo->SetMarkerColor(srcColors[isrc]);
+            histo->SetLineColor(srcColors[isrc-1]);
+            histo->SetMarkerColor(srcColors[isrc-1]);
             histo->SetMarkerStyle(20+4*icharge);
             histo->Draw(drawOpt.Data());
             TPaveStats* paveStats = (TPaveStats*)histo->FindObject("stats");
-            if ( paveStats ) paveStats->SetTextColor(srcColors[isrc]);
+            if ( paveStats ) paveStats->SetTextColor(srcColors[isrc-1]);
             if ( iproj == 0 ) {
               TString legEntry = ( itype == 0 ) ? fChargeKeys->At(icharge)->GetName() : "";
-              if ( isMC ) legEntry += Form(" %s", fSrcKeys->At(isrc)->GetName());
+              if ( isMC ) legEntry += Form(" %s", srcAxis->GetBinLabel(isrc));
               if ( ! legEntry.IsNull() ) legKine->AddEntry(histo,legEntry.Data(), "lp");
             }
           } // loop on mu charge
@@ -436,124 +444,12 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
       }
     } // loop on grid sparse
   } // loop on types
-
-
-//  TString histoName = "", drawOpt = "";
-//  ////////////////
-//  // Kinematics //
-//  ////////////////
-//  TCanvas* canKine[3] = {0x0, 0x0, 0x0};
-//  TLegend* legKine[3] = {0x0, 0x0, 0x0};
-//  for ( Int_t isrc = firstSrc; isrc <= lastSrc; ++isrc ) {
-//    for ( Int_t icharge=0; icharge<2; ++icharge ) {
-//      for ( Int_t igrid=0; igrid<3; ++igrid ) {
-//        if ( gridSparseArray[igrid]->GetEntries() == 0. ) break;
-//        if ( gridSparseArray[igrid]->IsA() != AliCFEffGrid::Class() ) {
-//          SetSparseRange(gridSparseArray[igrid], kHvarEta, "", -3.999, -2.501);
-//          SetSparseRange(gridSparseArray[igrid], kHvarMotherType, "", isrc+1, isrc+1, "USEBIN");
-//          SetSparseRange(gridSparseArray[igrid], kHvarCharge, "", icharge+1, icharge+1, "USEBIN");
-//        }
-//        if ( ! canKine[igrid] ) {
-//          igroup1++;
-//          igroup2 = 0;
-//          currName = Form("%s_proj_%s", GetName(), gridSparseName[igrid].Data());
-//          canKine[igrid] = new TCanvas(currName.Data(),currName.Data(),igroup1*xshift,igroup2*yshift,600,600);
-//          canKine[igrid]->Divide(2,2);
-//          legKine[igrid] = new TLegend(0.6, 0.6, 0.8, 0.8);
-//        }
-//        for ( Int_t iproj=0; iproj<4; ++iproj ) {
-//          canKine[igrid]->cd(iproj+1);
-//          if ( ( iproj == kHvarPt || iproj == kHvarVz ) && gridSparseArray[igrid]->IsA() != AliCFEffGrid::Class() ) gPad->SetLogy();
-//          TH1* projHisto = gridSparseArray[igrid]->Project(iproj);
-//          projHisto->SetName(Form("proj%i_%s_%s_%s", iproj, gridSparseName[igrid].Data(), fSrcKeys->At(isrc)->GetName(), fChargeKeys->At(icharge)->GetName()));
-//          if ( projHisto->GetEntries() == 0 ) continue;
-//          Bool_t isFirst = ( gPad->GetListOfPrimitives()->GetEntries() == 0 );
-//          drawOpt = isFirst ? "e" : "esames";
-//          //if ( isrc == kUnidentified && ! drawOpt.Contains("same") ) isMC = kFALSE;
-//          //if ( ! isMC ) srcColors[kUnidentified] = 1;
-//          projHisto->SetLineColor(srcColors[isrc]);
-//          projHisto->SetMarkerColor(srcColors[isrc]);
-//          projHisto->SetMarkerStyle(20+4*icharge);
-//          projHisto->Draw(drawOpt.Data());
-//          gPad->Update();
-//          TPaveStats* paveStats = (TPaveStats*)projHisto->FindObject("stats");
-//          if ( paveStats ) paveStats->SetTextColor(srcColors[isrc]);
-//          if ( iproj == 0 ) {
-//            TString legEntry = fChargeKeys->At(icharge)->GetName();
-//            if ( isMC ) legEntry += Form(" %s", fSrcKeys->At(isrc)->GetName());
-//            legKine[igrid]->AddEntry(projHisto,legEntry.Data(), "lp");
-//          }
-//        } // loop on projections
-//        
-//        TH1* saveHisto = gridSparseArray[igrid]->Project(kHvarPt, kHvarEta);
-//        if ( saveHisto->GetEntries() > 0 ) {
-//          saveHisto->SetName(Form("hPtEta_%s_%s_%s", gridSparseName[igrid].Data(), fSrcKeys->At(isrc)->GetName(), fChargeKeys->At(icharge)->GetName()));
-//        }
-//        
-//      } // loop on grid sparse
-//    } // loop on mu charge
-//  } // loop on track sources
   
   
   for ( Int_t igrid=0; igrid<3; igrid++ ) {
-//    if ( ! canKine[igrid] ) continue;
-//    canKine[igrid]->cd(1);
-//    legKine[igrid]->Draw("same");
     if ( gridSparseArray[igrid]->IsA() == AliCFEffGrid::Class() ) continue;
     SetSparseRange(gridSparseArray[igrid], kHvarCharge, "", 1, gridSparseArray[igrid]->GetAxis(kHvarCharge)->GetNbins(), "USEBIN"); // Reset range
   } // loop on container steps
-
-//  // Plot summed histo and charge asymmetry or mu+/mu-
-//  for ( Int_t itype=0; itype<2; itype++ ) {
-//    TString basePlotName = "TotalCharge";
-//    igroup2++;
-//    if ( itype == 0 ) basePlotName = plotChargeAsymmetry ? "ChargeAsymmetry" : "ChargeRatio";
-//    for ( Int_t igrid=0; igrid<2; igrid++ ) {
-//      if ( ! canKine[igrid] ) continue;
-//      TList* padList = canKine[igrid]->GetListOfPrimitives();
-//      currName = canKine[igrid]->GetName();
-//      currName.Append(Form("_%s", basePlotName.Data()));
-//      can = new TCanvas(currName.Data(),currName.Data(),canKine[igrid]->GetWindowTopX(),igroup2*yshift,600,600);
-//      can->Divide(2,2);
-//      for ( Int_t ipad=0; ipad<padList->GetEntries(); ipad++ ) {
-//        TPad* pad = dynamic_cast<TPad*> (padList->At(ipad));
-//        if ( ! pad ) continue;
-//        TList* histoList = pad->GetListOfPrimitives();
-//        can->cd(ipad+1);
-//        if ( itype == 1 ) gPad->SetLogy(pad->GetLogy());
-//        for ( Int_t iobj=0; iobj<histoList->GetEntries(); iobj++ ) {
-//          currName = histoList->At(iobj)->GetName();
-//          if ( ! histoList->At(iobj)->InheritsFrom(TH1::Class()) || ! currName.Contains(fChargeKeys->At(1)->GetName()) ) continue;
-//          histoName = currName;
-//          histoName.ReplaceAll(fChargeKeys->At(1)->GetName(),"");
-//          histoName.Append(Form("_%s", basePlotName.Data()));
-//          currName.ReplaceAll(fChargeKeys->At(1)->GetName(), fChargeKeys->At(0)->GetName());
-//          TH1* auxHisto = dynamic_cast<TH1*> (histoList->FindObject(currName.Data()));
-//          if ( ! auxHisto ) continue;
-//          TH1* histo = static_cast<TH1*> (histoList->At(iobj)->Clone(histoName.Data()));
-//          if ( itype == 0 ) {
-//            if ( plotChargeAsymmetry ) {
-//              histo->Add(auxHisto, -1.);
-//              // h2 + h1 = 2xh2 + (h1-h2)
-//              auxHisto->Add(auxHisto, histo, 2.);
-//            }
-//            histo->Divide(auxHisto);
-//            TString axisTitle = plotChargeAsymmetry ? Form("(%s - %s) / (%s + %s)", fChargeKeys->At(1)->GetName(), fChargeKeys->At(0)->GetName(), fChargeKeys->At(1)->GetName(), fChargeKeys->At(0)->GetName()) : Form("%s / %s", fChargeKeys->At(1)->GetName(), fChargeKeys->At(0)->GetName());
-//            axisTitle.ReplaceAll("MuPlus","#mu^{+}");
-//            axisTitle.ReplaceAll("MuMinus","#mu^{-}");
-//            histo->GetYaxis()->SetTitle(axisTitle.Data());
-//            histo->SetStats(kFALSE);
-//          }
-//          else histo->Add(auxHisto);
-//          histo->SetMarkerStyle(20);
-//          drawOpt = ( gPad->GetListOfPrimitives()->GetEntries() == 0 ) ? "e" : "esames";
-//          histo->Draw(drawOpt.Data());
-//        } // loop on histos
-//        gPad->Update();
-//      } // loop on pads
-//    } // loop on container steps
-//  } // loop on histo type
-  
   
   //////////////////////
   // Event statistics //
@@ -599,8 +495,8 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   TString fitOpt = "R0S";
   Bool_t fixFitRange = kFALSE;
   TString fitFormula = Form("[0]+[1]*(x+[2])");
-    
-  // Get vertex shape    
+  
+  // Get vertex shape
   if ( eventVertex->GetSumw2N() == 0 ) eventVertex->Sumw2();
   Double_t eventVtxIntegral = eventVertex->Integral(0,eventVertex->GetNbinsX()+1); // Include under/overflow
   printf("Event vertex integral %.0f\n\n", eventVtxIntegral);
@@ -614,7 +510,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   can->SetLogy();
   eventVertex->Draw();
   vtxFit->Draw("same");
-
+  
   
   enum {kRecoHF, kRecoBkg, kInputHF, kInputDecay, kRecoAll, kNrecoHistos};
   TString baseRecoName[kNrecoHistos] = {"RecoHF", "RecoBkg", "InputHF", "InputDecay", "RecoAll"};
@@ -627,9 +523,9 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   sumMothers[kInputHF][2] = kQuarkoniumMu;
   sumMothers[kInputDecay].Set(1);
   sumMothers[kInputDecay][0] = kDecayMu;
-  sumMothers[kRecoAll].Set(kNtrackSources);
-  for ( Int_t isrc=0; isrc<kNtrackSources; ++isrc ) {
-    sumMothers[kRecoAll][isrc] = isrc;
+  sumMothers[kRecoAll].Set(srcAxis->GetNbins());
+  for ( Int_t isrc=1; isrc<srcAxis->GetNbins(); ++isrc ) {
+    sumMothers[kRecoAll][isrc-1] = isrc;
   }
   
   meanZ = vtxFit->GetParameter(1);
@@ -644,7 +540,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   const Double_t kFreePath = 153.; // 150.; // 130.; // cm
   //fitFunc->SetParameters(0.,1.);
   fitFunc->FixParameter(2, kFreePath);
-
+  
   AliCFGridSparse* gridSparse = cfContainer->GetGrid(kStepReconstructed);
   TAxis* ptAxis = gridSparse->GetAxis(kHvarPt);
   
@@ -653,7 +549,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   Int_t firstPtBin = 0, lastPtBin = 0;
   
   gStyle->SetOptFit(1111);
-
+  
   for ( Int_t itheta=0; itheta<kNthetaAbs; ++itheta ) {
     igroup2++;
     SetSparseRange(gridSparse, kHvarThetaAbs, "", itheta+1, itheta+1, "USEBIN");
@@ -667,7 +563,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
       recoHisto[ireco]->Reset();
       recoHisto[ireco]->Sumw2();
       for ( Int_t isrc=0; isrc<sumMothers[ireco].GetSize(); ++isrc ) {
-        SetSparseRange(gridSparse, kHvarMotherType, "", sumMothers[ireco][isrc]+1, sumMothers[ireco][isrc]+1, "USEBIN");
+        SetSparseRange(gridSparse, kHvarMotherType, "", sumMothers[ireco][isrc], sumMothers[ireco][isrc], "USEBIN");
         TH1* auxHisto = gridSparse->Project(kHvarPt);
         recoHisto[ireco]->Add(auxHisto);
         delete auxHisto;
@@ -675,7 +571,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
     }
     SetSparseRange(gridSparse, kHvarMotherType, "", firstMother+1, lastMother+1, "USEBIN");
     Int_t currDraw = 0;
-
+    
     for ( Int_t ibinpt=0; ibinpt<=ptAxis->GetNbins(); ++ibinpt ) {
       firstPtBin = ibinpt;
       lastPtBin = ( ibinpt == 0 ) ? ptAxis->GetNbins() : ibinpt;
@@ -687,7 +583,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
       histo->Divide(eventVertex);
       Double_t norm = histo->GetBinContent(histo->FindBin(0.));
       histo->GetYaxis()->SetTitle("#frac{dN_{#mu}}{dv_{z}} / #left(#frac{1}{N_{MB}}#frac{dN_{MB}}{dv_{z}}#right)");
-      slope = ( histo->GetBinContent(histo->FindBin(meanZ+sigmaZ)) - 
+      slope = ( histo->GetBinContent(histo->FindBin(meanZ+sigmaZ)) -
                histo->GetBinContent(histo->FindBin(meanZ-sigmaZ)) ) / ( 2. * sigmaZ );
       
       if ( slope < 0. ) slope = norm/kFreePath;
@@ -706,9 +602,9 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
         }
         TFitResultPtr fitRes = histo->Fit(fitFunc, fitOpt.Data(), "", minZfit, maxZfit);
         
-//      if ( gMinuit->fCstatu.Contains("CONVERGED") && 
+        //      if ( gMinuit->fCstatu.Contains("CONVERGED") &&
         if ( ((Int_t)fitRes) == 0 &&
-            fitFunc->GetParameter(0) > 0. && 
+            fitFunc->GetParameter(0) > 0. &&
             fitFunc->GetParameter(1) > 0. )
           break;
         else if ( furtherOpt.Contains("REFIT") ) printf("Re-fit with limits\n");

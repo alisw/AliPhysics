@@ -39,8 +39,6 @@
 //#include "TMCProcess.h"
 #include "TLorentzVector.h"
 #include "TRegexp.h"
-#include "TDatabasePDG.h"
-#include "TParticlePDG.h"
 
 // STEER includes
 #include "AliInputEventHandler.h"
@@ -66,12 +64,13 @@
 // CORRFW includes
 #include "AliCFGridSparse.h"
 
-// PWG3 includes
+// PWG includes
 #include "AliMergeableCollection.h"
 #include "AliMuonEventCuts.h"
 #include "AliMuonTrackCuts.h"
 #include "AliMuonPairCuts.h"
 #include "AliAnalysisMuonUtility.h"
+#include "AliUtilityMuonAncestor.h"
 
 /// \cond CLASSIMP
 ClassImp(AliVAnalysisMuon) // Class implementation in ROOT context
@@ -91,6 +90,7 @@ AliVAnalysisMuon::AliVAnalysisMuon() :
   fSrcKeys(0x0),
   fPhysSelKeys(0x0),
   fWeights(0x0),
+  fUtilityMuonAncestor(0x0),
   fEventCounters(0x0),
   fMergeableCollection(0x0),
   fOutputList(0x0),
@@ -112,6 +112,7 @@ AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonTrackCuts& tra
   fSrcKeys(0x0),
   fPhysSelKeys(0x0),
   fWeights(new THashList()),
+  fUtilityMuonAncestor(0x0),
   fEventCounters(0x0),
   fMergeableCollection(0x0),
   fOutputList(0x0),
@@ -142,6 +143,7 @@ AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonTrackCuts& tra
   fSrcKeys(0x0),
   fPhysSelKeys(0x0),
   fWeights(new THashList()),
+  fUtilityMuonAncestor(0x0),
   fEventCounters(0x0),
   fMergeableCollection(0x0),
   fOutputList(0x0),
@@ -173,6 +175,7 @@ AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonPairCuts& pair
   fSrcKeys(0x0),
   fPhysSelKeys(0x0),
   fWeights(new THashList()),
+  fUtilityMuonAncestor(0x0),
   fEventCounters(0x0),
   fMergeableCollection(0x0),
   fOutputList(0x0),
@@ -205,6 +208,7 @@ AliVAnalysisMuon::~AliVAnalysisMuon()
   delete fSrcKeys;
   delete fPhysSelKeys;
   delete fWeights;
+  delete fUtilityMuonAncestor;
   delete fOutputPrototypeList;
 
 
@@ -287,6 +291,8 @@ void AliVAnalysisMuon::UserCreateOutputObjects()
   fMuonEventCuts->Print();
   
   MyUserCreateOutputObjects();
+  
+  fUtilityMuonAncestor = new AliUtilityMuonAncestor();
 }
 
 
@@ -341,7 +347,9 @@ void AliVAnalysisMuon::Terminate(Option_t *)
   
   if ( ! fTerminateOptions ) SetTerminateOptions();
   
-  if ( gROOT->IsBatch() ) return;
+  TString furtherOpt = ((TObjString*)fTerminateOptions->At(3))->GetString();
+  furtherOpt.ToUpper();
+  if ( gROOT->IsBatch() && ! furtherOpt.Contains("FORCEBATCH") ) return;
     
   fOutputList = dynamic_cast<TObjArray*>(GetOutputData(1));
   if ( ! fOutputList ) return;
@@ -359,91 +367,22 @@ void AliVAnalysisMuon::Terminate(Option_t *)
 
 
 //________________________________________________________________________
-Int_t AliVAnalysisMuon::GetParticleType ( AliVParticle* track, Bool_t forceReachFirstAncestor )
+Int_t AliVAnalysisMuon::GetParticleType ( AliVParticle* track )
 {
   //
   /// Get particle type from mathced MC track
   //
   
-  Int_t trackSrc = kUnidentified;
-  Int_t trackLabel = track->GetLabel();
-  if ( trackLabel >= 0 ) {
-    AliVParticle* matchedMCTrack = MCEvent()->GetTrack(trackLabel);
-    if ( matchedMCTrack ) trackSrc = RecoTrackMother(matchedMCTrack,forceReachFirstAncestor);
-  } // track has MC label
-  return trackSrc;
-}
-
-
-//________________________________________________________________________
-Int_t AliVAnalysisMuon::RecoTrackMother ( AliVParticle* mcParticle, Bool_t forceReachFirstAncestor )
-{
-  //
-  /// Find track mother from kinematics
-  /// The flag forceReachFirstAncestor affects the heavy flavor chains.
-  /// For example the case D -> K -> mu is seen as:
-  /// - kDecayMu if forceReachFirstAncestor = kFALSE
-  /// - kCharmMu if forceReachFirstAncestor = kTRUE
-  //
-  
-  Int_t recoPdg = mcParticle->PdgCode();
-  
-  // Track is not a muon
-  if ( TMath::Abs(recoPdg) != 13 ) return kRecoHadron;
-  
-  Int_t imother = AliAnalysisMuonUtility::GetMotherIndex(mcParticle);
-  
-  //Int_t den[3] = {100, 1000, 1};
-  Int_t den[2] = {100, 1000};
-  
-  
-  Int_t motherType = kDecayMu;
-  while ( imother >= 0 ) {
-    AliVParticle* part = MCEvent()->GetTrack(imother);
-    TParticlePDG* partPdg = TDatabasePDG::Instance()->GetParticle(part->PdgCode());
-    //if ( ! part ) return motherType;
-    
-    Int_t absPdg = TMath::Abs(part->PdgCode());
-    
-    Bool_t isPrimary = AliAnalysisMuonUtility::IsPrimary(part, MCEvent());
-    
-    if ( isPrimary ) {
-      if ( absPdg == 24 ) return kWbosonMu;
-      
-      if ( absPdg < 10 ) break; // particle loop
-      
-      // Check heavy flavours
-      for ( Int_t idec=0; idec<2; idec++ ) {
-        Int_t flv = (absPdg%100000)/den[idec];
-        if ( flv > 0 && flv < 4 ) {
-          if ( ! forceReachFirstAncestor ) return kDecayMu;
-        }
-        else if ( flv == 0 || flv > 5 ) continue;
-//        if ( flv < 4 || flv > 5 ) continue;
-        else {
-          if ( den[idec] == 100 && partPdg && ! partPdg->AntiParticle() ) motherType = kQuarkoniumMu;
-          else if ( flv == 4 ) motherType = kCharmMu;
-          else motherType = kBeautyMu;
-          break; // break loop on pdg code
-          // but continue the global loop to find higher mass HF
-        }
-      } // loop on pdg code
-      //if ( absPdg < 10 ) break; // particle loop
-    } // is primary
-    else {
-      if ( part->Zv() < -90. ) {
-        // If hadronic process => secondary
-        //if ( part->GetUniqueID() == kPHadronic ) {
-        return kSecondaryMu;
-        //}
-      }
-    } // is secondary
-    
-    imother = AliAnalysisMuonUtility::GetMotherIndex(part);
-    
-  } // loop on mothers
-  
-  return motherType;
+  if ( fUtilityMuonAncestor->IsUnidentified(track,MCEvent()) ) return kUnidentified;
+  if ( fUtilityMuonAncestor->IsBeautyMu(track,MCEvent()) ) return kBeautyMu;
+  if ( fUtilityMuonAncestor->IsCharmMu(track,MCEvent()) ) return kCharmMu;
+  if ( fUtilityMuonAncestor->IsWBosonMu(track,MCEvent()) ) return kWbosonMu;
+  if ( fUtilityMuonAncestor->IsZBosonMu(track,MCEvent()) ) return kZbosonMu;
+  if ( fUtilityMuonAncestor->IsDecayMu(track,MCEvent()) ) return kDecayMu;
+  if ( fUtilityMuonAncestor->IsQuarkoniumMu(track,MCEvent()) ) return kQuarkoniumMu;
+  if ( fUtilityMuonAncestor->IsHadron(track,MCEvent()) ) return kRecoHadron;
+  if ( fUtilityMuonAncestor->IsSecondaryMu(track,MCEvent()) ) return kSecondaryMu;
+  return kDecayMu;
 }
 
 
@@ -750,7 +689,7 @@ void AliVAnalysisMuon::InitKeys()
   TString chargeKeys = "MuMinus MuPlus";
   fChargeKeys = chargeKeys.Tokenize(" ");
   
-  TString srcKeys = "CharmMu BeautyMu QuarkoniumMu WbosonMu DecayMu SecondaryMu Hadron Unidentified";
+  TString srcKeys = "CharmMu BeautyMu QuarkoniumMu WbosonMu ZbosonMu DecayMu SecondaryMu Hadron Unidentified";
   fSrcKeys = srcKeys.Tokenize(" ");
   
   TString physSelKeys = "PhysSelPass PhysSelReject";
