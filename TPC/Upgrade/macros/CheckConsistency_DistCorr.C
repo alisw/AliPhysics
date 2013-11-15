@@ -9,17 +9,26 @@
 #include "TStyle.h"
 #include "AliTPCCorrection.h"
 #include "AliTPCCorrectionLookupTable.h"
+#include <AliToyMCEventGenerator.h>
+
+
 
 void makeComparisonTree(TString filename, TString addToName)
 {
   
   AliTPCCorrectionLookupTable *fTPCCorrection2=0x0;
-  
+
+  Bool_t doScaling=kTRUE;
   if (filename.Contains(":")) {
     TObjArray *arr=filename.Tokenize(":");
-    TFile f2(arr->At(1)->GetName());
+    TString s2(arr->At(1)->GetName());
+    if (s2.Contains("-scale")) {
+      doScaling=kFALSE;
+      s2.ReplaceAll("-scale","");
+    }
+    TFile f2(s2);
     gROOT->cd();
-    fTPCCorrection2=(AliTPCCorrectionLookupTable*)fn.Get("map");
+    fTPCCorrection2=(AliTPCCorrectionLookupTable*)f2.Get("map");
     f2.Close();
     filename=arr->At(0)->GetName();
     delete arr;
@@ -28,6 +37,11 @@ void makeComparisonTree(TString filename, TString addToName)
   gROOT->cd();
   AliTPCCorrectionLookupTable *fTPCCorrection=(AliTPCCorrectionLookupTable*)fn.Get("map");
   fn.Close();
+  if (fTPCCorrection2 && doScaling) {
+    Float_t dummy=0;
+    fTPCCorrection2->SetCorrScaleFactor(AliToyMCEventGenerator::GetSCScalingFactor(fTPCCorrection, fTPCCorrection2,dummy));
+    
+  }
 //   fTPCCorrection->BuildExactInverse();
 
 //   TFile f("/tmp/corrTest.Root","recreate");
