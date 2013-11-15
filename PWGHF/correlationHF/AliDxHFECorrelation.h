@@ -66,6 +66,11 @@ class AliDxHFECorrelation : public TNamed {
     kFeedDown=1
   };
 
+  enum{
+    kReducedMode=0,
+    kFullMode=1
+  };
+
   // init
   int Init(const char* arguments="");
 
@@ -112,7 +117,7 @@ class AliDxHFECorrelation : public TNamed {
   //void SetPhiRange(Double_t min, Double_t max){fMinPhi=min; fMaxPhi=max;}
   // TODO: SetEventType only needed for MC. How to avoid this?
   virtual void SetEventType(int type){fEventType=type;}
-  void SetRunFullMode(bool fullmode=kTRUE){fRunFullMode=fullmode;}
+  void SetRunFullMode(bool fullmode=kTRUE){fRunMode=fullmode;}
 
   Bool_t GetUseMC() const {return fUseMC;}
   const TList* GetControlObjects() const {return fControlObjects;}
@@ -123,7 +128,7 @@ class AliDxHFECorrelation : public TNamed {
   inline int GetDimTHnSparse() const {return fDimThn;}
   AliAnalysisCuts* GetCuts() const {return fCuts;}
   Int_t GetTriggerParticleType() const {return fTriggerParticleType;}
-  Bool_t RunFullMode() const {return fRunFullMode;}
+  Int_t RunFullMode() const {return fRunMode;}
 
   void EventMixingChecks(const AliVEvent* pEvent);
 
@@ -176,7 +181,7 @@ class AliDxHFECorrelation : public TNamed {
   Int_t fTriggerParticleType;    // Which particle to trigger on
   Bool_t fUseTrackEfficiency;    // Whether or not to correct for single track efficiency
   Bool_t fUseD0Efficiency;       // Whether or not to correct for D0 efficiency
-  Bool_t fRunFullMode;           // If run in full mode (bigger thnsparse)
+  Int_t fRunMode;                // Which mode to run in (bigger thnsparse)
 
   static const char* fgkEventControlBinNames[];
 
