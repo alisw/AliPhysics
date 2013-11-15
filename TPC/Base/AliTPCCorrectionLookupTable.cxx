@@ -265,6 +265,66 @@ void AliTPCCorrectionLookupTable::InitTables()
 }
 
 //_________________________________________________________________________________________
+void AliTPCCorrectionLookupTable::CreateLookupTableFromResidualDistortion(THn &resDist)
+{
+  //
+  // create lookup table from residual distortions stored in a 3d histogram
+  // assume dimensions are r, phi, z
+  //
+  if (fNR==0) {
+    AliError("Limits are not set yet. Please use one of the Set..Limits functions first");
+    return;
+  }
+  
+  TStopwatch s;
+  
+  ResetTables();
+  InitTables();
+
+  Double_t x[3]={0.,0.,0.};
+  
+  for (Int_t iPhi=0; iPhi<fNPhi; ++iPhi){
+    const Double_t phi=fLimitsPhi(iPhi);
+    x[1]=phi;
+    //
+    TMatrixF &mDxDist   = *fLookUpDxDist[iPhi];
+    TMatrixF &mDyDist   = *fLookUpDyDist[iPhi];
+    TMatrixF &mDzDist   = *fLookUpDzDist[iPhi];
+    //
+    TMatrixF &mDxCorr   = *fLookUpDxCorr[iPhi];
+    TMatrixF &mDyCorr   = *fLookUpDyCorr[iPhi];
+    TMatrixF &mDzCorr   = *fLookUpDzCorr[iPhi];
+    
+    for (Int_t ir=0; ir<fNR; ++ir){
+      const Double_t r=fLimitsR(ir);
+      x[0]=r;
+      
+      for (Int_t iz=0; iz<fNZ; ++iz){
+        const Double_t z=fLimitsZ(iz);
+        x[2]=z;
+
+        const Double_t drphi = resDist.GetBinContent(resDist.GetBin(x));
+        Double_t dx[3]={0.,drphi,0.};
+        
+        // transform rphi distortions (local y, so dy') to a global distortion
+        // assume no radial distortion (dx' = 0)
+        // assume no residual distortion in z for the moment
+        Double_t cs=TMath::Cos(phi), sn=TMath::Sin(phi), lx=dx[0];
+        dx[0]=lx*cs - dx[1]*sn; dx[1]=lx*sn + dx[1]*cs;
+
+        mDxDist(ir,iz)=dx[0];
+        mDyDist(ir,iz)=dx[1];
+        mDzDist(ir,iz)=dx[2];
+
+        mDxCorr(ir,iz)=-dx[0];
+        mDyCorr(ir,iz)=-dx[1];
+        mDzCorr(ir,iz)=-dx[2];
+      }
+    }
+  }
+}
+  
+//_________________________________________________________________________________________
 void AliTPCCorrectionLookupTable::InitTablesPhiBin(Int_t iPhi)
 {
   //

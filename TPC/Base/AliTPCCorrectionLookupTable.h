@@ -9,6 +9,7 @@
 #include "AliTPCCorrection.h"
 #include <TVectorD.h>
 #include <TMatrixFfwd.h>
+#include <THn.h>
 
 class AliTPCCorrectionLookupTable : public AliTPCCorrection {
 
@@ -23,6 +24,8 @@ public:
   void CreateLookupTable(AliTPCCorrection &tpcCorr, Float_t stepSize=5.);
   void CreateLookupTableSinglePhi(AliTPCCorrection &tpcCorr, Int_t iPhi, Float_t stepSize=5.);
 
+  void CreateLookupTableFromResidualDistortion(THn &resDist);
+  
   void MergePhiTables(const char* files);
 
   void   SetFillCorrection(Bool_t fill) { fFillCorrection=fill;   }

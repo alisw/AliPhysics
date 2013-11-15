@@ -96,7 +96,11 @@ void AnaDeltaTree(TString file, TString outFile="deltas_tree.root")
   hn->GetAxis(0)->Set(vR  ->GetNrows()-1, vR  ->GetMatrixArray());
   hn->GetAxis(1)->Set(vPhi->GetNrows()-1, vPhi->GetMatrixArray());
   hn->GetAxis(2)->Set(vZ  ->GetNrows()-1, vZ  ->GetMatrixArray());
-  
+
+  hn->GetAxis(0)->SetNameTitle("r","r (cm)");
+  hn->GetAxis(1)->SetNameTitle("phi","#varphi");
+  hn->GetAxis(2)->SetNameTitle("z","z (cm)");
+  hn->GetAxis(3)->SetNameTitle("drphi","#Delta(r#varphi)");
   
   for (Int_t iev=0; iev<t->GetEntries(); ++iev) {
     t->GetEntry(iev);
@@ -302,6 +306,17 @@ void DumpHn(THn *hn, TTreeSRedirector &stream)
   TAxis *ar   = hn->GetAxis(0);
   TAxis *aphi = hn->GetAxis(1);
   TAxis *az   = hn->GetAxis(2);
+
+  // output Hn
+  const Int_t nbins=3;
+  Int_t bins[nbins]    = {1,1,1};
+  Double_t xmin[nbins] = {0.,0.,0.};
+  Double_t xmax[nbins] = {1.,1.,1.};
+  THnF hnRes("hnRes", "hnRes", nbins, bins, xmin, xmax);
+
+  ar  ->Copy(*hnRes.GetAxis(0));
+  aphi->Copy(*hnRes.GetAxis(1));
+  az  ->Copy(*hnRes.GetAxis(2));
   
   
   for (Int_t iz=0; iz<az->GetNbins(); ++iz) {
@@ -325,40 +340,54 @@ void DumpHn(THn *hn, TTreeSRedirector &stream)
         Double_t cr   = ar->GetBinCenter(ir+1);
         Double_t cphi = aphi->GetBinCenter(iphi+1);
         Double_t cz   = az->GetBinCenter(iz+1);
-        hProj->SetNameTitle(Form("h_%02d_%02d_%02d",iz+1, iphi+1, ir+1),
-                            Form("z,phi,r: %02d,%02d,%02d (%.2f, %.2f, %.2f)",iz+1,iphi+1,ir+1, cz, cphi, cr )
+        hProj->SetNameTitle(Form("h_%02d_%02d_%02d",iz, iphi, ir),
+                            Form("z,phi,r: %02d,%02d,%02d (%.2f, %.2f, %.2f)",iz,iphi,ir, cz, cphi, cr )
         );
-        hProj->Fit(&fg,"QR");
+        hProj->Fit(&fg,"LMQR");
         arrFits.Add(hProj);
 
-        Double_t mean     = fg.GetParameter(1);
-        Double_t meanErr  = fg.GetParError(1);
-        Double_t sigma    = fg.GetParameter(2);
-        Double_t sigmaErr = fg.GetParError(2);
+        Float_t mean     = fg.GetParameter(1);
+        Float_t meanErr  = fg.GetParError(1);
+        Float_t sigma    = fg.GetParameter(2);
+        Float_t sigmaErr = fg.GetParError(2);
         Int_t    entries  = hProj->GetEntries();
-        Double_t chi2ndf  = fg.GetChisquare()/fg.GetNDF();
-
+        Float_t chi2ndf  = fg.GetChisquare()/fg.GetNDF();
+        Float_t mean2    = hProj->GetMean();
+        Float_t meanErr2 = hProj->GetMeanError();
+        Float_t rms2     = hProj->GetRMS();
+        Float_t rmsErr2  = hProj->GetRMSError();
+        
         stream << "d" <<
-        "ir="        << ir       <<
-        "iphi="      << iphi     <<
-        "iz="        << iz       <<
-        "cr="        << cr       <<
-        "cphi="      << cphi     <<
-        "cz="        << cz       <<
-        "mean="      << mean     <<
-        "meanErr="   << meanErr  <<
-        "sigma="     << sigma    <<
-        "sigmaErr="  << sigmaErr <<
-        "entries="   << entries  <<
-        "chi2ndf="   << chi2ndf  <<
+        "ir="          << ir       <<
+        "iphi="        << iphi     <<
+        "iz="          << iz       <<
+        "cr="          << cr       <<
+        "cphi="        << cphi     <<
+        "cz="          << cz       <<
+        "mean="        << mean     <<
+        "meanErr="     << meanErr  <<
+        "sigma="       << sigma    <<
+        "sigmaErr="    << sigmaErr <<
+        "histMean="    << mean2    <<
+        "histMeanErr=" << meanErr2 <<
+        "histRMS="     << rms2    <<
+        "histRMSErr="  << rmsErr2 <<
+        "entries="     << entries  <<
+        "chi2ndf="     << chi2ndf  <<
         "\n";
+
+        Double_t x[nbins]={cr, cphi, cz};
+        if (meanErr<0.3) hnRes.Fill(x,mean);
       }
     }
     stream.GetFile()->cd();
     arrFits.Write(0x0,TObject::kSingleKey);
     gROOT->cd();
   }
-  
+
+  stream.GetFile()->cd();
+  hnRes.Write();
+  gROOT->cd();
 }
 
 //______________________________________________________________________________
