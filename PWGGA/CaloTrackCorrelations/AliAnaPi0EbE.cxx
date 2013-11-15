@@ -2870,7 +2870,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
        (!fidcut2 || !fidcut1 || distbad1 < fMinDist || distbad2 < fMinDist))
     {
       if(GetDebug() > 1)
-        printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Dist to bad channel cl %f, cl1 %f, cl2 %f; fid cl1 %d, cl2 %d \n",
+        Info("MakeShowerShapeIdentification", "Dist to bad channel cl %f, cl1 %f, cl2 %f; fid cl1 %d, cl2 %d \n",
                calo->GetDistanceToBadChannel(),distbad1,distbad2, fidcut1,fidcut2);
       
       continue ;
@@ -2936,6 +2936,15 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       noverlaps = GetMCAnalysisUtils()->GetNOverlaps(calo->GetLabels(), nlabels,tag,mesonLabel,GetReader(),overpdg);
     }
     
+    Int_t inlm = 2;
+    if     ( nMaxima == 1 ) inlm = 0;
+    else if( nMaxima == 2 ) inlm = 1;
+    else if( nMaxima < 1 )
+    {
+      Info("MakeShowerShapeIdentification","Wrong number of maxima %d\n",nMaxima);
+      return;
+    }
+    
     //mass of all clusters
     fhMass       ->Fill(mom.E() ,mass);
     fhMassPt     ->Fill(mom.Pt(),mass);
@@ -2993,20 +3002,20 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     // If cluster does not pass pid, not pi0/eta, skip it.
     if     (GetOutputAODName().Contains("Pi0") && idPartType != AliCaloPID::kPi0)
     {
-      if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Cluster is not Pi0\n");
+      if(GetDebug() > 1) Info("MakeShowerShapeIdentification","Cluster is not Pi0\n");
       FillRejectedClusterHistograms(mom,tag);
       continue ;
     }
     
     else if(GetOutputAODName().Contains("Eta") && idPartType != AliCaloPID::kEta)
     {
-      if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Cluster is not Eta\n");
+      if(GetDebug() > 1) Info("MakeShowerShapeIdentification","Cluster is not Eta\n");
       FillRejectedClusterHistograms(mom,tag);
       continue ;
     }
     
     if(GetDebug() > 1)
-      printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Pi0/Eta selection cuts passed: pT %3.2f, pdg %d\n",
+      Info("MakeShowerShapeIdentification","Pi0/Eta selection cuts passed: pT %3.2f, pdg %d\n",
              mom.Pt(), idPartType);
     
     //Mass and asymmetry of selected pairs
@@ -3157,7 +3166,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
          }
       }
       else if(TMath::Abs(bc) >= 6)
-        printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Trigger BC not expected = %d\n",bc);
+        Info("MakeShowerShapeIdentification","Trigger BC not expected = %d\n",bc);
     }
     
     //Add AOD with pi0 object to aod branch
@@ -3165,7 +3174,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     
   }//loop
   
-  if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - End fill AODs \n");
+  if(GetDebug() > 1) Info("MakeShowerShapeIdentification","End fill AODs \n");
   
 }
 //______________________________________________
@@ -3175,12 +3184,11 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
   
   if(!GetOutputAODBranch())
   {
-    printf("AliAnaPi0EbE::MakeAnalysisFillHistograms()  - No output pi0 in AOD branch with name < %s >,STOP \n",GetOutputAODName().Data());
-    abort();
+    AliFatal(Form("No output pi0 in AOD branch with name < %s >,STOP \n",GetOutputAODName().Data()));
   }
   //Loop on stored AOD pi0
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
-  if(GetDebug() > 0) printf("AliAnaPi0EbE::MakeAnalysisFillHistograms() - aod branch entries %d\n", naod);
+  if(GetDebug() > 0) Info("MakeAnalysisFillHistograms","aod branch entries %d\n", naod);
   
   Float_t cen = GetEventCentrality();
   Float_t ep  = GetEventPlaneAngle();

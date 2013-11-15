@@ -44,10 +44,10 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
                                 Float_t & eprim, Float_t & asymGen, Float_t & angleGen, Int_t & noverlaps );
   
   void         FillAngleHistograms(const Int_t   nMax,  const Bool_t  matched, const Int_t   mcindex,
-                                   const Float_t en,    const Float_t angle,   const Float_t mass,   const Float_t anglePrim,
+                                   const Float_t en,    const Float_t e1  ,    const Float_t e2,
+                                   const Float_t angle, const Float_t mass,    const Float_t anglePrim,
                                    const Float_t m02,   const Float_t asym,    const Int_t   pid,    const Int_t   noverlaps);
   
-
   void         FillArmenterosHistograms(const Int_t nMax, const Int_t ebin, const Int_t mcindex,
                                         const Float_t pi0E, TLorentzVector g1, TLorentzVector g2,
                                         const Float_t m02, const Int_t pid);
@@ -262,6 +262,10 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhAsymEnCutNLocMax1  ;                   //! Asym(E) E sub-cluster cut selection, not matched, Mass of split clusters, NLM = 1
   TH2F       * fhAsymEnCutNLocMax2  ;                   //! Asym(E) E sub-cluster cut selection, not matched, Mass of split clusters, NLM = 1
   TH2F       * fhAsymEnCutNLocMaxN  ;                   //! Asym(E) E sub-cluster cut selection, not matched, Mass of split clusters, NLM > 2
+
+  TH2F       * fhSplitEFracEnCutNLocMax1  ;             //! Split E fraction (E) E sub-cluster cut selection, not matched, Mass of split clusters, NLM = 1
+  TH2F       * fhSplitEFracEnCutNLocMax2  ;             //! Split E fraction (E) E sub-cluster cut selection, not matched, Mass of split clusters, NLM = 1
+  TH2F       * fhSplitEFracEnCutNLocMaxN  ;             //! Split E fraction (E) E sub-cluster cut selection, not matched, Mass of split clusters, NLM > 2
   
   TH2F       * fhMassSplitECutNLocMax1 ;                //! 85% of split energy, not matched, Mass of split clusters, NLM = 1
   TH2F       * fhMassSplitECutNLocMax2 ;                //! 85% of split energy, not matched, Mass of split clusters, NLM = 1

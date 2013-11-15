@@ -68,6 +68,7 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
   fhMassEnCutNLocMax1(0),                    fhMassEnCutNLocMax2(0),                    fhMassEnCutNLocMaxN(0),
   fhM02EnCutNLocMax1(0),                     fhM02EnCutNLocMax2(0),                     fhM02EnCutNLocMaxN(0),
   fhAsymEnCutNLocMax1(0),                    fhAsymEnCutNLocMax2(0),                    fhAsymEnCutNLocMaxN(0),
+  fhSplitEFracEnCutNLocMax1(0),              fhSplitEFracEnCutNLocMax2(0),              fhSplitEFracEnCutNLocMaxN(0),
   fhMassSplitECutNLocMax1(0),                fhMassSplitECutNLocMax2(0),                fhMassSplitECutNLocMaxN(0),
   fhMCGenFracAfterCutsNLocMax1MCPi0(0),      fhMCGenFracAfterCutsNLocMax2MCPi0(0),      fhMCGenFracAfterCutsNLocMaxNMCPi0(0),
   fhMCGenSplitEFracAfterCutsNLocMax1MCPi0(0),fhMCGenSplitEFracAfterCutsNLocMax2MCPi0(0),fhMCGenSplitEFracAfterCutsNLocMaxNMCPi0(0),
@@ -800,7 +801,7 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   
   if(pdg!=111 || label < 0)
   {
-    printf("AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(() - Mother Pi0 not found!\n");
+    Info("CheckLocalMaximaMCOrigin","Mother Pi0 not found!\n");
     return;
   }
   
@@ -808,7 +809,7 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   
   if(nDaugthers != 2)
   {
-    printf("AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(() - N daughters %d !=2!\n",nDaugthers);
+    Info("CheckLocalMaximaMCOrigin","N daughters %d !=2!\n",nDaugthers);
     return;
   }
   
@@ -820,7 +821,7 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
 
   if(pdg1!=22 || pdg0 != 22)
   {
-    printf("AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(() - Wrong daughters PDG: photon0 %d - photon1 %d\n",pdg0,pdg1);
+    Info("CheckLocalMaximaMCOrigin","Wrong daughters PDG: photon0 %d - photon1 %d\n",pdg0,pdg1);
     return;
   }
   
@@ -1286,7 +1287,8 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
 
 //_____________________________________________________________________________________________________________________________
 void AliAnaInsideClusterInvariantMass::FillAngleHistograms(const Int_t   nMax,      const Bool_t  matched, const Int_t mcIndex,
-                                                           const Float_t en,        const Float_t angle,   const Float_t mass,
+                                                           const Float_t en,        const Float_t e1,      const Float_t e2,
+                                                           const Float_t angle,     const Float_t mass,
                                                            const Float_t anglePrim, const Float_t m02,
                                                            const Float_t asym,      const Int_t   pid,     const Int_t noverlaps)
 {
@@ -1296,12 +1298,19 @@ void AliAnaInsideClusterInvariantMass::FillAngleHistograms(const Int_t   nMax,  
   Bool_t asyOK = GetCaloPID()->IsInPi0SplitAsymmetryRange(en,asym,nMax);
   Bool_t m02On = GetCaloPID()->IsSplitShowerShapeCutOn();
   Bool_t asyOn = GetCaloPID()->IsSplitAsymmetryCutOn();
-  
+
+  Bool_t eCutOK= kFALSE;
+  Int_t inlm = nMax-1;
+  if(inlm > 2 ) inlm = 2;
+  Float_t ensubcut = GetCaloPID()->GetSubClusterEnergyMinimum(inlm);
+  if     (ensubcut > 0.1 && ensubcut < e1 && ensubcut < e2 ) eCutOK = kTRUE;
+  else if(ensubcut < 0.1)                                    eCutOK = kTRUE;
+
   if     (nMax==1)
   {
     fhAnglePairNLocMax1[0][matched]->Fill(en,angle);
     
-    if((m02OK && asyOK) && (asyOn || m02On))
+    if((m02OK && asyOK) && (asyOn || m02On) && eCutOK)
       fhAnglePairAfterCutsNLocMax1[0][matched]->Fill(en,angle);
     if(pid==AliCaloPID::kPi0)
       fhAnglePairPi0NLocMax1[0][matched]->Fill(en,angle);
@@ -1322,7 +1331,7 @@ void AliAnaInsideClusterInvariantMass::FillAngleHistograms(const Int_t   nMax,  
   {
     fhAnglePairNLocMax2[0][matched]->Fill(en,angle);
     
-    if((m02OK && asyOK) && (asyOn || m02On))
+    if((m02OK && asyOK) && (asyOn || m02On) && eCutOK)
       fhAnglePairAfterCutsNLocMax2[0][matched]->Fill(en,angle);
     if(pid==AliCaloPID::kPi0)
       fhAnglePairPi0NLocMax2[0][matched]->Fill(en,angle);
@@ -1343,7 +1352,7 @@ void AliAnaInsideClusterInvariantMass::FillAngleHistograms(const Int_t   nMax,  
   {
     fhAnglePairNLocMaxN[0][matched]->Fill(en,angle);
     
-    if((m02OK && asyOK) && (asyOn || m02On))
+    if((m02OK && asyOK) && (asyOn || m02On) && eCutOK)
       fhAnglePairAfterCutsNLocMaxN[0][matched]->Fill(en,angle);
     if(pid==AliCaloPID::kPi0)
       fhAnglePairPi0NLocMaxN[0][matched]->Fill(en,angle);
@@ -1371,7 +1380,7 @@ void AliAnaInsideClusterInvariantMass::FillAngleHistograms(const Int_t   nMax,  
         fhAnglePairMassNLocMax1[mcIndex][matched]->Fill(mass,angle);
         fhAnglePairM02NLocMax1 [mcIndex][matched]->Fill(m02,angle);
       }
-      if((m02OK && asyOK) && (asyOn || m02On))
+      if((m02OK && asyOK) && (asyOn || m02On) && eCutOK)
         fhAnglePairAfterCutsNLocMax1[mcIndex][matched]->Fill(en,angle);
       if(pid==AliCaloPID::kPi0)
          fhAnglePairPi0NLocMax1[mcIndex][matched]->Fill(en,angle);
@@ -1399,7 +1408,7 @@ void AliAnaInsideClusterInvariantMass::FillAngleHistograms(const Int_t   nMax,  
         fhAnglePairM02NLocMax2 [mcIndex][matched]->Fill(m02 ,angle);
       }
       
-      if((m02OK && asyOK) && (asyOn || m02On))
+      if((m02OK && asyOK) && (asyOn || m02On) && eCutOK)
         fhAnglePairAfterCutsNLocMax2[mcIndex][matched]->Fill(en,angle);
       if(pid==AliCaloPID::kPi0)
         fhAnglePairPi0NLocMax2[mcIndex][matched]->Fill(en,angle);
@@ -1425,7 +1434,7 @@ void AliAnaInsideClusterInvariantMass::FillAngleHistograms(const Int_t   nMax,  
         fhAnglePairMassNLocMaxN[mcIndex][matched]->Fill(mass,angle);
         fhAnglePairM02NLocMaxN [mcIndex][matched]->Fill(m02 ,angle);
       }
-      if((m02OK && asyOK) && (asyOn || m02On))
+      if((m02OK && asyOK) && (asyOn || m02On) && eCutOK)
         fhAnglePairAfterCutsNLocMaxN[mcIndex][matched]->Fill(en,angle);
       if(pid==AliCaloPID::kPi0)
         fhAnglePairPi0NLocMaxN[mcIndex][matched]->Fill(en,angle);
@@ -1480,17 +1489,25 @@ void AliAnaInsideClusterInvariantMass::FillArmenterosHistograms(const Int_t nMax
   
   Float_t asym = TMath::Abs( g1.Energy()-g2.Energy() )/( g1.Energy()+g2.Energy() ) ;
   
-   if(GetDebug() > 2 ) printf("AliAnaInsideClusterInvariantMass::FillArmenterosHistograms() - E %f, alphaArm %f, pTArm %f\n",en,alphaArm,pTArm);
+   if(GetDebug() > 2 ) Info("FillArmenterosHistograms()","E %f, alphaArm %f, pTArm %f\n",en,alphaArm,pTArm);
   
   Bool_t m02OK = GetCaloPID()->IsInPi0M02Range(en,m02,nMax);
   Bool_t asyOK = GetCaloPID()->IsInPi0SplitAsymmetryRange(en,asym,nMax);
   Bool_t m02On = GetCaloPID()->IsSplitShowerShapeCutOn();
   Bool_t asyOn = GetCaloPID()->IsSplitAsymmetryCutOn();
   
+  Bool_t eCutOK= kFALSE;
+  Int_t inlm = nMax-1;
+  if(inlm > 2 ) inlm = 2;
+  Float_t ensubcut = GetCaloPID()->GetSubClusterEnergyMinimum(inlm);
+  if     (ensubcut > 0.1 && ensubcut < g1.E() && ensubcut < g2.E() ) eCutOK = kTRUE;
+  else if(ensubcut < 0.1)                                            eCutOK = kTRUE;
+
+  
   if     (nMax==1)
   {
     fhArmNLocMax1[0][ebin]->Fill(alphaArm,pTArm);
-    if((m02OK && asyOK) && (asyOn || m02On))
+    if((m02OK && asyOK) && (asyOn || m02On) && eCutOK)
       fhArmAfterCutsNLocMax1[0][ebin]->Fill(alphaArm,pTArm);
     if(pid==AliCaloPID::kPi0)
       fhArmPi0NLocMax1[0][ebin]->Fill(alphaArm,pTArm);
@@ -1506,7 +1523,7 @@ void AliAnaInsideClusterInvariantMass::FillArmenterosHistograms(const Int_t nMax
   else if(nMax >2)
   {
     fhArmNLocMaxN[0][ebin]->Fill(alphaArm,pTArm);
-    if((m02OK && asyOK) && (asyOn || m02On))
+    if((m02OK && asyOK) && (asyOn || m02On) && eCutOK)
       fhArmAfterCutsNLocMaxN[0][ebin]->Fill(alphaArm,pTArm);
     if(pid==AliCaloPID::kPi0)
       fhArmPi0NLocMaxN[0][ebin]->Fill(alphaArm,pTArm);
@@ -1517,7 +1534,7 @@ void AliAnaInsideClusterInvariantMass::FillArmenterosHistograms(const Int_t nMax
     if     (nMax==1)
     {
       fhArmNLocMax1[mcIndex][ebin]->Fill(alphaArm,pTArm);
-      if((m02OK && asyOK) && (asyOn || m02On))
+      if((m02OK && asyOK) && (asyOn || m02On) && eCutOK)
         fhArmAfterCutsNLocMax1[mcIndex][ebin]->Fill(alphaArm,pTArm);
       if(pid==AliCaloPID::kPi0)
         fhArmPi0NLocMax1[mcIndex][ebin]->Fill(alphaArm,pTArm);
@@ -1525,7 +1542,7 @@ void AliAnaInsideClusterInvariantMass::FillArmenterosHistograms(const Int_t nMax
     else if(nMax==2)
     {
       fhArmNLocMax2[mcIndex][ebin]->Fill(alphaArm,pTArm);
-      if((m02OK && asyOK) && (asyOn || m02On))
+      if((m02OK && asyOK) && (asyOn || m02On) && eCutOK)
         fhArmAfterCutsNLocMax2[mcIndex][ebin]->Fill(alphaArm,pTArm);
       if(pid==AliCaloPID::kPi0)
         fhArmPi0NLocMax2[mcIndex][ebin]->Fill(alphaArm,pTArm);
@@ -1533,7 +1550,7 @@ void AliAnaInsideClusterInvariantMass::FillArmenterosHistograms(const Int_t nMax
     else if(nMax >2)
     {
       fhArmNLocMaxN[mcIndex][ebin]->Fill(alphaArm,pTArm);
-      if((m02OK && asyOK) && (asyOn || m02On))
+      if((m02OK && asyOK) && (asyOn || m02On) && eCutOK)
         fhArmAfterCutsNLocMaxN[mcIndex][ebin]->Fill(alphaArm,pTArm);
       if(pid==AliCaloPID::kPi0)
         fhArmPi0NLocMaxN[mcIndex][ebin]->Fill(alphaArm,pTArm);
@@ -1564,13 +1581,20 @@ void AliAnaInsideClusterInvariantMass::FillThetaStarHistograms(const Int_t nMax,
   Bool_t m02On = GetCaloPID()->IsSplitShowerShapeCutOn();
   Bool_t asyOn = GetCaloPID()->IsSplitAsymmetryCutOn();
   
+  Bool_t eCutOK= kFALSE;
+  Int_t inlm = nMax-1;
+  if(inlm > 2 ) inlm = 2;
+  Float_t ensubcut = GetCaloPID()->GetSubClusterEnergyMinimum(inlm);
+  if     (ensubcut > 0.1 && ensubcut < g1.E() && ensubcut < g2.E() ) eCutOK = kTRUE;
+  else if(ensubcut < 0.1)                                            eCutOK = kTRUE;
+
   //printf("Reco cos %f, asy %f\n",cosThStar,asym);
   
   if     (nMax==1)
   {
     fhCosThStarNLocMax1[0][matched]->Fill(en,cosThStar);
     
-    if((m02OK && asyOK) && (asyOn || m02On))
+    if((m02OK && asyOK) && (asyOn || m02On) && eCutOK)
       fhCosThStarAfterCutsNLocMax1[0][matched]->Fill(en,cosThStar);
     if(pid==AliCaloPID::kPi0)
       fhCosThStarPi0NLocMax1[0][matched]->Fill(en,cosThStar);
@@ -1579,7 +1603,7 @@ void AliAnaInsideClusterInvariantMass::FillThetaStarHistograms(const Int_t nMax,
   {
     fhCosThStarNLocMax2[0][matched]->Fill(en,cosThStar);
     
-    if((m02OK && asyOK) && (asyOn || m02On))
+    if((m02OK && asyOK) && (asyOn || m02On) && eCutOK)
       fhCosThStarAfterCutsNLocMax2[0][matched]->Fill(en,cosThStar);
     if(pid==AliCaloPID::kPi0)
       fhCosThStarPi0NLocMax2[0][matched]->Fill(en,cosThStar);
@@ -1588,7 +1612,7 @@ void AliAnaInsideClusterInvariantMass::FillThetaStarHistograms(const Int_t nMax,
   {
     fhCosThStarNLocMaxN[0][matched]->Fill(en,cosThStar);
     
-    if((m02OK && asyOK) && (asyOn || m02On))
+    if((m02OK && asyOK) && (asyOn || m02On) && eCutOK)
       fhCosThStarAfterCutsNLocMaxN[0][matched]->Fill(en,cosThStar);
     if(pid==AliCaloPID::kPi0)
       fhCosThStarPi0NLocMaxN[0][matched]->Fill(en,cosThStar);
@@ -1600,7 +1624,7 @@ void AliAnaInsideClusterInvariantMass::FillThetaStarHistograms(const Int_t nMax,
     {
       fhCosThStarNLocMax1[mcIndex][matched]->Fill(en,cosThStar);
       
-      if((m02OK && asyOK) && (asyOn || m02On))
+      if((m02OK && asyOK) && (asyOn || m02On) && eCutOK)
         fhCosThStarAfterCutsNLocMax1[mcIndex][matched]->Fill(en,cosThStar);
       if(pid==AliCaloPID::kPi0)
         fhCosThStarPi0NLocMax1[mcIndex][matched]->Fill(en,cosThStar);
@@ -1609,7 +1633,7 @@ void AliAnaInsideClusterInvariantMass::FillThetaStarHistograms(const Int_t nMax,
     {
       fhCosThStarNLocMax2[mcIndex][matched]->Fill(en,cosThStar);
       
-      if((m02OK && asyOK) && (asyOn || m02On))
+      if((m02OK && asyOK) && (asyOn || m02On) && eCutOK)
         fhCosThStarAfterCutsNLocMax2[mcIndex][matched]->Fill(en,cosThStar);
       if(pid==AliCaloPID::kPi0)
         fhCosThStarPi0NLocMax2[mcIndex][matched]->Fill(en,cosThStar);
@@ -1618,7 +1642,7 @@ void AliAnaInsideClusterInvariantMass::FillThetaStarHistograms(const Int_t nMax,
     {
       fhCosThStarNLocMaxN[mcIndex][matched]->Fill(en,cosThStar);
       
-      if((m02OK && asyOK) && (asyOn || m02On))
+      if((m02OK && asyOK) && (asyOn || m02On) && eCutOK)
         fhCosThStarAfterCutsNLocMaxN[mcIndex][matched]->Fill(en,cosThStar);
       if(pid==AliCaloPID::kPi0)
         fhCosThStarPi0NLocMaxN[mcIndex][matched]->Fill(en,cosThStar);
@@ -1780,7 +1804,12 @@ void AliAnaInsideClusterInvariantMass::FillHistograms2(const Float_t en,     con
   Bool_t m02On = GetCaloPID()->IsSplitShowerShapeCutOn();
   Bool_t asyOn = GetCaloPID()->IsSplitAsymmetryCutOn();
   
-  //printf("splitFracMin %f, val %f, m02ok %d, asyok %d, m02On %d, asyOn %d\n",splitFracMin,splitFrac,m02OK,asyOK,m02On,asyOn);
+  Bool_t eCutOK = kFALSE;
+  Float_t ensubcut = GetCaloPID()->GetSubClusterEnergyMinimum(inlm);
+  if     (ensubcut > 0.1 && ensubcut < e1 && ensubcut < e2 ) eCutOK = kTRUE;
+  else if(ensubcut < 0.1)                                    eCutOK = kTRUE;
+
+  //printf("splitFracMin %f, val %f, m02ok %d, asyok %d, m02On %d, asyOn %d, ecutOK %d\n",splitFracMin,splitFrac,m02OK,asyOK,m02On,asyOn,eCutOK);
   
   if(m02On && m02OK)
   {
@@ -1815,15 +1844,15 @@ void AliAnaInsideClusterInvariantMass::FillHistograms2(const Float_t en,     con
       if(splitFrac > splitFracMin && fhMassSplitECutNLocMax1) fhMassSplitECutNLocMax1->Fill(en,mass );
     } 
     
-    Float_t ensubcut = GetCaloPID()->GetSubClusterEnergyMinimum(0);
-    if(!matched && ensubcut > 0.1 && ensubcut < e1 && ensubcut < e2 )
+    if(!matched && eCutOK && ensubcut > 0.1)
     {
       fhMassEnCutNLocMax1->Fill(en,mass );
       fhM02EnCutNLocMax1 ->Fill(en,l0   );
       fhAsymEnCutNLocMax1->Fill(en,asym );
+      fhSplitEFracEnCutNLocMax1->Fill(en,splitFrac );
     }
     
-    if((m02OK && asyOK) && (asyOn || m02On))
+    if((m02OK && asyOK) && (asyOn || m02On) && eCutOK)
     {
       fhSplitEFractionAfterCutsNLocMax1[0][matched]->Fill(en,splitFrac);
       if(splitFrac > splitFracMin) fhMassAfterCutsNLocMax1[0][matched]->Fill(en,mass);
@@ -1855,15 +1884,15 @@ void AliAnaInsideClusterInvariantMass::FillHistograms2(const Float_t en,     con
       if(splitFrac > splitFracMin && fhMassSplitECutNLocMax2) fhMassSplitECutNLocMax2->Fill(en,mass );
     } 
     
-    Float_t ensubcut = GetCaloPID()->GetSubClusterEnergyMinimum(1);
-    if(!matched && ensubcut > 0.1 && ensubcut < e1 && ensubcut < e2 )
+    if(!matched && eCutOK && ensubcut > 0.1)
     {
       fhMassEnCutNLocMax2->Fill(en,mass );
       fhM02EnCutNLocMax2 ->Fill(en,l0   );
       fhAsymEnCutNLocMax2->Fill(en,asym );
+      fhSplitEFracEnCutNLocMax2->Fill(en,splitFrac );
     }
     
-    if((m02OK && asyOK) && (asyOn || m02On))
+    if((m02OK && asyOK) && (asyOn || m02On) && eCutOK)
     {
       fhSplitEFractionAfterCutsNLocMax2[0][matched]->Fill(en,splitFrac);
       if(splitFrac >splitFracMin) fhMassAfterCutsNLocMax2[0][matched]->Fill(en,mass);
@@ -1895,15 +1924,15 @@ void AliAnaInsideClusterInvariantMass::FillHistograms2(const Float_t en,     con
       if(splitFrac > splitFracMin && fhMassSplitECutNLocMaxN) fhMassSplitECutNLocMaxN->Fill(en,mass );
     } 
     
-    Float_t ensubcut = GetCaloPID()->GetSubClusterEnergyMinimum(2);
-    if(!matched && ensubcut > 0.1 && ensubcut < e1 && ensubcut < e2 )
+    if(!matched && eCutOK && ensubcut > 0.1 )
     {
       fhMassEnCutNLocMaxN->Fill(en,mass );
       fhM02EnCutNLocMaxN ->Fill(en,l0   );
       fhAsymEnCutNLocMaxN->Fill(en,asym );
+      fhSplitEFracEnCutNLocMaxN->Fill(en,splitFrac );
     }
     
-    if((m02OK && asyOK) && (asyOn || m02On))
+    if((m02OK && asyOK) && (asyOn || m02On) && eCutOK)
     {
       fhSplitEFractionAfterCutsNLocMaxN[0][matched]->Fill(en,splitFrac);
       if(splitFrac > splitFracMin) fhMassAfterCutsNLocMaxN[0][matched]->Fill(en,mass);
@@ -1923,7 +1952,7 @@ void AliAnaInsideClusterInvariantMass::FillHistograms2(const Float_t en,     con
       fhMassNLocMax1[mcindex][matched]->Fill(en,mass);
       fhAsymNLocMax1[mcindex][matched]->Fill(en,asym);
       
-      if((m02OK && asyOK) && (asyOn || m02On))
+      if((m02OK && asyOK) && (asyOn || m02On) && eCutOK)
       {
         fhSplitEFractionAfterCutsNLocMax1[mcindex][matched]->Fill(en,splitFrac);
         if(splitFrac > splitFracMin)
@@ -1935,7 +1964,7 @@ void AliAnaInsideClusterInvariantMass::FillHistograms2(const Float_t en,     con
       fhMassNLocMax2[mcindex][matched]->Fill(en,mass);
       fhAsymNLocMax2[mcindex][matched]->Fill(en,asym);
       
-      if((m02OK && asyOK) && (asyOn || m02On))
+      if((m02OK && asyOK) && (asyOn || m02On) && eCutOK)
       {
         fhSplitEFractionAfterCutsNLocMax2[mcindex][matched]->Fill(en,splitFrac);
         if(splitFrac >splitFracMin)
@@ -1947,7 +1976,7 @@ void AliAnaInsideClusterInvariantMass::FillHistograms2(const Float_t en,     con
       fhMassNLocMaxN[mcindex][matched]->Fill(en,mass);
       fhAsymNLocMaxN[mcindex][matched]->Fill(en,asym);
       
-      if((m02OK && asyOK) && (asyOn || m02On))
+      if((m02OK && asyOK) && (asyOn || m02On) && eCutOK)
       {
         fhSplitEFractionAfterCutsNLocMaxN[mcindex][matched]->Fill(en,splitFrac);
         if(splitFrac > splitFracMin )
@@ -2391,7 +2420,7 @@ void AliAnaInsideClusterInvariantMass::FillMCOverlapHistograms(const Float_t en,
       if((mcindex==kmcPi0 || mcindex == kmcPi0Conv) && ebin >=0) fhMCPi0MassM02OverlapN[inlm][ebin]->Fill(l0,mass);
     }
     else
-      printf("AliAnaInsideClusterInvariantMass::FillMCOverlapHistograms() - n overlaps = %d!!", noverlaps);
+      Info("FillMCOverlapHistograms","n overlaps = %d!!", noverlaps);
   }
   else if(fFillTMHisto)
   {
@@ -2428,7 +2457,7 @@ void AliAnaInsideClusterInvariantMass::FillMCOverlapHistograms(const Float_t en,
       if((mcindex==kmcPi0 || mcindex == kmcPi0Conv) && ebin >=0) fhMCPi0MassM02OverlapNMatch[inlm][ebin]->Fill(l0,mass);
     }
     else
-        printf("AliAnaInsideClusterInvariantMass::FillMCOverlapHistograms() - n overlaps in matched = %d!!", noverlaps);
+        Info("FillMCOverlapHistograms()","n overlaps in matched = %d!!", noverlaps);
   }
 }
 
@@ -2622,7 +2651,7 @@ void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus,
   
   if(energy <=0 )
   {
-    printf("AliAnaInsideClusterInvatiantMass::WeightHistograms()- Wrong calculated energy %f\n",energy);
+    Info("WeightHistograms()","Wrong calculated energy %f\n",energy);
     return;
   }
   
@@ -2632,8 +2661,8 @@ void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus,
   Float_t amp2 = cells->GetCellAmplitude(absId2);
   GetCaloUtils()->RecalibrateCellAmplitude(amp2,fCalorimeter, absId2);
 
-  if(amp1 < amp2)        printf("Bad local maxima E ordering : id1 E %f, id2 E %f\n ",amp1,amp2);
-  if(amp1==0 || amp2==0) printf("Null E local maxima : id1 E %f, id2 E %f\n "        ,amp1,amp2);
+  if(amp1 < amp2)        Info("FillSSWeightHistograms","Bad local maxima E ordering : id1 E %f, id2 E %f\n ",amp1,amp2);
+  if(amp1==0 || amp2==0) Info("FillSSWeightHistograms","Null E local maxima : id1 E %f, id2 E %f\n "        ,amp1,amp2);
   
   if(amp1>0)fhPi0CellEMaxEMax2Frac   [nlm]->Fill(energy,amp2/amp1);
   fhPi0CellEMaxClusterFrac [nlm]->Fill(energy,amp1/energy);
@@ -3244,12 +3273,29 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
           fhAsymEnCutNLocMaxN->SetYTitle("(E_{1}-E_{2})/(E_{1}+E_{2})");
           fhAsymEnCutNLocMaxN->SetXTitle("E (GeV)");
           outputContainer->Add(fhAsymEnCutNLocMaxN) ;
+
+          fhSplitEFracEnCutNLocMax1  = new TH2F("hSplitEFracEnCutNLocMax1",Form("SplitEFracmetry of NLM=1  vs cluster Energy, E > %1.1f GeV, no TM",GetCaloPID()->GetSubClusterEnergyMinimum(0))
+                                          , nptbins,ptmin,ptmax,120,0,1.2);
+          fhSplitEFracEnCutNLocMax1->SetYTitle("(E_{split1}+E_{split2})/E_{cluster}");
+          fhSplitEFracEnCutNLocMax1->SetXTitle("E (GeV)");
+          outputContainer->Add(fhSplitEFracEnCutNLocMax1) ;
           
+          fhSplitEFracEnCutNLocMax2  = new TH2F("hSplitEFracEnCutNLocMax2",Form("SplitEFracmetry of NLM=2  vs cluster Energy, E > %1.1f GeV, no TM",GetCaloPID()->GetSubClusterEnergyMinimum(1))
+                                          , nptbins,ptmin,ptmax,120,0,1.2);
+          fhSplitEFracEnCutNLocMax2->SetYTitle("(E_{split1}+E_{split2})/E_{cluster}");
+          fhSplitEFracEnCutNLocMax2->SetXTitle("E (GeV)");
+          outputContainer->Add(fhSplitEFracEnCutNLocMax2) ;
+          
+          fhSplitEFracEnCutNLocMaxN  = new TH2F("hSplitEFracEnCutNLocMaxN",Form("SplitEFracmetry of NLM>2  vs cluster Energy, E > %1.1f GeV, no TM",GetCaloPID()->GetSubClusterEnergyMinimum(2))
+                                          , nptbins,ptmin,ptmax,120,0,1.2);
+          fhSplitEFracEnCutNLocMaxN->SetYTitle("(E_{split1}+E_{split2})/E_{cluster}");
+          fhSplitEFracEnCutNLocMaxN->SetXTitle("E (GeV)");
+          outputContainer->Add(fhSplitEFracEnCutNLocMaxN) ;
         }
         
       } // no MC
       
-      if(asyOn || m02On)
+      if(asyOn || m02On || GetCaloPID()->GetSubClusterEnergyMinimum(0) > 0.1)
       {
         fhMassAfterCutsNLocMax1[i][j]     = new TH2F(Form("hMassAfterCutsNLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
                                                      Form("Mass vs E, %s %s, for NLM = 1, M02 and asy cut",ptype[i].Data(),sMatched[j].Data()),
@@ -4113,7 +4159,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
     }
   }
   
-  if(IsDataMC() && fFillMCHisto && (asyOn || m02On))
+  if(IsDataMC() && fFillMCHisto && (asyOn || m02On || GetCaloPID()->GetSubClusterEnergyMinimum(0) > 0.1))
   {
     fhMCGenSplitEFracAfterCutsNLocMax1MCPi0     = new TH2F("hMCGenSplitEFracAfterCutsNLocMax1MCPi0",
                                                            "E_{gen} / (E_{1 split}+E_{2 split}) vs E for N max  = 1 MC Pi0, after M02 and Asym cut",
@@ -4350,7 +4396,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
         fhAnglePairNLocMaxN[i][j]->SetXTitle("E (GeV)");
         outputContainer->Add(fhAnglePairNLocMaxN[i][j]) ;
         
-        if(asyOn || m02On)
+        if(asyOn || m02On || GetCaloPID()->GetSubClusterEnergyMinimum(0) > 0.1)
         {
           fhAnglePairAfterCutsNLocMax1[i][j]  = new TH2F(Form("hAnglePairAfterCutsNLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
                                                 Form("Opening angle split sub-clusters of cluster NLM=1, after cuts, vs pair Energy, %s, %s",ptype[i].Data(),sMatched[j].Data()),
@@ -4587,7 +4633,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
         fhCosThStarNLocMaxN[i][j]->SetXTitle("E (GeV)");
         outputContainer->Add(fhCosThStarNLocMaxN[i][j]) ;
         
-        if(asyOn || m02On)
+        if(asyOn || m02On || GetCaloPID()->GetSubClusterEnergyMinimum(0) > 0.1)
         {
           fhCosThStarAfterCutsNLocMax1[i][j]  = new TH2F(Form("hCosThStarAfterCutsNLocMax1%s%s",pname[i].Data(),sMatched[j].Data()),
                                                          Form("cos(#theta^{*}) split sub-clusters of cluster NLM=1, after cuts, vs pair Energy, %s, %s",ptype[i].Data(),sMatched[j].Data()),
@@ -5826,7 +5872,7 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
         fhArmNLocMaxN[i][j]->SetXTitle("#alpha^{Arm}");
         outputContainer->Add(fhArmNLocMaxN[i][j]) ;
         
-        if(asyOn || m02On)
+        if(asyOn || m02On || GetCaloPID()->GetSubClusterEnergyMinimum(0) > 0.1)
         {
           fhArmAfterCutsNLocMax1[i][j]  = new TH2F(Form("hArmAfterCutsNLocMax1EBin%d%s",j,pname[i].Data()),
                                           Form("Armenteros of splitted cluster with NLM=1, %s, %s",sEBin[j].Data(),ptype[i].Data()),
@@ -5971,22 +6017,19 @@ void AliAnaInsideClusterInvariantMass::Init()
 {
   //Init
   //Do some checks
+  
   if(fCalorimeter == "PHOS" && !GetReader()->IsPHOSSwitchedOn() && NewOutputAOD())
   {
-    printf("AliAnaInsideClusterInvariantMass::Init() - !!STOP: You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!\n");
-    abort();
+    AliFatal("!!STOP: You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!\n");
   }
   else  if(fCalorimeter == "EMCAL" && !GetReader()->IsEMCALSwitchedOn() && NewOutputAOD())
   {
-    printf("AliAnaInsideClusterInvariantMass::Init() - !!STOP: You want to use EMCAL in analysis but it is not read!! \n!!Check the configuration file!!\n");
-    abort();
+    AliFatal("!!STOP: You want to use EMCAL in analysis but it is not read!! \n!!Check the configuration file!!\n");
   }
   
   if( GetReader()->GetDataType() == AliCaloTrackReader::kMC )
   {
-    printf("AliAnaInsideClusterInvariantMass::Init() - !!STOP: You want to use pure MC data!!\n");
-    abort();
-    
+    AliFatal("!!STOP: You want to use pure MC data!!\n");
   }
   
 }
@@ -6094,7 +6137,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     if (nMax <= 0) 
     {
       if(GetDebug() > 0 )
-        printf("AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms() - No local maximum found! It did not pass CaloPID selection criteria \n");
+        Info("MakeAnalysisFillHistograms","No local maximum found! It did not pass CaloPID selection criteria \n");
       
       continue;
     }
@@ -6105,14 +6148,14 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     if     (nMax == 1) inlm = 0;
     else if(nMax == 2) inlm = 1;
     else if(nMax >  2) inlm = 2;
-    else printf("Wrong N local maximum -> %d, n cells in cluster %d \n",nMax,nc);
+    else Info("MakeAnalysisFillHistograms","Wrong N local maximum -> %d, n cells in cluster %d \n",nMax,nc);
 
     // Skip events where one of the new clusters (lowest energy) is close to an EMCal border or a bad channel
     if( (fCheckSplitDistToBad) &&
         (!fidcut2 || !fidcut1 || distbad1 < fMinBadDist || distbad2 < fMinBadDist))
     {
       if(GetDebug() > 1)
-        printf("AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()  - Dist to bad channel cl1 %f, cl2 %f; fid cl1 %d, cl2 %d \n",
+        Info("MakeAnalysisFillHistograms","Dist to bad channel cl1 %f, cl2 %f; fid cl1 %d, cl2 %d \n",
                                  distbad1,distbad2, fidcut1,fidcut2);
       
       if(distbad1 < fMinBadDist || distbad2 < fMinBadDist)
@@ -6204,7 +6247,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     //
     
     if(fFillAngleHisto)
-      FillAngleHistograms(nMax,matched,mcindex,en,angle,mass,angleGen,l0, asym,pidTag,noverlaps);
+      FillAngleHistograms(nMax,matched,mcindex,en,e1,e2,angle,mass,angleGen,l0, asym,pidTag,noverlaps);
 
     if(fFillArmenterosHisto && ebin >= 0)
       FillArmenterosHistograms(nMax, ebin, mcindex, en, lv1, lv2, l0, pidTag);
@@ -6270,7 +6313,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     
   }//loop
   
-  if(GetDebug() > 1) printf("AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms() - END \n");  
+  if(GetDebug() > 1) Info("MakeAnalysisFillHistograms","END \n");
 
 }
 
