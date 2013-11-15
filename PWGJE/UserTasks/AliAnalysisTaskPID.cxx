@@ -617,7 +617,7 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   const Int_t nMCIDbins = AliPID::kSPECIES;
   Double_t binsMCID[nMCIDbins];
   
-  for(Int_t i = 0; i <= nMCIDbins; i++) {
+  for(Int_t i = 0; i < nMCIDbins; i++) {
     binsMCID[i]= i; 
   }
   
@@ -782,8 +782,8 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     
     
     // Apply detector level track cuts
-    //TODO NOW if (track->GetTPCsignalN() < 60)
-    //TODO NOW  continue;//TODO was removed for a while
+    //if (track->GetTPCsignalN() < 60)
+    //  continue;//TODO was removed for a while
     
     
     if(fTrackFilter && !fTrackFilter->IsSelected(track))
@@ -2541,7 +2541,7 @@ Bool_t AliAnalysisTaskPID::SetConvolutedGaussLambdaParameter(Double_t lambda)
     fConvolutedGausDeltaPrime->SetRange(oldFuncRangeLow, oldFuncRangeUp);
     
     delete hInput;
-    delete oldFuncParams;
+    delete [] oldFuncParams;
     
     return kFALSE; 
   }
@@ -2553,7 +2553,7 @@ Bool_t AliAnalysisTaskPID::SetConvolutedGaussLambdaParameter(Double_t lambda)
     fConvolutedGausDeltaPrime->SetRange(oldFuncRangeLow, oldFuncRangeUp);
     
     delete hInput;
-    delete oldFuncParams;
+    delete [] oldFuncParams;
     
     return kFALSE;
   }
@@ -2603,7 +2603,7 @@ Bool_t AliAnalysisTaskPID::SetConvolutedGaussLambdaParameter(Double_t lambda)
     fConvolutedGausDeltaPrime->SetRange(oldFuncRangeLow, oldFuncRangeUp);
     
     delete hInput;
-    delete oldFuncParams;
+    delete [] oldFuncParams;
     
     return kFALSE;
   }
@@ -2620,7 +2620,7 @@ Bool_t AliAnalysisTaskPID::SetConvolutedGaussLambdaParameter(Double_t lambda)
   fConvolutedGausDeltaPrime->SetRange(oldFuncRangeLow, oldFuncRangeUp);
   
   delete hInput;
-  delete oldFuncParams;
+  delete [] oldFuncParams;
 
   return kTRUE;
 }

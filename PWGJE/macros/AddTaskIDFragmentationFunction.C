@@ -20,7 +20,7 @@ Or it runs on delta-AODs filled with filtered tracks and jets before.
 
 Typical parameters to run on 11a1* (MC_pp@7TeV):
 "clustersAOD_ANTIKT", "", "clustersAODMC2_ANTIKT", "AODMCb", "AODMC2b", AliAnalysisManager::GetGlobalInt("kHighPtFilterMask", gDebug), 
--0.4, 0, 1000*AliAnalysisManager::GetGlobalDbl("kTrackPtCut", gDebug), 0, "_Skip00", "", "_Skip00", 0.4, -1, 0, 0,
+-0.4, 0, 1000*AliAnalysisManager::GetGlobalDbl("kTrackPtCut", gDebug), 0, "_Skip00", "", "_Skip00", 0.4, -1, 0, 0, kFALSE,
 "PWGJE_taskPID_Jets", "", "PWGJE_taskPID_Jets_Inclusive", "" 
 
 ***************************************************************************************************/
@@ -196,17 +196,18 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
   const char* jetType,
   const char* trackType,
   UInt_t filterMask,
-        Float_t radius,
-        int kBackgroundMode,
-        Int_t PtTrackMin,
-        Int_t eventClass=0,
-        TString BrOpt="",
-        TString BrOpt2="",
-        TString BrOpt3="",
-        Float_t radiusBckg=0.4,
+  Float_t radius,
+  Int_t kBackgroundMode,
+  Int_t PtTrackMin,
+  Int_t eventClass=0,
+  TString BrOpt="",
+  TString BrOpt2="",
+  TString BrOpt3="",
+  Float_t radiusBckg=0.4,
   Int_t FFMaxTrackPt = -1,
   Int_t FFMinNTracks = 0,
   UInt_t filterMaskTracks = 0,
+  Bool_t onlyConsiderLeadingJets = kFALSE,
   TString suffixPIDtaskJets1 = "",
   TString suffixPIDtaskJets2 = "",
   TString suffixPIDtaskInclusive1 = "",
@@ -370,6 +371,8 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
    task->SetBckgMode(1);        // default: bgMode = 1 
    task->SetBckgType();
    task->SetBranchRecBackClusters(Form("clustersAOD_KT04_B0_Filter%05d_Cut00150_Skip00",filterMask));
+   
+   task->SetOnlyLeadingJets(onlyConsiderLeadingJets); // default: kFALSE
    
    // Define histo bins
    task->SetFFHistoBins(23, 5, 120, 480, 0., 120.,70,  0., 7.,22,  0.,  1.1);

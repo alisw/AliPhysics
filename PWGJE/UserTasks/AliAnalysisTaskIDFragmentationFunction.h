@@ -303,6 +303,9 @@ class AliAnalysisTaskIDFragmentationFunction : public AliAnalysisTaskSE {
 	Bool_t GetIsPP() const { return fIsPP; };
 	void SetIsPP(Bool_t flag) { fIsPP = flag; };
   
+  Bool_t GetOnlyLeadingJets() const { return fOnlyLeadingJets; }
+  void SetOnlyLeadingJets(Bool_t onlyLeadingJets) { fOnlyLeadingJets = onlyLeadingJets; }
+  
   // Consts
   enum {kTrackUndef=0, kTrackAOD, kTrackAODQualityCuts, kTrackAODCuts, 
 	kTrackAODExtra, kTrackAODExtraonly, kTrackAODExtraCuts, kTrackAODExtraonlyCuts, 
@@ -566,7 +569,9 @@ class AliAnalysisTaskIDFragmentationFunction : public AliAnalysisTaskSE {
   TProfile* fProDelRPtSumRecSecSsc[5];      //! jet shape 
   
 
-  TRandom3*                   fRandom;          // TRandom3 for background estimation 
+  TRandom3* fRandom;                        // TRandom3 for background estimation 
+  
+  Bool_t fOnlyLeadingJets;                  // Flag indicating whether some histos are filled with leading jets only or all jets
   
   // PID framework
   Int_t fNumInclusivePIDtasks;              // Number of inclusive PID tasks used 
@@ -586,7 +591,7 @@ class AliAnalysisTaskIDFragmentationFunction : public AliAnalysisTaskSE {
   AliFragFuncHistos* fIDFFHistosRecCuts[AliPID::kSPECIES];    //! Identified FF reconstructed tracks after cuts 
   AliFragFuncHistos* fIDFFHistosGen[AliPID::kSPECIES];    //! Identified FF generated tracks after cuts 
 
-  ClassDef(AliAnalysisTaskIDFragmentationFunction, 17);
+  ClassDef(AliAnalysisTaskIDFragmentationFunction, 18);
 };
 
 
