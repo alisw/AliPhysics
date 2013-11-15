@@ -1686,7 +1686,7 @@ void AliTPCtracker::GetTailValue(const Float_t ampfactor,Double_t &ionTailMax, D
         }
     }
     if (!graphRes[ampIndex]) continue;
-    if (deltaTimebin+2 > graphRes[ampIndex]->GetN()) continue;
+    if (deltaTimebin+2 >= graphRes[ampIndex]->GetN()) continue;
     if (graphRes[ampIndex]->GetY()[deltaTimebin+2]>=0) continue;
      
     for (Int_t ipad0=padcl0-padScan; ipad0<=padcl0+padScan; ipad0++) {
