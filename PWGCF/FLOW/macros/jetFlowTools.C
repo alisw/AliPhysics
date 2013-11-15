@@ -43,37 +43,35 @@ void jetFlowTools() {
     tools->SetBinsRec(BinsRec);
  
     // connect input
-    tools->SetInputList(l0);
+    tools->SetInputList(l);
+
 
     // unfold using different parameters
-    tools->CreateOutputList(TString("R04_beta01_kCombined"));
+    tools->SetUnfoldingAlgorithm(AliJetFlowTools::kSVD);
+    tools->SetBeta(0.01);
+
+    tools->CreateOutputList(TString("R04_kCombined_SVD_d3"));
+    tools->SetSVDDraw(3);
+    tools->Make();
+
+    tools->CreateOutputList(TString("R04_kCombined_SVD_d4"));
+    tools->SetSVDDraw(4);
+    tools->Make();
+    
+    tools->CreateOutputList(TString("R04_kCombined_SVD_d5"));
+    tools->SetSVDDraw(5);
+    tools->Make();
+
+    // unfold using chi2 method
+    tools->SetUnfoldingAlgorithm(AliJetFlowTools::kChi2);
+    tools->CreateOutputList(TString("beta_01"));
     tools->SetBeta(0.01);
     tools->Make();
 
-    tools->CreateOutputList(TString("R04_beta005_kCombined"));
-    tools->SetBeta(0.005);
+    tools->CreateOutputList(TString("beta_005"));
+    tools->SetBeta(0.05);
     tools->Make();
 
-    tools->CreateOutputList(TString("R04_beta002_kCombined"));
-    tools->SetBeta(0.002);
-    tools->Make();
-
-    // add another input list
-    tools->SetInputList(l1);
- 
-    // unfold using different parametrs
-    tools->CreateOutputList(TString("R04_beta01_kNoFit"));
-    tools->SetBeta(0.01);
-    tools->Make();
-
-    tools->CreateOutputList(TString("R04_beta005_kNoFit"));
-    tools->SetBeta(0.005);
-    tools->Make();
-
-
-    tools->CreateOutputList(TString("R04_beta002_kNoFit"));
-    tools->SetBeta(0.002);
-    tools->Make();
 
     // finish the unfolding
     tools->Finish();
@@ -111,7 +109,11 @@ void Load() {
     gSystem->AddIncludePath("-I$ALICE_ROOT/PWGDQ/dielectron -I$ALICE_ROOT/PWGHF/hfe");
     gSystem->AddIncludePath("-I$ALICE_ROOT/JETAN -I$ALICE_ROOT/JETAN/fastjet");
 
+    // attempt to load RooUnfold libraries, 
+    gSystem->Load("/home/redmer/Documents/CERN/alice/BUILDS/ROOUNFOLD/RooUnfold-1.1.1/libRooUnfold.so");
+    gSystem->AddIncludePath("-I/home/redmer/Documents/CERN/alice/BUILDS/ROOUNFOLD/RooUnfold-1.1.1/src/");
     // compile unfolding class
+    
     gROOT->LoadMacro("$ALICE_ROOT/PWG/FLOW/Tasks/AliJetFlowTools.cxx++g");
 }
 //_____________________________________________________________________________

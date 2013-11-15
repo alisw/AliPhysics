@@ -18,7 +18,9 @@
 //
 // Tools class for Jet Flow Analysis, replaces 'extractJetFlow.C' macro
 // Class is designed to manipulate the raw output of the jet flow
-// tasks in PWG and PWGJE 
+// tasks in PWG and PWGJE
+// a response matrix is created from a delta pt distribution, and jet spectra
+// are unfolded w.r.t. the event plane 
 // to use this class, see $ALICE_ROOT/PWGCF/FLOW/macros/jetFlowTools.C
 
 // root includes
@@ -40,9 +42,13 @@
 #include "AliAnaChargedJetResponseMaker.h"
 // local include
 #include "AliJetFlowTools.h"
+// roo unfold includes (make sure you have these available on your system)
+#include "RooUnfold.h"
+#include "RooUnfoldResponse.h"
+#include "RooUnfoldSvd.h"
+#include "TSVDUnfold.h"
 
 using namespace std;
-
 //_____________________________________________________________________________
 AliJetFlowTools::AliJetFlowTools() :
     fActiveString       (""),
@@ -55,9 +61,16 @@ AliJetFlowTools::AliJetFlowTools() :
     fDetectorResponse   (0x0),
     fBeta               (.001),
     fBetaPerDOF         (.0005),
-    fAvoidRoundingError (kFALSE),
+    fAvoidRoundingError (kTRUE),
+    fUnfoldingAlgorithm (kChi2),
+    fPrior              (kPriorMeasured),
     fBinsTrue           (0x0),
     fBinsRec            (0x0),
+    fSVDDraw            (3),
+    fIterMin            (3),
+    fIterMax            (7),
+    fSVDToy             (kTRUE),
+    fJetRadius          (0.3),
     fDeltaPtDeltaPhi    (0x0),
     fJetPtDeltaPhi      (0x0),
     fSpectrumIn         (0x0),
@@ -126,6 +139,10 @@ void AliJetFlowTools::Make() {
     TH2D* resizedResonseOut = ResizeYaxisTH2D(fullResponseRebinnedOut, fBinsTrue, fBinsRec, TString("out"));
     TH1D* kinematicEfficiencyIn  = resizedResonseIn->ProjectionX();
     TH1D* kinematicEfficiencyOut = resizedResonseOut->ProjectionX();
+    for(Int_t i(0); i < kinematicEfficiencyOut->GetXaxis()->GetNbins(); i++) {
+        kinematicEfficiencyIn->SetBinError(1+i, 0.);
+        kinematicEfficiencyIn->SetBinError(1+i, 0.);
+    }
 
     kinematicEfficiencyIn->SetNameTitle("kin_eff_IN","kin_eff_IN");
     kinematicEfficiencyOut->SetNameTitle("kin_eff_OUT", "kin_eff_OUT");
@@ -134,13 +151,32 @@ void AliJetFlowTools::Make() {
     fActiveDir->cd();                   // select active dir
     TDirectoryFile* dirIn = new TDirectoryFile(Form("InPlane___%s", fActiveString.Data()), Form("InPlane___%s", fActiveString.Data()));
     dirIn->cd();                        // select inplane subdir
-    Bool_t convergedIn = UnfoldSpectrum(       // do the inplane unfolding
-            resizedJetPtIn,
-            resizedResonseIn,
-            kinematicEfficiencyIn,
-            unfoldingTemplateIn,
-            fUnfoldedIn, 
-            TString("in"));
+    Bool_t convergedIn(kFALSE), convergedOut(kFALSE);
+    // select the unfolding method
+    switch (fUnfoldingAlgorithm) {
+        case kChi2 : {
+            convergedIn = UnfoldSpectrumChi2(       // do the inplane unfolding
+                resizedJetPtIn,
+                resizedResonseIn,
+                kinematicEfficiencyIn,
+                unfoldingTemplateIn,
+                fUnfoldedIn, 
+                TString("in"));
+        } break;
+        case kSVD : {
+            convergedIn = UnfoldSpectrumSVD(       // do the inplane unfolding
+                resizedJetPtIn,
+                resizedResonseIn,
+                kinematicEfficiencyIn,
+                unfoldingTemplateIn,
+                fUnfoldedIn, 
+                TString("in"));
+        } break;
+        default : {
+            printf(" > Selected unfolding method is not implemented yet ! \n");
+            return;
+        }
+    }
     fSpectrumIn->SetNameTitle("JetSpectrum", "Jet spectrum, in plane");
     fSpectrumIn->Write();
     fDptInDist->SetNameTitle("DeltaPt", "#delta p_{T} distribution, in plane");
@@ -160,13 +196,30 @@ void AliJetFlowTools::Make() {
     fActiveDir->cd();
     TDirectoryFile* dirOut = new TDirectoryFile(Form("OutOfPlane___%s", fActiveString.Data()), Form("OutOfPlane___%s", fActiveString.Data()));
     dirOut->cd();
-    Bool_t convergedOut = UnfoldSpectrum(
-            resizedJetPtOut,
-            resizedResonseOut,
-            kinematicEfficiencyOut,
-            unfoldingTemplateOut,
-            fUnfoldedOut,
-            TString("out"));
+    switch (fUnfoldingAlgorithm) {
+        case kChi2 : {
+            convergedOut = UnfoldSpectrumChi2(
+                resizedJetPtOut,
+                resizedResonseOut,
+                kinematicEfficiencyOut,
+                unfoldingTemplateOut,
+                fUnfoldedOut,
+                TString("out"));
+        } break;
+        case kSVD : {
+            convergedOut = UnfoldSpectrumSVD(
+                resizedJetPtOut,
+                resizedResonseOut,
+                kinematicEfficiencyOut,
+                unfoldingTemplateOut,
+                fUnfoldedOut,
+                TString("out"));
+        } break;
+        default : {
+            printf(" > Selected unfolding method is not implemented yet ! \n");
+            return;
+        }
+    }
     fSpectrumOut->SetNameTitle("JetSpectrum", "Jet spectrum, Out plane");
     fSpectrumOut->Write();
     fDptOutDist->SetNameTitle("DeltaPt", "#delta p_{T} distribution, Out plane");
@@ -183,8 +236,9 @@ void AliJetFlowTools::Make() {
     fDetectorResponse->SetNameTitle("DetectorResponse", "Detector response matrix");
     fDetectorResponse->Write();
     
+    // write general output histograms to file
     fActiveDir->cd();
-    TGraphErrors* ratio = GetRatio((TH1D*)fUnfoldedIn->Clone("hUnfolded_in"), (TH1D*)fUnfoldedOut->Clone("hUnfolded_out"));
+    TGraphErrors* ratio = GetRatio((TH1D*)fUnfoldedIn->Clone("unfoldedLocal_in"), (TH1D*)fUnfoldedOut->Clone("unfoldedLocal_out"));
     ratio->SetNameTitle("RatioInOutPlane", "Ratio in plane, out of plane jet spectrum");
     ratio->GetXaxis()->SetTitle("p_{T} [GeV/c]");
     ratio->GetYaxis()->SetTitle("yield IN / yield OUT");
@@ -207,7 +261,7 @@ void AliJetFlowTools::Make() {
     beta->Write();
 }
 //_____________________________________________________________________________
-Bool_t AliJetFlowTools::UnfoldSpectrum(
+Bool_t AliJetFlowTools::UnfoldSpectrumChi2(
         TH1D* resizedJetPt, 
         TH2D* resizedResonse,
         TH1D* kinematicEfficiency,
@@ -215,68 +269,201 @@ Bool_t AliJetFlowTools::UnfoldSpectrum(
         TH1D *&unfolded,
         TString suffix)
 {
+    // unfold the spectrum using chi2 minimization
+
     /* the following is inspired by Marta Verweij's unfolding twiki */
 
     Bool_t converged = kFALSE;
     // step 1) clone all input histograms
-    TH1D *fh1RawJetsCurrentOrig = (TH1D*)resizedJetPt->Clone(Form("fh1RawJetsCurrentOrig_%s", suffix.Data()));
+    TH1D *resizedJetPtLocal = (TH1D*)resizedJetPt->Clone(Form("resizedJetPtLocal_%s", suffix.Data()));
     // full response matrix and kinematic efficiency
-    TH2D* h2ResponseMatrixOrig = (TH2D*)resizedResonse->Clone(Form("h2ResponseMatrixOrig_%s", suffix.Data()));
-    TH1D* hEfficiency = (TH1D*)kinematicEfficiency->Clone(Form("hEfficiency_%s", suffix.Data()));
+    TH2D* resizedResponseLocal = (TH2D*)resizedResonse->Clone(Form("resizedResponseLocal_%s", suffix.Data()));
+    TH1D* kinematicEfficiencyLocal = (TH1D*)kinematicEfficiency->Clone(Form("kinematicEfficiencyLocal_%s", suffix.Data()));
     // the initial guess for the unfolded pt spectrum. 
     // equal to the folded spectrum, but different binning and ranges
-    TH1D *hUnfoldedOrig = (TH1D*)unfoldingTemplate->Clone(Form("hUnfoldedOrig_%s", suffix.Data()));
-    TH1D *hInitial = (TH1D*)hUnfoldedOrig->Clone(Form("hInitial_%s", suffix.Data()));
+    TH1D *unfoldingTemplateLocal = (TH1D*)unfoldingTemplate->Clone(Form("unfoldingTemplateLocal_%s", suffix.Data()));
+    TH1D *priorLocal = (TH1D*)unfoldingTemplateLocal->Clone(Form("priorLocal_%s", suffix.Data()));
     // 'bookkeeping' histograms, this is not input
-    TH2D *h2ResponseMatrix = (TH2D*)h2ResponseMatrixOrig->Clone(Form("h2ResponseMatrix_%s", suffix.Data()));
-    TH1D *hUnfolded = (TH1D*)hUnfoldedOrig->Clone(Form("hUnfolded_%s", suffix.Data()));
-    hUnfolded->Reset();
-    TH1D *fh1RawJetsCurrent = (TH1D*)fh1RawJetsCurrentOrig->Clone(Form("fh1RawJetsCurrent_%s", suffix.Data()));
+    TH2D *cachedResponseLocal = (TH2D*)resizedResponseLocal->Clone(Form("cachedResponseLocal_%s", suffix.Data()));
+    TH1D *unfoldedLocal = (TH1D*)unfoldingTemplateLocal->Clone(Form("unfoldedLocal_%s", suffix.Data()));
+    unfoldedLocal->Reset();
+    TH1D *cachedRawJetLocal = (TH1D*)resizedJetPtLocal->Clone(Form("cachedRawJetLocal_%s", suffix.Data()));
     // step 2) start the unfolding routine
     AliUnfolding::SetUnfoldingMethod(AliUnfolding::kChi2Minimization);
-    AliUnfolding::SetNbins(fh1RawJetsCurrent->GetNbinsX(), hUnfolded->GetNbinsX());
+    AliUnfolding::SetNbins(cachedRawJetLocal->GetNbinsX(), unfoldedLocal->GetNbinsX());
     AliUnfolding::SetChi2Regularization(AliUnfolding::kLogLog,fBeta);
     AliUnfolding::SetMinuitStepSize(1.);
     AliUnfolding::SetMinuitPrecision(1e-6);
     AliUnfolding::SetMinuitMaxIterations(100000);
     AliUnfolding::SetMinuitStrategy(2.);
     AliUnfolding::SetDebug(1);
-    //Unfolding loop starts here
-    Int_t iret = -1; Int_t niter = 0;
-    while(iret < 0 && niter < 100) {
-        if (niter > 0) hInitial = (TH1D*)hUnfolded->Clone(Form("hInitial_%s", suffix.Data()));
-        iret = AliUnfolding::Unfold(h2ResponseMatrix, hEfficiency,fh1RawJetsCurrent ,hInitial ,hUnfolded);
-        niter++;
+    // start the unfolding
+    Int_t status(-1), i(0);
+    while(status < 0 && i < 100) {
+        if (i > 0) priorLocal = (TH1D*)unfoldedLocal->Clone(Form("priorLocal_%s", suffix.Data()));
+        status = AliUnfolding::Unfold(cachedResponseLocal, kinematicEfficiencyLocal, cachedRawJetLocal, priorLocal, unfoldedLocal);
+        i++;
     }
-    Int_t errMat(gMinuit->fISW[1]);
-    if(iret==0 && errMat==3) {
+    Int_t errStatus(gMinuit->fISW[1]);
+    if(status == 0 && errStatus == 3) {
         TVirtualFitter *fitter(TVirtualFitter::GetFitter());
-        double arglist[1] = {0.};
+        Double_t arglist[1] = {0.};
         fitter->ExecuteCommand("SHOW COV", arglist, 1);
-        TMatrixD covmatrix(hUnfolded->GetNbinsX(),hUnfolded->GetNbinsX(),fitter->GetCovarianceMatrix());
-        TMatrixD *pearson((TMatrixD*)CalculatePearsonCoefficients(&covmatrix));
+        TMatrixD covarianceMatrixrix(unfoldedLocal->GetNbinsX(),unfoldedLocal->GetNbinsX(),fitter->GetCovarianceMatrix());
+        TMatrixD *pearson((TMatrixD*)CalculatePearsonCoefficients(&covarianceMatrixrix));
         TH2D *hPearson(new TH2D(*pearson));
-        hPearson->SetYTitle("bin number");
-        hPearson->SetXTitle("bin number");
         hPearson->SetNameTitle("PearsonCoefficients", Form("Pearson coefficients, %s plane", suffix.Data()));
-        hPearson->SetMinimum(-1.);
-        hPearson->SetMaximum(1.);
-        hPearson->GetZaxis()->SetLabelSize(0.06);
         hPearson->Write();
         converged = kTRUE;
     }  
-    AliAnaChargedJetResponseMaker *corr(new AliAnaChargedJetResponseMaker());
-    TH1D *hFolded(corr->MultiplyResponseGenerated(hUnfolded,h2ResponseMatrix,hEfficiency));
-    hFolded->SetNameTitle("RefoldedSpectrum", Form("Refolded jet spectrum, %s plane", suffix.Data()));
-    hFolded->Write();
-    hUnfolded->SetNameTitle("UnfoldedSpectrum", Form("Unfolded jet spectrum, %s plane", suffix.Data()));
-    hUnfolded->Write();
-    unfolded = hUnfolded;
-    TGraphErrors* ratio(GetRatio(hFolded,fh1RawJetsCurrent, kTRUE, fBinsTrue->At(0), fBinsTrue->At(fBinsTrue->GetSize()-1)));
+    AliAnaChargedJetResponseMaker *chargedJetResponseMaker(new AliAnaChargedJetResponseMaker());
+    TH1D *foldedLocal(chargedJetResponseMaker->MultiplyResponseGenerated(unfoldedLocal,cachedResponseLocal,kinematicEfficiencyLocal));
+    foldedLocal->SetNameTitle("RefoldedSpectrum", Form("Refolded jet spectrum, %s plane", suffix.Data()));
+    foldedLocal->Write();
+    unfoldedLocal->SetNameTitle("UnfoldedSpectrum", Form("Unfolded jet spectrum, %s plane", suffix.Data()));
+    unfoldedLocal->Write();
+    unfolded = unfoldedLocal;
+    TGraphErrors* ratio(GetRatio(foldedLocal,cachedRawJetLocal, kTRUE, fBinsTrue->At(0), fBinsTrue->At(fBinsTrue->GetSize()-1)));
     ratio->SetNameTitle("RatioRefoldedMeasured", Form("Ratio refolded and measured spectrum %s plane", suffix.Data()));
     ratio->Write();
     
     return converged;
+}
+//_____________________________________________________________________________
+Bool_t AliJetFlowTools::UnfoldSpectrumSVD(
+        TH1D* resizedJetPt, 
+        TH2D* resizedResonse,
+        TH1D* kinematicEfficiency,
+        TH1D* unfoldingTemplate,
+        TH1D *&unfolded,
+        TString suffix)
+{
+    // use SVD (singular value decomposition) method to unfold spectra
+    
+    /* the following is inspired by Marta Verweij's unfolding twiki */
+
+    // 1) use the chi2 method to get a prior for unfolding (the other prior is the measured spectrum)
+    TDirectoryFile* dirOut = new TDirectoryFile(Form("Prior_%s___%s", suffix.Data(), fActiveString.Data()), Form("Prior_%s___%s", suffix.Data(), fActiveString.Data()));
+    dirOut->cd();
+    if(! UnfoldSpectrumChi2(
+                resizedJetPt,
+                resizedResonse,
+                kinematicEfficiency,
+                unfoldingTemplate,
+                unfolded,
+                TString(Form("prior_%s", suffix.Data()))) ) return kFALSE;
+    (!strcmp(suffix.Data(), "in")) ? fActiveDir->cd(Form("InPlane___%s", fActiveString.Data())) :fActiveDir->cd(Form("OutOfPlane___%s", fActiveString.Data()));
+    // 2) setup all the necessary input for the unfolding routine
+    TH1D *unfoldedLocalChi2((TH1D*)unfolded->Clone(Form("chi2priorUnfolded_%s", suffix.Data())));
+    TH1D *foldedLocalChi2((TH1D*)resizedJetPt->Clone(Form("chi2priorFolded_%s", suffix.Data())));
+    TH1D *cachedRawJetLocal((TH1D*)resizedJetPt->Clone(Form("jets_%s", suffix.Data())));
+    TH1D *cachedRawJetLocalCoarse((TH1D*)unfoldingTemplate->Clone(Form("unfoldingTemplate_%s", suffix.Data())));
+    TH1D *cachedRawJetLocalCoarseOrig((TH1D*)cachedRawJetLocalCoarse->Clone(Form("cachedRawJetLocalCoarseOrig_%s", suffix.Data())));
+    TH2D *cachedResponseLocal((TH2D*)resizedResonse->Clone(Form("cachedResponseLocal_%s", suffix.Data())));
+    TH2D *cachedResponseLocalNorm((TH2D*)resizedResonse->Clone(Form("cachedResponseLocalNorm_%s", suffix.Data())));
+    TH1D *kinematicEfficiencyLocal((TH1D*)kinematicEfficiency->Clone(Form("kinematicEfficiency_%s", suffix.Data())));
+    // place holder histos
+    TH1 *unfoldedLocalSVDPriorMeas[fIterMax];
+    TH1 *foldedLocalSVDPriorMeas[fIterMax];
+    TH2 *pearsonSVDPriorMeas[fIterMax];
+    TH1 *unfoldedLocalSVDPriorChi2[fIterMax];
+    TH1 *foldedLocalSVDPriorChi2[fIterMax];
+    TH2 *hPearsonSVDPriorChi2[fIterMax];
+    // 3) configure routine
+    RooUnfold::ErrorTreatment errorTreatment = (fSVDToy) ? RooUnfold::kCovToy : RooUnfold::kCovariance;
+    // measured prior: use fit for where the histogram is sparsely filled 
+    TF1 *fPower = new TF1("fPower","[0]*TMath::Power(x,-([1]))",0.,200.);
+    cachedRawJetLocalCoarse->Fit(fPower,"","",60.,110.);
+    for(Int_t i(0); i < cachedRawJetLocalCoarse->GetNbinsX(); i++) {
+        if(cachedRawJetLocalCoarse->GetBinCenter(i) > 100.) {     // from this pt value use extrapolation
+            cachedRawJetLocalCoarse->SetBinContent(i,fPower->Integral(cachedRawJetLocalCoarse->GetXaxis()->GetBinLowEdge(i),cachedRawJetLocalCoarse->GetXaxis()->GetBinUpEdge(i))/cachedRawJetLocalCoarse->GetXaxis()->GetBinWidth(i));
+        }
+    }
+    cachedRawJetLocalCoarseOrig->Write();
+    fPower->Write();
+
+    AliAnaChargedJetResponseMaker *chargedJetResponseMaker = new AliAnaChargedJetResponseMaker();
+    // FIXME transpose runs into problems with non-square matrix,needs to  be fixed
+    TH2 *responseMatrixLocalTranspose(chargedJetResponseMaker->GetTransposeResponsMatrix(cachedResponseLocal));
+    TH2 *responseMatrixLocalTransposeNorm(chargedJetResponseMaker->GetTransposeResponsMatrix(cachedResponseLocalNorm));
+    TH2 *responseMatrixLocalTransposePrior((TH2*)responseMatrixLocalTranspose->Clone("responseMatrixLocalTransposePrior"));
+    responseMatrixLocalTransposePrior = chargedJetResponseMaker->NormalizeResponsMatrixYaxisWithPrior(responseMatrixLocalTransposePrior, cachedRawJetLocalCoarse);
+    TH2 *responseMatrixLocalTransposeNormPrior((TH2*)responseMatrixLocalTransposeNorm->Clone("responseMatrixLocalTransposeNormPrior"));
+    responseMatrixLocalTransposeNormPrior = chargedJetResponseMaker->NormalizeResponsMatrixYaxisWithPrior(responseMatrixLocalTransposeNormPrior, cachedRawJetLocalCoarse);
+    TH2 *responseMatrixLocalTransposePriorChi2((TH2*)responseMatrixLocalTranspose->Clone("responseMatrixLocalTransposePriorChi2"));
+    responseMatrixLocalTransposePriorChi2 = chargedJetResponseMaker->NormalizeResponsMatrixYaxisWithPrior(responseMatrixLocalTransposePriorChi2, unfoldedLocalChi2);
+
+    // reaponse for chi2
+    RooUnfoldResponse responseChi2(0,0,responseMatrixLocalTransposePriorChi2,"respCombinedChi2","respCombinedChi2");
+    // response for SVD unfolding
+    RooUnfoldResponse responseSVDMeas(0,0,responseMatrixLocalTransposePrior,"respCombinedSVDMeas","respCombinedSVDMeas");
+    RooUnfoldResponse responseSVDChi2(0,0,responseMatrixLocalTransposePriorChi2,"respCombinedSVDChi2","respCombinedSVDChi2");
+    TH2 *h2ResponseRooUnfold = responseSVDMeas.Hresponse();
+    h2ResponseRooUnfold->Write(); 
+
+    // 4) actualy unfolding loop
+    RooUnfoldSvd* unfoldSVD(0x0);
+    for(Int_t i(fIterMin); i < fIterMax; i++) {
+        unfoldSVD = new RooUnfoldSvd(&responseSVDMeas, cachedRawJetLocal, i);
+        unfoldedLocalSVDPriorMeas[i-1] = (TH1D*)unfoldSVD->Hreco(errorTreatment);
+        TMatrixD covarianceMatrix = unfoldSVD->Ereco(errorTreatment);
+        TMatrixD *pearson = (TMatrixD*)CalculatePearsonCoefficients(&covarianceMatrix);
+        if(pearson) { 
+            pearsonSVDPriorMeas[i-1] = new TH2D(*pearson);
+            pearsonSVDPriorMeas[i-1]->SetNameTitle("pearsonSVDPriorMeas[i-1]", Form("Meani=%d",i));
+            pearsonSVDPriorMeas[i-1]->Write();
+        } 
+        unfoldedLocalSVDPriorMeas[i-1]->Divide(kinematicEfficiencyLocal);
+        foldedLocalSVDPriorMeas[i-1] = chargedJetResponseMaker->MultiplyResponseGenerated(unfoldedLocalSVDPriorMeas[i-1],cachedResponseLocalNorm,kinematicEfficiencyLocal);    
+        //Chi2 as prior
+        RooUnfoldSvd unfoldSVDChi2(&responseSVDChi2, cachedRawJetLocal, i);
+        unfoldedLocalSVDPriorChi2[i-1] = (TH1D*) unfoldSVDChi2.Hreco(errorTreatment);
+        foldedLocalSVDPriorChi2[i-1] = responseSVDChi2.ApplyToTruth(unfoldedLocalSVDPriorChi2[i-1]);
+        covarianceMatrix = unfoldSVD->Ereco(errorTreatment);
+        pearson = (TMatrixD*)CalculatePearsonCoefficients(&covarianceMatrix);
+        if(pearson) {
+            hPearsonSVDPriorChi2[i-1] = new TH2D(*pearson);
+            hPearsonSVDPriorChi2[i-1]->SetNameTitle("hPearsonSVDPriorChi2[i-1]", Form("Chi2i=%d",i));
+            hPearsonSVDPriorChi2[i-1]->Write();
+        }
+        unfoldedLocalSVDPriorChi2[i-1]->Divide(kinematicEfficiencyLocal);
+    }
+    TSVDUnfold* svdUnfold(unfoldSVD->Impl());
+    TH1* hSVal(svdUnfold->GetSV());
+    TH1D* hdi(svdUnfold->GetD());
+    hSVal->SetXTitle("singular values");
+    hSVal->Write();
+    hdi->SetXTitle("|d_{i}^{kreg}|");
+    hdi->Write();
+    if(pearsonSVDPriorMeas[fSVDDraw-1]) {
+        pearsonSVDPriorMeas[fSVDDraw-1]->SetNameTitle("pearsonSVDPriorMeas", "pearsonSVDPriorMeas");
+        pearsonSVDPriorMeas[fSVDDraw-1]->Write();
+    } 
+    cachedRawJetLocal->Write();
+    unfoldedLocalSVDPriorMeas[fSVDDraw-1] ->Write();
+    foldedLocalSVDPriorMeas[fSVDDraw-1]->Write();
+    foldedLocalChi2->Write();
+    for(Int_t i(fIterMin); i < fIterMax; i++) {
+        GetRatio(unfoldedLocalSVDPriorMeas[i-1],unfoldedLocalChi2, TString(Form("SVDoverChi2_%i", i)))->Write();
+        unfoldedLocalSVDPriorMeas[i-1]->Write(Form("unfoldedLocalSVDPriorMeasKReg%d",i));
+        foldedLocalSVDPriorMeas[i-1]->Write(Form("foldedLocalSVDPriorMeasKReg%d",i));
+        if(pearsonSVDPriorMeas[i-1]) pearsonSVDPriorMeas[i-1]->Write(Form("pearsonSVDPriorMeasKReg%d",i));
+        unfoldedLocalSVDPriorChi2[i-1]->Write(Form("unfoldedLocalSVDPriorChi2KReg%d",i));
+        if(hPearsonSVDPriorChi2[i-1]) hPearsonSVDPriorChi2[i-1]->Write(Form("hPearsonSVDPriorChi2KReg%d",i));
+        foldedLocalSVDPriorChi2[i-1]->Write(Form("foldedLocalSVDPriorChi2KReg%d",i));
+    }
+    unfoldedLocalChi2->Write();
+    switch (fPrior) {
+        case  kPriorMeasured : {
+            unfolded = (TH1D*)unfoldedLocalSVDPriorMeas[fSVDDraw-1];
+            break;
+        }
+        case kPriorChi2 : {
+            unfolded = (TH1D*)unfoldedLocalSVDPriorChi2[fSVDDraw-1]; 
+            break;
+        }
+    }
+    return (unfolded) ? kTRUE : kFALSE;
 }
 //_____________________________________________________________________________
 Bool_t AliJetFlowTools::PrepareForUnfolding()
@@ -562,9 +749,8 @@ TH2D* AliJetFlowTools::MatrixMultiplicationTH2D(TH2D* A, TH2D* B, TString name) 
     for(Int_t i(0); i < aX; i++) {      // x coordinate of target matrix
         for(Int_t j(0); j < aY; j++) {  // y coordinate of target matrix
 
-            // matrix multiplications are ugly by definition. 
-            // the thing to keep in mind: the coordinate of the target matrix is
-            // (x, y) is the dot product of row x of matrix A with column y of matrix B
+            // the coordinate of the target matrix (x, y) is the dot
+            // product of row x of matrix A with column y of matrix B
             // so in this nexted loop, we need to fill point i, j of the target matrix
             // with the dot product of 
             // matrix A) row i \cdotp matrix B) column j
@@ -588,25 +774,26 @@ TH1D* AliJetFlowTools::NormalizeTH1D(TH1D* histo, Double_t scale) {
      return histo;
 }
 //_____________________________________________________________________________
-TMatrixD* AliJetFlowTools::CalculatePearsonCoefficients(TMatrixD* covmat) 
+TMatrixD* AliJetFlowTools::CalculatePearsonCoefficients(TMatrixD* covarianceMatrix) 
 {
     // Calculate pearson coefficients from covariance matrix
-    TMatrixD *pearsonCoefs((TMatrixD*)covmat->Clone("pearsonCoefs"));
-    Int_t nrows(covmat->GetNrows()), ncols (covmat->GetNcols());
+    TMatrixD *pearsonCoefficients((TMatrixD*)covarianceMatrix->Clone("pearsonCoefficients"));
+    Int_t nrows(covarianceMatrix->GetNrows()), ncols(covarianceMatrix->GetNcols());
     Double_t pearson(0.);
     if(nrows==0 && ncols==0) return 0x0;
-    for(int row = 0; row<nrows; row++) {
+    for(int row = 0; row < nrows; row++) {
         for(int col = 0; col<ncols; col++) {
-        if((*covmat)(row,row)!=0. && (*covmat)(col,col)!=0.) pearson = (*covmat)(row,col)/TMath::Sqrt((*covmat)(row,row)*(*covmat)(col,col));
-        (*pearsonCoefs)(row,col) = pearson;
+        if((*covarianceMatrix)(row,row)!=0. && (*covarianceMatrix)(col,col)!=0.) pearson = (*covarianceMatrix)(row,col)/TMath::Sqrt((*covarianceMatrix)(row,row)*(*covarianceMatrix)(col,col));
+        (*pearsonCoefficients)(row,col) = pearson;
         }
     }
-    return pearsonCoefs;
+    return pearsonCoefficients;
 }
 //_____________________________________________________________________________
-TGraphErrors* AliJetFlowTools::GetRatio(TH1 *h1, TH1* h2, Bool_t appendFit, Double_t low, Double_t up) 
+TGraphErrors* AliJetFlowTools::GetRatio(TH1 *h1, TH1* h2, TString name, Bool_t appendFit, Double_t low, Double_t up) 
 {
     TGraphErrors *gr(new TGraphErrors());
+    if(name && name.Length() > 1) gr->SetNameTitle(name.Data(), name.Data());
     Int_t j(0);
     Float_t binCent(0.), ratio(0.), error2(0.), binWidth(0.);
     for(Int_t i(1); i < h1->GetNbinsX(); i++) {
