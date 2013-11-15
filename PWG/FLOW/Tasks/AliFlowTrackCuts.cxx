@@ -4184,7 +4184,7 @@ Bool_t AliFlowTrackCuts::PassesV0cuts(Int_t id)
     // printf ( " tile %i and weight %.2f \n", id, fTrackWeight);
   }
 
-  if (fLinearizeVZEROresponse)
+  if (fLinearizeVZEROresponse && id < 64)
   {
     //this is only needed in pass1 of LHC10h
     Float_t multV0[fgkNumberOfV0tracks];
