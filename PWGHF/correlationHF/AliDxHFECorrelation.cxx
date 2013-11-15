@@ -76,7 +76,7 @@ AliDxHFECorrelation::AliDxHFECorrelation(const char* name)
   , fTriggerParticleType(kD)
   , fUseTrackEfficiency(kFALSE)
   , fUseD0Efficiency(kFALSE)
-  , fRunFullMode(kTRUE)
+  , fRunMode(kReducedMode)
 {
   // default constructor
   // 
@@ -273,12 +273,12 @@ int AliDxHFECorrelation::ParseArguments(const char* arguments)
       continue;
     }
     if (argument.BeginsWith("reducedMode") || argument.BeginsWith("reducedmode")){
-      fRunFullMode=false;
+      fRunMode=kReducedMode;
       AliInfo("Running in Reduced mode");
       continue;
     }
     if (argument.BeginsWith("FullMode") || argument.BeginsWith("fullmode")){
-      fRunFullMode=true;
+      fRunMode=kFullMode;
       AliInfo("Running in Full mode");
       continue;
     }
@@ -338,13 +338,13 @@ THnSparse* AliDxHFECorrelation::DefineTHnSparse()
   TString name;
   name.Form("%s info", GetName());
 
-  if(RunFullMode()){
+  if(fRunMode==kFullMode){
 
     // 			                        0           1       2      3         4     5      6   
     // 			                      D0invmass   PtD0    PhiD0  PtbinD0    Pte   dphi   deta   
-    int         binsEventdphi[sizeEventdphi] = {   200,      1000,   100,    21,     1000,   100,    100};
-    double      minEventdphi [sizeEventdphi] = { 1.5648,      0,       0,     0,       0,  fMinPhi, -2};
-    double      maxEventdphi [sizeEventdphi] = { 2.1648,     100,   2*pi,    20,      100, fMaxPhi, 2};
+    int         binsEventdphi[sizeEventdphi] = {   200,      500,   100,    21,     100,   64,    100};
+    double      minEventdphi [sizeEventdphi] = { 1.5648,      0,      0,     0,       0,  fMinPhi, -2};
+    double      maxEventdphi [sizeEventdphi] = { 2.1648,     50,   2*pi,    20,      10,  fMaxPhi,  2};
     const char* nameEventdphi[sizeEventdphi] = {
       "D0InvMass",
       "PtD0",

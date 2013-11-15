@@ -59,6 +59,7 @@ AliDxHFECorrelationMC::AliDxHFECorrelationMC(const char* name)
   , fMCEventType(0)
   , fStoreOriginEl(kAll)
   , fStoreOriginD(kAll)
+  , fRunMode(kReducedModeFullMCInfo)
 {
   // default constructor
   // 
@@ -78,14 +79,14 @@ THnSparse* AliDxHFECorrelationMC::DefineTHnSparse()
 {
   //
   // Defines the THnSparse. 
-  if(RunFullMode())
+  if(fRunMode==kFullMode)
     AliDebug(1, "Creating Full Corr THnSparse");
   else
     AliDebug(1, "Creating Reduced Corr THnSparse");
   // here is the only place to change the dimension
   static const int sizeEventdphi = 10;  
   static const int sizeEventdphiReduced = 5;  
-  InitTHnSparseArray(sizeEventdphi);
+  static const int sizeEventdphiRedMC = 7;  
   const double pi=TMath::Pi();
   Double_t minPhi=GetMinPhi();
   Double_t maxPhi=GetMaxPhi();
@@ -95,12 +96,14 @@ THnSparse* AliDxHFECorrelationMC::DefineTHnSparse()
   TString name;
   name.Form("%s info", GetName());
 
-  if(RunFullMode()){
-    // 			                        0        1     2      3      4     5       6      7    8      9
-    // 			                      D0invmass  PtD0 PhiD0 PtbinD0 Pte  dphi    dEta OrigD0 origEl process
-    int         binsEventdphi[sizeEventdphi] = {   200,    100,  100,  21,   100, 100,     100,   10,     14,  100 };
-    double      minEventdphi [sizeEventdphi] = { 1.5648,     0,    0,   0,     0 , minPhi, -0.9, -1.5,   -1.5, -0.5 };
-    double      maxEventdphi [sizeEventdphi] = { 2.1648,    50, 2*pi,  20,    10, maxPhi,  0.9,  8.5,   12.5, 99.5 };
+  if(fRunMode==kFullMode){
+    InitTHnSparseArray(sizeEventdphi);
+
+    // 			                        0        1     2      3      4      5       6      7    8      9
+    // 			                      D0invmass  PtD0 PhiD0 PtbinD0 Pte   dphi    dEta OrigD0 origEl process
+    int         binsEventdphi[sizeEventdphi] = {   200,    100,  100,  21,   100,  64,     100,   10,     14,  100 };
+    double      minEventdphi [sizeEventdphi] = { 1.5648,     0,    0,   0,     0, minPhi, -2.0, -1.5,   -1.5, -0.5 };
+    double      maxEventdphi [sizeEventdphi] = { 2.1648,    50, 2*pi,  20,    10, maxPhi,  2.0,  8.5,   12.5, 99.5 };
     const char* nameEventdphi[sizeEventdphi] = {
       "D0InvMass",
       "PtD0",
@@ -115,12 +118,31 @@ THnSparse* AliDxHFECorrelationMC::DefineTHnSparse()
     };
     thn=(THnSparse*)CreateControlTHnSparse(name,sizeEventdphi,binsEventdphi,minEventdphi,maxEventdphi,nameEventdphi);
   }
-  else{//Could also here consider removing process
+  else if(fRunMode==kReducedModeFullMCInfo){
+    InitTHnSparseArray(sizeEventdphiRedMC);
+    // 			                                       0        1    2     3      4      5       6     
+    // 			                                  D0invmass  PtD0   Pte   dphi    dEta OrigD0 origEl
+    int         binsEventdphiRedMC[sizeEventdphiRedMC] = {   200,    100,   100,  64,     100,   10,     14 };
+    double      minEventdphiRedMC [sizeEventdphiRedMC] = { 1.5648,     0,     0, minPhi, -2.0, -1.5,   -1.5 };
+    double      maxEventdphiRedMC [sizeEventdphiRedMC] = { 2.1648,    50,    10, maxPhi,  2.0,  8.5,   12.5 };
+    const char* nameEventdphiRedMC[sizeEventdphiRedMC] = {
+      "D0InvMass",
+      "PtD0",
+      "PtEl",
+      "#Delta#Phi",
+      "#Delta#eta", 
+      "Origin D0", 
+      "Origin Electron",
+    };
+    thn=(THnSparse*)CreateControlTHnSparse(name,sizeEventdphiRedMC,binsEventdphiRedMC,minEventdphiRedMC,maxEventdphiRedMC,nameEventdphiRedMC);
+  }
+  else{
+    InitTHnSparseArray(sizeEventdphiReduced);
     //           			                    0        1      2    3      4  
     // 		                	                 D0invmass  PtD0  Pte   dphi    dEta
-    int         binsEventdphiRed[sizeEventdphiReduced] = {   200,    100,  21, 100,     100 };
-    double      minEventdphiRed [sizeEventdphiReduced] = { 1.5648,     0,   0, minPhi, -0.9 };
-    double      maxEventdphiRed [sizeEventdphiReduced] = { 2.1648,    50,  20, maxPhi,  0.9 };
+    int         binsEventdphiRed[sizeEventdphiReduced] = {   200,    100,  100,   64,    100 };
+    double      minEventdphiRed [sizeEventdphiReduced] = { 1.5648,     0,   0, minPhi, -2.0 };
+    double      maxEventdphiRed [sizeEventdphiReduced] = { 2.1648,    50,  10, maxPhi,  2.0 };
     const char* nameEventdphiRed[sizeEventdphiReduced] = {
       "D0InvMass",
       "PtD0",
@@ -218,20 +240,20 @@ int AliDxHFECorrelationMC::FillParticleProperties(AliVParticle* tr, AliVParticle
   if(AliDxHFECorrelation::GetTriggerParticleType()==kD){
     data[i++]=ptrigger->GetInvMass();
     data[i++]=ptrigger->Pt();
-    if(RunFullMode())data[i++]=ptrigger->Phi();
-    if(RunFullMode()) {data[i++]=ptrigger->GetPtBin(); }
+    if(fRunMode==kFullMode)data[i++]=ptrigger->Phi();
+    if(fRunMode==kFullMode) {data[i++]=ptrigger->GetPtBin(); }
     data[i++]=assoc->Pt();
   } 
   else{
     data[i++]=assoc->GetInvMass();
     data[i++]=assoc->Pt();
     data[i++]=assoc->Phi();
-    if(RunFullMode()) data[i++]=assoc->GetPtBin(); 
+    if(fRunMode==kFullMode) data[i++]=assoc->GetPtBin(); 
     data[i++]=ptrigger->Pt();
   }
   data[i++]=AliDxHFECorrelation::GetDeltaPhi();
   data[i++]=AliDxHFECorrelation::GetDeltaEta();
-  if(RunFullMode()){
+  if(fRunMode==kFullMode || fRunMode==kReducedModeFullMCInfo){
     if(AliDxHFECorrelation::GetTriggerParticleType()==kD){
       data[i++]=ptrigger->GetOriginMother();
       data[i++]=assoc->GetOriginMother();
@@ -241,7 +263,7 @@ int AliDxHFECorrelationMC::FillParticleProperties(AliVParticle* tr, AliVParticle
       data[i++]=ptrigger->GetOriginMother();
     }
   }
-  if(RunFullMode()) data[i++]=fMCEventType;
+  if(fRunMode==kFullMode ) data[i++]=fMCEventType;
   return i;
 }
 
@@ -310,6 +332,21 @@ int AliDxHFECorrelationMC::ParseArguments(const char* arguments)
       else if (argument.CompareTo("hadrons")==0){ fStoreOriginEl=kHadrons; AliInfo("Store electrons candidates from hadrons");}
       continue;
     }  
+    if (argument.BeginsWith("reducedMode") || argument.BeginsWith("reducedmode")){
+      fRunMode=kReducedMode;
+      AliInfo("Running in Reduced mode");
+      continue;
+    }
+    if (argument.BeginsWith("FullMode") || argument.BeginsWith("fullmode")){
+      fRunMode=kFullMode;
+      AliInfo("Running in Full mode");
+      continue;
+    }
+    if (argument.BeginsWith("reducedModewithMC") || argument.BeginsWith("reducedmodewithmc")){
+      fRunMode=kReducedModeFullMCInfo;
+      AliInfo("Running in Reduced mode with MC info stored as well");
+      continue;
+    }
 
     //    AliWarning(Form("unknown argument '%s'", argument.Data()));
     AliDxHFECorrelation::ParseArguments(argument);      

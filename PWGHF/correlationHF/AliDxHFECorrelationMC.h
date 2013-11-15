@@ -54,6 +54,13 @@ class AliDxHFECorrelationMC : public AliDxHFECorrelation {
     kHadrons=5
   };
 
+
+  enum{
+    kReducedMode=0,
+    kFullMode=1,
+    kReducedModeFullMCInfo=2
+  };
+
  protected:
 
  private:
@@ -65,6 +72,7 @@ class AliDxHFECorrelationMC : public AliDxHFECorrelation {
   int fMCEventType;  // Holds MC Event type, retrieved from MCHeader
   int fStoreOriginEl;// Which origin to store for electrons
   int fStoreOriginD; // Which origin to store for Ds
+  Int_t fRunMode;    // Which mode to run in (bigger thnsparse)
 
   ClassDef(AliDxHFECorrelationMC, 2)
 };
