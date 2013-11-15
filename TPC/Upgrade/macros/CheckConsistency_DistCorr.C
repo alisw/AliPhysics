@@ -190,7 +190,8 @@ void makeHistos(TString addToName) {
   //
   c2->cd(3);
   t->SetAlias("phiFix","-((phidc-phi)>4)*2*TMath::Pi()+((phidc-phi)<-4)*2*TMath::Pi()");
-  t->Draw("phidc-phi+phiFix","","");
+  t->SetAlias("phiRes","phidc-phi+phiFix");
+  t->Draw("phiRes","","");
   //
   c2->cd(4);
   t->Draw("(phidc*rdc)-(phi*r)","abs(phidc-phi)<1","");

@@ -112,7 +112,7 @@ void AnaDeltaTree(TString file, TString outFile="deltas_tree.root")
     if (pt<0.8) continue;
     
     Float_t resRphiRandom = resRphi*trackRes;
-    Float_t deviation     = trackY+resRphiRandom-pointY;
+    Float_t deviation     = pointY-(trackY+resRphiRandom);
     
     Double_t xx[4]={radius, trackPhi, trackZ ,deviation};
     hn->Fill(xx);
@@ -231,9 +231,9 @@ void AnaDeltaResiduals(TString fluctuationMap, TString averageMap, TString outFi
   AliTPCCorrectionLookupTable *corrAverage = (AliTPCCorrectionLookupTable*)fAverage.Get("map");
   fAverage.Close();
   
-  TObjArray *arrMaps = new TObjArray(2);
-  arrMaps->Add(corrAverage); // correction with the average Map
-  arrMaps->Add(corrFluct);   // distortion with the fluctuation Map
+//   TObjArray *arrMaps = new TObjArray(2);
+//   arrMaps->Add(corrAverage); // correction with the average Map
+//   arrMaps->Add(corrFluct);   // distortion with the fluctuation Map
   
   // create the composed correction
   // if the weight are set to +1 and -1, the first map will be responsible for the distortions
@@ -241,12 +241,14 @@ void AnaDeltaResiduals(TString fluctuationMap, TString averageMap, TString outFi
   // !!!!! In AliTPCComposedCorrection::GetDistortion MakeInverseIterator is called !!!!
   // for this reason we have to add the maps in the wrong order
   
-  AliTPCComposedCorrection *residualDistortion = new AliTPCComposedCorrection(arrMaps, AliTPCComposedCorrection::kQueueResidual);
+//   AliTPCComposedCorrection *residualDistortion = new AliTPCComposedCorrection(arrMaps, AliTPCComposedCorrection::kQueueResidual);
   Float_t dummy=0;
-  TVectorD weights(2);
-  weights(0)=+1.;
-  weights(1)=-AliToyMCEventGenerator::GetSCScalingFactor(corrFluct, corrAverage,dummy);
-  residualDistortion->SetWeights(&weights);
+//   TVectorD weights(2);
+//   weights(0)=+1.;
+//   weights(1)=-AliToyMCEventGenerator::GetSCScalingFactor(corrFluct, corrAverage,dummy);
+//   residualDistortion->SetWeights(&weights);
+
+  corrAverage->SetCorrScaleFactor(AliToyMCEventGenerator::GetSCScalingFactor(corrFluct, corrAverage,dummy));
 
   TVectorD *vR   = MakeLinBinning(10,86.,250.);
   TVectorD *vPhi = MakeLinBinning(18*8,0.,2*TMath::Pi());
@@ -272,9 +274,15 @@ void AnaDeltaResiduals(TString fluctuationMap, TString averageMap, TString outFi
         Float_t x=ir*(Float_t)TMath::Cos(iphi);
         Float_t y=ir*(Float_t)TMath::Sin(iphi);
         Float_t x3[3]    = {x,y,iz};
+        Float_t x3dc[3]    = {x,y,iz};
         Float_t dx3[3]   = {0.,0.,0.};
-        residualDistortion->GetDistortion(x3,roc,dx3);
-
+//         residualDistortion->GetDistortion(x3,roc,dx3);
+        corrFluct->DistortPoint(x3dc,roc);
+        corrAverage->CorrectPoint(x3dc,roc);
+        dx3[0]=x3dc[0]-x3[0];
+        dx3[1]=x3dc[1]-x3[1];
+        dx3[2]=x3dc[2]-x3[2];
+        
         Double_t ddx3[3]={dx3[0], dx3[1], dx3[2]};
         vv.Global2LocalPosition(ddx3,iphi);
 
@@ -298,7 +306,7 @@ void AnaDeltaResiduals(TString fluctuationMap, TString averageMap, TString outFi
   delete vPhi;
   delete vZ;
   
-  delete residualDistortion;
+//   delete residualDistortion;
 }
 
 void DumpHn(THn *hn, TTreeSRedirector &stream)
