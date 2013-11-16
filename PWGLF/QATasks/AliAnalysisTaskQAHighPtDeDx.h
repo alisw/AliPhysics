@@ -30,11 +30,18 @@
 class AliAnalysisTaskQAHighPtDeDx : public AliAnalysisTaskSE {
  public:
  
-  //AliAnalysisTaskQAHighPtDeDx();
-  //AliAnalysisTaskQAHighPtDeDx(const char *name);
-  //virtual ~AliAnalysisTaskQAHighPtDeDx();
-  AliAnalysisTaskQAHighPtDeDx(const char *name="<default name>");
-  virtual ~AliAnalysisTaskQAHighPtDeDx() { /*if (fOutputList) delete fOutputList;*/}//;
+
+  AliAnalysisTaskQAHighPtDeDx();
+  AliAnalysisTaskQAHighPtDeDx(const char *name);
+  virtual ~AliAnalysisTaskQAHighPtDeDx();
+
+
+
+
+
+
+  //AliAnalysisTaskQAHighPtDeDx(const char *name="<default name>");
+  //virtual ~AliAnalysisTaskQAHighPtDeDx() { /*if (fOutputList) delete fOutputList;*/}//;
 
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -157,15 +164,23 @@ class AliAnalysisTaskQAHighPtDeDx : public AliAnalysisTaskSE {
   TProfile *pPlateauVsPhi[9];
 
   TH2D* histPiV0[9];
+  TH1D* histpPiV0[9];
+
   TH2D* histPV0[9];
+  TH1D* histpPV0[9];
 
   TH2D* histAllCh[9];
+
   TH2D* histPiTof[9];
+  TH1D* histpPiTof[9];
+
   TH2D* histEV0[9];
+
   TH1D* hMcIn[7][9];
   TH1D* hMcOut[7][9];
 
-
+  AliAnalysisTaskQAHighPtDeDx(const AliAnalysisTaskQAHighPtDeDx&);            // not implemented
+  AliAnalysisTaskQAHighPtDeDx& operator=(const AliAnalysisTaskQAHighPtDeDx&); // not implemented
 
   //TTree*        fTree;              //! Debug tree 
 

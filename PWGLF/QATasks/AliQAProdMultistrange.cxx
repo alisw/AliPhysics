@@ -358,7 +358,7 @@ void AliQAProdMultistrange::UserExec(Option_t *) {
   //Load the InputEvent and check, before any event selection	
   //---------------------------------------------------------
   Float_t  lPrimaryTrackMultiplicity = -1.;
-  AliCentrality* centrality;
+  AliCentrality* centrality = 0;
   if (fAnalysisType == "ESD") {
       lESDevent = dynamic_cast<AliESDEvent*>( InputEvent() );
       if (!lESDevent) {
