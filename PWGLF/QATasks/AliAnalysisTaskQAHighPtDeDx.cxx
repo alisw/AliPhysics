@@ -82,7 +82,7 @@ TF1* cutHigh = new TF1("StandardPhiCutHigh", "0.12/x+pi/18.0+0.035", 0, 50);
 Double_t DeDxMIPMin  = 30;
 Double_t DeDxMIPMax  = 65;
 const Int_t nHists = 9;
-
+Float_t centralityGlobal = -10;
 Int_t etaLow[nHists]  = {-8, -8, -6, -4, -2, 0, 2, 4, 6};
 Int_t etaHigh[nHists] = { 8, -6, -4, -2,  0, 2, 4, 6, 8};
 
@@ -92,6 +92,53 @@ Double_t deltaPiHigh = 100;
 const Char_t *Pid[7]={"Ch","Pion","Kaon","Proton","Electron","Muon","Oher"};
 ClassImp(AliAnalysisTaskQAHighPtDeDx)
 //_____________________________________________________________________________
+//AliAnalysisTaskQAHighPtDeDx::AliAnalysisTaskQAHighPtDeDx(const char *name):
+AliAnalysisTaskQAHighPtDeDx::AliAnalysisTaskQAHighPtDeDx():
+  AliAnalysisTaskSE(),
+  fESD(0x0),
+  fAOD(0x0),
+  fMC(0x0),
+  fMCStack(0x0),
+  fMCArray(0x0),
+  fTrackFilterGolden(0x0),
+  fTrackFilterTPC(0x0),
+  fCentEst("V0M"),
+  fAnalysisType("ESD"),
+  fAnalysisMC(kFALSE),
+  fAnalysisPbPb(kFALSE),
+  ftrigBit(0x0),
+  fRandom(0x0),
+  fPileUpRej(kFALSE),
+  fVtxCut(10.0),  
+  fEtaCut(0.9),  
+  fMinCent(0.0),
+  fMaxCent(100.0),
+  fStoreMcIn(kFALSE),//
+  fMcProcessType(-999),
+  fTriggeredEventMB(-999),
+  fVtxStatus(-999),
+  fZvtx(-999),
+  fZvtxMC(-999),
+  fRun(-999),
+  fEventId(-999),
+  fListOfObjects(0), 
+  fEvents(0x0), fVtx(0x0), fVtxMC(0x0), fVtxBeforeCuts(0x0), fVtxAfterCuts(0x0),
+  fn1(0x0),
+  fcent(0x0),
+  hMIPVsEta(0x0),
+  pMIPVsEta(0x0),
+  hMIPVsEtaV0s(0x0),
+  pMIPVsEtaV0s(0x0),
+  hPlateauVsEta(0x0),
+  pPlateauVsEta(0x0),
+  hPhi(0x0)
+
+
+{
+  //default constructor
+}
+
+
 AliAnalysisTaskQAHighPtDeDx::AliAnalysisTaskQAHighPtDeDx(const char *name):
   AliAnalysisTaskSE(name),
   fESD(0x0),
@@ -144,9 +191,12 @@ AliAnalysisTaskQAHighPtDeDx::AliAnalysisTaskQAHighPtDeDx(const char *name):
     hPlateauVsPhi[i]=0;//TH2D, dE/dx vs Phi, electrons 0.4<p<0.6 GeV/c
     pPlateauVsPhi[i]=0;//TProfile, dE/dx vs Phi, electrons 0.4<p<0.6 GeV/c
     histPiV0[i]=0;//TH2D, dE/dx vs p, pi id by V0s
+    histpPiV0[i]=0;//TH1D, pi id by V0s
     histPV0[i]=0;// TH2D, dE/dx vs p, p id by V0s
+    histpPV0[i]=0;// TH1D, p id by V0s
     histAllCh[i]=0;//TH2D, dE/dx vs p for all charged particles
     histPiTof[i]=0;//TH2D, dE/dx vs p for a "clean" sample of pions, beta>1
+    histpPiTof[i]=0;//TH1D, for a "clean" sample of pions, beta>1
     histEV0[i]=0;
 
     for(Int_t pid=0;pid<7;++pid){
@@ -157,6 +207,23 @@ AliAnalysisTaskQAHighPtDeDx::AliAnalysisTaskQAHighPtDeDx(const char *name):
   }
   DefineOutput(1, TList::Class());//esto es nuevo
 }
+
+
+
+
+AliAnalysisTaskQAHighPtDeDx::~AliAnalysisTaskQAHighPtDeDx() {
+  //
+  // Destructor
+  //
+
+}
+
+
+
+
+
+
+
 
 //______________________________________________________________________________
 void AliAnalysisTaskQAHighPtDeDx::UserCreateOutputObjects()
@@ -265,16 +332,32 @@ void AliAnalysisTaskQAHighPtDeDx::UserCreateOutputObjects()
     fListOfObjects->Add(hMIPVsNch[i]);
     fListOfObjects->Add(pMIPVsNch[i]);
 
-
+    //two dimmesional distributions dE/dx vs p for secondary pions
     histPiV0[i]  = new TH2D(Form("histPiV0%s", ending[i]), "Pions id by V0", nPtBinsV0s, ptBinsV0s, nDeltaPiBins, deltaPiLow, deltaPiHigh);
     histPiV0[i]->Sumw2();
-    histPV0[i]   = new TH2D(Form("histPV0%s", ending[i]), "Protons id by V0", nPtBinsV0s, ptBinsV0s, nDeltaPiBins, deltaPiLow, deltaPiHigh);
-
     fListOfObjects->Add(histPiV0[i]);
+
+    histpPiV0[i]  = new TH1D(Form("histPiV01D%s", ending[i]), "Pions id by V0; #it{p} (GeV/#it{c}); counts", 200, 0, 20);
+    histpPiV0[i]->Sumw2();
+    fListOfObjects->Add(histpPiV0[i]);
+
+    //two dimmesional distributions dE/dx vs p for secondary protons
+    histPV0[i]   = new TH2D(Form("histPV0%s", ending[i]), "Protons id by V0", nPtBinsV0s, ptBinsV0s, nDeltaPiBins, deltaPiLow, deltaPiHigh);
+    histPV0[i]->Sumw2();
     fListOfObjects->Add(histPV0[i]);
 
+    histpPV0[i]  = new TH1D(Form("histPV01D%s", ending[i]), "Protons id by V0; #it{p} (GeV/#it{c}); counts", 200, 0, 20);
+    histpPV0[i]->Sumw2();
+    fListOfObjects->Add(histpPV0[i]);
+
+    //two dimmesional distributions dE/dx vs p for primary pions
     histPiTof[i] = new TH2D(Form("histPiTof%s", ending[i]), "all charged", nPtBinsV0s, ptBinsV0s, nDeltaPiBins, deltaPiLow, deltaPiHigh);
     histPiTof[i]->Sumw2();
+
+    histpPiTof[i]  = new TH1D(Form("histPiTof1D%s", ending[i]), "Protons id by V0; #it{p} (GeV/#it{c}); counts", 200, 0, 20);
+    histpPiTof[i]->Sumw2();
+    fListOfObjects->Add(histpPiTof[i]);
+
 
     histAllCh[i] = new TH2D(Form("histAllCh%s", ending[i]), "Pions id by TOF", nPtBinsV0s, ptBinsV0s, nDeltaPiBins, deltaPiLow, deltaPiHigh);
     histAllCh[i]->Sumw2();
@@ -527,7 +610,7 @@ void AliAnalysisTaskQAHighPtDeDx::UserExec(Option_t *)
       if(fAnalysisPbPb){
 	AliCentrality *centObject = fESD->GetCentrality();
 	centrality = centObject->GetCentralityPercentile(fCentEst);
-	
+	centralityGlobal = centrality;
 	if((centrality>fMaxCent)||(centrality<fMinCent))return;
       }
       fcent->Fill(centrality);
@@ -578,6 +661,9 @@ void AliAnalysisTaskQAHighPtDeDx::AnalyzeESD(AliESDEvent* esdEvent)
   if(esdEvent->GetHeader())
     fEventId = GetEventIdAsLong(esdEvent->GetHeader());
   
+  cout << "centrality=" << centralityGlobal << endl;
+
+
   Bool_t isPileup = esdEvent->IsPileupFromSPD();
   if(fPileUpRej)
     if(isPileup)
@@ -1140,7 +1226,7 @@ void AliAnalysisTaskQAHighPtDeDx::ProduceArrayTrksESD( AliESDEvent *ESDevent ){
 	  pMIPVsEta->Fill(eta,dedx);
 	}
       }
-      if( dedx > DeDxMIPMax+5 && dedx < 95 ){
+      if( dedx > DeDxMIPMax+1 && dedx < 95 ){
 	if(TMath::Abs(beta-1)<0.1){
 	  hPlateauVsEta->Fill(eta,dedx);
 	  pPlateauVsEta->Fill(eta,dedx); 
@@ -1161,9 +1247,11 @@ void AliAnalysisTaskQAHighPtDeDx::ProduceArrayTrksESD( AliESDEvent *ESDevent ){
       }
 
       histAllCh[nh]->Fill(momentum, dedx);
-      if(beta>1)
+      if(beta>1){
 	histPiTof[nh]->Fill(momentum, dedx);
-      
+      	histpPiTof[nh]->Fill(momentum);
+      }
+
       if( momentum <= 0.6 && momentum >= 0.4  ){//only p:0.4-0.6 GeV, pion MIP
 	//Fill  pion MIP, before calibration
 	if( dedx < DeDxMIPMax && dedx > DeDxMIPMin ){	  
@@ -1177,7 +1265,7 @@ void AliAnalysisTaskQAHighPtDeDx::ProduceArrayTrksESD( AliESDEvent *ESDevent ){
 	}
 	
 	//Fill electrons, before calibration
-	if( dedx > DeDxMIPMax+5 && dedx < 95 ){
+	if( dedx > DeDxMIPMax+1 && dedx < 95 ){
 	  if(TMath::Abs(beta-1)<0.1){
 	    hPlateauVsPhi[nh]->Fill(phi,dedx);
 	    pPlateauVsPhi[nh]->Fill(phi,dedx);
@@ -1321,7 +1409,7 @@ void AliAnalysisTaskQAHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent ){
 	  pMIPVsEta->Fill(eta,dedx);
 	}
       }
-      if( dedx > DeDxMIPMax+5 && dedx < 95 ){
+      if( dedx > DeDxMIPMax+1 && dedx < 95 ){
 	if(TMath::Abs(beta-1)<0.1){
 	  hPlateauVsEta->Fill(eta,dedx);
 	  pPlateauVsEta->Fill(eta,dedx); 
@@ -1342,9 +1430,11 @@ void AliAnalysisTaskQAHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent ){
       }
       
       histAllCh[nh]->Fill(momentum, dedx);
-      if(beta>1)
+      if(beta>1){
 	histPiTof[nh]->Fill(momentum, dedx);
-      
+      	histpPiTof[nh]->Fill(momentum);
+      }
+
       if( momentum <= 0.6 && momentum >= 0.4  ){//only p:0.4-0.6 GeV, pion MIP
 	//Fill  pion MIP, before calibration
 	if( dedx < DeDxMIPMax && dedx > DeDxMIPMin ){	  
@@ -1358,7 +1448,7 @@ void AliAnalysisTaskQAHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent ){
 	}
 	
 	//Fill electrons, before calibration
-	if( dedx > DeDxMIPMax+5 && dedx < 95 ){
+	if( dedx > DeDxMIPMax+1 && dedx < 95 ){
 	  if(TMath::Abs(beta-1)<0.1){
 	    hPlateauVsPhi[nh]->Fill(phi,dedx);
 	    pPlateauVsPhi[nh]->Fill(phi,dedx);
@@ -1597,12 +1687,14 @@ void AliAnalysisTaskQAHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent ){
 	    if(fillPos&&fillNeg){
 	      
 	      histPiV0[nh]->Fill(momentum, dedx);	    
-	      
+	      histpPiV0[nh]->Fill(momentum);
+
 	    }
 	    else{
 	      
 	      histPV0[nh]->Fill(momentum, dedx);
-	      
+	      histpPV0[nh]->Fill(momentum);
+
 	    }
 	    
 	  }
@@ -1844,12 +1936,14 @@ void AliAnalysisTaskQAHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent ){
 	    if(fillPos&&fillNeg){
 	      
 	      histPiV0[nh]->Fill(momentum, dedx);	    
-	      
+	      histpPiV0[nh]->Fill(momentum);	    
+
 	    }
 	    else{
 	      
 	      histPV0[nh]->Fill(momentum, dedx);
-	      
+	      histpPV0[nh]->Fill(momentum);
+
 	    }
 	    
 	  }
