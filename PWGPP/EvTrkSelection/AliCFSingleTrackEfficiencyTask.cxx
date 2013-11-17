@@ -27,6 +27,7 @@
 #include "AliStack.h"
 #include "AliGenEventHeader.h"
 #include "AliAODMCHeader.h"
+#include "AliCentrality.h"
 
 #include "AliSingleTrackEffCuts.h"
 #include "AliCFSingleTrackEfficiencyTask.h"
@@ -44,6 +45,8 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask() :
   fTriggerMask(AliVEvent::kAny),
   fSetFilterBit(kFALSE),
   fbit(0),
+  fEvalCentrality(kFALSE),
+  fCentralityEstimator("V0M"),
   fHistEventsProcessed(0x0)
 {
   //
@@ -62,6 +65,8 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask(const Char_t* nam
   fTriggerMask(AliVEvent::kAny),
   fSetFilterBit(kFALSE),
   fbit(0),
+  fEvalCentrality(kFALSE),
+  fCentralityEstimator("V0M"),
   fHistEventsProcessed(0x0)
 {
   //
@@ -90,9 +95,9 @@ AliCFSingleTrackEfficiencyTask& AliCFSingleTrackEfficiencyTask::operator=(const 
   if (this!=&c) {
     AliAnalysisTaskSE::operator=(c) ;
 
-    fReadAODData = c.fReadAODData ;
+    fReadAODData = c.fReadAODData;
     fCFManager  = c.fCFManager;
-    fQAHistList = c.fQAHistList ;
+    fQAHistList = c.fQAHistList;
 
     if(c.fTrackCuts) { delete fTrackCuts; fTrackCuts = new AliESDtrackCuts(*(c.fTrackCuts)); }
     if(c.fMCCuts) { delete fMCCuts; fMCCuts = new AliSingleTrackEffCuts(*(c.fMCCuts)); }
@@ -100,6 +105,10 @@ AliCFSingleTrackEfficiencyTask& AliCFSingleTrackEfficiencyTask::operator=(const 
 
     fSetFilterBit  = c.fSetFilterBit;
     fbit = c.fbit;
+
+    fEvalCentrality = c.fEvalCentrality;
+    fCentralityEstimator = c.fCentralityEstimator;
+
     fHistEventsProcessed = c.fHistEventsProcessed;
   }
   return *this;
@@ -116,6 +125,8 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask(const AliCFSingle
   fTriggerMask(c.fTriggerMask),
   fSetFilterBit(c.fSetFilterBit),
   fbit(c.fbit),
+  fEvalCentrality(c.fEvalCentrality),
+  fCentralityEstimator(c.fCentralityEstimator),
   fHistEventsProcessed(c.fHistEventsProcessed)
 {
   //
@@ -164,6 +175,19 @@ void AliCFSingleTrackEfficiencyTask::Init()
   copyfMCCuts->SetName(nameoutput);
   // Post the data
   PostData(5,copyfMCCuts);
+
+
+  if(fEvalCentrality) {
+    Bool_t isCentEstimatorOk = kFALSE;
+    TString validEstimators[9] = { "V0M", "V0A", "V0C", "TRK", "TKL", "CL1", "ZNA", "ZNC" "ZPA" };
+    for(Int_t i=0; i<9; i++ ) { 
+      if(fCentralityEstimator==validEstimators[i]) isCentEstimatorOk = kTRUE; 
+    }
+    if(!isCentEstimatorOk) {
+      AliFatal(Form("Chosen centrality estimator %s is not valid\n",fCentralityEstimator.Data()));
+      return;
+    }
+  }
 
   return;
 }
@@ -268,6 +292,7 @@ void AliCFSingleTrackEfficiencyTask::Terminate(Option_t*)
   TH1D* h04 =   cont->ShowProjection(5,4) ;
   TH1D* h05 =   cont->ShowProjection(5,5) ;
   TH1D* h06 =   cont->ShowProjection(5,6) ;
+  TH1D* h07 =   cont->ShowProjection(5,7) ;
        
   h00->SetMarkerStyle(23) ;
   h01->SetMarkerStyle(24) ;
@@ -296,10 +321,11 @@ void AliCFSingleTrackEfficiencyTask::Terminate(Option_t*)
   h05->Draw("p");
   c->cd(7);
   h06->Draw("p");
+  c->cd(8);
+  h07->Draw("p");
        
   c->SaveAs("plots.eps");
   */
-       
 }
 
 
@@ -341,7 +367,7 @@ void AliCFSingleTrackEfficiencyTask::CheckESDMCParticles()
     return;
   }
 
-  Double_t containerInput[6] = { 0., 0., 0., 0., 0., 0. };
+  Double_t containerInput[7] = { 0., 0., 0., 0., 0., 0., 0. };
 
   TArrayF vtxPos(3);
   AliGenEventHeader *genHeader = NULL;
@@ -351,6 +377,10 @@ void AliCFSingleTrackEfficiencyTask::CheckESDMCParticles()
 
   Double_t multiplicity = (Double_t)GetNumberOfTrackletsInEtaRange(-1.0,1.0);
   containerInput[5] = multiplicity; //reconstructed number of tracklets
+
+  Double_t centrality = -1.;
+  if(fEvalCentrality) centrality = GetCentrality();
+  containerInput[6] = centrality;
 
   // loop on the MC Generated Particles
   for (Int_t ipart=0; ipart<fMCEvent->GetNumberOfTracks(); ipart++) {
@@ -418,12 +448,16 @@ void AliCFSingleTrackEfficiencyTask::CheckAODMCParticles()
     return;
   }
 
-  Double_t containerInput[6] = { 0., 0., 0., 0., 0., 0. };
+  Double_t containerInput[7] = { 0., 0., 0., 0., 0., 0., 0. };
   // Set the z-vertex position
   containerInput[4]  = mcHeader->GetVtxZ();
   // Multiplicity of the event defined as Ntracklets |eta|<1.0
   Double_t multiplicity = (Double_t)GetNumberOfTrackletsInEtaRange(-1.0,1.0);
   containerInput[5] = multiplicity;
+  // Determine the event centrality
+  Double_t centrality = 0.;
+  if(fEvalCentrality) centrality = GetCentrality();
+  containerInput[6] = centrality;
 
   for (Int_t ipart=0; ipart<mcArray->GetEntriesFast(); ipart++) {
 
@@ -504,8 +538,8 @@ void AliCFSingleTrackEfficiencyTask::CheckReconstructedParticles()
   }
   if (!event) return;
 
-  Double_t containerInput[6] = { 0, 0, 0, 0, 0, 0};   // contains reconstructed quantities
-  Double_t containerInputMC[6] = { 0, 0, 0, 0, 0, 0}; // contains generated quantities
+  Double_t containerInput[7] = { 0, 0, 0, 0, 0, 0, 0};   // contains reconstructed quantities
+  Double_t containerInputMC[7] = { 0, 0, 0, 0, 0, 0, 0}; // contains generated quantities
   
   const AliVVertex *vertex = event->GetPrimaryVertex();
   // set the z-vertex position
@@ -515,6 +549,11 @@ void AliCFSingleTrackEfficiencyTask::CheckReconstructedParticles()
   Double_t multiplicity = (Double_t)GetNumberOfTrackletsInEtaRange(-1.0,1.0);
   containerInput[5] = multiplicity;
   containerInputMC[5] = multiplicity;
+  // Determine the event centrality
+  Double_t centrality = 0.;
+  if(fEvalCentrality) centrality = GetCentrality();
+  containerInput[6] = centrality;
+  containerInputMC[6] = centrality;
 
   // Reco tracks track loop
   AliVParticle* track = NULL;
@@ -600,6 +639,7 @@ void AliCFSingleTrackEfficiencyTask::CheckReconstructedParticles()
     fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepReconstructedMC);
     fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoQualityCuts);
     if(isAOD) delete tmptrack;
+    //    cout << " checking particle pid"<<endl;
 
     //
     // Step8, PID check
@@ -609,6 +649,7 @@ void AliCFSingleTrackEfficiencyTask::CheckReconstructedParticles()
       continue;
     }
     fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoPID);
+    //    cout << " all steps filled"<<endl;
 
   }
   return;
@@ -652,4 +693,32 @@ Int_t AliCFSingleTrackEfficiencyTask::GetNumberOfTrackletsInEtaRange(Double_t mi
   }
 
   return count;
+}
+
+//______________________________________________________________________
+Double_t AliCFSingleTrackEfficiencyTask::GetCentrality()
+{
+  //
+  // Get centrality
+  //
+
+  Bool_t isAOD = fInputEvent->IsA()->InheritsFrom("AliAODEvent");
+  Double_t cent = -1;
+
+  if(isAOD) {
+    AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
+    AliAODHeader* header = aodEvent->GetHeader();
+    if(!header) return -1;
+    AliCentrality *centrality = header->GetCentralityP();
+    if(!centrality) return -1;
+    //    cout<<" about to get cent perc AOD"<<endl;
+    cent = centrality->GetCentralityPercentile(fCentralityEstimator.Data());
+  } else {
+    AliESDEvent* esd = dynamic_cast<AliESDEvent*>(fInputEvent);
+    AliCentrality *centrality = esd->GetCentrality();
+    if(!centrality) return -1;
+    cent = centrality->GetCentralityPercentile(fCentralityEstimator.Data());
+  }
+
+  return cent;
 }

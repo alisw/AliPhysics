@@ -7,8 +7,6 @@
 #include "TFile.h"
 #include "AliCFGridSparse.h"
 #include "AliCFContainer.h"
-#include "AliSingleTrackEffCuts.h"
-#include "AliCFSingleTrackEfficiencyTask.h"
 #include "AliCFEffGrid.h"
 
 #include "TROOT.h"
@@ -61,10 +59,11 @@ void RebinCFContainer(const char *infile="AnalysisResults.root",Int_t rebinVar=0
   //
   AliCFGridSparse* gridSparse = 0;		
   if( myEff == 1 )  gridSparse = (AliCFGridSparse*)data->GetGrid(1); // GenAcc
-  if( myEff == 2 )  gridSparse = (AliCFGridSparse*)data->GetGrid(6); // RecCuts
-  if( myEff == 3 )  gridSparse = (AliCFGridSparse*)data->GetGrid(7); // RecPID
-  if( myEff == 4 )  gridSparse = (AliCFGridSparse*)data->GetGrid(3); // Rec (no cuts)
-  if( myEff == 5 )  gridSparse = (AliCFGridSparse*)data->GetGrid(4); // RecAcc
+  else if( myEff == 2 )  gridSparse = (AliCFGridSparse*)data->GetGrid(6); // Rec (acc + cuts) draw reco properties
+  else if( myEff == 3 )  gridSparse = (AliCFGridSparse*)data->GetGrid(7); // RecPID
+  else if( myEff == 4 )  gridSparse = (AliCFGridSparse*)data->GetGrid(3); // Rec (no cuts)
+  else if( myEff == 5 )  gridSparse = (AliCFGridSparse*)data->GetGrid(4); // RecAcc
+  else if( myEff == 6 )  gridSparse = (AliCFGridSparse*)data->GetGrid(5); // Rec (acc + cuts) draw kine properties
 
   THnSparse* numData = (THnSparse*)gridSparse->GetGrid();
   
@@ -180,35 +179,41 @@ void RebinCFContainer(const char *infile="AnalysisResults.root",Int_t rebinVar=0
   TH1D* heff = (TH1D*)h2num->Clone("heff");
   heff->Divide(h2num, h2,1,1,"B");
   //  heff->GetXaxis()->SetRangeUser(0,23.5);
-  TFile* fout ;
+  TFile* fout = NULL;
   if( myEff == 1 ) {
     fout = new TFile(Form("efficiency_GenAcc_over_LimAcc_rebinned_%d_%s.root",rebinVar,name),"RECREATE");
     heff->Write("hpteffCFLimAccGenAcc");
     h2num->Write("hptLimAcc");
     h2->Write("hptGenAcc");
   }
-  if( myEff == 2 ) {
+  else if( myEff == 2 ) {
     fout = new TFile(Form("efficiency_RecPPR_over_GenAcc_rebinned_%d_%s.root",rebinVar,name),"RECREATE");
     heff->Write("hpteffCFRecPPRGenAcc");
     h2num->Write("hptRecPPR");
     h2->Write("hptGenAcc");
   }
-  if( myEff == 3 ) {
+  else if( myEff == 3 ) {
     fout = new TFile(Form("efficiency_RecPID_over_GenAcc_rebinned_%d_%s.root",rebinVar,name),"RECREATE");
     heff->Write("hpteffCFRecPIDGenAcc");
     h2num->Write("hptRecPID");
     h2->Write("hptGenAcc");
   }
-  if( myEff == 4 ) {
+  else if( myEff == 4 ) {
     fout = new TFile(Form("efficiency_Rec_over_GenAcc_rebinned_%d_%s.root",rebinVar,name),"RECREATE");
     heff->Write("hpteffCFRecGenAcc");
     h2num->Write("hptRec");
     h2->Write("hptGenAcc");
   }
-  if( myEff == 5 ) {
+  else if( myEff == 5 ) {
     fout = new TFile(Form("efficiency_RecAcc_over_GenAcc_rebinned_%d_%s.root",rebinVar,name),"RECREATE");
     heff->Write("hpteffCFRecAccGenAcc");
     h2num->Write("hptRecAcc");
+    h2->Write("hptGenAcc");
+  }
+  else if( myEff == 6 ) {
+    fout = new TFile(Form("efficiency_RecPPRKine_over_GenAcc_rebinned_%d_%s.root",rebinVar,name),"RECREATE");
+    heff->Write("hpteffCFRecPPRKineGenAcc");
+    h2num->Write("hptRecPPRKine");
     h2->Write("hptGenAcc");
   }
   fout->Close();
