@@ -57,6 +57,8 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
   void SetFilterType (Int_t fbittype) { fbit=fbittype; }
   // select trigger event mask
   void SetTriggerMask(ULong64_t mask=0) { fTriggerMask=mask; }
+  // set whether to evaluate centrality
+  void SetUseCentrality(Bool_t flag, TString estimator=""){ fEvalCentrality=flag; fCentralityEstimator=estimator; }
 
   // Getters
   // analyze AOD:1 or ESD:0 data
@@ -81,6 +83,8 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
   AliESDtrack* ConvertTrack(AliAODTrack *track);
   // Count the number of tracklets in given eta range
   Int_t GetNumberOfTrackletsInEtaRange(Double_t mineta, Double_t maxeta);
+  // Evaluate the event centrality
+  Double_t GetCentrality();
 
   Bool_t fReadAODData;       // flag for AOD/ESD input files
   AliCFManager *fCFManager;  // pointer to the CF manager slot 2
@@ -93,9 +97,12 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
   Bool_t fSetFilterBit; // flag to decide if applying filter-bit selection to tracks
   Int_t  fbit;          // filter-bit selection to tracks
 
+  Bool_t fEvalCentrality;        // flag to enable centrality determination
+  TString fCentralityEstimator;  // centrality estimator
+
   TH1I  *fHistEventsProcessed;   //! histo for monitoring the number of events processed slot 1
 
-  ClassDef(AliCFSingleTrackEfficiencyTask,1)
+  ClassDef(AliCFSingleTrackEfficiencyTask,2)
 };
 
 #endif
