@@ -5,15 +5,34 @@
 //Allows basic configuration of pile-up check
 //
 ****************************************************************************/
+enum pairYCutSet { kPairDefault,
+		   kNegative,
+		   kCentral
+                 };
 
-AliRsnMiniAnalysisTask * AddTaskKStarPPb
+enum eventCutSet { kOld = -1, 
+		   kEvtDefault, //=0
+		   kNoPileUpCut, //=1
+		   kPileUpMV, //=2
+		   kPileUpSPD3, //=3		      
+		   kDefaultVtx8, //=4
+		   kDefaultVtx5 //=5                    
+                 };
+
+enum eventMixConfig { kMixDefault, //10 events, Dvz = 1cm, DC = 10
+		      k5Evts, //=1 //5 events, Dvz = 1cm, DC = 10
+		      k5Cent  //=2 //10 events, Dvz = 1cm, DC = 5
+                    };
+
+
+AliRsnMiniAnalysisTask * AddTaskKStarPPB
 (
  Bool_t      isMC = kFALSE,
  Bool_t      isPP = kFALSE,
  TString     outNameSuffix = "tof2s",
- Int_t       evtCutSetID = 0;
- Int_t       pairCutSetID = 0;
- Int_t       mixingConfigID = 0;
+ Int_t       evtCutSetID = 0,
+ Int_t       pairCutSetID = 0,
+ Int_t       mixingConfigID = 0,
  Int_t       aodFilterBit = 5,
  AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPiCandidate = AliRsnCutSetDaughterParticle::kTOFpidKstarPPB2011,
  AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate = AliRsnCutSetDaughterParticle::kTOFpidKstarPPB2011,
@@ -27,24 +46,7 @@ AliRsnMiniAnalysisTask * AddTaskKStarPPb
  AliRsnMiniValue::EType yaxisvar = AliRsnMiniValue::kPt
  )
 {  
-  enum pairYCutSet { kDefault = 0,
-		     kNegative,
-		     kCentral 
-                   }
 
-  enum eventCutSet { kOld = -1, 
-		      kDefault, //=0
-		      kNoPileUpCut, //=1
-		      kPileUpMV, //=2
-		      kPileUpSPD3, //=3		      
-		      kDefaultVtx8, //=4
-		      kDefaultVtx5, //=5                    
-                    }
-
-  enum eventMixConfig { kDefault = 0, //10 events, Dvz = 1cm, DC = 10
-			k5Evts, //=1 //5 events, Dvz = 1cm, DC = 10
-			k5Cent  //=2 //10 events, Dvz = 1cm, DC = 5
-                      }
   
   //-------------------------------------------
   // event cuts
