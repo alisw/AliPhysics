@@ -52,6 +52,7 @@ set ( SRCS
     EBYE/Fluctuations/AliEbyEHigherMomentsTask.cxx 
     EBYE/Fluctuations/AliEbyEHigherMomentsEffContTask.cxx    
     EBYE/Fluctuations/AliHigherMomentsToyModel.cxx    
+    EBYE/Fluctuations/AliEbyEMultFluctuationTask.cxx
     EBYE/MeanPtFluctuations/AliAnalysisTaskPtFluc.cxx 
     EBYE/MeanPtFluctuations/AliAnalysisTaskPtFlucPbPb.cxx
     EBYE/PIDFluctuation/task/AliAnalysisTaskPIDFluctuation.cxx	 
