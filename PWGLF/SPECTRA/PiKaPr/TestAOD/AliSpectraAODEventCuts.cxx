@@ -84,17 +84,19 @@ AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) :
   fCalib->SetName("fCalib");
   
   TH1I *fHistoCuts = new TH1I("fHistoCuts", "Event Cuts", kNVtxCuts, -0.5, kNVtxCuts - 0.5);
-  TH1F *fHistoVtxBefSel = new TH1F("fHistoVtxBefSel", "Vtx distr before event selection",500,-15,15);
-  TH1F *fHistoVtxAftSel = new TH1F("fHistoVtxAftSel", "Vtx distr after event selection",500,-15,15);
-  TH1F *fHistoEtaBefSel = new TH1F("fHistoEtaBefSel", "Eta distr before event selection",500,-2,2);
-  TH1F *fHistoEtaAftSel = new TH1F("fHistoEtaAftSel", "Eta distr after event selection",500,-2,2);
-  TH1F *fHistoNChAftSel = new TH1F("fHistoNChAftSel", "NCh distr after event selection",2000,-0.5,1999.5);
-  TH1F *fHistoQVector = new TH1F("fHistoQVector", "QVector with VZERO distribution",100,0,10);
-  TH1F *fHistoEP = new TH1F("fHistoEP", "EP with VZERO distribution",100,-2,2);
-  TH2F *fPsiACor = new TH2F("fPsiACor", "EP with VZERO A distribution",20,0,100,100,0,10);
-  TH2F *fPsiCCor = new TH2F("fPsiCCor", "EP with VZERO C distribution",20,0,100,100,0,10);
-  TH2F *fQVecACor = new TH2F("fQVecACor", "QVec VZERO A",20,0,100,100,0,10);
-  TH2F *fQVecCCor = new TH2F("fQVecCCor", "QVec VZERO C",20,0,100,100,0,10);
+  TH1F *fHistoVtxBefSel = new TH1F("fHistoVtxBefSel", "Vtx distr before event selection;z (cm)",500,-15,15);
+  TH1F *fHistoVtxAftSel = new TH1F("fHistoVtxAftSel", "Vtx distr after event selection;z (cm)",500,-15,15);
+  TH1F *fHistoEtaBefSel = new TH1F("fHistoEtaBefSel", "Eta distr before event selection;eta",500,-2,2);
+  TH1F *fHistoEtaAftSel = new TH1F("fHistoEtaAftSel", "Eta distr after event selection;eta",500,-2,2);
+  TH1F *fHistoNChAftSel = new TH1F("fHistoNChAftSel", "NCh distr after event selection;Nch",2000,-0.5,1999.5);
+  TH2F *fHistoQVector = new TH2F("fHistoQVector", "QVector with VZERO distribution;centrality;Q vector from EP task",20,0,100,100,0,10);
+  TH2F *fHistoEP = new TH2F("fHistoEP", "EP with VZERO distribution;centrality;Psi_{EP} from EP task",20,0,100,100,-2,2);
+  TH2F *fPsiACor = new TH2F("fPsiACor", "EP with VZERO A distribution;centrality;Psi_{EP} VZERO-A",20,0,100,100,-2,2);
+  TH2F *fPsiCCor = new TH2F("fPsiCCor", "EP with VZERO C distribution;centrality;Psi_{EP} VZERO-C",20,0,100,100,-2,2);
+  TH2F *fQVecACor = new TH2F("fQVecACor", "QVec VZERO A;centrality;Qvector VZERO-A",20,0,100,100,0,10);
+  TH2F *fQVecCCor = new TH2F("fQVecCCor", "QVec VZERO C;centrality;Qvector VZERO-C",20,0,100,100,0,10);
+  TH2F *fV0M = new TH2F("fV0M", "V0 Multiplicity, before correction;V0 sector",64,-.5,63.5,500,0,1000);
+  TH2F *fV0MCor = new TH2F("fV0MCor", "V0 Multiplicity, after correction;V0 sector",64,-.5,63.5,500,0,1000);
   
   fOutput->Add(fHistoCuts);
   fOutput->Add(fHistoVtxBefSel);
@@ -108,6 +110,8 @@ AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) :
   fOutput->Add(fPsiCCor);
   fOutput->Add(fQVecACor);
   fOutput->Add(fQVecCCor);
+  fOutput->Add(fV0M);
+  fOutput->Add(fV0MCor);
   
   for (Int_t i = 0; i<10; i++){
     fMeanQxa2[i] = -1;
@@ -176,7 +180,7 @@ Bool_t AliSpectraAODEventCuts::CheckVtxRange()
 Bool_t AliSpectraAODEventCuts::CheckCentralityCut()
 {
   // Check centrality cut
-  Double_t cent=0;
+  Double_t cent=-999.;
   cent=fAOD->GetCentrality()->GetCentralityPercentile(fCentralityMethod.Data());
   if ( (cent <= fCentralityCutMax)  &&  (cent >= fCentralityCutMin) )  return kTRUE;   
   ((TH1I*)fOutput->FindObject("fHistoCuts"))->Fill(kVtxCentral);
@@ -200,15 +204,17 @@ Bool_t AliSpectraAODEventCuts::CheckMultiplicityCut()
 
 //______________________________________________________
 Bool_t AliSpectraAODEventCuts::CheckQVectorCut()
-{  
+{ 
   Double_t qxEPVZERO = 0, qyEPVZERO = 0;
   Double_t qVZERO = CalculateQVectorLHC10h();
   Double_t psi=fAOD->GetEventplane()->CalculateVZEROEventPlane(fAOD,10,2,qxEPVZERO,qyEPVZERO);//FIXME we can a flag for 2010 and 2011
   qVZERO= TMath::Sqrt(qxEPVZERO*qxEPVZERO + qyEPVZERO*qyEPVZERO);
   if(qVZERO<fQVectorCutMin || qVZERO>fQVectorCutMax)return kFALSE;
-  ((TH1F*)fOutput->FindObject("fHistoQVector"))->Fill(qVZERO);
-  ((TH1F*)fOutput->FindObject("fHistoEP"))->Fill(psi);
+  Double_t cent=fAOD->GetCentrality()->GetCentralityPercentile(fCentralityMethod.Data());
+  ((TH2F*)fOutput->FindObject("fHistoQVector"))->Fill(cent,qVZERO);
+  ((TH2F*)fOutput->FindObject("fHistoEP"))->Fill(cent,psi);
   ((TH1I*)fOutput->FindObject("fHistoCuts"))->Fill(kQVector);
+  
   return kTRUE;
 }
 
@@ -236,6 +242,8 @@ Double_t AliSpectraAODEventCuts::CalculateQVectorLHC10h(){
     Double_t phiV0 = TMath::PiOver4()*(0.5 + iv0 % 8);
     
     Float_t multv0 = aodV0->GetMultiplicity(iv0);
+    ((TH2F*)fOutput->FindObject("fV0M"))->Fill(iv0,multv0);
+    
     if (iv0 < 32){
       
       Double_t multCorC = -10;
@@ -258,6 +266,7 @@ Double_t AliSpectraAODEventCuts::CalculateQVectorLHC10h(){
       Qyc2 += TMath::Sin(2*phiV0) * multCorC;
       
       sumMc += multCorC;
+      ((TH2F*)fOutput->FindObject("fV0MCor"))->Fill(iv0,multCorC);
       
     } else {
       
@@ -281,6 +290,8 @@ Double_t AliSpectraAODEventCuts::CalculateQVectorLHC10h(){
       Qya2 += TMath::Sin(2*phiV0) * multCorA;
       
       sumMa += multCorA;
+      ((TH2F*)fOutput->FindObject("fV0MCor"))->Fill(iv0,multCorA);
+      
     }
   }
   

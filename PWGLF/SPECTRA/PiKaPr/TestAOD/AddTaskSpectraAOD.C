@@ -91,13 +91,14 @@ AliAnalysisTaskSpectraAOD* AddTaskSpectraAOD(Bool_t mc=kFALSE,
   AliAnalysisDataContainer *coutputpt2 = mgr->CreateContainer("cvcutpt", AliSpectraAODEventCuts::Class(),    AliAnalysisManager::kOutputContainer,outputFileName);
   AliAnalysisDataContainer *coutputpt3 = mgr->CreateContainer("ctcutpt", AliSpectraAODTrackCuts::Class(),     AliAnalysisManager::kOutputContainer, outputFileName);
   AliAnalysisDataContainer *coutputpt4 = mgr->CreateContainer("cpidpt",  AliSpectraAODPID::Class(),     AliAnalysisManager::kOutputContainer,outputFileName);
+
+  mgr->AddTask(task);
   
   mgr->ConnectInput(task, 0, cinput);
   mgr->ConnectOutput(task, 1, coutputpt1);
   mgr->ConnectOutput(task, 2, coutputpt2);
   mgr->ConnectOutput(task, 3, coutputpt3);
   mgr->ConnectOutput(task, 4, coutputpt4);
-  
-  mgr->AddTask(task);
+
   return task;
 }
