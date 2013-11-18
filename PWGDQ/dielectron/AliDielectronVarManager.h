@@ -66,6 +66,7 @@
 #include "AliDielectronHelper.h"
 
 #include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
 #include "AliVZEROEPSelectionTask.h"
 
 class AliVEvent;
@@ -385,6 +386,9 @@ public:
 
     kCentrality,             // event centrality fraction
     kCentralitySPD,          // centrality using SPD
+    kTriggerInclONL,         // online trigger bits fired (inclusive)
+    kTriggerInclOFF,         // offline trigger bits fired (inclusive)
+    kTriggerExclOFF,         // offline only this trigger bit fired (exclusive)
     kNevents,                // event counter
     kRunNumber,              // run number
     kMixingBin,
@@ -1581,7 +1585,15 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
     values[AliDielectronVarManager::kNVtxContrib]  = primVtx->GetNContributors();
   }
   //   values[AliDielectronVarManager::kChi2NDF]      = primVtx->GetChi2perNDF(); //this is the pair value
-  
+
+  // online and offline trigger maps
+  values[AliDielectronVarManager::kTriggerInclONL]     = event->GetTriggerMask();
+  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  UInt_t maskOff = ((AliInputEventHandler*)man->GetInputEventHandler())->IsEventSelected();
+  values[AliDielectronVarManager::kTriggerInclOFF]     = maskOff;
+  values[AliDielectronVarManager::kTriggerExclOFF]        = -1;
+  for(Int_t i=0; i<30; i++) { if(maskOff==BIT(i)) values[AliDielectronVarManager::kTriggerExclOFF]=i; }
+
   values[AliDielectronVarManager::kNTrk]            = event->GetNumberOfTracks();
   values[AliDielectronVarManager::kNacc]            = AliDielectronHelper::GetNacc(event);
   values[AliDielectronVarManager::kMatchEffITSTPC]  = AliDielectronHelper::GetITSTPCMatchEff(event);

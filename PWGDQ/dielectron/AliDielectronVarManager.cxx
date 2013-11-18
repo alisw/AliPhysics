@@ -385,6 +385,9 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"Nch10",                  "N_{ch} #cbar_{#||{#eta}<1.0}",                       ""},
   {"Centrality",             "centrality",                                         "(%)"},
   {"CentralitySPD",          "centrality_{SPD}",                                   "(%)"},
+  {"TriggerInclONL",         "online trigger bit (inclusive)",                     ""},
+  {"TriggerInclOFF",         "offline trigger bit (inclusive)",                    ""},
+  {"TriggerExclOFF",         "offline trigger bit (exclusive)",                    ""},
   {"Nevents",                "N_{evt}",                                            ""},
   {"RunNumber",              "run",                                                ""},
   {"MixingBin",              "mixing bin",                                         ""}
