@@ -1172,27 +1172,68 @@ void AliDielectronHistos::FillValues(TH1 *obj, const Double_t *values)
   UInt_t value3=obj->GetZaxis()->GetUniqueID();
   UInt_t value4=obj->GetUniqueID();            // get profile var stored in the unique ID
 
-  switch ( dim ) {
-  case 1:
-    if(!bprf && !weight)     obj->Fill(values[value1]);                 // histograms
-    else if(!bprf && weight) obj->Fill(values[value1], values[value4]); // weighted histograms
-    else if(bprf && !weight) ((TProfile*)obj)->Fill(values[value1],values[value2]);   // profiles
-    else                     ((TProfile*)obj)->Fill(values[value1],values[value2], values[value4]); // weighted profiles
-    break;
-  case 2:
-    if(!bprf && !weight)     obj->Fill(values[value1], values[value2]);                 // histograms
-    else if(!bprf && weight) ((TH2*)obj)->Fill(values[value1], values[value2], values[value4]); // weighted histograms
-    else if(bprf && !weight) ((TProfile2D*)obj)->Fill(values[value1], values[value2], values[value3]); // profiles
-    else                     ((TProfile2D*)obj)->Fill(values[value1], values[value2], values[value3], values[value4]); // weighted profiles
-    break;
-  case 3:
-    if(!bprf && !weight)     ((TH3*)obj)->Fill(values[value1], values[value2], values[value3]);                 // histograms
-    else if(!bprf && weight) ((TH3*)obj)->Fill(values[value1], values[value2], values[value3], values[value4]); // weighted histograms
-    else if(bprf && !weight) ((TProfile3D*)obj)->Fill(values[value1], values[value2], values[value3], values[value4]); // profiles
-    else                     printf(" WARNING: weighting NOT possible yet for TProfile3Ds ! \n");
-    break;
+  // ask for inclusive trigger map variables
+  if(value1!=AliDielectronVarManager::kTriggerInclONL && value1!=AliDielectronVarManager::kTriggerInclOFF &&
+     value2!=AliDielectronVarManager::kTriggerInclONL && value2!=AliDielectronVarManager::kTriggerInclOFF &&
+     value3!=AliDielectronVarManager::kTriggerInclONL && value3!=AliDielectronVarManager::kTriggerInclOFF &&
+     value4!=AliDielectronVarManager::kTriggerInclONL && value4!=AliDielectronVarManager::kTriggerInclOFF ) {
+    // no trigger map variable selected
+    switch ( dim ) {
+    case 1:
+      if(!bprf && !weight)     obj->Fill(values[value1]);                 // histograms
+      else if(!bprf && weight) obj->Fill(values[value1], values[value4]); // weighted histograms
+      else if(bprf && !weight) ((TProfile*)obj)->Fill(values[value1],values[value2]);   // profiles
+      else                     ((TProfile*)obj)->Fill(values[value1],values[value2], values[value4]); // weighted profiles
+      break;
+    case 2:
+      if(!bprf && !weight)     obj->Fill(values[value1], values[value2]);                 // histograms
+      else if(!bprf && weight) ((TH2*)obj)->Fill(values[value1], values[value2], values[value4]); // weighted histograms
+      else if(bprf && !weight) ((TProfile2D*)obj)->Fill(values[value1], values[value2], values[value3]); // profiles
+      else                     ((TProfile2D*)obj)->Fill(values[value1], values[value2], values[value3], values[value4]); // weighted profiles
+      break;
+    case 3:
+      if(!bprf && !weight)     ((TH3*)obj)->Fill(values[value1], values[value2], values[value3]);                 // histograms
+      else if(!bprf && weight) ((TH3*)obj)->Fill(values[value1], values[value2], values[value3], values[value4]); // weighted histograms
+      else if(bprf && !weight) ((TProfile3D*)obj)->Fill(values[value1], values[value2], values[value3], values[value4]); // profiles
+      else                     printf(" WARNING: weighting NOT possible yet for TProfile3Ds ! \n");
+      break;
+    }
   }
-  
+  else {
+    // fill inclusive trigger map variables
+    if(weight) return;
+    switch ( dim ) {
+    case 1:
+      for(Int_t i=0; i<30; i++) { if(TESTBIT((UInt_t)values[value1],i)) obj->Fill(i); }
+      break;
+    case 2:
+      if(value1==AliDielectronVarManager::kTriggerInclONL || value1==AliDielectronVarManager::kTriggerInclOFF) {
+	for(Int_t i=0; i<30; i++) { if(TESTBIT((UInt_t)values[value1],i)) obj->Fill(i, values[value2]); }
+      }
+      else if(value2==AliDielectronVarManager::kTriggerInclONL || value2==AliDielectronVarManager::kTriggerInclOFF) {
+	for(Int_t i=0; i<30; i++) { if(TESTBIT((UInt_t)values[value2],i)) obj->Fill(values[value1], i); }
+      }
+      else if((value1==AliDielectronVarManager::kTriggerInclOFF && value2==AliDielectronVarManager::kTriggerInclONL) ||
+	      (value1==AliDielectronVarManager::kTriggerInclONL && value2==AliDielectronVarManager::kTriggerInclOFF) ) {
+	for(Int_t i=0; i<30; i++) {
+	  if((UInt_t)values[value1]==BIT(i)) {
+	    for(Int_t i2=0; i2<30; i2++) {
+	      if((UInt_t)values[value2]==BIT(i2)) {
+		obj->Fill(i, i2);
+	      } // bit fired
+	    } //loop 2
+	  }//bit fired
+	} // loop 1
+      }
+      else //makes no sense
+	return;
+      break;
+    default: return;
+    }
+
+  } //end: trigger filling
+
+
   return;
 }
 
