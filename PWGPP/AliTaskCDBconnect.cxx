@@ -24,8 +24,8 @@
 #include "AliGeomManager.h"
 #include "AliCDBManager.h"
 #include "AliGRPManager.h"
-#include "AliESDEvent.h"
-#include "AliESDInputHandler.h"
+#include "AliVEvent.h"
+#include "AliInputEventHandler.h"
 #include "AliLog.h"
 
 ClassImp(AliTaskCDBconnect)
@@ -34,9 +34,6 @@ ClassImp(AliTaskCDBconnect)
 AliTaskCDBconnect::AliTaskCDBconnect():
            AliAnalysisTask(),
            fRun(0),
-           fRunChanged(kFALSE),
-           fESDhandler(NULL),
-           fESD(NULL),
            fGRPManager(NULL)
 {
 // Dummy constructor
@@ -46,9 +43,6 @@ AliTaskCDBconnect::AliTaskCDBconnect():
 AliTaskCDBconnect::AliTaskCDBconnect(const char* name, const char *storage, Int_t run)
           :AliAnalysisTask(name, "ESD analysis tender car"),
            fRun(run),
-           fRunChanged(kFALSE),
-           fESDhandler(NULL),
-           fESD(NULL),
            fGRPManager(NULL)
 {
 // Default constructor
@@ -56,104 +50,49 @@ AliTaskCDBconnect::AliTaskCDBconnect(const char* name, const char *storage, Int_
   cdb->SetDefaultStorage(storage);
   cdb->SetRun(run);
   DefineInput (0, TChain::Class());
+  if (run>0) InitGRP();
 }
 
 //______________________________________________________________________________
 AliTaskCDBconnect::~AliTaskCDBconnect()
 {
-// Destructor
+  // Destructor
   delete fGRPManager;
 }  
-
-//______________________________________________________________________________
-void AliTaskCDBconnect::LocalInit()
-{
-// Init CDB locally if run number is defined.
-}
-  
-//______________________________________________________________________________
-void AliTaskCDBconnect::ConnectInputData(Option_t* /*option*/)
-{
-// Connect the input data, create CDB manager.
-}
 
 //______________________________________________________________________________
 void AliTaskCDBconnect::InitGRP()
 {
 // Initialize geometry and mag. field
-  if (!fGRPManager) {
-  // magnetic field
-    if (!TGeoGlobalMagField::Instance()->GetField()) {
-      printf("AliCDBconnect: #### Loading field map...\n");
-      fGRPManager = new AliGRPManager();
-      if(!fGRPManager->ReadGRPEntry()) { 
-        AliError("Cannot get GRP entry"); 
-      }
-      if( !fGRPManager->SetMagField() ) { 
-        AliError("Problem with magnetic field setup"); 
-      }
-    }
-
-    // geometry
-    if (!gGeoManager) {
-      printf("AliCDBconnect: #### Loading geometry...\n");
-      AliGeomManager::LoadGeometry("geometry.root");
-      if( !AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC TRD") ) {
-        AliError("Problem with align objects"); 
-      }
-    }  
+  if (!fGRPManager) fGRPManager = new AliGRPManager();
+  AliInfo("AliCDBconnect: #### Loading GRP to init B-field...");
+  if(!fGRPManager->ReadGRPEntry()) AliFatal("Cannot get GRP entry"); 
+  if(!fGRPManager->SetMagField())  AliFatal("Problem with magnetic field setup"); 
+  //
+  // geometry
+  if (!gGeoManager) {
+    AliInfo("AliCDBconnect: #### Loading geometry...");
+    AliGeomManager::LoadGeometry("geometry.root");
+    if(!AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC TRD")) AliFatal("Problem with align objects"); 
   }  
 }
 
 //______________________________________________________________________________
 void AliTaskCDBconnect::CreateOutputObjects()
 {
-// Init CDB locally if run number is defined.
+  // Init CDB locally if run number is defined.
+  //
+  //  try to init before the analysis set
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) AliFatal("No analysis manager");
-  fESDhandler = dynamic_cast<AliESDInputHandler *>(mgr->GetInputEventHandler());
-    
-  if (!fESDhandler) {
-     AliFatal("No ESD input event handler connected");
-     return;
-  }   
-  // Try to get event number before the first event is read (this has precedence
-  // over existing fRun)
-  Int_t run = mgr->GetRunFromPath();
-  if (!run && !fRun) {
-     AliError("AliTaskCDBconnect: Run not set - no CDB connection");
-     return;
+  if ( fRun>0 && mgr->IsProofMode() ) { 
+    // in the proof mode the initialization done in the constructor is not available
+    InitGRP();
   }
-  // Create CDB manager
-  AliCDBManager *cdb = AliCDBManager::Instance();
-  // If CDB is already locked, return
-  if (cdb->GetLock()) return;
-  // SetDefault storage. Specific storages must be set by TaskCDBconnectSupply::Init()
-  //  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-//  if (!cdb->GetRaw()) {
-//     cdb->SetDefaultStorage("raw://");
-//  }   
-  if (run && (run != fRun)) {
-     fRunChanged = kTRUE;
-     fRun = run;
-  } else {
-     fRunChanged = kFALSE;
+  else {
+    AliInfo("Run number is not available at this stage, InitGRP will be called in the execution loop");
   }
-  // Set run
-  if (fRunChanged || !fGRPManager) {
-     printf("AliCDBconnect: #### Setting run to: %d\n", fRun);
-     cdb->SetRun(fRun);
-     // Initialize GRP manager only once
-     if (fRun) InitGRP();
-  }   
-}
-
-//______________________________________________________________________________
-Bool_t AliTaskCDBconnect::Notify()
-{
-// Init CDB locally if run number is defined.
-  CreateOutputObjects();
-  return kTRUE;
+  //
 }
 
 //______________________________________________________________________________
@@ -161,18 +100,19 @@ void AliTaskCDBconnect::Exec(Option_t* /*option*/)
 {
 //
 // Execute all supplied analysis of one event. Notify run change via RunChanged().
-  fESD = fESDhandler->GetEvent();
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) AliFatal("No analysis manager");
+  AliInputEventHandler* inp = (AliInputEventHandler*)mgr->GetInputEventHandler();
+  if (!inp) AliFatal("No input event handler connected");
+  //
+  AliVEvent* ev = inp->GetEvent();
+  if (!ev) AliFatal("No event returned");
+  int run = ev->GetRunNumber();
   // Intercept when the run number changed
-  if (fRun != fESD->GetRunNumber()) {
-    fRunChanged = kTRUE;
-    fRun = fESD->GetRunNumber();
-    CreateOutputObjects();
+  if (fRun != run) {
+    fRun = run;
+    AliCDBManager *cdb = AliCDBManager::Instance();
+    cdb->SetRun(run);
+    InitGRP();
   }
-}
-
-//______________________________________________________________________________
-void AliTaskCDBconnect::Terminate(Option_t *)
-{
-// Initialize CDB also in Terminate
-//   CreateOutputObjects();
 }
