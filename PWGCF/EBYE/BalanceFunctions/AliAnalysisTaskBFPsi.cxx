@@ -1035,7 +1035,6 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
       
       //exclude non stable particles
       if(!(gMCEvent->IsPhysicalPrimary(iParticle))) continue;
-      if(track->Pt() < 0.1)  continue;
       
       //++++++++++++++++
       if (fMultiplicityEstimator == "V0M") {
@@ -1046,8 +1045,11 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
       else if (fMultiplicityEstimator == "V0C") {
 	if(track->Eta() > -1.7 || track->Eta() < -3.7)  continue;}
       else if (fMultiplicityEstimator == "TPC") {
-	if(track->Eta() > 0.9 || track->Eta() < -0.9)  continue;}
+	if(track->Eta() < fEtaMin || track->Eta() > fEtaMax)  continue;
+	if(track->Pt() < fPtMin || track->Pt() > fPtMax)  continue;
+      }
       else{
+	if(track->Pt() < fPtMin || track->Pt() > fPtMax)  continue;
 	if(track->Eta() < fEtaMin || track->Eta() > fEtaMax)  continue;
       }
       //++++++++++++++++
