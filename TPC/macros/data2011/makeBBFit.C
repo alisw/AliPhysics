@@ -1,8 +1,22 @@
 /*
-   Macro to make the MC based dEdx fits, and study the influence of thre track selection to the PID 
-   
-   .x $HOME/rootlogon.C
-   .x $HOME/NimStyle.C
+   Macro to make the MC based dEdx fits, and study the influence of thre track selection to the PID.
+
+   Motivation:
+   In the ALICE Geant3 MC the input Bethe-Bloch parameterization of the primary ionization can be 
+   parameterized by user defined formula.
+
+   In detector Input dEdx(BG)_in} (more exact dNprim/dx) is transformed to the output reconstructed dEdx_{rec}. 
+   While original input function is just function of particle \beta\gama, random variable, reconstructed 
+   dEdx estimate, is influenced by detection processes and is sensitive to other aspects namily 
+   diffusion, track inclination angle (\phi,\theta), gain ...
+
+   In the following we will calibrate transform function:
+    dEdx_{BB}= f_{tr}(dEdx_{rec}, #phi,#eta)
+    //
+    // Example code for author:
+    //
+    .x $HOME/rootlogon.C
+    .x $HOME/NimStyle.C
     .L $ALICE_ROOT/TPC/macros/data2011/makeBBFit.C+
     Init();
     MakeESDCutsPID();
@@ -41,12 +55,13 @@ const char *partName[4]={"Electron","Pion","Kaon","Proton"};
 const Int_t colors[5]={kGreen,kBlack,kRed,kBlue,5};
 const Int_t markers[5]={24,20,21,25,25};
 const Float_t markerSize[5]={1.2,1.2,1.0,1.2,1};
+TTree * treeFit=0;
 
 void Init();            // init (ALICE) BB parameterization
 
-void FitTransferFunctionAllTheta();
-void FitTransferFunctionTheta(Bool_t isMax, Int_t dType, Int_t tgl, Bool_t skipKaon, Double_t maxP, TTreeSRedirector *pcstream);
-
+//
+void FitTransferFunctionTheta(Bool_t isMax, Int_t dType, Int_t tgl, Bool_t skipKaon, Double_t maxP, TTreeSRedirector *pcstream, Bool_t doDraw);
+void FitTransferFunctionAll(Bool_t isMax, Int_t dType, Bool_t skipKaon, Double_t maxP, TTreeSRedirector *pcstream, Bool_t doDraw);
 
 void Init(){
    //
@@ -97,8 +112,11 @@ void MakeESDCutsPID(){
 
 void makeBBfit(Int_t ntracks=100000){
   //
-  // Make BB Bloch fits in bins of the mo
-  //
+  // Make dEdx  fits of indiviadual particle species in bins:
+  //  a.)  momenta
+  //  b.)  tan(theta) -tgl
+  //  c.)  per detector segmen
+  //  d.)  Qmax/Qtot
   TFile * ff = TFile::Open("Filtered.root");
   TTreeSRedirector *pcstream = new TTreeSRedirector("dedxFit.root","update");
   TTree * treeMC = (TTree*)ff->Get("highPt");
@@ -222,14 +240,59 @@ void makeBBfit(Int_t ntracks=100000){
   //
 }
 
-void FitTransferFunctionAllTheta(){
 
+void FitTransferFunctionScanAll(){
+  //
+  // Make fit of transfer functions - parabolic in theta
+  //
+  TTreeSRedirector * pcstream = new TTreeSRedirector("dedxFit.root","update");
+  treeFit=(TTree*)pcstream->GetFile()->Get("fitdEdxG"); 
+  treeFit = (TTree*)pcstream->GetFile()->Get("fitdEdxG");
+  treeFit->SetMarkerStyle(25);
+  treeFit->SetCacheSize(200000000);
+  for (Int_t isMax=0; isMax<=1; isMax++){
+    for (Int_t dType=0; dType<4; dType++){      
+      for (Int_t skipKaon=0; skipKaon<=1; skipKaon++){
+	for (Float_t maxP=3; maxP<21; maxP+=3){
+	  printf("%d\t%d\t%d\t%f\n",isMax,dType,skipKaon,maxP);
+	  FitTransferFunctionAll(isMax,dType,skipKaon,maxP,pcstream,1);
+	}
+      }
+    }
+  }
+  delete pcstream;
 }
 
 
-void FitTransferFunctionTheta(Bool_t isMax, Int_t dType, Int_t tgl, Bool_t skipKaon, Double_t maxP, TTreeSRedirector *pcstream){
+void FitTransferFunctionScanTheta(){
   //
+  // Make fit of transfer functions - bin by bin in Theta
   //
+  TTreeSRedirector * pcstream = new TTreeSRedirector("dedxFit.root","update");
+  treeFit=(TTree*)pcstream->GetFile()->Get("fitdEdxG"); 
+  treeFit = (TTree*)pcstream->GetFile()->Get("fitdEdxG");
+  treeFit->SetMarkerStyle(25);
+  treeFit->SetCacheSize(200000000);
+  for (Int_t isMax=0; isMax<=1; isMax++){
+    for (Int_t dType=0; dType<4; dType++){
+      
+      for (Int_t tgl=2; tgl<10; tgl++){
+	for (Int_t skipKaon=0; skipKaon<=1; skipKaon++){
+	  for (Float_t maxP=3; maxP<21; maxP+=3){
+	    printf("%d\t%d\t%d\t%d\t%f\n",isMax,dType,tgl,skipKaon,maxP);
+	    FitTransferFunctionTheta(isMax,dType,tgl,skipKaon,maxP,pcstream,1);
+	  }
+	}
+      }
+    }
+  }
+  delete pcstream;
+}
+
+
+void FitTransferFunctionTheta(Bool_t isMax, Int_t dType, Int_t tgl, Bool_t skipKaon, Double_t maxP, TTreeSRedirector *pcstream, Bool_t doDraw){
+  //
+  // 
   // dEdx_{BB}= f_{tr}(dEdx_{rec}, #phi,#eta)
   //
   // Fit the parematers of transfer function
@@ -242,8 +305,11 @@ void FitTransferFunctionTheta(Bool_t isMax, Int_t dType, Int_t tgl, Bool_t skipK
   //
   if (!pcstream)  pcstream = new TTreeSRedirector("dedxFit.root","update");
   //
-  TTree* treeFit = (TTree*)pcstream->GetFile()->Get("fitdEdxG");
-  treeFit->SetMarkerStyle(25);
+  if (!treeFit){
+    treeFit = (TTree*)pcstream->GetFile()->Get("fitdEdxG");
+    treeFit->SetMarkerStyle(25);
+    treeFit->SetCacheSize(100000000);
+  }
   const char *chfitType[4] = { "dEdx_{BB}=k(#theta)dEdx_{rec}", 
 			       "dEdx_{BB}=k(#theta)dEdx_{rec}+#Delta(#theta)", 
 			       "dEdx_{BB}=k(#theta,#phi)dEdx_{rec}+#Delta(#theta,#phi)",
@@ -265,11 +331,11 @@ void FitTransferFunctionTheta(Bool_t isMax, Int_t dType, Int_t tgl, Bool_t skipK
   fstringFast0+="dEdxM++";
   //
   TString fstringFast="";
-  fstringFast+="dEdxM++";
-  fstringFast+="(1/pCenter)++";
-  fstringFast+="(1/pCenter)^2++";
-  fstringFast+="(1/pCenter)*dEdxM++";
-  fstringFast+="((1/pCenter)^2)*dEdxM++";
+  fstringFast+="dEdxM++";                  // 1
+  fstringFast+="(1/pCenter)++";            // 2
+  fstringFast+="(1/pCenter)^2++";          // 3
+  fstringFast+="(1/pCenter)*dEdxM++";      // 4
+  fstringFast+="((1/pCenter)^2)*dEdxM++";  // 5
   //
   //
   TCut cutUse=TString::Format("isOK&&isMax==%d&&dType==%d&&ibinTgl==%d",isMax,dType,tgl).Data();
@@ -280,8 +346,8 @@ void FitTransferFunctionTheta(Bool_t isMax, Int_t dType, Int_t tgl, Bool_t skipK
   TString *strDeltaFit1 = TStatToolkit::FitPlane(treeFit,"dEdxExp:dEdxMErr", fstringFast0.Data(),cutFit, chi21,npoints,param1,covar1,-1,0, npointsMax, 0);
   TString *strDeltaFit2 = TStatToolkit::FitPlane(treeFit,"dEdxExp:dEdxMErr", fstringFast.Data(),cutFit, chi22,npoints,param2,covar2,-1,0, npointsMax, 0);
   //
-  fstringFast+="(1/pCenter)/dEdxM++";
-  fstringFast+="((1/pCenter)^2)/dEdxM++";
+  fstringFast+="(1/pCenter)/dEdxM++";       //6
+  fstringFast+="((1/pCenter)^2)/dEdxM++";   //7
   TString *strDeltaFit3 = TStatToolkit::FitPlane(treeFit,"dEdxExp:dEdxMErr", fstringFast.Data(),cutFit, chi23,npoints,param3,covar3,-1,0, npointsMax, 0);
 
   treeFit->SetAlias("fitdEdx0",strDeltaFit0->Data());
@@ -294,6 +360,32 @@ void FitTransferFunctionTheta(Bool_t isMax, Int_t dType, Int_t tgl, Bool_t skipK
   strDeltaFit2->Tokenize("++")->Print();
   strDeltaFit3->Tokenize("++")->Print();
   //
+  (*pcstream)<<"fitTheta"<<
+    "isMax="<<isMax<<          // switch is Qmax/Qtot used
+    "dType="<<dType<<          // detector Type
+    "tgl="<<tgl<<              // tgl number 
+    "skipKaon="<<skipKaon<<    // Was kaon dEdx used in the calibration?
+    "maxP="<<maxP<<            // Maximal p used in the fit 
+    "npoints="<<npoints<<      // number of points for fit
+    // model 0
+    "chi20="<<chi20<<          // chi2
+    "param0.="<<&param0<<      // parameters
+    "covar0.="<<&covar0<<      // covariance
+    // model 1
+    "chi21="<<chi21<<          // chi2
+    "param1.="<<&param1<<      // parameters
+    "covar1.="<<&covar1<<      // covariance
+    // model 2
+    "chi22="<<chi22<<          // chi2
+    "param2.="<<&param2<<      // parameters
+    "covar2.="<<&covar2<<      // covariance
+    // model 3
+    "chi23="<<chi23<<          // chi2
+    "param3.="<<&param3<<      // parameters
+    "covar3.="<<&covar3<<      // covariance
+    "\n";
+  //
+  if (!doDraw) return;
   TGraphErrors * graphs[4] ={0};
   //  TCanvas *canvasdEdxFit = new TCanvas(TString::Format("canvasdEdxFit%d",fitType),"canvasdEdxFit",800,800);
   TCanvas *canvasdEdxFit = new TCanvas("canvasdEdxFit","canvasdEdxFit",800,800);
@@ -337,13 +429,117 @@ void FitTransferFunctionTheta(Bool_t isMax, Int_t dType, Int_t tgl, Bool_t skipK
   }
   //
   //
-  canvasdEdxFit->SaveAs(TString::Format("fitTransfer_Max%d_Det_%dTheta%d_UseKaon%d_MaxP%1.0f.pdf",isMax,dType,tgl, skipKaon,maxP));
-  (*pcstream)<<"fitTheta"<<
+  canvasdEdxFit->SaveAs(TString::Format("fitTransfer_Max%d_Det_%dTheta%d_SkipKaon%d_MaxP%1.0f.pdf",isMax,dType,tgl, skipKaon,maxP));
+  canvasdEdxFit->SaveAs(TString::Format("fitTransfer_Max%d_Det_%dTheta%d_SkipKaon%d_MaxP%1.0f.png",isMax,dType,tgl, skipKaon,maxP));
+
+}
+//
+//
+//
+void FitTransferFunctionAll(Bool_t isMax, Int_t dType, Bool_t skipKaon, Double_t maxP, TTreeSRedirector *pcstream, Bool_t doDraw){
+  //
+  // 
+  // dEdx_{BB}= f_{tr}(dEdx_{rec}, #phi,#eta)
+  //
+  // Example usage:
+  //    FitTransferFunctionAll(1,1,1,15,0,1) 
+  //    isMax=1; dType=1; skipKaon=0; Double_t maxP=10
+  //
+  if (!pcstream)  pcstream = new TTreeSRedirector("dedxFit.root","update");
+  //
+  if (!treeFit){
+    treeFit = (TTree*)pcstream->GetFile()->Get("fitdEdxG");
+    treeFit->SetMarkerStyle(25);
+    treeFit->SetCacheSize(100000000);
+  }
+  const char *chfitType[4] = { "dEdx_{BB}=k(#theta)dEdx_{rec}", 
+			       "dEdx_{BB}=k(#theta)dEdx_{rec}+#Delta(#theta)", 
+			       "dEdx_{BB}=k(#theta,#phi)dEdx_{rec}+#Delta(#theta,#phi)",
+			       "dEdx_{BB}=k(#theta,#phi,1/Q)dEdx_{rec}+#Delta(#theta,#phi,1/Q)",
+  };
+  //
+  treeFit->SetAlias("isOK","entries>100&&chi2<80");
+  treeFit->SetAlias("dEdxM","(vecFit.fElements[1]*dEdxExp)/50.");
+  treeFit->SetAlias("dEdxMErr","(vecFitErr.fElements[1]*dEdxExp)/50.");
+  //
+  //
+  Int_t  npointsMax=30000000;
+  TStatToolkit toolkit;
+  Double_t chi20=0,chi21=0,chi22=0,chi23=0;
+  Int_t    npoints=0;
+  TVectorD param0,param1,param2,param3;
+  TMatrixD covar0,covar1,covar2,covar3;
+  //
+  //
+  //
+  TString fstringFast0="";
+  fstringFast0+="dEdxM++";
+  fstringFast0+="(tglCenter-0.5)++";
+  fstringFast0+="(tglCenter-0.5)*dEdxM++";
+  //
+  TString fstringFast1="";
+  fstringFast1+="dEdxM++";
+  fstringFast1+="(tglCenter-0.5)++";
+  fstringFast1+="(tglCenter-0.5)*dEdxM++";
+  fstringFast1+="(tglCenter-0.5)^2++";
+  fstringFast1+="((tglCenter-0.5)^2)*dEdxM++";
+  //
+  TString fstringFast2="";
+  fstringFast2+="dEdxM++";                  // 1
+  fstringFast2+="(1/pCenter)++";            // 2
+  fstringFast2+="(1/pCenter)^2++";          // 3
+  fstringFast2+="(1/pCenter)*dEdxM++";      // 4
+  fstringFast2+="((1/pCenter)^2)*dEdxM++";  // 5
+  //
+  fstringFast2+="(tglCenter-0.5)*dEdxM++";                  // 8
+  fstringFast2+="(tglCenter-0.5)*(1/pCenter)++";            // 9
+  fstringFast2+="(tglCenter-0.5)*(1/pCenter)^2++";          // 10
+  fstringFast2+="(tglCenter-0.5)*(1/pCenter)*dEdxM++";      // 11
+  fstringFast2+="(tglCenter-0.5)*((1/pCenter)^2)*dEdxM++";  // 12
+  //
+  //
+  fstringFast2+="((tglCenter-0.5)^2)*dEdxM++";                  // 15
+  fstringFast2+="((tglCenter-0.5)^2)*(1/pCenter)++";            // 16
+  fstringFast2+="((tglCenter-0.5)^2)*(1/pCenter)^2++";          // 17
+  fstringFast2+="((tglCenter-0.5)^2)*(1/pCenter)*dEdxM++";      // 18
+  fstringFast2+="((tglCenter-0.5)^2)*((1/pCenter)^2)*dEdxM++";  // 19
+  TString fstringFast3=fstringFast2;
+  //
+  fstringFast3+="(1/pCenter)/dEdxM++";       // 6
+  fstringFast3+="((1/pCenter)^2)/dEdxM++";   // 7
+  fstringFast3+="(tglCenter-0.5)*(1/pCenter)/dEdxM++";       // 13
+  fstringFast3+="(tglCenter-0.5)*((1/pCenter)^2)/dEdxM++";   // 14
+  fstringFast3+="((tglCenter-0.5)^2)*(1/pCenter)/dEdxM++";       // 20
+  fstringFast3+="((tglCenter-0.5)^2)*((1/pCenter)^2)/dEdxM++";   // 21
+  //
+  //
+  //
+  TCut cutUse=TString::Format("isOK&&isMax==%d&&dType==%d",isMax,dType).Data();
+  TCut cutFit=cutUse+TString::Format("pCenter<%f",maxP).Data();
+  if (skipKaon) cutFit+="pType!=3";
+  TCut cutDraw =  "(ibinP%2)==0";
+  TString *strDeltaFit0 = TStatToolkit::FitPlane(treeFit,"dEdxExp:dEdxMErr", fstringFast0.Data(),cutFit, chi20,npoints,param0,covar0,-1,0, npointsMax, 1);
+  TString *strDeltaFit1 = TStatToolkit::FitPlane(treeFit,"dEdxExp:dEdxMErr", fstringFast1.Data(),cutFit, chi21,npoints,param1,covar1,-1,0, npointsMax, 0);
+  TString *strDeltaFit2 = TStatToolkit::FitPlane(treeFit,"dEdxExp:dEdxMErr", fstringFast2.Data(),cutFit, chi22,npoints,param2,covar2,-1,0, npointsMax, 0);
+  //
+  TString *strDeltaFit3 = TStatToolkit::FitPlane(treeFit,"dEdxExp:dEdxMErr", fstringFast3.Data(),cutFit, chi23,npoints,param3,covar3,-1,0, npointsMax, 0);
+
+  treeFit->SetAlias("fitdEdx0",strDeltaFit0->Data());
+  treeFit->SetAlias("fitdEdx1",strDeltaFit1->Data());
+  treeFit->SetAlias("fitdEdx2",strDeltaFit2->Data());
+  treeFit->SetAlias("fitdEdx3",strDeltaFit3->Data());
+  
+  strDeltaFit0->Tokenize("++")->Print();
+  strDeltaFit1->Tokenize("++")->Print();
+  strDeltaFit2->Tokenize("++")->Print();
+  strDeltaFit3->Tokenize("++")->Print();
+  //
+  (*pcstream)<<"fitAll"<<
     "isMax="<<isMax<<          // switch is Qmax/Qtot used
     "dType="<<dType<<          // detector Type
-    "tgl="<<tgl<<              // tgl number 
     "skipKaon="<<skipKaon<<    // Was kaon dEdx used in the calibration?
     "maxP="<<maxP<<            // Maximal p used in the fit 
+    "npoints="<<npoints<<      // number of points for fit
     // model 0
     "chi20="<<chi20<<          // chi2
     "param0.="<<&param0<<      // parameters
@@ -361,5 +557,68 @@ void FitTransferFunctionTheta(Bool_t isMax, Int_t dType, Int_t tgl, Bool_t skipK
     "param3.="<<&param3<<      // parameters
     "covar3.="<<&covar3<<      // covariance
     "\n";
+  //
+  if (!doDraw) return;
+  TGraphErrors * graphs[4] ={0};
+  //  TCanvas *canvasdEdxFit = new TCanvas(TString::Format("canvasdEdxFit%d",fitType),"canvasdEdxFit",800,800);
+  TCanvas *canvasdEdxFit = new TCanvas("canvasdEdxFit","canvasdEdxFit",800,800);
+  canvasdEdxFit->SetLeftMargin(0.15);
+  canvasdEdxFit->SetRightMargin(0.1);
+  canvasdEdxFit->SetBottomMargin(0.15);
+  canvasdEdxFit->Divide(2,2,0,0);
+ 
+  for (Int_t fitType=0; fitType<4; fitType++){
+    canvasdEdxFit->cd(fitType+1);
+    TLegend * legendPart = new TLegend(0.16+0.1*(fitType%2==0),0.16-0.14*(fitType<2),0.89,0.4,TString::Format("%s",chfitType[fitType]));
+    legendPart->SetTextSize(0.05);
+    legendPart->SetBorderSize(0);
+    for (Int_t ihis=3; ihis>=0;ihis--){
+      gPad->SetLogx(1);
+      TString expr= TString::Format("100*(dEdxExp-fitdEdx%d)/dEdxExp:pCenter:100*dEdxMErr",fitType);
+      graphs[ihis]= TStatToolkit::MakeGraphErrors(treeFit,expr,cutUse+cutDraw+TString::Format("pType==%d",ihis).Data(), markers[ihis],colors[ihis],markerSize[ihis]);
+      graphs[ihis]->SetMinimum(-5);
+      graphs[ihis]->SetMaximum(5);
+      graphs[ihis]->GetXaxis()->SetTitle("#it{p} (GeV/c)");
+      graphs[ihis]->GetXaxis()->SetTitleSize(0.06);
+      graphs[ihis]->GetYaxis()->SetTitleSize(0.06);      
+      graphs[ihis]->GetYaxis()->SetTitle("#Delta(d#it{E}dx)/d#it{E}dx_{BB}(#beta#gamma) (%)");
+      if (ihis==3) graphs[ihis]->Draw("alp");
+      graphs[ihis]->Draw("lp");
+      legendPart->AddEntry(graphs[ihis],partName[ihis],"p");
+    }
+    legendPart->Draw();
+  }
+  TLatex  latexDraw;
+  latexDraw.SetTextSize(0.045);
+
+  const char *chDType[4]={"IROC","OROC medium","OROC long","OROC"};
+  {
+    if (isMax) latexDraw.DrawLatex(1,4,"Q_{Max}");
+    if (!isMax) latexDraw.DrawLatex(1,4,"Q_{tot}");
+    latexDraw.DrawLatex(1,3.5,chDType[dType%4]);
+    latexDraw.DrawLatex(1,2.5,TString::Format("Fit: p_{t}<%1.1f (GeV/c)",maxP));
+    latexDraw.DrawLatex(1,2.,TString::Format("Fit: Skip Kaon=%d",skipKaon));
+  }
+  //
+  //
+  canvasdEdxFit->SaveAs(TString::Format("fitTransfer_Max%d_Det_%dSkipKaon%d_MaxP%1.0f.pdf",isMax,dType, skipKaon,maxP));
+  canvasdEdxFit->SaveAs(TString::Format("fitTransfer_Max%d_Det_%dSkipKaon%d_MaxP%1.0f.png",isMax,dType, skipKaon,maxP));
+
+}
+
+
+void DrawFit(){
+  //
+  //
+  //
+  TTreeSRedirector * pcstream = new TTreeSRedirector("dedxFit.root","update");
+  TTree * treeTheta=(TTree*)pcstream->GetFile()->Get("fitTheta"); 
+  treeTheta->SetMarkerStyle(25);
+  TTree * treeAll=(TTree*)pcstream->GetFile()->Get("fitAll"); 
+  treeAll->SetMarkerStyle(25);
+  //
+  //
+  //
+  //treeFit->Draw("vecFit.fElements[2]/vecFit.fElements[1]*pow(dEdxExp*sqrt(1+tglCenter**2),0.25):dEdxExp:tglCenter","isTot&&dType==1&&entries>500","colz",1000000);
 
 }
