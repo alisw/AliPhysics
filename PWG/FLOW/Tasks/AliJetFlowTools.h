@@ -55,13 +55,13 @@ class AliJetFlowTools {
         void            SetBinsTrue(TArrayD* bins)      {fBinsTrue              = bins;}
         void            SetBinsRec(TArrayD* bins)       {fBinsRec               = bins;}
         void            SetSVDDraw(Int_t draw)          {fSVDDraw               = draw;}
-        void            SetSVDMinMaxIter(Int_t min, Int_t max)          {fIterMin = min; fIterMax = max;}
         void            SetSVDToy(Bool_t b, Float_t r)  {fSVDToy = b; fJetRadius = r;}
         void            SetBeta(Double_t beta)          {fBeta                  = beta;}
         void            SetBetaDOF(Double_t betaDOF)    {fBetaPerDOF            = betaDOF;}
         void            SetAvoidRoundingError(Bool_t r) {fAvoidRoundingError    = r;}
         void            SetUnfoldingAlgorithm(unfoldingAlgorithm ua)    {fUnfoldingAlgorithm    = ua;}
         void            SetPrior(prior p)                               {fPrior                 = p;}
+        void            SetNormalizeSpectra(Bool_t b)   {fNormalizeSpectra      = b;}
         void            Make();
         void            Finish()                        {fOutputFile->Close();}
         // static const helper functions, mainly histogram manipulation
@@ -107,10 +107,10 @@ class AliJetFlowTools {
         TArrayD*                fBinsTrue;              // pt true bins
         TArrayD*                fBinsRec;               // pt rec bins
         Int_t                   fSVDDraw;               // svd iteration 
-        Int_t                   fIterMin;               // min number of iterations (SVD)
-        Int_t                   fIterMax;               // max number of iterations (SVD)
         Bool_t                  fSVDToy;                // use toy to estimate coveriance matrix for SVD method
         Float_t                 fJetRadius;             // jet radius (for SVD toy)
+        Int_t                   fEventCount;            // number of events
+        Bool_t                  fNormalizeSpectra;      // normalize spectra to event count
         // members, set internally
         TH2D*   fDeltaPtDeltaPhi;               // delta pt delta phi distribution
         TH2D*   fJetPtDeltaPhi;                 // jet pt delta phi distribution
