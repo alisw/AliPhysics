@@ -63,6 +63,7 @@ public:
   virtual void  UserCreateOutputObjects();
 
   void SetDoTPConly(Bool_t tpconlydo)   { fTPConlydo = tpconlydo; };
+  void SetDoTRDonly(Bool_t trdonlydo)   { fTRDonlydo = trdonlydo; };
   void SetDoTOFTPC(Bool_t toftpcdo)   { fTOFTPCdo = toftpcdo; };
   void SetDoTPCTRD(Bool_t tpctrddo)   { fTPCTRDdo = tpctrddo; };
   void SetDoTPCEMCal(Bool_t tpcemcaldo)   { fTPCEMCaldo = tpcemcaldo; };
@@ -88,9 +89,11 @@ public:
   Bool_t IspPb() const { return fCollisionSystem.TestBitNumber(kpPb); }
   
   AliHFEpid *GetPIDTPConly() const { return fPIDTPConly; }
+  AliHFEpid *GetPIDTRDonly() const { return fPIDTRDonly; }
   AliHFEpid *GetPIDTOFTPC() const { return fPIDTOFTPC; }
   AliHFEpid *GetPIDTPCTRD() const { return fPIDTPCTRD; }
   AliHFEpid *GetPIDTPCEMCal() const { return fPIDTPCEMCal; }
+  AliHFEpidQAmanager *GetPIDQAManagerTRDonly() const { return fPIDqaTRDonly; }
   AliHFEpidQAmanager *GetPIDQAManagerTOFTPC() const { return fPIDqaTOFTPC; }
   AliHFEpidQAmanager *GetPIDQAManagerTPCTRD() const { return fPIDqaTPCTRD; }
   AliHFEpidQAmanager *GetPIDQAManagerTPCEMCal() const { return fPIDqaTPCEMCal; }
@@ -107,9 +110,11 @@ public:
   // Cuts for HFE
   AliHFEcuts *fHFECuts;                   // HFE cuts
   AliHFEpid  *fPIDTPConly;                // PID cuts 
+  AliHFEpid  *fPIDTRDonly;                // PID cuts 
   AliHFEpid  *fPIDTOFTPC;                 // PID cuts TOF-TPC only
   AliHFEpid  *fPIDTPCTRD;                 // PID cuts TPC-TRD 
   AliHFEpid  *fPIDTPCEMCal;                 // PID cuts TPC-EMCal 
+  AliHFEpidQAmanager *fPIDqaTRDonly;       // QA Manager TOF TPC
   AliHFEpidQAmanager *fPIDqaTOFTPC;       // QA Manager TOF TPC
   AliHFEpidQAmanager *fPIDqaTPCTRD;       // QA Manager TPC TRD
   AliHFEpidQAmanager *fPIDqaTPCEMCal;       // QA Manager TPC EMCal
@@ -117,6 +122,7 @@ public:
   TBits fCollisionSystem;              // Collision System;
 
   // Histo yields
+  TH1F *fNbEvent;                      // Number of events
   TH1F *fTPConly;                      // TPC only electron yield
   TH1F *fTOFTPC;                      // TOF TPC  electron yield
   TH1F *fTPCTRD;                      // TPC TRD  electron yield
@@ -124,6 +130,7 @@ public:
 
   // Do PID or not
   Bool_t fTPConlydo;                   // Do TPC only PID
+  Bool_t fTRDonlydo;                   // Do TRD only PID
   Bool_t fTOFTPCdo;                    // Do TOF TPC 
   Bool_t fTPCTRDdo;                    // Do TPC TRD 
   Bool_t fTPCEMCaldo;                    // Do TPC EMCal 
@@ -134,7 +141,7 @@ public:
 
   
   
-  ClassDef(AliAnalysisTaskHFEQA, 2); // analysisclass
+  ClassDef(AliAnalysisTaskHFEQA, 3); // analysisclass
 };
 
 #endif
