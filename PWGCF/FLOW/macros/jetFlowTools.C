@@ -45,11 +45,11 @@ void jetFlowTools() {
     // connect input
     tools->SetInputList(l);
 
-
     // unfold using different parameters
     tools->SetUnfoldingAlgorithm(AliJetFlowTools::kSVD);
     tools->SetBeta(0.01);
 
+    tools->SetPrior(AliJetFlowTools::kChi2);
     tools->CreateOutputList(TString("R04_kCombined_SVD_d3"));
     tools->SetSVDDraw(3);
     tools->Make();
@@ -57,21 +57,29 @@ void jetFlowTools() {
     tools->CreateOutputList(TString("R04_kCombined_SVD_d4"));
     tools->SetSVDDraw(4);
     tools->Make();
-    
+
     tools->CreateOutputList(TString("R04_kCombined_SVD_d5"));
     tools->SetSVDDraw(5);
     tools->Make();
 
-    // unfold using chi2 method
+    tools->CreateOutputList(TString("R04_kCombined_SVD_d6"));
+    tools->SetSVDDraw(6);
+    tools->Make();
+
+
+    tools->CreateOutputList(TString("R04_kCombined_SVD_d7"));
+    tools->SetSVDDraw(7);
+    tools->Make();
+
     tools->SetUnfoldingAlgorithm(AliJetFlowTools::kChi2);
-    tools->CreateOutputList(TString("beta_01"));
     tools->SetBeta(0.01);
+    tools->CreateOutputList(TString("chi2_0.01"));
     tools->Make();
 
-    tools->CreateOutputList(TString("beta_005"));
+    tools->SetUnfoldingAlgorithm(AliJetFlowTools::kChi2);
     tools->SetBeta(0.05);
+    tools->CreateOutputList(TString("chi2_0.05"));
     tools->Make();
-
 
     // finish the unfolding
     tools->Finish();
