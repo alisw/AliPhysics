@@ -75,19 +75,23 @@ AliAnalysisTaskHFEQA::AliAnalysisTaskHFEQA() :
   fAODArrayMCInfo(NULL),
   fHFECuts(0),
   fPIDTPConly(0),
+  fPIDTRDonly(0),
   fPIDTOFTPC(0),
   fPIDTPCTRD(0),
   fPIDTPCEMCal(0),
+  fPIDqaTRDonly(0),
   fPIDqaTOFTPC(0),
   fPIDqaTPCTRD(0),
   fPIDqaTPCEMCal(0),
   fCentralityEstimator("V0M"),
   fCollisionSystem(3),
+  fNbEvent(0),
   fTPConly(0),
   fTOFTPC(0),
   fTPCTRD(0),
   fTPCEMCal(0),
   fTPConlydo(kFALSE),
+  fTRDonlydo(kFALSE),
   fTOFTPCdo(kFALSE),
   fTPCTRDdo(kFALSE),
   fTPCEMCaldo(kFALSE)
@@ -104,19 +108,23 @@ AliAnalysisTaskHFEQA:: AliAnalysisTaskHFEQA(const char *name) :
   fAODArrayMCInfo(NULL),
   fHFECuts(0),
   fPIDTPConly(0),
+  fPIDTRDonly(0),
   fPIDTOFTPC(0),
   fPIDTPCTRD(0),
   fPIDTPCEMCal(0),
+  fPIDqaTRDonly(0),
   fPIDqaTOFTPC(0),
   fPIDqaTPCTRD(0),
   fPIDqaTPCEMCal(0),
   fCentralityEstimator("V0M"),
   fCollisionSystem(3),
+  fNbEvent(0),
   fTPConly(0),
   fTOFTPC(0),
   fTPCTRD(0),
   fTPCEMCal(0),
   fTPConlydo(kFALSE),
+  fTRDonlydo(kFALSE),
   fTOFTPCdo(kFALSE),
   fTPCTRDdo(kFALSE),
   fTPCEMCaldo(kFALSE)
@@ -126,10 +134,12 @@ AliAnalysisTaskHFEQA:: AliAnalysisTaskHFEQA(const char *name) :
   //
  
   fPIDTPConly = new AliHFEpid("hfePidTPConly");
+  fPIDTRDonly = new AliHFEpid("hfePidTRDonly");
   fPIDTOFTPC = new AliHFEpid("hfePidTOFTPC");
   fPIDTPCTRD = new AliHFEpid("hfePidTPCTRD");
   fPIDTPCEMCal = new AliHFEpid("hfePidTPCEMCal");
 
+  fPIDqaTRDonly = new AliHFEpidQAmanager;
   fPIDqaTOFTPC = new AliHFEpidQAmanager;
   fPIDqaTPCTRD = new AliHFEpidQAmanager;
   fPIDqaTPCEMCal = new AliHFEpidQAmanager;
@@ -149,19 +159,23 @@ AliAnalysisTaskHFEQA::AliAnalysisTaskHFEQA(const AliAnalysisTaskHFEQA &ref):
   fAODArrayMCInfo(ref.fAODArrayMCInfo),
   fHFECuts(NULL),
   fPIDTPConly(0),
+  fPIDTRDonly(0),
   fPIDTOFTPC(0),
   fPIDTPCTRD(0),
   fPIDTPCEMCal(0),
+  fPIDqaTRDonly(0),
   fPIDqaTOFTPC(0),
   fPIDqaTPCTRD(0),
   fPIDqaTPCEMCal(0),
   fCentralityEstimator(ref.fCentralityEstimator),
   fCollisionSystem(ref.fCollisionSystem),
+  fNbEvent(ref.fNbEvent),
   fTPConly(ref.fTPConly),
   fTOFTPC(ref.fTOFTPC),
   fTPCTRD(ref.fTPCTRD),
   fTPCEMCal(ref.fTPCEMCal),
   fTPConlydo(ref.fTPConlydo),
+  fTRDonlydo(ref.fTRDonlydo),
   fTOFTPCdo(ref.fTOFTPCdo),
   fTPCTRDdo(ref.fTPCTRDdo),
   fTPCEMCaldo(ref.fTPCEMCaldo)
@@ -195,19 +209,23 @@ void AliAnalysisTaskHFEQA::Copy(TObject &o) const {
   target.fAODArrayMCInfo = fAODArrayMCInfo;
   target.fHFECuts = fHFECuts;
   target.fPIDTPConly = fPIDTPConly;
+  target.fPIDTRDonly = fPIDTRDonly;
   target.fPIDTOFTPC = fPIDTOFTPC;
   target.fPIDTPCTRD = fPIDTPCTRD;
   target.fPIDTPCEMCal = fPIDTPCEMCal;
+  target.fPIDqaTRDonly = fPIDqaTRDonly;
   target.fPIDqaTOFTPC = fPIDqaTOFTPC;
   target.fPIDqaTPCTRD = fPIDqaTPCTRD;
   target.fPIDqaTPCEMCal = fPIDqaTPCEMCal;
   target.fCentralityEstimator = fCentralityEstimator;
   target.fCollisionSystem = fCollisionSystem;
+  target.fNbEvent = fNbEvent;
   target.fTPConly = fTPConly;
   target.fTOFTPC = fTOFTPC;
   target.fTPCTRD = fTPCTRD;
   target.fTPCEMCal = fTPCEMCal;
   target.fTPConlydo = fTPConlydo;
+  target.fTRDonlydo = fTRDonlydo;  
   target.fTOFTPCdo = fTOFTPCdo;
   target.fTPCTRDdo = fTPCTRDdo;
   target.fTPCEMCaldo = fTPCEMCaldo;
@@ -224,6 +242,7 @@ AliAnalysisTaskHFEQA::~AliAnalysisTaskHFEQA(){
   if(fListHist) delete fListHist;
   if(fHFECuts) delete fHFECuts;
   if(fPIDTPConly) delete fPIDTPConly;
+  if(fPIDTRDonly) delete fPIDTRDonly;
   if(fPIDTOFTPC) delete fPIDTOFTPC;
   if(fPIDTPCTRD) delete fPIDTPCTRD;
   if(fPIDTPCEMCal) delete fPIDTPCEMCal;
@@ -267,11 +286,20 @@ void AliAnalysisTaskHFEQA::UserCreateOutputObjects()
 
   // PIDTPConly HFE
   if(!fPIDTPConly) {
-    fPIDTPConly =new AliHFEpid("hfePidTPC");
+    fPIDTPConly =new AliHFEpid("hfePidTPConly");
   }
   if(!fPIDTPConly->GetNumberOfPIDdetectors()) fPIDTPConly->AddDetector("TPC", 0);
   fPIDTPConly->InitializePID();
   fPIDTPConly->SortDetectors();
+
+  // PIDTRDonly HFE
+  if(!fPIDTRDonly) {
+    fPIDTRDonly =new AliHFEpid("hfePidTRDonly");
+  }
+  if(!fPIDTRDonly->GetNumberOfPIDdetectors()) fPIDTRDonly->AddDetector("TRD", 0);
+  fPIDTRDonly->InitializePID();
+  fPIDqaTRDonly->Initialize(fPIDTRDonly);
+  fPIDTRDonly->SortDetectors();
 
   // PIDTOFTPC HFE
   if(!fPIDTOFTPC) {
@@ -311,6 +339,8 @@ void AliAnalysisTaskHFEQA::UserCreateOutputObjects()
   fPIDTPCEMCal->SortDetectors();
  
   // Histograms
+  fNbEvent = new TH1F("NbEvent", "",11,0,11);
+  fNbEvent->Sumw2();
   Double_t ptbinning[36] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};
   fTPConly = new TH1F("TPCOnly", "",35,&ptbinning[0]);
   fTPConly->Sumw2();
@@ -327,10 +357,12 @@ void AliAnalysisTaskHFEQA::UserCreateOutputObjects()
   fListHist = new TList();
   fListHist->SetOwner();
 
+  fListHist->Add(fPIDqaTRDonly->MakeList("HFEpidQATRDonly"));
   fListHist->Add(fPIDqaTOFTPC->MakeList("HFEpidQATOFTPC"));
   fListHist->Add(fPIDqaTPCTRD->MakeList("HFEpidQATPCTRD"));
   fListHist->Add(fPIDqaTPCEMCal->MakeList("HFEpidQATPCEMCal"));
 
+  fListHist->Add(fNbEvent);
   fListHist->Add(fTPConly);
   fListHist->Add(fTOFTPC);
   fListHist->Add(fTPCTRD);
@@ -443,6 +475,7 @@ void AliAnalysisTaskHFEQA::UserExec(Option_t */*option*/)
     if((90.0< cntr) && (cntr<100.0)) binct = 10.5;
     if(binct > 11.0) return;
   }
+  else binct = 0.5;
   AliDebug(2,Form("Centrality %f with %s",binct,fCentralityEstimator.Data()));
  
   //////////////////////
@@ -454,6 +487,9 @@ void AliAnalysisTaskHFEQA::UserExec(Option_t */*option*/)
    
   if(!fPIDTPConly->IsInitialized()){
     fPIDTPConly->InitializePID(runnumber);
+  }
+  if(!fPIDTRDonly->IsInitialized()){
+    fPIDTRDonly->InitializePID(runnumber);
   }
   if(!fPIDTOFTPC->IsInitialized()){
     fPIDTOFTPC->InitializePID(runnumber);
@@ -480,6 +516,7 @@ void AliAnalysisTaskHFEQA::UserExec(Option_t */*option*/)
     return;
   }
   fPIDTPConly->SetPIDResponse(pidResponse);
+  fPIDTRDonly->SetPIDResponse(pidResponse);
   fPIDTOFTPC->SetPIDResponse(pidResponse);
   fPIDTPCTRD->SetPIDResponse(pidResponse);
   fPIDTPCEMCal->SetPIDResponse(pidResponse);
@@ -493,6 +530,7 @@ void AliAnalysisTaskHFEQA::UserExec(Option_t */*option*/)
     PostData(1, fListHist);
     return;
   }
+  fNbEvent->Fill(binct);
   
   //////////////////////////
   // Loop over track
@@ -561,6 +599,14 @@ void AliAnalysisTaskHFEQA::UserExec(Option_t */*option*/)
       }
     }
     AliDebug(2,"TPC only PID\n");
+	
+    // Complete PID TRD alone
+    if(fTRDonlydo) {
+      if(fPIDTRDonly->IsSelected(&hfetrack,0x0,"recTrackCont",fPIDqaTRDonly)) {
+	AliDebug(2,"Passed TRD only PID\n");
+      }
+    }
+    AliDebug(2,"TRD only PID\n");
 	    
     
     // Complete PID TPC TOF 

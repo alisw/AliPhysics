@@ -258,10 +258,15 @@ void AliHFEtrdPIDqaV1::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa
   container[2] = pidResponse ? pidResponse->NumberOfSigmasTPC(track->GetRecTrack(), AliPID::kElectron) : 0.;
   container[3] = step;
   container[4] = track->GetCentrality();
+  AliDebug(1, Form("Species %d, p %f, number of sigma TPC %f, step %f, centrality %f", (Int_t)species,(Float_t) container[1],(Float_t) container[2],(Float_t) container[3],(Float_t) container[4]));
   fHistos->Fill("hTPCsigma", container);
+  AliDebug(1, "Filled  TPC sigma\n");
+
+
 
   container[2] = trdpid ? trdpid->GetElectronLikelihood(static_cast<const AliVTrack*>(track->GetRecTrack()), anatype) : 0;
   fHistos->Fill("hTRDlikelihood", container);
+  AliDebug(1, "Filled likelihood\n");
 
   if(track->IsESDanalysis()){
     const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track->GetRecTrack());
@@ -274,6 +279,7 @@ void AliHFEtrdPIDqaV1::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa
     container[2] = trdpid ? trdpid->GetChargeLayer(track->GetRecTrack(), ily, anatype) : 0;
     if(container[2] < 1e-3) continue; // Filter out 0 entries
     fHistos->Fill("hTRDcharge", container);
+    AliDebug(1, "Filled TRD charge\n");
   }
 
   Int_t ntracklets = track->GetRecTrack()->GetTRDntrackletsPID();
@@ -281,6 +287,7 @@ void AliHFEtrdPIDqaV1::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa
     fHistos->Fill("hNtrackletsBefore", trdpid ? trdpid->GetP(track->GetRecTrack(), anatype) : 0., ntracklets);
   else
     fHistos->Fill("hNtrackletsAfter", trdpid ? trdpid->GetP(track->GetRecTrack(), anatype) : 0., ntracklets);
+  AliDebug(1, "Filled tracklet\n");
 }
 
 //_________________________________________________________

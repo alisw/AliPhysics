@@ -1,4 +1,4 @@
-AliAnalysisTaskHFEQA* ConfigHFEQA(Bool_t useMC, Bool_t isAOD, Int_t icollisionsystem = 2, Int_t icent = 2,Bool_t tpconlydo = kTRUE,Bool_t toftpcdo = kTRUE,Bool_t tpctrddo = kTRUE,Bool_t tpcemcaldo = kTRUE){
+AliAnalysisTaskHFEQA* ConfigHFEQA(Bool_t useMC, Bool_t isAOD, Int_t icollisionsystem = 2, Int_t icent = 2,Bool_t tpconlydo = kTRUE,Bool_t trdonlydo = kTRUE,Bool_t toftpcdo = kTRUE,Bool_t tpctrddo = kTRUE,Bool_t tpcemcaldo = kTRUE){
   
   //***************************************//
   //        Setting up the HFE cuts        //
@@ -52,10 +52,25 @@ AliAnalysisTaskHFEQA* ConfigHFEQA(Bool_t useMC, Bool_t isAOD, Int_t icollisionsy
   //          Configure the PID            //
   //***************************************//
 
-  if(tpconlydo) task->SetDoTPConly(kTRUE);
-  if(toftpcdo) task->SetDoTOFTPC(kTRUE);
-  if(tpctrddo) task->SetDoTPCTRD(kTRUE);
-  if(tpcemcaldo) task->SetDoTPCEMCal(kTRUE);
+  if(tpconlydo) {
+    task->SetDoTPConly(kTRUE);
+  }
+  if(trdonlydo) {
+    task->SetDoTRDonly(kTRUE);
+    task->GetPIDQAManagerTRDonly()->SetHighResolutionHistos();
+  }
+  if(toftpcdo) {
+    task->SetDoTOFTPC(kTRUE);
+    task->GetPIDQAManagerTOFTPC()->SetHighResolutionHistos();
+  }
+  if(tpctrddo) {
+    task->SetDoTPCTRD(kTRUE);
+    task->GetPIDQAManagerTPCTRD()->SetHighResolutionHistos();
+  }
+  if(tpcemcaldo) {
+    task->SetDoTPCEMCal(kTRUE);
+    task->GetPIDQAManagerTPCEMCal()->SetHighResolutionHistos();
+  }
 
   AliHFEpid *pidTPConly = task->GetPIDTPConly();
   if(useMC) pidTPConly->SetHasMCData(kTRUE);
@@ -104,6 +119,17 @@ AliAnalysisTaskHFEQA* ConfigHFEQA(Bool_t useMC, Bool_t isAOD, Int_t icollisionsy
   trdpid->SetElectronEfficiency(0.80);   // efficiency
   trdpid->SetNTracklets(6);      // ntracklets threshold
   trdpid->SetCutNTracklets(6, kTRUE);
+
+  // TRD only
+  AliHFEpid *pidTRDonly = task->GetPIDTRDonly();
+  if(useMC) pidTRDonly->SetHasMCData(kTRUE);
+  pidTRDonly->AddDetector("TRD", 0);
+ 
+  AliHFEpidTRD *trdonlypid = pidTRDonly->GetDetPID(AliHFEpid::kTRDpid);
+  trdonlypid->SetTRD2DPID();
+  trdonlypid->SetElectronEfficiency(0.80);   // efficiency
+  trdonlypid->SetNTracklets(6);      // ntracklets threshold
+  trdonlypid->SetCutNTracklets(6, kTRUE);
 
   // change E/p cuts
   AliHFEpidEMCAL *emcpid = pidTPCEMCal->AliHFEpid::GetDetPID(AliHFEpid::kEMCALpid);

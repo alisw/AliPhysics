@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskHFEQA(Bool_t useMC, Bool_t isAOD, Int_t icollisionsystem = 2, Int_t icent = 2,Int_t debuglevel = 4,Bool_t tpconlydo = kTRUE,Bool_t toftpcdo = kTRUE,Bool_t tpctrddo = kTRUE,Bool_t tpcemcaldo = kTRUE){
+AliAnalysisTask *AddTaskHFEQA(Bool_t useMC, Bool_t isAOD, Int_t icollisionsystem = 2, Int_t icent = 2,Int_t debuglevel = 4,Bool_t tpconlydo = kTRUE,Bool_t trdonlydo = kTRUE,Bool_t toftpcdo = kTRUE,Bool_t tpctrddo = kTRUE,Bool_t tpcemcaldo = kTRUE){
 
    // Name
   TString appendixx("HFEQA");
@@ -11,14 +11,17 @@ AliAnalysisTask *AddTaskHFEQA(Bool_t useMC, Bool_t isAOD, Int_t icollisionsystem
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-  AliAnalysisTaskHFEQA *task = ConfigHFEQA(useMC,isAOD,icollisionsystem,icent,tpconlydo,toftpcdo,tpctrddo,tpcemcaldo);  
+  AliAnalysisTaskHFEQA *task = ConfigHFEQA(useMC,isAOD,icollisionsystem,icent,tpconlydo,trdonlydo,toftpcdo,tpctrddo,tpcemcaldo);  
 
   mgr->AddTask(task);
   mgr->AddClassDebug("AliAnalysisTaskHFEQA",debuglevel);
-  mgr->AddClassDebug("AliHFEpid",debuglevel);
-  mgr->AddClassDebug("AliHFEpidTPC",debuglevel);
-  mgr->AddClassDebug("AliHFEpidTOF",debuglevel);
+  //mgr->AddClassDebug("AliHFEpid",debuglevel);
+  //mgr->AddClassDebug("AliHFEpidTPC",debuglevel);
+  //mgr->AddClassDebug("AliHFEpidTOF",debuglevel);
   mgr->AddClassDebug("AliHFEpidTRD",debuglevel);
+  mgr->AddClassDebug("AliHFEtrdPIDqaV1",debuglevel);
+  mgr->AddClassDebug("AliPIDResponse",debuglevel);
+  mgr->AddClassDebug("AliTRDPIDResponse",debuglevel);
 
   TString containerName = mgr->GetCommonFileName();
   containerName += ":";
