@@ -679,6 +679,7 @@ int AliCFSingleTrackEfficiencyTask::CheckBackgroundSource(AliVParticle* track, c
   if(useMCarray) res=fElectronsKine->CheckMC(track, (AliVEvent*)pEvent);
   else res=fElectrons->CheckMC(track, (AliVEvent*)pEvent);
   //cout << "here2 " << endl;
+
   int origin=-1;
   if(useMCarray){
     origin=fElectronsKine->GetOriginMother();
@@ -696,8 +697,9 @@ int AliCFSingleTrackEfficiencyTask::CheckBackgroundSource(AliVParticle* track, c
   //  if(origin==AliDxHFEToolsMC::kOriginGluonCharm || origin==AliDxHFEToolsMC::kOriginGluonBeauty) cout << "HELLO" << endl;
 
   Bool_t isConversion=(origin==AliDxHFEToolsMC::kNrOrginMother+2);
-  //if(isConversion) cout << "Origin is conversion " << origin << endl;
-  //else cout << "not conversion" << endl;
+  Bool_t isHadron=(origin==-1);
+  
+
   TString nameGen;	
   int originvsGen=-2;
   Int_t generator=0;// adding per track: -1 hijing; 0-pythiaHF; 2-the rest  --> -2= pure hijing -> back ok (but check identity); 0= phytia,pythia-> ok for checking signal; reject the rest: -1 (Hij,pyt), 1 (hij, rest), 2 (pythia,rest) ,4 (rest,rest) 
@@ -1281,20 +1283,34 @@ void AliCFSingleTrackEfficiencyTask::CheckAODParticles(){
     int originvsGen= CheckBackgroundSource(mcPart,const_cast<AliVEvent*>(event),kTRUE);
     //    int originvsGen=CheckBackgroundSource(track,const_cast<AliVEvent*>(fEvent));
     fhElGenerator->Fill(originvsGen);
-    if(fSelectElSource==kHFPythia && originvsGen!=kHFPythia){
-      //fhOriginReco->Fill(fOriginMotherReco);
-      continue;
+
+
+    if(fUseGenerator){
+      if(fSelectElSource==kHFPythia && originvsGen!=kHFPythia){
+	continue;
+      }
+      if(fSelectElSource==knonHFHijing && originvsGen!=knonHFHijing){
+	continue;
+      }
+
+      if(fSelectElSource==kConvElHijing && originvsGen!=kConvElHijing){
+	continue;
+      }
     }
-    if(fSelectElSource==knonHFHijing && originvsGen!=knonHFHijing){
-      //      fhOriginReco->Fill(fOriginMotherReco);
-      continue;
+    else{
+
+      if(fSelectElSource==kHF && originvsGen!=kHF){
+	continue;
+      }
+      if(fSelectElSource==knonHF && originvsGen!=knonHF){
+	continue;
+      }
+
+      if(fSelectElSource==kConvEl && originvsGen!=kConvEl){
+	continue;
+      }
     }
 
-    if(fSelectElSource==kConvElHijing && originvsGen!=kConvElHijing){
-      //fhOriginReco->Fill(fOriginMotherReco);
-      continue;
-    }
-    fhOriginKine->Fill(fOriginMotherKine);
 
     //cout << "originvsGen: " << originvsGen << " kConvElHijing: " << kConvElHijing << endl;
       //    cout << "
@@ -1307,6 +1323,8 @@ void AliCFSingleTrackEfficiencyTask::CheckAODParticles(){
       AliDebug(3,"MC Particle not in the acceptance\n");
       continue;
     }
+    fhOriginKine->Fill(fOriginMotherKine);
+
     
     fCFManager->GetParticleContainer()->Fill(containerInput,kStepMCKineCut);
 	 
