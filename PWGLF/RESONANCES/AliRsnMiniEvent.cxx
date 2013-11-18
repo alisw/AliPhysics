@@ -28,7 +28,7 @@ void AliRsnMiniEvent::AddParticle(AliRsnMiniParticle copy)
 AliRsnMiniParticle *AliRsnMiniEvent::GetParticle(Int_t i)
 {
 //
-// Return the leading particle
+// Return the particle
 //
 
    if (i < 0 || i > fParticles.GetEntriesFast()) return 0x0;

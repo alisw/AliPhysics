@@ -11,9 +11,9 @@ AliRsnMiniAnalysisTask * AddTaskKStar_pAPileUp
    Bool_t      isMC,
    Bool_t      isPP,
    TString     outNameSuffix = "tof2s_pileup",
-   Bool_t      rmFirstEvtChunk = kFALSE,
+   Bool_t      rmFirstEvtChunk = kTRUE,
    Bool_t      rejectPileUp = kTRUE,
-   Int_t       MinPlpContribSPD = 1,
+   Int_t       MinPlpContribSPD = 5,
    Bool_t      useMVPileUpSelection = kFALSE,
    Int_t       MinPlpContribMV = 5,
    Int_t       aodFilterBit = 5,
@@ -48,6 +48,9 @@ AliRsnMiniAnalysisTask * AddTaskKStar_pAPileUp
    // create the task and configure 
    TString taskName = Form("TOFKStar%s%s_%i%i", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"), (Int_t)cutPiCandidate,(Int_t)cutKaCandidate );
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
+   //task->UseESDTriggerMask(AliVEvent::kINT7); //ESD
+   task->SelectCollisionCandidates(AliVEvent::kINT7); //AOD
+   
    if (isPP) 
      task->UseMultiplicity("QUALITY");
    else

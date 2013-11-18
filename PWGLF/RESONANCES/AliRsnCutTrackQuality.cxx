@@ -221,8 +221,8 @@ Bool_t AliRsnCutTrackQuality::CheckESD(AliESDtrack *track)
 // This is done using the default track checker for ESD.
 // It is declared static, not to recreate it every time.
 //
-
-   static AliESDtrackCuts cuts;
+  //static AliESDtrackCuts cuts;
+  AliESDtrackCuts cuts;
 
    // general acceptance/pt cuts
    cuts.SetPtRange(fPt[0], fPt[1]);
