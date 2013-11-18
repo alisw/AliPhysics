@@ -44,6 +44,8 @@ Bool_t LoadCommonLibraries();
 Bool_t LoadAnalysisLibraries();
 Bool_t LoadLibrary(const char *);
 TChain *CreateChain();
+const char *cdbPath = "raw://";
+Int_t run_number = 0;
 
 //______________________________________________________________________________
 void AODtrain(Int_t merge=0)
@@ -110,7 +112,7 @@ void AODtrain(Int_t merge=0)
    // Debugging if needed
    if (useDBG) mgr->SetDebugLevel(3);
 
-   AddAnalysisTasks();
+   AddAnalysisTasks(cdbPath);
    if (merge) {
       AODmerge();
       mgr->InitAnalysis();
@@ -134,7 +136,7 @@ void AODtrain(Int_t merge=0)
 }                                                                                                                                          
                                                                                                                                             
 //______________________________________________________________________________                                                           
-void AddAnalysisTasks(){                                                                                                                                          
+void AddAnalysisTasks(const char *cdb_location){                                                                                                                                          
   // Add all analysis task wagons to the train                                                                                               
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();                                                                     
 
@@ -169,10 +171,10 @@ void AddAnalysisTasks(){
   //
   if (doCDBconnect && !useTender) {
     gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskCDBconnect.C");
-    AliTaskCDBconnect *taskCDB = AddTaskCDBconnect();
+    AliTaskCDBconnect *taskCDB = AddTaskCDBconnect(cdb_location, run_number);
     if (!taskCDB) return;
     AliCDBManager *cdb = AliCDBManager::Instance();
-    cdb->SetDefaultStorage("raw://");
+    cdb->SetDefaultStorage(cdb_location);
 //    taskCDB->SetRunNumber(run_number);
   }    
  
