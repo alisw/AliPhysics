@@ -1,6 +1,5 @@
-const Int_t numberOfCentralityBins = 12;
-//TString centralityArray[numberOfCentralityBins] = {"0-4","4-5","6-14","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3"};
-TString centralityArray[numberOfCentralityBins] = {"0-80","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3"};
+const Int_t numberOfCentralityBins = 13;
+TString centralityArray[numberOfCentralityBins] = {"0-80","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3","92-8500"};
 
 const Int_t gRebin = 1;
 
