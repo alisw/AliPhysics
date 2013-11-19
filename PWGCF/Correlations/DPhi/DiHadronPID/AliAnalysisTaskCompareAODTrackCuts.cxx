@@ -67,7 +67,8 @@ AliAnalysisTaskCompareAODTrackCuts::AliAnalysisTaskCompareAODTrackCuts():
 	fIsMC(kFALSE),
 	fVerbose(kFALSE),
 	fCalculateTOFMismatch(kFALSE),	
-	fUseMismatchFileFromHomeDir(kTRUE),	
+	fUseMismatchFileFromHomeDir(kTRUE),
+	fUseNSigmaOnPIDAxes(kFALSE),	
 	fEventCuts(0x0),
 	fTrackCuts(0x0),
 	fInclusiveTimes(0x0),
@@ -95,6 +96,7 @@ AliAnalysisTaskCompareAODTrackCuts::AliAnalysisTaskCompareAODTrackCuts(const cha
 	fVerbose(kFALSE),
 	fCalculateTOFMismatch(kFALSE),	
 	fUseMismatchFileFromHomeDir(kTRUE),	
+	fUseNSigmaOnPIDAxes(kFALSE),	
 	fEventCuts(0x0),
 	fTrackCuts(0x0),
 	fInclusiveTimes(0x0),
@@ -375,7 +377,7 @@ void AliAnalysisTaskCompareAODTrackCuts::UserExec(Option_t*) {
 		((AliAODTrackCutsDiHadronPID*)fTrackCuts->At(iCuts))->EventIsDone(fIsMC);
 	}
 	
-	cout << "Matched: "<<nmatched<<" Mismatched: "<<nmismatched<<" No TOF hit: "<<nnotof<<endl;
+	//cout << "Matched: "<<nmatched<<" Mismatched: "<<nmismatched<<" No TOF hit: "<<nnotof<<endl;
 
 	PostData(1,fOutputList);
 
@@ -496,6 +498,48 @@ Double_t AliAnalysisTaskCompareAODTrackCuts::GenerateRandomHit(Double_t eta) {
 	rndhittime = fT0Fill->GetRandom() - t0fill + currentRndTime;
 
 	return rndhittime;
+
+}
+
+// -----------------------------------------------------------------------
+void AliAnalysisTaskCompareAODTrackCuts::SetUseNSigmaOnPIDAxes(const Bool_t UseNSigma) {
+
+	// Will use NSigma on all PID axes. Will also change all track cuts objects
+	// owned by this task.
+	if (fDebug > 0) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	fUseNSigmaOnPIDAxes = UseNSigma;
+
+	if (fTrackCuts) {
+		for (Int_t iCut = 0; iCut < fTrackCuts->GetSize(); ++iCut) {
+			AliAODTrackCutsDiHadronPID* cutstmp = (AliAODTrackCutsDiHadronPID*)(fTrackCuts->At(iCut));
+			if (cutstmp) {cutstmp->SetUseNSigmaOnPIDAxes(UseNSigma);}
+			else {cout << Form("%s -> WARNING: Found an empty spot in the track cuts array...",__func__) << endl;}
+		}
+	}
+}
+
+// -----------------------------------------------------------------------
+void AliAnalysisTaskCompareAODTrackCuts::SetEventCuts(AliAODEventCutsDiHadronPID* eventcuts) {
+
+	if (fDebug > 0) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (!eventcuts) {cout << Form("%s -> ERROR: No Event Cuts Object provided.",__func__) << endl; return;}
+
+	fEventCuts = eventcuts;
+
+}
+
+// -----------------------------------------------------------------------
+void AliAnalysisTaskCompareAODTrackCuts::AddTrackCuts(AliAODTrackCutsDiHadronPID* trackcuts) {
+
+	if (fDebug > 0) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (!trackcuts) {cout << Form("%s -> ERROR: No Track Cuts Object provided.",__func__) << endl; return;}
+	if (!fTrackCuts) {cout << Form("%s -> ERROR: No Track Cuts array available.",__func__) << endl; return;}
+
+	// The setting of the task propagates to the imported track cuts object.
+	trackcuts->SetUseNSigmaOnPIDAxes(fUseNSigmaOnPIDAxes);
+
+	fTrackCuts->AddLast(trackcuts);
 
 }
 

@@ -26,6 +26,9 @@
 
 ClassImp(AliTrackDiHadronPID);
 
+Double_t AliTrackDiHadronPID::fSigmaTOFStd = 80.;	// Should perhaps be replaced with a 
+Double_t AliTrackDiHadronPID::fSigmaTPCStd = 3.5;   // function later.
+
 // -----------------------------------------------------------------------
 AliTrackDiHadronPID::AliTrackDiHadronPID():
 	TObject(),
@@ -159,7 +162,7 @@ AliTrackDiHadronPID::AliTrackDiHadronPID(AliAODTrack* track, AliAODTrack* global
 
 	if (track) {
 		fAODTrack = track;
-		fAODEvent = track->GetAODEvent();
+		fAODEvent = const_cast<AliAODEvent*>(track->GetAODEvent());
 	}
 	if (globaltrack) fAODGlobalTrack = globaltrack;
 	if (mcparticle) fAODMCParticle = mcparticle;

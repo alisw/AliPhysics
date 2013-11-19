@@ -25,33 +25,18 @@ public:
 	Bool_t LoadExternalMismatchHistos();			// For each mismatch method, external histo's are needed.
 	Double_t GenerateRandomHit(Double_t eta);		// Generates a random time for a certain eta.
 
-// Run over MC or not.
+// Task Settings.
 	void SetMC(const Bool_t isMC = kTRUE) {fIsMC = isMC;} 
 	void SetVerbose(const Bool_t verbose = kTRUE) {fVerbose = verbose;}
 	void SetCalculateTOFMismatch(const Bool_t calculatetofmismatch = kTRUE/* const Int_t method*/) {fCalculateTOFMismatch = calculatetofmismatch;}
 	void SetUseMismatchFileFromGridHomeDir(const Bool_t usefromhomedir = kTRUE) {fUseMismatchFileFromHomeDir = usefromhomedir;}
+	void SetUseNSigmaOnPIDAxes(const Bool_t UseNSigma = kTRUE);
 
-// Managing Event Cuts.
-    void SetEventCuts(AliAODEventCutsDiHadronPID* eventcuts) {
-    	if (!eventcuts) {
-    			cout<<"ERROR: No Event Cuts Object"<<endl;
-    		return;
-    	}
-    	fEventCuts = eventcuts;
-    }
+// Managing Cuts.
+    void SetEventCuts(AliAODEventCutsDiHadronPID* eventcuts);
+    void AddTrackCuts(AliAODTrackCutsDiHadronPID* trackcuts);
 
-// Managing Track Cuts.
-    void AddTrackCuts(AliAODTrackCutsDiHadronPID* trackcuts) {
-
-    	if (!trackcuts) return;
-    	if (!fTrackCuts) {
-    		cout<<"ERROR: No Track Cuts array available! Check your constructor."<<endl;
-    		return;
-    	}
-
-    	fTrackCuts->AddLast(trackcuts);
-    }
-
+// Override from AliAnalysisTaskSE.
 	void SetDebugLevel(const Int_t debuglvl);
 
 private:
@@ -71,6 +56,7 @@ private:
 	Bool_t							fVerbose;					// Verbose mode.
 	Bool_t 							fCalculateTOFMismatch;		// Compute mismatch or not. (Needs input histograms!)
 	Bool_t							fUseMismatchFileFromHomeDir;// Take TOFmistmachHistos.root from the home dir, or take the one copied when submitting jobs
+	Bool_t							fUseNSigmaOnPIDAxes;		// Uses NSigma on the PID axes of all histograms.
 
 	// Event Cut Object (streamed!).
 	AliAODEventCutsDiHadronPID*		fEventCuts;					// Event Cuts.
