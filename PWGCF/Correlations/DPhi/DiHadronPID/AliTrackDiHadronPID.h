@@ -35,34 +35,13 @@ private:
 
 // Check functions.
 public:
-	Bool_t IsBasicTrackInfoAvailable() const { 
-		if (!fBasicInfoAvailable) cout<<"Basic Track Info not available."<<endl; 
-		return fBasicInfoAvailable;
-	}
-	Bool_t IsFlagInfoAvailable() const { 
-		if (!fFlagsAvailable) cout<<"Flag Info not available."<<endl; 
-		return fFlagsAvailable;
-	}
-	Bool_t IsDCAInfoAvailable() const { 
-		if (!fDCAInfoAvailable) cout<<"DCA Info not available."<<endl; 
-		return fDCAInfoAvailable;
-	}
-	Bool_t IsITSInfoAvailable() const { 
-		if (!fITSInfoAvailable) cout<<"ITS Info not available."<<endl; 
-		return fITSInfoAvailable;
-	}
-	Bool_t IsTPCInfoAvailable() const { 
-		if (!fTPCInfoAvailable) cout<<"TPC Info not available."<<endl; 
-		return fTPCInfoAvailable;
-	}
-	Bool_t IsTOFInfoAvailable() const { 
-		if (!fTOFInfoAvailable) cout<<"TOF Info not available."<<endl; 
-		return fTOFInfoAvailable;
-	}
-	Bool_t IsMCInfoAvailable() const { 
-		if (!fMCInfoAvailable) cout<<"MC Info not available."<<endl; 
-		return fMCInfoAvailable;
-	}			
+	Bool_t IsBasicTrackInfoAvailable() const {return fBasicInfoAvailable;}
+	Bool_t IsFlagInfoAvailable() const {return fFlagsAvailable;}
+	Bool_t IsDCAInfoAvailable() const {return fDCAInfoAvailable;}
+	Bool_t IsITSInfoAvailable() const {return fITSInfoAvailable;}
+	Bool_t IsTPCInfoAvailable() const {return fTPCInfoAvailable;}
+	Bool_t IsTOFInfoAvailable() const {return fTOFInfoAvailable;}
+	Bool_t IsMCInfoAvailable() const {return fMCInfoAvailable;}			
 
 public:
 // Getting Track Parameters. Functionality is the same as AOD track,
@@ -103,6 +82,13 @@ public:
 			return -10e10;
 		}
 		return (fTOFsignal - fTOFsignalMinusExpected[species]);
+	}
+	Double_t GetTOFsigmaExpected(Int_t species) {
+		if (species < 0 || species > 2) {
+			cout<<"ERROR: Unknown species"<<endl;
+			return -10e10;
+		}
+		return (GetTOFsignalMinusExpected(species)/GetNumberOfSigmasTOF(species));
 	}
 	Double_t GetNumberOfSigmasTOF(Int_t species) const {
 		if (species < 0 || species > 2) {
@@ -173,7 +159,7 @@ private:
 // Pointers to original Tracks etc (cannot be returned, will not be streamed/saved).
 	AliAODTrack*		fAODTrack;			//! Original AOD Track.
 	AliAODTrack*		fAODGlobalTrack;	//! Corresponding Global AOD Track.
-	const AliAODEvent*	fAODEvent;			//!	Original AOD Event.
+	AliAODEvent*		fAODEvent;			//!	Original AOD Event.
 	AliAODMCParticle*	fAODMCParticle;		//! Original MC Particle.
 	AliPIDResponse*		fPIDResponse;		//!	Original PID Response.
 
@@ -228,7 +214,13 @@ private:
 	Bool_t				fIsSecondaryFromWeakDecay;
 	Bool_t				fIsSecondaryFromMaterial;
 
+// Static variables.
+public:
+	static Double_t 	fSigmaTOFStd;
+	static Double_t 	fSigmaTPCStd;
+
 // Debug.
+private:
 	Int_t				fDebug;				// Debug flag.
 
 	ClassDef(AliTrackDiHadronPID,1);

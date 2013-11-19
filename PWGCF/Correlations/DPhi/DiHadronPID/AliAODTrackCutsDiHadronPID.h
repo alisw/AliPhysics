@@ -126,7 +126,7 @@ public:
 // Setters (Settings)
 	void SetIsMC(Bool_t ismc = kTRUE) {fIsMC = ismc;}
 	void SetLowPtNSigmaTOFOnly(Bool_t lowptnsigmatofonly = kFALSE) {fLowPtNSigmaTOFOnly = lowptnsigmatofonly;}
-
+	void SetUseNSigmaOnPIDAxes(const Bool_t useNSigma = kTRUE) {fUseNSigmaOnPIDAxes = useNSigma;}
 	void SetDebugLevel(Int_t debuglevel) {fDebug = debuglevel;}
 
 // -----------------------------------------------------------------------
@@ -219,6 +219,7 @@ private:
 // Settings
 	Bool_t					fIsMC;							// Is the current event MC or not.
 	Bool_t					fLowPtNSigmaTOFOnly;			//
+	Bool_t					fUseNSigmaOnPIDAxes;			//
 
 // Requested Histograms;
 	Bool_t					fHistRequested[12];				//
@@ -308,7 +309,7 @@ private:
 
 	Int_t 					fDebug;							// Debug flag.
 
-	ClassDef(AliAODTrackCutsDiHadronPID,8);
+	ClassDef(AliAODTrackCutsDiHadronPID,9);
 
 };
 

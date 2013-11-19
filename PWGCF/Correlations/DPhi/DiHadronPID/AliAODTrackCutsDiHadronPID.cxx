@@ -62,6 +62,7 @@ AliAODTrackCutsDiHadronPID::AliAODTrackCutsDiHadronPID():
 	fDCAzCut(999.),
 	fIsMC(kFALSE),
 	fLowPtNSigmaTOFOnly(kFALSE),
+	fUseNSigmaOnPIDAxes(kFALSE),
 	fTestPt(kFALSE),
 	fTestFilterMask(kFALSE),
 	fTestMaxEta(kFALSE),
@@ -167,6 +168,7 @@ AliAODTrackCutsDiHadronPID::AliAODTrackCutsDiHadronPID(const char* name):
 	fDCAzCut(999.),
 	fIsMC(kFALSE),
 	fLowPtNSigmaTOFOnly(kFALSE),
+	fUseNSigmaOnPIDAxes(kFALSE),	
 	fTestPt(kFALSE),	
 	fTestFilterMask(kFALSE),
 	fTestMaxEta(kFALSE),
@@ -295,25 +297,31 @@ void AliAODTrackCutsDiHadronPID::InitializeDefaultHistoNamesAndAxes() {
 	for (Int_t iPtBins = 0; iPtBins < 5; iPtBins++) {fNPtBinsPID[iPtBins] = nptbinspid[iPtBins];}
 
 	// Setting the TOF axes for the PID histograms.
+	//Double_t tofsigmaapprox = 80.;
 	Double_t toflowerbound[5][3] = {{-2000.,-6000.,-10000.},{-2000.,-4000.,-10000.},{-1000.,-2000.,-5000.},{-1000.,-1000.,-2500.},{-500.,-500.,-1000.}};
 	Double_t tofupperbound[5][3] = {{10000.,10000.,6000.},{10000.,8000.,6000.},{6000.,6000.,6000.},{6000.,6000.,6000.},{4000.,4000.,6000.}};
 	Int_t tofbins[5][3] = {{120,160,160},{120,120,160},{140,140,165},{140,140,170},{90,90,140}};
 	for (Int_t iPtClass = 0; iPtClass < 5; iPtClass++) {
 		for (Int_t iSpecies = 0; iSpecies < 3; iSpecies++) {
 			fTOFLowerBound[iPtClass][iSpecies] = toflowerbound[iPtClass][iSpecies];
+			//if (fUseNSigmaOnPIDAxes) {toflowerbound[iPtClass][iSpecies] /= tofsigmaapprox;}
 			fTOFUpperBound[iPtClass][iSpecies] = tofupperbound[iPtClass][iSpecies];
+			//if (fUseNSigmaOnPIDAxes) {tofupperbound[iPtClass][iSpecies] /= tofsigmaapprox;}
 			fTOFbins[iPtClass][iSpecies] = tofbins[iPtClass][iSpecies];
 		}
 	}
 
 	// Setting the TPC axes for the PID histograms.
+	//Double_t tpcsigmaaxpprox = 3.5;
 	Double_t tpclowerbound[5][3] = {{-20.,-50.,-100.},{-20.,-30.,-80.},{-25.,-25.,-45.},{-25.,-25.,-45.},{-25.,-20.,-20.}};
 	Double_t tpcupperbound[5][3] = {{60.,30.,20.},{60.,40.,20.},{50.,50.,25.},{45.,45.,25.},{25.,30.,30.}}; // Check highest pT bin boundaries for K,p
 	Int_t tpcbins[5][3] = {{80,80,120},{80,70,100},{75,75,70},{70,70,70},{50,50,50}};
 	for (Int_t iPtClass = 0; iPtClass < 5; iPtClass++) {
 		for (Int_t iSpecies = 0; iSpecies < 3; iSpecies++) {
 			fTPCLowerBound[iPtClass][iSpecies] = tpclowerbound[iPtClass][iSpecies];
+			//if (fUseNSigmaOnPIDAxes) {tpclowerbound[iPtClass][iSpecies] /= tpcsigmaaxpprox;}
 			fTPCUpperBound[iPtClass][iSpecies] = tpcupperbound[iPtClass][iSpecies];
+			//if (fUseNSigmaOnPIDAxes) {tpcupperbound[iPtClass][iSpecies] /= tpcsigmaaxpprox;}
 			fTPCbins[iPtClass][iSpecies] = tpcbins[iPtClass][iSpecies];
 		}
 	}
@@ -1394,20 +1402,6 @@ Bool_t AliAODTrackCutsDiHadronPID::FillDataHistos(Int_t histoclass, AliTrackDiHa
 	//	checkSum++;	cout<<"Pion found: nSigTOF: "<<track->GetNumberOfSigmasTOF(0)<<"; nSigTPC: "<<track->GetNumberOfSigmasTPC(0)<<endl;
 	}
 
-	// if (TMath::Sqrt(track->GetNumberOfSigmasTOF(1) * track->GetNumberOfSigmasTOF(1) + 
-	// 				track->GetNumberOfSigmasTPC(1) * track->GetNumberOfSigmasTPC(1)) < 1.) {
-	// 	fHistDataDCAxyOneSigma[0 + histoclass]->Fill(track->Pt(),track->GetXYAtDCA());	// All species.
-	// 	fHistDataDCAxyOneSigma[6 + histoclass]->Fill(track->Pt(),track->GetXYAtDCA());	// Kaons.
-	// //	checkSum++;	cout<<"Kaon found: nSigTOF: "<<track->GetNumberOfSigmasTOF(1)<<"; nSigTPC: "<<track->GetNumberOfSigmasTPC(1)<<endl;
-	// }
-	// if (TMath::Sqrt(track->GetNumberOfSigmasTOF(2) * track->GetNumberOfSigmasTOF(2) + 
-	// 				track->GetNumberOfSigmasTPC(2) * track->GetNumberOfSigmasTPC(2)) < 1.) {		
-	// 	fHistDataDCAxyOneSigma[0 + histoclass]->Fill(track->Pt(),track->GetXYAtDCA());	// All species.
-	// 	fHistDataDCAxyOneSigma[9 + histoclass]->Fill(track->Pt(),track->GetXYAtDCA());	// Protons.
-	// //	checkSum++;	cout<<"Proton found: nSigTOF: "<<track->GetNumberOfSigmasTOF(2)<<"; nSigTPC: "<<track->GetNumberOfSigmasTPC(2)<<endl;
-	// }
-	// for protons and low pt:
-
 	// for protons and low pt, only when fLowPtNSigmaTOFOnly set to kTRUE:
 	if ((TMath::Abs(track->Pt()) < 1.8) && fLowPtNSigmaTOFOnly) {
 
@@ -1445,7 +1439,9 @@ Bool_t AliAODTrackCutsDiHadronPID::FillDataHistos(Int_t histoclass, AliTrackDiHa
 		if (!CheckRapidity(track->Y(iSpecies))) continue;
 
 		for (Int_t iPtClass = 0; iPtClass < 5; iPtClass++) {
-			fHistDataPID[histoclass][iSpecies][iPtClass]->Fill(track->Pt(),track->GetTOFsignalMinusExpected(iSpecies),track->GetTPCsignalMinusExpected(iSpecies));		
+			fHistDataPID[histoclass][iSpecies][iPtClass]->Fill(track->Pt(),
+				(fUseNSigmaOnPIDAxes ? track->GetNumberOfSigmasTOF(iSpecies) : track->GetTOFsignalMinusExpected(iSpecies)),
+				(fUseNSigmaOnPIDAxes ? track->GetNumberOfSigmasTPC(iSpecies) : track->GetTPCsignalMinusExpected(iSpecies)));		
 		}
 	}
 
@@ -1464,9 +1460,13 @@ Bool_t AliAODTrackCutsDiHadronPID::FillTOFMismatchHistos(Int_t histoclass, AliTr
 		// Note that a possible Y cut is only done on the PID cuts!
 		if (!CheckRapidity(track->Y(iSpecies))) continue;
 
+		Double_t TOFmismatchSigma = randomhittime - track->GetTOFsignalExpected(iSpecies);
+		if (fUseNSigmaOnPIDAxes) {TOFmismatchSigma /= track->GetTOFsigmaExpected(iSpecies);}
+
 		for (Int_t iPtClass = 0; iPtClass < 5; iPtClass++) {
-			fHistTOFMismatch[histoclass][iSpecies][iPtClass]->Fill(track->Pt(),randomhittime - track->GetTOFsignalExpected(iSpecies));		
-			fHistTPCTOFMismatch[histoclass][iSpecies][iPtClass]->Fill(track->Pt(),randomhittime - track->GetTOFsignalExpected(iSpecies),track->GetTPCsignalMinusExpected(iSpecies));			
+			fHistTOFMismatch[histoclass][iSpecies][iPtClass]->Fill(track->Pt(), TOFmismatchSigma);		
+			fHistTPCTOFMismatch[histoclass][iSpecies][iPtClass]->Fill(track->Pt(), TOFmismatchSigma,
+				(fUseNSigmaOnPIDAxes ? track->GetNumberOfSigmasTPC(iSpecies) : track->GetTPCsignalMinusExpected(iSpecies)));			
 		}
 	}
 
@@ -1539,12 +1539,16 @@ Bool_t AliAODTrackCutsDiHadronPID::FillRecMCHistos(Int_t histoclass, AliTrackDiH
 			if (!CheckRapidity(track->MCY())) continue;
 
 			for (Int_t iPtClass = 0; iPtClass < 5; iPtClass++) {
-				//cout << "recpt: " << track->Pt() << " mcpt: "<<track->MCPt() << " DTOF: " << track->GetTOFsignalMinusExpected(iSpecies) << " DTPC: " << track->GetTPCsignalMinusExpected(iSpecies) << endl;
+				//cout << "recpt: " << track->Pt() << " mcpt: "<<track->MCPt() << " DTOF: " << 
+				//(fUseNSigmaOnPIDAxes ? track->GetNumberOfSigmasTOF(iSpecies) : track->GetTOFsignalMinusExpected(iSpecies)) << " DTPC: " << 
+				//(fUseNSigmaOnPIDAxes ? track->GetNumberOfSigmasTPC(iSpecies) : track->GetTPCsignalMinusExpected(iSpecies)) << endl;
 
-				fHistPrimRecPID[histoclass][iSpecies][iPtClass]->Fill(track->MCPt(),track->GetTOFsignalMinusExpected(iSpecies));		
+				fHistPrimRecPID[histoclass][iSpecies][iPtClass]->Fill(track->MCPt(),
+					(fUseNSigmaOnPIDAxes ? track->GetNumberOfSigmasTOF(iSpecies) : track->GetTOFsignalMinusExpected(iSpecies)));		
 
 				if (track->IsTOFMismatch()) {
-					fHistPrimRecMismatch[histoclass][iSpecies][iPtClass]->Fill(track->MCPt(),track->GetTOFsignalMinusExpected(iSpecies));		
+					fHistPrimRecMismatch[histoclass][iSpecies][iPtClass]->Fill(track->MCPt(),
+						(fUseNSigmaOnPIDAxes ? track->GetNumberOfSigmasTOF(iSpecies) : track->GetTOFsignalMinusExpected(iSpecies)));		
 				}
 			}
 		}
@@ -1883,11 +1887,19 @@ TH3F* AliAODTrackCutsDiHadronPID::InitializePIDHisto(const char* name, Int_t his
 
 	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
+	TString PIDaxeslabel;
+	if (fUseNSigmaOnPIDAxes) {PIDaxeslabel = ";n#sigma_{TOF};n#sigma_{TPC}";} 
+	else {PIDaxeslabel = ";#Delta t (ps);dE/dx (a.u.)";}
+
 	TH3F* hout = new TH3F(Form("%s%s%s%s",name,fHistoName[histoclass].Data(),fParticleName[expspecies].Data(),fPtClassName[ptclass].Data()),
-		Form("PID %s (Exp: %s);p_{T} (GeV/c);#Delta t (ps);dE/dx (a.u.)",fHistoName[histoclass].Data(),fParticleName[expspecies].Data()),
+		Form("PID %s (Exp: %s);p_{T} (GeV/c)%s",fHistoName[histoclass].Data(),fParticleName[expspecies].Data(),PIDaxeslabel.Data()),
 		fNPtBinsPID[ptclass],fPtBoundaryPID[ptclass],fPtBoundaryPID[ptclass+1],
-		fTOFbins[ptclass][expspecies],fTOFLowerBound[ptclass][expspecies],fTOFUpperBound[ptclass][expspecies],
-		fTPCbins[ptclass][expspecies],fTPCLowerBound[ptclass][expspecies],fTPCUpperBound[ptclass][expspecies]);
+		fTOFbins[ptclass][expspecies],
+		(fUseNSigmaOnPIDAxes ? fTOFLowerBound[ptclass][expspecies] / AliTrackDiHadronPID::fSigmaTOFStd : fTOFLowerBound[ptclass][expspecies]),
+		(fUseNSigmaOnPIDAxes ? fTOFUpperBound[ptclass][expspecies] / AliTrackDiHadronPID::fSigmaTOFStd : fTOFUpperBound[ptclass][expspecies]),
+		fTPCbins[ptclass][expspecies],
+		(fUseNSigmaOnPIDAxes ? fTPCLowerBound[ptclass][expspecies] / AliTrackDiHadronPID::fSigmaTPCStd : fTPCLowerBound[ptclass][expspecies]),
+		(fUseNSigmaOnPIDAxes ? fTPCUpperBound[ptclass][expspecies] / AliTrackDiHadronPID::fSigmaTPCStd : fTPCUpperBound[ptclass][expspecies]));
 
 	hout->SetDirectory(0);
 
@@ -1898,12 +1910,19 @@ TH3F* AliAODTrackCutsDiHadronPID::InitializePIDHisto(const char* name, Int_t his
 // -----------------------------------------------------------------------
 TH2F* AliAODTrackCutsDiHadronPID::InitializeTOFMismatchHisto(const char* name, Int_t histoclass, Int_t expspecies, Int_t ptclass) {
 
+	// Is basically the same as InitializeTOFHisto -> CAN BE REMOVED!
 	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
+	TString PIDaxeslabel;
+	if (fUseNSigmaOnPIDAxes) {PIDaxeslabel = ";n#sigma_{TOF}";} 
+	else {PIDaxeslabel = ";#Delta t (ps)";}
+
 	TH2F* hout = new TH2F(Form("%s%s%s%s",name,fHistoName[histoclass].Data(),fParticleName[expspecies].Data(),fPtClassName[ptclass].Data()),
-		Form("TOF Mismatch %s (Exp: %s);p_{T} (GeV/c);#Delta t (ps)",fHistoName[histoclass].Data(),fParticleName[expspecies].Data()),
+		Form("TOF Mismatch %s (Exp: %s);p_{T} (GeV/c)%s",fHistoName[histoclass].Data(),fParticleName[expspecies].Data(),PIDaxeslabel.Data()),
 		fNPtBinsPID[ptclass],fPtBoundaryPID[ptclass],fPtBoundaryPID[ptclass+1],
-		fTOFbins[ptclass][expspecies],fTOFLowerBound[ptclass][expspecies],fTOFUpperBound[ptclass][expspecies]);
+		fTOFbins[ptclass][expspecies],
+		(fUseNSigmaOnPIDAxes ? fTOFLowerBound[ptclass][expspecies] / AliTrackDiHadronPID::fSigmaTOFStd : fTOFLowerBound[ptclass][expspecies]),
+		(fUseNSigmaOnPIDAxes ? fTOFUpperBound[ptclass][expspecies] / AliTrackDiHadronPID::fSigmaTOFStd : fTOFUpperBound[ptclass][expspecies]));
 
 	hout->SetDirectory(0);
 
@@ -1916,10 +1935,16 @@ TH2F* AliAODTrackCutsDiHadronPID::InitializeTOFHisto(const char* name, Int_t his
 
 	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
+	TString PIDaxeslabel;
+	if (fUseNSigmaOnPIDAxes) {PIDaxeslabel = ";n#sigma_{TOF}";} 
+	else {PIDaxeslabel = ";#Delta t (ps)";}
+
 	TH2F* hout = new TH2F(Form("%s%s%s%s",name,fHistoName[histoclass].Data(),fParticleName[expspecies].Data(),fPtClassName[ptclass].Data()),
-		Form("TOF %s (Exp: %s);p_{T} (GeV/c);#Delta t (ps)",fHistoName[histoclass].Data(),fParticleName[expspecies].Data()),
+		Form("TOF %s (Exp: %s);p_{T} (GeV/c)%s",fHistoName[histoclass].Data(),fParticleName[expspecies].Data(),PIDaxeslabel.Data()),
 		fNPtBinsPID[ptclass],fPtBoundaryPID[ptclass],fPtBoundaryPID[ptclass+1],
-		fTOFbins[ptclass][expspecies],fTOFLowerBound[ptclass][expspecies],fTOFUpperBound[ptclass][expspecies]);
+		fTOFbins[ptclass][expspecies],
+		(fUseNSigmaOnPIDAxes ? fTOFLowerBound[ptclass][expspecies] / AliTrackDiHadronPID::fSigmaTOFStd : fTOFLowerBound[ptclass][expspecies]),
+		(fUseNSigmaOnPIDAxes ? fTOFUpperBound[ptclass][expspecies] / AliTrackDiHadronPID::fSigmaTOFStd : fTOFUpperBound[ptclass][expspecies]));
 
 	hout->SetDirectory(0);
 
