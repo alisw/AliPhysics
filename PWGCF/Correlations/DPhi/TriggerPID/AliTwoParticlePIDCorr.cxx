@@ -14,20 +14,15 @@
  **************************************************************************/
 
 #include "AliTwoParticlePIDCorr.h"
-#include "AliUEHistograms.h"
-#include "AliLog.h"
 #include "AliVParticle.h"
-#include "AliCFContainer.h"
 #include "TFormula.h"
-
+#include "TAxis.h"
 #include "TChain.h"
 #include "TTree.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3F.h"
-#include "TCanvas.h"
 #include "TList.h"
-#include "TKey.h"
 #include "TFile.h"
 
 #include "AliCentrality.h"
@@ -38,23 +33,14 @@
 #include "AliESDpid.h"
 #include "AliAODpidUtil.h"
 #include <AliPIDResponse.h>
-#include <AliITSPIDResponse.h>
-#include <AliTPCPIDResponse.h>
-#include <AliTRDPIDResponse.h>
-#include <AliTOFPIDResponse.h>
 
 #include <AliAnalysisManager.h>
 #include <AliInputEventHandler.h>
 #include "AliAODInputHandler.h"
-#include "AliESDInputHandler.h"
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
-#include "AliESDtrackCuts.h"
-#include "AliESDEvent.h"
-#include "AliESDtrack.h"
 #include "AliCentrality.h"
-#include "AliPIDResponse.h"
 
 #include "AliVEvent.h"
 #include "AliAODEvent.h"
@@ -68,7 +54,6 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
-#include "AliStack.h"
 #include "TParticle.h"
 #include <TDatabasePDG.h>
 #include <TParticlePDG.h>
@@ -76,7 +61,6 @@
 #include "AliGenCocktailEventHeader.h"
 #include "AliGenEventHeader.h"
 
-#include "AliESDPmdTrack.h"
 #include "AliEventPoolManager.h"
 //#include "AliAnalysisUtils.h"
 using namespace AliPIDNameSpace;
@@ -84,32 +68,74 @@ using namespace std;
 
 ClassImp(AliTwoParticlePIDCorr)
 ClassImp(LRCParticlePID)
-
-//*********Debojit Sarkar******************
 //________________________________________________________________________
 AliTwoParticlePIDCorr::AliTwoParticlePIDCorr() // All data members should be initialised here
 :AliAnalysisTaskSE(),
   fOutput(0),
+  fCentralityMethod("V0A"),
+  fSampleType("pPb"),
+fnTracksVertex(1),  // QA tracks pointing to principal vertex (= 3 default)
+  trkVtx(0),
+  zvtx(0),
+  fFilterBit(768),
+  fzvtxcut(10.0),
+  ffilltrigassoUNID(kFALSE),
+  ffilltrigUNIDassoID(kFALSE),
+  ffilltrigIDassoUNID(kFALSE),
+  ffilltrigIDassoID(kTRUE),
+  ffilltrigIDassoIDMCTRUTH(kFALSE),
+  fPtOrderMCTruth(kFALSE),
+ fTriggerSpeciesSelection(kFALSE),
+  fAssociatedSpeciesSelection(kTRUE),
+  fTriggerSpecies(SpPion),
+  fAssociatedSpecies(SpPion),
+  fCustomBinning(""),
+  fBinningString(""),
+  fcontainPIDtrig(kTRUE),
+  fcontainPIDasso(kFALSE),
+  fminPt(0.2),
+  fmaxPt(10.0),
+  fmineta(-0.8),
+  fmaxeta(0.8),
+  fminprotonsigmacut(-6.0),
+  fmaxprotonsigmacut(-3.0),
+  fminpionsigmacut(0.0),
+  fmaxpionsigmacut(4.0),
+  fselectprimaryTruth(kTRUE),
+  fdcacut(kFALSE),
+  fdcacutvalue(3.0),
   fhistcentrality(0),
   fEventCounter(0),
   fEtaSpectrasso(0),
   fphiSpectraasso(0),
-  fEtaSpectraTrigall(0),
+  MCtruthpt(0),
+  MCtrutheta(0),
+  MCtruthphi(0),
+  MCtruthpionpt(0),
+  MCtruthpioneta(0),
+  MCtruthpionphi(0),
+  MCtruthkaonpt(0),
+  MCtruthkaoneta(0),
+  MCtruthkaonphi(0),
+  MCtruthprotonpt(0),
+  MCtruthprotoneta(0),
+  MCtruthprotonphi(0),
+  fPioncont(0),
+  fKaoncont(0),
+  fProtoncont(0),
   fCentralityCorrelation(0x0),
   fHistoTPCdEdx(0x0),
   fHistoTOFbeta(0x0),
-// fHistocentNSigmaTPC(0x0),
-//fHistocentNSigmaTOF(0x0),
-  fsame(0x0),
-  fmix(0x0),
-  fdeletasame(0),
-  fdelphisame(0),
-  fdeletamixed(0),
-  fdelphimixed(0),
- fdeletamixedproton(0),
-  fdelphimixedproton(0),
-  fdeletamixedkaonpion(0),
-  fdelphimixedkaonpion(0),
+  fCorrelatonTruthPrimary(0),
+  fCorrelatonTruthPrimarymix(0),
+  fTHnCorrUNID(0),
+  fTHnCorrUNIDmix(0),
+  fTHnCorrID(0),
+  fTHnCorrIDmix(0),
+  fTHnCorrIDUNID(0),
+  fTHnCorrIDUNIDmix(0),
+  fTHnTrigcount(0),
+  fTHnTrigcountMCTruthPrim(0),
   fPoolMgr(0x0),
   fArrayMC(0),
   fAnalysisType("AOD"), 
@@ -117,11 +143,11 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr() // All data members should be ini
 //fControlConvResoncances(0),
   fPID(NULL),
  eventno(0),
-  fPtTOFPID(.6),
+  fPtTOFPIDmin(0.6),
+  fPtTOFPIDmax(4.0),
   fRequestTOFPID(kTRUE),
   fPIDType(NSigmaTPCTOF),
   fNSigmaPID(3),
-  fNSigmaPIDtrig1(4),
   fUseExclusiveNSigma(kFALSE),
   fRemoveTracksT0Fill(kFALSE),
 fSelectCharge(0),
@@ -133,180 +159,26 @@ fCutConversions(kFALSE),
 fCutResonances(kFALSE),
 fRejectResonanceDaughters(-1),
   fOnlyOneEtaSide(0),
-  fPtOrder(kTRUE),
 fInjectedSignals(kFALSE),
   fRemoveWeakDecays(kFALSE),
 fRemoveDuplicates(kFALSE),
-applyefficiency(kFALSE),
+fapplyefficiency(kFALSE),
+  ffillefficiency(kFALSE),
+fAnalysisUtils(0x0),
   fDCAXYCut(0)     
 
-{
-  
-for(Int_t jj=0;jj<4;jj++)
-    {
-for(Int_t kk=0;kk<10;kk++)
-   {
-     //event no counting
-     fEventno[jj][kk]=0;
-     fEventnobaryon[jj][kk]=0;
-     fEventnomeson[jj][kk]=0;
-   }
-    }
-
- 
+{ 
  for ( Int_t i = 0; i < 16; i++) { 
     fHistQA[i] = NULL;
   }
 
-for(Int_t jj=0;jj<9;jj++)
-    {
-      fTPCTOFpion2d[jj]=0;
-  }
-
-for(Int_t jj=0;jj<5;jj++)
-    {
-      fhistoassopioncont[jj]=0;
-      fhistoassokaoncont[jj]=0;
-      fhistoassoprotoncont[jj]=0;
-    }
-
-for(Int_t jj=0;jj<4;jj++)
-    {
-      fhistotrigbaryoncont[jj]=0;
-      fhistotrigmesoncont[jj]=0;
-    }
-
-
-for(Int_t kk=0;kk<4;kk++)
-    {
-for(Int_t jj=0;jj<9;jj++)
-    {
-//binning acording to pttrig only,no zvtx  dependance, but include centrality dependence
-      //data
-       fHistoNSigmaTPCpion[kk][jj]=0; 
-       fHistoNSigmaTOFpion[kk][jj]=0;
-       fHistoNSigmaTPCTOFpion[kk][jj]=0; 
-       fhistopionnsigmaTPCMC[kk][jj]=0; 
-       fhistopionnsigmaTOFMC[kk][jj]=0;
-       fhistopionnsigmaTPCTOFMC[kk][jj]=0;
-       fhistokaonnsigmaTPCMC[kk][jj]=0; 
-       fhistokaonnsigmaTOFMC[kk][jj]=0;
-       fhistokaonnsigmaTPCTOFMC[kk][jj]=0; 
-       fhistoprotonnsigmaTPCMC[kk][jj]=0; 
-       fhistoprotonnsigmaTOFMC[kk][jj]=0;
-       fhistoprotonnsigmaTPCTOFMC[kk][jj]=0; 
-       fhistoelectronnsigmaTPCMC[kk][jj]=0; 
-       fhistoelectronnsigmaTOFMC[kk][jj]=0;
-       fhistoelectronnsigmaTPCTOFMC[kk][jj]=0;  
-       }
-    }
-
-for(Int_t jj=0;jj<4;jj++)
-    {
-for(Int_t kk=0;kk<10;kk++)
-    {
-      //for(Int_t ii=0;ii<4;ii++)
-      // { //trigger particle counting with centrality,zvtx,pttrig binning
-     fEtaSpectraTrig[jj][kk]=0;
-     fEtaSpectraTrigbaryon[jj][kk]=0;
-     fEtaSpectraTrigmeson[jj][kk]=0;
-     // }
-     }
-     }
-
-for(Int_t jj=0;jj<4;jj++)
-    {
-for(Int_t ii=0;ii<2;ii++) //associated pt binning
-   {
-for(Int_t kk=0;kk<10;kk++)
-   {
-     //for(Int_t pp=0;pp<4;pp++) //trigger pt binning ,do weighted average
-       // {
-    falltrigallasso[jj][ii][kk]=0x0;
-    falltrigpionasso[jj][ii][kk]=0x0;
-    falltrigkaonasso[jj][ii][kk]=0x0; 
-    falltrigprotonasso[jj][ii][kk]=0x0;   
-    fbaryontrigallasso[jj][ii][kk]=0x0; 
-    fbaryontrigpionasso[jj][ii][kk]=0x0;
-    fbaryontrigkaonasso[jj][ii][kk]=0x0;
-    fbaryontrigprotonasso[jj][ii][kk]=0x0;
-    fmesontrigallasso[jj][ii][kk]=0x0;
-    fmesontrigpionasso[jj][ii][kk]=0x0;   
-    fmesontrigkaonasso[jj][ii][kk]=0x0; 
-    fmesontrigprotonasso[jj][ii][kk]=0x0;
-
-    falltrigallassomix[jj][ii][kk]=0x0;
-    falltrigpionassomix[jj][ii][kk]=0x0;
-    falltrigkaonassomix[jj][ii][kk]=0x0; 
-    falltrigprotonassomix[jj][ii][kk]=0x0;    
-    fbaryontrigallassomix[jj][ii][kk]=0x0; 
-    fbaryontrigpionassomix[jj][ii][kk]=0x0;
-    fbaryontrigkaonassomix[jj][ii][kk]=0x0;
-    fbaryontrigprotonassomix[jj][ii][kk]=0x0;
-    fmesontrigallassomix[jj][ii][kk]=0x0;
-    fmesontrigpionassomix[jj][ii][kk]=0x0;   
-    fmesontrigkaonassomix[jj][ii][kk]=0x0; 
-    fmesontrigprotonassomix[jj][ii][kk]=0x0;
-    
-    //}
-    }
-  }
-}
-
-
- for ( Int_t i = 0; i < 6; i++ ){
-    fTHnrecoallPid[i] = NULL;
+ for ( Int_t i = 0; i < 5; i++ ){
+    fTHnrecomatchedallPid[i] = NULL;
     fTHngenprimPidTruth[i] = NULL;
     effcorection[i]=NULL;
     //effmap[i]=NULL;
 
   }
-
-
-
-for(Int_t jj=0;jj<4;jj++)
-  {//centrality binning
-     recoallpt[jj]=0;
-     recoalleta[jj]=0;
-     alltrigeta[jj]=0;
-     allassoeta[jj]=0;
-     baryontrigeta[jj]=0;
-     mesontrigeta[jj]=0;
-     pionassoeta[jj]=0;
-     kaonassoeta[jj]=0;
-     protonassoeta[jj]=0;
-     recoallphi[jj]=0;
-     MCrecomatchedprimpt[jj]=0;
-     MCrecomatchedprimeta[jj]=0;
-     MCrecomatchedprimphi[jj]=0;
-     MCtruthpt[jj]=0;
-     MCtrutheta[jj]=0;
-     MCtruthphi[jj]=0;
-
-MCrecomatchedprimpionpt[jj]=0;
-     MCrecomatchedprimpioneta[jj]=0;
-     MCrecomatchedprimpionphi[jj]=0;
-
-MCrecomatchedprimkaonpt[jj]=0;
-     MCrecomatchedprimkaoneta[jj]=0;
-     MCrecomatchedprimkaonphi[jj]=0;
-
-MCrecomatchedprimprotonpt[jj]=0;
-     MCrecomatchedprimprotoneta[jj]=0;
-     MCrecomatchedprimprotonphi[jj]=0;
-
-     MCtruthpionpt[jj]=0;
-     MCtruthpioneta[jj]=0;
-     MCtruthpionphi[jj]=0;
-
-     MCtruthkaonpt[jj]=0;
-     MCtruthkaoneta[jj]=0;
-     MCtruthkaonphi[jj]=0;
-
-     MCtruthprotonpt[jj]=0;
-     MCtruthprotoneta[jj]=0;
-     MCtruthprotonphi[jj]=0;
-   }
 
 
   }
@@ -314,26 +186,70 @@ MCrecomatchedprimprotonpt[jj]=0;
 AliTwoParticlePIDCorr::AliTwoParticlePIDCorr(const char *name) // All data members should be initialised here
   :AliAnalysisTaskSE(name),
  fOutput(0),
+ fCentralityMethod("V0A"),
+  fSampleType("pPb"),
+  fnTracksVertex(1),  // QA tracks pointing to principal vertex (= 3 default)
+  trkVtx(0),
+  zvtx(0),
+  fFilterBit(768),
+  fzvtxcut(10.0),
+  ffilltrigassoUNID(kFALSE),
+  ffilltrigUNIDassoID(kFALSE),
+  ffilltrigIDassoUNID(kFALSE),
+  ffilltrigIDassoID(kTRUE),
+  ffilltrigIDassoIDMCTRUTH(kFALSE),
+  fPtOrderMCTruth(kFALSE),
+  fTriggerSpeciesSelection(kFALSE),
+  fAssociatedSpeciesSelection(kTRUE),
+  fTriggerSpecies(SpPion),
+  fAssociatedSpecies(SpPion),
+  fCustomBinning(""),
+  fBinningString(""),
+  fcontainPIDtrig(kTRUE),
+  fcontainPIDasso(kFALSE),
+  fminPt(0.2),
+  fmaxPt(10.0),
+  fmineta(-0.8),
+  fmaxeta(0.8),
+   fminprotonsigmacut(-6.0),
+   fmaxprotonsigmacut(-3.0),
+   fminpionsigmacut(0.0),
+   fmaxpionsigmacut(4.0),
+  fselectprimaryTruth(kTRUE),
+   fdcacut(kFALSE),
+  fdcacutvalue(3.0),
   fhistcentrality(0),
   fEventCounter(0),
   fEtaSpectrasso(0),
   fphiSpectraasso(0),
-  fEtaSpectraTrigall(0),
+MCtruthpt(0),
+  MCtrutheta(0),
+  MCtruthphi(0),
+  MCtruthpionpt(0),
+  MCtruthpioneta(0),
+  MCtruthpionphi(0),
+  MCtruthkaonpt(0),
+  MCtruthkaoneta(0),
+  MCtruthkaonphi(0),
+  MCtruthprotonpt(0),
+  MCtruthprotoneta(0),
+  MCtruthprotonphi(0),
+  fPioncont(0),
+  fKaoncont(0),
+  fProtoncont(0),
   fCentralityCorrelation(0x0),
   fHistoTPCdEdx(0x0),
   fHistoTOFbeta(0x0),
-// fHistocentNSigmaTPC(0x0),
-//fHistocentNSigmaTOF(0x0),
-  fsame(0x0),
-  fmix(0x0),
-  fdeletasame(0),
-  fdelphisame(0),
-  fdeletamixed(0),
-  fdelphimixed(0),
- fdeletamixedproton(0),
-  fdelphimixedproton(0),
-  fdeletamixedkaonpion(0),
-  fdelphimixedkaonpion(0),
+  fCorrelatonTruthPrimary(0),
+fCorrelatonTruthPrimarymix(0),
+  fTHnCorrUNID(0),
+  fTHnCorrUNIDmix(0),
+  fTHnCorrID(0),
+  fTHnCorrIDmix(0),
+  fTHnCorrIDUNID(0),
+  fTHnCorrIDUNIDmix(0),
+  fTHnTrigcount(0),
+  fTHnTrigcountMCTruthPrim(0),
    fPoolMgr(0x0),
   fArrayMC(0),
   fAnalysisType("AOD"), 
@@ -341,11 +257,11 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr(const char *name) // All data membe
 //fControlConvResoncances(0),
   fPID(NULL),
  eventno(0),
-  fPtTOFPID(.6),
+ fPtTOFPIDmin(0.6),
+  fPtTOFPIDmax(4.0),
   fRequestTOFPID(kTRUE),
   fPIDType(NSigmaTPCTOF),
   fNSigmaPID(3),
-  fNSigmaPIDtrig1(4),
   fUseExclusiveNSigma(kFALSE),
   fRemoveTracksT0Fill(kFALSE),
 fSelectCharge(0),
@@ -357,180 +273,28 @@ fCutConversions(kFALSE),
 fCutResonances(kFALSE),
 fRejectResonanceDaughters(-1),
   fOnlyOneEtaSide(0),
-  fPtOrder(kTRUE),
 fInjectedSignals(kFALSE),
   fRemoveWeakDecays(kFALSE),
 fRemoveDuplicates(kFALSE),
-applyefficiency(kFALSE),
-  fDCAXYCut(0)     
-
-    
+fapplyefficiency(kFALSE),
+  ffillefficiency(kFALSE),
+fAnalysisUtils(0x0),
+  fDCAXYCut(0)         
 {
-
-for(Int_t jj=0;jj<4;jj++)
-    {
-for(Int_t kk=0;kk<10;kk++)
-   {
-     //event no counting
-     fEventno[jj][kk]=0;
-     fEventnobaryon[jj][kk]=0;
-     fEventnomeson[jj][kk]=0;
-   }
-    }
   
    for ( Int_t i = 0; i < 16; i++) { 
     fHistQA[i] = NULL;
   }
-
-
-for(Int_t jj=0;jj<9;jj++)
-    {
-      fTPCTOFpion2d[jj]=0;
-  }
-
-for(Int_t jj=0;jj<5;jj++)
-    {
-      fhistoassopioncont[jj]=0;
-      fhistoassokaoncont[jj]=0;
-      fhistoassoprotoncont[jj]=0;
-    }
-
-for(Int_t jj=0;jj<4;jj++)
-    {
-      fhistotrigbaryoncont[jj]=0;
-      fhistotrigmesoncont[jj]=0;
-    }
-
-for(Int_t kk=0;kk<4;kk++)
-    {
-for(Int_t jj=0;jj<9;jj++)
-    {
-//binning acording to pttrig only,no zvtx  dependance, but include centrality dependence
-      //data
-       fHistoNSigmaTPCpion[kk][jj]=0; 
-       fHistoNSigmaTOFpion[kk][jj]=0;
-       fHistoNSigmaTPCTOFpion[kk][jj]=0; 
-       fhistopionnsigmaTPCMC[kk][jj]=0; 
-       fhistopionnsigmaTOFMC[kk][jj]=0;
-       fhistopionnsigmaTPCTOFMC[kk][jj]=0;
-       fhistokaonnsigmaTPCMC[kk][jj]=0; 
-       fhistokaonnsigmaTOFMC[kk][jj]=0;
-       fhistokaonnsigmaTPCTOFMC[kk][jj]=0; 
-       fhistoprotonnsigmaTPCMC[kk][jj]=0; 
-       fhistoprotonnsigmaTOFMC[kk][jj]=0;
-       fhistoprotonnsigmaTPCTOFMC[kk][jj]=0; 
-       fhistoelectronnsigmaTPCMC[kk][jj]=0; 
-       fhistoelectronnsigmaTOFMC[kk][jj]=0;
-       fhistoelectronnsigmaTPCTOFMC[kk][jj]=0;  
-       }
-    }
-
-for(Int_t jj=0;jj<4;jj++)
-    {
-for(Int_t kk=0;kk<10;kk++)
-   {
-     //for(Int_t ii=0;ii<4;ii++)
-     //{
-     //trigger particle counting with centrality,zvtx,pttrig binning
-     fEtaSpectraTrig[jj][kk]=0;
-     fEtaSpectraTrigbaryon[jj][kk]=0;
-     fEtaSpectraTrigmeson[jj][kk]=0;
-     //}
-   }
- }
-
-
-for(Int_t jj=0;jj<4;jj++)
-   {
-for(Int_t ii=0;ii<2;ii++)//asso particle pt binning
-   {
-for(Int_t kk=0;kk<10;kk++)
-   {
-     //for(Int_t pp=0;pp<4;pp++) //trigger pt binning ,do weighted average
-       //{
-    falltrigallasso[jj][ii][kk]=0x0;
-    falltrigpionasso[jj][ii][kk]=0x0;
-    falltrigkaonasso[jj][ii][kk]=0x0; 
-    falltrigprotonasso[jj][ii][kk]=0x0;     
-    fbaryontrigallasso[jj][ii][kk]=0x0; 
-    fbaryontrigpionasso[jj][ii][kk]=0x0;
-    fbaryontrigkaonasso[jj][ii][kk]=0x0;
-    fbaryontrigprotonasso[jj][ii][kk]=0x0;
-    fmesontrigallasso[jj][ii][kk]=0x0;
-    fmesontrigpionasso[jj][ii][kk]=0x0;   
-    fmesontrigkaonasso[jj][ii][kk]=0x0; 
-    fmesontrigprotonasso[jj][ii][kk]=0x0;
-
-    falltrigallassomix[jj][ii][kk]=0x0;
-    falltrigpionassomix[jj][ii][kk]=0x0;
-    falltrigkaonassomix[jj][ii][kk]=0x0; 
-    falltrigprotonassomix[jj][ii][kk]=0x0;   
-    fbaryontrigallassomix[jj][ii][kk]=0x0; 
-    fbaryontrigpionassomix[jj][ii][kk]=0x0;
-    fbaryontrigkaonassomix[jj][ii][kk]=0x0;
-    fbaryontrigprotonassomix[jj][ii][kk]=0x0;
-    fmesontrigallassomix[jj][ii][kk]=0x0;
-    fmesontrigpionassomix[jj][ii][kk]=0x0;   
-    fmesontrigkaonassomix[jj][ii][kk]=0x0; 
-    fmesontrigprotonassomix[jj][ii][kk]=0x0;
-     //}
-    }
-  }
-}
-
-
-for ( Int_t i = 0; i < 6; i++ ){
-    fTHnrecoallPid[i] = NULL;
+ 
+for ( Int_t i = 0; i < 5; i++ ){
+    fTHnrecomatchedallPid[i] = NULL;
     fTHngenprimPidTruth[i] = NULL;
     effcorection[i]=NULL;
     //effmap[i]=NULL;
 
   }
 
-for(Int_t jj=0;jj<4;jj++)
-  {//centrality binning
-     recoallpt[jj]=0;
-     recoalleta[jj]=0;
-     alltrigeta[jj]=0;
-     allassoeta[jj]=0;
-     baryontrigeta[jj]=0;
-     mesontrigeta[jj]=0;
-     pionassoeta[jj]=0;
-     kaonassoeta[jj]=0;
-     protonassoeta[jj]=0;
-     recoallphi[jj]=0;
-     MCrecomatchedprimpt[jj]=0;
-     MCrecomatchedprimeta[jj]=0;
-     MCrecomatchedprimphi[jj]=0;
-     MCtruthpt[jj]=0;
-     MCtrutheta[jj]=0;
-     MCtruthphi[jj]=0;
-
-MCrecomatchedprimpionpt[jj]=0;
-     MCrecomatchedprimpioneta[jj]=0;
-     MCrecomatchedprimpionphi[jj]=0;
-
-MCrecomatchedprimkaonpt[jj]=0;
-     MCrecomatchedprimkaoneta[jj]=0;
-     MCrecomatchedprimkaonphi[jj]=0;
-
-MCrecomatchedprimprotonpt[jj]=0;
-     MCrecomatchedprimprotoneta[jj]=0;
-     MCrecomatchedprimprotonphi[jj]=0;
-
-     MCtruthpionpt[jj]=0;
-     MCtruthpioneta[jj]=0;
-     MCtruthpionphi[jj]=0;
-
-     MCtruthkaonpt[jj]=0;
-     MCtruthkaoneta[jj]=0;
-     MCtruthkaonphi[jj]=0;
-
-     MCtruthprotonpt[jj]=0;
-     MCtruthprotoneta[jj]=0;
-     MCtruthprotonphi[jj]=0;
-
-   }
+  
   // The last in the above list should not have a comma after it
   
   // Constructor
@@ -585,85 +349,57 @@ void AliTwoParticlePIDCorr::UserCreateOutputObjects()
   fOutput = new TList();
   fOutput->SetOwner();  // IMPORTANT!  
 
-fhistcentrality=new TH1F("fhistcentrality","fhistcentrality",100,0.,100.);
+  if(fSampleType=="pPb" || fSampleType=="PbPb")
+   {
+      centmultbins=10;
+     //Int_t centmultbinseff=10;
+     centmultmin=0.0;
+      centmultmax=100.0;
+   }
+else if(fSampleType=="pp")
+   {
+     centmultbins=10;
+     //Int_t centmultbinseff=1;//integrated over multiplicity as efficiency has negligible dependence on multiplicity
+     centmultmin=0.0;
+     centmultmax=200.0;
+   }
+ else//default value
+   {
+      centmultbins=10;
+      centmultmin=0.0;
+      centmultmax=100.0;
+   }
+
+fhistcentrality=new TH1F("fhistcentrality","fhistcentrality",centmultbins*4,centmultmin,centmultmax);
 fOutput->Add(fhistcentrality);
 
   fEventCounter = new TH1F("fEventCounter","EventCounter", 10, 0.5,10.5);
   fEventCounter->GetXaxis()->SetBinLabel(1,"Event Accesed");
-  fEventCounter->GetXaxis()->SetBinLabel(2,"Within 0-100% centrality");
-  fEventCounter->GetXaxis()->SetBinLabel(5,"Have a vertex");
-  fEventCounter->GetXaxis()->SetBinLabel(6,"After vertex Cut");
+  fEventCounter->GetXaxis()->SetBinLabel(2,"Have a vertex");
+  fEventCounter->GetXaxis()->SetBinLabel(5,"After vertex Cut");
+  fEventCounter->GetXaxis()->SetBinLabel(6,"Within 0-100% centrality");
   fEventCounter->GetXaxis()->SetBinLabel(7,"Event Analyzed");
   //fEventCounter->GetXaxis()->SetBinLabel(8,"Event Analysis finished");
   fOutput->Add(fEventCounter);
   
-fEtaSpectrasso=new TH2F("fEtaSpectraasso","fEtaSpectraasso",180,-0.9,0.9,10,0,5 );
+fEtaSpectrasso=new TH2F("fEtaSpectraasso","fEtaSpectraasso",180,-0.9,0.9,100,0.,20. );
 fOutput->Add(fEtaSpectrasso);
 
-fphiSpectraasso=new TH2F("fphiSpectraasso","fphiSpectraasso",72,0,2*TMath::Pi(),10,0,5);
+fphiSpectraasso=new TH2F("fphiSpectraasso","fphiSpectraasso",72,0,2*TMath::Pi(),100,0.,20.);
 fOutput->Add(fphiSpectraasso);
 
-fEtaSpectraTrigall=new TH1F("fEtaSpectraTrigall","fEtaSpectraTrigall",180,-0.9,0.9);
-fOutput->Add(fEtaSpectraTrigall);
 
- fCentralityCorrelation = new TH2F("fCentralityCorrelation", ";centrality;multiplicity", 101, 0, 101, 200, 0, 4000);
+ if(fSampleType=="pPb" || fSampleType=="PbPb"){ fCentralityCorrelation = new TH2D("fCentralityCorrelation", ";centrality;multiplicity", 101, 0, 101, 20000, 0,40000);
       fOutput->Add(fCentralityCorrelation);
+ }
 
-
-fHistoTPCdEdx = new TH2F("hHistoTPCdEdx", ";p_{T} (GeV/c);dE/dx (au.)",70, 0., 7., 500, 0., 500.);
+fHistoTPCdEdx = new TH2F("hHistoTPCdEdx", ";p_{T} (GeV/c);dE/dx (au.)",200,0.0,10.0,500, 0., 500.);
 fOutput->Add(fHistoTPCdEdx);
 fHistoTOFbeta = new TH2F(Form("hHistoTOFbeta"), ";p_{T} (GeV/c);v/c",70, 0., 7., 500, 0.1, 1.1);
   fOutput->Add(fHistoTOFbeta);
   
-  fsame=new TH2F ("fsame","#delta#eta-#delta#phi corr",72,-TMath::Pi()/2,3*TMath::Pi()/2,36,-1.8,1.8);
-fOutput->Add(fsame);
+  
 
- fmix=new TH2F ("fmix","#delta#eta-#delta#phi corr",72,-TMath::Pi()/2,3*TMath::Pi()/2,36,-1.8,1.8);
-fOutput->Add(fmix);
-
-fdeletasame=new TH1F("fdeletasame","#delta#eta mixed event distribution",36,-1.8,1.8);
-fOutput->Add(fdeletasame);
-
-fdelphisame=new TH1F("fdelphisame","#delta#phi mixed event distribution",72,-TMath::Pi()/2,3*TMath::Pi()/2);
-fOutput->Add(fdelphisame);
-
-fdeletamixed=new TH1F("fdeletamixed","#delta#eta mixed event distribution",36,-1.8,1.8);
-fOutput->Add(fdeletamixed);
-
-fdelphimixed=new TH1F("fdelphimixed","#delta#phi mixed event distribution",72,-TMath::Pi()/2,3*TMath::Pi()/2);
-fOutput->Add(fdelphimixed);
-
-fdeletamixedproton=new TH1F("fdeletamixedproton","#delta#eta mixed event distribution",36,-1.8,1.8);
-fOutput->Add(fdeletamixedproton);
-
-fdelphimixedproton=new TH1F("fdelphimixedproton","#delta#phi mixed event distribution",72,-TMath::Pi()/2,3*TMath::Pi()/2);
-fOutput->Add(fdelphimixedproton);
-
-fdeletamixedkaonpion=new TH1F("fdeletamixedkaonpion","#delta#eta mixed event distribution",36,-1.8,1.8);
-fOutput->Add(fdeletamixedkaonpion);
-
-fdelphimixedkaonpion=new TH1F("fdelphimixedkaonpion","#delta#phi mixed event distribution",72,-TMath::Pi()/2,3*TMath::Pi()/2);
-fOutput->Add(fdelphimixedkaonpion);
-
-TString Histpname;
-for(Int_t jj=0;jj<4;jj++)
- {
-for(Int_t kk=0;kk<10;kk++)
-   {
-  Histpname="fEventno";Histpname+=jj;Histpname+=kk;
-  fEventno[jj][kk]=new TH1F (Histpname.Data(),"eventno",50,0.5,50.5);
-  fOutput->Add(fEventno[jj][kk]);
-
- Histpname="fEventnobaryon";Histpname+=jj;Histpname+=kk;
-  fEventnobaryon[jj][kk]=new TH1F (Histpname.Data(),"eventnobaryon",50,0.5,50.5);
-  fOutput->Add(fEventnobaryon[jj][kk]);
-
- Histpname="fEventnomeson";Histpname+=jj;Histpname+=kk;
-  fEventnomeson[jj][kk]=new TH1F (Histpname.Data(),"eventnomeson",50,0.5,50.5);
-  fOutput->Add(fEventnomeson[jj][kk]);
-   }
- }
- 
   fHistQA[0] = new TH1F("fHistQAvx", "Histo Vx All ", 50, -5., 5.);
   fHistQA[1] = new TH1F("fHistQAvy", "Histo Vy All", 50, -5., 5.);
   fHistQA[2] = new TH1F("fHistQAvz", "Histo Vz All", 50, -25., 25.);  
@@ -687,497 +423,351 @@ for(Int_t i = 0; i < 16; i++)
     {
       fOutput->Add(fHistQA[i]);
     }
+   kTrackVariablesPair=6 ;
 
-TString Histpvrkname;
-for(Int_t jj=0;jj<9;jj++)
-  {//pt binning(asso)0,1,2,3,4,5,6,7,8
-Histpvrkname="fTPCTOFpion2d";Histpvrkname+=jj;//Histtname+=ii;//Histtname+=kk;
- fTPCTOFpion2d[jj]=new TH2F (Histpvrkname.Data(),"fTPCTOFpion2d",1600,-80.,80.,1600,-80.,80);
-   fOutput->Add(fTPCTOFpion2d[jj]);
-  }
-
-TString Histpvrname;
-for(Int_t jj=0;jj<5;jj++)
-  {//pt binning(asso) 4,5,6,7,8
-    
-Histpvrname="fhistoassoprotoncont";Histpvrname+=jj;//Histtname+=ii;//Histtname+=kk;
-   fhistoassoprotoncont[jj]=new TH1F (Histpvrname.Data(),"fhistoassoprotoncont",50,0.,50.);
-   fOutput->Add(fhistoassoprotoncont[jj]);
-    
-   Histpvrname="fhistoassopioncont";Histpvrname+=jj;//Histtname+=ii;//Histtname+=kk;
-   fhistoassopioncont[jj]=new TH1F (Histpvrname.Data(),"fhistoassopioncont",50,0.,50.);
-   fOutput->Add(fhistoassopioncont[jj]);
-
-   Histpvrname="fhistoassokaoncont";Histpvrname+=jj;//Histtname+=ii;//Histtname+=kk;
-   fhistoassokaoncont[jj]=new TH1F (Histpvrname.Data(),"fhistoassokaoncont",50,0.,50.);
-   fOutput->Add(fhistoassokaoncont[jj]);
-
-  }
-
-TString Histpvname;
-for(Int_t jj=0;jj<4;jj++)
-  {//pt binning(trigger)0,1,2,3
-   
-   Histpvname="fhistotrigbaryoncont";Histpvname+=jj;//Histtname+=ii;//Histtname+=kk;
-   fhistotrigbaryoncont[jj]=new TH1F (Histpvname.Data(),"fhistotrigbaryoncont",50,0.,50.);
-   fOutput->Add(fhistotrigbaryoncont[jj]);
-
-   Histpvname="fhistotrigmesoncont";Histpvname+=jj;//Histtname+=ii;//Histtname+=kk;
-   fhistotrigmesoncont[jj]=new TH1F (Histpvname.Data(),"fhistotrigmesoncont",50,0.,50.);
-   fOutput->Add(fhistotrigmesoncont[jj]);
-
- }
-
-
-
-TString Histtname;
-for(Int_t kk=0;kk<4;kk++)
-    {
-for(Int_t jj=0;jj<9;jj++)
-    {
-//data
-   Histtname="fHistoNSigmaTPCpion";Histtname+=kk;Histtname+=jj;//Histtname+=ii;//Histtname+=kk;
-   fHistoNSigmaTPCpion[kk][jj]=new TH1F (Histtname.Data(),"fHistoNSigmaTPCpion",1200, -60., 60.);
-   fOutput->Add(fHistoNSigmaTPCpion[kk][jj]);
-
-   Histtname="fHistoNSigmaTOFpion";Histtname+=kk;Histtname+=jj;//Histtname+=ii;//Histtname+=kk;
-   fHistoNSigmaTOFpion[kk][jj]=new TH1F (Histtname.Data(),"fHistoNSigmaTOFpion",1200, -60., 60.);
-   fOutput->Add(fHistoNSigmaTOFpion[kk][jj]);
-
- Histtname="fHistoNSigmaTPCTOFpion";Histtname+=kk;Histtname+=jj;//Histtname+=ii;//Histtname+=kk;
-   fHistoNSigmaTPCTOFpion[kk][jj]=new TH1F (Histtname.Data(),"fHistoNSigmaTPCTOFpion",1200, -60., 60.);
-   fOutput->Add(fHistoNSigmaTPCTOFpion[kk][jj]);
-
- Histtname="fhistopionnsigmaTPCMC";Histtname+=kk;Histtname+=jj;//Histtname+=ii;//Histtname+=kk;
-   fhistopionnsigmaTPCMC[kk][jj]=new TH1F (Histtname.Data(),"fhistopionnsigmaTPCMC",1200, -60., 60.);
-   fOutput->Add(fhistopionnsigmaTPCMC[kk][jj]);
-
- Histtname="fhistopionnsigmaTOFMC";Histtname+=kk;Histtname+=jj;//Histtname+=ii;//Histtname+=kk;
-   fhistopionnsigmaTOFMC[kk][jj]=new TH1F (Histtname.Data(),"fhistopionnsigmaTOFMC",1200, -60., 60.);
-   fOutput->Add(fhistopionnsigmaTOFMC[kk][jj]);
-
- Histtname="fhistopionnsigmaTPCTOFMC";Histtname+=kk;Histtname+=jj;//Histtname+=ii;//Histtname+=kk;
- fhistopionnsigmaTPCTOFMC[kk][jj]=new TH1F (Histtname.Data(),"fhistopionnsigmaTPCTOFMC",1200, -60., 60.);
- fOutput->Add(fhistopionnsigmaTPCTOFMC[kk][jj]);
-  
- Histtname="fhistokaonnsigmaTPCMC";Histtname+=kk;Histtname+=jj;//Histtname+=ii;//Histtname+=kk;
-   fhistokaonnsigmaTPCMC[kk][jj]=new TH1F (Histtname.Data(),"fhistokaonnsigmaTPCMC",1200, -60., 60.);
-   fOutput->Add(fhistokaonnsigmaTPCMC[kk][jj]);
-
- Histtname="fhistokaonnsigmaTOFMC";Histtname+=kk;Histtname+=jj;//Histtname+=ii;//Histtname+=kk;
-   fhistokaonnsigmaTOFMC[kk][jj]=new TH1F (Histtname.Data(),"fhistokaonnsigmaTOFMC",1200, -60., 60.);
-   fOutput->Add(fhistokaonnsigmaTOFMC[kk][jj]);
-
- Histtname="fhistokaonnsigmaTPCTOFMC";Histtname+=kk;Histtname+=jj;//Histtname+=ii;//Histtname+=kk;
- fhistokaonnsigmaTPCTOFMC[kk][jj]=new TH1F (Histtname.Data(),"fhistokaonnsigmaTPCTOFMC",1200, -60., 60.);
- fOutput->Add(fhistokaonnsigmaTPCTOFMC[kk][jj]);
-  
- Histtname="fhistoprotonnsigmaTPCMC";Histtname+=kk;Histtname+=jj;//Histtname+=ii;//Histtname+=kk;
-   fhistoprotonnsigmaTPCMC[kk][jj]=new TH1F (Histtname.Data(),"fhistoprotonnsigmaTPCMC",1200, -60., 60.);
-   fOutput->Add(fhistoprotonnsigmaTPCMC[kk][jj]);
-
- Histtname="fhistoprotonnsigmaTOFMC";Histtname+=kk;Histtname+=jj;//Histtname+=ii;//Histtname+=kk;
-   fhistoprotonnsigmaTOFMC[kk][jj]=new TH1F (Histtname.Data(),"fhistoprotonnsigmaTOFMC",1200, -60., 60.);
-   fOutput->Add(fhistoprotonnsigmaTOFMC[kk][jj]);
-
- Histtname="fhistoprotonnsigmaTPCTOFMC";Histtname+=kk;Histtname+=jj;//Histtname+=ii;//Histtname+=kk;
- fhistoprotonnsigmaTPCTOFMC[kk][jj]=new TH1F (Histtname.Data(),"fhistoprotonnsigmaTPCTOFMC",1200, -60., 60.);
- fOutput->Add(fhistoprotonnsigmaTPCTOFMC[kk][jj]);
-  
- Histtname="fhistoelectronnsigmaTPCMC";Histtname+=kk;Histtname+=jj;//Histtname+=ii;//Histtname+=kk;
-   fhistoelectronnsigmaTPCMC[kk][jj]=new TH1F (Histtname.Data(),"fhistoelectronnsigmaTPCMC",1200, -60., 60.);
-   fOutput->Add(fhistoelectronnsigmaTPCMC[kk][jj]);
-
- Histtname="fhistoelectronnsigmaTOFMC";Histtname+=kk;Histtname+=jj;//Histtname+=ii;//Histtname+=kk;
-   fhistoelectronnsigmaTOFMC[kk][jj]=new TH1F (Histtname.Data(),"fhistoelectronnsigmaTOFMC",1200, -60., 60.);
-   fOutput->Add(fhistoelectronnsigmaTOFMC[kk][jj]);
-
- Histtname="fhistoelectronnsigmaTPCTOFMC";Histtname+=kk;Histtname+=jj;//Histtname+=ii;//Histtname+=kk;
- fhistoelectronnsigmaTPCTOFMC[kk][jj]=new TH1F (Histtname.Data(),"fhistoelectronnsigmaTPCTOFMC",1200, -60., 60.);
- fOutput->Add(fhistoelectronnsigmaTPCTOFMC[kk][jj]);
-   
-    }
-
-    }
-
-TString Histoname;
-for(Int_t jj=0;jj<4;jj++)
-    {
-for(Int_t kk=0;kk<10;kk++)
-   {
-     //for(Int_t ii=0;ii<4;ii++)
-     //{
-     //trigger particle counting with centrality,zvtx,pttrig binning(use for weighted average)
-     Histoname="fEtaSpectraTrig";Histoname+=jj;Histoname+=kk;//Histoname+=ii;
-  fEtaSpectraTrig[jj][kk]=new TH1F (Histoname.Data(),"#eta distribution",180,-0.9,0.9);
-  fOutput->Add(fEtaSpectraTrig[jj][kk]);
-
-  Histoname="fEtaSpectraTrigbaryon";Histoname+=jj;Histoname+=kk;//Histoname+=ii;
- fEtaSpectraTrigbaryon[jj][kk]=new TH1F (Histoname.Data(),"#eta distribution",180,-0.9,0.9);
-  fOutput->Add(fEtaSpectraTrigbaryon[jj][kk]);
-
-  Histoname="fEtaSpectraTrigmeson";Histoname+=jj;Histoname+=kk;//Histoname+=ii;
- fEtaSpectraTrigmeson[jj][kk]=new TH1F (Histoname.Data(),"#eta distribution",180,-0.9,0.9);
-  fOutput->Add(fEtaSpectraTrigmeson[jj][kk]);
-  //}
-  }
- }
-
-TString Histiname;
-for(Int_t jj=0;jj<4;jj++)//centrality binning
-    {
-for(Int_t ii=0;ii<2;ii++)//asso pt binning
-   {
-for(Int_t kk=0;kk<10;kk++)//zvtx binning
-   {
-     //for(Int_t pp=0;pp<4;pp++) //trigger pt binning ,do weighted average
-     //{
-     Histiname="falltrigallasso";Histiname+=jj;Histiname+=ii;Histiname+=kk;//Histiname+=pp;
-falltrigallasso[jj][ii][kk]=new TH2F (Histiname.Data(),"#delta#eta-#delta#phi corr",72,-TMath::Pi()/2,3*TMath::Pi()/2,36,-1.8,1.8);
- falltrigallasso[jj][ii][kk]->Sumw2();
-fOutput->Add(falltrigallasso[jj][ii][kk]);
-
-Histiname="falltrigpionasso";Histiname+=jj;Histiname+=ii;Histiname+=kk;//Histiname+=pp;
-falltrigpionasso[jj][ii][kk]=new TH2F (Histiname.Data(),"#delta#eta-#delta#phi corr",72,-TMath::Pi()/2,3*TMath::Pi()/2,36,-1.8,1.8);
- falltrigpionasso[jj][ii][kk]->Sumw2();
-fOutput->Add(falltrigpionasso[jj][ii][kk]);
-
-Histiname="falltrigkaonasso";Histiname+=jj;Histiname+=ii;Histiname+=kk;//Histiname+=pp;
-falltrigkaonasso[jj][ii][kk]=new TH2F (Histiname.Data(),"#delta#eta-#delta#phi corr",72,-TMath::Pi()/2,3*TMath::Pi()/2,36,-1.8,1.8);
- falltrigkaonasso[jj][ii][kk]->Sumw2();
-fOutput->Add(falltrigkaonasso[jj][ii][kk]);
-
-Histiname="falltrigprotonasso";Histiname+=jj;Histiname+=ii;Histiname+=kk;//Histiname+=pp;
-falltrigprotonasso[jj][ii][kk]=new TH2F (Histiname.Data(),"#delta#eta-#delta#phi corr",72,-TMath::Pi()/2,3*TMath::Pi()/2,36,-1.8,1.8);
- falltrigpionasso[jj][ii][kk]->Sumw2();
-fOutput->Add(falltrigprotonasso[jj][ii][kk]);
-
-Histiname="fbaryontrigallasso";Histiname+=jj;Histiname+=ii;Histiname+=kk;//Histiname+=pp;
-fbaryontrigallasso[jj][ii][kk]=new TH2F (Histiname.Data(),"#delta#eta-#delta#phi corr",72,-TMath::Pi()/2,3*TMath::Pi()/2,36,-1.8,1.8);
- fbaryontrigallasso[jj][ii][kk]->Sumw2();
-   fOutput->Add(fbaryontrigallasso[jj][ii][kk]);
-
- Histiname="fbaryontrigpionasso";Histiname+=jj;Histiname+=ii;Histiname+=kk;//Histiname+=pp;
-fbaryontrigpionasso[jj][ii][kk]=new TH2F (Histiname.Data(),"#delta#eta-#delta#phi corr",72,-TMath::Pi()/2,3*TMath::Pi()/2,36,-1.8,1.8);
- fbaryontrigpionasso[jj][ii][kk]->Sumw2();
-   fOutput->Add(fbaryontrigpionasso[jj][ii][kk]);
-
-   Histiname="fbaryontrigkaonasso";Histiname+=jj;Histiname+=ii;Histiname+=kk;//Histiname+=pp;
-fbaryontrigkaonasso[jj][ii][kk]=new TH2F (Histiname.Data(),"#delta#eta-#delta#phi corr",72,-TMath::Pi()/2,3*TMath::Pi()/2,36,-1.8,1.8);
- fbaryontrigkaonasso[jj][ii][kk]->Sumw2();
-fOutput->Add(fbaryontrigkaonasso[jj][ii][kk]);
-
- Histiname="fbaryontrigprotonasso";Histiname+=jj;Histiname+=ii;Histiname+=kk;//Histiname+=pp;
-fbaryontrigprotonasso[jj][ii][kk]=new TH2F (Histiname.Data(),"#delta#eta-#delta#phi corr",72,-TMath::Pi()/2,3*TMath::Pi()/2,36,-1.8,1.8);
- fbaryontrigprotonasso[jj][ii][kk]->Sumw2();
-fOutput->Add(fbaryontrigprotonasso[jj][ii][kk]);
-
-Histiname="fmesontrigallasso";Histiname+=jj;Histiname+=ii;Histiname+=kk;//Histiname+=pp;
-fmesontrigallasso[jj][ii][kk]=new TH2F (Histiname.Data(),"#delta#eta-#delta#phi corr",72,-TMath::Pi()/2,3*TMath::Pi()/2,36,-1.8,1.8);
- fmesontrigallasso[jj][ii][kk]->Sumw2();
-fOutput->Add(fmesontrigallasso[jj][ii][kk]);
-
- Histiname="fmesontrigpionasso";Histiname+=jj;Histiname+=ii;Histiname+=kk;//Histiname+=pp;
-fmesontrigpionasso[jj][ii][kk]=new TH2F (Histiname.Data(),"#delta#eta-#delta#phi corr",72,-TMath::Pi()/2,3*TMath::Pi()/2,36,-1.8,1.8);
- fmesontrigpionasso[jj][ii][kk]->Sumw2();
-fOutput->Add(fmesontrigpionasso[jj][ii][kk]);
+ if(fcontainPIDtrig && !fcontainPIDasso) kTrackVariablesPair=7;
  
- Histiname="fmesontrigkaonasso";Histiname+=jj;Histiname+=ii;Histiname+=kk;//Histiname+=pp;
-fmesontrigkaonasso[jj][ii][kk]=new TH2F (Histiname.Data(),"#delta#eta-#delta#phi corr",72,-TMath::Pi()/2,3*TMath::Pi()/2,36,-1.8,1.8);
- fmesontrigkaonasso[jj][ii][kk]->Sumw2();
-fOutput->Add(fmesontrigkaonasso[jj][ii][kk]);
-
- Histiname="fmesontrigprotonasso";Histiname+=jj;Histiname+=ii;Histiname+=kk;//Histiname+=pp;
-fmesontrigprotonasso[jj][ii][kk]=new TH2F (Histiname.Data(),"#delta#eta-#delta#phi corr",72,-TMath::Pi()/2,3*TMath::Pi()/2,36,-1.8,1.8);
- fmesontrigprotonasso[jj][ii][kk]->Sumw2();
-fOutput->Add(fmesontrigprotonasso[jj][ii][kk]);
-
-Histiname="falltrigallassomix";Histiname+=jj;Histiname+=ii;Histiname+=kk;//Histiname+=pp;
-falltrigallassomix[jj][ii][kk]=new TH2F (Histiname.Data(),"#delta#eta-#delta#phi corr",72,-TMath::Pi()/2,3*TMath::Pi()/2,36,-1.8,1.8);
- falltrigallassomix[jj][ii][kk]->Sumw2();
-fOutput->Add(falltrigallassomix[jj][ii][kk]);
-
-Histiname="falltrigpionassomix";Histiname+=jj;Histiname+=ii;Histiname+=kk;//Histiname+=pp;
-falltrigpionassomix[jj][ii][kk]=new TH2F (Histiname.Data(),"#delta#eta-#delta#phi corr",72,-TMath::Pi()/2,3*TMath::Pi()/2,36,-1.8,1.8);
- falltrigpionassomix[jj][ii][kk]->Sumw2();
-fOutput->Add(falltrigpionassomix[jj][ii][kk]);
-
-Histiname="falltrigkaonassomix";Histiname+=jj;Histiname+=ii;Histiname+=kk;//Histiname+=pp;
-falltrigkaonassomix[jj][ii][kk]=new TH2F (Histiname.Data(),"#delta#eta-#delta#phi corr",72,-TMath::Pi()/2,3*TMath::Pi()/2,36,-1.8,1.8);
- falltrigkaonassomix[jj][ii][kk]->Sumw2();
-fOutput->Add(falltrigkaonassomix[jj][ii][kk]);
-
-Histiname="falltrigprotonassomix";Histiname+=jj;Histiname+=ii;Histiname+=kk;//Histiname+=pp;
-falltrigprotonassomix[jj][ii][kk]=new TH2F (Histiname.Data(),"#delta#eta-#delta#phi corr",72,-TMath::Pi()/2,3*TMath::Pi()/2,36,-1.8,1.8);
- falltrigprotonassomix[jj][ii][kk]->Sumw2();
-fOutput->Add(falltrigprotonassomix[jj][ii][kk]);
-
-
-Histiname="fbaryontrigallassomix";Histiname+=jj;Histiname+=ii;Histiname+=kk;//Histiname+=pp;
-fbaryontrigallassomix[jj][ii][kk]=new TH2F (Histiname.Data(),"#delta#eta-#delta#phi corr",72,-TMath::Pi()/2,3*TMath::Pi()/2,36,-1.8,1.8);
- fbaryontrigallassomix[jj][ii][kk]->Sumw2();
-   fOutput->Add(fbaryontrigallassomix[jj][ii][kk]);
-
-Histiname="fbaryontrigpionassomix";Histiname+=jj;Histiname+=ii;Histiname+=kk;//Histiname+=pp;
-fbaryontrigpionassomix[jj][ii][kk]=new TH2F (Histiname.Data(),"#delta#eta-#delta#phi corr",72,-TMath::Pi()/2,3*TMath::Pi()/2,36,-1.8,1.8);
- fbaryontrigpionassomix[jj][ii][kk]->Sumw2();
-   fOutput->Add(fbaryontrigpionassomix[jj][ii][kk]);
-
-   Histiname="fbaryontrigkaonassomix";Histiname+=jj;Histiname+=ii;Histiname+=kk;//Histiname+=pp;
-fbaryontrigkaonassomix[jj][ii][kk]=new TH2F (Histiname.Data(),"#delta#eta-#delta#phi corr",72,-TMath::Pi()/2,3*TMath::Pi()/2,36,-1.8,1.8);
- fbaryontrigkaonassomix[jj][ii][kk]->Sumw2();
-fOutput->Add(fbaryontrigkaonassomix[jj][ii][kk]);
-
- Histiname="fbaryontrigprotonassomix";Histiname+=jj;Histiname+=ii;Histiname+=kk;//Histiname+=pp;
-fbaryontrigprotonassomix[jj][ii][kk]=new TH2F (Histiname.Data(),"#delta#eta-#delta#phi corr",72,-TMath::Pi()/2,3*TMath::Pi()/2,36,-1.8,1.8);
- fbaryontrigprotonassomix[jj][ii][kk]->Sumw2();
-fOutput->Add(fbaryontrigprotonassomix[jj][ii][kk]);
-
-Histiname="fmesontrigallassomix";Histiname+=jj;Histiname+=ii;Histiname+=kk;//Histiname+=pp;
-fmesontrigallassomix[jj][ii][kk]=new TH2F (Histiname.Data(),"#delta#eta-#delta#phi corr",72,-TMath::Pi()/2,3*TMath::Pi()/2,36,-1.8,1.8);
- fmesontrigallassomix[jj][ii][kk]->Sumw2();
-fOutput->Add(fmesontrigallassomix[jj][ii][kk]);
-
- Histiname="fmesontrigpionassomix";Histiname+=jj;Histiname+=ii;Histiname+=kk;//Histiname+=pp;
-fmesontrigpionassomix[jj][ii][kk]=new TH2F (Histiname.Data(),"#delta#eta-#delta#phi corr",72,-TMath::Pi()/2,3*TMath::Pi()/2,36,-1.8,1.8);
- fmesontrigpionassomix[jj][ii][kk]->Sumw2();
-fOutput->Add(fmesontrigpionassomix[jj][ii][kk]);
+ if(!fcontainPIDtrig && fcontainPIDasso) kTrackVariablesPair=7;
  
- Histiname="fmesontrigkaonassomix";Histiname+=jj;Histiname+=ii;Histiname+=kk;//Histiname+=pp;
-fmesontrigkaonassomix[jj][ii][kk]=new TH2F (Histiname.Data(),"#delta#eta-#delta#phi corr",72,-TMath::Pi()/2,3*TMath::Pi()/2,36,-1.8,1.8);
- fmesontrigkaonassomix[jj][ii][kk]->Sumw2();
-fOutput->Add(fmesontrigkaonassomix[jj][ii][kk]);
+ if(fcontainPIDtrig && fcontainPIDasso) kTrackVariablesPair=8;
+ 
+ 
+// two particle histograms
+  Int_t iBinPair[kTrackVariablesPair];         // binning for track variables
+  Double_t* dBinsPair[kTrackVariablesPair];    // bins for track variables  
+  TString* axisTitlePair;  // axis titles for track variables
+  axisTitlePair=new TString[kTrackVariablesPair];
 
- Histiname="fmesontrigprotonassomix";Histiname+=jj;Histiname+=ii;Histiname+=kk;//Histiname+=pp;
-fmesontrigprotonassomix[jj][ii][kk]=new TH2F (Histiname.Data(),"#delta#eta-#delta#phi corr",72,-TMath::Pi()/2,3*TMath::Pi()/2,36,-1.8,1.8);
- fmesontrigprotonassomix[jj][ii][kk]->Sumw2();
-fOutput->Add(fmesontrigprotonassomix[jj][ii][kk]);
-//} 
-    }
-   }
+ TString defaultBinningStr;
+  defaultBinningStr =   "eta: -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0\n"
+    "p_t_assoc: 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 8.0,10.0\n"
+    "p_t_leading_course: 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0,10.0\n"
+    "p_t_eff:0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0,9.0,10.0\n"
+    "vertex: -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10\n"
+  "delta_phi: -1.570796, -1.483530, -1.396263, -1.308997, -1.221730, -1.134464, -1.047198, -0.959931, -0.872665, -0.785398, -0.698132, -0.610865, -0.523599, -0.436332, -0.349066, -0.261799, -0.174533, -0.087266, 0.0, 0.087266, 0.174533, 0.261799, 0.349066, 0.436332, 0.523599, 0.610865, 0.698132, 0.785398, 0.872665, 0.959931, 1.047198, 1.134464, 1.221730, 1.308997, 1.396263, 1.483530, 1.570796, 1.658063, 1.745329, 1.832596, 1.919862, 2.007129, 2.094395, 2.181662, 2.268928, 2.356194, 2.443461, 2.530727, 2.617994, 2.705260, 2.792527, 2.879793, 2.967060, 3.054326, 3.141593, 3.228859, 3.316126, 3.403392, 3.490659, 3.577925, 3.665191, 3.752458, 3.839724, 3.926991, 4.014257, 4.101524, 4.188790, 4.276057, 4.363323, 4.450590, 4.537856, 4.625123, 4.712389\n" // this binning starts at -pi/2 and is modulo 3 
+	"delta_eta: -2.4, -2.3, -2.2, -2.1, -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0,2.1, 2.2, 2.3, 2.4\n"
+      "multiplicity: 0, 1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100.1\n";
+
+  if(fcontainPIDtrig){
+      defaultBinningStr += "PIDTrig: -0.5,0.5,1.5,2.5,3.5\n"; // course
+  }
+  if(fcontainPIDasso){
+      defaultBinningStr += "PIDAsso: -0.5,0.5,1.5,2.5,3.5\n"; // course
+  }
+ // =========================================================
+  // Customization (adopted from AliUEHistograms)
+  // =========================================================
+
+  TObjArray* lines = defaultBinningStr.Tokenize("\n");
+  for (Int_t i=0; i<lines->GetEntriesFast(); i++)
+  {
+    TString line(lines->At(i)->GetName());
+    TString tag = line(0, line.Index(":")+1);
+    if (!fCustomBinning.BeginsWith(tag) && !fCustomBinning.Contains(TString("\n") + tag))
+      fBinningString += line + "\n";
+    else
+      AliInfo(Form("Using custom binning for %s", tag.Data()));
+  }
+  delete lines;
+  fBinningString += fCustomBinning;
+  
+  AliInfo(Form("Used THn Binning:\n%s",fBinningString.Data()));
+
+ // =========================================================
+  // Now set the bins
+  // =========================================================
+
+    dBinsPair[0]       = GetBinning(fBinningString, "multiplicity", iBinPair[0]);
+    axisTitlePair[0]   = " multiplicity";
+
+    dBinsPair[1]     = GetBinning(fBinningString, "vertex", iBinPair[1]);
+    axisTitlePair[1]  = "v_{Z} (cm)"; 
+
+    dBinsPair[2]     = GetBinning(fBinningString, "p_t_leading_course", iBinPair[2]);
+    axisTitlePair[2]    = "p_{T,trig.} (GeV/c)"; 
+
+    dBinsPair[3]     = GetBinning(fBinningString, "p_t_assoc", iBinPair[3]);
+    axisTitlePair[3]    = "p_{T,assoc.} (GeV/c)";
+
+    dBinsPair[4]       = GetBinning(fBinningString, "delta_eta", iBinPair[4]);
+    axisTitlePair[4]   = "#Delta#eta"; 
+
+    dBinsPair[5]       = GetBinning(fBinningString, "delta_phi", iBinPair[5]);
+    axisTitlePair[5]   = "#Delta#varphi (rad)";  
+
+ if(fcontainPIDtrig && !fcontainPIDasso){
+    dBinsPair[6]       = GetBinning(fBinningString, "PIDTrig", iBinPair[6]);
+    axisTitlePair[6]   = "PIDTrig"; 
  }
 
-if(fAnalysisType == "MCAOD") {
+ if(!fcontainPIDtrig && fcontainPIDasso){
+    dBinsPair[6]       = GetBinning(fBinningString, "PIDAsso", iBinPair[6]);
+    axisTitlePair[6]   = "PIDAsso"; 
+ }
+
+if(fcontainPIDtrig && fcontainPIDasso){
+
+    dBinsPair[6]       = GetBinning(fBinningString, "PIDTrig", iBinPair[6]);
+    axisTitlePair[6]   = "PIDTrig";
+
+    dBinsPair[7]       = GetBinning(fBinningString, "PIDAsso", iBinPair[7]);
+    axisTitlePair[7]   = "PIDAsso";  
+ }
+	
+	Int_t nEtaBin = -1;
+ 	Double_t* EtaBin = GetBinning(fBinningString, "eta", nEtaBin);
+	
+        Int_t nPteffbin = -1;
+ 	Double_t* Pteff = GetBinning(fBinningString, "p_t_eff", nPteffbin);
+
+
+	fminPtTrig=dBinsPair[2][0];
+        fmaxPtTrig=dBinsPair[2][iBinPair[2]];
+        fminPtAsso=dBinsPair[3][0];
+        fmaxPtAsso=dBinsPair[3][iBinPair[3]];
+
+//THnSparses for calculation of efficiency
+
+if(fAnalysisType == "MCAOD" && ffillefficiency) {
      const Int_t nDim = 4;//       cent zvtx  pt   eta
-     Int_t fBinsCh[nDim] = {20, 10, 90 , 16};//******************************************change it
-     Double_t fMinCh[nDim] = { 0.0, -10.0 , 0.0,-0.8 };
-     Double_t fMaxCh[nDim] = { 100.0, 10.0, 9.0,0.8};
+     Int_t fBinsCh[nDim] = {iBinPair[0], iBinPair[1], nPteffbin ,nEtaBin};//**********************change it
+     Double_t fMinCh[nDim] = { dBinsPair[0][0],dBinsPair[1][0], Pteff[0], EtaBin[0] };
+     Double_t fMaxCh[nDim] = { dBinsPair[0][iBinPair[0]], dBinsPair[1][iBinPair[1]], Pteff[nPteffbin], EtaBin[nEtaBin]};
 
 TString Histrename;
-for(Int_t jj=0;jj<6;jj++)//centrality binning
+for(Int_t jj=0;jj<5;jj++)//centrality binning
     {
-   Histrename="fTHnrecoallPid";Histrename+=jj;
-  fTHnrecoallPid[jj] = new THnF(Histrename.Data(),"cent:zvtx::Pt:eta", nDim, fBinsCh, fMinCh, fMaxCh); 
- fTHnrecoallPid[jj]->Sumw2();
-  fTHnrecoallPid[jj]->GetAxis(0)->SetTitle("Centrality");
-  fTHnrecoallPid[jj]->GetAxis(1)->SetTitle("zvtx");
-  fTHnrecoallPid[jj]->GetAxis(2)->SetTitle("Pt");
-  fTHnrecoallPid[jj]->GetAxis(3)->SetTitle("eta");
-  fOutput->Add(fTHnrecoallPid[jj]);
+   Histrename="fTHnrecomatchedallPid";Histrename+=jj;
+  fTHnrecomatchedallPid[jj] = new THnSparseF(Histrename.Data(),"cent:zvtx::Pt:eta", nDim, fBinsCh, fMinCh, fMaxCh); 
+  effcorection[jj]->Sumw2(); 
+  fTHnrecomatchedallPid[jj]->GetAxis(0)->Set(iBinPair[0], dBinsPair[0]);
+  fTHnrecomatchedallPid[jj]->GetAxis(0)->SetTitle("Centrality");
+  fTHnrecomatchedallPid[jj]->GetAxis(1)->Set(iBinPair[1],dBinsPair[1]);
+  fTHnrecomatchedallPid[jj]->GetAxis(1)->SetTitle("zvtx"); 
+  fTHnrecomatchedallPid[jj]->GetAxis(2)->Set(nPteffbin, Pteff);  
+  fTHnrecomatchedallPid[jj]->GetAxis(2)->SetTitle("p_{T} (GeV/c)");
+  fTHnrecomatchedallPid[jj]->GetAxis(3)->Set(nEtaBin,EtaBin);
+  fTHnrecomatchedallPid[jj]->GetAxis(3)->SetTitle("#eta");
+  fOutput->Add(fTHnrecomatchedallPid[jj]);
 
 Histrename="fTHngenprimPidTruth";Histrename+=jj;
-  fTHngenprimPidTruth[jj] = new THnF(Histrename.Data(),"cent:zvtx::Pt:eta", nDim, fBinsCh, fMinCh, fMaxCh);
+  fTHngenprimPidTruth[jj] = new THnSparseF(Histrename.Data(),"cent:zvtx::Pt:eta", nDim, fBinsCh, fMinCh, fMaxCh);
   fTHngenprimPidTruth[jj]->Sumw2(); 
+  fTHngenprimPidTruth[jj]->GetAxis(0)->Set(iBinPair[0],dBinsPair[0]);
   fTHngenprimPidTruth[jj]->GetAxis(0)->SetTitle("Centrality");
-  fTHngenprimPidTruth[jj]->GetAxis(1)->SetTitle("zvtx");
-  fTHngenprimPidTruth[jj]->GetAxis(2)->SetTitle("Pt");
-  fTHngenprimPidTruth[jj]->GetAxis(3)->SetTitle("eta");
+  fTHngenprimPidTruth[jj]->GetAxis(1)->Set(iBinPair[1], dBinsPair[1]);
+  fTHngenprimPidTruth[jj]->GetAxis(1)->SetTitle("zvtx"); 
+  fTHngenprimPidTruth[jj]->GetAxis(2)->Set(nPteffbin, Pteff);  
+  fTHngenprimPidTruth[jj]->GetAxis(2)->SetTitle("p_{T} (GeV/c)");
+  fTHngenprimPidTruth[jj]->GetAxis(3)->Set(nEtaBin, EtaBin);
+  fTHngenprimPidTruth[jj]->GetAxis(3)->SetTitle("#eta");
   fOutput->Add(fTHngenprimPidTruth[jj]);
     }
  }
 
-     const Int_t nDim = 4;//       cent zvtx  pt   eta
-     Int_t fBinsCh[nDim] = {20, 10, 90 , 16};//******************************************change it
-     Double_t fMinCh[nDim] = { 0.0, -10.0 , 0.0,-0.8 };
-     Double_t fMaxCh[nDim] = { 100.0, 10.0, 9.0,0.8};
+ Int_t fBins[kTrackVariablesPair];
+ Double_t fMin[kTrackVariablesPair];
+ Double_t fMax[kTrackVariablesPair];
 
-  TString Histrexname;
-for(Int_t jj=0;jj<6;jj++)//centrality binning
-    {
-  Histrexname="effcorection";Histrexname+=jj;
-  effcorection[jj] = new THnF(Histrexname.Data(),"cent:zvtx::Pt:eta", nDim, fBinsCh, fMinCh, fMaxCh);
-  effcorection[jj]->Sumw2(); 
-  effcorection[jj]->GetAxis(0)->SetTitle("Centrality");
-  effcorection[jj]->GetAxis(1)->SetTitle("zvtx");
-  effcorection[jj]->GetAxis(2)->SetTitle("Pt");
-  effcorection[jj]->GetAxis(3)->SetTitle("eta");
-  fOutput->Add(effcorection[jj]);
-  /*
-Histrexname="effmap";Histrexname+=jj;
-  effmap[jj] = new THnF(Histrexname.Data(),"cent:zvtx::Pt:eta", nDim, fBinsCh, fMinCh, fMaxCh);
-  effmap[jj]->Sumw2(); 
-  effmap[jj]->GetAxis(0)->SetTitle("Centrality");
-  effmap[jj]->GetAxis(1)->SetTitle("zvtx");
-  effmap[jj]->GetAxis(2)->SetTitle("Pt");
-  effmap[jj]->GetAxis(3)->SetTitle("eta");
-  //fOutput->Add(effcorection[jj]);
-  */
-    }
+//ThnSparses for Correlation plots(data &  MC)
+ for(Int_t i=0;i<kTrackVariablesPair;i++)
+   {
+     fBins[i] =iBinPair[i];
+     fMin[i]= dBinsPair[i][0];
+     fMax[i] = dBinsPair[i][iBinPair[i]];
+   }
+     if(ffilltrigassoUNID)
+       {
+  fTHnCorrUNID = new THnSparseF("fTHnCorrUNID","cent:zvtx:pttrig:ptasso:deltaeta:deltaphi", kTrackVariablesPair, fBins, fMin, fMax); 
+  fTHnCorrUNID->Sumw2();
+  for(Int_t i=0; i<kTrackVariablesPair;i++){
+    SetAsymmetricBin(fTHnCorrUNID,i,dBinsPair[i],iBinPair[i],axisTitlePair[i]);
+  }
+  fOutput->Add(fTHnCorrUNID);
+       
+fTHnCorrUNIDmix = new THnSparseF("fTHnCorrUNIDmix","cent:zvtx:pttrig:ptasso:deltaeta:deltaphi", kTrackVariablesPair, fBins, fMin, fMax); 
+  fTHnCorrUNIDmix->Sumw2();
+for(Int_t i=0; i<kTrackVariablesPair;i++){
+    SetAsymmetricBin(fTHnCorrUNIDmix,i,dBinsPair[i],iBinPair[i],axisTitlePair[i]);
+  }
+  fOutput->Add(fTHnCorrUNIDmix);
+       }
 
+     if(ffilltrigIDassoID)
+       {
+    fTHnCorrID = new THnSparseF("fTHnCorrID","cent:zvtx:pttrig:ptasso:deltaeta:deltaphi", kTrackVariablesPair, fBins, fMin, fMax); 
+  fTHnCorrID->Sumw2();
+for(Int_t i=0; i<kTrackVariablesPair;i++){
+    SetAsymmetricBin(fTHnCorrID,i,dBinsPair[i],iBinPair[i],axisTitlePair[i]);
+  }
+  fOutput->Add(fTHnCorrID);
 
-TString Histmcname;
-for(Int_t jj=0;jj<4;jj++)
-  {//centrality binning 
+fTHnCorrIDmix = new THnSparseF("fTHnCorrIDmix","cent:zvtx:pttrig:ptasso:deltaeta:deltaphi", kTrackVariablesPair, fBins, fMin, fMax); 
+  fTHnCorrIDmix->Sumw2();
+for(Int_t i=0; i<kTrackVariablesPair;i++){
+    SetAsymmetricBin(fTHnCorrIDmix,i,dBinsPair[i],iBinPair[i],axisTitlePair[i]);
+  }
+  fOutput->Add(fTHnCorrIDmix);
+       }
 
-Histmcname="recoallpt";Histmcname+=jj;
-  recoallpt[jj]=new TH1F (Histmcname.Data(),"ptdistributionrecoall",900,0.,9.);
-  fOutput->Add(recoallpt[jj]);
-  
-Histmcname="MCrecomatchedprimpt";Histmcname+=jj;
-  MCrecomatchedprimpt[jj]=new TH1F (Histmcname.Data(),"ptdistributionrecomatchedprim",900,0.,9.);
-  fOutput->Add(MCrecomatchedprimpt[jj]);
+     if(ffilltrigUNIDassoID || ffilltrigIDassoUNID)//***********a bit tricky, be careful
+       {
+ fTHnCorrIDUNID = new THnSparseF("fTHnCorrIDUNID","cent:zvtx:pttrig:ptasso:deltaeta:deltaphi", kTrackVariablesPair, fBins, fMin, fMax); 
+  fTHnCorrIDUNID->Sumw2();
+for(Int_t i=0; i<kTrackVariablesPair;i++){
+    SetAsymmetricBin(fTHnCorrIDUNID,i,dBinsPair[i],iBinPair[i],axisTitlePair[i]);
+  }
+  fOutput->Add(fTHnCorrIDUNID);
 
-Histmcname="recoalleta";Histmcname+=jj;
-  recoalleta[jj]=new TH1F (Histmcname.Data(),"etadistributionrecoall",360,-1.8,1.8);
-  fOutput->Add(recoalleta[jj]);
-
-Histmcname="alltrigeta";Histmcname+=jj;
-  alltrigeta[jj]=new TH1F (Histmcname.Data(),"alltrigeta",360,-1.8,1.8);
-  fOutput->Add(alltrigeta[jj]);
-
-Histmcname="allassoeta";Histmcname+=jj;
-  allassoeta[jj]=new TH1F (Histmcname.Data(),"allassoeta",360,-1.8,1.8);
-  fOutput->Add(allassoeta[jj]);
-
-Histmcname="baryontrigeta";Histmcname+=jj;
-  baryontrigeta[jj]=new TH1F (Histmcname.Data(),"baryontrigeta",360,-1.8,1.8);
-  fOutput->Add(baryontrigeta[jj]);
-
-
-Histmcname="mesontrigeta";Histmcname+=jj;
-  mesontrigeta[jj]=new TH1F (Histmcname.Data(),"mesontrigeta",360,-1.8,1.8);
-  fOutput->Add(mesontrigeta[jj]);
-
-
-Histmcname="pionassoeta";Histmcname+=jj;
-  pionassoeta[jj]=new TH1F (Histmcname.Data(),"pionassoeta",360,-1.8,1.8);
-  fOutput->Add(pionassoeta[jj]);
-
-
-Histmcname="kaonassoeta";Histmcname+=jj;
-  kaonassoeta[jj]=new TH1F (Histmcname.Data(),"kaonassoeta",360,-1.8,1.8);
-  fOutput->Add(kaonassoeta[jj]);
-
-Histmcname="protonassoeta";Histmcname+=jj;
-  protonassoeta[jj]=new TH1F (Histmcname.Data(),"protonassoeta",360,-1.8,1.8);
-  fOutput->Add(protonassoeta[jj]);
+ fTHnCorrIDUNIDmix = new THnSparseF("fTHnCorrIDUNIDmix","cent:zvtx:pttrig:ptasso:deltaeta:deltaphi", kTrackVariablesPair, fBins, fMin, fMax); 
+  fTHnCorrIDUNIDmix->Sumw2();
+for(Int_t i=0; i<kTrackVariablesPair;i++){
+    SetAsymmetricBin(fTHnCorrIDUNIDmix,i,dBinsPair[i],iBinPair[i],axisTitlePair[i]);
+  }
+  fOutput->Add(fTHnCorrIDUNIDmix);
+       }
 
 
 
-Histmcname="MCrecomatchedprimeta";Histmcname+=jj;
-  MCrecomatchedprimeta[jj]=new TH1F (Histmcname.Data(),"etadistributionrecomatchedprim",360,-1.8,1.8);
-  fOutput->Add(MCrecomatchedprimeta[jj]);
+  //ThnSparse for Correlation plots(truth MC)
+    if(fAnalysisType == "MCAOD" && ffilltrigIDassoIDMCTRUTH) {//remember that in this case uidentified means other than pions, kaons, protons
+      fCorrelatonTruthPrimary = new THnSparseF("fCorrelatonTruthPrimary","cent:zvtx:pttrig:ptasso:deltaeta:deltaphi", kTrackVariablesPair, fBins, fMin, fMax); 
+  fCorrelatonTruthPrimary->Sumw2();
+for(Int_t i=0; i<kTrackVariablesPair;i++){
+    SetAsymmetricBin(fCorrelatonTruthPrimary,i,dBinsPair[i],iBinPair[i],axisTitlePair[i]);
+  }
+  fOutput->Add(fCorrelatonTruthPrimary);
 
-Histmcname="recoallphi";Histmcname+=jj;
-  recoallphi[jj]=new TH1F (Histmcname.Data(),"phidistrecoall",340,0,6.8);
-  fOutput->Add(recoallphi[jj]);
-  Histmcname="MCrecomatchedprimphi";Histmcname+=jj;
-  MCrecomatchedprimphi[jj]=new TH1F (Histmcname.Data(),"phidistrecomatchedprim",340,0,6.8);
-  fOutput->Add(MCrecomatchedprimphi[jj]);
-
-Histmcname="MCtruthpt";Histmcname+=jj;
-  MCtruthpt[jj]=new TH1F (Histmcname.Data(),"ptdistributiontruthprim",900,0.,9.);
-  fOutput->Add(MCtruthpt[jj]);
-
-Histmcname="MCtrutheta";Histmcname+=jj;
-  MCtrutheta[jj]=new TH1F (Histmcname.Data(),"etadistributiontruthprim",360,-1.8,1.8);
-  fOutput->Add(MCtrutheta[jj]);
-
-Histmcname="MCtruthphi";Histmcname+=jj;
-  MCtruthphi[jj]=new TH1F (Histmcname.Data(),"phidisttruthprim",340,0,6.8);
-  fOutput->Add(MCtruthphi[jj]);
-
-
-Histmcname="MCtruthpionpt";Histmcname+=jj;
-  MCtruthpionpt[jj]=new TH1F (Histmcname.Data(),"MCtruthpionpt",900,0.,9.);
-  fOutput->Add(MCtruthpionpt[jj]);
-
-Histmcname="MCtruthpioneta";Histmcname+=jj;
-  MCtruthpioneta[jj]=new TH1F (Histmcname.Data(),"MCtruthpioneta",360,-1.8,1.8);
-  fOutput->Add(MCtruthpioneta[jj]);
-
-
-Histmcname="MCtruthpionphi";Histmcname+=jj;
-  MCtruthpionphi[jj]=new TH1F (Histmcname.Data(),"MCtruthpionphi",340,0,6.8);
-  fOutput->Add(MCtruthpionphi[jj]);
-
-
-Histmcname="MCtruthkaonpt";Histmcname+=jj;
-  MCtruthkaonpt[jj]=new TH1F (Histmcname.Data(),"MCtruthkaonpt",900,0.,9.);
-  fOutput->Add(MCtruthkaonpt[jj]);
-
-Histmcname="MCtruthkaoneta";Histmcname+=jj;
-  MCtruthkaoneta[jj]=new TH1F (Histmcname.Data(),"MCtruthkaoneta",360,-1.8,1.8);
-  fOutput->Add(MCtruthkaoneta[jj]);
-
-Histmcname="MCtruthkaonphi";Histmcname+=jj;
-  MCtruthkaonphi[jj]=new TH1F (Histmcname.Data(),"MCtruthkaonphi",340,0,6.8);
-  fOutput->Add(MCtruthkaonphi[jj]);
-
-
-Histmcname="MCtruthprotonpt";Histmcname+=jj;
-  MCtruthprotonpt[jj]=new TH1F (Histmcname.Data(),"MCtruthprotonpt",900,0.,9.);
-  fOutput->Add(MCtruthprotonpt[jj]);
-
-Histmcname="MCtruthprotoneta";Histmcname+=jj;
-  MCtruthprotoneta[jj]=new TH1F (Histmcname.Data(),"MCtruthprotoneta",360,-1.8,1.8);
-  fOutput->Add(MCtruthprotoneta[jj]);
-
-Histmcname="MCtruthprotonphi";Histmcname+=jj;
-  MCtruthprotonphi[jj]=new TH1F (Histmcname.Data(),"MCtruthprotonphi",340,0,6.8);
-  fOutput->Add(MCtruthprotonphi[jj]);
-
-Histmcname="MCrecomatchedprimpionpt";Histmcname+=jj;
-  MCrecomatchedprimpionpt[jj]=new TH1F (Histmcname.Data(),"MCrecomatchedprimpionpt",900,0.,9.);
-  fOutput->Add(MCrecomatchedprimpionpt[jj]);
-
-Histmcname="MCrecomatchedprimpioneta";Histmcname+=jj;
-  MCrecomatchedprimpioneta[jj]=new TH1F (Histmcname.Data(),"MCrecomatchedprimpioneta",360,-1.8,1.8);
-  fOutput->Add(MCrecomatchedprimpioneta[jj]);
-
-Histmcname="MCrecomatchedprimpionphi";Histmcname+=jj;
-  MCrecomatchedprimpionphi[jj]=new TH1F (Histmcname.Data(),"MCrecomatchedprimpionphi",340,0,6.8);
-  fOutput->Add(MCrecomatchedprimpionphi[jj]);
-
-Histmcname="MCrecomatchedprimkaonpt";Histmcname+=jj;
-  MCrecomatchedprimkaonpt[jj]=new TH1F (Histmcname.Data(),"MCrecomatchedprimkaonpt",900,0.,9.);
-  fOutput->Add(MCrecomatchedprimkaonpt[jj]);
-
-Histmcname="MCrecomatchedprimkaoneta";Histmcname+=jj;
-  MCrecomatchedprimkaoneta[jj]=new TH1F (Histmcname.Data(),"MCrecomatchedprimkaoneta",360,-1.8,1.8);
-  fOutput->Add(MCrecomatchedprimkaoneta[jj]);
-
-Histmcname="MCrecomatchedprimkaonphi";Histmcname+=jj;
-  MCrecomatchedprimkaonphi[jj]=new TH1F (Histmcname.Data(),"MCrecomatchedprimkaonphi",340,0,6.8);
-  fOutput->Add(MCrecomatchedprimkaonphi[jj]);
-
-
-Histmcname="MCrecomatchedprimprotonpt";Histmcname+=jj;
-  MCrecomatchedprimprotonpt[jj]=new TH1F (Histmcname.Data(),"MCrecomatchedprimprotonpt",900,0.,9.);
-  fOutput->Add(MCrecomatchedprimprotonpt[jj]);
-
-Histmcname="MCrecomatchedprimprotoneta";Histmcname+=jj;
-  MCrecomatchedprimprotoneta[jj]=new TH1F (Histmcname.Data(),"MCrecomatchedprimprotoneta",360,-1.8,1.8);
-  fOutput->Add(MCrecomatchedprimprotoneta[jj]);
-
-Histmcname="MCrecomatchedprimprotonphi";Histmcname+=jj;
-  MCrecomatchedprimprotonphi[jj]=new TH1F (Histmcname.Data(),"MCrecomatchedprimprotonphi",340,0,6.8);
-  fOutput->Add(MCrecomatchedprimprotonphi[jj]);
-
-
+  fCorrelatonTruthPrimarymix = new THnSparseF("fCorrelatonTruthPrimarymix","cent:zvtx:pttrig:ptasso:deltaeta:deltaphi", kTrackVariablesPair, fBins, fMin, fMax); 
+  fCorrelatonTruthPrimarymix->Sumw2();
+for(Int_t i=0; i<kTrackVariablesPair;i++){
+    SetAsymmetricBin(fCorrelatonTruthPrimarymix,i,dBinsPair[i],iBinPair[i],axisTitlePair[i]);
+  }
+  fOutput->Add(fCorrelatonTruthPrimarymix);
  }
+
+
+    //binning for trigger no. counting
+
+	Double_t* fMint;
+	Double_t* fMaxt;
+	Int_t* fBinst;
+	Int_t dims=3;
+	if(fcontainPIDtrig) dims=4;
+        fMint= new Double_t[dims];
+        fMaxt= new Double_t[dims];
+        fBinst= new Int_t[dims];
+	for(Int_t i=0; i<3;i++)
+	  {
+	    fBinst[i]=iBinPair[i];
+	    fMint[i]=dBinsPair[i][0];
+	    fMaxt[i]=dBinsPair[i][iBinPair[i]];
+	  }
+	if(fcontainPIDtrig){
+            fBinst[3]=iBinPair[6];
+	    fMint[3]=dBinsPair[6][0];
+	    fMaxt[3]=dBinsPair[6][iBinPair[6]];
+	}
+
+  //ThSparse for trigger counting(data & reco MC)
+  fTHnTrigcount = new THnSparseF("fTHnTrigcount","cent:zvtx:pt", dims, fBinst, fMint, fMaxt); 
+  fTHnTrigcount->Sumw2();
+for(Int_t i=0; i<3;i++){
+    SetAsymmetricBin(fTHnTrigcount,i,dBinsPair[i],iBinPair[i],axisTitlePair[i]);
+  }
+ if(fcontainPIDtrig)   SetAsymmetricBin(fTHnTrigcount,3,dBinsPair[6],iBinPair[6],axisTitlePair[6]);
+  fOutput->Add(fTHnTrigcount);
+  
+if(fAnalysisType == "MCAOD" && ffilltrigIDassoIDMCTRUTH) {
+  //ThSparse for trigger counting(truth MC)
+fTHnTrigcountMCTruthPrim = new THnSparseF("fTHnTrigcountMCTruthPrim","cent:zvtx:pt", dims, fBinst, fMint, fMaxt); 
+  fTHnTrigcountMCTruthPrim->Sumw2();
+for(Int_t i=0; i<3;i++){
+    SetAsymmetricBin(fTHnTrigcountMCTruthPrim,i,dBinsPair[i],iBinPair[i],axisTitlePair[i]);
+  }
+if(fcontainPIDtrig)    SetAsymmetricBin(fTHnTrigcountMCTruthPrim,3,dBinsPair[6],iBinPair[6],axisTitlePair[6]);
+  fOutput->Add(fTHnTrigcountMCTruthPrim);
+ }
+
+if(fAnalysisType == "MCAOD"){
+  MCtruthpt=new TH1F ("MCtruthpt","ptdistributiontruthprim",100,0.,10.);
+  fOutput->Add(MCtruthpt);
+
+  MCtrutheta=new TH1F ("MCtrutheta","etadistributiontruthprim",360,-1.8,1.8);
+  fOutput->Add(MCtrutheta);
+
+  MCtruthphi=new TH1F ("MCtruthphi","phidisttruthprim",340,0,6.8);
+  fOutput->Add(MCtruthphi);
+
+  MCtruthpionpt=new TH1F ("MCtruthpionpt","MCtruthpionpt",100,0.,10.);
+  fOutput->Add(MCtruthpionpt);
+
+  MCtruthpioneta=new TH1F ("MCtruthpioneta","MCtruthpioneta",360,-1.8,1.8);
+  fOutput->Add(MCtruthpioneta);
+
+  MCtruthpionphi=new TH1F ("MCtruthpionphi","MCtruthpionphi",340,0,6.8);
+  fOutput->Add(MCtruthpionphi);
+
+  MCtruthkaonpt=new TH1F ("MCtruthkaonpt","MCtruthkaonpt",100,0.,10.);
+  fOutput->Add(MCtruthkaonpt);
+
+  MCtruthkaoneta=new TH1F ("MCtruthkaoneta","MCtruthkaoneta",360,-1.8,1.8);
+  fOutput->Add(MCtruthkaoneta);
+
+  MCtruthkaonphi=new TH1F ("MCtruthkaonphi","MCtruthkaonphi",340,0,6.8);
+  fOutput->Add(MCtruthkaonphi);
+
+  MCtruthprotonpt=new TH1F ("MCtruthprotonpt","MCtruthprotonpt",100,0.,10.);
+  fOutput->Add(MCtruthprotonpt);
+
+  MCtruthprotoneta=new TH1F ("MCtruthprotoneta","MCtruthprotoneta",360,-1.8,1.8);
+  fOutput->Add(MCtruthprotoneta);
+
+  MCtruthprotonphi=new TH1F ("MCtruthprotonphi","MCtruthprotonphi",340,0,6.8);
+  fOutput->Add(MCtruthprotonphi);
+
+ fPioncont=new TH2F("fPioncont", "fPioncont",4,-0.5,3.5,100,0.,10.);
+  fOutput->Add(fPioncont);
+
+ fKaoncont=new TH2F("fKaoncont","fKaoncont",4,-0.5,3.5,100,0.,10.);
+  fOutput->Add(fKaoncont);
+
+ fProtoncont=new TH2F("fProtoncont","fProtoncont",4,-0.5,3.5,100,0.,10.);
+  fOutput->Add(fProtoncont);
+  }
 
 //Mixing
 DefineEventPool();
 
-  if(applyefficiency)
+  if(fapplyefficiency)
    {
+     const Int_t nDimt = 4;//       cent zvtx  pt   eta
+     Int_t fBinsCht[nDimt] = {iBinPair[0], iBinPair[1], nPteffbin ,nEtaBin};//*************change it
+     Double_t fMinCht[nDimt] = { dBinsPair[0][0],dBinsPair[1][0], Pteff[0], EtaBin[0] };
+     Double_t fMaxCht[nDimt] = {dBinsPair[0][iBinPair[0]], dBinsPair[1][iBinPair[1]], Pteff[nPteffbin], EtaBin[nEtaBin]};
+
+  TString Histrexname;
+for(Int_t jj=0;jj<5;jj++)// PID type binning
+    {
+  Histrexname="effcorection";Histrexname+=jj;
+  effcorection[jj] = new THnSparseF(Histrexname.Data(),"cent:zvtx::Pt:eta", nDimt, fBinsCht, fMinCht, fMaxCht);
+  effcorection[jj]->Sumw2(); 
+  effcorection[jj]->GetAxis(0)->Set(iBinPair[0], dBinsPair[0]);
+  effcorection[jj]->GetAxis(0)->SetTitle("Centrality");
+  effcorection[jj]->GetAxis(1)->Set( iBinPair[1],dBinsPair[1]);
+  effcorection[jj]->GetAxis(1)->SetTitle("zvtx"); 
+  effcorection[jj]->GetAxis(2)->Set(nPteffbin, Pteff);  
+  effcorection[jj]->GetAxis(2)->SetTitle("p_{T} (GeV/c)");
+  effcorection[jj]->GetAxis(3)->Set( nEtaBin,EtaBin);
+  effcorection[jj]->GetAxis(3)->SetTitle("#eta");
+  fOutput->Add(effcorection[jj]);
+    }
      TFile *fsifile = new TFile("map32.root","READ");
  TString Nameg;
-for(Int_t jj=0;jj<6;jj++)//type binning
+for(Int_t jj=0;jj<5;jj++)//type binning
     {
 Nameg="effmap";Nameg+=jj;
-effcorection[jj] = (THnF*)fsifile->Get(Nameg.Data());
+effcorection[jj] = (THnSparseF*)fsifile->Get(Nameg.Data());
 //effcorection[jj]->SetDirectory(0);//****************************not present in case oh THnF
     }
 fsifile->Close();
@@ -1219,39 +809,33 @@ void AliTwoParticlePIDCorr::doMCAODevent()
     return;
   }
  
-// count all events   
+// count all events(physics triggered)   
   fEventCounter->Fill(1);
 
- 
-// get centrality object and check quality
-  Float_t cent_v0m=-999;
+ // get centrality object and check quality(valid for p-Pb and Pb-Pb)
+  Double_t cent_v0=0.0;
+
+  if(fSampleType=="pPb" || fSampleType=="PbPb")
+    {
   AliCentrality *centrality=0;
   if(aod) 
- centrality = aod->GetHeader()->GetCentralityP();
-  
-if(centrality)
+  centrality = aod->GetHeader()->GetCentralityP();
+  // if (centrality->GetQuality() != 0) return ;
+
+  if(centrality)
   { 
-    // if (centrality->GetQuality() != 0) return ;
-  cent_v0m = centrality->GetCentralityPercentile("V0A");
-  //AliInfo(Form("Centrality is %f", cent_v0m));
+  cent_v0 = centrality->GetCentralityPercentile(fCentralityMethod);
   }
- else
+  else
     {
-      Printf("WARNING: Centrality object is 0");
-      cent_v0m = -1;
+  cent_v0= -1;
      }
+    }
 
-if (cent_v0m < 0)   return;
-
-//do centrality binning(for 0-100% centrality events,reject events outside this range)
- Int_t centbin=Getcentbin(cent_v0m);
- if(centbin==-999) return;
-
- //check the PIDResponse handler
+//check the PIDResponse handler
   if (!fPID) return;
 
 // get mag. field required for twotrack efficiency cut
- if(!aod) return; //for safety
  Float_t bSign = 0;
  bSign = (aod->GetMagneticField() > 0) ? 1 : -1;
 
@@ -1270,15 +854,9 @@ fArrayMC = dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::Std
     return;
   }
  
-
-
- //count events having centrality betn 0-100%
-  fEventCounter->Fill(2);
-
-
 //Only consider MC events within the vtx-z region used also as cut on the reconstructed vertex
 Float_t zVtxmc =header->GetVtxZ();
- if(TMath::Abs(zVtxmc)>10.) return;
+ if(TMath::Abs(zVtxmc)>fzvtxcut) return;
 
  // For productions with injected signals, figure out above which label to skip particles/tracks
   Int_t skipParticlesAbove = 0;
@@ -1307,66 +885,244 @@ skipParticlesAbove = eventHeader->NProduced();
     AliInfo(Form("Injected signals in this event (%d headers). Keeping events of %s. Will skip particles/tracks above %d.", headers, eventHeader->ClassName(), skipParticlesAbove));
   }
 
- //determine the two particle correlation function with generator level (cleaned up) primary particles
-
-  // Trigger selection ************************************************
-
-
-
-// Vertex selection *************************************************
-   AliAODVertex* trkVtx = aod->GetPrimaryVertex();
+ //vertex selection(is it fine for PP?)
+  if ( fSampleType=="pPb"){
+  trkVtx = aod->GetPrimaryVertex();
   if (!trkVtx || trkVtx->GetNContributors()<=0) return;
   TString vtxTtl = trkVtx->GetTitle();
   if (!vtxTtl.Contains("VertexerTracks")) return;
-  Float_t zvtx = trkVtx->GetZ();
+   zvtx = trkVtx->GetZ();
   const AliAODVertex* spdVtx = aod->GetPrimaryVertexSPD();
-  if (spdVtx->GetNContributors()<=0) return;
+  if (!spdVtx || spdVtx->GetNContributors()<=0) return;
   TString vtxTyp = spdVtx->GetTitle();
   Double_t cov[6]={0};
   spdVtx->GetCovarianceMatrix(cov);
   Double_t zRes = TMath::Sqrt(cov[5]);
   if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) return;
-  if (TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return;
+   if (TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return;
+  }
+  else if(fSampleType=="PbPb" || fSampleType=="pp") {//for pp and pb-pb case
+	Int_t nVertex = aod->GetNumberOfVertices();
+  	if( nVertex > 0 ) { 
+    trkVtx = aod->GetPrimaryVertex();
+		Int_t nTracksPrim = trkVtx->GetNContributors();
+                 zvtx = trkVtx->GetZ();
+  		//if (fDebug > 1)AliInfo(Form(" Vertex in = %f with %d particles by  %s data ...",zVertex,nTracksPrim,vertex->GetName()));
+  		// Reject TPC only vertex
+		TString name(trkVtx->GetName());
+		if (name.CompareTo("PrimaryVertex") && name.CompareTo("SPDVertex"))return;
+
+		// Select a quality vertex by number of tracks?
+  		if( nTracksPrim < fnTracksVertex ) {
+		  //if (fDebug > 1) AliInfo(" Primary-vertex Selection: event REJECTED ...");
+  			return ;
+  			}
+  		// TODO remove vertexer Z events with dispersion > 0.02: Doesn't work for AOD at present
+                //if (strcmp(vertex->GetTitle(), "AliVertexerZ") == 0 && vertex->GetDispersion() > 0.02)
+                //  return kFALSE;
+		//	if (fDebug > 1) AliInfo(" Primary-vertex Selection: event ACCEPTED...");
+	}
+	else return;
+
+  }
+  else return;//as there is no proper sample type
+
 
   fHistQA[0]->Fill((trkVtx->GetX()));fHistQA[1]->Fill((trkVtx->GetY()));fHistQA[2]->Fill((trkVtx->GetZ()));   //for trkVtx only before vertex cut |zvtx|<10 cm
 
   //count events having a proper vertex
-   fEventCounter->Fill(5);
+   fEventCounter->Fill(2);
 
- if (TMath::Abs(zvtx) > 10) return;
+ if (TMath::Abs(zvtx) > fzvtxcut) return;
 
 fHistQA[3]->Fill((trkVtx->GetX()));fHistQA[4]->Fill((trkVtx->GetY()));fHistQA[5]->Fill((trkVtx->GetZ()));//after vertex cut for trkVtx only
 
-//do zvtx binning
-  Int_t vtx=Getzbin(zvtx);
-  if(vtx==-999) return;//all the events outside the defined vtx range will be ignored
+//now we have events passed physics trigger, centrality,eventzvtx cut 
 
-  //now we have events passed physics trigger, centrality,zvtx cut 
-
-  //count events after vertex cut
-  fEventCounter->Fill(6);
- 
-  //centrality dist. of accepted events
- fhistcentrality->Fill(cent_v0m);
-
-  eventno++;
-    
+//count events after vertex cut
+  fEventCounter->Fill(5);
+     
 if(!aod) return;  //for safety
 
-   TObjArray* trackstrig = new TObjArray;
-   TObjArray* tracksasso = new TObjArray;
-   trackstrig->SetOwner(kTRUE);  // IMPORTANT!
-   tracksasso->SetOwner(kTRUE);  // IMPORTANT!
+   Double_t nooftrackstruth=0.0;//in case of pp this will give the multiplicity(for truth case) after the track loop(only for unidentified particles that pass  kinematic cuts)
+
+   Double_t cent_v0_truth=0.0;
+
+if (fSampleType=="pPb" || fSampleType=="PbPb") if (cent_v0 < 0)  return;//for pp case it is the multiplicity
+
+ TObjArray* tracksMCtruth=0;
+ tracksMCtruth=new TObjArray;//for truth MC particles with PID,here unidentified means any particle other than pion, kaon or proton(Basicaly Spundefined of AliHelperPID)******WARNING::different from data and reco MC
+ tracksMCtruth->SetOwner(kTRUE);  //***********************************IMPORTANT!
+
+  eventno++;
+
+
+//now process the truth particles(for both efficiency & correlation function)
+Int_t nMCTrack = fArrayMC->GetEntriesFast();
+  
+for (Int_t iMC = 0; iMC < nMCTrack; iMC++) 
+{      //MC truth track loop starts
+    
+AliAODMCParticle *partMC = (AliAODMCParticle*) fArrayMC->At(iMC);
+    
+    if(!partMC){
+      AliError(Form("ERROR: Could not retrieve AODMCtrack %d",iMC));
+      continue;
+    }
+
+//consider only charged particles
+    if(partMC->Charge() == 0) continue;
+
+//consider only primary particles; neglect all secondary particles including from weak decays
+ if(fselectprimaryTruth && !partMC->IsPhysicalPrimary()) continue;
+
+
+//remove injected signals(primaries above <maxLabel>)
+ if (fInjectedSignals && partMC->GetLabel() >= skipParticlesAbove) continue;
+
+//remove duplicates
+  Bool_t isduplicate=kFALSE;
+ if (fRemoveDuplicates)
+   { 
+ for (Int_t j=iMC+1; j<nMCTrack; ++j) 
+   {//2nd trutuh loop starts
+AliAODMCParticle *partMC2 = (AliAODMCParticle*) fArrayMC->At(j);
+   if(!partMC2){
+      AliError(Form("ERROR: Could not retrieve AODMCtrack %d",j));
+      continue;
+    }    
+ if (partMC->GetLabel() == partMC2->GetLabel())
+   {
+isduplicate=kTRUE;
+ break;  
+   }    
+   }//2nd truth loop ends
+   }
+ if(fRemoveDuplicates && isduplicate) continue;//remove duplicates
+
+//give only kinematic cuts at the truth level  
+ if (partMC->Eta() < fmineta || partMC->Eta() > fmaxeta) continue;
+ if (partMC->Pt() < fminPt ||  partMC->Pt() > fmaxPt) continue;
+
+ if(!partMC) continue;//for safety
+
+ //To determine multiplicity in case of PP
+ nooftrackstruth++;
+
+//only physical primary(all/unidentified)  
+ MCtruthpt->Fill(partMC->Pt());
+ MCtrutheta->Fill(partMC->Eta());
+ MCtruthphi->Fill(partMC->Phi());
+
+ //get particle ID
+Int_t pdgtruth=((AliAODMCParticle*)partMC)->GetPdgCode();
+Int_t particletypeTruth=-999;
+ if (TMath::Abs(pdgtruth)==211)
+   {
+ particletypeTruth=SpPion;
+ MCtruthpionpt->Fill(partMC->Pt());
+ MCtruthpioneta->Fill(partMC->Eta());
+ MCtruthpionphi->Fill(partMC->Phi());
+      }
+
+ if (TMath::Abs(pdgtruth)==321)
+   {
+ particletypeTruth=SpKaon;
+ MCtruthkaonpt->Fill(partMC->Pt());
+ MCtruthkaoneta->Fill(partMC->Eta());
+ MCtruthkaonphi->Fill(partMC->Phi());
+  }
+if(TMath::Abs(pdgtruth)==2212)
+  {
+ particletypeTruth=SpProton;
+ MCtruthprotonpt->Fill(partMC->Pt());
+ MCtruthprotoneta->Fill(partMC->Eta());
+ MCtruthprotonphi->Fill(partMC->Phi());
+  }
+ if(TMath::Abs(pdgtruth)!=211 && TMath::Abs(pdgtruth)!=321 && TMath::Abs(pdgtruth)!=2212)  particletypeTruth=unidentified;//*********************WARNING:: situation is different from reco MC and data case(here we don't have SpUndefined particles)
+
+ // -- Fill THnSparse for efficiency and contamination calculation
+ if (fSampleType=="pp") cent_v0=15.0;//integrated over multiplicity(so put any fixed value for each track so that practically means there is only one bin in multiplicityi.e multiplicity intregated out )**************Important
+
+ Double_t primmctruth[4] = {cent_v0, zVtxmc,partMC->Pt(), partMC->Eta()};
+ if(ffillefficiency)
+  {
+  fTHngenprimPidTruth[4]->Fill(primmctruth);//for all primary truth particles(4)
+
+if (TMath::Abs(pdgtruth)==211 || TMath::Abs(pdgtruth)==321)
+  {
+    fTHngenprimPidTruth[3]->Fill(primmctruth);//for  primary truth mesons(3)
+  if (TMath::Abs(pdgtruth)==211)  fTHngenprimPidTruth[0]->Fill(primmctruth);//for pions
+  if (TMath::Abs(pdgtruth)==321)  fTHngenprimPidTruth[1]->Fill(primmctruth);//for kaons
+  }
+  if(TMath::Abs(pdgtruth)==2212)  fTHngenprimPidTruth[2]->Fill(primmctruth);//for protons
+  }
+   
+ Float_t effmatrix=1.;//here no case of efficiency correction so it should be always 1.0
+if(partMC->Pt()>=fminPtAsso || partMC->Pt()<=fmaxPtTrig)//to reduce memory consumption in pool
+  {
+LRCParticlePID* copy6 = new LRCParticlePID(particletypeTruth,partMC->Charge(),partMC->Pt(),partMC->Eta(), partMC->Phi(),effmatrix);
+ copy6->SetUniqueID(eventno * 100000 + TMath::Abs(partMC->GetLabel()));
+ tracksMCtruth->Add(copy6);//************** TObjArray used for truth correlation function calculation
+  }
+  }//MC truth track loop ends
+
+ if (fSampleType=="pp") cent_v0_truth=nooftrackstruth;
+ else cent_v0_truth=cent_v0;//the notation cent_v0 is reserved for reco case
+
+if(nooftrackstruth>0.0 && ffilltrigIDassoIDMCTRUTH)
+  {
+ //Fill Correlations for MC truth particles(same event)
+if(tracksMCtruth && tracksMCtruth->GetEntriesFast()>0)//hadron triggered correlation
+ Fillcorrelation(tracksMCtruth,0,cent_v0_truth,zVtxmc,bSign,fPtOrderMCTruth,kFALSE,kFALSE,"trigIDassoIDMCTRUTH");//mixcase=kFALSE for same event case
+
+//start mixing
+AliEventPool* pool2 = fPoolMgr->GetEventPool(cent_v0, zVtxmc+200);
+if (pool2 && pool2->IsReady())
+  {//start mixing only when pool->IsReady
+if(tracksMCtruth && tracksMCtruth->GetEntriesFast()>0)
+  {//proceed only when no. of trigger particles >0 in current event
+for (Int_t jMix=0; jMix<pool2->GetCurrentNEvents(); jMix++) 
+  { //pool event loop start
+ TObjArray* bgTracks6 = pool2->GetEvent(jMix);
+  if(!bgTracks6) continue;
+  Fillcorrelation(tracksMCtruth,bgTracks6,cent_v0_truth,zVtxmc,bSign,fPtOrderMCTruth,kFALSE,kTRUE,"trigIDassoIDMCTRUTH");//mixcase=kTRUE for mixing case
+  
+   }// pool event loop ends mixing case
+ }//if(trackstrig && trackstrig->GetEntriesFast()>0) condition ends mixing case
+} //if pool->IsReady() condition ends mixing case
+
+ //still in main event loop
+
+ if(tracksMCtruth){
+if(pool2)  pool2->UpdatePool(CloneAndReduceTrackList(tracksMCtruth));//ownership of tracksasso is with pool now, don't delete it
+ }
+  }
+
+ //still in main event loop
+
+if(tracksMCtruth) delete tracksMCtruth;
+
+//now deal with reco tracks
+   TObjArray* tracksUNID=0;
+   tracksUNID = new TObjArray;
+   tracksUNID->SetOwner(kTRUE);
+
+   TObjArray* tracksID=0;
+   tracksID = new TObjArray;
+   tracksID->SetOwner(kTRUE);
+
 
    Float_t bSign1=aod->GetHeader()->GetMagneticField() ;//used for reconstructed track dca cut
-   Int_t nooftracks=0;
+
+   Double_t trackscount=0.0;
 
 // loop over reconstructed tracks 
   for (Int_t itrk = 0; itrk < aod->GetNumberOfTracks(); itrk++) 
 { // reconstructed track loop starts
   AliAODTrack* track = dynamic_cast<AliAODTrack*>(aod->GetTrack(itrk));
   if (!track) continue;
- //get the corresponding MC track at the truth level 
+ //get the corresponding MC track at the truth level (doing reco matching)
   AliAODMCParticle* recomatched = static_cast<AliAODMCParticle*>(fArrayMC->At(TMath::Abs(track->GetLabel())));
   if(!recomatched) continue;//if a reco track doesn't have corresponding truth track at generated level is a fake track, ignore it
 
@@ -1417,18 +1173,46 @@ isduplicate2=kTRUE;
  if(fRemoveDuplicates && isduplicate2) continue;//remove duplicates
      
   fHistQA[11]->Fill(track->GetTPCNcls());
-   Int_t tracktype=ClassifyTrack(track,centbin,trkVtx,bSign1,kFALSE);//dcacut=kFALSE
+  Int_t tracktype=ClassifyTrack(track,kFALSE,trkVtx,bSign1);//dcacut=kFALSE,onlyprimary=kFALSE
 
  if(tracktype==0) continue; 
  if(tracktype==1)//tracks "not" passed AliAODTrack::kPrimary at reconstructed level & have proper TPC PID response(?)
 {
- //accepted all(primaries+secondary) reconstructed tracks(pt 0.2 to 9.0,,eta -0.8 to 0.8)
-  nooftracks++;
+  if(!track) continue;//for safety
+ //accepted all(primaries+secondary) reconstructed tracks(pt 0.2 to 10.0,,eta -0.8 to 0.8)
+  trackscount++;
 
- MCrecomatchedprimpt[centbin]->Fill(recomatched->Pt());
- MCrecomatchedprimeta[centbin]->Fill(recomatched->Eta());
- MCrecomatchedprimphi[centbin]->Fill(recomatched->Phi());
+//check for eta , phi holes
+ fEtaSpectrasso->Fill(track->Eta(),track->Pt());
+ fphiSpectraasso->Fill(track->Phi(),track->Pt());
 
+  Int_t particletypeMC=-9999;
+
+//tag all particles as unidentified
+ particletypeMC=unidentified;
+
+ Float_t effmatrix=1.;
+
+// -- Fill THnSparse for efficiency calculation
+ if (fSampleType=="pp") cent_v0=15.0;//integrated over multiplicity(so put any fixed value for each track so that practically means there is only one bin in multiplicityi.e multiplicity intregated out )**************Important
+ //NOTE:: this will be used for fillinfg THnSparse of efficiency & also to get the the track by track eff. factor on the fly(only in case of pp)
+
+ //Clone & Reduce track list(TObjArray) for unidentified particles
+if(track->Pt()>=fminPtAsso || track->Pt()<=fmaxPtTrig)//to reduce memory consumption in pool
+  {
+ if (fapplyefficiency)//get the trackingefficiency x contamination factor for unidentified particles
+   effmatrix=GetTrackbyTrackeffvalue(track,cent_v0,zvtx,particletypeMC,kFALSE);
+   LRCParticlePID* copy = new LRCParticlePID(particletypeMC,track->Charge(),track->Pt(),track->Eta(), track->Phi(),effmatrix);
+   copy->SetUniqueID(eventno * 100000 +(Int_t)trackscount);
+   tracksUNID->Add(copy);//track information Storage for UNID correlation function(tracks that pass the filterbit & kinematic cuts only)
+  }
+ Double_t allrecomatchedpid[4] = {cent_v0, zVtxmc,recomatched->Pt(), recomatched->Eta()};
+if(ffillefficiency) fTHnrecomatchedallPid[4]->Fill(allrecomatchedpid);//for all
+
+ //now start the particle identification process:)
+
+//get the pdg code of the corresponding truth particle
+ Int_t pdgCode = ((AliAODMCParticle*)recomatched)->GetPdgCode();
 
 Float_t dEdx = track->GetTPCsignal();
  fHistoTPCdEdx->Fill(track->Pt(), dEdx);
@@ -1439,366 +1223,145 @@ Float_t beta = GetBeta(track);
 fHistoTOFbeta->Fill(track->Pt(), beta);
  }
 
- Float_t effmatrix=1.;
-
- //get the pdg code of the corresponding truth particle
- Int_t pdgCode = ((AliAODMCParticle*)recomatched)->GetPdgCode();
- 
-if (TMath::Abs(pdgCode)==211)
-  {
- MCrecomatchedprimpionpt[centbin]->Fill(recomatched->Pt());
- MCrecomatchedprimpioneta[centbin]->Fill(recomatched->Eta());
- MCrecomatchedprimpionphi[centbin]->Fill(recomatched->Phi());
-  }
-
-if(TMath::Abs(pdgCode)==321)
-  {
- MCrecomatchedprimkaonpt[centbin]->Fill(recomatched->Pt());
- MCrecomatchedprimkaoneta[centbin]->Fill(recomatched->Eta());
- MCrecomatchedprimkaonphi[centbin]->Fill(recomatched->Phi());
-  }
-
-if(TMath::Abs(pdgCode)==2212)
-  {
- MCrecomatchedprimprotonpt[centbin]->Fill(recomatched->Pt());
- MCrecomatchedprimprotoneta[centbin]->Fill(recomatched->Eta());
- MCrecomatchedprimprotonphi[centbin]->Fill(recomatched->Phi());
-  }
-  
-
-
-//now we have only those reconstructed particles each of them have a corresponding  particle(primary+secondary) at the truth level
-
-
-// -- Fill THnSparse 
- Double_t allrecomatchedpid[4] = {cent_v0m, zVtxmc,recomatched->Pt(), recomatched->Eta()};
- fTHnrecoallPid[5]->Fill(allrecomatchedpid);//for all
-
  //do track identification(nsigma method)
- Int_t particletypeMC=GetParticle(track,centbin);//******************************problem is here
+  particletypeMC=GetParticle(track);//******************************problem is here
+
+ if(particletypeMC==SpUndefined) continue;
+
+ //for purity calculation(do it with tuneonPID)
+ if(particletypeMC==SpPion )
+   {
+     if(TMath::Abs(pdgCode)==211) fPioncont->Fill(0.,track->Pt());
+     if(TMath::Abs(pdgCode)==321) fPioncont->Fill(1.,track->Pt());
+     if(TMath::Abs(pdgCode)==2212) fPioncont->Fill(2.,track->Pt());
+     if(TMath::Abs(pdgCode)!=211 && TMath::Abs(pdgCode)!=321 && TMath::Abs(pdgCode)!=2212) fPioncont->Fill(3.,track->Pt());
+   }
+if(particletypeMC==SpKaon )
+   {
+     if(TMath::Abs(pdgCode)==211) fKaoncont->Fill(0.,track->Pt());
+     if(TMath::Abs(pdgCode)==321) fKaoncont->Fill(1.,track->Pt());
+     if(TMath::Abs(pdgCode)==2212) fKaoncont->Fill(2.,track->Pt());
+     if(TMath::Abs(pdgCode)!=211 && TMath::Abs(pdgCode)!=321 && TMath::Abs(pdgCode)!=2212) fKaoncont->Fill(3.,track->Pt());
+   }
+ if(particletypeMC==SpProton )
+   {
+     if(TMath::Abs(pdgCode)==211) fProtoncont->Fill(0.,track->Pt());
+     if(TMath::Abs(pdgCode)==321) fProtoncont->Fill(1.,track->Pt());
+     if(TMath::Abs(pdgCode)==2212) fProtoncont->Fill(2.,track->Pt());
+     if(TMath::Abs(pdgCode)!=211 && TMath::Abs(pdgCode)!=321 && TMath::Abs(pdgCode)!=2212) fProtoncont->Fill(3.,track->Pt());
+   }
 
  //fill tracking efficiency
+ if(ffillefficiency)
+   {
  if(particletypeMC==SpPion || particletypeMC==SpKaon)
    {
 if(TMath::Abs(pdgCode)==211 ||  TMath::Abs(pdgCode)==321)
   {   
-  fTHnrecoallPid[4]->Fill(allrecomatchedpid);//for mesons
-  if(TMath::Abs(pdgCode)==211)  fTHnrecoallPid[0]->Fill(allrecomatchedpid);//for pions
-  if(TMath::Abs(pdgCode)==321)  fTHnrecoallPid[1]->Fill(allrecomatchedpid);//for kaons
+  fTHnrecomatchedallPid[3]->Fill(allrecomatchedpid);//for mesons
+  if(TMath::Abs(pdgCode)==211)  fTHnrecomatchedallPid[0]->Fill(allrecomatchedpid);//for pions  
+  if(TMath::Abs(pdgCode)==321)  fTHnrecomatchedallPid[1]->Fill(allrecomatchedpid);//for kaons
   }
  }
-
  if(particletypeMC==SpProton && TMath::Abs(pdgCode)==2212 )
-   fTHnrecoallPid[2]->Fill(allrecomatchedpid);//for protons
-  
- if(particletypeMC==SpUndefined && TMath::Abs(pdgCode)!=211 && TMath::Abs(pdgCode)!=321 && TMath::Abs(pdgCode)!=2212) fTHnrecoallPid[3]->Fill(allrecomatchedpid);//for others
- 
-  
-Int_t ptmc1=Getptbin(track->Pt());//trig--0,1,2,3; asso--4,5,6,7,8
-if(ptmc1==-999) continue;//remove particles with pt<1.0 Gev/c, now only particleswithin 1.0<=pt<=4.0Gev/c are present
-
-//Fill the nsigma histograms
-   Float_t nsigmaTPCPionmc    =  fnsigmas[SpPion][NSigmaTPC];
-   Float_t nsigmaTOFPionmc    =  fnsigmas[SpPion][NSigmaTOF];
-   Float_t nsigmaTPCTOFPionmc    = TMath::Abs(fnsigmas[SpPion][NSigmaTPCTOF]);//it may be negative if TOF pid is not available(i.e. this is basically nsigmaTPCPionmc)
-
-if (TMath::Abs(pdgCode)==211)//pions
-   {
-     fhistopionnsigmaTPCMC[centbin][ptmc1]->Fill(nsigmaTPCPionmc); 
-     if(nsigmaTOFPionmc!=999) fhistopionnsigmaTOFMC[centbin][ptmc1]->Fill(nsigmaTOFPionmc);
-     fhistopionnsigmaTPCTOFMC[centbin][ptmc1]->Fill(nsigmaTPCTOFPionmc); 
+   fTHnrecomatchedallPid[2]->Fill(allrecomatchedpid);//for protons
    }
- if(TMath::Abs(pdgCode)==321)//kaons 
-    {
-     fhistokaonnsigmaTPCMC[centbin][ptmc1]->Fill(nsigmaTPCPionmc); 
-     if(nsigmaTOFPionmc!=999) fhistokaonnsigmaTOFMC[centbin][ptmc1]->Fill(nsigmaTOFPionmc);
-     fhistokaonnsigmaTPCTOFMC[centbin][ptmc1]->Fill(nsigmaTPCTOFPionmc); 
-    }
-if(TMath::Abs(pdgCode)==2212)//protons 
-    {
-     fhistoprotonnsigmaTPCMC[centbin][ptmc1]->Fill(nsigmaTPCPionmc); 
-     if(nsigmaTOFPionmc!=999) fhistoprotonnsigmaTOFMC[centbin][ptmc1]->Fill(nsigmaTOFPionmc);
-     fhistoprotonnsigmaTPCTOFMC[centbin][ptmc1]->Fill(nsigmaTPCTOFPionmc); 
-    }
-if(TMath::Abs(pdgCode)==11)//electrons 
-    {
-     fhistoelectronnsigmaTPCMC[centbin][ptmc1]->Fill(nsigmaTPCPionmc); 
-     if(nsigmaTOFPionmc!=999) fhistoelectronnsigmaTOFMC[centbin][ptmc1]->Fill(nsigmaTOFPionmc);
-     fhistoelectronnsigmaTPCTOFMC[centbin][ptmc1]->Fill(nsigmaTPCTOFPionmc); 
-    }
 
-
-//2-d TPCTOF map(for each Pt interval)
- if(HasTOFPID(track)) fTPCTOFpion2d[ptmc1]->Fill(nsigmaTPCPionmc,nsigmaTOFPionmc);
- 
-//now depending on the pt of the current particle it will either go into the asso or trigger particle loop
-
-if ((track->Pt()>=1.0) && (track->Pt()<2.0)) 
-  {//asso filling loop starts
-
-Int_t ptmc2;
-if(ptmc1==4) ptmc2=0;
-if(ptmc1==5) ptmc2=1;
-if(ptmc1==6) ptmc2=2;
-if(ptmc1==7) ptmc2=3;
-if(ptmc1==8) ptmc2=4; 
-
-//for purity check
-if(particletypeMC==SpPion)//should be pions
-   {
-  if (TMath::Abs(pdgCode)==211) fhistoassopioncont[ptmc2]->Fill(1);//pions
-   
-else if(TMath::Abs(pdgCode)==321) fhistoassopioncont[ptmc2]->Fill(3);//kaons 
-    
-else if(TMath::Abs(pdgCode)==2212)  fhistoassopioncont[ptmc2]->Fill(5);//protons 
-   
-else if(TMath::Abs(pdgCode)==11) fhistoassopioncont[ptmc2]->Fill(7);//electrons 
-  
-else  fhistoassopioncont[ptmc2]->Fill(9);//anything else(contamination)
-
-   }//if(particletypeMC==10) condition ends
-
-
-if(particletypeMC==SpKaon)//should be kaons
-   {
-if (TMath::Abs(pdgCode)==321) fhistoassokaoncont[ptmc2]->Fill(1);//kaons
-   
-else if(TMath::Abs(pdgCode)==211) fhistoassokaoncont[ptmc2]->Fill(3);//pions 
-   
-else if(TMath::Abs(pdgCode)==2212) fhistoassokaoncont[ptmc2]->Fill(5);//protons 
-    
-else if(TMath::Abs(pdgCode)==11) fhistoassokaoncont[ptmc2]->Fill(7);//electrons 
-    
-else  fhistoassokaoncont[ptmc2]->Fill(9);//anything else(contamination)
-
-   }//if(particletypeMC==20) condition ends
-
-if(particletypeMC==SpProton)//should be protons
-   {
-if(TMath::Abs(pdgCode)==2212) fhistoassoprotoncont[ptmc2]->Fill(1);//protons
-   
-else if(TMath::Abs(pdgCode)==321) fhistoassoprotoncont[ptmc2]->Fill(3);//kaons 
-   
-else if(TMath::Abs(pdgCode)==211) fhistoassoprotoncont[ptmc2]->Fill(5);//pions 
-    
-else if(TMath::Abs(pdgCode)==11)  fhistoassoprotoncont[ptmc2]->Fill(7);//electrons 
-    
-else  fhistoassoprotoncont[ptmc2]->Fill(9);//anything else(contamination)
-
-   }//if(particletypeMC==30) condition ends
-fEtaSpectrasso->Fill(track->Eta(),track->Pt());
-fphiSpectraasso->Fill(track->Phi(),track->Pt());
-if (applyefficiency)
-  effmatrix=GetTrackbyTrackeffvalue(track,cent_v0m,zvtx,particletypeMC);
- LRCParticlePID* copy = new LRCParticlePID(particletypeMC,track->Charge(),track->Pt(),track->Eta(), track->Phi(),centbin,vtx,effmatrix);
- copy->SetUniqueID(track->GetUniqueID());
- tracksasso->Add(copy);//fill it with either asso pions,kaons or protons in case of identified associated particles,now all particles are present even e,muon etc
-
-if(particletypeMC==SpPion) pionassoeta[centbin]->Fill(track->Eta());
-if(particletypeMC==SpKaon) kaonassoeta[centbin]->Fill(track->Eta());
-if(particletypeMC==SpProton) protonassoeta[centbin]->Fill(track->Eta());
-
-  }//asso filling loop ends
-
-//now deal with trigger particles only
- 
-if ((track->Pt()>=2.0) && (track->Pt()<=4.0))  
-  {//trigger filling  loop starts
- if(particletypeMC==SpProton)//only for 2 to 4Gev,should be protons
-   {
-if (TMath::Abs(pdgCode)==2212)  fhistotrigbaryoncont[ptmc1]->Fill(1);//protons
-
-else if(TMath::Abs(pdgCode)==321) fhistotrigbaryoncont[ptmc1]->Fill(3);//kaons 
-    
-else if(TMath::Abs(pdgCode)==211)  fhistotrigbaryoncont[ptmc1]->Fill(5);//pions 
-   
-else if(TMath::Abs(pdgCode)==11) fhistotrigbaryoncont[ptmc1]->Fill(7);//electrons 
-    
-else  fhistotrigbaryoncont[ptmc1]->Fill(9);//anything else(contamination)
-
-   }//if(particletypeMC==1) condition ends
- 
- if(particletypeMC==SpPion || particletypeMC==SpKaon) //only for 2 to 4 Gev,should be either kaons or pions 
+if(track->Pt()>=fminPtAsso || track->Pt()<=fmaxPtTrig)//to reduce memory consumption in pool
   {
-if(TMath::Abs(pdgCode)==211) fhistotrigmesoncont[ptmc1]->Fill(1);//pions 
-   
-else if (TMath::Abs(pdgCode)==321) fhistotrigmesoncont[ptmc1]->Fill(1);//kaons
-    
-else if(TMath::Abs(pdgCode)==2212) fhistotrigmesoncont[ptmc1]->Fill(3);//protons
-    
-else if(TMath::Abs(pdgCode)==11) fhistotrigmesoncont[ptmc1]->Fill(5);//electrons 
-
-else fhistotrigmesoncont[ptmc1]->Fill(7);//anything else(contamination)
-  }//if(particletypeMC==2) condition ends
-
-//fill up the trigger particle container
-
-     fEtaSpectraTrigall->Fill(track->Eta());   //to know the number of trigger particls
-if (applyefficiency)
-  effmatrix=GetTrackbyTrackeffvalue(track,cent_v0m,zvtx,particletypeMC);
- LRCParticlePID* copy1 = new LRCParticlePID(particletypeMC,track->Charge(),track->Pt(),track->Eta(), track->Phi(),centbin,vtx,effmatrix);
-    copy1->SetUniqueID(track->GetUniqueID());
-    trackstrig->Add(copy1);
-if(particletypeMC==SpProton) baryontrigeta[centbin]->Fill(track->Eta());
-if(particletypeMC==SpPion || particletypeMC==SpKaon) mesontrigeta[centbin]->Fill(track->Eta());
-     }//trigger filling loop ends
-
+if (fapplyefficiency)
+    effmatrix=GetTrackbyTrackeffvalue(track,cent_v0,zvtx,particletypeMC,kFALSE);//get the tracking eff x TOF matching eff x PID eff x contamination factor for identified particles 
+    LRCParticlePID* copy1 = new LRCParticlePID(particletypeMC,track->Charge(),track->Pt(),track->Eta(), track->Phi(),effmatrix);
+    copy1->SetUniqueID(eventno * 100000 + (Int_t)trackscount);
+    tracksID->Add(copy1);
+  }
   }// if(tracktype==1) condition structure ands
 
 }//reco track loop ends
 
-//still in main event loop
- fCentralityCorrelation->Fill(cent_v0m, nooftracks);
+  //*************************************************************still in event loop
+ 
+//same event delta-eta-deltaphi plot 
+if(fSampleType=="pp")  cent_v0=trackscount;//multiplicity
 
-Bool_t isbaryontrig=kFALSE;
-Bool_t ismesontrig=kFALSE;
+if(trackscount>0.0)
+  { 
+//fill the centrality/multiplicity distribution of the selected events
+ fhistcentrality->Fill(cent_v0);//*********************************WARNING::binning of cent_v0 is different for pp and pPb/PbPb case
 
-if(trackstrig && tracksasso && trackstrig->GetEntriesFast()>0)
+ if (fSampleType=="pPb" || fSampleType=="PbPb") fCentralityCorrelation->Fill(cent_v0, trackscount);//only with unidentified tracks(i.e before PID selection);;;;;can be used to remove centrality outliers??????
+
+//count selected events having centrality betn 0-100%
+ fEventCounter->Fill(6);
+
+ //same event delte-eta, delta-phi plot
+if(tracksUNID && tracksUNID->GetEntriesFast()>0)//hadron triggered correlation
   {//same event calculation starts
-//calculate no of events in each centrality for different zvtx bins
-    fEventno[centbin][vtx]->Fill(5);//only those events which have at least one trigger particle
-    Fillcorrelation(trackstrig,tracksasso,centbin,vtx,bSign,kTRUE,kFALSE);//mixcase=kFALSE for same event case
+    if(ffilltrigassoUNID) Fillcorrelation(tracksUNID,0,cent_v0,zvtx,bSign,kTRUE,kTRUE,kFALSE,"trigassoUNID");//mixcase=kFALSE (hadron-hadron correlation)
+    if(tracksID && tracksID->GetEntriesFast()>0 && ffilltrigUNIDassoID)  Fillcorrelation(tracksUNID,tracksID,cent_v0,zvtx,bSign,kFALSE,kTRUE,kFALSE,"trigUNIDassoID");//mixcase=kFALSE (hadron-ID correlation)
+  }
 
-for(Int_t i=0;i<trackstrig->GetEntriesFast();i++)
-    {  //trigger loop starts
-      LRCParticlePID *trig=(LRCParticlePID*)(trackstrig->UncheckedAt(i));
-      if(!trig) continue;
-      Int_t particlepidtrig=trig->getparticle(); //either 1 or 2
-      if(particlepidtrig==SpProton) isbaryontrig=kTRUE;
-      if(particlepidtrig==SpPion || particlepidtrig==SpKaon) ismesontrig=kTRUE;
-    }//trig loop ends
- if (isbaryontrig) fEventnobaryon[centbin][vtx]->Fill(5); 
- if (ismesontrig) fEventnomeson[centbin][vtx]->Fill(5);
-  }//same event calculation ends
+if(tracksID && tracksID->GetEntriesFast()>0)//ID triggered correlation
+  {//same event calculation starts
+    if(tracksUNID && tracksUNID->GetEntriesFast()>0 && ffilltrigIDassoUNID)  Fillcorrelation(tracksID,tracksUNID,cent_v0,zvtx,bSign,kFALSE,kTRUE,kFALSE,"trigIDassoUNID");//mixcase=kFALSE (ID-hadron correlation)
+    if(ffilltrigIDassoID)   Fillcorrelation(tracksID,0,cent_v0,zvtx,bSign,kFALSE,kTRUE,kFALSE,"trigIDassoID");//mixcase=kFALSE (ID-ID correlation)
+  }
 
+//still in  main event loop
 //start mixing
-AliEventPool* pool = fPoolMgr->GetEventPool(cent_v0m, zvtx);
-//if (!pool)
-//AliFatal(Form("No pool found for centrality = %f, zVtx = %f", cent_v0m, zvtx));
+ if(ffilltrigassoUNID || ffilltrigIDassoUNID){//mixing with unidentified particles
+AliEventPool* pool = fPoolMgr->GetEventPool(cent_v0, zvtx);//In the pool there is tracksUNID(i.e associateds are unidentified)
 if (pool && pool->IsReady())
   {//start mixing only when pool->IsReady
-if(trackstrig && trackstrig->GetEntriesFast()>0)
-  {//proceed only when no. of trigger particles >0 in current event
-    //TObjArray* bgTracks =new TObjArray();
-for (Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) 
+ for (Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) 
   { //pool event loop start
  TObjArray* bgTracks = pool->GetEvent(jMix);
   if(!bgTracks) continue;
-  Fillcorrelation(trackstrig,bgTracks,centbin,vtx,bSign,kTRUE,kTRUE);//mixcase=kTRUE for mixing case
-  
+  if(ffilltrigassoUNID && tracksUNID && tracksUNID->GetEntriesFast()>0)//*******************************hadron trggered mixing
+  Fillcorrelation(tracksUNID,bgTracks,cent_v0,zvtx,bSign,kTRUE,kTRUE,kTRUE,"trigassoUNID");//mixcase=kTRUE
+ if(ffilltrigIDassoUNID && tracksID && tracksID->GetEntriesFast()>0)//***********************************ID trggered mixing
+  Fillcorrelation(tracksID,bgTracks,cent_v0,zvtx,bSign,kFALSE,kTRUE,kTRUE,"trigIDassoUNID");//mixcase=kTRUE 
    }// pool event loop ends mixing case
- }//if(trackstrig && trackstrig->GetEntriesFast()>0) condition ends mixing case
+
 } //if pool->IsReady() condition ends mixing case
-
-
- //still in main event loop
+ if(tracksUNID) {
 if(pool)
- {
-if(tracksasso)
-pool->UpdatePool(tracksasso);//ownership of tracksasso is with pool now, don't delete it
+  pool->UpdatePool(CloneAndReduceTrackList(tracksUNID));
  }
-if(trackstrig)
-delete trackstrig;
+ }//mixing with unidentified particles
 
- //still in main event loop
+ if(ffilltrigUNIDassoID || ffilltrigIDassoID){//mixing with identified particles
+AliEventPool* pool1 = fPoolMgr->GetEventPool(cent_v0, zvtx+100);//In the pool1 there is tracksID(i.e associateds are identified)
+if (pool1 && pool1->IsReady())
+  {//start mixing only when pool->IsReady
+for (Int_t jMix=0; jMix<pool1->GetCurrentNEvents(); jMix++) 
+  { //pool event loop start
+ TObjArray* bgTracks2 = pool1->GetEvent(jMix);
+  if(!bgTracks2) continue;
+if(ffilltrigUNIDassoID && tracksUNID && tracksUNID->GetEntriesFast()>0)
+  Fillcorrelation(tracksUNID,bgTracks2,cent_v0,zvtx,bSign,kFALSE,kTRUE,kTRUE,"trigUNIDassoID");//mixcase=kTRUE  
+if(ffilltrigIDassoID && tracksID && tracksID->GetEntriesFast()>0)
+  Fillcorrelation(tracksID,bgTracks2,cent_v0,zvtx,bSign,kFALSE,kTRUE,kTRUE,"trigIDassoID");//mixcase=kTRUE
 
-//now process the truth particles
+   }// pool event loop ends mixing case
+} //if pool1->IsReady() condition ends mixing case
 
-Int_t nMCTrack = fArrayMC->GetEntriesFast();
-  
-for (Int_t iMC = 0; iMC < nMCTrack; iMC++) 
-{      //MC truth track loop starts
-    
-AliAODMCParticle *partMC = (AliAODMCParticle*) fArrayMC->At(iMC);
-    
-    if(!partMC){
-      AliError(Form("ERROR: Could not retrieve AODMCtrack %d",iMC));
-      continue;
-    }
+if(tracksID) {
+if(pool1) 
+  pool1->UpdatePool(CloneAndReduceTrackList(tracksID));//ownership of tracksasso is with pool now, don't delete it(tracksUNID is with pool)
+ }
+ }//mixing with identified particles
 
-//consider only charged particles
-    if(partMC->Charge() == 0) continue;
-
-//consider only primary particles; neglect all secondary particles including from weak decays
-    if(!partMC->IsPhysicalPrimary()) continue;
-
-
-//remove injected signals(primaries above <maxLabel>)
- if (fInjectedSignals && partMC->GetLabel() >= skipParticlesAbove) continue;
-
-
-  Bool_t isduplicate=kFALSE;
- if (fRemoveDuplicates)
-   { 
- for (Int_t j=iMC+1; j<nMCTrack; ++j) 
-   {//2nd trutuh loop starts
-AliAODMCParticle *partMC2 = (AliAODMCParticle*) fArrayMC->At(j);
-   if(!partMC2){
-      AliError(Form("ERROR: Could not retrieve AODMCtrack %d",j));
-      continue;
-    }    
- if (partMC->GetLabel() == partMC2->GetLabel())
-   {
-isduplicate=kTRUE;
- break;  
-   }    
-   }//2nd truth loop ends
-   }
- if(fRemoveDuplicates && isduplicate) continue;//remove duplicates
-
- //kinematic cuts    
- if (partMC->Eta() < -0.8 || partMC->Eta() > 0.8) continue;
- if (partMC->Pt() < 0.2 ||  partMC->Pt() > 9.0) continue;
-
-//only physical primary(all)  
- MCtruthpt[centbin]->Fill(partMC->Pt());
- MCtrutheta[centbin]->Fill(partMC->Eta());
- MCtruthphi[centbin]->Fill(partMC->Phi());
-
- //get particle ID
-Int_t pdgtruth=((AliAODMCParticle*)partMC)->GetPdgCode();
-
- if (TMath::Abs(pdgtruth)==211)
-   {
-MCtruthpionpt[centbin]->Fill(partMC->Pt());
- MCtruthpioneta[centbin]->Fill(partMC->Eta());
- MCtruthpionphi[centbin]->Fill(partMC->Phi());
-      }
-
- if (TMath::Abs(pdgtruth)==321)
-   {
- MCtruthkaonpt[centbin]->Fill(partMC->Pt());
- MCtruthkaoneta[centbin]->Fill(partMC->Eta());
- MCtruthkaonphi[centbin]->Fill(partMC->Phi());
-  }
-if(TMath::Abs(pdgtruth)==2212)
-  {
- MCtruthprotonpt[centbin]->Fill(partMC->Pt());
- MCtruthprotoneta[centbin]->Fill(partMC->Eta());
- MCtruthprotonphi[centbin]->Fill(partMC->Phi());
-  }
-
- // -- Fill THnSparse
- Double_t primmctruth[4] = {cent_v0m, zVtxmc,partMC->Pt(), partMC->Eta()};
-
-  fTHngenprimPidTruth[5]->Fill(primmctruth);//for all
-
-if (TMath::Abs(pdgtruth)==211 || TMath::Abs(pdgtruth)==321)
-  {
-    fTHngenprimPidTruth[4]->Fill(primmctruth);//for mesons
-  if (TMath::Abs(pdgtruth)==211)  fTHngenprimPidTruth[0]->Fill(primmctruth);//for pions
-  if (TMath::Abs(pdgtruth)==321)  fTHngenprimPidTruth[1]->Fill(primmctruth);//for kaons
-  }
- else if(TMath::Abs(pdgtruth)==2212)  fTHngenprimPidTruth[2]->Fill(primmctruth);//for protons
- else fTHngenprimPidTruth[3]->Fill(primmctruth);//for others
- 
-  }//MC truth track loop ends
-
+  //no. of events analyzed
 fEventCounter->Fill(7);
+  }
+
+if(tracksUNID)  delete tracksUNID;
+
+if(tracksID) delete tracksID;
 
 
 PostData(1, fOutput);
-
 
 }
 //________________________________________________________________________
@@ -1818,45 +1381,40 @@ void AliTwoParticlePIDCorr::doAODevent()
   fEventCounter->Fill(1);
 
   // get centrality object and check quality
-  Float_t cent_v0m=0;
+  Double_t cent_v0=0;
+
+  if(fSampleType=="pPb" || fSampleType=="PbPb")
+    {
   AliCentrality *centrality=0;
   if(aod) 
- centrality = aod->GetHeader()->GetCentralityP();
-  //if(!centrality) return;
+  centrality = aod->GetHeader()->GetCentralityP();
   // if (centrality->GetQuality() != 0) return ;
 
-if(centrality)
+  if(centrality)
   { 
-  cent_v0m = centrality->GetCentralityPercentile("V0A");
+  cent_v0 = centrality->GetCentralityPercentile(fCentralityMethod);
   }
- else
+  else
     {
-      cent_v0m = -1;
+  cent_v0= -1;
      }
+    }
 
-  if (!fPID) return;
+ Float_t bSign = (aod->GetMagneticField() > 0) ? 1 : -1;//for two track efficiency cut in correlation function calculation
+ Float_t bSign1=aod->GetHeader()->GetMagneticField() ;//for dca cut in ClassifyTrack(), i.e in track loop
 
-if (cent_v0m < 0)  return;
-//do centrality binning
- Int_t centbin=Getcentbin(cent_v0m);
- if(centbin==-999) return;
+// Pileup selection ************************************************
+ //if (fAnalysisUtils && fAnalysisUtils->IsPileUpEvent(aod)) return; //applicable only for TPC only tracks,not for hybrid tracks?.
 
- fhistcentrality->Fill(cent_v0m);
-
-//count events having centrality betn 0-100%
-  fEventCounter->Fill(2);
-
-  // Pileup selection ************************************************
-
-  //if(fUtils->IsPileUpEvent(aod)) return;  //applicable only for TPC only tracks,not for hybrid tracks
-
+ if (!fPID) return;//this should be available with each event even if we don't do PID selection
   
-  //vertex selection
-  AliAODVertex* trkVtx = aod->GetPrimaryVertex();
+  //vertex selection(is it fine for PP?)
+  if ( fSampleType=="pPb"){
+  trkVtx = aod->GetPrimaryVertex();
   if (!trkVtx || trkVtx->GetNContributors()<=0) return;
   TString vtxTtl = trkVtx->GetTitle();
   if (!vtxTtl.Contains("VertexerTracks")) return;
-  Float_t zvtx = trkVtx->GetZ();
+   zvtx = trkVtx->GetZ();
   const AliAODVertex* spdVtx = aod->GetPrimaryVertexSPD();
   if (!spdVtx || spdVtx->GetNContributors()<=0) return;
   TString vtxTyp = spdVtx->GetTitle();
@@ -1865,197 +1423,246 @@ if (cent_v0m < 0)  return;
   Double_t zRes = TMath::Sqrt(cov[5]);
   if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) return;
    if (TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return;
+  }
+  else if(fSampleType=="PbPb" || fSampleType=="pp") {//for pp and pb-pb case
+	Int_t nVertex = aod->GetNumberOfVertices();
+  	if( nVertex > 0 ) { 
+     trkVtx = aod->GetPrimaryVertex();
+		Int_t nTracksPrim = trkVtx->GetNContributors();
+                 zvtx = trkVtx->GetZ();
+  		//if (fDebug > 1)AliInfo(Form(" Vertex in = %f with %d particles by  %s data ...",zVertex,nTracksPrim,vertex->GetName()));
+  		// Reject TPC only vertex
+		TString name(trkVtx->GetName());
+		if (name.CompareTo("PrimaryVertex") && name.CompareTo("SPDVertex"))return;
 
-  fHistQA[0]->Fill((trkVtx->GetX()));fHistQA[1]->Fill((trkVtx->GetY()));fHistQA[2]->Fill((trkVtx->GetZ()));   //for trkVtx only before vertex cut |zvtx|<10 cm
+		// Select a quality vertex by number of tracks?
+  		if( nTracksPrim < fnTracksVertex ) {
+		  //if (fDebug > 1) AliInfo(" Primary-vertex Selection: event REJECTED ...");
+  			return ;
+  			}
+  		// TODO remove vertexer Z events with dispersion > 0.02: Doesn't work for AOD at present
+                //if (strcmp(vertex->GetTitle(), "AliVertexerZ") == 0 && vertex->GetDispersion() > 0.02)
+                //  return kFALSE;
+		//	if (fDebug > 1) AliInfo(" Primary-vertex Selection: event ACCEPTED...");
+	}
+	else return;
+
+  }
+  else return;//as there is no proper sample type
+
+
+  fHistQA[0]->Fill((trkVtx->GetX()));fHistQA[1]->Fill((trkVtx->GetY()));fHistQA[2]->Fill((trkVtx->GetZ())); //for trkVtx only before vertex cut |zvtx|<10 cm
 
 //count events having a proper vertex
-   fEventCounter->Fill(5);
+   fEventCounter->Fill(2);
 
- if (TMath::Abs(zvtx) > 10) return;
+ if (TMath::Abs(zvtx) > fzvtxcut) return;
 
 //count events after vertex cut
-  fEventCounter->Fill(6);
+  fEventCounter->Fill(5);
 
 
-  //if(!fUtils->IsVertexSelected2013pA(aod)) return;
+ //if(!fAnalysisUtils->IsVertexSelected2013pA(aod)) return;
   
  fHistQA[3]->Fill((trkVtx->GetX()));fHistQA[4]->Fill((trkVtx->GetY()));fHistQA[5]->Fill((trkVtx->GetZ()));//after vertex cut,for trkVtx only
 
-//do zvtx binning
-  Int_t vtx=Getzbin(zvtx);
-  if(vtx==-999) return;//all the events outside the defined vtx range will be ignored
-    
-  eventno++;
 
  if(!aod) return; //for safety
   
- Float_t bSign = (aod->GetMagneticField() > 0) ? 1 : -1;//for two track efficiency cut
- Float_t bSign1=aod->GetHeader()->GetMagneticField() ;//for dca cut
+if(fSampleType=="pPb" || fSampleType=="PbPb") if (cent_v0 < 0)  return;//for pp case it is the multiplicity
 
+   TObjArray* tracksUNID=0;
+   tracksUNID= new TObjArray;//track info before doing PID
+   tracksUNID->SetOwner(kTRUE);  // IMPORTANT!
 
-   TObjArray* trackstrig = new TObjArray;
-   TObjArray* tracksasso = new TObjArray;
-   trackstrig->SetOwner(kTRUE);  // IMPORTANT!
-   tracksasso->SetOwner(kTRUE);  // IMPORTANT!
+   TObjArray* tracksID=0;
+   tracksID= new TObjArray;//only pions, kaons,protonsi.e. after doing the PID selection
+   tracksID->SetOwner(kTRUE);  // IMPORTANT!
  
-   Int_t nooftracks=0;
-// loop over tracks 
-  for (Int_t itrk = 0; itrk < aod->GetNumberOfTracks(); itrk++) 
-{ //track loop starts
+     Double_t trackscount=0.0;//in case of pp this will give the multiplicity after the track loop(only for unidentified particles that pass the filterbit and kinematic cuts)
+
+    eventno++;
+
+
+ for (Int_t itrk = 0; itrk < aod->GetNumberOfTracks(); itrk++) 
+{ //track loop starts for TObjArray(containing track and event information) filling; used for correlation function calculation 
   AliAODTrack* track = dynamic_cast<AliAODTrack*>(aod->GetTrack(itrk));
   if (!track) continue;
   fHistQA[11]->Fill(track->GetTPCNcls());
-  Int_t tracktype=ClassifyTrack(track,centbin,trkVtx,bSign1,kFALSE);//dcacut=kFALSE
-  if(tracktype==0) continue; 
-  if(tracktype==1)//tracks not passed AliAODTrack::kPrimary at reconstructed level & have proper TPC PID response
-{
-  //accepted tracks having pt (0.2 to 9.0 Gev) & eta (-0.8 to 0.8)
+  Int_t particletype=-9999;//required for PID filling
+  Int_t tracktype=ClassifyTrack(track,kFALSE,trkVtx,bSign1);//dcacut=kFALSE,onlyprimary=kFALSE
+  if(tracktype!=1) continue; 
 
-  nooftracks++;
-Float_t pt=track->Pt();
- 
-Float_t dEdx = track->GetTPCsignal();
-fHistoTPCdEdx->Fill(pt, dEdx);
+  if(!track) continue;//for safety
 
+//check for eta , phi holes
+ fEtaSpectrasso->Fill(track->Eta(),track->Pt());
+ fphiSpectraasso->Fill(track->Phi(),track->Pt());
+
+ trackscount++;
+
+ //if no applyefficiency , set the eff factor=1.0
+ Float_t effmatrix=1.0;
+
+ //tag all particles as unidentified that passed filterbit & kinematic cuts 
+ particletype=unidentified;
+
+//track passing filterbit 768 have proper TPC response,or need to be checked explicitly before doing PID????
+
+  Float_t dEdx = track->GetTPCsignal();
+  fHistoTPCdEdx->Fill(track->Pt(), dEdx);
+
+  //fill beta vs Pt plots only for tracks having proper TOF response(much less tracks compared to the no. that pass the filterbit & kinematic cuts)
  if(HasTOFPID(track))
 {
-Float_t beta = GetBeta(track);
-fHistoTOFbeta->Fill(pt, beta);
+  Float_t beta = GetBeta(track);
+  fHistoTOFbeta->Fill(track->Pt(), beta);
  }
 
-Int_t pt1=Getptbin(track->Pt());//trig--0,1,2,3; asso--4,5,6,7,8
-if(pt1==-999) continue;//remove particles with pt<1.0 Gev/c, now only particleswithin 1.0<=pt<=4.0Gev/c are present
+ if (fSampleType=="pp") cent_v0=15.0;//integrated over multiplicity [i.e each track has multiplicity 15.0](so put any fixed value for each track so that practically means there is only one bin in multiplicityi.e multiplicity intregated out )**************Important
+
+
+ //to reduce memory consumption in pool
+  if(track->Pt()<fminPtAsso || track->Pt()>fmaxPtTrig) continue; 
+
+
+ //Clone & Reduce track list(TObjArray) for unidentified particles
+ if (fapplyefficiency)//get the trackingefficiency x contamination factor for unidentified particles
+   effmatrix=GetTrackbyTrackeffvalue(track,cent_v0,zvtx,particletype,kFALSE);
+ LRCParticlePID* copy = new LRCParticlePID(particletype,track->Charge(),track->Pt(),track->Eta(), track->Phi(),effmatrix);
+  copy->SetUniqueID(eventno * 100000 + (Int_t)trackscount);
+  tracksUNID->Add(copy);//track information Storage for UNID correlation function(tracks that pass the filterbit & kinematic cuts only)
+
+//now start the particle identificaion process:) 
 
 //track identification(using nsigma method)
-Int_t particletype=GetParticle(track,centbin);
+  particletype=GetParticle(track);//*******************************change may be required(It should return only pion,kaon, proton and Spundefined; NOT unidentifed***************be careful)
 
-//Fill the nsigma histograms
-   Float_t nsigmaTPCPion    =  fnsigmas[SpPion][NSigmaTPC];
-   Float_t nsigmaTOFPion    =  fnsigmas[SpPion][NSigmaTOF];
-   Float_t nsigmaTPCTOFPion    = TMath::Abs(fnsigmas[SpPion][NSigmaTPCTOF]);//it may be negative if TOF pid is not available(i.e. this is basically nsigmaTPCPionmc)
-
-if (particletype==SpPion)//pions like
-   {
-     fhistopionnsigmaTPCMC[centbin][pt1]->Fill(nsigmaTPCPion); 
-     fhistopionnsigmaTOFMC[centbin][pt1]->Fill(nsigmaTOFPion);
-     fhistopionnsigmaTPCTOFMC[centbin][pt1]->Fill(nsigmaTPCTOFPion); 
-   }
- if(particletype==SpKaon)//kaons like 
-    {
-     fhistokaonnsigmaTPCMC[centbin][pt1]->Fill(nsigmaTPCPion); 
-     fhistokaonnsigmaTOFMC[centbin][pt1]->Fill(nsigmaTOFPion);
-     fhistokaonnsigmaTPCTOFMC[centbin][pt1]->Fill(nsigmaTPCTOFPion); 
-    }
-if(particletype==SpProton)//protons like
-    {
-     fhistoprotonnsigmaTPCMC[centbin][pt1]->Fill(nsigmaTPCPion); 
-     fhistoprotonnsigmaTOFMC[centbin][pt1]->Fill(nsigmaTOFPion);
-     fhistoprotonnsigmaTPCTOFMC[centbin][pt1]->Fill(nsigmaTPCTOFPion); 
-    }
-
-//2-d TPCTOF map(for each specified Pt intervals)
- if (HasTOFPID(track)) fTPCTOFpion2d[pt1]->Fill(nsigmaTPCPion,nsigmaTOFPion);
-   
-
- Float_t effmatrix=1.;
-
- if ((pt>=1.0) && (pt<2.0)) 
-	  {
-        //if(particletype==kSpUndefined) continue;      
-        fEtaSpectrasso->Fill(track->Eta(),track->Pt());
-	fphiSpectraasso->Fill(track->Phi(),track->Pt());
-if (applyefficiency)
-  effmatrix=GetTrackbyTrackeffvalue(track,cent_v0m,zvtx,particletype);
- LRCParticlePID* copy = new LRCParticlePID(particletype,track->Charge(),pt,track->Eta(), track->Phi(),centbin,vtx,effmatrix);
-       copy->SetUniqueID(track->GetUniqueID());
-       tracksasso->Add(copy);
-    //kSpUndefined particles are also added
-
-if(particletype==SpPion) pionassoeta[centbin]->Fill(track->Eta());
-if(particletype==SpKaon) kaonassoeta[centbin]->Fill(track->Eta());
-if(particletype==SpProton) protonassoeta[centbin]->Fill(track->Eta());	
-	  }
-
-if ((pt>=2.0)&&(pt<=4.0))  
-          {
-   //if(particletype==kSpUndefined) continue; 
-   fEtaSpectraTrigall->Fill(track->Eta());//to know the number of trigger particls
-if (applyefficiency)
- effmatrix=GetTrackbyTrackeffvalue(track,cent_v0m,zvtx,particletype);
-//cout<<effmatrix<<endl;
- LRCParticlePID* copy1 = new LRCParticlePID(particletype,track->Charge(),pt,track->Eta(), track->Phi(),centbin,vtx,effmatrix);
-    copy1->SetUniqueID(track->GetUniqueID());
-    trackstrig->Add(copy1);
-if(particletype==SpProton) baryontrigeta[centbin]->Fill(track->Eta());
-if(particletype==SpPion || particletype==SpKaon) mesontrigeta[centbin]->Fill(track->Eta());
-	  }
-   }// selected particle condition structure ends
-
+//ignore the Spundefined particles as they also contain pion, kaon, proton outside the nsigma cut(also if tracks don't have proper TOF PID in a certain Pt interval) & these tracks are actually counted when we do the the efficiency correction, so considering them as unidentified particles & doing the efficiency correction(i.e defining unidentified=pion+Kaon+proton+SpUndefined is right only without efficiency correction) for them will be two times wrong!!!!! 
+ if (particletype==SpUndefined) continue;
+ 
+if (fapplyefficiency)
+  effmatrix=GetTrackbyTrackeffvalue(track,cent_v0,zvtx,particletype,kFALSE);//get the tracking eff x TOF matching eff x PID eff x contamination factor for identified particles; Bool_t mesoneffrequired=kFALSE
+ LRCParticlePID* copy1 = new LRCParticlePID(particletype,track->Charge(),track->Pt(),track->Eta(), track->Phi(),effmatrix);
+    copy1->SetUniqueID(eventno * 100000 + (Int_t)trackscount);
+    tracksID->Add(copy1);
+ 
 } //track loop ends but still in event loop
 
- fCentralityCorrelation->Fill(cent_v0m, nooftracks);
+if(trackscount<1.0){
+  if(tracksUNID) delete tracksUNID;
+  if(tracksID) delete tracksID;
+  return;
+ }
+
+
+if(fSampleType=="pp")  cent_v0=trackscount;//multiplicity
   
-Bool_t isbaryontrig=kFALSE;
-Bool_t ismesontrig=kFALSE;
+//fill the centrality/multiplicity distribution of the selected events
+ fhistcentrality->Fill(cent_v0);//*********************************WARNING::binning of cent_v0 is different for pp and pPb/PbPb case
 
-//same event delta-eta-deltaphi plot
+if(fSampleType=="pPb" || fSampleType=="PbPb") fCentralityCorrelation->Fill(cent_v0, trackscount);//only with unidentified tracks(i.e before PID selection);;;;;can be used to remove centrality outliers??????
 
-if(trackstrig && tracksasso && trackstrig->GetEntriesFast()>0)
+//count selected events having centrality betn 0-100%
+ fEventCounter->Fill(6);
+
+//same event delta-eta-deltaphi plot 
+
+if(tracksUNID && tracksUNID->GetEntriesFast()>0)//hadron triggered correlation
   {//same event calculation starts
-//calculate no of events in each centrality for different zvtx bins
-    fEventno[centbin][vtx]->Fill(5);//only those events which have at least one trigger particle
-    Fillcorrelation(trackstrig,tracksasso,centbin,vtx,bSign,kTRUE,kFALSE);//mixcase=kFALSE 
+    if(ffilltrigassoUNID) Fillcorrelation(tracksUNID,0,cent_v0,zvtx,bSign,kTRUE,kTRUE,kFALSE,"trigassoUNID");//mixcase=kFALSE (hadron-hadron correlation)
+    if(tracksID && tracksID->GetEntriesFast()>0 && ffilltrigUNIDassoID)  Fillcorrelation(tracksUNID,tracksID,cent_v0,zvtx,bSign,kFALSE,kTRUE,kFALSE,"trigUNIDassoID");//mixcase=kFALSE (hadron-ID correlation)
+  }
 
-for(Int_t i=0;i<trackstrig->GetEntriesFast();i++)
-    {  //trigger loop starts
-      LRCParticlePID *trig=(LRCParticlePID*)(trackstrig->UncheckedAt(i));
-      if(!trig) continue;
-      Int_t particlepidtrig=trig->getparticle(); //either 1 or 2
-      if(particlepidtrig==SpProton) isbaryontrig=kTRUE;
-      if(particlepidtrig==SpPion || particlepidtrig==SpKaon) ismesontrig=kTRUE;
-    }//trig loop ends
- if (isbaryontrig) fEventnobaryon[centbin][vtx]->Fill(5); 
- if (ismesontrig) fEventnomeson[centbin][vtx]->Fill(5);
-  }//same event calculation ends
+if(tracksID && tracksID->GetEntriesFast()>0)//ID triggered correlation
+  {//same event calculation starts
+    if(tracksUNID && tracksUNID->GetEntriesFast()>0 && ffilltrigIDassoUNID)  Fillcorrelation(tracksID,tracksUNID,cent_v0,zvtx,bSign,kFALSE,kTRUE,kFALSE,"trigIDassoUNID");//mixcase=kFALSE (ID-hadron correlation)
+    if(ffilltrigIDassoID)   Fillcorrelation(tracksID,0,cent_v0,zvtx,bSign,kFALSE,kTRUE,kFALSE,"trigIDassoID");//mixcase=kFALSE (ID-ID correlation)
+  }
 
 //still in  main event loop
+
+
 //start mixing
-AliEventPool* pool = fPoolMgr->GetEventPool(cent_v0m, zvtx);
-if (!pool)
-AliFatal(Form("No pool found for centrality = %f, zVtx = %f", cent_v0m, zvtx));
-if (pool->IsReady())
+ if(ffilltrigassoUNID || ffilltrigIDassoUNID){//mixing with unidentified particles
+AliEventPool* pool = fPoolMgr->GetEventPool(cent_v0, zvtx);//In the pool there is tracksUNID(i.e associateds are unidentified)
+if (pool && pool->IsReady())
   {//start mixing only when pool->IsReady
-if(trackstrig && trackstrig->GetEntriesFast()>0)
-  {//proceed only when no. of trigger particles >0 in current event
-    //TObjArray* bgTracks =new TObjArray();
-for (Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) 
+ for (Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) 
   { //pool event loop start
  TObjArray* bgTracks = pool->GetEvent(jMix);
   if(!bgTracks) continue;
-  Fillcorrelation(trackstrig,bgTracks,centbin,vtx,bSign,kTRUE,kTRUE);//mixcase=kTRUE
-  
+  if(ffilltrigassoUNID && tracksUNID && tracksUNID->GetEntriesFast()>0)//*******************************hadron trggered mixing
+  Fillcorrelation(tracksUNID,bgTracks,cent_v0,zvtx,bSign,kTRUE,kTRUE,kTRUE,"trigassoUNID");//mixcase=kTRUE
+ if(ffilltrigIDassoUNID && tracksID && tracksID->GetEntriesFast()>0)//***********************************ID trggered mixing
+  Fillcorrelation(tracksID,bgTracks,cent_v0,zvtx,bSign,kFALSE,kTRUE,kTRUE,"trigIDassoUNID");//mixcase=kTRUE 
    }// pool event loop ends mixing case
- }//if(trackstrig && trackstrig->GetEntriesFast()>0) condition ends mixing case
+
 } //if pool->IsReady() condition ends mixing case
-
-//still in main event loop
+ if(tracksUNID) {
 if(pool)
- {
-if(tracksasso)
-pool->UpdatePool(tracksasso);//ownership of tracksasso is with pool now, don't delete it
+  pool->UpdatePool(CloneAndReduceTrackList(tracksUNID));
  }
-if(trackstrig)
-delete trackstrig;
+ }//mixing with unidentified particles
 
+
+ if(ffilltrigUNIDassoID || ffilltrigIDassoID){//mixing with identified particles
+AliEventPool* pool1 = fPoolMgr->GetEventPool(cent_v0, zvtx+100);//In the pool1 there is tracksID(i.e associateds are identified)
+if (pool1 && pool1->IsReady())
+  {//start mixing only when pool->IsReady
+for (Int_t jMix=0; jMix<pool1->GetCurrentNEvents(); jMix++) 
+  { //pool event loop start
+ TObjArray* bgTracks2 = pool1->GetEvent(jMix);
+  if(!bgTracks2) continue;
+if(ffilltrigUNIDassoID && tracksUNID && tracksUNID->GetEntriesFast()>0)
+  Fillcorrelation(tracksUNID,bgTracks2,cent_v0,zvtx,bSign,kFALSE,kTRUE,kTRUE,"trigUNIDassoID");//mixcase=kTRUE  
+if(ffilltrigIDassoID && tracksID && tracksID->GetEntriesFast()>0)
+  Fillcorrelation(tracksID,bgTracks2,cent_v0,zvtx,bSign,kFALSE,kTRUE,kTRUE,"trigIDassoID");//mixcase=kTRUE
+
+   }// pool event loop ends mixing case
+} //if pool1->IsReady() condition ends mixing case
+
+if(tracksID) {
+if(pool1) 
+  pool1->UpdatePool(CloneAndReduceTrackList(tracksID));//ownership of tracksasso is with pool now, don't delete it(tracksUNID is with pool)
+ }
+ }//mixing with identified particles
+
+
+  //no. of events analyzed
 fEventCounter->Fill(7);
+ 
+//still in main event loop
+
+
+if(tracksUNID)  delete tracksUNID;
+
+if(tracksID) delete tracksID;
 
 
 PostData(1, fOutput);
 
 } // *************************event loop ends******************************************//_______________________________________________________________________
+TObjArray* AliTwoParticlePIDCorr::CloneAndReduceTrackList(TObjArray* tracks)
+{
+  // clones a track list by using AliDPhiBasicParticle which uses much less memory (used for event mixing)
+  
+  TObjArray* tracksClone = new TObjArray;
+  tracksClone->SetOwner(kTRUE);
+  
+  for (Int_t i=0; i<tracks->GetEntriesFast(); i++)
+  {
+    LRCParticlePID* particle = (LRCParticlePID*) tracks->UncheckedAt(i);
+    LRCParticlePID* copy100 = new LRCParticlePID(particle->getparticle(),particle->Charge(), particle->Pt(),particle->Eta(), particle->Phi(), particle->geteffcorrectionval());
+    copy100->SetUniqueID(particle->GetUniqueID());
+    tracksClone->Add(copy100);
+  }
+  
+  return tracksClone;
+}
 
 //--------------------------------------------------------------------------------
-void AliTwoParticlePIDCorr::Fillcorrelation(TObjArray *trackstrig,TObjArray *tracksasso,Int_t centbin,Int_t vtx,Float_t bSign,Bool_t twoTrackEfficiencyCut,Bool_t mixcase)
+void AliTwoParticlePIDCorr::Fillcorrelation(TObjArray *trackstrig,TObjArray *tracksasso,Double_t cent,Float_t vtx,Float_t bSign,Bool_t fPtOrder,Bool_t twoTrackEfficiencyCut,Bool_t mixcase,TString fillup)
 {
 
   //before calling this function check that both trackstrig & tracksasso are available 
@@ -2065,7 +1672,11 @@ void AliTwoParticlePIDCorr::Fillcorrelation(TObjArray *trackstrig,TObjArray *tra
   TArrayF eta(input->GetEntriesFast());
   for (Int_t i=0; i<input->GetEntriesFast(); i++)
     eta[i] = ((LRCParticlePID*) input->UncheckedAt(i))->Eta();
-  
+
+  //if(trackstrig)
+    Int_t jmax=trackstrig->GetEntriesFast();
+  if(tracksasso)
+     jmax=tracksasso->GetEntriesFast();
 
 // identify K, Lambda candidates and flag those particles
     // a TObject bit is used for this
@@ -2126,7 +1737,11 @@ for(Int_t i=0;i<trackstrig->GetEntriesFast();i++)
       LRCParticlePID *trig=(LRCParticlePID*)(trackstrig->UncheckedAt(i));
       if(!trig) continue;
       Float_t trigpt=trig->Pt();
-      if(trigpt<2.0 || trigpt>4.0) continue;//for safety
+    //to avoid overflow qnd underflow
+      if(trigpt<fminPtTrig || trigpt>fmaxPtTrig) continue;
+      Int_t particlepidtrig=trig->getparticle();
+      if(fTriggerSpeciesSelection){ if (particlepidtrig!=fTriggerSpecies) continue;}
+
       Float_t trigeta=trig->Eta();
 
       // some optimization
@@ -2146,32 +1761,68 @@ if (fOnlyOneEtaSide != 0)
 	if (trig->TestBit(kResonanceDaughterFlag)) continue;
 
       Float_t trigphi=trig->Phi();
-      Int_t particlepidtrig=trig->getparticle(); //either 1 or 2
       Float_t trackefftrig=trig->geteffcorrectionval();
+	Double_t* trigval;
+	Int_t dim=3;
+	if(fcontainPIDtrig) dim=4;
+        trigval= new Double_t[dim];
+      trigval[0] = cent;
+      trigval[1] = vtx;
+      trigval[2] = trigpt;
+if(fcontainPIDtrig)      trigval[3] = particlepidtrig;
 
-      Int_t pttrig2=Getptbin(trigpt);//pt binning of trigger particles:0,1,2,3
-      if(pttrig2==-999) continue;//neglect particles outside the defined range of trigger particles(2 to 4 Gev)
       //filling only for same event case(mixcase=kFALSE)
+
+      //trigger particle counting only when mixcase=kFALSE i.e for same event correlation function calculation
 if(mixcase==kFALSE)  
   {
-    fEtaSpectraTrig[centbin][vtx]->Fill(trigeta,1./trackefftrig);
-    if(particlepidtrig==SpProton)//proton
-      fEtaSpectraTrigbaryon[centbin][vtx]->Fill(trigeta,1./trackefftrig);
-      if(particlepidtrig==SpPion || particlepidtrig==SpKaon)//kaon+pion
-	fEtaSpectraTrigmeson[centbin][vtx]->Fill(trigeta,1./trackefftrig);
-  }
-    //asso loop starts within trigger loop
-   for(Int_t j=0;j<tracksasso->GetEntriesFast();j++)
-             {
-        LRCParticlePID *asso=(LRCParticlePID*)(tracksasso->UncheckedAt(j));
-	if(!asso) continue;
-Float_t assoPt=asso->Pt();
-if(assoPt<1.0 || assoPt>=2.0) continue;//for safety
+    if(ffilltrigassoUNID==kTRUE && ffilltrigUNIDassoID==kTRUE){
+      if(fillup=="trigassoUNID" )  fTHnTrigcount->Fill(trigval,1.0/trackefftrig); 
+    }
+ if(ffilltrigassoUNID==kTRUE && ffilltrigUNIDassoID==kFALSE){
+      if(fillup=="trigassoUNID" )  fTHnTrigcount->Fill(trigval,1.0/trackefftrig); 
+    }
+if(ffilltrigassoUNID==kFALSE && ffilltrigUNIDassoID==kTRUE){
+      if(fillup=="trigUNIDassoID")  fTHnTrigcount->Fill(trigval,1.0/trackefftrig); 
+    }
+ //ensure that trigIDassoID , trigassoUNID, trigIDassoUNID & trigUNIDassoID  case FillCorrelation called only once in the event loop for same event correlation function calculation, otherwise there will be multiple counting of pion, kaon,proton,unidentified
+if(ffilltrigIDassoUNID==kTRUE && ffilltrigIDassoID==kTRUE){
+      if(fillup=="trigIDassoID" )  fTHnTrigcount->Fill(trigval,1.0/trackefftrig); 
+    }
+ if(ffilltrigIDassoUNID==kTRUE && ffilltrigIDassoID==kFALSE){
+      if(fillup=="trigIDassoUNID" )  fTHnTrigcount->Fill(trigval,1.0/trackefftrig); 
+    }
+if(ffilltrigIDassoUNID==kFALSE && ffilltrigIDassoID==kTRUE){
+      if(fillup=="trigIDassoID")  fTHnTrigcount->Fill(trigval,1.0/trackefftrig); 
+    }
 
-if (trig->IsEqual(asso)) continue;
+   
+ if(fillup=="trigIDassoIDMCTRUTH") fTHnTrigcountMCTruthPrim->Fill(trigval,1.0/trackefftrig); //In truth MC case "Unidentified" means any particle other than pion,kaon or proton and no efficiency correction************************be careful!!!!  
+  }
+
+    //asso loop starts within trigger loop
+   for(Int_t j=0;j<jmax;j++)
+             {
+    if(!tracksasso && i==j) continue;
+    LRCParticlePID *asso=0;
+    if(!tracksasso)
+    asso=(LRCParticlePID*)(trackstrig->UncheckedAt(j));
+    else
+    asso=(LRCParticlePID*)(tracksasso->UncheckedAt(j));
+
+    if(!asso) continue;
+        // check if both particles point to the same element (does not occur for mixed events, but if subsets are mixed within the same event)
+
+    //to avoid overflow qnd underflow
+     if(asso->Pt()<fminPtAsso || asso->Pt()>fmaxPtAsso) continue;
+
+ if (tracksasso && trig->IsEqual(asso)) continue;
  
-if (fPtOrder)
+ if (fPtOrder)
  if (asso->Pt() >= trig->Pt()) continue;
+
+  Int_t particlepidasso=asso->getparticle(); 
+  if(fAssociatedSpeciesSelection){ if (particlepidasso!=fAssociatedSpecies) continue;}
 	    
 
 if (fAssociatedSelectCharge != 0)
@@ -2317,116 +1968,83 @@ if (dphistarminabs < twoTrackEfficiencyCutValue && TMath::Abs(deta) < twoTrackEf
 	  }
 	}
 
-        Int_t particlepidasso=asso->getparticle(); //either 10 or 20 or 30
-       Float_t trackeffasso=asso->geteffcorrectionval();
+        Float_t trackeffasso=asso->geteffcorrectionval();
 
         Float_t deleta=trigeta-eta[j];
 	Float_t delphi=PhiRange(trigphi-asso->Phi()); 
-        Int_t ptbin=(Int_t)asso->Pt(); //asso pt binning either 0 or 1
 
-
-	//here get the two particle efficiency correction factor
+ //here get the two particle efficiency correction factor
 	Float_t effweight=trackefftrig*trackeffasso;
-	//	cout<<effweight<<endl;
-//same event calculation(mixcase=kFALSE)
-if(mixcase==kFALSE)
-  {	
-fdeletasame->Fill(deleta,1./effweight);
-fdelphisame->Fill(delphi,1./effweight);
- fsame->Fill(delphi,deleta,1./effweight);
-// correlation histograms same event
- falltrigallasso[centbin][ptbin][vtx]->Fill(delphi,deleta,1./effweight);
-if (particlepidasso==SpPion ) falltrigpionasso[centbin][ptbin][vtx]->Fill(delphi,deleta,1./effweight);
-if (particlepidasso==SpKaon ) falltrigkaonasso[centbin][ptbin][vtx]->Fill(delphi,deleta,1./effweight);
-if (particlepidasso==SpProton ) falltrigprotonasso[centbin][ptbin][vtx]->Fill(delphi,deleta,1./effweight);
- if(particlepidtrig==SpProton)//proton trig
-   { 
-fbaryontrigallasso[centbin][ptbin][vtx]->Fill(delphi,deleta,1./effweight);
-if (particlepidasso==SpPion ) 
-fbaryontrigpionasso[centbin][ptbin][vtx]->Fill(delphi,deleta,1./effweight);
-if (particlepidasso==SpKaon ) 
-fbaryontrigkaonasso[centbin][ptbin][vtx]->Fill(delphi,deleta,1./effweight);
-if (particlepidasso==SpProton ) 
-fbaryontrigprotonasso[centbin][ptbin][vtx]->Fill(delphi,deleta,1./effweight);
-   }
- if(particlepidtrig==SpPion || particlepidtrig==SpKaon)//meson trig
-   {
-fmesontrigallasso[centbin][ptbin][vtx]->Fill(delphi,deleta,1./effweight); 
-if (particlepidasso==SpPion) 
-fmesontrigpionasso[centbin][ptbin][vtx]->Fill(delphi,deleta,1./effweight);
-if (particlepidasso==SpKaon) 
-fmesontrigkaonasso[centbin][ptbin][vtx]->Fill(delphi,deleta,1./effweight);
-if (particlepidasso==SpProton) 
-fmesontrigprotonasso[centbin][ptbin][vtx]->Fill(delphi,deleta,1./effweight);
-   }
-   }
- if(mixcase==kTRUE)//for mixing case
-   {
-fmix->Fill(delphi,deleta,1./effweight);
-fdeletamixed->Fill(deleta,1./effweight);
-fdelphimixed->Fill(delphi,1./effweight);
-falltrigallassomix[centbin][ptbin][vtx]->Fill(delphi,deleta,1./effweight);
-if (particlepidasso==SpPion ) falltrigpionassomix[centbin][ptbin][vtx]->Fill(delphi,deleta,1./effweight);
-if (particlepidasso==SpKaon ) falltrigkaonassomix[centbin][ptbin][vtx]->Fill(delphi,deleta,1./effweight);
-if (particlepidasso==SpProton ) falltrigprotonassomix[centbin][ptbin][vtx]->Fill(delphi,deleta,1./effweight);
-if(particlepidtrig==SpProton)
-  {
- fdeletamixedproton->Fill(deleta,1./effweight);
- fdelphimixedproton->Fill(delphi,1./effweight); 
-fbaryontrigallassomix[centbin][ptbin][vtx]->Fill(delphi,deleta,1./effweight);
-if (particlepidasso==SpPion ) 
-fbaryontrigpionassomix[centbin][ptbin][vtx]->Fill(delphi,deleta,1./effweight);
-if (particlepidasso==SpKaon ) 
-fbaryontrigkaonassomix[centbin][ptbin][vtx]->Fill(delphi,deleta,1./effweight);
-if (particlepidasso==SpProton ) 
-fbaryontrigprotonassomix[centbin][ptbin][vtx]->Fill(delphi,deleta,1./effweight);
-  }
-if(particlepidtrig==SpPion || particlepidtrig==SpKaon)
-  { 
-fdeletamixedkaonpion->Fill(deleta,1./effweight);
-fdelphimixedkaonpion->Fill(delphi,1./effweight);
-fmesontrigallassomix[centbin][ptbin][vtx]->Fill(delphi,deleta,1./effweight);
-if (particlepidasso==SpPion) 
-fmesontrigpionassomix[centbin][ptbin][vtx]->Fill(delphi,deleta,1./effweight);
-if (particlepidasso==SpKaon) 
-fmesontrigkaonassomix[centbin][ptbin][vtx]->Fill(delphi,deleta,1./effweight);
-if (particlepidasso==SpProton) 
-fmesontrigprotonassomix[centbin][ptbin][vtx]->Fill(delphi,deleta,1./effweight);
+	Double_t* vars;
+        vars= new Double_t[kTrackVariablesPair];
+	vars[0]=cent;
+	vars[1]=vtx;
+	vars[2]=trigpt;
+	vars[3]=asso->Pt();
+	vars[4]=deleta;
+	vars[5]=delphi;
+if(fcontainPIDtrig && !fcontainPIDasso) vars[6]=particlepidtrig;
+if(!fcontainPIDtrig && fcontainPIDasso) vars[6]=particlepidasso;
+ if(fcontainPIDtrig && fcontainPIDasso){
+	vars[6]=particlepidtrig;
+	vars[7]=particlepidasso;
  }
 
-   }
-
+	//Fill Correlation ThnSparses
+    if(fillup=="trigassoUNID")
+      {
+    if(mixcase==kFALSE)  fTHnCorrUNID->Fill(vars,1.0/effweight);
+    if(mixcase==kTRUE)   fTHnCorrUNIDmix->Fill(vars,1.0/effweight);
+      }
+    if(fillup=="trigIDassoID")
+      {
+    if(mixcase==kFALSE)  fTHnCorrID->Fill(vars,1.0/effweight);
+    if(mixcase==kTRUE)  fTHnCorrIDmix->Fill(vars,1.0/effweight);
+      }
+    if(fillup=="trigIDassoIDMCTRUTH")//******************************************for TRUTH MC particles
+      {//in this case effweight should be 1 always 
+     if(mixcase==kFALSE)  fCorrelatonTruthPrimary->Fill(vars,1.0/effweight); 
+     if(mixcase==kTRUE) fCorrelatonTruthPrimarymix->Fill(vars,1.0/effweight);
+    }   
+    if(fillup=="trigIDassoUNID" || fillup=="trigUNIDassoID")//****************************be careful
+      {
+    if(mixcase==kFALSE)  fTHnCorrIDUNID->Fill(vars,1.0/effweight);
+    if(mixcase==kTRUE)   fTHnCorrIDUNIDmix->Fill(vars,1.0/effweight);
+       }
+	
+delete[] vars;
    }//asso loop ends 
+delete[] trigval;
  }//trigger loop ends 
 
 }
 
 //--------------------------------------------------------------------------------
-Float_t AliTwoParticlePIDCorr::GetTrackbyTrackeffvalue(AliAODTrack* track,Float_t cent,Float_t evzvtx, Int_t parpid)
+Float_t AliTwoParticlePIDCorr::GetTrackbyTrackeffvalue(AliAODTrack* track,Double_t cent,Float_t evzvtx, Int_t parpid,Bool_t mesoneffrequired)
 {
-  //This function is called only when applyefficiency=kTRUE
+  //This function is called only when applyefficiency=kTRUE; also ensure that "track" is present before calling that function
  Int_t effVars[4];
  Float_t effvalue=1.; 
 
-  if(parpid==SpUndefined)
+  if(parpid==unidentified)
             {
-	    effVars[0] = effcorection[5]->GetAxis(0)->FindBin(cent);
-	    effVars[1] = effcorection[5]->GetAxis(1)->FindBin(evzvtx); 
-	    effVars[2] = effcorection[5]->GetAxis(2)->FindBin(track->Pt()); 
-	    effVars[3] = effcorection[5]->GetAxis(3)->FindBin(track->Eta()); 
-            effvalue=effcorection[5]->GetBinContent(effVars);
-	    }
-if(parpid==SpPion || parpid==SpKaon)
-            {
-	      if(track->Pt()>=2.0)
-		{
 	    effVars[0] = effcorection[4]->GetAxis(0)->FindBin(cent);
 	    effVars[1] = effcorection[4]->GetAxis(1)->FindBin(evzvtx); 
 	    effVars[2] = effcorection[4]->GetAxis(2)->FindBin(track->Pt()); 
-	    effVars[3] = effcorection[4]->GetAxis(3)->FindBin(track->Eta());
+	    effVars[3] = effcorection[4]->GetAxis(3)->FindBin(track->Eta()); 
             effvalue=effcorection[4]->GetBinContent(effVars);
+	    }
+if(parpid==SpPion || parpid==SpKaon)
+            {
+	      if(mesoneffrequired)
+		{
+	    effVars[0] = effcorection[3]->GetAxis(0)->FindBin(cent);
+	    effVars[1] = effcorection[3]->GetAxis(1)->FindBin(evzvtx); 
+	    effVars[2] = effcorection[3]->GetAxis(2)->FindBin(track->Pt()); 
+	    effVars[3] = effcorection[3]->GetAxis(3)->FindBin(track->Eta());
+            effvalue=effcorection[3]->GetBinContent(effVars);
 		}
-if(track->Pt()<2.0){
+	      else{
  if(parpid==SpPion)
             {
 	    effVars[0] = effcorection[0]->GetAxis(0)->FindBin(cent);
@@ -2444,8 +2062,9 @@ if(track->Pt()<2.0){
 	    effVars[3] =  effcorection[1]->GetAxis(3)->FindBin(track->Eta()); 
             effvalue=effcorection[1]->GetBinContent(effVars);
 	    }
-		}
-	    }  
+	      }
+	    }	
+	     
  if(parpid==SpProton)
             {
 	    effVars[0] =  effcorection[2]->GetAxis(0)->FindBin(cent);
@@ -2462,14 +2081,14 @@ if(track->Pt()<2.0){
 }
 //-----------------------------------------------------------------------
 
-Int_t AliTwoParticlePIDCorr::ClassifyTrack(AliAODTrack* track,Int_t centbin,AliAODVertex* vertex,Float_t magfield,Bool_t dcacut)
+Int_t AliTwoParticlePIDCorr::ClassifyTrack(AliAODTrack* track,Bool_t onlyprimary,AliAODVertex* vertex,Float_t magfield)
 {  
  
   if(!track) return 0;
-  Bool_t trackOK = track->TestFilterBit(768);
+  Bool_t trackOK = track->TestFilterBit(fFilterBit);
   if(!trackOK) return 0;
-  //select only primary traks 
-  //if(track->GetType()!=AliAODTrack::kPrimary) return 0;
+  //select only primary traks(for data & reco MC tracks) 
+  if(onlyprimary && track->GetType()!=AliAODTrack::kPrimary) return 0;
   if(track->Charge()==0) return 0;
   fHistQA[12]->Fill(track->GetTPCNcls());  
   Float_t dxy, dz;		  
@@ -2488,12 +2107,12 @@ Int_t AliTwoParticlePIDCorr::ClassifyTrack(AliAODTrack* track,Int_t centbin,AliA
     }
 //accepted tracks  
      Float_t pt=track->Pt();
-     if(pt<0.2 || pt>9.0) return 0;
-     if(TMath::Abs(track->Eta())>0.8) return 0;
+     if(pt< fminPt || pt> fmaxPt) return 0;
+     if(TMath::Abs(track->Eta())> fmaxeta) return 0;
      if(track->Phi()<0. || track->Phi()>2*TMath::Pi()) return 0;
-     //if (!HasTPCPID(track)) return 0;//trigger & associated particles must have TPC PID
+     //if (!HasTPCPID(track)) return 0;//trigger & associated particles must have TPC PID,Is it required
 // DCA XY
-	if (dcacut && fDCAXYCut)
+	if (fdcacut && fDCAXYCut)
 	{
 	  if (!vertex)
 	    return 0;
@@ -2501,7 +2120,7 @@ Int_t AliTwoParticlePIDCorr::ClassifyTrack(AliAODTrack* track,Int_t centbin,AliA
 	  Double_t pos[2];
 	  Double_t covar[2];
 	  AliAODTrack* clone =(AliAODTrack*) track->Clone();
-	  Bool_t success = clone->PropagateToDCA(vertex, magfield, 3, pos, covar);
+	  Bool_t success = clone->PropagateToDCA(vertex, magfield, fdcacutvalue, pos, covar);
 	  delete clone;
 	  if (!success)
 	    return 0;
@@ -2513,19 +2132,14 @@ Int_t AliTwoParticlePIDCorr::ClassifyTrack(AliAODTrack* track,Int_t centbin,AliA
 	}
 
      fHistQA[8]->Fill(pt);
-     recoallpt[centbin]->Fill(track->Pt());
      fHistQA[9]->Fill(track->Eta());
-     recoalleta[centbin]->Fill(track->Eta());
      fHistQA[10]->Fill(track->Phi());
-     recoallphi[centbin]->Fill(track->Phi());
-     if(pt>=1.0 && pt<2.0) allassoeta[centbin]->Fill(track->Eta());
-     if(pt>=2.0 && pt<=4.0) alltrigeta[centbin]->Fill(track->Eta());
      return 1;
   }
   //________________________________________________________________________________
-void AliTwoParticlePIDCorr::CalculateNSigmas(AliAODTrack *track,Int_t centbin) 
+void AliTwoParticlePIDCorr::CalculateNSigmas(AliAODTrack *track) 
 {
-//This function is called within the func GetParticle() for accepted tracks only i.e.after call of Classifytrack() & for those tracks which have proper TPC PID response & only for particles having pt within 1.0 to 4.0 Gev/c i.e. while filling the the TObjArray for trig & asso 
+//This function is called within the func GetParticle() for accepted tracks only i.e.after call of Classifytrack() & for those tracks which have proper TPC PID response . combined nsigma(circular) cut only for particles having pt upto  4.0 Gev/c and beyond that use the asymmetric nsigma cut around pion's mean position in TPC ( while filling the  TObjArray for trig & asso )
 Float_t pt=track->Pt();
 
 //it is assumed that every track that passed the filterbit have proper TPC response(!!)
@@ -2536,7 +2150,7 @@ Float_t nsigmaTPCkProton =fPID->NumberOfSigmasTPC(track, AliPID::kProton);
 Float_t nsigmaTOFkProton=999.,nsigmaTOFkKaon=999.,nsigmaTOFkPion=999.;
 Float_t nsigmaTPCTOFkProton=999.,nsigmaTPCTOFkKaon=999.,nsigmaTPCTOFkPion=999.;
 
- if(HasTOFPID(track) && pt>fPtTOFPID)
+ if(HasTOFPID(track) && pt>fPtTOFPIDmin)
    {
 
 nsigmaTOFkPion =fPID->NumberOfSigmasTOF(track, AliPID::kPion);
@@ -2547,16 +2161,7 @@ nsigmaTPCTOFkPion   = TMath::Sqrt(nsigmaTPCkPion*nsigmaTPCkPion+nsigmaTOFkPion*n
 nsigmaTPCTOFkKaon   = TMath::Sqrt(nsigmaTPCkKaon*nsigmaTPCkKaon+nsigmaTOFkKaon*nsigmaTOFkKaon);
 nsigmaTPCTOFkProton = TMath::Sqrt(nsigmaTPCkProton*nsigmaTPCkProton+nsigmaTOFkProton*nsigmaTOFkProton);
 
-//fill the nsigma pion histograms
- if(pt>=1.0 && pt<=4.0)
-   {
-Int_t ptbinval=Getptbin(track->Pt());//trig->0,1,2,3---ass0->4,5,6,7,8       
-fHistoNSigmaTPCpion[centbin][ptbinval]->Fill(nsigmaTPCkPion);
-fHistoNSigmaTOFpion[centbin][ptbinval]->Fill(nsigmaTOFkPion);
-fHistoNSigmaTPCTOFpion[centbin][ptbinval]->Fill(nsigmaTPCTOFkPion);
-//fHistocentNSigmaTPC->Fill(centrality, pt, nsigmaTPCkPion);
-//fHistocentNSigmaTOF->Fill(centrality, pt, nsigmaTOFkPion);
-   }
+
    }
 else{
     // --- combined
@@ -2564,22 +2169,20 @@ else{
     nsigmaTPCTOFkProton = TMath::Abs(nsigmaTPCkProton);
     nsigmaTPCTOFkKaon   = TMath::Abs(nsigmaTPCkKaon);
     nsigmaTPCTOFkPion   = TMath::Abs(nsigmaTPCkPion);
-if(pt>=1.0 && pt<=4.0)
-   {
-     Int_t ptbinval=Getptbin(track->Pt());//trig->0,1,2,3---ass0->4,5,6,7,8       
-     fHistoNSigmaTPCpion[centbin][ptbinval]->Fill(nsigmaTPCkPion);
-     fHistoNSigmaTPCTOFpion[centbin][ptbinval]->Fill(nsigmaTPCTOFkPion);
-   //fHistocentNSigmaTPC->Fill(centrality, pt, nsigmaTPCkPion);
-   }
+
   }
 
 //set data member fnsigmas
   fnsigmas[SpPion][NSigmaTPC]=nsigmaTPCkPion;
   fnsigmas[SpKaon][NSigmaTPC]=nsigmaTPCkKaon;
   fnsigmas[SpProton][NSigmaTPC]=nsigmaTPCkProton;
+
+  //for all tracks below fPtTOFPIDmin  and also for tracks above fPtTOFPIDmin without proper TOF response these TOF nsigma values will be 999.
   fnsigmas[SpPion][NSigmaTOF]=nsigmaTOFkPion;
   fnsigmas[SpKaon][NSigmaTOF]=nsigmaTOFkKaon;
   fnsigmas[SpProton][NSigmaTOF]=nsigmaTOFkProton;
+
+ //for all tracks below fPtTOFPIDmin  and also for tracks above fPtTOFPIDmin without proper TOF response these TPCTOF nsigma values will be TMath::Abs(TPC only nsigma)
   fnsigmas[SpPion][NSigmaTPCTOF]=nsigmaTPCTOFkPion;
   fnsigmas[SpKaon][NSigmaTPCTOF]=nsigmaTPCTOFkKaon;
   fnsigmas[SpProton][NSigmaTPCTOF]=nsigmaTPCTOFkProton;
@@ -2590,7 +2193,7 @@ if(pt>=1.0 && pt<=4.0)
 Int_t AliTwoParticlePIDCorr::FindMinNSigma(AliAODTrack *track) 
 {
   //this function is always called after calling the function CalculateNSigmas(AliAODTrack *track)
-if(fRequestTOFPID && (!HasTOFPID(track)) && track->Pt()>fPtTOFPID)return SpUndefined;
+if(fRequestTOFPID && track->Pt()>fPtTOFPIDmin && track->Pt()<=fPtTOFPIDmax && (!HasTOFPID(track)) )return SpUndefined;//so any track having Pt>0.6 && Pt<=4.0 Gev withot having proper TOF response will be defined as SpUndefined
 //get the identity of the particle with the minimum Nsigma
   Float_t nsigmaPion=999., nsigmaKaon=999., nsigmaProton=999.;
   switch (fPIDType){
@@ -2610,7 +2213,8 @@ if(fRequestTOFPID && (!HasTOFPID(track)) && track->Pt()>fPtTOFPID)return SpUndef
     nsigmaPion    =  TMath::Abs(fnsigmas[SpPion][NSigmaTPCTOF])  ;
     break;
   }
-  
+
+  if(track->Pt()<=fPtTOFPIDmax)  {
  // guess the particle based on the smaller nsigma (within fNSigmaPID)
   if( ( nsigmaKaon==nsigmaPion ) && ( nsigmaKaon==nsigmaProton )) return SpUndefined;//it is the default value for the three
 if( ( nsigmaKaon   < nsigmaPion ) && ( nsigmaKaon < nsigmaProton ) && (nsigmaKaon < fNSigmaPID)) return SpKaon;
@@ -2619,6 +2223,13 @@ if( ( nsigmaProton < nsigmaKaon ) && ( nsigmaProton < nsigmaPion ) && (nsigmaPro
 
 // else, return undefined
   return SpUndefined;
+  }
+  else  {//asymmetric nsigma cut around pion's mean position for racks having Pt>4.0 Gev
+    if(fminprotonsigmacut<fnsigmas[SpPion][NSigmaTPC]<fmaxprotonsigmacut) return SpProton;
+    if(fminpionsigmacut<fnsigmas[SpPion][NSigmaTPC]<fmaxpionsigmacut) return SpPion;
+// else, return undefined(here we don't detect kaons)
+  return SpUndefined;
+  }
 
 }
 
@@ -2654,31 +2265,25 @@ Bool_t* AliTwoParticlePIDCorr::GetDoubleCounting(AliAODTrack * trk){
     break;
   }
 
-if(trk->Pt()<2.0)//only associated particles
-    {
+  //there is chance of overlapping only for particles having pt below 4.0 GEv
+  if(trk->Pt()<=4.0){
   if(nsigmaPion<fNSigmaPID && MinNSigma!=SpPion)fHasDoubleCounting[SpPion]=kTRUE;
   if(nsigmaKaon<fNSigmaPID && MinNSigma!=SpKaon)fHasDoubleCounting[SpKaon]=kTRUE;
   if(nsigmaProton<fNSigmaPID && MinNSigma!=SpProton)fHasDoubleCounting[SpProton]=kTRUE;
-    } 
-
- if (trk->Pt()>=2.0 )// just consider overlapping between meson & baryon(proton)
-    {
-  if(nsigmaPion<fNSigmaPID && MinNSigma==SpProton)fHasDoubleCounting[SpPion]=kTRUE;
-  if(nsigmaKaon<fNSigmaPID && MinNSigma==SpProton)fHasDoubleCounting[SpKaon]=kTRUE;
-  if(nsigmaProton<fNSigmaPID && MinNSigma!=SpProton)fHasDoubleCounting[SpProton]=kTRUE;
-    } 
+     
+  }
 
  
   return fHasDoubleCounting;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-Int_t AliTwoParticlePIDCorr::GetParticle(AliAODTrack * trk,Int_t centbin){ 
+Int_t AliTwoParticlePIDCorr::GetParticle(AliAODTrack * trk){ 
   //return the specie according to the minimum nsigma value
   //no double counting, this has to be evaluated using CheckDoubleCounting()
   //Printf("fPtTOFPID %.1f, fRequestTOFPID %d, fNSigmaPID %.1f, fPIDType %d",fPtTOFPID,fRequestTOFPID,fNSigmaPID,fPIDType);
   
-  CalculateNSigmas(trk,centbin);//fill the data member fnsigmas with the nsigmas value [ipart][iPID]
+  CalculateNSigmas(trk);//fill the data member fnsigmas with the nsigmas value [ipart][iPID]
   
   if(fUseExclusiveNSigma){
     Bool_t *HasDC;
@@ -2690,51 +2295,6 @@ Int_t AliTwoParticlePIDCorr::GetParticle(AliAODTrack * trk,Int_t centbin){
   }
   else return FindMinNSigma(trk);//NSigmaRec distr filled here
   
-}
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-  Int_t AliTwoParticlePIDCorr::Getzbin(Float_t z)
-{
-  Int_t z1=-999;
-  if(z>=-10. && z<-8.) z1=0;
-  if(z>=-8. && z<-6.) z1=1;
-  if(z>=-6. && z<-4.) z1=2;
-  if(z>=-4. && z<-2.) z1=3;
-  if(z>=-2. && z<0.) z1=4;
-  if(z>=0. && z<2.) z1=5;
-  if(z>=2. && z<4.) z1=6;
-  if(z>=4. && z<6.) z1=7;
-  if(z>=6. && z<=8.) z1=8;
-  if(z>8. && z<=10.) z1=9;
-  return z1;
- }
-//-------------------------------------------------------------------------------
-Int_t AliTwoParticlePIDCorr::Getptbin(Float_t pt)
-  {
- Int_t ptval=-999;
- if ((pt>=2.0) && (pt<=2.5))  ptval=0;
- if ((pt>2.5) && (pt<=3.0))  ptval=1;
- if ((pt>3.0) && (pt<=3.5))  ptval=2;
- if ((pt>3.5) && (pt<=4.0))  ptval=3; 
- if ((pt>=1.0) && (pt<=1.2)) ptval=4;
- if ((pt>1.2) && (pt<=1.4))  ptval=5;
- if ((pt>1.4) && (pt<=1.6))  ptval=6;
- if ((pt>1.6) && (pt<=1.8))  ptval=7;
- if ((pt>1.8) && (pt<2.0))  ptval=8;
- return ptval;//will return -999 if the pt value passed as argument is not within the above mentioned range
-  }
-
-
-//------------------------------------------------------------------------------
-Int_t AliTwoParticlePIDCorr::Getcentbin(Float_t cent_v0m)
-{
-Int_t centbinn=-999;
- if(cent_v0m>0. && cent_v0m<=20.) centbinn=0;
- if(cent_v0m>20. && cent_v0m<=40.) centbinn=1;
- if(cent_v0m>40. && cent_v0m<=60.) centbinn=2;
- if(cent_v0m>60. && cent_v0m<=100.) centbinn=3;
-
- return centbinn;
 }
 
 //-------------------------------------------------------------------------------------
@@ -2761,6 +2321,7 @@ AliTwoParticlePIDCorr::HasTOFPID(AliAODTrack *track) const
   //if  (!( (status & AliAODTrack::kITSin  ) == AliAODTrack::kITSin  )) return kFALSE;
  AliPIDResponse::EDetPidStatus statustof = fPID->CheckPIDStatus(AliPIDResponse::kTOF,track);
  if(statustof!= AliPIDResponse::kDetPidOk) return kFALSE;
+  if(track->Pt()<=fPtTOFPIDmin) return kFALSE;
  //if(!((status & AliAODTrack::kTOFpid  ) == AliAODTrack::kTOFpid  )) return kFALSE;
  //Float_t probMis = fPIDresponse->GetTOFMismatchProbability(track);
  // if (probMis > 0.01) return kFALSE;
@@ -2886,14 +2447,22 @@ void AliTwoParticlePIDCorr ::DefineEventPool()
 {
 const Int_t MaxNofEvents=1000;
 const Int_t MaxNofTracks=50000;
-const Int_t NofCentBins=11;
-//Double_t CentralityBins[]={0, 20, 40, 60,80,100.1};
-Double_t CentralityBins[NofCentBins+1]={ 0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100.1};
-const Int_t NofVrtxBins=10;
-Double_t ZvrtxBins[]={-10,-8,-6,-4,-2,0,2,4,6,8,10};
-
-
+const Int_t NofVrtxBins=10+(1+10)*2;
+Double_t ZvrtxBins[NofVrtxBins+1]={ -10,   -8,  -6,  -4,  -2,   0,   2,   4,   6,   8,  10, 
+				       90,  92,  94,  96,  98, 100, 102, 104, 106, 108, 110, 
+				      190, 192, 194, 196, 198, 200, 202, 204, 206, 208, 210, 
+				      };
+ if (fSampleType=="pp"){
+const Int_t  NofCentBins=5;
+Double_t CentralityBins[NofCentBins+1]={0.,10., 20., 40.,80.,200.1};
 fPoolMgr = new AliEventPoolManager(MaxNofEvents,MaxNofTracks,NofCentBins,CentralityBins,NofVrtxBins,ZvrtxBins);
+ }
+if (fSampleType=="pPb" || fSampleType=="PbPb")
+  {
+const Int_t  NofCentBins=15;
+Double_t CentralityBins[NofCentBins+1]={0., 1., 2., 3., 4., 5., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.1 };
+fPoolMgr = new AliEventPoolManager(MaxNofEvents,MaxNofTracks,NofCentBins,CentralityBins,NofVrtxBins,ZvrtxBins);
+  }
 fPoolMgr->SetTargetValues(MaxNofTracks, 0.1, 5);
 
 //if(!fPoolMgr) return kFALSE;
@@ -2901,6 +2470,50 @@ fPoolMgr->SetTargetValues(MaxNofTracks, 0.1, 5);
 
 }
 //------------------------------------------------------------------------
+Double_t* AliTwoParticlePIDCorr::GetBinning(const char* configuration, const char* tag, Int_t& nBins)
+{
+  // This method is a copy from AliUEHist::GetBinning
+  // takes the binning from <configuration> identified by <tag>
+  // configuration syntax example:
+  // eta: 2.4, -2.3, -2.2, -2.1, -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4
+  // phi: .....
+  //
+  // returns bin edges which have to be deleted by the caller
+  
+  TString config(configuration);
+  TObjArray* lines = config.Tokenize("\n");
+  for (Int_t i=0; i<lines->GetEntriesFast(); i++)
+  {
+    TString line(lines->At(i)->GetName());
+    if (line.BeginsWith(TString(tag) + ":"))
+    {
+      line.Remove(0, strlen(tag) + 1);
+      line.ReplaceAll(" ", "");
+      TObjArray* binning = line.Tokenize(",");
+      Double_t* bins = new Double_t[binning->GetEntriesFast()];
+      for (Int_t j=0; j<binning->GetEntriesFast(); j++)
+	bins[j] = TString(binning->At(j)->GetName()).Atof();
+      
+      nBins = binning->GetEntriesFast() - 1;
+
+      delete binning;
+      delete lines;
+      return bins;
+    }
+  }
+  
+  delete lines;
+  AliFatal(Form("Tag %s not found in %s", tag, configuration));
+  return 0;
+}
+//_______________________________________________________________________________
+void AliTwoParticlePIDCorr::SetAsymmetricBin(THnSparse *h,Int_t dim,Double_t *arraybin,Int_t arraybinsize,TString axisTitle) 
+{
+  TAxis *axis = 0x0;
+  axis = h->GetAxis(dim);
+  axis->Set(arraybinsize,arraybin);
+  axis->SetTitle(axisTitle);
+}
 
 //________________________________________________________________________
 void AliTwoParticlePIDCorr::Terminate(Option_t *) 
