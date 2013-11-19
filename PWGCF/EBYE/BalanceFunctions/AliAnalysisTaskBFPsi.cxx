@@ -173,8 +173,10 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fUseMCPdgCode(kFALSE),
   fPDGCodeToBeAnalyzed(-1),
   fEventClass("EventPlane"), 
-  fCustomBinning("") 
-{
+  fCustomBinning(""),
+  fHistVZEROAGainEqualizationMap(0),
+  fHistVZEROCGainEqualizationMap(0),
+  fHistVZEROChannelGainEqualizationMap(0) {
   // Constructor
   // Define input and output slots here
   // Input slot #0 works with a TChain
@@ -1079,7 +1081,15 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
 Double_t AliAnalysisTaskBFPsi::GetReferenceMultiplicityFromAOD(AliVEvent *event){
   //Function that returns the reference multiplicity from AODs (data or reco MC)
   //Different ref. mult. implemented: V0M, V0A, V0C, TPC
-  Double_t gRefMultiplicity = 0., gRefMultiplicityTPC = 0., gRefMultiplicityVZERO = 0.;
+  Double_t gRefMultiplicity = 0., gRefMultiplicityTPC = 0.;
+  Double_t gRefMultiplicityVZERO = 0., gRefMultiplicityVZEROA = 0., gRefMultiplicityVZEROC = 0.;
+
+  AliAODHeader *header = dynamic_cast<AliAODHeader *>(event->GetHeader());
+  if(!header) {
+    Printf("ERROR: AOD header not available");
+    return -999;
+  }
+  Int_t gRunNumber = header->GetRunNumber();
 
   // Loop over tracks in event
   for (Int_t iTracks = 0; iTracks < event->GetNumberOfTracks(); iTracks++) {
@@ -1127,16 +1137,24 @@ Double_t AliAnalysisTaskBFPsi::GetReferenceMultiplicityFromAOD(AliVEvent *event)
   }// track loop
   
   //VZERO segmentation in two detectors (0-31: VZERO-C, 32-63: VZERO-A)
-  for(Int_t i = 0; i < 64; i++) {
-    fHistVZEROSignal->Fill(i,event->GetVZEROEqMultiplicity(i));
+  for(Int_t iChannel = 0; iChannel < 64; iChannel++) {
+    fHistVZEROSignal->Fill(iChannel,event->GetVZEROEqMultiplicity(iChannel));
     
-    if(fMultiplicityEstimator == "V0C") {
-      if(i > 31) continue;}
-    else if(fMultiplicityEstimator == "V0A") {
-      if(i < 32) continue;}
-    
-    gRefMultiplicityVZERO += event->GetVZEROEqMultiplicity(i);
+    if(iChannel < 32) 
+      gRefMultiplicityVZEROC += event->GetVZEROEqMultiplicity(iChannel);
+    else if(iChannel >= 32) 
+      gRefMultiplicityVZEROA += event->GetVZEROEqMultiplicity(iChannel);
   }//loop over PMTs
+  
+  //Equalization of gain
+  Double_t gFactorA = GetEqualizationFactor(gRunNumber,"A");
+  if(gFactorA != 0)
+    gRefMultiplicityVZEROA /= gFactorA;
+  Double_t gFactorC = GetEqualizationFactor(gRunNumber,"C");
+  if(gFactorC != 0)
+    gRefMultiplicityVZEROC /= gFactorC;
+  if((gFactorA != 0)&&(gFactorC != 0)) 
+    gRefMultiplicityVZERO = (gRefMultiplicityVZEROA/gFactorA)+(gRefMultiplicityVZEROC/gFactorC);
   
   if(fDebugLevel) 
     Printf("VZERO multiplicity: %.0f - TPC multiplicity: %.0f",gRefMultiplicityVZERO,gRefMultiplicityTPC);
@@ -1145,10 +1163,12 @@ Double_t AliAnalysisTaskBFPsi::GetReferenceMultiplicityFromAOD(AliVEvent *event)
 
   if(fMultiplicityEstimator == "TPC") 
     gRefMultiplicity = gRefMultiplicityTPC;
-  else if((fMultiplicityEstimator == "V0M")||
-	  (fMultiplicityEstimator == "V0A")||
-	  (fMultiplicityEstimator == "V0C")) 
+  else if(fMultiplicityEstimator == "V0M")
     gRefMultiplicity = gRefMultiplicityVZERO;
+  else if(fMultiplicityEstimator == "V0A")
+    gRefMultiplicity = gRefMultiplicityVZEROA;
+  else if(fMultiplicityEstimator == "V0C")
+    gRefMultiplicity = gRefMultiplicityVZEROC;
   
   return gRefMultiplicity;
 }
@@ -2050,6 +2070,72 @@ TObjArray* AliAnalysisTaskBFPsi::GetShuffledTracks(TObjArray *tracks, Double_t g
   return tracksShuffled;
 }
 
+//________________________________________________________________________
+void  AliAnalysisTaskBFPsi::SetVZEROCalibrationFile(const char* filename,
+						    const char* lhcPeriod) {
+  //Function to setup the VZERO gain equalization
+    //============Get the equilization map============//
+  TFile *calibrationFile = TFile::Open(filename);
+  if((!calibrationFile)||(!calibrationFile->IsOpen())) {
+    Printf("No calibration file found!!!");
+    return;
+  }
+
+  TList *list = dynamic_cast<TList *>(calibrationFile->Get(lhcPeriod));
+  if(!list) {
+    Printf("Calibration TList not found!!!");
+    return;
+  }
+
+  fHistVZEROAGainEqualizationMap = dynamic_cast<TH1F *>(list->FindObject("gHistVZEROAGainEqualizationMap"));
+  if(!fHistVZEROAGainEqualizationMap) {
+    Printf("VZERO-A calibration object not found!!!");
+    return;
+  }
+  fHistVZEROCGainEqualizationMap = dynamic_cast<TH1F *>(list->FindObject("gHistVZEROCGainEqualizationMap"));
+  if(!fHistVZEROCGainEqualizationMap) {
+    Printf("VZERO-C calibration object not found!!!");
+    return;
+  }
+
+  fHistVZEROChannelGainEqualizationMap = dynamic_cast<TH2F *>(list->FindObject("gHistVZEROChannelGainEqualizationMap"));
+  if(!fHistVZEROChannelGainEqualizationMap) {
+    Printf("VZERO channel calibration object not found!!!");
+    return;
+  }
+}
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskBFPsi::GetChannelEqualizationFactor(Int_t run, 
+							    Int_t channel) {
+  //
+  for(Int_t iBinX = 1; iBinX <= fHistVZEROChannelGainEqualizationMap->GetNbinsX(); iBinX++) {
+    Int_t gRunNumber = atoi(fHistVZEROChannelGainEqualizationMap->GetXaxis()->GetBinLabel(iBinX));
+    if(gRunNumber == run)
+      return fHistVZEROChannelGainEqualizationMap->GetBinContent(iBinX,channel+1);
+  }
+
+  return 1.0;
+}
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskBFPsi::GetEqualizationFactor(Int_t run, 
+						     const char* side) {
+  //
+  TString gVZEROSide = side;
+  for(Int_t iBinX = 1; iBinX <= fHistVZEROAGainEqualizationMap->GetNbinsX(); iBinX++) {
+    Int_t gRunNumber = atoi(fHistVZEROAGainEqualizationMap->GetXaxis()->GetBinLabel(iBinX));
+    //cout<<"Looking for run "<<run<<" - current run: "<<gRunNumber<<endl;
+    if(gRunNumber == run) {
+      if(gVZEROSide == "A") 
+	return fHistVZEROAGainEqualizationMap->GetBinContent(iBinX);
+      else if(gVZEROSide == "C") 
+	return fHistVZEROCGainEqualizationMap->GetBinContent(iBinX);
+    }
+  }
+
+  return 1.0;
+}
 
 //________________________________________________________________________
 void  AliAnalysisTaskBFPsi::FinishTaskOutput(){

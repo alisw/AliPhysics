@@ -177,6 +177,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
       fElectronRejectionMaxPt  = maxPt;
     }
 
+    void SetVZEROCalibrationFile(const char* filename, const char* lhcPeriod);
 
  private:
   Double_t    IsEventAccepted(AliVEvent* event);
@@ -192,6 +193,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   //===============================correction
   TObjArray* GetAcceptedTracks(AliVEvent* event, Double_t gCentrality, Double_t gReactionPlane);
   TObjArray* GetShuffledTracks(TObjArray* tracks, Double_t gCentrality);
+
+  Double_t GetChannelEqualizationFactor(Int_t run, Int_t channel);
+  Double_t GetEqualizationFactor(Int_t run, const char *side);
  
   Bool_t fDebugLevel; // debug level
 
@@ -343,6 +347,10 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TString fEventClass; //Can be "EventPlane", "Centrality", "Multiplicity"
   TString fCustomBinning;//for setting customized binning (for output AliTHn of AliBalancePsi)
   
+  //VZERO calibration
+  TH1F *fHistVZEROAGainEqualizationMap;//VZERO calibration map
+  TH1F *fHistVZEROCGainEqualizationMap;//VZERO calibration map
+  TH2F *fHistVZEROChannelGainEqualizationMap; //VZERO calibration map
 
   AliAnalysisTaskBFPsi(const AliAnalysisTaskBFPsi&); // not implemented
   AliAnalysisTaskBFPsi& operator=(const AliAnalysisTaskBFPsi&); // not implemented
