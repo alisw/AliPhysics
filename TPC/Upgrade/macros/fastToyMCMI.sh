@@ -1,6 +1,6 @@
             
 source $1 
-aliroot -b -q $ALICE_ROOT/TPC/Upgrade/macros/fastToyMCMI.C+
+aliroot -b -q $ALICE_ROOT/TPC/Upgrade/macros/fastToyMCMI.C+\($2,$3,$4)
 exit;
 
 
@@ -12,15 +12,13 @@ export baliceTPC=/u/miranov/.baliceTPC
 export flucPath=$HOME/AliRoot/TPCdev/TPC/Upgrade/macros/
 export batchCommand="qsub -cwd  -V "
 
-for idir in {0..40}; do  
-   $batchCommand    -o  drawFlucBin.log  $flucPath/fastToyMCMI.sh  $baliceTPC  7  100000 10000 0 0
-done;
-
 wdir=`pwd`
-for a in `ls -d dir*`; do
-    cd $wdir/$a
-    rm localBins.root
-    $batchCommand    -o  drawFlucBin.log  $flucPath/spaceChargeFluctuation.sh $baliceTPC  7  100000 10000 0 0
-    cd $wdir
+for idir in {0..20}; do  
+    mkdir $wdir/dir$idir
+    cd  $wdir/dir$idir
+    ln -sf ../geometry.root .
+    rm testdEdxResolution.root
+   $batchCommand    -o  fastToyMCMI.log  $flucPath/fastToyMCMI.sh  $baliceTPC  1 200 0 $idir
+   
 done;
 

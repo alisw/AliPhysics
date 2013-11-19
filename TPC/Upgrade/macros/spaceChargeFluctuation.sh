@@ -123,14 +123,14 @@ wdir=`pwd`
 
 ls $wdir/dirmerge*/fluct*.root| grep -v mergeAll >  $wdir/dirmergeAll/fluctuation.list 
 cd $wdir/dirmergeAll
-for epsilon in {5,10,20}; do
+for epsilon in {10,20}; do
    #create and clean  directories for epsilon
    mkdirhier  $wdir/dirmergeAll/dEpsilon$epsilon
    rm -rf $wdir/dirmergeAll/dEpsilon$epsilon/*
    cp $wdir/dirmergeAll/fluctuation.list  $wdir/dirmergeAll/dEpsilon$epsilon/
 done;
 #submit epsilon scan jobs
-for epsilon in {5,10,20}; do         # loop over epsilons
+for epsilon in {10,20}; do         # loop over epsilons
     for idir in {0..40}; do         # loop  create different random  ion pileup frames
        mkdir $wdir/dirmergeAll/dEpsilon$epsilon/dir$idir
        cd  $wdir/dirmergeAll/dEpsilon$epsilon/dir$idir
@@ -158,6 +158,28 @@ for a in `ls -d dirmerge*`; do
     cd $wdir
 done;
 
+
+#
+# 6.)  submit drawing fluctuation jobs
+#
+wdir=`pwd`
+for a in `ls -d dir*`; do
+    cd $wdir/$a
+    rm localFit.root
+    $batchCommand    -o  drawFlucFit.log  $flucPath/spaceChargeFluctuation.sh $baliceTPC  6  -1.5 1.5 0 0
+    cd $wdir
+done;
+
+#
+# 7.)  submit drawing fluctuation jobs
+#
+wdir=`pwd`
+for a in `ls -d dir*`; do
+    cd $wdir/$a
+    rm localBins.root
+    $batchCommand    -o  drawFlucBin.log  $flucPath/spaceChargeFluctuation.sh $baliceTPC  7  100000 10000 0 0
+    cd $wdir
+done;
 
 
 #
