@@ -48,7 +48,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   
   void           FillPileUpHistograms(const Float_t pt, const Float_t time, AliVCluster * c) ;
   
-  void           FillRejectedClusterHistograms(const TLorentzVector mom, const Int_t mctag);
+  void           FillRejectedClusterHistograms(const TLorentzVector mom, const Int_t mctag, const Int_t nMaxima);
   
   void           FillSelectedClusterHistograms(AliVCluster* cluster, 
                                                const Int_t nLocMax,
@@ -357,7 +357,10 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhEAsymmetryLocMax[3] ;   //! E asymmetry of 2 splitted clusters vs cluster E for different NLM
 
   TH2F         * fhMassPairLocMax[8];      //! pair mass, origin is same pi0, combine clusters depending on number of maxima
-
+  
+  TH2F         * fhNLocMaxPtReject;              //! number of maxima in selected clusters
+  TH2F         * fhMCNLocMaxPtReject[6];         //! number of maxima in selected clusters
+  
   // Pile-up
   TH1F         * fhPtPileUp[7];                   //! pT distribution of selected pi0/eta
   TH2F         * fhPtCellTimePileUp[7];           //! pT vs Time inside cluster, before any selection, not max cell
