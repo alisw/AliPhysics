@@ -707,16 +707,18 @@ Double_t AliCFSingleTrackEfficiencyTask::GetCentrality()
 
   if(isAOD) {
     AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
+    if(!aodEvent) return cent;
     AliAODHeader* header = aodEvent->GetHeader();
-    if(!header) return -1;
+    if(!header) return cent;
     AliCentrality *centrality = header->GetCentralityP();
-    if(!centrality) return -1;
+    if(!centrality) return cent;
     //    cout<<" about to get cent perc AOD"<<endl;
     cent = centrality->GetCentralityPercentile(fCentralityEstimator.Data());
   } else {
-    AliESDEvent* esd = dynamic_cast<AliESDEvent*>(fInputEvent);
-    AliCentrality *centrality = esd->GetCentrality();
-    if(!centrality) return -1;
+    AliESDEvent* esdEvent = dynamic_cast<AliESDEvent*>(fInputEvent);
+    if(!esdEvent) return cent;
+    AliCentrality *centrality = esdEvent->GetCentrality();
+    if(!centrality) return cent;
     cent = centrality->GetCentralityPercentile(fCentralityEstimator.Data());
   }
 
