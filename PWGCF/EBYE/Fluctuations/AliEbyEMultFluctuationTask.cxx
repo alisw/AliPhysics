@@ -34,8 +34,7 @@ ClassImp(AliEbyEMultFluctuationTask)
 
 //________________________________________________________________________
 AliEbyEMultFluctuationTask::AliEbyEMultFluctuationTask(const char *name) 
-: AliAnalysisTaskSE(name), fAOD(0), fOutputList(0),fHistNchPt(0),fHistNchEta(0),fHistNchEtaCent(0),fHistNchPhi(0),fHistDCAxy(0),fHistDCAz(0),fHistnclus(0),fHistchi2ndf(0),fDeDx(NULL),fHistMult(0),fAODVertex(0),fPID(0),fEventCounter(0),histcounter(0),fHistVz(0),fHistchi2ndfvscs(0),My_ntuple(0),fHistMultV0A(0),fHistMultV0C(0),fHistMultV0total(0),fCentralityCounter(0),fCentralityEstimator("V0M"),Counter(0)
-   
+: AliAnalysisTaskSE(name),fAOD(0), fAODVertex(0),fHistNchPt(0),fHistNchEta(0),fHistNchEtaCent(0),fHistNchPhi(0),fHistDCAxy(0),fHistDCAz(0),fHistnclus(0),fHistchi2ndf(0),fHistchi2ndfvscs(0),fHistVz(0),fHistMultV0A(0),fHistMultV0C(0),fHistMultV0total(0),My_ntuple(0),fOutputList(0),fCentralityEstimator("V0M"),fCentralityCounter(0),fEventCounter(0),histcounter(0)
 
 
 {
@@ -88,7 +87,6 @@ Int_t AliEbyEMultFluctuationTask :: SelectTrack(AliAODTrack* track)
 {
  
 	Double_t eta = track->Eta();
-	Double_t phi = track->Phi();
 
      if(TMath :: Abs(eta)>0.8) return 0;
 
@@ -115,7 +113,7 @@ return 1;
   
 }
 
-//___________________________________________________________________________________
+//________________________________________________________________________________________________
 void AliEbyEMultFluctuationTask::UserCreateOutputObjects()
 {
   fOutputList = new TList();
@@ -285,7 +283,6 @@ void AliEbyEMultFluctuationTask::UserExec(Option_t *)
 
   }
 
-  //  Int_t Counter = 0;
 Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
 if(!isSelected) return;
  fEventCounter->Fill(1);
@@ -354,7 +351,7 @@ Double_t Mult=0.0;
 	Double_t Mult1=0.0;
 	Double_t Mult2=0.0;
 
-	//printf("There are %d tracks in this event\n", fAOD->GetNumberOfTracks());
+ //printf("There are %d tracks in this event\n", fAOD->GetNumberOfTracks());
 
  
   for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {

@@ -18,7 +18,7 @@ class AliAODTracklets;
 
 class AliEbyEMultFluctuationTask : public AliAnalysisTaskSE {
  public:
- AliEbyEMultFluctuationTask() : AliAnalysisTaskSE(), fAOD(0), fOutputList(0), fAODVertex(0),fHistNchPt(0),fHistNchEta(0),fHistNchEtaCent(0),fHistNchPhi(0),fDeDx(NULL),fPID(0),fEventCounter(0),histcounter(0),fCentralityCounter(0),fHistDCAxy(0),fHistDCAz(0),fHistnclus(0),fHistchi2ndf(0),fHistVz(0),fHistMultV0A(0),fHistMultV0C(0),fHistMultV0total(0),My_ntuple(0),fHistchi2ndfvscs(0),fCentralityEstimator("V0M"),Counter(0),fCentralityBins20(kFALSE) {
+ AliEbyEMultFluctuationTask() : AliAnalysisTaskSE(), fAOD(0), fAODVertex(0),fHistNchPt(0),fHistNchEta(0),fHistNchEtaCent(0),fHistNchPhi(0),fHistDCAxy(0),fHistDCAz(0),fHistnclus(0),fHistchi2ndf(0),fHistchi2ndfvscs(0),fHistVz(0),fHistMultV0A(0),fHistMultV0C(0),fHistMultV0total(0),My_ntuple(0),fOutputList(0),fCentralityEstimator("V0M"),fCentralityCounter(0),fEventCounter(0),histcounter(0){
 		for(Int_t ibin=0;ibin<91;ibin++)
 		{
 			fMult[ibin]=NULL;
@@ -53,7 +53,6 @@ private:
 	
 	Bool_t SelectEvent(AliAODVertex *vertex);
 	Int_t SelectTrack(AliAODTrack *track);
-	Int_t Counter;
 	
   
  private://objects
@@ -68,12 +67,9 @@ TH1D *fHistNchPhi;
  TH1D *fHistDCAxy;
  TH1D *fHistDCAz;
  TH1D *fHistnclus;
- TH1D *fHistchi2ndf;
-TH2D *fDeDx;  
+ TH1D *fHistchi2ndf;  
  TH2D *fHistchi2ndfvscs;
  
-TH1I *fPID;
-TH1D *fHistMult;
 
 TH1F *fMult[91];
 TH1F *fMultTwo[46];
