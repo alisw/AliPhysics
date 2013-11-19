@@ -618,7 +618,7 @@ void AliCFSingleTrackEfficiencyTask::CheckReconstructedParticles()
     if(isESDtrack) {
       tmptrack = dynamic_cast<AliESDtrack*>(track); // ESDs
     } else {
-      tmptrack = ConvertTrack(aodTrack); // AODs
+      if (aodTrack) tmptrack = ConvertTrack(aodTrack); // AODs
     }
     if (!tmptrack) continue;
 
