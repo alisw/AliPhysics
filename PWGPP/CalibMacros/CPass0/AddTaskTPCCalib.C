@@ -359,6 +359,8 @@ void ConfigOCDB(Int_t run){
   tpcRecoParam->SetUseMultiplicityCorrectionDedx(kFALSE);
   tpcRecoParam->SetUseAlignmentTime(kFALSE);
   tpcRecoParam->SetUseComposedCorrection(kTRUE);
+  //
+  tpcRecoParam->GetGainCorrectionHVandPTMode(1);
 
   AliTPCcalibDB::Instance()->SetRun(run); 
 }
