@@ -56,7 +56,14 @@ class AliSpectraAODEventCuts : public TNamed
     fV0Apol2(-1),
     fV0Apol3(-1),
     fV0Apol4(-1)
-      {}
+      {
+	for (Int_t i = 0; i<10; i++){
+	  fMeanQxa2[i] = -1;
+	  fMeanQya2[i] = -1;
+	  fMeanQxc2[i] = -1;
+	  fMeanQyc2[i] = -1;   
+	}
+      }
   AliSpectraAODEventCuts(const char *name);
   virtual  ~AliSpectraAODEventCuts() {}
   
