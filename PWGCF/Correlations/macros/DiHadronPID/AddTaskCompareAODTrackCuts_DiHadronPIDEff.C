@@ -46,7 +46,7 @@ AliAnalysisTaskCompareAODTrackCuts* AddTaskCompareAODTrackCuts_DiHadronPIDEff(
 	// Configure and add track cuts for trigger.
 	AliAODTrackCutsDiHadronPID* triggercuts = new AliAODTrackCutsDiHadronPID("TrackCutsTrigger");
 	triggercuts->SetIsMC(isMC);
-	triggercuts->SetFilterMask(1<<FilterMaskTrigger);
+	triggercuts->SetFilterMask(FilterMaskTrigger);
 	triggercuts->SetPtRange(minTriggerPt,maxTriggerPt);
 	triggercuts->SetMaxEta(maxEta);
 	triggercuts->RequestQAHistos(AliAODTrackCutsDiHadronPID::kAllCharged);
@@ -69,7 +69,7 @@ AliAnalysisTaskCompareAODTrackCuts* AddTaskCompareAODTrackCuts_DiHadronPIDEff(
 	// Configure and add track cuts for associateds.
 	AliAODTrackCutsDiHadronPID* associatedscuts = new AliAODTrackCutsDiHadronPID("TrackCutsAssociated");
 	associatedscuts->SetIsMC(isMC);
-	associatedscuts->SetFilterMask(1<<FilterMaskAssociated);
+	associatedscuts->SetFilterMask(FilterMaskAssociated);
 	associatedscuts->SetPtRange(minAssociatedPt,maxAssociatedPt);
 	associatedscuts->SetMaxEta(maxEta);
 	ULong_t associatedflags = (UInt_t)(AliAODTrack::kTOFout)|(UInt_t)(AliAODTrack::kTIME);	
