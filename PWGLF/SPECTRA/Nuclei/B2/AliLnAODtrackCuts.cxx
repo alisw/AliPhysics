@@ -23,6 +23,7 @@
 #include <AliAODEvent.h>
 #include <AliAODMCParticle.h>
 #include <AliAODTrack.h>
+#include <AliAODVertex.h>
 #include "AliLnAODtrackCuts.h"
 
 ClassImp(AliLnAODtrackCuts)
@@ -63,9 +64,9 @@ Bool_t AliLnAODtrackCuts::IsWithinGeoAcceptance(const AliAODMCParticle* prt) con
 //
 // is particle within the geometrical acceptance?
 //
-	if( TMath::Abs(prt->Eta()) >= fMaxEta ) return kFALSE;
+	if( TMath::Abs(prt->Eta()) < fMaxEta ) return kTRUE;
 	
-	return kTRUE;
+	return kFALSE;
 }
 
 Bool_t AliLnAODtrackCuts::IsWithinGeoAcceptance(const AliAODTrack* trk) const
@@ -74,9 +75,9 @@ Bool_t AliLnAODtrackCuts::IsWithinGeoAcceptance(const AliAODTrack* trk) const
 // is track within the geometrical acceptance?
 //
 //
-	if( TMath::Abs(trk->Eta()) >= fMaxEta ) return kFALSE;
+	if( TMath::Abs(trk->Eta()) < fMaxEta ) return kTRUE;
 	
-	return kTRUE;
+	return kFALSE;
 }
 
 Bool_t AliLnAODtrackCuts::IsWithinGeoAcceptance(Double_t p[3]) const
@@ -86,9 +87,23 @@ Bool_t AliLnAODtrackCuts::IsWithinGeoAcceptance(Double_t p[3]) const
 //
 //
 	TVector3 trk(p[0],p[1],p[2]);
-	if( TMath::Abs(trk.Eta()) >= fMaxEta ) return kFALSE;
+	if( TMath::Abs(trk.Eta()) < fMaxEta ) return kTRUE;
 	
-	return kTRUE;
+	return kFALSE;
+}
+
+Bool_t AliLnAODtrackCuts::IsKinkDaughter(const AliAODTrack* trk) const
+{
+//
+// is this track a kink daughter?
+//
+//
+	AliAODVertex* vtx = trk->GetProdVertex();
+	
+	if(vtx == 0 ) return kFALSE;
+	if(vtx->GetType() == AliAODVertex::kKink) return kTRUE;
+	
+	return kFALSE;
 }
 
 Double_t AliLnAODtrackCuts::GetNTPCXRowsOverFindable(const AliAODTrack* trk) const
@@ -96,7 +111,7 @@ Double_t AliLnAODtrackCuts::GetNTPCXRowsOverFindable(const AliAODTrack* trk) con
 //
 // number of TPC crossed rows over findable
 //
-	if(trk->GetTPCNclsF() == 0) return -1;
+	if(trk->GetTPCNclsF() <= 0) return 1;
 	
 	return static_cast<Double_t>(trk->GetTPCNCrossedRows())/static_cast<Double_t>(trk->GetTPCNclsF());
 }
@@ -112,6 +127,8 @@ Bool_t AliLnAODtrackCuts::AcceptItsTpcNSigma(const AliAODTrack* trk, Double_t b[
 	
 	if(!trk->TestFilterBit(AliAODTrack::kTrkTPCOnly)) return kFALSE;
 	if(!trk->IsOn(AliAODTrack::kTPCrefit) ) return kFALSE;
+	
+	if(this->IsKinkDaughter(trk)) return kFALSE;
 	
 	if(fTPCXRows)
 	{
@@ -135,14 +152,14 @@ Bool_t AliLnAODtrackCuts::AcceptItsTpcDCA(const AliAODTrack* trk, Double_t b[2])
 //
 // Check ITS-TPC-DCA base cuts
 //
-	
-	
 	if(!trk->IsOn(AliAODTrack::kITSrefit) ) return kFALSE;
 	if(trk->GetITSNcls()<2) return kFALSE;
 	//if(trk->GetITSchi2PerCluster()>36) return kFALSE;
 	
 	if(!trk->IsOn(AliAODTrack::kTPCrefit) ) return kFALSE;
 	if(!trk->TestFilterBit(AliAODTrack::kTrkTPCOnly)) return kFALSE;
+	
+	if(this->IsKinkDaughter(trk)) return kFALSE;
 	
 	if(fTPCXRows)
 	{

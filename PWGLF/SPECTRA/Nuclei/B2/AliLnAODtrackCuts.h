@@ -23,6 +23,8 @@ class AliLnAODtrackCuts: public TObject
 	Bool_t IsWithinGeoAcceptance(const AliAODTrack* trk) const;
 	Bool_t IsWithinGeoAcceptance(Double_t p[3]) const;
 	
+	Bool_t IsKinkDaughter(const AliAODTrack* trk) const;
+	
 	Bool_t AcceptItsTpcNSigma(const AliAODTrack* trk, Double_t b[2], Double_t bCov[3]) const;
 	Bool_t AcceptItsTpcDCA(const AliAODTrack* trk, Double_t b[2]) const;
 	Bool_t AcceptItsTpcStdCut(const AliAODTrack* trk, Double_t b[2]) const;
