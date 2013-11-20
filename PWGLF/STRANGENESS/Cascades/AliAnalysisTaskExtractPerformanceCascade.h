@@ -112,6 +112,7 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
   Float_t fTreeCascVarCascRadius;           //!
   Float_t fTreeCascVarV0Mass;               //!
   Float_t fTreeCascVarV0CosPointingAngle;   //!
+  Float_t fTreeCascVarV0CosPointingAngleSpecial;   //!
   Float_t fTreeCascVarV0Radius;             //!
   Int_t   fTreeCascVarLeastNbrClusters;     //!
   
