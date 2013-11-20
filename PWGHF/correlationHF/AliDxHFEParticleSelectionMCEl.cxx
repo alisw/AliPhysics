@@ -58,7 +58,7 @@ AliDxHFEParticleSelectionMCEl::AliDxHFEParticleSelectionMCEl(const char* opt)
   , fStoreOnlyMCElectrons(kFALSE)
   , fMCInfo(kMCLast)
   , fRemoveEfromD0(kFALSE)
-  , fRemoveSecondary(kTRUE)
+  , fRemoveSecondary(kFALSE)
 {
   // constructor
   // 
@@ -84,6 +84,8 @@ AliDxHFEParticleSelectionMCEl::AliDxHFEParticleSelectionMCEl(const char* opt)
   if(fMCInfo==kMCLast) toolopt+=" mc-last";
   if(fMCInfo==kMCOnly) toolopt+=" mc-first";
   if(fMCInfo==kMCFirst) toolopt+=" mc-first";
+  if(fRemoveSecondary )toolopt+=" removesecondary";
+  else toolopt+=" keepsecondary";
   if(fUseKine || kineTools){cout << "sending usekine to tools " << endl; toolopt+=" usekine";}
   new (&fMCTools) AliDxHFEToolsMC(toolopt);
 }
@@ -315,23 +317,22 @@ int AliDxHFEParticleSelectionMCEl::CheckMC(AliVParticle* p, const AliVEvent* pEv
   if(fUseKine){
     // If run on kinematical level, check if particle is electron (only ones who are relevant) 
     // and if pass IsPhysicalPrimary()
-    Int_t test = fMCTools.CheckMCParticle(p);
-    if(test==1) return 0;
+    bool test = fMCTools.CheckMCParticle(p);
+    if(!test) return 0;
     // Add additional contraints on the electrons? 
     // TODO: remove delta e? also remove E<300MeV?
     // Should also mark dalitz decay and gamma conversion..
     AliAODMCParticle *mcp=dynamic_cast<AliAODMCParticle*>(p);
-    if(!mcp ) return 0;
-    if(fRemoveSecondary)
-      if(!mcp->IsPhysicalPrimary()) return 0; 
+    if(!mcp ) {return 0;}
+    //if(fRemoveSecondary)
+    //  if(!mcp->IsPhysicalPrimary()){cout <<"not physprim" << endl; return 0; }
     if(TMath::Abs(mcp->Eta())>0.8){ return 0;}
-
   }
 
   int pdgMother=0;
   int pdgParticle=-1;
-  if (!fUseKine && fMCTools.RejectByPDG(p,false, &pdgParticle)) {
-    // rejected by pdg
+  if (!fUseKine && !fMCTools.CheckMCParticle(p, &pdgParticle)) {
+    // rejected by pdg (and maybe IsPhysicalPrimary
     // TODO: Move this to fMCTools???? Can this be part of the statistics in the MC class?
     ((TH1D*)fHistoList->FindObject("fPDGnotMCElectron"))->Fill(fMCTools.MapPDGLabel(pdgParticle));
     ((TH1D*)fHistoList->FindObject("fPDGHadronMother"))->Fill(fMCTools.FindMotherPDG(p,AliDxHFEToolsMC::kGetFirstMother));
@@ -442,8 +443,14 @@ int AliDxHFEParticleSelectionMCEl::ParseArguments(const char* arguments)
   TObject* token;
   while ((token=next())) {
     TString argument=token->GetName();
-    if (argument.BeginsWith("usekine") ){
+    if(argument.CompareTo("usekine")==0){
       fUseKine=kTRUE;
+      fRemoveSecondary=kTRUE;
+      continue;
+    }
+    if(argument.CompareTo("usekine-keepsecondary")==0){
+      fUseKine=kTRUE;
+      fRemoveSecondary=kFALSE;
       continue;
     }
     if (argument.BeginsWith("elmcreco")){

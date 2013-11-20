@@ -976,7 +976,7 @@ void AliCFSingleTrackEfficiencyTask::UserCreateOutputObjects() {
 
   // Setting up the electron selection class for MC
   TString option="usekine"; 
-  if(!fMCCuts->GetUseIsPhysicalPrimary()) option+=" notusePhysPrim";
+  if(!fMCCuts->GetUseIsPhysicalPrimary()) option+="-keepsecondary";
   fElectronsKine= new AliDxHFEParticleSelectionMCEl(option);
   int result=fElectronsKine->Init();
   if (result<0) {

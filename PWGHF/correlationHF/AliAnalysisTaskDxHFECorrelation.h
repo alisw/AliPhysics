@@ -110,6 +110,7 @@ class AliAnalysisTaskDxHFECorrelation : public AliAnalysisTaskSE {
   TObjArray* fMCArray;                   // Array to hold MCarray
   TString fCorrelationArguments;         // String argument for correlation
   Bool_t fStoreSeparateOrigins;          // Whether to create correlation objects for various origins
+  Bool_t fReqD0InEvent;                  // Whether or not to search for a MC truth D0 in the event
 
   ClassDef(AliAnalysisTaskDxHFECorrelation, 7);
 };
