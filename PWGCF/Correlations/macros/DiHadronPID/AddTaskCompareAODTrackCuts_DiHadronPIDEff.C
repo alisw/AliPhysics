@@ -31,7 +31,7 @@ AliAnalysisTaskCompareAODTrackCuts* AddTaskCompareAODTrackCuts_DiHadronPIDEff(
     AliAnalysisTaskCompareAODTrackCuts* EfficiencyTask = new AliAnalysisTaskCompareAODTrackCuts(containerName);
     EfficiencyTask->SetVerbose(kFALSE);
     EfficiencyTask->SetMC(isMC);
-    EfficiencyTask->SetCalculateTOFMismatch(kTRUE,0);
+    EfficiencyTask->SetCalculateTOFMismatch(kTRUE);
 
         // Configure and add Event Cuts.
 	AliAODEventCutsDiHadronPID* eventcuts = new AliAODEventCutsDiHadronPID("EventCuts");
