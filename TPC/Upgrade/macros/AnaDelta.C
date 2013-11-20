@@ -337,33 +337,44 @@ void DumpHn(THn *hn, TTreeSRedirector &stream)
       ar->SetRange(ir+1,ir+1);
       for (Int_t iphi=0; iphi<aphi->GetNbins(); ++iphi) {
         aphi->SetRange(iphi+1,iphi+1);
+
+        Float_t cr       = 0.;
+        Float_t cphi     = 0.;
+        Float_t cz       = 0.;
+        Float_t mean     = 0.;
+        Float_t meanErr  = 0.;
+        Float_t sigma    = 0.;
+        Float_t sigmaErr = 0.;
+        Int_t   entries  = 0.;
+        Float_t chi2ndf  = 0.;
+        Float_t mean2    = 0.;
+        Float_t meanErr2 = 0.;
+        Float_t rms2     = 0.;
+        Float_t rmsErr2  = 0.;
         
         TH1 *hProj = hn->Projection(3);
-        if (hProj->GetEntries()<1) {
-          delete hProj;
-          continue;
-        }
-        
-        TF1 fg("fg","gaus",-2,2);
-        Double_t cr   = ar->GetBinCenter(ir+1);
-        Double_t cphi = aphi->GetBinCenter(iphi+1);
-        Double_t cz   = az->GetBinCenter(iz+1);
-        hProj->SetNameTitle(Form("h_%02d_%02d_%02d",iz, iphi, ir),
-                            Form("z,phi,r: %02d,%02d,%02d (%.2f, %.2f, %.2f)",iz,iphi,ir, cz, cphi, cr )
-        );
-        hProj->Fit(&fg,"LMQR");
-        arrFits.Add(hProj);
+        if (hProj->GetEntries()>1) {
+          TF1 fg("fg","gaus",-2,2);
+          cr   = ar->GetBinCenter(ir+1);
+          cphi = aphi->GetBinCenter(iphi+1);
+          cz   = az->GetBinCenter(iz+1);
+          hProj->SetNameTitle(Form("h_%02d_%02d_%02d",iz, iphi, ir),
+          Form("z,phi,r: %02d,%02d,%02d (%.2f, %.2f, %.2f)",iz,iphi,ir, cz, cphi, cr )
+          );
+          hProj->Fit(&fg,"LMQR");
+          arrFits.Add(hProj);
 
-        Float_t mean     = fg.GetParameter(1);
-        Float_t meanErr  = fg.GetParError(1);
-        Float_t sigma    = fg.GetParameter(2);
-        Float_t sigmaErr = fg.GetParError(2);
-        Int_t    entries  = hProj->GetEntries();
-        Float_t chi2ndf  = fg.GetChisquare()/fg.GetNDF();
-        Float_t mean2    = hProj->GetMean();
-        Float_t meanErr2 = hProj->GetMeanError();
-        Float_t rms2     = hProj->GetRMS();
-        Float_t rmsErr2  = hProj->GetRMSError();
+          mean     = fg.GetParameter(1);
+          meanErr  = fg.GetParError(1);
+          sigma    = fg.GetParameter(2);
+          sigmaErr = fg.GetParError(2);
+          entries  = hProj->GetEntries();
+          chi2ndf  = fg.GetChisquare()/fg.GetNDF();
+          mean2    = hProj->GetMean();
+          meanErr2 = hProj->GetMeanError();
+          rms2     = hProj->GetRMS();
+          rmsErr2  = hProj->GetRMSError();
+        }
         
         stream << "d" <<
         "ir="          << ir       <<
@@ -386,6 +397,7 @@ void DumpHn(THn *hn, TTreeSRedirector &stream)
 
 //        Double_t x[nbins]={cr, cphi, cz};
 //        if (meanErr<0.3) hnRes.Fill(x,mean);
+        delete hProj;
       }
     }
     stream.GetFile()->cd();
