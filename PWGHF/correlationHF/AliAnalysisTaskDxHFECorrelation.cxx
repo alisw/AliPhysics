@@ -93,6 +93,7 @@ AliAnalysisTaskDxHFECorrelation::AliAnalysisTaskDxHFECorrelation(const char* opt
   , fMCArray(NULL)
   , fCorrelationArguments("")
   , fStoreSeparateOrigins(kFALSE)
+  , fReqD0InEvent(kFALSE)
 {
   // constructor
   //
@@ -411,7 +412,7 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
     }
     Int_t eventType = mcHeader->GetEventType();
     fCorrelation->SetEventType(eventType);
-    if(fUseKine){
+    if(fUseKine || fReqD0InEvent){
       fMCArray = dynamic_cast<TObjArray*>(pEvent->FindListObject(AliAODMCParticle::StdBranchName()));
       if(fUseMC && !fMCArray){
 	AliError("Array of MC particles not found");
@@ -421,6 +422,22 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
   }
 
   Int_t nInD0toKpi = inputArray->GetEntriesFast();
+
+
+  //For studies reco/kine ratio -> select only events where there is a MC truth D0
+  if(fUseMC && fReqD0InEvent){
+    TIter itr(fMCArray);
+    TObject* otr=NULL;
+    Bool_t selectEvent=kFALSE;
+    while ((otr=itr())!=NULL) {
+      AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(otr);
+      if(!mcPart) continue;
+      Int_t PDG =TMath::Abs(mcPart->PdgCode()); 
+      if(PDG==421) {selectEvent=kTRUE;}
+    }
+    if(!selectEvent) return;
+
+  }
 
   fCorrelation->HistogramEventProperties(AliDxHFECorrelation::kEventsSel);
 
@@ -559,6 +576,11 @@ int AliAnalysisTaskDxHFECorrelation::ParseArguments(const char* arguments)
     if (argument.BeginsWith("usekine") || argument.BeginsWith("kine")) {
       fUseKine=true;
       AliInfo("Running on MC stack");
+      continue;
+    }
+    if (argument.BeginsWith("reqD0inevent") || argument.BeginsWith("ReqD0InEvent")) {
+      fReqD0InEvent=true;
+      AliInfo("Requiring MC truth D0 in event");
       continue;
     }
     if (argument.BeginsWith("system=")) {
