@@ -31,8 +31,23 @@ TVectorD* MakeLinBinning(Int_t nbinsX, Double_t xmin, Double_t xmax);
 TVectorD* MakeArbitraryBinning(const char* bins);
 
 void DumpHn(THn *hn, TTreeSRedirector &stream);
+void AnaDeltaBase(TString file, TString outDir=".");
+void AnaDeltaTree(TString file, TString outFile="deltas_tree.root");
 
-void AnaDelta(TString file, TString outDir=".")
+void AnaDelta(Int_t type, TString file, TString output="")
+{
+  switch (type) {
+    case 0:
+      AnaDeltaBase(file,output);
+      break;
+    case 1:
+      AnaDeltaTree(file,output);
+      break;
+  }
+}
+
+
+void AnaDeltaBase(TString file, TString outDir)
 {
   //
   //
@@ -52,8 +67,9 @@ void AnaDelta(TString file, TString outDir=".")
 }
 
 
-void AnaDeltaTree(TString file, TString outFile="deltas_tree.root")
+void AnaDeltaTree(TString file, TString outFile)
 {
+  if (outFile.IsNull()) outFile="deltas_tree.root";
   TFile f(file);
   gROOT->cd();
   TTree *t = (TTree*)f.Get("delta");
