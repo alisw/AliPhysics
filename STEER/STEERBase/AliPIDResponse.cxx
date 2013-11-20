@@ -1746,7 +1746,10 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
     // T0-FILL and T0-TO offset (because of TOF misallignment
     Float_t starttimeoffset = 0;
     if(fTOFPIDParams && !(fIsMC)) starttimeoffset=fTOFPIDParams->GetTOFtimeOffset();
-
+    if(fTOFPIDParams){
+      fTOFtail = fTOFPIDParams->GetTOFtail();
+      GetTOFResponse().SetTOFtail(fTOFtail);
+    }
 
     // T0 from TOF algorithm
     Bool_t flagT0TOF=kFALSE;

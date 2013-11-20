@@ -9,13 +9,13 @@
 //   Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------
 
-#include "TObject.h"
+#include <TObject.h>
+#include <TF1.h>
 #include "AliPID.h"
 #include "AliVParticle.h"
 #include "AliVTrack.h"
 
 class AliTOFPIDParams;
-class TF1;
 class TH1F;
 class TH1D;
 
@@ -66,6 +66,9 @@ public:
   void SetTrackParameter(Int_t ip,Float_t value){if(ip>=0 && ip < 4) fPar[ip] = value;};
   Float_t GetTrackParameter(Int_t ip){if(ip>=0 && ip < 4) return fPar[ip]; else return -1.0;};
   Int_t GetTOFchannel(AliVParticle *trk) const;
+
+  Float_t GetTOFtail() {if(fTOFtailResponse) return fTOFtailResponse->GetParameter(3);else return -1;};
+  void    SetTOFtail(Float_t tail);
 
  private:
   Double_t fSigma;        // intrinsic TOF resolution
