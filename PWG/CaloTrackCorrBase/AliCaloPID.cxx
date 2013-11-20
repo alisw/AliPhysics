@@ -250,30 +250,30 @@ void AliCaloPID::InitParameters()
   fMassPi0Param[0][0] = 0     ; // Constant term on mass dependence
   fMassPi0Param[0][1] = 0     ; // slope term on mass dependence
   fMassPi0Param[0][2] = 0     ; // E function change
-  fMassPi0Param[0][3] = 0.063 ; // constant term on mass dependence
-  fMassPi0Param[0][4] = 0.004 ; // slope term on mass dependence
+  fMassPi0Param[0][3] = 0.044 ; // constant term on mass dependence
+  fMassPi0Param[0][4] = 0.0049; // slope term on mass dependence
   fMassPi0Param[0][5] = 0.070 ; // Absolute low mass cut
   
-  fMassPi0Param[1][0] = 0.131 ; // Constant term below 21 GeV
-  fMassPi0Param[1][1] = 0     ; // slope term below 21 GeV
+  fMassPi0Param[1][0] = 0.115 ; // Constant term below 21 GeV
+  fMassPi0Param[1][1] = 0.00096; // slope term below 21 GeV
   fMassPi0Param[1][2] = 21    ; // E function change
-  fMassPi0Param[1][3] = 0.095 ; // constant term on mass dependence
+  fMassPi0Param[1][3] = 0.10  ; // constant term on mass dependence
   fMassPi0Param[1][4] = 0.0017; // slope term on mass dependence
   fMassPi0Param[1][5] = 0.070 ; // Absolute low mass cut
   
-  fWidthPi0Param[0][0] = 0.023 ; // Constant term on width dependence
+  fWidthPi0Param[0][0] = 0.012 ; // Constant term on width dependence
   fWidthPi0Param[0][1] = 0.0   ; // Slope term on width dependence
-  fWidthPi0Param[0][2] = 20    ; // E function change
-  fWidthPi0Param[0][3] =-0.001 ; // Constant term on width dependence
-  fWidthPi0Param[0][4] = 0.0012; // Slope term on width dependence
+  fWidthPi0Param[0][2] = 19    ; // E function change
+  fWidthPi0Param[0][3] = 0.0012; // Constant term on width dependence
+  fWidthPi0Param[0][4] = 0.0006; // Slope term on width dependence
   fWidthPi0Param[0][5] = 0.0   ; // xx term
 
-  fWidthPi0Param[1][0] = 0.0075; // Constant term on width dependence
-  fWidthPi0Param[1][1] = 0.0006; // Slope term on width dependence
-  fWidthPi0Param[1][2] = 19    ; // E function change
-  fWidthPi0Param[1][3] = 0.04  ; // Constant term on width dependence
-  fWidthPi0Param[1][4] =-0.0019; // Slope term on width dependence
-  fWidthPi0Param[1][5] = 0.000041;// xx term
+  fWidthPi0Param[1][0] = 0.009 ; // Constant term on width dependence
+  fWidthPi0Param[1][1] = 0.000 ; // Slope term on width dependence
+  fWidthPi0Param[1][2] = 10    ; // E function change
+  fWidthPi0Param[1][3] = 0.0023 ; // Constant term on width dependence
+  fWidthPi0Param[1][4] = 0.00067; // Slope term on width dependence
+  fWidthPi0Param[1][5] = 0.000 ;// xx term
 
   fMassShiftHighECell = 0; // Shift of cuts in case of higher energy threshold in cells, 5 MeV when Ecell>150 MeV
   
@@ -380,7 +380,7 @@ Bool_t AliCaloPID::IsInPi0SplitMassRange(const Float_t energy, const Float_t mas
   Float_t meanMass = energy * fMassPi0Param[inlm][1] + fMassPi0Param[inlm][0];
   if(energy > fMassPi0Param[inlm][2]) meanMass = energy * fMassPi0Param[inlm][4] + fMassPi0Param[inlm][3];
   
-  // In case of higher energy cell cut than 50 MeV, smaller mean mass
+  // In case of higher energy cell cut than 50 MeV, smaller mean mass 0-5 MeV, not really necessary
   meanMass -= fMassShiftHighECell;
   
   // Get the parametrized width of the mass
@@ -864,10 +864,13 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   else if(IsInEtaM02Range(eClus,m02,nMax))  etaOK = kTRUE;
   else if(IsInConM02Range(eClus,m02,nMax))  conOK = kTRUE;
   
+  Float_t energy = eClus;
+  if(nMax > 2) energy = e1+e2; // In case of NLM>2 use mass cut for NLM=2 but for the split sum not the cluster energy that is not the pi0 E.
+  
   // Check the mass, and set an ID to the splitted cluster
   if     ( conOK && mass < fMassPhoMax && mass > fMassPhoMin     ) { if(fDebug > 0) printf("\t Split Conv \n"); return kPhoton ; }
   else if( etaOK && mass < fMassEtaMax && mass > fMassEtaMin     ) { if(fDebug > 0) printf("\t Split Eta \n");  return kEta    ; }
-  else if( pi0OK && IsInPi0SplitMassRange(cluster->E(),mass,nMax)) { if(fDebug > 0) printf("\t Split Pi0 \n");  return kPi0    ; }
+  else if( pi0OK && IsInPi0SplitMassRange(energy,mass,nMax)) { if(fDebug > 0) printf("\t Split Pi0 \n");  return kPi0    ; }
   else                                                                                                          return kNeutralUnknown ;
   
 }
