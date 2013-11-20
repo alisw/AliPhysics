@@ -51,7 +51,7 @@ struct ParUtilities
     if (gSystem->AccessPathName(parFile.Data())) { 
       // If not found
       TString src;
-      if (gSystem->AccessPathName(Form("../%s.par", parFile.Data())) == 0) 
+      if (gSystem->AccessPathName(Form("../%s", parFile.Data())) == 0) 
 	src.Form("../%s", parFile.Data());
       else {
 	// If not found 
@@ -68,6 +68,7 @@ struct ParUtilities
       }
       // Copy to current directory 
       // TFile::Copy(aliParFile, parFile);
+      Info("", "Found PAR %s at %s", what.Data(), src.Data());
       if (gSystem->Exec(Form("ln -s %s %s", src.Data(), parFile.Data())) != 0){
 	Error("ParUtilities::Find", "Failed to symlink %s to %s", 
 	      src.Data(), parFile.Data());
@@ -165,7 +166,10 @@ struct ParUtilities
 	return false;
       }
     }
-    
+
+    // We need to make sure the current directory is in the load path 
+    gSystem->SetDynamicPath(Form("%s:%s", gSystem->WorkingDirectory(), 
+				 gSystem->GetDynamicPath()));
     // Check for setup script
     if (!gSystem->AccessPathName("PROOF-INF/SETUP.C")) {
       // Info("ParUtilities::SetupPAR", "Setting up for PAR %s", what);
