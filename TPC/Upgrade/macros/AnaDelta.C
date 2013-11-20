@@ -374,6 +374,8 @@ void DumpHn(THn *hn, TTreeSRedirector &stream)
           meanErr2 = hProj->GetMeanError();
           rms2     = hProj->GetRMS();
           rmsErr2  = hProj->GetRMSError();
+        } else {
+          delete hProj;
         }
         
         stream << "d" <<
@@ -397,7 +399,6 @@ void DumpHn(THn *hn, TTreeSRedirector &stream)
 
 //        Double_t x[nbins]={cr, cphi, cz};
 //        if (meanErr<0.3) hnRes.Fill(x,mean);
-        delete hProj;
       }
     }
     stream.GetFile()->cd();
