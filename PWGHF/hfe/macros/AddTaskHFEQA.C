@@ -22,6 +22,8 @@ AliAnalysisTask *AddTaskHFEQA(Bool_t useMC, Bool_t isAOD, Int_t icollisionsystem
   mgr->AddClassDebug("AliHFEtrdPIDqaV1",debuglevel);
   mgr->AddClassDebug("AliPIDResponse",debuglevel);
   mgr->AddClassDebug("AliTRDPIDResponse",debuglevel);
+  mgr->AddClassDebug("AliTRDPIDReference",debuglevel);
+  mgr->AddClassDebug("AliTRDPIDResponseObject",debuglevel);
 
   TString containerName = mgr->GetCommonFileName();
   containerName += ":";
