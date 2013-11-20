@@ -74,14 +74,9 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
     fEtaRangeMax(1.6), 
     fPtRangeMin(0.0), 
     fPtRangeMax(20.0), 
-    fPhiRangeMin(0.0),
-    fPhiRangeMax(360.), 
-    fdPhiRangeMax(180.), 
     fEtaBin(100),
     fdEtaBin(64),
     fPtBin(100),
-    fPhiBin(100),
-    fdPhiBin(90), 
     fHistSurvived4EtaPtPhiPlus(0), 
     fHistSurvived8EtaPtPhiPlus(0){}
     AliAnalysisTaskEffContBF(const char *name);
@@ -139,14 +134,6 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
     fPtRangeMin = minRangePt;
     fPtRangeMax = maxRangePt;
     fPtBin = binPt;}  
-  void SetPhiRange(Double_t minRangePhi, Double_t maxRangePhi,Int_t binPhi,Double_t maxRangedPhi,Int_t bindPhi ){
-    fPhiRangeMin = minRangePhi;
-    fPhiRangeMax = maxRangePhi;
-    fPhiBin = binPhi;
-    fdPhiRangeMax = maxRangedPhi;
-    fdPhiBin = bindPhi;
-  } 
-
  private:
   AliAODEvent* fAOD; //! AOD object  
   TClonesArray *fArrayMC; //! array of MC particles  
@@ -217,15 +204,10 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   Double_t fEtaRangeMax; // acceptance cuts
   Double_t fPtRangeMin;  //acceptance cuts
   Double_t fPtRangeMax;  //acceptance cuts
-  Double_t fPhiRangeMin; //acceptance cuts
-  Double_t fPhiRangeMax; // acceptance cuts
-  Double_t fdPhiRangeMax; // acceptance cuts
   
   Int_t fEtaBin;  //acceptance cuts
   Int_t fdEtaBin;  //acceptance cuts
   Int_t fPtBin; //acceptance cuts
-  Int_t fPhiBin; // acceptance cuts
-  Int_t fdPhiBin; // acceptance cuts
 
   TH3F        *fHistSurvived4EtaPtPhiPlus;//!
   TH3F        *fHistSurvived8EtaPtPhiPlus;//!
