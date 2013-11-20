@@ -138,6 +138,10 @@ struct SummaryUnfoldedDrawer : public SummaryDrawer
   void DrawResults(TDirectory* d) 
   { 
     THStack* c = GetStack(d, "corrected");
+    if (!c) {
+      Warning("DrawResults", "Stack of corrected results not found!");
+      return;
+    }
     DrawInPad(fBody, 0, c, "nostack", kLogy);
     c->GetXaxis()->SetTitle("#it{N}_{ch}");
     c->GetYaxis()->SetTitle("P(#it{N}_{ch})");
@@ -194,6 +198,7 @@ struct SummaryUnfoldedDrawer : public SummaryDrawer
 	e->SetFillStyle(1001);
       }
       l->Draw();
+      if (s->GetMinimum() > -1) s->SetMinimum(-1);
       
       PrintCanvas("  Ratios");
     }
