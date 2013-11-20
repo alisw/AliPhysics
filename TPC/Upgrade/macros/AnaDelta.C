@@ -267,10 +267,10 @@ void AnaDeltaResiduals(TString fluctuationMap, TString averageMap, TString outFi
   
   AliExternalTrackParam vv;
   
-  for (Float_t iz=-245; iz<=245; iz+=1) {
+  for (Float_t iz=-245; iz<=245; iz+=2) {
     Short_t roc=(iz>=0)?0:18;
     for (Float_t ir=86; ir<250; ir+=1) {
-      for (Float_t iphi=0; iphi<TMath::TwoPi(); iphi+=1*TMath::DegToRad()){
+      for (Float_t iphi=0; iphi<TMath::TwoPi(); iphi+=0.5*TMath::DegToRad()){
         Float_t x=ir*(Float_t)TMath::Cos(iphi);
         Float_t y=ir*(Float_t)TMath::Sin(iphi);
         Float_t x3[3]    = {x,y,iz};
@@ -384,8 +384,8 @@ void DumpHn(THn *hn, TTreeSRedirector &stream)
         "chi2ndf="     << chi2ndf  <<
         "\n";
 
-        Double_t x[nbins]={cr, cphi, cz};
-        if (meanErr<0.3) hnRes.Fill(x,mean);
+//        Double_t x[nbins]={cr, cphi, cz};
+//        if (meanErr<0.3) hnRes.Fill(x,mean);
       }
     }
     stream.GetFile()->cd();
