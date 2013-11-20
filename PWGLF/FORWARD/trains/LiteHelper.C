@@ -179,8 +179,12 @@ struct LiteHelper : public ProofHelper
 			TProofDebug::kGlobal|*/
 			TProofDebug::kPackage);
     if (nEvents < 0) nEvents = fChain->GetEntries();
+    Info("Run", "Output objects registered with PROOF:");
+    gProof->GetOutputList()->ls();
     Long64_t ret = mgr->StartAnalysis("proof", fChain, nEvents);
     
+    Info("Run", "Output objects registered with PROOF:");
+    gProof->GetOutputList()->ls();
     if (fVerbose > 2) 
       TProof::Mgr(fUrl.GetUrl())->GetSessionLogs()->Save("*","lite.log");
     return ret;
