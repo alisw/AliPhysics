@@ -50,6 +50,7 @@ AliDxHFEToolsMC::AliDxHFEToolsMC(const char* option)
   , fMClabel(-1)
   , fNrMCParticles(-1)
   , fUseKine(kFALSE)
+  , fRemoveSecondary(kTRUE)
 {
   // constructor
   // 
@@ -140,6 +141,16 @@ int AliDxHFEToolsMC::Init(const char* option)
       if(arg.BeginsWith(key)) {
 	printf("AliDxHFEToolsMC::Init()  Using Kinematical\n");
 	fUseKine=kTRUE;
+      }
+      key="removesecondary";
+      if(arg.BeginsWith(key)) {
+	printf("AliDxHFEToolsMC::Init()  Removing Secondary tracks\n");
+	fRemoveSecondary=kTRUE;
+      }
+      key="keepsecondary";
+      if(arg.BeginsWith(key)) {
+	printf("AliDxHFEToolsMC::Init()  Keeping Secondary tracks\n");
+	fRemoveSecondary=kFALSE;
       }
     }
   }
@@ -459,19 +470,38 @@ void AliDxHFEToolsMC::Clear(const char* /*option*/)
 }
 
 
-int AliDxHFEToolsMC::CheckMCParticle(AliVParticle* p){
+bool AliDxHFEToolsMC::CheckMCParticle(AliVParticle* p, int* pdgParticleResult){
 
   // Checks if MC particle is desired particle
 
-  AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(p);
+  AliAODMCParticle* mcPart = NULL;
+  if(fUseKine)
+    mcPart=dynamic_cast<AliAODMCParticle*>(p);
+  else{
+    Int_t label = p->GetLabel();
+    if (label<0) {
+      AliDebugClass(3,"Particle not matching MC label \n");
+      return 0;
+    }
+    mcPart=dynamic_cast<AliAODMCParticle*>(fMCParticles->At(label)); 
+  }
   if (!mcPart) {
     AliInfoClass("MC Particle not found in tree, skipping"); 
-    return -1;
+    return 0;
   }
-			
-  Int_t PDG =TMath::Abs(mcPart->PdgCode()); 
-  int bReject=RejectByPDG(PDG, fPDGs);
 
-  return bReject;
+
+  // Both on reco and kine level, have to be switched off manually
+  if(fRemoveSecondary)
+    if(!mcPart->IsPhysicalPrimary()){return 0; }			
+
+
+  Int_t PDG =TMath::Abs(mcPart->PdgCode()); 
+  if (pdgParticleResult)
+    *pdgParticleResult=PDG;
+
+  bool bKeep=!(RejectByPDG(PDG, fPDGs));
+
+  return bKeep;
 
 }
