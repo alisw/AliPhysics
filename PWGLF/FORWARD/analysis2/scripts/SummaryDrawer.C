@@ -59,7 +59,8 @@ public:
     kLegend = 0x10, 
     kGridx  = 0x100, 
     kGridy  = 0x200, 
-    kGridz  = 0x400
+    kGridz  = 0x400,
+    kSilent = 0x800
   };
   enum { 
     kLandscape         = 0x100, 
@@ -737,6 +738,24 @@ protected:
     // THStack* tmp = static_cast<THStack*>(o->Clone());
     o->Draw(options);
     if (title && title[0] != '\0') o->GetHistogram()->SetTitle(title);
+    TAxis*   xAxis = o->GetXaxis();
+    TH1*     h     = 0;
+    Int_t    nBins = xAxis->GetNbins();
+    Double_t xMin  = xAxis->GetXmin();
+    Double_t xMax  = xAxis->GetXmax();
+    TIter  next(o->GetHists());
+    while ((h = static_cast<TH1*>(next()))) {
+      TAxis* a = h->GetXaxis();
+      nBins    = TMath::Max(nBins, a->GetNbins()); 
+      xMin     = TMath::Min(xMin, a->GetXmin());
+      xMax     = TMath::Max(xMax, a->GetXmax());
+    }
+    if (nBins != xAxis->GetNbins() || 
+	xMin  != xAxis->GetXmin() || 
+	xMax  != xAxis->GetXmax()) {
+      xAxis->Set(nBins, xMin, xMax);
+      o->GetHistogram()->Rebuild();
+    }
   }
   /** 
    * Draw an object clone 
@@ -784,7 +803,8 @@ protected:
     if (o.Contains("colz", TString::kIgnoreCase)) 
       p->SetRightMargin(0.15);
     if (!h) {
-      Warning("DrawInPad", "Nothing to draw in pad # %s", p->GetName());
+      if (!(flags & kSilent))
+	Warning("DrawInPad", "Nothing to draw in pad # %s", p->GetName());
       return;
     }
     if (o.Contains("text", TString::kIgnoreCase)) {

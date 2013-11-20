@@ -52,7 +52,11 @@ public:
 
     // --- Get top-level collection ----------------------------------
     fSums = GetCollection(file, "ForwardSums");
-    if (!fSums) return;
+    if (!fSums) {
+      Info("Run", "Trying old name Forward");
+      fSums = GetCollection(file, "Forward");
+      if (!fSums) return;
+    }
 
     // --- Do the results ----------------------------------------------
     fResults = GetCollection(file, "ForwardResults");
@@ -65,7 +69,10 @@ public:
     DrawTitlePage(file);
 
     // --- Possibly make a chapter here ------------------------------
-    if (what & kCentral && GetCollection(file, "CentralSums")) 
+    TCollection* centralSums = GetCollection(file, "CentralSums", false);
+    if (!centralSums) 
+      centralSums = GetCollection(file, "Central", false);
+    if (what & kCentral && centralSums) 
       MakeChapter("Forward");
     
     // --- Set pause flag --------------------------------------------
@@ -114,7 +121,7 @@ protected:
     ltx->SetTextAlign(22);
     ltx->Draw();
 
-    TCollection* fwd = GetCollection(f, "ForwardSums");
+    TCollection* fwd = fSums; // GetCollection(f, "ForwardSums");
     TCollection* cen = GetCollection(f, "CentralSums");
     Double_t y = .6;
     
