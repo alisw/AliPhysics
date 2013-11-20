@@ -43,25 +43,32 @@ AliLnHistoMap* CreateHistograms(const TString& species, const TString& binSize, 
 	Int_t nptbins = 100;
 	Double_t* ptbins;
 	
-	if(binSize == "900GeV")
+	if(binSize == "d_900GeV")
 	{
 		nptbins = 11;
 		ptbins  = new Double_t[nptbins+1];
 		Double_t bin[] = { 0., 0.3, 0.4, 0.5, 0.7, 0.9, 1.1, 1.3, 1.5, 1.7, 1.9, 2.1 };
 		for(Int_t i=0; i<nptbins+1; ++i) ptbins[i] = A*bin[i];
 	}
-	else if(binSize == "2.76TeV")
+	else if(binSize == "d_2.76TeV")
 	{
 		nptbins = 22;
 		ptbins  = new Double_t[nptbins+1];
 		Double_t bin[] = { 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4 };
 		for(Int_t i=0; i<nptbins+1; ++i) ptbins[i] = A*bin[i];
 	}
-	else if(binSize == "7TeV")
+	else if(binSize == "d_7TeV")
 	{
 		nptbins = 48;
 		ptbins  = new Double_t[nptbins+1];
 		Double_t bin[] = { 0., 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.00, 1.05, 1.10, 1.15, 1.20, 1.25, 1.30, 1.40, 1.50, 1.60, 1.70, 1.80, 1.90, 2.00, 2.10, 2.20, 2.30, 2.40, 2.50, 2.60, 2.70, 2.80, 2.90, 3.00, 3.10, 3.20, 3.30, 3.40, 3.50 };
+		for(Int_t i=0; i<nptbins+1; ++i) ptbins[i] = A*bin[i];
+	}
+	else if(binSize=="He3_7TeV")
+	{
+		nptbins = 5;
+		ptbins  = new Double_t[nptbins+1];
+		Double_t bin[] = { 0., 0.4, 0.6, 1.0, 2.0, 3.0 };
 		for(Int_t i=0; i<nptbins+1; ++i) ptbins[i] = A*bin[i];
 	}
 	else
