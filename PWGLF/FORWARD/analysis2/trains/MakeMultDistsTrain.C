@@ -66,6 +66,7 @@ protected:
 	      trig.Data(), vzMin, vzMax, phiAcc, aSymm);
     // --- Add the task ----------------------------------------------
     gROOT->Macro(Form("AddTaskForwardMultDists.C(%s);", args.Data()));
+    AddMonitor("ForwardMultSums");
   }
   //__________________________________________________________________
   /** 
