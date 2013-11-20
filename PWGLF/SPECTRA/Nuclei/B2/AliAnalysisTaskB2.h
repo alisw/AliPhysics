@@ -101,7 +101,7 @@ class AliAnalysisTaskB2: public AliAnalysisTask
 	
 	Double_t GetPhi(const AliESDtrack* trk) const;
 	Double_t GetTheta(const AliESDtrack* trk) const;
-	Double_t GetRapidity(Double_t p, Double_t pz, Int_t pid) const;
+	Double_t GetRapidity(Double_t p, Double_t pz, Double_t m) const;
 	Double_t GetITSmomentum(const AliESDtrack* trk) const;
 	Double_t GetTOFmomentum(const AliESDtrack* trk) const;
 	Double_t GetBeta(const AliESDtrack* trk) const;

@@ -1266,12 +1266,11 @@ Double_t AliAnalysisTaskB2::GetMomentumCorrection(Double_t ptrec) const
 	return fMoCpfx->Interpolate(ptrec);
 }
 
-Double_t AliAnalysisTaskB2::GetRapidity(Double_t p, Double_t pz, Int_t pid) const
+Double_t AliAnalysisTaskB2::GetRapidity(Double_t p, Double_t pz, Double_t m) const
 {
 //
 // Rapidity
 //
-	Double_t m  = AliPID::ParticleMass(pid);
 	Double_t e  = TMath::Sqrt(p*p + m*m);
 	
 	if(e <= pz) return 1.e+16;
