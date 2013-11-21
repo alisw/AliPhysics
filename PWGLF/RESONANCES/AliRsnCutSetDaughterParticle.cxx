@@ -23,7 +23,8 @@ AliRsnCutSetDaughterParticle::AliRsnCutSetDaughterParticle() :
    fNsigmaTPC(1E20),
    fNsigmaTOF(1E20),
    fCutQuality(0x0),
-   fAODTrkCutFilterBit(0)
+   fAODTrkCutFilterBit(0),
+   fCheckOnlyFilterBit(kTRUE)
 {
    //
    // Default constructor
@@ -37,7 +38,8 @@ AliRsnCutSetDaughterParticle::AliRsnCutSetDaughterParticle(const char *name, Ali
    fNsigmaTPC(nSigmaFast),
    fNsigmaTOF(nSigmaFast),
    fCutQuality(new AliRsnCutTrackQuality("CutQuality")),
-   fAODTrkCutFilterBit(AODfilterBit)
+   fAODTrkCutFilterBit(AODfilterBit),
+   fCheckOnlyFilterBit(kTRUE)
 {
    //
    // Constructor
@@ -58,7 +60,8 @@ AliRsnCutSetDaughterParticle::AliRsnCutSetDaughterParticle(const AliRsnCutSetDau
    fNsigmaTPC(copy.fNsigmaTPC),
    fNsigmaTOF(copy.fNsigmaTOF),
    fCutQuality(copy.fCutQuality),
-   fAODTrkCutFilterBit(copy.fAODTrkCutFilterBit)
+   fAODTrkCutFilterBit(copy.fAODTrkCutFilterBit),
+   fCheckOnlyFilterBit(copy.fCheckOnlyFilterBit)
 {
    //
    // copy constructor
@@ -78,6 +81,7 @@ AliRsnCutSetDaughterParticle &AliRsnCutSetDaughterParticle::operator=(const AliR
    fNsigmaTPC=copy.fNsigmaTPC;
    fNsigmaTOF=copy.fNsigmaTOF;
    fAODTrkCutFilterBit=copy.fAODTrkCutFilterBit;
+   fCheckOnlyFilterBit=copy.fCheckOnlyFilterBit;
    fCutQuality=copy.fCutQuality;
    return (*this);
 }
@@ -94,7 +98,7 @@ AliRsnCutSetDaughterParticle::~AliRsnCutSetDaughterParticle()
 //----------------------------------------------------------------------------
 void AliRsnCutSetDaughterParticle::Init()
 {
-   //
+  //
    // init cut sets by setting variable params
    //
   if ( (fAppliedCutSetID==AliRsnCutSetDaughterParticle::kQualityStd2011) ||
@@ -121,6 +125,7 @@ void AliRsnCutSetDaughterParticle::Init()
     //fCutQuality->SetITSmaxChi2(36);
     //fCutQuality->SetMaxChi2TPCConstrainedGlobal(36);
   }
+  fCutQuality->SetCheckOnlyFilterBit(fCheckOnlyFilterBit);
   fCutQuality->SetPtRange(0.15, 20.0);
   fCutQuality->SetEtaRange(-0.8, 0.8);
   

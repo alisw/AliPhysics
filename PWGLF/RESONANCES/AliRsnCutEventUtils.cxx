@@ -21,6 +21,7 @@ AliRsnCut(name, AliRsnCut::kEvent),
   fUseMVPlpSelection(kFALSE),
   fMinPlpContribMV(5),
   fMinPlpContribSPD(5),
+  fUseVertexSelection2013pA(kFALSE),
   fUtils(0x0)
 {
   //
@@ -42,6 +43,7 @@ AliRsnCutEventUtils::AliRsnCutEventUtils(const AliRsnCutEventUtils &copy) :
   fUseMVPlpSelection(copy.fUseMVPlpSelection),
   fMinPlpContribMV(copy.fMinPlpContribMV),
   fMinPlpContribSPD(copy.fMinPlpContribSPD),
+  fUseVertexSelection2013pA(copy.fUseVertexSelection2013pA),
   fUtils(copy.fUtils)
 {
   //
@@ -65,6 +67,7 @@ AliRsnCutEventUtils &AliRsnCutEventUtils::operator=(const AliRsnCutEventUtils &c
   fUseMVPlpSelection=copy.fUseMVPlpSelection;
   fMinPlpContribMV=copy.fMinPlpContribMV;
   fMinPlpContribSPD=copy.fMinPlpContribSPD;
+  fUseVertexSelection2013pA=copy.fUseVertexSelection2013pA;
 
   fUtils=copy.fUtils;
 	
@@ -86,14 +89,18 @@ Bool_t AliRsnCutEventUtils::IsSelected(TObject *object)
    fUtils->SetUseMVPlpSelection(fUseMVPlpSelection);
    fUtils->SetMinPlpContribMV(fMinPlpContribMV);
    fUtils->SetMinPlpContribSPD(fMinPlpContribSPD);
-   fUtils->SetUseMVPlpSelection(fUseMVPlpSelection);
 
    // pile-up check
    if ((fCheckPileUppA2013) && (fUtils->IsPileUpEvent(vevt)))
      return kFALSE;
-   
+  
+   //remove first event in chunk 
    if ((fIsRmFirstEvInChunck) && (fUtils->IsFirstEventInChunk(vevt)))
      return kFALSE;
    
+   //apply vertex selection - for 2013 pPb data
+   if((fUseVertexSelection2013pA) && (!fUtils->IsVertexSelected2013pA(vevt)))
+      return kFALSE;
+ 
    return kTRUE;
 }
