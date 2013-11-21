@@ -159,7 +159,7 @@ Bool_t AliEmcalTriggerMaker::Run()
   
   // must reset before usage, or the class will fail 
   fCaloTriggers->Reset();
-  for (Int_t i=0; i<2; i++) {
+  for (i=0; i<2; i++) {
     fEGA[i] = 0;
     fEJE[i] = 0;
   }
@@ -168,10 +168,10 @@ Bool_t AliEmcalTriggerMaker::Run()
   // class is not empty
   if( fCaloTriggers->GetEntries() > 0 ){
 		
-		// zero the array
-		for( i = 0; i < 48; i++ )
-			for( j = 0; j < 64; j++ )
-				patchADC[i][j] = 0;
+    // zero the array
+    for( i = 0; i < 48; i++ )
+      for( j = 0; j < 64; j++ )
+	patchADC[i][j] = 0;
 		
     // go throuth the trigger channels
     while( fCaloTriggers->Next() ){
@@ -197,8 +197,8 @@ Bool_t AliEmcalTriggerMaker::Run()
         if ((tBits >> (offSet + kL1JetHigh  )) & 1 ) fEJE[0] = 1;
         if ((tBits >> (offSet + kL1JetLow   )) & 1 ) fEJE[1] = 1;
       }
-		} // patches
-	} // array not empty
+    } // patches
+  } // array not empty
   
   // fill the array for offline trigger processing
   // using calibrated cell energies

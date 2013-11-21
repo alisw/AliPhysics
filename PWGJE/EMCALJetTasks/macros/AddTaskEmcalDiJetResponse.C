@@ -58,7 +58,8 @@ AliAnalysisTaskEmcalDiJetResponse* AddTaskEmcalDiJetResponse(TString     kTracks
   Printf("strJetsFull: %s",strJetsFull.Data());
   Printf("strJetsCh: %s",strJetsCh.Data());
 
-  taskDiJet->SetIsPythiaPtHard(kTRUE);
+  taskDiJet->SetUseAliAnaUtils(kTRUE);
+  taskDiJet->SetIsPythia(kTRUE);
 
   taskDiJet->SetJetCorrelationType(corrType);
 

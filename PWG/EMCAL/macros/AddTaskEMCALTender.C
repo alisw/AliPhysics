@@ -20,7 +20,7 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
   Bool_t updateCellOnly = kFALSE,  //only change if you run your own clusterizer task
   Float_t timeMin       = 100e-9,  //minimum time of physical signal in a cell/digit (s)
   Float_t timeMax       = 900e-9,  //maximum time of physical signal in a cell/digit (s)
-  Float_t timeCut       = 25e-9,   //maximum time difference between the digits inside EMC cluster (s)
+  Float_t timeCut       = 50e-9,   //maximum time difference between the digits inside EMC cluster (s)
   const char *pass      = 0        //string defining pass (use none if figured out from path)
 ) 
 {

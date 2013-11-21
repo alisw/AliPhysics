@@ -36,6 +36,12 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
     kpA       = 2
   };
 
+  enum TriggerType {
+    kND       = -1,  //not defined
+    kJ1       = 0,
+    kJ2       = 1
+  };
+
   AliAnalysisTaskEmcal();
   AliAnalysisTaskEmcal(const char *name, Bool_t histo=kFALSE); 
   virtual ~AliAnalysisTaskEmcal();
@@ -48,7 +54,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetCentRange(Double_t min, Double_t max)              { fMinCent           = min  ; fMaxCent = max          ; }
   void                        SetHistoBins(Int_t nbins, Double_t min, Double_t max) { fNbins = nbins; fMinBinPt = min; fMaxBinPt = max    ; }
   void                        SetOffTrigger(UInt_t t)                               { fOffTrigger        = t                              ; }
-  void                        SetTrigClass(const char *n)                           { fTrigClass         = n                              ; }  
+  void                        SetTrigClass(const char *n)                           { fTrigClass         = n                              ; } 
+  void                        SetTriggerTypeSel(TriggerType t)                      { fTriggerTypeSel    = t                              ; } 
   void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz   = max          ; }
   void                        SetForceBeamType(BeamType f)                          { fForceBeamType     = f                              ; }
   void                        SetMakeGeneralHistograms(Bool_t g)                    { fGeneralHistograms = g                              ; }
@@ -91,6 +98,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
 
  protected:
   BeamType                    GetBeamType();
+  TriggerType                 GetTriggerType();
   TClonesArray               *GetArrayFromEvent(const char *name, const char *clname=0);
   Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard);
 
@@ -133,6 +141,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
 
   UInt_t                      fOffTrigger;                 // offline trigger for event selection
   TString                     fTrigClass;                  // trigger class name for event selection
+  TriggerType                 fTriggerTypeSel;             // trigger type to select based on trigger patches
   Int_t                       fNbins;                      // no. of pt bins
   Double_t                    fMinBinPt;                   // min pt in histograms
   Double_t                    fMaxBinPt;                   // max pt in histograms
@@ -171,6 +180,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TObjArray                   fParticleCollArray;          // particle/track collection array
   TObjArray                   fClusterCollArray;           // cluster collection array
   AliEmcalTriggerPatchInfo   *fMainTriggerPatch;           // main trigger patch, will be cached after calling GetMainTriggerPatch() first time
+  TriggerType                 fTriggerType;                // trigger type J1 or J2
 
   // Histograms
   TList                      *fOutput;                     //!output list
@@ -187,11 +197,12 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TH1                        *fHistCentrality;             //!event centrality distribution
   TH1                        *fHistZVertex;                //!z vertex position
   TH1                        *fHistEventPlane;             //!event plane distribution
+  TH1                        *fHistEventRejection;         //!book keep reasons for rejecting event
 
  private:
   AliAnalysisTaskEmcal(const AliAnalysisTaskEmcal&);            // not implemented
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcal, 5) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 6) // EMCAL base analysis task
 };
 #endif

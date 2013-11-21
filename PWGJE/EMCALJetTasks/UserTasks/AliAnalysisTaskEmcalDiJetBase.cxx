@@ -21,7 +21,6 @@
 #include "AliEmcalJet.h"
 #include "AliRhoParameter.h"
 #include "AliLog.h"
-#include "AliAnalysisUtils.h"
 #include "AliEmcalParticle.h"
 #include "AliMCEvent.h"
 #include "AliGenPythiaEventHeader.h"
@@ -51,23 +50,13 @@ AliAnalysisTaskEmcalDiJetBase::AliAnalysisTaskEmcalDiJetBase() :
   fDoChargedCharged(kTRUE),
   fDoFullCharged(kTRUE),
   fDoFullFull(kFALSE),
-  fUseAnaUtils(kTRUE),
-  fAnalysisUtils(0),
   fPtMinTriggerJet(10.),
   fMinFractionShared(0.5),
   fMatchingDone(kFALSE),
   faFullFracIndex(0),
   faFullFracIndexMC(0),
-  fIsPythiaPtHard(0),
-  fPythiaHeader(0),
-  fPtHard(0),
-  fPtHardBin(0),
-  fNTrials(0),
   fhNEvents(0),
-  fHistTrials(0),
-  fHistTrialsSelEvents(0),
-  fHistXsection(0),
-  fHistEvents(0)
+  fHistTrialsSelEvents(0)
 {
   // Default constructor.
 
@@ -93,23 +82,13 @@ AliAnalysisTaskEmcalDiJetBase::AliAnalysisTaskEmcalDiJetBase(const char *name) :
   fDoChargedCharged(kTRUE),
   fDoFullCharged(kTRUE),
   fDoFullFull(kFALSE),
-  fUseAnaUtils(kTRUE),
-  fAnalysisUtils(0),
   fPtMinTriggerJet(10.),
   fMinFractionShared(0.5),
   fMatchingDone(kFALSE),
   faFullFracIndex(0),
   faFullFracIndexMC(0),
-  fIsPythiaPtHard(0),
-  fPythiaHeader(0),
-  fPtHard(0),
-  fPtHardBin(0),
-  fNTrials(0),
   fhNEvents(0),
-  fHistTrials(0),
-  fHistTrialsSelEvents(0),
-  fHistXsection(0),
-  fHistEvents(0)
+  fHistTrialsSelEvents(0)
 {
   // Standard constructor.
 
@@ -123,45 +102,11 @@ AliAnalysisTaskEmcalDiJetBase::~AliAnalysisTaskEmcalDiJetBase()
   // Destructor.
 }
 
-//----------------------------------------------------------------------------------------------
-void AliAnalysisTaskEmcalDiJetBase::InitOnce() {
-  //
-  // only initialize once
-  //
-
-  // Initialize analysis util class for vertex selection
-  if(fUseAnaUtils) {
-    fAnalysisUtils = new AliAnalysisUtils();
-    fAnalysisUtils->SetMinVtxContr(2);
-    fAnalysisUtils->SetMaxVtxZ(10.);
-  }
-}
-
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalDiJetBase::SelectEvent() {
   //
   // Decide if event should be selected for analysis
   //
-
-  fhNEvents->Fill(0.5);
-
-  if(!fAnalysisUtils && fUseAnaUtils)
-    InitOnce();
-
-
- if(fAnalysisUtils) {
-    if(!fAnalysisUtils->IsVertexSelected2013pA(InputEvent()))
-      return kFALSE;
-
-    fhNEvents->Fill(2.5);
-
-    if(fAnalysisUtils->IsPileUpEvent(InputEvent()))
-      return kFALSE;
-  }
-  else{
-    if(fUseAnaUtils)
-      AliError("fAnalysisUtils not initialized. Call AliAnalysisTaskEmcalJetTriggerQA::InitOnce()");
-  }
 
   fhNEvents->Fill(3.5);
 
@@ -170,9 +115,13 @@ Bool_t AliAnalysisTaskEmcalDiJetBase::SelectEvent() {
     TString firedTrigClass = InputEvent()->GetFiredTriggerClasses();
     if(!firedTrigClass.Contains(fTriggerClass))
       return kFALSE;
+    if(fTriggerClass.Contains("J2") && firedTrigClass.Contains("J1")) //only accept J2 triggers which were not fired by J1 as well
+      return kFALSE;
   }
 
-  fhNEvents->Fill(1.5);
+   fhNEvents->Fill(1.5);
+
+  fHistTrialsSelEvents->Fill(fPtHardBin, fNTrials);
   
   return kTRUE;
 
@@ -183,8 +132,6 @@ void AliAnalysisTaskEmcalDiJetBase::UserCreateOutputObjects()
 {
   // Create user output.
 
-  InitOnce();
-
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   Bool_t oldStatus = TH1::AddDirectoryStatus();
@@ -193,29 +140,11 @@ void AliAnalysisTaskEmcalDiJetBase::UserCreateOutputObjects()
   fhNEvents = new TH1F("fhNEvents","fhNEvents;selection;N_{evt}",5,0,5);
   fOutput->Add(fhNEvents);
 
-
   //Pythia info
-
-  fHistTrials = new TH1F("fHistTrials", "fHistTrials", 12, 0, 12);
-  fHistTrials->GetXaxis()->SetTitle("p_{T} hard bin");
-  fHistTrials->GetYaxis()->SetTitle("trials");
-  fOutput->Add(fHistTrials);
-
   fHistTrialsSelEvents = new TH1F("fHistTrialsSelEvents", "fHistTrialsSelEvents", 12, 0, 12);
   fHistTrialsSelEvents->GetXaxis()->SetTitle("p_{T} hard bin");
   fHistTrialsSelEvents->GetYaxis()->SetTitle("trials");
   fOutput->Add(fHistTrialsSelEvents);
-  
-  fHistXsection = new TProfile("fHistXsection", "fHistXsection", 12, 0, 12);
-  fHistXsection->GetXaxis()->SetTitle("p_{T} hard bin");
-  fHistXsection->GetYaxis()->SetTitle("xsection");
-  fOutput->Add(fHistXsection);
-  
-  fHistEvents = new TH1F("fHistEvents", "fHistEvents", 12, 0, 12);
-  fHistEvents->GetXaxis()->SetTitle("p_{T} hard bin");
-  fHistEvents->GetYaxis()->SetTitle("total events");
-  fOutput->Add(fHistEvents);
-
 
   TH1::AddDirectory(oldStatus);
 
@@ -257,8 +186,6 @@ Bool_t AliAnalysisTaskEmcalDiJetBase::IsSameJet(const Int_t ijt, const Int_t ija
      else{
        AliWarning(Form("%s: matching type unknown", GetName()));
      }
-
-     
    }
 
    return bSame;
@@ -336,8 +263,6 @@ Double_t AliAnalysisTaskEmcalDiJetBase::GetDeltaPhi(Double_t phi1,Double_t phi2)
 
   Double_t dPhi = phi1-phi2;
 
-  if(dPhi > 2*TMath::Pi())    dPhi -= TMath::TwoPi();
-  if(dPhi <-2*TMath::Pi())    dPhi += TMath::TwoPi();
   if(dPhi <-0.5*TMath::Pi())  dPhi += TMath::TwoPi();
   if(dPhi > 1.5*TMath::Pi())  dPhi -= TMath::TwoPi();
 
@@ -644,141 +569,67 @@ AliEmcalJet* AliAnalysisTaskEmcalDiJetBase::GetLeadingJetOppositeHemisphere(cons
 
   }
 
-  AliEmcalJet *jetAssocLead = static_cast<AliEmcalJet*>(GetJetFromArray(iJetLead, typea));
+  AliEmcalJet *jetAssocLead = NULL;
+  if(iJetLead>-1)
+    jetAssocLead = static_cast<AliEmcalJet*>(GetJetFromArray(iJetLead, typea));
 
   return jetAssocLead;
 
 }
 
-//________________________________________________________________________
-Bool_t AliAnalysisTaskEmcalDiJetBase::PythiaInfoFromFile(const char* currFile, Float_t &xsec, Float_t &trials, Int_t &pthard)
-{
-  //
-  // Get the cross section and the trails either from pyxsec.root or from pysec_hists.root
-  // Get the pt hard bin from the file path
-  // This is to called in Notify and should provide the path to the AOD/ESD file
-  // (Partially copied from AliAnalysisHelperJetTasks)
+//_______________________________________________________________________
+AliEmcalJet* AliAnalysisTaskEmcalDiJetBase::GetSecondLeadingJetOppositeHemisphere(const Int_t type, const Int_t typea, const AliEmcalJet *jetTrig) {
 
-  TString file(currFile);
-  xsec = 0;
-  trials = 1;
+  // Get leading jet in opposite hemisphere from trigger jet
+  // type = correlation type
+  // typea = container of associated jets
 
-  if(file.Contains(".zip#")){
-    Ssiz_t pos1 = file.Index("root_archive",12,0,TString::kExact);
-    Ssiz_t pos = file.Index("#",1,pos1,TString::kExact);
-    Ssiz_t pos2 = file.Index(".root",5,TString::kExact);
-    file.Replace(pos+1,pos2-pos1,"");
-  }
-  else {
-    // not an archive take the basename....
-    file.ReplaceAll(gSystem->BaseName(file.Data()),"");
-  }
-  //Printf("%s",file.Data());
+  Int_t nJetsAssoc = GetNJets(typea);
+  Double_t ptLead = -999;
+  Int_t    iJetLead = -1;
+  Int_t    iJetLead2 = -1;
+  for(Int_t ija=0; ija<nJetsAssoc; ija++) {
 
-  // Get the pt hard bin
-  TString strPthard(file);
-
-  strPthard.Remove(strPthard.Last('/'));
-  strPthard.Remove(strPthard.Last('/'));
-  if (strPthard.Contains("AOD")) strPthard.Remove(strPthard.Last('/'));
-  strPthard.Remove(0,strPthard.Last('/')+1);
-  if (strPthard.IsDec())
-    pthard = strPthard.Atoi();
-  else
-    AliWarning(Form("Could not extract file number from path %s", strPthard.Data()));
-
-  TFile *fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")); // problem that we cannot really test the existance of a file in a archive so we have to lvie with open error message from root
-  if(!fxsec){
-    // next trial fetch the histgram file
-    fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root"));
-    if(!fxsec){
-        // not a severe condition but inciate that we have no information
-      return kFALSE;
+    AliEmcalJet *jetAssoc = NULL;
+    if(type==0) {
+      jetAssoc = static_cast<AliEmcalJet*>(GetJetFromArray(ija, typea));
+      if(TMath::Abs(jetAssoc->Eta())>0.5)
+        jetAssoc = NULL;
     }
-    else{
-      // find the tlist we want to be independtent of the name so use the Tkey
-      TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0);
-      if(!key){
-        fxsec->Close();
-        return kFALSE;
-      }
-      TList *list = dynamic_cast<TList*>(key->ReadObj());
-      if(!list){
-        fxsec->Close();
-        return kFALSE;
-      }
-      xsec = ((TProfile*)list->FindObject("h1Xsec"))->GetBinContent(1);
-      trials  = ((TH1F*)list->FindObject("h1Trials"))->GetBinContent(1);
-      fxsec->Close();
+    else
+      jetAssoc = static_cast<AliEmcalJet*>(GetAcceptJetFromArray(ija, typea));
+
+    if(!jetAssoc)
+      continue;
+
+    Double_t dPhi = GetDeltaPhi(jetTrig,jetAssoc);
+    Double_t phiMin = 0.5*TMath::Pi();
+    Double_t phiMax = 1.5*TMath::Pi();
+    if(dPhi<phiMin || dPhi>phiMax)
+      continue;
+
+    Double_t jetAssocPt = GetJetPt(jetAssoc,typea);
+
+    if(jetAssocPt>ptLead) {
+      iJetLead2 = iJetLead;
+      ptLead = jetAssocPt;
+      iJetLead = ija;
     }
-  } // no tree pyxsec.root
-  else {
-    TTree *xtree = (TTree*)fxsec->Get("Xsection");
-    if(!xtree){
-      fxsec->Close();
-      return kFALSE;
-    }
-    UInt_t   ntrials  = 0;
-    Double_t  xsection  = 0;
-    xtree->SetBranchAddress("xsection",&xsection);
-    xtree->SetBranchAddress("ntrials",&ntrials);
-    xtree->GetEntry(0);
-    trials = ntrials;
-    xsec = xsection;
-    fxsec->Close();
-  }
-  return kTRUE;
-}
 
-//________________________________________________________________________
-Bool_t AliAnalysisTaskEmcalDiJetBase::UserNotify()
-{
-  // Get pythia info
-
-  if (!fIsPythiaPtHard) {
-    
-    return kTRUE;
   }
 
-  TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
-  if (!tree) {
-    AliError(Form("%s - UserNotify: No current tree!",GetName()));
-    return kFALSE;
-  }
+  AliEmcalJet *jetAssocLead2 = NULL;
+  if(iJetLead2>-1)
+    jetAssocLead2 = static_cast<AliEmcalJet*>(GetJetFromArray(iJetLead2, typea));
 
-  Float_t xsection = 0;
-  Float_t trials   = 0;
-  Int_t   pthard   = 0;
+  return jetAssocLead2;
 
-  TFile *curfile = tree->GetCurrentFile();
-  if (!curfile) {
-    AliError(Form("%s - UserNotify: No current file!",GetName()));
-    return kFALSE;
-  }
-
-  TChain *chain = dynamic_cast<TChain*>(tree);
-  if (chain)
-    tree = chain->GetTree();
-
-  Int_t nevents = tree->GetEntriesFast();
-
-  PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthard);
-
-  fPtHardBin = pthard;
-  // fXsec = xsection;
-  // fTrials = trials;
-
-  fHistTrials->Fill(pthard, trials);
-  fHistXsection->Fill(pthard, xsection);
-  fHistEvents->Fill(pthard, nevents);
-
-  return kTRUE;
 }
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalDiJetBase::RetrieveEventObjects() {
   //
-  // get charged jets
+  // Retrieve objects from event.
   //
 
   if (!AliAnalysisTaskEmcalJet::RetrieveEventObjects())
@@ -793,30 +644,7 @@ Bool_t AliAnalysisTaskEmcalDiJetBase::RetrieveEventObjects() {
     fRhoChVal = GetRhoVal(fContainerCharged);
   }
 
-  if (MCEvent()) {
-    fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
-    if (!fPythiaHeader) {
-      // Check if AOD
-      AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
-      
-      if (aodMCH) {
-        for(UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
-          fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
-          if (fPythiaHeader) break;
-        }
-      }
-    }
-  }
-  
-  if (fPythiaHeader) {
-    fPtHard = fPythiaHeader->GetPtHard();
-
-    fNTrials = fPythiaHeader->Trials();
-
-  }
-
   return kTRUE;
-
 }
 
 //_______________________________________________________________________

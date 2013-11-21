@@ -7,7 +7,6 @@ class TH3;
 class TH3F;
 class TClonesArray;
 class TArrayI;
-class AliAnalysisUtils;
 
 #include <TRef.h>
 #include <TBits.h>
@@ -23,8 +22,6 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
 
   void                        UserCreateOutputObjects();
   void                        Terminate(Option_t *option);
-
-  void                        LoadExtraBranches();
 
   Bool_t                      SelectEvent();              //decides if event is used for analysis
   void                        FindTriggerPatch();
@@ -44,7 +41,6 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
   Double_t GetZ(const Double_t trkPx, const Double_t trkPy, const Double_t trkPz, const Double_t jetPx, const Double_t jetPy, const Double_t jetPz) const;
 
  protected:
-  void                        ExecOnce()         ;
   Bool_t                      FillHistograms()   ;
   Bool_t                      Run()              ;
 
@@ -53,8 +49,6 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
 
  private:
   Bool_t             fDebug;                 //  debug level
-  Bool_t             fUseAnaUtils;           //  used for LHC13* data
-  AliAnalysisUtils  *fAnalysisUtils;         //! vertex selection
   TString            fTriggerClass;          // trigger class to analyze EJ1 or EJ2    
   UInt_t             fBitJ1;                 // trigger bit of EJE1
   UInt_t             fBitJ2;                 // trigger bit of EJE2
