@@ -302,6 +302,9 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->UserHistogram("Event","","",
                           100,-2.,2.,100,-2.,2.,AliDielectronVarManager::kXvPrim,AliDielectronVarManager::kYvPrim);
     histos->UserHistogram("Event","","",GetRunNumbers(),AliDielectronVarManager::kRunNumber);
+    histos->UserProfile("Event","","", AliDielectronVarManager::kTracks, GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+    histos->UserProfile("Event","","", AliDielectronVarManager::kPairs,  GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+
   }
 
   //add histograms to Track classes
