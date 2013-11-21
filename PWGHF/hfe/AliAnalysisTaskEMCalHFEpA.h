@@ -213,7 +213,7 @@ private:
 	TH1F				**fNTracks;
 	TH1F				**fNClusters;
 	TH2F				**fTPCNcls_EoverP;
-	TH2F				*fTPCNcls_pid;
+	TH2F				**fTPCNcls_pid;
 	
 	TH1F				**fEta;
 	TH1F				**fPhi;
