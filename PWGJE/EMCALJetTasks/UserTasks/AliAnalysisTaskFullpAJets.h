@@ -132,7 +132,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         void SetLeadingJetPtRange(Int_t bins, Double_t low, Double_t up);
         void SetLeadingChargedTrackPtRange(Int_t bins, Double_t low, Double_t up);
         void SetNEFRange(Int_t bins, Double_t low, Double_t up);
-        
+        void SetSignalTrackPtBias(Bool_t chargedBias);
+
         // User Defined Functions
         TList* GetOutputHistos();  //!
         Double_t GetRho();
@@ -250,7 +251,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         Double_t fLChargedTrackPtUp;
         
         Bool_t fDoNEFQAPlots;
-        
+        Bool_t fSignalTrackBias;
+
         Int_t fNEFBins;
         Double_t fNEFLow;
         Double_t fNEFUp;
@@ -399,8 +401,13 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     
     inline void DoNEFCalibration(Bool_t doNEF)
     {
-        fDoNEF=doNEF;
+        fDoNEF = doNEF;
     };
+    
+    inline void SetJetChargeBias(Bool_t trackBias)
+    {
+        fSignalTrackBias = trackBias;
+    }
     
     private:
     TList *fOutput; //! Output list
@@ -434,6 +441,10 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     TH2D *fhClusterPhiPt;  //!
     TH2D *fhClusterEtaPt;  //!
     TH2D *fhRhoScale;  //!
+    
+    TH2D *fhEMCalEventMult; //!
+    TH2D *fhTPCEventMult; //!
+    TH2D *fhEMCalTrackEventMult; //!
     
     TH3D *fhTrackEtaPhiPt;  //!
     TH3D *fhGlobalTrackEtaPhiPt;  //!
@@ -491,7 +502,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     AliEMCALGeometry *fEMCALGeometry;  //!
     AliVCaloCells *fCells;  //!
     Bool_t fDoNEF;
-
+    Bool_t fSignalTrackBias;
+    
     // Protected Global Variables
     Double_t fEMCalPhiMin;
     Double_t fEMCalPhiMax;
