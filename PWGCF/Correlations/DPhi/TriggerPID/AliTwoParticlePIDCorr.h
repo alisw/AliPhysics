@@ -159,6 +159,8 @@ class AliTwoParticlePIDCorr : public AliAnalysisTaskSE {
       ffillefficiency=fillefficiency;
       fapplyefficiency=applyefficiency;
     }
+   void SetSkipTrigEff(Bool_t SkipTrigEff) {fSkipTrigEff=SkipTrigEff;}
+   void SetSkipAssoEff(Bool_t SkipAssoEff) {fSkipAssoEff=SkipAssoEff;}
    void SetOnlyOneEtaSide(Int_t OnlyOneEtaSide){fOnlyOneEtaSide=OnlyOneEtaSide;}
    void SetRejectResonanceDaughters(Int_t RejectResonanceDaughters){fRejectResonanceDaughters=RejectResonanceDaughters;}
 
@@ -169,6 +171,8 @@ fPtTOFPIDmin=PtTOFPIDmin;
 fPtTOFPIDmax=PtTOFPIDmax;
 }
 
+ void SetEffcorectionfilePathName(TString efffilename) {fefffilename=efffilename;}
+ 
  private:
  //histograms
     TList *fOutput;        //! Output list
@@ -273,7 +277,7 @@ fPtTOFPIDmax=PtTOFPIDmax;
   AliEventPoolManager    *fPoolMgr;//! 
   TClonesArray          *fArrayMC;//!
   TString          fAnalysisType;//!          // "MC", "ESD", "AOD"
-
+  TString fefffilename;//!
 
     //PID part histograms
 
@@ -313,6 +317,8 @@ fPtTOFPIDmax=PtTOFPIDmax;
     Bool_t fRemoveDuplicates;// remove particles with the same label (double reconstruction)
     Bool_t fapplyefficiency;//if kTRUE then eff correction calculation starts
     Bool_t ffillefficiency;//if kTRUE then THNsparses used for eff. calculation are filled up
+    Bool_t fSkipAssoEff;
+    Bool_t fSkipTrigEff;
     AliAnalysisUtils*     fAnalysisUtils;      // points to class with common analysis utilities
   TFormula*      fDCAXYCut;          // additional pt dependent cut on DCA XY (only for AOD)
 
