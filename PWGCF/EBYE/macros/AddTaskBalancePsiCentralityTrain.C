@@ -9,9 +9,9 @@
 //=============================================//
 
 //PID config
-Bool_t kUseNSigmaPID = kFALSE;
+Bool_t kUseNSigmaPID = kTRUE;
 Double_t nSigmaMax = 3.0;
-Bool_t kUseBayesianPID = kTRUE;
+Bool_t kUseBayesianPID = kFALSE;
 Double_t gMinAcceptedProbability = 0.7;
 
 //_________________________________________________________//
@@ -30,7 +30,7 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
 						       Double_t etaMax=0.8,
 						       Double_t maxTPCchi2 = -1, 
 						       Int_t minNClustersTPC = -1,
-						       Bool_t kUsePID = kFALSE,
+						       Bool_t kUsePID = kTRUE,
 						       Bool_t bResonancesCut = kTRUE,
 						       Bool_t bHBTcut = kTRUE,
 						       Double_t HBTCutValue = 0.02,
@@ -123,6 +123,9 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   
   //Event characteristics scheme
   taskBF->SetEventClass(fArgEventClass);
+  //taskBF->SetCustomBinning("centralityVertex:0,80");
+  //taskBF->SetCustomBinning("multiplicity:0,260");
+  
   if(fArgEventClass == "Multiplicity") {
     taskBF->SetMultiplicityRange(centrMin,centrMax);
     taskBF->SetMultiplicityEstimator(centralityEstimator);
@@ -165,7 +168,7 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
 	taskBF->SetUseBayesianPID(gMinAcceptedProbability);
       else if(kUseNSigmaPID)
 	taskBF->SetUseNSigmaPID(nSigmaMax);
-      taskBF->SetParticleOfInterest(AliAnalysistaskBFPsi::kProton);
+      taskBF->SetParticleOfInterest(AliAnalysisTaskBFPsi::kPion);
       taskBF->SetDetectorUsedForPID(AliAnalysisTaskBFPsi::kTOFpid);
     }
   }
@@ -185,6 +188,18 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
       if(electronExclusiveRejection) taskBF->SetElectronOnlyRejection(sigmaElectronRejection); // no other particle in nsigma 
       else                           taskBF->SetElectronRejection(sigmaElectronRejection); // check only if electrons in nsigma
     }
+
+    //++++++++++++++++//
+    if(kUsePID) {
+      if(kUseBayesianPID)
+	taskBF->SetUseBayesianPID(gMinAcceptedProbability);
+      else if(kUseNSigmaPID)
+	taskBF->SetUseNSigmaPID(nSigmaMax);
+      taskBF->SetParticleOfInterest(AliAnalysisTaskBFPsi::kPion);
+      taskBF->SetDetectorUsedForPID(AliAnalysisTaskBFPsi::kTPCTOF); //TOFpid,TPCpid
+    }
+    //++++++++++++++++//
+
   }
   else if(analysisType == "MC") {
     taskBF->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax);
@@ -246,7 +261,9 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   mgr->ConnectOutput(taskBF, 2, coutBF);
   if(gRunShuffling) mgr->ConnectOutput(taskBF, 3, coutBFS);
   if(gRunMixing) mgr->ConnectOutput(taskBF, 4, coutBFM);
-  if((kUsePID && analysisType == "ESD")||sigmaElectronRejection > 0) mgr->ConnectOutput(taskBF, 5, coutQAPID);
+  if(kUsePID||sigmaElectronRejection > 0) mgr->ConnectOutput(taskBF, 5, coutQAPID);
+  //if((kUsePID && analysisType == "AOD")||sigmaElectronRejection > 0) mgr->ConnectOutput(taskBF, 5, coutQAPID);
+  //if((kUsePID && analysisType == "ESD")||sigmaElectronRejection > 0) mgr->ConnectOutput(taskBF, 5, coutQAPID);
 
   return taskBF;
 }

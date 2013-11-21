@@ -1,6 +1,6 @@
 AliAnalysisTaskEffContBF *AddTaskBalanceEffCont( TString  centralityEstimator="V0M",
 						 Double_t centrMin=0.,
-						 Double_t centrMax=90.,
+						 Double_t centrMax=80.,
 						 Double_t vertexZ=10.,
 						 Int_t AODfilterBit = 128,
 						 TString fileNameBase="AnalysisResults"
