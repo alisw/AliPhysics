@@ -74,7 +74,7 @@ void AddTask_PhotonQA(  TString V0ReaderCutNumber = "000000006008400100150000000
                fCuts->DoEtaShift(doEtaShiftV0Reader);
             }
             fV0ReaderV1->SetConversionCuts(fCuts);
-            fCuts->SetFillCutHistograms("",kTRUE);
+            fCuts->SetFillCutHistograms("",kFALSE);
          }
       }
       

@@ -63,42 +63,57 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA() : AliAnalysisTaskSE()
    hGammaEta(NULL),
    hGammaChi2perNDF(NULL),
    hGammaPsiPair(NULL),
-   hGammaQt(NULL),
+   hGammaArmenteros(NULL),
    hGammaCosinePointingAngle(NULL),
-   hGammaXY(NULL),
-   hGammaZR(NULL),
+   hGammaInvMass(NULL),
    hElecPt(NULL),
    hElecEta(NULL),
    hElecPhi(NULL),
    hElecNfindableClsTPC(NULL),
    hPosiNfindableClsTPC(NULL),
-   hElecAsymP(NULL),
-   fTrueList(NULL),
-   hTrueResolutionR(NULL),
-   hTrueResolutionZ(NULL),
-   hTrueResolutionPhi(NULL),
-   hTrueGammaPt(NULL),
-   hTrueGammaPhi(NULL),
-   hTrueGammaEta(NULL),
-   hTrueGammaMass(NULL),
-   hTrueGammaChi2perNDF(NULL),
-   hTrueGammaPsiPair(NULL),
-   hTrueGammaQt(NULL),
-   hTrueGammaCosinePointingAngle(NULL),
-   hTrueGammaXY(NULL),
-   hTrueGammaZR(NULL),
-   hTrueElecPt(NULL),
-   hTrueElecEta(NULL),
-   hTrueElecPhi(NULL),
-   hTrueElecNfindableClsTPC(NULL),
-   hTruePosiNfindableClsTPC(NULL),
-   hTrueElecAsymP(NULL),
+   hElecClsTPC(NULL),
+   hPosiClsTPC(NULL),
+   hElectrondEdxP(NULL),
+   hElectronITSdEdxP(NULL),
+   hElectronTOFP(NULL),
+   hElectronNSigmadEdxP(NULL),
+   hElectronNSigmaPiondEdxP(NULL),
+   hElectronNSigmaITSP(NULL),
+   hElectronNSigmaTOFP(NULL),
+   hPositrondEdxP(NULL),
+   hPositronITSdEdxP(NULL),
+   hPositronTOFP(NULL),
+   hPositronNSigmadEdxP(NULL),
+   hPositronNSigmaPiondEdxP(NULL),
+   hPositronNSigmaITSP(NULL),
+   hPositronNSigmaTOFP(NULL),
+//    hElecAsymP(NULL),
+//    fTrueList(NULL),
+//    hTrueResolutionR(NULL),
+//    hTrueResolutionZ(NULL),
+//    hTrueResolutionPhi(NULL),
+//    hTrueGammaPt(NULL),
+//    hTrueGammaPhi(NULL),
+//    hTrueGammaEta(NULL),
+//    hTrueGammaMass(NULL),
+//    hTrueGammaChi2perNDF(NULL),
+//    hTrueGammaPsiPair(NULL),
+//    hTrueGammaQt(NULL),
+//    hTrueGammaCosinePointingAngle(NULL),
+//    hTrueGammaXY(NULL),
+//    hTrueGammaZR(NULL),
+//    hTrueElecPt(NULL),
+//    hTrueElecEta(NULL),
+//    hTrueElecPhi(NULL),
+//    hTrueElecNfindableClsTPC(NULL),
+//    hTruePosiNfindableClsTPC(NULL),
+//    hTrueElecAsymP(NULL),
    fGammaPt(0),
    fGammaTheta(0),
    fGammaChi2NDF(0),
    fGammaPhotonProp(5),
    fGammaConvCoord(5),
-   fDaughterProp(22),
+   fDaughterProp(24),
    fKind(0),
    fIsMC(kFALSE),
    fnGammaCandidates(1),
@@ -133,42 +148,59 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA(const char *name) : Ali
    hGammaEta(NULL),
    hGammaChi2perNDF(NULL),
    hGammaPsiPair(NULL),
-   hGammaQt(NULL),
+   hGammaArmenteros(NULL),
    hGammaCosinePointingAngle(NULL),
-   hGammaXY(NULL),
-   hGammaZR(NULL),
+   hGammaInvMass(NULL),
    hElecPt(NULL),
    hElecEta(NULL),
    hElecPhi(NULL),
    hElecNfindableClsTPC(NULL),
    hPosiNfindableClsTPC(NULL),
-   hElecAsymP(NULL),
-   fTrueList(NULL),
-   hTrueResolutionR(NULL),
-   hTrueResolutionZ(NULL),
-   hTrueResolutionPhi(NULL),
-   hTrueGammaPt(NULL),
-   hTrueGammaPhi(NULL),
-   hTrueGammaEta(NULL),
-   hTrueGammaMass(NULL),
-   hTrueGammaChi2perNDF(NULL),
-   hTrueGammaPsiPair(NULL),
-   hTrueGammaQt(NULL),
-   hTrueGammaCosinePointingAngle(NULL),
-   hTrueGammaXY(NULL),
-   hTrueGammaZR(NULL),
-   hTrueElecPt(NULL),
-   hTrueElecEta(NULL),
-   hTrueElecPhi(NULL),
-   hTrueElecNfindableClsTPC(NULL),
-   hTruePosiNfindableClsTPC(NULL),
-   hTrueElecAsymP(NULL),
+   hElecClsTPC(NULL),
+   hPosiClsTPC(NULL),
+   hElectrondEdxP(NULL),
+   hElectronITSdEdxP(NULL),
+   hElectronTOFP(NULL),
+   hElectronNSigmadEdxP(NULL),
+   hElectronNSigmaPiondEdxP(NULL),
+   hElectronNSigmaITSP(NULL),
+   hElectronNSigmaTOFP(NULL),
+   hPositrondEdxP(NULL),
+   hPositronITSdEdxP(NULL),
+   hPositronTOFP(NULL),
+   hPositronNSigmadEdxP(NULL),
+   hPositronNSigmaPiondEdxP(NULL),
+   hPositronNSigmaITSP(NULL),
+   hPositronNSigmaTOFP(NULL),
+//    hGammaXY(NULL),
+//    hGammaZR(NULL),
+//    hElecAsymP(NULL),
+//    fTrueList(NULL),
+//    hTrueResolutionR(NULL),
+//    hTrueResolutionZ(NULL),
+//    hTrueResolutionPhi(NULL),
+//    hTrueGammaPt(NULL),
+//    hTrueGammaPhi(NULL),
+//    hTrueGammaEta(NULL),
+//    hTrueGammaMass(NULL),
+//    hTrueGammaChi2perNDF(NULL),
+//    hTrueGammaPsiPair(NULL),
+//    hTrueGammaQt(NULL),
+//    hTrueGammaCosinePointingAngle(NULL),
+//    hTrueGammaXY(NULL),
+//    hTrueGammaZR(NULL),
+//    hTrueElecPt(NULL),
+//    hTrueElecEta(NULL),
+//    hTrueElecPhi(NULL),
+//    hTrueElecNfindableClsTPC(NULL),
+//    hTruePosiNfindableClsTPC(NULL),
+//    hTrueElecAsymP(NULL),
    fGammaPt(0),
    fGammaTheta(0),
    fGammaChi2NDF(0),
    fGammaPhotonProp(5),
    fGammaConvCoord(5),
-   fDaughterProp(22),
+   fDaughterProp(24),
    fKind(0),
    fIsMC(kFALSE),
    fnGammaCandidates(1),
@@ -231,75 +263,131 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
       fESDList->Add(hGammaChi2perNDF);
       hGammaPsiPair = new TH1F("Gamma_PsiPair","Gamma_PsiPair",500,0,2);
       fESDList->Add(hGammaPsiPair);
-      hGammaQt = new TH1F("Gamma_Qt","Gamma_Qt",400,0,0.1);
-      fESDList->Add(hGammaQt);
+      hGammaArmenteros = new TH2F("Gamma_Armenteros","Gamma_Armenteros",200,-1,1,400,0,0.1);
+      fESDList->Add(hGammaArmenteros);
       hGammaCosinePointingAngle = new TH1F("Gamma_CosinePointingAngle","Gamma_CosinePointingAngle",900,0.7,1.);
       fESDList->Add(hGammaCosinePointingAngle);
-      hGammaXY = new TH2F("Gamma_ConversionPoint_XY","Gamma_ConversionPoint_XY",960,-120,120,960,-120,120);
-      fESDList->Add(hGammaXY);
-      hGammaZR= new TH2F("Gamma_ConversionPoint_ZR","Gamma_ConversionPoint_ZR",1200,-150,150,480,0,120);
-      fESDList->Add(hGammaZR);
-
+      hGammaInvMass = new TH1F( "Gamma_InvMass","",200, 0, 0.2);
+      fESDList->Add(hGammaInvMass);
       hElecPt = new TH2F("Electron_Positron_Pt","Electron_Positron_Pt",250,0,25,250,0,25);
       fESDList->Add(hElecPt);
       hElecEta = new TH2F("Electron_Positron_Eta","Electron_Positron_Eta",600,-1.5,1.5,600,-1.5,1.5);
       fESDList->Add(hElecEta);
       hElecPhi = new TH2F("Electron_Positron_Phi","Electron_Positron_Phi",360,0,2*TMath::Pi(),360,0,2*TMath::Pi());
       fESDList->Add(hElecPhi);
+      hElecClsTPC = new TH1F("Electron_ClusterTPC","Electron_ClusterTPC",200,0,200);
+      fESDList->Add(hElecClsTPC);
+      hPosiClsTPC = new TH1F("Positron_ClusterTPC","Positron_ClusterTPC",200,0,200);
+      fESDList->Add(hPosiClsTPC);
+      
       hElecNfindableClsTPC = new TH1F("Electron_findableClusterTPC","Electron_findableClusterTPC",100,0,1);
       fESDList->Add(hElecNfindableClsTPC);
       hPosiNfindableClsTPC = new TH1F("Positron_findableClusterTPC","Positron_findableClusterTPC",100,0,1);
       fESDList->Add(hPosiNfindableClsTPC);
-      hElecAsymP = new TH2F("Electron_Asym_vs_P", "Electron_Asym_vs_P",200,0.,20.,200,0.,1.); 
-      fESDList->Add(hElecAsymP);
+      
+      hElectrondEdxP =  new TH2F("Electron_dEdx_P","Electron_dEdx_P",100, 0.05, 20, 200, 0, 200);
+      SetLogBinningXTH2(hElectrondEdxP);
+      fESDList->Add(hElectrondEdxP);
+      hPositrondEdxP =  new TH2F("Positron_dEdx_P","Positron_dEdx_P",100, 0.05, 20, 200, 0, 200);
+      SetLogBinningXTH2(hPositrondEdxP);
+      fESDList->Add(hPositrondEdxP);
+      hElectronNSigmadEdxP =  new TH2F("Electron_NSigmadEdx_P","Electron_NSigmadEdx_P",100, 0.05, 20, 200, -10, 10);  
+      SetLogBinningXTH2(hElectronNSigmadEdxP);
+      fESDList->Add(hElectronNSigmadEdxP);
+      hPositronNSigmadEdxP =  new TH2F("Positron_NSigmadEdx_P","Positron_NSigmadEdx_P",100, 0.05, 20, 200, -10, 10);
+      SetLogBinningXTH2(hPositronNSigmadEdxP);
+      fESDList->Add(hPositronNSigmadEdxP);
+      hElectronNSigmaPiondEdxP =  new TH2F("Electron_NSigmaPiondEdx_P","Electron_NSigmaPiondEdx_P",100, 0.05, 20, 200, -10, 10);  
+      SetLogBinningXTH2(hElectronNSigmaPiondEdxP);
+      fESDList->Add(hElectronNSigmaPiondEdxP);
+      hPositronNSigmaPiondEdxP =  new TH2F("Positron_NSigmaPiondEdx_P","Positron_NSigmaPiondEdx_P",100, 0.05, 20, 200, -10, 10);
+      SetLogBinningXTH2(hPositronNSigmaPiondEdxP);
+      fESDList->Add(hPositronNSigmaPiondEdxP);
+      
+      hElectronTOFP =  new TH2F("Electron_TOF_P","Electron_TOF_P",100, 0.05, 20, 600, -1000, 29000);
+      SetLogBinningXTH2(hElectronTOFP);
+      fESDList->Add(hElectronTOFP);
+      hPositronTOFP =  new TH2F("Positron_TOF_P","Positron_TOF_P",100, 0.05, 20, 600, -1000, 29000);
+      SetLogBinningXTH2(hPositronTOFP);
+      fESDList->Add(hPositronTOFP);
+      hElectronNSigmaTOFP =  new TH2F("Electron_NSigmaTOF_P","Electron_NSigmaTOF_P",100, 0.05, 20, 200, -10, 10);
+      SetLogBinningXTH2(hElectronNSigmaTOFP);
+      fESDList->Add(hElectronNSigmaTOFP);
+      hPositronNSigmaTOFP =  new TH2F("Positron_NSigmaTOF_P","Positron_NSigmaTOF_P",100, 0.05, 20, 200, -10, 10);
+      SetLogBinningXTH2(hPositronNSigmaTOFP);
+      fESDList->Add(hPositronNSigmaTOFP);
+      
+      hElectronITSdEdxP  =  new TH2F("Electron_ITSdEdx_P","Electron_ITSdEdx_P",100, 0.05, 20, 200, 0, 200);
+      SetLogBinningXTH2(hElectronITSdEdxP);
+      fESDList->Add(hElectronITSdEdxP);
+      hPositronITSdEdxP =  new TH2F("Positron_ITSdEdx_P","Positron_ITSdEdx_P",100, 0.05, 20, 200, 0, 200);
+      SetLogBinningXTH2(hPositronITSdEdxP);
+      fESDList->Add(hPositronITSdEdxP);
+      hElectronNSigmaITSP =  new TH2F("Electron_NSigmaITS_P","Electron_NSigmaITS_P",100, 0.05, 20, 200, 0, 200);
+      SetLogBinningXTH2(hElectronNSigmaITSP);
+      fESDList->Add(hElectronNSigmaITSP);
+      hPositronNSigmaITSP =  new TH2F("Positron_NSigmaITS_P","Positron_NSigmaITS_P",100, 0.05, 20, 200, 0, 200);
+      SetLogBinningXTH2(hPositronNSigmaITSP);
+      fESDList->Add(hPositronNSigmaITSP);
+      
+      
+      
+//       hGammaXY = new TH2F("Gamma_ConversionPoint_XY","Gamma_ConversionPoint_XY",960,-120,120,960,-120,120);
+//       fESDList->Add(hGammaXY);
+//       hGammaZR= new TH2F("Gamma_ConversionPoint_ZR","Gamma_ConversionPoint_ZR",1200,-150,150,480,0,120);
+//       fESDList->Add(hGammaZR);
 
-      if(fIsMC){
-         fTrueList = new TList();
-         fTrueList->SetOwner(kTRUE);
-         fTrueList->SetName("True QA");
-         fOutputList->Add(fTrueList);
 
-         hTrueResolutionR = new TH2F("True_ConversionPointResolution_R","True_ConversionPointResolution_R",240,0,120,200,-20,20);
-         fTrueList->Add(hTrueResolutionR);
-         hTrueResolutionZ = new TH2F("True_ConversionPointResolution_Z","True_ConversionPointResolution_Z",480,-120,120,200,-20,20);
-         fTrueList->Add(hTrueResolutionZ);
-         hTrueResolutionPhi = new TH2F("True_ConversionPointResolution_Phi","True_ConversionPointResolution_Phi",360,0,2*TMath::Pi(),200,-TMath::Pi()/30., TMath::Pi()/30.);
-         fTrueList->Add(hTrueResolutionPhi);
+//       hElecAsymP = new TH2F("Electron_Asym_vs_P", "Electron_Asym_vs_P",200,0.,20.,200,0.,1.); 
+//       fESDList->Add(hElecAsymP);
 
-         hTrueGammaPt = new TH1F("True_Gamma_Pt","True_Gamma_Pt",250,0,25);
-         fTrueList->Add(hTrueGammaPt);
-         hTrueGammaPhi = new TH1F("True_Gamma_Phi","True_Gamma_Phi",360,0,2*TMath::Pi());
-         fTrueList->Add(hTrueGammaPhi);
-         hTrueGammaEta = new TH1F("True_Gamma_Eta","True_Gamma_Eta",600,-1.5,1.5);
-         fTrueList->Add(hTrueGammaEta);
-         hTrueGammaMass = new TH1F("True_Gamma_Mass","True_Gamma_Mass",1000,0,0.3);
-         fTrueList->Add(hTrueGammaMass);
-         hTrueGammaChi2perNDF = new TH1F("True_Gamma_Chi2perNDF","True_Gamma_Chi2perNDF",500,0,100);
-         fTrueList->Add(hTrueGammaChi2perNDF);
-         hTrueGammaPsiPair = new TH1F("True_Gamma_PsiPair","True_Gamma_PsiPair",500,0,2);
-         fTrueList->Add(hTrueGammaPsiPair);
-         hTrueGammaQt = new TH1F("True_Gamma_Qt","True_Gamma_Qt",400,0,0.1);
-         fTrueList->Add(hTrueGammaQt);
-         hTrueGammaCosinePointingAngle = new TH1F("True_Gamma_CosinePointingAngle","True_Gamma_CosinePointingAngle",900,0.7,1.);
-         fTrueList->Add(hTrueGammaCosinePointingAngle);
-         hTrueGammaXY = new TH2F("True_Gamma_ConversionPoint_XY","True_Gamma_ConversionPoint_XY",960,-120,120,960,-120,120);
-         fTrueList->Add(hTrueGammaXY);
-         hTrueGammaZR= new TH2F("TrueGamma_ConversionPoint_ZR","TrueGamma_ConversionPoint_ZR",1200,-150,150,480,0,120);
-         fTrueList->Add(hTrueGammaZR);
-
-         hTrueElecPt = new TH2F("True_Electron_Positron_Pt","True_Electron_Positron_Pt",250,0,25,250,0,25);
-         fTrueList->Add(hTrueElecPt);
-         hTrueElecEta = new TH2F("True_Electron_Positron_Eta","True_Electron_Positron_Eta",600,-1.5,1.5,600,-1.5,1.5);
-         fTrueList->Add(hTrueElecEta);
-         hTrueElecPhi = new TH2F("True_Electron_Positron_Phi","True_Electron_Positron_Phi",360,0,2*TMath::Pi(),360,0,2*TMath::Pi());
-         fTrueList->Add(hTrueElecPhi);
-         hTrueElecNfindableClsTPC = new TH1F("True_Electron_findableClusterTPC","True_Electron_findableClusterTPC",100,0,1);
-         fTrueList->Add(hTrueElecNfindableClsTPC);
-         hTruePosiNfindableClsTPC = new TH1F("True_Positron_findableClusterTPC","True_Positron_findableClusterTPC",100,0,1);
-         fTrueList->Add(hTruePosiNfindableClsTPC);
-				 hTrueElecAsymP = new TH2F("True_Electron_Asym_vs_P", "True_Electron_Asym_vs_P",200,0.,20.,200,0.,1.); 
-				 fTrueList->Add(hTrueElecAsymP);
-      }
+//       if(fIsMC){
+//          fTrueList = new TList();
+//          fTrueList->SetOwner(kTRUE);
+//          fTrueList->SetName("True QA");
+//          fOutputList->Add(fTrueList);
+// 
+//          hTrueResolutionR = new TH2F("True_ConversionPointResolution_R","True_ConversionPointResolution_R",240,0,120,200,-20,20);
+//          fTrueList->Add(hTrueResolutionR);
+//          hTrueResolutionZ = new TH2F("True_ConversionPointResolution_Z","True_ConversionPointResolution_Z",480,-120,120,200,-20,20);
+//          fTrueList->Add(hTrueResolutionZ);
+//          hTrueResolutionPhi = new TH2F("True_ConversionPointResolution_Phi","True_ConversionPointResolution_Phi",360,0,2*TMath::Pi(),200,-TMath::Pi()/30., TMath::Pi()/30.);
+//          fTrueList->Add(hTrueResolutionPhi);
+// 
+//          hTrueGammaPt = new TH1F("True_Gamma_Pt","True_Gamma_Pt",250,0,25);
+//          fTrueList->Add(hTrueGammaPt);
+//          hTrueGammaPhi = new TH1F("True_Gamma_Phi","True_Gamma_Phi",360,0,2*TMath::Pi());
+//          fTrueList->Add(hTrueGammaPhi);
+//          hTrueGammaEta = new TH1F("True_Gamma_Eta","True_Gamma_Eta",600,-1.5,1.5);
+//          fTrueList->Add(hTrueGammaEta);
+//          hTrueGammaMass = new TH1F("True_Gamma_Mass","True_Gamma_Mass",1000,0,0.3);
+//          fTrueList->Add(hTrueGammaMass);
+//          hTrueGammaChi2perNDF = new TH1F("True_Gamma_Chi2perNDF","True_Gamma_Chi2perNDF",500,0,100);
+//          fTrueList->Add(hTrueGammaChi2perNDF);
+//          hTrueGammaPsiPair = new TH1F("True_Gamma_PsiPair","True_Gamma_PsiPair",500,0,2);
+//          fTrueList->Add(hTrueGammaPsiPair);
+//          hTrueGammaQt = new TH1F("True_Gamma_Qt","True_Gamma_Qt",400,0,0.1);
+//          fTrueList->Add(hTrueGammaQt);
+//          hTrueGammaCosinePointingAngle = new TH1F("True_Gamma_CosinePointingAngle","True_Gamma_CosinePointingAngle",900,0.7,1.);
+//          fTrueList->Add(hTrueGammaCosinePointingAngle);
+//          hTrueGammaXY = new TH2F("True_Gamma_ConversionPoint_XY","True_Gamma_ConversionPoint_XY",960,-120,120,960,-120,120);
+//          fTrueList->Add(hTrueGammaXY);
+//          hTrueGammaZR= new TH2F("TrueGamma_ConversionPoint_ZR","TrueGamma_ConversionPoint_ZR",1200,-150,150,480,0,120);
+//          fTrueList->Add(hTrueGammaZR);
+// 
+//          hTrueElecPt = new TH2F("True_Electron_Positron_Pt","True_Electron_Positron_Pt",250,0,25,250,0,25);
+//          fTrueList->Add(hTrueElecPt);
+//          hTrueElecEta = new TH2F("True_Electron_Positron_Eta","True_Electron_Positron_Eta",600,-1.5,1.5,600,-1.5,1.5);
+//          fTrueList->Add(hTrueElecEta);
+//          hTrueElecPhi = new TH2F("True_Electron_Positron_Phi","True_Electron_Positron_Phi",360,0,2*TMath::Pi(),360,0,2*TMath::Pi());
+//          fTrueList->Add(hTrueElecPhi);
+//          hTrueElecNfindableClsTPC = new TH1F("True_Electron_findableClusterTPC","True_Electron_findableClusterTPC",100,0,1);
+//          fTrueList->Add(hTrueElecNfindableClsTPC);
+//          hTruePosiNfindableClsTPC = new TH1F("True_Positron_findableClusterTPC","True_Positron_findableClusterTPC",100,0,1);
+//          fTrueList->Add(hTruePosiNfindableClsTPC);
+// 				 hTrueElecAsymP = new TH2F("True_Electron_Asym_vs_P", "True_Electron_Asym_vs_P",200,0.,20.,200,0.,1.); 
+// 				 fTrueList->Add(hTrueElecAsymP);
+//       }
       if(fConversionCuts->GetCutHistograms()){
          fOutputList->Add(fConversionCuts->GetCutHistograms());
       }
@@ -489,9 +577,10 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
    // dEdx TPC
    fDaughterProp(2) =  posTrack->GetTPCsignal();
    fDaughterProp(3) =  pidResonse->NumberOfSigmasTPC(posTrack,AliPID::kElectron);
+   fDaughterProp(22) =  pidResonse->NumberOfSigmasTPC(posTrack,AliPID::kPion);
    fDaughterProp(9) =  negTrack->GetTPCsignal();
    fDaughterProp(10) =  pidResonse->NumberOfSigmasTPC(negTrack,AliPID::kElectron);
-
+   fDaughterProp(23) =  pidResonse->NumberOfSigmasTPC(negTrack,AliPID::kPion);
    Int_t nPosClusterITS = 0;
    Int_t nNegClusterITS = 0;
    for(Int_t itsLayer = 0; itsLayer<6;itsLayer++){
@@ -560,34 +649,25 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
 //_____________________________________________________________________________________________________
 void AliAnalysisTaskConversionQA::ProcessQA(AliAODConversionPhoton *gamma){
 
-
+   AliPIDResponse* pidResonse = ((AliConversionCuts*)fV0Reader->GetConversionCuts())->GetPIDResponse();
+   
    // Fill Histograms for QA and MC
+
    hGammaPt->Fill(gamma->GetPhotonPt());
    hGammaPhi->Fill(gamma->GetPhotonPhi());
    hGammaEta->Fill(gamma->Eta());
    hGammaChi2perNDF->Fill(gamma->GetChi2perNDF());
    hGammaPsiPair->Fill(gamma->GetPsiPair());
-   hGammaQt->Fill(gamma->GetArmenterosQt());
+   hGammaArmenteros->Fill(gamma->GetArmenterosAlpha(),gamma->GetArmenterosQt());
    hGammaCosinePointingAngle->Fill(fConversionCuts->GetCosineOfPointingAngle(gamma,fInputEvent));
-   hGammaXY->Fill(gamma->GetConversionX(),gamma->GetConversionY());
-   hGammaZR->Fill(gamma->GetConversionZ(),gamma->GetConversionRadius());
+   hGammaInvMass->Fill(gamma->GetMass());
+//    hGammaXY->Fill(gamma->GetConversionX(),gamma->GetConversionY());
+//    hGammaZR->Fill(gamma->GetConversionZ(),gamma->GetConversionRadius());
 
    AliVTrack * negTrack = fConversionCuts->GetTrack(fInputEvent, gamma->GetTrackLabelNegative());
    AliVTrack * posTrack = fConversionCuts->GetTrack(fInputEvent, gamma->GetTrackLabelPositive());
    if(!negTrack||!posTrack)return;
 
-   Double_t negtrackPhi = negTrack->Phi();
-   Double_t postrackPhi = posTrack->Phi();
-   hITSClusterPhi->Fill(negtrackPhi,6);
-   hITSClusterPhi->Fill(postrackPhi,6);
-   for(Int_t itsLayer = 0; itsLayer<6;itsLayer++){
-      if(TESTBIT(negTrack->GetITSClusterMap(),itsLayer)){
-         hITSClusterPhi->Fill(negtrackPhi,itsLayer);
-      }
-      if(TESTBIT(posTrack->GetITSClusterMap(),itsLayer)){
-         hITSClusterPhi->Fill(postrackPhi,itsLayer);
-      }
-   }
 
    hElecPt->Fill(negTrack->Pt(),posTrack->Pt());
    hElecEta->Fill(negTrack->Eta(),posTrack->Eta());
@@ -595,94 +675,150 @@ void AliAnalysisTaskConversionQA::ProcessQA(AliAODConversionPhoton *gamma){
 
    hElecNfindableClsTPC->Fill((Float_t)posTrack->GetTPCClusterInfo(2,0,fConversionCuts->GetFirstTPCRow(gamma->GetConversionRadius())));
    hPosiNfindableClsTPC->Fill((Float_t)negTrack->GetTPCClusterInfo(2,0,fConversionCuts->GetFirstTPCRow(gamma->GetConversionRadius())));
-   if(gamma->P()!=0){
-		 hElecAsymP->Fill(gamma->P(),negTrack->P()/gamma->P());
-	 }
+   hElecClsTPC->Fill(negTrack->GetNcls(1));
+   hPosiClsTPC->Fill(posTrack->GetNcls(1));
+   //TPC dEdx
+   hElectrondEdxP->Fill(negTrack->P() ,negTrack->GetTPCsignal());
+   hElectronNSigmadEdxP->Fill(negTrack->P() ,pidResonse->NumberOfSigmasTPC(negTrack, AliPID::kElectron));
+   hElectronNSigmaPiondEdxP->Fill(negTrack->P() ,pidResonse->NumberOfSigmasTPC(negTrack, AliPID::kPion));
+   hPositrondEdxP->Fill(posTrack->P() ,posTrack->GetTPCsignal());
+   hPositronNSigmadEdxP->Fill(posTrack->P() ,pidResonse->NumberOfSigmasTPC(posTrack, AliPID::kElectron));
+   hPositronNSigmaPiondEdxP->Fill(posTrack->P() ,pidResonse->NumberOfSigmasTPC(posTrack, AliPID::kPion));
+   
+   //TOF signal
+   if((negTrack->GetStatus() & AliESDtrack::kTOFpid) && !(negTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
+      Double_t t0neg = pidResonse->GetTOFResponse().GetStartTime(negTrack->P());
+      Double_t timesNeg[5];
+      negTrack->GetIntegratedTimes(timesNeg);
+      Double_t TOFsignalNeg = negTrack->GetTOFsignal();
+      Double_t dTneg = TOFsignalNeg - t0neg - timesNeg[0];
+      hElectronTOFP->Fill(negTrack->P() ,dTneg);
+      hElectronNSigmaTOFP->Fill(negTrack->P() ,pidResonse->NumberOfSigmasTOF(negTrack, AliPID::kElectron));
+   }
+   if((posTrack->GetStatus() & AliESDtrack::kTOFpid) && !(posTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
+      Double_t t0pos = pidResonse->GetTOFResponse().GetStartTime(posTrack->P());
+      Double_t timesPos[5];
+      posTrack->GetIntegratedTimes(timesPos);
+      Double_t TOFsignalPos = posTrack->GetTOFsignal();
+      Double_t dTpos = TOFsignalPos - t0pos - timesPos[0];
+      hPositronTOFP->Fill(posTrack->P() ,dTpos);
+      hPositronNSigmaTOFP->Fill(posTrack->P() ,pidResonse->NumberOfSigmasTOF(posTrack, AliPID::kElectron));
+   }
+   
+   Int_t nPosClusterITS = 0;
+   Int_t nNegClusterITS = 0;
+   for(Int_t itsLayer = 0; itsLayer<6;itsLayer++){
+      if(TESTBIT(negTrack->GetITSClusterMap(),itsLayer)){
+         nNegClusterITS++;
+      }
+      if(TESTBIT(posTrack->GetITSClusterMap(),itsLayer)){
+         nPosClusterITS++;
+      }
+   }
+   Double_t negtrackPhi = negTrack->Phi();
+   Double_t postrackPhi = posTrack->Phi();
+   hITSClusterPhi->Fill(negtrackPhi,nNegClusterITS);
+   hITSClusterPhi->Fill(postrackPhi,nPosClusterITS);
+   
+   // ITS signal
+   if (nPosClusterITS > 0 ){
+      hPositronITSdEdxP->Fill(posTrack->P() ,posTrack->GetITSsignal());
+      hPositronNSigmaITSP->Fill(posTrack->P() ,pidResonse->NumberOfSigmasITS(posTrack,AliPID::kElectron));
+   } 
+   if (nNegClusterITS > 0 ){
+      hElectronITSdEdxP->Fill(negTrack->P() ,negTrack->GetITSsignal());
+      hElectronNSigmaITSP->Fill(negTrack->P() ,pidResonse->NumberOfSigmasITS(negTrack,AliPID::kElectron));
+   }
+
+   
+//    if(gamma->P()!=0){
+// 		 hElecAsymP->Fill(gamma->P(),negTrack->P()/gamma->P());
+// 	 }
    // hElecNfindableClsTPC->Fill((Float_t)negTrack->GetNcls(1)/(Float_t)negTrack->GetTPCNclsF());
    // hPosiNfindableClsTPC->Fill((Float_t)posTrack->GetNcls(1)/(Float_t)posTrack->GetTPCNclsF());
-   if(fMCEvent && fInputEvent->IsA()==AliESDEvent::Class()){
-      ProcessTrueQAESD(gamma,(AliESDtrack*)negTrack,(AliESDtrack*)posTrack);
-   } else if(fMCEvent && fInputEvent->IsA()==AliAODEvent::Class()){
-        ProcessTrueQAAOD(gamma,(AliAODTrack*)negTrack,(AliAODTrack*)posTrack);
-   }
+//    if(fMCEvent && fInputEvent->IsA()==AliESDEvent::Class()){
+//       ProcessTrueQAESD(gamma,(AliESDtrack*)negTrack,(AliESDtrack*)posTrack);
+//    } else if(fMCEvent && fInputEvent->IsA()==AliAODEvent::Class()){
+//         ProcessTrueQAAOD(gamma,(AliAODTrack*)negTrack,(AliAODTrack*)posTrack);
+//    }
 }
 
-//________________________________________________________________________
-void AliAnalysisTaskConversionQA::ProcessTrueQAESD(AliAODConversionPhoton *TruePhotonCandidate, AliESDtrack *elec, AliESDtrack *posi)
-{
-
-   if(IsTruePhotonESD(TruePhotonCandidate)!=0 && IsTruePhotonESD(TruePhotonCandidate)!=5  ) return;
-
-   TParticle *negDaughter = TruePhotonCandidate->GetNegativeMCDaughter(fMCStack);
-   TParticle *mcPhoton = TruePhotonCandidate->GetMCParticle(fMCStack);
+// //________________________________________________________________________
+// void AliAnalysisTaskConversionQA::ProcessTrueQAESD(AliAODConversionPhoton *TruePhotonCandidate, AliESDtrack *elec, AliESDtrack *posi)
+// {
+// 
+//    if(IsTruePhotonESD(TruePhotonCandidate)!=0 && IsTruePhotonESD(TruePhotonCandidate)!=5  ) return;
+// 
+//    TParticle *negDaughter = TruePhotonCandidate->GetNegativeMCDaughter(fMCStack);
+//    TParticle *mcPhoton = TruePhotonCandidate->GetMCParticle(fMCStack);
    // True Photon
-   hTrueResolutionR->Fill(TruePhotonCandidate->GetConversionRadius(),
-                           TruePhotonCandidate->GetConversionRadius()-negDaughter->R());
-   hTrueResolutionZ->Fill(TruePhotonCandidate->GetConversionZ(),
-                           TruePhotonCandidate->GetConversionZ()-negDaughter->Vz());
-   hTrueResolutionPhi->Fill(TruePhotonCandidate->Phi(),
-                             TruePhotonCandidate->Phi()-mcPhoton->Phi());
-   hTrueGammaPt->Fill(TruePhotonCandidate->Pt());
-   hTrueGammaPhi->Fill(TruePhotonCandidate->Phi());
-   hTrueGammaEta->Fill(TruePhotonCandidate->Eta());
-   hTrueGammaMass->Fill(TruePhotonCandidate->GetMass());
-   hTrueGammaChi2perNDF->Fill(TruePhotonCandidate->GetChi2perNDF());
-   hTrueGammaPsiPair->Fill(TruePhotonCandidate->GetPsiPair());
-   hTrueGammaQt->Fill(TruePhotonCandidate->GetArmenterosQt());
-   hTrueGammaCosinePointingAngle->Fill(fConversionCuts->GetCosineOfPointingAngle(TruePhotonCandidate,fInputEvent));
-   hTrueGammaXY->Fill(TruePhotonCandidate->GetConversionX(),TruePhotonCandidate->GetConversionY());
-   hTrueGammaZR->Fill(TruePhotonCandidate->GetConversionZ(),TruePhotonCandidate->GetConversionRadius());
-   hTrueElecPt->Fill(elec->Pt(),posi->Pt());
-   hTrueElecEta->Fill(elec->Eta(),posi->Eta());
-   hTrueElecPhi->Fill(elec->Phi(),posi->Phi());
-   hTrueElecNfindableClsTPC
-      ->Fill((Float_t)elec->GetTPCClusterInfo(2,0,fConversionCuts->GetFirstTPCRow(TruePhotonCandidate->GetConversionRadius())));
-   hTruePosiNfindableClsTPC
-      ->Fill((Float_t)posi->GetTPCClusterInfo(2,0,fConversionCuts->GetFirstTPCRow(TruePhotonCandidate->GetConversionRadius())));
-   if(TruePhotonCandidate->P()!=0){
-		 hTrueElecAsymP->Fill(TruePhotonCandidate->P(),elec->P()/TruePhotonCandidate->P());
-	 }
+//    hTrueResolutionR->Fill(TruePhotonCandidate->GetConversionRadius(),
+//                            TruePhotonCandidate->GetConversionRadius()-negDaughter->R());
+//    hTrueResolutionZ->Fill(TruePhotonCandidate->GetConversionZ(),
+//                            TruePhotonCandidate->GetConversionZ()-negDaughter->Vz());
+//    hTrueResolutionPhi->Fill(TruePhotonCandidate->Phi(),
+//                              TruePhotonCandidate->Phi()-mcPhoton->Phi());
+//    hTrueGammaPt->Fill(TruePhotonCandidate->Pt());
+//    hTrueGammaPhi->Fill(TruePhotonCandidate->Phi());
+//    hTrueGammaEta->Fill(TruePhotonCandidate->Eta());
+//    hTrueGammaMass->Fill(TruePhotonCandidate->GetMass());
+//    hTrueGammaChi2perNDF->Fill(TruePhotonCandidate->GetChi2perNDF());
+//    hTrueGammaPsiPair->Fill(TruePhotonCandidate->GetPsiPair());
+//    hTrueGammaQt->Fill(TruePhotonCandidate->GetArmenterosQt());
+//    hTrueGammaCosinePointingAngle->Fill(fConversionCuts->GetCosineOfPointingAngle(TruePhotonCandidate,fInputEvent));
+//    hTrueGammaXY->Fill(TruePhotonCandidate->GetConversionX(),TruePhotonCandidate->GetConversionY());
+//    hTrueGammaZR->Fill(TruePhotonCandidate->GetConversionZ(),TruePhotonCandidate->GetConversionRadius());
+//    hTrueElecPt->Fill(elec->Pt(),posi->Pt());
+//    hTrueElecEta->Fill(elec->Eta(),posi->Eta());
+//    hTrueElecPhi->Fill(elec->Phi(),posi->Phi());
+//    hTrueElecNfindableClsTPC
+//       ->Fill((Float_t)elec->GetTPCClusterInfo(2,0,fConversionCuts->GetFirstTPCRow(TruePhotonCandidate->GetConversionRadius())));
+//    hTruePosiNfindableClsTPC
+//       ->Fill((Float_t)posi->GetTPCClusterInfo(2,0,fConversionCuts->GetFirstTPCRow(TruePhotonCandidate->GetConversionRadius())));
+//    if(TruePhotonCandidate->P()!=0){
+// 		 hTrueElecAsymP->Fill(TruePhotonCandidate->P(),elec->P()/TruePhotonCandidate->P());
+// 	 }
 
    // hTrueElecNfindableClsTPC->Fill((Float_t)elec->GetNcls(1)/(Float_t)elec->GetTPCNclsF());
    // hTruePosiNfindableClsTPC->Fill((Float_t)posi->GetNcls(1)/(Float_t)posi->GetTPCNclsF());
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskConversionQA::ProcessTrueQAAOD(AliAODConversionPhoton *TruePhotonCandidate, AliAODTrack *elec, AliAODTrack *posi)
-{
-
-   if(IsTruePhotonAOD(TruePhotonCandidate)!=0 && IsTruePhotonESD(TruePhotonCandidate)!=5 ) return;
-
-   TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-   AliAODMCParticle *negDaughter = (AliAODMCParticle*) AODMCTrackArray->At(TruePhotonCandidate->GetMCLabelNegative());
-   AliAODMCParticle *mcPhoton = (AliAODMCParticle*) AODMCTrackArray->At(negDaughter->GetMother());
+// }
+// 
+// //________________________________________________________________________
+// void AliAnalysisTaskConversionQA::ProcessTrueQAAOD(AliAODConversionPhoton *TruePhotonCandidate, AliAODTrack *elec, AliAODTrack *posi)
+// {
+// 
+//    if(IsTruePhotonAOD(TruePhotonCandidate)!=0 && IsTruePhotonESD(TruePhotonCandidate)!=5 ) return;
+// 
+//    TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+//    AliAODMCParticle *negDaughter = (AliAODMCParticle*) AODMCTrackArray->At(TruePhotonCandidate->GetMCLabelNegative());
+//    AliAODMCParticle *mcPhoton = (AliAODMCParticle*) AODMCTrackArray->At(negDaughter->GetMother());
    // True Photon
-   hTrueResolutionR->Fill(TruePhotonCandidate->GetConversionRadius(),
-                           TruePhotonCandidate->GetConversionRadius()-(TMath::Sqrt(negDaughter->Xv()*negDaughter->Xv()+negDaughter->Yv()*negDaughter->Yv())));
-   hTrueResolutionZ->Fill(TruePhotonCandidate->GetConversionZ(),
-                           TruePhotonCandidate->GetConversionZ()-negDaughter->Zv());
-   hTrueResolutionPhi->Fill(TruePhotonCandidate->Phi(),
-                             TruePhotonCandidate->Phi()-mcPhoton->Phi());
-   hTrueGammaPt->Fill(TruePhotonCandidate->Pt());
-   hTrueGammaPhi->Fill(TruePhotonCandidate->Phi());
-   hTrueGammaEta->Fill(TruePhotonCandidate->Eta());
-   hTrueGammaMass->Fill(TruePhotonCandidate->GetMass());
-   hTrueGammaChi2perNDF->Fill(TruePhotonCandidate->GetChi2perNDF());
-   hTrueGammaPsiPair->Fill(TruePhotonCandidate->GetPsiPair());
-   hTrueGammaQt->Fill(TruePhotonCandidate->GetArmenterosQt());
-   hTrueGammaCosinePointingAngle->Fill(fConversionCuts->GetCosineOfPointingAngle(TruePhotonCandidate,fInputEvent));
-   hTrueGammaXY->Fill(TruePhotonCandidate->GetConversionX(),TruePhotonCandidate->GetConversionY());
-   hTrueGammaZR->Fill(TruePhotonCandidate->GetConversionZ(),TruePhotonCandidate->GetConversionRadius());
-   hTrueElecPt->Fill(elec->Pt(),posi->Pt());
-   hTrueElecEta->Fill(elec->Eta(),posi->Eta());
-   hTrueElecPhi->Fill(elec->Phi(),posi->Phi());
-   hTrueElecNfindableClsTPC
-      ->Fill((Float_t)elec->GetTPCClusterInfo(2,0,fConversionCuts->GetFirstTPCRow(TruePhotonCandidate->GetConversionRadius())));
-   hTruePosiNfindableClsTPC
-      ->Fill((Float_t)posi->GetTPCClusterInfo(2,0,fConversionCuts->GetFirstTPCRow(TruePhotonCandidate->GetConversionRadius())));
+//    hTrueResolutionR->Fill(TruePhotonCandidate->GetConversionRadius(),
+//                            TruePhotonCandidate->GetConversionRadius()-(TMath::Sqrt(negDaughter->Xv()*negDaughter->Xv()+negDaughter->Yv()*negDaughter->Yv())));
+//    hTrueResolutionZ->Fill(TruePhotonCandidate->GetConversionZ(),
+//                            TruePhotonCandidate->GetConversionZ()-negDaughter->Zv());
+//    hTrueResolutionPhi->Fill(TruePhotonCandidate->Phi(),
+//                              TruePhotonCandidate->Phi()-mcPhoton->Phi());
+//    hTrueGammaPt->Fill(TruePhotonCandidate->Pt());
+//    hTrueGammaPhi->Fill(TruePhotonCandidate->Phi());
+//    hTrueGammaEta->Fill(TruePhotonCandidate->Eta());
+//    hTrueGammaMass->Fill(TruePhotonCandidate->GetMass());
+//    hTrueGammaChi2perNDF->Fill(TruePhotonCandidate->GetChi2perNDF());
+//    hTrueGammaPsiPair->Fill(TruePhotonCandidate->GetPsiPair());
+//    hTrueGammaQt->Fill(TruePhotonCandidate->GetArmenterosQt());
+//    hTrueGammaCosinePointingAngle->Fill(fConversionCuts->GetCosineOfPointingAngle(TruePhotonCandidate,fInputEvent));
+//    hTrueGammaXY->Fill(TruePhotonCandidate->GetConversionX(),TruePhotonCandidate->GetConversionY());
+//    hTrueGammaZR->Fill(TruePhotonCandidate->GetConversionZ(),TruePhotonCandidate->GetConversionRadius());
+//    hTrueElecPt->Fill(elec->Pt(),posi->Pt());
+//    hTrueElecEta->Fill(elec->Eta(),posi->Eta());
+//    hTrueElecPhi->Fill(elec->Phi(),posi->Phi());
+//    hTrueElecNfindableClsTPC
+//       ->Fill((Float_t)elec->GetTPCClusterInfo(2,0,fConversionCuts->GetFirstTPCRow(TruePhotonCandidate->GetConversionRadius())));
+//    hTruePosiNfindableClsTPC
+//       ->Fill((Float_t)posi->GetTPCClusterInfo(2,0,fConversionCuts->GetFirstTPCRow(TruePhotonCandidate->GetConversionRadius())));
    // hTrueElecNfindableClsTPC->Fill((Float_t)elec->GetNcls(1)/(Float_t)elec->GetTPCNclsF());
    // hTruePosiNfindableClsTPC->Fill((Float_t)posi->GetNcls(1)/(Float_t)posi->GetTPCNclsF());
-}
+// }
 
 //________________________________________________________________________
 void AliAnalysisTaskConversionQA::CountTracks(){
@@ -932,6 +1068,20 @@ void AliAnalysisTaskConversionQA::RelabelAODPhotonCandidates(Bool_t mode){
       delete[] fMCStackPos;
       delete[] fMCStackNeg;
    }
+}
+
+void AliAnalysisTaskConversionQA::SetLogBinningXTH2(TH2* histoRebin){
+   TAxis *axisafter = histoRebin->GetXaxis(); 
+   Int_t bins = axisafter->GetNbins();
+   Double_t from = axisafter->GetXmin();
+   Double_t to = axisafter->GetXmax();
+   Double_t *newbins = new Double_t[bins+1];
+   newbins[0] = from;
+   Double_t factor = TMath::Power(to/from, 1./bins);
+   for(Int_t i=1; i<=bins; ++i) newbins[i] = factor * newbins[i-1];
+   axisafter->Set(bins, newbins);
+   delete [] newbins;
+
 }
 
 //________________________________________________________________________
