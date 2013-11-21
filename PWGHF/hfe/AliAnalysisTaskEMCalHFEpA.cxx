@@ -18,7 +18,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: November 11th, 2013.								  //
+	//		version: November 21, 2013.								  //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -738,6 +738,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fNTracks= new  TH1F *[3];
 	fNClusters= new TH1F *[3];
 	fTPCNcls_EoverP= new TH2F *[3];	
+	fTPCNcls_pid=new TH2F *[4];
 	
 	for(Int_t i = 0; i < 3; i++)
 	{
@@ -752,6 +753,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fNTracks[i]= new  TH1F(Form("fNTracks%d",i),"NTracks",1000, 0,1000);
 		fNClusters[i]= new TH1F(Form("fNClusters%d",i),"fNClusters0",200, 0,100);
 		fTPCNcls_EoverP[i]= new TH2F(Form("fTPCNcls_EoverP%d",i),"TPCNcls_EoverP",1000,0,200,200,0,2);	
+			
 		
 		
 		fOutputList->Add(fEoverP_pt[i]);
@@ -765,6 +767,12 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fOutputList->Add(fNTracks[i]);
 		fOutputList->Add(fNClusters[i]);
 		fOutputList->Add(fTPCNcls_EoverP[i]);
+	}
+	
+	for(Int_t i = 0; i < 4; i++)
+	{
+		fTPCNcls_pid[i]= new TH2F(Form("fTPCNcls_pid%d",i),"fTPCNcls_pid;NCls;NCls for PID",200,0,200,200,0,200);
+		fOutputList->Add(fTPCNcls_pid[i]);
 	}
 	
 		//pt bin
@@ -957,7 +965,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fTPCnsigma_eta = new TH2F("fTPCnsigma_eta",";Pseudorapidity #eta; TPC signal - <TPC signal>_{elec} (#sigma)",200,-0.9,0.9,200,-15,15);
 	fTPCnsigma_phi = new TH2F("fTPCnsigma_phi",";Azimuthal Angle #phi; TPC signal - <TPC signal>_{elec} (#sigma)",200,0,2*TMath::Pi(),200,-15,15);
 	
-	fTPCNcls_pid= new TH2F("fTPCNcls_pid","fTPCNcls_pid;NCls;NCls for PID",159,0,159,159,0,159);	
+	
 	
 	fNcells_pt=new TH2F("fNcells_pt","fNcells_pt",1000, 0,20,100,0,30);
 	fEoverP_pt_pions= new TH2F("fEoverP_pt_pions","fEoverP_pt_pions",1000,0,30,500,0,2);
@@ -981,7 +989,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fOutputList->Add(fEoverP_pt_pions2);
 	fOutputList->Add(fEoverP_pt_hadrons);
 	
-	fOutputList->Add(fTPCNcls_pid);
+	
 
 	
 		//__________________________________________________________________
@@ -1488,7 +1496,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		Float_t TPCNcls = track->GetTPCNcls();
 		//TPC Ncls for pid
 		Float_t TPCNcls_pid = track->GetTPCsignalN();
-		fTPCNcls_pid->Fill(TPCNcls, TPCNcls_pid);
+		
 		
 		
 		Float_t pos[3]={0,0,0};
@@ -1529,7 +1537,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		fVtxZ[0]->Fill(fZvtx);
 		fNTracks[0]->Fill(fNOtrks);
 		fNClusters[0]->Fill(ClsNo);
-		
+		fTPCNcls_pid[0]->Fill(TPCNcls, TPCNcls_pid);
 			//______________________________________________________________
 		
 			///Fill QA plots without track selection
@@ -1786,6 +1794,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		fVtxZ[1]->Fill(fZvtx);
 		fNTracks[1]->Fill(fNOtrks);
 		fNClusters[1]->Fill(ClsNo);
+		fTPCNcls_pid[1]->Fill(TPCNcls, TPCNcls_pid);
 			//______________________________________________________________
 		
 			///______________________________________________________________________
@@ -2147,19 +2156,23 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 						}
 					}
 					
-					
+					//_______________________________________________________
+					//PID using EMCal
 					if((fClus->E() / fP) >= fEoverPCutMin && (fClus->E() / fP) <= fEoverPCutMax)
 					{	
 						
 					    fECluster[2]->Fill(Energy);
-							//_______________________________________________________
-							//Correlation Analysis
+						fTPCNcls_pid[3]->Fill(TPCNcls, TPCNcls_pid);
+						//_______________________________________________________
+						//Correlation Analysis
 						if(fUseEMCal)
 						{
 							fPtElec_Inc->Fill(fPt);
-								//new function to fill non-HFE histos
+							//Eta cut for background
 							if(fFillBackground){
-								Background(track, iTracks, Vtrack, kFALSE);
+								if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax){
+									Background(track, iTracks, Vtrack, kFALSE);
+								}
 							}
 							
 							double emctof2 = fClus->GetTOF();
@@ -2170,17 +2183,17 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 								ElectronHadronCorrelation(track, iTracks, Vtrack);
 							}
 						}
-							//_______________________________________________________
+						//_______________________________________________________
 						
-							////////////////////////////////////////////////////////////////////
-							///EMCal - efficiency calculations 
+						////////////////////////////////////////////////////////////////////
+						///EMCal - efficiency calculations 
 						
 						if(track->Charge()<0)  fCharge_n->Fill(fPt);
 						if(track->Charge()>0)  fCharge_p->Fill(fPt);
 						
 						
-							/// changing start here
-						if(fIsMC && fIsAOD && track->GetLabel()>=0)
+							
+						if(fIsMC && fIsAOD && track->GetLabel()>=0)//AOD
 						{
 							if(track->Charge()<0)  fCharge_n->Fill(fPt);
 							if(track->Charge()>0)  fCharge_p->Fill(fPt);
@@ -2311,6 +2324,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		fVtxZ[2]->Fill(fZvtx);
 		fNTracks[2]->Fill(fNOtrks);
 		fNClusters[2]->Fill(ClsNo);
+		fTPCNcls_pid[2]->Fill(TPCNcls, TPCNcls_pid);
 		
 			//______________________________________________________________
 		
