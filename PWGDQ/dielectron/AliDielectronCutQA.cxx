@@ -47,7 +47,7 @@ ClassImp(AliDielectronCutQA)
 
 AliDielectronCutQA::AliDielectronCutQA() :
   TNamed(),
-  fQAHistArray(0x0)
+  fQAHistArray()
 {
   //
   // Default constructor
@@ -60,15 +60,15 @@ AliDielectronCutQA::AliDielectronCutQA() :
     }
   }
   fTypeKeys[kTrack] = "Track";
-  fTypeKeys[kPair] = "Pair";
+  fTypeKeys[kPair]  = "Pair";
   fTypeKeys[kEvent] = "Event";
-
+  fQAHistArray.SetOwner();
 }
 
 //_____________________________________________________________________
 AliDielectronCutQA::AliDielectronCutQA(const char* name, const char* title) :
   TNamed(name, title),
-  fQAHistArray(0x0)
+  fQAHistArray()
 {
   //
   // Named Constructor
@@ -83,7 +83,7 @@ AliDielectronCutQA::AliDielectronCutQA(const char* name, const char* title) :
   fTypeKeys[kTrack] = "Track";
   fTypeKeys[kPair]  = "Pair";
   fTypeKeys[kEvent] = "Event";
-
+  fQAHistArray.SetOwner();
 }
 
 //_____________________________________________________________________
