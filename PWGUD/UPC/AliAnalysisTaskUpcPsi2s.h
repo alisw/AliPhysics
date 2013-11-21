@@ -23,9 +23,12 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   virtual void Init();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
+  virtual void RunAODtrig();
   virtual void RunAODhist();
   virtual void RunAODtree();
-  virtual void RunESD();
+  virtual void RunESDtrig();
+  virtual void RunESDhist();
+  virtual void RunESDtree();
   virtual void Terminate(Option_t *);
   void SetRunTree(Bool_t runTree){fRunTree = runTree;}
   void SetRunHist(Bool_t runHist){fRunHist = runHist;}
@@ -35,9 +38,6 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   Bool_t fRunTree; 
   Bool_t fRunHist;
   
-  //counter
-  TH1I *hCounter; //!
-
   //event tree
   TTree *fJPsiTree;
   TTree *fPsi2sTree;
@@ -62,8 +62,12 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   TClonesArray *fPsi2sAODTracks;
   TClonesArray *fPsi2sESDTracks;
   
+  TList *fListTrig;
+  TH1D *fHistUpcTriggersPerRun;
+  TH1D *fHistZedTriggersPerRun;
+  TH1D *fHistCvlnTriggersPerRun;
+  
   TList *fListHist;
-  TH1D *fHistTriggersPerRun;
   TH1D *fHistNeventsJPsi; 
   TH2D *fHistTPCsignalJPsi;
   TH2D *fHistDiLeptonPtJPsi;
@@ -73,8 +77,6 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   TH1D *fHistNeventsPsi2s;
   TH2D *fHistPsi2sMassVsPt;
   TH1D *fHistPsi2sMassCoherent;
-  
-  TH1D *fHistK0sMass;
   
   AliAnalysisTaskUpcPsi2s(const AliAnalysisTaskUpcPsi2s&); //not implemented
   AliAnalysisTaskUpcPsi2s& operator =(const AliAnalysisTaskUpcPsi2s&); //not implemented
