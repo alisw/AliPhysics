@@ -46,3 +46,22 @@ AliTPCComposedCorrection* GetComposedResidualDistortion(TString fluctuationMap, 
 
   return residualDistortion;
 }
+
+AliTPCCorrectionLookupTable* GetResidualTable(TString fluctuationMap, TString averageMap, Bool_t rescale=kTRUE)
+{
+  TFile fFluct(fluctuationMap);
+  AliTPCCorrectionLookupTable *corrFluct = (AliTPCCorrectionLookupTable*)fFluct.Get("map");
+  fFluct.Close();
+  
+  TFile fAverage(averageMap);
+  AliTPCCorrectionLookupTable *corrAverage = (AliTPCCorrectionLookupTable*)fAverage.Get("map");
+  fAverage.Close();
+
+  Double_t scale=AliToyMCEventGenerator::GetSCScalingFactor(corrFluct, corrAverage,dummy);
+
+  corrAverage->SetCorrScaleFactor(scale);
+
+  AliTPCCorrectionLookupTable *tab=new AliTPCCorrectionLookupTable;
+  tab->CreateResidual(corrFluct, corrAverage);
+  
+}

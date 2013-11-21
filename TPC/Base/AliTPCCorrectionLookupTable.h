@@ -25,6 +25,7 @@ public:
   void CreateLookupTableSinglePhi(AliTPCCorrection &tpcCorr, Int_t iPhi, Float_t stepSize=5.);
 
   void CreateLookupTableFromResidualDistortion(THn &resDist);
+  void CreateResidual(AliTPCCorrection *distortion, AliTPCCorrection* correction);
   
   void MergePhiTables(const char* files);
 

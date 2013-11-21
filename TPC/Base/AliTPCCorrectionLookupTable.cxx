@@ -276,8 +276,6 @@ void AliTPCCorrectionLookupTable::CreateLookupTableFromResidualDistortion(THn &r
     return;
   }
   
-  TStopwatch s;
-  
   ResetTables();
   InitTables();
 
@@ -323,7 +321,63 @@ void AliTPCCorrectionLookupTable::CreateLookupTableFromResidualDistortion(THn &r
     }
   }
 }
+
+//_________________________________________________________________________________________
+void AliTPCCorrectionLookupTable::CreateResidual(AliTPCCorrection *distortion, AliTPCCorrection* correction)
+{
+  //
+  // create lookup table from residual distortions calculated from distorted - correction
+  //
   
+  ResetTables();
+  InitTables();
+  
+  Float_t x[3]={0.,0.,0.};
+  
+  for (Int_t iPhi=0; iPhi<fNPhi; ++iPhi){
+    const Double_t phi=fLimitsPhi(iPhi);
+    //
+    TMatrixF &mDxDist   = *fLookUpDxDist[iPhi];
+    TMatrixF &mDyDist   = *fLookUpDyDist[iPhi];
+    TMatrixF &mDzDist   = *fLookUpDzDist[iPhi];
+    //
+    TMatrixF &mDxCorr   = *fLookUpDxCorr[iPhi];
+    TMatrixF &mDyCorr   = *fLookUpDyCorr[iPhi];
+    TMatrixF &mDzCorr   = *fLookUpDzCorr[iPhi];
+    
+    for (Int_t ir=0; ir<fNR; ++ir){
+      const Double_t r=fLimitsR(ir);
+      x[0]=r * TMath::Cos(phi);
+      x[1]=r * TMath::Sin(phi);
+      
+      for (Int_t iz=0; iz<fNZ; ++iz){
+        const Double_t z=fLimitsZ(iz);
+        x[2]=z;
+
+        //original point
+        Float_t xo[3]={x[0], x[1], x[2]};
+        
+        Int_t roc=TMath::Nint(phi*TMath::RadToDeg()/20.)%18;
+        if (r>133.) roc+=36;
+        if (z<0)    roc+=18;
+
+        //get residual distortion
+        distortion->DistortPoint(x, roc);
+        correction->CorrectPoint(x, roc);
+        Float_t dx[3]={xo[0]-x[0], xo[1]-x[1], xo[2]-x[2]};
+        
+        mDxDist(ir,iz)=dx[0];
+        mDyDist(ir,iz)=dx[1];
+        mDzDist(ir,iz)=dx[2];
+        
+        mDxCorr(ir,iz)=-dx[0];
+        mDyCorr(ir,iz)=-dx[1];
+        mDzCorr(ir,iz)=-dx[2];
+      }
+    }
+  }
+}
+
 //_________________________________________________________________________________________
 void AliTPCCorrectionLookupTable::InitTablesPhiBin(Int_t iPhi)
 {
