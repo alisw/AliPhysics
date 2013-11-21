@@ -195,6 +195,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"EffPair",                "A#times#epsilon",                                    ""},
   {"OneOverEffPair",         "(A#times#epsilon)^{-1}",                             ""},
   {"RndmPair",               "P",                                                  ""},
+  {"Pairs",                  "pairs/event",                                        ""},
   //
   {"X",                      "x_{prim.vtx}",                                       "(cm)"},
   {"Y",                      "y_{prim.vtx}",                                       "(cm)"},
@@ -351,7 +352,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"TPCsub12DiffH2uc",       "cos(2(#Psi^{TPCsub1}-#Psi^{TPCsub2})) (uncorr.)",    ""},
 
   {"NTrk",                   "N_{trk}",                                            ""},
-  {"Tracks",                 "tracks",                                             ""},
+  {"Tracks",                 "tracks/per event",                                             ""},
   {"NVtxContrib",            "N_{vtx. contrib.}",                                  ""},
   {"NVtxContribTPC",         "N_{vtx. contrib.}^{TPC}",                            ""},
   {"Nacc",                   "N_{acc} #cbar_{#||{#eta}<0.9}",                      ""},

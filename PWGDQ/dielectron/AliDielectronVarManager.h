@@ -254,6 +254,7 @@ public:
     kPairEff,                // pair efficiency
     kOneOverPairEff,         // 1 / pair efficiency (correction factor)
     kRndmPair,               // radomly created number (used to apply special signal reduction cuts)
+    kPairs,                  // number of Ev1PM pair candidates after all cuts
     kPairMax,                 //
   // Event specific variables
     kXvPrim=kPairMax,        // prim vertex
@@ -350,7 +351,7 @@ public:
     kTPCsub12DiffH2uc,          // TPC reaction plane difference of sub event 1,2 for 2nd harmonic (uncorrected)
 
     kNTrk,                   // number of tracks (or tracklets) TODO: ambiguous
-    kTracks,                 // ESD tracks TODO: ambiguous
+    kTracks,                 // track after all cuts
     kNVtxContrib,             // number of primary vertex contibutors
     kNVtxContribTPC,         // number of TPC vertex contibutors
     kNacc,                   // Number of accepted tracks
