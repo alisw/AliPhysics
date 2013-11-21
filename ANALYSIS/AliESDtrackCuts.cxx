@@ -2335,8 +2335,16 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
     // are both clusters from the same tracks? If not, skip the tracklet (shouldn't change things much)
     if ((id1!=id2 && id1>=0 && id2>=0) || (id3!=id4 && id3>=0 && id4>=0)) continue;
 
-    Bool_t bUsedInGlobal = (id1 != -1) ? globalBits.TestBitNumber(id1) : 0;// has associated global track been associated to a previous tracklet?
-    Bool_t bUsedInPureITS = (id3 != -1) ? pureITSBits.TestBitNumber(id3) : 0;// has associated pure ITS track been associated to a previous tracklet?
+    Bool_t bUsedInGlobal = 0;
+    if (id1 != -1)      bUsedInGlobal = globalBits.TestBitNumber(id1);
+    else if (id2 != -1) bUsedInGlobal = globalBits.TestBitNumber(id2);
+    //
+    // has associated global track been associated to a previous tracklet?
+    Bool_t bUsedInPureITS = 0;
+    if (id3 != -1)      bUsedInPureITS = pureITSBits.TestBitNumber(id3);
+    else if (id4 != -1) bUsedInPureITS = pureITSBits.TestBitNumber(id4);
+    //
+    // has associated pure ITS track been associated to a previous tracklet?
     //*******************************************************************************************************
     if (trackType == kTrackletsITSTPC) {
       // count tracklets towards global+complementary tracks
@@ -2347,7 +2355,7 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
             if(id1>=0) globalBits.SetBitNumber(id1); // mark global track linked to this tracklet as "associated"
           }
       }
-      else if(id1<0) {
+      else if(!bUsedInGlobal) {
         ++trackletsITSTPC_complementary; // if no associated track, count the tracklet
       }
     } else {
@@ -2359,7 +2367,7 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
           if(id3>=0) pureITSBits.SetBitNumber(id3); // mark global track linked to this tracklet as "associated"
         }
       }
-      else if(id3<0) {
+      else if (bUsedInPureITS) {
         ++trackletsITSSA_complementary; // if no associated track, count the tracklet
       }
     }
