@@ -327,6 +327,12 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
     //     FillHistograms(0x0,kTRUE);
   }
 
+  // fill candidate variables
+  Double_t ntracks = fTracks[0].GetEntriesFast() + fTracks[1].GetEntriesFast();
+  Double_t npairs  = PairArray(AliDielectron::kEv1PM)->GetEntriesFast();
+  AliDielectronVarManager::SetValue(AliDielectronVarManager::kTracks, ntracks);
+  AliDielectronVarManager::SetValue(AliDielectronVarManager::kPairs,  npairs);
+
   //in case there is a histogram manager, fill the QA histograms
   if (fHistos && fSignalsMC) FillMCHistograms(ev1);
   if (fHistos) FillHistograms(ev1);
@@ -357,23 +363,29 @@ void AliDielectron::ProcessMC(AliVEvent *ev1)
 
   if (fHistos) FillHistogramsMC(dieMC->GetMCEvent(), ev1);
 
-  if(!fSignalsMC) return;
-  //loop over all MC data and Fill the HF, CF containers and histograms if they exist
-  if(fCfManagerPair) fCfManagerPair->SetPdgMother(fPdgMother);
+  // mc tracks
+  if(!dieMC->GetNMCTracks()) return;
 
   // signals to be studied
+  if(!fSignalsMC) return;
   Int_t nSignals = fSignalsMC->GetEntries();
+  if(!nSignals) return;
+
+  //loop over all MC data and Fill the HF, CF containers and histograms if they exist
+  if(fCfManagerPair) fCfManagerPair->SetPdgMother(fPdgMother);
 
   Bool_t bFillCF   = (fCfManagerPair ? fCfManagerPair->GetStepForMCtruth()  : kFALSE);
   Bool_t bFillHF   = (fHistoArray    ? fHistoArray->GetStepForMCGenerated() : kFALSE);
   Bool_t bFillHist = kFALSE;
-  for(Int_t isig=0;isig<nSignals;isig++) {
-    TString sigName = fSignalsMC->At(isig)->GetName();
+  if(fHistos) {
     const THashList *histlist =  fHistos->GetHistogramList();
-    bFillHist |= histlist->FindObject(Form("Pair_%s_MCtruth",sigName.Data()))!=0x0;
-    bFillHist |= histlist->FindObject(Form("Track_Leg_%s_MCtruth",sigName.Data()))!=0x0;
-    bFillHist |= histlist->FindObject(Form("Track_%s_%s_MCtruth",fgkPairClassNames[1],sigName.Data()))!=0x0;
-    if(bFillHist) break;
+    for(Int_t isig=0;isig<nSignals;isig++) {
+      TString sigName = fSignalsMC->At(isig)->GetName();
+      bFillHist |= histlist->FindObject(Form("Pair_%s_MCtruth",sigName.Data()))!=0x0;
+      bFillHist |= histlist->FindObject(Form("Track_Leg_%s_MCtruth",sigName.Data()))!=0x0;
+      bFillHist |= histlist->FindObject(Form("Track_%s_%s_MCtruth",fgkPairClassNames[1],sigName.Data()))!=0x0;
+      if(bFillHist) break;
+    }
   }
   // check if there is anything to fill
   if(!bFillCF && !bFillHF && !bFillHist) return;

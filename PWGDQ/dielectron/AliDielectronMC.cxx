@@ -166,7 +166,7 @@ AliVParticle* AliDielectronMC::GetMCTrackFromMCEvent(Int_t label) const
     track = fMCEvent->GetTrack(label); //  tracks from MC event (ESD)
   } else if(fAnaType == kAOD) {
     if (!fMcArray){ AliError("No fMcArray"); return NULL;}
-    if (label>fMcArray->GetEntriesFast()) { AliWarning(Form("track %d out of array size %d",label,fMcArray->GetEntriesFast())); return NULL;}
+    if (label>fMcArray->GetEntriesFast()) { AliDebug(10,Form("track %d out of array size %d",label,fMcArray->GetEntriesFast())); return NULL;}
     track = (AliVParticle*)fMcArray->At(label); //  tracks from MC event (AOD)
   }
   return track;

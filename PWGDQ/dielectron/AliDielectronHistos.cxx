@@ -1207,14 +1207,8 @@ void AliDielectronHistos::FillValues(TH1 *obj, const Double_t *values)
       for(Int_t i=0; i<30; i++) { if(TESTBIT((UInt_t)values[value1],i)) obj->Fill(i); }
       break;
     case 2:
-      if(value1==AliDielectronVarManager::kTriggerInclONL || value1==AliDielectronVarManager::kTriggerInclOFF) {
-	for(Int_t i=0; i<30; i++) { if(TESTBIT((UInt_t)values[value1],i)) obj->Fill(i, values[value2]); }
-      }
-      else if(value2==AliDielectronVarManager::kTriggerInclONL || value2==AliDielectronVarManager::kTriggerInclOFF) {
-	for(Int_t i=0; i<30; i++) { if(TESTBIT((UInt_t)values[value2],i)) obj->Fill(values[value1], i); }
-      }
-      else if((value1==AliDielectronVarManager::kTriggerInclOFF && value2==AliDielectronVarManager::kTriggerInclONL) ||
-	      (value1==AliDielectronVarManager::kTriggerInclONL && value2==AliDielectronVarManager::kTriggerInclOFF) ) {
+      if((value1==AliDielectronVarManager::kTriggerInclOFF && value2==AliDielectronVarManager::kTriggerInclONL) ||
+	 (value1==AliDielectronVarManager::kTriggerInclONL && value2==AliDielectronVarManager::kTriggerInclOFF) ) {
 	for(Int_t i=0; i<30; i++) {
 	  if((UInt_t)values[value1]==BIT(i)) {
 	    for(Int_t i2=0; i2<30; i2++) {
@@ -1224,6 +1218,12 @@ void AliDielectronHistos::FillValues(TH1 *obj, const Double_t *values)
 	    } //loop 2
 	  }//bit fired
 	} // loop 1
+      }
+      else if(value1==AliDielectronVarManager::kTriggerInclONL || value1==AliDielectronVarManager::kTriggerInclOFF) {
+	for(Int_t i=0; i<30; i++) { if(TESTBIT((UInt_t)values[value1],i)) obj->Fill(i, values[value2]); }
+      }
+      else if(value2==AliDielectronVarManager::kTriggerInclONL || value2==AliDielectronVarManager::kTriggerInclOFF) {
+	for(Int_t i=0; i<30; i++) { if(TESTBIT((UInt_t)values[value2],i)) obj->Fill(values[value1], i); }
       }
       else //makes no sense
 	return;
