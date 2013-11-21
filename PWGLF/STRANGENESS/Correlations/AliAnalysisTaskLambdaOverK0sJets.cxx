@@ -414,7 +414,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
     fK0sAssocPtRap    = new TH3F("fK0sAssocPtRap","K^{0}_{S} Assoc;p_{T} (GeV/c);y;centrality",nbins,pMin,pMax,30,-1.5,1.5,100,0.,100.);
     fOutput->Add(fK0sAssocPtRap);
 
-    fK0sAssocPtMassArm    = new TH3F("fK0sAssocPtMassArm","K^{0}_{S} Assoc;Mass (GeV/c^{2})p_{T} (GeV/c);centrality",nbins/2,0.448,0.548,nbins,pMin,pMax,100,0.,100.);
+    fK0sAssocPtMassArm    = new TH3F("fK0sAssocPtMassArm","K^{0}_{S} Assoc;Mass (GeV/c^{2})p_{T} (GeV/c);centrality",nbins,0.398,0.598,nbins,pMin,pMax,100,0.,100.);
     fOutput->Add(fK0sAssocPtMassArm);
 
     fK0sAssocPtRapEmbeded    = new TH3F("fK0sAssocPtRapEmbeded","K^{0}_{S} Assoc  - Embeded MC;p_{T} (GeV/c);y;centrality",nbins,pMin,pMax,30,-1.5,1.5,100,0.,100.);
@@ -559,7 +559,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
   
   // ****** K0s ******
   fK0sMass = 
-    new TH3F("fK0sMass", "K^{0}_{s}: mass vs p_{T}",nbins/2,0.448,0.548,nbins,pMin,pMax,100,0.,100.);
+    new TH3F("fK0sMass", "K^{0}_{s}: mass vs p_{T}",nbins,0.398,0.598,nbins,pMin,pMax,100,0.,100.);
   fK0sMass->GetXaxis()->SetTitle("Mass (GeV/c^2)"); 
   fK0sMass->GetYaxis()->SetTitle("p_{T} (GeV/c)"); 
   fK0sMass->GetZaxis()->SetTitle("centrality"); 
@@ -591,7 +591,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
 
   fK0sMassPtPhi  = 
     new TH3F("fK0sMassPtPhi","K^{0}_{s}: mass vs pt vs #phi;Mass (GeV/c^2);p_{T} (GeV/c);#phi (rad)",
-	     nbins/2,0.448,0.548,nbins,pMin,pMax,nbinsPhi,0.,2.*TMath::Pi());
+	     nbins,0.398,0.598,nbins,pMin,pMax,nbinsPhi,0.,2.*TMath::Pi());
   fOutput->Add(fK0sMassPtPhi);
 
 
@@ -628,7 +628,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
 	fK0sdPhidEtaPtL[jj*kN1*kNVtxZ  + k*kNVtxZ + ll] = new TH3F(hNameHist,"K^{0}_{S}: #Delta#phi vs #Delta#eta vs Inv. Mass",
 					     nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
 					     nbinsdEta,-1.5,1.5,
-					     nbins/2,0.448,0.548);
+					     nbins,0.398,0.598);
 	fK0sdPhidEtaPtL[jj*kN1*kNVtxZ  + k*kNVtxZ + ll]->GetXaxis()->SetTitle("#Delta#phi (rad)"); 
 	fK0sdPhidEtaPtL[jj*kN1*kNVtxZ  + k*kNVtxZ + ll]->GetYaxis()->SetTitle("#Delta#eta"); 
 	fK0sdPhidEtaPtL[jj*kN1*kNVtxZ  + k*kNVtxZ + ll]->GetZaxis()->SetTitle("Inv. Mass"); 
@@ -2523,7 +2523,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
     //   K0s selection
     // *******************
     if (ctK && (TMath::Abs(v0->RapK0Short())<fYMax) &&
-        ( lPtArmV0 > TMath::Abs(0.2*lAlphaV0) ) && ( massK0s > 0.4479 && massK0s < 0.5481 ) ) {
+        ( lPtArmV0 > TMath::Abs(0.2*lAlphaV0) ) && ( massK0s > 0.3979 && massK0s < 0.5981 ) ) {
       
       switch(step) {
       case kTriggerCheck: 
