@@ -2322,13 +2322,13 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
   //*******************************************************************************************************
   // get multiplicity from ITS tracklets to complement TPC+ITS, and ITSpureSA
   const AliMultiplicity* spdmult = esd->GetMultiplicity();    // spd multiplicity object
-  for (Int_t iTracklet=0; iTracklet<spdmult->GetNumberOfTracklets(); ++iTracklet) {
-    if (TMath::Abs(spdmult->GetEta(iTracklet)) > etaRange) continue; // eta selection for tracklets
+  for (Int_t i=0; i<spdmult->GetNumberOfTracklets(); ++i) {
+    if (TMath::Abs(spdmult->GetEta(i)) > etaRange) continue; // eta selection for tracklets
     
     // if counting tracks+tracklets, check if clusters were already used in tracks
     Int_t id1, id2, id3, id4;
-    spdmult->GetTrackletTrackIDs ( iTracklet, 0, id1, id2 ); // references for eventual Global/ITS_SA tracks
-    spdmult->GetTrackletTrackIDs ( iTracklet, 1, id3, id4 ); // references for eventual ITS_SA_pure tracks
+    spdmult->GetTrackletTrackIDs ( i, 0, id1, id2 ); // references for eventual Global/ITS_SA tracks
+    spdmult->GetTrackletTrackIDs ( i, 1, id3, id4 ); // references for eventual ITS_SA_pure tracks
     
     // are both clusters from the same tracks? If not, skip the tracklet (shouldn't change things much)
     if ( ( id1 != id2 && id1 >= 0 && id2 >= 0 ) || ( id3 != id4 && id3 >= 0 && id4 >= 0 ) ) continue;
