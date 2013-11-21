@@ -253,6 +253,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2D *fHistProbTPCTOFvsPtbeforePID;//TOF/TPC probability vs pT before PID cuts (QA histogram)
   TH2D *fHistNSigmaTPCvsPtbeforePID;//TPC nsigma vs pT before PID cuts (QA histogram)
   TH2D *fHistNSigmaTOFvsPtbeforePID;//TOF nsigma vs pT before PID cuts (QA histogram)
+  TH2D *fHistBetaVsdEdXbeforePID;//TPCTOF  before PID cuts (QA histogram)//+++++++++++++++++++++
+  TH2D *fHistNSigmaTPCTOFvsPtbeforePID;//TPCTOF  before PID cuts (QA histogram)//+++++++++++++++++++++
   TH2D *fHistdEdxVsPTPCafterPID;//TPC dEdx vs momentum after PID cuts (QA histogram)
   TH2D *fHistBetavsPTOFafterPID;//beta vs momentum after PID cuts (QA histogram)
   TH2D *fHistProbTPCvsPtafterPID; //TPC probability vs pT after PID cuts (QA histogram)
@@ -260,6 +262,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2D *fHistProbTPCTOFvsPtafterPID;//TOF/TPC probability vs pT after PID cuts (QA histogram)
   TH2D *fHistNSigmaTPCvsPtafterPID;//TPC nsigma vs pT after PID cuts (QA histogram)
   TH2D *fHistNSigmaTOFvsPtafterPID;//TOF nsigma vs pT after PID cuts (QA histogram)
+  TH2D *fHistBetaVsdEdXafterPID;//TPCTOF  before PID cuts (QA histogram)//+++++++++++++++++++++
+  TH2D *fHistNSigmaTPCTOFvsPtafterPID;//TPCTOF  before PID cuts (QA histogram)//+++++++++++++++++++++
   
   TH3F *fHistCorrectionPlus[kCENTRALITY]; //====correction
   TH3F *fHistCorrectionMinus[kCENTRALITY]; //===correction
@@ -283,7 +287,6 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Double_t fElectronRejectionNSigma;//nsigma cut for electron rejection
   Double_t fElectronRejectionMinPt;//minimum pt for electron rejection (default = 0.)
   Double_t fElectronRejectionMaxPt;//maximum pt for electron rejection (default = 1000.)
-
   //============PID============//
 
   AliESDtrackCuts *fESDtrackCuts; //ESD track cuts
