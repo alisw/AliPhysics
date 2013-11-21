@@ -886,8 +886,8 @@ void Plot_plotsTPR(){
   Specif_Marker_2->Draw("same");
   TLatex *Specif_Kt3;
   TLatex *Specif_kt;
-  if(KT3Bin==0) {Specif_Kt3 = new TLatex(0.57, 0.83,"0.16<K_{T,3}<0.3, <k_{T}>=0.3 GeV/c"); Specif_kt = new TLatex(0.57, 0.76,"0.3<k_{T}<0.4, <k_{T}>=0.32 GeV/c");}
-  if(KT3Bin==1) {Specif_Kt3 = new TLatex(0.57, 0.83,"0.3<K_{T,3}<1.0, <k_{T}>=0.4 GeV/c"); Specif_kt = new TLatex(0.57, 0.76,"0.4<k_{T}<0.5, <k_{T}>=0.42 GeV/c");}
+  if(KT3Bin==0) {Specif_Kt3 = new TLatex(0.57, 0.83,"0.16<K_{T,3}<0.3, <k_{T}>=0.24 GeV/c"); Specif_kt = new TLatex(0.57, 0.76,"0.2<k_{T}<0.3, <k_{T}>=0.25 GeV/c");}
+  if(KT3Bin==1) {Specif_Kt3 = new TLatex(0.57, 0.83,"0.3<K_{T,3}<1.0, <k_{T}>=0.39 GeV/c"); Specif_kt = new TLatex(0.57, 0.76,"0.3<k_{T}<0.4, <k_{T}>=0.35 GeV/c");}
   //if(KT3Bin==0) {Specif_Kt3 = new TLatex(0.57, 0.83,"0.16<K_{T,3}<0.25 GeV/c"); Specif_kt = new TLatex(0.57, 0.76,"0.2<k_{T}<0.3 GeV/c");}
   //if(KT3Bin==1) {Specif_Kt3 = new TLatex(0.57, 0.83,"0.25<K_{T,3}<0.35 GeV/c"); Specif_kt = new TLatex(0.57, 0.76,"0.3<k_{T}<0.4 GeV/c");}
   //if(KT3Bin==2) {Specif_Kt3 = new TLatex(0.57, 0.83,"0.35<K_{T,3}<1.0 GeV/c"); Specif_kt = new TLatex(0.57, 0.76,"0.4<k_{T}<0.5 GeV/c");}
@@ -905,7 +905,7 @@ void Plot_plotsTPR(){
   ////////////////////////////////////////////////////
   // Correlation functions and Monte Carlo
 
-  TCanvas *can4 = new TCanvas("can4", "can4",1700,0,600,600);// 11,53,700,500
+  TCanvas *can4 = new TCanvas("can4", "can4",10,0,900,600);// 11,53,700,500
   can4->SetHighLightColor(2);
   gStyle->SetOptFit(0111);
   can4->SetFillColor(10);//10
@@ -920,102 +920,146 @@ void Plot_plotsTPR(){
   gPad->SetGridy(0);
   gPad->SetTickx();
   gPad->SetTicky();
-  pad4->SetTopMargin(0.02);//0.05
+  pad4->SetTopMargin(0.01);//0.05
   pad4->SetRightMargin(0.01);//3e-2
-  pad4->SetBottomMargin(0.07);//0.12
+  pad4->SetBottomMargin(0.15);//0.12
+  pad4->SetLeftMargin(0.15);
+  pad4->Divide(3,2,0,0);
   pad4->Draw();
-  pad4->cd();
-  TLegend *legend5 = new TLegend(.55,.78, .97,.97,NULL,"brNDC");//.45 or .4 for x1
-  legend5->SetBorderSize(0);
-  legend5->SetFillColor(0);
-  legend5->SetTextFont(TextFont);
-  legend5->SetTextSize(SizeLegend*SF2);
+  TLegend *legend5[6];
+  legend5[0] = new TLegend(.55,.78, .97,.97,NULL,"brNDC");//.45 or .4 for x1
+  legend5[0]->SetBorderSize(0);
+  legend5[0]->SetFillColor(0);
+  legend5[0]->SetTextFont(TextFont);
+  legend5[0]->SetTextSize(SizeLegend*SF2);
+  TLegend *legend5[1]=(TLegend*)legend5[0]->Clone();
+  TLegend *legend5[2]=(TLegend*)legend5[0]->Clone();
+  TLegend *legend5[3]=(TLegend*)legend5[0]->Clone();
+  TLegend *legend5[4]=(TLegend*)legend5[0]->Clone();
+  TLegend *legend5[5]=(TLegend*)legend5[0]->Clone();
   //
-  gPad->SetRightMargin(0.03); gPad->SetLeftMargin(0.12);
-  gPad->SetBottomMargin(0.1); gPad->SetTopMargin(0.02);
-  //
-  int System_proof=0;
-  int ChComb_proof=0;
-  int Mb_proof=2;// 0 and 12 for PbPb
-  
-  C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->SetMinimum(0.9); C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->SetMaximum(3.0);
-  if(System_proof==0 && Mb_proof<10) C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->SetMaximum(2.0);
-  //
-  //c3[2][0][0][KT3Bin][Mb_pp]->GetXaxis()->SetLabelSize(SizeLabel*SF2); c3[2][0][0][KT3Bin][Mb_pp]->GetYaxis()->SetLabelSize(SizeLabel*SF2);
-  //c3[2][0][0][KT3Bin][Mb_pp]->GetXaxis()->SetNdivisions(808);
-  //c3[2][0][0][KT3Bin][Mb_pp]->GetYaxis()->SetTitleSize(SizeTitle*SF1);
-  C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetYaxis()->SetTitle("#font[12]{C}_{3} or #font[12]{#bf{c}}_{3}");
-  C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetXaxis()->SetTitleOffset(1.2); C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetYaxis()->SetTitleOffset(1.2);
-  C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetXaxis()->SetNdivisions(808);
-  double Q3Limit;
-  if(System_proof==0) Q3Limit = 0.1 + 0.1*Mb_proof/16.;
-  else Q3Limit = 0.3 + 0.2*fabs(Mb_proof-10)/9.;
-  C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetXaxis()->SetRangeUser(0,Q3Limit);
-  C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->Draw();
-  
-
-  C3_Sys[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->Draw("E2 same");
-  c3_Sys[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->Draw("E2 same");
-  C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->Draw("same");
-  c3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->Draw("same");
-  if(System_proof!=0) c3[System_proof][1][ChComb_proof][KT3Bin][Mb_proof]->Draw("same");
-  if(ChComb_proof==0){
-    legend5->AddEntry(C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof],"#font[12]{C}_{3}^{#pm#pm#pm}","p");
-    legend5->AddEntry(c3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof],"#font[12]{#bf{c}}_{3}^{#pm#pm#pm}","p");
-    if(System_proof==1) legend5->AddEntry(c3[System_proof][1][ChComb_proof][KT3Bin][Mb_proof],"DPMJET #font[12]{#bf{c}}_{3}^{#pm#pm#pm}","p");
-    if(System_proof==2) legend5->AddEntry(c3[System_proof][1][ChComb_proof][KT3Bin][Mb_proof],"Pythia Perugia 6 #font[12]{#bf{c}}_{3}^{#pm#pm#pm}","p");
-  }else{
-    legend5->AddEntry(C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof],"#font[12]{C}_{3}^{#pm#pm#mp}","p");
-    legend5->AddEntry(c3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof],"#font[12]{#bf{c}}_{3}^{#pm#pm#mp}","p");
-    if(System_proof==1) legend5->AddEntry(c3[System_proof][1][ChComb_proof][KT3Bin][Mb_proof],"DPMJET #font[12]{#bf{c}}_{3}^{#pm#pm#mp}","p");
-    if(System_proof==2) legend5->AddEntry(c3[System_proof][1][ChComb_proof][KT3Bin][Mb_proof],"Pythia Perugia 6 #font[12]{#bf{c}}_{3}^{#pm#pm#mp}","p");
-  } 
-  
-  if(ChComb_proof==0) {
-    //c3_fit[System_proof][ChComb_proof][KT3Bin][Mb_proof]->Draw("c same");
-    if(!IncludeEW) legend5->AddEntry(c3_fit[System_proof][ChComb_proof][KT3Bin][Mb_proof],"Gaussian Fit to #font[12]{#bf{c}}_{3}^{#pm#pm#pm}","l");
-    if(IncludeEW) legend5->AddEntry(c3_fit[System_proof][ChComb_proof][KT3Bin][Mb_proof],"Edgeworth Fit to #font[12]{#bf{c}}_{3}^{#pm#pm#pm}","l");
+  for(int padNum=1; padNum<=6; padNum++){
+    pad4->cd(padNum);
+    if(padNum==1 || padNum==4) {
+      gPad->SetLeftMargin(0.13);
+    }else{
+      gPad->SetLeftMargin(0);
+    }
+    if(padNum>=4){
+      gPad->SetBottomMargin(0.13); gPad->SetTopMargin(0);
+    }else{
+      gPad->SetBottomMargin(0); gPad->SetTopMargin(0.02);
+    }
+    if(padNum==3 || padNum==6) gPad->SetRightMargin(0.02);
+    else gPad->SetRightMargin(0);
+    
+    //
+    int System_proof=0;
+    int ChComb_proof=0;
+    int Mb_proof=0;
+    if(padNum==1) {System_proof=2; ChComb_proof=0; Mb_proof=18;}
+    if(padNum==2) {System_proof=1; ChComb_proof=0; Mb_proof=14;}
+    if(padNum==3) {System_proof=0; ChComb_proof=0; Mb_proof=2;}
+    if(padNum==4) {System_proof=2; ChComb_proof=1; Mb_proof=18;}
+    if(padNum==5) {System_proof=1; ChComb_proof=1; Mb_proof=14;}
+    if(padNum==6) {System_proof=0; ChComb_proof=1; Mb_proof=2;}
+    
+    C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->SetMinimum(0.9); C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->SetMaximum(3.1);
+    //
+    //c3[2][0][0][KT3Bin][Mb_pp]->GetXaxis()->SetLabelSize(SizeLabel*SF2); c3[2][0][0][KT3Bin][Mb_pp]->GetYaxis()->SetLabelSize(SizeLabel*SF2);
+    //c3[2][0][0][KT3Bin][Mb_pp]->GetXaxis()->SetNdivisions(808);
+    //c3[2][0][0][KT3Bin][Mb_pp]->GetYaxis()->SetTitleSize(SizeTitle*SF1);
+    //C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetYaxis()->SetTitle("#font[12]{C}_{3} or #font[12]{#bf{c}}_{3}");
+    C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetXaxis()->SetTitleOffset(10); C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetYaxis()->SetTitleOffset(10);
+    
+    C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetXaxis()->SetNdivisions(808);
+    double Q3Limit;
+    if(System_proof==0) Q3Limit = 0.1 + 0.1*Mb_proof/16.;
+    else Q3Limit = 0.3 + 0.2*fabs(Mb_proof-10)/9.;
+    //C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetXaxis()->SetRangeUser(0,Q3Limit);
+    if(System_proof==1 || System_proof==2) C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetXaxis()->SetRangeUser(0,0.49);
+    else C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->GetXaxis()->SetRangeUser(0,0.105);
+    C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->DrawCopy();
+    
+    
+    C3_Sys[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->DrawCopy("E2 same");
+    c3_Sys[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->DrawCopy("E2 same");
+    C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->DrawCopy("same");
+    c3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof]->DrawCopy("same");
+    //if(System_proof!=0) c3[System_proof][1][ChComb_proof][KT3Bin][Mb_proof]->DrawCopy("same");// MC cumulants
+    if(padNum<=3){
+      legend5[padNum-1]->AddEntry(C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof],"#font[12]{C}_{3}^{#pm#pm#pm}","p");
+      legend5[padNum-1]->AddEntry(c3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof],"#font[12]{#bf{c}}_{3}^{#pm#pm#pm}","p");
+      //if(System_proof==1) legend5[0]->AddEntry(c3[System_proof][1][ChComb_proof][KT3Bin][Mb_proof],"DPMJET #font[12]{#bf{c}}_{3}^{#pm#pm#pm}","p");
+      //if(System_proof==2) legend5[0]->AddEntry(c3[System_proof][1][ChComb_proof][KT3Bin][Mb_proof],"Pythia Perugia 6 #font[12]{#bf{c}}_{3}^{#pm#pm#pm}","p");
+    }else{
+      legend5[padNum-1]->AddEntry(C3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof],"#font[12]{C}_{3}^{#pm#pm#mp}","p");
+      legend5[padNum-1]->AddEntry(c3[System_proof][0][ChComb_proof][KT3Bin][Mb_proof],"#font[12]{#bf{c}}_{3}^{#pm#pm#mp}","p");
+      //if(System_proof==1) legend5[0]->AddEntry(c3[System_proof][1][ChComb_proof][KT3Bin][Mb_proof],"DPMJET #font[12]{#bf{c}}_{3}^{#pm#pm#mp}","p");
+      //if(System_proof==2) legend5[0]->AddEntry(c3[System_proof][1][ChComb_proof][KT3Bin][Mb_proof],"Pythia Perugia 6 #font[12]{#bf{c}}_{3}^{#pm#pm#mp}","p");
+    }
+   
+    if(ChComb_proof==0) {
+      c3_fit[System_proof][ChComb_proof][KT3Bin][Mb_proof]->Draw("c same");
+      if(!IncludeEW) legend5[padNum-1]->AddEntry(c3_fit[System_proof][ChComb_proof][KT3Bin][Mb_proof],"Gaussian Fit to #font[12]{#bf{c}}_{3}^{#pm#pm#pm}","l");
+      if(IncludeEW) legend5[padNum-1]->AddEntry(c3_fit[System_proof][ChComb_proof][KT3Bin][Mb_proof],"Edgeworth Fit to #font[12]{#bf{c}}_{3}^{#pm#pm#pm}","l");
+    }
+    
+    TLatex *CTLabel;
+    if(System_proof==0) CTLabel = new TLatex(0.55,0.73,"Pb-Pb #sqrt{s_{NN}}=2.76 TeV");// 0.003,.988
+    if(System_proof==1) CTLabel = new TLatex(0.55,0.73,"p-Pb #sqrt{s_{NN}}=5.02 TeV");// 0.003,.988
+    if(System_proof==2) CTLabel = new TLatex(0.55,0.73,"pp #sqrt{s}=7 TeV");// 0.003,.988
+    CTLabel->SetNDC();
+    CTLabel->SetTextFont(TextFont);
+    CTLabel->SetTextSize(SizeTitle*SF2);
+    CTLabel->Draw("same");
+    
+    TString *nameCh=new TString("N_{ch} = ");
+    float Nch=1;
+    if(System_proof==0) Nch = pow(10,meanNchPbPb[Mb_proof]);
+    else if(System_proof==1) Nch = pow(10,meanNchpPb[Mb_proof]);
+    else Nch = pow(10,meanNchpp[Mb_proof]);
+    *nameCh += int(Nch);
+    nameCh->Append(" #pm ");
+    float SysPercent = 0.05;
+    int SigFig=0;
+    if(SysPercent*Nch < 1) {nameCh->Append("0."); SigFig=int(10*SysPercent*Nch + 0.5);}
+    else {SigFig=int(SysPercent*Nch + 0.5);}
+    
+    *nameCh += SigFig;
+    TLatex *MLabel = new TLatex(0.55,0.66,nameCh->Data());// (0.1 + 0.1*Mb_proof/16.) * 0.5,2.13
+    MLabel->SetNDC();
+    MLabel->SetTextFont(TextFont);
+    MLabel->SetTextSize(SizeTitle*SF2);
+    MLabel->Draw("same");
+    
+    
+    TLatex *Specif_Kt3_3 = new TLatex(0.55,0.59,"0.16<#font[12]{K}_{T,3}<0.3 GeV/c");
+    Specif_Kt3_3->SetNDC();
+    Specif_Kt3_3->SetTextFont(TextFont);
+    Specif_Kt3_3->SetTextSize(SizeTitle*SF2);
+    //Specif_Kt3_3->Draw("same");
+    TLatex *Specif_Kinematics_3 = new TLatex(0.55,0.52,"|#eta|<0.8, 0.16<p_{T}<1.0 GeV/c");
+    Specif_Kinematics_3->SetNDC();
+    Specif_Kinematics_3->SetTextFont(TextFont);
+    Specif_Kinematics_3->SetTextSize(SizeSpecif*SF2);
+    //Specif_Kinematics_3->Draw("same");
+    legend5[padNum-1]->Draw("same");
   }
   
-  TLatex *CTLabel;
-  if(System_proof==0) CTLabel = new TLatex(0.55,0.73,"Pb-Pb #sqrt{s_{NN}}=2.76 TeV");// 0.003,.988
-  if(System_proof==1) CTLabel = new TLatex(0.55,0.73,"p-Pb #sqrt{s_{NN}}=5.02 TeV");// 0.003,.988
-  if(System_proof==2) CTLabel = new TLatex(0.55,0.73,"pp #sqrt{s}=7 TeV");// 0.003,.988
-  CTLabel->SetNDC();
-  CTLabel->SetTextFont(TextFont);
-  CTLabel->SetTextSize(SizeTitle*SF2);
-  CTLabel->Draw("same");
-
-  TString *nameCh=new TString("N_{ch} = ");
-  float Nch=1;
-  if(System_proof==0) Nch = pow(10,meanNchPbPb[Mb_proof]);
-  else if(System_proof==1) Nch = pow(10,meanNchpPb[Mb_proof]);
-  else Nch = pow(10,meanNchpp[Mb_proof]);
-  *nameCh += int(Nch);
-  nameCh->Append(" #pm ");
-  float SysPercent = 0.05;
-  int SigFig=0;
-  if(SysPercent*Nch < 1) {nameCh->Append("0."); SigFig=int(10*SysPercent*Nch + 0.5);}
-  else {SigFig=int(SysPercent*Nch + 0.5);}
+  TLatex *Q3Title=new TLatex(0.62,0.04,"#font[12]{Q}_{3} (GeV/#font[12]{c})");
+  Q3Title->SetNDC();
+  Q3Title->SetTextFont(TextFont);
+  Q3Title->SetTextSize(0.08);
+  Q3Title->Draw("same");
   
-  *nameCh += SigFig;
-  TLatex *MLabel = new TLatex(0.55,0.66,nameCh->Data());// (0.1 + 0.1*Mb_proof/16.) * 0.5,2.13
-  MLabel->SetNDC();
-  MLabel->SetTextFont(TextFont);
-  MLabel->SetTextSize(SizeTitle*SF2);
-  MLabel->Draw("same");
-  
-
-  TLatex *Specif_Kt3_3 = new TLatex(0.55,0.59,"0.16<K_{T,3}<0.3 GeV/c");
-  Specif_Kt3_3->SetNDC();
-  Specif_Kt3_3->SetTextFont(TextFont);
-  Specif_Kt3_3->SetTextSize(SizeTitle*SF2);
-  Specif_Kt3_3->Draw("same");
-  TLatex *Specif_Kinematics_3 = new TLatex(0.55,0.52,"|#eta|<0.8, 0.16<p_{T}<1.0 GeV/c");
-  Specif_Kinematics_3->SetNDC();
-  Specif_Kinematics_3->SetTextFont(TextFont);
-  Specif_Kinematics_3->SetTextSize(SizeSpecif*SF2);
-  //Specif_Kinematics_3->Draw("same");
+  pad4->cd(1);
+  TLatex *C3c3Title=new TLatex(0.06,0.7,"#font[12]{C}_{3} or #font[12]{#bf{c}}_{3}");
+  C3c3Title->SetNDC();
+  C3c3Title->SetTextFont(TextFont);
+  C3c3Title->SetTextSize(0.08);
+  C3c3Title->SetTextAngle(90);
+  C3c3Title->Draw("same");
 
   //TString *nameCh=new TString("N_{rec}: ");
   //nameCh->Append(labels[Mb_proof]);
@@ -1033,7 +1077,7 @@ void Plot_plotsTPR(){
   //CTLabel->SetTextSize(SizeTitle*SF2);
   //CTLabel->Draw("same");
   
-  legend5->Draw("same");
+
 
   if(SaveFiles) {
     TString *name = new TString("ThreePionCorrelations");
