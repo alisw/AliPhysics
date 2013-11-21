@@ -72,6 +72,9 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets() :
     fhClusterPhiPt(0),
     fhClusterEtaPt(0),
     fhRhoScale(0),
+    fhEMCalEventMult(0),
+    fhTPCEventMult(0),
+    fhEMCalTrackEventMult(0),
 
     fhTrackEtaPhiPt(0),
     fhGlobalTrackEtaPhiPt(0),
@@ -85,8 +88,8 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets() :
     fpTrackPtProfile(0),
     fpClusterPtProfile(0),
 
-    //fTPCRawJets(0),
-    //fEMCalRawJets(0),
+    fTPCRawJets(0),
+    fEMCalRawJets(0),
     //fRhoFull0(0),
     //fRhoFull1(0),
     //fRhoFull2(0),
@@ -125,6 +128,7 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets() :
     fEMCALGeometry(0),
     fCells(0),
     fDoNEF(0),
+    fSignalTrackBias(0),
     fEMCalPhiMin(1.39626),
     fEMCalPhiMax(3.26377),
     fEMCalPhiTotal(1.86750),
@@ -229,6 +233,9 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets(const char *name) :
     fhClusterPhiPt(0),
     fhClusterEtaPt(0),
     fhRhoScale(0),
+    fhEMCalEventMult(0),
+    fhTPCEventMult(0),
+    fhEMCalTrackEventMult(0),
 
     fhTrackEtaPhiPt(0),
     fhGlobalTrackEtaPhiPt(0),
@@ -282,6 +289,7 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets(const char *name) :
     fEMCALGeometry(0),
     fCells(0),
     fDoNEF(0),
+    fSignalTrackBias(0),
     fEMCalPhiMin(1.39626),
     fEMCalPhiMax(3.26377),
     fEMCalPhiTotal(1.86750),
@@ -628,7 +636,30 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fhRhoScale->GetYaxis()->SetTitle("Centrality");
     fhRhoScale->GetZaxis()->SetTitle("Counts");
     fhRhoScale->Sumw2();
+
+    // Event Multiplicity Distributions
+    Int_t multBins=200;
+    Double_t multLow=0;
+    Double_t multUp=200;
     
+    fhEMCalEventMult = new TH2D("fhEMCalEventMult","EMCal Event Multiplcity vs Centrality",CentralityBinMult*fCentralityBins,fCentralityLow,fCentralityUp,multBins,multLow,multUp);
+    fhEMCalEventMult->GetXaxis()->SetTitle(fCentralityTag);
+    fhEMCalEventMult->GetYaxis()->SetTitle("Multiplicity");
+    fhEMCalEventMult->GetZaxis()->SetTitle("1/N_{Events} dN/dCentdN_{Neutral}");
+    fhEMCalEventMult->Sumw2();
+
+    fhTPCEventMult = new TH2D("fhTPCEventMult","TPC Event Multiplcity vs Centrality",CentralityBinMult*fCentralityBins,fCentralityLow,fCentralityUp,multBins,multLow,multUp);
+    fhTPCEventMult->GetXaxis()->SetTitle(fCentralityTag);
+    fhTPCEventMult->GetYaxis()->SetTitle("Multiplicity");
+    fhTPCEventMult->GetZaxis()->SetTitle("1/N_{Events} dN/dCentdN_{Charged}");
+    fhTPCEventMult->Sumw2();
+
+    fhEMCalTrackEventMult = new TH2D("fhEMCalTrackEventMult","EMCal Track Event Multiplcity vs Centrality",CentralityBinMult*fCentralityBins,fCentralityLow,fCentralityUp,multBins,multLow,multUp);
+    fhEMCalTrackEventMult->GetXaxis()->SetTitle(fCentralityTag);
+    fhEMCalTrackEventMult->GetYaxis()->SetTitle("Multiplicity");
+    fhEMCalTrackEventMult->GetZaxis()->SetTitle("1/N_{Events} dN/dCentdN_{Neutral}");
+    fhEMCalTrackEventMult->Sumw2();
+
     // Profiles
     fpEMCalEventMult = new TProfile("fpEMCalEventMult","EMCal Event Multiplcity vs Centrality",CentralityBinMult*fCentralityBins,fCentralityLow,fCentralityUp);
     fpEMCalEventMult->GetXaxis()->SetTitle(fCentralityTag);
@@ -673,7 +704,9 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fRhoChargedCMS = new AlipAJetHistos("RhoChargedCMS",fCentralityTag);
     */
     fRhoChargedScale = new AlipAJetHistos("RhoChargedScale",fCentralityTag);
+    fRhoChargedScale->SetSignalTrackPtBias(fSignalTrackBias);
     fRhoChargedCMSScale = new AlipAJetHistos("RhoChargedCMSScale",fCentralityTag,fDoNEF);
+    fRhoChargedCMSScale->SetSignalTrackPtBias(fSignalTrackBias);
     
     fOutput->Add(fhTrackPt);
     fOutput->Add(fhTrackEta);
@@ -706,6 +739,9 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     fOutput->Add(fhCentrality);
     fOutput->Add(fhEMCalCellCounts);
     fOutput->Add(fhRhoScale);
+    fOutput->Add(fhEMCalEventMult);
+    fOutput->Add(fhTPCEventMult);
+    fOutput->Add(fhEMCalTrackEventMult);
     
     fOutput->Add(fpTPCEventMult);
     fOutput->Add(fpEMCalEventMult);
@@ -1068,12 +1104,15 @@ void AliAnalysisTaskFullpAJets::InitChargedJets()
     fTPCJet->SetSignalCut(fTPCJetThreshold);
     fTPCJet->SetAreaCutFraction(fJetAreaCutFrac);
     fTPCJet->SetJetR(fJetR);
+    fTPCJet->SetSignalTrackPtBias(fSignalTrackBias);
     fTPCFullJet->SetSignalCut(fTPCJetThreshold);
     fTPCFullJet->SetAreaCutFraction(fJetAreaCutFrac);
     fTPCFullJet->SetJetR(fJetR);
+    fTPCFullJet->SetSignalTrackPtBias(fSignalTrackBias);
     fTPCOnlyJet->SetSignalCut(fTPCJetThreshold);
     fTPCOnlyJet->SetAreaCutFraction(fJetAreaCutFrac);
     fTPCOnlyJet->SetJetR(fJetR);
+    fTPCOnlyJet->SetSignalTrackPtBias(fSignalTrackBias);
     fTPCJetUnbiased->SetSignalCut(fTPCJetThreshold);
     fTPCJetUnbiased->SetAreaCutFraction(fJetAreaCutFrac);
     fTPCJetUnbiased->SetJetR(fJetR);
@@ -1128,17 +1167,17 @@ void AliAnalysisTaskFullpAJets::InitFullJets()
     fEMCalJet->SetAreaCutFraction(fJetAreaCutFrac);
     fEMCalJet->SetJetR(fJetR);
     fEMCalJet->SetNEF(fNEFSignalJetCut);
-    fEMCalJet->SetSignalTrackPtBias(kTRUE);
+    fEMCalJet->SetSignalTrackPtBias(fSignalTrackBias);
     fEMCalFullJet->SetSignalCut(fEMCalJetThreshold);
     fEMCalFullJet->SetAreaCutFraction(fJetAreaCutFrac);
     fEMCalFullJet->SetJetR(fJetR);
     fEMCalFullJet->SetNEF(fNEFSignalJetCut);
-    fEMCalFullJet->SetSignalTrackPtBias(kTRUE);
+    fEMCalFullJet->SetSignalTrackPtBias(fSignalTrackBias);
     fEMCalPartJet->SetSignalCut(fEMCalJetThreshold);
     fEMCalPartJet->SetAreaCutFraction(fJetAreaCutFrac);
     fEMCalPartJet->SetJetR(fJetR);
     fEMCalPartJet->SetNEF(fNEFSignalJetCut);
-    fEMCalPartJet->SetSignalTrackPtBias(kTRUE);
+    fEMCalPartJet->SetSignalTrackPtBias(fSignalTrackBias);
     fEMCalPartJetUnbiased->SetSignalCut(fEMCalJetThreshold);
     fEMCalPartJetUnbiased->SetAreaCutFraction(fJetAreaCutFrac);
     fEMCalPartJetUnbiased->SetJetR(fJetR);
@@ -1166,7 +1205,7 @@ void AliAnalysisTaskFullpAJets::InitFullJets()
     fEMCalkTFullJet->SetAreaCutFraction(0.25*fJetAreaCutFrac);
     fEMCalkTFullJet->SetJetR(fJetR);
     fEMCalkTFullJet->SetNEF(fNEFSignalJetCut);
-    fEMCalkTFullJet->SetSignalTrackPtBias(kTRUE);
+    fEMCalkTFullJet->SetSignalTrackPtBias(fSignalTrackBias);
     
     for (i=0;i<fnKTFullJets;i++)
     {
@@ -1188,6 +1227,7 @@ void AliAnalysisTaskFullpAJets::GenerateTPCRandomConesPt()
     Double_t Eta_Center=0.5*(fTPCEtaMin+fTPCEtaMax);
     Double_t Phi_Center=0.5*(fTPCPhiMin+fTPCPhiMax);
     Int_t event_mult=0;
+    Int_t event_track_mult=0;
     Int_t clus_mult=0;
     
     for (i=0;i<fnBckgClusters;i++)
@@ -1239,6 +1279,7 @@ void AliAnalysisTaskFullpAJets::GenerateTPCRandomConesPt()
     for (j=0;j<fnBckgClusters;j++)
     {
         event_mult=0;
+        event_track_mult=0;
         clus_mult=0;
         E_tracks_total=0.;
         
@@ -1254,6 +1295,10 @@ void AliAnalysisTaskFullpAJets::GenerateTPCRandomConesPt()
             if (IsInTPC(fJetR,vtrack->Phi(),vtrack->Eta(),kFALSE)==kTRUE)
             {
                 event_mult++;
+                if (IsInEMCal(vtrack->Phi(),vtrack->Eta()==kTRUE))
+                {
+                    event_track_mult++;
+                }
                 TLorentzVector *track_vec = new TLorentzVector;
                 track_vec->SetPtEtaPhiE(vtrack->Pt(),vtrack->Eta(),vtrack->Phi(),vtrack->E());
                 if (dummy->DeltaR(*track_vec)<fJetR)
@@ -1266,7 +1311,9 @@ void AliAnalysisTaskFullpAJets::GenerateTPCRandomConesPt()
         }
         fTPCRCBckgFluc[j]=E_tracks_total;
     }
+    fhTPCEventMult->Fill(fEventCentrality,event_mult);
     fpTPCEventMult->Fill(fEventCentrality,event_mult);
+    fhEMCalTrackEventMult->Fill(fEventCentrality,event_track_mult);
     fTPCRawJets->FillDeltaPt(fEventCentrality,0.0,fJetR,fTPCRCBckgFluc,1);
     
     // For the case of partial exclusion, merely allow a superposition of full and no exclusion with probability p=1/Ncoll
@@ -1408,6 +1455,7 @@ void AliAnalysisTaskFullpAJets::GenerateEMCalRandomConesPt()
         }
         fEMCalRCBckgFluc[j]=E_tracks_total+E_caloclusters_total;
     }
+    fhEMCalEventMult->Fill(fEventCentrality,event_mult);
     fpEMCalEventMult->Fill(fEventCentrality,event_mult);
     fEMCalRawJets->FillDeltaPt(fEventCentrality,0.0,fJetR,fEMCalRCBckgFluc,1);
     
@@ -2996,8 +3044,8 @@ AliAnalysisTaskFullpAJets::AlipAJetData::AlipAJetData() :
     fJetR(0),
     fSignalPt(0),
     fAreaCutFrac(0.6),
-    fNEF(0.9),
-    fSignalTrackBias(1),
+    fNEF(1.0),
+    fSignalTrackBias(0),
     fPtMaxIndex(0),
     fPtMax(0),
     fPtSubLeadingIndex(0),
@@ -3021,8 +3069,8 @@ AliAnalysisTaskFullpAJets::AlipAJetData::AlipAJetData(const char *name, Bool_t i
     fJetR(0),
     fSignalPt(0),
     fAreaCutFrac(0.6),
-    fNEF(0.9),
-    fSignalTrackBias(1),
+    fNEF(1.0),
+    fSignalTrackBias(0),
     fPtMaxIndex(0),
     fPtMax(0),
     fPtSubLeadingIndex(0),
@@ -3040,7 +3088,7 @@ AliAnalysisTaskFullpAJets::AlipAJetData::AlipAJetData(const char *name, Bool_t i
     SetSignalCut(0);
     SetAreaCutFraction(0.6);
     SetJetR(fJetR);
-    SetSignalTrackPtBias(1);
+    SetSignalTrackPtBias(0);
 }
 
 // Destructor
@@ -3059,7 +3107,7 @@ AliAnalysisTaskFullpAJets::AlipAJetData::~AlipAJetData()
         SetAreaCutFraction(0);
         SetJetR(0);
         SetNEF(0);
-        SetSignalTrackPtBias(kTRUE);
+        SetSignalTrackPtBias(kFALSE);
         
         delete [] fJetsIndex;
         delete [] fJetsSCIndex;
@@ -3351,6 +3399,7 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos() :
     fLChargedTrackPtLow(0),
     fLChargedTrackPtUp(0),
     fDoNEFQAPlots(0),
+    fSignalTrackBias(0),
     fNEFBins(0),
     fNEFLow(0),
     fNEFUp(0),
@@ -3446,6 +3495,7 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name) :
     fLChargedTrackPtLow(0),
     fLChargedTrackPtUp(0),
     fDoNEFQAPlots(0),
+    fSignalTrackBias(0),
     fNEFBins(0),
     fNEFLow(0),
     fNEFUp(0),
@@ -3553,6 +3603,7 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name, cons
     fLChargedTrackPtLow(0),
     fLChargedTrackPtUp(0),
     fDoNEFQAPlots(0),
+    fSignalTrackBias(0),
     fNEFBins(0),
     fNEFLow(0),
     fNEFUp(0),
@@ -4053,6 +4104,11 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::SetNEFRange(Int_t bins, Double_t
     fNEFUp=up;
 }
 
+void AliAnalysisTaskFullpAJets::AlipAJetHistos::SetSignalTrackPtBias(Bool_t chargedBias)
+{
+    fSignalTrackBias = chargedBias;
+}
+
 void AliAnalysisTaskFullpAJets::AlipAJetHistos::FillRho(Double_t eventCentrality, Double_t rho)
 {
     fRhoValue = rho;
@@ -4094,17 +4150,36 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::FillBSJS(Double_t eventCentralit
         {
             fh80100BSPt->Fill(tempPt);
         }
-        if (tempChargedHighPt>=signalCut)
+        if (fSignalTrackBias==kTRUE)
         {
-            fhBSPtSignal->Fill(tempPt);
-            fhBSPtCenSignal->Fill(tempPt,eventCentrality);
-            if (eventCentrality<=20)
+            if (tempChargedHighPt>=signalCut)
             {
-                fh020BSPtSignal->Fill(tempPt);
+                fhBSPtSignal->Fill(tempPt);
+                fhBSPtCenSignal->Fill(tempPt,eventCentrality);
+                if (eventCentrality<=20)
+                {
+                    fh020BSPtSignal->Fill(tempPt);
+                }
+                else if (eventCentrality>=80)
+                {
+                    fh80100BSPtSignal->Fill(tempPt);
+                }
             }
-            else if (eventCentrality>=80)
+        }
+        else
+        {
+            if (tempPt>=signalCut)
             {
-                fh80100BSPtSignal->Fill(tempPt);
+                fhBSPtSignal->Fill(tempPt);
+                fhBSPtCenSignal->Fill(tempPt,eventCentrality);
+                if (eventCentrality<=20)
+                {
+                    fh020BSPtSignal->Fill(tempPt);
+                }
+                else if (eventCentrality>=80)
+                {
+                    fh80100BSPtSignal->Fill(tempPt);
+                }
             }
         }
         tempPt=0.0;
@@ -4292,15 +4367,32 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::DoNEFAnalysis(Double_t nefCut, D
             iSupMod=-1,absId=-1,ieta=-1,iphi=-1;
         }
 
-        if (tempChargedHighPt>=signalCut)
+        if (fSignalTrackBias==kTRUE)
         {
-            if (nef<=nefCut)
+            if (tempChargedHighPt>=signalCut)
             {
-                fhNEFSignal->Fill(nef);
-                fhNEFJetPtSignal->Fill(nef,myJet->Pt());
-                fhNEFEtaPhiSignal->Fill(eta,phi);
-                fhNEFTotalMultSignal->Fill(nef,totalMult);
-                fhNEFNeutralMultSignal->Fill(nef,neutralMult);
+                if (nef<=nefCut)
+                {
+                    fhNEFSignal->Fill(nef);
+                    fhNEFJetPtSignal->Fill(nef,myJet->Pt());
+                    fhNEFEtaPhiSignal->Fill(eta,phi);
+                    fhNEFTotalMultSignal->Fill(nef,totalMult);
+                    fhNEFNeutralMultSignal->Fill(nef,neutralMult);
+                }
+            }
+        }
+        else
+        {
+            if (myJet->Pt()>=signalCut)
+            {
+                if (nef<=nefCut)
+                {
+                    fhNEFSignal->Fill(nef);
+                    fhNEFJetPtSignal->Fill(nef,myJet->Pt());
+                    fhNEFEtaPhiSignal->Fill(eta,phi);
+                    fhNEFTotalMultSignal->Fill(nef,totalMult);
+                    fhNEFNeutralMultSignal->Fill(nef,neutralMult);
+                }
             }
         }
         nef=0.0;
