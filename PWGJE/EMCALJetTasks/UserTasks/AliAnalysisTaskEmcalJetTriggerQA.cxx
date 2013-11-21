@@ -16,7 +16,6 @@
 #include "AliEmcalJet.h"
 #include "AliRhoParameter.h"
 #include "AliLog.h"
-#include "AliAnalysisUtils.h"
 #include "AliEmcalParticle.h"
 #include "AliAODCaloTrigger.h"
 #include "AliEMCALGeometry.h"
@@ -34,8 +33,6 @@ ClassImp(AliAnalysisTaskEmcalJetTriggerQA)
 AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetTriggerQA", kTRUE),
   fDebug(kFALSE),
-  fUseAnaUtils(kTRUE),
-  fAnalysisUtils(0),
   fTriggerClass(""),
   fBitJ1((1<<8)),
   fBitJ2((1<<11)),
@@ -79,8 +76,6 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
 AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *name) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fDebug(kFALSE),
-  fUseAnaUtils(kTRUE),
-  fAnalysisUtils(0),
   fTriggerClass(""),
   fBitJ1((1<<8)),
   fBitJ2((1<<11)),
@@ -127,68 +122,19 @@ AliAnalysisTaskEmcalJetTriggerQA::~AliAnalysisTaskEmcalJetTriggerQA()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEmcalJetTriggerQA::ExecOnce()
-{
-  // Init the analysis.
-
-  AliAnalysisTaskEmcalJet::ExecOnce();
-
-  // Initialize analysis util class for vertex selection
-  if(fUseAnaUtils) {
-    if(!fAnalysisUtils) fAnalysisUtils = new AliAnalysisUtils();
-    fAnalysisUtils->SetMinVtxContr(2);
-    fAnalysisUtils->SetMaxVtxZ(10.);
-  }
-
-}
-
-//________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalJetTriggerQA::SelectEvent() {
   //
   // Decide if event should be selected for analysis
   //
 
-  fhNEvents->Fill(0.5);
-  
-  if(fAnalysisUtils) {
-    if(!fAnalysisUtils->IsVertexSelected2013pA(InputEvent()))
-      return kFALSE;
-
-    fhNEvents->Fill(2.5);
-
-    if(fAnalysisUtils->IsPileUpEvent(InputEvent()))
-      return kFALSE;
-  }
-  else{
-    if(fUseAnaUtils)
-      AliError("fAnalysisUtils not initialized. Call AliAnalysisTaskEmcalJetTriggerQA::ExecOnce()");
-  }
-
   fhNEvents->Fill(3.5);
 
-  Bool_t check = kFALSE;
   if(!fTriggerClass.IsNull()) {
     //Check if requested trigger was fired
     TString firedTrigClass = InputEvent()->GetFiredTriggerClasses();
-    AliEmcalTriggerPatchInfo *patch = GetMainTriggerPatch();
-
-    // AliAODHeader *aodH = dynamic_cast<AliAODHeader*>(InputEvent()->GetHeader());
-    // Printf("event nr in ESD: %d  ntracks: %d",aodH->GetEventNumberESDFile(), InputEvent()->GetNumberOfTracks());
-    // Printf("IsJetLow(): %d  IsJetHigh(): %d %s",patch->IsJetLow(),patch->IsJetHigh(),firedTrigClass.Data());
-    // Printf("patch E: %f  eta: %f  phi: %f", patch->GetPatchE(),patch->GetEtaGeo(),patch->GetPhiGeo());
-    if(fTriggerClass.Contains("J1")) { //asking for high threshold trigger
-      if(patch->IsJetHigh())
-	check = kTRUE;
-    }
-    if(fTriggerClass.Contains("J2")) { //asking for low threshold trigger
-      if(patch->IsJetLow() && !patch->IsJetHigh())
-	check = kTRUE;
-    }
-
-    if(!check)
-      return kFALSE;
-    
     if(!firedTrigClass.Contains(fTriggerClass))
+      return kFALSE;
+    if(fTriggerClass.Contains("J2") && firedTrigClass.Contains("J1")) //only accept J2 triggers which were not fired by J1 as well
       return kFALSE;
   }
 
@@ -214,14 +160,6 @@ void AliAnalysisTaskEmcalJetTriggerQA::FindTriggerPatch() {
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEmcalJetTriggerQA::LoadExtraBranches() {
-  //
-  // load extra brances
-  //
-
-}
-
-//________________________________________________________________________
 void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
 {
   // Create user output.
@@ -234,8 +172,8 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   fhNEvents = new TH1F("fhNEvents","fhNEvents;selection;N_{evt}",5,0,5);
   fOutput->Add(fhNEvents);
 
-  Int_t fgkNPtBins = 170;
-  Float_t kMinPt   = -20.;
+  Int_t fgkNPtBins = 200;
+  Float_t kMinPt   = -50.;
   Float_t kMaxPt   = 150.;
   Double_t *binsPt = new Double_t[fgkNPtBins+1];
   for(Int_t i=0; i<=fgkNPtBins; i++) binsPt[i]=(Double_t)kMinPt + (kMaxPt-kMinPt)/fgkNPtBins*(Double_t)i ;
@@ -460,7 +398,7 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
 
       if(fCaloCells) {
 	Double_t leadCellE = GetEnergyLeadingCell(cluster);
-	Double_t leadCellT = cluster->GetTOF();//fCaloCells->GetCellTime(absId);
+	Double_t leadCellT = cluster->GetTOF();
 	fh3EClusELeadingCellVsTime->Fill(lp.E(),leadCellE,leadCellT*1e9);
       }
     }
@@ -494,7 +432,7 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
       if (!jet)
 	continue; //jet not selected
       
-      Double_t jetPt = jet->Pt();
+      Double_t jetPt = jet->Pt() - GetRhoVal(fContainerFull)*jet->Area();
       if(jetPt>ptLeadJet1) ptLeadJet1=jetPt;
       fh3PtEtaPhiJetFull->Fill(jetPt,jet->Eta(),jet->Phi());
       fh3PtEtaAreaJetFull->Fill(jetPt,jet->Eta(),jet->Area());
@@ -562,7 +500,7 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
       if (!jet)
 	continue; //jet not selected
 
-      Double_t jetPt = jet->Pt();
+      Double_t jetPt = jet->Pt() - GetRhoVal(fContainerCharged)*jet->Area();;
       if(jetPt>ptLeadJet2) ptLeadJet2=jetPt;
       fh3PtEtaPhiJetCharged->Fill(jetPt,jet->Eta(),jet->Phi());
       fh3PtEtaAreaJetCharged->Fill(jetPt,jet->Eta(),jet->Area());
@@ -607,8 +545,6 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::Run()
   if(!SelectEvent())
     return kFALSE;
   
-  LoadExtraBranches();
-
   if(!fTriggerClass.IsNull())
     FindTriggerPatch();
 

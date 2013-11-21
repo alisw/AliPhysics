@@ -99,9 +99,11 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
   AliAnalysisTaskEmcalDiJetAna *taskDiJet = NULL;
   taskDiJet = new AliAnalysisTaskEmcalDiJetAna(wagonName.Data());
 
+  taskDiJet->SetUseAliAnaUtils(kTRUE);
   taskDiJet->SetTriggerClass(trigClass.Data());
+
   if(ptminTrack==0.) {
-    taskDiJet->SetIsPythiaPtHard(kTRUE);
+    taskDiJet->SetIsPythia(kTRUE);
     taskDiJet->SetDoFullFull(kTRUE);
   }
   taskDiJet->SetJetCorrelationType(corrType);

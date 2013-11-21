@@ -61,6 +61,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fAliAnalysisUtils(0x0),
   fOffTrigger(AliVEvent::kAny),
   fTrigClass(),
+  fTriggerTypeSel(kND),
   fNbins(500),
   fMinBinPt(0),
   fMaxBinPt(250),
@@ -95,6 +96,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fParticleCollArray(),
   fClusterCollArray(),
   fMainTriggerPatch(0x0),
+  fTriggerType(kND),
   fOutput(0),
   fHistTrialsAfterSel(0),
   fHistEventsAfterSel(0),
@@ -104,7 +106,8 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fHistPtHard(0),
   fHistCentrality(0),
   fHistZVertex(0),
-  fHistEventPlane(0)
+  fHistEventPlane(0),
+  fHistEventRejection(0)
 {
   // Default constructor.
 
@@ -137,6 +140,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fAliAnalysisUtils(0x0),
   fOffTrigger(AliVEvent::kAny),
   fTrigClass(),
+  fTriggerTypeSel(kND),
   fNbins(500),
   fMinBinPt(0),
   fMaxBinPt(250),
@@ -171,6 +175,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fParticleCollArray(),
   fClusterCollArray(),
   fMainTriggerPatch(0x0),
+  fTriggerType(kND),
   fOutput(0),
   fHistTrialsAfterSel(0),
   fHistEventsAfterSel(0),
@@ -180,7 +185,8 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fHistPtHard(0),
   fHistCentrality(0),
   fHistZVertex(0),
-  fHistEventPlane(0)
+  fHistEventPlane(0),
+  fHistEventRejection(0)
 {
   // Standard constructor.
 
@@ -319,6 +325,22 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
   fHistEventPlane->GetXaxis()->SetTitle("event plane");
   fHistEventPlane->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistEventPlane);
+
+  fHistEventRejection = new TH1I("fHistEventRejection","Reasons to reject event",20,0,20);
+  fHistEventRejection->Fill("PhysSel",0);
+  fHistEventRejection->Fill("trigger",0);
+  fHistEventRejection->Fill("trigTypeSel",0);
+  fHistEventRejection->Fill("Cent",0);
+  fHistEventRejection->Fill("vertex contr.",0);
+  fHistEventRejection->Fill("Vz",0);
+  fHistEventRejection->Fill("trackInEmcal",0);
+  fHistEventRejection->Fill("minNTrack",0);
+  fHistEventRejection->Fill("VtxSel2013pA",0);
+  fHistEventRejection->Fill("PileUp",0);
+  fHistEventRejection->Fill("EvtPlane",0);
+  fHistEventRejection->Fill("SelPtHardBin",0);
+  fHistEventRejection->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistEventRejection);
 
   PostData(1, fOutput);
 }
@@ -598,12 +620,11 @@ void AliAnalysisTaskEmcal::ExecOnce()
   }
 
   if (!fCaloTriggerPatchInfoName.IsNull() && !fTriggerPatchInfo) {
-    //  fTriggerPatchInfo = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fCaloTriggerPatchInfoName));
-    //    if (!fTriggerPatchInfo) {
-    //      AliError(Form("%s: Could not retrieve calo trigger patch info %s!", GetName(), fCaloTriggerPatchInfoName.Data())); 
-    //      return;
-    //    }
     fTriggerPatchInfo = GetArrayFromEvent(fCaloTriggerPatchInfoName.Data(),"AliEmcalTriggerPatchInfo");
+    if (!fTriggerPatchInfo) {
+      AliError(Form("%s: Could not retrieve calo trigger patch info %s!", GetName(), fCaloTriggerPatchInfoName.Data())); 
+      return;
+    }
 
   }
 
@@ -648,6 +669,36 @@ AliAnalysisTaskEmcal::BeamType AliAnalysisTaskEmcal::GetBeamType()
   }  
 }
 
+//_____________________________________________________
+AliAnalysisTaskEmcal::TriggerType AliAnalysisTaskEmcal::GetTriggerType()
+{
+  // Get trigger type: kND, kJ1, kJ2
+ 
+  if(!fTriggerPatchInfo)
+    return kND;
+  
+  //number of patches in event
+  Int_t nPatch = fTriggerPatchInfo->GetEntries();
+
+  //loop over patches to define trigger type of event
+  Int_t nJ1 = 0;
+  Int_t nJ2 = 0;
+  AliEmcalTriggerPatchInfo *patch;
+  for(Int_t iPatch = 0; iPatch < nPatch; iPatch++ ){
+    patch = (AliEmcalTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
+    if(patch->IsJetHigh()) nJ1++;
+    if(patch->IsJetLow())  nJ2++;
+  }
+
+  if(nJ1>0) 
+    return kJ1;
+  else if(nJ2>0)
+    return kJ2;
+  else
+    return kND;
+ 
+}
+
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcal::IsEventSelected()
 {
@@ -664,8 +715,10 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
         res = aev->GetHeader()->GetOfflineTrigger();
       }
     }
-    if ((res & fOffTrigger) == 0)
+    if ((res & fOffTrigger) == 0) {
+      fHistEventRejection->Fill("PhysSel",1);
       return kFALSE;
+    }
   }
 
   if (!fTrigClass.IsNull()) {
@@ -679,11 +732,15 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
         fired = aev->GetFiredTriggerClasses();
       }
     }
-    if (!fired.Contains("-B-"))
+    if (!fired.Contains("-B-")) {
+      fHistEventRejection->Fill("trigger",1);
       return kFALSE;
+    }
     TObjArray *arr = fTrigClass.Tokenize("|");
-    if (!arr)
+    if (!arr) {
+      fHistEventRejection->Fill("trigger",1);
       return kFALSE;
+    }
     Bool_t match = 0;
     for (Int_t i=0;i<arr->GetEntriesFast();++i) {
       TObject *obj = arr->At(i);
@@ -695,28 +752,40 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
       }
     }
     delete arr;
-    if (!match)
+    if (!match) {
+      fHistEventRejection->Fill("trigger",1);
       return kFALSE;
+    }
   }
 
+  if (fTriggerTypeSel != kND) {
+    if(fTriggerType != fTriggerTypeSel) {
+      fHistEventRejection->Fill("trigTypeSel",1);
+      return kFALSE;
+    }
+  }
+  
+
   if ((fMinCent != -999) && (fMaxCent != -999)) {
-    if (fCent<fMinCent)
+    if (fCent<fMinCent || fCent>fMaxCent) {
+      fHistEventRejection->Fill("Cent",1);
       return kFALSE;
-    if (fCent>fMaxCent)
-      return kFALSE;
+    }
   }
 
   if ((fMinVz != -999) && (fMaxVz != -999)) {
-    if (fNVertCont == 0 )
+    if (fNVertCont == 0 ) {
+      fHistEventRejection->Fill("vertex contr.",1);
       return kFALSE;
+    }
     Double_t vz = fVertex[2];
-    if (vz<fMinVz)
-      return kFALSE;
-    if (vz>fMaxVz)
-      return kFALSE;
+    if (vz<fMinVz || vz>fMaxVz) {
+	fHistEventRejection->Fill("Vz",1);
+	return kFALSE;
+      }
   }
 
-  if (fMinPtTrackInEmcal > 0 && fTracks && fGeom) { //what is fTracks for? remove?
+  if (fMinPtTrackInEmcal > 0 && fGeom) {
     Bool_t trackInEmcalOk = kFALSE;
     Int_t ntracks = GetNParticles(0);
     for (Int_t i = 0; i < ntracks; i++) {
@@ -739,11 +808,13 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
 	break;
       }
     }
-    if (!trackInEmcalOk)
+    if (!trackInEmcalOk) {
+      fHistEventRejection->Fill("trackInEmcal",1);
       return kFALSE;
+    }
   }
 
-  if (fMinNTrack > 0 && fTracks) {
+  if (fMinNTrack > 0) {
     Int_t nTracksAcc = 0;
     Int_t ntracks = GetNParticles(0);
     for (Int_t i = 0; i < ntracks; i++) {
@@ -756,8 +827,10 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
 	  break;
       }
     }
-    if (nTracksAcc<fMinNTrack)
+    if (nTracksAcc<fMinNTrack) {
+      fHistEventRejection->Fill("minNTrack",1);
       return kFALSE;
+    }
   }
 
   if(fUseAliAnaUtils) {
@@ -766,20 +839,29 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     fAliAnalysisUtils->SetMinVtxContr(2);
     fAliAnalysisUtils->SetMaxVtxZ(10.);
 
-    if(!fAliAnalysisUtils->IsVertexSelected2013pA(InputEvent()))
+    if(!fAliAnalysisUtils->IsVertexSelected2013pA(InputEvent())) {
+      fHistEventRejection->Fill("VtxSel2013pA",1);
       return kFALSE;
+    }
 
-    if(fAliAnalysisUtils->IsPileUpEvent(InputEvent()))
+    if(fAliAnalysisUtils->IsPileUpEvent(InputEvent())) {
+      fHistEventRejection->Fill("PileUp",1);
       return kFALSE;
+    }
   }
 
   if (!(fEPV0 > fMinEventPlane && fEPV0 <= fMaxEventPlane) &&
       !(fEPV0 + TMath::Pi() > fMinEventPlane && fEPV0 + TMath::Pi() <= fMaxEventPlane) &&
       !(fEPV0 - TMath::Pi() > fMinEventPlane && fEPV0 - TMath::Pi() <= fMaxEventPlane)) 
-    return kFALSE;
+    {
+      fHistEventRejection->Fill("EvtPlane",1);
+      return kFALSE;
+    }
 
-  if (fSelectPtHardBin != -999 && fSelectPtHardBin != fPtHardBin) 
-    return kFALSE;
+  if (fSelectPtHardBin != -999 && fSelectPtHardBin != fPtHardBin)  {
+      fHistEventRejection->Fill("SelPtHardBin",1);
+      return kFALSE;
+    }
 
   return kTRUE;
 }
@@ -901,6 +983,8 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       fNTrials = fPythiaHeader->Trials();
     }
   }
+
+  fTriggerType = GetTriggerType();
 
   return kTRUE;
 }
