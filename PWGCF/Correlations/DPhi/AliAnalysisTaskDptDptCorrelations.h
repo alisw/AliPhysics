@@ -134,7 +134,7 @@ protected:
   AliESDEvent*             fESDEvent;             //! ESD Event 
   AliInputEventHandler*    fInputHandler;    //! Generic InputEventHandler 
   
-  AliPIDResponse *fPIDResponse;
+  AliPIDResponse*          fPIDResponse;
 
   // Histogram settings
   //TList*              _inputHistoList;
@@ -186,6 +186,7 @@ protected:
   double _mult2;
   double _mult3;
   double _mult4;
+  double _mult4a;
   double _mult5;
   double _mult6;
   
