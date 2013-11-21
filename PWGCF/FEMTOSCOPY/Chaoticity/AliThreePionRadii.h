@@ -178,6 +178,7 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
   Bool_t fAODcase;
   Bool_t fPbPbcase;
   Bool_t fGenerateSignal;
+  Bool_t fGeneratorOnly;
   Bool_t fPdensityPairCut;
   Int_t fRMax;
   UInt_t fFilterBit;
