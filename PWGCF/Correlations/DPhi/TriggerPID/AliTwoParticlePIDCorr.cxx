@@ -139,6 +139,7 @@ fnTracksVertex(1),  // QA tracks pointing to principal vertex (= 3 default)
   fPoolMgr(0x0),
   fArrayMC(0),
   fAnalysisType("AOD"), 
+  fefffilename(""),
   twoTrackEfficiencyCutValue(0.02),
 //fControlConvResoncances(0),
   fPID(NULL),
@@ -164,6 +165,8 @@ fInjectedSignals(kFALSE),
 fRemoveDuplicates(kFALSE),
 fapplyefficiency(kFALSE),
   ffillefficiency(kFALSE),
+  fSkipAssoEff(kFALSE),
+  fSkipTrigEff(kFALSE),
 fAnalysisUtils(0x0),
   fDCAXYCut(0)     
 
@@ -252,7 +255,8 @@ fCorrelatonTruthPrimarymix(0),
   fTHnTrigcountMCTruthPrim(0),
    fPoolMgr(0x0),
   fArrayMC(0),
-  fAnalysisType("AOD"), 
+  fAnalysisType("AOD"),
+   fefffilename(""), 
   twoTrackEfficiencyCutValue(0.02),
 //fControlConvResoncances(0),
   fPID(NULL),
@@ -278,6 +282,8 @@ fInjectedSignals(kFALSE),
 fRemoveDuplicates(kFALSE),
 fapplyefficiency(kFALSE),
   ffillefficiency(kFALSE),
+ fSkipAssoEff(kFALSE),
+  fSkipTrigEff(kFALSE),
 fAnalysisUtils(0x0),
   fDCAXYCut(0)         
 {
@@ -762,15 +768,20 @@ for(Int_t jj=0;jj<5;jj++)// PID type binning
   effcorection[jj]->GetAxis(3)->SetTitle("#eta");
   fOutput->Add(effcorection[jj]);
     }
-     TFile *fsifile = new TFile("map32.root","READ");
+// TFile *fsifile = new TFile(fefffilename,"READ");
+ TFile *fileT=TFile::Open(fefffilename);
  TString Nameg;
 for(Int_t jj=0;jj<5;jj++)//type binning
     {
 Nameg="effmap";Nameg+=jj;
-effcorection[jj] = (THnSparseF*)fsifile->Get(Nameg.Data());
+//effcorection[jj] = (THnSparseF*)fsifile->Get(Nameg.Data());
+effcorection[jj] = (THnSparseF*)fileT->Get(Nameg.Data());
+
 //effcorection[jj]->SetDirectory(0);//****************************not present in case oh THnF
     }
-fsifile->Close();
+//fsifile->Close();
+fileT->Close();
+
    }
     
 //fControlConvResoncances = new TH2F("fControlConvResoncances", ";id;delta mass", 3, -0.5, 2.5, 100, -0.1, 0.1);
@@ -1228,7 +1239,7 @@ fHistoTOFbeta->Fill(track->Pt(), beta);
 
  if(particletypeMC==SpUndefined) continue;
 
- //for purity calculation(do it with tuneonPID)
+ //for misidentification fraction calculation(do it with tuneonPID)
  if(particletypeMC==SpPion )
    {
      if(TMath::Abs(pdgCode)==211) fPioncont->Fill(0.,track->Pt());
@@ -1256,15 +1267,12 @@ if(particletypeMC==SpKaon )
    {
  if(particletypeMC==SpPion || particletypeMC==SpKaon)
    {
-if(TMath::Abs(pdgCode)==211 ||  TMath::Abs(pdgCode)==321)
-  {   
-  fTHnrecomatchedallPid[3]->Fill(allrecomatchedpid);//for mesons
-  if(TMath::Abs(pdgCode)==211)  fTHnrecomatchedallPid[0]->Fill(allrecomatchedpid);//for pions  
-  if(TMath::Abs(pdgCode)==321)  fTHnrecomatchedallPid[1]->Fill(allrecomatchedpid);//for kaons
-  }
- }
- if(particletypeMC==SpProton && TMath::Abs(pdgCode)==2212 )
-   fTHnrecomatchedallPid[2]->Fill(allrecomatchedpid);//for protons
+if(TMath::Abs(pdgCode)==211 ||  TMath::Abs(pdgCode)==321)   fTHnrecomatchedallPid[3]->Fill(allrecomatchedpid);//for mesons
+   }
+  if(particletypeMC==SpPion && TMath::Abs(pdgCode)==211)  fTHnrecomatchedallPid[0]->Fill(allrecomatchedpid);//for pions  
+  if(particletypeMC==SpKaon && TMath::Abs(pdgCode)==321)  fTHnrecomatchedallPid[1]->Fill(allrecomatchedpid);//for kaons
+ if(particletypeMC==SpProton && TMath::Abs(pdgCode)==2212) fTHnrecomatchedallPid[2]->Fill(allrecomatchedpid);//for protons
+
    }
 
 if(track->Pt()>=fminPtAsso || track->Pt()<=fmaxPtTrig)//to reduce memory consumption in pool
@@ -1762,6 +1770,7 @@ if (fOnlyOneEtaSide != 0)
 
       Float_t trigphi=trig->Phi();
       Float_t trackefftrig=trig->geteffcorrectionval();
+      if(fSkipTrigEff) trackefftrig=1.0; 
 	Double_t* trigval;
 	Int_t dim=3;
 	if(fcontainPIDtrig) dim=4;
@@ -1969,12 +1978,13 @@ if (dphistarminabs < twoTrackEfficiencyCutValue && TMath::Abs(deta) < twoTrackEf
 	}
 
         Float_t trackeffasso=asso->geteffcorrectionval();
-
+        if(fSkipAssoEff) trackeffasso=1.0; 
         Float_t deleta=trigeta-eta[j];
 	Float_t delphi=PhiRange(trigphi-asso->Phi()); 
 
  //here get the two particle efficiency correction factor
 	Float_t effweight=trackefftrig*trackeffasso;
+	//cout<<effweight<<endl;
 	Double_t* vars;
         vars= new Double_t[kTrackVariablesPair];
 	vars[0]=cent;
