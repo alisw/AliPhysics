@@ -22,32 +22,32 @@ class AliRsnCutSetDaughterParticle : public AliRsnCutSet {
 
 public:
 
-   enum ERsnDaughterCutSet {
-      kNoCuts,
-      kQualityStd2010,
-      kQualityStd2011,    
-      kTOFMatch,
-      kFastTPCpidNsigma,
-      kFastTOFpidNsigma,
-      kTPCTOFpidKstarPP2010,
-      kTOFpidKstarPbPb2010,
-      kTOFTPCmismatchKstarPbPb2010,
-      kTOFMatchTRD2010,
-      kTOFMatchNoTRD2010,
-      kTOFpidKstarPbPbTRD2010,
-      kTOFpidKstarPbPbNoTRD2010,
-      kTOFMatchTPCpidNsigma,     
-      kQualityStd2010TRD,
-      kQualityStd2010NoTRD,
-      kTOFMatchPPB2011, //pA analysis
-      kTPCpidKstarPPB2011,
-      kTOFpidKstarPPB2011,
-      kTPCTOFpidKstarPPB2011,
-      kTPCpidTOFvetoKStarPPB2011, //TPC pid with TOF veto
-      kTPCpidMatchPPB2011, //Match with nsigma = fNsigmaTPC
-      kNDaughterCuts
-   };
-
+  enum ERsnDaughterCutSet {
+    kNoCuts,
+    kQualityStd2010,//quality only
+    kQualityStd2011,    
+    kTOFMatch,  
+    kFastTPCpidNsigma, //PbPb analysis
+    kFastTOFpidNsigma,
+    kTPCTOFpidKstarPP2010,
+    kTOFpidKstarPbPb2010,
+    kTOFTPCmismatchKstarPbPb2010,
+    kTOFMatchTRD2010,
+    kTOFMatchNoTRD2010,
+    kTOFpidKstarPbPbTRD2010,
+    kTOFpidKstarPbPbNoTRD2010,
+    kTOFMatchTPCpidNsigma,     
+    kQualityStd2010TRD,
+    kQualityStd2010NoTRD,    
+    kTOFMatchPPB2011, //pA analysis
+    kTPCpidKstarPPB2011,
+    kTOFpidKstarPPB2011,
+    kTPCTOFpidKstarPPB2011,
+    kTPCpidTOFvetoKStarPPB2011, //TPC pid with TOF veto
+    kTPCpidMatchPPB2011, //Match with nsigma = fNsigmaTPC
+    kNDaughterCuts
+  };
+   
    AliRsnCutSetDaughterParticle();
    AliRsnCutSetDaughterParticle(const char *name,
                                 AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutSetID,
@@ -62,20 +62,24 @@ public:
    void           SetNsigmaForFastTPCpid(Float_t nsigma) {fNsigmaTPC=nsigma; return;};
    void           SetNsigmaForFastTOFpid(Float_t nsigma) {fNsigmaTOF=nsigma; return;};
    void           SetAODTrackCutFilterBit(Int_t ibit) {fAODTrkCutFilterBit=ibit; return;}
+   void           SetUseFilterBitOnly(Bool_t useFilterBitOnly=kTRUE) {fCheckOnlyFilterBit=useFilterBitOnly; return;}
+   
    //getters
    const char   *GetAppliedDaughterCutSetName() { return GetName();}
    Int_t         GetAppliedDaughterCutSetId() { return fAppliedCutSetID;}
    const AliRsnCutTrackQuality *GetQualityCut() {return fCutQuality;};
 
-private:
-
+ private:
+   
    AliPID::EParticleType fPID;              // PID for track
    AliRsnCutSetDaughterParticle::ERsnDaughterCutSet    fAppliedCutSetID;     // ID of applied cut
    Float_t               fNsigmaTPC;         // number of TPC sigmas for fast pid cut only
    Float_t               fNsigmaTOF;         // number of TOF sigmas for fast pid cut only
    AliRsnCutTrackQuality *fCutQuality;       //pointer to quality cut object
    Int_t                 fAODTrkCutFilterBit; //AOD filter bit for track cuts
-   ClassDef(AliRsnCutSetDaughterParticle, 2) // cut definitions for K*
+   Bool_t                fCheckOnlyFilterBit; //flag to use only filter bit cut
+   
+   ClassDef(AliRsnCutSetDaughterParticle, 3) // cut definitions for K*
 
 };
 

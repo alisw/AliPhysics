@@ -1,8 +1,8 @@
 /***************************************************************************
-              fbellini@cern.ch - created and last modified on 20/09/2012
+              fbellini@cern.ch - last modified on 21/11/2013
 //
 //Lauches KStar analysis with rsn mini package
-//Allows basic configuration of pile-up check
+//Allows basic configuration of pile-up check and event cuts
 //
 ****************************************************************************/
 enum pairYCutSet { kPairDefault,
@@ -19,9 +19,10 @@ enum eventCutSet { kOld = -1,
 		   kDefaultVtx5 //=5                    
                  };
 
-enum eventMixConfig { kMixDefault, //10 events, Dvz = 1cm, DC = 10
+enum eventMixConfig { kDisabled = -1,
+		      kMixDefault,//=0 //10 events, Dvz = 1cm, DC = 10
 		      k5Evts, //=1 //5 events, Dvz = 1cm, DC = 10
-		      k5Cent  //=2 //10 events, Dvz = 1cm, DC = 5
+		      k5Cent,  //=2 //10 events, Dvz = 1cm, DC = 5
                     };
 
 
@@ -57,20 +58,21 @@ AliRsnMiniAnalysisTask * AddTaskKStarPPB
   Int_t       MinPlpContribSPD = 5; //default value if used
   Bool_t      useMVPileUpSelection = kFALSE; //
   Int_t       MinPlpContribMV = 5; //default value if used
-  Double_t       vtxZcut = 10.0; //cm, default cut on vtx z
+  Bool_t      useVtxCut2013pA = kTRUE; //default use recommended 2013 pA vtx selection
+  Double_t    vtxZcut = 10.0; //cm, default cut on vtx z
   
   if (evtCutSetID==eventCutSet::kOld) {
-    triggerMask = AliVEvent::kMB;
+    triggerMask = AliVEvent::kAnyINT;
     rmFirstEvtChunk = kFALSE;
     rejectPileUp = kFALSE;
-    // vtxZcut = 10.0;
+    useVtxCut2013pA = kFALSE;
   }
   
   if (evtCutSetID==eventCutSet::kNoPileUpCut) {
     rmFirstEvtChunk = kTRUE;
     rejectPileUp = kFALSE;
   }
-
+  
   if (evtCutSetID==eventCutSet::kPileUpMV) {
     useMVPileUpSelection = kTRUE;
     MinPlpContribSPD = 3;
@@ -80,35 +82,39 @@ AliRsnMiniAnalysisTask * AddTaskKStarPPB
   if (evtCutSetID==eventCutSet::kPileUpSPD3) {
     MinPlpContribSPD = 3;
   }
-
+  
   if (evtCutSetID==eventCutSet::kDefaultVtx8){
     vtxZcut = 8.0; //cm
   } 
-
+  
   if (evtCutSetID==eventCutSet::kDefaultVtx5){
     vtxZcut = 5.0; //cm
   } 
-
+  
   //-------------------------------------------
   //pair cuts
   //-------------------------------------------
   Double_t    minYlab =  -0.465;
   Double_t    maxYlab =  0.035;
 
-  if (pairCutSetID==pairYCutSet::kNegative) {
+  if (pairCutSetID==pairYCutSet::kNegative) { //-0.5<y_cm<0.0
     minYlab = -0.965;    maxYlab = -0.465;
   }
   
-  if (pairCutSetID==pairYCutSet::kCentral) {
+  if (pairCutSetID==pairYCutSet::kCentral) { //|y_cm|<0.3
     minYlab = -0.765;    maxYlab = -0.165;
   }
 
   //-------------------------------------------
   //mixing settings
   //-------------------------------------------
-  Int_t       nmix = 10;
+  Int_t       nmix = 0;
   Float_t     maxDiffVzMix = 1.0;
   Float_t     maxDiffMultMix = 10.0;
+  
+  if (mixingConfigID == eventMixConfig::kMixDefault) {
+    nmix = 10;
+  }
 
   if (mixingConfigID == eventMixConfig::k5Evts) {
     nmix = 5;
@@ -157,9 +163,10 @@ AliRsnMiniAnalysisTask * AddTaskKStarPPB
    // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
    AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", vtxZcut, 0, kFALSE);
    //if (isPP) cutVertex->SetCheckPileUp(kTRUE);   // set the check for pileup 
-   
    //set check for pileup in 2013
    AliRsnCutEventUtils *cutEventUtils = new AliRsnCutEventUtils("cutEventUtils", rmFirstEvtChunk, rejectPileUp);
+   cutEventUtils->SetUseVertexSelection2013pA(useVtxCut2013pA);
+   ::Info("AddAnalysisTaskTOFKStar", Form(":::::::::::::::::: Vertex cut as pA 2013: %s", (useVtxCut2013pA?"ON":"OFF")));   
    if (useMVPileUpSelection){
      cutEventUtils->SetUseMVPlpSelection(useMVPileUpSelection);
      cutEventUtils->SetMinPlpContribMV(MinPlpContribMV);
@@ -174,8 +181,8 @@ AliRsnMiniAnalysisTask * AddTaskKStarPPB
    
    // define and fill cut set for event cut
    AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
-   eventCuts->AddCut(cutVertex);
    eventCuts->AddCut(cutEventUtils);
+   eventCuts->AddCut(cutVertex);
    eventCuts->SetCutScheme(Form("%s&%s", cutEventUtils->GetName(), cutVertex->GetName()));
    // set cuts in task
    task->SetEventCuts(eventCuts);
