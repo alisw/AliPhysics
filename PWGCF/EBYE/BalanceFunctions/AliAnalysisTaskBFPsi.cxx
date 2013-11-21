@@ -2109,6 +2109,8 @@ void  AliAnalysisTaskBFPsi::SetVZEROCalibrationFile(const char* filename,
 Double_t AliAnalysisTaskBFPsi::GetChannelEqualizationFactor(Int_t run, 
 							    Int_t channel) {
   //
+  if(!fHistVZEROAGainEqualizationMap) return 1.0;
+
   for(Int_t iBinX = 1; iBinX <= fHistVZEROChannelGainEqualizationMap->GetNbinsX(); iBinX++) {
     Int_t gRunNumber = atoi(fHistVZEROChannelGainEqualizationMap->GetXaxis()->GetBinLabel(iBinX));
     if(gRunNumber == run)
@@ -2122,6 +2124,8 @@ Double_t AliAnalysisTaskBFPsi::GetChannelEqualizationFactor(Int_t run,
 Double_t AliAnalysisTaskBFPsi::GetEqualizationFactor(Int_t run, 
 						     const char* side) {
   //
+  if(!fHistVZEROAGainEqualizationMap) return 1.0;
+
   TString gVZEROSide = side;
   for(Int_t iBinX = 1; iBinX <= fHistVZEROAGainEqualizationMap->GetNbinsX(); iBinX++) {
     Int_t gRunNumber = atoi(fHistVZEROAGainEqualizationMap->GetXaxis()->GetBinLabel(iBinX));
