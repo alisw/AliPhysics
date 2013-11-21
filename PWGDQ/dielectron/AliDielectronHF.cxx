@@ -54,7 +54,7 @@ ClassImp(AliDielectronHF)
 
 AliDielectronHF::AliDielectronHF() :
   TNamed(),
-  fArrPairType(0x0),
+  fArrPairType(),
   fPairType(kOSonly),
   fSignalsMC(0x0),
   fAxes(kMaxCuts),
@@ -72,12 +72,13 @@ AliDielectronHF::AliDielectronHF() :
   }
   fAxes.SetOwner(kTRUE);
   fRefObj.SetOwner(kTRUE);
+  fArrPairType.SetOwner(kTRUE);
 }
 
 //______________________________________________
 AliDielectronHF::AliDielectronHF(const char* name, const char* title) :
   TNamed(name, title),
-  fArrPairType(0x0),
+  fArrPairType(),
   fPairType(kOSonly),
   fSignalsMC(0x0),
   fAxes(kMaxCuts),
@@ -95,6 +96,7 @@ AliDielectronHF::AliDielectronHF(const char* name, const char* title) :
   }
   fAxes.SetOwner(kTRUE);
   fRefObj.SetOwner(kTRUE);
+  fArrPairType.SetOwner(kTRUE);
 }
 
 //______________________________________________
