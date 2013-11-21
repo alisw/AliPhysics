@@ -51,6 +51,7 @@ AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) :
   fCentralityMethod("V0M"),
   fTrackBits(1),
   fIsMC(0),
+  fIsLHC10h(1),
   fTrackCuts(0),
   fIsSelected(0),
   fCentralityCutMin(0.),
@@ -61,6 +62,9 @@ AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) :
   fVertexCutMax(999.),
   fMultiplicityCutMin(-999.),
   fMultiplicityCutMax(99999.),
+  fqV0C(-999.),
+  fqV0A(-999.),
+  fCent(-999.),
   fOutput(0),
   fCalib(0),
   fRun(-1),
@@ -180,9 +184,9 @@ Bool_t AliSpectraAODEventCuts::CheckVtxRange()
 Bool_t AliSpectraAODEventCuts::CheckCentralityCut()
 {
   // Check centrality cut
-  Double_t cent=-999.;
-  cent=fAOD->GetCentrality()->GetCentralityPercentile(fCentralityMethod.Data());
-  if ( (cent <= fCentralityCutMax)  &&  (cent >= fCentralityCutMin) )  return kTRUE;   
+  fCent=-999.;
+  fCent=fAOD->GetCentrality()->GetCentralityPercentile(fCentralityMethod.Data());
+  if ( (fCent <= fCentralityCutMax)  &&  (fCent >= fCentralityCutMin) )  return kTRUE;   
   ((TH1I*)fOutput->FindObject("fHistoCuts"))->Fill(kVtxCentral);
   return kFALSE;
 }
@@ -205,7 +209,7 @@ Bool_t AliSpectraAODEventCuts::CheckMultiplicityCut()
 //______________________________________________________
 Bool_t AliSpectraAODEventCuts::CheckQVectorCut()
 { 
-  Double_t qxEPVZERO = 0, qyEPVZERO = 0;
+  Double_t qxEPVZERO = -999., qyEPVZERO = -999.;
   Double_t qVZERO = CalculateQVectorLHC10h();
   Double_t psi=fAOD->GetEventplane()->CalculateVZEROEventPlane(fAOD,10,2,qxEPVZERO,qyEPVZERO);//FIXME we can a flag for 2010 and 2011
   qVZERO= TMath::Sqrt(qxEPVZERO*qxEPVZERO + qyEPVZERO*qyEPVZERO);
@@ -227,7 +231,11 @@ Double_t AliSpectraAODEventCuts::CalculateQVectorLHC10h(){
   if(run != fRun){
     // Load the calibrations run dependent
     if(OpenInfoCalbration(run))fRun=run;
-    else return -999.;
+    else{
+      fqV0C=-999.;
+      fqV0A=-999.;
+      return -999.;
+    }
   }
   
   //V0 info    
@@ -259,7 +267,9 @@ Double_t AliSpectraAODEventCuts::CalculateQVectorLHC10h(){
       
       if (multCorC < 0){
 	cout<<"Problem with multiplicity in V0C"<<endl;
-	return -999;
+	fqV0C=-999.;
+	fqV0A=-999.;
+	return -999.;
       }
       
       Qxc2 += TMath::Cos(2*phiV0) * multCorC;
@@ -283,7 +293,9 @@ Double_t AliSpectraAODEventCuts::CalculateQVectorLHC10h(){
       
       if (multCorA < 0){
 	cout<<"Problem with multiplicity in V0A"<<endl;
-	return -999;
+	fqV0C=-999.;
+	fqV0A=-999.;
+	return -999.;
       }
       
       Qxa2 += TMath::Cos(2*phiV0) * multCorA;
@@ -313,12 +325,12 @@ Double_t AliSpectraAODEventCuts::CalculateQVectorLHC10h(){
   
   ((TH2F*)fOutput->FindObject("fPsiACor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), evPlAngV0ACor2);
   ((TH2F*)fOutput->FindObject("fPsiCCor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), evPlAngV0CCor2);
-
-  Double_t qV0C = TMath::Sqrt((QxcCor2*QxcCor2 + QycCor2*QycCor2)/sumMc);
-  Double_t qV0A = TMath::Sqrt((QxaCor2*QxaCor2 + QyaCor2*QyaCor2)/sumMa);
   
-  ((TH2F*)fOutput->FindObject("fQVecACor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), qV0A);
-  ((TH2F*)fOutput->FindObject("fQVecCCor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), qV0C);
+  fqV0C = TMath::Sqrt((QxcCor2*QxcCor2 + QycCor2*QycCor2)/sumMc);
+  fqV0A = TMath::Sqrt((QxaCor2*QxaCor2 + QyaCor2*QyaCor2)/sumMa);
+  
+  ((TH2F*)fOutput->FindObject("fQVecACor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), fqV0A);
+  ((TH2F*)fOutput->FindObject("fQVecCCor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), fqV0C);
   
   return -999;
 }

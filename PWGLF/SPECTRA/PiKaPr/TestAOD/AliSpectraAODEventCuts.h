@@ -34,6 +34,7 @@ class AliSpectraAODEventCuts : public TNamed
     fCentralityMethod(),
     fTrackBits(1),
     fIsMC(0),
+    fIsLHC10h(0),
     fTrackCuts(0),
     fIsSelected(0),
     fCentralityCutMin(0.),
@@ -44,6 +45,9 @@ class AliSpectraAODEventCuts : public TNamed
     fVertexCutMax(999.),
     fMultiplicityCutMin(-999.),
     fMultiplicityCutMax(99999.),
+    fqV0C(-999.),
+    fqV0A(-999.),
+    fCent(-999.),
     fOutput(0),
     fCalib(0),
     fRun(-1),
@@ -71,6 +75,7 @@ class AliSpectraAODEventCuts : public TNamed
   void  SetCentralityMethod(const char* method) { fCentralityMethod = method; }
   void  SetTrackBits(UInt_t TrackBits) {fTrackBits=TrackBits;}
   void  SetIsMC(Bool_t isMC = kFALSE)    {fIsMC = isMC; };
+  void  SetIsLHC10h(Bool_t isLHC10h = kFALSE)    {fIsLHC10h = isLHC10h; };
   void  SetCentralityCutMin(Float_t cut)  { fCentralityCutMin = cut; }
   void  SetCentralityCutMax(Float_t cut)  { fCentralityCutMax = cut; }
   void  SetQVectorCut(Float_t min,Float_t max)  { fQVectorCutMin = min; fQVectorCutMax = max; }
@@ -81,6 +86,7 @@ class AliSpectraAODEventCuts : public TNamed
   TString GetCentralityMethod()   const           { return fCentralityMethod;}
   UInt_t GetTrackType()          const    { return fTrackBits;}
   Bool_t GetIsMC()                const           { return fIsMC;}
+  Bool_t GetIsLHC10h()                const           { return fIsLHC10h;}
   Float_t  GetCentralityMin()      const {  return fCentralityCutMin; }
   Float_t  GetCentralityMax()     const {  return fCentralityCutMax; }
   Float_t  GetQVectorCutMin()    const {  return fQVectorCutMin; }
@@ -89,6 +95,9 @@ class AliSpectraAODEventCuts : public TNamed
   Float_t  GetVertexCutMax()    const {  return fVertexCutMax; }
   Float_t  GetMultiplicityCutMin()  const {  return fMultiplicityCutMin; }
   Float_t  GetMultiplicityCutMax()  const {  return fMultiplicityCutMax; }
+  Double_t  GetqV0C()  const {  return fqV0C; }
+  Double_t  GetqV0A()  const {  return fqV0A; }
+  Double_t  GetCent()  const {  return fCent; }
   TList *GetOutputList()       {return fOutput;};
   TList *GetCalibList()       {return fCalib;};
   void SetCalibFile(TFile *f)    {
@@ -124,7 +133,8 @@ class AliSpectraAODEventCuts : public TNamed
   UInt_t           fSelectBit;            // Select events according to AliAnalysisTaskJetServices bit maps 
   TString          fCentralityMethod;     // Method to determine centrality
   UInt_t           fTrackBits;       // Type of track to be used in the Qvector calculation
-  Bool_t          fIsMC;// true if processing MC
+  Bool_t          fIsMC; // true if processing MC
+  Bool_t          fIsLHC10h; // for LHC10h
   AliSpectraAODTrackCuts     *fTrackCuts;              //! track cuts
   Bool_t          fIsSelected;        // True if cuts are selected
   Float_t         fCentralityCutMin;     // minimum centrality percentile
@@ -135,6 +145,9 @@ class AliSpectraAODEventCuts : public TNamed
   Float_t         fVertexCutMax;     // maximum vertex position
   Float_t         fMultiplicityCutMin;     // minimum multiplicity position
   Float_t         fMultiplicityCutMax;     // maximum multiplicity position
+  Double_t       fqV0C;            //q vector in the VZERO-C
+  Double_t       fqV0A;            //q vector in the VZERO-A
+  Double_t       fCent;            //centrality according to fCentralityMethod
   TList            *fOutput;        // output list 
   TList            *fCalib;        // output list 
   Int_t fRun;                       // run number - for calibration
@@ -155,7 +168,7 @@ class AliSpectraAODEventCuts : public TNamed
   AliSpectraAODEventCuts(const AliSpectraAODEventCuts&);
   AliSpectraAODEventCuts& operator=(const AliSpectraAODEventCuts&);
   
-  ClassDef(AliSpectraAODEventCuts, 2);
+  ClassDef(AliSpectraAODEventCuts, 3);
   
 };
 #endif
