@@ -55,7 +55,7 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
    UInt_t IsTruePhotonESD(AliAODConversionPhoton *TruePhotonCandidate);
    UInt_t IsTruePhotonAOD(AliAODConversionPhoton *TruePhotonCandidate);
    void CountTracks();
-   
+   void SetLogBinningXTH2(TH2* histoRebin);
 	
    AliV0ReaderV1 *fV0Reader;    
    TClonesArray *fConversionGammas;
@@ -81,36 +81,53 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
    TH1F *hGammaEta;
    TH1F *hGammaChi2perNDF;
    TH1F *hGammaPsiPair;
-   TH1F *hGammaQt;
+   TH2F *hGammaArmenteros;
    TH1F *hGammaCosinePointingAngle;
-   TH2F *hGammaXY;
-   TH2F *hGammaZR;
+   TH1F *hGammaInvMass;
    TH2F *hElecPt;
    TH2F *hElecEta;
    TH2F *hElecPhi;
    TH1F *hElecNfindableClsTPC;
    TH1F *hPosiNfindableClsTPC;
-   TH2F *hElecAsymP;
-   TList *fTrueList;
-   TH2F *hTrueResolutionR;
-   TH2F *hTrueResolutionZ;
-   TH2F *hTrueResolutionPhi;
-   TH1F *hTrueGammaPt;
-   TH1F *hTrueGammaPhi;
-   TH1F *hTrueGammaEta;
-   TH1F *hTrueGammaMass;
-   TH1F *hTrueGammaChi2perNDF;
-   TH1F *hTrueGammaPsiPair;
-   TH1F *hTrueGammaQt;
-   TH1F *hTrueGammaCosinePointingAngle;
-   TH2F *hTrueGammaXY;
-   TH2F *hTrueGammaZR;
-   TH2F *hTrueElecPt;
-   TH2F *hTrueElecEta;
-   TH2F *hTrueElecPhi;
-   TH1F *hTrueElecNfindableClsTPC;
-   TH1F *hTruePosiNfindableClsTPC;
-   TH2F *hTrueElecAsymP;
+   TH1F *hElecClsTPC;
+   TH1F *hPosiClsTPC;
+   TH2F* hElectrondEdxP;
+   TH2F* hElectronITSdEdxP;
+   TH2F* hElectronTOFP;
+   TH2F* hElectronNSigmadEdxP;
+   TH2F* hElectronNSigmaPiondEdxP;
+   TH2F* hElectronNSigmaITSP;
+   TH2F* hElectronNSigmaTOFP;
+   TH2F* hPositrondEdxP;
+   TH2F* hPositronITSdEdxP;
+   TH2F* hPositronTOFP;
+   TH2F* hPositronNSigmadEdxP;
+   TH2F* hPositronNSigmaPiondEdxP;
+   TH2F* hPositronNSigmaITSP;
+   TH2F* hPositronNSigmaTOFP;
+//    TH2F *hElecAsymP;
+//    TH2F *hGammaXY;
+//    TH2F *hGammaZR;   
+//    TList *fTrueList;
+//    TH2F *hTrueResolutionR;
+//    TH2F *hTrueResolutionZ;
+//    TH2F *hTrueResolutionPhi;
+//    TH1F *hTrueGammaPt;
+//    TH1F *hTrueGammaPhi;
+//    TH1F *hTrueGammaEta;
+//    TH1F *hTrueGammaMass;
+//    TH1F *hTrueGammaChi2perNDF;
+//    TH1F *hTrueGammaPsiPair;
+//    TH1F *hTrueGammaQt;
+//    TH1F *hTrueGammaCosinePointingAngle;
+//    TH2F *hTrueGammaXY;
+//    TH2F *hTrueGammaZR;
+//    TH2F *hTrueElecPt;
+//    TH2F *hTrueElecEta;
+//    TH2F *hTrueElecPhi;
+//    TH1F *hTrueElecNfindableClsTPC;
+//    TH1F *hTruePosiNfindableClsTPC;
+//    TH2F *hTrueElecAsymP;
    Float_t fGammaPt;
    Float_t fGammaTheta;
    Float_t fGammaChi2NDF;
@@ -122,7 +139,7 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
    Int_t fnGammaCandidates;
    Int_t *fMCStackPos;     //[fnGammaCandidates]
    Int_t *fMCStackNeg;     //[fnGammaCandidates]
-   ClassDef(AliAnalysisTaskConversionQA, 3);
+   ClassDef(AliAnalysisTaskConversionQA, 4);
 };
 
 #endif
