@@ -3,30 +3,34 @@
 //
 // Author: Prabhat Pujahari & Claude Pruneau, Wayne State
 // 
-//           system:  0: PbPb                 1: pp
+//           system:  0: PbPb                 1: pPb
 //      singlesOnly:  0: full correlations    1: singles only
 //       useWeights:  0: no                   1: yes
-// centralityMethod:  3: track count  4: V0 centrality
+// centralityMethod:  3: track count  4: V0 centrality  7: V0A centrality for pPb
 //        chargeSet:  0: ++    1: +-    2: -+    3: --
 /////////////////////////////////////////////////////////////////////////////////
 
-AliAnalysisTaskDptDptCorrelations *AddTaskDptWeight_dca1(int    system                 = 0,
-                                                         int    singlesOnly            = 1,
-                                                         int    useWeights             = 0,
-                                                         int    centralityMethod       = 4,
-                                                         int    chargeSet              = 1,
-                                                         int    trackFilterBit         = 128,
-                                                         int    nClusterMin            = 80,
-                                                         double etaMin                 = -0.9,
-                                                         double etaMax                 = 0.9,
-						         double dcaZMin                = -2.0,
-							 double dcaZMax                =  2.0,
-							 double dcaXYMin               = -2.4,
-							 double dcaXYMax               =  2.4,
-							 int nCentrality               =  4)
-							 
-
+AliAnalysisTaskDptDptCorrelations *AddTaskDptWeight_dca1
+(int    system                 = 1,
+ int    singlesOnly            = 1,
+ int    useWeights             = 0,
+ int    centralityMethod       = 7,
+ int    chargeSet              = 1,
+ int    trackFilterBit         = 768,
+ int    nClusterMin            = 80,
+ double etaMin                 = -0.8,
+ double etaMax                 = 0.8,
+ double dcaZMin                = -2.0,
+ double dcaZMax                = 2.0,
+ double dcaXYMin               = -2.4,
+ double dcaXYMax               =  2.4,
+ int nCentrality               =  4, 
+ Bool_t trigger                = kTRUE,
+ const char* taskname          = "dcaz2"
+ )
+  
 {
+    
   // Set Default Configuration of this analysis
   // ==========================================
   int    debugLevel             = 0;
@@ -43,14 +47,12 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptWeight_dca1(int    system          
     {
     if (centralityMethod == 4)
       {
-
+	
 	minCentrality[0] = 0.0; maxCentrality[0] = 5.0; 
 	minCentrality[1] = 5.0; maxCentrality[1] = 10.;
 	minCentrality[2] = 30.; maxCentrality[2] = 40.;
 	minCentrality[3] = 60.; maxCentrality[3] = 70.;
 	
-
-
 	//To Get rid of Memory problem
 	//nCentrality = 10;
 	/*minCentrality[0] = 0.0; maxCentrality[0] = 5.0; //change it prabhat
@@ -71,15 +73,15 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptWeight_dca1(int    system          
       return 0;
       }
     }
-  else if (system==1) // pp
+  else if (system==1) // pPb
     {
-    if (centralityMethod == 3)
+    if (centralityMethod == 7)
       {
-      nCentrality = 4;
-      minCentrality[0] = 2;   maxCentrality[0] = 100.0;
-      minCentrality[1] = 2;   maxCentrality[1] = 20.;
-      minCentrality[2] = 20.; maxCentrality[2] = 50.;
-      minCentrality[3] = 50.; maxCentrality[3] = 100.;
+
+      minCentrality[0] = 0.;    maxCentrality[0] = 20.0;
+      minCentrality[1] = 20.;   maxCentrality[1] = 40.;
+      minCentrality[2] = 40.;   maxCentrality[2] = 60.;
+      minCentrality[3] = 60.;   maxCentrality[3] = 80.;
       }
     else
       {
@@ -97,17 +99,8 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptWeight_dca1(int    system          
   double zMax                   =  10.;
   double ptMin                  =  0.2;
   double ptMax                  =  2.0;
-  //double etaMin                 = -0.9;
-  //double etaMax                 =  0.9;
-  //double dcaZMin                = -3.0;
-  //double dcaZMax                =  3.0;
-  //double dcaXYMin               = -2.4;
-  //double dcaXYMax               =  2.4;
   double dedxMin                =  0.0;
   double dedxMax                =  20000.0;
-  //int    nClusterMin            =   80;
-  //int    trackFilterBit         =  128;
-  
   int    requestedCharge1       =  1; //default
   int    requestedCharge2       = -1; //default
   
@@ -156,7 +149,7 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptWeight_dca1(int    system          
           case 2: part1Name = "M_"; part2Name = "P_"; requestedCharge1 = -1; requestedCharge2 =  1; sameFilter = 0;   break;
           case 3: part1Name = "M_"; part2Name = "M_"; requestedCharge1 = -1; requestedCharge2 = -1; sameFilter = 1;   break;
         }
-      //part1Name += int(1000*etaMin);
+      //part1Name += int(1000*etaMin);                                                                                        
       part1Name += "eta";
       part1Name += int(1000*etaMax);
       part1Name += "_";
@@ -164,7 +157,13 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptWeight_dca1(int    system          
       part1Name += "pt";
       part1Name += int(1000*ptMax);
       part1Name += "_";
-      //part2Name += int(1000*etaMin);
+      part1Name += int(1000*dcaZMin);
+      part1Name += "DCA";
+      part1Name += int(1000*dcaZMax);
+      part1Name += "_";
+
+
+      //part2Name += int(1000*etaMin);                                                                                        
       part2Name += "eta";
       part2Name += int(1000*etaMax);
       part2Name += "_";
@@ -172,23 +171,24 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptWeight_dca1(int    system          
       part2Name += "pt";
       part2Name += int(1000*ptMax);
       part2Name += "_";
+      part2Name += int(1000*dcaZMin);
+      part2Name += "DCA";
+      part2Name += int(1000*dcaZMax);
+      part2Name += "_";
+
       eventName =  "";
       eventName += int(10.*minCentrality[iCentrality] );
       eventName += "Vo";
       eventName += int(10.*maxCentrality[iCentrality] );
-      //eventName += "_";
-      //eventName += int(10*zMin ); 
-      //eventName += "Z";
-      //eventName += int(10*zMax ); 
-      //if (rejectPileup)         eventName += pileupRejecSuffix;
-      //if (rejectPairConversion) eventName += pairRejecSuffix;
+      
+
       baseName     =   prefixName;
       baseName     +=  part1Name;
       baseName     +=  part2Name;
       baseName     +=  eventName;
       listName     =   baseName;
       taskName     =   baseName;
-
+      
       
       outputHistogramFileName = baseName;
       if (singlesOnly) outputHistogramFileName += singlesOnlySuffix;
@@ -287,12 +287,20 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptWeight_dca1(int    system          
       task->SetWeigth_2(            weight_2        );
       
       
+
+
+      if(trigger) task->SelectCollisionCandidates(AliVEvent::kINT7);
+      else task->SelectCollisionCandidates(AliVEvent::kMB);
+            
       cout << "Creating task output container" << endl;
+      
       taskOutputContainer = analysisManager->CreateContainer(listName, 
                                                              TList::Class(),    
                                                              AliAnalysisManager::kOutputContainer, 
-                                                             Form("%s:Histos1", AliAnalysisManager::GetCommonFileName()));
+                                                             Form("%s:%s", AliAnalysisManager::GetCommonFileName(),taskname));
       cout << "Add task to analysis manager and connect it to input and output containers" << endl;
+           
+
       analysisManager->AddTask(task);
       analysisManager->ConnectInput( task,  0, analysisManager->GetCommonInputContainer());
       analysisManager->ConnectOutput(task,  0, taskOutputContainer );
@@ -301,8 +309,6 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptWeight_dca1(int    system          
       iTask++;
     
     }
-  
-  
   
   return task;
 }
