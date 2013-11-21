@@ -64,7 +64,7 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF(const char *name)
     fHistSurvivedPhiEtaMinusMinus(0),
     fHistGeneratedPhiEtaPlusMinus(0),
     fHistSurvivedPhiEtaPlusMinus(0),
-    fAnalysisMode(0), 
+    fUseCentrality(kFALSE),
     fCentralityEstimator("V0M"), 
     fCentralityPercentileMin(0.0), 
     fCentralityPercentileMax(5.0), 
@@ -330,7 +330,7 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
   AliAODHeader *header = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
   Double_t nCentrality = 0;
   
-  if(fCentralityEstimator) {
+  if(fUseCentrality) {
     AliCentrality *centrality = header->GetCentralityP();
     nCentrality =centrality->GetCentralityPercentile(fCentralityEstimator.Data());
     
@@ -345,7 +345,7 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
     }
   }
   //Printf("Centrality selection: %lf - %lf",fCentralityPercentileMin,fCentralityPercentileMax);
-  
+
   const AliAODVertex *vertex = fAOD->GetPrimaryVertex(); 
   if(vertex) {
     if(vertex->GetNContributors() > 0) {
@@ -470,7 +470,11 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		AliAODTrack *trackAOD = static_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));    
 		if(!trackAOD) continue;
 		
-		Int_t label = TMath::Abs(trackAOD->GetLabel()); 
+		//track cuts
+		if (!trackAOD->TestFilterBit(fAODTrackCutBit)) 
+		  continue;
+
+ 		Int_t label = TMath::Abs(trackAOD->GetLabel()); 
 		if(IsLabelUsed(labelArray,label)) continue;
 		labelArray.AddAt(label,labelCounter);
 		labelCounter += 1;
@@ -491,17 +495,11 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		  if((trackAOD->Pt() > fMaxPt)||(trackAOD->Pt() <  fMinPt)) 
 		    continue;
 		  
-		  level[k]  = 2;
-		  
 		  Short_t gCharge = trackAOD->Charge();
-		  Double_t phiRad = trackAOD->Phi();
-		  
-		  //track cuts
-		  if (!trackAOD->TestFilterBit(fAODTrackCutBit)) 
-		    continue; 
+		  Double_t phiRad = trackAOD->Phi();		  
 		  
 		  if(TMath::Abs(trackAOD->Eta()) < fMaxEta && trackAOD->Pt() > fMinPt&&trackAOD->Pt() < fMaxPt){ 
-		    level[k]  = 3;
+		    level[k]  = 2;
 		    
 		    if(gCharge > 0)
 		      fHistSurvivedEtaPtPhiPlus->Fill(trackAOD->Eta(),
@@ -528,15 +526,14 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
   // Here comes the 2 particle analysis
   // loop over all good MC particles
   for (Int_t i = 0; i < nMCLabelCounter ; i++) {
-    
     // control 1D histograms (charge might be different?)
     if(charge[i] > 0){
       if(level[i] > 0) fHistGeneratedEtaPtPlusControl->Fill(eta[i],pt[i]);
-      if(level[i] > 2) fHistSurvivedEtaPtPlusControl->Fill(eta[i],pt[i]);
+      if(level[i] > 1) fHistSurvivedEtaPtPlusControl->Fill(eta[i],pt[i]);
     }
     else if(charge[i] < 0){
       if(level[i] > 0) fHistGeneratedEtaPtMinusControl->Fill(eta[i],pt[i]);
-      if(level[i] > 2) fHistSurvivedEtaPtMinusControl->Fill(eta[i],pt[i]);
+      if(level[i] > 1) fHistSurvivedEtaPtMinusControl->Fill(eta[i],pt[i]);
     }
     
     
@@ -545,12 +542,12 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
       if(charge[i] > 0 && charge[j] > 0 ){
 	if(level[i] > 0 && level[j] > 0) {  
 	  fHistGeneratedEtaPtPlusPlus->Fill(TMath::Abs(eta[i]-eta[j]),pt[i]);
-	  if (TMath::Abs(phi[i]-phi[j]) < 180)
+	  if (TMath::Abs(phi[i]-phi[j]) <  TMath::Pi())
 	    fHistGeneratedPhiEtaPlusPlus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(eta[i]-eta[j]));
 	}
-	if(level[i] > 2 && level[j] > 2) {
+	if(level[i] > 1 && level[j] > 1) {
 	  fHistSurvivedEtaPtPlusPlus->Fill(TMath::Abs(eta[i]-eta[j]),pt[i]);
-	  if (TMath::Abs(phi[i]-phi[j]) < 180)
+	  if (TMath::Abs(phi[i]-phi[j]) < TMath::Pi())
 	    fHistSurvivedPhiEtaPlusPlus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(eta[i]-eta[j]));
 	}
       }
@@ -558,12 +555,12 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
       else if(charge[i] < 0 && charge[j] < 0 ){
 	if(level[i] > 0 && level[j] > 0) {
 	  fHistGeneratedEtaPtMinusMinus->Fill(TMath::Abs(eta[i]-eta[j]),pt[i]);	    
-	  if (TMath::Abs(phi[i]-phi[j]) < 180)
+	  if (TMath::Abs(phi[i]-phi[j]) <  TMath::Pi())
 	    fHistGeneratedPhiEtaMinusMinus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(eta[i]-eta[j]));  	    
 	}
-	if(level[i] > 2 && level[j] > 2) {
+	if(level[i] > 2 && level[j] > 1) {
 	  fHistSurvivedEtaPtMinusMinus->Fill(TMath::Abs(eta[i]-eta[j]),pt[i]);
-	  if (TMath::Abs(phi[i]-phi[j]) < 180)
+	  if (TMath::Abs(phi[i]-phi[j]) <  TMath::Pi())
 	    fHistSurvivedPhiEtaMinusMinus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(eta[i]-eta[j]));
 	}
       }
@@ -571,12 +568,12 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
       else if((charge[i] > 0 && charge[j] < 0)||(charge[i] < 0 && charge[j] > 0)){
 	if(level[i] > 0 && level[j] > 0) {
 	  fHistGeneratedEtaPtPlusMinus->Fill(TMath::Abs(eta[i]-eta[j]),pt[i]);
-	  if (TMath::Abs(phi[i]-phi[j]) < 180)
+	  if (TMath::Abs(phi[i]-phi[j]) <  TMath::Pi())
 	    fHistGeneratedPhiEtaPlusMinus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(eta[i]-eta[j]));	
 	}
-	if(level[i] > 2 && level[j] > 2) {
+	if(level[i] > 2 && level[j] > 1) {
 	  fHistSurvivedEtaPtPlusMinus->Fill(TMath::Abs(eta[i]-eta[j]),pt[i]);
-	  if (TMath::Abs(phi[i]-phi[j]) < 180)
+	  if (TMath::Abs(phi[i]-phi[j]) <  TMath::Pi())
 	    fHistSurvivedPhiEtaPlusMinus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(eta[i]-eta[j]));
 	}	
       }
