@@ -58,6 +58,7 @@ AliAnalysisTaskSE(),
   fAODcase(kTRUE),
   fPbPbcase(kTRUE),
   fGenerateSignal(kFALSE),
+  fGeneratorOnly(kFALSE),
   fPdensityPairCut(kTRUE),
   fRMax(11),
   fFilterBit(7),
@@ -181,6 +182,7 @@ AliThreePionRadii::AliThreePionRadii(const Char_t *name)
   fAODcase(kTRUE),
   fPbPbcase(kTRUE),
   fGenerateSignal(kFALSE),
+  fGeneratorOnly(kFALSE),
   fPdensityPairCut(kTRUE),
   fRMax(11),
   fFilterBit(7),
@@ -309,6 +311,7 @@ AliThreePionRadii::AliThreePionRadii(const AliThreePionRadii &obj)
     fAODcase(obj.fAODcase),
     fPbPbcase(obj.fPbPbcase),
     fGenerateSignal(obj.fGenerateSignal),
+    fGeneratorOnly(obj.fGeneratorOnly),
     fPdensityPairCut(obj.fPdensityPairCut),
     fRMax(obj.fRMax),
     fFilterBit(obj.fFilterBit),
@@ -396,6 +399,7 @@ AliThreePionRadii &AliThreePionRadii::operator=(const AliThreePionRadii &obj)
   fAODcase = obj.fAODcase;
   fPbPbcase = obj.fPbPbcase; 
   fGenerateSignal = obj.fGenerateSignal;
+  fGeneratorOnly = obj.fGeneratorOnly;
   fPdensityPairCut = obj.fPdensityPairCut;
   fRMax = obj.fRMax;
   fFilterBit = obj.fFilterBit;
@@ -808,13 +812,20 @@ void AliThreePionRadii::UserCreateOutputObjects()
   fOutputList->Add(fMCWeight3DTerm4MCden);
 
   TH2D *fdNchdEtaResponse = new TH2D("fdNchdEtaResponse","",15,0,15, 15,0,15);
-  TH2D *fNpionTrueDist = new TH2D("fNpionTrueDist","",fMbins,.5,fMbins+.5, 1500,0.5,3000.5);
-  TH2D *fNchTrueDist = new TH2D("fNchTrueDist","",fMbins,.5,fMbins+.5, 1500,0.5,3000.5);
+  TH2D *fNpionTrueDist = new TH2D("fNpionTrueDist","",fMbins,.5,fMbins+.5, 3000,0.5,3000.5);
+  TH2D *fNchTrueDist = new TH2D("fNchTrueDist","",fMbins,.5,fMbins+.5, 3000,0.5,3000.5);// default Nch mapping
+  TH2D *fNchTrueDistFullPt = new TH2D("fNchTrueDistFullPt","",fMbins,.5,fMbins+.5, 3000,0.5,3000.5);// full Pt Nch range mapping
+  TH2D *fNchTrueDistPubMethod = new TH2D("fNchTrueDistPubMethod","",fMbins,.5,fMbins+.5, 3000,0.5,3000.5);// Published pp Nch mapping
+  Float_t PubBins[9]={1.,12.,17.,23.,29.,35.,42.,52.,152.};
+  TProfile *fAvgNchTrueDistvsPubMethodBin = new TProfile("fAvgNchTrueDistvsPubMethodBin","",8,PubBins,"");
   TProfile *fAvgRecRate = new TProfile("fAvgRecRate","",3000,0.5,3000.5, 0,3000, "");
   if(fMCcase) fOutputList->Add(fdNchdEtaResponse);
   if(fMCcase) fOutputList->Add(fNpionTrueDist);
   if(fMCcase) fOutputList->Add(fNchTrueDist);
+  if(fMCcase) fOutputList->Add(fNchTrueDistFullPt);
+  if(fMCcase) fOutputList->Add(fNchTrueDistPubMethod);
   if(fMCcase) fOutputList->Add(fAvgRecRate);
+  if(fMCcase) fOutputList->Add(fAvgNchTrueDistvsPubMethodBin);
   TH2D *fdCentVsNchdEta = new TH2D("fdCentVsNchdEta","",fMbins,.5,fMbins+.5, 15,0,15);
   if(fPbPbcase) fOutputList->Add(fdCentVsNchdEta);
   
@@ -1069,7 +1080,7 @@ void AliThreePionRadii::Exec(Option_t *)
 
   
   TClonesArray *mcArray = 0x0;
-  Int_t mcNch=0;
+  Int_t mcNch=0, mcNchFullPt=0, mcNchPubMethod=0;
   Int_t mcNpion=0;
   if(fMCcase){
     if(fAODcase){ 
@@ -1083,12 +1094,15 @@ void AliThreePionRadii::Exec(Option_t *)
       for(Int_t mctrackN=0; mctrackN<mcArray->GetEntriesFast(); mctrackN++){
 	AliAODMCParticle *mcParticle = (AliAODMCParticle*)mcArray->At(mctrackN);
 	if(!mcParticle) continue;
-	if(fabs(mcParticle->Eta())>0.8) continue;
 	if(mcParticle->Charge()!=-3 && mcParticle->Charge()!=+3) continue;// x3 by convention
-	if(mcParticle->Pt() < 0.16 || mcParticle->Pt() > 1.0) continue;
 	if(!mcParticle->IsPrimary()) continue;
 	if(!mcParticle->IsPhysicalPrimary()) continue;
-	mcNch++;
+	//
+	if(fabs(mcParticle->Eta())>0.8) continue;
+	if(fabs(mcParticle->Eta())<=0.5) mcNchPubMethod++;// Published pp binning
+	mcNchFullPt++;// My binning in full Pt range
+	if(mcParticle->Pt() < 0.16 || mcParticle->Pt() > 1.0) continue;
+	mcNch++;// My binning in my pt range
 	if(abs(mcParticle->GetPdgCode())==211) mcNpion++;
       }
       
@@ -1375,6 +1389,48 @@ void AliThreePionRadii::Exec(Option_t *)
     return;
   }
   
+  // Generator info only
+  if(fMCcase && fGeneratorOnly){
+    myTracks=0; pionCount=0; kaonCount=0; protonCount=0;// reset track counters
+    for(Int_t mctrackN=0; mctrackN<mcArray->GetEntriesFast(); mctrackN++){
+      if(myTracks >= fMultLimit) {cout<<"More tracks than Track Limit"<<endl; return;}
+      if(myTracks >= 1300) continue;// additional cut to limit high mult events which exceed pair # limits
+      
+      AliAODMCParticle *mcParticle = (AliAODMCParticle*)mcArray->At(mctrackN);
+      if(!mcParticle) continue;
+      if(fabs(mcParticle->Eta())>0.8) continue;
+      if(mcParticle->Charge()!=-3 && mcParticle->Charge()!=+3) continue;// x3 by convention
+      if(mcParticle->Pt() < 0.16 || mcParticle->Pt() > 1.0) continue;
+      if(!mcParticle->IsPrimary()) continue;
+      if(!mcParticle->IsPhysicalPrimary()) continue;
+      if(abs(mcParticle->GetPdgCode())!=211) continue;
+      
+      fTempStruct[myTracks].fP[0] = mcParticle->Px();
+      fTempStruct[myTracks].fP[1] = mcParticle->Py();
+      fTempStruct[myTracks].fP[2] = mcParticle->Pz();
+      fTempStruct[myTracks].fX[0] = 0.; fTempStruct[myTracks].fX[1] = 0.; fTempStruct[myTracks].fX[2] = 0.;
+      
+      fTempStruct[myTracks].fId = myTracks;// use my track counter 
+      fTempStruct[myTracks].fLabel = mctrackN;
+      fTempStruct[myTracks].fPhi = atan2(fTempStruct[myTracks].fP[1], fTempStruct[myTracks].fP[0]);
+      if(fTempStruct[myTracks].fPhi < 0) fTempStruct[myTracks].fPhi += 2*PI;
+      fTempStruct[myTracks].fPt = sqrt(pow(fTempStruct[myTracks].fP[0],2) + pow(fTempStruct[myTracks].fP[1],2));
+      fTempStruct[myTracks].fMom = sqrt( pow(fTempStruct[myTracks].fPt,2) + pow(fTempStruct[myTracks].fP[2],2) );
+      fTempStruct[myTracks].fEta = mcParticle->Eta();
+      fTempStruct[myTracks].fCharge = int(mcParticle->Charge()/3.);
+      fTempStruct[myTracks].fDCAXY = 0.;
+      fTempStruct[myTracks].fDCAZ = 0.;
+      fTempStruct[myTracks].fDCA = 0.;
+      fTempStruct[myTracks].fPion = kTRUE;
+      fTempStruct[myTracks].fEaccepted = sqrt(pow(fTempStruct[myTracks].fMom,2) + pow(fTrueMassPi,2)); 
+      fTempStruct[myTracks].fKey = 1;
+      
+      myTracks++;
+      pionCount++;
+    }
+  }
+
+
   
   if(myTracks >= 1) {
     ((TH1F*)fOutputList->FindObject("fMultDist3"))->Fill(myTracks);
@@ -1454,7 +1510,10 @@ void AliThreePionRadii::Exec(Option_t *)
   if(fMCcase){
     ((TH2D*)fOutputList->FindObject("fdNchdEtaResponse"))->Fill(pow(trackletMult,1/3.), pow(mcNch,1/3.));
     ((TH2D*)fOutputList->FindObject("fNpionTrueDist"))->Fill(fMbin+1., mcNpion);
-    ((TH2D*)fOutputList->FindObject("fNchTrueDist"))->Fill(fMbin+1., mcNch);
+    ((TH2D*)fOutputList->FindObject("fNchTrueDist"))->Fill(fMbin+1., mcNch);// default Nch mapping
+    ((TH2D*)fOutputList->FindObject("fNchTrueDistFullPt"))->Fill(fMbin+1., mcNchFullPt);// full Pt Nch range mapping
+    ((TH2D*)fOutputList->FindObject("fNchTrueDistPubMethod"))->Fill(fMbin+1., mcNchPubMethod);// Published pp Method Nch mapping
+    ((TProfile*)fOutputList->FindObject("fAvgNchTrueDistvsPubMethodBin"))->Fill(mcNchPubMethod, mcNch);// Mapping of Published bins to default Nch bins
     ((TProfile*)fOutputList->FindObject("fAvgRecRate"))->Fill(mcNpion, pionCount);
   }
   if(fPbPbcase){
@@ -1720,7 +1779,7 @@ void AliThreePionRadii::Exec(Option_t *)
 	
 	// Pair Splitting/Merging cut
 	if(qinv12 < fQLowerCut) continue;// remove unwanted low-q pairs (also a type of track splitting/merging cut)
-	if(ch1 == ch2){
+	if(ch1 == ch2 && !fGeneratorOnly){
 	  if(!AcceptPair(&((fEvt)->fTracks[i]), &((fEvt+en2)->fTracks[j]))) {
 	    fPairSplitCut[0][i]->AddAt('1',j);
 	    ((TH1F*)fOutputList->FindObject("fRejectedPairs"))->Fill(qinv12);
@@ -2145,7 +2204,7 @@ void AliThreePionRadii::Exec(Option_t *)
 	
 
 	if(qinv12 < fQLowerCut) continue;// remove unwanted low-q pairs (also a type of track splitting cut)
-	if(ch1 == ch2){
+	if(ch1 == ch2 && !fGeneratorOnly){
 	  if(!AcceptPair(&((fEvt)->fTracks[i]), &((fEvt+en2)->fTracks[j]))) {
 	    fPairSplitCut[1][i]->AddAt('1',j);
 	    continue;
@@ -2286,7 +2345,7 @@ void AliThreePionRadii::Exec(Option_t *)
 	ch1 = Int_t(((fEvt)->fTracks[i].fCharge + 1)/2.);
 	ch2 = Int_t(((fEvt+en2)->fTracks[j].fCharge + 1)/2.);
 	
-	if(ch1 == ch2){
+	if(ch1 == ch2 && !fGeneratorOnly){
 	  if(!AcceptPair(&((fEvt)->fTracks[i]), &((fEvt+en2)->fTracks[j]))) {
 	    fPairSplitCut[2][i]->AddAt('1',j);
 	    continue;
@@ -2339,7 +2398,7 @@ void AliThreePionRadii::Exec(Option_t *)
 	ch1 = Int_t(((fEvt+en1)->fTracks[i].fCharge + 1)/2.);
 	ch2 = Int_t(((fEvt+en2)->fTracks[j].fCharge + 1)/2.);
 	
-	if(ch1 == ch2){
+	if(ch1 == ch2 && !fGeneratorOnly){
 	  if(!AcceptPair(&((fEvt+en1)->fTracks[i]), &((fEvt+en2)->fTracks[j]))) {
 	    fPairSplitCut[3][i]->AddAt('1',j);
 	    continue;
