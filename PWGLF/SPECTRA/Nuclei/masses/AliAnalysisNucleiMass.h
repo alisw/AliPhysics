@@ -45,6 +45,7 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   void SetNsigmaTPCCut(Double_t nSigmaTpcCut=2) {NsigmaTpcCut=nSigmaTpcCut;}
   void SetNminTPCcluster(Int_t nMinTPCcluster=0) {NminTpcCluster=nMinTPCcluster;}
   void SetTrdCut(Int_t kTRDcut=0) {iTrdCut=kTRDcut;}
+  
   //Settings
   void SetisSignalCheck(Int_t IsSignalCheck=2) {kSignalCheck=IsSignalCheck;}
   void SetMtofMethod(Int_t iMtofMethod=1) {iMtof=iMtofMethod;}
@@ -68,7 +69,7 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   Int_t NminTpcCluster;                            // Number of minimum TPC clusters
   Int_t iTrdCut;                                   // iTrdCut==0-> No TRD cut; iTrdCut==1-> Yes TRD cut: yes TRD; iTrdCut==2->Yes TRD cut: no TRD; 
   Int_t kSignalCheck;                              // kSignalCheck==1->Fill all plots ; kSignalCheck==0->Fill only TH1 ; kSignalCheck==2-> Fill TH1 and some TH2 usefull in analysis
-  Int_t iMtof;                                     // iMtof==1->m~pVtx ; iMtof==2->m~pExp ; iMtof==4->m~pExp(MCcorrected) for (d,He2); iMtof==4->m~pExp(MCcorrected) (p,d,He3)
+  Int_t iMtof;                                     // iMtof==1->m~pVtx ; iMtof==2->m~pExp ; iMtof==4->m~pExp(MCcorrected) for (d,He3); iMtof==4->m~pExp(MCcorrected) (p,d,He3)
   
   //other:
   Int_t iBconf;                                   //! If Magnetic Field configuration is down or up
@@ -118,10 +119,14 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   //Parametrizations
   TF1 *fPmeanVsPexp[3];                           //! Parameterization of (<p>-pExp)/pExp vs pExp for p,d,He3
 
+  //...
+  TH2F *fPmeanVsBetaGamma[nBconf][18];            //!<p>/p vs beta*gamma (TH1)
+  TProfile *prPmeanVsBetaGamma[nBconf][18];       //!<p>/p vs beta*gamma (profile)
+
   //------------------------------Methods----------------------------------------
   void GetMassFromPvertex(Double_t beta, Double_t p, Double_t &M2);
   void GetZTpc(Double_t dedx, Double_t pTPC, Double_t M2, Double_t &Z2);
-  void GetMassFromExpTimes(Double_t beta, Double_t *IntTimes, Double_t *Mass2, Int_t iCorr=4);
+  void GetMassFromExpTimes(Double_t beta, Double_t *IntTimes, Double_t *Mass2, Int_t iCorr, Double_t pVtx, Int_t FlagPid, Double_t charge);
  
   ClassDef(AliAnalysisNucleiMass, 1);
 };

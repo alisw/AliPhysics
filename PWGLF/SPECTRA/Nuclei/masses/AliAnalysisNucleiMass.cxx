@@ -1,20 +1,3 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-
-// author: Manuel Colocci <manuel.colocci@cern.ch>
-
 #include "AliAnalysisNucleiMass.h"
 
 // ROOT includes
@@ -159,7 +142,7 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
     
     hPhi[iB] = new TH1F("hPhi_Analyzed","#phi distribution after the track cuts;#phi (rad.)",90,0,6.3);//Each TRD supermodule is divided for 5 (DeltaPhi(TRD)=0.35 theoretical)
     
-    Int_t hbins[2]={1,1};
+    Int_t hbins[2];
     if(kSignalCheck>1) {hbins[0]=100; hbins[1]=90;}
     else if(kSignalCheck==0) {hbins[0]=1; hbins[1]=1;}
     fEtaPhi[iB] = new TH2F("fEtaPhi_Analyzed","|#eta| vs. #phi after the track cuts;|#eta|;#phi (rad.)",hbins[0],0.0,1.0,hbins[1],0,6.3);
@@ -351,6 +334,25 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
       }*/
     //end parameterizations
 
+    Char_t name_fPmeanVsBetaGamma[18][200];
+    Char_t title_fPmeanVsBetaGamma[18][200];
+    
+    hbins[0]=200; hbins[1]=200;
+    for(Int_t iS=0;iS<nSpec;iS++) {
+      snprintf(name_fPmeanVsBetaGamma[iS],200,"fPmeanVsPvtx_%s",name[iS]);
+      snprintf(title_fPmeanVsBetaGamma[iS],200,"<p>/p_{vtx} vs #beta#gamma of %s;p_{vtx}/m_{%s};<p>_{%s}/p_{vtx}",name[iS],name[iS],name[iS]);
+      fPmeanVsBetaGamma[iB][iS]=new TH2F(name_fPmeanVsBetaGamma[iS],title_fPmeanVsBetaGamma[iS],hbins[0],0,10,hbins[1],0.8,1.2);
+    }	
+    
+    Char_t name_prPmeanVsBetaGamma[18][200];
+    Char_t title_prPmeanVsBetaGamma[18][200];
+    
+    for(Int_t iS=0;iS<nSpec;iS++) {
+      snprintf(name_prPmeanVsBetaGamma[iS],200,"prPmeanVsPvtx_%s",name[iS]);
+      snprintf(title_prPmeanVsBetaGamma[iS],200,"<p>/p_{vtx} vs #beta#gamma of %s;p_{vtx}/m_{%s};<p>_{%s}/p_{vtx}",name[iS],name[iS],name[iS]);
+      prPmeanVsBetaGamma[iB][iS]=new TProfile(name_prPmeanVsBetaGamma[iS],title_prPmeanVsBetaGamma[iS],hbins[0],0,10,0.8,1.2,"");
+    }	
+
     fList[iB]->Add(htemp[iB]);
     for(Int_t i=0;i<2;i++) fList[iB]->Add(hCentrality[iB][i]);
     for(Int_t i=0;i<2;i++) fList[iB]->Add(hZvertex[iB][i]);
@@ -389,6 +391,15 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
 	if(i<3 || i==6 || i==8) continue;//e,mu,pi,t,he4 excluded
       fList[iB]->Add(fM2vsPt[iB][1][i]);
       fList[iB]->Add(fM2vsPt[iB][1][i+nPart]);
+    }
+    if(iMtof!=1) {
+      for(Int_t i=0;i<nPart;i++){
+	if(i<3 || i==6 || i==8) continue;//e,mu,pi,t,he4 excluded
+	fList[iB]->Add(fPmeanVsBetaGamma[iB][i]);
+	fList[iB]->Add(prPmeanVsBetaGamma[iB][i]);
+	fList[iB]->Add(fPmeanVsBetaGamma[iB][i+nPart]);
+	fList[iB]->Add(prPmeanVsBetaGamma[iB][i+nPart]);
+      }
     }
     if(iMtof==8) for(Int_t i=0;i<3;i++) fList[iB]->Add(fPmeanVsPexp[i]);
     else if(iMtof==4) for(Int_t i=1;i<3;i++) fList[iB]->Add(fPmeanVsPexp[i]);
@@ -602,7 +613,7 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 		
 	//-----------------------------M2 as a function of expected times, if iMtof>1---------------------------------
 	Double_t Mass2[9];
-	if(iMtof>1) this->GetMassFromExpTimes(beta,exptimes,Mass2,iMtof);
+	if(iMtof>1) this->GetMassFromExpTimes(beta,exptimes,Mass2,iMtof,p,FlagPid,charge);
 		
 	//-------------------------------Squared Mass TH2 distributions-----------------------
 	if(charge>0) {
@@ -740,7 +751,7 @@ void AliAnalysisNucleiMass::GetMassFromPvertex(Double_t beta, Double_t p, Double
   
 }
 //____________________________________________________________________________________________________________
-void AliAnalysisNucleiMass::GetMassFromExpTimes(Double_t beta, Double_t *IntTimes, Double_t *Mass2, Int_t iCorr) {
+void AliAnalysisNucleiMass::GetMassFromExpTimes(Double_t beta, Double_t *IntTimes, Double_t *Mass2, Int_t iCorr, Double_t pVtx, Int_t FlagPid, Double_t charge) {
  
   // m = p_exp/beta/gamma where p_exp = mPDG*beta_exp*gamma_exp; beta_exp = L/t_exp/c = t_e/t_exp ; beta=L/tof/c = t_e/tof
   // In this way m_tof = mPDG only if tof=t_exp
@@ -752,6 +763,8 @@ void AliAnalysisNucleiMass::GetMassFromExpTimes(Double_t beta, Double_t *IntTime
   
   Double_t pExp[9];
   Double_t CorrFactor=0.0;
+
+  Int_t stdFlagPid[9] = {1,2,4,8,16,32,64,128,256};//e,#mu,#pi,K,p,d,t,3He,4He
 
   for(Int_t iS=0;iS<9;iS++) {
     beta2Exp[iS]=IntTimes[0]/IntTimes[iS];//beta = L/tof*c = t_e/tof
@@ -780,9 +793,20 @@ void AliAnalysisNucleiMass::GetMassFromExpTimes(Double_t beta, Double_t *IntTime
     }
     p2Exp[iS]=pExp[iS]*pExp[iS];
     //------------
-    
     Mass2[iS]=p2Exp[iS]*(1-beta*beta)/(beta*beta);
-  }
+  
+    //------------
+    if(FlagPid & stdFlagPid[iS]) {
+      if(charge>0){
+	fPmeanVsBetaGamma[iBconf][iS]->Fill(pVtx/massOverZ[iS],pExp[iS]/pVtx);
+	prPmeanVsBetaGamma[iBconf][iS]->Fill(pVtx/massOverZ[iS],pExp[iS]/pVtx);
+      }
+      else {
+	fPmeanVsBetaGamma[iBconf][iS+nPart]->Fill(pVtx/massOverZ[iS],pExp[iS]/pVtx);
+	prPmeanVsBetaGamma[iBconf][iS+nPart]->Fill(pVtx/massOverZ[iS],pExp[iS]/pVtx);
+      }
+    }
+  }//end loop on the particle species
   
   return;
   
