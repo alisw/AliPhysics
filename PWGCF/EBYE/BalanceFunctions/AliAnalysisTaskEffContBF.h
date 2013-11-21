@@ -54,7 +54,7 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
     fHistSurvivedPhiEtaMinusMinus(0),
     fHistGeneratedPhiEtaPlusMinus(0),
     fHistSurvivedPhiEtaPlusMinus(0), 
-    fAnalysisMode(0), 
+    fUseCentrality(kFALSE), 
     fCentralityEstimator("V0M"), 
     fCentralityPercentileMin(0.0), 
     fCentralityPercentileMax(5.0), 
@@ -98,15 +98,13 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   }
 
   //Centrality
+  void UseCentrality() { fUseCentrality = kTRUE;}
   void SetCentralityEstimator(const char* centralityEstimator) {
     fCentralityEstimator = centralityEstimator;}
   void SetCentralityPercentileRange(Float_t min, Float_t max) { 
     fCentralityPercentileMin=min;
     fCentralityPercentileMax=max;
   }
-
-  void SetAnalysisMode(const char* analysisMode) {
-    fAnalysisMode = analysisMode;}
 
   //Track cuts
   void SetMinNumberOfTPCClusters(Double_t min) {
@@ -184,8 +182,7 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   TH2F        *fHistGeneratedPhiEtaPlusMinus;//!correction map for +- (generated)
   TH2F        *fHistSurvivedPhiEtaPlusMinus;//!correction map +- (survived)
 
-  TString fAnalysisMode;//"TPC", "Global"
-
+  Bool_t  fUseCentrality;// Bool_t use centrality or not
   TString fCentralityEstimator;//"V0M","TRK","TKL","ZDC","FMD"
   Float_t fCentralityPercentileMin, fCentralityPercentileMax; //min-max centrality percentile
 
