@@ -74,9 +74,11 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   maker->SetAnaDebug(debugLevel)  ;
   maker->SwitchOnHistogramsMaker()  ;
   maker->SwitchOnAODsMaker() ;
-  //if(simulation)
-  maker->SwitchOffDataControlHistograms();
-  
+  if(simulation || !suffix.Contains("EMC"))
+    maker->SwitchOffDataControlHistograms();
+  else
+    maker->SwitchOnDataControlHistograms();
+
   if(debugLevel > 0) maker->Print("");
   
   // Create task
@@ -125,7 +127,7 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType,
   else if(inputDataType=="ESD")
     reader = new AliCaloTrackESDReader();
   else 
-    printf("AliCaloTrackReader::ConfigureReader() - Data combination not known kInput Data=%s\n",
+    printf("AliCaloTrackReader::ConfigureReader() - Data combination not known input Data=%s\n",
            inputDataType.Data());
   
   reader->SetDebug(debugLevel);//10 for lots of messages
@@ -225,7 +227,8 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType,
   reader->SwitchOffV0ANDSelection() ;       // and besides v0 AND
   
   reader->SetCentralityBin(minCen,maxCen); // Accept all events, if not select range
-  
+  reader->SetCentralityOpt(100);  // 10 (c= 0-10, 10-20 ...), 20  (c= 0-5, 5-10 ...) or 100 (c= 1, 2, 3 ..)
+
   if(debugLevel > 0) reader->Print("");
   
   return reader;
