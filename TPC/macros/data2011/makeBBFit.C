@@ -73,18 +73,24 @@ void Init(){
 }
 
 
-void MakeESDCutsPID(){
+void MakeESDCutsPID(Double_t fgeom=1, Double_t fcr=0.85, Double_t fcl=0.7 ){
   //
   // Cuts to be used in the sequenece
   // 1.)  cutGeom - stronger cut on geometry  - perfect agreement data-MC        
-  //              - Length factor 1
+  //              - Default length factor 1
   // 2.)  cutNcr  - relativally stong cut on the number of crossed rows to gaurantee tracking performance 
   //                relativally good agrement in the MC except of the week decay propability
-  //              - Length factor 0.8
+  //              - Default length factor 0.85
   // 3.)  cutNcl  - very week cut on the numebr of clusters
-  //              - Length factor 0.6 
+  //              - Default length factor 0.7
   //  
-  cutGeom="esdTrack.GetLengthInActiveZone(0,3,236, -5 ,0,0)> 1.*(130-5*abs(esdTrack.fP[4]))"; 
+  // Combined cuts should be combination:
+  // cutGeom+cutNcr+cutNcl 
+  //  Default  factors 1, 0.85 and 0.7 should be suited for most of analysis
+  //  Modification can be expected for the Jet analysis and further tuning of the parameters for the 
+  //     relativistic PID analysis
+  //  
+  cutGeom=TString::Format("esdTrack.GetLengthInActiveZone(0,3,236, -5 ,0,0)> %f*(130-5*abs(esdTrack.fP[4]))",fgeom); 
   //  Geomtrical cut in fiducial volume - proper description  in the MC
   //  GetLengthInActiveZone(Int_t mode, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi = 0, TTreeSRedirector* pcstream = 0) const
   //  mode   ==0     - inner param used
@@ -94,7 +100,7 @@ void MakeESDCutsPID(){
   //                   c.) non homogenous Q sample - preferable IROC is skipped -bais in the dEdx
   //  deltaZ ==236   - 
   //  bz = 5 KG      - proper sign should be used ohterwise wrong calculation
-  cutNcr="esdTrack.GetTPCClusterInfo(3,1,0,159,1)>0.85*(130-5*abs(esdTrack.fP[4]))";
+  cutNcr=TString::Format("esdTrack.GetTPCClusterInfo(3,1,0,159,1)>%f*(130-5*abs(esdTrack.fP[4]))",fcr);
   //
   // Cut on the number of crossed raws
   // GetTPCClusterInfo(Int_t nNeighbours = 3, Int_t type = 0, Int_t row0 = 0, Int_t row1 = 159, Int_t bitType = 0) 
@@ -103,7 +109,7 @@ void MakeESDCutsPID(){
   //    type = 0        - return number of rows (type==1 returns fraction of clusters)
   //    row0-row1       - upper and lower part of integration
   //  
-  cutNcl="esdTrack.fTPCncls>0.7*(130-5*abs(esdTrack.fP[4]))";
+  cutNcl=TString::Format("esdTrack.fTPCncls>%f*(130-5*abs(esdTrack.fP[4]))",fcl);
   //
   // cut un the number of clusters
   //
