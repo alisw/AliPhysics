@@ -117,8 +117,13 @@ fOption(opt),
   fhGenerator(NULL),
   fhOriginKine(NULL),
   fhOriginReco(NULL),
-  fhElGenerator(NULL)
-
+  fhElGenerator(NULL),
+  fhdEdxvsEta(NULL),
+  fhdEdxSigmavsEta(NULL),
+  fhdEdxvsEtaTPC(NULL),
+  fhdEdxSigmavsEtaTPC(NULL),
+  fhdEdxvsEtaTPCTOF(NULL),
+  fhdEdxSigmavsEtaTPCTOF(NULL)
 
 {
   //
@@ -169,8 +174,13 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask(const char* opt,c
   fhGenerator(NULL),
   fhOriginKine(NULL),
   fhOriginReco(NULL),
-  fhElGenerator(NULL)
-
+  fhElGenerator(NULL),
+  fhdEdxvsEta(NULL),
+  fhdEdxSigmavsEta(NULL),
+  fhdEdxvsEtaTPC(NULL),
+  fhdEdxSigmavsEtaTPC(NULL),
+  fhdEdxvsEtaTPCTOF(NULL),
+  fhdEdxSigmavsEtaTPCTOF(NULL)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -228,7 +238,12 @@ AliCFSingleTrackEfficiencyTask& AliCFSingleTrackEfficiencyTask::operator=(const 
     fhOriginKine=c.fhOriginKine;
     fhOriginReco=c.fhOriginReco;
     fhElGenerator=c.fhElGenerator;
-
+    fhdEdxvsEta=c.fhdEdxvsEta;
+    fhdEdxSigmavsEta=c.fhdEdxSigmavsEta;
+    fhdEdxvsEtaTPC=c.fhdEdxvsEtaTPC;
+    fhdEdxSigmavsEtaTPC=c.fhdEdxSigmavsEtaTPC;
+    fhdEdxvsEtaTPCTOF=c.fhdEdxvsEtaTPCTOF;
+    fhdEdxSigmavsEtaTPCTOF=c.fhdEdxSigmavsEtaTPCTOF;
   }
   return *this;
 }
@@ -266,7 +281,13 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask(const AliCFSingle
   fhGenerator(c.fhGenerator),
   fhOriginKine(c.fhOriginKine),
   fhOriginReco(c.fhOriginReco),
-  fhElGenerator(c.fhElGenerator)
+  fhElGenerator(c.fhElGenerator),
+  fhdEdxvsEta(c.fhdEdxvsEta),
+  fhdEdxSigmavsEta(c.fhdEdxSigmavsEta),
+  fhdEdxvsEtaTPC(c.fhdEdxvsEtaTPC),
+  fhdEdxSigmavsEtaTPC(c.fhdEdxSigmavsEtaTPC),
+  fhdEdxvsEtaTPCTOF(c.fhdEdxvsEtaTPCTOF),
+  fhdEdxSigmavsEtaTPCTOF(c.fhdEdxSigmavsEtaTPCTOF)
 
 {
   //
@@ -397,8 +418,8 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 	 
     fHistEventsProcessed->Fill(2.5); // # of Event after passing all cuts
     const AliVVertex *vertex = fEvent->GetPrimaryVertex();
-    containerInput[4] = vertex->GetZ(); // Z Vertex of Event
-    containerInputMC[4]  =  containerInput[4];
+    containerInput[4] = vertex->GetZ(); // Z Vertex of Event 
+   containerInputMC[4]  =  containerInput[4];
     //cout << "Z vtx of current event is @ Event " <<  containerInputMC[4] << endl; 
 	 
 
@@ -602,6 +623,9 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 	   
       // PID requirement
       if(selected){
+	fhdEdxSigmavsEta->Fill(vtrack->Eta(), pidResponse->NumberOfSigmasTPC(vtrack, AliPID::kElectron));
+	fhdEdxvsEta->Fill(vtrack->Eta(), vtrack->GetTPCsignal());
+
 	//also check for pdg first????
 	if(fUseTPCPID){
 	  Float_t tpcNsigma = pidResponse->NumberOfSigmasTPC(vtrack, AliPID::kElectron); // change to particle
@@ -610,7 +634,10 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 	  if(tpcNsigma<fTPCnSigmaMin || tpcNsigma>fTPCnSigmaMax) { selected = false;}
 
 	}
-
+	if(selected){
+	  fhdEdxSigmavsEtaTPC->Fill(vtrack->Eta(), pidResponse->NumberOfSigmasTPC(vtrack, AliPID::kElectron));
+	  fhdEdxvsEtaTPC->Fill(vtrack->Eta(), vtrack->GetTPCsignal());
+	}
 	if(useTOFPID && fUseTOFPID){
 
 	  // if fMaxPtCombinedPID is set to lower than upper Ptlimit (10GeV/c), will separate
@@ -623,6 +650,9 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 	}
 
 	if(selected){
+	  fhdEdxSigmavsEtaTPCTOF->Fill(vtrack->Eta(), pidResponse->NumberOfSigmasTPC(vtrack, AliPID::kElectron));
+	  fhdEdxvsEtaTPCTOF->Fill(vtrack->Eta(), vtrack->GetTPCsignal());
+
 	  //cout << "RECO: originvsGen: " << originvsGen << " kConvElHijing: " << kConvElHijing << endl;
 
 	  // fill container for tracks
@@ -1017,6 +1047,31 @@ void AliCFSingleTrackEfficiencyTask::UserCreateOutputObjects() {
   fhElGenerator = new TH1F("fhElGenerator","fhElGenerator",13,-0.5,12.5);
   fhElGenerator->GetXaxis()->SetTitle("Which generator + el source");
   fQAHistList->Add(fhElGenerator);
+
+  fhdEdxvsEta = new TH2F("fhdEdxvsEta","fhdEdxvsEta", 100,-1.,1.,200,0., 200.);
+  fhdEdxvsEta->GetXaxis()->SetTitle("dEdx vs eta");
+  fQAHistList->Add(fhdEdxvsEta);
+
+  fhdEdxSigmavsEta = new TH2F("fhdEdxSigmavsEta","fhdEdxSigmavsEta", 100,-1.,1.,200,-10., 10.);
+  fhdEdxSigmavsEta->GetXaxis()->SetTitle("dEdx vs eta");
+  fQAHistList->Add(fhdEdxSigmavsEta);
+
+  fhdEdxvsEtaTPC = new TH2F("fhdEdxvsEtaTPC","fhdEdxvsEtaTPC", 100,-1.,1.,200,0., 200.);
+  fhdEdxvsEtaTPC->GetXaxis()->SetTitle("dEdx vs eta");
+  fQAHistList->Add(fhdEdxvsEtaTPC);
+
+  fhdEdxSigmavsEtaTPC = new TH2F("fhdEdxSigmavsEtaTPC","fhdEdxSigmavsEtaTPC", 100,-1.,1.,200,-10., 10.);
+  fhdEdxSigmavsEtaTPC->GetXaxis()->SetTitle("dEdx vs eta");
+  fQAHistList->Add(fhdEdxSigmavsEtaTPC);
+
+  fhdEdxvsEtaTPCTOF = new TH2F("fhdEdxvsEtaTPCTOF","fhdEdxvsEtaTPCTOF", 100,-1.,1.,200,0., 200.);
+  fhdEdxvsEtaTPCTOF->GetXaxis()->SetTitle("dEdx vs eta");
+  fQAHistList->Add(fhdEdxvsEtaTPCTOF);
+
+  fhdEdxSigmavsEtaTPCTOF = new TH2F("fhdEdxSigmavsEtaTPCTOF","fhdEdxSigmavsEtaTPCTOF", 100,-1.,1.,200,-10., 10.);
+  fhdEdxSigmavsEtaTPCTOF->GetXaxis()->SetTitle("dEdx vs eta");
+  fQAHistList->Add(fhdEdxSigmavsEtaTPCTOF);
+
        
   PostData(1,fHistEventsProcessed) ;
   PostData(2,fCFManager->GetParticleContainer()) ;
