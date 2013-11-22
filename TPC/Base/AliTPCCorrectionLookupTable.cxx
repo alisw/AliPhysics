@@ -355,16 +355,16 @@ void AliTPCCorrectionLookupTable::CreateResidual(AliTPCCorrection *distortion, A
         x[2]=z;
 
         //original point
-        Float_t xo[3]={x[0], x[1], x[2]};
+        Float_t xdc[3]={x[0], x[1], x[2]};
         
         Int_t roc=TMath::Nint(phi*TMath::RadToDeg()/20.)%18;
         if (r>133.) roc+=36;
         if (z<0)    roc+=18;
 
         //get residual distortion
-        distortion->DistortPoint(x, roc);
-        correction->CorrectPoint(x, roc);
-        Float_t dx[3]={xo[0]-x[0], xo[1]-x[1], xo[2]-x[2]};
+        distortion->DistortPoint(xdc, roc);
+        correction->CorrectPoint(xdc, roc);
+        Float_t dx[3]={x[0]-xdc[0], x[1]-xdc[1], x[2]-xdc[2]};
         
         mDxDist(ir,iz)=dx[0];
         mDyDist(ir,iz)=dx[1];
