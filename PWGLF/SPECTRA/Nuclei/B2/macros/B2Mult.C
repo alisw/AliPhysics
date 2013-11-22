@@ -131,11 +131,11 @@ Int_t B2Mult(  const TString& pSpectra     = "~/alice/output/Proton-lhc10d-Mult-
 	{
 		for(Int_t j=0; j<kNmult; ++j)
 		{
-			grB2pt[i][j] = FindObj<TGraphErrors>(finput, otag + kMultTag[j], kNucleus[j] + "_B2_Pt");
-			grR3pt[i][j] = FindObj<TGraphErrors>(finput, otag + kMultTag[j], kNucleus[j] + "_R3_Pt");
+			grB2pt[i][j] = FindObj<TGraphErrors>(finput, otag + kMultTag[j], kNucleus[i] + "_B2_Pt");
+			grR3pt[i][j] = FindObj<TGraphErrors>(finput, otag + kMultTag[j], kNucleus[i] + "_R3_Pt");
 			
-			grSysB2pt[i][j] = FindObj<TGraphErrors>(finput, otag + kMultTag[j], kNucleus[j] + "_SystErr_B2_Pt");
-			grSysR3pt[i][j] = FindObj<TGraphErrors>(finput, otag + kMultTag[j], kNucleus[j] + "_SystErr_R3_Pt");
+			grSysB2pt[i][j] = FindObj<TGraphErrors>(finput, otag + kMultTag[j], kNucleus[i] + "_SystErr_B2_Pt");
+			grSysR3pt[i][j] = FindObj<TGraphErrors>(finput, otag + kMultTag[j], kNucleus[i] + "_SystErr_R3_Pt");
 		}
 	}
 	
