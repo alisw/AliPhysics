@@ -315,6 +315,18 @@ public:
   TH2F *   fhCaloTrackMCorrNCells;            //! Calo vs V0 Track Multiplicity, number of cells
   TH2F *   fhCaloTrackMCorrECells;            //! Calo vs V0 Track Multipliticy,  total measured cell energy
   
+  // Centrality
+  TH2F *   fhCaloCenNClusters;               //! Calo vs centrality, number of clusters
+  TH2F *   fhCaloCenEClusters;               //! Calo vs centrality, total measured cluster energy
+  TH2F *   fhCaloCenNCells;                  //! Calo vs centrality, number of cells
+  TH2F *   fhCaloCenECells;                  //! Calo vs centrality,  total measured cell energy
+
+  // Event plane
+  TH2F *   fhCaloEvPNClusters;               //! Calo vs event plane angle, number of clusters
+  TH2F *   fhCaloEvPEClusters;               //! Calo vs event plane angle, total measured cluster energy
+  TH2F *   fhCaloEvPNCells;                  //! Calo vs event plane angle, number of cells
+  TH2F *   fhCaloEvPECells;                  //! Calo vs event plane angle,  total measured cell energy
+  
   //Module histograms
   TH2F *   fhEMod  ;                          //! cluster E distribution for different module, Reco
   TH2F *   fhAmpMod ;                         //! cell amplitude distribution for different module, Reco
@@ -405,11 +417,18 @@ public:
   TH2F *   fhMCChHad1EleEOverP;               //! p/E for track-cluster matches, dR < 0.2, 60 < dEdx < 100, MC charged hadrons
   TH2F *   fhMCNeutral1EleEOverP;             //! p/E for track-cluster matches, dR < 0.2, 60 < dEdx < 100, MC neutral
 
-	
+  TH2F *   fhTrackMatchedDEta    ;            //! Eta distance between track and cluster vs cluster E, after and before photon cuts
+  TH2F *   fhTrackMatchedDPhi    ;            //! Phi distance between track and cluster vs cluster E, after and before photon cuts
+  TH2F *   fhTrackMatchedDEtaDPhi;            //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV, after and before
+  
+  TH2F *   fhTrackMatchedDEtaPos;             //! Eta distance between track and cluster vs cluster E, after and before photon cuts
+  TH2F *   fhTrackMatchedDPhiPos;             //! Phi distance between track and cluster vs cluster E, after and before photon cuts
+  TH2F *   fhTrackMatchedDEtaDPhiPos;         //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV, after and before
+
   AliAnaCalorimeterQA & operator = (const AliAnaCalorimeterQA & qa) ;//cpy assignment
   AliAnaCalorimeterQA(              const AliAnaCalorimeterQA & qa) ; // cpy ctor
   
-  ClassDef(AliAnaCalorimeterQA,26)
+  ClassDef(AliAnaCalorimeterQA,27)
 } ;
 
 
