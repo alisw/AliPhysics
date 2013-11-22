@@ -364,7 +364,7 @@ void AliTPCCorrectionLookupTable::CreateResidual(AliTPCCorrection *distortion, A
         //get residual distortion
         distortion->DistortPoint(xdc, roc);
         correction->CorrectPoint(xdc, roc);
-        Float_t dx[3]={x[0]-xdc[0], x[1]-xdc[1], x[2]-xdc[2]};
+        Float_t dx[3]={xdc[0]-x[0], xdc[1]-x[1], xdc[2]-x[2]};
         
         mDxDist(ir,iz)=dx[0];
         mDyDist(ir,iz)=dx[1];
