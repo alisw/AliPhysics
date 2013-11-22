@@ -72,6 +72,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   fOnlyOneEtaSide(0),
   fWeightPerEvent(kFALSE),
   fPtOrder(kTRUE),
+  fTwoTrackCutMinRadius(0.8),
   fRunNumber(0),
   fMergeCount(1)
 {
@@ -243,6 +244,7 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fOnlyOneEtaSide(0),
   fWeightPerEvent(kFALSE),
   fPtOrder(kTRUE),
+  fTwoTrackCutMinRadius(0.8),
   fRunNumber(0),
   fMergeCount(1)
 {
@@ -818,7 +820,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	  if (TMath::Abs(deta) < twoTrackEfficiencyCutValue * 2.5 * 3)
 	  {
 	    // check first boundaries to see if is worth to loop and find the minimum
-	    Float_t dphistar1 = GetDPhiStar(phi1, pt1, charge1, phi2, pt2, charge2, 0.8, bSign);
+	    Float_t dphistar1 = GetDPhiStar(phi1, pt1, charge1, phi2, pt2, charge2, fTwoTrackCutMinRadius, bSign);
 	    Float_t dphistar2 = GetDPhiStar(phi1, pt1, charge1, phi2, pt2, charge2, 2.5, bSign);
 	    
 	    const Float_t kLimit = twoTrackEfficiencyCutValue * 3;
@@ -827,7 +829,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	    Float_t dphistarmin = 1e5;
 	    if (TMath::Abs(dphistar1) < kLimit || TMath::Abs(dphistar2) < kLimit || dphistar1 * dphistar2 < 0)
 	    {
-	      for (Double_t rad=0.8; rad<2.51; rad+=0.01) 
+	      for (Double_t rad=fTwoTrackCutMinRadius; rad<2.51; rad+=0.01) 
 	      {
 		Float_t dphistar = GetDPhiStar(phi1, pt1, charge1, phi2, pt2, charge2, rad, bSign);
 
@@ -1237,6 +1239,7 @@ void AliUEHistograms::Copy(TObject& c) const
   target.fMergeCount = fMergeCount;
   target.fWeightPerEvent = fWeightPerEvent;
   target.fPtOrder = fPtOrder;
+  target.fTwoTrackCutMinRadius = fTwoTrackCutMinRadius;
 }
 
 //____________________________________________________________________

@@ -95,6 +95,7 @@ fFillMixed(kTRUE),
 fMixingTracks(50000),
 fTwoTrackEfficiencyStudy(kFALSE),
 fTwoTrackEfficiencyCut(0),
+fTwoTrackCutMinRadius(0.8),
 fUseVtxAxis(kFALSE),
 fCourseCentralityBinning(kFALSE),
 fSkipTrigger(kFALSE),
@@ -291,6 +292,9 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fHistos->SetPtOrder(fPtOrder);
   fHistosMixed->SetPtOrder(fPtOrder);
   
+  fHistos->SetTwoTrackCutMinRadius(fTwoTrackCutMinRadius);
+  fHistosMixed->SetTwoTrackCutMinRadius(fTwoTrackCutMinRadius);
+  
   if (fEfficiencyCorrectionTriggers)
    {
     fHistos->SetEfficiencyCorrectionTriggers(fEfficiencyCorrectionTriggers);
@@ -433,6 +437,8 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fPtOrder", &fPtOrder,"PtOrder/O");
   settingsTree->Branch("fTriggersFromDetector", &fTriggersFromDetector,"TriggersFromDetector/I");
   settingsTree->Branch("fMCUseUncheckedCentrality", &fMCUseUncheckedCentrality,"MCUseUncheckedCentrality/O");
+  settingsTree->Branch("fTwoTrackEfficiencyCut", &fTwoTrackEfficiencyCut,"TwoTrackEfficiencyCut/D");
+  settingsTree->Branch("fTwoTrackCutMinRadius", &fTwoTrackCutMinRadius,"TwoTrackCutMinRadius/D");
   
   //fCustomBinning
   
