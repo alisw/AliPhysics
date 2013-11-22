@@ -194,6 +194,12 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
   TH1F  *fhOriginKine;             //! histo for Origin Kine level
   TH1F  *fhOriginReco;             //! histo for Origin Reco level
   TH1F  *fhElGenerator;            //! histo for showing which generator + source of electron
+  TH2F  *fhdEdxvsEta;              //! histo dEdx vs eta
+  TH2F  *fhdEdxSigmavsEta;         //! histo sigma dEdx vs eta
+  TH2F  *fhdEdxvsEtaTPC;           //! histo dEdx vs eta
+  TH2F  *fhdEdxSigmavsEtaTPC;      //! histo sigma dEdx vs eta
+  TH2F  *fhdEdxvsEtaTPCTOF;        //! histo dEdx vs eta
+  TH2F  *fhdEdxSigmavsEtaTPCTOF;   //! histo sigma dEdx vs eta
 
   ClassDef(AliCFSingleTrackEfficiencyTask,1);
 
