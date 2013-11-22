@@ -86,8 +86,8 @@ Float_t centralityGlobal = -10;
 Int_t etaLow[nHists]  = {-8, -8, -6, -4, -2, 0, 2, 4, 6};
 Int_t etaHigh[nHists] = { 8, -6, -4, -2,  0, 2, 4, 6, 8};
 
-Int_t nDeltaPiBins   = 60;
-Double_t deltaPiLow  = 40;
+Int_t nDeltaPiBins   = 80;
+Double_t deltaPiLow  = 20;
 Double_t deltaPiHigh = 100;
 const Char_t *Pid[7]={"Ch","Pion","Kaon","Proton","Electron","Muon","Oher"};
 ClassImp(AliAnalysisTaskQAHighPtDeDx)
