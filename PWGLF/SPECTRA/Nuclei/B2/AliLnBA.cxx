@@ -22,12 +22,12 @@
 #include <TGraphErrors.h>
 #include <TF1.h>
 
-#include "AliLnB2.h"
+#include "AliLnBA.h"
 #include "B2.h"
 
-ClassImp(AliLnB2)
+ClassImp(AliLnBA)
 
-AliLnB2::AliLnB2(const TString& protonSpectra, const TString& protonTag, const TString& nucleusSpectra, const TString& nucleusTag, const TString& outputFilename, const TString& otag, Int_t a, Int_t z)
+AliLnBA::AliLnBA(const TString& protonSpectra, const TString& protonTag, const TString& nucleusSpectra, const TString& nucleusTag, const TString& outputFilename, const TString& otag, Int_t a, Int_t z)
 : TObject()
 , fProtonSpectra(protonSpectra)
 , fProtonTag(protonTag)
@@ -46,14 +46,14 @@ AliLnB2::AliLnB2(const TString& protonSpectra, const TString& protonTag, const T
 	this->SetNucleus(a,z);
 }
 
-AliLnB2::~AliLnB2()
+AliLnBA::~AliLnBA()
 {
 //
 // destructor
 //
 }
 
-void AliLnB2::SetNucleus(Int_t a, Int_t z)
+void AliLnBA::SetNucleus(Int_t a, Int_t z)
 {
 //
 // set nucleus mass and name
@@ -73,9 +73,11 @@ void AliLnB2::SetNucleus(Int_t a, Int_t z)
 		this->Warning("SetNucleus", "unknown nucleus A = %d, Z = %d", a, z);
 		fNucleusName = "Unknown";
 	}
+	
+	if(z<0) fNucleusName.Prepend("Anti");
 }
 
-Int_t AliLnB2::Run()
+Int_t AliLnBA::Run()
 {
 //
 // coalescence parameter
@@ -86,18 +88,12 @@ Int_t AliLnB2::Run()
 	TFile* finputA = new TFile(fNucleusSpectra.Data(), "read");
 	if (finputA->IsZombie()) exit(1);
 	
-	TString prefix = "";
-	TString suffix = "";
-	if(fZ < 0)
-	{
-		prefix = "Anti";
-		suffix = "bar";
-	}
-	
 	// invariant differential yields
 	
-	TGraphErrors* grPrtInvDYieldPt = FindObj<TGraphErrors>(finput1, fProtonTag, prefix + "Proton_InvDiffYield_Pt");
-	TGraphErrors* grNucInvDYieldPt = FindObj<TGraphErrors>(finputA, fNucleusTag, prefix + fNucleusName + "_InvDiffYield_Pt");
+	TString nucleonName = (fZ > 0) ? "Proton" : "AntiProton";
+	
+	TGraphErrors* grPrtInvDYieldPt = FindObj<TGraphErrors>(finput1, fProtonTag, nucleonName + "_InvDiffYield_Pt");
+	TGraphErrors* grNucInvDYieldPt = FindObj<TGraphErrors>(finputA, fNucleusTag, fNucleusName + "_InvDiffYield_Pt");
 	
 	TFile* foutput = new TFile(fOutputFilename.Data(),"recreate");
 	
@@ -106,43 +102,47 @@ Int_t AliLnB2::Run()
 	
 	// coalescence parameter
 	
-	TGraphErrors* grB2Pt = this->GetBAPt(grPrtInvDYieldPt, grNucInvDYieldPt, Form("B2%s_Pt",suffix.Data()));
+	TGraphErrors* grBAPt = this->GetBAPt(grPrtInvDYieldPt, grNucInvDYieldPt, fNucleusName + Form("_B%d_Pt",fA));
 	
-	
-	grB2Pt->Write();
+	grBAPt->Write();
 	
 	// homogeneity volume
-	
-	TGraphErrors* grR3Pt = this->Rside2Rlong(grB2Pt, Form("R3%s_Pt", suffix.Data()), fCd);
-	
-	grR3Pt->Write();
+	TGraphErrors* grR3Pt = 0;
+	if(fA==2)
+	{
+		grR3Pt = this->Rside2Rlong(grBAPt, fNucleusName + "_R3_Pt", fCd);
+		grR3Pt->Write();
+	}
 	
 	// propagate systematic errors if possible
 	
-	TString grPrtName = fProtonTag +  "/" + prefix + "Proton_SystErr_InvDiffYield_Pt;1";
-	TString grNucName = fNucleusTag + "/" + prefix + fNucleusName + "_SystErr_InvDiffYield_Pt;1";
+	TString grPrtName = fProtonTag +  "/" + nucleonName + "_SystErr_InvDiffYield_Pt;1";
+	TString grNucName = fNucleusTag + "/" + fNucleusName + "_SystErr_InvDiffYield_Pt;1";
 	
 	TGraphErrors* grSystErrPrtInvDYieldPt = dynamic_cast<TGraphErrors*>(finput1->Get(grPrtName.Data()));
-	TGraphErrors* grSystErrNucInvDYieldPt = dynamic_cast<TGraphErrors*>(finput1->Get(grNucName.Data()));
+	TGraphErrors* grSystErrNucInvDYieldPt = dynamic_cast<TGraphErrors*>(finputA->Get(grNucName.Data()));
 	
 	if( (grSystErrPrtInvDYieldPt != 0) && (grSystErrNucInvDYieldPt != 0) )
 	{
-		TGraphErrors* grSystErrB2Pt = this->GetBAPt(grSystErrPrtInvDYieldPt, grSystErrNucInvDYieldPt, Form("SystErr_B2%s_Pt",suffix.Data()));
+		TGraphErrors* grSystErrBAPt = this->GetBAPt(grSystErrPrtInvDYieldPt, grSystErrNucInvDYieldPt, fNucleusName + Form("_SystErr_B%d_Pt",fA));
 		
-		grSystErrB2Pt->Write();
+		if(fA==2)
+		{
+			TGraphErrors* grSystErrR3Pt = this->Rside2Rlong(grSystErrBAPt, fNucleusName + "_SystErr_R3_Pt", fCd);
+			grSystErrR3Pt->Write();
+			
+			delete grSystErrR3Pt;
+		}
 		
-		TGraphErrors* grSystErrR3Pt = this->Rside2Rlong(grSystErrB2Pt, Form("SystErr_R3%s_Pt", suffix.Data()), fCd);
-		grSystErrR3Pt->Write();
-		
-		delete grSystErrB2Pt;
-		delete grSystErrR3Pt;
+		grSystErrBAPt->Write();
+		delete grSystErrBAPt;
 	}
 	else
 	{
 		this->Warning("Run", "systematic errors are not propagated");
 	}
 	
-	delete grB2Pt;
+	delete grBAPt;
 	delete grR3Pt;
 	
 	delete foutput;
@@ -152,7 +152,7 @@ Int_t AliLnB2::Run()
 	return 0;
 }
 
-TGraphErrors* AliLnB2::GetBAPt(const TGraphErrors* grPrtInvDYieldPt, const TGraphErrors* grNucInvDYieldPt, const TString& name) const
+TGraphErrors* AliLnBA::GetBAPt(const TGraphErrors* grPrtInvDYieldPt, const TGraphErrors* grNucInvDYieldPt, const TString& name) const
 {
 //
 // coalescence parameter
@@ -166,7 +166,7 @@ TGraphErrors* AliLnB2::GetBAPt(const TGraphErrors* grPrtInvDYieldPt, const TGrap
 		
 		grNucInvDYieldPt->GetPoint(i, ptNuc, yNuc);
 		
-		if(ptNuc<0.8) continue; // acceptance
+		if(ptNuc/fA < 0.4) continue; // acceptance
 		
 		Double_t yPrt = grPrtInvDYieldPt->Eval(ptNuc/fA); // interpolate
 		
@@ -188,7 +188,7 @@ TGraphErrors* AliLnB2::GetBAPt(const TGraphErrors* grPrtInvDYieldPt, const TGrap
 	return grBAPt;
 }
 
-Double_t AliLnB2::GetErrorY(const TGraphErrors* gr, Double_t x0) const
+Double_t AliLnBA::GetErrorY(const TGraphErrors* gr, Double_t x0) const
 {
 //
 // estimate error of gr(x0) with the closest point to x0
@@ -218,7 +218,7 @@ Double_t AliLnB2::GetErrorY(const TGraphErrors* gr, Double_t x0) const
 	return 0;
 }
 
-Double_t AliLnB2::Rside2Rlong(Double_t pt, Double_t B2, Double_t Cd) const
+Double_t AliLnBA::Rside2Rlong(Double_t pt, Double_t B2, Double_t Cd) const
 {
 //
 // Rside^2*Rlong from B2 value
@@ -237,7 +237,7 @@ Double_t AliLnB2::Rside2Rlong(Double_t pt, Double_t B2, Double_t Cd) const
 	return r3;
 }
 
-TGraphErrors* AliLnB2::Rside2Rlong(const TGraphErrors* grB2, const TString& name, Double_t Cd) const
+TGraphErrors* AliLnBA::Rside2Rlong(const TGraphErrors* grB2, const TString& name, Double_t Cd) const
 {
 //
 // Rside^2*Rlong from B2 value
