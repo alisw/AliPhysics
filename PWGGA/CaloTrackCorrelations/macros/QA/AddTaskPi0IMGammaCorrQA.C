@@ -212,8 +212,8 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType,
   reader->SwitchOnEMCALCells();
   reader->SwitchOnEMCAL();
 
-  reader->SwitchOffPHOSCells();
-  reader->SwitchOffPHOS();
+  reader->SwitchOnPHOSCells();
+  reader->SwitchOnPHOS();
   
   //-----------------
   // Event selection
@@ -416,7 +416,7 @@ AliAnaPi0* ConfigurePi0Analysis(TString calorimeter, TString collision,
   }
 
   ana->SwitchOffMultipleCutAnalysis();
-  if(!qaan)ana->SwitchOnSMCombinations();
+  ana->SwitchOnSMCombinations();
   ana->SwitchOffFillAngleHisto();
   ana->SwitchOffFillOriginHisto();
 
@@ -558,7 +558,7 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter,  Bool_t simulation
   ana->SetCalorimeter(calorimeter);
   
   ana->SetTimeCut(-1e10,1e10); // Open time cut
-  ana->SwitchOffCorrelation();
+  ana->SwitchOnCorrelation();
   ana->SwitchOffStudyBadClusters() ;
   ana->SwitchOffFiducialCut();
   ana->SwitchOffFillAllTH3Histogram();
@@ -567,8 +567,8 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter,  Bool_t simulation
   ana->SwitchOffStudyBadClusters();
   ana->SwitchOffStudyClustersAsymmetry();
   ana->SwitchOffStudyWeight();
-  ana->SwitchOffFillAllTrackMatchingHistogram();
-  ana->SwitchOffFillAllCellTimeHisto() ;
+  ana->SwitchOnFillAllTrackMatchingHistogram();
+  ana->SwitchOnFillAllCellTimeHisto() ;
   
   if(calorimeter=="EMCAL")
   {
@@ -656,6 +656,7 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges,
   histoRanges->SetHistoRatioRangeAndNBins(0.,2.,100);
   histoRanges->SetHistoVertexDistRangeAndNBins(0.,500.,500);
   histoRanges->SetHistoNClusterCellRangeAndNBins(0,50,50);
+  histoRanges->SetHistoNClustersRangeAndNBins(0,100,100);
   histoRanges->SetHistoZRangeAndNBins(-400,400,200);
   histoRanges->SetHistoRRangeAndNBins(400,450,25);
   histoRanges->SetHistoV0SignalRangeAndNBins(0,5000,500);
