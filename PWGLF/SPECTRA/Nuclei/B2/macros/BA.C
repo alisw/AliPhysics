@@ -17,14 +17,15 @@
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
+#include <Riostream.h>
 #include <TSystem.h>
 #include <TROOT.h>
 #include <TFileMerger.h>
 #include <TString.h>
-#include "AliLnB2.h"
+#include "AliLnBA.h"
 #endif
 
-Int_t B2(  const TString& pSpectra   = "~/alice/output/Proton-lhc10d-Spectra.root"
+Int_t BA(  const TString& pSpectra   = "~/alice/output/Proton-lhc10d-Spectra.root"
          , const TString& dSpectra   = "~/alice/output/Deuteron-lhc10d-Spectra.root"
          , const TString& ptag       = "lhc10d"
          , const TString& dtag       = "lhc10d"
@@ -33,37 +34,61 @@ Int_t B2(  const TString& pSpectra   = "~/alice/output/Proton-lhc10d-Spectra.roo
          , const Bool_t   draw       = 1)
 {
 //
-// coalescence parameter
+// coalescence parameter for nucleus and antinucleus
 //
-	const Int_t kNpart      = 2;
-	const TString kPrefix[] = { "", "Anti" };
-	const Int_t kCharge[]   = { 1, -1 };
+	using namespace std;
+	
+	Int_t A = 2;
+	Int_t Z = 1;
+	
+	if(nucleus == "Deuteron")
+	{
+		A = 2;
+		Z = 1;
+	}
+	else if(nucleus == "Triton")
+	{
+		A = 3;
+		Z = 1;
+	}
+	else if(nucleus == "He3")
+	{
+		A = 3;
+		Z = 2;
+	}
+	else
+	{
+		cerr << "only valid names: Deuteron, Triton and He3" << endl;
+		return 1;
+	}
+	
+	const Int_t kNpart = 2;
+	const Int_t kZ[kNpart] = { Z, -Z };
+	const TString kB2File[kNpart] = {"BA.root", "AntiBA.root" };
 	
 	TFileMerger m;
 	
 	for(Int_t i=0; i<kNpart; ++i)
 	{
-		TString b2file = kPrefix[i] + "B2.root";
-		
-		AliLnB2 b2(pSpectra, ptag, dSpectra, dtag, b2file, otag, 2, kCharge[i]);
+		AliLnBA b2(pSpectra, ptag, dSpectra, dtag, kB2File[i], otag, A, kZ[i]);
 		
 		b2.Run();
 		
-		m.AddFile(b2file.Data(),0);
+		m.AddFile(kB2File[i].Data(),0);
 	}
 	
 	m.OutputFile(outputfile.Data());
 	m.Merge();
 	
-	gSystem->Exec("rm -f B2.root AntiB2.root");
-	
-	// draw
+	gSystem->Exec(Form("rm -f %s %s", kB2File[0].Data(), kB2File[1].Data()));
 	
 	if(!draw) return 0;
 	
+	const TString kNucleus[kNpart] = { nucleus, Form("Anti%s",nucleus.Data())};
+	
 	for(Int_t i=0; i<kNpart; ++i)
 	{
-		gROOT->ProcessLine(Form(".x DrawB2.C+g(\"%s\",\"%s\",\"%s\")", outputfile.Data(), otag.Data(), kPrefix[i].Data()));
+		gROOT->ProcessLine(Form(".x DrawBA.C+g(\"%s\",\"%s\",\"%s\")", outputfile.Data(), otag.Data(), kNucleus[i].Data()));
 	}
 	
 	return 0;

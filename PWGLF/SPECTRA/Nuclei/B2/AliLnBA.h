@@ -1,5 +1,5 @@
-#ifndef ALILNB2_H
-#define ALILNB2_H
+#ifndef ALILNBA_H
+#define ALILNBA_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -11,15 +11,19 @@
 
 class TGraphErrors;
 
-class AliLnB2: public TObject
+class AliLnBA: public TObject
 {
   public:
 	
-	AliLnB2(const TString& protonSpectra, const TString& nucleusSpectra, const TString& protonTag, const TString& nucleusTag, const TString& outputFilename, const TString& otag, Int_t a, Int_t z);
+	AliLnBA(const TString& protonSpectra, const TString& nucleusSpectra, const TString& protonTag, const TString& nucleusTag, const TString& outputFilename, const TString& otag, Int_t a, Int_t z);
 	
-	virtual ~AliLnB2();
+	virtual ~AliLnBA();
 	
 	TGraphErrors* GetBAPt(const TGraphErrors* grPrtInvDYieldPt, const TGraphErrors* grNucInvDYieldPt, const TString& name) const;
+	
+	TString GetNucleusName() const { return fNucleusName; }
+	Int_t GetA() const { return fA; }
+	Int_t GetZ() const { return fZ; }
 	
 	Double_t Rside2Rlong(Double_t pt, Double_t B2, Double_t Cd) const;
 	TGraphErrors* Rside2Rlong(const TGraphErrors* grB2, const TString& name, Double_t Cd) const;
@@ -31,8 +35,8 @@ class AliLnB2: public TObject
 	
   private:
  
-	AliLnB2(const AliLnB2& other);
-	AliLnB2& operator=(const AliLnB2& other);
+	AliLnBA(const AliLnBA& other);
+	AliLnBA& operator=(const AliLnBA& other);
 	
 	Double_t GetErrorY(const TGraphErrors* gr, Double_t x0) const;
 	
@@ -52,7 +56,7 @@ class AliLnB2: public TObject
 	
 	Double_t fCd; // correction factor for homogeneity volume
 	
-	ClassDef(AliLnB2,1)
+	ClassDef(AliLnBA,2)
 };
 
-#endif // ALILNB2_H
+#endif // ALILNBA_H
