@@ -71,7 +71,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     virtual	void	SetEventMixing(Bool_t flag) { fFillMixed = flag; }
     virtual	void    SetMixingTracks(Int_t tracks) { fMixingTracks = tracks; }
     virtual	void	SetTwoTrackEfficiencyStudy(Bool_t flag) { fTwoTrackEfficiencyStudy = flag; }
-    virtual	void	SetTwoTrackEfficiencyCut(Float_t value = 0.02) { fTwoTrackEfficiencyCut = value; }
+    virtual	void	SetTwoTrackEfficiencyCut(Float_t value = 0.02, Float_t min = 0.8) { fTwoTrackEfficiencyCut = value; fTwoTrackCutMinRadius = min; }
     virtual	void	SetUseVtxAxis(Int_t flag) { fUseVtxAxis = flag; }
     virtual	void	SetCourseCentralityBinning(Bool_t flag) { fCourseCentralityBinning = flag; }
     virtual     void    SetSkipTrigger(Bool_t flag) { fSkipTrigger = flag; }
@@ -151,6 +151,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Int_t  		fMixingTracks;		// size of track buffer for event mixing
     Bool_t		fTwoTrackEfficiencyStudy; // two-track efficiency study on
     Float_t		fTwoTrackEfficiencyCut;   // enable two-track efficiency cut
+    Float_t		fTwoTrackCutMinRadius;    // minimum radius for two-track efficiency cut
     Int_t		fUseVtxAxis;              // use z vtx as axis (needs 7-10 times more memory!)
     Bool_t		fCourseCentralityBinning; // less centrality bins
     Bool_t		fSkipTrigger;		  // skip trigger selection
@@ -222,7 +223,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef(AliAnalysisTaskPhiCorrelations, 38); // Analysis task for delta phi correlations
+    ClassDef(AliAnalysisTaskPhiCorrelations, 39); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle

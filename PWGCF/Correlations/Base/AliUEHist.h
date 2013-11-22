@@ -110,6 +110,7 @@ class AliUEHist : public TObject
   Float_t GetTrackEtaCut() { return fTrackEtaCut; }
   void SetTrackEtaCut(Float_t value) { fTrackEtaCut = value; }
   void SetWeightPerEvent(Bool_t flag)   { fWeightPerEvent = flag; }
+  void SetSkipScaleMixedEvent(Bool_t flag)  { fSkipScaleMixedEvent = flag; }
   
   void SetContaminationEnhancement(TH1F* hist)    { fContaminationEnhancement = hist; }
   
@@ -161,7 +162,8 @@ protected:
   
   Bool_t fCombineMinMax;              // flag to combine min and max to a general towards region
   Float_t fTrackEtaCut;               // cut used during production of histograms (needed for finite bin correction in GetSumOfRatios)
-  Bool_t fWeightPerEvent;	// weight with the number of trigger particles per event
+  Bool_t fWeightPerEvent;	      // weight with the number of trigger particles per event
+  Bool_t fSkipScaleMixedEvent;        // scale the mixed event with (0, 0) plus finite bin correction (default: kTRUE)
   
   AliCFContainer* fCache;             //! cache variable for GetTrackEfficiency
   
@@ -170,7 +172,7 @@ protected:
   
   TString fHistogramType;             // what is stored in this histogram
   
-  ClassDef(AliUEHist, 13) // underlying event histogram container
+  ClassDef(AliUEHist, 14) // underlying event histogram container
 };
 
 #endif
