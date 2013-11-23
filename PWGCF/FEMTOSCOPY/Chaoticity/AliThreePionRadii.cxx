@@ -832,6 +832,9 @@ void AliThreePionRadii::UserCreateOutputObjects()
   TH1D *fV0TotSignal = new TH1D("fV0TotSignal","",3000, 0,30000); 
   if(fV0Mbinning) fOutputList->Add(fV0TotSignal);
   
+  TH2D *fMultBinVsCent = new TH2D("fMultBinVsCent","",fMbins,.5,fMbins+.5, 100,0,100);
+  fOutputList->Add(fMultBinVsCent);
+
   TH1D *fExtendedQ3Histo_term1 = new TH1D("fExtendedQ3Histo_term1","",50,0,0.5);
   TH1D *fExtendedQ3Histo_term2 = new TH1D("fExtendedQ3Histo_term2","",50,0,0.5);
   TH1D *fExtendedQ3Histo_term5 = new TH1D("fExtendedQ3Histo_term5","",50,0,0.5);
@@ -1518,6 +1521,9 @@ void AliThreePionRadii::Exec(Option_t *)
   }
   if(fPbPbcase){
     ((TH2D*)fOutputList->FindObject("fdCentVsNchdEta"))->Fill(fMbin+1, pow(trackletMult,1/3.));
+    centrality = fAOD->GetCentrality();
+    centralityPercentile = centrality->GetCentralityPercentile("V0M");
+    ((TH2D*)fOutputList->FindObject("fMultBinVsCent"))->Fill(fMbin+1, centralityPercentile);
   }
 
   // Mult cut
