@@ -258,12 +258,22 @@ void TStatToolkit::TruncatedMean(const TH1 * his, TVectorD *param, Float_t down,
   if (verbose)  printf("Mean\t%f\t Sigma2\t%f\n", mean,sigma2);
 }
 
-void TStatToolkit::LTM(TH1F * his, TVectorD *param , Float_t fraction,  Bool_t verbose){
+void TStatToolkit::LTM(TH1 * his, TVectorD *param , Float_t fraction,  Bool_t verbose){
   //
-  // LTM
+  // LTM : Trimmed mean on histogram - Modified version for binned data
   //
+  // Robust statistic to estimate properties of the distribution
+  // See http://en.wikipedia.org/w/index.php?title=Trimmed_estimator&oldid=582847999
+  //
+  // New faster version is under preparation
+  //
+  if (!param) return;
+  (*param)[0]=0;
+  (*param)[1]=0;
+  (*param)[2]=0;  
   Int_t nbins    = his->GetNbinsX();
   Int_t nentries = (Int_t)his->GetEntries();
+  if (nentries<=0) return;
   Double_t *data  = new Double_t[nentries];
   Int_t npoints=0;
   for (Int_t ibin=1;ibin<nbins; ibin++){
@@ -276,7 +286,7 @@ void TStatToolkit::LTM(TH1F * his, TVectorD *param , Float_t fraction,  Bool_t v
       }
     }
   }
-  Double_t mean, sigma;
+  Double_t mean, sigma;  
   Int_t npoints2=TMath::Min(Int_t(fraction*Float_t(npoints)),npoints-1);
   npoints2=TMath::Max(Int_t(0.5*Float_t(npoints)),npoints2);
   TStatToolkit::EvaluateUni(npoints, data, mean,sigma,npoints2);
@@ -578,7 +588,7 @@ void TStatToolkit::TestGausFit(Int_t nhistos){
   // ROOT gauss fit
   //  nhistos - number of histograms to be used for test
   //
-  TTreeSRedirector *pcstream = new TTreeSRedirector("fitdebug.root");
+  TTreeSRedirector *pcstream = new TTreeSRedirector("fitdebug.root","recreate");
   
   Float_t  *xTrue = new Float_t[nhistos];
   Float_t  *sTrue = new Float_t[nhistos];
@@ -604,7 +614,7 @@ void TStatToolkit::TestGausFit(Int_t nhistos){
     h1f[i]->FillRandom("myg");
   }
   
-  TStopwatch s;
+  TStopwatch s; 
   s.Start();
   //standard gaus fit
   for (Int_t i=0; i<nhistos; i++){
@@ -698,45 +708,76 @@ TGraph2D * TStatToolkit::MakeStat2D(TH3 * his, Int_t delta0, Int_t delta1, Int_t
   return graph;
 }
 
-TGraph * TStatToolkit::MakeStat1D(TH3 * his, Int_t delta1, Int_t type){
+TGraphErrors * TStatToolkit::MakeStat1D(TH2 * his, Int_t deltaBin, Double_t fraction, Int_t returnType, Int_t markerStyle, Int_t markerColor){
   //
+  // function to retrieve the "mean and RMS estimate" of 2D histograms
+  //     
+  // Robust statistic to estimate properties of the distribution
+  // See http://en.wikipedia.org/wiki/Trimmed_estimator
   //
-  //
-  // delta - number of bins to integrate
-  // type - 0 - mean value
-
+  // deltaBin - number of bins to integrate (bin+-deltaBin)
+  // fraction - fraction of values for the LTM and for the gauss fit
+  // returnType - 
+  //        0 - mean value
+  //        1 - RMS
+  //        2 - LTM mean
+  //        3 - LTM sigma
+  //        4 - Gaus fit mean  - on LTM range
+  //        5 - Gaus fit sigma - on LTM  range
+  // 
   TAxis * xaxis  = his->GetXaxis();
-  TAxis * yaxis  = his->GetYaxis();
-  //  TAxis * zaxis  = his->GetZaxis();
   Int_t   nbinx  = xaxis->GetNbins();
-  Int_t   nbiny  = yaxis->GetNbins();
   char name[1000];
   Int_t icount=0;
-  TGraph  *graph = new TGraph(nbinx);
+  //
+  TVectorD vecX(nbinx);
+  TVectorD vecXErr(nbinx);
+  TVectorD vecY(nbinx);
+  TVectorD vecYErr(nbinx);
+  //
   TF1 f1("f1","gaus");
+  TVectorD vecLTM(3);
+
   for (Int_t ix=0; ix<nbinx;ix++){
     Float_t xcenter = xaxis->GetBinCenter(ix); 
-    //    Float_t ycenter = yaxis->GetBinCenter(iy); 
     snprintf(name,1000,"%s_%d",his->GetName(), ix);
-    TH1 *projection = his->ProjectionZ(name,ix-delta1,ix+delta1,0,nbiny);
-    Float_t stat= 0;
-    if (type==0) stat = projection->GetMean();
-    if (type==1) stat = projection->GetRMS();
-    if (type==2 || type==3){
-      TVectorD vec(3);
-	TStatToolkit::LTM((TH1F*)projection,&vec,0.7);
-	if (type==2) stat= vec[1];
-	if (type==3) stat= vec[0];	
+    TH1 *projection = his->ProjectionY(name,TMath::Max(ix-deltaBin,1),TMath::Min(ix+deltaBin,nbinx));
+    Double_t stat= 0;
+    Double_t err =0;
+    TStatToolkit::LTM((TH1F*)projection,&vecLTM,fraction);  
+    //
+    if (returnType==0) {
+      stat = projection->GetMean();
+      err  = projection->GetMeanError();
     }
-    if (type==4|| type==5){
-      projection->Fit(&f1);
-      if (type==4) stat= f1.GetParameter(1);
-      if (type==5) stat= f1.GetParameter(2);
+    if (returnType==1) {
+      stat = projection->GetRMS();
+      err = projection->GetRMSError();
     }
-      //printf("%d\t%f\t%f\t%f\n", icount,xcenter, ycenter, stat);
-    graph->SetPoint(icount,xcenter, stat);
+    if (returnType==2 || returnType==3){
+      if (returnType==2) stat= vecLTM[1];
+      if (returnType==3) stat= vecLTM[2];	
+    }
+    if (returnType==4|| returnType==5){
+      projection->Fit(&f1,"QNR","QNR");
+      if (returnType==4) {
+	stat= f1.GetParameter(1);
+	err=f1.GetParError(1);
+      }
+      if (returnType==5) {
+	stat= f1.GetParameter(2);
+	err=f1.GetParError(2);
+      }
+    }
+    vecX[icount]=xcenter;
+    vecY[icount]=stat;
+    vecYErr[icount]=err;
     icount++;
+    delete projection;
   }
+  TGraphErrors  *graph = new TGraphErrors(icount,vecX.GetMatrixArray(), vecY.GetMatrixArray(),0, vecYErr.GetMatrixArray());
+  graph->SetMarkerStyle(markerStyle);
+  graph->SetMarkerColor(markerColor);
   return graph;
 }
 
