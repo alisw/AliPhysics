@@ -300,10 +300,11 @@ void AliAnalyseLeadingTrackUE::RemoveInjectedSignals(TObjArray* tracks, TObject*
       Printf("WARNING: No mother found for particle %d:", part->GetLabel());
       continue;
     }
-   
+
+//     Printf("%d %d %d", i, part->GetLabel(), mother->GetLabel());
     if (mother->GetLabel() >= maxLabel)
     {
-//       Printf("Removing %d with label %d", i, part->GetLabel()); part->Dump();
+//       Printf("Removing %d with label %d", i, part->GetLabel()); ((AliMCParticle*)part)->Particle()->Print(); ((AliMCParticle*)mother)->Particle()->Print();
       TObject* object = tracks->RemoveAt(i);
       if (tracks->IsOwner())
 	delete object;
@@ -380,7 +381,7 @@ TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject*
   // particleSpecies: -1 all particles are returned
   //                  0 (pions) 1 (kaons) 2 (protons) 3 (others) particles
   // speciesOnTracks if kFALSE, particleSpecies is only applied on the matched MC particle (not on the track itself)
-
+  
   Int_t nTracks = NParticles(obj);
   TObjArray* tracks = new TObjArray;
   
@@ -404,6 +405,8 @@ TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject*
 	  delete part;
         continue;
       }
+      
+//     Printf("%p %p %d Accepted %d %f %f %f", obj, arrayMC, particleSpecies, ipart, part->Eta(), part->Phi(), part->Pt());
     
     if (arrayMC) {
       Int_t label = part->GetLabel();
@@ -715,7 +718,7 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
 	    return 0;
 	  
 	  Double_t pos[2];
-	  Double_t covar[2];
+	  Double_t covar[3];
 	  AliAODTrack* clone = (AliAODTrack*) part->Clone();
 	  Bool_t success = clone->PropagateToDCA(vertex, aodEvent->GetHeader()->GetMagneticField(), 3, pos, covar);
 	  delete clone;
