@@ -319,7 +319,6 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fListOfHistos->Add(new TH2F("processIDs", ";#Delta#phi;process id", 100, -0.5 * TMath::Pi(), 1.5 * TMath::Pi(), kPNoProcess + 1, -0.5, kPNoProcess + 0.5));
   fListOfHistos->Add(new TH1F("eventStat", ";;events", 4, -0.5, 3.5));
   fListOfHistos->Add(new TH2F("mixedDist", ";centrality;tracks;events", 101, 0, 101, 200, 0, fMixingTracks * 1.5));
-  //fListOfHistos->Add(new TH1F("pids", ";pdg;tracks", 2001, -1000.5, 1000.5));
   fListOfHistos->Add(new TH2F("referenceMultiplicity", ";centrality;tracks;events", 101, 0, 101, 200, 0, 200));
   if (fCentralityMethod == "V0A_MANUAL")
   {
@@ -567,6 +566,15 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
 
       headers = cocktailHeader->GetHeaders()->GetEntries();
       eventHeader = dynamic_cast<AliGenEventHeader*> (cocktailHeader->GetHeaders()->First());
+      
+      if (fDebug > 4)
+      {
+	for (Int_t i=0; i<cocktailHeader->GetHeaders()->GetEntries(); i++)
+	{
+	  Printf("%d particles in header:", (dynamic_cast<AliGenEventHeader*> (cocktailHeader->GetHeaders()->At(i)))->NProduced());
+	  cocktailHeader->GetHeaders()->At(i)->Dump();
+	}
+      }
     }
     else
     {
@@ -589,7 +597,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
     }
     
     skipParticlesAbove = eventHeader->NProduced();
-    AliInfo(Form("Injected signals in this event (%d headers). Keeping events of %s. Will skip particles/tracks above %d.", headers, eventHeader->ClassName(), skipParticlesAbove));
+    AliInfo(Form("Injected signals in this event (%d headers). Keeping particles/tracks of %s. Will skip particles/tracks above %d.", headers, eventHeader->ClassName(), skipParticlesAbove));
   }
   
   // Get MC primaries
@@ -609,19 +617,6 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
     delete tmpList;
   }
   
-  /*
-  if (fAOD)
-  {
-    for (Int_t i=0; i<fArrayMC->GetEntriesFast(); i++)
-      ((TH1F*) fListOfHistos->FindObject("pids"))->Fill(((AliAODMCParticle*) fArrayMC->At(i))->PdgCode());
-  }
-  else
-  {
-    for (Int_t i=0; i<fMcEvent->GetNumberOfTracks(); i++)
-      ((TH1F*) fListOfHistos->FindObject("pids"))->Fill(fMcEvent->GetTrack(i)->PdgCode());
-  }
-  */
-  
   if (fFillOnlyStep0)
     zVtx = 0;
   
@@ -633,6 +628,8 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   if (fFillMixed)
   {
     AliEventPool* pool = fPoolMgr->GetEventPool(centrality, zVtx);
+    if (fFillOnlyStep0)
+      ((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool->NTracksInPool());
     if (pool->IsReady())
       for (Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) 
 	fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepAll, tracksMC, pool->GetEvent(jMix), 1.0 / pool->GetCurrentNEvents(), (jMix == 0));
@@ -818,6 +815,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       if (fFillMixed)
       {
 	AliEventPool* pool2 = fPoolMgr->GetEventPool(centrality, zVtx + 100);
+	((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool2->NTracksInPool());
 	if (pool2->IsReady())
 	{
 	  for (Int_t jMix=0; jMix<pool2->GetCurrentNEvents(); jMix++)
