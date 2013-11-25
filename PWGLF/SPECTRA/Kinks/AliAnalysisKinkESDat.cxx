@@ -121,6 +121,12 @@ void AliAnalysisKinkESDat::UserCreateOutputObjects()
                          2.2, 2.4, 2.6, 2.8,  3.0,   3.3, 3.6, 3.9,   
                          4.2, 4.6,5.0, 5.4, 5.9,  6.5,   7.0,7.5, 8.0,8.5,  9.2, 10., 11., 12., 13.5,15.0 };  // David K0
 
+ Double_t gPt7Comb[48] = {
+0.25,0.30,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0, 1.1, 1.2,
+1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9,
+3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.2, 4.4, 4.6, 4.8,5.0, 5.5, 6
+ };  // 25/11/2013 from Francesco
+
    Double_t gPt7TOF[47] = { 0.2,0.25, 0.3,0.35,  0.4,0.45,  0.5,0.55,  0.6,0.65,  0.7,0.75,  0.8, 0.85, 0.9, 0.95, 1.0,
                         1.1, 1.2, 1.3, 1.4, 1.5, 1.6,1.7,1.8,1.9,  2.0,
                          2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7,2.8, 2.9, 3.0, 
@@ -149,7 +155,8 @@ void AliAnalysisKinkESDat::UserCreateOutputObjects()
   fKinkKaonBg= new TH1F("fKinkKaonBg", "P_{T}Kaon kinks backgr",300, 0.0,15.0); 
   //fM1kaon= new TH1F("fM1kaon","Invar m(kaon) from kink->mu+netrino decay",180,0.10, 1.0); 
   fM1kaon= new TH1F("fM1kaon","Invar m(kaon) from kink->mu+netrino decay",600,0.10, 0.7); //  23/8/2013
-  fPtKink= new TH1F("fPtKink", "P_{T}Kaon Kink  distribution, counts",44, gPt7K0); 
+  //fPtKink= new TH1F("fPtKink", "P_{T}Kaon Kink  distribution, counts",44, gPt7K0); 
+  fPtKink= new TH1F("fPtKink", "P_{T}Kaon Kink  distribution, counts",47, gPt7Comb); 
   fptKink= new TH1F("fptKink", "P_{T}Kaon Kink  bution",300, 0.0,15.0); 
   fAngMomK= new TH2F("fAngMomK","Decay angle vrs Mother Mom,K",100,0.0,5.0,80,0.,80.);
   fAngMomPi= new TH2F("fAngMomPi","Decay angle vrs Mother Mom,Pi",100,0.0,5.0,80,0.,80.);
@@ -194,8 +201,9 @@ void AliAnalysisKinkESDat::UserCreateOutputObjects()
     fMothKinkMomSgnl  = new TH2F("fMothKinkMomSgnl","TPC signal de/dx Mom TPC,Kink  ",100,0.0,250.0,100, 0., 250.    );
     fNSigmTPC    = new TH1F("fNSigmTPC","TPC Nsigma  de/dx  TPC,K  ", 30 , -7.5, 7.5);
     fTPCSgnlKinkDau = new TH2F("fTPCSgnlKinkDau","TPC signal de/dx Mom,K",500,0.0,10.0,100,0.,250.);
-  fPtKinkPos= new TH1F("fPtKinkPos", "Pos P_{T}Kaon Kink  distribution, counts",44, gPt7K0); 
-  fPtKinkNeg= new TH1F("fPtKinkNeg", "Neg P_{T}Kaon Kink  distribution, counts",44, gPt7K0); 
+  //fPtKinkPos= new TH1F("fPtKinkPos", "Pos P_{T}Kaon Kink  distribution, counts",44, gPt7K0); 
+  fPtKinkPos= new TH1F("fPtKinkPos", "Pos P_{T}Kaon Kink  distribution, counts",47, gPt7Comb ); 
+  fPtKinkNeg= new TH1F("fPtKinkNeg", "Neg P_{T}Kaon Kink  distribution, counts",47, gPt7Comb ); 
   fRadNclCln = new TH2F("fRadNclCln","kink radius vrs Nclust,K Clean ",75,100.,250., 80,0, 160);
   fRatioCrossedRows = new TH1F("fRatioCrossedRows","Ratio crossed rows  in TPC",20,0.0,1.0);
   fRatioCrossedRowsKink = new TH1F("fRatioCrossedRowsKink","Ratio crossed rows  in TPC for kinks",20,0.0,1.0);
