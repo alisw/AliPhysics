@@ -1459,11 +1459,11 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  
 	  //Check dca cuts for systematics
 	  //Comment this portion when not required
-	  if (dcaZ  <  _dcaZMin || 
+	  /*if (dcaZ  <  _dcaZMin || 
 	      dcaZ  >  _dcaZMax ||
 	      dcaXY <  _dcaXYMin || 
 	      dcaXY >  _dcaXYMax ) continue;
-	  
+	  */
 	  //==== QA ===========================
 	  _dcaz->Fill(dcaZ);
 	  _dcaxy->Fill(dcaXY);
