@@ -399,10 +399,11 @@ TObject* AliDielectronHFhelper::FindObjects(TObjArray *stepArr)
 	if(binvar.Contains(cutvar)) {
 	  // bin limits
 	  TObjArray *limits = binvar.Tokenize("#");
+	  if(!limits) continue;
 	  Double_t binmin = atof(limits->At(1)->GetName()); // lower bin limit
 	  Double_t binmax = atof(limits->At(2)->GetName()); // upper bin limit
 	  AliDebug(10,Form(" bin %s var %s [%.2f,%.2f]",binvar.Data(),limits->At(0)->GetName(),binmin,binmax));
-	  if(limits) delete limits;
+	  delete limits;
 
 	  // cut and remove objects from the array
 	  if(binmin < min || binmax < min || binmin > max || binmax > max ) {
@@ -484,6 +485,8 @@ void AliDielectronHFhelper::CheckCuts(TObjArray *arr)
   TObjArray* binvarsL  = titleLAST.Tokenize(":#");
   Double_t binmin[kMaxCuts]= {0.0};
   Double_t binmax[kMaxCuts]= {0.0};
+  if(!binvarsF) { delete binvarsL; return; }
+  if(!binvarsL) { delete binvarsF; return; }
   for(Int_t ivar=0; ivar<binvarsF->GetEntriesFast(); ivar++) {
 
     TString elementF=binvarsF->At(ivar)->GetName();
@@ -524,8 +527,8 @@ void AliDielectronHFhelper::CheckCuts(TObjArray *arr)
   }
 
   // clean up
-  if(binvarsF) delete binvarsF;
-  if(binvarsL) delete binvarsL;
+  delete binvarsF;
+  delete binvarsL;
 }
 
 //________________________________________________________________
