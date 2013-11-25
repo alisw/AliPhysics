@@ -58,8 +58,8 @@ AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) :
   fCentralityCutMax(999),
   fQVectorCutMin(-999.),
   fQVectorCutMax(999.),
-  fVertexCutMin(-999.),
-  fVertexCutMax(999.),
+  fVertexCutMin(-10.),
+  fVertexCutMax(10.),
   fMultiplicityCutMin(-999.),
   fMultiplicityCutMax(99999.),
   fqV0C(-999.),
@@ -433,13 +433,13 @@ Bool_t AliSpectraAODEventCuts::OpenInfoCalbration(Int_t run)
   fV0Cpol4 = fpolc4->GetParameter(0);
   
   TF1* fpola1 = new TF1("fpola1","pol0", 32, 39);
-  fMultV0->Fit(fpola1, "RN");
+  fMultV0->Fit(fpola1, "R");
   fV0Apol1 = fpola1->GetParameter(0);
 
   TF1* fpola2 = new TF1("fpola2","pol0", 40, 47);
   fMultV0->Fit(fpola2, "RN");
   fV0Apol2 = fpola2->GetParameter(0);
-
+  
   TF1* fpola3 = new TF1("fpola3","pol0", 48, 55);
   fMultV0->Fit(fpola3, "RN");
   fV0Apol3 = fpola3->GetParameter(0);
@@ -448,7 +448,8 @@ Bool_t AliSpectraAODEventCuts::OpenInfoCalbration(Int_t run)
   fMultV0->Fit(fpola4, "RN");
   fV0Apol4 = fpola4->GetParameter(0);
 
-
+  fV0Cpol1=fV0Cpol2=fV0Cpol3=fV0Cpol4=fV0Apol1=fV0Apol2=fV0Apol3=fV0Apol4=10.;
+  
   for(Int_t i=0; i < 10; i++){
 
     char nameQxa2[100];
