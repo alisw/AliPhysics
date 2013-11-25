@@ -223,8 +223,8 @@ int AliDxHFEParticleSelectionMCD0::IsSelected(AliVParticle* p, const AliVEvent* 
     if (!fMCTools.IsInitialized() && (iResult=fMCTools.InitMCParticles(pEvent))<0) {
       return 0; // no meaningful filtering on mc possible
     }
-    Int_t result = fMCTools.CheckMCParticle(p);
-    if(result==1) return 0;
+    bool result = fMCTools.CheckMCParticle(p);
+    if(!result) return 0;
     AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(p);
     if (!mcPart) {
       AliWarning("Particle not found in tree, skipping"); 

@@ -50,7 +50,7 @@ AliDxHFEToolsMC::AliDxHFEToolsMC(const char* option)
   , fMClabel(-1)
   , fNrMCParticles(-1)
   , fUseKine(kFALSE)
-  , fRemoveSecondary(kTRUE)
+  , fRemoveSecondary(kFALSE)
 {
   // constructor
   // 
