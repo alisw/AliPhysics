@@ -1537,7 +1537,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   //select event
   if(!fCuts->IsEventSelected(aod)) {
     evSelected=kFALSE;
-    if(fCuts->IsEventRejectedDueToPileupSPD()) {
+    if(fCuts->IsEventRejectedDueToPileup()) {
       if(hWhyEvRejected) hWhyEvRejected->Fill(0); 
       evselByPileup=kFALSE;
     }// rejected for pileup
