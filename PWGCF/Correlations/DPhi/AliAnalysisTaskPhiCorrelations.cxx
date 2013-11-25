@@ -926,7 +926,7 @@ AliGenEventHeader* AliAnalysisTaskPhiCorrelations::GetFirstHeader()
     if (cocktailHeader)
       return dynamic_cast<AliGenEventHeader*> (cocktailHeader->GetHeaders()->First());
 
-    return dynamic_cast<AliGenEventHeader*> (header);
+    return dynamic_cast<AliGenEventHeader*> (header->GenEventHeader());
   }
   else
   {
