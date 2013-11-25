@@ -47,7 +47,7 @@ AliAnalysisTask*  AddAliTwoParticlePIDCorrTask(TString  SampleType="pPb",//pp,pP
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(containerName, TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:%s", outputFileName, folderName));
   
   mgr->ConnectInput  (PIDCorr, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput (PIDCorr, 0, coutput1 );
+  mgr->ConnectOutput (PIDCorr, 1, coutput1 );
    
   return PIDCorr;
 }
