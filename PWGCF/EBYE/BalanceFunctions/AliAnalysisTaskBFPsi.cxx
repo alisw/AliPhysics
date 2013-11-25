@@ -149,6 +149,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fUseOfflineTrigger(kFALSE),
   fCheckFirstEventInChunk(kFALSE),
   fCheckPileUp(kFALSE),
+  fCheckPrimaryFlagAOD(kFALSE),
   fUseMCforKinematics(kFALSE),
   fVxMax(0.3),
   fVyMax(0.3),
@@ -1353,7 +1354,15 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       }
 
       if(!aodTrack->TestFilterBit(fnAODtrackCutBit)) continue;
-      
+
+
+      // additional check on kPrimary flag
+      if(fCheckPrimaryFlagAOD){
+	if(aodTrack->GetType() != AliAODTrack::kPrimary)
+	  continue;
+      }
+
+     
       vCharge = aodTrack->Charge();
       vEta    = aodTrack->Eta();
       vY      = aodTrack->Y();
