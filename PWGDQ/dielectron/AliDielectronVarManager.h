@@ -69,6 +69,8 @@
 #include "AliInputEventHandler.h"
 #include "AliVZEROEPSelectionTask.h"
 
+#include "AliAODMCHEader.h"
+
 class AliVEvent;
 
 //________________________________________________________________
@@ -1004,7 +1006,7 @@ inline void AliDielectronVarManager::FillVarMCParticle(const AliMCParticle *part
 
   // Fill common AliVParticle interface information
   FillVarVParticle(particle, values);
-  
+
   // Fill AliMCParticle interface specific information
   AliDielectronMC *mc=AliDielectronMC::Instance();
   Int_t trkLbl = TMath::Abs(particle->GetLabel());
@@ -1177,9 +1179,17 @@ inline void AliDielectronVarManager::FillVarAODMCParticle(const AliAODMCParticle
   AliAODMCParticle *motherMC=mc->GetMCTrackMother(particle); //mother
   if(motherMC) values[AliDielectronVarManager::kPdgCodeGrandMother]=mc->GetMotherPDG(motherMC);
 
-
   values[AliDielectronVarManager::kIsJpsiPrimary] = mc->IsJpsiPrimary(particle);
   values[AliDielectronVarManager::kNumberOfDaughters]=mc->NumberOfDaughters(particle);
+
+  // using AODMCHEader information
+  AliAODMCHeader *mcHeader = (AliAODMCHeader*)fgEvent->FindListObject(AliAODMCHeader::StdBranchName());
+  if(mcHeader) {
+    values[AliDielectronVarManager::kImpactParZ]  = mcHeader->GetVtxZ()-particle->Zv();
+    values[AliDielectronVarManager::kImpactParXY] = TMath::Sqrt(TMath::Power(mcHeader->GetVtxX()-particle->Xv(),2) +
+								TMath::Power(mcHeader->GetVtxY()-particle->Yv(),2));
+  }
+
 }
 
 inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPair *pair, Double_t * const values)
@@ -1580,6 +1590,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kRefMultTPConly]  = 0;
   
   if (primVtx){
+    //    printf("prim vertex reco: %f \n",primVtx->GetX());
     values[AliDielectronVarManager::kXvPrim]       = primVtx->GetX();
     values[AliDielectronVarManager::kYvPrim]       = primVtx->GetY();
     values[AliDielectronVarManager::kZvPrim]       = primVtx->GetZ();
