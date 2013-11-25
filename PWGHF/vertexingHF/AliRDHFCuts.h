@@ -29,11 +29,11 @@ class AliRDHFCuts : public AliAnalysisCuts
 {
  public:
 
-   enum ECentrality {kCentOff,kCentV0M,kCentTRK,kCentTKL,kCentCL1,kCentZNA,kCentZPA,kCentV0A,kCentInvalid};
+  enum ECentrality {kCentOff,kCentV0M,kCentTRK,kCentTKL,kCentCL1,kCentZNA,kCentZPA,kCentV0A,kCentInvalid};
   enum ESelLevel {kAll,kTracks,kPID,kCandidate};
-  enum EPileup {kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex};
+  enum EPileup {kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex,kRejectMVPileupEvent};
   enum ESele {kD0toKpiCuts,kD0toKpiPID,kD0fromDstarCuts,kD0fromDstarPID,kDplusCuts,kDplusPID,kDsCuts,kDsPID,kLcCuts,kLcPID,kDstarCuts,kDstarPID};
-  enum ERejBits {kNotSelTrigger,kNoVertex,kTooFewVtxContrib,kZVtxOutFid,kPileupSPD,kOutsideCentrality,kPhysicsSelection,kBadSPDVertex,kZVtxSPDOutFid,kCentralityFlattening,kBadTrackV0Correl};
+  enum ERejBits {kNotSelTrigger,kNoVertex,kTooFewVtxContrib,kZVtxOutFid,kPileup,kOutsideCentrality,kPhysicsSelection,kBadSPDVertex,kZVtxSPDOutFid,kCentralityFlattening,kBadTrackV0Correl};
   enum EV0sel  {kAllV0s = 0, kOnlyOfflineV0s = 1, kOnlyOnTheFlyV0s = 2};
 
   AliRDHFCuts(const Char_t* name="RDHFCuts", const Char_t* title="");
@@ -304,8 +304,8 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t IsEventRejectedDueToZVertexOutsideFiducialRegion() const {
     return fEvRejectionBits&(1<<kZVtxOutFid);
   }
-  Bool_t IsEventRejectedDueToPileupSPD() const {
-    return fEvRejectionBits&(1<<kPileupSPD);
+  Bool_t IsEventRejectedDueToPileup() const {
+    return fEvRejectionBits&(1<<kPileup);
   }
   Bool_t IsEventRejectedDueToCentrality() const {
     return fEvRejectionBits&(1<<kOutsideCentrality);
@@ -427,7 +427,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   TFormula *f1CutMinNCrossedRowsTPCPtDep; // pT-dep cut in TPC minimum n crossed rows
  
 
-  ClassDef(AliRDHFCuts,33);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,34);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif

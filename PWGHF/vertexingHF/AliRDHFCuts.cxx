@@ -43,6 +43,7 @@
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliPIDResponse.h"
+#include "AliAnalysisUtils.h"
 #include "TRandom.h"
 #include <TF1.h>
 
@@ -572,7 +573,16 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
     Double_t cutz=(Double_t)fMinDzPileup;
     if(event->IsPileupFromSPD(cutc,cutz,3.,2.,10.)) {
       if(accept) fWhyRejection=1;
-      fEvRejectionBits+=1<<kPileupSPD;
+      fEvRejectionBits+=1<<kPileup;
+      accept=kFALSE;
+    }
+  }
+  else if(fOptPileup==kRejectMVPileupEvent){
+    AliAnalysisUtils utils;
+    Bool_t isPUMV = utils.IsPileUpMV(event);
+    if(isPUMV) {
+      if(accept) fWhyRejection=1;
+      fEvRejectionBits+=1<<kPileup;
       accept=kFALSE;
     }
   }

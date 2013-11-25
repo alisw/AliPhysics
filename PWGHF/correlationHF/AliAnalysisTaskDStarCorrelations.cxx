@@ -310,7 +310,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
     
     if(!isEvSel) {
       
-      if(fCuts->IsEventRejectedDueToPileupSPD()) ((TH1D*)fOutput->FindObject("NofEvents"))->Fill(2);
+      if(fCuts->IsEventRejectedDueToPileup()) ((TH1D*)fOutput->FindObject("NofEvents"))->Fill(2);
       if(fCuts->IsEventRejectedDueToCentrality()) ((TH1D*)fOutput->FindObject("NofEvents"))->Fill(3);
       if(fCuts->IsEventRejectedDueToNotRecoVertex()) ((TH1D*)fOutput->FindObject("NofEvents"))->Fill(4);
       if(fCuts->IsEventRejectedDueToVertexContributors()) ((TH1D*)fOutput->FindObject("NofEvents"))->Fill(5);
