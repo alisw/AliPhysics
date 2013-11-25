@@ -129,6 +129,8 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   Bool_t bUseTPCPID=kTRUE;
   Bool_t cutOnClusters=kTRUE;
 
+  Bool_t bReducedMode=kFALSE;
+
 
   if (configuration.IsNull() && gDirectory) {
     const char* confObjectName="run_single_task_configuration";
@@ -150,9 +152,14 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
 	    ofilename=argument;
 	    continue;
 	  }
-	  else if (argument.BeginsWith("name=")) {
+	  if (argument.BeginsWith("name=")) {
 	    argument.ReplaceAll("name=", "");
 	    analysisName=argument;
+	    continue;
+	  }
+	  if (argument.BeginsWith("reducedmode")) {
+	    bReducedMode=kTRUE;
+	    taskOptions+=" reducedmode";
 	    continue;
 	  }
 	  if (argument.BeginsWith("cutname=")) {
@@ -229,16 +236,23 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
 
   Info("AliCFSingleTrackEfficiencyTask","SETUP CONTAINER");
 
-  const Int_t nvar   = 5 ; //number of variables on the grid:pt,y,phi
+  if(bReducedMode)
+    const Int_t nvar   = 4 ; //number of variables on the grid:pt,y,phi
+  else
+    const Int_t nvar   = 5 ; //number of variables on the grid:pt,y,phi
+
   UInt_t nstep = 10; //number of selection steps MC
 
+  if(bReducedMode)
+    nstep = 5; //number of selection steps MC
+  
+  //TODO:set this to enum-value in task  
   const UInt_t ipt = 0;
   const UInt_t iy  = 1;
   const UInt_t iphi = 2;
-  const UInt_t itheta  = 3;
-  const UInt_t izvtx  = 4;
+  const UInt_t izvtx  = 3;
+  const UInt_t itheta  = 4;
   const UInt_t isource = 5;
-  
   
 
   //A1. Bins variation by hand for pt
@@ -267,8 +281,8 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   iBin[0]=nbinpt_03_1+nbinpt_1_4+nbinpt_4_10;//+nbinpt_16_24;
   iBin[1]=nbin2;
   iBin[2]=nbin3;
-  iBin[3]=nbin4;
-  iBin[4]=nbin5;
+  iBin[3]=nbin5;
+  if(!bReducedMode)iBin[4]=nbin4;
   //iBin[5]=nbin6;
   //  iBin[5]=nbinmult_0_20 +  nbinmult_20_50 +  nbinmult_50_102  ;
 
@@ -278,7 +292,7 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   Double_t *binLim2=new Double_t[iBin[1]+1];
   Double_t *binLim3=new Double_t[iBin[2]+1];
   Double_t *binLim4=new Double_t[iBin[3]+1];
-  Double_t *binLim5=new Double_t[iBin[4]+1];
+  if(!bReducedMode)Double_t *binLim5=new Double_t[iBin[4]+1];
   // Double_t *binLim6=new Double_t[iBin[5]+1];
   //  Double_t *binLimmult=new Double_t[iBin[5]+1];
 
@@ -292,8 +306,9 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   // Other Variables
   for(Int_t i=0; i<=nbin2; i++) binLim2[i]=(Double_t)etamin  + (etamax-etamin)  /nbin2*(Double_t)i ;
   for(Int_t i=0; i<=nbin3; i++) binLim3[i]=(Double_t)phimin + (phimax-phimin)/nbin3*(Double_t)i ;
-  for(Int_t i=0; i<=nbin4; i++) binLim4[i]=(Double_t)thetamin  + (thetamax-thetamin)  /nbin4*(Double_t)i ;
-  for(Int_t i=0; i<=nbin5; i++) binLim5[i]=(Double_t)zvtxmin  + (zvtxmax-zvtxmin)  /nbin5*(Double_t)i ;
+  for(Int_t i=0; i<=nbin4; i++) binLim4[i]=(Double_t)zvtxmin  + (zvtxmax-zvtxmin)  /nbin4*(Double_t)i ;
+  if(!bReducedMode)for(Int_t i=0; i<=nbin5; i++) binLim5[i]=(Double_t)thetamin  + (thetamax-thetamin)  /nbin5*(Double_t)i ;
+
   //for(Int_t i=0; i<=nbin6; i++) binLim6[i]=(Double_t)sourcemin  + (sourcemax-sourcemin)  /nbin6*(Double_t)i ;
 
   
@@ -304,39 +319,39 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   for(Int_t i=0; i<=nbinmult_50_102; i++) binLimmult[i+nbinmult_0_20+nbinmult_20_50]=(Double_t)multmin_50_102 + (multmax_50_102-multmin_50_102)/nbinmult_50_102*(Double_t)i ; 
   */
 
- 
+
   //Container  
   AliCFContainer* container = new AliCFContainer("container","container for tracks",nstep,nvar,iBin);
   container -> SetBinLimits(ipt,binLimpT);//pt
   container -> SetBinLimits(iy,binLim2);//eta
   container -> SetBinLimits(iphi,binLim3);//phi
-  container -> SetBinLimits(itheta,binLim4);//theta
-  container -> SetBinLimits(izvtx,binLim5);//Zvtx
+  container -> SetBinLimits(izvtx,binLim4);//Zvtx
+  if(!bReducedMode)  container -> SetBinLimits(itheta,binLim5);//theta
   //container -> SetBinLimits(isource,binLim6);
-
   //Variable Titles 
   container -> SetVarTitle(ipt,"pt");
   container -> SetVarTitle(iy, "#eta");
   container -> SetVarTitle(iphi,"phi");
-  container -> SetVarTitle(itheta, "theta");
   container -> SetVarTitle(izvtx, "Zvtx");
+  if(!bReducedMode)  container -> SetVarTitle(itheta, "theta");
   //  container -> SetVarTitle(isource, "Electron source");
-
+  cout <<"after" <<endl;
   //Variable Titles 
-  container -> SetStepTitle(0, " MC Particle with Generated Cuts");
-  container -> SetStepTitle(1, " MC Particle with Kine Acceptance Cuts");
-  container -> SetStepTitle(2, " MC Particle with Track Ref Acceptance Cuts");
-  container -> SetStepTitle(3, " Total Reconstructed  Particle ");
-  container -> SetStepTitle(4, " Reco Particle With Kine Acceptance Cuts");
-  //container -> SetStepTitle(5, " Reco Particle to MC True pt particles First track cuts");
-  container -> SetStepTitle(5, " Reco Particle With First Quality Cuts");
-  //container -> SetStepTitle(7, " Reco Particle to MC True pt particles ");
-  container -> SetStepTitle(6, " Reco Particle With All Quality Cuts");
-  container -> SetStepTitle(7, " Reco Particle to MC True pt particles after PID");
-  container -> SetStepTitle(8, " Reco Particle after PID");
-  //  container -> SetStepTitle(8, " Reco Particle to MC True pt particle after inv mass cut");
-  container -> SetStepTitle(9, " Reco Particle after inv mass cut");
-
+  int step=0;
+  if(!bReducedMode)container -> SetStepTitle(step++, " MC Particle with Generated Cuts");
+  container -> SetStepTitle(step++, " MC Particle with Kine Acceptance Cuts");
+  if(!bReducedMode)container -> SetStepTitle(step++, " MC Particle with Track Ref Acceptance Cuts");
+  if(!bReducedMode)container -> SetStepTitle(step++, " Total Reconstructed  Particle ");
+  if(!bReducedMode)container -> SetStepTitle(step++, " Reco Particle With Kine Acceptance Cuts");
+  //container -> SetStepTitle(step++, " Reco Particle to MC True pt particles First track cuts");
+  container -> SetStepTitle(step++, " Reco Particle With First Quality Cuts");
+  //container -> SetStepTitle(step++, " Reco Particle to MC True pt particles ");
+  container -> SetStepTitle(step++, " Reco Particle With All Quality Cuts");
+  if(!bReducedMode) container -> SetStepTitle(step++, " Reco Particle to MC True pt particles after PID");
+  container -> SetStepTitle(step++, " Reco Particle after PID");
+  //  container -> SetStepTitle(step++, " Reco Particle to MC True pt particle after inv mass cut");
+  container -> SetStepTitle(step++, " Reco Particle after inv mass cut");
+  cout <<"after" <<endl;
 
   // SET TLIST FOR QA HISTOS
   TList* qaList = new TList();
@@ -346,22 +361,26 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   printf("CREATE INTERFACE AND CUTS\n");
   AliCFManager* man = new AliCFManager();
   
-  man->SetNStepEvent(2);
+  Int_t nrEvstep=2;
+  int stepEv=0;
+  man->SetNStepEvent(nrEvstep);
   man->SetEventContainer(container);
-  man->SetEventCutsList(0,emptyList);//evtmcList);
-  man->SetEventCutsList(1,emptyList);//evtrecoList);
+  man->SetEventCutsList(stepEv++,emptyList);//evtmcList);
+  man->SetEventCutsList(stepEv++,emptyList);//evtrecoList);
   
   man->SetParticleContainer(container);
-  man->SetParticleCutsList(0,emptyList);//mcGenList);
-  man->SetParticleCutsList(1,emptyList);//mcKineList);
-  man->SetParticleCutsList(2,emptyList);//mcaccList);
-  man->SetParticleCutsList(3,emptyList);//evtrecoPureList);
-  man->SetParticleCutsList(4,emptyList);//recKineList);
-  man->SetParticleCutsList(5,emptyList);//fPIDCutList);
-  man->SetParticleCutsList(6,emptyList);//fPIDCutList);
-  man->SetParticleCutsList(7,emptyList);//fPIDCutList);
-  man->SetParticleCutsList(8,emptyList);//fPIDCutList);
-  man->SetParticleCutsList(9,emptyList);//fPIDCutList);
+  for(int stepPart=0;stepPart<step;stepPart++){
+    man->SetParticleCutsList(stepPart++,emptyList);//mcGenList);
+  }
+  /*  man->SetParticleCutsList(stepPart++,emptyList);//mcKineList);
+  man->SetParticleCutsList(stepPart++,emptyList);//mcaccList);
+  man->SetParticleCutsList(stepPart++,emptyList);//evtrecoPureList);
+  man->SetParticleCutsList(stepPart++,emptyList);//recKineList);
+  man->SetParticleCutsList(stepPart++,emptyList);//fPIDCutList);
+  man->SetParticleCutsList(stepPart++,emptyList);//fPIDCutList);
+  man->SetParticleCutsList(stepPart++,emptyList);//fPIDCutList);
+  man->SetParticleCutsList(stepPart++,emptyList);//fPIDCutList);
+  man->SetParticleCutsList(stepPart++,emptyList);//fPIDCutList);*/
   /*man->SetParticleCutsList(10,emptyList);//fPIDCutList);
   man->SetParticleCutsList(11,emptyList);//fPIDCutList);
   man->SetParticleCutsList(12,emptyList);//fPIDCutList);*/
