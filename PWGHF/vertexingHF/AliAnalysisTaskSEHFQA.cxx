@@ -1413,13 +1413,13 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       trigCount->Count(Form("triggerType:EMCAL/Run:%d",runNumber));
       trigCount2->Count(Form("triggerType:EMC1/Run:%d",runNumber));
     }
-    if(evSelMask & AliVEvent::kEMC7){
+    if((evSelMask & AliVEvent::kEMC7) && trigClass.Contains("CEMC7")){
       hTrigC->Fill(8.,centrality);
       hTrigM->Fill(8.,multiplicity);
       trigCount->Count(Form("triggerType:EMCAL/Run:%d",runNumber));
       trigCount2->Count(Form("triggerType:EMC7/Run:%d",runNumber));
     }
-    if(evSelMask & AliVEvent::kEMC8){
+    if((evSelMask & AliVEvent::kEMC8) && trigClass.Contains("CEMC8")){
       hTrigC->Fill(9.,centrality);
       hTrigM->Fill(9.,multiplicity);
       trigCount->Count(Form("triggerType:EMCAL/Run:%d",runNumber));
@@ -1593,11 +1593,11 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       hTrigS->Fill(7.,centrality);
       hTrigSM->Fill(7.,multiplicity);
     }
-    if(evSelMask & AliVEvent::kEMC7){
+    if((evSelMask & AliVEvent::kEMC7) && trigClass.Contains("CEMC7")){
       hTrigS->Fill(8.,centrality);
       hTrigSM->Fill(8.,multiplicity);
     }
-    if(evSelMask & AliVEvent::kEMC8){
+    if((evSelMask & AliVEvent::kEMC8) && trigClass.Contains("CEMC8")){
       hTrigS->Fill(9.,centrality);
       hTrigSM->Fill(9.,multiplicity);
     }
