@@ -73,6 +73,15 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
     kStepRecononHFE=16*/
   };
 
+   
+  enum {
+    kStepRedMCKineCut        = 0,
+    kStepRedRecoFirstQualityCuts  = 1,
+    kStepRedRecoQualityCuts  = 2,
+    kStepRedRecoPID  = 3,
+    kStepRedRecoInvMass=4,
+  };
+
   enum {
     kAll=-1,
     kHF,
@@ -87,6 +96,15 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
     kConvElPythia,
     kConvElHijing,
     kConvElGen0
+  };
+
+  enum{
+    kPt=0,
+    kEta=1,
+    kPhi=2,
+    kZvt=3,
+    kTheta=4,
+    kSource=5
   };
 
   AliCFSingleTrackEfficiencyTask(const char* opt="");
@@ -137,6 +155,29 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
   void GetTrackPrimaryGenerator(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC,TString &nameGen);
   TString GetGenerator(Int_t label, AliAODMCHeader* header);
 
+  /// create 2D control histogram
+  TH2* CreateControl2DHistogram(const char* name,
+				const char* title,
+				double* nBins,
+				const char* xaxis,
+				const char* yaxis) const;
+
+  /// create control histogram
+  TH1* CreateControlHistogram(const char* name,
+			      const char* title,
+			      int nBins,
+			      double min,
+			      double max,
+			      const char** binLabels=NULL) const;
+
+  /// create control histogram
+  TH1* CreateControlHistogram(const char* name,
+			      const char* title,
+			      int nBins,
+			      const char** binLabels=NULL) const {
+    return CreateControlHistogram(name, title, nBins, -0.5, nBins-0.5, binLabels);
+  }
+
  protected:
 
   void CheckESDParticles();
@@ -182,24 +223,7 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
   Int_t           fOriginMotherKine;// Origin of mother, kine level
   Int_t           fSelectElSource;  // which source to select
   Bool_t          fUseGenerator;    // If using generator
-
-
-  //Number of events
-  TH1I  *fHistEventsProcessed;     //! simple histo for monitoring the number of events processed
-  TH1F  *fElectronPt;              //! histo with final selected electron pt
-  TH1F  *fElectronPtStart;         //! histo with final selected electron pt
-  TH1F  *fHistInvMassLS;           //! histo with LS distribution invariant mass
-  TH1F  *fHistInvMassULS;          //! histo with ULS distribution invariant mass
-  TH1F  *fhGenerator;              //! histo for showing which generator
-  TH1F  *fhOriginKine;             //! histo for Origin Kine level
-  TH1F  *fhOriginReco;             //! histo for Origin Reco level
-  TH1F  *fhElGenerator;            //! histo for showing which generator + source of electron
-  TH2F  *fhdEdxvsEta;              //! histo dEdx vs eta
-  TH2F  *fhdEdxSigmavsEta;         //! histo sigma dEdx vs eta
-  TH2F  *fhdEdxvsEtaTPC;           //! histo dEdx vs eta
-  TH2F  *fhdEdxSigmavsEtaTPC;      //! histo sigma dEdx vs eta
-  TH2F  *fhdEdxvsEtaTPCTOF;        //! histo dEdx vs eta
-  TH2F  *fhdEdxSigmavsEtaTPCTOF;   //! histo sigma dEdx vs eta
+  Bool_t          fReducedMode;     // which mode to run in
 
   ClassDef(AliCFSingleTrackEfficiencyTask,1);
 

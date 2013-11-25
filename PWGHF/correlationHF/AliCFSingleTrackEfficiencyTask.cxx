@@ -109,21 +109,7 @@ fOption(opt),
   fOriginMotherKine(-1),
   fSelectElSource(kAll),
   fUseGenerator(kFALSE),
-  fHistEventsProcessed(0x0),
-  fElectronPt(NULL),
-  fElectronPtStart(NULL),
-  fHistInvMassLS(NULL),
-  fHistInvMassULS(NULL),
-  fhGenerator(NULL),
-  fhOriginKine(NULL),
-  fhOriginReco(NULL),
-  fhElGenerator(NULL),
-  fhdEdxvsEta(NULL),
-  fhdEdxSigmavsEta(NULL),
-  fhdEdxvsEtaTPC(NULL),
-  fhdEdxSigmavsEtaTPC(NULL),
-  fhdEdxvsEtaTPCTOF(NULL),
-  fhdEdxSigmavsEtaTPCTOF(NULL)
+  fReducedMode(kFALSE)
 
 {
   //
@@ -166,21 +152,7 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask(const char* opt,c
   fOriginMotherKine(-1),
   fSelectElSource(kAll),
   fUseGenerator(kFALSE),
-  fHistEventsProcessed(0x0),
-  fElectronPt(NULL),
-  fElectronPtStart(NULL),
-  fHistInvMassLS(NULL),
-  fHistInvMassULS(NULL),
-  fhGenerator(NULL),
-  fhOriginKine(NULL),
-  fhOriginReco(NULL),
-  fhElGenerator(NULL),
-  fhdEdxvsEta(NULL),
-  fhdEdxSigmavsEta(NULL),
-  fhdEdxvsEtaTPC(NULL),
-  fhdEdxSigmavsEtaTPC(NULL),
-  fhdEdxvsEtaTPCTOF(NULL),
-  fhdEdxSigmavsEtaTPCTOF(NULL)
+  fReducedMode(kFALSE)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -228,22 +200,8 @@ AliCFSingleTrackEfficiencyTask& AliCFSingleTrackEfficiencyTask::operator=(const 
     fOriginMotherKine=c.fOriginMotherKine;
     fSelectElSource=c.fSelectElSource;  
     fUseGenerator=c.fUseGenerator;
+    fReducedMode=c.fReducedMode;
 
-    fHistEventsProcessed = c.fHistEventsProcessed;
-    fElectronPt=c.fElectronPt;
-    fElectronPtStart=c.fElectronPtStart;
-    fHistInvMassLS=c.fHistInvMassLS;
-    fHistInvMassULS=c.fHistInvMassULS;
-    fhGenerator=c.fhGenerator;
-    fhOriginKine=c.fhOriginKine;
-    fhOriginReco=c.fhOriginReco;
-    fhElGenerator=c.fhElGenerator;
-    fhdEdxvsEta=c.fhdEdxvsEta;
-    fhdEdxSigmavsEta=c.fhdEdxSigmavsEta;
-    fhdEdxvsEtaTPC=c.fhdEdxvsEtaTPC;
-    fhdEdxSigmavsEtaTPC=c.fhdEdxSigmavsEtaTPC;
-    fhdEdxvsEtaTPCTOF=c.fhdEdxvsEtaTPCTOF;
-    fhdEdxSigmavsEtaTPCTOF=c.fhdEdxSigmavsEtaTPCTOF;
   }
   return *this;
 }
@@ -272,22 +230,7 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask(const AliCFSingle
   fOriginMotherKine(c.fOriginMotherKine),
   fSelectElSource(c.fSelectElSource),
   fUseGenerator(c.fUseGenerator),
-
-  fHistEventsProcessed(c.fHistEventsProcessed),
-  fElectronPt(c.fElectronPt),
-  fElectronPtStart(c.fElectronPtStart),
-  fHistInvMassLS(c.fHistInvMassLS),
-  fHistInvMassULS(c.fHistInvMassULS),
-  fhGenerator(c.fhGenerator),
-  fhOriginKine(c.fhOriginKine),
-  fhOriginReco(c.fhOriginReco),
-  fhElGenerator(c.fhElGenerator),
-  fhdEdxvsEta(c.fhdEdxvsEta),
-  fhdEdxSigmavsEta(c.fhdEdxSigmavsEta),
-  fhdEdxvsEtaTPC(c.fhdEdxvsEtaTPC),
-  fhdEdxSigmavsEtaTPC(c.fhdEdxSigmavsEtaTPC),
-  fhdEdxvsEtaTPCTOF(c.fhdEdxvsEtaTPCTOF),
-  fhdEdxSigmavsEtaTPCTOF(c.fhdEdxSigmavsEtaTPCTOF)
+  fReducedMode(c.fReducedMode)
 
 {
   //
@@ -303,21 +246,10 @@ AliCFSingleTrackEfficiencyTask::~AliCFSingleTrackEfficiencyTask() {
   Info("~AliCFSingleTrackEfficiencyTask","Calling Destructor");
 
   if (fCFManager)           delete fCFManager ;
-  if (fHistEventsProcessed) delete fHistEventsProcessed ;
   if (fQAHistList) {fQAHistList->Clear(); delete fQAHistList;}
   if (fTrackCuts)           delete fTrackCuts;
   if (fMCCuts)              delete fMCCuts;
-  if( fElectronPt)          delete fElectronPt;
-  if( fElectronPtStart)     delete fElectronPtStart;
-  if(fHistInvMassLS)        delete fHistInvMassLS;
-  if(fHistInvMassULS)       delete fHistInvMassULS;
-  if(fElectrons)            delete fElectrons;
-  if(fElectronsKine)        delete fElectronsKine;
-  if(fVertUtil)             delete fVertUtil;
-  if(fhGenerator)           delete fhGenerator;
-  if(fhOriginKine)          delete fhOriginKine;
-  if(fhOriginReco)          delete fhOriginReco;
-  if(fhElGenerator)         delete fhElGenerator;
+
 
   if(fSelNHFE){
     delete fSelNHFE;
@@ -360,7 +292,7 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
   }
        
   //Info("UserExec","") ;
-  fHistEventsProcessed->Fill(0.5); // # of Event proceed        
+  ((TH1F*)fQAHistList->FindObject("fHistEventsProcessed"))->Fill(0.5); // # of Event proceed        
   Bool_t IsEventMCSelected = kFALSE;
   Bool_t isAOD = fInputEvent->IsA()->InheritsFrom("AliAODEvent");
        
@@ -396,13 +328,13 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
   
   if(!IsEventMCSelected) {
     AliDebug(3,"MC event not passing the quality criteria \n");
-    PostData(1,fHistEventsProcessed) ;
+    //    PostData(1,fHistEventsProcessed) ;
     PostData(2,fCFManager->GetParticleContainer()) ;
     PostData(3,fQAHistList) ;
     return;
   }
   
-  fHistEventsProcessed->Fill(1.5); // # of Event after passing MC cuts
+  ((TH1F*)fQAHistList->FindObject("fHistEventsProcessed"))->Fill(1.5); // # of Event after passing MC cuts
        
   //Filling of MC generated particle -> below function 
   if(!isAOD) CheckESDParticles();
@@ -411,15 +343,18 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
   // Step 0B. MC Reconstruction Event Selection for ESDs/ AODs
   Bool_t isRecoEventOk = fMCCuts->IsRecoEventSelected(fEvent);
      
-  Double_t containerInput[5] ;
-  Double_t containerInputMC[5] ; // for true pt
+  int nr_input=5;
+  if(fReducedMode)
+    nr_input=4;
+  Double_t containerInput[nr_input] ;
+  Double_t containerInputMC[nr_input] ; // for true pt
      
   if(isRecoEventOk) {
 	 
-    fHistEventsProcessed->Fill(2.5); // # of Event after passing all cuts
+    ((TH1F*)fQAHistList->FindObject("fHistEventsProcessed"))->Fill(2.5); // # of Event after passing all cuts
     const AliVVertex *vertex = fEvent->GetPrimaryVertex();
-    containerInput[4] = vertex->GetZ(); // Z Vertex of Event 
-   containerInputMC[4]  =  containerInput[4];
+    containerInput[kZvt] = vertex->GetZ(); // Z Vertex of Event 
+    containerInputMC[kZvt]  =  containerInput[kZvt];
     //cout << "Z vtx of current event is @ Event " <<  containerInputMC[4] << endl; 
 	 
 
@@ -427,7 +362,7 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
     for (Int_t iTrack = 0; iTrack<fEvent->GetNumberOfTracks(); iTrack++) {
       fOriginMotherReco=-1;
       track = fEvent->GetTrack(iTrack);
-      fElectronPtStart->Fill(track->Pt());
+      ((TH1F*)fQAHistList->FindObject("fElectronPtStart"))->Fill(track->Pt());
 
       AliAODTrack *aodtrack = NULL;
       if(isAOD) aodtrack= static_cast<AliAODTrack *>(track);
@@ -435,10 +370,10 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
       Double_t mom[3];
       track->PxPyPz(mom);
       Double_t pt=TMath::Sqrt(mom[0]*mom[0]+mom[1]*mom[1]);
-      containerInput[0] = pt ;
-      containerInput[1] = track->Eta();
-      containerInput[2] = track->Phi() ;
-      containerInput[3] = track->Theta() ;
+      containerInput[kPt] = pt ;
+      containerInput[kEta] = track->Eta();
+      containerInput[kPhi] = track->Phi() ;
+      if(!fReducedMode) containerInput[kTheta] = track->Theta() ;
 
       /*
       int originvsGen=CheckBackgroundSource(track,const_cast<AliVEvent*>(fEvent));
@@ -447,13 +382,13 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
       fhElGenerator->Fill(originvsGen);*/
 
       // Step 4. Track that are recostructed and filling
-      fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructed) ;
+      if(!fReducedMode) fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructed) ;
 	   
  
       // Step 5. Track that are recostructed and +Kine acceptance filling
       // Pt and eta
       if (!fMCCuts->IsRecoParticleKineAcceptance(track)) continue;
-      fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoKineCuts) ;
+      if(!fReducedMode) fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoKineCuts) ;
       
       // is track associated to particle ? if yes + implimenting the physical primary..
       Int_t label = track->GetLabel();
@@ -464,10 +399,10 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 
       // Step 6. Track that are recostructed + true pt and filling
       AliVParticle *mcPart  = (AliVParticle*)fMCEvent->GetTrack(label);
-      containerInputMC[0] = mcPart->Pt();
-      containerInputMC[1] = mcPart->Eta() ;
-      containerInputMC[2] = mcPart->Phi() ;
-      containerInputMC[3] = mcPart->Theta() ;
+      containerInputMC[kPt] = mcPart->Pt();
+      containerInputMC[kEta] = mcPart->Eta() ;
+      containerInputMC[kPhi] = mcPart->Phi() ;
+      if(!fReducedMode)containerInputMC[kTheta] = mcPart->Theta() ;
       
       if (!fMCCuts->IsMCParticleGenerated(mcPart)) continue;
       AliAODMCParticle *mcPart2=dynamic_cast<AliAODMCParticle*>(mcPart);
@@ -479,7 +414,7 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 
       int originvsGen=CheckBackgroundSource(track,const_cast<AliVEvent*>(fEvent));
 
-      fhElGenerator->Fill(originvsGen);
+      ((TH1F*)fQAHistList->FindObject("fhElGenerator"))->Fill(originvsGen);
 
       if(fUseGenerator){
 	if(fSelectElSource==kHFPythia && originvsGen!=kHFPythia){
@@ -509,7 +444,7 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 
       if(!selected) continue;
       
-      fhOriginReco->Fill(fOriginMotherReco);
+      ((TH1F*)fQAHistList->FindObject("fhOriginReco"))->Fill(fOriginMotherReco);
 	
       Double_t x=mcPart2->Xv();
       Double_t y=mcPart2->Yv();
@@ -555,7 +490,10 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 
 	AliDebug(2,"Reconstructed track pass first quality criteria\n");
 	//fCFManager->GetParticleContainer()->Fill(containerInputMC, kStepReconstructedFirstTrackCutsMC);
-	fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoFirstQualityCuts);
+	if(fReducedMode)
+	  fCFManager->GetParticleContainer()->Fill(containerInput,kStepRedRecoFirstQualityCuts);
+	else
+	  fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoFirstQualityCuts);
       }else {
 	//cout <<"Not passing first " << endl;
 	AliDebug(3,"Reconstructed track not passing first quality criteria\n");
@@ -612,19 +550,22 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 	}
       }
       if(selected){
-	fElectronPt->Fill(tmptrack->Pt());
+	((TH1F*)fQAHistList->FindObject("fElectronPt"))->Fill(tmptrack->Pt());
       }
 	   
       if(selected){
 	AliDebug(2,"Reconstructed track pass quality criteria\n");
 	//fCFManager->GetParticleContainer()->Fill(containerInputMC, kStepReconstructedMC);
-	fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoQualityCuts);
+	if(fReducedMode)
+	  fCFManager->GetParticleContainer()->Fill(containerInput,kStepRedRecoQualityCuts);
+	else
+	  fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoQualityCuts);
       }else AliDebug(3,"Reconstructed track not passing quality criteria\n");
 	   
       // PID requirement
       if(selected){
-	fhdEdxSigmavsEta->Fill(vtrack->Eta(), pidResponse->NumberOfSigmasTPC(vtrack, AliPID::kElectron));
-	fhdEdxvsEta->Fill(vtrack->Eta(), vtrack->GetTPCsignal());
+	((TH2F*)fQAHistList->FindObject("fhdEdxSigmavsEta"))->Fill(vtrack->Eta(), pidResponse->NumberOfSigmasTPC(vtrack, AliPID::kElectron));
+	((TH2F*)fQAHistList->FindObject("fhdEdxvsEta"))->Fill(vtrack->Eta(), vtrack->GetTPCsignal());
 
 	//also check for pdg first????
 	if(fUseTPCPID){
@@ -635,8 +576,8 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 
 	}
 	if(selected){
-	  fhdEdxSigmavsEtaTPC->Fill(vtrack->Eta(), pidResponse->NumberOfSigmasTPC(vtrack, AliPID::kElectron));
-	  fhdEdxvsEtaTPC->Fill(vtrack->Eta(), vtrack->GetTPCsignal());
+	  ((TH2F*)fQAHistList->FindObject("fhdEdxSigmavsEtaTPC"))->Fill(vtrack->Eta(), pidResponse->NumberOfSigmasTPC(vtrack, AliPID::kElectron));
+	  ((TH2F*)fQAHistList->FindObject("fhdEdxvsEtaTPC"))->Fill(vtrack->Eta(), vtrack->GetTPCsignal());
 	}
 	if(useTOFPID && fUseTOFPID){
 
@@ -650,14 +591,18 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 	}
 
 	if(selected){
-	  fhdEdxSigmavsEtaTPCTOF->Fill(vtrack->Eta(), pidResponse->NumberOfSigmasTPC(vtrack, AliPID::kElectron));
-	  fhdEdxvsEtaTPCTOF->Fill(vtrack->Eta(), vtrack->GetTPCsignal());
+	  ((TH2F*)fQAHistList->FindObject("fhdEdxSigmavsEtaTPCTOF"))->Fill(vtrack->Eta(), pidResponse->NumberOfSigmasTPC(vtrack, AliPID::kElectron));
+	  ((TH2F*)fQAHistList->FindObject("fhdEdxvsEtaTPCTOF"))->Fill(vtrack->Eta(), vtrack->GetTPCsignal());
 
 	  //cout << "RECO: originvsGen: " << originvsGen << " kConvElHijing: " << kConvElHijing << endl;
 
 	  // fill container for tracks
-	  fCFManager->GetParticleContainer()->Fill(containerInputMC, kStepRecoPIDMC);
-	  fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoPID);
+	  if(fReducedMode)
+	    fCFManager->GetParticleContainer()->Fill(containerInput,kStepRedRecoPID);
+	  else{
+	    fCFManager->GetParticleContainer()->Fill(containerInputMC, kStepRecoPIDMC);
+	    fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoPID);
+	  }
 	}
 
       }
@@ -677,7 +622,10 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 
 	  // fill container for tracks, with all electrons
 	  //fCFManager->GetParticleContainer()->Fill(containerInputMC, kStepRecoInvMassMC);
-	  fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoInvMass);
+	  if(fReducedMode)
+	    fCFManager->GetParticleContainer()->Fill(containerInput,kStepRedRecoInvMass);
+	  else
+	    fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoInvMass);
 
 
 
@@ -694,7 +642,7 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
        
   
   // PostData(0) is taken care of by AliAnalysisTaskSE 
-  PostData(1,fHistEventsProcessed) ;
+  //  PostData(1,fHistEventsProcessed) ;
   PostData(2,fCFManager->GetParticleContainer()) ;
   PostData(3,fQAHistList) ;
        
@@ -703,12 +651,8 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 }
 int AliCFSingleTrackEfficiencyTask::CheckBackgroundSource(AliVParticle* track, const AliVEvent* pEvent,Bool_t useMCarray){
 
-  // cout << "here " << endl;
-  //cout <<  track->GetLabel() << endl;
-  int res=0;
-  if(useMCarray) res=fElectronsKine->CheckMC(track, (AliVEvent*)pEvent);
-  else res=fElectrons->CheckMC(track, (AliVEvent*)pEvent);
-  //cout << "here2 " << endl;
+  if(useMCarray) fElectronsKine->CheckMC(track, (AliVEvent*)pEvent);
+  else fElectrons->CheckMC(track, (AliVEvent*)pEvent);
 
   int origin=-1;
   if(useMCarray){
@@ -727,7 +671,6 @@ int AliCFSingleTrackEfficiencyTask::CheckBackgroundSource(AliVParticle* track, c
   //  if(origin==AliDxHFEToolsMC::kOriginGluonCharm || origin==AliDxHFEToolsMC::kOriginGluonBeauty) cout << "HELLO" << endl;
 
   Bool_t isConversion=(origin==AliDxHFEToolsMC::kNrOrginMother+2);
-  Bool_t isHadron=(origin==-1);
   
 
   TString nameGen;	
@@ -993,16 +936,12 @@ void AliCFSingleTrackEfficiencyTask::UserCreateOutputObjects() {
   fSelNHFE->SetInvariantMassCut(fInvMassLow);
   //  fSelNHFE->SetAlgorithm("KF");
   fSelNHFE->SetAODanalysis(kTRUE);
-
-  // Invariant mass LS and ULS without cut
-  fHistInvMassLS= new TH1F("fInvMassLS","Invariant mass LS",1000,0,0.5) ;
-  fHistInvMassULS = new TH1F("fInvMassULS","Invariant mass ULS",1000,0,0.5) ;
   
+  fQAHistList->Add(CreateControlHistogram("fInvMassLS","Invariant mass LS",1000,0,0.5));
+  fQAHistList->Add(CreateControlHistogram("fInvMassULS","Invariant mass ULS",1000,0,0.5));
 
-  fSelNHFE->SetHistMass(fHistInvMassULS);
-  fSelNHFE->SetHistMassBack(fHistInvMassLS);
-  fQAHistList->Add(fHistInvMassLS);
-  fQAHistList->Add(fHistInvMassULS);
+  fSelNHFE->SetHistMass((TH1F*)fQAHistList->FindObject("fInvMassULS"));
+  fSelNHFE->SetHistMassBack((TH1F*)fQAHistList->FindObject("fInvMassLS"));
 
   // Setting up the electron selection class for MC
   TString option="usekine"; 
@@ -1019,67 +958,83 @@ void AliCFSingleTrackEfficiencyTask::UserCreateOutputObjects() {
     AliFatal(Form("initialization of worker class instance fElectrons failed with error %d", result));
   }
 
-  fHistEventsProcessed = new TH1I("fHistEventsProcessed","fHistEventsProcessed",3,0,3) ;
-  fHistEventsProcessed->GetXaxis()->SetBinLabel(1,"All events");
-  fHistEventsProcessed->GetXaxis()->SetBinLabel(2,"Good MC events");
-  fHistEventsProcessed->GetXaxis()->SetBinLabel(3,"Good Reconstructed events");
+  const char* cutBinNames[]={
+    "All events",
+    "Good MC events",
+    "Good Reconstructed events"
+  };
+  
+  fQAHistList->Add(CreateControlHistogram("fHistEventsProcessed","Event Info",3,cutBinNames));
 
-  fElectronPt = new TH1F("fElectronPt","fElectronPt",100,0.,10);
-  fElectronPt->GetXaxis()->SetTitle("electron Pt");
-  fQAHistList->Add(fElectronPt);
+  fQAHistList->Add(CreateControlHistogram("fElectronPt","electron pt",100,0.,10));
+  fQAHistList->Add(CreateControlHistogram("fElectronPtStart","electron pt Start",100,0.,10));
+  fQAHistList->Add(CreateControlHistogram("fhGenerator","Which Generator",3,-0.5,2.5));
+  fQAHistList->Add(CreateControlHistogram("fhOriginKine","Electron source origin Kine",15,-1.5,13.5));
+  fQAHistList->Add(CreateControlHistogram("fhOriginReco","Electron source origin Reco",15,-1.5,13.5));
 
-  fElectronPtStart = new TH1F("fElectronPtStart","fElectronPtStart",100,0,10);
-  fElectronPtStart->GetXaxis()->SetTitle("electron Pt");
-  fQAHistList->Add(fElectronPtStart);
+  fQAHistList->Add(CreateControlHistogram("fhElGenerator","Which generator + el source",13,-0.5,12.5));
 
-  fhGenerator = new TH1F("fhGenerator","fhGenerator",3,-0.5,2.5);
-  fhGenerator->GetXaxis()->SetTitle("Which generator");
-  fQAHistList->Add(fhGenerator);
+  double dEdxvseta[6]={100,-1.,1.,200,0., 200.};
+  double sigmavseta[6]={100,-1.,1.,200,-10., 10.};
+  fQAHistList->Add(CreateControl2DHistogram("fhdEdxvsEta", "dEdx vs eta",dEdxvseta ,"dE/dx","#eta"));
+  fQAHistList->Add(CreateControl2DHistogram("fhdEdxSigmavsEta", "dEdx vs eta", sigmavseta,"dE/dx","#eta"));
 
-  fhOriginKine = new TH1F("fhOriginKine","fhOriginKine",15,-1.5,13.5);
-  fhOriginKine->GetXaxis()->SetTitle("Electron source origin Kine");
-  fQAHistList->Add(fhOriginKine);
+  fQAHistList->Add(CreateControl2DHistogram("fhdEdxvsEtaTPC", "dEdx vs eta",dEdxvseta ,"dE/dx","#eta"));
+  fQAHistList->Add(CreateControl2DHistogram("fhdEdxSigmavsEtaTPC", "dEdx vs eta", sigmavseta,"dE/dx","#eta"));
 
-  fhOriginReco = new TH1F("fhOriginReco","fhOriginReco",15,-1.5,13.5);
-  fhOriginReco->GetXaxis()->SetTitle("Electron source origin Reco");
-  fQAHistList->Add(fhOriginReco);
-
-  fhElGenerator = new TH1F("fhElGenerator","fhElGenerator",13,-0.5,12.5);
-  fhElGenerator->GetXaxis()->SetTitle("Which generator + el source");
-  fQAHistList->Add(fhElGenerator);
-
-  fhdEdxvsEta = new TH2F("fhdEdxvsEta","fhdEdxvsEta", 100,-1.,1.,200,0., 200.);
-  fhdEdxvsEta->GetXaxis()->SetTitle("dEdx vs eta");
-  fQAHistList->Add(fhdEdxvsEta);
-
-  fhdEdxSigmavsEta = new TH2F("fhdEdxSigmavsEta","fhdEdxSigmavsEta", 100,-1.,1.,200,-10., 10.);
-  fhdEdxSigmavsEta->GetXaxis()->SetTitle("dEdx vs eta");
-  fQAHistList->Add(fhdEdxSigmavsEta);
-
-  fhdEdxvsEtaTPC = new TH2F("fhdEdxvsEtaTPC","fhdEdxvsEtaTPC", 100,-1.,1.,200,0., 200.);
-  fhdEdxvsEtaTPC->GetXaxis()->SetTitle("dEdx vs eta");
-  fQAHistList->Add(fhdEdxvsEtaTPC);
-
-  fhdEdxSigmavsEtaTPC = new TH2F("fhdEdxSigmavsEtaTPC","fhdEdxSigmavsEtaTPC", 100,-1.,1.,200,-10., 10.);
-  fhdEdxSigmavsEtaTPC->GetXaxis()->SetTitle("dEdx vs eta");
-  fQAHistList->Add(fhdEdxSigmavsEtaTPC);
-
-  fhdEdxvsEtaTPCTOF = new TH2F("fhdEdxvsEtaTPCTOF","fhdEdxvsEtaTPCTOF", 100,-1.,1.,200,0., 200.);
-  fhdEdxvsEtaTPCTOF->GetXaxis()->SetTitle("dEdx vs eta");
-  fQAHistList->Add(fhdEdxvsEtaTPCTOF);
-
-  fhdEdxSigmavsEtaTPCTOF = new TH2F("fhdEdxSigmavsEtaTPCTOF","fhdEdxSigmavsEtaTPCTOF", 100,-1.,1.,200,-10., 10.);
-  fhdEdxSigmavsEtaTPCTOF->GetXaxis()->SetTitle("dEdx vs eta");
-  fQAHistList->Add(fhdEdxSigmavsEtaTPCTOF);
+  fQAHistList->Add(CreateControl2DHistogram("fhdEdxvsEtaTPCTOF", "dEdx vs eta",dEdxvseta ,"dE/dx","#eta"));
+  fQAHistList->Add(CreateControl2DHistogram("fhdEdxSigmavsEtaTPCTOF", "dEdx vs eta", sigmavseta,"dE/dx","#eta"));
 
        
-  PostData(1,fHistEventsProcessed) ;
+  //PostData(1,fHistEventsProcessed) ;
   PostData(2,fCFManager->GetParticleContainer()) ;
   PostData(3,fQAHistList) ;
-  cout << "at the end of createing" << endl;
+
   return;
 }
 
+
+TH1* AliCFSingleTrackEfficiencyTask::CreateControlHistogram(const char* name,
+						       const char* title,
+						       int nBins,
+						       double min,
+						       double max,
+						       const char** binLabels) const
+{
+  /// create control histogram
+  std::auto_ptr<TH1> h(new TH1D(name, title, nBins, min, max));
+  if (!h.get()) return NULL;
+  if (binLabels) {
+  for (int iLabel=0; iLabel<nBins; iLabel++) {
+    h->GetXaxis()->SetBinLabel(iLabel+1, binLabels[iLabel]);    
+  }
+  }
+  
+  return h.release();
+}
+
+
+TH2* AliCFSingleTrackEfficiencyTask::CreateControl2DHistogram(const char* name,
+							 const char* title,
+							 double* nBins,
+							 const char* xaxis,
+							 const char* yaxis
+							 ) const
+{
+  /// create control 2D histogram. Requires as input:
+  // name = name of histogram 
+  // title = title of histogram
+  // nBins (array with 6 elements) containing apropriate binning and range for x and y axis
+  // xaxis = title of x axis 
+  // yaxis = title of y axis 
+
+  std::auto_ptr<TH2> h(new TH2D(name, title, (Int_t)nBins[0], nBins[1], nBins[2], (Int_t)nBins[3], nBins[4],nBins[5]));
+  if (!h.get()) return NULL;
+  h->GetXaxis()->SetTitle(xaxis);
+  h->GetYaxis()->SetTitle(yaxis);
+  
+  return h.release();
+}
 
 int AliCFSingleTrackEfficiencyTask::ParseArguments(const char* arguments)
 {
@@ -1146,6 +1101,11 @@ int AliCFSingleTrackEfficiencyTask::ParseArguments(const char* arguments)
       fUseTOFPID=kFALSE;	    
       continue;
     }
+    if (argument.BeginsWith("reducedmode")){
+      AliInfo("Running in reduced mode");
+      fReducedMode=kTRUE;	    
+      continue;
+    }
     if(argument.BeginsWith("elsource=")){
       argument.ReplaceAll("elsource=", "");
       
@@ -1199,24 +1159,26 @@ void AliCFSingleTrackEfficiencyTask::CheckESDParticles(){
     AliFatal("NO MC INFO FOUND");
     return;
   }
-       
-       
-  Double_t containerInput[5] ; //number of variables
+  
+  int nr_input=5;
+  if(fReducedMode)
+    nr_input=4;
+  Double_t containerInput[nr_input] ; //number of variables
        
   TArrayF vtxPos(3); // for Z vtx
   AliGenEventHeader *genHeader;
   genHeader = fMCEvent->GenEventHeader();
   genHeader->PrimaryVertex(vtxPos);
-  containerInput[4]  = vtxPos[2];
+  containerInput[kZvt]  = vtxPos[2];
        
   //loop on the MC Gen Partiles
   for (Int_t ipart=0; ipart<fMCEvent->GetNumberOfTracks(); ipart++) { 
 	 
     AliMCParticle *mcPart  = (AliMCParticle*)fMCEvent->GetTrack(ipart);  
-    containerInput[0] = mcPart->Pt(); 
-    containerInput[1] = mcPart->Eta() ;
-    containerInput[2] = mcPart->Phi() ;
-    containerInput[3] = mcPart->Theta() ;
+    containerInput[kPt] = mcPart->Pt(); 
+    containerInput[kEta] = mcPart->Eta() ;
+    containerInput[kPhi] = mcPart->Phi() ;
+    if(!fReducedMode) containerInput[kTheta] = mcPart->Theta() ;
 	 
 	 
     // Step 1. Particle passing through Generation criteria and filling
@@ -1224,7 +1186,8 @@ void AliCFSingleTrackEfficiencyTask::CheckESDParticles(){
       AliDebug(3,"MC Particle not passing through genetations criteria\n");
       continue;
     }
-    fCFManager->GetParticleContainer()->Fill(containerInput,kStepMCGenCut);
+    if(!fReducedMode)
+      fCFManager->GetParticleContainer()->Fill(containerInput,kStepMCGenCut);
 	 
      
 	 
@@ -1233,7 +1196,10 @@ void AliCFSingleTrackEfficiencyTask::CheckESDParticles(){
       AliDebug(3,"MC Particle not in the kine acceptance\n");
       continue;
     }
-    fCFManager->GetParticleContainer()->Fill(containerInput,kStepMCKineCut);
+    if(fReducedMode)
+      fCFManager->GetParticleContainer()->Fill(containerInput,kStepRedMCKineCut);
+    else
+      fCFManager->GetParticleContainer()->Fill(containerInput,kStepMCKineCut);
 	 
     // Step 3. Particle passing through Track ref criteria and filling
     // did leave signal (enough clusters) on the detector
@@ -1241,7 +1207,8 @@ void AliCFSingleTrackEfficiencyTask::CheckESDParticles(){
       AliDebug(3,"MC Particle not in the reconstructible\n");
       continue;
     }
-    fCFManager->GetParticleContainer()->Fill(containerInput,kStepMCAccpCut);
+    if(!fReducedMode)
+      fCFManager->GetParticleContainer()->Fill(containerInput,kStepMCAccpCut);
 	 
 	 
   }// end of particle loop
@@ -1280,65 +1247,33 @@ void AliCFSingleTrackEfficiencyTask::CheckAODParticles(){
     //return kFALSE;
   }
        
-       
-  Double_t containerInput[5] ;
-  containerInput[4]  = mcHeader->GetVtxZ();
-  // loop over AOD MC-Particles 
-  //cout << "nr entries: " << mcArray->GetEntriesFast() << endl;
-  /*
-  TObjArray* selectedTracks=new TObjArray;
-  if (!selectedTracks) return;
-  selectedTracks->SetOwner(kFALSE); // creating new track objects below
-  TIter next(mcArray);
-  TObject* pObj=NULL;
-  Int_t ipart=0;
-  while ((pObj=next())) {
-
-    AliAODMCParticle* mcPart=dynamic_cast<AliAODMCParticle*>(pObj);
-    //if (!track) continue;*/
+  int nr_input=5;
+  if(fReducedMode)
+    nr_input=4;    
+  Double_t containerInput[nr_input] ;
+  containerInput[kZvt]  = mcHeader->GetVtxZ();
 
   for (Int_t ipart=0; ipart<mcArray->GetEntriesFast(); ipart++) { 
-    if (ipart > mcArray->GetEntriesFast()) cout << "should not be here" << endl;
     AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(mcArray->At(ipart));
-    //ipart++;
- 
 
     if (!mcPart){
       AliError("Failed casting particle from MC array!, Skipping particle");
       continue;
     }
     //    cout << "mcPartlabel: " <<  TMath::Abs(mcPart->GetLabel()) << endl;
-    containerInput[0] = (Float_t)mcPart->Pt();
-    containerInput[1] = mcPart->Eta() ;
-    containerInput[2] = mcPart->Phi() ;
-    containerInput[3] = mcPart->Theta() ;
+    containerInput[kPt] = (Float_t)mcPart->Pt();
+    containerInput[kEta] = mcPart->Eta() ;
+    containerInput[kPhi] = mcPart->Phi() ;
+    if(!fReducedMode) containerInput[kTheta] = mcPart->Theta() ;
 
     // Step 1. Particle passing through Generation criteria and filling
     if( !fMCCuts->IsMCParticleGenerated(mcPart) ) {
       AliDebug(3,"MC Particle not passing quality criteria\n");
       continue;
     }
-    /*
-    cout << "ipart: " << ipart << endl;
-    cout << "mcPartlabel: " <<  mcPart->Label() << endl;
-    Int_t mother = mcPart->GetMother();
-    cout << "mother: " << mother << endl;
-    AliAODMCParticle * mcMother= (AliAODMCParticle*)mcArray->At(mother);
-    if(!mcMother) {
-      cout << "mother not here" << endl;
-      return;
-    }
-    int daug=mcMother->GetDaughter(1);
-    int daug2=mcMother->GetDaughter(0);
-    cout << "daug: " << daug <<"   daug2: " << daug2 << endl; 
-*/
-    //cout << "mcPartlabel: " <<  TMath::Abs(mcPart->GetLabel()) << endl;
-    /*
-      containerInput[5] = originvsGen; */
+ 
     int originvsGen= CheckBackgroundSource(mcPart,const_cast<AliVEvent*>(event),kTRUE);
-    //    int originvsGen=CheckBackgroundSource(track,const_cast<AliVEvent*>(fEvent));
-    fhElGenerator->Fill(originvsGen);
-
+    ((TH1F*)fQAHistList->FindObject("fhElGenerator"))->Fill(originvsGen);
 
     if(fUseGenerator){
       if(fSelectElSource==kHFPythia && originvsGen!=kHFPythia){
@@ -1366,11 +1301,7 @@ void AliCFSingleTrackEfficiencyTask::CheckAODParticles(){
       }
     }
 
-
-    //cout << "originvsGen: " << originvsGen << " kConvElHijing: " << kConvElHijing << endl;
-      //    cout << "
-
-    fCFManager->GetParticleContainer()->Fill(containerInput,kStepMCGenCut);
+    if(!fReducedMode) fCFManager->GetParticleContainer()->Fill(containerInput,kStepMCGenCut);
 	 
 
     // Step 2. Particle passing through Kinematic criteria and filling
@@ -1378,15 +1309,17 @@ void AliCFSingleTrackEfficiencyTask::CheckAODParticles(){
       AliDebug(3,"MC Particle not in the acceptance\n");
       continue;
     }
-    fhOriginKine->Fill(fOriginMotherKine);
+    ((TH1F*)fQAHistList->FindObject("fhOriginKine"))->Fill(fOriginMotherKine);
 
-    
-    fCFManager->GetParticleContainer()->Fill(containerInput,kStepMCKineCut);
+    if(fReducedMode)
+      fCFManager->GetParticleContainer()->Fill(containerInput,kStepRedMCKineCut);
+    else
+      fCFManager->GetParticleContainer()->Fill(containerInput,kStepMCKineCut);
 	 
 
     // Step 3. Particle passing through Track Ref criteria and filling
     // but no info available for Track ref in AOD fillng same as above
-    fCFManager->GetParticleContainer()->Fill(containerInput,kStepMCAccpCut);
+    if(!fReducedMode) fCFManager->GetParticleContainer()->Fill(containerInput,kStepMCAccpCut);
      
 
   }
