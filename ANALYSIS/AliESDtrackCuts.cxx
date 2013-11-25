@@ -2339,14 +2339,14 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
     // id1>=0, id2 = -1		: 1st layer cluster has associated track
     // id1=-1, id2>=0		: 2nd layer cluster has associated track
     // id1=-1, id2=-1		: tracklet has no associated track
-    
+    //
     Int_t bUsedInGlobal(-1);
-    if ( id1 != -1 ) bUsedInGlobal = globalBits.TestBitNumber(id1);
-    else if ( id2 != -1) bUsedInGlobal = globalBits.TestBitNumber(id2);// has associated global track been associated to a previous tracklet?
+    if ( id1 != -1 ) bUsedInGlobal = globalBits.TestBitNumber(id1) ? id1 : -1;
+    else if ( id2 != -1) bUsedInGlobal = globalBits.TestBitNumber(id2) ? id2 : -1;
     Int_t bUsedInPureITS(-1);
-    if ( id3 != -1 ) bUsedInPureITS = pureITSBits.TestBitNumber(id3);
-    else if ( id4 != -1) bUsedInPureITS = pureITSBits.TestBitNumber(id4); // has associated pure ITS track been associated to a previous tracklet?
-    
+    if ( id3 != -1 ) bUsedInPureITS = pureITSBits.TestBitNumber(id3) ? id3 : -1;
+    else if ( id4 != -1) bUsedInPureITS = pureITSBits.TestBitNumber(id4) ? id4 : -1;
+    //
     AliESDtrack* tr_global = bUsedInGlobal >= 0 ? esd->GetTrack ( bUsedInGlobal ) : 0;
     AliESDtrack* tr_itssa = bUsedInPureITS >= 0 ? esd->GetTrack ( bUsedInPureITS ) : 0;
     //
