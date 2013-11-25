@@ -502,6 +502,7 @@ void AliDielectronHF::Init()
 
   // fill object array with the array of bin cells
   TObjArray *histArr = new TObjArray();
+  if(!histArr) return;
   histArr->SetOwner(kTRUE);
   histArr->Expand(size);
 
