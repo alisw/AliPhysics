@@ -305,6 +305,7 @@ TObjArray* AliDxHFEParticleSelection::Select(const AliVEvent* pEvent)
     if (selectionCode==0) continue;
     selectedTracks->Add(CreateParticle(track));
   }
+  HistogramEventProperties(AliDxHFEParticleSelection::kHistoNrTracksPrEvent,selectedTracks->GetEntries());
   return selectedTracks;
 }
 
@@ -327,6 +328,7 @@ TObjArray* AliDxHFEParticleSelection::Select(TObjArray* pParticles, AliVEvent* p
     if (selectionCode ==0) continue;
     selectedTracks->Add(CreateParticle(track));
   }
+  HistogramEventProperties(AliDxHFEParticleSelection::kHistoNrTracksPrEvent,selectedTracks->GetEntries());
   return selectedTracks;
 }
 
