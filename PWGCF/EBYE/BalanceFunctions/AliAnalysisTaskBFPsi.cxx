@@ -462,7 +462,7 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
     Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
     
     // centrality bins
-    Double_t* centbins;
+    Double_t* centbins = NULL;
     Int_t nCentralityBins;
     if(fBalance->IsUseVertexBinning()){
       centbins = fBalance->GetBinning(fBalance->GetBinningString(), "centralityVertex", nCentralityBins);
@@ -472,12 +472,12 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
     }
     
     // multiplicity bins
-    Double_t* multbins;
+    Double_t* multbins = NULL;
     Int_t nMultiplicityBins;
     multbins = fBalance->GetBinning(fBalance->GetBinningString(), "multiplicity", nMultiplicityBins);
     
     // Zvtx bins
-    Double_t* vtxbins; 
+    Double_t* vtxbins = NULL; 
     Int_t nVertexBins;
     if(fBalance->IsUseVertexBinning()){
       vtxbins = fBalance->GetBinning(fBalance->GetBinningString(), "vertexVertex", nVertexBins);
@@ -487,7 +487,7 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
     }
 
     // Event plane angle (Psi) bins
-    Double_t* psibins;
+    Double_t* psibins = NULL;
     Int_t nPsiBins; 
     psibins = fBalance->GetBinning(fBalance->GetBinningString(), "eventPlane", nPsiBins);
 
@@ -495,22 +495,36 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
     // run the event mixing also in bins of event plane (statistics!)
     if(fRunMixingEventPlane){
       if(fEventClass=="Multiplicity"){
-	fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nMultiplicityBins, multbins, nVertexBins, vtxbins, nPsiBins, psibins);
+	if(multbins && vtxbins && psibins){
+	  fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nMultiplicityBins, multbins, nVertexBins, vtxbins, nPsiBins, psibins);
+	}
       }
       else{
-	fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centbins, nVertexBins, vtxbins, nPsiBins, psibins);
+	if(centbins && vtxbins && psibins){
+	  fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centbins, nVertexBins, vtxbins, nPsiBins, psibins);
+	}
       }
     }
     else{
       if(fEventClass=="Multiplicity"){
-	fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nMultiplicityBins, multbins, nVertexBins, vtxbins);
+	if(multbins && vtxbins){
+	  fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nMultiplicityBins, multbins, nVertexBins, vtxbins);
+	}
       }
       else{
-	fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centbins, nVertexBins, vtxbins);
+	if(centbins && vtxbins){
+	  fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centbins, nVertexBins, vtxbins);
+	}
       }
     }
-  }
 
+    // check pool manager
+    if(!fPoolMgr){
+      AliError("Event Mixing required, but Pool Manager not initialized...");
+      return;
+    }
+  }
+  
   if(fESDtrackCuts) fList->Add(fESDtrackCuts);
 
   //====================PID========================//
