@@ -114,6 +114,10 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fHistNSigmaTOFvsPtafterPID(NULL),  
   fHistBetaVsdEdXafterPID(NULL), //+++++++ 
   fHistNSigmaTPCTOFvsPtafterPID(NULL), //+++++++
+  fHistdEdxVsPTPCbeforePIDelectron(NULL), //+++++++
+  fHistNSigmaTPCvsPtbeforePIDelectron(NULL), //+++++++
+  fHistdEdxVsPTPCafterPIDelectron(NULL), //+++++++
+  fHistNSigmaTPCvsPtafterPIDelectron(NULL), //+++++++
   fCentralityArrayBinsForCorrections(kCENTRALITY),
   fPIDResponse(0x0),
   fPIDCombined(0x0),
@@ -570,19 +574,19 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   }
 
   // for electron rejection only TPC nsigma histograms
-  if(!fUsePID && fElectronRejection) {
+  if(fElectronRejection) {
  
-    fHistdEdxVsPTPCbeforePID = new TH2D ("dEdxVsPTPCbefore","dEdxVsPTPCbefore", 1000, -10.0, 10.0, 1000, 0, 1000); 
-    fHistListPIDQA->Add(fHistdEdxVsPTPCbeforePID);
+    fHistdEdxVsPTPCbeforePIDelectron = new TH2D ("dEdxVsPTPCbeforeelectron","dEdxVsPTPCbeforeelectron", 1000, -10.0, 10.0, 1000, 0, 1000); 
+    fHistListPIDQA->Add(fHistdEdxVsPTPCbeforePIDelectron);
     
-    fHistNSigmaTPCvsPtbeforePID = new TH2D ("NSigmaTPCvsPtbefore","NSigmaTPCvsPtbefore", 1000, -10, 10, 1000, 0, 500); 
-    fHistListPIDQA->Add(fHistNSigmaTPCvsPtbeforePID); //addition 
+    fHistNSigmaTPCvsPtbeforePIDelectron = new TH2D ("NSigmaTPCvsPtbeforeelectron","NSigmaTPCvsPtbeforeelectron", 1000, -10, 10, 1000, 0, 500); 
+    fHistListPIDQA->Add(fHistNSigmaTPCvsPtbeforePIDelectron);
     
-    fHistdEdxVsPTPCafterPID = new TH2D ("dEdxVsPTPCafter","dEdxVsPTPCafter", 1000, -10, 10, 1000, 0, 1000); 
-    fHistListPIDQA->Add(fHistdEdxVsPTPCafterPID);
+    fHistdEdxVsPTPCafterPIDelectron = new TH2D ("dEdxVsPTPCafterelectron","dEdxVsPTPCafterelectron", 1000, -10, 10, 1000, 0, 1000); 
+    fHistListPIDQA->Add(fHistdEdxVsPTPCafterPIDelectron);
 
-    fHistNSigmaTPCvsPtafterPID = new TH2D ("NSigmaTPCvsPtafter","NSigmaTPCvsPtafter", 1000, -10, 10, 1000, 0, 500); 
-    fHistListPIDQA->Add(fHistNSigmaTPCvsPtafterPID); 
+    fHistNSigmaTPCvsPtafterPIDelectron = new TH2D ("NSigmaTPCvsPtafterelectron","NSigmaTPCvsPtafterelectron", 1000, -10, 10, 1000, 0, 500); 
+    fHistListPIDQA->Add(fHistNSigmaTPCvsPtafterPIDelectron); 
   }
   //====================PID========================//
 
@@ -1349,8 +1353,8 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kElectron));
 	
 	//Fill QA before the PID
-	fHistdEdxVsPTPCbeforePID -> Fill(aodTrack->P()*aodTrack->Charge(),aodTrack->GetTPCsignal());
-	fHistNSigmaTPCvsPtbeforePID -> Fill(aodTrack->P()*aodTrack->Charge(),nSigma); 
+	fHistdEdxVsPTPCbeforePIDelectron -> Fill(aodTrack->P()*aodTrack->Charge(),aodTrack->GetTPCsignal());
+	fHistNSigmaTPCvsPtbeforePIDelectron -> Fill(aodTrack->P()*aodTrack->Charge(),nSigma); 
 	//end of QA-before pid
 	
 	// check only for given momentum range
@@ -1377,8 +1381,8 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	}
   
 	//Fill QA after the PID
-	fHistdEdxVsPTPCafterPID -> Fill(aodTrack->P()*aodTrack->Charge(),aodTrack->GetTPCsignal());
-	fHistNSigmaTPCvsPtafterPID -> Fill(aodTrack->P()*aodTrack->Charge(),nSigma); 
+	fHistdEdxVsPTPCafterPIDelectron -> Fill(aodTrack->P()*aodTrack->Charge(),aodTrack->GetTPCsignal());
+	fHistNSigmaTPCvsPtafterPIDelectron -> Fill(aodTrack->P()*aodTrack->Charge(),nSigma); 
 	
       }
       //===========================end of PID (so far only for electron rejection)===============================//
@@ -1394,31 +1398,34 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	Double_t nSigma = 0.;
 	Double_t nSigmaTPC = 0.; //++++
 	Double_t nSigmaTOF = 0.; //++++
+	Double_t nSigmaTPCTOF = 0.; //++++
 	UInt_t detUsedTPC = 0;
 	UInt_t detUsedTOF = 0;
 	UInt_t detUsedTPCTOF = 0;
 	
+	nSigmaTPC = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)fParticleOfInterest));
+	nSigmaTOF = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(aodTrack,(AliPID::EParticleType)fParticleOfInterest));
+	nSigmaTPCTOF = TMath::Sqrt(nSigmaTPC*nSigmaTPC + nSigmaTOF*nSigmaTOF);
+
 	//Decide what detector configuration we want to use
 	switch(fPidDetectorConfig) {
 	case kTPCpid:
 	  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
-	  nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)fParticleOfInterest));
+	  nSigma = nSigmaTPC;
 	  detUsedTPC = fPIDCombined->ComputeProbabilities(aodTrack, fPIDResponse, probTPC);
 	  for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
 	    prob[iSpecies] = probTPC[iSpecies];
 	  break;
 	case kTOFpid:
 	  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF);
-	  nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(aodTrack,(AliPID::EParticleType)fParticleOfInterest));
+	  nSigma = nSigmaTOF;
 	  detUsedTOF = fPIDCombined->ComputeProbabilities(aodTrack, fPIDResponse, probTOF);
 	  for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
 	    prob[iSpecies] = probTOF[iSpecies];
 	  break;
 	case kTPCTOF:
 	  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF|AliPIDResponse::kDetTPC);
-	  nSigmaTPC = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)fParticleOfInterest)); //++++++
-	  nSigmaTOF = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)fParticleOfInterest)); //++++++
-	  nSigma = TMath::Sqrt(nSigmaTPC*nSigmaTPC + nSigmaTOF*nSigmaTOF);//++++++
+	  nSigma = nSigmaTPCTOF;
 	  detUsedTPCTOF = fPIDCombined->ComputeProbabilities(aodTrack, fPIDResponse, probTPCTOF);
 	  for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
 	    prob[iSpecies] = probTPCTOF[iSpecies];
@@ -1431,7 +1438,6 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	Double_t tofTime = -999., length = 999., tof = -999.;
 	Double_t c = TMath::C()*1.E-9;// m/ns
 	Double_t beta = -999.;
-	Double_t  nSigmaTOFForParticleOfInterest = -999.;
 	if ( (aodTrack->IsOn(AliAODTrack::kTOFin)) &&
 	     (aodTrack->IsOn(AliAODTrack::kTIME))  ) { 
 	  tofTime = aodTrack->GetTOFsignal();//in ps
@@ -1451,26 +1457,22 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  tof = tof*c;
 	  beta = length/tof;
 	  
-	  nSigmaTOFForParticleOfInterest = fPIDResponse->NumberOfSigmasTOF(aodTrack,(AliPID::EParticleType)fParticleOfInterest);
 	  fHistBetavsPTOFbeforePID ->Fill(aodTrack->P()*aodTrack->Charge(),beta);
 	  fHistProbTOFvsPtbeforePID ->Fill(aodTrack->Pt(),probTOF[fParticleOfInterest]);
-	  fHistNSigmaTOFvsPtbeforePID ->Fill(aodTrack->Pt(),nSigmaTOFForParticleOfInterest);
+	  fHistNSigmaTOFvsPtbeforePID ->Fill(aodTrack->Pt(),nSigmaTOF);
 	}//TOF signal 
 	
-	Double_t  nSigmaTPCForParticleOfInterest = fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)fParticleOfInterest);
 	fHistdEdxVsPTPCbeforePID -> Fill(aodTrack->P()*aodTrack->Charge(),aodTrack->GetTPCsignal());
 	fHistProbTPCvsPtbeforePID -> Fill(aodTrack->Pt(),probTPC[fParticleOfInterest]); 
-	fHistNSigmaTPCvsPtbeforePID -> Fill(aodTrack->Pt(),nSigmaTPCForParticleOfInterest); 
-	fHistProbTPCTOFvsPtbeforePID -> Fill(aodTrack->Pt(),probTPCTOF[fParticleOfInterest]);
+	fHistNSigmaTPCvsPtbeforePID -> Fill(aodTrack->Pt(),nSigmaTPC);
 	
+	fHistProbTPCTOFvsPtbeforePID -> Fill(aodTrack->Pt(),probTPCTOF[fParticleOfInterest]);
+
 	//combined TPC&TOF
 	fHistBetaVsdEdXbeforePID->Fill(aodTrack->GetTPCsignal(),beta); //+++++++++	
-	Double_t nSigmaTPCTOFForParticleOfInterest = -999.;//++++++++
-	nSigmaTPCTOFForParticleOfInterest = TMath::Sqrt(nSigmaTPCForParticleOfInterest*nSigmaTPCForParticleOfInterest + nSigmaTOFForParticleOfInterest*nSigmaTOFForParticleOfInterest);//++++++++
-	fHistNSigmaTPCTOFvsPtbeforePID -> Fill(aodTrack->Pt(),nSigmaTPCTOFForParticleOfInterest); //++++++++
-
-	//Printf("nSigma %lf",nSigma); //++++++++++++
-	//Printf("nSigmaTPCTOF %lf",nSigmaTPCTOFForParticleOfInterest); //++++++++++++
+	fHistNSigmaTPCTOFvsPtbeforePID -> Fill(aodTrack->Pt(),nSigmaTPCTOF);
+	Printf("NSIGMA: %lf - nSigmaTOF: %lf - nSigmaTPC: %lf - nSigmaTPCTOF: %lf",nSigma,nSigmaTOF,nSigmaTPC,nSigmaTPCTOF);
+	
 	//end of QA-before pid
 	
 	if ((detUsedTPC != 0)||(detUsedTOF != 0)||(detUsedTPCTOF != 0)) {
@@ -1478,9 +1480,9 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  if(fUsePIDnSigma) {
 	    if(nSigma > fPIDNSigma) continue;  
 	    
-	    fHistNSigmaTOFvsPtafterPID ->Fill(aodTrack->Pt(),nSigma);
-	    fHistNSigmaTPCvsPtafterPID ->Fill(aodTrack->Pt(),nSigma); 
-	    fHistNSigmaTPCTOFvsPtafterPID ->Fill(aodTrack->Pt(),nSigma); //++++++++
+	    fHistNSigmaTOFvsPtafterPID ->Fill(aodTrack->Pt(),nSigmaTOF);
+	    fHistNSigmaTPCvsPtafterPID ->Fill(aodTrack->Pt(),nSigmaTPC);
+	    fHistNSigmaTPCTOFvsPtafterPID ->Fill(aodTrack->Pt(),nSigmaTPCTOF);
 	  }
 	  //Make the decision based on the bayesian
 	  else if(fUsePIDPropabilities) {
@@ -1492,9 +1494,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	    fHistProbTPCTOFvsPtafterPID ->Fill(aodTrack->Pt(),probTPCTOF[fParticleOfInterest]);
 	  
 	  }
-	  
-	  //Printf("nSigmaAFTER %lf", nSigma); //++++++++++++
-	  //Printf("nSigmaTPCTOFAFTER %lf", nSigmaTPCTOFForParticleOfInterest); //++++++++++++	  
+	    
 	  //Fill QA after the PID
 	  fHistBetavsPTOFafterPID ->Fill(aodTrack->P()*aodTrack->Charge(),beta);
 	  fHistdEdxVsPTPCafterPID ->Fill(aodTrack->P()*aodTrack->Charge(),aodTrack->GetTPCsignal());
@@ -1708,8 +1708,8 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kElectron));
 
 	//Fill QA before the PID
-	fHistdEdxVsPTPCbeforePID -> Fill(aodTrack->P()*aodTrack->Charge(),aodTrack->GetTPCsignal());
-	fHistNSigmaTPCvsPtbeforePID -> Fill(aodTrack->P()*aodTrack->Charge(),nSigma); 
+	fHistdEdxVsPTPCbeforePIDelectron -> Fill(aodTrack->P()*aodTrack->Charge(),aodTrack->GetTPCsignal());
+	fHistNSigmaTPCvsPtbeforePIDelectron -> Fill(aodTrack->P()*aodTrack->Charge(),nSigma); 
 	//end of QA-before pid
 	
 	// check only for given momentum range
@@ -1736,8 +1736,8 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	}
   
 	//Fill QA after the PID
-	fHistdEdxVsPTPCafterPID -> Fill(aodTrack->P()*aodTrack->Charge(),aodTrack->GetTPCsignal());
-	fHistNSigmaTPCvsPtafterPID -> Fill(aodTrack->P()*aodTrack->Charge(),nSigma); 
+	fHistdEdxVsPTPCafterPIDelectron -> Fill(aodTrack->P()*aodTrack->Charge(),aodTrack->GetTPCsignal());
+	fHistNSigmaTPCvsPtafterPIDelectron -> Fill(aodTrack->P()*aodTrack->Charge(),nSigma); 
 	
       }
       //===========================end of PID (so far only for electron rejection)===============================//

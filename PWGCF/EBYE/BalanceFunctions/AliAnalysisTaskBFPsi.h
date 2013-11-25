@@ -264,6 +264,11 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2D *fHistNSigmaTOFvsPtafterPID;//TOF nsigma vs pT after PID cuts (QA histogram)
   TH2D *fHistBetaVsdEdXafterPID;//TPCTOF  before PID cuts (QA histogram)//+++++++++++++++++++++
   TH2D *fHistNSigmaTPCTOFvsPtafterPID;//TPCTOF  before PID cuts (QA histogram)//+++++++++++++++++++++
+
+  TH2D *fHistdEdxVsPTPCbeforePIDelectron; //+++++++
+  TH2D *fHistNSigmaTPCvsPtbeforePIDelectron; //+++++++
+  TH2D *fHistdEdxVsPTPCafterPIDelectron; //+++++++
+  TH2D *fHistNSigmaTPCvsPtafterPIDelectron; //+++++++
   
   TH3F *fHistCorrectionPlus[kCENTRALITY]; //====correction
   TH3F *fHistCorrectionMinus[kCENTRALITY]; //===correction
