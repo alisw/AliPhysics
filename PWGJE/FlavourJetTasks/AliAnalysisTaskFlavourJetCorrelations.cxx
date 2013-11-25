@@ -635,7 +635,7 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
    const Int_t nAxis=5;
    const Int_t nbinsSparse[nAxis]={nbinsz,nbinsphi,nbinsptjet,nbinsptD,nbinsmass};
    const Double_t minSparse[nAxis]={zlims[0],philims[0],ptjetlims[0],ptDlims[0],fMinMass};
-   const Double_t maxSparse[nAxis]={zlims[1],philims[1],ptjetlims[1],ptDlims[1],fMinMass};
+   const Double_t maxSparse[nAxis]={zlims[1],philims[1],ptjetlims[1],ptDlims[1],fMaxMass};
    THnSparseF *hsDphiz=new THnSparseF("hsDphiz","Z and #Delta#phi vs p_{T}^{jet}, p_{T}^{D}, and mass", nAxis, nbinsSparse, minSparse, maxSparse);
    hsDphiz->Sumw2();
    
