@@ -24,7 +24,7 @@ class AliSingleTrackEffCuts : public AliAnalysisCuts
 
   virtual ~AliSingleTrackEffCuts();
 
-  virtual Bool_t IsSelected(TList* /* list */) { return kFALSE; }
+  virtual Bool_t IsSelected(TList* list) { list->GetEntries(); return kFALSE; } // not implemented
 
   //
   // Event and track selections
