@@ -618,6 +618,7 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromBayesWeights(const Bool_t isEMCAL
   if(!pid)
   { 
     AliFatal("pid pointer not initialized!!!");
+    return kNeutralUnknown; // not needed, added to content coverity
   }
   
   Float_t wPh  =  fPHOSPhotonWeight ;

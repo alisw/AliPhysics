@@ -1640,6 +1640,7 @@ void AliMCAnalysisUtils::GetMCDecayAsymmetryAngleForPDG(const Int_t label, const
         printf("AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG() - AODMCParticles is not available, check analysis settings in configuration file!!\n");
       
       ok=kFALSE;
+      return;
     }
     
     Int_t nprimaries = mcparticles->GetEntriesFast();
