@@ -131,6 +131,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   void UseOfflineTrigger() {fUseOfflineTrigger = kTRUE;}
   void CheckFirstEventInChunk() {fCheckFirstEventInChunk = kTRUE;}
   void CheckPileUp() {fCheckPileUp = kTRUE;}
+  void CheckPrimaryFlagAOD() {fCheckPrimaryFlagAOD = kTRUE;}
   void UseMCforKinematics() {fUseMCforKinematics = kTRUE;}
   
   //Acceptance filter
@@ -313,6 +314,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Bool_t fUseOfflineTrigger;//Usage of the offline trigger selection
   Bool_t fCheckFirstEventInChunk;//Usage of the "First Event in Chunk" check (not needed for new productions)
   Bool_t fCheckPileUp;//Usage of the "Pile-Up" event check
+  Bool_t fCheckPrimaryFlagAOD;// Usage of check on AliAODtrack::kPrimary (default = OFF)
   Bool_t fUseMCforKinematics;//Usage of MC information for filling the kinematics information of particles (only in MCAODrec mode)
 
   Double_t fVxMax;//vxmax
