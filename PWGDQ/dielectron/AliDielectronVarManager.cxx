@@ -31,6 +31,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"Py",                     "#it{p}_{y}",                                         "(GeV/#it{c})"},
   {"Pz",                     "#it{p}_{z}",                                         "(GeV/#it{c})"},
   {"Pt",                     "#it{p}_{T}",                                         "(GeV/#it{c})"},
+  {"PtSq",                   "#it{p}_{T}^{2}",                                     "((GeV/#it{c})^{2})"},
   {"P",                      "#it{p}",                                             "(GeV/#it{c})"},
   {"Xv",                     "x_{vtx}",                                            "(cm)"},
   {"Yv",                     "y_{vtx}",                                            "(cm)"},

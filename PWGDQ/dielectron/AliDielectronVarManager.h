@@ -84,6 +84,7 @@ public:
     kPy,                     // py
     kPz,                     // pz
     kPt,                     // transverse momentum
+    kPtSq,                   // transverse momentum squared
     kP,                      // momentum
     kXv,                     // vertex position in x
     kYv,                     // vertex position in y
@@ -516,6 +517,7 @@ inline void AliDielectronVarManager::FillVarVParticle(const AliVParticle *partic
   values[AliDielectronVarManager::kPy]        = particle->Py();
   values[AliDielectronVarManager::kPz]        = particle->Pz();
   values[AliDielectronVarManager::kPt]        = particle->Pt();
+  values[AliDielectronVarManager::kPtSq]      = particle->Pt()*particle->Pt();
   values[AliDielectronVarManager::kP]         = particle->P();
 
   values[AliDielectronVarManager::kXv]        = particle->Xv();
@@ -1088,6 +1090,7 @@ inline void AliDielectronVarManager::FillVarMCParticle2(const AliVParticle *p1, 
 						      values[AliDielectronVarManager::kPx]+
 						      values[AliDielectronVarManager::kPy]*
 						      values[AliDielectronVarManager::kPy]);
+  values[AliDielectronVarManager::kPtSq]      = values[AliDielectronVarManager::kPt] * values[AliDielectronVarManager::kPt];
   values[AliDielectronVarManager::kP]         = TMath::Sqrt(values[AliDielectronVarManager::kPt]*
 						      values[AliDielectronVarManager::kPt]+
 						      values[AliDielectronVarManager::kPz]*
@@ -1293,6 +1296,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 	values[AliDielectronVarManager::kPz]        = (lv1+lv2).Pz();
 
 	values[AliDielectronVarManager::kPt]        =  (lv1+lv2).Pt();
+	values[AliDielectronVarManager::kPtSq]      = values[AliDielectronVarManager::kPt] * values[AliDielectronVarManager::kPt];
 
 	values[AliDielectronVarManager::kP]         =  (lv1+lv2).P();
 
@@ -1498,6 +1502,7 @@ inline void AliDielectronVarManager::FillVarKFParticle(const AliKFParticle *part
   values[AliDielectronVarManager::kPy]        = particle->GetPy();
   values[AliDielectronVarManager::kPz]        = particle->GetPz();
   values[AliDielectronVarManager::kPt]        = particle->GetPt();
+  values[AliDielectronVarManager::kPtSq]      = particle->GetPt() * particle->GetPt();
   values[AliDielectronVarManager::kP]         = particle->GetP();
   
   values[AliDielectronVarManager::kXv]        = particle->GetX();
