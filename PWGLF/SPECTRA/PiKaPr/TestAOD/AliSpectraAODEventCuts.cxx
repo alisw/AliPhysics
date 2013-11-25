@@ -309,11 +309,17 @@ Double_t AliSpectraAODEventCuts::CalculateQVectorLHC10h(){
   
   Short_t centrV0  = GetCentrCode(fAOD);
   
-  Double_t Qxamean2 = fMeanQxa2[centrV0];
-  Double_t Qyamean2 = fMeanQya2[centrV0];
+  Double_t Qxamean2 = 0.;
+  Double_t Qyamean2 = 0.;
+  Double_t Qxcmean2 = 0.;
+  Double_t Qycmean2 = 0.;
   
-  Double_t Qxcmean2 = fMeanQxc2[centrV0];
-  Double_t Qycmean2 = fMeanQyc2[centrV0];
+  if(centrV0!=-1){
+    Qxamean2 = fMeanQxa2[centrV0];
+    Qyamean2 = fMeanQya2[centrV0];
+    Qxcmean2 = fMeanQxc2[centrV0];
+    Qycmean2 = fMeanQyc2[centrV0];
+  }
   
   Double_t QxaCor2 = Qxa2 - Qxamean2*sumMa;
   Double_t QyaCor2 = Qya2 - Qyamean2*sumMa;
@@ -433,7 +439,7 @@ Bool_t AliSpectraAODEventCuts::OpenInfoCalbration(Int_t run)
   fV0Cpol4 = fpolc4->GetParameter(0);
   
   TF1* fpola1 = new TF1("fpola1","pol0", 32, 39);
-  fMultV0->Fit(fpola1, "R");
+  fMultV0->Fit(fpola1, "RN");
   fV0Apol1 = fpola1->GetParameter(0);
 
   TF1* fpola2 = new TF1("fpola2","pol0", 40, 47);
@@ -453,16 +459,16 @@ Bool_t AliSpectraAODEventCuts::OpenInfoCalbration(Int_t run)
   for(Int_t i=0; i < 10; i++){
 
     char nameQxa2[100];
-    sprintf(nameQxa2, "hQxa2m_%i", i);
+    snprintf(nameQxa2,100, "hQxa2m_%i", i);
 
     char nameQya2[100];
-    sprintf(nameQya2, "hQya2m_%i", i);
+    snprintf(nameQya2,100, "hQya2m_%i", i);
 
     char nameQxc2[100];
-    sprintf(nameQxc2, "hQxc2m_%i", i);
+    snprintf(nameQxc2,100, "hQxc2m_%i", i);
 
     char nameQyc2[100];
-    sprintf(nameQyc2, "hQyc2m_%i", i);
+    snprintf(nameQyc2,100, "hQyc2m_%i", i);
 	
     AliOADBContainer* contQxa2 = (AliOADBContainer*) fCalib->FindObject(nameQxa2);
     if(!contQxa2){
