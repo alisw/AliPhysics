@@ -2251,7 +2251,10 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTOFProbability  (const A
   //
   // Compute PID probabilities for TOF
   //
-  
+
+  Double_t mismprob = 1E-8;
+  //fTOFResponse.GetMismatchProbability(track->GetTOFsignal(),track->Eta()) * 0.01; // for future implementation of mismatch (i.e. 1% mismatch that should be extended for PbPb, pPb)
+
   // set flat distribution (no decision)
   for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
   
@@ -2266,17 +2269,13 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTOFProbability  (const A
     
     const Double_t expTime = fTOFResponse.GetExpectedSignal(track,type);
     const Double_t sig     = fTOFResponse.GetExpectedSigma(track->P(),expTime,AliPID::ParticleMassZ(type));
-    if (TMath::Abs(nsigmas) > (fRange+2)) {
-      if(nsigmas < fTOFtail)
-        p[j] = TMath::Exp(-0.5*(fRange+2)*(fRange+2))/sig;
-      else
-        p[j] = TMath::Exp(-(fRange+2 - fTOFtail*0.5)*fTOFtail)/sig;
-    } else{
-      if(nsigmas < fTOFtail)
-        p[j] = TMath::Exp(-0.5*nsigmas*nsigmas)/sig;
-      else
-        p[j] = TMath::Exp(-(nsigmas - fTOFtail*0.5)*fTOFtail)/sig;
-    }    
+
+    if(nsigmas < fTOFtail)
+      p[j] = TMath::Exp(-0.5*nsigmas*nsigmas)/sig;
+    else
+      p[j] = TMath::Exp(-(nsigmas - fTOFtail*0.5)*fTOFtail)/sig;
+    
+    p[j] += mismprob;
   }
   
   return kDetPidOk;

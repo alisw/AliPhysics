@@ -37,7 +37,7 @@ public:
   Double_t GetExpectedSigma(Float_t mom, Float_t tof, AliPID::EParticleType type) const;
   Double_t GetExpectedSignal(const AliVTrack *track, AliPID::EParticleType type) const;
 
-  Double_t GetMismatchProbability(Double_t p,Double_t mass) const;
+  Double_t GetMismatchProbability(Double_t time,Double_t eta) const;
 
   static Double_t GetTailRandomValue(Float_t pt=1.0,Float_t eta=0.0,Float_t time=0.0,Float_t addmism=0.0); // generate a random value to add a tail to TOF time (for MC analyses), addmism = additional mismatch in percentile
   static Double_t GetMismatchRandomValue(Float_t eta); // generate a random value for mismatched tracks (for MC analyses)
