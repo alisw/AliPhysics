@@ -63,7 +63,9 @@ AliTaskCDBconnect::~AliTaskCDBconnect()
 //______________________________________________________________________________
 void AliTaskCDBconnect::InitGRP()
 {
-// Initialize geometry and mag. field
+  // Initialize geometry and mag. field
+  AliCDBManager *cdb = AliCDBManager::Instance();
+  if (!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("raw://");
   if (!fGRPManager) fGRPManager = new AliGRPManager();
   AliInfo("AliCDBconnect: #### Loading GRP to init B-field...");
   if(!fGRPManager->ReadGRPEntry()) AliFatal("Cannot get GRP entry"); 
