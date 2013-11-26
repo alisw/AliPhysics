@@ -42,7 +42,7 @@ AliFlowVector::AliFlowVector(const AliFlowVector& aVector):
 
 //________________________________________________________________________
 
-AliFlowVector::AliFlowVector(Double_t *y, const Double_t m):
+AliFlowVector::AliFlowVector(Double_t *y, Double_t m):
   TVector2(y),
   fMult(m)
 {
@@ -51,7 +51,7 @@ AliFlowVector::AliFlowVector(Double_t *y, const Double_t m):
 
  //________________________________________________________________________
 
-AliFlowVector::AliFlowVector(const TVector2 &v, const Double_t m):
+AliFlowVector::AliFlowVector(const TVector2 &v, Double_t m):
   TVector2(v),
   fMult(m)
 {
@@ -60,7 +60,7 @@ AliFlowVector::AliFlowVector(const TVector2 &v, const Double_t m):
 
  //________________________________________________________________________
 
-AliFlowVector::AliFlowVector(const Double_t x, const Double_t y, const Double_t m):
+AliFlowVector::AliFlowVector(Double_t x, Double_t y, Double_t m):
   TVector2(x,y),
   fMult(m)
 {
@@ -113,7 +113,7 @@ AliFlowVector& AliFlowVector::operator-=(const AliFlowVector& aVector)
   return *this;
 }
 
-AliFlowVector& AliFlowVector::operator*=(const double w)
+AliFlowVector& AliFlowVector::operator*=(double w)
 {
    // multiply by a weight operator
    fX*=w;
