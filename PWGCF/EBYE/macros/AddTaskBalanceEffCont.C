@@ -37,9 +37,6 @@ AliAnalysisTaskEffContBF *AddTaskBalanceEffCont( TString  centralityEstimator="V
 
   AliAnalysisTaskEffContBF *taskEffContBF = new AliAnalysisTaskEffContBF("TaskEffContBF");
 
-  // analysis mode
-  taskEffContBF->SetAnalysisMode("TPC");
-
   // centrality
   if(centralityEstimator) {
     taskEffContBF->SetCentralityEstimator(centralityEstimator);
