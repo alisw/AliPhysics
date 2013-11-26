@@ -2116,7 +2116,7 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
   gasgain*=correctionHVandPT;
 
   Int_t i;
-  Float_t xyz[5]; 
+  Float_t xyz[5]={0,0,0,0,0};
 
   AliTPChit *tpcHit; // pointer to a sigle TPC hit    
   //MI change
@@ -2230,9 +2230,12 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
       for(Int_t nel=0;nel<qI;nel++){
 	// skip if electron lost due to the attachment
 	if((gRandom->Rndm(0)) < attProb) continue; // electron lost!
-	
+	// use default hit position
+	xyz[0]=tpcHit->X();
+	xyz[1]=tpcHit->Y();
+	xyz[2]=tpcHit->Z(); 
 	//
-	// ExB effect
+	// ExB effect - distort hig if specifiend in the RecoParam
 	//
         if (tpcrecoparam->GetUseExBCorrection()) {
 	  Double_t dxyz0[3],dxyz1[3];
