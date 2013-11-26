@@ -69,7 +69,7 @@
 #include "AliInputEventHandler.h"
 #include "AliVZEROEPSelectionTask.h"
 
-#include "AliAODMCHEader.h"
+#include "AliAODMCHeader.h"
 
 class AliVEvent;
 
