@@ -454,8 +454,6 @@ Bool_t AliSpectraAODEventCuts::OpenInfoCalbration(Int_t run)
   fMultV0->Fit(fpola4, "RN");
   fV0Apol4 = fpola4->GetParameter(0);
 
-  fV0Cpol1=fV0Cpol2=fV0Cpol3=fV0Cpol4=fV0Apol1=fV0Apol2=fV0Apol3=fV0Apol4=10.;
-  
   for(Int_t i=0; i < 10; i++){
 
     char nameQxa2[100];
