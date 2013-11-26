@@ -810,8 +810,15 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 
       hname="hMult";
       TH1F* hMult=new TH1F(hname.Data(),"Multiplicity;multiplicity;Entries",10000,-0.5,9999.5);
+      hname="hMultComb05";
+      TH1F* hMultC05=new TH1F(hname.Data(),"Multiplicity (global+tracklet) in |#eta|<0.5;multiplicity;Entries",10000,-0.5,9999.5);
+      hname="hMultComb08";
+      TH1F* hMultC08=new TH1F(hname.Data(),"Multiplicity (global+tracklet) in |#eta|<0.8;multiplicity;Entries",10000,-0.5,9999.5);
+
       fOutputTrack->Add(hNtracklets);
       fOutputTrack->Add(hMult);
+      fOutputTrack->Add(hMultC05);
+      fOutputTrack->Add(hMultC08);
     }
   }
 
@@ -1734,6 +1741,8 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       if(fOnOff[0]){
 	((TH1F*)fOutputTrack->FindObject("hNtracklets"))->Fill(aod->GetTracklets()->GetNumberOfTracklets());
 	((TH1F*)fOutputTrack->FindObject("hMult"))->Fill(aod->GetHeader()->GetRefMultiplicity());
+	((TH1F*)fOutputTrack->FindObject("hMultComb05"))->Fill(aod->GetHeader()->GetRefMultiplicityComb05());
+	((TH1F*)fOutputTrack->FindObject("hMultComb08"))->Fill(aod->GetHeader()->GetRefMultiplicityComb08());
       }
     }
   }
