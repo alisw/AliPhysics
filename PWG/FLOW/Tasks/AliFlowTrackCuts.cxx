@@ -368,10 +368,9 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   if (!that.fAliESDtrackCuts) delete fAliESDtrackCuts; fAliESDtrackCuts=NULL;
 
   if ( that.fMuonTrackCuts &&  fMuonTrackCuts) *fMuonTrackCuts = *(that.fMuonTrackCuts);                   // XZhang 20120604
-  if ( that.fMuonTrackCuts && !fMuonTrackCuts)  fMuonTrackCuts = new AliMuonTrackCuts(*(fMuonTrackCuts));  // XZhang 20120604
+  if ( that.fMuonTrackCuts && !fMuonTrackCuts)  fMuonTrackCuts = new AliMuonTrackCuts(*(that.fMuonTrackCuts));  // XZhang 20120604
   if (!that.fMuonTrackCuts) delete fMuonTrackCuts; fMuonTrackCuts = NULL;                                  // XZhang 20120604
   if (!that.fV0gainEqualization) delete fV0gainEqualization; fV0gainEqualization = NULL;
-
   //these guys we don't need to copy, just reinit
   if (that.fQA) {fQA->Delete(); delete fQA; fQA=NULL; DefineHistograms();} 
   fCutMC=that.fCutMC;
