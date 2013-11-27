@@ -106,6 +106,9 @@ class AliTPCtrackerSector: public TObject {
     
     void InsertCluster(AliTPCclusterMI *cl, Int_t size, const AliTPCParam *par);
 
+    Int_t GetNClInSector(Int_t side) const;
+    Int_t GetNClUsedInSector(Int_t side) const;
+  
  private:
     AliTPCtrackerSector & operator=(const AliTPCtrackerSector & );
     AliTPCtrackerSector(const AliTPCtrackerSector &/*s*/);           //dummy copy contructor 

@@ -18,6 +18,8 @@
 #include "AliTPCreco.h"
 #include "AliTPCclusterMI.h"
 #include "AliTPCtrackerSector.h"
+#include "AliESDfriend.h"
+
 
 
 class TFile;
@@ -172,6 +174,8 @@ private:
    void DumpClusters(Int_t iter, TObjArray *trackArray);
    void UnsignClusters();
 
+   void FillClusterOccupancyInfo();
+
    void ParallelTracking(TObjArray *const arr, Int_t rfirst, Int_t rlast);
    void Tracking(TObjArray * arr);
    TObjArray * Tracking(Int_t seedtype, Int_t i1, Int_t i2, Float_t cuts[4], Float_t dy=-1, Int_t dsec=0);
@@ -274,8 +278,6 @@ void  AliTPCtracker::SetTPCtrackerSectors(AliTPCtrackerSector *innerSec, AliTPCt
   fInnerSec = innerSec;
   fOuterSec = outerSec;
 }
-
-
 
 #endif
 

@@ -3081,6 +3081,8 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
 
   AliCosmicTracker::FindCosmic(event, kTRUE);
 
+  FillClusterOccupancyInfo();
+
   return 0;
 }
 
@@ -8456,4 +8458,26 @@ TObjArray * AliTPCtracker::MakeSeedsHLT(const AliESDEvent *hltEvent)
   }
   std::cout<<"\n\nHLT tracks left: "<<seeds->GetEntries()<<" out of "<<hltEvent->GetNumberOfTracks()<<endl<<endl;
   return seeds;    
+}
+
+void AliTPCtracker::FillClusterOccupancyInfo()
+{
+  //fill the cluster occupancy info into the ESD friend
+  AliESDfriend* esdFriend = static_cast<AliESDfriend*>(fEvent->FindListObject("AliESDfriend"));
+  if (!esdFriend) return;
+
+  for (Int_t isector=0; isector<18; isector++){
+    AliTPCtrackerSector &iroc = fInnerSec[isector];
+    AliTPCtrackerSector &oroc = fOuterSec[isector];
+    //all clusters
+    esdFriend->SetNclustersTPC(isector,   iroc.GetNClInSector(0));
+    esdFriend->SetNclustersTPC(isector+18,iroc.GetNClInSector(1));
+    esdFriend->SetNclustersTPC(isector+36,oroc.GetNClInSector(0));
+    esdFriend->SetNclustersTPC(isector+54,oroc.GetNClInSector(1));
+    //clusters used in tracking
+    esdFriend->SetNclustersTPCused(isector,    iroc.GetNClUsedInSector(0));
+    esdFriend->SetNclustersTPCused(isector+18, iroc.GetNClUsedInSector(1));
+    esdFriend->SetNclustersTPCused(isector+36, oroc.GetNClUsedInSector(0));
+    esdFriend->SetNclustersTPCused(isector+54, oroc.GetNClUsedInSector(1));
+  }
 }

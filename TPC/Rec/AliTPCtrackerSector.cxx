@@ -350,3 +350,44 @@ void AliTPCtrackerSector::InsertCluster(AliTPCclusterMI *cl, Int_t size, const A
   }
 }
 
+//_________________________________________________________________________
+Int_t  AliTPCtrackerSector::GetNClInSector(Int_t side) const
+{
+  //return number of all clusters in one sector; side =0 for A side and 1 for C side 
+
+  Int_t nclSector=0;
+  Int_t nrows = GetNRows();
+
+  for (Int_t row=0;row<nrows;row++) {
+    AliTPCtrackerRow&  tpcrow = (*this)[row];
+    Int_t ncl =  (side==0)?(tpcrow.GetN1()):(tpcrow.GetN2());
+    nclSector+=ncl;
+  }
+
+  return nclSector;
+}
+
+//_________________________________________________________________________
+Int_t  AliTPCtrackerSector::GetNClUsedInSector(Int_t side) const
+{
+  //return number of clusters used in tracking in one sector; side =0 for A side and 1 for C side 
+
+  Int_t nclSector=0;
+  Int_t nrows = GetNRows();
+
+  for (Int_t row=0;row<nrows;row++) {
+    AliTPCtrackerRow&  tpcrow = (*this)[row];
+    Int_t nclusters = (side==0)?tpcrow.GetN1():tpcrow.GetN2();
+    for (Int_t icluster=0; icluster<nclusters; icluster++)
+    {
+      AliTPCclusterMI* cluster = NULL;
+      if (side==0) { cluster=tpcrow.GetCluster1(icluster); }
+      else         { cluster=tpcrow.GetCluster2(icluster); }
+      if (!cluster) continue;
+      if (cluster->IsUsed(1)) nclSector++;
+    }
+  }
+
+  return nclSector;
+}
+
