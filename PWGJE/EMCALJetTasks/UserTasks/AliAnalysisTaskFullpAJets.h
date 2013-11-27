@@ -407,10 +407,27 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     inline void SetJetChargeBias(Bool_t trackBias)
     {
         fSignalTrackBias = trackBias;
-    }
+    };
     
+    inline void DoTrackQA(Bool_t doQA)
+    {
+        fTrackQA = doQA;
+    };
+
+    inline void DoClusterQA(Bool_t doQA)
+    {
+        fClusterQA = doQA;
+    };
+    
+    inline void CalculateRhoJet(Int_t doRhoJet)
+    {
+        fCalculateRhoJet = doRhoJet;
+    };
+
     private:
     TList *fOutput; //! Output list
+    TList *flTrack; //! Track QA List
+    TList *flCluster; //! Cluster QA List
     
     TH1D *fhTrackPt;  //!
     TH1D *fhTrackEta;  //!
@@ -440,7 +457,6 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     TH2D *fhClusterEtaPhi; //!
     TH2D *fhClusterPhiPt;  //!
     TH2D *fhClusterEtaPt;  //!
-    TH2D *fhRhoScale;  //!
     
     TH2D *fhEMCalEventMult; //!
     TH2D *fhTPCEventMult; //!
@@ -453,14 +469,16 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     
     TProfile *fpEMCalEventMult;  //!
     TProfile *fpTPCEventMult;  //!
-    TProfile *fpRhoScale; //! Scale of rho_total/rho_charged event/event vs centrality
     
     TProfile2D *fpTrackPtProfile;  //!
     TProfile2D *fpClusterPtProfile;  //!
     
     AlipAJetHistos *fTPCRawJets;  //!
     AlipAJetHistos *fEMCalRawJets;  //!
-    /*
+
+    AlipAJetHistos *fRhoChargedCMSScale;  //!
+    AlipAJetHistos *fRhoChargedScale;  //!
+    
     AlipAJetHistos *fRhoFull0;  //!
     AlipAJetHistos *fRhoFull1;  //!
     AlipAJetHistos *fRhoFull2;  //!
@@ -476,9 +494,6 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     AlipAJetHistos *fRhoChargedkT;  //!
     AlipAJetHistos *fRhoChargedkTScale;  //!
     AlipAJetHistos *fRhoChargedCMS;  //!
-    */
-    AlipAJetHistos *fRhoChargedScale;  //!
-    AlipAJetHistos *fRhoChargedCMSScale;  //!
 
     AlipAJetData *fTPCJet;  //!
     AlipAJetData *fTPCFullJet;  //!
@@ -503,6 +518,9 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     AliVCaloCells *fCells;  //!
     Bool_t fDoNEF;
     Bool_t fSignalTrackBias;
+    Bool_t fTrackQA;
+    Bool_t fClusterQA;
+    Int_t fCalculateRhoJet;
     
     // Protected Global Variables
     Double_t fEMCalPhiMin;
