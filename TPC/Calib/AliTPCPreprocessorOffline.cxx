@@ -1152,8 +1152,11 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainMultiplicity() {
   //
   TObjArray arrMax;
   TObjArray arrTot;
-  histMultMax->FitSlicesY(0,0,-1,0,"QNR",&arrMax);
-  histMultTot->FitSlicesY(0,0,-1,0,"QNR",&arrTot);
+  TF1 fitGaus("fitGaus","gaus(0)",histMultMax->GetYaxis()->GetXmin(),histMultMax->GetYaxis()->GetXmax());
+  fitGaus.SetParameters(histMultMax->GetEntries()/10., histMultMax->GetMean(2), TMath::Sqrt(TMath::Abs(histMultMax->GetMean(2))));
+  histMultMax->FitSlicesY(&fitGaus,0,-1,1,"QNRB",&arrMax);
+  fitGaus.SetParameters(histMultTot->GetEntries()/10., histMultTot->GetMean(2), TMath::Sqrt(TMath::Abs(histMultTot->GetMean(2))));
+  histMultTot->FitSlicesY(&fitGaus,0,-1,1,"QNRB",&arrTot);
   //
   TH1D * meanMax = (TH1D*)arrMax.At(1);
   TH1D * meanTot = (TH1D*)arrTot.At(1);
