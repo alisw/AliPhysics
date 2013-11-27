@@ -137,11 +137,21 @@ AliAnalysisTask *AddTaskPID(TString nameSuffix, Bool_t writeOutputToSeparateFile
                            writeOutputToSeparateFiles
                             ? Form("%s_efficiency.root", taskName.Data())
                             : Form("%s:%s_efficiency", AliAnalysisManager::GetCommonFileName(), taskName.Data()));
+  
+  AliAnalysisDataContainer *coutput3 = 
+      mgr->CreateContainer(Form("%s_PtResolution", taskName.Data()),
+                           TObjArray::Class(),
+                           AliAnalysisManager::kOutputContainer,
+                           writeOutputToSeparateFiles
+                            ? Form("%s_PtResolution.root", taskName.Data())
+                            : Form("%s:%s_PtResolution", AliAnalysisManager::GetCommonFileName(), taskName.Data()));
+  
   //connect containers
   mgr->ConnectInput  (task,  0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput (task,  0, mgr->GetCommonOutputContainer()); // comment to run local
   mgr->ConnectOutput (task,  1, coutput1);
   mgr->ConnectOutput (task,  2, coutput2);
+  mgr->ConnectOutput (task,  3, coutput3);
 
   return task;
 }
