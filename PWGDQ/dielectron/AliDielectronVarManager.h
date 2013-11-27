@@ -216,10 +216,26 @@ public:
     kThetaSqCS,              // squared value of kThetaCS
     kPsiPair,                // phi in mother's rest frame in Collins-Soper picture
 	kPhivPair,               // angle between ee plane and the magnetic field (can be useful for conversion rejection)
-	kPairPlaneAngle,         // angle between ee plane and strong magnetic field
-	kRotPairx,               //ee plane vector
-	kRotPairy,               //ee plane vector
-	kRotPairz,               //ee plane vector
+	
+    kPairPlaneAngle1A,         // angle between ee decay plane and x'-z reaction plane by using V0-A
+    kPairPlaneAngle2A,         // angle between ee decay plane and (p1+p2) rot ez
+    kPairPlaneAngle3A,         // angle between ee decay plane and (p1+p2) rot (p1+p2)x'z
+    kPairPlaneAngle4A,         // angle between ee decay plane and x'-y' plane
+    kPairPlaneAngle1C,         // using v0-C
+    kPairPlaneAngle2C,
+    kPairPlaneAngle3C,
+    kPairPlaneAngle4C,
+    kPairPlaneAngle1AC,        // using v0-AC
+    kPairPlaneAngle2AC,
+    kPairPlaneAngle3AC,
+    kPairPlaneAngle4AC,
+    kPairPlaneAngle1Ran,       // using random reaction plane
+    kPairPlaneAngle2Ran,
+    kPairPlaneAngle3Ran,
+    kPairPlaneAngle4Ran,
+    kRandomRP,                //Random reaction plane
+    kDeltaPhiRandomRP,        //delta phi of the pair
+
 	kCos2PhiCS,              // Cosine of 2*phi in mother's rest frame in the Collins-Soper picture
     kCosTilPhiCS,            // Shifted phi depending on kThetaCS
     kCosPhiH2,               // cosine of pair phi for 2nd harmonic
@@ -1412,16 +1428,36 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   if ( values[AliDielectronVarManager::kDeltaPhiTPCrpH2] < -1.*TMath::Pi() )
     values[AliDielectronVarManager::kDeltaPhiTPCrpH2] += TMath::TwoPi(); 
 
-  //angle between ee plane and Mag/Reaction plane
-  values[AliDielectronVarManager::kPairPlaneAngle] = pair->PairPlaneAngle();
-  //ee plane vector
-  Double_t RotPairx = 0;
-  Double_t RotPairy = 0;
-  Double_t RotPairz = 0;
-  pair->GetRotPair(RotPairx,RotPairy,RotPairz);
-  values[AliDielectronVarManager::kRotPairx]=RotPairx;
-  values[AliDielectronVarManager::kRotPairy]=RotPairy;
-  values[AliDielectronVarManager::kRotPairz]=RotPairz;
+  //Calculate the angle between electrons decay plane and variables 1-4
+  values[AliDielectronVarManager::kPairPlaneAngle1A] = pair->GetPairPlaneAngle(values[AliDielectronVarManager::kv0ArpH2],1);
+  values[AliDielectronVarManager::kPairPlaneAngle2A] = pair->GetPairPlaneAngle(values[AliDielectronVarManager::kv0ArpH2],2);
+  values[AliDielectronVarManager::kPairPlaneAngle3A] = pair->GetPairPlaneAngle(values[AliDielectronVarManager::kv0ArpH2],3);
+  values[AliDielectronVarManager::kPairPlaneAngle4A] = pair->GetPairPlaneAngle(values[AliDielectronVarManager::kv0ArpH2],4);
+
+  values[AliDielectronVarManager::kPairPlaneAngle1C] = pair->GetPairPlaneAngle(values[AliDielectronVarManager::kv0CrpH2],1);
+  values[AliDielectronVarManager::kPairPlaneAngle2C] = pair->GetPairPlaneAngle(values[AliDielectronVarManager::kv0CrpH2],2);
+  values[AliDielectronVarManager::kPairPlaneAngle3C] = pair->GetPairPlaneAngle(values[AliDielectronVarManager::kv0CrpH2],3);
+  values[AliDielectronVarManager::kPairPlaneAngle4C] = pair->GetPairPlaneAngle(values[AliDielectronVarManager::kv0CrpH2],4);
+
+  values[AliDielectronVarManager::kPairPlaneAngle1AC] = pair->GetPairPlaneAngle(values[AliDielectronVarManager::kv0ACrpH2],1);
+  values[AliDielectronVarManager::kPairPlaneAngle2AC] = pair->GetPairPlaneAngle(values[AliDielectronVarManager::kv0ACrpH2],2);
+  values[AliDielectronVarManager::kPairPlaneAngle3AC] = pair->GetPairPlaneAngle(values[AliDielectronVarManager::kv0ACrpH2],3);
+  values[AliDielectronVarManager::kPairPlaneAngle4AC] = pair->GetPairPlaneAngle(values[AliDielectronVarManager::kv0ACrpH2],4);
+
+  //Random reaction plane
+  values[AliDielectronVarManager::kRandomRP] = (TMath::Pi()/2.0)*((Double_t)rand()/RAND_MAX * 2.0 -1.0 );
+  //delta phi of pair fron random reaction plane
+  values[AliDielectronVarManager::kDeltaPhiRandomRP] = values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kRandomRP];
+  // keep the interval [-pi,+pi]
+  if ( values[AliDielectronVarManager::kDeltaPhiRandomRP] > TMath::Pi() )
+    values[AliDielectronVarManager::kDeltaPhiRandomRP] -= TMath::TwoPi();
+
+  values[AliDielectronVarManager::kPairPlaneAngle1Ran]= pair->GetPairPlaneAngle(values[AliDielectronVarManager::kRandomRP],1);
+  values[AliDielectronVarManager::kPairPlaneAngle2Ran]= pair->GetPairPlaneAngle(values[AliDielectronVarManager::kRandomRP],2);
+  values[AliDielectronVarManager::kPairPlaneAngle3Ran]= pair->GetPairPlaneAngle(values[AliDielectronVarManager::kRandomRP],3);
+  values[AliDielectronVarManager::kPairPlaneAngle4Ran]= pair->GetPairPlaneAngle(values[AliDielectronVarManager::kRandomRP],4);
+
+
 
 
   AliDielectronMC *mc=AliDielectronMC::Instance();

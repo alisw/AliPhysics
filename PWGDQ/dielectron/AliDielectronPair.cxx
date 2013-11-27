@@ -252,45 +252,6 @@ void AliDielectronPair::GetThetaPhiCM(Double_t &thetaHE, Double_t &phiHE, Double
   }
 }
 
-//______________________________________________
-void AliDielectronPair::GetRotPair(Double_t &RotPairx, Double_t &RotPairy, Double_t &RotPairz) const
-{
-  // calculation of rotation p1 p2
-  Double_t px1=-9999.,py1=-9999.,pz1=-9999.;
-  Double_t px2=-9999.,py2=-9999.,pz2=-9999.;
-
-  px1 = fD1.GetPx();
-  py1 = fD1.GetPy();
-  pz1 = fD1.GetPz();
-
-  px2 = fD2.GetPx();
-  py2 = fD2.GetPy();
-  pz2 = fD2.GetPz();
-
-  // normal vector of ee plane
-  Double_t pnorx = py1*pz2 - pz1*py2;
-  Double_t pnory = pz1*px2 - px1*pz2;
-  Double_t pnorz = px1*py2 - py1*px2;
-  Double_t pnor  = TMath::Sqrt( pnorx*pnorx + pnory*pnory + pnorz*pnorz );
-
-  //unit vector
-  Double_t upnx = -9999.;
-  Double_t upny = -9999.;
-  Double_t upnz = -9999.;
-  if (pnor !=0) 
-  {
-	upnx= pnorx/pnor;
-	upny= pnory/pnor;
-	upnz= pnorz/pnor;
-  }
-
-
-  RotPairx = upnx;
-  RotPairy = upny;
-  RotPairz = upnz;
-
-}
-
 
 //______________________________________________
 Double_t AliDielectronPair::PsiPair(Double_t MagField) const
@@ -653,11 +614,11 @@ Double_t AliDielectronPair::PhivPair(Double_t MagField) const
 }
 
 //______________________________________________
-Double_t AliDielectronPair::PairPlaneAngle() const
+Double_t AliDielectronPair::GetPairPlaneAngle(const Double_t v0rpH2,const Int_t VariNum)const
 {
 
-  // Calculate the angle between electron pair plane and VZERO-C reaction plane for 2nd harmonic
-
+  // Calculate the angle between electron pair plane and variables
+  // kv0rpH2 is reaction plane angle using V0-A,C,AC,Random
 
   Double_t px1=-9999.,py1=-9999.,pz1=-9999.;
   Double_t px2=-9999.,py2=-9999.,pz2=-9999.;
@@ -673,7 +634,7 @@ Double_t AliDielectronPair::PairPlaneAngle() const
   //p1+p2
   Double_t px = px1+px2;
   Double_t py = py1+py2;
-  //Double_t pz = pz1+pz2;
+  Double_t pz = pz1+pz2;
 
   // normal vector of ee plane
   Double_t pnorx = py1*pz2 - pz1*py2;
@@ -681,46 +642,85 @@ Double_t AliDielectronPair::PairPlaneAngle() const
   Double_t pnorz = px1*py2 - py1*px2;
   Double_t pnor  = TMath::Sqrt( pnorx*pnorx + pnory*pnory + pnorz*pnorz );
 
-  //unit vector  
+  //unit vector
   Double_t upnx = -9999.;
   Double_t upny = -9999.;
   Double_t upnz = -9999.;
 
-  if (pnor !=0) 
-  {
-	upnx= pnorx/pnor;
-	upny= pnory/pnor;
-	upnz= pnorz/pnor;
-  } 
+  if (pnor !=0)
+    {
+      upnx= pnorx/pnor;
+      upny= pnory/pnor;
+      upnz= pnorz/pnor;
+    }
 
-  // normal vector of strong magnetic field plane
-  //rotation coordinates (x,y,z)->(x',y',z')
-  //(p1+p2),(0,0,1)
-  Double_t ax = py;
-  Double_t ay = -px;
-  Double_t az = 0.0;
 
-  Double_t denomHelper = ax*ax + ay*ay +az*az;
-  Double_t uax = -9999.;
-  Double_t uay = -9999.;
-  Double_t uaz = -9999.;
-  if (denomHelper !=0)  {
-	 uax = ax/TMath::Sqrt(denomHelper);
-	 uay = ay/TMath::Sqrt(denomHelper);
-	 uaz = az/TMath::Sqrt(denomHelper);
-  }
-  //PM is the angle between Pair plane and Magnetic field plane
-  Double_t cosPM = upnx*uax + upny*uay + upnz*uaz;
-  Double_t PM = TMath::ACos(cosPM);
+  Double_t ax = -9999.;
+  Double_t ay = -9999.;
+  Double_t az = -9999.;
 
-  //keep interval [0,pi/2]
-  if(PM > TMath::Pi()/2){
-    PM -= TMath::Pi();
-    PM *= -1.0;
+  //variable 1
+  //seeing the angle between ee decay plane and reaction plane by using V0-A,C,AC,Random
+	  if(VariNum == 1){
+		ax = TMath::Sin(v0rpH2);
+		ay = -TMath::Cos(v0rpH2);
+		az = 0.0;
+	  }
 
-  }
-  return PM;
+
+	//variable 2
+	//seeing the angle between ee decay plane and (p1+p2) rot ez
+	  else if (VariNum == 2 ){
+		ax = py;
+		ay = -px;
+		az = 0.0;
+	  }
+
+	//variable 3
+	//seeing the angle between ee decay plane and (p1+p2) rot (p1+p2)x'z
+	  else if (VariNum == 3 ){
+		Double_t rotpx = px*TMath::Cos(v0rpH2)+py*TMath::Sin(v0rpH2);
+		//Double_t rotpy = 0.0;
+		// Double_t rotpz = pz;
+
+		ax = py*pz;
+		ay = pz*rotpx-pz*px;
+		az = -rotpx*py;
+	  }
+
+	//variable 4
+	//seeing the angle between ee decay plane and (p1+p2) rot ey'
+	  else if (VariNum == 4){
+		ax = 0.0;
+		ay = 0.0;
+		az = pz;
+	  }
+
+	Double_t denomHelper = ax*ax + ay*ay +az*az;
+	Double_t uax = -9999.;
+	Double_t uay = -9999.;
+	Double_t uaz = -9999.;
+
+	if (denomHelper !=0) {
+	  uax = ax/TMath::Sqrt(denomHelper);
+	  uay = ay/TMath::Sqrt(denomHelper);
+	  uaz = az/TMath::Sqrt(denomHelper);
+	}
+
+	//PM is the angle between Pair plane and a plane decided by using variable 1-4
+
+	Double_t cosPM = upnx*uax + upny*uay + upnz*uaz;
+	Double_t PM = TMath::ACos(cosPM);
+	
+	//keep interval [0,pi/2]
+	if(PM > TMath::Pi()/2){
+	  PM -= TMath::Pi();
+	  PM *= -1.0;
+	  
+	}
+	return PM;
 }
+
 
 
 //______________________________________________

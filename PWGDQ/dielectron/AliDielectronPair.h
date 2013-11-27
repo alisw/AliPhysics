@@ -134,17 +134,13 @@ public:
 
   Double_t PsiPair(Double_t MagField)const; //Angle cut w.r.t. to magnetic field
   Double_t PhivPair(Double_t MagField)const; //Angle of ee plane w.r.t. to magnetic field
-  //  Double_t PairPlanev0rpH2Angle(Double_t kv0CrpH2)const;
-  // Double_t PairPlaneMagAngle(Double_t kv0CrpH2)const;
-  Double_t PairPlaneAngle()const;
+
+  //Calculate the angle between ee decay plane and variables
+  Double_t GetPairPlaneAngle(const Double_t kv0CrpH2, const Int_t VariNum) const;
 
   Double_t GetCosPointingAngle(const AliVVertex *primVtx) const;
   Double_t GetArmAlpha() const;
   Double_t GetArmPt()    const;
-
-  // calculate rotation of p1 p2
-  void GetRotPair(Double_t &RotPairx, Double_t &RotPairy, Double_t &RotPairz) const;
-  
 
   // internal KF particle
   const AliKFParticle& GetKFParticle()       const { return fPair; }
