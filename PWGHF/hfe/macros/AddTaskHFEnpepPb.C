@@ -13,8 +13,8 @@ AliAnalysisTask *AddTaskHFEnpepPb(Bool_t MCthere,
   const double	kDefDCAr	=   1.;
   const double	kDefDCAz	=   2.;
   const double	kDefTOFs	=   3.;
-  const double  kDefEtaIncMin = -0.6;
-  const double  kDefEtaIncMax = 0.6;
+  const double  kDefEtaIncMin = -0.8;
+  const double  kDefEtaIncMax = 0.8;
 
   // TPC PID Cuts Inclusive leg:
   // NEW SPLINES + CORRECTIONS: mean 0, width 1

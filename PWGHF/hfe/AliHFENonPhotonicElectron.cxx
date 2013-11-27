@@ -68,6 +68,8 @@ AliHFENonPhotonicElectron::AliHFENonPhotonicElectron(const char *name, const Cha
   ,fPIDBackground	(0x0)
   ,fPIDBackgroundQA	(0)
   ,fkPIDRespons		(NULL)
+  ,fPtBinning()
+  ,fEtaBinning()
   ,fAlgorithmMA		(kTRUE)
   ,fChi2OverNDFCut	(3.0)
   ,fMaxDCA		(3.0)
@@ -110,6 +112,8 @@ AliHFENonPhotonicElectron::AliHFENonPhotonicElectron()
   ,fPIDBackground	(0x0)
   ,fPIDBackgroundQA	(0)
   ,fkPIDRespons		(NULL)
+  ,fPtBinning()
+  ,fEtaBinning()
   ,fAlgorithmMA		(kTRUE)
   ,fChi2OverNDFCut	(3.0)
   ,fMaxDCA		(3.0)
@@ -152,6 +156,8 @@ AliHFENonPhotonicElectron::AliHFENonPhotonicElectron(const AliHFENonPhotonicElec
   ,fPIDBackground	(ref.fPIDBackground)
   ,fPIDBackgroundQA	(ref.fPIDBackgroundQA)
   ,fkPIDRespons		(ref.fkPIDRespons)
+  ,fPtBinning(ref.fPtBinning)
+  ,fEtaBinning(ref.fEtaBinning)
   ,fAlgorithmMA		(ref.fAlgorithmMA)
   ,fChi2OverNDFCut	(ref.fChi2OverNDFCut)
   ,fMaxDCA		(ref.fMaxDCA)
@@ -237,13 +243,15 @@ void AliHFENonPhotonicElectron::Init()
   fListOutput->Add(fPIDBackgroundQA->MakeList("HFENP_PID_Background"));
   fPIDBackground->SortDetectors();
 
-  Int_t nBinsPt = 35;
-  //Double_t binLimPt[25] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 3., 3.5, 4., 5., 6.};
-  Double_t binLimPt[36] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};
-  const Int_t kBinsEtaInclusive = 8;
-  Double_t binLimEtaInclusive[kBinsEtaInclusive+1] = {-0.8, -0.6, -0.4, -0.2, 0., 0.2, 0.4, 0.6, 0.8};
+  const Int_t kBinsPtDefault = 35;
+  Double_t binLimPtDefault[kBinsPtDefault+1] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};
+  const Int_t kBinsEtaInclusiveDefault = 8;
+  Double_t binLimEtaInclusiveDefault[kBinsEtaInclusiveDefault+1] = {-0.8, -0.6, -0.4, -0.2, 0., 0.2, 0.4, 0.6, 0.8};
   const Int_t kBinsEtaAssociated = 30;
   Double_t binLimEtaAssociat[kBinsEtaAssociated+1] = {-1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5};
+
+  if(!fPtBinning.GetSize()) fPtBinning.Set(kBinsPtDefault+1, binLimPtDefault);
+  if(!fEtaBinning.GetSize()) fEtaBinning.Set(kBinsEtaInclusiveDefault+1, binLimEtaInclusiveDefault);
 
   //Int_t nBinsP = 400;
   //Double_t minP = 0.0;
@@ -292,25 +300,25 @@ void AliHFENonPhotonicElectron::Init()
   // Constrain histograms
   const Int_t nDimSingle=4;
   const Int_t nDimPair=9;
-  Int_t nBinPair[nDimPair] = {nBinsPhi,nBinsC,nBinsPt,nBinsInvMass,nBinsSource,nBinsAngle,nBinsPt,kBinsEtaInclusive,kBinsEtaAssociated};
+  Int_t nBinPair[nDimPair] = {nBinsPhi,nBinsC,fPtBinning.GetSize()-1,nBinsInvMass,nBinsSource,nBinsAngle,fPtBinning.GetSize()-1,fEtaBinning.GetSize()-1,kBinsEtaAssociated};
   
   // Associated Electron
-  Int_t nBinAssElectron[nDimSingle] = {nBinsC,nBinsPt,nBinsSource,kBinsEtaAssociated};
+  Int_t nBinAssElectron[nDimSingle] = {nBinsC,fPtBinning.GetSize()-1,nBinsSource,kBinsEtaAssociated};
   fAssElectron = new THnSparseF("fAssElectron","fAssElectron",nDimSingle,nBinAssElectron);
   fAssElectron->SetBinEdges(0,binLimC);
-  fAssElectron->SetBinEdges(1,binLimPt);
+  fAssElectron->SetBinEdges(1,fPtBinning.GetArray());
   fAssElectron->SetBinEdges(2,binLimSource);
   fAssElectron->SetBinEdges(3,binLimEtaAssociat);
   fAssElectron->Sumw2();
   AliDebug(2,"AliHFENonPhotonicElectron: fAssElectron");
 
   // Inclusive Electron
-  Int_t nBinIncElectron[nDimSingle] = {nBinsC,nBinsPt,nBinsSource,kBinsEtaInclusive};
+  Int_t nBinIncElectron[nDimSingle] = {nBinsC,fPtBinning.GetSize()-1,nBinsSource,fEtaBinning.GetSize()-1};
   fIncElectron = new THnSparseF("fIncElectron","fIncElectron",nDimSingle,nBinIncElectron);
   fIncElectron->SetBinEdges(0,binLimC);
-  fIncElectron->SetBinEdges(1,binLimPt);
+  fIncElectron->SetBinEdges(1,fPtBinning.GetArray());
   fIncElectron->SetBinEdges(2,binLimSource);
-  fIncElectron->SetBinEdges(3,binLimEtaInclusive);
+  fIncElectron->SetBinEdges(3,fEtaBinning.GetArray());
   fIncElectron->Sumw2();
   AliDebug(2,"AliHFENonPhotonicElectron: fIncElectron");
 
@@ -318,12 +326,12 @@ void AliHFENonPhotonicElectron::Init()
   fUSign = new THnSparseF("fUSign","fUSign",nDimPair,nBinPair);
   fUSign->SetBinEdges(0,binLimPhi);
   fUSign->SetBinEdges(1,binLimC);
-  fUSign->SetBinEdges(2,binLimPt);
+  fUSign->SetBinEdges(2,fPtBinning.GetArray());
   fUSign->SetBinEdges(3,binLimInvMass);
   fUSign->SetBinEdges(4,binLimSource);
   fUSign->SetBinEdges(5,binLimAngle);
-  fUSign->SetBinEdges(6,binLimPt);
-  fUSign->SetBinEdges(7,binLimEtaInclusive);
+  fUSign->SetBinEdges(6,fPtBinning.GetArray());
+  fUSign->SetBinEdges(7,fEtaBinning.GetArray());
   fUSign->SetBinEdges(8,binLimEtaAssociat);
   fUSign->Sumw2();
   AliDebug(2,"AliHFENonPhotonicElectron: fUSign");
@@ -332,12 +340,12 @@ void AliHFENonPhotonicElectron::Init()
   fLSign = new THnSparseF("fLSign","fLSign",nDimPair,nBinPair);
   fLSign->SetBinEdges(0,binLimPhi);
   fLSign->SetBinEdges(1,binLimC);
-  fLSign->SetBinEdges(2,binLimPt);
+  fLSign->SetBinEdges(2,fPtBinning.GetArray());
   fLSign->SetBinEdges(3,binLimInvMass);
   fLSign->SetBinEdges(4,binLimSource);
   fLSign->SetBinEdges(5,binLimAngle);
-  fLSign->SetBinEdges(6,binLimPt);
-  fLSign->SetBinEdges(7,binLimEtaInclusive);
+  fLSign->SetBinEdges(6,fPtBinning.GetArray());
+  fLSign->SetBinEdges(7,fEtaBinning.GetArray());
   fLSign->SetBinEdges(8,binLimEtaAssociat);
   fLSign->Sumw2();
   AliDebug(2,"AliHFENonPhotonicElectron: fLSign");
@@ -347,15 +355,15 @@ void AliHFENonPhotonicElectron::Init()
   Double_t binLimMatches[nBinsMatches+1];
   for(int ib = 0; ib <= nBinsMatches; ib++) binLimMatches[ib] = ib;
   const Int_t nDimMatches = 3;  // centrality, pt_inc, number of matches 
-  const Int_t nBinsMatchHist[nDimMatches] = {nBinsC, nBinsPt, nBinsMatches};
+  const Int_t nBinsMatchHist[nDimMatches] = {nBinsC, fPtBinning.GetSize()-1, nBinsMatches};
   fUSmatches = new THnSparseF("fUSmatches", "fUSmatches", nDimMatches, nBinsMatchHist);
   fUSmatches->SetBinEdges(0,binLimC);
-  fUSmatches->SetBinEdges(1,binLimPt);
+  fUSmatches->SetBinEdges(1,fPtBinning.GetArray());
   fUSmatches->SetBinEdges(2,binLimMatches);
 
   fLSmatches = new THnSparseF("fLSmatches", "fLSmatches", nDimMatches, nBinsMatchHist);
   fLSmatches->SetBinEdges(0,binLimC);
-  fLSmatches->SetBinEdges(1,binLimPt);
+  fLSmatches->SetBinEdges(1,fPtBinning.GetArray());
   fLSmatches->SetBinEdges(2,binLimMatches);
 
 /*

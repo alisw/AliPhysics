@@ -57,7 +57,7 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb(Bool_t useMC, Bool_t isAOD, TString appendi
                 Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kTRUE)
 {
   Bool_t kAnalyseTaggedTracks = kFALSE;
-  Bool_t kApplyPreselection = kFALSE;
+  Bool_t kApplyPreselection = kTRUE;
 
   //***************************************//
   //        Setting up the HFE cuts        //
@@ -70,16 +70,17 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb(Bool_t useMC, Bool_t isAOD, TString appendi
   hfecuts->SetMinNClustersTPCPID(TPCclPID);
   hfecuts->SetMinNClustersITS(ITScl);
   hfecuts->SetMinRatioTPCclusters(0.6);
-  hfecuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
+  hfecuts->SetTPCmodes(AliHFEextraCuts::kFoundAll, AliHFEextraCuts::kFoundAllOverFindable);
   hfecuts->SetCutITSpixel(itshitpixel);
   hfecuts->SetCheckITSLayerStatus(kFALSE);
   hfecuts->SetMaxChi2perClusterITS(itsChi2PerClusters);
   hfecuts->SetEtaRange(etami,etama);
   hfecuts->SetFractionOfSharedTPCClusters(tpcClShared);
-  if(isAOD) hfecuts->SetAODFilterBit(4);
+  hfecuts->SetAcceptKinkMothers();
+  if(isAOD) hfecuts->SetAODFilterBit(2);
   
-  //if((iPixelAny==AliHFEextraCuts::kAny) || (iPixelAny==AliHFEextraCuts::kSecond))     
-  //hfecuts->SetProductionVertex(0,7,0,7);
+  if((iPixelAny==AliHFEextraCuts::kAny) || (iPixelAny==AliHFEextraCuts::kSecond))     
+  hfecuts->SetProductionVertex(0,7,0,7);
  
   hfecuts->SetMaxImpactParam(DCAxy,DCAz);
   hfecuts->SetUseMixedVertex(kTRUE);
@@ -108,6 +109,7 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb(Bool_t useMC, Bool_t isAOD, TString appendi
   task->SetPbPbAnalysis();
   task->SetRemovePileUp(kFALSE);
   task->SetHFECuts(hfecuts);
+  task->SetRejectKinkMother(kFALSE);
   task->GetPIDQAManager()->SetHighResolutionHistos();
 
   // Determine the centrality estimator
@@ -125,14 +127,11 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb(Bool_t useMC, Bool_t isAOD, TString appendi
   // ANALYSIS/macros/AddTaskESDFilter.C    //
   //***************************************//
   if(kApplyPreselection){
-	AliESDtrackCuts* esdTrackCutsH = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE);
-	esdTrackCutsH->SetMaxDCAToVertexXY(2.4);
-	esdTrackCutsH->SetMaxDCAToVertexZ(3.2);
-	esdTrackCutsH->SetDCAToVertex2D(kTRUE); 
-	esdTrackCutsH->SetMaxChi2PerClusterITS(1e10);
-	task->SetHFECutsPreselect(esdTrackCutsH);
-	printf("Put a preselection cut\n");
-	task->SetFillNoCuts(kTRUE);
+    AliESDtrackCuts* esdTrackCutsH = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+    esdTrackCutsH->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+    task->SetHFECutsPreselect(esdTrackCutsH);
+    printf("Put a preselection cut\n");
+    task->SetFillNoCuts(kTRUE);
   }
 
   //***************************************//
@@ -247,8 +246,8 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb(Bool_t useMC, Bool_t isAOD, TString appendi
   hfeBackgroundCuts->SetMinNClustersTPC(assTPCcl);
   hfeBackgroundCuts->SetMinNClustersTPCPID(assTPCPIDcl);
   hfeBackgroundCuts->SetMaxImpactParam(assDCAr,assDCAz);
-  if(isAOD) hfeBackgroundCuts->SetAODFilterBit(4);
-  hfeBackgroundCuts->SetQAOn();			        // QA
+  if(isAOD) hfeBackgroundCuts->SetAODFilterBit(0);
+  //hfeBackgroundCuts->SetQAOn();			        // QA
 
   AliHFEpid *pidbackground = backe->GetPIDBackground();
   if(useMC) pidbackground->SetHasMCData(kTRUE);
@@ -267,7 +266,7 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb(Bool_t useMC, Bool_t isAOD, TString appendi
     Float_t tpcparamhigh=paramsTPCdEdxcuthighAssoc[a];
     pidbackground->ConfigureTPCcentralityCut(a,cutmodelAssoc,tpcparamlow,tpcparamhigh);
   }
-  backe->GetPIDBackgroundQAManager()->SetHighResolutionHistos();
+  //backe->GetPIDBackgroundQAManager()->SetHighResolutionHistos();
   backe->SetHFEBackgroundCuts(hfeBackgroundCuts);
 
   // Selection of associated tracks for the pool
@@ -279,6 +278,8 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb(Bool_t useMC, Bool_t isAOD, TString appendi
 
   // apply opening angle cut to reduce file size
   backe->SetMaxInvMass(0.3);
+  backe->SetPtBinning(sizept, ptbinning);
+  backe->SetEtaBinning(sizeeta, etabinning);
 
   task->SetHFEBackgroundSubtraction(backe);
 
