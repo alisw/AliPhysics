@@ -12,8 +12,9 @@
 // Authors: Michele Floris, CERN, Philip Versteeg, UU, Redmer Bertens, UU
 //-------------------------------------------------------------------------
 
-class AliAODEvent;
 class TH1I;
+class AliAODEvent;
+class AliPIDResponse;  
 class AliAODMCParticle;
 class AliAODTrack;
 
@@ -29,7 +30,7 @@ class AliSpectraAODTrackCuts : public TNamed
   enum { kTrkBit = 0, kTrkCuts, kTrkEta, kTrkDCA, kTrkP, kTrkPt,kTrkPtTOF,kTOFMatching,kTrTOFout,kTrTIME,kTrTOFpid,kAccepted,kNTrkCuts};
   
   
- AliSpectraAODTrackCuts() : TNamed(), fIsSelected(0), fTrackBits(0), fMinTPCcls(0), fEtaCutMin(0), fEtaCutMax(0),fDCACut(0), fPCut(0), fPtCut(0),fYCut(0), fPtCutTOFMatching(0), fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fTrack(0) {}
+ AliSpectraAODTrackCuts() : TNamed(), fIsSelected(0), fTrackBits(0), fMinTPCcls(0), fEtaCutMin(0), fEtaCutMax(0),fDCACut(0), fPCut(0), fPtCut(0),fYCut(0), fPtCutTOFMatching(0), fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fTrack(0), fPIDResponse(0) {}
   
   AliSpectraAODTrackCuts(const char *name);
   virtual  ~AliSpectraAODTrackCuts() {} // To be implemented
@@ -93,13 +94,14 @@ class AliSpectraAODTrackCuts : public TNamed
   TH1F             *fHistoNMatchedNeg;       // Matched negative tracks
   TH2F             *fHistoEtaPhiHighPt;       // EtaPhi distr at high pt (>1.5 GeV/c)
   AliAODTrack      *fTrack;           //! Track pointer
+  AliPIDResponse   *fPIDResponse;     // ! PID response object
   static const char * kBinLabel[]; // labels of stat histo
 
    
   AliSpectraAODTrackCuts(const AliSpectraAODTrackCuts&);
   AliSpectraAODTrackCuts& operator=(const AliSpectraAODTrackCuts&);
    
-  ClassDef(AliSpectraAODTrackCuts, 1);
+  ClassDef(AliSpectraAODTrackCuts, 2);
 };
 #endif
 

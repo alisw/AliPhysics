@@ -28,6 +28,7 @@
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliAODTrack.h"
+#include "AliPIDResponse.h"   
 #include "AliExternalTrackParam.h"
 #include "AliAODMCParticle.h"
 #include "AliAODEvent.h"
@@ -57,8 +58,7 @@ ClassImp(AliSpectraAODTrackCuts)
 
 
 AliSpectraAODTrackCuts::AliSpectraAODTrackCuts(const char *name) : TNamed(name, "AOD Track Cuts"), fIsSelected(0), fTrackBits(0), fMinTPCcls(0), fEtaCutMin(0), fEtaCutMax(0), fDCACut(0), fPCut(0), fPtCut(0), fYCut(0),
-  fPtCutTOFMatching(0), fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fTrack(0)
-  
+  fPtCutTOFMatching(0), fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fTrack(0), fPIDResponse(0)
 {
   // Constructor
   fHistoCuts = new TH1I("fTrkCuts", "Track Cuts", kNTrkCuts, -0.5, kNTrkCuts - 0.5);
@@ -197,14 +197,28 @@ Bool_t AliSpectraAODTrackCuts::CheckTOFMatching(Bool_t FillHistStat)
     if(FillHistStat)fHistoCuts->Fill(kTrkPtTOF);
     if(fTrack->Charge()>0)fHistoNSelectedPos->Fill(fTrack->Pt());
     else fHistoNSelectedNeg->Fill(fTrack->Pt());
+    
+    // Get PID response object, if needed
+    if(!fPIDResponse) {
+      AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+      AliInputEventHandler* inputHandler = (AliInputEventHandler*)(man->GetInputEventHandler());
+      fPIDResponse = inputHandler->GetPIDResponse();
+    }
+    if(!fPIDResponse) {
+      AliFatal("Cannot get pid response");
+      return 0;
+    }
+    
+    if(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,fTrack)==0)return kFALSE; 
+    
+    //check the bits of the selected particles
     UInt_t status; 
     status=fTrack->GetStatus();
     if((status&AliAODTrack::kTOFout)&&FillHistStat)fHistoCuts->Fill(kTrTOFout);
     if((status&AliAODTrack::kTIME)&&FillHistStat)fHistoCuts->Fill(kTrTIME);
     if((status&AliAODTrack::kTOFpid)&&FillHistStat)fHistoCuts->Fill(kTrTOFpid);
     
-    if((status&AliAODTrack::kTOFout)==0 || (status&AliAODTrack::kTIME)==0 || (status&AliAODTrack::kTOFpid)==0)return kFALSE; 
-
+    
     if(FillHistStat)fHistoCuts->Fill(kTOFMatching);
     if(fTrack->Charge()>0)fHistoNMatchedPos->Fill(fTrack->Pt());
     else fHistoNMatchedNeg->Fill(fTrack->Pt());
