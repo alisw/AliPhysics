@@ -25,7 +25,9 @@
 //   used to construct the detector response function
 // and unfolds jet spectra with respect to the event plane. The user can choose
 // different alrogithms for unfolding which are available in (ali)root. RooUnfold 
-// libraries must be present on the system (see http://hepunx.rl.ac.uk/~adye/software/unfold/RooUnfold.html)
+// libraries must be present on the system (see http://hepunx.rl.ac.uk/~adye/software/unfold/RooUnfold.html).
+// A test mode is available in which the spectrum is unfolded with a generated unity response
+// matrix.
 // 
 // The weak spot of this class is the function PrepareForUnfolding, which will read
 // output from two output files and expects histograms with certain names and binning. 
@@ -50,6 +52,7 @@
 #include "TLine.h"
 #include "TMath.h"
 #include "TVirtualFitter.h"
+#include "TFitResultPtr.h"
 // aliroot includes
 #include "AliUnfolding.h"
 #include "AliAnaChargedJetResponseMaker.h"
@@ -65,7 +68,7 @@ using namespace std;
 //_____________________________________________________________________________
 AliJetFlowTools::AliJetFlowTools() :
     fResponseMaker      (new AliAnaChargedJetResponseMaker()),
-    fPower              (new TF1("fPower","[0]*TMath::Power(x,-([1]))",0.,200.)),
+    fPower              (new TF1("fPower","[0]*TMath::Power(x,-([1]))",0.,300.)),
     fSaveFull           (kFALSE),
     fActiveString       (""),
     fActiveDir          (0x0),
@@ -77,11 +80,13 @@ AliJetFlowTools::AliJetFlowTools() :
     fDetectorResponse   (0x0),
     fBetaIn             (.1),
     fBetaOut            (.1),
-    fAvoidRoundingError (kTRUE),
+    fAvoidRoundingError (kFALSE),
     fUnfoldingAlgorithm (kChi2),
     fPrior              (kPriorMeasured),
     fBinsTrue           (0x0),
     fBinsRec            (0x0),
+    fBinsTruePrior      (0x0),
+    fBinsRecPrior       (0x0),
     fSVDRegIn           (5),
     fSVDRegOut          (5),
     fSVDToy             (kTRUE),
@@ -92,10 +97,16 @@ AliJetFlowTools::AliJetFlowTools() :
     fFitMin             (60.),
     fFitMax             (105.),
     fFitStart           (75.),
+    fTestMode           (kFALSE),
+    fNoDphi             (kFALSE),
     fRawInputProvided   (kFALSE),
+    fEventPlaneRes      (.63),
+    fUseDetectorResponse(kTRUE),
+    fTrainPower         (kTRUE),
     fRMSSpectrumIn      (0x0),
     fRMSSpectrumOut     (0x0),
     fRMSRatio           (0x0),
+    fRMSV2              (0x0),
     fDeltaPtDeltaPhi    (0x0),
     fJetPtDeltaPhi      (0x0),
     fSpectrumIn         (0x0),
@@ -140,9 +151,15 @@ void AliJetFlowTools::Make() {
 
     // get the full response matrix from the dpt and the detector response
     fDetectorResponse = NormalizeTH2D(fDetectorResponse);
-    // get the full response matrix
-    fFullResponseIn  = MatrixMultiplicationTH2D(fDptIn, fDetectorResponse);
-    fFullResponseOut = MatrixMultiplicationTH2D(fDptOut, fDetectorResponse);
+    // get the full response matrix. if test mode is chosen, the full response is replace by a unity matrix
+    // so that unfolding should return the initial spectrum
+    if(!fTestMode) {
+        fFullResponseIn  = (fUseDetectorResponse) ? MatrixMultiplicationTH2D(fDptIn, fDetectorResponse) : fDptIn;
+        fFullResponseOut = (fUseDetectorResponse) ? MatrixMultiplicationTH2D(fDptOut, fDetectorResponse) : fDptOut;
+    } else {
+        fFullResponseIn = GetUnityResponse(fBinsTrue, fBinsRec, TString("in"));
+        fFullResponseOut = GetUnityResponse(fBinsTrue, fBinsRec, TString("out"));
+    }
     // normalize each slide of the response to one
     NormalizeTH2D(fFullResponseIn);
     NormalizeTH2D(fFullResponseOut);
@@ -186,6 +203,27 @@ void AliJetFlowTools::Make() {
                 TString("in"));
             printf(" > Spectrum (in plane) unfolded using kSVD unfolding < \n");
         } break;
+        case kNone : {  // do nothing, just rebin and optionally smooothen the spectrum
+            resizedResonseIn->SetNameTitle("measuredSpectrumIn", "measured spectrum, in plane");
+            if(fSmoothenSpectrum) {     // see if we want to smooothen the spectrum
+                TH1D* resizedJetPtInJagged((TH1D*)resizedJetPtIn->Clone("cachedRawJetJaggedIn"));
+                resizedJetPtInJagged->SetNameTitle("measured spectrum before smoothening in", "measured spectrum, before smoothening in");
+                resizedJetPtInJagged = ProtectHeap(resizedJetPtInJagged);
+                resizedJetPtInJagged->Write();       // save the original
+                resizedJetPtIn->Sumw2();
+                TFitResultPtr r = resizedJetPtIn->Fit(fPower, "QWILS", "", fFitMin, fFitMax);
+                if((int)r == 0 ) { 
+                    for(Int_t i(0); i < resizedJetPtIn->GetNbinsX() + 1; i++) {
+                        if(resizedJetPtIn->GetBinCenter(i) > fFitStart) {     // from this pt value use extrapolation
+                            resizedJetPtIn->SetBinContent(i,fPower->Integral(resizedJetPtIn->GetXaxis()->GetBinLowEdge(i),resizedJetPtIn->GetXaxis()->GetBinUpEdge(i))/resizedJetPtIn->GetXaxis()->GetBinWidth(i));
+                        }
+                    }
+                } else printf(" > PANIC, SMOOTHENING FAILED < \n");
+            }
+            fUnfoldedIn = ProtectHeap(resizedJetPtIn, kTRUE, TString("in"));
+            convergedIn = kTRUE;
+        } break;
+        
         default : {
             printf(" > Selected unfolding method is not implemented yet ! \n");
             return;
@@ -237,6 +275,27 @@ void AliJetFlowTools::Make() {
                 TString("out"));
             printf(" > Spectrum (out of plane) unfolded using kSVD < \n");
         } break;
+        case kNone : {  // do nothing, just rebin and optionally smooothen the spectrum
+            resizedResonseOut->SetNameTitle("measuredSpectrumOut", "measured spectrum, out plane");
+            if(fSmoothenSpectrum) {     // see if we want to smooothen the spectrum
+                TH1D* resizedJetPtOutJagged((TH1D*)resizedJetPtOut->Clone("cachedRawJetJaggedOut"));
+                resizedJetPtOutJagged->SetNameTitle("measured spectrum before smoothening Out", "measured spectrum, before smoothening Out");
+                resizedJetPtOutJagged = ProtectHeap(resizedJetPtOutJagged);
+                resizedJetPtOutJagged->Write();       // save the original
+                resizedJetPtOut->Sumw2();
+                TFitResultPtr r = resizedJetPtOut->Fit(fPower, "QWILS", "", fFitMin, fFitMax);
+                if((int)r == 0) {
+                    for(Int_t i(0); i < resizedJetPtOut->GetNbinsX() + 1; i++) {
+                        if(resizedJetPtOut->GetBinCenter(i) > fFitStart) {     // from this pt value use extrapolation
+                            resizedJetPtOut->SetBinContent(i,fPower->Integral(resizedJetPtOut->GetXaxis()->GetBinLowEdge(i),resizedJetPtOut->GetXaxis()->GetBinUpEdge(i))/resizedJetPtOut->GetXaxis()->GetBinWidth(i));
+                        }
+                    }
+                }else printf(" > PANIC, SMOOTHENING FAILED < \n");
+
+            }
+            fUnfoldedOut = ProtectHeap(resizedJetPtOut, kTRUE, TString("out"));
+            convergedOut = kTRUE;
+        } break;
         default : {
             printf(" > Selected unfolding method is not implemented yet ! \n");
             return;
@@ -255,7 +314,7 @@ void AliJetFlowTools::Make() {
     fDetectorResponse->Write();
     // optional histograms
     if(fSaveFull) {
-        fSpectrumOut->SetNameTitle("[ORIG]JetSpectrum", "[INPUT] Jet spectrum, Out plane");
+        fSpectrumOut->SetNameTitle("[ORIG]JetSpectrum", "[INPUT]Jet spectrum, Out plane");
         fSpectrumOut->Write();
         fDptOutDist->SetNameTitle("[ORIG]DeltaPt", "#delta p_{T} distribution, Out plane");
         fDptOutDist->Write();
@@ -267,11 +326,12 @@ void AliJetFlowTools::Make() {
     // write general output histograms to file
     fActiveDir->cd();
     if(convergedIn && convergedOut && fUnfoldedIn && fUnfoldedOut) {
-        TGraphErrors* ratio = GetRatio((TH1D*)fUnfoldedIn->Clone("unfoldedLocal_in"), (TH1D*)fUnfoldedOut->Clone("unfoldedLocal_out"));
+        TGraphErrors* ratio(GetRatio((TH1D*)fUnfoldedIn->Clone("unfoldedLocal_in"), (TH1D*)fUnfoldedOut->Clone("unfoldedLocal_out")));
         if(ratio) {
             ratio->SetNameTitle("RatioInOutPlane", "Ratio in plane, out of plane jet spectrum");
             ratio->GetXaxis()->SetTitle("p_{T} [GeV/c]");
             ratio->GetYaxis()->SetTitle("yield IN / yield OUT");
+            ratio = ProtectHeap(ratio);
             ratio->Write();
             // write histo values to RMS files if both routines converged
             // input values are weighted by their uncertainty
@@ -279,7 +339,32 @@ void AliJetFlowTools::Make() {
                 if(fUnfoldedIn->GetBinError(i+1) > 0) fRMSSpectrumIn->Fill(fRMSSpectrumIn->GetBinCenter(i+1), fUnfoldedIn->GetBinContent(i+1), 1./TMath::Power(fUnfoldedIn->GetBinError(i+1), 2.));
                 if(fUnfoldedOut->GetBinError(i+1) > 0) fRMSSpectrumOut->Fill(fRMSSpectrumOut->GetBinCenter(i+1), fUnfoldedOut->GetBinContent(i+1), 1./TMath::Power(fUnfoldedOut->GetBinError(i+1), 2.));
                 if(fUnfoldedOut->GetBinContent(i+1) > 0) fRMSRatio->Fill(fRMSSpectrumIn->GetBinCenter(i+1), fUnfoldedIn->GetBinContent(i+1) / fUnfoldedOut->GetBinContent(i+1));
-            }
+           }
+        }
+        TGraphErrors* v2(GetV2((TH1D*)fUnfoldedIn->Clone("unfoldedLocal_inv2"), (TH1D*)fUnfoldedOut->Clone("unfoldedLocal_outv2")));
+        if(v2) {
+            v2->SetNameTitle("v2", "v_{2} from different in, out of plane yield");
+            v2->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+            v2->GetYaxis()->SetTitle("v_{2}");
+            v2 = ProtectHeap(v2);
+            v2->Write();
+        }
+    } else if (fUnfoldedOut && fUnfoldedIn) {
+        TGraphErrors* ratio(GetRatio((TH1D*)fUnfoldedIn->Clone("unfoldedLocal_in"), (TH1D*)fUnfoldedOut->Clone("unfoldedLocal_out"), TString(""), fBinsRec->At(fBinsRec->GetSize()-1)));
+        if(ratio) {
+            ratio->SetNameTitle("[NC]RatioInOutPlane", "[NC]Ratio in plane, out of plane jet spectrum");
+            ratio->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+            ratio->GetYaxis()->SetTitle("yield IN / yield OUT");
+            ratio = ProtectHeap(ratio);
+            ratio->Write();
+        }
+        TGraphErrors* v2(GetV2((TH1D*)fUnfoldedIn->Clone("unfoldedLocal_inv2"), (TH1D*)fUnfoldedOut->Clone("unfoldedLocal_outv2")));
+         if(v2) {
+            v2->SetNameTitle("v2", "v_{2} from different in, out of plane yield");
+            v2->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+            v2->GetYaxis()->SetTitle("v_{2}");
+            v2 = ProtectHeap(v2);
+            v2->Write();
         }
     }
     fDeltaPtDeltaPhi->Write();
@@ -317,12 +402,15 @@ Bool_t AliJetFlowTools::UnfoldSpectrumChi2(
         resizedJetPtLocalJagged = ProtectHeap(resizedJetPtLocalJagged);
         resizedJetPtLocalJagged->Write();       // save the original
         resizedJetPtLocal->Sumw2();
-        resizedJetPtLocal->Fit(fPower, "", "", fFitMin, fFitMax);
-        for(Int_t i(0); i < resizedJetPtLocal->GetNbinsX() + 1; i++) {
-            if(resizedJetPtLocal->GetBinCenter(i) > fFitStart) {     // from this pt value use extrapolation
-                resizedJetPtLocal->SetBinContent(i,fPower->Integral(resizedJetPtLocal->GetXaxis()->GetBinLowEdge(i),resizedJetPtLocal->GetXaxis()->GetBinUpEdge(i))/resizedJetPtLocal->GetXaxis()->GetBinWidth(i));
+        TFitResultPtr r = resizedJetPtLocal->Fit(fPower, "QWILS", "", fFitMin, fFitMax);
+        if((int)r == 0) {
+            for(Int_t i(0); i < resizedJetPtLocal->GetNbinsX() + 1; i++) {
+                if(resizedJetPtLocal->GetBinCenter(i) > fFitStart) {     // from this pt value use extrapolation
+                    resizedJetPtLocal->SetBinContent(i,fPower->Integral(resizedJetPtLocal->GetXaxis()->GetBinLowEdge(i),resizedJetPtLocal->GetXaxis()->GetBinUpEdge(i))/resizedJetPtLocal->GetXaxis()->GetBinWidth(i));
+                }
             }
-        }
+        }else printf(" > PANIC, SMOOTHENING FAILED < \n");
+
     }
     // unfolded local will be filled with the result of the unfolding
     TH1D *unfoldedLocal(new TH1D(Form("unfoldedLocal_%s", suffix.Data()), Form("unfoldedLocal_%s", suffix.Data()), fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
@@ -332,7 +420,22 @@ Bool_t AliJetFlowTools::UnfoldSpectrumChi2(
     TH1D* kinematicEfficiencyLocal = (TH1D*)kinematicEfficiency->Clone(Form("kinematicEfficiencyLocal_%s", suffix.Data()));
     // the initial guess for the unfolded pt spectrum, equal to the folded spectrum, but in 'true' bins
     TH1D *priorLocal = (TH1D*)unfoldingTemplate->Clone(Form("priorLocal_%s", suffix.Data()));
-   
+    if(fSmoothenSpectrum) {
+        TH1D* priorLocalJagged((TH1D*)priorLocal->Clone(Form("cachedRawJetLocalJagged_%s", suffix.Data())));
+        priorLocalJagged->SetNameTitle(Form("prior before smoothening %s", suffix.Data()), Form("prior before smoothening %s", suffix.Data()));
+        priorLocalJagged = ProtectHeap(priorLocalJagged);
+        priorLocalJagged->Write();       // save the original
+        priorLocal->Sumw2();
+        TFitResultPtr r = priorLocal->Fit(fPower, "WQILS", "", fFitMin, fFitMax);
+        if((int)r == 0) {
+            for(Int_t i(0); i < priorLocal->GetNbinsX() + 1; i++) {
+                if(priorLocal->GetBinCenter(i) > fFitStart) {     // from this pt value use extrapolation
+                    priorLocal->SetBinContent(i,fPower->Integral(priorLocal->GetXaxis()->GetBinLowEdge(i),priorLocal->GetXaxis()->GetBinUpEdge(i))/priorLocal->GetXaxis()->GetBinWidth(i));
+                }
+            }
+        }else printf(" > PANIC, SMOOTHENING FAILED < \n");
+
+    }
     // step 2) start the unfolding
     Int_t status(-1), i(0);
     while(status < 0 && i < 100) {
@@ -380,6 +483,8 @@ Bool_t AliJetFlowTools::UnfoldSpectrumChi2(
     unfolded = unfoldedLocal;
     foldedLocal = ProtectHeap(foldedLocal);
     foldedLocal->Write();
+    priorLocal = ProtectHeap(priorLocal);
+    priorLocal->Write();
     return (status == 0) ? kTRUE : kFALSE;
 }
 //_____________________________________________________________________________
@@ -387,8 +492,8 @@ Bool_t AliJetFlowTools::UnfoldSpectrumSVD(
         TH1D* resizedJetPt,                     // jet pt in pt rec bins 
         TH2D* resizedResonse,                   // full response matrix, normalized in slides of pt true
         TH1D* kinematicEfficiency,              // kinematic efficiency
-        TH1D* unfoldingTemplate,                // jet pt in pt true bins
-        TH1D *&unfolded,                        // placeholder for prior to unfolding
+        TH1D* unfoldingTemplate,                // jet pt in pt true bins, also the prior when measured is chosen as prior
+        TH1D *&unfolded,                        // will point to result. temporarily holds prior when chi2 is chosen as prior
         TString suffix)                         // suffix (in, out)
 {
     // use SVD (singular value decomposition) method to unfold spectra
@@ -399,12 +504,37 @@ Bool_t AliJetFlowTools::UnfoldSpectrumSVD(
     dirOut->cd();
     switch (fPrior) {    // select the prior for unfolding
         case kPriorChi2 : {
-            if(! UnfoldSpectrumChi2(
+            if(fBinsTruePrior && fBinsRecPrior) {       // if set, use different binning for the prior
+                TArrayD* tempArrayTrue(fBinsTrue);      // temporarily cache the original (SVD) binning
+                fBinsTrue = fBinsTruePrior;             // switch binning schemes (will be used in UnfoldSpectrumChi2())
+                TArrayD* tempArrayRec(fBinsRec);
+                fBinsRec = fBinsRecPrior;
+                TH1D* resizedJetPtChi2 = GetUnfoldingTemplate((!strcmp("in", suffix.Data())) ? fSpectrumIn : fSpectrumOut, fBinsRec, TString("resized_chi2"));
+                TH1D* unfoldingTemplateChi2 = GetUnfoldingTemplate((!strcmp("in", suffix.Data())) ? fSpectrumIn : fSpectrumOut, fBinsTruePrior, TString("out"));
+                TH2D* resizedResonseChi2(RebinTH2D((!strcmp("in", suffix.Data())) ? fFullResponseIn : fFullResponseOut,fBinsTruePrior, fBinsRec, TString("chi2")));
+                TH1D* kinematicEfficiencyChi2(resizedResonseChi2->ProjectionX());
+                kinematicEfficiencyChi2->SetNameTitle("kin_eff_chi2","kin_eff_chi2");
+                for(Int_t i(0); i < kinematicEfficiencyChi2->GetXaxis()->GetNbins(); i++) kinematicEfficiencyChi2->SetBinError(1+i, 0.);
+                if(! UnfoldSpectrumChi2(
+                            resizedJetPtChi2,
+                            resizedResonseChi2,
+                            kinematicEfficiencyChi2,
+                            unfoldingTemplateChi2,  // prior for chi2 unfolding (measured)
+                            unfolded,               // will hold the result from chi2 (is prior for SVD)
+                            TString(Form("prior_%s", suffix.Data()))) ) {
+                    printf(" > UnfoldSVD:: panic, couldn't get prior from Chi2 unfolding! \n");
+                    printf("               probably Chi2 unfolding did not converge < \n");
+                    return kFALSE;
+                }
+                fBinsTrue = tempArrayTrue;  // reset bins borders
+                fBinsRec = tempArrayRec;
+                unfolded = GetUnfoldingTemplate(unfolded, fBinsTrue, TString(Form("unfoldedChi2Prior_%s", suffix.Data())));     // rebin unfolded
+            } else if(! UnfoldSpectrumChi2(
                         resizedJetPt,
                         resizedResonse,
                         kinematicEfficiency,
-                        unfoldingTemplate,
-                        unfolded,
+                        unfoldingTemplate,      // prior for chi2 unfolding (measured)
+                        unfolded,               // will hold the result from chi2 (is prior for SVD)
                         TString(Form("prior_%s", suffix.Data()))) ) {
                 printf(" > UnfoldSVD:: panic, couldn't get prior from Chi2 unfolding! \n");
                 printf("               probably Chi2 unfolding did not converge < \n");
@@ -417,15 +547,26 @@ Bool_t AliJetFlowTools::UnfoldSpectrumSVD(
             break;
         }
         case kPriorMeasured : { 
-            unfolded = (TH1D*)unfoldingTemplate->Clone(Form("kPriorMeasured_%s", suffix.Data()));
+            unfolded = (TH1D*)unfoldingTemplate->Clone(Form("kPriorMeasured_%s", suffix.Data()));       // copy template to unfolded to use as prior
+            if(fSmoothenSpectrum) {     // optionally smoothen the measured prior
+                unfolded->Sumw2();
+                TFitResultPtr r = unfolded->Fit(fPower, "QWILS", "", fFitMin, fFitMax);
+                if((int)r == 0) {
+                    for(Int_t i(1); i < unfolded->GetNbinsX() + 1; i++) {
+                        if(unfolded->GetBinCenter(i) > fFitStart) {     // from this pt value use extrapolation
+                            unfolded->SetBinContent(i,fPower->Integral(unfolded->GetXaxis()->GetBinLowEdge(i),unfolded->GetXaxis()->GetBinUpEdge(i))/unfolded->GetXaxis()->GetBinWidth(i));
+                        }
+                    }
+                }else printf(" > PANIC, SMOOTHENING FAILED < \n");
+            }
+//            unfoldingTemplate = ProtectHeap(unfolded, kFALSE, TString("template"));
         }
         default : break;
     }
     // note: true and measured spectrum must have same binning for SVD unfolding
-    // regularization parameter should by default be nbins / 2
+    // a sane starting point for regularization is nbins / 2 (but the user has to set this ! ) 
     if(unfoldingTemplate->GetXaxis()->GetNbins() != resizedJetPt->GetXaxis()->GetNbins()) {
         printf(" > UnfoldSpectrumSVD:: PANIC, true and measured spectrum must have same numer of bins ! < \n ");
-        return kFALSE;
     }
     (!strcmp(suffix.Data(), "in")) ? fActiveDir->cd(Form("InPlane___%s", fActiveString.Data())) : fActiveDir->cd(Form("OutOfPlane___%s", fActiveString.Data()));
     cout << " 1) retrieved prior " << endl;
@@ -435,42 +576,54 @@ Bool_t AliJetFlowTools::UnfoldSpectrumSVD(
     TH1D *unfoldedLocal((TH1D*)unfolded->Clone(Form("priorUnfolded_%s", suffix.Data())));
     // raw jets in pt rec binning
     TH1D *cachedRawJetLocal((TH1D*)resizedJetPt->Clone(Form("jets_%s", suffix.Data())));
-   // raw jets in pt true binning
+    // raw jets in pt true binning
     TH1D *cachedRawJetLocalCoarse((TH1D*)unfoldingTemplate->Clone(Form("unfoldingTemplate_%s", suffix.Data())));
-  // copy of raw jets in pt true binning
+    // copy of raw jets in pt true binning 
     TH1D *cachedRawJetLocalCoarseOrig((TH1D*)cachedRawJetLocalCoarse->Clone(Form("cachedRawJetLocalCoarseOrig_%s", suffix.Data())));
-   // local response matrix
+    // local copies response matrix
     TH2D *cachedResponseLocal((TH2D*)resizedResonse->Clone(Form("cachedResponseLocal_%s", suffix.Data())));
-   // local response matrix, norm
+    // local copy of response matrix, all true slides normalized to 1
     TH2D *cachedResponseLocalNorm((TH2D*)resizedResonse->Clone(Form("cachedResponseLocalNorm_%s", suffix.Data())));
-   // kinematic efficiency
+    cachedResponseLocalNorm = NormalizeTH2D(cachedResponseLocalNorm);
+    // kinematic efficiency
     TH1D *kinematicEfficiencyLocal((TH1D*)kinematicEfficiency->Clone(Form("kinematicEfficiency_%s", suffix.Data())));
-   // place holder histos
+    // place holder histos
     TH1 *unfoldedLocalSVD(0x0);
     TH1 *foldedLocalSVD(0x0);
     cout << " 2) setup necessary input " << endl;
     // 3) configure routine
     RooUnfold::ErrorTreatment errorTreatment = (fSVDToy) ? RooUnfold::kCovToy : RooUnfold::kCovariance;
     // prior: use fit for where the histogram is sparsely filled 
-    if(fSmoothenSpectrum) {
+    if(fSmoothenSpectrum) { // smoothen raw input jets in true and rec binning, and smoothen the prior
         cachedRawJetLocalCoarse->Sumw2();
-        cachedRawJetLocalCoarse->Fit(fPower, "", "", fFitMin, fFitMax);
-        for(Int_t i(0); i < cachedRawJetLocalCoarse->GetNbinsX() + 1; i++) {
-            if(cachedRawJetLocalCoarse->GetBinCenter(i) > fFitStart) {     // from this pt value use extrapolation
-                cachedRawJetLocalCoarse->SetBinContent(i,fPower->Integral(cachedRawJetLocalCoarse->GetXaxis()->GetBinLowEdge(i),cachedRawJetLocalCoarse->GetXaxis()->GetBinUpEdge(i))/cachedRawJetLocalCoarse->GetXaxis()->GetBinWidth(i));
+        TFitResultPtr r = cachedRawJetLocalCoarse->Fit(fPower, "QWILS", "", fFitMin, fFitMax);
+        if((int)r == 0) {
+            for(Int_t i(1); i < cachedRawJetLocalCoarse->GetNbinsX() + 1; i++) {
+                if(cachedRawJetLocalCoarse->GetBinCenter(i) > fFitStart) { 
+                    cachedRawJetLocalCoarse->SetBinContent(i,fPower->Integral(cachedRawJetLocalCoarse->GetXaxis()->GetBinLowEdge(i),cachedRawJetLocalCoarse->GetXaxis()->GetBinUpEdge(i))/cachedRawJetLocalCoarse->GetXaxis()->GetBinWidth(i));
+                }
             }
-        }
+        } else printf(" > PANIC, SMOOTHENING FAILED < \n");
         TH1D* cachedRawJetLocalJagged((TH1D*)cachedRawJetLocal->Clone("cachedRawJetLocalJagged"));
         cachedRawJetLocalJagged->SetNameTitle("measured spectrum before smoothening", "measured spectrum, before smoothening");
         cachedRawJetLocalJagged->Write();
         cachedRawJetLocal->Sumw2();
-        cachedRawJetLocal->Fit(fPower, "", "", fFitMin, fFitMax);
-        for(Int_t i(0); i < cachedRawJetLocal->GetNbinsX() + 1; i++) {
-            if(cachedRawJetLocal->GetBinCenter(i) > fFitStart) {     // from this pt value use extrapolation
-                cachedRawJetLocal->SetBinContent(i,fPower->Integral(cachedRawJetLocal->GetXaxis()->GetBinLowEdge(i),cachedRawJetLocal->GetXaxis()->GetBinUpEdge(i))/cachedRawJetLocal->GetXaxis()->GetBinWidth(i));
+        r = cachedRawJetLocal->Fit(fPower, "S", "", fFitMin, fFitMax);
+        if((int)r == 0) {
+            for(Int_t i(0); i < cachedRawJetLocal->GetNbinsX() + 1; i++) {
+                if(cachedRawJetLocal->GetBinCenter(i) > fFitStart) {     // from this pt value use extrapolation
+                   cachedRawJetLocal->SetBinContent(i,fPower->Integral(cachedRawJetLocal->GetXaxis()->GetBinLowEdge(i),cachedRawJetLocal->GetXaxis()->GetBinUpEdge(i))/cachedRawJetLocal->GetXaxis()->GetBinWidth(i));
+                }
             }
         }
-
+        r = unfoldedLocal->Fit(fPower, "S", "", fFitMin, fFitMax);
+        if((int)r == 0) {
+            for(Int_t i(0); i < unfoldedLocal->GetNbinsX() + 1; i++) {
+                if(unfoldedLocal->GetBinCenter(i) > fFitStart) {     // from this pt value use extrapolation
+                   unfoldedLocal->SetBinContent(i,fPower->Integral(unfoldedLocal->GetXaxis()->GetBinLowEdge(i),unfoldedLocal->GetXaxis()->GetBinUpEdge(i))/unfoldedLocal->GetXaxis()->GetBinWidth(i));
+                }
+            }
+        }
     }
     cout << " 3) configured routine " << endl;
     // 4) get transpose matrices
@@ -478,7 +631,7 @@ Bool_t AliJetFlowTools::UnfoldSpectrumSVD(
     TH2* responseMatrixLocalTransposePrior(fResponseMaker->GetTransposeResponsMatrix(cachedResponseLocal));
     responseMatrixLocalTransposePrior->SetNameTitle(Form("prior_%s_%s", responseMatrixLocalTransposePrior->GetName(), suffix.Data()),Form("prior_%s_%s", responseMatrixLocalTransposePrior->GetName(), suffix.Data()));
     // normalize it with the prior
-    responseMatrixLocalTransposePrior = fResponseMaker->NormalizeResponsMatrixYaxisWithPrior(responseMatrixLocalTransposePrior, cachedRawJetLocalCoarse);
+    responseMatrixLocalTransposePrior = fResponseMaker->NormalizeResponsMatrixYaxisWithPrior(responseMatrixLocalTransposePrior, unfoldedLocal);
     cout << " 4a) retrieved first transpose matrix " << endl;
     // b) prior norm
     TH2* responseMatrixLocalTransposePriorNorm(fResponseMaker->GetTransposeResponsMatrix(cachedResponseLocalNorm));
@@ -496,13 +649,10 @@ Bool_t AliJetFlowTools::UnfoldSpectrumSVD(
     cout << " 5) retrieved roo unfold response object " << endl;
     // 6) actualy unfolding loop
     RooUnfoldSvd unfoldSVD(&responseSVD, cachedRawJetLocal, (!strcmp(suffix.Data(), "in")) ? fSVDRegIn : fSVDRegOut);
-    cout << " roounfoldsvd" << endl;
     unfoldedLocalSVD = (TH1D*)unfoldSVD.Hreco(errorTreatment);
-    cout << " unfoldedlocalsvd" << endl;
     TMatrixD covarianceMatrix = unfoldSVD.Ereco(errorTreatment);
-    cout << " covariance matrix " << endl;
     TMatrixD *pearson = (TMatrixD*)CalculatePearsonCoefficients(&covarianceMatrix);
-    cout << " Perason coeffs" << endl;
+    cout << " Pearson coeffs" << endl;
     // create the unfolding qa plots
     cout << " 6) unfolded spectrum " << endl;
     if(pearson) {
@@ -512,7 +662,7 @@ Bool_t AliJetFlowTools::UnfoldSpectrumSVD(
         hPearson->Write();
     } else return kFALSE;       // return if unfolding didn't converge
     // correct for the efficiency
-//    unfoldedLocalSVD->Divide(kinematicEfficiencyLocal);
+    unfoldedLocalSVD->Divide(kinematicEfficiencyLocal);
 
     // plot singular values and d_i vector
     TSVDUnfold* svdUnfold(unfoldSVD.Impl());
@@ -557,6 +707,8 @@ Bool_t AliJetFlowTools::UnfoldSpectrumSVD(
     cachedRawJetLocalCoarseOrig->SetXTitle("p_{t} [GeV/c]");
     cachedRawJetLocalCoarseOrig->Write();
     unfolded = (TH1D*)unfoldedLocalSVD; 
+    cachedResponseLocalNorm = ProtectHeap(cachedResponseLocalNorm);
+    cachedResponseLocalNorm->Write();
     return (unfoldedLocalSVD) ? kTRUE : kFALSE;
 }
 //_____________________________________________________________________________
@@ -583,7 +735,9 @@ Bool_t AliJetFlowTools::PrepareForUnfolding()
         fRMSSpectrumOut = new TProfile("fRMSSpectrumOut", "fRMSSpectrumOut", fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
         fRMSRatio = new TProfile("fRMSRatio", "fRMSRatio", fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
     }
-    for(Int_t i(0); i < fPower->GetNpar(); i++) fPower->SetParameter(i, 0.);
+    if(!fTrainPower) {
+        for(Int_t i(0); i < fPower->GetNpar(); i++) fPower->SetParameter(i, 0.);
+    }
     // extract the spectra
     TString spectrumName(Form("fHistJetPsi2Pt_%i", fCentralityBin));
     fJetPtDeltaPhi = ((TH2D*)fInputList->FindObject(spectrumName.Data()));
@@ -593,43 +747,46 @@ Bool_t AliJetFlowTools::PrepareForUnfolding()
     }
     fJetPtDeltaPhi = ProtectHeap(fJetPtDeltaPhi, kFALSE);
     // in plane spectrum
-    fSpectrumIn = fJetPtDeltaPhi->ProjectionY(Form("_py_ina_%s", spectrumName.Data()), 1, 10);
-    fSpectrumIn->Add(fJetPtDeltaPhi->ProjectionY(Form("_py_inb_%s", spectrumName.Data()), 31, 40));
-    fSpectrumIn = ProtectHeap(fSpectrumIn);
-    // out of plane spectrum
-    fSpectrumOut = fJetPtDeltaPhi->ProjectionY(Form("_py_out_%s", spectrumName.Data()), 11, 30);
-    fSpectrumOut = ProtectHeap(fSpectrumOut);
+    if(fNoDphi) {
+        fSpectrumIn = fJetPtDeltaPhi->ProjectionY(Form("_py_in_%s", spectrumName.Data()), 1, 40);
+        fSpectrumOut = fJetPtDeltaPhi->ProjectionY(Form("_py_out_%s", spectrumName.Data()), 1, 40);
+    } else {
+        fSpectrumIn = fJetPtDeltaPhi->ProjectionY(Form("_py_ina_%s", spectrumName.Data()), 1, 10);
+        fSpectrumIn->Add(fJetPtDeltaPhi->ProjectionY(Form("_py_inb_%s", spectrumName.Data()), 31, 40));
+        fSpectrumIn = ProtectHeap(fSpectrumIn);
+        // out of plane spectrum
+        fSpectrumOut = fJetPtDeltaPhi->ProjectionY(Form("_py_out_%s", spectrumName.Data()), 11, 30);
+        fSpectrumOut = ProtectHeap(fSpectrumOut);
+    }
     // normalize spectra to event count if requested
     if(fNormalizeSpectra) {
         TH1* rho((TH1*)fInputList->FindObject(Form("fHistRho_%i", fCentralityBin)));
-        if(rho) fEventCount = rho->GetEntries();
+        if(!rho) return 0x0;
+        Bool_t normalizeToFullSpectrum = (fEventCount < 0) ? kTRUE : kFALSE;
+        if (normalizeToFullSpectrum) fEventCount = rho->GetEntries();
         if(fEventCount > 0) {
             fSpectrumIn->Sumw2();       // necessary for correct error propagation of scale
             fSpectrumOut->Sumw2();
-//            fSpectrumIn->Scale(1./((double)fEventCount));
-//            fSpectrumOut->Scale(1./((double)fEventCount));
-            Double_t pt(0), error(0);            
-            for(Int_t i(0); i < fBinsRec->GetSize(); i++) {
+            Double_t pt(0);            
+            // Double_t error(0); // lots of issues with the errors here ...
+            for(Int_t i(0); i < fSpectrumIn->GetXaxis()->GetNbins(); i++) {
                 pt = fSpectrumIn->GetBinContent(1+i)/fEventCount;       // normalized count
-                error = 1./((double)(fEventCount*fEventCount))*fSpectrumIn->GetBinError(1+i)*fSpectrumIn->GetBinError(1+i);
+//                error = 1./((double)(fEventCount*fEventCount))*fSpectrumIn->GetBinError(1+i)*fSpectrumIn->GetBinError(1+i);
                 fSpectrumIn->SetBinContent(1+i, pt);
-                if(error > 0) fSpectrumIn->SetBinError(1+i, TMath::Sqrt(error));
-                else if(pt > 0) fSpectrumIn->SetBinError(1+i, TMath::Sqrt(pt));
+                if(pt <= 0 ) fSpectrumIn->SetBinError(1+i, 0.);
+//                if(error > 0) fSpectrumIn->SetBinError(1+i, TMath::Sqrt(error));
+                else fSpectrumIn->SetBinError(1+i, TMath::Sqrt(pt));
             }
-            for(Int_t i(0); i < fBinsRec->GetSize(); i++) {
-                pt = fSpectrumIn->GetBinContent(1+i)/fEventCount;       // normalized count
-                error = 1./((double)(fEventCount*fEventCount))*fSpectrumIn->GetBinError(1+i)*fSpectrumIn->GetBinError(1+i);
-                fSpectrumIn->SetBinContent(1+i, pt);
-                if(error > 0) fSpectrumIn->SetBinError(1+i, TMath::Sqrt(error));
-                else if(pt > 0) fSpectrumIn->SetBinError(1+i, TMath::Sqrt(pt));
+            for(Int_t i(0); i < fSpectrumOut->GetXaxis()->GetNbins(); i++) {
+                pt = fSpectrumOut->GetBinContent(1+i)/fEventCount;       // normalized count
+//                error = 1./((double)(fEventCount*fEventCount))*fSpectrumOut->GetBinError(1+i)*fSpectrumOut->GetBinError(1+i);
+                fSpectrumOut->SetBinContent(1+i, pt);
+                if( pt <= 0) fSpectrumOut->SetBinError(1+i, 0.);
+//                if(error > 0) fSpectrumOut->SetBinError(1+i, TMath::Sqrt(error));
+                else fSpectrumOut->SetBinError(1+i, TMath::Sqrt(pt));
             }
         }
-    }
-    if(!fNormalizeSpectra && fEventCount > 0) {
-        fSpectrumIn->Sumw2();       // necessary for correct error propagation of scale
-        fSpectrumOut->Sumw2();
-        fSpectrumIn->Scale(1./((double)fEventCount));
-        fSpectrumOut->Scale(1./((double)fEventCount));
+        if(normalizeToFullSpectrum) fEventCount = -1;
     }
     // extract the delta pt matrices
     TString deltaptName(Form("fHistDeltaPtDeltaPhi2_%i", fCentralityBin));
@@ -639,13 +796,18 @@ Bool_t AliJetFlowTools::PrepareForUnfolding()
     }
     fDeltaPtDeltaPhi = ProtectHeap(fDeltaPtDeltaPhi, kFALSE);
     // in plane delta pt distribution
-    fDptInDist = fDeltaPtDeltaPhi->ProjectionY(Form("_py_ina_%s", deltaptName.Data()), 1, 10);
-    fDptInDist->Add(fDeltaPtDeltaPhi->ProjectionY(Form("_py_inb_%s", deltaptName.Data()), 31, 40));
-    // out of plane delta pt distribution
-    fDptOutDist = fDeltaPtDeltaPhi->ProjectionY(Form("_py_out_%s", deltaptName.Data()), 11, 30);
-    fDptInDist = ProtectHeap(fDptInDist);
-    fDptOutDist = ProtectHeap(fDptOutDist);
-    // TODO get dpt response matrix from ConstructDPtResponseFromTH1D
+    if(fNoDphi) {
+        fDptInDist = fDeltaPtDeltaPhi->ProjectionY(Form("_py_in_%s", deltaptName.Data()), 1, 40);
+        fDptOutDist = fDeltaPtDeltaPhi->ProjectionY(Form("_py_out_%s", deltaptName.Data()), 1, 40);
+    } else {
+        fDptInDist = fDeltaPtDeltaPhi->ProjectionY(Form("_py_ina_%s", deltaptName.Data()), 1, 10);
+        fDptInDist->Add(fDeltaPtDeltaPhi->ProjectionY(Form("_py_inb_%s", deltaptName.Data()), 31, 40));
+        // out of plane delta pt distribution
+        fDptOutDist = fDeltaPtDeltaPhi->ProjectionY(Form("_py_out_%s", deltaptName.Data()), 11, 30);
+        fDptInDist = ProtectHeap(fDptInDist);
+        fDptOutDist = ProtectHeap(fDptOutDist);
+        // TODO get dpt response matrix from ConstructDPtResponseFromTH1D
+    }
 
     // create a rec - true smeared response matrix
     TMatrixD* rfIn = new TMatrixD(-50, 249, -50, 249);
@@ -840,8 +1002,8 @@ TMatrixD* AliJetFlowTools::CalculatePearsonCoefficients(TMatrixD* covarianceMatr
     Int_t nrows(covarianceMatrix->GetNrows()), ncols(covarianceMatrix->GetNcols());
     Double_t pearson(0.);
     if(nrows==0 && ncols==0) return 0x0;
-    for(int row = 0; row < nrows; row++) {
-        for(int col = 0; col<ncols; col++) {
+    for(Int_t row = 0; row < nrows; row++) {
+        for(Int_t col = 0; col<ncols; col++) {
         if((*covarianceMatrix)(row,row)!=0. && (*covarianceMatrix)(col,col)!=0.) pearson = (*covarianceMatrix)(row,col)/TMath::Sqrt((*covarianceMatrix)(row,row)*(*covarianceMatrix)(col,col));
         (*pearsonCoefficients)(row,col) = pearson;
         }
@@ -909,13 +1071,15 @@ Bool_t AliJetFlowTools::SetRawInput (
 //_____________________________________________________________________________
 TGraphErrors* AliJetFlowTools::GetRatio(TH1 *h1, TH1* h2, TString name, Bool_t appendFit, Int_t xmax) 
 {
+    // return ratio of h1 / h2
+    // histograms can have different binning. errors are propagated as uncorrelated
     if(!(h1 && h2) ) {
         printf(" GetRatio called with NULL argument(s) \n ");
         return 0x0;
     }
     Int_t j(0);
     TGraphErrors *gr = new TGraphErrors();
-    Float_t binCent(0.), ratio(0.), error2(0.), binWidth(0.);
+    Double_t binCent(0.), ratio(0.), error2(0.), binWidth(0.);
     for(Int_t i(1); i <= h1->GetNbinsX(); i++) {
         binCent = h1->GetXaxis()->GetBinCenter(i);
         if(xmax > 0. && binCent > xmax) continue;
@@ -928,15 +1092,49 @@ TGraphErrors* AliJetFlowTools::GetRatio(TH1 *h1, TH1* h2, TString name, Bool_t a
             if(h2->GetBinError(j)>0.) {
                 B = -1.*h1->GetBinContent(i)/(h2->GetBinContent(j)*h2->GetBinContent(j))*h2->GetBinError(j);
                 error2 = A*A + B*B;
-            }
-            else error2 = A*A;
+            } else error2 = A*A;
+            if(error2 > 0 ) error2 = TMath::Sqrt(error2);
             gr->SetPoint(gr->GetN(),binCent,ratio);
-            gr->SetPointError(gr->GetN()-1,0.5*binWidth,TMath::Sqrt(error2));
+            gr->SetPointError(gr->GetN()-1,0.5*binWidth,error2);
         }
     }
     if(appendFit) {
         TF1* fit(new TF1("lin", "pol0", 10, 100));
         gr->Fit(fit);
+    }
+    if(strcmp(name, "")) gr->SetNameTitle(name.Data(), name.Data());
+    return gr;
+}
+//_____________________________________________________________________________
+TGraphErrors* AliJetFlowTools::GetV2(TH1 *h1, TH1* h2, Double_t r, TString name) 
+{
+    // get v2 from difference of in plane, out of plane yield
+    // h1 must hold the in-plane yield, h2 holds the out of plane  yield
+    // different binning is allowed
+    // r is the event plane resolution for the chosen centrality
+    if(!(h1 && h2) ) {
+        printf(" GetV2 called with NULL argument(s) \n ");
+        return 0x0;
+    }
+    Int_t j(0);
+    TGraphErrors *gr = new TGraphErrors();
+    Float_t binCent(0.), ratio(0.), error2(0.), binWidth(0.);
+    Double_t pre(TMath::Pi()/(4.*r)), in(0.), out(0.), ein(0.), eout(0.);
+    for(Int_t i(1); i <= h1->GetNbinsX(); i++) {
+        binCent = h1->GetXaxis()->GetBinCenter(i);
+        j = h2->FindBin(binCent);
+        binWidth = h1->GetXaxis()->GetBinWidth(i);
+        if(h2->GetBinContent(j) > 0.) {
+            in = h1->GetBinContent(i);
+            ein = h1->GetBinError(i);
+            out = h2->GetBinContent(j);
+            eout = h2->GetBinError(j);
+            ratio = pre*((in-out)/(in+out));
+            error2 = (r*4.)/(TMath::Pi())*((out*out/(TMath::Power(in+out, 4)))*ein*ein+(in*in/(TMath::Power(in+out, 4)))*eout*eout);
+            if(error2 > 0) error2 = TMath::Sqrt(error2);
+            gr->SetPoint(gr->GetN(),binCent,ratio);
+            gr->SetPointError(gr->GetN()-1,0.5*binWidth,error2);
+        }
     }
     if(strcmp(name, "")) gr->SetNameTitle(name.Data(), name.Data());
     return gr;
@@ -974,40 +1172,58 @@ TH2D* AliJetFlowTools::ConstructDPtResponseFromTH1D(TH1D* dpt, Bool_t AvoidRound
     }
     return res;
 }
-
+//_____________________________________________________________________________
+TH2D* AliJetFlowTools::GetUnityResponse(TArrayD* binsTrue, TArrayD* binsRec, TString suffix) {
+    if(!binsTrue || !binsRec) {
+        printf(" > GetUnityResponse:: function called with NULL arguments < \n");
+        return 0x0;
+    }
+    TString name(Form("unityResponse_%s", suffix.Data()));
+    TH2D* unity(new TH2D(name.Data(), name.Data(), binsTrue->GetSize()-1, binsTrue->GetArray(), binsRec->GetSize()-1, binsRec->GetArray()));
+    for(Int_t i(0); i < binsTrue->GetSize(); i++) {
+        for(Int_t j(0); j < binsRec->GetSize(); j++) {
+            if(i==j) unity->SetBinContent(1+i, 1+j, 1.);
+        }
+    }
+    return unity;
+}
 //_____________________________________________________________________________
 void AliJetFlowTools::SaveConfiguration(Bool_t convergedIn, Bool_t convergedOut) {
     // save configuration parameters to histogram
-    TH1F* beta = new TH1F("UnfoldingConfiguration","UnfoldingConfiguration", 14, -.5, 14.5);
-    beta->SetBinContent(1, fBetaIn);
-    beta->GetXaxis()->SetBinLabel(1, "fBetaIn");
-    beta->SetBinContent(2, fBetaOut);
-    beta->GetXaxis()->SetBinLabel(2, "fBetaOut");
-    beta->SetBinContent(3, fCentralityBin);
-    beta->GetXaxis()->SetBinLabel(3, "fCentralityBin");
-    beta->SetBinContent(4, (int)convergedIn);
-    beta->GetXaxis()->SetBinLabel(4, "convergedIn");
-    beta->SetBinContent(5, (int)convergedOut);
-    beta->GetXaxis()->SetBinLabel(5, "convergedOut");
-    beta->SetBinContent(6, (int)fAvoidRoundingError);
-    beta->GetXaxis()->SetBinLabel(6, "fAvoidRoundingError");
-    beta->SetBinContent(7, (int)fUnfoldingAlgorithm);
-    beta->GetXaxis()->SetBinLabel(7, "fUnfoldingAlgorithm");
-    beta->SetBinContent(8, (int)fPrior);
-    beta->GetXaxis()->SetBinLabel(8, "fPrior");
-    beta->SetBinContent(9, fSVDRegIn);
-    beta->GetXaxis()->SetBinLabel(9, "fSVDRegIn");
-    beta->SetBinContent(10, fSVDRegOut);
-    beta->GetXaxis()->SetBinLabel(10, "fSVDRegOut");
-    beta->SetBinContent(11, (int)fSVDToy);
-    beta->GetXaxis()->SetBinLabel(11, "fSVDToy");
-    beta->SetBinContent(12, fJetRadius);
-    beta->GetXaxis()->SetBinLabel(12, "fJetRadius");
-    beta->SetBinContent(13, (int)fNormalizeSpectra);
-    beta->GetXaxis()->SetBinLabel(13, "fNormalizeSpectra");
-    beta->SetBinContent(14, (int)fSmoothenSpectrum);
-    beta->GetXaxis()->SetBinLabel(14, "fSmoothenSpectrum");
-    beta->Write();
+    TH1F* summary = new TH1F("UnfoldingConfiguration","UnfoldingConfiguration", 16, -.5, 16.5);
+    summary->SetBinContent(1, fBetaIn);
+    summary->GetXaxis()->SetBinLabel(1, "fBetaIn");
+    summary->SetBinContent(2, fBetaOut);
+    summary->GetXaxis()->SetBinLabel(2, "fBetaOut");
+    summary->SetBinContent(3, fCentralityBin);
+    summary->GetXaxis()->SetBinLabel(3, "fCentralityBin");
+    summary->SetBinContent(4, (int)convergedIn);
+    summary->GetXaxis()->SetBinLabel(4, "convergedIn");
+    summary->SetBinContent(5, (int)convergedOut);
+    summary->GetXaxis()->SetBinLabel(5, "convergedOut");
+    summary->SetBinContent(6, (int)fAvoidRoundingError);
+    summary->GetXaxis()->SetBinLabel(6, "fAvoidRoundingError");
+    summary->SetBinContent(7, (int)fUnfoldingAlgorithm);
+    summary->GetXaxis()->SetBinLabel(7, "fUnfoldingAlgorithm");
+    summary->SetBinContent(8, (int)fPrior);
+    summary->GetXaxis()->SetBinLabel(8, "fPrior");
+    summary->SetBinContent(9, fSVDRegIn);
+    summary->GetXaxis()->SetBinLabel(9, "fSVDRegIn");
+    summary->SetBinContent(10, fSVDRegOut);
+    summary->GetXaxis()->SetBinLabel(10, "fSVDRegOut");
+    summary->SetBinContent(11, (int)fSVDToy);
+    summary->GetXaxis()->SetBinLabel(11, "fSVDToy");
+    summary->SetBinContent(12, fJetRadius);
+    summary->GetXaxis()->SetBinLabel(12, "fJetRadius");
+    summary->SetBinContent(13, (int)fNormalizeSpectra);
+    summary->GetXaxis()->SetBinLabel(13, "fNormalizeSpectra");
+    summary->SetBinContent(14, (int)fSmoothenSpectrum);
+    summary->GetXaxis()->SetBinLabel(14, "fSmoothenSpectrum");
+    summary->SetBinContent(15, (int)fTestMode);
+    summary->GetXaxis()->SetBinLabel(15, "fTestMode");
+    summary->SetBinContent(16, (int)fUseDetectorResponse);
+    summary->GetXaxis()->SetBinLabel(16, "fUseDetectorResponse");
+    summary->Write();
 }
 //_____________________________________________________________________________
 void AliJetFlowTools::ResetAliUnfolding() {
@@ -1017,11 +1233,11 @@ void AliJetFlowTools::ResetAliUnfolding() {
          printf(" > Found fitter, will delete it < \n");
          delete fitter;
      }
-     if(gMinuit) {
-         printf(" > Found gMinuit, will re-create it < \n");
-         delete gMinuit;
-         gMinuit = new TMinuit;
-     }
+//     if(gMinuit) {
+//         printf(" > Found gMinuit, will re-create it < \n");
+//         delete gMinuit;
+//         gMinuit = new TMinuit;
+//     }
      AliUnfolding::fgCorrelationMatrix = 0;
      AliUnfolding::fgCorrelationMatrixSquared = 0;
      AliUnfolding::fgCorrelationCovarianceMatrix = 0;
@@ -1066,32 +1282,38 @@ void AliJetFlowTools::ResetAliUnfolding() {
      AliUnfolding::SetDebug(1);
 }
 //_____________________________________________________________________________
-TH1D* AliJetFlowTools::ProtectHeap(TH1D* protect, Bool_t kill) {
+TH1D* AliJetFlowTools::ProtectHeap(TH1D* protect, Bool_t kill, TString suffix) {
     // protect heap by adding unique qualifier to name
     if(!protect) return 0x0;
     TH1D* p = (TH1D*)protect->Clone();
-    p->SetName(Form("%s_%s", protect->GetName(), fActiveString.Data()));
-    p->SetTitle(Form("%s_%s", protect->GetTitle(), fActiveString.Data()));
+    TString tempString(fActiveString);
+    tempString+=suffix;
+    p->SetName(Form("%s_%s", protect->GetName(), tempString.Data()));
+    p->SetTitle(Form("%s_%s", protect->GetTitle(), tempString.Data()));
     if(kill) delete protect;
     return p;
 }
 //_____________________________________________________________________________
-TH2D* AliJetFlowTools::ProtectHeap(TH2D* protect, Bool_t kill) {
+TH2D* AliJetFlowTools::ProtectHeap(TH2D* protect, Bool_t kill, TString suffix) {
     // protect heap by adding unique qualifier to name
     if(!protect) return 0x0;
     TH2D* p = (TH2D*)protect->Clone();
-    p->SetName(Form("%s_%s", protect->GetName(), fActiveString.Data()));
-    p->SetTitle(Form("%s_%s", protect->GetTitle(), fActiveString.Data()));
+    TString tempString(fActiveString);
+    tempString+=suffix;
+    p->SetName(Form("%s_%s", protect->GetName(), tempString.Data()));
+    p->SetTitle(Form("%s_%s", protect->GetTitle(), tempString.Data()));
     if(kill) delete protect;
     return p;
 }
 //_____________________________________________________________________________
-TGraphErrors* AliJetFlowTools::ProtectHeap(TGraphErrors* protect, Bool_t kill) {
+TGraphErrors* AliJetFlowTools::ProtectHeap(TGraphErrors* protect, Bool_t kill, TString suffix) {
     // protect heap by adding unique qualifier to name
     if(!protect) return 0x0;
     TGraphErrors* p = (TGraphErrors*)protect->Clone();
-    p->SetName(Form("%s_%s", protect->GetName(), fActiveString.Data()));
-    p->SetTitle(Form("%s_%s", protect->GetTitle(), fActiveString.Data()));
+    TString tempString(fActiveString);
+    tempString+=suffix;
+    p->SetName(Form("%s_%s", protect->GetName(), tempString.Data()));
+    p->SetTitle(Form("%s_%s", protect->GetTitle(), tempString.Data()));
     if(kill) delete protect;
     return p;
 }

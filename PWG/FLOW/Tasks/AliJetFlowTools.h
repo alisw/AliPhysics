@@ -30,18 +30,18 @@ class AliJetFlowTools {
     public: 
         AliJetFlowTools();
     protected:
-        ~AliJetFlowTools();
+        ~AliJetFlowTools();     // no implemented destructor, but class is not compiled
     public:
         // enumerators
         enum unfoldingAlgorithm {
             kChi2,
             kBayesian,
-            kSVD };             // type of unfolding algorithm
+            kSVD,
+            kNone };            // type of unfolding algorithm
         enum prior {
             kPriorChi2,
             kPriorMeasured };   // used prior for svd unfolding
-
-        // setters, setup the procedure
+        // setters, interface to the class
         void            SetSaveFull(Bool_t b)           {fSaveFull              = b;}
         void            SetInputList(TList* list)       {
             fInputList          = list;
@@ -52,6 +52,10 @@ class AliJetFlowTools {
             // create a new output list and add it to the full output
             if(!fOutputFile) fOutputFile = new TFile(fOutputFileName.Data(), "RECREATE");
             fOutputFile->cd();  // avoid nested dirs
+            if(name.EqualTo(fActiveString)) {
+                printf(Form(" > Warning, duplicate output list, renaming %s to %s_2 ! < \n", name.Data(), name.Data()));
+                name+="_2";
+            }
             fActiveString = name;
             fActiveDir = new TDirectoryFile(fActiveString.Data(), fActiveString.Data());
             fActiveDir->cd();
@@ -60,6 +64,8 @@ class AliJetFlowTools {
         void            SetDetectorResponse(TH2D* dr)   {fDetectorResponse      = dr;}
         void            SetBinsTrue(TArrayD* bins)      {fBinsTrue              = bins;}
         void            SetBinsRec(TArrayD* bins)       {fBinsRec               = bins;}
+        void            SetBinsTruePrior(TArrayD* bins) {fBinsTruePrior         = bins;}
+        void            SetBinsRecPrior(TArrayD* bins)  {fBinsRecPrior          = bins;}
         void            SetSVDReg(Int_t r)              {fSVDRegIn = r; fSVDRegOut = r;}
         void            SetSVDReg(Int_t in, Int_t out)  {fSVDRegIn = in; fSVDRegOut = out;}
         void            SetSVDToy(Bool_t b, Float_t r)  {fSVDToy = b; fJetRadius = r;}
@@ -79,6 +85,11 @@ class AliJetFlowTools {
             fFitMax             = max;
             fFitStart           = start;
         }
+        void            SetTestMode(Bool_t t)           {fTestMode                      = t;}
+        void            SetNoDphi(Bool_t n)             {fNoDphi                        = n;}
+        void            SetEventPlaneResolution(Double_t r)     {fEventPlaneRes         = r;}
+        void            SetUseDetectorResponse(Bool_t r)        {fUseDetectorResponse   = r;}
+        void            SetTrainPowerFit(Bool_t t)      {fTrainPower                    = t;}
         void            Make();
         void            Finish() {
             fOutputFile->cd();
@@ -102,8 +113,10 @@ class AliJetFlowTools {
         static TH2D*    MatrixMultiplicationTH2D(TH2D* A, TH2D* B, TString name = "CombinedResponse");
         static TH1D*    NormalizeTH1D(TH1D* histo, Double_t scale = 1.);
         static TGraphErrors*    GetRatio(TH1 *h1 = 0x0, TH1* h2 = 0x0, TString name = "", Bool_t appendFit = kFALSE, Int_t xmax = -1);
+        static TGraphErrors*    GetV2(TH1* h1 = 0x0, TH1* h2 = 0x0, Double_t r = .63, TString name = "");
         static void     WriteObject(TObject* object);
         static TH2D*    ConstructDPtResponseFromTH1D(TH1D* dpt, Bool_t AvoidRoundingError);
+        static TH2D*    GetUnityResponse(TArrayD* binsTrue, TArrayD* binsRec, TString suffix = "");
         void            SaveConfiguration(Bool_t convergedIn, Bool_t convergedOut);
         // interface to AliUnfolding, not necessary but nice to have all parameters in one place
         static void     SetMinuitStepSize(Float_t s)    {AliUnfolding::SetMinuitStepSize(s);}
@@ -128,9 +141,12 @@ class AliJetFlowTools {
                                                         TString suffix);
         TMatrixD*       CalculatePearsonCoefficients(TMatrixD* covmat);
         static void     ResetAliUnfolding();
-        TH1D*           ProtectHeap(TH1D* protect, Bool_t kill = kTRUE);
-        TH2D*           ProtectHeap(TH2D* protect, Bool_t kill = kTRUE);
-        TGraphErrors*   ProtectHeap(TGraphErrors* protect, Bool_t kill = kTRUE);
+        // give object a unique name via the 'protect heap' functions. 
+        // may seem redundant, but some internal functions of root (e.g.
+        // ProjectionY()) check for existing objects by name and re-use them
+        TH1D*           ProtectHeap(TH1D* protect, Bool_t kill = kTRUE, TString suffix = "");
+        TH2D*           ProtectHeap(TH2D* protect, Bool_t kill = kTRUE, TString suffix = "");
+        TGraphErrors*   ProtectHeap(TGraphErrors* protect, Bool_t kill = kTRUE, TString suffix = "");
         // members, accessible via setters
         AliAnaChargedJetResponseMaker*  fResponseMaker; // utility object
         TF1*                    fPower;                 // smoothening fit
@@ -150,6 +166,8 @@ class AliJetFlowTools {
         prior                   fPrior;                 // prior for unfolding
         TArrayD*                fBinsTrue;              // pt true bins
         TArrayD*                fBinsRec;               // pt rec bins
+        TArrayD*                fBinsTruePrior;         // holds true bins for the chi2 prior for SVD. setting this is optional
+        TArrayD*                fBinsRecPrior;          // holds rec bins for the chi2 prior for SVD. setting this is optional
         Int_t                   fSVDRegIn;              // svd regularization (a good starting point is half of the number of bins)
         Int_t                   fSVDRegOut;             // svd regularization out of plane
         Bool_t                  fSVDToy;                // use toy to estimate coveriance matrix for SVD method
@@ -160,11 +178,19 @@ class AliJetFlowTools {
         Float_t                 fFitMin;                // lower bound of smoothening fit
         Float_t                 fFitMax;                // upper bound of smoothening fit
         Float_t                 fFitStart;              // from this value, use smoothening
+        Bool_t                  fTestMode;              // unfold with unity response for testing
+        Bool_t                  fNoDphi;                // no dphi dependence in unfolding
         Bool_t                  fRawInputProvided;      // input histograms provided, not read from file
+        Double_t                fEventPlaneRes;         // event plane resolution for current centrality
+        Bool_t                  fUseDetectorResponse;   // add detector response to unfolding
+        Bool_t                  fTrainPower;            // don't clear the params of fPower for call to Make
+                                                        // might give more stable results, but also introduces
+                                                        // a bias / dependency on previous iterations
         // members, set internally
         TProfile*               fRMSSpectrumIn;         // rms of in plane spectra of converged unfoldings
         TProfile*               fRMSSpectrumOut;        // rms of out of plane spectra of converged unfoldings
         TProfile*               fRMSRatio;              // rms of ratio of converged unfolded spectra
+        TProfile*               fRMSV2;                 // rms of v2 of converged unfolded spectra
         TH2D*                   fDeltaPtDeltaPhi;       // delta pt delta phi distribution
         TH2D*                   fJetPtDeltaPhi;         // jet pt delta phi distribution
         TH1D*                   fSpectrumIn;            // in plane jet pt spectrum
