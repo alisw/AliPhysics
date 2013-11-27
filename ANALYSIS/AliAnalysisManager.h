@@ -76,6 +76,7 @@ enum EAliAnalysisFlags {
    AliAnalysisManager& operator=(const AliAnalysisManager& other);
    
    // Event loop control
+   Bool_t              EventLoop(Long64_t nevents);
    virtual Int_t       GetEntry(Long64_t entry, Int_t getall = 0);
    virtual Bool_t      Init(TTree *tree);
    virtual Bool_t      Notify();

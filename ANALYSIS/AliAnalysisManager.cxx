@@ -304,6 +304,33 @@ void AliAnalysisManager::CreateReadCache()
    }
    return;
 }   
+
+//______________________________________________________________________________
+Bool_t AliAnalysisManager::EventLoop(Long64_t nevents)
+{
+// Initialize an event loop where the data producer is the input handler
+// The handler must implement MakeTree creating the tree of events (likely
+// memory resident) and generate the current event in the method BeginEvent.
+// If the tree is memory resident, the handler should never call TTree::Fill
+// method.
+   cout << "===== RUNNING IN EVENT LOOP MODE: " << GetName() << endl;
+   if (!fInputEventHandler) {
+     Error("EventLoop", "No input handler: exiting");
+     return kFALSE;
+   }
+   TTree *tree = fInputEventHandler->MakeTree();
+   if (!tree) {
+     Error("EventLoop", "The input handler must provide MakeTree()");
+     return kFALSE;
+  }
+  SetExternalLoop(kTRUE);
+  if (!Init(tree)) return kFALSE;
+  for (Long64_t iev=0; iev<nevents; iev++) {
+    fInputEventHandler->BeginEvent(iev);
+    ExecAnalysis();
+    fInputEventHandler->FinishEvent();
+  }
+}
       
 //______________________________________________________________________________
 Int_t AliAnalysisManager::GetEntry(Long64_t entry, Int_t getall)
@@ -535,6 +562,7 @@ Bool_t AliAnalysisManager::Notify()
    // is started when using PROOF. It is normaly not necessary to make changes
    // to the generated code, but the routine can be extended by the
    // user if needed. The return value is currently not used.
+   static TFile *oldfile = 0;
    fIOTimer->Start(kTRUE); 
    if (!fTree) return kFALSE;
    if (!TObject::TestBit(AliAnalysisManager::kTrueNotify)) return kFALSE;
@@ -551,7 +579,12 @@ Bool_t AliAnalysisManager::Notify()
       if (fCurrentDescriptor) fCurrentDescriptor->Done();
       fCurrentDescriptor = new AliAnalysisFileDescriptor(curfile);
       fFileDescriptors->Add(fCurrentDescriptor);
-   }   
+      if (fCacheSize && oldfile) {
+         TTreeCache* pf = dynamic_cast<TTreeCache*>(oldfile->GetCacheRead());
+         if (pf) pf->Print();
+      }
+   } 
+   oldfile = curfile;  
    
    if (fDebug > 1) printf("->AliAnalysisManager::Notify() file: %s\n", curfile->GetName());
    Int_t run = AliAnalysisManager::GetRunFromAlienPath(curfile->GetName());
