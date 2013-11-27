@@ -23,65 +23,86 @@ void jetFlowTools() {
         printf(" > read error ! < \n");
         return;
     }
-    TList* l = (TList*)f.Get("RhoVnMod_R04_kCombined_Jet_AKTChargedR040_PicoTracks_pT0150_Rho_TPC_PWGJE");
+    TList* l = (TList*)f.Get("RhoVnMod_R03_kCombined_Jet_AKTChargedR030_PicoTracks_pT0150_Rho_TPC_PWGJE");
     if(!l) {
         printf(" > failed to find output list ! \n");
         return;
     }
-    const Double_t ptBins[] = {20, 25, 30, 35,  40,  45,  50, 55, 60, 70, 80, 90, 100};
-    BinsTrue = new TArrayD(sizeof(ptBins)/sizeof(ptBins[0]), ptBins);
-    Double_t binsY[81];
-    for(Int_t i(0); i < 81; i++) binsY[i] = (double)(30+i);
-    BinsRec = new TArrayD(sizeof(binsY)/sizeof(binsY[0]), binsY);
-
     // create an instance of the Tools class
     AliJetFlowTools* tools = new AliJetFlowTools();
     // set some common variables
     tools->SetCentralityBin(2);
     tools->SetDetectorResponse(detres);
-    tools->SetBinsTrue(BinsTrue);
-    tools->SetBinsRec(BinsRec);
- 
+
+    // set the true (unfolded) bins
+    Double_t binsTrue[] = {5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 150};
+    tools->SetBinsTrue(new TArrayD(sizeof(binsTrue)/sizeof(binsTrue[0]), binsTrue));
+    // set the same binning scheme to be used when chi2 is taken as a prior
+    tools->SetBinsTruePrior(new TArrayD(sizeof(binsTrue)/sizeof(binsTrue[0]), binsTrue));
+
+
+    // set the measured (folded) bins
+    Double_t binsRec[36];
+    for(Int_t i(0); i < 36; i++) binsRec[i] = 2*i+26;
+    tools->SetBinsRec(new TArrayD(sizeof(binsRec)/sizeof(binsRec[0]), binsRec));
+    // set the same binning scheme to be used when chi2 is taken as a prior
+    tools->SetBinsRecPrior(new TArrayD(sizeof(binsRec)/sizeof(binsRec[0]), binsRec));
+
     // connect input
     tools->SetInputList(l);
-
     // unfold using different parameters
+
+    tools->SetSmoothenSpectrum(kTRUE, 50, 100, 70);
+    tools->SetNormalizeSpectra(10000);
+    tools->SetUseDetectorResponse(kTRUE);
+    tools->SetSaveFull(kTRUE);
+    // set no unfolding
+    tools->SetUnfoldingAlgorithm(AliJetFlowTools::kNone);
+    tools->CreateOutputList(TString("do_nothing"));
+    tools->Make();
+    tools->SetTestMode(kTRUE);
+/* 
+    // do some chi2 unfolding in test mode
+    tools->SetUnfoldingAlgorithm(AliJetFlowTools::kChi2);
+    Double_t b = 0.05;
+    tools->CreateOutputList(TString(Form("test_beta%.2f", b)));
+    tools->SetBeta(b);
+    tools->Make();
+    b = 0.1;
+    tools->CreateOutputList(TString(Form("test_beta%.2f", b)));
+    tools->SetBeta(b);
+    tools->Make();
+*/
+   
+    tools->SetTestMode(kFALSE);
+    // do some chi2 unfolding
+    tools->SetUnfoldingAlgorithm(AliJetFlowTools::kChi2);
+    Double_t b = 0.05;
+    tools->CreateOutputList(TString(Form("beta%.2f", b)));
+    tools->SetBeta(b);
+    tools->Make();
+    b = 0.1;
+    tools->CreateOutputList(TString(Form("beta%.2f", b)));
+    tools->SetBeta(b);
+    tools->Make();
+
+    // do some SVD unfolding
     tools->SetUnfoldingAlgorithm(AliJetFlowTools::kSVD);
-    tools->SetBeta(0.01);
+    tools->SetPrior(AliJetFlowTools::kPriorChi2);
 
-    tools->SetPrior(AliJetFlowTools::kChi2);
-    tools->CreateOutputList(TString("R04_kCombined_SVD_d3"));
-    tools->SetSVDDraw(3);
-    tools->Make();
+    // svd unfolding prefers diffefrent binning
+    Double_t binsRec2[] = {25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 95};
+    tools->SetBinsRec(new TArrayD(sizeof(binsRec2)/sizeof(binsRec2[0]), binsRec2));
 
-    tools->CreateOutputList(TString("R04_kCombined_SVD_d4"));
-    tools->SetSVDDraw(4);
-    tools->Make();
-
-    tools->CreateOutputList(TString("R04_kCombined_SVD_d5"));
-    tools->SetSVDDraw(5);
-    tools->Make();
-
-    tools->CreateOutputList(TString("R04_kCombined_SVD_d6"));
-    tools->SetSVDDraw(6);
-    tools->Make();
-
-
-    tools->CreateOutputList(TString("R04_kCombined_SVD_d7"));
-    tools->SetSVDDraw(7);
-    tools->Make();
-
-    tools->SetUnfoldingAlgorithm(AliJetFlowTools::kChi2);
-    tools->SetBeta(0.01);
-    tools->CreateOutputList(TString("chi2_0.01"));
-    tools->Make();
-
-    tools->SetUnfoldingAlgorithm(AliJetFlowTools::kChi2);
-    tools->SetBeta(0.05);
-    tools->CreateOutputList(TString("chi2_0.05"));
-    tools->Make();
-
+ 
+    for(Int_t j(3); j < 7; j++) {
+        tools->CreateOutputList(TString(Form("SVD_kreg_%i", j)));
+        tools->SetSVDReg(j);
+        tools->Make();
+    }
     // finish the unfolding
+    // will write the output to file
+    
     tools->Finish();
 }
 
