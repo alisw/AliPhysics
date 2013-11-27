@@ -42,6 +42,9 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   : AliAnalysisTaskPIDV0base()
   , fPIDcombined(new AliPIDCombined())
   , fInputFromOtherTask(kFALSE)
+  , fDoPID(kTRUE)
+  , fDoEfficiency(kTRUE)
+  , fDoPtResolution(kTRUE)
   , fStoreCentralityPercentile(kFALSE)
   , fStoreAdditionalJetInformation(kFALSE)
   , fTakeIntoAccountMuons(kFALSE)
@@ -123,6 +126,7 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   , fh1Trials(0x0)
   , fContainerEff(0x0)
   , fOutputContainer(0x0)
+  , fPtResolutionContainer(0x0)
 {
   // default Constructor
   
@@ -143,6 +147,8 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
     fFractionHists[i] = 0x0;
     fFractionSysErrorHists[i] = 0x0;
+    
+    fPtResolution[i] = 0x0;
   }
 }
 
@@ -151,6 +157,9 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   : AliAnalysisTaskPIDV0base(name)
   , fPIDcombined(new AliPIDCombined())
   , fInputFromOtherTask(kFALSE)
+  , fDoPID(kTRUE)
+  , fDoEfficiency(kTRUE)
+  , fDoPtResolution(kTRUE)
   , fStoreCentralityPercentile(kFALSE)
   , fStoreAdditionalJetInformation(kFALSE)
   , fTakeIntoAccountMuons(kFALSE)
@@ -232,6 +241,7 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   , fh1Trials(0x0)
   , fContainerEff(0x0)
   , fOutputContainer(0x0)
+  , fPtResolutionContainer(0x0)
 {
   // Constructor
   
@@ -252,15 +262,19 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
     fFractionHists[i] = 0x0;
     fFractionSysErrorHists[i] = 0x0;
+    
+    fPtResolution[i] = 0x0;
   }
   
   // Define input and output slots here
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
-  // Output slot #0 writes into a TH1 container
+
   DefineOutput(1, TObjArray::Class());
   
   DefineOutput(2, AliCFContainer::Class());
+  
+  DefineOutput(3, TObjArray::Class());
 }
 
 
@@ -272,10 +286,13 @@ AliAnalysisTaskPID::~AliAnalysisTaskPID()
   CleanupParticleFractionHistos();
   
   delete fOutputContainer;
-  fOutputContainer = 0;
+  fOutputContainer = 0x0;
+  
+  delete fPtResolutionContainer;
+  fPtResolutionContainer = 0x0;
 
   delete fConvolutedGausDeltaPrime;
-  fConvolutedGausDeltaPrime = 0;
+  fConvolutedGausDeltaPrime = 0x0;
   
   delete [] fGenRespElDeltaPrimeEl;
   delete [] fGenRespElDeltaPrimeKa;
@@ -386,6 +403,12 @@ void AliAnalysisTaskPID::SetUpPIDcombined()
 {
   // Initialise the PIDcombined object
   
+  if (!fDoPID)
+    return;
+  
+  if(fDebug > 1)
+    printf("File: %s, Line: %d: SetUpPIDcombined\n", (char*)__FILE__, __LINE__);
+  
   if (!fPIDcombined) {
     AliFatal("No PIDcombined object!\n");
     return;
@@ -417,6 +440,9 @@ void AliAnalysisTaskPID::SetUpPIDcombined()
   
   fPIDcombined->SetDetectorMask(detectorMask);
   fPIDcombined->SetRejectMismatchMask(rejectMismatchMask);
+  
+  if(fDebug > 1)
+    printf("File: %s, Line: %d: SetUpPIDcombined done\n", (char*)__FILE__, __LINE__);
 }
 
 
@@ -426,6 +452,9 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   // Create histograms
   // Called once
 
+  if(fDebug > 1)
+    printf("File: %s, Line: %d: UserCreateOutputObjects\n", (char*)__FILE__, __LINE__);
+  
   SetUpPIDcombined();
 
   // Input handler
@@ -441,10 +470,16 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
       AliFatal("PIDResponse object was not created");
   }
   
+  if(fDebug > 2)
+    printf("File: %s, Line: %d: UserCreateOutputObjects -> Retrieved PIDresponse object\n", (char*)__FILE__, __LINE__);
+  
   OpenFile(1);
-    
+  
+  if(fDebug > 2)
+    printf("File: %s, Line: %d: UserCreateOutputObjects -> OpenFile(1) successful\n", (char*)__FILE__, __LINE__);
+  
   fOutputContainer = new TObjArray(1);
-  fOutputContainer->SetName(GetName()) ;
+  fOutputContainer->SetName(GetName());
   fOutputContainer->SetOwner(kTRUE);
   
   const Int_t nPtBins = 68;
@@ -543,9 +578,11 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   
   fConvolutedGausDeltaPrime->SetNpx(deltaPrimeNBins);
 
-  fhPIDdataAll = new THnSparseD("hPIDdataAll","", nBins, bins, xmin, xmax);
-  SetUpHist(fhPIDdataAll, binsPt, deltaPrimeBins, binsCent, binsJetPt);
-  fOutputContainer->Add(fhPIDdataAll);
+  if (fDoPID) {
+    fhPIDdataAll = new THnSparseD("hPIDdataAll","", nBins, bins, xmin, xmax);
+    SetUpHist(fhPIDdataAll, binsPt, deltaPrimeBins, binsCent, binsJetPt);
+    fOutputContainer->Add(fhPIDdataAll);
+  }
   
   // Generated histograms (so far, bins are the same as for primary THnSparse)
   const Int_t nGenBins = fStoreAdditionalJetInformation ? nBinsJets : nBinsNoJets;
@@ -555,38 +592,41 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   Double_t *genXmin = fStoreAdditionalJetInformation? &xminJets[0] : &xminNoJets[0];
   Double_t *genXmax = fStoreAdditionalJetInformation? &xmaxJets[0] : &xmaxNoJets[0];
 
-  fhGenEl = new THnSparseD("hGenEl", "", nGenBins, genBins, genXmin, genXmax);
-  SetUpGenHist(fhGenEl, binsPt, deltaPrimeBins, binsCent, binsJetPt);
-  fOutputContainer->Add(fhGenEl);
-  
-  fhGenKa = new THnSparseD("hGenKa", "", nGenBins, genBins, genXmin, genXmax);
-  SetUpGenHist(fhGenKa, binsPt, deltaPrimeBins, binsCent, binsJetPt);
-  fOutputContainer->Add(fhGenKa);
-  
-  fhGenPi = new THnSparseD("hGenPi", "", nGenBins, genBins, genXmin, genXmax);
-  SetUpGenHist(fhGenPi, binsPt, deltaPrimeBins, binsCent, binsJetPt);
-  fOutputContainer->Add(fhGenPi);
-  
-  if (fTakeIntoAccountMuons) {
-    fhGenMu = new THnSparseD("hGenMu", "", nGenBins, genBins, genXmin, genXmax);
-    SetUpGenHist(fhGenMu, binsPt, deltaPrimeBins, binsCent, binsJetPt);
-    fOutputContainer->Add(fhGenMu);
+  if (fDoPID) {
+    fhGenEl = new THnSparseD("hGenEl", "", nGenBins, genBins, genXmin, genXmax);
+    SetUpGenHist(fhGenEl, binsPt, deltaPrimeBins, binsCent, binsJetPt);
+    fOutputContainer->Add(fhGenEl);
+    
+    fhGenKa = new THnSparseD("hGenKa", "", nGenBins, genBins, genXmin, genXmax);
+    SetUpGenHist(fhGenKa, binsPt, deltaPrimeBins, binsCent, binsJetPt);
+    fOutputContainer->Add(fhGenKa);
+    
+    fhGenPi = new THnSparseD("hGenPi", "", nGenBins, genBins, genXmin, genXmax);
+    SetUpGenHist(fhGenPi, binsPt, deltaPrimeBins, binsCent, binsJetPt);
+    fOutputContainer->Add(fhGenPi);
+    
+    if (fTakeIntoAccountMuons) {
+      fhGenMu = new THnSparseD("hGenMu", "", nGenBins, genBins, genXmin, genXmax);
+      SetUpGenHist(fhGenMu, binsPt, deltaPrimeBins, binsCent, binsJetPt);
+      fOutputContainer->Add(fhGenMu);
+    }
+    
+    fhGenPr = new THnSparseD("hGenPr", "", nGenBins, genBins, genXmin, genXmax);
+    SetUpGenHist(fhGenPr, binsPt, deltaPrimeBins, binsCent, binsJetPt);
+    fOutputContainer->Add(fhGenPr);
+    
+    
+    fhEventsProcessed = new TH1D("fhEventsProcessed","Number of processed events;Centrality percentile", nCentBins,
+                                 binsCent);
+    fhEventsProcessed->Sumw2();
+    fOutputContainer->Add(fhEventsProcessed);
+    
+    fhSkippedTracksForSignalGeneration = new TH2D("fhSkippedTracksForSignalGeneration",
+                                                  "Number of tracks skipped for the signal generation;P_{T}^{gen} (GeV/c);TPC signal N", 
+                                                  nPtBins, binsPt, 161, -0.5, 160.5);
+    fhSkippedTracksForSignalGeneration->Sumw2();
+    fOutputContainer->Add(fhSkippedTracksForSignalGeneration);
   }
-  
-  fhGenPr = new THnSparseD("hGenPr", "", nGenBins, genBins, genXmin, genXmax);
-  SetUpGenHist(fhGenPr, binsPt, deltaPrimeBins, binsCent, binsJetPt);
-  fOutputContainer->Add(fhGenPr);
-  
-  
-  fhEventsProcessed = new TH1D("fhEventsProcessed","Number of processed events;Centrality percentile", nCentBins, binsCent);
-  fhEventsProcessed->Sumw2();
-  fOutputContainer->Add(fhEventsProcessed);
-  
-  fhSkippedTracksForSignalGeneration = new TH2D("fhSkippedTracksForSignalGeneration",
-                                                "Number of tracks skipped for the signal generation;P_{T}^{gen} (GeV/c);TPC signal N", 
-                                                nPtBins, binsPt, 161, -0.5, 160.5);
-  fhSkippedTracksForSignalGeneration->Sumw2();
-  fOutputContainer->Add(fhSkippedTracksForSignalGeneration);
   
   
   // Generated yields within acceptance
@@ -601,81 +641,93 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
                                                binsCharge[nChargeBins] };
   genYieldsXmax[GetIndexOfChargeAxisGenYield()] = binsCharge[nChargeBins];
   
-  fhMCgeneratedYieldsPrimaries = new THnSparseD("fhMCgeneratedYieldsPrimaries", 
-                                                "Generated yields w/o reco and cuts inside acceptance (physical primaries)", 
-                                                nBinsGenYields, genYieldsBins, genYieldsXmin, genYieldsXmax);
-  SetUpGenYieldHist(fhMCgeneratedYieldsPrimaries, binsPt, binsCent, binsJetPt);
-  fOutputContainer->Add(fhMCgeneratedYieldsPrimaries);
+  if (fDoPID) {
+    fhMCgeneratedYieldsPrimaries = new THnSparseD("fhMCgeneratedYieldsPrimaries", 
+                                                  "Generated yields w/o reco and cuts inside acceptance (physical primaries)", 
+                                                  nBinsGenYields, genYieldsBins, genYieldsXmin, genYieldsXmax);
+    SetUpGenYieldHist(fhMCgeneratedYieldsPrimaries, binsPt, binsCent, binsJetPt);
+    fOutputContainer->Add(fhMCgeneratedYieldsPrimaries);
+  }
   
   // Container with several process steps (generated and reconstructed level with some variations)
-  OpenFile(2);
- 
-  // Array for the number of bins in each dimension
-  // Dimensions: MC-ID, trackPt, trackEta, trackCharge, cenrality percentile, jetPt, z, xi TODO phi???
-  const Int_t nEffDims = fStoreAdditionalJetInformation ? kEffNumAxes : kEffNumAxes - 3; // Number of dimensions for the efficiency
+  if (fDoEfficiency) {
+    OpenFile(2);
+    
+    if(fDebug > 2)
+    printf("File: %s, Line: %d: UserCreateOutputObjects -> OpenFile(2) successful\n", (char*)__FILE__, __LINE__);
   
-  const Int_t nMCIDbins = AliPID::kSPECIES;
-  Double_t binsMCID[nMCIDbins];
-  
-  for(Int_t i = 0; i < nMCIDbins; i++) {
-    binsMCID[i]= i; 
-  }
-  
-  const Int_t nEtaBins = 18;
-  const Double_t binsEta[nEtaBins+1] = {-0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1,
-                                         0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 };
-  
-  const Int_t nEffBins[kEffNumAxes] = { nMCIDbins, nPtBins, nEtaBins, nChargeBins, nCentBins, nJetPtBins, nZBins, nXiBins };
-  
-  fContainerEff = new AliCFContainer("containerEff", "Reconstruction Efficiency x Acceptance x Resolution and Secondary Correction",
-                                     kNumSteps, nEffDims, nEffBins);
+    // Array for the number of bins in each dimension
+    // Dimensions: MC-ID, trackPt, trackEta, trackCharge, cenrality percentile, jetPt, z, xi TODO phi???
+    const Int_t nEffDims = fStoreAdditionalJetInformation ? kEffNumAxes : kEffNumAxes - 3; // Number of dimensions for the efficiency
+    
+    const Int_t nMCIDbins = AliPID::kSPECIES;
+    Double_t binsMCID[nMCIDbins];
+    
+    for(Int_t i = 0; i < nMCIDbins; i++) {
+      binsMCID[i]= i; 
+    }
+    
+    const Int_t nEtaBins = 18;
+    const Double_t binsEta[nEtaBins+1] = {-0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1,
+                                          0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 };
+    
+    const Int_t nEffBins[kEffNumAxes] = { nMCIDbins, nPtBins, nEtaBins, nChargeBins, nCentBins, nJetPtBins, nZBins, nXiBins };
+    
+    fContainerEff = new AliCFContainer("containerEff", "Reconstruction Efficiency x Acceptance x Resolution and Secondary Correction",
+                                      kNumSteps, nEffDims, nEffBins);
 
-  // Setting the bin limits
-  fContainerEff->SetBinLimits(kEffMCID, binsMCID);
-  fContainerEff->SetBinLimits(kEffTrackPt, binsPt);
-  fContainerEff->SetBinLimits(kEffTrackEta, binsEta);
-  fContainerEff->SetBinLimits(kEffTrackCharge, binsCharge);
-  fContainerEff->SetBinLimits(kEffCentrality, binsCent);
-  if (fStoreAdditionalJetInformation) {
-    fContainerEff->SetBinLimits(kEffJetPt, binsJetPt);
-    fContainerEff->SetBinLimits(kEffZ, zMin, zMax);
-    fContainerEff->SetBinLimits(kEffXi, xiMin, xiMax);
+    // Setting the bin limits
+    fContainerEff->SetBinLimits(kEffMCID, binsMCID);
+    fContainerEff->SetBinLimits(kEffTrackPt, binsPt);
+    fContainerEff->SetBinLimits(kEffTrackEta, binsEta);
+    fContainerEff->SetBinLimits(kEffTrackCharge, binsCharge);
+    fContainerEff->SetBinLimits(kEffCentrality, binsCent);
+    if (fStoreAdditionalJetInformation) {
+      fContainerEff->SetBinLimits(kEffJetPt, binsJetPt);
+      fContainerEff->SetBinLimits(kEffZ, zMin, zMax);
+      fContainerEff->SetBinLimits(kEffXi, xiMin, xiMax);
+    }
+    
+    fContainerEff->SetVarTitle(kEffMCID,"MC ID");
+    fContainerEff->SetVarTitle(kEffTrackPt,"P_{T} (GeV/c)");
+    fContainerEff->SetVarTitle(kEffTrackEta,"#eta");
+    fContainerEff->SetVarTitle(kEffTrackCharge,"Charge (e_{0})");
+    fContainerEff->SetVarTitle(kEffCentrality, "Centrality Percentile");
+    if (fStoreAdditionalJetInformation) {
+      fContainerEff->SetVarTitle(kEffJetPt, "P_{T}^{jet} (GeV/c)");
+      fContainerEff->SetVarTitle(kEffZ, "z = P_{T}^{track} / P_{T}^{jet}");
+      fContainerEff->SetVarTitle(kEffXi, "#xi = ln(P_{T}^{jet} / P_{T}^{track})");
+    }
+    
+    // Define clean MC sample
+    fContainerEff->SetStepTitle(kStepGenWithGenCuts, "Particle level, cuts on particle level");
+    // For Acceptance x Efficiency correction of primaries
+    fContainerEff->SetStepTitle(kStepRecWithGenCuts, "Detector level (rec) with cuts on particle level"); 
+    // For (pT) resolution correction
+    fContainerEff->SetStepTitle(kStepRecWithGenCutsMeasuredObs, 
+                                "Detector level (rec) with cuts on particle level with measured observables");
+    // For secondary correction
+    fContainerEff->SetStepTitle(kStepRecWithRecCutsMeasuredObs, 
+                                "Detector level, all cuts on detector level with measured observables");
+    fContainerEff->SetStepTitle(kStepRecWithRecCutsPrimaries, 
+                                "Detector level, all cuts on detector level, only MC primaries");
+    fContainerEff->SetStepTitle(kStepRecWithRecCutsMeasuredObsPrimaries, 
+                                "Detector level, all cuts on detector level with measured observables, only MC primaries");
+    fContainerEff->SetStepTitle(kStepRecWithRecCutsMeasuredObsStrangenessScaled, 
+                                "Detector level (strangeness scaled), all cuts on detector level with measured observables");
   }
   
-  fContainerEff->SetVarTitle(kEffMCID,"MC ID");
-  fContainerEff->SetVarTitle(kEffTrackPt,"P_{T} (GeV/c)");
-  fContainerEff->SetVarTitle(kEffTrackEta,"#eta");
-  fContainerEff->SetVarTitle(kEffTrackCharge,"Charge (e_{0})");
-  fContainerEff->SetVarTitle(kEffCentrality, "Centrality Percentile");
-  if (fStoreAdditionalJetInformation) {
-    fContainerEff->SetVarTitle(kEffJetPt, "P_{T}^{jet} (GeV/c)");
-    fContainerEff->SetVarTitle(kEffZ, "z = P_{T}^{track} / P_{T}^{jet}");
-    fContainerEff->SetVarTitle(kEffXi, "#xi = ln(P_{T}^{jet} / P_{T}^{track})");
+  if (fDoPID || fDoEfficiency) {
+    // Generated jets
+    fh2FFJetPtRec = new TH2D("fh2FFJetPtRec", "Number of reconstructed jets;Centrality Percentile;P_{T}^{jet} (GeV/c)",
+                            nCentBins, binsCent, nJetPtBins, binsJetPt);
+    fh2FFJetPtRec->Sumw2();
+    fOutputContainer->Add(fh2FFJetPtRec);
+    fh2FFJetPtGen = new TH2D("fh2FFJetPtGen", "Number of generated jets;Centrality Percentile;P_{T}^{jet} (GeV/c)",
+                            nCentBins, binsCent, nJetPtBins, binsJetPt);
+    fh2FFJetPtGen->Sumw2();
+    fOutputContainer->Add(fh2FFJetPtGen);
   }
-  
-  // Define clean MC sample
-  fContainerEff->SetStepTitle(kStepGenWithGenCuts, "Particle level, cuts on particle level");
-  // For Acceptance x Efficiency correction of primaries
-  fContainerEff->SetStepTitle(kStepRecWithGenCuts, "Detector level (rec) with cuts on particle level"); 
-  // For (pT) resolution correction
-  fContainerEff->SetStepTitle(kStepRecWithGenCutsMeasuredObs, 
-                              "Detector level (rec) with cuts on particle level with measured observables");
-  // For secondary correction
-  fContainerEff->SetStepTitle(kStepRecWithRecCutsMeasuredObs, "Detector level, all cuts on detector level with measured observables");
-  fContainerEff->SetStepTitle(kStepRecWithRecCutsMeasuredObsPrimaries, 
-                              "Detector level, all cuts on detector level with measured observables, only MC primaries");
-  fContainerEff->SetStepTitle(kStepRecWithRecCutsMeasuredObsStrangenessScaled, 
-                              "Detector level (strangeness scaled), all cuts on detector level with measured observables");
-  
-  // Generated jets
-  fh2FFJetPtRec = new TH2D("fh2FFJetPtRec", "Number of reconstructed jets;Centrality Percentile;P_{T}^{jet} (GeV/c)",
-                           nCentBins, binsCent, nJetPtBins, binsJetPt);
-  fh2FFJetPtRec->Sumw2();
-  fOutputContainer->Add(fh2FFJetPtRec);
-  fh2FFJetPtGen = new TH2D("fh2FFJetPtGen", "Number of generated jets;Centrality Percentile;P_{T}^{jet} (GeV/c)",
-                           nCentBins, binsCent, nJetPtBins, binsJetPt);
-  fh2FFJetPtGen->Sumw2();
-  fOutputContainer->Add(fh2FFJetPtGen);
   
   // Pythia information
   fh1Xsec = new TProfile("fh1Xsec", "xsec from pyxsec.root", 1, 0, 1);
@@ -688,7 +740,37 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   fOutputContainer->Add(fh1Xsec);
   fOutputContainer->Add(fh1Trials);
   
+  if (fDoPtResolution) {
+    OpenFile(3);
+    
+    if(fDebug > 2)
+    printf("File: %s, Line: %d: UserCreateOutputObjects -> OpenFile(3) successful\n", (char*)__FILE__, __LINE__);
+    
+    fPtResolutionContainer = new TObjArray(1);
+    fPtResolutionContainer->SetName(Form("%s_PtResolution", GetName()));
+    fPtResolutionContainer->SetOwner(kTRUE);
+    
+    const Int_t nBinsPtResolution = kPtResNumAxes;
+    Int_t ptResolutionBins[kPtResNumAxes]    = { nJetPtBins,                    nPtBins,         nPtBins };
+    Double_t ptResolutionXmin[kPtResNumAxes] = { binsJetPt[0],                binsPt[0],       binsPt[0] };
+    Double_t ptResolutionXmax[kPtResNumAxes] = { binsJetPt[nJetPtBins], binsPt[nPtBins], binsPt[nPtBins] };
+
+    for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
+      fPtResolution[i] = new THnSparseD(Form("fPtResolution_%s", AliPID::ParticleShortName(i)), 
+                                        Form("Pt resolution for primaries, %s", AliPID::ParticleLatexName(i)),
+                                        nBinsPtResolution, ptResolutionBins, ptResolutionXmin, ptResolutionXmax);
+      SetUpPtResHist(fPtResolution[i], binsPt, binsJetPt);
+      fPtResolutionContainer->Add(fPtResolution[i]);
+    }
+  }
+  
+  if(fDebug > 2)
+    printf("File: %s, Line: %d: UserCreateOutputObjects -> Posting output data\n", (char*)__FILE__, __LINE__);
+  
   PostOutputData();
+  
+  if(fDebug > 2)
+    printf("File: %s, Line: %d: UserCreateOutputObjects -> Done\n", (char*)__FILE__, __LINE__);
 }
 
 
@@ -698,9 +780,15 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
   // Main loop
   // Called for each event
   
+  if(fDebug > 1)
+    printf("File: %s, Line: %d: UserExec\n", (char*)__FILE__, __LINE__);
+  
   // No processing of event, if input is fed in directly from another task
   if (fInputFromOtherTask)
     return;
+  
+  if(fDebug > 1)
+    printf("File: %s, Line: %d: UserExec -> Processing started\n", (char*)__FILE__, __LINE__);
 
   fEvent = dynamic_cast<AliVEvent*>(InputEvent());
   if (!fEvent) {
@@ -734,41 +822,47 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     centralityPercentile = fEvent->GetCentrality()->GetCentralityPercentile(fCentralityEstimator.Data());
   
   if (fMC) {
-    for (Int_t iPart = 0; iPart < fMC->GetNumberOfTracks(); iPart++) { 
-      AliMCParticle *mcPart  = dynamic_cast<AliMCParticle*>(fMC->GetTrack(iPart));
-      
-      if (!mcPart)
-          continue;
-      
-      // Define clean MC sample with corresponding particle level track cuts:
-      // - MC-track must be in desired eta range
-      // - MC-track must be physical primary
-      // - Species must be one of those in question (everything else goes to the overflow bin of mcID)
-      
-      // Geometrie should be the same as on the reconstructed level -> By definition analysis within this eta interval
-      if (TMath::Abs(mcPart->Eta()) < fEtaAbsCutLow || TMath::Abs(mcPart->Eta()) > fEtaAbsCutUp)  continue;
-      
-      Int_t mcID = PDGtoMCID(mcPart->PdgCode());
-      
-      // AliMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
-      Double_t chargeMC = mcPart->Charge() / 3.;
-      
-      if (TMath::Abs(chargeMC) < 0.01)
-        continue; // Reject neutral particles (only relevant, if mcID is not used)
-      
-      Double_t valuesGenYield[kGenYieldNumAxes] = { mcID, mcPart->Pt(), centralityPercentile, -1, -1, -1, -1 };
-      valuesGenYield[GetIndexOfChargeAxisGenYield()] = chargeMC;
-      
-      if (!fMC->IsPhysicalPrimary(iPart)) 
-          continue;
-      
-      fhMCgeneratedYieldsPrimaries->Fill(valuesGenYield);
-      
-      
-      Double_t valueEff[kEffNumAxes] = { mcID, mcPart->Pt(), mcPart->Eta(), chargeMC, centralityPercentile,
-                                         -1, -1, -1 };
-      
-      fContainerEff->Fill(valueEff, kStepGenWithGenCuts);    
+    if (fDoPID || fDoEfficiency) {
+      for (Int_t iPart = 0; iPart < fMC->GetNumberOfTracks(); iPart++) { 
+        AliMCParticle *mcPart  = dynamic_cast<AliMCParticle*>(fMC->GetTrack(iPart));
+        
+        if (!mcPart)
+            continue;
+        
+        // Define clean MC sample with corresponding particle level track cuts:
+        // - MC-track must be in desired eta range
+        // - MC-track must be physical primary
+        // - Species must be one of those in question (everything else goes to the overflow bin of mcID)
+        
+        // Geometrie should be the same as on the reconstructed level -> By definition analysis within this eta interval
+        if (TMath::Abs(mcPart->Eta()) < fEtaAbsCutLow || TMath::Abs(mcPart->Eta()) > fEtaAbsCutUp)  continue;
+        
+        Int_t mcID = PDGtoMCID(mcPart->PdgCode());
+        
+        // AliMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
+        Double_t chargeMC = mcPart->Charge() / 3.;
+        
+        if (TMath::Abs(chargeMC) < 0.01)
+          continue; // Reject neutral particles (only relevant, if mcID is not used)
+        
+        if (!fMC->IsPhysicalPrimary(iPart)) 
+            continue;
+        
+        if (fDoPID) {
+          Double_t valuesGenYield[kGenYieldNumAxes] = { mcID, mcPart->Pt(), centralityPercentile, -1, -1, -1, -1 };
+          valuesGenYield[GetIndexOfChargeAxisGenYield()] = chargeMC;
+        
+          fhMCgeneratedYieldsPrimaries->Fill(valuesGenYield);
+        }
+        
+        
+        if (fDoEfficiency) {
+          Double_t valueEff[kEffNumAxes] = { mcID, mcPart->Pt(), mcPart->Eta(), chargeMC, centralityPercentile,
+                                            -1, -1, -1 };
+          
+          fContainerEff->Fill(valueEff, kStepGenWithGenCuts);    
+        }
+      }
     }
   }
   
@@ -828,43 +922,67 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
       pdg = mcTrack->PdgCode();
       mcID = PDGtoMCID(mcTrack->PdgCode());
       
-      // For efficiency: Reconstructed track has survived all cuts on the detector level (excluding acceptance)
-      // and has an associated MC track which is a physical primary and was generated inside the acceptance
-      if (fMC->IsPhysicalPrimary(TMath::Abs(label)) &&
-          (TMath::Abs(mcTrack->Eta()) >= fEtaAbsCutLow && TMath::Abs(mcTrack->Eta()) <= fEtaAbsCutUp)) {
-        
-        // AliMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
-        Double_t value[kEffNumAxes] = { mcID, mcTrack->Pt(), mcTrack->Eta(), mcTrack->Charge() / 3., centralityPercentile,
-                                        -1, -1, -1 };
-        fContainerEff->Fill(value, kStepRecWithGenCuts);    
+      if (fDoEfficiency) {
+        // For efficiency: Reconstructed track has survived all cuts on the detector level (excluding acceptance)
+        // and has an associated MC track which is a physical primary and was generated inside the acceptance
+        if (fMC->IsPhysicalPrimary(TMath::Abs(label)) &&
+            (TMath::Abs(mcTrack->Eta()) >= fEtaAbsCutLow && TMath::Abs(mcTrack->Eta()) <= fEtaAbsCutUp)) {
           
-        Double_t valueMeas[kEffNumAxes] = { mcID, track->Pt(), track->Eta(), track->Charge(), centralityPercentile,
-                                            -1, -1, -1 };
-        fContainerEff->Fill(valueMeas, kStepRecWithGenCutsMeasuredObs);    
+          // AliMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
+          Double_t value[kEffNumAxes] = { mcID, mcTrack->Pt(), mcTrack->Eta(), mcTrack->Charge() / 3., centralityPercentile,
+                                          -1, -1, -1 };
+          fContainerEff->Fill(value, kStepRecWithGenCuts);    
+            
+          Double_t valueMeas[kEffNumAxes] = { mcID, track->Pt(), track->Eta(), track->Charge(), centralityPercentile,
+                                              -1, -1, -1 };
+          fContainerEff->Fill(valueMeas, kStepRecWithGenCutsMeasuredObs);    
+        }
       }
     }
    
     // Only process tracks inside the desired eta window    
     if (TMath::Abs(track->Eta()) < fEtaAbsCutLow || TMath::Abs(track->Eta()) > fEtaAbsCutUp)  continue;
    
-    ProcessTrack(track, pdg, centralityPercentile, -1); // No jet information in this case -> Set jet pT to -1
+    if (fDoPID) 
+      ProcessTrack(track, pdg, centralityPercentile, -1); // No jet information in this case -> Set jet pT to -1
     
-    if (mcTrack) {
-      Double_t valueRecAllCuts[kEffNumAxes] = { mcID, track->Pt(), track->Eta(), track->Charge(), centralityPercentile,
-                                                -1, -1, -1 };
-      fContainerEff->Fill(valueRecAllCuts, kStepRecWithRecCutsMeasuredObs);
-      
-      Double_t weight = IsSecondaryWithStrangeMotherMC(fMC, TMath::Abs(label)) ? GetMCStrangenessFactorCMS(fMC, mcTrack) : 1.0;
-      fContainerEff->Fill(valueRecAllCuts, kStepRecWithRecCutsMeasuredObsStrangenessScaled, weight);
-      
-      if (fMC->IsPhysicalPrimary(TMath::Abs(label)))
-        fContainerEff->Fill(valueRecAllCuts, kStepRecWithRecCutsMeasuredObsPrimaries);
+    if (fDoPtResolution) {
+      if (mcTrack && fMC->IsPhysicalPrimary(TMath::Abs(label))) {
+        Double_t valuePtRes[kPtResNumAxes] = { -1, mcTrack->Pt(), track->Pt() };
+        fPtResolution[mcID]->Fill(valuePtRes);
+      }
+    }
+    
+    if (fDoEfficiency) {
+      if (mcTrack) {
+        Double_t valueRecAllCuts[kEffNumAxes] = { mcID, track->Pt(), track->Eta(), track->Charge(), centralityPercentile,
+                                                  -1, -1, -1 };
+        fContainerEff->Fill(valueRecAllCuts, kStepRecWithRecCutsMeasuredObs);
+        
+        Double_t weight = IsSecondaryWithStrangeMotherMC(fMC, TMath::Abs(label)) ? 
+                                                                GetMCStrangenessFactorCMS(fMC, mcTrack) : 1.0;
+        fContainerEff->Fill(valueRecAllCuts, kStepRecWithRecCutsMeasuredObsStrangenessScaled, weight);
+        
+        // AliMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
+        Double_t valueGenAllCuts[kEffNumAxes] = { mcID, mcTrack->Pt(), mcTrack->Eta(), mcTrack->Charge() / 3., 
+                                                  centralityPercentile, -1, -1, -1 };
+        if (fMC->IsPhysicalPrimary(TMath::Abs(label))) {
+          fContainerEff->Fill(valueRecAllCuts, kStepRecWithRecCutsMeasuredObsPrimaries);
+          fContainerEff->Fill(valueGenAllCuts, kStepRecWithRecCutsPrimaries);
+        }
+      }
     }
   } //track loop 
   
   IncrementEventsProcessed(centralityPercentile);
 
+  if(fDebug > 2)
+    printf("File: %s, Line: %d: UserExec -> Processing done\n", (char*)__FILE__, __LINE__);
+  
   PostOutputData();
+  
+  if(fDebug > 2)
+    printf("File: %s, Line: %d: UserExec -> Done\n", (char*)__FILE__, __LINE__);
 }      
 
 //________________________________________________________________________
@@ -971,6 +1089,9 @@ Double_t AliAnalysisTaskPID::ConvolutedGaus(const Double_t* xx, const Double_t* 
   const Double_t mean = par[0];
   const Double_t sigma = par[1];
   const Double_t lambda = par[2];
+  
+  if(fDebug > 5)
+    printf("File: %s, Line: %d: ConvolutedGaus: mean %e, sigma %e, lambda %e\n", (char*)__FILE__, __LINE__, mean, sigma, lambda);
   
   return lambda/sigma*TMath::Exp(-lambda/sigma*(xx[0]-mean)+lambda*lambda*0.5)*0.5*TMath::Erfc((-xx[0]+mean+sigma*lambda)/sigma*fgkOneOverSqrt2);
 }
@@ -1752,6 +1873,12 @@ void AliAnalysisTaskPID::PrintSettings(Bool_t printSystematicsSettings) const
   printf("[2]: %e\n", GetConvolutedGaussTransitionPar(2));
   
   printf("\n");
+  
+  printf("Do PID: %d\n", fDoPID);
+  printf("Do Efficiency: %d\n", fDoEfficiency);
+  printf("Do PtResolution: %d\n", fDoPtResolution);
+  
+  printf("\n");
 
   printf("Input from other task: %d\n", GetInputFromOtherTask());
   printf("Store additional jet information: %d\n", GetStoreAdditionalJetInformation());
@@ -1790,6 +1917,15 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   
   //Printf("Debug: Task %s is starting to process track: dEdx %f, pTPC %f, eta %f, ncl %d\n", GetName(), track->GetTPCsignal(), track->GetTPCmomentum(),
   //       track->Eta(), track->GetTPCsignalN());
+  
+  if(fDebug > 1)
+    printf("File: %s, Line: %d: ProcessTrack\n", (char*)__FILE__, __LINE__);
+  
+  if (!fDoPID)
+    return kFALSE;
+  
+  if(fDebug > 2)
+    printf("File: %s, Line: %d: ProcessTrack -> Processing started\n", (char*)__FILE__, __LINE__);
   
   const Bool_t isMC = (particlePDGcode == 0) ? kFALSE : kTRUE;
   
@@ -2058,6 +2194,8 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   Float_t protonDeltaTOF = GetDeltaTOF(track, &tofPIDResponse, times, AliPID::kProton);
   */
   
+  if(fDebug > 2)
+    printf("File: %s, Line: %d: ProcessTrack -> Compute probabilities\n", (char*)__FILE__, __LINE__);
   
   // Use probabilities to weigh the response generation for the different species.
   // Also determine the most probable particle type.
@@ -2208,6 +2346,9 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
     numGenEntries = fgkMaxNumGenEntries;
       
   ErrorCode errCode = kNoErrors;
+  
+  if(fDebug > 2)
+    printf("File: %s, Line: %d: ProcessTrack -> Generate Responses\n", (char*)__FILE__, __LINE__);
   
   // Electrons
   errCode = GenerateDetectorResponse(errCode, 1.,              sigmaEl / dEdxEl, fGenRespElDeltaPrimeEl, numGenEntries);
@@ -2425,6 +2566,9 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
     fhGenPr->Fill(genEntry);
   }
   
+  if(fDebug > 2)
+    printf("File: %s, Line: %d: ProcessTrack -> Done\n", (char*)__FILE__, __LINE__);
+  
   return kTRUE;
 }
 
@@ -2633,6 +2777,9 @@ AliAnalysisTaskPID::ErrorCode AliAnalysisTaskPID::SetParamsForConvolutedGaus(con
   // If SetConvolutedGaussLambdaParameter has not been called before to initialise the translation parameters,
   // some default parameters will be used and an error will show up.
   
+  if(fDebug > 1)
+    printf("File: %s, Line: %d: SetParamsForConvolutedGaus: mean %e, sigma %e\n", (char*)__FILE__, __LINE__, gausMean, gausSigma);
+  
   if (fConvolutedGaussTransitionPars[1] < -998) {
     AliError("Transition parameters not initialised! Default parameters will be used. Please call SetConvolutedGaussLambdaParameter(...) before any calculations!");
     SetConvolutedGaussLambdaParameter(2.0);
@@ -2648,6 +2795,11 @@ AliAnalysisTaskPID::ErrorCode AliAnalysisTaskPID::SetParamsForConvolutedGaus(con
   
   ErrorCode errCode = kNoErrors;
   fConvolutedGausDeltaPrime->SetParameters(par);
+  
+  if(fDebug > 3)
+    printf("File: %s, Line: %d: SetParamsForConvolutedGaus -> Parameters set to: %e, %e, %e (transition pars: %e, %e, %e, %e)\n",
+           (char*)__FILE__, __LINE__, par[0], par[1], par[2], fConvolutedGaussTransitionPars[0], fConvolutedGaussTransitionPars[1], 
+           fConvolutedGaussTransitionPars[2], fgkSigmaReferenceForTransitionPars);
   
   fConvolutedGausDeltaPrime->SetNpx(20); // Small value speeds up following algorithm (valid, since extrema far apart)
 
@@ -2733,6 +2885,10 @@ AliAnalysisTaskPID::ErrorCode AliAnalysisTaskPID::SetParamsForConvolutedGaus(con
                                       - fhPIDdataAll->GetAxis(kDataDeltaPrimeSpecies)->FindBin(rangeStart) + 1);
     //fConvolutedGausDeltaPrime->SetNpx((rangeEnd - rangeStart) / fDeltaPrimeBinWidth + 1);
   }
+  
+  if(fDebug > 3)
+    printf("File: %s, Line: %d: SetParamsForConvolutedGaus -> range %f - %f, error code %d\n", (char*)__FILE__, __LINE__,
+           rangeStart, rangeEnd, errCode);
   
   return errCode;
 }
@@ -2884,4 +3040,20 @@ void AliAnalysisTaskPID::SetUpHist(THnSparse* hist, Double_t* binsPt, Double_t* 
   
   hist->GetAxis(7)->SetTitle("#Delta TOF_{species} (ps)");
   */
+}
+
+
+//________________________________________________________________________
+void AliAnalysisTaskPID::SetUpPtResHist(THnSparse* hist, Double_t* binsPt, Double_t* binsJetPt) const
+{
+  // Sets bin limits for axes which are not standard binned and the axes titles.
+  
+  hist->SetBinEdges(kPtResJetPt, binsJetPt);
+  hist->SetBinEdges(kPtResGenPt, binsPt);
+  hist->SetBinEdges(kPtResRecPt, binsPt);
+  
+  // Set axes titles
+  hist->GetAxis(kPtResJetPt)->SetTitle("P_{T}^{jet, rec} (GeV/c)");
+  hist->GetAxis(kPtResGenPt)->SetTitle("P_{T}^{gen} (GeV/c)");
+  hist->GetAxis(kPtResRecPt)->SetTitle("P_{T}^{rec} (GeV/c)");  
 }

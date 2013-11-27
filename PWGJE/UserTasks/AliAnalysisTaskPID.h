@@ -59,12 +59,14 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   enum genYieldAxes { kGenYieldMCID = 0, kGenYieldPt = 1, kGenYieldCentrality = 2, kGenYieldJetPt = 3, kGenYieldZ = 4, kGenYieldXi = 5,
                       kGenYieldCharge = 6, kGenYieldNumAxes = 7 };
   
+  enum ptResolutionAxes { kPtResJetPt = 0, kPtResGenPt = 1, kPtResRecPt = 2, kPtResNumAxes = 3 };
+  
   enum efficiencyAxes { kEffMCID = 0, kEffTrackPt = 1, kEffTrackEta = 2, kEffTrackCharge = 3, kEffCentrality = 4, kEffJetPt = 5,
                         kEffZ = 6, kEffXi = 7, kEffNumAxes = 8 };
   
   enum EffSteps { kStepGenWithGenCuts = 0, kStepRecWithGenCuts = 1, kStepRecWithGenCutsMeasuredObs = 2,
                   kStepRecWithRecCutsMeasuredObs = 3, kStepRecWithRecCutsMeasuredObsPrimaries = 4,
-                  kStepRecWithRecCutsMeasuredObsStrangenessScaled = 5, kNumSteps = 6};
+                  kStepRecWithRecCutsMeasuredObsStrangenessScaled = 5, kStepRecWithRecCutsPrimaries = 6, kNumSteps = 7};
   
   static Int_t PDGtoMCID(Int_t pdg);
   
@@ -90,12 +92,13 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   Bool_t FillEfficiencyContainer(const Double_t* values, const EffSteps step, const Double_t weight = 1.0);
   
   Bool_t FillGeneratedYield(const Double_t* values, const Double_t weight = 1.0);
+  Bool_t FillPtResolution(const Int_t mcID, const Double_t* values);
   Bool_t FillGenJets(const Double_t centralityPercentile, const Double_t jetPt, const Double_t norm = -1.);
   Bool_t FillRecJets(const Double_t centralityPercentile, const Double_t jetPt, const Double_t norm = -1.);
   
   Bool_t IncrementEventsProcessed(const Double_t centralityPercentile);
   
-  void PostOutputData() { PostData(1, fOutputContainer);  PostData(2, fContainerEff); };
+  void PostOutputData();
   
   void PrintSettings(Bool_t printSystematicsSettings = kFALSE) const;
   
@@ -119,6 +122,15 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
 
   Bool_t GetInputFromOtherTask() const { return fInputFromOtherTask; };
   void SetInputFromOtherTask(Bool_t flag) { fInputFromOtherTask = flag; };
+  
+  Bool_t GetDoPID() const { return fDoPID; };
+  void SetDoPID(Bool_t flag) { fDoPID = flag; };
+  
+  Bool_t GetDoEfficiency() const { return fDoEfficiency; };
+  void SetDoEfficiency(Bool_t flag) { fDoEfficiency = flag; };
+  
+  Bool_t GetDoPtResolution() const { return fDoPtResolution; };
+  void SetDoPtResolution(Bool_t flag) { fDoPtResolution = flag; };
   
   Bool_t GetStoreCentralityPercentile() const { return fStoreCentralityPercentile; };
   void SetStoreCentralityPercentile(Bool_t flag) { fStoreCentralityPercentile = flag; };
@@ -207,6 +219,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   virtual void SetUpGenHist(THnSparse* hist, Double_t* binsPt, Double_t* binsDeltaPrime, Double_t* binsCent, Double_t* binsJetPt) const;
   virtual void SetUpGenYieldHist(THnSparse* hist, Double_t* binsPt, Double_t* binsCent, Double_t* binsJetPt) const;
   virtual void SetUpHist(THnSparse* hist, Double_t* binsPt, Double_t* binsDeltaPrime, Double_t* binsCent, Double_t* binsJetPt) const;
+  void SetUpPtResHist(THnSparse* hist, Double_t* binsPt, Double_t* binsJetPt) const;
   virtual void SetUpPIDcombined();
   
   static const Int_t fgkNumJetAxes = 3; // Number of additional axes for jets
@@ -219,6 +232,10 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   AliPIDCombined* fPIDcombined; //! PID combined object
   
   Bool_t fInputFromOtherTask; // If set to kTRUE, no events are processed and the input must be fed in from another task. If set to kFALSE, normal event processing
+  
+  Bool_t fDoPID; // Only do PID processing (and post the output), if flag is set to kTRUE
+  Bool_t fDoEfficiency; // Only do efficiency processing (and post the output), if flag is set to kTRUE
+  Bool_t fDoPtResolution; // Only do pT resolution processing (and post the output), if flag is set to kTRUE
   
   Bool_t fStoreCentralityPercentile; // If set to kTRUE, store centrality percentile for each event. In case of kFALSE (appropriate for pp), centrality percentile will be set to -1 for every event
   Bool_t fStoreAdditionalJetInformation; // If set to kTRUE, additional jet information like jetPt, z, xi will be stored in the THnSparses
@@ -323,12 +340,16 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   AliCFContainer* fContainerEff; // Container for efficiency determination
   
-  TObjArray * fOutputContainer; // output data container
+  THnSparseD* fPtResolution[AliPID::kSPECIES]; // Pt Resolution for the individual species
+  
+  TObjArray* fOutputContainer;  // output data container
+  
+  TObjArray* fPtResolutionContainer;  // output data container for pt resolution
   
   AliAnalysisTaskPID(const AliAnalysisTaskPID&); // not implemented
   AliAnalysisTaskPID& operator=(const AliAnalysisTaskPID&); // not implemented
   
-  ClassDef(AliAnalysisTaskPID, 12);
+  ClassDef(AliAnalysisTaskPID, 13);
 };
 
 
@@ -337,6 +358,9 @@ inline Bool_t AliAnalysisTaskPID::FillEfficiencyContainer(const Double_t* values
                                                           const Double_t weight) 
 {
   // Fill efficiency container at step "step" with the values
+  
+  if (!fDoEfficiency)
+    return kFALSE;
   
   if (!fContainerEff) {
     AliError("Efficiency container not initialised -> cannot be filled!");
@@ -354,6 +378,9 @@ inline Bool_t AliAnalysisTaskPID::FillGeneratedYield(const Double_t* values, con
 {
   // Fill histos with generated primary yields with provided values
   
+  if (!fDoPID)
+    return kFALSE;
+  
   if (!fhMCgeneratedYieldsPrimaries) {
     AliError("Histo for generated primary yield not initialised -> cannot be filled!");
     return kFALSE;
@@ -368,6 +395,9 @@ inline Bool_t AliAnalysisTaskPID::FillGeneratedYield(const Double_t* values, con
 //_____________________________________________________________________________
 inline Bool_t AliAnalysisTaskPID::FillGenJets(const Double_t centralityPercentile, const Double_t jetPt, const Double_t norm)
 {
+  if (!fDoPID && !fDoEfficiency)
+    return kFALSE;
+  
   if (!fh2FFJetPtGen)
     return kFALSE;
   
@@ -383,6 +413,9 @@ inline Bool_t AliAnalysisTaskPID::FillGenJets(const Double_t centralityPercentil
 //_____________________________________________________________________________
 inline Bool_t AliAnalysisTaskPID::FillRecJets(const Double_t centralityPercentile, const Double_t jetPt, const Double_t norm)
 {
+  if (!fDoPID && !fDoEfficiency)
+    return kFALSE;
+  
   if (!fh2FFJetPtRec)
     return kFALSE;
   
@@ -393,12 +426,34 @@ inline Bool_t AliAnalysisTaskPID::FillRecJets(const Double_t centralityPercentil
   
   return kTRUE;
 }
+
+
+//_____________________________________________________________________________
+inline Bool_t AliAnalysisTaskPID::FillPtResolution(const Int_t mcID, const Double_t* values)
+{
+  // Fill histos with pT resolution with provided values
+  
+  if (!fDoPtResolution || mcID < 0 || mcID >= AliPID::kSPECIES)
+    return kFALSE;
+  
+  if (!fPtResolution[mcID]) {
+    AliError(Form("Histo for pT resolution (species: %s) not initialised -> cannot be filled!", AliPID::ParticleName(mcID)));
+    return kFALSE;
+  }
+  
+  fPtResolution[mcID]->Fill(values);
+    
+  return kTRUE;
+}
  
 
 //_____________________________________________________________________________
 inline Bool_t AliAnalysisTaskPID::IncrementEventsProcessed(const Double_t centralityPercentile)
 {
   // Increment the number of processed events for the given centrality percentile
+  
+  if (!fDoPID)
+    return kFALSE;
   
   if (!fhEventsProcessed) {
     AliError("Histogram for number of events not initialised -> cannot be incremented!");
@@ -478,6 +533,19 @@ inline Double_t AliAnalysisTaskPID::GetCentralityPercentile(AliVEvent* evt) cons
     centralityPercentile = evt->GetCentrality()->GetCentralityPercentile(fCentralityEstimator.Data());
   
   return centralityPercentile;
+}
+
+
+//_____________________________________________________________________________
+inline void AliAnalysisTaskPID::PostOutputData()
+{
+  PostData(1, fOutputContainer);
+  
+  if (fDoEfficiency)
+    PostData(2, fContainerEff);
+  
+  if (fDoPtResolution)
+    PostData(3, fPtResolutionContainer);
 }
 
 #endif

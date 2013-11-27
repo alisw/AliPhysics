@@ -1497,7 +1497,7 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::Notify()
     }
   
     if(!fh1Xsec||!fh1Trials){
-      Printf("%s%d No Histogram fh1Xsec",(char*)__FILE__,__LINE__);
+      Printf("%s:%d No Histogram fh1Xsec",(char*)__FILE__,__LINE__);
       return kFALSE;
     }
     
@@ -2260,6 +2260,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
   
   
   // Load PID framework if desired
+  if(fDebug > 1) Printf("AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects() -> Loading PID framework");
   
   fUseJetPIDtask = fIDFFMode || fFFMode;
   fUseInclusivePIDtask = fQAMode && (fQAMode&1);
@@ -2308,7 +2309,11 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
     }
   }
 
+  if(fDebug > 2) Printf("AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects() -> Posting Output");
+  
   PostData(1, fCommonHistList);
+  
+  if(fDebug > 2) Printf("AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects() -> Done");
 }
 
 //_______________________________________________
@@ -2658,6 +2663,8 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
     }
   }
   
+  if(fDebug>2)Printf("%s:%d Starting processing...",(char*)__FILE__,__LINE__);
+  
   //____ analysis, fill histos ___________________________________________________
   
   if(fQAMode){
@@ -2820,11 +2827,23 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
                 fInclusivePIDtask[i]->FillEfficiencyContainer(valueRecAllCuts, 
                                                               AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObsStrangenessScaled,
                                                               weight);
-          
+              
               if (gentrack->IsPhysicalPrimary()) {
-                for (Int_t i = 0; i < fNumInclusivePIDtasks; i++)
+                // AliAODMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
+                Double_t valueGenAllCuts[AliAnalysisTaskPID::kEffNumAxes] = { mcID, gentrack->Pt(), gentrack->Eta(), 
+                                                                              gentrack->Charge() / 3., centPercent, -1, -1, 
+                                                                              -1 };
+                
+                Double_t valuePtResolution[AliAnalysisTaskPID::kPtResNumAxes] = { -1, gentrack->Pt(), inclusiveaod->Pt() };
+              
+                for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
                   fInclusivePIDtask[i]->FillEfficiencyContainer(valueRecAllCuts, 
                                                                 AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObsPrimaries);
+                  fInclusivePIDtask[i]->FillEfficiencyContainer(valueGenAllCuts, 
+                                                                AliAnalysisTaskPID::kStepRecWithRecCutsPrimaries);
+                  
+                  fInclusivePIDtask[i]->FillPtResolution(mcID, valuePtResolution);
+                }
               }
             }
           }
@@ -3111,10 +3130,26 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
             fJetPIDtask[i]->FillEfficiencyContainer(valueRecAllCuts, 
                                                     AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObsStrangenessScaled,
                                                     weight);
-            
+          
           if (gentrack->IsPhysicalPrimary()) {
-            for (Int_t i = 0; i < fNumJetPIDtasks; i++)
-              fJetPIDtask[i]->FillEfficiencyContainer(valueRecAllCuts, AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObsPrimaries);
+            // AliAODMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
+            Double_t genPt = gentrack->Pt();
+            Double_t genZ = -1., genXi = -1.;
+            AliAnalysisTaskPID::GetJetTrackObservables(genPt, jetPt, genZ, genXi);
+            Double_t valueGenAllCuts[AliAnalysisTaskPID::kEffNumAxes] = { mcID, genPt, gentrack->Eta(), 
+                                                                          gentrack->Charge() / 3., centPercent, jetPt, genZ, 
+                                                                          genXi };
+            
+            Double_t valuePtResolution[AliAnalysisTaskPID::kPtResNumAxes] = { jetPt, genPt, pT };
+            
+            for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
+              fJetPIDtask[i]->FillEfficiencyContainer(valueRecAllCuts,
+                                                      AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObsPrimaries);
+              fJetPIDtask[i]->FillEfficiencyContainer(valueGenAllCuts,
+                                                      AliAnalysisTaskPID::kStepRecWithRecCutsPrimaries);
+              
+              fJetPIDtask[i]->FillPtResolution(mcID, valuePtResolution);
+            }
           }
         }
         
