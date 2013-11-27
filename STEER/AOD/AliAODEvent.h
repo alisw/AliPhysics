@@ -96,6 +96,8 @@ class AliAODEvent : public AliVEvent {
 	(fAODObjects->FirstLink())->SetObject(fHeader);
     }
 
+  virtual  Bool_t InitMagneticField() const {return fHeader ? fHeader->InitMagneticField() : kFALSE;}
+
   // setters and getters for header information
   void     SetRunNumber(Int_t n) {if (fHeader) fHeader->SetRunNumber(n);}
   void     SetPeriodNumber(UInt_t n){if (fHeader) fHeader->SetPeriodNumber(n);}
