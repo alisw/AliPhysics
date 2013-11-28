@@ -785,8 +785,8 @@ Double_t AliTPCPIDResponse::GetEtaCorrectionFast(const AliVTrack *track, Double_
     return 1.;
   
   Double_t tanTheta = GetTrackTanTheta(track); 
-  Int_t binX = fhEtaCorr->GetXaxis()->FindBin(tanTheta);
-  Int_t binY = fhEtaCorr->GetYaxis()->FindBin(1. / tpcSignal);
+  Int_t binX = fhEtaCorr->GetXaxis()->FindFixBin(tanTheta);
+  Int_t binY = fhEtaCorr->GetYaxis()->FindFixBin(1. / tpcSignal);
   
   if (binX == 0) 
     binX = 1;
@@ -907,8 +907,8 @@ Double_t AliTPCPIDResponse::GetSigmaPar1Fast(const AliVTrack *track, AliPID::EPa
     return 999;
   
   Double_t tanTheta = GetTrackTanTheta(track);
-  Int_t binX = fhEtaSigmaPar1->GetXaxis()->FindBin(tanTheta);
-  Int_t binY = fhEtaSigmaPar1->GetYaxis()->FindBin(1. / dEdxExpected);
+  Int_t binX = fhEtaSigmaPar1->GetXaxis()->FindFixBin(tanTheta);
+  Int_t binY = fhEtaSigmaPar1->GetYaxis()->FindFixBin(1. / dEdxExpected);
     
   if (binX == 0) 
     binX = 1;
