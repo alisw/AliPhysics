@@ -47,27 +47,51 @@ public:
     kTPCpidMatchPPB2011, //Match with nsigma = fNsigmaTPC
     kNDaughterCuts
   };
-   
+
+  enum ECustomQualityCuts { 
+    kDisableCustom = -1,
+    kFilterBitCustom,
+    kStdLooserDCAXY, 
+    kStdLooserDCAZ, 
+    kStdCrossedRows60, 
+    kStdCrossedRows80, 
+    kStdRowsToCls075, 
+    kStdRowsToCls085, 
+    kStdCls70, 
+    kStdChi2TPCCls35,
+    kNcustomQualityCuts
+  };
+  
    AliRsnCutSetDaughterParticle();
    AliRsnCutSetDaughterParticle(const char *name,
                                 AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutSetID,
                                 AliPID::EParticleType pid,
                                 Float_t nsigmaFast,
                                 Int_t AODfilterBit);
+   AliRsnCutSetDaughterParticle(const char *name, 
+				AliRsnCutTrackQuality *rsnTrackQualityCut, 
+				AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutSetID, 
+				AliPID::EParticleType pid, 
+				Float_t nSigmaFast);
    AliRsnCutSetDaughterParticle(const AliRsnCutSetDaughterParticle &copy);
    AliRsnCutSetDaughterParticle &operator=(const AliRsnCutSetDaughterParticle &copy);
    virtual ~AliRsnCutSetDaughterParticle();
 
    void           Init();
+   void           InitStdQualityCuts();
    void           SetNsigmaForFastTPCpid(Float_t nsigma) {fNsigmaTPC=nsigma; return;};
    void           SetNsigmaForFastTOFpid(Float_t nsigma) {fNsigmaTOF=nsigma; return;};
    void           SetAODTrackCutFilterBit(Int_t ibit) {fAODTrkCutFilterBit=ibit; return;}
-   void           SetUseFilterBitOnly(Bool_t useFilterBitOnly=kTRUE) {fCheckOnlyFilterBit=useFilterBitOnly; return;}
-   
+   void           SetUseFilterBitOnly(Bool_t useFilterBitOnly=kTRUE) {fCheckOnlyFilterBit=useFilterBitOnly; return;}   
+   void           EnableCustomCuts(Bool_t useCustom=kFALSE) {fUseCustomQualityCuts=useCustom; return;}
+   void           SetPtRange(Double_t a, Double_t b)        {fPtRange[0] = TMath::Min(a, b); fPtRange[1] = TMath::Max(a, b); return;}
+   void           SetEtaRange(Double_t a, Double_t b)       {fEtaRange[0] = TMath::Min(a, b); fEtaRange[1] = TMath::Max(a, b); return;}
+
    //getters
    const char   *GetAppliedDaughterCutSetName() { return GetName();}
    Int_t         GetAppliedDaughterCutSetId() { return fAppliedCutSetID;}
    const AliRsnCutTrackQuality *GetQualityCut() {return fCutQuality;};
+   void          PrintTrackQualityCuts();
 
  private:
    
@@ -78,9 +102,13 @@ public:
    AliRsnCutTrackQuality *fCutQuality;       //pointer to quality cut object
    Int_t                 fAODTrkCutFilterBit; //AOD filter bit for track cuts
    Bool_t                fCheckOnlyFilterBit; //flag to use only filter bit cut
-   
-   ClassDef(AliRsnCutSetDaughterParticle, 3) // cut definitions for K*
+   Bool_t                fUseCustomQualityCuts; //flag to enable the usage of custom quality cuts
+   Float_t               fPtRange[2]; //single track pt range (min, max)
+   Float_t               fEtaRange[2]; //single track eta range (min, max)
+
+   ClassDef(AliRsnCutSetDaughterParticle, 4) // cut definitions for K*
 
 };
 
 #endif
+

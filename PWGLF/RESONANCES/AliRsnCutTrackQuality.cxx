@@ -47,6 +47,9 @@ AliRsnCutTrackQuality::AliRsnCutTrackQuality(const char *name) :
    fTPCminNClusters(0),
    fTPCmaxChi2(1E20),
    fCutMaxChi2TPCConstrainedVsGlobal(1E20),
+   fTPCminNCrossedRows(0),
+   fTPCminCrossedRowsOverFindableCls(0),
+   fCutMinLengthActiveVolumeTPC(0),
    fAODTestFilterBit(-1),
    fCheckOnlyFilterBit(kTRUE),
    fESDtrackCuts(0x0)
@@ -78,6 +81,9 @@ AliRsnCutTrackQuality::AliRsnCutTrackQuality(const AliRsnCutTrackQuality &copy) 
    fTPCminNClusters(copy.fTPCminNClusters),
    fTPCmaxChi2(copy.fTPCmaxChi2),
    fCutMaxChi2TPCConstrainedVsGlobal(copy.fCutMaxChi2TPCConstrainedVsGlobal),
+   fTPCminNCrossedRows(copy.fTPCminNCrossedRows),
+   fTPCminCrossedRowsOverFindableCls(copy.fTPCminCrossedRowsOverFindableCls),
+   fCutMinLengthActiveVolumeTPC(copy.fCutMinLengthActiveVolumeTPC),
    fAODTestFilterBit(copy.fAODTestFilterBit),
    fCheckOnlyFilterBit(copy.fCheckOnlyFilterBit),
    fESDtrackCuts(copy.fESDtrackCuts)
@@ -116,6 +122,11 @@ AliRsnCutTrackQuality &AliRsnCutTrackQuality::operator=(const AliRsnCutTrackQual
    fITSmaxChi2 = copy.fITSmaxChi2;
    fTPCminNClusters = copy.fTPCminNClusters;
    fTPCmaxChi2 = copy.fTPCmaxChi2;
+   fCutMaxChi2TPCConstrainedVsGlobal = copy.fCutMaxChi2TPCConstrainedVsGlobal;
+   fTPCminNCrossedRows = copy.fTPCminNCrossedRows;
+   fTPCminCrossedRowsOverFindableCls = copy.fTPCminCrossedRowsOverFindableCls;
+   fCutMinLengthActiveVolumeTPC = copy.fCutMinLengthActiveVolumeTPC;
+   
    fAODTestFilterBit = copy.fAODTestFilterBit;
    fCheckOnlyFilterBit = copy.fCheckOnlyFilterBit;
    fESDtrackCuts = copy.fESDtrackCuts;
@@ -147,6 +158,11 @@ void AliRsnCutTrackQuality::DisableAll()
    fTPCminNClusters = 0;
    fTPCmaxChi2 = 1E20;
    fAODTestFilterBit = -1;
+   fCutMaxChi2TPCConstrainedVsGlobal = 1E20;
+   fTPCminNCrossedRows = 0;
+   fTPCminCrossedRowsOverFindableCls = 0;
+   fCutMinLengthActiveVolumeTPC = 0.0;
+ 
    if (fESDtrackCuts) {
       const char *cutsName = fESDtrackCuts->GetName();
       const char *cutsTitle = fESDtrackCuts->GetTitle();
@@ -249,6 +265,9 @@ Bool_t AliRsnCutTrackQuality::CheckESD(AliESDtrack *track)
    cuts.SetMaxChi2PerClusterTPC(fTPCmaxChi2);
    cuts.SetAcceptKinkDaughters(!fRejectKinkDaughters);
    cuts.SetMaxChi2TPCConstrainedGlobal(fCutMaxChi2TPCConstrainedVsGlobal);
+   cuts.SetMinNCrossedRowsTPC(fTPCminNCrossedRows);
+   cuts.SetMinRatioCrossedRowsOverFindableClustersTPC(fTPCminCrossedRowsOverFindableCls);
+   cuts.SetMinLengthActiveVolumeTPC(fCutMinLengthActiveVolumeTPC);
 
    // ITS related cuts for TPC+ITS tracks
    if (fSPDminNClusters > 0)
@@ -299,7 +318,7 @@ Bool_t AliRsnCutTrackQuality::CheckAOD(AliAODTrack *track)
    }
 
 
-   // step #1: check number of clusters in TPC
+   //step #1: check number of clusters 
    if (track->GetTPCNcls() < fTPCminNClusters) {
       AliDebug(AliLog::kDebug + 2, "Too few TPC clusters. Rejected");
       return kFALSE;
@@ -309,7 +328,7 @@ Bool_t AliRsnCutTrackQuality::CheckAOD(AliAODTrack *track)
       return kFALSE;
    }
 
-   // step #2: check chi square
+   //check chi square
    if (track->Chi2perNDF() > fTPCmaxChi2) {
       AliDebug(AliLog::kDebug + 2, "Bad chi2. Rejected");
       return kFALSE;
@@ -319,7 +338,25 @@ Bool_t AliRsnCutTrackQuality::CheckAOD(AliAODTrack *track)
       return kFALSE;
    }
 
-   // step #3: reject kink daughters
+   //step #2a: check number of crossed rows in TPC
+   Float_t nCrossedRowsTPC = track->GetTPCNCrossedRows();
+   if (nCrossedRowsTPC < fTPCminNCrossedRows) {
+     AliDebug(AliLog::kDebug + 2, "Too few TPC crossed rows. Rejected");
+     return kFALSE;
+   }
+   if (track->GetTPCNclsF()>0) {
+     Float_t ratioCrossedRowsOverFindableClustersTPC = nCrossedRowsTPC / track->GetTPCNclsF();
+     if (ratioCrossedRowsOverFindableClustersTPC < fTPCminCrossedRowsOverFindableCls){
+       AliDebug(AliLog::kDebug + 2, "Too few TPC crossed rows/findable clusters. Rejected");
+       return kFALSE;
+     }
+   } else {
+     AliDebug(AliLog::kDebug + 2, "Negative value for TPC crossed rows/findable clusters. Rejected");
+     return kFALSE;
+   }
+   //step #2b: check on track length in active volume of TPC implemented only for ESD tracks
+     
+   //step #3: reject kink daughters
    AliAODVertex *vertex = track->GetProdVertex();
    if (vertex && fRejectKinkDaughters) {
       if (vertex->GetType() == AliAODVertex::kKink) {
@@ -398,7 +435,10 @@ void AliRsnCutTrackQuality::Print(const Option_t *) const
    AliInfo(Form("Required flags (off, on): %lx %lx", fFlagsOn, fFlagsOff));
    AliInfo(Form("Ranges in eta, pt       : %.2f - %.2f, %.2f - %.2f", fEta[0], fEta[1], fPt[0], fPt[1]));
    AliInfo(Form("Kink daughters are      : %s", (fRejectKinkDaughters ? "rejected" : "accepted")));
-   AliInfo(Form("TPC requirements        : min. cluster = %d, max chi2 = %f", fTPCminNClusters, fTPCmaxChi2));
+   AliInfo(Form("TPC requirements (clusters)       : min. cluster = %i, max chi2 = %f", fTPCminNClusters, fTPCmaxChi2));
+   AliInfo(Form("TPC requirements (crossed rows)   : min. crossed rows = %f, min. crossed rows/findable clusters = %f", fTPCminNCrossedRows, fTPCminCrossedRowsOverFindableCls));
+   AliInfo(Form("TPC requirements (track length)   : min. track length in active volume TPC = %f", fCutMinLengthActiveVolumeTPC));
+
    AliInfo(Form("ITS requirements        : min. cluster = %d (all), %d (SPD), max chi2 = %f", fITSminNClusters, fSPDminNClusters, fITSmaxChi2));
 
    if (fDCARfixed) {
@@ -443,13 +483,13 @@ void AliRsnCutTrackQuality::SetDefaults2010()
 void AliRsnCutTrackQuality::SetDefaults2011()
 {
 //
-// Default settings for cuts used in 2011
+// Default settings for cuts used in 2011 (for high-pT)
 //
    fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,1);
-   fESDtrackCuts->SetMinNCrossedRowsTPC(120);
+   fESDtrackCuts->SetMinNCrossedRowsTPC(120); //default is min 70 crossed rows -> use 120 to go to higher pt
    fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
    fESDtrackCuts->SetMaxChi2PerClusterITS(36);
-   fESDtrackCuts->SetMaxFractionSharedTPCClusters(0.4);
+   fESDtrackCuts->SetMaxFractionSharedTPCClusters(0.4);//default is not set --> use to go to higher pt
    fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
  
    AddStatusFlag(AliESDtrack::kTPCin   , kTRUE);
