@@ -1,18 +1,19 @@
-void AddTask_PhotonQA(  TString V0ReaderCutNumber = "000000006008400100150000000", 
-                        TString TaskCutnumber = "000000009009266374380000000",
+void AddTask_PhotonQA(  TString V0ReaderCutNumber = "0000000060084001001500000000", 
+                        TString TaskCutnumber = "0000000090092663743800000000",
                         Bool_t IsMC = kFALSE,
                         Int_t IsHeavyIon = 0,
                         Bool_t kHistograms = kTRUE, 
                         Bool_t kTree = kTRUE,
                         TString V0ReaderCutNumberAODBranch = "0000000060084001001500000", 
+                        Bool_t runBasicQAWithStandardOutput = kTRUE,
                         Bool_t doEtaShiftV0Reader = kFALSE 
                      ){
              
    // Suitable Cutnumbers for the V0 Reader for
-   // PbPb: V0ReaderCutNumber =  "100000006008400100150000000"; (V0Mult MC)
-   //  or   V0ReaderCutNumber =  "500000006008400100150000000" (TPC mult MC)
-   // pPb: V0ReaderCutNumber =   "800000006008400100150000000";
-   // pp: V0ReaderCutNumber =    "000000006008400100150000000";
+   // PbPb: V0ReaderCutNumber =  "1000000060084001001500000000"; (V0Mult MC)
+   //  or   V0ReaderCutNumber =  "5000000060084001001500000000" (TPC mult MC)
+   // pPb: V0ReaderCutNumber =   "8000000060084001001500000000";
+   // pp: V0ReaderCutNumber =    "0000000060084001001500000000";
 
    
    // ================= Load Librariers =================================
@@ -99,10 +100,10 @@ void AddTask_PhotonQA(  TString V0ReaderCutNumber = "000000006008400100150000000
    
 
    // suitable cuts for the photon Task, however in principle every cutnumber can be chosen which is used in the photon analysis:
-   // PbPb:  TaskCutnumber = "568000106009266304480300000"; TPC mult in MC - 60-80% central
-   //   or:  TaskCutnumber = "168000106009266304480300000"; V0 mult in MC  - 60-80% central
-   //  pPb:  TaskCutnumber = "800000009009266374380000000";
-   //   pp:  TaskCutnumber = "000000009009266374380000000";
+   // PbPb:  TaskCutnumber = "5680001060092663044803000000"; TPC mult in MC - 60-80% central
+   //   or:  TaskCutnumber = "1680001060092663044803000000"; V0 mult in MC  - 60-80% central
+   //  pPb:  TaskCutnumber = "8000000090092663743800000000";
+   //   pp:  TaskCutnumber = "0000000090092663743800000000";
 
     AliConversionCuts *analysisCuts = new AliConversionCuts();
 	 analysisCuts->InitializeCutsFromCutString(TaskCutnumber.Data());
@@ -115,13 +116,19 @@ void AddTask_PhotonQA(  TString V0ReaderCutNumber = "000000006008400100150000000
     mgr->AddTask(fQA);
 
     AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-    AliAnalysisDataContainer *coutput =
-       mgr->CreateContainer(Form("GammaConv_V1QA_%s",TaskCutnumber.Data()), TList::Class(),
-                            AliAnalysisManager::kOutputContainer,Form("GammaConvV1_QA_%s.root",TaskCutnumber.Data()));
-
-
+    if (runBasicQAWithStandardOutput){
+         AliAnalysisDataContainer *coutput =
+            mgr->CreateContainer(Form("GammaConv_V1QA_%s",TaskCutnumber.Data()), TList::Class(),
+                AliAnalysisManager::kOutputContainer,Form("%s:GammaConvV1_QA_%s",AliAnalysisManager::GetCommonFileName(), TaskCutnumber.Data()));
+         mgr->ConnectOutput(fQA,  1, coutput);
+    } else {
+         AliAnalysisDataContainer *coutput =
+            mgr->CreateContainer(Form("GammaConv_V1QA_%s",TaskCutnumber.Data()), TList::Class(),
+                 AliAnalysisManager::kOutputContainer,Form("GammaConvV1_QA_%s.root",TaskCutnumber.Data()));
+         mgr->ConnectOutput(fQA,  1, coutput);
+    }
     mgr->ConnectInput(fQA,0,cinput);
-    mgr->ConnectOutput(fQA,  1, coutput);
+    
 
    //connect containers
    return;

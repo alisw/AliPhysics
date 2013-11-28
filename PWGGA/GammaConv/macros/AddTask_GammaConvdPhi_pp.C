@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_GammaConvdPhi_pp(TString v0Cut = "000001100209366300380000000",
+AliAnalysisTask *AddTask_GammaConvdPhi_pp(TString v0Cut = "0000011002093663003800000000",
 					 TString pionCut = "01631031009000",
 					 Bool_t pbpb = kFALSE) {
 
@@ -330,32 +330,32 @@ AliAnalysisTask *AddTask_GammaConvdPhi_pp(TString v0Cut = "000001100209366300380
   TString *tcutarray  =new TString[7];
   TString *wcutarray = new TString[7];
   
-  //"000001100209366300380000000",
-                // "000001100209366300380000000"; // -4 5 sigma electron line
-  tcutarray[0] = "000001100209266300380000000"; // -3 5 sigma
-  wcutarray[0] = "000001100209166300380000000"; //dedex -5 -5 sigma
+  //"0000011002093663003800000000",
+                // "0000011002093663003800000000"; // -4 5 sigma electron line
+  tcutarray[0] = "0000011002092663003800000000"; // -3 5 sigma
+  wcutarray[0] = "0000011002091663003800000000"; //dedex -5 -5 sigma
 
-             // "000001100209366300380000000"; // 663: 2 sigma low pt (0.25)  0.5 sigma: high pt (3.5)
-  tcutarray[1] = "000001100209386300380000000"; // 863  2                      1 
-  wcutarray[1] = "000001100209356300380000000"; // 563  2                      -10
+             // "0000011002093663003800000000"; // 663: 2 sigma low pt (0.25)  0.5 sigma: high pt (3.5)
+  tcutarray[1] = "0000011002093863003800000000"; // 863  2                      1 
+  wcutarray[1] = "0000011002093563003800000000"; // 563  2                      -10
 
-  tcutarray[2] = "000001100209366300380000000";
-  wcutarray[2] = "000001100209366300380000000";
+  tcutarray[2] = "0000011002093663003800000000";
+  wcutarray[2] = "0000011002093663003800000000";
 
-  tcutarray[3] = "000001100269366300380000000"; // single pt 6: 0.04 tight
-  wcutarray[3] = "000001100249366300380000000"; // single pt 4: 0.075 loose
+  tcutarray[3] = "0000011002693663003800000000"; // single pt 6: 0.04 tight
+  wcutarray[3] = "0000011002493663003800000000"; // single pt 4: 0.075 loose
 
                             //                 //tpc cluster cut 9 : 0.6 default
-  tcutarray[4] = "000001100206366300380000000"; //6 : > 0.7 tight 
-  wcutarray[4] = "000001100208366300380000000"; //8 : > 0.35 loose
+  tcutarray[4] = "0000011002063663003800000000"; //6 : > 0.7 tight 
+  wcutarray[4] = "0000011002083663003800000000"; //8 : > 0.35 loose
 
                                    //          // qt max 3: 0.05 default
-  tcutarray[5] = "000001100209366300480000000"; //4 : < 0.03 tight
-  wcutarray[5] = "000001100209366300280000000"; //2 : < 0.07 loose 
+  tcutarray[5] = "0000011002093663004800000000"; //4 : < 0.03 tight
+  wcutarray[5] = "0000011002093663002800000000"; //2 : < 0.07 loose 
 
                                     //         // chi2 8 default <20
-  tcutarray[6] = "000001100209366300390000000"; //9 : < 15 tight 
-  wcutarray[6] = "000001100209366300320000000"; //2 : < 30 loose
+  tcutarray[6] = "0000011002093663003900000000"; //9 : < 15 tight 
+  wcutarray[6] = "0000011002093663003200000000"; //2 : < 30 loose
 
 
   ///Add the tight cuts

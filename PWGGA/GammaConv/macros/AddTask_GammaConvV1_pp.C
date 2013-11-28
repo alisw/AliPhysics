@@ -1,7 +1,7 @@
 void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  //change different set of cuts
                               Bool_t isMC   = kFALSE, //run MC 
-                              Bool_t enableQAMesonTask = kFALSE, //enable QA in AliAnalysisTaskGammaConvV1
-                              Bool_t enableQAPhotonTask = kFALSE, // enable additional QA task
+                              Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvV1
+                              Int_t enableQAPhotonTask = 0, // enable additional QA task
                               TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
                               TString cutnumberAODBranch = "0000000060084001001500000" // cutnumber for AOD branch
                            ) {
@@ -42,7 +42,7 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  //change different set of 
    }
    
    //=========  Set Cutnumber for V0Reader ================================
-   TString cutnumber = "000000000208400000220000000"; 
+   TString cutnumber = "0000000002084000002200000000"; 
    AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
    
    //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
@@ -96,20 +96,20 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  //change different set of 
    TString *mesonCutArray = new TString[numberOfCuts];
 
    if(trainConfig == 1){
-      cutarray[ 0] = "000001200209366300380000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD , only boxes
-      cutarray[ 1] = "000101200209366300380000000"; mesonCutArray[1] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD, V0AND , only boxes
-      cutarray[ 2] = "000001200209326000380000000"; mesonCutArray[2] = "01631031009000"; //standard cut Gamma pp 2-76TeV , only boxes
-      cutarray[ 3] = "000001200209326000380000000"; mesonCutArray[3] = "01631031009000"; //standard cut Gamma pp 2-76TeV , only boxes
+      cutarray[ 0] = "0000012002093663003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD , only boxes
+      cutarray[ 1] = "0001012002093663003800000000"; mesonCutArray[1] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD, V0AND , only boxes
+      cutarray[ 2] = "0000012002093260003800000000"; mesonCutArray[2] = "01631031009000"; //standard cut Gamma pp 2-76TeV , only boxes
+      cutarray[ 3] = "0000012002093260003800000000"; mesonCutArray[3] = "01631031009000"; //standard cut Gamma pp 2-76TeV , only boxes
    } else if (trainConfig == 2) {
-      cutarray[ 0] = "000001100209366300380000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD , only Minbias MC
-      cutarray[ 1] = "000101100209366300380000000"; mesonCutArray[1] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD, V0AND
-      cutarray[ 2] = "000001100209326000380000000"; mesonCutArray[2] = "01631031009000"; //standard cut Gamma pp 2-76TeV
-      cutarray[ 3] = "000001100209326000380000000"; mesonCutArray[3] = "01631031009000"; //standard cut Gamma pp 2-76TeV , only boxes
+      cutarray[ 0] = "0000011002093663003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD , only Minbias MC
+      cutarray[ 1] = "0001011002093663003800000000"; mesonCutArray[1] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD, V0AND
+      cutarray[ 2] = "0000011002093260003800000000"; mesonCutArray[2] = "01631031009000"; //standard cut Gamma pp 2-76TeV
+      cutarray[ 3] = "0000011002093260003800000000"; mesonCutArray[3] = "01631031009000"; //standard cut Gamma pp 2-76TeV , only boxes
    } else if (trainConfig == 3) {
-      cutarray[ 0] = "000201100209366300380000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD , only Minbias MC
-      cutarray[ 1] = "000301100209366300380000000"; mesonCutArray[1] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD, V0AND , only Minbias MC
-      cutarray[ 2] = "000201200209366300380000000"; mesonCutArray[2] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD , only Boxes MC
-      cutarray[ 3] = "000301200209366300380000000"; mesonCutArray[3] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD, V0AND, only Boxes MC
+      cutarray[ 0] = "0002011002093663003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD , only Minbias MC
+      cutarray[ 1] = "0003011002093663003800000000"; mesonCutArray[1] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD, V0AND , only Minbias MC
+      cutarray[ 2] = "0002012002093663003800000000"; mesonCutArray[2] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD , only Boxes MC
+      cutarray[ 3] = "0003012002093663003800000000"; mesonCutArray[3] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD, V0AND, only Boxes MC
    } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
@@ -145,8 +145,8 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  //change different set of 
    task->SetMesonCutList(numberOfCuts,MesonCutList);
    task->SetMoveParticleAccordingToVertex(kTRUE);
    task->SetDoMesonAnalysis(kTRUE);
-   if (enableQAMesonTask) task->SetDoMesonQA(kTRUE); //Attention new switch for Pi0 QA
-   if (enableQAPhotonTask) task->SetDoPhotonQA(kTRUE);  //Attention new switch small for Photon QA
+   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
+   task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
 
    //connect containers
    AliAnalysisDataContainer *coutput =

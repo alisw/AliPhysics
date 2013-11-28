@@ -952,7 +952,7 @@ UInt_t AliAnalysisTaskConversionQA::IsTruePhotonAOD(AliAODConversionPhoton *True
 		kind = 9;
 		//		return kFALSE; // One particle does not exist
    
-  } else if( posDaughter->GetMother() != negDaughter->GetMother()  || (posDaughter->GetMother() == negDaughter->GetMother() && posDaughter->GetMother() ==-1)) {
+   } else if( posDaughter->GetMother() != negDaughter->GetMother()  || (posDaughter->GetMother() == negDaughter->GetMother() && posDaughter->GetMother() ==-1)) {
 		kind = 1;
 
 		pdgCodePos=TMath::Abs(posDaughter->GetPdgCode());
@@ -970,8 +970,8 @@ UInt_t AliAnalysisTaskConversionQA::IsTruePhotonAOD(AliAODConversionPhoton *True
 		pdgCodePos=posDaughter->GetPdgCode();
 		pdgCodeNeg=negDaughter->GetPdgCode();
 
-		if ( TruePhotonCandidate->GetMCParticle(fMCStack)->GetPdgCode()) 
-			pdgCode = TruePhotonCandidate->GetMCParticle(fMCStack)->GetPdgCode(); 
+		if ( Photon->GetPdgCode()) 
+			pdgCode = Photon->GetPdgCode(); 
 		if(TMath::Abs(pdgCodePos)!=11 || TMath::Abs(pdgCodeNeg)!=11) kind = 2; // true from hadronic decays
 		else if ( !(pdgCodeNeg==pdgCodePos)){
 			if(pdgCode == 111) kind = 3; // pi0 Dalitz

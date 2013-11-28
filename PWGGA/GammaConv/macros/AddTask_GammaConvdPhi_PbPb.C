@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_GammaConvdPhi_PbPb(TString v0Cut = "109000200209297002322000000",
+AliAnalysisTask *AddTask_GammaConvdPhi_PbPb(TString v0Cut = "1090002002092970023220000000",
 					 TString pionCut = "01522045009000",
 					 TString photoncut = "",
 					 Bool_t pbpb = kTRUE) {
