@@ -231,7 +231,7 @@ Bool_t AliConversionTrackCuts::AcceptTrack(AliESDtrack * track) {
   if (fEsdTrackCutsExtra2 && fEsdTrackCutsExtra2->IsSelected(track)) {
     const AliExternalTrackParam * param = track->GetConstrainedParam();
     if(param) {
-      AliESDtrack* esdTrack = new AliESDtrack(track);
+      AliESDtrack* esdTrack = new AliESDtrack(*track);
       esdTrack->CopyFromVTrack(param);
       track = esdTrack;
       fOwnedTracks.Add(track);
@@ -280,8 +280,11 @@ Bool_t AliConversionTrackCuts::AcceptTrack(AliAODTrack * track) {
     return kFALSE;
   }
 
-  ///Do dca xy cut!
 
+
+
+  ///Do dca xy cut!
+  FillHistograms(1, track);
   return kTRUE;
 
 
