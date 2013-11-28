@@ -71,6 +71,7 @@ void CaloQA()
   TH1F* hCellAmplitude = (TH1F*) GetHisto("QA_hAmplitude");
   TH1F* hClusterEnergy = (TH1F*) GetHisto("QA_hE");
   
+  hClusterEnergy->SetYTitle("entries");
   hClusterEnergy->SetTitle("Cluster-cell energy spectra");
   hClusterEnergy->Sumw2();
   hClusterEnergy->SetMarkerColor(1);
@@ -83,9 +84,9 @@ void CaloQA()
   hCellAmplitude->SetMarkerStyle(25);
   hCellAmplitude->Draw("same");
   
-  TLegend l(0.3,0.7,0.83,0.85);
+  TLegend l(0.25,0.7,0.83,0.85);
   l.SetTextSize(0.04);
-  l.AddEntry(hClusterEnergy,"Cluster (no exotic+non lin)","P");
+  l.AddEntry(hClusterEnergy,"Cluster (no exotic+non lin.)","P");
   l.AddEntry(hCellAmplitude,"Cell","P");
   l.SetBorderSize(0);
   l.SetFillColor(0);
@@ -110,7 +111,7 @@ void CaloQA()
   hCorr->SetMarkerStyle(20);
   hCorr->Divide(hRaw);
   hCorr->SetAxisRange(0.,30.,"X");
-  hCorr->SetMaximum(1);
+  hCorr->SetMaximum(1.1);
   hCorr->SetMinimum(0);
   hCorr->Draw();
   
@@ -126,9 +127,9 @@ void CaloQA()
   hShSh->Divide(hRaw);
   hShSh->Draw("same");
   
-  TLegend l2(0.3,0.7,0.83,0.85);
+  TLegend l2(0.45,0.8,0.95,0.93);
   l2.SetTextSize(0.04);
-  l2.AddEntry(hCorr,"No Exotics + non lin. ++","P");
+  l2.AddEntry(hCorr,"No Exotics + non lin.","P");
   l2.AddEntry(hTM,  "+ Track matching","P");
   l2.AddEntry(hShSh,"+ #lambda^{2}_{0} < 0.4","P");
   l2.SetBorderSize(0);
@@ -148,6 +149,9 @@ void CaloQA()
     hTrackMatchResEtaPhi->SetAxisRange(-0.025,0.025,"Y");
     hTrackMatchResEtaPhi->SetTitleOffset(1.5,"Y");
     hTrackMatchResEtaPhi->SetTitle("Track-cluster residual #Delta #phi vs #Delta #eta, E > 0.5 GeV");
+    hTrackMatchResEtaPhi->SetXTitle("#Delta #eta");
+    hTrackMatchResEtaPhi->SetYTitle("#Delta #phi");
+    hTrackMatchResEtaPhi->SetZTitle("entries");
     hTrackMatchResEtaPhi->Draw("colz");
     
     ccalo->cd(4);
@@ -167,6 +171,8 @@ void CaloQA()
     TH1F* hTrackMatchResPhiNeg = (TH1F*) h2TrackMatchResPhiNeg->ProjectionY("TMProjPhiNeg",binMin, 1000);
     TH1F* hTrackMatchResPhiPos = (TH1F*) h2TrackMatchResPhiPos->ProjectionY("TMProjPhiPos",binMin, 1000);
     
+    hTrackMatchResEtaNeg->SetXTitle("#Delta #eta, #Delta #phi");
+    hTrackMatchResEtaNeg->SetYTitle("entries");
     hTrackMatchResEtaNeg->SetTitle("Track-cluster residuals, E > 1 GeV");
     hTrackMatchResEtaNeg->SetAxisRange(-0.05,0.05,"X");
     hTrackMatchResEtaNeg->Sumw2();
@@ -287,12 +293,13 @@ void TrackQA()
   hPhiNoSPD->SetLineColor(4);
   
   hPhi     ->SetMinimum(1);
+  hPhi     ->SetMaximum(hPhi->GetMaximum()*1.2);
   
   hPhi     ->Draw("H");
   hPhiSPD  ->Draw("Hsame");
   hPhiNoSPD->Draw("Hsame");
   
-  TLegend l(0.12,0.8,0.4,0.9);
+  TLegend l(0.2,0.75,0.4,0.89);
   l.SetTextSize(0.04);
   l.AddEntry(hPhi,"Sum","L");
   l.AddEntry(hPhiSPD  ,"SPD+Refit","L");
