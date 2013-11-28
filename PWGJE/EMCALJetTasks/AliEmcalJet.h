@@ -133,6 +133,11 @@ class AliEmcalJet : public AliVParticle
   AliEmcalJet*      MatchedJet()                              const { return fMatched < 2 ? fClosestJets[fMatched] : 0; }
   UShort_t          GetMatchingType()                         const { return fMatchingType                            ; }
 
+  void              SetTaggedJet(AliEmcalJet *j)                    { fTaggedJet = j                                  ; }
+  void              SetTagStatus(Int_t i)                           { fTagStatus = i                                  ; }
+  AliEmcalJet*      GetTaggedJet()                            const { return fTaggedJet                               ; }
+  Int_t             GetTagStatus()                            const { return fTagStatus                               ; }
+
  protected:
   Double32_t        fPt;                  //[0,0,12]   pt 
   Double32_t        fEta;                 //[-1,1,12]  eta
@@ -158,10 +163,12 @@ class AliEmcalJet : public AliVParticle
   Double32_t        fClosestJetsDist[2];  //!          distance to closest jets (see above)
   UShort_t          fMatched;             //!          0,1 if it is matched with one of the closest jets; 2 if it is not matched
   UShort_t          fMatchingType;        //!          matching type
+  AliEmcalJet      *fTaggedJet;           //!          jet tagged to this jet
+  Int_t             fTagStatus;           //!          status of tagging -1: NA 0: not tagged 1: tagged
   Double_t          fPtSub;               //!          background subtracted pt (not stored set from outside) 
   Double_t          fPtVectSub;           //!          background vector subtracted pt (not stored set from outside) 
   UInt_t            fTriggers;            //!          triggers that the jet might have fired (AliVEvent::EOfflineTriggerTypes)
 
-  ClassDef(AliEmcalJet,11) // Emcal jet class in cylindrical coordinates
+  ClassDef(AliEmcalJet,12) // Emcal jet class in cylindrical coordinates
 };
 #endif

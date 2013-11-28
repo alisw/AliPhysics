@@ -467,7 +467,7 @@ void AliJetContainer::SetJetEtaPhiEMCAL()
   else {
     AliWarning("Could not get instance of AliEMCALGeometry. Using manual settings for EMCAL year 2011!!");
     SetJetEtaLimits(-0.7+fJetRadius,0.7-fJetRadius);
-    SetJetPhiLimits(1.4+fJetRadius,TMath::Pi()-fJetRadius);
+    SetJetPhiLimits(1.405+fJetRadius,3.135-fJetRadius);
   }
 }
 

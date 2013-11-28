@@ -37,6 +37,9 @@ AliAnalysisTaskRho* AddTaskRho(
   //-------------------------------------------------------
 
   TString name(Form("%s_%s_%s", taskname, nJets,cutType));
+  AliAnalysisTaskRho* mgrTask = mgr->GetTask(name.Data());
+  if (mgrTask) return mgrTask;
+
   AliAnalysisTaskRho *rhotask = new AliAnalysisTaskRho(name, histo);
   rhotask->SetExcludeLeadJets(exclJets);
   rhotask->SetScaleFunction(sfunc);

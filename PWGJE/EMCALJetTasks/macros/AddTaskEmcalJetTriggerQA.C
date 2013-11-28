@@ -51,6 +51,9 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
     jetFinderTask2 = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus);
   }
 
+  // jetFinderTask1->SetRecombSheme(0);
+  // jetFinderTask2->SetRecombSheme(0);
+
   TString strJets1 = jetFinderTask1->GetName();
   TString strJets2 = jetFinderTask2->GetName();
 
@@ -58,6 +61,7 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
   if(rhoType==1) {
     rhoTask = AttachRhoTask(kPeriod,kTracksName,kClusName,R,ptminTrack,etminClus);
     rhoTask->SetCentralityEstimator(CentEst);  
+    rhoTask->SelectCollisionCandidates(AliVEvent::kAny);
   }
 
   TString wagonName = Form("TriggerQA_%s_%s_TC%s",strJets1.Data(),strJets2.Data(),trigClass.Data());
