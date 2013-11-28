@@ -153,10 +153,11 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
 
   // basic quality cut, /*at least one*/ both of the V0 daughters has to fullfill
   AliDielectronVarCuts dauQAcuts1;
-  dauQAcuts1.AddCut(AliDielectronVarManager::kPt,            0.05, 100.0);
-  dauQAcuts1.AddCut(AliDielectronVarManager::kEta,          -0.9,    0.9);
-  dauQAcuts1.AddCut(AliDielectronVarManager::kNclsTPC,      50.0,  160.0);
+  dauQAcuts1.AddCut(AliDielectronVarManager::kNclsTPC,      70.0,  160.0);
   dauQAcuts1.AddCut(AliDielectronVarManager::kTPCchi2Cl,     0.0,    4.0);
+  dauQAcuts1.AddCut(AliDielectronVarManager::kKinkIndex0,            0.0);
+  dauQAcuts1.AddCut(AliDielectronVarManager::kEta,          -0.9,    0.9);
+  dauQAcuts1.AddCut(AliDielectronVarManager::kPt,            0.05, 100.0);
   AliDielectronTrackCuts dauQAcuts2;
   //  dauQAcuts2.SetRequireITSRefit(kTRUE);
   dauQAcuts2.SetRequireTPCRefit(kTRUE);
@@ -177,7 +178,7 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
     for (Int_t iv=0; iv<esdev->GetNumberOfV0s(); ++iv){
       AliESDv0 *v = esdev->GetV0(iv);
       if(!v) continue;
-      
+
       // check the v0 finder
       if( v->GetOnFlyStatus() && fV0finder==AliDielectronV0Cuts::kOffline  ) continue;
       if(!v->GetOnFlyStatus() && fV0finder==AliDielectronV0Cuts::kOnTheFly ) continue;
@@ -271,7 +272,7 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
 	fV0TrackArr.SetBitNumber(trPos->GetID());
       }
     }
-    //printf("there are %d V0s in the event \n",nV0stored);
+    //    printf("there are %d V0s in the event \n",nV0stored);
   }
   else
     return;
