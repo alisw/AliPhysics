@@ -33,7 +33,7 @@ using namespace std;
 
 // -----------------------------------------------------------------------
 TH1F* AliHistToolsDiHadronPID::RebinVariableBinning(
-	const TH1F* histIn, const Double_t* binsx, const Int_t Nbinsx, const Bool_t density) {
+	const TH1F* histIn, const Double_t* binsx, Int_t Nbinsx, Bool_t density) {
 
 	// Rebins a histogram (hin) with a variable binning to a histogram
 	// with another variable binning (binsx). If the "density" flag is set,
@@ -172,7 +172,7 @@ TH1F* AliHistToolsDiHadronPID::RebinVariableBinning(
 }
 
 // -----------------------------------------------------------------------
-TH1F* AliHistToolsDiHadronPID::RebinVariableBinning(const TH1F* histIn, const TH1F* histAxis, const Bool_t density) {
+TH1F* AliHistToolsDiHadronPID::RebinVariableBinning(const TH1F* histIn, const TH1F* histAxis, Bool_t density) {
 
 	// Rebins histogram histIn to the x-axis of histAxis
 	TAxis* xaxis = histAxis->GetXaxis();
@@ -183,7 +183,7 @@ TH1F* AliHistToolsDiHadronPID::RebinVariableBinning(const TH1F* histIn, const TH
 }
 
 // -----------------------------------------------------------------------
-TH1F* AliHistToolsDiHadronPID::RebinVariableBinning(const TH1F* histIn, const TAxis* xaxis, const Bool_t density) {
+TH1F* AliHistToolsDiHadronPID::RebinVariableBinning(const TH1F* histIn, const TAxis* xaxis, Bool_t density) {
 
 	// Rebins histogram histIn to the x-axis of histAxis
 	Int_t nbinsx = xaxis->GetNbins();
@@ -193,7 +193,7 @@ TH1F* AliHistToolsDiHadronPID::RebinVariableBinning(const TH1F* histIn, const TA
 }
 
 // -----------------------------------------------------------------------
-TH1F* AliHistToolsDiHadronPID::TrimHisto(const TH1F* histo, const Int_t firstbin, const Int_t lastbin) {
+TH1F* AliHistToolsDiHadronPID::TrimHisto(const TH1F* histo, Int_t firstbin, Int_t lastbin) {
 
 	const char* name = histo->GetName();
 	const char* title = histo->GetTitle();
@@ -227,7 +227,7 @@ TH1F* AliHistToolsDiHadronPID::TrimHisto(const TH1F* histo, const Int_t firstbin
 }
 
 // -----------------------------------------------------------------------
-void AliHistToolsDiHadronPID::ConstMinusHist(TH1F* histo, const Float_t cc) {
+void AliHistToolsDiHadronPID::ConstMinusHist(TH1F* histo, Float_t cc) {
 
 	// h -> (c-h)
 	Int_t nbins = histo->GetNbinsX();
@@ -240,9 +240,9 @@ void AliHistToolsDiHadronPID::ConstMinusHist(TH1F* histo, const Float_t cc) {
 
 // -----------------------------------------------------------------------
 TH3F* AliHistToolsDiHadronPID::MakeHist3D(const char* name, const char* title, 
-	const Int_t nbinsX, const Double_t minX, const Double_t maxX,
-	const Int_t nbinsY, const Double_t minY, const Double_t maxY,
-	const Int_t nbinsZ, const Double_t* zaxis) {
+	Int_t nbinsX, Double_t minX, Double_t maxX,
+	Int_t nbinsY, Double_t minY, Double_t maxY,
+	Int_t nbinsZ, const Double_t* zaxis) {
 
 	const Double_t* xaxis = const_cast<Double_t*>(CreateAxis(nbinsX,minX,maxX));
 	const Double_t* yaxis = const_cast<Double_t*>(CreateAxis(nbinsY,minY,maxY));
@@ -302,7 +302,7 @@ TH2F* AliHistToolsDiHadronPID::Function2DToHist2D(const TF2* function, const TH2
 
 // -----------------------------------------------------------------------
 TCanvas* AliHistToolsDiHadronPID::CreateSpectraComparison(const char* name, 
-	const char* title, const TH1F* h1, const TH1F* h2, const Int_t markerstyle, const Bool_t logy) {
+	const char* title, const TH1F* h1, const TH1F* h2, Int_t markerstyle, Bool_t logy) {
 
 	// - Creates a window comparing two histograms h1, and h2.
 	// - Returns an array of pointers to the objects created
@@ -406,7 +406,7 @@ TCanvas* AliHistToolsDiHadronPID::CreateSpectraComparison(const char* name,
 }
 
 // -----------------------------------------------------------------------
-Double_t* AliHistToolsDiHadronPID::CreateAxis(const Int_t nbins, const Double_t min, const Double_t max) {
+Double_t* AliHistToolsDiHadronPID::CreateAxis(Int_t nbins, Double_t min, Double_t max) {
 
 	if (nbins <= 0) return 0x0;
 	if (max < min) return 0x0;

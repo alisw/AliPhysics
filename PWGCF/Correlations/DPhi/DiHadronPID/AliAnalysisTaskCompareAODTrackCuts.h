@@ -26,18 +26,18 @@ public:
 	Double_t GenerateRandomHit(Double_t eta);		// Generates a random time for a certain eta.
 
 // Task Settings.
-	void SetMC(const Bool_t isMC = kTRUE) {fIsMC = isMC;} 
-	void SetVerbose(const Bool_t verbose = kTRUE) {fVerbose = verbose;}
-	void SetCalculateTOFMismatch(const Bool_t calculatetofmismatch = kTRUE/* const Int_t method*/) {fCalculateTOFMismatch = calculatetofmismatch;}
-	void SetUseMismatchFileFromGridHomeDir(const Bool_t usefromhomedir = kTRUE) {fUseMismatchFileFromHomeDir = usefromhomedir;}
-	void SetUseNSigmaOnPIDAxes(const Bool_t UseNSigma = kTRUE);
+	void SetMC(Bool_t isMC = kTRUE) {fIsMC = isMC;} 
+	void SetVerbose(Bool_t verbose = kTRUE) {fVerbose = verbose;}
+	void SetCalculateTOFMismatch(Bool_t calculatetofmismatch = kTRUE/* const Int_t method*/) {fCalculateTOFMismatch = calculatetofmismatch;}
+	void SetUseMismatchFileFromGridHomeDir(Bool_t usefromhomedir = kTRUE) {fUseMismatchFileFromHomeDir = usefromhomedir;}
+	void SetUseNSigmaOnPIDAxes(Bool_t UseNSigma = kTRUE);
 
 // Managing Cuts.
     void SetEventCuts(AliAODEventCutsDiHadronPID* eventcuts);
     void AddTrackCuts(AliAODTrackCutsDiHadronPID* trackcuts);
 
 // Override from AliAnalysisTaskSE.
-	void SetDebugLevel(const Int_t debuglvl);
+	void SetDebugLevel(Int_t debuglvl);
 
 private:
 	void FillGlobalTracksArray();
