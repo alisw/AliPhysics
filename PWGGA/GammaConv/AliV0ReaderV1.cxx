@@ -36,6 +36,7 @@
 // If you want to find the AODTrack corresponding to the daugher track of a AliAODConversionPhoton you have to find the AODTrack with
 // AODTrack->GetID() == GetTrackLabelPositive() (GetTrackLabelNagative()).
 
+#include <TGeoGlobalMagField.h>
 
 #include "AliV0ReaderV1.h"
 #include "AliKFParticle.h"
@@ -225,6 +226,13 @@ Bool_t AliV0ReaderV1::Notify()
 }
 //________________________________________________________________________
 void AliV0ReaderV1::UserExec(Option_t *option){
+
+  AliESDEvent * esdEvent = dynamic_cast<AliESDEvent*>(fInputEvent);
+  if(esdEvent) {
+    if (!TGeoGlobalMagField::Instance()->GetField()) esdEvent->InitMagneticField(); 
+  }
+
+
 
    // Check if correctly initialized
    if(!fConversionGammas)Init();
