@@ -86,6 +86,7 @@ const char* AliConversionCuts::fgkCutNames[AliConversionCuts::kNCuts] = {
    "RejectToCloseV0s", //24
    "DcaRPrimVtx", //25
    "DcaZPrimVtx" //26
+   "EvetPlane" //27
 };
 
 
@@ -175,6 +176,7 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) :
    fElectronLabelArray(NULL),
    fDCAZPrimVtxCut(1000),
    fDCARPrimVtxCut(1000),
+   fInPlaneOutOfPlane(0),
    fConversionPointXArray(0.0),
    fConversionPointYArray(0.0),
    fConversionPointZArray(0.0),
@@ -217,6 +219,7 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) :
    hCentrality(NULL),
    hCentralityVsNumberOfPrimaryTracks(NULL),
    hVertexZ(NULL),
+   hEventPlanePhi(NULL),
    hTriggerClass(NULL),
    hTriggerClassSelected(NULL),
    hReweightMCHistPi0(NULL),
@@ -328,6 +331,7 @@ AliConversionCuts::AliConversionCuts(const AliConversionCuts &ref) :
    fElectronLabelArray(NULL),
    fDCAZPrimVtxCut(ref.fDCAZPrimVtxCut),
    fDCARPrimVtxCut(ref.fDCAZPrimVtxCut),
+   fInPlaneOutOfPlane(ref.fInPlaneOutOfPlane),
    fConversionPointXArray(ref.fConversionPointXArray),
    fConversionPointYArray(ref.fConversionPointYArray),
    fConversionPointZArray(ref.fConversionPointZArray),
@@ -370,6 +374,7 @@ AliConversionCuts::AliConversionCuts(const AliConversionCuts &ref) :
    hCentrality(NULL),
    hCentralityVsNumberOfPrimaryTracks(NULL),
    hVertexZ(NULL),
+   hEventPlanePhi(NULL),
    hTriggerClass(NULL),
    hTriggerClassSelected(NULL),
    hReweightMCHistPi0(ref.hReweightMCHistPi0),
@@ -468,7 +473,7 @@ void AliConversionCuts::InitCutHistograms(TString name, Bool_t preCut){
 //       fHistograms->Add(fFitDataK0s);
 //    }
    // IsPhotonSelected
-   hCutIndex=new TH1F(Form("IsPhotonSelected %s",GetCutNumber().Data()),"IsPhotonSelected",10,-0.5,9.5);
+   hCutIndex=new TH1F(Form("IsPhotonSelected %s",GetCutNumber().Data()),"IsPhotonSelected",11,-0.5,10.5);
    hCutIndex->GetXaxis()->SetBinLabel(kPhotonIn+1,"in");
    hCutIndex->GetXaxis()->SetBinLabel(kOnFly+1,"onfly");
    hCutIndex->GetXaxis()->SetBinLabel(kNoTracks+1,"no tracks");
@@ -476,6 +481,7 @@ void AliConversionCuts::InitCutHistograms(TString name, Bool_t preCut){
    hCutIndex->GetXaxis()->SetBinLabel(kTrackCuts+1,"Track cuts");
    hCutIndex->GetXaxis()->SetBinLabel(kConvPointFail+1,"ConvPoint fail");
    hCutIndex->GetXaxis()->SetBinLabel(kPhotonCuts+1,"PhotonCuts");
+   hCutIndex->GetXaxis()->SetBinLabel(kEventPlane+1,"EventPlane");
    hCutIndex->GetXaxis()->SetBinLabel(kPhotonOut+1,"out");
    fHistograms->Add(hCutIndex);
 
@@ -596,6 +602,11 @@ void AliConversionCuts::InitCutHistograms(TString name, Bool_t preCut){
    }
    delete [] newBins;
 
+   hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",1000,0,100);
+   fHistograms->Add(hCentrality);
+   hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",100,0,100,4000,0,4000);
+   fHistograms->Add(hCentralityVsNumberOfPrimaryTracks);
+
    // Event Cuts and Info
    if(preCut){
       hV0EventCuts=new TH1F(Form("ESD_EventCuts %s",GetCutNumber().Data()),"Event Cuts",7,-0.5,6.5);
@@ -608,10 +619,6 @@ void AliConversionCuts::InitCutHistograms(TString name, Bool_t preCut){
       hV0EventCuts->GetXaxis()->SetBinLabel(7,"out");
       fHistograms->Add(hV0EventCuts);
 
-      hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",1000,0,100);
-      fHistograms->Add(hCentrality);
-      hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",100,0,100,4000,0,4000);
-      fHistograms->Add(hCentralityVsNumberOfPrimaryTracks);
       hVertexZ=new TH1F(Form("VertexZ %s",GetCutNumber().Data()),"VertexZ",1000,-50,50);
       fHistograms->Add(hVertexZ);
 
@@ -690,6 +697,11 @@ void AliConversionCuts::InitCutHistograms(TString name, Bool_t preCut){
       hTriggerClassSelected->GetXaxis()->SetBinLabel(33,"V0AND");
       hTriggerClassSelected->GetXaxis()->SetBinLabel(34,"NOT kFastOnly");
       fHistograms->Add(hTriggerClassSelected);
+      
+      hEventPlanePhi=new TH1F(Form("EventPlaneMinusPhotonAngle %s",GetCutNumber().Data()),"EventPlaneMinusPhotonAngle",360,-TMath::Pi(),TMath::Pi());
+      fHistograms->Add(hEventPlanePhi);
+
+      
    }
    TH1::AddDirectory(kTRUE);
 }
@@ -1986,6 +1998,15 @@ Bool_t AliConversionCuts::SetCut(cutIds cutID, const Int_t value) {
          return kTRUE;
       } else return kFALSE;
 
+   case kInPlaneOutOfPlane:
+   if( SetInPlaneOutOfPlane(value)) {
+      fCuts[kInPlaneOutOfPlane] = value;
+      UpdateCutString();
+      return kTRUE;
+   } else return kFALSE;
+
+
+      
 
    case kNCuts:
       AliError("Cut id out of range");
@@ -3070,6 +3091,26 @@ Bool_t AliConversionCuts::SetDCARPhotonPrimVtxCut(Int_t DCARPhotonPrimVtx){
    return kTRUE;
 }
 
+///________________________________________________________________________
+Bool_t AliConversionCuts::SetInPlaneOutOfPlane(Int_t inOutPlane){
+   // Set Cut
+   switch(inOutPlane){
+   case 0:  //
+      fInPlaneOutOfPlane = 0; // No Event Plane
+      break;
+   case 1:  //
+      fInPlaneOutOfPlane = 1; // In-Plane
+      break;
+   case 2:  //
+      fInPlaneOutOfPlane = 2; // Out-Of-Plane
+      break;
+   default:
+      cout<<"Warning: In-Plane or Out-Of-Plane not defined "<<inOutPlane<<endl;
+      return kFALSE;
+   }
+   return kTRUE;
+}
+
 
 //-------------------------------------------------------------
 Double_t AliConversionCuts::GetCentrality(AliVEvent *event)
@@ -3958,3 +3999,35 @@ void AliConversionCuts::GetCorrectEtaShiftFromPeriod(TString periodName){
       }
    else printf(" Gamma Conversion Cuts %s :: Automatic Eta Shift requested but Period is not known -> No Shift \n\n",(GetCutNumber()).Data());
 }
+
+///________________________________________________________________________
+Bool_t AliConversionCuts::InPlaneOutOfPlaneCut(Double_t photonPhi, Double_t eventPlaneAngle, Bool_t fill){
+   
+   //GetPhotonPhi() 0-2 Pi  //eventPlaneAngle -1pi-1pi
+   eventPlaneAngle=eventPlaneAngle+TMath::Pi();
+   Double_t gammaToEPAngle = eventPlaneAngle-photonPhi;
+   if(gammaToEPAngle < 0) gammaToEPAngle=gammaToEPAngle+2*TMath::Pi();
+   gammaToEPAngle = gammaToEPAngle-TMath::Pi(); // angle from -pi +pi
+
+   if(!fInPlaneOutOfPlane){
+      if(fill&&hEventPlanePhi)hEventPlanePhi->Fill(gammaToEPAngle);
+      return kTRUE;
+   }
+   else if(fInPlaneOutOfPlane == 1){
+      if(abs(gammaToEPAngle)<=0.25*TMath::Pi() || abs(gammaToEPAngle)>=0.75*TMath::Pi()){
+         if(fill&&hEventPlanePhi)hEventPlanePhi->Fill(gammaToEPAngle);
+         return kTRUE;
+      }
+      else return kFALSE;
+   }
+   else if(fInPlaneOutOfPlane == 2){
+      if(abs(gammaToEPAngle)>0.25*TMath::Pi() && abs(gammaToEPAngle)<0.75*TMath::Pi()){
+         if(fill&&hEventPlanePhi)hEventPlanePhi->Fill(gammaToEPAngle);
+         return kTRUE;
+      }
+      else return kFALSE;
+   }
+   return kFALSE;
+
+}
+

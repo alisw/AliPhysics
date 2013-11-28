@@ -1,5 +1,5 @@
-void AddTask_Material(TString V0ReaderCutNumber = "000000006008400100150000000",
-                      TString TaskCutnumber = "000000009009266374380000000",
+void AddTask_Material(TString V0ReaderCutNumber = "0000000060084001001500000000",
+                      TString TaskCutnumber = "0000000090092663743800000000",
                       Bool_t IsMC = kFALSE, 
                       Int_t IsHeavyIon = 0, 
                       TString cutnumberAODBranch = "0000000060084001001500000",
@@ -7,10 +7,10 @@ void AddTask_Material(TString V0ReaderCutNumber = "000000006008400100150000000",
                      ){
   
    // Suitable Cutnumbers for the V0 Reader for
-   // PbPb: V0ReaderCutNumber =  "100000006008400100150000000"; (V0Mult MC)
-   //  or   V0ReaderCutNumber =  "500000006008400100150000000" (TPC mult MC)
-   // pPb: V0ReaderCutNumber =   "800000006008400100150000000";
-   // pp: V0ReaderCutNumber =    "000000006008400100150000000";
+   // PbPb: V0ReaderCutNumber =  "1000000060084001001500000000"; (V0Mult MC)
+   //  or   V0ReaderCutNumber =  "5000000060084001001500000000" (TPC mult MC)
+   // pPb: V0ReaderCutNumber =   "8000000060084001001500000000";
+   // pp: V0ReaderCutNumber =    "0000000060084001001500000000";
 
 
    // ================= Load Librariers =================================
@@ -94,10 +94,10 @@ void AddTask_Material(TString V0ReaderCutNumber = "000000006008400100150000000",
 
 
    // suitable cuts for the material Task:
-   // PbPb:  TaskCutnumber = "568000106009266304480300000"; TPC mult in MC - 60-80% central
-   //   or:  TaskCutnumber = "168000106009266304480300000"; V0 mult in MC  - 60-80% central
-   //  pPb:  TaskCutnumber = "800000009009266374380000000";
-   //   pp:  TaskCutnumber = "000000009009266374380000000";
+   // PbPb:  TaskCutnumber = "5680001060092663044803000000"; TPC mult in MC - 60-80% central
+   //   or:  TaskCutnumber = "1680001060092663044803000000"; V0 mult in MC  - 60-80% central
+   //  pPb:  TaskCutnumber = "8000000090092663743800000000";
+   //   pp:  TaskCutnumber = "0000000090092663743800000000";
 
    AliConversionCuts *analysisCuts = new AliConversionCuts();
    analysisCuts->InitializeCutsFromCutString(TaskCutnumber.Data());

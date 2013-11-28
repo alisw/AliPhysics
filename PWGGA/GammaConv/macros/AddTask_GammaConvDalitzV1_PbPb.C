@@ -51,7 +51,7 @@ void AddTask_GammaConvDalitzV1_PbPb(   Int_t trainConfig = 1,
 
   //=========  Set Cutnumber for V0Reader ================================
 			   
-  TString ConvCutnumber = "108000000008400100150000000";   //Online  V0 finder
+  TString ConvCutnumber = "1080000000084001001500000000";   //Online  V0 finder
   TString ElecCuts      = "9000620000000200000";            //Electron Cuts
                            //903162000550020210
                            //900054000000020000
@@ -149,44 +149,44 @@ void AddTask_GammaConvDalitzV1_PbPb(   Int_t trainConfig = 1,
 
    if ( trainConfig == 1 ) {
 
-       ConvCutarray[0]  = "124000104209297100720000000"; MesonCutarray[0] = "01522045009000"; ElecCutarray[0]  = "9051620025510252170"; //PbPb 20-40% kAny
-       ConvCutarray[1]  = "146000104209297100720000000"; MesonCutarray[1] = "01522045009000"; ElecCutarray[1]  = "9051620025510252170"; //PbPb 40-60% kAny
-       ConvCutarray[2]  = "168000104209297100720000000"; MesonCutarray[2] = "01522045009000"; ElecCutarray[2]  = "9051620025510252170"; //PbPb 60-80% kAny
+       ConvCutarray[0]  = "1240001042092971007200000000"; MesonCutarray[0] = "01522045009000"; ElecCutarray[0]  = "9051620025510252170"; //PbPb 20-40% kAny
+       ConvCutarray[1]  = "1460001042092971007200000000"; MesonCutarray[1] = "01522045009000"; ElecCutarray[1]  = "9051620025510252170"; //PbPb 40-60% kAny
+       ConvCutarray[2]  = "1680001042092971007200000000"; MesonCutarray[2] = "01522045009000"; ElecCutarray[2]  = "9051620025510252170"; //PbPb 60-80% kAny
 
     } else if ( trainConfig == 2 ) {
 
-       ConvCutarray[0]  = "524000104209297100322000000"; MesonCutarray[0] = "01522085009000"; ElecCutarray[0]  = "9051620025510252170"; //PbPb 20-40% kAny Alpha cut 0.6
-       ConvCutarray[1]  = "546000104209297100120000000"; MesonCutarray[1] = "01522065009000"; ElecCutarray[1]  = "9051620025510252170"; //PbPb 40-60% kAny Alpha cut 0.8      
-       ConvCutarray[2]  = "568000104209297100120000000"; MesonCutarray[2] = "01522075009000"; ElecCutarray[2]  = "9051620025510252170"; //PbPb 60-80% kAny Alpha cut 0.85
+       ConvCutarray[0]  = "5240001042092971003220000000"; MesonCutarray[0] = "01522085009000"; ElecCutarray[0]  = "9051620025510252170"; //PbPb 20-40% kAny Alpha cut 0.6
+       ConvCutarray[1]  = "5460001042092971001200000000"; MesonCutarray[1] = "01522065009000"; ElecCutarray[1]  = "9051620025510252170"; //PbPb 40-60% kAny Alpha cut 0.8      
+       ConvCutarray[2]  = "5680001042092971001200000000"; MesonCutarray[2] = "01522075009000"; ElecCutarray[2]  = "9051620025510252170"; //PbPb 60-80% kAny Alpha cut 0.85
       
     } else if ( trainConfig == 3 ) {
 
-       ConvCutarray[0]  = "524000104209297100322000000"; MesonCutarray[0] = "01522085009000"; ElecCutarray[0]  = "9051620025510252171"; //PbPb 20-40% kAny Alpha cut 0.6
-       ConvCutarray[1]  = "546000104209297100120000000"; MesonCutarray[1] = "01522065009000"; ElecCutarray[1]  = "9051620025510252171"; //PbPb 40-60% kAny Alpha cut 0.8      
-       ConvCutarray[2]  = "568000104209297100120000000"; MesonCutarray[2] = "01522075009000"; ElecCutarray[2]  = "9051620025510252171"; //PbPb 60-80% kAny Alpha cut 0.85
+       ConvCutarray[0]  = "5240001042092971003220000000"; MesonCutarray[0] = "01522085009000"; ElecCutarray[0]  = "9051620025510252171"; //PbPb 20-40% kAny Alpha cut 0.6
+       ConvCutarray[1]  = "5460001042092971001200000000"; MesonCutarray[1] = "01522065009000"; ElecCutarray[1]  = "9051620025510252171"; //PbPb 40-60% kAny Alpha cut 0.8      
+       ConvCutarray[2]  = "5680001042092971001200000000"; MesonCutarray[2] = "01522075009000"; ElecCutarray[2]  = "9051620025510252171"; //PbPb 60-80% kAny Alpha cut 0.85
 
     } else if ( trainConfig == 4 ) {
 
-       ConvCutarray[0]  = "524000203209297100322000000"; MesonCutarray[0] = "01523015009000"; ElecCutarray[0]  = "9051620025510252171"; //PbPb 20-40% kAny Gamma |Eta| < 0.65  only added signals alpha cut Pt dependent ( 0.7, 1.2)
-       ConvCutarray[1]  = "546000203209297100120000000"; MesonCutarray[1] = "01523015009000"; ElecCutarray[1]  = "9051620025510252171"; //PbPb 40-60% kAny Gamma |Eta| < 0.65  only added signals alpha cut Pt dependent ( 0.7, 1.2)
-       ConvCutarray[2]  = "568000203209297100120000000"; MesonCutarray[2] = "01523025009000"; ElecCutarray[2]  = "9051620025510252171"; //PbPb 60-80% kAny Gamma |Eta| < 0.80  only added signals alpha cut Pt dependent ( 0.80, 1.2)
+       ConvCutarray[0]  = "5240002032092971003220000000"; MesonCutarray[0] = "01523015009000"; ElecCutarray[0]  = "9051620025510252171"; //PbPb 20-40% kAny Gamma |Eta| < 0.65  only added signals alpha cut Pt dependent ( 0.7, 1.2)
+       ConvCutarray[1]  = "5460002032092971001200000000"; MesonCutarray[1] = "01523015009000"; ElecCutarray[1]  = "9051620025510252171"; //PbPb 40-60% kAny Gamma |Eta| < 0.65  only added signals alpha cut Pt dependent ( 0.7, 1.2)
+       ConvCutarray[2]  = "5680002032092971001200000000"; MesonCutarray[2] = "01523025009000"; ElecCutarray[2]  = "9051620025510252171"; //PbPb 60-80% kAny Gamma |Eta| < 0.80  only added signals alpha cut Pt dependent ( 0.80, 1.2)
 
     } else if ( trainConfig == 5 ) {
 
-       ConvCutarray[0]  = "524000103209297100322000000"; MesonCutarray[0] = "01523015009000"; ElecCutarray[0]  = "9051620025510252171"; //PbPb 20-40% kAny Gamma |Eta| < 0.65 alpha cut Pt dependent ( 0.7, 1.2)
-       ConvCutarray[1]  = "546000103209297100120000000"; MesonCutarray[1] = "01523015009000"; ElecCutarray[1]  = "9051620025510252171"; //PbPb 40-60% kAny Gamma |Eta| < 0.65 alpha cut Pt dependent ( 0.7, 1.2)  
-       ConvCutarray[2]  = "568000103209297100120000000"; MesonCutarray[2] = "01523025009000"; ElecCutarray[2]  = "9051620025510252171"; //PbPb 60-80% kAny Gamma |Eta| < 0.65 alpha cut Pt dependent ( 0.8, 1.2)
+       ConvCutarray[0]  = "5240001032092971003220000000"; MesonCutarray[0] = "01523015009000"; ElecCutarray[0]  = "9051620025510252171"; //PbPb 20-40% kAny Gamma |Eta| < 0.65 alpha cut Pt dependent ( 0.7, 1.2)
+       ConvCutarray[1]  = "5460001032092971001200000000"; MesonCutarray[1] = "01523015009000"; ElecCutarray[1]  = "9051620025510252171"; //PbPb 40-60% kAny Gamma |Eta| < 0.65 alpha cut Pt dependent ( 0.7, 1.2)  
+       ConvCutarray[2]  = "5680001032092971001200000000"; MesonCutarray[2] = "01523025009000"; ElecCutarray[2]  = "9051620025510252171"; //PbPb 60-80% kAny Gamma |Eta| < 0.65 alpha cut Pt dependent ( 0.8, 1.2)
     } else if ( trainConfig == 6 ) {
 
-       ConvCutarray[0]  = "524000203209297100322000000"; MesonCutarray[0] = "01523095009000"; ElecCutarray[0]  = "9051620025510252171"; //PbPb 20-40% kAny Gamma |Eta| < 0.65  only added signals alpha cut Pt dependent( 0.65, 1.2)
-       ConvCutarray[1]  = "546000203209297100120000000"; MesonCutarray[1] = "01523095009000"; ElecCutarray[1]  = "9051620025510252171"; //PbPb 40-60% kAny Gamma |Eta| < 0.65  only added signals alpha cut Pt dependent( 0.65, 1.2)
-       ConvCutarray[2]  = "568000203209297100120000000"; MesonCutarray[2] = "01523025009000"; ElecCutarray[2]  = "9051620025510252171"; //PbPb 60-80% kAny Gamma |Eta| < 0.80  only added signals alpha cut Pt dependent( 0.80, 1.2)
+       ConvCutarray[0]  = "5240002032092971003220000000"; MesonCutarray[0] = "01523095009000"; ElecCutarray[0]  = "9051620025510252171"; //PbPb 20-40% kAny Gamma |Eta| < 0.65  only added signals alpha cut Pt dependent( 0.65, 1.2)
+       ConvCutarray[1]  = "5460002032092971001200000000"; MesonCutarray[1] = "01523095009000"; ElecCutarray[1]  = "9051620025510252171"; //PbPb 40-60% kAny Gamma |Eta| < 0.65  only added signals alpha cut Pt dependent( 0.65, 1.2)
+       ConvCutarray[2]  = "5680002032092971001200000000"; MesonCutarray[2] = "01523025009000"; ElecCutarray[2]  = "9051620025510252171"; //PbPb 60-80% kAny Gamma |Eta| < 0.80  only added signals alpha cut Pt dependent( 0.80, 1.2)
 
     } else if ( trainConfig == 7 ) {
 
-       ConvCutarray[0]  = "524000103209297100322000000"; MesonCutarray[0] = "01523095009000"; ElecCutarray[0]  = "9051620025510252171"; //PbPb 20-40% kAny Gamma |Eta| < 0.65 alpha cut Pt dependent ( 0.65, 1.2)
-       ConvCutarray[1]  = "546000103209297100120000000"; MesonCutarray[1] = "01523095009000"; ElecCutarray[1]  = "9051620025510252171"; //PbPb 40-60% kAny Gamma |Eta| < 0.65 alpha cut Pt dependent ( 0.65, 1.2)
-       ConvCutarray[2]  = "568000103209297100120000000"; MesonCutarray[2] = "01523025009000"; ElecCutarray[2]  = "9051620025510252171"; //PbPb 60-80% kAny Gamma |Eta| < 0.65 alpha cut Pt dependent ( 0.80, 1.2)
+       ConvCutarray[0]  = "5240001032092971003220000000"; MesonCutarray[0] = "01523095009000"; ElecCutarray[0]  = "9051620025510252171"; //PbPb 20-40% kAny Gamma |Eta| < 0.65 alpha cut Pt dependent ( 0.65, 1.2)
+       ConvCutarray[1]  = "5460001032092971001200000000"; MesonCutarray[1] = "01523095009000"; ElecCutarray[1]  = "9051620025510252171"; //PbPb 40-60% kAny Gamma |Eta| < 0.65 alpha cut Pt dependent ( 0.65, 1.2)
+       ConvCutarray[2]  = "5680001032092971001200000000"; MesonCutarray[2] = "01523025009000"; ElecCutarray[2]  = "9051620025510252171"; //PbPb 60-80% kAny Gamma |Eta| < 0.65 alpha cut Pt dependent ( 0.80, 1.2)
     }
 
 
