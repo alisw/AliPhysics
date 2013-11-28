@@ -31,6 +31,7 @@
 #include <AliInputEventHandler.h>
 #include <AliESDInputHandler.h>
 #include <AliAODInputHandler.h>
+#include <TGeoGlobalMagField.h>
 
 #include "AliConversionTrackCuts.h"
 #include "AliConversionCuts.h"
@@ -438,6 +439,13 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
   ///User exec. 
   ///This is a very ugly function, cut the complexity of the logic demands it.
   
+
+  AliESDEvent * esdEvent = dynamic_cast<AliESDEvent*>(fInputEvent);
+  if(esdEvent) {
+    if (!TGeoGlobalMagField::Instance()->GetField()) esdEvent->InitMagneticField(); 
+  }
+
+
   //if(! fV0Filter->EventIsSelected(fInputEvent)) return;
   if(!fV0Reader){
     AliError("Error: No V0 Reader");
