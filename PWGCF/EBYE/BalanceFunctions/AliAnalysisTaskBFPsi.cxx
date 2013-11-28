@@ -341,7 +341,7 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fList->Add(fHistVz);
 
   //TPC vs VZERO multiplicity
-  fHistTPCvsVZEROMultiplicity = new TH2F("fHistTPCvsVZEROMultiplicity","VZERO vs TPC multiplicity",3001,-0.5,30000.5,4001,-0.5,4000.5);
+  fHistTPCvsVZEROMultiplicity = new TH2F("fHistTPCvsVZEROMultiplicity","VZERO vs TPC multiplicity",10001,-0.5,10000.5,4001,-0.5,4000.5);
   if(fMultiplicityEstimator == "V0A") 
     fHistTPCvsVZEROMultiplicity->GetXaxis()->SetTitle("VZERO-A multiplicity (a.u.)");
   else if(fMultiplicityEstimator == "V0C") 
