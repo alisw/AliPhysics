@@ -502,7 +502,7 @@ Double_t AliAnalysisTaskCompareAODTrackCuts::GenerateRandomHit(Double_t eta) {
 }
 
 // -----------------------------------------------------------------------
-void AliAnalysisTaskCompareAODTrackCuts::SetUseNSigmaOnPIDAxes(const Bool_t UseNSigma) {
+void AliAnalysisTaskCompareAODTrackCuts::SetUseNSigmaOnPIDAxes(Bool_t UseNSigma) {
 
 	// Will use NSigma on all PID axes. Will also change all track cuts objects
 	// owned by this task.
@@ -544,7 +544,7 @@ void AliAnalysisTaskCompareAODTrackCuts::AddTrackCuts(AliAODTrackCutsDiHadronPID
 }
 
 // -----------------------------------------------------------------------
-void AliAnalysisTaskCompareAODTrackCuts::SetDebugLevel(const Int_t debuglvl) {
+void AliAnalysisTaskCompareAODTrackCuts::SetDebugLevel(Int_t debuglvl) {
 
 	// Sets debug level to a certain value, as well as the debug level of the
 	// track cuts objects and event cut object.

@@ -69,26 +69,26 @@ public:
 	// Methods regarding the "other" p_T axis.
 	Int_t GetNPtBins() const {return fNPtBins;}
 	Double_t* GetPtAxis() {return fPtAxis;}
-	Double_t GetPtMin(const Int_t bin) const;
-	Double_t GetPtMax(const Int_t bin) const;
+	Double_t GetPtMin(Int_t bin) const;
+	Double_t GetPtMax(Int_t bin) const;
 	Double_t GetPtBinWidth(Int_t bin) const {return (GetPtMax(bin) - GetPtMin(bin)); }
 
 	// Methods regarding the PID p_T axis.
-	Int_t GetNPtBinsPID(const Int_t ptclass = -1) const;
+	Int_t GetNPtBinsPID(Int_t ptclass = -1) const;
 	Double_t* GetPtAxisPID() const;
-	Double_t GetPtMinPID(const Int_t bin) const;
-	Double_t GetPtMaxPID(const Int_t bin) const;
+	Double_t GetPtMinPID(Int_t bin) const;
+	Double_t GetPtMaxPID(Int_t bin) const;
 	Double_t GetPtBinWidthPID(Int_t bin) const {return (GetPtMaxPID(bin) - GetPtMinPID(bin));}
-	Double_t GetPtClassMin(const Int_t ptclass) const;
-	Double_t GetPtClassMax(const Int_t ptclass) const;
+	Double_t GetPtClassMin(Int_t ptclass) const;
+	Double_t GetPtClassMax(Int_t ptclass) const;
 
-	Int_t GetNTOFbins(const Int_t ptclass, const Int_t species) const {return fTOFbins[ptclass][species];}
-	Double_t GetTOFmin(const Int_t ptclass, const Int_t species) const {return fTOFLowerBound[ptclass][species];}
-	Double_t GetTOFmax(const Int_t ptclass, const Int_t species) const {return fTOFUpperBound[ptclass][species];}
+	Int_t GetNTOFbins(Int_t ptclass, Int_t species) const {return fTOFbins[ptclass][species];}
+	Double_t GetTOFmin(Int_t ptclass, Int_t species) const {return fTOFLowerBound[ptclass][species];}
+	Double_t GetTOFmax(Int_t ptclass, Int_t species) const {return fTOFUpperBound[ptclass][species];}
 
-	Int_t GetNTPCbins(const Int_t ptclass, const Int_t species) const {return fTPCbins[ptclass][species];}
-	Double_t GetTPCmin(const Int_t ptclass, const Int_t species) const {return fTPCLowerBound[ptclass][species];}
-	Double_t GetTPCmax(const Int_t ptclass, const Int_t species) const {return fTPCUpperBound[ptclass][species];}
+	Int_t GetNTPCbins(Int_t ptclass, Int_t species) const {return fTPCbins[ptclass][species];}
+	Double_t GetTPCmin(Int_t ptclass, Int_t species) const {return fTPCLowerBound[ptclass][species];}
+	Double_t GetTPCmax(Int_t ptclass, Int_t species) const {return fTPCUpperBound[ptclass][species];}
 
 	// Getters (Cuts)
 	UInt_t GetFilterMask() const {return fFilterMask;}
@@ -110,7 +110,7 @@ public:
 public:
 
 	// Request Certain QA histograms being filled.
-	Bool_t RequestQAHistos(const Int_t histoclass, const Bool_t Enable3DSpectra = kFALSE, const Bool_t EnablePIDHistos = kFALSE);
+	Bool_t RequestQAHistos(Int_t histoclass, Bool_t Enable3DSpectra = kFALSE, Bool_t EnablePIDHistos = kFALSE);
 	
 	// Setters (Cuts)
 	void SetPtRange(Double_t minpt, Double_t maxpt);
@@ -126,7 +126,7 @@ public:
 // Setters (Settings)
 	void SetIsMC(Bool_t ismc = kTRUE) {fIsMC = ismc;}
 	void SetLowPtNSigmaTOFOnly(Bool_t lowptnsigmatofonly = kFALSE) {fLowPtNSigmaTOFOnly = lowptnsigmatofonly;}
-	void SetUseNSigmaOnPIDAxes(const Bool_t useNSigma = kTRUE) {fUseNSigmaOnPIDAxes = useNSigma;}
+	void SetUseNSigmaOnPIDAxes(Bool_t useNSigma = kTRUE) {fUseNSigmaOnPIDAxes = useNSigma;}
 	void SetDebugLevel(Int_t debuglevel) {fDebug = debuglevel;}
 
 // -----------------------------------------------------------------------
@@ -156,8 +156,8 @@ public:
 // one for the higher pT and smaller range in TOF/TPC, etc. The following methods
 // are a mapping between the total pT bin (what the user uses), and the pt bin
 // within one of the five histograms (what's used internally)
-	Int_t GetPtClass(const Int_t ptbin) const;
-	Int_t GetBinInPtClass(const Int_t ptbin) const;
+	Int_t GetPtClass(Int_t ptbin) const;
+	Int_t GetBinInPtClass(Int_t ptbin) const;
 
 private:
 

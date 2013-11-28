@@ -717,7 +717,7 @@ TObjArray* AliAODTrackCutsDiHadronPID::GetDataTPCTOFMismatch(Int_t charge, Int_t
 }
 
 // -----------------------------------------------------------------------
-Double_t AliAODTrackCutsDiHadronPID::GetPtMin(const Int_t bin) const {
+Double_t AliAODTrackCutsDiHadronPID::GetPtMin(Int_t bin) const {
 	
 	// Same as: TAxis::GetBinLowEdge()
 
@@ -733,7 +733,7 @@ Double_t AliAODTrackCutsDiHadronPID::GetPtMin(const Int_t bin) const {
 }
 
 // -----------------------------------------------------------------------
-Double_t AliAODTrackCutsDiHadronPID::GetPtMax(const Int_t bin) const {
+Double_t AliAODTrackCutsDiHadronPID::GetPtMax(Int_t bin) const {
 	
 	// Same as: TAxis::GetBinUpEdge()
 
@@ -749,7 +749,7 @@ Double_t AliAODTrackCutsDiHadronPID::GetPtMax(const Int_t bin) const {
 }
 
 // -----------------------------------------------------------------------
-Int_t AliAODTrackCutsDiHadronPID::GetNPtBinsPID(const Int_t ptclass) const {
+Int_t AliAODTrackCutsDiHadronPID::GetNPtBinsPID(Int_t ptclass) const {
 
 	// Returns the number of pt bins that are used in every "pt class",
 	// where a "pt class" is a range in pT which have the same range in
@@ -793,7 +793,7 @@ Double_t* AliAODTrackCutsDiHadronPID::GetPtAxisPID() const {
 }
 
 // -----------------------------------------------------------------------
-Double_t AliAODTrackCutsDiHadronPID::GetPtMinPID(const Int_t bin) const {
+Double_t AliAODTrackCutsDiHadronPID::GetPtMinPID(Int_t bin) const {
 
 	// Same as: TAxis::GetBinLowEdge()
 
@@ -814,7 +814,7 @@ Double_t AliAODTrackCutsDiHadronPID::GetPtMinPID(const Int_t bin) const {
 }
 
 // -----------------------------------------------------------------------
-Double_t AliAODTrackCutsDiHadronPID::GetPtMaxPID(const Int_t bin) const {
+Double_t AliAODTrackCutsDiHadronPID::GetPtMaxPID(Int_t bin) const {
 
 	// Same as: TAxis::GetBinUpEdge()
 
@@ -835,7 +835,7 @@ Double_t AliAODTrackCutsDiHadronPID::GetPtMaxPID(const Int_t bin) const {
 }
 
 // -----------------------------------------------------------------------
-Double_t AliAODTrackCutsDiHadronPID::GetPtClassMin(const Int_t ptclass) const {
+Double_t AliAODTrackCutsDiHadronPID::GetPtClassMin(Int_t ptclass) const {
 
 	// Returns the minimum p_T of a p_T class.
 
@@ -850,7 +850,7 @@ Double_t AliAODTrackCutsDiHadronPID::GetPtClassMin(const Int_t ptclass) const {
 }
 
 // -----------------------------------------------------------------------
-Double_t AliAODTrackCutsDiHadronPID::GetPtClassMax(const Int_t ptclass) const {
+Double_t AliAODTrackCutsDiHadronPID::GetPtClassMax(Int_t ptclass) const {
 
 	// Returns the maximum p_T of a p_T class.
 
@@ -865,7 +865,7 @@ Double_t AliAODTrackCutsDiHadronPID::GetPtClassMax(const Int_t ptclass) const {
 }
 
 // -----------------------------------------------------------------------
-Bool_t AliAODTrackCutsDiHadronPID::RequestQAHistos(const Int_t histoclass, const Bool_t Enable3DSpectra, const Bool_t EnablePIDHistos) {
+Bool_t AliAODTrackCutsDiHadronPID::RequestQAHistos(Int_t histoclass, Bool_t Enable3DSpectra, Bool_t EnablePIDHistos) {
 
 	// Request certain histograms to be filled.
 
@@ -1255,7 +1255,7 @@ Bool_t AliAODTrackCutsDiHadronPID::IsSelectedReconstructedMC(AliTrackDiHadronPID
 }
 
 // -----------------------------------------------------------------------
-Int_t AliAODTrackCutsDiHadronPID::GetPtClass(const Int_t ptbin) const {
+Int_t AliAODTrackCutsDiHadronPID::GetPtClass(Int_t ptbin) const {
 
 	// Returns a p_T class as a function of bin (PID histos)
 	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
@@ -1278,7 +1278,7 @@ Int_t AliAODTrackCutsDiHadronPID::GetPtClass(const Int_t ptbin) const {
 }
 
 // -----------------------------------------------------------------------
-Int_t AliAODTrackCutsDiHadronPID::GetBinInPtClass(const Int_t ptbin) const {
+Int_t AliAODTrackCutsDiHadronPID::GetBinInPtClass(Int_t ptbin) const {
 
 	// Returns the bin withing the p_T class (i.e., 1..Nbins)
 	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
@@ -1731,6 +1731,7 @@ void AliAODTrackCutsDiHadronPID::SetXaxisAcceptedFilterBits() {
 	// Step 2: Create and fill base array.
 	const Int_t baseArraySize = baseArraySizeTmp;
 	Int_t baseArray[baseArraySize];
+	for (Int_t ii = 0; ii < baseArraySize; ++ii) {baseArray[ii] = 0;}
 
 	Int_t iBaseArray = 0;
 	for (Int_t iBit = 0; iBit <= largestBit; ++iBit) {
