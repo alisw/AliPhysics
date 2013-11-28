@@ -30,7 +30,7 @@ class AliESDpid;
 class AliFemtoK0Analysis : public AliAnalysisTaskSE {
  public:
   AliFemtoK0Analysis();
-  AliFemtoK0Analysis(const char *name, bool SignDep = kFALSE, bool FieldPositive = kTRUE, bool OnlineCase = kTRUE, bool MeritCase = kTRUE, float MinDL = 0.0, int MeritCutChoice = 2, float MinSep = 5.0);
+  AliFemtoK0Analysis(const char *name, bool SignDep = kFALSE, bool FieldPositive = kTRUE, bool OnlineCase = kTRUE, bool MeritCase = kTRUE, bool Case3D = kFALSE, float MinDL = 0.0, int MeritCutChoice = 2, float MinSep = 5.0);
   virtual ~AliFemtoK0Analysis();
   AliFemtoK0Analysis(const AliFemtoK0Analysis&);
   AliFemtoK0Analysis& operator=(const AliFemtoK0Analysis&);
@@ -60,6 +60,7 @@ class AliFemtoK0Analysis : public AliAnalysisTaskSE {
   bool fFieldPos;
   bool fOnlineCase;
   bool fMeritCase;
+  bool fCase3D;
   float fMinDecayLength;
   int fMeritCutChoice;
   float fMinSep;
