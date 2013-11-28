@@ -183,20 +183,20 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType,
     gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
 //    if(year > 2010)
 //    {
-//      //Hybrids 2011
-//      AliESDtrackCuts * esdTrackCuts  = CreateTrackCutsPWGJE(10001008);
-//      reader->SetTrackCuts(esdTrackCuts);
-//      AliESDtrackCuts * esdTrackCuts2 = CreateTrackCutsPWGJE(10011008);
-//      reader->SetTrackComplementaryCuts(esdTrackCuts2);
+      //Hybrids 2011
+      AliESDtrackCuts * esdTrackCuts  = CreateTrackCutsPWGJE(10001008);
+      reader->SetTrackCuts(esdTrackCuts);
+      AliESDtrackCuts * esdTrackCuts2 = CreateTrackCutsPWGJE(10011008);
+      reader->SetTrackComplementaryCuts(esdTrackCuts2);
 //    }
 //    else
-    {
-      //Hybrids 2010
-      AliESDtrackCuts * esdTrackCuts  = CreateTrackCutsPWGJE(10001006);
-      reader->SetTrackCuts(esdTrackCuts);
-      AliESDtrackCuts * esdTrackCuts2 = CreateTrackCutsPWGJE(10041006);
-      reader->SetTrackComplementaryCuts(esdTrackCuts2);
-    }
+//    {
+//      //Hybrids 2010
+//      AliESDtrackCuts * esdTrackCuts  = CreateTrackCutsPWGJE(10001006);
+//      reader->SetTrackCuts(esdTrackCuts);
+//      AliESDtrackCuts * esdTrackCuts2 = CreateTrackCutsPWGJE(10041006);
+//      reader->SetTrackComplementaryCuts(esdTrackCuts2);
+//    }
   }
   else if(inputDataType=="AOD")
   {
