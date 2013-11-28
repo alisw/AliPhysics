@@ -126,6 +126,11 @@ Bool_t AliAODInputHandler::Init(TTree* tree, Option_t* opt)
 Bool_t AliAODInputHandler::BeginEvent(Long64_t entry)
 {
     // Begin event
+    static Int_t prevRunNumber = -1;
+    if (prevRunNumber != fEvent->GetRunNumber() && NeedField()) {
+      fEvent->InitMagneticField();
+      prevRunNumber = fEvent->GetRunNumber();
+    } 
     TClonesArray* mcParticles = (TClonesArray*) (fEvent->FindListObject("mcparticles"));
     if (mcParticles) {
        if (!fMCEvent) fMCEvent = new AliMCEvent();
