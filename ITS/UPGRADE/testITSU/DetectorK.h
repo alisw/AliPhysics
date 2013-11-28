@@ -94,6 +94,10 @@ class DetectorK : public TNamed {
   Float_t GetAvgRapidity() const { return fAvgRapidity; }
   void SetConfidenceLevel(Float_t confLevel) {fConfLevel = confLevel; }
   Float_t GetConfidenceLevel() const { return fConfLevel; }
+
+  void SetAtLeastHits(Int_t atLeast ) {fAtLeastHits = atLeast; }
+  Int_t GetAtLeastHits() const { return fAtLeastHits; }
+
   void SetAtLeastCorr(Int_t atLeastCorr ) {fAtLeastCorr = atLeastCorr; }
   Int_t GetAtLeastCorr() const { return fAtLeastCorr; }
   void SetAtLeastFake(Int_t atLeastFake ) {fAtLeastFake = atLeastFake; }
@@ -166,6 +170,8 @@ class DetectorK : public TNamed {
   Float_t fParticleMass;        // Particle used for tracking. Standard: mass of pion
   Double_t fMaxRadiusSlowDet;   // Maximum radius for slow detectors.  Fast detectors 
                                 // and only fast detectors reside outside this radius.
+
+  Int_t fAtLeastHits;     // min. number of hits for the track to account it
   Int_t fAtLeastCorr;     // min. number of correct hits for the track to be "good"
   Int_t fAtLeastFake;     // min. number of fake hits for the track to be "fake"
 

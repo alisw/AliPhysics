@@ -22,8 +22,6 @@ http://rnc.lbl.gov/~jhthomas
 
 Changes by S. Rossegger -> see header file
 
-RS: Allows to have smaller pt's in the TPC, play with kMinRadTPCTrack constant
-
 ***********************************************************/
 
 
@@ -45,8 +43,8 @@ RS: Allows to have smaller pt's in the TPC, play with kMinRadTPCTrack constant
 #define KaonMass                 0.498  // Mass of the Kaon
 #define D0Mass                   1.865  // Mass of the D0
 
-const double DetectorK::kPtMinFix = 0.050;
-const double DetectorK::kPtMaxFix = 20.5;
+const double DetectorK::kPtMinFix = 0.150;
+const double DetectorK::kPtMaxFix = 31.5;
 const double DetectorK::kMinRadTPCTrack = 132.0;
 
 //TMatrixD *probKomb; // table for efficiency kombinatorics
@@ -107,7 +105,8 @@ DetectorK::DetectorK()
     fConfLevel(0.0027),      // 0.27 % -> 3 sigma confidence
     fAvgRapidity(0.45),      // Avg rapidity, MCS calc is a function of crossing angle
     fParticleMass(0.140),    // Standard: pion mass 
-    fMaxRadiusSlowDet(10.),
+  fMaxRadiusSlowDet(10.),
+    fAtLeastHits(-1),     // if -1, then require hit on all ITS layers
     fAtLeastCorr(-1),     // if -1, then correct hit on all ITS layers
     fAtLeastFake(1),       // if at least x fakes, track is considered fake ...
     fMaxSeedRadius(50000),
@@ -133,6 +132,7 @@ DetectorK::DetectorK(char *name, char *title)
     fAvgRapidity(0.45),      // Avg rapidity, MCS calc is a function of crossing angle
     fParticleMass(0.140),     // Standard: pion mass
     fMaxRadiusSlowDet(10.),
+    fAtLeastHits(-1),     // if -1, then require hit on all ITS layers
     fAtLeastCorr(-1),     // if -1, then correct hit on all ITS layers
     fAtLeastFake(1),       // if at least x fakes, track is considered fake ...
     fMaxSeedRadius(50000),
@@ -1075,7 +1075,7 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 	    
 	}
 	
-	if (fAtLeastCorr != -1) {
+	if (fAtLeastCorr != -1 || fAtLeastHits) {
 	  // Calculate probabilities from Kombinatorics tree ...
 	  Double_t *probs = PrepareEffFakeKombinations(&probKomb, &probLay);
 	  fEfficiency[massloop][i] = probs[0]; // efficiency
@@ -1343,7 +1343,7 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 
 
 	  }
-	  if (fAtLeastCorr != -1) {
+	  if (fAtLeastCorr != -1 || fAtLeastHits != -1 ) {
 	    // Calculate probabilities from Kombinatorics tree ...
 	    Double_t *probs = PrepareEffFakeKombinations(&probKomb, &probLay);
 	    fEfficiency[massloop][i] = probs[0]; // efficiency
@@ -2225,9 +2225,13 @@ Double_t* DetectorK::PrepareEffFakeKombinations(TMatrixD *probKomb, TMatrixD *pr
 	printf("Error: unexpected values in combinatorics table\n");
     }
 
+    Int_t fkAtLeastHits = fAtLeastHits;
     Int_t fkAtLeastCorr = fAtLeastCorr;
+    if (fAtLeastHits == -1) fkAtLeastHits = nLayer; // all hits are "correct"
     if (fAtLeastCorr == -1) fkAtLeastCorr = nLayer; // all hits are "correct"
-    
+    //
+    if (flCorr+flFake < fAtLeastHits) continue;
+
     if (flCorr>=fkAtLeastCorr && flFake==0) { // at least correct but zero fake
       Double_t probEffLayer = 1;
       for (Int_t l=0; l<nLayer; l++) {

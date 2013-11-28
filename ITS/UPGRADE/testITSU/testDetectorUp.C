@@ -3,6 +3,8 @@
 // .L DetectorK.cxx++
 
 //void standardPlots() {
+
+
 void testDetectorUp() {
 
 
@@ -19,7 +21,7 @@ void testDetectorUp() {
   Double_t resZOB        = 0.0004;
   Double_t eff           = 0.95;
   //
-  /*
+  //  /*
   its.AddLayer((char*)"ddd1",  2.32 ,  x0IB, resRPhiIB, resZIB,eff); 
   its.AddLayer((char*)"ddd2",  3.13 ,  x0IB, resRPhiIB, resZIB,eff); 
   its.AddLayer((char*)"ddd3",  3.91 ,  x0IB, resRPhiIB, resZIB,eff); 
@@ -27,20 +29,21 @@ void testDetectorUp() {
   its.AddLayer((char*)"ddd5",  24.71 ,  x0OB, resRPhiOB, resZOB,eff); 
   its.AddLayer((char*)"ddd6",  35.33 ,  x0OB, resRPhiOB, resZOB,eff); 
   its.AddLayer((char*)"ddd7",  40.53 ,  x0OB, resRPhiOB, resZOB,eff); 
-  */
+  //  */
   //
+  /*
   its.AddLayer((char*)"ddd1",  2.32 ,  x0IB, resRPhiIB, resZIB,eff); 
   its.AddLayer((char*)"ddd2",  3.13 ,  x0IB, resRPhiIB, resZIB,eff); 
   its.AddLayer((char*)"ddd3",  3.91 ,  x0IB, resRPhiIB, resZIB,eff); 
-  //  its.AddLayer((char*)"ddd4",  19.41,  x0OB, resRPhiOB, resZOB,eff); 
-  //  its.AddLayer((char*)"ddd5",  24.71 ,  x0OB, resRPhiOB, resZOB,eff); 
-  its.AddLayer((char*)"ddd4",  5.,  x0OB, resRPhiOB, resZOB,eff); 
-  its.AddLayer((char*)"ddd5",  33. ,  x0OB, resRPhiOB, resZOB,eff); 
+  its.AddLayer((char*)"ddd4",  19.41+5,  x0OB, resRPhiOB, resZOB,eff); 
+  its.AddLayer((char*)"ddd5",  24.71+5,  x0OB, resRPhiOB, resZOB,eff); 
+  //  its.AddLayer((char*)"ddd4",  5.,  x0OB, resRPhiOB, resZOB,eff); 
+  //  its.AddLayer((char*)"ddd5",  32. ,  x0OB, resRPhiOB, resZOB,eff); 
   its.AddLayer((char*)"ddd6",  35.33 ,  x0OB, resRPhiOB, resZOB,eff); 
   its.AddLayer((char*)"ddd7",  40.53 ,  x0OB, resRPhiOB, resZOB,eff); 
+  */
 
-
-
+  its.SetAtLeastHits(5);
   its.SetAtLeastCorr(5);
   its.SetAtLeastFake(1);
   //
@@ -56,6 +59,22 @@ void testDetectorUp() {
 
 }
 
+void testDetectorCurr() {
+  DetectorK its("ALICE","ITS");
+  its.MakeAliceCurrent(0,0);
+  its.SetAtLeastCorr(4);
+  its.SetAtLeastFake(1);
+  its.PrintLayout();
+  its.SolveViaBilloir(0);
+ 
+  its.MakeStandardPlots(0,2,1,kTRUE);
+  //  return;
+  its.AddTPC(0.1,0.1);
+  its.SolveViaBilloir(0);
+ 
+  its.MakeStandardPlots(1,1,1,kTRUE);
+  
+}
 
 void particleDependendResolution() { 
 // particle dependency on resolution
