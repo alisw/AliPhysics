@@ -329,9 +329,11 @@ void AliAnalysisTaskEmcalDiJetBase::MatchJetsGeo(Int_t cFull, Int_t cCharged,
 
   TArrayI faChNeMatchIndex;
   faChNeMatchIndex.Set(nChJets+1);
+  faChNeMatchIndex.Reset(-1);
 
   TArrayI faChMatchIndex;
   faChMatchIndex.Set(nFullJets+1);
+  faChMatchIndex.Reset(-1);
 
   static TArrayS iFlag(nChJets*nFullJets);
   if(iFlag.GetSize()<(nChJets*nFullJets)){
@@ -355,7 +357,7 @@ void AliAnalysisTaskEmcalDiJetBase::MatchJetsGeo(Int_t cFull, Int_t cCharged,
 	chJet = static_cast<AliEmcalJet*>(GetAcceptJetFromArray(ich, cCharged));
       else {
 	chJet = static_cast<AliEmcalJet*>(GetJetFromArray(ich, cCharged));
-	if(!chJet) continue;;
+	if(!chJet) continue;
 	if(type>0) {
 	  if(chJet->Eta()<(contCh->GetJetEtaMin()-0.1) || chJet->Eta()>(contCh->GetJetEtaMax()+0.1))
 	    continue;

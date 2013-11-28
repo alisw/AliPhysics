@@ -67,8 +67,8 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fMaxBinPt(250),
   fMinPtTrackInEmcal(0),
   fEventPlaneVsEmcal(-1),
-  fMinEventPlane(-10),
-  fMaxEventPlane(10),
+  fMinEventPlane(-1e6),
+  fMaxEventPlane(1e6),
   fCentEst("V0M"),
   fIsEmbedded(kFALSE),
   fIsPythia(kFALSE),
@@ -146,8 +146,8 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fMaxBinPt(250),
   fMinPtTrackInEmcal(0),
   fEventPlaneVsEmcal(-1),
-  fMinEventPlane(-10),
-  fMaxEventPlane(10),
+  fMinEventPlane(-1e6),
+  fMaxEventPlane(1e6),
   fCentEst("V0M"),
   fIsEmbedded(kFALSE),
   fIsPythia(kFALSE),
@@ -716,7 +716,8 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
       }
     }
     if ((res & fOffTrigger) == 0) {
-      fHistEventRejection->Fill("PhysSel",1);
+      if (fGeneralHistograms) 
+	fHistEventRejection->Fill("PhysSel",1);
       return kFALSE;
     }
   }
@@ -733,12 +734,14 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
       }
     }
     if (!fired.Contains("-B-")) {
-      fHistEventRejection->Fill("trigger",1);
+      if (fGeneralHistograms) 
+	fHistEventRejection->Fill("trigger",1);
       return kFALSE;
     }
     TObjArray *arr = fTrigClass.Tokenize("|");
     if (!arr) {
-      fHistEventRejection->Fill("trigger",1);
+      if (fGeneralHistograms) 
+	fHistEventRejection->Fill("trigger",1);
       return kFALSE;
     }
     Bool_t match = 0;
@@ -753,14 +756,16 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     }
     delete arr;
     if (!match) {
-      fHistEventRejection->Fill("trigger",1);
+      if (fGeneralHistograms) 
+	fHistEventRejection->Fill("trigger",1);
       return kFALSE;
     }
   }
 
   if (fTriggerTypeSel != kND) {
     if(fTriggerType != fTriggerTypeSel) {
-      fHistEventRejection->Fill("trigTypeSel",1);
+      if (fGeneralHistograms) 
+	fHistEventRejection->Fill("trigTypeSel",1);
       return kFALSE;
     }
   }
@@ -768,21 +773,24 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
 
   if ((fMinCent != -999) && (fMaxCent != -999)) {
     if (fCent<fMinCent || fCent>fMaxCent) {
-      fHistEventRejection->Fill("Cent",1);
+      if (fGeneralHistograms) 
+	fHistEventRejection->Fill("Cent",1);
       return kFALSE;
     }
   }
 
   if ((fMinVz != -999) && (fMaxVz != -999)) {
     if (fNVertCont == 0 ) {
-      fHistEventRejection->Fill("vertex contr.",1);
+      if (fGeneralHistograms) 
+	fHistEventRejection->Fill("vertex contr.",1);
       return kFALSE;
     }
     Double_t vz = fVertex[2];
     if (vz<fMinVz || vz>fMaxVz) {
+      if (fGeneralHistograms) 
 	fHistEventRejection->Fill("Vz",1);
-	return kFALSE;
-      }
+      return kFALSE;
+    }
   }
 
   if (fMinPtTrackInEmcal > 0 && fGeom) {
@@ -809,7 +817,8 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
       }
     }
     if (!trackInEmcalOk) {
-      fHistEventRejection->Fill("trackInEmcal",1);
+      if (fGeneralHistograms) 
+	fHistEventRejection->Fill("trackInEmcal",1);
       return kFALSE;
     }
   }
@@ -828,7 +837,8 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
       }
     }
     if (nTracksAcc<fMinNTrack) {
-      fHistEventRejection->Fill("minNTrack",1);
+      if (fGeneralHistograms) 
+	fHistEventRejection->Fill("minNTrack",1);
       return kFALSE;
     }
   }
@@ -840,7 +850,8 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     fAliAnalysisUtils->SetMaxVtxZ(10.);
 
     if(!fAliAnalysisUtils->IsVertexSelected2013pA(InputEvent())) {
-      fHistEventRejection->Fill("VtxSel2013pA",1);
+      if (fGeneralHistograms) 
+	fHistEventRejection->Fill("VtxSel2013pA",1);
       return kFALSE;
     }
 
@@ -854,12 +865,14 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
       !(fEPV0 + TMath::Pi() > fMinEventPlane && fEPV0 + TMath::Pi() <= fMaxEventPlane) &&
       !(fEPV0 - TMath::Pi() > fMinEventPlane && fEPV0 - TMath::Pi() <= fMaxEventPlane)) 
     {
-      fHistEventRejection->Fill("EvtPlane",1);
+      if (fGeneralHistograms) 
+	fHistEventRejection->Fill("EvtPlane",1);
       return kFALSE;
     }
 
   if (fSelectPtHardBin != -999 && fSelectPtHardBin != fPtHardBin)  {
-      fHistEventRejection->Fill("SelPtHardBin",1);
+      if (fGeneralHistograms) 
+	fHistEventRejection->Fill("SelPtHardBin",1);
       return kFALSE;
     }
 
