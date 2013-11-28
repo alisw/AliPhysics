@@ -46,6 +46,8 @@
 //		- 1-mass, 2-v0dca, 3-dddca, 4-combination (used to be v0dca)
 //	- added passable argument for two-track minimum separation (10/16/13)
 //	- added boolean to turn off field-sign dependence for train (10/30/13)
+//	- changed destructors to minimize lost memory (11/27/13)
+//	- added Case3D to switch off all 3D objects (11/27/13)
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -94,6 +96,7 @@ AliAnalysisTaskSE(),
   fFieldPos(kTRUE),
   fOnlineCase(kTRUE),
   fMeritCase(kTRUE),
+  fCase3D(kFALSE),
   fMinDecayLength(0.0),
   fMeritCutChoice(0),
   fMinSep(0.0),
@@ -108,12 +111,13 @@ AliAnalysisTaskSE(),
 {
 }
 //________________________________________________________________________
-AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool SignDep, bool FieldPositive, bool OnlineCase, bool MeritCase, float MinDL, int MeritCutChoice, float MinSep) 
+AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool SignDep, bool FieldPositive, bool OnlineCase, bool MeritCase, bool Case3D, float MinDL, int MeritCutChoice, float MinSep) 
 : AliAnalysisTaskSE(name),
   fSignDep(SignDep),
   fFieldPos(FieldPositive),
   fOnlineCase(OnlineCase),
   fMeritCase(MeritCase),
+  fCase3D(Case3D),
   fMinDecayLength(MinDL),
   fMeritCutChoice(MeritCutChoice),
   fMinSep(MinSep),
@@ -131,6 +135,7 @@ AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool SignDep, bool Fiel
   fFieldPos 	= FieldPositive;
   fOnlineCase 	= OnlineCase;
   fMeritCase 	= MeritCase;
+  fCase3D		= Case3D;
   fMinDecayLength = MinDL;
   fMeritCutChoice = MeritCutChoice;
   fMinSep 		= MinSep;
@@ -147,6 +152,7 @@ AliFemtoK0Analysis::AliFemtoK0Analysis(const AliFemtoK0Analysis &obj)
   fFieldPos(obj.fFieldPos),
   fOnlineCase(obj.fOnlineCase),
   fMeritCase(obj.fMeritCase),
+  fCase3D(obj.fCase3D),
   fMinDecayLength(obj.fMinDecayLength),
   fMeritCutChoice(obj.fMeritCutChoice),
   fMinSep(obj.fMinSep),
@@ -170,6 +176,7 @@ AliFemtoK0Analysis &AliFemtoK0Analysis::operator=(const AliFemtoK0Analysis &obj)
  fFieldPos 	= obj.fFieldPos;
  fOnlineCase 	= obj.fOnlineCase;
  fMeritCase 	= obj.fMeritCase;
+ fCase3D		= obj.fCase3D;
  fMinDecayLength= obj.fMinDecayLength;
  fMeritCutChoice= obj.fMeritCutChoice;
  fMinSep		= obj.fMinSep;
@@ -188,13 +195,22 @@ AliFemtoK0Analysis &AliFemtoK0Analysis::operator=(const AliFemtoK0Analysis &obj)
 AliFemtoK0Analysis::~AliFemtoK0Analysis()
 {
   // Destructor
-  if(fEC) delete fEC;
-  if(fEvt) delete fEvt;
-  if(fRandomNumber) delete fRandomNumber;
-  if(fName) delete fName;
-  if(fAOD) delete fAOD;
-  if(fOutputList) delete fOutputList;
-  if(fPidAOD) delete fPidAOD;
+  for(unsigned short i=0; i<kZVertexBins; i++)
+  {
+    for(unsigned short j=0; j<kCentBins; j++)
+    {
+      fEC[i][j]->~AliFemtoK0EventCollection();
+      fEC[i][j] = NULL;
+    }
+    delete[] fEC[i]; fEC[i] = NULL;
+  }
+  delete[] fEC; fEC = NULL;
+
+  if(fEC){ delete fEC; fEC = NULL;}
+  if(fRandomNumber){ delete fRandomNumber; fRandomNumber = NULL;}
+  if(fAOD){ delete fAOD; fAOD = NULL;}
+  if(fOutputList){ delete fOutputList; fOutputList = NULL;}
+  if(fPidAOD){ delete fPidAOD; fPidAOD = NULL;}
 }
 //________________________________________________________________________
 void AliFemtoK0Analysis::MyInit()
@@ -348,65 +364,43 @@ void AliFemtoK0Analysis::UserCreateOutputObjects()
   //fOutputList->Add(fHistCRCRSignal);
   //fOutputList->Add(fHistCRCRBkg);
   
-
-  //3D out-side-long
-  /*TH3F* fHistOSLCentLowKt = new TH3F("fHistOSLCentLowKt","",100,-.5,.5,100,-.5,.5,100,-.5,.5);
-  fOutputList->Add(fHistOSLCentLowKt);
-  TH3F* fHistOSLCentLowKtBkg = new TH3F("fHistOSLCentLowKtBkg","",100,-.5,.5,100,-.5,.5,100,-.5,.5);
-  fOutputList->Add(fHistOSLCentLowKtBkg);
-
-  TH3F* fHistOSLCentHighKt = new TH3F("fHistOSLCentHighKt","",100,-.5,.5,100,-.5,.5,100,-.5,.5);
-  fOutputList->Add(fHistOSLCentHighKt);
-  TH3F* fHistOSLCentHighKtBkg = new TH3F("fHistOSLCentHighKtBkg","",100,-.5,.5,100,-.5,.5,100,-.5,.5);
-  fOutputList->Add(fHistOSLCentHighKtBkg);
-
-  TH3F* fHistOSLSemiCentLowKt = new TH3F("fHistOSLSemiCentLowKt","",100,-.5,.5,100,-.5,.5,100,-.5,.5);
-  fOutputList->Add(fHistOSLSemiCentLowKt);
-  TH3F* fHistOSLSemiCentLowKtBkg = new TH3F("fHistOSLSemiCentLowKtBkg","",100,-.5,.5,100,-.5,.5,100,-.5,.5);
-  fOutputList->Add(fHistOSLSemiCentLowKtBkg);
-
-  TH3F* fHistOSLSemiCentHighKt = new TH3F("fHistOSLSemiCentHighKt","",100,-.5,.5,100,-.5,.5,100,-.5,.5);
-  fOutputList->Add(fHistOSLSemiCentHighKt);
-  TH3F* fHistOSLSemiCentHighKtBkg = new TH3F("fHistOSLSemiCentHighKtBkg","",100,-.5,.5,100,-.5,.5,100,-.5,.5);
-  fOutputList->Add(fHistOSLSemiCentHighKtBkg);*/
-
   //3D out-side-long
   TH3F *fHist3DOSLSignal[10][4];
   TH3F *fHist3DOSLBkg[10][4];
   
-  for(int i3D=0;i3D<10;i3D++){
-   for(int j3D=0;j3D<4;j3D++){
-    TString *histname = new TString("fHist3DOSL");
-    *histname += i3D;
-    *histname += j3D;
-    histname->Append("Signal");
-    fHist3DOSLSignal[i3D][j3D] = new TH3F(histname->Data(),"",100,-.5,.5,100,-.5,.5,100,-.5,.5);
-    fOutputList->Add(fHist3DOSLSignal[i3D][j3D]);
-    histname->Replace(12,6,"Bkg");
-    fHist3DOSLBkg[i3D][j3D] = new TH3F(histname->Data(),"",100,-.5,.5,100,-.5,.5,100,-.5,.5);
-    fOutputList->Add(fHist3DOSLBkg[i3D][j3D]);
+  if(fCase3D){
+   for(int i3D=0;i3D<10;i3D++){
+    for(int j3D=0;j3D<4;j3D++){
+     TString *histname = new TString("fHist3DOSL");
+     *histname += i3D;
+     *histname += j3D;
+     histname->Append("Signal");
+     fHist3DOSLSignal[i3D][j3D] = new TH3F(histname->Data(),"",100,-.5,.5,100,-.5,.5,100,-.5,.5);
+     fOutputList->Add(fHist3DOSLSignal[i3D][j3D]);
+     histname->Replace(12,6,"Bkg");
+     fHist3DOSLBkg[i3D][j3D] = new TH3F(histname->Data(),"",100,-.5,.5,100,-.5,.5,100,-.5,.5);
+     fOutputList->Add(fHist3DOSLBkg[i3D][j3D]);
+    }
    }
   }
-    
-
 
   //3D Spherical Harmonics
-  TH3F* fHistSHCentLowKt = new TH3F("fHistSHCentLowKt","",50,0,.5,ncthetabins,-1,1,nphibins,0,2*PI);
-  TH3F* fHistSHCentHighKt = new TH3F("fHistSHCentHighKt","",50,0,.5,ncthetabins,-1,1,nphibins,0,2*PI);
-  TH3F* fHistSHSemiCentLowKt = new TH3F("fHistSHSemiCentLowKt","",50,0,.5,ncthetabins,-1,1,nphibins,0,2*PI);
-  TH3F* fHistSHSemiCentHighKt = new TH3F("fHistSHSemiCentHighKt","",50,0,.5,ncthetabins,-1,1,nphibins,0,2*PI);
-  TH3F* fHistSHCentLowKtBkg = new TH3F("fHistSHCentLowKtBkg","",50,0,.5,ncthetabins,-1,1,nphibins,0,2*PI);
-  TH3F* fHistSHCentHighKtBkg = new TH3F("fHistSHCentHighKtBkg","",50,0,.5,ncthetabins,-1,1,nphibins,0,2*PI);
-  TH3F* fHistSHSemiCentLowKtBkg = new TH3F("fHistSHSemiCentLowKtBkg","",50,0,.5,ncthetabins,-1,1,nphibins,0,2*PI);
-  TH3F* fHistSHSemiCentHighKtBkg = new TH3F("fHistSHSemiCentHighKtBkg","",50,0,.5,ncthetabins,-1,1,nphibins,0,2*PI);
-  fOutputList->Add(fHistSHCentLowKt);
-  fOutputList->Add(fHistSHCentHighKt);
-  fOutputList->Add(fHistSHSemiCentLowKt);
-  fOutputList->Add(fHistSHSemiCentHighKt);
-  fOutputList->Add(fHistSHCentLowKtBkg);
-  fOutputList->Add(fHistSHCentHighKtBkg);
-  fOutputList->Add(fHistSHSemiCentLowKtBkg);
-  fOutputList->Add(fHistSHSemiCentHighKtBkg);
+  //TH3F* fHistSHCentLowKt = new TH3F("fHistSHCentLowKt","",50,0,.5,ncthetabins,-1,1,nphibins,0,2*PI);
+  //TH3F* fHistSHCentHighKt = new TH3F("fHistSHCentHighKt","",50,0,.5,ncthetabins,-1,1,nphibins,0,2*PI);
+  //TH3F* fHistSHSemiCentLowKt = new TH3F("fHistSHSemiCentLowKt","",50,0,.5,ncthetabins,-1,1,nphibins,0,2*PI);
+  //TH3F* fHistSHSemiCentHighKt = new TH3F("fHistSHSemiCentHighKt","",50,0,.5,ncthetabins,-1,1,nphibins,0,2*PI);
+  //TH3F* fHistSHCentLowKtBkg = new TH3F("fHistSHCentLowKtBkg","",50,0,.5,ncthetabins,-1,1,nphibins,0,2*PI);
+  //TH3F* fHistSHCentHighKtBkg = new TH3F("fHistSHCentHighKtBkg","",50,0,.5,ncthetabins,-1,1,nphibins,0,2*PI);
+  //TH3F* fHistSHSemiCentLowKtBkg = new TH3F("fHistSHSemiCentLowKtBkg","",50,0,.5,ncthetabins,-1,1,nphibins,0,2*PI);
+  //TH3F* fHistSHSemiCentHighKtBkg = new TH3F("fHistSHSemiCentHighKtBkg","",50,0,.5,ncthetabins,-1,1,nphibins,0,2*PI);
+  //fOutputList->Add(fHistSHCentLowKt);
+  //fOutputList->Add(fHistSHCentHighKt);
+  //fOutputList->Add(fHistSHSemiCentLowKt);
+  //fOutputList->Add(fHistSHSemiCentHighKt);
+  //fOutputList->Add(fHistSHCentLowKtBkg);
+  //fOutputList->Add(fHistSHCentHighKtBkg);
+  //fOutputList->Add(fHistSHSemiCentLowKtBkg);
+  //fOutputList->Add(fHistSHSemiCentHighKtBkg);
 
   //side-side
   //TH3F* fHistLeftLeftSignal = new TH3F("fHistLeftLeftSignal","", kCentBins, .5, kCentBins+.5, 300, 0., 3., 100, 0., 1);
@@ -802,7 +796,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
   (fEvt)->fNumV0s = unskippedCount;
   //Printf("Number of v0s: %d", v0Count);
   //Printf("Number of K0s: %d", k0Count);
-  tempK0->~AliFemtoK0Particle();
+  delete [] tempK0; tempK0 = NULL;
 
   ((TH1F*)fOutputList->FindObject("fHistMultK0"))->Fill(unskippedCount);	// changed 3/25, used to be "k0Count"
 
@@ -1083,11 +1077,12 @@ void AliFemtoK0Analysis::Exec(Option_t *)
            //else ((TH3F*)fOutputList->FindObject("fHistCRCRSignal"))->Fill(centBin+1, pairKt, qinv);
 
            //3D
-           if(pairKt > 0.2 && pairKt < 1.5 && centBin > 5){
-		    histname3D->Append("Signal");
-			((TH3F*)fOutputList->FindObject(histname3D->Data()))->Fill(qOutPRF,qSide,qLong);
-		   }
-             
+           if(fCase3D){
+            if(pairKt > 0.2 && pairKt < 1.5 && centBin > 5){
+		     histname3D->Append("Signal");
+			 ((TH3F*)fOutputList->FindObject(histname3D->Data()))->Fill(qOutPRF,qSide,qLong);
+		    }
+           }  
            /*if(pairKt < 1.0){
             if(centBin > 13){
              ((TH3F*)fOutputList->FindObject("fHistOSLCentLowKt"))->Fill(qOutPRF,qSide,qLong);
@@ -1132,10 +1127,12 @@ void AliFemtoK0Analysis::Exec(Option_t *)
            //else ((TH3F*)fOutputList->FindObject("fHistCRCRBkg"))->Fill(centBin+1, pairKt, qinv);
 
            //3D
-           if(pairKt > 0.2 && pairKt < 1.5 && centBin > 5){
-		    histname3D->Replace(12,6,"Bkg");
-			((TH3F*)fOutputList->FindObject(histname3D->Data()))->Fill(qOutPRF,qSide,qLong);
-		   }
+           if(fCase3D){
+            if(pairKt > 0.2 && pairKt < 1.5 && centBin > 5){
+		     histname3D->Replace(12,6,"Bkg");
+			 ((TH3F*)fOutputList->FindObject(histname3D->Data()))->Fill(qOutPRF,qSide,qLong);
+		    }
+           }
            /*if(pairKt < 1.0){
             if(centBin > 13){
              ((TH3F*)fOutputList->FindObject("fHistOSLCentLowKtBkg"))->Fill(qOutPRF,qSide,qLong);
