@@ -1,5 +1,5 @@
 /***************************************************************************
-              fbellini@cern.ch - last modified on 21/11/2013
+              fbellini@cern.ch - last modified on 28/11/2013
 //
 //Lauches KStar analysis with rsn mini package
 //Allows basic configuration of pile-up check and event cuts
@@ -35,6 +35,7 @@ AliRsnMiniAnalysisTask * AddTaskKStarPPB
  Int_t       pairCutSetID = 0,
  Int_t       mixingConfigID = 0,
  Int_t       aodFilterBit = 5,
+ Int_t       customQualityCutsID = -1,
  AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPiCandidate = AliRsnCutSetDaughterParticle::kTOFpidKstarPPB2011,
  AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate = AliRsnCutSetDaughterParticle::kTOFpidKstarPPB2011,
  Float_t     nsigmaPi = 2.0,
@@ -224,7 +225,7 @@ AliRsnMiniAnalysisTask * AddTaskKStarPPB
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    //   
    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigTOFanalysisKStar.C");
-   if (!ConfigTOFanalysisKStar(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, useMixLS, signedPdg, monitorOpt.Data(), yaxisvar)) return 0x0;
+   if (!ConfigTOFanalysisKStar(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, useMixLS, signedPdg, monitorOpt.Data(), yaxisvar)) return 0x0;
    
    
    //
