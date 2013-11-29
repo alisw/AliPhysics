@@ -3155,21 +3155,21 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       fhYPrimMC[i]  = new TH2F(Form("hYPrim_MC%s",ppname[i].Data()),
                                Form("primary photon %s : Rapidity ",pptype[i].Data()),
-                               nptbins,ptmin,ptmax,800,-8,8);
+                               nptbins,ptmin,ptmax,200,-2,2);
       fhYPrimMC[i]->SetYTitle("Rapidity");
       fhYPrimMC[i]->SetXTitle("E (GeV)");
       outputContainer->Add(fhYPrimMC[i]) ;
       
       fhEtaPrimMC[i]  = new TH2F(Form("hEtaPrim_MC%s",ppname[i].Data()),
                                Form("primary photon %s : #eta",pptype[i].Data()),
-                               nptbins,ptmin,ptmax,800,-8,8);
+                               nptbins,ptmin,ptmax,200,-2,2);
       fhEtaPrimMC[i]->SetYTitle("#eta");
       fhEtaPrimMC[i]->SetXTitle("E (GeV)");
       outputContainer->Add(fhEtaPrimMC[i]) ;
       
       fhPhiPrimMC[i]  = new TH2F(Form("hPhiPrim_MC%s",ppname[i].Data()),
                                  Form("primary photon %s : #phi ",pptype[i].Data()),
-                                 nptbins,ptmin,ptmax,nphibins,phimin,phimax);
+                                 nptbins,ptmin,ptmax,nphibins,0,TMath::TwoPi());
       fhPhiPrimMC[i]->SetYTitle("#phi (rad)");
       fhPhiPrimMC[i]->SetXTitle("E (GeV)");
       outputContainer->Add(fhPhiPrimMC[i]) ;
