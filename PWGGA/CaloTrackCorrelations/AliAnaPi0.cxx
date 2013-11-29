@@ -232,7 +232,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   
   //create event containers
   fEventsList = new TList*[GetNCentrBin()*GetNZvertBin()*GetNRPBin()] ;
-	
+
   for(Int_t ic=0; ic<GetNCentrBin(); ic++)
   {
     for(Int_t iz=0; iz<GetNZvertBin(); iz++)
@@ -1909,7 +1909,13 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   //Int_t curVzBin        = GetEventVzBin();
   //Int_t curRPBin        = GetEventRPBin();
   Int_t eventbin        = GetEventMixBin();
-
+  
+  if(eventbin > GetNCentrBin()*GetNZvertBin()*GetNRPBin())
+  {
+     printf("AliAnaPi0::MakeAnalysisFillHistograms() - Mix Bin not exepcted: cen bin %d, z bin %d, rp bin %d, total bin %d, Event Centrality %d, z vertex %2.3f, Reaction Plane %2.3f\n",GetEventCentralityBin(),GetEventVzBin(), GetEventRPBin(),eventbin,GetEventCentrality(),vert[2],GetEventPlaneAngle());
+    return;
+  }
+    
   //Get shower shape information of clusters
   TObjArray *clusters = 0;
   if     (fCalorimeter=="EMCAL") clusters = GetEMCALClusters();
