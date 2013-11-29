@@ -884,9 +884,8 @@ void AliAnaCaloTrackCorrMaker::Print(const Option_t * opt) const
   
 }
 
-//_______________________________________________________________________
-void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
-                                            const char * currentFileName)
+//_____________________________________________________________________________________
+void AliAnaCaloTrackCorrMaker::ProcessEvent(Int_t iEntry, const char * currentFileName)
 {
   //Process analysis for this event
   

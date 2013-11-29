@@ -97,7 +97,7 @@ fSplitWidthSigma(0),      fMassShiftHighECell(0)
 }
 
 //________________________________________
-AliCaloPID::AliCaloPID(const Int_t flux) : 
+AliCaloPID::AliCaloPID(Int_t flux) :
 TObject(),                fDebug(-1),                  fParticleFlux(flux),
 //Bayesian
 fEMCALPIDUtils(),         fUseBayesianWeights(kFALSE), fRecalculateBayesian(kFALSE),
@@ -333,8 +333,8 @@ void AliCaloPID::InitParameters()
 }
 
 
-//_____________________________________________________________________________________________________
-Bool_t AliCaloPID::IsInPi0SplitAsymmetryRange(const Float_t energy, const Float_t asy, const Int_t nlm)
+//_________________________________________________________________________________________
+Bool_t AliCaloPID::IsInPi0SplitAsymmetryRange(Float_t energy, Float_t asy, Int_t nlm) const
 {
   // Select the appropriate mass range for pi0 selection in splitting method
   // No used yet in splitting ID decision
@@ -362,8 +362,8 @@ Bool_t AliCaloPID::IsInPi0SplitAsymmetryRange(const Float_t energy, const Float_
   
 }
 
-//_________________________________________________________________________________________________
-Bool_t AliCaloPID::IsInPi0SplitMassRange(const Float_t energy, const Float_t mass, const Int_t nlm)
+//______________________________________________________________________________________
+Bool_t AliCaloPID::IsInPi0SplitMassRange(Float_t energy, Float_t mass, Int_t nlm) const
 {
   // Select the appropriate mass range for pi0 selection in splitting method
   
@@ -406,7 +406,7 @@ Bool_t AliCaloPID::IsInPi0SplitMassRange(const Float_t energy, const Float_t mas
 }
 
 //________________________________________________
-Bool_t AliCaloPID::IsInM02Range(const Float_t m02)
+Bool_t AliCaloPID::IsInM02Range(Float_t m02) const
 {
   // Select the appropriate m02 range, fix cut, not E dependent 
     
@@ -418,8 +418,8 @@ Bool_t AliCaloPID::IsInM02Range(const Float_t m02)
   
 }
 
-//___________________________________________________________________________________________
-Bool_t AliCaloPID::IsInPi0M02Range(const Float_t energy, const Float_t m02,  const Int_t nlm)
+//_______________________________________________________________________________
+Bool_t AliCaloPID::IsInPi0M02Range(Float_t energy, Float_t m02,  Int_t nlm) const
 {
   // Select the appropriate m02 range in splitting method for pi0
   
@@ -462,8 +462,8 @@ Bool_t AliCaloPID::IsInPi0M02Range(const Float_t energy, const Float_t m02,  con
 }
 
 
-//_____________________________________________________________________________________________
-Bool_t AliCaloPID::IsInEtaM02Range(const Float_t energy, const Float_t m02,  const Int_t nlm)
+//______________________________________________________________________________
+Bool_t AliCaloPID::IsInEtaM02Range(Float_t energy, Float_t m02, Int_t nlm) const
 {
   // Select the appropriate m02 range in splitting method to select eta's
   // Use same parametrization as pi0, just shift the distributions (to be tuned)
@@ -514,8 +514,8 @@ Bool_t AliCaloPID::IsInEtaM02Range(const Float_t energy, const Float_t m02,  con
   
 }
 
-//_____________________________________________________________________________________________
-Bool_t AliCaloPID::IsInConM02Range(const Float_t energy, const Float_t m02,  const Int_t nlm)
+//______________________________________________________________________________
+Bool_t AliCaloPID::IsInConM02Range(Float_t energy, Float_t m02, Int_t nlm) const
 {
   // Select the appropriate m02 range in splitting method for converted photons
   // Just min limit for pi0s is max for conversion.
@@ -553,8 +553,8 @@ AliEMCALPIDUtils *AliCaloPID::GetEMCALPIDUtils()
 }
 
 
-//______________________________________________________________________
-Int_t AliCaloPID::GetIdentifiedParticleType(const AliVCluster * cluster) 
+//________________________________________________________________ 
+Int_t AliCaloPID::GetIdentifiedParticleType(AliVCluster * cluster)
 {
   // Returns a PDG number corresponding to the likely ID of the cluster
   
@@ -608,10 +608,8 @@ Int_t AliCaloPID::GetIdentifiedParticleType(const AliVCluster * cluster)
   
 }
 
-//_______________________________________________________________________________
-Int_t AliCaloPID::GetIdentifiedParticleTypeFromBayesWeights(const Bool_t isEMCAL, 
-                                                            const Double_t * pid, 
-                                                            const Float_t energy) 
+//_________________________________________________________________________________________________________
+Int_t AliCaloPID::GetIdentifiedParticleTypeFromBayesWeights(Bool_t isEMCAL, Double_t * pid, Float_t energy)
 {
   //Return most probable identity of the particle after bayesian weights calculated in reconstruction
   
@@ -680,7 +678,7 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromBayesWeights(const Bool_t isEMCAL
   
 }
 
-//____________________________________________________________________________________________________
+//____________________________________________________________________________________________________________
 Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* cluster, 
                                                                 AliVCaloCells* cells,
                                                                 AliCalorimeterUtils * caloutils,
@@ -690,7 +688,7 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
                                                                 TLorentzVector & l1, TLorentzVector & l2,
                                                                 Int_t   & absId1,   Int_t   & absId2,
                                                                 Float_t & distbad1, Float_t & distbad2,
-                                                                Bool_t  & fidcut1,  Bool_t  & fidcut2  )
+                                                                Bool_t  & fidcut1,  Bool_t  & fidcut2  ) const
 {
   // Split the cluster in 2, do invariant mass, get the mass and decide 
   // if this is a photon, pi0, eta, ...
