@@ -360,7 +360,7 @@ void ConfigOCDB(Int_t run){
   tpcRecoParam->SetUseAlignmentTime(kFALSE);
   tpcRecoParam->SetUseComposedCorrection(kTRUE);
   //
-  tpcRecoParam->GetGainCorrectionHVandPTMode(1);
+  tpcRecoParam->SetCorrectionHVandPTMode(1);
 
   AliTPCcalibDB::Instance()->SetRun(run); 
 }
