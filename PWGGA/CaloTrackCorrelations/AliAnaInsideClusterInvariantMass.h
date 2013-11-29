@@ -30,8 +30,8 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   AliAnaInsideClusterInvariantMass() ; // default ctor
   virtual ~AliAnaInsideClusterInvariantMass() { ; } //virtual dtor
   
-  void         CheckLocalMaximaMCOrigin(AliVCluster* cluster, const Int_t mcindex, const Int_t noverlaps,
-                                        const Float_t e1,     const Float_t e2,    const Float_t mass);
+  void         CheckLocalMaximaMCOrigin(AliVCluster* cluster, Int_t mcindex, Int_t noverlaps,
+                                        Float_t e1,     Float_t e2,    Float_t mass);
                                         //, Float_t m02, TLorentzVector l1, TLorentzVector l2);
   
   TObjString * GetAnalysisCuts();
@@ -40,76 +40,76 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   
   void         GetMCIndex(AliVCluster * cluster, Int_t & mcindex, Int_t & mcTag);
   
-  void         GetMCPrimaryKine(AliVCluster* cluster, const Int_t mcindex, const Int_t mcTag, const Bool_t matched,
+  void         GetMCPrimaryKine(AliVCluster* cluster, Int_t mcindex, Int_t mcTag, Bool_t matched,
                                 Float_t & eprim, Float_t & asymGen, Float_t & angleGen, Int_t & noverlaps );
   
-  void         FillAngleHistograms(const Int_t   nMax,  const Bool_t  matched, const Int_t   mcindex,
-                                   const Float_t en,    const Float_t e1  ,    const Float_t e2,
-                                   const Float_t angle, const Float_t mass,    const Float_t anglePrim,
-                                   const Float_t m02,   const Float_t asym,    const Int_t   pid,    const Int_t   noverlaps);
+  void         FillAngleHistograms(Int_t   nMax,  Bool_t  matched, Int_t   mcindex,
+                                   Float_t en,    Float_t e1  ,    Float_t e2,
+                                   Float_t angle, Float_t mass,    Float_t anglePrim,
+                                   Float_t m02,   Float_t asym,    Int_t   pid,    Int_t   noverlaps);
   
-  void         FillArmenterosHistograms(const Int_t nMax, const Int_t ebin, const Int_t mcindex,
-                                        const Float_t pi0E, TLorentzVector g1, TLorentzVector g2,
-                                        const Float_t m02, const Int_t pid);
+  void         FillArmenterosHistograms(Int_t nMax, Int_t ebin, Int_t mcindex,
+                                        Float_t pi0E, TLorentzVector g1, TLorentzVector g2,
+                                        Float_t m02, Int_t pid);
 
-  void         FillThetaStarHistograms(const Int_t nMax, const Bool_t matched, const Int_t mcindex,
-                                       const Float_t pi0E, TLorentzVector g1, TLorentzVector g2,
-                                       const Float_t m02, const Int_t pid);
+  void         FillThetaStarHistograms(Int_t nMax, Bool_t matched, Int_t mcindex,
+                                       Float_t pi0E, TLorentzVector g1, TLorentzVector g2,
+                                       Float_t m02, Int_t pid);
 
-  void         FillEBinHistograms(const Int_t ebin, const Int_t nMax, const Int_t mcindex, const Float_t splitFrac,
-                                  const Float_t mass, const Float_t asym, const Float_t l0);
+  void         FillEBinHistograms(Int_t ebin, Int_t nMax, Int_t mcindex, Float_t splitFrac,
+                                  Float_t mass, Float_t asym, Float_t l0);
   
-  void         FillMCHistograms(const Float_t en,        const Float_t e1  , const Float_t e2,
-                                const Int_t ebin,        const Int_t mcindex,const Int_t noverlaps,
-                                const Float_t l0,        const Float_t mass,
-                                const Int_t nMax,        const Bool_t  matched,
-                                const Float_t splitFrac, const Float_t asym,
-                                const Float_t eprim,     const Float_t asymGen);
+  void         FillMCHistograms(Float_t en,        Float_t e1  , Float_t e2,
+                                Int_t ebin,        Int_t mcindex,Int_t noverlaps,
+                                Float_t l0,        Float_t mass,
+                                Int_t nMax,        Bool_t  matched,
+                                Float_t splitFrac, Float_t asym,
+                                Float_t eprim,     Float_t asymGen);
   
-  void         FillMCOverlapHistograms(const Float_t en,      const Float_t enprim,
-                                       const Int_t   nc,      const Float_t mass,    const Float_t l0,
-                                       const Float_t asym,    const Float_t splitFrac,
-                                       const Int_t   nlm,     const Int_t ebin,   const Bool_t matched,
-                                       const Int_t   mcindex, const Int_t noverlaps);
+  void         FillMCOverlapHistograms(Float_t en,      Float_t enprim,
+                                       Int_t   nc,      Float_t mass,    Float_t l0,
+                                       Float_t asym,    Float_t splitFrac,
+                                       Int_t   nlm,     Int_t ebin,   Bool_t matched,
+                                       Int_t   mcindex, Int_t noverlaps);
   
-  void         FillSSWeightHistograms(AliVCluster *cluster, const Int_t nlm, const Int_t absId1, const Int_t absId2);
+  void         FillSSWeightHistograms(AliVCluster *cluster, Int_t nlm, Int_t absId1, Int_t absId2);
   
-  void         FillSSExtraHistograms(AliVCluster *cluster, const Int_t nMax,
-                                     const Bool_t matched, const Int_t mcindex,
-                                     const Float_t mass  , const Int_t ebin);
+  void         FillSSExtraHistograms(AliVCluster *cluster, Int_t nMax,
+                                     Bool_t matched, Int_t mcindex,
+                                     Float_t mass  , Int_t ebin);
 
-  void         FillNCellHistograms(const Int_t   ncells,  const Float_t energy, const Int_t nMax,
-                                   const Bool_t  matched, const Int_t mcindex,
-                                   const Float_t mass   , const Float_t l0);
+  void         FillNCellHistograms(Int_t   ncells,  Float_t energy, Int_t nMax,
+                                   Bool_t  matched, Int_t mcindex,
+                                   Float_t mass   , Float_t l0);
   
-  void         FillTrackMatchingHistograms(AliVCluster * cluster,const Int_t nMax, const Int_t mcindex);
+  void         FillTrackMatchingHistograms(AliVCluster * cluster,Int_t nMax, Int_t mcindex);
   
-  void         FillHistograms1(const Float_t en,     const Float_t e1,     const Float_t e2,
-                               const Int_t nMax,     const Float_t mass,   const Float_t l0,
-                               const Float_t eta,    const Float_t phi,
-                               const Bool_t matched, const Int_t mcindex);
+  void         FillHistograms1(Float_t en,     Float_t e1,     Float_t e2,
+                               Int_t nMax,     Float_t mass,   Float_t l0,
+                               Float_t eta,    Float_t phi,
+                               Bool_t matched, Int_t mcindex);
 
   
-  void         FillHistograms2(const Float_t en,     const Float_t eprim,
-                               const Float_t e1,     const Float_t e2,      const Int_t nMax,  
-                               const Float_t mass,   const Float_t l0,
-                               const Bool_t matched, const Int_t mcindex);
+  void         FillHistograms2(Float_t en,     Float_t eprim,
+                               Float_t e1,     Float_t e2,      Int_t nMax,  
+                               Float_t mass,   Float_t l0,
+                               Bool_t matched, Int_t mcindex);
   
-  void         FillIdPi0Histograms(const Float_t en,     const Float_t e1,  const Float_t e2,
-                                   const Int_t nc,       const Int_t nMax,  const Float_t t12diff,
-                                   const Float_t mass,   const Float_t l0,
-                                   const Float_t eta,    const Float_t phi,
-                                   const Bool_t matched, const Int_t mcindex);
+  void         FillIdPi0Histograms(Float_t en,     Float_t e1,  Float_t e2,
+                                   Int_t nc,       Int_t nMax,  Float_t t12diff,
+                                   Float_t mass,   Float_t l0,
+                                   Float_t eta,    Float_t phi,
+                                   Bool_t matched, Int_t mcindex);
   
-  void         FillIdEtaHistograms(const Float_t en,     const Float_t e1,  const Float_t e2,
-                                   const Int_t nc,       const Int_t nMax,  const Float_t t12diff,
-                                   const Float_t mass,   const Float_t l0,
-                                   const Float_t eta,    const Float_t phi,
-                                   const Bool_t matched, const Int_t mcindex);
+  void         FillIdEtaHistograms(Float_t en,     Float_t e1,  Float_t e2,
+                                   Int_t nc,       Int_t nMax,  Float_t t12diff,
+                                   Float_t mass,   Float_t l0,
+                                   Float_t eta,    Float_t phi,
+                                   Bool_t matched, Int_t mcindex);
   
-  void         FillIdConvHistograms(const Float_t en,    const Int_t nMax, const Float_t asym,
-                                    const Float_t mass,   const Float_t l0,
-                                    const Bool_t matched, const Int_t mcindex);
+  void         FillIdConvHistograms(Float_t en,    Int_t nMax, Float_t asym,
+                                    Float_t mass,   Float_t l0,
+                                    Bool_t matched, Int_t mcindex);
   
   void         Init();
   

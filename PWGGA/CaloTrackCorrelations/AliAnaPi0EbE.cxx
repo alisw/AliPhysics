@@ -228,8 +228,8 @@ fhPtNPileUpSPDVtxTimeCut2(0),       fhPtNPileUpTrkVtxTimeCut2(0)
   
 }
 
-//_______________________________________________________________________________________________
-void AliAnaPi0EbE::FillPileUpHistograms(const Float_t pt, const Float_t time, AliVCluster * calo)
+//___________________________________________________________________________________
+void AliAnaPi0EbE::FillPileUpHistograms(Float_t pt, Float_t time, AliVCluster * calo)
 {
   // Fill some histograms to understand pile-up
   if(!fFillPileUpHistograms) return;
@@ -402,8 +402,8 @@ void AliAnaPi0EbE::FillPileUpHistograms(const Float_t pt, const Float_t time, Al
 }
 
 
-//___________________________________________________________________________________________
-void AliAnaPi0EbE::FillRejectedClusterHistograms(const TLorentzVector mom, const Int_t mctag, const Int_t nMaxima)
+//______________________________________________________________________________________________
+void AliAnaPi0EbE::FillRejectedClusterHistograms(TLorentzVector mom, Int_t mctag, Int_t nMaxima)
 {
   // Fill histograms that do not pass the identification (SS case only)
   
@@ -431,11 +431,9 @@ void AliAnaPi0EbE::FillRejectedClusterHistograms(const TLorentzVector mom, const
   }
 }
 
-//_____________________________________________________________________________________
-void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster,
-                                                 const Int_t nMaxima,
-                                                 const Int_t tag,
-                                                 const Float_t asy)
+//___________________________________________________________________________________
+void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, Int_t nMaxima,
+                                                 Int_t tag, Float_t asy)
 {
   // Fill shower shape, timing and other histograms for selected clusters from decay
   

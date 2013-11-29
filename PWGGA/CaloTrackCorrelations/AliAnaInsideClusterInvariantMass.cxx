@@ -520,9 +520,9 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
 
 }
 
-//_______________________________________________________________________________________________________
-void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* cluster,const Int_t mcindex, const Int_t noverlaps,
-                                                                const Float_t e1,    const Float_t e2,    const Float_t mass)
+//___________________________________________________________________________________________________________________
+void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* cluster, Int_t mcindex, Int_t noverlaps,
+                                                                Float_t e1,    Float_t e2,    Float_t mass)
                                                                 //Float_t m02,
                                                                 //TLorentzVector l1, TLorentzVector l2)
 {
@@ -1298,12 +1298,12 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   
 }
 
-//_____________________________________________________________________________________________________________________________
-void AliAnaInsideClusterInvariantMass::FillAngleHistograms(const Int_t   nMax,      const Bool_t  matched, const Int_t mcIndex,
-                                                           const Float_t en,        const Float_t e1,      const Float_t e2,
-                                                           const Float_t angle,     const Float_t mass,
-                                                           const Float_t anglePrim, const Float_t m02,
-                                                           const Float_t asym,      const Int_t   pid,     const Int_t noverlaps)
+//___________________________________________________________________________________________________________
+void AliAnaInsideClusterInvariantMass::FillAngleHistograms(Int_t   nMax,      Bool_t  matched, Int_t mcIndex,
+                                                           Float_t en,        Float_t e1,      Float_t e2,
+                                                           Float_t angle,     Float_t mass,
+                                                           Float_t anglePrim, Float_t m02,
+                                                           Float_t asym,      Int_t   pid,     Int_t noverlaps)
 {
   // Fill histograms related to opening angle
   
@@ -1471,9 +1471,9 @@ void AliAnaInsideClusterInvariantMass::FillAngleHistograms(const Int_t   nMax,  
 }
 
 //______________________________________________________________________________________________________________________
-void AliAnaInsideClusterInvariantMass::FillArmenterosHistograms(const Int_t nMax, const Int_t ebin, const Int_t mcIndex,
-                                                                const Float_t en, TLorentzVector g1, TLorentzVector g2,
-                                                                const Float_t m02, const Int_t pid)
+void AliAnaInsideClusterInvariantMass::FillArmenterosHistograms(Int_t nMax, Int_t ebin, Int_t mcIndex,
+                                                                Float_t en, TLorentzVector g1, TLorentzVector g2,
+                                                                Float_t m02, Int_t pid)
 {
   // Fill Armeteros type histograms
   
@@ -1573,10 +1573,10 @@ void AliAnaInsideClusterInvariantMass::FillArmenterosHistograms(const Int_t nMax
   
 }
 
-//______________________________________________________________________________________________________________________
-void AliAnaInsideClusterInvariantMass::FillThetaStarHistograms(const Int_t nMax, const Bool_t matched, const Int_t mcIndex,
-                                                               const Float_t en, TLorentzVector g1, TLorentzVector g2,
-                                                               const Float_t m02, const Int_t pid)
+//______________________________________________________________________________________________________________
+void AliAnaInsideClusterInvariantMass::FillThetaStarHistograms(Int_t nMax, Bool_t matched, Int_t mcIndex,
+                                                               Float_t en, TLorentzVector g1, TLorentzVector g2,
+                                                               Float_t m02, Int_t pid)
 {
   // Fill cos Theta^star histograms
 
@@ -1665,9 +1665,9 @@ void AliAnaInsideClusterInvariantMass::FillThetaStarHistograms(const Int_t nMax,
 
 }
 
-//__________________________________________________________________________________________________________________________________________
-void AliAnaInsideClusterInvariantMass::FillEBinHistograms(const Int_t   ebin     , const Int_t   nMax, const Int_t mcindex,
-                                                          const Float_t splitFrac, const Float_t mass, const Float_t asym, const Float_t l0)
+//__________________________________________________________________________________________________________________
+void AliAnaInsideClusterInvariantMass::FillEBinHistograms(Int_t   ebin     , Int_t   nMax, Int_t mcindex,
+                                                          Float_t splitFrac, Float_t mass, Float_t asym, Float_t l0)
 {
   // Fill some histograms integrating in few energy bins
     
@@ -1698,11 +1698,11 @@ void AliAnaInsideClusterInvariantMass::FillEBinHistograms(const Int_t   ebin    
   
 }
 
-//________________________________________________________________________________________________________________________
-void AliAnaInsideClusterInvariantMass::FillHistograms1(const Float_t en,     const Float_t e1,     const Float_t e2,
-                                                       const Int_t nMax,     const Float_t mass,   const Float_t l0,
-                                                       const Float_t eta,    const Float_t phi,
-                                                       const Bool_t matched, const Int_t mcindex)
+//________________________________________________________________________________________________
+void AliAnaInsideClusterInvariantMass::FillHistograms1(Float_t en,     Float_t e1,     Float_t e2,
+                                                       Int_t nMax,     Float_t mass,   Float_t l0,
+                                                       Float_t eta,    Float_t phi,
+                                                       Bool_t matched, Int_t mcindex)
 {
   // Fill histograms for clusters before any selection after spliting
   
@@ -1791,11 +1791,11 @@ void AliAnaInsideClusterInvariantMass::FillHistograms1(const Float_t en,     con
   
 }
 
-//________________________________________________________________________________________________________________________
-void AliAnaInsideClusterInvariantMass::FillHistograms2(const Float_t en,     const Float_t eprim,
-                                                       const Float_t e1,     const Float_t e2,
-                                                       const Int_t nMax,     const Float_t mass,   const Float_t l0,
-                                                       const Bool_t matched, const Int_t mcindex)
+//________________________________________________________________________________________________
+void AliAnaInsideClusterInvariantMass::FillHistograms2(Float_t en,     Float_t eprim,
+                                                       Float_t e1,     Float_t e2,
+                                                       Int_t nMax,     Float_t mass,   Float_t l0,
+                                                       Bool_t matched, Int_t mcindex)
 {
   // Fill histograms for clusters passing the first M02 selection
   
@@ -2027,12 +2027,12 @@ void AliAnaInsideClusterInvariantMass::FillHistograms2(const Float_t en,     con
 }
 
 
-//________________________________________________________________________________________________________________________
-void AliAnaInsideClusterInvariantMass::FillIdPi0Histograms(const Float_t en,     const Float_t e1,     const Float_t e2,
-                                                           const Int_t nc,       const Int_t nMax,     const Float_t t12diff,
-                                                           const Float_t mass,   const Float_t l0,
-                                                           const Float_t eta,    const Float_t phi,
-                                                           const Bool_t matched, const Int_t mcindex)
+//_________________________________________________________________________________________________________
+void AliAnaInsideClusterInvariantMass::FillIdPi0Histograms(Float_t en,     Float_t e1,     Float_t e2,
+                                                           Int_t nc,       Int_t nMax,     Float_t t12diff,
+                                                           Float_t mass,   Float_t l0,
+                                                           Float_t eta,    Float_t phi,
+                                                           Bool_t matched, Int_t mcindex)
 {
   // Fill histograms for clusters passing the pi0 selection
   
@@ -2144,12 +2144,12 @@ void AliAnaInsideClusterInvariantMass::FillIdPi0Histograms(const Float_t en,    
   }//Work with MC truth
 }
 
-//________________________________________________________________________________________________________________________
-void AliAnaInsideClusterInvariantMass::FillIdEtaHistograms(const Float_t en,     const Float_t e1,  const Float_t e2,
-                                                           const Int_t nc,       const Int_t nMax,  const Float_t t12diff,
-                                                           const Float_t mass,   const Float_t l0,
-                                                           const Float_t eta,    const Float_t phi,
-                                                           const Bool_t matched, const Int_t mcindex)
+//______________________________________________________________________________________________________
+void AliAnaInsideClusterInvariantMass::FillIdEtaHistograms(Float_t en,     Float_t e1,  Float_t e2,
+                                                           Int_t nc,       Int_t nMax,  Float_t t12diff,
+                                                           Float_t mass,   Float_t l0,
+                                                           Float_t eta,    Float_t phi,
+                                                           Bool_t matched, Int_t mcindex)
 {
   // Fill histograms for clusters passing the eta selection
   
@@ -2239,10 +2239,10 @@ void AliAnaInsideClusterInvariantMass::FillIdEtaHistograms(const Float_t en,    
 }
 
 
-//_____________________________________________________________________________________________________________________
-void AliAnaInsideClusterInvariantMass::FillIdConvHistograms(const Float_t en,    const Int_t nMax, const Float_t asym,
-                                                            const Float_t mass,   const Float_t l0,
-                                                            const Bool_t matched, const Int_t mcindex)
+//__________________________________________________________________________________________________
+void AliAnaInsideClusterInvariantMass::FillIdConvHistograms(Float_t en,    Int_t nMax, Float_t asym,
+                                                            Float_t mass,   Float_t l0,
+                                                            Bool_t matched, Int_t mcindex)
 {
   // Fill histograms for clusters passing the photon selection
   
@@ -2289,13 +2289,13 @@ void AliAnaInsideClusterInvariantMass::FillIdConvHistograms(const Float_t en,   
   }//Work with MC truth
 }
 
-//_____________________________________________________________________________________________________________________
-void AliAnaInsideClusterInvariantMass::FillMCHistograms(const Float_t en,        const Float_t e1  , const Float_t e2,
-                                                        const Int_t ebin,        const Int_t mcindex,const Int_t noverlaps,
-                                                        const Float_t l0,        const Float_t mass,
-                                                        const Int_t nMax,        const Bool_t  matched,
-                                                        const Float_t splitFrac, const Float_t asym,
-                                                        const Float_t eprim,     const Float_t asymGen)
+//_______________________________________________________________________________________________________
+void AliAnaInsideClusterInvariantMass::FillMCHistograms(Float_t en,        Float_t e1  , Float_t e2,
+                                                        Int_t ebin,        Int_t mcindex,Int_t noverlaps,
+                                                        Float_t l0,        Float_t mass,
+                                                        Int_t nMax,        Bool_t  matched,
+                                                        Float_t splitFrac, Float_t asym,
+                                                        Float_t eprim,     Float_t asymGen)
 {
   // Fill histograms needing some MC input
     
@@ -2418,12 +2418,12 @@ void AliAnaInsideClusterInvariantMass::FillMCHistograms(const Float_t en,       
   }
 }
 
-//__________________________________________________________________________________________________________________________________________________
-void AliAnaInsideClusterInvariantMass::FillMCOverlapHistograms(const Float_t en,      const Float_t enprim,
-                                                               const Int_t   nc,      const Float_t mass,    const Float_t l0,
-                                                               const Float_t asym,    const Float_t splitFrac,
-                                                               const Int_t   inlm,    const Int_t ebin, const Bool_t matched,
-                                                               const Int_t   mcindex, const Int_t noverlaps)
+//__________________________________________________________________________________________________________
+void AliAnaInsideClusterInvariantMass::FillMCOverlapHistograms(Float_t en,      Float_t enprim,
+                                                               Int_t   nc,      Float_t mass,    Float_t l0,
+                                                               Float_t asym,    Float_t splitFrac,
+                                                               Int_t   inlm,    Int_t ebin, Bool_t matched,
+                                                               Int_t   mcindex, Int_t noverlaps)
 {
   // Fill histograms for MC Overlaps
   
@@ -2508,10 +2508,10 @@ void AliAnaInsideClusterInvariantMass::FillMCOverlapHistograms(const Float_t en,
 }
 
 
-//__________________________________________________________________________________________________
-void AliAnaInsideClusterInvariantMass::FillNCellHistograms(const Int_t   ncells,  const Float_t energy, const Int_t nMax,
-                                                           const Bool_t  matched, const Int_t mcindex,
-                                                           const Float_t mass   , const Float_t l0)
+//_____________________________________________________________________________________________________
+void AliAnaInsideClusterInvariantMass::FillNCellHistograms(Int_t   ncells,  Float_t energy, Int_t nMax,
+                                                           Bool_t  matched, Int_t mcindex,
+                                                           Float_t mass   , Float_t l0)
 
 {
   // Fill optional histograms with more SS parameters
@@ -2576,10 +2576,10 @@ void AliAnaInsideClusterInvariantMass::FillNCellHistograms(const Int_t   ncells,
   }
 }
 
-//______________________________________________________________________________________________________
-void AliAnaInsideClusterInvariantMass::FillSSExtraHistograms(AliVCluster  *cluster, const Int_t nMax,
-                                                             const Bool_t  matched, const Int_t mcindex,
-                                                             const Float_t mass   , const Int_t ebin)
+//_____________________________________________________________________________________________
+void AliAnaInsideClusterInvariantMass::FillSSExtraHistograms(AliVCluster  *cluster, Int_t nMax,
+                                                             Bool_t  matched, Int_t mcindex,
+                                                             Float_t mass   , Int_t ebin)
 {
   // Fill optional histograms with more SS parameters
     
@@ -2670,9 +2670,9 @@ void AliAnaInsideClusterInvariantMass::FillSSExtraHistograms(AliVCluster  *clust
   
 }
 
-//__________________________________________________________________________________________________
-void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus,  const Int_t nlm,
-                                                              const Int_t absId1, const Int_t absId2)
+//__________________________________________________________________________________________
+void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus,  Int_t nlm,
+                                                              Int_t absId1, Int_t absId2)
 {
   // Calculate weights and fill histograms
     
@@ -2783,9 +2783,9 @@ void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus,
   }// EMCAL
 }
 
-//________________________________________________________________________________________
-void  AliAnaInsideClusterInvariantMass::FillTrackMatchingHistograms(AliVCluster * cluster, const Int_t nMax,
-                                                                    const Int_t mcindex)
+//____________________________________________________________________________________________
+void  AliAnaInsideClusterInvariantMass::FillTrackMatchingHistograms(AliVCluster * cluster,
+                                                                    Int_t nMax, Int_t mcindex)
 {
   // Fill histograms related to track matching
     
@@ -2858,7 +2858,7 @@ TObjString *  AliAnaInsideClusterInvariantMass::GetAnalysisCuts()
 {	
 	//Save parameters used for analysis
   TString parList ; //this will be list of parameters used for this analysis.
-  const Int_t buffersize = 255;
+  Int_t buffersize = 255;
   char onePar[buffersize] ;
   
   snprintf(onePar,buffersize,"--- AliAnaInsideClusterInvariantMass ---\n") ;
@@ -6057,10 +6057,11 @@ void AliAnaInsideClusterInvariantMass::GetMCIndex(AliVCluster* cluster,
   
 }
 
-//______________________________________________________________________________________________________________
-void AliAnaInsideClusterInvariantMass::GetMCPrimaryKine(AliVCluster* cluster, const Int_t mcindex,
-                                                        const Int_t mctag, const Bool_t matched,
-                                                        Float_t & eprim, Float_t & asymGen, Float_t & angleGen, Int_t & noverlaps )
+//____________________________________________________________________________________________
+void AliAnaInsideClusterInvariantMass::GetMCPrimaryKine(AliVCluster* cluster, Int_t mcindex,
+                                                        Int_t mctag, Bool_t matched,
+                                                        Float_t & eprim, Float_t & asymGen,
+                                                        Float_t & angleGen, Int_t & noverlaps )
 {
   // Check origin of the candidates, get primary kinematics if overlapped meson decay
   
