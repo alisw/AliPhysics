@@ -670,18 +670,68 @@ void AliCDBLocal::GetEntriesForLevel1(const char* level0, const char* level1,
 			AliDebug(2, Form("Error reading entry %s !",level2Str.Data()));
 			continue;
 		}
-		if(!(flag&2)) continue; // bit 1 of flag = directory!
+		if(!(flag&2)) continue; // skip if not a directory
 		
 		if (queryId.GetAliCDBPath().Level2Comprises(level2)) {
 
 			AliCDBPath entryPath(level0, level1, level2);
+
         		AliCDBId entryId(entryPath, queryId.GetAliCDBRunRange(),
 		                queryId.GetVersion(), queryId.GetSubVersion());
 
-		        AliCDBEntry* anEntry = GetEntry(entryId);
-	        	if (anEntry) {
-        		        result->Add(anEntry);
-		        }
+			// check filenames to see if any includes queryId.GetAliCDBRunRange()
+			void* level2DirPtr = gSystem->OpenDirectory(fullPath);
+			if (!level2DirPtr) {
+				AliDebug(2,Form("Can't open level2 directory <%s>!", fullPath.Data()));
+				return;
+			}
+			const char* level3;
+			Long_t file_flag=0;
+			while ((level3 = gSystem->GetDirEntry(level2DirPtr))) {
+				TString fileName(level3);
+				TString fullFileName = Form("%s/%s", fullPath.Data(), level3); 
+
+				Int_t file_res=gSystem->GetPathInfo(fullFileName.Data(), 0, (Long64_t*) 0, &file_flag, 0);
+
+				if(file_res){
+					AliDebug(2, Form("Error reading entry %s !",level2Str.Data()));
+					continue;
+				}
+				if(file_flag)
+					continue; // it is not a regular file!
+
+				// skip if result already contains an entry for this path
+				Bool_t alreadyLoaded = kFALSE;
+				Int_t nEntries = result->GetEntries();
+				for(int i=0; i<nEntries; i++){
+					AliCDBEntry *lEntry = (AliCDBEntry*) result->At(i);
+					AliCDBId lId = lEntry->GetId();
+					TString lPath = lId.GetPath();
+					if(lPath.EqualTo(entryPath.GetPath())){
+						alreadyLoaded = kTRUE;
+						break;
+					}
+				}
+				if (alreadyLoaded) continue;
+
+				//skip filenames not matching the regex below
+				TRegexp re("^Run[0-9]+_[0-9]+_");
+				if(!fileName.Contains(re))
+					continue;
+				//extract first- and last-run. This allows to avoid quering for a calibration path
+				// if we did not find a filename with interesting run-range.
+				TString firstRunStr = fileName(3,fileName.First('_')-3);
+				TString lastRunStr  = fileName(fileName.First('_')+1,fileName.Length()-fileName.First('_')-2);
+				Int_t firstRun = firstRunStr.Atoi();
+				Int_t lastRun  = lastRunStr.Atoi();
+				AliCDBRunRange rr(firstRun,lastRun);
+
+				AliCDBEntry* anEntry = 0;
+				if (rr.Comprises(queryId.GetAliCDBRunRange()))
+					anEntry = GetEntry(entryId);
+				if (anEntry)
+					result->Add(anEntry);
+			}
 		}
 	}
 
