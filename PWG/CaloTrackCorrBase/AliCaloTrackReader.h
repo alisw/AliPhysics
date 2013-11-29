@@ -76,8 +76,8 @@ public:
   // Input/output event setters and getters
   //---------------------------------------
   
-  virtual void    SetInputEvent(AliVEvent* const input) ;
-  virtual void    SetOutputEvent(AliAODEvent* const aod)   { fOutputEvent = aod            ; }
+  virtual void    SetInputEvent(AliVEvent* input) ;
+  virtual void    SetOutputEvent(AliAODEvent*  aod)        { fOutputEvent = aod            ; }
   virtual void    SetMC(AliMCEvent* const mc)              { fMC          = mc             ; }
   virtual void    SetInputOutputMCEvent(AliVEvent* /*esd*/, AliAODEvent* /*aod*/, AliMCEvent* /*mc*/) { ; }
   
@@ -123,7 +123,7 @@ public:
   
   // Track DCA cut
   
-  Bool_t           AcceptDCA(const Float_t pt, const Float_t dca);
+  Bool_t           AcceptDCA(Float_t pt, Float_t dca);
   Double_t         GetTrackDCACut(Int_t i)           const { if(i >= 0 && i < 3 ) return fTrackDCACut[i] ;
                                                              else return -999              ; }
   
@@ -148,7 +148,7 @@ public:
   Double_t         GetEMCALTimeCutMin()              const { return fEMCALTimeCutMin       ; }
   Double_t         GetEMCALTimeCutMax()              const { return fEMCALTimeCutMax       ; }	
 
-  Bool_t           IsInTimeWindow(const Double_t tof, const Float_t energy)  const ;
+  Bool_t           IsInTimeWindow(Double_t tof, Float_t energy)  const ;
   
   void             SetEMCALTimeCut(Double_t a, Double_t b) { fEMCALTimeCutMin = a ; 
                                                              fEMCALTimeCutMax = b          ; } // ns
@@ -167,7 +167,7 @@ public:
   virtual AliFiducialCut * GetFiducialCut()                { 
                     if(!fFiducialCut) fFiducialCut = new AliFiducialCut(); 
                     return  fFiducialCut                                                   ; }
-  virtual void     SetFiducialCut(AliFiducialCut * const fc) { fFiducialCut = fc           ; }
+  virtual void     SetFiducialCut(AliFiducialCut * fc)     { fFiducialCut = fc           ; }
   virtual Bool_t   IsFiducialCutOn()                 const { return fCheckFidCut           ; }
   virtual void     SwitchOnFiducialCut()                   { fCheckFidCut = kTRUE          ; 
                                                              fFiducialCut = new AliFiducialCut() ; }
@@ -218,7 +218,7 @@ public:
   
   // Filling/ filtering / detector information access methods
   
-  virtual Bool_t   FillInputEvent(const Int_t iEntry, const char *currentFileName)  ;
+  virtual Bool_t   FillInputEvent(Int_t iEntry, const char *currentFileName)  ;
   virtual void     FillInputCTS() ;
   virtual void     FillInputEMCAL() ;
   virtual void     FillInputEMCALAlgorithm(AliVCluster * clus, const Int_t iclus) ;
@@ -431,7 +431,7 @@ public:
   //-------------------------------
 
   virtual void      GetVertex(Double_t v[3])         const ;
-  virtual Double_t* GetVertex(const Int_t evtIndex)  const { return fVertex[evtIndex]            ; }
+  virtual Double_t* GetVertex(Int_t evtIndex)        const { return fVertex[evtIndex]            ; }
   virtual void      GetVertex(Double_t vertex[3],    const Int_t evtIndex) const ;
   virtual void      FillVertexArray();
   virtual Bool_t    CheckForPrimaryVertex();

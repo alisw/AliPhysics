@@ -205,7 +205,7 @@ AliCaloTrackReader::~AliCaloTrackReader()
 }
 
 //________________________________________________________________________
-Bool_t  AliCaloTrackReader::AcceptDCA(const Float_t pt, const Float_t dca)
+Bool_t  AliCaloTrackReader::AcceptDCA(Float_t pt, Float_t dca)
 {
   // Accept track if DCA is smaller than function
   
@@ -858,8 +858,8 @@ Bool_t AliCaloTrackReader::IsHIJINGLabel(Int_t label)
   }//AOD
 }
 
-//___________________________________________________________
-Bool_t AliCaloTrackReader::IsInTimeWindow(const Double_t tof, const Float_t energy) const
+//__________________________________________________________________________
+Bool_t AliCaloTrackReader::IsInTimeWindow(Double_t tof, Float_t energy) const
 {
   // Cluster time selection window
   
@@ -937,9 +937,8 @@ Bool_t AliCaloTrackReader::IsPileUpFromNotSPDAndNotEMCal() const
   else                                            return kFALSE;
 }
 
-//_________________________________________________________________________
-Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
-                                          const char * /*currentFileName*/)
+//___________________________________________________________________________________
+Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileName*/)
 {
   //Fill the event counter and input lists that are needed, called by the analysis maker.
   
@@ -1305,9 +1304,8 @@ void AliCaloTrackReader::GetVertex(Double_t vertex[3]) const
   vertex[2]=fVertex[0][2];
 }
 
-//____________________________________________________________
-void AliCaloTrackReader::GetVertex(Double_t vertex[3],
-                                   const Int_t evtIndex) const
+//__________________________________________________________________________
+void AliCaloTrackReader::GetVertex(Double_t vertex[3], Int_t evtIndex) const
 {
   //Return vertex position for mixed event, recover the vertex in a particular event.
   
@@ -1588,9 +1586,8 @@ void AliCaloTrackReader::FillInputCTS()
   
 }
 
-//__________________________________________________________________
-void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus,
-                                                 const Int_t iclus)
+//_______________________________________________________________________________
+void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus)
 {
   //Fill the EMCAL data in the array, do it
   
@@ -2043,7 +2040,7 @@ Bool_t AliCaloTrackReader::CheckForPrimaryVertex()
 }
 
 //________________________________________________________________________________
-TArrayI AliCaloTrackReader::GetTriggerPatches(const Int_t tmin, const Int_t tmax )
+TArrayI AliCaloTrackReader::GetTriggerPatches(Int_t tmin, Int_t tmax )
 {
   // Select the patches that triggered
   // Depend on L0 or L1
