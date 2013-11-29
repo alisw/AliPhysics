@@ -12,6 +12,8 @@
 class TF1;
 class TH1D;
 class TH2D;
+class TCanvas;
+class TLegend;
 class TString;
 class TArrayD;
 class TGraphErrors;
@@ -25,6 +27,7 @@ class AliUnfolding;
 #include "TDirectoryFile.h"
 #include "TFile.h"
 #include "TProfile.h"
+#include "TVirtualPad.h"
 //_____________________________________________________________________________
 class AliJetFlowTools {
     public: 
@@ -37,6 +40,7 @@ class AliJetFlowTools {
             kChi2,
             kBayesian,
             kSVD,
+            kSVDlegacy,         // first implementation
             kNone };            // type of unfolding algorithm
         enum prior {
             kPriorChi2,
@@ -97,6 +101,7 @@ class AliJetFlowTools {
             fRMSSpectrumOut->Write();
             fRMSRatio->Write();
             fOutputFile->Close();}
+        void            PostProcess(TString def, TString in = "UnfoldedSpectra.root", TString out = "ProcessedSpectra.root");
         Bool_t          SetRawInput (
                 TH2D* detectorResponse, // detector response matrix
                 TH1D* jetPtIn,          // in plane jet spectrum
@@ -110,7 +115,7 @@ class AliJetFlowTools {
         static TH2D*    NormalizeTH2D(TH2D* histo);
         static TH1D*    GetUnfoldingTemplate(TH1D* histo, TArrayD* bins, TString suffix = "");
         TH2D*           RebinTH2D(TH2D* histo, TArrayD* binsTrue, TArrayD* binsRec, TString suffix = "");
-        static TH2D*    MatrixMultiplicationTH2D(TH2D* A, TH2D* B, TString name = "CombinedResponse");
+        static TH2D*    MatrixMultiplication(TH2D* a, TH2D* b, TString name = "CombinedResponse");
         static TH1D*    NormalizeTH1D(TH1D* histo, Double_t scale = 1.);
         static TGraphErrors*    GetRatio(TH1 *h1 = 0x0, TH1* h2 = 0x0, TString name = "", Bool_t appendFit = kFALSE, Int_t xmax = -1);
         static TGraphErrors*    GetV2(TH1* h1 = 0x0, TH1* h2 = 0x0, Double_t r = .63, TString name = "");
@@ -118,6 +123,12 @@ class AliJetFlowTools {
         static TH2D*    ConstructDPtResponseFromTH1D(TH1D* dpt, Bool_t AvoidRoundingError);
         static TH2D*    GetUnityResponse(TArrayD* binsTrue, TArrayD* binsRec, TString suffix = "");
         void            SaveConfiguration(Bool_t convergedIn, Bool_t convergedOut);
+        static TMatrixD*        CalculatePearsonCoefficients(TMatrixD* covmat);
+        static TH1D*    SmoothenSpectrum(TH1D* spectrum, TF1* function, Double_t min, Double_t max, Double_t start, Bool_t kill = kTRUE, Bool_t counts = kTRUE);
+        // set styles
+        static void     Style(TCanvas* c, TString style = "PEARSON");
+        static void     Style(TVirtualPad* c, TString style = "SPECTRUM");
+        static TLegend* AddLegend(TVirtualPad* p)       {return p->BuildLegend();}
         // interface to AliUnfolding, not necessary but nice to have all parameters in one place
         static void     SetMinuitStepSize(Float_t s)    {AliUnfolding::SetMinuitStepSize(s);}
         static void     SetMinuitPrecision(Float_t s)   {AliUnfolding::SetMinuitPrecision(s);}
@@ -126,6 +137,7 @@ class AliJetFlowTools {
         static void     SetDebug(Int_t d)               {AliUnfolding::SetDebug(d);}
     private:
         Bool_t          PrepareForUnfolding(); 
+        void            GetPrior()                      {; /* FIXME implement */};
         Bool_t          UnfoldSpectrumChi2(             TH1D* resizedJetPt, 
                                                         TH2D* resizedResonse,
                                                         TH1D* kinematicEfficiency,
@@ -133,13 +145,18 @@ class AliJetFlowTools {
                                                         TH1D *&unfolded,        // careful, pointer reference
                                                         TString suffix);
         Bool_t          UnfoldSpectrumBayesian()        {return kFALSE;}
+        Bool_t          UnfoldSpectrumSVDlegacy(        TH1D* resizedJetPt, 
+                                                        TH2D* resizedResonse,
+                                                        TH1D* kinematicEfficiency,
+                                                        TH1D* unfoldingTemplate,
+                                                        TH1D *&unfolded,        // careful, pointer reference
+                                                        TString suffix);
         Bool_t          UnfoldSpectrumSVD(              TH1D* resizedJetPt, 
                                                         TH2D* resizedResonse,
                                                         TH1D* kinematicEfficiency,
                                                         TH1D* unfoldingTemplate,
                                                         TH1D *&unfolded,        // careful, pointer reference
                                                         TString suffix);
-        TMatrixD*       CalculatePearsonCoefficients(TMatrixD* covmat);
         static void     ResetAliUnfolding();
         // give object a unique name via the 'protect heap' functions. 
         // may seem redundant, but some internal functions of root (e.g.
