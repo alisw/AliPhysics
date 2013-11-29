@@ -719,9 +719,9 @@ void AliAnaPhoton::FillAcceptanceHistograms()
   }	// read AOD MC
 }
 
-//__________________________________________________________________________________________________________________________
-void  AliAnaPhoton::FillEMCALTriggerClusterBCHistograms(const Int_t idcalo, const Float_t ecluster, const Float_t tofcluster,
-                                                        const Float_t etacluster, const Float_t phicluster)
+//________________________________________________________________________________________________________________
+void  AliAnaPhoton::FillEMCALTriggerClusterBCHistograms(Int_t idcalo,       Float_t ecluster,  Float_t tofcluster,
+                                                        Float_t etacluster, Float_t phicluster)
 
 {
   // Fill trigger related histograms
@@ -870,11 +870,9 @@ void  AliAnaPhoton::FillEMCALTriggerClusterBCHistograms(const Int_t idcalo, cons
   
 }
 
-//______________________________________________________________________________________________
-void  AliAnaPhoton::FillClusterPileUpHistograms(AliVCluster * calo,       const Bool_t matched,
-                                                const Float_t ptcluster,
-                                                const Float_t etacluster, const Float_t phicluster,
-                                                const Float_t l0cluster)
+//_________________________________________________________________________________________________________
+void  AliAnaPhoton::FillClusterPileUpHistograms(AliVCluster * calo, Bool_t matched,     Float_t ptcluster,
+                                                Float_t etacluster, Float_t phicluster, Float_t l0cluster)
 {
   // Fill some histograms related to pile up before any cluster cut is applied
   

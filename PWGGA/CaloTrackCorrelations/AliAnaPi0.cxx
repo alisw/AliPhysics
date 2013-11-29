@@ -1565,9 +1565,9 @@ void AliAnaPi0::FillAcceptanceHistograms()
   }	// read AOD MC
 }
 
-//______________________________________________________________________________________
-void AliAnaPi0::FillArmenterosThetaStar(const Int_t pdg, const TLorentzVector meson,
-                               const TLorentzVector daugh1, const TLorentzVector daugh2)
+//__________________________________________________________________________________
+void AliAnaPi0::FillArmenterosThetaStar(Int_t pdg,             TLorentzVector meson,
+                                        TLorentzVector daugh1, TLorentzVector daugh2)
 {
   // Fill armenteros plots
   
@@ -1624,12 +1624,13 @@ void AliAnaPi0::FillArmenterosThetaStar(const Int_t pdg, const TLorentzVector me
 }
 
 
-//_____________________________________________________________
-void AliAnaPi0::FillMCVersusRecDataHistograms(const Int_t index1,  const Int_t index2, 
-                                              const Float_t pt1,   const Float_t pt2, 
-                                              const Int_t ncell1,  const Int_t ncell2,
-                                              const Double_t mass, const Double_t pt, const Double_t asym, 
-                                              const Double_t deta, const Double_t dphi){
+//_______________________________________________________________________________________
+void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
+                                              Float_t pt1,   Float_t pt2,
+                                              Int_t ncell1,  Int_t ncell2,
+                                              Double_t mass, Double_t pt,  Double_t asym,
+                                              Double_t deta, Double_t dphi)
+{
   //Do some MC checks on the origin of the pair, is there any common ancestor and if there is one, who?
   //Adjusted for Pythia, need to see what to do for other generators.
   //Array of histograms ordered as follows: 0-Photon, 1-electron, 2-pi0, 3-eta, 4-a-proton, 5-a-neutron, 6-stable particles, 

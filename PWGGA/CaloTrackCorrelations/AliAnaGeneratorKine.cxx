@@ -76,12 +76,12 @@ fhPtPhoton(0),       fhPtPi0(0)
   
 }
 
-//_______________________________________________________________________________
-Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(const TLorentzVector trigger, 
-                                                      const Int_t   indexTrig,                     
-                                                      const Int_t   pdgTrig, 
-                                                      const Bool_t  leading[4],
-                                                      const Bool_t  isolated[4], 
+//___________________________________________________________________________
+Bool_t  AliAnaGeneratorKine::CorrelateWithPartonOrJet(TLorentzVector trigger,
+                                                      Int_t   indexTrig,
+                                                      Int_t   pdgTrig,
+                                                      Bool_t  leading[4],
+                                                      Bool_t  isolated[4],
                                                       Int_t & iparton )  
 {
   //Correlate trigger with partons or jets, get z
@@ -633,13 +633,13 @@ void  AliAnaGeneratorKine::GetPartonsAndJets()
 
 }
 
-//___________________________________________________________
-void AliAnaGeneratorKine::GetXE(const TLorentzVector trigger,  
-                                const Int_t   indexTrig,                     
-                                const Int_t   pdgTrig, 
-                                const Bool_t  leading[4], 
-                                const Bool_t  isolated[4], 
-                                const Int_t   iparton)     
+//_____________________________________________________
+void AliAnaGeneratorKine::GetXE(TLorentzVector trigger,
+                                Int_t   indexTrig,
+                                Int_t   pdgTrig,
+                                Bool_t  leading[4],
+                                Bool_t  isolated[4],
+                                Int_t   iparton)
 {
 
   // Calculate the real XE and the UE XE
@@ -776,10 +776,10 @@ void AliAnaGeneratorKine::InitParameters()
   
 }
 
-//___________________________________________________________________________
-void  AliAnaGeneratorKine::IsLeadingAndIsolated(const TLorentzVector trigger, 
-                                                const Int_t indexTrig, 
-                                                const Int_t pdgTrig, 
+//_____________________________________________________________________
+void  AliAnaGeneratorKine::IsLeadingAndIsolated(TLorentzVector trigger,
+                                                Int_t indexTrig,
+                                                Int_t pdgTrig,
                                                 Bool_t leading[4],
                                                 Bool_t isolated[4]) 
 {

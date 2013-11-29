@@ -32,7 +32,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   
   TList      *   GetCreateOutputObjects();
   
-  Int_t          GetMCIndex(const Int_t aodTag);
+  Int_t          GetMCIndex(Int_t aodTag);
   
   void           Init();
   
@@ -46,14 +46,14 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   
   // Main
   
-  void           FillPileUpHistograms(const Float_t pt, const Float_t time, AliVCluster * c) ;
+  void           FillPileUpHistograms(Float_t pt, Float_t time, AliVCluster * c) ;
   
-  void           FillRejectedClusterHistograms(const TLorentzVector mom, const Int_t mctag, const Int_t nMaxima);
+  void           FillRejectedClusterHistograms(TLorentzVector mom, Int_t mctag, Int_t nMaxima);
   
   void           FillSelectedClusterHistograms(AliVCluster* cluster, 
-                                               const Int_t nLocMax,
-                                               const Int_t tag,
-                                               const Float_t asy = 0);
+                                               Int_t nLocMax,
+                                               Int_t tag,
+                                               Float_t asy = 0);
     
   void           FillWeightHistograms(AliVCluster *clus);
     

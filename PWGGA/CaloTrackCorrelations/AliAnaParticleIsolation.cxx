@@ -588,9 +588,10 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliAODPWG4ParticleCorrelation
 
 
 
-//___________________________________________________________________________________________________________________________________
-void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliAODPWG4ParticleCorrelation * pCandidate,
-								  Float_t coneptsumCluster,  Float_t coneptsumCell, Float_t coneptsumTrack, Float_t &etaBandptsumTrackNorm, Float_t &etaBandptsumClusterNorm)
+//_____________________________________________________________________________________________________________________________________
+void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliAODPWG4ParticleCorrelation * pCandidate, Float_t coneptsumCluster,
+                                                                  Float_t coneptsumCell,          Float_t coneptsumTrack,
+                                                                  Float_t &etaBandptsumTrackNorm, Float_t &etaBandptsumClusterNorm)
 {
   //normalize phi/eta band per area unit
 
@@ -906,7 +907,7 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
   fhConeSumPtCluster   ->Fill(ptTrig,     coneptsumCluster);
 }
 
-//__________________________________________________________________________________________________
+//______________________________________________________________________________________________________
 void AliAnaParticleIsolation::CalculateCaloCellSignalInCone(AliAODPWG4ParticleCorrelation * aodParticle,
                                                             Float_t & coneptsumCell)
 {

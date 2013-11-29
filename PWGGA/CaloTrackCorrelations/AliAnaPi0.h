@@ -126,14 +126,14 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOffMultipleCutAnalysisInSimulation() { fMultiCutAnaSim = kFALSE ; }
   
   void         FillAcceptanceHistograms();
-  void         FillMCVersusRecDataHistograms(const Int_t    index1,  const Int_t    index2,
-                                             const Float_t  pt1,     const Float_t  pt2, 
-                                             const Int_t    ncells1, const Int_t    ncells2, 
-                                             const Double_t mass,    const Double_t pt,  const Double_t asym,    
-                                             const Double_t deta,    const Double_t dphi);
+  void         FillMCVersusRecDataHistograms(Int_t    index1,  Int_t    index2,
+                                             Float_t  pt1,     Float_t  pt2,
+                                             Int_t    ncells1, Int_t    ncells2,
+                                             Double_t mass,    Double_t pt,     Double_t asym,
+                                             Double_t deta,    Double_t dphi);
   
-  void         FillArmenterosThetaStar(const Int_t pdg, const TLorentzVector meson,
-                                       const TLorentzVector daugh1, const TLorentzVector daugh2);
+  void         FillArmenterosThetaStar(Int_t pdg,             TLorentzVector meson,
+                                       TLorentzVector daugh1, TLorentzVector daugh2);
 
   
   private:

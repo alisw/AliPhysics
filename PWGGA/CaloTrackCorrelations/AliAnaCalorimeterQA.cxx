@@ -225,11 +225,10 @@ fhTrackMatchedDEtaPos(0),              fhTrackMatchedDPhiPos(0),               f
   InitParameters();
 }
 
-//____________________________________________________________________________________________________________________________
+//______________________________________________________________________________________________________________________
 void AliAnaCalorimeterQA::BadClusterHistograms(AliVCluster* clus, const TObjArray *caloClusters, AliVCaloCells * cells, 
-                                               const Int_t absIdMax, const Double_t maxCellFraction, const Float_t eCrossFrac,
-                                               const Double_t tmax,  Double_t timeAverages[2]
-                                               )
+                                               Int_t absIdMax, Double_t maxCellFraction, Float_t eCrossFrac,
+                                               Double_t tmax,  Double_t timeAverages[2] )
 {
   //Bad cluster histograms
   
@@ -605,8 +604,8 @@ void AliAnaCalorimeterQA::CellInClusterPositionHistograms(AliVCluster* clus)
 }
 
 //___________________________________________________________________________________________
-void AliAnaCalorimeterQA::ClusterAsymmetryHistograms(AliVCluster* clus, const Int_t absIdMax, 
-                                                     const Bool_t goodCluster)
+void AliAnaCalorimeterQA::ClusterAsymmetryHistograms(AliVCluster* clus, Int_t absIdMax,
+                                                     Bool_t goodCluster)
 {
   // Study the shape of the cluster in cell units terms
   
@@ -700,10 +699,10 @@ void AliAnaCalorimeterQA::ClusterAsymmetryHistograms(AliVCluster* clus, const In
   }
 }
 
-//_________________________________________________________________________________________________________________________
-void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus,const TObjArray *caloClusters, AliVCaloCells * cells, 
-                                            const Int_t absIdMax, const Double_t maxCellFraction, const Float_t eCrossFrac,
-                                            const Double_t tmax,  Double_t timeAverages[2])
+//__________________________________________________________________________________________________________________
+void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus, const TObjArray *caloClusters, AliVCaloCells * cells,
+                                            Int_t absIdMax, Double_t maxCellFraction, Float_t eCrossFrac,
+                                            Double_t tmax,  Double_t timeAverages[2])
 {
   //Fill CaloCluster related histograms
   
@@ -980,9 +979,9 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
   
 }
 
-//______________________________________________________________________________________________________
-Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(const TLorentzVector mom, const Bool_t matched,
-                                                const Int_t * labels, const Int_t nLabels, Int_t & pdg )
+//__________________________________________________________________________________________
+Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(TLorentzVector mom, Bool_t matched,
+                                                const Int_t * labels, Int_t nLabels, Int_t & pdg )
 {
   
   //Fill histograms only possible when simulation
@@ -1325,7 +1324,7 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(const TLorentzVector mom, const 
 
 //________________________________________________________________________________________________
 void AliAnaCalorimeterQA::ClusterMatchedWithTrackHistograms(AliVCluster *clus, TLorentzVector mom, 
-                                                            const Bool_t okPrimary, const Int_t pdg)
+                                                            Bool_t okPrimary, Int_t pdg)
 {
   //Histograms for clusters matched with tracks
   
@@ -1577,8 +1576,8 @@ TObjString * AliAnaCalorimeterQA::GetAnalysisCuts()
   return new TObjString(parList) ;
 }
 
-//___________________________________________________________________________________
-void AliAnaCalorimeterQA::ExoticHistograms(const Int_t absIdMax, const Float_t ampMax,
+//_________________________________________________________________________________
+void AliAnaCalorimeterQA::ExoticHistograms(Int_t absIdMax, Float_t ampMax,
                                            AliVCluster *clus, AliVCaloCells* cells)
 {
   // Calculate weights
@@ -2887,8 +2886,8 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   return outputContainer;
 }
 
-//__________________________________________________________________________________________________
-Float_t AliAnaCalorimeterQA::GetECross(const Int_t absID, AliVCaloCells* cells, const Float_t dtcut)
+//______________________________________________________________________________________
+Float_t AliAnaCalorimeterQA::GetECross(Int_t absID, AliVCaloCells* cells, Float_t dtcut)
 {
   // Get energy in cross axis around maximum cell, for EMCAL only
   
@@ -3001,8 +3000,8 @@ Float_t AliAnaCalorimeterQA::GetECross(const Int_t absID, AliVCaloCells* cells, 
 }
 
 //__________________________________________________________________________________________________
-void AliAnaCalorimeterQA::InvariantMassHistograms(const Int_t iclus,   const TLorentzVector mom, 
-                                                  const Int_t nModule, const TObjArray* caloClusters, 
+void AliAnaCalorimeterQA::InvariantMassHistograms(Int_t iclus,   TLorentzVector mom,
+                                                  Int_t nModule, const TObjArray* caloClusters,
                                                   AliVCaloCells * cells) 
 {
   // Fill Invariant mass histograms
@@ -3095,8 +3094,8 @@ void AliAnaCalorimeterQA::InitParameters()
   
 }
 
-//___________________________________________________________________________________
-Bool_t AliAnaCalorimeterQA::IsGoodCluster(const Int_t absIdMax, AliVCaloCells* cells)
+//_____________________________________________________________________________
+Bool_t AliAnaCalorimeterQA::IsGoodCluster(Int_t absIdMax, AliVCaloCells* cells)
 {
   //Identify cluster as exotic or not
   
@@ -3229,7 +3228,7 @@ void AliAnaCalorimeterQA::MCHistograms()
 }
 
 //_______________________________________________________________________________
-void AliAnaCalorimeterQA::MCHistograms(const TLorentzVector mom, const Int_t pdg)
+void AliAnaCalorimeterQA::MCHistograms(TLorentzVector mom, Int_t pdg)
 {
   //Fill pure monte carlo related histograms
 	
