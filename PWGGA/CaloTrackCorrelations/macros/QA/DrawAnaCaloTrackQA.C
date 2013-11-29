@@ -835,7 +835,7 @@ void MCQA()
   cmc->cd(4);
   //gPad->SetLogy();
   
-  TH2F* h2PrimPhoEta = (TH2F*) GetHisto("AnaPhoton_hEtaPrim_MCPhoton");
+  TH2F* h2PrimPhoEta = (TH2F*) GetHisto("AnaPhoton_hYPrim_MCPhoton");
   TH2F* h2PrimPi0Eta = (TH2F*) GetHisto("AnaPi0_hPrimPi0Rapidity");
   TH2F* h2PrimEtaEta = (TH2F*) GetHisto("AnaPi0_hPrimEtaRapidity");
   
