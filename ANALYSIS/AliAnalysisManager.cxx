@@ -330,6 +330,7 @@ Bool_t AliAnalysisManager::EventLoop(Long64_t nevents)
     ExecAnalysis();
     fInputEventHandler->FinishEvent();
   }
+  return kTRUE;
 }
       
 //______________________________________________________________________________
@@ -562,7 +563,6 @@ Bool_t AliAnalysisManager::Notify()
    // is started when using PROOF. It is normaly not necessary to make changes
    // to the generated code, but the routine can be extended by the
    // user if needed. The return value is currently not used.
-   static TFile *oldfile = 0;
    fIOTimer->Start(kTRUE); 
    if (!fTree) return kFALSE;
    if (!TObject::TestBit(AliAnalysisManager::kTrueNotify)) return kFALSE;
@@ -579,12 +579,7 @@ Bool_t AliAnalysisManager::Notify()
       if (fCurrentDescriptor) fCurrentDescriptor->Done();
       fCurrentDescriptor = new AliAnalysisFileDescriptor(curfile);
       fFileDescriptors->Add(fCurrentDescriptor);
-      if (fCacheSize && oldfile) {
-         TTreeCache* pf = dynamic_cast<TTreeCache*>(oldfile->GetCacheRead());
-         if (pf) pf->Print();
-      }
    } 
-   oldfile = curfile;  
    
    if (fDebug > 1) printf("->AliAnalysisManager::Notify() file: %s\n", curfile->GetName());
    Int_t run = AliAnalysisManager::GetRunFromAlienPath(curfile->GetName());
