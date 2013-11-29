@@ -35,7 +35,7 @@ AliEmcalSetupTask::AliEmcalSetupTask(const char *name) :
   AliAnalysisTaskSE(name),
   fOcdbPath(),
   fOadbPath("$ALICE_ROOT/OADB/EMCAL"),
-  fGeoPath("."),
+  fGeoPath("$ALICE_ROOT/OADB/EMCAL"),
   fIsInit(kFALSE)
 {
   // Constructor.
@@ -66,14 +66,15 @@ void AliEmcalSetupTask::UserExec(Option_t *)
 
   Int_t runno = InputEvent()->GetRunNumber();
   TString geoname("EMCAL_COMPLETE12SMV1");
-  Int_t year = 2012;
+  Int_t year = 2013;
   if (runno<=139517) {
     year = 2010;
     geoname = "EMCAL_FIRSTYEARV1";
-  }
-  else if ((runno>139517) && (runno<=170593)) {
+  } else if ((runno>139517) && (runno<=170593)) {
     year = 2011;
     geoname = "EMCAL_COMPLETEV1";
+  } else if ((runno>170593) && (runno<=193766)) {
+    year = 2012;
   }
 
   AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance(geoname);
