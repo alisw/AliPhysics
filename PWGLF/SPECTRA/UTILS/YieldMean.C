@@ -34,9 +34,12 @@ YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t max 
   
   do Int_t fitres = htot->Fit(f, opt);
   while (fitres != 0);
+  cout<<" Fit sys+stat for " <<f->GetName()<<endl;		
+  cout<<"NDF="<<f->GetNDF()<<" Chi^2="<<f->GetChisquare()<<" Chi^2/NDF="<<f->GetChisquare()/f->GetNDF()<<endl;
+
   hlo = YieldMean_LowExtrapolationHisto(htot, f, min, loprecision);
   hhi = YieldMean_HighExtrapolationHisto(htot, f, max, hiprecision);
-  YieldMean_IntegralMean(htot, hlo, hhi, integral, mean);
+  YieldMean_IntegralMean(htot, hlo, hhi, integral, mean,kTRUE);
   hout->SetBinContent(kYield, integral);
   hout->SetBinContent(kMean, mean);
 
@@ -371,7 +374,7 @@ YieldMean_ReturnExtremeHisto(TH1 *hin, Float_t sign = 1.)
   return hmax;
 }
 
-YieldMean_IntegralMean(TH1 *hdata, TH1 *hlo, TH1 *hhi, Double_t &integral, Double_t &mean)
+YieldMean_IntegralMean(TH1 *hdata, TH1 *hlo, TH1 *hhi, Double_t &integral, Double_t &mean,Bool_t printinfo=kFALSE)
 {
   
   /*
@@ -381,6 +384,7 @@ YieldMean_IntegralMean(TH1 *hdata, TH1 *hlo, TH1 *hhi, Double_t &integral, Doubl
   Double_t cont, err, width, cent;
   Double_t I = 0., IX = 0., Ierr = 0., IXerr = 0., Ilerr = 0., IXlerr = 0.;
   Double_t M = 0., Merr = 0., Mlerr = 0., C;
+  Double_t dataonly=0.0;
 
   /* integrate the data */
   for (Int_t ibin = 0; ibin < hdata->GetNbinsX(); ibin++) {
@@ -392,6 +396,7 @@ YieldMean_IntegralMean(TH1 *hdata, TH1 *hlo, TH1 *hhi, Double_t &integral, Doubl
     I += cont;
     IX += cont * cent;
   }
+  dataonly=I;	
   /* integrate low */
   for (Int_t ibin = 0; ibin < hlo->GetNbinsX(); ibin++) {
     cent = hlo->GetBinCenter(ibin + 1);
@@ -416,4 +421,6 @@ YieldMean_IntegralMean(TH1 *hdata, TH1 *hlo, TH1 *hhi, Double_t &integral, Doubl
   /* set values */
   integral = I;
   mean = IX / I;
+  if(printinfo)	
+  	cout<<"data only = "<<dataonly<<" total = "<<I<<" ratio= "<<dataonly/I<<endl; 	
 }
