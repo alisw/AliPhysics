@@ -2,6 +2,7 @@
 .x $HOME/rootlogon.C
 .L $ALICE_ROOT/TPC/Upgrade/macros/makeCurrentCorrection.C+
 
+
 */
 
 #include "TMath.h"
@@ -44,18 +45,22 @@
 #include "TROOT.h"
 #include "AliMathBase.h"
 #include "TLatex.h"
+#include "AliTPCCorrectionLookupTable.h"
 //
 
 const Int_t kColors[6]={1,2,3,4,6,7};
 const Int_t kMarkers[6]={20,21,24,25,24,25};
 
 void MakeLocalDistortionCurrentTree(Int_t npointsZ=20000, Int_t id=0);
+void MakeSmoothKernelStudy(Int_t npoints, Int_t nkernels, Int_t mapID);
 
-void makeCurrentCorrection(Int_t action=0, Int_t arg0=5000, Int_t arg1=0){
+void makeCurrentCorrection(Int_t action=0, Int_t arg0=5000, Int_t arg1=0, Int_t arg2=0){
   //
   //
   //
   if (action==0) MakeLocalDistortionCurrentTree(arg0,arg1);
+  if (action==1) MakeSmoothKernelStudy(arg0,arg1,arg2);
+ 
 }
 
 void SetGraphTDRStyle(TGraph * graph){
@@ -384,6 +389,167 @@ void FitLinear(){
   canvasFit->SaveAs("canvasAIJ_CurrenToDR.png");
 }
 
+void MakeSmoothKernelStudy(Int_t npoints, Int_t nkernels, Int_t mapID){
+  //
+  // Compare the input and reconstructed distortion maps
+  // Input files are expected to have predefined names
+  // 
+  // Values and smoothed vaules using differnt smoothing algorithms are used
+  // Results of given studies will be used to define "optimal" smoothing algorithm
+  // and optimal Kernel parameters
+  // 
+  //
+  const Double_t cutMaxDist=3;
+  const Double_t cutMinDist=0.00001;
+  
+  TFile *foutput = TFile::Open("MeasureResidual.root");
+  TFile *finput = TFile::Open("RealResidualScaled.root");
+  AliTPCCorrectionLookupTable *mapIn = (AliTPCCorrectionLookupTable *)finput->Get("map");
+  AliTPCCorrectionLookupTable *mapOut = (AliTPCCorrectionLookupTable *)foutput->Get("map");
+  AliTPCCorrection::AddVisualCorrection(mapIn,1);
+  AliTPCCorrection::AddVisualCorrection(mapOut,2);
+  TF1 * fin = new TF1("fin","AliTPCCorrection::GetCorrXYZ(x,5,10,1,1)",85,245);
+  TF1 * fout = new TF1("fout","AliTPCCorrection::GetCorrXYZ(x,5,10,1,2)",85,245);  
+  TTreeSRedirector * pcstream = new TTreeSRedirector("smoothLookupStudy.root","recreate");
+  //
+  //
+  // 1. Generate random point of interest
+  //
+  TVectorD  sigmaKernelR(nkernels);
+  TVectorD  sigmaKernelRPhi(nkernels);
+  TVectorD  sigmaKernelZ(nkernels);
+  TVectorD  fitValues(nkernels);
+  TVectorD  fitValuesErr(nkernels);
+  TVectorD  fitValuesChi2(nkernels);
+  TVectorD  fitSumW(nkernels);
+  TVectorD  fitValuesN(nkernels);
+  //
+  TLinearFitter *fitters[nkernels];
+  for (Int_t ipoint=0; ipoint<npoints; ipoint++){ 
+    if (ipoint%10==0) printf("%d\n",ipoint);
+    for (Int_t i=0; i<nkernels; i++) {
+      fitters[i]=new TLinearFitter(7,"hyp6");
+    }
+    Double_t phi = gRandom->Rndm()*TMath::TwoPi();
+    Double_t r   = 85+gRandom->Rndm()*(245-85);
+    Double_t theta   = -0.9+gRandom->Rndm()*1.8;
+    Double_t z=r*theta;     
+    //
+    Double_t x = r*TMath::Cos(phi);
+    Double_t y = r*TMath::Sin(phi);
+    Double_t drphiInput = AliTPCCorrection::GetCorrXYZ(x,y,z,1,1);
+    Double_t drphiOutput = AliTPCCorrection::GetCorrXYZ(x,y,z,1,2);
+    Double_t drInput = AliTPCCorrection::GetCorrXYZ(x,y,z,0,1);
+    Double_t drOutput = AliTPCCorrection::GetCorrXYZ(x,y,z,0,2);
+    if (TMath::Abs(drphiOutput)<cutMinDist) continue; // beter condition needed
+    if (TMath::Abs(drphiInput)<cutMinDist) continue; // beter condition needed
+    if (TMath::Abs(drphiOutput)>cutMaxDist) continue; // beter condition needed
+    if (TMath::Abs(drphiInput)>cutMaxDist) continue; // beter condition needed
+    //
+    for (Int_t i=0; i<nkernels; i++) {
+      sigmaKernelR[i]    = 1.+15.*gRandom->Rndm(); 
+      sigmaKernelRPhi[i] = 1.+15.*gRandom->Rndm();
+      sigmaKernelZ[i]    = 1.+15.*gRandom->Rndm();
+      fitSumW[i]=0;
+    }
+    for (Int_t idphi=-6; idphi<=6; idphi++){
+      Double_t dphi=idphi*TMath::Pi()/54.;
+      for (Double_t dR=-30; dR<=30.; dR+=5){
+	for (Double_t dZ=-30; dZ<=30.; dZ+=5){
+	  if (r+dR<85) continue;
+	  if (r+dR>245) continue;
+	  if (z+dZ<-240) continue;
+	  if (z+dZ>240) continue;
+	  //
+	  Double_t x2=(r+dR)*TMath::Cos(phi+dphi);
+	  Double_t y2=(r+dR)*TMath::Sin(phi+dphi);
+	  Double_t z2=(r+dR)*TMath::Sin(phi+dphi);
+	  Double_t drphiOutput2=AliTPCCorrection::GetCorrXYZ(x2,y2,z2,1,1);
+	  if (TMath::Abs(drphiOutput2)<cutMinDist) continue; // hard cut beter condition needed
+	  if (TMath::Abs(drphiOutput2)>cutMaxDist) continue; // beter condition needed
+
+	  Double_t xfit[7]={dphi,dphi*dphi,dR,dR*dR,dZ,dZ*dZ};
+	  for (Int_t i=0; i<nkernels; i++) {
+	    Double_t weight=1;
+	    weight*=TMath::Gaus(dphi*r,0,sigmaKernelRPhi[i]);
+	    weight*=TMath::Gaus(dR,0,sigmaKernelR[i]);
+	    weight*=TMath::Gaus(dZ,0,sigmaKernelZ[i]);
+	    weight+=0.00000001;
+	    fitSumW[i]+=weight;
+	    fitters[i]->AddPoint(xfit,drphiOutput2,0.1/weight);
+	  }
+	}
+      }
+    }
+    for (Int_t ifix=0; ifix<=1; ifix++){
+      for (Int_t i=0; i<nkernels; i++) {
+	if (ifix==1){
+	  fitters[i]->FixParameter(4,0);
+	  fitters[i]->FixParameter(5,0);
+	  fitters[i]->FixParameter(6,0);
+	}
+	fitters[i]->Eval();
+	fitValues[i]=fitters[i]->GetParameter(0);
+	fitValuesErr[i]=fitters[i]->GetParError(0);
+	fitValuesChi2[i]=TMath::Sqrt(fitters[i]->GetChisquare()/fitSumW[i]);
+	fitValuesN[i]=fitters[i]->GetNpoints();
+      }
+      (*pcstream)<<"smoothLookup"<<
+	"ipoint"<<ipoint<<
+	"mapID="<<mapID<<
+	"ifix="<<ifix<<
+	// coordinates
+	"x="<<x<<
+	"y="<<y<<
+	"z="<<z<<
+	"phi="<<phi<<
+	"r="<<r<<
+	"z="<<z<<
+	// Input output values
+	"drphiInput="<<drphiInput<<       // input lookup tables disotrions
+	"drphiOutput="<<drphiOutput<<     // reconstructed lookup tables distortion
+	"drInput="<<drInput<<       // input lookup tables disotrions
+	"drOutput="<<drOutput<<     // reconstructed lookup tables distortion
+	// Smoothed values
+	"fitValues.="<<&fitValues<<
+	"fitValuesErr.="<<&fitValuesErr<<
+	"fitValuesChi2.="<<&fitValuesChi2<<
+	"fitValuesN.="<<&fitValuesN<<
+	"fitSumW.="<<&fitSumW<<
+	// Kernel sigma
+	"sigmaKernelR.="<<&sigmaKernelR<<
+	"sigmaKernelRPhi.="<<&sigmaKernelRPhi<<
+	"sigmaKernelZ.="<<&sigmaKernelZ<<
+	"\n";
+    }
+    for (Int_t i=0; i<nkernels; i++) {
+      delete fitters[i];
+    }
+  }
+  delete pcstream;
+  //
+  //
+  /* 
+     TFile *ff = TFile::Open("smoothLookupStudy.root")
+     TChain * chain = AliXRDPROOFtoolkit::MakeChain("smooth.list", "smoothLookup", 0,100)
+
+   */
+}
+void MakeSmoothKernelStudyDraw(){
+  //
+  //
+  //
+  TChain * chain = AliXRDPROOFtoolkit::MakeChain("smooth.list", "smoothLookup", 0,100);
+  TH2* hisInputsS[3]={0};
+  chain->Draw("fitValues.fElements-drphiInput:pow(sigmaKernelR.fElements*sigmaKernelRPhi.fElements*sigmaKernelZ.fElements,1/3.)>>his0Diff(10,3,15,100,-0.3,0.3)","ifix==0&&fitValuesErr.fElements<0.2","colz");  
+  hisInputs[0]= chain->GetHistogram()->Clone();  
+  chain->Draw("fitValues.fElements-drphiInput:pow(sigmaKernelR.fElements*sigmaKernelRPhi.fElements*sigmaKernelZ.fElements,1/3.)>>his1Diff(10,3,15,100,-0.3,0.3)","ifix==1&&fitValuesErr.fElements<0.2","colz");
+  //
+  hisInputsS[1]= chain->GetHistogram()->Clone();  
+  chain->Draw("drphiOutput-drphiInput:pow(sigmaKernelR.fElements*sigmaKernelRPhi.fElements*sigmaKernelZ.fElements,1/3.)>>hisDiff(10,3,15,100,-0.3,0.3)","ifix==1&&fitValuesErr.fElements<0.2","colz");
+hisInputsS[2]= chain->GetHistogram()->Clone();  
+  
+}
 
 void FFTexample(){
   //
@@ -400,8 +566,8 @@ void FFTexample(){
   //
   TF2 f2("f2","AliTPCCorrection::GetCorrXYZ(x,0,y,0,1)-1.07*AliTPCCorrection::GetCorrXYZ(x,0,y,0,2)",85,245,0,250);
   TF2 f2c("f2c","AliTPCCorrection::GetCorrXYZ(x,0,y,0,1)-1.07*AliTPCCorrection::GetCorrXYZ(x,0,y,0,2)+sqrt(12.)*(rndm-0.5)*0.04",85,245,0,250);
-  f2.SetNpx(16); f2.SetNpy(32);
-  f2c.SetNpx(16); f2c.SetNpy(32);
+  f2.SetNpx(32); f2.SetNpy(32);
+  f2c.SetNpx(32); f2c.SetNpy(32);
   f2.Draw("colz");
   f2c.Draw("colz");
   
@@ -421,7 +587,7 @@ void FFTexample(){
 	  if (jbin+dj<=1) continue;
 	  if (ibin+di>=nx) continue;
 	  if (jbin+dj>=ny) continue;
-	  Double_t x[2]={di,dj,dj*dj};
+	  Double_t x[3]={di,dj,dj*dj};
 	  Double_t w = 1./(TMath::Gaus(di/sigma)*TMath::Gaus(dj/sigma));	  
 	  Double_t y = his2Dc->GetBinContent(ibin+di,jbin+dj);
 	  fitter.AddPoint(x,y,w);
