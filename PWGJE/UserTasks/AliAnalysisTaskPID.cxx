@@ -877,30 +877,24 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     
     // Apply detector level track cuts
     //if (track->GetTPCsignalN() < 60)
-    //  continue;//TODO was removed for a while
+    //  continue;
     
+    Double_t dEdxTPC = fPIDResponse->IsTunedOnData() ? fPIDResponse->GetTPCsignalTunedOnData(track) : track->GetTPCsignal();
+    if (dEdxTPC <= 0)
+      continue;
     
     if(fTrackFilter && !fTrackFilter->IsSelected(track))
       continue;
     
-    /*
-    if (fESD) {
-      AliESDtrack* trackESD = fESD->GetTrack(iTracks);
-      if (trackESD) {
-        if (trackESD->GetLengthInActiveZone(1, 1.8, 220, magField) < 120)
-           continue; //TODO NOW TEST
-      }
-    }*/
+    if (fUseTPCCutMIGeo) {
+      if (!TPCCutMIGeo(track, fEvent))
+        continue;
+    }
     
     if(fUsePhiCut) {
       if (!PhiPrimeCut(track, magField))
         continue; // reject track
     }
-    
-    Double_t dEdxTPC = fPIDResponse->IsTunedOnData() ? fPIDResponse->GetTPCsignalTunedOnData(track) : track->GetTPCsignal();
-    
-    if (dEdxTPC <= 0)
-      continue;
     
     Int_t pdg =  0; // = 0 indicates data for the moment
     AliMCParticle* mcTrack = 0x0;
@@ -1852,6 +1846,7 @@ void AliAnalysisTaskPID::PrintSettings(Bool_t printSystematicsSettings) const
   printf("Track cuts: %s\n", fTrackFilter ? fTrackFilter->GetTitle() : "-");
   printf("Eta cut: %.2f <= |eta| <= %.2f\n", GetEtaAbsCutLow(), GetEtaAbsCutUp());
   printf("Phi' cut: %d\n", GetUsePhiCut());
+  printf("TPCCutMIGeo: %d\n", GetUseTPCCutMIGeo());
   
   printf("\n");
   

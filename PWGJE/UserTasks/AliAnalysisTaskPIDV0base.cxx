@@ -13,7 +13,8 @@
 #include "AliMCEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliInputEventHandler.h"
-
+#include "AliVTrack.h"
+#include "AliExternalTrackParam.h"
 #include "AliVVertex.h"
 #include "AliAnalysisFilter.h"
 #include "AliPID.h"
@@ -35,6 +36,10 @@ Contact: bhess@cern.ch
 
 ClassImp(AliAnalysisTaskPIDV0base)
 
+Double_t AliAnalysisTaskPIDV0base::fgCutGeo = 1.;   
+Double_t AliAnalysisTaskPIDV0base::fgCutNcr = 0.85; 
+Double_t AliAnalysisTaskPIDV0base::fgCutNcl = 0.7;  
+
 //________________________________________________________________________
 AliAnalysisTaskPIDV0base::AliAnalysisTaskPIDV0base()
   : AliAnalysisTaskSE()
@@ -45,6 +50,7 @@ AliAnalysisTaskPIDV0base::AliAnalysisTaskPIDV0base()
   , fV0KineCuts(0x0)
   , fIsPbpOrpPb(kFALSE)
   , fUsePhiCut(kFALSE)
+  , fUseTPCCutMIGeo(kFALSE)
   , fZvtxCutEvent(10.0)
   , fEtaCut(0.9)
   , fPhiCutLow(0x0)
@@ -78,6 +84,7 @@ AliAnalysisTaskPIDV0base::AliAnalysisTaskPIDV0base(const char *name)
   , fV0KineCuts(0x0)
   , fIsPbpOrpPb(kFALSE)
   , fUsePhiCut(kFALSE)
+  , fUseTPCCutMIGeo(kFALSE)
   , fZvtxCutEvent(10.0)
   , fEtaCut(0.9)
   , fPhiCutLow(0x0)
@@ -432,4 +439,62 @@ Int_t AliAnalysisTaskPIDV0base::GetV0motherIndex(Int_t trackIndex) const
     return -99;
   
   return fV0motherIndex[trackIndex];
+}
+
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskPIDV0base::TPCCutMIGeo(const AliVTrack* track, const AliVEvent* evt, TTreeStream* streamer)
+{
+  //
+  // TPC Cut MIGeo
+  //
+
+  if (!track || !evt)
+    return kFALSE;
+  
+  const Short_t sign = track->Charge();
+  Double_t xyz[50];
+  Double_t pxpypz[50];
+  Double_t cv[100];
+
+  track->GetXYZ(xyz);
+  track->GetPxPyPz(pxpypz);
+
+  AliExternalTrackParam* par = new AliExternalTrackParam(xyz, pxpypz, cv, sign);
+  const AliESDtrack dummy;
+
+  const Double_t magField = evt->GetMagneticField();
+  Double_t varGeom = dummy.GetLengthInActiveZone(par, 3, 236, magField, 0, 0);
+  Double_t varNcr  = track->GetTPCClusterInfo(3, 1);
+  Double_t varNcls = track->GetTPCsignalN();
+
+  const Double_t varEval = 130. - 5. * TMath::Abs(1. / track->Pt());
+  Bool_t cutGeom   = varGeom > fgCutGeo * varEval;
+  Bool_t cutNcr    = varNcr  > fgCutNcr * varEval;
+  Bool_t cutNcls   = varNcls > fgCutNcl * varEval;
+
+  Bool_t kout = cutGeom && cutNcr && cutNcls;
+
+  if (streamer) {
+    Double_t dedx = track->GetTPCsignal();
+
+    (*streamer)<<"tree"<<
+      "param.="<< par<<
+      "varGeom="<<varGeom<<
+      "varNcr="<<varNcr<<
+      "varNcls="<<varNcls<<
+      
+      "cutGeom="<<cutGeom<<
+      "cutNcr="<<cutNcr<<
+      "cutNcls="<<cutNcls<<
+      
+      "kout="<<kout<<
+      "dedx="<<dedx<<
+      
+      "\n";
+  }
+  
+  delete par;
+  
+  return kout;
 }

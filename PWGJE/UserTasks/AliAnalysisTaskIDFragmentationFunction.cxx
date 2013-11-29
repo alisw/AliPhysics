@@ -2731,11 +2731,13 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
           // fill inclusive tracks XXX, they have the same track cuts!
           AliAODTrack * inclusiveaod  = dynamic_cast<AliAODTrack*>(fTracksRecCutsEfficiency->At(it));
           if(inclusiveaod){
-            Double_t dEdxTPC = pidResponse->IsTunedOnData() ? pidResponse->GetTPCsignalTunedOnData(inclusiveaod) : 
-            inclusiveaod->GetTPCsignal();
+            Double_t dEdxTPC = pidResponse->IsTunedOnData() ? pidResponse->GetTPCsignalTunedOnData(inclusiveaod) 
+                                                            : inclusiveaod->GetTPCsignal();
             
             if (dEdxTPC <= 0)
               continue;
+            
+            Bool_t survivedTPCCutMIGeo = AliAnalysisTaskPID::TPCCutMIGeo(inclusiveaod, InputEvent());
             
             Int_t label = TMath::Abs(inclusiveaod->GetLabel());
             
@@ -2774,14 +2776,18 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
               Double_t value[AliAnalysisTaskPID::kEffNumAxes] = { mcID, gentrack->Pt(), gentrack->Eta(), gentrack->Charge() / 3.,
                                                                   centPercent,
                                                                   -1, -1, -1 };// no jet pT etc since inclusive spectrum 
-              for (Int_t i = 0; i < fNumInclusivePIDtasks; i++)
-                fInclusivePIDtask[i]->FillEfficiencyContainer(value, AliAnalysisTaskPID::kStepRecWithGenCuts);
+              for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
+                if (survivedTPCCutMIGeo || !fInclusivePIDtask[i]->GetUseTPCCutMIGeo())
+                  fInclusivePIDtask[i]->FillEfficiencyContainer(value, AliAnalysisTaskPID::kStepRecWithGenCuts);
+              }
                   
               Double_t valueMeas[AliAnalysisTaskPID::kEffNumAxes] = { mcID, inclusiveaod->Pt(), inclusiveaod->Eta(),
                                                                       inclusiveaod->Charge(), centPercent,
                                                                       -1, -1, -1 };// no jet pT etc since inclusive spectrum 
-              for (Int_t i = 0; i < fNumInclusivePIDtasks; i++)
-                fInclusivePIDtask[i]->FillEfficiencyContainer(valueMeas, AliAnalysisTaskPID::kStepRecWithGenCutsMeasuredObs);
+              for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
+                if (survivedTPCCutMIGeo || !fInclusivePIDtask[i]->GetUseTPCCutMIGeo())
+                  fInclusivePIDtask[i]->FillEfficiencyContainer(valueMeas, AliAnalysisTaskPID::kStepRecWithGenCutsMeasuredObs);
+              }
             }
           }
         }
@@ -2802,6 +2808,8 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
             if (dEdxTPC <= 0)
               continue;
             
+            Bool_t survivedTPCCutMIGeo = AliAnalysisTaskPID::TPCCutMIGeo(inclusiveaod, InputEvent());
+            
             Int_t label = TMath::Abs(inclusiveaod->GetLabel());
 
             // find MC track in our list, if available
@@ -2811,22 +2819,28 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
             if (gentrack)
               pdg = gentrack->GetPdgCode();
             
-            for (Int_t i = 0; i < fNumInclusivePIDtasks; i++)
-              fInclusivePIDtask[i]->ProcessTrack(inclusiveaod, pdg, centPercent, -1); // no jet pT since inclusive spectrum 
+            for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
+              if (survivedTPCCutMIGeo || !fInclusivePIDtask[i]->GetUseTPCCutMIGeo())
+                fInclusivePIDtask[i]->ProcessTrack(inclusiveaod, pdg, centPercent, -1); // no jet pT since inclusive spectrum 
+            }
             
             if (gentrack) {
               Int_t mcID = AliAnalysisTaskPID::PDGtoMCID(pdg);
               Double_t valueRecAllCuts[AliAnalysisTaskPID::kEffNumAxes] = { mcID, inclusiveaod->Pt(), inclusiveaod->Eta(), 
                                                                             inclusiveaod->Charge(), centPercent,
                                                                             -1, -1, -1 };
-              for (Int_t i = 0; i < fNumInclusivePIDtasks; i++)
-                fInclusivePIDtask[i]->FillEfficiencyContainer(valueRecAllCuts, AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObs);
+              for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
+                if (survivedTPCCutMIGeo || !fInclusivePIDtask[i]->GetUseTPCCutMIGeo())
+                  fInclusivePIDtask[i]->FillEfficiencyContainer(valueRecAllCuts, AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObs);
+              }
               
               Double_t weight = IsSecondaryWithStrangeMotherMC(gentrack) ? GetMCStrangenessFactorCMS(gentrack) : 1.0;
-              for (Int_t i = 0; i < fNumInclusivePIDtasks; i++)
-                fInclusivePIDtask[i]->FillEfficiencyContainer(valueRecAllCuts, 
-                                                              AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObsStrangenessScaled,
-                                                              weight);
+              for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
+                if (survivedTPCCutMIGeo || !fInclusivePIDtask[i]->GetUseTPCCutMIGeo())
+                  fInclusivePIDtask[i]->FillEfficiencyContainer(valueRecAllCuts, 
+                                                                AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObsStrangenessScaled,
+                                                                weight);
+              }
               
               if (gentrack->IsPhysicalPrimary()) {
                 // AliAODMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
@@ -2837,12 +2851,14 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
                 Double_t valuePtResolution[AliAnalysisTaskPID::kPtResNumAxes] = { -1, gentrack->Pt(), inclusiveaod->Pt() };
               
                 for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
-                  fInclusivePIDtask[i]->FillEfficiencyContainer(valueRecAllCuts, 
-                                                                AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObsPrimaries);
-                  fInclusivePIDtask[i]->FillEfficiencyContainer(valueGenAllCuts, 
-                                                                AliAnalysisTaskPID::kStepRecWithRecCutsPrimaries);
-                  
-                  fInclusivePIDtask[i]->FillPtResolution(mcID, valuePtResolution);
+                  if (survivedTPCCutMIGeo || !fInclusivePIDtask[i]->GetUseTPCCutMIGeo()) {
+                    fInclusivePIDtask[i]->FillEfficiencyContainer(valueRecAllCuts, 
+                                                                  AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObsPrimaries);
+                    fInclusivePIDtask[i]->FillEfficiencyContainer(valueGenAllCuts, 
+                                                                  AliAnalysisTaskPID::kStepRecWithRecCutsPrimaries);
+                    
+                    fInclusivePIDtask[i]->FillPtResolution(mcID, valuePtResolution);
+                  }
                 }
               }
             }
@@ -3104,6 +3120,8 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
         if (dEdxTPC <= 0)
           continue;
         
+        Bool_t survivedTPCCutMIGeo = AliAnalysisTaskPID::TPCCutMIGeo(aodtrack, InputEvent());
+            
         Int_t label = TMath::Abs(aodtrack->GetLabel());
 
         // Find MC track in our list, if available
@@ -3122,14 +3140,18 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
             
           Double_t valueRecAllCuts[AliAnalysisTaskPID::kEffNumAxes] = { mcID, pT, aodtrack->Eta(), aodtrack->Charge(),
                                                                         centPercent, jetPt, z, xi };
-          for (Int_t i = 0; i < fNumJetPIDtasks; i++)
-            fJetPIDtask[i]->FillEfficiencyContainer(valueRecAllCuts, AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObs);
+          for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
+            if (survivedTPCCutMIGeo || !fJetPIDtask[i]->GetUseTPCCutMIGeo())
+              fJetPIDtask[i]->FillEfficiencyContainer(valueRecAllCuts, AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObs);
+          }
           
           Double_t weight = IsSecondaryWithStrangeMotherMC(gentrack) ? GetMCStrangenessFactorCMS(gentrack) : 1.0;
-          for (Int_t i = 0; i < fNumJetPIDtasks; i++)
-            fJetPIDtask[i]->FillEfficiencyContainer(valueRecAllCuts, 
-                                                    AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObsStrangenessScaled,
-                                                    weight);
+          for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
+            if (survivedTPCCutMIGeo || !fJetPIDtask[i]->GetUseTPCCutMIGeo())
+              fJetPIDtask[i]->FillEfficiencyContainer(valueRecAllCuts, 
+                                                      AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObsStrangenessScaled,
+                                                      weight);
+          }
           
           if (gentrack->IsPhysicalPrimary()) {
             // AliAODMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
@@ -3143,20 +3165,24 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
             Double_t valuePtResolution[AliAnalysisTaskPID::kPtResNumAxes] = { jetPt, genPt, pT };
             
             for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
-              fJetPIDtask[i]->FillEfficiencyContainer(valueRecAllCuts,
-                                                      AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObsPrimaries);
-              fJetPIDtask[i]->FillEfficiencyContainer(valueGenAllCuts,
-                                                      AliAnalysisTaskPID::kStepRecWithRecCutsPrimaries);
-              
-              fJetPIDtask[i]->FillPtResolution(mcID, valuePtResolution);
+              if (survivedTPCCutMIGeo || !fJetPIDtask[i]->GetUseTPCCutMIGeo()) {
+                fJetPIDtask[i]->FillEfficiencyContainer(valueRecAllCuts,
+                                                        AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObsPrimaries);
+                fJetPIDtask[i]->FillEfficiencyContainer(valueGenAllCuts,
+                                                        AliAnalysisTaskPID::kStepRecWithRecCutsPrimaries);
+                
+                fJetPIDtask[i]->FillPtResolution(mcID, valuePtResolution);
+              }
             }
           }
         }
         
-        for (Int_t i = 0; i < fNumJetPIDtasks; i++)
-          fJetPIDtask[i]->ProcessTrack(aodtrack, pdg, centPercent, jetPt);
+        for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
+          if (survivedTPCCutMIGeo || !fJetPIDtask[i]->GetUseTPCCutMIGeo())
+            fJetPIDtask[i]->ProcessTrack(aodtrack, pdg, centPercent, jetPt);
+        }
         
-        if (fIDFFMode) {
+        if (fIDFFMode && (survivedTPCCutMIGeo || !fJetPIDtask[0]->GetUseTPCCutMIGeo())) {
           // NOTE: Just take particle fraction from first task (should anyway be the same for all tasks)
           Int_t pidWeightedSpecies = fJetPIDtask[0]->GetRandomParticleTypeAccordingToParticleFractions(pT, jetPt,
                                                                                                        centPercent, kTRUE);
@@ -3203,13 +3229,17 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
 					// AliAODMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
           Double_t value[AliAnalysisTaskPID::kEffNumAxes] = { mcID, genPt, gentrack->Eta(), gentrack->Charge() / 3.,
                                                               centPercent, jetPt, genZ, genXi };
-          for (Int_t i = 0; i < fNumJetPIDtasks; i++)
-            fJetPIDtask[i]->FillEfficiencyContainer(value, AliAnalysisTaskPID::kStepRecWithGenCuts);
+          for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
+            if (survivedTPCCutMIGeo || !fJetPIDtask[i]->GetUseTPCCutMIGeo())
+              fJetPIDtask[i]->FillEfficiencyContainer(value, AliAnalysisTaskPID::kStepRecWithGenCuts);
+          }
           
           Double_t valueMeas[AliAnalysisTaskPID::kEffNumAxes] = { mcID, measPt, aodtrack->Eta(), aodtrack->Charge(),
                                                                   centPercent, jetPt, measZ, measXi };
-          for (Int_t i = 0; i < fNumJetPIDtasks; i++)
-            fJetPIDtask[i]->FillEfficiencyContainer(valueMeas, AliAnalysisTaskPID::kStepRecWithGenCutsMeasuredObs);
+          for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
+            if (survivedTPCCutMIGeo || !fJetPIDtask[i]->GetUseTPCCutMIGeo())
+              fJetPIDtask[i]->FillEfficiencyContainer(valueMeas, AliAnalysisTaskPID::kStepRecWithGenCutsMeasuredObs);
+          }
         }
       }
 	  }
