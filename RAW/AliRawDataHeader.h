@@ -32,7 +32,7 @@ struct AliRawDataHeader {
 
   UChar_t   GetL1TriggerMessage() const
     {
-      return (UChar_t)( (fWord2 >> 14) & 0x3FF );
+      return (UChar_t)( (fWord2 >> 14) & 0xFF );
     };
 
   UChar_t   GetVersion() const
