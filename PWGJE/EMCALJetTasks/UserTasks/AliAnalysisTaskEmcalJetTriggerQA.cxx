@@ -500,7 +500,7 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
       if (!jet)
 	continue; //jet not selected
 
-      Double_t jetPt = jet->Pt() - GetRhoVal(fContainerCharged)*jet->Area();;
+      Double_t jetPt = jet->Pt() - GetRhoVal(fContainerCharged)*jet->Area();
       if(jetPt>ptLeadJet2) ptLeadJet2=jetPt;
       fh3PtEtaPhiJetCharged->Fill(jetPt,jet->Eta(),jet->Phi());
       fh3PtEtaAreaJetCharged->Fill(jetPt,jet->Eta(),jet->Area());

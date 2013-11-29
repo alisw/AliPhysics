@@ -62,7 +62,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   void                   SetJetPhiRange(Double_t pmi, Double_t pma) {fJetPhiMin = pmi; fJetPhiMax = pma; }
   void                   SetGhostArea(Double_t gharea)    { fGhostArea      = gharea;  }
   void                   SetMinMCLabel(Int_t s)           { fMinMCLabel     = s     ;  }
-  void                   SetRecombSheme(Int_t scheme)     { fRecombScheme   = scheme;  }
+  void                   SetRecombScheme(Int_t scheme)    { fRecombScheme   = scheme;  }
   void                   SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB)
   {
     if(!fIsPSelSet)

@@ -1,7 +1,7 @@
 #ifndef ALIANALYSISTASKCLQA_H
 #define ALIANALYSISTASKCLQA_H
 
-// $Id: AliAnalysisTaskCLQA.h 58847 2012-09-30 18:11:49Z loizides $
+// $Id$
 
 class TClonesArray;
 class TString;
