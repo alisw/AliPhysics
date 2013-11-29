@@ -443,7 +443,12 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetEventCentralityBin()
     
     if((minCent< 0 && maxCent< 0) || minCent>=maxCent)
     {
-      curCentrBin = GetEventCentrality() * GetNCentrBin() / GetReader()->GetCentralityOpt(); 
+      curCentrBin = GetEventCentrality() * GetNCentrBin() / GetReader()->GetCentralityOpt();
+      if(curCentrBin==GetNCentrBin())
+      {
+        curCentrBin = GetNCentrBin()-1;
+        printf("AliAnaCaloTrackCorrBaseClass::GetEventCentralityBin() - Centrality = %d, put it in last bin \n",GetEventCentrality());
+      }
     }
     else
     {
