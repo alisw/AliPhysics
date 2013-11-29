@@ -45,7 +45,6 @@
 #include "AliAnalysisManager.h"
 #include "AliLog.h"
 #include "TGeoManager.h"
-#include "AliMCAnalysisUtils.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
