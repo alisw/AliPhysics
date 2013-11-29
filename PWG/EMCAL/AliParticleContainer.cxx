@@ -195,6 +195,20 @@ Bool_t AliParticleContainer::AcceptParticle(AliVParticle *vp) const
 }
 
 //________________________________________________________________________
+Int_t AliParticleContainer::GetNAcceptedParticles()
+{
+
+  Int_t nPart = 0;
+
+  AliVParticle *vp = GetNextAcceptParticle(0);
+  if(vp) nPart = 1;
+  while (GetNextAcceptParticle())
+    nPart++;
+
+  return nPart;
+}
+
+//________________________________________________________________________
 void AliParticleContainer::SetClassName(const char *clname)
 {
   // Set the class name

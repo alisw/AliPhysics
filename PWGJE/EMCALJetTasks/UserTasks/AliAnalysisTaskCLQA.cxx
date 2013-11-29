@@ -1,4 +1,4 @@
-// $Id: AliAnalysisTaskCLQA.cxx 60694 2013-02-04 15:35:56Z morsch $
+// $Id$
 //
 // Constantin's Task
 //

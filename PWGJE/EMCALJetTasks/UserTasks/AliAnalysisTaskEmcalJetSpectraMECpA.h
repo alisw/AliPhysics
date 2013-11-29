@@ -1,7 +1,7 @@
 #ifndef AliAnalysisTaskEmcalJetSpectraMECpA_h
 #define AliAnalysisTaskEmcalJetSpectraMECpA_h
 
-// $Id: AliAnalysisTaskEmcalJetSpectraMECpA.h 3010 2012-06-10 05:40:56Z loizides $
+// $Id$
 
 
 class TH1F;

@@ -151,8 +151,9 @@ void runEMCalJetAnalysis(
   if (useTender)
   {
     gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEMCALTender.C");
-    AliAnalysisTaskSE *tender = AddTaskEMCALTender(runPeriod, kFALSE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kTRUE, kTRUE, kTRUE,
-                                                   kFALSE, AliEMCALRecParam::kClusterizerNxN);
+    AliAnalysisTaskSE *tender = AddTaskEMCALTender(runPeriod, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kTRUE, kTRUE, kTRUE,
+                                                   AliEMCALRecoUtils::kBeamTestCorrected,kTRUE,0.1,0.05,AliEMCALRecParam::kClusterizerv2,
+						   kFALSE,kFALSE,-1,1e6,1e6);
     if (usedData != "AOD" && !useGrid) {
       AliTender *alitender = dynamic_cast<AliTender*>(tender);
       alitender->SetDefaultCDBStorage("local://$ALICE_ROOT/OCDB"); 
