@@ -25,10 +25,11 @@
 #include <cstdlib>
 
 // --- ROOT system ---
-#include "TClonesArray.h"
-#include "TList.h"
-#include "TH1F.h"
+#include <TClonesArray.h>
+#include <TList.h>
+#include <TH1F.h>
 //#include <TObjectTable.h>
+#include <TGeoGlobalMagField.h>
 
 //---- AliRoot system ----
 #include "AliAnalysisManager.h"
@@ -949,6 +950,10 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(Int_t iEntry, const char * currentFi
     isMBTrigger = inputHandler->IsEventSelected() & fReader->GetMixEventTriggerMask();
     isTrigger   = inputHandler->IsEventSelected() & fReader->GetEventTriggerMask();
   }
+  
+  // Init mag field for tracks in case of ESDs, not really necessary
+  if (!TGeoGlobalMagField::Instance()->GetField() && ((AliESDEvent*) fReader->GetInputEvent()))
+    ((AliESDEvent*)fReader->GetInputEvent())->InitMagneticField();
   
   //Loop on analysis algorithms
   
