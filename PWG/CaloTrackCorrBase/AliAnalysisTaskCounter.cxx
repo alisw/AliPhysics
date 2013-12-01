@@ -46,6 +46,7 @@
 #include <TProfile2D.h>
 #include <TList.h>
 #include <TClonesArray.h>
+#include <TGeoGlobalMagField.h>
 #include "AliAODHeader.h"
 #include "AliTriggerAnalysis.h"
 #include "AliESDEvent.h"
@@ -216,6 +217,9 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
   AliESDEvent * esdevent = dynamic_cast<AliESDEvent*> (event);
   AliAODEvent * aodevent = dynamic_cast<AliAODEvent*> (event);
   
+  // Init mag field for tracks in case of ESDs, needed, not clear why
+  if (!TGeoGlobalMagField::Instance()->GetField() && esdevent) esdevent->InitMagneticField();
+
   TString triggerclasses = event->GetFiredTriggerClasses();
 
   //printf("Trigger class fired: %s \n",event->GetFiredTriggerClasses().Data());
