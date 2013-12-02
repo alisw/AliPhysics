@@ -1670,25 +1670,25 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
                
                if (fDoMesonQA > 0){
                   if ( pi0cand->M() < 0.17){
-                     hESDMotherPi0PtY[fiCut]->Fill(pi0cand->Pt(),abs(pi0cand->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()));  
+                     hESDMotherPi0PtY[fiCut]->Fill(pi0cand->Pt(),pi0cand->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift());  
                      hESDMotherPi0PtAlpha[fiCut]->Fill(pi0cand->Pt(),pi0cand->GetAlpha());  
                      if (gamma0->Pt() < gamma1->Pt()){
-                       hESDMotherPi0YEtaLowPtGamma[fiCut]->Fill(abs(pi0cand->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()),gamma0->Eta()); 
-                       hESDMotherPi0YEtaHighPtGamma[fiCut]->Fill(abs(pi0cand->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()),gamma1->Eta()); 
+                       hESDMotherPi0YEtaLowPtGamma[fiCut]->Fill(pi0cand->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift(),gamma0->Eta()); 
+                       hESDMotherPi0YEtaHighPtGamma[fiCut]->Fill(pi0cand->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift(),gamma1->Eta()); 
                      } else {
-                       hESDMotherPi0YEtaLowPtGamma[fiCut]->Fill(abs(pi0cand->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()),gamma1->Eta()); 
-                       hESDMotherPi0YEtaHighPtGamma[fiCut]->Fill(abs(pi0cand->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()),gamma0->Eta()); 
+                       hESDMotherPi0YEtaLowPtGamma[fiCut]->Fill(pi0cand->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift(),gamma1->Eta()); 
+                       hESDMotherPi0YEtaHighPtGamma[fiCut]->Fill(pi0cand->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift(),gamma0->Eta()); 
                      }   
                   } 
                   if ( pi0cand->M() > 0.17 && pi0cand->M() < 0.7){
-                     hESDMotherEtaPtY[fiCut]->Fill(pi0cand->Pt(),abs(pi0cand->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()));  
+                     hESDMotherEtaPtY[fiCut]->Fill(pi0cand->Pt(),pi0cand->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift());  
                      hESDMotherEtaPtAlpha[fiCut]->Fill(pi0cand->Pt(),pi0cand->GetAlpha());  
                      if (gamma0->Pt() < gamma1->Pt()){
-                       hESDMotherEtaYEtaLowPtGamma[fiCut]->Fill(abs(pi0cand->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()),gamma0->Eta()); 
-                       hESDMotherEtaYEtaHighPtGamma[fiCut]->Fill(abs(pi0cand->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()),gamma1->Eta()); 
+                       hESDMotherEtaYEtaLowPtGamma[fiCut]->Fill(pi0cand->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift(),gamma0->Eta()); 
+                       hESDMotherEtaYEtaHighPtGamma[fiCut]->Fill(pi0cand->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift(),gamma1->Eta()); 
                      } else {
-                       hESDMotherEtaYEtaLowPtGamma[fiCut]->Fill(abs(pi0cand->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()),gamma1->Eta()); 
-                       hESDMotherEtaYEtaHighPtGamma[fiCut]->Fill(abs(pi0cand->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()),gamma0->Eta()); 
+                       hESDMotherEtaYEtaLowPtGamma[fiCut]->Fill(pi0cand->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift(),gamma1->Eta()); 
+                       hESDMotherEtaYEtaHighPtGamma[fiCut]->Fill(pi0cand->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift(),gamma0->Eta()); 
                      }
                   }
                }   
@@ -1837,25 +1837,25 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidates(AliAODConversionMoth
             hESDTrueMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt()); 
             if (fDoMesonQA > 0){
                if (isTruePi0){
-                  hESDTruePi0PtY[fiCut]->Fill(Pi0Candidate->Pt(),abs(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift())); 
+                  hESDTruePi0PtY[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()); 
                   hESDTruePi0PtAlpha[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->GetAlpha()); 
                   if (TrueGammaCandidate0->Pt() < TrueGammaCandidate1->Pt()){
-                     hESDMotherPi0YEtaLowPtGamma[fiCut]->Fill(abs(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()),TrueGammaCandidate0->Eta()); 
-                     hESDMotherPi0YEtaHighPtGamma[fiCut]->Fill(abs(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()),TrueGammaCandidate1->Eta()); 
+                     hESDMotherPi0YEtaLowPtGamma[fiCut]->Fill(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift(),TrueGammaCandidate0->Eta()); 
+                     hESDMotherPi0YEtaHighPtGamma[fiCut]->Fill(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift(),TrueGammaCandidate1->Eta()); 
                   } else {
-                     hESDMotherPi0YEtaLowPtGamma[fiCut]->Fill(abs(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()),TrueGammaCandidate1->Eta()); 
-                     hESDMotherPi0YEtaHighPtGamma[fiCut]->Fill(abs(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()),TrueGammaCandidate0->Eta()); 
+                     hESDMotherPi0YEtaLowPtGamma[fiCut]->Fill(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift(),TrueGammaCandidate1->Eta()); 
+                     hESDMotherPi0YEtaHighPtGamma[fiCut]->Fill(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift(),TrueGammaCandidate0->Eta()); 
                   }   
                   
                } else if (isTrueEta){   
-                  hESDTrueEtaPtY[fiCut]->Fill(Pi0Candidate->Pt(),abs(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift())); 
+                  hESDTrueEtaPtY[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()); 
                   hESDTrueEtaPtAlpha[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->GetAlpha()); 
                   if (TrueGammaCandidate0->Pt() < TrueGammaCandidate1->Pt()){
-                     hESDMotherEtaYEtaLowPtGamma[fiCut]->Fill(abs(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()),TrueGammaCandidate0->Eta()); 
-                     hESDMotherEtaYEtaHighPtGamma[fiCut]->Fill(abs(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()),TrueGammaCandidate1->Eta()); 
+                     hESDMotherEtaYEtaLowPtGamma[fiCut]->Fill(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift(),TrueGammaCandidate0->Eta()); 
+                     hESDMotherEtaYEtaHighPtGamma[fiCut]->Fill(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift(),TrueGammaCandidate1->Eta()); 
                   } else {
-                     hESDMotherEtaYEtaLowPtGamma[fiCut]->Fill(abs(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()),TrueGammaCandidate1->Eta()); 
-                     hESDMotherEtaYEtaHighPtGamma[fiCut]->Fill(abs(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()),TrueGammaCandidate0->Eta()); 
+                     hESDMotherEtaYEtaLowPtGamma[fiCut]->Fill(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift(),TrueGammaCandidate1->Eta()); 
+                     hESDMotherEtaYEtaHighPtGamma[fiCut]->Fill(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift(),TrueGammaCandidate0->Eta()); 
                   }
                }
             }   
@@ -2025,24 +2025,24 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
       hESDTrueMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
       if (fDoMesonQA > 0){
          if (isTruePi0){
-            hESDTruePi0PtY[fiCut]->Fill(Pi0Candidate->Pt(),abs(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()));
+            hESDTruePi0PtY[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift());
             hESDTruePi0PtAlpha[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->GetAlpha()); 
             if (TrueGammaCandidate0->Pt() < TrueGammaCandidate1->Pt()){
-               hESDMotherPi0YEtaLowPtGamma[fiCut]->Fill(abs(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()),TrueGammaCandidate0->Eta()); 
-               hESDMotherPi0YEtaHighPtGamma[fiCut]->Fill(abs(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()),TrueGammaCandidate1->Eta()); 
+               hESDTruePi0YEtaLowPtGamma[fiCut]->Fill(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift(),TrueGammaCandidate0->Eta()); 
+               hESDTruePi0YEtaHighPtGamma[fiCut]->Fill(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift(),TrueGammaCandidate1->Eta()); 
             } else {
-               hESDMotherPi0YEtaLowPtGamma[fiCut]->Fill(abs(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()),TrueGammaCandidate1->Eta()); 
-               hESDMotherPi0YEtaHighPtGamma[fiCut]->Fill(abs(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()),TrueGammaCandidate0->Eta()); 
+               hESDTruePi0YEtaLowPtGamma[fiCut]->Fill(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift(),TrueGammaCandidate1->Eta()); 
+               hESDTruePi0YEtaHighPtGamma[fiCut]->Fill(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift(),TrueGammaCandidate0->Eta()); 
             }
          } else if (isTrueEta){   
-            hESDTrueEtaPtY[fiCut]->Fill(Pi0Candidate->Pt(),abs(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift())); 
+            hESDTrueEtaPtY[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()); 
             hESDTrueEtaPtAlpha[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->GetAlpha()); 
             if (TrueGammaCandidate0->Pt() < TrueGammaCandidate1->Pt()){
-               hESDMotherEtaYEtaLowPtGamma[fiCut]->Fill(abs(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()),TrueGammaCandidate0->Eta()); 
-               hESDMotherEtaYEtaHighPtGamma[fiCut]->Fill(abs(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()),TrueGammaCandidate1->Eta()); 
+               hESDTrueEtaYEtaLowPtGamma[fiCut]->Fill(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift(),TrueGammaCandidate0->Eta()); 
+               hESDTrueEtaYEtaHighPtGamma[fiCut]->Fill(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift(),TrueGammaCandidate1->Eta()); 
             } else {
-               hESDMotherEtaYEtaLowPtGamma[fiCut]->Fill(abs(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()),TrueGammaCandidate1->Eta()); 
-               hESDMotherEtaYEtaHighPtGamma[fiCut]->Fill(abs(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift()),TrueGammaCandidate0->Eta()); 
+               hESDTrueEtaYEtaLowPtGamma[fiCut]->Fill(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift(),TrueGammaCandidate1->Eta()); 
+               hESDTrueEtaYEtaHighPtGamma[fiCut]->Fill(Pi0Candidate->Rapidity()-((AliConversionCuts*)fCutArray->At(fiCut))->GetEtaShift(),TrueGammaCandidate0->Eta()); 
             }
 
          }

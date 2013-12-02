@@ -154,7 +154,24 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
       cutarray[ 3] = "8460002002093172003290000000"; mesonCutArray[ 3] = "01621035009000";  //standard cut Pi0 pPb Single pT Cut changed
       cutarray[ 4] = "8680002002093172003290000000"; mesonCutArray[ 4] = "01621035009000";  //standard cut Pi0 pPb Single pT Cut changed
       cutarray[ 5] = "8600002002093172003290000000"; mesonCutArray[ 5] = "01621035009000";  //standard cut Pi0 pPb Single pT Cut changed
-      
+   } else if (trainConfig == 7) {
+     // doEtaShiftIndCuts = kTRUE;
+     //  stringShift = "pPb";
+      cutarray[ 0] = "8000001002092970023220000000"; mesonCutArray[ 0] = "01621035009000"; 
+      cutarray[ 1] = "8000001002093663003800000000"; mesonCutArray[ 1] = "01621035009000"; 
+      cutarray[ 2] = "8000001002093260003800000000"; mesonCutArray[ 2] = "01621035009000"; 
+      cutarray[ 3] = "8000001002092370023220000000"; mesonCutArray[ 3] = "01621035009000";                       
+      cutarray[ 4] = "8000001002092770023220000000"; mesonCutArray[ 4] = "01621035009000";                       
+      cutarray[ 5] = "8000001002092551023220000000"; mesonCutArray[ 5] = "01621035009000";                       
+   } else if (trainConfig == 8) {
+     // doEtaShiftIndCuts = kTRUE;
+     //  stringShift = "pPb";
+      cutarray[ 0] = "8000002002092970023220000000"; mesonCutArray[ 0] = "01621035009000"; 
+      cutarray[ 1] = "8000002002093663003800000000"; mesonCutArray[ 1] = "01621035009000"; 
+      cutarray[ 2] = "8000002002093260003800000000"; mesonCutArray[ 2] = "01621035009000"; 
+      cutarray[ 3] = "8000002002092370023220000000"; mesonCutArray[ 3] = "01621035009000";                       
+      cutarray[ 4] = "8000002002092770023220000000"; mesonCutArray[ 4] = "01621035009000";                       
+      cutarray[ 5] = "8000002002092551023220000000"; mesonCutArray[ 5] = "01621035009000";                          
    } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
