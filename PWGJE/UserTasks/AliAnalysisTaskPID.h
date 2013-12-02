@@ -70,7 +70,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   static Int_t PDGtoMCID(Int_t pdg);
   
-  static void GetJetTrackObservables(const Double_t trackPt, const Double_t jetPt, Double_t& z, Double_t& xi);
+  static void GetJetTrackObservables(Double_t trackPt, Double_t jetPt, Double_t& z, Double_t& xi);
   
   static Double_t GetMCStrangenessFactorCMS(Int_t motherPDG, Double_t motherGenPt);
   static Double_t GetMCStrangenessFactorCMS(AliMCEvent* mcEvent, AliMCParticle* daughter);
@@ -84,19 +84,19 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   Int_t GetIndexOfChargeAxisGenYield() const
     { return fStoreAdditionalJetInformation ? kGenYieldCharge : kGenYieldCharge - fgkNumJetAxes; };
   
-  Bool_t FillXsec(const Double_t xsection)
+  Bool_t FillXsec(Double_t xsection)
     { if (!fh1Xsec) return kFALSE; fh1Xsec->Fill("<#sigma>", xsection); return kTRUE; };
-  Bool_t FillPythiaTrials(const Double_t avgTrials)
+  Bool_t FillPythiaTrials(Double_t avgTrials)
     { if (!fh1Trials) return kFALSE; fh1Trials->Fill("#sum{ntrials}", avgTrials); return kTRUE; };
     
-  Bool_t FillEfficiencyContainer(const Double_t* values, const EffSteps step, const Double_t weight = 1.0);
+  Bool_t FillEfficiencyContainer(const Double_t* values, EffSteps step, Double_t weight = 1.0);
   
-  Bool_t FillGeneratedYield(const Double_t* values, const Double_t weight = 1.0);
-  Bool_t FillPtResolution(const Int_t mcID, const Double_t* values);
-  Bool_t FillGenJets(const Double_t centralityPercentile, const Double_t jetPt, const Double_t norm = -1.);
-  Bool_t FillRecJets(const Double_t centralityPercentile, const Double_t jetPt, const Double_t norm = -1.);
+  Bool_t FillGeneratedYield(const Double_t* values, Double_t weight = 1.0);
+  Bool_t FillPtResolution(Int_t mcID, const Double_t* values);
+  Bool_t FillGenJets(Double_t centralityPercentile, Double_t jetPt, Double_t norm = -1.);
+  Bool_t FillRecJets(Double_t centralityPercentile, Double_t jetPt, Double_t norm = -1.);
   
-  Bool_t IncrementEventsProcessed(const Double_t centralityPercentile);
+  Bool_t IncrementEventsProcessed(Double_t centralityPercentile);
   
   void PostOutputData();
   
@@ -106,10 +106,10 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   Bool_t ProcessTrack(const AliVTrack* track, Int_t particlePDGcode, Double_t centralityPercentile, Double_t jetPt) ;
   
-  ErrorCode GenerateDetectorResponse(const ErrorCode errCode, const Double_t mean, const Double_t sigma, Double_t* responses,
-                                     const Int_t nResponses,
-                                     const Bool_t usePureGaus = kFALSE);
-  ErrorCode SetParamsForConvolutedGaus(const Double_t gausMean, const Double_t gausSigma);
+  ErrorCode GenerateDetectorResponse(ErrorCode errCode, Double_t mean, Double_t sigma, Double_t* responses,
+                                     Int_t nResponses,
+                                     Bool_t usePureGaus = kFALSE);
+  ErrorCode SetParamsForConvolutedGaus(Double_t gausMean, Double_t gausSigma);
   
   const TString GetCentralityEstimator() const { return fCentralityEstimator; };
   void SetCentralityEstimator(TString estimator) { fCentralityEstimator = estimator; };
@@ -190,32 +190,32 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
     { fSystematicScalingMultCorrection = scaleFactor; CheckDoAnyStematicStudiesOnTheExpectedSignal(); };
   
   void CleanupParticleFractionHistos();
-  Bool_t GetParticleFraction(const Double_t trackPt, const Double_t jetPt, const Double_t multiplicity,
-                             const AliPID::EParticleType species, Double_t& fraction, Double_t& fractionErrorStat,
+  Bool_t GetParticleFraction(Double_t trackPt, Double_t jetPt, Double_t multiplicity,
+                             AliPID::EParticleType species, Double_t& fraction, Double_t& fractionErrorStat,
                              Double_t& fractionErrorSys) const;
-  Bool_t GetParticleFractions(const Double_t trackPt, const Double_t jetPt, const Double_t centralityPercentile,
-                              Double_t* prob, const Int_t smearSpeciesByError, const Int_t takeIntoAccountSpeciesSysError,
-                              const Bool_t uniformSystematicError = kFALSE) const;
-  const TH3D* GetParticleFractionHisto(const Int_t species, const Bool_t sysError = kFALSE) const;
-  Bool_t SetParticleFractionHisto(const TH3D* hist, const Int_t species, const Bool_t sysError = kFALSE);
+  Bool_t GetParticleFractions(Double_t trackPt, Double_t jetPt, Double_t centralityPercentile,
+                              Double_t* prob, Int_t smearSpeciesByError, Int_t takeIntoAccountSpeciesSysError,
+                              Bool_t uniformSystematicError = kFALSE) const;
+  const TH3D* GetParticleFractionHisto(Int_t species, Bool_t sysError = kFALSE) const;
+  Bool_t SetParticleFractionHisto(const TH3D* hist, Int_t species, Bool_t sysError = kFALSE);
   Int_t GetParticleFractionHistoNbinsTrackPt() const;
   Int_t GetParticleFractionHistoNbinsJetPt() const;
   Int_t GetParticleFractionHistoNbinsCentrality() const;
-  Bool_t SetParticleFractionHistosFromFile(const TString filePathName, const Bool_t sysError = kFALSE);
-  Int_t GetRandomParticleTypeAccordingToParticleFractions(const Double_t trackPt, const Double_t jetPt, 
-                                                          const Double_t centralityPercentile,
-                                                          const Bool_t smearByError,
-                                                          const Bool_t takeIntoAccountSysError = kFALSE) const;
+  Bool_t SetParticleFractionHistosFromFile(const TString filePathName, Bool_t sysError = kFALSE);
+  Int_t GetRandomParticleTypeAccordingToParticleFractions(Double_t trackPt, Double_t jetPt, 
+                                                          Double_t centralityPercentile,
+                                                          Bool_t smearByError,
+                                                          Bool_t takeIntoAccountSysError = kFALSE) const;
   
   
  protected:
   void CheckDoAnyStematicStudiesOnTheExpectedSignal();
   Double_t ConvolutedGaus(const Double_t* xx, const Double_t* par) const;
-  inline Double_t FastGaus(const Double_t x, const Double_t mean, const Double_t sigma) const;
-  inline Double_t FastNormalisedGaus(const Double_t x, const Double_t mean, const Double_t sigma) const;
+  inline Double_t FastGaus(Double_t x, Double_t mean, Double_t sigma) const;
+  inline Double_t FastNormalisedGaus(Double_t x, Double_t mean, Double_t sigma) const;
   Int_t FindBinWithinRange(TAxis* axis, Double_t value) const;
-  Int_t FindFirstBinAboveIn3dSubset(const TH3* hist, const Double_t threshold, const Int_t yValue, const Int_t zValue) const;
-  Int_t FindLastBinAboveIn3dSubset(const TH3* hist, const Double_t threshold, const Int_t yValue, const Int_t zValue) const;
+  Int_t FindFirstBinAboveIn3dSubset(const TH3* hist, Double_t threshold, Int_t yValue, Int_t zValue) const;
+  Int_t FindLastBinAboveIn3dSubset(const TH3* hist, Double_t threshold, Int_t yValue, Int_t zValue) const;
   virtual void SetUpGenHist(THnSparse* hist, Double_t* binsPt, Double_t* binsDeltaPrime, Double_t* binsCent, Double_t* binsJetPt) const;
   virtual void SetUpGenYieldHist(THnSparse* hist, Double_t* binsPt, Double_t* binsCent, Double_t* binsJetPt) const;
   virtual void SetUpHist(THnSparse* hist, Double_t* binsPt, Double_t* binsDeltaPrime, Double_t* binsCent, Double_t* binsJetPt) const;
@@ -275,14 +275,14 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   TString fCentralityEstimator; // Estimator for the centrality (e.g. V0A, V0M)
   
-  THnSparseD* fhPIDdataAll; // Data histo
+  THnSparseD* fhPIDdataAll; //! Data histo
   
   // Generated response information
-  THnSparseD* fhGenEl; // Generated response for el
-  THnSparseD* fhGenKa; // Generated response for ka
-  THnSparseD* fhGenPi; // Generated response for pi
-  THnSparseD* fhGenMu; // Generated response for mu
-  THnSparseD* fhGenPr; // Generated response for pr
+  THnSparseD* fhGenEl; //! Generated response for el
+  THnSparseD* fhGenKa; //! Generated response for ka
+  THnSparseD* fhGenPi; //! Generated response for pi
+  THnSparseD* fhGenMu; //! Generated response for mu
+  THnSparseD* fhGenPr; //! Generated response for pr
   
   // Generated responses for a single track
   Double_t* fGenRespElDeltaPrimeEl; //! Generated responses for a single track
@@ -328,23 +328,23 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   Double_t* fGenRespPrDeltaPr; //! Generated responses for a single track
   */
   
-  TH1D* fhEventsProcessed; // Histo holding the number of processed events
-  TH2D* fhSkippedTracksForSignalGeneration; // Number of tracks that have been skipped for the signal generation
-  THnSparseD* fhMCgeneratedYieldsPrimaries; // Histo holding the generated (no reco, no cuts) primary particle yields in considered eta range
+  TH1D* fhEventsProcessed; //! Histo holding the number of processed events
+  TH2D* fhSkippedTracksForSignalGeneration; //! Number of tracks that have been skipped for the signal generation
+  THnSparseD* fhMCgeneratedYieldsPrimaries; //! Histo holding the generated (no reco, no cuts) primary particle yields in considered eta range
   
-  TH2D* fh2FFJetPtRec;            // Number of reconstructed jets vs. jetPt and centrality
-  TH2D* fh2FFJetPtGen;            // Number of generated jets vs. jetPt and centrality
+  TH2D* fh2FFJetPtRec;            //! Number of reconstructed jets vs. jetPt and centrality
+  TH2D* fh2FFJetPtGen;            //! Number of generated jets vs. jetPt and centrality
   
-  TProfile* fh1Xsec;              // pythia cross section and trials
-  TH1D*     fh1Trials;            // sum of trials
+  TProfile* fh1Xsec;              //! pythia cross section and trials
+  TH1D*     fh1Trials;            //! sum of trials
   
-  AliCFContainer* fContainerEff; // Container for efficiency determination
+  AliCFContainer* fContainerEff; //! Container for efficiency determination
   
-  THnSparseD* fPtResolution[AliPID::kSPECIES]; // Pt Resolution for the individual species
+  THnSparseD* fPtResolution[AliPID::kSPECIES]; //! Pt Resolution for the individual species
   
-  TObjArray* fOutputContainer;  // output data container
+  TObjArray* fOutputContainer;  //! output data container
   
-  TObjArray* fPtResolutionContainer;  // output data container for pt resolution
+  TObjArray* fPtResolutionContainer;  //! output data container for pt resolution
   
   AliAnalysisTaskPID(const AliAnalysisTaskPID&); // not implemented
   AliAnalysisTaskPID& operator=(const AliAnalysisTaskPID&); // not implemented
@@ -354,8 +354,8 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
 
 
 //_____________________________________________________________________________
-inline Bool_t AliAnalysisTaskPID::FillEfficiencyContainer(const Double_t* values, const AliAnalysisTaskPID::EffSteps step,
-                                                          const Double_t weight) 
+inline Bool_t AliAnalysisTaskPID::FillEfficiencyContainer(const Double_t* values, AliAnalysisTaskPID::EffSteps step,
+                                                          Double_t weight) 
 {
   // Fill efficiency container at step "step" with the values
   
@@ -374,7 +374,7 @@ inline Bool_t AliAnalysisTaskPID::FillEfficiencyContainer(const Double_t* values
 
 
 //_____________________________________________________________________________
-inline Bool_t AliAnalysisTaskPID::FillGeneratedYield(const Double_t* values, const Double_t weight)
+inline Bool_t AliAnalysisTaskPID::FillGeneratedYield(const Double_t* values, Double_t weight)
 {
   // Fill histos with generated primary yields with provided values
   
@@ -393,7 +393,7 @@ inline Bool_t AliAnalysisTaskPID::FillGeneratedYield(const Double_t* values, con
 
 
 //_____________________________________________________________________________
-inline Bool_t AliAnalysisTaskPID::FillGenJets(const Double_t centralityPercentile, const Double_t jetPt, const Double_t norm)
+inline Bool_t AliAnalysisTaskPID::FillGenJets(Double_t centralityPercentile, Double_t jetPt, Double_t norm)
 {
   if (!fDoPID && !fDoEfficiency)
     return kFALSE;
@@ -411,7 +411,7 @@ inline Bool_t AliAnalysisTaskPID::FillGenJets(const Double_t centralityPercentil
 
 
 //_____________________________________________________________________________
-inline Bool_t AliAnalysisTaskPID::FillRecJets(const Double_t centralityPercentile, const Double_t jetPt, const Double_t norm)
+inline Bool_t AliAnalysisTaskPID::FillRecJets(Double_t centralityPercentile, Double_t jetPt, Double_t norm)
 {
   if (!fDoPID && !fDoEfficiency)
     return kFALSE;
@@ -429,7 +429,7 @@ inline Bool_t AliAnalysisTaskPID::FillRecJets(const Double_t centralityPercentil
 
 
 //_____________________________________________________________________________
-inline Bool_t AliAnalysisTaskPID::FillPtResolution(const Int_t mcID, const Double_t* values)
+inline Bool_t AliAnalysisTaskPID::FillPtResolution(Int_t mcID, const Double_t* values)
 {
   // Fill histos with pT resolution with provided values
   
@@ -448,7 +448,7 @@ inline Bool_t AliAnalysisTaskPID::FillPtResolution(const Int_t mcID, const Doubl
  
 
 //_____________________________________________________________________________
-inline Bool_t AliAnalysisTaskPID::IncrementEventsProcessed(const Double_t centralityPercentile)
+inline Bool_t AliAnalysisTaskPID::IncrementEventsProcessed(Double_t centralityPercentile)
 {
   // Increment the number of processed events for the given centrality percentile
   

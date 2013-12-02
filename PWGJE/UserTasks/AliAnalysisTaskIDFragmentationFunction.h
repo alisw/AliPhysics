@@ -226,7 +226,7 @@ class AliAnalysisTaskIDFragmentationFunction : public AliAnalysisTaskSE {
 
   static  void   SetProperties(TH1* h,const char* x, const char* y);
   static  void   SetProperties(TH1* h,const char* x, const char* y,const char* z);
-  static  void   SetProperties(THnSparse* h,const Int_t dim, const char** labels);
+  static  void   SetProperties(THnSparse* h,Int_t dim, const char** labels);
 
   void   SetHighPtThreshold(Float_t pt = 5.) { fQATrackHighPtThreshold = pt; }
 
@@ -260,8 +260,9 @@ class AliAnalysisTaskIDFragmentationFunction : public AliAnalysisTaskSE {
   Float_t  GetFFMaxTrackPt() const { return fFFMaxTrackPt; }
   Float_t  GetFFMinNTracks() const { return fFFMinnTracks; }
   Float_t  GetFFBckgRadius() const { return fFFBckgRadius; }
-  void	   GetJetTracksTrackrefs(TList* l, const AliAODJet* j, const Double_t minPtL, const Double_t maxPt, Bool_t& isBadPt);
-  void	   GetJetTracksPointing(TList* in, TList* out, const AliAODJet* j, const Double_t r, Double_t& sumPt, const Double_t minPtL, const Double_t maxPt, Bool_t& isBadPt);  
+  void	   GetJetTracksTrackrefs(TList* l, const AliAODJet* j, Double_t minPtL, Double_t maxPt, Bool_t& isBadPt);
+  void	   GetJetTracksPointing(TList* in, TList* out, const AliAODJet* j, Double_t r, Double_t& sumPt, Double_t minPtL, Double_t maxPt,
+                                Bool_t& isBadPt);  
   void     GetTracksOutOfNJets(Int_t nCases, TList* in, TList* out, const TList* jets, Double_t& pt);
   void     GetTracksOutOfNJetsStat(Int_t nCases, TList* in, TList* out, const TList* jets, Double_t& pt, Double_t &normFactor);
   void     GetTracksTiltedwrpJetAxis(Float_t alpha, TList* inputlist, TList* outputlist, const AliAODJet* jet, Double_t radius, Double_t& sumPt);
@@ -270,23 +271,23 @@ class AliAnalysisTaskIDFragmentationFunction : public AliAnalysisTaskSE {
   void     AssociateGenRec(TList* tracksAODMCCharged,TList* tracksRec, TArrayI& indexAODTr,TArrayI& indexMCTr,TArrayS& isRefGen,TH2F* fh2PtRecVsGen);
 
   void     FillSingleTrackHistosRecGen(AliFragFuncQATrackHistos* trackQAGen, AliFragFuncQATrackHistos* trackQARec, TList* tracksGen, 
-				       const TArrayI& indexAODTr, const TArrayS& isRefGen, const Bool_t scaleStrangeness = kFALSE);
+				       const TArrayI& indexAODTr, const TArrayS& isRefGen, Bool_t scaleStrangeness = kFALSE);
 
 
   void     FillJetTrackHistosRec(AliFragFuncHistos* histRec,  AliAODJet* jet, 
 				 TList* jetTrackList, const TList* tracksGen, const TList* tracksRec, const TArrayI& indexAODTr,
-				 const TArrayS& isRefGen, TList* jetTrackListTR = 0, const Bool_t scaleStrangeness = kFALSE,
+				 const TArrayS& isRefGen, TList* jetTrackListTR = 0, Bool_t scaleStrangeness = kFALSE,
 				 Bool_t fillJS = kFALSE, TProfile* hProNtracksLeadingJet = 0, TProfile** hProDelRPtSum = 0, TProfile* hProDelR80pcPt = 0);
 
 
-  Float_t  CalcJetArea(const Float_t etaJet, const Float_t rc) const;
+  Float_t  CalcJetArea(Float_t etaJet, Float_t rc) const;
   void     GetClusterTracksOutOf1Jet(AliAODJet* jet, TList* outputlist, Double_t &normFactor);
   void     GetClusterTracksMedian(TList* outputlist, Double_t &normFactor);
 
   void     FillBckgHistos(Int_t type, TList* inputtracklist, TList* inputjetlist, AliAODJet* jet, 
 			  AliFragFuncHistos* ffbckghistocuts,AliFragFuncQATrackHistos* qabckghistos,TH1F* fh1Mult = 0); 
  
-  Double_t GetMCStrangenessFactor(const Double_t pt) const;
+  Double_t GetMCStrangenessFactor(Double_t pt) const;
   Double_t GetMCStrangenessFactorCMS(AliAODMCParticle* daughter) const;
   
   Bool_t IsSecondaryWithStrangeMotherMC(AliAODMCParticle* part);
@@ -294,10 +295,10 @@ class AliAnalysisTaskIDFragmentationFunction : public AliAnalysisTaskSE {
   void FillJetShape(AliAODJet* jet, TList* list,  TProfile* hProNtracksLeadingJet, TProfile** hProDelRPtSum, TProfile* hProDelR80pcPt=0, Double_t dPhiUE=0, Double_t normUE = 0, Bool_t scaleStrangeness = kFALSE);
 
   const TString* GetNamesOfInclusivePIDtasks() const { return fNameInclusivePIDtask; };
-  void SetNamesOfInclusivePIDtasks(const Int_t numNames, TString* names);
+  void SetNamesOfInclusivePIDtasks(Int_t numNames, const TString* names);
   
   const TString* GetNamesOfJetPIDtasks() const { return fNameJetPIDtask; };
-  void SetNamesOfJetPIDtasks(const Int_t numNames, TString* names);
+  void SetNamesOfJetPIDtasks(Int_t numNames, const TString* names);
 	
 	
 	Bool_t GetIsPP() const { return fIsPP; };
@@ -322,9 +323,9 @@ class AliAnalysisTaskIDFragmentationFunction : public AliAnalysisTaskSE {
   Int_t	  GetListOfJets(TList* list, Int_t type);
   Int_t   GetListOfBckgJets(TList *list, Int_t type);
 
-  AliESDEvent* fESD;      // ESD event
-  AliAODEvent* fAOD;      // AOD event
-  AliAODEvent* fAODJets;  // AOD event with jet branch (case we have AOD both in input and output)
+  AliESDEvent* fESD;      //! ESD event
+  AliAODEvent* fAOD;      //! AOD event
+  AliAODEvent* fAODJets;  //! AOD event with jet branch (case we have AOD both in input and output)
   AliAODExtension  *fAODExtension; //! where we take the jets from can be input or output AOD
   TString       fNonStdFile; // name of delta aod file to catch the extension
  
@@ -569,7 +570,7 @@ class AliAnalysisTaskIDFragmentationFunction : public AliAnalysisTaskSE {
   TProfile* fProDelRPtSumRecSecSsc[5];      //! jet shape 
   
 
-  TRandom3* fRandom;                        // TRandom3 for background estimation 
+  TRandom3* fRandom;                        //! TRandom3 for background estimation 
   
   Bool_t fOnlyLeadingJets;                  // Flag indicating whether some histos are filled with leading jets only or all jets
   
@@ -577,11 +578,11 @@ class AliAnalysisTaskIDFragmentationFunction : public AliAnalysisTaskSE {
   Int_t fNumInclusivePIDtasks;              // Number of inclusive PID tasks used 
   Int_t fNumJetPIDtasks;                    // Number of jet PID tasks used
   
-  TString* fNameInclusivePIDtask;           // Names of the tasks for inclusive PID spectra
-  TString* fNameJetPIDtask;                 // Names of the tasks for jet PID spectra
+  TString* fNameInclusivePIDtask;           //[fNumInclusivePIDtasks] Names of the tasks for inclusive PID spectra
+  TString* fNameJetPIDtask;                 //[fNumJetPIDtasks] Names of the tasks for jet PID spectra
   
-  AliAnalysisTaskPID** fInclusivePIDtask;   // Pointer to tasks for inclusive PID spectra
-  AliAnalysisTaskPID** fJetPIDtask;         // Pointer to tasks for jet PID spectra
+  AliAnalysisTaskPID** fInclusivePIDtask;   //! Pointer to tasks for inclusive PID spectra
+  AliAnalysisTaskPID** fJetPIDtask;         //! Pointer to tasks for jet PID spectra
   
   Bool_t fUseInclusivePIDtask;              // Process inclusive PID spectra?
   Bool_t fUseJetPIDtask;                    // Process jet PID spectra?
@@ -595,7 +596,7 @@ class AliAnalysisTaskIDFragmentationFunction : public AliAnalysisTaskSE {
 };
 
 
-inline void AliAnalysisTaskIDFragmentationFunction::SetNamesOfInclusivePIDtasks(const Int_t numNames, TString* names)
+inline void AliAnalysisTaskIDFragmentationFunction::SetNamesOfInclusivePIDtasks(Int_t numNames, const TString* names)
 {
   delete [] fNameInclusivePIDtask;
   fNameInclusivePIDtask = 0x0;
@@ -621,7 +622,7 @@ inline void AliAnalysisTaskIDFragmentationFunction::SetNamesOfInclusivePIDtasks(
   }  
 }
 
-inline void AliAnalysisTaskIDFragmentationFunction::SetNamesOfJetPIDtasks(const Int_t numNames, TString* names)
+inline void AliAnalysisTaskIDFragmentationFunction::SetNamesOfJetPIDtasks(Int_t numNames, const TString* names)
 {
   delete [] fNameJetPIDtask;
   fNameJetPIDtask = 0x0;

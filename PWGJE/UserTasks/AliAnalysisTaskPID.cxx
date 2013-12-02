@@ -136,6 +136,13 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
                                       fkDeltaPrimeLowLimit, fkDeltaPrimeUpLimit,
                                       fkConvolutedGausNPar, "AliAnalysisTaskPID", "ConvolutedGaus");
   
+  // Set some arbitrary parameteres, such that the function call will not crash
+  // (although it should not be called with these parameters...)
+  fConvolutedGausDeltaPrime->SetParameter(0, 0);
+  fConvolutedGausDeltaPrime->SetParameter(1, 1);
+  fConvolutedGausDeltaPrime->SetParameter(2, 2);
+  
+  
   // Initialisation of translation parameters is time consuming.
   // Therefore, default values will only be initialised if they are really needed.
   // Otherwise, it is left to the user to set the parameter properly.
@@ -250,6 +257,13 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   fConvolutedGausDeltaPrime = new TF1("convolutedGausDeltaPrime", this, &AliAnalysisTaskPID::ConvolutedGaus,
                                       fkDeltaPrimeLowLimit, fkDeltaPrimeUpLimit,
                                       fkConvolutedGausNPar, "AliAnalysisTaskPID", "ConvolutedGaus");
+  
+  // Set some arbitrary parameteres, such that the function call will not crash
+  // (although it should not be called with these parameters...)
+  fConvolutedGausDeltaPrime->SetParameter(0, 0);
+  fConvolutedGausDeltaPrime->SetParameter(1, 1);
+  fConvolutedGausDeltaPrime->SetParameter(2, 2);
+  
   
   // Initialisation of translation parameters is time consuming.
   // Therefore, default values will only be initialised if they are really needed.
@@ -661,9 +675,9 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
     const Int_t nEffDims = fStoreAdditionalJetInformation ? kEffNumAxes : kEffNumAxes - 3; // Number of dimensions for the efficiency
     
     const Int_t nMCIDbins = AliPID::kSPECIES;
-    Double_t binsMCID[nMCIDbins];
+    Double_t binsMCID[nMCIDbins + 1];
     
-    for(Int_t i = 0; i < nMCIDbins; i++) {
+    for(Int_t i = 0; i <= nMCIDbins; i++) {
       binsMCID[i]= i; 
     }
     
@@ -779,7 +793,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
 {
   // Main loop
   // Called for each event
-  
+
   if(fDebug > 1)
     printf("File: %s, Line: %d: UserExec\n", (char*)__FILE__, __LINE__);
   
@@ -1046,7 +1060,7 @@ Int_t AliAnalysisTaskPID::PDGtoMCID(Int_t pdg)
 
 
 //_____________________________________________________________________________
-void AliAnalysisTaskPID::GetJetTrackObservables(const Double_t trackPt, const Double_t jetPt, Double_t& z, Double_t& xi)
+void AliAnalysisTaskPID::GetJetTrackObservables(Double_t trackPt, Double_t jetPt, Double_t& z, Double_t& xi)
 {
   // Uses trackPt and jetPt to obtain z and xi.
   
@@ -1092,7 +1106,7 @@ Double_t AliAnalysisTaskPID::ConvolutedGaus(const Double_t* xx, const Double_t* 
 
 
 //_____________________________________________________________________________
-inline Double_t AliAnalysisTaskPID::FastGaus(const Double_t x, const Double_t mean, const Double_t sigma) const
+inline Double_t AliAnalysisTaskPID::FastGaus(Double_t x, Double_t mean, Double_t sigma) const
 {
   // Calculate an unnormalised gaussian function with mean and sigma.
 
@@ -1105,7 +1119,7 @@ inline Double_t AliAnalysisTaskPID::FastGaus(const Double_t x, const Double_t me
 
 
 //_____________________________________________________________________________
-inline Double_t AliAnalysisTaskPID::FastNormalisedGaus(const Double_t x, const Double_t mean, const Double_t sigma) const
+inline Double_t AliAnalysisTaskPID::FastNormalisedGaus(Double_t x, Double_t mean, Double_t sigma) const
 {
   // Calculate a normalised (divided by sqrt(2*Pi)*sigma) gaussian function with mean and sigma.
 
@@ -1136,8 +1150,8 @@ Int_t AliAnalysisTaskPID::FindBinWithinRange(TAxis* axis, Double_t value) const
 
   
 //_____________________________________________________________________________
-Int_t AliAnalysisTaskPID::FindFirstBinAboveIn3dSubset(const TH3* hist, const Double_t threshold, const Int_t yBin,
-                                                      const Int_t zBin) const
+Int_t AliAnalysisTaskPID::FindFirstBinAboveIn3dSubset(const TH3* hist, Double_t threshold, Int_t yBin,
+                                                      Int_t zBin) const
 {
   // Kind of projects a TH3 to 1 bin combination in y and z
   // and looks for the first x bin above a threshold for this projection.
@@ -1157,8 +1171,8 @@ Int_t AliAnalysisTaskPID::FindFirstBinAboveIn3dSubset(const TH3* hist, const Dou
 
 
 //_____________________________________________________________________________
-Int_t AliAnalysisTaskPID::FindLastBinAboveIn3dSubset(const TH3* hist, const Double_t threshold, const Int_t yBin,
-                                                     const Int_t zBin) const
+Int_t AliAnalysisTaskPID::FindLastBinAboveIn3dSubset(const TH3* hist, Double_t threshold, Int_t yBin,
+                                                     Int_t zBin) const
 {
   // Kind of projects a TH3 to 1 bin combination in y and z 
   // and looks for the last x bin above a threshold for this projection.
@@ -1178,8 +1192,8 @@ Int_t AliAnalysisTaskPID::FindLastBinAboveIn3dSubset(const TH3* hist, const Doub
 
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskPID::GetParticleFraction(const Double_t trackPt, const Double_t jetPt, const Double_t centralityPercentile,
-                                               const AliPID::EParticleType species,
+Bool_t AliAnalysisTaskPID::GetParticleFraction(Double_t trackPt, Double_t jetPt, Double_t centralityPercentile,
+                                               AliPID::EParticleType species,
                                                Double_t& fraction, Double_t& fractionErrorStat, Double_t& fractionErrorSys) const
 {
   // Computes the particle fraction for the corresponding species for the given trackPt, jetPt and centrality.
@@ -1272,9 +1286,9 @@ Bool_t AliAnalysisTaskPID::GetParticleFraction(const Double_t trackPt, const Dou
 
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskPID::GetParticleFractions(const Double_t trackPt, const Double_t jetPt, const Double_t centralityPercentile,
-                                                Double_t* prob, const Int_t smearSpeciesByError,
-                                                const Int_t takeIntoAccountSpeciesSysError, const Bool_t uniformSystematicError) const
+Bool_t AliAnalysisTaskPID::GetParticleFractions(Double_t trackPt, Double_t jetPt, Double_t centralityPercentile,
+                                                Double_t* prob, Int_t smearSpeciesByError,
+                                                Int_t takeIntoAccountSpeciesSysError, Bool_t uniformSystematicError) const
 {
   // Fills the particle fractions for the given trackPt, jetPt and centrality into "prob".
   // Use jetPt = -1 for inclusive spectra and centralityPercentile = -1 for pp.
@@ -1478,7 +1492,7 @@ Bool_t AliAnalysisTaskPID::GetParticleFractions(const Double_t trackPt, const Do
 
 
 //_____________________________________________________________________________
-const TH3D* AliAnalysisTaskPID::GetParticleFractionHisto(const Int_t species, const Bool_t sysError) const
+const TH3D* AliAnalysisTaskPID::GetParticleFractionHisto(Int_t species, Bool_t sysError) const
 {
   if (species < AliPID::kElectron || species > AliPID::kProton)
     return 0x0;
@@ -1681,7 +1695,7 @@ Bool_t AliAnalysisTaskPID::IsSecondaryWithStrangeMotherMC(AliMCEvent* mcEvent, I
 
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskPID::SetParticleFractionHisto(const TH3D* hist, const Int_t species, const Bool_t sysError)
+Bool_t AliAnalysisTaskPID::SetParticleFractionHisto(const TH3D* hist, Int_t species, Bool_t sysError)
 {
   // Store a clone of hist (containing the particle fractions of the corresponding species with statistical error (sysError = kFALSE)
   // or systematic error (sysError = kTRUE), respectively), internally 
@@ -1708,7 +1722,7 @@ Bool_t AliAnalysisTaskPID::SetParticleFractionHisto(const TH3D* hist, const Int_
 
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskPID::SetParticleFractionHistosFromFile(const TString filePathName, const Bool_t sysError)
+Bool_t AliAnalysisTaskPID::SetParticleFractionHistosFromFile(const TString filePathName, Bool_t sysError)
 {
   // Loads particle fractions for all species from the desired file and returns kTRUE on success.
   // The maps are assumed to be of Type TH3D, to sit in the main directory and to have names 
@@ -1748,10 +1762,10 @@ Bool_t AliAnalysisTaskPID::SetParticleFractionHistosFromFile(const TString fileP
 
 
 //_____________________________________________________________________________
-Int_t AliAnalysisTaskPID::GetRandomParticleTypeAccordingToParticleFractions(const Double_t trackPt, const Double_t jetPt,
-                                                                            const Double_t centralityPercentile, 
-                                                                            const Bool_t smearByError,
-                                                                            const Bool_t takeIntoAccountSysError) const
+Int_t AliAnalysisTaskPID::GetRandomParticleTypeAccordingToParticleFractions(Double_t trackPt, Double_t jetPt,
+                                                                            Double_t centralityPercentile, 
+                                                                            Bool_t smearByError,
+                                                                            Bool_t takeIntoAccountSysError) const
 {
   // Uses the stored histograms with the particle fractions to generate a random particle type according to these fractions.
   // In case of problems (e.g. histo missing), AliPID::kUnknown is returned.
@@ -1788,10 +1802,10 @@ Int_t AliAnalysisTaskPID::GetRandomParticleTypeAccordingToParticleFractions(cons
 
 
 //_____________________________________________________________________________
-AliAnalysisTaskPID::ErrorCode AliAnalysisTaskPID::GenerateDetectorResponse(const AliAnalysisTaskPID::ErrorCode errCode, 
-                                                                           const Double_t mean, const Double_t sigma,
-                                                                           Double_t* responses, const Int_t nResponses, 
-                                                                           const Bool_t usePureGaus)
+AliAnalysisTaskPID::ErrorCode AliAnalysisTaskPID::GenerateDetectorResponse(AliAnalysisTaskPID::ErrorCode errCode, 
+                                                                           Double_t mean, Double_t sigma,
+                                                                           Double_t* responses, Int_t nResponses, 
+                                                                           Bool_t usePureGaus)
 {
   // Generate detector response. If a previous generation was not successful or there is something wrong with this signal generation,
   // the function will return kFALSE  
@@ -2766,7 +2780,7 @@ Bool_t AliAnalysisTaskPID::SetConvolutedGaussLambdaParameter(Double_t lambda)
 
 
 //_____________________________________________________________________________
-AliAnalysisTaskPID::ErrorCode AliAnalysisTaskPID::SetParamsForConvolutedGaus(const Double_t gausMean, const Double_t gausSigma) 
+AliAnalysisTaskPID::ErrorCode AliAnalysisTaskPID::SetParamsForConvolutedGaus(Double_t gausMean, Double_t gausSigma) 
 {
   // Set parameters for convoluted gauss using parameters for a pure gaussian.
   // If SetConvolutedGaussLambdaParameter has not been called before to initialise the translation parameters,

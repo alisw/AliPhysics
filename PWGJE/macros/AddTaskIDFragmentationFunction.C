@@ -263,7 +263,7 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
    //===========================================================================
 
    AliAnalysisTaskIDFragmentationFunction *task = new AliAnalysisTaskIDFragmentationFunction(
-        Form("Fragmentation Function %s %s %s %s", branchRecJets.Data(), branchGenJets.Data(), typeJets.Data(), typeTracks.Data()));
+        Form("Fragmentation_Function_%s_%s_%s_%s", branchRecJets.Data(), branchGenJets.Data(), typeJets.Data(), typeTracks.Data()));
    
    if(debug>=0) task->SetDebugLevel(debug);
    

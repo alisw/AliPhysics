@@ -106,7 +106,7 @@ class AliAnalysisTaskPIDV0base : public AliAnalysisTaskSE {
   
   TRandom3* fRandom;        //! Can be used to statistically determine the shape in the pt bins e.g.
   
-  AliAnalysisFilter* fTrackFilter; //! Track Filter
+  AliAnalysisFilter* fTrackFilter; // Track Filter
   
 
   Int_t fNumTagsStored;     // Number of entries of fV0tags

@@ -1508,6 +1508,7 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::Notify()
   }
 
   // Set seed for backg study
+  delete fRandom;
   fRandom = new TRandom3();
   fRandom->SetSeed(0);
 
@@ -3979,7 +3980,7 @@ Int_t AliAnalysisTaskIDFragmentationFunction::GetListOfBckgJets(TList *list, Int
 } 
 
 // _________________________________________________________________________________________________________
-void AliAnalysisTaskIDFragmentationFunction::SetProperties(THnSparse* h,const Int_t dim, const char** labels)
+void AliAnalysisTaskIDFragmentationFunction::SetProperties(THnSparse* h, Int_t dim, const char** labels)
 {
   // Set properties of THnSparse 
 
@@ -4015,7 +4016,7 @@ void AliAnalysisTaskIDFragmentationFunction::SetProperties(TH1* h,const char* x,
 
 // ________________________________________________________________________________________________________________________________________________________
 void AliAnalysisTaskIDFragmentationFunction::GetJetTracksPointing(TList* inputlist, TList* outputlist, const AliAODJet* jet, 
-								   const Double_t radius, Double_t& sumPt, const Double_t minPtL, const Double_t maxPt, Bool_t& isBadPt)
+								   Double_t radius, Double_t& sumPt, Double_t minPtL, Double_t maxPt, Bool_t& isBadPt)
 {
   // fill list of tracks in cone around jet axis  
 
@@ -4056,7 +4057,7 @@ void AliAnalysisTaskIDFragmentationFunction::GetJetTracksPointing(TList* inputli
 }
 
 // _________________________________________________________________________________________________________________________________________________________________
-void AliAnalysisTaskIDFragmentationFunction::GetJetTracksTrackrefs(TList* list, const AliAODJet* jet, const Double_t minPtL, const Double_t maxPt, Bool_t& isBadPt)
+void AliAnalysisTaskIDFragmentationFunction::GetJetTracksTrackrefs(TList* list, const AliAODJet* jet, Double_t minPtL, Double_t maxPt, Bool_t& isBadPt)
 {
   // list of jet tracks from trackrefs
   
@@ -4162,7 +4163,7 @@ void  AliAnalysisTaskIDFragmentationFunction::AssociateGenRec(TList* tracksAODMC
 
 // _____________________________________________________________________________________________________________________________________________
 void AliAnalysisTaskIDFragmentationFunction::FillSingleTrackHistosRecGen(AliFragFuncQATrackHistos* trackQAGen, AliFragFuncQATrackHistos* trackQARec, TList* tracksGen, 
-								       const TArrayI& indexAODTr, const TArrayS& isRefGen, const Bool_t scaleStrangeness){
+								       const TArrayI& indexAODTr, const TArrayS& isRefGen, Bool_t scaleStrangeness){
 
   // fill QA for single track reconstruction efficiency
   
@@ -4205,7 +4206,7 @@ void AliAnalysisTaskIDFragmentationFunction::FillSingleTrackHistosRecGen(AliFrag
 
 void  AliAnalysisTaskIDFragmentationFunction::FillJetTrackHistosRec(AliFragFuncHistos* ffhistRec, AliAODJet* jet, 
 								  TList* jetTrackList, const TList* tracksGen, const TList* tracksRec, const TArrayI& indexAODTr,
-								  const TArrayS& isRefGen, TList* jetTrackListTR, const Bool_t scaleStrangeness,
+								  const TArrayS& isRefGen, TList* jetTrackListTR, Bool_t scaleStrangeness,
 								  Bool_t fillJS, TProfile* hProNtracksLeadingJet, TProfile** hProDelRPtSum, TProfile* hProDelR80pcPt)
 {
   // fill objects for jet track reconstruction efficiency or secondaries contamination 
@@ -4625,7 +4626,7 @@ void AliAnalysisTaskIDFragmentationFunction::GetTracksOutOfNJetsStat(Int_t nCase
 }
 
 // ______________________________________________________________________________________________________________________________________________________
-Float_t AliAnalysisTaskIDFragmentationFunction::CalcJetArea(const Float_t etaJet, const Float_t rc) const
+Float_t AliAnalysisTaskIDFragmentationFunction::CalcJetArea(Float_t etaJet, Float_t rc) const
 {
   // calculate area of jet with eta etaJet and radius rc
 
@@ -5362,7 +5363,7 @@ void AliAnalysisTaskIDFragmentationFunction::FillBckgHistos(Int_t type, TList* i
 }
 
 //_____________________________________________________________________________________
-Double_t AliAnalysisTaskIDFragmentationFunction::GetMCStrangenessFactor(const Double_t pt) const
+Double_t AliAnalysisTaskIDFragmentationFunction::GetMCStrangenessFactor(Double_t pt) const
 {
   // factor strangeness data/MC as function of pt from UE analysis (Sara Vallero)
 
