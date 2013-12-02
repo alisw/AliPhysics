@@ -29,18 +29,22 @@ ClassImp(AliAnalysisTaskBaseLine)
 AliAnalysisTaskBaseLine::AliAnalysisTaskBaseLine() 
    :AliAnalysisTaskSE()
 {
+  // constructor
 }
 
 AliAnalysisTaskBaseLine::AliAnalysisTaskBaseLine(const char *name)
    :AliAnalysisTaskSE(name)
 {
+  // constructor
   DefineInput(0, TChain::Class());
 }
 
 AliAnalysisTaskBaseLine::~AliAnalysisTaskBaseLine()
 {
+   // destructor
 }
 
 void AliAnalysisTaskBaseLine::UserExec(Option_t *) 
 {
+  // empty exec
 }

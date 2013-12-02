@@ -18,6 +18,8 @@ class AliDummyHandler : public AliInputEventHandler {
     AliDummyHandler();
     AliDummyHandler(const char* name, const char* title);
     virtual ~AliDummyHandler();
+    virtual Bool_t       Init(Option_t* opt) { return AliInputEventHandler::Init(opt); }
+    virtual Bool_t Init(TTree* tree, Option_t* /*opt*/) { fTree = tree; return kTRUE; }
     Option_t            *GetDataType() const { return "MC"; }
 
  private:

@@ -43,7 +43,8 @@ AliMCGenHandler::AliMCGenHandler() :
     fStack(0),
     fHeader(0),
     fGenerator(0),
-    fSeedMode(0)
+    fSeedMode(0),
+    fSeed(0)
 {
   //
   // Default constructor
@@ -59,7 +60,8 @@ AliMCGenHandler::AliMCGenHandler(const char* name, const char* title) :
     fStack(0),
     fHeader(0),
     fGenerator(0),
-    fSeedMode(0)
+    fSeedMode(0),
+    fSeed(0)
 {
   //
   // Constructor
@@ -85,22 +87,31 @@ Bool_t AliMCGenHandler::Init(Option_t* /*opt*/)
     
     if (fSeedMode == 0)
       Printf("AliMCGenHandler::Init: Not setting any seed. Seed needs to be set externally!");
-    else if (fSeedMode == 1)
-    {
-      Printf("AliMCGenHandler::Init: Taking seed from current time");
-      gRandom->SetSeed(time(0));
-    }
-    else if (fSeedMode == 2)
-    {
-      Printf("AliMCGenHandler::Init: Taking seed from AliEn job id");
-      TString tmp(gSystem->Getenv("ALIEN_PROC_ID"));
-      UInt_t seed = tmp.Atoi();
-      if (tmp.Length() == 0 || seed == 0)
-	AliFatal(Form("Could not retrieve AliEn job id for seed. The variable ALIEN_PROC_ID contains %s", tmp.Data()));
-      gRandom->SetSeed(seed);
-    }
     else
-      AliFatal(Form("Seed mode %d unknown", fSeedMode));
+    {
+      if (fSeedMode == 1)
+      {
+	Printf("AliMCGenHandler::Init: Using manually set seed");
+      }
+      else if (fSeedMode == 2)
+      {
+	Printf("AliMCGenHandler::Init: Taking seed from current time");
+	fSeed = time(0);
+      }
+      else if (fSeedMode == 3)
+      {
+	Printf("AliMCGenHandler::Init: Taking seed from AliEn job id");
+	TString tmp(gSystem->Getenv("ALIEN_PROC_ID"));
+	fSeed = tmp.Atoi();
+	if (tmp.Length() == 0 || fSeed == 0)
+	  AliFatal(Form("Could not retrieve AliEn job id for seed. The variable ALIEN_PROC_ID contains %s", tmp.Data()));
+      }
+      else
+	AliFatal(Form("Seed mode %d unknown", fSeedMode));
+
+      Printf("AliMCGenHandler::Init: Using seed: %d", fSeed);
+      gRandom->SetSeed(fSeed);
+    }
 
     AliRunLoader* rl = AliRunLoader::Open("galice.root","FASTRUN","recreate");
     rl->MakeTree("E");

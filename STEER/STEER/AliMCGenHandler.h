@@ -41,6 +41,8 @@ public:
     
     void 		 SetGenerator(AliGenerator* generator) { fGenerator = generator; }
     void		 SetSeedMode(Int_t mode) { fSeedMode = mode; }
+    void		 SetSeed(UInt_t seed) { fSeed = seed; }
+    UInt_t		 GetSeed() { return fSeed; }
 
 private:
     AliMCGenHandler(const AliMCGenHandler& handler);             
@@ -52,7 +54,8 @@ private:
     AliHeader*		   fHeader;		//! current AliHeader pointer
 
     AliGenerator	  *fGenerator;		// generator
-    Int_t		   fSeedMode;		// which seed is to be used: 0 (default): nothing/set externally; 1: current time; 2: AliEn job id
+    Int_t		   fSeedMode;		// which seed is to be used: 0 (default): nothing/set externally; 1: use fSeed; 2: current time; 3: AliEn job id
+    UInt_t		   fSeed;		// can be used to set seed manually (fSeedMode == 1); contains last used seed (fSeedMode == 2 || 3)
 
     ClassDef(AliMCGenHandler,1)  // MC Gen Handler
 };

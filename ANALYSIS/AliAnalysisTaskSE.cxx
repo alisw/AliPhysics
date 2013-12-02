@@ -177,8 +177,8 @@ void AliAnalysisTaskSE::ConnectInputData(Option_t* /*option*/)
    // Connect input handlers (multi input handler is handled)
     ConnectMultiHandler();
     
-    if (fInputHandler) {
-	if ((fInputHandler->GetTree())->GetBranch("ESDfriend."))
+    if (fInputHandler && fInputHandler->GetTree()) {
+	if (fInputHandler->GetTree()->GetBranch("ESDfriend."))
 	    fESDfriend = ((AliESDInputHandler*)fInputHandler)->GetESDfriend();
 
 	fInputEvent = fInputHandler->GetEvent();
