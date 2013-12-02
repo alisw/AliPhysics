@@ -19,6 +19,7 @@ class AliVCuts;
 class AliRunTag;
 class AliEventTag;
 class AliPIDResponse;
+class AliMCEvent;
 
 class AliInputEventHandler : public AliVEventHandler {
 
@@ -71,6 +72,7 @@ class AliInputEventHandler : public AliVEventHandler {
 	{Bool_t ne = fNewEvent; fNewEvent = kFALSE; return ne;}
     virtual UInt_t       IsEventSelected() 
         {return fIsSelectedResult;}
+    virtual AliMCEvent*  MCEvent() const			      {return 0;}
     TList       *GetUserInfo() const                         {return fUserInfo;}
     // Mixing
     void SetMixingHandler(AliInputEventHandler* mixing) {Changed(); fMixingHandler = mixing;}

@@ -165,4 +165,6 @@
 #pragma link C++ typedef AliLHCDipValF; 	 
 #pragma link C++ typedef AliLHCDipValC;
 
+#pragma link C++ class AliMCGenHandler+;
+
 #endif

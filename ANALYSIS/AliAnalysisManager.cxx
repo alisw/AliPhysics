@@ -318,19 +318,16 @@ Bool_t AliAnalysisManager::EventLoop(Long64_t nevents)
      Error("EventLoop", "No input handler: exiting");
      return kFALSE;
    }
-   TTree *tree = fInputEventHandler->MakeTree();
-   if (!tree) {
-     Error("EventLoop", "The input handler must provide MakeTree()");
-     return kFALSE;
-  }
-  SetExternalLoop(kTRUE);
-  if (!Init(tree)) return kFALSE;
-  for (Long64_t iev=0; iev<nevents; iev++) {
-    fInputEventHandler->BeginEvent(iev);
-    ExecAnalysis();
-    fInputEventHandler->FinishEvent();
-  }
-  return kTRUE;
+   TTree *tree = new TTree("DummyTree", "Dummy tree for AliAnalysisManager::EventLoop");
+   SetExternalLoop(kTRUE);
+   if (!Init(tree)) return kFALSE;
+   SlaveBegin(tree);
+   for (Long64_t iev=0; iev<nevents; iev++)
+      ExecAnalysis();
+   TList dummyList;
+   PackOutput(&dummyList);
+   Terminate();
+   return kTRUE;
 }
       
 //______________________________________________________________________________

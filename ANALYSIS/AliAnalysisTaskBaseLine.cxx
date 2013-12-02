@@ -22,6 +22,7 @@
 //
 
 #include "AliAnalysisTaskBaseLine.h"
+#include "TChain.h"
 
 ClassImp(AliAnalysisTaskBaseLine)
 
@@ -33,6 +34,7 @@ AliAnalysisTaskBaseLine::AliAnalysisTaskBaseLine()
 AliAnalysisTaskBaseLine::AliAnalysisTaskBaseLine(const char *name)
    :AliAnalysisTaskSE(name)
 {
+  DefineInput(0, TChain::Class());
 }
 
 AliAnalysisTaskBaseLine::~AliAnalysisTaskBaseLine()

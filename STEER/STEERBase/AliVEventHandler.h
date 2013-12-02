@@ -38,8 +38,6 @@ enum EEventHandlerFlags {
     virtual const char*  GetExtraOutputs() const {return NULL;}
     // Input
     virtual void         SetInputTree(TTree* tree)        = 0;
-    // Special "generator" handler
-    virtual TTree       *MakeTree() {return 0;}
     // Steering 
     virtual Bool_t       Init(Option_t* opt)              = 0;
     virtual Bool_t       Init(TTree* tree, Option_t* opt) = 0;

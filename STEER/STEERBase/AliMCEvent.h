@@ -111,6 +111,7 @@ public:
     // Services
     virtual void      ConnectTreeE (TTree* tree);
     virtual void      ConnectTreeK (TTree* tree);
+    virtual void      ConnectHeaderAndStack(AliHeader* header);
     virtual void      ConnectTreeTR(TTree* tree);
     virtual void      Clean();
     virtual void      InitEvent();
@@ -154,6 +155,7 @@ public:
 private:
     virtual void      ReorderAndExpandTreeTR();
     virtual Int_t     FindIndexAndEvent(Int_t oldidx, AliMCEvent*& event) const;
+    void 	      UpdateEventInformation();
     
 private: 
     // Stanndard implementation for ESD production
