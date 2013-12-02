@@ -1180,8 +1180,8 @@ Bool_t AliHFEextraCuts::MatchTOFlabel(const AliVTrack *const track) const {
     trklabel = esdtrk->GetLabel(); 
     esdtrk->GetTOFLabel(toflabel); 
   } else if((aodtrk = dynamic_cast<const AliAODTrack *>(track))){
-    trklabel = esdtrk->GetLabel(); 
-    esdtrk->GetTOFLabel(toflabel); 
+    trklabel = aodtrk->GetLabel(); 
+    aodtrk->GetTOFLabel(toflabel); 
   } else return kFALSE;
   if(TMath::Abs(trklabel) == TMath::Abs(toflabel[0])) return kTRUE;
   return kFALSE;

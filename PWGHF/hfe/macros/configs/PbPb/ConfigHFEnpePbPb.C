@@ -54,7 +54,8 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb(Bool_t useMC, Bool_t isAOD, TString appendi
                 Int_t assTPCcl=100, Int_t assTPCPIDcl=80, 
                 Double_t assDCAr=1.0, Double_t assDCAz=2.0, 
                 Double_t *assTPCSminus=NULL, Double_t *assTPCSplus=NULL, 
-                Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kTRUE)
+	        Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kTRUE,
+                Bool_t rejectMCFake = kFALSE)
 {
   Bool_t kAnalyseTaggedTracks = kFALSE;
   Bool_t kApplyPreselection = kTRUE;
@@ -93,7 +94,7 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb(Bool_t useMC, Bool_t isAOD, TString appendi
     usetof = 1;
     printf("CONFIGURATION FILE: TOF is used \n");
     hfecuts->SetTOFPIDStep(kTRUE);
-    hfecuts->SetMatchTOFLabel(kTRUE);
+    if(useMC) hfecuts->SetMatchTOFLabel(kTRUE);
     printf("CONFIGURATION FILE: TOF PID step is requested !!!! \n");
     if (TOFmis>0){
       kTOFmis = kTRUE;
@@ -112,6 +113,7 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb(Bool_t useMC, Bool_t isAOD, TString appendi
   task->SetHFECuts(hfecuts);
   task->SetRejectKinkMother(kFALSE);
   task->GetPIDQAManager()->SetHighResolutionHistos();
+  if(useMC && rejectMCFake) task->SetRejectMCFakeTracks(kTRUE); // MC label negative
 
   // Determine the centrality estimator
   task->SetCentralityEstimator("V0M");
