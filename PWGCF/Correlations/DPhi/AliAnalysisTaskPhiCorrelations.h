@@ -175,7 +175,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     TClonesArray*            fArrayMC;         //! Array of MC particles 
     AliInputEventHandler*    fInputHandler;    //! Generic InputEventHandler 
     AliMCEvent*              fMcEvent;         //! MC event
-    AliMCEventHandler*       fMcHandler;       //! MCEventHandler 
+    AliInputEventHandler*    fMcHandler;       //! MCEventHandler 
     AliEventPoolManager*     fPoolMgr;         //! event pool manager
     
     // Histogram settings
