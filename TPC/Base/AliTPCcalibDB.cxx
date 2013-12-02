@@ -2533,9 +2533,10 @@ Double_t AliTPCcalibDB::GetGainCorrectionHVandPT(Int_t timeStamp, Int_t run, Int
   //  deltaCache - maximal time differnce above which the cache is recaclulated
   //  mode       - mode==0 by default return combined correction 
   //                       actual HV and Pt correction has to be present in the run calibration otherwise it is ignored.
-  //                      
+  //                       (retrun value differnt than 1 only in case calibration present in the OCDB entry CalibTimeGain
   //               mode==1 return combined correction ( important for calibration pass)
-  //
+  //                       (in case thereis  no calibration in  CalibTimeGain, default value from the AliTPCParam (Parameters) is used
+  //                       this mode is used in the CPass0
   //               mode==2 return HV correction
   //               mode==3 return P/T correction
   //  Usage in the simulation/reconstruction
@@ -2545,7 +2546,7 @@ Double_t AliTPCcalibDB::GetGainCorrectionHVandPT(Int_t timeStamp, Int_t run, Int
   static Float_t gGainCorrection[72];
   static Float_t gGainCorrectionPT[72];
   static Float_t gGainCorrectionHV[72];
-  static Int_t    gTimeStamp=0;
+  static Int_t    gTimeStamp=-99999999;
   static Bool_t   hasTimeDependent=kFALSE; 
   if ( TMath::Abs(timeStamp-gTimeStamp)> deltaCache){    
     //

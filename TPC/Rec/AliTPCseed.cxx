@@ -1217,10 +1217,10 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   //
   if (trans) {
       runNumber = trans->GetCurrentRunNumber();
+      time = trans->GetCurrentTimeStamp();
       //AliTPCcalibDB::Instance()->SetRun(runNumber);
       timeGainSplines = AliTPCcalibDB::Instance()->GetTimeGainSplinesRun(runNumber);
       if (timeGainSplines && recoParam->GetUseGainCorrectionTime()>0) {
-	time = trans->GetCurrentTimeStamp();
 	AliSplineFit * fitMIP = (AliSplineFit *) timeGainSplines->At(0);
 	AliSplineFit * fitFPcosmic = (AliSplineFit *) timeGainSplines->At(1);
 	if (fitMIP) {
