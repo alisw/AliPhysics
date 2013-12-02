@@ -93,6 +93,7 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb(Bool_t useMC, Bool_t isAOD, TString appendi
     usetof = 1;
     printf("CONFIGURATION FILE: TOF is used \n");
     hfecuts->SetTOFPIDStep(kTRUE);
+    hfecuts->SetMatchTOFLabel(kTRUE);
     printf("CONFIGURATION FILE: TOF PID step is requested !!!! \n");
     if (TOFmis>0){
       kTOFmis = kTRUE;
