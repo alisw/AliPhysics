@@ -59,7 +59,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   enum genYieldAxes { kGenYieldMCID = 0, kGenYieldPt = 1, kGenYieldCentrality = 2, kGenYieldJetPt = 3, kGenYieldZ = 4, kGenYieldXi = 5,
                       kGenYieldCharge = 6, kGenYieldNumAxes = 7 };
   
-  enum ptResolutionAxes { kPtResJetPt = 0, kPtResGenPt = 1, kPtResRecPt = 2, kPtResNumAxes = 3 };
+  enum ptResolutionAxes { kPtResJetPt = 0, kPtResGenPt = 1, kPtResRecPt = 2, kPtResCharge = 3, kPtResCentrality = 4, kPtResNumAxes = 5 };
   
   enum efficiencyAxes { kEffMCID = 0, kEffTrackPt = 1, kEffTrackEta = 2, kEffTrackCharge = 3, kEffCentrality = 4, kEffJetPt = 5,
                         kEffZ = 6, kEffXi = 7, kEffNumAxes = 8 };
@@ -219,7 +219,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   virtual void SetUpGenHist(THnSparse* hist, Double_t* binsPt, Double_t* binsDeltaPrime, Double_t* binsCent, Double_t* binsJetPt) const;
   virtual void SetUpGenYieldHist(THnSparse* hist, Double_t* binsPt, Double_t* binsCent, Double_t* binsJetPt) const;
   virtual void SetUpHist(THnSparse* hist, Double_t* binsPt, Double_t* binsDeltaPrime, Double_t* binsCent, Double_t* binsJetPt) const;
-  void SetUpPtResHist(THnSparse* hist, Double_t* binsPt, Double_t* binsJetPt) const;
+  virtual void SetUpPtResHist(THnSparse* hist, Double_t* binsPt, Double_t* binsJetPt, Double_t* binsCent) const;
   virtual void SetUpPIDcombined();
   
   static const Int_t fgkNumJetAxes = 3; // Number of additional axes for jets

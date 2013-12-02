@@ -2849,7 +2849,8 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
                                                                               gentrack->Charge() / 3., centPercent, -1, -1, 
                                                                               -1 };
                 
-                Double_t valuePtResolution[AliAnalysisTaskPID::kPtResNumAxes] = { -1, gentrack->Pt(), inclusiveaod->Pt() };
+                Double_t valuePtResolution[AliAnalysisTaskPID::kPtResNumAxes] = { -1, gentrack->Pt(), inclusiveaod->Pt(),
+                                                                                  gentrack->Charge() / 3., centPercent };
               
                 for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
                   if (survivedTPCCutMIGeo || !fInclusivePIDtask[i]->GetUseTPCCutMIGeo()) {
@@ -3163,7 +3164,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
                                                                           gentrack->Charge() / 3., centPercent, jetPt, genZ, 
                                                                           genXi };
             
-            Double_t valuePtResolution[AliAnalysisTaskPID::kPtResNumAxes] = { jetPt, genPt, pT };
+            Double_t valuePtResolution[AliAnalysisTaskPID::kPtResNumAxes] = { jetPt, genPt, pT, gentrack->Charge() / 3., centPercent };
             
             for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
               if (survivedTPCCutMIGeo || !fJetPIDtask[i]->GetUseTPCCutMIGeo()) {

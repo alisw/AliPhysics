@@ -764,16 +764,31 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
     fPtResolutionContainer->SetName(Form("%s_PtResolution", GetName()));
     fPtResolutionContainer->SetOwner(kTRUE);
     
+    const Int_t nPtBinsRes = 100;
+    Double_t pTbinsRes[nPtBinsRes + 1];
+
+    const Double_t fromLowPtRes = 0.15;
+    const Double_t toHighPtRes = 50.;
+    const Double_t factorPtRes = TMath::Power(toHighPtRes/fromLowPtRes, 1./nPtBinsRes);
+    // Log binning for whole pT range
+    pTbinsRes[0] = fromLowPtRes;
+    for (Int_t i = 0 + 1; i <= nPtBinsRes; i++) {
+      pTbinsRes[i] = factorPtRes * pTbinsRes[i - 1];
+    }
+    
     const Int_t nBinsPtResolution = kPtResNumAxes;
-    Int_t ptResolutionBins[kPtResNumAxes]    = { nJetPtBins,                    nPtBins,         nPtBins };
-    Double_t ptResolutionXmin[kPtResNumAxes] = { binsJetPt[0],                binsPt[0],       binsPt[0] };
-    Double_t ptResolutionXmax[kPtResNumAxes] = { binsJetPt[nJetPtBins], binsPt[nPtBins], binsPt[nPtBins] };
+    Int_t ptResolutionBins[kPtResNumAxes]    = { nJetPtBins,                       nPtBinsRes,            nPtBinsRes,             
+                                                 nChargeBins,             nCentBins };
+    Double_t ptResolutionXmin[kPtResNumAxes] = { binsJetPt[0],                   pTbinsRes[0],          pTbinsRes[0],           
+                                                 binsCharge[0],           binsCent[0] };
+    Double_t ptResolutionXmax[kPtResNumAxes] = { binsJetPt[nJetPtBins], pTbinsRes[nPtBinsRes], pTbinsRes[nPtBinsRes], 
+                                                 binsCharge[nChargeBins], binsCent[nCentBins] };
 
     for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
       fPtResolution[i] = new THnSparseD(Form("fPtResolution_%s", AliPID::ParticleShortName(i)), 
                                         Form("Pt resolution for primaries, %s", AliPID::ParticleLatexName(i)),
                                         nBinsPtResolution, ptResolutionBins, ptResolutionXmin, ptResolutionXmax);
-      SetUpPtResHist(fPtResolution[i], binsPt, binsJetPt);
+      SetUpPtResHist(fPtResolution[i], pTbinsRes, binsJetPt, binsCent);
       fPtResolutionContainer->Add(fPtResolution[i]);
     }
   }
@@ -956,7 +971,8 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     
     if (fDoPtResolution) {
       if (mcTrack && fMC->IsPhysicalPrimary(TMath::Abs(label))) {
-        Double_t valuePtRes[kPtResNumAxes] = { -1, mcTrack->Pt(), track->Pt() };
+        // AliMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
+        Double_t valuePtRes[kPtResNumAxes] = { -1, mcTrack->Pt(), track->Pt(), mcTrack->Charge() / 3., centralityPercentile };
         fPtResolution[mcID]->Fill(valuePtRes);
       }
     }
@@ -3053,16 +3069,20 @@ void AliAnalysisTaskPID::SetUpHist(THnSparse* hist, Double_t* binsPt, Double_t* 
 
 
 //________________________________________________________________________
-void AliAnalysisTaskPID::SetUpPtResHist(THnSparse* hist, Double_t* binsPt, Double_t* binsJetPt) const
+void AliAnalysisTaskPID::SetUpPtResHist(THnSparse* hist, Double_t* binsPt, Double_t* binsJetPt, Double_t* binsCent) const
 {
   // Sets bin limits for axes which are not standard binned and the axes titles.
   
   hist->SetBinEdges(kPtResJetPt, binsJetPt);
   hist->SetBinEdges(kPtResGenPt, binsPt);
   hist->SetBinEdges(kPtResRecPt, binsPt);
+  hist->SetBinEdges(kPtResCentrality, binsCent);
   
   // Set axes titles
   hist->GetAxis(kPtResJetPt)->SetTitle("P_{T}^{jet, rec} (GeV/c)");
   hist->GetAxis(kPtResGenPt)->SetTitle("P_{T}^{gen} (GeV/c)");
   hist->GetAxis(kPtResRecPt)->SetTitle("P_{T}^{rec} (GeV/c)");  
+  
+  hist->GetAxis(kPtResCharge)->SetTitle("Charge (e_{0})");
+  hist->GetAxis(kPtResCentrality)->SetTitle(Form("Centrality Percentile (%s)", fCentralityEstimator.Data()));
 }
