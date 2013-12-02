@@ -299,7 +299,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 1] = "5460001002092970023220000000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
       cutarray[ 2] = "5680001002092970023220000000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
       cutarray[ 3] = "5480001002092970023220000000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
-      cutarray[ 4] = "5490001002092970023220000000"; mesonCutArray[ 4] = "01525065009000"; // 40-90%   
+      cutarray[ 4] = "5350001002092970023220000000"; mesonCutArray[ 4] = "01525065009000"; // 40-90%   
    } else if (trainConfig == 35){ // Standard cuts, eta 1.4, only to be run on data
       cutarray[ 0] = "6010001022092970023220000000"; mesonCutArray[ 0] = "01520045009000"; // 0-5%
       cutarray[ 1] = "6120001022092970023220000000"; mesonCutArray[ 1] = "01520045009000"; // 5-10%
@@ -311,79 +311,49 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 1] = "5460001022092970023220000000"; mesonCutArray[ 1] = "01520065009000"; // 40-60%
       cutarray[ 2] = "5680001022092970023220000000"; mesonCutArray[ 2] = "01520065009000"; // 60-80%
       cutarray[ 3] = "5480001022092970023220000000"; mesonCutArray[ 3] = "01520065009000"; // 40-80%
-      cutarray[ 4] = "5490001022092970023220000000"; mesonCutArray[ 4] = "01520065009000"; // 40-90%   
-   } else if (trainConfig == 37){ // Standard cuts, eta 0.9, only to be run on data
+      cutarray[ 4] = "5350001022092970023220000000"; mesonCutArray[ 4] = "01520065009000"; // 40-90%   
+   } else if (trainConfig == 37){ // Standard cuts, eta 0.9, only to be run on data : kMB
       cutarray[ 0] = "6014001002092970023220000000"; mesonCutArray[ 0] = "01525045009000"; // 0-5%
       cutarray[ 1] = "6124001002092970023220000000"; mesonCutArray[ 1] = "01525045009000"; // 5-10%
       cutarray[ 2] = "5014001002092970023220000000"; mesonCutArray[ 2] = "01525045009000"; // 0-10%
       cutarray[ 3] = "5124001002092970023220000000"; mesonCutArray[ 3] = "01525045009000"; // 10-20%
       cutarray[ 4] = "5024001002092970023220000000"; mesonCutArray[ 4] = "01525045009000"; // 0-20%
-   } else if (trainConfig == 38) { // Standard cuts, eta 0.9, only to be run on data
+   } else if (trainConfig == 38) { // Standard cuts, eta 0.9, only to be run on data : kMB
       cutarray[ 0] = "5244001002092970023220000000"; mesonCutArray[ 0] = "01525045009000"; // 20-40%
       cutarray[ 1] = "5464001002092970023220000000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
       cutarray[ 2] = "5684001002092970023220000000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
       cutarray[ 3] = "5484001002092970023220000000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
-      cutarray[ 4] = "5494001002092970023220000000"; mesonCutArray[ 4] = "01525065009000"; // 40-90%   
-   } else if (trainConfig == 39){ // Standard cuts, eta 0.9, only to be run on data
+      cutarray[ 4] = "5354001002092970023220000000"; mesonCutArray[ 4] = "01525065009000"; // 40-90%   
+   } else if (trainConfig == 39){ // Standard cuts, eta 0.9, only to be run on data :kCentral
       cutarray[ 0] = "6015001002092970023220000000"; mesonCutArray[ 0] = "01525045009000"; // 0-5%
       cutarray[ 1] = "6125001002092970023220000000"; mesonCutArray[ 1] = "01525045009000"; // 5-10%
       cutarray[ 2] = "5015001002092970023220000000"; mesonCutArray[ 2] = "01525045009000"; // 0-10%
       cutarray[ 3] = "5125001002092970023220000000"; mesonCutArray[ 3] = "01525045009000"; // 10-20%
       cutarray[ 4] = "5025001002092970023220000000"; mesonCutArray[ 4] = "01525045009000"; // 0-20%
-   } else if (trainConfig == 40) { // Standard cuts, eta 0.9, only to be run on data
+   } else if (trainConfig == 40) { // Standard cuts, eta 0.9, only to be run on data : kCentral
       cutarray[ 0] = "5245001002092970023220000000"; mesonCutArray[ 0] = "01525045009000"; // 20-40%
       cutarray[ 1] = "5465001002092970023220000000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
       cutarray[ 2] = "5685001002092970023220000000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
       cutarray[ 3] = "5485001002092970023220000000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
-      cutarray[ 4] = "5495001002092970023220000000"; mesonCutArray[ 4] = "01525065009000"; // 40-90%   
-   } else if (trainConfig == 41){ // Standard cuts, eta 0.9, only to be run on data
+      cutarray[ 4] = "5355001002092970023220000000"; mesonCutArray[ 4] = "01525065009000"; // 40-90%   
+   } else if (trainConfig == 41){ // Standard cuts, eta 0.9, only to be run on data :kSemiCentral
       cutarray[ 0] = "6016001002092970023220000000"; mesonCutArray[ 0] = "01525045009000"; // 0-5%
       cutarray[ 1] = "6126001002092970023220000000"; mesonCutArray[ 1] = "01525045009000"; // 5-10%
       cutarray[ 2] = "5016001002092970023220000000"; mesonCutArray[ 2] = "01525045009000"; // 0-10%
       cutarray[ 3] = "5126001002092970023220000000"; mesonCutArray[ 3] = "01525045009000"; // 10-20%
       cutarray[ 4] = "5026001002092970023220000000"; mesonCutArray[ 4] = "01525045009000"; // 0-20%
-   } else if (trainConfig == 42) { // Standard cuts, eta 0.9, only to be run on data
-      cutarray[ 0] = "5246001002092970023220000000"; mesonCutArray[ 0] = "01525045009000"; // 20-40%
-      cutarray[ 1] = "5466001002092970023220000000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
-      cutarray[ 2] = "5686001002092970023220000000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
-      cutarray[ 3] = "5486001002092970023220000000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
-      cutarray[ 4] = "5496001002092970023220000000"; mesonCutArray[ 4] = "01525065009000"; // 40-90%   
+   } else if (trainConfig == 42) { // Standard cuts, eta 0.9, only to be run on data :kSemiCentral
+      cutarray[ 0] = "5236001002092970023220000000"; mesonCutArray[ 0] = "01525065009000"; 
+      cutarray[ 1] = "5346001002092970023220000000"; mesonCutArray[ 1] = "01525065009000"; 
+      cutarray[ 2] = "5456001002092970023220000000"; mesonCutArray[ 2] = "01525065009000"; 
+      cutarray[ 3] = "5566001002092970023220000000"; mesonCutArray[ 3] = "01525065009000"; 
+      cutarray[ 4] = "5676001002092970023220000000"; mesonCutArray[ 4] = "01525065009000"; 
    } else if (trainConfig == 43){ // Standard cuts, eta 0.9, only to be run on data
-      cutarray[ 0] = "6017001002092970023220000000"; mesonCutArray[ 0] = "01525045009000"; // 0-5%
-      cutarray[ 1] = "6127001002092970023220000000"; mesonCutArray[ 1] = "01525045009000"; // 5-10%
-      cutarray[ 2] = "5017001002092970023220000000"; mesonCutArray[ 2] = "01525045009000"; // 0-10%
-      cutarray[ 3] = "5127001002092970023220000000"; mesonCutArray[ 3] = "01525045009000"; // 10-20%
-      cutarray[ 4] = "5027001002092970023220000000"; mesonCutArray[ 4] = "01525045009000"; // 0-20%
-   } else if (trainConfig == 44) { // Standard cuts, eta 0.9, only to be run on data
-      cutarray[ 0] = "5247001002092970023220000000"; mesonCutArray[ 0] = "01525045009000"; // 20-40%
-      cutarray[ 1] = "5467001002092970023220000000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
-      cutarray[ 2] = "5687001002092970023220000000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
-      cutarray[ 3] = "5487001002092970023220000000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
-      cutarray[ 4] = "5497001002092970023220000000"; mesonCutArray[ 4] = "01525065009000"; // 40-90%   
-   } else if (trainConfig == 45){ // Standard cuts, eta 0.9, only to be run on data
-      cutarray[ 0] = "6018001002092970023220000000"; mesonCutArray[ 0] = "01525045009000"; // 0-5%
-      cutarray[ 1] = "6128001002092970023220000000"; mesonCutArray[ 1] = "01525045009000"; // 5-10%
-      cutarray[ 2] = "5018001002092970023220000000"; mesonCutArray[ 2] = "01525045009000"; // 0-10%
-      cutarray[ 3] = "5128001002092970023220000000"; mesonCutArray[ 3] = "01525045009000"; // 10-20%
-      cutarray[ 4] = "5028001002092970023220000000"; mesonCutArray[ 4] = "01525045009000"; // 0-20%
-   } else if (trainConfig == 46) { // Standard cuts, eta 0.9, only to be run on data
-      cutarray[ 0] = "5248001002092970023220000000"; mesonCutArray[ 0] = "01525045009000"; // 20-40%
-      cutarray[ 1] = "5468001002092970023220000000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
-      cutarray[ 2] = "5688001002092970023220000000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
-      cutarray[ 3] = "5488001002092970023220000000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
-      cutarray[ 4] = "5498001002092970023220000000"; mesonCutArray[ 4] = "01525065009000"; // 40-90%   
-   } else if (trainConfig == 47){ // Standard cuts, eta 0.9, only to be run on data
-      cutarray[ 0] = "6019001002092970023220000000"; mesonCutArray[ 0] = "01525045009000"; // 0-5%
-      cutarray[ 1] = "6129001002092970023220000000"; mesonCutArray[ 1] = "01525045009000"; // 5-10%
-      cutarray[ 2] = "5019001002092970023220000000"; mesonCutArray[ 2] = "01525045009000"; // 0-10%
-      cutarray[ 3] = "5129001002092970023220000000"; mesonCutArray[ 3] = "01525045009000"; // 10-20%
-      cutarray[ 4] = "5029001002092970023220000000"; mesonCutArray[ 4] = "01525045009000"; // 0-20%
-   } else if (trainConfig == 48) { // Standard cuts, eta 0.9, only to be run on data
-      cutarray[ 0] = "5249001002092970023220000000"; mesonCutArray[ 0] = "01525045009000"; // 20-40%
-      cutarray[ 1] = "5469001002092970023220000000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
-      cutarray[ 2] = "5689001002092970023220000000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
-      cutarray[ 3] = "5489001002092970023220000000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
-      cutarray[ 4] = "5499001002092970023220000000"; mesonCutArray[ 4] = "01525065009000"; // 40-90%   
+      cutarray[ 0] = "5230001002092970023220000000"; mesonCutArray[ 0] = "01525045009000"; 
+      cutarray[ 1] = "5340001002092970023220000000"; mesonCutArray[ 1] = "01525065009000"; 
+      cutarray[ 2] = "5450001002092970023220000000"; mesonCutArray[ 2] = "01525065009000"; 
+      cutarray[ 3] = "5560001002092970023220000000"; mesonCutArray[ 3] = "01525065009000"; 
+      cutarray[ 4] = "5670001002092970023220000000"; mesonCutArray[ 4] = "01525065009000"; 
       
    } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
@@ -457,15 +427,6 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       if (trainConfig == 41 || trainConfig == 42){   
          analysisCuts[i]->SelectSpecialTrigger(AliVEvent::kSemiCentral,"AliVEvent::kSemiCentral" );
       }   
-      if (trainConfig == 43 || trainConfig == 44){   
-         analysisCuts[i]->SelectSpecialTrigger(AliVEvent::kPHOSPb,"AliVEvent::kPHOSPb" );
-      }
-      if (trainConfig == 45 || trainConfig == 46){   
-         analysisCuts[i]->SelectSpecialTrigger(AliVEvent::kEMCEJE,"AliVEvent::kEMCEJE" );
-      }
-      if (trainConfig == 47 || trainConfig == 48){   
-         analysisCuts[i]->SelectSpecialTrigger(AliVEvent::kEMCEGA,"AliVEvent::kEMCEGA" );
-      }
       
       analysisCuts[i]->SetFillCutHistograms("",kFALSE);
       analysisMesonCuts[i] = new AliConversionMesonCuts();
