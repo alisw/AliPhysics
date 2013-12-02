@@ -47,6 +47,8 @@ class AliSpectraAODEventCuts : public TNamed
     fMultiplicityCutMax(99999.),
     fqV0C(-999.),
     fqV0A(-999.),
+    fPsiV0C(-999.),
+    fPsiV0A(-999.),
     fCent(-999.),
     fOutput(0),
     fCalib(0),
@@ -147,6 +149,8 @@ class AliSpectraAODEventCuts : public TNamed
   Float_t         fMultiplicityCutMax;     // maximum multiplicity position
   Double_t       fqV0C;            //q vector in the VZERO-C
   Double_t       fqV0A;            //q vector in the VZERO-A
+  Double_t       fPsiV0C;            //q vector in the VZERO-C
+  Double_t       fPsiV0A;            //q vector in the VZERO-A
   Double_t       fCent;            //centrality according to fCentralityMethod
   TList            *fOutput;        // output list 
   TList            *fCalib;        // output list 
@@ -168,7 +172,7 @@ class AliSpectraAODEventCuts : public TNamed
   AliSpectraAODEventCuts(const AliSpectraAODEventCuts&);
   AliSpectraAODEventCuts& operator=(const AliSpectraAODEventCuts&);
   
-  ClassDef(AliSpectraAODEventCuts, 3);
+  ClassDef(AliSpectraAODEventCuts, 4);
   
 };
 #endif
