@@ -13,7 +13,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-// $Id: AliAnalysisTaskLongRangeCorrelations.cxx 341 2013-09-30 15:59:19Z cmayer $
+// $Id: AliAnalysisTaskLongRangeCorrelations.cxx 359 2013-10-29 15:39:09Z cmayer $
 
 #include <numeric>
 #include <functional>
@@ -59,6 +59,8 @@ AliAnalysisTaskLongRangeCorrelations::AliAnalysisTaskLongRangeCorrelations(const
   , fMaxAbsVertexZ(10.)
   , fSelectPrimaryMCParticles(0)
   , fSelectPrimaryMCDataParticles(0)
+  , fNMin(-1)
+  , fNMax(-1)
   , fnBinsCent( 220), fnBinsPt(400), fnBinsPhi(4),              fnBinsEta(120)
   , fxMinCent( -5.0), fxMinPt( 0.0), fxMinPhi( 0.0),            fxMinEta(-1.5)
   , fxMaxCent(105.0), fxMaxPt( 4.0), fxMaxPhi( TMath::TwoPi()), fxMaxEta( 1.5) {
@@ -286,6 +288,10 @@ TString AliAnalysisTaskLongRangeCorrelations::GetOutputListName() const {
     listName += "_selPrimMCData";
   if (-1 == fSelectPrimaryMCDataParticles)
     listName += "_selNonPrimMCData";
+  if (-1 != fNMin)
+    listName += TString::Format("_nMin%d", fNMin);
+  if (-1 != fNMax)
+    listName += TString::Format("_nMax%d", fNMax);
   return listName;
 }
 
@@ -365,6 +371,9 @@ TObjArray* AliAnalysisTaskLongRangeCorrelations::GetAcceptedTracks(AliAODEvent* 
       if (label >=0 && NULL == mcParticle)
 	AliFatal("MC particle not found");
 
+//       const Bool_t isPhysicalPrimary(mcParticle->IsPhysicalPrimary());
+//       Printf("mcParticle->IsPhysicalPrimary() %d", isPhysicalPrimary);
+
       switch (fSelectPrimaryMCDataParticles) {
       case -1:
 	if (label < 0) continue;
@@ -417,6 +426,8 @@ TObjArray* AliAnalysisTaskLongRangeCorrelations::GetAcceptedTracks(TClonesArray*
     }
     labelSet.insert(pMCTrack->Label());    
     
+//     Printf("isPrim = %d", pMCTrack->IsPhysicalPrimary());
+
     switch (fSelectPrimaryMCParticles) {
     case -1:
       if (kTRUE == pMCTrack->IsPhysicalPrimary()) continue;
@@ -473,6 +484,14 @@ void AliAnalysisTaskLongRangeCorrelations::CalculateMoments(TString prefix,
 							    TObjArray* tracks2,
 							    Double_t vertexZ,
 							    Double_t weight) {
+  const Long64_t nc1(tracks1->GetEntriesFast());
+  if (fNMin != -1 && nc1 < fNMin) return;
+  if (fNMax != -1 && nc1 > fNMax) return;
+
+  const Long64_t nc2(tracks1->GetEntriesFast());
+  if (fNMin != -1 && nc2 < fNMin) return;
+  if (fNMax != -1 && nc2 > fNMax) return;
+
   AliTHn* hN1(dynamic_cast<AliTHn*>(fOutputList->FindObject(prefix+"histMoment1PhiEta_1")));
   if (NULL == hN1) return;
 
