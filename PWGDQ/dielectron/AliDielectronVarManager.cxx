@@ -172,6 +172,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"PairPlaneAngle2Ran",     "#Phi_{2Ran}",                                        "(rad.)"},
   {"PairPlaneAngle3Ran",     "#Phi_{3Ran}",                                        "(rad.)"},
   {"PairPlaneAngle4Ran",     "#Phi_{4Ran}",                                        "(rad.)"},
+  {"RandomRP",               "random",                                             ""},
   {"DeltaPhiRandomRP",       "#Phi_{RanRP}",                                       "(rad.)"},
   {"Cos2PhiCS",              "cos(2#phi_{CS})",                                    ""},
   {"CosTilPhiCS",            "cos(#phi_{CS})",                                     ""},
