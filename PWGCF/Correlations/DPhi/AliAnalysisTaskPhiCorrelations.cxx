@@ -1298,7 +1298,7 @@ void  AliAnalysisTaskPhiCorrelations::Initialize()
   fInputHandler = (AliInputEventHandler*)
          ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
   // MC handler
-  fMcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  fMcHandler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
 }
 
 //____________________________________________________________________
