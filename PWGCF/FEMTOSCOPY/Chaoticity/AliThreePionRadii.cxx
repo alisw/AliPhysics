@@ -725,6 +725,14 @@ void AliThreePionRadii::UserCreateOutputObjects()
   fMultDist3->GetXaxis()->SetTitle("Multiplicity");
   fOutputList->Add(fMultDist3);
   
+  TH1F *fMultDist4 = new TH1F("fMultDist4","Multiplicity Distribution",fMultLimit,-.5,fMultLimit-.5);
+  fMultDist4->GetXaxis()->SetTitle("Multiplicity");
+  fOutputList->Add(fMultDist4);
+  
+  TH1F *fMultDist5 = new TH1F("fMultDist5","Multiplicity Distribution",fMultLimit,-.5,fMultLimit-.5);
+  fMultDist5->GetXaxis()->SetTitle("Multiplicity");
+  fOutputList->Add(fMultDist5);
+  
   TH3F *fPtEtaDist = new TH3F("fPtEtaDist","fPtEtaDist",2,-1.1,1.1, 300,0,3., 28,-1.4,1.4);
   fOutputList->Add(fPtEtaDist);
 
@@ -1115,7 +1123,8 @@ void AliThreePionRadii::Exec(Option_t *)
   UInt_t status=0;
   Int_t positiveTracks=0, negativeTracks=0;
   Int_t myTracks=0, pionCount=0, kaonCount=0, protonCount=0;
-   
+  Int_t FBTracks=0, AODTracks=0;
+
   Double_t vertex[3]={0};
   Int_t zbin=0;
   Double_t zstep=2*10/Double_t(fZvertexBins), zstart=-10.;
@@ -1150,6 +1159,14 @@ void AliThreePionRadii::Exec(Option_t *)
     if(fabs(vertex[2]) > 10) {/*cout<<"Zvertex Out of Range. Skip Event"<<endl;*/ return;} // Z-Vertex Cut 
     ((TH3F*)fOutputList->FindObject("fVertexDist"))->Fill(vertex[0], vertex[1], vertex[2]);
     
+    for (Int_t i = 0; i < fAOD->GetNumberOfTracks(); i++) {
+      AliAODTrack* aodtrack = fAOD->GetTrack(i);
+      if (!aodtrack) continue;
+      AODTracks++;
+      if(!aodtrack->TestFilterBit(BIT(fFilterBit))) continue;// AOD filterBit cut
+      FBTracks++;
+    }
+
     if(fAOD->IsPileupFromSPD()) {/*cout<<"PileUpEvent. Skip Event"<<endl;*/ return;} // Reject Pile-up events
     if(primaryVertexAOD->GetNContributors() < 1) {/*cout<<"Bad Vertex. Skip Event"<<endl;*/ return;}
    
@@ -1182,7 +1199,7 @@ void AliThreePionRadii::Exec(Option_t *)
       AliAODTrack* aodtrack = fAOD->GetTrack(randomIndex[i]);
       if (!aodtrack) continue;
       if(myTracks >= fMultLimit) {cout<<"More tracks than Track Limit"<<endl; return;}
-    
+      
       status=aodtrack->GetStatus();
                 
       if(!aodtrack->TestFilterBit(BIT(7))) continue;// AOD filterBit cut
@@ -1343,7 +1360,8 @@ void AliThreePionRadii::Exec(Option_t *)
       if(fTempStruct[myTracks].fProton && fTempStruct[myTracks].fMom < 0.25) continue;//extra cut for protons
 
       if(!fTempStruct[myTracks].fPion) continue;// only pions
-      
+          
+     
 
 
       if(fTempStruct[myTracks].fCharge==+1) {
@@ -1427,7 +1445,7 @@ void AliThreePionRadii::Exec(Option_t *)
       fTempStruct[myTracks].fPion = kTRUE;
       fTempStruct[myTracks].fEaccepted = sqrt(pow(fTempStruct[myTracks].fMom,2) + pow(fTrueMassPi,2)); 
       fTempStruct[myTracks].fKey = 1;
-      
+            
       myTracks++;
       pionCount++;
     }
@@ -1437,6 +1455,8 @@ void AliThreePionRadii::Exec(Option_t *)
   
   if(myTracks >= 1) {
     ((TH1F*)fOutputList->FindObject("fMultDist3"))->Fill(myTracks);
+    ((TH1F*)fOutputList->FindObject("fMultDist4"))->Fill(AODTracks);
+    ((TH1F*)fOutputList->FindObject("fMultDist5"))->Fill(FBTracks);
   }
  
  
@@ -1533,8 +1553,8 @@ void AliThreePionRadii::Exec(Option_t *)
   fEDbin=0;// Extra Dimension bin (Kt, (Kt-Psi),....)
   //////////////////////////////////////////////////
 
-  
 
+  
   //return;// un-comment for a run to calculate Nrec to Nch Mapping 
 
   
@@ -1994,8 +2014,7 @@ void AliThreePionRadii::Exec(Option_t *)
 	//if(transK12 <= 0.35) fEDbin=0;
 	//else fEDbin=1;
 
-	
-	
+
 	///////////////////////////////
 	ch1 = Int_t(((fEvt)->fTracks[i].fCharge + 1)/2.);
 	ch2 = Int_t(((fEvt+en2)->fTracks[j].fCharge + 1)/2.);
@@ -2056,6 +2075,18 @@ void AliThreePionRadii::Exec(Option_t *)
 		  q3MC = sqrt(pow(qinv12MC,2)+pow(qinv13MC,2)+pow(qinv23MC,2));
 		  transK3 = sqrt( pow(pVect1[1]+pVect2[1]+pVect3[1],2) + pow(pVect1[2]+pVect2[2]+pVect3[2],2))/3.;
 		  
+		  if(qinv12 < fQLowerCut) continue;// remove unwanted low-q pairs (also a type of track splitting/merging cut)
+		  if(qinv13 < fQLowerCut) continue;
+		  if(qinv23 < fQLowerCut) continue;
+		  if(ch1 == ch2){
+		    if(!AcceptPair(&((fEvt)->fTracks[i]), &((fEvt+en2)->fTracks[j]))) continue;
+		  }
+		  if(ch1 == ch3){
+		    if(!AcceptPair(&((fEvt)->fTracks[i]), &((fEvt+en3)->fTracks[k]))) continue;
+		  }
+		  if(ch2 == ch3){
+		    if(!AcceptPair(&((fEvt+en2)->fTracks[j]), &((fEvt+en3)->fTracks[k]))) continue;
+		  }
 
 		  //
 		  // The below call to SetFillBins3 will work for all 3-particle terms since all are for fully mixed events. part is set to 1, but only matters for terms 2-4.
