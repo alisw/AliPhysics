@@ -167,6 +167,7 @@ class AliHFEcuts : public TNamed{
     void SetVertexRange(Double_t zrange){fVertexRangeZ = zrange;};
     void SetTOFPIDStep(Bool_t tofPidStep) {fTOFPIDStep = tofPidStep;};
     void SetTOFMISMATCHStep(Bool_t tofMismatchStep) {fTOFMISMATCHStep = tofMismatchStep;};
+    void SetMatchTOFLabel(Bool_t match) { fMatchTOFLabel = match; }
     void SetTPCPIDCleanUpStep(Bool_t tpcPIDCleanUpStep) {fTPCPIDCLEANUPStep = tpcPIDCleanUpStep;};
     void SetITSpatternCut() { fITSpatternCut = kTRUE; }
     inline void SetUseMixedVertex(Bool_t useMixedVertex);    
@@ -255,6 +256,7 @@ class AliHFEcuts : public TNamed{
     Double_t fVertexRangeZ;                   // Vertex Range reconstructed
     Bool_t   fTRDtrackletsExact;              // Require exact number of tracklets
     Bool_t   fTOFPIDStep;                     // TOF matching step efficiency
+    Bool_t   fMatchTOFLabel;                  // Check whether Track or TOF label are the same
     Bool_t   fTOFMISMATCHStep;                // TOF mismatch step
     Bool_t   fTPCPIDCLEANUPStep;              // TPC PIC cleanup step
     Bool_t   fITSpatternCut;                  // Cut on ITS pattern

@@ -135,7 +135,6 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     void SetFillSignalOnly(Bool_t signalOnly) { fFillSignalOnly = signalOnly; }
    
     void SetFillNoCuts(Bool_t fillNoCuts) { fFillNoCuts = fillNoCuts; }
-    void SetApplyCutAOD(Bool_t applyCutAOD)   { fApplyCutAOD = applyCutAOD; }
     void SetRemovePileUp(Bool_t removePileUp) { fRemovePileUp = removePileUp; }
     void SetRemoveFirstEventInChunk() {fRemoveFirstEvent = kTRUE;}
     void SetPIDPreselect(AliHFEpid * const cuts) { fPIDpreselect = cuts; };
@@ -167,6 +166,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     void SetPPMultiBinAnalysis(Bool_t isppMultiBin) { fisppMultiBin = isppMultiBin; };
     void SetNonHFEsystematics(Bool_t isSystematics) {fisNonHFEsystematics = isSystematics; };
     void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
+    void SetRejectMCFakeTracks(Bool_t rejectFakes = kTRUE) { fRejectMCFakeTracks = rejectFakes; };
     void SetBackGroundFactorsFunction(const TF1 * const backGroundFactorsFunction, Int_t centralitybin=0){  
       fkBackGroundFactorArray[centralitybin]=backGroundFactorsFunction;
       fBackGroundFactorApply=kTRUE;
@@ -201,6 +201,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     void ProcessESD();
     void ProcessAOD();
     Int_t GetITSMultiplicity(AliVEvent *ev);
+    Bool_t IsMCFakeTrack(const AliVTrack * const trk) const;
     Bool_t PreSelectTrack(AliESDtrack *track) const;
     Bool_t ProcessMCtrack(AliVParticle *track);
     Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
@@ -210,8 +211,8 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     UShort_t fPlugins;                    // Enabled Plugins
     TBits fCollisionSystem;              // Collision System;
     Bool_t fFillSignalOnly;               // Fill container only with MC Signal Tracks
+    Bool_t fRejectMCFakeTracks;           // Reject fake tracks in MC using the sign of the Label
     Bool_t fFillNoCuts;                   // Fill container before any cut
-    Bool_t fApplyCutAOD;                  // Apply the analysis cut for AOD tracks
     Bool_t fBackGroundFactorApply;        // Apply Background Function Subtraction,   MF: To be removed when transition to OADB container is finished
     Bool_t fRemovePileUp;                 // Remove Pile Up
     Bool_t fIdentifiedAsPileUp;           // Identified as pile-up

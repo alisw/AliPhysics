@@ -463,6 +463,10 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
     if(!(track->GetStatus() & AliESDtrack::kTOFmismatch)) SETBIT(survivedCut, kTOFmismatch);
   }
 
+  if(TESTBIT(fRequirements, kTOFlabel)){
+    if(MatchTOFlabel(track)) SETBIT(survivedCut, kTOFlabel);
+  }
+
   if(TESTBIT(fRequirements, kTPCPIDCleanUp)){
       // cut on TPC PID cleanup
       Bool_t fBitsAboveThreshold=GetTPCCountSharedMapBitsAboveThreshold(track);
@@ -1164,6 +1168,24 @@ void AliHFEextraCuts::GetTOFsignalDxDz(const AliVTrack * const track, Double_t &
 
 }
 
+//______________________________________________________
+Bool_t AliHFEextraCuts::MatchTOFlabel(const AliVTrack *const track) const { 
+  //
+  // Check whether the TOF label is the same as the track label
+  //
+  const AliESDtrack *esdtrk(NULL);
+  const AliAODTrack *aodtrk(NULL);
+  int trklabel(99999), toflabel[3] = {99999,99999,99999};
+  if((esdtrk = dynamic_cast<const AliESDtrack *>(track))){
+    trklabel = esdtrk->GetLabel(); 
+    esdtrk->GetTOFLabel(toflabel); 
+  } else if((aodtrk = dynamic_cast<const AliAODTrack *>(track))){
+    trklabel = esdtrk->GetLabel(); 
+    esdtrk->GetTOFLabel(toflabel); 
+  } else return kFALSE;
+  if(TMath::Abs(trklabel) == TMath::Abs(toflabel[0])) return kTRUE;
+  return kFALSE;
+}
 //______________________________________________________
 Bool_t AliHFEextraCuts::CheckITSpattern(const AliVTrack *const track) const {
   //
