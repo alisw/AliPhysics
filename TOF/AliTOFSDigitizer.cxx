@@ -51,7 +51,7 @@
 #include "AliTOFSDigit.h"
 #include "AliTOF.h"
 
-extern TROOT *gROOT;
+//extern TROOT *gROOT;
 
 ClassImp(AliTOFSDigitizer)
 

@@ -54,7 +54,7 @@
 #include "AliTOFtrack.h"
 
 extern TGeoManager *gGeoManager;
-extern TROOT *gROOT;
+//extern TROOT *gROOT;
 
 
 ClassImp(AliTOFtracker)

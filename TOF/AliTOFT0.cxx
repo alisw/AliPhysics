@@ -100,7 +100,7 @@
 #include "AliTOFT0.h"
 #include "AliTOF.h"
 
-extern TROOT *gROOT;
+//extern TROOT *gROOT;
 extern TRandom *gRandom;
 extern TBenchmark *gBenchmark;
 
