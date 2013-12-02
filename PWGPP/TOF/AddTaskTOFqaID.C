@@ -34,8 +34,7 @@ AliAnalysisTaskSE * AddTaskTOFqaID(UInt_t triggerMask = kTriggerMask, Bool_t fla
   task->EnableAdvancedCheck(flagEnableAdvancedCheck);
   task->SetSelectMCspecies(isMC, absPdgCode);
   task->SelectCollisionCandidates(triggerMask);
-
-  //AliLog::SetClassDebugLevel("AliAnalysisTaskTOFqa",1);
+  //AliLog::SetClassDebugLevel("AliAnalysisTaskTOFqaID",4);
   mgr->AddTask(task);
 
   /* cuts used for QA in 2010 p-p */
@@ -67,6 +66,11 @@ AliAnalysisTaskSE * AddTaskTOFqaID(UInt_t triggerMask = kTriggerMask, Bool_t fla
   esdTrackCutsStd2010->SetDCAToVertex2D(kFALSE);
   esdTrackCutsStd2010->SetRequireSigmaToVertex(kFALSE);
 
+  /*
+    AliESDtrackCuts* esdTrackCutsStd2011 = new AliESDtrackCuts("AliESDtrackCuts", "Standard2011");
+    esdTrackCutsStd2011->GetStandardITSTPCTrackCuts2011(kTRUE,0);
+  */
+  
   AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
   trackFilter->AddCuts(esdTrackCutsStd2010);
   task->SetTrackFilter(trackFilter);

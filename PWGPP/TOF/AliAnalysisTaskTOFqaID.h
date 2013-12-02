@@ -66,7 +66,7 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   AliAnalysisFilter * fTrackFilter; //track filter object
   AliESDVertex *      fVertex; //pointer to the vertex object
   AliESDpid *         fESDpid; //pointer to the PID object
-  AliTOFT0v1 *        fTOFT0v1; // TOF-T0 v1
+  //AliTOFT0v1 *        fTOFT0v1; // TOF-T0 v1
   AliTOFHeader *      fTOFHeader; // TOF header needed for trigger info
   Int_t               fNTOFtracks[3]; //number of tracks matching with TOF
   //Int_t fNPrimaryTracks; //number of primary tracks
