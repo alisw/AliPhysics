@@ -128,6 +128,7 @@ AliHFEcuts::AliHFEcuts():
   fVertexRangeZ(20.),
   fTRDtrackletsExact(kFALSE),
   fTOFPIDStep(kFALSE),
+  fMatchTOFLabel(kFALSE),
   fTOFMISMATCHStep(kFALSE),
   fTPCPIDCLEANUPStep(kFALSE),
   fITSpatternCut(kFALSE),
@@ -184,6 +185,7 @@ AliHFEcuts::AliHFEcuts(const Char_t *name, const Char_t *title):
   fVertexRangeZ(20.),
   fTRDtrackletsExact(kFALSE),
   fTOFPIDStep(kFALSE),
+  fMatchTOFLabel(kFALSE),
   fTOFMISMATCHStep(kFALSE),
   fTPCPIDCLEANUPStep(kFALSE),
   fITSpatternCut(kFALSE),
@@ -240,6 +242,7 @@ AliHFEcuts::AliHFEcuts(const AliHFEcuts &c):
   fVertexRangeZ(20.),
   fTRDtrackletsExact(kFALSE),
   fTOFPIDStep(kFALSE),
+  fMatchTOFLabel(kFALSE),
   fTOFMISMATCHStep(kFALSE),
   fTPCPIDCLEANUPStep(kFALSE),
   fITSpatternCut(c.fITSpatternCut),
@@ -302,6 +305,7 @@ void AliHFEcuts::Copy(TObject &c) const {
   target.fVertexRangeZ = fVertexRangeZ;
   target.fTRDtrackletsExact = fTRDtrackletsExact;
   target.fTOFPIDStep = fTOFPIDStep;
+  target.fMatchTOFLabel = fMatchTOFLabel;
   target.fTOFMISMATCHStep = fTOFMISMATCHStep;
   target.fTPCPIDCLEANUPStep = fTPCPIDCLEANUPStep;
   target.fUseMixedVertex = fUseMixedVertex;
@@ -754,6 +758,7 @@ void AliHFEcuts::SetHFElectronTOFCuts(){
   AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsHFElectronGroupTOF","Extra cuts from the HFE group on TOF PID");
   if(fTOFPIDStep) hfecuts->SetTOFPID(kTRUE);
   if(fTOFMISMATCHStep) hfecuts->SetTOFMISMATCH(kTRUE);
+  if(fMatchTOFLabel) hfecuts->SetMatchTOFLabel(kTRUE);
   if((fTOFsignaldx > 0.0) && (fTOFsignaldz > 0.0)) hfecuts->SetTOFsignalDxz(fTOFsignaldx,fTOFsignaldz);
   if(IsQAOn()) hfecuts->SetQAOn(fHistQA);
   hfecuts->SetDebugLevel(fDebugLevel);
