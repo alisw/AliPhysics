@@ -380,20 +380,21 @@ void AliAnalysisTaskTOFqaID::UserExec(Option_t *)
   } 
   
   */
-
   fESD=(AliESDEvent*)InputEvent();
-  if ((!fESD)||(!fESDpid)) return;
-  
   if (!fESD) {
-    AliError("ERROR: fESD not available");
+    Printf("ERROR: fESD not available");
     return;
   }
+  
+  if (!fESDpid) {
+    Printf("ERROR: fESDpid not available");
+    return;
+  }
+  
   //retrieve default start time type from PIDresponse
   AliPIDResponse::EStartTimeType_t startTimeMethodDefault = AliPIDResponse::kBest_T0;  
   if (fESDpid->GetTOFPIDParams()) {  // during reconstruction OADB not yet available
     startTimeMethodDefault = ((AliTOFPIDParams *)fESDpid->GetTOFPIDParams())->GetStartTimeMethod();
-    //debug
-    Printf("::::: startTimeMethodDefault = %i", startTimeMethodDefault);
   }
   
   //access MC event handler for MC truth information
@@ -413,10 +414,7 @@ void AliAnalysisTaskTOFqaID::UserExec(Option_t *)
   
   // get run number
   Int_t runNb = fESD->GetRunNumber();
-  if (runNb>0) fRunNumber = runNb;
-  //Debug
-  Printf("::::: run number = %i", fRunNumber);
-  
+  if (runNb>0) fRunNumber = runNb;  
 
   //reset matched track counters
   for (Int_t j=0;j<3;j++){fNTOFtracks[j]=0;}  
@@ -944,7 +942,10 @@ void  AliAnalysisTaskTOFqaID::AddPidHisto(TList *list, Int_t charge, TString suf
   TH2F* hExpTimePiT0Sub1GeV = new TH2F(Form("hExpTimePiT0Sub1GeV%s_%s",suffix.Data(),cLabel.Data()), Form("%s trk (0.95#leq p_{T}#leq 1.05 GeV/c) t_{TOF}-t_{#pi,exp}-t_{0}^{TOF}",cLabel.Data()), 500, 0., 500., fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
   HistogramMakeUp(hExpTimePiT0Sub1GeV,((charge>0)? kRed+2 : kBlue+2), 1, "colz", "","","n. tracks used for t_{0}^{TOF}","t_{TOF}-t_{#pi,exp}-t_{0}^{TOF}");    
   list->AddLast(hExpTimePiT0Sub1GeV) ;
-  
+
+  TH1F* hExpTimePiFillSub = new TH1F(Form("hExpTimePiFillSub%s_%s",suffix.Data(),cLabel.Data()), "%s trk t_{TOF}-t_{#pi,exp}-t_{0,fill}; t_{TOF}-t_{#pi,exp} -_{0,fill} [ps];entries", fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
+  list->AddLast(hExpTimePiFillSub) ;
+
   TH1F* hExpTimePi = new TH1F(Form("hExpTimePi%s_%s",suffix.Data(),cLabel.Data()),Form("%s matched trk t_{TOF}-t_{#pi,exp}",cLabel.Data()), fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
   HistogramMakeUp(hExpTimePi,((charge>0)? kRed+2 : kBlue+2), 1, "", "","", "t_{TOF}-t_{#pi,exp} [ps]","tracks");
   list->AddLast(hExpTimePi);
@@ -1273,9 +1274,9 @@ void AliAnalysisTaskTOFqaID::FillPidHisto(AliESDtrack * track, Int_t charge, TSt
     ((TH1F*) fHlistTRD->FindObject(Form("hMatchedMass%s_%s",suffix.Data(),cLabel.Data())))->Fill(mass);
     ((TH1F*) fHlistTRD->FindObject(Form("hMatchedMass2%s_%s",suffix.Data(),cLabel.Data())))->Fill(mass*mass);
   } else {
-    ((TH2F*) fHlist->FindObject(Form("hMatchedBetaVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP,beta);
-    ((TH1F*) fHlist->FindObject(Form("hMatchedMass%s_%s",suffix.Data(),cLabel.Data())))->Fill(mass);
-    ((TH1F*) fHlist->FindObject(Form("hMatchedMass2%s_%s",suffix.Data(),cLabel.Data())))->Fill(mass*mass);
+    ((TH2F*) fHlistPID->FindObject(Form("hMatchedBetaVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP,beta);
+    ((TH1F*) fHlistPID->FindObject(Form("hMatchedMass%s_%s",suffix.Data(),cLabel.Data())))->Fill(mass);
+    ((TH1F*) fHlistPID->FindObject(Form("hMatchedMass2%s_%s",suffix.Data(),cLabel.Data())))->Fill(mass*mass);
   }
   
   //PID sigmas
@@ -1296,101 +1297,53 @@ void AliAnalysisTaskTOFqaID::FillPidHisto(AliESDtrack * track, Int_t charge, TSt
   Int_t channel=track->GetTOFCalChannel(); 
   Int_t volId[5]; //(sector, plate,strip,padZ,padX)
   AliTOFGeometry::GetVolumeIndices(channel,volId);
-  Char_t partName[3][3] = {"Pi","Ka","P"}; 
+  Char_t partName[3][4] = {"Pi","Ka","Pro"}; 
   
   if (suffix.Contains("Trd")) {
+    //fill histos for pion only
+    ((TH2F*)fHlistTRD->FindObject(Form("hExpTimePiVsStrip%s_%s",suffix.Data(),cLabel.Data())))->Fill((Int_t)GetStripIndex(volId),tofps-fTrkExpTimes[AliPID::kPion]);//ps
+    ((TH1F*)fHlistTRD->FindObject(Form("hExpTimePi%s_%s",suffix.Data(),cLabel.Data())))->Fill(tofps-fTrkExpTimes[AliPID::kPion]);//ps	
+    if (ComputeTimeZeroByTOF1GeV() && (fPt>0.95) && (fPt<1.05) ){
+      ((TH2F*)fHlistTRD->FindObject(Form("hExpTimePiT0Sub1GeV%s_%s",suffix.Data(),cLabel.Data())))->Fill(fMyTimeZeroTOFtracks,tofps-fMyTimeZeroTOF-fTrkExpTimes[AliPID::kPion]);
+    }
+    //fill sigmas and deltas for each specie
     for (Int_t specie = AliPID::kPion; specie <= AliPID::kProton; specie++){
       if (isValidBeta[specie]){
-	((TH2F*)fHlistTRD->FindObject(Form("hExpTime%sVsP%s_%s",partName[specie], suffix.Data(),cLabel.Data())))->Fill(fP, tofps-fTrkExpTimes[specie]);
-	((TH2F*)fHlistTRD->FindObject(Form("hTOFpidSigma%s%s_%s",partName[specie], suffix.Data(),cLabel.Data())))->Fill(fPt, (tofps-fTrkExpTimes[specie])/fSigmaSpecie[specie]);
-	((TH2F*)fHlistTRD->FindObject(Form("hExpTime%sT0SubVsP%s_%s",partName[specie], suffix.Data(),cLabel.Data())))->Fill(fP,tofps-fTrkExpTimes[specie]-timeZeroTOF);  
-	((TH2F*)fHlistTRD->FindObject(Form("hExpTime%sVsOutPhi%s_%s",partName[specie], suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,tofps-fTrkExpTimes[specie]-timeZeroTOF);
-	
-	//fill histos for pion only
-	if (specie == AliPID::kPion){
-	  ((TH2F*)fHlistTRD->FindObject(Form("hExpTimePiVsStrip%s_%s",suffix.Data(),cLabel.Data())))->Fill((Int_t)GetStripIndex(volId),tofps-fTrkExpTimes[specie]);//ps
-	  ((TH1F*)fHlistTRD->FindObject(Form("hExpTimePi%s_%s",suffix.Data(),cLabel.Data())))->Fill(tofps-fTrkExpTimes[specie]);//ps
+	((TH2F*)fHlistTRD->FindObject(Form("hExpTime%sVsP%s_%s",partName[specie-2], suffix.Data(),cLabel.Data())))->Fill(fP, tofps-fTrkExpTimes[specie]);
+	((TH2F*)fHlistTRD->FindObject(Form("hTOFpidSigma%s%s_%s",partName[specie-2], suffix.Data(),cLabel.Data())))->Fill(fPt, (tofps-fTrkExpTimes[specie])/fSigmaSpecie[specie]);
+	((TH2F*)fHlistTRD->FindObject(Form("hExpTime%sT0SubVsP%s_%s",partName[specie-2], suffix.Data(),cLabel.Data())))->Fill(fP,tofps-fTrkExpTimes[specie]-timeZeroTOF);  
+	((TH2F*)fHlistTRD->FindObject(Form("hExpTime%sVsOutPhi%s_%s",partName[specie-2], suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,tofps-fTrkExpTimes[specie]-timeZeroTOF);
 	  
-	  if (ComputeTimeZeroByTOF1GeV()){
-	    if ((fPt>0.95)&&(fPt<1.05)){
-	      ((TH2F*)fHlistTRD->FindObject(Form("hExpTimePiT0Sub1GeV%s_%s",suffix.Data(),cLabel.Data())))->Fill(fMyTimeZeroTOFtracks,tofps-fMyTimeZeroTOF-fTrkExpTimes[specie]);
-	    }
-	  } 
-	}//end pion	
       }// end check on beta
     }
-    // if (isValidBeta[AliPID::kKaon]){
-    //   ((TH2F*)fHlistTRD->FindObject(Form("hExpTimeKaVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP, tofps-fTrkExpTimes[AliPID::kKaon]);
-    //   ((TH2F*)fHlistTRD->FindObject(Form("hTOFpidSigmaKa%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt, (tofps-fTrkExpTimes[AliPID::kKaon])/fSigmaSpecie[AliPID::kKaon]);
-    //   ((TH2F*)fHlistTRD->FindObject(Form("hExpTimeKaT0SubVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP,tofps-fTrkExpTimes[AliPID::kKaon]-timeZeroTOF);  
-    //   ((TH2F*)fHlistTRD->FindObject(Form("hExpTimeKaVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,tofps-fTrkExpTimes[AliPID::kKaon]-timeZeroTOF);    
-    // }//end kaon  
-    
-    // if (isValidBeta[AliPID::kProton]){
-  //   ((TH2F*)fHlistTRD->FindObject(Form("hExpTimeProVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP, tofps-fTrkExpTimes[AliPID::kProton]);
-  //   ((TH2F*)fHlistTRD->FindObject(Form("hTOFpidSigmaPro%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt, (tofps-fTrkExpTimes[AliPID::kProton])/fSigmaSpecie[AliPID::kProton]);
-  //   ((TH2F*)fHlistTRD->FindObject(Form("hExpTimeProT0SubVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP,tofps-fTrkExpTimes[AliPID::kProton]-timeZeroTOF);  
-  //   ((TH2F*)fHlistTRD->FindObject(Form("hExpTimeProVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,tofps-fTrkExpTimes[AliPID::kProton]-timeZeroTOF);
-  // }//end proton  
-    
   } else { 
+    
+    //fill histos for pion only
+    ((TH2F*)fHlistPID->FindObject(Form("hExpTimePiVsStrip%s_%s",suffix.Data(),cLabel.Data())))->Fill((Int_t)GetStripIndex(volId),tofps-fTrkExpTimes[AliPID::kPion]);//ps
+    ((TH1F*)fHlistPID->FindObject(Form("hExpTimePi%s_%s",suffix.Data(),cLabel.Data())))->Fill(tofps-fTrkExpTimes[AliPID::kPion]);//ps    
+    if (ComputeTimeZeroByTOF1GeV() && (fPt>0.95) && (fPt<1.05) ){
+      ((TH2F*)fHlistPID->FindObject(Form("hExpTimePiT0Sub1GeV%s_%s",suffix.Data(),cLabel.Data())))->Fill(fMyTimeZeroTOFtracks,tofps-fMyTimeZeroTOF-fTrkExpTimes[AliPID::kPion]);
+    }
+    //fill sigmas and deltas for each specie
     for (Int_t specie = AliPID::kPion; specie <= AliPID::kProton; specie++){
       if (isValidBeta[specie]){
-	((TH2F*)fHlist->FindObject(Form("hExpTime%sVsP%s_%s",partName[specie], suffix.Data(),cLabel.Data())))->Fill(fP, tofps-fTrkExpTimes[specie]);
-	((TH2F*)fHlist->FindObject(Form("hTOFpidSigma%s%s_%s",partName[specie], suffix.Data(),cLabel.Data())))->Fill(fPt, (tofps-fTrkExpTimes[specie])/fSigmaSpecie[specie]);
-	((TH2F*)fHlist->FindObject(Form("hExpTime%sT0SubVsP%s_%s",partName[specie], suffix.Data(),cLabel.Data())))->Fill(fP,tofps-fTrkExpTimes[specie]-timeZeroTOF);  
-	((TH2F*)fHlist->FindObject(Form("hExpTime%sVsOutPhi%s_%s",partName[specie], suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,tofps-fTrkExpTimes[specie]-timeZeroTOF);
-	
-	//fill histos for pion only
-	if (specie == AliPID::kPion){
-	  ((TH2F*)fHlist->FindObject(Form("hExpTimePiVsStrip%s_%s",suffix.Data(),cLabel.Data())))->Fill((Int_t)GetStripIndex(volId),tofps-fTrkExpTimes[specie]);//ps
-	  ((TH1F*)fHlist->FindObject(Form("hExpTimePi%s_%s",suffix.Data(),cLabel.Data())))->Fill(tofps-fTrkExpTimes[specie]);//ps
-	  
-	  if (ComputeTimeZeroByTOF1GeV()){
-	    if ((fPt>0.95)&&(fPt<1.05)){
-	      ((TH2F*)fHlist->FindObject(Form("hExpTimePiT0Sub1GeV%s_%s",suffix.Data(),cLabel.Data())))->Fill(fMyTimeZeroTOFtracks,tofps-fMyTimeZeroTOF-fTrkExpTimes[specie]);
-	    }
-	  } 
-	}//end pion	
+	((TH2F*)fHlistPID->FindObject(Form("hExpTime%sVsP%s_%s",partName[specie-2], suffix.Data(),cLabel.Data())))->Fill(fP, tofps-fTrkExpTimes[specie]);
+	((TH2F*)fHlistPID->FindObject(Form("hTOFpidSigma%s%s_%s",partName[specie-2], suffix.Data(),cLabel.Data())))->Fill(fPt, (tofps-fTrkExpTimes[specie])/fSigmaSpecie[specie]);
+	((TH2F*)fHlistPID->FindObject(Form("hExpTime%sT0SubVsP%s_%s",partName[specie-2], suffix.Data(),cLabel.Data())))->Fill(fP,tofps-fTrkExpTimes[specie]-timeZeroTOF);  
+	((TH2F*)fHlistPID->FindObject(Form("hExpTime%sVsOutPhi%s_%s",partName[specie-2], suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,tofps-fTrkExpTimes[specie]-timeZeroTOF);
       }// end check on beta
-    }
-    
-    // if (isValidBeta[AliPID::kPion]){
-  //   ((TH2F*)fHlist->FindObject(Form("hExpTimePiVsStrip%s_%s",suffix.Data(),cLabel.Data())))->Fill((Int_t)GetStripIndex(volId),tofps-fTrkExpTimes[AliPID::kPion]);//ps
-  //   ((TH1F*)fHlist->FindObject(Form("hExpTimePi%s_%s",suffix.Data(),cLabel.Data())))->Fill(tofps-fTrkExpTimes[AliPID::kPion]);//ps
-  //   ((TH2F*)fHlist->FindObject(Form("hExpTimePiVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP, tofps-fTrkExpTimes[AliPID::kPion]);
-  //   ((TH2F*)fHlist->FindObject(Form("hTOFpidSigmaPi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt, (tofps-fTrkExpTimes[AliPID::kPion])/fSigmaSpecie[AliPID::kPion]);
-  //   ((TH2F*)fHlist->FindObject(Form("hExpTimePiT0SubVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP,tofps-fTrkExpTimes[AliPID::kPion]-timeZeroTOF);  
-  //   ((TH2F*)fHlist->FindObject(Form("hExpTimePiVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,tofps-fTrkExpTimes[AliPID::kPion]-timeZeroTOF);
-    
-  //   if (ComputeTimeZeroByTOF1GeV()){
-  //     if ((fPt>0.95)&&(fPt<1.05)){
-  // 	((TH2F*)fHlist->FindObject(Form("hExpTimePiT0Sub1GeV%s_%s",suffix.Data(),cLabel.Data())))->Fill(fMyTimeZeroTOFtracks,tofps-fMyTimeZeroTOF-fTrkExpTimes[AliPID::kPion]);
-  //     }
-  //   } 
-  // }//end pion
-  
-  // if (isValidBeta[AliPID::kKaon]){
-  //   ((TH2F*)fHlist->FindObject(Form("hExpTimeKaVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP, tofps-fTrkExpTimes[AliPID::kKaon]);
-  //   ((TH2F*)fHlist->FindObject(Form("hTOFpidSigmaKa%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt, (tofps-fTrkExpTimes[AliPID::kKaon])/fSigmaSpecie[AliPID::kKaon]);
-  //   ((TH2F*)fHlist->FindObject(Form("hExpTimeKaT0SubVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP,tofps-fTrkExpTimes[AliPID::kKaon]-timeZeroTOF);  
-  //   ((TH2F*)fHlist->FindObject(Form("hExpTimeKaVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,tofps-fTrkExpTimes[AliPID::kKaon]-timeZeroTOF);    
-  // }//end kaon  
-  
-  // if (isValidBeta[AliPID::kProton]){
-  //   ((TH2F*)fHlist->FindObject(Form("hExpTimeProVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP, tofps-fTrkExpTimes[AliPID::kProton]);
-  //   ((TH2F*)fHlist->FindObject(Form("hTOFpidSigmaPro%s_%s",suffix.Data(),cLabel.Data())))->Fill(fPt, (tofps-fTrkExpTimes[AliPID::kProton])/fSigmaSpecie[AliPID::kProton]);
-  //   ((TH2F*)fHlist->FindObject(Form("hExpTimeProT0SubVsP%s_%s",suffix.Data(),cLabel.Data())))->Fill(fP,tofps-fTrkExpTimes[AliPID::kProton]-timeZeroTOF);  
-  //   ((TH2F*)fHlist->FindObject(Form("hExpTimeProVsOutPhi%s_%s",suffix.Data(),cLabel.Data())))->Fill(fTPCOuterPhi,tofps-fTrkExpTimes[AliPID::kProton]-timeZeroTOF);
-  // }//end proton  
+    } 
+ 
   }
   
   //re-set response kFILL_T0 to check post-alignment wih OADB
   fESDpid->SetTOFResponse(fESD,AliESDpid::kFILL_T0);//(fill_t0, tof_t0, t0_t0, best_t0)
   Float_t startTimeFill=fESDpid->GetTOFResponse().GetStartTime(fP); //timeZero for bin pT>10GeV/c
-  ((TH1F*)fHlistPID->FindObject("hExpTimePiFillSub"))->Fill(tofps-fTrkExpTimes[AliPID::kPion]-startTimeFill);//ps
-  
-  
+  if (suffix.Contains("Trd"))
+    ((TH1F*)fHlistTRD->FindObject(Form("hExpTimePiFillSub%s_%s",suffix.Data(),cLabel.Data())))->Fill(tofps-fTrkExpTimes[AliPID::kPion]-startTimeFill);//ps
+  else 
+    ((TH1F*)fHlistPID->FindObject(Form("hExpTimePiFillSub%s_%s",suffix.Data(),cLabel.Data())))->Fill(tofps-fTrkExpTimes[AliPID::kPion]-startTimeFill);//ps
+ 
   // if (fEnableAdvancedCheck && (fPt<1.)) {
   //   Double_t pos[3]={0.,0.,0.};
   //   track->GetXYZAt(378.,5.,pos);
@@ -1477,8 +1430,7 @@ void AliAnalysisTaskTOFqaID::FillTrdHisto(AliESDtrack * track, Int_t charge)
     FillPrimaryTrkHisto(charge,"_Trd");
     if (IsTPCTOFMatched(track)) {      
       FillMatchedTrkHisto(charge,"_Trd");
-      FillPidHisto
-(track,charge, "_Trd");
+      FillPidHisto(track,charge, "_Trd");
     }
   } else {
     FillPrimaryTrkHisto(charge,"_noTrd");    
