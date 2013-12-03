@@ -35,6 +35,7 @@
 #include "AliAnalysisDataContainer.h"
 #include "AliSpectraAODTrackCuts.h"
 #include "AliSpectraAODEventCuts.h"
+#include "AliHelperPID.h"
 #include "AliCentrality.h"
 #include "TProof.h"
 #include "AliVEvent.h"
@@ -43,22 +44,28 @@
 
 #include <iostream>
 
+using namespace AliHelperPIDNameSpace;
 using namespace std;
 
 ClassImp(AliAnalysisTaskSpectraAllChAOD)
 
 //________________________________________________________________________
-AliAnalysisTaskSpectraAllChAOD::AliAnalysisTaskSpectraAllChAOD(const char *name) : AliAnalysisTaskSE(name), fAOD(0), fTrackCuts(0), fEventCuts(0), fIsMC(0), fOutput(0)
+AliAnalysisTaskSpectraAllChAOD::AliAnalysisTaskSpectraAllChAOD(const char *name) : AliAnalysisTaskSE(name),  
+  fAOD(0x0),
+  fTrackCuts(0x0),
+  fEventCuts(0x0),
+  fHelperPID(0x0),
+  fIsMC(0),
+  fOutput(0x0)
 {
   // Default constructor
-  
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, AliSpectraAODEventCuts::Class());
   DefineOutput(3, AliSpectraAODTrackCuts::Class());
-  
+  DefineOutput(4, AliHelperPID::Class());
 }
-//________________________________________________________________________
+
 //________________________________________________________________________
 void AliAnalysisTaskSpectraAllChAOD::UserCreateOutputObjects()
 {
@@ -69,42 +76,69 @@ void AliAnalysisTaskSpectraAllChAOD::UserCreateOutputObjects()
   
   if (!fTrackCuts) AliFatal("Track Cuts should be set in the steering macro");
   if (!fEventCuts) AliFatal("Event Cuts should be set in the steering macro");
+  if (!fHelperPID)  AliFatal("HelperPID should be set in the steering macro");
   
-  //dimensions of standard THnSparse
-  const Int_t nvar=4;
-  const Double_t ptBins[] = {0.05,0.1,0.12,0.14,0.16,0.18,0.20,0.25,0.30,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0,3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0,5.5,6.0,6.5,7.0,7.5,8.0,8.5,9.0,9.5,10.,11.,12.,13.,14.,15.};
-  Int_t nptBins=67;
+  // binning common to all the THn
+  const Double_t ptBins[] = {0.20,0.30,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.2,1.4,1.6,1.8,2.0,2.4,2.8,3.2,3.6,4.0,5.0,6.0,7.0,8.0,9.0,10.,12.,15.};
+  const Int_t nptBins=26;
+  const Int_t nCentBins=20;
+  const Int_t nQvecBins=50;
   
-  Int_t    binsHistReal[nvar] = {   100,   100,      nptBins,     20};
-  Double_t xminHistReal[nvar] = {    0.,     0,            0.,      0.};
-  Double_t xmaxHistReal[nvar] = {  10.,   10.,            5.,   100.};
+  //dimensions of THnSparse for tracks
+  const Int_t nvartrk=8;
+  //                                             pt          cent        Q vec     IDrec     IDgen       isph           iswd      y
+  Int_t    binsHistRealTrk[nvartrk] = {      nptBins, nCentBins,   nQvecBins,        3,        3,         2,          2,       2};
+  Double_t xminHistRealTrk[nvartrk] = {         0.,         0.,            0.,     -0.5,      -0.5,      -0.5,        -0.5,   -0.5};
+  Double_t xmaxHistRealTrk[nvartrk] = {       10.,      100.,          10.,      2.5,      2.5,       1.5,         1.5,     0.5};    
+  THnSparseF* NSparseHistTrk = new THnSparseF("NSparseHistTrk","NSparseHistTrk",nvartrk,binsHistRealTrk,xminHistRealTrk,xmaxHistRealTrk);
+  NSparseHistTrk->GetAxis(0)->SetTitle("#it{p}_{T,rec}");
+  NSparseHistTrk->SetBinEdges(0,ptBins);
+  NSparseHistTrk->GetAxis(1)->SetTitle(Form("%s cent",fEventCuts->GetCentralityMethod().Data()));
+  NSparseHistTrk->GetAxis(2)->SetTitle("Q vec");
+  NSparseHistTrk->GetAxis(3)->SetTitle("ID rec");
+  NSparseHistTrk->GetAxis(4)->SetTitle("ID gen");
+  NSparseHistTrk->GetAxis(5)->SetTitle("isph");
+  NSparseHistTrk->GetAxis(6)->SetTitle("iswd");
+  NSparseHistTrk->GetAxis(7)->SetTitle("y");
+  fOutput->Add(NSparseHistTrk);
   
-  THnSparseF* NSparseHist = new THnSparseF("NSparseHist","NSparseHist",nvar,binsHistReal,xminHistReal,xmaxHistReal);
-  NSparseHist->GetAxis(0)->SetTitle("Q vec VZERO-C");
-  NSparseHist->GetAxis(1)->SetTitle("Q vec VZERO-A");
-  NSparseHist->GetAxis(2)->SetTitle("#it{p}_{T}");
-  NSparseHist->SetBinEdges(2,ptBins);
-  NSparseHist->GetAxis(3)->SetTitle(Form("%s cent",fEventCuts->GetCentralityMethod().Data()));
-  fOutput->Add(NSparseHist);
+  //dimensions of THnSparse for stack
+  const Int_t nvarst=5;
+  //                                             pt          cent    IDgen        isph        y
+  Int_t    binsHistRealSt[nvarst] = {      nptBins,   nCentBins,        3,         2,        2};
+  Double_t xminHistRealSt[nvarst] = {         0.,           0.,      -0.5,      -0.5,    -0.5};
+  Double_t xmaxHistRealSt[nvarst] = {       10.,        100.,      2.5,       1.5,      0.5};
+  THnSparseF* NSparseHistSt = new THnSparseF("NSparseHistSt","NSparseHistSt",nvarst,binsHistRealSt,xminHistRealSt,xmaxHistRealSt);
+  NSparseHistSt->GetAxis(0)->SetTitle("#it{p}_{T,gen}");
+  NSparseHistSt->SetBinEdges(0,ptBins);
+  NSparseHistSt->GetAxis(1)->SetTitle(Form("%s cent",fEventCuts->GetCentralityMethod().Data()));
+  NSparseHistSt->GetAxis(2)->SetTitle("ID gen");
+  NSparseHistSt->GetAxis(3)->SetTitle("isph");
+  NSparseHistSt->GetAxis(4)->SetTitle("y");
+  fOutput->Add(NSparseHistSt);
   
-  TH2F* hGen = new TH2F("hGen","hGen",nptBins,ptBins,20,0.,100.);
-  hGen->GetXaxis()->SetTitle("#it{p}_{T,Gen}");
-  hGen->GetYaxis()->SetTitle(Form("%s cent",fEventCuts->GetCentralityMethod().Data()));
-  fOutput->Add(hGen);
-  
-  TH2F* hRec = new TH2F("hRec","hRec",nptBins,ptBins,20,0.,100.);
-  hRec->GetXaxis()->SetTitle("#it{p}_{T,Rec}");
-  hRec->GetYaxis()->SetTitle(Form("%s cent",fEventCuts->GetCentralityMethod().Data()));
-  fOutput->Add(hRec);
+  //dimensions of THnSparse for the normalization
+  const Int_t nvarev=2;
+  //                                             cent             Q vec   
+  Int_t    binsHistRealEv[nvarev] = {     nCentBins,       nQvecBins};
+  Double_t xminHistRealEv[nvarev] = {           0.,               0.};
+  Double_t xmaxHistRealEv[nvarev] = {       100.,              10.};
+  THnSparseF* NSparseHistEv = new THnSparseF("NSparseHistEv","NSparseHistEv",nvarev,binsHistRealEv,xminHistRealEv,xmaxHistRealEv);
+  NSparseHistEv->GetAxis(0)->SetTitle(Form("%s cent",fEventCuts->GetCentralityMethod().Data()));
+  NSparseHistEv->GetAxis(1)->SetTitle("Q vec");
+  fOutput->Add(NSparseHistEv);
   
   PostData(1, fOutput  );
   PostData(2, fEventCuts);
   PostData(3, fTrackCuts);
-  
+  PostData(4, fHelperPID);
 }
+
 //________________________________________________________________________
+
 void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
 {
+  //Printf("An event");
   // main event loop
   fAOD = dynamic_cast<AliAODEvent*>(fInputEvent);
   if (!fAOD) {
@@ -119,7 +153,11 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
   
   if(!fEventCuts->IsSelected(fAOD,fTrackCuts))return;//event selection
   
-  // First do MC to fill up the MC particle array, such that we can use it later
+  Double_t Qvec=0.;//in case of MC we save space in the memory
+  if(!fIsMC)Qvec=fEventCuts->GetqV0A();//FIXME we'll have to combine A and C
+  Double_t Cent=fEventCuts->GetCent();
+    
+  // First do MC to fill up the MC particle array
   TClonesArray *arrayMC = 0;
   if (fIsMC)
     {
@@ -132,36 +170,68 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
 	{
 	  AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(iMC);
 	  if(!partMC->Charge()) continue;//Skip neutrals
-	  if(!partMC->IsPhysicalPrimary()) continue; //skip secondaries
 	  if(partMC->Eta() < fTrackCuts->GetEtaMin() || partMC->Eta() > fTrackCuts->GetEtaMax())continue;//ETA CUT ON GENERATED!!!!!!!!!!!!!!!!!!!!!!!!!!
 	  
-	  ((TH2F*)fOutput->FindObject("hGen"))->Fill(partMC->Pt(),fEventCuts->GetCent());
+	  //pt     cent    IDgen        isph        y
+ 	  Double_t varSt[5];
+	  varSt[0]=partMC->Pt();
+	  varSt[1]=Cent;
+	  varSt[2]=(Double_t)fHelperPID->GetParticleSpecies(partMC);
+	  varSt[3]=(Double_t)partMC->IsPhysicalPrimary();
+	  varSt[4]=partMC->Y();
+	  ((THnSparseF*)fOutput->FindObject("NSparseHistSt"))->Fill(varSt);//stack loop
+	  
 	  //Printf("a particle");
- 
+	  
 	}
     }
   
   //main loop on tracks
   for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
     AliAODTrack* track = fAOD->GetTrack(iTracks);
-    if (!fTrackCuts->IsSelected(track,kTRUE)) continue;
+    if (!fTrackCuts->IsSelected(track,kTRUE)) continue; //track selection (rapidity selection NOT in the standard cuts)
+    Int_t IDrec=fHelperPID->GetParticleSpecies(track,kTRUE);//id from detector
+    Double_t y= track->Y(fHelperPID->GetMass((AliHelperParticleSpecies_t)IDrec));
+    Int_t IDgen=kSpUndefined;//set if MC
+    Int_t isph=-999;
+    Int_t iswd=-999;
     
-    ((TH2F*)fOutput->FindObject("hRec"))->Fill(track->Pt(),fEventCuts->GetCent());
+    if (arrayMC) {
+      AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(TMath::Abs(track->GetLabel()));
+      if (!partMC) { 
+	AliError("Cannot get MC particle");
+	continue; 
+      }
+      IDgen=fHelperPID->GetParticleSpecies(partMC);
+      isph=partMC->IsPhysicalPrimary();
+      iswd=partMC->IsSecondaryFromWeakDecay();//FIXME not working on old productions
+    }
     
-    Double_t var[4];
-    var[0]=fEventCuts->GetqV0C();
-    var[1]=fEventCuts->GetqV0A();
-    var[2]=track->Pt();
-    var[3]=fEventCuts->GetCent();
-    ((THnSparseF*)fOutput->FindObject("NSparseHist"))->Fill(var);
+    //pt     cent    Q vec     IDrec     IDgen       isph           iswd      y
+    Double_t varTrk[8];
+    varTrk[0]=track->Pt();
+    varTrk[1]=Cent;
+    varTrk[2]=Qvec;
+    varTrk[3]=(Double_t)IDrec;
+    varTrk[4]=(Double_t)IDgen;
+    varTrk[5]=(Double_t)isph;
+    varTrk[6]=(Double_t)iswd;
+    varTrk[7]=y;
+    ((THnSparseF*)fOutput->FindObject("NSparseHistTrk"))->Fill(varTrk);//track loop
     
     //Printf("a track");
     
   } // end loop on tracks
   
+  Double_t varEv[2];
+  varEv[0]=Cent;
+  varEv[1]=Qvec;
+  ((THnSparseF*)fOutput->FindObject("NSparseHistEv"))->Fill(varEv);//event loop
+  
   PostData(1, fOutput  );
   PostData(2, fEventCuts);
   PostData(3, fTrackCuts);
+  PostData(4, fHelperPID);
 }
 
 //_________________________________________________________________
