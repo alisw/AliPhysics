@@ -18,10 +18,7 @@ class AliPIDResponse;
 class AliAODMCParticle;
 class AliAODTrack;
 
-#include "AliSpectraAODHistoManager.h"
 #include "TNamed.h"
- 
-using namespace AliSpectraNameSpace;
 
 class AliSpectraAODTrackCuts : public TNamed
 {
@@ -65,7 +62,7 @@ class AliSpectraAODTrackCuts : public TNamed
   Bool_t CheckTrackType();
   Bool_t CheckTrackCuts();
   Bool_t CheckEtaCut();
-  Bool_t CheckYCut(AODParticleSpecies_t specie); // not included in standard cuts
+  Bool_t CheckYCut(Double_t mass); // not included in standard cuts
   Bool_t CheckDCACut();
   Bool_t CheckPCut();
   Bool_t CheckPtCut();
