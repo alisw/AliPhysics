@@ -36,10 +36,10 @@ void DrawLatex(Float_t x, Float_t y, Int_t color, const char* text, Float_t text
   latex->Draw();
 }
 
-// 0    1    2    3     4     5     6      7      8          9          10         11         12         13         14          15
-// norm,dphi,deta,norm2,dphi2,deta2,chi2_1,chi2_2,moment2phi,moment2eta,moment3phi,moment3eta,moment4phi,moment4eta,kurtosisphi,kurtosiseta,
-//            16   17   18   19    20    21    22     23     24         25         26         27         28         29         30          31         
-// second fit:norm,dphi,deta,norm2,dphi2,deta2,chi2_1,chi2_2,moment2phi,moment2eta,moment3phi,moment3eta,moment4phi,moment4eta,kurtosisphi,kurtosiseta,
+// 0    1    2    3     4     5     6      7      8          9          10     11     12         13         14          15
+// norm,dphi,deta,norm2,dphi2,deta2,chi2_1,chi2_2,moment2phi,moment2eta,phirms,etarms,moment4phi,moment4eta,kurtosisphi,kurtosiseta,
+//            16   17   18   19    20    21    22     23     24         25         26     27     28         29         30          31         
+// second fit:norm,dphi,deta,norm2,dphi2,deta2,chi2_1,chi2_2,moment2phi,moment2eta,phirms,etarms,moment4phi,moment4eta,kurtosisphi,kurtosiseta,
 // 32     33              34      
 // IAAFit,Yield(integral),IAAHist,
 //        35      36       37    38    39      40       41    42    43       44
@@ -479,7 +479,7 @@ void SubtractEtaGap1D(TH1* projPhi, TH1* projPhiSubtractPositive, TH1* projPhiSu
 void CalculateMomentsKurtosis(Float_t momentCalcLimit, TH1* proj, Int_t graphIDStart, Int_t histId, Float_t x, Float_t xE)
 {
   //   momentCalcLimit = 0.6;
-  for (Int_t n=2; n <= 4; n++)
+  for (Int_t n=2; n <= 4; n+=2) // skipping moment 3
   {
     Float_t moment = 0;
     Float_t sum = 0;
@@ -506,17 +506,101 @@ void CalculateMomentsKurtosis(Float_t momentCalcLimit, TH1* proj, Int_t graphIDS
   AddPoint(graphs[graphIDStart+6][histId], x, proj->GetKurtosis(1), xE, proj->GetKurtosis(11));
 }
 
+void AddRMS(TGraphErrors* graph, Float_t x, Float_t xE, TF1* func, TMatrixDSym& cov, Int_t sigma1, Int_t sigma2, Int_t weight)
+{
+  Float_t a = TMath::Abs(func->GetParameter(sigma1));
+  Float_t b = TMath::Abs(func->GetParameter(sigma2));
+  Float_t w = func->GetParameter(weight);
+
+  Float_t rms = a * w + b * (1.0 - w);
+
+  /*
+  func->Print(); Printf("%f %f %f", a, b, w); cov.Print();
+  Printf("%f %f %f %f %f %f", TMath::Power(w * func->GetParError(sigma1), 2),
+    TMath::Power((1.0 - w) * func->GetParError(sigma2), 2),
+    TMath::Power((a - b) * func->GetParError(weight), 2),
+    2 * (a - b) * w * cov(weight, sigma1),
+    2 * (a - b) * (1.0 - w) * cov(weight, sigma2),
+    2 * w * (1.0 - w) * cov(sigma1, sigma2));
+  */
+  
+  Float_t sigma_rms = 
+    TMath::Power(w * func->GetParError(sigma1), 2) + 
+    TMath::Power((1.0 - w) * func->GetParError(sigma2), 2) + 
+    TMath::Power((a - b) * func->GetParError(weight), 2) + 
+    2 * (a - b) * w * cov(weight, sigma1) +
+    2 * (a - b) * (1.0 - w) * cov(weight, sigma2) +
+    2 * w * (1.0 - w) * cov(sigma1, sigma2);
+    
+   if (sigma_rms < 0)
+   {
+     Printf("WARNING: error is negative!");
+     
+     sigma_rms = TMath::Power(w * func->GetParError(sigma1), 2) + 
+     TMath::Power((1.0 - w) * func->GetParError(sigma2), 2) + 
+     TMath::Power((a - b) * func->GetParError(weight), 2);
+   }
+    
+  sigma_rms = TMath::Sqrt(sigma_rms);
+  
+  Printf("RMS: %f +- %f", rms, sigma_rms);
+  AddPoint(graph, x, rms, xE, sigma_rms);
+}
+
+void AddKurtosis(TGraphErrors* graph, Float_t x, Float_t xE, TF1* func, TMatrixDSym& cov, Int_t sigma1, Int_t sigma2, Int_t weight)
+{
+  Float_t a = TMath::Abs(func->GetParameter(sigma1));
+  Float_t b = TMath::Abs(func->GetParameter(sigma2));
+  Float_t w = func->GetParameter(weight);
+
+  Float_t rms = a * w + b * (1.0 - w);
+  Float_t kurtosis = 3 * (w * TMath::Power(a, 4) + (1.0 - w) * TMath::Power(b, 4)) / rms / rms - 3;
+  
+  Float_t der_a = 12*a*a*a*w / TMath::Power(b*b+(a*a-b*b)*w, 2) - (12*a*w*(b*b*b*b+(a*a*a*a-b*b*b*b)*w))/TMath::Power(b*b+(a*a-b*b)*w, 3);
+  Float_t der_b = (3*(4*b*b*b-4*b*b*b*w))/TMath::Power((b*b+(a*a-b*b)*w), 2) - (6*(2*b-2*b*w)*(b*b*b*b+(a*a*a*a-b*b*b*b)* w))/TMath::Power(b*b+(a*a-b*b)*w, 3);
+  Float_t der_w = (3*(a*a*a*a-b*b*b*b))/TMath::Power(b*b+(a*a-b*b)*w, 2) - (6*(a*a-b*b)*(b*b*b*b+(a*a*a*a-b*b*b*b)*w))/TMath::Power(b*b+(a*a-b*b)*w,3);
+  
+  Float_t sigma_kurtosis = 
+    TMath::Power(der_a * func->GetParError(sigma1), 2) + 
+    TMath::Power(der_b * func->GetParError(sigma2), 2) + 
+    TMath::Power(der_w * func->GetParError(weight), 2) + 
+    2 * der_w * der_a * cov(weight, sigma1) +
+    2 * der_w * der_b * cov(weight, sigma2) +
+    2 * der_a * der_b * cov(sigma1, sigma2);
+    
+//   if (sigma_rms < 0)
+//   {
+//     Printf("WARNING: error is negative!");
+//     
+//     sigma_rms = TMath::Power(w * func->GetParError(sigma1), 2) + 
+//     TMath::Power((1.0 - w) * func->GetParError(sigma2), 2) + 
+//     TMath::Power((a - b) * func->GetParError(weight), 2);
+//   }
+    
+  sigma_kurtosis = TMath::Sqrt(sigma_kurtosis);
+  
+  Printf("Kurtosis: %f +- %f", kurtosis, sigma_kurtosis);
+  AddPoint(graph, x, kurtosis, xE, sigma_kurtosis);
+}
+
 Float_t kEtaLimit = 1.0;
 Float_t kOuterLimit = 1.59;
 
 
-Bool_t FitDeltaPhi2DOneFunction(TH2* hist, TCanvas* canvas, Int_t canvasPos, Int_t graphID, Float_t x, Float_t xE, Float_t yPosChi2, Bool_t quick, Int_t histId, Int_t limits, Bool_t twoTrack)
+Bool_t FitDeltaPhi2DOneFunction(TH2* hist, TCanvas* canvas, Int_t canvasPos, Int_t graphID, Float_t x, Float_t xE, Float_t yPosChi2, Bool_t quick, Int_t histId, Int_t limits, Bool_t /*twoTrack*/)
 {
   Bool_t success = kTRUE;
   Float_t etaLimit = kEtaLimit;
   Float_t outerLimit = kOuterLimit;
 
-  if (graphID >= 15)
+  // for pt,T < 3
+  if (graphID <= 10)
+    etaLimit = 1.4;
+  if (graphID <= 15)
+    etaLimit = 1.2;
+  
+  // for pT,a > 4
+  if (graphID == 18 || graphID == 23 || graphID == 24)
   {
     etaLimit = 0.5;
     outerLimit = 0.99;
@@ -528,6 +612,28 @@ Bool_t FitDeltaPhi2DOneFunction(TH2* hist, TCanvas* canvas, Int_t canvasPos, Int
   {
     etaFitUpperLimit = 0.6;
     initSigma = 0.4;
+  }
+  if ((graphID == 10 && histId == 4) || (graphID == 5 && histId == 0))
+    etaFitUpperLimit += 0.1;
+  
+  Printf("Limits: etaLimit = %f outerLimit = %f sigmaFitLimit = %f etaFitUpperLimit = %f initSigma = %f", etaLimit, outerLimit, sigmaFitLimit, etaFitUpperLimit, initSigma);
+
+  // set errors large for bins around (0,0)
+  if (1 && graphID <= 12)
+  {
+    Float_t exclusionRegion = 0.19;
+    if (graphID == 0)
+      exclusionRegion = 0.29;
+    if (graphID == 10 || graphID == 11 || graphID == 12)
+      exclusionRegion = 0.075;
+    
+    Printf("NOTE : Skipping bins at (0, 0)");
+    for (Int_t binx = hist->GetXaxis()->FindBin(-exclusionRegion); binx <= hist->GetXaxis()->FindBin(exclusionRegion); binx++)
+      for (Int_t biny = hist->GetYaxis()->FindBin(-exclusionRegion); biny <= hist->GetYaxis()->FindBin(exclusionRegion); biny++)
+      {
+// 	hist->SetBinContent(binx, biny,  0);
+	hist->SetBinError(binx, biny,  1e5);
+      }
   }
 
   hist->GetYaxis()->SetRangeUser(-outerLimit+0.01, outerLimit-0.01);
@@ -574,10 +680,10 @@ Bool_t FitDeltaPhi2DOneFunction(TH2* hist, TCanvas* canvas, Int_t canvasPos, Int
     //   func->SetParameters(1, 0.3, 0.3, 0.25, initSigma, initSigma);
     func->SetParLimits(0, 0, 10);
     func->SetParLimits(1, sigmaFitLimit, 0.6);
-    func->SetParLimits(2, sigmaFitLimit, etaFitUpperLimit + (((graphID == 5 && histId == 4) || (graphID == 0 && histId == 0)) ? 0.1 : 0));
-    func->SetParLimits(3, 0.1, 0.9);
-    func->SetParLimits(4, sigmaFitLimit, 0.6);
-    func->SetParLimits(5, sigmaFitLimit, etaFitUpperLimit + (((graphID == 5 && histId == 4) || (graphID == 0 && histId == 0)) ? 0.1 : 0));
+    func->SetParLimits(2, sigmaFitLimit, etaFitUpperLimit);
+    func->SetParLimits(3, 0.05, 0.95);
+    func->SetParLimits(4, sigmaFitLimit, 0.601);
+    func->SetParLimits(5, sigmaFitLimit, etaFitUpperLimit);
     for (Int_t i=6; i<bins+6; i++)
       func->FixParameter(i, func->GetParameter(i));
     hist->GetYaxis()->SetRangeUser(-etaLimit+0.01, etaLimit-0.01);
@@ -602,9 +708,10 @@ Bool_t FitDeltaPhi2DOneFunction(TH2* hist, TCanvas* canvas, Int_t canvasPos, Int
     if (fitResult != 0)
       success = kFALSE;
   }
-  Int_t fitResult = hist->Fit(func, "0", "");
-  Printf("Fit result: %d; Chi2/ndf: %f/%d", fitResult, func->GetChisquare(), func->GetNDF());
-  if (fitResult != 0)
+  TFitResultPtr fitResultPtr = hist->Fit(func, "S0", "");
+  TMatrixDSym cov = fitResultPtr->GetCovarianceMatrix();
+  Printf("Fit result: %d; Chi2/ndf: %f/%d", (Int_t) fitResultPtr, func->GetChisquare(), func->GetNDF());
+  if (fitResultPtr != 0)
     success = kFALSE;
 
   Printf("Trying 1 Gaussian...");
@@ -620,8 +727,8 @@ Bool_t FitDeltaPhi2DOneFunction(TH2* hist, TCanvas* canvas, Int_t canvasPos, Int
   func_clone->FixParameter(3, 1);
   func_clone->FixParameter(4, sigmaFitLimit);
   func_clone->FixParameter(5, sigmaFitLimit);
-  fitResult = hist->Fit(func_clone, "0R", "");
-  Printf("Fit result: %d", fitResult);
+  TFitResultPtr fitResultPtr2 = hist->Fit(func_clone, "S0R", "");
+  Printf("Fit result: %d", (Int_t) fitResultPtr2);
   
   // if both parameters are within 1%, refit with 1 Gaussian only
   if (TMath::Abs(1.0 - func->GetParameter(1) / func->GetParameter(4)) < 0.01 && TMath::Abs(1.0 - func->GetParameter(2) / func->GetParameter(5)) < 0.01)
@@ -629,8 +736,9 @@ Bool_t FitDeltaPhi2DOneFunction(TH2* hist, TCanvas* canvas, Int_t canvasPos, Int
     Printf("Parameters within 1%%. Using result from 1 Gaussian...");
     
     func = func_clone;
+    cov = fitResultPtr2->GetCovarianceMatrix();
     
-    if (fitResult != 0)
+    if (fitResultPtr2 != 0)
       success = kFALSE;
   }
   else if (func_clone->GetChisquare() * 0.99 < func->GetChisquare())
@@ -638,8 +746,9 @@ Bool_t FitDeltaPhi2DOneFunction(TH2* hist, TCanvas* canvas, Int_t canvasPos, Int
     Printf("1 Gaussian fit has a at maximum 1%% (%f %f) larger chi2. Using results from 1 Gaussian...", func_clone->GetChisquare(), func->GetChisquare());
     
     func = func_clone;
+    cov = fitResultPtr2->GetCovarianceMatrix();
     
-    if (fitResult != 0)
+    if (fitResultPtr2 != 0)
       success = kFALSE;
   } 
   
@@ -664,6 +773,12 @@ Bool_t FitDeltaPhi2DOneFunction(TH2* hist, TCanvas* canvas, Int_t canvasPos, Int
     AddPoint(graphs[3+16][graphID], x, func->GetParameter(3), xE, func->GetParError(3));
   else
     AddPoint(graphs[3+16][graphID], x, 1.0 - func->GetParameter(3), xE, func->GetParError(3));    
+  
+  //rms
+  AddRMS(graphs[10+16][graphID], x, xE, func, cov, 1, 4, 3);
+  AddRMS(graphs[11+16][graphID], x, xE, func, cov, 1+1, 4+1, 3);
+  AddKurtosis(graphs[14+16][graphID], x, xE, func, cov, 1, 4, 3);
+  AddKurtosis(graphs[15+16][graphID], x, xE, func, cov, 1+1, 4+1, 3);
   
   //   hist->Fit(func, "0RI", "");
 
@@ -696,7 +811,7 @@ Bool_t FitDeltaPhi2DOneFunction(TH2* hist, TCanvas* canvas, Int_t canvasPos, Int
   residuals->SetMaximum((max - min) / 2);
   residuals->Draw("SURF1");
 
-  Float_t chi2 = 0;
+  Double_t chi2 = 0;
   Int_t ndf = 0;
   for (Int_t i=hist->GetXaxis()->FindBin(-0.8); i<=hist->GetXaxis()->FindBin(0.8); i++)
     for (Int_t j=hist->GetYaxis()->FindBin(-etaLimit); j<=hist->GetYaxis()->FindBin(etaLimit); j++)
@@ -733,8 +848,8 @@ Bool_t FitDeltaPhi2DOneFunction(TH2* hist, TCanvas* canvas, Int_t canvasPos, Int
   funcHist = (TH2*) hist->Clone("funcHistb");
   funcHist->Reset();
   funcHist->Add(funcClone);
-  funcHist->SetMinimum(-(max - min) / 2);
-  funcHist->SetMaximum((max - min) / 2);
+  funcHist->SetMinimum(0);
+  funcHist->SetMaximum(max - min);
   funcHist->Draw("SURF1");
   
   // eta gap subtraction
@@ -742,8 +857,8 @@ Bool_t FitDeltaPhi2DOneFunction(TH2* hist, TCanvas* canvas, Int_t canvasPos, Int
   func->SetParameter(0, 0);
   TH2* subtractFlow = (TH2*) hist->Clone("subtractFlow");
   subtractFlow->Add(func, -1);
-  subtractFlow->SetMinimum(-(max - min) / 2);
-  subtractFlow->SetMaximum((max - min) / 2);
+  subtractFlow->SetMinimum(0);
+  subtractFlow->SetMaximum(max - min);
   subtractFlow->DrawCopy("SURF1");
   sumSummary->SetPoint(sumSummary->GetN(), sumSummary->GetN(), subtractFlow->Integral());
 /*
@@ -762,7 +877,7 @@ Bool_t FitDeltaPhi2DOneFunction(TH2* hist, TCanvas* canvas, Int_t canvasPos, Int
 */
 
   Float_t momentFitLimit = 0.8 - 1e-4;
-  if (graphID >= 15)
+  if (graphID >= 20)
     momentFitLimit = 0.4 - 1e-4;
 
   TH1* projx3 = hist->ProjectionX(Form("%s_projx3", hist->GetName()), hist->GetYaxis()->FindBin(-etaLimit+0.01), hist->GetYaxis()->FindBin(etaLimit-0.01));
@@ -848,8 +963,8 @@ Bool_t FitDeltaPhi2DOneFunction(TH2* hist, TCanvas* canvas, Int_t canvasPos, Int
   nBins = hist->GetXaxis()->FindBin(momentFitLimit-0.01) - hist->GetXaxis()->FindBin(-momentFitLimit+0.01)+1;
   projy2->Scale(1.0/nBins);
   
-  CalculateMomentsKurtosis(momentFitLimit, projx2, 8, graphID, x, xE);
-  CalculateMomentsKurtosis(momentFitLimit, projy2, 9, graphID, x, xE);
+//   CalculateMomentsKurtosis(momentFitLimit, projx2, 8, graphID, x, xE);
+//   CalculateMomentsKurtosis(momentFitLimit, projy2, 9, graphID, x, xE);
 
 //     return success;
   
@@ -859,8 +974,8 @@ Bool_t FitDeltaPhi2DOneFunction(TH2* hist, TCanvas* canvas, Int_t canvasPos, Int
   TH1* projy1 = subtractFlow->ProjectionY(Form("%s_projy1", hist->GetName()), hist->GetXaxis()->FindBin(-0.79), hist->GetXaxis()->FindBin(0.79));
   projy1->GetXaxis()->SetRangeUser(-momentFitLimit, momentFitLimit);
 
-  CalculateMomentsKurtosis(momentFitLimit, projx1, 8+16, graphID, x, xE);
-  CalculateMomentsKurtosis(momentFitLimit, projy1, 9+16, graphID, x, xE);
+//   CalculateMomentsKurtosis(momentFitLimit, projx1, 8+16, graphID, x, xE);
+//   CalculateMomentsKurtosis(momentFitLimit, projy1, 9+16, graphID, x, xE);
 
 //   TF1* twoGauss = new TF1("twoGauss", "gaus(0)+gaus(3)", -2, 2);
 //   twoGauss->SetParameters(1, 0, 0.3, 1, 0, 0.6);
@@ -903,19 +1018,6 @@ Bool_t FitDeltaPhi2DOneFunction(TH2* hist, TCanvas* canvas, Int_t canvasPos, Int
   // 1d fit (lots of params)
   AddPoint(etaWidthSummary, etaWidthSummary->GetN(), projy1->GetFunction("gaus")->GetParameter(2), 0, projy1->GetFunction("gaus")->GetParError(2));
 
-  // set errors large for bins potentially affected by two-track effects
-  if (0 && twoTrack)
-  {
-    Printf("NOTE : Skipping bins at (0, 0)");
-//     for (Int_t binx = hist->GetXaxis()->FindBin(-0.25); binx <= hist->GetXaxis()->FindBin(0.25); binx++)
-    for (Int_t binx = hist->GetXaxis()->FindBin(-0.01); binx <= hist->GetXaxis()->FindBin(0.01); binx++)
-      for (Int_t biny = hist->GetYaxis()->FindBin(-0.01); biny <= hist->GetYaxis()->FindBin(0.01); biny++)
-      {
-// 	hist->SetBinContent(binx, biny,  0);
-	hist->SetBinError(binx, biny,  1e5);
-      }
-  }
-
   Float_t etaFitLimit = outerLimit;
 
   Bool_t oneGaussian = kTRUE;
@@ -955,8 +1057,8 @@ Bool_t FitDeltaPhi2DOneFunction(TH2* hist, TCanvas* canvas, Int_t canvasPos, Int
   }
   canvas->cd(canvasPos++);
   func4phi->SetLineColor(4);
-  TFitResultPtr fitResultPtr = projx3->Fit(func4phi, "SIR", "SAME");
-  TMatrixDSym cov = fitResultPtr->GetCovarianceMatrix();
+  fitResultPtr = projx3->Fit(func4phi, "SIR", "SAME");
+  TMatrixDSym cov2 = fitResultPtr->GetCovarianceMatrix();
 
   projx3->Draw("SAME");
   projx3->SetLineColor(4);
@@ -995,7 +1097,7 @@ Bool_t FitDeltaPhi2DOneFunction(TH2* hist, TCanvas* canvas, Int_t canvasPos, Int
   {
     Float_t vector[3];
     for (Int_t i=2; i<5;i++)
-      vector[i-2] = cov[i][2]*func4phi->GetParameter(4) + cov[i][3]*(1-func4phi->GetParameter(4))+cov[i][4]*(TMath::Abs(func4phi->GetParameter(2))-TMath::Abs(func4phi->GetParameter(3)));
+      vector[i-2] = cov2[i][2]*func4phi->GetParameter(4) + cov2[i][3]*(1-func4phi->GetParameter(4))+cov2[i][4]*(TMath::Abs(func4phi->GetParameter(2))-TMath::Abs(func4phi->GetParameter(3)));
 
     Float_t sigma = TMath::Sqrt(vector[0]*func4phi->GetParameter(4) + vector[1]*(1-func4phi->GetParameter(4))+ vector[2]*(TMath::Abs(func4phi->GetParameter(2))-TMath::Abs(func4phi->GetParameter(3))));
     Float_t rms = TMath::Abs(func4phi->GetParameter(2))*func4phi->GetParameter(4)+TMath::Abs(func4phi->GetParameter(3))*(1-func4phi->GetParameter(4));
@@ -1029,7 +1131,7 @@ Bool_t FitDeltaPhi2DOneFunction(TH2* hist, TCanvas* canvas, Int_t canvasPos, Int
   canvas->cd(canvasPos++);
   func4eta->SetLineColor(4);
   fitResultPtr = projy3->Fit(func4eta, "SIR", "SAME");
-  cov = fitResultPtr->GetCovarianceMatrix();
+  cov2 = fitResultPtr->GetCovarianceMatrix();
 
   projy3->Draw("SAME");
   projy3->SetLineColor(4);
@@ -1044,6 +1146,9 @@ Bool_t FitDeltaPhi2DOneFunction(TH2* hist, TCanvas* canvas, Int_t canvasPos, Int
   for (Int_t i=projy3->FindBin(-momentFitLimit); i<=projy3->FindBin(momentFitLimit);i++)
   {
 //    Float_t temp = chi2;
+    if (projy3->GetBinError(i) <= 0)
+      continue;
+    
     chi2 += TMath::Power((projy3->GetBinContent(i)-func4eta->Eval(projy3->GetBinCenter(i)))/projy3->GetBinError(i),2);
 //    cerr << i << "\t" << projy3->GetBinCenter(i) << "\t" << chi2-temp << endl;
     ndf++;
@@ -1065,7 +1170,7 @@ Bool_t FitDeltaPhi2DOneFunction(TH2* hist, TCanvas* canvas, Int_t canvasPos, Int
   {
     Float_t vector[3];
     for (Int_t i=2; i<5;i++)
-      vector[i-2] = cov[i][2]*func4eta->GetParameter(4) + cov[i][3]*(1-func4eta->GetParameter(4))+cov[i][4]*(TMath::Abs(func4eta->GetParameter(2))-TMath::Abs(func4eta->GetParameter(3)));
+      vector[i-2] = cov2[i][2]*func4eta->GetParameter(4) + cov2[i][3]*(1-func4eta->GetParameter(4))+cov2[i][4]*(TMath::Abs(func4eta->GetParameter(2))-TMath::Abs(func4eta->GetParameter(3)));
 
     Float_t sigma = TMath::Sqrt(vector[0]*func4eta->GetParameter(4) + vector[1]*(1-func4eta->GetParameter(4))+ vector[2]*(TMath::Abs(func4eta->GetParameter(2))-TMath::Abs(func4eta->GetParameter(3))));
     Float_t rms = TMath::Abs(func4eta->GetParameter(2))*func4eta->GetParameter(4)+TMath::Abs(func4eta->GetParameter(3))*(1-func4eta->GetParameter(4));
@@ -1104,14 +1209,17 @@ Bool_t FitDeltaPhi2DOneFunction(TH2* hist, TCanvas* canvas, Int_t canvasPos, Int
 //   Float_t etaFitLimit = 0.5;
   TF2* func3 = new TF2("func3", "[0]+[1]*([4]/TMath::TwoPi()/[2]/[3]*exp(-0.5*((x/[2])**2+(y/[3])**2))+(1-[4])/TMath::TwoPi()/[5]/[6]*exp(-0.5*((x/[5])**2+(y/[6])**2)))", -0.5 * TMath::Pi(), 0.5 * TMath::Pi(), -etaFitLimit, etaFitLimit);
 
-  func3->SetParLimits(4, 0.1, 0.9);
-  func3->SetParLimits(1, 0, 10);
-  func3->SetParLimits(2, sigmaFitLimit, 0.7);
-  func3->SetParLimits(3, sigmaFitLimit, etaFitUpperLimit);
-  func3->SetParLimits(5, sigmaFitLimit, 0.7);
-  func3->SetParLimits(6, sigmaFitLimit, etaFitUpperLimit);
-  
+  func3->SetParameters(0, hist->GetBinContent(hist->GetXaxis()->FindBin(0.0), hist->GetYaxis()->FindBin(0.0)), 0.3, 0.3, 0.25, initSigma, initSigma);
+
   func3->FixParameter(0, 0);
+
+  func3->SetParLimits(4, 0.05, 0.95);
+  func3->SetParLimits(1, 0, 10);
+  func3->SetParLimits(2, sigmaFitLimit, 0.6);
+  func3->SetParLimits(3, sigmaFitLimit, etaFitUpperLimit);
+  func3->SetParLimits(5, sigmaFitLimit, 0.601);
+  func3->SetParLimits(6, sigmaFitLimit, etaFitUpperLimit);
+
 /*
   sigmaFitLimit = 0.09;
   etaFitUpperLimit = 0.12;
@@ -1123,29 +1231,16 @@ Bool_t FitDeltaPhi2DOneFunction(TH2* hist, TCanvas* canvas, Int_t canvasPos, Int
   func3->SetParLimits(6, sigmaFitLimit, etaFitUpperLimit);
   func3->FixParameter(0, 0);
 */
-  func3->SetParameters(0, hist->GetBinContent(hist->GetXaxis()->FindBin(0.0), hist->GetYaxis()->FindBin(0.0)) - mean, 0.3, 0.3, 0.25, initSigma, initSigma);
 //   for (Int_t i=0; i<6; i++)
 //     func3->SetParameter(i+1, func->GetParameter(i));
 
-  if (0 && histId == 0)
-  {
-    // central --> go to 1 Gaussian only
-    func3->SetParLimits(4, 1, 1);
-    func3->FixParameter(4, 1);
-    func3->FixParameter(5, sigmaFitLimit);
-    func3->FixParameter(6, sigmaFitLimit);
-  }
-  
-  // set errors 20% of the value for bins potentially affected by two-track effects
-//   hist->SetBinError(hist->GetXaxis()->FindBin(0.0001),  hist->GetYaxis()->FindBin(0.0001),  0.1 * hist->GetBinContent(hist->GetXaxis()->FindBin(0.0001),  hist->GetYaxis()->FindBin(0.0001)));
-//   hist->SetBinError(hist->GetXaxis()->FindBin(0.0001),  hist->GetYaxis()->FindBin(-0.0001), 0.1 * hist->GetBinContent(hist->GetXaxis()->FindBin(0.0001),  hist->GetYaxis()->FindBin(-0.0001)));
-//   hist->SetBinError(hist->GetXaxis()->FindBin(-0.0001), hist->GetYaxis()->FindBin(0.0001),  0.1 * hist->GetBinContent(hist->GetXaxis()->FindBin(-0.0001), hist->GetYaxis()->FindBin(0.0001)));
-//   hist->SetBinError(hist->GetXaxis()->FindBin(-0.0001), hist->GetYaxis()->FindBin(-0.0001), 0.1 * hist->GetBinContent(hist->GetXaxis()->FindBin(-0.0001), hist->GetYaxis()->FindBin(-0.0001)));
-
-  fitResult = hist->Fit(func3, "0R", "");
-  Printf("Fit result: %d", fitResult);
-  if (fitResult != 0)
+  fitResultPtr = hist->Fit(func3, "0RS", "");
+  Printf("Fit result: %d", (Int_t) fitResultPtr);
+//   return 0;
+  if (fitResultPtr != 0)
     success = kFALSE;
+  TMatrixDSym cov3 = fitResultPtr->GetCovarianceMatrix();
+  cov3.Print();
   
   Printf("Testing 1 Gaussian...");
 
@@ -1156,25 +1251,28 @@ Bool_t FitDeltaPhi2DOneFunction(TH2* hist, TCanvas* canvas, Int_t canvasPos, Int
   func3_clone->FixParameter(5, sigmaFitLimit);
   func3_clone->FixParameter(6, sigmaFitLimit);
   
-  fitResult = hist->Fit(func3_clone, "0R", "");
-  Printf("Fit result: %d", fitResult);
+  fitResultPtr2 = hist->Fit(func3_clone, "0RS", "");
+  Printf("Fit result: %d", (Int_t) fitResultPtr2);
   
   // if both parameters were within 1%, use 1 Gaussian parameters
   if (TMath::Abs(1.0 - func3->GetParameter(2) / func3->GetParameter(5)) < 0.01 && TMath::Abs(1.0 - func3->GetParameter(3) / func3->GetParameter(6)) < 0.01)
   {
     Printf("Parameters within 1%%. Using results from 1 Gaussian...");
     
-    if (fitResult != 0)
+    if (fitResultPtr2 != 0)
       success = kFALSE;
     func3 = func3_clone;
+    cov3 = fitResultPtr2->GetCovarianceMatrix();
+//     cov3.Print();
   }
   else if (func3_clone->GetChisquare() * 0.99 < func3->GetChisquare())
   {
-    Printf("1 Gaussian fit has a at maximum 1%% (%f %f) larger chi2. Using results from 1 Gaussian...", func3_clone->GetChisquare(), func3->GetChisquare());
+    Printf("1 Gaussian fit has a at maximum 1%% (%f/%d %f/%d) larger chi2. Using results from 1 Gaussian...", func3_clone->GetChisquare(), func3_clone->GetNDF(), func3->GetChisquare(), func3_clone->GetNDF());
     
-    if (fitResult != 0)
+    if (fitResultPtr2 != 0)
       success = kFALSE;
     func3 = func3_clone;
+    cov3 = fitResultPtr2->GetCovarianceMatrix();
   }
   
 //   hist->Fit(func3, "I0R", "");
@@ -1207,6 +1305,9 @@ Bool_t FitDeltaPhi2DOneFunction(TH2* hist, TCanvas* canvas, Int_t canvasPos, Int
   else
     AddPoint(graphs[3][graphID], x, 1.0 - func3->GetParameter(4), xE, func3->GetParError(4));
 
+  AddRMS(graphs[10][graphID], x, xE, func3, cov3, 2, 5, 4);
+  AddRMS(graphs[11][graphID], x, xE, func3, cov3, 2+1, 5+1, 4);
+  
   TH2* funcHist3 = (TH2*) hist->Clone("funcHist3");
   funcHist3->Reset();
   funcHist3->Add(func3);
@@ -1305,11 +1406,15 @@ void AnalyzeDeltaPhiEtaGap2D(const char* fileName, const char* outputFileName = 
 	continue;
       }
       
-      for (Int_t histId = 0; histId < NHists; histId++)
+      for (Int_t histId = 0; histId < 8; histId++)
       {
 // 	if (i != 1 || j != 2)
 // 	  continue;
-    
+
+	// skip 4.0 < p_{T,trig} < 8.0 - 6.00 < p_{T,assoc} < 8.00 above 40% and pp
+	if (i == 2 && j == 5 && (histId == 1 || histId == 2 || histId == 5))
+	  continue;
+	
 	hist1 = (TH2*) gFile->Get(Form("dphi_%d_%d_%d", i, j+1, histId));
 	if (!hist1)
         {
@@ -1344,8 +1449,8 @@ void AnalyzeDeltaPhiEtaGap2D(const char* fileName, const char* outputFileName = 
 	  for (Int_t k=0; k<NGraphs; k++)
 	    graphs[k][graphID]->SetTitle(hist1->GetTitle());
 	
-	Float_t centralityAxisMapping[] = { 5, 65, 100, 30, 15, 50 };
-	Float_t centralityAxisMappingE[] = { 5, 5, 0, 10, 5, 10 };
+	Float_t centralityAxisMapping[] = { 5, 70, 100, 30, 15, 50 };
+	Float_t centralityAxisMappingE[] = { 5, 10, 0, 10, 5, 10 };
 
 	Bool_t success = FitDeltaPhi2DOneFunction((TH2*) hist1, canvas, 1, graphID, centralityAxisMapping[histId], centralityAxisMappingE[histId], 0.9, kTRUE, histId, (i > 0) ? 1 : 0, (j <= 2 && histId != 2));
 	if (!success)
@@ -1434,7 +1539,7 @@ void AnalyzeDeltaPhiEtaGap2DExample(const char* fileName, Int_t i, Int_t j, Int_
   paveText->Draw();
   
   c->cd(1);
-  DrawALICELogo(kTRUE, 0.2, 0.7, 0.4, 0.9);
+//   DrawALICELogo(kTRUE, 0.2, 0.7, 0.4, 0.9);
   
 //   return;
     
@@ -1592,16 +1697,20 @@ void CalculateRMS(Int_t nHists, TGraphErrors** graph, TGraphErrors** graph2, TGr
       graph[histId]->GetY()[i] = rms;
       // error**2 = weight**2 * error_sigma**2 + (weight-1)**2 * error_sigma2**2 + (sigma1 + sigma2)**2 * error_weight**2
       // TODO this neglects some correlations
-      graph[histId]->GetEY()[i] = TMath::Sqrt(TMath::Power(weight[histId]->GetY()[i] * graph[histId]->GetEY()[i], 2) + 
-	TMath::Power((weight[histId]->GetY()[i] - 1) * graph2[histId]->GetEY()[i], 2) + TMath::Power((graph[histId]->GetY()[i] + graph2[histId]->GetY()[i]) * weight[histId]->GetEY()[i], 2));
+      graph[histId]->GetEY()[i] = TMath::Sqrt(
+	TMath::Power(weight[histId]->GetY()[i] * graph[histId]->GetEY()[i], 2) + 
+	TMath::Power((weight[histId]->GetY()[i] - 1) * graph2[histId]->GetEY()[i], 2) + 
+	TMath::Power((graph[histId]->GetY()[i] - graph2[histId]->GetY()[i]) * weight[histId]->GetEY()[i], 2)
+      );
     }
   }
 }
 
 Bool_t SkipGraph(Int_t i)
 {
+  return (i == 14);
 //  return (i == 1 || i == 7 || i == 9 || i == 13 || i == 14);
-  return (i == 7 || i == 9 || i == 13 || i == 14); //For the STAR comparison
+//   return (i == 7 || i == 9 || i == 13 || i == 14); //For the STAR comparison
 }
 
 Int_t skipGraphList[] =  { -1, -1, -1 };
@@ -1799,12 +1908,12 @@ const char* MCLabel = 0;
 
 void DrawCentrality(const char* canvasName, Int_t nHists, TGraphErrors** graph, Float_t min = 0, Float_t max = 0, const char* yLabel = "", TGraphErrors** systematicA = 0, TGraphErrors** systematicB = 0, TGraphErrors** graph2 = 0, TGraphErrors** systematic2 = 0, TGraphErrors** graph3 = 0, Int_t uncertaintyID = -1)
 {
-  Bool_t found = kTRUE;
+//   Bool_t found = kTRUE;
   TCanvas* c1 = 0;//(TCanvas*) gROOT->GetListOfCanvases()->FindObject(canvasName);
   if (!c1)
   {
     c1 = new TCanvas(canvasName, canvasName, 800, 600);
-    found = kFALSE;
+//     found = kFALSE;
   }
   c1->cd();
   
@@ -1967,8 +2076,8 @@ void DrawCentrality(const char* canvasName, Int_t nHists, TGraphErrors** graph, 
     DrawALICELogo(kTRUE, 0.41, 0.75, 0.54, 0.95);
   
   gSystem->mkdir(fgFolder, kTRUE);
-  c1->SaveAs(Form("%s/%s.gif", fgFolder.Data(), canvasName));
-  c1->SaveAs(Form("%s/%s.eps", fgFolder.Data(), canvasName));
+  c1->SaveAs(Form("%s/%s.png", fgFolder.Data(), canvasName));
+//   c1->SaveAs(Form("%s/%s.eps", fgFolder.Data(), canvasName));
 }
 
 void CalculateRMSSigma(TGraphErrors*** graphsTmp = 0)
@@ -2046,13 +2155,17 @@ void DrawResultsCentrality(const char* fileName = "graphs.root", const char* fil
 //    DrawCentrality("norm2phi(1D)", nHists, graphs[36], 0, 1.5, "N (a.u.)", (graphsWingRemoved) ? graphsWingRemoved[0+offset] : 0);
 //    DrawCentrality("norm2eta(1D)", nHists, graphs[40], 0, 1.5, "N (a.u.)", (graphsWingRemoved) ? graphsWingRemoved[0+offset] : 0);
 
+    
+    Bool_t uncertainties = kFALSE;
+
     CalculateRMSSigma();
     if (graphsWingRemoved)
       CalculateRMSSigma(graphsWingRemoved);
+//     DrawCentrality("phi_rms_centrality_old", nHists, graphs[1+offset], 0, 0.8, Form("#sigma_{#Delta#varphi} (%s) (rad.)", fitLabel), (graphsWingRemoved) ? graphsWingRemoved[1+offset] : 0, 0, 0, 0, 0, (uncertainties) ? 1 : -1);
+//     DrawCentrality("eta_rms_centrality_old", nHists, graphs[2+offset], 0, 0.8 + 0.4 / 16 * offset, Form("#sigma_{#Delta#eta} (%s)", fitLabel), (graphsWingRemoved) ? graphsWingRemoved[2+offset] : 0, 0, 0, 0, 0, (uncertainties) ? 1 : -1);
 
-    DrawCentrality("phi_rms_centrality", nHists, graphs[1+offset], 0, 0.8, Form("#sigma_{#Delta#varphi} (%s) (rad.)", fitLabel), (graphsWingRemoved) ? graphsWingRemoved[1+offset] : 0, 0, 0, 0, 0, 1);
-
-    DrawCentrality("eta_rms_centrality", nHists, graphs[2+offset], 0, 0.8 + 0.4 / 16 * offset, Form("#sigma_{#Delta#eta} (%s)", fitLabel), (graphsWingRemoved) ? graphsWingRemoved[2+offset] : 0, 0, 0, 0, 0, 1);
+    DrawCentrality("phi_rms_centrality", nHists, graphs[10+offset], 0, 0.8, Form("#sigma_{#Delta#varphi} (%s) (rad.)", fitLabel), (graphsWingRemoved) ? graphsWingRemoved[10+offset] : 0, 0, 0, 0, 0, (uncertainties) ? 1 : -1);
+    DrawCentrality("eta_rms_centrality", nHists, graphs[11+offset], 0, 0.8 + 0.4 / 16 * offset, Form("#sigma_{#Delta#eta} (%s)", fitLabel), (graphsWingRemoved) ? graphsWingRemoved[11+offset] : 0, 0, 0, 0, 0, (uncertainties) ? 1 : -1);
 
 //     return;
 //   DrawCentrality("phi_rms_centrality(1D)", nHists, graphs[37], 0, 0.8, Form("#sigma_{#Delta#varphi} (%s) (rad.)", fitLabel), (graphsWingRemoved) ? graphsWingRemoved[1+offset] : 0, 0, 0, 0, 0, 1);
@@ -2060,13 +2173,13 @@ void DrawResultsCentrality(const char* fileName = "graphs.root", const char* fil
 //   DrawCentrality("eta_rms_centrality(1D)", nHists, graphs[41], 0, 0.8 + 0.4 / 16 * offset, Form("#sigma_{#Delta#eta} (%s)", fitLabel), (graphsWingRemoved) ? graphsWingRemoved[2+offset] : 0, 0, 0, 0, 0, 1);
 //   DrawCentrality("chi2_phi(1D)", nHists, graphs[43], 0, 150, "#chi^{2}/ndf");
 //   DrawCentrality("chi2_eta(1D)", nHists, graphs[44], 0, 150, "#chi^{2}/ndf");
-/*    
-    DrawCentrality("chi2_1", nHists, graphs[6+offset], 0.5, 5, "#chi^{2}/ndf (full region)");
-    DrawCentrality("chi2_2", nHists, graphs[7+offset], 0.5, 5, "#chi^{2}/ndf (peak region)");
+    DrawCentrality("chi2_1", nHists, graphs[6+offset], 0.5, 5, "#chi^{2}/ndf (full region)", (graphsWingRemoved) ? graphsWingRemoved[6+offset] : 0);
+    DrawCentrality("chi2_2", nHists, graphs[7+offset], 0.5, 5, "#chi^{2}/ndf (peak region)", (graphsWingRemoved) ? graphsWingRemoved[7+offset] : 0);
     
-    DrawCentrality("sigma_phi", nHists, graphs[8+offset], 0, 1, "#sigma_{#Delta#varphi} (rad.)", (graphsWingRemoved) ? graphsWingRemoved[8+offset] : 0, 0, 0, 0, 0, 1);
-    DrawCentrality("sigma_eta", nHists, graphs[9+offset], 0, 1, "#sigma_{#Delta#eta}", (graphsWingRemoved) ? graphsWingRemoved[9+offset] : 0, 0, 0, 0, 0, 1);
+    DrawCentrality("sigma_phi", nHists, graphs[8+offset], 0, 1, "#sigma_{#Delta#varphi} (rad.)", (graphsWingRemoved) ? graphsWingRemoved[8+offset] : 0, 0, 0, 0, 0, (uncertainties) ? 1 : -1);
+    DrawCentrality("sigma_eta", nHists, graphs[9+offset], 0, 1, "#sigma_{#Delta#eta}", (graphsWingRemoved) ? graphsWingRemoved[9+offset] : 0, 0, 0, 0, 0, (uncertainties) ? 1 : -1);
 
+/*    
 //     DrawCentrality("moment3_phi", nHists, graphs[10+offset], -0.5, 0.5, "moment3 #varphi (rad.)", (graphsWingRemoved) ? graphsWingRemoved[10+offset] : 0, 0, 0, 0, 0, 0);
 //     DrawCentrality("moment3_eta", nHists, graphs[11+offset], -0.5, 0.5, "moment3 #eta", (graphsWingRemoved) ? graphsWingRemoved[11+offset] : 0, 0, 0, 0, 0, 0);
 */
@@ -2077,8 +2190,8 @@ void DrawResultsCentrality(const char* fileName = "graphs.root", const char* fil
 */
   }
   
-//  DrawCentrality("kurtosisphi_centrality", 12, graphs[14+offset], -1.5, 2.5, "Kurtosis #Delta#varphi", (graphsWingRemoved) ? graphsWingRemoved[14+offset] : 0, 0, 0, 0, 0, 2);
-//  DrawCentrality("kurtosiseta_centrality", 12, graphs[15+offset], -1.5, 2.5, "Kurtosis #Delta#eta", (graphsWingRemoved) ? graphsWingRemoved[15+offset] : 0, 0, 0, 0, 0, 2);
+ DrawCentrality("kurtosisphi_centrality", 12, graphs[14+offset], -1.5, 2.5, "Kurtosis #Delta#varphi", (graphsWingRemoved) ? graphsWingRemoved[14+offset] : 0, 0, 0, 0, 0, 2);
+ DrawCentrality("kurtosiseta_centrality", 12, graphs[15+offset], -1.5, 2.5, "Kurtosis #Delta#eta", (graphsWingRemoved) ? graphsWingRemoved[15+offset] : 0, 0, 0, 0, 0, 2);
 }
 
 /*
@@ -2129,7 +2242,7 @@ void DrawResultsCentrality(const char* fileName = "graphs.root", const char* fil
 
 void MCComparison(const char* fileNameData, const char* fileNameWingRemoved, const char* fileNameHijing, const char* fileNameAMPT, Int_t offset = 0)
 {
-  Int_t nHists = 12; //NHists;
+  Int_t nHists = 14; //NHists;
 
   ReadGraphs(fileNameWingRemoved);
   CalculateRMSSigma();
@@ -2153,7 +2266,7 @@ void MCComparison(const char* fileNameData, const char* fileNameWingRemoved, con
 
   if (0)
   {
-    Int_t graphList[] = { 1, 2, 8, 9, 14, 15 };
+    Int_t graphList[] = { 10, 11, 8, 9, 14, 15 };
     for (Int_t i=0; i<6; i++)
     {
       graphs[graphList[i]+offset][5] = new TGraphErrors;
@@ -2163,17 +2276,17 @@ void MCComparison(const char* fileNameData, const char* fileNameWingRemoved, con
     }
   }
   
-  DrawCentrality("phi_rms_centrality_mc", nHists, graphs[1+offset], 0.2, 0.8, Form("#sigma_{#Delta#varphi} (%s) (rad.)", fitLabel), graphsWingRemoved[1+offset], 0, graphs1[1+offset], 0, graphs2[1+offset], 1);
+  DrawCentrality("phi_rms_centrality_mc", nHists, graphs[10+offset], 0, 0.8, Form("#sigma_{#Delta#varphi} (%s) (rad.)", fitLabel), graphsWingRemoved[1+offset], 0, graphs1[10+offset], 0, graphs2[10+offset], 1);
   
 //   return;
   
-  DrawCentrality("eta_rms_centrality_mc", nHists, graphs[2+offset], 0.2, 0.8 + 0.4 / 16 * offset, Form("#sigma_{#Delta#eta} (%s)", fitLabel), graphsWingRemoved[2+offset], 0, graphs1[2+offset], 0, graphs2[2+offset], 1);
+  DrawCentrality("eta_rms_centrality_mc", nHists, graphs[11+offset], 0, 0.8 + 0.4 / 16 * offset, Form("#sigma_{#Delta#eta} (%s)", fitLabel), graphsWingRemoved[11+offset], 0, graphs1[11+offset], 0, graphs2[2+offset], 1);
   
-  DrawCentrality("sigma_phi_mc", nHists, graphs[8+offset], 0.2, 0.6, "#sigma_{#Delta#varphi} (rad.)", graphsWingRemoved[8+offset], 0, graphs1[8+offset], 0, graphs2[8+offset], 1);
-  DrawCentrality("sigma_eta_mc", nHists, graphs[9+offset], 0.2, 0.6, "#sigma_{#Delta#eta}", graphsWingRemoved[9+offset], 0, graphs1[9+offset], 0, graphs2[9+offset], 1);
+  DrawCentrality("sigma_phi_mc", nHists, graphs[8+offset], 0, 0.6, "#sigma_{#Delta#varphi} (rad.)", graphsWingRemoved[8+offset], 0, graphs1[8+offset], 0, graphs2[8+offset], 1);
+  DrawCentrality("sigma_eta_mc", nHists, graphs[9+offset], 0, 0.6, "#sigma_{#Delta#eta}", graphsWingRemoved[9+offset], 0, graphs1[9+offset], 0, graphs2[9+offset], 1);
 
-  DrawCentrality("kurtosisphi_centrality_mc", nHists, graphs[14+offset], -1.5, 2.5, "Kurtosis #Delta#varphi", graphsWingRemoved[14+offset], 0, graphs1[14+offset], 0, graphs2[14+offset], 2);
-  DrawCentrality("kurtosiseta_centrality_mc", nHists, graphs[15+offset], -1.5, 2.5, "Kurtosis #Delta#eta", graphsWingRemoved[15+offset], 0, graphs1[15+offset], 0, graphs2[15+offset], 2);
+  DrawCentrality("kurtosisphi_centrality_mc", nHists, graphs[14+offset], -1.5, 3.5, "Kurtosis #Delta#varphi", graphsWingRemoved[14+offset], 0, graphs1[14+offset], 0, graphs2[14+offset], 2);
+  DrawCentrality("kurtosiseta_centrality_mc", nHists, graphs[15+offset], -1.5, 3.5, "Kurtosis #Delta#eta", graphsWingRemoved[15+offset], 0, graphs1[15+offset], 0, graphs2[15+offset], 2);
 
 /*  DrawCentrality("phi_rms_centrality_mc", nHists, graphs[1], 0, 0.8, "#sigma_{#varphi} (fit) (rad.)", graphs[1+16], graphsWingRemoved[1],  graphs1[1], 0, graphs2[1], 1);
   DrawCentrality("eta_rms_centrality_mc", nHists, graphs[2], 0, 0.8, "#sigma_{#eta} (fit)", graphs[2+16], graphsWingRemoved[2], graphs1[2], 0, graphs2[2], 1);
@@ -2208,7 +2321,7 @@ void ShowWingEffect(const char* fileNameData, const char* fileNameWingRemoved, I
 
 void ShowFitEffect(const char* fileNameData)
 {
-  Int_t nHists = 12; //NHists;
+  Int_t nHists = NHists;
 
   ReadGraphs(fileNameData);
   CalculateRMSSigma();
@@ -2221,6 +2334,9 @@ void ShowFitEffect(const char* fileNameData)
 
   DrawCentrality("kurtosisphi_centrality_mc", nHists, graphs[14], -2, 4, "Kurtosis #varphi", graphs[14+16]);
   DrawCentrality("kurtosiseta_centrality_mc", nHists, graphs[15], -2, 4, "Kurtosis #eta", graphs[15+16]);
+
+  DrawCentrality("chi2_1", nHists, graphs[6], 0.5, 5, "chi2_1", graphs[6+16]);
+  DrawCentrality("chi2_2", nHists, graphs[7], 0.5, 5, "chi2_2", graphs[7+16]);
 }
 
 void CompareSigmas(const char* fileNameData)
@@ -3049,9 +3165,70 @@ TH1* GetSystUnc(TH1* hist, Int_t i, Int_t j, Int_t histId, Int_t etaPhi)
   return systUnc;
 }
 
+void Draw2DExamples(const char* histFileName)
+{
+  Int_t is[] = { 0, 0, 1, 1, 2, 2, 3 };
+  Int_t js[] = { 1, 2, 2, 3, 4, 5, 6 };
+  Int_t cs[] = { 0, 3, 5, 1 };
+  Float_t outerLimit = kOuterLimit;
+
+  TFile::Open(histFileName);
+
+  TCanvas* canvas = new TCanvas("2d", "2d", 1800, 600);
+  canvas->Divide(7, 4);
+  Int_t cID = 1;
+
+  for (Int_t c=0; c<4; c++)
+  {
+    for (Int_t i=0; i<7; i++)
+    {
+      canvas->cd(cID++);
+
+      TH2* hist = (TH2*) gFile->Get(Form("dphi_%d_%d_%d", is[i], js[i], cs[c]));
+      if (!hist)
+	continue;
+
+      // NOTE fix normalization. these 2d correlations come out of AliUEHist normalized by dphi bin width, but not deta
+      hist->Scale(1.0 / hist->GetYaxis()->GetBinWidth(1));
+      hist->GetZaxis()->SetTitle(kCorrFuncTitle);
+      hist->GetZaxis()->SetTitleOffset(1.9);
+      
+      hist->Rebin2D(2, 2);
+      hist->Scale(0.25);
+  
+      TString label(hist->GetTitle());
+      label.ReplaceAll(".00", " GeV/c");
+      label.ReplaceAll(".0", " GeV/c");
+      TObjArray* objArray = label.Tokenize("-");
+      TPaveText* paveText = new TPaveText(0.52, 0.72, 0.95, 0.95, "BRNDC");
+      paveText->SetTextSize(0.035);
+      paveText->SetFillColor(0);
+      paveText->SetShadowColor(0);
+      paveText->AddText(objArray->At(0)->GetName());
+      paveText->AddText(objArray->At(1)->GetName());
+      if (objArray->GetEntries() == 4)
+	paveText->AddText(Form("Pb-Pb 2.76 TeV %s-%s", objArray->At(2)->GetName(), objArray->At(3)->GetName()));
+      else
+	paveText->AddText(Form("%s 2.76 TeV", objArray->At(2)->GetName()));
+      paveText->AddText("|#eta| < 0.9");
+      
+      gPad->SetLeftMargin(0.15);
+      hist->GetYaxis()->SetRangeUser(-outerLimit, outerLimit);
+      hist->GetXaxis()->SetTitleOffset(1.5);
+      hist->GetYaxis()->SetTitleOffset(1.7);
+      hist->SetStats(0);
+      hist->SetTitle("a) Correlation");
+      TH2* clone = (TH2*) hist->Clone(Form("%s_clone", hist->GetName()));
+    //   clone->GetXaxis()->SetRangeUser(-TMath::Pi() / 2, TMath::Pi() / 2);
+      clone->Draw("SURF1");
+      paveText->Draw();
+    }
+  }
+}
+
 Bool_t disableUncertainties = kTRUE;
 
-void DrawExample(const char* histFileName, Int_t i, Int_t j, Int_t histId, TH1** projPhi, TH1** projEta, TH1** projPhiSyst, TH1** projEtaSyst, Bool_t Ratio = kFALSE)
+void DrawExample(const char* histFileName, Int_t i, Int_t j, Int_t histId, TH1** projPhi = 0, TH1** projEta = 0, TH1** projPhiSyst = 0 , TH1** projEtaSyst = 0, Bool_t Ratio = kFALSE)
 {
   Float_t etaLimit = kEtaLimit;
   Float_t outerLimit = kOuterLimit;
@@ -3072,7 +3249,7 @@ void DrawExample(const char* histFileName, Int_t i, Int_t j, Int_t histId, TH1**
   hist->GetZaxis()->SetTitle(kCorrFuncTitle);
   hist->GetZaxis()->SetTitleOffset(1.9);
   
-  if (graphID >= 15)
+  if (graphID >= 20)
   {
     etaLimit = 0.5;
     outerLimit = 0.99;
@@ -3103,7 +3280,7 @@ void DrawExample(const char* histFileName, Int_t i, Int_t j, Int_t histId, TH1**
   hist->SetStats(0);
   hist->SetTitle("a) Correlation");
   TH2* clone = (TH2*) hist->Clone(Form("%s_clone", hist->GetName()));
-  clone->GetXaxis()->SetRangeUser(-TMath::Pi() / 2, TMath::Pi() / 2);
+//   clone->GetXaxis()->SetRangeUser(-TMath::Pi() / 2, TMath::Pi() / 2);
   clone->Draw("SURF1");
   paveText->Draw();
   
@@ -3180,6 +3357,9 @@ void DrawExample(const char* histFileName, Int_t i, Int_t j, Int_t histId, TH1**
       etaRatio->SetBinContent(x,proj2->GetBinContent(proj2->FindBin(proj2->GetBinCenter(x)))+proj2->GetBinContent(proj2->FindBin(-1*proj2->GetBinCenter(x))));
       etaRatio->SetBinError(x,sqrt((proj2->GetBinError(proj2->FindBin(proj2->GetBinCenter(x)))*proj2->GetBinError(proj2->FindBin(proj2->GetBinCenter(x)))+proj2->GetBinError(proj2->FindBin(-1*proj2->GetBinCenter(x)))*proj2->GetBinError(proj2->FindBin(-1*proj2->GetBinCenter(x))))));
     }
+    
+  if (!projPhi || ! projEta)
+    return;
 
   if (Ratio)
   {
@@ -3197,7 +3377,7 @@ void DrawExample(const char* histFileName, Int_t i, Int_t j, Int_t histId, TH1**
   c->SaveAs(Form("ex/%s.png", c->GetName()));
   c->SaveAs(Form("ex/%s.eps", c->GetName()));
 
-  if (1)
+  if (0)
   {
     c = new TCanvas(Form("ex_%d_%d_%d_a", i, j, histId), Form("ex_%d_%d_%d_a", i, j, histId), 800, 800);
     gPad->SetLeftMargin(0.15);
@@ -3523,7 +3703,7 @@ void DrawFullCentralityDependence(const char* histFileName)
   for (Int_t histId = 0; histId<6; histId++)
   {
     projectionsPhi[count] = 0;
-    DrawExample(histFileName, 0, 1, histId, &projectionsPhi[count], &projectionsEta[count], &projectionsPhiSyst[count], &projectionsEtaSyst[count]);
+    DrawExample(histFileName, 1, 1, histId, &projectionsPhi[count], &projectionsEta[count], &projectionsPhiSyst[count], &projectionsEtaSyst[count]);
     count++;
   }
   
@@ -4234,8 +4414,8 @@ void v2DependencyToy2(const char* DataFileName, const char* ToyFileName, const c
 
 void DrawResults()
 {
-  const char* mainFile = "graphs_120511.root";
-  const char* wingFile = "graphs_120511_wingremoved.root";
+  const char* mainFile = "graphs_131112.root";
+  const char* wingFile = "graphs_131112_wingremoved.root";
   const char* hijing = "graphs_hijing_120515.root";
   const char* ampt = "graph_ampt_120516.root";
   
@@ -4283,29 +4463,45 @@ void DrawResults()
   }
 }
 
-void DrawAMPTComparison()
+void DrawAllMCComparisons()
 {
-  const char* mainFile = "graphs_120511.root";
-  const char* wingFile = "graphs_120511_wingremoved.root";
-  const char* ampt2 = "ampt_stringmelting_norescattering/graphs.root";
-  const char* ampt3 = "ampt_default/graphs.root";
-  
-  drawLogo = 1;
+  const char* mainFile = "graphs_131112.root";
+  const char* wingFile = "graphs_131112_wingremoved.root";
+  const char* hijing = "graphs_hijing_131122.root";
+  const char* ampt2 = "graphs_ampt_norescattering_131115.root";
+  const char* ampt3 = "graphs_ampt_default_131115.root";
+  const char* ampt4 = "graphs_ampt_nostringmelting_131115.root";
+  const char* ampt5 = "graphs_ampt_tuned_131115.root";
+
+//   drawLogo = 1;
 //   DrawResultsCentrality(mainFile, wingFile); return;
 //   MCLabel = "Data  HIJING 1.36 / Pythia 6 P-0"; MCComparison(mainFile, wingFile, hijing, 0); return;
 
   gROOT->SetBatch(kTRUE);
 
-  skipGraphList[0] = 5;
-  skipGraphList[1] = 10;
+//   skipGraphList[0] = 5;
+//   skipGraphList[1] = 10;
 
-  MCLabel = "Data  AMPT 2.25 no resc / Pythia 6 P-0";
+  MCLabel = "Data  HIJING / Pythia 6 P-0";
+  fgFolder.Form("results/%s", "hijing");
+  MCComparison(mainFile, wingFile, hijing, 0);
+
+  MCLabel = "Data  AMPT melting / Pythia 6 P-0";
   fgFolder.Form("results/%s", "ampt-norescattering");
   MCComparison(mainFile, wingFile, ampt2, 0);
 
-  MCLabel = "Data  AMPT 1.25 / Pythia 6 P-0";
+  MCLabel = "Data  AMPT melting + resc / Pythia 6 P-0";
   fgFolder.Form("results/%s", "ampt-default");
   MCComparison(mainFile, wingFile, ampt3, 0);
+
+  MCLabel = "Data  AMPT resc / Pythia 6 P-0";
+  fgFolder.Form("results/%s", "ampt-nostringmelting");
+  MCComparison(mainFile, wingFile, ampt4, 0);
+
+  MCLabel = "Data  AMPT melting + resc 50% flow / Pythia 6 P-0";
+  fgFolder.Form("results/%s", "ampt-tuned");
+  MCComparison(mainFile, wingFile, ampt5, 0);
+  
 }
 
 void CalculateIAA(const char* GraphFileName, const char* HistFileName, const char* outputFileName = "graphs.root")
@@ -4642,9 +4838,9 @@ void CompareHistDraw(const char* HistFileName1, const char* HistFileName2, Int_t
     }
   }
   
-  hist1->GetYaxis()->SetRangeUser(-1.99, 1.99);
-  hist2->GetYaxis()->SetRangeUser(-1.99, 1.99);
-  ratio->GetYaxis()->SetRangeUser(-1.99, 1.99);
+  hist1->GetYaxis()->SetRangeUser(-1.79, 1.79);
+  hist2->GetYaxis()->SetRangeUser(-1.79, 1.79);
+  ratio->GetYaxis()->SetRangeUser(-1.79, 1.79);
   
   c->cd(1);
   hist1->Draw("surf1");
@@ -4658,6 +4854,62 @@ void CompareHistDraw(const char* HistFileName1, const char* HistFileName2, Int_t
   new TCanvas;
   hist1->ProjectionX("p1", hist1->GetYaxis()->FindBin(-1.5), hist1->GetYaxis()->FindBin(1.5))->Draw();
   hist2->ProjectionY("p2", hist2->GetXaxis()->FindBin(-1.5), hist2->GetXaxis()->FindBin(1.5))->DrawCopy("SAME")->SetLineColor(2);
+}
+
+void CompareHistDraw(const char* HistFileName1, Int_t i, Int_t j, Int_t histId, Int_t i2, Int_t j2, Int_t histId2)
+{
+  TFile* input1 = TFile::Open(HistFileName1);
+
+  TH2* hist1 = (TH2*) input1->Get(Form("dphi_%d_%d_%d", i, j+1, histId));
+  if (!hist1)
+  {
+    cout << "Hist1 does not exist." << endl;
+    return;
+  }
+
+  TH2* hist2 = (TH2*) input1->Get(Form("dphi_%d_%d_%d", i2, j2+1, histId2));
+  if (!hist2)
+  {
+    cout << "Hist2 does not exist." << endl;
+    return;
+  }
+  // NOTE fix normalization. these 2d correlations come out of AliUEHist normalized by dphi bin width, but not deta
+  hist1->Scale(1.0 / hist1->GetYaxis()->GetBinWidth(1));
+  hist2->Scale(1.0 / hist2->GetYaxis()->GetBinWidth(1));
+  
+  Printf("Integrals: %f %f", hist1->Integral(1, hist1->GetNbinsX(), hist1->GetYaxis()->FindBin(-1.19), hist1->GetYaxis()->FindBin(1.19)), hist2->Integral(1, hist1->GetNbinsX(), hist1->GetYaxis()->FindBin(-1.19), hist1->GetYaxis()->FindBin(1.19)));
+
+  if (1) //SubtractEtaGap
+  {
+    Float_t etaLimit = kEtaLimit;
+    Float_t outerLimit = kOuterLimit;
+
+    SubtractEtaGap(hist1, etaLimit, outerLimit, kFALSE);
+    SubtractEtaGap(hist2, etaLimit, outerLimit, kFALSE);
+  }
+  
+  TCanvas *c = new TCanvas(Form("c%d", canvasCount), Form("c%d", canvasCount), 600, 900);
+  c->Divide(1,3);
+  canvasCount++;
+
+  TH2* ratio = (TH2*) hist1->Clone("ratio");
+  ratio->Divide(hist2);
+  
+  if (hist1->GetEntries() < 1e4 || hist2->GetEntries() < 1e4)
+  {
+    cout << "Hist1: " << hist1->GetEntries() << " entries" << endl << "Hist2: " << hist2->GetEntries() << " entries" << endl;
+  }
+
+  hist1->GetYaxis()->SetRangeUser(-1.79, 1.79);
+  hist2->GetYaxis()->SetRangeUser(-1.79, 1.79);
+  ratio->GetYaxis()->SetRangeUser(-1.79, 1.79);
+  
+  c->cd(1);
+  hist1->Draw("surf1");
+  c->cd(2);
+  hist2->Draw("surf1");
+  c->cd(3);
+  ratio->Draw("colz");
 }
 
 void CompareSTARpTa(const char* STARFileName, const char* GraphFileName)
@@ -5550,7 +5802,7 @@ void TwoPlusOneCorrelations()
   TH2D* as2 = new TH2D("as2", ";delta eta; delta phi", bins, -2, 2, bins, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
   TH2D* ns2Same = new TH2D("ns2Same", ";delta eta; delta phi", bins, -2, 2, bins, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
   TH2D* as2Same = new TH2D("as2Same", ";delta eta; delta phi", bins, -2, 2, bins, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
-  TH2D* as2AllSame = new TH2D("as2AllSame", ";delta eta; delta phi", bins, -2, 2, bins, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
+//   TH2D* as2AllSame = new TH2D("as2AllSame", ";delta eta; delta phi", bins, -2, 2, bins, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
   TH2D* ns2Diff = new TH2D("ns2Diff", ";delta eta; delta phi", bins, -2, 2, bins, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
   TH2D* as2Diff = new TH2D("as2Diff", ";delta eta; delta phi", bins, -2, 2, bins, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
 
@@ -5643,7 +5895,7 @@ void TwoPlusOneCorrelations()
 
 	Float_t weight = 1;
 	// apply flow
-// 	weight *= weights[j] * weights[k];
+	weight *= weights[j] * weights[k];
 	
 	ns->Fill(deltaEta, deltaPhi, weight);
       }
