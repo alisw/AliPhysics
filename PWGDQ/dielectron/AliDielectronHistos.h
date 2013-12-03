@@ -113,18 +113,18 @@ public:
 
   void UserHistogram(const char* histClass,const char *name, const char* title,
 		     const TVectorD * const binsX, UInt_t valTypeX, UInt_t valTypeW)
-  { UserProfile(histClass,name,title,kNoProfile,binsX,valTypeX,valTypeW); }
+  { UserProfile(histClass,name,title,kNoProfile,binsX,valTypeX,"",valTypeW); }
 
   void UserHistogram(const char* histClass,const char *name, const char* title,
                      const TVectorD * const binsX, const TVectorD * const binsY, UInt_t valTypeX, UInt_t valTypeY,
 		     UInt_t valTypeW=kNoWeights)
-  { UserProfile(histClass,name,title,kNoProfile,binsX,binsY,valTypeX,valTypeY,valTypeW); }
+  { UserProfile(histClass,name,title,kNoProfile,binsX,binsY,valTypeX,valTypeY,"",valTypeW); }
 
   void UserHistogram(const char* histClass,const char *name, const char* title,
                      const TVectorD * const binsX, const TVectorD * const binsY, const TVectorD * const binsZ,
                      UInt_t valTypeX, UInt_t valTypeY, UInt_t valTypeZ,
 		     UInt_t valTypeW=kNoWeights)
-  { UserProfile(histClass,name,title,kNoProfile,binsX,binsY,binsZ,valTypeX,valTypeY,valTypeZ,valTypeW); }
+  { UserProfile(histClass,name,title,kNoProfile,binsX,binsY,binsZ,valTypeX,valTypeY,valTypeZ,"",valTypeW); }
 
   void UserHistogram(const char* histClass, TObject* hist, UInt_t valTypes=kNoAutoFill);
 
