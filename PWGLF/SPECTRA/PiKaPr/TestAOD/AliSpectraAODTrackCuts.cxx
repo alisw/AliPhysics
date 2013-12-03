@@ -157,13 +157,11 @@ Bool_t AliSpectraAODTrackCuts::CheckEtaCut()
   return kFALSE;
 }
 
-Bool_t AliSpectraAODTrackCuts::CheckYCut(AODParticleSpecies_t species) 
+Bool_t AliSpectraAODTrackCuts::CheckYCut(Double_t mass) 
 {
   // check if the rapidity is within the set range
   Double_t y=-1000;
-  if (species == kSpProton) { y = fTrack->Y(9.38271999999999995e-01); }
-  if ( species == kSpKaon ) { y = fTrack->Y(4.93676999999999977e-01); }
-  if ( species == kSpPion)  { y = fTrack->Y(1.39570000000000000e-01); }
+  if (mass > 0.) { y = fTrack->Y(mass); }//negative mass for unidentified particles
   if (TMath::Abs(y) > fYCut || y < -998.) return kFALSE;
   return kTRUE;
 }
