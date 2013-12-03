@@ -50,6 +50,8 @@
 
 const Int_t kColors[6]={1,2,3,4,6,7};
 const Int_t kMarkers[6]={20,21,24,25,24,25};
+TObjArray garrayFit(3);
+
 
 void MakeLocalDistortionCurrentTree(Int_t npointsZ=20000, Int_t id=0);
 void MakeSmoothKernelStudy(Int_t npoints, Int_t nkernels, Int_t mapID);
@@ -401,7 +403,7 @@ void MakeSmoothKernelStudy(Int_t npoints, Int_t nkernels, Int_t mapID){
   //
   const Double_t cutMaxDist=3;
   const Double_t cutMinDist=0.00001;
-  
+  const Int_t kMinPoints=10;
   TFile *foutput = TFile::Open("MeasureResidual.root");
   TFile *finput = TFile::Open("RealResidualScaled.root");
   AliTPCCorrectionLookupTable *mapIn = (AliTPCCorrectionLookupTable *)finput->Get("map");
@@ -419,16 +421,22 @@ void MakeSmoothKernelStudy(Int_t npoints, Int_t nkernels, Int_t mapID){
   TVectorD  sigmaKernelRPhi(nkernels);
   TVectorD  sigmaKernelZ(nkernels);
   TVectorD  fitValues(nkernels);
+  TVectorD  fitValuesIn(nkernels);
+  TVectorD  fitValuesInR(nkernels);
   TVectorD  fitValuesErr(nkernels);
   TVectorD  fitValuesChi2(nkernels);
   TVectorD  fitSumW(nkernels);
   TVectorD  fitValuesN(nkernels);
   //
   TLinearFitter *fitters[nkernels];
+  TLinearFitter *fittersIn[nkernels];
+  TLinearFitter *fittersInR[nkernels];
   for (Int_t ipoint=0; ipoint<npoints; ipoint++){ 
     if (ipoint%10==0) printf("%d\n",ipoint);
     for (Int_t i=0; i<nkernels; i++) {
       fitters[i]=new TLinearFitter(7,"hyp6");
+      fittersIn[i]=new TLinearFitter(7,"hyp6");
+      fittersInR[i]=new TLinearFitter(7,"hyp6");
     }
     Double_t phi = gRandom->Rndm()*TMath::TwoPi();
     Double_t r   = 85+gRandom->Rndm()*(245-85);
@@ -465,8 +473,12 @@ void MakeSmoothKernelStudy(Int_t npoints, Int_t nkernels, Int_t mapID){
 	  Double_t y2=(r+dR)*TMath::Sin(phi+dphi);
 	  Double_t z2=(r+dR)*TMath::Sin(phi+dphi);
 	  Double_t drphiOutput2=AliTPCCorrection::GetCorrXYZ(x2,y2,z2,1,1);
+	  Double_t drphiInput2=AliTPCCorrection::GetCorrXYZ(x2,y2,z2,1,2);
+	  Double_t drInput2=AliTPCCorrection::GetCorrXYZ(x2,y2,z2,0,2);
 	  if (TMath::Abs(drphiOutput2)<cutMinDist) continue; // hard cut beter condition needed
 	  if (TMath::Abs(drphiOutput2)>cutMaxDist) continue; // beter condition needed
+	  if (TMath::Abs(drphiInput2)<cutMinDist) continue; // hard cut beter condition needed
+	  if (TMath::Abs(drphiInput2)>cutMaxDist) continue; // beter condition needed
 
 	  Double_t xfit[7]={dphi,dphi*dphi,dR,dR*dR,dZ,dZ*dZ};
 	  for (Int_t i=0; i<nkernels; i++) {
@@ -477,23 +489,48 @@ void MakeSmoothKernelStudy(Int_t npoints, Int_t nkernels, Int_t mapID){
 	    weight+=0.00000001;
 	    fitSumW[i]+=weight;
 	    fitters[i]->AddPoint(xfit,drphiOutput2,0.1/weight);
+	    fittersIn[i]->AddPoint(xfit,drphiInput2,0.1/weight);
+	    fittersInR[i]->AddPoint(xfit,drInput2,0.1/weight);
 	  }
 	}
       }
-    }
+    }   
+    
     for (Int_t ifix=0; ifix<=1; ifix++){
+      Bool_t isOK=kTRUE;
       for (Int_t i=0; i<nkernels; i++) {
+	if( fitters[i]->GetNpoints() < kMinPoints) {
+	  isOK=kFALSE;
+	  break;
+	}
+	if (fitSumW[i]<0.01/*kMinWeight*/){
+	  isOK=kFALSE;
+	  break;
+	}
 	if (ifix==1){
 	  fitters[i]->FixParameter(4,0);
 	  fitters[i]->FixParameter(5,0);
 	  fitters[i]->FixParameter(6,0);
+	  fittersIn[i]->FixParameter(4,0);
+	  fittersIn[i]->FixParameter(5,0);
+	  fittersIn[i]->FixParameter(6,0);
+	  fittersInR[i]->FixParameter(4,0);
+	  fittersInR[i]->FixParameter(5,0);
+	  fittersInR[i]->FixParameter(6,0);
 	}
 	fitters[i]->Eval();
+	fittersIn[i]->Eval();
+	fittersInR[i]->Eval();
+	//
 	fitValues[i]=fitters[i]->GetParameter(0);
+	fitValuesIn[i]=fittersIn[i]->GetParameter(0);
+	fitValuesInR[i]=fittersInR[i]->GetParameter(0);
+	//
 	fitValuesErr[i]=fitters[i]->GetParError(0);
 	fitValuesChi2[i]=TMath::Sqrt(fitters[i]->GetChisquare()/fitSumW[i]);
 	fitValuesN[i]=fitters[i]->GetNpoints();
       }
+      if (isOK){
       (*pcstream)<<"smoothLookup"<<
 	"ipoint"<<ipoint<<
 	"mapID="<<mapID<<
@@ -511,7 +548,9 @@ void MakeSmoothKernelStudy(Int_t npoints, Int_t nkernels, Int_t mapID){
 	"drInput="<<drInput<<       // input lookup tables disotrions
 	"drOutput="<<drOutput<<     // reconstructed lookup tables distortion
 	// Smoothed values
-	"fitValues.="<<&fitValues<<
+	"fitValuesIn.="<<&fitValuesIn<<     // smoothed input values
+	"fitValuesInR.="<<&fitValuesInR<<     // smoothed input values
+	"fitValues.="<<&fitValues<<         // smoothed measuured values
 	"fitValuesErr.="<<&fitValuesErr<<
 	"fitValuesChi2.="<<&fitValuesChi2<<
 	"fitValuesN.="<<&fitValuesN<<
@@ -521,9 +560,12 @@ void MakeSmoothKernelStudy(Int_t npoints, Int_t nkernels, Int_t mapID){
 	"sigmaKernelRPhi.="<<&sigmaKernelRPhi<<
 	"sigmaKernelZ.="<<&sigmaKernelZ<<
 	"\n";
+      }
     }
     for (Int_t i=0; i<nkernels; i++) {
       delete fitters[i];
+      delete fittersIn[i];
+      delete fittersInR[i];
     }
   }
   delete pcstream;
@@ -537,18 +579,53 @@ void MakeSmoothKernelStudy(Int_t npoints, Int_t nkernels, Int_t mapID){
 }
 void MakeSmoothKernelStudyDraw(){
   //
-  //
+  // make figure for kernel smoothing Draw
   //
   TChain * chain = AliXRDPROOFtoolkit::MakeChain("smooth.list", "smoothLookup", 0,100);
   TH2* hisInputsS[3]={0};
+  //
+  // 1.) Resolution not smoothed make nice plots
+  //
+  TH2 * his2DBase[10]={0};
+  TH1 * hisSigmas[10]={0};
+  chain->Draw("10*drphiInput:r>>hisIn(30,85,245)","","colz");
+  his2DBase[0]=(TH2*)chain->GetHistogram()->Clone();
+  chain->Draw("10*drphiOutput-drphiInput:r>>hisOutIn(30,85,245)","","colz");
+  his2DBase[1]=(TH2*)chain->GetHistogram()->Clone();
+  his2DBase[0]->FitSlicesY(0,0,-1,0,"QNR",&garrayFit);
+  hisSigmas[0] = (TH1*)garrayFit.At(2)->Clone();
+  his2DBase[1]->FitSlicesY(0,0,-1,0,"QNR",&garrayFit);
+  hisSigmas[1] = (TH1*)garrayFit.At(2)->Clone();
+  //
+  TCanvas *canvasInOut = new TCanvas("deltaInOut","deltaInOut",600,500);
+  for (Int_t i=0; i<2; i++) {
+    hisSigmas[i]->SetMinimum(0); 
+    hisSigmas[i]->SetMaximum(1.5); 
+    hisSigmas[i]->SetMarkerStyle(kMarkers[i]);
+    hisSigmas[i]->SetMarkerColor(kColors[i]);
+    hisSigmas[i]->GetXaxis()->SetTitle("R (cm)");
+    hisSigmas[i]->GetYaxis()->SetTitle("#Delta_{R#phi} (mm)");
+    if (i==0) hisSigmas[i]->Draw("");
+    hisSigmas[i]->Draw("same");
+  }
+  TLegend * legend = new TLegend(0.4,0.5,0.89,0.89,"Residual #Delta_{r#phi}");
+  legend->SetBorderSize(0);
+  legend->AddEntry(hisSigmas[0],"#Delta_{current}-k#Delta_{mean}");
+  legend->AddEntry(hisSigmas[1],"(#Delta_{current}-k#Delta_{mean})_{align}-(#Delta_{current}-k#Delta_{mean})");
+  legend->Draw();
+  canvasInOut->SaveAs("canvasDistortionAlgimentInOut.pdf");
+  canvasInOut->SaveAs("canvasDistortionAlgimentInOut.png");
+
   chain->Draw("fitValues.fElements-drphiInput:pow(sigmaKernelR.fElements*sigmaKernelRPhi.fElements*sigmaKernelZ.fElements,1/3.)>>his0Diff(10,3,15,100,-0.3,0.3)","ifix==0&&fitValuesErr.fElements<0.2","colz");  
-  hisInputs[0]= chain->GetHistogram()->Clone();  
+  hisInputsS[0]= (TH2*)chain->GetHistogram()->Clone();  
   chain->Draw("fitValues.fElements-drphiInput:pow(sigmaKernelR.fElements*sigmaKernelRPhi.fElements*sigmaKernelZ.fElements,1/3.)>>his1Diff(10,3,15,100,-0.3,0.3)","ifix==1&&fitValuesErr.fElements<0.2","colz");
   //
-  hisInputsS[1]= chain->GetHistogram()->Clone();  
+  hisInputsS[1]= (TH2*)chain->GetHistogram()->Clone();  
   chain->Draw("drphiOutput-drphiInput:pow(sigmaKernelR.fElements*sigmaKernelRPhi.fElements*sigmaKernelZ.fElements,1/3.)>>hisDiff(10,3,15,100,-0.3,0.3)","ifix==1&&fitValuesErr.fElements<0.2","colz");
-hisInputsS[2]= chain->GetHistogram()->Clone();  
+  hisInputsS[2]= (TH2*)chain->GetHistogram()->Clone();  
   
+
+
 }
 
 void FFTexample(){

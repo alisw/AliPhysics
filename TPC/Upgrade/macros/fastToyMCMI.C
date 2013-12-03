@@ -490,3 +490,57 @@ void testExtrapolationError(Int_t ntracks, Int_t useGeo, Int_t seed){
   canvasResolutionFit->SaveAs("canvasResolutionFit.png");
 
 }
+
+
+void DrawInerpolationResolution(){
+
+  // resRphi = 0.004390 + oneOverPt*(-0.136403) + oneOverPt*radius*(0.002266) + oneOverPt*radius*radius*(-0.000006);
+
+  //TF1 f1("f1","[0]+[1]*(
+}
+
+void MakeRobustFitTest(){
+  //
+  //
+  //
+  // 
+  TH2F *   his2D   = new TH2F("his2D", "his2D",50,0,1., 100,-2.,2.);
+  TH2F *   his2DW   = new TH2F("his2DW", "his2DW",50,0,1., 100,-2.,2.);
+  Double_t probRND = 0.1;
+  Int_t    ntracks = 20*50000;
+  Int_t    nclusters = 16;
+  Double_t sigmaCluster=0.1;
+  //
+  for (Int_t itrack=0; itrack<ntracks; itrack++){
+    Double_t x     = gRandom->Rndm();
+    Double_t widthTrack = 0.1/(0.5+gRandom->Exp(0.5));
+    Double_t y     = 0;
+    y= gRandom->Gaus(0.0,widthTrack);
+    Bool_t isRandom=gRandom->Rndm()<probRND;
+    //if (gRandom->Rndm()<probRND) y= -2+4*gRandom->Rndm();  
+    //
+    Double_t sigmaTrack= TMath::Sqrt(sigmaCluster*sigmaCluster/nclusters+widthTrack*widthTrack);
+    for (Int_t icl=0; icl<nclusters; icl++){
+      his2D->Fill(x,y+gRandom->Gaus(0,sigmaCluster));
+      his2DW->Fill(x,y+gRandom->Gaus(0,sigmaCluster),1/sigmaTrack);
+    }
+  }
+  {
+    his2D->Draw("colz");
+    his2DW->Draw("colz");
+    his2D->FitSlicesY();
+    his2DW->FitSlicesY();    
+    his2D_1->Draw();
+    his2DW_1->Draw("same");
+  }
+  TMath::RMS(50, &(his2D_1->GetArray()[1]));
+
+  TH1D * phis1D = his2D->ProjectionY("aaa",5,5);
+  Int_t nbinsY= phis1D->GetXaxis()->GetNbins();
+  TVectorD vector(nbinsY, &(phis1D->GetArray()[1]));
+
+  TStatToolkit::MakeStat1D((TH2*)his2D, 1,0.8,0,25,1)->Draw("alp");
+  TStatToolkit::MakeStat1D((TH2*)his2D, 1,0.8,2,20,2)->Draw("lp");
+  TStatToolkit::MakeStat1D((TH2*)his2D, 1,0.8,4,21,4)->Draw("lp");
+
+}
