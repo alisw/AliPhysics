@@ -201,7 +201,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   if (fNumberDensityPhi)
   {
     fCentralityDistribution = new TH1F("fCentralityDistribution", ";centrality;count", fNumberDensityPhi->GetEventHist()->GetNBins(1), fNumberDensityPhi->GetEventHist()->GetAxis(1, 0)->GetXbins()->GetArray());
-    fCentralityCorrelation = new TH2F("fCentralityCorrelation", ";centrality;multiplicity", 101, 0, 101, 200, 0, 4000);
+    fCentralityCorrelation = new TH2F("fCentralityCorrelation", ";centrality;multiplicity", 404, 0, 101, 200, 0, 4000);
   }
   
   fITSClusterMap = new TH3F("fITSClusterMap", "; its cluster map; centrality; pT", 256, -0.5, 255.5, 20, 0, 100.001, 100, 0, 20);
