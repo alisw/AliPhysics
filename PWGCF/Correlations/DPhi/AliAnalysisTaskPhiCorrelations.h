@@ -40,7 +40,7 @@ class AliMCEvent;
 class AliMCEventHandler;
 class AliUEHistograms;
 class AliVParticle;
-class TH1D;
+class TH1;
 class TObjArray;
 class AliEventPoolManager;
 class AliESDEvent;
@@ -80,6 +80,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     // histogram settings
     void SetEfficiencyCorrectionTriggers(THnF* hist) { fEfficiencyCorrectionTriggers = hist; }
     void SetEfficiencyCorrectionAssociated(THnF* hist) { fEfficiencyCorrectionAssociated = hist; }
+    void SetCentralityWeights(TH1* hist) { fCentralityWeights = hist; }
 
     // for event QA
     void   SetTracksInVertex( Int_t val ){ fnTracksVertex = val; }
@@ -141,6 +142,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void CleanUp(TObjArray* tracks, TObject* mcObj, Int_t maxLabel);
     void SelectCharge(TObjArray* tracks);
     AliGenEventHeader* GetFirstHeader();
+    Bool_t AcceptEventCentralityWeight(Double_t centrality);
 
     // General configuration
     Int_t               fDebug;           //  Debug flag
@@ -166,8 +168,9 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     AliUEHistograms*  fHistos;       //! points to class to handle histograms/containers  
     AliUEHistograms*  fHistosMixed;       //! points to class to handle mixed histograms/containers  
     
-    THnF* fEfficiencyCorrectionTriggers;   // if non-0 this efficiency correction is applied on the fly to the filling for trigger particles. The factor is multiplicative, i.e. should contain 1/efficiency. Axes: eta, pT, centrality, z-vtx
+    THnF* fEfficiencyCorrectionTriggers;     // if non-0 this efficiency correction is applied on the fly to the filling for trigger particles. The factor is multiplicative, i.e. should contain 1/efficiency. Axes: eta, pT, centrality, z-vtx
     THnF* fEfficiencyCorrectionAssociated;   // if non-0 this efficiency correction is applied on the fly to the filling for associated particles. The factor is multiplicative, i.e. should contain 1/efficiency. Axes: eta, pT, centrality, z-vtx
+    TH1* fCentralityWeights;		     // for centrality flattening
     
     // Handlers and events
     AliAODEvent*             fAOD;             //! AOD Event 
@@ -223,7 +226,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef(AliAnalysisTaskPhiCorrelations, 39); // Analysis task for delta phi correlations
+    ClassDef(AliAnalysisTaskPhiCorrelations, 40); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle

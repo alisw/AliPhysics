@@ -109,6 +109,7 @@ fHistos(0x0),
 fHistosMixed(0),
 fEfficiencyCorrectionTriggers(0),
 fEfficiencyCorrectionAssociated(0),
+fCentralityWeights(0),
 // handlers and events
 fAOD(0x0),
 fESD(0x0),
@@ -571,7 +572,9 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       {
 	for (Int_t i=0; i<cocktailHeader->GetHeaders()->GetEntries(); i++)
 	{
-	  Printf("%d particles in header:", (dynamic_cast<AliGenEventHeader*> (cocktailHeader->GetHeaders()->At(i)))->NProduced());
+	  AliGenEventHeader* headerTmp = dynamic_cast<AliGenEventHeader*> (cocktailHeader->GetHeaders()->At(i));
+	  if (headerTmp)
+	    Printf("%d particles in header:", headerTmp->NProduced());
 	  cocktailHeader->GetHeaders()->At(i)->Dump();
 	}
       }
@@ -1165,7 +1168,15 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     delete tracks;
     return;
   }
-
+  
+  if (fCentralityWeights && !AcceptEventCentralityWeight(centrality))
+  {
+    AliInfo(Form("Rejecting event because of centrality weighting: %f", centrality));
+    fHistos->FillEvent(centrality, AliUEHist::kCFStepAnaTopology);
+    delete tracks;
+    return;
+  }
+  
   // correlate particles with...
   TObjArray* tracksCorrelate = 0;
   if (fParticleSpeciesAssociated != fParticleSpeciesTrigger || fTriggersFromDetector > 0)
@@ -1375,4 +1386,24 @@ void AliAnalysisTaskPhiCorrelations::SelectCharge(TObjArray* tracks)
   
   if (before > tracks->GetEntriesFast())
     AliInfo(Form("Reduced from %d to %d", before, tracks->GetEntriesFast())); 
+}
+
+//____________________________________________________________________
+Bool_t AliAnalysisTaskPhiCorrelations::AcceptEventCentralityWeight(Double_t centrality)
+{
+  // rejects "randomly" events such that the centrality gets flat
+  // uses fCentralityWeights histogram
+
+  // TODO code taken and adapted from AliRDHFCuts; waiting for general class AliCentralityFlattening
+  
+  Double_t weight = fCentralityWeights->GetBinContent(fCentralityWeights->FindBin(centrality));
+  Double_t centralityDigits = centrality*10000. - (Int_t)(centrality*10000.);
+  
+  Bool_t result = kFALSE;
+  if (centralityDigits < weight) 
+    result = kTRUE;
+  
+  AliInfo(Form("Centrality: %f; Digits: %f; Weight: %f; Result: %d", centrality, centralityDigits, weight, result));
+  
+  return result;
 }
