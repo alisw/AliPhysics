@@ -100,7 +100,8 @@ class AliHelperPID : public TNamed
   //PID functions
   // User should call ONLY the function GetParticleSpecies and set the PID strategy in the steering macro!
   Int_t GetParticleSpecies(AliVTrack * trk, Bool_t FIllQAHistos);//calculate the PID according to the slected method.
-  
+  Int_t GetParticleSpecies(AliVParticle * part);
+
   Int_t GetIDBayes(AliVTrack * trk, Bool_t FIllQAHistos);//calculate the PID according to bayesian PID
   UInt_t CalcPIDCombined(const AliVTrack *track,const AliPIDResponse *PIDResponse, Int_t detMask, Double_t* prob) const;
   void CalculateNSigmas(AliVTrack * trk, Bool_t FIllQAHistos);//Calcuate nsigma[ipart][idet], fill NSigma histos
@@ -110,6 +111,7 @@ class AliHelperPID : public TNamed
   Int_t GetMCParticleSpecie(AliVEvent* event, AliVTrack * trk, Bool_t FIllQAHistos);//calculate the PID according to MC truth
   void CheckTOF(AliVTrack * trk);//check the TOF matching and set fHasTOFPID
   Double_t TOFBetaCalc(AliVTrack *track) const;
+  Double_t GetMass(AliHelperParticleSpecies_t id) const;
   Long64_t Merge(TCollection* list);
   
  private:

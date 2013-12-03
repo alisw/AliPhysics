@@ -199,6 +199,25 @@ Int_t AliHelperPID::GetParticleSpecies(AliVTrack * trk, Bool_t FIllQAHistos){
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
+Int_t AliHelperPID::GetParticleSpecies(AliVParticle * part) {
+  // return PID according to MC truth
+  switch(TMath::Abs(part->PdgCode())){
+  case 2212:
+    return kSpProton;
+    break;
+  case 321:
+    return kSpKaon;
+    break;
+  case 211:
+    return kSpPion;
+    break;
+  default:
+    return kSpUndefined;
+  } 
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
 Int_t AliHelperPID::GetIDBayes(AliVTrack * trk, Bool_t FIllQAHistos){ 
   
   Bool_t *IDs=GetAllCompatibleIdentitiesNSigma(trk,FIllQAHistos);
@@ -581,6 +600,17 @@ Double_t AliHelperPID::TOFBetaCalc(AliVTrack *track) const{
   Double_t tof= tofTime*1E-3; // ns, average T0 fill subtracted, no info from T0detector 	 
   tof=tof*c;
   return length/tof;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+Double_t AliHelperPID::GetMass(AliHelperParticleSpecies_t id) const{
+  //return Mass according to AliHelperParticleSpecies_t. If undefined return -999.
+  Double_t mass=-999.;
+  if (id == kSpProton) { mass=9.38271999999999995e-01; }
+  if (id == kSpKaon)   { mass=4.93676999999999977e-01; }
+  if (id == kSpPion)    { mass=1.39570000000000000e-01; }
+  return mass;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
