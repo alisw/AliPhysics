@@ -1397,7 +1397,7 @@ Bool_t AliAnalysisTaskPhiCorrelations::AcceptEventCentralityWeight(Double_t cent
   // TODO code taken and adapted from AliRDHFCuts; waiting for general class AliCentralityFlattening
   
   Double_t weight = fCentralityWeights->GetBinContent(fCentralityWeights->FindBin(centrality));
-  Double_t centralityDigits = centrality*10000. - (Int_t)(centrality*10000.);
+  Double_t centralityDigits = centrality*100. - (Int_t)(centrality*100.);
   
   Bool_t result = kFALSE;
   if (centralityDigits < weight) 
