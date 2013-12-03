@@ -81,6 +81,7 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
                     fMustClean(kFALSE),
                     fIsRemote(kFALSE),
                     fLocked(kFALSE),
+                    fMCLoop(kFALSE),
                     fDebug(0),
                     fSpecialOutputLocation(""), 
                     fTasks(0),
@@ -151,6 +152,7 @@ AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
                     fMustClean(other.fMustClean),
                     fIsRemote(other.fIsRemote),
                     fLocked(other.fLocked),
+                    fMCLoop(other.fMCLoop),
                     fDebug(other.fDebug),
                     fSpecialOutputLocation(""), 
                     fTasks(NULL),
@@ -216,6 +218,7 @@ AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& othe
       fInitOK     = other.fInitOK;
       fIsRemote   = other.fIsRemote;
       fLocked     = other.fLocked;
+      fMCLoop     = other.fMCLoop;
       fDebug      = other.fDebug;
       fTasks      = new TObjArray(*other.fTasks);
       fTopTasks   = new TObjArray(*other.fTopTasks);
