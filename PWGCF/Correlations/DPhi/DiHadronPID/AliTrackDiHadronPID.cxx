@@ -453,3 +453,16 @@ Bool_t AliTrackDiHadronPID::CopyMCInfo() {
 	return fMCInfoAvailable;
 
 }
+
+// -----------------------------------------------------------------------
+Bool_t AliTrackDiHadronPID::UnknownSpecies(Int_t species) const {
+
+	if (fDebug > 2) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (species < 0 || species > 2) {
+		cout<<"ERROR: Unknown species"<<endl;
+		return kTRUE;
+	} else {
+		return kFALSE;
+	}
+
+}
