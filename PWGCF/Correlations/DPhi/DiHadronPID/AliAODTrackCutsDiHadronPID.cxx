@@ -278,7 +278,7 @@ void AliAODTrackCutsDiHadronPID::InitializeDefaultHistoNamesAndAxes() {
  							1.05,1.10,1.15,1.20,1.25,1.30,1.35,1.40,1.45,1.50,1.55,1.60,1.65,1.70,
  							1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0,
  							3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0};
-	for (Int_t iPtBins = 0; iPtBins < 57; iPtBins++) {fPtAxis[iPtBins] = ptaxis[iPtBins];}
+	for (Int_t iPtBins = 0; iPtBins < 52; iPtBins++) {fPtAxis[iPtBins] = ptaxis[iPtBins];}
  	fNPtBins = 51;
 /*
  	Double_t ptaxis[57] = {0.20,0.25,0.30,0.35,0.40,0.45,0.50,0.55,0.60,0.65,0.70,0.75,0.80,0.85,0.90,0.95,1.00,
@@ -1112,7 +1112,7 @@ Bool_t AliAODTrackCutsDiHadronPID::IsSelectedData(AliTrackDiHadronPID* track, Do
 
 	// Fill the filterbit histogram.
 	for (Int_t iBin = (fRelevantBitsArray->GetSize() - 1); iBin >= 0; --iBin) {
-		if ( (track->GetFilterMap()&(1<<fRelevantBitsArray->At(iBin))) == (1<<fRelevantBitsArray->At(iBin))) {
+		if ( (((Int_t)track->GetFilterMap())&(1<<fRelevantBitsArray->At(iBin))) == (1<<fRelevantBitsArray->At(iBin))) {
 			fHistAcceptedFilterBits->Fill(iBin);
 			break;
 		}
@@ -1459,9 +1459,31 @@ Bool_t AliAODTrackCutsDiHadronPID::FillTOFMismatchHistos(Int_t histoclass, AliTr
 
 		// Note that a possible Y cut is only done on the PID cuts!
 		if (!CheckRapidity(track->Y(iSpecies))) continue;
+/*
+		if (!track->GetNumberOfSigmasTOF(iSpecies)) {
+			cout<<"NSigma TOF: "<<track->GetNumberOfSigmasTOF(iSpecies)<<endl;
+			cout<<"TOFsignal exp: "<<track->GetTOFsignalExpected(iSpecies)<<endl;
+			cout<<"TOFsigma exp: "<<track->GetTOFsigmaExpected(iSpecies)<<endl;
+			cout<<endl;
+		}
+*/
 
 		Double_t TOFmismatchSigma = randomhittime - track->GetTOFsignalExpected(iSpecies);
-		if (fUseNSigmaOnPIDAxes) {TOFmismatchSigma /= track->GetTOFsigmaExpected(iSpecies);}
+		if (fUseNSigmaOnPIDAxes) {
+			if (track->GetTOFsigmaExpected(iSpecies) < 10e-30) {
+				/*
+				cout << "ERROR: division through (almost) zero on the mismatch signal..."<<endl;
+				cout << "Random time: "<<randomhittime<<endl;
+				cout << "Exp TOF signal track for species "<<iSpecies<<" "<<track->GetTOFsignalExpected(iSpecies)<<endl;
+				cout << "Exp Mismatch signal assuming species "<< iSpecies<<": "<<TOFmismatchSigma<<endl;
+				cout << "Expected TOF sigma: "<<track->GetTOFsigmaExpected(iSpecies)<<endl;
+				ULong_t flags_kTOFout_kTIME = (UInt_t)(AliAODTrack::kTOFout)|(UInt_t)(AliAODTrack::kTIME);
+				cout << "Random track TOF status (kTOFout, kTIME): "<<(((track->GetFlags())&flags_kTOFout_kTIME)==flags_kTOFout_kTIME)<<endl;
+				*/
+			} else {
+				TOFmismatchSigma /= track->GetTOFsigmaExpected(iSpecies);
+			}
+		}
 
 		for (Int_t iPtClass = 0; iPtClass < 5; iPtClass++) {
 			fHistTOFMismatch[histoclass][iSpecies][iPtClass]->Fill(track->Pt(), TOFmismatchSigma);		
@@ -1719,8 +1741,8 @@ void AliAODTrackCutsDiHadronPID::SetXaxisAcceptedFilterBits() {
 	Int_t baseArraySizeTmp = 0;
 	Int_t fullArraySizeTmp = 0;
 
-	while (fFilterMask > (1<<(largestBit)) ) {
-		if ((fFilterMask&(1<<largestBit))==(1<<largestBit)) {
+	while (((Int_t)fFilterMask) >= (1<<(largestBit)) ) {
+		if ((((Int_t)fFilterMask)&(1<<largestBit))==(1<<largestBit)) {
 			fullArraySizeTmp += TMath::Power(2, baseArraySizeTmp);
 			baseArraySizeTmp++;
 		}
@@ -1730,13 +1752,13 @@ void AliAODTrackCutsDiHadronPID::SetXaxisAcceptedFilterBits() {
 
 	// Step 2: Create and fill base array.
 	const Int_t baseArraySize = baseArraySizeTmp;
-	Int_t baseArray[baseArraySize];
+	Int_t* baseArray = new Int_t[baseArraySize];
 	for (Int_t ii = 0; ii < baseArraySize; ++ii) {baseArray[ii] = 0;}
 
 	Int_t iBaseArray = 0;
 	for (Int_t iBit = 0; iBit <= largestBit; ++iBit) {
 
-		if ((fFilterMask&(1<<iBit))==(1<<iBit)) {		
+		if ((((Int_t)fFilterMask)&(1<<iBit))==(1<<iBit)) {		
 			baseArray[iBaseArray] = (1<<iBit);
 			iBaseArray++;
 		}
@@ -1745,7 +1767,7 @@ void AliAODTrackCutsDiHadronPID::SetXaxisAcceptedFilterBits() {
 
 	// Step 3: Create and fill full array.
 	const Int_t fullArraySize = fullArraySizeTmp;
-	Int_t fullArray[fullArraySize];
+	Int_t* fullArray = new Int_t[fullArraySize];
 	fullArray[0] = baseArray[0];
 	Int_t iFullArray = 1;
 
@@ -1767,6 +1789,10 @@ void AliAODTrackCutsDiHadronPID::SetXaxisAcceptedFilterBits() {
 
 	// Step 4: Convert to TArrayI object.
 	fRelevantBitsArray = new TArrayI(fullArraySize, fullArray);
+
+	// Delete the temporary arrays.
+	delete baseArray;
+	delete fullArray;
 
 }
 

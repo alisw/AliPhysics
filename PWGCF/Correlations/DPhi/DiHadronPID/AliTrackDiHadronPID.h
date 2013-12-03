@@ -46,11 +46,12 @@ public:
 public:
 // Getting Track Parameters. Functionality is the same as AOD track,
 // unless stated otherwise.
+	Bool_t UnknownSpecies(Int_t species) const;
 	Double_t Pt() const {return fPt;}
 	Double_t Eta() const {return fEta;}
 	Double_t Phi() const {return fPhi;}
 	Double_t Y(Int_t species) {
-		if (species >= 0 && species < 3) return fY[species];
+		if (UnknownSpecies(species)) return fY[species];
 		else return -999.;
 	}
 
@@ -70,38 +71,24 @@ public:
 
 	Double_t GetTOFsignal() const {return fTOFsignal;}
 	Double_t GetTOFsignalMinusExpected(Int_t species) const {
-		if (species < 0 || species > 2) {
-			cout<<"ERROR: Unknown species"<<endl;
-			return -10e10;
-		}
+		if (UnknownSpecies(species)) {return -10e10;}
 		return fTOFsignalMinusExpected[species];
 	}
 	Double_t GetTOFsignalExpected(Int_t species) const {
-		if (species < 0 || species > 2) {
-			cout<<"ERROR: Unknown species"<<endl;
-			return -10e10;
-		}
+		if (UnknownSpecies(species)) {return -10e10;}
 		return (fTOFsignal - fTOFsignalMinusExpected[species]);
 	}
 	Double_t GetTOFsigmaExpected(Int_t species) {
-		if (species < 0 || species > 2) {
-			cout<<"ERROR: Unknown species"<<endl;
-			return -10e10;
-		}
+		if (UnknownSpecies(species)) {return -10e10;}
+		if (GetNumberOfSigmasTOF(species) < 10e-10) {return -10e30;}
 		return (GetTOFsignalMinusExpected(species)/GetNumberOfSigmasTOF(species));
 	}
 	Double_t GetNumberOfSigmasTOF(Int_t species) const {
-		if (species < 0 || species > 2) {
-			cout<<"ERROR: Unknown species"<<endl;
-			return -10e10;
-		}
+		if (UnknownSpecies(species)) {return -10e10;}
 		return fTOFNsigma[species];
 	}
 	Double_t GetNumberOfSigmasTPC(Int_t species) const {
-		if (species < 0 || species > 2) {
-			cout<<"ERROR: Unknown species"<<endl;
-			return -10e10;
-		}
+		if (UnknownSpecies(species)) {return -10e10;}
 		return fTPCNsigma[species];
 	}
 	Int_t GetTOFMatchingStatus() const {return fTOFMatchingStatus;}
