@@ -3752,7 +3752,8 @@ Int_t AliConversionCuts::IsEventAcceptedByConversionCut(AliConversionCuts *Reade
 
    if(isHeavyIon && !(IsCentralitySelected(InputEvent,MCEvent)))
       return 1; // Check Centrality --> Not Accepted => eventQuality = 1
-
+      
+      
    if(!isHeavyIon && GetIsFromPileup()){
       if(InputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.)){
 
@@ -3768,6 +3769,11 @@ Int_t AliConversionCuts::IsEventAcceptedByConversionCut(AliConversionCuts *Reade
    if( (IsSpecialTrigger() == 1 || IsSpecialTrigger() == 3) && !hasV0And)
       return 8; // V0AND requested but no fired
 
+   if(hCentrality)hCentrality->Fill(GetCentrality(InputEvent));
+   if(hCentralityVsNumberOfPrimaryTracks)
+      hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(InputEvent),
+                                             ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
+                                                ->GetTask("V0ReaderV1"))->GetNumberOfPrimaryTracks());     
 
    return 0;
 }
