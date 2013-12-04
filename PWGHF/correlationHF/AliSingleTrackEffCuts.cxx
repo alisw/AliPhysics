@@ -47,7 +47,7 @@ ClassImp(AliSingleTrackEffCuts)
 AliSingleTrackEffCuts::AliSingleTrackEffCuts():
   TObject(),
   fisAOD(kTRUE),
-  fIsPdgCode(kFALSE),
+  fIsPdgCode(kPDGSelectAll),
   fPdgCode(0),
   fEtaMin(-12),
   fEtaMax(12),
@@ -212,7 +212,9 @@ Bool_t AliSingleTrackEffCuts::IsMCParticleGenerated(TObject* obj)
 	  Bool_t isSelected = kTRUE;
 	  
        	  // Pdg Code
-	  if( fIsPdgCode && TMath::Abs( particle->PdgCode() )!= fPdgCode) isSelected = kFALSE;
+	  Bool_t testPDG=(TMath::Abs(particle->PdgCode()) == fPdgCode);
+	  if( fIsPdgCode==kPDGSelectPdg && !testPDG) {isSelected = kFALSE;}
+	  if( fIsPdgCode==kPDGSelectNotPdg && testPDG){  isSelected = kFALSE;}
 
 	  //Should also test for HF for electrons
 	  
