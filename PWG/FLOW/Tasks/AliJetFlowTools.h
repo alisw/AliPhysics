@@ -16,6 +16,7 @@ class TCanvas;
 class TLegend;
 class TString;
 class TArrayD;
+class TGraph;
 class TGraphErrors;
 class TObjArray;
 // aliroot forward declarations
@@ -33,7 +34,8 @@ class AliJetFlowTools {
     public: 
         AliJetFlowTools();
     protected:
-        ~AliJetFlowTools();     // no implemented destructor, but class is not compiled
+        ~AliJetFlowTools();     // not implemented (deliberately). object ownership is a bit messy in this class
+                                // since most (or all) of the objects are owned by the input and output files
     public:
         // enumerators
         enum unfoldingAlgorithm {
@@ -45,6 +47,13 @@ class AliJetFlowTools {
         enum prior {
             kPriorChi2,
             kPriorMeasured };   // used prior for svd unfolding
+        enum histoType {
+            kInPlaneSpectrum,
+            kOutPlaneSpectrum,
+            kUnfoldedSpectrum,
+            kFoldedSpectrum,
+            kMeasuredSpectrum,
+            kEmpty };           // histo types (used for styling)
         // setters, interface to the class
         void            SetSaveFull(Bool_t b)           {fSaveFull              = b;}
         void            SetInputList(TList* list)       {
@@ -66,6 +75,7 @@ class AliJetFlowTools {
         }
         void            SetCentralityBin(Int_t bin)     {fCentralityBin         = bin;}
         void            SetDetectorResponse(TH2D* dr)   {fDetectorResponse      = dr;}
+        void            SetJetFindingEfficiency(TH1D* e)                {fJetFindingEff         = e;}
         void            SetBinsTrue(TArrayD* bins)      {fBinsTrue              = bins;}
         void            SetBinsRec(TArrayD* bins)       {fBinsRec               = bins;}
         void            SetBinsTruePrior(TArrayD* bins) {fBinsTruePrior         = bins;}
@@ -101,7 +111,11 @@ class AliJetFlowTools {
             fRMSSpectrumOut->Write();
             fRMSRatio->Write();
             fOutputFile->Close();}
-        void            PostProcess(TString def, TString in = "UnfoldedSpectra.root", TString out = "ProcessedSpectra.root");
+        void            PostProcess(
+                TString def,
+                TString in = "UnfoldedSpectra.root", 
+                TString out = "ProcessedSpectra.root", 
+                Int_t columns = 4);
         Bool_t          SetRawInput (
                 TH2D* detectorResponse, // detector response matrix
                 TH1D* jetPtIn,          // in plane jet spectrum
@@ -113,7 +127,7 @@ class AliJetFlowTools {
         static TH1D*    ResizeXaxisTH1D(TH1D* histo, Int_t low, Int_t up, TString suffix = "");
         static TH2D*    ResizeYaxisTH2D(TH2D* histo, TArrayD* x, TArrayD* y, TString suffix = "");
         static TH2D*    NormalizeTH2D(TH2D* histo);
-        static TH1D*    GetUnfoldingTemplate(TH1D* histo, TArrayD* bins, TString suffix = "");
+        static TH1D*    RebinTH1D(TH1D* histo, TArrayD* bins, TString suffix = "", Bool_t kill = kTRUE);
         TH2D*           RebinTH2D(TH2D* histo, TArrayD* binsTrue, TArrayD* binsRec, TString suffix = "");
         static TH2D*    MatrixMultiplication(TH2D* a, TH2D* b, TString name = "CombinedResponse");
         static TH1D*    NormalizeTH1D(TH1D* histo, Double_t scale = 1.);
@@ -128,7 +142,10 @@ class AliJetFlowTools {
         // set styles
         static void     Style(TCanvas* c, TString style = "PEARSON");
         static void     Style(TVirtualPad* c, TString style = "SPECTRUM");
-        static TLegend* AddLegend(TVirtualPad* p)       {return p->BuildLegend();}
+        static void     Style(TLegend* l);
+        static void     Style(TH1* h, EColor col = kBlue, histoType = kEmpty);
+        static void     Style(TGraph* h, EColor col = kBlue, histoType = kEmpty);
+        static TLegend* AddLegend(TVirtualPad* p)       {return p->BuildLegend(.27, .61, .88, .88);}
         // interface to AliUnfolding, not necessary but nice to have all parameters in one place
         static void     SetMinuitStepSize(Float_t s)    {AliUnfolding::SetMinuitStepSize(s);}
         static void     SetMinuitPrecision(Float_t s)   {AliUnfolding::SetMinuitPrecision(s);}
@@ -143,20 +160,23 @@ class AliJetFlowTools {
                                                         TH1D* kinematicEfficiency,
                                                         TH1D* unfoldingTemplate,
                                                         TH1D *&unfolded,        // careful, pointer reference
-                                                        TString suffix);
+                                                        TString suffix,
+                                                        TH1D* jetFindingEfficiency = 0x0);
         Bool_t          UnfoldSpectrumBayesian()        {return kFALSE;}
         Bool_t          UnfoldSpectrumSVDlegacy(        TH1D* resizedJetPt, 
                                                         TH2D* resizedResonse,
                                                         TH1D* kinematicEfficiency,
                                                         TH1D* unfoldingTemplate,
                                                         TH1D *&unfolded,        // careful, pointer reference
-                                                        TString suffix);
+                                                        TString suffix,
+                                                        TH1D* jetFindingEfficiency = 0x0);
         Bool_t          UnfoldSpectrumSVD(              TH1D* resizedJetPt, 
                                                         TH2D* resizedResonse,
                                                         TH1D* kinematicEfficiency,
                                                         TH1D* unfoldingTemplate,
                                                         TH1D *&unfolded,        // careful, pointer reference
-                                                        TString suffix);
+                                                        TString suffix,
+                                                        TH1D* jetFindingEfficiency = 0x0);
         static void     ResetAliUnfolding();
         // give object a unique name via the 'protect heap' functions. 
         // may seem redundant, but some internal functions of root (e.g.
@@ -176,6 +196,7 @@ class AliJetFlowTools {
         TFile*                  fOutputFile;            // output file
         Int_t                   fCentralityBin;         // centrality bin
         TH2D*                   fDetectorResponse;      // detector response
+        TH1D*                   fJetFindingEff;         // jet finding efficiency
         Double_t                fBetaIn;                // regularization strength, in plane unfolding
         Double_t                fBetaOut;               // regularization strength, out of plane unfoldign
         Bool_t                  fAvoidRoundingError;    // set dpt to zero for small values far from the diagonal
