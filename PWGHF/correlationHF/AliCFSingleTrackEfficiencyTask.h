@@ -95,7 +95,12 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
     kConvEl,
     kConvElPythia,
     kConvElHijing,
-    kConvElGen0
+    kConvElGen0,
+    kHadron,
+    kHadronPythia,
+    kHadronHijing,
+    kHadronGen0,
+    kNrSources
   };
 
   enum{

@@ -60,7 +60,7 @@ class AliSingleTrackEffCuts : public TObject
   void SetYRange(Float_t ymin, Float_t ymax){ fYMin=ymin; fYMax=ymax; }
   void SetPtRange(Float_t ptmin, Float_t ptmax){fPtMin=ptmin; fPtMax=ptmax; }
 
-  void SetPdgCode(Int_t pdgCode){ fPdgCode = pdgCode; fIsPdgCode=kTRUE; }
+  void SetPdgCode(Int_t pdgCode){ fPdgCode = pdgCode; fIsPdgCode=kPDGSelectPdg; }
   void SetIsCharged(Int_t charge=kCharged){ fIsCharged=charge; }
 
   void SetMinVtxType(Int_t type=3) {fMinVtxType=type;}  
@@ -88,6 +88,7 @@ class AliSingleTrackEffCuts : public TObject
   void SetUseIsPhysicalPrimary(bool t){fRemoveSecondary=t;}
   void SetRejectPileup(bool reject){fRejectPileup=reject;}
   void SetUsePhysicsSelection(bool phys){fUsePhysicsSelection =phys;}
+  void SetSelectPdg(int usepdg=kPDGSelectPdg) {fIsPdgCode=usepdg;}
 
   bool GetUseIsPhysicalPrimary() const {return fRemoveSecondary;}
 
@@ -99,13 +100,19 @@ class AliSingleTrackEffCuts : public TObject
     kNegative=3
   };
 
+  enum{
+    kPDGSelectAll=0,
+    kPDGSelectPdg=1,
+    kPDGSelectNotPdg=2
+  };
+
  protected:
 
   Bool_t IsVertexSelected(AliVEvent *event);
 
   Bool_t fisAOD;  // flag wether it is AOD:1 or ESD:0 analysis
   
-  Bool_t fIsPdgCode;
+  Int_t fIsPdgCode;
   Int_t fPdgCode;
 
   Float_t fEtaMin;
