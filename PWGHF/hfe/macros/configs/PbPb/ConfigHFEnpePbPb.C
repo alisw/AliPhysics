@@ -80,7 +80,7 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb(Bool_t useMC, Bool_t isAOD, TString appendi
   hfecuts->SetAcceptKinkMothers();
   if(isAOD) hfecuts->SetAODFilterBit(2);
   
-  if((iPixelAny==AliHFEextraCuts::kAny) || (iPixelAny==AliHFEextraCuts::kSecond))     
+  if((itshitpixel==AliHFEextraCuts::kAny) || (itshitpixel==AliHFEextraCuts::kSecond))     
   hfecuts->SetProductionVertex(0,7,0,7);
  
   hfecuts->SetMaxImpactParam(DCAxy,DCAz);
