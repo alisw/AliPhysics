@@ -974,11 +974,12 @@ void AliAnalysisTaskChargedJetsPA::GetKTBackgroundDensityAll(Int_t numberExclude
     {
       AliEmcalJet* signalJet = fSignalJets[j];
      
-      if(IsJetOverlapping(signalJet, backgroundJet))
-      {
-        isOverlapping = kTRUE;
-        break;
-      }
+      if(signalJet->Pt() >= 5.0)
+        if(IsJetOverlapping(signalJet, backgroundJet))
+        {
+          isOverlapping = kTRUE;
+          break;
+        }
     }
 
     tmpSummedArea += backgroundJet->Area();
@@ -1088,12 +1089,12 @@ void AliAnalysisTaskChargedJetsPA::GetKTBackgroundDensity(Int_t numberExcludeLea
     for(Int_t j=0;j<numberExcludeLeadingJets;j++)
     {
       AliEmcalJet* signalJet = fSignalJets[j];
-     
-      if(IsJetOverlapping(signalJet, backgroundJet))
-      {
-        isOverlapping = kTRUE;
-        break;
-      }
+      if(signalJet->Pt() >= 5.0)     
+        if(IsJetOverlapping(signalJet, backgroundJet))
+        {
+          isOverlapping = kTRUE;
+          break;
+        }
     }
 
     tmpSummedArea += backgroundJet->Area();
@@ -1151,6 +1152,15 @@ void AliAnalysisTaskChargedJetsPA::GetTRBackgroundDensity(Int_t numberExcludeLea
   if (fNumberSignalJets < numberExcludeLeadingJets)
     numberExcludeLeadingJets = fNumberSignalJets;
 
+  Int_t fSignalJetCount5GeV = 0;
+  for(Int_t j=0;j<numberExcludeLeadingJets;j++)
+  {
+    AliEmcalJet* signalJet = fSignalJets[j];
+    if(signalJet->Pt() < 5.0)
+      continue;
+    fSignalJetCount5GeV++;
+  }
+
   for (Int_t i = 0; i < fTrackArray->GetEntries(); i++)
   {
     AliVTrack* tmpTrack = static_cast<AliVTrack*>(fTrackArray->At(i));
@@ -1162,6 +1172,9 @@ void AliAnalysisTaskChargedJetsPA::GetTRBackgroundDensity(Int_t numberExcludeLea
       for(Int_t j=0;j<numberExcludeLeadingJets;j++)
       {
         AliEmcalJet* signalJet = fSignalJets[j];
+
+        if(signalJet->Pt() < 5.0)
+          continue;
 
         // Exact jet exclusion
         if (IsTrackInJet(signalJet, i))
@@ -1226,21 +1239,28 @@ void AliAnalysisTaskChargedJetsPA::GetTRBackgroundDensity(Int_t numberExcludeLea
   Double_t tmpAreaCone06     = tmpFullTPCArea;
   Double_t tmpAreaCone08     = tmpFullTPCArea;
   Double_t tmpAreaWithinJets = tmpFullTPCArea;
-  std::vector<Double_t> tmpEtas(numberExcludeLeadingJets);
-  std::vector<Double_t> tmpPhis(numberExcludeLeadingJets);
+  std::vector<Double_t> tmpEtas(fSignalJetCount5GeV);
+  std::vector<Double_t> tmpPhis(fSignalJetCount5GeV);
 
+  Int_t iSignal = 0;
   for(Int_t i=0;i<numberExcludeLeadingJets;i++)
   {
     AliEmcalJet* tmpJet = fSignalJets[i];
-    tmpEtas[i] = tmpJet->Eta();
-    tmpPhis[i] = tmpJet->Phi();
+
+    if(tmpJet->Pt() < 5.0)
+      continue;
+
+    tmpEtas[iSignal] = tmpJet->Eta();
+    tmpPhis[iSignal] = tmpJet->Phi();
     tmpAreaWithinJets -= tmpJet->Area();
+
+    iSignal++;
   }
 
-  tmpAreaCone02 -= tmpFullTPCArea * MCGetOverlapMultipleCirclesRectancle(numberExcludeLeadingJets, tmpEtas, tmpPhis, 0.2, -fTrackEtaWindow, +fTrackEtaWindow, 0., TMath::TwoPi());
-  tmpAreaCone04 -= tmpFullTPCArea * MCGetOverlapMultipleCirclesRectancle(numberExcludeLeadingJets, tmpEtas, tmpPhis, 0.4, -fTrackEtaWindow, +fTrackEtaWindow, 0., TMath::TwoPi());
-  tmpAreaCone06 -= tmpFullTPCArea * MCGetOverlapMultipleCirclesRectancle(numberExcludeLeadingJets, tmpEtas, tmpPhis, 0.6, -fTrackEtaWindow, +fTrackEtaWindow, 0., TMath::TwoPi());
-  tmpAreaCone08 -= tmpFullTPCArea * MCGetOverlapMultipleCirclesRectancle(numberExcludeLeadingJets, tmpEtas, tmpPhis, 0.8, -fTrackEtaWindow, +fTrackEtaWindow, 0., TMath::TwoPi());
+  tmpAreaCone02 -= tmpFullTPCArea * MCGetOverlapMultipleCirclesRectancle(fSignalJetCount5GeV, tmpEtas, tmpPhis, 0.2, -fTrackEtaWindow, +fTrackEtaWindow, 0., TMath::TwoPi());
+  tmpAreaCone04 -= tmpFullTPCArea * MCGetOverlapMultipleCirclesRectancle(fSignalJetCount5GeV, tmpEtas, tmpPhis, 0.4, -fTrackEtaWindow, +fTrackEtaWindow, 0., TMath::TwoPi());
+  tmpAreaCone06 -= tmpFullTPCArea * MCGetOverlapMultipleCirclesRectancle(fSignalJetCount5GeV, tmpEtas, tmpPhis, 0.6, -fTrackEtaWindow, +fTrackEtaWindow, 0., TMath::TwoPi());
+  tmpAreaCone08 -= tmpFullTPCArea * MCGetOverlapMultipleCirclesRectancle(fSignalJetCount5GeV, tmpEtas, tmpPhis, 0.8, -fTrackEtaWindow, +fTrackEtaWindow, 0., TMath::TwoPi());
  
   rhoConeExclusion02 = summedTracksPtCone02/tmpAreaCone02;
   rhoConeExclusion04 = summedTracksPtCone04/tmpAreaCone04;
@@ -1637,6 +1657,7 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
             FillHistogram("hJetProfile10GeV", 0.60-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.60))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
           }
         }
+        FillHistogram("hJetPtVsConstituentCount", tmpJet->Pt(),tmpJet->GetNumberOfTracks());
 
         if((fAnalyzeQA) && (tmpJet->Pt() >= 5.0))
         {
@@ -1652,7 +1673,6 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
               highestTrackPt = tmpJet->TrackAt(j, fTrackArray)->Pt();
           }
           FillHistogram("hJetArea", tmpJet->Area());
-          FillHistogram("hJetPtVsConstituentCount", tmpJet->Pt(),tmpJet->GetNumberOfTracks());
           // Signal jet vs. signal jet - "Combinatorial"
           for (Int_t j = i+1; j<fNumberSignalJets; j++)
             FillHistogram("hJetDeltaPhi", GetDeltaPhi(tmpJet->Phi(), fSignalJets[j]->Phi()));
