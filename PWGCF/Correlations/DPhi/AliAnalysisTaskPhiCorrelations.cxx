@@ -130,6 +130,7 @@ fTrackEtaCutMin(-1.),
 fOnlyOneEtaSide(0),
 fPtMin(0.5),
 fDCAXYCut(0),
+fSharedClusterCut(-1),
 fFilterBit(0xFF),
 fTrackStatus(0),
 fSelectBit(AliVEvent::kMB|AliVEvent::kUserDefined),
@@ -230,6 +231,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fAnalyseUE = new AliAnalyseLeadingTrackUE();
   fAnalyseUE->SetParticleSelectionCriteria(fFilterBit, fUseChargeHadrons, fTrackEtaCut, fTrackEtaCutMin, fPtMin);
   fAnalyseUE->SetDCAXYCut(fDCAXYCut);
+  fAnalyseUE->SetSharedClusterCut(fSharedClusterCut);
   fAnalyseUE->SetTrackStatus(fTrackStatus);
   fAnalyseUE->SetCheckMotherPDG(fCheckMotherPDG);
   fAnalyseUE->SetDebug(fDebug); 
@@ -410,6 +412,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fOnlyOneEtaSide", &fOnlyOneEtaSide,"OnlyOneEtaSide/I");
   settingsTree->Branch("fPtMin", &fPtMin, "PtMin/D");
   settingsTree->Branch("fFilterBit", &fFilterBit,"FilterBit/I");
+  settingsTree->Branch("fSharedClusterCut", &fSharedClusterCut,"SharedClusterCut/D");
   settingsTree->Branch("fTrackStatus", &fTrackStatus,"TrackStatus/I");
   settingsTree->Branch("fSelectBit", &fSelectBit,"EventSelectionBit/I");
   settingsTree->Branch("fUseChargeHadrons", &fUseChargeHadrons,"UseChHadrons/O");
