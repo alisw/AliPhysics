@@ -12,41 +12,22 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-//#include <TBranch.h>
-//#include <TCanvas.h>
-//#include <TChain.h>
-//#include <TFile.h>
-//#include <TH1F.h>
-//#include <TH1I.h>
-//#include <TH2F.h>
+
 #include <TList.h>
-//#include <TLorentzVector.h>
 #include <TMath.h>
 #include <TObjArray.h>
 #include <TObject.h>
-//#include <TProfile.h>
-//#include <TRandom.h>
-//#include <TSystem.h>
-//#include <TTree.h>
 #include <TVector3.h>
 
 #include "AliAnalyseLeadingTrackUE.h"
-//#include "AliAnalysisTask.h"
 
-//#include "AliAnalysisHelperJetTasks.h"
-//#include "AliAnalysisManager.h"
 #include "AliAODEvent.h"
-//#include "AliAODHandler.h"
-//#include "AliAODJet.h"
 #include "AliAODMCParticle.h"
 #include "AliAODTrack.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
-//#include "AliGenPythiaEventHeader.h"
 #include "AliInputEventHandler.h"
-//#include "AliKFVertex.h"
-//#include "AliLog.h"
 #include "AliMCEvent.h"
 #include "AliVParticle.h"
 #include "AliAODMCHeader.h"
@@ -83,6 +64,7 @@ AliAnalyseLeadingTrackUE::AliAnalyseLeadingTrackUE() :
   fTrackPtMin(0),
   fEventSelection(AliVEvent::kMB|AliVEvent::kUserDefined),
   fDCAXYCut(0),
+  fSharedClusterCut(-1),
   fEsdTrackCuts(0x0), 
   fEsdTrackCutsExtra1(0x0), 
   fEsdTrackCutsExtra2(0x0), 
@@ -728,6 +710,13 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
 // 	  Printf("%f", ((AliAODTrack*)part)->DCA());
 // 	  Printf("%f", pos[0]);
 	  if (TMath::Abs(pos[0]) > fDCAXYCut->Eval(part->Pt()))
+	    return 0;
+	}
+	
+	if (fSharedClusterCut >= 0)
+	{
+	  Double_t frac = Double_t(((AliAODTrack*)part)->GetTPCnclsS()) / Double_t(((AliAODTrack*)part)->GetTPCncls());
+	  if (frac > fSharedClusterCut)
 	    return 0;
 	}
 
