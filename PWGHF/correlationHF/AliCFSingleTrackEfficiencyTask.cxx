@@ -292,7 +292,7 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
   }
        
   //Info("UserExec","") ;
-  ((TH1F*)fQAHistList->FindObject("fHistEventsProcessed"))->Fill(0.5); // # of Event proceed        
+  ((TH1F*)fQAHistList->FindObject("fHistEventsProcessed"))->Fill(0); // # of Event proceed        
   Bool_t IsEventMCSelected = kFALSE;
   Bool_t isAOD = fInputEvent->IsA()->InheritsFrom("AliAODEvent");
        
@@ -334,7 +334,7 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
     return;
   }
   
-  ((TH1F*)fQAHistList->FindObject("fHistEventsProcessed"))->Fill(1.5); // # of Event after passing MC cuts
+  ((TH1F*)fQAHistList->FindObject("fHistEventsProcessed"))->Fill(1); // # of Event after passing MC cuts
        
   //Filling of MC generated particle -> below function 
   if(!isAOD) CheckESDParticles();
@@ -351,7 +351,7 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
      
   if(isRecoEventOk) {
 	 
-    ((TH1F*)fQAHistList->FindObject("fHistEventsProcessed"))->Fill(2.5); // # of Event after passing all cuts
+    ((TH1F*)fQAHistList->FindObject("fHistEventsProcessed"))->Fill(2); // # of Event after passing all cuts
     const AliVVertex *vertex = fEvent->GetPrimaryVertex();
     containerInput[kZvt] = vertex->GetZ(); // Z Vertex of Event 
     containerInputMC[kZvt]  =  containerInput[kZvt];
@@ -403,7 +403,6 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
       containerInputMC[kEta] = mcPart->Eta() ;
       containerInputMC[kPhi] = mcPart->Phi() ;
       if(!fReducedMode)containerInputMC[kTheta] = mcPart->Theta() ;
-      
       if (!fMCCuts->IsMCParticleGenerated(mcPart)) continue;
       AliAODMCParticle *mcPart2=dynamic_cast<AliAODMCParticle*>(mcPart);
       
@@ -427,6 +426,9 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 	if(fSelectElSource==kConvElHijing && originvsGen!=kConvElHijing){
 	  selected=kFALSE;
 	}
+	if(fSelectElSource==kHadronHijing && originvsGen!=kHadronHijing){
+	  selected=kFALSE;
+	}
       }
       else{
 
@@ -440,12 +442,13 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 	if(fSelectElSource==kConvEl && originvsGen!=kConvEl){
 	  selected=kFALSE;
 	}
+	if(fSelectElSource==kHadron && originvsGen!=kHadron){
+	  selected=kFALSE;
+	}
       }
 
       if(!selected) continue;
       
-      ((TH1F*)fQAHistList->FindObject("fhOriginReco"))->Fill(fOriginMotherReco);
-	
       Double_t x=mcPart2->Xv();
       Double_t y=mcPart2->Yv();
       double radius=TMath::Sqrt(x*x+y*y);
@@ -627,7 +630,9 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 	  else
 	    fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoInvMass);
 
-
+	  ((TH1F*)fQAHistList->FindObject("fhOriginReco"))->Fill(fOriginMotherReco);
+	
+	  if(fSelectElSource==kHadronHijing || fSelectElSource==kHadron){((TH1F*)fQAHistList->FindObject("fPDGHadron"))->Fill(TMath::Abs(mcPart->PdgCode()));}
 
 	}
       }
@@ -650,28 +655,6 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 
 }
 int AliCFSingleTrackEfficiencyTask::CheckBackgroundSource(AliVParticle* track, const AliVEvent* pEvent,Bool_t useMCarray){
-
-  if(useMCarray) fElectronsKine->CheckMC(track, (AliVEvent*)pEvent);
-  else fElectrons->CheckMC(track, (AliVEvent*)pEvent);
-
-  int origin=-1;
-  if(useMCarray){
-    origin=fElectronsKine->GetOriginMother();
-    fOriginMotherKine=origin;
-  }
-  else{
-    origin=fElectrons->GetOriginMother();
-    fOriginMotherReco=origin;
-  }
-  Bool_t isCharm=(origin==AliDxHFEToolsMC::kOriginCharm || 
-		  origin==AliDxHFEToolsMC::kOriginGluonCharm);
-  Bool_t isBeauty=(origin==AliDxHFEToolsMC::kOriginBeauty || 
-		   origin==AliDxHFEToolsMC::kOriginGluonBeauty);
-
-  //  if(origin==AliDxHFEToolsMC::kOriginGluonCharm || origin==AliDxHFEToolsMC::kOriginGluonBeauty) cout << "HELLO" << endl;
-
-  Bool_t isConversion=(origin==AliDxHFEToolsMC::kNrOrginMother+2);
-  
 
   TString nameGen;	
   int originvsGen=-2;
@@ -711,47 +694,83 @@ int AliCFSingleTrackEfficiencyTask::CheckBackgroundSource(AliVParticle* track, c
       generator=2;
     }
   }
-  bool isHF=(isCharm || isBeauty);
+  if(!(fSelectElSource==kHadronHijing || fSelectElSource==kHadron)){
+    if(useMCarray) fElectronsKine->CheckMC(track, (AliVEvent*)pEvent);
+    else fElectrons->CheckMC(track, (AliVEvent*)pEvent);
 
-  if(isHF){
-    originvsGen=kHF;
+    int origin=-1;
+    if(useMCarray){
+      origin=fElectronsKine->GetOriginMother();
+      fOriginMotherKine=origin;
+    }
+    else{
+      origin=fElectrons->GetOriginMother();
+      fOriginMotherReco=origin;
+    }
+    Bool_t isCharm=(origin==AliDxHFEToolsMC::kOriginCharm || 
+		    origin==AliDxHFEToolsMC::kOriginGluonCharm);
+    Bool_t isBeauty=(origin==AliDxHFEToolsMC::kOriginBeauty || 
+		     origin==AliDxHFEToolsMC::kOriginGluonBeauty);
 
-    if(fUseGenerator){
-      if(generator==0)
-	originvsGen=kHFGen0;
-      if(generator==1)
-	originvsGen=kHFHijing;
-      if(generator==2)
-	originvsGen=kHFPythia;
+    //  if(origin==AliDxHFEToolsMC::kOriginGluonCharm || origin==AliDxHFEToolsMC::kOriginGluonBeauty) cout << "HELLO" << endl;
+
+    Bool_t isConversion=(origin==AliDxHFEToolsMC::kNrOrginMother+2);
+  
+
+
+    bool isHF=(isCharm || isBeauty);
+
+    if(isHF){
+      originvsGen=kHF;
+
+      if(fUseGenerator){
+	if(generator==0)
+	  originvsGen=kHFGen0;
+	if(generator==1)
+	  originvsGen=kHFHijing;
+	if(generator==2)
+	  originvsGen=kHFPythia;
+      }
+    }
+    else{
+      if(isConversion){
+	originvsGen=kConvEl;
+	if(fUseGenerator){
+	  if(generator==0)
+	    originvsGen=kConvElGen0;
+	  if(generator==1)
+	    originvsGen=kConvElHijing;
+	  if(generator==2)
+	    originvsGen=kConvElPythia;
+	}
+      
+      }
+      else{
+	originvsGen=knonHF;
+	if(fUseGenerator){
+	  if(generator==0)
+	    originvsGen=knonHFGen0;
+	  if(generator==1)
+	    originvsGen=knonHFHijing;
+	  if(generator==2)
+	    originvsGen=knonHFPythia;
+	}      
+
+      }
     }
   }
   else{
-    if(isConversion){
-      originvsGen=kConvEl;
-      if(fUseGenerator){
-	if(generator==0)
-	  originvsGen=kConvElGen0;
-	if(generator==1)
-	  originvsGen=kConvElHijing;
-	if(generator==2)
-	  originvsGen=kConvElPythia;
-      }
-      
-    }
-    else{
-      originvsGen=knonHF;
-      if(fUseGenerator){
-	if(generator==0)
-	  originvsGen=knonHFGen0;
-	if(generator==1)
-	  originvsGen=knonHFHijing;
-	if(generator==2)
-	  originvsGen=knonHFPythia;
-      }      
+    originvsGen=kHadron;
+    if(fUseGenerator){
+      if(generator==0)
+	originvsGen=kHadronGen0;
+      if(generator==1)
+	originvsGen=kHadronHijing;
+      if(generator==2)
+	originvsGen=kHadronPythia;
+    }      
 
-    }
   }
-  
   return originvsGen;
   
 }
@@ -972,7 +991,7 @@ void AliCFSingleTrackEfficiencyTask::UserCreateOutputObjects() {
   fQAHistList->Add(CreateControlHistogram("fhOriginKine","Electron source origin Kine",15,-1.5,13.5));
   fQAHistList->Add(CreateControlHistogram("fhOriginReco","Electron source origin Reco",15,-1.5,13.5));
 
-  fQAHistList->Add(CreateControlHistogram("fhElGenerator","Which generator + el source",13,-0.5,12.5));
+  fQAHistList->Add(CreateControlHistogram("fhElGenerator","Which generator + el source",kNrSources,-0.5,kNrSources-0.5));
 
   double dEdxvseta[6]={100,-1.,1.,200,0., 200.};
   double sigmavseta[6]={100,-1.,1.,200,-10., 10.};
@@ -984,7 +1003,7 @@ void AliCFSingleTrackEfficiencyTask::UserCreateOutputObjects() {
 
   fQAHistList->Add(CreateControl2DHistogram("fhdEdxvsEtaTPCTOF", "dEdx vs eta",dEdxvseta ,"dE/dx","#eta"));
   fQAHistList->Add(CreateControl2DHistogram("fhdEdxSigmavsEtaTPCTOF", "dEdx vs eta", sigmavseta,"dE/dx","#eta"));
-
+  fQAHistList->Add(CreateControlHistogram("fPDGHadron","PDG of hadrons",5000));  
        
   //PostData(1,fHistEventsProcessed) ;
   PostData(2,fCFManager->GetParticleContainer()) ;
@@ -1112,9 +1131,11 @@ int AliCFSingleTrackEfficiencyTask::ParseArguments(const char* arguments)
       if(argument.CompareTo("HFEPythia")==0){ cout << " setting HFE as source from Pythia " << endl; fUseGenerator=kTRUE; fSelectElSource=kHFPythia;}
       else if(argument.CompareTo("nonHFEHijing")==0) {cout << " setting nonHFE as source from Hijing" << endl; fUseGenerator=kTRUE; fSelectElSource=knonHFHijing;}
       else if(argument.CompareTo("convHijing")==0){ cout << " setting conv as source from Hijing" << endl; fUseGenerator=kTRUE; fSelectElSource=kConvElHijing; }
+      else if(argument.CompareTo("hadronHijing")==0){ cout << " setting hadron as source from Hijing" << endl; fMCCuts->SetSelectPdg(AliSingleTrackEffCuts::kPDGSelectNotPdg); fUseGenerator=kTRUE; fSelectElSource=kHadronHijing; }
       else if(argument.CompareTo("HFE")==0){ cout << " setting HFE as source " << endl; fSelectElSource=kHF;}
       else if(argument.CompareTo("nonHFE")==0) {cout << " setting nonHFE as source " << endl; fSelectElSource=knonHF;}
       else if(argument.CompareTo("conv")==0){ cout << " setting conv as source " << endl; fSelectElSource=kConvEl; }
+      else if(argument.CompareTo("hadron")==0){ cout << " setting hadron as source " << endl; fMCCuts->SetSelectPdg(AliSingleTrackEffCuts::kPDGSelectNotPdg); fSelectElSource=kHadron; }
 
       else AliFatal(Form("unknown argument '%s'", argument.Data()));
       AliInfo(Form("Selecting only source %d",fSelectElSource));
@@ -1286,6 +1307,9 @@ void AliCFSingleTrackEfficiencyTask::CheckAODParticles(){
       if(fSelectElSource==kConvElHijing && originvsGen!=kConvElHijing){
 	continue;
       }
+      if(fSelectElSource==kHadronHijing && originvsGen!=kHadronHijing){
+	continue;
+      }
     }
     else{
 
@@ -1297,6 +1321,9 @@ void AliCFSingleTrackEfficiencyTask::CheckAODParticles(){
       }
 
       if(fSelectElSource==kConvEl && originvsGen!=kConvEl){
+	continue;
+      }
+      if(fSelectElSource==kHadron && originvsGen!=kHadron){
 	continue;
       }
     }
