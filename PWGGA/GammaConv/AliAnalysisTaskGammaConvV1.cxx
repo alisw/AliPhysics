@@ -580,13 +580,13 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects()
             fESDList[iCut]->Add(hESDMotherPi0PtAlpha[iCut]);
             hESDMotherEtaPtAlpha[iCut] = new TH2F("ESD_MotherEta_Pt_Alpha","ESD_MotherEta_Pt_Alpha",250,0,25,100,0,1);
             fESDList[iCut]->Add(hESDMotherEtaPtAlpha[iCut]);
-            hESDMotherPi0YEtaLowPtGamma[iCut] = new TH2F("ESD_MotherPi0_Y_EtaLowPtGamma","ESD_MotherPi0_Y_EtaLowPtGamma",150,-1.5,1.5,200,2,2);            
+            hESDMotherPi0YEtaLowPtGamma[iCut] = new TH2F("ESD_MotherPi0_Y_EtaLowPtGamma","ESD_MotherPi0_Y_EtaLowPtGamma",150,-1.5,1.5,200,-2,2);            
             fESDList[iCut]->Add(hESDMotherPi0YEtaLowPtGamma[iCut]);
-            hESDMotherPi0YEtaHighPtGamma[iCut] = new TH2F("ESD_MotherPi0_Y_EtaHighPtGamma","ESD_MotherPi0_Y_EtaHighPtGamma",150,-1.5,1.5,200,2,2);            
+            hESDMotherPi0YEtaHighPtGamma[iCut] = new TH2F("ESD_MotherPi0_Y_EtaHighPtGamma","ESD_MotherPi0_Y_EtaHighPtGamma",150,-1.5,1.5,200,-2,2);            
             fESDList[iCut]->Add(hESDMotherPi0YEtaHighPtGamma[iCut]);
-            hESDMotherEtaYEtaLowPtGamma[iCut] = new TH2F("ESD_MotherEta_Y_EtaLowPtGamma","ESD_MotherEta_Y_EtaLowPtGamma",150,-1.5,1.5,200,2,2);            
+            hESDMotherEtaYEtaLowPtGamma[iCut] = new TH2F("ESD_MotherEta_Y_EtaLowPtGamma","ESD_MotherEta_Y_EtaLowPtGamma",150,-1.5,1.5,200,-2,2);            
             fESDList[iCut]->Add(hESDMotherEtaYEtaLowPtGamma[iCut]);
-            hESDMotherEtaYEtaHighPtGamma[iCut] = new TH2F("ESD_MotherEta_Y_EtaHighPtGamma","ESD_MotherEta_Y_EtaHighPtGamma",150,-1.5,1.5,200,2,2);            
+            hESDMotherEtaYEtaHighPtGamma[iCut] = new TH2F("ESD_MotherEta_Y_EtaHighPtGamma","ESD_MotherEta_Y_EtaHighPtGamma",150,-1.5,1.5,200,-2,2);            
             fESDList[iCut]->Add(hESDMotherEtaYEtaHighPtGamma[iCut]);
          }
          
@@ -847,13 +847,13 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects()
                hESDTrueEtaPtAlpha[iCut] = new TH2F("ESD_TrueEta_Pt_Alpha","ESD_TrueEta_Pt_Alpha",250,0,25,100,0,1);
                fTrueList[iCut]->Add(hESDTrueEtaPtAlpha[iCut]);
                
-               hESDTruePi0YEtaLowPtGamma[iCut] = new TH2F("ESD_TruePi0_Y_EtaLowPtGamma","ESD_TruePi0_Y_EtaLowPtGamma",150,-1.5,1.5,200,2,2);            
+               hESDTruePi0YEtaLowPtGamma[iCut] = new TH2F("ESD_TruePi0_Y_EtaLowPtGamma","ESD_TruePi0_Y_EtaLowPtGamma",150,-1.5,1.5,200,-2,2);            
                fTrueList[iCut]->Add(hESDTruePi0YEtaLowPtGamma[iCut]);
-               hESDTruePi0YEtaHighPtGamma[iCut] = new TH2F("ESD_TruePi0_Y_EtaHighPtGamma","ESD_TruePi0_Y_EtaHighPtGamma",150,-1.5,1.5,200,2,2);            
+               hESDTruePi0YEtaHighPtGamma[iCut] = new TH2F("ESD_TruePi0_Y_EtaHighPtGamma","ESD_TruePi0_Y_EtaHighPtGamma",150,-1.5,1.5,200,-2,2);            
                fTrueList[iCut]->Add(hESDTruePi0YEtaHighPtGamma[iCut]);
-               hESDTrueEtaYEtaLowPtGamma[iCut] = new TH2F("ESD_TrueEta_Y_EtaLowPtGamma","ESD_TrueEta_Y_EtaLowPtGamma",150,-1.5,1.5,200,2,2);            
+               hESDTrueEtaYEtaLowPtGamma[iCut] = new TH2F("ESD_TrueEta_Y_EtaLowPtGamma","ESD_TrueEta_Y_EtaLowPtGamma",150,-1.5,1.5,200,-2,2);            
                fTrueList[iCut]->Add(hESDTrueEtaYEtaLowPtGamma[iCut]);
-               hESDTrueEtaYEtaHighPtGamma[iCut] = new TH2F("ESD_TrueEta_Y_EtaHighPtGamma","ESD_TrueEta_Y_EtaHighPtGamma",150,-1.5,1.5,200,2,2);            
+               hESDTrueEtaYEtaHighPtGamma[iCut] = new TH2F("ESD_TrueEta_Y_EtaHighPtGamma","ESD_TrueEta_Y_EtaHighPtGamma",150,-1.5,1.5,200,-2,2);            
                fTrueList[iCut]->Add(hESDTrueEtaYEtaHighPtGamma[iCut]);
             }
          }

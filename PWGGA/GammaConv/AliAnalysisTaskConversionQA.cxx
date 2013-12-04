@@ -244,7 +244,7 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
       fESDList->Add(hVertexZ);
       hNContributorsVertex = new TH1I("ContrVertex_Z","ContrVertex_Z",3000,0,3000);
       fESDList->Add(hNContributorsVertex);
-      if(fIsHeavyIon) hNGoodESDTracks = new TH1I("GoodESDTracks","GoodESDTracks",3000,0,3000);
+      if(fIsHeavyIon) hNGoodESDTracks = new TH1I("GoodESDTracks","GoodESDTracks",4000,0,4000);
       else hNGoodESDTracks = new TH1I("GoodESDTracks","GoodESDTracks",200,0,200);
       fESDList->Add(hNGoodESDTracks);
       if(fIsHeavyIon) hNV0Tracks = new TH1I("V0 Multiplicity","V0 Multiplicity",30000,0,30000);
@@ -265,7 +265,7 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
       fESDList->Add(hGammaPsiPair);
       hGammaArmenteros = new TH2F("Gamma_Armenteros","Gamma_Armenteros",200,-1,1,400,0,0.1);
       fESDList->Add(hGammaArmenteros);
-      hGammaCosinePointingAngle = new TH1F("Gamma_CosinePointingAngle","Gamma_CosinePointingAngle",900,0.7,1.);
+      hGammaCosinePointingAngle = new TH1F("Gamma_CosinePointingAngle","Gamma_CosinePointingAngle",1000,-1.,1.);
       fESDList->Add(hGammaCosinePointingAngle);
       hGammaInvMass = new TH1F( "Gamma_InvMass","",200, 0, 0.2);
       fESDList->Add(hGammaInvMass);
@@ -323,10 +323,10 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
       hPositronITSdEdxP =  new TH2F("Positron_ITSdEdx_P","Positron_ITSdEdx_P",100, 0.05, 20, 200, 0, 200);
       SetLogBinningXTH2(hPositronITSdEdxP);
       fESDList->Add(hPositronITSdEdxP);
-      hElectronNSigmaITSP =  new TH2F("Electron_NSigmaITS_P","Electron_NSigmaITS_P",100, 0.05, 20, 200, 0, 200);
+      hElectronNSigmaITSP =  new TH2F("Electron_NSigmaITS_P","Electron_NSigmaITS_P",100, 0.05, 20, 200, -10, 10);
       SetLogBinningXTH2(hElectronNSigmaITSP);
       fESDList->Add(hElectronNSigmaITSP);
-      hPositronNSigmaITSP =  new TH2F("Positron_NSigmaITS_P","Positron_NSigmaITS_P",100, 0.05, 20, 200, 0, 200);
+      hPositronNSigmaITSP =  new TH2F("Positron_NSigmaITS_P","Positron_NSigmaITS_P",100, 0.05, 20, 200, -10, 10);
       SetLogBinningXTH2(hPositronNSigmaITSP);
       fESDList->Add(hPositronNSigmaITSP);
       
