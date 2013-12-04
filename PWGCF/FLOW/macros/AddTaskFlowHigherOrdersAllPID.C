@@ -19,8 +19,9 @@ void AddTaskFlowHigherOrdersAllPID(Int_t triggerSelectionString,
 				   Int_t AODfilterBitRP = 768,
 				   Int_t AODfilterBitPOI = 768,
 				   Int_t charge=0,
-				   Bool_t doQA=kFALSE,
-                                   Bool_t isPID = kTRUE,
+                                   Bool_t doQA=kFALSE,
+				   Bool_t doPIDQA=kFALSE,
+                                   Bool_t isPID = kFALSE,
                                    AliPID::EParticleType particleType=AliPID::kPion,
                                    AliFlowTrackCuts::PIDsource sourcePID = AliFlowTrackCuts::kTOFbayesian) {
   // Define the range for eta subevents (for SP method)
@@ -57,19 +58,7 @@ void AddTaskFlowHigherOrdersAllPID(Int_t triggerSelectionString,
   Bool_t SP       = kTRUE;  // scalar product method (similar to eventplane method)
   Bool_t QC       = kTRUE;  // cumulants using Q vectors
   
-  //these are OBSOLETE, use at own peril
-  Bool_t GFC      = kFALSE;  // cumulants based on generating function
-  Bool_t MCEP     = kFALSE;  // correlation with Monte Carlo reaction plane
-  Bool_t FQD      = kFALSE;  // fit of the distribution of the Q vector (only integrated v)
-  Bool_t LYZ1SUM  = kFALSE;  // Lee Yang Zeroes using sum generating function (integrated v)
-  Bool_t LYZ1PROD = kFALSE;  // Lee Yang Zeroes using product generating function (integrated v)
-  Bool_t LYZ2SUM  = kFALSE; // Lee Yang Zeroes using sum generating function (second pass differential v)
-  Bool_t LYZ2PROD = kFALSE; // Lee Yang Zeroes using product generating function (second pass differential v)
-  Bool_t LYZEP    = kFALSE; // Lee Yang Zeroes Event plane using sum generating function (gives eventplane + weight)
-  Bool_t MH       = kFALSE;  // azimuthal correlators in mixed harmonics  
-  Bool_t NL       = kFALSE;  // nested loops (for instance distribution of phi1-phi2 for all distinct pairs)
-
-  Bool_t METHODS[] = {SP,LYZ1SUM,LYZ1PROD,LYZ2SUM,LYZ2PROD,LYZEP,GFC,QC,FQD,MCEP,MH,NL};
+  Bool_t METHODS[] = {SP,QC};
 
   // Boolean to use/not use weights for the Q vector
   Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
@@ -116,9 +105,8 @@ void AddTaskFlowHigherOrdersAllPID(Int_t triggerSelectionString,
   cutsRP->SetMaxDCAToVertexZ(3.0);
   cutsRP->SetAcceptKinkDaughters(kFALSE);
   cutsRP->SetMinimalTPCdedx(10.);
-  cutsRP->SetAODfilterBit(AODfilterBitRP);  
-//  cutsRP->SetAODfilterBit(768);  
-cutsRP->SetQA(doQA);
+  cutsRP->SetAODfilterBit(AODfilterBitRP);    
+  cutsRP->SetQA(doQA);
 
   // POI TRACK CUTS:
   AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts("TPConlyPOI");
@@ -179,17 +167,27 @@ cutsRP->SetQA(doQA);
     if (charge<0) outputSlotName[harmonic-2]+="-";
     if (charge>0) outputSlotName[harmonic-2]+="+";
   }
+/*
+  TString QASlotName;
 
-  TString QASlotName[] = {"","","",""};
+//QA
 
-  for(int harmonic=2;harmonic<6;harmonic++){  //for v3,v4 and v5
-    QASlotName[harmonic-2]+="qa";
-    QASlotName[harmonic-2]+=Form("%i",harmonic);
-    QASlotName[harmonic-2]+="_";
-    QASlotName[harmonic-2]+=Form("_%.0f-",centrMin);
-    QASlotName[harmonic-2]+=Form("%.0f_",centrMax);
-  }
-
+    QASlotName+="qa";
+    QASlotName+=Form("%i",harmonic);
+    QASlotName+="_";
+    QASlotName+=Form("_%.0f-",centrMin);
+    QASlotName+=Form("%.0f_",centrMax);
+    if(isPID){
+      QASlotName+=AliFlowTrackCuts::PIDsourceName(sourcePID);//sourcePID
+      QASlotName+="_";
+      QASlotName+=AliPID::ParticleName(particleType);//particleType
+    }
+    else{
+      QASlotName+="AllCharged";
+    }
+    if (charge<0) QASlotName+="-";
+    if (charge>0) QASlotName+="+";
+*/
 
   TString fileName(fileNameBase);
   fileName.Append(".root");
@@ -237,20 +235,19 @@ cutsRP->SetQA(doQA);
   //===========================================================================
   AliAnalysisTaskFlowEvent *taskFE[4];
   for(int i=0;i<4;i++){
-  if(useAfterBurner)
-      { 
+  if(useAfterBurner){ 
       taskFE[i] = new AliAnalysisTaskFlowEvent(Form("TaskFlowEvent_%s",outputSlotName[i].Data()),"",doQA,1);
       taskFE[i]->SetFlow(v1,v2,v3,v4); 
       taskFE[i]->SetNonFlowNumberOfTrackClones(numberOfTrackClones);
       taskFE[i]->SetAfterburnerOn();
       taskFE[i]->SelectCollisionCandidates(triggerSelectionString);
-      } 
+  } 
   else{
-    taskFE[i] = new AliAnalysisTaskFlowEvent(Form("TaskFlowEvent_%s",outputSlotName[i].Data()),"",doQA); 
-    taskFE[i]->SelectCollisionCandidates(triggerSelectionString);
-    }
+      taskFE[i] = new AliAnalysisTaskFlowEvent(Form("TaskFlowEvent_%s",outputSlotName[i].Data()),"",doQA); 
+      taskFE[i]->SelectCollisionCandidates(triggerSelectionString);
+  }
   if (ExcludeRegion) {
-    taskFE[i]->DefineDeadZone(excludeEtaMin, excludeEtaMax, excludePhiMin, excludePhiMax); 
+      taskFE[i]->DefineDeadZone(excludeEtaMin, excludeEtaMax, excludePhiMin, excludePhiMax); 
   }
   taskFE[i]->SetSubeventEtaRange(minA, maxA, minB, maxB);
   if (UsePhysicsSelection) {
@@ -275,7 +272,8 @@ cutsRP->SetQA(doQA);
   //===========================================================================
   AliAnalysisTaskScalarProduct *taskSP[4];
   AliAnalysisTaskQCumulants *taskQC[4];
-  AliAnalysisTaskPIDqa *taskQA[4];
+  AliAnalysisTaskPIDqa *taskPIDQA[4];
+
   for(int i=0;i<4;i++){
   if (SP){
     taskSP[i] = new AliAnalysisTaskScalarProduct(Form("TaskScalarProduct_%s",outputSlotName[i].Data()),WEIGHTS[0]);
@@ -300,29 +298,43 @@ cutsRP->SetQA(doQA);
     taskQC[i]->SetFillMultipleControlHistograms(kFALSE);     
     mgr->AddTask(taskQC[i]);
   }
+  }
+  if(doPIDQA){
+     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");    
+//     taskPIDQA = new AliAnalysisTaskPIDqa(Form("TaskPIDQA_%s",QASlotName.Data()));
+//     taskPIDQA->SelectCollisionCandidates(triggerSelectionString);
+     AddTaskPIDResponse(kFALSE);
+     AddTaskPIDqa();     
+//     mgr->AddTask(taskPIDQA);
 
-//  taskQA[i] = new AliAnalysisTaskPIDqa(Form("TaskQA_%s",QASlotName[i].Data()));
-//  mgr->AddTask(taskQA[i]);
+     
+  }
 
-}
   // Create the output container for the data produced by the task
   // Connect to the input and output containers
   //===========================================================================
   AliAnalysisDataContainer *cinput1[4];
   AliAnalysisDataContainer *coutputFE[4];
   AliAnalysisDataContainer* coutputFEQA[4];
+  AliAnalysisDataContainer* coutput_QA[4];
   for(int i=0; i<4; i++) {
+//    TString output_QA = fileName;
+//    output_QA = ":FlowEventQA"
     cinput1[i] = mgr->GetCommonInputContainer();
     
-    coutputFE[i] = mgr->CreateContainer(Form("FlowEventSimple_%s",outputSlotName[i].Data()),AliFlowEventSimple::Class(),AliAnalysisManager::kExchangeContainer);
+    coutputFE[i] = mgr->CreateContainer(Form("FlowEventSimple_%s",outputSlotName[i].Data()),AliFlowEventSimple::Class()/*AliVEvent::Class()*/,AliAnalysisManager::kExchangeContainer);
+//    coutput_QA[i] = mgr->CreateContainer(Form("FlowEventSimpleQA_%s",outputSlotName[i].Data()),TList::Class(),AliAnalysisManager::kOutputContainer,output_QA);
     mgr->ConnectInput(taskFE[i],0,cinput1[i]); 
     mgr->ConnectOutput(taskFE[i],1,coutputFE[i]);
+//    mgr->ConnectOutput(taskFE[i],2,coutput_QA[i]);
     
     if (taskFE[i]->GetQAOn()) {
       TString outputQA = fileName;
       outputQA += ":QA";
-      coutputFEQA[i] = mgr->CreateContainer(Form("QA_%s",outputSlotName[i].Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputQA);
-      mgr->ConnectOutput(taskFE[i],2,coutputFEQA[i]);
+      coutputFEQA[i] = mgr->CreateContainer(Form("QA_%s",outputSlotName[i].Data()), TList/*AliVEvent*/::Class(),AliAnalysisManager::kOutputContainer,outputQA);
+  //  mgr->ConnectInput(taskPIDQA[i],0,cinput1[i]);  
+    mgr->ConnectOutput(taskFE[i],2,coutputFEQA[i]);
     }
   }
   // Create the output containers for the data produced by the analysis tasks
@@ -365,44 +377,17 @@ cutsRP->SetQA(doQA);
 	cinputWeights[i]->SetData(weightsList);
       }
     }
-    if(doQA){
-      TString outputQA = "";
-      outputQA +="outputQA";
-      coutputQA[i] = mgr->CreateContainer(Form("QA",QASlotName[i].Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputQA);
-      mgr->ConnectInput(taskQA[i],0,coutputFE[i]);
-      mgr->ConnectOutput(taskQA[i],1,coutputQA[i]);
-    }
-  }
-  
-//=============================================================================
-  AliAnalysisTaskPIDqa* taskPIDQA[4];
-  AliAnalysisDataContainer* coutputPIDQAtask[4]; 
-
-  TString taskPIDQAoutputFileName[4]={"","","",""};
-  for(int i=0;i<4;i++) {
-    if (doQA) {
-     
-      taskPIDQA[i] = new AliAnalysisTaskPIDqa(Form("TaskPIDQA_%s",outputSlotName[i].Data()));
-      taskPIDQA[i]->SelectCollisionCandidates(triggerSelectionString);
-     
-      mgr->AddTask(taskPIDQA[i]);
-      
-      Printf("outputSlotName_%s",outputSlotName[i].Data());
-      taskPIDQAoutputFileName[i](fileNameBase);
-      taskPIDQAoutputFileName[i].Append("_PIDQA.root");
-      coutputPIDQAtask[i] = mgr->CreateContainer(Form("PIDQA_%s",outputSlotName[i].Data()),
-                TObjArray::Class(),
-                AliAnalysisManager::kOutputContainer,
-                taskPIDQAoutputFileName[i]);
+/*     if(doPIDQA){
+      TString outputPIDQA = fileName;
+      outputPIDQA +=":outputQAanalysis";
+   //  // cInputFEQA[i] = mgr->CreateContainer(i);
+      coutputQA[i] = mgr->CreateContainer(Form("PIDQA_%s",outputSlotName[i].Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputPIDQA);
       mgr->ConnectInput(taskPIDQA[i],0,mgr->GetCommonInputContainer());
-      mgr->ConnectInput(taskPIDQA[i],1,coutputFE[i]);
-      mgr->ConnectOutput(taskPIDQA[i],1,coutputPIDQAtask[i]);
-      }
+    //  mgr->ConnectInput(taskPIDQA[i],0,cInputFEQA[i]);
+      mgr->ConnectOutput(taskPIDQA[i],1,coutputQA[i]);
+   }*/
   }
-
+ 
 
 }
-
-
-
 
