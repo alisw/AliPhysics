@@ -21,6 +21,7 @@
 //  Authors:
 //  F. Manso 
 //  A. Morsch
+//  R. Tieulent
 //-------------------------------------------------------------------------
 
 
@@ -154,12 +155,21 @@ void AliPIPEv4::CreateGeometry()
   // from https://twiki.cern.ch/twiki/pub/ALICE/MinutesMecanicsIntegration/Minutes_MFT_meeting_BeamPipe_2013_05_13.pdf
   //------------------------------------------------ Pipe version 4.6 june 2013 -------------------------------------
 
-  Float_t fztube1=fZ2;
-  Float_t fztube2=fZ2+(-15.53-2.0);
-  Float_t fztube3=fztube2+(-1.3);
-  Float_t fztube4=fztube3+(-1.3-3.8);
-  Float_t fztube5=fztube4+(-4.0-3.8);
-  Float_t fzadapt=fztube5+(-1.3);
+  Float_t fBellowLength = 3.72;
+  Float_t fFirstConeLength = 1.3;
+  Float_t fCylinderBeforeAfterBellowsLength = 1.34;
+  Float_t fDistanceBetweenBellows = 4.08;
+  Float_t fAluSmallDiamLength = 15.53 + 2.0;
+  Float_t fBellowSectionOuterRadius = 2.15;
+  Float_t fBellowOuterRadius = 3.0;
+
+
+  Float_t fztube1=fZ2;                  // z of Be - Al jonction on the C-side
+  Float_t fztube2=fZ2-fAluSmallDiamLength;     // z of end of small diameter part (beginning of first cone before the bellow
+  Float_t fztube3=fztube2+(-fFirstConeLength);       // z of end of conical section
+  Float_t fztube4=fztube3+(-fCylinderBeforeAfterBellowsLength-fBellowLength);
+  Float_t fztube5=fztube4+(-fDistanceBetweenBellows-fBellowLength);
+  Float_t fzadapt=fztube5+(-fCylinderBeforeAfterBellowsLength);
 
   //---------------- Be pipe around the IP ----------
   TGeoPcon* tube0 = new TGeoPcon(0., 360., 2);
@@ -181,14 +191,14 @@ void AliPIPEv4::CreateGeometry()
   //---------------- First Al tube ------------------
   TGeoPcon* tube1 = new TGeoPcon(0., 360., 2);
   tube1->DefineSection(0,fztube1, fRmax-fBe,fRmax);
-  tube1->DefineSection(1,fztube1+(-15.53-2.0),fRmax-fBe,fRmax);
+  tube1->DefineSection(1,fztube1-fAluSmallDiamLength,fRmax-fBe,fRmax);
   TGeoVolume* votube1 = new TGeoVolume("votube1",tube1,kMedAlu2219);
   votube1->SetLineColor(kBlue);
   top->AddNode(votube1,1,new TGeoTranslation(0., 0., 0.));
 
   TGeoPcon* tube1vide = new TGeoPcon(0., 360., 2);
   tube1vide->DefineSection(0,fZ2, 0.,fRmax-fBe);
-  tube1vide->DefineSection(1,fZ2+(-15.53-2.0), 0.,fRmax-fBe);
+  tube1vide->DefineSection(1,fZ2-fAluSmallDiamLength, 0.,fRmax-fBe);
   TGeoVolume* votube1vide = new TGeoVolume("votube1vide",tube1vide,kMedVac);
   votube1vide->SetVisibility(0);votube1vide->SetLineColor(kGreen);
   top->AddNode(votube1vide,1,new TGeoTranslation(0., 0., 0.));
@@ -198,14 +208,14 @@ void AliPIPEv4::CreateGeometry()
   //----------- Conical Al tube before bellows ----------
   TGeoPcon* tube2 = new TGeoPcon(0., 360., 2);
   tube2->DefineSection(0,fztube2, fRmax-fBe,fRmax);
-  tube2->DefineSection(1,fztube2+(-1.3),2.15-fBe,2.15);
+  tube2->DefineSection(1,fztube2-fFirstConeLength,fBellowSectionOuterRadius-fBe,fBellowSectionOuterRadius);
   TGeoVolume* votube2 = new TGeoVolume("votube2",tube2,kMedAlu2219);
   votube2->SetLineColor(kBlue);
   top->AddNode(votube2,1,new TGeoTranslation(0., 0., 0.));
 
   TGeoPcon* tube2vide = new TGeoPcon(0., 360., 2);
   tube2vide->DefineSection(0,fztube2, 0., fRmax-fBe);
-  tube2vide->DefineSection(1,fztube2+(-1.3), 0., 2.15-fBe);
+  tube2vide->DefineSection(1,fztube2-fFirstConeLength, 0., fBellowSectionOuterRadius-fBe);
   TGeoVolume* votube2vide = new TGeoVolume("votube2vide",tube2vide,kMedVac);
   votube2vide->SetVisibility(0);votube2vide->SetLineColor(kGreen); 
   top->AddNode(votube2vide,1,new TGeoTranslation(0., 0., 0.));
@@ -214,32 +224,32 @@ void AliPIPEv4::CreateGeometry()
 
   //---------- Al tube before first bellow ----------
   TGeoPcon* tube3 = new TGeoPcon(0., 360., 2);
-  tube3->DefineSection(0,fztube3, 2.15-fBe,2.15);
-  tube3->DefineSection(1,fztube3+(-1.3),2.15-fBe,2.15);
+  tube3->DefineSection(0,fztube3, fBellowSectionOuterRadius-fBe,fBellowSectionOuterRadius);
+  tube3->DefineSection(1,fztube3-fCylinderBeforeAfterBellowsLength,fBellowSectionOuterRadius-fBe,fBellowSectionOuterRadius);
   TGeoVolume* votube3 = new TGeoVolume("votube3",tube3,kMedAlu2219);
   votube3->SetLineColor(kBlue);
   top->AddNode(votube3,1,new TGeoTranslation(0., 0., 0.));
   //-------------------------------------------------
   //---------- Al tube between the bellows ----------
   TGeoPcon* tube4 = new TGeoPcon(0., 360., 2);
-  tube4->DefineSection(0,fztube4, 2.15-fBe,2.15);
-  tube4->DefineSection(1,fztube4+(-4.0),2.15-fBe,2.15);
+  tube4->DefineSection(0,fztube4, fBellowSectionOuterRadius-fBe,fBellowSectionOuterRadius);
+  tube4->DefineSection(1,fztube4-fDistanceBetweenBellows,fBellowSectionOuterRadius-fBe,fBellowSectionOuterRadius);
   TGeoVolume* votube4 = new TGeoVolume("votube4",tube4,kMedAlu2219);
   votube4->SetLineColor(kBlue);
   top->AddNode(votube4,1,new TGeoTranslation(0., 0., 0.));
   //-------------------------------------------------
   //-------- Al tube after the second bellow --------
   TGeoPcon* tube5 = new TGeoPcon(0., 360., 2);
-  tube5->DefineSection(0,fztube5, 2.15-fBe,2.15);
-  tube5->DefineSection(1,fztube5+(-1.3),2.15-fBe,2.15);
+  tube5->DefineSection(0,fztube5, fBellowSectionOuterRadius-fBe,fBellowSectionOuterRadius);
+  tube5->DefineSection(1,fztube5-fCylinderBeforeAfterBellowsLength,fBellowSectionOuterRadius-fBe,fBellowSectionOuterRadius);
   TGeoVolume* votube5 = new TGeoVolume("votube5",tube5,kMedAlu2219);
   votube5->SetLineColor(kBlue);
   top->AddNode(votube5,1,new TGeoTranslation(0., 0., 0.));
   //-------------------------------------------------
   //---- One empty tube inside tube3, tube4, tube5 and bellows -----
   TGeoPcon* tube345vide = new TGeoPcon(0., 360., 2);
-  tube345vide->DefineSection(0,fztube3, 0., 2.15-fBe);
-  tube345vide->DefineSection(1,fztube5+(-1.3), 0., 2.15-fBe);
+  tube345vide->DefineSection(0,fztube3, 0., fBellowSectionOuterRadius-fBe);
+  tube345vide->DefineSection(1,fztube5-fCylinderBeforeAfterBellowsLength, 0., fBellowSectionOuterRadius-fBe);
   TGeoVolume* votube345vide = new TGeoVolume("votube345vide",tube345vide,kMedVac);
   votube345vide->SetVisibility(0);votube345vide->SetLineColor(kGreen);
   top->AddNode(votube345vide,1,new TGeoTranslation(0., 0., 0.));
@@ -248,7 +258,7 @@ void AliPIPEv4::CreateGeometry()
 
   //----------- 15?? Conical adaptator + flange ----------
   TGeoPcon* adaptator = new TGeoPcon(0., 360., 4);
-  adaptator->DefineSection(0,fzadapt, 2.15-fBe, 2.15);
+  adaptator->DefineSection(0,fzadapt, fBellowSectionOuterRadius-fBe, fBellowSectionOuterRadius);
   adaptator->DefineSection(1,fzadapt+(-3.17), 3.0-fBe, 3.0);
   adaptator->DefineSection(2,fzadapt+(-3.17), 3.0-fBe, 4.3);
   adaptator->DefineSection(3,fzadapt+(-3.17-1.4), 3.0-fBe ,4.3);
@@ -275,32 +285,27 @@ void AliPIPEv4::CreateGeometry()
 
   
   // ------------------ First Bellow  -------------------- 
-  TGeoVolume* vobellows1 = MakeBellow("bellows1", 6, 2.15-fBe, 3.0, 3.8, plieradius ,0.03);
-  top->AddNode(vobellows1, 1, new TGeoTranslation(0., 0., fztube3+(-1.3-3.8/2. -0.31 +0.08)));
-  // Comments: removing 1/2 plie (see MakeBellow):  0.31= 2*0.17-0.03    and   0.08: free space
-
-  // small tube of the bellow 1 to cover the 0.08cm remaining space
-  TGeoPcon* bellowtube1 = new TGeoPcon(0., 360., 2);
-  bellowtube1->DefineSection(0,fztube4+(0.08), 2.15-0.03,2.15);
-  bellowtube1->DefineSection(1,fztube4,2.15-0.03,2.15);
-  TGeoVolume* vobellowtube1 = new TGeoVolume("vobellowtube1",bellowtube1,kMedAlu5083);
-  vobellowtube1->SetLineColor(kGreen);
-  top->AddNode(vobellowtube1,1,new TGeoTranslation(0., 0., 0.));
+  TGeoVolume* vobellows1 = MakeBellowCside("bellows1", 6, fBellowSectionOuterRadius-fBe, fBellowOuterRadius, fBellowLength, plieradius ,0.03);
+  top->AddNode(vobellows1, 1, new TGeoTranslation(0., 0., fztube3+(-fCylinderBeforeAfterBellowsLength-fBellowLength/2.-2.*plieradius)));
   //------------------------------------------------------
    
   // ------------------ Second Bellow --------------------
-  TGeoVolume* vobellows2 = MakeBellow("bellows2", 6, 2.15-fBe, 3.0, 3.8, plieradius ,0.03);
-  top->AddNode(vobellows2, 1, new TGeoTranslation(0., 0., fztube4+(-4.0-3.8/2. -0.31 +0.08)));
-  // small tube of the bellow 1
-  TGeoPcon* bellowtube2 = new TGeoPcon(0., 360., 2);
-  bellowtube2->DefineSection(0,fztube5+(0.08), 2.15-0.03,2.15);
-  bellowtube2->DefineSection(1,fztube5,2.15-0.03,2.15);
-  TGeoVolume* vobellowtube2 = new TGeoVolume("vobellowtube2",bellowtube2,kMedAlu5083);
-  vobellowtube2->SetLineColor(kGreen);
-  top->AddNode(vobellowtube2,1,new TGeoTranslation(0., 0., 0.));
+  TGeoVolume* vobellows2 = MakeBellowCside("bellows2", 6, fBellowSectionOuterRadius-fBe, fBellowOuterRadius, fBellowLength, plieradius ,0.03);
+  top->AddNode(vobellows2, 1, new TGeoTranslation(0., 0., fztube4+(-fDistanceBetweenBellows-fBellowLength/2. -2.*plieradius)));
   //-----------------------------------------------------
   
-  /////////////////////////// END NEW BEAM PIPE GEOMETRY fOR MFT /////////////////////////////
+  
+ 
+  ///////////////////////////////////
+  //    Beam Pipe support          //
+  //     version 4.6               //
+  ///////////////////////////////////
+
+  TGeoBBox * carbonSkinVert = new TGeoBBox(13.375/2.,0.45/2.,0.05/2.);
+  
+  
+  
+  ///////////// END NEW BEAM PIPE GEOMETRY fOR MFT ////////////////////
     
 
 
@@ -3098,6 +3103,95 @@ TGeoVolume* AliPIPEv4::MakeBellow(const char* ext, Int_t nc, Float_t rMin, Float
     Float_t zpos =  z0 + iw * zsh;	
     voBellow->AddNode(asWiggle,  iw + 1, new TGeoTranslation(0., 0., zpos - dPlie));
 
+  }
+  return voBellow;
+}
+
+TGeoVolume* AliPIPEv4::MakeBellowCside(const char* ext, Int_t nc, Float_t rMin, Float_t rMax, Float_t dU, Float_t rPlie, Float_t dPlie)
+{
+  // nc     Number of convolution
+  // rMin   Inner radius of the bellow
+  // rMax   Outer radius of the bellow
+  // dU     Undulation length
+  // rPlie  Plie radius
+  // dPlie  Plie thickness
+  const TGeoMedium* kMedVac    =  gGeoManager->GetMedium("PIPE_VACUUM");
+  //const TGeoMedium* kMedSteel  =  gGeoManager->GetMedium("PIPE_INOX");
+  const TGeoMedium* kMedAlu5083 =  gGeoManager->GetMedium("PIPE_AA5083"); //fm
+  
+  char name[64], nameA[64], nameB[64], bools[64];
+  snprintf(name, 64, "%sBellowUS", ext);
+  TGeoVolume* voBellow = new TGeoVolume(name, new TGeoTube(rMin, rMax, dU/2.), kMedVac);
+  //
+  //  Upper part of the undulation
+  //
+  TGeoTorus* shPlieTorusU  =  new TGeoTorus(rMax - rPlie, rPlie - dPlie, rPlie);
+  snprintf(nameA, 64, "%sTorusU", ext);
+  shPlieTorusU->SetName(nameA);
+  TGeoTube*  shPlieTubeU   =  new TGeoTube (rMax - rPlie, rMax, rPlie);
+  snprintf(nameB, 64, "%sTubeU", ext);
+  shPlieTubeU->SetName(nameB);
+  snprintf(name, 64, "%sUpperPlie", ext);
+  snprintf(bools, 64, "%s*%s", nameA, nameB);
+  TGeoCompositeShape*  shUpperPlie = new TGeoCompositeShape(name, bools);
+  
+  TGeoVolume* voWiggleU = new TGeoVolume(name, shUpperPlie, kMedAlu5083);
+  voWiggleU->SetLineColor(kOrange); // fm
+  
+  // First Lower part of the undulation
+  TGeoTorus* shPlieTorusL =  new TGeoTorus(rMin + rPlie, rPlie - dPlie, rPlie);
+  snprintf(nameA, 64, "%sTorusL", ext);
+  shPlieTorusL->SetName(nameA);
+  TGeoTranslation *t1 = new TGeoTranslation("t1",0,0,-rPlie/2.);
+  t1->RegisterYourself();
+
+  TGeoTube*  shPlieTubeL  =  new TGeoTube (rMin, rMin + rPlie, rPlie/2.);
+  snprintf(nameB, 64, "%sTubeL", ext);
+  shPlieTubeL->SetName(nameB);
+  snprintf(name, 64, "%sLowerPlie", ext);
+  snprintf(bools, 64, "%s*%s:t1", nameA, nameB);
+  TGeoCompositeShape*  shLowerPlie1 = new TGeoCompositeShape(name, bools);
+  
+  TGeoVolume* voWiggleL1 = new TGeoVolume(name, shLowerPlie1, kMedAlu5083);
+  voWiggleL1->SetLineColor(kOrange); // fm
+  
+  // Second Lower part of the undulation
+  TGeoTranslation *t2 = new TGeoTranslation("t2",0,0,rPlie/2.);
+  t2->RegisterYourself();
+  
+  snprintf(bools, 64, "%s*%s:t2", nameA, nameB);
+  TGeoCompositeShape*  shLowerPlie2 = new TGeoCompositeShape(name, bools);
+  
+  TGeoVolume* voWiggleL2 = new TGeoVolume(name, shLowerPlie2, kMedAlu5083);
+  voWiggleL2->SetLineColor(kOrange); // fm
+  
+  // Connection between upper and lower part of undulation
+  snprintf(name, 64, "%sPlieConn1", ext);
+  TGeoVolume* voWiggleC1 = new TGeoVolume(name, new TGeoTube(rMin + rPlie, rMax - rPlie, dPlie/2.), kMedAlu5083);
+  voWiggleC1->SetLineColor(kOrange); // fm
+  
+  // One wiggle
+  Float_t dz = rPlie -  dPlie / 2.;
+  Float_t z0 = 2.*rPlie;
+  snprintf(name, 64, "%sWiggle", ext);
+  TGeoVolumeAssembly* asWiggle = new TGeoVolumeAssembly(name);
+  
+  asWiggle->AddNode(voWiggleL1 ,  1 , new TGeoTranslation(0., 0., z0));
+  z0 -= dz;
+  asWiggle->AddNode(voWiggleC1,  1 , new TGeoTranslation(0., 0., z0));
+  z0 -= dz;
+  asWiggle->AddNode(voWiggleU,   1 , new TGeoTranslation(0., 0., z0));
+  z0 -= dz;
+  asWiggle->AddNode(voWiggleC1,  2 , new TGeoTranslation(0., 0., z0));
+  z0 -= dz;
+  asWiggle->AddNode(voWiggleL2 ,  1 , new TGeoTranslation(0., 0., z0));
+  // Positioning of the volumes
+  z0   = + dU / 2.;
+  Float_t zsh  = 4. *  dz;
+  for (Int_t iw = 0; iw < nc; iw++) {
+    Float_t zpos =  z0 - iw * zsh;
+    voBellow->AddNode(asWiggle,  iw + 1, new TGeoTranslation(0., 0., zpos));
+    
   }
   return voBellow;
 }
