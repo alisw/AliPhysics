@@ -1,8 +1,9 @@
 AliAnalysisTask *AddTaskHFEnpePbPb(Bool_t MCthere, 
                                    Bool_t isAOD,
                                    Bool_t kNPERef = kTRUE,
-                                   Bool_t kNPEkAny = kTRUE,
-				   Bool_t kNPERefMCf = kTRUE)
+                                   Bool_t kNPEkAny = kFALSE,
+				   Bool_t kNPERefMCf =  kTRUE,
+				   Bool_t kNPERefTPConly =  kTRUE)
 {
   // Default settings (TOF-TPC PbPb)
   const int	kDefTPCcl	= 130;
@@ -38,6 +39,9 @@ AliAnalysisTask *AddTaskHFEnpePbPb(Bool_t MCthere,
     Error("AddTask_hfe_HFE", "No analysis manager found.");
     return 0;
   }
+
+  //mgr->AddClassDebug("AliAnalysisTaskHFE",12);
+ 
 
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
 
@@ -76,6 +80,16 @@ AliAnalysisTask *AddTaskHFEnpePbPb(Bool_t MCthere,
     // **************************************************************
     RegisterTaskNPEPbPb( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1, dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
 			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE, kTRUE);
+  }
+
+  if(kNPERefTPConly){
+    // **************************************************************
+    // 
+    // Reference task
+    //
+    // **************************************************************
+    RegisterTaskNPEPbPb( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1, dEdxhm, 0., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
+			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE, kFALSE);
   }
 
   return NULL;

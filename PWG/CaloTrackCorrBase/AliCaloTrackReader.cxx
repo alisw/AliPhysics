@@ -86,9 +86,9 @@ fFillCTS(0),                 fFillEMCAL(0),                   fFillPHOS(0),
 fFillEMCALCells(0),          fFillPHOSCells(0),
 fRecalculateClusters(kFALSE),fCorrectELinearity(kTRUE),
 fSelectEmbeddedClusters(kFALSE),
-fTrackStatus(0),             fTrackFilterMask(0),
+fTrackStatus(0),             fTrackFilterMask(0),             fTrackFilterMaskComplementary(0),
 fESDtrackCuts(0),            fESDtrackComplementaryCuts(0),   fConstrainTrack(kFALSE),
-fSelectHybridTracks(0),      fSelectSPDHitTracks(kFALSE),
+fSelectHybridTracks(0),      fSelectPrimaryTracks(0),         fSelectSPDHitTracks(kFALSE),
 fTrackMult(0),               fTrackMultEtaCut(0.9),
 fReadStack(kFALSE),          fReadAODMCParticles(kFALSE),
 fDeltaAODFileName(""),       fFiredTriggerClassName(""),
@@ -658,6 +658,7 @@ void AliCaloTrackReader::InitParameters()
   //fTrackStatus|=AliESDtrack::kITSrefit;
   fTrackStatus     = 0;
   fTrackFilterMask = 128; //For AODs, but what is the difference between fTrackStatus and fTrackFilterMask?
+  fTrackFilterMaskComplementary = 0; // in case of hybrid tracks, without using the standard method
   
   fESDtrackCuts = 0;
   fESDtrackComplementaryCuts = 0;
@@ -1471,14 +1472,21 @@ void AliCaloTrackReader::FillInputCTS()
                                aodtrack->GetType(),AliAODTrack::kPrimary,
                                aodtrack->IsHybridGlobalConstrainedGlobal());
         
-        
-        if (fSelectHybridTracks)
+        if (fSelectHybridTracks && fTrackFilterMaskComplementary == 0)
         {
           if (!aodtrack->IsHybridGlobalConstrainedGlobal())       continue ;
         }
         else
         {
-          if ( aodtrack->TestFilterBit(fTrackFilterMask)==kFALSE) continue ;
+          Bool_t accept = aodtrack->TestFilterBit(fTrackFilterMask);
+          
+          if(!fSelectHybridTracks && !accept) continue ;
+          
+          if(fSelectHybridTracks)
+          {
+            Bool_t acceptcomplement = aodtrack->TestFilterBit(fTrackFilterMaskComplementary);
+            if (!accept && !acceptcomplement) continue ;
+          }
         }
         
         if(fSelectSPDHitTracks)
@@ -1486,7 +1494,10 @@ void AliCaloTrackReader::FillInputCTS()
           if(!aodtrack->HasPointOnITSLayer(0) && !aodtrack->HasPointOnITSLayer(1)) continue ;
         }
         
-        if (aodtrack->GetType()!= AliAODTrack::kPrimary)          continue ;
+        if ( fSelectPrimaryTracks )
+        {
+          if ( aodtrack->GetType()!= AliAODTrack::kPrimary ) continue ;
+        }
         
         if (fDebug > 2 ) printf("AliCaloTrackReader::FillInputCTS(): \t accepted track! \n");
         
@@ -1553,7 +1564,7 @@ void AliCaloTrackReader::FillInputCTS()
       //else printf("Accept track time %f and bc = %d\n",tof,trackBC);
       
     }
-    
+
     //Count the tracks in eta < 0.9
     //printf("Eta %f cut  %f\n",TMath::Abs(track->Eta()),fTrackMultEtaCut);
     if(TMath::Abs(track->Eta())< fTrackMultEtaCut) fTrackMult++;
@@ -1563,8 +1574,8 @@ void AliCaloTrackReader::FillInputCTS()
     if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"CTS")) continue;
     
     if(fDebug > 2 && momentum.Pt() > 0.1)
-      printf("AliCaloTrackReader::FillInputCTS() - Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
-             momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
+      printf("AliCaloTrackReader::FillInputCTS() - Selected tracks pt %3.2f, phi %3.2f, eta %3.2f\n",
+             momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
     
     if (fMixedEvent)  track->SetID(itrack);
     
@@ -2462,7 +2473,8 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("Use EMCAL Cells =     %d\n",     fFillEMCALCells) ;
   printf("Use PHOS  Cells =     %d\n",     fFillPHOSCells) ;
   printf("Track status    =     %d\n", (Int_t) fTrackStatus) ;
-  printf("AODs Track filter mask  =  %d or hybrid %d, SPD hit %d\n", (Int_t) fTrackFilterMask,fSelectHybridTracks,fSelectSPDHitTracks) ;
+  printf("AODs Track filter mask  =  %d or hybrid %d (if filter bit comp %d), select : SPD hit %d, primary %d\n",
+         (Int_t) fTrackFilterMask, fSelectHybridTracks, (Int_t) fTrackFilterMaskComplementary, fSelectSPDHitTracks,fSelectPrimaryTracks) ;
   printf("Track Mult Eta Cut =  %d\n", (Int_t) fTrackMultEtaCut) ;
   printf("Write delta AOD =     %d\n",     fWriteOutputDeltaAOD) ;
   printf("Recalculate Clusters = %d, E linearity = %d\n",    fRecalculateClusters, fCorrectELinearity) ;
