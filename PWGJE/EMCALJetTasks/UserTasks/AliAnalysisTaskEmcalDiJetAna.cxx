@@ -46,7 +46,6 @@ AliAnalysisTaskEmcalDiJetAna::AliAnalysisTaskEmcalDiJetAna() :
   fhnDiJetVarsCh(0),
   fhnDiJetVarsFullCharged(0),
   fhnMatchingFullCharged(0),
-  fh3JetPtFullFractionDR(0),
   fh3PtTrigKt1Kt2Ch(0),
   fh3PtTrigKt1Kt2FuCh(0),
   fh3PtTrigDPhi1DPhi2Ch(0),
@@ -79,7 +78,6 @@ AliAnalysisTaskEmcalDiJetAna::AliAnalysisTaskEmcalDiJetAna(const char *name) :
   fhnDiJetVarsCh(0),
   fhnDiJetVarsFullCharged(0),
   fhnMatchingFullCharged(0),
-  fh3JetPtFullFractionDR(0),
   fh3PtTrigKt1Kt2Ch(0),
   fh3PtTrigKt1Kt2FuCh(0),
   fh3PtTrigDPhi1DPhi2Ch(0),
@@ -162,7 +160,7 @@ void AliAnalysisTaskEmcalDiJetAna::UserCreateOutputObjects()
   const Int_t nBinsKt       = 50;
   const Int_t nBinsDiJetEta = 40;
   const Int_t nBinsCentr    = fNcentBins;
-  const Int_t nBinsAj       = 50;
+  const Int_t nBinsAj       = 20;
   const Int_t nBins0[nBinsSparse0] = {nBinsPtW,nBinsPtW,nBinsDPhi,nBinsKt,nBinsDiJetEta,nBinsCentr,nBinsAj};
   //pT1, pT2, deltaPhi, kT
   const Double_t xmin0[nBinsSparse0]  = {  minPt, minPt, -0.5*TMath::Pi(),   0.,-1.,0.  , 0.};
@@ -250,8 +248,6 @@ void AliAnalysisTaskEmcalDiJetAna::UserCreateOutputObjects()
 					  nBinsSparseMatch,nBinsMatch,xminMatch,xmaxMatch);
     fOutput->Add(fhnMatchingFullCharged);
   }
-  fh3JetPtFullFractionDR = new TH3F("fh3JetPtFullFractionDR","fh3JetPtFullFractionDR;#it{p}_{T,full} (GeV/#it{c}); #it{f}_{ch};#Delta R",nBinsPt,minPt,maxPt,nBinsFraction,0.,1.05,nBinsDR,0.,1.);
-  fOutput->Add(fh3JetPtFullFractionDR);
   
   // =========== Switch on Sumw2 for all histos ===========
   for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
