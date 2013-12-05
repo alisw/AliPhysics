@@ -87,8 +87,10 @@ void AliEmcalSetupTask::UserExec(Option_t *)
   if (fOcdbPath.Length()>0) {
     AliInfo(Form("Setting up OCDB"));
     man = AliCDBManager::Instance();
-    man->SetDefaultStorage(fOcdbPath);
-    man->SetRun(runno);
+    if (!man->IsDefaultStorageSet())
+      man->SetDefaultStorage(fOcdbPath);
+    if (man->GetRun()!=runno)
+      man->SetRun(runno);
   }
 
   TGeoManager *geo = AliGeomManager::GetGeometry();
@@ -101,6 +103,7 @@ void AliEmcalSetupTask::UserExec(Option_t *)
       AliInfo(Form("Loading geometry from OCDB"));
       AliGeomManager::LoadGeometry();
     }
+    geo = AliGeomManager::GetGeometry();
   }
   if (geo) {
     AliGeomManager::ApplyAlignObjsFromCDB("EMCAL");
