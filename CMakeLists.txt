@@ -172,32 +172,29 @@ set(LIBS ${ROOTCLIBS} ${ROOTPLIBS} ${SYSLIBS})
 
 # Configure ARVerion.h
 # ------------------------------
-if(Subversion_FOUND)
-  if(EXISTS ${PROJECT_SOURCE_DIR}/.svn/ )
-  Subversion_WC_INFO(${PROJECT_SOURCE_DIR} PROJECT)
-  set(ALIROOT_SVN_REVISION ${PROJECT_WC_REVISION})
-  set(ALIROOT_SVN_BRANCH ${PROJECT_WC_URL})
-  string(REGEX MATCH "[^/]+$" ALIROOT_SVN_BRANCH ${ALIROOT_SVN_BRANCH})
+#If the sources were taken from Git
+if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
+ include(GetGitRevisionDescription)
+ find_package(Git)
+ if(GIT_FOUND)
+  get_git_head_revision(GIT_REFSPEC GIT_SHA1)
+  message(STATUS "Aliroot Revision - ${GIT_SHA1} Branch - ${GIT_REFSPEC}")
 
-  elseif(EXISTS ${PROJECT_SOURCE_DIR}/.git/ )
-    execute_process(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND git svn info OUTPUT_VARIABLE OUTPUTVAR)
-    string(REPLACE "\n" ";" OUTPUTVAR ${OUTPUTVAR})
-    foreach(f ${OUTPUTVAR})
-      if(${f} MATCHES URL)
-	string(REGEX MATCH "[^/]+$" ALIROOT_SVN_BRANCH ${f})
-      elseif(${f} MATCHES Revision)
-	string(REGEX MATCH "[^: ]+$" ALIROOT_SVN_REVISION ${f})
-      endif(${f} MATCHES URL)   
-    endforeach()
-  endif(EXISTS ${PROJECT_SOURCE_DIR}/.svn/ )
+  STRING(REGEX REPLACE "^(.+/)(.+/)(.*)$" "\\3" SHORT_BRANCH "${GIT_REFSPEC}" )
 
-  message(STATUS "Aliroot Revision - ${ALIROOT_SVN_REVISION} Branch - ${ALIROOT_SVN_BRANCH}")
-  if(EXISTS ${CMAKE_INCLUDE_EXPORT_DIRECTORY}/ARVersion.h)
-    file(REMOVE ${CMAKE_INCLUDE_EXPORT_DIRECTORY}/ARVersion.h)
-  endif(EXISTS ${CMAKE_INCLUDE_EXPORT_DIRECTORY}/ARVersion.h)
-  configure_file(${PROJECT_SOURCE_DIR}/cmake/ARVersion.h.tmp ${CMAKE_INCLUDE_EXPORT_DIRECTORY}/ARVersion.h @ONLY)
-endif(Subversion_FOUND)
-string (REPLACE "-" "." ALIROOT_SVN_BRANCH_SPEC "${ALIROOT_SVN_BRANCH}")
+  set(ALIROOT_REVISION ${GIT_SHA1})
+  set(ALIROOT_BRANCH ${SHORT_BRANCH})
+
+ else()
+  message("Git not installed. I can't tell you which revision you are using!")
+  endif(GIT_FOUND)
+else()
+ message("AliRoot sources not downloaded from a Version Control System. I can't tell which revision you are using!")
+endif(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
+
+configure_file(${PROJECT_SOURCE_DIR}/cmake/ARVersion.h.tmp ${CMAKE_INCLUDE_EXPORT_DIRECTORY}/ARVersion.h @ONLY)
+
+string (REPLACE "-" "." ALIROOT_BRANCH_SPEC "${ALIROOT_BRANCH}")
 
 #--------------------------------------------------------------------------------#
 # Build Modules                                                                  #
@@ -373,8 +370,8 @@ COMMAND @echo '\# make alimdc-rpm' >> ${ALIMDCSPECFILE}
 COMMAND @echo "" >> ${ALIMDCSPECFILE}
 COMMAND @echo "Summary: AliMDC static libraries" >> ${ALIMDCSPECFILE}
 COMMAND @echo "Name: alimdc" >> ${ALIMDCSPECFILE}
-COMMAND @echo "Version:  ${ALIROOT_SVN_BRANCH_SPEC}" >> ${ALIMDCSPECFILE}
-COMMAND @echo "Release: ${ALIROOT_SVN_REVISION}" >> ${ALIMDCSPECFILE}
+COMMAND @echo "Version:  ${ALIROOT_BRANCH_SPEC}" >> ${ALIMDCSPECFILE}
+COMMAND @echo "Release: ${ALIROOT_REVISION}" >> ${ALIMDCSPECFILE}
 COMMAND @echo '\# Copyright: CERN Alice Off-line' >> ${ALIMDCSPECFILE}
 COMMAND @echo "License: CERN Alice Off-line" >> ${ALIMDCSPECFILE}
 COMMAND @echo "Vendor: ALICE Core Off-line Group" >> ${ALIMDCSPECFILE}
