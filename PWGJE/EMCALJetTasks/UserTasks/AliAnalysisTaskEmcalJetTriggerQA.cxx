@@ -132,10 +132,18 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::SelectEvent() {
   if(!fTriggerClass.IsNull()) {
     //Check if requested trigger was fired
     TString firedTrigClass = InputEvent()->GetFiredTriggerClasses();
-    if(!firedTrigClass.Contains(fTriggerClass))
-      return kFALSE;
-    if(fTriggerClass.Contains("J2") && firedTrigClass.Contains("J1")) //only accept J2 triggers which were not fired by J1 as well
-      return kFALSE;
+    
+    if(fTriggerClass.Contains("J1") && fTriggerClass.Contains("J2")) {      
+      if(!firedTrigClass.Contains("J1") || !firedTrigClass.Contains("J2") )
+	return kFALSE; 
+    }
+    else {
+
+      if(!firedTrigClass.Contains(fTriggerClass))
+	return kFALSE;
+      if(fTriggerClass.Contains("J2") && firedTrigClass.Contains("J1")) //only accept J2 triggers which were not fired by J1 as well
+	return kFALSE;
+    }
   }
 
   fhNEvents->Fill(1.5);

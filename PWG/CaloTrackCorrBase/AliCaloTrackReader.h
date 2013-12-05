@@ -399,8 +399,11 @@ public:
   ULong_t          GetTrackStatus()                  const { return fTrackStatus          ; }
   void             SetTrackStatus(ULong_t bit)             { fTrackStatus = bit           ; }		
 
-  ULong_t          GetTrackFilterMask()              const {return fTrackFilterMask       ; }
-  void             SetTrackFilterMask(ULong_t bit)         { fTrackFilterMask = bit       ; }		
+  ULong_t          GetTrackFilterMask()              const { return fTrackFilterMask       ; }
+  void             SetTrackFilterMask(ULong_t bit)         { fTrackFilterMask = bit       ; }
+  
+  ULong_t          GetTrackFilterMaskComplementary() const { return fTrackFilterMaskComplementary       ; }
+  void             SetTrackFilterMaskComplementary(ULong_t bit) {   fTrackFilterMaskComplementary = bit ; }
   
   AliESDtrackCuts* GetTrackCuts()                    const { return fESDtrackCuts         ; }
   void             SetTrackCuts(AliESDtrackCuts * cuts)    ;
@@ -414,6 +417,9 @@ public:
   
   void             SwitchOnAODHybridTrackSelection()       { fSelectHybridTracks = kTRUE  ; } 
   void             SwitchOffAODHybridTrackSelection()      { fSelectHybridTracks = kFALSE ; }      
+
+  void             SwitchOnAODPrimaryTrackSelection()      { fSelectPrimaryTracks = kTRUE  ; }
+  void             SwitchOffAODPrimaryTrackSelection()     { fSelectPrimaryTracks = kFALSE ; }
   
   void             SwitchOnTrackHitSPDSelection()          { fSelectSPDHitTracks = kTRUE  ; }
   void             SwitchOffTrackHitSPDSelection()         { fSelectSPDHitTracks = kFALSE ; }
@@ -631,10 +637,12 @@ public:
   
   ULong_t          fTrackStatus        ;       // Track selection bit, select tracks refitted in TPC, ITS ...
   ULong_t          fTrackFilterMask    ;       // Track selection bit, for AODs (any difference with track status?)
+  ULong_t          fTrackFilterMaskComplementary;       // Complementary Track selection bit, for AODs in case hybrid option selected
   AliESDtrackCuts *fESDtrackCuts       ;       // Track cut
   AliESDtrackCuts *fESDtrackComplementaryCuts; // Track cut, complementary cuts for hybrids
   Bool_t           fConstrainTrack     ;       // Constrain Track to vertex
   Bool_t           fSelectHybridTracks ;       // Select CTS tracks of type hybrid (only for AODs)
+  Bool_t           fSelectPrimaryTracks ;      // Select CTS tracks of type hybrid (only for AODs)
   Bool_t           fSelectSPDHitTracks ;       // Ensure that track hits SPD layers
   Int_t            fTrackMult          ;       // Track multiplicity
   Float_t          fTrackMultEtaCut    ;       // Track multiplicity eta cut
@@ -756,7 +764,7 @@ public:
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,62)
+  ClassDef(AliCaloTrackReader,63)
   
 } ;
 

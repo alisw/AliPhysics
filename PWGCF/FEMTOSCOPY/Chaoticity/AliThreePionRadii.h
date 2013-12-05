@@ -147,7 +147,7 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
     TH1D *fMCqinv; //!
     TH1D *fMCqinvQW; //!
     TH2D *fPIDpurityDen; //!
-    TH2D *fPIDpurityNum; //!
+    TH3D *fPIDpurityNum; //!
   };
   struct St_EDB {// SC structure
     struct St5 TwoPT[2];

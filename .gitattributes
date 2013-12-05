@@ -1,0 +1,2 @@
+*.cxx filter=rcs-keywords
+*.h filter=rcs-keywords
