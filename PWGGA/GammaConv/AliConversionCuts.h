@@ -192,7 +192,7 @@ class AliConversionCuts : public AliAnalysisCuts {
    }
    Bool_t PhotonCuts(AliConversionPhotonBase *photon,AliVEvent *event);
    Bool_t CorrectedTPCClusterCut(AliConversionPhotonBase *photon, AliVEvent * event);
-   Bool_t PsiPairCut(const AliConversionPhotonBase * photon, Double_t deltaPhi) const;
+   Bool_t PsiPairCut(const AliConversionPhotonBase * photon) const;
    Bool_t CosinePAngleCut(const AliConversionPhotonBase * photon, AliVEvent * event) const;
    Bool_t RejectSharedElectronV0s(AliAODConversionPhoton* photon, Int_t nV0, Int_t nV0s);
    Bool_t RejectToCloseV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0);
@@ -324,10 +324,8 @@ class AliConversionCuts : public AliAnalysisCuts {
    Double_t fPIDMinPProtonRejectionLowP; // Momentum limit to apply proton rejection
    Double_t fPIDMinPPionRejectionLowP; // Momentum limit to apply proton rejection
    Bool_t   fDoQtGammaSelection; // Select gammas using qtMax
-   Bool_t   fDoHighPtQtGammaSelection; // RRnew Select gammas using qtMax for high pT
+   Bool_t   fDo2DQt; // Select gammas using ellipse cut
    Double_t fQtMax; // Maximum Qt from Armenteros to select Gammas
-   Double_t fHighPtQtMax; // RRnew Maximum Qt for High pT from Armenteros to select Gammas
-   Double_t fPtBorderForQt; // RRnew 
    Double_t fXVertexCut; //vertex cut
    Double_t fYVertexCut; //vertex cut
    Double_t fZVertexCut; // vertexcut
@@ -350,8 +348,7 @@ class AliConversionCuts : public AliAnalysisCuts {
    Bool_t fRemovePileUp; //flag
    Float_t fOpeningAngle; // min opening angle for meson
    Float_t fPsiPairCut;
-   Float_t fPsiPairDeltaPhiCut;
-   Bool_t fDo2DPsiPair;
+   Bool_t fDo2DPsiPairChi2;
    Float_t fCosPAngleCut;
    Bool_t fDoToCloseV0sCut; //
    Int_t fRejectExtraSignals;//
@@ -423,7 +420,7 @@ class AliConversionCuts : public AliAnalysisCuts {
    TString fSpecialTriggerName; // Name of the Special Triggers
 private:
 
-   ClassDef(AliConversionCuts,6)
+   ClassDef(AliConversionCuts,7)
 };
 
 
