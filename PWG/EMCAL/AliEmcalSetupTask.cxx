@@ -109,19 +109,7 @@ void AliEmcalSetupTask::UserExec(Option_t *)
   }
 
   if (!TGeoGlobalMagField::Instance()->GetField()) { // construct field map
-    AliESDEvent *esdEv = dynamic_cast<AliESDEvent*>(InputEvent());
-    if (esdEv) {
-      AliInfo("Constructing field map from ESD run info");
-      esdEv->InitMagneticField();
-    } else {
-      AliAODEvent *aodEv = dynamic_cast<AliAODEvent*>(InputEvent());
-      if (aodEv) {
-        Double_t curSol = 30000*aodEv->GetMagneticField()/5.00668;
-        Double_t curDip = 6000 *aodEv->GetMuonMagFieldScale();
-        AliMagF *field  = AliMagF::CreateFieldMap(curSol,curDip);
-        TGeoGlobalMagField::Instance()->SetField(field);
-      }
-    }
+    InputEvent()->InitMagneticField();
   }
 
   if (fOadbPath.Length()>0) {
