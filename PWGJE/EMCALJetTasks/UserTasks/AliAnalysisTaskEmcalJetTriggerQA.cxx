@@ -22,6 +22,7 @@
 #include "AliVCaloCells.h"
 #include "AliJetContainer.h"
 #include "AliClusterContainer.h"
+#include "AliParticleContainer.h"
 #include "AliEmcalTriggerPatchInfo.h"
 #include "AliAODHeader.h"
 
@@ -42,6 +43,7 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
   fTriggerType(-1),
   fNFastOR(16),
   fhNEvents(0),
+  fh3PtEtaPhiTracks(0),
   fh3PtEtaPhiJetFull(0),
   fh3PtEtaPhiJetCharged(0),
   fh2NJetsPtFull(0),
@@ -64,6 +66,10 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
   fh3PtLeadJet2VsPatchEnergy(0),
   fh3PatchEnergyEtaPhiCenterJ1(0),
   fh3PatchEnergyEtaPhiCenterJ2(0),
+  fh3PatchEnergyEtaPhiCenterJ1J2(0),
+  fh3PatchADCEnergyEtaPhiCenterJ1(0),
+  fh3PatchADCEnergyEtaPhiCenterJ2(0),
+  fh3PatchADCEnergyEtaPhiCenterJ1J2(0),
   fh2CellEnergyVsTime(0),
   fh3EClusELeadingCellVsTime(0)
 {
@@ -85,6 +91,7 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
   fTriggerType(-1),
   fNFastOR(16),
   fhNEvents(0),
+  fh3PtEtaPhiTracks(0),
   fh3PtEtaPhiJetFull(0),
   fh3PtEtaPhiJetCharged(0),
   fh2NJetsPtFull(0),
@@ -107,6 +114,10 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
   fh3PtLeadJet2VsPatchEnergy(0),
   fh3PatchEnergyEtaPhiCenterJ1(0),
   fh3PatchEnergyEtaPhiCenterJ2(0),
+  fh3PatchEnergyEtaPhiCenterJ1J2(0),
+  fh3PatchADCEnergyEtaPhiCenterJ1(0),
+  fh3PatchADCEnergyEtaPhiCenterJ2(0),
+  fh3PatchADCEnergyEtaPhiCenterJ1J2(0),
   fh2CellEnergyVsTime(0),
   fh3EClusELeadingCellVsTime(0)
 {
@@ -133,17 +144,19 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::SelectEvent() {
     //Check if requested trigger was fired
     TString firedTrigClass = InputEvent()->GetFiredTriggerClasses();
     
-    if(fTriggerClass.Contains("J1") && fTriggerClass.Contains("J2")) {      
+     if(fTriggerClass.Contains("J1") && fTriggerClass.Contains("J2")) {
       if(!firedTrigClass.Contains("J1") || !firedTrigClass.Contains("J2") )
-	return kFALSE; 
+        return kFALSE;
     }
     else {
-
       if(!firedTrigClass.Contains(fTriggerClass))
-	return kFALSE;
+        return kFALSE;
       if(fTriggerClass.Contains("J2") && firedTrigClass.Contains("J1")) //only accept J2 triggers which were not fired by J1 as well
-	return kFALSE;
+        return kFALSE;
+      else if(fTriggerClass.Contains("J1") && firedTrigClass.Contains("J2")) //only accept J2 triggers which were not fired by J1 as well
+        return kFALSE;
     }
+     
   }
 
   fhNEvents->Fill(1.5);
@@ -160,11 +173,21 @@ void AliAnalysisTaskEmcalJetTriggerQA::FindTriggerPatch() {
   AliEmcalTriggerPatchInfo *patch = GetMainTriggerPatch();
   if(patch) {
     fMaxPatchEnergy = patch->GetPatchE();
-    if(patch->IsJetLow() && !patch->IsJetHigh())  
+    Double_t patchADCGeV = patch->GetADCAmpGeVRough();
+    if(patch->IsJetLow() && !patch->IsJetHigh()) {
       fh3PatchEnergyEtaPhiCenterJ2->Fill(patch->GetPatchE(),patch->GetEtaGeo(),patch->GetPhiGeo());
-    if(patch->IsJetHigh()) 
+      fh3PatchADCEnergyEtaPhiCenterJ2->Fill(patchADCGeV,patch->GetEtaGeo(),patch->GetPhiGeo());
+    }
+    else if(patch->IsJetHigh() && !patch->IsJetLow()) {
       fh3PatchEnergyEtaPhiCenterJ1->Fill(patch->GetPatchE(),patch->GetEtaGeo(),patch->GetPhiGeo());
+      fh3PatchADCEnergyEtaPhiCenterJ1->Fill(patchADCGeV,patch->GetEtaGeo(),patch->GetPhiGeo());
+    }
+    else if(patch->IsJetHigh() && patch->IsJetLow()) {
+      fh3PatchEnergyEtaPhiCenterJ1J2->Fill(patch->GetPatchE(),patch->GetEtaGeo(),patch->GetPhiGeo());
+      fh3PatchADCEnergyEtaPhiCenterJ1J2->Fill(patchADCGeV,patch->GetEtaGeo(),patch->GetPhiGeo());
+    }
   }
+
 }
 
 //________________________________________________________________________
@@ -266,6 +289,8 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
     if(i<=nbin13 && i>nbin12) binsEn[i]=(Double_t)enmin3 + (enmax3-enmin3)/(nbin13-nbin12)*((Double_t)i-(Double_t)nbin12) ;
   }
 
+  fh3PtEtaPhiTracks = new TH3F("fh3PtEtaPhiTracks","fh3PtEtaPhiTracks;#it{p}_{T}^{track};#eta;#varphi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fOutput->Add(fh3PtEtaPhiTracks);
 
   fh3PtEtaPhiJetFull = new TH3F("fh3PtEtaPhiJetFull","fh3PtEtaPhiJetFull;#it{p}_{T}^{jet};#eta;#varphi",fgkNPtBins,binsPt,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PtEtaPhiJetFull);
@@ -332,6 +357,18 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   fh3PatchEnergyEtaPhiCenterJ2 = new TH3F("fh3PatchEnergyEtaPhiCenterJ2","fh3PatchEnergyEtaPhiCenterJ2;E_{patch};#eta;#phi",fgkNPtBins,binsPt,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PatchEnergyEtaPhiCenterJ2);
 
+  fh3PatchEnergyEtaPhiCenterJ1J2 = new TH3F("fh3PatchEnergyEtaPhiCenterJ1J2","fh3PatchEnergyEtaPhiCenterJ1J2;E_{patch};#eta;#phi",fgkNPtBins,binsPt,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fOutput->Add(fh3PatchEnergyEtaPhiCenterJ1J2);
+
+  fh3PatchADCEnergyEtaPhiCenterJ1 = new TH3F("fh3PatchADCEnergyEtaPhiCenterJ1","fh3PatchADCEnergyEtaPhiCenterJ1;E_{ADC,patch};#eta;#phi",fgkNPtBins,binsPt,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fOutput->Add(fh3PatchADCEnergyEtaPhiCenterJ1);
+
+  fh3PatchADCEnergyEtaPhiCenterJ2 = new TH3F("fh3PatchADCEnergyEtaPhiCenterJ2","fh3PatchADCEnergyEtaPhiCenterJ2;E_{ADC,patch};#eta;#phi",fgkNPtBins,binsPt,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fOutput->Add(fh3PatchADCEnergyEtaPhiCenterJ2);
+
+  fh3PatchADCEnergyEtaPhiCenterJ1J2 = new TH3F("fh3PatchADCEnergyEtaPhiCenterJ1J2","fh3PatchADCEnergyEtaPhiCenterJ1J2;E_{ADC,patch};#eta;#phi",fgkNPtBins,binsPt,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fOutput->Add(fh3PatchADCEnergyEtaPhiCenterJ1J2);
+
   fh2CellEnergyVsTime = new TH2F("fh2CellEnergyVsTime","fh2CellEnergyVsTime;E_{cell};time",fgkNEnBins,binsEn,fgkNTimeBins,binsTime);
   fOutput->Add(fh2CellEnergyVsTime);
 
@@ -382,6 +419,16 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
 Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
 {
   // Fill histograms.
+
+  AliParticleContainer *partCont = GetParticleContainer(0);
+  if (partCont) {
+    AliVParticle *track = partCont->GetNextAcceptParticle(0);
+    while(track) {
+      fh3PtEtaPhiTracks->Fill(track->Pt(),track->Eta(),track->Phi());
+      track = partCont->GetNextAcceptParticle();
+    }
+  }
+
 
   AliClusterContainer  *clusCont = GetClusterContainer(0);
   if (clusCont) {
@@ -553,7 +600,7 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::Run()
   if(!SelectEvent())
     return kFALSE;
   
-  if(!fTriggerClass.IsNull())
+  if(fTriggerPatchInfo) 
     FindTriggerPatch();
 
   return kTRUE;  // If return kFALSE FillHistogram() will NOT be executed.
@@ -625,4 +672,53 @@ Double_t AliAnalysisTaskEmcalJetTriggerQA::GetEnergyLeadingCell(const AliVCluste
   else 
     return -1.;
 
+}
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskEmcalJetTriggerQA::GetECross(Int_t absID) const {
+
+  //Get Ecross = sum of energy of neighbouring cells (using uncalibrated energy)
+
+  if(!fCaloCells)
+    return -1.;
+
+  Double_t ecross = -1.;
+
+  Int_t absID1 = -1;
+  Int_t absID2 = -1;
+  Int_t absID3 = -1;
+  Int_t absID4 = -1;
+
+  Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1;
+  fGeom->GetCellIndex(absID,imod,iTower,iIphi,iIeta);
+  fGeom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);
+
+  if( iphi < AliEMCALGeoParams::fgkEMCALRows-1)
+    absID1 = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi+1, ieta);
+  if( iphi > 0 )
+    absID2 = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi-1, ieta);
+
+  if( ieta == AliEMCALGeoParams::fgkEMCALCols-1 && !(imod%2) ) {
+    absID3 = fGeom->GetAbsCellIdFromCellIndexes(imod+1, iphi, 0);
+    absID4 = fGeom->GetAbsCellIdFromCellIndexes(imod,   iphi, ieta-1);
+  }
+  else if( ieta == 0 && imod%2 ) {
+    absID3 = fGeom->GetAbsCellIdFromCellIndexes(imod,   iphi, ieta+1);
+    absID4 = fGeom->GetAbsCellIdFromCellIndexes(imod-1, iphi, AliEMCALGeoParams::fgkEMCALCols-1);
+  }
+  else  {
+    if( ieta < AliEMCALGeoParams::fgkEMCALCols-1 )
+      absID3 = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi, ieta+1);
+    if( ieta > 0 )
+      absID4 = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi, ieta-1);
+  }
+
+  Double_t ecell1 = fCaloCells->GetCellAmplitude(absID1);
+  Double_t ecell2 = fCaloCells->GetCellAmplitude(absID2);
+  Double_t ecell3 = fCaloCells->GetCellAmplitude(absID3);
+  Double_t ecell4 = fCaloCells->GetCellAmplitude(absID4);
+
+  ecross = ecell1+ecell2+ecell3+ecell4;
+
+  return ecross;
 }
