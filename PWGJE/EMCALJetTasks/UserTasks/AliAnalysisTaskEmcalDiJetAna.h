@@ -60,7 +60,6 @@ class AliAnalysisTaskEmcalDiJetAna : public AliAnalysisTaskEmcalDiJetBase {
   THnSparse        *fhnDiJetVarsCh;                       //! sparse with di-jet properties (charged-charged)
   THnSparse        *fhnDiJetVarsFullCharged;              //! sparse with di-jet properties (full-charged)
   THnSparse        *fhnMatchingFullCharged;               //! sparse comparing full with matched charged jet
-  TH3F             *fh3JetPtFullFractionDR;               //! full jet pt vs highest shared charged fraction vs DeltaR
 
   TH3F             *fh3DiJetKtNEFPtAssoc[4];              //! dijet kt vs NEF vs pTassoc for 4 trigger intervals
 
@@ -82,6 +81,6 @@ class AliAnalysisTaskEmcalDiJetAna : public AliAnalysisTaskEmcalDiJetBase {
   AliAnalysisTaskEmcalDiJetAna(const AliAnalysisTaskEmcalDiJetAna&);            // not implemented
   AliAnalysisTaskEmcalDiJetAna &operator=(const AliAnalysisTaskEmcalDiJetAna&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalDiJetAna, 8) // dijet analysis task
+  ClassDef(AliAnalysisTaskEmcalDiJetAna, 9) // dijet analysis task
 };
 #endif
