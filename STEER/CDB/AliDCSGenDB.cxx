@@ -171,7 +171,7 @@ AliCDBMetaData* AliDCSGenDB::CreateMetaObject(const char* objectClassName)
   md1->SetObjectClassName(objectClassName);
   md1->SetResponsible("Haavard Helstrup");
   md1->SetBeamPeriod(kBeamPeriod);
-  md1->SetAliRootVersion(ALIROOT_SVN_BRANCH);
+  md1->SetAliRootVersion(ALIROOT_BRANCH);
 
   return md1;
 }

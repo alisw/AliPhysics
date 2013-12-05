@@ -69,8 +69,8 @@ Bool_t MakeCosmicTriggersEntry(const char *fileName, const char* cdbUri)
   md->SetComment("List of the defined cosmic triggers. It is used in order to steer the reconstruction, namely in the selection of the proper event specie. It is maintained and updated by the trigger coordinator.");
   // Get root and AliRoot versions and set them in the metadata
   const char* rootv = gROOT->GetVersion();
-  TString av(ALIROOT_SVN_BRANCH);
-  Int_t revnum = ALIROOT_SVN_REVISION;
+  TString av(ALIROOT_BRANCH);
+  TString revnum(ALIROOT_REVISION);
   av+=" - revision: ";
   av+=revnum;
   md->SetAliRootVersion(av.Data());

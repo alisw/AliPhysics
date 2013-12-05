@@ -116,13 +116,13 @@ void UpdateCDBCTPConfig(Bool_t check = false) {
 
   // ROOT and AliRoot versions
   const char* rootv = gROOT->GetVersion();
-  TString av(ALIROOT_SVN_BRANCH);
-  Int_t revnum = ALIROOT_SVN_REVISION;
+  TString av(ALIROOT_BRANCH);
+  TString revnum(ALIROOT_REVISION);
 
-  Printf("root version: %s.  AliRoot %s, revision number %d",rootv,av.Data(),revnum);
+  Printf("root version: %s.  AliRoot %s, revision number %s",rootv,av.Data(),revnum);
 
   md->SetAliRootVersion(av.Data());
-  md->SetComment(Form("Default CTP configuration for MUON mode produced with root version %s and AliRoot version %s revision %d ",rootv,av.Data(),revnum));
+  md->SetComment(Form("Default CTP configuration for MUON mode produced with root version %s and AliRoot version %s revision %s ",rootv,av.Data(),revnum));
 
   AliCDBStorage* storage = cdb->GetStorage("local://$ALICE_ROOT/OCDB");
   storage->Put(trconfig,id,md);
