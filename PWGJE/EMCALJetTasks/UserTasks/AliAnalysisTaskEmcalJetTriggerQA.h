@@ -36,6 +36,7 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
 
   Int_t    GetLeadingCellId(const AliVCluster *clus) const;
   Double_t GetEnergyLeadingCell(const AliVCluster *clus) const;
+  Double_t GetECross(Int_t absID) const;
 
   Double_t GetZ(const AliVParticle *trk, const AliEmcalJet *jet)       const;
   Double_t GetZ(const Double_t trkPx, const Double_t trkPy, const Double_t trkPz, const Double_t jetPx, const Double_t jetPy, const Double_t jetPz) const;
@@ -59,6 +60,7 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
   Int_t              fNFastOR;               // size of trigger patch fNFastORxfNFastOR
 
   TH1F  *fhNEvents;                         //! Histo number of events
+  TH3F  *fh3PtEtaPhiTracks;                 //! pt,eta,phi of tracks
   TH3F  *fh3PtEtaPhiJetFull;                //! pt,eta,phi of full jets
   TH3F  *fh3PtEtaPhiJetCharged;             //! pt,eta,phi of charged jets
   TH2F  *fh2NJetsPtFull;                    //! NJets per event vs pT,jet
@@ -81,6 +83,10 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
   TH3F  *fh3PtLeadJet2VsPatchEnergy;        //! leading jet energy vs leading patch energy vs jet trigger (J1/J2)
   TH3F  *fh3PatchEnergyEtaPhiCenterJ1;      //! patch energy vs eta, phi at center of patch, high threshold
   TH3F  *fh3PatchEnergyEtaPhiCenterJ2;      //! patch energy vs eta, phi at center of patch, low threshold
+  TH3F  *fh3PatchEnergyEtaPhiCenterJ1J2;    //! patch energy vs eta, phi at center of patch, low + high threshold
+  TH3F  *fh3PatchADCEnergyEtaPhiCenterJ1;   //! patch ADC energy vs eta, phi at center of patch, high threshold
+  TH3F  *fh3PatchADCEnergyEtaPhiCenterJ2;   //! patch ADC energy vs eta, phi at center of patch, low threshold
+  TH3F  *fh3PatchADCEnergyEtaPhiCenterJ1J2; //! patch ADC energy vs eta, phi at center of patch, low + high threshold
   TH2F  *fh2CellEnergyVsTime;               //! emcal cell energy vs time
   TH3F  *fh3EClusELeadingCellVsTime;        //! cluster energy vs energy of leading cell in cluster vs time of the leading cell
 
@@ -88,6 +94,6 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetTriggerQA(const AliAnalysisTaskEmcalJetTriggerQA&);            // not implemented
   AliAnalysisTaskEmcalJetTriggerQA &operator=(const AliAnalysisTaskEmcalJetTriggerQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetTriggerQA, 5)
+  ClassDef(AliAnalysisTaskEmcalJetTriggerQA, 6)
 };
 #endif
