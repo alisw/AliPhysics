@@ -4263,8 +4263,9 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          if (fMCLoop) {
             out << "   mgr->SetCacheSize(0);" << endl;
             out << "   mgr->EventLoop(" << fNMCevents << ");" << endl;         
-         }
-         out << "   mgr->StartAnalysis(\"localfile\");" << endl;
+         } else {
+            out << "   mgr->StartAnalysis(\"localfile\");" << endl;
+         }   
       }   
       out << "   timer.Stop();" << endl;
       out << "   timer.Print();" << endl;
