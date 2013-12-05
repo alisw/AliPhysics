@@ -65,7 +65,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    void FillPhotonCombinatorialBackgroundHist(AliAODConversionPhoton *TruePhotonCandidate, Int_t pdgCode[]);
    void MoveParticleAccordingToVertex(AliAODConversionPhoton* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
    void UpdateEventByEventData();
-
+   void SetLogBinningXTH2(TH2* histoRebin);
+   
  protected:
    AliV0ReaderV1 *fV0Reader;
    AliGammaConversionAODBGHandler **fBGHandler;
