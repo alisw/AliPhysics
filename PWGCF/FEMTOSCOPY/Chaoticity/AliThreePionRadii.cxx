@@ -729,10 +729,6 @@ void AliThreePionRadii::UserCreateOutputObjects()
   fMultDist4->GetXaxis()->SetTitle("Multiplicity");
   fOutputList->Add(fMultDist4);
   
-  TH1F *fMultDist5 = new TH1F("fMultDist5","Multiplicity Distribution",fMultLimit,-.5,fMultLimit-.5);
-  fMultDist5->GetXaxis()->SetTitle("Multiplicity");
-  fOutputList->Add(fMultDist5);
-  
   TH3F *fPtEtaDist = new TH3F("fPtEtaDist","fPtEtaDist",2,-1.1,1.1, 300,0,3., 28,-1.4,1.4);
   fOutputList->Add(fPtEtaDist);
 
@@ -923,7 +919,7 @@ void AliThreePionRadii::UserCreateOutputObjects()
 		  fOutputList->Add(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fPIDpurityDen);
 		  TString *nameEx2PIDpurityNum=new TString(nameEx2->Data());
 		  nameEx2PIDpurityNum->Append("_PIDpurityNum");
-		  Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fPIDpurityNum = new TH2D(nameEx2PIDpurityNum->Data(),"Two Particle Distribution",20,0,1, fQbinsC2,0,fQlimitC2);
+		  Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fPIDpurityNum = new TH3D(nameEx2PIDpurityNum->Data(),"Two Particle Distribution",16,0.5,16.5, 20,0,1, fQbinsC2,0,fQlimitC2);
 		  fOutputList->Add(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fPIDpurityNum);
 		}
 		
@@ -1166,11 +1162,12 @@ void AliThreePionRadii::Exec(Option_t *)
       if(!aodtrack->TestFilterBit(BIT(fFilterBit))) continue;// AOD filterBit cut
       FBTracks++;
     }
+    ((TH1F*)fOutputList->FindObject("fMultDist2"))->Fill(FBTracks);
 
     if(fAOD->IsPileupFromSPD()) {/*cout<<"PileUpEvent. Skip Event"<<endl;*/ return;} // Reject Pile-up events
     if(primaryVertexAOD->GetNContributors() < 1) {/*cout<<"Bad Vertex. Skip Event"<<endl;*/ return;}
    
-    ((TH1F*)fOutputList->FindObject("fMultDist2"))->Fill(fAOD->GetNumberOfTracks());
+    ((TH1F*)fOutputList->FindObject("fMultDist3"))->Fill(FBTracks);
  
     fBfield = fAOD->GetMagneticField();
     
@@ -1454,9 +1451,7 @@ void AliThreePionRadii::Exec(Option_t *)
 
   
   if(myTracks >= 1) {
-    ((TH1F*)fOutputList->FindObject("fMultDist3"))->Fill(myTracks);
-    ((TH1F*)fOutputList->FindObject("fMultDist4"))->Fill(AODTracks);
-    ((TH1F*)fOutputList->FindObject("fMultDist5"))->Fill(FBTracks);
+    ((TH1F*)fOutputList->FindObject("fMultDist4"))->Fill(myTracks);
   }
  
  
@@ -1865,11 +1860,31 @@ void AliThreePionRadii::Exec(Option_t *)
 	    
 	    Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fMCqinv->Fill(qinv12MC, MCWeight(ch1,ch2,rForQW,10,qinv12MC));// was 4,5
 	    Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fMCqinvQW->Fill(qinv12MC, qinv12MC*MCWeight(ch1,ch2,rForQW,10,qinv12MC));// was 4,5
-	    // pion purity	    
+	    // pion purity
 	    Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fPIDpurityDen->Fill(transK12, qinv12);
-	    if(abs(mcParticle1->GetPdgCode())==211 && abs(mcParticle2->GetPdgCode())==211){// Pions
-	      Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fPIDpurityNum->Fill(transK12, qinv12);
-	    }
+	    Int_t SCNumber = 1;
+	    
+	    if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==22) SCNumber=1;// e-e
+	    else if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==24) SCNumber=2;// e-mu
+	    else if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==222) SCNumber=3;// e-pi
+	    else if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==332) SCNumber=4;// e-k
+	    else if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==2223) SCNumber=5;// e-p
+	    else if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==26) SCNumber=6;// mu-mu
+	    else if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==224) SCNumber=7;// mu-pi
+	    else if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==334) SCNumber=8;// mu-k
+	    else if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==2225) SCNumber=9;// mu-p
+	    else if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==422) SCNumber=10;// pi-pi
+	    else if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==532) SCNumber=11;// pi-k
+	    else if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==2423) SCNumber=12;// pi-p
+	    else if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==642) SCNumber=13;// k-k
+	    else if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==2533) SCNumber=14;// k-p
+	    else if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==4424) SCNumber=15;// p-p
+	    else SCNumber=16;
+	    
+	    Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fPIDpurityNum->Fill(SCNumber, transK12, qinv12);
+	    
+	    
+
 
 	  }// label check 2
 	}// MC case
