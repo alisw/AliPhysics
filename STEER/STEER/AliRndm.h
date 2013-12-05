@@ -40,12 +40,12 @@ public:
   virtual void ReadRandom(const char *filename);
 
 protected:
-  TRandom *fRandom;       // Pointer to the random number generator
+  TRandom *fRandom;       //! Pointer to the random number generator
 
 private:
   void Copy(AliRndm &rn) const;
 
-  ClassDef(AliRndm,1)  //Random Number generator wrapper
+  ClassDef(AliRndm,2)  //Random Number generator wrapper
 };
 
 #endif 
