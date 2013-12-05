@@ -148,6 +148,10 @@ fhPtTrkTruePrimRec(0x0),
 fhPtTrkTruePrimGen(0x0),
 fhPtTrkSecOrFakeRec(0x0),
 fHRhoUeMedianVsConeGen(0x0),
+fhEntriesToMedian(0x0),
+fhEntriesToMedianGen(0x0),
+fhCellAreaToMedian(0x0),
+fhCellAreaToMedianGen(0x0),
 fIsChargedMC(0),
 fIsFullMC(0),
 faGenIndex(0),
@@ -169,6 +173,7 @@ fTriggerPtRangeHigh(10000.0),
 fFillRespMx(0),
 fRandom(0x0),
 fnTrials(1000),
+fJetFreeAreaFrac(0.5),
 fnPhi(9),
 fnEta(2),
 fEtaSize(0.7),
@@ -259,6 +264,10 @@ fhPtTrkTruePrimRec(0x0),
 fhPtTrkTruePrimGen(0x0),
 fhPtTrkSecOrFakeRec(0x0),
 fHRhoUeMedianVsConeGen(0x0),
+fhEntriesToMedian(0x0),
+fhEntriesToMedianGen(0x0),
+fhCellAreaToMedian(0x0),
+fhCellAreaToMedianGen(0x0),
 fIsChargedMC(0),
 fIsFullMC(0),
 faGenIndex(0),
@@ -280,6 +289,7 @@ fTriggerPtRangeHigh(10000.0),
 fFillRespMx(0),
 fRandom(0x0),
 fnTrials(1000),
+fJetFreeAreaFrac(0.5),
 fnPhi(9),
 fnEta(2),
 fEtaSize(0.7),
@@ -371,6 +381,10 @@ fhPtTrkTruePrimRec(a.fhPtTrkTruePrimRec),
 fhPtTrkTruePrimGen(a.fhPtTrkTruePrimGen),
 fhPtTrkSecOrFakeRec(a.fhPtTrkSecOrFakeRec),
 fHRhoUeMedianVsConeGen(a.fHRhoUeMedianVsConeGen),
+fhEntriesToMedian(a.fhEntriesToMedian),
+fhEntriesToMedianGen(a.fhEntriesToMedianGen),
+fhCellAreaToMedian(a.fhCellAreaToMedian),
+fhCellAreaToMedianGen(a.fhCellAreaToMedianGen),
 fIsChargedMC(a.fIsChargedMC),
 fIsFullMC(a.fIsFullMC),
 faGenIndex(a.faGenIndex),
@@ -392,6 +406,7 @@ fTriggerPtRangeHigh(a.fTriggerPtRangeHigh),
 fFillRespMx(a.fFillRespMx),
 fRandom(a.fRandom),
 fnTrials(a.fnTrials),
+fJetFreeAreaFrac(a.fJetFreeAreaFrac),
 fnPhi(a.fnPhi),
 fnEta(a.fnEta),
 fEtaSize(a.fEtaSize),
@@ -616,6 +631,8 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
    fhDphiTriggerJetAccept = new TH1D("fhDphiTriggerJetAccept","Deltaphi trig-jet after cut",50, -TMath::Pi(),TMath::Pi()); 
    fhCentrality = new TH1D("fhCentrality","Centrality",20,0,100);
    fhCentralityAccept = new TH1D("fhCentralityAccept","Centrality after cut",20,0,100);
+   fhEntriesToMedian = new TH1D("fhEntriesToMedian","fhEntriesToMedian",30,0,30);
+   fhCellAreaToMedian =  new TH1D("fhCellAreaToMedian", "fhCellAreaToMedian", 75,0,1.5),
 
    fOutputList->Add(fhJetPhi);
    fOutputList->Add(fhTriggerPhi);
@@ -629,7 +646,8 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
    fOutputList->Add(fhDphiTriggerJetAccept);
    fOutputList->Add(fhCentrality); 
    fOutputList->Add(fhCentralityAccept);
-
+   fOutputList->Add(fhEntriesToMedian);
+   fOutputList->Add(fhCellAreaToMedian);
    // raw spectra of INCLUSIVE jets  
    //Centrality, pTjet, A
    /*const Int_t dimRaw   = 3;
@@ -735,6 +753,14 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
       fHRhoUeMedianVsConeGen = (THnSparseF*) fHRhoUeMedianVsCone->Clone("hRhoUeMedianVsConeGen");
       fHRhoUeMedianVsConeGen->SetTitle(Form("%s Gen MC", fHRhoUeMedianVsCone->GetTitle())); 
       fOutputList->Add(fHRhoUeMedianVsConeGen);
+
+      fhEntriesToMedianGen = (TH1D*) fhEntriesToMedian->Clone("fhEntriesToMedianGen");
+      fhEntriesToMedianGen->SetTitle(Form("%s Gen MC", fhEntriesToMedian->GetTitle())); 
+      fOutputList->Add(fhEntriesToMedianGen);
+
+      fhCellAreaToMedianGen  = (TH1D*) fhCellAreaToMedian->Clone("fhCellAreaToMedianGen");
+      fhCellAreaToMedianGen->SetTitle(Form("%s Gen MC", fhCellAreaToMedian->GetTitle())); 
+      fOutputList->Add(fhCellAreaToMedianGen);
    }
    //-------------------------------------
    //     pythia histograms
@@ -946,7 +972,7 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
    EstimateBgCone(fListJets, &particleList, rhoCone);
 
    //Estimate rho from cell median minus jets
-   EstimateBgRhoMedian(fListJetsBg, &particleList, rhoFromCellMedian);
+   EstimateBgRhoMedian(fListJetsBg, &particleList, rhoFromCellMedian,0); //real data
    //fListJetsBg->Clear(); //this list is further not needed
 
    //==============  analyze generator level MC  ================ 
@@ -1038,7 +1064,7 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
       EstimateBgCone(fListJetsGen, &particleListGen, rhoConeGen);
 
       //Estimate rho from cell median minus jets
-      EstimateBgRhoMedian(fListJetsBgGen, &particleListGen, rhoFromCellMedianGen);
+      EstimateBgRhoMedian(fListJetsBgGen, &particleListGen, rhoFromCellMedianGen,1);//mc data
       //fListJetsBgGen->Clear();
 
       //============  Generator trigger+jet ==================
@@ -1484,8 +1510,8 @@ Int_t  AliAnalysisTaskJetCorePP::GetListOfTracks(TList *list){
    for(Int_t it = 0; it < aodevt->GetNumberOfTracks(); it++){
       AliAODTrack *tr = aodevt->GetTrack(it);
       
-      //if((fFilterMask > 0) && !(tr->TestFilterBit(fFilterMask))) continue;
-      if((fFilterMask > 0) && !(tr->IsHybridGlobalConstrainedGlobal())) continue;
+      if((fFilterMask > 0) && !(tr->TestFilterBit(fFilterMask))) continue;
+      //if((fFilterMask > 0) && !(tr->IsHybridGlobalConstrainedGlobal())) continue;
       if(TMath::Abs((Float_t) tr->Eta()) > fTrackEtaCut) continue;
       if(tr->Pt() < fTrackLowPtCut) continue;
       list->Add(tr);
@@ -1614,7 +1640,7 @@ void AliAnalysisTaskJetCorePP::FillEffHistos(TList *recList, TList *genList){
    return;
 }
 //________________________________________________________________
-void AliAnalysisTaskJetCorePP::EstimateBgRhoMedian(TList *listJet, TList* listPart,  Double_t &rhoMedian){
+void AliAnalysisTaskJetCorePP::EstimateBgRhoMedian(TList *listJet, TList* listPart,  Double_t &rhoMedian, Int_t mode){
    //Estimate background rho by means of integrating track pT outside identified jet cones
 
    rhoMedian = 0;
@@ -1723,19 +1749,36 @@ void AliAnalysisTaskJetCorePP::EstimateBgRhoMedian(TList *listJet, TList* listPa
    static Double_t rhoInCells[20];
    Double_t  relativeArea;
    Int_t  nCells=0;
-
+   Double_t bufferArea=0.0, bufferPt=0.0; //sum cells where A< fJetFreeAreaFrac
    for(Int_t ip=0; ip<fnPhi; ip++){
       for(Int_t ie=0; ie<fnEta; ie++){
          relativeArea = nOutCone[ip][ie]/fnTrials;
-         
-         if(relativeArea < 0.5) continue; 
-         rhoInCells[nCells] =  sumPtOutOfCone[ip][ie]/(relativeArea*fCellArea);
-         nCells++;
+         //cout<<"RA=  "<< relativeArea<<"  BA="<<bufferArea<<"    BPT="<< bufferPt <<endl;
+
+         bufferArea += relativeArea;
+         bufferPt   += sumPtOutOfCone[ip][ie];
+         if(bufferArea > fJetFreeAreaFrac){ 
+            rhoInCells[nCells] = bufferPt/(bufferArea*fCellArea);
+
+            if(mode==1) fhCellAreaToMedianGen->Fill(bufferArea*fCellArea);  
+            else fhCellAreaToMedian->Fill(bufferArea*fCellArea);
+
+            bufferArea = 0.0; 
+            bufferPt   = 0.0;
+            nCells++;
+         }
       }
    }
 
-   if(nCells>0)
-     rhoMedian = TMath::Median(nCells, rhoInCells); 
+
+   if(nCells>0){
+     rhoMedian = TMath::Median(nCells, rhoInCells);
+     if(mode==1){ //mc data 
+        fhEntriesToMedianGen->Fill(nCells);
+     }else{ //real data
+        fhEntriesToMedian->Fill(nCells);
+     } 
+   } 
 
 }
 

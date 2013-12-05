@@ -54,6 +54,8 @@ public:
    virtual void  SetJetR(Float_t jR) { fJetParamR = jR; }
    virtual void  SetBgJetR(Float_t bgjR) { fBgJetParamR = bgjR; }
    virtual void  SetBgMaxJetPt(Float_t mpt){ fBgMaxJetPt = mpt;}
+   virtual void  SetRndTrials(Int_t nt){ fnTrials = nt;}
+   virtual void  SetFreeAreaFrac(Float_t frac){ fJetFreeAreaFrac = frac;}
    virtual void  SetBgConeR(Float_t cr){ fBgConeR = cr; } 
    virtual void  SetOfflineTrgMask(AliVEvent::EOfflineTriggerTypes mask) { fOfflineTrgMask = mask; } 
    virtual void  SetMinContribVtx(Int_t n) { fMinContribVtx = n; } 
@@ -83,7 +85,7 @@ private:
    Bool_t SelectMCGenTracks(AliVParticle *trk, TList *trkList, Double_t &ptLeading, Int_t &index, Int_t counter);
    void FillEffHistos(TList *recList, TList *genList);
    
-   void EstimateBgRhoMedian(TList *listJet, TList* listPart, Double_t &rhoMedian);//median method to estimate bg
+   void EstimateBgRhoMedian(TList *listJet, TList* listPart, Double_t &rhoMedian, Int_t mode);//median method to estimate bg
    void EstimateBgCone(TList *listJet, TList* listPart, Double_t &rhoPerpCone);//perp cone method to estimate bg
    void ReadTClonesArray(TString bname, TList *list); //init jets lists
    //private member objects
@@ -176,7 +178,13 @@ private:
    TH2D      *fhPtTrkTruePrimGen; // pt spectrum of true generated primary track    
    TH2D      *fhPtTrkSecOrFakeRec; // pt spectrum of reconstructed fake or secondary tracks    
    THnSparse *fHRhoUeMedianVsConeGen; //EBE UE from Median vs Perp Cone  generator level 
-   
+  
+   TH1D  *fhEntriesToMedian; //how many entries were used to calculate
+   TH1D  *fhEntriesToMedianGen; //how many entries were used to calculate in MC
+   TH1D  *fhCellAreaToMedian; //how many entries were used to calculate
+   TH1D  *fhCellAreaToMedianGen; //how many entries were used to calculate in MC
+ 
+
    Bool_t fIsChargedMC;   //flag analysis on MC data with true and on the real data false
    Bool_t fIsFullMC;   //flag analysis on MC data with true and on the real data false
    TArrayI faGenIndex;   // labels of particles on MC generator level  
@@ -203,7 +211,8 @@ private:
 
 
    TRandom3* fRandom;           // TRandom3 
-   const Int_t fnTrials;  //number of random trials to measure cell area
+   Int_t fnTrials;  //number of random trials to measure cell area
+   Float_t fJetFreeAreaFrac; //fraction of area in cell free of jets  
    const Int_t  fnPhi; //number of cells in phi
    const Int_t  fnEta; //number of cells in eta
    const Double_t fEtaSize; //cell size in eta 
@@ -211,7 +220,7 @@ private:
    const Double_t fCellArea; //cell area
    Double_t fSafetyMargin; //enlarge a bit the jet size to avoid contamination of UE
 
-   ClassDef(AliAnalysisTaskJetCorePP, 9);  //has to end with number larger than 0
+   ClassDef(AliAnalysisTaskJetCorePP, 10);  //has to end with number larger than 0
 };
 
 #endif

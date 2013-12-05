@@ -9,6 +9,8 @@ AliAnalysisTaskJetCorePP* AddTaskJetCorePP(
    const Char_t* jetbgAlgo="ANTIKT",    //background jet algo
    Float_t bgjetParameterR = 0.3,  //R of jet to be removed while bg calc 
    Float_t bgMaxJetPt = 8.0, //max jet pt to be accepted to bg 
+   Int_t  rndTrials = 2000, //number of trials to get jet free cell area
+   Float_t jetFreeAreaFrac = 0.75, //cell area free of jets
    Float_t bgConeR = 0.4,  //R of perp cone jet R 
    Int_t   collisionSystem = 0, //pp=0, pPb=1
    Int_t   offlineTriggerMask=AliVEvent::kMB, //MinBias=0 
@@ -105,6 +107,8 @@ AliAnalysisTaskJetCorePP* AddTaskJetCorePP(
    task->SetJetR(jetParameterR);
    task->SetBgJetR(bgjetParameterR);
    task->SetBgMaxJetPt(bgMaxJetPt);
+   task->SetRndTrials(rndTrials);
+   task->SetFreeAreaFrac(jetFreeAreaFrac);
    task->SetBgConeR(bgConeR); 
    task->SetOfflineTrgMask(offlineTriggerMask);
    task->SetMinContribVtx(minContribVtx);
