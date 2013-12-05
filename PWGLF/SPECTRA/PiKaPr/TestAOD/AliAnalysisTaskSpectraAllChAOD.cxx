@@ -56,7 +56,9 @@ AliAnalysisTaskSpectraAllChAOD::AliAnalysisTaskSpectraAllChAOD(const char *name)
   fEventCuts(0x0),
   fHelperPID(0x0),
   fIsMC(0),
-  fOutput(0x0)
+  fOutput(0x0),
+  fnCentBins(20),
+  fnQvecBins(50)
 {
   // Default constructor
   DefineInput(0, TChain::Class());
@@ -81,51 +83,64 @@ void AliAnalysisTaskSpectraAllChAOD::UserCreateOutputObjects()
   // binning common to all the THn
   const Double_t ptBins[] = {0.20,0.30,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.2,1.4,1.6,1.8,2.0,2.4,2.8,3.2,3.6,4.0,5.0,6.0,7.0,8.0,9.0,10.,12.,15.};
   const Int_t nptBins=26;
-  const Int_t nCentBins=20;
-  const Int_t nQvecBins=50;
   
   //dimensions of THnSparse for tracks
   const Int_t nvartrk=8;
   //                                             pt          cent        Q vec     IDrec     IDgen       isph           iswd      y
-  Int_t    binsHistRealTrk[nvartrk] = {      nptBins, nCentBins,   nQvecBins,        3,        3,         2,          2,       2};
-  Double_t xminHistRealTrk[nvartrk] = {         0.,         0.,            0.,     -0.5,      -0.5,      -0.5,        -0.5,   -0.5};
-  Double_t xmaxHistRealTrk[nvartrk] = {       10.,      100.,          10.,      2.5,      2.5,       1.5,         1.5,     0.5};    
+  Int_t    binsHistRealTrk[nvartrk] = {      nptBins, fnCentBins,   fnQvecBins,        3,        3,         2,          2,       2};
+  Double_t xminHistRealTrk[nvartrk] = {         0.,          0.,            0.,     -0.5,      -0.5,      -0.5,        -0.5,   -0.5};
+  Double_t xmaxHistRealTrk[nvartrk] = {       10.,       100.,          10.,      2.5,      2.5,       1.5,         1.5,     0.5};    
   THnSparseF* NSparseHistTrk = new THnSparseF("NSparseHistTrk","NSparseHistTrk",nvartrk,binsHistRealTrk,xminHistRealTrk,xmaxHistRealTrk);
   NSparseHistTrk->GetAxis(0)->SetTitle("#it{p}_{T,rec}");
+  NSparseHistTrk->GetAxis(0)->SetName("pT_rec");
   NSparseHistTrk->SetBinEdges(0,ptBins);
   NSparseHistTrk->GetAxis(1)->SetTitle(Form("%s cent",fEventCuts->GetCentralityMethod().Data()));
+  NSparseHistTrk->GetAxis(1)->SetName(Form("%s_cent",fEventCuts->GetCentralityMethod().Data()));
   NSparseHistTrk->GetAxis(2)->SetTitle("Q vec");
+  NSparseHistTrk->GetAxis(2)->SetName("Q_vec");
   NSparseHistTrk->GetAxis(3)->SetTitle("ID rec");
+  NSparseHistTrk->GetAxis(3)->SetName("ID_rec");
   NSparseHistTrk->GetAxis(4)->SetTitle("ID gen");
+  NSparseHistTrk->GetAxis(4)->SetName("ID_gen");
   NSparseHistTrk->GetAxis(5)->SetTitle("isph");
+  NSparseHistTrk->GetAxis(5)->SetName("isph");
   NSparseHistTrk->GetAxis(6)->SetTitle("iswd");
+  NSparseHistTrk->GetAxis(6)->SetName("iswd");
   NSparseHistTrk->GetAxis(7)->SetTitle("y");
+  NSparseHistTrk->GetAxis(7)->SetName("y");
   fOutput->Add(NSparseHistTrk);
   
   //dimensions of THnSparse for stack
   const Int_t nvarst=5;
   //                                             pt          cent    IDgen        isph        y
-  Int_t    binsHistRealSt[nvarst] = {      nptBins,   nCentBins,        3,         2,        2};
+  Int_t    binsHistRealSt[nvarst] = {      nptBins,  fnCentBins,        3,         2,        2};
   Double_t xminHistRealSt[nvarst] = {         0.,           0.,      -0.5,      -0.5,    -0.5};
   Double_t xmaxHistRealSt[nvarst] = {       10.,        100.,      2.5,       1.5,      0.5};
   THnSparseF* NSparseHistSt = new THnSparseF("NSparseHistSt","NSparseHistSt",nvarst,binsHistRealSt,xminHistRealSt,xmaxHistRealSt);
   NSparseHistSt->GetAxis(0)->SetTitle("#it{p}_{T,gen}");
   NSparseHistSt->SetBinEdges(0,ptBins);
+  NSparseHistSt->GetAxis(0)->SetName("pT_rec");
   NSparseHistSt->GetAxis(1)->SetTitle(Form("%s cent",fEventCuts->GetCentralityMethod().Data()));
+  NSparseHistSt->GetAxis(1)->SetName(Form("%s_cent",fEventCuts->GetCentralityMethod().Data()));
   NSparseHistSt->GetAxis(2)->SetTitle("ID gen");
+  NSparseHistSt->GetAxis(2)->SetName("ID_gen");
   NSparseHistSt->GetAxis(3)->SetTitle("isph");
+  NSparseHistSt->GetAxis(3)->SetName("isph");
   NSparseHistSt->GetAxis(4)->SetTitle("y");
+  NSparseHistSt->GetAxis(4)->SetName("y");
   fOutput->Add(NSparseHistSt);
   
   //dimensions of THnSparse for the normalization
   const Int_t nvarev=2;
   //                                             cent             Q vec   
-  Int_t    binsHistRealEv[nvarev] = {     nCentBins,       nQvecBins};
+  Int_t    binsHistRealEv[nvarev] = {    fnCentBins,      fnQvecBins};
   Double_t xminHistRealEv[nvarev] = {           0.,               0.};
   Double_t xmaxHistRealEv[nvarev] = {       100.,              10.};
   THnSparseF* NSparseHistEv = new THnSparseF("NSparseHistEv","NSparseHistEv",nvarev,binsHistRealEv,xminHistRealEv,xmaxHistRealEv);
   NSparseHistEv->GetAxis(0)->SetTitle(Form("%s cent",fEventCuts->GetCentralityMethod().Data()));
+  NSparseHistEv->GetAxis(0)->SetName(Form("%s_cent",fEventCuts->GetCentralityMethod().Data()));
   NSparseHistEv->GetAxis(1)->SetTitle("Q vec");
+  NSparseHistEv->GetAxis(1)->SetName("Q_vec");
   fOutput->Add(NSparseHistEv);
   
   PostData(1, fOutput  );

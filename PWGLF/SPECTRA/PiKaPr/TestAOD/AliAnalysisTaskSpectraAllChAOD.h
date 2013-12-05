@@ -29,10 +29,14 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
     fEventCuts(0x0),
     fHelperPID(0x0),
     fIsMC(0),
-    fOutput(0x0)
+    fOutput(0x0),
+    fnCentBins(20),
+    fnQvecBins(50)
       {}
   AliAnalysisTaskSpectraAllChAOD(const char *name);
-  virtual ~AliAnalysisTaskSpectraAllChAOD() {}
+  virtual ~AliAnalysisTaskSpectraAllChAOD() {
+    Printf("calling detructor of AliAnalysisTaskSpectraAllChAOD - To be implemented");
+  }
   
   void SetIsMC(Bool_t isMC = kFALSE)    {fIsMC = isMC; };
   Bool_t GetIsMC()           const           { return fIsMC;};
@@ -49,6 +53,8 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
   void SetTrackCuts(AliSpectraAODTrackCuts * tc)       { fTrackCuts = tc; }
   void SetEventCuts(AliSpectraAODEventCuts * vc)       { fEventCuts = vc; }
   void SetHelperPID(AliHelperPID* pid)                     { fHelperPID = pid; }
+  void SetnCentBins(Int_t val)                             { fnCentBins = val; }
+  void SetnQvecBins(Int_t val)                             { fnQvecBins = val; }
   
  private:
   
@@ -58,10 +64,12 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
   AliHelperPID                   * fHelperPID;      // points to class for PID
   Bool_t                          fIsMC;           // true if processing MC
   TList                          * fOutput;        // output list
+  Int_t                            fnCentBins;        // number of bins for the centrality axis
+  Int_t                            fnQvecBins;        // number of bins for the q vector axis
   AliAnalysisTaskSpectraAllChAOD(const AliAnalysisTaskSpectraAllChAOD&);
   AliAnalysisTaskSpectraAllChAOD& operator=(const AliAnalysisTaskSpectraAllChAOD&);
   
-  ClassDef(AliAnalysisTaskSpectraAllChAOD, 2);
+  ClassDef(AliAnalysisTaskSpectraAllChAOD, 3);
 };
 
 #endif
