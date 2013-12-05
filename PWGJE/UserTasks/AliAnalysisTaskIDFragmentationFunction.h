@@ -600,9 +600,6 @@ inline void AliAnalysisTaskIDFragmentationFunction::SetNamesOfInclusivePIDtasks(
 {
   delete [] fNameInclusivePIDtask;
   fNameInclusivePIDtask = 0x0;
-    
-  delete [] fInclusivePIDtask;
-  fInclusivePIDtask = 0x0;
   
   if (!names || numNames < 0) {
     fNumInclusivePIDtasks = 0;
@@ -613,11 +610,9 @@ inline void AliAnalysisTaskIDFragmentationFunction::SetNamesOfInclusivePIDtasks(
   
   if (numNames > 0) {
     fNameInclusivePIDtask = new TString[numNames];
-    fInclusivePIDtask = new AliAnalysisTaskPID*[numNames];
     
     for (Int_t i = 0; i < numNames; i++) {
       fNameInclusivePIDtask[i] = names[i];
-      fInclusivePIDtask[i] = 0x0;
     }
   }  
 }
@@ -626,9 +621,6 @@ inline void AliAnalysisTaskIDFragmentationFunction::SetNamesOfJetPIDtasks(Int_t 
 {
   delete [] fNameJetPIDtask;
   fNameJetPIDtask = 0x0;
-    
-  delete [] fJetPIDtask;
-  fJetPIDtask = 0x0;
   
   if (!names || numNames < 0) {
     fNumJetPIDtasks = 0;
@@ -639,11 +631,9 @@ inline void AliAnalysisTaskIDFragmentationFunction::SetNamesOfJetPIDtasks(Int_t 
   
   if (numNames > 0) {
     fNameJetPIDtask = new TString[numNames];
-    fJetPIDtask = new AliAnalysisTaskPID*[numNames];
     
     for (Int_t i = 0; i < numNames; i++) {
       fNameJetPIDtask[i] = names[i];
-      fJetPIDtask[i] = 0x0;
     }
   }  
 }
