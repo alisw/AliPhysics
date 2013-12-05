@@ -71,6 +71,7 @@ public:
    virtual void        SetTTL(Int_t ttl=30000)                           {fTTL = ttl;}
    virtual void        SetGridWorkingDir(const char *name="workdir")     {fGridWorkingDir = name;}
    virtual void        SetGridDataDir(const char *name)                  {fGridDataDir = name;}
+   void                SetGeneratorLibs(const char *libs)                {fGeneratorLibs = libs;}
    virtual void        SetDataPattern(const char *pattern="*AliESDs.root") {fDataPattern = pattern;}
    virtual void        SetFriendChainName(const char *name="", const char *libnames="");
    virtual void        SetDefaultOutputs(Bool_t flag);
