@@ -100,6 +100,7 @@ AliAnalysisTaskSE(),
   fMinDecayLength(0.0),
   fMeritCutChoice(0),
   fMinSep(0.0),
+  fFlatCent(kFALSE),
   fEventCount(0),
   fEC(0x0),
   fEvt(0X0),
@@ -111,7 +112,7 @@ AliAnalysisTaskSE(),
 {
 }
 //________________________________________________________________________
-AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool SignDep, bool FieldPositive, bool OnlineCase, bool MeritCase, bool Case3D, float MinDL, int MeritCutChoice, float MinSep) 
+AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool SignDep, bool FieldPositive, bool OnlineCase, bool MeritCase, bool Case3D, float MinDL, int MeritCutChoice, float MinSep, bool FlatCent) 
 : AliAnalysisTaskSE(name),
   fSignDep(SignDep),
   fFieldPos(FieldPositive),
@@ -121,6 +122,7 @@ AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool SignDep, bool Fiel
   fMinDecayLength(MinDL),
   fMeritCutChoice(MeritCutChoice),
   fMinSep(MinSep),
+  fFlatCent(FlatCent),
   fEventCount(0),
   fEC(0x0),
   fEvt(0X0),
@@ -139,6 +141,7 @@ AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool SignDep, bool Fiel
   fMinDecayLength = MinDL;
   fMeritCutChoice = MeritCutChoice;
   fMinSep 		= MinSep;
+  fFlatCent		= FlatCent;
 
   // Define output slots here 
   // Output slot #1
@@ -156,6 +159,7 @@ AliFemtoK0Analysis::AliFemtoK0Analysis(const AliFemtoK0Analysis &obj)
   fMinDecayLength(obj.fMinDecayLength),
   fMeritCutChoice(obj.fMeritCutChoice),
   fMinSep(obj.fMinSep),
+  fFlatCent(obj.fFlatCent),
   fEventCount(obj.fEventCount),
   fEC(obj.fEC),
   fEvt(obj.fEvt),
@@ -180,6 +184,7 @@ AliFemtoK0Analysis &AliFemtoK0Analysis::operator=(const AliFemtoK0Analysis &obj)
  fMinDecayLength= obj.fMinDecayLength;
  fMeritCutChoice= obj.fMeritCutChoice;
  fMinSep		= obj.fMinSep;
+ fFlatCent		= obj.fFlatCent;
  fEventCount 	= obj.fEventCount;
  fEC 		= obj.fEC;
  fEvt 		= obj.fEvt;
@@ -250,6 +255,10 @@ void AliFemtoK0Analysis::UserCreateOutputObjects()
 
   TH1F *fHistCent = new TH1F("fHistCent","",100,0,100);
   fOutputList->Add(fHistCent);
+  TH1F *fHistCentFlat = new TH1F("fHistCentFlat","",100,0,100);
+  fOutputList->Add(fHistCentFlat);
+  TH1F *fHistCentUsed = new TH1F("fHistCentUsed","",100,0,100);
+  fOutputList->Add(fHistCentUsed);
  
   //pion parameters
   TH1F* fHistDCAPiPlus = new TH1F("fHistDCAPiPlus","",100,0,10);
@@ -507,6 +516,14 @@ void AliFemtoK0Analysis::Exec(Option_t *)
   if(percent > 10 && isCentral) return;
   ((TH1F*)fOutputList->FindObject("fHistCent"))->Fill(percent);
   
+  //flatten centrality dist.
+  if(percent < 9){ 
+   if(fFlatCent){
+    if(RejectEventCentFlat(bField,percent)) return; 
+   }
+  }
+  ((TH1F*)fOutputList->FindObject("fHistCentFlat"))->Fill(percent);
+  
   //Vertexing
   AliAODVertex *primaryVertex;
   double vertex[3]={0};
@@ -589,7 +606,6 @@ void AliFemtoK0Analysis::Exec(Option_t *)
     bool orderswitch = kFALSE;
     if(tempTrack->Charge() > 0) {pos0or1 = 0; neg0or1 = 1;}
     else {pos0or1 = 1; neg0or1 = 0; orderswitch = kTRUE;}
-    //tempTrack->~AliAODTrack();
 
     //load daughter tracks
     AliAODTrack* prongTrackPos = (AliAODTrack*)v0->GetDaughter(pos0or1);
@@ -771,8 +787,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
         v0Count++;
     }
 
-    v0->~AliAODv0();
-    }//v0
+  }//v0
    
   if(k0Count<2) return;  //only keep events with more than 1 good K0
 
@@ -799,6 +814,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
   delete [] tempK0; tempK0 = NULL;
 
   ((TH1F*)fOutputList->FindObject("fHistMultK0"))->Fill(unskippedCount);	// changed 3/25, used to be "k0Count"
+  ((TH1F*)fOutputList->FindObject("fHistCentUsed"))->Fill(percent);
 
   //Printf("Reconstruction Finished. Starting pair studies.");
 
@@ -1265,4 +1281,18 @@ bool AliFemtoK0Analysis::CheckMeritCutWinner(int cutChoice, double oldPars[3], d
  return newV0Wins;
 }
 
+bool AliFemtoK0Analysis::RejectEventCentFlat(float MagField, float CentPercent)
+{ // to flatten centrality distribution
+ bool RejectEvent = kFALSE;
+ int weightBinSign;
+ if(MagField > 0) weightBinSign = 0;
+ else weightBinSign = 1;
+ float kCentWeight[2][9] = {{.878,.876,.860,.859,.859,.88,.873,.879,.894},
+  						 {.828,.793,.776,.772,.775,.796,.788,.804,.839}};
+ int weightBinCent = (int) CentPercent;
+ if(fRandomNumber->Rndm() > kCentWeight[weightBinSign][weightBinCent]) RejectEvent = kTRUE;
+
+ return RejectEvent;
+}
+  
 
