@@ -1445,7 +1445,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   values[AliDielectronVarManager::kPairPlaneAngle4AC] = pair->GetPairPlaneAngle(values[AliDielectronVarManager::kv0ACrpH2],4);
 
   //Random reaction plane
-  values[AliDielectronVarManager::kRandomRP] = (TMath::Pi()/2.0)*((Double_t)rand()/RAND_MAX * 2.0 -1.0 );
+  values[AliDielectronVarManager::kRandomRP] = gRandom->Uniform(-TMath::Pi()/2.0,TMath::Pi()/2.0);
   //delta phi of pair fron random reaction plane
   values[AliDielectronVarManager::kDeltaPhiRandomRP] = values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kRandomRP];
   // keep the interval [-pi,+pi]
@@ -2200,11 +2200,12 @@ inline Double_t AliDielectronVarManager::GetSingleLegEff(Double_t * const values
   for(Int_t idim=0; idim<dim; idim++) {
     UInt_t var = GetValueType(fgEffMap->GetAxis(idim)->GetName());
     idx[idim] = fgEffMap->GetAxis(idim)->FindBin(values[var]);
-    if(idx[idim] < 0 || idx[idim]>fgEffMap->GetAxis(idim)->GetNbins()) 
-      printf(" [E] AliDielectronVarManager::GetSingleLegEff values %f for %s not found in axis range \n",values[var],fgEffMap->GetAxis(idim)->GetName());
+    /* if(idx[idim] < 0 || idx[idim]>fgEffMap->GetAxis(idim)->GetNbins())  */
+    /*   printf(" [E] AliDielectronVarManager::GetSingleLegEff values %f for %s not found in axis range \n",values[var],fgEffMap->GetAxis(idim)->GetName()); */
     //    printf(" (%d,%f,%s) \t",idx[idim],values[var],fgEffMap->GetAxis(idim)->GetName());
   }
   //  printf(" bin content %f+-%f \n",fgEffMap->GetBinContent(idx), fgEffMap->GetBinError(idx));
+  if(fgEffMap->GetBinContent(idx)<0.01 || fgEffMap->GetBinError(idx)/fgEffMap->GetBinContent(idx)>0.2) return 0.0;
   return (fgEffMap->GetBinContent(idx));
 }
 
