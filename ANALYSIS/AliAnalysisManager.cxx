@@ -446,7 +446,10 @@ Bool_t AliAnalysisManager::Init(TTree *tree)
    if (!fInitOK) return kFALSE;
    fTree = tree;
    if (fMode != kProofAnalysis) CreateReadCache();
-   fTable.Rehash(100);
+   else {
+     // cholm - here we should re-add to the table or branches 
+     fTable.Clear();
+   }
    AliAnalysisDataContainer *top = fCommonInput;
    if (!top) top = (AliAnalysisDataContainer*)fInputs->At(0);
    if (!top) {
@@ -455,6 +458,7 @@ Bool_t AliAnalysisManager::Init(TTree *tree)
    }
    top->SetData(tree);
    CheckBranches(kFALSE);
+   fTable.Rehash(100);
    if (fDebug > 1) {
       printf("<-AliAnalysisManager::Init(%s)\n", tree->GetName());
    }
