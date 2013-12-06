@@ -668,6 +668,8 @@ TH1D* AliJetFlowTools::UnfoldSpectrumBayesianAli(
     else if(!strcmp("out", suffix.Data())) AliUnfolding::SetBayesianParameters(fBayesianSmoothOut, fBayesianIterOut);
     else if(!strcmp("prior_in", suffix.Data())) AliUnfolding::SetBayesianParameters(fBayesianSmoothIn, fBayesianIterIn);
     else if(!strcmp("prior_out", suffix.Data())) AliUnfolding::SetBayesianParameters(fBayesianSmoothOut, fBayesianIterOut);
+    AliUnfolding::SetNbins(fBinsRec->GetSize()-1, fBinsTrue->GetSize()-1);
+
     // 1) get a prior for unfolding and clone all the input histograms
     TH1D* priorLocal( GetPrior(
         measuredJetSpectrum,              // jet pt in pt rec bins 
