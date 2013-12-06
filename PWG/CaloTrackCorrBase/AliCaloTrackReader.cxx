@@ -88,7 +88,8 @@ fRecalculateClusters(kFALSE),fCorrectELinearity(kTRUE),
 fSelectEmbeddedClusters(kFALSE),
 fTrackStatus(0),             fTrackFilterMask(0),             fTrackFilterMaskComplementary(0),
 fESDtrackCuts(0),            fESDtrackComplementaryCuts(0),   fConstrainTrack(kFALSE),
-fSelectHybridTracks(0),      fSelectPrimaryTracks(0),         fSelectSPDHitTracks(kFALSE),
+fSelectHybridTracks(0),      fSelectPrimaryTracks(0),
+fSelectSPDHitTracks(0),      fSelectFractionTPCSharedClusters(0), fCutTPCSharedClustersFraction(0),
 fTrackMult(0),               fTrackMultEtaCut(0.9),
 fReadStack(kFALSE),          fReadAODMCParticles(kFALSE),
 fDeltaAODFileName(""),       fFiredTriggerClassName(""),
@@ -659,6 +660,9 @@ void AliCaloTrackReader::InitParameters()
   fTrackStatus     = 0;
   fTrackFilterMask = 128; //For AODs, but what is the difference between fTrackStatus and fTrackFilterMask?
   fTrackFilterMaskComplementary = 0; // in case of hybrid tracks, without using the standard method
+  
+  fSelectFractionTPCSharedClusters = kTRUE;
+  fCutTPCSharedClustersFraction = 0.4,
   
   fESDtrackCuts = 0;
   fESDtrackComplementaryCuts = 0;
@@ -1494,12 +1498,26 @@ void AliCaloTrackReader::FillInputCTS()
           if(!aodtrack->HasPointOnITSLayer(0) && !aodtrack->HasPointOnITSLayer(1)) continue ;
         }
         
-        if ( fSelectPrimaryTracks )
+        if ( fSelectFractionTPCSharedClusters )
         {
-          if ( aodtrack->GetType()!= AliAODTrack::kPrimary ) continue ;
+          Double_t frac = Double_t(aodtrack->GetTPCnclsS()) / Double_t(aodtrack->GetTPCncls());
+          if (frac > fCutTPCSharedClustersFraction)
+          {
+             if (fDebug > 2 )printf("\t Reject track, shared cluster fraction %f > %f\n",frac, fCutTPCSharedClustersFraction);
+            continue ;
+          }
         }
         
-        if (fDebug > 2 ) printf("AliCaloTrackReader::FillInputCTS(): \t accepted track! \n");
+        if ( fSelectPrimaryTracks )
+        {
+          if ( aodtrack->GetType()!= AliAODTrack::kPrimary )
+          {
+             if (fDebug > 2 ) printf("\t Remove not primary track\n");
+            continue ;
+          }
+        }
+
+        if (fDebug > 2 ) printf("\t accepted track! \n");
         
         //In case of AODs, TPC tracks cannot be propagated back to primary vertex,
         // info stored here
