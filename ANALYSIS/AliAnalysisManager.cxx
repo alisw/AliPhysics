@@ -329,6 +329,7 @@ Bool_t AliAnalysisManager::EventLoop(Long64_t nevents)
       ExecAnalysis();
    TList dummyList;
    PackOutput(&dummyList);
+   fIsRemote = kTRUE;
    Terminate();
    return kTRUE;
 }
