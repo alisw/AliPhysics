@@ -71,6 +71,7 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
       }
       if(inputHandler->IsA()==AliAODInputHandler::Class()){
       // AOD mode
+         cout << "AOD handler: adding " << cutnumberAODBranch.Data() << " as conversion branch" << endl;
          fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
       }
       fV0ReaderV1->Init();

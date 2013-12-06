@@ -755,6 +755,7 @@ Bool_t AliV0ReaderV1::GetAODConversionGammas(){
       AliAODConversionPhoton *gamma=0x0;
 
       TClonesArray *fInputGammas=dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(fDeltaAODBranchName.Data()));
+      
       if(!fInputGammas){
          FindDeltaAODBranchName();
          fInputGammas=dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(fDeltaAODBranchName.Data()));}
