@@ -8,7 +8,7 @@
 #ifndef AliJetFlowTools_H
 #define AliJetFlowTools_H
 
-// root forward declaration
+// root forward declarations
 class TF1;
 class TH1D;
 class TH2D;
@@ -38,22 +38,22 @@ class AliJetFlowTools {
                                 // since most (or all) of the objects are owned by the input and output files
     public:
         // enumerators
-        enum unfoldingAlgorithm {
-            kChi2,
-            kBayesian,
-            kSVD,
-            kSVDlegacy,         // first implementation
-            kNone };            // type of unfolding algorithm
-        enum prior {
-            kPriorChi2,
-            kPriorMeasured };   // used prior for svd unfolding
-        enum histoType {
+        enum unfoldingAlgorithm {       // type of unfolding alrogithm
+            kChi2,                      // chi^2 unfolding, implemented in AliUnfolding
+            kBayesian,                  // Bayesian unfolding, implemented in RooUnfold
+            kBayesianAli,               // Bayesian unfolding, implemented in AliUnfolding
+            kSVD,                       // SVD unfolding, implemented in RooUnfold
+            kNone };                    // no unfolding
+        enum prior {                    // prior that is used for unfolding
+            kPriorChi2,                 // prior from chi^2 method
+            kPriorMeasured };           // use measured spectrum as prior
+        enum histoType {                // histogram identifier, only used internally
             kInPlaneSpectrum,
             kOutPlaneSpectrum,
             kUnfoldedSpectrum,
             kFoldedSpectrum,
             kMeasuredSpectrum,
-            kEmpty };           // histo types (used for styling)
+            kEmpty };
         // setters, interface to the class
         void            SetSaveFull(Bool_t b)           {fSaveFull              = b;}
         void            SetInputList(TList* list)       {
@@ -73,37 +73,43 @@ class AliJetFlowTools {
             fActiveDir = new TDirectoryFile(fActiveString.Data(), fActiveString.Data());
             fActiveDir->cd();
         }
-        void            SetCentralityBin(Int_t bin)     {fCentralityBin         = bin;}
-        void            SetDetectorResponse(TH2D* dr)   {fDetectorResponse      = dr;}
-        void            SetJetFindingEfficiency(TH1D* e)                {fJetFindingEff         = e;}
-        void            SetBinsTrue(TArrayD* bins)      {fBinsTrue              = bins;}
-        void            SetBinsRec(TArrayD* bins)       {fBinsRec               = bins;}
-        void            SetBinsTruePrior(TArrayD* bins) {fBinsTruePrior         = bins;}
-        void            SetBinsRecPrior(TArrayD* bins)  {fBinsRecPrior          = bins;}
-        void            SetSVDReg(Int_t r)              {fSVDRegIn = r; fSVDRegOut = r;}
-        void            SetSVDReg(Int_t in, Int_t out)  {fSVDRegIn = in; fSVDRegOut = out;}
-        void            SetSVDToy(Bool_t b, Float_t r)  {fSVDToy = b; fJetRadius = r;}
-        void            SetBeta(Double_t b)             {fBetaIn = b; fBetaOut = b;}
-        void            SetBeta(Double_t i, Double_t o) {fBetaIn = i; fBetaOut = o;}
-        void            SetAvoidRoundingError(Bool_t r) {fAvoidRoundingError    = r;}
-        void            SetUnfoldingAlgorithm(unfoldingAlgorithm ua)    {fUnfoldingAlgorithm    = ua;}
-        void            SetPrior(prior p)                               {fPrior                 = p;}
-        void            SetNormalizeSpectra(Bool_t b)   {fNormalizeSpectra      = b;}
-        void            SetNormalizeSpectra(Int_t e)    { // use to normalize to this no of events
-            fEventCount = e;
-            fNormalizeSpectra = kFALSE;
+        void            SetCentralityBin(Int_t bin)             {fCentralityBin         = bin;}
+        void            SetDetectorResponse(TH2D* dr)           {fDetectorResponse      = dr;}
+        void            SetJetFindingEfficiency(TH1D* e)        {fJetFindingEff         = e;}
+        void            SetBinsTrue(TArrayD* bins)              {fBinsTrue              = bins;}
+        void            SetBinsRec(TArrayD* bins)               {fBinsRec               = bins;}
+        void            SetBinsTruePrior(TArrayD* bins)         {fBinsTruePrior         = bins;}
+        void            SetBinsRecPrior(TArrayD* bins)          {fBinsRecPrior          = bins;}
+        void            SetSVDReg(Int_t r)                      {fSVDRegIn              = r; fSVDRegOut         = r;}
+        void            SetSVDReg(Int_t in, Int_t out)          {fSVDRegIn              = in; fSVDRegOut        = out;}
+        void            SetSVDToy(Bool_t b, Float_t r)          {fSVDToy                = b; fJetRadius         = r;}
+        void            SetBeta(Double_t b)                     {fBetaIn                = b; fBetaOut           = b;}
+        void            SetBeta(Double_t i, Double_t o)         {fBetaIn                = i; fBetaOut           = o;}
+        void            SetBayesianIter(Int_t i)                {fBayesianIterIn        = i; fBayesianIterOut    = i;}
+        void            SetBayesianIter(Int_t i, Int_t o)       {fBayesianIterIn        = i; fBayesianIterOut    = o;}
+        void            SetBayesianSmooth(Float_t s)            {fBayesianSmoothIn      = s; fBayesianSmoothOut = s;}
+        void            SetBayesianSmooth(Float_t i, Float_t o) {fBayesianSmoothIn      = i; fBayesianSmoothOut = o;}
+        void            SetAvoidRoundingError(Bool_t r)         {fAvoidRoundingError    = r;}
+        void            SetUnfoldingAlgorithm(unfoldingAlgorithm ua)    {fUnfoldingAlgorithm                    = ua;}
+        void            SetPrior(prior p)                       {fPrior                 = p;}
+        void            SetNormalizeSpectra(Bool_t b)           {fNormalizeSpectra      = b;}
+        void            SetNormalizeSpectra(Int_t e)            { // use to normalize to this no of events
+            fEventCount         = e;
+            fNormalizeSpectra   = kFALSE;
         }
-        void            SetSmoothenSpectrum(Bool_t b, Float_t min = 50., Float_t max = 100., Float_t start= 75.) {
-            fSmoothenSpectrum   = b;
+        void            SetSmoothenPrior(Bool_t b, Float_t min = 50., Float_t max = 100., Float_t start= 75., Bool_t counts = kTRUE) {
+            fSmoothenPrior      = b;
             fFitMin             = min;
             fFitMax             = max;
             fFitStart           = start;
+            fSmoothenCounts     = counts;
         }
-        void            SetTestMode(Bool_t t)           {fTestMode                      = t;}
-        void            SetNoDphi(Bool_t n)             {fNoDphi                        = n;}
+        void            SetTestMode(Bool_t t)                   {fTestMode              = t;}
+        void            SetNoDphi(Bool_t n)                     {fNoDphi                = n;}
         void            SetEventPlaneResolution(Double_t r)     {fEventPlaneRes         = r;}
         void            SetUseDetectorResponse(Bool_t r)        {fUseDetectorResponse   = r;}
-        void            SetTrainPowerFit(Bool_t t)      {fTrainPower                    = t;}
+        void            SetUseDptResponse(Bool_t r)             {fUseDptResponse        = r;}
+        void            SetTrainPowerFit(Bool_t t)              {fTrainPower            = t;}
         void            Make();
         void            Finish() {
             fOutputFile->cd();
@@ -115,7 +121,7 @@ class AliJetFlowTools {
                 TString def,
                 TString in = "UnfoldedSpectra.root", 
                 TString out = "ProcessedSpectra.root", 
-                Int_t columns = 4);
+                Int_t columns = 4) const;
         Bool_t          SetRawInput (
                 TH2D* detectorResponse, // detector response matrix
                 TH1D* jetPtIn,          // in plane jet spectrum
@@ -133,12 +139,12 @@ class AliJetFlowTools {
         static TH1D*    NormalizeTH1D(TH1D* histo, Double_t scale = 1.);
         static TGraphErrors*    GetRatio(TH1 *h1 = 0x0, TH1* h2 = 0x0, TString name = "", Bool_t appendFit = kFALSE, Int_t xmax = -1);
         static TGraphErrors*    GetV2(TH1* h1 = 0x0, TH1* h2 = 0x0, Double_t r = .63, TString name = "");
-        static void     WriteObject(TObject* object);
+        static void     WriteObject(TObject* object, TString suffix = "", Bool_t kill = kTRUE);
         static TH2D*    ConstructDPtResponseFromTH1D(TH1D* dpt, Bool_t AvoidRoundingError);
         static TH2D*    GetUnityResponse(TArrayD* binsTrue, TArrayD* binsRec, TString suffix = "");
-        void            SaveConfiguration(Bool_t convergedIn, Bool_t convergedOut);
+        void            SaveConfiguration(Bool_t convergedIn, Bool_t convergedOut) const;
         static TMatrixD*        CalculatePearsonCoefficients(TMatrixD* covmat);
-        static TH1D*    SmoothenSpectrum(TH1D* spectrum, TF1* function, Double_t min, Double_t max, Double_t start, Bool_t kill = kTRUE, Bool_t counts = kTRUE);
+        static TH1D*    SmoothenPrior(TH1D* spectrum, TF1* function, Double_t min, Double_t max, Double_t start, Bool_t kill = kTRUE, Bool_t counts = kTRUE);
         // set styles
         static void     Style(TCanvas* c, TString style = "PEARSON");
         static void     Style(TVirtualPad* c, TString style = "SPECTRUM");
@@ -154,29 +160,36 @@ class AliJetFlowTools {
         static void     SetDebug(Int_t d)               {AliUnfolding::SetDebug(d);}
     private:
         Bool_t          PrepareForUnfolding(); 
-        void            GetPrior()                      {; /* FIXME implement */};
-        Bool_t          UnfoldSpectrumChi2(             TH1D* resizedJetPt, 
-                                                        TH2D* resizedResonse,
-                                                        TH1D* kinematicEfficiency,
-                                                        TH1D* unfoldingTemplate,
-                                                        TH1D *&unfolded,        // careful, pointer reference
-                                                        TString suffix,
-                                                        TH1D* jetFindingEfficiency = 0x0);
-        Bool_t          UnfoldSpectrumBayesian()        {return kFALSE;}
-        Bool_t          UnfoldSpectrumSVDlegacy(        TH1D* resizedJetPt, 
-                                                        TH2D* resizedResonse,
-                                                        TH1D* kinematicEfficiency,
-                                                        TH1D* unfoldingTemplate,
-                                                        TH1D *&unfolded,        // careful, pointer reference
-                                                        TString suffix,
-                                                        TH1D* jetFindingEfficiency = 0x0);
-        Bool_t          UnfoldSpectrumSVD(              TH1D* resizedJetPt, 
-                                                        TH2D* resizedResonse,
-                                                        TH1D* kinematicEfficiency,
-                                                        TH1D* unfoldingTemplate,
-                                                        TH1D *&unfolded,        // careful, pointer reference
-                                                        TString suffix,
-                                                        TH1D* jetFindingEfficiency = 0x0);
+        TH1D*           GetPrior(                       const TH1D* measuredJetSpectrum,
+                                                        const TH2D* resizedResponse,
+                                                        const TH1D* kinematicEfficiency,
+                                                        const TH1D* measuredJetSpectrumTrueBins,
+                                                        const TString suffix,
+                                                        const TH1D* jetFindingEfficiency);
+        TH1D*           UnfoldSpectrumChi2(             const TH1D* measuredJetSpectrum, 
+                                                        const TH2D* resizedResponse,
+                                                        const TH1D* kinematicEfficiency,
+                                                        const TH1D* measuredJetSpectrumTrueBins,
+                                                        const TString suffix,
+                                                        const TH1D* jetFindingEfficiency = 0x0);
+        TH1D*           UnfoldSpectrumSVD(              const TH1D* measuredJetSpectrum, 
+                                                        const TH2D* resizedResponse,
+                                                        const TH1D* kinematicEfficiency,
+                                                        const TH1D* measuredJetSpectrumTrueBins,
+                                                        const TString suffix,
+                                                        const TH1D* jetFindingEfficiency = 0x0);
+        TH1D*           UnfoldSpectrumBayesianAli(      const TH1D* measuredJetSpectrum, 
+                                                        const TH2D* resizedResponse,
+                                                        const TH1D* kinematicEfficiency,
+                                                        const TH1D* measuredJetSpectrumTrueBins,
+                                                        const TString suffix,
+                                                        const TH1D* jetFindingEfficiency = 0x0);
+        TH1D*           UnfoldSpectrumBayesian(         const TH1D* measuredJetSpectrum, 
+                                                        const TH2D* resizedResponse,
+                                                        const TH1D* kinematicEfficiency,
+                                                        const TH1D* measuredJetSpectrumTrueBins,
+                                                        const TString suffix,
+                                                        const TH1D* jetFindingEfficiency = 0x0);
         static void     ResetAliUnfolding();
         // give object a unique name via the 'protect heap' functions. 
         // may seem redundant, but some internal functions of root (e.g.
@@ -199,6 +212,10 @@ class AliJetFlowTools {
         TH1D*                   fJetFindingEff;         // jet finding efficiency
         Double_t                fBetaIn;                // regularization strength, in plane unfolding
         Double_t                fBetaOut;               // regularization strength, out of plane unfoldign
+        Int_t                   fBayesianIterIn;        // bayesian regularization parameter, in plane unfolding
+        Int_t                   fBayesianIterOut;       // bayesian regularization parameter, out plane unfolding
+        Float_t                 fBayesianSmoothIn;      // bayesian smoothening parameter (AliUnfolding)
+        Float_t                 fBayesianSmoothOut;     // bayesian smoothening parameter (AliUnfolding)
         Bool_t                  fAvoidRoundingError;    // set dpt to zero for small values far from the diagonal
         unfoldingAlgorithm      fUnfoldingAlgorithm;    // algorithm used for unfolding
         prior                   fPrior;                 // prior for unfolding
@@ -212,15 +229,17 @@ class AliJetFlowTools {
         Float_t                 fJetRadius;             // jet radius (for SVD toy)
         Int_t                   fEventCount;            // number of events
         Bool_t                  fNormalizeSpectra;      // normalize spectra to event count
-        Bool_t                  fSmoothenSpectrum;      // smoothen the tail of the measured spectrum using a powerlaw fit
+        Bool_t                  fSmoothenPrior;         // smoothen the tail of the measured spectrum using a powerlaw fit
         Float_t                 fFitMin;                // lower bound of smoothening fit
         Float_t                 fFitMax;                // upper bound of smoothening fit
         Float_t                 fFitStart;              // from this value, use smoothening
+        Bool_t                  fSmoothenCounts;        // fill smoothened spectrum with counts
         Bool_t                  fTestMode;              // unfold with unity response for testing
         Bool_t                  fNoDphi;                // no dphi dependence in unfolding
         Bool_t                  fRawInputProvided;      // input histograms provided, not read from file
         Double_t                fEventPlaneRes;         // event plane resolution for current centrality
         Bool_t                  fUseDetectorResponse;   // add detector response to unfolding
+        Bool_t                  fUseDptResponse;        // add dpt response to unfolding
         Bool_t                  fTrainPower;            // don't clear the params of fPower for call to Make
                                                         // might give more stable results, but also introduces
                                                         // a bias / dependency on previous iterations
@@ -239,8 +258,6 @@ class AliJetFlowTools {
         TH2D*                   fDptOut;                // out plane dpt matrix
         TH2D*                   fFullResponseIn;        // full response matrix, in plane
         TH2D*                   fFullResponseOut;       // full response matrix, out of plane
-        TH1D*                   fUnfoldedIn;            // unfolded in plane spectrum
-        TH1D*                   fUnfoldedOut;           // unfolded out ofplane spectrum
         // copy and assignment 
         AliJetFlowTools(const AliJetFlowTools&);             // not implemented
         AliJetFlowTools& operator=(const AliJetFlowTools&);  // not implemented
