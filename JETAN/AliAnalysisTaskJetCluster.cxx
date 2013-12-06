@@ -119,6 +119,7 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster():
   fExternalWeight(1),
   fTrackEtaWindow(0.9),    
   fRequireITSRefit(0),
+  fApplySharedClusterCut(0),
   fRecEtaWindow(0.5),
   fTrackPtCut(0.),							
   fJetOutputMinPt(0.150),
@@ -287,6 +288,7 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fExternalWeight(1),    
   fTrackEtaWindow(0.9),    
   fRequireITSRefit(0),
+  fApplySharedClusterCut(0),
   fRecEtaWindow(0.5),
   fTrackPtCut(0.),							
   fJetOutputMinPt(0.150),
@@ -1888,6 +1890,10 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
 	  continue;
 	}
         if(fRequireITSRefit){if((tr->GetStatus()&AliESDtrack::kITSrefit)==0)continue;}
+        if (fApplySharedClusterCut) {
+           Double_t frac = Double_t(tr->GetTPCnclsS()) /Double_t(tr->GetTPCncls());
+           if (frac > 0.4) continue;
+        } 
 	if(TMath::Abs(tr->Eta())>fTrackEtaWindow){
 	  if(fDebug>10)Printf("%s:%d Not matching eta %d/%d",(char*)__FILE__,__LINE__,it,aod->GetNumberOfTracks());	
 	  continue;
