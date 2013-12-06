@@ -8,6 +8,7 @@
  *********************************************************************/
 
 #if !defined(__CINT__) || defined(__MAKECINT_)
+
 #include "AliFemtoManager.h"
 #include "AliFemtoEventReaderESDChain.h"
 #include "AliFemtoEventReaderESDChainKine.h"
@@ -69,10 +70,10 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   int runepvzero[4] = {0, 0, 0, 1};
   double epvzerobins[4] = {-psi, -psi+psid, -psi+2*psid, -psi+3*psid};
 
-  int runmults[10] = {1, 1, 1, 1, 1, 1, 0, 0, 0, 0};
+  int runmults[10] = {1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
   int multbins[11] = {0.001, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900};
 
-  int runch[3] = {1, 0, 0};
+  int runch[3] = {1, 1, 1};
   const char *chrgs[3] = { "PP", "APAP", "PAP" };
 
   int runktdep = 0;
