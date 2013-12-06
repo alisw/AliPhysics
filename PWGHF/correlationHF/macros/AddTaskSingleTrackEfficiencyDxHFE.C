@@ -130,6 +130,7 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   Bool_t cutOnClusters=kTRUE;
 
   Bool_t bReducedMode=kFALSE;
+  Bool_t bTuneOnData=kFALSE;
 
 
   if (configuration.IsNull() && gDirectory) {
@@ -160,6 +161,11 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
 	  if (argument.BeginsWith("reducedmode")) {
 	    bReducedMode=kTRUE;
 	    taskOptions+=" reducedmode";
+	    continue;
+	  }
+	  if (argument.BeginsWith("tuneondata")) {
+	    bTuneOnData=kTRUE;
+	    cout <<"Use tuneondata for PIDresponsetask" << endl;
 	    continue;
 	  }
 	  if (argument.BeginsWith("cutname=")) {
@@ -306,7 +312,7 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   // Other Variables
   for(Int_t i=0; i<=nbin2; i++) binLim2[i]=(Double_t)etamin  + (etamax-etamin)  /nbin2*(Double_t)i ;
   for(Int_t i=0; i<=nbin3; i++) binLim3[i]=(Double_t)phimin + (phimax-phimin)/nbin3*(Double_t)i ;
-  for(Int_t i=0; i<=nbin4; i++) binLim4[i]=(Double_t)zvtxmin  + (zvtxmax-zvtxmin)  /nbin4*(Double_t)i ;
+  for(Int_t i=0; i<=nbin4; i++) {binLim4[i]=(Double_t)zvtxmin  + (zvtxmax-zvtxmin)  /nbin4*(Double_t)i ;}
   if(!bReducedMode)for(Int_t i=0; i<=nbin5; i++) binLim5[i]=(Double_t)thetamin  + (thetamax-thetamin)  /nbin5*(Double_t)i ;
 
   //for(Int_t i=0; i<=nbin6; i++) binLim6[i]=(Double_t)sourcemin  + (sourcemax-sourcemin)  /nbin6*(Double_t)i ;
@@ -335,7 +341,6 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
   container -> SetVarTitle(izvtx, "Zvtx");
   if(!bReducedMode)  container -> SetVarTitle(itheta, "theta");
   //  container -> SetVarTitle(isource, "Electron source");
-  cout <<"after" <<endl;
   //Variable Titles 
   int step=0;
   if(!bReducedMode)container -> SetStepTitle(step++, " MC Particle with Generated Cuts");
@@ -496,7 +501,7 @@ int AddTaskSingleTrackEfficiencyDxHFE(TString configuration="", TString analysis
     if (!pidTask) {
       gROOT->LoadMacro(pidTaskMacro);
       TString pidFunction;
-      pidFunction.Form("AddTaskPIDResponse(%d, %d)", kTRUE, kTRUE);
+      pidFunction.Form("AddTaskPIDResponse(%d, %d, %d)", kTRUE, kTRUE,bTuneOnData);
       gROOT->ProcessLine(pidFunction);
       if (mgr->GetTask(pidTaskName)==NULL) {
 	::Error("AddTaskSingleTrackEfficiencyDxHFE", Form("failed to add PID task '%s' from macro '%s'",

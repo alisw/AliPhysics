@@ -229,6 +229,7 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
   Int_t           fSelectElSource;  // which source to select
   Bool_t          fUseGenerator;    // If using generator
   Bool_t          fReducedMode;     // which mode to run in
+  Bool_t          fUsePt;           // Store Pt or global momentum
 
   ClassDef(AliCFSingleTrackEfficiencyTask,1);
 

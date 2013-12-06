@@ -109,7 +109,8 @@ fOption(opt),
   fOriginMotherKine(-1),
   fSelectElSource(kAll),
   fUseGenerator(kFALSE),
-  fReducedMode(kFALSE)
+  fReducedMode(kFALSE),
+  fUsePt(kTRUE)
 
 {
   //
@@ -152,7 +153,8 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask(const char* opt,c
   fOriginMotherKine(-1),
   fSelectElSource(kAll),
   fUseGenerator(kFALSE),
-  fReducedMode(kFALSE)
+  fReducedMode(kFALSE),
+  fUsePt(kTRUE)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -201,6 +203,7 @@ AliCFSingleTrackEfficiencyTask& AliCFSingleTrackEfficiencyTask::operator=(const 
     fSelectElSource=c.fSelectElSource;  
     fUseGenerator=c.fUseGenerator;
     fReducedMode=c.fReducedMode;
+    fUsePt=c.fUsePt;
 
   }
   return *this;
@@ -230,7 +233,8 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask(const AliCFSingle
   fOriginMotherKine(c.fOriginMotherKine),
   fSelectElSource(c.fSelectElSource),
   fUseGenerator(c.fUseGenerator),
-  fReducedMode(c.fReducedMode)
+  fReducedMode(c.fReducedMode),
+  fUsePt(c.fUsePt)
 
 {
   //
@@ -370,7 +374,10 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
       Double_t mom[3];
       track->PxPyPz(mom);
       Double_t pt=TMath::Sqrt(mom[0]*mom[0]+mom[1]*mom[1]);
-      containerInput[kPt] = pt ;
+      if(fUsePt)
+	containerInput[kPt] = pt ;
+      else
+	containerInput[kPt]=track->P();
       containerInput[kEta] = track->Eta();
       containerInput[kPhi] = track->Phi() ;
       if(!fReducedMode) containerInput[kTheta] = track->Theta() ;
@@ -399,7 +406,10 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 
       // Step 6. Track that are recostructed + true pt and filling
       AliVParticle *mcPart  = (AliVParticle*)fMCEvent->GetTrack(label);
-      containerInputMC[kPt] = mcPart->Pt();
+      if(fUsePt)
+	containerInputMC[kPt] = mcPart->Pt();
+      else
+	containerInputMC[kPt] = mcPart->P();
       containerInputMC[kEta] = mcPart->Eta() ;
       containerInputMC[kPhi] = mcPart->Phi() ;
       if(!fReducedMode)containerInputMC[kTheta] = mcPart->Theta() ;
@@ -1091,6 +1101,11 @@ int AliCFSingleTrackEfficiencyTask::ParseArguments(const char* arguments)
       fRequireTOF=kFALSE;	    
       continue;
     }
+    if (argument.BeginsWith("useglobalmomentum") || argument.BeginsWith("useglobalmom")){
+      AliInfo("Use global momentum");
+      fUsePt=kFALSE;	    
+      continue;
+    }
     if (argument.BeginsWith("clustersTPCPID=")){
       argument.ReplaceAll("clustersTPCPID=", "");
       fMinNclsTPCPID=argument.Atoi();;
@@ -1196,7 +1211,9 @@ void AliCFSingleTrackEfficiencyTask::CheckESDParticles(){
   for (Int_t ipart=0; ipart<fMCEvent->GetNumberOfTracks(); ipart++) { 
 	 
     AliMCParticle *mcPart  = (AliMCParticle*)fMCEvent->GetTrack(ipart);  
-    containerInput[kPt] = mcPart->Pt(); 
+    if(fUsePt)    containerInput[kPt] = mcPart->Pt(); 
+    else
+      containerInput[kPt] = mcPart->P(); 
     containerInput[kEta] = mcPart->Eta() ;
     containerInput[kPhi] = mcPart->Phi() ;
     if(!fReducedMode) containerInput[kTheta] = mcPart->Theta() ;
@@ -1282,7 +1299,10 @@ void AliCFSingleTrackEfficiencyTask::CheckAODParticles(){
       continue;
     }
     //    cout << "mcPartlabel: " <<  TMath::Abs(mcPart->GetLabel()) << endl;
-    containerInput[kPt] = (Float_t)mcPart->Pt();
+    if(fUsePt)
+      containerInput[kPt] = (Float_t)mcPart->Pt();
+    else
+      containerInput[kPt] = (Float_t)mcPart->P();
     containerInput[kEta] = mcPart->Eta() ;
     containerInput[kPhi] = mcPart->Phi() ;
     if(!fReducedMode) containerInput[kTheta] = mcPart->Theta() ;
