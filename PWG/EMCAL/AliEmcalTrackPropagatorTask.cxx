@@ -60,7 +60,7 @@ void AliEmcalTrackPropagatorTask::UserCreateOutputObjects()
 
   if (!fRecoUtils) {
     fRecoUtils = new AliEMCALRecoUtils;
-    fRecoUtils->SetStep(25);
+    fRecoUtils->SetStep(20);
     AliInfo("No reco utils given, creating default utils");
   }
 }
@@ -101,7 +101,7 @@ void AliEmcalTrackPropagatorTask::UserExec(Option_t *)
     if(eTrack->Pt()<fMinPtCut) 
       continue;
     Double_t phi = eTrack->Phi()*TMath::RadToDeg();
-    if (TMath::Abs(eTrack->Eta())>0.8 || phi <= 20 || phi >= 240) 
+    if (TMath::Abs(eTrack->Eta())>0.9 || phi <= 10 || phi >= 250) 
       continue;
     AliExternalTrackParam *trackParam =  const_cast<AliExternalTrackParam*>(eTrack->GetInnerParam());
     if(!trackParam) 
@@ -112,7 +112,7 @@ void AliEmcalTrackPropagatorTask::UserExec(Option_t *)
     Float_t etaout=-999, phiout=-999, ptout=-999;
     Bool_t ret = fRecoUtils->ExtrapolateTrackToEMCalSurface(&emcalParam, 
                                                             fDist, 
-                                                            fRecoUtils->GetMass(), 
+                                                            eTrack->GetMass(), 
                                                             fRecoUtils->GetStepSurface(), 
                                                             etaout, 
                                                             phiout,

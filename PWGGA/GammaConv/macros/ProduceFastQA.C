@@ -414,6 +414,7 @@ void ProduceFastQA(TString fileNameInput = "myOutput", TString cutSelection = "5
    histoITSClusterPhi->Scale(1./nEvt);
    
    TH1F* histoGammaPt = (TH1F*)listQAESD->FindObject("Gamma_Pt");
+   Double_t nGamma = histoGammaPt->GetEntries();
    histoGammaPt->Sumw2();
    histoGammaPt->Scale(1./nEvt);
    
@@ -855,6 +856,11 @@ void ProduceFastQA(TString fileNameInput = "myOutput", TString cutSelection = "5
    TLatex *labelPhotons = new TLatex(0.75,0.9,"Photon");
    SetStyleTLatex( labelPhotons, 0.05,4);
    labelPhotons->Draw();
+   Double_t nGammaPerEvt = nGamma/nEvt;
+   TLatex *labelPhotonsPerEvent = new TLatex(0.18,0.18,Form("N_{#gamma}/N_{Evt} = %4.4f",nGammaPerEvt));
+   SetStyleTLatex( labelPhotonsPerEvent, 0.05,4);
+   labelPhotonsPerEvent->Draw();
+   
    
    if (labelDataSet) labelDataSet->Draw();
    

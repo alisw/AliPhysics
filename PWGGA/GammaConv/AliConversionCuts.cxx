@@ -135,10 +135,8 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) :
    fPIDMinPProtonRejectionLowP(2),
    fPIDMinPPionRejectionLowP(0),
    fDoQtGammaSelection(kTRUE),
-   fDoHighPtQtGammaSelection(kFALSE),
+   fDo2DQt(kFALSE),
    fQtMax(100),
-   fHighPtQtMax(0.),
-   fPtBorderForQt(0),
    fXVertexCut(0.),
    fYVertexCut(0.),
    fZVertexCut(0.),
@@ -161,8 +159,7 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) :
    fRemovePileUp(kFALSE),
    fOpeningAngle(0.005),
    fPsiPairCut(10000),
-   fPsiPairDeltaPhiCut(10000),
-   fDo2DPsiPair(kFALSE),
+   fDo2DPsiPairChi2(kFALSE),
    fCosPAngleCut(10000),
    fDoToCloseV0sCut(kFALSE),
    fRejectExtraSignals(0),
@@ -290,10 +287,8 @@ AliConversionCuts::AliConversionCuts(const AliConversionCuts &ref) :
    fPIDMinPProtonRejectionLowP(ref.fPIDMinPProtonRejectionLowP),
    fPIDMinPPionRejectionLowP(ref.fPIDMinPPionRejectionLowP),
    fDoQtGammaSelection(ref.fDoQtGammaSelection),
-   fDoHighPtQtGammaSelection(ref.fDoHighPtQtGammaSelection),
+   fDo2DQt(ref.fDo2DQt),
    fQtMax(ref.fQtMax),
-   fHighPtQtMax(ref.fHighPtQtMax),
-   fPtBorderForQt(ref.fPtBorderForQt),
    fXVertexCut(ref.fXVertexCut),
    fYVertexCut(ref.fYVertexCut),
    fZVertexCut(ref.fZVertexCut),
@@ -316,8 +311,7 @@ AliConversionCuts::AliConversionCuts(const AliConversionCuts &ref) :
    fRemovePileUp(ref.fRemovePileUp),
    fOpeningAngle(ref.fOpeningAngle),
    fPsiPairCut(ref.fPsiPairCut),
-   fPsiPairDeltaPhiCut(ref.fPsiPairDeltaPhiCut),
-   fDo2DPsiPair(ref.fDo2DPsiPair),
+   fDo2DPsiPairChi2(ref.fDo2DPsiPairChi2),
    fCosPAngleCut(ref.fCosPAngleCut),
    fDoToCloseV0sCut(ref.fDoToCloseV0sCut),
    fRejectExtraSignals(ref.fRejectExtraSignals),
@@ -1060,12 +1054,13 @@ Bool_t AliConversionCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVEvent *
    } else {
       magField =  -1.0;
    }
+   
    AliVTrack * electronCandidate = GetTrack(event,photon->GetTrackLabelNegative() );
    AliVTrack * positronCandidate = GetTrack(event,photon->GetTrackLabelPositive() );
    Double_t deltaPhi = magField * TVector2::Phi_mpi_pi( electronCandidate->Phi()-positronCandidate->Phi());
 
    cutIndex++; //7
-   if(!PsiPairCut(photon,deltaPhi)) {
+   if(!PsiPairCut(photon)) {
       if(hPhotonCuts)hPhotonCuts->Fill(cutIndex); //7
       return kFALSE;
    }
@@ -1197,18 +1192,11 @@ Bool_t AliConversionCuts::PhotonIsSelected(AliConversionPhotonBase *photon, AliV
 Bool_t AliConversionCuts::ArmenterosQtCut(AliConversionPhotonBase *photon)
 {   // Armenteros Qt Cut
 
-   if(fDoHighPtQtGammaSelection){
-      if(photon->GetPhotonPt() < fPtBorderForQt){
-         if(photon->GetArmenterosQt()>fQtMax){
-            return kFALSE;
-         }
-      } else {
-         if(photon->GetArmenterosQt()>fHighPtQtMax){
-            return kFALSE;
-         }
+   if(fDo2DQt){
+      if ( !(TMath::Power(photon->GetArmenterosAlpha()/0.95,2)+TMath::Power(photon->GetArmenterosQt()/fQtMax,2) < 1) ){
+         return kFALSE;
       }
    } else {
-
       if(photon->GetArmenterosQt()>fQtMax){
          return kFALSE;
       }
@@ -2731,52 +2719,44 @@ Bool_t AliConversionCuts::SetQtMaxCut(Int_t QtMaxCut)
    case 0: //
       fQtMax=1.;
       fDoQtGammaSelection=kFALSE;
-      fDoHighPtQtGammaSelection=kFALSE;
-      fHighPtQtMax=100.;
-      fPtBorderForQt=100.;
+      fDo2DQt=kFALSE;
       break;
    case 1:
       fQtMax=0.1;
-      fDoHighPtQtGammaSelection=kFALSE;
-      fHighPtQtMax=100.;
-      fPtBorderForQt=100.;
+      fDo2DQt=kFALSE;
       break;
    case 2:
       fQtMax=0.07;
-      fDoHighPtQtGammaSelection=kFALSE;
-      fHighPtQtMax=100.;
-      fPtBorderForQt=100.;
+      fDo2DQt=kFALSE;
       break;
    case 3:
       fQtMax=0.05;
-      fDoHighPtQtGammaSelection=kFALSE;
-      fHighPtQtMax=100.;
-      fPtBorderForQt=100.;
+      fDo2DQt=kFALSE;
       break;
    case 4:
       fQtMax=0.03;
-      fDoHighPtQtGammaSelection=kFALSE;
-      fHighPtQtMax=100.;
-      fPtBorderForQt=100.;
+      fDo2DQt=kFALSE;
       break;
    case 5:
       fQtMax=0.02;
-      fDoHighPtQtGammaSelection=kFALSE;
-      fHighPtQtMax=100.;
-      fPtBorderForQt=100.;
+      fDo2DQt=kFALSE;
       break;
    case 6:
       fQtMax=0.02;
-      fDoHighPtQtGammaSelection=kTRUE;
-      fHighPtQtMax=0.06;
-      fPtBorderForQt=2.5;
+      fDo2DQt=kTRUE;
       break;
    case 7:
       fQtMax=0.15;
-      fDoHighPtQtGammaSelection=kFALSE;
-      fHighPtQtMax=100.;
-      fPtBorderForQt=100.;
+      fDo2DQt=kFALSE;
       break;
+   case 8:
+      fQtMax=0.05;
+      fDo2DQt=kTRUE;
+      break;   
+   case 9:
+      fQtMax=0.03;
+      fDo2DQt=kTRUE;
+      break;      
    default:
       AliError(Form("Warning: QtMaxCut not defined %d",QtMaxCut));
       return kFALSE;
@@ -2845,23 +2825,19 @@ Bool_t AliConversionCuts::SetPsiPairCut(Int_t psiCut) {
       break;   
    case 5:
       fPsiPairCut = 0.1; //
-      fPsiPairDeltaPhiCut = 1;
-      fDo2DPsiPair = kTRUE;
+      fDo2DPsiPairChi2 = kTRUE;
       break;
    case 6:
       fPsiPairCut = 0.05; //
-      fPsiPairDeltaPhiCut = 1;
-      fDo2DPsiPair = kTRUE;
+      fDo2DPsiPairChi2 = kTRUE;
       break;
    case 7:
       fPsiPairCut = 0.035; //
-      fPsiPairDeltaPhiCut = 1;
-      fDo2DPsiPair = kTRUE;
+      fDo2DPsiPairChi2 = kTRUE;
       break;
    case 8:
       fPsiPairCut = 0.2; //
-      fPsiPairDeltaPhiCut = 1;
-      fDo2DPsiPair = kTRUE; //
+      fDo2DPsiPairChi2 = kTRUE; //
       break;
    case 9:
       fPsiPairCut = 0.5; //
@@ -2909,28 +2885,28 @@ Bool_t AliConversionCuts::SetCosPAngleCut(Int_t cosCut) {
 
    switch(cosCut){
    case 0:
-      fCosPAngleCut = TMath::Pi(); // -1
+      fCosPAngleCut = -1; 
       break;
    case 1:
-      fCosPAngleCut = 0.1; // 0.99500
+      fCosPAngleCut = 0; 
       break;
    case 2:
-      fCosPAngleCut = 0.05; // 0.99875
+      fCosPAngleCut = 0.5; 
       break;
    case 3:
-      fCosPAngleCut = 0.025; // 0.99969
+      fCosPAngleCut = 0.75; 
       break;
    case 4:
-      fCosPAngleCut = 0.01; // 0.99995
+      fCosPAngleCut = 0.85; 
       break;
    case 5:
-      fCosPAngleCut = 0.2; // 0.98007
+      fCosPAngleCut = 0.88; 
       break;
    case 6:
-      fCosPAngleCut = 0.5; // 0.87758
+      fCosPAngleCut = 0.9;
       break;
    case 7:
-      fCosPAngleCut = 0.075; // 0.73169
+      fCosPAngleCut = 0.95;
       break;
    default:
       AliError(Form("Cosine Pointing Angle cut not defined %d",cosCut));
@@ -3474,7 +3450,7 @@ Int_t AliConversionCuts::GetFirstTPCRow(Double_t radius){
 
 Bool_t AliConversionCuts::CosinePAngleCut(const AliConversionPhotonBase * photon, AliVEvent * event) const {
    ///Check if passes cosine of pointing angle cut
-   if(GetCosineOfPointingAngle(photon, event) < (TMath::Cos(fCosPAngleCut))){
+   if(GetCosineOfPointingAngle(photon, event) < fCosPAngleCut){
       return kFALSE;
    }
    return kTRUE;
@@ -3514,15 +3490,14 @@ Double_t AliConversionCuts::GetCosineOfPointingAngle( const AliConversionPhotonB
 }
 
 ///________________________________________________________________________
-Bool_t AliConversionCuts::PsiPairCut(const AliConversionPhotonBase * photon, Double_t deltaPhi) const {
+Bool_t AliConversionCuts::PsiPairCut(const AliConversionPhotonBase * photon) const {
 
-//    cout << fDo2DPsiPair << "\t" << fPsiPairCut << "\t" << fPsiPairDeltaPhiCut << endl;
-   
-   if (fDo2DPsiPair){
-      
-      if ( (deltaPhi > 0  &&  deltaPhi < fPsiPairDeltaPhiCut) &&
-        TMath::Abs(photon->GetPsiPair()) < ( fPsiPairCut - fPsiPairCut/fPsiPairDeltaPhiCut * deltaPhi ) ) return kTRUE;
-      else return kFALSE;
+   if (fDo2DPsiPairChi2){
+      if (abs(photon->GetPsiPair()) < -fPsiPairCut/fChi2CutConversion*photon->GetChi2perNDF() + fPsiPairCut ){  
+         return kTRUE;
+      } else {
+         return kFALSE;
+      }    
    } else {
       if(abs(photon->GetPsiPair()) > fPsiPairCut){
          return kFALSE;}

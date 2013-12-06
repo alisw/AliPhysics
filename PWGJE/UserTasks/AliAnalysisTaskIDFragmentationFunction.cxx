@@ -2276,7 +2276,12 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
     }
     
     if (fUseJetPIDtask) {
+      delete [] fJetPIDtask;
+      fJetPIDtask = 0x0;
+      
       if (fNumJetPIDtasks > 0) {
+        fJetPIDtask = new AliAnalysisTaskPID*[fNumJetPIDtasks];
+        
         for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
           fJetPIDtask[i] = (AliAnalysisTaskPID*)tasks->FindObject(fNameJetPIDtask[i].Data());
           
@@ -2293,7 +2298,12 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
     }
     
     if (fUseInclusivePIDtask) {
+      delete [] fInclusivePIDtask;
+      fInclusivePIDtask = 0x0;
+      
       if (fNumInclusivePIDtasks > 0) {
+        fInclusivePIDtask = new AliAnalysisTaskPID*[fNumInclusivePIDtasks];
+        
         for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
           fInclusivePIDtask[i] = (AliAnalysisTaskPID*)tasks->FindObject(fNameInclusivePIDtask[i].Data());
           
