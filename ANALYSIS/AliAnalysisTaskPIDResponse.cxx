@@ -46,8 +46,8 @@ fRecoPass(0),
 fIsTunedOnData(kFALSE),
 fTunedOnDataMask(0),
 fRecoPassTuned(0),
-fUseTPCEtaCorrection(kFALSE),                 //TODO: In future, default kTRUE 
-fUseTPCMultiplicityCorrection(kFALSE),        //TODO: In future, default kTRUE  
+fUseTPCEtaCorrection(kTRUE),
+fUseTPCMultiplicityCorrection(kTRUE),
 fUserDataRecoPass(-1)
 {
   //
@@ -69,8 +69,8 @@ fRecoPass(0),
 fIsTunedOnData(kFALSE),
 fTunedOnDataMask(0),
 fRecoPassTuned(0),
-fUseTPCEtaCorrection(kFALSE),//TODO: In future, default kTRUE
-fUseTPCMultiplicityCorrection(kFALSE),//TODO: In future, default kTRUE  
+fUseTPCEtaCorrection(kTRUE),
+fUseTPCMultiplicityCorrection(kTRUE),  
 fUserDataRecoPass(-1)
 {
   //
