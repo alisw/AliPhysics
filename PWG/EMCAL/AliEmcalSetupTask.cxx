@@ -99,13 +99,17 @@ void AliEmcalSetupTask::UserExec(Option_t *)
     if (gSystem->AccessPathName(fname)==0) {
       AliInfo(Form("Loading geometry from %s", fname.Data()));
       AliGeomManager::LoadGeometry(fname);
+      geo = AliGeomManager::GetGeometry();
     } else if (man) {
       AliInfo(Form("Loading geometry from OCDB"));
       AliGeomManager::LoadGeometry();
       AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC TRD EMCAL");
+      geo = AliGeomManager::GetGeometry();
     }
-    AliInfo(Form("Locking geometry"));
-    geo->LockGeometry();
+    if (geo) {
+      AliInfo(Form("Locking geometry"));
+      geo->LockGeometry();
+    }
   }
 
   if (!TGeoGlobalMagField::Instance()->GetField()) { // construct field map
