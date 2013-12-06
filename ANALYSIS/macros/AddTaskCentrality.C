@@ -17,6 +17,10 @@ AliCentralitySelectionTask *AddTaskCentrality(Bool_t fillHistos=kTRUE, Bool_t ao
     ::Error("AddTaskCentrality", "This task works only on ESD analysis");
     return NULL;
   }
+  //
+  AliInputEventHandler* hdl = (AliInputEventHandler*)mgr->GetInputEventHandler();
+  if (hdl) hdl->SetNeedField(); 
+  //
   AliCentralitySelectionTask *centralityTask = new AliCentralitySelectionTask("CentralitySelection");
   centralityTask->SetInput(inputDataType);
   centralityTask->SelectCollisionCandidates(AliVEvent::kAny);
