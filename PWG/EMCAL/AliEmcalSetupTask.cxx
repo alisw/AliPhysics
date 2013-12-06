@@ -102,11 +102,8 @@ void AliEmcalSetupTask::UserExec(Option_t *)
     } else if (man) {
       AliInfo(Form("Loading geometry from OCDB"));
       AliGeomManager::LoadGeometry();
+      AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC TRD EMCAL");
     }
-    //geo = AliGeomManager::GetGeometry();
-  }
-  if (geo) {
-    AliGeomManager::ApplyAlignObjsFromCDB("EMCAL");
     AliInfo(Form("Locking geometry"));
     geo->LockGeometry();
   }
