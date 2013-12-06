@@ -299,17 +299,17 @@ void AddTaskFlowHigherOrdersAllPID(Int_t triggerSelectionString,
     mgr->AddTask(taskQC[i]);
   }
   }
-  if(doPIDQA){
-     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");    
+//  if(doPIDQA){
+//     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+//     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");    
 //     taskPIDQA = new AliAnalysisTaskPIDqa(Form("TaskPIDQA_%s",QASlotName.Data()));
 //     taskPIDQA->SelectCollisionCandidates(triggerSelectionString);
-     AddTaskPIDResponse(kFALSE);
-     AddTaskPIDqa();     
+//     AddTaskPIDResponse(kFALSE);
+ //    AddTaskPIDqa();     
 //     mgr->AddTask(taskPIDQA);
 
      
-  }
+//  }
 
   // Create the output container for the data produced by the task
   // Connect to the input and output containers
