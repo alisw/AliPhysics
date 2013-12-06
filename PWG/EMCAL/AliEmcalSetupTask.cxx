@@ -103,7 +103,7 @@ void AliEmcalSetupTask::UserExec(Option_t *)
       AliInfo(Form("Loading geometry from OCDB"));
       AliGeomManager::LoadGeometry();
     }
-    geo = AliGeomManager::GetGeometry();
+    //geo = AliGeomManager::GetGeometry();
   }
   if (geo) {
     AliGeomManager::ApplyAlignObjsFromCDB("EMCAL");
