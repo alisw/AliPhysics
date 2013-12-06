@@ -41,6 +41,7 @@ set ( SRCS
  EMCAL/AliEmcalPhysicsSelection.cxx
  EMCAL/AliEmcalPhysicsSelectionTask.cxx
  EMCAL/AliEmcalPicoTrackMaker.cxx
+ EMCAL/AliAodTrackFilterTask.cxx
  EMCAL/AliEmcalSetupTask.cxx
  EMCAL/AliEmcalTenderTask.cxx
  EMCAL/AliEmcalTrackPropagatorTask.cxx
