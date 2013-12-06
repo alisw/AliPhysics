@@ -36,6 +36,7 @@
 #include "AliSpectraAODTrackCuts.h"
 #include "AliSpectraAODEventCuts.h"
 #include "AliHelperPID.h"
+#include "AliPIDCombined.h"
 #include "AliCentrality.h"
 #include "TProof.h"
 #include "AliVEvent.h"
@@ -167,6 +168,9 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
     }
   
   if(!fEventCuts->IsSelected(fAOD,fTrackCuts))return;//event selection
+
+  //Default TPC priors
+  fHelperPID->GetPIDCombined()->SetDefaultTPCPriors();//FIXME maybe this can go in the UserCreateOutputObject?
   
   Double_t Qvec=0.;//in case of MC we save space in the memory
   if(!fIsMC)Qvec=fEventCuts->GetqV0A();//FIXME we'll have to combine A and C
