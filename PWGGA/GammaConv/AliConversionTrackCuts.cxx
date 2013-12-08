@@ -56,13 +56,14 @@ AliConversionTrackCuts::AliConversionTrackCuts() :
   fOwnedTracks(),
   fInitialized(kFALSE),
   fhPhi(NULL),
-  fhPt(NULL),
-  fhPhiPt(NULL),
+  //  fhPt(NULL),
+  //fhPhiPt(NULL),
   fhdcaxyPt(NULL),
   fhdcazPt(NULL),
   fhdca(NULL),
   fhnclpt(NULL),
   fhnclsfpt(NULL),
+  fhEtaPhi(NULL),
   fHistograms(NULL) 
 {
   //Constructor
@@ -81,13 +82,14 @@ AliConversionTrackCuts::AliConversionTrackCuts(TString name, TString title = "ti
   fOwnedTracks(),
   fInitialized(kFALSE),
   fhPhi(NULL),  
-  fhPt(NULL),
-  fhPhiPt(NULL),
+  //fhPt(NULL),
+  //fhPhiPt(NULL),
   fhdcaxyPt(NULL),
   fhdcazPt(NULL),
   fhdca(NULL),
   fhnclpt(NULL),
   fhnclsfpt(NULL),
+  fhEtaPhi(NULL),
   fHistograms(NULL)
 {
   //Constructor
@@ -275,57 +277,77 @@ Bool_t AliConversionTrackCuts::AcceptTrack(AliESDtrack * track) {
 
 Bool_t AliConversionTrackCuts::AcceptTrack(AliAODTrack * track) {
   //Check aod track
+
   FillHistograms(kPreCut, track);
-  if(!track->TestFilterBit(fFilterBit)) {
-    return kFALSE;
-  }
+
+  if(!track->IsHybridGlobalConstrainedGlobal()) return kFALSE;
+
+   if (!(track->GetStatus() & AliVTrack::kITSrefit)) {
+     return kFALSE;
+   }
+ 
 
 
+  //The cluster sharing cut can be done with:
+  Double_t frac = Double_t(track->GetTPCnclsS()) / Double_t(track->GetTPCncls());
+  if (frac > 0.4) return kFALSE;
 
 
   ///Do dca xy cut!
   FillHistograms(1, track);
-  return kTRUE;
 
-
-  // if (track->GetTPCNcls() < fTPCminNClusters) return kFALSE;
-  // FillHistograms(kCutNcls, track);
-
-  // if (track->Chi2perNDF() > fTPCmaxChi2) return kFALSE;
-  // FillHistograms(kCutNDF, track);
-
-  // AliAODVertex *vertex = track->GetProdVertex();
-  // if (vertex && fRejectKinkDaughters) {
-  //   if (vertex->GetType() == AliAODVertex::kKink) {
-  //     return kFALSE;
-  //   }
-  // }
-  // FillHistograms(kCutKinc, track);
+  ///DCA
+  Double_t dca[2] = { -999, -999};
+  //Bool_t dcaok = 
+  GetDCA(track, dca);
+  FillDCAHist(dca[1], dca[0], track);
   
-  // if(TMath::Abs(track->ZAtDCA()) > fDCAZmax) {
-  //   return kFALSE;
-  // }
-  // FillHistograms(kCutDCAZ, track);
 
-  // Float_t xatdca = track->XAtDCA();
-  // Float_t yatdca = track->YAtDCA();
-  // Float_t xy = xatdca*xatdca + yatdca*yatdca;
-  // if(xy > fDCAXYmax) {
-  //   return kFALSE;
-  // }
+  if(track->IsGlobalConstrained()) {
+    FillHistograms(3, track);
+  } else {
+    FillHistograms(2, track);
+  }
+  
+  if(fhEtaPhi) fhEtaPhi->Fill(track->Eta(), track->Phi());
 
-  // FillHistograms(kCutDCAXY, track);
-
-
-  // fhnclpt->Fill(track->Pt(), track->GetTPCNcls());
-  // if(track->GetTPCNclsF() > 0) fhnclsfpt->Fill(track->Pt(), ((Double_t) track->GetTPCNcls())/track->GetTPCNclsF());
-  // FillDCAHist(track->ZAtDCA(), TMath::Sqrt(track->XAtDCA()*track->XAtDCA() + track->YAtDCA()*track->YAtDCA()), track);
-
-
+  return kTRUE;
 }
 
+///______________________________________________________________________________
+Bool_t AliConversionTrackCuts::GetDCA(const AliAODTrack *track, Double_t dca[2]) {
+  if(track->TestBit(AliAODTrack::kIsDCA)){
+    dca[0]=track->DCA();
+    dca[1]=track->ZAtDCA();
+    return kTRUE;
+  }
+  
+  Bool_t ok=kFALSE;
+  if(fEvent) {
+    Double_t covdca[3];
+    //AliAODTrack copy(*track);
+    AliExternalTrackParam etp; etp.CopyFromVTrack(track);
+    
+    Float_t xstart = etp.GetX();
+    if(xstart>3.) {
+      dca[0]=-999.;
+    dca[1]=-999.;
+    //printf("This method can be used only for propagation inside the beam pipe \n");
+    return kFALSE;
+    }
 
 
+    AliAODVertex *vtx =(AliAODVertex*)(fEvent->GetPrimaryVertex());
+    Double_t fBzkG = fEvent->GetMagneticField(); // z componenent of field in kG
+    ok = etp.PropagateToDCA(vtx,fBzkG,kVeryBig,dca,covdca);
+    //ok = copy.PropagateToDCA(vtx,fBzkG,kVeryBig,dca,covdca);
+  }
+  if(!ok){
+    dca[0]=-999.;
+    dca[1]=-999.;
+  }
+  return ok;
+}
 
 
 
@@ -345,6 +367,8 @@ TList * AliConversionTrackCuts::CreateHistograms() {
   fHistograms->Add(fhPhi);
   
 
+  fhEtaPhi = new TH2F("etahpi", "etaphi", 36, -0.9, 0.9, 32, 0, TMath::TwoPi());
+  fHistograms->Add(fhEtaPhi);
 
   // fhPt = new TH2F("pt", "pt", kNCuts+2, kPreCut -0.5, kNCuts + 0.5, 
   // 				  20, 0., 20.);
@@ -357,14 +381,18 @@ TList * AliConversionTrackCuts::CreateHistograms() {
   //  fhPhiPt = new TH2F("phipt", "phipt", 100, 0, 100, 64, 0, TMath::TwoPi());
   //fHistograms->Add(fhPhiPt);
 
-  // fhdcaxyPt = new TH2F("dcaxypt", "dcaxypt", 20, 0, 20, 50, 0, 5);
-  // fHistograms->Add(fhdcaxyPt);
+  fhdcaxyPt = new TH2F("dcaxypt", "dcaxypt", 20, 0, 20, 50, -2.5, 2.5);
+  fHistograms->Add(fhdcaxyPt);
 
-  // fhdcazPt = new TH2F("dcazpt", "dcazpt", 20, 0, 20, 50, 0, 5);
-  // fHistograms->Add(fhdcazPt);
+  fhdcazPt = new TH2F("dcazpt", "dcazpt", 20, 0, 20, 70, -3.5, 3.5);
+  fHistograms->Add(fhdcazPt);
 
-  // fhdca = new TH2F("dca", "dca", 60, -3, 3, 60, -3, 3);
-  // fHistograms->Add(fhdca);
+  fhdca = new TH2F("dca", "dca", 70, -3.5, 3.5, 50, -2.5, 2.5);
+  fhdca->SetXTitle("dca z");
+  fhdca->SetYTitle("dca xy");
+
+  
+  fHistograms->Add(fhdca);
 
   // fhnclpt = new TH2F("nclstpcvspt", "nclstpcvspt", 20, 0, 20, 50, 0, 100);
   // fHistograms->Add(fhnclpt);
