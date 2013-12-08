@@ -420,7 +420,17 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
       //
       Float_t meanMax = (63./159)*signalArrayMax[0] + (64./159)*signalArrayMax[1] + (32./159)*signalArrayMax[2];
       Float_t meanTot = (63./159)*signalArrayTot[0] + (64./159)*signalArrayTot[1] + (32./159)*signalArrayTot[2]; 
-      if (meanMax < 1e-5 || meanTot < 1e-5) continue;
+      //MY SUGGESTION COMMENT NEXT LINE
+      //      if (meanMax < 1e-5 || meanTot < 1e-5) continue;      
+      //AND INTRODUCE NEW LINE
+      // 
+      const Double_t kMinAmp=0.001;
+      if (signalArrayMax[0]<=kMinAmp) continue;
+      if (signalArrayMax[1]<=kMinAmp) continue;
+      if (signalArrayMax[2]<=kMinAmp) continue;
+      if (signalArrayTot[0]<=kMinAmp) continue;
+      if (signalArrayTot[1]<=kMinAmp) continue;
+      if (signalArrayTot[2]<=kMinAmp) continue;
       //
       for(Int_t ipad = 0; ipad < 4; ipad ++) {
 	// "dEdxRatioMax","dEdxRatioTot","padType","mult","driftlength", "1_pt"

@@ -467,7 +467,7 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
       //
       // flattens signal in MIP window
       //
-      if (particleCase == 0) {
+      if (particleCase == 2) {
 	Float_t corrFactor = AliExternalTrackParam::BetheBlochAleph(meanP/0.13957, 
 								    fAlephParameters[0], 
 								    fAlephParameters[1], 
