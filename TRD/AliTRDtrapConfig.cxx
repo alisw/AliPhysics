@@ -850,6 +850,11 @@ AliTRDtrapConfig::AliTRDtrapValue::AliTRDtrapValue() :
   fValid[0] = kTRUE;
 }
 
+AliTRDtrapConfig::AliTRDtrapValue::~AliTRDtrapValue()
+{
+  delete [] fData;
+  delete [] fValid;
+}
 
 Bool_t AliTRDtrapConfig::AliTRDtrapValue::Allocate(Alloc_t alloc)
 {
