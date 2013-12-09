@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id: AliEMCALRecoUtils.cxx | Sun Dec 8 06:56:48 2013 +0100 | Constantin Loizides  $ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -2098,6 +2098,72 @@ Int_t  AliEMCALRecoUtils::FindMatchedClusterInClusterArr(const AliExternalTrackP
 
   return index;
 }
+
+//------------------------------------------------------------------------------------
+Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliVTrack *track,
+							 Double_t emcalR, Double_t mass, Double_t step)
+{ 
+  // Extrpolate track to EMCAL surface
+
+  track->SetTrackPhiEtaPtOnEMCal(-999, -999, -999);
+
+  if (track->Pt()<0.350) 
+    return kFALSE;
+
+  Double_t phi = track->Phi()*TMath::RadToDeg();
+  if (TMath::Abs(track->Eta())>0.9 || phi <= 10 || phi >= 250) 
+    return kFALSE;
+
+  AliESDtrack *esdt = dynamic_cast<AliESDtrack*>(track);
+  AliAODTrack *aodt = 0;
+  if (!esdt) {
+    aodt = dynamic_cast<AliAODTrack*>(track);
+    if (!aodt)
+      return kFALSE;
+  }
+
+  if (mass<0) {
+    Bool_t onlyTPC = kFALSE;
+    if (mass==-99)
+      onlyTPC=kTRUE;
+    if (esdt)
+      mass = esdt->GetMass(onlyTPC);
+    else 
+      mass = aodt->M();
+  }
+
+  AliExternalTrackParam *trackParam = 0;
+  if (esdt) {
+    trackParam = new AliExternalTrackParam(*esdt->GetInnerParam());
+  } else {
+    Double_t xyz[3] = {0}, pxpypz[3] = {0}, cv[21] = {0};
+    aodt->PxPyPz(pxpypz);  
+    aodt->XvYvZv(xyz);
+    aodt->GetCovarianceXYZPxPyPz(cv);  
+    trackParam = new AliExternalTrackParam(xyz,pxpypz,cv,aodt->Charge());
+  }
+  if (!trackParam)
+    return kFALSE;
+
+  Float_t etaout=-999, phiout=-999, ptout=-999;
+  Bool_t ret = ExtrapolateTrackToEMCalSurface(trackParam, 
+					      emcalR,
+					      mass,
+					      step,
+					      etaout, 
+					      phiout,
+					      ptout);
+
+  if (!ret)
+    return kFALSE;
+
+  if (TMath::Abs(etaout)>0.75 || (phiout<70*TMath::DegToRad()) || (phiout>190*TMath::DegToRad()))
+    return kFALSE;
+
+  track->SetTrackPhiEtaPtOnEMCal(phiout, etaout, ptout);
+  return kTRUE;
+}
+
 
 //------------------------------------------------------------------------------------
 Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *trkParam, 
