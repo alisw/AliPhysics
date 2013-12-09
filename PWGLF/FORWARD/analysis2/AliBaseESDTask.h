@@ -241,7 +241,7 @@ protected:
    * 
    * @return null
    */
-  virtual TAxis* DefaultEtaAxis() const { return 0; }
+  virtual TAxis* DefaultEtaAxis() const;
   /** 
    * Set the default eta axis to use in case we didn't get one from
    * the read-in corretions.  Override this if the sub class should go
@@ -250,7 +250,7 @@ protected:
    * 
    * @return null
    */
-  virtual TAxis* DefaultVertexAxis() const = 0;
+  virtual TAxis* DefaultVertexAxis() const;
   /** 
    * Get the correction mananger.  Derived class should overload this
    * to return the proper object.

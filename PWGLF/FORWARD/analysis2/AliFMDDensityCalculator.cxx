@@ -10,6 +10,7 @@
 #include "AliFMDCorrDoubleHit.h"
 #include "AliFMDCorrELossFit.h"
 #include "AliLog.h"
+#include "AliForwardUtil.h"
 #include <TH2D.h>
 #include <TProfile.h>
 #include <THStack.h>
@@ -57,7 +58,9 @@ AliFMDDensityCalculator::AliFMDDensityCalculator()
     fMinQuality(10),
     fCache(),
     fDoTiming(false),
-    fHTiming(0)
+  fHTiming(0), 
+  fMaxOutliers(0.05),
+  fOutlierCut(0.50)
 {
   // 
   // Constructor 
@@ -93,7 +96,9 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
     fMinQuality(10),
     fCache(),
     fDoTiming(false),
-    fHTiming(0)
+    fHTiming(0), 
+  fMaxOutliers(0.05),
+  fOutlierCut(0.50)
 {
   // 
   // Constructor 
@@ -165,7 +170,9 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const
     fMinQuality(o.fMinQuality),
     fCache(o.fCache),
     fDoTiming(o.fDoTiming),
-    fHTiming(o.fHTiming)
+    fHTiming(o.fHTiming), 
+  fMaxOutliers(o.fMaxOutliers),
+  fOutlierCut(o.fOutlierCut)
 {
   // 
   // Copy constructor 
@@ -228,6 +235,8 @@ AliFMDDensityCalculator::operator=(const AliFMDDensityCalculator& o)
   fCache              = o.fCache;
   fDoTiming           = o.fDoTiming;
   fHTiming            = o.fHTiming;
+  fMaxOutliers        = o.fMaxOutliers;
+  fOutlierCut         = o.fOutlierCut;
 
   fRingHistos.Delete();
   TIter    next(&o.fRingHistos);
@@ -536,6 +545,8 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
       // --- Make diagnostics - eloss vs poisson ---------------------
       if (fDoTiming) timer.Start(true);
       Int_t nY = h->GetNbinsY();
+      Int_t nIn  = 0; // Count non-outliers
+      Int_t nOut = 0; // Count outliers
       for (Int_t ieta=1; ieta <= h->GetNbinsX(); ieta++) { 
 	// Set the overflow bin to contain the phi acceptance 
 	Double_t phiAcc  = rh->fGood->GetBinContent(ieta);
@@ -557,12 +568,28 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	    eLossV  = h->GetBinContent(ieta,iphi);
 	  }
 	  
-	  rh->fELossVsPoisson->Fill(eLossV, poissonV);
-	  rh->fDiffELossPoisson->Fill(poissonV < 1e-12 ? 0 : 
-				      (eLossV - poissonV) / poissonV);
+	  if (poissonV < 1e-12 && eLossV < 1e-12) 
+	    // we do not care about trivially empty bins 
+	    continue;
 				      
+	  Bool_t   outlier = CheckOutlier(eLossV, poissonV, fOutlierCut);
+	  Double_t rel     = eLossV < 1e-12 ? 0 : (poissonV - eLossV) / eLossV;
+	  if (outlier) {
+	    rh->fELossVsPoissonOut->Fill(eLossV, poissonV);
+	    rh->fDiffELossPoissonOut->Fill(rel);
+	    nOut++;
 	}
-      }
+	  else {
+	    rh->fELossVsPoisson->Fill(eLossV, poissonV);
+	    rh->fDiffELossPoisson->Fill(rel);
+	    nIn++;
+	  } // if (outlier)
+	} // for (iphi)
+      } // for (ieta)
+      Double_t outRatio = Double_t(nOut) / (nIn+nOut);
+      rh->fOutliers->Fill(outRatio);
+      if (outRatio < fMaxOutliers) rh->fPoisson.FillDiagnostics();
+      else                         h->SetBit(AliForwardUtil::kSkipRing);
       if (fDoTiming) diagTime += timer.CpuTime();
       // delete hclone;
       
@@ -583,6 +610,16 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
   return kTRUE;
 }
 
+//_____________________________________________________________________
+Bool_t 
+AliFMDDensityCalculator::CheckOutlier(Double_t eloss, 
+				      Double_t poisson,
+				      Double_t cut) const
+{
+  if (eloss < 1e-6) return true;
+  Double_t diff = TMath::Abs(poisson - eloss) / eloss;
+  return diff > cut;
+}
 //_____________________________________________________________________
 Int_t
 AliFMDDensityCalculator::FindMaxWeight(const AliFMDCorrELossFit* cor,
@@ -1002,28 +1039,19 @@ AliFMDDensityCalculator::CreateOutputObjects(TList* dir)
   d->Add(fMaxWeights);
   d->Add(fLowCuts);
 
-  // TNamed* sigma  = new TNamed("sigma",
-  // (fIncludeSigma ? "included" : "excluded"));
-  TObject* maxP   = AliForwardUtil::MakeParameter("maxParticle", fMaxParticles);
-  TObject* method = AliForwardUtil::MakeParameter("method", fUsePoisson);
-  TObject* phiA   = AliForwardUtil::MakeParameter("phiAcceptance", 
-						  fUsePhiAcceptance);
-  TObject* etaL   = AliForwardUtil::MakeParameter("etaLumping", fEtaLumping);
-  TObject* phiL   = AliForwardUtil::MakeParameter("phiLumping", fPhiLumping);
-  TObject* reEt   = AliForwardUtil::MakeParameter("recalcEta", fRecalculateEta);
-  TObject* rePh   = AliForwardUtil::MakeParameter("recalcPhi", fRecalculatePhi);
-
   TParameter<int>* nFiles = new TParameter<int>("nFiles", 1);
   nFiles->SetMergeMode('+');
   
   // d->Add(sigma);
-  d->Add(maxP);
-  d->Add(method);
-  d->Add(phiA);
-  d->Add(etaL);
-  d->Add(phiL);
-  d->Add(reEt);
-  d->Add(rePh);
+  d->Add(AliForwardUtil::MakeParameter("maxParticle",  fMaxParticles));
+  d->Add(AliForwardUtil::MakeParameter("method",       fUsePoisson));
+  d->Add(AliForwardUtil::MakeParameter("phiAcceptance",fUsePhiAcceptance));
+  d->Add(AliForwardUtil::MakeParameter("etaLumping",   fEtaLumping));
+  d->Add(AliForwardUtil::MakeParameter("phiLumping",   fPhiLumping));
+  d->Add(AliForwardUtil::MakeParameter("recalcEta",    fRecalculateEta));
+  d->Add(AliForwardUtil::MakeParameter("recalcPhi",    fRecalculatePhi));
+  d->Add(AliForwardUtil::MakeParameter("maxOutliers",  fMaxOutliers));
+  d->Add(AliForwardUtil::MakeParameter("outlierCut",   fOutlierCut));
   d->Add(nFiles);
   // d->Add(nxi);
   fCuts.Output(d,"lCuts");
@@ -1147,6 +1175,9 @@ AliFMDDensityCalculator::RingHistos::RingHistos()
     fDensity(0),
     fELossVsPoisson(0),
     fDiffELossPoisson(0),
+    fELossVsPoissonOut(0),
+    fDiffELossPoissonOut(0),
+    fOutliers(0),
     fPoisson(),
     fELoss(0),
     fELossUsed(0),
@@ -1174,6 +1205,9 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
     fDensity(0),
     fELossVsPoisson(0),
     fDiffELossPoisson(0),
+    fELossVsPoissonOut(0),
+    fDiffELossPoissonOut(0),
+    fOutliers(0),
     fPoisson("ignored"),
     fELoss(0),
     fELossUsed(0),
@@ -1235,16 +1269,33 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
   fDensity->SetYTitle("#phi [radians]");
   fDensity->SetZTitle("Inclusive N_{ch} density");
 
+  // --- Create increasing sized bins --------------------------------
+  TArrayD bins;
+  // bins, lowest order, higest order, return array
+  const char* nchP = "N_{ch}^{Poisson}";
+  const char* nchE = "N_{ch}^{#Delta}";
+  AliForwardUtil::MakeLogScale(300, 0, 2, bins);
   fELossVsPoisson = new TH2D("elossVsPoisson", 
-			     "N_{ch} from energy loss vs from Poission",
-			     500, 0, 100, 500, 0, 100);
+			     "N_{ch} from energy loss vs from Poisson",
+			     bins.GetSize()-1, bins.GetArray(), 
+			     bins.GetSize()-1, bins.GetArray());
   fELossVsPoisson->SetDirectory(0);
-  fELossVsPoisson->SetXTitle("N_{ch} from #DeltaE");
-  fELossVsPoisson->SetYTitle("N_{ch} from Poisson");
+  fELossVsPoisson->SetXTitle(nchE);
+  fELossVsPoisson->SetYTitle(nchP);
   fELossVsPoisson->SetZTitle("Correlation");
+  fELossVsPoissonOut = 
+    static_cast<TH2D*>(fELossVsPoisson
+		       ->Clone(Form("%sOutlier", 
+				    fELossVsPoisson->GetName())));
+  fELossVsPoissonOut->SetDirectory(0);
+  fELossVsPoissonOut->SetMarkerStyle(20);
+  fELossVsPoissonOut->SetMarkerSize(0.3);
+  fELossVsPoissonOut->SetMarkerColor(kBlack);
+  fELossVsPoissonOut->SetTitle(Form("%s for outliers", 
+				    fELossVsPoisson->GetTitle()));
 
   fDiffELossPoisson = new TH1D("diffElossPoisson",
-			       "(N_{ch,#DeltaE}-N_{ch,Poisson})/N_{ch,Poisson}",
+			       Form("(%s-%s)/%s", nchP, nchE, nchE),
 			       100, -1, 1);
   fDiffELossPoisson->SetDirectory(0);
   fDiffELossPoisson->SetXTitle(fDiffELossPoisson->GetTitle());
@@ -1254,6 +1305,24 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
   fDiffELossPoisson->SetFillStyle(3001);
   fDiffELossPoisson->Sumw2();
 			       
+  fDiffELossPoissonOut = 
+    static_cast<TH1D*>(fDiffELossPoisson
+		       ->Clone(Form("%sOutlier",fDiffELossPoisson->GetName())));
+  fDiffELossPoissonOut->SetDirectory(0);
+  fDiffELossPoissonOut->SetTitle(Form("%s for outliers", 
+				      fDiffELossPoisson->GetTitle()));
+  fDiffELossPoissonOut->SetMarkerColor(Color()-2);
+  fDiffELossPoissonOut->SetFillColor(Color()-2);
+  fDiffELossPoissonOut->SetFillStyle(3002);
+  
+  fOutliers = new TH1D("outliers", "Fraction of outliers", 100, 0, 1);
+  fOutliers->SetDirectory(0);
+  fOutliers->SetXTitle("N_{outlier}/(N_{outlier}+N_{inside})");
+  fOutliers->SetYTitle("#sum_{events}#sum_{bins}");
+  fOutliers->SetFillColor(Color());
+  fOutliers->SetFillStyle(3001);
+  fOutliers->SetLineColor(kBlack);
+
   fELoss = new TH1D("eloss", "#Delta/#Delta_{mip} in all strips", 
 		    640, -1, 15);
   fELoss->SetXTitle("#Delta/#Delta_{mip} (selected)");
@@ -1262,7 +1331,7 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
   fELoss->SetFillStyle(3003);
   fELoss->SetLineColor(kBlack);
   fELoss->SetLineStyle(2);
-  fELoss->SetLineWidth(2);
+  fELoss->SetLineWidth(1);
   fELoss->SetDirectory(0);
 
   fELossUsed = static_cast<TH1D*>(fELoss->Clone("elossUsed"));
@@ -1299,6 +1368,9 @@ AliFMDDensityCalculator::RingHistos::RingHistos(const RingHistos& o)
     fDensity(o.fDensity),
     fELossVsPoisson(o.fELossVsPoisson),
     fDiffELossPoisson(o.fDiffELossPoisson),
+    fELossVsPoissonOut(o.fELossVsPoissonOut),
+    fDiffELossPoissonOut(o.fDiffELossPoissonOut),
+    fOutliers(o.fOutliers),
     fPoisson(o.fPoisson),
     fELoss(o.fELoss),
     fELossUsed(o.fELossUsed),
@@ -1355,6 +1427,9 @@ AliFMDDensityCalculator::RingHistos::operator=(const RingHistos& o)
   fDensity          = static_cast<TH2D*>(o.fDensity->Clone());
   fELossVsPoisson   = static_cast<TH2D*>(o.fELossVsPoisson->Clone());
   fDiffELossPoisson = static_cast<TH1D*>(o.fDiffELossPoisson->Clone());
+  fELossVsPoissonOut   = static_cast<TH2D*>(o.fELossVsPoisson->Clone());
+  fDiffELossPoissonOut = static_cast<TH1D*>(o.fDiffELossPoisson->Clone());
+  fOutliers            = static_cast<TH1D*>(o.fOutliers->Clone());
   fPoisson          = o.fPoisson;
   fELoss            = static_cast<TH1D*>(o.fELoss->Clone());
   fELossUsed        = static_cast<TH1D*>(o.fELossUsed->Clone());
@@ -1419,7 +1494,10 @@ AliFMDDensityCalculator::RingHistos::CreateOutputObjects(TList* dir)
   d->Add(fCorr);
   d->Add(fDensity);
   d->Add(fELossVsPoisson);
+  d->Add(fELossVsPoissonOut);
   d->Add(fDiffELossPoisson);
+  d->Add(fDiffELossPoissonOut);
+  d->Add(fOutliers);
   fPoisson.Output(d);
   fPoisson.GetOccupancy()->SetFillColor(Color());
   fPoisson.GetMean()->SetFillColor(Color());
@@ -1429,11 +1507,8 @@ AliFMDDensityCalculator::RingHistos::CreateOutputObjects(TList* dir)
   d->Add(fPhiBefore);
   d->Add(fPhiAfter);
 
-  Bool_t inner = (fRing == 'I' || fRing == 'i');
-  Int_t nStr = inner ? 512 : 256;
-  Int_t nSec = inner ?  20 :  40;
-  TAxis x(nStr, -.5, nStr-.5);
-  TAxis y(nSec, -.5, nSec-.5);
+  TAxis x(NStrip(), -.5, NStrip()-.5);
+  TAxis y(NSector(), -.5, NSector()-.5);
   x.SetTitle("strip");
   y.SetTitle("sector");
   fPoisson.Define(x, y);
