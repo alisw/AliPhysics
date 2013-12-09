@@ -25,6 +25,7 @@
 #include "AliParticleContainer.h"
 #include "AliEmcalTriggerPatchInfo.h"
 #include "AliAODHeader.h"
+#include "AliPicoTrack.h"
 
 #include "AliAnalysisTaskEmcalJetTriggerQA.h"
 
@@ -44,6 +45,9 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
   fNFastOR(16),
   fhNEvents(0),
   fh3PtEtaPhiTracks(0),
+  fh3PtEtaPhiTracksOnEmcal(0),
+  fh3PtEtaPhiTracksProp(0),
+  fh3PtEtaPhiTracksNoProp(0),
   fh3PtEtaPhiJetFull(0),
   fh3PtEtaPhiJetCharged(0),
   fh2NJetsPtFull(0),
@@ -92,6 +96,9 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
   fNFastOR(16),
   fhNEvents(0),
   fh3PtEtaPhiTracks(0),
+  fh3PtEtaPhiTracksOnEmcal(0),
+  fh3PtEtaPhiTracksProp(0),
+  fh3PtEtaPhiTracksNoProp(0),
   fh3PtEtaPhiJetFull(0),
   fh3PtEtaPhiJetCharged(0),
   fh2NJetsPtFull(0),
@@ -292,6 +299,15 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   fh3PtEtaPhiTracks = new TH3F("fh3PtEtaPhiTracks","fh3PtEtaPhiTracks;#it{p}_{T}^{track};#eta;#varphi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PtEtaPhiTracks);
 
+  fh3PtEtaPhiTracksOnEmcal = new TH3F("fh3PtEtaPhiTracksOnEmcal","fh3PtEtaPhiTracksOnEmcal;#it{p}_{T}^{track};#eta;#varphi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fOutput->Add(fh3PtEtaPhiTracksOnEmcal);
+
+  fh3PtEtaPhiTracksProp = new TH3F("fh3PtEtaPhiTracksProp","fh3PtEtaPhiTracksProp;#it{p}_{T}^{track};#eta;#varphi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fOutput->Add(fh3PtEtaPhiTracksProp);
+
+  fh3PtEtaPhiTracksNoProp = new TH3F("fh3PtEtaPhiTracksNoProp","fh3PtEtaPhiTracksNoProp;#it{p}_{T}^{track};#eta;#varphi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fOutput->Add(fh3PtEtaPhiTracksNoProp);
+
   fh3PtEtaPhiJetFull = new TH3F("fh3PtEtaPhiJetFull","fh3PtEtaPhiJetFull;#it{p}_{T}^{jet};#eta;#varphi",fgkNPtBins,binsPt,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PtEtaPhiJetFull);
 
@@ -420,13 +436,32 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
 {
   // Fill histograms.
 
+  //  Printf("fEntry %d",fEntry);
+
   AliParticleContainer *partCont = GetParticleContainer(0);
   if (partCont) {
-    AliVParticle *track = partCont->GetNextAcceptParticle(0);
+    Int_t i = 0;
+    //Printf("id type  pt,eta,phi");
+    AliPicoTrack *track = dynamic_cast<AliPicoTrack*>(partCont->GetNextAcceptParticle(0));
     while(track) {
-      fh3PtEtaPhiTracks->Fill(track->Pt(),track->Eta(),track->Phi());
-      track = partCont->GetNextAcceptParticle();
+      //      if(track->GetTrackType()==0) {
+	Double_t trkphi = track->Phi()*TMath::RadToDeg();
+	fh3PtEtaPhiTracks->Fill(track->Pt(),track->Eta(),track->Phi());
+	if(track->IsEMCAL()) {
+	  i++;
+	  //	  Printf("%d %d %f,%f,%f",i,track->GetTrackType(),track->GetTrackPtOnEMCal(),track->GetTrackEtaOnEMCal(),track->GetTrackPhiOnEMCal());
+	  fh3PtEtaPhiTracksOnEmcal->Fill(track->GetTrackPtOnEMCal(),track->GetTrackEtaOnEMCal(),track->GetTrackPhiOnEMCal());
+	  if(TMath::Abs(track->Eta())<0.9 && trkphi > 10 && trkphi < 250 )
+	    fh3PtEtaPhiTracksProp->Fill(track->Pt(),track->Eta(),track->Phi());
+	}
+	else {
+	  if(TMath::Abs(track->Eta())<0.9 && trkphi > 10 && trkphi < 250 )
+	    fh3PtEtaPhiTracksNoProp->Fill(track->Pt(),track->Eta(),track->Phi());
+	}
+	//}
+      track = dynamic_cast<AliPicoTrack*>(partCont->GetNextAcceptParticle());
     }
+
   }
 
 
