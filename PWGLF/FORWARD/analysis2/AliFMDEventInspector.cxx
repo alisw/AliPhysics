@@ -44,6 +44,30 @@
 #include "AliVVZERO.h"
 
 //====================================================================
+namespace {
+  AliPhysicsSelection* GetPhysicsSelection()
+  {
+    AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
+
+    // Get the input handler - should always be there 
+    AliInputEventHandler* ih = 
+      dynamic_cast<AliInputEventHandler*>(am->GetInputEventHandler());
+    if (!ih) { 
+      Warning("GetPhysicsSelection", "No input handler");
+      return 0;
+    }
+    // Get the physics selection - should always be there 
+    AliPhysicsSelection* ps = 
+      dynamic_cast<AliPhysicsSelection*>(ih->GetEventSelection());
+    if (!ps) {
+      Warning("GetPhysicsSelection", "No physics selection");
+      return 0;
+    }
+    return ps;
+  }
+}
+
+//====================================================================
 const char* AliFMDEventInspector::fgkFolderName = "fmdEventInspector";
 
 //____________________________________________________________________
@@ -149,6 +173,14 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
   //   name Name of object
   //
   DGUARD(fDebug,1,"Named CTOR of AliFMDEventInspector: %s", name);
+  if (!GetPhysicsSelection()) {
+    AliFatal("No physics selection defined in manager\n"
+	     "=======================================================\n"
+	     " The use of AliFMDEventInspector _requires_ a valid\n"
+	     " AliPhysicsSelection registered with the input handler.\n\n"
+	     " Please check our train setup\n"
+	     "=======================================================\n");
+}
 }
 
 //____________________________________________________________________
@@ -301,18 +333,8 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
   //
   DGUARD(fDebug,1,"Initialize in AliFMDEventInspector");
 
-  AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
-
-  // Get the input handler - should always be there 
-  AliInputEventHandler* ih = 
-    static_cast<AliInputEventHandler*>(am->GetInputEventHandler());
-  if (!ih) { 
-    AliWarning("No input handler");
-    return;
-  }
   // Get the physics selection - should always be there 
-  AliPhysicsSelection* ps = 
-    static_cast<AliPhysicsSelection*>(ih->GetEventSelection());
+  AliPhysicsSelection* ps = GetPhysicsSelection();
   if (!ps) {
     AliWarning("No physics selection");
     return;
@@ -343,20 +365,31 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
   
   TArrayD limits;
   if ((fMinCent < 0 && fMaxCent < 0) || fMaxCent <= fMinCent) {
+    // Was:
     // -1.5 -0.5 0.5 1.5 ... 89.5 ... 100.5
     // ----- 92 number --------- ---- 1 ---
-    limits.Set(93);
-    for (Int_t i = 0; i < 92; i++) limits[i] = -1.5 + i;
-    limits[92] = 100.5;
+    // Now:
+    // -0.5 0.5 1.5 ... 89.5 ... 100.5
+    // ----- 91 number ---- ---- 1 ---
+    limits.Set(92);
+    for (Int_t i = 0; i < 91; i++) limits[i] = -.5 + i;
+    limits[91] = 100.5;
   }
   else {
-    Int_t n = fMaxCent-fMinCent+2;
+    Int_t n = Int_t(fMaxCent-fMinCent+2);
     limits.Set(n);
     for (Int_t i = 0; i < n; i++) { 
       limits[i] = fMinCent + i - .5;
     }
   }
       
+  Printf("Got vertex axis %p (%d,%f,%f)", 
+	 &vtxAxis, 
+	 (&vtxAxis ? vtxAxis.GetNbins() : -1),
+	 (&vtxAxis ? vtxAxis.GetXmin() : -1),
+	 (&vtxAxis ? vtxAxis.GetXmax() : -1));
+  // if (&vtxAxis) vtxAxis.Dump();
+	 
   fVtxAxis.Set(vtxAxis.GetNbins(), vtxAxis.GetXmin(), vtxAxis.GetXmax());
   
   fCentAxis  = new TAxis(limits.GetSize()-1, limits.GetArray());
@@ -495,7 +528,7 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
   fHCentVsQual->SetDirectory(0);
   fList->Add(fHCentVsQual);
 
-  fHStatus = new TH1I("status", "Status", 7, 1, 8);
+  fHStatus = new TH1I("status", "Status", 8, 1, 9);
   fHStatus->SetFillColor(kBlue+1);
   fHStatus->SetFillStyle(3001);
   fHStatus->SetStats(0);
@@ -508,6 +541,7 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
   xAxis->SetBinLabel(5, "No FMD");
   xAxis->SetBinLabel(6, "No vertex");
   xAxis->SetBinLabel(7, "Bad vertex");
+  xAxis->SetBinLabel(8, "No centrality");
   fList->Add(fHStatus);
 
   fHVtxStatus = new TH1I("vtxStatus","Vertex Status",
@@ -729,9 +763,10 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
  
   if(fMinCent > -0.0001 && cent < fMinCent) return  kNoEvent; 
   if(fMaxCent > -0.0001 && cent > fMaxCent) return  kNoEvent; 
-  fHCent->Fill(cent);
+  if (cent >= 0) fHCent->Fill(cent);
   if (qual == 0) fHCentVsQual->Fill(0., cent);
   else { 
+    fHStatus->Fill(8);
     for (UShort_t i = 0; i < 4; i++) 
       if (qual & (1 << i)) fHCentVsQual->Fill(Double_t(i+1), cent);
   }

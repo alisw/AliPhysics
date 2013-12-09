@@ -394,6 +394,10 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 	    mult = AliESDFMD::kInvalidMult;
 	  }
 	  
+	  if (mult != AliESDFMD::kInvalidMult) 
+	    // Always fill the ESD sum histogram 
+	    histos->fSumESD->Fill(eta, phi, mult);
+
 	  // If no signal or dead strip, go on. 
 	  if (mult == AliESDFMD::kInvalidMult || mult == 0) {
 	    if (mult == 0) histos->fSum->Fill(eta,phi,mult);
@@ -675,6 +679,7 @@ AliFMDSharingFilter::Terminate(const TList* dir, TList* output, Int_t nEvents)
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   THStack* sums = new THStack("sums", "Sum of ring signals");
+  THStack* sumsESD = new THStack("sumsESD", "Sum of ring ESD signals");
   while ((o = static_cast<RingHistos*>(next()))) {
     o->Terminate(d, nEvents);
     if (!o->fSum) { 
@@ -685,10 +690,18 @@ AliFMDSharingFilter::Terminate(const TList* dir, TList* output, Int_t nEvents)
     sum->Scale(1., "width");
     sum->SetTitle(o->GetName());
     sum->SetDirectory(0);
-    sum->SetYTitle("#sum #Delta/#Delta_{mip}");
+    sum->SetYTitle("#sum_{c} #Delta/#Delta_{mip}");
     sums->Add(sum);
+
+    sum = o->fSumESD->ProjectionX(o->GetName(), 1, o->fSumESD->GetNbinsY(),"e");
+    sum->Scale(1., "width");
+    sum->SetTitle(o->GetName());
+    sum->SetDirectory(0);
+    sum->SetYTitle("#sum_{s} #Delta/#Delta_{mip}");
+    sumsESD->Add(sum);
   }
   out->Add(sums);
+  out->Add(sumsESD);
   output->Add(out);
 }
 
@@ -835,6 +848,7 @@ AliFMDSharingFilter::RingHistos::RingHistos()
     fBeforeAfter(0),
     fNeighborsBefore(0),
     fNeighborsAfter(0),
+    fSumESD(0),
     fSum(0) // ,
     // fHits(0),
     // fNHits(0)
@@ -859,6 +873,7 @@ AliFMDSharingFilter::RingHistos::RingHistos(UShort_t d, Char_t r)
     fBeforeAfter(0),
     fNeighborsBefore(0),
     fNeighborsAfter(0),
+    fSumESD(0),
     fSum(0) //,
     // fHits(0),
     // fNHits(0)
@@ -957,16 +972,21 @@ AliFMDSharingFilter::RingHistos::RingHistos(UShort_t d, Char_t r)
   fNeighborsAfter->SetTitle("Correlation of neighbors after");
   fNeighborsAfter->SetDirectory(0);
 
-  fSum = new TH2D("summed", "Summed signal", 200, -4, 6, 
-		  (fRing == 'I' || fRing == 'i' ? 20 : 40), 0, 2*TMath::Pi());
-  fSum->SetDirectory(0);
-  fSum->Sumw2();
-  fSum->SetMarkerColor(Color());
+  fSumESD = new TH2D("summedESD", "Summed ESD signal", 200, -4, 6, 
+		  NSector(), 0, 2*TMath::Pi());
+  fSumESD->SetDirectory(0);
+  fSumESD->Sumw2();
+  fSumESD->SetMarkerColor(Color());
   // fSum->SetFillColor(Color());
-  fSum->SetXTitle("#eta");
-  fSum->SetYTitle("#varphi [radians]");
-  fSum->SetZTitle("#sum #Delta/#Delta_{mip}(#eta,#varphi) ");
+  fSumESD->SetXTitle("#eta");
+  fSumESD->SetYTitle("#varphi [radians]");
+  fSumESD->SetZTitle("#sum_{strip} #Delta/#Delta_{mip}(#eta,#varphi) ");
 
+  fSum = static_cast<TH2D*>(fSumESD->Clone("summed"));
+  fSum->SetTitle("Summed cluster signal");
+  fSum->SetZTitle("#sum_{cluster} #Delta/#Delta_{mip}(#eta,#varphi) ");
+  fSum->SetDirectory(0);
+  
 #if 0  
   fHits = new TH1D("hits", "Number of hits", 200, 0, 200000);
   fHits->SetDirectory(0);
@@ -988,6 +1008,7 @@ AliFMDSharingFilter::RingHistos::RingHistos(const RingHistos& o)
     fBeforeAfter(o.fBeforeAfter),
     fNeighborsBefore(o.fNeighborsBefore),
     fNeighborsAfter(o.fNeighborsAfter),
+    fSumESD(o.fSumESD), //,
     fSum(o.fSum) //,
     // fHits(o.fHits),
     // fNHits(o.fNHits)
@@ -1041,6 +1062,7 @@ AliFMDSharingFilter::RingHistos::operator=(const RingHistos& o)
   fNeighborsBefore = static_cast<TH2D*>(o.fNeighborsBefore->Clone());
   fNeighborsAfter  = static_cast<TH2D*>(o.fNeighborsAfter->Clone());
   // fHits            = static_cast<TH1D*>(o.fHits->Clone());
+  fSumESD          = static_cast<TH2D*>(o.fSumESD->Clone());
   fSum             = static_cast<TH2D*>(o.fSum->Clone());
 
   return *this;
@@ -1088,6 +1110,10 @@ AliFMDSharingFilter::RingHistos::Terminate(const TList* dir, Int_t nEvents)
   TH2D* summed = static_cast<TH2D*>(l->FindObject("summed"));
   if (summed) summed->Scale(1./nEvents);
   fSum = summed;
+
+  TH2D* summedESD = static_cast<TH2D*>(l->FindObject("summedESD"));
+  if (summedESD) summedESD->Scale(1./nEvents);
+  fSumESD = summedESD;
 }
 
 //____________________________________________________________________
@@ -1114,6 +1140,7 @@ AliFMDSharingFilter::RingHistos::CreateOutputObjects(TList* dir)
   d->Add(fNeighborsBefore);
   d->Add(fNeighborsAfter);
   // d->Add(fHits);
+  d->Add(fSumESD);
   d->Add(fSum);
 
   // Removed to avoid doubly adding the list which destroys 
