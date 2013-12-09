@@ -356,6 +356,7 @@ struct ChainBuilder
 
 
     collection->SetDefaultTreeName(chain->GetName());
+    Long64_t nEntries = 0;
     while ((element = static_cast<TChainElement*>(next()))) {
       Info("", "Element: '%s' - '%s' %lld", 
 	   element->GetName(), element->GetTitle(), 
@@ -368,9 +369,16 @@ struct ChainBuilder
       // info->AddUrl(Form("file://%s", element->GetTitle()));
       collection->Add(info);
       
+      Long64_t n = element->GetEntries();
+      if (n >= 0) nEntries += n;
+      
     }
     collection->Update();
+    TFileInfoMeta* cMeta = new TFileInfoMeta(chain->GetName(), 
+					     "TTree", nEntries);
+    collection->AddMetaData(cMeta);
     collection->Write();
+    Printf("A total of %lld entries", nEntries);
     // collection->Print("MFL");
     out->Close();
   }
@@ -507,7 +515,8 @@ struct ChainBuilder
   {
     Info("", "Removing bad file %s", path.Data());
     gSystem->RedirectOutput("/dev/null", "w");
-    gSystem->Unlink(path);
+    // gSystem->Unlink(path);
+    gSystem->Rename(path, Form("%s.bad", path.Data()));
     gSystem->RedirectOutput(0);    
   }
   //------------------------------------------------------------------
