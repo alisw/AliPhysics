@@ -6,12 +6,12 @@
 
 #include <TClonesArray.h>
 #include <TGeoGlobalMagField.h>
-#include "AliAnalysisManager.h"
-#include "AliESDEvent.h"
-#include "AliESDtrackCuts.h"
-#include "AliMagF.h"
-#include "AliTrackerBase.h"
-#include "AliEMCALRecoUtils.h"
+#include <AliAnalysisManager.h>
+#include <AliESDEvent.h>
+#include <AliESDtrackCuts.h>
+#include <AliMagF.h>
+#include <AliTrackerBase.h>
+#include <AliEMCALRecoUtils.h>
 
 #include "AliEmcalEsdTrackFilterTask.h"
 
