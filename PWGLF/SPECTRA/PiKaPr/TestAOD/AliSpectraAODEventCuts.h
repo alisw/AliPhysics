@@ -47,6 +47,10 @@ class AliSpectraAODEventCuts : public TNamed
     fMultiplicityCutMax(99999.),
     fqV0C(-999.),
     fqV0A(-999.),
+    fqV0Cx(-999.),
+    fqV0Ax(-999.),
+    fqV0Cy(-999.),
+    fqV0Ay(-999.),
     fPsiV0C(-999.),
     fPsiV0A(-999.),
     fCent(-999.),
@@ -99,6 +103,12 @@ class AliSpectraAODEventCuts : public TNamed
   Float_t  GetMultiplicityCutMax()  const {  return fMultiplicityCutMax; }
   Double_t  GetqV0C()  const {  return fqV0C; }
   Double_t  GetqV0A()  const {  return fqV0A; }
+  Double_t  GetqV0Cx()  const {  return fqV0Cx; }
+  Double_t  GetqV0Ax()  const {  return fqV0Ax; }
+  Double_t  GetqV0Cy()  const {  return fqV0Cy; }
+  Double_t  GetqV0Ay()  const {  return fqV0Ay; }
+  Double_t  GetPsiV0C()  const {  return fPsiV0C; }
+  Double_t  GetPsiV0A()  const {  return fPsiV0A; }
   Double_t  GetCent()  const {  return fCent; }
   TList *GetOutputList()       {return fOutput;};
   TList *GetCalibList()       {return fCalib;};
@@ -149,8 +159,12 @@ class AliSpectraAODEventCuts : public TNamed
   Float_t         fMultiplicityCutMax;     // maximum multiplicity position
   Double_t       fqV0C;            //q vector in the VZERO-C
   Double_t       fqV0A;            //q vector in the VZERO-A
-  Double_t       fPsiV0C;            //q vector in the VZERO-C
-  Double_t       fPsiV0A;            //q vector in the VZERO-A
+  Double_t       fqV0Cx;            //q vector in the VZERO-C, x-comp
+  Double_t       fqV0Ax;            //q vector in the VZERO-A, x-comp
+  Double_t       fqV0Cy;            //q vector in the VZERO-C, y-comp
+  Double_t       fqV0Ay;            //q vector in the VZERO-A, y-comp
+  Double_t       fPsiV0C;            //EP from VZERO-C
+  Double_t       fPsiV0A;            //EP from VZERO-A
   Double_t       fCent;            //centrality according to fCentralityMethod
   TList            *fOutput;        // output list 
   TList            *fCalib;        // output list 
@@ -172,7 +186,7 @@ class AliSpectraAODEventCuts : public TNamed
   AliSpectraAODEventCuts(const AliSpectraAODEventCuts&);
   AliSpectraAODEventCuts& operator=(const AliSpectraAODEventCuts&);
   
-  ClassDef(AliSpectraAODEventCuts, 4);
+  ClassDef(AliSpectraAODEventCuts, 5);
   
 };
 #endif
