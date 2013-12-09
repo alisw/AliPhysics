@@ -2153,17 +2153,12 @@ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliVTrack *track,
 					      etaout, 
 					      phiout,
 					      ptout);
-
+  delete trackParam;
   if (!ret)
     return kFALSE;
-
   if (TMath::Abs(etaout)>0.75 || (phiout<70*TMath::DegToRad()) || (phiout>190*TMath::DegToRad()))
     return kFALSE;
-
   track->SetTrackPhiEtaPtOnEMCal(phiout, etaout, ptout);
-
-  if(trackParam) delete trackParam;
-
   return kTRUE;
 }
 
