@@ -7,6 +7,7 @@ class TClonesArray;
 class AliESDEvent;
 class AliESDtrack;
 class AliESDtrackCuts;
+class AliEMCALRecoUtils;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -26,6 +27,9 @@ class AliEmcalEsdTpcTrackTask : public AliAnalysisTaskSE {
   void SetIncludeNoITS(Bool_t f)                 { fIncludeNoITS     = f;    }
 
   void SetDoPropagation(Bool_t b)                { fDoPropagation    = b;    }
+  void SetDist(Double_t d)                       { fDist             = d;    }
+  void SetMinPtProp(Double_t pt)                 { fMinPtCutProp     = pt;   }
+  void SetRecoUtils(AliEMCALRecoUtils *ru)       { fRecoUtils        = ru;   }
 
  protected:
   void PropagateTrackToEMCal(AliESDtrack *esdTrack);
@@ -36,6 +40,9 @@ class AliEmcalEsdTpcTrackTask : public AliAnalysisTaskSE {
   TString            fTracksName;        // name of tracks 
   Bool_t             fIncludeNoITS;      // includes tracks with failed ITS refit
   Bool_t             fDoPropagation;     // propagate all hybrid tracks to EMCal surface
+  AliEMCALRecoUtils *fRecoUtils;         // esd reco utils
+  Double_t           fDist;              // distance to surface (430cm default)
+  Double_t           fMinPtCutProp;      // minimum track pt cut for propagated tracks (350 MeV/c default)
   AliESDEvent       *fEsdEv;             //!esd event
   TClonesArray      *fTracks;            //!track array
 
