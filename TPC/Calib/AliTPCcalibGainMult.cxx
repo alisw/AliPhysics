@@ -67,6 +67,7 @@ Send comments etc. to: A.Kalweit@gsi.de, marian.ivanov@cern.ch
 #include "AliTracker.h"
 #include "AliTPCTransform.h"
 #include "AliTPCROC.h"
+#include "TStatToolkit.h"
 
 ClassImp(AliTPCcalibGainMult)
 
@@ -1949,6 +1950,34 @@ TGraphErrors* AliTPCcalibGainMult::GetGainPerChamber(Int_t padRegion/*=1*/, Bool
   }
   
   delete histGainSec;
+  return gr;
+}
+TGraphErrors* AliTPCcalibGainMult::GetGainPerChamberRobust(Int_t padRegion/*=1*/, Bool_t /*plotQA=kFALSE*/)
+{
+  //
+  // Extract gain variations per chamger for 'padRegion'
+  // Use Robust mean - LTM with 60 % 0 should be similar to the truncated mean 60 %
+  if (padRegion<0||padRegion>2) return 0x0;
+  const Int_t colors[10]={1,2,4,6};
+  const Int_t markers[10]={21,25,22,20};
+  //
+  if (!fHistGainSector) return NULL;
+  if (!fHistGainSector->GetAxis(2)) return NULL;
+  fHistGainSector->GetAxis(2)->SetRangeUser(padRegion,padRegion);
+  if (padRegion==0) fHistGainSector->GetAxis(1)->SetRangeUser(0.0,35.);
+  if (padRegion>0) fHistGainSector->GetAxis(1)->SetRangeUser(36.,71.);
+  //
+  TH2D * histGainSec = fHistGainSector->Projection(0,1);
+  TGraphErrors * gr = TStatToolkit::MakeStat1D(histGainSec, 0, 0.6,2,markers[padRegion],colors[padRegion]);
+  Double_t median = TMath::Median(gr->GetN(),gr->GetY());
+  if (median>0){
+    for (Int_t i=0; i<gr->GetN();i++) {
+      gr->GetY()[i]/=median;
+      gr->SetPointError(i,gr->GetErrorX(i),gr->GetErrorY(i)/median);
+    }    
+  }
+  const char* names[3]={"SHORT","MEDIUM","LONG"};
+  gr->SetNameTitle(Form("TGRAPHERRORS_MEAN_CHAMBERGAIN_%s_BEAM_ALL",names[padRegion]),Form("TGRAPHERRORS_MEAN_CHAMBERGAIN_%s_BEAM_ALL",names[padRegion]));
   return gr;
 }
 

@@ -51,6 +51,7 @@ public:
   TTree *      GetdEdxTree() const {return fdEdxTree;}         // tree for the later minimization
 
   TGraphErrors* GetGainPerChamber(Int_t padRegion=1, Bool_t plotQA=kFALSE);
+  TGraphErrors* GetGainPerChamberRobust(Int_t padRegion=1, Bool_t plotQA=kFALSE);
   //
   void SetMIPvalue(Float_t mip){fMIP = mip;};
   void SetLowerTrunc(Float_t lowerTrunc){fLowerTrunc = lowerTrunc;};

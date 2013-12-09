@@ -9,7 +9,7 @@
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
+ * about the suitability of this software for any prpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
@@ -89,8 +89,12 @@
 #include "AliTPCPreprocessorOffline.h"
 #include "AliTPCCorrectionFit.h"
 
+#include "AliTPCClusterParam.h"
+#include "AliTPCRecoParam.h"
+
 using std::endl;
 using std::cout;
+
 ClassImp(AliTPCPreprocessorOffline)
 
 AliTPCPreprocessorOffline::AliTPCPreprocessorOffline():
@@ -253,8 +257,16 @@ void AliTPCPreprocessorOffline::CalibTimeVdrift(const Char_t* file, Int_t ustart
     if (alignmentTime) fVdriftArray->AddLast(alignmentTime);
   }
   //
+  // 5.) Add the RecoParam and ClusterParam - for compatibility checks -different sets of parameters can invalidate calibration 
   //
-  // 5. update of OCDB
+  AliTPCClusterParam *clParam =   AliTPCcalibDB::Instance()->GetClusterParam();
+  TObjArray *recoParams = new TObjArray(4) ;
+  for (Int_t i=0;i<4;i++) recoParams->AddAt(AliTPCcalibDB::Instance()->GetRecoParam(i),i);
+  fVdriftArray->AddLast(clParam);
+  fVdriftArray->AddLast(recoParams);
+  //
+  //
+  // 6. update of OCDB
   //
   //
   UpdateOCDBDrift(ustartRun,uendRun,fOCDBstorage);
@@ -969,7 +981,7 @@ void AliTPCPreprocessorOffline::ReadGainGlobal(const Char_t* fileName){
 Bool_t AliTPCPreprocessorOffline::AnalyzeGain(Int_t startRunNumber, Int_t endRunNumber, Int_t minEntriesGaussFit,  Float_t FPtoMIPratio){
   //
   // Analyze gain - produce the calibration graphs
-  //
+ //
 
   // 1.) try to create MIP spline
   if (fGainMIP) 
@@ -1009,11 +1021,20 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGain(Int_t startRunNumber, Int_t endRun
   fGainArray->AddAt(fGraphMIP,2);
   fGainArray->AddAt(fGraphCosmic,3);
   //
-  // Add HV and PT correction parameterization
+  // 3.) Add HV and PT correction parameterization which was used
   //
   AliTPCParam *param= AliTPCcalibDB::Instance()->GetParameters();
   if (param->GetGainSlopesHV())  fGainArray->AddLast(param->GetGainSlopesHV());
   if (param->GetGainSlopesPT())  fGainArray->AddLast(param->GetGainSlopesPT());
+  //
+  // 4.) Add the RecoParam and ClusterParam - for compatibility checks -deffrent sets of paramters can invalidate calibration 
+  //
+  AliTPCClusterParam *clParam =   AliTPCcalibDB::Instance()->GetClusterParam();
+  TObjArray *recoParams = new TObjArray(4) ;
+  for (Int_t i=0;i<4;i++) recoParams->AddAt(AliTPCcalibDB::Instance()->GetRecoParam(i),i);
+  fGainArray->AddLast(clParam);
+  fGainArray->AddLast(recoParams);
+  //
   cout << "fGraphCosmic: " << fGraphCosmic << " fGraphMIP " << fGraphMIP << endl;
   return kTRUE;
 
@@ -1224,9 +1245,9 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainChamberByChamber(){
   // get chamber by chamber gain
   //
   if (!fGainMult) return kFALSE;
-  TGraphErrors *grShort  = fGainMult->GetGainPerChamber(0);
-  TGraphErrors *grMedium = fGainMult->GetGainPerChamber(1);
-  TGraphErrors *grLong   = fGainMult->GetGainPerChamber(2);
+  TGraphErrors *grShort  = fGainMult->GetGainPerChamberRobust(0);
+  TGraphErrors *grMedium = fGainMult->GetGainPerChamberRobust(1);
+  TGraphErrors *grLong   = fGainMult->GetGainPerChamberRobust(2);
   if (grShort==0x0 || grMedium==0x0 || grLong==0x0) {
     delete grShort;
     delete grMedium;

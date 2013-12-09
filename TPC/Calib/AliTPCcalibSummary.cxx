@@ -802,6 +802,9 @@ void AliTPCcalibSummary::ProcessGain(Int_t irun, Int_t timeStamp){
   //
   static TVectorD vGainQMaxGraphRegion(3);
   static TVectorD vGainQTotGraphRegion(3);
+
+  static TGraphErrors ggrPadEqualMax(36);
+  static TGraphErrors ggrPadEqualTot(36);
   
   vGainGraphIROC.Zero();
   vGainGraphOROCmed.Zero();
@@ -824,6 +827,12 @@ void AliTPCcalibSummary::ProcessGain(Int_t irun, Int_t timeStamp){
     TGraphErrors * graphGainIROC       = (TGraphErrors *) gainSplines->FindObject("TGRAPHERRORS_MEAN_CHAMBERGAIN_SHORT_BEAM_ALL");
     TGraphErrors * graphGainOROCMedium = (TGraphErrors *) gainSplines->FindObject("TGRAPHERRORS_MEAN_CHAMBERGAIN_MEDIUM_BEAM_ALL");
     TGraphErrors * graphGainOROCLong   = (TGraphErrors *) gainSplines->FindObject("TGRAPHERRORS_MEAN_CHAMBERGAIN_LONG_BEAM_ALL");
+    //
+    TGraphErrors *grPadEqualMax = (TGraphErrors * ) gainSplines->FindObject("TGRAPHERRORS_MEANQMAX_PADREGIONGAIN_BEAM_ALL");
+    TGraphErrors *grPadEqualTot = (TGraphErrors * ) gainSplines->FindObject("TGRAPHERRORS_MEANQTOT_PADREGIONGAIN_BEAM_ALL");
+    if (grPadEqualMax) ggrPadEqualMax = *grPadEqualMax;
+    if (grPadEqualTot) ggrPadEqualTot = *grPadEqualTot;
+
 
     if (graphGainIROC && graphGainOROCMedium && graphGainOROCLong) {
       Double_t x=0,y=0;
@@ -853,6 +862,8 @@ void AliTPCcalibSummary::ProcessGain(Int_t irun, Int_t timeStamp){
     
   // time dependence of gain 
   (*fPcstream)<<"dcs"<<
+    "grPadEqualMax.=" << &ggrPadEqualMax <<
+    "grPadEqualTot.=" << &ggrPadEqualTot <<
     "rocGainIROC.="            << &vGainGraphIROC        <<          
     "rocGainOROCMedium.="      << &vGainGraphOROCmed     <<
     "rocGainOROCLong.="        << &vGainGraphOROClong    <<
