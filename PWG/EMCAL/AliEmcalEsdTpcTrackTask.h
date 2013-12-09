@@ -25,12 +25,17 @@ class AliEmcalEsdTpcTrackTask : public AliAnalysisTaskSE {
   void SetTracksName(const char *name)           { fTracksName       = name; }
   void SetIncludeNoITS(Bool_t f)                 { fIncludeNoITS     = f;    }
 
+  void SetDoPropagation(Bool_t b)                { fDoPropagation    = b;    }
+
  protected:
+  void PropagateTrackToEMCal(AliESDtrack *esdTrack);
+
   AliESDtrackCuts   *fEsdTrackCuts;      // esd track cuts
   Bool_t             fDoSpdVtxCon;       // if true then do vertex constraint
   AliESDtrackCuts   *fHybridTrackCuts;   // hybrid track cuts
   TString            fTracksName;        // name of tracks 
   Bool_t             fIncludeNoITS;      // includes tracks with failed ITS refit
+  Bool_t             fDoPropagation;     // propagate all hybrid tracks to EMCal surface
   AliESDEvent       *fEsdEv;             //!esd event
   TClonesArray      *fTracks;            //!track array
 
