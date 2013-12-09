@@ -36,7 +36,7 @@ class AliEmcalEsdTrackFilterTask : public AliAnalysisTaskSE {
   TString            fTracksName;        // name of tracks 
   Bool_t             fIncludeNoITS;      // includes tracks with failed ITS refit
   Bool_t             fDoPropagation;     // propagate all hybrid tracks to EMCal surface
-  Double_t           fDist;              // distance to surface (430cm default)
+  Double_t           fDist;              // distance to surface (440cm default)
   AliESDEvent       *fEsdEv;             //!esd event
   TClonesArray      *fTracks;            //!track array
 
