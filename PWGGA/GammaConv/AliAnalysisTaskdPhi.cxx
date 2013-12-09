@@ -689,8 +689,6 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
   Bool_t lpitmap[fAxistPt.GetNbins()][fMesonFilters[0].GetEntriesFast()];
   Bool_t upitmap[fAxistPt.GetNbins()][fMesonFilters[1].GetEntriesFast()];
   
-  
-
   for(Int_t igf = 0; igf < fV0Filters[0].GetEntriesFast(); igf++) {
     for(Int_t ptbin = 0; ptbin < fAxistPt.GetNbins(); ptbin++) {
       lv0tmap[ptbin][igf] = kFALSE;
@@ -899,10 +897,18 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 		  for(int ij = 0; ij < tracks->GetEntriesFast(); ij++) {
 		    AliVTrack * track = static_cast<AliVTrack*>(tracks->At(ij));
 		    Int_t tid = track->GetID();
-		  
-		    if((tid > 0) && (tid == tIDs[0] || tid == tIDs[1] || tid == tIDs[2] || tid == tIDs[3]) ) {
+
+
+		    if(tid == tIDs[0] || tid == tIDs[1] || tid == tIDs[2] || tid == tIDs[3])  {
 		      continue;
 		    }
+		    
+		    if(tid < 0) {
+		      if(-tid-1 == tIDs[0]+1 || -tid-1 == tIDs[1]+1 || -tid-1 == tIDs[2]+1 || -tid-1 == tIDs[3]+1)  {
+			continue;
+		      }
+		    }
+		  
 		  
 		    dphivalues[0] = pion->Eta() - track->Eta();
 		    dphivalues[1] = GetDPhi(pion->Phi() - track->Phi());
@@ -980,10 +986,16 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 			AliVTrack * track = static_cast<AliVTrack*>(ttracks->At(ij));
 			Int_t tid = track->GetID();
 			
-			if((tid > 0) && (tid == tIDs[0] || tid == tIDs[1] || tid == tIDs[2] || tid == tIDs[3]) ) {
+			if(tid == tIDs[0] || tid == tIDs[1] || tid == tIDs[2] || tid == tIDs[3] ) {
 			  continue;
 			}
-			
+
+			if(tid < 0) {
+			  if(-tid-1 == tIDs[0]+1 || -tid-1 == tIDs[1]+1 || -tid-1 == tIDs[2]+1 || -tid-1 == tIDs[3]+1)  {
+			    continue;
+			  }
+			}
+		  
 			dphivalues[0] = pion->Eta() - track->Eta();
 			dphivalues[1] = GetDPhi(pion->Phi() - track->Phi());
 			dphivalues[3] = track->Pt();
@@ -1068,7 +1080,7 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
       for(Int_t iguf = 0; iguf < fV0Filters[1].GetEntriesFast(); iguf++) {
 	if (uv0tmap[tbin][iguf] ) {
 
-	  cout << "c vtx " <<  centrality << vertexz << endl;
+	  //cout << "c vtx " <<  centrality << vertexz << endl;
 
 	  for(Int_t iTrack = 0; iTrack < ttracks->GetEntriesFast(); iTrack++) {
 	    AliVTrack * track = static_cast<AliVTrack*>(ttracks->At(iTrack));
@@ -1085,7 +1097,7 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
       for(Int_t ipuf = 0; ipuf < fMesonFilters[1].GetEntriesFast(); ipuf++) {
 	if (upitmap[tbin][ipuf] ) {
 
-	  cout << "c2 vtx2 " <<  centrality << vertexz << endl;
+	  //cout << "c2 vtx2 " <<  centrality << vertexz << endl;
 
 
 	  for(Int_t iTrack = 0; iTrack < ttracks->GetEntriesFast(); iTrack++) {
@@ -1099,7 +1111,6 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 	  }
 	}
       }
-
     }
   }
 

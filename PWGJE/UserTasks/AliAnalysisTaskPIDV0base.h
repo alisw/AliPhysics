@@ -30,6 +30,7 @@ class AliVTrack;
 
 class AliAnalysisTaskPIDV0base : public AliAnalysisTaskSE {
  public:
+  enum TPCcutType { kNoCut = 0, kTPCCutMIGeo = 1, kTPCnclCut = 2 };
   AliAnalysisTaskPIDV0base();
   AliAnalysisTaskPIDV0base(const char *name);
   virtual ~AliAnalysisTaskPIDV0base();
@@ -49,8 +50,11 @@ class AliAnalysisTaskPIDV0base : public AliAnalysisTaskSE {
   virtual Bool_t GetUsePhiCut() const { return fUsePhiCut; };
   virtual void SetUsePhiCut(Bool_t newValue) { fUsePhiCut = newValue; };
   
-  virtual Bool_t GetUseTPCCutMIGeo() const { return fUseTPCCutMIGeo; };
-  virtual void SetUseTPCCutMIGeo(Bool_t newValue) { fUseTPCCutMIGeo = newValue; };
+  virtual TPCcutType GetTPCcutType() const { return fTPCcutType; };
+  virtual Bool_t GetUseTPCCutMIGeo() const { return (fTPCcutType == kTPCCutMIGeo); };
+  virtual Bool_t GetUseTPCnclCut() const { return (fTPCcutType == kTPCnclCut); };
+  
+  virtual void SetTPCcutType(TPCcutType newType) { fTPCcutType = newType; };
   
   virtual Double_t GetEtaCut() const { return fEtaCut; };     
   virtual void  SetEtaCut(Double_t etaCut){ fEtaCut = etaCut; };
@@ -83,10 +87,17 @@ class AliAnalysisTaskPIDV0base : public AliAnalysisTaskSE {
   static Bool_t TPCCutMIGeo(const AliVTrack* track, const AliInputEventHandler* evtHandler, TTreeStream* streamer = 0x0)
     { if (!evtHandler) return kFALSE; return TPCCutMIGeo(track, evtHandler->GetEvent(), streamer); };
   
+  static UShort_t GetCutPureNcl() { return fgCutPureNcl; };
+  static void SetCutPureNcl(UShort_t value) { fgCutPureNcl = value; };
+  
+  static Bool_t TPCnclCut(const AliVTrack* track);
+  
  protected:
   static Double_t fgCutGeo;   // Cut variable for TPCCutMIGeo concerning geometry
   static Double_t fgCutNcr; // Cut variable for TPCCutMIGeo concerning num crossed rows
   static Double_t fgCutNcl;  // Cut variable for TPCCutMIGeo concerning num clusters
+  
+  static UShort_t fgCutPureNcl; // Cut variable for TPCnclCut
   
   AliVEvent   *fEvent;    //! VEvent object
   AliESDEvent *fESD;      //! ESDEvent object, if ESD
@@ -97,7 +108,7 @@ class AliAnalysisTaskPIDV0base : public AliAnalysisTaskSE {
   
   Bool_t fIsPbpOrpPb;       // Pbp/pPb collision or something else?
   Bool_t fUsePhiCut;        // Use cut on phi (useful for TPC)
-  Bool_t fUseTPCCutMIGeo;   // Use geometrical cut for TPC 
+  TPCcutType fTPCcutType;   // Type of TPC cut to be used
   Double_t fZvtxCutEvent;   // Vertex z cut for the event (cm)
   Double_t fEtaCut;         // Eta cut
   
