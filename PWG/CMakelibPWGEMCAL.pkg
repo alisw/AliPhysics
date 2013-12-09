@@ -34,7 +34,7 @@ set ( SRCS
  EMCAL/AliEmcalClusTrackMatcherTask.cxx
  EMCAL/AliEmcalCompatTask.cxx
  EMCAL/AliEmcalContainer.cxx
- EMCAL/AliEmcalEsdTpcTrackTask.cxx
+ EMCAL/AliEmcalEsdTrackFilterTask.cxx
  EMCAL/AliEmcalMCTrackSelector.cxx
  EMCAL/AliEmcalParticle.cxx
  EMCAL/AliEmcalParticleMaker.cxx
