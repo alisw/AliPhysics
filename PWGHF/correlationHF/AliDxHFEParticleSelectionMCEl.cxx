@@ -506,6 +506,11 @@ int AliDxHFEParticleSelectionMCEl::ParseArguments(const char* arguments)
       fRemoveSecondary=kFALSE;
       continue;
     }
+    if (argument.BeginsWith("onlyPhysPrim")){
+      AliInfo("Use IsPhysicalPrimary()");
+      fRemoveSecondary=kTRUE;
+      continue;
+    }
     if(argument.BeginsWith("mc-only")){
       AliInfo("Do only test on MC info");
       fMCInfo=kMCOnly;

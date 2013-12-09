@@ -616,11 +616,11 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
       ((TH1F*)fQAHistList->FindObject("fhOriginReco"))->Fill(fOriginMotherReco);
 	
       if(fSelectElSource==kHadronHijing || fSelectElSource==kHadron){((TH1F*)fQAHistList->FindObject("fPDGHadron"))->Fill(TMath::Abs(mcPart->PdgCode()));}
+    if(isAOD) delete tmptrack;
 
 	
     }
       
-    if(isAOD) delete tmptrack;
 	
   }
   else AliDebug(3,"Event not passing quality criteria\n");
