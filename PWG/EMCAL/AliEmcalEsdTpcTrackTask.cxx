@@ -9,10 +9,11 @@
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
 #include "AliESDtrackCuts.h"
-#include "AliEmcalEsdTpcTrackTask.h"
 #include "AliMagF.h"
 #include "AliTrackerBase.h"
+#include "AliEMCALRecoUtils.h"
 
+#include "AliEmcalEsdTpcTrackTask.h"
 
 ClassImp(AliEmcalEsdTpcTrackTask)
 
@@ -25,6 +26,9 @@ AliEmcalEsdTpcTrackTask::AliEmcalEsdTpcTrackTask() :
   fTracksName(),
   fIncludeNoITS(kTRUE),
   fDoPropagation(kFALSE),
+  fRecoUtils(0),
+  fDist(440),
+  fMinPtCutProp(0.35),
   fEsdEv(0),
   fTracks(0)
 {
@@ -40,6 +44,9 @@ AliEmcalEsdTpcTrackTask::AliEmcalEsdTpcTrackTask(const char *name) :
   fTracksName("TpcSpdVertexConstrainedTracks"),
   fIncludeNoITS(kTRUE),
   fDoPropagation(kFALSE),
+  fRecoUtils(0),
+  fDist(440),
+  fMinPtCutProp(0.35),
   fEsdEv(0),
   fTracks(0)
 {
@@ -59,6 +66,7 @@ AliEmcalEsdTpcTrackTask::~AliEmcalEsdTpcTrackTask()
   //Destructor
 
   delete fEsdTrackCuts;
+  delete fRecoUtils;
 }
 
 //________________________________________________________________________
@@ -73,6 +81,12 @@ void AliEmcalEsdTpcTrackTask::UserCreateOutputObjects()
     AliInfo("No track cuts given, creating default (standard only TPC) cuts");
     fEsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
     fEsdTrackCuts->SetPtRange(0.15,1e3);
+  }
+
+  if (!fRecoUtils) {
+    fRecoUtils = new AliEMCALRecoUtils;
+    fRecoUtils->SetStep(20);
+    AliInfo("No reco utils given, creating default utils");
   }
 }
 
@@ -166,17 +180,20 @@ void AliEmcalEsdTpcTrackTask::UserExec(Option_t *)
 	continue;
 
       if (fEsdTrackCuts->AcceptTrack(etrack)) {
+	if(fDoPropagation) PropagateTrackToEMCal(etrack);
+
         new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
         AliESDtrack *newTrack = static_cast<AliESDtrack*>(fTracks->At(ntrnew));
-	if(fDoPropagation) {
-	  PropagateTrackToEMCal(etrack);
-	  newTrack->SetTrackPhiEtaPtOnEMCal(etrack->GetTrackPhiOnEMCal(),etrack->GetTrackEtaOnEMCal(),etrack->GetTrackPtOnEMCal());
-	}
+	if(fDoPropagation) newTrack->SetTrackPhiEtaPtOnEMCal(etrack->GetTrackPhiOnEMCal(),etrack->GetTrackEtaOnEMCal(),etrack->GetTrackPtOnEMCal());
+	
         newTrack->SetTRDNchamberdEdx(0);
         ++ntrnew;
       } else if (fHybridTrackCuts->AcceptTrack(etrack)) {
+	if(fDoPropagation) PropagateTrackToEMCal(etrack);
+
 	UInt_t status = etrack->GetStatus();
         if (etrack->GetConstrainedParam() && ((status&AliESDtrack::kITSrefit)!=0 || fIncludeNoITS)) {
+
           new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
           AliESDtrack *newTrack = static_cast<AliESDtrack*>(fTracks->At(ntrnew));
           ++ntrnew;
@@ -189,11 +206,9 @@ void AliEmcalEsdTpcTrackTask::UserExec(Option_t *)
             newTrack->SetTRDNchamberdEdx(2);
           else
             newTrack->SetTRDNchamberdEdx(1);
-	  if(fDoPropagation) {
-	    PropagateTrackToEMCal(etrack);
-	    newTrack->SetTrackPhiEtaPtOnEMCal(etrack->GetTrackPhiOnEMCal(),etrack->GetTrackEtaOnEMCal(),etrack->GetTrackPtOnEMCal());
-	  }
-        }
+
+	  if(fDoPropagation) newTrack->SetTrackPhiEtaPtOnEMCal(etrack->GetTrackPhiOnEMCal(),etrack->GetTrackEtaOnEMCal(),etrack->GetTrackPtOnEMCal());
+	}
       }
     }
   }
@@ -202,26 +217,34 @@ void AliEmcalEsdTpcTrackTask::UserExec(Option_t *)
 //______________________________________________________________________________
 void AliEmcalEsdTpcTrackTask::PropagateTrackToEMCal(AliESDtrack *esdTrack)
 {
-  Double_t fEMCalSurfaceDistance = 440.;
-  Double_t trkPos[3] = {0.,0.,0.};
-  Double_t EMCalEta=-999, EMCalPhi=-999, EMCalPt=-999;
-  Double_t trkphi = esdTrack->Phi()*TMath::RadToDeg();
-  if(TMath::Abs(esdTrack->Eta())<0.9 && trkphi > 10 && trkphi < 250 )
-    {
-      AliExternalTrackParam *trkParam = const_cast<AliExternalTrackParam*>(esdTrack->GetInnerParam());
-      if(trkParam)
-	{
-	  AliExternalTrackParam trkParamTmp(*trkParam);
-	  if(AliTrackerBase::PropagateTrackToBxByBz(&trkParamTmp, fEMCalSurfaceDistance, esdTrack->GetMass(), 20, kTRUE, 0.8, -1))
-	    {
-	      trkParamTmp.GetXYZ(trkPos);
-	      TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
-	      EMCalEta = trkPosVec.Eta();
-	      EMCalPhi = trkPosVec.Phi();
-	      EMCalPt = trkParamTmp.Pt();
-	      if(EMCalPhi<0)  EMCalPhi += 2*TMath::Pi();
-	      esdTrack->SetTrackPhiEtaPtOnEMCal(EMCalPhi,EMCalEta,EMCalPt);
-	    }
-	}
-    }
+  // Extrapolate the track to EMCal surface
+  esdTrack->ResetStatus(AliVTrack::kEMCALmatch);
+
+  Double_t phi = esdTrack->Phi()*TMath::RadToDeg();
+  if (TMath::Abs(esdTrack->Eta())>0.9 || phi <= 10 || phi >= 250) 
+    return;
+  if(esdTrack->Pt()<fMinPtCutProp) 
+    return;
+
+  AliExternalTrackParam *trackParam =  const_cast<AliExternalTrackParam*>(esdTrack->GetInnerParam());
+  if(!trackParam)
+    return;
+  AliExternalTrackParam emcalParam(*trackParam);
+
+  Float_t etaout=-999, phiout=-999, ptout=-999;
+  Bool_t ret = fRecoUtils->ExtrapolateTrackToEMCalSurface(&emcalParam, 
+							  fDist, 
+							  esdTrack->GetMass(), 
+							  fRecoUtils->GetStepSurface(), 
+							  etaout, 
+							  phiout,
+							  ptout);
+  if (!ret)
+    return;
+  if (TMath::Abs(etaout)>0.75 || (phiout<70*TMath::DegToRad()) || (phiout>190*TMath::DegToRad()))
+    return;
+  esdTrack->SetOuterParam(&emcalParam,AliExternalTrackParam::kMultSec);
+  esdTrack->SetTrackPhiEtaPtOnEMCal(phiout, etaout, ptout);
+  esdTrack->SetStatus(AliVTrack::kEMCALmatch);
+
 }

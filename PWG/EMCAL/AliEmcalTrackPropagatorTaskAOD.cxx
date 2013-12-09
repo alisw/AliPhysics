@@ -102,6 +102,9 @@ void AliEmcalTrackPropagatorTaskAOD::UserExec(Option_t *)
     aodTrack->ResetStatus(AliVTrack::kEMCALmatch); //MV: necessary?
     if(aodTrack->Pt()<fMinPtCut) 
       continue;
+    if(aodTrack->GetTrackPtOnEMCal()>0) 
+      continue;
+
     Double_t phi = aodTrack->Phi()*TMath::RadToDeg();
     if (TMath::Abs(aodTrack->Eta())>0.9 || phi <= 10 || phi >= 250) 
       continue;

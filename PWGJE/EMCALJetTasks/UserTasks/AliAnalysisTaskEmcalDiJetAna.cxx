@@ -38,6 +38,8 @@ ClassImp(AliAnalysisTaskEmcalDiJetAna)
 AliAnalysisTaskEmcalDiJetAna::AliAnalysisTaskEmcalDiJetAna() : 
   AliAnalysisTaskEmcalDiJetBase("AliAnalysisTaskEmcalDiJetAna"),
   fDoMatchFullCharged(kTRUE),
+  fNDiJetEtaBins(1),
+  fNAjBins(1),
   fh2CentRhoCh(0),
   fh2CentRhoScaled(0),
   fh3PtEtaPhiJetFull(0),
@@ -70,6 +72,8 @@ AliAnalysisTaskEmcalDiJetAna::AliAnalysisTaskEmcalDiJetAna() :
 AliAnalysisTaskEmcalDiJetAna::AliAnalysisTaskEmcalDiJetAna(const char *name) : 
   AliAnalysisTaskEmcalDiJetBase(name),
   fDoMatchFullCharged(kTRUE),
+  fNDiJetEtaBins(1),
+  fNAjBins(1),
   fh2CentRhoCh(0),
   fh2CentRhoScaled(0),
   fh3PtEtaPhiJetFull(0),
@@ -158,9 +162,9 @@ void AliAnalysisTaskEmcalDiJetAna::UserCreateOutputObjects()
   const Int_t nBinsPtW      = 30;
   const Int_t nBinsDPhi     = 72;
   const Int_t nBinsKt       = 50;
-  const Int_t nBinsDiJetEta = 40;
+  const Int_t nBinsDiJetEta = fNDiJetEtaBins;//40;
   const Int_t nBinsCentr    = fNcentBins;
-  const Int_t nBinsAj       = 20;
+  const Int_t nBinsAj       = fNAjBins;//20
   const Int_t nBins0[nBinsSparse0] = {nBinsPtW,nBinsPtW,nBinsDPhi,nBinsKt,nBinsDiJetEta,nBinsCentr,nBinsAj};
   //pT1, pT2, deltaPhi, kT
   const Double_t xmin0[nBinsSparse0]  = {  minPt, minPt, -0.5*TMath::Pi(),   0.,-1.,0.  , 0.};
