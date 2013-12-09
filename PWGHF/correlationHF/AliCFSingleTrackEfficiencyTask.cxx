@@ -383,10 +383,10 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
       if(!fReducedMode) containerInput[kTheta] = track->Theta() ;
 
       /*
-      int originvsGen=CheckBackgroundSource(track,const_cast<AliVEvent*>(fEvent));
+	int originvsGen=CheckBackgroundSource(track,const_cast<AliVEvent*>(fEvent));
 
-      containerInput[5]=originvsGen;
-      fhElGenerator->Fill(originvsGen);*/
+	containerInput[5]=originvsGen;
+	fhElGenerator->Fill(originvsGen);*/
 
       // Step 4. Track that are recostructed and filling
       if(!fReducedMode) fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructed) ;
@@ -465,9 +465,6 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
       if(radius > fMaxRadius) { continue;}
       
       
-      //if(!selected) cout << "radius: " << radius << "    fMaxr: " << fMaxRadius << endl; 
-
-	 	   
       // for filter bit selection
       AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*>(track);
       if(isAOD && fSetFilterBit) 
@@ -496,22 +493,17 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 
       // Step 7. Track that are recostructed + Quality + Kine criteria filling
       if(! fTrackCuts->IsSelected(tmptrack) ){
-	selected=kFALSE;
+	AliDebug(3,"Reconstructed track not passing first quality criteria\n");
 	continue;
       }
-      if(selected){
 
-	AliDebug(2,"Reconstructed track pass first quality criteria\n");
-	//fCFManager->GetParticleContainer()->Fill(containerInputMC, kStepReconstructedFirstTrackCutsMC);
-	if(fReducedMode)
-	  fCFManager->GetParticleContainer()->Fill(containerInput,kStepRedRecoFirstQualityCuts);
-	else
-	  fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoFirstQualityCuts);
-      }else {
-	//cout <<"Not passing first " << endl;
-	AliDebug(3,"Reconstructed track not passing first quality criteria\n");
-      }
-
+      AliDebug(2,"Reconstructed track pass first quality criteria\n");
+      //fCFManager->GetParticleContainer()->Fill(containerInputMC, kStepReconstructedFirstTrackCutsMC);
+      if(fReducedMode)
+	fCFManager->GetParticleContainer()->Fill(containerInput,kStepRedRecoFirstQualityCuts);
+      else
+	fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoFirstQualityCuts);
+      
 
       Bool_t useTOFPID=kTRUE;
       if(track->Pt() > fMaxPtForTOFPID) useTOFPID=kFALSE;
@@ -519,24 +511,20 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 	AliDebug(2,Form("Pt: %f, use CombinedPID (fMaxPtCombinedPID= %f)",track->Pt(),fMaxPtForTOFPID));
       else 
 	AliDebug(2,Form("Pt: %f, use only TPC PID (fMaxPtCombinedPID= %f)",track->Pt(),fMaxPtForTOFPID));
-      /*
-	if(useTOFPID) printf(Form("Pt: %f, use CombinedPID (fMaxPtCombinedPID= %f)\n",track->Pt(),fMaxPtForTOFPID));
-	if(fMinNclsTPCPID>0) cout <<"using TPC clusters for PID"<<endl;
-	if(fMinRatioTPCcluster>0) cout <<"using ratio TPC clusters"<<endl;
-	if(fRequireTOF) cout << "require hit in TOF" << endl;*/
+ 
       // DxHFE: Add here the extra cuts
       // 1. TPC PID clusters
-      if(fMinNclsTPCPID>0 && selected){
+      if(fMinNclsTPCPID>0 ){
 	Int_t nclsTPCPID = tmptrack->GetTPCsignalN();
 	if(nclsTPCPID<fMinNclsTPCPID){
 	  //cout << "cut due to nr cls TPC PID " << endl;
 	  AliDebug(2,Form("nlcTPCPID NOT selected - nrclusters=%d", nclsTPCPID));
-	  selected=kFALSE;
+	  continue;
 	}
       }
  
       // 2. ratio TPC/findable
-      if(fMinRatioTPCcluster>0 && selected){	     
+      if(fMinRatioTPCcluster>0){	     
 	if(isAOD){
 	  //AliAODTrack *aodtrack = static_cast<AliAODTrack *>(track);
 	  const TBits &clusterTPC = aodtrack->GetTPCClusterMap();
@@ -546,112 +534,94 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 	  if(clusterRatio <= fMinRatioTPCcluster){
 	    AliDebug(2,"clusterRatio NOT selected");
 	    //cout << "cut due to clusterratio" << endl;
-	    selected=kFALSE;
+	    continue;
 	  }
 	}
       }
       
       // 3. TOF matching
-      if(fRequireTOF && selected && useTOFPID){
+      if(fRequireTOF && useTOFPID){
 	if(!(vtrack->GetStatus() & AliESDtrack::kTOFpid)){
 	  if(fUseTOFonlyWhenPresent) 
 	    useTOFPID=kFALSE;
 	  else{
-	    selected = kFALSE;
 	    AliDebug(2,"Cut due to TOF requirement");
+	    continue;
 	  }
 	}
       }
-      if(selected){
-	((TH1F*)fQAHistList->FindObject("fElectronPt"))->Fill(tmptrack->Pt());
-      }
-	   
-      if(selected){
-	AliDebug(2,"Reconstructed track pass quality criteria\n");
-	//fCFManager->GetParticleContainer()->Fill(containerInputMC, kStepReconstructedMC);
-	if(fReducedMode)
-	  fCFManager->GetParticleContainer()->Fill(containerInput,kStepRedRecoQualityCuts);
-	else
-	  fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoQualityCuts);
-      }else AliDebug(3,"Reconstructed track not passing quality criteria\n");
+      ((TH1F*)fQAHistList->FindObject("fElectronPt"))->Fill(tmptrack->Pt());
+      
+      AliDebug(2,"Reconstructed track pass quality criteria\n");
+      //fCFManager->GetParticleContainer()->Fill(containerInputMC, kStepReconstructedMC);
+      if(fReducedMode)
+	fCFManager->GetParticleContainer()->Fill(containerInput,kStepRedRecoQualityCuts);
+      else
+	fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoQualityCuts);
 	   
       // PID requirement
-      if(selected){
-	((TH2F*)fQAHistList->FindObject("fhdEdxSigmavsEta"))->Fill(vtrack->Eta(), pidResponse->NumberOfSigmasTPC(vtrack, AliPID::kElectron));
-	((TH2F*)fQAHistList->FindObject("fhdEdxvsEta"))->Fill(vtrack->Eta(), vtrack->GetTPCsignal());
+      ((TH2F*)fQAHistList->FindObject("fhdEdxSigmavsEta"))->Fill(vtrack->Eta(), pidResponse->NumberOfSigmasTPC(vtrack, AliPID::kElectron));
+      ((TH2F*)fQAHistList->FindObject("fhdEdxvsEta"))->Fill(vtrack->Eta(), vtrack->GetTPCsignal());
 
-	//also check for pdg first????
-	if(fUseTPCPID){
-	  Float_t tpcNsigma = pidResponse->NumberOfSigmasTPC(vtrack, AliPID::kElectron); // change to particle
-	  AliDebug(2, Form("Number of sigmas in TPC: %f", tpcNsigma));
-	  //cout << "sigmaTPC " << tpcNsigma << "   " << fTPCnSigmaMin << " - " << fTPCnSigmaMax << endl;
-	  if(tpcNsigma<fTPCnSigmaMin || tpcNsigma>fTPCnSigmaMax) { selected = false;}
-
-	}
-	if(selected){
-	  ((TH2F*)fQAHistList->FindObject("fhdEdxSigmavsEtaTPC"))->Fill(vtrack->Eta(), pidResponse->NumberOfSigmasTPC(vtrack, AliPID::kElectron));
-	  ((TH2F*)fQAHistList->FindObject("fhdEdxvsEtaTPC"))->Fill(vtrack->Eta(), vtrack->GetTPCsignal());
-	}
-	if(useTOFPID && fUseTOFPID){
-
-	  // if fMaxPtCombinedPID is set to lower than upper Ptlimit (10GeV/c), will separate
-	  // PID into two regions: below fMaxptCombinedPID - both TPC and TOF, above only TPC
-	  Float_t tofNsigma = pidResponse->NumberOfSigmasTOF(vtrack, AliPID::kElectron); //change to particle
-	  AliDebug(2, Form("Number of sigmas in TOF: %f", tofNsigma));
-	  // cout << "sigmaTOF " << tofNsigma << "   " << fTOFnSigma  << endl;
-	  // for now: Assume symmetric cut for TOF
-	  if(TMath::Abs(tofNsigma) > fTOFnSigma  && useTOFPID) {selected = false;}
-	}
-
-	if(selected){
-	  ((TH2F*)fQAHistList->FindObject("fhdEdxSigmavsEtaTPCTOF"))->Fill(vtrack->Eta(), pidResponse->NumberOfSigmasTPC(vtrack, AliPID::kElectron));
-	  ((TH2F*)fQAHistList->FindObject("fhdEdxvsEtaTPCTOF"))->Fill(vtrack->Eta(), vtrack->GetTPCsignal());
-
-	  //cout << "RECO: originvsGen: " << originvsGen << " kConvElHijing: " << kConvElHijing << endl;
-
-	  // fill container for tracks
-	  if(fReducedMode)
-	    fCFManager->GetParticleContainer()->Fill(containerInput,kStepRedRecoPID);
-	  else{
-	    fCFManager->GetParticleContainer()->Fill(containerInputMC, kStepRecoPIDMC);
-	    fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoPID);
-	  }
-	}
+      //also check for pdg first????
+      if(fUseTPCPID){
+	Float_t tpcNsigma = pidResponse->NumberOfSigmasTPC(vtrack, AliPID::kElectron); // change to particle
+	AliDebug(2, Form("Number of sigmas in TPC: %f", tpcNsigma));
+	//cout << "sigmaTPC " << tpcNsigma << "   " << fTPCnSigmaMin << " - " << fTPCnSigmaMax << endl;
+	if(tpcNsigma<fTPCnSigmaMin || tpcNsigma>fTPCnSigmaMax) { continue;}
 
       }
- 
+
+      ((TH2F*)fQAHistList->FindObject("fhdEdxSigmavsEtaTPC"))->Fill(vtrack->Eta(), pidResponse->NumberOfSigmasTPC(vtrack, AliPID::kElectron));
+      ((TH2F*)fQAHistList->FindObject("fhdEdxvsEtaTPC"))->Fill(vtrack->Eta(), vtrack->GetTPCsignal());
+    
+      if(useTOFPID && fUseTOFPID){
+
+	// if fMaxPtCombinedPID is set to lower than upper Ptlimit (10GeV/c), will separate
+	// PID into two regions: below fMaxptCombinedPID - both TPC and TOF, above only TPC
+	Float_t tofNsigma = pidResponse->NumberOfSigmasTOF(vtrack, AliPID::kElectron); //change to particle
+	AliDebug(2, Form("Number of sigmas in TOF: %f", tofNsigma));
+	// for now: Assume symmetric cut for TOF
+	if(TMath::Abs(tofNsigma) > fTOFnSigma) {continue;}
+      }
+
+
+      ((TH2F*)fQAHistList->FindObject("fhdEdxSigmavsEtaTPCTOF"))->Fill(vtrack->Eta(), pidResponse->NumberOfSigmasTPC(vtrack, AliPID::kElectron));
+      ((TH2F*)fQAHistList->FindObject("fhdEdxvsEtaTPCTOF"))->Fill(vtrack->Eta(), vtrack->GetTPCsignal());
+
+      // fill container for tracks
+      if(fReducedMode)
+	fCFManager->GetParticleContainer()->Fill(containerInput,kStepRedRecoPID);
+      else{
+	fCFManager->GetParticleContainer()->Fill(containerInputMC, kStepRecoPIDMC);
+	fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoPID);
+      }
+
       // invariant mass method - Not sure if needed here...
-      if(selected){
-	fSelNHFE->FindNonHFE(iTrack, aodtrack, const_cast<AliVEvent*>(fEvent));
-	if(fSelNHFE->IsLS() || fSelNHFE->IsULS())
-	  {
-	    //Not selected
-	    //	    ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kINVMASS);
-	    //cout <<"Not selected due to inv mass" << endl;
-	    AliDebug(2,"Cut: Invmass");
-	    selected=false;
-	  }
-	if(selected){
-
-	  // fill container for tracks, with all electrons
-	  //fCFManager->GetParticleContainer()->Fill(containerInputMC, kStepRecoInvMassMC);
-	  if(fReducedMode)
-	    fCFManager->GetParticleContainer()->Fill(containerInput,kStepRedRecoInvMass);
-	  else
-	    fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoInvMass);
-
-	  ((TH1F*)fQAHistList->FindObject("fhOriginReco"))->Fill(fOriginMotherReco);
-	
-	  if(fSelectElSource==kHadronHijing || fSelectElSource==kHadron){((TH1F*)fQAHistList->FindObject("fPDGHadron"))->Fill(TMath::Abs(mcPart->PdgCode()));}
-
+      fSelNHFE->FindNonHFE(iTrack, aodtrack, const_cast<AliVEvent*>(fEvent));
+      if(fSelNHFE->IsLS() || fSelNHFE->IsULS())
+	{
+	  //Not selected
+	  AliDebug(2,"Cut: Invmass");
+	  continue;
 	}
-      }
-      
-      if(isAOD) delete tmptrack;
+
+      // fill container for tracks, with all electrons
+      //fCFManager->GetParticleContainer()->Fill(containerInputMC, kStepRecoInvMassMC);
+      if(fReducedMode)
+	fCFManager->GetParticleContainer()->Fill(containerInput,kStepRedRecoInvMass);
+      else
+	fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoInvMass);
+
+      ((TH1F*)fQAHistList->FindObject("fhOriginReco"))->Fill(fOriginMotherReco);
 	
-    } 
-    
-    
+      if(fSelectElSource==kHadronHijing || fSelectElSource==kHadron){((TH1F*)fQAHistList->FindObject("fPDGHadron"))->Fill(TMath::Abs(mcPart->PdgCode()));}
+
+	
+    }
+      
+    if(isAOD) delete tmptrack;
+	
   }
   else AliDebug(3,"Event not passing quality criteria\n");
        
@@ -815,10 +785,10 @@ void AliCFSingleTrackEfficiencyTask::GetTrackPrimaryGenerator(AliAODTrack *track
     nameGen=GetGenerator(mother,header);
     countControl++;
     /**
-    if(countControl>=10){ // 10 = arbitrary number; protection from infinite loops
-      printf("BREAK: Protection from infinite loop active\n");
-      break;
-      }*/
+       if(countControl>=10){ // 10 = arbitrary number; protection from infinite loops
+       printf("BREAK: Protection from infinite loop active\n");
+       break;
+       }*/
   }
   
   return;
@@ -850,7 +820,7 @@ void AliCFSingleTrackEfficiencyTask::GetTrackPrimaryGenerator(AliAODTrack *track
     nameGen=GetGenerator(mother,header);
     countControl++;
     /*
-    if(countControl>=10){ // 10 = arbitrary number; protection from infinite loops
+      if(countControl>=10){ // 10 = arbitrary number; protection from infinite loops
       printf("BREAK: Protection from infinite loop active\n");
       break;
       }*/
@@ -1024,19 +994,19 @@ void AliCFSingleTrackEfficiencyTask::UserCreateOutputObjects() {
 
 
 TH1* AliCFSingleTrackEfficiencyTask::CreateControlHistogram(const char* name,
-						       const char* title,
-						       int nBins,
-						       double min,
-						       double max,
-						       const char** binLabels) const
+							    const char* title,
+							    int nBins,
+							    double min,
+							    double max,
+							    const char** binLabels) const
 {
   /// create control histogram
   std::auto_ptr<TH1> h(new TH1D(name, title, nBins, min, max));
   if (!h.get()) return NULL;
   if (binLabels) {
-  for (int iLabel=0; iLabel<nBins; iLabel++) {
-    h->GetXaxis()->SetBinLabel(iLabel+1, binLabels[iLabel]);    
-  }
+    for (int iLabel=0; iLabel<nBins; iLabel++) {
+      h->GetXaxis()->SetBinLabel(iLabel+1, binLabels[iLabel]);    
+    }
   }
   
   return h.release();
@@ -1044,11 +1014,11 @@ TH1* AliCFSingleTrackEfficiencyTask::CreateControlHistogram(const char* name,
 
 
 TH2* AliCFSingleTrackEfficiencyTask::CreateControl2DHistogram(const char* name,
-							 const char* title,
-							 double* nBins,
-							 const char* xaxis,
-							 const char* yaxis
-							 ) const
+							      const char* title,
+							      double* nBins,
+							      const char* xaxis,
+							      const char* yaxis
+							      ) const
 {
   /// create control 2D histogram. Requires as input:
   // name = name of histogram 
@@ -1090,7 +1060,7 @@ int AliCFSingleTrackEfficiencyTask::ParseArguments(const char* arguments)
       AliInfo(Form("tpc clusters /findable %f",fMinRatioTPCcluster));
       continue;
     }
-   if (argument.BeginsWith("invmasscut=")){
+    if (argument.BeginsWith("invmasscut=")){
       argument.ReplaceAll("invmasscut=", "");
       fInvMassLow=argument.Atof();	    
       AliInfo(Form("Invariant mass cut %f",fInvMassLow));
@@ -1101,6 +1071,18 @@ int AliCFSingleTrackEfficiencyTask::ParseArguments(const char* arguments)
       fRequireTOF=kFALSE;	    
       continue;
     }
+    if (argument.BeginsWith("notuseTOFPID")){
+      AliInfo("Not Use TOF PID");
+      fUseTOFPID=kFALSE;
+      fRequireTOF=kFALSE;	    
+      continue;
+    }
+    if(argument.BeginsWith("TOFwhenpresent")){
+      SetUseTOFWhenPresent(kTRUE);
+      AliInfo("Only use TOF when it's present");
+      continue;
+    }
+
     if (argument.BeginsWith("useglobalmomentum") || argument.BeginsWith("useglobalmom")){
       AliInfo("Use global momentum");
       fUsePt=kFALSE;	    
@@ -1125,16 +1107,7 @@ int AliCFSingleTrackEfficiencyTask::ParseArguments(const char* arguments)
       AliInfo(Form("Setting max radius for particles %f",fMaxRadius));
       continue;
     }
-    if(argument.BeginsWith("TOFwhenpresent")){
-      SetUseTOFWhenPresent(kTRUE);
-      AliInfo("Only use TOF when it's present");
-      continue;
-    }
-    if (argument.BeginsWith("notuseTOFPID")){
-      AliInfo("Not Use TOF PID");
-      fUseTOFPID=kFALSE;	    
-      continue;
-    }
+
     if (argument.BeginsWith("reducedmode")){
       AliInfo("Running in reduced mode");
       fReducedMode=kTRUE;	    
