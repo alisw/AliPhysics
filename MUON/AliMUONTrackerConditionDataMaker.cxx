@@ -107,7 +107,16 @@ fIsOwnerOfData(kTRUE)
     {
       fData = CreateData(type,*store,startOfValidity);
     }
-    // we do not delete the store, as it's supposedly part of the OCDB cache...
+    delete store;
+  }
+
+  if ( fData )
+  {
+    TString name(fData->GetName());
+    name += "(";
+    name += ocdbPath;
+    name += ")";
+    fData->SetName(name);
   }
   
   AliCDBManager::Instance()->SetDefaultStorage(storage);

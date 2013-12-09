@@ -506,8 +506,11 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterial
   // "anglecorr" - switch for the angular correction
   // "Bethe" - function calculating the energy loss (GeV/(g/cm^2)) 
   //------------------------------------------------------------------
-  
   Double_t bg=GetP()/mass;
+  if (bg<kAlmost0) {
+    AliError(Form("Non-positive beta*gamma = %e, mass = %e",bg,mass));
+    return kFALSE;
+  }
   Double_t dEdx=Bethe(bg);
 
   return CorrectForMeanMaterialdEdx(xOverX0,xTimesRho,mass,dEdx,anglecorr);
