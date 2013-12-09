@@ -9,7 +9,7 @@
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any prpose. It is          *
+ * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
@@ -913,6 +913,10 @@ void AliTPCPreprocessorOffline::CalibTimeGain(const Char_t* fileName, Int_t star
   AnalyzeGainMultiplicity();
   AnalyzeGainChamberByChamber();
   //
+  AnalyzeGainDipAngle(0); // short pads
+  AnalyzeGainDipAngle(1); // medium pads
+  AnalyzeGainDipAngle(2); // long pads
+  //
   // 3. Make control plots
   //
   MakeQAPlot(1.43);  
@@ -1160,6 +1164,43 @@ Bool_t AliTPCPreprocessorOffline::AnalyzePadRegionGain(){
 }
 
 
+Bool_t AliTPCPreprocessorOffline::AnalyzeGainDipAngle(Int_t padRegion)  {
+  //
+  // Analyze gain as a function of multiplicity and produce calibration graphs
+  // padRegion -- 0: short, 1: medium, 2: long
+  //
+  if (!fGainMult) return kFALSE;
+  //
+  // "dEdxRatioMax","dEdxRatioTot","padType","mult","driftlength"
+  TObjArray arrMax;
+  TObjArray arrTot;
+  //
+  fGainMult->GetHistPadEqual()->GetAxis(2)->SetRangeUser(padRegion,padRegion); // short
+  TH2D * histQmax = (TH2D*) fGainMult->GetHistPadEqual()->Projection(0,4);
+  TH2D * histQtot = (TH2D*) fGainMult->GetHistPadEqual()->Projection(1,4);
+  //
+  histQmax->FitSlicesY(0,0,-1,0,"QNR",&arrMax);
+  histQtot->FitSlicesY(0,0,-1,0,"QNR",&arrTot);
+  TH1D * corrMax = (TH1D*)arrMax.At(1);
+  TH1D * corrTot = (TH1D*)arrTot.At(1);
+  //
+  const char* names[3]={"SHORT","MEDIUM","LONG"};
+  //
+  TGraphErrors * graphMax = new TGraphErrors(corrMax);
+  TGraphErrors * graphTot = new TGraphErrors(corrTot);
+  //
+  graphMax->SetNameTitle(Form("TGRAPHERRORS_QMAX_DIPANGLE_%s_BEAM_ALL",names[padRegion]),
+			Form("TGRAPHERRORS_QMAX_DIPANGLE_%s_BEAM_ALL",names[padRegion]));
+  graphTot->SetNameTitle(Form("TGRAPHERRORS_QTOT_DIPANGLE_%s_BEAM_ALL",names[padRegion]),
+			Form("TGRAPHERRORS_QTOT_DIPANGLE_%s_BEAM_ALL",names[padRegion]));
+  //
+  fGainArray->AddLast(graphMax);
+  fGainArray->AddLast(graphTot);
+  //
+  return kTRUE;
+}
+
+
 Bool_t AliTPCPreprocessorOffline::AnalyzeGainMultiplicity() {
   //
   // Analyze gain as a function of multiplicity and produce calibration graphs
@@ -1245,9 +1286,9 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainChamberByChamber(){
   // get chamber by chamber gain
   //
   if (!fGainMult) return kFALSE;
-  TGraphErrors *grShort  = fGainMult->GetGainPerChamberRobust(0);
-  TGraphErrors *grMedium = fGainMult->GetGainPerChamberRobust(1);
-  TGraphErrors *grLong   = fGainMult->GetGainPerChamberRobust(2);
+  TGraphErrors *grShort  = fGainMult->GetGainPerChamber(0);
+  TGraphErrors *grMedium = fGainMult->GetGainPerChamber(1);
+  TGraphErrors *grLong   = fGainMult->GetGainPerChamber(2);
   if (grShort==0x0 || grMedium==0x0 || grLong==0x0) {
     delete grShort;
     delete grMedium;

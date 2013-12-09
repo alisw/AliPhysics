@@ -183,11 +183,11 @@ AliTPCcalibGainMult::AliTPCcalibGainMult(const Text_t *name, const Text_t *title
   //
   //
   //
-  Int_t binsPadEqual[5]    = { 400, 400,    4,   10,   10};
-  Double_t xminPadEqual[5] = { 0.0, 0.0, -0.5,    0, -250}; 
-  Double_t xmaxPadEqual[5] = { 2.0, 2.0,  3.5, 13000, 250};
-  TString axisNamePadEqual[5]   = {"dEdxRatioMax","dEdxRatioTot","padType","mult","driftlength"};
-  TString axisTitlePadEqual[5]  = {"dEdx_padRegion/mean_dEdx Qmax", "dEdx_padRegion/mean_dEdx Qtot","padType","mult","driftlength"};
+  Int_t binsPadEqual[5]    = { 400, 400,    4,    5,   20};
+  Double_t xminPadEqual[5] = { 0.0, 0.0, -0.5,    0,  -1.}; 
+  Double_t xmaxPadEqual[5] = { 2.0, 2.0,  3.5, 13000,  +1};
+  TString axisNamePadEqual[5]   = {"dEdxRatioMax","dEdxRatioTot","padType","mult","dipAngle"};
+  TString axisTitlePadEqual[5]  = {"dEdx_padRegion/mean_dEdx Qmax", "dEdx_padRegion/mean_dEdx Qtot","padType","mult","tan(lambda)"};
   //
   fHistPadEqual = new THnSparseF("fHistPadEqual","0:dEdx_pad/dEdx_mean, 1:pad, 2:mult, 3:drift", 5, binsPadEqual, xminPadEqual, xmaxPadEqual);
   for (Int_t iaxis=0; iaxis<5;iaxis++){
@@ -377,6 +377,7 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
       if (!trackIn) continue;
       if (!trackOut) continue;
       Double_t meanDrift = 250 - 0.5*TMath::Abs(trackIn->GetZ() + trackOut->GetZ());
+      Double_t dipAngleTgl  = trackIn->GetTgl();
       //
       for (Int_t irow =0; irow<160;irow++)    {
 	AliTPCTrackerPoint * point = seed->GetTrackPoint(irow);
@@ -434,8 +435,8 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
       if (signalArrayTot[2]<=kMinAmp) continue;
       //
       for(Int_t ipad = 0; ipad < 4; ipad ++) {
-	// "dEdxRatioMax","dEdxRatioTot","padType","mult","driftlength", "1_pt"
-	Double_t vecPadEqual[5] = {signalArrayMax[ipad]/meanMax, signalArrayTot[ipad]/meanTot, ipad, nContributors, meanDrift};
+	// "dEdxRatioMax","dEdxRatioTot","padType","mult","driftlength"
+	Double_t vecPadEqual[5] = {signalArrayMax[ipad]/meanMax, signalArrayTot[ipad]/meanTot, ipad, nContributors, dipAngleTgl};
 	if (fMinMomentumMIP > meanP && meanP < fMaxMomentumMIP) fHistPadEqual->Fill(vecPadEqual);
       }
       //
