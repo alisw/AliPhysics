@@ -1676,9 +1676,12 @@ Bool_t AliAnalysisAlien::CreateJDL()
       if (!fUser.IsNull()) {
          fGridJDL->SetValue("User", Form("\"%s\"", fUser.Data()));
          fMergingJDL->SetValue("User", Form("\"%s\"", fUser.Data()));
-      }   
-      fGridJDL->SetExecutable(fExecutable, "This is the startup script");
-      TString mergeExec = fExecutable;
+      }
+      TString executable = fExecutable;
+      if (!executable.BeginsWith("/")) 
+         executable.Prepend(Form("%s/", workdir.Data()));
+      fGridJDL->SetExecutable(executable, "This is the startup script");
+      TString mergeExec = executable;
       mergeExec.ReplaceAll(".sh", "_merge.sh");
       fMergingJDL->SetExecutable(mergeExec, "This is the startup script");
       mergeExec.ReplaceAll(".sh", ".C");
@@ -1700,11 +1703,11 @@ Bool_t AliAnalysisAlien::CreateJDL()
          fGridJDL->SetValue("MaxInitFailed", Form("\"%d\"",fMaxInitFailed));
          fGridJDL->SetDescription("MaxInitFailed", "Maximum number of first failing jobs to abort the master job");
       }   
-      if (fSplitMaxInputFileNumber > 0) {
+      if (fSplitMaxInputFileNumber > 0 && !fMCLoop) {
          fGridJDL->SetValue("SplitMaxInputFileNumber", Form("\"%d\"", fSplitMaxInputFileNumber));
          fGridJDL->SetDescription("SplitMaxInputFileNumber", "Maximum number of input files to be processed per subjob");
       }
-      if (!IsOneStageMerging()) {
+      if (!IsOneStageMerging() && !fMCLoop) {
          fMergingJDL->SetValue("SplitMaxInputFileNumber", Form("\"%d\"",fMaxMergeFiles));
          fMergingJDL->SetDescription("SplitMaxInputFileNumber", "Maximum number of input files to be merged in one go");
       }   
@@ -1739,10 +1742,12 @@ Bool_t AliAnalysisAlien::CreateJDL()
          }   
          delete arr;   
       }   
-      fGridJDL->SetInputDataListFormat(fInputFormat, "Format of input data");
-      fGridJDL->SetInputDataList("wn.xml", "Collection name to be processed on each worker node");
-      fMergingJDL->SetInputDataListFormat(fInputFormat, "Format of input data");
-      fMergingJDL->SetInputDataList("wn.xml", "Collection name to be processed on each worker node");
+      if (!fMCLoop) {
+         fGridJDL->SetInputDataListFormat(fInputFormat, "Format of input data");
+         fGridJDL->SetInputDataList("wn.xml", "Collection name to be processed on each worker node");
+         fMergingJDL->SetInputDataListFormat(fInputFormat, "Format of input data");
+         fMergingJDL->SetInputDataList("wn.xml", "Collection name to be processed on each worker node");
+      }   
       fGridJDL->AddToInputSandbox(Form("LF:%s/%s", workdir.Data(), fAnalysisMacro.Data()), "List of input files to be uploaded to workers");
       TString analysisFile = fExecutable;
       analysisFile.ReplaceAll(".sh", ".root");
@@ -4828,13 +4833,10 @@ void AliAnalysisAlien::WriteExecutable()
    if (copy) {
       CdWork();
       TString workdir = gGrid->GetHomeDirectory();
-      TString bindir = Form("%s/bin", workdir.Data());
-      if (!DirectoryExists(bindir)) gGrid->Mkdir(bindir,"-p");
       workdir += fGridWorkingDir;
-      TString executable = Form("%s/bin/%s", gGrid->GetHomeDirectory(), fExecutable.Data());
+      TString executable = TString::Format("%s/%s", workdir.Data(), fExecutable.Data());
       if (FileExists(executable)) gGrid->Rm(executable);
       Info("WriteExecutable", "\n#####   Copying executable file <%s> to your AliEn bin directory", fExecutable.Data());
-//      TFile::Cp(Form("file:%s",fExecutable.Data()), Form("alien://%s", executable.Data()));
       if (!copyLocal2Alien("WriteExecutable",fExecutable.Data(), 
           executable.Data())) Fatal("","Terminating");
    } 
@@ -4905,15 +4907,12 @@ void AliAnalysisAlien::WriteMergeExecutable()
    if (copy) {
       CdWork();
       TString workdir = gGrid->GetHomeDirectory();
-      TString bindir = Form("%s/bin", workdir.Data());
-      if (!DirectoryExists(bindir)) gGrid->Mkdir(bindir,"-p");
       workdir += fGridWorkingDir;
-      TString executable = Form("%s/bin/%s", gGrid->GetHomeDirectory(), mergeExec.Data());
+      TString executable = TString::Format("%s/%s", workdir.Data(), mergeExec.Data());
       if (FileExists(executable)) gGrid->Rm(executable);
       Info("WriteMergeExecutable", "\n#####   Copying executable file <%s> to your AliEn bin directory", mergeExec.Data());
-//      TFile::Cp(Form("file:%s",mergeExec.Data()), Form("alien://%s", executable.Data()));
-      if (!copyLocal2Alien("WriteMergeExecutable",
-          mergeExec.Data(), executable.Data())) Fatal("","Terminating");
+      if (!copyLocal2Alien("WriteMergeExecutable",mergeExec.Data(), 
+          executable.Data())) Fatal("","Terminating");
    } 
 }
 
