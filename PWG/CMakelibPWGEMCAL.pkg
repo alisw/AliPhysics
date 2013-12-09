@@ -45,6 +45,7 @@ set ( SRCS
  EMCAL/AliEmcalSetupTask.cxx
  EMCAL/AliEmcalTenderTask.cxx
  EMCAL/AliEmcalTrackPropagatorTask.cxx
+ EMCAL/AliEmcalTrackPropagatorTaskAOD.cxx
  EMCAL/AliEsdSkimTask.cxx
  EMCAL/AliEsdTrackExt.cxx
  EMCAL/AliParticleContainer.cxx
