@@ -10,9 +10,9 @@ class TH2;
 class AliEmcalParticle;
 class TString;
 
-#include "AliAnalysisTaskEmcalDev.h"
+#include "AliAnalysisTaskEmcal.h"
 
-class AliHadCorrTask : public AliAnalysisTaskEmcalDev {
+class AliHadCorrTask : public AliAnalysisTaskEmcal {
 
  public:
   AliHadCorrTask();

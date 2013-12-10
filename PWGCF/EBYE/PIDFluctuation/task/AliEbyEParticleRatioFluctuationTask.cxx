@@ -46,7 +46,8 @@
 #include "AliAODHeader.h"
 #include "AliAODpidUtil.h"
 #include "AliHelperPID.h"
-
+using std::endl;
+using std::cout;
 #include "AliEbyEParticleRatioFluctuationTask.h"
 
 ClassImp(AliEbyEParticleRatioFluctuationTask)

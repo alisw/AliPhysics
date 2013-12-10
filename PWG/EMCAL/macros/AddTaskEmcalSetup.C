@@ -1,6 +1,10 @@
 // $Id$
 
-AliEmcalSetupTask* AddTaskEmcalSetup()
+AliEmcalSetupTask* AddTaskEmcalSetup(
+  const char *geop = 0,
+  const char *oadp = 0,
+  const char *ocdp = 0 
+)
 {  
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -23,6 +27,9 @@ AliEmcalSetupTask* AddTaskEmcalSetup()
   // Init the task and do settings
   //-------------------------------------------------------
   AliEmcalSetupTask *eTask = new AliEmcalSetupTask("EmcalSetupTask");
+  if (geop) eTask->SetGeoPath(geop);
+  if (oadp) eTask->SetOadbPath(oadp);
+  if (ocdp) eTask->SetOcdbPath(ocdp);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

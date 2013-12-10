@@ -1,5 +1,15 @@
 #ifndef ALIFORWARDMULTDIST_H
 #define ALIFORWARDMULTDIST_H
+/**
+ * @file   AliForwardMultDists.h
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Tue Nov 12 09:57:28 2013
+ * 
+ * @brief  Class to make raw @f$P(N_{ch})@f$ distributions 
+ * 
+ * @ingroup pwglf_forward_multdist 
+ */
+
 #include "AliBaseAODTask.h"
 #include <TList.h>
 #include <TString.h>
@@ -10,6 +20,7 @@ class AliAODForwardMult;
 /**
  * Class to make raw @f$P(N_{ch})@f$ distributions 
  * 
+ * @ingroup pwglf_forward_multdist
  */
 class AliForwardMultDists : public AliBaseAODTask
 {
@@ -129,7 +140,6 @@ public:
    * @param etaLow Low cut on @f$\eta@f$  
    * @param etaMax High cut on @f$\eta@f$ 
    * @param nAxis  Axis to use for measured @f$ N_{ch}@f$ 
-   *
    */
   void AddBin(Double_t etaLow, Double_t etaMax, const TAxis& nAxis); 
   /** 

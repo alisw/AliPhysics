@@ -74,9 +74,8 @@ AliFiducialCut::~AliFiducialCut()
 }
 
 
-//___________________________________________________________________
-Bool_t AliFiducialCut::IsInFiducialCut(const TLorentzVector momentum, 
-                                       const TString det) const
+//________________________________________________________________________________
+Bool_t AliFiducialCut::IsInFiducialCut(TLorentzVector momentum, TString det) const
 {
   //Selects EMCAL or PHOS cluster or CTS track if it is inside eta-phi defined regions
   
@@ -110,7 +109,7 @@ Bool_t AliFiducialCut::IsInFiducialCut(const TLorentzVector momentum,
 }
 
 //___________________________________________________________________________________________
-Bool_t AliFiducialCut::CheckFiducialRegion(const TLorentzVector momentum, 
+Bool_t AliFiducialCut::CheckFiducialRegion(TLorentzVector momentum,
                                            const TArrayF* minphi, const TArrayF* maxphi, 
                                            const TArrayF* mineta, const TArrayF* maxeta) const 
 {
@@ -243,10 +242,8 @@ void AliFiducialCut::Print(const Option_t * opt) const
   
 } 
 
-//_______________________________________________________________
-void AliFiducialCut::SetSimpleCTSFiducialCut(const Float_t eta, 
-                                             const Float_t minphi, 
-                                             const Float_t maxphi)
+//_______________________________________________________________________________________
+void AliFiducialCut::SetSimpleCTSFiducialCut(Float_t eta, Float_t minphi, Float_t maxphi)
 {
   
   //Method to set simple acceptance cut to CTS
@@ -263,10 +260,8 @@ void AliFiducialCut::SetSimpleCTSFiducialCut(const Float_t eta,
   
 }
 
-//__________________________________________________________________
-void AliFiducialCut::SetSimpleEMCALFiducialCut(const Float_t eta, 
-                                               const Float_t minphi, 
-                                               const Float_t maxphi)
+//_________________________________________________________________________________________
+void AliFiducialCut::SetSimpleEMCALFiducialCut(Float_t eta, Float_t minphi, Float_t maxphi)
 {
   //Method to set simple acceptance cut to EMCAL
   
@@ -280,13 +275,10 @@ void AliFiducialCut::SetSimpleEMCALFiducialCut(const Float_t eta,
   fEMCALFidCutMinPhi->SetAt(minphi,0);
   fEMCALFidCutMaxPhi->SetAt(maxphi,0);
   
-  
 }
 
-//_________________________________________________________________
-void AliFiducialCut::SetSimplePHOSFiducialCut(const Float_t eta, 
-                                              const Float_t minphi, 
-                                              const Float_t maxphi)
+//________________________________________________________________________________________
+void AliFiducialCut::SetSimplePHOSFiducialCut(Float_t eta, Float_t minphi, Float_t maxphi)
 {
   //Method to set simple acceptance cut to PHOS
   

@@ -44,6 +44,30 @@
 #include "AliVVZERO.h"
 
 //====================================================================
+namespace {
+  AliPhysicsSelection* GetPhysicsSelection()
+  {
+    AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
+
+    // Get the input handler - should always be there 
+    AliInputEventHandler* ih = 
+      dynamic_cast<AliInputEventHandler*>(am->GetInputEventHandler());
+    if (!ih) { 
+      Warning("GetPhysicsSelection", "No input handler");
+      return 0;
+    }
+    // Get the physics selection - should always be there 
+    AliPhysicsSelection* ps = 
+      dynamic_cast<AliPhysicsSelection*>(ih->GetEventSelection());
+    if (!ps) {
+      Warning("GetPhysicsSelection", "No physics selection");
+      return 0;
+    }
+    return ps;
+  }
+}
+
+//====================================================================
 const char* AliFMDEventInspector::fgkFolderName = "fmdEventInspector";
 
 //____________________________________________________________________
@@ -73,18 +97,23 @@ AliFMDEventInspector::AliFMDEventInspector()
     fVtxAxis(10,-10,10),
     fUseFirstPhysicsVertex(false),
     fUseV0AND(false),
-  fMinPileupContrib(3), 
-  fMinPileupDistance(0.8),
+    fMinPileupContrib(3), 
+    fMinPileupDistance(0.8),
     fUseDisplacedVertices(false),
-  fDisplacedVertex(),
-  fCollWords(),
-  fBgWords(),
-  fCentMethod("V0M"),
-  fMinCent(-1.0),
-  fMaxCent(-1.0),
-  fUsepA2012Vertex(false),
-  fRunNumber(0),
-  fMC(false)
+    fDisplacedVertex(),
+    fCollWords(),
+    fBgWords(),
+    fCentMethod("V0M"),
+    fMinCent(-1.0),
+    fMaxCent(-1.0),
+    fUsepA2012Vertex(false),
+    fRunNumber(0),
+    fMC(false),
+  fProdYear(-1),
+  fProdLetter('?'),
+  fProdPass(-1),
+  fProdSVN(-1),
+  fProdMC(false)
 {
   // 
   // Constructor 
@@ -130,7 +159,12 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
   fMaxCent(-1.0),
   fUsepA2012Vertex(false),
   fRunNumber(0),
-  fMC(false)
+  fMC(false),
+  fProdYear(-1),
+  fProdLetter('?'),
+  fProdPass(-1),
+  fProdSVN(-1),
+  fProdMC(false)
 {
   // 
   // Constructor 
@@ -139,56 +173,14 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
   //   name Name of object
   //
   DGUARD(fDebug,1,"Named CTOR of AliFMDEventInspector: %s", name);
+  if (!GetPhysicsSelection()) {
+    AliFatal("No physics selection defined in manager\n"
+	     "=======================================================\n"
+	     " The use of AliFMDEventInspector _requires_ a valid\n"
+	     " AliPhysicsSelection registered with the input handler.\n\n"
+	     " Please check our train setup\n"
+	     "=======================================================\n");
 }
-
-//____________________________________________________________________
-AliFMDEventInspector::AliFMDEventInspector(const AliFMDEventInspector& o)
-  : TNamed(o), 
-    fHEventsTr(o.fHEventsTr), 
-    fHEventsTrVtx(o.fHEventsTrVtx), 
-    fHEventsAccepted(o.fHEventsAccepted),
-    fHEventsAcceptedXY(o.fHEventsAcceptedXY),
-    fHTriggers(o.fHTriggers),
-    fHTriggerCorr(o.fHTriggerCorr),
-    fHType(o.fHType),
-    fHWords(o.fHWords),
-    fHCent(o.fHCent),
-    fHCentVsQual(o.fHCentVsQual),
-    fHStatus(o.fHStatus),
-    fHVtxStatus(o.fHVtxStatus),
-    fHTrgStatus(o.fHTrgStatus),
-    fLowFluxCut(o.fLowFluxCut),
-    fMaxVzErr(o.fMaxVzErr),
-    fList(o.fList),
-    fEnergy(o.fEnergy),
-    fField(o.fField), 
-    fCollisionSystem(o.fCollisionSystem),
-    fDebug(0),
-    fCentAxis(0),
-    fVtxAxis(o.fVtxAxis),
-    fUseFirstPhysicsVertex(o.fUseFirstPhysicsVertex),
-    fUseV0AND(o.fUseV0AND),
-    fMinPileupContrib(o.fMinPileupContrib), 
-    fMinPileupDistance(o.fMinPileupDistance),
-    fUseDisplacedVertices(o.fUseDisplacedVertices),
-    fDisplacedVertex(o.fDisplacedVertex),
-  fCollWords(),
-  fBgWords(),
-  fCentMethod(o.fCentMethod),
-  fMinCent(o.fMinCent),
-  fMaxCent(o.fMaxCent),
-  fUsepA2012Vertex(o.fUsepA2012Vertex),
-  fRunNumber(o.fRunNumber),
-  fMC(o.fMC)
-  	
-{
-  // 
-  // Copy constructor 
-  // 
-  // Parameters:
-  //   o Object to copy from 
-  //
-  DGUARD(fDebug,1,"Copy CTOR of AliFMDEventInspector");
 }
 
 //____________________________________________________________________
@@ -199,74 +191,6 @@ AliFMDEventInspector::~AliFMDEventInspector()
   //
   DGUARD(fDebug,1,"DTOR of AliFMDEventInspector");
   // if (fList)         delete fList;
-}
-//____________________________________________________________________
-AliFMDEventInspector&
-AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
-{
-  // 
-  // Assignement operator
-  // 
-  // Parameters:
-  //   o Object to assign from 
-  // 
-  // Return:
-  //    Reference to this object
-  //
-  DGUARD(fDebug,3,"Assignment of AliFMDEventInspector");
-  if (&o == this) return *this; 
-  TNamed::operator=(o);
-  fHEventsTr         = o.fHEventsTr;
-  fHEventsTrVtx      = o.fHEventsTrVtx;
-  fHEventsAccepted   = o.fHEventsAccepted;
-  fHEventsAcceptedXY = o.fHEventsAcceptedXY;
-  fHTriggers         = o.fHTriggers;
-  fHTriggerCorr      = o.fHTriggerCorr;
-  fHType             = o.fHType;
-  fHWords            = o.fHWords;
-  fHCent             = o.fHCent;
-  fHCentVsQual       = o.fHCentVsQual;
-  fHStatus           = o.fHStatus;
-  fHVtxStatus        = o.fHVtxStatus;
-  fHTrgStatus        = o.fHTrgStatus;
-  fLowFluxCut        = o.fLowFluxCut;
-  fMaxVzErr          = o.fMaxVzErr;
-  fDebug             = o.fDebug;
-  fList              = (o.fList ? new TList : 0);
-  fEnergy            = o.fEnergy;
-  fField             = o.fField;
-  fCollisionSystem   = o.fCollisionSystem;
-  fVtxAxis.Set(o.fVtxAxis.GetNbins(), o.fVtxAxis.GetXmin(), 
-	       o.fVtxAxis.GetXmax());
-  
-  fUseFirstPhysicsVertex = o.fUseFirstPhysicsVertex;
-  fUseV0AND              = o.fUseV0AND;
-  fMinPileupContrib      = o.fMinPileupContrib;
-  fMinPileupDistance     = o.fMinPileupDistance;
-  fUseDisplacedVertices  = o.fUseDisplacedVertices;
-  fDisplacedVertex       = o.fDisplacedVertex;
-  fCentMethod            = o.fCentMethod;
-  fMinCent		 = o.fMinCent;
-  fMaxCent		 = o.fMaxCent; 
-  fUsepA2012Vertex       = o.fUsepA2012Vertex;
-  fRunNumber             = o.fRunNumber;
-  fMC                    = o.fMC;
-
-  if (fList) { 
-    fList->SetName(GetName());
-    if (fHEventsTr)    fList->Add(fHEventsTr);
-    if (fHEventsTrVtx) fList->Add(fHEventsTrVtx);
-    if (fHTriggers)    fList->Add(fHTriggers);
-    if (fHTriggerCorr) fList->Add(fHTriggerCorr);
-    if (fHType)        fList->Add(fHType);
-    if (fHWords)       fList->Add(fHWords);
-    if (fHCent)        fList->Add(fHCent);
-    if (fHCentVsQual)  fList->Add(fHCentVsQual);
-    if (fHStatus)      fList->Add(fHStatus);
-    if (fHVtxStatus)   fList->Add(fHVtxStatus);
-    if (fHTrgStatus)   fList->Add(fHTrgStatus);
-  }
-  return *this;
 }
 
 //____________________________________________________________________
@@ -409,18 +333,8 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
   //
   DGUARD(fDebug,1,"Initialize in AliFMDEventInspector");
 
-  AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
-
-  // Get the input handler - should always be there 
-  AliInputEventHandler* ih = 
-    static_cast<AliInputEventHandler*>(am->GetInputEventHandler());
-  if (!ih) { 
-    AliWarning("No input handler");
-    return;
-  }
   // Get the physics selection - should always be there 
-  AliPhysicsSelection* ps = 
-    static_cast<AliPhysicsSelection*>(ih->GetEventSelection());
+  AliPhysicsSelection* ps = GetPhysicsSelection();
   if (!ps) {
     AliWarning("No physics selection");
     return;
@@ -451,20 +365,31 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
   
   TArrayD limits;
   if ((fMinCent < 0 && fMaxCent < 0) || fMaxCent <= fMinCent) {
+    // Was:
     // -1.5 -0.5 0.5 1.5 ... 89.5 ... 100.5
     // ----- 92 number --------- ---- 1 ---
-    limits.Set(93);
-    for (Int_t i = 0; i < 92; i++) limits[i] = -1.5 + i;
-    limits[92] = 100.5;
+    // Now:
+    // -0.5 0.5 1.5 ... 89.5 ... 100.5
+    // ----- 91 number ---- ---- 1 ---
+    limits.Set(92);
+    for (Int_t i = 0; i < 91; i++) limits[i] = -.5 + i;
+    limits[91] = 100.5;
   }
   else {
-    Int_t n = fMaxCent-fMinCent+2;
+    Int_t n = Int_t(fMaxCent-fMinCent+2);
     limits.Set(n);
     for (Int_t i = 0; i < n; i++) { 
       limits[i] = fMinCent + i - .5;
     }
   }
       
+  Printf("Got vertex axis %p (%d,%f,%f)", 
+	 &vtxAxis, 
+	 (&vtxAxis ? vtxAxis.GetNbins() : -1),
+	 (&vtxAxis ? vtxAxis.GetXmin() : -1),
+	 (&vtxAxis ? vtxAxis.GetXmax() : -1));
+  // if (&vtxAxis) vtxAxis.Dump();
+	 
   fVtxAxis.Set(vtxAxis.GetNbins(), vtxAxis.GetXmin(), vtxAxis.GetXmax());
   
   fCentAxis  = new TAxis(limits.GetSize()-1, limits.GetArray());
@@ -603,7 +528,7 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
   fHCentVsQual->SetDirectory(0);
   fList->Add(fHCentVsQual);
 
-  fHStatus = new TH1I("status", "Status", 7, 1, 8);
+  fHStatus = new TH1I("status", "Status", 8, 1, 9);
   fHStatus->SetFillColor(kBlue+1);
   fHStatus->SetFillStyle(3001);
   fHStatus->SetStats(0);
@@ -616,6 +541,7 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
   xAxis->SetBinLabel(5, "No FMD");
   xAxis->SetBinLabel(6, "No vertex");
   xAxis->SetBinLabel(7, "Bad vertex");
+  xAxis->SetBinLabel(8, "No centrality");
   fList->Add(fHStatus);
 
   fHVtxStatus = new TH1I("vtxStatus","Vertex Status",
@@ -717,23 +643,23 @@ AliFMDEventInspector::StoreProduction()
 
   TString period            = p.GetLHCPeriod();
   // TString aliROOTVersion    = p.GetAlirootVersion();
-  Int_t   aliROOTSVN        = p.GetAlirootSvnVersion();
+  fProdSVN                  = p.GetAlirootSvnVersion();
   // TString rootVersion       = p.GetRootVersion();
   Int_t   rootSVN           = p.GetRootSvnVersion();
-  Int_t   pass              = p.GetRecoPass();
-  Bool_t  mc                = p.IsMC();
+  fProdPass                 = p.GetRecoPass();
+  fProdMC                   = p.IsMC();
 
   TObjArray* pp = TPRegexp("LHC([0-9]+)([a-z]+)").MatchS(period);
-  Int_t      yy = static_cast<TObjString*>(pp->At(1))->String().Atoi();
-  Char_t     ll = static_cast<TObjString*>(pp->At(2))->String()[0];
+  fProdYear     = static_cast<TObjString*>(pp->At(1))->String().Atoi();
+  fProdLetter   = static_cast<TObjString*>(pp->At(2))->String()[0];
   pp->Delete();
   
-  out->Add(AliForwardUtil::MakeParameter("year", yy));
-  out->Add(AliForwardUtil::MakeParameter("letter", Int_t(ll)));
-  out->Add(AliForwardUtil::MakeParameter("alirootSVN", aliROOTSVN));
+  out->Add(AliForwardUtil::MakeParameter("year", fProdYear));
+  out->Add(AliForwardUtil::MakeParameter("letter", Int_t(fProdLetter)));
+  out->Add(AliForwardUtil::MakeParameter("alirootSVN", fProdSVN));
   out->Add(AliForwardUtil::MakeParameter("rootSVN", rootSVN));
-  out->Add(AliForwardUtil::MakeParameter("pass", pass));
-  out->Add(AliForwardUtil::MakeParameter("mc", mc));
+  out->Add(AliForwardUtil::MakeParameter("pass", fProdPass));
+  out->Add(AliForwardUtil::MakeParameter("mc", fProdMC));
 }
 
   
@@ -837,9 +763,10 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
  
   if(fMinCent > -0.0001 && cent < fMinCent) return  kNoEvent; 
   if(fMaxCent > -0.0001 && cent > fMaxCent) return  kNoEvent; 
-  fHCent->Fill(cent);
+  if (cent >= 0) fHCent->Fill(cent);
   if (qual == 0) fHCentVsQual->Fill(0., cent);
   else { 
+    fHStatus->Fill(8);
     for (UShort_t i = 0; i < 4; i++) 
       if (qual & (1 << i)) fHCentVsQual->Fill(Double_t(i+1), cent);
   }
@@ -1513,6 +1440,12 @@ AliFMDEventInspector::Print(Option_t*) const
   field.ReplaceAll("kG", " kG");
 
   gROOT->IncreaseDirLevel();
+  PFV("Production", "");
+  gROOT->IncreaseDirLevel();
+  PF("Period", "LHC%02d%c", fProdYear, fProdLetter);
+  PFB("MC anchor", fProdMC);
+  PFV("AliROOT Revision", fProdSVN);
+  gROOT->DecreaseDirLevel();
   PFV("Vertex bins", fVtxAxis.GetNbins());
   PF("Vertex Range", "[%+6.1f,%+6.1f]", fVtxAxis.GetXmin(), fVtxAxis.GetXmax());
   PFV("Low flux cut",		fLowFluxCut );
@@ -1531,7 +1464,8 @@ AliFMDEventInspector::Print(Option_t*) const
   if (!fCentAxis) {return; }
   Int_t nBin = fCentAxis->GetNbins();
   for (Int_t i = 0; i < nBin; i++) { 
-    if (i != 0 && (i % 10) == 0) std::cout << '\n' << "    ";
+    if (i != 0 && (i % 10) == 0) std::cout << '\n';
+    if ((i % 10) == 0)           std::cout << "    ";
     std::cout << std::setw(5) << fCentAxis->GetBinLowEdge(i+1) << '-';
   }
   std::cout << std::setw(5) << fCentAxis->GetBinUpEdge(nBin) << std::endl;

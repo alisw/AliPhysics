@@ -49,8 +49,8 @@ AliAnaRandomTrigger::AliAnaRandomTrigger() :
 
 }
 
-//_____________________________________________________________________________________
-Bool_t AliAnaRandomTrigger::ExcludeDeadBadRegions(const Float_t eta, const Float_t phi)
+//_________________________________________________________________________
+Bool_t AliAnaRandomTrigger::ExcludeDeadBadRegions(Float_t eta, Float_t phi)
 {
   // Check if there is a dead or bad region in a detector
   // Now only EMCAL

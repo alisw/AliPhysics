@@ -7,7 +7,6 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliAnalysisTaskEmcalJet+;
-#pragma link C++ class AliAnalysisTaskEmcalJetDev+;
 #pragma link C++ class AliAnalysisTaskRhoBase+;
 #pragma link C++ class AliAnalysisTaskRho+;
 #pragma link C++ class AliAnalysisTaskRhoFlow+;
@@ -42,10 +41,12 @@
 #pragma link C++ class AliAnalysisTaskEmcalDiJetResponse+;
 #pragma link C++ class AliAnalysisTaskEmcalJetHMEC+;
 #pragma link C++ class AliAnalysisTaskEmcalJetHadCorQA+;
+#pragma link C++ class AliAnalysisTaskEmcalJetMass+;
+#pragma link C++ class AliAnalysisTaskEmcalJetMassBkg+;
 #pragma link C++ class AliAnalysisTaskEmcalJetSample+;
-#pragma link C++ class AliAnalysisTaskEmcalJetSampleDev+;
 #pragma link C++ class AliAnalysisTaskEmcalJetSpectra+;
 #pragma link C++ class AliAnalysisTaskEmcalJetSpectraMECpA;
+#pragma link C++ class AliAnalysisTaskEmcalJetTagger+;
 #pragma link C++ class AliAnalysisTaskEmcalJetTriggerQA+;
 #pragma link C++ class AliAnalysisTaskEmcalTriggerInfoQA+;
 #pragma link C++ class AliAnalysisTaskFullpAJets+;

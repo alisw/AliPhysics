@@ -45,9 +45,9 @@ public:
     
   // Main methods
   
-  void         BadClusterHistograms(AliVCluster* clus,    const TObjArray *caloClusters,  AliVCaloCells * cells, 
-                                    const Int_t absIdMax, const Double_t maxCellFraction, const Float_t eCrossFrac,
-                                    const Double_t tmax, Double_t timeAverages[2]);  
+  void         BadClusterHistograms(AliVCluster* clus, const TObjArray *caloClusters,  AliVCaloCells * cells,
+                                    Int_t absIdMax,    Double_t maxCellFraction, Float_t eCrossFrac,
+                                    Double_t tmax,     Double_t timeAverages[2]);
     
   void         CalculateAverageTime(AliVCluster *clus, AliVCaloCells *cells, Double_t timeAverages[2]);
   
@@ -55,35 +55,35 @@ public:
 
   void         CellInClusterPositionHistograms(AliVCluster* cluster);
     
-  void         ClusterAsymmetryHistograms(AliVCluster* clus, const Int_t absIdMax, const Bool_t goodCluster );
+  void         ClusterAsymmetryHistograms(AliVCluster* clus, Int_t absIdMax, const Bool_t goodCluster );
   
   void         ClusterHistograms(AliVCluster* cluster, const TObjArray *caloClusters,  AliVCaloCells * cells, 
-                                 const Int_t absIdMax, const Double_t maxCellFraction, const Float_t eCrossFrac,
-                                 const Double_t tmax, Double_t timeAverages[2]);
+                                 Int_t absIdMax, Double_t maxCellFraction, Float_t eCrossFrac,
+                                 Double_t tmax, Double_t timeAverages[2]);
   
   void         ClusterLoopHistograms(const TObjArray * clusters, AliVCaloCells * cells);
   
-  Bool_t       ClusterMCHistograms(const TLorentzVector mom,const Bool_t matched,
-                                   const Int_t * labels, const Int_t nLabels, Int_t & pdg );
+  Bool_t       ClusterMCHistograms(TLorentzVector mom, Bool_t matched,
+                                   const Int_t * labels, Int_t nLabels, Int_t & pdg );
 
   void         ClusterMatchedWithTrackHistograms(AliVCluster* clus, TLorentzVector mom, 
-                                                 const Bool_t mcOK, const Int_t pdg);
+                                                 Bool_t mcOK, Int_t pdg);
 
   void         Correlate();
   
-  void         ExoticHistograms(const Int_t absIdMax, const Float_t ampMax,
+  void         ExoticHistograms(Int_t absIdMax, Float_t ampMax,
                                 AliVCluster *clus, AliVCaloCells* cells);
   
-  Float_t      GetECross(const Int_t absId, AliVCaloCells* cells,const Float_t dtcut = 10000);
+  Float_t      GetECross(Int_t absId, AliVCaloCells* cells,Float_t dtcut = 10000);
   
-  void         InvariantMassHistograms(const Int_t iclus, const TLorentzVector mom, const Int_t nModule,
+  void         InvariantMassHistograms(Int_t iclus, TLorentzVector mom, Int_t nModule,
                                        const TObjArray* caloClusters, AliVCaloCells * cells);
 
-  Bool_t       IsGoodCluster(const Int_t absIdMax, AliVCaloCells *cells);
+  Bool_t       IsGoodCluster(Int_t absIdMax, AliVCaloCells *cells);
   
   void         MCHistograms();  
   
-  void         MCHistograms(const TLorentzVector mom, const Int_t pdg);
+  void         MCHistograms(const TLorentzVector mom, Int_t pdg);
     
   void         WeightHistograms(AliVCluster *clus, AliVCaloCells* cells);
 
@@ -315,6 +315,18 @@ public:
   TH2F *   fhCaloTrackMCorrNCells;            //! Calo vs V0 Track Multiplicity, number of cells
   TH2F *   fhCaloTrackMCorrECells;            //! Calo vs V0 Track Multipliticy,  total measured cell energy
   
+  // Centrality
+  TH2F *   fhCaloCenNClusters;               //! Calo vs centrality, number of clusters
+  TH2F *   fhCaloCenEClusters;               //! Calo vs centrality, total measured cluster energy
+  TH2F *   fhCaloCenNCells;                  //! Calo vs centrality, number of cells
+  TH2F *   fhCaloCenECells;                  //! Calo vs centrality,  total measured cell energy
+
+  // Event plane
+  TH2F *   fhCaloEvPNClusters;               //! Calo vs event plane angle, number of clusters
+  TH2F *   fhCaloEvPEClusters;               //! Calo vs event plane angle, total measured cluster energy
+  TH2F *   fhCaloEvPNCells;                  //! Calo vs event plane angle, number of cells
+  TH2F *   fhCaloEvPECells;                  //! Calo vs event plane angle,  total measured cell energy
+  
   //Module histograms
   TH2F *   fhEMod  ;                          //! cluster E distribution for different module, Reco
   TH2F *   fhAmpMod ;                         //! cell amplitude distribution for different module, Reco
@@ -405,11 +417,18 @@ public:
   TH2F *   fhMCChHad1EleEOverP;               //! p/E for track-cluster matches, dR < 0.2, 60 < dEdx < 100, MC charged hadrons
   TH2F *   fhMCNeutral1EleEOverP;             //! p/E for track-cluster matches, dR < 0.2, 60 < dEdx < 100, MC neutral
 
-	
+  TH2F *   fhTrackMatchedDEta    ;            //! Eta distance between track and cluster vs cluster E, after and before photon cuts
+  TH2F *   fhTrackMatchedDPhi    ;            //! Phi distance between track and cluster vs cluster E, after and before photon cuts
+  TH2F *   fhTrackMatchedDEtaDPhi;            //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV, after and before
+  
+  TH2F *   fhTrackMatchedDEtaPos;             //! Eta distance between track and cluster vs cluster E, after and before photon cuts
+  TH2F *   fhTrackMatchedDPhiPos;             //! Phi distance between track and cluster vs cluster E, after and before photon cuts
+  TH2F *   fhTrackMatchedDEtaDPhiPos;         //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV, after and before
+
   AliAnaCalorimeterQA & operator = (const AliAnaCalorimeterQA & qa) ;//cpy assignment
   AliAnaCalorimeterQA(              const AliAnaCalorimeterQA & qa) ; // cpy ctor
   
-  ClassDef(AliAnaCalorimeterQA,26)
+  ClassDef(AliAnaCalorimeterQA,27)
 } ;
 
 

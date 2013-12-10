@@ -485,8 +485,8 @@ AliBasedNdetaTask::ProjectX(const TH2D* h,
     
     
     for (Int_t ybin = first; ybin <= last; ybin++) { 
-      Double_t c1 = h->GetCellContent(xbin, ybin);
-      Double_t e1 = h->GetCellError(xbin, ybin);
+      Double_t c1 = h->GetBinContent(h->GetBin(xbin, ybin));
+      Double_t e1 = h->GetBinError(h->GetBin(xbin, ybin));
 
       // Ignore empty bins 
       if (c1 < 1e-12) continue;
@@ -1592,7 +1592,7 @@ AliBasedNdetaTask::CentralityBin::Normalization(const TH1I& t,
 	rhs.Append("/eps_V");
     } // Event-level
     if (scheme & kTriggerEfficiency) {
-      Int_t old =  ntotal;
+      Int_t old =  Int_t(ntotal);
       ntotal    /= trigEff;
       scaler    *= trigEff;
       DMSG(fDebug,0,"Correcting for trigger efficiency:\n"

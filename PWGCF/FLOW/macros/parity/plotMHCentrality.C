@@ -13,7 +13,9 @@ TString strCentralityBins[nCentralityBins] = {"0-5","5-10","10-20",
 					      "50-60","60-70","70-80"};
 
 void plotMHCentrality(const char* filename = "AnalysisResults.root",
-		      const char* analysisType = "TPC only") {
+		      const char* systemType = "PbPb",
+		      Bool_t isPID = kTRUE,
+		      Int_t charge = 1) {
   gStyle->SetPalette(1,0);
 
   //----------------------------------------------------------
@@ -26,8 +28,13 @@ void plotMHCentrality(const char* filename = "AnalysisResults.root",
   gSystem->Load("libPhysics");
   
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libPWGflowBase");
+  gSystem->Load("libANALYSIS.so");
+  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libPWGflowBase.so");
+  gSystem->Load("libPWGflowTasks.so");
+
+  AliFlowTrackCuts::PIDsource sourcePID = AliFlowTrackCuts::kTOFbayesian;
+  AliPID::EParticleType particleType=AliPID::kPion;
 
   //----------------------------------------------------------
   // >>>>>>>>>>> Open file - Get objects <<<<<<<<<<<<<< 
@@ -40,13 +47,16 @@ void plotMHCentrality(const char* filename = "AnalysisResults.root",
   //fInput->ls();
 
   //Get the TList of the MH
-  TList *listMH = GetMHResults(fInput,analysisType);
+  TList *listMH = GetMHResults(fInput,systemType,isPID,
+			       sourcePID,particleType,charge);
 
   //Get the TList of the QC
-  TList *listQC = GetQCResults(fInput,analysisType);
+  TList *listQC = GetQCResults(fInput,systemType,isPID,
+			       sourcePID,particleType,charge);
 
   //Get the TList of the SP
-  TList *listSP = GetSPResults(fInput,analysisType);
+  //TList *listSP = GetSPResults(fInput,systemType,isPID,
+  //sourcePID,particleType,charge);
 
   TFile *fOutput = TFile::Open("outputMH.root","recreate");
   listMH->Write();
@@ -57,8 +67,11 @@ void plotMHCentrality(const char* filename = "AnalysisResults.root",
 
 //____________________________________________________________//
 TList *GetSPResults(TFile *fInput,
-		    const char* analysisType = 0x0,
-		    Int_t centrality = -1) {
+		    const char* systemType = 0x0,
+		    Bool_t isPID = kTRUE,
+		    AliFlowTrackCuts::PIDsource sourcePID = AliFlowTrackCuts::kTOFbayesian,
+		    AliPID::EParticleType particleType=AliPID::kPion,
+		    Int_t charge = 0) {
   //Function that reads the TDirectoryFile of the MH
   //and returns a TList with the relevant plots.
   TList *listOutput = new TList();
@@ -73,7 +86,6 @@ TList *GetSPResults(TFile *fInput,
   //Get the TDirectoryFile
   TString directoryNameSP = 0;
   directoryNameSP = "outputSPanalysis"; 
-  if(analysisType) directoryNameSP += analysisType;
   TDirectoryFile *outputSPanalysis = dynamic_cast<TDirectoryFile *>(fInput->Get(directoryNameSP.Data()));
   if(!outputSPanalysis) {
     Printf("SP directory not found!!!");
@@ -87,8 +99,20 @@ TList *GetSPResults(TFile *fInput,
   TList *cobjSP;
   for(Int_t iCentralityBin = 0; iCentralityBin < nCentralityBins; iCentralityBin++) {
     //for(Int_t iCentralityBin = 0; iCentralityBin < 1; iCentralityBin++) {
-    listNameSP = "cobjSP_"; listNameSP += strCentralityBins[iCentralityBin];
-
+    listNameSP = "cobjSP_"; 
+    listNameSP += systemType;
+    listNameSP += "_";
+    listNameSP += strCentralityBins[iCentralityBin];
+    if(isPID) {
+      listNameSP += AliFlowTrackCuts::PIDsourceName(sourcePID);
+      listNameSP += "_";
+      listNameSP += AliPID::ParticleName(particleType);
+    }
+    else {
+      listNameSP += "AllCharged";
+    }
+    if (charge < 0) listNameSP += "-";
+    if (charge > 0) listNameSP += "+" ;
     cobjSP = dynamic_cast<TList *>(outputSPanalysis->Get(listNameSP.Data()));
     if(!cobjSP) {
       Printf("SP object list not found!!!");
@@ -133,9 +157,12 @@ TList *GetSPResults(TFile *fInput,
 
 //____________________________________________________________//
 TList *GetQCResults(TFile *fInput,
-		    const char* analysisType = 0x0,
-		    Int_t centrality = -1) {
-  //Function that reads the TDirectoryFile of the MH
+		    const char* systemType = 0x0,
+		    Bool_t isPID = kTRUE,
+		    AliFlowTrackCuts::PIDsource sourcePID = AliFlowTrackCuts::kTOFbayesian,
+		    AliPID::EParticleType particleType=AliPID::kPion,
+		    Int_t charge = 0) {
+  //Function that reads the TDirectoryFile of the QC
   //and returns a TList with the relevant plots.
   TList *listOutput = new TList();
   listOutput->SetName("listQC");
@@ -154,7 +181,6 @@ TList *GetQCResults(TFile *fInput,
   //Get the TDirectoryFile
   TString directoryNameQC = 0;
   directoryNameQC = "outputQCanalysis"; 
-  if(analysisType) directoryNameQC += analysisType;
   TDirectoryFile *outputQCanalysis = dynamic_cast<TDirectoryFile *>(fInput->Get(directoryNameQC.Data()));
   if(!outputQCanalysis) {
     Printf("QC directory not found!!!");
@@ -168,7 +194,20 @@ TList *GetQCResults(TFile *fInput,
   TList *cobjQC;
   for(Int_t iCentralityBin = 0; iCentralityBin < nCentralityBins; iCentralityBin++) {
     //for(Int_t iCentralityBin = 0; iCentralityBin < 1; iCentralityBin++) {
-    listNameQC = "cobjQC_"; listNameQC += strCentralityBins[iCentralityBin];
+    listNameQC = "cobjQC_"; 
+    listNameQC += systemType;
+    listNameQC += "_";
+    listNameQC += strCentralityBins[iCentralityBin];
+    if(isPID) {
+      listNameQC += AliFlowTrackCuts::PIDsourceName(sourcePID);
+      listNameQC += "_";
+      listNameQC += AliPID::ParticleName(particleType);
+    }
+    else {
+      listNameQC += "AllCharged";
+    }
+    if (charge < 0) listNameQC += "-";
+    if (charge > 0) listNameQC += "+";
 
     cobjQC = dynamic_cast<TList *>(outputQCanalysis->Get(listNameQC.Data()));
     if(!cobjQC) {
@@ -256,7 +295,11 @@ TList *GetQCResults(TFile *fInput,
 
 //____________________________________________________________//
 TList *GetMHResults(TFile *fInput,
-		    const char* analysisType = 0x0) {
+		    const char* systemType = 0x0,
+		    Bool_t isPID = kTRUE,
+		    AliFlowTrackCuts::PIDsource sourcePID = AliFlowTrackCuts::kTOFbayesian,
+		    AliPID::EParticleType particleType=AliPID::kPion,
+		    Int_t charge = 0) {
   //Function that reads the TDirectoryFile of the MH
   //and returns a TList with the relevant plots.
   TList *listOutput = new TList();
@@ -266,7 +309,6 @@ TList *GetMHResults(TFile *fInput,
   //Get the TDirectoryFile
   TString directoryNameMH = 0;
   directoryNameMH = "outputMHanalysis"; 
-  if(analysisType) directoryNameMH += analysisType;
   TDirectoryFile *outputMHanalysis = dynamic_cast<TDirectoryFile *>(fInput->Get(directoryNameMH.Data()));
   if(!outputMHanalysis) {
     Printf("MH directory not found!!!");
@@ -281,7 +323,21 @@ TList *GetMHResults(TFile *fInput,
   TCanvas *c[nCentralityBins];
   for(Int_t iCentralityBin = 0; iCentralityBin < nCentralityBins; iCentralityBin++) {
     //for(Int_t iCentralityBin = 0; iCentralityBin < 1; iCentralityBin++) {
-    listNameMH = "cobjMH_"; listNameMH += strCentralityBins[iCentralityBin];
+    listNameMH = "cobjMH_"; 
+    listNameMH += systemType;
+    listNameMH += "_";
+    listNameMH += strCentralityBins[iCentralityBin];
+    if(isPID) {
+      listNameMH += AliFlowTrackCuts::PIDsourceName(sourcePID);
+      listNameMH += "_";
+      listNameMH += AliPID::ParticleName(particleType);
+    }
+    else {
+      listNameMH += "AllCharged";
+    }
+    if (charge < 0) listNameMH += "-";
+    if (charge > 0) listNameMH += "+";
+
     //Printf("%s",listNameMH.Data());
     cobjMH = dynamic_cast<TList *>(outputMHanalysis->Get(listNameMH.Data()));
     if(!cobjMH) {

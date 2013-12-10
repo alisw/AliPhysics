@@ -3,9 +3,9 @@
 
 // $Id$
 
-#include "AliAnalysisTaskEmcalDev.h"
+#include "AliAnalysisTaskEmcal.h"
 
-class AliEmcalClusTrackMatcherTask : public AliAnalysisTaskEmcalDev {
+class AliEmcalClusTrackMatcherTask : public AliAnalysisTaskEmcal {
  public:
   AliEmcalClusTrackMatcherTask();
   AliEmcalClusTrackMatcherTask(const char *name, Bool_t histo=kFALSE);

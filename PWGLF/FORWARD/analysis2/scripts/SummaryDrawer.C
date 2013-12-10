@@ -30,6 +30,7 @@
 #  include <TGaxis.h>
 #  include <TPad.h>
 #  include <TRegexp.h>
+#  include <TGraph.h>
 # else 
 #  ifdef __ACLIC__
 class THStack;
@@ -59,7 +60,8 @@ public:
     kLegend = 0x10, 
     kGridx  = 0x100, 
     kGridy  = 0x200, 
-    kGridz  = 0x400
+    kGridz  = 0x400,
+    kSilent = 0x800
   };
   enum { 
     kLandscape         = 0x100, 
@@ -75,7 +77,8 @@ public:
       fPause(false),
       fLandscape(false), 
       fRingMap(0), 
-      fPDF(true)
+      fPDF(true),
+      fLastTitle("")
   {
     fRingMap = new TVirtualPad*[6];
     fRingMap[0] = 0;
@@ -628,9 +631,13 @@ protected:
   {
     // Info("CloseCanvas", "Closing canvas");
     // ClearCanvas();
-    if (fPDF && fCanvas)
+    if (fPDF && fCanvas) {
+      // Printf("Closing canvas with last title %s", fLastTitle.Data());
       fCanvas->Print(Form("%s]", fCanvas->GetTitle()),
-		     Form("pdf %s", fLandscape ? "Landscape" : ""));
+		     Form("pdf %s Title:%s", 
+			  fLandscape ? "Landscape" : "",
+			  fLastTitle.Data()));
+    }
     if (fCanvas)
       fCanvas->Close();
     fCanvas = 0;
@@ -661,7 +668,7 @@ protected:
       gSystem->RedirectOutput("/dev/null");
       fCanvas->Print(fCanvas->GetTitle(), tit);
       gSystem->RedirectOutput(0);
-
+      fLastTitle = title;
       Pause();
 
       ClearCanvas();
@@ -722,6 +729,8 @@ protected:
       DrawObjClone(static_cast<TH1*>(o), options, title);
     else if (o->IsA()->InheritsFrom(THStack::Class())) 
       DrawObjClone(static_cast<THStack*>(o), options, title);
+    else if (o->IsA()->InheritsFrom(TGraph::Class()))
+      o->DrawClone(options);
     else 
       o->Draw(options);
   }
@@ -737,6 +746,28 @@ protected:
     // THStack* tmp = static_cast<THStack*>(o->Clone());
     o->Draw(options);
     if (title && title[0] != '\0') o->GetHistogram()->SetTitle(title);
+    TAxis*   xAxis = o->GetXaxis();
+    if (!xAxis) {
+      Warning("DrawObjClone", "No X-axis for drawn stack %s", o->GetName());
+      return;
+    }
+    TH1*     h     = 0;
+    Int_t    nBins = xAxis->GetNbins();
+    Double_t xMin  = xAxis->GetXmin();
+    Double_t xMax  = xAxis->GetXmax();
+    TIter  next(o->GetHists());
+    while ((h = static_cast<TH1*>(next()))) {
+      TAxis* a = h->GetXaxis();
+      nBins    = TMath::Max(nBins, a->GetNbins()); 
+      xMin     = TMath::Min(xMin, a->GetXmin());
+      xMax     = TMath::Max(xMax, a->GetXmax());
+    }
+    if (nBins != xAxis->GetNbins() || 
+	xMin  != xAxis->GetXmin() || 
+	xMax  != xAxis->GetXmax()) {
+      xAxis->Set(nBins, xMin, xMax);
+      o->GetHistogram()->Rebuild();
+    }
   }
   /** 
    * Draw an object clone 
@@ -784,7 +815,8 @@ protected:
     if (o.Contains("colz", TString::kIgnoreCase)) 
       p->SetRightMargin(0.15);
     if (!h) {
-      Warning("DrawInPad", "Nothing to draw in pad # %s", p->GetName());
+      if (!(flags & kSilent))
+	Warning("DrawInPad", "Nothing to draw in pad # %s", p->GetName());
       return;
     }
     if (o.Contains("text", TString::kIgnoreCase)) {
@@ -796,7 +828,12 @@ protected:
     DrawObjClone(h, o, title);
     
     if (flags& kLegend) { 
-      TLegend* l = p->BuildLegend(0.33, .67, .66, .99-p->GetTopMargin());
+      Double_t x1 = fParVal->GetX();
+      Double_t y1 = fParVal->GetY();
+      Double_t x2 = TMath::Min(x1+.5, .99);
+      Double_t y2 = TMath::Min(y1+.5, .99-p->GetTopMargin());
+      //Printf("Legend at (%f,%f)x(%f,%f)", x1, y1, x2, y2);
+      TLegend* l = p->BuildLegend(x1, y1, x2, y2);
       l->SetFillColor(0);
       l->SetFillStyle(0);
       l->SetBorderSize(0);
@@ -1165,7 +1202,8 @@ protected:
     fParName->SetTextSize(save);
     fParVal->SetTextSize(save);
 
-    fBody->Divide(2,4);
+    if (fLandscape) fBody->Divide(4,2);
+    else            fBody->Divide(2,4);
     
     TH1*    nEventsTr    = GetH1(c, "nEventsTr");
     TH1*    nEventsTrVtx = GetH1(c, "nEventsTrVtx");
@@ -1200,7 +1238,7 @@ protected:
     if (cent && centQual) { 
       cent->Scale(1, "width");
       centQual->Scale(1, "width");
-      DrawInPad(fBody, 7, cent);
+      DrawInPad(fBody, 7, cent, "", kLogy);
       DrawInPad(fBody, 8, centQual, "colz", kLogz);
     }
     
@@ -1295,6 +1333,7 @@ protected:
   Bool_t   fLandscape; // Landscape or Portrait orientation
   TVirtualPad** fRingMap;
   Bool_t   fPDF;
+  TString  fLastTitle;
 };
 #if 0
 template <> 

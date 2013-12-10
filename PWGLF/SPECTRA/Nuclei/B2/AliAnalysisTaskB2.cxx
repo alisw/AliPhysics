@@ -50,6 +50,7 @@
 #include <TH2D.h>
 #include <TList.h>
 #include <TProfile.h>
+#include <TFile.h>
 
 #include "AliLnID.h"
 #include "AliLnHistoMap.h"
@@ -644,6 +645,38 @@ Int_t AliAnalysisTaskB2::GetTracks()
 			((TH2D*)fHistoMap->Get(particle + "_TOF_Mass_P"))->Fill(pTOF, mass);
 		}
 		
+		// get the pid
+		Int_t pid = fLnID->GetPID( fPartCode, pITS, dEdxITS, nPointsITS, pTPC, dEdxTPC, nPointsTPC, pTOF, beta, fMaxNSigmaITS, fMaxNSigmaTPC, fMaxNSigmaTOF);
+		
+		Int_t offset = AliPID::kDeuteron - 5;
+		
+		// for bayes iteration
+		if(pid != -1)
+		{
+			Int_t iBin = (pid > AliPID::kProton) ? pid - offset : pid;
+			((TH1D*)fHistoMap->Get(fSpecies + "_Stats_PID"))->Fill(iBin);
+		}
+		
+		// fix momentum
+		if(fPartCode > AliPID::kTriton)
+		{
+			p  *= 2.;
+			pt *= 2.;
+			pz *= 2.;
+		}
+		
+		if(fMomentumCorrection)
+		{
+			pt += this->GetMomentumCorrection(pt);
+			p   = TMath::Sqrt(pt*pt + pz*pz);
+			
+			if(fTOFmatch)
+			{
+				m2   = this->GetMassSquared(p, beta);
+				mass = TMath::Sqrt(TMath::Abs(m2));
+			}
+		}
+		
 		// for pid and efficiency
 		
 		Double_t simPt  = 0;
@@ -736,17 +769,9 @@ Int_t AliAnalysisTaskB2::GetTracks()
 					}
 				}
 			}
-		}
-		
-		// get the pid
-		Int_t pid = fLnID->GetPID( fPartCode, pITS, dEdxITS, nPointsITS, pTPC, dEdxTPC, nPointsTPC, pTOF, beta, fMaxNSigmaITS, fMaxNSigmaTPC, fMaxNSigmaTOF);
-		
-		// pid table for prior probabilities (only Bayes)
-		
-		Int_t offset = AliPID::kDeuteron - 5;
-		
-		if( fSimulation )
-		{
+			
+			// pid table for prior probabilities (only Bayes)
+			
 			Int_t sim = (simpid > AliPID::kProton) ? simpid - offset : simpid;
 			Int_t rec = (pid > AliPID::kProton) ? pid - offset : pid;
 			
@@ -761,16 +786,9 @@ Int_t AliAnalysisTaskB2::GetTracks()
 			}
 		}
 		
-		// for bayes iteration
-		if(pid != -1)
-		{
-			Int_t iBin = (pid > AliPID::kProton) ? pid - offset : pid;
-			((TH1D*)fHistoMap->Get(fSpecies + "_Stats_PID"))->Fill(iBin);
-		}
+		// candidate tracks
 		
 		if(pid != fPartCode) continue;
-		
-		// track candidates
 		
 		Bool_t goodPid = 0;
 		
@@ -796,33 +814,12 @@ Int_t AliAnalysisTaskB2::GetTracks()
 			}
 		}
 		
-		//
-		//  results in |y| < fMaxY
-		//
-		
-		if(fMomentumCorrection)
-		{
-			pt += this->GetMomentumCorrection(pt);
-			p   = TMath::Sqrt(pt*pt + pz*pz);
-			
-			if(fTOFmatch)
-			{
-				m2   = this->GetMassSquared(p, beta);
-				mass = TMath::Sqrt(TMath::Abs(m2));
-			}
-		}
-		
-		if(fPartCode > AliPID::kTriton)
-		{
-			p  *= 2.;
-			pt *= 2.;
-			pz *= 2.;
-		}
-		
 		Double_t y = this->GetRapidity(p, pz, AliPID::ParticleMass(fPartCode));
 		
 		((TH1D*)fHistoMap->Get(particle + "_PID_Y"))->Fill(y);
 		((TH2D*)fHistoMap->Get(particle + "_PID_Pt_Y"))->Fill(y, pt);
+		
+		//  results in |y| < fMaxY
 		
 		if(TMath::Abs(y) >= fMaxY) continue;
 		
@@ -1266,12 +1263,11 @@ Double_t AliAnalysisTaskB2::GetMomentumCorrection(Double_t ptrec) const
 	return fMoCpfx->Interpolate(ptrec);
 }
 
-Double_t AliAnalysisTaskB2::GetRapidity(Double_t p, Double_t pz, Int_t pid) const
+Double_t AliAnalysisTaskB2::GetRapidity(Double_t p, Double_t pz, Double_t m) const
 {
 //
 // Rapidity
 //
-	Double_t m  = AliPID::ParticleMass(pid);
 	Double_t e  = TMath::Sqrt(p*p + m*m);
 	
 	if(e <= pz) return 1.e+16;

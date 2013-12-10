@@ -124,6 +124,7 @@ _mult1    ( 0 ),
 _mult2    ( 0 ),
 _mult3    ( 0 ),
 _mult4    ( 0 ),
+_mult4a    ( 0 ),
 _mult5    ( 0 ),
 _mult6    ( 0 ),
 arraySize ( 2000),
@@ -414,6 +415,7 @@ _mult1    ( 0 ),
 _mult2    ( 0 ),
 _mult3    ( 0 ),
 _mult4    ( 0 ),
+_mult4a    ( 0 ),
 _mult5    ( 0 ),
 _mult6    ( 0 ),
 arraySize ( 2000),
@@ -1125,7 +1127,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
   int    iZEtaPhiPt;
   float  massElecSq = 2.5e-7;
   const  AliAODVertex*	vertex;
-  //int    nClus;
+  int    nClus;
   bool   bitOK;
     
   AliAnalysisManager* manager = AliAnalysisManager::GetAnalysisManager();
@@ -1177,6 +1179,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
   __n1_1 = __n1_2 = __s1pt_1 = __s1pt_2 = __n1Nw_1 = __n1Nw_2 = __s1ptNw_1 = __s1ptNw_2 = 0;
   
   float v0Centr  = -999.;
+  float v0ACentr  = -999.;
   float trkCentr = -999.;
   float spdCentr = -999.;
   
@@ -1186,8 +1189,8 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
   float vertexXY = -999;
   //float dcaX     = -999;
   //float dcaY     = -999;
-  //float dcaZ     = -999;
-  //float dcaXY    = -999;
+  float dcaZ     = -999;
+  float dcaXY    = -999;
   float centrality = -999;
   //Double_t nSigma =-999;   
 
@@ -1202,6 +1205,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
       //cout << "AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option) - 6" << endl;
       
       v0Centr  = centralityObject->GetCentralityPercentile("V0M");
+      v0ACentr  = centralityObject->GetCentralityPercentile("V0A");
       trkCentr = centralityObject->GetCentralityPercentile("TRK"); 
       spdCentr = centralityObject->GetCentralityPercentile("CL1");
       //cout << "AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option) - 7" << endl;
@@ -1219,6 +1223,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
     //_mult2    = 0;
     _mult3    = _nTracks; 
     _mult4    = v0Centr;
+    _mult4a    = v0ACentr;
     _mult5    = trkCentr;
     _mult6    = spdCentr;
     _field    = fAODEvent->GetMagneticField(); 
@@ -1228,13 +1233,14 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
     //_centralityMethod
     switch (_centralityMethod)
       {
-        case 0: centrality = _mult0; break;
-        case 1: centrality = _mult1; break;
-        case 2: centrality = _mult2; break;
-        case 3: centrality = _mult3; break;
-        case 4: centrality = _mult4; break;
-        case 5: centrality = _mult5; break;
-        case 6: centrality = _mult6; break;
+      case 0: centrality = _mult0; break;
+      case 1: centrality = _mult1; break;
+      case 2: centrality = _mult2; break;
+      case 3: centrality = _mult3; break;
+      case 4: centrality = _mult4; break;
+      case 5: centrality = _mult5; break;
+      case 6: centrality = _mult6; break;
+      case 7: centrality = _mult4a; break;
       }
     
     
@@ -1331,12 +1337,11 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
       pz     = t->Pz();
       eta    = t->Eta();
       //dedx   = t->GetTPCsignal();
-      //nClus  = t->GetTPCNcls();
-      //Double_t nclus2 = t->GetTPCClusterInfo(2,1);
+      nClus  = t->GetTPCNcls();
+      Double_t nclus2 = t->GetTPCClusterInfo(2,1);
       
       
-      //_Ncluster1->Fill(nClus);
-      //_Ncluster2->Fill(nclus2);
+      
             
       //Float_t nsigmaTPCPID = -999.;
       //Float_t nsigmaTOFPID = -999.;
@@ -1449,19 +1454,25 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
           eta      <   _max_eta_2)  
         {
 	  	  
-	  //dcaXY = t->DCA(); //new change Prabhat                                        
-	  //dcaZ  = t->ZAtDCA(); //new change Prabhat  
+	  dcaXY = t->DCA(); //new change Prabhat                                        
+	  dcaZ  = t->ZAtDCA(); //new change Prabhat  
 	  
-	  //if (dcaZ > _dcaZMax) continue;
-	  //cout <<"Prabhat=============="<<"  "<<_dcaZMax<<"    "<<dcaZ<<endl;
-
-	  /*
-	  if (dcaZ     <  _dcaZMin || 
-	      dcaZ     >   _dcaZMax || 
-	      dcaXY    <  _dcaXYMin || 
-	      dcaXY    >   _dcaXYMax)
-	    continue; //track does not have a valid DCA
+	  //Check dca cuts for systematics
+	  //Comment this portion when not required
+	  /*if (dcaZ  <  _dcaZMin || 
+	      dcaZ  >  _dcaZMax ||
+	      dcaXY <  _dcaXYMin || 
+	      dcaXY >  _dcaXYMax ) continue;
 	  */
+	  //==== QA ===========================
+	  _dcaz->Fill(dcaZ);
+	  _dcaxy->Fill(dcaXY);
+	  _etadis->Fill(eta);
+	  _phidis->Fill(phi);
+	  _Ncluster1->Fill(nClus);
+	  _Ncluster2->Fill(nclus2);
+	  
+	  //===================================
 
 	  iPhi   = int( phi/_width_phi_2);
 	  
@@ -1545,8 +1556,8 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
   _m4->Fill(_mult4);
   _m5->Fill(_mult5);
   _m6->Fill(_mult6);
-  //_vertexZ->Fill(vertexZ);
-      
+  _vertexZ->Fill(vertexZ);
+  
   if (_singlesOnly)
     {
     // nothing to do here.

@@ -9,7 +9,7 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   const char*         usedTracks              = "PicoTracks",
   const char*         centralityType          = "V0A",
   Double_t            trackEtaWindow          = 0.9,
-  Double_t            minJetPt                = 5.0, // signal jet min pt
+  Double_t            minJetPt                = 0.15, // signal jet min pt
   Double_t            minBackgroundJetPt      = 0.0, // background jet min pt
   Double_t            dijetLeadingMinPt       = 10.0,
   Double_t            dijetMaxAngleDev        = 10.0,
@@ -65,7 +65,10 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
   AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(usedTracks,"",1,jetRadius,1,0.150,0.300); // anti-kt
   AliEmcalJetTask* jetFinderTaskKT = AddTaskEmcalJet(usedTracks,"",0,jetRadius,1,0.150,0.300); // kt
-  
+
+//  jetFinderTask->SetRecombSheme(0);
+//  jetFinderTaskKT->SetRecombSheme(0);
+
   if(jetRadius < 0.1)
   {
     jetFinderTask->SetMinJetArea(0.0);
@@ -125,7 +128,7 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   task->SetAnalyzeBackground(kTRUE);
   task->SetAnalyzeDeprecatedBackgrounds(analyzeDeprecatedBackgrounds);
   task->SetUsePileUpCut(usePileUpCut);
-  task->SetUseVertexCut(useVertexCut);
+  task->SetUseDefaultVertexCut(useVertexCut);
   task->SetSignalJetMinPt(minJetPt);
   task->SetSignalJetMinArea(0.6*jetRadius*jetRadius*TMath::Pi());
   task->SetDijetLeadingMinPt(dijetLeadingMinPt);

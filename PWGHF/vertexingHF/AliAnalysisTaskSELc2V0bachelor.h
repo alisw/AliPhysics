@@ -37,8 +37,8 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
  public:
   
   AliAnalysisTaskSELc2V0bachelor();
-  AliAnalysisTaskSELc2V0bachelor(const Char_t* name, AliRDHFCutsLctoV0* cutsA, AliRDHFCutsLctoV0* cutsB,
-				 Bool_t useOnTheFly=kFALSE, Bool_t writeVariableTree=kTRUE);
+  AliAnalysisTaskSELc2V0bachelor(const Char_t* name, AliRDHFCutsLctoV0* cuts,
+				 Bool_t useOnTheFly=kFALSE, Bool_t writeVariableTree=kTRUE, Bool_t additionalChecks=kFALSE);
   virtual ~AliAnalysisTaskSELc2V0bachelor();
 
   // Implementation of interface methods  
@@ -50,65 +50,84 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
  
   // histos
   void FillLc2pK0Sspectrum(AliAODRecoCascadeHF *part, Int_t isLc,
-			   Int_t &nSelectedProd, AliRDHFCutsLctoV0 *cutsProd,
 			   Int_t &nSelectedAnal, AliRDHFCutsLctoV0 *cutsAnal,
 			   TClonesArray *mcArray);
 
-  void DefineHistograms();
-
-  void MakeAnalysisForLc2prK0S(TClonesArray *arrayLctopK0s,
+  void MakeAnalysisForLc2prK0S(TClonesArray *arrayLctopK0S,
 			       TClonesArray *mcArray,
-			       Int_t &nSelectedProd, AliRDHFCutsLctoV0 *cutsProd,
 			       Int_t &nSelectedAnal, AliRDHFCutsLctoV0 *cutsAnal);
  
   // set MC usage
   void SetMC(Bool_t theMCon) {fUseMCInfo = theMCon;}
   Bool_t GetMC() const {return fUseMCInfo;}
 
+  // set flag for additional checks
+  void SetAdditionalChecks(Bool_t additionalChecks) {fAdditionalChecks = additionalChecks;}
+  Bool_t GetAdditionalChecks() const {return fAdditionalChecks;}
+
   void FillArmPodDistribution(AliAODv0 *vZero, TString histoTitle, TList *histoList);
 
-  void SetK0sAnalysis(Bool_t a) {fIsK0sAnalysis=a;}
-  Bool_t GetK0sAnalysis() const {return fIsK0sAnalysis;}
+  void SetK0SAnalysis(Bool_t a) {fIsK0SAnalysis=a;}
+  Bool_t GetK0SAnalysis() const {return fIsK0SAnalysis;}
 
   void SetUseOnTheFlyV0(Bool_t a) { fUseOnTheFlyV0=a; }
   Bool_t GetUseOnTheFlyV0() { return fUseOnTheFlyV0; }
 
  private:
   
+  void CheckEventSelection(AliAODEvent *aodEvent);
+  void CheckEventSelectionWithCandidates(AliAODEvent *aodEvent);
+  void CheckCandidatesAtDifferentLevels(AliAODRecoCascadeHF *part,AliRDHFCutsLctoV0* cutsAnal);
+  void FillTheTree(AliAODRecoCascadeHF *part, AliRDHFCutsLctoV0 *cutsAnal, TClonesArray *mcArray, Int_t isLc);
+  void DefineTreeVariables();
+
   Int_t MatchToMC(AliAODRecoCascadeHF *lc2bacV0,
 		  Int_t *pdgDgLc2bacV0, Int_t *pdgDgV0,
 		  TClonesArray *mcArray);
 
   Int_t SearchLcDaughter(TClonesArray *arrayMC, Int_t iii);
 
+  void DefineGeneralHistograms();
+  void DefineAnalysisHistograms();
   void DefineK0SHistos();
+  void  FillAnalysisHistograms(AliAODRecoCascadeHF *part, Bool_t isBachelorID, TString appendthis);
 
   AliAnalysisTaskSELc2V0bachelor(const AliAnalysisTaskSELc2V0bachelor &source);
   AliAnalysisTaskSELc2V0bachelor& operator=(const AliAnalysisTaskSELc2V0bachelor& source); 
   
-  Bool_t fUseMCInfo;          // Use MC info
-  TList *fOutput;             // User output1 // general histos
-  TList *fOutputAll;          // User output2 // histos without pid and cut on V0
-  TList *fOutputPIDBach;      // User output3 // histos with PID on Bachelor
+  Double_t Det(Double_t a00,Double_t a01,
+	       Double_t a10,Double_t a11) const;
+  Double_t Det(Double_t a00,Double_t a01,Double_t a02,
+	       Double_t a10,Double_t a11,Double_t a12,
+	       Double_t a20,Double_t a21,Double_t a22) const;
+  Double_t PropagateToDCA(AliAODv0 *v, AliAODTrack *bachelor, Double_t b,
+			  Double_t &xVtxLc, Double_t &yVtxLc, Double_t &zVtxLc,
+			  Double_t &pxVtxLc, Double_t &pyVtxLc, Double_t &pzVtxLc);
 
-  // define the histograms
+  Double_t GetAlpha(Double_t xyz[3],Double_t pxpypz[3]);
+
+  Bool_t fUseMCInfo;          // Use MC info
+  TList *fOutput;             // User output slot 1 // general histos
+  TList *fOutputAll;          // User output slot 4 // histos without pid and cut on V0
+  TList *fOutputPIDBach;      // User output slot 5 // histos with PID on Bachelor
+
   TH1F *fCEvents;                    // Histogram to check selected events
   AliPIDResponse *fPIDResponse;      //! PID response object
-  Bool_t fIsK0sAnalysis;             // switch between Lpi and K0sp
-  AliNormalizationCounter *fCounter; // AliNormalizationCounter on output slot 4
-  AliRDHFCutsLctoV0 *fProdCuts;      // Cuts - sent to output slot 5
-  AliRDHFCutsLctoV0 *fAnalCuts;      // Cuts - sent to output slot 5
-  TList *fListCuts;                  // list of cuts
+  Bool_t fIsK0SAnalysis;             // switch between Lpi and K0Sp
+  AliNormalizationCounter *fCounter; // AliNormalizationCounter on output slot 2
+  AliRDHFCutsLctoV0 *fAnalCuts;      // Cuts - sent to output slot 3
+  //TList *fListCuts;                  // list of cuts
   Bool_t fUseOnTheFlyV0;             // flag to analyze also on-the-fly V0 candidates
   Bool_t fIsEventSelected;           // flag for event selected
 
   Bool_t    fWriteVariableTree;       // flag to decide whether to write the candidate variables on a tree variables
-  TTree    *fVariablesTree;           //! tree of the candidate variables after track selection on output slot 6
+  TTree    *fVariablesTree;           //! tree of the candidate variables after track selection on output slot 4
   Float_t *fCandidateVariables;       //! variables to be written to the tree
   AliAODVertex *fVtx1;                // primary vertex
   Float_t fBzkG;                      // magnetic field value [kG]
+  Bool_t fAdditionalChecks;           // flag to fill additional histograms
 
-  ClassDef(AliAnalysisTaskSELc2V0bachelor,3); // class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelor,4); // class for Lc->p K0
 };
 
 #endif

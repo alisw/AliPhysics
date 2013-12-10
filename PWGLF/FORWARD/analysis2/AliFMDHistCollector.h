@@ -21,6 +21,7 @@
 class AliESDFMD;
 class TH2;
 class TH2D;
+class TH1D;
 class TObjArray;
 
 /** 
@@ -390,6 +391,7 @@ protected:
 		   AliForwardUtil::Histos&       sums, 
 		   TH2D&                         out,
 		   TH2D*                         sumRings,
+		   TH1D*                         skipped,
 		   Double_t                      cent,
 		   MergeMethod                   m,
 		   UShort_t                      skips,
@@ -495,6 +497,7 @@ protected:
   TList*      fList;		// Output list
   TH2D*       fSumRings;        // Sum per ring (on y-axis)
   TH2D*       fCoverage;        // Sum per ring (on y-axis)
+  TH1D*       fSkipped;         // Skipped rings
   MergeMethod fMergeMethod;     // Merge methiod for overlapping bins 
   FiducialMethod fFiducialMethod; // Fidicual method
   UShort_t    fSkipFMDRings;    // FMD rings to ignore     

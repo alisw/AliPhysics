@@ -29,6 +29,7 @@
 #include <TDatabasePDG.h>
 #include <TKey.h>
 #include <TBits.h>
+#include <TRandom3.h>
 
 #include <AliVEvent.h>
 #include <AliESDEvent.h>
@@ -65,7 +66,10 @@
 #include "AliDielectronHelper.h"
 
 #include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
 #include "AliVZEROEPSelectionTask.h"
+
+#include "AliAODMCHeader.h"
 
 class AliVEvent;
 
@@ -80,6 +84,7 @@ public:
     kPy,                     // py
     kPz,                     // pz
     kPt,                     // transverse momentum
+    kPtSq,                   // transverse momentum squared
     kP,                      // momentum
     kXv,                     // vertex position in x
     kYv,                     // vertex position in y
@@ -184,6 +189,7 @@ public:
     kEMCALDispersion,        // Dispersion paramter
     
     kLegEff,                 // single electron efficiency
+    kOneOverLegEff,          // 1 / single electron efficiency (correction factor)
     kV0Index0,               // v0 index 0
     kKinkIndex0,             // kink index 0
       
@@ -210,10 +216,26 @@ public:
     kThetaSqCS,              // squared value of kThetaCS
     kPsiPair,                // phi in mother's rest frame in Collins-Soper picture
 	kPhivPair,               // angle between ee plane and the magnetic field (can be useful for conversion rejection)
-	kPairPlaneAngle,         // angle between ee plane and strong magnetic field
-	kRotPairx,               //ee plane vector
-	kRotPairy,               //ee plane vector
-	kRotPairz,               //ee plane vector
+	
+    kPairPlaneAngle1A,         // angle between ee decay plane and x'-z reaction plane by using V0-A
+    kPairPlaneAngle2A,         // angle between ee decay plane and (p1+p2) rot ez
+    kPairPlaneAngle3A,         // angle between ee decay plane and (p1+p2) rot (p1+p2)x'z
+    kPairPlaneAngle4A,         // angle between ee decay plane and x'-y' plane
+    kPairPlaneAngle1C,         // using v0-C
+    kPairPlaneAngle2C,
+    kPairPlaneAngle3C,
+    kPairPlaneAngle4C,
+    kPairPlaneAngle1AC,        // using v0-AC
+    kPairPlaneAngle2AC,
+    kPairPlaneAngle3AC,
+    kPairPlaneAngle4AC,
+    kPairPlaneAngle1Ran,       // using random reaction plane
+    kPairPlaneAngle2Ran,
+    kPairPlaneAngle3Ran,
+    kPairPlaneAngle4Ran,
+    kRandomRP,                //Random reaction plane
+    kDeltaPhiRandomRP,        //delta phi of the pair
+
 	kCos2PhiCS,              // Cosine of 2*phi in mother's rest frame in the Collins-Soper picture
     kCosTilPhiCS,            // Shifted phi depending on kThetaCS
     kCosPhiH2,               // cosine of pair phi for 2nd harmonic
@@ -248,7 +270,10 @@ public:
     kTRDpidEffPair,          // TRD pid efficieny from conversion electrons
     kMomAsymDau1,            // momentum fraction of daughter1
     kMomAsymDau2,            // momentum fraction of daughter2
-    kPairEff,                 // pair efficiency
+    kPairEff,                // pair efficiency
+    kOneOverPairEff,         // 1 / pair efficiency (correction factor)
+    kRndmPair,               // radomly created number (used to apply special signal reduction cuts)
+    kPairs,                  // number of Ev1PM pair candidates after all cuts
     kPairMax,                 //
   // Event specific variables
     kXvPrim=kPairMax,        // prim vertex
@@ -345,7 +370,7 @@ public:
     kTPCsub12DiffH2uc,          // TPC reaction plane difference of sub event 1,2 for 2nd harmonic (uncorrected)
 
     kNTrk,                   // number of tracks (or tracklets) TODO: ambiguous
-    kTracks,                 // ESD tracks TODO: ambiguous
+    kTracks,                 // track after all cuts
     kNVtxContrib,             // number of primary vertex contibutors
     kNVtxContribTPC,         // number of TPC vertex contibutors
     kNacc,                   // Number of accepted tracks
@@ -381,6 +406,9 @@ public:
 
     kCentrality,             // event centrality fraction
     kCentralitySPD,          // centrality using SPD
+    kTriggerInclONL,         // online trigger bits fired (inclusive)
+    kTriggerInclOFF,         // offline trigger bits fired (inclusive)
+    kTriggerExclOFF,         // offline only this trigger bit fired (exclusive)
     kNevents,                // event counter
     kRunNumber,              // run number
     kMixingBin,
@@ -505,6 +533,7 @@ inline void AliDielectronVarManager::FillVarVParticle(const AliVParticle *partic
   values[AliDielectronVarManager::kPy]        = particle->Py();
   values[AliDielectronVarManager::kPz]        = particle->Pz();
   values[AliDielectronVarManager::kPt]        = particle->Pt();
+  values[AliDielectronVarManager::kPtSq]      = particle->Pt()*particle->Pt();
   values[AliDielectronVarManager::kP]         = particle->P();
 
   values[AliDielectronVarManager::kXv]        = particle->Xv();
@@ -608,27 +637,18 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kNumberOfDaughters]=-999;
   
   AliDielectronMC *mc=AliDielectronMC::Instance();
-  
   if (mc->HasMC()){
     if (mc->GetMCTrack(particle)) {
-      values[AliDielectronVarManager::kPdgCode]=mc->GetMCTrack(particle)->PdgCode();
-      Int_t trkLbl = mc->GetMCTrack(particle)->GetLabel();
-      values[AliDielectronVarManager::kHasCocktailMother]=mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kDirect);
+      Int_t trkLbl = TMath::Abs(mc->GetMCTrack(particle)->GetLabel());
+      values[AliDielectronVarManager::kPdgCode]           =mc->GetMCTrack(particle)->PdgCode();
+      values[AliDielectronVarManager::kHasCocktailMother] =mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kDirect);
+      values[AliDielectronVarManager::kPdgCodeMother]     =mc->GetMotherPDG(particle);
+      AliMCParticle *motherMC=mc->GetMCTrackMother(particle); //mother
+      if(motherMC) values[AliDielectronVarManager::kPdgCodeGrandMother]=mc->GetMotherPDG(motherMC);
     }
-    AliMCParticle *motherMC=mc->GetMCTrackMother(particle); //mother
-    if (motherMC){
-      values[AliDielectronVarManager::kPdgCodeMother]=motherMC->PdgCode();
-      Int_t motherLbl = motherMC->GetLabel();
-      values[AliDielectronVarManager::kHasCocktailGrandMother]=mc->CheckParticleSource(motherLbl, AliDielectronSignalMC::kDirect);
-      
-      motherMC=mc->GetMCTrackMother(motherMC);  //grand motherMC
-      if (motherMC) values[AliDielectronVarManager::kPdgCodeGrandMother]=motherMC->PdgCode();;
-    }
-      
     values[AliDielectronVarManager::kNumberOfDaughters]=mc->NumberOfDaughters(particle);
   } //if(mc->HasMC())
   
-
 
   values[AliDielectronVarManager::kITSsignal]   =   particle->GetITSsignal();
   
@@ -738,7 +758,8 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kEMCALM20]        = showershape[2];
   values[AliDielectronVarManager::kEMCALDispersion] = showershape[3];
 
-  values[AliDielectronVarManager::kLegEff] = GetSingleLegEff(values);
+  values[AliDielectronVarManager::kLegEff]        = GetSingleLegEff(values);
+  values[AliDielectronVarManager::kOneOverLegEff] = (values[AliDielectronVarManager::kLegEff]>0.0 ? 1./values[AliDielectronVarManager::kLegEff] : 0.0);
   //restore TPC signal if it was changed
   if (esdTrack) esdTrack->SetTPCsignal(origdEdx,esdTrack->GetTPCsignalSigma(),esdTrack->GetTPCsignalN());
 }
@@ -934,31 +955,24 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   values[AliDielectronVarManager::kHasCocktailGrandMother]=0;
 
   values[AliDielectronVarManager::kNumberOfDaughters]=-1;
-  
+
   AliDielectronMC *mc=AliDielectronMC::Instance();
-  
   if (mc->HasMC()){
     if (mc->GetMCTrack(particle)) {
-      values[AliDielectronVarManager::kPdgCode]=mc->GetMCTrack(particle)->PdgCode();
-      Int_t trkLbl = mc->GetMCTrack(particle)->GetLabel();
-      //      printf("trklbl %d for %p->%p \n",trkLbl,particle,mc->GetMCTrack(particle));
-      values[AliDielectronVarManager::kHasCocktailMother]=mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kDirect);
+      Int_t trkLbl = TMath::Abs(mc->GetMCTrack(particle)->GetLabel());
+      values[AliDielectronVarManager::kPdgCode]           =mc->GetMCTrack(particle)->PdgCode();
+      values[AliDielectronVarManager::kHasCocktailMother] =mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kDirect);
+      values[AliDielectronVarManager::kPdgCodeMother]     =mc->GetMotherPDG(particle);
+      AliAODMCParticle *motherMC=mc->GetMCTrackMother(particle); //mother
+      if(motherMC) values[AliDielectronVarManager::kPdgCodeGrandMother]=mc->GetMotherPDG(motherMC);
     }
-    AliAODMCParticle *motherMC=mc->GetMCTrackMother(particle); //mother
-    if (motherMC){
-      values[AliDielectronVarManager::kPdgCodeMother]=motherMC->PdgCode();
-      Int_t motherLbl = motherMC->GetLabel();
-      values[AliDielectronVarManager::kHasCocktailGrandMother]=mc->CheckParticleSource(motherLbl, AliDielectronSignalMC::kDirect);
-     
-      motherMC=mc->GetMCTrackMother(motherMC);  //grand motherMC
-      if (motherMC) values[AliDielectronVarManager::kPdgCodeGrandMother]=motherMC->PdgCode();;
-    }
-    
     values[AliDielectronVarManager::kNumberOfDaughters]=mc->NumberOfDaughters(particle);
   } //if(mc->HasMC())
-  
+
   values[AliDielectronVarManager::kTOFPIDBit]=(particle->GetStatus()&AliESDtrack::kTOFpid? 1: 0);
   values[AliDielectronVarManager::kLegEff] = GetSingleLegEff(values);
+  values[AliDielectronVarManager::kOneOverLegEff] = (values[AliDielectronVarManager::kLegEff]>0.0 ? 1./values[AliDielectronVarManager::kLegEff] : 0.0);
+
 }
 
 inline void AliDielectronVarManager::FillVarMCParticle(const AliMCParticle *particle, Double_t * const values)
@@ -1010,24 +1024,17 @@ inline void AliDielectronVarManager::FillVarMCParticle(const AliMCParticle *part
 
   // Fill common AliVParticle interface information
   FillVarVParticle(particle, values);
-  
-  AliDielectronMC *mc=AliDielectronMC::Instance();
 
   // Fill AliMCParticle interface specific information
-  values[AliDielectronVarManager::kPdgCode] = particle->PdgCode();
-  Int_t trkLbl = particle->GetLabel();
-  values[AliDielectronVarManager::kHasCocktailMother]=mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kDirect);
+  AliDielectronMC *mc=AliDielectronMC::Instance();
+  Int_t trkLbl = TMath::Abs(particle->GetLabel());
+  values[AliDielectronVarManager::kPdgCode]           = particle->PdgCode();
+  values[AliDielectronVarManager::kHasCocktailMother] = mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kDirect);
+  values[AliDielectronVarManager::kPdgCodeMother]     = mc->GetMotherPDG(particle);
+  AliMCParticle *motherMC=mc->GetMCTrackMother(particle); //mother
+  if(motherMC) values[AliDielectronVarManager::kPdgCodeGrandMother]=mc->GetMotherPDG(motherMC);
 
-  AliMCParticle *motherMC = mc->GetMCTrackMother(particle);
-  if (motherMC){
-    values[AliDielectronVarManager::kPdgCodeMother]=motherMC->PdgCode();
-    Int_t motherLbl = motherMC->GetLabel();
-    values[AliDielectronVarManager::kHasCocktailGrandMother]=mc->CheckParticleSource(motherLbl, AliDielectronSignalMC::kDirect);
 
-    motherMC=mc->GetMCTrackMother(motherMC);  //grand mother
-    if (motherMC) values[AliDielectronVarManager::kPdgCodeGrandMother]=motherMC->PdgCode();;
-  }
-  
   values[AliDielectronVarManager::kIsJpsiPrimary] = mc->IsJpsiPrimary(particle);
   values[AliDielectronVarManager::kNumberOfDaughters]=mc->NumberOfDaughters(particle);
 }
@@ -1071,8 +1078,8 @@ inline void AliDielectronVarManager::FillVarMCParticle2(const AliVParticle *p1, 
   values[AliDielectronVarManager::kTPCnSigmaPro]  = 0;
   values[AliDielectronVarManager::kITSclusterMap] = 0;
   
-  values[AliDielectronVarManager::kPdgCode]       = 0;
-  values[AliDielectronVarManager::kPdgCodeMother] = 0;
+  values[AliDielectronVarManager::kPdgCode]       = -1;
+  values[AliDielectronVarManager::kPdgCodeMother] = -1;
   values[AliDielectronVarManager::kHasCocktailMother]=0;
 
   AliDielectronMC *mc=AliDielectronMC::Instance();
@@ -1099,6 +1106,7 @@ inline void AliDielectronVarManager::FillVarMCParticle2(const AliVParticle *p1, 
 						      values[AliDielectronVarManager::kPx]+
 						      values[AliDielectronVarManager::kPy]*
 						      values[AliDielectronVarManager::kPy]);
+  values[AliDielectronVarManager::kPtSq]      = values[AliDielectronVarManager::kPt] * values[AliDielectronVarManager::kPt];
   values[AliDielectronVarManager::kP]         = TMath::Sqrt(values[AliDielectronVarManager::kPt]*
 						      values[AliDielectronVarManager::kPt]+
 						      values[AliDielectronVarManager::kPz]*
@@ -1180,29 +1188,27 @@ inline void AliDielectronVarManager::FillVarAODMCParticle(const AliAODMCParticle
 
   // Fill common AliVParticle interface information
   FillVarVParticle(particle, values);
-  
-  AliDielectronMC *mc=AliDielectronMC::Instance();
-
 
   // Fill AliAODMCParticle interface specific information
-  values[AliDielectronVarManager::kPdgCode] = particle->PdgCode();
-  Int_t trkLbl = particle->GetLabel();
-  values[AliDielectronVarManager::kHasCocktailMother]=mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kDirect);
+  AliDielectronMC *mc=AliDielectronMC::Instance();
+  Int_t trkLbl = TMath::Abs(particle->GetLabel());
+  values[AliDielectronVarManager::kPdgCode]           = particle->PdgCode();
+  values[AliDielectronVarManager::kHasCocktailMother] = mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kDirect);
+  values[AliDielectronVarManager::kPdgCodeMother]     = mc->GetMotherPDG(particle);
+  AliAODMCParticle *motherMC=mc->GetMCTrackMother(particle); //mother
+  if(motherMC) values[AliDielectronVarManager::kPdgCodeGrandMother]=mc->GetMotherPDG(motherMC);
 
-  AliAODMCParticle *motherMC = mc->GetMCTrackMother(particle);
-  if (motherMC){
-    values[AliDielectronVarManager::kPdgCodeMother]=motherMC->PdgCode();
-    Int_t motherLbl = motherMC->GetLabel();
-    values[AliDielectronVarManager::kHasCocktailGrandMother]=mc->CheckParticleSource(motherLbl, AliDielectronSignalMC::kDirect);
-
-    motherMC=mc->GetMCTrackMother(motherMC);  //grand mother
-    if (motherMC) values[AliDielectronVarManager::kPdgCodeGrandMother]=motherMC->PdgCode();;
-  }
-  
-  
   values[AliDielectronVarManager::kIsJpsiPrimary] = mc->IsJpsiPrimary(particle);
-
   values[AliDielectronVarManager::kNumberOfDaughters]=mc->NumberOfDaughters(particle);
+
+  // using AODMCHEader information
+  AliAODMCHeader *mcHeader = (AliAODMCHeader*)fgEvent->FindListObject(AliAODMCHeader::StdBranchName());
+  if(mcHeader) {
+    values[AliDielectronVarManager::kImpactParZ]  = mcHeader->GetVtxZ()-particle->Zv();
+    values[AliDielectronVarManager::kImpactParXY] = TMath::Sqrt(TMath::Power(mcHeader->GetVtxX()-particle->Xv(),2) +
+								TMath::Power(mcHeader->GetVtxY()-particle->Yv(),2));
+  }
+
 }
 
 inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPair *pair, Double_t * const values)
@@ -1262,6 +1268,14 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   // values[AliDielectronVarManager::kPseudoProperTime] = fgEvent ? pair->GetPseudoProperTime(fgEvent->GetPrimaryVertex()): -1e10;
   values[AliDielectronVarManager::kPseudoProperTimeErr] = (errPseudoProperTime2 > 0) ? TMath::Sqrt(errPseudoProperTime2) : -1e10;
 
+  // impact parameter
+  Double_t d0z0[2];
+  d0z0[0]=-999.;
+  d0z0[1]=-999.;
+  if(fgEvent) pair->GetDCA(fgEvent->GetPrimaryVertex(), d0z0);
+  values[AliDielectronVarManager::kImpactParXY]   = d0z0[0];
+  values[AliDielectronVarManager::kImpactParZ]    = d0z0[1];
+
  
   if (!(pair->GetKFUsage())) {
 	//if KF Pairing is not enabled, overwrite values that can be easily derived from legs
@@ -1306,6 +1320,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 	values[AliDielectronVarManager::kPz]        = (lv1+lv2).Pz();
 
 	values[AliDielectronVarManager::kPt]        =  (lv1+lv2).Pt();
+	values[AliDielectronVarManager::kPtSq]      = values[AliDielectronVarManager::kPt] * values[AliDielectronVarManager::kPt];
 
 	values[AliDielectronVarManager::kP]         =  (lv1+lv2).P();
 
@@ -1322,7 +1337,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 	values[AliDielectronVarManager::kOpeningAngle] =  lv1.Angle(lv2.Vect());
 
 	values[AliDielectronVarManager::kOneOverPt] = (values[AliDielectronVarManager::kPt]>0. ? 1./values[AliDielectronVarManager::kPt] : -9999.);
-	values[AliDielectronVarManager::kPhi]       = (lv1+lv2).Phi();
+	values[AliDielectronVarManager::kPhi]       = (lv1+lv2).Phi()+TMath::Pi(); // change interval to [0,+2pi]
 	values[AliDielectronVarManager::kEta]       = (lv1+lv2).Eta();
 
 	values[AliDielectronVarManager::kY]       = (lv1+lv2).Rapidity();
@@ -1421,16 +1436,36 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   if ( values[AliDielectronVarManager::kDeltaPhiTPCrpH2] < -1.*TMath::Pi() )
     values[AliDielectronVarManager::kDeltaPhiTPCrpH2] += TMath::TwoPi(); 
 
-  //angle between ee plane and Mag/Reaction plane
-  values[AliDielectronVarManager::kPairPlaneAngle] = pair->PairPlaneAngle();
-  //ee plane vector
-  Double_t RotPairx = 0;
-  Double_t RotPairy = 0;
-  Double_t RotPairz = 0;
-  pair->GetRotPair(RotPairx,RotPairy,RotPairz);
-  values[AliDielectronVarManager::kRotPairx]=RotPairx;
-  values[AliDielectronVarManager::kRotPairy]=RotPairy;
-  values[AliDielectronVarManager::kRotPairz]=RotPairz;
+  //Calculate the angle between electrons decay plane and variables 1-4
+  values[AliDielectronVarManager::kPairPlaneAngle1A] = pair->GetPairPlaneAngle(values[AliDielectronVarManager::kv0ArpH2],1);
+  values[AliDielectronVarManager::kPairPlaneAngle2A] = pair->GetPairPlaneAngle(values[AliDielectronVarManager::kv0ArpH2],2);
+  values[AliDielectronVarManager::kPairPlaneAngle3A] = pair->GetPairPlaneAngle(values[AliDielectronVarManager::kv0ArpH2],3);
+  values[AliDielectronVarManager::kPairPlaneAngle4A] = pair->GetPairPlaneAngle(values[AliDielectronVarManager::kv0ArpH2],4);
+
+  values[AliDielectronVarManager::kPairPlaneAngle1C] = pair->GetPairPlaneAngle(values[AliDielectronVarManager::kv0CrpH2],1);
+  values[AliDielectronVarManager::kPairPlaneAngle2C] = pair->GetPairPlaneAngle(values[AliDielectronVarManager::kv0CrpH2],2);
+  values[AliDielectronVarManager::kPairPlaneAngle3C] = pair->GetPairPlaneAngle(values[AliDielectronVarManager::kv0CrpH2],3);
+  values[AliDielectronVarManager::kPairPlaneAngle4C] = pair->GetPairPlaneAngle(values[AliDielectronVarManager::kv0CrpH2],4);
+
+  values[AliDielectronVarManager::kPairPlaneAngle1AC] = pair->GetPairPlaneAngle(values[AliDielectronVarManager::kv0ACrpH2],1);
+  values[AliDielectronVarManager::kPairPlaneAngle2AC] = pair->GetPairPlaneAngle(values[AliDielectronVarManager::kv0ACrpH2],2);
+  values[AliDielectronVarManager::kPairPlaneAngle3AC] = pair->GetPairPlaneAngle(values[AliDielectronVarManager::kv0ACrpH2],3);
+  values[AliDielectronVarManager::kPairPlaneAngle4AC] = pair->GetPairPlaneAngle(values[AliDielectronVarManager::kv0ACrpH2],4);
+
+  //Random reaction plane
+  values[AliDielectronVarManager::kRandomRP] = gRandom->Uniform(-TMath::Pi()/2.0,TMath::Pi()/2.0);
+  //delta phi of pair fron random reaction plane
+  values[AliDielectronVarManager::kDeltaPhiRandomRP] = values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kRandomRP];
+  // keep the interval [-pi,+pi]
+  if ( values[AliDielectronVarManager::kDeltaPhiRandomRP] > TMath::Pi() )
+    values[AliDielectronVarManager::kDeltaPhiRandomRP] -= TMath::TwoPi();
+
+  values[AliDielectronVarManager::kPairPlaneAngle1Ran]= pair->GetPairPlaneAngle(values[AliDielectronVarManager::kRandomRP],1);
+  values[AliDielectronVarManager::kPairPlaneAngle2Ran]= pair->GetPairPlaneAngle(values[AliDielectronVarManager::kRandomRP],2);
+  values[AliDielectronVarManager::kPairPlaneAngle3Ran]= pair->GetPairPlaneAngle(values[AliDielectronVarManager::kRandomRP],3);
+  values[AliDielectronVarManager::kPairPlaneAngle4Ran]= pair->GetPairPlaneAngle(values[AliDielectronVarManager::kRandomRP],4);
+
+
 
 
   AliDielectronMC *mc=AliDielectronMC::Instance();
@@ -1496,7 +1531,10 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
     Fill(leg1, valuesLeg1);
     Fill(leg2, valuesLeg2);
     values[AliDielectronVarManager::kPairEff] = valuesLeg1[AliDielectronVarManager::kLegEff] *valuesLeg2[AliDielectronVarManager::kLegEff];
+    values[AliDielectronVarManager::kOneOverPairEff] = (values[AliDielectronVarManager::kPairEff]>0.0 ? 1./values[AliDielectronVarManager::kPairEff] : 0.0);
+
   }
+  values[AliDielectronVarManager::kRndmPair] = gRandom->Rndm();
 }
 
 inline void AliDielectronVarManager::FillVarKFParticle(const AliKFParticle *particle, Double_t * const values)
@@ -1508,6 +1546,7 @@ inline void AliDielectronVarManager::FillVarKFParticle(const AliKFParticle *part
   values[AliDielectronVarManager::kPy]        = particle->GetPy();
   values[AliDielectronVarManager::kPz]        = particle->GetPz();
   values[AliDielectronVarManager::kPt]        = particle->GetPt();
+  values[AliDielectronVarManager::kPtSq]      = particle->GetPt() * particle->GetPt();
   values[AliDielectronVarManager::kP]         = particle->GetP();
   
   values[AliDielectronVarManager::kXv]        = particle->GetX();
@@ -1600,13 +1639,22 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kRefMultTPConly]  = 0;
   
   if (primVtx){
+    //    printf("prim vertex reco: %f \n",primVtx->GetX());
     values[AliDielectronVarManager::kXvPrim]       = primVtx->GetX();
     values[AliDielectronVarManager::kYvPrim]       = primVtx->GetY();
     values[AliDielectronVarManager::kZvPrim]       = primVtx->GetZ();
     values[AliDielectronVarManager::kNVtxContrib]  = primVtx->GetNContributors();
   }
   //   values[AliDielectronVarManager::kChi2NDF]      = primVtx->GetChi2perNDF(); //this is the pair value
-  
+
+  // online and offline trigger maps
+  values[AliDielectronVarManager::kTriggerInclONL]     = event->GetTriggerMask();
+  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  UInt_t maskOff = ((AliInputEventHandler*)man->GetInputEventHandler())->IsEventSelected();
+  values[AliDielectronVarManager::kTriggerInclOFF]     = maskOff;
+  values[AliDielectronVarManager::kTriggerExclOFF]        = -1;
+  for(Int_t i=0; i<30; i++) { if(maskOff==BIT(i)) values[AliDielectronVarManager::kTriggerExclOFF]=i; }
+
   values[AliDielectronVarManager::kNTrk]            = event->GetNumberOfTracks();
   values[AliDielectronVarManager::kNacc]            = AliDielectronHelper::GetNacc(event);
   values[AliDielectronVarManager::kMatchEffITSTPC]  = AliDielectronHelper::GetITSTPCMatchEff(event);
@@ -2143,8 +2191,10 @@ inline void AliDielectronVarManager::InitEffMap(const Char_t* filename) {
   if(!hFnd || !hGen) return;
 
   fgEffMap  = (THnBase*) hFnd->Clone("effMap");
-  fgEffMap->Divide(hFnd, hGen, 1, 1, "");  //assume uncorrelated err, otherwise give option "B"
-  if(fgEffMap) printf("[I] AliDielectronVarManager::InitEffMap eff map loaded! \n");
+  fgEffMap->Reset();
+  fgEffMap->Sumw2();
+  fgEffMap->Divide(hFnd, hGen);//, 1, 1, "");  //assume uncorrelated err, otherwise give option "B"
+  if(fgEffMap) printf("[I] AliDielectronVarManager::InitEffMap efficiency maps loaded! \n");
 }
 
 inline Double_t AliDielectronVarManager::GetSingleLegEff(Double_t * const values) {
@@ -2158,8 +2208,12 @@ inline Double_t AliDielectronVarManager::GetSingleLegEff(Double_t * const values
   for(Int_t idim=0; idim<dim; idim++) {
     UInt_t var = GetValueType(fgEffMap->GetAxis(idim)->GetName());
     idx[idim] = fgEffMap->GetAxis(idim)->FindBin(values[var]);
+    /* if(idx[idim] < 0 || idx[idim]>fgEffMap->GetAxis(idim)->GetNbins())  */
+    /*   printf(" [E] AliDielectronVarManager::GetSingleLegEff values %f for %s not found in axis range \n",values[var],fgEffMap->GetAxis(idim)->GetName()); */
+    //    printf(" (%d,%f,%s) \t",idx[idim],values[var],fgEffMap->GetAxis(idim)->GetName());
   }
-  /* printf("bin content %f+-%f \n",fgEffMap->GetBinContent(idx), fgEffMap->GetBinError(idx)); */
+  //  printf(" bin content %f+-%f \n",fgEffMap->GetBinContent(idx), fgEffMap->GetBinError(idx));
+  if(fgEffMap->GetBinContent(idx)<0.01 || fgEffMap->GetBinError(idx)/fgEffMap->GetBinContent(idx)>0.2) return 0.0;
   return (fgEffMap->GetBinContent(idx));
 }
 

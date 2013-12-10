@@ -272,7 +272,7 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
 
   if(fRequire13sel){
     if(!fUtils.IsVertexSelected2013pA(ev)) return kFALSE;
-    if(fUtils.IsFirstEventInChunk(ev)) return kFALSE;
+//     if(fUtils.IsFirstEventInChunk(ev)) return kFALSE;
   }
 
   /*

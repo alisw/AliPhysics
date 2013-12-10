@@ -47,6 +47,8 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix
   hfecuts->SetCutITSpixel(itshitpixel);
   hfecuts->SetCheckITSLayerStatus(kFALSE);
   hfecuts->SetEtaRange(etami,etama);
+  hfecuts->SetRejectKinkDaughters();
+  hfecuts->SetAcceptKinkMothers();
   if(isAOD) hfecuts->SetAODFilterBit(4);
   
   //if((iPixelAny==AliHFEextraCuts::kAny) || (iPixelAny==AliHFEextraCuts::kSecond))     
@@ -85,12 +87,36 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix
   task->SetRemovePileUp(kFALSE);
   task->SetHFECuts(hfecuts);
   task->GetPIDQAManager()->SetHighResolutionHistos();
+  task->SetRejectKinkMother(kFALSE);
 
   // Determine the centrality estimator
   task->SetCentralityEstimator("V0A");
   if (icent == 2) task->SetCentralityEstimator("V0M");
   else if (icent == 3) task->SetCentralityEstimator("CL1");
   else if (icent == 4) task->SetCentralityEstimator("ZNA");
+
+  //***************************************//
+  //        Prepare preselection           //
+  // This mimics the ESD->AOD filter in    //
+  // case of the ESD analysis and selects  //
+  // only tracks which will be selected in //
+  // the AOD analysis with the given filter//
+  // bit. Not to be applied for AODS.      //
+  // For pPb the cuts used are (bit 4)     //
+  // esdTrackCutsHG0 from file $ALICE_ROOT///
+  // ANALYSIS/macros/AddTaskESDFilter.C    //
+  //***************************************//
+
+  if(kApplyPreselection){    
+    AliESDtrackCuts* esdfilter = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
+    esdfilter->SetMaxDCAToVertexXY(2.4);
+    esdfilter->SetMaxDCAToVertexZ(3.2);
+    esdfilter->SetDCAToVertex2D(kTRUE);
+
+    task->SetHFECutsPreselect(esdfilter);
+    printf("Put a preselection cut\n");
+    task->SetFillNoCuts(kTRUE);
+  }
 
   //***************************************//
   //          Variable manager             //
@@ -217,10 +243,15 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix
 
   // Selection of associated tracks for the pool
   if(useCat1Tracks) backe->SelectCategory1Tracks(kTRUE);
-  if(useCat2Tracks) backe->SelectCategory2Tracks(kTRUE);
+  if(useCat2Tracks){
+    backe->SelectCategory2Tracks(kTRUE);
+    backe-> SetITSMeanShift(-0.5);
+  }
 
   // apply opening angle cut to reduce file size
   backe->SetMaxInvMass(0.3);
+  backe->SetPtBinning(sizept, ptbinning);
+  backe->SetEtaBinning(sizeeta, etabinning);
 
   task->SetHFEBackgroundSubtraction(backe);
 

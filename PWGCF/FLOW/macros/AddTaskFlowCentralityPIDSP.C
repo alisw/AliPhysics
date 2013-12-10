@@ -19,7 +19,8 @@ void AddTaskFlowCentralityPIDSP(Int_t centralitysel,
                                Bool_t doQA=kFALSE,
 			       Float_t etamin=-0.8,
 			       Float_t etamax=0.8,	 
-                               TString uniqueStr="" )
+                               TString uniqueStr="",
+			       Int_t side      = 0 )
 {
   // Define the range for eta subevents (for SP method)
   Double_t minA = -5;
@@ -92,8 +93,8 @@ void AddTaskFlowCentralityPIDSP(Int_t centralitysel,
   // EVENTS CUTS:
  AliFlowEventCuts* cutsEvent = new AliFlowEventCuts("event cuts");
   cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
-  cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kVZERO);
-//  cutsEvent->SetRefMultMethod(AliFlowEventCuts::kVZERO);
+  cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
+//  cutsEvent->SetRefMultMethod(AliFlowEventCuts::kV0);
   //cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kSPD1tracklets);
 //  cutsEvent->SetNContributorsRange(2);
   cutsEvent->SetPrimaryVertexZrange(-10.,10.);
@@ -106,7 +107,17 @@ void AddTaskFlowCentralityPIDSP(Int_t centralitysel,
   cutsRP->SetParamType(rptype);
   cutsRP->SetParamMix(rpmix);
   cutsRP->SetPtRange(0.2,5.);
-  cutsRP->SetEtaRange(etamin,etamax);
+  // side A
+  if(side < 0)
+    cutsRP->SetEtaRange(etamin,0.);
+
+  // side C
+  else if(side > 0)
+    cutsRP->SetEtaRange(0.,etamax);
+
+  else
+    cutsRP->SetEtaRange(etamin,etamax);
+
   cutsRP->SetMinNClustersTPC(70);
 //  cutsRP->SetMinChi2PerClusterTPC(0.1);
 //  cutsRP->SetMaxChi2PerClusterTPC(4.0);
@@ -337,7 +348,7 @@ void AddTaskFlowCentralityPIDSP(Int_t centralitysel,
   taskFE->SetCutsEvent(cutsEvent);
   taskFE->SetCutsRP(cutsRP2);
   taskFE->SetCutsPOI(cutsPOI);
-  if (cutsRP->GetParamType()==AliFlowTrackCuts::kVZERO)
+  if (cutsRP->GetParamType()==AliFlowTrackCuts::kV0)
   { 
     //TODO: since this is set in a static object all analyses in an analysis train
     //will be affected.
@@ -350,6 +361,8 @@ void AddTaskFlowCentralityPIDSP(Int_t centralitysel,
   if (SP){
     AliAnalysisTaskScalarProduct *taskSP = new AliAnalysisTaskScalarProduct(Form("TaskScalarProduct %s",outputSlotName.Data()),WEIGHTS[0]);
     taskSP->SelectCollisionCandidates(centralitysel);
+    if(side < 0)   taskSP->SetTotalQvector("Qb");
+    else     taskSP->SetTotalQvector("Qa");
     taskSP->SetRelDiffMsub(1.0);
     taskSP->SetApplyCorrectionForNUA(kTRUE);
     mgr->AddTask(taskSP);

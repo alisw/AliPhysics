@@ -1,7 +1,7 @@
 #ifndef ALIANALYSISTASKCLQA_H
 #define ALIANALYSISTASKCLQA_H
 
-// $Id: AliAnalysisTaskCLQA.h 58847 2012-09-30 18:11:49Z loizides $
+// $Id$
 
 class TClonesArray;
 class TString;
@@ -13,12 +13,12 @@ class TNtuple;
 class TNtupleD;
 class TTree;
 
-#include "AliAnalysisTaskEmcalDev.h"
+#include "AliAnalysisTaskEmcal.h"
 
 class AliNtupCumInfo;
 class AliNtupZdcInfo;
 
-class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcalDev {
+class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcal {
  public:
   AliAnalysisTaskCLQA();
   AliAnalysisTaskCLQA(const char *name);
@@ -41,6 +41,7 @@ class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcalDev {
   Bool_t                      fDoTracking;       // if true run tracking analysis
   Bool_t                      fDoMuonTracking;   // if true run muon tracking analysis
   Bool_t                      fDoCumulants;      // if true run cumulant analysis
+  Bool_t                      fDoCumNtuple;      // if true then save cumulant ntuple
   Double_t                    fCumPtMin;         // minimum pt for cumulants
   Double_t                    fCumPtMax;         // maximum pt for cumulants
   Double_t                    fCumEtaMin;        // minimum eta for cumulants
@@ -57,7 +58,7 @@ class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcalDev {
   AliAnalysisTaskCLQA(const AliAnalysisTaskCLQA&);            // not implemented
   AliAnalysisTaskCLQA &operator=(const AliAnalysisTaskCLQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskCLQA, 4) // Constantin's Task
+  ClassDef(AliAnalysisTaskCLQA, 5) // Constantin's Task
 };
 
 class AliNtupCumInfo {

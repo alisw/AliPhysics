@@ -2,7 +2,7 @@
 
 AliAnalysisTaskEMCALPhoton *AddTaskEMCALPhoton(
   Double_t clusTh=2, 
-  TString period="LHC11d" 
+  TString period="LHC11d", 
   TString geoname="EMCAL_COMPLETEV1"
 )
 {

@@ -71,11 +71,12 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   void SetDataType(DataType d)             {fDataType = d;}
   void SetIsPbPb(Bool_t cs)                {fIsPbPb = cs;}
   void SetCentralityClass(int cent)        {fCentClass=cent;}
-  void SetCuts(AliESDtrackCuts* trackCuts) {fTrackCuts = trackCuts;}
+  void SetCuts(AliESDtrackCuts* trackCuts)         {fTrackCuts         = trackCuts;}
   void SetCutsITSLoose(AliESDtrackCuts* trackCuts) {fTrackCutsITSLoose = trackCuts;}
-  void SetCutsTPConly(AliESDtrackCuts* trackCuts) {fTrackCutsTPConly = trackCuts;}
+  void SetCutsTPConly(AliESDtrackCuts* trackCuts)  {fTrackCutsTPConly  = trackCuts;}
   void SetTrackType(Int_t trackType) {fTrackType = trackType;}
-  void SetFilterMask(UInt_t filterMask)    {fFilterMask = filterMask;}
+  void SetFilterMask(UInt_t filterMask)    {fFilterMask    = filterMask ;}
+  void SetIncludeNoITS(Bool_t f)           {fIncludeNoITS  = f          ; }
 
   void SetSigmaConstrainedMax(Double_t sigma) {fSigmaConstrainedMax=sigma;}
   void SetPtMax(Float_t ptmax) {fPtMax = ptmax;}
@@ -110,6 +111,7 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   AliESDtrackCuts *fTrackCutsTPConly;  // TPC track cuts
   Int_t   fTrackType;                  // 0: global track; 1:TPConly track 2: TPConly constrained track 3: global ITSrefit 4: TPConly constrained track with QA selection based on global track
   UInt_t fFilterMask;                  // Select tracks from specific track cuts belonging to certain filter mask for AOD analysis
+  Bool_t fIncludeNoITS;                // includes tracks with failed ITS refit
 
   Double_t fSigmaConstrainedMax;  // max sigma on constrained fit
   Float_t fPtMax;                 // Maximum pT for histograms
@@ -117,6 +119,7 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
 
   Bool_t   fIsPbPb;               // kTRUE if PbPb
   Int_t fCentClass;               // Select only events from predefined centrality class
+  
 
   /*
     QA variables stored in TArrayF *fVariables
@@ -173,6 +176,7 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   TH1F *fPtSel;                                //! Pt spectrum all selected charged particles by fTrackCuts
   TH2F *fPtPhi;                                //! Pt vs Phi
   TH2F *fPtEta;                                //! Pt vs Eta
+  TH3F *fPtEtaPhi;                             //! Pt vs Eta vs Phi
   TH2F *fPtDCA2D;                              //! Pt vs DCA2D
   TH2F *fPtDCAZ;                               //! Pt vs DCAZ
   TH2F *fPtNClustersTPC;                       //! Pt vs nClustersTPC
@@ -181,6 +185,7 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   TH2F *fPtNClustersTPCShared;                 //! Pt vs nClustersTPCShared
   TH2F *fPtNClustersTPCSharedFrac;             //! Pt vs nClustersTPCSharedFrac
   TH2F *fPtNPointITS;                          //! Pt vs nPointITS
+  TH3F *fPtNPointITSPhi;                       //! Pt vs nPointITS vs phi
   TH2F *fPtChi2C;                              //! Pt vs Chi2C
   TH2F *fPtNSigmaToVertex;                     //! Pt vs nSigmaToVertex
 
@@ -234,9 +239,7 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   TProfile *fProfPtPtSigma1Pt;                 //! pT vs pT*sigma(1/Pt)
 
   TList *fHistList; //! List of Histograms
-  
  
-  ClassDef(AliPWG4HighPtTrackQA,3) 
-  
+  ClassDef(AliPWG4HighPtTrackQA,4) 
 };
 #endif

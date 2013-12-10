@@ -42,6 +42,7 @@ file ( GLOB SRCS12 "Centrality/*.cxx" )
 file ( GLOB SRCS13 "ZDC/*.cxx" )
 file ( GLOB SRCS14 "T0/*.cxx" )
 file ( GLOB SRCS15 "VZERO/*PbPb.cxx" )
+file ( GLOB SRCS16 "EvTrkSelection/*.cxx" )
 
 list ( APPEND SRCS 
   ${SRCS1} 
@@ -59,6 +60,7 @@ list ( APPEND SRCS
   ${SRCS13} 
   ${SRCS14}
   ${SRCS15}
+  ${SRCS16}
   )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -89,6 +91,7 @@ set ( EINCLUDE
   PWGPP/TRD/info 
   PWGPP/background 
   PWGPP/Centrality 
+  PWGPP/EvTrkSelection
   HMPID 
   PWGPP/ZDC 
   PWGPP/T0 

@@ -20,17 +20,17 @@ class AliEmcalPicoTrackMaker : public AliAnalysisTaskSE {
   void UserExec(Option_t *option);
 
   void SetAODfilterBits(Int_t b0 = 0, Int_t b1 = 0)      { fAODfilterBits[0] = b0  ; fAODfilterBits[1] = b1  ; }
+  void SetCutMaxFractionSharedTPCClusters(Double_t c = 0.4)        { fCutMaxFractionSharedTPCClusters  = c ; }
   void SetESDtrackCuts(AliESDtrackCuts *cuts)            { fESDtrackCuts     = cuts; }
-  void SetTracksInName(const char *name)                 { fTracksInName     = name; }
-  void SetTracksOutName(const char *name)                { fTracksOutName    = name; }
-  void SetTrackPtLimits(Double_t min, Double_t max)      { fMaxTrackPt       = max ; fMinTrackPt       = min ; }
+  void SetIncludeNoITS(Bool_t f)                         { fIncludeNoITS     = f   ; }
+  void SetMC(Bool_t a)                                   { fIsMC             = a   ; }
+  void SetTrackEfficiency(Double_t eff = 0.95)           { fTrackEfficiency  = eff ; }
   void SetTrackEtaLimits(Double_t min, Double_t max)     { fMaxTrackEta      = max ; fMinTrackEta      = min ; }
   void SetTrackPhiLimits(Double_t min, Double_t max)     { fMaxTrackPhi      = max ; fMinTrackPhi      = min ; }
-  void SetTrackEfficiency(Double_t eff = 0.95)           { fTrackEfficiency  = eff ; }
-  void SetIncludeNoITS(Bool_t f)                         { fIncludeNoITS     = f   ; }
+  void SetTrackPtLimits(Double_t min, Double_t max)      { fMaxTrackPt       = max ; fMinTrackPt       = min ; }
+  void SetTracksInName(const char *name)                 { fTracksInName     = name; }
+  void SetTracksOutName(const char *name)                { fTracksOutName    = name; }
   void SetUseNegativeLabels(Bool_t f)                    { fUseNegativeLabels= f   ; }
-  void SetMC(Bool_t a)                                   { fIsMC             = a   ; }
-  void SetCutMaxFractionSharedTPCClusters(Double_t c = 0.4)        { fCutMaxFractionSharedTPCClusters  = c ; }
 
  protected:
   Int_t              fAODfilterBits[2];     // AOD track filter bit map

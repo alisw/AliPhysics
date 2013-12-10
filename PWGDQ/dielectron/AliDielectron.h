@@ -215,7 +215,7 @@ private:
   AliDielectron(const AliDielectron &c);
   AliDielectron &operator=(const AliDielectron &c);
   
-  ClassDef(AliDielectron,5);
+  ClassDef(AliDielectron,6);
 };
 
 inline void AliDielectron::InitPairCandidateArrays()

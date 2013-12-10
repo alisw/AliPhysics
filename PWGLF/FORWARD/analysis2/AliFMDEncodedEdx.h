@@ -1,7 +1,7 @@
 #ifndef ALIFMDENCODEDEDX_H
 #define ALIFMDENCODEDEDX_H
 /**
- * @file   AliFMDEncodedEdx.C
+ * @file   AliFMDEncodedEdx.h
  * @author Christian Holm Christensen <cholm@nbi.dk>
  * @date   Thu Oct 10 11:50:59 2013
  * 

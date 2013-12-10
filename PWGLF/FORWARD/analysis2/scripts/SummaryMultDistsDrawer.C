@@ -109,11 +109,13 @@ protected:
 
       fBody->Divide(2,2);
       DrawInPad(fBody, 1, GetH1(bin, "rawDist"), "",          kLogy);
-      DrawInPad(fBody, 1, GetH1(bin, "truthAccepted",false),"same", kLogy);
-      DrawInPad(fBody, 1, GetH1(bin, "truth",false),   "same", kLogy|kLegend);
+      DrawInPad(fBody, 1, GetH1(bin, "truthAccepted",false),"same", 
+		kLogy|kSilent);
+      DrawInPad(fBody, 1, GetH1(bin, "truth",false),   "same", 
+		kLogy|kLegend|kSilent);
       DrawInPad(fBody, 2, GetH1(bin, "coverage"));
       DrawInPad(fBody, 3, GetH2(bin, "corr"),     "colz");
-      DrawInPad(fBody, 4, GetH2(bin, "response",false), "colz", kLogz);
+      DrawInPad(fBody, 4, GetH2(bin, "response",false), "colz",kLogz|kSilent);
       
       PrintCanvas(Form("%+5.1f < #eta < %+5.1f", etaMin, etaMax));
     }
@@ -170,12 +172,13 @@ protected:
 
       fBody->Divide(2,3);
       DrawInPad(fBody, 1, GetH1(bin, "rawDist"),      "",     kLogy);
-      DrawInPad(fBody, 1, GetH1(bin, "truthAccepted", false),"same", kLogy);
-      DrawInPad(fBody, 1, GetH1(bin, "truth", false),"same", kLogy|kLegend);
+      DrawInPad(fBody, 1, GetH1(bin, "truthAccepted", false),
+		"same", kSilent);
+      DrawInPad(fBody, 1, GetH1(bin, "truth", false),"same", kSilent|kLegend);
       DrawInPad(fBody, 2, GetH1(bin, "coverage"));
       DrawInPad(fBody, 3, GetH2(bin, "corr"),            "colz");
-      DrawInPad(fBody, 4, GetH2(bin, "response", false), "colz", kLogz);
-      DrawInPad(fBody, 5, GetH1(bin, "triggerVertex"));
+      DrawInPad(fBody, 4, GetH2(bin, "response", false), "colz", kLogz|kSilent);
+      DrawInPad(fBody, 5, GetH1(bin, "triggerVertex", false), "", kSilent);
       
       PrintCanvas(Form("%+5.1f < #eta < %+5.1f", etaMin, etaMax));
     }

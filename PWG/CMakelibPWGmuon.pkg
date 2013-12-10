@@ -61,7 +61,8 @@ set ( SRCS
     muon/AliMergeableCollection.cxx 
     muon/AliVAnalysisMuon.cxx 
     muon/AliAnalysisTaskFlowSingleMu.cxx 
-    muon/AliAnalysisMuonUtility.cxx 
+    muon/AliAnalysisMuonUtility.cxx
+    muon/AliUtilityMuonAncestor.cxx
     muon/AliOADBMuonTrackCutsParam.cxx
     muon/AliAnalysisMuMuBinning.cxx
     muon/AliAnalysisNonMuonTrackCuts.cxx

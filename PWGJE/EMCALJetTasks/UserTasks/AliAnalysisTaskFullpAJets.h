@@ -119,6 +119,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         void FillLeadingJetPtRho(Double_t jetPt, Double_t rho);
         void DoNEFQAPlots(Bool_t doNEFAna);
         void DoNEFAnalysis(Double_t nefCut, Double_t signalCut, TClonesArray *jetList, Int_t *indexJetList, Int_t nIndexJetList, TObjArray *clusterList, TClonesArray *orgClusterList, AliVEvent *event, AliEMCALGeometry *geometry, AliEMCALRecoUtils *recoUtils, AliVCaloCells *cells);
+        void FillMiscJetStats(TClonesArray *jetList, Int_t *indexJetList, Int_t nIndexJetList, TClonesArray *trackList, TClonesArray *clusterList);
         
         // Setters
         void SetName(const char *name);
@@ -131,7 +132,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         void SetLeadingJetPtRange(Int_t bins, Double_t low, Double_t up);
         void SetLeadingChargedTrackPtRange(Int_t bins, Double_t low, Double_t up);
         void SetNEFRange(Int_t bins, Double_t low, Double_t up);
-        
+        void SetSignalTrackPtBias(Bool_t chargedBias);
+
         // User Defined Functions
         TList* GetOutputHistos();  //!
         Double_t GetRho();
@@ -186,13 +188,16 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         // Profiles
         TProfile *fpRho; //!
         TProfile *fpLJetRho; //!
-
+        TH2D *fhJetConstituentPt; //!
+        TH2D *fhJetPtArea; //!
+        
         // Histograms for Neutral Energy Fraction
         TList *fNEFOutput; //! NEF QA Plots
         
         TH1D *fhNEF; //!
         TH1D *fhNEFSignal; //!
         TH2D *fhNEFJetPt; //!
+        TH2D *fhNEFJetPtSignal; //!
         
         TH2D *fhNEFEtaPhi; //!
         TH2D *fhNEFEtaPhiSignal; //!
@@ -246,7 +251,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         Double_t fLChargedTrackPtUp;
         
         Bool_t fDoNEFQAPlots;
-        
+        Bool_t fSignalTrackBias;
+
         Int_t fNEFBins;
         Double_t fNEFLow;
         Double_t fNEFUp;
@@ -276,7 +282,6 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     void ClusterHisto();
     void InitChargedJets();
     void InitFullJets();
-    void JetPtArea();
     void GenerateTPCRandomConesPt();
     void GenerateEMCalRandomConesPt();
     
@@ -394,8 +399,35 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         fNEFSignalJetCut = nef;
     };
     
+    inline void DoNEFCalibration(Bool_t doNEF)
+    {
+        fDoNEF = doNEF;
+    };
+    
+    inline void SetJetChargeBias(Bool_t trackBias)
+    {
+        fSignalTrackBias = trackBias;
+    };
+    
+    inline void DoTrackQA(Bool_t doQA)
+    {
+        fTrackQA = doQA;
+    };
+
+    inline void DoClusterQA(Bool_t doQA)
+    {
+        fClusterQA = doQA;
+    };
+    
+    inline void CalculateRhoJet(Int_t doRhoJet)
+    {
+        fCalculateRhoJet = doRhoJet;
+    };
+
     private:
     TList *fOutput; //! Output list
+    TList *flTrack; //! Track QA List
+    TList *flCluster; //! Cluster QA List
     
     TH1D *fhTrackPt;  //!
     TH1D *fhTrackEta;  //!
@@ -411,8 +443,6 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     TH1D *fhClusterPhi;  //!
     TH1D *fhCentrality; //!
     TH1D *fhEMCalCellCounts;  //! Plots the distribution of cluster counts in the EMCal. Used to determine which cells are hot (if any...)
-    TH1D *fhDeltaRhoN;  //!
-    TH1D *fhDeltaRhoCMS;  //!
     
     TH2D *fhTrackEtaPhi;  //!
     TH2D *fhTrackPhiPt;  //!
@@ -427,9 +457,10 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     TH2D *fhClusterEtaPhi; //!
     TH2D *fhClusterPhiPt;  //!
     TH2D *fhClusterEtaPt;  //!
-    TH2D *fhJetPtArea; //! Jet Area distribution vs Pt
-    TH2D *fhJetConstituentPt; //! Pt distribution of jet constituents
-    TH2D *fhRhoScale;  //!
+    
+    TH2D *fhEMCalEventMult; //!
+    TH2D *fhTPCEventMult; //!
+    TH2D *fhEMCalTrackEventMult; //!
     
     TH3D *fhTrackEtaPhiPt;  //!
     TH3D *fhGlobalTrackEtaPhiPt;  //!
@@ -438,13 +469,15 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     
     TProfile *fpEMCalEventMult;  //!
     TProfile *fpTPCEventMult;  //!
-    TProfile *fpRhoScale; //! Scale of rho_total/rho_charged event/event vs centrality
     
     TProfile2D *fpTrackPtProfile;  //!
     TProfile2D *fpClusterPtProfile;  //!
     
     AlipAJetHistos *fTPCRawJets;  //!
     AlipAJetHistos *fEMCalRawJets;  //!
+
+    AlipAJetHistos *fRhoChargedCMSScale;  //!
+    AlipAJetHistos *fRhoChargedScale;  //!
     
     AlipAJetHistos *fRhoFull0;  //!
     AlipAJetHistos *fRhoFull1;  //!
@@ -458,11 +491,9 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     AlipAJetHistos *fRhoCharged1;  //!
     AlipAJetHistos *fRhoCharged2;  //!
     AlipAJetHistos *fRhoChargedN;  //!
-    AlipAJetHistos *fRhoChargedScale;  //!
     AlipAJetHistos *fRhoChargedkT;  //!
     AlipAJetHistos *fRhoChargedkTScale;  //!
     AlipAJetHistos *fRhoChargedCMS;  //!
-    AlipAJetHistos *fRhoChargedCMSScale;  //!
 
     AlipAJetData *fTPCJet;  //!
     AlipAJetData *fTPCFullJet;  //!
@@ -485,6 +516,11 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     AliEMCALRecoUtils *fRecoUtil;  //!
     AliEMCALGeometry *fEMCALGeometry;  //!
     AliVCaloCells *fCells;  //!
+    Bool_t fDoNEF;
+    Bool_t fSignalTrackBias;
+    Bool_t fTrackQA;
+    Bool_t fClusterQA;
+    Int_t fCalculateRhoJet;
     
     // Protected Global Variables
     Double_t fEMCalPhiMin;

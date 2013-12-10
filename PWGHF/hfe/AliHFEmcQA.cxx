@@ -502,7 +502,7 @@ void AliHFEmcQA::GetMesonKine()
 
 //     if(!fIsPbPb&&!fIsppMultiBin) fCentrality=0;
 
-     if(abs(mctrack0->PdgCode()) == 111) // pi0 
+     if(TMath::Abs(mctrack0->PdgCode()) == 111) // pi0 
        {
           if(TMath::Abs(AliHFEtools::GetRapidity(mcpart0))<0.8) {
             fMCQACollection->Fill(Form("pionspectra_centrbin%i",fCentrality),mctrack0->Pt());
@@ -514,11 +514,11 @@ void AliHFEmcQA::GetMesonKine()
           for(int idx=id1; idx<=id2; idx++){
             if(!(mctrackdaugt = fMCEvent->GetTrack(idx))) continue;
             if(!(mctrackd = dynamic_cast<AliMCParticle *>(mctrackdaugt))) continue;
-            if(abs(mctrackd->PdgCode()) == 11 && TMath::Abs(mctrackd->Eta())<0.8)
+            if(TMath::Abs(mctrackd->PdgCode()) == 11 && TMath::Abs(mctrackd->Eta())<0.8)
              fMCQACollection->Fill(Form("piondaughters_centrbin%i",fCentrality),mctrackd->Pt());
           }
        }
-     else if(abs(mctrack0->PdgCode()) == 221) // eta 
+     else if(TMath::Abs(mctrack0->PdgCode()) == 221) // eta 
        {
           if(TMath::Abs(AliHFEtools::GetRapidity(mcpart0))<0.8) {
             fMCQACollection->Fill(Form("etaspectra_centrbin%i",fCentrality),mctrack0->Pt());
@@ -530,11 +530,11 @@ void AliHFEmcQA::GetMesonKine()
           for(int idx=id1; idx<=id2; idx++){
             if(!(mctrackdaugt = fMCEvent->GetTrack(idx))) continue;
             if(!(mctrackd = dynamic_cast<AliMCParticle *>(mctrackdaugt))) continue;
-            if(abs(mctrackd->PdgCode()) == 11 && TMath::Abs(mctrackd->Eta())<0.8)
+            if(TMath::Abs(mctrackd->PdgCode()) == 11 && TMath::Abs(mctrackd->Eta())<0.8)
              fMCQACollection->Fill(Form("etadaughters_centrbin%i",fCentrality),mctrackd->Pt());
           }
        }
-     else if(abs(mctrack0->PdgCode()) == 223) // omega
+     else if(TMath::Abs(mctrack0->PdgCode()) == 223) // omega
        {
           if(TMath::Abs(AliHFEtools::GetRapidity(mcpart0))<0.8) {
             fMCQACollection->Fill(Form("omegaspectra_centrbin%i",fCentrality),mctrack0->Pt());
@@ -546,11 +546,11 @@ void AliHFEmcQA::GetMesonKine()
           for(int idx=id1; idx<=id2; idx++){
             if(!(mctrackdaugt = fMCEvent->GetTrack(idx))) continue;
             if(!(mctrackd = dynamic_cast<AliMCParticle *>(mctrackdaugt))) continue;
-            if(abs(mctrackd->PdgCode()) == 11 && TMath::Abs(mctrackd->Eta())<0.8)
+            if(TMath::Abs(mctrackd->PdgCode()) == 11 && TMath::Abs(mctrackd->Eta())<0.8)
              fMCQACollection->Fill(Form("omegadaughters_centrbin%i",fCentrality),mctrackd->Pt());
           }
        }
-     else if(abs(mctrack0->PdgCode()) == 333) // phi 
+     else if(TMath::Abs(mctrack0->PdgCode()) == 333) // phi 
        {
           if(TMath::Abs(AliHFEtools::GetRapidity(mcpart0))<0.8) {
             fMCQACollection->Fill(Form("phispectra_centrbin%i",fCentrality),mctrack0->Pt());
@@ -562,11 +562,11 @@ void AliHFEmcQA::GetMesonKine()
           for(int idx=id1; idx<=id2; idx++){
             if(!(mctrackdaugt = fMCEvent->GetTrack(idx))) continue;
             if(!(mctrackd = dynamic_cast<AliMCParticle *>(mctrackdaugt))) continue;
-            if(abs(mctrackd->PdgCode()) == 11 && TMath::Abs(mctrackd->Eta())<0.8)
+            if(TMath::Abs(mctrackd->PdgCode()) == 11 && TMath::Abs(mctrackd->Eta())<0.8)
              fMCQACollection->Fill(Form("phidaughters_centrbin%i",fCentrality),mctrackd->Pt());
           }
        }
-     else if(abs(mctrack0->PdgCode()) == 331) // eta prime
+     else if(TMath::Abs(mctrack0->PdgCode()) == 331) // eta prime
        {
           if(TMath::Abs(AliHFEtools::GetRapidity(mcpart0))<0.8) {
             fMCQACollection->Fill(Form("etapspectra_centrbin%i",fCentrality),mctrack0->Pt());
@@ -578,11 +578,11 @@ void AliHFEmcQA::GetMesonKine()
           for(int idx=id1; idx<=id2; idx++){
             if(!(mctrackdaugt = fMCEvent->GetTrack(idx))) continue;
             if(!(mctrackd = dynamic_cast<AliMCParticle *>(mctrackdaugt))) continue;
-            if(abs(mctrackd->PdgCode()) == 11 && TMath::Abs(mctrackd->Eta())<0.8)
+            if(TMath::Abs(mctrackd->PdgCode()) == 11 && TMath::Abs(mctrackd->Eta())<0.8)
              fMCQACollection->Fill(Form("etapdaughters_centrbin%i",fCentrality),mctrackd->Pt());
           }
        }
-     else if(abs(mctrack0->PdgCode()) == 113) // rho
+     else if(TMath::Abs(mctrack0->PdgCode()) == 113) // rho
        {
           if(TMath::Abs(AliHFEtools::GetRapidity(mcpart0))<0.8) {
             fMCQACollection->Fill(Form("rhospectra_centrbin%i",fCentrality),mctrack0->Pt());
@@ -594,17 +594,17 @@ void AliHFEmcQA::GetMesonKine()
           for(int idx=id1; idx<=id2; idx++){
             if(!(mctrackdaugt = fMCEvent->GetTrack(idx))) continue;
             if(!(mctrackd = dynamic_cast<AliMCParticle *>(mctrackdaugt))) continue;
-            if(abs(mctrackd->PdgCode()) == 11 && TMath::Abs(mctrackd->Eta())<0.8)
+            if(TMath::Abs(mctrackd->PdgCode()) == 11 && TMath::Abs(mctrackd->Eta())<0.8)
              fMCQACollection->Fill(Form("rhodaughters_centrbin%i",fCentrality),mctrackd->Pt());
           }
        }
-     else if(abs(mctrack0->PdgCode()) == 321) // kaon+-
+     else if(TMath::Abs(mctrack0->PdgCode()) == 321) // kaon+-
        {
           if(TMath::Abs(AliHFEtools::GetRapidity(mcpart0))<0.8) {
             fMCQACollection->Fill(Form("kaonspectraLog_centrbin%i",fCentrality),mctrack0->Pt());
           }
        }
-     else if(abs(mctrack0->PdgCode()) == 130) // k0L
+     else if(TMath::Abs(mctrack0->PdgCode()) == 130) // k0L
        {
           if(TMath::Abs(AliHFEtools::GetRapidity(mcpart0))<0.8) {
             fMCQACollection->Fill(Form("k0LspectraLog_centrbin%i",fCentrality),mctrack0->Pt());
@@ -657,10 +657,10 @@ void AliHFEmcQA::GetQuarkKine(TParticle *part, Int_t iTrack, const Int_t kquark)
       // if the heavy particle comes from string which is denoted as particle status 12|12|12...12|11,[PYTHIA p.60]
       // in this case, the mother of heavy particle can be one of the fragmented parton of the string
       // should I make a condition that partMother should be quark or diquark? -> not necessary
-      if ( abs(partMother->GetPdgCode()) == kquark || (partMother->GetStatusCode() == 11) ){
-      //if ( abs(partMother->GetPdgCode()) == kquark || (partMother->GetStatusCode() == 11 || partMother->GetStatusCode() == 12) ){
+      if ( TMath::Abs(partMother->GetPdgCode()) == kquark || (partMother->GetStatusCode() == 11) ){
+      //if ( TMath::Abs(partMother->GetPdgCode()) == kquark || (partMother->GetStatusCode() == 11 || partMother->GetStatusCode() == 12) ){
 
-        if ( abs(partMother->GetPdgCode()) != kquark ){
+        if ( TMath::Abs(partMother->GetPdgCode()) != kquark ){
           // search fragmented partons in the same string
           Bool_t isSameString = kTRUE; 
           for (Int_t i=1; i<fgkMaxIter; i++){
@@ -671,13 +671,13 @@ void AliHFEmcQA::GetQuarkKine(TParticle *part, Int_t iTrack, const Int_t kquark)
                AliDebug(1, "Stack label is negative, return\n");
                return; 
              }
-             if ( abs(partMother->GetPdgCode()) == kquark ) break;
+             if ( TMath::Abs(partMother->GetPdgCode()) == kquark ) break;
              if ( partMother->GetStatusCode() != 12 ) isSameString = kFALSE;
              if (!isSameString) return; 
           }
         }
         AliDebug(1, "Can not find heavy parton of this heavy hadron in the string, return\n");
-        if (abs(partMother->GetPdgCode()) != kquark) return; 
+        if (TMath::Abs(partMother->GetPdgCode()) != kquark) return; 
 
         if (fIsHeavy[iq] >= 50) return;  
         fHeavyQuark[fIsHeavy[iq]] = partMother;
@@ -845,7 +845,7 @@ void AliHFEmcQA::GetHadronKine(TParticle* mcpart, const Int_t kquark)
 
     // if the mother is charmed hadron  
     Bool_t isDirectCharm = kFALSE;
-    if ( int(abs(pdgcode)/100.) == kCharm || int(abs(pdgcode)/1000.) == kCharm ) {
+    if ( int(TMath::Abs(pdgcode)/100.) == kCharm || int(TMath::Abs(pdgcode)/1000.) == kCharm ) {
 
           // iterate until you find B hadron as a mother or become top ancester 
           for (Int_t i=1; i<fgkMaxIter; i++){
@@ -865,7 +865,7 @@ void AliHFEmcQA::GetHadronKine(TParticle* mcpart, const Int_t kquark)
              Int_t motherPDG = mother->GetPdgCode();
     
              for (Int_t j=0; j<fNparents; j++){
-                if (abs(motherPDG)==fParentSelect[1][j]) return; // return if this hadron is originated from b
+                if (TMath::Abs(motherPDG)==fParentSelect[1][j]) return; // return if this hadron is originated from b
              }
 
              mcpart = mother;
@@ -873,7 +873,7 @@ void AliHFEmcQA::GetHadronKine(TParticle* mcpart, const Int_t kquark)
     } // end of if
     if((isDirectCharm == kTRUE && kquark == kCharm) || kquark == kBeauty) {
          for (Int_t i=0; i<fNparents; i++){
-            if (abs(pdgcodeCopy)==fParentSelect[iq][i]){
+            if (TMath::Abs(pdgcodeCopy)==fParentSelect[iq][i]){
 
               // fill hadron kinematics
               fHist[iq][kHadron][0][fCentrality].fPdgCode->Fill(pdgcodeCopy);
@@ -887,10 +887,10 @@ void AliHFEmcQA::GetHadronKine(TParticle* mcpart, const Int_t kquark)
             }
          }
 	 // I also want to store D* info to compare with D* measurement 
-	 if (abs(pdgcodeCopy)==413 && iq==0) { //D*+
+	 if (TMath::Abs(pdgcodeCopy)==413 && iq==0) { //D*+
                fhD[7]->Fill(partCopy->Pt(),AliHFEtools::GetRapidity(partCopy));
 	 }
-	 if (abs(pdgcodeCopy)==423 && iq==0) { //D*0
+	 if (TMath::Abs(pdgcodeCopy)==423 && iq==0) { //D*0
                fhD[8]->Fill(partCopy->Pt(),AliHFEtools::GetRapidity(partCopy));
 	 }
     } // end of if
@@ -920,7 +920,7 @@ void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kde
 
     if(kquark==kOthers){
       Int_t esource = -1;
-      if ( abs(mcpart->GetPdgCode()) != kdecayed ) esource = kMisID-4;
+      if ( TMath::Abs(mcpart->GetPdgCode()) != kdecayed ) esource = kMisID-4;
       else esource =GetSource(mcpart)-4; // return for the cases kGamma=4, kPi0=5, kElse=6
       if(esource==0|| esource==1 || esource==2 || esource==3){
         fHist[iq][esource][0][fCentrality].fPt->Fill(mcpart->Pt());
@@ -944,7 +944,7 @@ void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kde
       }
     }
 
-    if ( abs(mcpart->GetPdgCode()) != kdecayed ) return;
+    if ( TMath::Abs(mcpart->GetPdgCode()) != kdecayed ) return;
 
     Int_t iLabel = mcpart->GetFirstMother(); 
     if (iLabel<0){
@@ -975,10 +975,10 @@ void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kde
 
     // if the mother is charmed hadron  
     Bool_t isMotherDirectCharm = kFALSE;
-    if ( int(abs(maPdgcode)/100.) == kCharm || int(abs(maPdgcode)/1000.) == kCharm ) { 
+    if ( int(TMath::Abs(maPdgcode)/100.) == kCharm || int(TMath::Abs(maPdgcode)/1000.) == kCharm ) { 
 
          for (Int_t i=0; i<fNparents; i++){
-            if (abs(maPdgcode)==fParentSelect[0][i]){
+            if (TMath::Abs(maPdgcode)==fParentSelect[0][i]){
               isFinalOpenCharm = kTRUE;
             } 
          }  
@@ -1003,7 +1003,7 @@ void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kde
              Int_t grandMaPDG = grandMa->GetPdgCode();
 
              for (Int_t j=0; j<fNparents; j++){
-                if (abs(grandMaPDG)==fParentSelect[1][j]){
+                if (TMath::Abs(grandMaPDG)==fParentSelect[1][j]){
 
                   if (kquark == kCharm) return;
                   // fill electron kinematics
@@ -1052,7 +1052,7 @@ void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kde
                     if((mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(kLabel0))))){
                       TParticle* ggrandMatmp = mctrack->Particle();
                       Int_t ggrandMaPDGtmp = ggrandMatmp->GetPdgCode();
-                      if ( int(abs(ggrandMaPDGtmp)/100.) == kBeauty || int(abs(ggrandMaPDGtmp)/1000.) == kBeauty) isGGrandmaYes = kTRUE;
+                      if ( int(TMath::Abs(ggrandMaPDGtmp)/100.) == kBeauty || int(TMath::Abs(ggrandMaPDGtmp)/1000.) == kBeauty) isGGrandmaYes = kTRUE;
                       ggmrapidwstmp = AliHFEtools::GetRapidity(ggrandMatmp);
                     }
                   }
@@ -1101,7 +1101,7 @@ void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kde
     } // end of if
     if((isMotherDirectCharm == kTRUE && kquark == kCharm) || kquark == kBeauty) {
          for (Int_t i=0; i<fNparents; i++){
-            if (abs(maPdgcodeCopy)==fParentSelect[iq][i]){
+            if (TMath::Abs(maPdgcodeCopy)==fParentSelect[iq][i]){
 
               fHist[iq][kElectron][0][fCentrality].fPdgCode->Fill(mcpart->GetPdgCode());
               fHist[iq][kElectron][0][fCentrality].fPt->Fill(mcpart->Pt());
@@ -1193,8 +1193,8 @@ void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kde
                 if((mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(kLabel))))){ 
                   TParticle* grandMatmp = mctrack->Particle();
                   Int_t grandMaPDGtmp = grandMatmp->GetPdgCode();
-                  if ( int(abs(grandMaPDGtmp)/100.) == kCharm || int(abs(grandMaPDGtmp)/1000.) == kCharm ) isGrandmaYes = kTRUE;
-                  if ( int(abs(grandMaPDGtmp)/100.) == kBeauty || int(abs(grandMaPDGtmp)/1000.) == kBeauty) isGrandmaYes = kTRUE;
+                  if ( int(TMath::Abs(grandMaPDGtmp)/100.) == kCharm || int(TMath::Abs(grandMaPDGtmp)/1000.) == kCharm ) isGrandmaYes = kTRUE;
+                  if ( int(TMath::Abs(grandMaPDGtmp)/100.) == kBeauty || int(TMath::Abs(grandMaPDGtmp)/1000.) == kBeauty) isGrandmaYes = kTRUE;
                   gmrapidwstmp = AliHFEtools::GetRapidity(grandMatmp);
                 }
               }
@@ -1272,7 +1272,7 @@ void  AliHFEmcQA::GetDecayedKine(AliAODMCParticle *mcpart, const Int_t kquark, I
     return;
   }
 
-  if ( abs(mcpart->GetPdgCode()) != kdecayed ) return;
+  if ( TMath::Abs(mcpart->GetPdgCode()) != kdecayed ) return;
 
   Double_t eabsEta = TMath::Abs(mcpart->Eta());
   Double_t eabsY = TMath::Abs(AliHFEtools::GetRapidity(mcpart));
@@ -1292,10 +1292,10 @@ void  AliHFEmcQA::GetDecayedKine(AliAODMCParticle *mcpart, const Int_t kquark, I
   Int_t maPdgcodeCopy = maPdgcode;
 
   Bool_t isMotherDirectCharm = kFALSE;
-  if ( int(abs(maPdgcode)/100.) == kCharm || int(abs(maPdgcode)/1000.) == kCharm ) {
+  if ( int(TMath::Abs(maPdgcode)/100.) == kCharm || int(TMath::Abs(maPdgcode)/1000.) == kCharm ) {
 
     for (Int_t i=0; i<fNparents; i++){
-       if (abs(maPdgcode)==fParentSelect[0][i]){
+       if (TMath::Abs(maPdgcode)==fParentSelect[0][i]){
          isFinalOpenCharm = kTRUE;
        }
     } 
@@ -1318,7 +1318,7 @@ void  AliHFEmcQA::GetDecayedKine(AliAODMCParticle *mcpart, const Int_t kquark, I
        Int_t grandMaPDG = grandMa->GetPdgCode();
 
        for (Int_t j=0; j<fNparents; j++){
-          if (abs(grandMaPDG)==fParentSelect[1][j]){
+          if (TMath::Abs(grandMaPDG)==fParentSelect[1][j]){
 
             if (kquark == kCharm) return;
             // fill electron kinematics
@@ -1369,7 +1369,7 @@ void  AliHFEmcQA::GetDecayedKine(AliAODMCParticle *mcpart, const Int_t kquark, I
   } // end of if
   if ((isMotherDirectCharm == kTRUE && kquark == kCharm) || kquark == kBeauty) {
     for (Int_t i=0; i<fNparents; i++){
-       if (abs(maPdgcodeCopy)==fParentSelect[iq][i]){
+       if (TMath::Abs(maPdgcodeCopy)==fParentSelect[iq][i]){
 
          // fill electron kinematics
          fHist[iq][kElectron][0][fCentrality].fPdgCode->Fill(mcpart->GetPdgCode());
@@ -1447,17 +1447,17 @@ void AliHFEmcQA::HardScattering(const Int_t kquark, Int_t &motherID, Int_t &moth
            
        motherlabel = -1;
 
-       if (abs(afterinitialrad1->GetPdgCode()) == fgkGluon && abs(afterinitialrad2->GetPdgCode()) == fgkGluon){
+       if (TMath::Abs(afterinitialrad1->GetPdgCode()) == fgkGluon && TMath::Abs(afterinitialrad2->GetPdgCode()) == fgkGluon){
          AliDebug(1,"heavy from gluon gluon pair creation!\n");
          mothertype = -1;
          motherID = fgkGluon;
        }
-       else if (abs(afterinitialrad1->GetPdgCode()) == kquark || abs(afterinitialrad2->GetPdgCode()) == kquark){ // one from Q and the other from g
+       else if (TMath::Abs(afterinitialrad1->GetPdgCode()) == kquark || TMath::Abs(afterinitialrad2->GetPdgCode()) == kquark){ // one from Q and the other from g
          AliDebug(1,"heavy from flavor exitation!\n");
          mothertype = -1;
          motherID = kquark;
        }
-       else if  (abs(afterinitialrad1->GetPdgCode()) == abs(afterinitialrad2->GetPdgCode())){
+       else if  (TMath::Abs(afterinitialrad1->GetPdgCode()) == TMath::Abs(afterinitialrad2->GetPdgCode())){
          AliDebug(1,"heavy from q-qbar pair creation!\n");
          mothertype = -1;
          motherID = 1;
@@ -1525,7 +1525,7 @@ Int_t AliHFEmcQA::GetSource(const AliVParticle* const mcpart)
 {        
   // decay particle's origin 
 
-  //if ( abs(mcpart->GetPdgCode()) != AliHFEmcQA::kElectronPDG ) return -1;
+  //if ( TMath::Abs(mcpart->GetPdgCode()) != AliHFEmcQA::kElectronPDG ) return -1;
        
   Int_t origin = -1;
   Bool_t isFinalOpenCharm = kFALSE;
@@ -1547,10 +1547,10 @@ Int_t AliHFEmcQA::GetSource(const AliVParticle* const mcpart)
   Int_t maPdgcode = partMother->PdgCode();
   
   // if the mother is charmed hadron  
-  if ( int(abs(maPdgcode)/100.) == kCharm || int(abs(maPdgcode)/1000.) == kCharm ) {
+  if ( int(TMath::Abs(maPdgcode)/100.) == kCharm || int(TMath::Abs(maPdgcode)/1000.) == kCharm ) {
     
     for (Int_t i=0; i<fNparents; i++){
-       if (abs(maPdgcode)==fParentSelect[0][i]){
+       if (TMath::Abs(maPdgcode)==fParentSelect[0][i]){
          isFinalOpenCharm = kTRUE;
        }
     }
@@ -1574,7 +1574,7 @@ Int_t AliHFEmcQA::GetSource(const AliVParticle* const mcpart)
        Int_t grandMaPDG = grandMa->PdgCode();
 
        for (Int_t j=0; j<fNparents; j++){
-          if (abs(grandMaPDG)==fParentSelect[1][j]){
+          if (TMath::Abs(grandMaPDG)==fParentSelect[1][j]){
             origin = kBeautyCharm;
             return origin;
           }
@@ -1583,19 +1583,19 @@ Int_t AliHFEmcQA::GetSource(const AliVParticle* const mcpart)
        partMother = grandMa;
     } // end of iteration 
   } // end of if
-  else if ( int(abs(maPdgcode)/100.) == kBeauty || int(abs(maPdgcode)/1000.) == kBeauty ) {
+  else if ( int(TMath::Abs(maPdgcode)/100.) == kBeauty || int(TMath::Abs(maPdgcode)/1000.) == kBeauty ) {
     for (Int_t i=0; i<fNparents; i++){
-       if (abs(maPdgcode)==fParentSelect[1][i]){
+       if (TMath::Abs(maPdgcode)==fParentSelect[1][i]){
          origin = kDirectBeauty;
          return origin;
        }
     }
   } // end of if
-  else if ( abs(maPdgcode) == 22 ) {
+  else if ( TMath::Abs(maPdgcode) == 22 ) {
     origin = kGamma;
     return origin;
   } // end of if
-  else if ( abs(maPdgcode) == 111 ) {
+  else if ( TMath::Abs(maPdgcode) == 111 ) {
     origin = kPi0;
     return origin;
   } // end of if
@@ -1608,7 +1608,7 @@ Int_t AliHFEmcQA::GetSource(const TParticle * const mcpart)
 {
   // decay particle's origin 
 
-  //if ( abs(mcpart->GetPdgCode()) != AliHFEmcQA::kElectronPDG ) return -1;
+  //if ( TMath::Abs(mcpart->GetPdgCode()) != AliHFEmcQA::kElectronPDG ) return -1;
 
   Int_t origin = -1;
   Bool_t isFinalOpenCharm = kFALSE;
@@ -1630,10 +1630,10 @@ Int_t AliHFEmcQA::GetSource(const TParticle * const mcpart)
   Int_t maPdgcode = partMother->GetPdgCode();
 
    // if the mother is charmed hadron  
-   if ( int(abs(maPdgcode)/100.) == kCharm || int(abs(maPdgcode)/1000.) == kCharm ) {
+   if ( int(TMath::Abs(maPdgcode)/100.) == kCharm || int(TMath::Abs(maPdgcode)/1000.) == kCharm ) {
 
      for (Int_t i=0; i<fNparents; i++){
-        if (abs(maPdgcode)==fParentSelect[0][i]){
+        if (TMath::Abs(maPdgcode)==fParentSelect[0][i]){
           isFinalOpenCharm = kTRUE;
         }
      }
@@ -1658,7 +1658,7 @@ Int_t AliHFEmcQA::GetSource(const TParticle * const mcpart)
         Int_t grandMaPDG = grandMa->GetPdgCode();
 
         for (Int_t j=0; j<fNparents; j++){
-           if (abs(grandMaPDG)==fParentSelect[1][j]){
+           if (TMath::Abs(grandMaPDG)==fParentSelect[1][j]){
              origin = kBeautyCharm;
              return origin;
            }
@@ -1667,19 +1667,19 @@ Int_t AliHFEmcQA::GetSource(const TParticle * const mcpart)
         partMother = grandMa;
      } // end of iteration 
    } // end of if
-   else if ( int(abs(maPdgcode)/100.) == kBeauty || int(abs(maPdgcode)/1000.) == kBeauty ) {
+   else if ( int(TMath::Abs(maPdgcode)/100.) == kBeauty || int(TMath::Abs(maPdgcode)/1000.) == kBeauty ) {
      for (Int_t i=0; i<fNparents; i++){
-        if (abs(maPdgcode)==fParentSelect[1][i]){
+        if (TMath::Abs(maPdgcode)==fParentSelect[1][i]){
           origin = kDirectBeauty;
           return origin;
         }
      }
    } // end of if
-   else if ( abs(maPdgcode) == 22 ) {
+   else if ( TMath::Abs(maPdgcode) == 22 ) {
      origin = kGamma;
      return origin;
    } // end of if
-   else if ( abs(maPdgcode) == 111 ) {
+   else if ( TMath::Abs(maPdgcode) == 111 ) {
      origin = kPi0;
      return origin;
    } // end of if
@@ -1698,7 +1698,7 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart)
     return -1;
   }
 
-  if ( abs(mcpart->GetPdgCode()) != AliHFEmcQA::kElectronPDG ) return kMisID;
+  if ( TMath::Abs(mcpart->GetPdgCode()) != AliHFEmcQA::kElectronPDG ) return kMisID;
 
   Int_t origin = -1;
   Bool_t isFinalOpenCharm = kFALSE;
@@ -1720,19 +1720,19 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart)
 
    // if the mother is charmed hadron  
 
-   if(abs(maPdgcode)==443){ // J/spi
+   if(TMath::Abs(maPdgcode)==443){ // J/spi
       Int_t jLabel = partMother->GetFirstMother();
       if((mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(jLabel))))){
         TParticle* grandMa = mctrack->Particle();
         Int_t grandMaPDG = grandMa->GetPdgCode();
-        if((int(abs(grandMaPDG)/100.)%10) == kBeauty || (int(abs(grandMaPDG)/1000.)%10) == kBeauty) return kB2Jpsi;
+        if((int(TMath::Abs(grandMaPDG)/100.)%10) == kBeauty || (int(TMath::Abs(grandMaPDG)/1000.)%10) == kBeauty) return kB2Jpsi;
       }
       return kJpsi;   
    } 
-   else if ( (int(abs(maPdgcode)/100.)%10) == kCharm || (int(abs(maPdgcode)/1000.)%10) == kCharm ) {
+   else if ( (int(TMath::Abs(maPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(maPdgcode)/1000.)%10) == kCharm ) {
 
      for (Int_t i=0; i<fNparents; i++){
-        if (abs(maPdgcode)==fParentSelect[0][i]){
+        if (TMath::Abs(maPdgcode)==fParentSelect[0][i]){
           isFinalOpenCharm = kTRUE;
         }
      }
@@ -1756,7 +1756,7 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart)
         Int_t grandMaPDG = grandMa->GetPdgCode();
 
         for (Int_t j=0; j<fNparents; j++){
-           if (abs(grandMaPDG)==fParentSelect[1][j]){
+           if (TMath::Abs(grandMaPDG)==fParentSelect[1][j]){
              return kBeautyCharm;
            }
         }
@@ -1764,14 +1764,14 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart)
         partMother = grandMa;
      } // end of iteration 
    } // end of if
-   else if ( (int(abs(maPdgcode)/100.)%10) == kBeauty || (int(abs(maPdgcode)/1000.)%10) == kBeauty ) {
+   else if ( (int(TMath::Abs(maPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(maPdgcode)/1000.)%10) == kBeauty ) {
      for (Int_t i=0; i<fNparents; i++){
-        if (abs(maPdgcode)==fParentSelect[1][i]){
+        if (TMath::Abs(maPdgcode)==fParentSelect[1][i]){
           return kDirectBeauty;
         }
      }
    } // end of if
-   else if ( abs(maPdgcode) == 22 ) { //conversion
+   else if ( TMath::Abs(maPdgcode) == 22 ) { //conversion
 
      tmpMomLabel = partMotherCopy->GetFirstMother();
      if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(tmpMomLabel))))) return -1;
@@ -1784,36 +1784,36 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart)
       partMother = mctrack->Particle();
       grmaPdgcode = partMother->GetPdgCode();
 
-      if ( (int(abs(grmaPdgcode)/100.)%10) == kBeauty || (int(abs(grmaPdgcode)/1000.)%10) == kBeauty ) return kGammaB2M;
-      if ( (int(abs(grmaPdgcode)/100.)%10) == kCharm || (int(abs(grmaPdgcode)/1000.)%10) == kCharm ) return kGammaD2M;
-      if ( abs(grmaPdgcode) == 221 ) return kElse; //mj to remove secondary pi0 decay electrons from eta decays, mainly to eta signal enhance samples
+      if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kBeauty ) return kGammaB2M;
+      if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kCharm ) return kGammaD2M;
+      if ( TMath::Abs(grmaPdgcode) == 221 ) return kElse; //mj to remove secondary pi0 decay electrons from eta decays, mainly to eta signal enhance samples
 
       tmpMomLabel = partMother->GetFirstMother();
       if((mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(tmpMomLabel))))) {
        partMother = mctrack->Particle();
        ggrmaPdgcode = partMother->GetPdgCode();
 
-       if ( (int(abs(ggrmaPdgcode)/100.)%10) == kBeauty || (int(abs(ggrmaPdgcode)/1000.)%10) == kBeauty ) return kGammaB2M;
-       if ( (int(abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(abs(ggrmaPdgcode)/1000.)%10) == kCharm ) return kGammaD2M;
+       if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kBeauty ) return kGammaB2M;
+       if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kCharm ) return kGammaD2M;
       }
      }
 
-     if ( abs(maPdgcode) == 111 ) {
+     if ( TMath::Abs(maPdgcode) == 111 ) {
        return kGammaPi0;
      } 
-     else if ( abs(maPdgcode) == 221 ) {
+     else if ( TMath::Abs(maPdgcode) == 221 ) {
        return kGammaEta;
      } 
-     else if ( abs(maPdgcode) == 223 ) {
+     else if ( TMath::Abs(maPdgcode) == 223 ) {
        return kGammaOmega;
      } 
-     else if ( abs(maPdgcode) == 333 ) {
+     else if ( TMath::Abs(maPdgcode) == 333 ) {
        return kGammaPhi;
      }
-     else if ( abs(maPdgcode) == 331 ) {
+     else if ( TMath::Abs(maPdgcode) == 331 ) {
        return kGammaEtaPrime; 
      }
-     else if ( abs(maPdgcode) == 113 ) {
+     else if ( TMath::Abs(maPdgcode) == 113 ) {
        return kGammaRho0;
      }
      else origin = kElse;
@@ -1828,39 +1828,39 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart)
       partMother = mctrack->Particle();
       grmaPdgcode = partMother->GetPdgCode();
 
-      if ( (int(abs(grmaPdgcode)/100.)%10) == kBeauty || (int(abs(grmaPdgcode)/1000.)%10) == kBeauty ) return kGammaB2M;
-      if ( (int(abs(grmaPdgcode)/100.)%10) == kCharm || (int(abs(grmaPdgcode)/1000.)%10) == kCharm ) return kGammaD2M;
-      if ( abs(grmaPdgcode) == 221 ) return kElse; //mj to remove secondary pi0 decay electrons from eta decays, mainly to eta signal enhance samples
+      if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kBeauty ) return kGammaB2M;
+      if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kCharm ) return kGammaD2M;
+      if ( TMath::Abs(grmaPdgcode) == 221 ) return kElse; //mj to remove secondary pi0 decay electrons from eta decays, mainly to eta signal enhance samples
 
       tmpMomLabel = partMother->GetFirstMother();
       if((mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(tmpMomLabel))))) {
        partMother = mctrack->Particle();
        ggrmaPdgcode = partMother->GetPdgCode();
 
-       if ( (int(abs(ggrmaPdgcode)/100.)%10) == kBeauty || (int(abs(ggrmaPdgcode)/1000.)%10) == kBeauty ) return kGammaB2M;
-       if ( (int(abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(abs(ggrmaPdgcode)/1000.)%10) == kCharm ) return kGammaD2M;
+       if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kBeauty ) return kGammaB2M;
+       if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kCharm ) return kGammaD2M;
       }
      }
 
-     if ( abs(maPdgcode) == 111 ) {
+     if ( TMath::Abs(maPdgcode) == 111 ) {
        return kPi0;
      } 
-     else if ( abs(maPdgcode) == 221 ) {
+     else if ( TMath::Abs(maPdgcode) == 221 ) {
        return kEta;
      } 
-     else if ( abs(maPdgcode) == 223 ) {
+     else if ( TMath::Abs(maPdgcode) == 223 ) {
        return kOmega;
      } 
-     else if ( abs(maPdgcode) == 333 ) {
+     else if ( TMath::Abs(maPdgcode) == 333 ) {
        return kPhi;
      } 
-     else if ( abs(maPdgcode) == 331 ) {
+     else if ( TMath::Abs(maPdgcode) == 331 ) {
        return kEtaPrime;
      } 
-     else if ( abs(maPdgcode) == 113 ) {
+     else if ( TMath::Abs(maPdgcode) == 113 ) {
        return kRho0;
      } 
-     else if ( abs(maPdgcode) == 321 || abs(maPdgcode) == 130 ) {
+     else if ( TMath::Abs(maPdgcode) == 321 || TMath::Abs(maPdgcode) == 130 ) {
        return kKe3;
      }
      else{ 
@@ -1912,7 +1912,7 @@ Int_t AliHFEmcQA::GetElecSource(const AliAODMCParticle * const mcpart)
   if (!mcpart) return -1;
   if (!fMCArray) return -1;
   
-  if ( abs(mcpart->GetPdgCode()) != AliHFEmcQA::kElectronPDG ) return kMisID;
+  if ( TMath::Abs(mcpart->GetPdgCode()) != AliHFEmcQA::kElectronPDG ) return kMisID;
 
   Int_t origin = -1;
   Bool_t isFinalOpenCharm = kFALSE;
@@ -1934,7 +1934,7 @@ Int_t AliHFEmcQA::GetElecSource(const AliAODMCParticle * const mcpart)
 
   // if the mother is charmed hadron  
 
-  if(abs(maPdgcode)==443){ 
+  if(TMath::Abs(maPdgcode)==443){ 
     //
     // J/spi
     //
@@ -1942,19 +1942,19 @@ Int_t AliHFEmcQA::GetElecSource(const AliAODMCParticle * const mcpart)
     if ((jLabel>=0) && (jLabel<fMCArray->GetEntriesFast())){
       if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(jLabel))))){
 	Int_t grandMaPDG = mctrack->GetPdgCode();
-	if((int(abs(grandMaPDG)/100.)%10) == kBeauty || (int(abs(grandMaPDG)/1000.)%10) == kBeauty) {
+	if((int(TMath::Abs(grandMaPDG)/100.)%10) == kBeauty || (int(TMath::Abs(grandMaPDG)/1000.)%10) == kBeauty) {
 	  return kB2Jpsi;
 	}
       }
     }
     return kJpsi;   
   } 
-  else if ( (int(abs(maPdgcode)/100.)%10) == kCharm || (int(abs(maPdgcode)/1000.)%10) == kCharm ) {
+  else if ( (int(TMath::Abs(maPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(maPdgcode)/1000.)%10) == kCharm ) {
     //
     // charm
     //
     for (Int_t i=0; i<fNparents; i++){
-      if (abs(maPdgcode)==fParentSelect[0][i]){
+      if (TMath::Abs(maPdgcode)==fParentSelect[0][i]){
 	isFinalOpenCharm = kTRUE;
       }
     }
@@ -1980,7 +1980,7 @@ Int_t AliHFEmcQA::GetElecSource(const AliAODMCParticle * const mcpart)
       }
       Int_t grandMaPDG = mctrack->GetPdgCode();
       for (Int_t j=0; j<fNparents; j++){
-	if (abs(grandMaPDG)==fParentSelect[1][j]){
+	if (TMath::Abs(grandMaPDG)==fParentSelect[1][j]){
 	  return kBeautyCharm;
 	}
       }
@@ -1988,17 +1988,17 @@ Int_t AliHFEmcQA::GetElecSource(const AliAODMCParticle * const mcpart)
     } // end of iteration 
 
   } // end of if
-  else if ( (int(abs(maPdgcode)/100.)%10) == kBeauty || (int(abs(maPdgcode)/1000.)%10) == kBeauty ) {
+  else if ( (int(TMath::Abs(maPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(maPdgcode)/1000.)%10) == kBeauty ) {
     //
     // beauty
     //
     for (Int_t i=0; i<fNparents; i++){
-      if (abs(maPdgcode)==fParentSelect[1][i]){
+      if (TMath::Abs(maPdgcode)==fParentSelect[1][i]){
 	return kDirectBeauty;
       }
     }
   } // end of if
-  else if ( abs(maPdgcode) == 22 ) { 
+  else if ( TMath::Abs(maPdgcode) == 22 ) { 
     //
     //conversion
     //
@@ -2019,13 +2019,13 @@ Int_t AliHFEmcQA::GetElecSource(const AliAODMCParticle * const mcpart)
 	partMother = mctrack;
 	grmaPdgcode = partMother->GetPdgCode();
 	
-	if ( (int(abs(grmaPdgcode)/100.)%10) == kBeauty || (int(abs(grmaPdgcode)/1000.)%10) == kBeauty ) {	 
+	if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kBeauty ) {	 
 	  return kGammaB2M;
 	}
-	if ( (int(abs(grmaPdgcode)/100.)%10) == kCharm || (int(abs(grmaPdgcode)/1000.)%10) == kCharm ) {	 
+	if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kCharm ) {	 
 	  return kGammaD2M;
 	}
-	if ( abs(grmaPdgcode) == 221 ) {	 
+	if ( TMath::Abs(grmaPdgcode) == 221 ) {	 
 	  return kElse; //mj to remove secondary pi0 decay electrons from eta decays, mainly to eta signal enhance samples
 	}
 	
@@ -2035,10 +2035,10 @@ Int_t AliHFEmcQA::GetElecSource(const AliAODMCParticle * const mcpart)
 	    partMother = mctrack;
 	    ggrmaPdgcode = partMother->GetPdgCode();
 	    
-	    if ( (int(abs(ggrmaPdgcode)/100.)%10) == kBeauty || (int(abs(ggrmaPdgcode)/1000.)%10) == kBeauty ) {
+	    if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kBeauty ) {
 	      return kGammaB2M;
 	    }
-	    if ( (int(abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(abs(ggrmaPdgcode)/1000.)%10) == kCharm ) {
+	    if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kCharm ) {
 	      return kGammaD2M;
 	    }
 	   }
@@ -2046,22 +2046,22 @@ Int_t AliHFEmcQA::GetElecSource(const AliAODMCParticle * const mcpart)
       }
     }
 
-    if ( abs(maPdgcode) == 111 ) {
+    if ( TMath::Abs(maPdgcode) == 111 ) {
       return kGammaPi0;
     } 
-    else if ( abs(maPdgcode) == 221 ) {
+    else if ( TMath::Abs(maPdgcode) == 221 ) {
       return kGammaEta;
     } 
-    else if ( abs(maPdgcode) == 223 ) {
+    else if ( TMath::Abs(maPdgcode) == 223 ) {
       return kGammaOmega;
     } 
-    else if ( abs(maPdgcode) == 333 ) {
+    else if ( TMath::Abs(maPdgcode) == 333 ) {
       return kGammaPhi;
     }
-    else if ( abs(maPdgcode) == 331 ) {
+    else if ( TMath::Abs(maPdgcode) == 331 ) {
       return kGammaEtaPrime; 
     }
-    else if ( abs(maPdgcode) == 113 ) {
+    else if ( TMath::Abs(maPdgcode) == 113 ) {
       return kGammaRho0;
     }
     else origin = kElse;
@@ -2079,13 +2079,13 @@ Int_t AliHFEmcQA::GetElecSource(const AliAODMCParticle * const mcpart)
 	 partMother = mctrack;
 	 grmaPdgcode = partMother->GetPdgCode();
 	 
-	 if ( (int(abs(grmaPdgcode)/100.)%10) == kBeauty || (int(abs(grmaPdgcode)/1000.)%10) == kBeauty ) {
+	 if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kBeauty ) {
 	   return kGammaB2M;
 	 }
-	 if ( (int(abs(grmaPdgcode)/100.)%10) == kCharm || (int(abs(grmaPdgcode)/1000.)%10) == kCharm ) {
+	 if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kCharm ) {
 	   return kGammaD2M;
 	 }
-	 if ( abs(grmaPdgcode) == 221 ) {
+	 if ( TMath::Abs(grmaPdgcode) == 221 ) {
 	   return kElse; //mj to remove secondary pi0 decay electrons from eta decays, mainly to eta signal enhance samples
 	 }
 	 
@@ -2095,35 +2095,35 @@ Int_t AliHFEmcQA::GetElecSource(const AliAODMCParticle * const mcpart)
 	     partMother = mctrack;
 	     ggrmaPdgcode = partMother->GetPdgCode();
 	     
-	     if ( (int(abs(ggrmaPdgcode)/100.)%10) == kBeauty || (int(abs(ggrmaPdgcode)/1000.)%10) == kBeauty ) {
+	     if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kBeauty ) {
 	       return kGammaB2M;
 	     }
-	     if ( (int(abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(abs(ggrmaPdgcode)/1000.)%10) == kCharm ) {
+	     if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kCharm ) {
 	       return kGammaD2M;
 	     }
 	   }
 	 }
        }
        
-       if ( abs(maPdgcode) == 111 ) {
+       if ( TMath::Abs(maPdgcode) == 111 ) {
 	 return kPi0;
        } 
-       else if ( abs(maPdgcode) == 221 ) {
+       else if ( TMath::Abs(maPdgcode) == 221 ) {
 	 return kEta;
        } 
-       else if ( abs(maPdgcode) == 223 ) {
+       else if ( TMath::Abs(maPdgcode) == 223 ) {
 	 return kOmega;
        } 
-       else if ( abs(maPdgcode) == 333 ) {
+       else if ( TMath::Abs(maPdgcode) == 333 ) {
 	 return kPhi;
        } 
-       else if ( abs(maPdgcode) == 331 ) {
+       else if ( TMath::Abs(maPdgcode) == 331 ) {
 	 return kEtaPrime;
        } 
-       else if ( abs(maPdgcode) == 113 ) {
+       else if ( TMath::Abs(maPdgcode) == 113 ) {
 	 return kRho0;
        } 
-       else if ( abs(maPdgcode) == 321 || abs(maPdgcode) == 130 ) {
+       else if ( TMath::Abs(maPdgcode) == 321 || TMath::Abs(maPdgcode) == 130 ) {
 	 return kKe3;
        }
        else{ 

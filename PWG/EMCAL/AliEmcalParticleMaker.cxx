@@ -17,7 +17,7 @@ ClassImp(AliEmcalParticleMaker)
 
 //________________________________________________________________________
 AliEmcalParticleMaker::AliEmcalParticleMaker() : 
-  AliAnalysisTaskEmcalDev("AliEmcalParticleMaker",kFALSE),
+  AliAnalysisTaskEmcal("AliEmcalParticleMaker",kFALSE),
   fTracksOutName("EmcalTracks"),
   fCaloOutName("EmcalClusters"),
   fTracksOut(0),
@@ -28,7 +28,7 @@ AliEmcalParticleMaker::AliEmcalParticleMaker() :
 
 //________________________________________________________________________
 AliEmcalParticleMaker::AliEmcalParticleMaker(const char *name) : 
-  AliAnalysisTaskEmcalDev(name,kFALSE),
+  AliAnalysisTaskEmcal(name,kFALSE),
   fTracksOutName("EmcalTracks"),
   fCaloOutName("EmcalClusters"),
   fTracksOut(0),
@@ -49,7 +49,7 @@ void AliEmcalParticleMaker::ExecOnce()
 {
   // Init the analysis.
 
-  AliAnalysisTaskEmcalDev::ExecOnce();
+  AliAnalysisTaskEmcal::ExecOnce();
 
   if (!fInitialized)
     return;
@@ -108,9 +108,11 @@ Bool_t AliEmcalParticleMaker::Run()
 
     // loop over clusters
     const Int_t Nclusters = fCaloClusters->GetEntries();
-    for (Int_t iClusters = 0; iClusters < Nclusters; ++iClusters) {
+    for (Int_t iClusters = 0, iN=0; iClusters < Nclusters; ++iClusters) {
       AliVCluster *cluster = static_cast<AliVCluster*>(fCaloClusters->At(iClusters));
-      new ((*fCaloClustersOut)[iClusters]) AliEmcalParticle(cluster, iClusters, fVertex[0], fVertex[1], fVertex[2]);
+      if (!cluster->IsEMCAL())
+	continue;
+      new ((*fCaloClustersOut)[iN++]) AliEmcalParticle(cluster, iClusters, fVertex[0], fVertex[1], fVertex[2]);
     }
   }
   return kTRUE;

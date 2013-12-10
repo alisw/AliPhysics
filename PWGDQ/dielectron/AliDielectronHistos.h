@@ -10,6 +10,7 @@
 //                                                                                       //
 // Authors:                                                                              //
 //   Jens Wiechula <Jens.Wiechula@cern.ch>                                               //
+//   Julian Book   <Julian.Book@cern.ch>                                                 //
 //                                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -33,84 +34,109 @@ public:
   AliDielectronHistos(const char* name, const char* title);
   virtual ~AliDielectronHistos();
 
-  enum {kNoAutoFill=1000000000};
+  enum {kNoAutoFill=1000000000, kNoProfile=999, kNoWeights=998};
 
   void UserProfile(const char* histClass,const char *name, const char* title,
 		   UInt_t valTypeP,
 		   Int_t nbinsX, Double_t xmin, Double_t xmax,
-		   UInt_t valTypeX=kNoAutoFill, Bool_t logBinX=kFALSE, TString option="");
+		   UInt_t valTypeX, Bool_t logBinX=kFALSE, TString option="",
+		   UInt_t valTypeW=kNoWeights);
 
   void UserProfile(const char* histClass,const char *name, const char* title,
 		   UInt_t valTypeP,
 		   Int_t nbinsX, Double_t xmin, Double_t xmax,
 		   Int_t nbinsY, Double_t ymin, Double_t ymax,
-		   UInt_t valTypeX=kNoAutoFill, UInt_t valTypeY=0,
-		   Bool_t logBinX=kFALSE, Bool_t logBinY=kFALSE, TString option="");
+		   UInt_t valTypeX, UInt_t valTypeY,
+		   Bool_t logBinX=kFALSE, Bool_t logBinY=kFALSE, TString option="",
+		   UInt_t valTypeW=kNoWeights);
   
   void UserProfile(const char* histClass,const char *name, const char* title,
 		   UInt_t valTypeP,
 		   Int_t nbinsX, Double_t xmin, Double_t xmax,
 		   Int_t nbinsY, Double_t ymin, Double_t ymax,
 		   Int_t nbinsZ, Double_t zmin, Double_t zmax,
-		   UInt_t valTypeX=kNoAutoFill, UInt_t valTypeY=0, UInt_t valTypeZ=0,
-		   Bool_t logBinX=kFALSE, Bool_t logBinY=kFALSE, Bool_t logBinZ=kFALSE, TString option="");
+		   UInt_t valTypeX, UInt_t valTypeY, UInt_t valTypeZ,
+		   Bool_t logBinX=kFALSE, Bool_t logBinY=kFALSE, Bool_t logBinZ=kFALSE, TString option="",
+		   UInt_t valTypeW=kNoWeights);
   
   void UserProfile(const char* histClass,const char *name, const char* title,
 		   UInt_t valTypeP,
-		   const char* binning, UInt_t valTypeX=kNoAutoFill, TString option="");
+		   const char* binning, UInt_t valTypeX, TString option="",
+		   UInt_t valTypeW=kNoWeights);
   
   void UserProfile(const char* histClass,const char *name, const char* title,
 		   UInt_t valTypeP,
-		   const TVectorD * const binsX, UInt_t valTypeX=kNoAutoFill, TString option="");
+		   const TVectorD * const binsX, UInt_t valTypeX, TString option="",
+		   UInt_t valTypeW=kNoWeights);
   
   void UserProfile(const char* histClass,const char *name, const char* title,
 		   UInt_t valTypeP,
 		   const TVectorD * const binsX, const TVectorD * const binsY,
-		   UInt_t valTypeX=kNoAutoFill, UInt_t valTypeY=0, TString option="");
+		   UInt_t valTypeX, UInt_t valTypeY, TString option="",
+		   UInt_t valTypeW=kNoWeights);
   
   void UserProfile(const char* histClass,const char *name, const char* title,
 		   UInt_t valTypeP,
 		   const TVectorD * const binsX, const TVectorD * const binsY, const TVectorD * const binsZ,
-		   UInt_t valTypeX=kNoAutoFill, UInt_t valTypeY=0, UInt_t valTypeZ=0, TString option="");
+		   UInt_t valTypeX, UInt_t valTypeY, UInt_t valTypeZ, TString option="",
+		   UInt_t valTypeW=kNoWeights);
 
-  void UserHistogram(const char* histClass, Int_t ndim, Int_t *bins, Double_t *mins, Double_t *maxs, UInt_t *vars);
-  void UserSparse(   const char* histClass, Int_t ndim, Int_t *bins, Double_t *mins, Double_t *maxs, UInt_t *vars);
-  void UserHistogram(const char* histClass, Int_t ndim, TObjArray *limits, UInt_t *vars);
-  void UserSparse(   const char* histClass, Int_t ndim, TObjArray *limits, UInt_t *vars);
-
-  void UserHistogram(const char* histClass,const char *name, const char* title,
-                     Int_t nbinsX, Double_t xmin, Double_t xmax, UInt_t valTypeX=kNoAutoFill, Bool_t logBinX=kFALSE)
-  { UserProfile(histClass,name,title,999,nbinsX,xmin,xmax,valTypeX,logBinX); }
+  void UserHistogram(const char* histClass, Int_t ndim, Int_t *bins, Double_t *mins, Double_t *maxs, UInt_t *vars, UInt_t valTypeW=kNoWeights);
+  void UserSparse(   const char* histClass, Int_t ndim, Int_t *bins, Double_t *mins, Double_t *maxs, UInt_t *vars, UInt_t valTypeW=kNoWeights);
+  void UserHistogram(const char* histClass, Int_t ndim, TObjArray *limits, UInt_t *vars, UInt_t valTypeW=kNoWeights);
+  void UserSparse(   const char* histClass, Int_t ndim, TObjArray *limits, UInt_t *vars, UInt_t valTypeW=kNoWeights);
 
   void UserHistogram(const char* histClass,const char *name, const char* title,
-                     Int_t nbinsX, Double_t xmin, Double_t xmax, Int_t nbinsY, Double_t ymin, Double_t ymax,
-                     UInt_t valTypeX=kNoAutoFill, UInt_t valTypeY=0, Bool_t logBinX=kFALSE, Bool_t logBinY=kFALSE)
-  { UserProfile(histClass,name,title,999,nbinsX,xmin,xmax,nbinsY,ymin,ymax,valTypeX,valTypeY,logBinX,logBinY); }
+                     Int_t nbinsX, Double_t xmin, Double_t xmax, UInt_t valTypeX, Bool_t logBinX=kFALSE)
+  { UserProfile(histClass,name,title,kNoProfile,nbinsX,xmin,xmax,valTypeX,logBinX); }
 
   void UserHistogram(const char* histClass,const char *name, const char* title,
                      Int_t nbinsX, Double_t xmin, Double_t xmax, Int_t nbinsY, Double_t ymin, Double_t ymax,
-                     Int_t nbinsZ, Double_t zmin, Double_t zmax, UInt_t valTypeX=kNoAutoFill, UInt_t valTypeY=0, UInt_t valTypeZ=0,
-                     Bool_t logBinX=kFALSE, Bool_t logBinY=kFALSE, Bool_t logBinZ=kFALSE)
-  { UserProfile(histClass,name,title,999,nbinsX,xmin,xmax,nbinsY,ymin,ymax,nbinsZ,zmin,zmax,valTypeX,valTypeY,valTypeZ,logBinX,logBinY,logBinZ); }
+                     UInt_t valTypeX, UInt_t valTypeY, Bool_t logBinX=kFALSE, Bool_t logBinY=kFALSE,
+		     UInt_t valTypeW=kNoWeights)
+  { UserProfile(histClass,name,title,kNoProfile,nbinsX,xmin,xmax,nbinsY,ymin,ymax,valTypeX,valTypeY,logBinX,logBinY,valTypeW); }
 
   void UserHistogram(const char* histClass,const char *name, const char* title,
-                     const char* binning, UInt_t valTypeX=kNoAutoFill)
-  { UserProfile(histClass,name,title,999,binning,valTypeX); }
+                     Int_t nbinsX, Double_t xmin, Double_t xmax, Int_t nbinsY, Double_t ymin, Double_t ymax,
+                     Int_t nbinsZ, Double_t zmin, Double_t zmax, UInt_t valTypeX, UInt_t valTypeY, UInt_t valTypeZ,
+                     Bool_t logBinX=kFALSE, Bool_t logBinY=kFALSE, Bool_t logBinZ=kFALSE,
+		     UInt_t valTypeW=kNoWeights)
+  { UserProfile(histClass,name,title,kNoProfile,nbinsX,xmin,xmax,nbinsY,ymin,ymax,nbinsZ,zmin,zmax,valTypeX,valTypeY,valTypeZ,logBinX,logBinY,logBinZ,valTypeW); }
 
   void UserHistogram(const char* histClass,const char *name, const char* title,
-                     const TVectorD * const binsX, UInt_t valTypeX=kNoAutoFill)
-  { UserProfile(histClass,name,title,999,binsX,valTypeX); }
+                     const char* binning, UInt_t valTypeX)
+  { UserProfile(histClass,name,title,kNoProfile,binning,valTypeX); }
 
   void UserHistogram(const char* histClass,const char *name, const char* title,
-                     const TVectorD * const binsX, const TVectorD * const binsY, UInt_t valTypeX=kNoAutoFill, UInt_t valTypeY=0)
-  { UserProfile(histClass,name,title,999,binsX,binsY,valTypeX,valTypeY); }
+                     const TVectorD * const binsX, UInt_t valTypeX)
+  { UserProfile(histClass,name,title,kNoProfile,binsX,valTypeX); }
+
+  void UserHistogram(const char* histClass,const char *name, const char* title,
+		     const TVectorD * const binsX, UInt_t valTypeX, UInt_t valTypeW)
+  { UserProfile(histClass,name,title,kNoProfile,binsX,valTypeX,"",valTypeW); }
+
+  void UserHistogram(const char* histClass,const char *name, const char* title,
+                     const TVectorD * const binsX, const TVectorD * const binsY, UInt_t valTypeX, UInt_t valTypeY,
+		     UInt_t valTypeW=kNoWeights)
+  { UserProfile(histClass,name,title,kNoProfile,binsX,binsY,valTypeX,valTypeY,"",valTypeW); }
 
   void UserHistogram(const char* histClass,const char *name, const char* title,
                      const TVectorD * const binsX, const TVectorD * const binsY, const TVectorD * const binsZ,
-                     UInt_t valTypeX=kNoAutoFill, UInt_t valTypeY=0, UInt_t valTypeZ=0)
-  { UserProfile(histClass,name,title,999,binsX,binsY,binsZ,valTypeX,valTypeY,valTypeZ); }
+                     UInt_t valTypeX, UInt_t valTypeY, UInt_t valTypeZ,
+		     UInt_t valTypeW=kNoWeights)
+  { UserProfile(histClass,name,title,kNoProfile,binsX,binsY,binsZ,valTypeX,valTypeY,valTypeZ,"",valTypeW); }
 
   void UserHistogram(const char* histClass, TObject* hist, UInt_t valTypes=kNoAutoFill);
+
+  // some functions needed to garantuee backward compatibility
+  void UserHistogram(const char* histClass,const char *name, const char* title,
+                     Int_t nbinsX, Double_t xmin, Double_t xmax)
+  { UserProfile(histClass,name,title,kNoProfile,nbinsX,xmin,xmax,kNoAutoFill); }
+  void UserHistogram(const char* histClass,const char *name, const char* title,
+                     Int_t nbinsX, Double_t xmin, Double_t xmax,
+                     Int_t nbinsY, Double_t ymin, Double_t ymax)
+  { UserProfile(histClass,name,title,kNoProfile,nbinsX,xmin,xmax,nbinsY,ymin,ymax,kNoAutoFill,kNoAutoFill); }
+
 
   void Fill(const char* histClass, const char* name, Double_t xval);
   void Fill(const char* histClass, const char* name, Double_t xval, Double_t yval);

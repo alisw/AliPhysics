@@ -19,7 +19,7 @@
 #include "AliFMDMCDensityCalculator.h"
 #include "AliFMDMCCorrector.h"
 #include "AliFMDHistCollector.h"
-#include "AliFMDEnergyFitter.h"
+// #include "AliFMDEnergyFitter.h"
 #include "AliFMDEventPlaneFinder.h"
 #include <AliESDFMD.h>
 class AliESDEvent;

@@ -28,9 +28,13 @@
 
 if((DEFINED ALIROOT_SVN_REVISION)) 
   add_definitions(-DALIROOT_SVN_REVISION=${ALIROOT_SVN_REVISION})
+elseif((DEFINED ALIROOT_REVISION)) 
+  add_definitions(-DALIROOT_REVISION=\"${ALIROOT_REVISION}\")
 endif((DEFINED ALIROOT_SVN_REVISION)) 
 if((DEFINED ALIROOT_SVN_BRANCH)) 
   add_definitions(-DALIROOT_SVN_BRANCH=\"${ALIROOT_SVN_BRANCH}\")
+elseif((DEFINED ALIROOT_BRANCH)) 
+  add_definitions(-DALIROOT_BRANCH=\"${ALIROOT_BRANCH}\")
 endif((DEFINED ALIROOT_SVN_BRANCH))
 
 set ( SRCS   
@@ -130,10 +134,16 @@ set ( EXPORT FORWARD/analysis2/AliAODForwardMult.h
 	     FORWARD/analysis2/AliFMDEventInspector.h
 	     FORWARD/analysis2/AliFMDMCEventInspector.h
 	     FORWARD/analysis2/AliForwardCorrectionManager.h
+	     FORWARD/analysis2/AliCentralCorrectionManager.h
 	     FORWARD/analysis2/AliCorrectionManagerBase.h
 	     FORWARD/analysis2/AliFMDCorrAcceptance.h
 	     FORWARD/analysis2/AliFMDCorrSecondaryMap.h
 	     FORWARD/analysis2/AliFMDCorrELossFit.h
+	     FORWARD/analysis2/AliBaseESDTask.h
+	     FORWARD/analysis2/AliBaseAODTask.h
+	     FORWARD/analysis2/AliFMDEnergyFitter.h
+	     FORWARD/analysis2/AliMCAuxHandler.h
+	     FORWARD/analysis2/AliDisplacedVertexSelection.h
 	     FORWARD/GEO/AliAnalysisTaskZDCPbPb.h
 	     FORWARD/GEO/AliAnalysisTaskZDCpAcalib.h
 	     FORWARD/GEO/AliAnalysisTaskZDCTreeMaker.h)
@@ -269,17 +279,18 @@ install ( FILES FORWARD/analysis2/AddTaskCentraldNdeta.C
                 FORWARD/analysis2/MakeForwardQA.C
 		FORWARD/analysis2/MakeMCCorr.C		
                 FORWARD/analysis2/OtherData.C
-                FORWARD/analysis2/AliFMDCorrAcceptance.h
-                FORWARD/analysis2/AliFMDCorrDoubleHit.h
-                FORWARD/analysis2/AliFMDCorrector.h
-                FORWARD/analysis2/AliFMDCorrELossFit.h
-                FORWARD/analysis2/AliFMDCorrMergingEfficiency.h
-                FORWARD/analysis2/AliFMDCorrSecondaryMap.h
-                FORWARD/analysis2/AliFMDCorrVertexBias.h
-                FORWARD/analysis2/AliForwardUtil.h
-		FORWARD/analysis2/AliForwardCorrectionManager.h
-		FORWARD/analysis2/AliCorrectionManagerBase.h
            DESTINATION PWGLF/FORWARD/analysis2 )
+
+         # FORWARD/analysis2/AliFMDCorrAcceptance.h
+         # FORWARD/analysis2/AliFMDCorrDoubleHit.h
+         # FORWARD/analysis2/AliFMDCorrector.h
+         # FORWARD/analysis2/AliFMDCorrELossFit.h
+         # FORWARD/analysis2/AliFMDCorrMergingEfficiency.h
+         # FORWARD/analysis2/AliFMDCorrSecondaryMap.h
+         # FORWARD/analysis2/AliFMDCorrVertexBias.h
+         # FORWARD/analysis2/AliForwardUtil.h
+	 # FORWARD/analysis2/AliForwardCorrectionManager.h
+	 # FORWARD/analysis2/AliCorrectionManagerBase.h
 
 # Install corrections 
 install ( DIRECTORY FORWARD/corrections/Empirical

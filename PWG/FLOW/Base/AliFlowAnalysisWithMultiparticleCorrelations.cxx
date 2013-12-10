@@ -88,7 +88,8 @@ AliFlowAnalysisWithMultiparticleCorrelations::AliFlowAnalysisWithMultiparticleCo
  fStandardCandlesList(NULL),
  fStandardCandlesFlagsPro(NULL),
  fCalculateStandardCandles(kFALSE),
- fStandardCandlesHist(NULL)
+ fStandardCandlesHist(NULL),
+ fProductsPro2D(NULL)
  {
   // Constructor.  
   
@@ -162,32 +163,40 @@ void AliFlowAnalysisWithMultiparticleCorrelations::Make(AliFlowEventSimple *anEv
  // Running over data only in this method.
  
  // a) Cross-check internal flags;
- // b) Fill control histograms;
- // c) Fill Q-vector components;
- // d) Calculate multi-particle correlations from Q-vector components; 
- // e) Calculate e-b-e cumulants; 
- // f) Reset Q-vector components;
- // g) Cross-check results with nested loops.
+ // b) Cross-check all pointers used in this method;
+ // c) Fill control histograms;
+ // d) Fill Q-vector components;
+ // e) Calculate multi-particle correlations from Q-vector components; 
+ // f) Calculate products of multi-particle correlations (needed for error propagation of SCs);
+ // g) Calculate e-b-e cumulants; 
+ // h) Reset Q-vector components;
+ // i) Cross-check results with nested loops.
 
  // a) Cross-check internal flags:
  if(fUseInternalFlags){if(!this->CrossCheckInternalFlags(anEvent)){return;}}
 
- // b) Fill control histograms:
+ // b) Cross-check all pointers used in this method:
+ this->CrossCheckPointersUsedInMake(); 
+
+ // c) Fill control histograms:
  if(fFillControlHistograms){this->FillControlHistograms(anEvent);}
  
- // c) Fill Q-vector components:
+ // d) Fill Q-vector components:
  if(fCalculateQvector){this->FillQvector(anEvent);}
 
- // d) Calculate multi-particle correlations from Q-vector components:
+ // e) Calculate multi-particle correlations from Q-vector components:
  if(fCalculateCorrelations){this->CalculateCorrelations(anEvent);}
 
- // e) Calculate e-b-e cumulants: 
+ // f) Calculate products of multi-particle correlations (needed for error propagation of SCs):
+ if(fCalculateStandardCandles){this->CalculateProductsOfCorrelations(anEvent);}
+
+ // g) Calculate e-b-e cumulants: 
  if(fCalculateCumulants){this->CalculateCumulants();}
 
- // f) Reset Q-vector components:
+ // h) Reset Q-vector components:
  if(fCalculateQvector){this->ResetQvector();}
 
- // g) Cross-check results with nested loops:
+ // i) Cross-check results with nested loops:
  if(fCrossCheckWithNestedLoops){this->CrossCheckWithNestedLoops(anEvent);}
 
 } // end of AliFlowAnalysisWithMultiparticleCorrelations::Make(AliFlowEventSimple *anEvent)
@@ -209,7 +218,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::Finish()
  if(fCalculateStandardCandles){this->CalculateStandardCandles();}
 
  // ...
- printf("\n ... Closing the curtains ... \n\n");
+ printf("\n  ... Closing the curtains ... \n\n");
 
 } // end of AliFlowAnalysisWithMultiparticleCorrelations::Finish()
 
@@ -219,12 +228,62 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckPointersUsedInFinis
 {
  // Cross-check all pointers used in method Finish().
 
- if(fCalculateStandardCandles && !fStandardCandlesHist)
+ // a) Correlations;
+ // b) 'Standard candles'.
+
+ TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckPointersUsedInFinish()"; 
+
+ // a) Correlations:
+ if(fCalculateCorrelations)
  {
-  Fatal("AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckPointersUsedInFinish()","fStandardCandlesHist");
- }
+  for(Int_t cs=0;cs<2;cs++) 
+  {
+   for(Int_t c=0;c<fMaxCorrelator;c++) 
+   {
+    if(!fCorrelationsPro[cs][c]){Fatal(sMethodName.Data(),"fCorrelationsPro[%d][%d] is NULL, for one reason or another...",cs,c);}
+   }
+  }
+ } // if(fCalculateCorrelations)
+
+ // b) 'Standard candles':
+ if(fCalculateStandardCandles)
+ {
+  if(!fStandardCandlesHist){Fatal(sMethodName.Data(),"fStandardCandlesHist is NULL, for one reason or another...");}
+  if(!fProductsPro2D){Fatal(sMethodName.Data(),"fProductsPro2D is NULL, for one reason or another...");}
+ } // if(fCalculateStandardCandles)
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckPointersUsedInFinish()
+
+//=======================================================================================================================
+
+void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckPointersUsedInMake()
+{
+ // Cross-check all pointers used in method Make().
+
+ // a) Correlations;
+ // b) 'Standard candles'.
+
+ TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckPointersUsedInMake()"; 
+
+ // a) Correlations:
+ if(fCalculateCorrelations)
+ {
+  for(Int_t cs=0;cs<2;cs++) 
+  {
+   for(Int_t c=0;c<fMaxCorrelator;c++) 
+   {
+    if(!fCorrelationsPro[cs][c]){Fatal(sMethodName.Data(),"fCorrelationsPro[%d][%d] is NULL, for one reason or another...",cs,c);}
+   }
+  }
+ } // if(fCalculateCorrelations)
+
+ // b) 'Standard candles':
+ if(fCalculateStandardCandles)
+ {
+  if(!fProductsPro2D){Fatal(sMethodName.Data(),"fProductsPro2D is NULL, for one reason or another...");}
+ } // if(fCalculateStandardCandles)
+
+} // void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckPointersUsedInMake()
 
 //=======================================================================================================================
 
@@ -232,11 +291,130 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateStandardCandles()
 {
  // Calculate 'standard candles'.
 
+ // 'Standard candle' (SC) is defined in terms of average (all-event!) correlations as follows: 
+ //   SC(-n1,-n2,n2,n1) = <<Cos(-n1,-n2,n2,n1)>> - <<Cos(-n1,n1)>>*<<Cos(-n2,n2)>>, n1 > n2.
+
  TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::CalculateStandardCandles()"; 
 
- // TBC
+ Int_t nBins2p = fCorrelationsPro[0][1]->GetXaxis()->GetNbins();
+ Int_t nBins4p = fCorrelationsPro[0][3]->GetXaxis()->GetNbins();
+ Int_t nBins2D = fProductsPro2D->GetXaxis()->GetNbins();
+ Int_t nBinsSC = fStandardCandlesHist->GetXaxis()->GetNbins();
+ Double_t dSCn1n2n2n1 = 0.; // SC(-n1,-n2,n2,n1)
+ Double_t dSCn1n2n2n1Err = 0.; // stat. error of SC(-n1,-n2,n2,n1)
+ Double_t dCovCosn2n2Cosn1n1 = 0.; // Cov[<Cos(-n2,n2)>*<Cos(-n1,n1)>]
+ Double_t dCovCosn1n2n2n1Cosn1n1 = 0.; // Cov[<Cos(-n1,-n2,n2,n1)>]*<Cos(-n1,n1)>
+ Double_t dCovCosn1n2n2n1Cosn2n2 = 0.; // Cov[<Cos(-n1,-n2,n2,n1)>*<Cos(-n2,n2)>]
+ Int_t binNo = 1; // for fStandardCandlesHist
 
- // ...
+ for(Int_t n1=-fMaxHarmonic;n1<=-2;n1++)
+ {
+  Double_t dCosn1n1 = 0.; // <<Cos(-n1,n1)>>
+  Double_t dCosn1n1Err = 0.; // stat. error of <<Cos(-n1,n1)>> 
+  Double_t dCosn1n1SumW = 0.; // total sum of weights for <Cos(-n1,n1)> 
+  TString sn1n1 = Form("(%d,%d)",n1,-1*n1); // pattern (-n1,n1) 
+  for(Int_t bin2p=1;bin2p<=nBins2p;bin2p++)
+  {
+   TString binLabel2p = fCorrelationsPro[0][1]->GetXaxis()->GetBinLabel(bin2p);
+   if(!binLabel2p.CompareTo("")){break;} // TBI this is a little bit shaky...
+   if(binLabel2p.EndsWith(sn1n1.Data())) // TBI this is a little bit shaky as well...
+   {
+    dCosn1n1 = fCorrelationsPro[0][1]->GetBinContent(bin2p);
+    dCosn1n1Err = fCorrelationsPro[0][1]->GetBinError(bin2p);
+    dCosn1n1SumW = fCorrelationsPro[0][1]->GetBinEntries(bin2p);
+   } // if(binLabel2p.EndsWith(sn1n1.Data()))
+  } // for(Int_t bin2p=1;bin2p<=nBins2p;bin2p++)
+
+  for(Int_t n2=n1+1;n2<=-1;n2++)
+  {
+   Double_t dCosn2n2 = 0.; // <<Cos(-n2,n2)>>
+   Double_t dCosn2n2Err = 0.; // stat. error of <<Cos(-n2,n2)>> 
+   Double_t dCosn2n2SumW = 0.; // total sum of weights for <Cos(-n2,n2)> 
+   TString sn2n2 = Form("(%d,%d)",n2,-1*n2); // pattern (-n2,n2) 
+   for(Int_t bin2p=1;bin2p<=nBins2p;bin2p++)
+   {
+    TString binLabel2p = fCorrelationsPro[0][1]->GetXaxis()->GetBinLabel(bin2p);
+    if(!binLabel2p.CompareTo("")){break;} // TBI this is a little bit shaky...
+    if(binLabel2p.EndsWith(sn2n2.Data())) // TBI this is a little bit shaky as well...
+    {
+     dCosn2n2 = fCorrelationsPro[0][1]->GetBinContent(bin2p);
+     dCosn2n2Err = fCorrelationsPro[0][1]->GetBinError(bin2p);
+     dCosn2n2SumW = fCorrelationsPro[0][1]->GetBinEntries(bin2p);
+    } // if(binLabel2p.EndsWith(sn2n2.Data()))
+   } // for(Int_t bin2p=1;bin2p<=nBins2p;bin2p++)
+   Double_t dCosn1n2n2n1 = 0.; // <<Cos(-n1,-n2,n2,n1)>>
+   Double_t dCosn1n2n2n1Err = 0.; // stat. error of <<Cos(-n1,-n2,n2,n1)>> 
+   Double_t dCosn1n2n2n1SumW = 0.; // total sum of weights for <Cos(-n1,-n2,n2,n1)>
+   TString sn1n2n2n1 = Form("(%d,%d,%d,%d)",n1,n2,-1*n2,-1*n1); // pattern (-n1,-n2,n2,n1) 
+   for(Int_t bin4p=1;bin4p<=nBins4p;bin4p++)
+   {
+    TString binLabel4p = fCorrelationsPro[0][3]->GetXaxis()->GetBinLabel(bin4p);
+    if(!binLabel4p.CompareTo("")){break;} // TBI this is a little bit shaky...
+    if(binLabel4p.EndsWith(sn1n2n2n1.Data())) // TBI this is a little bit shaky as well...
+    {
+     dCosn1n2n2n1 = fCorrelationsPro[0][3]->GetBinContent(bin4p);
+     dCosn1n2n2n1Err = fCorrelationsPro[0][3]->GetBinError(bin4p);
+     dCosn1n2n2n1SumW = fCorrelationsPro[0][3]->GetBinEntries(bin4p);
+    } // if(binLabel4p.EndsWith(sn1n2n2n1.Data()))
+   } // for(Int_t bin4p=1;bin4p<=nBins4p;bin4p++)
+ 
+   // Get the needed products, and calculate covariances for error propagation:
+   for(Int_t bx=2;bx<=nBins2D;bx++) 
+   { 
+    if(!(TString(fProductsPro2D->GetXaxis()->GetBinLabel(bx)).Contains(sn1n1.Data()) 
+         || TString(fProductsPro2D->GetXaxis()->GetBinLabel(bx)).Contains(sn2n2.Data()) 
+         || TString(fProductsPro2D->GetXaxis()->GetBinLabel(bx)).Contains(sn1n2n2n1.Data()))){continue;}
+    for(Int_t by=1;by<bx;by++) 
+    {
+     if(!(TString(fProductsPro2D->GetYaxis()->GetBinLabel(by)).Contains(sn1n1.Data()) 
+          || TString(fProductsPro2D->GetYaxis()->GetBinLabel(by)).Contains(sn2n2.Data()) 
+          || TString(fProductsPro2D->GetYaxis()->GetBinLabel(by)).Contains(sn1n2n2n1.Data()))){continue;}
+     //  Cov[<Cos(-n2,n2)>*<Cos(-n1,n1)>]:
+     if(TString(fProductsPro2D->GetXaxis()->GetBinLabel(bx)).Contains(sn2n2.Data()) 
+        && TString(fProductsPro2D->GetYaxis()->GetBinLabel(by)).Contains(sn1n1.Data()))    
+       { 
+        if(dCosn2n2SumW > 0. && dCosn1n1SumW > 0.)
+        {
+         dCovCosn2n2Cosn1n1 = (fProductsPro2D->GetBinEntries(fProductsPro2D->GetBin(bx,by))/(dCosn2n2SumW*dCosn1n1SumW))
+                            * (fProductsPro2D->GetBinContent(fProductsPro2D->GetBin(bx,by))-dCosn2n2*dCosn1n1);
+        } else{Fatal(sMethodName.Data(),"dCosn2n2SumW > 0. && dCosn1n1SumW > 0.");}
+       }
+     // Cov[<Cos(-n1,-n2,n2,n1)>*<Cos(-n2,n2)>];
+     else if(TString(fProductsPro2D->GetXaxis()->GetBinLabel(bx)).Contains(sn1n2n2n1.Data()) 
+             && TString(fProductsPro2D->GetYaxis()->GetBinLabel(by)).Contains(sn2n2.Data()))    
+       {
+        if(dCosn1n2n2n1SumW > 0. && dCosn2n2SumW > 0.)
+        {
+         dCovCosn1n2n2n1Cosn2n2 = (fProductsPro2D->GetBinEntries(fProductsPro2D->GetBin(bx,by))/(dCosn2n2SumW*dCosn1n2n2n1SumW))
+                                * (fProductsPro2D->GetBinContent(fProductsPro2D->GetBin(bx,by))-dCosn1n2n2n1*dCosn2n2);
+        } else{Fatal(sMethodName.Data(),"dCosn1n2n2n1SumW > 0. && dCosn2n2SumW > 0.");}
+       }
+    // Cov[<Cos(-n1,-n2,n2,n1)>*<Cos(-n1,n1)>]:
+    else if(TString(fProductsPro2D->GetXaxis()->GetBinLabel(bx)).Contains(sn1n2n2n1.Data()) 
+            && TString(fProductsPro2D->GetYaxis()->GetBinLabel(by)).Contains(sn1n1.Data()))    
+       {       
+        if(dCosn1n2n2n1SumW > 0. && dCosn1n1SumW > 0.)
+        {
+         dCovCosn1n2n2n1Cosn1n1 = (fProductsPro2D->GetBinEntries(fProductsPro2D->GetBin(bx,by))/(dCosn1n1SumW*dCosn1n2n2n1SumW))
+                                * (fProductsPro2D->GetBinContent(fProductsPro2D->GetBin(bx,by))-dCosn1n2n2n1*dCosn1n1);
+        } else{Fatal(sMethodName.Data(),"if(dCosn1n2n2n1Cosn1n1SumW > 0. && dCosn1n1SumW > 0.)");}
+       }
+    } // for(Int_t by=1;by<bx;by++)
+   } // for(Int_t bx=2;bx<=nBins2D;bx++)
+   // Finally, calculate and store SCs:
+   dSCn1n2n2n1 = dCosn1n2n2n1 - dCosn1n1*dCosn2n2;
+   dSCn1n2n2n1Err = pow(dCosn1n1,2.)*pow(dCosn2n2Err,2.) + pow(dCosn2n2,2.)*pow(dCosn1n1Err,2.) + pow(dCosn1n2n2n1Err,2.)
+                  + 2.*dCosn1n1*dCosn2n2*dCovCosn2n2Cosn1n1 
+                  - 2.*dCosn1n1*dCovCosn1n2n2n1Cosn2n2 
+                  - 2.*dCosn2n2*dCovCosn1n2n2n1Cosn1n1; // note that this is still error^2
+   fStandardCandlesHist->SetBinContent(binNo,dSCn1n2n2n1); 
+   if(dSCn1n2n2n1Err>0.){fStandardCandlesHist->SetBinError(binNo,pow(dSCn1n2n2n1Err,0.5));}
+   else{Warning(sMethodName.Data(),"if(dSCn1n2n2n1Err>0.)");}
+   binNo++;
+  } // for(Int_t n2=n1+1;n2<=-1;n2++)
+ } // for(Int_t n1=-fMaxHarmonic;n1<=-2;n1++)
+
+ if(nBinsSC != binNo-1){Fatal(sMethodName.Data(),"nBinsSC != binNo-1");} // just in case...
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::CalculateStandardCandles()
 
@@ -264,8 +442,9 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateCorrelations(AliFlow
 
  // Fill ... TBI this can be implemented better, most likely...
 
- TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::CalculateCorrelations()"; // TBI
+ TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::CalculateCorrelations()"; 
  if(!anEvent){Fatal(sMethodName.Data(),"anEvent is apparently doing crazy things...");} // TBI
+
  Double_t dMultRP = anEvent->GetNumberOfRPs(); // TBI shall I promote this variable into data member? 
 
  Int_t binNo[8]; for(Int_t c=0;c<8;c++){binNo[c]=1;} 
@@ -440,6 +619,144 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateCorrelations(AliFlow
  } // for(Int_t n1=-fMaxHarmonic;n1<=fMaxHarmonic;n1++) 
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::CalculateCorrelations(AliFlowEventSimple *anEvent)
+
+//=======================================================================================================================
+
+Double_t AliFlowAnalysisWithMultiparticleCorrelations::CastStringToCorrelation(const char *string, Bool_t numerator)
+{
+ // Cast string of the generic form Cos/Sin(-n_1,-n_2,...,n_{k-1},n_k) in the corresponding correlation value.
+ // If you issue a call to this method with setting numerator = kFALSE, then you are getting back for free
+ // the corresponding denumerator (a.k.a. weight 'number of combinations').
+
+ // TBI:
+ // a) add protection against cases a la:
+ //     string = Cos(-3,-4,5,6,5,6-3)
+ //     method = Six(-3,-4,5,6,5,-3).Re()
+ // b) cross-check with nested loops this method 
+
+ Double_t dValue = 0.; // return value
+
+ TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::CastStringToCorrelation(const char *string, Bool_t numerator)"; 
+
+ if(!(TString(string).BeginsWith("Cos") || TString(string).BeginsWith("Sin")))
+ {
+  cout<<Form("And the fatal string is... '%s'. Congratulations!!",string)<<endl; 
+  Fatal(sMethodName.Data(),"!(TString(string).BeginsWith(...");
+ }
+
+ Bool_t bRealPart = kTRUE;
+ if(TString(string).BeginsWith("Sin")){bRealPart = kFALSE;}
+
+ Int_t n[8] = {0,0,0,0,0,0,0,0}; // harmonics, supporting up to 8p correlations
+ UInt_t whichCorr = 0;   
+ for(Int_t t=0;t<=TString(string).Length();t++)
+ {
+  if(TString(string[t]).EqualTo(",") || TString(string[t]).EqualTo(")")) // TBI this is just ugly
+  {
+   n[whichCorr] = string[t-1] - '0';
+   if(TString(string[t-2]).EqualTo("-")){n[whichCorr] = -1*n[whichCorr];}
+   if(!(TString(string[t-2]).EqualTo("-") 
+      || TString(string[t-2]).EqualTo(",")
+      || TString(string[t-2]).EqualTo("("))) // TBI relax this eventually to allow two-digits harmonics
+   { 
+    cout<<Form("And the fatal string is... '%s'. Congratulations!!",string)<<endl; 
+    Fatal(sMethodName.Data(),"!(TString(string[t-2]).EqualTo(...");
+   }
+   whichCorr++;
+   if(whichCorr>=9){Fatal(sMethodName.Data(),"whichCorr>=9");} // not supporting corr. beyond 8p 
+  } // if(TString(string[t]).EqualTo(",") || TString(string[t]).EqualTo(")")) // TBI this is just ugly
+ } // for(UInt_t t=0;t<=TString(string).Length();t++)
+
+ switch(whichCorr)
+ {
+  case 1:
+   if(!numerator){dValue = One(0).Re();}
+   else if(bRealPart){dValue = One(n[0]).Re();} 
+   else{dValue = One(n[0]).Im();}
+  break;
+
+  case 2: 
+   if(!numerator){dValue = Two(0,0).Re();}
+   else if(bRealPart){dValue = Two(n[0],n[1]).Re();}
+   else{dValue = Two(n[0],n[1]).Im();}
+  break;
+
+  case 3: 
+   if(!numerator){dValue = Three(0,0,0).Re();}
+   else if(bRealPart){dValue = Three(n[0],n[1],n[2]).Re();}
+   else{dValue = Three(n[0],n[1],n[2]).Im();}
+  break;
+
+  case 4: 
+   if(!numerator){dValue = Four(0,0,0,0).Re();}
+   else if(bRealPart){dValue = Four(n[0],n[1],n[2],n[3]).Re();}
+   else{dValue = Four(n[0],n[1],n[2],n[3]).Im();}
+  break;
+
+  case 5: 
+   if(!numerator){dValue = Five(0,0,0,0,0).Re();}
+   else if(bRealPart){dValue = Five(n[0],n[1],n[2],n[3],n[4]).Re();}
+   else{dValue = Five(n[0],n[1],n[2],n[3],n[4]).Im();}
+  break;
+
+  case 6: 
+   if(!numerator){dValue = Six(0,0,0,0,0,0).Re();}
+   else if(bRealPart){dValue = Six(n[0],n[1],n[2],n[3],n[4],n[5]).Re();}
+   else{dValue = Six(n[0],n[1],n[2],n[3],n[4],n[5]).Im();}
+  break;
+
+  case 7: 
+   if(!numerator){dValue = Seven(0,0,0,0,0,0,0).Re();}
+   else if(bRealPart){dValue = Seven(n[0],n[1],n[2],n[3],n[4],n[5],n[6]).Re();}
+   else{dValue = Seven(n[0],n[1],n[2],n[3],n[4],n[5],n[6]).Im();}
+   break;
+
+  case 8: 
+   if(!numerator){dValue = Eight(0,0,0,0,0,0,0,0).Re();}
+   else if(bRealPart){dValue = Eight(n[0],n[1],n[2],n[3],n[4],n[5],n[6],n[7]).Re();} 
+   else{dValue = Eight(n[0],n[1],n[2],n[3],n[4],n[5],n[6],n[7]).Im();} 
+  break;
+
+  default:
+   cout<<Form("And the fatal 'whichCorr' value is... %d. Congratulations!!",whichCorr)<<endl; 
+   Fatal(sMethodName.Data(),"switch(whichCorr)"); 
+ } // switch(whichCorr)
+ 
+ return dValue;
+
+} // Double_t AliFlowAnalysisWithMultiparticleCorrelations::CastStringToCorrelation(const char *string, Bool_t numerator)
+
+//=======================================================================================================================
+
+void AliFlowAnalysisWithMultiparticleCorrelations::CalculateProductsOfCorrelations(AliFlowEventSimple *anEvent)
+{
+ // Calculate products of multi-particle correlations (needed for error propagation of SCs).
+
+ TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::CalculateProductsOfCorrelations()"; 
+ if(!anEvent){Fatal(sMethodName.Data(),"Sorry, 'anEvent' is on holidays.");} 
+
+ Int_t nBins = fProductsPro2D->GetXaxis()->GetNbins();
+ for(Int_t bx=2;bx<=nBins;bx++)
+ {
+  for(Int_t by=1;by<bx;by++)
+  {
+   const char *binLabelX = fProductsPro2D->GetXaxis()->GetBinLabel(bx);
+   const char *binLabelY = fProductsPro2D->GetYaxis()->GetBinLabel(by);
+   Double_t numX = this->CastStringToCorrelation(binLabelX,kTRUE); // numerator
+   Double_t denX = this->CastStringToCorrelation(binLabelX,kFALSE); // denominator
+   Double_t wX = denX; // weight TBI add support for other options
+   Double_t numY = this->CastStringToCorrelation(binLabelY,kTRUE); // numerator
+   Double_t denY = this->CastStringToCorrelation(binLabelY,kFALSE); // denominator
+   Double_t wY = denY; // weight TBI add support for other options
+   if(TMath::Abs(denX) > 0. && TMath::Abs(denY) > 0.)
+   {
+    fProductsPro2D->Fill(bx-0.5,by-0.5,(numX/denX)*(numY/denY),wX*wY);
+   } 
+   else{Fatal(sMethodName.Data(),"if(TMath::Abs(denX) > 0. && TMath::Abs(denY) > 0.)");}
+  } // for(Int_t by=1;by<bx;by++)
+ } // for(Int_t bx=2;bx<=nbins;bx++)
+
+} // void AliFlowAnalysisWithMultiparticleCorrelations::CalculateProductsOfCorrelations(AliFlowEventSimple *anEvent)
 
 //=======================================================================================================================
 
@@ -945,7 +1262,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckSettings()
  // Cross-check all initial settings in this method. 
  
  // a) Few cross-checks for control histograms;
- // b) Few cross-checks for flags for correlations.
+ // b) Few cross-checks for flags for correlations;
+ // c) 'Standard candles'.
 
  TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckSettings()";
 
@@ -959,6 +1277,12 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckSettings()
  // b) Few cross-checks for flags for correlations: // TBI the lines bellow can be civilized
  Int_t iSum = (Int_t)fCalculateIsotropic + (Int_t)fCalculateSame + (Int_t)fCalculateSameIsotropic;
  if(iSum>1){Fatal(sMethodName.Data(),"iSum is doing crazy things...");}
+
+ // c) 'Standard candles':
+ if(fCalculateStandardCandles && !fCalculateCorrelations)
+ {
+  Fatal(sMethodName.Data(),"fCalculateStandardCandles && !fCalculateCorrelations");
+ }
 
 } // end of void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckSettings()
 
@@ -1583,7 +1907,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForStandardCand
  // Book all the stuff for 'standard candles'.
 
  // a) Book the profile holding all the flags for 'standard candles';
- // b) Book the histogram holding all results for 'standard candles'.
+ // b) Book the histogram holding all results for 'standard candles';
+ // c) Book 2D profile holding products of correlations (needed for error propagation).
 
  TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForStandardCandles()";
 
@@ -1603,8 +1928,11 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForStandardCand
 
  // b) Book the histogram holding all results for 'standard candles':
  Int_t nBins = fMaxHarmonic*(fMaxHarmonic-1)/2;
- fStandardCandlesHist = new TH1D("fStandardCandlesHist","Standard candles",nBins,0.,1.*nBins); 
+ fStandardCandlesHist = new TH1D("fStandardCandlesHist","'Standard candles'",nBins,0.,1.*nBins); 
  fStandardCandlesHist->SetStats(kFALSE);
+ fStandardCandlesHist->SetMarkerStyle(kFullSquare);
+ fStandardCandlesHist->SetMarkerColor(kBlue);
+ fStandardCandlesHist->SetLineColor(kBlue);
  Int_t binNo = 1;
  for(Int_t n1=-fMaxHarmonic;n1<=-2;n1++)
  {
@@ -1615,6 +1943,42 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForStandardCand
  }
  if(binNo-1 != nBins){Fatal(sMethodName.Data(),"Well, binNo-1 != nBins ... :'( ");}
  fStandardCandlesList->Add(fStandardCandlesHist);
+
+ // c) Book 2D profile holding products of correlations (needed for error propagation):
+ Int_t nBins2p = fCorrelationsPro[0][1]->GetXaxis()->GetNbins(), nBins2pFilled = 0;
+ Int_t nBins4p = fCorrelationsPro[0][3]->GetXaxis()->GetNbins(), nBins4pFilled = 0;
+ for(Int_t b=1;b<=nBins2p;b++)
+ {
+  TString binLabel2p = fCorrelationsPro[0][1]->GetXaxis()->GetBinLabel(b);
+  if(!binLabel2p.CompareTo("")){break;} 
+  nBins2pFilled++;
+ }
+ for(Int_t b=1;b<=nBins4p;b++)
+ {
+  TString binLabel4p = fCorrelationsPro[0][3]->GetXaxis()->GetBinLabel(b);
+  if(!binLabel4p.CompareTo("")){break;}
+  nBins4pFilled++;
+ }
+ Int_t nBins2D = nBins2pFilled + nBins4pFilled;
+ if(0==nBins2D){Fatal(sMethodName.Data(),"0==nBins2D");} // well, just in case...
+ fProductsPro2D = new TProfile2D("fProductsPro2D","Products of correlations",nBins2D,0.,nBins2D,nBins2D,0.,nBins2D);
+ fProductsPro2D->SetStats(kFALSE);
+ fProductsPro2D->Sumw2();
+ for(Int_t b=1;b<=nBins2D;b++)
+ {
+  TString binLabel = "";
+  if(b>=1 && b<=nBins2pFilled)
+  {
+   binLabel = fCorrelationsPro[0][1]->GetXaxis()->GetBinLabel(b);
+  }
+  else if(b>nBins2pFilled && b<=nBins4pFilled+nBins2pFilled) // TBI landmine ?
+  {
+   binLabel = fCorrelationsPro[0][3]->GetXaxis()->GetBinLabel(b-nBins2pFilled); // TBI another landmine ?
+  }
+  fProductsPro2D->GetXaxis()->SetBinLabel(b,binLabel.Data());
+  fProductsPro2D->GetYaxis()->SetBinLabel(b,binLabel.Data());
+ } // for(Int_t b=1;b<=nBins2D;b++)
+ fStandardCandlesList->Add(fProductsPro2D);
 
 } // end of void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForStandardCandles()
 
@@ -1696,6 +2060,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForStandardCandles
  // b) Get pointer for fStandardCandlesFlagsPro; TBI
  // c) Set again all flags; TBI
  // d) Get pointer TH1D *fStandardCandlesHist; TBI
+ // e) Get pointer TProfile2D *fProductsPro2D. TBI
 
  TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForStandardCandles()";
 
@@ -1712,8 +2077,11 @@ void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForStandardCandles
 
  if(!fCalculateStandardCandles){return;} // TBI is this safe enough
 
- // d) Get pointer TH1D *fStandardCandlesHist; TBI
+ // d) Get pointer TH1D *fStandardCandlesHist: TBI
  fStandardCandlesHist = dynamic_cast<TH1D*>(fStandardCandlesList->FindObject("fStandardCandlesHist"));
+
+ // e) Get pointer TProfile2D *fProductsPro2D: TBI
+ fProductsPro2D = dynamic_cast<TProfile2D*>(fStandardCandlesList->FindObject("fProductsPro2D"));
  
 } // void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForStandardCandles()
 

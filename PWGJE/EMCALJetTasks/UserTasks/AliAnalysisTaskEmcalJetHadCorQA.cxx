@@ -33,7 +33,7 @@ ClassImp(AliAnalysisTaskEmcalJetHadCorQA)
 
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetHadCorQA::AliAnalysisTaskEmcalJetHadCorQA() : 
-  AliAnalysisTaskEmcalJetDev("jethadcor",kFALSE), 
+  AliAnalysisTaskEmcalJet("jethadcor",kFALSE), 
   fCalo2Name(),
   fCaloClusters2(),
   fMCParticlesName(),
@@ -65,7 +65,7 @@ AliAnalysisTaskEmcalJetHadCorQA::AliAnalysisTaskEmcalJetHadCorQA() :
 
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetHadCorQA::AliAnalysisTaskEmcalJetHadCorQA(const char *name) :
-  AliAnalysisTaskEmcalJetDev(name,kTRUE),
+  AliAnalysisTaskEmcalJet(name,kTRUE),
   fCalo2Name(),
   fCaloClusters2(),
   fMCParticlesName(),
@@ -98,7 +98,7 @@ void AliAnalysisTaskEmcalJetHadCorQA::UserCreateOutputObjects()
 {
   if (! fCreateHisto)
     return;
-  AliAnalysisTaskEmcalJetDev::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
   fHistRhovsCent             = new TH2F("RhovsCent",              "RhovsCent",             100, 0.0, 100.0, 500, 0, 500);
   fHistNjetvsCent            = new TH2F("NjetvsCent",             "NjetvsCent",            100, 0.0, 100.0, 100, 0, 100);
 
@@ -197,8 +197,9 @@ Float_t AliAnalysisTaskEmcalJetHadCorQA:: RelativePhi(Double_t mphi,Double_t vph
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEmcalJetHadCorQA::ExecOnce(){
-  AliAnalysisTaskEmcalJetDev::ExecOnce();
+void AliAnalysisTaskEmcalJetHadCorQA::ExecOnce()
+{
+  AliAnalysisTaskEmcalJet::ExecOnce();
 
 //   AliAnalysisManger *am = AliAnalysisManager::GetAnalysisManger();
 //   if (fCaloName == "CaloClusters")

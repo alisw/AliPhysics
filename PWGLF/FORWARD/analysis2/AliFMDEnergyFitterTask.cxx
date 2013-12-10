@@ -91,6 +91,14 @@ AliFMDEnergyFitterTask::DefaultVertexAxis() const
 
 //____________________________________________________________________
 Bool_t
+AliFMDEnergyFitterTask::Setup()
+{
+  fEnergyFitter.Init();
+  return true;
+}
+
+//____________________________________________________________________
+Bool_t
 AliFMDEnergyFitterTask::Book()
 {
   // 

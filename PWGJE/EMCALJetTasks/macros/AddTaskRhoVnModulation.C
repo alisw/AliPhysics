@@ -57,11 +57,11 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
     name += "_";
     name += nrho;
   }
-  if (type == AliAnalysisTaskEmcal::kTPC) 
+  if (!strcmp(type, "TPC"))
     name += "_TPC";
-  else if (type == AliAnalysisTaskEmcal::kEMCAL) 
+  else if (!strcmp(type, "EMCAL"))
     name += "_EMCAL";
-  else if (type == AliAnalysisTaskEmcal::kUser) 
+  else if (!strcmp(type, "USER")) 
     name += "_USER";
 
   AliAnalysisTaskRhoVnModulation* jetTask = new AliAnalysisTaskRhoVnModulation(name, runMode);

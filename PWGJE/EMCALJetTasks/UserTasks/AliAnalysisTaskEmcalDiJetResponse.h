@@ -10,9 +10,7 @@ class TClonesArray;
 class TArrayI;
 class AliAnalysisUtils;
 class AliAnalysisManager;
-class AliGenPythiaEventHeader;
-
-#include "AliJetContainer.h"
+class AliJetContainer;
 
 #include "AliAnalysisTaskEmcalDiJetBase.h"
 
@@ -37,7 +35,6 @@ class AliAnalysisTaskEmcalDiJetResponse : public AliAnalysisTaskEmcalDiJetBase {
   void                        CorrelateAllJets(const Int_t type);
   void                        CorrelateTwoJets(const Int_t type);
 
-  Bool_t                      FillHistograms()   ;
   void                        FillDiJetHistos(const AliEmcalJet *jet1 = 0, const AliEmcalJet *jet2 = 0, const Int_t mode = 0);
   void                        FillMatchHistos();
   Bool_t                      RetrieveEventObjects();

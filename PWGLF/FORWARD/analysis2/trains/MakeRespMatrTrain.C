@@ -1,5 +1,5 @@
 /**
- * @file   CreateRespMatrTrain.C
+ * @file   MakeRespMatrTrain.C
  * @author Valentina Zaccolo
  * @date   Fri Jan  11 14:47:26 2013
  * 
@@ -7,8 +7,8 @@
  * 
  * @ingroup pwglf_forward_trains_specific
  * 
+ * @ingroup pwglf_forward_multdist
  */
-
 #include "TrainSetup.C"
 
 //====================================================================
@@ -16,7 +16,7 @@
  * Analysis train to make @f$ Response Matrices@f$
  * 
  *
- * @ingroup pwglf_forward_mult
+ * @ingroup pwglf_forward_multdist
  * @ingroup pwglf_forward_trains_specific
  */
 class MakeRespMatrTrain : public TrainSetup
@@ -26,11 +26,9 @@ public:
    * Constructor.  
    * 
    * @param name     Name of train (free form)
-   * @param trig     "NSD" for Non-Single-Diffractive, "INEL" for inelastic
-   * @param nBins    For pp set 500, for central PbPb set 30000
    */
- MakeRespMatrTrain(const char* name)
-  : TrainSetup(name)
+  MakeRespMatrTrain(const char* name)
+    : TrainSetup(name)
   {
     fOptions.Add("trig",  "TYPE",       "Trigger type", "V0AND");
     fOptions.Add("vzMin", "CENTIMETER", "Min Ip Z",     -4);
@@ -40,7 +38,6 @@ protected:
   /** 
    * Make the tasks 
    * 
-   * @param par  Whether to use par files 
    */
   void CreateTasks(AliAnalysisManager*)
   {

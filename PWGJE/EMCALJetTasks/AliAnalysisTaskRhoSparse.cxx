@@ -1,4 +1,4 @@
-// $Id: AliAnalysisTaskRho.cxx 58408 2012-09-03 07:00:58Z loizides $
+// $Id$
 //
 // Calculation of rho from a collection of jets.
 // If scale function is given the scaled rho will be exported

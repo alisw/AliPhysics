@@ -89,7 +89,7 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  PWGHFvertexingHFLinkDef.h)
 
-set ( EINCLUDE   PWGHF/vertexingHF CORRFW STEER/AOD STEER/ESD STEER/STEERBase PWG/FLOW/Base PWG/FLOW/Tasks)
+set ( EINCLUDE   PWGHF/vertexingHF CORRFW STEER/AOD STEER/ESD STEER/STEERBase PWG/FLOW/Base PWG/FLOW/Tasks ANALYSIS)
 
 install ( FILES vertexingHF/AliAODRecoDecayHF.h 
   	  vertexingHF/AliAODRecoDecayHF2Prong.h

@@ -1,5 +1,6 @@
+// $Id$
 //
-// Particle Container
+// Container with name, TClonesArray and cuts for particles
 //
 // Author: M. Verweij
 
@@ -191,6 +192,20 @@ Bool_t AliParticleContainer::AcceptParticle(AliVParticle *vp) const
     return kFALSE;
   
   return kTRUE;
+}
+
+//________________________________________________________________________
+Int_t AliParticleContainer::GetNAcceptedParticles()
+{
+
+  Int_t nPart = 0;
+
+  AliVParticle *vp = GetNextAcceptParticle(0);
+  if(vp) nPart = 1;
+  while (GetNextAcceptParticle())
+    nPart++;
+
+  return nPart;
 }
 
 //________________________________________________________________________

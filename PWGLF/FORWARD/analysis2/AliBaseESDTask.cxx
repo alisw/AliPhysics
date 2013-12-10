@@ -38,8 +38,8 @@ AliBaseESDTask::AliBaseESDTask(const char* name, const char* title,
 {
   SetTitle(title && title[0] != '\0' ? title : this->ClassName());
   fCorrManager = manager;
-  if (!manager) 
-    AliFatal("Must pass in a valid correction manager object!");
+  // if (!manager) 
+  //   AliFatal("Must pass in a valid correction manager object!");
   fBranchNames = 
     "ESD:AliESDRun.,AliESDHeader.,AliMultiplicity.,"
     "AliESDFMD.,SPDVertex.,PrimaryVertex.";
@@ -67,22 +67,48 @@ AliBaseESDTask::Connect(const char* sumFile,
   if      (sumFile && sumFile[0] != '\0') sumOut = sumFile;
   if      (resFile && resFile[0] != '\0') resOut = resFile;
   else if (sumFile && sumFile[0] != '\0') resOut = sumFile;
-  if (sumOut.IsNull()) sumOut = AliAnalysisManager::GetCommonFileName();
-  if (resOut.IsNull()) resOut = AliAnalysisManager::GetCommonFileName();
+  // If the string is null or 'default' connect to standard output file 
+  if (sumOut.IsNull() || sumOut.EqualTo("default", TString::kIgnoreCase)) 
+    sumOut = AliAnalysisManager::GetCommonFileName();
+  // If the string is null or 'default' connect to standard output file 
+  if (resOut.IsNull() || resOut.EqualTo("default", TString::kIgnoreCase)) 
+    resOut = AliAnalysisManager::GetCommonFileName();
 
-  AliAnalysisDataContainer* sumCon = 
-    mgr->CreateContainer(Form("%sSums", GetName()), TList::Class(), 
-			 AliAnalysisManager::kOutputContainer, sumOut);
-  AliAnalysisDataContainer* resCon = 
-    mgr->CreateContainer(Form("%sResults", GetName()), TList::Class(), 
-			 AliAnalysisManager::kParamContainer, resOut);
+  // Always connect input 
   mgr->ConnectInput(this, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(this, 1, sumCon);
-  mgr->ConnectOutput(this, 2, resCon);
+
+  // Connect sum list unless the output 'none' is specified
+  if (!sumOut.EqualTo("none", TString::kIgnoreCase)) {
+    AliAnalysisDataContainer* sumCon = 
+      mgr->CreateContainer(Form("%sSums", GetName()), TList::Class(), 
+			   AliAnalysisManager::kOutputContainer, sumOut);
+    mgr->ConnectOutput(this, 1, sumCon);
+  }
+  // Connect the result list unless the output 'none' is specified
+  if (!resOut.EqualTo("none", TString::kIgnoreCase)) {
+    AliAnalysisDataContainer* resCon = 
+      mgr->CreateContainer(Form("%sResults", GetName()), TList::Class(), 
+			   AliAnalysisManager::kParamContainer, resOut);
+    mgr->ConnectOutput(this, 2, resCon);
+  }
   
   return true;
 }
 
+//____________________________________________________________________
+TAxis*
+AliBaseESDTask::DefaultEtaAxis() const
+{
+  static TAxis* a = new TAxis(200, -4, 6);
+  return a;
+}
+//____________________________________________________________________
+TAxis*
+AliBaseESDTask::DefaultVertexAxis() const
+{
+  static TAxis* a = AliForwardUtil::MakeFullIpZAxis(20);
+  return a;
+}
 //____________________________________________________________________
 void
 AliBaseESDTask::SetDebug(Int_t dbg)
@@ -122,6 +148,15 @@ AliBaseESDTask::Configure(const char* macro)
  
  return true;
 }
+
+//____________________________________________________________________
+void 
+AliBaseESDTask::LocalInit() 
+{ 
+  fFirstEvent = true; 
+  Setup(); 
+}
+
 //____________________________________________________________________
 void
 AliBaseESDTask::UserCreateOutputObjects()
@@ -144,7 +179,8 @@ AliBaseESDTask::UserCreateOutputObjects()
   GetEventInspector().CreateOutputObjects(fList);
 
   if (!Book()) AliFatalF("Failed to book output objects for %s", GetName());
-  
+
+  // gSystem->Exec("root-config --version --prefix");
   PostData(1, fList);
 }
 
@@ -154,6 +190,9 @@ AliBaseESDTask::UserExec(Option_t*)
 {
   // Call pre-event setup 
   PreEvent();
+
+  // Read in selected branches 
+  LoadBranches();
 
   // Get the input data 
   AliESDEvent* esd = GetESDEvent();
@@ -229,8 +268,15 @@ AliBaseESDTask::CheckCorrections(UInt_t what) const
   //    true if all present, false otherwise
   //  
   DGUARD(fDebug,1,"Checking corrections 0x%x", what);
+  if (what == 0) return true;
 
   AliCorrectionManagerBase* cm = GetManager();
+  if (!cm) {
+    AliErrorF("Check corrections=0x%x not null, "
+	      "but no correction manager defined!", 
+	      what);
+    return false;
+  }
   Bool_t ret = cm->CheckCorrections(what);
   return ret;
 }
@@ -246,8 +292,22 @@ AliBaseESDTask::ReadCorrections(const TAxis*& pe,
   //
   //
   UInt_t what = fNeededCorrections|fExtraCorrections;
+  
   DGUARD(fDebug,1,"Read corrections 0x%x", what);
+
   AliCorrectionManagerBase* cm = GetManager();
+  if (!cm && fNeededCorrections) {
+    AliErrorF("Needed/extra corrections=0x%x/0x%x not null, "
+	      "but no correction manager defined!", 
+	      fNeededCorrections, fExtraCorrections);
+    return false;
+  }
+  if (!cm || !what) {
+    // In case we have no needed corrections, we can return here 
+    if (!pe) pe = DefaultEtaAxis();
+    if (!pv) pv = DefaultVertexAxis();
+    return true;
+  }
   cm->EnableCorrections(what);
   if (!cm->InitCorrections(GetEventInspector().GetRunNumber(),
 			   GetEventInspector().GetCollisionSystem(),
@@ -268,13 +328,11 @@ AliBaseESDTask::ReadCorrections(const TAxis*& pe,
   if (!pe) {
     pe = cm->GetEtaAxis();
     if (!pe) pe = DefaultEtaAxis();
-    if (!pe) AliFatal("No eta axis defined");
   }
   // Get the vertex axis from the secondary maps - if read in
   if (!pv) {
     pv = cm->GetVertexAxis();
     if (!pv) pv = DefaultVertexAxis();
-    if (!pv) AliFatal("No vertex axis defined");
   }
 
   return true;
@@ -331,6 +389,9 @@ AliBaseESDTask::GetESDEvent()
     SetZombie(true);
     return 0;
   }
+  Printf("Vertex axis: %p   Eta axis: %p", pv, pe);
+  if (!pv) AliFatal("No vertex axis defined");
+  if (!pe) AliFatal("No eta axis defined");
 
   // Initialize the event inspector 
   GetEventInspector().SetupForData(*pv);
@@ -385,9 +446,12 @@ AliBaseESDTask::Print(Option_t* option) const
   AliForwardUtil::PrintTask(*this);
   gROOT->IncreaseDirLevel();
   PF("Off-line trigger mask", "0x%0x", fOfflineTriggerMask);
-  if (fCorrManager) fCorrManager->Print(option);
-  else  PF("Correction manager not set yet","");
+  if (GetManager()) GetManager()->Print(option);
+  else  PF("No correction manager","");
 
   GetEventInspector().Print(option);
   gROOT->DecreaseDirLevel();
 }
+//
+// EOF
+//

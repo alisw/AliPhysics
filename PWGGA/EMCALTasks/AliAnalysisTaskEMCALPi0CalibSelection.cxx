@@ -165,8 +165,7 @@ void  AliAnalysisTaskEMCALPi0CalibSelection::CorrectClusters()
     
     if(fRecoUtils->GetParticleType()!=AliEMCALRecoUtils::kPhoton)
     {
-      printf("Wrong particle type for cluster position recalculation! = %d\n", fRecoUtils->GetParticleType());
-      abort();
+      AliFatal(Form("Wrong particle type for cluster position recalculation! = %d\n", fRecoUtils->GetParticleType()));
     }    
     
     if(DebugLevel() > 1) printf("AliAnalysisTaskEMCALPi0CalibSelection Will use fLogWeight %.3f .\n",fLogWeight);
@@ -919,7 +918,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
 }
 
 //______________________________________________________________________________________________________
-Bool_t AliAnalysisTaskEMCALPi0CalibSelection::MaskFrameCluster(const Int_t iSM,  const Int_t ieta) const 
+Bool_t AliAnalysisTaskEMCALPi0CalibSelection::MaskFrameCluster(Int_t iSM, Int_t ieta) const 
 {
   //Check if cell is in one of the regions where we have significant amount of material in front of EMCAL
   

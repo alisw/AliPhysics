@@ -4,6 +4,7 @@
 * See cxx source for full Copyright notice */ 
 /* $Id$ */
 
+#include "AliAODEvent.h"
 #include "TString.h"
 #include "TH1F.h"
 #include "TList.h"

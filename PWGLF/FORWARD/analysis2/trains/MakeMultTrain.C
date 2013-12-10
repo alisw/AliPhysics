@@ -6,9 +6,9 @@
  * @brief  
  * 
  * @ingroup pwglf_forward_trains_specific
+ * @ingroup pwglf_forward_multdist
  * 
  */
-
 #include "TrainSetup.C"
 
 //====================================================================
@@ -16,7 +16,7 @@
  * Analysis train to make @f$ Multiplicity Distributions@f$
  * 
  *
- * @ingroup pwglf_forward_mult
+ * @ingroup pwglf_forward_multdist
  * @ingroup pwglf_forward_trains_specific
  */
 class MakeMultTrain : public TrainSetup
@@ -26,11 +26,6 @@ public:
    * Constructor.  
    * 
    * @param name     Name of train (free form)
-   * @param aoddir   Any file matching *AliAODs.root* is added 
-   * @param nEvents  If 0 or less -> all events are analysed
-   * @param trig     "NSD" for Non-Single-Diffractive, "INEL" for inelastic
-   * @param lowCent  Set 0 for pp
-   * @param nBins    For pp set 500, for central PbPb set 30000
    */
  MakeMultTrain(const char* name)
   : TrainSetup(name)
@@ -45,8 +40,6 @@ public:
 protected:
   /** 
    * Create the tasks 
-   * 
-   * @param par  Whether to use par files 
    */
   void CreateTasks(AliAnalysisManager*)
   {

@@ -64,6 +64,11 @@ public:
     fSelectPrimaryMCDataParticles = flagMCData;
   }
 
+  void SetRangeN(Int_t nMin, Int_t nMax) {
+    fNMin = nMin;
+    fNMax = nMax;
+  }
+
   TString GetOutputListName() const;
 
 protected:
@@ -104,10 +109,12 @@ private:
   Double_t             fMaxAbsVertexZ;      // max abs(zvertex)
   Int_t                fSelectPrimaryMCParticles;     // 0: no, 1: yes, -1: only non-primary particles
   Int_t                fSelectPrimaryMCDataParticles; // 0: no, 1: yes, -1: only non-primary particles
+  Int_t                fNMin;
+  Int_t                fNMax;
   // histogram data
   Int_t    fnBinsCent, fnBinsPt, fnBinsPhi, fnBinsEta;
   Double_t fxMinCent,  fxMinPt,  fxMinPhi,  fxMinEta;
-  Double_t fxMaxCent,  fxMaxPt,  fxMaxPhi,  fxMaxEta;
+  Double_t fxMaxCent,  fxMaxPt,  fxMaxPhi,  fxMaxEta;  
 
   AliAnalysisTaskLongRangeCorrelations(const AliAnalysisTaskLongRangeCorrelations&); // not implemented
   AliAnalysisTaskLongRangeCorrelations& operator=(const AliAnalysisTaskLongRangeCorrelations&); // not implemented

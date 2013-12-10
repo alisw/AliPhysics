@@ -77,7 +77,8 @@ void redoFinish()
       {
         AliFlowAnalysisWithScalarProduct* sp = new AliFlowAnalysisWithScalarProduct();
         sp->GetOutputHistograms(list);
-        //sp->GetHistProFlags()->SetBinContent(1,(Int_t)bApplyCorrectionForNUA);
+        sp->GetHistProConfig()->SetBinContent(1,(Int_t)bApplyCorrectionForNUA*
+                                              sp->GetHistProConfig()->GetEntries());
         sp->Finish();
         directory->Add(list,kTRUE);
         directory->Write(directory->GetName(),TObject::kSingleKey+TObject::kWriteDelete);

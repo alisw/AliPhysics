@@ -1,16 +1,24 @@
 void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void InitCF(AliDielectron* die, Int_t cutDefinition);
 
+void SetupEventCuts(AliDielectron *die, Int_t cutDefinition);
 void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition);
-void SetupPairCuts(AliDielectron *die, Int_t cutDefinition);
+void SetupPairCuts(AliDielectron *die,  Int_t cutDefinition);
+
+void SetupMCsignals(AliDielectron *die);
+TVectorD *GetRunNumbers();
 
 TString names=("default");
 TObjArray *arrNames=names.Tokenize(";");
 
 const Int_t nDie=arrNames->GetEntries();
+Bool_t isAOD=kFALSE;
+Bool_t hasMC=kFALSE;
+Int_t iPeriod=-1;
+enum { k10b=0, k10c, k10d, k10e, k10f, k10h, k11a, k11d, k11h, k12h };
 
 //______________________________________________________________________________________
-AliAnalysisTask* AddTask_jpsi_Default(TString prod="")
+AliAnalysisTask* AddTask_jpsi_Default(TString prod="", Bool_t isMC=kFALSE)
 {
   //get the current analysis manager
 
@@ -21,44 +29,59 @@ AliAnalysisTask* AddTask_jpsi_Default(TString prod="")
   }
 
   //Do we have an MC handler?
-  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
+  hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
+
   //AOD input?
-  Bool_t isAOD=mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
-  
+  isAOD=mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
+  if(isAOD) hasMC=isMC;
+
   //Get the current train configuration
   TString trainConfig=gSystem->Getenv("CONFIG_FILE");
-  
   TString list=gSystem->Getenv("LIST");
   if( list.IsNull()) list=prod;
-  
+
+  // selected period
+  if(      !prod.CompareTo("LHC10b") ) iPeriod = k10b;
+  else if( !prod.CompareTo("LHC10c") ) iPeriod = k10c;
+  else if( !prod.CompareTo("LHC10d") ) iPeriod = k10d;
+  else if( !prod.CompareTo("LHC10e") ) iPeriod = k10e;
+  else if( !prod.CompareTo("LHC10f") ) iPeriod = k10f;
+  else if( !prod.CompareTo("LHC10h") ) iPeriod = k10h;
+  else if( !prod.CompareTo("LHC11a") ) iPeriod = k11a;
+  else if( !prod.CompareTo("LHC11d") ) iPeriod = k11d;
+  else if( !prod.CompareTo("LHC11h") ) iPeriod = k11h;
+  else if( !prod.CompareTo("LHC12h") ) iPeriod = k12h;
+
+  // // aod monte carlo
+  // if( list.Contains("LHC11a10") ||
+  //     list.Contains("LHC11b10") ||
+  //     list.Contains("LHC12a17") ||
+  //     list.Contains("fix")
+  //     ) hasMC=kTRUE;
+
   //create task and add it to the manager
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("JpsiDefault");
+  //  task->SetBeamEnergy(1380.); // not neeeded since we are not looking at helicity and Collins-Soper coordinates
   if (!hasMC) task->UsePhysicsSelection();
-  if (list.Contains("LHC11d")) task->SetTriggerMask(AliVEvent::kEMCEJE+AliVEvent::kEMC7+AliVEvent::kEMCEGA);
-  if (list.Contains("LHC11h")) {
-    task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
-    printf("AddTask_jpsi_Default: LHC11h data detected. Using trigger classes: %d\n",AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
+
+  // add special triggers
+  switch(iPeriod) {
+  case k11d: task->SetTriggerMask(AliVEvent::kEMCEJE+AliVEvent::kEMC7+AliVEvent::kEMCEGA);     break;
+  case k11h: task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral); break;
+  case k12h: task->SetTriggerMask(AliVEvent::kAnyINT);                                         break;
   }
-  if (list.Contains("LHC12h")) task->SetTriggerMask(AliVEvent::kAnyINT);
   mgr->AddTask(task);
 
   //add dielectron analysis with different cuts to the task
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
     AliDielectron *jpsi=ConfigDefault(i);
     if (!jpsi) continue;
+    jpsi->SetHasMC(hasMC);
     task->AddDielectron(jpsi);
   }
-  
-  //Add event filter
-  AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
-  if (isAOD) eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
-  eventCuts->SetRequireVertex();
-  eventCuts->SetMinVtxContributors(1);
-  eventCuts->SetVertexZ(-10.,10.);
-  task->SetEventFilter(eventCuts);
 
   //   task->SetTriggerOnV0AND();
-//   if ( trainConfig=="pp" ) task->SetRejectPileup();
+  //   if ( trainConfig=="pp" ) task->SetRejectPileup();
   
   //create output container
   AliAnalysisDataContainer *coutput1 =
@@ -107,8 +130,6 @@ AliDielectron* ConfigDefault(Int_t cutDefinition)
   // Setup the instance of AliDielectron
   //
   
-  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
-  
   // create the actual framework object
   TString name=Form("%02d",cutDefinition);
   if (cutDefinition<arrNames->GetEntriesFast()){
@@ -118,23 +139,49 @@ AliDielectron* ConfigDefault(Int_t cutDefinition)
   new AliDielectron(Form("%s",name.Data()),
                     Form("Track cuts: %s",name.Data()));
   
-  if (hasMC) SetupMCsignals(die);
-  // cut setup
+  /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
+  SetupEventCuts(die,cutDefinition);
   SetupTrackCuts(die,cutDefinition);
-  //
   SetupPairCuts(die,cutDefinition);
-  //
+
+  /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv MISC vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
+  // Monte Carlo Signals
+  if (hasMC) SetupMCsignals(die);
+  // prefilter settings
+  die->SetPreFilterUnlikeOnly();//  die->SetNoPairing();//  die->SetPreFilterAllSigns();
+  // cut QA
+  die->SetCutQA();
+
+  /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv OUTPUT vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
   InitHistograms(die,cutDefinition);
-  //
   InitCF(die,cutDefinition);
-  //
+
+
   //   AliDielectronMixingHandler *mix=new AliDielectronMixingHandler;
   //   mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10,-8,-5,0,5,8,10");
   //   mix->AddVariable(AliDielectronVarManager::kPhi ,"0,3.14,6.3");
   //   mix->SetDepth(10);
   //  die->SetMixingHandler(mix);
   //
+  
   return die;
+}
+
+//______________________________________________________________________________________
+void SetupEventCuts(AliDielectron *die, Int_t cutDefinition)
+{
+  //
+  // Setup the event cuts
+  //
+
+  AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","eventCuts");
+  if(isAOD) eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
+  eventCuts->SetRequireVertex();
+  eventCuts->SetMinVtxContributors(1);
+  eventCuts->SetVertexZ(-10.,+10.);
+  eventCuts->Print();
+  die->GetEventFilter().AddCuts(eventCuts);
+
 }
 
 //______________________________________________________________________________________
@@ -144,30 +191,47 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   // Setup the track cuts
   //
 
-  AliDielectronCutGroup* cuts = new AliDielectronCutGroup("cuts","cuts",AliDielectronCutGroup::kCompAND);
-  die->GetTrackFilter().AddCuts(cuts);
+  /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv TRACK CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
+  AliDielectronVarCuts *varAccCuts   = new AliDielectronVarCuts("acc","acc");
+  varAccCuts->AddCut(AliDielectronVarManager::kPt,           0.8, 1e30);
+  varAccCuts->AddCut(AliDielectronVarManager::kEta,         -0.9,  0.9);
+  die->GetTrackFilter().AddCuts(varAccCuts);
+  varAccCuts->Print();
 
-  //default quality cuts
-  AliDielectronTrackCuts *cut1=new AliDielectronTrackCuts("cut1","cut1");
-  cut1->SetRequireITSRefit(kTRUE);
-  cut1->SetRequireTPCRefit(kTRUE);
-  cut1->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-  cuts->AddCut(cut1);
 
-  //pt and kink mother
-  AliDielectronVarCuts *cut2 = new AliDielectronVarCuts("cut2Cut","cut2 cut");
-  cut2->AddCut(AliDielectronVarManager::kPt,            0.8 ,     1.e30 );
-  cut2->AddCut(AliDielectronVarManager::kImpactParZ,   -3.  ,     3.    );
-  cut2->AddCut(AliDielectronVarManager::kImpactParXY,  -1.  ,     1.    );
-  cut2->AddCut(AliDielectronVarManager::kEta,          -0.9 ,     0.9   );
-  cut2->AddCut(AliDielectronVarManager::kNclsTPC,      70.  ,  160.     );
-  cut2->AddCut(AliDielectronVarManager::kTPCchi2Cl,     0.  ,    4.     );
-  //   cut2->AddCut(AliDielectronVarManager::kITSchi2Cl,     0.  ,   36.     ); // removes all tracks in AOD!! why???
-  cut2->AddCut(AliDielectronVarManager::kKinkIndex0,    0.              );
-  cut2->AddCut(AliDielectronVarManager::kTPCnSigmaEle,  -3. ,    3.     );
-  cut2->AddCut(AliDielectronVarManager::kTPCnSigmaPio,   3.5, 1000.     );
-  cut2->AddCut(AliDielectronVarManager::kTPCnSigmaPro,   3. , 1000.     );
-  cuts->AddCut(cut2);
+  AliDielectronVarCuts   *varRecCuts = new AliDielectronVarCuts("VarRecCuts","VarRecCuts");
+  varRecCuts->AddCut(AliDielectronVarManager::kNclsTPC,      70.,   160.);
+  varRecCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+  varRecCuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+  varRecCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+  //  varRecCuts->AddCut(AliDielectronVarManager::kITSchi2Cl,     0.  ,   36.     ); // not defined in AOD
+  varRecCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.0);
+
+  AliDielectronTrackCuts *trkRecCuts = new AliDielectronTrackCuts("TrkRecCuts","TrkRecCuts");
+  trkRecCuts->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 3); // SPD any
+  trkRecCuts->SetRequireITSRefit(kTRUE);
+  trkRecCuts->SetRequireTPCRefit(kTRUE);
+
+  AliDielectronCutGroup  *grpRecCuts = new AliDielectronCutGroup("rec","rec",AliDielectronCutGroup::kCompAND);
+  grpRecCuts->AddCut(trkRecCuts);
+  grpRecCuts->AddCut(varRecCuts);
+  die->GetTrackFilter().AddCuts(grpRecCuts);
+  grpRecCuts->Print();
+
+
+  /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv PID CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
+  AliDielectronVarCuts *pidVarCuts = new AliDielectronVarCuts("varPIDCuts","varPIDCuts");
+  pidVarCuts->AddCut(AliDielectronVarManager::kTPCnSigmaEle,  -2. ,    3.     ); //-3.0
+  pidVarCuts->AddCut(AliDielectronVarManager::kTPCnSigmaPio,   3.5, 1000.     );
+  pidVarCuts->AddCut(AliDielectronVarManager::kTPCnSigmaPro,   4. , 1000.     ); //3.0
+  //  AliDielectronPID *pidCuts        = new AliDielectronPID("PIDCuts","PIDCuts"); //not used
+  AliDielectronCutGroup *grpPIDCuts = new AliDielectronCutGroup("PID","PID",AliDielectronCutGroup::kCompAND);
+  grpPIDCuts->AddCut(pidVarCuts);
+  //grpPIDCuts->AddCut(pidCuts);
+  die->GetTrackFilter().AddCuts(grpPIDCuts);
+  grpPIDCuts->Print();
+
+  //
 
 
   //exclude conversion electrons selected by the tender
@@ -183,12 +247,10 @@ void SetupPairCuts(AliDielectron *die, Int_t cutDefinition)
   // Setup the pair cuts
   //
 
-
   // add conversion rejection
   AliDielectronVarCuts *gammaCut=new AliDielectronVarCuts("gammaCut","gammaCut");
   gammaCut->AddCut(AliDielectronVarManager::kM,0.,.05);
   die->GetPairPreFilter().AddCuts(gammaCut);
-  die->SetPreFilterUnlikeOnly();
 
 }
 
@@ -219,12 +281,30 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->AddClass(Form("Pair_%s",AliDielectron::PairClassName(i)));
   }
 
+  //add MC signal histograms to track and pair class
+  if(die->GetMCSignals()) {
+    for(Int_t isig=0; isig<die->GetMCSignals()->GetEntriesFast(); isig++) {
+      TString sigMCname = die->GetMCSignals()->At(isig)->GetName(); 
+
+      // mc truth
+      histos->AddClass(Form("Pair_%s_MCtruth",       sigMCname.Data()));
+      histos->AddClass(Form("Track_Legs_%s_MCtruth", sigMCname.Data())); 
+      // mc reconstructed
+      histos->AddClass(Form("Pair_%s",               sigMCname.Data()));
+      histos->AddClass(Form("Track_Legs_%s",         sigMCname.Data())); 
+    }
+  }
+
   //add histograms to event class
   if (cutDefinition==0) {
     histos->AddClass("Event");
     histos->UserHistogram("Event","","",300,-15.,15.,AliDielectronVarManager::kZvPrim);
     histos->UserHistogram("Event","","",
                           100,-2.,2.,100,-2.,2.,AliDielectronVarManager::kXvPrim,AliDielectronVarManager::kYvPrim);
+    histos->UserHistogram("Event","","",GetRunNumbers(),AliDielectronVarManager::kRunNumber);
+    histos->UserProfile("Event","","", AliDielectronVarManager::kTracks, GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+    histos->UserProfile("Event","","", AliDielectronVarManager::kPairs,  GetRunNumbers(), AliDielectronVarManager::kRunNumber);
+
   }
 
   //add histograms to Track classes
@@ -288,23 +368,21 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
 
   //cf->AddVariable(AliDielectronVarManager::kITSLayerFirstCls,6,0,6,kTRUE);
 
-
-  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
-  if (hasMC){
+  if (hasMC && 0){ //ATTENTION SWITCHED OFF
     cf->AddVariable(AliDielectronVarManager::kPdgCode,10000,-5000.5,4999.5,kTRUE);
     cf->AddVariable(AliDielectronVarManager::kPdgCodeMother,10000,-5000.5,4999.5,kTRUE);
     cf->AddVariable(AliDielectronVarManager::kPdgCodeGrandMother,10000,-5000.5,4999.5,kTRUE);
+  }
 
+  if(hasMC) {
     //only steps for efficiencies
     cf->SetStepsForMCtruthOnly();
+    //only in this case write MC truth info
+    if (cutDefinition==0){
+      cf->SetStepForMCtruth();
+    }
   }
-
-  //only in this case write MC truth info
-  if (cutDefinition==0){
-    cf->SetStepForMCtruth();
-  }
-
-  cf->SetStepsForSignal();
+  // cf->SetStepsForSignal();
 
   die->SetCFManagerPair(cf);
 }
@@ -349,4 +427,26 @@ void SetupMCsignals(AliDielectron *die){
   promptJpsiRad->SetJpsiRadiative(AliDielectronSignalMC::kIsRadiative);
   die->AddSignalMC(promptJpsiRad);
 
+}
+
+TVectorD *GetRunNumbers() {
+  // returns a vector with the runnumber used in the period
+
+  Double_t first=0;
+  Double_t last =1;
+
+  switch(iPeriod) {
+  case k10b: first=114737; last=117223; break;
+  case k10c: first=117777; last=121417; break;
+  case k10d: first=121692; last=126437; break;
+  case k10e: first=127102; last=130850; break;
+  case k10f: first=130931; last=135031; break;
+  case k10h: first=136831; last=139517; break;
+  case k11a: first=141052; last=146974; break;
+  case k11d: first=155838; last=159649; break;
+  case k11h: first=165772; last=170718; break;
+  case k12h: first=188720; last=192738; break;
+  }
+  //  printf("iPeriod: %d \t %.0f-%.0f \n",iPeriod,first,last);
+  return (AliDielectronHelper::MakeLinBinning(last-first, first, last));
 }

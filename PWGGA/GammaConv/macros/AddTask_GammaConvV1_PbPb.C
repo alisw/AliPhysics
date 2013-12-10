@@ -1,7 +1,7 @@
 void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set of cuts
                               Bool_t isMC   = kFALSE, //run MC 
-                              Bool_t enableQAMesonTask = kFALSE, //enable QA in AliAnalysisTaskGammaConvV1
-                              Bool_t enableQAPhotonTask = kFALSE, // enable additional QA task
+                              Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvV1
+                              Int_t enableQAPhotonTask = 0, // enable additional QA task
                               TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
                               Bool_t doWeighting = kFALSE,  //enable Weighting
                               TString cutnumberAODBranch = "1000000060084000001500000" 
@@ -43,7 +43,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
    }
    
    //=========  Set Cutnumber for V0Reader ================================
-   TString cutnumber = "100000000008400100150000000"; 
+   TString cutnumber = "1000000000084001001500000000"; 
    AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
    //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
    if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
@@ -97,354 +97,353 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
    TString *mesonCutArray = new TString[numberOfCuts];
 
    if (trainConfig == 1){ // Standard cuts
-      cutarray[ 0] = "601000104209297002322000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
-      cutarray[ 1] = "612000104209297002322000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-      cutarray[ 2] = "501000104209297002322000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
-      cutarray[ 3] = "512000104209297002322000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
-      cutarray[ 4] = "502000104209297002322000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
+      cutarray[ 0] = "6010001042092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
+      cutarray[ 1] = "6120001042092970023220000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
+      cutarray[ 2] = "5010001042092970023220000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
+      cutarray[ 3] = "5120001042092970023220000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
+      cutarray[ 4] = "5020001042092970023220000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
    } else if (trainConfig == 2) { // Standard cuts
-      cutarray[ 0] = "524000104209297002322000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
-      cutarray[ 1] = "546000104209297002322000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
-      cutarray[ 2] = "568000104209297002322000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-      cutarray[ 3] = "548000104209297002322000000"; mesonCutArray[ 3] = "01522065009000"; // 40-80%
-      cutarray[ 4] = "549000104209297002322000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
+      cutarray[ 0] = "5240001042092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
+      cutarray[ 1] = "5460001042092970023220000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
+      cutarray[ 2] = "5680001042092970023220000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
+      cutarray[ 3] = "5480001042092970023220000000"; mesonCutArray[ 3] = "01522065009000"; // 40-80%
+      cutarray[ 4] = "5490001042092970023220000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
    } else if (trainConfig == 3) { // Standard cuts only added signals
-      cutarray[ 0] = "601000204209297002322000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
-      cutarray[ 1] = "612000204209297002322000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-      cutarray[ 2] = "501000204209297002322000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
-      cutarray[ 3] = "512000204209297002322000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
-      cutarray[ 4] = "502000204209297002322000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
+      cutarray[ 0] = "6010002042092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
+      cutarray[ 1] = "6120002042092970023220000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
+      cutarray[ 2] = "5010002042092970023220000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
+      cutarray[ 3] = "5120002042092970023220000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
+      cutarray[ 4] = "5020002042092970023220000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
    } else if (trainConfig == 4) { // Standard cuts only added signals
-      cutarray[ 0] = "524000204209297002322000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
-      cutarray[ 1] = "546000204209297002322000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
-      cutarray[ 2] = "568000204209297002322000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-      cutarray[ 3] = "548000204209297002322000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
-      cutarray[ 4] = "549000204209297002322000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
-   } else if (trainConfig == 5){  // Psi pair 0.2 (constant, 4) 
-      cutarray[ 0] = "601000104209297002324000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
-      cutarray[ 1] = "612000104209297002324000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-      cutarray[ 2] = "501000104209297002324000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
-      cutarray[ 3] = "512000104209297002324000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
-      cutarray[ 4] = "502000104209297002324000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
-   } else if (trainConfig == 6) { // Psi pair 0.2 (constant, 4) 
-      cutarray[ 0] = "524000104209297002324000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
-      cutarray[ 1] = "546000104209297002324000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
-      cutarray[ 2] = "568000104209297002324000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-      cutarray[ 3] = "548000104209297002324000000"; mesonCutArray[ 3] = "01522065009000"; // 40-80%
-      cutarray[ 4] = "549000104209297002324000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
-   } else if (trainConfig == 7) { // Psi pair 0.2 (constant, 4) 
-      cutarray[ 0] = "601000204209297002324000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
-      cutarray[ 1] = "612000204209297002324000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-      cutarray[ 2] = "501000204209297002324000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
-      cutarray[ 3] = "512000204209297002324000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
-      cutarray[ 4] = "502000204209297002324000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
-   } else if (trainConfig == 8) { // Psi pair 0.2 (constant, 4) 
-      cutarray[ 0] = "524000204209297002324000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
-      cutarray[ 1] = "546000204209297002324000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
-      cutarray[ 2] = "568000204209297002324000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-      cutarray[ 3] = "548000204209297002324000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
-      cutarray[ 4] = "549000204209297002324000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
-   } else if (trainConfig == 9){ // Psi pair 0.1 (triangle to 1, 5) 
-      cutarray[ 0] = "601000104209297002325000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
-      cutarray[ 1] = "612000104209297002325000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-      cutarray[ 2] = "501000104209297002325000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
-      cutarray[ 3] = "512000104209297002325000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
-      cutarray[ 4] = "502000104209297002325000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
-   } else if (trainConfig == 10) { // Psi pair 0.1 (triangle to 1, 5) 
-      cutarray[ 0] = "524000104209297002325000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
-      cutarray[ 1] = "546000104209297002325000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
-      cutarray[ 2] = "568000104209297002325000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-      cutarray[ 3] = "548000104209297002325000000"; mesonCutArray[ 3] = "01522065009000"; // 40-80%
-      cutarray[ 4] = "549000104209297002325000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
-   } else if (trainConfig == 11) { // Psi pair 0.1 (triangle to 1, 5) 
-      cutarray[ 0] = "601000204209297002325000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
-      cutarray[ 1] = "612000204209297002325000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-      cutarray[ 2] = "501000204209297002325000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
-      cutarray[ 3] = "512000204209297002325000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
-      cutarray[ 4] = "502000204209297002325000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
-   } else if (trainConfig == 12) { // Psi pair 0.1 (triangle to 1, 5) 
-      cutarray[ 0] = "524000204209297002325000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
-      cutarray[ 1] = "546000204209297002325000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
-      cutarray[ 2] = "568000204209297002325000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-      cutarray[ 3] = "548000204209297002325000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
-      cutarray[ 4] = "549000204209297002325000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
-   } else if (trainConfig == 13){ // Psi pair 0.05 (triangle to 1, 6) 
-      cutarray[ 0] = "601000104209297002326000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
-      cutarray[ 1] = "612000104209297002326000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-      cutarray[ 2] = "501000104209297002326000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
-      cutarray[ 3] = "512000104209297002326000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
-      cutarray[ 4] = "502000104209297002326000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
-   } else if (trainConfig == 14) { // Psi pair 0.05 (triangle to 1, 6) 
-      cutarray[ 0] = "524000104209297002326000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
-      cutarray[ 1] = "546000104209297002326000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
-      cutarray[ 2] = "568000104209297002326000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-      cutarray[ 3] = "548000104209297002326000000"; mesonCutArray[ 3] = "01522065009000"; // 40-80%
-      cutarray[ 4] = "549000104209297002326000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
-   } else if (trainConfig == 15) { // Psi pair 0.05 (triangle to 1, 6) 
-      cutarray[ 0] = "601000204209297002326000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
-      cutarray[ 1] = "612000204209297002326000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-      cutarray[ 2] = "501000204209297002326000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
-      cutarray[ 3] = "512000204209297002326000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
-      cutarray[ 4] = "502000204209297002326000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
-   } else if (trainConfig == 16) { // Psi pair 0.05 (triangle to 1, 6) 
-      cutarray[ 0] = "524000204209297002326000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
-      cutarray[ 1] = "546000204209297002326000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
-      cutarray[ 2] = "568000204209297002326000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-      cutarray[ 3] = "548000204209297002326000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
-      cutarray[ 4] = "549000204209297002326000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
-   } else if (trainConfig == 17){ // Psi pair 0.2 (triangle to 1, 8) 
-      cutarray[ 0] = "601000104209297002328000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
-      cutarray[ 1] = "612000104209297002328000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-      cutarray[ 2] = "501000104209297002328000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
-      cutarray[ 3] = "512000104209297002328000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
-      cutarray[ 4] = "502000104209297002328000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
-   } else if (trainConfig == 18) { // Psi pair 0.2 (triangle to 1, 8) 
-      cutarray[ 0] = "524000104209297002328000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
-      cutarray[ 1] = "546000104209297002328000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
-      cutarray[ 2] = "568000104209297002328000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-      cutarray[ 3] = "548000104209297002328000000"; mesonCutArray[ 3] = "01522065009000"; // 40-80%
-      cutarray[ 4] = "549000104209297002328000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
-   } else if (trainConfig == 19) { // Psi pair 0.2 (triangle to 1, 8) 
-      cutarray[ 0] = "601000204209297002328000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
-      cutarray[ 1] = "612000204209297002328000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-      cutarray[ 2] = "501000204209297002328000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
-      cutarray[ 3] = "512000204209297002328000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
-      cutarray[ 4] = "502000204209297002328000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
-   } else if (trainConfig == 20) { // Psi pair 0.2 (triangle to 1, 8) 
-      cutarray[ 0] = "524000204209297002328000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
-      cutarray[ 1] = "546000204209297002328000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
-      cutarray[ 2] = "568000204209297002328000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-      cutarray[ 3] = "548000204209297002328000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
-      cutarray[ 4] = "549000204209297002328000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
-   } else if (trainConfig == 21){ // Psi pair 0.1 (triangle to 1, 5) without min R
-      cutarray[ 0] = "601000104009297002325000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
-      cutarray[ 1] = "612000104009297002325000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-      cutarray[ 2] = "501000104009297002325000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
-      cutarray[ 3] = "512000104009297002325000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
-      cutarray[ 4] = "502000104009297002325000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
-   } else if (trainConfig == 22) { // Psi pair 0.1 (triangle to 1, 5) without min R
-      cutarray[ 0] = "524000104009297002325000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
-      cutarray[ 1] = "546000104009297002325000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
-      cutarray[ 2] = "568000104009297002325000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-      cutarray[ 3] = "548000104009297002325000000"; mesonCutArray[ 3] = "01522065009000"; // 40-80%
-      cutarray[ 4] = "549000104009297002325000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
-   } else if (trainConfig == 23) { // Psi pair 0.1 (triangle to 1, 5) without min R
-      cutarray[ 0] = "601000204009297002325000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
-      cutarray[ 1] = "612000204009297002325000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-      cutarray[ 2] = "501000204009297002325000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
-      cutarray[ 3] = "512000204009297002325000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
-      cutarray[ 4] = "502000204009297002325000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
-   } else if (trainConfig == 24) { // Psi pair 0.1 (triangle to 1, 5) without min R
-      cutarray[ 0] = "524000204009297002325000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
-      cutarray[ 1] = "546000204009297002325000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
-      cutarray[ 2] = "568000204009297002325000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-      cutarray[ 3] = "548000204009297002325000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
-      cutarray[ 4] = "549000204009297002325000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
-   } else if (trainConfig == 25){ // Psi pair 0.05 (triangle to 1, 6) without min R
-      cutarray[ 0] = "601000104009297002326000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
-      cutarray[ 1] = "612000104009297002326000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-      cutarray[ 2] = "501000104009297002326000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
-      cutarray[ 3] = "512000104009297002326000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
-      cutarray[ 4] = "502000104009297002326000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
-   } else if (trainConfig == 26) { // Psi pair 0.05 (triangle to 1, 6) without min R
-      cutarray[ 0] = "524000104009297002326000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
-      cutarray[ 1] = "546000104009297002326000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
-      cutarray[ 2] = "568000104009297002326000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-      cutarray[ 3] = "548000104009297002326000000"; mesonCutArray[ 3] = "01522065009000"; // 40-80%
-      cutarray[ 4] = "549000104009297002326000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
-   } else if (trainConfig == 27) { // Psi pair 0.05 (triangle to 1, 6) without min R
-      cutarray[ 0] = "601000204009297002326000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
-      cutarray[ 1] = "612000204009297002326000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-      cutarray[ 2] = "501000204009297002326000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
-      cutarray[ 3] = "512000204009297002326000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
-      cutarray[ 4] = "502000204009297002326000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
-   } else if (trainConfig == 28) { // Psi pair 0.05 (triangle to 1, 6) without min R
-      cutarray[ 0] = "524000204009297002326000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
-      cutarray[ 1] = "546000204009297002326000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
-      cutarray[ 2] = "568000204009297002326000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-      cutarray[ 3] = "548000204009297002326000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
-      cutarray[ 4] = "549000204009297002326000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
-   } else if (trainConfig == 29){ // Psi pair 0.2 (triangle to 1, 8) without min R
-      cutarray[ 0] = "601000104009297002328000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
-      cutarray[ 1] = "612000104009297002328000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-      cutarray[ 2] = "501000104009297002328000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
-      cutarray[ 3] = "512000104009297002328000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
-      cutarray[ 4] = "502000104009297002328000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
-   } else if (trainConfig == 30) { // Psi pair 0.2 (triangle to 1, 8) without min R
-      cutarray[ 0] = "524000104009297002328000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
-      cutarray[ 1] = "546000104009297002328000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
-      cutarray[ 2] = "568000104009297002328000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-      cutarray[ 3] = "548000104009297002328000000"; mesonCutArray[ 3] = "01522065009000"; // 40-80%
-      cutarray[ 4] = "549000104009297002328000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
-   } else if (trainConfig == 31) { // Psi pair 0.2 (triangle to 1, 8) without min R
-      cutarray[ 0] = "601000204009297002328000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
-      cutarray[ 1] = "612000204009297002328000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-      cutarray[ 2] = "501000204009297002328000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
-      cutarray[ 3] = "512000204009297002328000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
-      cutarray[ 4] = "502000204009297002328000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
-   } else if (trainConfig == 32) { // Psi pair 0.2 (triangle to 1, 8) without min R
-      cutarray[ 0] = "524000204009297002328000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
-      cutarray[ 1] = "546000204009297002328000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
-      cutarray[ 2] = "568000204009297002328000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-      cutarray[ 3] = "548000204009297002328000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
-      cutarray[ 4] = "549000204009297002328000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
-   }else if (trainConfig == 33){ // Asymmetry 1- 0.04 above 3.5 GeV
-      cutarray[ 0] = "601000104209297002322100000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
-      cutarray[ 1] = "612000104209297002322100000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-      cutarray[ 2] = "501000104209297002322100000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
-      cutarray[ 3] = "512000104209297002322100000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
-      cutarray[ 4] = "502000104209297002322100000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
-   } else if (trainConfig == 34) { // Asymmetry 1- 0.04 above 3.5 GeV
-      cutarray[ 0] = "524000104209297002322100000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
-      cutarray[ 1] = "546000104209297002322100000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
-      cutarray[ 2] = "568000104209297002322100000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-      cutarray[ 3] = "548000104209297002322100000"; mesonCutArray[ 3] = "01522065009000"; // 40-80%
-      cutarray[ 4] = "549000104209297002322100000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
-   } else if (trainConfig == 35) { // Asymmetry 1- 0.04 above 3.5 GeV
-      cutarray[ 0] = "601000204209297002322100000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
-      cutarray[ 1] = "612000204209297002322100000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-      cutarray[ 2] = "501000204209297002322100000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
-      cutarray[ 3] = "512000204209297002322100000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
-      cutarray[ 4] = "502000204209297002322100000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
-   } else if (trainConfig == 36) { // Asymmetry 1- 0.04 above 3.5 GeV
-      cutarray[ 0] = "524000204209297002322100000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
-      cutarray[ 1] = "546000204209297002322100000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
-      cutarray[ 2] = "568000204209297002322100000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-      cutarray[ 3] = "548000204209297002322100000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
-      cutarray[ 4] = "549000204209297002322100000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
-   } else if (trainConfig == 37){ // Asymmetry 1- 0.06 above 3.5 GeV
-      cutarray[ 0] = "601000104209297002322200000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
-      cutarray[ 1] = "612000104209297002322200000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-      cutarray[ 2] = "501000104209297002322200000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
-      cutarray[ 3] = "512000104209297002322200000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
-      cutarray[ 4] = "502000104209297002322200000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
-   } else if (trainConfig == 38) { // Asymmetry 1- 0.06 above 3.5 GeV
-      cutarray[ 0] = "524000104209297002322200000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
-      cutarray[ 1] = "546000104209297002322200000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
-      cutarray[ 2] = "568000104209297002322200000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-      cutarray[ 3] = "548000104209297002322200000"; mesonCutArray[ 3] = "01522065009000"; // 40-80%
-      cutarray[ 4] = "549000104209297002322200000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
-   } else if (trainConfig == 39) { // Asymmetry 1- 0.06 above 3.5 GeV
-      cutarray[ 0] = "601000204209297002322200000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
-      cutarray[ 1] = "612000204209297002322200000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-      cutarray[ 2] = "501000204209297002322200000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
-      cutarray[ 3] = "512000204209297002322200000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
-      cutarray[ 4] = "502000204209297002322200000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
-   } else if (trainConfig == 40) { // Asymmetry 1- 0.06 above 3.5 GeV
-      cutarray[ 0] = "524000204209297002322200000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
-      cutarray[ 1] = "546000204209297002322200000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
-      cutarray[ 2] = "568000204209297002322200000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-      cutarray[ 3] = "548000204209297002322200000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
-      cutarray[ 4] = "549000204209297002322200000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
-   } else if (trainConfig == 41){ // Asymmetry 1- 0.05
-      cutarray[ 0] = "601000104209297002322300000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
-      cutarray[ 1] = "612000104209297002322300000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-      cutarray[ 2] = "501000104209297002322300000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
-      cutarray[ 3] = "512000104209297002322300000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
-      cutarray[ 4] = "502000104209297002322300000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
-   } else if (trainConfig == 42) {// Asymmetry 1- 0.05 
-      cutarray[ 0] = "524000104209297002322300000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
-      cutarray[ 1] = "546000104209297002322300000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
-      cutarray[ 2] = "568000104209297002322300000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-      cutarray[ 3] = "548000104209297002322300000"; mesonCutArray[ 3] = "01522065009000"; // 40-80%
-      cutarray[ 4] = "549000104209297002322300000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
-   } else if (trainConfig == 43) { // Asymmetry 1- 0.05
-      cutarray[ 0] = "601000204209297002322300000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
-      cutarray[ 1] = "612000204209297002322300000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-      cutarray[ 2] = "501000204209297002322300000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
-      cutarray[ 3] = "512000204209297002322300000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
-      cutarray[ 4] = "502000204209297002322300000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
-   } else if (trainConfig == 44) { // Asymmetry 1- 0.05
-      cutarray[ 0] = "524000204209297002322300000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
-      cutarray[ 1] = "546000204209297002322300000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
-      cutarray[ 2] = "568000204209297002322300000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-      cutarray[ 3] = "548000204209297002322300000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
-      cutarray[ 4] = "549000204209297002322300000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
-   } else if (trainConfig == 45) { // CutStudies martin: 
-      cutarray[ 0] = "502000104209237002322200000"; mesonCutArray[ 0] = "01522045009000"; // dE/dx E varied to \sigma > 2.5, \sigma > -10, min p\pi = 0.4 GeV/c, max p\pi = 100 GeV/c
-      cutarray[ 1] = "502000104209277002322200000"; mesonCutArray[ 1] = "01522045009000"; // dE/dx E varied to \sigma > 3.5, \sigma > -10, min p\pi = 0.4 GeV/c, max p\pi = 100 GeV/c
-      cutarray[ 2] = "502000104209197002322200000"; mesonCutArray[ 2] = "01522045009000"; // dE/dx E varied to \sigma < +-5 
-      cutarray[ 3] = "548000104209237002322200000"; mesonCutArray[ 3] = "01522065009000"; // dE/dx E varied to \sigma > 2.5, \sigma > -10, min p\pi = 0.4 GeV/c, max p\pi = 100 GeV/c
-      cutarray[ 4] = "548000104209277002322200000"; mesonCutArray[ 4] = "01522065009000"; // dE/dx E varied to \sigma > 3.5, \sigma > -10, min p\pi = 0.4 GeV/c, max p\pi = 100 GeV/c
-   } else if (trainConfig == 46){ // CutStudies martin: 
-      cutarray[ 0] = "502000204209237002322200000"; mesonCutArray[ 0] = "01522045009000"; // dE/dx E varied to \sigma > 2.5, \sigma > -10, min p\pi = 0.4 GeV/c, max p\pi = 100 GeV/c
-      cutarray[ 1] = "502000204209277002322200000"; mesonCutArray[ 1] = "01522045009000"; // dE/dx E varied to \sigma > 3.5, \sigma > -10, min p\pi = 0.4 GeV/c, max p\pi = 100 GeV/c
-      cutarray[ 2] = "502000204209197002322200000"; mesonCutArray[ 2] = "01522045009000"; // dE/dx E varied to \sigma < +-5 
-      cutarray[ 3] = "548000204209237002322200000"; mesonCutArray[ 3] = "01522065009000"; // dE/dx E varied to \sigma > 2.5, \sigma > -10, min p\pi = 0.4 GeV/c, max p\pi = 100 GeV/c
-      cutarray[ 4] = "548000204209277002322200000"; mesonCutArray[ 4] = "01522065009000"; // dE/dx E varied to \sigma > 3.5, \sigma > -10, min p\pi = 0.4 GeV/c, max p\pi = 100 GeV/c
-   } else if (trainConfig == 47) { // CutStudies martin: 
-      cutarray[ 0] = "502000104209397002322200000"; mesonCutArray[ 0] = "01522045009000"; // dE/dx E varied to \sigma < -4,5
-      cutarray[ 1] = "502000104209697002322200000"; mesonCutArray[ 1] = "01522045009000"; // dE/dx E varied to \sigma < +4,-2.5
-      cutarray[ 2] = "502000104208297002322000000"; mesonCutArray[ 2] = "01522045009000"; // cluster 0.35 
-      cutarray[ 3] = "548000104209397002322200000"; mesonCutArray[ 3] = "01522065009000"; // dE/dx E varied to \sigma < -4,5
-      cutarray[ 4] = "548000104209697002322200000"; mesonCutArray[ 4] = "01522065009000"; // dE/dx E varied to \sigma < +4,-2.5
-   } else if (trainConfig == 48){ // CutStudies martin: 
-      cutarray[ 0] = "502000204209397002322200000"; mesonCutArray[ 0] = "01522045009000"; // dE/dx E varied to \sigma < -4,5
-      cutarray[ 1] = "502000204209697002322200000"; mesonCutArray[ 1] = "01522045009000"; // dE/dx E varied to \sigma < +4,-2.5
-      cutarray[ 2] = "502000204208297002322000000"; mesonCutArray[ 2] = "01522045009000"; // cluster 0.35 
-      cutarray[ 3] = "548000204209397002322200000"; mesonCutArray[ 3] = "01522065009000"; // dE/dx E varied to \sigma < -4,5
-      cutarray[ 4] = "548000204209697002322200000"; mesonCutArray[ 4] = "01522065009000"; // dE/dx E varied to \sigma < +4,-2.5
-   } else if (trainConfig == 49) { // CutStudies martin: 
-      cutarray[ 0] = "502000104206297002322000000"; mesonCutArray[ 0] = "01522045009000"; // cluster 0.7
-      cutarray[ 1] = "502000104209297002422000000"; mesonCutArray[ 1] = "01522045009000"; // qt < 0.03
-      cutarray[ 2] = "502000104209297002222000000"; mesonCutArray[ 2] = "01522045009000"; // qt < 0.07
-      cutarray[ 3] = "548000104206297002322000000"; mesonCutArray[ 3] = "01522065009000"; // cluster 0.7
-      cutarray[ 4] = "548000104209297002422000000"; mesonCutArray[ 4] = "01522065009000"; // qt < 0.03
-   } else if (trainConfig == 50) { // CutStudies martin: 
-      cutarray[ 0] = "502000204206297002322000000"; mesonCutArray[ 0] = "01522045009000"; // cluster 0.7
-      cutarray[ 1] = "502000204209297002422000000"; mesonCutArray[ 1] = "01522045009000"; // qt < 0.03
-      cutarray[ 2] = "502000204209297002222000000"; mesonCutArray[ 2] = "01522045009000"; // qt < 0.07
-      cutarray[ 3] = "548000204206297002322000000"; mesonCutArray[ 3] = "01522065009000"; // cluster 0.7
-      cutarray[ 4] = "548000204209297002422000000"; mesonCutArray[ 4] = "01522065009000"; // qt < 0.03
-   } else if (trainConfig == 51) { // CutStudies martin: 
-      cutarray[ 0] = "502000104249297002322000000"; mesonCutArray[ 0] = "01522045009000"; // min pt 75
-      cutarray[ 1] = "502000104219297002322000000"; mesonCutArray[ 1] = "01522045009000"; // min pt 100
-      cutarray[ 2] = "502000104209297003322000000"; mesonCutArray[ 2] = "01522045009000"; // TOF \sigma = -3 5
-      cutarray[ 3] = "548000104249297002322000000"; mesonCutArray[ 3] = "01522065009000"; // min pt 75
-      cutarray[ 4] = "548000104219297002322000000"; mesonCutArray[ 4] = "01522065009000"; // min pt 100
-   } else if (trainConfig == 52) { // CutStudies martin: 
-      cutarray[ 0] = "502000204249297002322000000"; mesonCutArray[ 0] = "01522045009000"; // min pt 75
-      cutarray[ 1] = "502000204219297002322000000"; mesonCutArray[ 1] = "01522045009000"; // min pt 100
-      cutarray[ 2] = "502000204209297003322000000"; mesonCutArray[ 2] = "01522045009000"; // TOF \sigma = -3 5
-      cutarray[ 3] = "548000204249297002322000000"; mesonCutArray[ 3] = "01522065009000"; // min pt 75
-      cutarray[ 4] = "548000204219297002322000000"; mesonCutArray[ 4] = "01522065009000"; // min pt 100
-   } else if (trainConfig == 53) { // CutStudies martin: 
-      cutarray[ 0] = "502000104209297004322000000"; mesonCutArray[ 0] = "01522045009000"; // TOF \sigma = -2 3
-      cutarray[ 1] = "502000104209297002322000000"; mesonCutArray[ 1] = "01522085009000"; // alpha central 0.6 (8), peripher 0.75 (5) 
-      cutarray[ 2] = "502000104209297002322000000"; mesonCutArray[ 2] = "01522005009000"; // alpha central 0.7 (0), peripher 0.85 (7) 
-      cutarray[ 3] = "548000104209297004322000000"; mesonCutArray[ 3] = "01522065009000"; // TOF \sigma = -2 3
-      cutarray[ 4] = "548000104209297002322000000"; mesonCutArray[ 4] = "01522055009000"; // alpha central 0.6 (8), peripher 0.75 (5) 
-   } else if (trainConfig == 54) { // CutStudies martin: 
-      cutarray[ 0] = "502000204209297004322000000"; mesonCutArray[ 0] = "01522045009000"; // TOF \sigma = -2 3
-      cutarray[ 1] = "502000204209297002322000000"; mesonCutArray[ 1] = "01522085009000"; // alpha central 0.6 (8), peripher 0.75 (5) 
-      cutarray[ 2] = "502000204209297002322000000"; mesonCutArray[ 2] = "01522005009000"; // alpha central 0.7 (0), peripher 0.85 (7) 
-      cutarray[ 3] = "548000204209297004322000000"; mesonCutArray[ 3] = "01522065009000"; // TOF \sigma = -2 3
-      cutarray[ 4] = "548000204209297002322000000"; mesonCutArray[ 4] = "01522055009000"; // alpha central 0.6 (8), peripher 0.75 (5) 
-   } else if (trainConfig == 55) { // CutStudies martin: 
-      cutarray[ 0] = "502000104209297002382000000"; mesonCutArray[ 0] = "01522045009000"; // chi2 < 20 
-      cutarray[ 1] = "502000104209297002312000000"; mesonCutArray[ 1] = "01522045009000"; // chi2 < 50 (1),
-      cutarray[ 2] = "502000104209297002322000000"; mesonCutArray[ 2] = "01522045009000"; // alpha central 0.7 (0), peripher 0.85 (7) 
-      cutarray[ 3] = "548000104209297002382000000"; mesonCutArray[ 3] = "01522065009000"; // chi2 < 20 
-      cutarray[ 4] = "512000104209297002312000000"; mesonCutArray[ 4] = "01522065009000"; // chi2 < 50 (1),
-   } else if (trainConfig == 56) { // CutStudies martin: 
-      cutarray[ 0] = "502000204209297002382000000"; mesonCutArray[ 0] = "01522045009000"; // chi2 < 20 
-      cutarray[ 1] = "502000204209297002312000000"; mesonCutArray[ 1] = "01522045009000"; // chi2 < 50 (1),
-      cutarray[ 2] = "502000204209297002322000000"; mesonCutArray[ 2] = "01522045009000"; // alpha central 0.7 (0), peripher 0.85 (7) 
-      cutarray[ 3] = "548000204209297002382000000"; mesonCutArray[ 3] = "01522065009000"; // chi2 < 20 
-      cutarray[ 4] = "512000204209297002312000000"; mesonCutArray[ 4] = "01522065009000"; // chi2 < 50 (1),
-   } else if (trainConfig == 57) { // CutStudies martin: 
-      cutarray[ 0] = "548000104209197002322200000"; mesonCutArray[ 0] = "01522065009000"; // dE/dx E varied to \sigma < +-5 
-      cutarray[ 1] = "548000104208297002322000000"; mesonCutArray[ 1] = "01522065009000"; // cluster 0.35 
-      cutarray[ 2] = "548000104209297002222000000"; mesonCutArray[ 2] = "01522065009000"; // qt < 0.07
-      cutarray[ 3] = "548000104209297003322000000"; mesonCutArray[ 3] = "01522065009000";  // TOF \sigma = -3 5
-      cutarray[ 4] = "548000104209297002322000000"; mesonCutArray[ 4] = "01522075009000"; // alpha central 0.7 (0), peripher 0.85 (7) 
-   } else if (trainConfig == 58) { // CutStudies martin:    
-      cutarray[ 0] = "548000204209197002322200000"; mesonCutArray[ 0] = "01522065009000"; // dE/dx E varied to \sigma < +-5 
-      cutarray[ 1] = "548000204208297002322000000"; mesonCutArray[ 1] = "01522065009000"; // cluster 0.35 
-      cutarray[ 2] = "548000204209297002222000000"; mesonCutArray[ 2] = "01522065009000"; // qt < 0.07
-      cutarray[ 3] = "548000204209297003322000000"; mesonCutArray[ 3] = "01522065009000";  // TOF \sigma = -3 5
-      cutarray[ 4] = "548000204209297002322000000"; mesonCutArray[ 4] = "01522075009000"; // alpha central 0.7 (0), peripher 0.85 (7) 
-      
+      cutarray[ 0] = "5240002042092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
+      cutarray[ 1] = "5460002042092970023220000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
+      cutarray[ 2] = "5680002042092970023220000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
+      cutarray[ 3] = "5480002042092970023220000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
+      cutarray[ 4] = "5490002042092970023220000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
+   } else if (trainConfig == 5){ // R-minCut 7.5 cm
+      cutarray[ 0] = "6010001049092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
+      cutarray[ 1] = "6120001049092970023220000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
+      cutarray[ 2] = "5010001049092970023220000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
+      cutarray[ 3] = "5120001049092970023220000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
+      cutarray[ 4] = "5020001049092970023220000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
+   } else if (trainConfig == 6) { // R-minCut 7.5 cm
+      cutarray[ 0] = "5240001049092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
+      cutarray[ 1] = "5460001049092970023220000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
+      cutarray[ 2] = "5680001049092970023220000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
+      cutarray[ 3] = "5480001049092970023220000000"; mesonCutArray[ 3] = "01522065009000"; // 40-80%
+      cutarray[ 4] = "5490001049092970023220000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
+   } else if (trainConfig == 7) {// R-minCut 7.5 cm
+      cutarray[ 0] = "6010002049092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
+      cutarray[ 1] = "6120002049092970023220000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
+      cutarray[ 2] = "5010002049092970023220000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
+      cutarray[ 3] = "5120002049092970023220000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
+      cutarray[ 4] = "5020002049092970023220000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
+   } else if (trainConfig == 8) { // R-minCut 7.5 cm
+      cutarray[ 0] = "5240002040092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
+      cutarray[ 1] = "5460002049092970023220000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
+      cutarray[ 2] = "5680002049092970023220000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
+      cutarray[ 3] = "5480002049092970023220000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
+      cutarray[ 4] = "5490002049092970023220000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%   
+   } else if (trainConfig == 9){ // R-minCut 12.5 cm
+      cutarray[ 0] = "6010001048092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
+      cutarray[ 1] = "6120001048092970023220000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
+      cutarray[ 2] = "5010001048092970023220000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
+      cutarray[ 3] = "5120001048092970023220000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
+      cutarray[ 4] = "5020001048092970023220000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
+   } else if (trainConfig == 10) { // R-minCut 12.5 cm
+      cutarray[ 0] = "5240001048092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
+      cutarray[ 1] = "5460001048092970023220000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
+      cutarray[ 2] = "5680001048092970023220000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
+      cutarray[ 3] = "5480001048092970023220000000"; mesonCutArray[ 3] = "01522065009000"; // 40-80%
+      cutarray[ 4] = "5490001048092970023220000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
+   } else if (trainConfig == 11) {// R-minCut 12.5 cm
+      cutarray[ 0] = "6010002048092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
+      cutarray[ 1] = "6120002048092970023220000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
+      cutarray[ 2] = "5010002048092970023220000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
+      cutarray[ 3] = "5120002048092970023220000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
+      cutarray[ 4] = "5020002048092970023220000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
+   } else if (trainConfig == 12) { // R-minCut 12.5 cm
+      cutarray[ 0] = "5240002040092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
+      cutarray[ 1] = "5460002048092970023220000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
+      cutarray[ 2] = "5680002048092970023220000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
+      cutarray[ 3] = "5480002048092970023220000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
+      cutarray[ 4] = "5490002048092970023220000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%      
+   } else  if (trainConfig == 13){ // eta 0.65 (new standard), y = 0.6 (new Standard)
+      cutarray[ 0] = "6010001032092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
+      cutarray[ 1] = "6120001032092970023220000000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
+      cutarray[ 2] = "5010001032092970023220000000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
+      cutarray[ 3] = "5120001032092970023220000000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
+      cutarray[ 4] = "5020001032092970023220000000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
+   } else if (trainConfig == 14) {  // eta 0.65 (new standard), y = 0.6 (new Standard)
+      cutarray[ 0] = "5240001032092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
+      cutarray[ 1] = "5460001032092970023220000000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
+      cutarray[ 2] = "5680001032092970023220000000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
+      cutarray[ 3] = "5480001032092970023220000000"; mesonCutArray[ 3] = "01523065009000"; // 40-80%
+      cutarray[ 4] = "5490001032092970023220000000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
+   } else if (trainConfig == 15) { // eta 0.65 (new standard), y = 0.6 (new Standard) cuts only added signals
+      cutarray[ 0] = "6010002032092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
+      cutarray[ 1] = "6120002032092970023220000000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
+      cutarray[ 2] = "5010002032092970023220000000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
+      cutarray[ 3] = "5120002032092970023220000000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
+      cutarray[ 4] = "5020002032092970023220000000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
+   } else if (trainConfig == 16) { // eta 0.65 (new standard), y = 0.6 (new Standard) cuts only added signals
+      cutarray[ 0] = "5240002032092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
+      cutarray[ 1] = "5460002032092970023220000000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
+      cutarray[ 2] = "5680002032092970023220000000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
+      cutarray[ 3] = "5480002032092970023220000000"; mesonCutArray[ 3] = "01523065009000"; // 20-40% 
+      cutarray[ 4] = "5490002032092970023220000000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
+   } else  if (trainConfig == 17){ // eta 0.6, y = 0.6 (new Standard)
+      cutarray[ 0] = "6010001012092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
+      cutarray[ 1] = "6120001012092970023220000000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
+      cutarray[ 2] = "5010001012092970023220000000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
+      cutarray[ 3] = "5120001012092970023220000000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
+      cutarray[ 4] = "5020001012092970023220000000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
+   } else if (trainConfig == 18) {  // eta 0.6, y = 0.6 (new Standard)
+      cutarray[ 0] = "5240001012092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
+      cutarray[ 1] = "5460001012092970023220000000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
+      cutarray[ 2] = "5680001012092970023220000000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
+      cutarray[ 3] = "5480001012092970023220000000"; mesonCutArray[ 3] = "01523065009000"; // 40-80%
+      cutarray[ 4] = "5490001012092970023220000000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
+   } else if (trainConfig == 19) { // eta 0.6, y = 0.6 (new Standard) cuts only added signals
+      cutarray[ 0] = "6010002012092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
+      cutarray[ 1] = "6120002012092970023220000000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
+      cutarray[ 2] = "5010002012092970023220000000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
+      cutarray[ 3] = "5120002012092970023220000000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
+      cutarray[ 4] = "5020002012092970023220000000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
+   } else if (trainConfig == 20) { // eta 0.6, y = 0.6 (new Standard) cuts only added signals
+      cutarray[ 0] = "5240002012092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
+      cutarray[ 1] = "5460002012092970023220000000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
+      cutarray[ 2] = "5680002012092970023220000000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
+      cutarray[ 3] = "5480002012092970023220000000"; mesonCutArray[ 3] = "01523065009000"; // 20-40% 
+      cutarray[ 4] = "5490002012092970023220000000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
+   } else  if (trainConfig == 21){ // eta 0.7, y = 0.6 (new Standard)
+      cutarray[ 0] = "6010001072092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
+      cutarray[ 1] = "6120001072092970023220000000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
+      cutarray[ 2] = "5010001072092970023220000000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
+      cutarray[ 3] = "5120001072092970023220000000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
+      cutarray[ 4] = "5020001072092970023220000000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
+   } else if (trainConfig == 22) {  // eta 0.7, y = 0.6 (new Standard)
+      cutarray[ 0] = "5240001072092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
+      cutarray[ 1] = "5460001072092970023220000000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
+      cutarray[ 2] = "5680001072092970023220000000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
+      cutarray[ 3] = "5480001072092970023220000000"; mesonCutArray[ 3] = "01523065009000"; // 40-80%
+      cutarray[ 4] = "5490001072092970023220000000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
+   } else if (trainConfig == 23) { // eta 0.7, y = 0.6 (new Standard) cuts only added signals
+      cutarray[ 0] = "6010002072092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
+      cutarray[ 1] = "6120002072092970023220000000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
+      cutarray[ 2] = "5010002072092970023220000000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
+      cutarray[ 3] = "5120002072092970023220000000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
+      cutarray[ 4] = "5020002072092970023220000000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
+   } else if (trainConfig == 24) { // eta 0.7, y = 0.6 (new Standard) cuts only added signals
+      cutarray[ 0] = "5240002072092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
+      cutarray[ 1] = "5460002072092970023220000000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
+      cutarray[ 2] = "5680002072092970023220000000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
+      cutarray[ 3] = "5480002072092970023220000000"; mesonCutArray[ 3] = "01523065009000"; // 20-40% 
+      cutarray[ 4] = "5490002072092970023220000000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
+   } else  if (trainConfig == 25){ // eta 0.5, y = 0.6 (new Standard)
+      cutarray[ 0] = "6010001052092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
+      cutarray[ 1] = "6120001052092970023220000000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
+      cutarray[ 2] = "5010001052092970023220000000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
+      cutarray[ 3] = "5120001052092970023220000000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
+      cutarray[ 4] = "5020001052092970023220000000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
+   } else if (trainConfig == 26) {  // eta 0.5, y = 0.6 (new Standard)
+      cutarray[ 0] = "5240001052092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
+      cutarray[ 1] = "5460001052092970023220000000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
+      cutarray[ 2] = "5680001052092970023220000000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
+      cutarray[ 3] = "5480001052092970023220000000"; mesonCutArray[ 3] = "01523065009000"; // 40-80%
+      cutarray[ 4] = "5490001052092970023220000000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
+   } else if (trainConfig == 27) { // eta 0.5, y = 0.6 (new Standard) cuts only added signals
+      cutarray[ 0] = "6010002052092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
+      cutarray[ 1] = "6120002052092970023220000000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
+      cutarray[ 2] = "5010002052092970023220000000"; mesonCutArray[ 2] = "01523045009000"; // 0-10%
+      cutarray[ 3] = "5120002052092970023220000000"; mesonCutArray[ 3] = "01523045009000"; // 10-20%
+      cutarray[ 4] = "5020002052092970023220000000"; mesonCutArray[ 4] = "01523045009000"; // 0-20%
+   } else if (trainConfig == 28) { // eta 0.5, y = 0.6 (new Standard) cuts only added signals
+      cutarray[ 0] = "5240002052092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
+      cutarray[ 1] = "5460002052092970023220000000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
+      cutarray[ 2] = "5680002052092970023220000000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
+      cutarray[ 3] = "5480002052092970023220000000"; mesonCutArray[ 3] = "01523065009000"; // 20-40% 
+      cutarray[ 4] = "5490002052092970023220000000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
+   } else  if (trainConfig == 29){ // eta 0.65 (new standard), y = 0.6 (new Standard) pt dependent alpha
+      cutarray[ 0] = "6010001032092970023220000000"; mesonCutArray[ 0] = "01523015009000"; // 0-5%
+      cutarray[ 1] = "6120001032092970023220000000"; mesonCutArray[ 1] = "01523015009000"; // 5-10%
+      cutarray[ 2] = "5010001032092970023220000000"; mesonCutArray[ 2] = "01523015009000"; // 0-10%
+      cutarray[ 3] = "5120001032092970023220000000"; mesonCutArray[ 3] = "01523015009000"; // 10-20%
+      cutarray[ 4] = "5020001032092970023220000000"; mesonCutArray[ 4] = "01523015009000"; // 0-20%
+   } else if (trainConfig == 30) {  // eta 0.65 (new standard), y = 0.6 (new Standard) pt dependent alpha
+      cutarray[ 0] = "5240001032092970023220000000"; mesonCutArray[ 0] = "01523015009000"; // 20-40%
+      cutarray[ 1] = "5460001032092970023220000000"; mesonCutArray[ 1] = "01523025009000"; // 40-60%
+      cutarray[ 2] = "5680001032092970023220000000"; mesonCutArray[ 2] = "01523025009000"; // 60-80%
+      cutarray[ 3] = "5480001032092970023220000000"; mesonCutArray[ 3] = "01523025009000"; // 40-80%
+      cutarray[ 4] = "5490001032092970023220000000"; mesonCutArray[ 4] = "01523025009000"; // 40-90%
+   } else if (trainConfig == 31) { // eta 0.65 (new standard), y = 0.6 (new Standard) cuts only added signals, pt dependent alpha
+      cutarray[ 0] = "6010002032092970023220000000"; mesonCutArray[ 0] = "01523015009000"; // 0-5%
+      cutarray[ 1] = "6120002032092970023220000000"; mesonCutArray[ 1] = "01523015009000"; // 5-10%
+      cutarray[ 2] = "5010002032092970023220000000"; mesonCutArray[ 2] = "01523015009000"; // 0-10%
+      cutarray[ 3] = "5120002032092970023220000000"; mesonCutArray[ 3] = "01523015009000"; // 10-20%
+      cutarray[ 4] = "5020002032092970023220000000"; mesonCutArray[ 4] = "01523015009000"; // 0-20%
+   } else if (trainConfig == 32) { // eta 0.65 (new standard), y = 0.6 (new Standard) cuts only added signals, pt dependent alpha
+      cutarray[ 0] = "5240002032092970023220000000"; mesonCutArray[ 0] = "01523015009000"; // 20-40%
+      cutarray[ 1] = "5460002032092970023220000000"; mesonCutArray[ 1] = "01523025009000"; // 40-60%
+      cutarray[ 2] = "5680002032092970023220000000"; mesonCutArray[ 2] = "01523025009000"; // 60-80%
+      cutarray[ 3] = "5480002032092970023220000000"; mesonCutArray[ 3] = "01523025009000"; // 20-40% 
+      cutarray[ 4] = "5490002032092970023220000000"; mesonCutArray[ 4] = "01523025009000"; // 40-90%
+   } else if (trainConfig == 33){ // Standard cuts, eta 0.9, only to be run on data
+      cutarray[ 0] = "6010001002092970023220000000"; mesonCutArray[ 0] = "01525045009000"; // 0-5%
+      cutarray[ 1] = "6120001002092970023220000000"; mesonCutArray[ 1] = "01525045009000"; // 5-10%
+      cutarray[ 2] = "5010001002092970023220000000"; mesonCutArray[ 2] = "01525045009000"; // 0-10%
+      cutarray[ 3] = "5120001002092970023220000000"; mesonCutArray[ 3] = "01525045009000"; // 10-20%
+      cutarray[ 4] = "5020001002092970023220000000"; mesonCutArray[ 4] = "01525045009000"; // 0-20%
+   } else if (trainConfig == 34) { // Standard cuts, eta 0.9, only to be run on data
+      cutarray[ 0] = "5240001002092970023220000000"; mesonCutArray[ 0] = "01525045009000"; // 20-40%
+      cutarray[ 1] = "5460001002092970023220000000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
+      cutarray[ 2] = "5680001002092970023220000000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
+      cutarray[ 3] = "5480001002092970023220000000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
+      cutarray[ 4] = "5350001002092970023220000000"; mesonCutArray[ 4] = "01525065009000"; // 40-90%   
+   } else if (trainConfig == 35){ // Standard cuts, eta 1.4, only to be run on data
+      cutarray[ 0] = "6010001022092970023220000000"; mesonCutArray[ 0] = "01520045009000"; // 0-5%
+      cutarray[ 1] = "6120001022092970023220000000"; mesonCutArray[ 1] = "01520045009000"; // 5-10%
+      cutarray[ 2] = "5010001022092970023220000000"; mesonCutArray[ 2] = "01520045009000"; // 0-10%
+      cutarray[ 3] = "5120001022092970023220000000"; mesonCutArray[ 3] = "01520045009000"; // 10-20%
+      cutarray[ 4] = "5020001022092970023220000000"; mesonCutArray[ 4] = "01520045009000"; // 0-20%
+   } else if (trainConfig == 36) { // Standard cuts, eta 1.4, only to be run on data
+      cutarray[ 0] = "5240001022092970023220000000"; mesonCutArray[ 0] = "01520045009000"; // 20-40%
+      cutarray[ 1] = "5460001022092970023220000000"; mesonCutArray[ 1] = "01520065009000"; // 40-60%
+      cutarray[ 2] = "5680001022092970023220000000"; mesonCutArray[ 2] = "01520065009000"; // 60-80%
+      cutarray[ 3] = "5480001022092970023220000000"; mesonCutArray[ 3] = "01520065009000"; // 40-80%
+      cutarray[ 4] = "5350001022092970023220000000"; mesonCutArray[ 4] = "01520065009000"; // 40-90%   
+   } else if (trainConfig == 37){ // Standard cuts, eta 0.9, only to be run on data : kMB
+      cutarray[ 0] = "6014001002092970023220000000"; mesonCutArray[ 0] = "01525045009000"; // 0-5%
+      cutarray[ 1] = "6124001002092970023220000000"; mesonCutArray[ 1] = "01525045009000"; // 5-10%
+      cutarray[ 2] = "5014001002092970023220000000"; mesonCutArray[ 2] = "01525045009000"; // 0-10%
+      cutarray[ 3] = "5124001002092970023220000000"; mesonCutArray[ 3] = "01525045009000"; // 10-20%
+      cutarray[ 4] = "5024001002092970023220000000"; mesonCutArray[ 4] = "01525045009000"; // 0-20%
+   } else if (trainConfig == 38) { // Standard cuts, eta 0.9, only to be run on data : kMB
+      cutarray[ 0] = "5244001002092970023220000000"; mesonCutArray[ 0] = "01525045009000"; // 20-40%
+      cutarray[ 1] = "5464001002092970023220000000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
+      cutarray[ 2] = "5684001002092970023220000000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
+      cutarray[ 3] = "5484001002092970023220000000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
+      cutarray[ 4] = "5354001002092970023220000000"; mesonCutArray[ 4] = "01525065009000"; // 40-90%   
+   } else if (trainConfig == 39){ // Standard cuts, eta 0.9, only to be run on data :kCentral
+      cutarray[ 0] = "6015001002092970023220000000"; mesonCutArray[ 0] = "01525045009000"; // 0-5%
+      cutarray[ 1] = "6125001002092970023220000000"; mesonCutArray[ 1] = "01525045009000"; // 5-10%
+      cutarray[ 2] = "5015001002092970023220000000"; mesonCutArray[ 2] = "01525045009000"; // 0-10%
+      cutarray[ 3] = "5125001002092970023220000000"; mesonCutArray[ 3] = "01525045009000"; // 10-20%
+      cutarray[ 4] = "5025001002092970023220000000"; mesonCutArray[ 4] = "01525045009000"; // 0-20%
+   } else if (trainConfig == 40) { // Standard cuts, eta 0.9, only to be run on data : kCentral
+      cutarray[ 0] = "5245001002092970023220000000"; mesonCutArray[ 0] = "01525045009000"; // 20-40%
+      cutarray[ 1] = "5465001002092970023220000000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
+      cutarray[ 2] = "5685001002092970023220000000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
+      cutarray[ 3] = "5485001002092970023220000000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
+      cutarray[ 4] = "5355001002092970023220000000"; mesonCutArray[ 4] = "01525065009000"; // 40-90%   
+   } else if (trainConfig == 41){ // Standard cuts, eta 0.9, only to be run on data :kSemiCentral
+      cutarray[ 0] = "6016001002092970023220000000"; mesonCutArray[ 0] = "01525045009000"; // 0-5%
+      cutarray[ 1] = "6126001002092970023220000000"; mesonCutArray[ 1] = "01525045009000"; // 5-10%
+      cutarray[ 2] = "5016001002092970023220000000"; mesonCutArray[ 2] = "01525045009000"; // 0-10%
+      cutarray[ 3] = "5126001002092970023220000000"; mesonCutArray[ 3] = "01525045009000"; // 10-20%
+      cutarray[ 4] = "5026001002092970023220000000"; mesonCutArray[ 4] = "01525045009000"; // 0-20%
+   } else if (trainConfig == 42) { // Standard cuts, eta 0.9, only to be run on data :kSemiCentral
+      cutarray[ 0] = "5236001002092970023220000000"; mesonCutArray[ 0] = "01525065009000"; 
+      cutarray[ 1] = "5346001002092970023220000000"; mesonCutArray[ 1] = "01525065009000"; 
+      cutarray[ 2] = "5456001002092970023220000000"; mesonCutArray[ 2] = "01525065009000"; 
+      cutarray[ 3] = "5566001002092970023220000000"; mesonCutArray[ 3] = "01525065009000"; 
+      cutarray[ 4] = "5676001002092970023220000000"; mesonCutArray[ 4] = "01525065009000"; 
+   } else if (trainConfig == 43){ // Standard cuts, eta 0.9, only to be run on data
+      cutarray[ 0] = "5230001002092970023220000000"; mesonCutArray[ 0] = "01525045009000"; 
+      cutarray[ 1] = "5340001002092970023220000000"; mesonCutArray[ 1] = "01525065009000"; 
+      cutarray[ 2] = "5450001002092970023220000000"; mesonCutArray[ 2] = "01525065009000"; 
+      cutarray[ 3] = "5560001002092970023220000000"; mesonCutArray[ 3] = "01525065009000"; 
+      cutarray[ 4] = "5670001002092970023220000000"; mesonCutArray[ 4] = "01525065009000"; 
+   } else if ( trainConfig == 44){ // qt elipse cut 0.05
+      cutarray[ 0] = "6010001002092970028220000000"; mesonCutArray[ 0] = "01525065009000"; // 0-5%
+      cutarray[ 1] = "6120001002092970028220000000"; mesonCutArray[ 1] = "01525065009000"; // 5-10%
+      cutarray[ 2] = "5010001002092970028220000000"; mesonCutArray[ 2] = "01525065009000"; // 0-10%
+      cutarray[ 3] = "5120001002092970028220000000"; mesonCutArray[ 3] = "01525065009000"; // 10-20%
+      cutarray[ 4] = "5020001002092970028220000000"; mesonCutArray[ 4] = "01525065009000"; // 0-20%
+   } else if ( trainConfig == 45) { // qt elipse cut 0.05
+      cutarray[ 0] = "5240001002092970028220000000"; mesonCutArray[ 0] = "01525065009000"; // 20-40%
+      cutarray[ 1] = "5460001002092970028220000000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
+      cutarray[ 2] = "5680001002092970028220000000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
+      cutarray[ 3] = "5480001002092970028220000000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
+      cutarray[ 4] = "5350001002092970028220000000"; mesonCutArray[ 4] = "01525065009000"; // 30-50%  
+   } else if ( trainConfig == 46){ // qt elipse cut 0.05
+      cutarray[ 0] = "5230001002092970028220000000"; mesonCutArray[ 0] = "01525065009000"; // 20-30% 
+      cutarray[ 1] = "5340001002092970028220000000"; mesonCutArray[ 1] = "01525065009000"; // 30-40% 
+      cutarray[ 2] = "5450001002092970028220000000"; mesonCutArray[ 2] = "01525065009000"; // 40-50% 
+      cutarray[ 3] = "5560001002092970028220000000"; mesonCutArray[ 3] = "01525065009000"; // 50-60% 
+      cutarray[ 4] = "5670001002092970028220000000"; mesonCutArray[ 4] = "01525065009000"; // 60-70% 
+   } else if ( trainConfig == 47){ // cos(theta_point) cut 0.85
+      cutarray[ 0] = "6010001002092970023220400000"; mesonCutArray[ 0] = "01525065009000"; // 0-5%
+      cutarray[ 1] = "6120001002092970023220400000"; mesonCutArray[ 1] = "01525065009000"; // 5-10%
+      cutarray[ 2] = "5010001002092970023220400000"; mesonCutArray[ 2] = "01525065009000"; // 0-10%
+      cutarray[ 3] = "5120001002092970023220400000"; mesonCutArray[ 3] = "01525065009000"; // 10-20%
+      cutarray[ 4] = "5020001002092970023220400000"; mesonCutArray[ 4] = "01525065009000"; // 0-20%
+   } else if ( trainConfig == 48) { // cos(theta_point) cut 0.85
+      cutarray[ 0] = "5240001002092970023220400000"; mesonCutArray[ 0] = "01525065009000"; // 20-40%
+      cutarray[ 1] = "5460001002092970023220400000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
+      cutarray[ 2] = "5680001002092970023220400000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
+      cutarray[ 3] = "5480001002092970023220400000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
+      cutarray[ 4] = "5350001002092970023220400000"; mesonCutArray[ 4] = "01525065009000"; // 30-50%  
+   } else if ( trainConfig == 49){ // cos(theta_point) cut 0.85
+      cutarray[ 0] = "5230001002092970023220400000"; mesonCutArray[ 0] = "01525065009000"; // 20-30% 
+      cutarray[ 1] = "5340001002092970023220400000"; mesonCutArray[ 1] = "01525065009000"; // 30-40% 
+      cutarray[ 2] = "5450001002092970023220400000"; mesonCutArray[ 2] = "01525065009000"; // 40-50% 
+      cutarray[ 3] = "5560001002092970023220400000"; mesonCutArray[ 3] = "01525065009000"; // 50-60% 
+      cutarray[ 4] = "5670001002092970023220400000"; mesonCutArray[ 4] = "01525065009000"; // 60-70% 
+   } else if ( trainConfig == 50){ // psi pair 2D 0.05
+      cutarray[ 0] = "6010001002092970023260000000"; mesonCutArray[ 0] = "01525065009000"; // 0-5%
+      cutarray[ 1] = "6120001002092970023260000000"; mesonCutArray[ 1] = "01525065009000"; // 5-10%
+      cutarray[ 2] = "5010001002092970023260000000"; mesonCutArray[ 2] = "01525065009000"; // 0-10%
+      cutarray[ 3] = "5120001002092970023260000000"; mesonCutArray[ 3] = "01525065009000"; // 10-20%
+      cutarray[ 4] = "5020001002092970023260000000"; mesonCutArray[ 4] = "01525065009000"; // 0-20%
+   } else if ( trainConfig == 51) { // psi pair 2D 0.05
+      cutarray[ 0] = "5240001002092970023260000000"; mesonCutArray[ 0] = "01525065009000"; // 20-40%
+      cutarray[ 1] = "5460001002092970023260000000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
+      cutarray[ 2] = "5680001002092970023260000000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
+      cutarray[ 3] = "5480001002092970023260000000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
+      cutarray[ 4] = "5350001002092970023260000000"; mesonCutArray[ 4] = "01525065009000"; // 30-50%  
+   } else if ( trainConfig == 52){ // psi pair 2D 0.05
+      cutarray[ 0] = "5230001002092970023260000000"; mesonCutArray[ 0] = "01525065009000"; // 20-30% 
+      cutarray[ 1] = "5340001002092970023260000000"; mesonCutArray[ 1] = "01525065009000"; // 30-40% 
+      cutarray[ 2] = "5450001002092970023260000000"; mesonCutArray[ 2] = "01525065009000"; // 40-50% 
+      cutarray[ 3] = "5560001002092970023260000000"; mesonCutArray[ 3] = "01525065009000"; // 50-60% 
+      cutarray[ 4] = "5670001002092970023260000000"; mesonCutArray[ 4] = "01525065009000"; // 60-70%       
+   } else if ( trainConfig == 53){ // psi pair 2D 0.1
+      cutarray[ 0] = "6010001002092970023250000000"; mesonCutArray[ 0] = "01525065009000"; // 0-5%
+      cutarray[ 1] = "6120001002092970023250000000"; mesonCutArray[ 1] = "01525065009000"; // 5-10%
+      cutarray[ 2] = "5010001002092970023250000000"; mesonCutArray[ 2] = "01525065009000"; // 0-10%
+      cutarray[ 3] = "5120001002092970023250000000"; mesonCutArray[ 3] = "01525065009000"; // 10-20%
+      cutarray[ 4] = "5020001002092970023250000000"; mesonCutArray[ 4] = "01525065009000"; // 0-20%
+   } else if ( trainConfig == 54) { // psi pair 2D 0.1
+      cutarray[ 0] = "5240001002092970023250000000"; mesonCutArray[ 0] = "01525065009000"; // 20-40%
+      cutarray[ 1] = "5460001002092970023250000000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
+      cutarray[ 2] = "5680001002092970023250000000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
+      cutarray[ 3] = "5480001002092970023250000000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
+      cutarray[ 4] = "5350001002092970023250000000"; mesonCutArray[ 4] = "01525065009000"; // 30-50%  
+   } else if ( trainConfig == 55){ // psi pair 2D 0.1
+      cutarray[ 0] = "5230001002092970023250000000"; mesonCutArray[ 0] = "01525065009000"; // 20-30% 
+      cutarray[ 1] = "5340001002092970023250000000"; mesonCutArray[ 1] = "01525065009000"; // 30-40% 
+      cutarray[ 2] = "5450001002092970023250000000"; mesonCutArray[ 2] = "01525065009000"; // 40-50% 
+      cutarray[ 3] = "5560001002092970023250000000"; mesonCutArray[ 3] = "01525065009000"; // 50-60% 
+      cutarray[ 4] = "5670001002092970023250000000"; mesonCutArray[ 4] = "01525065009000"; // 60-70%          
+   } else if ( trainConfig == 56){ // cleaner cuts
+      cutarray[ 0] = "6010001002092970028250400000"; mesonCutArray[ 0] = "01525065009000"; // 0-5%
+      cutarray[ 1] = "6120001002092970028250400000"; mesonCutArray[ 1] = "01525065009000"; // 5-10%
+      cutarray[ 2] = "5010001002092970028250400000"; mesonCutArray[ 2] = "01525065009000"; // 0-10%
+      cutarray[ 3] = "5120001002092970028250400000"; mesonCutArray[ 3] = "01525065009000"; // 10-20%
+      cutarray[ 4] = "5020001002092970028250400000"; mesonCutArray[ 4] = "01525065009000"; // 0-20%
+   } else if ( trainConfig == 57) { // cleaner cuts
+      cutarray[ 0] = "5240001002092970028250400000"; mesonCutArray[ 0] = "01525065009000"; // 20-40%
+      cutarray[ 1] = "5460001002092970028250400000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
+      cutarray[ 2] = "5680001002092970028250400000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
+      cutarray[ 3] = "5480001002092970028250400000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
+      cutarray[ 4] = "5350001002092970028250400000"; mesonCutArray[ 4] = "01525065009000"; // 30-50%  
+   } else if ( trainConfig == 58){ // cleaner cuts
+      cutarray[ 0] = "5230001002092970028250400000"; mesonCutArray[ 0] = "01525065009000"; // 20-30% 
+      cutarray[ 1] = "5340001002092970028250400000"; mesonCutArray[ 1] = "01525065009000"; // 30-40% 
+      cutarray[ 2] = "5450001002092970028250400000"; mesonCutArray[ 2] = "01525065009000"; // 40-50% 
+      cutarray[ 3] = "5560001002092970028250400000"; mesonCutArray[ 3] = "01525065009000"; // 50-60% 
+      cutarray[ 4] = "5670001002092970028250400000"; mesonCutArray[ 4] = "01525065009000"; // 60-70%                
    } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
@@ -466,46 +465,58 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
 
    for(Int_t i = 0; i<numberOfCuts; i++){
       analysisCuts[i] = new AliConversionCuts();
-      if (trainConfig == 1 ||trainConfig == 5 || trainConfig == 9 || trainConfig == 13 || trainConfig == 17 || trainConfig == 21 || trainConfig == 25 || trainConfig == 29 || trainConfig == 33 || trainConfig == 37 || trainConfig == 41 ){
+      if (trainConfig == 1 ||trainConfig == 5 || trainConfig == 9 || trainConfig == 13 || trainConfig == 17 || trainConfig == 21 || trainConfig == 25 || trainConfig == 29 ){ //|| trainConfig == 33 || trainConfig == 37 || trainConfig == 41 
          if (i == 0 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_0005TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0005V0M");
          if (i == 1 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_0510TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0510V0M");
          if (i == 2 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_0010TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0010V0M");
          if (i == 3 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_1020TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_1020V0M");
          if (i == 4 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_0020TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0020V0M");
-      } else if (trainConfig == 2 ||trainConfig == 6 || trainConfig == 10 || trainConfig == 14 || trainConfig == 18 || trainConfig == 22 || trainConfig == 26 || trainConfig == 30 || trainConfig == 34 || trainConfig == 38 || trainConfig == 42 ){ 
+      } else if (trainConfig == 2 ||trainConfig == 6 || trainConfig == 10 || trainConfig == 14 || trainConfig == 18 || trainConfig == 22 || trainConfig == 26 || trainConfig == 30  ){ //|| trainConfig == 34 || trainConfig == 38 || trainConfig == 42
         if (i == 0 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
         if (i == 1 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_4060TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4060V0M");
         if (i == 2 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_6080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_6080V0M");
         if (i == 3 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
-      } else if (trainConfig == 3 ||trainConfig == 7 || trainConfig == 11 || trainConfig == 15 || trainConfig == 19 || trainConfig == 23 || trainConfig == 27 || trainConfig == 31 || trainConfig == 35 || trainConfig == 39 || trainConfig == 43 ){
+      } else if (trainConfig == 3 ||trainConfig == 7 || trainConfig == 11 || trainConfig == 15 || trainConfig == 19 || trainConfig == 23 || trainConfig == 27 || trainConfig == 31 ){ //|| trainConfig == 35 || trainConfig == 39 || trainConfig == 43 
          if (i == 0 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_0005TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0005V0M");
          if (i == 1 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_0510TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0510V0M");
          if (i == 2 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_0010TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0010V0M");
          if (i == 3 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_1020TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_1020V0M");
           if (i == 0 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_0020TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0020V0M");
-      } else if (trainConfig == 4 ||trainConfig == 8 || trainConfig == 12 || trainConfig == 16 || trainConfig == 20 || trainConfig == 24 || trainConfig == 28 || trainConfig == 32 || trainConfig == 36 || trainConfig == 40 || trainConfig == 44 ){ 
+      } else if (trainConfig == 4 ||trainConfig == 8 || trainConfig == 12 || trainConfig == 16 || trainConfig == 20 || trainConfig == 24 || trainConfig == 28 || trainConfig == 32 ){ //|| trainConfig == 36 || trainConfig == 40 || trainConfig == 44 
         if (i == 0 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
         if (i == 1 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_4060TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4060V0M");
         if (i == 2  && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_6080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_6080V0M");
         if (i == 3 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
       }
-     if (trainConfig == 45 ||trainConfig == 47 || trainConfig == 49 || trainConfig == 51 || trainConfig == 53 || trainConfig == 55  ){
-         if ((i == 0 || i == 1 || i == 2)&& doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_0020TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0020V0M");
-         if ((i == 3 || i == 4 )&& doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
-     }
-     if (trainConfig == 46 ||trainConfig == 48 || trainConfig == 50 || trainConfig == 52 || trainConfig == 54 || trainConfig == 56  ){
-         if ((i == 0 || i == 1 || i == 2)&& doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_0020TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0020V0M");
-         if ((i == 3 || i == 4 )&& doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
-     }
-     if (trainConfig == 57  ){
-         if (doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
-     }
-     if (trainConfig == 58){
-         if (doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
-     }
+      
+      
+//      if (trainConfig == 45 ||trainConfig == 47 || trainConfig == 49 || trainConfig == 51 || trainConfig == 53 || trainConfig == 55  ){
+//          if ((i == 0 || i == 1 || i == 2)&& doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_0020TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0020V0M");
+//          if ((i == 3 || i == 4 )&& doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
+//      }
+//      if (trainConfig == 46 ||trainConfig == 48 || trainConfig == 50 || trainConfig == 52 || trainConfig == 54 || trainConfig == 56  ){
+//          if ((i == 0 || i == 1 || i == 2)&& doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_0020TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0020V0M");
+//          if ((i == 3 || i == 4 )&& doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
+//      }
+//      if (trainConfig == 57  ){
+//          if (doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
+//      }
+//      if (trainConfig == 58){
+//          if (doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
+//      }
       analysisCuts[i]->InitializeCutsFromCutString(cutarray[i].Data());
       ConvCutList->Add(analysisCuts[i]);
 
+      if (trainConfig == 37 || trainConfig == 38){
+         analysisCuts[i]->SelectSpecialTrigger(AliVEvent::kMB, "AliVEvent::kMB" );
+      }
+      if (trainConfig == 39 || trainConfig == 40){   
+         analysisCuts[i]->SelectSpecialTrigger(AliVEvent::kCentral,"AliVEvent::kCentral" );
+      }   
+      if (trainConfig == 41 || trainConfig == 42){   
+         analysisCuts[i]->SelectSpecialTrigger(AliVEvent::kSemiCentral,"AliVEvent::kSemiCentral" );
+      }   
+      
       analysisCuts[i]->SetFillCutHistograms("",kFALSE);
       analysisMesonCuts[i] = new AliConversionMesonCuts();
       analysisMesonCuts[i]->InitializeCutsFromCutString(mesonCutArray[i].Data());
@@ -518,8 +529,8 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
    task->SetMesonCutList(numberOfCuts,MesonCutList);
    task->SetMoveParticleAccordingToVertex(kTRUE);
    task->SetDoMesonAnalysis(kTRUE);
-   if (enableQAMesonTask) task->SetDoMesonQA(kTRUE); //Attention new switch for Pi0 QA
-   if (enableQAPhotonTask) task->SetDoPhotonQA(kTRUE);  //Attention new switch small for Photon QA
+   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
+   task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
 
    //connect containers
    AliAnalysisDataContainer *coutput =

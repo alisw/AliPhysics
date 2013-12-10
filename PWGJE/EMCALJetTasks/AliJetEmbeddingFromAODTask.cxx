@@ -1,4 +1,4 @@
-// $Id: AliJetEmbeddingFromAODTask.cxx $
+// $Id$
 //
 // Jet embedding from AOD task.
 //

@@ -95,7 +95,6 @@ AddTaskFMDELoss(Bool_t        mc,
     else // Anything else gives plain difference and errors in errors
       rm = AliFMDEnergyFitter::kResidualDifference;
   }
-  Printf("Got residual: \"%s\" -> %d", resi.Data(), rm);
   task->GetEnergyFitter().SetStoreResiduals(rm);
 
   // --- Set limits on fits the energy -------------------------------
@@ -110,5 +109,9 @@ AddTaskFMDELoss(Bool_t        mc,
   // --- Make the output container and connect it --------------------
   task->Connect(0,0);
 
+  Printf("Returning task %p", task);
   return task;
 }
+//
+// EOF
+//

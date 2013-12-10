@@ -43,16 +43,16 @@ public:
    * 
    * @param out    Output file name on return 
    * @param prefix Prefix of the file name 
+   */
+  static void MakeFileName(TString&        out,
+			   const TString&  prefix)
+  /*
    * @param runNo  Run Number
    * @param sys    Collision system 
    * @param sNN    Center of mass energy 
    * @param field  L3 Field 
    * @param mc     Simulations or not
    * @param sat    Satellite interactions or not 
-   */
-  static void MakeFileName(TString&        out,
-			   const TString&  prefix)
-  /*
 			   ULong_t         runNo, 
 			   UShort_t        sys, 
 			   UShort_t        sNN, 
@@ -123,7 +123,6 @@ public:
    * @param field   L3 Field 
    * @param mc      Simulations or not
    * @param sat     Satellite interactions or not 
-   * @param options Options
    * @param local   Local database file 
    */
   void Run(UShort_t    what, 
@@ -274,7 +273,6 @@ public:
    * @param field   L3 magnetic field
    * @param mc      Simulation flag
    * @param sat     Satellite interaction flag
-   * @param options Options 
    * @param local   Local storage
    */
   virtual void Summarize(UShort_t    what, 
@@ -693,8 +691,10 @@ protected:
       TDirectory* savDir = gDirectory;
       if (!gSystem->AccessPathName(fELossExtra.Data())) {
 	hists = TFile::Open(fELossExtra, "READ");
-	// Info("", "Opened forward_eloss.root -> %p", hists);
+	Info("", "Opened forward_eloss.root -> %p", hists);
       }
+      else 
+	Warning("", "Couldn't open %s", fELossExtra.Data());
       if (hists) {
 	TList* fr = static_cast<TList*>(hists->Get("ForwardELossResults"));
 	// Info("", "Got forward results -> %p", fr);
@@ -773,9 +773,10 @@ protected:
 	  // Info("", "Got detector list -> %p", dl);
 	  if (dl) { 
 	    // Info("", "Detector list: %s", dl->GetName());
-	    dists = static_cast<TList*>(dl->FindObject("EDists"));
+	    dists = static_cast<TList*>(dl->FindObject("elossDists"));
 	    // Info("", "Got distributions -> %p", dists);
-	    resis = static_cast<TList*>(dl->FindObject("residuals"));
+	    resis = static_cast<TList*>(dl->FindObject("elossResiduals"));
+	    // Info("", "Got residuals -> %p", resis);
 	  }
 	}
 	
@@ -858,6 +859,8 @@ protected:
 	}
 	if (dist) { 
 	  // Info("", "Histogram: %s", dist->GetName());
+	  dist->SetFillStyle(3001);
+	  dist->SetMarkerStyle(0);
 	  DrawInPad(drawPad, subPad, dist, "HIST E", (subPad * kGridx) + kLogy);
 	  same = true;	  
 	}

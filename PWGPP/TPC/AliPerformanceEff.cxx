@@ -120,7 +120,7 @@ void AliPerformanceEff::Init()
   //mceta:mcphi:mcpt:pid:recStatus:findable:charge
   Int_t binsEffHisto[9]={30,144,nPtBins,5,2,2,3,fgkMaxClones+1,fgkMaxFakes+1};
   Double_t minEffHisto[9]={-1.5,0.,ptMin,0.,0.,0.,-1.5,0,0};
-  Double_t maxEffHisto[9]={ 1.5,2.*TMath::Pi(), ptMax,5.,2.,2.,1.5,fgkMaxClones,fgkMaxFakes};
+  Double_t maxEffHisto[9]={ 1.5,2.*TMath::Pi(), ptMax,5.,2.,2.,1.5,fgkMaxClones+1,fgkMaxFakes+1};
 
   fEffHisto = new THnSparseF("fEffHisto","mceta:mcphi:mcpt:pid:recStatus:findable:charge:nclones:nfakes",9,binsEffHisto,minEffHisto,maxEffHisto);
   fEffHisto->SetBinEdges(2,binsPt);
@@ -139,7 +139,7 @@ void AliPerformanceEff::Init()
   //mceta:mcphi:mcpt:pid:recStatus:findable:mcR:mother_phi:mother_eta:charge
   Int_t binsEffSecHisto[12]={30,60,nPtBins,5,2,2,100,60,30,3,fgkMaxClones+1,fgkMaxFakes+1};
   Double_t minEffSecHisto[12]={-1.5,0.,ptMin,0.,0.,0.,0.,0.,-1.5,-1.5,0,0};
-  Double_t maxEffSecHisto[12]={ 1.5,2.*TMath::Pi(), ptMax,5.,2.,2.,200,2.*TMath::Pi(),1.5,1.5,fgkMaxClones,fgkMaxFakes};
+  Double_t maxEffSecHisto[12]={ 1.5,2.*TMath::Pi(), ptMax,5.,2.,2.,200,2.*TMath::Pi(),1.5,1.5,fgkMaxClones+1,fgkMaxFakes+1};
 
   fEffSecHisto = new THnSparseF("fEffSecHisto","mceta:mcphi:mcpt:pid:recStatus:findable:mcR:mother_phi:mother_eta:charge:nclones:nfakes",12,binsEffSecHisto,minEffSecHisto,maxEffSecHisto);
   fEffSecHisto->SetBinEdges(2,binsPt);

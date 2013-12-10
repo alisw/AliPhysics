@@ -40,7 +40,7 @@ class AliMCEvent;
 class AliMCEventHandler;
 class AliUEHistograms;
 class AliVParticle;
-class TH1D;
+class TH1;
 class TObjArray;
 class AliEventPoolManager;
 class AliESDEvent;
@@ -48,6 +48,7 @@ class AliHelperPID;
 class AliAnalysisUtils;
 class TFormula;
 class TMap;
+class AliGenEventHeader;
 
 
 class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
@@ -70,7 +71,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     virtual	void	SetEventMixing(Bool_t flag) { fFillMixed = flag; }
     virtual	void    SetMixingTracks(Int_t tracks) { fMixingTracks = tracks; }
     virtual	void	SetTwoTrackEfficiencyStudy(Bool_t flag) { fTwoTrackEfficiencyStudy = flag; }
-    virtual	void	SetTwoTrackEfficiencyCut(Float_t value = 0.02) { fTwoTrackEfficiencyCut = value; }
+    virtual	void	SetTwoTrackEfficiencyCut(Float_t value = 0.02, Float_t min = 0.8) { fTwoTrackEfficiencyCut = value; fTwoTrackCutMinRadius = min; }
     virtual	void	SetUseVtxAxis(Int_t flag) { fUseVtxAxis = flag; }
     virtual	void	SetCourseCentralityBinning(Bool_t flag) { fCourseCentralityBinning = flag; }
     virtual     void    SetSkipTrigger(Bool_t flag) { fSkipTrigger = flag; }
@@ -79,6 +80,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     // histogram settings
     void SetEfficiencyCorrectionTriggers(THnF* hist) { fEfficiencyCorrectionTriggers = hist; }
     void SetEfficiencyCorrectionAssociated(THnF* hist) { fEfficiencyCorrectionAssociated = hist; }
+    void SetCentralityWeights(TH1* hist) { fCentralityWeights = hist; }
 
     // for event QA
     void   SetTracksInVertex( Int_t val ){ fnTracksVertex = val; }
@@ -91,6 +93,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void   SetPtMin(Double_t val)            { fPtMin = val; }
     void   SetFilterBit( UInt_t val )        { fFilterBit = val;  }
     void   SetDCAXYCut(TFormula* value)      { fDCAXYCut = value; }
+    void   SetSharedClusterCut(Float_t value) { fSharedClusterCut = value; }
     void   SetTrackStatus(UInt_t status)     { fTrackStatus = status; }
     void   SetCheckMotherPDG(Bool_t checkpdg) { fCheckMotherPDG = checkpdg; }
     
@@ -139,6 +142,8 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void RemoveDuplicates(TObjArray* tracks);
     void CleanUp(TObjArray* tracks, TObject* mcObj, Int_t maxLabel);
     void SelectCharge(TObjArray* tracks);
+    AliGenEventHeader* GetFirstHeader();
+    Bool_t AcceptEventCentralityWeight(Double_t centrality);
 
     // General configuration
     Int_t               fDebug;           //  Debug flag
@@ -149,6 +154,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Int_t  		fMixingTracks;		// size of track buffer for event mixing
     Bool_t		fTwoTrackEfficiencyStudy; // two-track efficiency study on
     Float_t		fTwoTrackEfficiencyCut;   // enable two-track efficiency cut
+    Float_t		fTwoTrackCutMinRadius;    // minimum radius for two-track efficiency cut
     Int_t		fUseVtxAxis;              // use z vtx as axis (needs 7-10 times more memory!)
     Bool_t		fCourseCentralityBinning; // less centrality bins
     Bool_t		fSkipTrigger;		  // skip trigger selection
@@ -163,8 +169,9 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     AliUEHistograms*  fHistos;       //! points to class to handle histograms/containers  
     AliUEHistograms*  fHistosMixed;       //! points to class to handle mixed histograms/containers  
     
-    THnF* fEfficiencyCorrectionTriggers;   // if non-0 this efficiency correction is applied on the fly to the filling for trigger particles. The factor is multiplicative, i.e. should contain 1/efficiency. Axes: eta, pT, centrality, z-vtx
+    THnF* fEfficiencyCorrectionTriggers;     // if non-0 this efficiency correction is applied on the fly to the filling for trigger particles. The factor is multiplicative, i.e. should contain 1/efficiency. Axes: eta, pT, centrality, z-vtx
     THnF* fEfficiencyCorrectionAssociated;   // if non-0 this efficiency correction is applied on the fly to the filling for associated particles. The factor is multiplicative, i.e. should contain 1/efficiency. Axes: eta, pT, centrality, z-vtx
+    TH1* fCentralityWeights;		     // for centrality flattening
     
     // Handlers and events
     AliAODEvent*             fAOD;             //! AOD Event 
@@ -172,7 +179,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     TClonesArray*            fArrayMC;         //! Array of MC particles 
     AliInputEventHandler*    fInputHandler;    //! Generic InputEventHandler 
     AliMCEvent*              fMcEvent;         //! MC event
-    AliMCEventHandler*       fMcHandler;       //! MCEventHandler 
+    AliInputEventHandler*    fMcHandler;       //! MCEventHandler 
     AliEventPoolManager*     fPoolMgr;         //! event pool manager
     
     // Histogram settings
@@ -189,6 +196,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Int_t 		fOnlyOneEtaSide;       // decides that only trigger particle from one eta side are considered (0 = all; -1 = negative, 1 = positive)
     Double_t            fPtMin;                // Min pT to start correlations
     TFormula*           fDCAXYCut;             // additional pt dependent cut on DCA XY (only for AOD)
+    Double_t            fSharedClusterCut;  // cut on shared clusters (only for AOD)
     UInt_t           	fFilterBit;            // Select tracks from an specific track cut 
     UInt_t         	fTrackStatus;          // if non-0, the bits set in this variable are required for each track
     UInt_t         	fSelectBit;            // Select events according to AliAnalysisTaskJetServices bit maps 
@@ -220,7 +228,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef(AliAnalysisTaskPhiCorrelations, 38); // Analysis task for delta phi correlations
+    ClassDef(AliAnalysisTaskPhiCorrelations, 41); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle

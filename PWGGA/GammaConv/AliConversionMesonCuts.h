@@ -143,6 +143,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   Double_t fPSigSmearingCte; //
   TF1 *fBrem; //
   TRandom3 fRandom; //
+  TF1 *fFAlphaCut;
+  Bool_t fAlphaPtDepCut;
   Int_t fElectronLabelArraySize;
   Int_t *fElectronLabelArray; //[fElectronLabelArraySize] Array with elec/pos v0 label
   Double_t fDCAGammaGammaCut; // cut value for the maximum distance between the two photons [cm]

@@ -78,6 +78,16 @@ AliEmcalEsdTpcTrackTask* AddTaskEmcalEsdTpcTrack(
     dataSet = kLHC11h;
     dataSetLabel = "LHC12a15f";
   }
+  else if (strTrackCuts.Contains("lhc12a15g"))
+  {
+    dataSet = kLHC11d;
+    dataSetLabel = "LHC12a15g";
+  }
+  else if (strTrackCuts.Contains("lhc12f2a"))
+  {
+    dataSet = kLHC11d;
+    dataSetLabel = "LHC12f2a";
+  }
   else {
     ::Warning("AddTaskEmcalEsdTpcTrack", "Dataset not recognized, will assume LHC11h");
   }

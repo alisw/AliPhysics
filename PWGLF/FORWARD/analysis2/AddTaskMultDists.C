@@ -1,11 +1,24 @@
 /**
- * @file   AddTaskMult.C
+ * @file   AddTaskMultDists.C
  * @author Valentina Zaccolo
  * @date   Thu Nov 22 11:29:26 2012
  * 
  * @brief Script to add a multiplicity task
  * 
  * 
+ * @ingroup pwglf_forward_scripts_tasks
+ */
+/** 
+ * Function to add task to train 
+ * 
+ * @param trig      Trigger to use 
+ * @param vzMin     Least z-coordinate of the interaction point
+ * @param vzMax     Largest z-coordinate of the interaction point
+ * @param lowCent   Least centrality to consider 
+ * @param highCent  Largest centrality to consider 
+ * @param nBins     Number of bins to use 
+ * 
+ * @return Newly allocated task, or null 
  */
 AliAnalysisTask*
 AddTaskMultDists(const char* trig     = "V0AND",

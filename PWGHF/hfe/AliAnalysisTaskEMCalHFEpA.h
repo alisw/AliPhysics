@@ -213,6 +213,7 @@ private:
 	TH1F				**fNTracks;
 	TH1F				**fNClusters;
 	TH2F				**fTPCNcls_EoverP;
+	TH2F				**fTPCNcls_pid;
 	
 	TH1F				**fEta;
 	TH1F				**fPhi;
@@ -293,6 +294,9 @@ private:
 	TH1F				*fPtBackgroundBeforeReco2;
 	TH1F				*fPtBackgroundBeforeReco_weight;
 	TH1F				*fPtBackgroundBeforeReco2_weight;
+	
+	TH2F				*fpT_m_electron;
+	TH2F				*fpT_gm_electron;
 	
 	TH1F				*fPtBackgroundAfterReco;
 	

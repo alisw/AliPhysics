@@ -18,22 +18,22 @@
 // -----------------------------------------------------------------------
 //  Author: Misha Veldhoen (misha.veldhoen@cern.ch)
 
+#include "AliAODEventCutsDiHadronPID.h"
+
 #include <iostream>
+using namespace std;
+
 #include "TList.h"
 #include "TMath.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TNamed.h"
 #include "TIterator.h"
-#include "AliAODEvent.h"
 #include "AliAODHeader.h"
 #include "AliAODVertex.h"
 #include "AliCentrality.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
-#include "AliAODEventCutsDiHadronPID.h"
-
-using namespace std;
 
 ClassImp(AliAODEventCutsDiHadronPID);
 
@@ -210,14 +210,21 @@ void AliAODEventCutsDiHadronPID::CreateHistos() {
 	for (Int_t iHistType = 0; iHistType < 2; iHistType++) {
 
 		// Trigger Histogram.
-		fHistTrigger[iHistType] = new TH1F(Form("fHistTrigger%s",HistType[iHistType]),"Trigger;;Count",2,-0.5,1.5);
+		fHistTrigger[iHistType] = new TH1F(Form("fHistTrigger%s",HistType[iHistType]),"Trigger;;Count",5,-0.5,4.5);
 		fHistTrigger[iHistType]->GetXaxis()->SetBinLabel(1,"kMB");
-		fHistTrigger[iHistType]->GetXaxis()->SetBinLabel(2,"Other");
+		fHistTrigger[iHistType]->GetXaxis()->SetBinLabel(2,"kCentral");		// Trigger only defined for period LHC11h.
+		fHistTrigger[iHistType]->GetXaxis()->SetBinLabel(3,"kSemiCentral");	// Trigger only defined for period LHC11h.
+		fHistTrigger[iHistType]->GetXaxis()->SetBinLabel(4,"kINT7");
+		fHistTrigger[iHistType]->GetXaxis()->SetBinLabel(5,"Other");
 		if (iHistType == 0) fSelectedEventQAHistos->Add(fHistTrigger[iHistType]);
 		else fAllEventQAHistos->Add(fHistTrigger[iHistType]);
 
 		// Ref Multiplicity Histogram.
-		fHistRefMultiplicity[iHistType] = new TH1F(Form("fHistRefMultiplicity%s",HistType[iHistType]),"Reference Multiplicity;N_{tracks};Count",100,0.,10000.);
+		if (fIsPbPb) {
+			fHistRefMultiplicity[iHistType] = new TH1F(Form("fHistRefMultiplicity%s",HistType[iHistType]),"Reference Multiplicity;N_{tracks};Count",100,0.,10000.);
+		} else {
+			fHistRefMultiplicity[iHistType] = new TH1F(Form("fHistRefMultiplicity%s",HistType[iHistType]),"Reference Multiplicity;N_{tracks};Count",100,0.,100.);
+		}
 		if (iHistType == 0) fSelectedEventQAHistos->Add(fHistRefMultiplicity[iHistType]);
 		else fAllEventQAHistos->Add(fHistRefMultiplicity[iHistType]);
 
@@ -246,35 +253,41 @@ void AliAODEventCutsDiHadronPID::CreateHistos() {
 Bool_t AliAODEventCutsDiHadronPID::IsSelected(AliAODEvent* event) {
 	
 	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
-
+	
 	if (!event) return kFALSE;
-
+	
 	if (!fAllEventQAHistos||!fSelectedEventQAHistos) {cout<<"AliAODEventCutsDiHadronPID - Histograms were not created, you should have called CreateHistos()..."<<endl;}
-
+	
 	// Input the event handler.
 	AliInputEventHandler* InputHandler = (AliInputEventHandler*)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
 	if (!InputHandler) return kFALSE;
-
+	
 	Bool_t select = kTRUE;
-
+	
 	// Test Trigger.
-	UInt_t trigger = InputHandler->IsEventSelected();
-	Int_t triggerselect = 0; // 0 = selected.
+	UInt_t trigger = InputHandler->IsEventSelected();	
+	Int_t triggerclass = -1;		// 0 = kMB, 1 = kCentral, 2 = kSemiCentral, 3 = Other.	
     if (fTestTrigger) {
-		if (!(trigger & fTrigger)) {
-			select = kFALSE;
-			triggerselect = 1;	// 1 = not selected.
-		}
-	}	
 
+    	// Find Trigger class.
+    	if (trigger & AliVEvent::kMB) {triggerclass = 0;}
+    	else if (trigger & AliVEvent::kCentral) {triggerclass = 1;}
+    	else if (trigger & AliVEvent::kSemiCentral) {triggerclass = 2;}
+    	else if (trigger & AliVEvent::kINT7) {triggerclass = 3;}    	
+    	else {triggerclass = 4;}
+
+		if (!(trigger & fTrigger)) {select = kFALSE;}	// Event not selected if not matched with the any of the desired triggers.
+	}	
+	
 	AliCentrality* CurrentCentrality = 0x0;
 	Int_t CurrentCentralityQuality = -999;
 	Float_t percentile = -999.;
-
+	
 	if (fIsPbPb) {
 
 		// Get the centrality object.
 	    CurrentCentrality = event->GetCentrality();
+	    //cout<<"Centrality object: "<<CurrentCentrality<<endl;
 	    if (!CurrentCentrality) {select = kFALSE; return select;}
 
 	    // Check the quality of the centrality estimation.
@@ -290,52 +303,57 @@ Bool_t AliAODEventCutsDiHadronPID::IsSelected(AliAODEvent* event) {
 		}
 
 	}
-
+	
 	// Get the primary vertex.
 	AliAODVertex* CurrentPrimaryVertex = event->GetPrimaryVertex();
     if (!CurrentPrimaryVertex) {select = kFALSE; return select;}
 
+	// Get the Vertex_z value (improved by Peter Christiansen).
+	Double_t vtxz = -999.;
+	if (fIsPbPb) {vtxz = CurrentPrimaryVertex->GetZ();}
+	else if (CurrentPrimaryVertex->GetNContributors() > 0) {
+		vtxz = CurrentPrimaryVertex->GetZ();	
+	}
+
 	// Test Vertex Z.
-    Double_t vtxz = CurrentPrimaryVertex->GetZ();
 	if (fTestVertexZ) {
     	if (TMath::Abs(vtxz) > fMaxVertexZ) select = kFALSE; 
 	}
 
-	// Test number of contributors. (very loose cut...)
+	// Test number of contributors.
 	if (fTestContributorsOrSPDVertex) {
 		Int_t nContributors = CurrentPrimaryVertex->GetNContributors();
 		if (nContributors < 1) {
 			if (CurrentPrimaryVertex->GetType() != AliAODVertex::kMainSPD ) {select = kFALSE;}
 		}  
 	}
-
+	
 	// Get the event header.
 	AliAODHeader* CurrentHeader = event->GetHeader();
-
+	
 	// Test minimum reference multiplicity.
 	Int_t CurrentRefMultiplicity = CurrentHeader->GetRefMultiplicity();
 	if (fTestMinRefMult) {
 		if (CurrentRefMultiplicity < fMinRefMult) select = kFALSE;
 	}
-
+	
 	// Fill the histograms for selected events.
 	if (select) {
-		fHistTrigger[0]->Fill(triggerselect);
+		fHistTrigger[0]->Fill(triggerclass);
 		fHistRefMultiplicity[0]->Fill(CurrentHeader->GetRefMultiplicity());
 		if (fIsPbPb) fHistCentrality[0]->Fill(percentile);
 		if (fIsPbPb) fHistCentralityQuality[0]->Fill(CurrentCentralityQuality);
 		fHistVertexZ[0]->Fill(vtxz);
 	}
-
+	
 	// Fill the histograms for all events.
-	fHistTrigger[1]->Fill(triggerselect);
+	fHistTrigger[1]->Fill(triggerclass);
 	fHistRefMultiplicity[1]->Fill(CurrentHeader->GetRefMultiplicity());
 	if (fIsPbPb) fHistCentrality[1]->Fill(percentile);
 	if (fIsPbPb) fHistCentralityQuality[1]->Fill(CurrentCentralityQuality);
 	fHistVertexZ[1]->Fill(vtxz);
-
+	
 	//cout<<"Event Selected: "<<select<<endl;
-
 	return select;
 
 }
