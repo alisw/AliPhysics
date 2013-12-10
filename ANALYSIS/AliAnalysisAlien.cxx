@@ -1640,7 +1640,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
    workdir += fGridWorkingDir;
    if (generate) {
       TObjString *os;
-      if (!fInputFiles) {
+      if (!fInputFiles && !fMCLoop) {
          Error("CreateJDL()", "Define some input files for your analysis.");
          error = kTRUE;
       }
