@@ -264,7 +264,7 @@ protected:
       << "//   0x200     Pause\n"
       << "//\n"
       << "void Summarize(const char* filename=\"forward.root\",\n"
-      << "               UShort_t what=0x0FF)\n"
+      << "               UShort_t what=0x1FF)\n"
       << "{\n"
       << "  const char* fwd=\"$ALICE_ROOT/PWGLF/FORWARD/analysis2\";\n"
       << "  gROOT->LoadMacro(Form(\"%s/DrawAODSummary.C\",fwd));\n"

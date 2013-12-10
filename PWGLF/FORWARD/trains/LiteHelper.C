@@ -179,12 +179,14 @@ struct LiteHelper : public ProofHelper
 			TProofDebug::kGlobal|*/
 			TProofDebug::kPackage);
     if (nEvents < 0) nEvents = fChain->GetEntries();
-    Info("Run", "Output objects registered with PROOF:");
-    gProof->GetOutputList()->ls();
-    Long64_t ret = mgr->StartAnalysis("proof", fChain, nEvents);
+    Long64_t off = fOptions.AsLong("offset", 0);
+    if (nEvents > 0 && nEvents < off) {
+      Warning("Run", "Number of events %lld < offset (%lld), stopping", 
+	      nEvents, off);
+      return 0;
+    }
+    Long64_t ret = mgr->StartAnalysis("proof", fChain, nEvents, off);
     
-    Info("Run", "Output objects registered with PROOF:");
-    gProof->GetOutputList()->ls();
     if (fVerbose > 2) 
       TProof::Mgr(fUrl.GetUrl())->GetSessionLogs()->Save("*","lite.log");
     return ret;

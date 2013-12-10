@@ -1,27 +1,32 @@
 // $Id$
 //
-// Task to constrain TPC tracks to SPD vertex.
+// Task to filter Esd tracks and propagate to Emcal surface.
 //
 // Author: C.Loizides
 
 #include <TClonesArray.h>
 #include <TGeoGlobalMagField.h>
-#include "AliAnalysisManager.h"
-#include "AliESDEvent.h"
-#include "AliESDtrackCuts.h"
-#include "AliEmcalEsdTpcTrackTask.h"
-#include "AliMagF.h"
+#include <AliAnalysisManager.h>
+#include <AliESDEvent.h>
+#include <AliESDtrackCuts.h>
+#include <AliMagF.h>
+#include <AliTrackerBase.h>
+#include <AliEMCALRecoUtils.h>
 
-ClassImp(AliEmcalEsdTpcTrackTask)
+#include "AliEmcalEsdTrackFilterTask.h"
+
+ClassImp(AliEmcalEsdTrackFilterTask)
 
 //________________________________________________________________________
-AliEmcalEsdTpcTrackTask::AliEmcalEsdTpcTrackTask() : 
-  AliAnalysisTaskSE("TpcSpdVertexConstrainedTracks"),
+AliEmcalEsdTrackFilterTask::AliEmcalEsdTrackFilterTask() : 
+  AliAnalysisTaskSE("AliEmcalEsdTrackFilterTask"),
   fEsdTrackCuts(0),
   fDoSpdVtxCon(0),
   fHybridTrackCuts(0),
   fTracksName(),
   fIncludeNoITS(kTRUE),
+  fDoPropagation(kFALSE),
+  fDist(440),
   fEsdEv(0),
   fTracks(0)
 {
@@ -29,13 +34,15 @@ AliEmcalEsdTpcTrackTask::AliEmcalEsdTpcTrackTask() :
 }
 
 //________________________________________________________________________
-AliEmcalEsdTpcTrackTask::AliEmcalEsdTpcTrackTask(const char *name) : 
+AliEmcalEsdTrackFilterTask::AliEmcalEsdTrackFilterTask(const char *name) : 
   AliAnalysisTaskSE(name),
   fEsdTrackCuts(0),
   fDoSpdVtxCon(0),
   fHybridTrackCuts(0),
-  fTracksName("TpcSpdVertexConstrainedTracks"),
+  fTracksName("EsdTracksOut"),
   fIncludeNoITS(kTRUE),
+  fDoPropagation(kFALSE),
+  fDist(440),
   fEsdEv(0),
   fTracks(0)
 {
@@ -50,7 +57,7 @@ AliEmcalEsdTpcTrackTask::AliEmcalEsdTpcTrackTask(const char *name) :
 }
 
 //________________________________________________________________________
-AliEmcalEsdTpcTrackTask::~AliEmcalEsdTpcTrackTask()
+AliEmcalEsdTrackFilterTask::~AliEmcalEsdTrackFilterTask()
 {
   //Destructor
 
@@ -58,7 +65,7 @@ AliEmcalEsdTpcTrackTask::~AliEmcalEsdTpcTrackTask()
 }
 
 //________________________________________________________________________
-void AliEmcalEsdTpcTrackTask::UserCreateOutputObjects()
+void AliEmcalEsdTrackFilterTask::UserCreateOutputObjects()
 {
   // Create histograms.
 
@@ -73,7 +80,7 @@ void AliEmcalEsdTpcTrackTask::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliEmcalEsdTpcTrackTask::UserExec(Option_t *) 
+void AliEmcalEsdTrackFilterTask::UserExec(Option_t *) 
 {
   // Main loop, called for each event.
 
@@ -158,30 +165,38 @@ void AliEmcalEsdTpcTrackTask::UserExec(Option_t *)
     Int_t ntr = fEsdEv->GetNumberOfTracks();
     for (Int_t i=0, ntrnew=0; i<ntr; ++i) {
       AliESDtrack *etrack = fEsdEv->GetTrack(i);
-      if (!etrack)
-        continue;
+      if (!etrack) 
+	continue;
+
       if (fEsdTrackCuts->AcceptTrack(etrack)) {
+
         new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
         AliESDtrack *newTrack = static_cast<AliESDtrack*>(fTracks->At(ntrnew));
-        newTrack->SetTRDNchamberdEdx(0);
+	if (fDoPropagation) 
+	  AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(newTrack,fDist);
+        //newTrack->SetTRDNchamberdEdx(0); todo
         ++ntrnew;
       } else if (fHybridTrackCuts->AcceptTrack(etrack)) {
+
 	UInt_t status = etrack->GetStatus();
         if (etrack->GetConstrainedParam() && ((status&AliESDtrack::kITSrefit)!=0 || fIncludeNoITS)) {
           new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
           AliESDtrack *newTrack = static_cast<AliESDtrack*>(fTracks->At(ntrnew));
-          ++ntrnew;
           const AliExternalTrackParam* constrainParam = etrack->GetConstrainedParam();
           newTrack->Set(constrainParam->GetX(),
                         constrainParam->GetAlpha(),
                         constrainParam->GetParameter(),
                         constrainParam->GetCovariance());
-          if ((status&AliESDtrack::kITSrefit)==0)
-            newTrack->SetTRDNchamberdEdx(2);
-          else
-            newTrack->SetTRDNchamberdEdx(1);
-        }
+	  //          if ((status&AliESDtrack::kITSrefit)==0) // todo
+	  //   newTrack->SetTRDNchamberdEdx(2);
+	  // else
+          //  newTrack->SetTRDNchamberdEdx(1);
+	  if (fDoPropagation) 	
+	    AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(newTrack,fDist);
+          ++ntrnew;
+	}
       }
     }
   }
 }
+
