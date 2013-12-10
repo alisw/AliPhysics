@@ -1268,6 +1268,14 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   // values[AliDielectronVarManager::kPseudoProperTime] = fgEvent ? pair->GetPseudoProperTime(fgEvent->GetPrimaryVertex()): -1e10;
   values[AliDielectronVarManager::kPseudoProperTimeErr] = (errPseudoProperTime2 > 0) ? TMath::Sqrt(errPseudoProperTime2) : -1e10;
 
+  // impact parameter
+  Double_t d0z0[2];
+  d0z0[0]=-999.;
+  d0z0[1]=-999.;
+  if(fgEvent) pair->GetDCA(fgEvent->GetPrimaryVertex(), d0z0);
+  values[AliDielectronVarManager::kImpactParXY]   = d0z0[0];
+  values[AliDielectronVarManager::kImpactParZ]    = d0z0[1];
+
  
   if (!(pair->GetKFUsage())) {
 	//if KF Pairing is not enabled, overwrite values that can be easily derived from legs

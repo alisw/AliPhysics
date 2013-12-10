@@ -443,10 +443,10 @@ Double_t AliDielectronPair::GetCosPointingAngle(const AliVVertex *primVtx) const
   deltaPos[1] = fPair.GetY() - primVtx->GetY();
   deltaPos[2] = fPair.GetZ() - primVtx->GetZ();
 
-  Double_t momV02    = fPair.GetPx()*fPair.GetPx() + fPair.GetPy()*fPair.GetPy() + fPair.GetPz()*fPair.GetPz();
+  Double_t momV02    = Px()*Px() + Py()*Py() + Pz()*Pz();
   Double_t deltaPos2 = deltaPos[0]*deltaPos[0] + deltaPos[1]*deltaPos[1] + deltaPos[2]*deltaPos[2];
 
-  Double_t cosinePointingAngle = (deltaPos[0]*fPair.GetPx() + deltaPos[1]*fPair.GetPy() + deltaPos[2]*fPair.GetPz()) / TMath::Sqrt(momV02 * deltaPos2);
+  Double_t cosinePointingAngle = (deltaPos[0]*Px() + deltaPos[1]*Py() + deltaPos[2]*Pz()) / TMath::Sqrt(momV02 * deltaPos2);
   
   return TMath::Abs(cosinePointingAngle);
 
@@ -488,6 +488,22 @@ Double_t AliDielectronPair::GetArmPt() const
   TVector3 momTot(Px(),Py(),Pz());
 
   return (momNeg.Perp(momTot));
+}
+
+//______________________________________________
+void AliDielectronPair::GetDCA(const AliVVertex *primVtx, Double_t d0z0[2]) const
+{
+  //
+  // Calculate the dca of the mother with respect to the primary vertex
+  //
+  if(!primVtx) return;
+
+  d0z0[0] = TMath::Sqrt(TMath::Power(Xv()-primVtx->GetX(),2) +
+			TMath::Power(Yv()-primVtx->GetY(),2) );
+
+  d0z0[1] = Zv() - primVtx->GetZ();
+  return;
+
 }
 
 // //______________________________________________
