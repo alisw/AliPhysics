@@ -41,7 +41,7 @@
   AliTPCPreprocessorOffline proces;
   proces.CalibTimeGain("TPCMultObjects.root",114000,140040,0);
   TFile oo("OCDB/TPC/Calib/TimeGain/Run114000_121040_v0_s0.root")
-  TObjArray * arr = AliCDBEntry->GetObject()
+ TObjArray * arr = AliCDBEntry->GetObject()
   arr->At(4)->Draw("alp")
 
 */
@@ -1183,6 +1183,8 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainDipAngle(Int_t padRegion)  {
   histQtot->FitSlicesY(0,0,-1,0,"QNR",&arrTot);
   TH1D * corrMax = (TH1D*)arrMax.At(1);
   TH1D * corrTot = (TH1D*)arrTot.At(1);
+  corrMax->Scale(1./histQmax->GetMean(2));
+  corrTot->Scale(1./histQtot->GetMean(2));
   //
   const char* names[3]={"SHORT","MEDIUM","LONG"};
   //
@@ -1196,6 +1198,19 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainDipAngle(Int_t padRegion)  {
   //
   fGainArray->AddLast(graphMax);
   fGainArray->AddLast(graphTot);
+  //
+  TF1 * funMax= new TF1("","1++abs(x)++abs(x*x)");
+  TF1 * funTot= new TF1("","1++abs(x)++abs(x*x)");
+  graphMax->Fit(funMax,"w","rob=0.9",-0.8,0.8);
+  graphTot->Fit(funTot,"w","rob=0.9",-0.8,0.8);
+  funMax->SetNameTitle(Form("TF1_QMAX_DIPANGLE_%s_BEAM_ALL",names[padRegion]),
+			Form("TF1_QMAX_DIPANGLE_%s_BEAM_ALL",names[padRegion]));
+  funTot->SetNameTitle(Form("TF1_QTOT_DIPANGLE_%s_BEAM_ALL",names[padRegion]),
+			Form("TF1_QTOT_DIPANGLE_%s_BEAM_ALL",names[padRegion]));
+
+  //
+  fGainArray->AddLast(funMax);
+  fGainArray->AddLast(funTot);
   //
   return kTRUE;
 }
