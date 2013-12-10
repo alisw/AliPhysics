@@ -886,14 +886,23 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
   
   THnBase* trackSameAll = 0;
   THnBase* trackMixedAll = 0;
+  THnBase* trackMixedAllStep6 = 0;
   TH2* eventSameAll = 0;
   TH2* eventMixedAll = 0;
+  TH2* eventMixedAllStep6 = 0;
   
   Long64_t totalEvents = 0;
   Int_t nCorrelationFunctions = 0;
   
   GetHistsZVtxMult(step, region, ptLeadMin, ptLeadMax, &trackSameAll, &eventSameAll);
   mixed->GetHistsZVtxMult(step, region, ptLeadMin, ptLeadMax, &trackMixedAll, &eventMixedAll);
+  
+  // If we ask for histograms from step8 (TTR cut applied) there is a hole at 0,0; so this cannot be used for the
+  // mixed-event normalization. If step6 is available, the normalization factor is read out from that one.
+  // If step6 is not available we fallback to taking the normalization along all delta phi (WARNING requires a
+  // flat delta phi distribution)
+  if (step == kCFStepBiasStudy && mixed->fEventHist->GetGrid(kCFStepReconstructed)->GetEntries() > 0)
+    mixed->GetHistsZVtxMult(kCFStepReconstructed, region, ptLeadMin, ptLeadMax, &trackMixedAllStep6, &eventMixedAllStep6);
   
 //   Printf("%f %f %f %f", trackSameAll->GetEntries(), eventSameAll->GetEntries(), trackMixedAll->GetEntries(), eventMixedAll->GetEntries());
   
@@ -913,6 +922,8 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
   {
     trackSameAll->GetAxis(3)->SetRange(multBin, multBin);
     trackMixedAll->GetAxis(3)->SetRange(multBin, multBin);
+    if (trackMixedAllStep6)
+      trackMixedAllStep6->GetAxis(3)->SetRange(multBin, multBin);
 
     Double_t mixedNorm = 1;
     Double_t mixedNormError = 0;
@@ -920,17 +931,27 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
     if (!fSkipScaleMixedEvent)
     {
       // get mixed normalization correction factor: is independent of vertex bin if scaled with number of triggers
-      trackMixedAll->GetAxis(2)->SetRange(0, -1);
-      TH2* tracksMixed = trackMixedAll->Projection(1, 0, "E");
+      TH2* tracksMixed = 0;
+      if (trackMixedAllStep6)
+      {
+	trackMixedAllStep6->GetAxis(2)->SetRange(0, -1);
+	tracksMixed = trackMixedAllStep6->Projection(1, 0, "E");
+      }
+      else
+      {
+	trackMixedAll->GetAxis(2)->SetRange(0, -1);
+	tracksMixed = trackMixedAll->Projection(1, 0, "E");
+      }
   //     Printf("%f", tracksMixed->Integral());
       Float_t binWidthEta = tracksMixed->GetYaxis()->GetBinWidth(1);
     
-      if (1)
+      if (step == kCFStepBiasStudy && !trackMixedAllStep6)
       {
 	// get mixed event normalization by assuming full acceptance at deta at 0 (integrate over dphi), excluding (0, 0)
-	mixedNorm = tracksMixed->IntegralAndError(1, tracksMixed->GetYaxis()->FindBin(-0.01)-1, tracksMixed->GetYaxis()->FindBin(-0.01), tracksMixed->GetYaxis()->FindBin(0.01), mixedNormError);
+	Float_t phiExclude = 0.41;
+	mixedNorm = tracksMixed->IntegralAndError(1, tracksMixed->GetXaxis()->FindBin(-phiExclude)-1, tracksMixed->GetYaxis()->FindBin(-0.01), tracksMixed->GetYaxis()->FindBin(0.01), mixedNormError);
 	Double_t mixedNormError2 = 0;
-	Double_t mixedNorm2 = tracksMixed->IntegralAndError(tracksMixed->GetYaxis()->FindBin(0.01)+1, tracksMixed->GetNbinsX(), tracksMixed->GetYaxis()->FindBin(-0.01), tracksMixed->GetYaxis()->FindBin(0.01), mixedNormError2);
+	Double_t mixedNorm2 = tracksMixed->IntegralAndError(tracksMixed->GetXaxis()->FindBin(phiExclude)+1, tracksMixed->GetNbinsX(), tracksMixed->GetYaxis()->FindBin(-0.01), tracksMixed->GetYaxis()->FindBin(0.01), mixedNormError2);
       
 	if (mixedNormError == 0 || mixedNormError2 == 0)
 	{
@@ -938,11 +959,11 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
 	  continue;
 	}
 	
-	Int_t nBinsMixedNorm = (tracksMixed->GetYaxis()->FindBin(-0.01) - 1 - 1 + 1) * (tracksMixed->GetYaxis()->FindBin(0.01) - tracksMixed->GetYaxis()->FindBin(-0.01) + 1);
+	Int_t nBinsMixedNorm = (tracksMixed->GetXaxis()->FindBin(-phiExclude) - 1 - 1 + 1) * (tracksMixed->GetYaxis()->FindBin(0.01) - tracksMixed->GetYaxis()->FindBin(-0.01) + 1);
 	mixedNorm /= nBinsMixedNorm;
 	mixedNormError /= nBinsMixedNorm;
 
-	Int_t nBinsMixedNorm2 = (tracksMixed->GetNbinsX() - tracksMixed->GetYaxis()->FindBin(0.01) - 1 + 1) * (tracksMixed->GetYaxis()->FindBin(0.01) - tracksMixed->GetYaxis()->FindBin(-0.01) + 1);
+	Int_t nBinsMixedNorm2 = (tracksMixed->GetNbinsX() - tracksMixed->GetXaxis()->FindBin(phiExclude) - 1 + 1) * (tracksMixed->GetYaxis()->FindBin(0.01) - tracksMixed->GetYaxis()->FindBin(-0.01) + 1);
 	mixedNorm2 /= nBinsMixedNorm2;
 	mixedNormError2 /= nBinsMixedNorm2;
 
@@ -1006,8 +1027,16 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
 //     normParameters->Fill(mixedNorm);
       
     TAxis* vertexAxis = trackSameAll->GetAxis(2);
-    for (Int_t vertexBin = 1; vertexBin <= vertexAxis->GetNbins(); vertexBin++)
-//     for (Int_t vertexBin = 5; vertexBin <= 6; vertexBin++)
+    Int_t vertexBinBegin = 1;
+    Int_t vertexBinEnd = vertexAxis->GetNbins();
+    
+    if (fZVtxMax > fZVtxMin)
+    {
+      vertexBinBegin = vertexAxis->FindBin(fZVtxMin);
+      vertexBinEnd = vertexAxis->FindBin(fZVtxMax);
+    }
+    
+    for (Int_t vertexBin = vertexBinBegin; vertexBin <= vertexBinEnd; vertexBin++)
     {
       trackSameAll->GetAxis(2)->SetRange(vertexBin, vertexBin);
       trackMixedAll->GetAxis(2)->SetRange(vertexBin, vertexBin);
@@ -1120,8 +1149,10 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
   
   delete trackSameAll;
   delete trackMixedAll;
+  delete trackMixedAllStep6;
   delete eventSameAll;
   delete eventMixedAll;
+  delete eventMixedAllStep6;
   
 //   new TCanvas; normParameters->Draw();
   

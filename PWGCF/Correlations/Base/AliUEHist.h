@@ -143,8 +143,8 @@ protected:
   void WeightHistogram(TH3* hist1, TH1* hist2);
   void MultiplyHistograms(THnSparse* grid, THnSparse* target, TH1* histogram, Int_t var1, Int_t var2);
 
-  AliCFContainer* fTrackHist[4];      // container for track level distributions in four regions (toward, away, min, max) and at four analysis steps
-  AliCFContainer* fEventHist;         // container for event level distribution at four analysis steps
+  AliCFContainer* fTrackHist[4];      // container for track level distributions in four regions (toward, away, min, max) and at all analysis steps
+  AliCFContainer* fEventHist;         // container for event level distribution at all analysis steps
   AliCFContainer* fTrackHistEfficiency; // container for tracking efficiency and contamination (all particles filled including leading one): axes: eta, pT, particle species
   TH3F* fFakePt;
  

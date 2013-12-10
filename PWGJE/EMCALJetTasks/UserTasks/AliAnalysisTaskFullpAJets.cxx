@@ -889,6 +889,12 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
     // Reject any event that doesn't have any tracks, i.e. TPC is off
     if (fnTracks<1)
     {
+        if (fTrackQA==kTRUE)
+        {
+            fhTPCEventMult->Fill(fEventCentrality,0.0);
+            fpTPCEventMult->Fill(fEventCentrality,0.0);
+            fhEMCalTrackEventMult->Fill(fEventCentrality,0.0);
+        }
         AliWarning("No PicoTracks, Rejecting Event");
         return;
     }
@@ -904,6 +910,13 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
         }
         InitChargedJets();
         GenerateTPCRandomConesPt();
+
+        if (fClusterQA==kTRUE)
+        {
+            fhEMCalEventMult->Fill(fEventCentrality,0.0);
+            fpEMCalEventMult->Fill(fEventCentrality,0.0);
+        }
+
         
         // Rho's
         if (fCalculateRhoJet>=2)
