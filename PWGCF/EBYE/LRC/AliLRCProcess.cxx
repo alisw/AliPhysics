@@ -35,6 +35,8 @@ ClassImp(AliLRCProcess)
 
 //const bool useSparse = false;//false;
 //const bool useAccumulatingHist = true;//false;
+using std::endl;
+using std::cout;
 
 AliLRCProcess::AliLRCProcess():fIsEventOpend(kFALSE), fIsOnline(kFALSE), fDisplayInitOnDemandWarning(kTRUE)
   ,fUseSparse(false)

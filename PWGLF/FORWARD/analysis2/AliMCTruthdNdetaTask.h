@@ -47,8 +47,6 @@ public:
    * Called at end of event processing.
    *
    * This is called once in the master 
-   * 
-   * @param option Not used 
    */
   virtual Bool_t Finalize();
 protected:

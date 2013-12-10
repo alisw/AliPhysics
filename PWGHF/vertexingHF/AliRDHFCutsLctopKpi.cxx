@@ -305,6 +305,12 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
     case kNSigmaStrong:
       returnvaluePID = IsSelectedPIDStrong(d);
       break;
+    case kCombinedpPb:
+      returnvaluePID = IsSelectedCombinedPIDpPb(d);
+      break;
+    case kCombinedpPb2:
+      returnvaluePID = IsSelectedCombinedPIDpPb2(d);
+      break;
     }
     fIsSelectedPID=returnvaluePID;
   }
@@ -508,9 +514,6 @@ Int_t AliRDHFCutsLctopKpi::IsSelectedPID(AliAODRecoDecayHF* obj) {
 }
 //---------------------------------------------------------------------------
 Int_t AliRDHFCutsLctopKpi::IsSelectedCombinedPID(AliAODRecoDecayHF* obj) {
-
-  //  Printf(" -------- IsSelectedCombinedPID --------------");
-
     
     if(!fUsePID || !obj) {return 3;}
     Int_t okLcpKpi=0,okLcpiKp=0;
@@ -1114,3 +1117,91 @@ Int_t AliRDHFCutsLctopKpi::IsSelectedPIDStrong(AliAODRecoDecayHF* obj) {
 
  return returnvalue;
 }
+//--------------------
+Int_t AliRDHFCutsLctopKpi::IsSelectedCombinedPIDpPb(AliAODRecoDecayHF* obj) {
+    
+    if(!fUsePID || !obj) {return 3;}
+    Int_t okLcpKpi=0,okLcpiKp=0;
+    Int_t returnvalue=0;
+   
+    Bool_t isMC=fPidHF->GetMC();
+
+    
+    if(isMC) {
+	    fPidObjprot->SetMC(kTRUE);
+	    fPidObjpion->SetMC(kTRUE);
+    }
+
+    AliVTrack *track0=dynamic_cast<AliVTrack*>(obj->GetDaughter(0));
+    AliVTrack *track1=dynamic_cast<AliVTrack*>(obj->GetDaughter(1));
+    AliVTrack *track2=dynamic_cast<AliVTrack*>(obj->GetDaughter(2));
+    if (!track0 || !track1 || !track2) return 0;
+    Double_t prob0[AliPID::kSPECIES];
+    Double_t prob1[AliPID::kSPECIES];
+    Double_t prob2[AliPID::kSPECIES];
+    
+    fPidHF->GetPidCombined()->ComputeProbabilities(track0,fPidHF->GetPidResponse(),prob0);
+    fPidHF->GetPidCombined()->ComputeProbabilities(track1,fPidHF->GetPidResponse(),prob1);
+    fPidHF->GetPidCombined()->ComputeProbabilities(track2,fPidHF->GetPidResponse(),prob2);
+  
+
+    if(fPIDThreshold[AliPID::kPion]>0. && fPIDThreshold[AliPID::kKaon]>0. && fPIDThreshold[AliPID::kProton]>0.){
+    okLcpiKp=  (prob0[AliPID::kPion  ]>fPIDThreshold[AliPID::kPion  ])
+             &&(prob1[AliPID::kKaon  ]>fPIDThreshold[AliPID::kKaon  ])
+             &&(prob2[AliPID::kProton]>fPIDThreshold[AliPID::kProton]);
+    okLcpKpi=  (prob0[AliPID::kProton]>fPIDThreshold[AliPID::kProton])
+             &&(prob1[AliPID::kKaon  ]>fPIDThreshold[AliPID::kKaon  ])
+             &&(prob2[AliPID::kPion  ]>fPIDThreshold[AliPID::kPion  ]);
+   }else{ 
+		    //pion or proton
+		    
+		    
+    if(TMath::MaxElement(AliPID::kSPECIES,prob1) == prob1[AliPID::kKaon]){
+    if(TMath::MaxElement(AliPID::kSPECIES,prob0) == prob0[AliPID::kProton] && TMath::MaxElement(AliPID::kSPECIES,prob2) == prob2[AliPID::kPion]) okLcpKpi = 1;  
+    if(TMath::MaxElement(AliPID::kSPECIES,prob2) == prob2[AliPID::kProton] && TMath::MaxElement(AliPID::kSPECIES,prob0) == prob0[AliPID::kPion]) okLcpiKp = 1; 
+	    }
+	   }
+    
+    if(okLcpKpi) returnvalue=1; //cuts passed as Lc->pKpi
+    if(okLcpiKp) returnvalue=2; //cuts passed as Lc->piKp
+    if(okLcpKpi && okLcpiKp) returnvalue=3; //cuts passed as both pKpi and piKp
+    
+    return returnvalue;
+}
+//-----------------------
+Int_t AliRDHFCutsLctopKpi::IsSelectedCombinedPIDpPb2(AliAODRecoDecayHF* obj) {
+
+  Int_t returnvalue =0;
+  Double_t thresholdK =0.7;
+  Double_t thresholdPi =0.3; //!
+  Double_t thresholdPr =0.7;
+
+  AliVTrack *track0=dynamic_cast<AliVTrack*>(obj->GetDaughter(0));
+  AliVTrack *track1=dynamic_cast<AliVTrack*>(obj->GetDaughter(1));
+  AliVTrack *track2=dynamic_cast<AliVTrack*>(obj->GetDaughter(2));
+
+  if (!track0 || !track1 || !track2) return 0;
+  Double_t prob0[AliPID::kSPECIES];
+  Double_t prob1[AliPID::kSPECIES];
+  Double_t prob2[AliPID::kSPECIES];
+
+  fPidHF->GetPidCombined()->ComputeProbabilities(track0,fPidHF->GetPidResponse(),prob0);
+  fPidHF->GetPidCombined()->ComputeProbabilities(track1,fPidHF->GetPidResponse(),prob1);
+  fPidHF->GetPidCombined()->ComputeProbabilities(track2,fPidHF->GetPidResponse(),prob2);
+
+  if(prob1[AliPID::kKaon]>thresholdK){
+    if(TMath::MaxElement(AliPID::kSPECIES,prob0)>TMath::MaxElement(AliPID::kSPECIES,prob2)){
+      if(((prob0[AliPID::kPion  ]>prob0[AliPID::kProton  ])&& prob0[AliPID::kPion]>thresholdPi) && prob2[AliPID::kProton]>thresholdPr) returnvalue=2;//piKp	
+      else if(((prob0[AliPID::kProton  ]>prob0[AliPID::kPion  ])&& prob0[AliPID::kProton]>thresholdPr) && prob2[AliPID::kPion]>thresholdPi)returnvalue =1;//pKpi
+    }
+
+    else if(TMath::MaxElement(AliPID::kSPECIES,prob0)<TMath::MaxElement(AliPID::kSPECIES,prob2)){
+      if(((prob2[AliPID::kPion  ]>prob2[AliPID::kProton  ])&& prob2[AliPID::kPion]>thresholdPi) && prob0[AliPID::kProton]>thresholdPr) returnvalue=1; //pKpi	
+      else if(((prob2[AliPID::kProton  ]>prob2[AliPID::kPion  ])&& prob2[AliPID::kProton]>thresholdPr) && prob0[AliPID::kPion]>thresholdPi)returnvalue =2;	//piKp
+    }
+
+  }
+  return returnvalue;
+
+}
+

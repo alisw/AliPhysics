@@ -1,9 +1,7 @@
 #ifndef AliParticleContainer_H
 #define AliParticleContainer_H
 
-//
-// container with name, TClonesArray and cuts for particles
-//
+// $Id$
 
 class AliVEvent;
 class AliVParticle;
@@ -38,6 +36,7 @@ class AliParticleContainer : public AliEmcalContainer {
   void                        GetMomentum(TLorentzVector &mom, Int_t i) const;
   Bool_t                      AcceptParticle(AliVParticle         *vp)  const;
   Int_t                       GetNParticles()                           const   {return GetNEntries();}
+  Int_t                       GetNAcceptedParticles()                   ;
   void                        SetClassName(const char *clname);
 
  protected:

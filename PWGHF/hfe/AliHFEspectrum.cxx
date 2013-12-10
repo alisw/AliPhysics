@@ -2392,18 +2392,20 @@ TGraphErrors *AliHFEspectrum::NormalizeTH1(TH1 *input,Int_t i) const {
     Double_t p = 0, dp = 0; Int_t point = 1;
     Double_t n = 0, dN = 0;
     Double_t nCorr = 0, dNcorr = 0;
-    Double_t errdN = 0, errdp = 0;
+    //Double_t errdN = 0, errdp = 0;
+    Double_t errdN = 0;
     for(Int_t ibin = input->GetXaxis()->GetFirst(); ibin <= input->GetXaxis()->GetLast(); ibin++){
       point = ibin - input->GetXaxis()->GetFirst();
       p = input->GetXaxis()->GetBinCenter(ibin);
-      dp = input->GetXaxis()->GetBinWidth(ibin)/2.;
+      //dp = input->GetXaxis()->GetBinWidth(ibin)/2.;
       n = input->GetBinContent(ibin);
       dN = input->GetBinError(ibin);
       // New point
       nCorr = chargecoefficient * 1./etarange * 1./(Double_t)(fNEvents[i]) * 1./(2. * TMath::Pi() * p) * n;
       errdN = 1./(2. * TMath::Pi() * p);
-      errdp = 1./(2. * TMath::Pi() * p*p) * n;
-      dNcorr = chargecoefficient * 1./etarange * 1./(Double_t)(fNEvents[i]) * TMath::Sqrt(errdN * errdN * dN *dN + errdp *errdp * dp *dp);
+      //errdp = 1./(2. * TMath::Pi() * p*p) * n;
+      //dNcorr = chargecoefficient * 1./etarange * 1./(Double_t)(fNEvents[i]) * TMath::Sqrt(errdN * errdN * dN *dN + errdp *errdp * dp *dp);
+      dNcorr = chargecoefficient * 1./etarange * 1./(Double_t)(fNEvents[i]) * TMath::Sqrt(errdN * errdN * dN *dN);
       
       spectrumNormalized->SetPoint(point, p, nCorr);
       spectrumNormalized->SetPointError(point, dp, dNcorr);
@@ -2439,18 +2441,20 @@ TGraphErrors *AliHFEspectrum::NormalizeTH1N(TH1 *input,Int_t normalization) cons
     Double_t p = 0, dp = 0; Int_t point = 1;
     Double_t n = 0, dN = 0;
     Double_t nCorr = 0, dNcorr = 0;
-    Double_t errdN = 0, errdp = 0;
+    //Double_t errdN = 0, errdp = 0;
+    Double_t errdN = 0;
     for(Int_t ibin = input->GetXaxis()->GetFirst(); ibin <= input->GetXaxis()->GetLast(); ibin++){
       point = ibin - input->GetXaxis()->GetFirst();
       p = input->GetXaxis()->GetBinCenter(ibin);
-      dp = input->GetXaxis()->GetBinWidth(ibin)/2.;
+      //dp = input->GetXaxis()->GetBinWidth(ibin)/2.;
       n = input->GetBinContent(ibin);
       dN = input->GetBinError(ibin);
       // New point
       nCorr = chargecoefficient * 1./etarange * 1./(Double_t)(normalization) * 1./(2. * TMath::Pi() * p) * n;
       errdN = 1./(2. * TMath::Pi() * p);
-      errdp = 1./(2. * TMath::Pi() * p*p) * n;
-      dNcorr = chargecoefficient * 1./etarange * 1./(Double_t)(normalization) * TMath::Sqrt(errdN * errdN * dN *dN + errdp *errdp * dp *dp);
+      //errdp = 1./(2. * TMath::Pi() * p*p) * n;
+      //dNcorr = chargecoefficient * 1./etarange * 1./(Double_t)(normalization) * TMath::Sqrt(errdN * errdN * dN *dN + errdp *errdp * dp *dp);
+      dNcorr = chargecoefficient * 1./etarange * 1./(Double_t)(normalization) * TMath::Sqrt(errdN * errdN * dN *dN);
       
       spectrumNormalized->SetPoint(point, p, nCorr);
       spectrumNormalized->SetPointError(point, dp, dNcorr);

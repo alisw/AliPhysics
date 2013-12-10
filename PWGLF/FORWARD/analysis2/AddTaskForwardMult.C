@@ -1,14 +1,14 @@
-/** 
+/**
  * @defgroup pwglf_forward_scripts Scripts used in the analysis
  *
- * These scripts add tasks to the analysis train 
+ * These scripts add tasks to the analysis train
  *
  * @ingroup pwglf_forward
  */
-/** 
- * @defgroup pwglf_forward_scripts_tasks Add tasks to manager 
+/**
+ * @defgroup pwglf_forward_scripts_tasks Add tasks to manager
  *
- * Scripts to add tasks to the analysis manager 
+ * Scripts to add tasks to the analysis manager
  *
  * @ingroup pwglf_forward_scripts
  */
@@ -16,33 +16,33 @@
  * @file   AddTaskForwardMult.C
  * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
  * @date   Wed Mar 23 12:13:54 2011
- * 
- * @brief  
- * 
- * 
+ *
+ * @brief
+ *
+ *
  * @ingroup pwglf_forward_scripts_tasks
  */
 /**
- * This is the script to include the Forward multiplicity in a train.  
- * 
- * @param mc      Define as true for MC input. 
+ * This is the script to include the Forward multiplicity in a train.
+ *
+ * @param mc      Define as true for MC input.
  * @param runNo   Pre-set run number
  * @param sys     Collision system (0: deduce, 1: pp, 2: pbpb, 3:pA)
- * @param sNN     Collision energy 
- * @param field   L3 field setting. 
- * @param config  Configuration file to use 
- * @param corrs   Corrections to use 
+ * @param sNN     Collision energy
+ * @param field   L3 field setting.
+ * @param config  Configuration file to use
+ * @param corrs   Corrections to use
  *
- * @return newly allocated analysis task 
+ * @return newly allocated analysis task
  *
  * @ingroup pwglf_forward_aod
  */
 AliAnalysisTask*
-AddTaskForwardMult(Bool_t   mc, 
+AddTaskForwardMult(Bool_t   mc,
 		   ULong_t  runNo=0,
-		   UShort_t sys=0, 
-		   UShort_t sNN=0, 
-		   Short_t  field=0, 
+		   UShort_t sys=0,
+		   UShort_t sNN=0,
+		   Short_t  field=0,
 		   const char* config="ForwardAODConfig.C",
 		   const char* corrs=0)
 {
@@ -53,19 +53,19 @@ AddTaskForwardMult(Bool_t   mc,
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("AddTaskForwardMult", "No analysis manager to connect to.");
-    return NULL;
-  }   
+    return 0;
+  }
 
   // --- Make the task and add it to the manager ---------------------
   AliForwardMultiplicityBase* task = 0;
   if (mc) task = new AliForwardMCMultiplicityTask("Forward");
   else    task = new AliForwardMultiplicityTask("Forward");
   task->Configure(config);
-  
+
   // --- Set alternative corrections path ----------------------------
   AliForwardCorrectionManager& cm = AliForwardCorrectionManager::Instance();
   if (corrs && corrs[0] != '\0') cm.SetPrefix(corrs);
-    
+
   // --- Do a local initialisation with assumed values ---------------
   if (sys > 0 && sNN > 0) {
     UInt_t what = AliForwardCorrectionManager::kAll;
@@ -76,7 +76,7 @@ AddTaskForwardMult(Bool_t   mc,
     if (!cm.Init(runNo, sys,sNN,field,mc,false,what))
       Fatal("AddTaskForwardMult", "Failed to initialize corrections");
   }
-  
+
   // --- Make the output container and connect it --------------------
   task->Connect(0,0);
 
@@ -84,23 +84,23 @@ AddTaskForwardMult(Bool_t   mc,
 }
 
 /**
- * This is the script to include the Forward multiplicity in a train.  
- * 
- * @param type   Data type (if it contains MC, assume MC input): 
- *               - ppb, p-pb, pa, p-a:  proton-lead 
+ * This is the script to include the Forward multiplicity in a train.
+ *
+ * @param type   Data type (if it contains MC, assume MC input):
+ *               - ppb, p-pb, pa, p-a:  proton-lead
  *               - pp, p-p:             proton-proton
  *               - pbpb, pb-pb, a-a:    lead-lead
- *               
+ *
  * @param energy Collision energy in GeV
  * @param bfield L3 field setting in kG (-5, 0, 5)
  *
- * @return newly allocated analysis task 
+ * @return newly allocated analysis task
  *
  * @ingroup pwglf_forward_aod
  */
 AliAnalysisTask*
-AddTaskForwardMult(const Char_t* type, 
-		   Float_t       energy=0, 
+AddTaskForwardMult(const Char_t* type,
+		   Float_t       energy=0,
 		   Float_t       bfield=0)
 {
   // --- Load libraries ----------------------------------------------

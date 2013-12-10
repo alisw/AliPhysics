@@ -573,8 +573,11 @@ void  LoadLibraries(Int_t mode)
   //SetupPar("EMCALrec");
   
   gSystem->Load("libANALYSISalice.so");
-  //gSystem->Load("libTENDER.so"); 
-  //gSystem->Load("libTENDERSupplies.so");
+  gSystem->Load("libTENDER.so");
+  gSystem->Load("libTENDERSupplies.so");
+  gSystem->Load("libPHOSUtils");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWGTools");
   
   gSystem->Load("libPHOSUtils");
   gSystem->Load("libEMCALUtils");

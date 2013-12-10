@@ -35,7 +35,7 @@ AliEmcalSetupTask::AliEmcalSetupTask(const char *name) :
   AliAnalysisTaskSE(name),
   fOcdbPath(),
   fOadbPath("$ALICE_ROOT/OADB/EMCAL"),
-  fGeoPath("."),
+  fGeoPath("$ALICE_ROOT/OADB/EMCAL"),
   fIsInit(kFALSE)
 {
   // Constructor.
@@ -66,14 +66,15 @@ void AliEmcalSetupTask::UserExec(Option_t *)
 
   Int_t runno = InputEvent()->GetRunNumber();
   TString geoname("EMCAL_COMPLETE12SMV1");
-  Int_t year = 2012;
+  Int_t year = 2013;
   if (runno<=139517) {
     year = 2010;
     geoname = "EMCAL_FIRSTYEARV1";
-  }
-  else if (runno>139517) {
+  } else if ((runno>139517) && (runno<=170593)) {
     year = 2011;
     geoname = "EMCAL_COMPLETEV1";
+  } else if ((runno>170593) && (runno<=193766)) {
+    year = 2012;
   }
 
   AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance(geoname);
@@ -86,8 +87,10 @@ void AliEmcalSetupTask::UserExec(Option_t *)
   if (fOcdbPath.Length()>0) {
     AliInfo(Form("Setting up OCDB"));
     man = AliCDBManager::Instance();
-    man->SetDefaultStorage(fOcdbPath);
-    man->SetRun(runno);
+    if (!man->IsDefaultStorageSet())
+      man->SetDefaultStorage(fOcdbPath);
+    if (man->GetRun()!=runno)
+      man->SetRun(runno);
   }
 
   TGeoManager *geo = AliGeomManager::GetGeometry();
@@ -96,31 +99,21 @@ void AliEmcalSetupTask::UserExec(Option_t *)
     if (gSystem->AccessPathName(fname)==0) {
       AliInfo(Form("Loading geometry from %s", fname.Data()));
       AliGeomManager::LoadGeometry(fname);
+      geo = AliGeomManager::GetGeometry();
     } else if (man) {
       AliInfo(Form("Loading geometry from OCDB"));
       AliGeomManager::LoadGeometry();
+      AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC TRD EMCAL");
+      geo = AliGeomManager::GetGeometry();
     }
-  }
-  if (geo) {
-    AliGeomManager::ApplyAlignObjsFromCDB("EMCAL");
-    AliInfo(Form("Locking geometry"));
-    geo->LockGeometry();
+    if (geo) {
+      AliInfo(Form("Locking geometry"));
+      geo->LockGeometry();
+    }
   }
 
   if (!TGeoGlobalMagField::Instance()->GetField()) { // construct field map
-    AliESDEvent *esdEv = dynamic_cast<AliESDEvent*>(InputEvent());
-    if (esdEv) {
-      AliInfo("Constructing field map from ESD run info");
-      esdEv->InitMagneticField();
-    } else {
-      AliAODEvent *aodEv = dynamic_cast<AliAODEvent*>(InputEvent());
-      if (aodEv) {
-        Double_t curSol = 30000*aodEv->GetMagneticField()/5.00668;
-        Double_t curDip = 6000 *aodEv->GetMuonMagFieldScale();
-        AliMagF *field  = AliMagF::CreateFieldMap(curSol,curDip);
-        TGeoGlobalMagField::Instance()->SetField(field);
-      }
-    }
+    InputEvent()->InitMagneticField();
   }
 
   if (fOadbPath.Length()>0) {

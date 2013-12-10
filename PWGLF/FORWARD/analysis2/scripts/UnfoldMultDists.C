@@ -1,3 +1,13 @@
+/**
+ * @file   UnfoldMultDists.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Tue Nov 12 09:25:52 2013
+ * 
+ * @brief  A class to do unfolding 
+ * 
+ * 
+ * @ingroup pwglf_forward_multdist
+ */
 #include <TFile.h>
 #include <TList.h>
 #include <TH1.h>
@@ -18,6 +28,7 @@
 /**
  * Class to do unfolding of raw histograms produced by AliForwardMultDists 
  * 
+ * @ingroup pwglf_forward_multdist
  */
 struct Unfolder
 {
@@ -598,7 +609,7 @@ struct Unfolder
   {
     Printf("   Processing %s ...", measured->GetName());
     // Try to get the data 
-    TH1* inRaw    = GetH1(measured, "rawDist");
+    TH1* inRaw    = GetH1(measured,    "rawDist");
     TH1* inTruth  = GetH1(corrections, "truth");
     TH1* inTruthA = GetH1(corrections, "truthAccepted");
     TH1* inTrgVtx = GetH1(corrections, "triggerVertex");
@@ -624,7 +635,7 @@ struct Unfolder
     Double_t             r        = regParam;
     RooUnfold::Algorithm algo     = (RooUnfold::Algorithm)method;
     RooUnfold*           unfolder = RooUnfold::New(algo, &matrix, inRaw, r);
-    unfolder->SetVerbose(1);
+    unfolder->SetVerbose(0);
 
     // Do the unfolding and get the result
     TH1* res = unfolder->Hreco();
@@ -872,9 +883,12 @@ struct Unfolder
     Double_t eta2 = static_cast<TObjString*>(tokens->At(1))->String().Atof();
     tokens->Delete();
     
-    if (TMath::Abs(eta2-eta1) > 1e3) 
+    if (TMath::Abs(eta2+eta1) > 1e-3) {
       // Not symmetric bin 
+      // Info("Other2Stack", "bin [%f,%f] is not symmetric (%f)",
+      //      eta1, eta2, TMath::Abs(eta2-eta1));
       return;
+    }
     Double_t aEta = TMath::Abs(eta1);
 
     Int_t open, closed;

@@ -1,9 +1,7 @@
 #ifndef AliClusterContainer_H
 #define AliClusterContainer_H
 
-//
-// container with name, TClonesArray and cuts for particles
-//
+// $Id$ 
 
 class TLorentzVector;
 

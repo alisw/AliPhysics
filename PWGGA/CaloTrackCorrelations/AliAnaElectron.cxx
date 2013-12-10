@@ -222,8 +222,8 @@ Bool_t  AliAnaElectron::ClusterSelected(AliVCluster* calo, TLorentzVector mom, I
     
 }
 
-//__________________________________________________________________________________________________________
-void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t mcTag, const Int_t pidTag)
+//______________________________________________________________________________________________
+void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag, Int_t pidTag)
 {
   
   //Fill cluster Shower Shape histograms

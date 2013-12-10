@@ -1,7 +1,7 @@
 #ifndef AliAnalysisTaskEmcalJetSpectraMECpA_h
 #define AliAnalysisTaskEmcalJetSpectraMECpA_h
 
-// $Id: AliAnalysisTaskEmcalJetSpectraMECpA.h 3010 2012-06-10 05:40:56Z loizides $
+// $Id$
 
 
 class TH1F;
@@ -9,9 +9,9 @@ class TH2F;
 class TH3F;
 class THnSparse;
 
-#include "AliAnalysisTaskEmcalJetDev.h"
+#include "AliAnalysisTaskEmcalJet.h"
 
-class AliAnalysisTaskEmcalJetSpectraMECpA : public AliAnalysisTaskEmcalJetDev {
+class AliAnalysisTaskEmcalJetSpectraMECpA : public AliAnalysisTaskEmcalJet {
  public:
   AliAnalysisTaskEmcalJetSpectraMECpA();
   AliAnalysisTaskEmcalJetSpectraMECpA(const char *name);

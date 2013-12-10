@@ -33,6 +33,8 @@
 #include "TStopwatch.h"
 #include "TFile.h"
 
+#include "TRandom3.h"
+
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 
@@ -112,6 +114,10 @@ AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange() :
   fVZEResponse(NULL),
   fVZEmb(kFALSE),
   fVZEByDisk(kTRUE),
+  fVZECa(0),
+  fVZECb(3),
+  fVZEAa(0),
+  fVZEAb(3),
   fVZEQA(NULL),
   fPsi2(0.0),
   fMCEP(0.0),
@@ -167,6 +173,7 @@ AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange() :
   fDaughterStatus(0),
   fDaughterNSigmaPID(0.0),
   fDaughterKinkIndex(0),
+  fDaughterUnTag(kTRUE),
   fDaughterMinEta(0.0),
   fDaughterMaxEta(0.0),
   fDaughterMinPt(0.0),
@@ -215,6 +222,10 @@ AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange(const char *name) :
   fVZEResponse(NULL),
   fVZEmb(kFALSE),
   fVZEByDisk(kTRUE),
+  fVZECa(0),
+  fVZECb(3),
+  fVZEAa(0),
+  fVZEAb(3),
   fVZEQA(NULL),
   fPsi2(0.0),
   fMCEP(0.0),
@@ -270,6 +281,7 @@ AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange(const char *name) :
   fDaughterStatus(0),
   fDaughterNSigmaPID(0.0),
   fDaughterKinkIndex(0),
+  fDaughterUnTag(kTRUE),
   fDaughterMinEta(0.0),
   fDaughterMaxEta(0.0),
   fDaughterMinPt(0.0),
@@ -330,6 +342,8 @@ void AliAnalysisTaskFlowStrange::UserCreateOutputObjects() {
     PostData(2,fTPCevent);
     PostData(3,fVZEevent);
   }
+
+  gRandom->SetSeed();
 }
 //=======================================================================
 void AliAnalysisTaskFlowStrange::AddQAEvents() {
@@ -584,7 +598,8 @@ Bool_t AliAnalysisTaskFlowStrange::AcceptAAEvent(AliAODEvent *tAOD) {
       return kFALSE;
     }
     xsec = mcHeader->GetCrossSection();
-    fMCEP = mcHeader->GetReactionPlaneAngle();
+    //fMCEP = mcHeader->GetReactionPlaneAngle();
+    fMCEP = mcHeader->GetReactionPlaneAngle() + (gRandom->Rndm()>0.5)*TMath::Pi();
   }
 
   acceptEvent = (fThisCent<fCentPerMin||fThisCent>fCentPerMax)?kFALSE:acceptEvent;
@@ -1377,20 +1392,22 @@ void AliAnalysisTaskFlowStrange::AddCandidates() {
                       iCand,cand->GetNDaughters(),cand->Mass());
     if(fSpecie<10) { // DECAYS
       // untagging ===>
-      for(int iDau=0; iDau!=cand->GetNDaughters(); ++iDau) {
-        if(fDebug) printf("  >Daughter %d with fID %d", iDau, cand->GetIDDaughter(iDau));
-        for(int iRPs=0; iRPs!=fTPCevent->NumberOfTracks(); ++iRPs ) {
-          AliFlowTrack *iRP = static_cast<AliFlowTrack*>(fTPCevent->GetTrack( iRPs ));
-          if(!iRP) continue;
-          if(!iRP->InRPSelection()) continue;
-          if(cand->GetIDDaughter(iDau) == iRP->GetID()) {
-            if(fDebug) printf(" was in RP set");
-            ++untagged;
-            iRP->SetForRPSelection(kFALSE);
-            fTPCevent->SetNumberOfRPs( fTPCevent->GetNumberOfRPs() -1 );
-          }
-        }
-        if(fDebug) printf("\n");
+      if(fDaughterUnTag) {
+	for(int iDau=0; iDau!=cand->GetNDaughters(); ++iDau) {
+	  if(fDebug) printf("  >Daughter %d with fID %d", iDau, cand->GetIDDaughter(iDau));
+	  for(int iRPs=0; iRPs!=fTPCevent->NumberOfTracks(); ++iRPs ) {
+	    AliFlowTrack *iRP = static_cast<AliFlowTrack*>(fTPCevent->GetTrack( iRPs ));
+	    if(!iRP) continue;
+	    if(!iRP->InRPSelection()) continue;
+	    if(cand->GetIDDaughter(iDau) == iRP->GetID()) {
+	      if(fDebug) printf(" was in RP set");
+	      ++untagged;
+	      iRP->SetForRPSelection(kFALSE);
+	      fTPCevent->SetNumberOfRPs( fTPCevent->GetNumberOfRPs() -1 );
+	    }
+	  }
+	  if(fDebug) printf("\n");
+	}
       }
       // <=== untagging 
       fTPCevent->InsertTrack( ((AliFlowTrack*) cand) );
@@ -1534,19 +1551,27 @@ void AliAnalysisTaskFlowStrange::MakeQVZE(AliVEvent *tevent,
     Int_t ybinmin = fVZEResponse->GetYaxis()->FindBin(minC+1e-6);
     Int_t ybinmax = fVZEResponse->GetYaxis()->FindBin(maxC-1e-6);
     for(int i=0;i!=64;++i) extW[i] = fVZEResponse->Integral(i+1,i+1,ybinmin,ybinmax)/(maxC-minC);
+    //ring-wise normalization
     Double_t ring[8];
     for(int j=0; j!=8; ++j) {
       ring[j]=0;
-      for(int i=0;i!=8;++i) ring[j] += extW[j*8+i];
+      for(int i=0;i!=8;++i) ring[j] += extW[j*8+i]/8;
     }
+    //disk-wise normalization
     Double_t disk[2];
-    disk[0] = fVZEResponse->Integral(1,32,ybinmin,ybinmax)/(maxC-minC);
-    disk[1] = fVZEResponse->Integral(33,64,ybinmin,ybinmax)/(maxC-minC);
+    int xbinmin, xbinmax;
+    xbinmin = 1+8*fVZECa;
+    xbinmax = 8+8*fVZECb;
+    disk[0] = fVZEResponse->Integral(xbinmin,xbinmax,ybinmin,ybinmax)/(maxC-minC)/(xbinmax-xbinmin+1);
+    xbinmin = 33+8*fVZEAa;
+    xbinmax = 40+8*fVZEAb;
+    disk[1] = fVZEResponse->Integral(xbinmin,xbinmax,ybinmin,ybinmax)/(maxC-minC)/(xbinmax-xbinmin+1);
     //for(int i=0;i!=64;++i) printf("CELL %d -> W = %f ||",i,extW[i]);
+
     if(fVZEByDisk) {
-      for(int i=0;i!=64;++i) extW[i] = disk[i/32]/extW[i]/8.0;
+      for(int i=0;i!=64;++i) extW[i] = disk[i/32]/extW[i];
     } else {
-      for(int i=0;i!=64;++i) extW[i] = ring[i/8]/extW[i]/8.0;
+      for(int i=0;i!=64;++i) extW[i] = ring[i/8]/extW[i];
     }
     //for(int i=0;i!=64;++i) printf(" W = %f \n",extW[i]);
   }
@@ -1555,7 +1580,7 @@ void AliAnalysisTaskFlowStrange::MakeQVZE(AliVEvent *tevent,
   Int_t rfp=0;
   Double_t eta, phi, w;
   //v0c -> qa
-  for(int id=0;id!=32;++id) {
+  for(int id=fVZECa*8;id!=8+fVZECb*8;++id) {
     eta = -3.45+0.5*(id/8);
     phi = TMath::PiOver4()*(0.5+id%8);
     w = tevent->GetVZEROEqMultiplicity(id)*extW[id];
@@ -1567,7 +1592,7 @@ void AliAnalysisTaskFlowStrange::MakeQVZE(AliVEvent *tevent,
     if(fUseFP) PushBackFlowTrack(fVZEevent,0,phi,eta,w,0);
   }
   //v0a -> qb
-  for(int id=32;id!=64;++id) {
+  for(int id=32+fVZEAa*8;id!=40+fVZEAb*8;++id) {
     eta = +4.8-0.6*((id/8)-4);
     phi = TMath::PiOver4()*(0.5+id%8);
     w = tevent->GetVZEROEqMultiplicity(id)*extW[id];
@@ -1918,6 +1943,7 @@ Bool_t AliAnalysisTaskFlowStrange::AcceptDaughter() {
   if(fDaughterEta<fDaughterMinEta) return kFALSE;
   if(fDaughterEta>fDaughterMaxEta) return kFALSE;
   if(fDaughterNClsTPC<fDaughterMinNClsTPC) return kFALSE;
+  if(fDaughterXRows<fDaughterMinXRows) return kFALSE;
   if(fDaughterChi2PerNClsTPC>fDaughterMaxChi2PerNClsTPC) return kFALSE;
   if(TMath::Abs(fDaughterImpactParameterXY)<fDaughterMinImpactParameterXY) return kFALSE;
   if(fDaughterXRows<fDaughterMinXRowsOverNClsFTPC*fDaughterNFClsTPC) return kFALSE;

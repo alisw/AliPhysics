@@ -24,7 +24,7 @@
 #include <TFormula.h>
 #include <iostream>
 #include "TH2F.h"
-
+#include "AliESDtrackCuts.h"
 
 using namespace std;
 ClassImp(AliConversionTrackCuts)
@@ -45,69 +45,55 @@ const char* AliConversionTrackCuts::fgkCutNames[AliConversionTrackCuts::kNCuts] 
 
 //________________________________________________________________________
 AliConversionTrackCuts::AliConversionTrackCuts() : 
-AliAnalysisCuts(),
-  fFlagsOn(0x0),
-  fFlagsOff(0x0),
-  fRejectKinkDaughters(kTRUE),
-  fDCARfixed(kTRUE),
-  fDCARptFormula(""),
-  fDCARmax(1E20),
-  fDCAZfixed(kTRUE),
-  fDCAZptFormula(""),
-  fDCAZmax(1E20),
-  fDCAXYmax(1E20),
-  fSPDminNClusters(0),
-  fITSminNClusters(0),
-  fITSmaxChi2(1E20),
-  fTPCminNClusters(0),
-  fTPCClusOverFindable(0.0),
-  fTPCmaxChi2(1E20),
-  fAODTestFilterBit(-1),
-  fRequireTPCRefit(kFALSE),
+  AliAnalysisCuts(),
+  fEsdTrackCuts(NULL),
+  fEsdTrackCutsExtra1(NULL),
+  fEsdTrackCutsExtra2(NULL),
+  fEvent(NULL),
+  fFilterBit(2048),
+  fDCAZmax(-1),
+  fDCAXYmax(-1),
+  fOwnedTracks(),
+  fInitialized(kFALSE),
   fhPhi(NULL),
-  fhPt(NULL),
-  fhPhiPt(NULL),
+  //  fhPt(NULL),
+  //fhPhiPt(NULL),
   fhdcaxyPt(NULL),
   fhdcazPt(NULL),
+  fhdca(NULL),
   fhnclpt(NULL),
   fhnclsfpt(NULL),
-  fHistograms(NULL)
+  fhEtaPhi(NULL),
+  fHistograms(NULL) 
 {
   //Constructor
-  //SetUpAxes();
+  fOwnedTracks.SetOwner(kTRUE);
 }
 //________________________________________________________________________
 AliConversionTrackCuts::AliConversionTrackCuts(TString name, TString title = "title") : 
   AliAnalysisCuts(name, title),
-  fFlagsOn(0x0),
-  fFlagsOff(0x0),
-  fRejectKinkDaughters(kTRUE),
-  fDCARfixed(kTRUE),
-  fDCARptFormula(""),
-  fDCARmax(1E20),
-  fDCAZfixed(kTRUE),
-  fDCAZptFormula(""),
-  fDCAZmax(1E20),
-  fDCAXYmax(1E20),
-  fSPDminNClusters(0),
-  fITSminNClusters(0),
-  fITSmaxChi2(1E20),
-  fTPCminNClusters(0),
-  fTPCClusOverFindable(0.0),
-  fTPCmaxChi2(1E20),
-  fAODTestFilterBit(-1),
-  fRequireTPCRefit(kFALSE),
+  fEsdTrackCuts(NULL),
+  fEsdTrackCutsExtra1(NULL),
+  fEsdTrackCutsExtra2(NULL),
+  fEvent(NULL),
+  fFilterBit(2048),
+  fDCAZmax(-1),
+  fDCAXYmax(-1),
+  fOwnedTracks(),
+  fInitialized(kFALSE),
   fhPhi(NULL),  
-  fhPt(NULL),
-  fhPhiPt(NULL),
+  //fhPt(NULL),
+  //fhPhiPt(NULL),
   fhdcaxyPt(NULL),
   fhdcazPt(NULL),
+  fhdca(NULL),
   fhnclpt(NULL),
   fhnclsfpt(NULL),
+  fhEtaPhi(NULL),
   fHistograms(NULL)
 {
   //Constructor
-//  SetUpAxes();
+  fOwnedTracks.SetOwner(kTRUE);
 }
 
 
@@ -118,127 +104,326 @@ AliConversionTrackCuts::AliConversionTrackCuts(TString name, TString title = "ti
    // 	 delete fHistograms;
    // fHistograms = NULL;
 
+   if(fEsdTrackCuts)
+     delete fEsdTrackCuts;
+   fEsdTrackCuts = NULL;
+   
+   if(fEsdTrackCutsExtra1)
+     delete fEsdTrackCutsExtra1;
+   fEsdTrackCutsExtra1 = NULL;
+   
+   if(fEsdTrackCutsExtra2)
+     delete fEsdTrackCutsExtra2;
+   fEsdTrackCutsExtra2 = NULL;
+
+   fOwnedTracks.Delete();
 }
 
-TList * AliConversionTrackCuts::CreateHistograms() {
-  //Create the histograms
-  if(!fHistograms) fHistograms = new TList();
+//______________________________________________________________________________
+void AliConversionTrackCuts::DefineESDCuts() {
+  // Reproduces the cuts of the corresponding bit in the ESD->AOD filtering
+  // (see $ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C)
+  ///Copied from alianalyseleadingue
+  const Int_t filterbit = fFilterBit;
 
-  fHistograms->SetOwner(kTRUE);
-  fHistograms->SetName("trackCuts");
-
-  fhPhi = new TH2F("phi", "phi", kNCuts+2, kPreCut -0.5, kNCuts + 0.5, 
-				   128, 0, TMath::TwoPi());
-  TAxis * xax = fhPhi->GetXaxis();
-  for(Int_t i = 0; i < kNCuts; i++){
-	xax->SetBinLabel(xax->FindFixBin(i), fgkCutNames[i]);
+  if (filterbit == 128) {
+    fEsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+    fEsdTrackCuts->SetMinNClustersTPC(70);
+    
+  }  else if (filterbit == 256) {
+    // syst study
+    fEsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+    fEsdTrackCuts->SetMinNClustersTPC(80);
+    fEsdTrackCuts->SetMaxChi2PerClusterTPC(3);
+    fEsdTrackCuts->SetMaxDCAToVertexZ(2.7);
+    fEsdTrackCuts->SetMaxDCAToVertexXY(1.9);
+    
+  }  else if (filterbit == 512) {
+    // syst study
+    fEsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+    fEsdTrackCuts->SetMinNClustersTPC(60);
+    fEsdTrackCuts->SetMaxChi2PerClusterTPC(5);
+    fEsdTrackCuts->SetMaxDCAToVertexZ(3.7);
+    fEsdTrackCuts->SetMaxDCAToVertexXY(2.9);
+    
+  } else if (filterbit == 1024) {
+    if(!fEsdTrackCuts) {
+      fEsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+      fEsdTrackCuts->SetMinNClustersTPC(-1);
+      fEsdTrackCuts->SetMinNCrossedRowsTPC(70);
+      fEsdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+    }
+  } else if (filterbit == 2048)  {
+    // mimic hybrid tracks 
+    // correspond to esdTrackCutsHTG, but WITHOUT spd constraint. this is checked with the next object
+    if(!fEsdTrackCuts) {
+      fEsdTrackCuts = new AliESDtrackCuts();
+      TFormula *f1NClustersTPCLinearPtDep = new TFormula("f1NClustersTPCLinearPtDep","70.+30./20.*x");
+      fEsdTrackCuts->SetMinNClustersTPCPtDep(f1NClustersTPCLinearPtDep, 100);
+      fEsdTrackCuts->SetMaxChi2PerClusterTPC(4);
+      fEsdTrackCuts->SetRequireTPCStandAlone(kTRUE);
+      fEsdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+      fEsdTrackCuts->SetRequireTPCRefit(kTRUE);
+      fEsdTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
+      
+      fEsdTrackCuts->SetMaxDCAToVertexXY(2.4);
+      fEsdTrackCuts->SetMaxDCAToVertexZ(3.2);
+      fEsdTrackCuts->SetDCAToVertex2D(kTRUE);
+	
+      fEsdTrackCuts->SetMaxChi2PerClusterITS(36);
+      fEsdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+	
+      fEsdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+	
+      fEsdTrackCuts->SetEtaRange(-0.9, 0.9);
+      fEsdTrackCuts->SetPtRange(0.1, 1000000.0);
+	
+      fEsdTrackCuts->SetRequireITSRefit(kFALSE); //not here, n
+    }
+    // Add SPD requirement 
+    fEsdTrackCutsExtra1 = new AliESDtrackCuts("SPD", "Require 1 cluster in SPD");
+    fEsdTrackCutsExtra1->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    fEsdTrackCutsExtra1->SetRequireITSRefit(kTRUE);
+    // A track passing fEsdTrackCuts and fEsdTrackCutsExtra1 corresponds to esdTrackCutsHTG
+    
+    fEsdTrackCutsExtra2 = new AliESDtrackCuts("No_SPD", "Reject tracks with cluster in SPD");
+    fEsdTrackCutsExtra2->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kNone);
+    // A track passing fEsdTrackCuts and fEsdTrackCutsExtra2 corresponds to esdTrackCutsHTGC and needs to be constrained
+    
+    
   }
-  fHistograms->Add(fhPhi);
-  
-
-
-  fhPt = new TH2F("pt", "pt", kNCuts+2, kPreCut -0.5, kNCuts + 0.5, 
-				  100, 0., 100.);
-  xax = fhPt->GetXaxis();
-  for(Int_t i = 0; i < kNCuts; i++){
-	xax->SetBinLabel(xax->FindFixBin(i), fgkCutNames[i]);
-  }
-  fHistograms->Add(fhPt);
-
-  fhPhiPt = new TH2F("phipt", "phipt", 100, 0, 100, 64, 0, TMath::TwoPi());
-  fHistograms->Add(fhPhiPt);
-
-  fhdcaxyPt = new TH2F("dcaxypt", "dcaxypt", 100, 0, 100, 100, 0, 100);
-  fHistograms->Add(fhdcaxyPt);
-
-  fhdcazPt = new TH2F("dcazpt", "dcazpt", 100, 0, 100, 100, 0, 100);
-  fHistograms->Add(fhdcazPt);
-
-  fhnclpt = new TH2F("nclstpcvspt", "nclstpcvspt", 100, 0, 100, 100, 0, 100);
-  fHistograms->Add(fhnclpt);
-
-  fhnclsfpt = new TH2F("nclsfpt", "nclsfpt", 100, 0, 100, 100, 0, 1.2);
-  fHistograms->Add(fhnclsfpt);
-  
-  return fHistograms;
 }
 
+//______________________________________________________________________________
+Bool_t AliConversionTrackCuts::AcceptTrack(AliESDtrack * track) {
+  //Check esd track
 
-void AliConversionTrackCuts::FillHistograms(Int_t cutIndex, AliVTrack * track, Bool_t passed = kFALSE) {
-  //Fill histograms
-  fhPhi->Fill(cutIndex, track->Phi());
-  fhPt->Fill(cutIndex, track->Pt());
-  if(passed) fhPhiPt->Fill(track->Pt(), track->Phi());
+  if(!fInitialized) {
+    DefineESDCuts();
+    if(fDCAXYmax > 0) {
+      if(fEsdTrackCuts) fEsdTrackCuts->SetMaxDCAToVertexXY(fDCAXYmax);
+    }
+    if(fDCAZmax > 0) {
+      if(fEsdTrackCuts) fEsdTrackCuts->SetMaxDCAToVertexZ(fDCAZmax);
+    }
+  
+    fInitialized = kTRUE;
+  }
 
+  FillHistograms(kPreCut, track);
+
+
+  
+  if( !fEsdTrackCuts->IsSelected(track)) return kFALSE;
+
+
+  ///If only one track cuts then it has passed the cuts
+  if( !(fEsdTrackCutsExtra1 && fEsdTrackCutsExtra2)) {
+    FillHistograms(1, track);
+    return kTRUE;
+  }
+  ///If passing extra
+  if (fEsdTrackCutsExtra1 && fEsdTrackCutsExtra1->IsSelected(track)) {
+    FillHistograms(2, track);
+    FillHistograms(1, track);
+    return kTRUE;
+  } 
+
+  ///If passing extra2
+  if (fEsdTrackCutsExtra2 && fEsdTrackCutsExtra2->IsSelected(track)) {
+    const AliExternalTrackParam * param = track->GetConstrainedParam();
+    if(param) {
+      AliESDtrack* esdTrack = new AliESDtrack(*track);
+      esdTrack->CopyFromVTrack(param);
+      track = esdTrack;
+      fOwnedTracks.Add(track);
+
+      FillHistograms(3, track);
+      FillHistograms(1, track);
+      return kTRUE;
+    } else {
+      return kFALSE;
+    }
+  } else {
+    return kFALSE;
+  }
+
+  cout << "error error, should not be herer!"<<endl;
+  return kFALSE;
+
+  // FillHistograms(kPreCut + 1, track);
+  // return kTRUE;
+
+  // fhnclpt->Fill(track->Pt(), track->GetTPCNcls());
+  // if(track->GetTPCNclsF() > 0) fhnclsfpt->Fill(track->Pt(), ((Double_t) track->GetTPCNcls())/track->GetTPCNclsF());
+  // FillHistograms(kPreCut + 1, track);
+
+  // ///Get impact parameters
+  // Double_t extCov[15];
+  // track->GetExternalCovariance(extCov);
+  // Float_t b[2];
+  // Float_t bCov[3];
+  // track->GetImpactParameters(b,bCov);
+  // if (bCov[0]<=0 || bCov[2]<=0) {
+  //   AliDebug(1, "Estimated b resolution lower or equal zero!");
+  //   bCov[0]=0; bCov[2]=0;
+  // }
+  
+  // Float_t dcaToVertexXY = b[0];
+  // Float_t dcaToVertexZ = b[1];
+  // FillDCAHist(dcaToVertexZ, dcaToVertexXY, track);
+  // return kTRUE;
 }
 
 Bool_t AliConversionTrackCuts::AcceptTrack(AliAODTrack * track) {
   //Check aod track
 
-  fhdcaxyPt->Fill(track->Pt(), TMath::Sqrt(track->XAtDCA()*track->XAtDCA() + track->YAtDCA()*track->YAtDCA()));
-  fhdcazPt->Fill(track->Pt(), TMath::Abs(track->ZAtDCA())); 
-  
-  fhnclpt->Fill(track->Pt(), track->GetTPCNcls());
-  if(track->GetTPCNclsF() > 0) fhnclsfpt->Fill(track->Pt(), ((Double_t) track->GetTPCNcls())/track->GetTPCNclsF());
-
-  
   FillHistograms(kPreCut, track);
 
-  if (track->GetTPCNcls() < fTPCminNClusters) return kFALSE;
-  FillHistograms(kCutNcls, track);
+  if(!track->IsHybridGlobalConstrainedGlobal()) return kFALSE;
 
-  Double_t foundclusters = 0.0001;
-  if(track->GetTPCNclsF() > 0) foundclusters = ( (Double_t) track->GetTPCNcls() )/track->GetTPCNclsF();
-  if (foundclusters < fTPCClusOverFindable) return kFALSE;
-  FillHistograms(kCutNclsFrac, track);
-
-  if (track->Chi2perNDF() > fTPCmaxChi2) return kFALSE;
-  FillHistograms(kCutNDF, track);
-
-  AliAODVertex *vertex = track->GetProdVertex();
-  if (vertex && fRejectKinkDaughters) {
-	if (vertex->GetType() == AliAODVertex::kKink) {
-	  return kFALSE;
-	}
-  }
-  FillHistograms(kCutKinc, track);
-
-  if(TMath::Abs(track->ZAtDCA()) > fDCAZmax) {
-	return kFALSE;
-  }
-  FillHistograms(kCutDCAZ, track);
+   if (!(track->GetStatus() & AliVTrack::kITSrefit)) {
+     return kFALSE;
+   }
+ 
 
 
-  Float_t xatdca = track->XAtDCA();
-  Float_t yatdca = track->YAtDCA();
-  Float_t xy = xatdca*xatdca + yatdca*yatdca;
-  if(xy > fDCAXYmax) {
-	AliDebug(AliLog::kDebug + 2, "Kink daughter. Rejected");
-	return kFALSE;
-  }
-  FillHistograms(kCutDCAXY, track);
+  //The cluster sharing cut can be done with:
+  Double_t frac = Double_t(track->GetTPCnclsS()) / Double_t(track->GetTPCncls());
+  if (frac > 0.4) return kFALSE;
 
-  ULong_t status = track->GetStatus();
-  if (fRequireTPCRefit && (status&AliESDtrack::kTPCrefit) == 0) {
-	AliDebug(AliLog::kDebug + 2, "Kink daughter. Rejected");
-	return kFALSE;
-  }
-  FillHistograms(kCutTPCRefit, track);
+
+  ///Do dca xy cut!
+  FillHistograms(1, track);
+
+  ///DCA
+  Double_t dca[2] = { -999, -999};
+  //Bool_t dcaok = 
+  GetDCA(track, dca);
+  FillDCAHist(dca[1], dca[0], track);
   
-  FillHistograms(kNCuts, track, kTRUE);
+
+  if(track->IsGlobalConstrained()) {
+    FillHistograms(3, track);
+  } else {
+    FillHistograms(2, track);
+  }
+  
+  if(fhEtaPhi) fhEtaPhi->Fill(track->Eta(), track->Phi());
+
   return kTRUE;
 }
 
-// void AliConversionTrackCuts::SetUpAxes() {
-//   //
-//   fCutAxis.Set(kNCuts + 1, -1.5, kNCuts -0.5);
-//   fCutAxis.SetAxisLabel(-1, "track in");
-//   for (Int_t i = 0; i < kNCuts; i++) {
-// 	fCutAxis.SetAxisLabel(i, fgkCutNames[i]);
-//   }
-//   for(Int_t i = 0, i < kNCuts; i++) {
-//   }
-// }
+///______________________________________________________________________________
+Bool_t AliConversionTrackCuts::GetDCA(const AliAODTrack *track, Double_t dca[2]) {
+  if(track->TestBit(AliAODTrack::kIsDCA)){
+    dca[0]=track->DCA();
+    dca[1]=track->ZAtDCA();
+    return kTRUE;
+  }
+  
+  Bool_t ok=kFALSE;
+  if(fEvent) {
+    Double_t covdca[3];
+    //AliAODTrack copy(*track);
+    AliExternalTrackParam etp; etp.CopyFromVTrack(track);
+    
+    Float_t xstart = etp.GetX();
+    if(xstart>3.) {
+      dca[0]=-999.;
+    dca[1]=-999.;
+    //printf("This method can be used only for propagation inside the beam pipe \n");
+    return kFALSE;
+    }
+
+
+    AliAODVertex *vtx =(AliAODVertex*)(fEvent->GetPrimaryVertex());
+    Double_t fBzkG = fEvent->GetMagneticField(); // z componenent of field in kG
+    ok = etp.PropagateToDCA(vtx,fBzkG,kVeryBig,dca,covdca);
+    //ok = copy.PropagateToDCA(vtx,fBzkG,kVeryBig,dca,covdca);
+  }
+  if(!ok){
+    dca[0]=-999.;
+    dca[1]=-999.;
+  }
+  return ok;
+}
+
+
+
+TList * AliConversionTrackCuts::CreateHistograms() {
+  //Create the histograms
+
+  if(!fHistograms) fHistograms = new TList();
+
+  fHistograms->SetOwner(kTRUE);
+  fHistograms->SetName("trackCuts");
+
+  fhPhi = new TH2F("phi", "phi", 5, -0.5, 4.5, 32, 0, TMath::TwoPi());
+  // TAxis * xax = fhPhi->GetXaxis();
+  // for(Int_t i = 0; i < kNCuts; i++){
+  // 	xax->SetBinLabel(xax->FindFixBin(i), fgkCutNames[i]);
+  // }
+  fHistograms->Add(fhPhi);
+  
+
+  fhEtaPhi = new TH2F("etahpi", "etaphi", 36, -0.9, 0.9, 32, 0, TMath::TwoPi());
+  fHistograms->Add(fhEtaPhi);
+
+  // fhPt = new TH2F("pt", "pt", kNCuts+2, kPreCut -0.5, kNCuts + 0.5, 
+  // 				  20, 0., 20.);
+  // xax = fhPt->GetXaxis();
+  // for(Int_t i = 0; i < kNCuts; i++){
+  // 	xax->SetBinLabel(xax->FindFixBin(i), fgkCutNames[i]);
+  // }
+  // fHistograms->Add(fhPt);
+
+  //  fhPhiPt = new TH2F("phipt", "phipt", 100, 0, 100, 64, 0, TMath::TwoPi());
+  //fHistograms->Add(fhPhiPt);
+
+  fhdcaxyPt = new TH2F("dcaxypt", "dcaxypt", 20, 0, 20, 50, -2.5, 2.5);
+  fHistograms->Add(fhdcaxyPt);
+
+  fhdcazPt = new TH2F("dcazpt", "dcazpt", 20, 0, 20, 70, -3.5, 3.5);
+  fHistograms->Add(fhdcazPt);
+
+  fhdca = new TH2F("dca", "dca", 70, -3.5, 3.5, 50, -2.5, 2.5);
+  fhdca->SetXTitle("dca z");
+  fhdca->SetYTitle("dca xy");
+
+  
+  fHistograms->Add(fhdca);
+
+  // fhnclpt = new TH2F("nclstpcvspt", "nclstpcvspt", 20, 0, 20, 50, 0, 100);
+  // fHistograms->Add(fhnclpt);
+
+  // fhnclsfpt = new TH2F("nclsfpt", "nclsfpt", 20, 0, 20, 60, 0, 1.2);
+  // fHistograms->Add(fhnclsfpt);
+  
+  return fHistograms;
+}
+
+void AliConversionTrackCuts::FillHistograms(Int_t cutIndex, AliVTrack * track) {
+
+  //Fill histograms
+  if(fhPhi) fhPhi->Fill(cutIndex, track->Phi());
+  //  if(fhPt) fhPt->Fill(cutIndex, track->Pt());
+  //if(passed) fhPhiPt->Fill(track->Pt(), track->Phi());
+
+}
+
+void AliConversionTrackCuts::FillDCAHist(Float_t dcaz, Float_t dcaxy, AliVTrack * track) {
+  if(fhdcaxyPt) fhdcaxyPt->Fill(track->Pt(), dcaxy);
+  if(fhdcazPt) fhdcazPt->Fill(track->Pt(), dcaz);
+  if(fhdca) fhdca->Fill(dcaz, dcaxy);
+}
+
+
+
+
+
+
+
 
 
 //_________________________________________________________________________________________________
@@ -248,16 +433,29 @@ void AliConversionTrackCuts::Print(const Option_t *) const
 // Print information on this cut
 //
 
-  printf("Cut name                : %s \n", GetName());
-  printf("Kink daughters are      : %s \n", (fRejectKinkDaughters ? "rejected" : "accepted"));
-  printf("TPC requirements        : clusters/findable %f, min. cluster = %d, max chi2 = %f, %s require refit\n", fTPCClusOverFindable, fTPCminNClusters, fTPCmaxChi2, (fRequireTPCRefit) ? "" : "Don't");
-  printf("ITS requirements        : min. cluster = %d (all), %d (SPD), max chi2 = %f \n", fITSminNClusters, fSPDminNClusters, fITSmaxChi2);
-  printf("DCA z cut               : fixed to %f cm \n", fDCAZmax);
-  printf("DCA xy cut              : fixed to %f cm \n", fDCAXYmax);
-  
+  // printf("Cut name                : %s \n", GetName());
+  // printf("Kink daughters are      : %s \n", (fRejectKinkDaughters ? "rejected" : "accepted"));
+  // printf("TPC requirements        : clusters/findable %f, min. cluster = %d, max chi2 = %f, %s require refit\n", fTPCClusOverFindable, fTPCminNClusters, fTPCmaxChi2, (fRequireTPCRefit) ? "" : "Don't");
+  // printf("ITS requirements        : min. cluster = %d (all), %d (SPD), max chi2 = %f \n", fITSminNClusters, fSPDminNClusters, fITSmaxChi2);
+  // printf("DCA z cut               : fixed to %f cm \n", fDCAZmax);
+  // printf("DCA xy cut              : fixed to %f cm \n", fDCAXYmax)
+    ;
 }
+ 
+//_________________________________________________________________________________________________
 
+Bool_t AliConversionTrackCuts::IsSelected(TObject * object ) {
+  AliAODTrack * aodtrack = dynamic_cast<AliAODTrack*>(object);
+  if (aodtrack) {
+    return AcceptTrack(aodtrack);
+  } else {
+    AliESDtrack * track = dynamic_cast<AliESDtrack*>(object);
+    if (track)
+      return AcceptTrack(track);
+  }
 
+return kFALSE;
+} 
 
 
 

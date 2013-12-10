@@ -97,6 +97,9 @@ AliForwardMultiplicityBase::Book()
   GetHistCollector()	.CreateOutputObjects(fList);
   GetEventPlaneFinder()	.CreateOutputObjects(fList);
 
+  TAxis tmp(1, 0, 1);
+  fHistos.Init(tmp);
+
   if (fDebug > 1) fDoTiming = true;
   if (fDoTiming) { 
     fHTiming = new TProfile("timing", "Timing of task", 
@@ -134,9 +137,6 @@ AliForwardMultiplicityBase::CreateBranches(AliAODHandler* ah)
 {
   TObject* obj   = &fAODFMD; ah->AddBranch("AliAODForwardMult", &obj);
   TObject* epobj = &fAODEP;  ah->AddBranch("AliAODForwardEP", &epobj);
-
-  TAxis tmp(1, 0, 1);
-  fHistos.Init(tmp);
 
   if (!fStorePerRing) return;
   

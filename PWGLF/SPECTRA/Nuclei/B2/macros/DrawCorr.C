@@ -56,14 +56,16 @@ void DrawCorr(const TString& species="Deuteron", const TString& inputFile="corre
 	TCanvas* c2 = new TCanvas(Form("%s.Efficiency",species.Data()), Form("Reconstruction Efficiency for (Anti)%ss",species.Data()));
 	c2->Divide(2,2);
 	
-	TH1D* hEffVtxPt[kNpart];
-	TH1D* hEffAccTrkPt[kNpart];
 	TH1D* hEffTrigPt[kNpart];
+	TH1D* hEffVtxPt[kNpart];
+	TH1D* hEffAccPt[kNpart];
+	TH1D* hEffAccTrkPt[kNpart];
 	
 	for(Int_t i=0; i<kNpart; ++i)
 	{
 		hEffTrigPt[i] = FindObj<TH1D>(finput, tag, kPrefix[i] + species + "_Eff_Trig_Pt");
 		hEffVtxPt[i] = FindObj<TH1D>(finput, tag, kPrefix[i] + species + "_Eff_Vtx_Pt");
+		hEffAccPt[i] = FindObj<TH1D>(finput, tag, kPrefix[i] + species + "_Eff_Acc_Pt");
 		hEffAccTrkPt[i] = FindObj<TH1D>(finput, tag, kPrefix[i] + species + "_Eff_AccTrk_Pt");
 	}
 	
@@ -74,6 +76,9 @@ void DrawCorr(const TString& species="Deuteron", const TString& inputFile="corre
 	DrawPair(hEffVtxPt[0], hEffVtxPt[1], xmin, xmax, 0, 1.1);
 	
 	c2->cd(3);
+	DrawPair(hEffAccPt[0], hEffAccPt[1], xmin, xmax, 0, 1.1);
+	
+	c2->cd(4);
 	DrawPair(hEffAccTrkPt[0], hEffAccTrkPt[1], xmin, xmax, 0, 1.1);
 	
 	// Secondaries

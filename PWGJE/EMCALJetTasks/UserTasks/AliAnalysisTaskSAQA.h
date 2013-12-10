@@ -9,9 +9,9 @@ class TH3;
 class THnSparse;
 class AliVVZERO;
 
-#include "AliAnalysisTaskEmcalJetDev.h"
+#include "AliAnalysisTaskEmcalJet.h"
 
-class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJetDev {
+class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
  public:
   AliAnalysisTaskSAQA();
   AliAnalysisTaskSAQA(const char *name);

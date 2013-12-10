@@ -121,19 +121,25 @@ AliAnalysisTaskLambdaOverK0sJets::AliAnalysisTaskLambdaOverK0sJets(const char *n
   for (Int_t i=0; i<kNCent*kN1; i++){     
     // K0s
     fK0sdPhidEtaMC[i] = 0;
-    fK0sdPhidEtaPtL[i] = 0;
-    fK0sdPhidEtaPtLBckg[i] = 0;
-    
     // Lambda
     fLambdadPhidEtaMC[i] = 0;
-    fLambdadPhidEtaPtL[i] = 0;
-    fLambdadPhidEtaPtLBckg[i] = 0;
-    
     // AntiLambda
     fAntiLambdadPhidEtaMC[i] = 0;
-    fAntiLambdadPhidEtaPtL[i] = 0;
-    fAntiLambdadPhidEtaPtLBckg[i] = 0;  
   }
+
+  
+  for (Int_t i=0; i<(kNCent*kN1*kNVtxZ); i++){     
+    // K0s
+    fK0sdPhidEtaPtL[i] = 0;
+    //fK0sdPhidEtaPtLBckg[i] = 0;
+    // Lambda
+    fLambdadPhidEtaPtL[i] = 0;
+    //fLambdadPhidEtaPtLBckg[i] = 0;
+    // AntiLambda
+    fAntiLambdadPhidEtaPtL[i] = 0;
+    //fAntiLambdadPhidEtaPtLBckg[i] = 0;  
+  }
+
 
   // Gamma Conversion
   for (Int_t i=0; i<kNCent; i++)
@@ -408,7 +414,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
     fK0sAssocPtRap    = new TH3F("fK0sAssocPtRap","K^{0}_{S} Assoc;p_{T} (GeV/c);y;centrality",nbins,pMin,pMax,30,-1.5,1.5,100,0.,100.);
     fOutput->Add(fK0sAssocPtRap);
 
-    fK0sAssocPtMassArm    = new TH3F("fK0sAssocPtMassArm","K^{0}_{S} Assoc;Mass (GeV/c^{2})p_{T} (GeV/c);centrality",nbins/2,0.448,0.548,nbins,pMin,pMax,100,0.,100.);
+    fK0sAssocPtMassArm    = new TH3F("fK0sAssocPtMassArm","K^{0}_{S} Assoc;Mass (GeV/c^{2})p_{T} (GeV/c);centrality",nbins,0.398,0.598,nbins,pMin,pMax,100,0.,100.);
     fOutput->Add(fK0sAssocPtMassArm);
 
     fK0sAssocPtRapEmbeded    = new TH3F("fK0sAssocPtRapEmbeded","K^{0}_{S} Assoc  - Embeded MC;p_{T} (GeV/c);y;centrality",nbins,pMin,pMax,30,-1.5,1.5,100,0.,100.);
@@ -553,7 +559,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
   
   // ****** K0s ******
   fK0sMass = 
-    new TH3F("fK0sMass", "K^{0}_{s}: mass vs p_{T}",nbins/2,0.448,0.548,nbins,pMin,pMax,100,0.,100.);
+    new TH3F("fK0sMass", "K^{0}_{s}: mass vs p_{T}",nbins,0.398,0.598,nbins,pMin,pMax,100,0.,100.);
   fK0sMass->GetXaxis()->SetTitle("Mass (GeV/c^2)"); 
   fK0sMass->GetYaxis()->SetTitle("p_{T} (GeV/c)"); 
   fK0sMass->GetZaxis()->SetTitle("centrality"); 
@@ -585,7 +591,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
 
   fK0sMassPtPhi  = 
     new TH3F("fK0sMassPtPhi","K^{0}_{s}: mass vs pt vs #phi;Mass (GeV/c^2);p_{T} (GeV/c);#phi (rad)",
-	     nbins/2,0.448,0.548,nbins,pMin,pMax,nbinsPhi,0.,2.*TMath::Pi());
+	     nbins,0.398,0.598,nbins,pMin,pMax,nbinsPhi,0.,2.*TMath::Pi());
   fOutput->Add(fK0sMassPtPhi);
 
 
@@ -617,16 +623,19 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       }
   
       // Reconstruction level:
-      snprintf(hNameHist,100, "fK0sdPhidEtaPtL_%.2f_%.2f_Cent_%.0f_%.0f",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1]); 
-      fK0sdPhidEtaPtL[jj*kN1+k] = new TH3F(hNameHist,"K^{0}_{S}: #Delta#phi vs #Delta#eta vs p_{T,l}",
-					   nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
-					   nbinsdEta,-1.5,1.5,
-					   nbinsVtx,-10.,10.);
-      fK0sdPhidEtaPtL[jj*kN1+k]->GetXaxis()->SetTitle("#Delta#phi (rad)"); 
-      fK0sdPhidEtaPtL[jj*kN1+k]->GetYaxis()->SetTitle("#Delta#eta"); 
-      fK0sdPhidEtaPtL[jj*kN1+k]->GetZaxis()->SetTitle("Vertex Z (cm)"); 
-      fOutput->Add(fK0sdPhidEtaPtL[jj*kN1+k]);
+      for(Int_t ll=0;ll<kNVtxZ;ll++){
+	snprintf(hNameHist,100, "fK0sdPhidEtaPtL_%.2f_%.2f_Cent_%.0f_%.0f_%d",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1],ll); 
+	fK0sdPhidEtaPtL[jj*kN1*kNVtxZ  + k*kNVtxZ + ll] = new TH3F(hNameHist,"K^{0}_{S}: #Delta#phi vs #Delta#eta vs Inv. Mass",
+					     nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
+					     nbinsdEta,-1.5,1.5,
+					     nbins,0.398,0.598);
+	fK0sdPhidEtaPtL[jj*kN1*kNVtxZ  + k*kNVtxZ + ll]->GetXaxis()->SetTitle("#Delta#phi (rad)"); 
+	fK0sdPhidEtaPtL[jj*kN1*kNVtxZ  + k*kNVtxZ + ll]->GetYaxis()->SetTitle("#Delta#eta"); 
+	fK0sdPhidEtaPtL[jj*kN1*kNVtxZ  + k*kNVtxZ + ll]->GetZaxis()->SetTitle("Inv. Mass"); 
+	fOutput->Add(fK0sdPhidEtaPtL[jj*kN1*kNVtxZ  + k*kNVtxZ + ll]);
+      }
   
+      /*
       snprintf(hNameHist,100, "fK0sdPhidEtaPtL_Bckg_%.2f_%.2f_Cent_%.0f_%.0f",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1]); 
       fK0sdPhidEtaPtLBckg[jj*kN1+k] = new TH3F(hNameHist,"K^{0}_{S}: #Delta#phi vs #Delta#eta vs p_{T,l}",
 					       nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
@@ -636,6 +645,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       fK0sdPhidEtaPtLBckg[jj*kN1+k]->GetYaxis()->SetTitle("#Delta#eta"); 
       fK0sdPhidEtaPtLBckg[jj*kN1+k]->GetZaxis()->SetTitle("Vertex Z (cm)");
       fOutput->Add(fK0sdPhidEtaPtLBckg[jj*kN1+k]);
+      */
 
     }
   }
@@ -782,25 +792,29 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       }
 
       // Reconstruction level:
-      snprintf(hNameHist,100, "fLambdadPhidEtaPtL_%.2f_%.2f_Cent_%.0f_%.0f",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1]); 
-      fLambdadPhidEtaPtL[jj*kN1+k] = new TH3F(hNameHist,"#Lambda: #Delta#phi vs #Delta#eta vs p_{T,l}",
-					      nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
-					      nbinsdEta,-1.5,1.5,
-					      nbinsVtx,-10.,10.);
-      fLambdadPhidEtaPtL[jj*kN1+k]->GetXaxis()->SetTitle("#Delta#phi (rad)"); 
-      fLambdadPhidEtaPtL[jj*kN1+k]->GetYaxis()->SetTitle("#Delta#eta"); 
-      fLambdadPhidEtaPtL[jj*kN1+k]->GetZaxis()->SetTitle("Vertex Z (cm)");
-      fOutput->Add(fLambdadPhidEtaPtL[jj*kN1+k]);
-  
-      snprintf(hNameHist,100, "fLambdadPhidEtaPtL_Bckg_%.2f_%.2f_Cent_%.0f_%.0f",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1]); 
-      fLambdadPhidEtaPtLBckg[jj*kN1+k] = new TH3F(hNameHist,"#Lambda: #Delta#phi  vs #Delta#eta vs p_{T,l}",
-						  nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
-						  nbinsdEta,-1.5,1.5,
-						  nbinsVtx,-10.,10.);
-      fLambdadPhidEtaPtLBckg[jj*kN1+k]->GetXaxis()->SetTitle("#Delta#phi (rad)"); 
-      fLambdadPhidEtaPtLBckg[jj*kN1+k]->GetYaxis()->SetTitle("#Delta#eta"); 
-      fLambdadPhidEtaPtLBckg[jj*kN1+k]->GetZaxis()->SetTitle("Vertex Z (cm)");
-      fOutput->Add(fLambdadPhidEtaPtLBckg[jj*kN1+k]);
+      for(Int_t ll=0;ll<kNVtxZ;ll++){
+	snprintf(hNameHist,100, "fLambdadPhidEtaPtL_%.2f_%.2f_Cent_%.0f_%.0f_%d",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1],ll); 
+	fLambdadPhidEtaPtL[jj*kN1*kNVtxZ  + k*kNVtxZ + ll] = new TH3F(hNameHist,"#Lambda: #Delta#phi vs #Delta#eta vs p_{T,l}",
+								      nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
+								      nbinsdEta,-1.5,1.5,
+								      nbins,1.065,1.165);
+	fLambdadPhidEtaPtL[jj*kN1*kNVtxZ  + k*kNVtxZ + ll]->GetXaxis()->SetTitle("#Delta#phi (rad)"); 
+	fLambdadPhidEtaPtL[jj*kN1*kNVtxZ  + k*kNVtxZ + ll]->GetYaxis()->SetTitle("#Delta#eta"); 
+	fLambdadPhidEtaPtL[jj*kN1*kNVtxZ  + k*kNVtxZ + ll]->GetZaxis()->SetTitle("Inv. Mass");
+	fOutput->Add(fLambdadPhidEtaPtL[jj*kN1*kNVtxZ  + k*kNVtxZ + ll]);
+      }
+      /*
+	snprintf(hNameHist,100, "fLambdadPhidEtaPtL_Bckg_%.2f_%.2f_Cent_%.0f_%.0f",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1]); 
+	fLambdadPhidEtaPtLBckg[jj*kN1+k] = new TH3F(hNameHist,"#Lambda: #Delta#phi  vs #Delta#eta vs p_{T,l}",
+	nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
+	nbinsdEta,-1.5,1.5,
+	nbinsVtx,-10.,10.);
+	fLambdadPhidEtaPtLBckg[jj*kN1+k]->GetXaxis()->SetTitle("#Delta#phi (rad)"); 
+	fLambdadPhidEtaPtLBckg[jj*kN1+k]->GetYaxis()->SetTitle("#Delta#eta"); 
+	fLambdadPhidEtaPtLBckg[jj*kN1+k]->GetZaxis()->SetTitle("Vertex Z (cm)");
+	fOutput->Add(fLambdadPhidEtaPtLBckg[jj*kN1+k]);
+      */
+
     }
   }
 
@@ -944,16 +958,20 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       }
 
       // Reconstruction level:
-      snprintf(hNameHist,100, "fAntiLambdadPhidEtaPtL_%.2f_%.2f_Cent_%.0f_%.0f",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1]); 
-      fAntiLambdadPhidEtaPtL[jj*kN1+k] = new TH3F(hNameHist,"#bar{#Lambda}: #Delta#phi vs #Delta#eta vs p_{T,l}",
-						  nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
-						  nbinsdEta,-1.5,1.5,
-						  nbinsVtx,-10.,10.);
-      fAntiLambdadPhidEtaPtL[jj*kN1+k]->GetXaxis()->SetTitle("#Delta#phi (rad)"); 
-      fAntiLambdadPhidEtaPtL[jj*kN1+k]->GetYaxis()->SetTitle("#Delta#eta"); 
-      fAntiLambdadPhidEtaPtL[jj*kN1+k]->GetZaxis()->SetTitle("Vertex Z (cm)");
-      fOutput->Add(fAntiLambdadPhidEtaPtL[jj*kN1+k]);
-  
+      for(Int_t ll=0;ll<kNVtxZ;ll++){
+	snprintf(hNameHist,100, "fAntiLambdadPhidEtaPtL_%.2f_%.2f_Cent_%.0f_%.0f_%d",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1],ll); 
+	fAntiLambdadPhidEtaPtL[jj*kN1*kNVtxZ  + k*kNVtxZ + ll] = new TH3F(hNameHist,"#bar{#Lambda}: #Delta#phi vs #Delta#eta vs p_{T,l}",
+									  nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
+									  nbinsdEta,-1.5,1.5,
+									  nbins,1.065,1.165);
+	fAntiLambdadPhidEtaPtL[jj*kN1*kNVtxZ  + k*kNVtxZ + ll]->GetXaxis()->SetTitle("#Delta#phi (rad)"); 
+	fAntiLambdadPhidEtaPtL[jj*kN1*kNVtxZ  + k*kNVtxZ + ll]->GetYaxis()->SetTitle("#Delta#eta"); 
+	fAntiLambdadPhidEtaPtL[jj*kN1*kNVtxZ  + k*kNVtxZ + ll]->GetZaxis()->SetTitle("Inv. Mass");
+	fOutput->Add(fAntiLambdadPhidEtaPtL[jj*kN1*kNVtxZ  + k*kNVtxZ + ll]);
+      }
+
+
+      /*
       snprintf(hNameHist,100, "fAntiLambdadPhidEtaPtL_Bckg_%.2f_%.2f_Cent_%.0f_%.0f",kPtBinV0[k],kPtBinV0[k+1],kBinCent[jj],kBinCent[jj+1]); 
       fAntiLambdadPhidEtaPtLBckg[jj*kN1+k] = new TH3F(hNameHist,"#bar{#Lambda}: #Delta#phi  vs #Delta#eta vs p_{T,l}",
 						      nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
@@ -963,6 +981,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
       fAntiLambdadPhidEtaPtLBckg[jj*kN1+k]->GetYaxis()->SetTitle("#Delta#eta"); 
       fAntiLambdadPhidEtaPtLBckg[jj*kN1+k]->GetZaxis()->SetTitle("Vertex Z (cm)");
       fOutput->Add(fAntiLambdadPhidEtaPtLBckg[jj*kN1+k]);
+      */
 
     }
   }
@@ -2462,27 +2481,34 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
     // **********************************
     // Disentangle the V0 candidate
     Float_t massK0s = 0., mK0s = 0., sK0s = 0.;
-    Float_t massLambda = 0., mLambda = 0., sLambda = 0.;
-    Float_t massAntiLambda = 0.;
+    Float_t massLambda = 0., mLambda = 0., sL = 0.;
+    Float_t massAntiLambda = 0., sAL = 0.;
 
     Bool_t isCandidate2K0s = kFALSE;
     massK0s = v0->MassK0Short();
     mK0s = TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass();
-    sK0s = 0.0044 + (0.008-0.0044)/(10-1)*(pt - 1.);
-    if ( TMath::Abs(mK0s-massK0s) < 3*sK0s )
-      isCandidate2K0s = kTRUE;     
+    if( fCollision.Contains("PbPb2010") )
+      sK0s = kCteK0s2010[curCentBin] + kLinearK0s2010[curCentBin]*pt;
+    else if( fCollision.Contains("PbPb2011") ) 
+      sK0s = kCteK0s2011[curCentBin] + kLinearK0s2011[curCentBin]*pt;
+    if ( TMath::Abs(mK0s-massK0s) < 3*sK0s )  isCandidate2K0s = kTRUE;     
     
     Bool_t isCandidate2Lambda = kFALSE;
     massLambda = v0->MassLambda();
     mLambda = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();
-    sLambda=0.0023 + (0.004-0.0023)/(6-1)*(pt-1);
-    if (TMath::Abs(mLambda-massLambda) < 3*sLambda)
-      isCandidate2Lambda = kTRUE;  
+    if( fCollision.Contains("PbPb2010") )
+      sL = kCteLambda2010[curCentBin] + kLinearLambda2010[curCentBin]*pt;
+    else if( fCollision.Contains("PbPb2011") ) 
+      sL = kCteLambda2011[curCentBin] + kLinearLambda2011[curCentBin]*pt;
+    if (TMath::Abs(mLambda-massLambda) < 3*sL)  isCandidate2Lambda = kTRUE;  
     
     Bool_t isCandidate2LambdaBar = kFALSE;
     massAntiLambda = v0->MassAntiLambda();
-    if (TMath::Abs(mLambda-massAntiLambda) < 3*sLambda)
-      isCandidate2LambdaBar = kTRUE; 
+    if( fCollision.Contains("PbPb2010") )
+      sAL = kCteAntiLambda2010[curCentBin] + kLinearAntiLambda2010[curCentBin]*pt;
+    else if( fCollision.Contains("PbPb2011") ) 
+      sAL = kCteAntiLambda2011[curCentBin] + kLinearAntiLambda2011[curCentBin]*pt;
+    if (TMath::Abs(mLambda-massAntiLambda) < 3*sAL)  isCandidate2LambdaBar = kTRUE; 
 
     // *******************
     //   Gamma conversion
@@ -2497,7 +2523,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
     //   K0s selection
     // *******************
     if (ctK && (TMath::Abs(v0->RapK0Short())<fYMax) &&
-        ( lPtArmV0 > TMath::Abs(0.2*lAlphaV0) ) ) {
+        ( lPtArmV0 > TMath::Abs(0.2*lAlphaV0) ) && ( massK0s > 0.3979 && massK0s < 0.5981 ) ) {
       
       switch(step) {
       case kTriggerCheck: 
@@ -2519,6 +2545,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	      Float_t posDeltaPhi =  phiTrig - phiPos, negDeltaPhi =  phiTrig - phiNeg;
 	      Float_t posDeltaEta =  etaTrig - etaPos, negDeltaEta =  etaTrig - etaNeg;
 	    
+	      /*
 	      Printf("  The LP has the same momentum in X and Y as one of the K0s daughters *** iV0 %d \n\t\t %d %d %d \n\t\t %lf %lf %lf \n\t\t %lf %lf %lf \n\t\t %lf %lf \n\t\t %lf %lf ",
 		     iV0, TMath::Abs( trkTrig->GetID() ), ntrack->GetID() ,  ptrack->GetID() ,
 		     TMath::Abs( difNegP[1] ), TMath::Abs( difNegP[2] ), TMath::Abs( difNegP[0] ),
@@ -2526,7 +2553,8 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 		     TMath::Abs( negDeltaPhi ), TMath::Abs( negDeltaEta ),
 		     TMath::Abs( posDeltaPhi ), TMath::Abs( posDeltaEta )
 		     );
-	    
+	      */
+
 	      // Positive daughter
 	      if( isSameTrkPosDaug==1 ){
 		for(Int_t i=0;i<3;i++)
@@ -2656,7 +2684,8 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
     // Lambda selection
     // *******************
     if ( ctL && (TMath::Abs(v0->RapLambda())<fYMax)  &&
-	 (nsigPosProton < fNSigma) && !isCandidate2K0s && !isCandidate2LambdaBar){
+	 (nsigPosProton < fNSigma) && !isCandidate2K0s && !isCandidate2LambdaBar
+	 && (massLambda > 1.0649 && massLambda < 1.1651 ) ){
 
       switch(step) {
       case kTriggerCheck: 
@@ -2678,6 +2707,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	      Float_t posDeltaPhi =  phiTrig - phiPos, negDeltaPhi =  phiTrig - phiNeg;
 	      Float_t posDeltaEta =  etaTrig - etaPos, negDeltaEta =  etaTrig - etaNeg;
     
+	      /*
 	      Printf("  The LP has the same momentum in X and Y as one of the Lambda daughters *** iV0 %d \n\t\t %d %d %d \n\t\t %lf %lf %lf \n\t\t %lf %lf %lf \n\t\t %lf %lf \n\t\t %lf %lf ",
 		     iV0, TMath::Abs( trkTrig->GetID() ), ntrack->GetID() ,  ptrack->GetID() ,
 		     TMath::Abs( difNegP[1] ), TMath::Abs( difNegP[2] ), TMath::Abs( difNegP[0] ),
@@ -2685,7 +2715,8 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 		     TMath::Abs( negDeltaPhi ), TMath::Abs( negDeltaEta ),
 		     TMath::Abs( posDeltaPhi ), TMath::Abs( posDeltaEta )
 		     );
-	      
+	      */
+
 	      // Positive daughter
 	      if( isSameTrkPosDaug==1 ){
 		for(Int_t i=0;i<3;i++)
@@ -2729,7 +2760,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	  
 	} 
 	// Invariant Mass cut
-	if (TMath::Abs(mLambda-massLambda) < 3*sLambda) {
+	if (TMath::Abs(mLambda-massLambda) < 3*sL) {
 
 	  fLambdaEtaPhi->Fill(lPhi,lEta);
 	  fLambdaPtvsEta->Fill(pt,lEta,2);
@@ -2765,8 +2796,8 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	 	  
 	} // End selection in mass
 	
-	if( (TMath::Abs(mLambda-massLambda + 6.5*sLambda) < 1.5*sLambda) ||
-	    (TMath::Abs(mLambda-massLambda - 6.5*sLambda) < 1.5*sLambda) ){
+	if( (TMath::Abs(mLambda-massLambda + 6.5*sL) < 1.5*sL) ||
+	    (TMath::Abs(mLambda-massLambda - 6.5*sL) < 1.5*sL) ){
 
 	  fLambdaEtaPhi->Fill(lPhi,lEta,-1);
 	  
@@ -2813,7 +2844,8 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
     // AntiLambda selection
     // *******************
     if ( ctAL && (TMath::Abs(v0->RapLambda())<fYMax)  &&
-	 (nsigNegProton < fNSigma)  && !isCandidate2K0s && !isCandidate2Lambda ) {
+	 (nsigNegProton < fNSigma)  && !isCandidate2K0s && !isCandidate2Lambda 
+	 && (massAntiLambda > 1.0649 && massAntiLambda < 1.1651 ) ) {
       
       switch(step) {
       case kTriggerCheck: 
@@ -2834,7 +2866,8 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	      difPosP[0] = (pTrig[0]-pPosDaug[0])/pTrig[0];  difPosP[1] = (pTrig[1]-pPosDaug[1])/pTrig[1]; difPosP[2] = (pTrig[2]-pPosDaug[2])/pTrig[2];
 	      Float_t posDeltaPhi =  phiTrig - phiPos, negDeltaPhi =  phiTrig - phiNeg;
 	      Float_t posDeltaEta =  etaTrig - etaPos, negDeltaEta =  etaTrig - etaNeg;
-    
+
+	      /*
 	      Printf("  The LP has the same momentum in X and Y as one of the AntiLambda daughters *** iV0 %d \n\t\t %d %d %d \n\t\t %lf %lf %lf \n\t\t %lf %lf %lf \n\t\t %lf %lf \n\t\t %lf %lf ",
 		     iV0, TMath::Abs( trkTrig->GetID() ), ntrack->GetID() ,  ptrack->GetID() ,
 		     TMath::Abs( difNegP[1] ), TMath::Abs( difNegP[2] ), TMath::Abs( difNegP[0] ),
@@ -2842,7 +2875,8 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 		     TMath::Abs( negDeltaPhi ), TMath::Abs( negDeltaEta ),
 		     TMath::Abs( posDeltaPhi ), TMath::Abs( posDeltaEta )
 		     );
-	      
+	      */
+
 	      // Positive daughter
 	      if( isSameTrkPosDaug==1 ){
 		for(Int_t i=0;i<3;i++)
@@ -2886,7 +2920,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	  
 	} 
 	// Invariant Mass cut
-	if (TMath::Abs(mLambda-massAntiLambda) < 3*sLambda) {
+	if (TMath::Abs(mLambda-massAntiLambda) < 3*sAL) {
 	  fAntiLambdaEtaPhi->Fill(lPhi,lEta);
 	  fAntiLambdaPtvsEta->Fill(pt,lEta,2);
 	  fAntiLambdaPtvsRap->Fill(pt,v0->RapLambda(),2);
@@ -2922,8 +2956,8 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 
 	} // End selection in mass
 	
-	if( (TMath::Abs(mLambda-massAntiLambda + 6.5*sLambda) < 1.5*sLambda) ||
-	    (TMath::Abs(mLambda-massAntiLambda - 6.5*sLambda) < 1.5*sLambda) ){
+	if( (TMath::Abs(mLambda-massAntiLambda + 6.5*sAL) < 1.5*sAL) ||
+	    (TMath::Abs(mLambda-massAntiLambda - 6.5*sAL) < 1.5*sAL) ){
 
 	  fAntiLambdaEtaPhi->Fill(lPhi,lEta,-1);
 	  
@@ -3094,6 +3128,9 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
   fEvents->Fill(5);
   fCentrality2->Fill(centrality);
 
+  // Protect the code: only interested in events with centrality < 40%
+  if(centrality>=40.) return;
+
   // Getting PID Response
   fPIDResponse = hdr->GetPIDResponse();
 
@@ -3202,7 +3239,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
     // -----------------------------------------
     // ---------- Strange particles ------------
     // -----------------------------------------
-    fEndOfHijingEvent = -1;
+    //fEndOfHijingEvent = -1;
     for (Int_t iTrkMC = 0; iTrkMC < nTrkMC; iTrkMC++){
       
       AliAODMCParticle *p0 = (AliAODMCParticle*)stack->At(iTrkMC);
@@ -3215,18 +3252,6 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 	   (lPdgcodeCurrentPart != kLambda0) &&
 	   (lPdgcodeCurrentPart != kLambda0Bar) ) continue;
       
-      // ----------------------------------------
-      
-      // For injected MC: it determines where HIJING event ends 
-      if (fEndOfHijingEvent==-1) { 
-        if ( ( p0->GetStatus() == 21 ) ||
-	     ( (p0->GetPdgCode() == 443) &&
-	       (p0->GetMother() == -1)   &&
-	       (p0->GetDaughter(0) ==  (iTrkMC+1))) ) {
-	  fEndOfHijingEvent = iTrkMC; 
-        }
-      }
-
       // ----------------------------------------
 
       Int_t isNaturalPart = 1;
@@ -3480,8 +3505,15 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 
 	massK0s = tAssoc->MassK0Short();
 	mK0s = TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass();
-	sK0s = 0.0044 + (0.008-0.0044)/(10-1)*(pt - 1.);
+	if( fCollision.Contains("PbPb2010") )
+	  sK0s = kCteK0s2010[curCentBin] + kLinearK0s2010[curCentBin]*pt;
+	else if( fCollision.Contains("PbPb2011") ) 
+	  sK0s = kCteK0s2011[curCentBin] + kLinearK0s2011[curCentBin]*pt;
 	
+	// ==== Correlations K0s invariant mass peak ==== //
+	// +++++++++++ Pt bin & centrality
+	fK0sdPhidEtaPtL[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(dPhi,dEta,massK0s);
+
 	// ==== Correlations K0s invariant mass peak ==== //
 	if (TMath::Abs(mK0s-massK0s) < 3*sK0s) {
 	  
@@ -3493,7 +3525,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 	  }
 	
 	  // Pt bin & centrality
-	  fK0sdPhidEtaPtL[curCentBin*kN1+binPtv0]->Fill(dPhi,dEta,zv);
+	  //fK0sdPhidEtaPtL[curCentBin*kN1+binPtv0]->Fill(dPhi,dEta,zv);
 
 	  if(radio<0.1)
 	    fK0sSpatialRes->Fill(dPhi,res,lt);
@@ -3518,7 +3550,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 	  }
 	  
 	  // Pt bin & centrality
-	  fK0sdPhidEtaPtLBckg[curCentBin*kN1+binPtv0]->Fill(dPhi,dEta,zv);
+	  //fK0sdPhidEtaPtLBckg[curCentBin*kN1+binPtv0]->Fill(dPhi,dEta,zv);
 	    
 	  if(radio < 0.4){ // Under the correlation peak
 	    fHistArmPodBckg->Fill(lAlphaV0,lPtArmV0,0);
@@ -3542,8 +3574,15 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
       if( trackAssocME->WhichCandidate() == 4 ){
 	massL = tAssoc->MassLambda();
 	mL = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();
-	sL = 0.0023 + (0.004-0.0023)/(6-1)*(pt-1);
-	
+	if( fCollision.Contains("PbPb2010") )
+	  sL = kCteLambda2010[curCentBin] + kLinearLambda2010[curCentBin]*pt;
+	else if( fCollision.Contains("PbPb2011") ) 
+	  sL = kCteLambda2011[curCentBin] + kLinearLambda2011[curCentBin]*pt;
+
+	// ==== Correlations Lambda invariant mass peak ==== //
+        // +++++++++++ Pt bin & centrality
+        fLambdadPhidEtaPtL[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(dPhi,dEta,massL);
+
 	// ==== Correlations Lambda invariant mass peak ==== //
 	if (TMath::Abs(mL-massL) < 3*sL) {
 
@@ -3555,7 +3594,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 	  }
 
 	  // Pt bin & centrality
-	  fLambdadPhidEtaPtL[curCentBin*kN1+binPtv0]->Fill(dPhi,dEta,zv);
+	  //fLambdadPhidEtaPtL[curCentBin*kN1+binPtv0]->Fill(dPhi,dEta,zv);
 		
 	  if(radio<0.1)
 	    fLambdaSpatialRes->Fill(dPhi,res,lt);
@@ -3579,7 +3618,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 	  }
 
 	  // Pt bin & centrality
-	  fLambdadPhidEtaPtLBckg[curCentBin*kN1+binPtv0]->Fill(dPhi,dEta,zv);
+	  //fLambdadPhidEtaPtLBckg[curCentBin*kN1+binPtv0]->Fill(dPhi,dEta,zv);
 	
 	  if(radio < 0.4){ // Under the peak
 	    fHistArmPodBckg->Fill(lAlphaV0,lPtArmV0,1);
@@ -3602,8 +3641,16 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
       if( trackAssocME->WhichCandidate() == 5 ){
 	massAL = tAssoc->MassAntiLambda();
 	mL = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();
-	sL = 0.0023 + (0.004-0.0023)/(6-1)*(pt-1);
+	if( fCollision.Contains("PbPb2010") )
+	  sL = kCteAntiLambda2010[curCentBin] + kLinearAntiLambda2010[curCentBin]*pt;
+	else if( fCollision.Contains("PbPb2011") ) 
+	  sL = kCteAntiLambda2011[curCentBin] + kLinearAntiLambda2011[curCentBin]*pt;
 	
+
+	// ==== Correlations Lambda invariant mass peak ==== //
+        // +++++++++++ Pt bin & centrality
+        fAntiLambdadPhidEtaPtL[curCentBin*kN1*kNVtxZ + binPtv0*kNVtxZ + curVtxBin]->Fill(dPhi,dEta,massAL);
+
 	// ==== Correlations AntiLambda invariant mass peak ==== //
 	if (TMath::Abs(mL-massAL) < 3*sL) {
 	
@@ -3615,7 +3662,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 	  }
 
 	  // Pt bin & centrality
-	  fAntiLambdadPhidEtaPtL[curCentBin*kN1+binPtv0]->Fill(dPhi,dEta,zv);
+	  //fAntiLambdadPhidEtaPtL[curCentBin*kN1+binPtv0]->Fill(dPhi,dEta,zv);
 
 	  if(radio<0.1)
 	    fAntiLambdaSpatialRes->Fill(dPhi,res,lt);	      
@@ -3639,7 +3686,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 	  }
 	    
 	  // Pt bin & centrality
-	  fAntiLambdadPhidEtaPtLBckg[curCentBin*kN1+binPtv0]->Fill(dPhi,dEta,zv);
+	  //fAntiLambdadPhidEtaPtLBckg[curCentBin*kN1+binPtv0]->Fill(dPhi,dEta,zv);
 	
 	  if(radio < 0.4){ // Under the peak
 	    fHistArmPodBckg->Fill(lAlphaV0,lPtArmV0,2);
@@ -3691,21 +3738,33 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
 	if( trackAssocME->WhichCandidate() == 3 ){
 	  massK0s = tAssoc->MassK0Short();
 	  mK0s = TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass();
-	  sK0s = 0.0044 + (0.008-0.0044)/(10-1)*(pt - 1.);
+	  if( fCollision.Contains("PbPb2010") )
+	    sK0s = kCteK0s2010[curCentBin] + kLinearK0s2010[curCentBin]*pt;
+	  else if( fCollision.Contains("PbPb2011") ) 
+	    sK0s = kCteK0s2011[curCentBin] + kLinearK0s2011[curCentBin]*pt;
+	  
 	  if (TMath::Abs(mK0s-massK0s) < 3*sK0s) IsSelected = kTRUE;
 	}
 	// Lambda
 	if( trackAssocME->WhichCandidate() == 4 ){
 	  massL = tAssoc->MassLambda();
-	  mL = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();
-	  sL = 0.0023 + (0.004-0.0023)/(6-1)*(pt-1);
+	  mL = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();	  
+	  if( fCollision.Contains("PbPb2010") )
+	    sL = kCteLambda2010[curCentBin] + kLinearLambda2010[curCentBin]*pt;
+	  else if( fCollision.Contains("PbPb2011") ) 
+	    sL = kCteLambda2011[curCentBin] + kLinearLambda2011[curCentBin]*pt;
+
 	  if (TMath::Abs(mL-massL) < 3*sL) IsSelected = kTRUE;
 	}
 	// AntiLambda
 	if( trackAssocME->WhichCandidate() == 5 ){
 	  massAL = tAssoc->MassAntiLambda();
 	  mL = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();
-	  sL = 0.0023 + (0.004-0.0023)/(6-1)*(pt-1);
+	  if( fCollision.Contains("PbPb2010") )
+	    sL = kCteAntiLambda2010[curCentBin] + kLinearAntiLambda2010[curCentBin]*pt;
+	  else if( fCollision.Contains("PbPb2011") ) 
+	    sL = kCteAntiLambda2011[curCentBin] + kLinearAntiLambda2011[curCentBin]*pt;
+	  
 	  if (TMath::Abs(mL-massAL) < 3*sL) IsSelected = kTRUE;
 	}
 
@@ -3744,12 +3803,15 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
       AliMiniParticle* trkTrig = (AliMiniParticle*) fTriggerParticles->At(ii);
       //cout << trkTrig->Pt() << "          " << ii << endl;
     
-      evMixList->AddFirst(trkTrig);
+      if(evMixList->GetSize() < nMaxEvMix)
+	evMixList->AddFirst(trkTrig);
+      /*
       if(evMixList->GetSize() >= nMaxEvMix) {
 	AliMiniParticle *tmp = (AliMiniParticle*) (evMixList->Last()) ;
 	evMixList->RemoveLast();
 	delete tmp;
       }
+      */
       
     }// End loop over fTriggerParticles
 

@@ -116,9 +116,6 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
     InputEvent()->AddObject(fTracksOut);
   }
 
-  // clear container (normally a null operation as the event should clean it already)
-  fTracksOut->Clear();
-
   // test if we are in ESD or AOD mode
   Bool_t esdMode = kTRUE;
   if (dynamic_cast<AliAODEvent*>(InputEvent())!=0)

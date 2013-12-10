@@ -5,19 +5,16 @@
 class AliAnalysisAlien;
 
 void runGridLambdaOverK0sJets(TString  runMode    = "full", 
-			      TString  alirootVer = "v5-04-59-AN",
-			      TString  rootVer    = "v5-34-05",
+			      TString  alirootVer = "v5-05-38-AN",
+			      TString  rootVer    = "v5-34-11",
 			      TString  dataPath   = "ESDs/pass2/AOD115/*/AliAOD.root",
 			      TString  dataDir    = "/alice/data/2011/LHC11h_2",		      
 			      TString  workDir    = "test",
 			      TString  name       = "LambdaOverK0sRatio", 
 			      TString  data       = "PbPb2011",
 			      Float_t  minCen     = 0.,
-			      Float_t  maxCen     = 90.,
-			      Float_t  ptMinTrig  = 5.,
-			      Float_t  ptMaxTrig  = 10.,
-			      Float_t  etaMaxTrig = 0.7,
-			      Float_t  rapMaxV0   = 0.7,
+			      Float_t  maxCen     = 40.,
+			      Float_t  dcaDaug    = 0.5,
 			      Bool_t   sepInjec   = kTRUE,
 			      Bool_t   isMC       = kFALSE,
 			      Bool_t   usePID     = kFALSE,
@@ -51,13 +48,13 @@ void runGridLambdaOverK0sJets(TString  runMode    = "full",
   //AliAnalysisTask *pidTask = AddTaskPIDResponse(isMC,kTRUE);
   if(!pidTask) { printf("no PIDtask\n"); return; }
  
-  Float_t checkIDTrig= kTRUE;
+  //Float_t checkIDTrig= kTRUE;
 
   // My task
   gROOT->LoadMacro("AliAnalysisTaskLambdaOverK0sJets.cxx++g"); 
   //gSystem->Load("libPWGLFSTRANGENESS");
   gROOT->LoadMacro("AddTaskLambdaOverK0sJets.C");
-  AliAnalysisTaskLambdaOverK0sJets *task = AddTaskLambdaOverK0sJets(name,data,minCen,maxCen,ptMinTrig,ptMaxTrig,etaMaxTrig,checkIDTrig,rapMaxV0,sepInjec,isMC,usePID,doQA);
+  AliAnalysisTaskLambdaOverK0sJets *task = AddTaskLambdaOverK0sJets(name,data,minCen,maxCen,dcaDaug,sepInjec,isMC,usePID,doQA);
    // _____________________________________________________ //
  
    if (!mgr->InitAnalysis()) return;

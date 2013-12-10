@@ -2,21 +2,21 @@
 
 AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
    const char *outfilename    = "AnalysisOutput.root",
-   UInt_t type                = AliAnalysisTaskEmcal::kTPC,
    const char *nRhosCh        = "rhoCh",
    const char *nRhosChEm      = "rhoChEm",
-   const char *nRhosEm      = "rhoEm",
-   TF1 *sfunc                 = 0,
+   const char *nRhosEm        = "rhoEm",
+   const Double_t scale       = 1.0,
    const Double_t radius      = 0.2,
    const Double_t minPhi      = 1.8,
    const Double_t maxPhi      = 2.74,
    const Double_t minEta      = -0.3,
    const Double_t maxEta      = 0.3,
    const char* usedTracks     = "PicoTracks",
-   const char* outClusName    = "CaloClustersCorr",
+   const char* outClusName    = "caloClustersCorr",
    const Double_t minTrackPt  = 0.15,
    const Double_t minClusterPt = 0.30,
-   const char *CentEst         = "V0A"
+   const char *CentEst         = "V0A",
+   const Int_t type            =1
    )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -44,13 +44,17 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
   const Int_t cFULLJETS           = 0;
   const Int_t cCHARGEDJETS        = 1;
   const Int_t cNEUTRALJETS        = 2;
+
+  UInt_t typeTPC                = AliAnalysisTaskEmcal::kTPC;
+  UInt_t typeEMC                = AliAnalysisTaskEmcal::kEMCAL;
+
     
   float AreaCut = 0.6*radius*radius*TMath::Pi();
 
-  sfunc=new TF1("sfunc","[0]*x*x+[1]*x+[2]",-1,100);
+  TF1 *sfunc=new TF1("sfunc","[0]*x*x+[1]*x+[2]",-1,100);
   sfunc->SetParameter(0,0.0);
   sfunc->SetParameter(1,0.0);
-  sfunc->SetParameter(2,1.5);
+  sfunc->SetParameter(2,scale);
 
 
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
@@ -62,6 +66,7 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
 
   TString scaledname(Form("%s_Scaled", nRhosCh));
   TString newrhoname(Form("%s_All", nRhosCh));
+  //TString scaledname(Form("%s_Scaled", newrhoname));
 
   
   if(!(usedTracks=="")){
@@ -78,14 +83,14 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
 
   AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(usedTracks,outClusName,cANTIKT,radius, cFULLJETS,minTrackPt,minClusterPt);
 
-  AliAnalysisTaskRhoSparse *rhochtask = AddTaskRhoSparse(jetFinderTaskChBack->GetName(),jetFinderTaskChSig->GetName(),usedTracks,outClusName,nRhosCh,radius,0,0.01,0,0,sfunc,0,kTRUE,nRhosCh);
+  AliAnalysisTaskRhoSparse *rhochtask = AddTaskRhoSparse(jetFinderTaskChBack->GetName(),jetFinderTaskChSig->GetName(),usedTracks,outClusName,nRhosCh,radius,typeTPC,0.01,0,0,sfunc,0,kTRUE,nRhosCh);
   rhochtask->SetCentralityEstimator(CentEst);
 
   AliAnalysisTaskRhoSparse *rhochalltask = AddTaskRhoSparse(jetFinderTaskChBackall->GetName(),jetFinderTaskChSig->GetName(),usedTracks,outClusName,newrhoname,radius,0,0.0,0,0,sfunc,0,kTRUE,newrhoname);
   rhochtask->SetCentralityEstimator(CentEst);
 
 
-  AliAnalysisTaskRhoSparse *rhochemtask = AddTaskRhoSparse(jetFinderTaskChEmBack->GetName(),jetFinderTask->GetName(),usedTracks,outClusName,nRhosChEm,radius,0,0.01,0,0,0,0,kTRUE,nRhosChEm);
+  AliAnalysisTaskRhoSparse *rhochemtask = AddTaskRhoSparse(jetFinderTaskChEmBack->GetName(),jetFinderTask->GetName(),usedTracks,outClusName,nRhosChEm,radius,typeEMC,0.01,0,0,0,0,kTRUE,nRhosChEm);
   rhochemtask->SetCentralityEstimator(CentEst);
 
   //nJets=jetFinderTask->GetName();
@@ -143,14 +148,20 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
 
 
   cout << "Ready to run my task..." << nJets <<endl;
-
+  
   TString name(Form("SpectraMECpA_%s", nJets.Data()));
   AliAnalysisTaskEmcalJetSpectraMECpA *spectratask = new AliAnalysisTaskEmcalJetSpectraMECpA(name);
   spectratask->SetJetsName(nJets.Data());
   spectratask->SetCentralityEstimator(CentEst);
-  spectratask->SetAnaType(type);
-  if(!(usedTracks=="")) spectratask->SetRhoName(scaledname);
-  else spectratask->SetRhoName(nRhosEm);
+
+  if(type==0){
+    spectratask->SetAnaType(typeTPC);
+    spectratask->SetRhoName(nRhosCh);
+  }else{
+    spectratask->SetAnaType(typeEMC);
+    if(!(usedTracks=="")) spectratask->SetRhoName(scaledname);
+    else spectratask->SetRhoName(nRhosEm);
+  }
   spectratask->SetJetPhiLimits(minPhi,maxPhi);
   spectratask->SetJetEtaLimits(minEta,maxEta);
   spectratask->SetJetAreaCut(AreaCut);
@@ -160,49 +171,18 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------
 
+
   mgr->AddTask(spectratask);
 
   // Create containers for input/output
-  mgr->ConnectInput (spectratask, 0, mgr->GetCommonInputContainer() );
+  mgr->ConnectInput (spectratask, 0, mgr->GetCommonInputContainer());
   AliAnalysisDataContainer *cospectra = mgr->CreateContainer(name,
                                                            TList::Class(),
                                                            AliAnalysisManager::kOutputContainer,
                                                            outfilename);
   mgr->ConnectOutput(spectratask,1,cospectra);
 
-  cout << "Ready to run my task..." << nJetsCh <<endl;
 
-  ///
-  if(!(usedTracks=="")){
-
-  TString namech(Form("SpectraMECpA_%s", nJetsCh.Data()));
-  AliAnalysisTaskEmcalJetSpectraMECpA *spectrataskch = new AliAnalysisTaskEmcalJetSpectraMECpA(namech);
-  spectrataskch->SetJetsName(nJetsCh.Data());
-  spectrataskch->SetCentralityEstimator(CentEst);
-  spectrataskch->SetAnaType(type);
-  spectrataskch->SetRhoName(nRhosCh);
-  spectrataskch->SetJetPhiLimits(minPhi,maxPhi);
-  spectrataskch->SetJetEtaLimits(minEta,maxEta);
-  spectrataskch->SetJetAreaCut(AreaCut);
-  spectrataskch->SetTracksName(usedTracks);
-
-    //-------------------------------------------------------
-  // Final settings, pass to manager and set the containers
-  //-------------------------------------------------------
-
-  mgr->AddTask(spectrataskch);
-
-  // Create containers for input/output
-  mgr->ConnectInput (spectrataskch, 0, mgr->GetCommonInputContainer() );
-  AliAnalysisDataContainer *cospectrach = mgr->CreateContainer(namech,
-                                                           TList::Class(),
-                                                           AliAnalysisManager::kOutputContainer,
-                                                           outfilename);
-  mgr->ConnectOutput(spectrataskch,1,cospectrach);
-
-  if(type<1) return spectrataskch;
-
-  }
 
   return spectratask;
 }

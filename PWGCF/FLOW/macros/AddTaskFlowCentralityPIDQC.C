@@ -92,8 +92,8 @@ void AddTaskFlowCentralityPIDQC(Int_t centralitysel,
   // EVENTS CUTS:
   AliFlowEventCuts* cutsEvent = new AliFlowEventCuts("event cuts");
   cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
-  cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kVZERO);
-//  cutsEvent->SetRefMultMethod(AliFlowEventCuts::kVZERO);
+  cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
+//  cutsEvent->SetRefMultMethod(AliFlowEventCuts::kV0);
   //cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kSPD1tracklets);
 //  cutsEvent->SetNContributorsRange(2);
   cutsEvent->SetPrimaryVertexZrange(-10.,10.);
@@ -340,7 +340,7 @@ void AddTaskFlowCentralityPIDQC(Int_t centralitysel,
   taskFE->SetCutsEvent(cutsEvent);
   taskFE->SetCutsRP(cutsRP);
   taskFE->SetCutsPOI(cutsPOI);
-  if (cutsRP->GetParamType()==AliFlowTrackCuts::kVZERO)
+  if (cutsRP->GetParamType()==AliFlowTrackCuts::kV0)
   { 
     //TODO: since this is set in a static object all analyses in an analysis train
     //will be affected.

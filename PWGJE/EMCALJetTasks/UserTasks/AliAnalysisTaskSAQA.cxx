@@ -35,7 +35,7 @@ ClassImp(AliAnalysisTaskSAQA)
 
 //________________________________________________________________________
 AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() : 
-  AliAnalysisTaskEmcalJetDev("AliAnalysisTaskSAQA", kTRUE),
+  AliAnalysisTaskEmcalJet("AliAnalysisTaskSAQA", kTRUE),
   fCellEnergyCut(0.1),
   fParticleLevel(kFALSE),
   fIsMC(kFALSE),
@@ -87,7 +87,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
 
 //________________________________________________________________________
 AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) : 
-  AliAnalysisTaskEmcalJetDev(name, kTRUE),
+  AliAnalysisTaskEmcalJet(name, kTRUE),
   fCellEnergyCut(0.1),
   fParticleLevel(kFALSE),
   fIsMC(kFALSE),
@@ -148,7 +148,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 {
   // Create histograms
 
-  AliAnalysisTaskEmcalJetDev::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   if (fParticleCollArray.GetEntriesFast()>0) {
     if (!fParticleLevel && fIsMC) {
@@ -346,7 +346,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   Double_t min[20] = {0};
   Double_t max[20] = {0};
   
-  if (fForceBeamType != AliAnalysisTaskEmcalDev::kpp) {
+  if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
     title[dim] = "Centrality %";
     nbins[dim] = 101;
     min[dim] = 0;
@@ -510,7 +510,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskSAQA::ExecOnce()
 {
-  AliAnalysisTaskEmcalJetDev::ExecOnce();
+  AliAnalysisTaskEmcalJet::ExecOnce();
   
   if (fDoV0QA) {
     fVZERO = InputEvent()->GetVZEROData();
@@ -525,7 +525,7 @@ Bool_t AliAnalysisTaskSAQA::RetrieveEventObjects()
 {
   // Retrieve event objects.
 
-  if (!AliAnalysisTaskEmcalJetDev::RetrieveEventObjects())
+  if (!AliAnalysisTaskEmcalJet::RetrieveEventObjects())
     return kFALSE;
 
   if (!fCentMethod2.IsNull() || !fCentMethod3.IsNull()) {

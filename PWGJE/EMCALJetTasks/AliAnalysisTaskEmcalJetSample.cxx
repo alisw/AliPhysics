@@ -15,6 +15,9 @@
 #include "AliEmcalJet.h"
 #include "AliRhoParameter.h"
 #include "AliLog.h"
+#include "AliJetContainer.h"
+#include "AliParticleContainer.h"
+#include "AliClusterContainer.h"
 
 #include "AliAnalysisTaskEmcalJetSample.h"
 
@@ -22,7 +25,10 @@ ClassImp(AliAnalysisTaskEmcalJetSample)
 
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetSample::AliAnalysisTaskEmcalJetSample() : 
-  AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetSample", kTRUE)
+  AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetSample", kTRUE),
+  fJetsCont(0),
+  fTracksCont(0),
+  fCaloClustersCont(0)
 
 {
   // Default constructor.
@@ -42,9 +48,13 @@ AliAnalysisTaskEmcalJetSample::AliAnalysisTaskEmcalJetSample() :
 
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetSample::AliAnalysisTaskEmcalJetSample(const char *name) : 
-  AliAnalysisTaskEmcalJet(name, kTRUE)
+  AliAnalysisTaskEmcalJet(name, kTRUE),
+  fJetsCont(0),
+  fTracksCont(0),
+  fCaloClustersCont(0)
 {
   // Standard constructor.
+
 
   for (Int_t i = 0; i < 4; i++) {
     fHistTracksPt[i] = 0;
@@ -72,10 +82,14 @@ void AliAnalysisTaskEmcalJetSample::UserCreateOutputObjects()
 
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
+  fJetsCont         = GetJetContainer(0);
+  fTracksCont       = fJetsCont->GetParticleContainer();
+  fCaloClustersCont = fJetsCont->GetClusterContainer();
+
   TString histname;
 
   for (Int_t i = 0; i < 4; i++) {
-    if (!fTracksName.IsNull()) {
+    if (fParticleCollArray.GetEntriesFast()>0) {
       histname = "fHistTracksPt_";
       histname += i;
       fHistTracksPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins / 2, fMinBinPt, fMaxBinPt / 2);
@@ -84,7 +98,7 @@ void AliAnalysisTaskEmcalJetSample::UserCreateOutputObjects()
       fOutput->Add(fHistTracksPt[i]);
     }
 
-    if (!fCaloName.IsNull()) {
+    if (fClusterCollArray.GetEntriesFast()>0) {
       histname = "fHistClustersPt_";
       histname += i;
       fHistClustersPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins / 2, fMinBinPt, fMaxBinPt / 2);
@@ -93,7 +107,7 @@ void AliAnalysisTaskEmcalJetSample::UserCreateOutputObjects()
       fOutput->Add(fHistClustersPt[i]);
     }
 
-    if (!fJetsName.IsNull()) {
+    if (fJetCollArray.GetEntriesFast()>0) {
       histname = "fHistLeadingJetPt_";
       histname += i;
       fHistLeadingJetPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt);
@@ -123,7 +137,7 @@ void AliAnalysisTaskEmcalJetSample::UserCreateOutputObjects()
       fHistJetsPtLeadHad[i]->GetZaxis()->SetTitle("counts");
       fOutput->Add(fHistJetsPtLeadHad[i]);
     
-      if (!fRhoName.IsNull()) {
+      if (!(GetJetContainer()->GetRhoName().IsNull())) {
 	histname = "fHistJetsCorrPtArea_";
 	histname += i;
 	fHistJetsCorrPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins*2, -fMaxBinPt, fMaxBinPt, 30, 0, 3);
@@ -141,64 +155,30 @@ Bool_t AliAnalysisTaskEmcalJetSample::FillHistograms()
 {
   // Fill histograms.
 
-  if (fTracks) {
-    const Int_t ntracks = fTracks->GetEntriesFast();
-    
-    for (Int_t it = 0; it < ntracks; it++) {
-      AliVTrack *track = static_cast<AliVTrack*>(fTracks->At(it));
-
-      if (!track) {
-	AliError(Form("Could not receive track %d", it));
-	continue;
-      }
-     
-      if (!AcceptTrack(track))
-	continue;
-
+  if (fTracksCont) {
+    AliVParticle *track = fTracksCont->GetNextAcceptParticle(0); 
+    while(track) {
       fHistTracksPt[fCentBin]->Fill(track->Pt()); 
+      
+      track = fTracksCont->GetNextAcceptParticle(); 
     }
   }
   
-  if (fCaloClusters) {
-    const Int_t nclusters = fCaloClusters->GetEntriesFast();
-    
-    for (Int_t ic = 0; ic < nclusters; ic++) {
-      AliVCluster *cluster = static_cast<AliVCluster*>(fCaloClusters->At(ic));
-      
-      if (!cluster) {
-	AliError(Form("Could not receive cluster %d", ic));
-	continue;
-      }
+  if (fCaloClustersCont) {
+    AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(0); 
+    while(cluster) {
 
       TLorentzVector nPart;
       cluster->GetMomentum(nPart, fVertex);
       fHistClustersPt[fCentBin]->Fill(nPart.Pt());
+      
+      cluster = fCaloClustersCont->GetNextAcceptCluster(); 
     }
   }
 
-  if (fJets) {
-    static Int_t sortedJets[9999] = {-1};
-    Bool_t r = GetSortedArray(sortedJets, fJets);
-
-    if (r && sortedJets[0]>=0) {
-      AliEmcalJet* leadJet = static_cast<AliEmcalJet*>(fJets->At(sortedJets[0]));
-      if (leadJet)
-	fHistLeadingJetPt[fCentBin]->Fill(leadJet->Pt());
-      else
-	AliError("Could not retrieve leading jet!");
-    }
-
-    const Int_t njets = fJets->GetEntriesFast();
-    for (Int_t ij = 0; ij < njets; ij++) {
-
-      AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(ij));
-      if (!jet) {
-	AliError(Form("Could not receive jet %d", ij));
-	continue;
-      }  
-
-      if (!AcceptJet(jet))
-	continue;
+  if (fJetsCont) {
+    AliEmcalJet *jet = fJetsCont->GetNextAcceptJet(0); 
+    while(jet) {
 
       fHistJetsPtArea[fCentBin]->Fill(jet->Pt(), jet->Area());
       fHistJetsPhiEta[fCentBin]->Fill(jet->Eta(), jet->Phi());
@@ -206,14 +186,28 @@ Bool_t AliAnalysisTaskEmcalJetSample::FillHistograms()
       Float_t ptLeading = GetLeadingHadronPt(jet);
       fHistJetsPtLeadHad[fCentBin]->Fill(jet->Pt(), ptLeading);
 
-      if (fRho) {
-	Float_t corrPt = jet->Pt() - fRhoVal * jet->Area();
-	fHistJetsCorrPtArea[fCentBin]->Fill(corrPt, jet->Area());
-      }
+      Float_t corrPt = jet->Pt() - fJetsCont->GetRhoVal() * jet->Area();
+      fHistJetsCorrPtArea[fCentBin]->Fill(corrPt, jet->Area());
+      
+      jet = fJetsCont->GetNextAcceptJet(); 
     }
+    
+    jet = fJetsCont->GetLeadingJet();
+    fHistLeadingJetPt[fCentBin]->Fill(jet->Pt());
   }
 
   return kTRUE;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEmcalJetSample::ExecOnce() {
+
+  AliAnalysisTaskEmcalJet::ExecOnce();
+
+  if (fJetsCont && fJetsCont->GetArray() == 0) fJetsCont = 0;
+  if (fTracksCont && fTracksCont->GetArray() == 0) fTracksCont = 0;
+  if (fCaloClustersCont && fCaloClustersCont->GetArray() == 0) fCaloClustersCont = 0;
+
 }
 
 //________________________________________________________________________

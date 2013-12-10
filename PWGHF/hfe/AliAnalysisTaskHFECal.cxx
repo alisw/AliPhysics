@@ -95,7 +95,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,stack(0)
   ,fGeom(0)
   ,fOutputList(0)
-  ,fqahist(1) 
+  ,fqahist(0) 
   ,fTrackCuts(0)
   ,fCuts(0)
   ,fIdentifiedAsOutInz(kFALSE)
@@ -145,6 +145,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fPhoElecPtM20(0)
   ,fSameElecPt(0)
   ,fSameElecPtM20(0)
+  ,fSemiElecPtM20(0)
   ,fTrackPtBefTrkCuts(0)	 
   ,fTrackPtAftTrkCuts(0)
   ,fTPCnsigma(0)
@@ -238,7 +239,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,stack(0)
   ,fGeom(0)
   ,fOutputList(0)
-  ,fqahist(1)
+  ,fqahist(0)
   ,fTrackCuts(0)
   ,fCuts(0)
   ,fIdentifiedAsOutInz(kFALSE)
@@ -288,6 +289,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fPhoElecPtM20(0)
   ,fSameElecPt(0)
   ,fSameElecPtM20(0)
+  ,fSemiElecPtM20(0)
   ,fTrackPtBefTrkCuts(0)	 
   ,fTrackPtAftTrkCuts(0)	 	  
   ,fTPCnsigma(0)
@@ -895,6 +897,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
        ftimingEle->Fill(pt,emctof); 
        if(fFlagPhotonicElec) fPhoElecPtM20->Fill(cent,pt);
        if(fFlagConvinatElec) fSameElecPtM20->Fill(cent,pt);
+       if(!fFlagPhotonicElec) fSemiElecPtM20->Fill(cent,pt);
      }
     
  
@@ -1193,6 +1196,9 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fSameElecPtM20 = new TH2F("fSameElecPtM20", "Same-inclusive electron pt with M20",200,0,100,100,0,50);
   fOutputList->Add(fSameElecPtM20);
 
+  fSemiElecPtM20 = new TH2F("fSemiElecPtM20", "Semi-inclusive electron pt with M20",200,0,100,100,0,50);
+  fOutputList->Add(fSemiElecPtM20);
+
   fCent = new TH1F("fCent","Centrality",200,0,100) ;
   fOutputList->Add(fCent);
  
@@ -1205,7 +1211,7 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   Double_t min[16] = {kMinP,  -0.5, 1.0,  -1.0,  -5.0,    0,    0,    0,  0.0, 0.0,  0.0,   0,    0,    0,  80, -1.5};
   Double_t max[16] = {kMaxP,   6.5, 4.0,   1.0,   4.0,  2.0, 0.05,   40,   10, 1.0, 20.0, 100,  100,  2.0, 180,  6.5};
   fEleInfo = new THnSparseD("fEleInfo", "Electron Info; pT [GeV/c]; TPC signal;phi;eta;nSig; E/p;Rmatch;Ncell;clsF;M20;mcpT;Centrality;charge;opp;same;trigCond;MCele", 16, nBins, min, max);
-  fOutputList->Add(fEleInfo);
+  if(fqahist==1)fOutputList->Add(fEleInfo);
 
   // Make common binning
   Int_t nBinsEop[3] =  { 10, 50, 100};
@@ -1475,7 +1481,7 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
   fTrackCuts->SetMaxChi2PerClusterTPC(3.5);
   fTrackCuts->SetMinNClustersTPC(90);
   
-  const AliESDVertex *pVtx = fESD->GetPrimaryVertex();
+  //const AliESDVertex *pVtx = fESD->GetPrimaryVertex();
   Double_t bfield = fESD->GetMagneticField();
   Double_t emass = 0.51*0.001; // (0.51 MeV)
 
@@ -1685,7 +1691,6 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron2(Int_t itrack, Double_t cent,
   fTrackCuts->SetMaxChi2PerClusterTPC(3.5);
   fTrackCuts->SetMinNClustersTPC(90);
   
-  //const AliESDVertex *pVtx = fESD->GetPrimaryVertex();
   Double_t eMass = TDatabasePDG::Instance()->GetParticle(11)->Mass(); //Electron mass in GeV
   Double_t bfield = fESD->GetMagneticField();
   

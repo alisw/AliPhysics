@@ -135,6 +135,11 @@ public:
    */
   TH2D* Result(Bool_t correct=true);
   /** 
+   * After calculating the results, fill the diagnostics histograms 
+   * 
+   */
+  void FillDiagnostics();
+  /** 
    * @return Always true 
    */
   Bool_t IsFolder() const { return kTRUE; }
@@ -279,7 +284,7 @@ protected:
   TH1D*    fMean;         // Mean calculated by poisson method 
   TH1D*    fOcc;          // Histogram of occupancies 
   TH2D*    fCorr;         // Correction as a function of mean 
-  ClassDef(AliPoissonCalculator,2) // Calculate N_ch using Poisson
+  ClassDef(AliPoissonCalculator,3) // Calculate N_ch using Poisson
 };
 
 #endif

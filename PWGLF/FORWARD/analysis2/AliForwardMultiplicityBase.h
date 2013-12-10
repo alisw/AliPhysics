@@ -18,7 +18,7 @@
 #include "AliForwardUtil.h"
 #include "AliAODForwardMult.h"
 #include "AliAODForwardEP.h"
-class AliFMDEnergyFitter;
+// class AliFMDEnergyFitter;
 class AliFMDSharingFilter;
 class AliFMDDensityCalculator;
 class AliFMDCorrector;

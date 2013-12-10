@@ -1474,6 +1474,186 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
   
 }
 
+
+//____________________________________________________________//
+void mergeBFPsi2D(TString momDirectory = "./",
+		  TString directory1 = "",
+		  TString directory2 = "",
+		  TString directory3 = "",
+		  TString directory4 = "",
+		  Int_t gCentrality = 1,
+		  Double_t psiMin = -0.5, Double_t psiMax = 3.5,
+		  TString  eventClass = "Centrality",
+		  Double_t ptTriggerMin = -1.,
+		  Double_t ptTriggerMax = -1.,
+		  Double_t ptAssociatedMin = -1.,
+		  Double_t ptAssociatedMax = -1.
+) {
+  //Macro that draws the BF distributions for each centrality bin
+  //for reaction plane dependent analysis
+  //Author: Panos.Christakoglou@nikhef.nl
+  TGaxis::SetMaxDigits(3);
+  gStyle->SetPalette(55,0);
+
+  const Int_t nMaxDirectories = 4; // maximum number of directories to merge (set to 4 for now)
+  TString sDirectory[nMaxDirectories];
+  Int_t nDirectories = nMaxDirectories;
+
+  TString sFileName[nMaxDirectories];
+  TFile *fBF[nMaxDirectories];
+  TH2D  *hBF[nMaxDirectories];
+  Double_t entries[nMaxDirectories];
+
+  TFile *fOut;
+  TH2D  *hBFOut;
+  Double_t entriesOut = 0.;
+
+  // find out how many directories we have to merge
+ if(directory1==""){
+    nDirectories=0;
+  }
+  else if(directory2==""){
+    nDirectories=1;
+    sDirectory[0]=directory1;
+  }
+  else if(directory3==""){
+    nDirectories=2;
+    sDirectory[0]=directory1;
+    sDirectory[1]=directory2;
+  }
+  else if(directory4==""){
+    nDirectories=3;
+    sDirectory[0]=directory1;
+    sDirectory[1]=directory2;
+    sDirectory[2]=directory3;
+  }
+  else{
+    nDirectories=nMaxDirectories;
+    sDirectory[0]=directory1;
+    sDirectory[1]=directory2;
+    sDirectory[2]=directory3;
+    sDirectory[3]=directory4;
+  }
+
+ for(Int_t iDir = 0; iDir < nDirectories; iDir++){
+
+   //Get the input file
+   sFileName[iDir] = sDirectory[iDir];
+   sFileName[iDir] += "/Centrality"; sFileName[iDir] += gCentrality;
+   sFileName[iDir] += "/"; 
+sFileName[iDir] += momDirectory;
+   sFileName[iDir] += "/balanceFunction2D.";
+   
+  if(eventClass == "Centrality"){
+    sFileName[iDir] += Form("Centrality%.1fTo%.1f",psiMin,psiMax);
+    sFileName[iDir] += ".PsiAll.PttFrom";
+  }
+  else if(eventClass == "Multiplicity"){
+    sFileName[iDir] += Form("Multiplicity%.0fTo%.0f",psiMin,psiMax);
+    sFileName[iDir] += ".PsiAll.PttFrom";
+  }
+  else{ // "EventPlane" (default)
+    sFileName[iDir] += "Centrality";
+    sFileName[iDir] += gCentrality; sFileName[iDir] += ".Psi";
+    if((psiMin == -0.5)&&(psiMax == 0.5)) sFileName[iDir] += "InPlane.Ptt";
+    else if((psiMin == 0.5)&&(psiMax == 1.5)) sFileName[iDir] += "Intermediate.Ptt";
+    else if((psiMin == 1.5)&&(psiMax == 2.5)) sFileName[iDir] += "OutOfPlane.Ptt";
+    else if((psiMin == 2.5)&&(psiMax == 3.5)) sFileName[iDir] += "Rest.PttFrom";
+    else sFileName[iDir] += "All.PttFrom";
+  } 
+  sFileName[iDir] += Form("%.1f",ptTriggerMin); sFileName[iDir] += "To"; 
+  sFileName[iDir] += Form("%.1f",ptTriggerMax); sFileName[iDir] += "PtaFrom";
+  sFileName[iDir] += Form("%.1f",ptAssociatedMin); sFileName[iDir] += "To"; 
+  sFileName[iDir] += Form("%.1f",ptAssociatedMax); 
+  sFileName[iDir] += "_";
+  sFileName[iDir] += Form("%.1f",psiMin);
+  sFileName[iDir] += "-";
+  sFileName[iDir] += Form("%.1f",psiMax);
+  sFileName[iDir] += ".root";  
+  
+  //Open the file
+  fBF[iDir] = TFile::Open(sFileName[iDir].Data());
+  if((!fBF[iDir])||(!fBF[iDir]->IsOpen())) {
+    Printf("The file %s is not found. Not used...",sFileName[iDir]);
+    continue;
+  }
+  //fBF[iDir]->ls();
+
+  hBF[iDir]     = (TH2D*)fBF[iDir]->Get("gHistBalanceFunctionSubtracted");
+  if(!hBF[iDir]) continue;
+  entries[iDir] = (Double_t) hBF[iDir]->GetEntries();
+  entriesOut += entries[iDir];
+  cout<<" BF histogram "<<iDir<<" has "<<entries[iDir] <<" entries."<<endl;
+
+  // scaling and adding (for average)
+  hBF[iDir]->Scale(entries[iDir]);
+  if(iDir==0) hBFOut = (TH2D*)hBF[iDir]->Clone("gHistBalanceFunctionSubtractedOut");
+  else hBFOut->Add(hBF[iDir]);
+  
+ }
+
+ // scaling with all entries
+ hBFOut->Scale(1./entriesOut);
+  
+  drawProjections(hBFOut,
+  		  kTRUE,
+  		  1,36,
+  		  gCentrality,
+  		  psiMin,psiMax,
+  		  ptTriggerMin,ptTriggerMax,
+  		  ptAssociatedMin,ptAssociatedMax,
+  		  kTRUE,
+  		  eventClass,
+  		  kTRUE);
+
+  drawProjections(hBFOut,
+  		  kFALSE,
+  		  1,80,
+  		  gCentrality,
+  		  psiMin,psiMax,
+  		  ptTriggerMin,ptTriggerMax,
+  		  ptAssociatedMin,ptAssociatedMax,
+  		  kTRUE,
+  		  eventClass.Data(),
+  		  kTRUE);
+
+ // output
+ TString outFileName = "balanceFunction2D.";
+ 
+ if(eventClass == "Centrality"){
+   outFileName += Form("Centrality%.1fTo%.1f",psiMin,psiMax);
+   outFileName += ".PsiAll.PttFrom";
+ }
+ else if(eventClass == "Multiplicity"){
+   outFileName += Form("Multiplicity%.0fTo%.0f",psiMin,psiMax);
+   outFileName += ".PsiAll.PttFrom";
+  }
+ else{ // "EventPlane" (default)
+   outFileName += "Centrality";
+   outFileName += gCentrality; outFileName += ".Psi";
+   if((psiMin == -0.5)&&(psiMax == 0.5)) outFileName += "InPlane.Ptt";
+   else if((psiMin == 0.5)&&(psiMax == 1.5)) outFileName += "Intermediate.Ptt";
+   else if((psiMin == 1.5)&&(psiMax == 2.5)) outFileName += "OutOfPlane.Ptt";
+   else if((psiMin == 2.5)&&(psiMax == 3.5)) outFileName += "Rest.PttFrom";
+   else outFileName += "All.PttFrom";
+ } 
+ outFileName += Form("%.1f",ptTriggerMin); outFileName += "To"; 
+ outFileName += Form("%.1f",ptTriggerMax); outFileName += "PtaFrom";
+ outFileName += Form("%.1f",ptAssociatedMin); outFileName += "To"; 
+ outFileName += Form("%.1f",ptAssociatedMax); 
+ outFileName += "_";
+ outFileName += Form("%.1f",psiMin);
+ outFileName += "-";
+ outFileName += Form("%.1f",psiMax);
+ outFileName += ".root";  
+ 
+ hBFOut->SetName("gHistBalanceFunctionSubtracted");
+ fBFOut = TFile::Open(outFileName.Data(),"recreate");  
+ hBFOut->Write();
+ fBFOut->Close();
+ 
+}
+
 //____________________________________________________________________//
 void GetWeightedMean1D(TH1D *gHistBalance, Bool_t kProjectInEta = kTRUE, Int_t fStartBin = 1, Int_t fStopBin = -1, Double_t &WM, Double_t &WME) {
 

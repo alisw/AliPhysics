@@ -58,6 +58,12 @@ public:
    * @name Interface methods 
    */
   /** 
+   * Called on master when setting up the train. 
+   * 
+   * @return Always true 
+   */
+  virtual Bool_t Setup();
+  /** 
    * Book output objects. Derived class should define this to book
    * output objects on the processing output list @c fList before the
    * actual event processing.  This is called on the master and on

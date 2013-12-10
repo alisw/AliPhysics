@@ -48,7 +48,7 @@ void AddTask_GammaConvDalitzV1_pPb(    Int_t trainConfig = 1,
    }
    
    //=========  Set Cutnumber for V0Reader ================================
-   TString ConvCutnumber = "800000006008400100150000000";   //Online  V0 finder
+   TString ConvCutnumber = "8000000060084001001500000000";   //Online  V0 finder
    TString ElecCuts      = "9000540000000200000";            //Electron Cuts
    Bool_t doEtaShift = kFALSE;
 
@@ -172,21 +172,21 @@ void AddTask_GammaConvDalitzV1_pPb(    Int_t trainConfig = 1,
 
    if( trainConfig == 1 ) {
 
-        ConvCutarray[0] = "800000008209360300220000000"; ElecCutarray[0] = "9047540025820262170"; MesonCutarray[0] = "01039035009000"; //standard cut Pi0 PbPb 00-100
-        ConvCutarray[1] = "800000008209360300220000000"; ElecCutarray[1] = "9047540025820261170"; MesonCutarray[1] = "01039035009000"; //standard cut Pi0 PbPb 00-100 + Single Pt primary > 0.100 GeV
-        ConvCutarray[2] = "800000008209460300220000000"; ElecCutarray[2] = "9047540025820262170"; MesonCutarray[2] = "01039035009000"; //standard cut Pi0 PbPb 00-100 + dEdx electron gamma   -6 ,7 sigmas
-        ConvCutarray[3] = "800000008209360300220300000"; ElecCutarray[3] = "9047540025820262170"; MesonCutarray[3] = "01039035009000"; //standard cut Pi0 PbPb 00-100  do Aysemtri cut
-        ConvCutarray[4] = "800000008209360300220000000"; ElecCutarray[4] = "9051540025820262170"; MesonCutarray[4] = "01039035009000"; //standard cut Pi0 PbPb 00-100
-        ConvCutarray[5] = "800000008209360300220000000"; ElecCutarray[5] = "9051540025820262170"; MesonCutarray[5] = "01039035009000"; //standard cut Pi0 PbPb 00-100 Standard cut + dEdx primary -3, 5 and  3.0  , -10 pion rejection
+        ConvCutarray[0] = "8000000082093603007200000000"; ElecCutarray[0] = "9047540025810262170"; MesonCutarray[0] = "01039035009000"; //standard cut Pi0 PbPb 00-100
+        ConvCutarray[1] = "8000000082093603007200000000"; ElecCutarray[1] = "9047540025810261170"; MesonCutarray[1] = "01039035009000"; //standard cut Pi0 PbPb 00-100 + Single Pt primary > 0.100 GeV
+        ConvCutarray[2] = "8000000082094603007200000000"; ElecCutarray[2] = "9047540025810262170"; MesonCutarray[2] = "01039035009000"; //standard cut Pi0 PbPb 00-100 + dEdx electron gamma   -6 ,7 sigmas
+        ConvCutarray[3] = "8000000082093603007203000000"; ElecCutarray[3] = "9047540025810262170"; MesonCutarray[3] = "01039035009000"; //standard cut Pi0 PbPb 00-100  do Aysemtri cut
+        ConvCutarray[4] = "8000000082093603007200000000"; ElecCutarray[4] = "9051540025810262170"; MesonCutarray[4] = "01039035009000"; //standard cut Pi0 PbPb 00-100
+        ConvCutarray[5] = "8000000082093603007200000000"; ElecCutarray[5] = "9051540025810262170"; MesonCutarray[5] = "01039035009000"; //standard cut Pi0 PbPb 00-100 Standard cut + dEdx primary -3, 5 and  3.0  , -10 pion rejection
 
    } else if( trainConfig == 2 ) {
 
-        ConvCutarray[0] = "800000008209360300220000000"; ElecCutarray[0] = "9047540025820262170"; MesonCutarray[0] = "01039035009000"; //standard cut Pi0 PbPb 00-100
-        ConvCutarray[1] = "802000008209360300220000000"; ElecCutarray[1] = "9047540025820262170"; MesonCutarray[1] = "01039035009000"; //standard cut Pi0 PbPb 00-20
-        ConvCutarray[2] = "824000008209360300220000000"; ElecCutarray[2] = "9047540025820262170"; MesonCutarray[2] = "01039035009000"; //standard cut Pi0 PbPb 20-40
-        ConvCutarray[3] = "846000008209360300220000000"; ElecCutarray[3] = "9047540025820262170"; MesonCutarray[3] = "01039035009000"; //standard cut Pi0 PbPb 40-60
-        ConvCutarray[4] = "868000008209360300220000000"; ElecCutarray[4] = "9047540025820262170"; MesonCutarray[4] = "01039035009000"; //standard cut Pi0 PbPb 60-80        
-        ConvCutarray[5] = "860000008209360300220000000"; ElecCutarray[5] = "9047540025820262170"; MesonCutarray[5] = "01039035009000"; //standard cut Pi0 PbPb 60-100
+        ConvCutarray[0] = "8000000082093603007200000000"; ElecCutarray[0] = "9047540025810262170"; MesonCutarray[0] = "01039035009000"; //standard cut Pi0 PbPb 00-100
+        ConvCutarray[1] = "8020000082093603007200000000"; ElecCutarray[1] = "9047540025810262170"; MesonCutarray[1] = "01039035009000"; //standard cut Pi0 PbPb 00-20
+        ConvCutarray[2] = "8240000082093603007200000000"; ElecCutarray[2] = "9047540025810262170"; MesonCutarray[2] = "01039035009000"; //standard cut Pi0 PbPb 20-40
+        ConvCutarray[3] = "8460000082093603007200000000"; ElecCutarray[3] = "9047540025810262170"; MesonCutarray[3] = "01039035009000"; //standard cut Pi0 PbPb 40-60
+        ConvCutarray[4] = "8680000082093603007200000000"; ElecCutarray[4] = "9047540025810262170"; MesonCutarray[4] = "01039035009000"; //standard cut Pi0 PbPb 60-80        
+        ConvCutarray[5] = "8600000082093603007200000000"; ElecCutarray[5] = "9047540025810262170"; MesonCutarray[5] = "01039035009000"; //standard cut Pi0 PbPb 60-100
    }
 
 

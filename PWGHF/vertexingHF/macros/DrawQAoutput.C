@@ -1,5 +1,6 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
+#include <fstream>
 #include <TFile.h>
 #include <TString.h>
 #include <TH2F.h>
@@ -30,6 +31,9 @@ Bool_t ReadFile(TList* &list,TH1F* &hstat, TString listname,TString partname,TSt
 Bool_t ReadFileMore(TList* &list,TH1F* &hstat, AliRDHFCuts* &cutobj, TString listname,TString partname,TString path="./",TString filename=/*"AnalysisResults.root"*/"PWG3histograms.root", TString dirname="PWG3_D2H_QA");
 void SuperimposeBBToTPCSignal(Int_t period /*0=LHC10bc, 1=LHC10d, 2=LHC10h*/,TCanvas* cpid, Int_t set);
 void TPCBetheBloch(Int_t set);
+Bool_t ReadFilesForCompilation(TString inputtextfile, TList**& lists, Int_t&numb, TString*& legend);
+void CompilationEvSelection(Int_t n,TList** lists, TString* legend);
+void CompilationTrackSelection(Int_t n,TList** lists, TString* legend);
 
 Bool_t ReadFile(TList* &list,TH1F* &hstat, TString listname,TString partname,TString path,TString filename, TString dirname){
 
@@ -371,7 +375,7 @@ void DrawOutputPID(TString partname="D0", Int_t mode=0/*0=with pull, 1=with nsig
   Double_t nsigmaTPC[3]={},plimTPC[2]={};
 
   if(mode==1){
-    Bool_t isRead=ReadFileMore(list,hstat,cutobj,listname,partname,path,filename,dirname);
+    Bool_t isRead=ReadFileMore(list,hstat,cutobj,listname,partname+suffixdir,path,filename,dirname);
     if(!isRead) return;
     if(!list || !hstat){
       cout<<":-( null pointers..."<<endl;
@@ -390,7 +394,7 @@ void DrawOutputPID(TString partname="D0", Int_t mode=0/*0=with pull, 1=with nsig
     aodpid->GetPLimit(plimTPC);
 
   }else{
-    Bool_t isRead=ReadFile(list,hstat,listname,partname,path,filename,dirname);
+    Bool_t isRead=ReadFile(list,hstat,listname,partname+suffixdir,path,filename,dirname);
     if(!isRead) return;
     if(!list || !hstat){
       cout<<":-( null pointers..."<<endl;
@@ -890,7 +894,7 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
 
       c->cd();
       c->SetGrid();
-      Int_t entries=h->Integral();
+      Int_t entries=hhh->Integral();
       pvtxt3->AddText(Form("%.1f %s of the events",(Double_t)entries/(Double_t)nevents*100,"%"));
       hhh->Draw("colz");
       c->SetLogz();
@@ -1329,4 +1333,464 @@ void DrawEventSelection(TString partname="D0", TString path="./",TString suffixd
 
   delete [] words;
 
+  //draw number of events per trigger
+  TH2F* hTrigMul=(TH2F*)list->FindObject("hTrigMul");
+
+  TH1F *hnEvPerTrig=(TH1F*)hTrigMul->ProjectionX("hnEvPerTrig");
+  hnEvPerTrig->SetTitle("Number of events per trigger");
+  TCanvas* cnev=new TCanvas("cnev","Number of events",1400,800);
+  cnev->cd();
+  hnEvPerTrig->Draw("htext0");
+  cnev->SaveAs(Form("%s.pdf",cnev->GetName()));
+  cnev->SaveAs(Form("%s.eps",cnev->GetName()));
+
+  //draw number of events selected per trigger
+  TH2F* hTrigMulSel=(TH2F*)list->FindObject("hTrigMulSel");
+
+  TH1F *hnEvPerTrigSel=(TH1F*)hTrigMulSel->ProjectionX("hnEvPerTrigSel");
+  hnEvPerTrigSel->SetTitle("Number of events selected per trigger");
+  TCanvas* cnevs=new TCanvas("cnevs","Number of events selected",1400,800);
+  cnevs->cd();
+  hnEvPerTrigSel->Draw("htext0");
+  cnevs->SaveAs(Form("%s%s.pdf",cnevs->GetName(),suffixdir.Data()));
+  cnevs->SaveAs(Form("%s%s.eps",cnevs->GetName(),suffixdir.Data()));
+
+  TH1F* hnEvSelPerc=(TH1F*)hnEvPerTrigSel->Clone("hnEvSelFrac");
+  hnEvSelPerc->SetTitle("Fraction of event selected per trigger");
+  hnEvSelPerc->Divide(hnEvPerTrig);
+  TCanvas* cnevsp=new TCanvas("cnevsp","Fraction of events selected",1400,800);
+  cnevsp->cd();
+  hnEvSelPerc->Draw("htext0");
+  cnevsp->SaveAs(Form("%s%s.pdf",cnevsp->GetName(),suffixdir.Data()));
+  cnevsp->SaveAs(Form("%s%s.eps",cnevsp->GetName(),suffixdir.Data()));
 }
+
+void WriteTextFileForCompilation(TString inputtextfile, Int_t analysistype){
+   //This method writes a text file with the name given in input containing the path of the QA output file, the directories and the lists of histograms to be read to perform a comparison of QA outputs
+   // analysistype = 1 is the OutputTrack
+   // analysistype = 2 is the OutputEventSelection
+   // other outputs can be implemented
+
+   // The paths and trigger type (or more in general the suffix of the directories to be read have to be set in this method)
+   // The legend is set either equal to the trigger type if they are different, or it should be set manually
+   // Run this methos before CompilationOfTriggeredEvents unless the text file has been already produced
+   
+  Printf("WARNING! Did you customize the parameters in the macro?");
+  const Int_t n=8; //customize this
+  TString prepath="/data/Work/HFQA/LHC12QATrainOutputs/";//"./";
+  TString pathname[n]={"LHC12a/Train165/","LHC12b/Train166/","LHC12d/Train168/","LHC12e/Train170/","LHC12f/Train171/","LHC12g/Train172/"};
+
+  TString dirname[n];
+  TString listname[n];
+  ofstream myfile;
+  myfile.open(inputtextfile);
+  myfile<<n<<endl;
+
+  TString filename="AnalysisResults.root";
+  TString basedirname="PWG3_D2H_QA";
+  TString trgnames[n];//={"INT7","EMC7","EMCJET7","EMCGAMMA7","INT8","EMC8","EMCJET8","EMCGAMMA8"}; //customize this
+  TString baselistname="", partname="D00100";
+  TString legend[n]={"LHC12a165","LHC12b166","LHC12d168","LHC12e170","LHC12f171","LHC12g172"}; //Customize this if want it to be different from trgnames
+  if(analysistype==1) baselistname="outputTrack";
+  if(analysistype==2) baselistname="outputEvSel";
+  //... others could be added
+
+  //All in the same directory on your computer
+  for(Int_t i=0;i<n;i++){
+    //set
+    pathname[i]=prepath+pathname[i];//"./";
+    trgnames[i]="EMC7";
+    dirname[i]=basedirname+trgnames[i];
+    listname[i]=baselistname+partname+trgnames[i];
+    if(legend[i]=="") legend[i]=trgnames[i];
+    
+    //Printf("Trigger name is %s",trgnames[i].Data());
+    //Printf("Legend is %s",legend[i].Data());
+    
+    //write text file
+    myfile<<endl;
+    myfile<<endl;
+    myfile<<pathname[i].Data()<<filename.Data()<<endl;
+    myfile<<dirname[i].Data()<<endl;
+    myfile<<listname[i].Data()<<endl;
+    myfile<<legend[i].Data()<<endl;
+      
+  }
+  myfile.close();
+
+}
+
+Bool_t ReadFilesForCompilation(TString inputtextfile, TList**& lists, Int_t& numb, TString*& legend){
+
+   //Method to read the QA files indicated in the text file in input (to be written with WriteTextFileForCompilation() method)
+  ifstream myfile;
+  myfile.open(inputtextfile);
+  if(!myfile.is_open()) Printf("No files found, did you make it correctly?");
+  Int_t n; 
+  myfile >> n;
+  lists=new TList*[n];
+  legend= new TString[n];
+  numb=n;
+
+  Int_t k=0;
+
+  while(myfile){
+   
+    TString filename;
+    myfile>>filename;
+    //Printf("Filename = %s",filename.Data());
+    TFile *fin=new TFile(filename);
+    if(!fin->IsOpen()){
+      Printf("File %s not found",filename.Data());
+      return kFALSE;
+    }
+   
+    TString dirname;
+    myfile>>dirname;
+    //Printf("Dirname = %s",dirname.Data());
+    TDirectoryFile* dir=(TDirectoryFile*)fin->Get(dirname);
+    if(!dir){
+      Printf("Directory %s not found in %s",dirname.Data(),filename.Data());
+      fin->ls();
+      return kFALSE;
+    }
+   
+    TString listname;
+    myfile>>listname;
+    //Printf("Listname = %s",listname.Data());
+    lists[k]=(TList*)dir->Get(listname);
+    if(!lists[k]){
+      Printf("List %s not found in %s",listname.Data(),dirname.Data());
+      dir->ls();
+      return kFALSE;
+    }
+    
+    TString temp;
+    myfile>>temp;
+    legend[k]=temp;
+    Printf("Legend = %s",legend[k].Data());
+    if(!legend[k]){
+      Printf("Legend %s not found",filename.Data());
+      return kFALSE;
+    }
+    
+
+    k++;
+    if(k==n)return kTRUE;// Needed as the while loop does not always realise the end is reached. 
+  }
+  return kTRUE;
+}
+
+void CompilationOfTriggeredEvents(TString inputtextfile,Int_t analysistype){
+   //This method draws the histograms superimposed
+
+   // analysistype = 1 is the OutputTrack
+   // analysistype = 2 is the OutputEventSelection
+   // other outputs can be implemented
+
+  TList **lists=0x0;
+  Int_t n;
+  TString* legend=0x0;
+  Bool_t okread=ReadFilesForCompilation(inputtextfile,lists,n,legend);
+  if(!okread){
+    Printf("Did you write %s with  WriteTextFileForCompilation(%s)?",inputtextfile.Data(),inputtextfile.Data());
+    return;
+  }
+
+  if(analysistype==2){CompilationEvSelection(n,lists,legend);}
+  if(analysistype==1){CompilationTrackSelection(n,lists,legend);}
+}
+
+void CompilationEvSelection(Int_t n,TList** lists, TString* legend){
+   // Specific method for EventSelection output (2)
+
+  TCanvas *cnevs=new TCanvas("cnevs","Number of events selected",1400,800);
+  TCanvas *cnevsp=new TCanvas("cnevsp","Fraction of events selected",1400,800);
+  TH1F** hnEvPerTrig=new TH1F*[n];
+  TH1F** hnEvPerTrigSel=new TH1F*[n];
+  TH1F** hnEvSelPerc=new TH1F*[n];
+  
+  TLegend* leg=new TLegend(0.15,0.5,0.45,0.78);
+  leg->SetFillStyle(0);
+  leg->SetBorderSize(0);
+  
+  Bool_t first=kTRUE;
+  Int_t nentriesl=lists[0]->GetEntries();
+  TCanvas** c=new TCanvas*[nentriesl];
+  Int_t nth1f=0;
+  
+  for(Int_t i=0;i<n;i++){
+   
+    TH2F* hTrigMul=(TH2F*)lists[i]->FindObject("hTrigMul");
+
+    hnEvPerTrig[i]=(TH1F*)hTrigMul->ProjectionX(Form("hnEvPerTrig%d",i));
+    hnEvPerTrig[i]->SetTitle("Number of events selected per trigger");
+   
+
+    TH2F* hTrigMulSel=(TH2F*)lists[i]->FindObject("hTrigMulSel");
+    
+    hnEvPerTrigSel[i]=(TH1F*)hTrigMulSel->ProjectionX(Form("hnEvPerTrigSel%d",i));
+    hnEvPerTrigSel[i]->SetTitle("Number of events selected per trigger");
+    hnEvPerTrigSel[i]->SetLineColor(i+1);
+    hnEvPerTrigSel[i]->SetLineWidth(2);
+
+    cnevs->cd();
+    if(i==0) hnEvPerTrigSel[i]->Draw();
+    else  hnEvPerTrigSel[i]->Draw("sames");
+
+    hnEvSelPerc[i]=(TH1F*)hnEvPerTrigSel[i]->Clone(Form("hnEvSelFrac%d",i));
+    hnEvSelPerc[i]->SetTitle("Fraction of event selected per trigger");
+    hnEvSelPerc[i]->SetLineColor(i+1);
+    hnEvSelPerc[i]->SetLineWidth(2);
+    hnEvSelPerc[i]->Divide(hnEvPerTrig[i]);
+    cnevsp->cd();
+    if(i==0) hnEvSelPerc[i]->Draw("htext0");
+    else  hnEvSelPerc[i]->Draw("htext0sames");
+    nth1f=0; //restart counting per each file 
+    
+    //fill legend
+    leg->AddEntry(hnEvSelPerc[i],legend[i],"L"); 
+    
+    for(Int_t j=0; j<nentriesl; j++){
+       TClass* objtype=lists[i]->At(j)->IsA();
+       TString tpname=objtype->GetName();
+       
+       if (tpname=="TH1F"){
+       	  TH1F* htmp=(TH1F*)lists[i]->At(j);
+       	  
+       	  htmp->SetLineColor(1+i);
+       	  if(htmp->Integral()>0) htmp->Scale(1./htmp->Integral());
+
+       	  if(first) {
+       	     c[nth1f]=new TCanvas(Form("c%s",htmp->GetName()),Form("c%s",htmp->GetName()));       	     
+       	     c[nth1f]->cd();
+       	     htmp->Draw();
+       	       
+       	  }
+       	  else {
+       	     c[nth1f]->cd();
+       	     htmp->Draw("sames");
+       	  }
+       	  nth1f++;
+       }
+    }
+
+    first=kFALSE;
+ 
+  }
+  
+  for(Int_t j=0;j<nth1f;j++){
+     c[j]->cd();
+     leg->Draw();
+     c[j]->SaveAs(Form("%s.pdf",c[j]->GetName()));
+     c[j]->SaveAs(Form("%s.eps",c[j]->GetName()));
+  }
+  
+  cnevs->cd();
+  leg->Draw();
+  cnevs->SaveAs(Form("%s.eps",cnevs->GetName()));
+  cnevs->SaveAs(Form("%s.pdf",cnevs->GetName()));
+  
+  cnevsp->cd();
+  leg->Draw();
+  cnevsp->SaveAs(Form("%s.eps",cnevsp->GetName()));
+  cnevsp->SaveAs(Form("%s.pdf",cnevsp->GetName()));
+  TCanvas *test=new TCanvas();
+  test->cd(); leg->Draw();
+}
+
+
+void CompilationTrackSelection(Int_t n,TList** lists,TString* legend)
+{
+   // Specific method for Track output (1)
+
+  for(Int_t i=0;i<lists[0]->GetEntries();i++){
+    TObjArray* plotseth=new TObjArray();
+    TObjArray* plotsethr=new TObjArray();
+    
+    for(Int_t j=0; j<n; j++){
+      TH1F* temph=(TH1F*)lists[j]->At(i);
+      TH1F * temphr=0x0;
+      TH1F * ploto=0x0; //0th plot to divide by
+      
+      // plot ratios and scale all plots to integral
+      temphr= (TH1F*)temph->Clone(Form("%s_ratio",temph->GetName()));
+      if(j==0)ploto = temphr;
+      else ploto = (TH1F*)plotseth->At(0);
+      temphr->Divide(ploto);
+      if(temphr->Integral()>0){temphr-> Scale(1./temphr->Integral());}// take out for nonscaled ratios
+      if(temph->Integral()>0){ temph-> Scale(1./temph->Integral());}
+      
+      plotseth->AddLast(new TH1F(*temph));
+      plotsethr->AddLast(new TH1F(*temphr));
+    }
+
+    
+    TH1F *h = (TH1F*)plotseth->At(0);
+    TCanvas* c=new TCanvas(Form("c%s",h->GetName()),h->GetName());
+    c->cd();
+    c->SetGrid();
+    TString hname=h->GetName();
+    
+    if(!hname.Contains("nCls")){
+      c->SetLogy();
+      if(hname.Contains("Layer")){
+	for(Int_t ibin=1;ibin<=h->GetNbinsX();ibin++){
+	  h->GetXaxis()->SetBinLabel(ibin+1,Form("%d",ibin));
+	}
+	h->GetXaxis()->SetLabelSize(0.06);
+	h->GetXaxis()->SetRangeUser(0,6); //comment to see ntracks!
+      }
+      //h->SetMinimum(1);
+      h->Draw();
+      
+      TLegend* leg=new TLegend(0.15,0.5,0.45,0.78);
+      leg->SetFillStyle(0);
+      leg->SetBorderSize(0);
+      leg->AddEntry(h,legend[0],"L");
+      
+      for(Int_t j=1; j<n; j++){
+	TH1F * h2 = (TH1F*)plotseth->At(j);
+	h2->SetLineColor(1+j);
+	h2->Draw("sames");
+	leg->AddEntry(h2,legend[j],"L");
+      }
+      
+      leg->Draw();
+      
+      TCanvas* c2=new TCanvas(Form("c2%s",h->GetName()),h->GetName());
+      c2->cd();
+      c2->SetGrid();
+      TH1F *hr = (TH1F*)plotsethr->At(1);
+      hr->SetLineColor(2);
+      hr->Draw();
+      TLegend* leg2=new TLegend(0.15,0.5,0.45,0.78);
+      leg2->SetFillStyle(0);
+      leg2->SetBorderSize(0);
+      
+      TString ratioleg;
+      ratioleg+=legend[1];
+      ratioleg+="/";
+      ratioleg+=legend[0];
+    
+      leg2->AddEntry(hr,ratioleg,"L");
+      
+      for(Int_t j=2; j<n; j++){
+	TH1F * hr2 = (TH1F*)plotsethr->At(j);
+	hr2->SetLineColor(1+j);
+	hr2->Draw("sames");
+      
+	TString ratioleg2;
+	ratioleg2+=legend[j];
+	ratioleg2+="/";
+	ratioleg2+=legend[0];
+
+	leg2->AddEntry(hr2,ratioleg2,"L");
+      }
+      leg2->Draw();
+      c2->SaveAs(Form("%s%s%sRatio.pdf",c->GetName(),legend[0].Data(), legend[n-1].Data()));
+      c2->SaveAs(Form("%s%s%sRatio.eps",c->GetName(),legend[0].Data(), legend[n-1].Data()));
+    } 
+    else {
+      h->Draw("htext0");
+    
+      TLegend* leg=new TLegend(0.15,0.5,0.45,0.78);
+      leg->SetFillStyle(0);
+      leg->SetBorderSize(0);
+      leg->AddEntry(h,legend[0],"L");
+      
+      for(Int_t j=1; j<n; j++){
+	TH1F * h2 = (TH1F*)plotseth->At(j);
+	h2->SetLineColor(1+j);
+	leg->AddEntry(h2,legend[j],"L");
+	h2->Draw("htext0sames");
+      }
+      
+      leg->Draw();
+    }
+    c->cd();
+    c->SaveAs(Form("%s%s%s.eps",c->GetName(),legend[0].Data(), legend[n-1].Data()));
+    c->SaveAs(Form("%s%s%s.pdf",c->GetName(),legend[0].Data(), legend[n-1].Data()));		
+  }
+  
+  Int_t check=0;
+  Int_t maxfa=1;
+  if(n<=10)maxfa=n;
+  else cout<<"Warning: To many files for combinationplot, show only original"<<endl;
+  TLegend* leg3=new TLegend(0.15,0.5,0.45,0.78);
+  leg3->SetFillStyle(0);
+  leg3->SetBorderSize(0);
+  TCanvas* ctrsel=new TCanvas("ctrsel","Track Sel");
+  ctrsel->SetLogy();
+  for(Int_t i=0; i<maxfa; i++){
+    TH1F* hd0fb4=(TH1F*)lists[i]->FindObject("hd0TracksFilterBit4");
+    TH1F* hd0SPD1=(TH1F*)lists[i]->FindObject("hd0TracksSPDin");
+    TH1F* hd0SPDany=(TH1F*)lists[i]->FindObject("hd0TracksSPDany");
+    TH1F* hd0TPCITScuts=(TH1F*)lists[i]->FindObject("hd0TracksTPCITSSPDany");
+    if(hd0fb4 && hd0SPD1 && hd0SPDany && hd0TPCITScuts){
+      if(i==0){check=1;}
+      else{if(check==0)return;}
+      ctrsel->cd();
+      hd0SPD1->SetLineColor(kCyan+3);
+      hd0SPDany->SetLineColor(4);
+      hd0TPCITScuts->SetLineColor(kGreen+1);
+      hd0fb4->SetLineColor(2);
+      if(i==0){
+	hd0SPD1->Draw();
+	ctrsel->Update();
+	TPaveStats *st1=(TPaveStats*)hd0SPD1->GetListOfFunctions()->FindObject("stats");
+	st1->SetTextColor(kCyan+3);
+	st1->SetY1NDC(0.71);
+	st1->SetY2NDC(0.9);
+	hd0SPDany->Draw("sames");
+	ctrsel->Update();
+	TPaveStats *st2=(TPaveStats*)hd0SPDany->GetListOfFunctions()->FindObject("stats");
+	st2->SetY1NDC(0.51);
+	st2->SetY2NDC(0.7);
+	st2->SetTextColor(4);
+	hd0fb4->Draw("sames");
+	ctrsel->Update();
+	TPaveStats *st3=(TPaveStats*)hd0fb4->GetListOfFunctions()->FindObject("stats");
+	st3->SetY1NDC(0.31);
+	st3->SetY2NDC(0.5);
+	st3->SetTextColor(2);
+	hd0TPCITScuts->Draw("sames");
+	ctrsel->Update();
+	TPaveStats *st4=(TPaveStats*)hd0TPCITScuts->GetListOfFunctions()->FindObject("stats");
+       st4->SetY1NDC(0.71);
+       st4->SetY2NDC(0.9);
+       st4->SetX1NDC(0.55);
+       st4->SetX2NDC(0.75);
+       st4->SetTextColor(kGreen+1);
+       ctrsel->Modified();
+       leg3->AddEntry(hd0SPD1,"kITSrefit+SPD inner","L");
+       leg3->AddEntry(hd0SPDany,"kITSrefit+SPD any","L");
+       leg3->AddEntry(hd0TPCITScuts,"TPC+ITS cuts+SPD any","L");
+       leg3->AddEntry(hd0fb4,"Filter Bit 4","L");
+       leg3->AddEntry(hd0SPD1, legend[i], "L");
+      }
+     else{	
+       hd0SPD1->SetStats(0);
+       hd0SPD1->SetLineStyle(i+1);
+       hd0SPD1->Draw("sames"); 
+       hd0SPDany->SetStats(0);
+       hd0SPDany->SetLineStyle(i+1);
+       hd0TPCITScuts->SetStats(0);
+       hd0TPCITScuts->SetLineStyle(i+1);
+       hd0fb4->SetStats(0);
+       hd0fb4->SetLineStyle(i+1);
+       ctrsel->cd();
+       hd0SPD1->Draw("sames");
+       hd0SPDany->Draw("sames");
+       hd0TPCITScuts->Draw("sames");
+       hd0fb4->Draw("sames");
+       leg3->AddEntry(hd0SPD1, legend[i], "L");				
+     }
+     
+    }
+  }
+  leg3->Draw();
+  ctrsel->SaveAs("ImpactParameterTrackSel.eps");
+  ctrsel->SaveAs("ImpactParameterTrackSel.pdf");
+}
+

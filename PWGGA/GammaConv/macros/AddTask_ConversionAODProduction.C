@@ -24,17 +24,17 @@ AliAnalysisTask *AddTask_ConversionAODProduction(Int_t dataset=0, Bool_t isMC = 
 
     if(dataset == 1){
      // Old cut string, no longer compatible with AliConversionCuts
-     // analysiscut="900177009350113211200001000000000";
+     // analysiscut="9001770093501132112000010000000000";
      // New cut string as of April 2013
-       analysiscut= "100000006008400000150000000";
-       analysiscutB="100000016008400000150000000";
+       analysiscut= "1000000060084000001500000000";
+       analysiscutB="1000000160084000001500000000";
     } else if (dataset == 2){
-       analysiscut= "800000006008400000150000000";
-       analysiscutB="800000016008400000150000000";
+       analysiscut= "8000000060084000001500000000";
+       analysiscutB="8000000160084000001500000000";
     } else{
       // analysiscut="
-       analysiscut ="000000006008400100150000000";
-       analysiscutB="000000016008400100150000000";
+       analysiscut ="0000000060084001001500000000";
+       analysiscutB="0000000160084001001500000000";
     }
 
     //========= Add V0 Reader to  ANALYSIS manager =====

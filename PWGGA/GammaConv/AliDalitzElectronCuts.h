@@ -75,7 +75,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t SetCutIds(TString cutString); 
   Int_t fCuts[kNCuts];
   Bool_t SetCut(cutIds cutID, Int_t cut);
-  Bool_t UpdateCutString();
+  Bool_t UpdateCutString(cutIds cutID, Int_t value);
   static const char * fgkCutNames[kNCuts];
 
 
@@ -177,7 +177,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Double_t fPsiPairCut;
   Double_t fDeltaPhiCutMin;
   Double_t fDeltaPhiCutMax;
-  Int_t fMinClsTPC; // minimum clusters in the TPC
+  Double_t fMinClsTPC; // minimum clusters in the TPC
   Double_t fMinClsTPCToF; // minimum clusters to findable clusters
   Bool_t   fDodEdxSigmaITSCut; // flag to use the dEdxCut ITS based on sigmas
   Bool_t   fDodEdxSigmaTPCCut; // flag to use the dEdxCut TPC based on sigmas

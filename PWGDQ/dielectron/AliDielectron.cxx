@@ -185,13 +185,13 @@ AliDielectron::~AliDielectron()
   // Default destructor
   //
   if (fQAmonitor) delete fQAmonitor;
-  if (fHistoArray) delete fHistoArray;
   if (fHistos) delete fHistos;
   if (fPairCandidates) delete fPairCandidates;
   if (fDebugTree) delete fDebugTree;
   if (fMixing) delete fMixing;
   if (fSignalsMC) delete fSignalsMC;
   if (fCfManagerPair) delete fCfManagerPair;
+  if (fHistoArray) delete fHistoArray;
 }
 
 //________________________________________________________________
@@ -327,6 +327,12 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
     //     FillHistograms(0x0,kTRUE);
   }
 
+  // fill candidate variables
+  Double_t ntracks = fTracks[0].GetEntriesFast() + fTracks[1].GetEntriesFast();
+  Double_t npairs  = PairArray(AliDielectron::kEv1PM)->GetEntriesFast();
+  AliDielectronVarManager::SetValue(AliDielectronVarManager::kTracks, ntracks);
+  AliDielectronVarManager::SetValue(AliDielectronVarManager::kPairs,  npairs);
+
   //in case there is a histogram manager, fill the QA histograms
   if (fHistos && fSignalsMC) FillMCHistograms(ev1);
   if (fHistos) FillHistograms(ev1);
@@ -357,23 +363,29 @@ void AliDielectron::ProcessMC(AliVEvent *ev1)
 
   if (fHistos) FillHistogramsMC(dieMC->GetMCEvent(), ev1);
 
-  if(!fSignalsMC) return;
-  //loop over all MC data and Fill the HF, CF containers and histograms if they exist
-  if(fCfManagerPair) fCfManagerPair->SetPdgMother(fPdgMother);
+  // mc tracks
+  if(!dieMC->GetNMCTracks()) return;
 
   // signals to be studied
+  if(!fSignalsMC) return;
   Int_t nSignals = fSignalsMC->GetEntries();
+  if(!nSignals) return;
+
+  //loop over all MC data and Fill the HF, CF containers and histograms if they exist
+  if(fCfManagerPair) fCfManagerPair->SetPdgMother(fPdgMother);
 
   Bool_t bFillCF   = (fCfManagerPair ? fCfManagerPair->GetStepForMCtruth()  : kFALSE);
   Bool_t bFillHF   = (fHistoArray    ? fHistoArray->GetStepForMCGenerated() : kFALSE);
   Bool_t bFillHist = kFALSE;
-  for(Int_t isig=0;isig<nSignals;isig++) {
-    TString sigName = fSignalsMC->At(isig)->GetName();
+  if(fHistos) {
     const THashList *histlist =  fHistos->GetHistogramList();
-    bFillHist |= histlist->FindObject(Form("Pair_%s_MCtruth",sigName.Data()))!=0x0;
-    bFillHist |= histlist->FindObject(Form("Track_Leg_%s_MCtruth",sigName.Data()))!=0x0;
-    bFillHist |= histlist->FindObject(Form("Track_%s_%s_MCtruth",fgkPairClassNames[1],sigName.Data()))!=0x0;
-    if(bFillHist) break;
+    for(Int_t isig=0;isig<nSignals;isig++) {
+      TString sigName = fSignalsMC->At(isig)->GetName();
+      bFillHist |= histlist->FindObject(Form("Pair_%s_MCtruth",sigName.Data()))!=0x0;
+      bFillHist |= histlist->FindObject(Form("Track_Leg_%s_MCtruth",sigName.Data()))!=0x0;
+      bFillHist |= histlist->FindObject(Form("Track_%s_%s_MCtruth",fgkPairClassNames[1],sigName.Data()))!=0x0;
+      if(bFillHist) break;
+    }
   }
   // check if there is anything to fill
   if(!bFillCF && !bFillHF && !bFillHist) return;
@@ -680,12 +692,6 @@ void AliDielectron::EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTra
     // track mapping
     TMap mapRemovedTracks;
 
-    // eta gap ?
-    //Bool_t etagap = kFALSE;
-    //for (Int_t iCut=0; iCut<fEventPlanePreFilter.GetCuts()->GetEntries();++iCut) {
-    //  TString cutName=fEventPlanePreFilter.GetCuts()->At(iCut)->GetName();
-    //  if(cutName.Contains("eta") || cutName.Contains("Eta"))  etagap=kTRUE;
-    //}
 
     Double_t cQX=0., cQY=0.;
     // apply cuts to the tracks, e.g. etagap
@@ -1056,7 +1062,7 @@ void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1,
       UInt_t cutMask=fPairPreFilterLegs.IsSelected(arrTracks1.UncheckedAt(itrack));
       
       //apply cut
-      if (cutMask!=selectedMask) arrTracks1.AddAt(0x0,itrack);;
+      if (cutMask!=selectedMask) arrTracks1.AddAt(0x0,itrack);
     }
     arrTracks1.Compress();
     
@@ -1112,11 +1118,12 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
     for (Int_t itrack2=0; itrack2<end; ++itrack2){
       //create the pair
       candidate->SetTracks(static_cast<AliVTrack*>(arrTracks1.UncheckedAt(itrack1)), fPdgLeg1,
-                             static_cast<AliVTrack*>(arrTracks2.UncheckedAt(itrack2)), fPdgLeg2);
+			   static_cast<AliVTrack*>(arrTracks2.UncheckedAt(itrack2)), fPdgLeg2);
       candidate->SetType(pairIndex);
       Int_t label=AliDielectronMC::Instance()->GetLabelMotherWithPdg(candidate,fPdgMother);
       candidate->SetLabel(label);
       if (label>-1) candidate->SetPdgCode(fPdgMother);
+      else candidate->SetPdgCode(0);
 
       // check for gamma kf particle
       label=AliDielectronMC::Instance()->GetLabelMotherWithPdg(candidate,22);
@@ -1128,11 +1135,10 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
 
       //pair cuts
       UInt_t cutMask=fPairFilter.IsSelected(candidate);
-      
+
       //CF manager for the pair
       if (fCfManagerPair) fCfManagerPair->Fill(cutMask,candidate);
-      //histogram array for the pair
-      if (fHistoArray) fHistoArray->Fill(pairIndex,candidate);
+
       // cut qa
       if(pairIndex==kEv1PM && fCutQA) {
 	fQAmonitor->FillAll(candidate);
@@ -1141,6 +1147,9 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
 
       //apply cut
       if (cutMask!=selectedMask) continue;
+
+      //histogram array for the pair
+      if (fHistoArray) fHistoArray->Fill(pairIndex,candidate);
 
       //add the candidate to the candidate array 
       PairArray(pairIndex)->Add(candidate);
@@ -1173,14 +1182,16 @@ void AliDielectron::FillPairArrayTR()
     
     //CF manager for the pair
     if (fCfManagerPair) fCfManagerPair->Fill(cutMask,&candidate);
-    //histogram array for the pair
-    if (fHistoArray) fHistoArray->Fill((Int_t)kEv1PMRot,&candidate);
     
     //apply cut
     if (cutMask==selectedMask) {
-     if(fHistos) FillHistogramsPair(&candidate);
-     if(fStoreRotatedPairs) PairArray(kEv1PMRot)->Add(new AliDielectronPair(candidate));
-    } 
+
+      //histogram array for the pair
+      if (fHistoArray) fHistoArray->Fill((Int_t)kEv1PMRot,&candidate);
+
+      if(fHistos) FillHistogramsPair(&candidate);
+      if(fStoreRotatedPairs) PairArray(kEv1PMRot)->Add(new AliDielectronPair(candidate));
+    }
   }
 }
 

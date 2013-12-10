@@ -20,7 +20,7 @@ ClassImp(AliAnalysisTaskRhoBase)
 
 //________________________________________________________________________
 AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase() : 
-  AliAnalysisTaskEmcalJetDev("AliAnalysisTaskRhoBase", kFALSE),
+  AliAnalysisTaskEmcalJet("AliAnalysisTaskRhoBase", kFALSE),
   fOutRhoName(),
   fOutRhoScaledName(),
   fCompareRhoName(),
@@ -64,7 +64,7 @@ AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase() :
 
 //________________________________________________________________________
 AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase(const char *name, Bool_t histo) :
-  AliAnalysisTaskEmcalJetDev(name, histo),
+  AliAnalysisTaskEmcalJet(name, histo),
   fOutRhoName(),
   fOutRhoScaledName(),
   fCompareRhoName(),
@@ -115,7 +115,7 @@ void AliAnalysisTaskRhoBase::UserCreateOutputObjects()
   if (!fCreateHisto)
     return;
 
-  AliAnalysisTaskEmcalJetDev::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   fHistRhovsCent = new TH2F("fHistRhovsCent", "fHistRhovsCent", 101, -1,  100, fNbins, fMinBinPt, fMaxBinPt*2);
   fHistRhovsCent->GetXaxis()->SetTitle("Centrality (%)");
@@ -409,7 +409,7 @@ void AliAnalysisTaskRhoBase::ExecOnce()
     }
   }
 
-  AliAnalysisTaskEmcalJetDev::ExecOnce();
+  AliAnalysisTaskEmcalJet::ExecOnce();
 }
 
 //________________________________________________________________________

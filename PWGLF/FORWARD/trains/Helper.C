@@ -366,6 +366,10 @@ struct Helper
     h->Options().Help(std::cout);
     std::cout << std::endl;
   }
+  /**
+   * Add a monitor object - only for PROOF 
+   */
+  virtual Bool_t AddMonitor(const TString&) { return true; }
 protected:
   /** 
    * Constructor 

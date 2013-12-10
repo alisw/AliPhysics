@@ -31,20 +31,57 @@ ULong_t AliForwardUtil::AliROOTRevision()
 {
 #ifdef ALIROOT_SVN_REVISION
   return ALIROOT_SVN_REVISION;
-#else 
-  return 0;
+#elif defined(ALIROOT_REVISION)
+  static ULong_t ret = 0;
+  if (ret != 0) return ret;
+
+  // Select first 32bits of the 40byte long check-sum
+  TString rev(ALIROOT_REVISION, 8);
+  for (ULong_t i = 0; i < 8; i++) {
+    ULong_t p = 0;
+    switch (rev[i]) { 
+    case '0': p = 0; break;
+    case '1': p = 1; break;
+    case '2': p = 2; break;
+    case '3': p = 3; break;
+    case '4': p = 4; break;
+    case '5': p = 5; break;
+    case '6': p = 6; break;
+    case '7': p = 7; break;
+    case '8': p = 8; break;
+    case '9': p = 9; break;
+    case 'a': case 'A': p = 10; break;
+    case 'b': case 'B': p = 11; break;
+    case 'c': case 'C': p = 12; break;
+    case 'd': case 'D': p = 13; break;
+    case 'e': case 'E': p = 14; break;
+    case 'f': case 'F': p = 15; break;
+    }
+    ret |= (p << (32-4*(i+1)));
+  }
+  return ret;
 #endif
 }
 //____________________________________________________________________
 ULong_t AliForwardUtil::AliROOTBranch()
 {
-#ifdef ALIROOT_SVN_BRANCH
+  // Do something here when we switch to git - sigh!
+#if !defined(ALIROOT_SVN_BRANCH) && !defined(ALIROOT_BRANCH) 
+  return 0;
+#endif
   static ULong_t ret = 0;
   if (ret != 0) return ret;
-  
-  TString str(ALIROOT_SVN_BRANCH);
+  TString str;
+  TString top;
+#ifdef ALIROOT_SVN_BRANCH
+  str = ALIROOT_SVN_BRANCH;
+  top = "trunk";
+#elif defined(ALIROOT_BRANCH)
+  str = ALIROOT_BRANCH;
+  top = "master";
+#endif
   if (str[0] == 'v') str.Remove(0,1);
-  if (str.EqualTo("trunk")) return ret = 0xFFFFFFFF;
+  if (str.EqualTo(top)) return ret = 0xFFFFFFFF;
 
   TObjArray*   tokens = str.Tokenize("-");
   TObjString*  pMajor = static_cast<TObjString*>(tokens->At(0));
@@ -62,9 +99,6 @@ ULong_t AliForwardUtil::AliROOTBranch()
     (pAn ? 0xAA : 0));
   
   return ret;
-#else 
-  return 0;
-#endif
 }
 
 //====================================================================
@@ -273,7 +307,7 @@ UShort_t AliForwardUtil::CheckForAOD()
 {
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
   if (dynamic_cast<AliAODInputHandler*>(am->GetInputEventHandler())) {
-    /// ::Info("CheckForAOD", "Found AOD Input handler");
+    // ::Info("CheckForAOD", "Found AOD Input handler");
     return 1;
   }
   if (dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler())) {
@@ -546,6 +580,14 @@ Double_t AliForwardUtil::GetPhiFromStrip(Char_t ring, UShort_t strip,
 TAxis*
 AliForwardUtil::MakeFullIpZAxis(Int_t nCenter)
 {
+  TArrayD bins;
+  MakeFullIpZAxis(nCenter, bins);
+  TAxis* a = new TAxis(bins.GetSize()-1,bins.GetArray());
+  return a;
+}
+void
+AliForwardUtil::MakeFullIpZAxis(Int_t nCenter, TArrayD& bins)
+{
   // Custom vertex axis that will include satellite vertices 
   // Satellite vertices are at k*37.5 where k=-10,-9,...,9,10 
   // Nominal vertices are usually in -10 to 10 and we should have 
@@ -562,7 +604,7 @@ AliForwardUtil::MakeFullIpZAxis(Int_t nCenter)
   const Int_t    nBins   = 2*nSat + nCenter;
   const Int_t    mBin    = nBins / 2;
   Double_t       dCenter = 2*mCenter / nCenter;
-  TArrayD        bins(nBins+1);	
+  bins.Set(nBins+1);
   bins[mBin] = 0;
   for (Int_t i = 1; i <= nCenter/2; i++) { 
     // Assign from the middle out 
@@ -578,9 +620,18 @@ AliForwardUtil::MakeFullIpZAxis(Int_t nCenter)
     bins[mBin-o] = -v;
     bins[mBin+o] = +v;
   }
-  TAxis* a = new TAxis(nBins,bins.GetArray());
-  return a;
 }
+void 
+AliForwardUtil::MakeLogScale(Int_t    nBins, 
+			     Int_t    minOrder, 
+			     Int_t    maxOrder, 
+			     TArrayD& bins)
+{
+  Double_t dO = Double_t(maxOrder-minOrder) / nBins; 
+  bins.Set(nBins+1);
+  for (Int_t i = 0; i <= nBins; i++) bins[i] = TMath::Power(10, i * dO);
+}
+
 void 
 AliForwardUtil::PrintTask(const TObject& o)
 {
@@ -667,9 +718,9 @@ namespace {
     Double_t xiP         = pp[AliForwardUtil::ELossFitter::kXi];
     Double_t sigmaP      = pp[AliForwardUtil::ELossFitter::kSigma];
     Double_t cS          = pp[AliForwardUtil::ELossFitter::kSigma+1];
-    Double_t deltaS      = pp[AliForwardUtil::ELossFitter::kSigma+2];
-    Double_t xiS         = pp[AliForwardUtil::ELossFitter::kSigma+3];
-    Double_t sigmaS      = pp[AliForwardUtil::ELossFitter::kSigma+4];
+    Double_t deltaS      = deltaP; // pp[AliForwardUtil::ELossFitter::kSigma+2];
+    Double_t xiS         = pp[AliForwardUtil::ELossFitter::kSigma+2/*3*/];
+    Double_t sigmaS      = sigmaP; // pp[AliForwardUtil::ELossFitter::kSigma+4];
 
     return (cP * AliForwardUtil::LandauGaus(x,deltaP,xiP,sigmaP,0) + 
 	    cS * AliForwardUtil::LandauGaus(x,deltaS,xiS,sigmaS,0));
@@ -1188,6 +1239,12 @@ AliForwardUtil::ELossFitter::Fit1Particle(TH1* dist, Double_t sigman)
   if (fDebug) 
     ::Info("Fit1Particle", "Fitting in the range %f,%f", minE, maxE);
   TFitResultPtr r = dist->Fit(landau1, FIT_OPTIONS, "", minE, maxE);
+  if (!r.Get()) { 
+    ::Warning("Fit1Particle", 
+	      "No fit returned when processing %s in the range [%f,%f] "
+	      "options %s", dist->GetName(), minE, maxE, FIT_OPTIONS);
+    return 0;
+  }
   // landau1->SetRange(minE, fMaxRange);
   fFitResults.AddAtAndExpand(new TFitResult(*r), 0);
   fFunctions.AddAtAndExpand(landau1, 0);
@@ -1361,6 +1418,24 @@ AliForwardUtil::ELossFitter::FitComposite(TH1* dist, Double_t sigman)
   /* TFitResultPtr r = */ dist->Fit(seed, FIT_OPTIONS, "", minE, maxE);
 
   maxE = dist->GetXaxis()->GetXmax();
+#if 1
+  TF1* comp = new TF1("composite", landauGausComposite, 
+		      minE, maxE, kSigma+1+2);
+  comp->SetParNames("C",       "#Delta_{p}",       "#xi",       "#sigma",
+		    "C#prime", "#xi#prime");
+  comp->SetParameters(0.8 * seed->GetParameter(kC),  // 0 Primary weight 
+		      seed->GetParameter(kDelta),    // 1 Primary Delta
+		      seed->GetParameter(kDelta)/10, // 2 primary Xi
+		      seed->GetParameter(kDelta)/5,  // 3 primary sigma
+		      1.20 * seed->GetParameter(kC), // 5 Secondary weight
+		      seed->GetParameter(kXi));      // 7 secondary Xi
+  // comp->SetParLimits(kC,       minE, fMaxRange); // C
+  comp->SetParLimits(kDelta,      minE, fMaxRange); // Delta
+  comp->SetParLimits(kXi,         0.00, fMaxRange); // Xi 
+  comp->SetParLimits(kSigma,      1e-5, fMaxRange); // Sigma
+  // comp->SetParLimits(kSigma+1, minE, fMaxRange); // C
+  comp->SetParLimits(kSigma+2,    0.00, fMaxRange); // Xi'
+#else
   TF1* comp = new TF1("composite", landauGausComposite, 
 		      minE, maxE, kSigma+1+4);
   comp->SetParNames("C",       "#Delta_{p}",       "#xi",       "#sigma",
@@ -1373,7 +1448,6 @@ AliForwardUtil::ELossFitter::FitComposite(TH1* dist, Double_t sigman)
 		      seed->GetParameter(kDelta),    // 6 secondary Delta
 		      seed->GetParameter(kXi),       // 7 secondary Xi
 		      seed->GetParameter(kSigma));   // 8 secondary sigma
-		      
   // comp->SetParLimits(kC,       minE, fMaxRange); // C
   comp->SetParLimits(kDelta,      minE, fMaxRange); // Delta
   comp->SetParLimits(kXi,         0.00, fMaxRange); // Xi 
@@ -1382,6 +1456,7 @@ AliForwardUtil::ELossFitter::FitComposite(TH1* dist, Double_t sigman)
   comp->SetParLimits(kSigma+2,    minE/10, fMaxRange); // Delta
   comp->SetParLimits(kSigma+3,    0.00,    fMaxRange); // Xi 
   comp->SetParLimits(kSigma+4,    1e-6,    fMaxRange); // Sigma
+#endif		      
   comp->SetLineColor(kRed+1);
   comp->SetLineWidth(3);
   
@@ -1517,11 +1592,11 @@ AliForwardUtil::Histos::ReInit(const TAxis& etaAxis)
   // Parameters:
   //    etaAxis Eta axis to use 
   //
-  RebinEta(fFMD1i, etaAxis);
-  RebinEta(fFMD2i, etaAxis);
-  RebinEta(fFMD2o, etaAxis);
-  RebinEta(fFMD3i, etaAxis);
-  RebinEta(fFMD3o, etaAxis);
+  if (!fFMD1i) fFMD1i = Make(1, 'i', etaAxis); else RebinEta(fFMD1i, etaAxis);
+  if (!fFMD2i) fFMD2i = Make(2, 'i', etaAxis); else RebinEta(fFMD2i, etaAxis);
+  if (!fFMD2o) fFMD2o = Make(2, 'o', etaAxis); else RebinEta(fFMD2o, etaAxis);
+  if (!fFMD3i) fFMD3i = Make(3, 'i', etaAxis); else RebinEta(fFMD3i, etaAxis);
+  if (!fFMD3o) fFMD3o = Make(3, 'o', etaAxis); else RebinEta(fFMD3o, etaAxis);
 }
 
 //____________________________________________________________________
@@ -1534,11 +1609,11 @@ AliForwardUtil::Histos::Clear(Option_t* option)
   // Parameters:
   //    option Not used 
   //
-  if (fFMD1i) fFMD1i->Reset(option);
-  if (fFMD2i) fFMD2i->Reset(option);
-  if (fFMD2o) fFMD2o->Reset(option);
-  if (fFMD3i) fFMD3i->Reset(option);
-  if (fFMD3o) fFMD3o->Reset(option);
+  if (fFMD1i) { fFMD1i->Reset(option); fFMD1i->ResetBit(kSkipRing); }
+  if (fFMD2i) { fFMD2i->Reset(option); fFMD2i->ResetBit(kSkipRing); }
+  if (fFMD2o) { fFMD2o->Reset(option); fFMD2o->ResetBit(kSkipRing); }
+  if (fFMD3i) { fFMD3i->Reset(option); fFMD3i->ResetBit(kSkipRing); }
+  if (fFMD3o) { fFMD3o->Reset(option); fFMD3o->ResetBit(kSkipRing); }
 }
 
 //____________________________________________________________________

@@ -69,6 +69,19 @@ class AliFemtoKKTrackCut : public AliFemtoTrackCut
   void SetMomRangeTPCpidIs(const float& minp, const float& maxp);
   void SetMomRangeITSpidIs(const float& minp, const float& maxp);
 
+  //ml
+ void SetNsigmaTPCle250(Double_t);
+ void SetNsigmaTPC250_400(Double_t);
+ void SetNsigmaTPC400_450(Double_t);
+ void SetNsigmaTPC450_500(Double_t);
+ void SetNsigmaTPCge500(Double_t);
+
+ void SetNsigmaTOF500_800(Double_t);
+ void SetNsigmaTOF800_1000(Double_t);
+ void SetNsigmaTOFge1000(Double_t);
+
+
+
  private:   // here are the quantities I want to cut on...
 
   int               fCharge;             // particle charge
@@ -85,6 +98,19 @@ class AliFemtoKKTrackCut : public AliFemtoTrackCut
   bool              fLabel;              // if true label<0 will not pass throught 
   long              fStatus;             // staus flag
   ReadPIDMethodType fPIDMethod;          // which PID mehod to use. 0 - nsgima, 1 - contour 
+
+  //ml
+ Double_t fNsigmaTPCle250;
+ Double_t fNsigmaTPC250_400;
+ Double_t fNsigmaTPC400_450;
+ Double_t fNsigmaTPC450_500;
+ Double_t fNsigmaTPCge500;
+
+ Double_t fNsigmaTOF500_800;
+ Double_t fNsigmaTOF800_1000;
+ Double_t fNsigmaTOFge1000;
+
+
 
   short             fminTPCclsF;         // min number of findable clusters in the TPC
   short             fminTPCncls;         // min number of clusters in the TPC
@@ -164,6 +190,8 @@ inline void AliFemtoKKTrackCut::SetMaxSigmaToVertex(const float& maxsig) { fMaxS
 inline void AliFemtoKKTrackCut::SetMaxImpactXY(const float& maximpxy) { fMaxImpactXY = maximpxy; }
 inline void AliFemtoKKTrackCut::SetMaxImpactXYPtDep(const float& maxoff, const float& maxnrm, const float& maxpow) { fMaxImpactXYPtOff = maxoff; fMaxImpactXYPtNrm = maxnrm; fMaxImpactXYPtPow = maxpow; }
 inline void AliFemtoKKTrackCut::SetMaxImpactZ(const float& maximpz) { fMaxImpactZ = maximpz; }
+
+
 
 
 #endif

@@ -1,13 +1,24 @@
-TString fileNameBase="AnalysisResults.root";
-AliAnalysisTask*  AddAliTwoParticlePIDCorrTask()
+AliAnalysisTask*  AddAliTwoParticlePIDCorrTask(TString  SampleType="pPb",//pp,pPb,PbPb
+					       TString CentralityMethod="V0A",//V0A/V0M          
+					       Int_t FilterBit=768,//768,16,32
+					       Float_t minPt=0.2,
+					       Float_t maxPt=10.0,
+					       Float_t mineta=-0.8,
+					       Float_t maxeta=0.8,
+					       TString  AnalysisType="AOD",//AOD/MCAOD
+					       const char* outputFileName = 0,
+					       const char* containerName = "TwoParticlePIDCorr",
+					       const char* folderName = "PWGCF_TwoParticlePIDCorr"
+)
 {
-  TString taskname = "pPbPIDCorr";
-  taskname.Append("taskssssssssss");
+  // Get the pointer to the existing analysis manager via the static access method.
+  //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddTaskPIDCorr", "No analysis manager to connect to.");
+    ::Error("AddAliTwoParticlePIDCorr", "No analysis manager to connect to.");
     return NULL;
-  }
+  }  
+ 
   
   if (!mgr->GetInputEventHandler()) {
     ::Error("AddTaskPIDCorr", "This task requires an input event handler");
@@ -15,18 +26,28 @@ AliAnalysisTask*  AddAliTwoParticlePIDCorrTask()
   }
   TString type = mgr->GetInputEventHandler()->GetDataType();
 
-   AliTwoParticlePIDCorr *taskpPbPIDCorr = new AliTwoParticlePIDCorr("TwoParticlePIDCorrTask");
+   AliTwoParticlePIDCorr *PIDCorr = new AliTwoParticlePIDCorr(containerName);
+   PIDCorr->SetSampleType( SampleType);
+   PIDCorr->SetCentralityEstimator( CentralityMethod);
+   PIDCorr->SetFilterBit(FilterBit);
+   PIDCorr->SetKinematicCuts( minPt,  maxPt, mineta, maxeta);
+   PIDCorr->SetAnalysisType(AnalysisType);
    
    //Trigger - Physics Selection
-   taskpPbPIDCorr->SelectCollisionCandidates(AliVEvent::kINT7);
-   mgr->AddTask(taskpPbPIDCorr);
-   
-   AliAnalysisDataContainer *coutFA = mgr->CreateContainer(taskname.Data(), 
-							  TList::Class(),
-							  AliAnalysisManager::kOutputContainer,fileNameBase.Data());
+   // PIDCorr->SelectCollisionCandidates(AliVEvent::kINT7);
 
-  mgr->ConnectInput(taskpPbPIDCorr, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(taskpPbPIDCorr, 1, coutFA);
+   mgr->AddTask(PIDCorr);
+
+ // Create ONLY the output containers for the data produced by the task.
+  // Get and connect other common input/output containers via the manager as below
+  //==============================================================================
+  if (!outputFileName)
+    outputFileName = AliAnalysisManager::GetCommonFileName();
   
-  return taskpPbPIDCorr;
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(containerName, TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:%s", outputFileName, folderName));
+  
+  mgr->ConnectInput  (PIDCorr, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput (PIDCorr, 1, coutput1 );
+   
+  return PIDCorr;
 }

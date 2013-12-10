@@ -26,7 +26,7 @@ using namespace std;
 
 //________________________________________________________________________
 AliEmcalTriggerMaker::AliEmcalTriggerMaker() : 
-  AliAnalysisTaskEmcalDev("AliEmcalTriggerMaker",kFALSE),
+  AliAnalysisTaskEmcal("AliEmcalTriggerMaker",kFALSE),
   fCaloTriggersOutName("EmcalTriggers"),
   fCaloTriggerSetupOutName("EmcalTriggersSetup"),
   fV0InName("AliAODVZERO"),
@@ -43,7 +43,7 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker() :
 
 //________________________________________________________________________
 AliEmcalTriggerMaker::AliEmcalTriggerMaker(const char *name) : 
-  AliAnalysisTaskEmcalDev(name,kFALSE),
+  AliAnalysisTaskEmcal(name,kFALSE),
   fCaloTriggersOutName("EmcalTriggers"),
   fCaloTriggerSetupOutName("EmcalTriggersSetup"),
   fV0InName("AliAODVZERO"),
@@ -69,7 +69,7 @@ void AliEmcalTriggerMaker::ExecOnce()
 {
   // Init the analysis.
 
-  AliAnalysisTaskEmcalDev::ExecOnce();
+  AliAnalysisTaskEmcal::ExecOnce();
 
   if (!fInitialized)
     return;
@@ -147,28 +147,31 @@ Bool_t AliEmcalTriggerMaker::Run()
     return kTRUE;
   }
   
-  // do not process, if sooner than 11h period
-  if( InputEvent()->GetRunNumber() < 167693 )
-    return kTRUE;
-
-  // do not process any MC, since no MC was generated with correct
-  // EMCal trigger L1 jet trigger simulation, yet
-  // productions will be enabled, once some correct once are produced
-  if( MCEvent() != 0 )
-    return kTRUE;
+//   // do not process, if sooner than 11h period
+//   if( InputEvent()->GetRunNumber() < 167693 )
+//     return kTRUE;
+// 
+//   // do not process any MC, since no MC was generated with correct
+//   // EMCal trigger L1 jet trigger simulation, yet
+//   // productions will be enabled, once some correct once are produced
+//   if( MCEvent() != 0 )
+//     return kTRUE;
   
   // must reset before usage, or the class will fail 
   fCaloTriggers->Reset();
-  
+  for (i=0; i<2; i++) {
+    fEGA[i] = 0;
+    fEJE[i] = 0;
+  }
   // first run over the patch array to compose a map of 2x2 patch energies
   // which is then needed to construct the full patch ADC energy
   // class is not empty
   if( fCaloTriggers->GetEntries() > 0 ){
 		
-		// zero the array
-		for( i = 0; i < 48; i++ )
-			for( j = 0; j < 64; j++ )
-				patchADC[i][j] = 0;
+    // zero the array
+    for( i = 0; i < 48; i++ )
+      for( j = 0; j < 64; j++ )
+	patchADC[i][j] = 0;
 		
     // go throuth the trigger channels
     while( fCaloTriggers->Next() ){
@@ -181,8 +184,21 @@ Bool_t AliEmcalTriggerMaker::Run()
       fCaloTriggers->GetL1TimeSum( adcAmp );
 			if( adcAmp > -1 )
 				patchADC[globCol][globRow] = adcAmp;
-		} // patches
-	} // array not empty
+      
+      fCaloTriggers->GetTriggerBits( tBits );
+      
+      Int_t isMC = 0;
+      if (MCEvent()) isMC = 1;
+      
+      Int_t offSet = (1 - isMC) * kTriggerTypeEnd;
+      if (tBits) {
+        if ((tBits >> (offSet + kL1GammaHigh)) & 1 ) fEGA[0] = 1;
+        if ((tBits >> (offSet + kL1GammaLow )) & 1 ) fEGA[1] = 1;
+        if ((tBits >> (offSet + kL1JetHigh  )) & 1 ) fEJE[0] = 1;
+        if ((tBits >> (offSet + kL1JetLow   )) & 1 ) fEJE[1] = 1;
+      }
+    } // patches
+  } // array not empty
   
   // fill the array for offline trigger processing
   // using calibrated cell energies

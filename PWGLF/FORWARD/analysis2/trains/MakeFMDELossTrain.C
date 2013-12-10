@@ -75,7 +75,7 @@ protected:
     if (fOptions.Has("residuals")) resi = fOptions.Get("residuals"); 
 
     // --- Add the task ----------------------------------------------
-    AddTask("AddTaskFMDELoss.C", Form("%d,%d,%d,%d,\"%s\")", 
+    AddTask("AddTaskFMDELoss.C", Form("%d,%d,%d,%d,\"%s\"", 
 				      mc, cent, onlyMB, verb, resi.Data()));
   }
   /** 

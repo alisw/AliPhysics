@@ -29,6 +29,7 @@
 #include "AliAODInputHandler.h"
 #include "AliAODMCParticle.h"
 #include "AliAODTracklets.h"
+#include "AliAnalysisUtils.h"
 
 #include "AliThreePionRadii.h"
 
@@ -58,6 +59,7 @@ AliAnalysisTaskSE(),
   fAODcase(kTRUE),
   fPbPbcase(kTRUE),
   fGenerateSignal(kFALSE),
+  fGeneratorOnly(kFALSE),
   fPdensityPairCut(kTRUE),
   fRMax(11),
   fFilterBit(7),
@@ -70,8 +72,10 @@ AliAnalysisTaskSE(),
   fMbins(fCentBins),
   fMultLimit(0),
   fKt3bins(1),
+  fV0Mbinning(kFALSE),
   fCentBinLowLimit(0),
   fCentBinHighLimit(1),
+  fTriggerType(0),
   fEventCounter(0),
   fEventsToMix(0),
   fZvertexBins(0),
@@ -179,6 +183,7 @@ AliThreePionRadii::AliThreePionRadii(const Char_t *name)
   fAODcase(kTRUE),
   fPbPbcase(kTRUE),
   fGenerateSignal(kFALSE),
+  fGeneratorOnly(kFALSE),
   fPdensityPairCut(kTRUE),
   fRMax(11),
   fFilterBit(7),
@@ -191,8 +196,10 @@ AliThreePionRadii::AliThreePionRadii(const Char_t *name)
   fMbins(fCentBins),
   fMultLimit(0),
   fKt3bins(1),
+  fV0Mbinning(kFALSE),
   fCentBinLowLimit(0),
   fCentBinHighLimit(1),
+  fTriggerType(0),
   fEventCounter(0),
   fEventsToMix(0),
   fZvertexBins(0),
@@ -305,6 +312,7 @@ AliThreePionRadii::AliThreePionRadii(const AliThreePionRadii &obj)
     fAODcase(obj.fAODcase),
     fPbPbcase(obj.fPbPbcase),
     fGenerateSignal(obj.fGenerateSignal),
+    fGeneratorOnly(obj.fGeneratorOnly),
     fPdensityPairCut(obj.fPdensityPairCut),
     fRMax(obj.fRMax),
     fFilterBit(obj.fFilterBit),
@@ -317,8 +325,10 @@ AliThreePionRadii::AliThreePionRadii(const AliThreePionRadii &obj)
     fMbins(obj.fMbins),
     fMultLimit(obj.fMultLimit),
     fKt3bins(obj.fKt3bins),
+    fV0Mbinning(obj.fV0Mbinning),
     fCentBinLowLimit(obj.fCentBinLowLimit),
     fCentBinHighLimit(obj.fCentBinHighLimit),
+    fTriggerType(obj.fTriggerType),
     fEventCounter(obj.fEventCounter),
     fEventsToMix(obj.fEventsToMix),
     fZvertexBins(obj.fZvertexBins),
@@ -390,6 +400,7 @@ AliThreePionRadii &AliThreePionRadii::operator=(const AliThreePionRadii &obj)
   fAODcase = obj.fAODcase;
   fPbPbcase = obj.fPbPbcase; 
   fGenerateSignal = obj.fGenerateSignal;
+  fGeneratorOnly = obj.fGeneratorOnly;
   fPdensityPairCut = obj.fPdensityPairCut;
   fRMax = obj.fRMax;
   fFilterBit = obj.fFilterBit;
@@ -402,8 +413,10 @@ AliThreePionRadii &AliThreePionRadii::operator=(const AliThreePionRadii &obj)
   fMbins = obj.fMbins;
   fMultLimit = obj.fMultLimit;
   fKt3bins = obj.fKt3bins;
+  fV0Mbinning = obj.fV0Mbinning;
   fCentBinLowLimit = obj.fCentBinLowLimit;
   fCentBinHighLimit = obj.fCentBinHighLimit;
+  fTriggerType = obj.fTriggerType;
   fEventCounter = obj.fEventCounter;
   fEventsToMix = obj.fEventsToMix;
   fZvertexBins = obj.fZvertexBins;
@@ -560,7 +573,7 @@ void AliThreePionRadii::ParInit()
     fQupperBound = fQcut[0];
     fQbins = kQbins;
     //
-    fDampStart = 0.5;// was 0.3
+    fDampStart = 0.5;
     fDampStep = 0.02;
   }else if(fPbPbcase && fCentBinLowLimit >= 6) {// PbPb 30-100%, was 50-100%
     fMultLimit=kMultLimitPbPb;
@@ -580,7 +593,7 @@ void AliThreePionRadii::ParInit()
     fQupperBound = fQcut[0];
     fQbins = 2*kQbins;
     //
-    fDampStart = 0.5;// was 0.3
+    fDampStart = 0.5;
     fDampStep = 0.02;
   }else {// pp or pPb
     fMultLimit=kMultLimitPP;
@@ -597,14 +610,14 @@ void AliThreePionRadii::ParInit()
     //
     fQlimitC2 = 2.0;
     fQbinsC2 = 200;
-    fQupperBound = 0.5;// was 0.4
+    fQupperBound = 0.4;// was 0.4
     fQbins = kQbinsPP;
     //
-    fDampStart = 0.5;// was 0.3
+    fDampStart = 0.5;
     fDampStep = 0.02;
   }
 
-  fQLowerCut = 0.005;// was 0.005
+  fQLowerCut = 0.005;
   fKupperBound = 1.0;
   //
  
@@ -713,6 +726,10 @@ void AliThreePionRadii::UserCreateOutputObjects()
   fMultDist3->GetXaxis()->SetTitle("Multiplicity");
   fOutputList->Add(fMultDist3);
   
+  TH1F *fMultDist4 = new TH1F("fMultDist4","Multiplicity Distribution",fMultLimit,-.5,fMultLimit-.5);
+  fMultDist4->GetXaxis()->SetTitle("Multiplicity");
+  fOutputList->Add(fMultDist4);
+  
   TH3F *fPtEtaDist = new TH3F("fPtEtaDist","fPtEtaDist",2,-1.1,1.1, 300,0,3., 28,-1.4,1.4);
   fOutputList->Add(fPtEtaDist);
 
@@ -753,28 +770,45 @@ void AliThreePionRadii::UserCreateOutputObjects()
   TH3D *fAllMCPionPairs = new TH3D("fAllMCPionPairs","",fMbins,.5,fMbins+.5, 20,0,1, 20,0,0.2);
   if(fMCcase) fOutputList->Add(fAllMCPionPairs);
 
+  TH3D *fMuonContamSmearedNum2 = new TH3D("fMuonContamSmearedNum2","",2,-0.5,1.5, 20,0,1, 40,0,0.2);
+  if(fMCcase) fOutputList->Add(fMuonContamSmearedNum2);
+  TH3D *fMuonContamSmearedDen2 = new TH3D("fMuonContamSmearedDen2","",2,-0.5,1.5, 20,0,1, 40,0,0.2);
+  if(fMCcase) fOutputList->Add(fMuonContamSmearedDen2);
+  TH3D *fMuonContamIdealNum2 = new TH3D("fMuonContamIdealNum2","",2,-0.5,1.5, 20,0,1, 40,0,0.2);
+  if(fMCcase) fOutputList->Add(fMuonContamIdealNum2);
+  TH3D *fMuonContamIdealDen2 = new TH3D("fMuonContamIdealDen2","",2,-0.5,1.5, 20,0,1, 40,0,0.2);
+  if(fMCcase) fOutputList->Add(fMuonContamIdealDen2);
+  //
+  TH3D *fMuonContamSmearedNum3 = new TH3D("fMuonContamSmearedNum3","",2,-0.5,1.5, 2,-0.5,1.5, 20,0,0.2);
+  if(fMCcase) fOutputList->Add(fMuonContamSmearedNum3);
+  TH3D *fMuonContamSmearedDen3 = new TH3D("fMuonContamSmearedDen3","",2,-0.5,1.5, 2,-0.5,1.5, 20,0,0.2);
+  if(fMCcase) fOutputList->Add(fMuonContamSmearedDen3);
+  TH3D *fMuonContamIdealNum3 = new TH3D("fMuonContamIdealNum3","",2,-0.5,1.5, 2,-0.5,1.5, 20,0,0.2);
+  if(fMCcase) fOutputList->Add(fMuonContamIdealNum3);
+  TH3D *fMuonContamIdealDen3 = new TH3D("fMuonContamIdealDen3","",2,-0.5,1.5, 2,-0.5,1.5, 20,0,0.2);
+  if(fMCcase) fOutputList->Add(fMuonContamIdealDen3);
+  //
+  TH1D *fMuonParents = new TH1D("fMuonParents","",500,0.5,500.5);
+  if(fMCcase) fOutputList->Add(fMuonParents);
+  TH1D *fSecondaryMuonParents = new TH1D("fSecondaryMuonParents","",500,0.5,500.5);
+  if(fMCcase) fOutputList->Add(fSecondaryMuonParents);
+  TH3D *fMuonPionDeltaQinv = new TH3D("fMuonPionDeltaQinv","",2,-0.5,1.5, 20,0,1, 100,-0.2,0.2);
+  if(fMCcase) fOutputList->Add(fMuonPionDeltaQinv);
+  //
   TProfile *fAvgMult = new TProfile("fAvgMult","",fMbins,.5,fMbins+.5, 0,1500,"");
   fOutputList->Add(fAvgMult);
   TH2D *fAvgMultHisto2D = new TH2D("fAvgMultHisto2D","",fMbins,.5,fMbins+.5, 1000,0.5,2000.5);
   fOutputList->Add(fAvgMultHisto2D);
-  
+  TH2D *fAvgMultHisto2DV0C = new TH2D("fAvgMultHisto2DV0C","",fMbins,.5,fMbins+.5, 1000,0.5,2000.5);
+  fOutputList->Add(fAvgMultHisto2DV0C);
+  TH2D *fAvgMultHisto2DV0AplusC = new TH2D("fAvgMultHisto2DV0AplusC","",fMbins,.5,fMbins+.5, 1000,0.5,2000.5);
+  fOutputList->Add(fAvgMultHisto2DV0AplusC);
 
   TH2D *fTrackChi2NDF = new TH2D("fTrackChi2NDF","",20,0,100, 100,0,10);
   fOutputList->Add(fTrackChi2NDF);
   TH2D *fTrackTPCncls = new TH2D("fTrackTPCncls","",20,0,100, 110,50,160);
   fOutputList->Add(fTrackTPCncls);
 
-
-  TH3D *fTPNRejects1 = new TH3D("fTPNRejects1","",fQbins,0,fQupperBound, fQbins,0,fQupperBound, fQbins,0,fQupperBound);
-  fOutputList->Add(fTPNRejects1);
-  TH3D *fTPNRejects2 = new TH3D("fTPNRejects2","",fQbins,0,fQupperBound, fQbins,0,fQupperBound, fQbins,0,fQupperBound);
-  fOutputList->Add(fTPNRejects2);
-  TH3D *fTPNRejects3 = new TH3D("fTPNRejects3","",fQbins,0,fQupperBound, fQbins,0,fQupperBound, fQbins,0,fQupperBound);
-  fOutputList->Add(fTPNRejects3);
-  TH3D *fTPNRejects4 = new TH3D("fTPNRejects4","",fQbins,0,fQupperBound, fQbins,0,fQupperBound, fQbins,0,fQupperBound);
-  fOutputList->Add(fTPNRejects4);
-  TH3D *fTPNRejects5 = new TH3D("fTPNRejects5","",fQbins,0,fQupperBound, fQbins,0,fQupperBound, fQbins,0,fQupperBound);
-  fOutputList->Add(fTPNRejects5);
 
 
   TH3D *fKt3DistTerm1 = new TH3D("fKt3DistTerm1","",fMbins,.5,fMbins+.5, 20,0,1, 20,0,0.2);
@@ -808,16 +842,29 @@ void AliThreePionRadii::UserCreateOutputObjects()
   fOutputList->Add(fMCWeight3DTerm4MCden);
 
   TH2D *fdNchdEtaResponse = new TH2D("fdNchdEtaResponse","",15,0,15, 15,0,15);
-  TH2D *fNpionTrueDist = new TH2D("fNpionTrueDist","",fMbins,.5,fMbins+.5, 1500,0.5,3000.5);
-  TH2D *fNchTrueDist = new TH2D("fNchTrueDist","",fMbins,.5,fMbins+.5, 1500,0.5,3000.5);
+  TH2D *fNpionTrueDist = new TH2D("fNpionTrueDist","",fMbins,.5,fMbins+.5, 3000,0.5,3000.5);
+  TH2D *fNchTrueDist = new TH2D("fNchTrueDist","",fMbins,.5,fMbins+.5, 3000,0.5,3000.5);// default Nch mapping
+  TH2D *fNchTrueDistFullPt = new TH2D("fNchTrueDistFullPt","",fMbins,.5,fMbins+.5, 3000,0.5,3000.5);// full Pt Nch range mapping
+  TH2D *fNchTrueDistPubMethod = new TH2D("fNchTrueDistPubMethod","",fMbins,.5,fMbins+.5, 3000,0.5,3000.5);// Published pp Nch mapping
+  Float_t PubBins[9]={1.,12.,17.,23.,29.,35.,42.,52.,152.};
+  TProfile *fAvgNchTrueDistvsPubMethodBin = new TProfile("fAvgNchTrueDistvsPubMethodBin","",8,PubBins,"");
   TProfile *fAvgRecRate = new TProfile("fAvgRecRate","",3000,0.5,3000.5, 0,3000, "");
   if(fMCcase) fOutputList->Add(fdNchdEtaResponse);
   if(fMCcase) fOutputList->Add(fNpionTrueDist);
   if(fMCcase) fOutputList->Add(fNchTrueDist);
+  if(fMCcase) fOutputList->Add(fNchTrueDistFullPt);
+  if(fMCcase) fOutputList->Add(fNchTrueDistPubMethod);
   if(fMCcase) fOutputList->Add(fAvgRecRate);
+  if(fMCcase) fOutputList->Add(fAvgNchTrueDistvsPubMethodBin);
   TH2D *fdCentVsNchdEta = new TH2D("fdCentVsNchdEta","",fMbins,.5,fMbins+.5, 15,0,15);
   if(fPbPbcase) fOutputList->Add(fdCentVsNchdEta);
   
+  TH1D *fV0TotSignal = new TH1D("fV0TotSignal","",3000, 0,30000); 
+  if(fV0Mbinning) fOutputList->Add(fV0TotSignal);
+  
+  TH2D *fMultBinVsCent = new TH2D("fMultBinVsCent","",fMbins,.5,fMbins+.5, 100,0,100);
+  fOutputList->Add(fMultBinVsCent);
+
   TH1D *fExtendedQ3Histo_term1 = new TH1D("fExtendedQ3Histo_term1","",50,0,0.5);
   TH1D *fExtendedQ3Histo_term2 = new TH1D("fExtendedQ3Histo_term2","",50,0,0.5);
   TH1D *fExtendedQ3Histo_term5 = new TH1D("fExtendedQ3Histo_term5","",50,0,0.5);
@@ -857,6 +904,12 @@ void AliThreePionRadii::UserCreateOutputObjects()
 		
 		Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fExplicit2 = new TH2D(nameEx2->Data(),"Two Particle Distribution",20,0,1, fQbinsC2,0,fQlimitC2);
 		fOutputList->Add(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fExplicit2);
+		//
+		TString *nameMeanKt=new TString(nameEx2->Data());
+		nameMeanKt->Append("_MeanKt");
+		Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fMeanKt = new TH1D(nameMeanKt->Data(),"Two Particle Distribution",200,0,1);
+		fOutputList->Add(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fMeanKt);
+		//
 		TString *nameEx2QW=new TString(nameEx2->Data());
 		nameEx2QW->Append("_QW");
 		Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fExplicit2QW = new TH2D(nameEx2QW->Data(),"Two Particle Distribution",20,0,1, fQbinsC2,0,fQlimitC2);
@@ -892,7 +945,7 @@ void AliThreePionRadii::UserCreateOutputObjects()
 		  fOutputList->Add(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fPIDpurityDen);
 		  TString *nameEx2PIDpurityNum=new TString(nameEx2->Data());
 		  nameEx2PIDpurityNum->Append("_PIDpurityNum");
-		  Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fPIDpurityNum = new TH2D(nameEx2PIDpurityNum->Data(),"Two Particle Distribution",20,0,1, fQbinsC2,0,fQlimitC2);
+		  Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fPIDpurityNum = new TH3D(nameEx2PIDpurityNum->Data(),"Two Particle Distribution",16,0.5,16.5, 20,0,1, fQbinsC2,0,fQlimitC2);
 		  fOutputList->Add(Charge1[c1].Charge2[c2].SC[sc].MB[mb].EDB[edB].TwoPT[term].fPIDpurityNum);
 		}
 		
@@ -965,6 +1018,10 @@ void AliThreePionRadii::UserCreateOutputObjects()
 		      Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fTerms3 = new TH3D(name3DQ->Data(),"", fQbins,0,fQupperBound, fQbins,0,fQupperBound, fQbins,0,fQupperBound);
 		      fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fTerms3);
 		      //
+		      TString *nameMeanKt=new TString(namePC3->Data());
+		      nameMeanKt->Append("_MeanKt");
+		      Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fMeanKt = new TH1D(nameMeanKt->Data(),"", 200,0,1);
+		      fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].SC[sc].MB[mb].EDB[edB].ThreePT[term].fMeanKt);
 		      
 		      if(sc==0 && fMCcase==kTRUE){
 			TString *name3DMomResIdeal=new TString(namePC3->Data());
@@ -1035,8 +1092,16 @@ void AliThreePionRadii::Exec(Option_t *)
       Bool_t isSelected3 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kSemiCentral);
       if(!isSelected1 && !isSelected2 && !isSelected3 && !fMCcase) {return;}
     }
+  }else{// pp and pPb
+    Bool_t isSelected[4]={kFALSE};
+    isSelected[0] = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+    isSelected[1] = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAnyINT);
+    isSelected[2] = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7);
+    isSelected[3] = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kHighMult);
+    if(!isSelected[fTriggerType] && !fMCcase) return;
   }
-
+  
+  
   ///////////////////////////////////////////////////////////
   const AliAODVertex *primaryVertexAOD;
   AliCentrality *centrality;// for AODs and ESDs
@@ -1048,7 +1113,7 @@ void AliThreePionRadii::Exec(Option_t *)
 
   
   TClonesArray *mcArray = 0x0;
-  Int_t mcNch=0;
+  Int_t mcNch=0, mcNchFullPt=0, mcNchPubMethod=0;
   Int_t mcNpion=0;
   if(fMCcase){
     if(fAODcase){ 
@@ -1062,12 +1127,15 @@ void AliThreePionRadii::Exec(Option_t *)
       for(Int_t mctrackN=0; mctrackN<mcArray->GetEntriesFast(); mctrackN++){
 	AliAODMCParticle *mcParticle = (AliAODMCParticle*)mcArray->At(mctrackN);
 	if(!mcParticle) continue;
-	if(fabs(mcParticle->Eta())>0.8) continue;
 	if(mcParticle->Charge()!=-3 && mcParticle->Charge()!=+3) continue;// x3 by convention
-	if(mcParticle->Pt() < 0.16 || mcParticle->Pt() > 1.0) continue;
 	if(!mcParticle->IsPrimary()) continue;
 	if(!mcParticle->IsPhysicalPrimary()) continue;
-	mcNch++;
+	//
+	if(fabs(mcParticle->Eta())>0.8) continue;
+	if(fabs(mcParticle->Eta())<=0.5) mcNchPubMethod++;// Published pp binning
+	mcNchFullPt++;// My binning in full Pt range
+	if(mcParticle->Pt() < 0.16 || mcParticle->Pt() > 1.0) continue;
+	mcNch++;// My binning in my pt range
 	if(abs(mcParticle->GetPdgCode())==211) mcNpion++;
       }
       
@@ -1077,12 +1145,12 @@ void AliThreePionRadii::Exec(Option_t *)
   UInt_t status=0;
   Int_t positiveTracks=0, negativeTracks=0;
   Int_t myTracks=0, pionCount=0, kaonCount=0, protonCount=0;
-   
+  Int_t FBTracks=0, AODTracks=0;
+
   Double_t vertex[3]={0};
   Int_t zbin=0;
   Double_t zstep=2*10/Double_t(fZvertexBins), zstart=-10.;
   /////////////////////////////////////////////////
-
   
   Float_t centralityPercentile=0;
   //Float_t cStep=5.0, cStart=0;
@@ -1100,8 +1168,10 @@ void AliThreePionRadii::Exec(Option_t *)
       //cout<<"AOD multiplicity = "<<fAOD->GetNumberOfTracks()<<endl;
     }
     
-
-    
+    AliAnalysisUtils *AnaUtil=new AliAnalysisUtils();
+    if(fAOD->GetRunNumber() >= 195344 && fAOD->GetRunNumber() <= 195873) AnaUtil->SetUseMVPlpSelection(kTRUE);// use Multi-Vertex tool for pPb
+    Bool_t pileUpCase=AnaUtil->IsPileUpEvent(fAOD); 
+    if(pileUpCase) return;
     
     ////////////////////////////////
     // Vertexing
@@ -1112,10 +1182,19 @@ void AliThreePionRadii::Exec(Option_t *)
     if(fabs(vertex[2]) > 10) {/*cout<<"Zvertex Out of Range. Skip Event"<<endl;*/ return;} // Z-Vertex Cut 
     ((TH3F*)fOutputList->FindObject("fVertexDist"))->Fill(vertex[0], vertex[1], vertex[2]);
     
+    for (Int_t i = 0; i < fAOD->GetNumberOfTracks(); i++) {
+      AliAODTrack* aodtrack = fAOD->GetTrack(i);
+      if (!aodtrack) continue;
+      AODTracks++;
+      if(!aodtrack->TestFilterBit(BIT(fFilterBit))) continue;// AOD filterBit cut
+      FBTracks++;
+    }
+    ((TH1F*)fOutputList->FindObject("fMultDist2"))->Fill(FBTracks);
+
     if(fAOD->IsPileupFromSPD()) {/*cout<<"PileUpEvent. Skip Event"<<endl;*/ return;} // Reject Pile-up events
     if(primaryVertexAOD->GetNContributors() < 1) {/*cout<<"Bad Vertex. Skip Event"<<endl;*/ return;}
    
-    ((TH1F*)fOutputList->FindObject("fMultDist2"))->Fill(fAOD->GetNumberOfTracks());
+    ((TH1F*)fOutputList->FindObject("fMultDist3"))->Fill(FBTracks);
  
     fBfield = fAOD->GetMagneticField();
     
@@ -1131,7 +1210,7 @@ void AliThreePionRadii::Exec(Option_t *)
       if(tracklets->GetTheta(trackletN) > 1.0904 && tracklets->GetTheta(trackletN) < 2.0512) trackletMult++;// |eta|<0.5 tracklets
     }
    
-    
+    //cout<<fAOD->GetFiredTriggerClasses()<<endl;
     /////////////////////////////
     // Create Shuffled index list
     Int_t randomIndex[fAOD->GetNumberOfTracks()];
@@ -1144,7 +1223,7 @@ void AliThreePionRadii::Exec(Option_t *)
       AliAODTrack* aodtrack = fAOD->GetTrack(randomIndex[i]);
       if (!aodtrack) continue;
       if(myTracks >= fMultLimit) {cout<<"More tracks than Track Limit"<<endl; return;}
-    
+      
       status=aodtrack->GetStatus();
                 
       if(!aodtrack->TestFilterBit(BIT(7))) continue;// AOD filterBit cut
@@ -1305,7 +1384,8 @@ void AliThreePionRadii::Exec(Option_t *)
       if(fTempStruct[myTracks].fProton && fTempStruct[myTracks].fMom < 0.25) continue;//extra cut for protons
 
       if(!fTempStruct[myTracks].fPion) continue;// only pions
-      
+          
+     
 
 
       if(fTempStruct[myTracks].fCharge==+1) {
@@ -1348,15 +1428,66 @@ void AliThreePionRadii::Exec(Option_t *)
 
       myTracks++;
       
+      if(fMCcase){// muon mothers
+	AliAODMCParticle *tempMCTrack=(AliAODMCParticle*)mcArray->At(abs(aodtrack->GetLabel()));
+	if(abs(tempMCTrack->GetPdgCode())==13 && tempMCTrack->GetMother()>0){// muons
+	  AliAODMCParticle *parent=(AliAODMCParticle*)mcArray->At(tempMCTrack->GetMother());
+	  if(parent->IsPhysicalPrimary()){
+	    ((TH1D*)fOutputList->FindObject("fMuonParents"))->Fill(abs(parent->GetPdgCode()));
+	  }else ((TH1D*)fOutputList->FindObject("fSecondaryMuonParents"))->Fill(abs(parent->GetPdgCode()));
+	}
+      }
     }
   }else {// ESD tracks
     cout<<"ESDs not supported currently"<<endl;
     return;
   }
   
+  // Generator info only
+  if(fMCcase && fGeneratorOnly){
+    myTracks=0; pionCount=0; kaonCount=0; protonCount=0;// reset track counters
+    for(Int_t mctrackN=0; mctrackN<mcArray->GetEntriesFast(); mctrackN++){
+      if(myTracks >= fMultLimit) {cout<<"More tracks than Track Limit"<<endl; return;}
+      if(myTracks >= 1300) continue;// additional cut to limit high mult events which exceed pair # limits
+      
+      AliAODMCParticle *mcParticle = (AliAODMCParticle*)mcArray->At(mctrackN);
+      if(!mcParticle) continue;
+      if(fabs(mcParticle->Eta())>0.8) continue;
+      if(mcParticle->Charge()!=-3 && mcParticle->Charge()!=+3) continue;// x3 by convention
+      if(mcParticle->Pt() < 0.16 || mcParticle->Pt() > 1.0) continue;
+      if(!mcParticle->IsPrimary()) continue;
+      if(!mcParticle->IsPhysicalPrimary()) continue;
+      if(abs(mcParticle->GetPdgCode())!=211) continue;
+      
+      fTempStruct[myTracks].fP[0] = mcParticle->Px();
+      fTempStruct[myTracks].fP[1] = mcParticle->Py();
+      fTempStruct[myTracks].fP[2] = mcParticle->Pz();
+      fTempStruct[myTracks].fX[0] = 0.; fTempStruct[myTracks].fX[1] = 0.; fTempStruct[myTracks].fX[2] = 0.;
+      
+      fTempStruct[myTracks].fId = myTracks;// use my track counter 
+      fTempStruct[myTracks].fLabel = mctrackN;
+      fTempStruct[myTracks].fPhi = atan2(fTempStruct[myTracks].fP[1], fTempStruct[myTracks].fP[0]);
+      if(fTempStruct[myTracks].fPhi < 0) fTempStruct[myTracks].fPhi += 2*PI;
+      fTempStruct[myTracks].fPt = sqrt(pow(fTempStruct[myTracks].fP[0],2) + pow(fTempStruct[myTracks].fP[1],2));
+      fTempStruct[myTracks].fMom = sqrt( pow(fTempStruct[myTracks].fPt,2) + pow(fTempStruct[myTracks].fP[2],2) );
+      fTempStruct[myTracks].fEta = mcParticle->Eta();
+      fTempStruct[myTracks].fCharge = int(mcParticle->Charge()/3.);
+      fTempStruct[myTracks].fDCAXY = 0.;
+      fTempStruct[myTracks].fDCAZ = 0.;
+      fTempStruct[myTracks].fDCA = 0.;
+      fTempStruct[myTracks].fPion = kTRUE;
+      fTempStruct[myTracks].fEaccepted = sqrt(pow(fTempStruct[myTracks].fMom,2) + pow(fTrueMassPi,2)); 
+      fTempStruct[myTracks].fKey = 1;
+            
+      myTracks++;
+      pionCount++;
+    }
+  }
+
+
   
   if(myTracks >= 1) {
-    ((TH1F*)fOutputList->FindObject("fMultDist3"))->Fill(myTracks);
+    ((TH1F*)fOutputList->FindObject("fMultDist4"))->Fill(myTracks);
   }
  
  
@@ -1377,12 +1508,8 @@ void AliThreePionRadii::Exec(Option_t *)
   for(Int_t i=0; i<fCentBins; i++){
     if( pionCount >= fMultLimits[i] && pionCount < fMultLimits[i+1]) {fMbin = fCentBins-i-1; break;}
   }
- 
-
-  if(fMbin==-1) {cout<<pionCount<<"  Bad Mbin+++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl; return;}
-  if(fMbin < fCentBinLowLimit || fMbin > fCentBinHighLimit) {cout<<"Mult out of range"<<endl; return;}
   
-
+  
   fFSIindex=0;
   if(fPbPbcase){
     if(fMbin==0) fFSIindex = 0;//0-5%
@@ -1397,26 +1524,70 @@ void AliThreePionRadii::Exec(Option_t *)
     else fFSIindex = 8;//90-100%
   }else fFSIindex = 9;// pp and pPb
   
-  //////////////////////////////////////////////////
-  fEDbin=0;// Extra Dimension bin (Kt, (Kt-Psi),....)
-  //////////////////////////////////////////////////
   
-  //cout<<fMbin<<"  "<<pionCount<<endl;
-  
+  if(fV0Mbinning){
+    Bool_t useV0=kFALSE;
+    if(fPbPbcase) useV0=kTRUE;
+    if(!fPbPbcase && fAOD->GetRunNumber() >= 195344 && fAOD->GetRunNumber() <= 195677) useV0=kTRUE;
+    if(useV0){
+      AliAODVZERO *vZero = fAOD->GetVZEROData();
+      Float_t vZeroAmp = vZero->GetMTotV0A();
+      centrality = fAOD->GetCentrality();
+      centralityPercentile = centrality->GetCentralityPercentile("V0M");
+      for(Int_t i=0; i<fCentBins; i++){
+	if(vZeroAmp/4.4 >= fMultLimits[i] && vZeroAmp/4.4 < fMultLimits[i+1]) {fMbin = fCentBins-i-1; break;}
+      }
+      ((TH1D*)fOutputList->FindObject("fV0TotSignal"))->Fill(vZeroAmp);
+      //cout<<centralityPercentile<<"  "<<vZeroAmp<<"  "<<fMbin<<endl;
+      //
+      Int_t fMbinV0C=-1;
+      vZeroAmp = vZero->GetMTotV0C();
+      for(Int_t i=0; i<fCentBins; i++){
+	if(vZeroAmp/4.4 >= fMultLimits[i] && vZeroAmp/4.4 < fMultLimits[i+1]) {fMbinV0C = fCentBins-i-1; break;}
+      }
+      //
+      Int_t fMbinV0AplusC=-1;
+      vZeroAmp = vZero->GetMTotV0A() + vZero->GetMTotV0C();
+      for(Int_t i=0; i<fCentBins; i++){
+	if(vZeroAmp/4.4 >= fMultLimits[i] && vZeroAmp/4.4 < fMultLimits[i+1]) {fMbinV0AplusC = fCentBins-i-1; break;}
+      }
+      ((TH2D*)fOutputList->FindObject("fAvgMultHisto2DV0C"))->Fill(fMbinV0C+1., pionCount);
+      ((TH2D*)fOutputList->FindObject("fAvgMultHisto2DV0AplusC"))->Fill(fMbinV0AplusC+1., pionCount);
+    }
+  }
+
+  if(fMbin==-1) {cout<<pionCount<<"  Bad Mbin+++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl; return;}
+
   ((TH1F*)fOutputList->FindObject("fEvents1"))->Fill(fMbin+1);
   ((TProfile*)fOutputList->FindObject("fAvgMult"))->Fill(fMbin+1., pionCount);
   ((TH2D*)fOutputList->FindObject("fAvgMultHisto2D"))->Fill(fMbin+1., pionCount);
   if(fMCcase){
     ((TH2D*)fOutputList->FindObject("fdNchdEtaResponse"))->Fill(pow(trackletMult,1/3.), pow(mcNch,1/3.));
     ((TH2D*)fOutputList->FindObject("fNpionTrueDist"))->Fill(fMbin+1., mcNpion);
-    ((TH2D*)fOutputList->FindObject("fNchTrueDist"))->Fill(fMbin+1., mcNch);
+    ((TH2D*)fOutputList->FindObject("fNchTrueDist"))->Fill(fMbin+1., mcNch);// default Nch mapping
+    ((TH2D*)fOutputList->FindObject("fNchTrueDistFullPt"))->Fill(fMbin+1., mcNchFullPt);// full Pt Nch range mapping
+    ((TH2D*)fOutputList->FindObject("fNchTrueDistPubMethod"))->Fill(fMbin+1., mcNchPubMethod);// Published pp Method Nch mapping
+    ((TProfile*)fOutputList->FindObject("fAvgNchTrueDistvsPubMethodBin"))->Fill(mcNchPubMethod, mcNch);// Mapping of Published bins to default Nch bins
     ((TProfile*)fOutputList->FindObject("fAvgRecRate"))->Fill(mcNpion, pionCount);
   }
   if(fPbPbcase){
     ((TH2D*)fOutputList->FindObject("fdCentVsNchdEta"))->Fill(fMbin+1, pow(trackletMult,1/3.));
+    centrality = fAOD->GetCentrality();
+    centralityPercentile = centrality->GetCentralityPercentile("V0M");
+    ((TH2D*)fOutputList->FindObject("fMultBinVsCent"))->Fill(fMbin+1, centralityPercentile);
   }
+
+  // Mult cut
+  if(fMbin < fCentBinLowLimit || fMbin > fCentBinHighLimit) {cout<<"Mult out of range"<<endl; return;}
   
-  //cout<<trackletMult<<"  "<<mcNchdEta<<endl;
+  //////////////////////////////////////////////////
+  fEDbin=0;// Extra Dimension bin (Kt, (Kt-Psi),....)
+  //////////////////////////////////////////////////
+
+
+  
+  //return;// un-comment for a run to calculate Nrec to Nch Mapping 
+
   
   ////////////////////////////////////
   // Add event to buffer if > 0 tracks
@@ -1437,7 +1608,7 @@ void AliThreePionRadii::Exec(Option_t *)
       }	
     }
   }
-    
+  
   
   
   Float_t qinv12=0, qinv13=0, qinv23=0;
@@ -1570,7 +1741,7 @@ void AliThreePionRadii::Exec(Option_t *)
     // Start the pairing process
     // P11 pairing
     // 1st Particle
-   
+    int goodcount=0, badcount=0;
     for (Int_t i=0; i<myTracks; i++) {
          
       Int_t en2=0;
@@ -1665,7 +1836,7 @@ void AliThreePionRadii::Exec(Option_t *)
 	
 	// Pair Splitting/Merging cut
 	if(qinv12 < fQLowerCut) continue;// remove unwanted low-q pairs (also a type of track splitting/merging cut)
-	if(ch1 == ch2){
+	if(ch1 == ch2 && !fGeneratorOnly){
 	  if(!AcceptPair(&((fEvt)->fTracks[i]), &((fEvt+en2)->fTracks[j]))) {
 	    fPairSplitCut[0][i]->AddAt('1',j);
 	    ((TH1F*)fOutputList->FindObject("fRejectedPairs"))->Fill(qinv12);
@@ -1725,12 +1896,138 @@ void AliThreePionRadii::Exec(Option_t *)
 	    
 	    Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fMCqinv->Fill(qinv12MC, MCWeight(ch1,ch2,rForQW,10,qinv12MC));// was 4,5
 	    Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fMCqinvQW->Fill(qinv12MC, qinv12MC*MCWeight(ch1,ch2,rForQW,10,qinv12MC));// was 4,5
-	    // pion purity	    
+	    // pion purity
 	    Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fPIDpurityDen->Fill(transK12, qinv12);
-	    if(abs(mcParticle1->GetPdgCode())==211 && abs(mcParticle2->GetPdgCode())==211){// Pions
-	      Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fPIDpurityNum->Fill(transK12, qinv12);
-	    }
+	    Int_t SCNumber = 1;
+	    
+	    if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==22) SCNumber=1;// e-e
+	    else if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==24) SCNumber=2;// e-mu
+	    else if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==222) SCNumber=3;// e-pi
+	    else if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==332) SCNumber=4;// e-k
+	    else if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==2223) SCNumber=5;// e-p
+	    else if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==26) SCNumber=6;// mu-mu
+	    else if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==224) SCNumber=7;// mu-pi
+	    else if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==334) SCNumber=8;// mu-k
+	    else if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==2225) SCNumber=9;// mu-p
+	    else if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==422) SCNumber=10;// pi-pi
+	    else if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==532) SCNumber=11;// pi-k
+	    else if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==2423) SCNumber=12;// pi-p
+	    else if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==642) SCNumber=13;// k-k
+	    else if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==2533) SCNumber=14;// k-p
+	    else if((abs(mcParticle1->GetPdgCode()) + abs(mcParticle2->GetPdgCode()))==4424) SCNumber=15;// p-p
+	    else SCNumber=16;
+	    
+	    Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fPIDpurityNum->Fill(SCNumber, transK12, qinv12);
+	    
+	    ///////////////////////
+	    // muon contamination
+	    if(qinv12 < fQcut[0] && ((fEvt)->fTracks[i].fLabel != (fEvt+en2)->fTracks[j].fLabel)){
+	      if(abs(mcParticle1->GetPdgCode())==13 || abs(mcParticle2->GetPdgCode())==13){// muon check
+		Float_t Pparent1[4]={pVect1MC[0],pVect1MC[1],pVect1MC[2],pVect1MC[3]}; 
+		Float_t Pparent2[4]={pVect2MC[0],pVect2MC[1],pVect2MC[2],pVect2MC[3]};
+		Bool_t PionParent1=kFALSE, PionParent2=kFALSE;
+		if(abs(mcParticle1->GetPdgCode())==13) {
+		  AliAODMCParticle *parent1=(AliAODMCParticle*)mcArray->At(mcParticle1->GetMother());
+		  if(abs(parent1->GetPdgCode())==211) {
+		    PionParent1=kTRUE;
+		    Pparent1[1] = parent1->Px(); Pparent1[2] = parent1->Py(); Pparent1[3] = parent1->Pz();
+		    Pparent1[0] = sqrt(pow(Pparent1[1],2)+pow(Pparent1[2],2)+pow(Pparent1[3],2)+pow(fTrueMassPi,2));
+		  }
+		}
+		// 
+		if(abs(mcParticle2->GetPdgCode())==13) {
+		  AliAODMCParticle *parent2=(AliAODMCParticle*)mcArray->At(mcParticle2->GetMother());
+		  if(abs(parent2->GetPdgCode())==211) {
+		    goodcount++;
+		    PionParent2=kTRUE;
+		    Pparent2[1] = parent2->Px(); Pparent2[2] = parent2->Py(); Pparent2[3] = parent2->Pz();
+		    Pparent2[0] = sqrt(pow(Pparent2[1],2)+pow(Pparent2[2],2)+pow(Pparent2[3],2)+pow(fTrueMassPi,2));
+		  }else {badcount++;}
+		}
+		Float_t parentQinv12 = GetQinv(0, Pparent1, Pparent2);
+		Float_t WInput = 1.0;
+		if(parentQinv12 > 0.001 && parentQinv12 < 0.2) WInput = MCWeight(ch1,ch2, 10, 10, parentQinv12);
+		Int_t ChComb=0;
+		if(ch1 != ch2) ChComb=1;
+		((TH3D*)fOutputList->FindObject("fMuonContamSmearedNum2"))->Fill(ChComb, transK12, qinv12MC, WInput);
+		((TH3D*)fOutputList->FindObject("fMuonContamSmearedDen2"))->Fill(ChComb, transK12, qinv12MC);
+		((TH3D*)fOutputList->FindObject("fMuonContamIdealNum2"))->Fill(ChComb, transK12, parentQinv12, WInput);
+		((TH3D*)fOutputList->FindObject("fMuonContamIdealDen2"))->Fill(ChComb, transK12, parentQinv12);
+		if(PionParent1==kTRUE && PionParent2==kTRUE) ((TH3D*)fOutputList->FindObject("fMuonPionDeltaQinv"))->Fill(ChComb, transK12, qinv12MC-parentQinv12);
+		
+		////////////////////////////////////
+		// 3rd particle
+		Int_t en3=0;
+		for (Int_t k=j+1; k<(fEvt+en3)->fNtracks; k++) {
+		  pVect3[0]=(fEvt+en3)->fTracks[k].fEaccepted;
+		  pVect3[1]=(fEvt+en3)->fTracks[k].fP[0];
+		  pVect3[2]=(fEvt+en3)->fTracks[k].fP[1];
+		  pVect3[3]=(fEvt+en3)->fTracks[k].fP[2];
+		  //
+		  qinv13 = GetQinv(0, pVect1, pVect3);
+		  qinv23 = GetQinv(0, pVect2, pVect3);
+		  if(qinv13 > fQcut[0] || qinv23 > fQcut[0]) continue;
+		  
+		  if(qinv13 < fQLowerCut || qinv23 < fQLowerCut) continue;// remove unwanted low-q pairs (also a type of track splitting/merging cut)
+		  if(ch1 == ch3 && !fGeneratorOnly){
+		    if(!AcceptPair(&((fEvt)->fTracks[i]), &((fEvt+en3)->fTracks[k]))) {
+		      continue;
+		    }
+		  }
+		  if(ch2 == ch3 && !fGeneratorOnly){
+		    if(!AcceptPair(&((fEvt+en2)->fTracks[j]), &((fEvt+en3)->fTracks[k]))) {
+		      continue;
+		    }
+		  }
+		  
+		  if((fEvt+en3)->fTracks[k].fLabel < (fEvt+en3)->fMCarraySize){
+		    AliAODMCParticle *mcParticle3 = (AliAODMCParticle*)mcArray->At(abs((fEvt+en3)->fTracks[k].fLabel));
+		    
+		    ch3 = Int_t(((fEvt+en3)->fTracks[k].fCharge + 1)/2.);
+		    pVect3MC[0]=sqrt(pow((fEvt+en3)->fMCtracks[abs((fEvt+en3)->fTracks[k].fLabel)].fPtot,2)+pow(fTrueMassPi,2)); 
+		    pVect3MC[1]=(fEvt+en3)->fMCtracks[abs((fEvt+en3)->fTracks[k].fLabel)].fPx;
+		    pVect3MC[2]=(fEvt+en3)->fMCtracks[abs((fEvt+en3)->fTracks[k].fLabel)].fPy;
+		    pVect3MC[3]=(fEvt+en3)->fMCtracks[abs((fEvt+en3)->fTracks[k].fLabel)].fPz;
+		    qinv13MC = GetQinv(0, pVect1MC, pVect3MC);
+		    qinv23MC = GetQinv(0, pVect2MC, pVect3MC);
+		    
+		    q3MC = sqrt(pow(qinv12MC,2)+pow(qinv13MC,2)+pow(qinv23MC,2));
+		    transK3 = sqrt( pow(pVect1[1]+pVect2[1]+pVect3[1],2) + pow(pVect1[2]+pVect2[2]+pVect3[2],2))/3.;
+		    Int_t K3index=0;
+		    if(transK3>0.3) K3index=1;
 
+		    Float_t Pparent3[4]={pVect3MC[0],pVect3MC[1],pVect3MC[2],pVect3MC[3]}; 
+		    if(abs(mcParticle3->GetPdgCode())==13){// muon check
+		      AliAODMCParticle *parent=(AliAODMCParticle*)mcArray->At(mcParticle3->GetMother());
+		      if(abs(parent->GetPdgCode())==211) {
+			Pparent3[1] = parent->Px(); Pparent3[2] = parent->Py(); Pparent3[3] = parent->Pz();
+			Pparent3[0] = sqrt(pow(Pparent3[1],2)+pow(Pparent3[2],2)+pow(Pparent3[3],2)+pow(fTrueMassPi,2));
+		      }
+		    }
+		    Float_t parentQinv13 = GetQinv(0, Pparent1, Pparent3);
+		    Float_t parentQinv23 = GetQinv(0, Pparent2, Pparent3);
+		    if(parentQinv12 < 0.001 || parentQinv12 > 0.2) continue;
+		    if(parentQinv13 < 0.001 || parentQinv13 > 0.2) continue;
+		    if(parentQinv23 < 0.001 || parentQinv23 > 0.2) continue;
+		    Float_t parentQ3 = sqrt(pow(parentQinv12,2) + pow(parentQinv13,2) + pow(parentQinv23,2));
+		    Int_t ChCombtriplet=0;
+		    if(ch1!=ch2 || ch1!=ch3 || ch2!=ch3) ChCombtriplet=1;
+		    Float_t WInput3=1.0;
+		    if(ChCombtriplet==0) WInput3 = MCWeight3D(kTRUE, 1, 10, parentQinv12, parentQinv13, parentQinv23);
+		    else{
+		      if(ch1==ch2) WInput3 = MCWeight3D(kFALSE, 1, 10, parentQinv12, parentQinv13, parentQinv23);
+		      else if(ch1==ch3) WInput3 = MCWeight3D(kFALSE, 1, 10, parentQinv13, parentQinv12, parentQinv23);
+		      else WInput3 = MCWeight3D(kFALSE, 1, 10, parentQinv23, parentQinv12, parentQinv13);
+		    }
+		    ((TH3D*)fOutputList->FindObject("fMuonContamSmearedNum3"))->Fill(ChCombtriplet, K3index, q3MC, WInput3);
+		    ((TH3D*)fOutputList->FindObject("fMuonContamSmearedDen3"))->Fill(ChCombtriplet, K3index, q3MC);
+		    ((TH3D*)fOutputList->FindObject("fMuonContamIdealNum3"))->Fill(ChCombtriplet, K3index, parentQ3, WInput3);
+		    ((TH3D*)fOutputList->FindObject("fMuonContamIdealDen3"))->Fill(ChCombtriplet, K3index, parentQ3);
+		    
+		  }//label check of 3
+		}// 3rd particle
+	      }// muon code check of 1 and 2
+	    }// qinv12 cut
 	  }// label check 2
 	}// MC case
 	
@@ -1740,7 +2037,8 @@ void AliThreePionRadii::Exec(Option_t *)
 	Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fExplicit2QW->Fill(transK12, qinv12, qinv12);
 	Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fAvgP->Fill(transK12, qinv12, (fEvt)->fTracks[i].fMom);
 	Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fAvgP->Fill(transK12, qinv12, (fEvt+en2)->fTracks[j].fMom);
-	
+	//
+	if(qinv12<fQupperBound) Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fMeanKt->Fill(transK12);
 	
 	//////////////////////////////////////////
 	
@@ -1845,7 +2143,7 @@ void AliThreePionRadii::Exec(Option_t *)
       }// j particle
     }// i particle
     
-
+    
     
     //////////////////////////////////////////////
     // P12 pairing
@@ -1873,8 +2171,7 @@ void AliThreePionRadii::Exec(Option_t *)
 	//if(transK12 <= 0.35) fEDbin=0;
 	//else fEDbin=1;
 
-	
-	
+
 	///////////////////////////////
 	ch1 = Int_t(((fEvt)->fTracks[i].fCharge + 1)/2.);
 	ch2 = Int_t(((fEvt+en2)->fTracks[j].fCharge + 1)/2.);
@@ -1900,8 +2197,7 @@ void AliThreePionRadii::Exec(Option_t *)
 		Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[1].fSmeared->Fill(denIndex, qinv12);
 	      }
 	    }
-	  
-	    
+	   
 	    /////////////////////////////////////////////////////
 	    if(qinv12 <= fQcut[qCutBin]) {// 3-particle MRC
 	      
@@ -1935,6 +2231,18 @@ void AliThreePionRadii::Exec(Option_t *)
 		  q3MC = sqrt(pow(qinv12MC,2)+pow(qinv13MC,2)+pow(qinv23MC,2));
 		  transK3 = sqrt( pow(pVect1[1]+pVect2[1]+pVect3[1],2) + pow(pVect1[2]+pVect2[2]+pVect3[2],2))/3.;
 		  
+		  if(qinv12 < fQLowerCut) continue;
+		  if(qinv13 < fQLowerCut) continue;
+		  if(qinv23 < fQLowerCut) continue;
+		  if(ch1 == ch2){
+		    if(!AcceptPair(&((fEvt)->fTracks[i]), &((fEvt+en2)->fTracks[j]))) continue;
+		  }
+		  if(ch1 == ch3){
+		    if(!AcceptPair(&((fEvt)->fTracks[i]), &((fEvt+en3)->fTracks[k]))) continue;
+		  }
+		  if(ch2 == ch3){
+		    if(!AcceptPair(&((fEvt+en2)->fTracks[j]), &((fEvt+en3)->fTracks[k]))) continue;
+		  }
 
 		  //
 		  // The below call to SetFillBins3 will work for all 3-particle terms since all are for fully mixed events. part is set to 1, but only matters for terms 2-4.
@@ -2089,7 +2397,7 @@ void AliThreePionRadii::Exec(Option_t *)
 	
 
 	if(qinv12 < fQLowerCut) continue;// remove unwanted low-q pairs (also a type of track splitting cut)
-	if(ch1 == ch2){
+	if(ch1 == ch2 && !fGeneratorOnly){
 	  if(!AcceptPair(&((fEvt)->fTracks[i]), &((fEvt+en2)->fTracks[j]))) {
 	    fPairSplitCut[1][i]->AddAt('1',j);
 	    continue;
@@ -2100,7 +2408,7 @@ void AliThreePionRadii::Exec(Option_t *)
 	// 2-particle term
 	Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fExplicit2->Fill(transK12, qinv12);
 	Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fExplicit2QW->Fill(transK12, qinv12, qinv12);
-	
+	if(qinv12<fQupperBound) Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fMeanKt->Fill(transK12);
 	
 	//////////////////////////////////////////
 
@@ -2230,7 +2538,7 @@ void AliThreePionRadii::Exec(Option_t *)
 	ch1 = Int_t(((fEvt)->fTracks[i].fCharge + 1)/2.);
 	ch2 = Int_t(((fEvt+en2)->fTracks[j].fCharge + 1)/2.);
 	
-	if(ch1 == ch2){
+	if(ch1 == ch2 && !fGeneratorOnly){
 	  if(!AcceptPair(&((fEvt)->fTracks[i]), &((fEvt+en2)->fTracks[j]))) {
 	    fPairSplitCut[2][i]->AddAt('1',j);
 	    continue;
@@ -2283,7 +2591,7 @@ void AliThreePionRadii::Exec(Option_t *)
 	ch1 = Int_t(((fEvt+en1)->fTracks[i].fCharge + 1)/2.);
 	ch2 = Int_t(((fEvt+en2)->fTracks[j].fCharge + 1)/2.);
 	
-	if(ch1 == ch2){
+	if(ch1 == ch2 && !fGeneratorOnly){
 	  if(!AcceptPair(&((fEvt+en1)->fTracks[i]), &((fEvt+en2)->fTracks[j]))) {
 	    fPairSplitCut[3][i]->AddAt('1',j);
 	    continue;
@@ -2568,11 +2876,13 @@ void AliThreePionRadii::Exec(Option_t *)
 	    
 	    
 	    // if all three pair cuts are the same then the case (config=2 && term=2) never reaches here.
-	    
+	    Float_t Kt12 = sqrt( pow(pVect1[1]+pVect2[1],2) + pow(pVect1[2]+pVect2[2],2))/2.;
+	    Float_t Kt13 = sqrt( pow(pVect1[1]+pVect3[1],2) + pow(pVect1[2]+pVect3[2],2))/2.;
+	    Float_t Kt23 = sqrt( pow(pVect2[1]+pVect3[1],2) + pow(pVect2[2]+pVect3[2],2))/2.;
 	    q3 = sqrt(pow(qinv12,2) + pow(qinv13,2) + pow(qinv23,2));
 	    transK3 = sqrt( pow(pVect1[1]+pVect2[1]+pVect3[1],2) + pow(pVect1[2]+pVect2[2]+pVect3[2],2))/3.;
 	    if(fKt3bins==1) fEDbin=0;
-	    else if(fKt3bins<2){
+	    else if(fKt3bins==2){
 	      if(transK3<0.3) fEDbin=0;
 	      else fEDbin=1;
 	    }else{// fKt3bins==3 is the limit set by fEDbins
@@ -2598,6 +2908,10 @@ void AliThreePionRadii::Exec(Option_t *)
 		////
 		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fTermsQ3->Fill(q3, WInput);
 		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fTerms3->Fill(firstQ, secondQ, thirdQ, WInput);
+		//
+		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fMeanKt->Fill(Kt12);
+		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fMeanKt->Fill(Kt13);
+		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[0].fMeanKt->Fill(Kt23);
 		////
 		//
 		if(fillIndex3==0 && ch1==ch2 && ch1==ch3 && fMCcase==kFALSE){
@@ -2626,7 +2940,10 @@ void AliThreePionRadii::Exec(Option_t *)
 		  ////
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].fTermsQ3->Fill(q3, WInput);
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].fTerms3->Fill(firstQ, secondQ, thirdQ, WInput);
-		  
+		  //
+		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].fMeanKt->Fill(Kt12);
+		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].fMeanKt->Fill(Kt13);
+		  Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[jj-1].fMeanKt->Fill(Kt23);
 		}
 	      }
 	      
@@ -2642,6 +2959,10 @@ void AliThreePionRadii::Exec(Option_t *)
 		ArrangeQs(fillIndex3, key1, key2, key3, ch1, ch2, ch3, qinv12, qinv13, qinv23, part, 5, firstQ, secondQ, thirdQ);
 		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].fTermsQ3->Fill(q3);
 		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].fTerms3->Fill(firstQ, secondQ, thirdQ);
+		//
+		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].fMeanKt->Fill(Kt12);
+		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].fMeanKt->Fill(Kt13);
+		Charge1[bin1].Charge2[bin2].Charge3[bin3].SC[fillIndex3].MB[fMbin].EDB[fEDbin].ThreePT[4].fMeanKt->Fill(Kt23);
 	      }
 	      
 	      

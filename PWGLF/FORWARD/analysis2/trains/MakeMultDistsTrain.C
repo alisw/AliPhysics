@@ -13,10 +13,10 @@
 
 //====================================================================
 /**
- * Analysis train to make @f$ dN/d\eta@f$
+ * Analysis train to make @f$ P(N_{ch})@f$
  * 
  *
- * @ingroup pwglf_forward_dndeta
+ * @ingroup pwglf_forward_multdists
  * @ingroup pwglf_forward_trains_specific
  */
 class MakeMultDistsTrain : public TrainSetup
@@ -33,7 +33,7 @@ public:
     fOptions.Add("trig",       "TYPE", "Trigger type", "V0AND");
     fOptions.Add("vzMin",      "CENTIMETER", "Min Ip Z", -4);
     fOptions.Add("vzMax",      "CENTIMETER", "Max Ip Z", +4);
-    fOptions.Add("phi-acc",    "Use stored phi acceptance", true);
+    fOptions.Add("phi-acc",    "Use stored phi acceptance", false);
     fOptions.Add("asymmetric", "Make asymmetric (+/-) bins", false);
   }
 protected:
@@ -66,6 +66,7 @@ protected:
 	      trig.Data(), vzMin, vzMax, phiAcc, aSymm);
     // --- Add the task ----------------------------------------------
     gROOT->Macro(Form("AddTaskForwardMultDists.C(%s);", args.Data()));
+    AddMonitor("ForwardMultSums");
   }
   //__________________________________________________________________
   /** 

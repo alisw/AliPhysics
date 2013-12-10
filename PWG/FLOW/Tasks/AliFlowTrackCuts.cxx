@@ -11,7 +11,7 @@
  * appear in the supporting documentation. The authors make no claims     *
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+ **********************************************************i****************/
 
 /* $Id$ */ 
 
@@ -19,6 +19,7 @@
 // Data selection for flow framework
 //
 // origin: Mikolaj Krzewicki (mikolaj.krzewicki@cern.ch)
+// mods:   Redmer A. Bertens (rbertens@cern.ch)
 //
 // This class gurantees consistency of cut methods, trackparameter
 // selection (global tracks, TPC only, etc..) and parameter mixing
@@ -46,6 +47,7 @@
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliVParticle.h"
+#include "AliVVZERO.h"
 #include "AliMCParticle.h"
 #include "AliESDtrack.h"
 #include "AliESDMuonTrack.h"   // XZhang 20120604
@@ -98,8 +100,8 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fCutNClustersITS(kFALSE),
   fNClustersITSMax(INT_MAX),
   fNClustersITSMin(INT_MIN),  
-  fUseAODFilterBit(kFALSE),
-  fAODFilterBit(0),
+  fUseAODFilterBit(kTRUE),
+  fAODFilterBit(1),
   fCutDCAToVertexXY(kFALSE),
   fCutDCAToVertexZ(kFALSE),
   fCutMinimalTPCdedx(kFALSE),
@@ -134,7 +136,10 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fRequireStrictTOFTPCagreement(kFALSE),
   fCutRejectElectronsWithTPCpid(kFALSE),
   fProbBayes(0.0),
-  fCurrCentr(0.0)
+  fCurrCentr(0.0),
+  fV0gainEqualization(NULL),
+  fApplyRecentering(kFALSE),
+  fV0gainEqualizationPerRing(kFALSE)
 {
   //io constructor 
   SetPriors(); //init arrays
@@ -145,6 +150,11 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   // TODO: fix streaming problems AliFlowBayesianPID
   fBayesianResponse = new AliFlowBayesianPID();
   fBayesianResponse->SetNewTrackParam();
+  for(Int_t i(0); i < 4; i++) {
+      fV0Apol[i] = 0;
+      fV0Cpol[i] = 0;
+  }
+  for(Int_t i(0); i < 8; i++) fUseVZERORing[i] = kTRUE;
 
 }
 
@@ -183,8 +193,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fCutNClustersITS(kFALSE),
   fNClustersITSMax(INT_MAX),
   fNClustersITSMin(INT_MIN),
-  fUseAODFilterBit(kFALSE),
-  fAODFilterBit(0),
+  fUseAODFilterBit(kTRUE),
+  fAODFilterBit(1),
   fCutDCAToVertexXY(kFALSE),
   fCutDCAToVertexZ(kFALSE),
   fCutMinimalTPCdedx(kFALSE),
@@ -219,7 +229,10 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fRequireStrictTOFTPCagreement(kFALSE),
   fCutRejectElectronsWithTPCpid(kFALSE),
   fProbBayes(0.0),
-  fCurrCentr(0.0)
+  fCurrCentr(0.0),
+  fV0gainEqualization(NULL),
+  fApplyRecentering(kFALSE),
+  fV0gainEqualizationPerRing(kFALSE)
 {
   //constructor 
   SetTitle("AliFlowTrackCuts");
@@ -233,6 +246,11 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   // New PID procedure (Bayesian Combined PID)
   fBayesianResponse = new AliFlowBayesianPID();
   fBayesianResponse->SetNewTrackParam();
+  for(Int_t i(0); i < 4; i++) {
+      fV0Apol[i] = 0;
+      fV0Cpol[i] = 0;
+  }
+  for(Int_t i(0); i < 8; i++) fUseVZERORing[i] = kTRUE;
 }
 
 //-----------------------------------------------------------------------
@@ -306,9 +324,13 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fRequireStrictTOFTPCagreement(that.fRequireStrictTOFTPCagreement),
   fCutRejectElectronsWithTPCpid(that.fCutRejectElectronsWithTPCpid),
   fProbBayes(0.0),
-  fCurrCentr(0.0)
+  fCurrCentr(0.0),
+  fV0gainEqualization(NULL),
+  fApplyRecentering(that.fApplyRecentering),
+  fV0gainEqualizationPerRing(that.fV0gainEqualizationPerRing)
 {
   //copy constructor
+  printf(" \n\n claling copy ctor \n\n" );
   if (that.fTPCpidCuts) fTPCpidCuts = new TMatrixF(*(that.fTPCpidCuts));
   if (that.fTOFpidCuts) fTOFpidCuts = new TMatrixF(*(that.fTOFpidCuts));
   if (that.fAliESDtrackCuts) fAliESDtrackCuts = new AliESDtrackCuts(*(that.fAliESDtrackCuts));
@@ -319,6 +341,17 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   // New PID procedure (Bayesian Combined PID)
   fBayesianResponse = new AliFlowBayesianPID();
   fBayesianResponse->SetNewTrackParam();
+
+  // V0 gain calibration
+  // no reason to init fV0gainEqualizationPerRing, will be initialized on node if necessary
+  // pointer is set to NULL in initialization list of this constructor
+//  if (that.fV0gainEqualization) fV0gainEqualization = new TH1(*(that.fV0gainEqualization));
+  for(Int_t i(0); i < 4; i++) { // no use to copy these guys since they're only initialized on worked node
+      fV0Apol[i] = 0.;
+      fV0Cpol[i] = 0.;
+  }
+  for(Int_t i(0); i < 8; i++) fUseVZERORing[i] = that.fUseVZERORing[i];
+
 }
 
 //-----------------------------------------------------------------------
@@ -335,9 +368,9 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   if (!that.fAliESDtrackCuts) delete fAliESDtrackCuts; fAliESDtrackCuts=NULL;
 
   if ( that.fMuonTrackCuts &&  fMuonTrackCuts) *fMuonTrackCuts = *(that.fMuonTrackCuts);                   // XZhang 20120604
-  if ( that.fMuonTrackCuts && !fMuonTrackCuts)  fMuonTrackCuts = new AliMuonTrackCuts(*(fMuonTrackCuts));  // XZhang 20120604
+  if ( that.fMuonTrackCuts && !fMuonTrackCuts)  fMuonTrackCuts = new AliMuonTrackCuts(*(that.fMuonTrackCuts));  // XZhang 20120604
   if (!that.fMuonTrackCuts) delete fMuonTrackCuts; fMuonTrackCuts = NULL;                                  // XZhang 20120604
-
+  if (!that.fV0gainEqualization) delete fV0gainEqualization; fV0gainEqualization = NULL;
   //these guys we don't need to copy, just reinit
   if (that.fQA) {fQA->Delete(); delete fQA; fQA=NULL; DefineHistograms();} 
   fCutMC=that.fCutMC;
@@ -411,6 +444,20 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fCutRejectElectronsWithTPCpid=that.fCutRejectElectronsWithTPCpid;
   fProbBayes = that.fProbBayes;
   fCurrCentr = that.fCurrCentr;
+  
+  fApplyRecentering = that.fApplyRecentering;
+  fV0gainEqualizationPerRing = that.fV0gainEqualizationPerRing;
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)           
+  if (that.fV0gainEqualization) fV0gainEqualization = new TH1(*(that.fV0gainEqualization));
+#else
+  //PH Lets try Clone, however the result might be wrong
+  if (that.fV0gainEqualization) fV0gainEqualization = (TH1*)that.fV0gainEqualization->Clone();
+#endif
+  for(Int_t i(0); i < 4; i++) { // no use to copy these guys since they're only initialized on worked node
+      fV0Apol[i] = that.fV0Apol[i];
+      fV0Cpol[i] = that.fV0Cpol[i];
+  }
+  for(Int_t i(0); i < 8; i++) fUseVZERORing[i] = that.fUseVZERORing[i];
 
   return *this;
 }
@@ -424,6 +471,7 @@ AliFlowTrackCuts::~AliFlowTrackCuts()
   delete fTOFpidCuts;
   if (fMuonTrackCuts) delete fMuonTrackCuts;  // XZhang 20120604
   if (fQA) { fQA->SetOwner(); fQA->Delete(); delete fQA; }
+  if (fV0gainEqualization) delete fV0gainEqualization;
 }
 
 //-----------------------------------------------------------------------
@@ -1141,15 +1189,57 @@ Int_t AliFlowTrackCuts::Count(AliVEvent* event)
 //-----------------------------------------------------------------------
 AliFlowTrackCuts* AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts()
 {
+  //returns the lhc10h vzero track cuts, this function
+  //is left here for backward compatibility
+  //if a run is recognized as 11h, the calibration method will
+  //switch to 11h calbiration, which means that the cut 
+  //object is updated but not replaced.
+  //calibratin is only available for PbPb runs
+  return GetStandardVZEROOnlyTrackCuts2010();
+}
+//-----------------------------------------------------------------------
+AliFlowTrackCuts* AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2010()
+{
   //get standard V0 cuts
-  AliFlowTrackCuts* cuts = new AliFlowTrackCuts("standard vzero flow cuts");
+  AliFlowTrackCuts* cuts = new AliFlowTrackCuts("standard vzero flow cuts 2010");
   cuts->SetParamType(kV0);
   cuts->SetEtaRange( -10, +10 );
   cuts->SetPhiMin( 0 );
   cuts->SetPhiMax( TMath::TwoPi() );
+  // options for the reweighting
+  cuts->SetV0gainEqualizationPerRing(kFALSE);
+  cuts->SetApplyRecentering(kTRUE);
+  // to exclude a ring , do e.g.
+  // cuts->SetUseVZERORing(7, kFALSE);
   return cuts;
 }
-
+//-----------------------------------------------------------------------
+AliFlowTrackCuts* AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2011()
+{
+  //get standard V0 cuts for 2011 data
+  //in this case, the vzero segments will be weighted by
+  //VZEROEqMultiplicity, 
+  //if recentering is enableded, the sub-q vectors
+  //will be taken from the event header, so make sure to run 
+  //the VZERO event plane selection task before this task !
+  //recentering replaces the already evaluated q-vectors, so 
+  //when chosen, additional settings (e.g. excluding rings) 
+  //have no effect. recentering is true by default
+  //
+  //NOTE user is responsible for running the vzero event plane
+  //selection task in advance, e.g. add to your launcher macro
+  //
+  //  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskVZEROEPSelection.C");
+  //  AddTaskVZEROEPSelection();
+  //
+  AliFlowTrackCuts* cuts = new AliFlowTrackCuts("standard vzero flow cuts 2011");
+  cuts->SetParamType(kV0);
+  cuts->SetEtaRange( -10, +10 );
+  cuts->SetPhiMin( 0 );
+  cuts->SetPhiMax( TMath::TwoPi() );
+  cuts->SetApplyRecentering(kTRUE);
+  return cuts;
+}
 //-----------------------------------------------------------------------
 AliFlowTrackCuts* AliFlowTrackCuts::GetStandardGlobalTrackCuts2010()
 {
@@ -4057,14 +4147,43 @@ Bool_t AliFlowTrackCuts::PassesV0cuts(Int_t id)
 
   fTrackPhi = TMath::PiOver4()*(0.5+id%8);
 
-  if(id<32)
-    fTrackEta = -3.45+0.5*(id/8);
-  else
-    fTrackEta = +4.8-0.6*((id/8)-4);
+  // 10102013 weighting vzero tiles - rbertens@cern.ch
+  if(!fV0gainEqualization) {
+      // if for some reason the equalization is not initialized (e.g. 2011 data)
+      // the fV0xpol[] weights are used to enable or disable vzero rings
+    if(id<32) {   // v0c side
+      fTrackEta = -3.45+0.5*(id/8);
+      if(id < 8) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fV0Cpol[0];
+      else if (id < 16 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fV0Cpol[1];
+      else if (id < 24 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fV0Cpol[2];
+      else if (id < 32 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fV0Cpol[3];
+    } else {       // v0a side
+      fTrackEta = +4.8-0.6*((id/8)-4);
+      if( id < 40) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fV0Apol[0];
+      else if ( id < 48 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fV0Apol[1];
+      else if ( id < 56 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fV0Apol[2];
+      else if ( id < 64 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fV0Apol[3];
+    }
+  } else { // the equalization is initialized
+     // note that disabled rings have already been excluded on calibration level in 
+     // AliFlowEvent (so for a disabled ring, fV0xpol is zero
+    if(id<32) {    // v0c side
+      fTrackEta = -3.45+0.5*(id/8);
+      if(id < 8) fTrackWeight = fEvent->GetVZEROData()->GetMultiplicity(id)*fV0Cpol[0]/fV0gainEqualization->GetBinContent(1+id);
+      else if (id < 16 ) fTrackWeight = fEvent->GetVZEROData()->GetMultiplicity(id)*fV0Cpol[1]/fV0gainEqualization->GetBinContent(1+id);
+      else if (id < 24 ) fTrackWeight = fEvent->GetVZEROData()->GetMultiplicity(id)*fV0Cpol[2]/fV0gainEqualization->GetBinContent(1+id);
+      else if (id < 32 ) fTrackWeight = fEvent->GetVZEROData()->GetMultiplicity(id)*fV0Cpol[3]/fV0gainEqualization->GetBinContent(1+id);
+    } else {       // v0a side
+      fTrackEta = +4.8-0.6*((id/8)-4);
+      if( id < 40) fTrackWeight = fEvent->GetVZEROData()->GetMultiplicity(id)*fV0Apol[0]/fV0gainEqualization->GetBinContent(1+id);
+      else if ( id < 48 ) fTrackWeight = fEvent->GetVZEROData()->GetMultiplicity(id)*fV0Apol[1]/fV0gainEqualization->GetBinContent(1+id);
+      else if ( id < 56 ) fTrackWeight = fEvent->GetVZEROData()->GetMultiplicity(id)*fV0Apol[2]/fV0gainEqualization->GetBinContent(1+id);
+      else if ( id < 64 ) fTrackWeight = fEvent->GetVZEROData()->GetMultiplicity(id)*fV0Apol[3]/fV0gainEqualization->GetBinContent(1+id);
+    }
+    // printf ( " tile %i and weight %.2f \n", id, fTrackWeight);
+  }
 
-  fTrackWeight = fEvent->GetVZEROEqMultiplicity(id);
-  
-  if (fLinearizeVZEROresponse)
+  if (fLinearizeVZEROresponse && id < 64)
   {
     //this is only needed in pass1 of LHC10h
     Float_t multV0[fgkNumberOfV0tracks];

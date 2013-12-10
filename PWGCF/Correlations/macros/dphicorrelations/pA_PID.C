@@ -1,5 +1,5 @@
-// 0       1       2       3       4  5  6 	        7     8             9                            10         11
-// nsyield,asyield,nswidth,aswidth,v2,v3,nsasyieldratio,v3/v2,remainingpeak,remainingjetyield/ridgeyield,chi2(v2v3),baseline
+// 0       1       2       3       4  5  6 	        7     8             9                            10         11       12
+// nsyield,asyield,nswidth,aswidth,v2,v3,nsasyieldratio,v3/v2,remainingpeak,remainingjetyield/ridgeyield,chi2(v2v3),baseline,v1
 const char* graphTitles[] = { "NS Ridge Yield", "AS Ridge Yield", "NS Width", "AS Width", "v2", "v3", "NS Yield / AS Yield", "v3 / v2", "remaining peak in %", "remaining jet / NS yield in %", "chi2/ndf", "baseline", "v1" };
 const Int_t NGraphs = 10; // pt index  //10 for the paper
 const Int_t NHists = 13; 
@@ -983,16 +983,16 @@ void CorrelationSubtractionHistogram(const char* fileName, Bool_t centralityAxis
     Int_t n = 10; //fine binning with low pt TPC only
     Int_t is[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     Int_t js[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-    Bool_t symm[] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+    Bool_t symm[] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
   }
   
   if (gBinning == 1)
   {
     // for extraction when trigger pT is from whole range
-    Int_t n = 8;
-    Int_t is[] =    { 0, 0, 0, 0, 0, 0, 0, 0 };
-    Int_t js[] =    { 1, 2, 3, 4, 5, 6, 7, 9 };
-    Bool_t symm[] = { 1, 1, 1, 1, 1, 1, 1, 1 };
+    Int_t n = 6;
+    Int_t is[] =    { 0, 0, 0, 0, 0, 0, 0 };
+    Int_t js[] =    { 1, 2, 3, 4, 5, 6, 9 };
+    Bool_t symm[] = { 1, 1, 1, 1, 1, 1, 1 };
   }
 
   if (gBinning == 2)
@@ -1017,7 +1017,7 @@ void CorrelationSubtractionHistogram(const char* fileName, Bool_t centralityAxis
   if (gBinning == 4)
   {
     // default with all but only symmetric bins
-    Int_t n = 7;
+    Int_t n = 6;
     // sorted by pT,T
     Int_t is[] =    { 0, 1, 2, 3, 4, 5, 8 };
     Int_t js[] =    { 1, 2, 3, 4, 5, 6, 9 };
@@ -1131,12 +1131,13 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
   TH2* hist2 = (TH2*) fin->Get(Form("dphi_%d_%d_%d", i, j, ((gStudySystematic == 60) ? 6 : 4)));
   TH1* refMult = (TH1*) fin->Get("refMult");
   
+  if (!hist1 || !hist2)
+    return;
+
   hist1 = (TH2*) hist1->Clone();
   hist2 = (TH2*) hist2->Clone();
   refMult = (TH1*) refMult->Clone();
   
-  if (!hist1 || !hist2)
-    return 0;
   // NOTE fix normalization. these 2d correlations come out of AliUEHist normalized by dphi bin width, but not deta
   hist1->Scale(1.0 / hist1->GetYaxis()->GetBinWidth(1));
   hist2->Scale(1.0 / hist2->GetYaxis()->GetBinWidth(1));
@@ -1587,6 +1588,21 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
   Float_t baseLine2 = hist2->IntegralAndError(phi1Z, phi2Z, eta1, eta6, baseLineE2);
   baseLine2 /= (phi2Z - phi1Z + 1) * (eta6 - eta1 + 1);
   baseLineE2 /= (phi2Z - phi1Z + 1) * (eta6 - eta1 + 1);
+
+  // get baseline of peripheral bin with large eta gap
+  Int_t eta1Alternative = hist1->GetYaxis()->FindBin(-etaMax + 0.001);
+  Int_t eta2Alternative = hist1->GetYaxis()->FindBin(-1.2 - 0.001);
+  Int_t eta3Alternative = hist1->GetYaxis()->FindBin(1.2 + 0.001);
+  Int_t eta6Alternative = hist1->GetYaxis()->FindBin(etaMax - 0.001);
+  Int_t phi1ZAlternative = hist1->GetXaxis()->FindBin(-TMath::Pi()/2 + 0.001);
+  Int_t phi2ZAlternative = hist1->GetXaxis()->FindBin( TMath::Pi()/2 - 0.001);
+  
+  Float_t baseLine2NSGapE, baseLine2NSGapE2;
+  Float_t baseLine2NSGap = hist2->IntegralAndError(phi1ZAlternative, phi2ZAlternative, eta1Alternative, eta2Alternative, baseLine2NSGapE);
+  baseLine2NSGap += hist2->IntegralAndError(phi1ZAlternative, phi2ZAlternative, eta3Alternative, eta6Alternative, baseLine2NSGapE2);
+  baseLine2NSGapE = TMath::Sqrt(baseLine2NSGapE * baseLine2NSGapE + baseLine2NSGapE2 * baseLine2NSGapE2);
+  baseLine2NSGap /= (phi2ZAlternative - phi1ZAlternative + 1) * (eta2Alternative - eta1Alternative + 1 + eta6Alternative - eta3Alternative + 1);
+  baseLine2NSGapE /= (phi2ZAlternative - phi1ZAlternative + 1) * (eta2Alternative - eta1Alternative + 1 + eta6Alternative - eta3Alternative + 1);
   
   if(gDoSubtraction)hist1->Add(hist2, -1);
   
@@ -2037,12 +2053,22 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
     if (v2v3->GetParameter(1) > 0)
     {
       if(gDoSubtraction){
-	v2value = TMath::Sqrt(v2v3->GetParameter(1) / (baseLine + diffMinParam0));
-	v2E = 0.5 * v2value * TMath::Sqrt(v2v3->GetParError(1) * v2v3->GetParError(1) / v2v3->GetParameter(1) / v2v3->GetParameter(1) + baseLineE * baseLineE / baseLine / baseLine);
+	if (1)
+	{
+	  v2value = TMath::Sqrt(v2v3->GetParameter(1) / (baseLine + diffMinParam0));
+	  v2E = 0.5 * v2value * TMath::Sqrt(v2v3->GetParError(1) * v2v3->GetParError(1) / v2v3->GetParameter(1) / v2v3->GetParameter(1) + baseLineE * baseLineE / baseLine / baseLine);
+	  Printf("-> v2 = %f +- %f (%f %f = %f)", v2value, v2E, baseLine, diffMinParam0, baseLine + diffMinParam0);
+	}
+	else
+	{
+	  v2value = TMath::Sqrt(v2v3->GetParameter(1) / (v2v3->GetParameter(0) + baseLine2NSGap));
+	  v2E = 0.5 * v2value * TMath::Sqrt(v2v3->GetParError(1) * v2v3->GetParError(1) / v2v3->GetParameter(1) / v2v3->GetParameter(1) + v2v3->GetParError(0) * v2v3->GetParError(0) / v2v3->GetParameter(0) / v2v3->GetParameter(0) + baseLine2NSGapE * baseLine2NSGapE / baseLine2NSGap / baseLine2NSGap);
+	  Printf("-> v2 = %f +- %f (%f %f = %f)", v2value, v2E, v2v3->GetParameter(0), baseLine2NSGap, v2v3->GetParameter(0) + baseLine2NSGap);
+	}
       }else{
 	v2value = TMath::Sqrt(v2v3->GetParameter(1) / v2v3->GetParameter(0));
 	v2E = 0.5 * v2value * TMath::Sqrt(v2v3->GetParError(1) * v2v3->GetParError(1) / v2v3->GetParameter(1) / v2v3->GetParameter(1) + v2v3->GetParError(0) * v2v3->GetParError(0) / v2v3->GetParameter(0) / v2v3->GetParameter(0));
-      }    	
+      }       
     }
     if (symmetricpT)//all points filled (even if v2v3->GetParameter(1) < 0), easier to plot after (same point number for different particles)
       AddPoint(graph[4], xValue1vn, v2value, 0, v2E);
@@ -3249,7 +3275,7 @@ void DivideOutReferenceParticle(const char* graphFile, const char* outputFile = 
 
   for (Int_t graphID = 4; graphID <= 4; graphID++) //v2 + v3
   {
-    const Int_t posFullPt = 7; // position where vn for unfolding is located (i.e. full pT,a and pT,t range)
+    const Int_t posFullPt = 6; // position where vn for unfolding is located (i.e. full pT,a and pT,t range)
     Bool_t allPt = TString(graphFile).Contains("allpt");
     Int_t maxPt = (allPt) ? posFullPt : NGraphs;
     for (Int_t i=0; i<maxPt; i++)
@@ -3308,15 +3334,15 @@ void ExtractForSkalarProductComparisonAllSpecies()
 {
   gROOT->SetBatch(kTRUE);
 
-  TString baseInput("dphi_corr_130515");
-  TString baseOutput("graphs_130515b");
-  baseOutput += "_nosub";
+  TString baseInput("dphi_corr_LHC13bc_20130604");
+  TString baseOutput("graphs_130618_otherbaseline");
+//   baseOutput += "_nosub";
 //   TString postfix("_wingremoved");
   TString postfix;
   
   if (1)
   {
-    gBinning = 4;
+    gBinning = 0;
     gReferenceFile = baseOutput + ".root";
     ExtractForSkalarProductComparison(baseInput + "_Hadrons" + postfix, baseOutput, kTRUE); 
     ExtractForSkalarProductComparison(baseInput + "_Pions" + postfix, baseOutput + "_pions", kTRUE);
@@ -3327,14 +3353,13 @@ void ExtractForSkalarProductComparisonAllSpecies()
   if (0)
   {
     gBinning = 1;
-    baseInput = "dphi_corr_130506";
     baseInput += "_allpt";
     baseOutput += "_allpt";
     gReferenceFile = baseOutput + ".root";
-    ExtractForSkalarProductComparison(baseInput + "_Hadrons" + postfix, baseOutput, kTRUE); 
-    ExtractForSkalarProductComparison(baseInput + "_Pions" + postfix, baseOutput + "_pions", kTRUE);
-    ExtractForSkalarProductComparison(baseInput + "_Protons" + postfix, baseOutput + "_protons", kTRUE);
-    ExtractForSkalarProductComparison(baseInput + "_Kaons" + postfix, baseOutput + "_kaons", kTRUE);
+    ExtractForSkalarProductComparison(baseInput + "_55_Hadrons_symmetrized" + postfix, baseOutput, kTRUE); 
+    ExtractForSkalarProductComparison(baseInput + "_63_Pions" + postfix, baseOutput + "_pions", kTRUE);
+    ExtractForSkalarProductComparison(baseInput + "_63_Protons" + postfix, baseOutput + "_protons", kTRUE);
+    ExtractForSkalarProductComparison(baseInput + "_63_Kaons" + postfix, baseOutput + "_kaons", kTRUE);
   }
 }
 

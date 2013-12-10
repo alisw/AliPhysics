@@ -137,6 +137,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   TH2F			*fPhoElecPtM20;	        //! Pho inclusive ele pt
   TH2F			*fSameElecPt;	        //! Same inclusive ele pt
   TH2F			*fSameElecPtM20;	        //! Same inclusive ele pt
+  TH2F			*fSemiElecPtM20;	        //! Same inclusive ele pt
 
   TH1F			*fTrackPtBefTrkCuts;	//! Track pt before track cuts	
   TH1F			*fTrackPtAftTrkCuts;	//! Track pt after track cuts

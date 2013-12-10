@@ -1,8 +1,10 @@
 // -*- c++ -*-
 // $Id: AddTaskLongRangeCorrelations.C 341 2013-09-30 15:59:19Z cmayer $
 
-const Double_t centMin[] = {  0,  0, 10, 20, 30, 40, 50, 60, 70,  80 };
-const Double_t centMax[] = {  5, 10, 20, 30, 40, 50, 60, 70, 80, 100 };
+const Double_t centMin[] = {  0,   0,  10,  20,  30,  40,  50,  60,  70,  80 };
+const Double_t centMax[] = {  5,  10,  20,  30,  40,  50,  60,  70,  80, 100 };
+const Int_t    nMin[]    = { -1, 120,  70,  35,  20,   5,   0,   0,   0,  -1 };
+const Int_t    nMax[]    = { -1, 400, 275, 200, 145, 100,  68,  46,  30,  -1 };
 
 AliAnalysisTaskLongRangeCorrelations*
 AddTaskLongRangeCorrelations(Int_t  trackFilter  = 128, // TPC only
@@ -42,6 +44,7 @@ AddTaskLongRangeCorrelations(Int_t  trackFilter  = 128, // TPC only
     taskLRC->SetPhiRange(phiMin, phiMax);
     taskLRC->SelectCollisionCandidates(AliVEvent::kMB);
     taskLRC->SetSelectPrimaryMCParticles(selPrimMC, selPrimMCData);
+    taskLRC->SetRangeN(nMin[i], nMax[i]);
 
     listLRC = mgr->CreateContainer(taskLRC->GetOutputListName(), TList::Class(),
 				   AliAnalysisManager::kOutputContainer,

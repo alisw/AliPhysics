@@ -45,13 +45,15 @@ AliEmcalPicoTrackMaker* AddTaskEmcalPicoTrackMaker(
   TString runPeriod(runperiod);
   Bool_t includeNoITS = kFALSE;
   runPeriod.ToLower();
-  if (runPeriod == "lhc11h" || runPeriod == "lhc13b" || runPeriod == "lhc13c" || runPeriod == "lhc13d" || runPeriod == "lhc13e" || runPeriod == "lhc13f" || runPeriod == "lhc12g") {
+  if (runPeriod == "lhc11h" || runPeriod == "lhc13b" || runPeriod == "lhc13c" || runPeriod == "lhc13d" || runPeriod == "lhc13e" || runPeriod == "lhc13f" || runPeriod == "lhc13g" || runPeriod == "lhc12g" || runPeriod == "lhc10h") {
     eTask->SetAODfilterBits(256,512); // hybrid tracks for LHC11h
     eTask->SetMC(kFALSE);
+    if(runPeriod == "lhc10h")
+      includeNoITS = kTRUE;
   } else if (runPeriod == "lhc12a15e" || runPeriod == "lhc13b4" || runPeriod == "lhc13b4_fix" || runPeriod == "lhc12a15f") {
     eTask->SetAODfilterBits(256,512); // hybrid tracks for LHC12a15e, LHC13b4, and LHC12a15f
     eTask->SetMC(kTRUE);
-  } else if (runPeriod == "lhc11a") {
+  } else if (runPeriod == "lhc11a" || runPeriod == "lhc10hold") {
     eTask->SetAODfilterBits(256,16); // hybrid tracks for LHC11a
     eTask->SetMC(kFALSE);
     includeNoITS = kTRUE;

@@ -66,7 +66,8 @@ struct TrainSetup
       fEscapedName(name),
       fDatimeString(""),
       fOptions(),
-      fHelper(0)
+      fHelper(0),
+      fMonitored("")
   {
     fOptions.Add("help", "Show help", false);
     fOptions.Add("date", "YYYY-MM-DD HH:MM", "Set date", "now");
@@ -91,7 +92,8 @@ struct TrainSetup
       fEscapedName(o.fEscapedName), 
       fDatimeString(o.fDatimeString),
       fOptions(o.fOptions), 
-      fHelper(o.fHelper)
+      fHelper(o.fHelper),
+      fMonitored(o.fMonitored)
   {}
   /** 
    * Assignment operator
@@ -108,6 +110,7 @@ struct TrainSetup
     fDatimeString = o.fDatimeString;
     fOptions      = o.fOptions;
     fHelper       = o.fHelper;
+    fMonitored    = o.fMonitored;
     return *this;
   }
   
@@ -202,6 +205,9 @@ struct TrainSetup
 
     // --- Create tasks ----------------------------------------------
     CreateTasks(mgr);
+
+    // --- Create monitor objects ------------------------------------
+    CreateMonitors();
 
     // --- Post set-up initialization of helper ----------------------
     if (!fHelper->PostSetup()) return false;
@@ -592,7 +598,7 @@ protected:
     Int_t err;
     Long_t ret = gROOT->Macro(cmd.Data(), &err, false);
     if (!ret) { 
-      Error("AddTask", "Failed to execute %s", cmd.Data());
+      Error("AddTask", "Failed to execute %s (%ld)", cmd.Data(), ret);
       return 0;
     }
     return reinterpret_cast<AliAnalysisTask*>(ret);
@@ -656,6 +662,27 @@ protected:
    */
   virtual const Char_t* ClassName() const = 0;
   /* @} */
+  //__________________________________________________________________
+  virtual void AddMonitor(const TString& name)
+  {
+    if (!fMonitored.IsNull()) fMonitored.Append(":");
+    fMonitored.Append(name);
+  }
+  virtual void CreateMonitors() 
+  {
+    if (fMonitored.IsNull()) return;
+    if (fHelper->Mode() != Helper::kProof) return;
+
+    TObjArray* tokens = fMonitored.Tokenize(":");
+    TObject*   token  = 0;
+    TIter      next(tokens);
+    while ((token = next())) {
+      gROOT->ProcessLine(Form("gProof->AddFeedback(\"%s\");", 
+			      token->GetName()));
+      
+    }
+    tokens->Delete();
+  }
   //__________________________________________________________________
   /** 
    * @{ 
@@ -967,5 +994,6 @@ protected:
   TString      fDatimeString;
   OptionList   fOptions;
   Helper*      fHelper;
+  TString      fMonitored;
 };
 #endif

@@ -8,9 +8,9 @@ class TString;
 class AliEmcalTriggerPatchInfo;
 class AliEmcalTriggerSetupInfo;
 
-#include "AliAnalysisTaskEmcalDev.h"
+#include "AliAnalysisTaskEmcal.h"
 
-class AliAnalysisTaskEmcalTriggerInfoQA : public AliAnalysisTaskEmcalDev
+class AliAnalysisTaskEmcalTriggerInfoQA : public AliAnalysisTaskEmcal
 {
   public:
     AliAnalysisTaskEmcalTriggerInfoQA();

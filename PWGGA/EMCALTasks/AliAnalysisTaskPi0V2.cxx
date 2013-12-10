@@ -14,13 +14,11 @@
 #include <TProfile.h>
 #include <TString.h>
 #include <TTree.h>
+#include <TRandom3.h>
 
 #include "AliAODEvent.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskSE.h"
-#include "AliCaloPID.h"
-#include "AliCaloTrackReader.h"
-#include "AliCalorimeterUtils.h"
 #include "AliEMCALGeometry.h"
 #include "AliEPFlattener.h"
 #include "AliESDEvent.h"

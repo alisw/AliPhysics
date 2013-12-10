@@ -9,9 +9,9 @@ class TH1F;
 class TH2F;
 class AliRhoParameter;
 
-#include "AliAnalysisTaskEmcalJetDev.h"
+#include "AliAnalysisTaskEmcalJet.h"
 
-class AliAnalysisTaskRhoBase : public AliAnalysisTaskEmcalJetDev {
+class AliAnalysisTaskRhoBase : public AliAnalysisTaskEmcalJet {
  public:
   AliAnalysisTaskRhoBase();
   AliAnalysisTaskRhoBase(const char *name, Bool_t histo=kFALSE);

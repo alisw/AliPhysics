@@ -76,9 +76,9 @@ AliEbyEPidTaskFastGen::~AliEbyEPidTaskFastGen()
 void AliEbyEPidTaskFastGen::UserCreateOutputObjects() {
   fThnList = new TList();
   fThnList->SetOwner(kTRUE);
-  Int_t fgSparseDataBins[kNSparseData]   = {50000,  500,  440,  30000,  15000,  15000,   10000,  5000,   5000,  2500,  2500,  2500,  1250, 1250};
-  Double_t fgSparseDataMin[kNSparseData] = {0.,     0.,     0.,     0.,     0.,     0.,      0.,    0.,     0.,    0.,    0.,   0., 0., 0. };
-  Double_t fgSparseDataMax[kNSparseData] = {50000., 50.,  440., 30000., 15000., 15000.,  10000., 5000.,  5000., 2500., 2500., 2500., 2500., 2500. };
+  Int_t fgSparseDataBins[kNSparseData]   = {50000,   500,     440,  30000,   15000,  15000,   10000,  5000,   5000,  5000,  2500,  2500,  2500,  1250, 1250};
+  Double_t fgSparseDataMin[kNSparseData] = {0.,       0.,      0.,     0.,      0.,     0.,      0.,    0.,     0.,    0.,    0.,    0.,    0.,   0.,    0.};
+  Double_t fgSparseDataMax[kNSparseData] = {50000.,  100.,    440., 30000.,  15000., 15000.,  10000., 5000.,  5000., 5000., 2500., 2500., 2500., 1250., 1250.};
   
   const Char_t *fgkSparseDataTitle[] = {
     "Nnumber of Partiles",
@@ -188,11 +188,13 @@ void AliEbyEPidTaskFastGen::UserExec( Option_t * ){
   vsparseMC[14] = count[3][1];
   
 
-  /*   Printf(" %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f",
-  	 vsparseMC[0], vsparseMC[1], vsparseMC[2], vsparseMC[3],
-	 vsparseMC[4],  vsparseMC[5], vsparseMC[6], vsparseMC[7], 
-	 vsparseMC[8], vsparseMC[9], vsparseMC[10], vsparseMC[11]);*/
-
+   /* Printf(" %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f",
+  	 vsparseMC[0], vsparseMC[1], vsparseMC[2], 
+	 vsparseMC[3], vsparseMC[4], vsparseMC[5], 
+	 vsparseMC[6], vsparseMC[7], vsparseMC[8], 
+	 vsparseMC[9], vsparseMC[10], vsparseMC[11],
+	 vsparseMC[12], vsparseMC[13], vsparseMC[13]);
+   */
   fHistoCorrelationMC->Fill(vsparseMC);
   PostData(1, fThnList);
   
