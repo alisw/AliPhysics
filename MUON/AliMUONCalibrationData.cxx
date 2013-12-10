@@ -13,7 +13,7 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-// $Id$
+// $Id: AliMUONCalibrationData.cxx 59486 2012-11-07 22:06:24Z laphecet $
 
 #include "AliMUONCalibrationData.h"
 
@@ -63,7 +63,9 @@ ClassImp(AliMUONCalibrationData)
 AliMUONVStore* AliMUONCalibrationData::fgBypassPedestals(0x0);
 AliMUONVStore* AliMUONCalibrationData::fgBypassGains(0x0);
 
-namespace  
+UInt_t AliMUONCalibrationData::fgkDCSSt1Flag(42);
+
+namespace
 {
   void MarkForDeletion(Int_t* indices, Int_t first, Int_t last)
   {
@@ -616,6 +618,92 @@ Bool_t AliMUONCalibrationData::PatchHVValues(TObjArray& values,
 }
 
 //_____________________________________________________________________________
+void AliMUONCalibrationData::AddToMap(const TMap& sourceMap,
+                                      TMap& destMap,
+                                      const TString& key,
+                                      const char* source,
+                                      const char* dest)
+{
+  /// Remap
+  
+  TString newkey(key);
+  
+  newkey.ReplaceAll(source,dest);
+
+  TPair* pair = static_cast<TPair*>(sourceMap.FindObject(key.Data()));
+
+  destMap.Add(new TObjString(newkey.Data()),pair->Value());
+}
+
+//_____________________________________________________________________________
+void AliMUONCalibrationData::PatchSt1DCSAliases(TMap& hvMap)
+{
+  /// It was discovered (in sept. 2013) that the DCS aliases for St1 was
+  /// wrongly assigned (in the hardware), so the correspondence between DCS channels
+  /// and actual HV channels is wrong for St1 in the DCS (and thus in the DCS archive,
+  /// and so in the OCDB HV object).
+  ///
+  /// It affects all the OCDB object written in 2010-2013.
+  ///
+  /// This method fixes that.
+  
+  if ( hvMap.GetUniqueID() == fgkDCSSt1Flag )
+  {
+    // already clean object. Do nothing
+    return;
+  }
+
+  TIter next(&hvMap);
+  TObjString* hvChannelName;
+  
+  TMap newmap;
+  newmap.SetOwnerKeyValue(kTRUE,kFALSE);
+  
+  while ( ( hvChannelName = static_cast<TObjString*>(next()) ) )
+  {
+    TString name(hvChannelName->String());
+    TString newname(name);
+    
+    // the problem is limited to St1 = ch1+ch2 (or, in DCS parlance, ch0+ch1)
+    // do it "by hand" as we "only" have 8 names to change
+    
+    if ( name.Contains("Chamber00Left") )
+    {
+      if (name.Contains("Quad1Sect0")) AddToMap(hvMap,newmap,name,"Quad1Sect0","Quad2Sect0"); // channel 0 of Board00 (alidcscae020)
+      
+      if (name.Contains("Quad1Sect1")) AddToMap(hvMap,newmap,name,"Quad1Sect1","Quad2Sect1"); // channel 1
+      if (name.Contains("Quad1Sect2")) AddToMap(hvMap,newmap,name,"Quad1Sect2","Quad2Sect2"); // channel 2
+      
+      if (name.Contains("Quad2Sect2")) AddToMap(hvMap,newmap,name,"Quad2Sect2","Quad1Sect0"); // channel 3
+      if (name.Contains("Quad2Sect1")) AddToMap(hvMap,newmap,name,"Quad2Sect1","Quad1Sect1"); // channel 4
+      if (name.Contains("Quad2Sect0")) AddToMap(hvMap,newmap,name,"Quad2Sect0","Quad1Sect2"); // channel 5
+    }
+    else if ( name.Contains("Chamber01Left"))
+    {
+      if (name.Contains("Quad2Sect2")) AddToMap(hvMap,newmap,name,"Quad2Sect2","Quad2Sect0"); // channel 9 of Board00 (alidcscae020)
+      if (name.Contains("Quad2Sect0")) AddToMap(hvMap,newmap,name,"Quad2Sect0","Quad2Sect2"); // channel 11
+    }
+    else
+    {
+      AddToMap(hvMap,newmap,name,name,name);
+    }
+  }
+  
+  // copy newmap to hvMap
+  
+  TIter nextNewMap(&newmap);
+  while ( ( hvChannelName = static_cast<TObjString*>(nextNewMap()) ) )
+  {
+    TPair* oldPair = static_cast<TPair*>(hvMap.FindObject(hvChannelName->String().Data()));
+    TPair* newPair = static_cast<TPair*>(newmap.FindObject(hvChannelName->String().Data()));
+      
+    TObjArray* newValues = static_cast<TObjArray*>(newPair->Value());
+      
+    oldPair->SetValue(newValues);
+  }
+}
+
+//_____________________________________________________________________________
 TMap*
 AliMUONCalibrationData::CreateHV(Int_t runNumber, 
                                  Int_t* startOfValidity, 
@@ -633,6 +721,8 @@ AliMUONCalibrationData::CreateHV(Int_t runNumber,
   TMap* hvMap = dynamic_cast<TMap*>(CreateObject(runNumber,"MUON/Calib/HV",startOfValidity));
 
   if (!hvMap) return 0x0;
+
+  PatchSt1DCSAliases(*hvMap);
   
   if (patched)
   {

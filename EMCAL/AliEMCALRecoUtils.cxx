@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliEMCALRecoUtils.cxx 33808 2009-07-15 09:48:08Z gconesab $ */
+/* $Id: AliEMCALRecoUtils.cxx | Sun Dec 8 06:56:48 2013 +0100 | Constantin Loizides  $ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -1829,19 +1829,7 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
   // init the magnetic field if not already on
   if(!TGeoGlobalMagField::Instance()->GetField())
   {
-    AliInfo("Init the magnetic field\n");
-    if     (esdevent) 
-    {
-      esdevent->InitMagneticField();
-    }
-    else if(aodevent)
-    {
-      Double_t curSol = 30000*aodevent->GetMagneticField()/5.00668;
-      Double_t curDip = 6000 *aodevent->GetMuonMagFieldScale();
-      AliMagF *field  = AliMagF::CreateFieldMap(curSol,curDip);
-      TGeoGlobalMagField::Instance()->SetField(field);
-    }
-    else
+    if (!event->InitMagneticField())
     {
       AliInfo("Mag Field not initialized, null esd/aod evetn pointers");
     }
@@ -1862,16 +1850,16 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
   }
 
   TObjArray *clusterArray = 0x0;
-  if(!clusterArr)
-    {
-      clusterArray = new TObjArray(event->GetNumberOfCaloClusters());
-      for(Int_t icl=0; icl<event->GetNumberOfCaloClusters(); icl++)
+  if(!clusterArr) 
   {
-    AliVCluster *cluster = (AliVCluster*) event->GetCaloCluster(icl);
-    if(geom && !IsGoodCluster(cluster,geom,(AliVCaloCells*)event->GetEMCALCells())) continue;
-    clusterArray->AddAt(cluster,icl);
-  }
+    clusterArray = new TObjArray(event->GetNumberOfCaloClusters());
+    for(Int_t icl=0; icl<event->GetNumberOfCaloClusters(); icl++) 
+    {
+      AliVCluster *cluster = (AliVCluster*) event->GetCaloCluster(icl);
+      if(geom && !IsGoodCluster(cluster,geom,(AliVCaloCells*)event->GetEMCALCells())) continue;
+      clusterArray->AddAt(cluster,icl);
     }
+  }
   
   Int_t    matched=0;
   Double_t cv[21];
@@ -1937,10 +1925,10 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
     {
       printf("Wrong input data type! Should be \"AOD\" or \"ESD\"\n");
       if(clusterArray)
-  {
-    clusterArray->Clear();
-    delete clusterArray;
-  }
+      {
+	clusterArray->Clear();
+	delete clusterArray;
+      }
       return;
     }
     
@@ -1950,36 +1938,30 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
     AliExternalTrackParam emcalParam(*trackParam);
     Float_t eta, phi, pt;
     if(!ExtrapolateTrackToEMCalSurface(&emcalParam, fEMCalSurfaceDistance, fMass, fStepSurface, eta, phi, pt)) 
-      {
-  if(aodevent && trackParam) delete trackParam;
-  if(fITSTrackSA && trackParam) delete trackParam;
-  continue;
-      }
-
-//    if(esdevent)
-//      {
-//  esdTrack->SetOuterParam(&emcalParam,AliExternalTrackParam::kMultSec);
-//      }
+    {
+      if(aodevent && trackParam) delete trackParam;
+      if(fITSTrackSA && trackParam) delete trackParam;
+      continue;
+    }
 
     if(TMath::Abs(eta)>0.75 || (phi) < 70*TMath::DegToRad() || (phi) > 190*TMath::DegToRad())
-      {
-  if(aodevent && trackParam) delete trackParam;
-  if(fITSTrackSA && trackParam) delete trackParam;
-  continue;
-      }
-
+    {
+      if(aodevent && trackParam) delete trackParam;
+      if(fITSTrackSA && trackParam) delete trackParam;
+      continue;
+    }
 
     //Find matched clusters
     Int_t index = -1;
     Float_t dEta = -999, dPhi = -999;
     if(!clusterArr)
-      {
-  index = FindMatchedClusterInClusterArr(&emcalParam, &emcalParam, clusterArray, dEta, dPhi);  
-      }
+    {
+      index = FindMatchedClusterInClusterArr(&emcalParam, &emcalParam, clusterArray, dEta, dPhi);  
+    } 
     else
-      {
-  index = FindMatchedClusterInClusterArr(&emcalParam, &emcalParam, clusterArr, dEta, dPhi);  
-      }  
+    {
+      index = FindMatchedClusterInClusterArr(&emcalParam, &emcalParam, clusterArr, dEta, dPhi);  
+    }  
     
     if(index>-1)
     {
@@ -1994,10 +1976,10 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
   }//track loop
 
   if(clusterArray)
-    {
-      clusterArray->Clear();
-      delete clusterArray;
-    }
+  {
+    clusterArray->Clear();
+    delete clusterArray;
+  }
   
   AliDebug(2,Form("Number of matched pairs = %d !\n",matched));
   
@@ -2073,49 +2055,113 @@ Int_t  AliEMCALRecoUtils::FindMatchedClusterInClusterArr(const AliExternalTrackP
 
   Float_t clsPos[3] = {0.,0.,0.};
   for(Int_t icl=0; icl<clusterArr->GetEntriesFast(); icl++)
+  {
+    AliVCluster *cluster = dynamic_cast<AliVCluster*> (clusterArr->At(icl)) ;
+    if(!cluster || !cluster->IsEMCAL()) continue;
+    cluster->GetPosition(clsPos);
+    Double_t dR = TMath::Sqrt(TMath::Power(exPos[0]-clsPos[0],2)+TMath::Power(exPos[1]-clsPos[1],2)+TMath::Power(exPos[2]-clsPos[2],2));
+    if(dR > fClusterWindow) continue;
+    
+    AliExternalTrackParam trkPamTmp (*trkParam);//Retrieve the starting point every time before the extrapolation
+    if(!ExtrapolateTrackToCluster(&trkPamTmp, cluster, fMass, fStepCluster, tmpEta, tmpPhi)) continue;
+    if(fCutEtaPhiSum)
     {
-      AliVCluster *cluster = dynamic_cast<AliVCluster*> (clusterArr->At(icl)) ;
-      if(!cluster || !cluster->IsEMCAL()) continue;
-      cluster->GetPosition(clsPos);
-      Double_t dR = TMath::Sqrt(TMath::Power(exPos[0]-clsPos[0],2)+TMath::Power(exPos[1]-clsPos[1],2)+TMath::Power(exPos[2]-clsPos[2],2));
-      if(dR > fClusterWindow) continue;
-
-      AliExternalTrackParam trkPamTmp (*trkParam);//Retrieve the starting point every time before the extrapolation
-      if(!ExtrapolateTrackToCluster(&trkPamTmp, cluster, fMass, fStepCluster, tmpEta, tmpPhi)) continue;
-      if(fCutEtaPhiSum)
-        {
-          Float_t tmpR=TMath::Sqrt(tmpEta*tmpEta + tmpPhi*tmpPhi);
-          if(tmpR<dRMax)
+      Float_t tmpR=TMath::Sqrt(tmpEta*tmpEta + tmpPhi*tmpPhi);
+      if(tmpR<dRMax)
       {
         dRMax=tmpR;
         dEtaMax=tmpEta;
         dPhiMax=tmpPhi;
         index=icl;
       }
-        }
-      else if(fCutEtaPhiSeparate)
-        {
-          if(TMath::Abs(tmpEta)<TMath::Abs(dEtaMax) && TMath::Abs(tmpPhi)<TMath::Abs(dPhiMax))
+    }
+    else if(fCutEtaPhiSeparate)
+    {
+      if(TMath::Abs(tmpEta)<TMath::Abs(dEtaMax) && TMath::Abs(tmpPhi)<TMath::Abs(dPhiMax))
       {
         dEtaMax = tmpEta;
         dPhiMax = tmpPhi;
         index=icl;
       }
-        }
-      else
-        {
-          printf("Error: please specify your cut criteria\n");
-          printf("To cut on sqrt(dEta^2+dPhi^2), use: SwitchOnCutEtaPhiSum()\n");
-          printf("To cut on dEta and dPhi separately, use: SwitchOnCutEtaPhiSeparate()\n");
-          return index;
-        }
     }
+    else
+    {
+      printf("Error: please specify your cut criteria\n");
+      printf("To cut on sqrt(dEta^2+dPhi^2), use: SwitchOnCutEtaPhiSum()\n");
+      printf("To cut on dEta and dPhi separately, use: SwitchOnCutEtaPhiSeparate()\n");
+      return index;
+    }
+  }
 
   dEta=dEtaMax;
   dPhi=dPhiMax;
 
   return index;
 }
+
+//------------------------------------------------------------------------------------
+Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliVTrack *track,
+							 Double_t emcalR, Double_t mass, Double_t step)
+{ 
+  // Extrpolate track to EMCAL surface
+
+  track->SetTrackPhiEtaPtOnEMCal(-999, -999, -999);
+
+  if (track->Pt()<0.350) 
+    return kFALSE;
+
+  Double_t phi = track->Phi()*TMath::RadToDeg();
+  if (TMath::Abs(track->Eta())>0.9 || phi <= 10 || phi >= 250) 
+    return kFALSE;
+
+  AliESDtrack *esdt = dynamic_cast<AliESDtrack*>(track);
+  AliAODTrack *aodt = 0;
+  if (!esdt) {
+    aodt = dynamic_cast<AliAODTrack*>(track);
+    if (!aodt)
+      return kFALSE;
+  }
+
+  if (mass<0) {
+    Bool_t onlyTPC = kFALSE;
+    if (mass==-99)
+      onlyTPC=kTRUE;
+    if (esdt)
+      mass = esdt->GetMass(onlyTPC);
+    else 
+      mass = aodt->M();
+  }
+
+  AliExternalTrackParam *trackParam = 0;
+  if (esdt) {
+    trackParam = new AliExternalTrackParam(*esdt->GetInnerParam());
+  } else {
+    Double_t xyz[3] = {0}, pxpypz[3] = {0}, cv[21] = {0};
+    aodt->PxPyPz(pxpypz);  
+    aodt->XvYvZv(xyz);
+    aodt->GetCovarianceXYZPxPyPz(cv);  
+    trackParam = new AliExternalTrackParam(xyz,pxpypz,cv,aodt->Charge());
+  }
+  if (!trackParam)
+    return kFALSE;
+
+  Float_t etaout=-999, phiout=-999, ptout=-999;
+  Bool_t ret = ExtrapolateTrackToEMCalSurface(trackParam, 
+					      emcalR,
+					      mass,
+					      step,
+					      etaout, 
+					      phiout,
+					      ptout);
+  delete trackParam;
+  if (!ret)
+    return kFALSE;
+  if (TMath::Abs(etaout)>0.75 || (phiout<70*TMath::DegToRad()) || (phiout>190*TMath::DegToRad()))
+    return kFALSE;
+  track->SetTrackPhiEtaPtOnEMCal(phiout, etaout, ptout);
+  return kTRUE;
+}
+
 
 //------------------------------------------------------------------------------------
 Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *trkParam, 

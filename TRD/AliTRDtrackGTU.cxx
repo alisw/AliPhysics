@@ -200,10 +200,20 @@ Int_t AliTRDtrackGTU::GetZSubChannel()
 // returns the z-subchannel
 
   if (fZSubChannel < 0) {
-    for (Int_t layer = 0; layer < AliTRDgtuParam::GetNLayers(); layer++)
-    {
-      if (IsTrackletInLayer(layer))
-	fZSubChannel = ((AliTRDtrackletGTU*) (*fTracklets)[layer])->GetSubChannel(GetZChannel());
+    for (Int_t layer = 0; layer < AliTRDgtuParam::GetNLayers(); layer++) {
+      if (IsTrackletInLayer(layer)) {
+	AliTRDtrackletGTU *trkl = (AliTRDtrackletGTU*) (*fTracklets)[layer];
+	if (trkl) {
+	  if ((fZSubChannel > -1) &&
+	      (fZSubChannel != trkl->GetSubChannel(GetZChannel())))
+	    AliError(Form("found inconsistent z-subchannels: track = %i/%i, trkl = %i",
+			  GetZChannel(), fZSubChannel, trkl->GetSubChannel(GetZChannel())));
+	  fZSubChannel = trkl->GetSubChannel(GetZChannel());
+	}
+	else {
+	  AliError("no tracklet where one should be according to layer mask");
+	}
+      }
     }
   }
   return fZSubChannel;
