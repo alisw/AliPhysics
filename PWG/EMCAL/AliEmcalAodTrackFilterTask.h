@@ -1,5 +1,5 @@
-#ifndef ALIAODTRACKFILTERTASK_H
-#define ALIAODTRACKFILTERTASK_H
+#ifndef ALIEMCALAODTRACKFILTERTASK_H
+#define ALIEMCALAODTRACKFILTERTASK_H
 
 // $Id$
 
@@ -9,17 +9,19 @@ class AliVTrack;
 
 #include "AliAnalysisTaskSE.h"
 
-class AliAodTrackFilterTask : public AliAnalysisTaskSE {
+class AliEmcalAodTrackFilterTask : public AliAnalysisTaskSE {
  public:
-  AliAodTrackFilterTask();
-  AliAodTrackFilterTask(const char *name);
-  virtual ~AliAodTrackFilterTask();
+  AliEmcalAodTrackFilterTask();
+  AliEmcalAodTrackFilterTask(const char *name);
+  virtual ~AliEmcalAodTrackFilterTask();
 
   void UserCreateOutputObjects();
   void UserExec(Option_t *option);
 
   void SetAODfilterBits(Int_t b0 = 0, Int_t b1 = 0)         { fAODfilterBits[0]  = b0  ; fAODfilterBits[1] = b1  ; }
   void SetCutMaxFractionSharedTPCClusters(Double_t c = 0.4) { fCutMaxFrShTPCClus = c   ; }
+  void SetDist(Double_t d)                                  { fDist              = d   ; }
+  void SetDoPropagation(Bool_t b)                           { fDoPropagation     = b   ; }
   void SetIncludeNoITS(Bool_t f)                            { fIncludeNoITS      = f   ; }
   void SetMC(Bool_t a)                                      { fIsMC              = a   ; }
   void SetModifyTrack(Bool_t b)                             { fModifyTrack       = b;    }
@@ -47,13 +49,15 @@ class AliAodTrackFilterTask : public AliAnalysisTaskSE {
   Bool_t             fIsMC;                 // whether it is a MC event or not
   Double_t           fCutMaxFrShTPCClus;    // max fraction of shared TPC clusters
   Bool_t             fModifyTrack;          // if true then overwrite some fields in AodTrack
+  Bool_t             fDoPropagation;        // if true then propagate all hybrid tracks to EMCal surface
+  Double_t           fDist;                 // distance to surface (440cm default)
   TClonesArray      *fTracksIn;             //!track array in
   TClonesArray      *fTracksOut;            //!track array out
 
  private:
-  AliAodTrackFilterTask(const AliAodTrackFilterTask&);            // not implemented
-  AliAodTrackFilterTask &operator=(const AliAodTrackFilterTask&); // not implemented
+  AliEmcalAodTrackFilterTask(const AliEmcalAodTrackFilterTask&);            // not implemented
+  AliEmcalAodTrackFilterTask &operator=(const AliEmcalAodTrackFilterTask&); // not implemented
 
-  ClassDef(AliAodTrackFilterTask, 1); // Task to filter Aod tracks
+  ClassDef(AliEmcalAodTrackFilterTask, 1); // Task to filter Aod tracks
 };
 #endif

@@ -157,6 +157,18 @@ AliForwardMultiplicityTask::Event(AliESDEvent& esd)
     if (fDoTiming) fHTiming->Fill(kTimingEventPlaneFinder,individual.CpuTime());
   }
   
+  // Check how many rings have been marked for skipping 
+  Int_t nSkip = 0;
+  for (UShort_t d=1; d<=3; d++) { 
+    for (UShort_t q=0; q<=(d/2); q++) { 
+      TH2D* h = fHistos.Get(d,q == 0 ? 'I' : 'O');
+      if (h && h->TestBit(AliForwardUtil::kSkipRing)) nSkip++;
+    }
+  }
+  if (nSkip > 0) 
+    // Skip the rest if we have too many outliers 
+    return false;
+  
   // Do the secondary and other corrections. 
   if (fDoTiming) individual.Start(true);
   if (!fCorrections.Correct(fHistos, ivz)) { 
@@ -175,7 +187,7 @@ AliForwardMultiplicityTask::Event(AliESDEvent& esd)
   }
   if (fDoTiming) fHTiming->Fill(kTimingHistCollector, individual.CpuTime());
 
-  if (fAODFMD.IsTriggerBits(AliAODForwardMult::kInel))
+  if (fAODFMD.IsTriggerBits(AliAODForwardMult::kInel) && nSkip < 1) 
     fHData->Add(&(fAODFMD.GetHistogram()));
 
   if (fDoTiming) fHTiming->Fill(kTimingTotal, total.CpuTime());

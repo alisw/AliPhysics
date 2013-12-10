@@ -153,6 +153,7 @@ void AliAnalyseLeadingTrackUE::DefineESDCuts(Int_t filterbit) {
     fEsdTrackCuts->SetDCAToVertex2D(kTRUE);
     fEsdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
     fEsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
+    fEsdTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
 
     // Add SPD requirement 
     fEsdTrackCutsExtra1 = new AliESDtrackCuts("SPD", "Require 1 cluster in SPD");
