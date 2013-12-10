@@ -65,7 +65,7 @@ AliITStrackV2::AliITStrackV2(AliESDtrack& t,Bool_t c):
   }
   Set(par->GetX(),par->GetAlpha(),par->GetParameter(),par->GetCovariance());
 
-  SetLabel(t.GetLabel());
+  SetLabel(t.GetITSLabel());
   SetMass(t.GetMass());
   SetNumberOfClusters(t.GetITSclusters(fIndex));
 
@@ -94,6 +94,19 @@ void AliITStrackV2::ResetClusters() {
 void AliITStrackV2::UpdateESDtrack(ULong_t flags) const {
   // Update track params
   fESDtrack->UpdateTrackParams(this,flags);
+  //
+  // set correctly the global label
+  if (fESDtrack->IsOn(AliESDtrack::kTPCin)) { 
+    // for global track the GetLabel should be negative if
+    // 1) GetTPCLabel<0
+    // 2) this->GetLabel()<0
+    // 3) GetTPCLabel() != this->GetLabel()
+    int label = fESDtrack->GetTPCLabel();
+    int itsLabel = GetLabel();
+    if (label<0 || itsLabel<0 || itsLabel!=label) label = -TMath::Abs(label);
+    fESDtrack->SetLabel(label);
+  }
+  //
   // copy the module indices
   Int_t i;
   for(i=0;i<2*AliITSgeomTGeo::kNLayers;i++) {
