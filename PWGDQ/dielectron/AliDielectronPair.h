@@ -141,6 +141,7 @@ public:
   Double_t GetCosPointingAngle(const AliVVertex *primVtx) const;
   Double_t GetArmAlpha() const;
   Double_t GetArmPt()    const;
+  void GetDCA(const AliVVertex *primVtx, Double_t d0z0[2]) const;
 
   // internal KF particle
   const AliKFParticle& GetKFParticle()       const { return fPair; }
