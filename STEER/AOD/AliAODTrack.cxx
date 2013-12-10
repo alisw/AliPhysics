@@ -628,15 +628,17 @@ Bool_t AliAODTrack::PropagateToDCA(const AliVVertex *vtx,
   // inside the beam pipe.
   // return kFALSE is something went wrong
 
-  // convert to AliExternalTrackParam
-  AliExternalTrackParam etp; etp.CopyFromVTrack(this);  
-
-  Float_t xstart = etp.GetX();
-  if(xstart>3.) {
+  // allowed only for tracks inside the beam pipe
+  Float_t xstart2 = fPosition[0]*fPosition[0]+fPosition[1]*fPosition[1];
+  if(xstart2 > 3.*3.) { // outside beampipe radius
     AliError("This method can be used only for propagation inside the beam pipe");
     return kFALSE; 
   }
 
+  // convert to AliExternalTrackParam
+  AliExternalTrackParam etp; etp.CopyFromVTrack(this);  
+
+  // propagate
   if(!etp.PropagateToDCA(vtx,b,maxd,dz,covar)) return kFALSE;
 
   // update track position and momentum

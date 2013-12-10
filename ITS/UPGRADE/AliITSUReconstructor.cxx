@@ -36,6 +36,7 @@
 #include "AliITSUDigitPix.h"
 #include "AliITSUClusterizer.h"
 #include "AliITSUClusterPix.h"
+#include "AliITSUVertexer.h"
 #include "AliMagF.h"
 
 ClassImp(AliITSUReconstructor)
@@ -191,10 +192,9 @@ AliVertexer* AliITSUReconstructor::CreateVertexer() const
 {
   // create a ITS vertexer
   // to be implemented for the upgrade
-
-  AliDebug(1,"ITSU vertexer should be initiated here\n");
-  return 0;
-
+  AliInfo("Creating dummy vertexer");
+  //  AliDebug(1,"ITSU vertexer should be initiated here\n");
+  return new AliITSUVertexer();
 }
 
 //_____________________________________________________________________________

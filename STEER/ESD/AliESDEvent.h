@@ -170,7 +170,7 @@ public:
   Int_t       GetBeamParticleZ(Int_t ibeam)       const  {return fESDRun?fESDRun->GetBeamParticleZ(ibeam):0;}
   Bool_t      IsUniformBMap()                     const  {return fESDRun?fESDRun->TestBit(AliESDRun::kUniformBMap):kFALSE;}
   //
-  Bool_t      InitMagneticField()                 const  {return fESDRun?fESDRun->InitMagneticField():kFALSE;} 
+  virtual Bool_t  InitMagneticField()             const  {return fESDRun?fESDRun->InitMagneticField():kFALSE;} 
   void        SetT0spread(Float_t *t)             const  {if(fESDRun) fESDRun->SetT0spread(t);} 
   Float_t     GetT0spread(Int_t i)                const  {return fESDRun?fESDRun->GetT0spread(i):0;}
   virtual void      SetVZEROEqFactors(Float_t factors[64]) const {if(fESDRun) fESDRun->SetVZEROEqFactors(factors);}

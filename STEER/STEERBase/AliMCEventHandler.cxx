@@ -338,6 +338,7 @@ Bool_t AliMCEventHandler::BeginEvent(Long64_t entry)
 	}
 	next.Reset();
 	while((handler = (AliMCEventHandler*)next())) {
+	  if (!handler->MCEvent()) continue;
 	    fMCEvent->AddSubsidiaryEvent(handler->MCEvent());
 	}
 	fMCEvent->InitEvent();
@@ -466,10 +467,11 @@ Bool_t AliMCEventHandler::Notify(const char *path)
     fileName = dirname;
     fileName += "/";
     fileName += basename;
+    /*
     if (fileName.BeginsWith("root:")) {
       fileName.Append("?ZIP=");
     }
-
+    */
     *fPathName = fileName;
     AliInfo(Form("Path: -%s-\n", fPathName->Data()));
     

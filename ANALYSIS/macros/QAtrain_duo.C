@@ -44,7 +44,7 @@ Int_t runNumbers[5] = {158626};
 
 Bool_t doCDBconnect   = 1;
 Bool_t doEventStat    = 1;
-Bool_t doCentrality   = 1;
+Bool_t doCentrality   = 0;
 Bool_t doQAsym        = 1;
 Bool_t doVZERO        = 1;   // there is a 2nd file
 Bool_t doVZEROPbPb    = 1; 
@@ -185,8 +185,12 @@ void AddAnalysisTasks(const char *suffix, const char *cdb_location)
   //
   if (doCDBconnect) {
     gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskCDBconnect.C");
-    AliTaskCDBconnect *taskCDB = AddTaskCDBconnect(cdb_location, run_number);
+    AliTaskCDBconnect *taskCDB = AddTaskCDBconnect(cdb_location, run_number);    
+//    AliTaskCDBconnect *taskCDB = AddTaskCDBconnect();
     if (!taskCDB) return;
+    AliCDBManager *cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage(cdb_location);
+//    taskCDB->SetRunNumber(run_number);
   }    
   
   //

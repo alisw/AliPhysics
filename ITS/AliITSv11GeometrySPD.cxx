@@ -1122,14 +1122,14 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth, Int_t sect,
         sB3->GetDX()*TMath::Cos(t*TMath::DegToRad());
     y0 = 0.5*(sB0->GetY(0)+sB0->GetY(sB0->GetNvert()-1))-3.5*
         sB3->GetDX()*TMath::Sin(t*TMath::DegToRad());
-    rotrans = new TGeoCombiTrans("",1.01*x0,y0,z0,rot);
+    rotrans = new TGeoCombiTrans("",1.02*x0,y0,z0,rot);
     vM0->AddNode(vB3,3,rotrans); // Put Mounting bracket on sector
-    h = sM3->GetDz() + sN3->GetZ(1);
+    h = sM3->GetDz() + sN3->GetZ(1) + 0.03;
     zt = sB3->GetDZ()-kMountingBlockScrew1ZPos;
     vM0->AddNode(vN3, 5, new TGeoCombiTrans(x0-h*CosD(180-t), y0+h*SinD(180-t),
 					    z0+zt,
 					    new TGeoRotation("",90+t,90,90)));
-    h += ksecCthick2 + 0.02;
+    h += ksecCthick2 + 0.05;
     zt = sB3->GetDZ()-kMountingBlockScrew2ZPos;
     vM0->AddNode(vN3, 6, new TGeoCombiTrans(x0-h*CosD(180-t), y0+h*SinD(180-t),
 					    z0+zt,
@@ -1148,14 +1148,14 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth, Int_t sect,
 					    new TGeoRotation("",90+t,90,90)));
 
     rot = new TGeoRotation("",t,180.0,0.0); // z & x axis rotation
-    rotrans = new TGeoCombiTrans("",1.01*x0,y0,-z0,rot);
+    rotrans = new TGeoCombiTrans("",1.02*x0,y0,-z0,rot);
     vM0->AddNode(vB3,4,rotrans); // Put Mounting bracket on sector
     h = sM3->GetDz() + sD1->GetDz();
     zt = sB3->GetDZ()-kMountingBlockScrew1ZPos;
     vM0->AddNode(vD1, 2, new TGeoCombiTrans(x0-h*CosD(180-t), y0+h*SinD(180-t),
 					   -z0-zt,
 					    new TGeoRotation("",90+t,90,90)));
-    h = sM3->GetDz() + sD2->GetDz() + ksecCthick2 + 0.02;
+    h = sM3->GetDz() + sD2->GetDz() + ksecCthick2 + 0.08;
     zt = sB3->GetDZ()-kMountingBlockScrew2ZPos;
     vM0->AddNode(vD2, 4, new TGeoCombiTrans(x0-h*CosD(180-t), y0+h*SinD(180-t),
 					   -z0-zt,

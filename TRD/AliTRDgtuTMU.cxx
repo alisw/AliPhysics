@@ -46,6 +46,7 @@ AliTRDgtuTMU::AliTRDgtuTMU(Int_t stack, Int_t sector) :
   fTracklets(0x0),
   fTrackletsPostInput(0x0),
   fZChannelTracklets(0x0),
+  fTrackArray(new TClonesArray("AliTRDtrackGTU", 50)),
   fTracks(0x0),
   fGtuParam(0x0),
   fStack(-1),
@@ -88,6 +89,8 @@ AliTRDgtuTMU::~AliTRDgtuTMU()
     delete [] fTracks[zch];
   }
   delete [] fTracks;
+  delete fTrackArray;
+
   for (Int_t layer = 0; layer < fGtuParam->GetNLayers(); layer++) {
     delete [] fZChannelTracklets[layer];
     delete fTrackletsPostInput[layer];
@@ -137,6 +140,8 @@ Bool_t AliTRDgtuTMU::Reset()
     }
   }
 
+  fTrackArray->Delete();
+
   // delete all added tracklets
   for (Int_t iLink = 0; iLink < fGtuParam->GetNLinks(); iLink++) {
     fTracklets[iLink]->Clear();
@@ -162,7 +167,7 @@ Bool_t AliTRDgtuTMU::AddTracklet(AliTRDtrackletGTU *tracklet, Int_t link)
 }
 
 
-Bool_t AliTRDgtuTMU::RunTMU(TList *ListOfTracks, AliESDEvent *esd)
+Bool_t AliTRDgtuTMU::RunTMU(TList *ListOfTracks, AliESDEvent *esd, Int_t outLabel)
 {
   // performs the analysis as in a TMU module of the GTU, i. e.
   // track matching
@@ -215,7 +220,10 @@ Bool_t AliTRDgtuTMU::RunTMU(TList *ListOfTracks, AliESDEvent *esd)
   // ----- label calculation and ESD storage -----
   TIter next(ListOfTracks);
   while (AliTRDtrackGTU *trk = (AliTRDtrackGTU*) next()) {
-    trk->CookLabel();
+    if (outLabel == -1)
+      trk->CookLabel();
+    else
+      trk->SetLabel(outLabel);
     if (esd) {
       AliESDTrdTrack *trdtrack = trk->CreateTrdTrack();
       esd->AddTrdTrack(trdtrack);
@@ -524,7 +532,7 @@ Bool_t AliTRDgtuTMU::RunTrackFinder(Int_t zch, TList* /* ListOfTracks */)
 
        if (nHits >= 4) {
 	 // ----- track registration -----
-	 AliTRDtrackGTU *track = new AliTRDtrackGTU();
+	 AliTRDtrackGTU *track = new ((*fTrackArray)[fTrackArray->GetEntriesFast()]) AliTRDtrackGTU();
 	 track->SetSector(fSector);
 	 track->SetStack(fStack);
 	 for (Int_t layer = 0; layer < fGtuParam->GetNLayers(); layer++ ) {
@@ -548,8 +556,6 @@ Bool_t AliTRDgtuTMU::RunTrackFinder(Int_t zch, TList* /* ListOfTracks */)
 	     track->SetRefLayerIdx(refLayerIdx);
 	     fTracks[zch][refLayerIdx].Add(track);
 	 }
-	 else
-	   delete track;
        }
 
        if ( (nUnc != 0) && (nUnc + nHits >= 4) ) // could this position of the reference layer give some track //??? special check in case of hit?
@@ -898,7 +904,25 @@ Bool_t AliTRDgtuTMU::RunTrackMerging(TList* ListOfTracks)
 
     TIter next(tracksZUniqueStage0);
     while (AliTRDtrackGTU *trk = (AliTRDtrackGTU*) next()) {
-	tracksZSplitted[(trk->GetZChannel() + 3 * (trk->GetZSubChannel() - 1)) % 2]->Add(trk);
+      if ((trk->GetZChannel() < 0) ||
+	  (trk->GetZChannel() > 2) ||
+	  (trk->GetZSubChannel() < 0) ||
+	  (trk->GetZSubChannel() > 6)) {
+	AliError(Form("track with invalid z-channel information at %p: zch = %i, subchannel = %i",
+		      trk, trk->GetZChannel(), trk->GetZSubChannel()));
+	trk->Dump();
+      }
+      Int_t idx = (trk->GetZChannel() + 3 * (trk->GetZSubChannel() - 1)) % 2;
+      if ((idx < 0) || (idx > 1)) {
+	AliError(Form("invalid index %i null", idx));
+	trk->Dump();
+	continue;
+      }
+      if (!tracksZSplitted[idx]) {
+	AliError(Form("array pointer %i null", idx));
+	continue;
+      }
+      tracksZSplitted[idx]->Add(trk);
     }
 
     for (Int_t i = 0; i < 2; i++) {
@@ -1151,10 +1175,7 @@ Bool_t AliTRDgtuTMU::Uniquifier(const TList *inlist, TList *outlist)
     AliTRDtrackGTU *trkStage1 = 0x0;
 
     do {
-      if (trkStage0 != trkStage1)
-	delete trkStage0;
-
-	trkStage0 = (AliTRDtrackGTU*) next();
+        trkStage0 = (AliTRDtrackGTU*) next();
 
 	Bool_t tracksEqual = kFALSE;
 	if (trkStage0 != 0 && trkStage1 != 0) {
@@ -1167,10 +1188,8 @@ Bool_t AliTRDgtuTMU::Uniquifier(const TList *inlist, TList *outlist)
 	}
 
 	if (tracksEqual) {
-	  if (trkStage0->GetNTracklets() >= trkStage1->GetNTracklets()) {
-	    delete trkStage1;
+	  if (trkStage0->GetNTracklets() >= trkStage1->GetNTracklets())
 	    trkStage1 = trkStage0;
-	  }
 	}
 	else {
 	    if (trkStage1 != 0x0)

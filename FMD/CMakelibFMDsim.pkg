@@ -29,7 +29,8 @@
 set ( SRCS   
   AliFMD.cxx 
   AliFMDv0.cxx 
-  AliFMDv1.cxx AliFMDHit.cxx
+  AliFMDv1.cxx 
+  AliFMDHit.cxx
   AliFMDBaseDigitizer.cxx
   AliFMDDigitizer.cxx
   AliFMDHitDigitizer.cxx
@@ -41,6 +42,7 @@ string (REPLACE ".cxx" ".h" HDRS "${SRCS}")
 set ( HDRS ${HDRS} AliFMDEdepHitPair.h )
 set ( DHDR  FMDsimLinkDef.h)
 set ( EINCLUDE  RAW STEER/STEER STEER/ESD STEER/STEERBase)
+set ( EXPORT AliFMDHit.h )
 #
 # EOF
 #

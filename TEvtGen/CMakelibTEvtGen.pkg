@@ -31,4 +31,4 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  TEvtGenLinkDef.h)
 
-set ( EINCLUDE TEvtGen EVGEN)
+set ( EINCLUDE TEvtGen EVGEN STEER/STEER)

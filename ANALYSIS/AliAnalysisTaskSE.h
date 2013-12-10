@@ -110,7 +110,7 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     UInt_t fOfflineTriggerMask;   //  Task processes collision candidates only
     // Event Mixing
     AliMultiInputEventHandler *fMultiInputHandler;  //! pointer to multihandler
-    AliMCEventHandler         *fMCEventHandler;     //! pointer to MCEventHandler
+    AliInputEventHandler      *fMCEventHandler;     //! pointer to MCEventHandler
     ClassDef(AliAnalysisTaskSE, 4); // Analysis task for standard jet analysis
 };
  

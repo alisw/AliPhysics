@@ -18,6 +18,12 @@ macro(ALICE_DevFlagsOutput)
     message(STATUS "SHLIB     : ${SHLIB}")
     message(STATUS "SYSLIBS   : ${SYSLIBS}")
     message(STATUS "CINTFLAGS : ${CINTFLAGS}")
+    message(STATUS "CMAKE_Fortran_FLAGS	      : ${CMAKE_Fortran_FLAGS}")
+    message(STATUS "CMAKE_CXX_FLAGS	      : ${CMAKE_CXX_FLAGS}")
+    message(STATUS "CMAKE_C_FLAGS	      : ${CMAKE_C_FLAGS}")
+    message(STATUS "CMAKE_SHARED_LINKER_FLAGS : ${CMAKE_SHARED_LINKER_FLAGS}")
+    message(STATUS "CMAKE_MODULE_LINKER_FLAGS : ${CMAKE_MODULE_LINKER_FLAGS}")
+    message(STATUS "CMAKE_EXE_LINKER_FLAGS    : ${CMAKE_EXE_LINKER_FLAGS}")
   endif(ALICEDEV STREQUAL "YES")
 
 endmacro(ALICE_DevFlagsOutput)
@@ -233,6 +239,8 @@ macro(ALICE_ResetPackage)
   set(PSHLIBS)
   set(PDS)
 
+  set(saveEINCLUDE)
+
 endmacro(ALICE_ResetPackage)
 
 function(ALICE_SetPackageVariable _var ext setvalue unsetvalue )
@@ -249,8 +257,15 @@ function(ALICE_SetPackageVariable _var ext setvalue unsetvalue )
 endfunction(ALICE_SetPackageVariable)
 
 macro(ALICE_BuildPackage)
+  # message(STATUS " ${PACKAGE}")
  
   list(APPEND EINCLUDE STEER) 
+  # Needed for PAR files - we need to do this before path 
+  # expansion so that the PAR files do not contain references to 
+  # specific directories but depend solely on ALICE_ROOT
+  string(REPLACE ";" " " saveEINCLUDE "${EINCLUDE}")
+  # set(saveEINCLUDE "${EINCLUDE}")
+  # message(STATUS "saveEINCLUDE=${saveEINCLUDE} EINCLUDE=${EINCLUDE}")
 
   ALICE_SetPackageVariable(PFFLAGS "FFLAGS" "${PACKFFLAGS}" "${FFLAGS}")
   ALICE_SetPackageVariable(PCFLAGS "CFLAGS" "${PACKCFLAGS}" "${CFLAGS}")
@@ -299,6 +314,8 @@ macro(ALICE_BuildPackage)
     list(APPEND PMALIBS ${PACKAGE}-static)
     list(APPEND ALLALIBS ${PACKAGE}-static)
     list(APPEND BINLIBS ${PACKAGE})
+    # Do not link against other libraries when creating a library 
+    # set(PELIBS)
   else()
     list(APPEND ALLEXECS ${PACKAGE})
   endif(lib)
@@ -307,7 +324,10 @@ macro(ALICE_BuildPackage)
   set(${MODULE}INC "${EINCLUDE}" PARENT_SCOPE)
   list(APPEND INCLUDEFILES ${PEXPORTDEST})
   if(WITHDICT)  
-    ALICE_SetPackageVariable(PDS "DS" "G__${PACKAGE}.cxx" "G__${PACKAGE}.cxx")
+    # Replace dots in file name with underscores, or rootcint will 
+    # write invalid code (namespace names with dots in them)
+    string(REPLACE "." "_" ESC_PACKAGE ${PACKAGE})
+    ALICE_SetPackageVariable(PDS "DS" "G__${ESC_PACKAGE}.cxx" "G__${ESC_PACKAGE}.cxx")
     ALICE_GenerateDictionary()
   else()
     if(lib)
@@ -328,7 +348,8 @@ endmacro(ALICE_BuildPackage)
 
 
 macro(ALICE_BuildModule)
-
+  # message(STATUS "${MODULE}")
+  execute_process(COMMAND ${CMAKE_COMMAND} -E echo_append "-- ${MODULE}:")
   add_definitions(-D_MODULE_="${MODULE}")
   foreach(PACKAGEFILE ${PACKAGES})
       set(lib)
@@ -337,6 +358,7 @@ macro(ALICE_BuildModule)
       string(REGEX MATCH "CMakebin" bin "${PACKAGEFILE}")
       get_filename_component(PACKAGE ${PACKAGEFILE} NAME)
       string(REGEX REPLACE "^CMake(lib|bin)(.*)\\.pkg" "\\2" PACKAGE "${PACKAGE}")
+      execute_process(COMMAND ${CMAKE_COMMAND} -E echo_append " ${PACKAGE}")
       if(ALICEDEV)
         message("Adding package ${PACKAGE} in ${MODULE}")
       endif(ALICEDEV)
@@ -353,6 +375,7 @@ macro(ALICE_BuildModule)
       endif(NOT EXCLUDEPACKAGE)
   endforeach(PACKAGEFILE)
   ALICE_CheckModule()
+  execute_process(COMMAND ${CMAKE_COMMAND} -E echo " done")
 endmacro(ALICE_BuildModule)
 
 macro(ALICE_GenerateDictionary)
@@ -375,7 +398,20 @@ macro(ALICE_GenerateDictionary)
   separate_arguments(DCINTHDRS)
   separate_arguments(DDH)
   # Format neccesary arguments
+  set(ROOT6_ALPHA "5.99.1")
+  string(REGEX REPLACE "/0*" "." ROOT_DOTVERSION ${ROOT_VERSION})
+  if(ROOT_DOTVERSION VERSION_GREATER ROOT6_ALPHA)
+    # For current ROOT6-alpha - without proper PCM support - we need to 
+    # give the _full_ path for all include paths, so that libCling can
+    # later attach those to the internal include path of the interpreter 
+    # and so that the interpreter can parse the header files. 
+    #
+    # THIS SHOULD BE A TEMPORARY HACK!
+    ALICE_Format(DINC "-I${PROJECT_SOURCE_DIR}/" "" 
+      "${DINC};${CMAKE_INCLUDE_EXPORT_DIRECTORY}")
+  else()
   ALICE_Format(DINC "-I" "" "${DINC};${CMAKE_INCLUDE_EXPORT_DIRECTORY}")
+  endif(ROOT_DOTVERSION VERSION_GREATER ROOT6_ALPHA)
   set_source_files_properties(${PDS} PROPERTIES GENERATED TRUE)
   set_source_files_properties(${PDS} PROPERTIES COMPILE_FLAGS "-w")
   add_custom_command(OUTPUT  ${PDS}
@@ -390,12 +426,12 @@ endmacro(ALICE_GenerateDictionary)
 
 macro(ALICE_BuildLibrary)
 
-  ALICE_DevFlagsOutput()
   set(CMAKE_CXX_FLAGS "${PEDEFINE} ${PCXXFLAGS}")
   set(CMAKE_C_FLAGS "${PEDEFINE} ${PCFLAGS}")
   set(CMAKE_Fortran_FLAGS "${PEDEFINE} ${PFFLAGS}")
   set(CMAKE_SHARED_LINKER_FLAGS ${PSOFLAGS}) 
   set(CMAKE_MODULE_LINKER_FLAGS ${PLDFLAGS})
+  ALICE_DevFlagsOutput()
   
   
   separate_arguments(PINC)
@@ -415,6 +451,7 @@ macro(ALICE_BuildLibrary)
   include_directories(${PINC})  
   include_directories(${EINCLUDE})
   include_directories(${CMAKE_INCLUDE_EXPORT_DIRECTORY})
+  include_directories(${CMAKE_SOURCE_DIR})
   
   add_library(${PACKAGE} SHARED ${PCS} ${PFS} ${PS} ${PDS})
   set_target_properties(${PACKAGE} PROPERTIES SUFFIX .so)  
@@ -449,12 +486,13 @@ endmacro(ALICE_BuildLibrary)
 
 macro(ALICE_BuildExecutable)
 
-  ALICE_DevFlagsOutput()
   set(CMAKE_CXX_FLAGS "${PEDEFINE} ${PCXXFLAGS} ${EXEFLAGS}")
   set(CMAKE_C_FLAGS "${PEDEFINE} ${PCFLAGS} ${EXEFLAGS}")
   set(CMAKE_Fortran_FLAGS "${PEDEFINE} ${PFFLAGS} ${EXEFLAGS}")
   set(CMAKE_SHARED_LINKER_FLAGS ${PSOFLAGS}) 
   set(CMAKE_MODULE_LINKER_FLAGS ${PLDFLAGS})
+  set(CMAKE_EXE_LINKER_FLAGS ${PLDFLAGS})
+  ALICE_DevFlagsOutput()
   
   separate_arguments(PINC)
   separate_arguments(EINCLUDE)
@@ -580,9 +618,10 @@ macro(ALICE_BuildPAR)
       list(APPEND PARSRCS ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}/${file}-par)
     endforeach(file ${SRCS} ${HDRS} ${FSRCS} ${DHDR})
     
+    # message(STATUS "saveEINCLUDE=${saveEINCLUDE}")
     add_custom_target(${PACKAGE}.par
-                      COMMAND sed -e 's/include .\(ROOTSYS\)\\/\\(etc\\|test\\)\\/Makefile.arch/include Makefile.arch/\; s/PACKAGE = .*/PACKAGE = ${PACKAGE}/\; s,SRCS *=.*,SRCS = ${SRCS},\;' < Makefile | sed -e 's,HDRS *=.*,HDRS = ${HDRS},\; s,FSRCS *=.*,FSRCS = ${FSRCS},\; s,DHDR *=.*,DHDR = ${DHDR},' > ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}/Makefile
-                      COMMAND cp -pR ${ROOTSYS}/etc/Makefile.arch ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}/Makefile.arch
+                      COMMAND sed -e 's,include ..ROOTSYS./\\\(etc\\|test\\\)/Makefile.arch,include Makefile.arch,\; s/PACKAGE = .*/PACKAGE = ${PACKAGE}/\; s,SRCS *=.*,SRCS = ${SRCS},\;' < Makefile | sed -e 's,HDRS *=.*,HDRS = ${HDRS},\; s,FSRCS *=.*,FSRCS = ${FSRCS},\; s,DHDR *=.*,DHDR = ${DHDR},\; s,EINCLUDE *:=.*,EINCLUDE := ${saveEINCLUDE},' > ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}/Makefile
+                      COMMAND cp -pR `root-config --etcdir`/Makefile.arch ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}/Makefile.arch
                       COMMAND cp -pR PROOF-INF.${PACKAGE} ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}/PROOF-INF
 #                      COMMAND cp -pR lib${PACKAGE}.pkg ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}
                       COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} tar --exclude=.svn -czhf ${CMAKE_BINARY_DIR}/${PACKAGE}.par ${PACKAGE}

@@ -60,6 +60,11 @@
 #include "TVector3.h"
 #include "AliTPCdEdxInfo.h"
 
+#include "AliESDTrdTrack.h"
+#include "AliESDTrdTracklet.h"
+#include "AliAODTrdTrack.h"
+#include "AliAODTrdTracklet.h"
+
 using std::cout;
 using std::endl;
 ClassImp(AliAnalysisTaskESDfilter)
@@ -76,6 +81,7 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
   fPtshape(0x0),
   fEnableFillAOD(kTRUE),
   fUsedTrack(0x0),
+  fUsedTrackCopy(0x0),
   fUsedKink(0x0),
   fUsedV0(0x0),
   fAODTrackRefs(0x0),
@@ -112,6 +118,7 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
   fAreEMCALTriggerEnabled(kTRUE),
   fArePHOSTriggerEnabled(kTRUE),
   fAreTrackletsEnabled(kTRUE),
+  fIsTRDEnabled(kTRUE),
   fESDpid(0x0),
   fIsPidOwner(kFALSE),
   fTPCaloneTrackCuts(0),
@@ -148,6 +155,7 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
     fPtshape(0x0),
     fEnableFillAOD(kTRUE),
     fUsedTrack(0x0),
+    fUsedTrackCopy(0x0),
     fUsedKink(0x0),
     fUsedV0(0x0),
     fAODTrackRefs(0x0),
@@ -184,6 +192,7 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
 		fAreEMCALTriggerEnabled(kTRUE),
 		fArePHOSTriggerEnabled(kTRUE),
 		fAreTrackletsEnabled(kTRUE),
+    fIsTRDEnabled(kTRUE),
     fESDpid(0x0),
     fIsPidOwner(kFALSE),
     fTPCaloneTrackCuts(0),
@@ -1214,6 +1223,7 @@ void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
     esdTrack->GetESDpid(pid);// original PID
     esdTrack->GetTOFLabel(tofLabel);
     if(fMChandler)fMChandler->SelectParticle(esdTrack->GetLabel());
+    fUsedTrackCopy[nTrack] |= selectInfo;
     aodTrack = new(Tracks()[fNumberOfTracks++]) AliAODTrack((track->GetID()+1)*-1,
                                                             track->GetLabel(),
                                                             p,
@@ -1362,6 +1372,7 @@ void AliAnalysisTaskESDfilter::ConvertGlobalConstrainedTracks(const AliESDEvent&
     esdTrack->GetESDpid(pid);
     esdTrack->GetTOFLabel(tofLabel); 
     if(fMChandler)fMChandler->SelectParticle(esdTrack->GetLabel());
+    fUsedTrackCopy[nTrack] |= selectInfo;
     aodTrack = new(Tracks()[fNumberOfTracks++]) AliAODTrack((esdTrack->GetID()+1)*-1,
                                                             esdTrack->GetLabel(),
                                                             p,
@@ -2187,6 +2198,105 @@ Int_t AliAnalysisTaskESDfilter::ConvertHMPID(const AliESDEvent& esd) // clm
   return cntHmpidGoodTracks;
 }
 
+void AliAnalysisTaskESDfilter::ConvertTRD(const AliESDEvent& esd)
+{
+  // fill TRD on-line tracks with assiocated tracklets
+  // as used for the TRD level-1 triggers
+
+  const Int_t nTrdTracks = esd.GetNumberOfTrdTracks();
+  const Int_t nLayers = 6;
+
+  for (Int_t iTrdTrack = 0; iTrdTrack < nTrdTracks; ++iTrdTrack) {
+    // copy information from ESD track to AOD track
+    const AliESDTrdTrack *esdTrdTrk = esd.GetTrdTrack(iTrdTrack);
+    AliAODTrdTrack &aodTrdTrk = AODEvent()->AddTrdTrack(esdTrdTrk);
+
+    // copy the contributing tracklets
+    for (Int_t iTracklet = 0; iTracklet < nLayers; ++iTracklet) {
+      if (const AliESDTrdTracklet *esdTrdTrkl = esdTrdTrk->GetTracklet(iTracklet))
+	aodTrdTrk.AddTracklet(*esdTrdTrkl, iTracklet);
+    }
+
+    // add the reference to the matched global track
+    AliAODTrack *aodTrkMatch = 0x0;
+    AliESDtrack *esdTrkMatch = (AliESDtrack*) esdTrdTrk->GetTrackMatch();
+    if (esdTrkMatch) {
+      Int_t idx = esdTrkMatch->GetID();
+
+      if (idx < 0)
+    	AliError("track has a matched track that was not found");
+      else if (esdTrkMatch != esd.GetTrack(idx))
+	AliError("wrong track found for ESD track index");
+      else {
+        UInt_t selectInfo = fTrackFilter ? fTrackFilter->IsSelected(esdTrkMatch) : 0;
+
+	if (fUsedTrack[idx]) {
+	  aodTrkMatch = (AliAODTrack*) (*fAODTrackRefs)[idx];
+	  AliDebug(2, Form("event %lld: existing track (idx %i, pt = %f) matched to TRD track (idx %i, pt = %f), cut flags: 0x%08x",
+			   Entry(), idx, esdTrkMatch->Pt(), iTrdTrack, esdTrdTrk->Pt(),
+			   selectInfo));
+	}
+	else {
+	  if (selectInfo & fUsedTrackCopy[idx]) {
+	    // mask filter bits already used in track copies
+	    selectInfo &= ~fUsedTrackCopy[idx];
+	    AliWarning(Form("event %lld: copied track (idx %i, pt = %f) matched to TRD track (idx %i, pt = %f), cut flags: 0x%08x -> 0x%08x",
+			    Entry(), idx, esdTrkMatch->Pt(), iTrdTrack, esdTrdTrk->Pt(),
+			    fTrackFilter->IsSelected(esdTrkMatch), selectInfo));
+	  }
+	  AliDebug(2, Form("event %lld: unused track (idx %i, pt = %f) matched to TRD track (idx %i, pt = %f), cut flags: 0x%08x -> 0x%08x",
+			   Entry(), idx, esdTrkMatch->Pt(), iTrdTrack, esdTrdTrk->Pt(),
+			   fTrackFilter->IsSelected(esdTrkMatch), selectInfo));
+
+	  Double_t mom[3]={0.};
+	  Double_t pos[3]={0.};
+	  Double_t covTr[21]={0.};
+	  Double_t pid[10]={0.};
+
+	  esdTrkMatch->GetPxPyPz(mom);
+	  esdTrkMatch->GetXYZ(pos);
+	  esdTrkMatch->GetCovarianceXYZPxPyPz(covTr);
+	  esdTrkMatch->GetESDpid(pid);
+	  const AliESDVertex* vtx = esd.GetPrimaryVertex();
+
+	  fUsedTrack[idx] = kTRUE;
+	  if(fMChandler) fMChandler->SelectParticle(esdTrkMatch->GetLabel());
+
+	  aodTrkMatch = new(Tracks()[fNumberOfTracks++])
+	    AliAODTrack(esdTrkMatch->GetID(),
+			esdTrkMatch->GetLabel(),
+			mom,
+			kTRUE,
+			pos,
+			kFALSE,
+			covTr,
+			(Short_t)esdTrkMatch->GetSign(),
+			esdTrkMatch->GetITSClusterMap(),
+			pid,
+			fPrimaryVertex,
+			kTRUE,
+			vtx->UsesTrack(esdTrkMatch->GetID()),
+			AliAODTrack::kUndef,
+			selectInfo);
+
+	  aodTrkMatch->SetTPCFitMap(esdTrkMatch->GetTPCFitMap());
+	  aodTrkMatch->SetTPCClusterMap(esdTrkMatch->GetTPCClusterMap());
+	  aodTrkMatch->SetTPCSharedMap (esdTrkMatch->GetTPCSharedMap());
+	  aodTrkMatch->SetChi2perNDF(Chi2perNDF(esdTrkMatch));
+	  aodTrkMatch->SetTPCPointsF(esdTrkMatch->GetTPCNclsF());
+	  aodTrkMatch->SetTPCNCrossedRows(UShort_t(esdTrkMatch->GetTPCCrossedRows()));
+	  aodTrkMatch->SetIntegratedLength(esdTrkMatch->GetIntegratedLength());
+	  fAODTrackRefs->AddAt(aodTrkMatch,idx);
+	  if (esdTrkMatch->GetSign() > 0) ++fNumberOfPositiveTracks;
+	  aodTrkMatch->ConvertAliPIDtoAODPID();
+	  aodTrkMatch->SetFlags(esdTrkMatch->GetStatus());
+	}
+      }
+    }
+    aodTrdTrk.SetTrackMatchReference(aodTrkMatch);
+  }
+}
+
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::ConvertESDtoAOD() 
 {
@@ -2280,7 +2390,11 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD()
 
     // Array to take into account the tracks already added to the AOD    
     fUsedTrack = new Bool_t[nTracks];
-    for (Int_t iTrack=0; iTrack<nTracks; ++iTrack) fUsedTrack[iTrack]=kFALSE;
+    fUsedTrackCopy = new UInt_t[nTracks];
+    for (Int_t iTrack=0; iTrack<nTracks; ++iTrack) {
+      fUsedTrack[iTrack]=kFALSE;
+      fUsedTrackCopy[iTrack] = 0;
+    }
   }
   
   // Array to take into account the kinks already added to the AOD
@@ -2356,11 +2470,14 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD()
   
   if(fIsHMPIDEnabled) nHmpidRings = ConvertHMPID(*esd); 
 
+  if (fIsTRDEnabled) ConvertTRD(*esd);
+
   delete fAODTrackRefs; fAODTrackRefs=0x0;
   delete fAODV0VtxRefs; fAODV0VtxRefs=0x0;
   delete fAODV0Refs; fAODV0Refs=0x0;
   
   delete[] fUsedTrack; fUsedTrack=0x0;
+  delete[] fUsedTrackCopy; fUsedTrackCopy=0x0;
   delete[] fUsedV0; fUsedV0=0x0;
   delete[] fUsedKink; fUsedKink=0x0;
 

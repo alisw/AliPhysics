@@ -37,13 +37,13 @@ void UpdateCDBIdealGeom(const char* cdbUri, const char* cfgFile){
 
 	// Get root and AliRoot versions
 	const char* rootv = gROOT->GetVersion();
-	TString av(ALIROOT_SVN_BRANCH);
-	Int_t revnum = ALIROOT_SVN_REVISION;
+	TString av(ALIROOT_BRANCH);
+	TString revnum(ALIROOT_REVISION);
 
-	Printf("root version: %s.  AliRoot %s, revision number %d",rootv,av.Data(),revnum);
+	Printf("root version: %s.  AliRoot %s, revision number %s",rootv,av.Data(),revnum);
 
 	md->SetAliRootVersion(av.Data());
-	md->SetComment(Form("Geometry produced with root version %s and AliRoot %s, revision number %d",rootv,av.Data(),revnum));
+	md->SetComment(Form("Geometry produced with root version %s and AliRoot %s, revision number %s",rootv,av.Data(),revnum));
 	md->AddDateToComment();
 
 	//gSystem->Exec("if [ -e geometry.root ]; then \necho deleting existing geometry.root \nrm -rf geometry.root \nfi");

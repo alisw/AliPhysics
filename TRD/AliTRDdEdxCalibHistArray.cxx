@@ -28,6 +28,7 @@
 #include "THnBase.h"
 #include "THn.h"
 #include "TCollection.h"
+#include "AliLog.h"
 
 #include "AliTRDdEdxBaseUtils.h"
 #include "AliTRDdEdxCalibHistArray.h"
@@ -107,7 +108,7 @@ Long64_t AliTRDdEdxCalibHistArray::Merge(const TCollection* list)
       if (entry == 0) continue; 
       
       if(GetSize()!= entry->GetSize()){
-        printf("AliTRDdEdxCalibHistArray::Merge GetSize()!= entry->GetSize() %d %d\n", GetSize(), entry->GetSize()); exit(1);
+        AliFatal(Form("GetSize()!= entry->GetSize() %d %d\n", GetSize(), entry->GetSize()));
       }
 
       for(Int_t ii=0; ii<GetSize(); ii++){

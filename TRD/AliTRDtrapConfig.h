@@ -525,13 +525,10 @@ class AliTRDtrapConfig : public TNamed
   static const Int_t fgkDbankStartAddress = 0xf000; // start address in TRAP GIO
   static const Int_t fgkDbankWords = 0x0100;        // number of words in DBANK
 
- protected:
-  void InitRegs();
-
   class AliTRDtrapValue : public TObject {
   public:
     AliTRDtrapValue();
-    virtual ~AliTRDtrapValue() {}
+    virtual ~AliTRDtrapValue();
 
     virtual Bool_t Allocate(Alloc_t mode);
 
@@ -614,6 +611,9 @@ class AliTRDtrapConfig : public TNamed
 
     ClassDef(AliTRDtrapDmemWord, 1);
   };
+
+ protected:
+  void InitRegs();
 
   // configuration registers
   AliTRDtrapRegister fRegisterValue[kLastReg];  // array of TRAP register values in use

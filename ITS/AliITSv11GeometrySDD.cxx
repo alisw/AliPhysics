@@ -826,6 +826,7 @@ void AliITSv11GeometrySDD::CreateBasicObjects() {
   TGeoMedium *stainless       = GetMedium("AISI304L$"); // for screws
   TGeoMedium *coolerMediumSDD = GetMedium("WATER$");
   TGeoMedium *raccordMedium   = GetMedium("INOX$");  // same as AISI 316-L
+  TGeoMedium *copperMedium    = GetMedium("COPPER$");
 
   //********************************************************************
   // pieces of the carbon fiber structure
@@ -976,6 +977,14 @@ void AliITSv11GeometrySDD::CreateBasicObjects() {
   TGeoCombiTrans *bottomBeamTransf5 = new TGeoCombiTrans
     (0,-(fgkLadderHeight/2-fgkLadderBeamRadius)-dy,fgkSegmentLength/4, bottomBeamRot5);
 
+  // The ground wire running on the top vertex - M.S. 12 nov 2013
+  TGeoTube *groundWire = new TGeoTube(0, fgkEndLadderEarthCableR, fgkSegmentLength/2);
+  TGeoVolume *groundWireVol = new TGeoVolume("ITSsddGroundWire", groundWire,
+					     copperMedium);
+  groundWireVol->SetLineColor(41); // should be something brown-ish
+  TGeoTranslation *trGroundWire = new TGeoTranslation(0,
+			       fgkLadderHeight/2-5*fgkEndLadderEarthCableR, 0);
+
   fLaddSegCommonVol[0] = cfLaddTopVol1;  fLaddSegCommonTr[0] = trTop1;
   fLaddSegCommonVol[1] = cfLaddTopVol2;  fLaddSegCommonTr[1] = trTop1;
   fLaddSegCommonVol[2] = cfLaddSideVol1; fLaddSegCommonTr[2] = ctSideR;
@@ -995,6 +1004,7 @@ void AliITSv11GeometrySDD::CreateBasicObjects() {
   fLaddSegCommonVol[16]= bottomBeam2Vol; fLaddSegCommonTr[16]= bottomBeamTransf3;
   fLaddSegCommonVol[17]= bottomBeam3Vol; fLaddSegCommonTr[17]= bottomBeamTransf4;
   fLaddSegCommonVol[18]= bottomBeam3Vol; fLaddSegCommonTr[18]= bottomBeamTransf5;
+  fLaddSegCommonVol[19]= groundWireVol;  fLaddSegCommonTr[19]= trGroundWire;
 
  
   //********************************************************************

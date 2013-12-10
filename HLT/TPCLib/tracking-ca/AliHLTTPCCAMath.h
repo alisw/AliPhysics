@@ -72,7 +72,7 @@ typedef AliHLTTPCCAMath CAMath;
 #if defined( HLTCA_STANDALONE )
 #define choiceA(c1,c2,c3) c2
 #else //HLTCA_STANDALONE
-#define choiceA(c1,c2,c3) c3
+#define choiceA(c1,c2,c3) c2
 #endif //HLTCA_STANDALONE
 #else //HLTCA_HOSTCODE
 #define choiceA(c1, c2, c3) c2
@@ -202,7 +202,7 @@ GPUhd() inline float AliHLTTPCCAMath::ASin( float x )
 
 GPUd() inline int AliHLTTPCCAMath::Mul24( int a, int b )
 {
-#if defined(FERMI) || defined(__OPENCL__)
+#if defined(FERMI) || defined(__OPENCL__) || defined(KEPLER)
   return(a * b);
 #else
   return choice( __mul24( a, b ), a*b, a*b );

@@ -215,7 +215,7 @@ int AliHLTTPCCATrackerFramework::InitializeSliceParam(int iSlice, AliHLTTPCCAPar
 #define GPULIBNAME "libAliHLTTPCCAGPU"
 #endif
 
-AliHLTTPCCATrackerFramework::AliHLTTPCCATrackerFramework(int allowGPU, char* GPU_Library) : fGPULibAvailable(false), fGPUTrackerAvailable(false), fUseGPUTracker(false), fGPUDebugLevel(0), fGPUTracker(NULL), fGPULib(NULL), fOutputControl( NULL ), fKeepData(false), fGlobalTracking(false)
+AliHLTTPCCATrackerFramework::AliHLTTPCCATrackerFramework(int allowGPU, const char* GPU_Library, int GPUDeviceNum) : fGPULibAvailable(false), fGPUTrackerAvailable(false), fUseGPUTracker(false), fGPUDebugLevel(0), fGPUTracker(NULL), fGPULib(NULL), fOutputControl( NULL ), fKeepData(false), fGlobalTracking(false)
 {
 	//Constructor
 	if (GPU_Library && !GPU_Library[0]) GPU_Library = NULL;
@@ -229,9 +229,9 @@ AliHLTTPCCATrackerFramework::AliHLTTPCCATrackerFramework(int allowGPU, char* GPU
 		if (allowGPU)
 		{
 			#ifndef R__WIN32
-				HLTInfo("The following error occured during dlopen: %s", dlerror());
+				HLTImportant("The following error occured during dlopen: %s", dlerror());
 			#endif
-			HLTError("Error Opening cagpu library for GPU Tracker, will fallback to CPU");
+			HLTError("Error Opening cagpu library for GPU Tracker (%s), will fallback to CPU", GPU_Library == NULL ? "default: " GPULIBNAME : GPU_Library);
 		}
 		else
 		{
@@ -268,7 +268,7 @@ AliHLTTPCCATrackerFramework::AliHLTTPCCATrackerFramework(int allowGPU, char* GPU
 
 	if (allowGPU && fGPULibAvailable)
 	{
-		fUseGPUTracker = (fGPUTrackerAvailable = (fGPUTracker->InitGPU() == 0));
+		fUseGPUTracker = (fGPUTrackerAvailable = (fGPUTracker->InitGPU(-1, GPUDeviceNum) == 0));
 		HLTInfo("GPU Tracker Initialized and available in framework");
 	}
 }

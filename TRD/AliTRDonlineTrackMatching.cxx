@@ -319,7 +319,7 @@ Bool_t AliTRDonlineTrackMatching::AcceptTrack(const AliESDtrack* esdTrack, const
   return kTRUE;
 }
 
-Bool_t AliTRDonlineTrackMatching::ProcessEvent(AliESDEvent *esdEvent) {
+Bool_t AliTRDonlineTrackMatching::ProcessEvent(AliESDEvent *esdEvent, Bool_t updateRef, Int_t label) {
 
   // performs track matching for all TRD online tracks of the ESD event
 
@@ -476,6 +476,10 @@ Bool_t AliTRDonlineTrackMatching::ProcessEvent(AliESDEvent *esdEvent) {
   for (UInt_t iTrdTrack = 0; iTrdTrack < numTrdTracks; ++iTrdTrack){
 
     trdTrack = esdEvent->GetTrdTrack(iTrdTrack);
+    if ((label != -1) &&
+	(trdTrack->GetLabel() != label))
+      continue;
+
     stack = TrdSecSiLsi(trdTrack->GetSector(), trdTrack->GetStack());
     trdPt = (esdEvent->GetMagneticField() > 0.) ? (-1.*trdTrack->Pt()) : trdTrack->Pt();
     matchTrack = NULL;
@@ -530,9 +534,12 @@ Bool_t AliTRDonlineTrackMatching::ProcessEvent(AliESDEvent *esdEvent) {
 	     trdTrack->GetSector(), trdTrack->GetStack(), iTrdTrack, matchEsdTrackIndexInStack,
 	     trdPt, matchTrack->GetSignedPt());
 #endif
-      trdTrack->SetTrackMatchReference(matchTrack);
-    } else
-      trdTrack->SetTrackMatchReference(NULL);
+      if (updateRef)
+	trdTrack->SetTrackMatchReference(matchTrack);
+    } else {
+      if (updateRef)
+	trdTrack->SetTrackMatchReference(NULL);
+    }
 
   } // loop over TRD online tracks
 

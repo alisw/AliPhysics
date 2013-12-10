@@ -675,17 +675,17 @@ void AliMUONClusterFinderMLEM::BuildPixArrayOneCathode(AliMUONCluster& cluster)
   for (Int_t i = 1; i <= nbins[0]; ++i) {
     Double_t x = xaxis->GetBinCenter(i);
     for (Int_t j = 1; j <= nbins[1]; ++j) {
-      if (hist2->GetCellContent(i,j) < 0.1) continue;
-      //if (hist2->GetCellContent(i,j) < 1.1 && cluster.Multiplicity(0) && 
+      if (hist2->GetBinContent(hist2->GetBin(i,j)) < 0.1) continue;
+      //if (hist2->GetBinContent(hist2->GetBin(i,j)) < 1.1 && cluster.Multiplicity(0) && 
       //  cluster.Multiplicity(1)) continue;
       if (cath0 != cath1) {
 	// Two-sided cluster
-	Double_t cont = hist2->GetCellContent(i,j);
+	Double_t cont = hist2->GetBinContent(hist2->GetBin(i,j));
 	if (cont < 999.) continue;
 	if (cont-Int_t(cont/1000.)*1000. < 0.5) continue;
       }
       Double_t y = yaxis->GetBinCenter(j);
-      Double_t charge = hist1->GetCellContent(i,j);
+      Double_t charge = hist1->GetBinContent(hist1->GetBin(i,j));
       AliMUONPad* pixPtr = new AliMUONPad(x, y, width[0], width[1], charge);
       fPixArray->Add(pixPtr);
     }  
@@ -726,11 +726,11 @@ void AliMUONClusterFinderMLEM::PadOverHist(Int_t idir, Int_t ix0, Int_t iy0, Ali
     else {
       // Fill histogram
       Double_t cont = pad->Charge();
-      if (hist2->GetCellContent(ix0, ixy) > 0.1) 
-	cont = TMath::Min (hist1->GetCellContent(ix0, ixy), cont);
-      hist1->SetCellContent(ix0, ixy, cont);
-      //hist2->SetCellContent(ix0, ixy, hist2->GetCellContent(ix0, ixy)+1);
-      hist2->SetCellContent(ix0, ixy, hist2->GetCellContent(ix0, ixy)+amask);
+      if (hist2->GetBinContent(hist2->GetBin(ix0, ixy)) > 0.1) 
+	cont = TMath::Min (hist1->GetBinContent(hist1->GetBin(ix0, ixy)), cont);
+      hist1->SetBinContent(hist1->GetBin(ix0, ixy), cont);
+      //hist2->SetBinContent(hist2->GetBin(ix0, ixy), hist2->GetBinContent(hist2->GetBin(ix0, ixy))+1);
+      hist2->SetBinContent(hist2->GetBin(ix0, ixy), hist2->GetBinContent(hist2->GetBin(ix0, ixy))+amask);
     }
   }
 
@@ -743,11 +743,11 @@ void AliMUONClusterFinderMLEM::PadOverHist(Int_t idir, Int_t ix0, Int_t iy0, Ali
     else {
       // Fill histogram
       Double_t cont = pad->Charge();
-      if (hist2->GetCellContent(ix0, ixy) > 0.1) 
-	cont = TMath::Min (hist1->GetCellContent(ix0, ixy), cont);
-      hist1->SetCellContent(ix0, ixy, cont);
-      //hist2->SetCellContent(ix0, ixy, hist2->GetCellContent(ix0, ixy)+1);
-      hist2->SetCellContent(ix0, ixy, hist2->GetCellContent(ix0, ixy)+amask);
+      if (hist2->GetBinContent(hist2->GetBin(ix0, ixy)) > 0.1) 
+	cont = TMath::Min (hist1->GetBinContent(hist1->GetBin(ix0, ixy)), cont);
+      hist1->SetBinContent(hist1->GetBin(ix0, ixy), cont);
+      //hist2->SetBinContent(hist1->GetBin(ix0, ixy), hist2->GetBinContent(hist2->GetBin(ix0, ixy))+1);
+      hist2->SetBinContent(hist2->GetBin(ix0, ixy), hist2->GetBinContent(hist2->GetBin(ix0, ixy))+amask);
     }
   }
 }
@@ -1237,7 +1237,7 @@ void AliMUONClusterFinderMLEM::FindCOG(Double_t *xyc)
   for (Int_t i = TMath::Max(1,iymax-1); i <= ie; ++i) {
     y = fHistMlem->GetYaxis()->GetBinCenter(i);
     for (Int_t j = TMath::Max(1,ixmax-1); j <= je; ++j) {
-      cont = fHistMlem->GetCellContent(j,i);
+      cont = fHistMlem->GetBinContent(fHistMlem->GetBin(j,i));
       if (cont < thresh) continue;
       if (i != i1) {i1 = i; nsumy++;}
       if (j != j1) {j1 = j; nsumx++;}
@@ -1257,7 +1257,7 @@ void AliMUONClusterFinderMLEM::FindCOG(Double_t *xyc)
     for (Int_t i = TMath::Max(1,iymax-1); i <= ie; ++i) {
       if (i == iymax) continue;
       for (Int_t j = TMath::Max(1,ixmax-1); j <= je; ++j) {
-        cont = fHistMlem->GetCellContent(j,i);
+        cont = fHistMlem->GetBinContent(fHistMlem->GetBin(j,i));
         if (cont > cmax) {
           cmax = cont;
           x = fHistMlem->GetXaxis()->GetBinCenter(j);
@@ -1281,7 +1281,7 @@ void AliMUONClusterFinderMLEM::FindCOG(Double_t *xyc)
     for (Int_t j = TMath::Max(1,ixmax-1); j <= je; ++j) {
       if (j == ixmax) continue;
       for (Int_t i = TMath::Max(1,iymax-1); i <= ie; ++i) {
-        cont = fHistMlem->GetCellContent(j,i);
+        cont = fHistMlem->GetBinContent(fHistMlem->GetBin(j,i));
         if (cont > cmax) {
           cmax = cont;
           x = fHistMlem->GetXaxis()->GetBinCenter(j);
@@ -1424,7 +1424,7 @@ Int_t AliMUONClusterFinderMLEM::FindLocalMaxima(TObjArray *pixArray, Int_t *loca
   for (Int_t i = 1; i <= ny; ++i) {
     indx = (i-1) * nx;
     for (Int_t j = 1; j <= nx; ++j) {
-      if (fHistAnode->GetCellContent(j,i) < fLowestPixelCharge) continue;
+      if (fHistAnode->GetBinContent(fHistAnode->GetBin(j,i)) < fLowestPixelCharge) continue;
       //if (isLocalMax[indx+j-1] < 0) continue;
       if (isLocalMax[indx+j-1] != 0) continue;
       FlagLocalMax(fHistAnode, i, j, isLocalMax);
@@ -1436,7 +1436,7 @@ Int_t AliMUONClusterFinderMLEM::FindLocalMaxima(TObjArray *pixArray, Int_t *loca
     for (Int_t j = 1; j <= nx; ++j) {
       if (isLocalMax[indx+j-1] > 0) { 
 	localMax[nMax] = indx + j - 1; 
-	maxVal[nMax++] = fHistAnode->GetCellContent(j,i);
+	maxVal[nMax++] = fHistAnode->GetBinContent(fHistAnode->GetBin(j,i));
 	((AliMUONPad*)fSplitter->BinToPix(fHistAnode, j, i))->SetStatus(fgkMustKeep);
 	if (nMax > 99) break;
       }
@@ -1458,7 +1458,7 @@ void AliMUONClusterFinderMLEM::FlagLocalMax(TH2D *hist, Int_t i, Int_t j, Int_t 
 
   Int_t nx = hist->GetNbinsX();
   Int_t ny = hist->GetNbinsY();
-  Int_t cont = TMath::Nint (hist->GetCellContent(j,i));
+  Int_t cont = TMath::Nint (hist->GetBinContent(hist->GetBin(j,i)));
   Int_t cont1 = 0, indx = (i-1)*nx+j-1, indx1 = 0, indx2 = 0;
 
   Int_t ie = i + 2, je = j + 2;
@@ -1469,7 +1469,7 @@ void AliMUONClusterFinderMLEM::FlagLocalMax(TH2D *hist, Int_t i, Int_t j, Int_t 
       if (j1 < 1 || j1 > nx) continue;
       if (i == i1 && j == j1) continue;
       indx2 = indx1 + j1 - 1;
-      cont1 = TMath::Nint (hist->GetCellContent(j1,i1));
+      cont1 = TMath::Nint (hist->GetBinContent(hist->GetBin(j1,i1)));
       if (cont < cont1) { isLocalMax[indx] = -1; return; }
       else if (cont > cont1) isLocalMax[indx2] = -1;
       else { // the same charge
@@ -1515,7 +1515,7 @@ void AliMUONClusterFinderMLEM::FindCluster(AliMUONCluster& cluster,
   Double_t wy = fHistAnode->GetYaxis()->GetBinWidth(1)/2;  
   Double_t yc = fHistAnode->GetYaxis()->GetBinCenter(ic);
   Double_t xc = fHistAnode->GetXaxis()->GetBinCenter(jc);
-  Double_t cont = fHistAnode->GetCellContent(jc,ic);
+  Double_t cont = fHistAnode->GetBinContent( fHistAnode->GetBin(jc,ic));
   fPixArray->Add(new AliMUONPad (xc, yc, wx, wy, cont));
   used[(ic-1)*nx+jc-1] = kTRUE;
   AddBinSimple(fHistAnode, ic, jc);
@@ -1566,13 +1566,13 @@ AliMUONClusterFinderMLEM::AddBinSimple(TH2D *hist, Int_t ic, Int_t jc)
   
   Int_t nx = hist->GetNbinsX();
   Int_t ny = hist->GetNbinsY();
-  Double_t cont1, cont = hist->GetCellContent(jc,ic);
+  Double_t cont1, cont = hist->GetBinContent(hist->GetBin(jc,ic));
   AliMUONPad *pixPtr = 0;
   
   Int_t ie = TMath::Min(ic+1,ny), je = TMath::Min(jc+1,nx);
   for (Int_t i = TMath::Max(ic-1,1); i <= ie; ++i) {
     for (Int_t j = TMath::Max(jc-1,1); j <= je; ++j) {
-      cont1 = hist->GetCellContent(j,i);
+      cont1 = hist->GetBinContent(hist->GetBin(j,i));
       if (cont1 > cont) continue;
       if (cont1 < fLowestPixelCharge) continue;
       pixPtr = new AliMUONPad (hist->GetXaxis()->GetBinCenter(j), 

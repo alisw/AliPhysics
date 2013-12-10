@@ -105,7 +105,6 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <TCint.h>
 #include <TFile.h>
 #include <TGeoGlobalMagField.h>
 #include <TGeoManager.h>

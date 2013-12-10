@@ -25,7 +25,7 @@
   target="fNEntries, fColumn, fRow, fTriggerBits" targetType="Int, Int_t*, Int_t*, Int_t*" code="{fTriggerBits = new Int_t[fNEntries]; for (Int_t i=0; i<fNEntries; ++i) fTriggerBits[i]=onfile.fTriggerBits[fColumn[i]][fRow[i]];}"
 
 #pragma link C++ class  AliESDfriend+;                                                                                                           
-#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="UChar_t fTRDpidQuality"  version="[-49]" target="fTRDntracklets" targetType="UChar_t" code="{fTRDntracklets = onfile.fTRDpidQuality;}"
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="unsigned char fTRDpidQuality"  version="[-49]" target="fTRDntracklets" targetType="unsigned char" code="{newObj->SetTRDntracklets(onfile.fTRDpidQuality);}"
 // see http://root.cern.ch/svn/root/trunk/io/doc/DataModelEvolution.txt
 #pragma link C++ class  AliESDtrack+;
 #pragma read sourceClass="AliESDfriendTrack" targetClass="AliESDfriendTrack" source="Int_t fITSindex" version="[-3]" \

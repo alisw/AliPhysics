@@ -25,6 +25,7 @@ class AliCentrality : public TNamed
   void SetQuality(Int_t quality) {fQuality = quality;} 
   void SetCentralityV0M(Float_t cent) {fCentralityV0M = cent;} 
   void SetCentralityV0A(Float_t cent) {fCentralityV0A = cent;} 
+  void SetCentralityV0A123(Float_t cent) {fCentralityV0A123 = cent;} 
   void SetCentralityV0C(Float_t cent) {fCentralityV0C = cent;} 
   void SetCentralityV0MEq(Float_t cent) {fCentralityV0MEq = cent;} 
   void SetCentralityV0AEq(Float_t cent) {fCentralityV0AEq = cent;} 
@@ -76,6 +77,7 @@ class AliCentrality : public TNamed
   Int_t   fQuality; // Quality of centrality determination
   Float_t fCentralityV0M;   // Centrality from V0A+V0C
   Float_t fCentralityV0A;   // Centrality from V0A
+  Float_t fCentralityV0A123;// Centrality from V0A123
   Float_t fCentralityV0C;   // Centrality from V0C
   Float_t fCentralityV0MEq; // Centrality from V0A+V0C equalized channel
   Float_t fCentralityV0AEq; // Centrality from V0A equalized channel
@@ -112,6 +114,6 @@ class AliCentrality : public TNamed
   Float_t fCentralityZPAtrue;   // Centrality from true (sim) ZNA
   Float_t fCentralityZPCtrue;   // Centrality from true (sim) ZNC
 
-  ClassDef(AliCentrality, 8)
+  ClassDef(AliCentrality, 9)
 };
 #endif //ALICENTRALITY_H

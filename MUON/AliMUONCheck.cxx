@@ -460,7 +460,7 @@ AliMUONCheck::CheckKine()
       p->Print("");
       Int_t pdg=p->GetPdgCode(); 
       
-      if (abs(pdg) == 13) 
+      if (TMath::Abs(pdg) == 13)
       {
         ++nmu2;
       }

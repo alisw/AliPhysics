@@ -32,4 +32,4 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR TOFcalibLinkDef.h)
 
-set ( EINCLUDE  RAW STEER/STEERBase)
+set ( EINCLUDE  RAW STEER/STEERBase ANALYSIS)

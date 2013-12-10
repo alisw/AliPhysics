@@ -1,7 +1,7 @@
 #ifndef ALIEMCALRECOUTILS_H
 #define ALIEMCALRECOUTILS_H
 
-/* $Id: AliEMCALRecoUtils.h 33808 2009-07-15 09:48:08Z gconesab $ */
+/* $Id: AliEMCALRecoUtils.h | Tue Jul 23 09:11:15 2013 +0000 | gconesab  $ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -34,6 +34,7 @@ class AliEMCALGeometry;
 class AliEMCALPIDUtils;
 class AliESDtrack;
 class AliExternalTrackParam;
+class AliVTrack;
 
 class AliEMCALRecoUtils : public TNamed {
   
@@ -263,6 +264,9 @@ public:
                                           AliExternalTrackParam *trkParam, 
                                           const TObjArray * clusterArr, 
                                           Float_t &dEta, Float_t &dPhi);
+
+  static Bool_t ExtrapolateTrackToEMCalSurface(AliVTrack *track, /*note, on success the call will change the track*/
+                                               Double_t emcalR=440, Double_t mass=0.1396, Double_t step=20); 
   
   static Bool_t ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *trkParam, 
                                                const Double_t emcalR, const Double_t mass, const Double_t step, 

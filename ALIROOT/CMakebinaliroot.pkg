@@ -1,5 +1,5 @@
 # -*- mode: CMake -*- 
-#--------------------------------------------------------------------------------#
+#-----------------------------------------------------------------------#
 # Package File for aliroot                                                       #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
@@ -24,7 +24,7 @@
 # CINTAUTOLINK - Set automatic dictionary generation                             #
 # ARLIBS - Archive Libraries and objects for linking (Executables only)          #
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
-#--------------------------------------------------------------------------------#
+#-----------------------------------------------------------------------#
 
 set ( SRCS aliroot.cxx)
 set ( CSRCS fpu.c)
@@ -78,3 +78,6 @@ list(APPEND SRCS ${GFILES})
 set ( SHLIBS  ${BINLIBDIRS} EVGEN -lEGPythia6 Pythia6 -lpythia6 AliPythia6 lhapdf THijing hijing THerwig herwig TPHIC FASTSIM microcern)
 
 set ( EINCLUDE STEER/STEER )
+#
+# EOF
+#

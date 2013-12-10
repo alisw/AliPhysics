@@ -51,7 +51,7 @@ author: Chiara Zampolli, zampolli@bo.infn.it
 #include "AliTOFCal.h"
 #include "AliTOFGeometryV5.h"
 
-extern TROOT *gROOT;
+//extern TROOT *gROOT;
 
 ClassImp(AliTOFCal)
 

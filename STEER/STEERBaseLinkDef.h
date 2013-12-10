@@ -57,6 +57,7 @@
 #pragma link C++ class AliStack+;
 #pragma link C++ class AliMCEventHandler+;
 #pragma link C++ class AliInputEventHandler+;
+#pragma link C++ class AliDummyHandler+;
 
 #pragma link C++ class AliTrackReference+;
 #pragma link C++ class AliSysInfo+;
@@ -86,8 +87,11 @@
 
 #pragma link C++ class AliTRDPIDReference+;
 #pragma link C++ class AliTRDPIDParams+;
+/* #if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0) */
+// AliTRDPIDThresholds and Centrality are private 
 #pragma link C++ class AliTRDPIDParams::AliTRDPIDThresholds+;
 #pragma link C++ class AliTRDPIDParams::AliTRDPIDCentrality+;
+/* #endif */
 #pragma link C++ class AliTRDPIDResponseObject+;
 #pragma link C++ class AliTRDTKDInterpolator+;
 #pragma link C++ class AliTRDTKDInterpolator::AliTRDTKDNodeInfo+;

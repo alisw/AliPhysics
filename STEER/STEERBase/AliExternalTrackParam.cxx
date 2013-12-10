@@ -506,8 +506,11 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterial
   // "anglecorr" - switch for the angular correction
   // "Bethe" - function calculating the energy loss (GeV/(g/cm^2)) 
   //------------------------------------------------------------------
-  
   Double_t bg=GetP()/mass;
+  if (bg<kAlmost0) {
+    AliError(Form("Non-positive beta*gamma = %e, mass = %e",bg,mass));
+    return kFALSE;
+  }
   Double_t dEdx=Bethe(bg);
 
   return CorrectForMeanMaterialdEdx(xOverX0,xTimesRho,mass,dEdx,anglecorr);
@@ -2258,48 +2261,52 @@ void AliExternalTrackParam::CheckCovariance() {
   // This function forces the diagonal elements of the covariance matrix to be positive.
   // In case the diagonal element is bigger than the maximal allowed value, it is set to
   // the limit and the off-diagonal elements that correspond to it are set to zero.
-
-    fC[0] = TMath::Abs(fC[0]);
-    if (fC[0]>kC0max) {
-      fC[0] = kC0max;
-      fC[1] = 0;
-      fC[3] = 0;
-      fC[6] = 0;
-      fC[10] = 0;
-    }
-    fC[2] = TMath::Abs(fC[2]);
-    if (fC[2]>kC2max) {
-      fC[2] = kC2max;
-      fC[1] = 0;
-      fC[4] = 0;
-      fC[7] = 0;
-      fC[11] = 0;
-    }
-    fC[5] = TMath::Abs(fC[5]);
-    if (fC[5]>kC5max) {
-      fC[5] = kC5max;
-      fC[3] = 0;
-      fC[4] = 0;
-      fC[8] = 0;
-      fC[12] = 0;
-    }
-    fC[9] = TMath::Abs(fC[9]);
-    if (fC[9]>kC9max) {
-      fC[9] = kC9max;
-      fC[6] = 0;
-      fC[7] = 0;
-      fC[8] = 0;
-      fC[13] = 0;
-    }
-    fC[14] = TMath::Abs(fC[14]);
-    if (fC[14]>kC14max) {
-      fC[14] = kC14max;
-      fC[10] = 0;
-      fC[11] = 0;
-      fC[12] = 0;
-      fC[13] = 0;
-    }
-    
+  fC[0] = TMath::Abs(fC[0]);
+  if (fC[0]>kC0max) {
+    double scl = TMath::Sqrt(kC0max/fC[0]);
+    fC[0] = kC0max;
+    fC[1] *= scl;
+    fC[3] *= scl;
+    fC[6] *= scl;
+    fC[10] *= scl;
+  }
+  fC[2] = TMath::Abs(fC[2]);
+  if (fC[2]>kC2max) {
+    double scl = TMath::Sqrt(kC2max/fC[2]);
+    fC[2] = kC2max;
+    fC[1] *= scl;
+    fC[4] *= scl;
+    fC[7] *= scl;
+    fC[11] *= scl;
+  }
+  fC[5] = TMath::Abs(fC[5]);
+  if (fC[5]>kC5max) {
+    double scl = TMath::Sqrt(kC5max/fC[5]);
+    fC[5] = kC5max;
+    fC[3] *= scl;
+    fC[4] *= scl;
+    fC[8] *= scl;
+    fC[12] *= scl;
+  }
+  fC[9] = TMath::Abs(fC[9]);
+  if (fC[9]>kC9max) {
+    double scl = TMath::Sqrt(kC9max/fC[9]);
+    fC[9] = kC9max;
+    fC[6] *= scl;
+    fC[7] *= scl;
+    fC[8] *= scl;
+    fC[13] *= scl;
+  }
+  fC[14] = TMath::Abs(fC[14]);
+  if (fC[14]>kC14max) {
+    double scl = TMath::Sqrt(kC14max/fC[14]);
+    fC[14] = kC14max;
+    fC[10] *= scl;
+    fC[11] *= scl;
+    fC[12] *= scl;
+    fC[13] *= scl;
+  }
+      
     // The part below is used for tests and normally is commented out    
 //     TMatrixDSym m(5);
 //     TVectorD eig(5);

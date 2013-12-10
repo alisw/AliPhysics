@@ -613,8 +613,8 @@ void AliITSv11::CreateGeometry()
   vALIC->AddNode(vITSS, 1, 0);
 
   //
-  const Char_t *cvsDate="$Date$";
-  const Char_t *cvsRevision="$Revision$";
+  const Char_t *cvsDate="$Date: 2013-07-05 15:19:21 +0200 (Fri, 05 Jul 2013) $";
+  const Char_t *cvsRevision="$Revision: 63353 $";
   const Int_t kLength=100;
   Char_t vstrng[kLength];
   if(fInitGeom.WriteVersionString(vstrng,kLength,(AliITSVersion_t)IsVersion(),

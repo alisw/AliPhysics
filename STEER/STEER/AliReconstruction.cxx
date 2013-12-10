@@ -1456,6 +1456,7 @@ Bool_t AliReconstruction::Run(const char* input)
         Abort("ProcessEvent",TSelector::kAbortFile);
         return kFALSE;
       }
+      CleanProcessedEvent();
       iEvent++;
     }
     if (!iEvent) AliWarning("No events passed trigger selection");
@@ -2411,9 +2412,12 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 		 nbf,fMemCountESDHLT,fhlttree->GetTotBytes(),fhlttree->GetZipBytes()));        
   }
     
+    
+  return kTRUE;
+}
 
-    // call AliEVE
-    if (fRunAliEVE) RunAliEVE();
+void AliReconstruction::CleanProcessedEvent()
+{
     //
     fesd->Reset();
     fhltesd->Reset();
@@ -2426,19 +2430,8 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       if (fReconstructor[iDet]) fReconstructor[iDet]->FinishEvent();
     }
  
-    gSystem->GetProcInfo(&procInfo);
-    Long_t dMres=(procInfo.fMemResident-oldMres)/1024;
-    Long_t dMvir=(procInfo.fMemVirtual-oldMvir)/1024;
-    Float_t dCPU=procInfo.fCpuUser+procInfo.fCpuSys-oldCPU;
-    aveDMres+=(dMres-aveDMres)/(iEvent-fFirstEvent+1);
-    aveDMvir+=(dMvir-aveDMvir)/(iEvent-fFirstEvent+1);
-    aveDCPU+=(dCPU-aveDCPU)/(iEvent-fFirstEvent+1);
-    AliInfo(Form("======================= End Event %d: Res %ld(%3ld <%3ld>) Vir %ld(%3ld <%3ld>) CPU %5.2f <%5.2f> ===================",
-		 iEvent, procInfo.fMemResident/1024, dMres, aveDMres, procInfo.fMemVirtual/1024, dMvir, aveDMvir, dCPU, aveDCPU));
-    oldMres=procInfo.fMemResident;
-    oldMvir=procInfo.fMemVirtual;
-    oldCPU=procInfo.fCpuUser+procInfo.fCpuSys;
-  
+    AliInfo("======================= End Event ===================");
+    
     fEventInfo.Reset();
     for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
       if (fReconstructor[iDet]) {
@@ -2454,7 +2447,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
   DeleteRecPoints(fDeleteRecPoints);
   DeleteDigits(fDeleteDigits);
   //
-  return kTRUE;
+
 }
 
 //_____________________________________________________________________________
@@ -2510,17 +2503,25 @@ void AliReconstruction::SlaveTerminate()
 
    // Add the AliRoot version that created this file
    TString sVersion("aliroot ");
-   sVersion += ALIROOT_SVN_BRANCH;
+   sVersion += ALIROOT_BRANCH;
    sVersion += ":";
-   sVersion += ALIROOT_SVN_REVISION;
+   sVersion += ALIROOT_REVISION;
    sVersion += "; root ";
 #ifdef ROOT_SVN_BRANCH
    sVersion += ROOT_SVN_BRANCH;
-#else
+#elif defined(ROOT_GIT_BRANCH)
    sVersion += ROOT_GIT_BRANCH;
+#else
+   sVersion += "?";
 #endif
    sVersion += ":";
+#ifdef ROOT_SVN_REVSION
    sVersion += ROOT_SVN_REVISION;
+#elif defined(ROOT_GIT_COMMIT)
+   sVersion += ROOT_GIT_COMMIT;
+#else 
+   sVersion += "?";
+#endif
    sVersion += "; metadata ";
    sVersion += getenv("PRODUCTION_METADATA");
 		    
@@ -4505,4 +4506,10 @@ Bool_t AliReconstruction::HasEnoughResources(int ev)
     fStopped = kTRUE;
   }
   return res;
+}
+
+Bool_t AliReconstruction::HasNextEventAfter(Int_t eventId)
+{
+	 return ( (eventId < fRunLoader->GetNumberOfEvents()) ||
+	   (fRawReader && fRawReader->NextEvent()) );
 }

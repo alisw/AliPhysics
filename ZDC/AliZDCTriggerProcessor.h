@@ -1,5 +1,5 @@
 #ifndef ALI_ZDC_TRIGGERPROCESSOR_H
-#define ALI_ZDC_TRIGGERPREPROCESSOR_H
+#define ALI_ZDC_TRIGGERPROCESSOR_H
 
 //////////////////////////////////////////////////////////////////////
 //                                                                  //

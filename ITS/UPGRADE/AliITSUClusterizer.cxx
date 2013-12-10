@@ -1,4 +1,5 @@
 #include <TTree.h>
+#include <TFile.h>
 #include <TObjArray.h>
 #include <TParticle.h>
 #include <TMath.h>
@@ -37,6 +38,13 @@ AliITSUClusterizer::AliITSUClusterizer(Int_t initNRow)
   ,fDigitFreelistBptrLast(0)
   ,fPartFreelistBptr(0)
   ,fCandFreelistBptr(0)
+#ifdef _ClusterTopology_
+  ,fTreeTopology(0)
+  ,fFileTopology(0)
+  ,fTopology(0)
+  ,fMinCol(0)
+  ,fMinRow(0)
+#endif //_ClusterTopology_
 {
   SetUniqueID(0);
   // c-tor
@@ -86,6 +94,10 @@ AliITSUClusterizer::~AliITSUClusterizer()
   }
   delete[] fPartFreelistBptr;
   delete[] fCandFreelistBptr;
+  //
+#ifdef _ClusterTopology_
+  SaveTopologyTree();
+#endif //_ClusterTopology_
 }
 
 //______________________________________________________________________________
@@ -159,6 +171,7 @@ void AliITSUClusterizer::Transform(AliITSUClusterPix *cluster,AliITSUClusterizer
   double x=0,z=0,xmn=1e9,xmx=-1e9,zmn=1e9,zmx=-1e9,px=0,pz=0;
   float  cx,cz;
   int charge=0;
+  //
   for (AliITSUClusterizerClusterDigit *idigit=cand->fFirstDigit;idigit;idigit=idigit->fNext) {
     AliITSdigit* dig = idigit->fDigit;
     fSegm->DetToLocal(dig->GetCoord2(),dig->GetCoord1(),cx,cz); // center of pixel
@@ -220,6 +233,11 @@ void AliITSUClusterizer::Transform(AliITSUClusterPix *cluster,AliITSUClusterizer
   // Set Volume id
   cluster->SetVolumeId(fVolID);
   //    printf("mod %d: (%.4lf,%.4lf)cm\n",fVolID,x,z);
+  //
+#ifdef _ClusterTopology_
+  FillClusterTopology(cand);
+#endif //_ClusterTopology_
+  //
 }
 
 //______________________________________________________________________________
@@ -265,6 +283,7 @@ void AliITSUClusterizer::Clusterize()
   AliITSUClusterizerClusterPart *iPrevRow=0;
   AliITSUClusterizerClusterPart *iNextRow=0;
   Int_t lastV=0;
+  //
   while (iDigit) {
     if (iDigit->fDigit->GetCoord2()!=lastV) {
       // NEW ROW
@@ -393,3 +412,74 @@ void AliITSUClusterizer::CheckLabels()
   }
   //
 }
+
+//------------------------------------------------------------------------
+
+#ifdef _ClusterTopology_
+//
+//______________________________________________________________________
+void AliITSUClusterizer::FillClusterTopology(AliITSUClusterizerClusterCand *cand) 
+{
+  // fill special tree with cluster topology bit pattern
+  //
+  enum {kMaxColSpan=30,kMaxRowSpan=30};
+  //
+  Int_t mnCol=999999,mxCol=0,mnRow=999999,mxRow=0;
+  for (AliITSUClusterizerClusterDigit *idigit=cand->fFirstDigit;idigit;idigit=idigit->fNext) {
+    AliITSdigit* dig = idigit->fDigit;
+    if (mnCol>dig->GetCoord1()) mnCol = dig->GetCoord1();
+    if (mxCol<dig->GetCoord1()) mxCol = dig->GetCoord1();
+    if (mnRow>dig->GetCoord2()) mnRow = dig->GetCoord2();
+    if (mxRow<dig->GetCoord2()) mxRow = dig->GetCoord2();    
+  }
+  int nColSpan = mxCol-mnCol+1;
+  int nRowSpan = mxRow-mnRow+1;
+  if (nColSpan<kMaxColSpan && nRowSpan<kMaxRowSpan) {
+    fTopology.Clear();
+    fTopology.SetBitNumber(nColSpan*nRowSpan-1,kFALSE); // set the size
+    fTopology.SetUniqueID( (nRowSpan<<8) + nColSpan );
+    for (AliITSUClusterizerClusterDigit *idigit=cand->fFirstDigit;idigit;idigit=idigit->fNext) {
+      AliITSdigit* dig = idigit->fDigit;
+      fTopology.SetBitNumber( (dig->GetCoord2()-mnRow)*nColSpan + (dig->GetCoord1()-mnCol) );
+    }
+    if (!fTreeTopology) InitTopologyTree();
+    AliInfo(Form("Fill Topology, lr %d",fLayerID));
+    fMinCol = mnCol;
+    fMinRow = mnRow;
+    fTreeTopology->Fill();
+  }
+  //
+}
+
+//______________________________________________________________________
+void AliITSUClusterizer::InitTopologyTree() 
+{
+  // create output tree for the topology stydy
+  if (fFileTopology || fTreeTopology) AliFatal("Topology structures are already created");
+  TDirectory* cdr = gDirectory;
+  fFileTopology = TFile::Open("clusterTopology.root","recreate");
+  fFileTopology->cd();
+  fTreeTopology = new TTree("clTop","ClusterTopology");
+  fTreeTopology->Branch("tp","TBits",&fTopology);
+  fTreeTopology->Branch("volID",&fVolID);  
+  fTreeTopology->Branch("mnCol",&fMinCol);  
+  fTreeTopology->Branch("mnRow",&fMinRow);  
+  cdr->cd();
+}
+
+//______________________________________________________________________
+void AliITSUClusterizer::SaveTopologyTree() 
+{
+  // write output tree for the topology stydy
+  AliInfo("Storing cluster topology tree");
+  if (!fFileTopology || !fTreeTopology) {AliError("Topology structures are not created"); return;}
+  fFileTopology->cd();
+  fTreeTopology->Write();
+  delete fTreeTopology;
+  fFileTopology->Close();
+  delete fFileTopology;
+  fTreeTopology = 0;
+  fFileTopology = 0;
+}
+
+#endif //_ClusterTopology_

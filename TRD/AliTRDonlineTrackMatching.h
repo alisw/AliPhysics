@@ -58,7 +58,7 @@ class AliTRDonlineTrackMatching : public TObject {
   void SetHistMatchRating(TH1* hist) { fHistMatchRating = hist; };
 
   static Bool_t AcceptTrack(const AliESDtrack* esdTrack, const AliESDEvent* esdEvent);
-  Bool_t ProcessEvent(AliESDEvent *esdEvent);
+  Bool_t ProcessEvent(AliESDEvent *esdEvent, Bool_t updateRef = kTRUE, Int_t label = -1);
 
  protected:
 

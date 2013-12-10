@@ -22,6 +22,7 @@
 
 #include "AliHLTTPCDataCompressionDecoder.h"
 #include "AliHLTTPCDataCompressionDescriptor.h"
+#include "AliHLTTPCRawClustersDescriptor.h"
 #include "AliHLTDataInflaterSimple.h"
 #include "AliHLTDataInflaterHuffman.h"
 #include "TList.h"
@@ -161,6 +162,21 @@ int AliHLTTPCDataCompressionDecoder::AddCompressionDescriptor(const AliHLTCompon
   if (!pDesc) return -EINVAL;
   if (pDesc->fDataType!=AliHLTTPCDefinitions::DataCompressionDescriptorDataType()) return -ENODATA;
   const AliHLTTPCDataCompressionDescriptor* pHeader=reinterpret_cast<const AliHLTTPCDataCompressionDescriptor*>(pDesc->fPtr);
+  if (! pHeader->CheckSize( pDesc->fSize ) ) return -EINVAL;
+  if( pHeader->GetMergedClustersFlag() == 0 ){
+    fUseClusterMerger = kTRUE;
+  } else if( pHeader->GetMergedClustersFlag() == 1 ){
+    fUseClusterMerger = kFALSE;
+  } else return -EINVAL;
+  return 0;
+}
+
+int AliHLTTPCDataCompressionDecoder::AddRawClustersDescriptor(const AliHLTComponentBlockData* pDesc)
+{
+  /// read descriptor
+  if (!pDesc) return -EINVAL;
+  if (pDesc->fDataType!=AliHLTTPCDefinitions::RawClustersDescriptorDataType()) return -ENODATA;
+  const AliHLTTPCRawClustersDescriptor* pHeader=reinterpret_cast<const AliHLTTPCRawClustersDescriptor*>(pDesc->fPtr);
   if (! pHeader->CheckSize( pDesc->fSize ) ) return -EINVAL;
   if( pHeader->GetMergedClustersFlag() == 0 ){
     fUseClusterMerger = kTRUE;

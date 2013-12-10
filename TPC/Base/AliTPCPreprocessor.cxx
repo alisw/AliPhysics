@@ -481,7 +481,7 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(0);
   metaData.SetResponsible("Haavard Helstrup");
-  metaData.SetAliRootVersion(ALIROOT_SVN_BRANCH);
+  metaData.SetAliRootVersion(ALIROOT_BRANCH);
   metaData.SetComment("Preprocessor AliTPC status.");
   Bool_t storeOK = Store("Calib", "PreprocStatus", resultArray, &metaData, 0,  kFALSE);
   if (!storeOK) Log ("Unable to store preprocessor status entry");
@@ -521,7 +521,7 @@ UInt_t AliTPCPreprocessor::MapTemperature(TMap* dcsAliasMap)
         AliCDBMetaData metaData;
 	metaData.SetBeamPeriod(0);
 	metaData.SetResponsible("Haavard Helstrup");
-	metaData.SetAliRootVersion(ALIROOT_SVN_BRANCH);
+	metaData.SetAliRootVersion(ALIROOT_BRANCH);
 	metaData.SetComment("Preprocessor AliTPC data base entries.");
 
 	Bool_t storeOK = Store("Calib", "Temperature", fTemp, &metaData, 0, kFALSE);
@@ -599,7 +599,7 @@ UInt_t AliTPCPreprocessor::MapHighVoltage(TMap* dcsAliasMap)
         AliCDBMetaData metaData;
 	metaData.SetBeamPeriod(0);
 	metaData.SetResponsible("Haavard Helstrup");
-	metaData.SetAliRootVersion(ALIROOT_SVN_BRANCH);
+	metaData.SetAliRootVersion(ALIROOT_BRANCH);
 	metaData.SetComment("Preprocessor AliTPC data base entries.");
 
 	Bool_t storeOK = Store("Calib", "HighVoltage", fHighVoltage, &metaData, 0, kFALSE);
@@ -635,7 +635,7 @@ UInt_t AliTPCPreprocessor::MapGoofie(TMap* dcsAliasMap)
         AliCDBMetaData metaData;
 	metaData.SetBeamPeriod(0);
 	metaData.SetResponsible("Haavard Helstrup");
-        metaData.SetAliRootVersion(ALIROOT_SVN_BRANCH);
+        metaData.SetAliRootVersion(ALIROOT_BRANCH);
 	metaData.SetComment("Preprocessor AliTPC data base entries.");
 
 	Bool_t storeOK = Store("Calib", "Goofie", fGoofie, &metaData, 0, kFALSE);
@@ -806,7 +806,7 @@ UInt_t AliTPCPreprocessor::ExtractPedestals(Int_t sourceFXS)
      AliCDBMetaData metaData;
      metaData.SetBeamPeriod(0);
      metaData.SetResponsible("Haavard Helstrup");
-     metaData.SetAliRootVersion(ALIROOT_SVN_BRANCH);
+     metaData.SetAliRootVersion(ALIROOT_BRANCH);
      metaData.SetComment("Preprocessor AliTPC data base entries."); 
  
      Bool_t storeOK = Store("Calib", "Pedestals", calPadPed, &metaData, 0, kTRUE);
@@ -989,7 +989,7 @@ if (pulserObjectsOCDB) {
      AliCDBMetaData metaData;
      metaData.SetBeamPeriod(0);
      metaData.SetResponsible("Haavard Helstrup");
-     metaData.SetAliRootVersion(ALIROOT_SVN_BRANCH);
+     metaData.SetAliRootVersion(ALIROOT_BRANCH);
      metaData.SetComment("Preprocessor AliTPC data base entries.");
 
      Bool_t storeOK = Store("Calib", "Pulser", pulserObjects, &metaData, 0, kTRUE);
@@ -1055,7 +1055,7 @@ UInt_t AliTPCPreprocessor::ExtractRaw(Int_t sourceFXS)
      AliCDBMetaData metaData;
      metaData.SetBeamPeriod(0);
      metaData.SetResponsible("Haavard Helstrup");
-     metaData.SetAliRootVersion(ALIROOT_SVN_BRANCH);
+     metaData.SetAliRootVersion(ALIROOT_BRANCH);
      metaData.SetComment("Preprocessor AliTPC data base entries.");
 
      Bool_t storeOK = Store("Calib", "Raw", rawArray, &metaData, 0, kTRUE);
@@ -1248,7 +1248,7 @@ UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
     AliCDBMetaData metaData;
     metaData.SetBeamPeriod(0);
     metaData.SetResponsible("Haavard Helstrup");
-    metaData.SetAliRootVersion(ALIROOT_SVN_BRANCH);
+    metaData.SetAliRootVersion(ALIROOT_BRANCH);
     metaData.SetComment("Preprocessor AliTPC data base entries.");
     
     if ( result == 0 ) {
@@ -1305,7 +1305,7 @@ UInt_t AliTPCPreprocessor::ExtractQA(Int_t sourceFXS)
            AliCDBMetaData metaData;
            metaData.SetBeamPeriod(0);
            metaData.SetResponsible("Haavard Helstrup");
-	   metaData.SetAliRootVersion(ALIROOT_SVN_BRANCH);
+	   metaData.SetAliRootVersion(ALIROOT_BRANCH);
            metaData.SetComment("Preprocessor AliTPC data base entries.");
 
            Bool_t storeOK = Store("Calib", "QA", calQA, &metaData, 0, kFALSE);
@@ -1598,7 +1598,7 @@ UInt_t AliTPCPreprocessor::ExtractAltro(Int_t sourceFXS, TMap* dcsMap)
      AliCDBMetaData metaData;
      metaData.SetBeamPeriod(0);
      metaData.SetResponsible("Haavard Helstrup");
-     metaData.SetAliRootVersion(ALIROOT_SVN_BRANCH);
+     metaData.SetAliRootVersion(ALIROOT_BRANCH);
      metaData.SetComment("Preprocessor AliTPC data base entries.");
 
      Bool_t storeOK = Store("Calib", "AltroConfig", altroObjects, &metaData, 0, kFALSE);

@@ -127,7 +127,7 @@ author: Chiara Zampolli, zampolli@bo.infn.it
 class TROOT;
 class TStyle;
 
-extern TROOT *gROOT;
+//extern TROOT *gROOT;
 extern TStyle *gStyle;
 
 ClassImp(AliTOFcalib)

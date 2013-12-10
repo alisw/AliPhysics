@@ -58,6 +58,7 @@ class AliHLTTPCDataCompressionDecoder : public AliHLTLogging {
   int InitPartitionClusterDecoding(AliHLTUInt32_t specification);
   int InitTrackModelClusterClusterDecoding();
   int AddCompressionDescriptor(const AliHLTComponentBlockData* pDesc);
+  int AddRawClustersDescriptor(const AliHLTComponentBlockData* pDesc);
   int AddClusterMCData(const AliHLTComponentBlockData* pDesc);
   int AddClusterIds(const AliHLTComponentBlockData* pDesc);
   AliHLTUInt32_t GetClusterId(int clusterNo) const;

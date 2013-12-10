@@ -154,18 +154,18 @@ Double_t AliITSMapA2::GetSignal(Int_t index) const {
     else return 0.;
 }
 //______________________________________________________________________
-FlagType AliITSMapA2::TestHit(Int_t iz, Int_t ix){
+FlagTypeITS AliITSMapA2::TestHit(Int_t iz, Int_t ix){
     // check if the entry has already been flagged
 
-    if (CheckedIndex(iz, ix) < 0) return kEmpty;
+    if (CheckedIndex(iz, ix) < 0) return kEmptyITS;
     Int_t inf=(Int_t)fHitMapD[CheckedIndex(iz, ix)];
     
     if (inf <= -1000) {
-	return kUsed;
+	return kUsedITS;
     } else if (inf == 0) {
-	return kEmpty;
+	return kEmptyITS;
     } else {
-	return kUnused;
+	return kUnusedITS;
     } // end if inf...
 }
 //______________________________________________________________________

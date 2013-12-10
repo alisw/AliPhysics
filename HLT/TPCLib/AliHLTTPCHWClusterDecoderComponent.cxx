@@ -34,6 +34,7 @@
 #include "AliHLTTPCHWCFEmulator.h"
 #include "AliHLTTPCHWCFData.h"
 #include "AliHLTErrorGuard.h"
+#include "AliHLTTPCRawClustersDescriptor.h"
 
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
@@ -102,6 +103,7 @@ int AliHLTTPCHWClusterDecoderComponent::GetOutputDataTypes(AliHLTComponentDataTy
 
   tgtList.clear();
   tgtList.push_back( AliHLTTPCDefinitions::fgkRawClustersDataType  | kAliHLTDataOriginTPC );
+  tgtList.push_back( AliHLTTPCDefinitions::RawClustersDescriptorDataType() );
   tgtList.push_back( AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo | kAliHLTDataOriginTPC );
   return tgtList.size();
 }
@@ -229,6 +231,8 @@ int AliHLTTPCHWClusterDecoderComponent::DoEvent(const AliHLTComponentEventData& 
   AliHLTUInt8_t* origOutputPtr = outputPtr;
   UInt_t origOutputBlocksSize = outputBlocks.size();
 
+  bool isInputPresent = kFALSE;
+
   for( unsigned long ndx=0; ndx<evtData.fBlockCnt; ndx++ ){
      
     const AliHLTComponentBlockData *iter   = blocks+ndx;
@@ -265,12 +269,10 @@ int AliHLTTPCHWClusterDecoderComponent::DoEvent(const AliHLTComponentEventData& 
     }
 
     if( iter->fDataType == (AliHLTTPCDefinitions::fgkHWClustersDataType | kAliHLTDataOriginTPC) ){
-        
-      UInt_t minSlice     = AliHLTTPCDefinitions::GetMinSliceNr(*iter); 
-      UInt_t minPartition = AliHLTTPCDefinitions::GetMinPatchNr(*iter);
-      
-      fBenchmark.SetName(Form("HWClusterTransform slice %d patch %d",minSlice,minPartition));
-      HLTDebug("minSlice: %d, minPartition: %d", minSlice, minPartition);     
+
+      isInputPresent = 1;
+
+      HLTDebug("minSlice: %d, minPartition: %d", AliHLTTPCDefinitions::GetMinSliceNr(*iter), AliHLTTPCDefinitions::GetMinPatchNr(*iter));     
       
       long maxRawClusters = ((long)maxOutSize-size-sizeof(AliHLTTPCRawClusterData))/sizeof(AliHLTTPCRawCluster);
        
@@ -330,6 +332,9 @@ int AliHLTTPCHWClusterDecoderComponent::DoEvent(const AliHLTComponentEventData& 
 
   } // end of loop over data blocks  
 
+  AliHLTTPCRawClustersDescriptor desc; 
+  desc.SetMergedClustersFlag(0);
+
   if( fDoMerge && fpClusterMerger ){
     fpClusterMerger->Clear();
     fpClusterMerger->SetDataPointer(origOutputPtr);
@@ -338,9 +343,29 @@ int AliHLTTPCHWClusterDecoderComponent::DoEvent(const AliHLTComponentEventData& 
     }
     int nMerged = fpClusterMerger->Merge();
     fpClusterMerger->Clear();
+    desc.SetMergedClustersFlag(1);
     HLTInfo("Merged %d clusters",nMerged);   
   }
- 
+
+  // Write header block 
+  if( isInputPresent ){
+    AliHLTComponent_BlockData bd;
+    FillBlockData(bd);
+    bd.fOffset        = size;
+    bd.fSize          = sizeof(AliHLTTPCRawClustersDescriptor);
+    bd.fDataType      = AliHLTTPCDefinitions::RawClustersDescriptorDataType();
+    if( maxOutSize < size + bd.fSize ){
+	HLTWarning( "Output buffer (%db) is too small, required %db", maxOutSize, size+bd.fSize);
+	iResult  = -ENOSPC;
+	return iResult;
+    }    
+    *(AliHLTTPCRawClustersDescriptor*)(outputPtr ) = desc;
+    outputBlocks.push_back(bd);
+    size += bd.fSize;
+    outputPtr += bd.fSize;
+    fBenchmark.AddOutput(bd.fSize);    
+    HLTBenchmark("header data block of size %d", bd.fSize);
+  }
   fBenchmark.Stop(0);
   HLTInfo(fBenchmark.GetStatistics());
   

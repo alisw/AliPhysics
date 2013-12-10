@@ -52,7 +52,7 @@
 #include "AliTOFtrackerV1.h"
 #include "AliTOFtrack.h"
 
-extern TROOT *gROOT;
+//extern TROOT *gROOT;
 
 ClassImp(AliTOFtrackerV1)
 
