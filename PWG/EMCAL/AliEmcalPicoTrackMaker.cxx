@@ -146,7 +146,11 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
       type = esdtrack->GetTRDNchamberdEdx();
       if (!fIncludeNoITS && (type==2))
 	continue;
-      isEmc = track->IsEMCAL();
+      if (TMath::Abs(esdtrack->GetTrackEtaOnEMCal()) < 0.75 && 
+	  esdtrack->GetTrackPhiOnEMCal() > 70 * TMath::DegToRad() &&
+	  esdtrack->GetTrackPhiOnEMCal() < 190 * TMath::DegToRad())
+	isEmc = kTRUE;
+      //   isEmc = track->IsEMCAL();
     } else {
       AliAODTrack *aodtrack = static_cast<AliAODTrack*>(track);
       if (fAODfilterBits[0] < 0) {

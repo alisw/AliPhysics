@@ -1,3 +1,18 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 // 
 // General task to match two sets of jets
 //
@@ -128,14 +143,14 @@ void AliAnalysisTaskJetMatching::UserCreateOutputObjects()
     fHistMatchedSourceJetPt = (fDoDetectorResponse) ? BookTH1F("fHistMatchedParticleLevelJetPt", "p_{t}^{gen} [GeV/c]", 150, -50, 250) : BookTH1F("fHistMatchedSourceJetPt", "p_{t} [GeV/c]", 150, -50, 250);
     fHistTargetJetPt = BookTH1F("fHistTargetJetPt", "p_{t} [GeV/c]", 150, -50, 250);
     fHistMatchedJetPt = (fDoDetectorResponse) ? BookTH1F("fHistDetectorLevelJet", "p_{t}^{rec}", 150, -50, 250) : BookTH1F("fHistMatchedJetPt", "p_{t} [GeV/c]", 150, -50, 250);
-    fHistSourceMatchedJetPt = (fDoDetectorResponse) ? BookTH2F("fHistPartDetJetPt", "particle level jet p_{t}^{gen} [GeV/c]", "detector level jet p_{t}^{rec} [GeV/c]", 300, -50, 250, 300, -50, 250) : BookTH2F("fHistSourceMatchedJetPt", "source jet p_{t} [GeV/c]", "matched jet p_{t} [GeV/c]", 300, -50, 250, 300, -50, 250);
-    fHistNoConstSourceJet = BookTH1F("fHistNoConstSourceJet", "number of constituents", 50, 0, 50);
-    fHistNoConstTargetJet = BookTH1F("fHistNoConstTargetJet", "number of constituents", 50, 0, 50);
-    fHistNoConstMatchJet = BookTH1F("fHistNoConstMatchJet", "number of constituents", 50, 0, 50);
+    fHistSourceMatchedJetPt = (fDoDetectorResponse) ? BookTH2F("fHistDetectorResponse", "particle level jet p_{t}^{gen} [GeV/c]", "detector level jet p_{t}^{rec} [GeV/c]", 300, -50, 250, 300, -50, 250) : BookTH2F("fHistSourceMatchedJetPt", "source jet p_{t} [GeV/c]", "matched jet p_{t} [GeV/c]", 300, -50, 250, 300, -50, 250);
+    fHistNoConstSourceJet = BookTH1F("fHistNoConstSourceJet", "number of constituents source jets", 50, 0, 50);
+    fHistNoConstTargetJet = BookTH1F("fHistNoConstTargetJet", "number of constituents target jets", 50, 0, 50);
+    fHistNoConstMatchJet = BookTH1F("fHistNoConstMatchJet", "number of constituents matched jets", 50, 0, 50);
     if(!fDoDetectorResponse) { // these observables cannot be measured in current detector response mode
-        fProfFracPtMatched = new TProfile("fProfFracPtMatched", "fProfFracPtMatched", 15, -50, 250);
+        fProfFracPtMatched = new TProfile("fProfFracPtMatched", "recovered target p_{T} / source p_{T}", 15, -50, 250);
         fOutputList->Add(fProfFracPtMatched);
-        fProfFracNoMatched = new TProfile("fProfFracNoMatched", "fProfFracNoMatched", 15, -50, 250);
+        fProfFracNoMatched = new TProfile("fProfFracNoMatched", "recovered target constituents / source constituents", 15, -50, 250);
         fOutputList->Add(fProfFracNoMatched);
     }
     // the analysis summary histo which stores all the analysis flags is always written to file
@@ -150,9 +165,9 @@ void AliAnalysisTaskJetMatching::UserCreateOutputObjects()
     fProfQA->GetXaxis()->SetBinLabel(2, "<#delta #eta>");
     fProfQA->GetXaxis()->SetBinLabel(3, "<#delta #varphi>");
     fOutputList->Add(fProfQA);
-    fProfFracPtJets = new TProfile("fProfFracPtJets", "fProfFracPtJets", 15, -50, 250);
+    fProfFracPtJets = new TProfile("fProfFracPtJets", "source p_{T} / target p_{T}", 15, -50, 250);
     fOutputList->Add(fProfFracPtJets);
-    fProfFracNoJets = new TProfile("fProfFracNoJets", "fProfFracNoJets", 15, -50, 250);
+    fProfFracNoJets = new TProfile("fProfFracNoJets", "source constituents / target constituents", 15, -50, 250);
     fOutputList->Add(fProfFracNoJets);
     fOutputList->Sort();
     PostData(1, fOutputList);
