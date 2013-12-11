@@ -69,6 +69,7 @@ public:
 	Double_t GetZAtDCA() const {return fDCAz;}
 	Double_t GetXYAtDCA() const {return fDCAxy;}
 
+	// TOF related Getters.
 	Double_t GetTOFsignal() const {return fTOFsignal;}
 	Double_t GetTOFsignalMinusExpected(Int_t species) const {
 		if (UnknownSpecies(species)) {return -10e10;}
@@ -87,10 +88,6 @@ public:
 		if (UnknownSpecies(species)) {return -10e10;}
 		return fTOFNsigma[species];
 	}
-	Double_t GetNumberOfSigmasTPC(Int_t species) const {
-		if (UnknownSpecies(species)) {return -10e10;}
-		return fTPCNsigma[species];
-	}
 	Int_t GetTOFMatchingStatus() const {return fTOFMatchingStatus;}
 	Bool_t IsTOFMismatch() const {
 		if (fTOFMatchingStatus==1) {return kTRUE;}
@@ -100,6 +97,10 @@ public:
 	Double_t GetTPCsignal() const {return fTPCsignal;}
 	Double_t GetTPCsignalMinusExpected(Int_t species) const {return fTPCsignalMinusExpected[species];}
 	Double_t GetTPCmomentum() const {return fTPCmomentum;}
+	Double_t GetNumberOfSigmasTPC(Int_t species) const {
+		if (UnknownSpecies(species)) {return -10e10;}
+		return fTPCNsigma[species];
+	}
 
 	Char_t GetITSClusterMap() const {return fITSClusterMap;}
 	Bool_t HasPointOnITSLayer(Int_t layer) const {
@@ -180,14 +181,14 @@ private:
 	Double_t			fDCAxy;				// xy at DCA.
 
 // PID Info.
-	Double_t			fTOFsignal;
+	Double_t			fTOFsignal;			
 	Double_t			fTOFsignalMinusExpected[3];
 	Double_t			fTOFNsigma[3];
 	Int_t				fTOFMatchingStatus;		// 0 -> match, 1 -> mismatch, 2 -> no TOF hit.
-	Double_t			fTPCsignal;
+	Double_t			fTPCsignal;			
 	Double_t			fTPCsignalMinusExpected[3];
 	Double_t			fTPCNsigma[3];
-	Double_t			fTPCmomentum;
+	Double_t			fTPCmomentum;		
 	UChar_t				fITSClusterMap;
 	Bool_t				fITSHits[6];
 
