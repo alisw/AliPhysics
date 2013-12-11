@@ -4558,6 +4558,16 @@ void AliAnalysisAlien::WriteMergingMacro()
       if (fIncludePath.Length()) out << "   gSystem->AddIncludePath(\"" << fIncludePath.Data() << "\");" << endl;
       out << "   gROOT->ProcessLine(\".include $ALICE_ROOT/include\");" << endl;
       out << "   printf(\"Include path: %s\\n\", gSystem->GetIncludePath());" << endl << endl;
+      if (fMCLoop && !fGeneratorLibs.IsNull()) {
+         out << "// MC generator libraries" << endl;
+         TObjArray *list = fGeneratorLibs.Tokenize(" ");
+         TIter next(list);
+         TObjString *str;
+         while((str=(TObjString*)next())) {
+            out << "   gSystem->Load(\"" << str->GetName() << "\");" << endl;
+         }
+         delete list;
+      }
       if (fAdditionalLibs.Length()) {
          out << "// Add aditional AliRoot libraries" << endl;
          TString additionalLibs = fAdditionalLibs;
