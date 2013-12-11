@@ -47,6 +47,7 @@
 #include "AliESDMuonTrack.h"
 #include "AliAODMCParticle.h"
 #include "AliMCParticle.h"
+#include "AliCentrality.h"
 
 // my headers
 #include "AliAnalysisTaskUpcPsi2s.h"
@@ -63,12 +64,13 @@ using std::endl;
 AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s() 
   : AliAnalysisTaskSE(),fType(0),fRunTree(kTRUE),fRunHist(kTRUE),fJPsiTree(0),fPsi2sTree(0),
     fRunNum(0),fPerNum(0),fOrbNum(0),fL0inputs(0),fL1inputs(0),
-    fVtxContrib(0),fVtxPosX(0),fVtxPosY(0),fVtxPosZ(0),fVtxErrX(0),fVtxErrY(0),fVtxErrZ(0),fVtxChi2(0),fVtxNDF(0),
+    fVtxContrib(0),fVtxPosX(0),fVtxPosY(0),fVtxPosZ(0),fVtxErrX(0),fVtxErrY(0),fVtxErrZ(0),fVtxChi2(0),fVtxNDF(0),fVtxType(0),
     fBCrossNum(0),fNtracklets(0),
     fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
     fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),
     fListTrig(0),fHistUpcTriggersPerRun(0),fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0),
+    fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
     fListHist(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),
     fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0)
 
@@ -83,12 +85,13 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s()
 AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s(const char *name) 
   : AliAnalysisTaskSE(name),fType(0),fRunTree(kTRUE),fRunHist(kTRUE),fJPsiTree(0),fPsi2sTree(0),
     fRunNum(0),fPerNum(0),fOrbNum(0),fL0inputs(0),fL1inputs(0),
-    fVtxContrib(0),fVtxPosX(0),fVtxPosY(0),fVtxPosZ(0),fVtxErrX(0),fVtxErrY(0),fVtxErrZ(0),fVtxChi2(0),fVtxNDF(0),
+    fVtxContrib(0),fVtxPosX(0),fVtxPosY(0),fVtxPosZ(0),fVtxErrX(0),fVtxErrY(0),fVtxErrZ(0),fVtxChi2(0),fVtxNDF(0),fVtxType(0),
     fBCrossNum(0),fNtracklets(0),
     fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
     fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),
     fListTrig(0),fHistUpcTriggersPerRun(0),fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0),
+    fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
     fListHist(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),
     fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0)
 
@@ -173,6 +176,7 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fJPsiTree ->Branch("fVtxErrZ", &fVtxErrZ, "fVtxErrZ/D");
   fJPsiTree ->Branch("fVtxChi2", &fVtxChi2, "fVtxChi2/D");
   fJPsiTree ->Branch("fVtxNDF", &fVtxNDF, "fVtxNDF/D");
+  fJPsiTree ->Branch("fVtxType", &fVtxType, "fVtxType/B");
   
   fJPsiTree ->Branch("fZDCAenergy", &fZDCAenergy, "fZDCAenergy/D");
   fJPsiTree ->Branch("fZDCCenergy", &fZDCCenergy, "fZDCCenergy/D");
@@ -209,6 +213,7 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fPsi2sTree ->Branch("fVtxErrZ", &fVtxErrZ, "fVtxErrZ/D");
   fPsi2sTree ->Branch("fVtxChi2", &fVtxChi2, "fVtxChi2/D");
   fPsi2sTree ->Branch("fVtxNDF", &fVtxNDF, "fVtxNDF/D");
+  fPsi2sTree ->Branch("fVtxType", &fVtxType, "fVtxType/B");
   
   fPsi2sTree ->Branch("fZDCAenergy", &fZDCAenergy, "fZDCAenergy/D");
   fPsi2sTree ->Branch("fZDCCenergy", &fZDCCenergy, "fZDCCenergy/D");
@@ -235,6 +240,15 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
 
   fHistCvlnTriggersPerRun = new TH1D("fHistCvlnTriggersPerRun", "fHistCvlnTriggersPerRun", 3000, 167000.5, 170000.5);
   fListTrig->Add(fHistCvlnTriggersPerRun);
+  
+  fHistMBTriggersPerRun = new TH1D("fHistMBTriggersPerRun", "fHistMBTriggersPerRun", 3000, 167000.5, 170000.5);
+  fListTrig->Add(fHistMBTriggersPerRun);
+  
+  fHistCentralTriggersPerRun = new TH1D("fHistCentralTriggersPerRun", "fHistCentralTriggersPerRun", 3000, 167000.5, 170000.5);
+  fListTrig->Add(fHistCentralTriggersPerRun);
+  
+  fHistSemiCentralTriggersPerRun = new TH1D("fHistSemiCentralTriggersPerRun", "fHistSemiCentralTriggersPerRun", 3000, 167000.5, 170000.5);
+  fListTrig->Add(fHistSemiCentralTriggersPerRun);
   
   fListHist = new TList();
   fListHist ->SetOwner();
@@ -315,12 +329,23 @@ void AliAnalysisTaskUpcPsi2s::RunAODtrig()
   
   if(trigger.Contains("CCUP4-B")) fHistUpcTriggersPerRun->Fill(fRunNum); //Upc triggers
   
-  if(trigger.Contains("CVLN")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers
-  
-  //if(aod->GetHeader()->IsTriggerInputFired("1ZED")) fHistZedTriggersPerRun->Fill(fRunNum); //1ZED trigger inputs
+  if(trigger.Contains("CVLN_B2-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - synchronously downscaled
+  if(trigger.Contains("CVLN_R1-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - randomly downscaled
   
   fL1inputs = aod->GetHeader()->GetL1TriggerInputs();
   if(fL1inputs & (1 << 18)) fHistZedTriggersPerRun->Fill(fRunNum); //1ZED trigger inputs
+  
+  //MB, Central and SemiCentral triggers
+  AliCentrality *centrality = aod->GetCentrality();
+  UInt_t selectionMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  
+  Double_t percentile = centrality->GetCentralityPercentile("V0M");
+  
+  if(((selectionMask & AliVEvent::kMB) == AliVEvent::kMB) && percentile<80 && percentile>0) fHistMBTriggersPerRun->Fill(fRunNum);
+  
+  if(((selectionMask & AliVEvent::kCentral) == AliVEvent::kCentral) && percentile<6 && percentile>0) fHistCentralTriggersPerRun->Fill(fRunNum);
+
+  if(((selectionMask & AliVEvent::kSemiCentral) == AliVEvent::kSemiCentral) && percentile<50 && percentile>15) fHistSemiCentralTriggersPerRun->Fill(fRunNum);
 
 PostData(3, fListTrig);
 
@@ -374,7 +399,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
   fZDCAenergy = fZDCdata->GetZNATowerEnergy()[0];
   fZDCCenergy = fZDCdata->GetZNCTowerEnergy()[0];
 
-  if( fZDCAenergy > 12000 || fZDCCenergy > 12000) return;
+  if( fZDCAenergy > 8200 || fZDCCenergy > 8200) return;
   
   fHistNeventsJPsi->Fill(4);
   fHistNeventsPsi2s->Fill(4);
@@ -567,7 +592,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   fVtxErrZ = CovMatx[2];
   fVtxChi2 = fAODVertex->GetChi2();
   fVtxNDF = fAODVertex->GetNDF();
-
+  fVtxType = fAODVertex->GetType();
 
   //Tracklets
   fNtracklets = aod->GetTracklets()->GetNumberOfTracklets();
@@ -672,7 +697,8 @@ void AliAnalysisTaskUpcPsi2s::RunESDtrig()
   
   if(trigger.Contains("CCUP4-B")) fHistUpcTriggersPerRun->Fill(fRunNum); //Upc triggers
   
-  if(trigger.Contains("CVLN")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers
+  if(trigger.Contains("CVLN_B2-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - synchronously downscaled
+  if(trigger.Contains("CVLN_R1-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - randomly downscaled
   
   if(esd->GetHeader()->IsTriggerInputFired("1ZED")) fHistZedTriggersPerRun->Fill(fRunNum); //1ZED trigger inputs
   
