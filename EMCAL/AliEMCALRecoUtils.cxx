@@ -2134,7 +2134,10 @@ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliVTrack *track,
 
   AliExternalTrackParam *trackParam = 0;
   if (esdt) {
-    trackParam = new AliExternalTrackParam(*esdt->GetInnerParam());
+    const AliExternalTrackParam *in = esdt->GetInnerParam();
+    if (!in)
+      return kFALSE;
+    trackParam = new AliExternalTrackParam(*in);
   } else {
     Double_t xyz[3] = {0}, pxpypz[3] = {0}, cv[21] = {0};
     aodt->PxPyPz(pxpypz);  

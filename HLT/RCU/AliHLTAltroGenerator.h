@@ -24,7 +24,7 @@
 #include <vector>
 #include <ostream>
 
-class AliRawDataHeader;
+struct AliRawDataHeader;
 class TArrayS;
 class TArrayC;
 class TRandom;
