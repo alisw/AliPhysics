@@ -21,7 +21,6 @@ AliAnalysisTaskUpcPsi2s *AddTaskUpcPsi2s(Bool_t runTree = kTRUE,Bool_t runHist =
   AliAnalysisTaskUpcPsi2s *task = new AliAnalysisTaskUpcPsi2s(inputDataType.Data());
   task->SetRunTree(runTree);
   task->SetRunHist(runHist);
-  //task->SelectCollisionCandidates(AliVEvent::kAny);
   mgr->AddTask(task);
 
 
