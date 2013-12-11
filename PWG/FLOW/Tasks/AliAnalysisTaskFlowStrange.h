@@ -57,11 +57,13 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   void SetCentralityRange(TString val, Int_t m, Int_t M) {fCentMethod=val; fCentPerMin=m; fCentPerMax=M;}
   void SetReadESD(Bool_t val) {fReadESD=val;}
   void SetReadMC(Bool_t val) {fReadMC=val;}
+  void SetPostMatched(Int_t val) {fPostMatched=val;}
   void SetAvoidExec(Bool_t val) {fAvoidExec=val;}
   void SetSkipSelection(Bool_t val) {fSkipSelection=val;}
   void SetSkipFlow(Bool_t val) {fSkipFlow=val;}
   void SetUseFlowPackage(Bool_t val) {fUseFP=val;}
   void SetExtraEventRejection(Bool_t val) {fExtraEventRejection=val;}
+  void SetVertexZcut(Double_t val) {fVertexZcut=val;}
 
   void SetWhichPsi(Int_t val) {fWhichPsi=val;}
   void SetStoreVZEResponse(Bool_t val) {fVZEsave=val;}
@@ -82,6 +84,7 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   void SetDauMinXRows(Int_t val) {fDaughterMinXRows=val;}
   void SetDauMaxChi2PerNClsTPC(Double_t val) {fDaughterMaxChi2PerNClsTPC=val;}
   void SetDauMinXRowsOverNClsFTPC(Double_t val) {fDaughterMinXRowsOverNClsFTPC=val;}
+  void SetDauITSLayer(Int_t layer, Int_t config) {fDaughterITSConfig[layer]=config;}
   void SetDauMinEta(Double_t val) {fDaughterMinEta=val;}
   void SetDauMaxEta(Double_t val) {fDaughterMaxEta=val;}
   void SetDauMinPt(Double_t val) {fDaughterMinPt=val;}
@@ -151,11 +154,11 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   void FillMCParticleSpy(TString listName, AliAODMCParticle *par);
   void FillMCParticleSpy(TString listName, TParticle *par);
 
-  void AddCandidatesSpy(TList *val);
-  void FillCandidateSpy(TString listName);
+  void AddCandidatesSpy(TList *val, Bool_t fillRes=kFALSE);
+  void FillCandidateSpy(TString listName, Bool_t fillRes=kFALSE);
 
-  void AddTracksSpy(TList *val);
-  void FillTrackSpy(TString listName);
+  void AddTracksSpy(TList *val, Bool_t fillRes=kFALSE);
+  void FillTrackSpy(TString listName, Bool_t fillRes=kFALSE);
 
   void MakeFilterBits();
   Bool_t PassesFilterBit(AliESDtrack *me);
@@ -197,6 +200,7 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
 
   Bool_t fReadESD;       // move back to ESD
   Bool_t fReadMC;        // read MC files
+  Int_t fPostMatched;    // post only (un)matched particles
   Bool_t fAvoidExec;     // avoids Exec
   Bool_t fSkipSelection; // skip decay finder
   Bool_t fSkipFlow;      // skip flow-wise code
@@ -209,6 +213,8 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   Int_t    fCentPerMin; // CC
   Int_t    fCentPerMax; // CC
   Double_t fThisCent;   // CC
+
+  Double_t fVertexZcut; // cut on main vertex Z
 
   Bool_t fExcludeTPCEdges; // exclude TPC edges from single track selection
 
@@ -235,6 +241,8 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   Int_t    fMassBins; // opens
   Double_t fMinMass;  // mass
   Double_t fMaxMass;  // window
+  Double_t fMinMassX; // HP window
+  Double_t fMaxMassX; // HP window
 
   Int_t fRFPFilterBit;    // RFP TPC
   Double_t fRFPminPt;     // RFP TPC
@@ -258,9 +266,19 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   Double_t fDecayAlpha;                 // DECAY
   Double_t fDecayRapidity;              // DECAY
   Double_t fDecayProductIPXY;           // DECAY
+  Double_t fDecayIPneg;                 // DECAY
+  Double_t fDecayIPpos;                 // DECAY
+  Double_t fDecayXneg;                  // DECAY
+  Double_t fDecayXpos;                  // DECAY
   Int_t    fDecayIDneg;                 // DECAY
   Int_t    fDecayIDpos;                 // DECAY
   Int_t    fDecayID;                    // DECAY
+
+  Double_t fDecayMatchOrigin;  // MC DECAY
+  Double_t fDecayMatchPhi;     // MC DECAY
+  Double_t fDecayMatchEta;     // MC DECAY
+  Double_t fDecayMatchPt;      // MC DECAY
+  Double_t fDecayMatchRadXY;   // MC DECAY
 
   Double_t fDecayMinEta;                   // DECAY CUTS
   Double_t fDecayMaxEta;                   // DECAY CUTS
@@ -278,6 +296,7 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   Double_t fDaughterEta;               // DAUGHTER
   Double_t fDaughterPt;                // DAUGHTER
   Int_t    fDaughterNClsTPC;           // DAUGHTER
+  Int_t    fDaughterITSConfig[6];      // DAUGHTER
   Int_t    fDaughterCharge;            // DAUGHTER
   Int_t    fDaughterNFClsTPC;          // DAUGHTER
   Int_t    fDaughterNSClsTPC;          // DAUGHTER
@@ -286,8 +305,15 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   Float_t  fDaughterImpactParameterXY; // DAUGHTER
   Float_t  fDaughterImpactParameterZ;  // DAUGHTER
   UInt_t   fDaughterStatus;            // DAUGHTER
+  UChar_t  fDaughterITScm;             // DAUGHTER
   Double_t fDaughterNSigmaPID;         // DAUGHTER
   Int_t    fDaughterKinkIndex;         // DAUGHTER
+
+  Double_t fDaughterMatchPhi;               // MC DAUGHTER
+  Double_t fDaughterMatchEta;               // MC DAUGHTER
+  Double_t fDaughterMatchPt;                // MC DAUGHTER
+  Float_t  fDaughterMatchImpactParameterXY; // MC DAUGHTER
+  Float_t  fDaughterMatchImpactParameterZ;  // MC DAUGHTER
 
   Bool_t   fDaughterUnTag;             // UNTAG PROCEDURE
 
