@@ -508,7 +508,7 @@ Bool_t AliHLTJETReader::FillGridMC() {
     if ( ! fTrackCuts->IsSelected(particle) )
       continue;
 
-    const Float_t aEtaPhi[]  = { particle->Eta(), particle->Phi(), particle->Pt() }; 
+    const Float_t aEtaPhi[]  = { static_cast<Float_t>(particle->Eta()), static_cast<Float_t>(particle->Phi()), static_cast<Float_t>(particle->Pt()) }; 
           Int_t   aGridIdx[] = { -1, -1, -1, -1, -1 };
 
     fGrid->FillTrack(particle, aEtaPhi, aGridIdx);
@@ -557,7 +557,7 @@ Bool_t AliHLTJETReader::FillGridHLTMC() {
     if ( ! fTrackCuts->IsSelected(particle) )
       continue;
 
-    const Float_t aEtaPhi[]  = { particle->Eta(), particle->Phi(), particle->Pt() }; 
+    const Float_t aEtaPhi[]  = { static_cast<Float_t>(particle->Eta()), static_cast<Float_t>(particle->Phi()), static_cast<Float_t>(particle->Pt()) }; 
           Int_t   aGridIdx[] = { -1, -1, -1, -1, -1 };
 
     // -- Fill grid
@@ -615,7 +615,7 @@ Bool_t AliHLTJETReader::FillGridESD() {
     if ( ! fTrackCuts->IsSelected(esdTrack) )
       continue;
 
-    const Float_t aEtaPhi[]  = { esdTrack->Eta(), esdTrack->Phi(), esdTrack->Pt() }; 
+    const Float_t aEtaPhi[]  = { static_cast<Float_t>(esdTrack->Eta()), static_cast<Float_t>(esdTrack->Phi()), static_cast<Float_t>(esdTrack->Pt()) }; 
           Int_t   aGridIdx[] = { -1, -1, -1, -1, -1 };
 
     // -- Fill grid

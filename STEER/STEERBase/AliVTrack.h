@@ -89,10 +89,11 @@ public:
   virtual void SetEMCALcluster(Int_t)       {;}
   virtual Bool_t IsEMCAL()            const {return kFALSE;}
 
-  virtual Double_t GetTrackPhiOnEMCal() const {return -999;}
-  virtual Double_t GetTrackEtaOnEMCal() const {return -999;}
-  virtual Double_t GetTrackPtOnEMCal() const {return -999;}
-  virtual Double_t GetTrackPOnEMCal() const {return -999;}
+  virtual Double_t GetTrackPhiOnEMCal()  const {return -999;}
+  virtual Double_t GetTrackEtaOnEMCal()  const {return -999;}
+  virtual Double_t GetTrackPtOnEMCal()   const {return -999;}
+  virtual Double_t GetTrackPOnEMCal()    const {return -999;}
+  virtual Bool_t IsExtrapolatedToEMCAL() const {return GetTrackPtOnEMCal()!=-999;} 
   virtual void SetTrackPhiEtaPtOnEMCal(Double_t,Double_t,Double_t=-999) {;}
 
   virtual Int_t GetPHOScluster()      const {return -1;}

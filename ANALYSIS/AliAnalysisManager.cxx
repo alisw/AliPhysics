@@ -1643,8 +1643,8 @@ void AliAnalysisManager::CheckBranches(Bool_t load)
             Error("CheckBranches", "Could not find branch %s",obj->GetName());
             continue;
          }
+         fTable.Add(br);
       }   
-      fTable.Add(br);
       if (load && br->GetReadEntry()!=GetCurrentEntry()) {
          br->GetEntry(GetCurrentEntry());
       }      

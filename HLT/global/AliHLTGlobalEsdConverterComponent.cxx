@@ -462,10 +462,10 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
       for (vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();
 	   element!=tracks.end(); element++) {
 	Float_t points[4] = {
-	  element->GetX(),
-	  element->GetY(),
-	  element->GetLastPointX(),
-	  element->GetLastPointY()
+	  static_cast<Float_t>(element->GetX()),
+	  static_cast<Float_t>(element->GetY()),
+	  static_cast<Float_t>(element->GetLastPointX()),
+	  static_cast<Float_t>(element->GetLastPointY())
 	};
 
 	Int_t mcLabel = -1;
