@@ -132,7 +132,7 @@ class AliJetFlowTools {
         // static const helper functions, mainly histogram manipulation
         static TH1D*    ResizeXaxisTH1D(TH1D* histo, Int_t low, Int_t up, TString suffix = "");
         static TH2D*    ResizeYaxisTH2D(TH2D* histo, TArrayD* x, TArrayD* y, TString suffix = "");
-        static TH2D*    NormalizeTH2D(TH2D* histo);
+        static TH2D*    NormalizeTH2D(TH2D* histo, Bool_t noError = kTRUE);
         static TH1D*    RebinTH1D(TH1D* histo, TArrayD* bins, TString suffix = "", Bool_t kill = kTRUE);
         TH2D*           RebinTH2D(TH2D* histo, TArrayD* binsTrue, TArrayD* binsRec, TString suffix = "");
         static TH2D*    MatrixMultiplication(TH2D* a, TH2D* b, TString name = "CombinedResponse");
@@ -152,6 +152,7 @@ class AliJetFlowTools {
         static void     Style(TH1* h, EColor col = kBlue, histoType = kEmpty);
         static void     Style(TGraph* h, EColor col = kBlue, histoType = kEmpty);
         static TLegend* AddLegend(TVirtualPad* p)       {return p->BuildLegend(.27, .61, .88, .88);}
+        static void     SavePadToPDF(TVirtualPad* pad)  {pad->SaveAs(Form("%s.pdf", pad->GetName()));}
         // interface to AliUnfolding, not necessary but nice to have all parameters in one place
         static void     SetMinuitStepSize(Float_t s)    {AliUnfolding::SetMinuitStepSize(s);}
         static void     SetMinuitPrecision(Float_t s)   {AliUnfolding::SetMinuitPrecision(s);}
