@@ -306,7 +306,8 @@ AliBaseAODTask::CheckEvent(const AliAODForwardMult& forward)
 {
   if (HasCentrality())
     return forward.CheckEvent(fTriggerMask, fMinIpZ, fMaxIpZ, 
-			      fCentAxis.GetXmin(), fCentAxis.GetXmax(), 
+			      UShort_t(fCentAxis.GetXmin()), 
+			      UShort_t(fCentAxis.GetXmax()), 
 			      fTriggers, fEventStatus);
  return forward.CheckEvent(fTriggerMask, fMinIpZ, fMaxIpZ, 
 			   0, 0, fTriggers, fEventStatus);

@@ -113,13 +113,18 @@ Bool_t AliAnalysisTaskEmcalDiJetBase::SelectEvent() {
   if(!fTriggerClass.IsNull()) {
     //Check if requested trigger was fired
     TString firedTrigClass = InputEvent()->GetFiredTriggerClasses();
+
     if(!firedTrigClass.Contains(fTriggerClass))
       return kFALSE;
-    if(fTriggerClass.Contains("J2") && firedTrigClass.Contains("J1")) //only accept J2 triggers which were not fired by J1 as well
+    else if(fTriggerClass.Contains("J1") && fTriggerClass.Contains("J2")) { //if events with J1&&J2 are requested
+      if(!firedTrigClass.Contains("J1") || !firedTrigClass.Contains("J2") ) //check if both are fired
+        return kFALSE;
+    }
+    else if(fTriggerClass.Contains("J1") && firedTrigClass.Contains("J2")) //if J2 is requested also add triggers which have J1&&J2. Reject if J1 is requested and J2 is fired
       return kFALSE;
   }
-
-   fhNEvents->Fill(1.5);
+  
+  fhNEvents->Fill(1.5);
 
   fHistTrialsSelEvents->Fill(fPtHardBin, fNTrials);
   

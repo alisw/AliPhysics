@@ -134,7 +134,7 @@ AliForwardMultDists::BinSpec::Axis() const
     fAxis.Set(fN[0], fLow, fN[0]*fD[0]+fLow);
   }
   else { 
-    Int_t n = fN.GetSum();
+    Int_t n = Int_t(fN.GetSum());
     Int_t l = fN.GetSize();
     Int_t i = 0;
     TArrayD b(n+1);
@@ -429,7 +429,7 @@ AliForwardMultDists::Finalize()
     
     Int_t mkrBits = GetIndexMarker(idx);
     while (*ph) { 
-      Int_t factor = TMath::Power(10, idx);
+      Int_t factor = Int_t(TMath::Power(10, idx));
       TH1* h = static_cast<TH1*>((*ph)->Clone());
       h->SetDirectory(0);
       h->Scale(factor);
@@ -677,8 +677,8 @@ AliForwardMultDists::EtaBin::EtaBin(Double_t minEta, Double_t maxEta,
   }
   else {
     // Rounded down maximum and minimum
-    Int_t max = mAxis.GetXmax(); 
-    Int_t min = mAxis.GetXmin();
+    Int_t max = Int_t(mAxis.GetXmax()); 
+    Int_t min = Int_t(mAxis.GetXmin());
     fTAxis.Set((max-min)+1, min-.5, max+.5);
   }
 }

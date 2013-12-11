@@ -691,8 +691,10 @@ protected:
       TDirectory* savDir = gDirectory;
       if (!gSystem->AccessPathName(fELossExtra.Data())) {
 	hists = TFile::Open(fELossExtra, "READ");
-	// Info("", "Opened forward_eloss.root -> %p", hists);
+	Info("", "Opened forward_eloss.root -> %p", hists);
       }
+      else 
+	Warning("", "Couldn't open %s", fELossExtra.Data());
       if (hists) {
 	TList* fr = static_cast<TList*>(hists->Get("ForwardELossResults"));
 	// Info("", "Got forward results -> %p", fr);
@@ -771,9 +773,10 @@ protected:
 	  // Info("", "Got detector list -> %p", dl);
 	  if (dl) { 
 	    // Info("", "Detector list: %s", dl->GetName());
-	    dists = static_cast<TList*>(dl->FindObject("EDists"));
+	    dists = static_cast<TList*>(dl->FindObject("elossDists"));
 	    // Info("", "Got distributions -> %p", dists);
-	    resis = static_cast<TList*>(dl->FindObject("residuals"));
+	    resis = static_cast<TList*>(dl->FindObject("elossResiduals"));
+	    // Info("", "Got residuals -> %p", resis);
 	  }
 	}
 	
@@ -856,6 +859,8 @@ protected:
 	}
 	if (dist) { 
 	  // Info("", "Histogram: %s", dist->GetName());
+	  dist->SetFillStyle(3001);
+	  dist->SetMarkerStyle(0);
 	  DrawInPad(drawPad, subPad, dist, "HIST E", (subPad * kGridx) + kLogy);
 	  same = true;	  
 	}
