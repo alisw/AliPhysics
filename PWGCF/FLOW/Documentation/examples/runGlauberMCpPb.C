@@ -31,9 +31,9 @@ void runGlauberMCpPb(Int_t option=0,Int_t N=250000)
   mcg.Setr(r);
   mcg.Seta(a);
   if (option==1) 
-    mcg.SetDoFluc(0.55,72.5,0.85,kTRUE);
+    mcg.SetDoFluc(0.55,78.5,0.82,kTRUE);
   else if (option==2) 
-    mcg.SetDoFluc(1.01,72.5,0.7,kTRUE);
+    mcg.SetDoFluc(1.01,72.5,0.74,kTRUE);
   mcg.SetDoPartProduction(kFALSE);
   
   //////////////////

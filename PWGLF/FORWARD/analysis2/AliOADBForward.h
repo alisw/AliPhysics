@@ -555,6 +555,34 @@ public:
 		Bool_t         sat=false,
 		ULong_t        aliRev=0,
 		const TString& author="");
+  /** 
+   * Copy one entry to another entry 
+   * 
+   * @param table      Table name 
+   * @param oldRunNo   Old run number 
+   * @param oldSys     Old collision system
+   * @param oldSNN     Old center of mass energy 
+   * @param oldField   Old L3 magnetic field strength
+   * @param newRunNo   New run number 		     
+   * @param newSys     New collision system	     
+   * @param newSNN     New center of mass energy     
+   * @param newField   New L3 magnetic field strength
+   * @param mc         True for MC only queries
+   * @param sat        True for including satellite queries
+   * 
+   * @return true on success 
+   */
+  Bool_t CopyEntry(const TString& table, 
+		   ULong_t        oldRunNo, 
+		   UShort_t       oldSys,
+		   UShort_t       oldSNN, 
+		   Short_t        oldField, 
+		   ULong_t        newRunNo,
+		   UShort_t       newSys,
+		   UShort_t       newSNN, 
+		   Short_t        newField, 
+		   Bool_t         mc, 
+		   Bool_t         sat);
   /* @} */
   /** 
    * Print the content of all tables

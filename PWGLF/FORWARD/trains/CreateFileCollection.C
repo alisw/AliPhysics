@@ -12,16 +12,19 @@
 void
 CreateFileCollection(const TString& dir="/data/alice/data/ppb/LHC12g/pass1/188359/",
 		     const TString& tN="esdTree", 
-		     const TString& pa="AliESD", 
+		     const TString& pa="AliESD*", 
 		     Bool_t mc=false, 
 		     Bool_t recursive=false)
 )
 {
-  gROOT->LoadMacro("ChainBuilder.C+");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/trains/ChainBuilder.C+");
   
-  UShort_t type = ChainBuilder::CheckSource(dir);
+  UShort_t flags = 0;
+  if (recursive) flags |= ChainBuilder::kRecursive;
+  if (mc)        flags |= ChainBuilder::kMC;
+  UShort_t type = ChainBuilder::CheckSource(dir, flags);
   Info("", "type=%d", type);
-  TChain* chain = ChainBuilder::Create(dir, tN, pa, mc, recursive);
+  TChain* chain = ChainBuilder::Create(type, dir, tN, pa, flags);
   if (!chain) { 
     Error("CreateFileCollection", "Failed to make chain");
     return;

@@ -1592,7 +1592,7 @@ AliBasedNdetaTask::CentralityBin::Normalization(const TH1I& t,
 	rhs.Append("/eps_V");
     } // Event-level
     if (scheme & kTriggerEfficiency) {
-      Int_t old =  ntotal;
+      Int_t old =  Int_t(ntotal);
       ntotal    /= trigEff;
       scaler    *= trigEff;
       DMSG(fDebug,0,"Correcting for trigger efficiency:\n"

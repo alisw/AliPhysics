@@ -33,7 +33,7 @@ public:
     fOptions.Add("trig",       "TYPE", "Trigger type", "V0AND");
     fOptions.Add("vzMin",      "CENTIMETER", "Min Ip Z", -4);
     fOptions.Add("vzMax",      "CENTIMETER", "Max Ip Z", +4);
-    fOptions.Add("phi-acc",    "Use stored phi acceptance", true);
+    fOptions.Add("phi-acc",    "Use stored phi acceptance", false);
     fOptions.Add("asymmetric", "Make asymmetric (+/-) bins", false);
   }
 protected:

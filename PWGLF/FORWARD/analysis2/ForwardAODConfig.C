@@ -147,6 +147,10 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   task->GetDensityCalculator().SetRecalculatePhi(true);
   // Least acceptable quality of ELoss fits
   task->GetDensityCalculator().SetMinQuality(8);
+  // Set the maximum ratio of outlier bins to the total number of bins
+  task->GetDensityCalculator().SetMaxOutliers(.10);
+  // Set the maximum relative diviation between N_ch from Eloss and Poisson
+  task->GetDensityCalculator().SetOutlierCut(0.5);
   // Set whether or not to use the phi acceptance
   //   AliFMDDensityCalculator::kPhiNoCorrect
   //   AliFMDDensityCalculator::kPhiCorrectNch

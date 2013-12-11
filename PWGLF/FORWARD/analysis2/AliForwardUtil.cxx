@@ -31,21 +31,57 @@ ULong_t AliForwardUtil::AliROOTRevision()
 {
 #ifdef ALIROOT_SVN_REVISION
   return ALIROOT_SVN_REVISION;
-#else 
-  return 0;
+#elif defined(ALIROOT_REVISION)
+  static ULong_t ret = 0;
+  if (ret != 0) return ret;
+
+  // Select first 32bits of the 40byte long check-sum
+  TString rev(ALIROOT_REVISION, 8);
+  for (ULong_t i = 0; i < 8; i++) {
+    ULong_t p = 0;
+    switch (rev[i]) { 
+    case '0': p = 0; break;
+    case '1': p = 1; break;
+    case '2': p = 2; break;
+    case '3': p = 3; break;
+    case '4': p = 4; break;
+    case '5': p = 5; break;
+    case '6': p = 6; break;
+    case '7': p = 7; break;
+    case '8': p = 8; break;
+    case '9': p = 9; break;
+    case 'a': case 'A': p = 10; break;
+    case 'b': case 'B': p = 11; break;
+    case 'c': case 'C': p = 12; break;
+    case 'd': case 'D': p = 13; break;
+    case 'e': case 'E': p = 14; break;
+    case 'f': case 'F': p = 15; break;
+    }
+    ret |= (p << (32-4*(i+1)));
+  }
+  return ret;
 #endif
 }
 //____________________________________________________________________
 ULong_t AliForwardUtil::AliROOTBranch()
 {
   // Do something here when we switch to git - sigh!
-#ifdef ALIROOT_SVN_BRANCH
+#if !defined(ALIROOT_SVN_BRANCH) && !defined(ALIROOT_BRANCH) 
+  return 0;
+#endif
   static ULong_t ret = 0;
   if (ret != 0) return ret;
-  
-  TString str(ALIROOT_SVN_BRANCH);
+  TString str;
+  TString top;
+#ifdef ALIROOT_SVN_BRANCH
+  str = ALIROOT_SVN_BRANCH;
+  top = "trunk";
+#elif defined(ALIROOT_BRANCH)
+  str = ALIROOT_BRANCH;
+  top = "master";
+#endif
   if (str[0] == 'v') str.Remove(0,1);
-  if (str.EqualTo("trunk")) return ret = 0xFFFFFFFF;
+  if (str.EqualTo(top)) return ret = 0xFFFFFFFF;
 
   TObjArray*   tokens = str.Tokenize("-");
   TObjString*  pMajor = static_cast<TObjString*>(tokens->At(0));
@@ -63,9 +99,6 @@ ULong_t AliForwardUtil::AliROOTBranch()
     (pAn ? 0xAA : 0));
   
   return ret;
-#else 
-  return 0;
-#endif
 }
 
 //====================================================================
@@ -547,6 +580,14 @@ Double_t AliForwardUtil::GetPhiFromStrip(Char_t ring, UShort_t strip,
 TAxis*
 AliForwardUtil::MakeFullIpZAxis(Int_t nCenter)
 {
+  TArrayD bins;
+  MakeFullIpZAxis(nCenter, bins);
+  TAxis* a = new TAxis(bins.GetSize()-1,bins.GetArray());
+  return a;
+}
+void
+AliForwardUtil::MakeFullIpZAxis(Int_t nCenter, TArrayD& bins)
+{
   // Custom vertex axis that will include satellite vertices 
   // Satellite vertices are at k*37.5 where k=-10,-9,...,9,10 
   // Nominal vertices are usually in -10 to 10 and we should have 
@@ -563,7 +604,7 @@ AliForwardUtil::MakeFullIpZAxis(Int_t nCenter)
   const Int_t    nBins   = 2*nSat + nCenter;
   const Int_t    mBin    = nBins / 2;
   Double_t       dCenter = 2*mCenter / nCenter;
-  TArrayD        bins(nBins+1);	
+  bins.Set(nBins+1);
   bins[mBin] = 0;
   for (Int_t i = 1; i <= nCenter/2; i++) { 
     // Assign from the middle out 
@@ -579,9 +620,18 @@ AliForwardUtil::MakeFullIpZAxis(Int_t nCenter)
     bins[mBin-o] = -v;
     bins[mBin+o] = +v;
   }
-  TAxis* a = new TAxis(nBins,bins.GetArray());
-  return a;
 }
+void 
+AliForwardUtil::MakeLogScale(Int_t    nBins, 
+			     Int_t    minOrder, 
+			     Int_t    maxOrder, 
+			     TArrayD& bins)
+{
+  Double_t dO = Double_t(maxOrder-minOrder) / nBins; 
+  bins.Set(nBins+1);
+  for (Int_t i = 0; i <= nBins; i++) bins[i] = TMath::Power(10, i * dO);
+}
+
 void 
 AliForwardUtil::PrintTask(const TObject& o)
 {
@@ -1559,11 +1609,11 @@ AliForwardUtil::Histos::Clear(Option_t* option)
   // Parameters:
   //    option Not used 
   //
-  if (fFMD1i) fFMD1i->Reset(option);
-  if (fFMD2i) fFMD2i->Reset(option);
-  if (fFMD2o) fFMD2o->Reset(option);
-  if (fFMD3i) fFMD3i->Reset(option);
-  if (fFMD3o) fFMD3o->Reset(option);
+  if (fFMD1i) { fFMD1i->Reset(option); fFMD1i->ResetBit(kSkipRing); }
+  if (fFMD2i) { fFMD2i->Reset(option); fFMD2i->ResetBit(kSkipRing); }
+  if (fFMD2o) { fFMD2o->Reset(option); fFMD2o->ResetBit(kSkipRing); }
+  if (fFMD3i) { fFMD3i->Reset(option); fFMD3i->ResetBit(kSkipRing); }
+  if (fFMD3o) { fFMD3o->Reset(option); fFMD3o->ResetBit(kSkipRing); }
 }
 
 //____________________________________________________________________

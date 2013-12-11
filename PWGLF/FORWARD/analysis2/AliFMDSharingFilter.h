@@ -361,7 +361,8 @@ protected:
     TH2D*     fBeforeAfter;     // Correlation of before and after 
     TH2D*     fNeighborsBefore; // Correlation of neighbors 
     TH2D*     fNeighborsAfter;  // Correlation of neighbors 
-    TH2D*     fSum;             // Summed signal 
+    TH2D*     fSumESD;          // Summed ESD signal 
+    TH2D*     fSum;             // Summed cluster signal 
     ClassDef(RingHistos,3);
   };
   /** 
