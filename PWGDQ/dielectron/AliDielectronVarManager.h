@@ -856,7 +856,8 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   values[AliDielectronVarManager::kTOFnSigmaKao]=0;
   values[AliDielectronVarManager::kTOFnSigmaPro]=0;
   
-  values[AliDielectronVarManager::kITSclusterMap]   =   particle->GetITSClusterMap();
+  values[AliDielectronVarManager::kITSsignal]        =   particle->GetITSsignal();
+  values[AliDielectronVarManager::kITSclusterMap]    =   particle->GetITSClusterMap();
   values[AliDielectronVarManager::kITSLayerFirstCls] = -1.;
   for (Int_t iC=0; iC<6; iC++) {
     if (((particle->GetITSClusterMap()) & (1<<(iC))) > 0) {
