@@ -48,6 +48,10 @@
 #include "AliGenPythiaEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
 #include "AliGenEventHeaderTunedPbPb.h"
+#include "AliESDtrack.h"
+#include "AliAODTrack.h"
+#include "AliAODPid.h"
+#include "AliESDpid.h"
 
 #include "AliLog.h"
 
