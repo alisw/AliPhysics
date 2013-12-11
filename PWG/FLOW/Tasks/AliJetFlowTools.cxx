@@ -952,7 +952,7 @@ Bool_t AliJetFlowTools::PrepareForUnfolding()
         if(normalizeToFullSpectrum) fEventCount = -1;
     }
     // extract the delta pt matrices
-    TString deltaptName(Form("fHistDeltaPtDeltaPhi2_%i", fCentralityBin));
+    TString deltaptName(Form("fHistDeltaPtDeltaPhi2ExLJ_%i", fCentralityBin));
     fDeltaPtDeltaPhi = ((TH2D*)fInputList->FindObject(deltaptName.Data()));
     if(!fDeltaPtDeltaPhi) {
         printf(" Couldn't find delta pt matrix %s ! \n", deltaptName.Data());
@@ -1121,7 +1121,7 @@ TH2D* AliJetFlowTools::ResizeYaxisTH2D(TH2D* histo, TArrayD* x, TArrayD* y, TStr
     return resized;
 }
 //_____________________________________________________________________________
-TH2D* AliJetFlowTools::NormalizeTH2D(TH2D* histo) {
+TH2D* AliJetFlowTools::NormalizeTH2D(TH2D* histo, Bool_t noError) {
     // general method to normalize all vertical slices of a th2 to unity
     // i.e. get a probability matrix
     if(!histo) {
@@ -1140,7 +1140,8 @@ TH2D* AliJetFlowTools::NormalizeTH2D(TH2D* histo) {
         for(Int_t j(0); j < binsY; j++) {
             if (weight <= 0 ) continue;
             histo->SetBinContent(1+i, j+1, histo->GetBinContent(1+i, j+1)/weight);
-            histo->SetBinError(  1+i, j+1, histo->GetBinError(  1+i, j+1)/weight);
+            if(noError) histo->SetBinError(  1+i, j+1, 0.);
+            else histo->SetBinError(  1+i, j+1, histo->GetBinError(  1+i, j+1)/weight);
         }
     }
     return histo;
@@ -1189,6 +1190,7 @@ TH2D* AliJetFlowTools::MatrixMultiplication(TH2D* a, TH2D* b, TString name)
 	        val += a->GetBinContent(x1, y1) * b->GetBinContent(x2, y2);
             }
             c->SetBinContent(x2, y1, val);
+            c->SetBinError(x2, y1, 0.);
         }
     }
     if(strcmp(name.Data(), "")) c->SetNameTitle(name.Data(), name.Data());
@@ -1639,16 +1641,27 @@ void AliJetFlowTools::PostProcess(TString def, TString in, TString out, Int_t co
        }
    }
    TFile output(out.Data(), "RECREATE");
+   SavePadToPDF(canvasIn);
    canvasIn->Write();
+   SavePadToPDF(canvasOut);
    canvasOut->Write();
+   SavePadToPDF(canvasRatioMeasuredRefoldedIn);
    canvasRatioMeasuredRefoldedIn->Write();
+   SavePadToPDF(canvasRatioMeasuredRefoldedOut);
    canvasRatioMeasuredRefoldedOut->Write();
+   SavePadToPDF(canvasSpectraIn);
    canvasSpectraIn->Write();
+   SavePadToPDF(canvasSpectraOut);
    canvasSpectraOut->Write();
+   SavePadToPDF(canvasRatio);
    canvasRatio->Write();
+   SavePadToPDF(canvasV2);
    canvasV2->Write();
+   SavePadToPDF(canvasMasterIn);
    canvasMasterIn->Write();
+   SavePadToPDF(canvasMasterIn);
    canvasMasterOut->Write();
+   SavePadToPDF(canvasMISC);
    canvasMISC->Write();
    output.Write();
    output.Close();
