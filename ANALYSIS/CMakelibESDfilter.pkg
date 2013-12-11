@@ -1,6 +1,6 @@
-# -*- mode: CMake -*- 
+# -*- mode: Makefile -*-
 #--------------------------------------------------------------------------------#
-# Package File for ANALYSISalice                                                 #
+# Package File for PWGmuon                                                      #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -26,67 +26,14 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  	
-    AliAnalysisTaskSE.cxx 
-    AliAnalysisTaskME.cxx 
-    AliAnalysisTaskMCParticleFilter.cxx 
-    AliKineTrackCuts.cxx 
-    AliESDtrackCuts.cxx 
-    AliESDpidCuts.cxx 
-    AliESDv0Cuts.cxx 
-    AliEventPoolOTF.cxx 
-    AliEventPoolLoop.cxx 
-    AliEventPoolSparse.cxx 
-    AliAnalysisTaskTagCreator.cxx 
-    AliMultiEventInputHandler.cxx 
-    AliTriggerAnalysis.cxx 
-    AliTRDTriggerAnalysis.cxx 
-    AliPhysicsSelection.cxx 
-    AliBackgroundSelection.cxx 
-    AliPhysicsSelectionTask.cxx 
-    AliAnalysisFilter.cxx 
-    AliAnalysisCuts.cxx 
-    AliCollisionNormalization.cxx 
-    AliCollisionNormalizationTask.cxx 
-    AliCentralitySelectionTask.cxx 
-    AliEPSelectionTask.cxx 
-    AliVZEROEPSelectionTask.cxx 
-    AliAnalysisTaskStat.cxx 
-    AliMultiInputEventHandler.cxx 
-    AliESDv0KineCuts.cxx 
-    AliAnalysisTaskPIDResponse.cxx 
-    AliPIDResponseInputHandler.cxx 
-    AliHEPDataParser.cxx 
-    AliAnalysisTaskPIDqa.cxx 
-    AliAnalysisTaskBaseLine.cxx
-    AliEventPoolManager.cxx
-    AliAnalysisTaskPIDCombined.cxx
-    AliUnfolding.cxx
-    AliAnalysisUtils.cxx
-    BadChunkFilter/AliAnalysisTaskBadChunkID.cxx
-    AliAODv0KineCuts.cxx
-    )
-
-if( ROOTHASALIEN STREQUAL "yes")
-	
-	set ( PACKCXXFLAGS  "${CXXFLAGS} -DWITHALIEN")
-
-endif( ROOTHASALIEN STREQUAL "yes")
-
-if( ROOTHASXML STREQUAL "yes")
-	
-	set ( PACKCXXFLAGS "${PACKCXXFLAGS}  ${CXXFLAGS} -DWITHXML")
-	set ( CINTFLAGS ${CINTFLAGS}  -DWITHXML)
-	set ( SRCS ${SRCS}  AliTagAnalysis.cxx AliXMLCollection.cxx AliAnalysisAlien.cxx)
-
-endif( ROOTHASXML STREQUAL "yes")
+set ( SRCS 
+    ESDfilter/AliAnalysisTaskESDfilter.cxx
+)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR  ANALYSISaliceLinkDef.h)
-
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE ANALYSIS/Aliengui STEER/AOD STEER/ESD STEER/STEERBase ANALYSIS/BadChunkFilter)
+set ( DHDR  ESDfilterLinkDef.h)
 
-set ( ELIBS "OADB" )
+set ( EINCLUDE ANALYSIS/ESDfilter EMCAL OADB STEER/AOD STEER/ESD STEER/STEERBase ANALYSIS)
