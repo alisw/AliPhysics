@@ -416,13 +416,13 @@ void AliTRDcheckESD::UserExec(Option_t *){
   for(Int_t i=0;i<nTrigFired;++i) trigFiredIdx[i] = triggerIndices[i];
   
   // Get MC information if available
-  AliStack * fStack = NULL;
+  //AliStack * fStack = NULL;
   if(HasMC()){
     if(!fMC){ 
       AliWarning("MC event missing");
       SetMC(kFALSE);
     } else {
-      if(!(fStack = fMC->Stack())){
+      if(!fMC->Stack()){
         AliWarning("MC stack missing");
         SetMC(kFALSE);
       }
@@ -677,6 +677,8 @@ void AliTRDcheckESD::FillCFContainer(AliCFContainer* cf, Double_t* values, Bool_
       }
     if(stepSelections[stepNo]) cf->Fill(cfValues, istep);
   }  // end loop over steps
+
+  delete [] cfValues;
 }
 
 //____________________________________________________________________
@@ -1724,7 +1726,7 @@ void AliTRDcheckESD::PlotPidSummaryFromCF(Double_t* trendValues, const Char_t* /
 
 
 //__________________________________________________________________________________________________
-void AliTRDcheckESD::PlotOtherSummaryFromCF(Double_t* trendValues) {
+void AliTRDcheckESD::PlotOtherSummaryFromCF(Double_t* /*trendValues*/) {
   //
   //
   //
