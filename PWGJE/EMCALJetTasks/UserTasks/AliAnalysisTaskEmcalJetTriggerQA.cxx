@@ -259,9 +259,9 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   Double_t *binsJetType = new Double_t[fgkNJetTypeBins+1];
   for(Int_t i=0; i<=fgkNJetTypeBins; i++) binsJetType[i]=(Double_t)kMinJetType + (kMaxJetType-kMinJetType)/fgkNJetTypeBins*(Double_t)i ;
 
-  Int_t fgkNTimeBins = 700;
-  Float_t kMinTime   = -400.;
-  Float_t kMaxTime   = 1000;
+  Int_t fgkNTimeBins = 100;
+  Float_t kMinTime   = -200.;
+  Float_t kMaxTime   = 200;
   Double_t *binsTime = new Double_t[fgkNTimeBins+1];
   for(Int_t i=0; i<=fgkNTimeBins; i++) binsTime[i]=(Double_t)kMinTime + (kMaxTime-kMinTime)/fgkNTimeBins*(Double_t)i ;
 
@@ -431,29 +431,23 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
 {
   // Fill histograms.
 
-  //  Printf("fEntry %d",fEntry);
-
   AliParticleContainer *partCont = GetParticleContainer(0);
   if (partCont) {
     Int_t i = 0;
-    //Printf("id type  pt,eta,phi");
     AliPicoTrack *track = dynamic_cast<AliPicoTrack*>(partCont->GetNextAcceptParticle(0));
     while(track) {
-      //      if(track->GetTrackType()==0) {
-	Double_t trkphi = track->Phi()*TMath::RadToDeg();
-	fh3PtEtaPhiTracks->Fill(track->Pt(),track->Eta(),track->Phi());
-	if(track->IsEMCAL()) {
-	  i++;
-	  //	  Printf("%d %d %f,%f,%f",i,track->GetTrackType(),track->GetTrackPtOnEMCal(),track->GetTrackEtaOnEMCal(),track->GetTrackPhiOnEMCal());
-	  fh3PtEtaPhiTracksOnEmcal->Fill(track->GetTrackPtOnEMCal(),track->GetTrackEtaOnEMCal(),track->GetTrackPhiOnEMCal());
-	  if(TMath::Abs(track->Eta())<0.9 && trkphi > 10 && trkphi < 250 )
-	    fh3PtEtaPhiTracksProp->Fill(track->Pt(),track->Eta(),track->Phi());
-	}
-	else {
-	  if(TMath::Abs(track->Eta())<0.9 && trkphi > 10 && trkphi < 250 )
-	    fh3PtEtaPhiTracksNoProp->Fill(track->Pt(),track->Eta(),track->Phi());
-	}
-	//}
+      Double_t trkphi = track->Phi()*TMath::RadToDeg();
+      fh3PtEtaPhiTracks->Fill(track->Pt(),track->Eta(),track->Phi());
+      if(track->IsEMCAL()) {
+	i++;
+	fh3PtEtaPhiTracksOnEmcal->Fill(track->GetTrackPtOnEMCal(),track->GetTrackEtaOnEMCal(),track->GetTrackPhiOnEMCal());
+	if(TMath::Abs(track->Eta())<0.9 && trkphi > 10 && trkphi < 250 )
+	  fh3PtEtaPhiTracksProp->Fill(track->Pt(),track->Eta(),track->Phi());
+      }
+      else {
+	if(TMath::Abs(track->Eta())<0.9 && trkphi > 10 && trkphi < 250 )
+	  fh3PtEtaPhiTracksNoProp->Fill(track->Pt(),track->Eta(),track->Phi());
+      }
       track = dynamic_cast<AliPicoTrack*>(partCont->GetNextAcceptParticle());
     }
 
