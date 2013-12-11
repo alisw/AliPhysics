@@ -2134,7 +2134,7 @@ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliVTrack *track,
 
   AliExternalTrackParam *trackParam = 0;
   if (esdt) {
-    AliExternalTrackParam *in = esdt->GetInnerParam();
+    const AliExternalTrackParam *in = esdt->GetInnerParam();
     if (!in)
       return kFALSE;
     trackParam = new AliExternalTrackParam(*in);

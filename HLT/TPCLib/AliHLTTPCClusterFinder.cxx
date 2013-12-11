@@ -1213,7 +1213,7 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
 	  fSpacePointData[counter].fZ = xyz[2];
 	}
 	else{
-	  Double_t x[3]={thisrow,fpad+.5,ftime}; 
+	  Double_t x[3]={static_cast<Double_t>(thisrow),fpad+.5,ftime}; 
 	  Int_t iSector[1]={thissector};
 	  fOfflineTransform->Transform(x,iSector,0,1);
 	  double y[3] = {x[0], x[1], x[2] };	  

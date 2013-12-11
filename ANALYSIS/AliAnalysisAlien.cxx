@@ -1685,7 +1685,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
       mergeExec.ReplaceAll(".sh", "_merge.sh");
       fMergingJDL->SetExecutable(mergeExec, "This is the startup script");
       mergeExec.ReplaceAll(".sh", ".C");
-      fMergingJDL->AddToInputSandbox(Form("LF:%s/%s", workdir.Data(),mergeExec.Data()), "List of input files to be uploaded to workers");
+      fMergingJDL->AddToInputSandbox(Form("LF:%s", mergeExec.Data()), "List of input files to be uploaded to workers");
       if (!fArguments.IsNull())
          fGridJDL->SetArguments(fArguments, "Arguments for the executable command");
       if (IsOneStageMerging()) fMergingJDL->SetArguments(fGridOutputDir);
@@ -1707,7 +1707,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
          fGridJDL->SetValue("SplitMaxInputFileNumber", Form("\"%d\"", fSplitMaxInputFileNumber));
          fGridJDL->SetDescription("SplitMaxInputFileNumber", "Maximum number of input files to be processed per subjob");
       }
-      if (!IsOneStageMerging() && !fMCLoop) {
+      if (!IsOneStageMerging()) {
          fMergingJDL->SetValue("SplitMaxInputFileNumber", Form("\"%d\"",fMaxMergeFiles));
          fMergingJDL->SetDescription("SplitMaxInputFileNumber", "Maximum number of input files to be merged in one go");
       }   
@@ -1745,9 +1745,9 @@ Bool_t AliAnalysisAlien::CreateJDL()
       if (!fMCLoop) {
          fGridJDL->SetInputDataListFormat(fInputFormat, "Format of input data");
          fGridJDL->SetInputDataList("wn.xml", "Collection name to be processed on each worker node");
-         fMergingJDL->SetInputDataListFormat(fInputFormat, "Format of input data");
-         fMergingJDL->SetInputDataList("wn.xml", "Collection name to be processed on each worker node");
       }   
+      fMergingJDL->SetInputDataListFormat(fInputFormat, "Format of input data");
+      fMergingJDL->SetInputDataList("wn.xml", "Collection name to be processed on each worker node");
       fGridJDL->AddToInputSandbox(Form("LF:%s/%s", workdir.Data(), fAnalysisMacro.Data()), "List of input files to be uploaded to workers");
       TString analysisFile = fExecutable;
       analysisFile.ReplaceAll(".sh", ".root");
@@ -4558,6 +4558,16 @@ void AliAnalysisAlien::WriteMergingMacro()
       if (fIncludePath.Length()) out << "   gSystem->AddIncludePath(\"" << fIncludePath.Data() << "\");" << endl;
       out << "   gROOT->ProcessLine(\".include $ALICE_ROOT/include\");" << endl;
       out << "   printf(\"Include path: %s\\n\", gSystem->GetIncludePath());" << endl << endl;
+      if (fMCLoop && !fGeneratorLibs.IsNull()) {
+         out << "// MC generator libraries" << endl;
+         TObjArray *list = fGeneratorLibs.Tokenize(" ");
+         TIter next(list);
+         TObjString *str;
+         while((str=(TObjString*)next())) {
+            out << "   gSystem->Load(\"" << str->GetName() << "\");" << endl;
+         }
+         delete list;
+      }
       if (fAdditionalLibs.Length()) {
          out << "// Add aditional AliRoot libraries" << endl;
          TString additionalLibs = fAdditionalLibs;
