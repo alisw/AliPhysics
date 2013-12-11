@@ -1707,7 +1707,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
          fGridJDL->SetValue("SplitMaxInputFileNumber", Form("\"%d\"", fSplitMaxInputFileNumber));
          fGridJDL->SetDescription("SplitMaxInputFileNumber", "Maximum number of input files to be processed per subjob");
       }
-      if (!IsOneStageMerging() && !fMCLoop) {
+      if (!IsOneStageMerging()) {
          fMergingJDL->SetValue("SplitMaxInputFileNumber", Form("\"%d\"",fMaxMergeFiles));
          fMergingJDL->SetDescription("SplitMaxInputFileNumber", "Maximum number of input files to be merged in one go");
       }   
@@ -1745,9 +1745,9 @@ Bool_t AliAnalysisAlien::CreateJDL()
       if (!fMCLoop) {
          fGridJDL->SetInputDataListFormat(fInputFormat, "Format of input data");
          fGridJDL->SetInputDataList("wn.xml", "Collection name to be processed on each worker node");
-         fMergingJDL->SetInputDataListFormat(fInputFormat, "Format of input data");
-         fMergingJDL->SetInputDataList("wn.xml", "Collection name to be processed on each worker node");
       }   
+      fMergingJDL->SetInputDataListFormat(fInputFormat, "Format of input data");
+      fMergingJDL->SetInputDataList("wn.xml", "Collection name to be processed on each worker node");
       fGridJDL->AddToInputSandbox(Form("LF:%s/%s", workdir.Data(), fAnalysisMacro.Data()), "List of input files to be uploaded to workers");
       TString analysisFile = fExecutable;
       analysisFile.ReplaceAll(".sh", ".root");
