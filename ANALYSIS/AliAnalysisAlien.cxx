@@ -1685,7 +1685,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
       mergeExec.ReplaceAll(".sh", "_merge.sh");
       fMergingJDL->SetExecutable(mergeExec, "This is the startup script");
       mergeExec.ReplaceAll(".sh", ".C");
-      fMergingJDL->AddToInputSandbox(Form("LF:%s/%s", workdir.Data(),mergeExec.Data()), "List of input files to be uploaded to workers");
+      fMergingJDL->AddToInputSandbox(Form("LF:%s", mergeExec.Data()), "List of input files to be uploaded to workers");
       if (!fArguments.IsNull())
          fGridJDL->SetArguments(fArguments, "Arguments for the executable command");
       if (IsOneStageMerging()) fMergingJDL->SetArguments(fGridOutputDir);
