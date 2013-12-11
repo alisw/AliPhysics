@@ -892,6 +892,12 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
     values[AliDielectronVarManager::kTPCnSigmaKao]=tpcNsigmaKao;
     values[AliDielectronVarManager::kTPCnSigmaPro]=tpcNsigmaPro;
     
+    values[AliDielectronVarManager::kITSnSigmaEle]=fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kElectron);
+    values[AliDielectronVarManager::kITSnSigmaPio]=fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kPion);
+    values[AliDielectronVarManager::kITSnSigmaMuo]=fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kMuon);
+    values[AliDielectronVarManager::kITSnSigmaKao]=fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kKaon);
+    values[AliDielectronVarManager::kITSnSigmaPro]=fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kProton);
+
     Double_t prob[AliPID::kSPECIES];
     fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob);
     values[AliDielectronVarManager::kTRDprobEle]      = prob[AliPID::kElectron];
@@ -914,26 +920,20 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
     }
     else {
       t *= 1e-12; //ps -> s
-      
+
       Double_t v = l / t;
       Float_t beta = v / TMath::C();
       values[AliDielectronVarManager::kTOFbeta]=beta;
     }
 
-    Double_t tofNsigmaEle=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kElectron);
-    Double_t tofNsigmaPio=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kPion);
-    Double_t tofNsigmaMuo=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kMuon);
-    Double_t tofNsigmaKao=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kKaon);
-    Double_t tofNsigmaPro=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kProton);
-    
-    values[AliDielectronVarManager::kTOFnSigmaEle]=tofNsigmaEle;
-    values[AliDielectronVarManager::kTOFnSigmaPio]=tofNsigmaPio;
-    values[AliDielectronVarManager::kTOFnSigmaMuo]=tofNsigmaMuo;
-    values[AliDielectronVarManager::kTOFnSigmaKao]=tofNsigmaKao;
-    values[AliDielectronVarManager::kTOFnSigmaPro]=tofNsigmaPro;
+    values[AliDielectronVarManager::kTOFnSigmaEle]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kElectron);
+    values[AliDielectronVarManager::kTOFnSigmaPio]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kPion);
+    values[AliDielectronVarManager::kTOFnSigmaMuo]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kMuon);
+    values[AliDielectronVarManager::kTOFnSigmaKao]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kKaon);
+    values[AliDielectronVarManager::kTOFnSigmaPro]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kProton);
 
     values[AliDielectronVarManager::kTOFmismProb] = fgPIDResponse->GetTOFMismatchProbability(particle);
-  
+
     pid->SetTPCsignal(origdEdx);
   }
 
