@@ -24,6 +24,7 @@ private:
    Double32_t fZ;            //Position of nucleon
    Bool_t     fInNucleusA;   //=1 from nucleus A, =0 from nucleus B
    Int_t      fNColl;        //Number of binary collisions
+   Double32_t fSigNN;        //Interaction cross section of this Nucleon
 
 public:
    AliGlauberNucleon();
@@ -31,6 +32,7 @@ public:
 
    void       Collide()            {fNColl++;}
    Int_t      GetNColl()     const {return fNColl;}
+   Double_t   GetSigNN()     const {return fSigNN;}
    Double_t   GetX()         const {return fX;}
    Double_t   GetY()         const {return fY;}
    Double_t   GetZ()         const {return fZ;}
@@ -41,9 +43,10 @@ public:
    void       Reset()              {fNColl=0;}
    void       SetInNucleusA()      {fInNucleusA=1;}
    void       SetInNucleusB()      {fInNucleusA=0;}
+   void       SetSigNN(Double_t s) {fSigNN=s;}
    void       SetXYZ(Double_t x, Double_t y, Double_t z) {fX=x; fY=y; fZ=z;}
 
-   ClassDef(AliGlauberNucleon,1)
+   ClassDef(AliGlauberNucleon,2)
 };
 
 #endif
