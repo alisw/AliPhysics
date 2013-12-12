@@ -46,7 +46,8 @@ AliFemtoK0Particle::AliFemtoK0Particle() :
  fPPos(),
  fPNeg(),
  fPosXYZ(),
- fNegXYZ()
+ fNegXYZ(),
+ fPhiPsi(0)
 {
   //Default constructor
 }
@@ -73,7 +74,8 @@ AliFemtoK0Particle::AliFemtoK0Particle(const AliFemtoK0Particle &obj) :
  fPPos(),
  fPNeg(),
  fPosXYZ(),
- fNegXYZ()
+ fNegXYZ(),
+ fPhiPsi()
 
 {
   // copy constructor
@@ -112,6 +114,7 @@ AliFemtoK0Particle &AliFemtoK0Particle::operator=(const AliFemtoK0Particle &obj)
    fNegXYZ[j][i] = obj.fNegXYZ[j][i];
   }
  }
+ fPhiPsi = obj.fPhiPsi;
  return (*this);
 }
 //_____________________________________________________________________________
@@ -232,4 +235,3 @@ void AliFemtoK0EventCollection::FIFOShift(){ //Shift elements in FIFO by one and
   (fEvt)->fFillStatus=0;
 
 }
-
