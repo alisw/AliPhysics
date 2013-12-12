@@ -100,6 +100,7 @@ fUseVtxAxis(kFALSE),
 fCourseCentralityBinning(kFALSE),
 fSkipTrigger(kFALSE),
 fInjectedSignals(kFALSE),
+fRandomizeReactionPlane(kFALSE),
 fHelperPID(0x0),
 fAnalysisUtils(0x0),
 fMap(0x0),
@@ -430,7 +431,8 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fFillpT", &fFillpT,"FillpT/O");
   settingsTree->Branch("fMixingTracks", &fMixingTracks,"MixingTracks/I");
   settingsTree->Branch("fSkipTrigger", &fSkipTrigger,"SkipTrigger/O");
-  settingsTree->Branch("fInjectedSignals", &fInjectedSignals,"SkipTrigger/O");
+  settingsTree->Branch("fInjectedSignals", &fInjectedSignals,"InjectedSignals/O");
+  settingsTree->Branch("fRandomizeReactionPlane", &fRandomizeReactionPlane,"RandomizeReactionPlane/O");
   settingsTree->Branch("fRejectCentralityOutliers", &fRejectCentralityOutliers,"RejectCentralityOutliers/O");
   settingsTree->Branch("fRejectZeroTrackEvents", &fRejectZeroTrackEvents,"RejectZeroTrackEvents/O");
   settingsTree->Branch("fRemoveWeakDecays", &fRemoveWeakDecays,"RemoveWeakDecays/O");
@@ -606,6 +608,13 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
     AliInfo(Form("Injected signals in this event (%d headers). Keeping particles/tracks of %s. Will skip particles/tracks above %d.", headers, eventHeader->ClassName(), skipParticlesAbove));
   }
   
+  if (fCentralityWeights && !AcceptEventCentralityWeight(centrality))
+  {
+    AliInfo(Form("Rejecting event because of centrality weighting: %f", centrality));
+    fHistos->FillEvent(centrality, AliUEHist::kCFStepAnaTopology);
+    return;
+  }
+  
   // Get MC primaries
   // triggers
   TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, fParticleSpeciesTrigger, kTRUE);
@@ -621,6 +630,16 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
     CleanUp(tmpList, mc, skipParticlesAbove);
     tracksCorrelateMC = CloneAndReduceTrackList(tmpList);
     delete tmpList;
+  }
+  
+  if (fRandomizeReactionPlane)
+  {
+    Double_t centralityDigits = centrality*1000. - (Int_t)(centrality*1000.);
+    Double_t angle = TMath::TwoPi() * centralityDigits;
+    AliInfo(Form("Shifting phi of all tracks by %f (digits %f)", angle, centralityDigits));
+    ShiftTracks(tracksMC, angle);
+    if (tracksCorrelateMC != tracksMC)
+      ShiftTracks(tracksCorrelateMC, angle);
   }
   
   if (fFillOnlyStep0)
@@ -1410,3 +1429,21 @@ Bool_t AliAnalysisTaskPhiCorrelations::AcceptEventCentralityWeight(Double_t cent
   
   return result;
 }
+
+//____________________________________________________________________
+void AliAnalysisTaskPhiCorrelations::ShiftTracks(TObjArray* tracks, Double_t angle)
+{
+  // shifts the phi angle of all tracks by angle
+  // 0 <= angle <= 2pi
+  
+  for (Int_t i=0; i<tracks->GetEntriesFast(); ++i) 
+  {
+    AliDPhiBasicParticle* part = (AliDPhiBasicParticle*) tracks->At(i);
+    Double_t newAngle = part->Phi() + angle; 
+    if (newAngle >= TMath::TwoPi())
+      newAngle -= TMath::TwoPi();
+    
+    part->SetPhi(newAngle);
+  }
+}
+  

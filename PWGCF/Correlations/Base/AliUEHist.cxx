@@ -901,8 +901,11 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
   // mixed-event normalization. If step6 is available, the normalization factor is read out from that one.
   // If step6 is not available we fallback to taking the normalization along all delta phi (WARNING requires a
   // flat delta phi distribution)
-  if (step == kCFStepBiasStudy && mixed->fEventHist->GetGrid(kCFStepReconstructed)->GetEntries() > 0)
+  if (step == kCFStepBiasStudy && mixed->fEventHist->GetGrid(kCFStepReconstructed)->GetEntries() > 0 && !fSkipScaleMixedEvent)
+  {
+    Printf("Using mixed-event normalization factors from step %d", kCFStepReconstructed);
     mixed->GetHistsZVtxMult(kCFStepReconstructed, region, ptLeadMin, ptLeadMax, &trackMixedAllStep6, &eventMixedAllStep6);
+  }
   
 //   Printf("%f %f %f %f", trackSameAll->GetEntries(), eventSameAll->GetEntries(), trackMixedAll->GetEntries(), eventMixedAll->GetEntries());
   
@@ -1171,6 +1174,12 @@ TH1* AliUEHist::GetTriggersAsFunctionOfMultiplicity(AliUEHist::CFStep step, Floa
   Int_t lastBin = fEventHist->GetGrid(step)->GetGrid()->GetAxis(0)->FindBin(ptLeadMax);
   Printf("Using pT range %d --> %d", firstBin, lastBin);
   fEventHist->GetGrid(step)->GetGrid()->GetAxis(0)->SetRange(firstBin, lastBin);
+
+  if (fZVtxMax > fZVtxMin)
+  {
+    fEventHist->GetGrid(step)->GetGrid()->GetAxis(2)->SetRangeUser(fZVtxMin, fZVtxMax);
+    Printf("Restricting z-vtx: %f-%f", fZVtxMin, fZVtxMax);
+  }
   
   TH1* eventHist = fEventHist->GetGrid(step)->Project(1);
 
