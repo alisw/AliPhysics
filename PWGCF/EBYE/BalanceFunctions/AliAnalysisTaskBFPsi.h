@@ -133,6 +133,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   void CheckPileUp() {fCheckPileUp = kTRUE;}
   void CheckPrimaryFlagAOD() {fCheckPrimaryFlagAOD = kTRUE;}
   void UseMCforKinematics() {fUseMCforKinematics = kTRUE;}
+  void SetCentralityWeights(TH1* hist) { fCentralityWeights = hist; }
+  Bool_t AcceptEventCentralityWeight(Double_t centrality);
+
   
   //Acceptance filter
   void SetAcceptanceParameterization(TF1 *parameterization) {
@@ -275,6 +278,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH3F *fHistCorrectionMinus[kCENTRALITY]; //===correction
   Double_t fCentralityArrayForCorrections[kCENTRALITY];
   Int_t fCentralityArrayBinsForCorrections;
+
+  TH1* fCentralityWeights;		     // for centrality flattening
 
   AliPIDResponse *fPIDResponse;     //! PID response object
   AliPIDCombined       *fPIDCombined;     //! combined PID object
