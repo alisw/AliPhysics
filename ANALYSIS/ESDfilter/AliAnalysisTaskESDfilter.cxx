@@ -15,6 +15,7 @@
 
 /* $Id$ */
  
+#include <Riostream.h>
 #include <TChain.h>
 #include <TTree.h>
 #include <TList.h>
@@ -23,6 +24,7 @@
 #include <TRandom.h>
 #include <TParticle.h>
 #include <TFile.h>
+#include <TVector3.h>
 
 #include "AliAnalysisTaskESDfilter.h"
 #include "AliAnalysisManager.h"
@@ -54,16 +56,15 @@
 #include "AliAODHMPIDrings.h"
 #include "AliV0vertexer.h"
 #include "AliCascadeVertexer.h"
-#include "Riostream.h"
 #include "AliExternalTrackParam.h"
 #include "AliTrackerBase.h"
-#include "TVector3.h"
 #include "AliTPCdEdxInfo.h"
 
 #include "AliESDTrdTrack.h"
 #include "AliESDTrdTracklet.h"
 #include "AliAODTrdTrack.h"
 #include "AliAODTrdTracklet.h"
+#include "AliEMCALRecoUtils.h"
 
 using std::cout;
 using std::endl;
@@ -995,6 +996,7 @@ void AliAnalysisTaskESDfilter::ConvertV0s(const AliESDEvent& esd)
 	    aodTrack->SetTPCNCrossedRows(UShort_t(esdV0Pos->GetTPCCrossedRows()));
 	    aodTrack->SetIntegratedLength(esdV0Pos->GetIntegratedLength());
 	    aodTrack->SetTOFLabel(tofLabel);
+	    CopyCaloProps(esdV0Pos,aodTrack);
 	    fAODTrackRefs->AddAt(aodTrack,posFromV0);
 	    //	    if (fDebug > 0) printf("-------------------Bo: pos track from original pt %.3f \n",aodTrack->Pt());
 	    if (esdV0Pos->GetSign() > 0) ++fNumberOfPositiveTracks;
@@ -1044,6 +1046,7 @@ void AliAnalysisTaskESDfilter::ConvertV0s(const AliESDEvent& esd)
 	    aodTrack->SetTPCNCrossedRows(UShort_t(esdV0Neg->GetTPCCrossedRows()));
 	    aodTrack->SetIntegratedLength(esdV0Neg->GetIntegratedLength());
 	    aodTrack->SetTOFLabel(tofLabel);
+	    CopyCaloProps(esdV0Neg,aodTrack);
 	    fAODTrackRefs->AddAt(aodTrack,negFromV0);
 	    //	    if (fDebug > 0) printf("-------------------Bo: neg track from original pt %.3f \n",aodTrack->Pt());
 	    if (esdV0Neg->GetSign() > 0) ++fNumberOfPositiveTracks;
@@ -1255,10 +1258,8 @@ void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
     aodTrack->SetTPCNCrossedRows(UShort_t(track->GetTPCCrossedRows()));
     aodTrack->SetIntegratedLength(track->GetIntegratedLength());
     aodTrack->SetTOFLabel(tofLabel);
-    //Perform progagation of tracks if needed
-    if(fDoPropagateTrackToEMCal) PropagateTrackToEMCal(esdTrack);
-    aodTrack->SetTrackPhiEtaPtOnEMCal(esdTrack->GetTrackPhiOnEMCal(),esdTrack->GetTrackEtaOnEMCal(),esdTrack->GetTrackPtOnEMCal());
-
+    CopyCaloProps(track,aodTrack);
+  
     // do not duplicate PID information 
     //    aodTrack->ConvertAliPIDtoAODPID();
     //    SetAODPID(esdTrack,aodTrack,detpid);
@@ -1394,27 +1395,22 @@ void AliAnalysisTaskESDfilter::ConvertGlobalConstrainedTracks(const AliESDEvent&
     aodTrack->SetTPCClusterMap(esdTrack->GetTPCClusterMap());
     aodTrack->SetTPCSharedMap (esdTrack->GetTPCSharedMap());
     aodTrack->SetChi2perNDF(Chi2perNDF(esdTrack));
-    
 
     // set the DCA values to the AOD track
     aodTrack->SetPxPyPzAtDCA(pDCA[0],pDCA[1],pDCA[2]);
     aodTrack->SetXYAtDCA(rDCA[0],rDCA[1]);
     aodTrack->SetDCA(dDCA[0],dDCA[1]);
-
     aodTrack->SetFlags(esdTrack->GetStatus());
     aodTrack->SetTPCPointsF(esdTrack->GetTPCNclsF());
     aodTrack->SetTPCNCrossedRows(UShort_t(esdTrack->GetTPCCrossedRows()));
     aodTrack->SetIntegratedLength(esdTrack->GetIntegratedLength());
     aodTrack->SetTOFLabel(tofLabel);
+    CopyCaloProps(esdTrack,aodTrack);
     if(isHybridGC){
       // only copy AOD information for hybrid, no duplicate information
       aodTrack->ConvertAliPIDtoAODPID();
       SetAODPID(esdTrack,aodTrack,detpid);
     }
-
-    //Perform progagation of tracks if needed
-    if(fDoPropagateTrackToEMCal) PropagateTrackToEMCal(esdTrack);
-    aodTrack->SetTrackPhiEtaPtOnEMCal(esdTrack->GetTrackPhiOnEMCal(),esdTrack->GetTrackEtaOnEMCal(),esdTrack->GetTrackPtOnEMCal());
   } // end of loop on tracks
   
 }
@@ -1484,47 +1480,15 @@ void AliAnalysisTaskESDfilter::ConvertTracks(const AliESDEvent& esd)
     aodTrack->SetTPCNCrossedRows(UShort_t(esdTrack->GetTPCCrossedRows()));
     aodTrack->SetIntegratedLength(esdTrack->GetIntegratedLength());
     aodTrack->SetTOFLabel(tofLabel);
-    if(esdTrack->IsEMCAL()) aodTrack->SetEMCALcluster(esdTrack->GetEMCALcluster());
-    if(esdTrack->IsPHOS())  aodTrack->SetPHOScluster(esdTrack->GetPHOScluster());
-
-    //Perform progagation of tracks if needed
-    if(fDoPropagateTrackToEMCal) PropagateTrackToEMCal(esdTrack);
-    aodTrack->SetTrackPhiEtaPtOnEMCal(esdTrack->GetTrackPhiOnEMCal(),esdTrack->GetTrackEtaOnEMCal(),esdTrack->GetTrackPtOnEMCal());
+    CopyCaloProps(esdTrack,aodTrack);
 
     fAODTrackRefs->AddAt(aodTrack, nTrack);
-    
     
     if (esdTrack->GetSign() > 0) ++fNumberOfPositiveTracks;
     aodTrack->SetFlags(esdTrack->GetStatus());
     aodTrack->ConvertAliPIDtoAODPID();
     SetAODPID(esdTrack,aodTrack,detpid);
   } // end of loop on tracks
-}
-
-//______________________________________________________________________________
-void AliAnalysisTaskESDfilter::PropagateTrackToEMCal(AliESDtrack *esdTrack)
-{
-  Double_t trkPos[3] = {0.,0.,0.};
-  Double_t EMCalEta=-999, EMCalPhi=-999, EMCalPt=-999;
-  Double_t trkphi = esdTrack->Phi()*TMath::RadToDeg();
-  if(TMath::Abs(esdTrack->Eta())<0.9 && trkphi > 10 && trkphi < 250 )
-    {
-      AliExternalTrackParam *trkParam = const_cast<AliExternalTrackParam*>(esdTrack->GetInnerParam());
-      if(trkParam)
-	{
-	  AliExternalTrackParam trkParamTmp(*trkParam);
-	  if(AliTrackerBase::PropagateTrackToBxByBz(&trkParamTmp, fEMCalSurfaceDistance, esdTrack->GetMass(), 20, kTRUE, 0.8, -1))
-	    {
-	      trkParamTmp.GetXYZ(trkPos);
-	      TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
-	      EMCalEta = trkPosVec.Eta();
-	      EMCalPhi = trkPosVec.Phi();
-	      EMCalPt = trkParamTmp.Pt();
-	      if(EMCalPhi<0)  EMCalPhi += 2*TMath::Pi();
-	      esdTrack->SetTrackPhiEtaPtOnEMCal(EMCalPhi,EMCalEta,EMCalPt);
-	    }
-	}
-    }
 }
 
 //______________________________________________________________________________
@@ -1869,6 +1833,7 @@ void AliAnalysisTaskESDfilter::ConvertKinks(const AliESDEvent& esd)
 	    mother->SetTPCNCrossedRows(UShort_t(esdTrackM->GetTPCCrossedRows()));
 	    mother->SetIntegratedLength(esdTrackM->GetIntegratedLength());
 	    mother->SetTOFLabel(tofLabel);
+	    CopyCaloProps(esdTrackM,mother);
             fAODTrackRefs->AddAt(mother, imother);
             
             if (esdTrackM->GetSign() > 0) ++fNumberOfPositiveTracks;
@@ -1936,6 +1901,7 @@ void AliAnalysisTaskESDfilter::ConvertKinks(const AliESDEvent& esd)
 	    daughter->SetTPCNCrossedRows(UShort_t(esdTrackD->GetTPCCrossedRows()));
 	    daughter->SetIntegratedLength(esdTrackD->GetIntegratedLength());
 	    daughter->SetTOFLabel(tofLabel);
+	    CopyCaloProps(esdTrackD,daughter);
             fAODTrackRefs->AddAt(daughter, idaughter);
             
             if (esdTrackD->GetSign() > 0) ++fNumberOfPositiveTracks;
@@ -2286,7 +2252,8 @@ void AliAnalysisTaskESDfilter::ConvertTRD(const AliESDEvent& esd)
 	  aodTrkMatch->SetTPCPointsF(esdTrkMatch->GetTPCNclsF());
 	  aodTrkMatch->SetTPCNCrossedRows(UShort_t(esdTrkMatch->GetTPCCrossedRows()));
 	  aodTrkMatch->SetIntegratedLength(esdTrkMatch->GetIntegratedLength());
-	  fAODTrackRefs->AddAt(aodTrkMatch,idx);
+	  CopyCaloProps(esdTrkMatch,aodTrkMatch);
+ 	  fAODTrackRefs->AddAt(aodTrkMatch,idx);
 	  if (esdTrkMatch->GetSign() > 0) ++fNumberOfPositiveTracks;
 	  aodTrkMatch->ConvertAliPIDtoAODPID();
 	  aodTrkMatch->SetFlags(esdTrkMatch->GetStatus());
@@ -2326,6 +2293,14 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD()
     lCascVtxer.V0sTracks2CascadeVertices(esd);
   }
 
+  // Perform progagation of tracks if needed
+  if (fDoPropagateTrackToEMCal) {
+    const Int_t ntrack = esd->GetNumberOfTracks();
+    for (Int_t i=0;i<ntrack;++i) {
+      AliESDtrack *t = esd->GetTrack(i);
+      AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(t,fEMCalSurfaceDistance);
+    }
+  }
  
   fNumberOfTracks = 0;
   fNumberOfPositiveTracks = 0;
@@ -2642,5 +2617,16 @@ void  AliAnalysisTaskESDfilter::PrintMCInfo(AliStack *pStack,Int_t label){
   Printf("########################");
 }
 
-//______________________________________________________
+//______________________________________________________________________________
+void  AliAnalysisTaskESDfilter::CopyCaloProps(AliESDtrack *tre, AliAODTrack *tra) {
+  //Copy calo properties from ESD track to AOD track
+
+  tra->SetTrackPhiEtaPtOnEMCal(tre->GetTrackPhiOnEMCal(),tre->GetTrackEtaOnEMCal(),tre->GetTrackPtOnEMCal());
+  if(tre->IsEMCAL()) tra->SetEMCALcluster(tre->GetEMCALcluster());
+  if(tre->IsPHOS())  tra->SetPHOScluster(tre->GetPHOScluster());
+
+}
+
+//______________________________________________________________________________
+
 
