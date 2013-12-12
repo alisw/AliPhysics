@@ -287,7 +287,7 @@ Double_t AliAnalysisTaskEmcalDiJetBase::GetFractionSharedPt(const AliEmcalJet *j
  
   if(jetPtCh>0) {
 
-    if(fDebug>10)  AliInfo(Form("%s: nConstituents: %d, ch: %d  chne: %d ne: %d",GetName(),jetFull->GetNumberOfConstituents(),jetCharged->GetNumberOfTracks(),jetFull->GetNumberOfTracks(),jetFull->GetNumberOfClusters()));
+    AliDebug(11,Form("%s: nConstituents: %d, ch: %d  chne: %d ne: %d",GetName(),jetFull->GetNumberOfConstituents(),jetCharged->GetNumberOfTracks(),jetFull->GetNumberOfTracks(),jetFull->GetNumberOfClusters()));
     
     Double_t sumPt = 0.;
     AliVParticle *vpf = 0x0;
@@ -310,7 +310,7 @@ Double_t AliAnalysisTaskEmcalDiJetBase::GetFractionSharedPt(const AliEmcalJet *j
     fraction = sumPt/jetPtCh;
   }
 
-  if(fDebug>10) AliInfo(Form("%s: charged shared fraction: %.2f",GetName(),fraction));
+  AliDebug(11,Form("%s: charged shared fraction: %.2f",GetName(),fraction));
 
   return fraction;
 
@@ -437,7 +437,7 @@ void AliAnalysisTaskEmcalDiJetBase::MatchJetsGeo(Int_t cFull, Int_t cCharged,
   // check for "true" correlations
   for(int ifu = 0;ifu<nFullJets;ifu++){
     for(int ich = 0;ich<nChJets;ich++){
-      if(iDebug>10) AliInfo(Form("%s: Flag[%d][%d] %d ",GetName(),ifu,ich,iFlag[ifu*nChJets+ich]));
+      AliDebug(11,Form("%s: Flag[%d][%d] %d ",GetName(),ifu,ich,iFlag[ifu*nChJets+ich]));
       
       if(kMode==3){
         // we have a uniqe correlation
@@ -447,7 +447,7 @@ void AliAnalysisTaskEmcalDiJetBase::MatchJetsGeo(Int_t cFull, Int_t cCharged,
 	  AliEmcalJet *fullJet = static_cast<AliEmcalJet*>(GetJetFromArray(ifu, cFull));
 	  Double_t dR = GetDeltaR(fullJet,chJet); 
 
-	  if(iDebug>10) Printf("closest jets %d  %d  dR =  %f",ich,ifu,dR);
+	  AliDebug(11,Form("closest jets %d  %d  dR =  %f",ich,ifu,dR));
 
 	  chJet->SetClosestJet(fullJet,dR);
 	  fullJet->SetClosestJet(chJet,dR);
