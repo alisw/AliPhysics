@@ -577,5 +577,3 @@ void AliAnalysisTaskCompareAODTrackCuts::Terminate(Option_t*) {
 	}
 
 }
-
-// -----------------------------------------------------------------------
