@@ -202,7 +202,7 @@ Double_t AliTRDPIDResponse::GetProbabilitySingleLayer(Int_t species, Double_t pl
   case kLQ2D: // 2D LQ
       {
 	  if(species==0||species==2){ // references only for electrons and pions
-	      Double_t error;
+	      Double_t error = 0.;
 	      Double_t point[kNslicesLQ2D];
 	      for(Int_t idim=0;idim<kNslicesLQ2D;idim++){point[idim]=dEdx[idim];}
 
