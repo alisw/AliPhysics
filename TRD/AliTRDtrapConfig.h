@@ -1,5 +1,3 @@
-
-
 #ifndef ALITRDTRAPCONFIG_H
 #define ALITRDTRAPCONFIG_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
