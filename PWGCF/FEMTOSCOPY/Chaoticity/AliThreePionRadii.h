@@ -42,7 +42,7 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
   
 
   virtual void   UserCreateOutputObjects();
-  virtual void   Exec(Option_t *option);
+  virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
   enum {

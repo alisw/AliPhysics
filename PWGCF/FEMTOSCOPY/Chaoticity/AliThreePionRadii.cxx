@@ -794,6 +794,8 @@ void AliThreePionRadii::UserCreateOutputObjects()
   if(fMCcase) fOutputList->Add(fSecondaryMuonParents);
   TH3D *fMuonPionDeltaQinv = new TH3D("fMuonPionDeltaQinv","",2,-0.5,1.5, 20,0,1, 100,-0.2,0.2);
   if(fMCcase) fOutputList->Add(fMuonPionDeltaQinv);
+  TH1D *fPionCandidates = new TH1D("fPionCandidates","",500,0.5,500.5);
+  if(fMCcase) fOutputList->Add(fPionCandidates);
   //
   TProfile *fAvgMult = new TProfile("fAvgMult","",fMbins,.5,fMbins+.5, 0,1500,"");
   fOutputList->Add(fAvgMult);
@@ -1067,7 +1069,7 @@ void AliThreePionRadii::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliThreePionRadii::Exec(Option_t *) 
+void AliThreePionRadii::UserExec(Option_t *) 
 {
   // Main loop
   // Called for each event
@@ -1436,6 +1438,7 @@ void AliThreePionRadii::Exec(Option_t *)
 	    ((TH1D*)fOutputList->FindObject("fMuonParents"))->Fill(abs(parent->GetPdgCode()));
 	  }else ((TH1D*)fOutputList->FindObject("fSecondaryMuonParents"))->Fill(abs(parent->GetPdgCode()));
 	}
+	((TH1D*)fOutputList->FindObject("fPionCandidates"))->Fill(abs(tempMCTrack->GetPdgCode()));
       }
     }
   }else {// ESD tracks
@@ -1605,11 +1608,10 @@ void AliThreePionRadii::Exec(Option_t *)
 	(fEvt)->fMCtracks[i].fPy = tempMCTrack->Py();
 	(fEvt)->fMCtracks[i].fPz = tempMCTrack->Pz();
 	(fEvt)->fMCtracks[i].fPtot = sqrt(pow(tempMCTrack->Px(),2)+pow(tempMCTrack->Py(),2)+pow(tempMCTrack->Pz(),2));
-      }	
+      }
     }
   }
-  
-  
+
   
   Float_t qinv12=0, qinv13=0, qinv23=0;
   Float_t qout=0, qside=0, qlong=0;
@@ -1741,7 +1743,7 @@ void AliThreePionRadii::Exec(Option_t *)
     // Start the pairing process
     // P11 pairing
     // 1st Particle
-    int goodcount=0, badcount=0;
+  
     for (Int_t i=0; i<myTracks; i++) {
          
       Int_t en2=0;
@@ -1925,11 +1927,11 @@ void AliThreePionRadii::Exec(Option_t *)
 	      if(abs(mcParticle1->GetPdgCode())==13 || abs(mcParticle2->GetPdgCode())==13){// muon check
 		Float_t Pparent1[4]={pVect1MC[0],pVect1MC[1],pVect1MC[2],pVect1MC[3]}; 
 		Float_t Pparent2[4]={pVect2MC[0],pVect2MC[1],pVect2MC[2],pVect2MC[3]};
-		Bool_t PionParent1=kFALSE, PionParent2=kFALSE;
+		Bool_t pionParent1=kFALSE, pionParent2=kFALSE;
 		if(abs(mcParticle1->GetPdgCode())==13) {
 		  AliAODMCParticle *parent1=(AliAODMCParticle*)mcArray->At(mcParticle1->GetMother());
 		  if(abs(parent1->GetPdgCode())==211) {
-		    PionParent1=kTRUE;
+		    pionParent1=kTRUE;
 		    Pparent1[1] = parent1->Px(); Pparent1[2] = parent1->Py(); Pparent1[3] = parent1->Pz();
 		    Pparent1[0] = sqrt(pow(Pparent1[1],2)+pow(Pparent1[2],2)+pow(Pparent1[3],2)+pow(fTrueMassPi,2));
 		  }
@@ -1938,23 +1940,23 @@ void AliThreePionRadii::Exec(Option_t *)
 		if(abs(mcParticle2->GetPdgCode())==13) {
 		  AliAODMCParticle *parent2=(AliAODMCParticle*)mcArray->At(mcParticle2->GetMother());
 		  if(abs(parent2->GetPdgCode())==211) {
-		    goodcount++;
-		    PionParent2=kTRUE;
+		    pionParent2=kTRUE;
 		    Pparent2[1] = parent2->Px(); Pparent2[2] = parent2->Py(); Pparent2[3] = parent2->Pz();
 		    Pparent2[0] = sqrt(pow(Pparent2[1],2)+pow(Pparent2[2],2)+pow(Pparent2[3],2)+pow(fTrueMassPi,2));
-		  }else {badcount++;}
+		  }
 		}
 		Float_t parentQinv12 = GetQinv(0, Pparent1, Pparent2);
 		Float_t WInput = 1.0;
 		if(parentQinv12 > 0.001 && parentQinv12 < 0.2) WInput = MCWeight(ch1,ch2, 10, 10, parentQinv12);
 		Int_t ChComb=0;
 		if(ch1 != ch2) ChComb=1;
-		((TH3D*)fOutputList->FindObject("fMuonContamSmearedNum2"))->Fill(ChComb, transK12, qinv12MC, WInput);
-		((TH3D*)fOutputList->FindObject("fMuonContamSmearedDen2"))->Fill(ChComb, transK12, qinv12MC);
-		((TH3D*)fOutputList->FindObject("fMuonContamIdealNum2"))->Fill(ChComb, transK12, parentQinv12, WInput);
-		((TH3D*)fOutputList->FindObject("fMuonContamIdealDen2"))->Fill(ChComb, transK12, parentQinv12);
-		if(PionParent1==kTRUE && PionParent2==kTRUE) ((TH3D*)fOutputList->FindObject("fMuonPionDeltaQinv"))->Fill(ChComb, transK12, qinv12MC-parentQinv12);
-		
+		if(pionParent1 || pionParent2){
+		  ((TH3D*)fOutputList->FindObject("fMuonContamSmearedNum2"))->Fill(ChComb, transK12, qinv12MC, WInput);
+		  ((TH3D*)fOutputList->FindObject("fMuonContamSmearedDen2"))->Fill(ChComb, transK12, qinv12MC);
+		  ((TH3D*)fOutputList->FindObject("fMuonContamIdealNum2"))->Fill(ChComb, transK12, parentQinv12, WInput);
+		  ((TH3D*)fOutputList->FindObject("fMuonContamIdealDen2"))->Fill(ChComb, transK12, parentQinv12);
+		  ((TH3D*)fOutputList->FindObject("fMuonPionDeltaQinv"))->Fill(ChComb, transK12, qinv12MC-parentQinv12);
+		}
 		////////////////////////////////////
 		// 3rd particle
 		Int_t en3=0;
@@ -1997,9 +1999,11 @@ void AliThreePionRadii::Exec(Option_t *)
 		    if(transK3>0.3) K3index=1;
 
 		    Float_t Pparent3[4]={pVect3MC[0],pVect3MC[1],pVect3MC[2],pVect3MC[3]}; 
+		    Bool_t pionParent3=kFALSE;
 		    if(abs(mcParticle3->GetPdgCode())==13){// muon check
 		      AliAODMCParticle *parent=(AliAODMCParticle*)mcArray->At(mcParticle3->GetMother());
 		      if(abs(parent->GetPdgCode())==211) {
+			pionParent3=kTRUE;
 			Pparent3[1] = parent->Px(); Pparent3[2] = parent->Py(); Pparent3[3] = parent->Pz();
 			Pparent3[0] = sqrt(pow(Pparent3[1],2)+pow(Pparent3[2],2)+pow(Pparent3[3],2)+pow(fTrueMassPi,2));
 		      }
@@ -2009,6 +2013,7 @@ void AliThreePionRadii::Exec(Option_t *)
 		    if(parentQinv12 < 0.001 || parentQinv12 > 0.2) continue;
 		    if(parentQinv13 < 0.001 || parentQinv13 > 0.2) continue;
 		    if(parentQinv23 < 0.001 || parentQinv23 > 0.2) continue;
+		    if(!pionParent1 && !pionParent2 && !pionParent3) continue;// want at least one pion-->muon
 		    Float_t parentQ3 = sqrt(pow(parentQinv12,2) + pow(parentQinv13,2) + pow(parentQinv23,2));
 		    Int_t ChCombtriplet=0;
 		    if(ch1!=ch2 || ch1!=ch3 || ch2!=ch3) ChCombtriplet=1;
