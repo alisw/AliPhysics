@@ -76,6 +76,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     virtual	void	SetCourseCentralityBinning(Bool_t flag) { fCourseCentralityBinning = flag; }
     virtual     void    SetSkipTrigger(Bool_t flag) { fSkipTrigger = flag; }
     virtual     void    SetInjectedSignals(Bool_t flag) { fInjectedSignals = flag; }
+    void SetRandomizeReactionPlane(Bool_t flag) { fRandomizeReactionPlane = flag; }
     
     // histogram settings
     void SetEfficiencyCorrectionTriggers(THnF* hist) { fEfficiencyCorrectionTriggers = hist; }
@@ -144,12 +145,13 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void SelectCharge(TObjArray* tracks);
     AliGenEventHeader* GetFirstHeader();
     Bool_t AcceptEventCentralityWeight(Double_t centrality);
+    void ShiftTracks(TObjArray* tracks, Double_t angle);
 
     // General configuration
     Int_t               fDebug;           //  Debug flag
     Int_t 	        fMode;            //  fMode = 0: data-like analysis 
     				          //  fMode = 1: corrections analysis	
-    Bool_t             fReduceMemoryFootprint; // reduce memory consumption by writing less debug histograms
+    Bool_t              fReduceMemoryFootprint; // reduce memory consumption by writing less debug histograms
     Bool_t		fFillMixed;		// enable event mixing (default: ON)
     Int_t  		fMixingTracks;		// size of track buffer for event mixing
     Bool_t		fTwoTrackEfficiencyStudy; // two-track efficiency study on
@@ -159,6 +161,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Bool_t		fCourseCentralityBinning; // less centrality bins
     Bool_t		fSkipTrigger;		  // skip trigger selection
     Bool_t		fInjectedSignals;	  // check header to skip injected signals in MC
+    Bool_t		fRandomizeReactionPlane;  // change the orientation of the RP by a random value by shifting all tracks
     
     AliHelperPID*     fHelperPID;      // points to class for PID
     AliAnalysisUtils*     fAnalysisUtils;      // points to class with common analysis utilities
@@ -228,7 +231,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef(AliAnalysisTaskPhiCorrelations, 41); // Analysis task for delta phi correlations
+    ClassDef(AliAnalysisTaskPhiCorrelations, 42); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle
@@ -271,6 +274,8 @@ class AliDPhiBasicParticle : public AliVParticle
     virtual const Double_t *PID() const { AliFatal("Not implemented"); return 0; }
     
     virtual Bool_t IsEqual(const TObject* obj) const { return (obj->GetUniqueID() == GetUniqueID()); }
+    
+    virtual void SetPhi(Double_t phi) { fPhi = phi; }
     
   private:
     Float_t fEta;      // eta

@@ -815,7 +815,7 @@ void AliAnalysisTaskEmcalDiJetAna::FillMatchFullChargedHistos(Int_t cFull,Int_t 
 
   Int_t match = MatchFullAndChargedJets(cFull,cCharged);
   if(match==0) {
-    if(fDebug>1) AliWarning(Form("%s: matching failed",GetName()));
+    AliDebug(11,Form("%s: matching failed",GetName()));
     return;
   }
   
@@ -827,7 +827,6 @@ void AliAnalysisTaskEmcalDiJetAna::FillMatchFullChargedHistos(Int_t cFull,Int_t 
     if(!jetCh) continue;
 
     Double_t shFraction = GetFractionSharedPt(jetFull,jetCh);
-    if(fDebug>10) Printf("shared charged pT:%.2f",shFraction);
     Double_t matchVars[7] = {
       jetFull->Pt(),
       jetCh->Pt(),
@@ -850,12 +849,12 @@ Int_t AliAnalysisTaskEmcalDiJetAna::MatchFullAndChargedJets(Int_t cFull, Int_t c
   //
 
   if(GetNJets(cFull)<1) {
-    if(fDebug>1) AliInfo(Form("%s: no full jets: %d", GetName(),GetNJets(cFull)));
+    AliDebug(2,Form("%s: no full jets: %d", GetName(),GetNJets(cFull)));
     return 0;
   }
 
   if(GetNJets(cCharged)<1) {
-    if(fDebug>1) AliInfo(Form("%s: no charged jets: %d", GetName(),GetNJets(cCharged)));
+    AliDebug(2,Form("%s: no charged jets: %d", GetName(),GetNJets(cCharged)));
     return 0;
   }
 
@@ -863,21 +862,21 @@ Int_t AliAnalysisTaskEmcalDiJetAna::MatchFullAndChargedJets(Int_t cFull, Int_t c
   TClonesArray *cJetsCharged = GetJetArray(cCharged);
 
   if(!cJetsFull) {
-    if(fDebug>1) AliInfo(Form("%s: no full jet array",GetName()));
+    AliDebug(2,Form("%s: no full jet array",GetName()));
     return 0;
   }
 
   if(!cJetsCharged) {
-    if(fDebug>1)  AliInfo(Form("%s: no charged jet array",GetName()));
+    AliDebug(2,Form("%s: no charged jet array",GetName()));
     return 0;
   }
 
 
   if(!fMatchingDone) {
-      MatchJetsGeo(cFull, cCharged, fDebug);
+      MatchJetsGeo(cFull, cCharged, 0);
       return 1;  
   } else {
-    if(fDebug>1) AliInfo(Form("%s: Matching already done before",GetName()));
+    AliDebug(11,Form("%s: Matching already done before",GetName()));
     return 1;
   }
 

@@ -48,6 +48,8 @@
 //	- added boolean to turn off field-sign dependence for train (10/30/13)
 //	- changed destructors to minimize lost memory (11/27/13)
 //	- added Case3D to switch off all 3D objects (11/27/13)
+//	- added centrality flattening routine (and switch) (12/04/13)
+//	- added event plane stuff (12/11/13)
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -101,6 +103,7 @@ AliAnalysisTaskSE(),
   fMeritCutChoice(0),
   fMinSep(0.0),
   fFlatCent(kFALSE),
+  fPsiBinning(kFALSE),
   fEventCount(0),
   fEC(0x0),
   fEvt(0X0),
@@ -112,7 +115,7 @@ AliAnalysisTaskSE(),
 {
 }
 //________________________________________________________________________
-AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool SignDep, bool FieldPositive, bool OnlineCase, bool MeritCase, bool Case3D, float MinDL, int MeritCutChoice, float MinSep, bool FlatCent) 
+AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool SignDep, bool FieldPositive, bool OnlineCase, bool MeritCase, bool Case3D, float MinDL, int MeritCutChoice, float MinSep, bool FlatCent, bool PsiBinning) 
 : AliAnalysisTaskSE(name),
   fSignDep(SignDep),
   fFieldPos(FieldPositive),
@@ -123,6 +126,7 @@ AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool SignDep, bool Fiel
   fMeritCutChoice(MeritCutChoice),
   fMinSep(MinSep),
   fFlatCent(FlatCent),
+  fPsiBinning(PsiBinning),
   fEventCount(0),
   fEC(0x0),
   fEvt(0X0),
@@ -142,6 +146,7 @@ AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool SignDep, bool Fiel
   fMeritCutChoice = MeritCutChoice;
   fMinSep 		= MinSep;
   fFlatCent		= FlatCent;
+  fPsiBinning	= PsiBinning;
 
   // Define output slots here 
   // Output slot #1
@@ -160,6 +165,7 @@ AliFemtoK0Analysis::AliFemtoK0Analysis(const AliFemtoK0Analysis &obj)
   fMeritCutChoice(obj.fMeritCutChoice),
   fMinSep(obj.fMinSep),
   fFlatCent(obj.fFlatCent),
+  fPsiBinning(obj.fPsiBinning),
   fEventCount(obj.fEventCount),
   fEC(obj.fEC),
   fEvt(obj.fEvt),
@@ -185,6 +191,7 @@ AliFemtoK0Analysis &AliFemtoK0Analysis::operator=(const AliFemtoK0Analysis &obj)
  fMeritCutChoice= obj.fMeritCutChoice;
  fMinSep		= obj.fMinSep;
  fFlatCent		= obj.fFlatCent;
+ fPsiBinning	= obj.fPsiBinning;
  fEventCount 	= obj.fEventCount;
  fEC 		= obj.fEC;
  fEvt 		= obj.fEvt;
@@ -204,8 +211,12 @@ AliFemtoK0Analysis::~AliFemtoK0Analysis()
   {
     for(unsigned short j=0; j<kCentBins; j++)
     {
-      fEC[i][j]->~AliFemtoK0EventCollection();
-      fEC[i][j] = NULL;
+	  for(unsigned short k=0; k<kPsiBins; k++)
+	  {
+        fEC[i][j][k]->~AliFemtoK0EventCollection();
+        fEC[i][j][k] = NULL;
+      }
+      delete [] fEC[i][j]; fEC[i][j] = NULL;
     }
     delete[] fEC[i]; fEC[i] = NULL;
   }
@@ -224,14 +235,19 @@ void AliFemtoK0Analysis::MyInit()
   // One can set global variables here
   fEventCount = 0;  
 
-  fEC = new AliFemtoK0EventCollection **[kZVertexBins];
+  fEC = new AliFemtoK0EventCollection ***[kZVertexBins];
   for(unsigned short i=0; i<kZVertexBins; i++)
   {
-    fEC[i] = new AliFemtoK0EventCollection *[kCentBins];
+    fEC[i] = new AliFemtoK0EventCollection **[kCentBins];
     
     for(unsigned short j=0; j<kCentBins; j++)
     {
-      fEC[i][j] = new AliFemtoK0EventCollection(kEventsToMix+1, kMultLimit);
+      fEC[i][j] = new AliFemtoK0EventCollection *[kPsiBins];
+
+      for(unsigned short k=0; k<kPsiBins; k++)
+	  {
+	    fEC[i][j][k] = new AliFemtoK0EventCollection(kEventsToMix+1, kMultLimit);
+      }
     }
   }
 
@@ -345,19 +361,33 @@ void AliFemtoK0Analysis::UserCreateOutputObjects()
   fOutputList->Add(fHistSepNumNeg2);
   fOutputList->Add(fHistSepDenNeg2);
 
-
   TH2F* fHistSepDPC = new TH2F("fHistSepDPC","",200,-1,1,50,0,10);
   TH2F* fHistSepDPCBkg = new TH2F("fHistSepDPCBkg","",200,-1,1,50,0,10);
   fOutputList->Add(fHistSepDPC);
-  fOutputList->Add(fHistSepDPCBkg);  
+  fOutputList->Add(fHistSepDPCBkg);
 
-/////////Signal Distributions///////////////////
+  TH1F *fHistPsi = new TH1F("fHistPsi","",90,-PI/2,PI/2);
+  fOutputList->Add(fHistPsi);
+  TH2F *fHistPhiPsi = new TH2F("fHistPhiPsi","",kCentBins,.5,kCentBins+.5,180,0,2*PI);
+  fOutputList->Add(fHistPhiPsi);
+
+/////////Pair Distributions///////////////////
 
   //1D Q invariant
   TH3F* fHistQinvSignal = new TH3F("fHistQinvSignal","Same Event Pair Distribution", kCentBins, .5, kCentBins+.5, 300, 0., 3., 100, 0., 1);
   fOutputList->Add(fHistQinvSignal);
   TH3F* fHistQinvBkg = new TH3F("fHistQinvBkg","Mixed Event Pair Distribution", kCentBins, .5, kCentBins+.5, 300, 0., 3., 100, 0., 1.);
   fOutputList->Add(fHistQinvBkg);
+
+  //event plane
+  TH3F* fHistQinvSignalEPIn = new TH3F("fHistQinvSignalEPIn","Same Event Pair Distribution", kCentBins, .5, kCentBins+.5, 300, 0., 3., 100, 0., 1);
+  fOutputList->Add(fHistQinvSignalEPIn);
+  TH3F* fHistQinvBkgEPIn = new TH3F("fHistQinvBkgEPIn","Mixed Event Pair Distribution", kCentBins, .5, kCentBins+.5, 300, 0., 3., 100, 0., 1.);
+  fOutputList->Add(fHistQinvBkgEPIn);
+  TH3F* fHistQinvSignalEPOut = new TH3F("fHistQinvSignalEPOut","Same Event Pair Distribution", kCentBins, .5, kCentBins+.5, 300, 0., 3., 100, 0., 1);
+  fOutputList->Add(fHistQinvSignalEPOut);
+  TH3F* fHistQinvBkgEPOut = new TH3F("fHistQinvBkgEPOut","Mixed Event Pair Distribution", kCentBins, .5, kCentBins+.5, 300, 0., 3., 100, 0., 1.);
+  fOutputList->Add(fHistQinvBkgEPOut);
 
   //mass bins within peak
   //TH3F* fHistCLCLSignal = new TH3F("fHistCLCLSignal","", kCentBins, .5, kCentBins+.5, 300, 0., 3., 100, 0., 1);
@@ -542,6 +572,18 @@ void AliFemtoK0Analysis::Exec(Option_t *)
       break;
     }
   }
+  
+  //Event plane
+  int psiBin = 0;
+  AliEventplane *eventplane = fAOD->GetEventplane();
+  if(fPsiBinning && !eventplane) return;
+  double psiEP = eventplane->GetEventplane("V0",fAOD,2); //[-PI/2,PI/2]
+  if(psiEP < -0.25*PI) psiBin = 0;
+  else if(psiEP < 0.0) psiBin = 1;
+  else if(psiEP < 0.25*PI) psiBin = 2;
+  else psiBin = 3;
+  if(!fPsiBinning) psiBin = 0;
+  ((TH1F*)fOutputList->FindObject("fHistPsi"))->Fill(psiEP);
 
 ////////////////////////////////////////////////////////////////
 //Cut Values and constants
@@ -768,7 +810,15 @@ void AliFemtoK0Analysis::Exec(Option_t *)
         else{
          tempK0[v0Count].fPosDca	= v0->DcaNegToPrimVertex();
          tempK0[v0Count].fNegDca	= v0->DcaPosToPrimVertex();
-	    } 
+        }
+
+		//for psi studies
+        double v0Phi = v0->Phi(); //between [0,2pi]
+        double v0PhiPsi = v0Phi-psiEP;
+        if(v0PhiPsi < 0) v0PhiPsi += 2.*PI;
+        else if (v0PhiPsi > 2.*PI) v0PhiPsi -= 2.*PI;
+		else{};
+        tempK0[v0Count].fPhiPsi = v0PhiPsi; 
         
         //for separation
         GetGlobalPositionAtGlobalRadiiThroughTPC(prongTrackPos, bField, tempK0[v0Count].fPosXYZ, vertex);
@@ -792,8 +842,8 @@ void AliFemtoK0Analysis::Exec(Option_t *)
   if(k0Count<2) return;  //only keep events with more than 1 good K0
 
   //Add Event to buffer - this is for event mixing
-  fEC[zBin][centBin]->FIFOShift();
-  (fEvt) = fEC[zBin][centBin]->fEvt;
+  fEC[zBin][centBin][psiBin]->FIFOShift();
+  (fEvt) = fEC[zBin][centBin][psiBin]->fEvt;
   (fEvt)->fFillStatus = 1;
   int unskippedCount = 0;
   for(int i=0;i<v0Count;i++)
@@ -841,20 +891,22 @@ void AliFemtoK0Analysis::Exec(Option_t *)
   for(int i=0; i<(fEvt)->fNumV0s; i++) // Current event V0
   {
     //single particle histograms (done here to avoid "skipped" v0s
-     ((TH1F*)fOutputList->FindObject("fHistDCADaughters"))	->Fill((fEvt)->fK0Particle[i].fDDDca);
-     ((TH1F*)fOutputList->FindObject("fHistDecayLengthK0"))	->Fill((fEvt)->fK0Particle[i].fDecayLength);
-     ((TH1F*)fOutputList->FindObject("fHistDCAK0"))		->Fill((fEvt)->fK0Particle[i].fV0Dca);
-     ((TH1F*)fOutputList->FindObject("fHistDCAPiMinus"))	->Fill((fEvt)->fK0Particle[i].fNegDca);
-     ((TH1F*)fOutputList->FindObject("fHistDCAPiPlus"))		->Fill((fEvt)->fK0Particle[i].fPosDca);
-     ((TH2F*)fOutputList->FindObject("fHistPtK0"))		->Fill(centBin+1, (fEvt)->fK0Particle[i].fPt);
-     ((TH2F*)fOutputList->FindObject("fHistK0PiPlusPt"))	->Fill(centBin+1, (fEvt)->fK0Particle[i].fPosPt);
-     ((TH2F*)fOutputList->FindObject("fHistK0PiMinusPt"))	->Fill(centBin+1, (fEvt)->fK0Particle[i].fNegPt);
-     ((TH1F*)fOutputList->FindObject("fHistDaughterPhi"))	->Fill((fEvt)->fK0Particle[i].fPosPhi);
-     ((TH1F*)fOutputList->FindObject("fHistDaughterPhi"))	->Fill((fEvt)->fK0Particle[i].fNegPhi);
-     
-     ((TH1F*)fOutputList->FindObject("fHistPx"))		->Fill((fEvt)->fK0Particle[i].fMomentum[0]);
-     ((TH1F*)fOutputList->FindObject("fHistPy"))		->Fill((fEvt)->fK0Particle[i].fMomentum[1]);
-     ((TH1F*)fOutputList->FindObject("fHistPz"))		->Fill((fEvt)->fK0Particle[i].fMomentum[2]);
+    ((TH1F*)fOutputList->FindObject("fHistDCADaughters"))	->Fill((fEvt)->fK0Particle[i].fDDDca);
+    ((TH1F*)fOutputList->FindObject("fHistDecayLengthK0"))	->Fill((fEvt)->fK0Particle[i].fDecayLength);
+    ((TH1F*)fOutputList->FindObject("fHistDCAK0"))		->Fill((fEvt)->fK0Particle[i].fV0Dca);
+    ((TH1F*)fOutputList->FindObject("fHistDCAPiMinus"))	->Fill((fEvt)->fK0Particle[i].fNegDca);
+    ((TH1F*)fOutputList->FindObject("fHistDCAPiPlus"))		->Fill((fEvt)->fK0Particle[i].fPosDca);
+    ((TH2F*)fOutputList->FindObject("fHistPtK0"))		->Fill(centBin+1, (fEvt)->fK0Particle[i].fPt);
+    ((TH2F*)fOutputList->FindObject("fHistK0PiPlusPt"))	->Fill(centBin+1, (fEvt)->fK0Particle[i].fPosPt);
+    ((TH2F*)fOutputList->FindObject("fHistK0PiMinusPt"))	->Fill(centBin+1, (fEvt)->fK0Particle[i].fNegPt);
+    ((TH1F*)fOutputList->FindObject("fHistDaughterPhi"))	->Fill((fEvt)->fK0Particle[i].fPosPhi);
+    ((TH1F*)fOutputList->FindObject("fHistDaughterPhi"))	->Fill((fEvt)->fK0Particle[i].fNegPhi);
+    
+    ((TH1F*)fOutputList->FindObject("fHistPx"))		->Fill((fEvt)->fK0Particle[i].fMomentum[0]);
+    ((TH1F*)fOutputList->FindObject("fHistPy"))		->Fill((fEvt)->fK0Particle[i].fMomentum[1]);
+    ((TH1F*)fOutputList->FindObject("fHistPz"))		->Fill((fEvt)->fK0Particle[i].fMomentum[2]);
+
+    ((TH2F*)fOutputList->FindObject("fHistPhiPsi"))	->Fill(centBin+1,(fEvt)->fK0Particle[i].fPhiPsi);
 
     for(int evnum=0; evnum<kEventsToMix+1; evnum++)// Event buffer loop: evnum=0 is the current event, all other evnum's are past events
     {
@@ -1070,6 +1122,16 @@ void AliFemtoK0Analysis::Exec(Option_t *)
         //else if((fEvt)->fK0Particle[i].fSideRight) SideRight1 = kTRUE;
         //if((fEvt+evnum)->fK0Particle[j].fSideLeft) SideLeft2 = kTRUE;
         //else if((fEvt+evnum)->fK0Particle[j].fSideRight) SideRight2 = kTRUE;
+
+        //for psi binning
+		float phipsi1 = (fEvt)->fK0Particle[i].fPhiPsi;
+        float phipsi2 = (fEvt+evnum)->fK0Particle[j].fPhiPsi;
+        bool inPlane1 = kFALSE;
+        bool inPlane2 = kFALSE; 
+        if(phipsi1 > PI) phipsi1 = phipsi1-PI;
+        if(phipsi2 > PI) phipsi2 = phipsi2-PI;
+        if(phipsi1 < 0.25*PI || phipsi1 > 0.75*PI) inPlane1 = kTRUE;
+        if(phipsi2 < 0.25*PI || phipsi2 > 0.75*PI) inPlane2 = kTRUE;
 	
 
         if(evnum==0) //Same Event
@@ -1086,6 +1148,12 @@ void AliFemtoK0Analysis::Exec(Option_t *)
            ((TH3F*)fOutputList->FindObject("fHistQinvSignal"))->Fill(centBin+1, pairKt, qinv);
            //if(!splitK0centers)((TH3F*)fOutputList->FindObject("fHistQinvSignalNoSplit"))->Fill(centBin+1, pairKt, qinv);
            ((TH2F*)fOutputList->FindObject("fHistKtK0"))->Fill(centBin+1, pairKt);
+
+		   //eventplane
+           if(inPlane1 && inPlane2)
+             ((TH3F*)fOutputList->FindObject("fHistQinvSignalEPIn"))->Fill(centBin+1, pairKt, qinv);
+           else if(!inPlane1 && !inPlane2)
+             ((TH3F*)fOutputList->FindObject("fHistQinvSignalEPOut"))->Fill(centBin+1, pairKt, qinv);
            
            //for mass bin study
            //if(CL1 && CL2) ((TH3F*)fOutputList->FindObject("fHistCLCLSignal"))->Fill(centBin+1, pairKt, qinv);	   
@@ -1136,6 +1204,12 @@ void AliFemtoK0Analysis::Exec(Option_t *)
           if(center1K0 && center2K0){
            //1D
            ((TH3F*)fOutputList->FindObject("fHistQinvBkg"))->Fill(centBin+1, pairKt, qinv);
+
+		   //eventplane
+           if(inPlane1 && inPlane2)
+             ((TH3F*)fOutputList->FindObject("fHistQinvBkgEPIn"))->Fill(centBin+1, pairKt, qinv);
+           else if(!inPlane1 && !inPlane2)
+             ((TH3F*)fOutputList->FindObject("fHistQinvBkgEPOut"))->Fill(centBin+1, pairKt, qinv);
 
            //for mass bin study
            //if(CL1 && CL2) ((TH3F*)fOutputList->FindObject("fHistCLCLBkg"))->Fill(centBin+1, pairKt, qinv);	   
@@ -1294,5 +1368,3 @@ bool AliFemtoK0Analysis::RejectEventCentFlat(float MagField, float CentPercent)
 
  return RejectEvent;
 }
-  
-
