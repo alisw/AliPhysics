@@ -98,6 +98,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   Reader->SetFilterBit(7);
   Reader->SetCentralityPreSelection(0.001, 310);
   Reader->SetEPVZERO(kTRUE);
+  Reader->SetCentralityFlattening(kTRUE);
 
   AliFemtoManager* Manager = new AliFemtoManager();
   Manager->SetEventReader(Reader);
