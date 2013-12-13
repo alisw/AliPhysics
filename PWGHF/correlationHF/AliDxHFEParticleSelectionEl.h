@@ -161,6 +161,7 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
   Double_t      fEovPMax;            // Upper cut value for E over P, EMCAL
   Bool_t        fUseTOFonlyWhenPresent; // use tof only when it's there
   Bool_t        fStopAfterFilterBit; // Stop selection after checking filterbits
+  Bool_t        fCutLS;              // Cut also electrons from LS distribution (set to false by default)
 
   static const char* fgkCutBinNames[]; //! bin labels for cuts histogram
   
