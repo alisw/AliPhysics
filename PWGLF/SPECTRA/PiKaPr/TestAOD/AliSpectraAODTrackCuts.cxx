@@ -64,9 +64,9 @@ AliSpectraAODTrackCuts::AliSpectraAODTrackCuts(const char *name) : TNamed(name, 
   fHistoCuts = new TH1I("fTrkCuts", "Track Cuts", kNTrkCuts, -0.5, kNTrkCuts - 0.5);
   for(Int_t ibin=1;ibin<=kNTrkCuts;ibin++)fHistoCuts->GetXaxis()->SetBinLabel(ibin,kBinLabel[ibin-1]);
   //standard histo
-  const Double_t templBins[] = {0.05,0.1,0.12,0.14,0.16,0.18,0.20,0.25,0.30,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0,3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0};
-  Int_t nbinsTempl=52;
-  
+  const Double_t templBins[] = {0.20,0.30,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.2,1.4,1.6,1.8,2.0,2.4,2.8,3.2,3.6,4.0,5.0,6.0,7.0,8.0,9.0,10.,12.,15.};
+  const Int_t nbinsTempl=26;
+
   fHistoNSelectedPos=new TH1F("fHistoNSelectedPos","fHistoNSelectedPos",nbinsTempl,templBins);
   fHistoNSelectedPos->GetXaxis()->SetTitle("P_{T} (GeV / c)");
   fHistoNSelectedNeg=new TH1F("fHistoNSelectedNeg","fHistoNSelectedNeg",nbinsTempl,templBins);
