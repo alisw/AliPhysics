@@ -16,8 +16,11 @@
 #include "AliAODEvent.h" 
 #include "AliAODInputHandler.h"
 #include "AliAODMCParticle.h"
+#include "AliAODMCHeader.h"
 #include "AliCentrality.h"
+#include "AliGenEventHeader.h"
 
+#include "AliLog.h"
 #include "AliAnalysisTaskEffContBF.h"
 
 // ---------------------------------------------------------------------
@@ -311,6 +314,38 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
     AliError("ERROR: Could not retrieve MC event");
     return;
   }
+
+  // ==============================================================================================
+  // Copy from AliAnalysisTaskPhiCorrelations:
+  // For productions with injected signals, figure out above which label to skip particles/tracks
+  Int_t skipParticlesAbove = 0;
+  if (fInjectedSignals)
+  {
+    AliGenEventHeader* eventHeader = 0;
+    Int_t headers = 0;
+    
+    // AOD only
+    AliAODMCHeader* header = (AliAODMCHeader*) fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+    if (!header)
+      AliFatal("fInjectedSignals set but no MC header found");
+    
+    headers = header->GetNCocktailHeaders();
+    eventHeader = header->GetCocktailHeader(0);
+    
+    
+    if (!eventHeader)
+      {
+	// We avoid AliFatal here, because the AOD productions sometimes have events where the MC header is missing 
+	// (due to unreadable Kinematics) and we don't want to loose the whole job because of a few events
+	AliError("First event header not found. Skipping this event.");
+	return;
+      }
+    
+    skipParticlesAbove = eventHeader->NProduced();
+    AliInfo(Form("Injected signals in this event (%d headers). Keeping particles/tracks of %s. Will skip particles/tracks above %d.", headers, eventHeader->ClassName(), skipParticlesAbove)); 
+  }
+  // ==============================================================================================
+
   
   // arrays for 2 particle histograms
   Int_t nMCLabelCounter         = 0;
@@ -391,6 +426,44 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		//if (!(AODmcTrack->IsPhysicalPrimary())) {
 		//fHistContaminationSecondaries->Fill(track->Eta(),track->Pt(),phiDeg);
 		//}
+
+		// ==============================================================================================
+		// Partial copy from AliAnalyseLeadingTrackUE::RemoveInjectedSignals:
+		// Skip tracks that come from injected signals
+		if (fInjectedSignals)
+		  {    
+     
+		    AliAODMCParticle* mother = AODmcTrack;
+		    
+		    // find the primary mother (if not already physical primary)
+		    while (!((AliAODMCParticle*)mother)->IsPhysicalPrimary())
+		      {
+			if (((AliAODMCParticle*)mother)->GetMother() < 0)
+			  {
+			    mother = 0;
+			    break;
+			  }
+			
+			mother = (AliAODMCParticle*) fArrayMC->At(((AliAODMCParticle*)mother)->GetMother());
+			if (!mother)
+			  break;
+		      }
+		    
+		    
+		    if (!mother)
+		      {
+			AliError(Form("WARNING: No mother found for particle %d:", AODmcTrack->GetLabel()));
+			continue;
+		      }
+
+		    if (mother->GetLabel() >= skipParticlesAbove)
+		      {
+			//AliInfo(Form("Remove particle %d (>= %d)",mother->GetLabel(),skipParticlesAbove));
+			continue;
+		      }
+		  }
+		// ==============================================================================================
+
 		if (AODmcTrack->IsPhysicalPrimary()) {
 		  if(gAODmcCharge > 0){
 		    fHistContaminationPrimariesPlus->Fill(track->Eta(),track->Pt(),phiRad);
