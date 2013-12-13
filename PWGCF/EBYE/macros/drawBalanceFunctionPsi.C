@@ -1087,3 +1087,54 @@ void drawBFPsi(const char* lhcPeriod = "LHC10h",
 
   c2->SaveAs(pngName.Data());
 }
+
+//____________________________________________________________________//
+void GetWeightedMean1D(TH1D *gHistBalance, Bool_t kProjectInEta = kTRUE, Int_t fStartBin = 1, Int_t fStopBin = -1, Double_t &WM, Double_t &WME) {
+
+  //Prints the calculated width of the BF and its error
+  Double_t gSumXi = 0.0, gSumBi = 0.0, gSumBiXi = 0.0;
+  Double_t gSumBiXi2 = 0.0, gSumBi2Xi2 = 0.0;
+  Double_t gSumDeltaBi2 = 0.0, gSumXi2DeltaBi2 = 0.0;
+  Double_t deltaBalP2 = 0.0, integral = 0.0;
+  Double_t deltaErrorNew = 0.0;
+
+  //Retrieve this variables from Histogram
+  Int_t fNumberOfBins = gHistBalance->GetNbinsX();
+  if(fStopBin > -1)   fNumberOfBins = fStopBin;
+  Double_t fP2Step    = gHistBalance->GetBinWidth(1); // assume equal binning!
+  Double_t currentBinCenter = 0.;
+
+  for(Int_t i = fStartBin; i <= fNumberOfBins; i++) {
+
+    // in order to recover the |abs| in the 1D analysis
+    currentBinCenter = gHistBalance->GetBinCenter(i);
+    if(kProjectInEta){
+      if(currentBinCenter < 0) currentBinCenter = -currentBinCenter;
+    }
+    else{
+      if(currentBinCenter < 0) currentBinCenter = -currentBinCenter;
+      if(currentBinCenter > TMath::Pi()) currentBinCenter = 2 * TMath::Pi() - currentBinCenter;
+    }
+
+    gSumXi += currentBinCenter;
+    gSumBi += gHistBalance->GetBinContent(i);
+    gSumBiXi += gHistBalance->GetBinContent(i)*currentBinCenter;
+    gSumBiXi2 += gHistBalance->GetBinContent(i)*TMath::Power(currentBinCenter,2);
+    gSumBi2Xi2 += TMath::Power(gHistBalance->GetBinContent(i),2)*TMath::Power(currentBinCenter,2);
+    gSumDeltaBi2 +=  TMath::Power(gHistBalance->GetBinError(i),2);
+    gSumXi2DeltaBi2 += TMath::Power(currentBinCenter,2) * TMath::Power(gHistBalance->GetBinError(i),2);
+    
+    deltaBalP2 += fP2Step*TMath::Power(gHistBalance->GetBinError(i),2);
+    integral += fP2Step*gHistBalance->GetBinContent(i);
+  }
+  for(Int_t i = fStartBin; i < fNumberOfBins; i++)
+    deltaErrorNew += gHistBalance->GetBinError(i)*(currentBinCenter*gSumBi - gSumBiXi)/TMath::Power(gSumBi,2);
+  
+  Double_t integralError = TMath::Sqrt(deltaBalP2);
+  
+  Double_t delta = gSumBiXi / gSumBi;
+  Double_t deltaError = (gSumBiXi / gSumBi) * TMath::Sqrt(TMath::Power((TMath::Sqrt(gSumXi2DeltaBi2)/gSumBiXi),2) + TMath::Power((gSumDeltaBi2/gSumBi),2) );
+  
+  WM  = delta;
+  WME = deltaError;
+}
