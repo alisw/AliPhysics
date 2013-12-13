@@ -569,7 +569,66 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
     Printf("RMS: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetRMS(),gHistBalanceFunctionSubtracted->GetRMSError());
     Printf("Skeweness: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetSkewness(1),gHistBalanceFunctionSubtracted->GetSkewness(11));
     Printf("Kurtosis: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetKurtosis(1),gHistBalanceFunctionSubtracted->GetKurtosis(11));
+
+    // store in txt files
+
+    Bool_t kProjectInEta = kFALSE;
+    if(gDeltaEtaDeltaPhi==1) //Delta eta
+      kProjectInEta = kTRUE;
+
+    TString meanFileName = "";
+    if(kProjectInEta) 
+      meanFileName= "deltaEtaProjection_Mean.txt";
+    else              
+      meanFileName = "deltaPhiProjection_Mean.txt";
+    ofstream fileMean(meanFileName.Data(),ios::app);
+    fileMean << " " << gHistBalanceFunctionSubtracted->GetMean() << " " <<gHistBalanceFunctionSubtracted->GetMeanError()<<endl;
+    fileMean.close();
+
+    TString rmsFileName = "";
+    if(kProjectInEta) 
+      rmsFileName = "deltaEtaProjection_Rms.txt";
+    else              
+      rmsFileName = "deltaPhiProjection_Rms.txt";
+    ofstream fileRms(rmsFileName.Data(),ios::app);
+    fileRms << " " << gHistBalanceFunctionSubtracted->GetRMS() << " " <<gHistBalanceFunctionSubtracted->GetRMSError()<<endl;
+    fileRms.close();
+
+    TString skewnessFileName = "";
+    if(kProjectInEta) 
+      skewnessFileName = "deltaEtaProjection_Skewness.txt";
+    else              
+      skewnessFileName = "deltaPhiProjection_Skewness.txt";
+    ofstream fileSkewness(skewnessFileName.Data(),ios::app);
+    fileSkewness << " " << gHistBalanceFunctionSubtracted->GetSkewness(1) << " " <<gHistBalanceFunctionSubtracted->GetSkewness(11)<<endl;
+    fileSkewness.close();
+
+    TString kurtosisFileName = "";
+    if(kProjectInEta) 
+      kurtosisFileName = "deltaEtaProjection_Kurtosis.txt";
+    else
+      kurtosisFileName = "deltaPhiProjection_Kurtosis.txt";              
+    ofstream fileKurtosis(kurtosisFileName.Data(),ios::app);
+    fileKurtosis << " " << gHistBalanceFunctionSubtracted->GetKurtosis(1) << " " <<gHistBalanceFunctionSubtracted->GetKurtosis(11)<<endl;
+    fileKurtosis.close();
+
+    // Weighted mean as calculated for 1D analysis
+    Double_t weightedMean, weightedMeanError;
+    GetWeightedMean1D(gHistBalanceFunctionSubtracted,kProjectInEta,1,-1,weightedMean,weightedMeanError);
+    Printf("Weighted Mean: %lf - Error: %lf",weightedMean, weightedMeanError);
+    
+    // store in txt files
+    TString weightedMeanFileName = "";
+    if(kProjectInEta) 
+      weightedMeanFileName = "deltaEtaProjection_WeightedMean.txt";
+    else              
+      weightedMeanFileName = "deltaPhiProjection_WeightedMean.txt";
+    ofstream fileWeightedMean(weightedMeanFileName.Data(),ios::app);
+    fileWeightedMean << " " << weightedMean << " " <<weightedMeanError<<endl;
+    fileWeightedMean.close();
+  
   }
+
   // calculate the moments by hand
   else{
 
