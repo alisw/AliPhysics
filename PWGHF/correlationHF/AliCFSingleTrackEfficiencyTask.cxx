@@ -110,7 +110,8 @@ fOption(opt),
   fSelectElSource(kAll),
   fUseGenerator(kFALSE),
   fReducedMode(kFALSE),
-  fUsePt(kTRUE)
+  fUsePt(kTRUE),
+  fCutLS(kFALSE)
 
 {
   //
@@ -154,7 +155,8 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask(const char* opt,c
   fSelectElSource(kAll),
   fUseGenerator(kFALSE),
   fReducedMode(kFALSE),
-  fUsePt(kTRUE)
+  fUsePt(kTRUE),
+  fCutLS(kFALSE)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -204,6 +206,7 @@ AliCFSingleTrackEfficiencyTask& AliCFSingleTrackEfficiencyTask::operator=(const 
     fUseGenerator=c.fUseGenerator;
     fReducedMode=c.fReducedMode;
     fUsePt=c.fUsePt;
+    fCutLS=c.fCutLS;
 
   }
   return *this;
@@ -234,7 +237,8 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask(const AliCFSingle
   fSelectElSource(c.fSelectElSource),
   fUseGenerator(c.fUseGenerator),
   fReducedMode(c.fReducedMode),
-  fUsePt(c.fUsePt)
+  fUsePt(c.fUsePt),
+  fCutLS(c.fCutLS)
 
 {
   //
@@ -599,12 +603,23 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 
       // invariant mass method - Not sure if needed here...
       fSelNHFE->FindNonHFE(iTrack, aodtrack, const_cast<AliVEvent*>(fEvent));
-      if(fSelNHFE->IsLS() || fSelNHFE->IsULS())
-	{
+
+      if(fSelNHFE->IsULS()){
+	//Not selected
+	((TH1F*)fQAHistList->FindObject("fPtULScut"))->Fill(vtrack->Pt());
+	AliDebug(4,"Cut: Invmass ULS");
+	continue;
+	  
+      }
+      if(fSelNHFE->IsLS()){
+	cout <<"LS pt: " << vtrack->Pt() << endl;
+	((TH1F*)fQAHistList->FindObject("fPtLScut"))->Fill(vtrack->Pt());
+	if(fCutLS){
 	  //Not selected
-	  AliDebug(2,"Cut: Invmass");
+	  AliDebug(4,"Cut: Invmass LS");
 	  continue;
 	}
+      }
 
       // fill container for tracks, with all electrons
       //fCFManager->GetParticleContainer()->Fill(containerInputMC, kStepRecoInvMassMC);
@@ -941,6 +956,9 @@ void AliCFSingleTrackEfficiencyTask::UserCreateOutputObjects() {
 
   fSelNHFE->SetHistMass((TH1F*)fQAHistList->FindObject("fInvMassULS"));
   fSelNHFE->SetHistMassBack((TH1F*)fQAHistList->FindObject("fInvMassLS"));
+
+  fQAHistList->Add(CreateControlHistogram("fPtULScut", "Pt particle cut from ULS ", 100, 0., 10.));
+  fQAHistList->Add(CreateControlHistogram("fPtLScut", "Pt particle cut from LS ", 100, 0., 10.));
 
   // Setting up the electron selection class for MC
   TString option="usekine"; 

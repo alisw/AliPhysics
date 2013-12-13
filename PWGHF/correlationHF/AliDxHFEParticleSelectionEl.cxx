@@ -98,6 +98,7 @@ AliDxHFEParticleSelectionEl::AliDxHFEParticleSelectionEl(const char* opt)
   , fEovPMax(1.2)
   , fUseTOFonlyWhenPresent(false)
   , fStopAfterFilterBit(false)
+  , fCutLS(kFALSE)
 {
   // constructor
   // 
@@ -342,7 +343,10 @@ int AliDxHFEParticleSelectionEl::InitControlObjects()
   // TODO: Remove if remove first try at invariant mass
   fHistoList->Add(CreateControlHistogram("fInvMass2SelLScut", "Invariant mass two selected particles LS (cut)", 1000, 0., 0.5));
   fHistoList->Add(CreateControlHistogram("fInvMass2SelULScut", "Invariant mass two selected particles ULS (cut)", 1000, 0., 0.5));
-  
+
+  fHistoList->Add(CreateControlHistogram("fPtULScut", "Pt particle cut from ULS ", 100, 0., 10.));
+  fHistoList->Add(CreateControlHistogram("fPtLScut", "Pt particle cut from LS ", 100, 0., 10.));
+
   fSelNHFE->SetHistMass((TH1F*)fHistoList->FindObject("fInvMassULS"));
   fSelNHFE->SetHistMassBack((TH1F*)fHistoList->FindObject("fInvMassLS"));
   
@@ -730,16 +734,31 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
   if(fUseInvMassCut==kInvMassSingleSelected)
     {
       AliDebug(4,"invmass check");
+      bool isLS=kFALSE;
+      bool isULS=kFALSE;
       fSelNHFE->FindNonHFE(fTrackNum, track, const_cast<AliVEvent*>(pEvent));
-      if(fSelNHFE->IsLS() || fSelNHFE->IsULS())
+      if(fSelNHFE->IsULS())
 	{
 	  //Not selected
+	  isULS=kTRUE;
+	  ((TH1F*)fHistoList->FindObject("fPtULScut"))->Fill(track->Pt());
+	  ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kINVMASS);
+	  AliDebug(4,"Cut: Invmass");
+	  if(!fStoreCutStepInfo) return 0;
+	  
+	}
+      if(fSelNHFE->IsLS()){
+	((TH1F*)fHistoList->FindObject("fPtLScut"))->Fill(track->Pt());
+	if(fCutLS){
+	  //Not selected
+	  isLS=kTRUE;
 	  ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kINVMASS);
 	  AliDebug(4,"Cut: Invmass");
 	  if(!fStoreCutStepInfo) return 0;
 	}
-      else
-	if(fStoreCutStepInfo) fSurvivedCutStep=kINVMASS;
+      }
+      
+      if(fStoreCutStepInfo && !(isLS || isULS)) fSurvivedCutStep=kINVMASS;
       
     }
   ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kSelected);
@@ -963,6 +982,11 @@ int AliDxHFEParticleSelectionEl::ParseArguments(const char* arguments)
     if(argument.BeginsWith("storelastcutstep")){
       AliInfo("Stores the last cut step");
       SetStoreLastCutStep(kTRUE);
+      continue;
+    }
+    if(argument.BeginsWith("cutLS")){
+      AliInfo("Cut also on LS distribution of electron pairs");
+      fCutLS=kTRUE;
       continue;
     }
     // forwarding of single argument works, unless key-option pairs separated
