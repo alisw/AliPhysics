@@ -1318,7 +1318,8 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
 					 Double_t ptAssociatedMin = -1.,
 					 Double_t ptAssociatedMax = -1.,
 					 TString eventClass = "Multiplicity",
-					 Bool_t bRootMoments = kFALSE
+					 Bool_t bRootMoments = kFALSE,
+					 Bool_t bFullPhiForEtaProjection = kFALSE
 ) {
   //Macro that draws the BF distributions for each centrality bin
   //for reaction plane dependent analysis
@@ -1443,16 +1444,32 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
 
   c0->SaveAs(pngName.Data());
 
+ // do the full range for the projection on eta (for cross checking with published results)
+ if(bFullPhiForEtaProjection){
+   
+   drawProjections(gHistBalanceFunction2D,
+		   kTRUE,
+		   1,72,
+		   gCentrality,
+		   psiMin,psiMax,
+		   ptTriggerMin,ptTriggerMax,
+		   ptAssociatedMin,ptAssociatedMax,
+		   kTRUE,
+		   eventClass.Data(),
+		   bRootMoments);
+ }
+ else{
   drawProjections(gHistBalanceFunction2D,
-		  kTRUE,
-		  1,36,
-		  gCentrality,
-		  psiMin,psiMax,
-		  ptTriggerMin,ptTriggerMax,
-		  ptAssociatedMin,ptAssociatedMax,
-		  kTRUE,
-		  eventClass,
-		  bRootMoments);
+		   kTRUE,
+		   1,36,
+		   gCentrality,
+		   psiMin,psiMax,
+		   ptTriggerMin,ptTriggerMax,
+		   ptAssociatedMin,ptAssociatedMax,
+		   kTRUE,
+		   eventClass.Data(),
+		   bRootMoments);
+ }
 
   drawProjections(gHistBalanceFunction2D,
   		  kFALSE,
