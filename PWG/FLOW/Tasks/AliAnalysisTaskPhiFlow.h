@@ -102,6 +102,7 @@ public:
    void                                 PrepareFlowEvent(Int_t iMulti);
    void                                 VZEROSubEventAnalysis();
    virtual void                         UserExec(Option_t *option);
+   virtual void                         Exec(Option_t *);
    void                                 ReconstructionWithEventMixing(TObjArray* MixingCandidates) const;
    virtual void                         Terminate(Option_t *);
    void                                 SetPOICuts(AliFlowTrackCuts *cutsPOI) { fPOICuts = cutsPOI; }
@@ -132,6 +133,7 @@ public:
                                                                                                                         fMaxMass= maxMass; }
    void                                 IsMC();
    Bool_t                               SetQA(Bool_t qa) {fQA = qa; return fQA;}
+   void                                 SetSkipEventSelection(Bool_t s) {fSkipEventSelection = s;}
 
 private:
 
@@ -213,12 +215,12 @@ private:
    TH2F                 *fDCAMaterial; //!dca material (mc) all (data)
    TProfile             *fSubEventDPhiv2; //! subevent resolution info for v2
    TProfile             *fV0Data[18][2]; //! profiles for vzero vn(minv)
-
+   Bool_t               fSkipEventSelection;// skip event selection and set bayesian pid object to MC mode
    AliAnalysisTaskPhiFlow(const AliAnalysisTaskPhiFlow&); // Not implemented
    AliAnalysisTaskPhiFlow& operator=(const AliAnalysisTaskPhiFlow&); // Not implemented
    void                 MakeTrack(Double_t, Double_t, Double_t, Double_t, Int_t , Int_t[]) const;
 
-   ClassDef(AliAnalysisTaskPhiFlow, 6);
+   ClassDef(AliAnalysisTaskPhiFlow, 7);
 };
 
 #endif
