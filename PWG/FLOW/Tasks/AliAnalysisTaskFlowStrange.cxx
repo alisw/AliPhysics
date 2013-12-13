@@ -442,24 +442,23 @@ void AliAnalysisTaskFlowStrange::AddQAEvents() {
   tH1D = new TH1D("UNTAG","UNTAG;Untagged Daughters",800,0,800);tQAEvents->Add(tH1D);
   tH1D = new TH1D("RealTime","RealTime;LogT sec",2000,-10,+10); tQAEvents->Add(tH1D);
   fList->Add(tQAEvents);
-  AddEventSpy();
+  AddEventSpy("EventsReached");
+  AddEventSpy("EventsSelected");
   AddMakeQSpy();
 }
 //=======================================================================
-void AliAnalysisTaskFlowStrange::AddEventSpy() {
+void AliAnalysisTaskFlowStrange::AddEventSpy(TString name) {
   TH1D *tH1D;
   TH2D *tH2D;
   TList *tList=new TList();
-  tList->SetName("EventSpy");
+  tList->SetName(name.Data());
   tList->SetOwner();
-  if(fQAlevel>0) {
-    tH2D = new TH2D("VTXZ","VTXZ;Global||SPD;SPD",60,-25,+25,60,-25,+25); tList->Add( tH2D );
-    tH2D = new TH2D("CCCC","CCCC;V0M;TRK",60,-10,110,60,-10,110);         tList->Add( tH2D );
-    tH2D = new TH2D("REFM","REFM;TPC;GLOBAL",100,0,3000,100,0,3000);      tList->Add( tH2D );
-    if(fReadMC) {
-      tH1D = new TH1D("MCCC","MCCC;Xsection",100,-10,110); tList->Add( tH1D );
-      tH1D = new TH1D("MCEP","MCEP;MCEP",100,-TMath::TwoPi(),TMath::TwoPi()); tList->Add( tH1D );
-    }
+  tH2D = new TH2D("VTXZ","VTXZ;Global||SPD;SPD",60,-25,+25,60,-25,+25); tList->Add( tH2D );
+  tH2D = new TH2D("CCCC","CCCC;V0M;TRK",60,-10,110,60,-10,110);         tList->Add( tH2D );
+  tH2D = new TH2D("REFM","REFM;TPC;GLOBAL",100,0,3000,100,0,3000);      tList->Add( tH2D );
+  if(fReadMC) {
+    tH1D = new TH1D("MCCC","MCCC;Xsection",100,-10,110); tList->Add( tH1D );
+    tH1D = new TH1D("MCEP","MCEP;MCEP",100,-TMath::TwoPi(),TMath::TwoPi()); tList->Add( tH1D );
   }
   fList->Add(tList);
 }
@@ -623,9 +622,13 @@ Bool_t AliAnalysisTaskFlowStrange::AcceptAAEvent(AliESDEvent *tESD) {
   acceptEvent = (fThisCent<fCentPerMin||fThisCent>fCentPerMax)?kFALSE:acceptEvent;
   acceptEvent = TMath::Abs(tTPCVtxZ-tSPDVtxZ)>0.5?kFALSE:acceptEvent;
   acceptEvent = TMath::Abs(tTPCVtxZ)>fVertexZcut?kFALSE:acceptEvent;
-  if(fQAlevel>0) ((TH2D*)((TList*)fList->FindObject("EventSpy"))->FindObject("VTXZ"))->Fill( tTPCVtxZ, tSPDVtxZ );
-  if(fQAlevel>0) ((TH2D*)((TList*)fList->FindObject("EventSpy"))->FindObject("CCCC"))->Fill( cc1, cc2 );
+  ((TH2D*)((TList*)fList->FindObject("EventsReached"))->FindObject("VTXZ"))->Fill( tTPCVtxZ, tSPDVtxZ );
+  ((TH2D*)((TList*)fList->FindObject("EventsReached"))->FindObject("CCCC"))->Fill( cc1, cc2 );
   // EndOfCuts
+  if(acceptEvent) {
+    ((TH2D*)((TList*)fList->FindObject("EventsSelected"))->FindObject("VTXZ"))->Fill( tTPCVtxZ, tSPDVtxZ );
+    ((TH2D*)((TList*)fList->FindObject("EventsSelected"))->FindObject("CCCC"))->Fill( cc1, cc2 );
+  }
   return acceptEvent;
 }
 //=======================================================================
@@ -669,16 +672,23 @@ Bool_t AliAnalysisTaskFlowStrange::AcceptAAEvent(AliAODEvent *tAOD) {
   acceptEvent = (fThisCent<fCentPerMin||fThisCent>fCentPerMax)?kFALSE:acceptEvent;
   acceptEvent = TMath::Abs(tVtxZ-tSPDVtxZ)>0.5?kFALSE:acceptEvent;
   acceptEvent = TMath::Abs(tVtxZ)>fVertexZcut?kFALSE:acceptEvent;
-  if(fQAlevel>0) {
-    ((TH2D*)((TList*)fList->FindObject("EventSpy"))->FindObject("VTXZ"))->Fill( tVtxZ, tSPDVtxZ );
-    ((TH2D*)((TList*)fList->FindObject("EventSpy"))->FindObject("CCCC"))->Fill( cc1, cc2 );
-    ((TH2D*)((TList*)fList->FindObject("EventSpy"))->FindObject("REFM"))->Fill( tpc, glo );
-    if(fReadMC) {
-      ((TH1D*)((TList*)fList->FindObject("EventSpy"))->FindObject("MCCC"))->Fill( xsec );
-      ((TH1D*)((TList*)fList->FindObject("EventSpy"))->FindObject("MCEP"))->Fill( fMCEP );
-    }
+  ((TH2D*)((TList*)fList->FindObject("EventsReached"))->FindObject("VTXZ"))->Fill( tVtxZ, tSPDVtxZ );
+  ((TH2D*)((TList*)fList->FindObject("EventsReached"))->FindObject("CCCC"))->Fill( cc1, cc2 );
+  ((TH2D*)((TList*)fList->FindObject("EventsReached"))->FindObject("REFM"))->Fill( tpc, glo );
+  if(fReadMC) {
+    ((TH1D*)((TList*)fList->FindObject("EventsReached"))->FindObject("MCCC"))->Fill( xsec );
+    ((TH1D*)((TList*)fList->FindObject("EventsReached"))->FindObject("MCEP"))->Fill( fMCEP );
   }
   // EndOfCuts
+  if(acceptEvent) {
+    ((TH2D*)((TList*)fList->FindObject("EventsSelected"))->FindObject("VTXZ"))->Fill( tVtxZ, tSPDVtxZ );
+    ((TH2D*)((TList*)fList->FindObject("EventsSelected"))->FindObject("CCCC"))->Fill( cc1, cc2 );
+    ((TH2D*)((TList*)fList->FindObject("EventsSelected"))->FindObject("REFM"))->Fill( tpc, glo );
+    if(fReadMC) {
+      ((TH1D*)((TList*)fList->FindObject("EventsSelected"))->FindObject("MCCC"))->Fill( xsec );
+      ((TH1D*)((TList*)fList->FindObject("EventsSelected"))->FindObject("MCEP"))->Fill( fMCEP );
+    }
+  }
   return acceptEvent;
 }
 //=======================================================================
@@ -698,9 +708,13 @@ Bool_t AliAnalysisTaskFlowStrange::AcceptPPEvent(AliAODEvent *tAOD) {
   acceptEvent = (fThisCent<fCentPerMin||fThisCent>fCentPerMax)?kFALSE:acceptEvent;
   acceptEvent = TMath::Abs(tVtxZ-tSPDVtxZ)>0.5?kFALSE:acceptEvent;
   acceptEvent = TMath::Abs(tVtxZ)>fVertexZcut?kFALSE:acceptEvent;
-  if(fQAlevel>0) ((TH2D*)((TList*)fList->FindObject("EventSpy"))->FindObject("VTXZ"))->Fill( tVtxZ, tSPDVtxZ );
-  if(fQAlevel>0) ((TH2D*)((TList*)fList->FindObject("EventSpy"))->FindObject("CCCC"))->Fill( cc1, cc2 );
+  ((TH2D*)((TList*)fList->FindObject("EventsReached"))->FindObject("VTXZ"))->Fill( tVtxZ, tSPDVtxZ );
+  ((TH2D*)((TList*)fList->FindObject("EventsReached"))->FindObject("CCCC"))->Fill( cc1, cc2 );
   // EndOfCuts
+  if(acceptEvent) {
+    ((TH2D*)((TList*)fList->FindObject("EventsSelected"))->FindObject("VTXZ"))->Fill( tVtxZ, tSPDVtxZ );
+    ((TH2D*)((TList*)fList->FindObject("EventsSelected"))->FindObject("CCCC"))->Fill( cc1, cc2 );
+  }
   return acceptEvent;
 }
 //=======================================================================
@@ -757,8 +771,12 @@ Bool_t AliAnalysisTaskFlowStrange::AcceptPAEvent(AliAODEvent *tAOD) {
   acceptEvent = (fThisCent<fCentPerMin||fThisCent>fCentPerMax)?kFALSE:acceptEvent;
   acceptEvent = TMath::Abs(tTPCVtxZ)>fVertexZcut?kFALSE:acceptEvent;
   // EndOfCuts
-  if(fQAlevel>0) ((TH2D*)((TList*)fList->FindObject("EventSpy"))->FindObject("VTXZ"))->Fill( tTPCVtxZ, tSPDVtxZ );
-  if(fQAlevel>0) ((TH2D*)((TList*)fList->FindObject("EventSpy"))->FindObject("CCCC"))->Fill( cc1, cc2 );
+  ((TH2D*)((TList*)fList->FindObject("EventsReached"))->FindObject("VTXZ"))->Fill( tTPCVtxZ, tSPDVtxZ );
+  ((TH2D*)((TList*)fList->FindObject("EventsReached"))->FindObject("CCCC"))->Fill( cc1, cc2 );
+  if(acceptEvent) {
+    ((TH2D*)((TList*)fList->FindObject("EventsSelected"))->FindObject("VTXZ"))->Fill( tTPCVtxZ, tSPDVtxZ );
+    ((TH2D*)((TList*)fList->FindObject("EventsSelected"))->FindObject("CCCC"))->Fill( cc1, cc2 );    
+  }
   return acceptEvent;
 }
 //=======================================================================
@@ -1556,6 +1574,10 @@ void AliAnalysisTaskFlowStrange::MakeQVectors() {
   //=>loading event
   MakeQVZE(InputEvent(),vzeqax,vzeqay,vzeqaw,vzeqbx,vzeqby,vzeqbw);
   MakeQTPC(InputEvent(),tpcqax,tpcqay,tpcqaw,tpcqbx,tpcqby,tpcqbw);
+  if(fReadMC) {
+    fVZEevent->SetMCReactionPlaneAngle( fMCEP );    
+    fTPCevent->SetMCReactionPlaneAngle( fMCEP );    
+  }
   //=>computing psi
   //VZERO
   Double_t vqx, vqy;
@@ -1826,7 +1848,7 @@ void AliAnalysisTaskFlowStrange::MakeQTPC(AliAODEvent *tAOD,
     eta = track->Eta();
     w = 1;
     //=>subevents
-    if(eta<0.5*(fRFPminEta+fRFPminEta)) {
+    if(eta<0.5*(fRFPminEta+fRFPmaxEta)) {
       qxa += w*TMath::Cos(2*phi);
       qya += w*TMath::Sin(2*phi);
       qwa += w;

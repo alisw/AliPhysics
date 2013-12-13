@@ -113,7 +113,7 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   Bool_t CalibrateEvent();
   void Publish();
   
-  void AddEventSpy();
+  void AddEventSpy(TString name);
   Bool_t AcceptAAEvent(AliESDEvent *tESD);
   Bool_t AcceptAAEvent(AliAODEvent *tAOD);
   Bool_t AcceptPPEvent(AliAODEvent *tAOD);
