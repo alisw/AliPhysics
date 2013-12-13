@@ -508,7 +508,7 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterial
   //------------------------------------------------------------------
   Double_t bg=GetP()/mass;
   if (bg<kAlmost0) {
-    AliError(Form("Non-positive beta*gamma = %e, mass = %e",bg,mass));
+    AliDebug(2,Form("Non-positive beta*gamma = %e, mass = %e",bg,mass));
     return kFALSE;
   }
   Double_t dEdx=Bethe(bg);
