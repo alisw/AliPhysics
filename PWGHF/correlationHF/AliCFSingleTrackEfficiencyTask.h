@@ -230,6 +230,7 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
   Bool_t          fUseGenerator;    // If using generator
   Bool_t          fReducedMode;     // which mode to run in
   Bool_t          fUsePt;           // Store Pt or global momentum
+  Bool_t          fCutLS;           // Whether to cut electron based on LS distro (default=false)
 
   ClassDef(AliCFSingleTrackEfficiencyTask,1);
 
