@@ -93,6 +93,7 @@ AliTPCcalibGainMult::AliTPCcalibGainMult()
    fHistGainSector(0),
    fHistPadEqual(0),
    fHistGainMult(0),
+   fHistTopology(0),
    fPIDMatrix(0),
    fHistdEdxMap(0),
    fHistdEdxMax(0),
@@ -127,6 +128,7 @@ AliTPCcalibGainMult::AliTPCcalibGainMult(const Text_t *name, const Text_t *title
    fHistGainSector(0),
    fHistPadEqual(0),
    fHistGainMult(0),
+   fHistTopology(0),
    fPIDMatrix(0),
    fHistdEdxMap(0),
    fHistdEdxMax(0),
@@ -145,7 +147,7 @@ AliTPCcalibGainMult::AliTPCcalibGainMult(const Text_t *name, const Text_t *title
   fUpperTrunc = 0.6;
   fUseMax = kTRUE; // IMPORTANT CHANGE FOR PbPb; standard: kFALSE;
   //
-  // define track cuts
+  // define track cuts and default BB parameters for interpolation around mean
   //
   fCutCrossRows = 80;
   fCutEtaWindow = 0.8;
@@ -160,14 +162,15 @@ AliTPCcalibGainMult::AliTPCcalibGainMult(const Text_t *name, const Text_t *title
   fAlephParameters[2] = 2.51466e-14;
   fAlephParameters[3] = 2.05379;
   fAlephParameters[4] = 1.84288;
-
+  //
+  // basic QA histograms - mainly for debugging purposes
   //
   fHistNTracks = new TH1F("ntracks","Number of Tracks per Event; number of tracks per event; number of tracks",1001,-0.5,1000.5);
   fHistClusterShape = new TH1F("fHistClusterShape","cluster shape; rms meas. / rms exp.;",300,0,3);
   fHistQA = new TH3F("fHistQA","dEdx; momentum p (GeV); TPC signal (a.u.); pad",500,0.1,20.,500,0.,500,6,-0.5,5.5);
   AliTPCcalibBase::BinLogX(fHistQA);
   //
-  //
+  // gain per chamber
   //                          MIP, sect,  pad (short,med,long,full,oroc),   run,      ncl
   Int_t binsGainSec[5]    = { 145,   72,    4,  10000000,   65};
   Double_t xminGainSec[5] = { 10., -0.5, -0.5,      -0.5, -0.5}; 
@@ -181,7 +184,7 @@ AliTPCcalibGainMult::AliTPCcalibGainMult(const Text_t *name, const Text_t *title
     fHistGainSector->GetAxis(iaxis)->SetTitle(axisTitleSec[iaxis]);
   }
   //
-  //
+  // pad region equalization
   //
   Int_t binsPadEqual[5]    = { 400, 400,    4,    5,   20};
   Double_t xminPadEqual[5] = { 0.0, 0.0, -0.5,    0,  -1.}; 
@@ -195,7 +198,7 @@ AliTPCcalibGainMult::AliTPCcalibGainMult(const Text_t *name, const Text_t *title
     fHistPadEqual->GetAxis(iaxis)->SetTitle(axisTitlePadEqual[iaxis]);
   }
   //
-  //
+  // multiplicity dependence
   //                    MIP Qmax, MIP Qtot,  z,  pad, vtx. contribut., ncl
   Int_t binsGainMult[6]    = { 145,  145,   25,    4,  100,  80};
   Double_t xminGainMult[6] = { 10.,  10.,    0, -0.5,    0, -0.5}; 
@@ -207,6 +210,21 @@ AliTPCcalibGainMult::AliTPCcalibGainMult(const Text_t *name, const Text_t *title
   for (Int_t iaxis=0; iaxis<6;iaxis++){
     fHistGainMult->GetAxis(iaxis)->SetName(axisNameMult[iaxis]);
     fHistGainMult->GetAxis(iaxis)->SetTitle(axisTitleMult[iaxis]);
+  }
+  //
+  // dip-angle (theta or eta) and inclination angle (local phi) dependence -- absolute calibration
+  //
+  //              (0.) weighted dE/dx, (1.) 0:Qtot - 1:Qmax, (2.) tgl, (3.) 1./pT
+  Int_t binsTopology[4]        = {145,                    2,       20,  20};
+  Double_t xminTopology[4]     = { 10,                 -0.5,       -1,   0};
+  Double_t xmaxTopology[4]     = { 10,                  1.5,       +1,   5};
+  TString axisNameTopology[4]  = {"dEdx",        "QtotQmax",    "tgl", "1/pT"};
+  TString axisTitleTopology[4] = {"dEdx",        "QtotQmax",    "tgl", "1/pT"};
+  //
+  fHistTopology = new THnF("fHistTopology", "dEdx,QtotQmax,tgl, 1/pT", 4, binsTopology, xminTopology, xmaxTopology);
+  for (Int_t iaxis=0; iaxis<4;iaxis++){
+    fHistTopology->GetAxis(iaxis)->SetName(axisNameTopology[iaxis]);
+    fHistTopology->GetAxis(iaxis)->SetTitle(axisTitleTopology[iaxis]);
   }
   //
   //
@@ -257,6 +275,7 @@ AliTPCcalibGainMult::~AliTPCcalibGainMult(){
   delete fHistGainSector;   //  histogram which shows MIP peak for each of the 3x36 sectors (pad region)
   delete fHistPadEqual;     //  histogram for the equalization of the gain in the different pad regions -> pass0
   delete fHistGainMult;     //  histogram which shows decrease of MIP signal as a function
+  delete fHistTopology;
   //
   delete fHistdEdxMap;
   delete fHistdEdxMax;
@@ -457,6 +476,12 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
 	vecMult[0]=mipSignalLong/corrFactorMip; vecMult[1]=mipSignalLong/corrFactorMip; vecMult[3]=2;
 	fHistGainMult->Fill(vecMult);
 	//
+	// topology histogram (absolute)
+	//                        (0.) weighted dE/dx, (1.) 0:Qtot - 1:Qmax, (2.) tgl, (3.) 1./pT
+	Double_t vecTopolTot[4] = {meanTot, 0, dipAngleTgl, TMath::Abs(track->GetSigned1Pt())};
+	Double_t vecTopolMax[4] = {meanMax, 1, dipAngleTgl, TMath::Abs(track->GetSigned1Pt())};
+	fHistTopology->Fill(vecTopolTot);
+	fHistTopology->Fill(vecTopolMax);
       }
       //
       //
@@ -555,7 +580,10 @@ Long64_t AliTPCcalibGainMult::Merge(TCollection *li) {
     if (cal->GetHistGainMult()) {
        if (fHistGainMult->GetEntries()<kMaxEntriesSparse) fHistGainMult->Add(cal->GetHistGainMult());
     } 
-
+    if (cal->GetHistTopology()) {
+       fHistTopology->Add(cal->GetHistTopology());
+    } 
+    //
     if (cal->fHistdEdxMap){
       if (fHistdEdxMap) fHistdEdxMap->Add(cal->fHistdEdxMap);
     }

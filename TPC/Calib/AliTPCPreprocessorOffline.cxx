@@ -916,6 +916,7 @@ void AliTPCPreprocessorOffline::CalibTimeGain(const Char_t* fileName, Int_t star
   AnalyzeGainDipAngle(0); // short pads
   AnalyzeGainDipAngle(1); // medium pads
   AnalyzeGainDipAngle(2); // long pads
+  AnalyzeGainDipAngle(3); // absolute calibration on full track
   //
   // 3. Make control plots
   //
@@ -1167,7 +1168,7 @@ Bool_t AliTPCPreprocessorOffline::AnalyzePadRegionGain(){
 Bool_t AliTPCPreprocessorOffline::AnalyzeGainDipAngle(Int_t padRegion)  {
   //
   // Analyze gain as a function of multiplicity and produce calibration graphs
-  // padRegion -- 0: short, 1: medium, 2: long
+  // padRegion -- 0: short, 1: medium, 2: long, 3: absolute calibration of full track
   //
   if (!fGainMult) return kFALSE;
   //
@@ -1175,9 +1176,18 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainDipAngle(Int_t padRegion)  {
   TObjArray arrMax;
   TObjArray arrTot;
   //
-  fGainMult->GetHistPadEqual()->GetAxis(2)->SetRangeUser(padRegion,padRegion); // short
-  TH2D * histQmax = (TH2D*) fGainMult->GetHistPadEqual()->Projection(0,4);
-  TH2D * histQtot = (TH2D*) fGainMult->GetHistPadEqual()->Projection(1,4);
+  TH2D * histQmax = 0x0;
+  TH2D * histQtot = 0x0;
+  if (padRegion < 3) {
+    fGainMult->GetHistPadEqual()->GetAxis(2)->SetRangeUser(padRegion,padRegion); // short,medium,long
+    histQmax = (TH2D*) fGainMult->GetHistPadEqual()->Projection(0,4);
+    histQtot = (TH2D*) fGainMult->GetHistPadEqual()->Projection(1,4);
+  } else {
+    fGainMult->GetHistTopology()->GetAxis(1)->SetRangeUser(1,1); //Qmax
+    histQmax = (TH2D*) fGainMult->GetHistTopology()->Projection(0,2);
+    fGainMult->GetHistTopology()->GetAxis(1)->SetRangeUser(0,0); //Qtot
+    histQtot = (TH2D*) fGainMult->GetHistTopology()->Projection(0,2);
+  }
   //
   histQmax->FitSlicesY(0,0,-1,0,"QNR",&arrMax);
   histQtot->FitSlicesY(0,0,-1,0,"QNR",&arrTot);
@@ -1186,7 +1196,7 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainDipAngle(Int_t padRegion)  {
   corrMax->Scale(1./histQmax->GetMean(2));
   corrTot->Scale(1./histQtot->GetMean(2));
   //
-  const char* names[3]={"SHORT","MEDIUM","LONG"};
+  const char* names[4]={"SHORT","MEDIUM","LONG","ABSOLUTE"};
   //
   TGraphErrors * graphMax = new TGraphErrors(corrMax);
   TGraphErrors * graphTot = new TGraphErrors(corrTot);

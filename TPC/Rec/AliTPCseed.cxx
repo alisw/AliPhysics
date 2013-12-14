@@ -1210,8 +1210,7 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   TObjArray * timeGainSplines = 0x0;
   TGraphErrors * grPadEqual = 0x0;
   TGraphErrors*  grChamberGain[3]={0x0,0x0,0x0};
-  TGraphErrors*  grDipAngle[3]={0x0,0x0,0x0};
-  TF1*  funDipAngle[3]={0x0,0x0,0x0};
+  TF1*  funDipAngle[4]={0x0,0x0,0x0,0x0};
   //
   //
   if (recoParam->GetNeighborRowsDedx() == 0) rowThres = 0;	
@@ -1233,11 +1232,9 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
 	//
 	if (type==1) grPadEqual = (TGraphErrors * ) timeGainSplines->FindObject("TGRAPHERRORS_MEANQMAX_PADREGIONGAIN_BEAM_ALL");
 	if (type==0) grPadEqual = (TGraphErrors * ) timeGainSplines->FindObject("TGRAPHERRORS_MEANQTOT_PADREGIONGAIN_BEAM_ALL");
-        const char* names[3]={"SHORT","MEDIUM","LONG"};
-        for (Int_t iPadRegion=0; iPadRegion<3; ++iPadRegion) {
+        const char* names[4]={"SHORT","MEDIUM","LONG","ABSOLUTE"};
+        for (Int_t iPadRegion=0; iPadRegion<4; ++iPadRegion) {
           grChamberGain[iPadRegion]=(TGraphErrors*)timeGainSplines->FindObject(Form("TGRAPHERRORS_MEAN_CHAMBERGAIN_%s_BEAM_ALL",names[iPadRegion]));
-	  if (type==1) grDipAngle[iPadRegion]=(TGraphErrors*)timeGainSplines->FindObject(Form("TGRAPHERRORS_QMAX_DIPANGLE_%s_BEAM_ALL",names[iPadRegion]));
-	  if (type==0) grDipAngle[iPadRegion]=(TGraphErrors*)timeGainSplines->FindObject(Form("TGRAPHERRORS_QTOT_DIPANGLE_%s_BEAM_ALL",names[iPadRegion]));
 	  if (type==1) funDipAngle[iPadRegion]=(TF1*)timeGainSplines->FindObject(Form("TF1_QMAX_DIPANGLE_%s_BEAM_ALL",names[iPadRegion]));
 	  if (type==0) funDipAngle[iPadRegion]=(TF1*)timeGainSplines->FindObject(Form("TF1_QTOT_DIPANGLE_%s_BEAM_ALL",names[iPadRegion]));
 	}
@@ -1348,9 +1345,11 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
     // dip angle correction
     //
     Float_t corrDipAngle = 1;
+    Float_t corrDipAngleAbs = 1;
     //    if (grDipAngle[ipad]) corrDipAngle = grDipAngle[ipad]->Eval(GetTgl());
     Double_t tgl=GetTgl();
     if (funDipAngle[ipad]) corrDipAngle = funDipAngle[ipad]->Eval(tgl);
+    if (funDipAngle[3]) corrDipAngleAbs = funDipAngle[3]->Eval(tgl);
     //
     // pressure temperature and high voltage correction
     //
@@ -1364,6 +1363,7 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
     amp[ncl]/=gainEqualPadRegion;
     amp[ncl]/=gainChamber;
     amp[ncl]/=corrDipAngle;
+    amp[ncl]/=corrDipAngleAbs;
     //
     ncl++;
   }

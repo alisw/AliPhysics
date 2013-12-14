@@ -9,6 +9,7 @@
 #include "TH3F.h"
 #include "TF1.h"
 #include "THnSparse.h"
+#include "THn.h"
 #include "TMatrixD.h"
 #include "TVectorD.h"
 class TH1F;
@@ -45,6 +46,8 @@ public:
   THnSparseF *      GetHistGainSector() const {return fHistGainSector;};
   THnSparseF *      GetHistPadEqual() const {return fHistPadEqual;};
   THnSparseF *      GetHistGainMult() const {return fHistGainMult;};  
+  THnF       *      GetHistTopology() const {return fHistTopology;};
+  //
   THnSparseF * GetHistdEdxMap() const { return fHistdEdxMap;}      // 4D dedx histogram
   THnSparseF * GetHistdEdxMax() const { return fHistdEdxMax;}      // 4D dedx histogram
   THnSparseF * GetHistdEdxTot() const { return fHistdEdxTot;}      // 4D dedx histogram
@@ -117,6 +120,7 @@ private:
   THnSparseF * fHistGainSector;   //  histogram which shows MIP peak for each of the 3x36 sectors (pad region)
   THnSparseF * fHistPadEqual;     //  histogram for the equalization of the gain in the different pad regions -> pass0
   THnSparseF * fHistGainMult;     //  histogram which shows decrease of MIP signal as a function
+  THnF       * fHistTopology;     //  histogram for topological corrections of signal - dip angle theta and curvature (1/pT)
   TMatrixD *fPIDMatrix;           //! custom PID matrix
   //
   THnSparseF * fHistdEdxMap;      // 4D dedx histogram - per sector/phi
