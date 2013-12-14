@@ -217,7 +217,7 @@ AliTPCcalibGainMult::AliTPCcalibGainMult(const Text_t *name, const Text_t *title
   //              (0.) weighted dE/dx, (1.) 0:Qtot - 1:Qmax, (2.) tgl, (3.) 1./pT
   Int_t binsTopology[4]        = {145,                    2,       20,  20};
   Double_t xminTopology[4]     = { 10,                 -0.5,       -1,   0};
-  Double_t xmaxTopology[4]     = { 10,                  1.5,       +1,   5};
+  Double_t xmaxTopology[4]     = { 300,                  1.5,       +1,   5};
   TString axisNameTopology[4]  = {"dEdx",        "QtotQmax",    "tgl", "1/pT"};
   TString axisTitleTopology[4] = {"dEdx",        "QtotQmax",    "tgl", "1/pT"};
   //
@@ -226,6 +226,11 @@ AliTPCcalibGainMult::AliTPCcalibGainMult(const Text_t *name, const Text_t *title
     fHistTopology->GetAxis(iaxis)->SetName(axisNameTopology[iaxis]);
     fHistTopology->GetAxis(iaxis)->SetTitle(axisTitleTopology[iaxis]);
   }
+  //
+  // MI suggestion for all dEdx histograms we shpuld keep log scale - to have the same relative resolution
+  //
+  // e.g: I want to enable -   AliTPCcalibBase::BinLogX(fHistTopology->GetAxis(0));
+
   //
   //
   //                    dedx maps - bigger granulatity in phi -
