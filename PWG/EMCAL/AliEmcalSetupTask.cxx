@@ -13,6 +13,7 @@
 #include "AliCDBManager.h"
 #include "AliEMCALGeometry.h"
 #include "AliESDEvent.h"
+#include "AliGRPManager.h"
 #include "AliGeomManager.h"
 #include "AliMagF.h"
 #include "AliOADBContainer.h"
@@ -84,13 +85,28 @@ void AliEmcalSetupTask::UserExec(Option_t *)
   }
 
   AliCDBManager *man = 0;
-  if (fOcdbPath.Length()>0) {
-    AliInfo(Form("Setting up OCDB"));
-    man = AliCDBManager::Instance();
-    if (!man->IsDefaultStorageSet())
+  man = AliCDBManager::Instance();
+  if (!man->IsDefaultStorageSet()) {
+    if (fOcdbPath.Length()>0) {
+      AliInfo(Form("Setting up OCDB"));
       man->SetDefaultStorage(fOcdbPath);
+      man->SetRun(runno);
+    } else {
+      man = 0;
+    }
+  } else {
     if (man->GetRun()!=runno)
       man->SetRun(runno);
+  }
+  
+  if (man) {
+    AliInfo(Form("Loading grp data from OCDB"));
+    AliGRPManager GRPManager;
+    GRPManager.ReadGRPEntry();
+    GRPManager.SetMagField();
+    AliInfo(Form("Loading geometry from OCDB"));
+    AliGeomManager::LoadGeometry();
+    AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC TRD EMCAL");
   }
 
   TGeoManager *geo = AliGeomManager::GetGeometry();
@@ -100,16 +116,11 @@ void AliEmcalSetupTask::UserExec(Option_t *)
       AliInfo(Form("Loading geometry from %s", fname.Data()));
       AliGeomManager::LoadGeometry(fname);
       geo = AliGeomManager::GetGeometry();
-    } else if (man) {
-      AliInfo(Form("Loading geometry from OCDB"));
-      AliGeomManager::LoadGeometry();
-      AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC TRD EMCAL");
-      geo = AliGeomManager::GetGeometry();
     }
-    if (geo) {
-      AliInfo(Form("Locking geometry"));
-      geo->LockGeometry();
-    }
+  }
+  if (geo) {
+    AliInfo(Form("Locking geometry"));
+    geo->LockGeometry();
   }
 
   if (!TGeoGlobalMagField::Instance()->GetField()) { // construct field map
