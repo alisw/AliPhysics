@@ -8,7 +8,8 @@ AliAnalysisTask *AddTaskHFEpPb(Bool_t MCthere = kFALSE,
                                Bool_t kITS_Sys = kFALSE,
                                Bool_t kTPCTOFTRD_Ref = kFALSE,
                                Bool_t kTPCTOFTRD_mbPID = kFALSE,
-                               Bool_t kTPCTOFTRD_PID = kFALSE,
+			       Bool_t kTPCTOFTRD_PID1 = kFALSE,
+                               Bool_t kTPCTOFTRD_PID2 = kFALSE,
                                int TRDtrigger = 0
   ){
   //get the current analysis manager
@@ -152,12 +153,20 @@ AliAnalysisTask *AddTaskHFEpPb(Bool_t MCthere = kFALSE,
     RegisterTaskPID2mbTRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,kDefTPCs,kDefTPCu,0,0,AliHFEextraCuts::kBoth,kFALSE,TRDtrigger,5,2,"TRD,TPC",etacut);
   }
 
-  if(kTPCTOFTRD_PID){
+  if(kTPCTOFTRD_PID1){
     // without TOF
-    RegisterTaskPID2TRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl1[0],&dEdxhm[0],0,0,AliHFEextraCuts::kBoth,1,TRDtrigger,5,4,"TRD,TPC");
-    RegisterTaskPID2TRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl1[0],&dEdxhm[0],0,0,AliHFEextraCuts::kBoth,1,TRDtrigger,5,4,"TPC,TRD");
-    RegisterTaskPID2TRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl1[0],&dEdxhm[0],0,0,AliHFEextraCuts::kBoth,1,TRDtrigger,6,4,"TRD,TPC");
-    RegisterTaskPID2TRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl1[0],&dEdxhm[0],0,0,AliHFEextraCuts::kBoth,1,TRDtrigger,6,4,"TPC,TRD");
+    RegisterTaskPID2TRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl1[0],&dEdxhm[0],0,0,AliHFEextraCuts::kBoth,1,TRDtrigger,1,5,4,"TRD,TPC");
+    RegisterTaskPID2TRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl1[0],&dEdxhm[0],0,0,AliHFEextraCuts::kBoth,1,TRDtrigger,1,5,4,"TPC,TRD");
+    RegisterTaskPID2TRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl1[0],&dEdxhm[0],0,0,AliHFEextraCuts::kBoth,1,TRDtrigger,1,6,4,"TRD,TPC");
+    RegisterTaskPID2TRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl1[0],&dEdxhm[0],0,0,AliHFEextraCuts::kBoth,1,TRDtrigger,1,6,4,"TPC,TRD");
+  }
+
+  if(kTPCTOFTRD_PID2){
+    // without TOF
+    RegisterTaskPID2TRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl1[0],&dEdxhm[0],0,0,AliHFEextraCuts::kBoth,1,TRDtrigger,2,5,4,"TRD,TPC");
+    RegisterTaskPID2TRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl1[0],&dEdxhm[0],0,0,AliHFEextraCuts::kBoth,1,TRDtrigger,2,5,4,"TPC,TRD");
+    RegisterTaskPID2TRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl1[0],&dEdxhm[0],0,0,AliHFEextraCuts::kBoth,1,TRDtrigger,2,6,4,"TRD,TPC");
+    RegisterTaskPID2TRD(MCthere,isAOD,kDefTPCcl,kDefTPCclPID,kDefITScl,kDefDCAr,kDefDCAz,&tpcl1[0],&dEdxhm[0],0,0,AliHFEextraCuts::kBoth,1,TRDtrigger,2,6,4,"TPC,TRD");
   }
 
   return NULL;
@@ -363,7 +372,7 @@ AliAnalysisTask *RegisterTaskPID2TRD(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=12
 				     Double_t *tpcdEdxcuthigh=NULL,
 				     Double_t tofs=3., Int_t tofm=0,
 				     Int_t itshitpixel = AliHFEextraCuts::kBoth, Int_t icent=1,
-				     Int_t TRDtrigger=0,Int_t trdl=6, Int_t trde=4,TString detector){
+				     Int_t TRDtrigger=0,Int_t trdpidmethod=1, Int_t trdl=6, Int_t trde=4,TString detector){
 
   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/pPb/ConfigHFEpPbTRD.C");
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -385,12 +394,12 @@ AliAnalysisTask *RegisterTaskPID2TRD(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=12
   Int_t itofs = (Int_t)(tofs*10.);
   Int_t ipixelany = itshitpixel;
 
-  TString appendix(TString::Format("TPCc%dp%dITS%dr%dz%dTPCs%dTOFs%dm%ipa%dTRDt%dl%ie%i%sc%s",tpcCls,
-                   tpcClsPID,itsCls,idcaxy,idcaz,tpclow,itofs,tofm,ipixelany,TRDtrigger,trdl,trde,detused.Data(),cesti.Data()));
+  TString appendix(TString::Format("TPCc%dp%dITS%dr%dz%dTPCs%dTOFs%dm%ipa%dTRDt%dm%il%ie%i%sc%s",tpcCls,
+                   tpcClsPID,itsCls,idcaxy,idcaz,tpclow,itofs,tofm,ipixelany,TRDtrigger,trdpidmethod,trdl,trde,detused.Data(),cesti.Data()));
   printf("Add macro appendix %s\n", appendix.Data());
 
   AliAnalysisTaskHFE *task = ConfigHFEpPbTRD(useMC, isAOD, appendix, tpcCls, tpcClsPID, itsCls, dcaxy, dcaz,
-                             tpcdEdxcutlow,tpcdEdxcuthigh, tofs, tofm, itshitpixel, icent, -0.8, 0.8, TRDtrigger,trdl,trde,detector);
+                             tpcdEdxcutlow,tpcdEdxcuthigh, tofs, tofm, itshitpixel, icent, -0.8, 0.8, TRDtrigger,trdpidmethod,trdl,trde,detector);
 
   if(isAOD)
     task->SetAODAnalysis();
