@@ -315,6 +315,8 @@ public:
     kMultV0A,                // VZERO multiplicity and ADC amplitudes
     kMultV0C,
     kMultV0,
+    kEqMultV0A,              // equalized VZERO multiplicity
+    kEqMultV0C,
     kAdcV0A,
     kAdcV0C,
     kAdcV0,
@@ -428,7 +430,7 @@ public:
   static void InitAODpidUtil(Int_t type=0);
   static void InitEstimatorAvg(const Char_t* filename);
   static void InitTRDpidEffHistograms(const Char_t* filename);
-  static void InitEffMap(const Char_t* filename);
+  static Bool_t InitEffMap(const Char_t* filename);
   static void SetVZEROCalibrationFile(const Char_t* filename) {fgVZEROCalibrationFile = filename;}
   
   static void SetVZERORecenteringFile(const Char_t* filename) {fgVZERORecenteringFile = filename;}
@@ -1739,6 +1741,8 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   AliVVZERO* vzeroData = event->GetVZEROData();
   values[AliDielectronVarManager::kMultV0A] = 0.0;
   values[AliDielectronVarManager::kMultV0C] = 0.0;
+  values[AliDielectronVarManager::kEqMultV0A] = 0.0;
+  values[AliDielectronVarManager::kEqMultV0C] = 0.0;
   values[AliDielectronVarManager::kAdcV0A]  = 0.0;
   values[AliDielectronVarManager::kAdcV0C]  = 0.0;
   for(Int_t i=0; i<32; ++i) {
@@ -1748,6 +1752,8 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
     //values[AliDielectronVarManager::kVZEROchMult+32+i] = event->GetVZEROEqMultiplicity(i+32);
     values[AliDielectronVarManager::kMultV0A] += vzeroData->GetMultiplicityV0A(i);
     values[AliDielectronVarManager::kMultV0C] += vzeroData->GetMultiplicityV0C(i);
+    values[AliDielectronVarManager::kEqMultV0A] += event->GetVZEROEqMultiplicity(i);
+    values[AliDielectronVarManager::kEqMultV0C] += event->GetVZEROEqMultiplicity(i+32);
     //values[AliDielectronVarManager::kAdcV0A] += vzeroData->GetAdcV0A(i);
     //values[AliDielectronVarManager::kAdcV0C] += vzeroData->GetAdcV0C(i);
   }
@@ -2181,21 +2187,24 @@ inline void AliDielectronVarManager::InitTRDpidEffHistograms(const Char_t* filen
   }
 }
 
-inline void AliDielectronVarManager::InitEffMap(const Char_t* filename) {
+inline Bool_t AliDielectronVarManager::InitEffMap(const Char_t* filename) {
   //
   // init an efficiency object for on-the-fly correction calculations
   //
   fgEffMap=0x0;
   TFile* file=TFile::Open(filename);
+  if(!file) return 0;
   THnBase *hGen = (THnBase*) file->Get("hGenerated");
   THnBase *hFnd = (THnBase*) file->Get("hFound");
-  if(!hFnd || !hGen) return;
+  if(!hFnd || !hGen) return 0;
 
   fgEffMap  = (THnBase*) hFnd->Clone("effMap");
   fgEffMap->Reset();
   fgEffMap->Sumw2();
   fgEffMap->Divide(hFnd, hGen);//, 1, 1, "");  //assume uncorrelated err, otherwise give option "B"
-  if(fgEffMap) printf("[I] AliDielectronVarManager::InitEffMap efficiency maps loaded! \n");
+  printf("[I] AliDielectronVarManager::InitEffMap efficiency maps loaded! \n");
+  return 1;
+  
 }
 
 inline Double_t AliDielectronVarManager::GetSingleLegEff(Double_t * const values) {
@@ -2209,11 +2218,11 @@ inline Double_t AliDielectronVarManager::GetSingleLegEff(Double_t * const values
   for(Int_t idim=0; idim<dim; idim++) {
     UInt_t var = GetValueType(fgEffMap->GetAxis(idim)->GetName());
     idx[idim] = fgEffMap->GetAxis(idim)->FindBin(values[var]);
-    /* if(idx[idim] < 0 || idx[idim]>fgEffMap->GetAxis(idim)->GetNbins())  */
-    /*   printf(" [E] AliDielectronVarManager::GetSingleLegEff values %f for %s not found in axis range \n",values[var],fgEffMap->GetAxis(idim)->GetName()); */
+    if(idx[idim] < 0 || idx[idim]>fgEffMap->GetAxis(idim)->GetNbins())
+      printf(" [E] AliDielectronVarManager::GetSingleLegEff values %f for %s not found in axis range \n",values[var],fgEffMap->GetAxis(idim)->GetName());
     //    printf(" (%d,%f,%s) \t",idx[idim],values[var],fgEffMap->GetAxis(idim)->GetName());
   }
-  //  printf(" bin content %f+-%f \n",fgEffMap->GetBinContent(idx), fgEffMap->GetBinError(idx));
+  printf(" bin content %f+-%f \n",fgEffMap->GetBinContent(idx), fgEffMap->GetBinError(idx));
   if(fgEffMap->GetBinContent(idx)<0.01 || fgEffMap->GetBinError(idx)/fgEffMap->GetBinContent(idx)>0.2) return 0.0;
   return (fgEffMap->GetBinContent(idx));
 }
