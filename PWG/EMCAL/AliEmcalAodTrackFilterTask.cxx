@@ -133,7 +133,6 @@ void AliEmcalAodTrackFilterTask::UserExec(Option_t *)
 	track->Phi() < fMinTrackPhi || track->Phi() > fMaxTrackPhi)
       continue;
 
-    Bool_t isEmc = kFALSE;
     Int_t type = -1;
 
     if (fAODfilterBits[0] < 0) {
@@ -185,14 +184,21 @@ void AliEmcalAodTrackFilterTask::UserExec(Option_t *)
     AliAODTrack *newt = new ((*fTracksOut)[nacc]) AliAODTrack(*track);
     if (fDoPropagation)
       AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(newt,fDist);
-
     if (fModifyTrack) {
       newt->SetLabel(label);
-      //newt->SetType((AliAODTrack::AODTrk_t)type);
-      //      if (isEmc)
-      //	newt->SetStatus(AliVTrack::kEMCALmatch);
-      //else 
-      //	newt->ResetStatus(AliVTrack::kEMCALmatch);
+      if (type==0) {
+        newt->SetBit(BIT(27),0);
+        newt->SetBit(BIT(28),0);
+      } else if (type==1) {
+        newt->SetBit(BIT(27),1);
+        newt->SetBit(BIT(28),0);
+      } else if (type==2) {
+        newt->SetBit(BIT(27),1);
+        newt->SetBit(BIT(28),1);
+      } else if (type==3) {
+        newt->SetBit(BIT(27),0);
+        newt->SetBit(BIT(28),1);
+      }
     }
     ++nacc;
   }
