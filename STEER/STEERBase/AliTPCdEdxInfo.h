@@ -9,6 +9,7 @@ public:
   AliTPCdEdxInfo();
   AliTPCdEdxInfo(const AliTPCdEdxInfo& source);
   AliTPCdEdxInfo& operator=(const AliTPCdEdxInfo& source);
+  Double_t GetWeightedMean(Int_t qType, Int_t wType, Double_t w0, Double_t w1, Double_t w2); 
   //
   // qTot info
   void     GetTPCSignalRegionInfo(Double_t signal[4], Char_t ncl[3], Char_t nrows[3]) const;
@@ -25,7 +26,8 @@ public:
   void     SetTPCSignalRegionInfoQmax(Double_t signal[4], Char_t ncl[3], Char_t nrows[3]);
   void     SetTPCSignalsQmax(Double_t signal[4]);
   
-  
+  Double_t GetSignalTot(Int_t index){ return fTPCsignalRegion[index];}
+  Double_t GetSignalMax(Int_t index){ return fTPCsignalRegionQmax[index];}
   //
   Double_t GetTPCsignalShortPad()      const {return fTPCsignalRegion[0];}
   Double_t GetTPCsignalMediumPad()     const {return fTPCsignalRegion[1];}
