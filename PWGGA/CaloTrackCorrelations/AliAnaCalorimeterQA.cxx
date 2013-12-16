@@ -302,7 +302,7 @@ void AliAnaCalorimeterQA::CalculateAverageTime(AliVCluster *clus,
   // First recalculate energy in case non linearity was applied
   Float_t  energy = 0;
   Float_t  ampMax = 0, amp = 0;
-  Int_t    absIdMax =-1;
+//  Int_t    absIdMax =-1;
   for (Int_t ipos = 0; ipos < clus->GetNCells(); ipos++) 
   {
     Int_t id       = clus->GetCellsAbsId()[ipos];
@@ -316,7 +316,7 @@ void AliAnaCalorimeterQA::CalculateAverageTime(AliVCluster *clus,
     if(amp> ampMax) 
     {
       ampMax   = amp;
-      absIdMax = id;
+//      absIdMax = id;
     }
     
   } // energy loop       
@@ -1016,7 +1016,8 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(TLorentzVector mom, Bool_t match
   
   Int_t pdg0  =-1;Int_t status = -1; Int_t iMother = -1; Int_t iParent = -1;
   Float_t vxMC= 0; Float_t vyMC = 0;	
-  Float_t eMC = 0; Float_t ptMC= 0; Float_t phiMC =0; Float_t etaMC = 0;
+  Float_t eMC = 0; //Float_t ptMC= 0;
+  Float_t phiMC =0; Float_t etaMC = 0;
   Int_t charge = 0;	
   
   //Check the origin.
@@ -1121,7 +1122,7 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(TLorentzVector mom, Bool_t match
     }
     
     eMC    = primary->Energy();
-    ptMC   = primary->Pt();
+    //ptMC   = primary->Pt();
     phiMC  = primary->Phi();
     etaMC  = primary->Eta();
     pdg    = TMath::Abs(primary->GetPdgCode());
@@ -1226,7 +1227,7 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(TLorentzVector mom, Bool_t match
     
     status = aodprimary->IsPrimary();
     eMC    = aodprimary->E();
-    ptMC   = aodprimary->Pt();
+    //ptMC   = aodprimary->Pt();
     phiMC  = aodprimary->Phi();
     etaMC  = aodprimary->Eta();
     pdg    = TMath::Abs(aodprimary->GetPdgCode());
