@@ -32,8 +32,7 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
       void             SetLUT(AliMUONTriggerLut* lut) { fLUT = lut; }
                        /// Set Coinc 44 (0/1 = coinc34/coinc44)
       void             SetCoinc44(Int_t coinc44=0) { fCoinc44 = coinc44; }
-      
-      virtual void     Setbit(Int_t strip, Int_t cathode, Int_t chamber);
+    
       virtual void     SetbitM(Int_t strip, Int_t cathode, Int_t chamber);
 
       virtual void     Pattern(const Option_t *option = "X Y") const; // default option displays X then Y bp
@@ -49,23 +48,13 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
       virtual Bool_t   GetTC() const {return fMpLocalBoard->GetTC();}
 
                        /// Return Board number
-      virtual Int_t    GetNumber() const;
+      virtual Int_t    GetNumber() const { return fMpLocalBoard->GetId(); }
+    
+      /// Is notified (copy boards are not)
+      virtual Bool_t    IsNotified() const { return fMpLocalBoard->IsNotified(); }
 
                        /// Return Crate name
       virtual TString  GetCrate() const {return fMpLocalBoard->GetCrate();}
-
-
-                       /// Return X34
-      virtual void     GetX34(UShort_t *X) const {for (Int_t i=0;i<2;i++) X[i] = fXY[0][i+2];}
-
-                       /// Set X34
-      virtual void     SetX34(UShort_t *X) {for (Int_t i=0;i<2;i++) fXY[0][i+2] = X[i];}
-
-                       /// Return Y
-      virtual void     GetY(UShort_t *Y) const {for (Int_t i=0;i<4;i++) Y[i] = fXY[1][i];}
-
-                       /// Set Y
-      virtual void     SetY(UShort_t *Y) {for (Int_t i=0;i<4;i++) fXY[1][i] = Y[i];}
 
                        /// Return XY
       virtual void     GetXY(UShort_t XY[2][4]) const {for (Int_t i=0;i<2;i++) for (Int_t j=0;j<4;j++) XY[i][j] = fXY[i][j];}

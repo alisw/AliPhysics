@@ -75,7 +75,6 @@ Bool_t AliMUONTriggerUtilities::Init()
   AliMUONDigitStoreV2R digitStore, digitStorePart;
   AliMUONTriggerStoreV1 triggerStore, triggerStorePart;
 
-//  // In the trigger logic, when the regional input is masked in the
   TArrayI activeBoards(AliMUONConstants::NTriggerCircuit());
 //  for (Int_t iSide = 0; iSide < 2; iSide++) // right & left side
 //  {
@@ -140,14 +139,30 @@ Bool_t AliMUONTriggerUtilities::Init()
     Int_t detElemId = dig->DetElemId();
     Int_t board = dig->ManuId();
     Int_t strip = dig->ManuChannel();
-    AliMUONVDigit* currDigit = 0x0;
-    if ( activeBoards[board-1] == 1 ) currDigit = digitStoreMasked.FindObject(detElemId, board, strip, cath);
+    AliMUONVDigit* currDigit = digitStoreMasked.FindObject(detElemId, board, strip, cath);
+    Int_t ich = detElemId/100-11;
+    const AliMpVSegmentation* seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, AliMp::GetCathodType(cath));
+    AliMpPad pad = seg->PadByIndices(dig->PadX(), dig->PadY(), kTRUE);
     Bool_t isMasked = ( currDigit ) ? kFALSE : kTRUE;
+    
+    if ( currDigit ) {
+      // Check if board is active
+      // For the non-bending plane the digit is created for the first board only
+      // The first board may be masked, but there may be some boards which are not.
+      // If so, the strip won't be masked, so we should keep it
+      Bool_t allBoardsMasked = kTRUE;
+      for (Int_t iloc=0; iloc<pad.GetNofLocations(); iloc++) {
+        Int_t currBoard = pad.GetLocalBoardId(iloc);
+        if ( activeBoards[currBoard-1] == 1 ) {
+          allBoardsMasked = kFALSE;
+          break;
+        }
+      }
+      isMasked = allBoardsMasked;
+    }
+    
     if ( isMasked ) fMaskedDigitsStore->Add(*((AliMUONVDigit*)dig->Clone()), AliMUONVDigitStore::kDeny);
     else {
-      Int_t ich = detElemId/100-11;
-      const AliMpVSegmentation* seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, AliMp::GetCathodType(cath));
-      AliMpPad pad = seg->PadByIndices(dig->PadX(), dig->PadY(), kTRUE);
       for (Int_t iloc=0; iloc<pad.GetNofLocations(); iloc++) {
         Int_t currBoard = pad.GetLocalBoardId(iloc);
         Int_t arrayIndex = GetArrayIndex(cath, ich, currBoard);

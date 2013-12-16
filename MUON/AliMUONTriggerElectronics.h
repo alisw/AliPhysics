@@ -72,13 +72,9 @@ class AliMUONTriggerElectronics : public TObject
       AliMUONTriggerElectronics&  operator = (const AliMUONTriggerElectronics& right);
 
       void FeedCopyNeighbours();
-     
-      /// set copy card array
-      void SetCopyInput();
+    
 
    private:
-      TList*                     fCopyXInput[2];         ///< list of copy X input from local to local board
-      TList*                     fCopyYInput[2];         ///< list of copy Y input from local to local board
       AliMUONTriggerCrateStore  *fCrates;             ///< Crate array
       AliMUONGlobalTriggerBoard *fGlobalTriggerBoard; ///< Global trigger board
       
