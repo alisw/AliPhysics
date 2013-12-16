@@ -91,7 +91,7 @@ public:
   virtual Float_t NumberOfSigmasTPC  (const AliVParticle *track, AliPID::EParticleType type, AliTPCPIDResponse::ETPCdEdxSource dedxSource) const;
   virtual Float_t NumberOfSigmasEMCAL(const AliVParticle *track, AliPID::EParticleType type, Double_t &eop, Double_t showershape[4]) const;
   virtual Float_t NumberOfSigmasTOF  (const AliVParticle *track, AliPID::EParticleType type) const;
-  virtual Float_t NumberOfSigmasTOF  (const AliVParticle *track, AliPID::EParticleType type, const Float_t /*timeZeroTOF*/) const { return NumberOfSigmasTOF(track,type); }
+  virtual Float_t NumberOfSigmasTOF  (const AliVParticle *track, AliPID::EParticleType type, Float_t /*timeZeroTOF*/) const { return NumberOfSigmasTOF(track,type); }
   virtual Float_t NumberOfSigmasHMPID(const AliVParticle *track, AliPID::EParticleType type) const;
   virtual Float_t NumberOfSigmasEMCAL(const AliVParticle *track, AliPID::EParticleType type) const;
 
