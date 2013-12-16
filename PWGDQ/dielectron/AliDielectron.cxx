@@ -46,6 +46,7 @@ The names are available via the function PairClassName(Int_t i)
 #include <TList.h>
 #include <TMath.h>
 #include <TObject.h>
+#include <TGrid.h>
 
 #include <AliKFParticle.h>
 
@@ -127,7 +128,8 @@ AliDielectron::AliDielectron() :
   fEstimatorFilename(""),
   fTRDpidCorrectionFilename(""),
   fVZEROCalibrationFilename(""),
-  fVZERORecenteringFilename("")
+  fVZERORecenteringFilename(""),
+  fEffMapFilename("")
 {
   //
   // Default constructor
@@ -170,7 +172,8 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fEstimatorFilename(""),
   fTRDpidCorrectionFilename(""),
   fVZEROCalibrationFilename(""),
-  fVZERORecenteringFilename("")
+  fVZERORecenteringFilename(""),
+  fEffMapFilename("")
 {
   //
   // Named constructor
@@ -218,7 +221,11 @@ void AliDielectron::Init()
   if(fTRDpidCorrectionFilename.Contains(".root")) AliDielectronVarManager::InitTRDpidEffHistograms(fTRDpidCorrectionFilename.Data());
   if(fVZEROCalibrationFilename.Contains(".root")) AliDielectronVarManager::SetVZEROCalibrationFile(fVZEROCalibrationFilename.Data());
   if(fVZERORecenteringFilename.Contains(".root")) AliDielectronVarManager::SetVZERORecenteringFile(fVZERORecenteringFilename.Data());
-  
+  if(fEffMapFilename.Contains(".root")) {
+    if(fEffMapFilename.Contains("alien://")) TGrid::Connect("alien://",0,0,"t");
+    AliDielectronVarManager::InitEffMap(fEffMapFilename.Data());
+  }
+
   if (fMixing) fMixing->Init(this);
   if (fHistoArray) {
     fHistoArray->SetSignalsMC(fSignalsMC);
