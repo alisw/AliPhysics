@@ -2218,7 +2218,7 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
   Bool_t  badClMax    = kFALSE;
   Bool_t  badCeMax    = kFALSE;
   Bool_t  exoMax      = kFALSE;
-  Int_t   absIdMaxTrig= -1;
+//  Int_t   absIdMaxTrig= -1;
   Int_t   absIdMaxMax = -1;
   
   Int_t   nOfHighECl  = 0 ;
@@ -2247,7 +2247,7 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
     
     Bool_t   badCluster = GetCaloUtils()->GetEMCALRecoUtils()->ClusterContainsBadChannel(GetCaloUtils()->GetEMCALGeometry(),
                                                                                          clus->GetCellsAbsId(),clus->GetNCells());
-    UShort_t cellMax[]  = {absIdMax};
+    UShort_t cellMax[]  = {(UShort_t) absIdMax};
     Bool_t   badCell    = GetCaloUtils()->GetEMCALRecoUtils()->ClusterContainsBadChannel(GetCaloUtils()->GetEMCALGeometry(),cellMax,1);
     
     // if cell is bad, it can happen that time calibration is not available,
@@ -2321,7 +2321,7 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
               fTriggerClusterIndex = iclus;
               fTriggerClusterId    = idclus;
               fIsTriggerMatch      = kTRUE;
-              absIdMaxTrig         = absIdMax;
+//              absIdMaxTrig         = absIdMax;
             }
           }
         }// cell patch loop
