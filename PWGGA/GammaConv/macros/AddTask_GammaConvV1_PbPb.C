@@ -4,7 +4,8 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
                               Int_t enableQAPhotonTask = 0, // enable additional QA task
                               TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
                               Bool_t doWeighting = kFALSE,  //enable Weighting
-                              TString cutnumberAODBranch = "1000000060084000001500000" 
+                              TString cutnumberAODBranch = "1000000060084000001500000",
+                              TString periodName = "LHC13d2"
                            ) {
 
    // ================= Load Librariers =================================
@@ -444,6 +445,24 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 2] = "5450001002092970028250400000"; mesonCutArray[ 2] = "01525065009000"; // 40-50% 
       cutarray[ 3] = "5560001002092970028250400000"; mesonCutArray[ 3] = "01525065009000"; // 50-60% 
       cutarray[ 4] = "5670001002092970028250400000"; mesonCutArray[ 4] = "01525065009000"; // 60-70%                
+   } else if ( trainConfig == 59){ // cleaner cuts
+      cutarray[ 0] = "6010002002092970028250400000"; mesonCutArray[ 0] = "01525065009000"; // 0-5%
+      cutarray[ 1] = "6120002002092970028250400000"; mesonCutArray[ 1] = "01525065009000"; // 5-10%
+      cutarray[ 2] = "5010002002092970028250400000"; mesonCutArray[ 2] = "01525065009000"; // 0-10%
+      cutarray[ 3] = "5120002002092970028250400000"; mesonCutArray[ 3] = "01525065009000"; // 10-20%
+      cutarray[ 4] = "5020002002092970028250400000"; mesonCutArray[ 4] = "01525065009000"; // 0-20%
+   } else if ( trainConfig == 60) { // cleaner cuts
+      cutarray[ 0] = "5240002002092970028250400000"; mesonCutArray[ 0] = "01525065009000"; // 20-40%
+      cutarray[ 1] = "5460002002092970028250400000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
+      cutarray[ 2] = "5680002002092970028250400000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
+      cutarray[ 3] = "5480002002092970028250400000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
+      cutarray[ 4] = "5350002002092970028250400000"; mesonCutArray[ 4] = "01525065009000"; // 30-50%  
+   } else if ( trainConfig == 61){ // cleaner cuts
+      cutarray[ 0] = "5230002002092970028250400000"; mesonCutArray[ 0] = "01525065009000"; // 20-30% 
+      cutarray[ 1] = "5340002002092970028250400000"; mesonCutArray[ 1] = "01525065009000"; // 30-40% 
+      cutarray[ 2] = "5450002002092970028250400000"; mesonCutArray[ 2] = "01525065009000"; // 40-50% 
+      cutarray[ 3] = "5560002002092970028250400000"; mesonCutArray[ 3] = "01525065009000"; // 50-60% 
+      cutarray[ 4] = "5670002002092970028250400000"; mesonCutArray[ 4] = "01525065009000"; // 60-70%                   
    } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
@@ -453,10 +472,16 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
    TList *MesonCutList = new TList();
 
    TList *HeaderList = new TList();
-   TObjString *Header1 = new TObjString("pi0_1");
-   HeaderList->Add(Header1);
-//    TObjString *Header3 = new TObjString("eta_2");
-//    HeaderList->Add(Header3);
+   if (periodName.CompareTo("LHC13d2")==0){
+      TObjString *Header1 = new TObjString("pi0_1");
+      HeaderList->Add(Header1);
+   //    TObjString *Header3 = new TObjString("eta_2");
+   //    HeaderList->Add(Header3);
+
+   } else if (periodName.CompareTo("LHC12a17x_fix")==0){
+      TObjString *Header1 = new TObjString("PARAM");
+      HeaderList->Add(Header1);
+   }
    
    ConvCutList->SetOwner(kTRUE);
    AliConversionCuts **analysisCuts = new AliConversionCuts*[numberOfCuts];

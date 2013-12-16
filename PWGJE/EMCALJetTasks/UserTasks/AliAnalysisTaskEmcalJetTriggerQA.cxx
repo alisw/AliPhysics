@@ -47,7 +47,6 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
   fh3PtEtaPhiTracks(0),
   fh3PtEtaPhiTracksOnEmcal(0),
   fh3PtEtaPhiTracksProp(0),
-  fh3PtEtaPhiTracksNoProp(0),
   fh3PtEtaPhiJetFull(0),
   fh3PtEtaPhiJetCharged(0),
   fh2NJetsPtFull(0),
@@ -98,7 +97,6 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
   fh3PtEtaPhiTracks(0),
   fh3PtEtaPhiTracksOnEmcal(0),
   fh3PtEtaPhiTracksProp(0),
-  fh3PtEtaPhiTracksNoProp(0),
   fh3PtEtaPhiJetFull(0),
   fh3PtEtaPhiJetCharged(0),
   fh2NJetsPtFull(0),
@@ -211,7 +209,7 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   Double_t *binsPt = new Double_t[fgkNPtBins+1];
   for(Int_t i=0; i<=fgkNPtBins; i++) binsPt[i]=(Double_t)kMinPt + (kMaxPt-kMinPt)/fgkNPtBins*(Double_t)i ;
 
-  Int_t fgkNPhiBins = 18*8;
+  Int_t fgkNPhiBins = 18*6;
   Float_t kMinPhi   = 0.;
   Float_t kMaxPhi   = 2.*TMath::Pi();
   Double_t *binsPhi = new Double_t[fgkNPhiBins+1];
@@ -235,7 +233,7 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   Double_t *binsConst = new Double_t[fgkNConstBins+1];
   for(Int_t i=0; i<=fgkNConstBins; i++) binsConst[i]=(Double_t)kMinConst + (kMaxConst-kMinConst)/fgkNConstBins*(Double_t)i ;
 
-  Int_t fgkNMeanPtBins = 200;
+  Int_t fgkNMeanPtBins = 100;
   Float_t kMinMeanPt   = 0.;
   Float_t kMaxMeanPt   = 20.;
   Double_t *binsMeanPt = new Double_t[fgkNMeanPtBins+1];
@@ -299,9 +297,6 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
 
   fh3PtEtaPhiTracksProp = new TH3F("fh3PtEtaPhiTracksProp","fh3PtEtaPhiTracksProp;#it{p}_{T}^{track};#eta;#varphi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PtEtaPhiTracksProp);
-
-  fh3PtEtaPhiTracksNoProp = new TH3F("fh3PtEtaPhiTracksNoProp","fh3PtEtaPhiTracksNoProp;#it{p}_{T}^{track};#eta;#varphi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
-  fOutput->Add(fh3PtEtaPhiTracksNoProp);
 
   fh3PtEtaPhiJetFull = new TH3F("fh3PtEtaPhiJetFull","fh3PtEtaPhiJetFull;#it{p}_{T}^{jet};#eta;#varphi",fgkNPtBins,binsPt,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PtEtaPhiJetFull);
@@ -443,10 +438,6 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
 	fh3PtEtaPhiTracksOnEmcal->Fill(track->GetTrackPtOnEMCal(),track->GetTrackEtaOnEMCal(),track->GetTrackPhiOnEMCal());
 	if(TMath::Abs(track->Eta())<0.9 && trkphi > 10 && trkphi < 250 )
 	  fh3PtEtaPhiTracksProp->Fill(track->Pt(),track->Eta(),track->Phi());
-      }
-      else {
-	if(TMath::Abs(track->Eta())<0.9 && trkphi > 10 && trkphi < 250 )
-	  fh3PtEtaPhiTracksNoProp->Fill(track->Pt(),track->Eta(),track->Phi());
       }
       track = dynamic_cast<AliPicoTrack*>(partCont->GetNextAcceptParticle());
     }

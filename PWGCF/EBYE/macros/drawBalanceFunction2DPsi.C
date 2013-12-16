@@ -932,7 +932,8 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
 		     Bool_t k2pMethod = kTRUE,
 		     TString eventClass = "Centrality",
 		     Bool_t bRootMoments = kFALSE,
-		     Bool_t kUseZYAM = kFALSE) {
+		     Bool_t kUseZYAM = kFALSE,
+		     Bool_t bReduceRangeForMoments = kFALSE) {
   //Macro that draws the balance functions PROJECTIONS 
   //for each centrality bin for the different pT of trigger and 
   //associated particles
@@ -1097,6 +1098,20 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
     // need to restrict to near side in case of dphi
     if(!kProjectInEta) gHistBalanceFunctionSubtracted->GetXaxis()->SetRangeUser(-TMath::Pi()/2,TMath::Pi()/2);
 
+    if(bReduceRangeForMoments){
+
+      // default (for 2<pT,assoc<3<pT,trig<4)
+      Double_t rangeReduced = 1.0;
+
+      //for 3<pT,assoc<8<pT,trig<15
+      if(ptTriggerMax>10){
+	rangeReduced = 0.4;
+      }
+
+      cout<<"Use reduced range = "<<rangeReduced<<endl;
+      gHistBalanceFunctionSubtracted->GetXaxis()->SetRangeUser(-rangeReduced,rangeReduced);
+    }
+
     meanLatex = "#mu = "; 
     meanLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetMean());
     meanLatex += " #pm "; 
@@ -1169,7 +1184,7 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
     fileKurtosis.close();
 
     if(!kProjectInEta) gHistBalanceFunctionSubtracted->GetXaxis()->SetRangeUser(-TMath::Pi()/2,3.*TMath::Pi()/2);
-
+    else               gHistBalanceFunctionSubtracted->GetXaxis()->SetRangeUser(-1.6,1.6);
   }
   // calculate the moments by hand
   else{
@@ -1257,7 +1272,12 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
 
   // Weighted mean as calculated for 1D analysis
   Double_t weightedMean, weightedMeanError;
-  GetWeightedMean1D(gHistBalanceFunctionSubtracted,kProjectInEta,1,-1,weightedMean,weightedMeanError);
+  if(bReduceRangeForMoments){
+    GetWeightedMean1D(gHistBalanceFunctionSubtracted,kProjectInEta,1,-1,weightedMean,weightedMeanError,rangeReduced);
+  }
+  else{
+    GetWeightedMean1D(gHistBalanceFunctionSubtracted,kProjectInEta,1,-1,weightedMean,weightedMeanError,-1.);
+  }
   Printf("Weighted Mean: %lf - Error: %lf",weightedMean, weightedMeanError);
  
   // store in txt files
@@ -1319,7 +1339,8 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
 					 Double_t ptAssociatedMax = -1.,
 					 TString eventClass = "Multiplicity",
 					 Bool_t bRootMoments = kFALSE,
-					 Bool_t bFullPhiForEtaProjection = kFALSE
+					 Bool_t bFullPhiForEtaProjection = kFALSE,
+					 Bool_t bReduceRangeForMoments = kFALSE
 ) {
   //Macro that draws the BF distributions for each centrality bin
   //for reaction plane dependent analysis
@@ -1456,7 +1477,9 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
 		   ptAssociatedMin,ptAssociatedMax,
 		   kTRUE,
 		   eventClass.Data(),
-		   bRootMoments);
+		   bRootMoments,
+		   kFALSE,
+		   bReduceRangeForMoments);
  }
  else{
   drawProjections(gHistBalanceFunction2D,
@@ -1468,7 +1491,9 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
 		   ptAssociatedMin,ptAssociatedMax,
 		   kTRUE,
 		   eventClass.Data(),
-		   bRootMoments);
+		  bRootMoments,
+		  kFALSE,
+		  bReduceRangeForMoments);
  }
 
   drawProjections(gHistBalanceFunction2D,
@@ -1480,7 +1505,9 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
   		  ptAssociatedMin,ptAssociatedMax,
   		  kTRUE,
   		  eventClass.Data(),
-  		  bRootMoments);
+  		  bRootMoments,
+		  kFALSE,
+		  bReduceRangeForMoments);
 
   TString outFileName = filename;
   outFileName.ReplaceAll("correlationFunction","balanceFunction2D");
@@ -1504,7 +1531,8 @@ void mergeBFPsi2D(TString momDirectory = "./",
 		  Double_t ptTriggerMin = -1.,
 		  Double_t ptTriggerMax = -1.,
 		  Double_t ptAssociatedMin = -1.,
-		  Double_t ptAssociatedMax = -1.
+		  Double_t ptAssociatedMax = -1.,
+		  Bool_t bReduceRangeForMoments = kFALSE
 ) {
   //Macro that draws the BF distributions for each centrality bin
   //for reaction plane dependent analysis
@@ -1611,8 +1639,8 @@ sFileName[iDir] += momDirectory;
 
  // scaling with all entries
  hBFOut->Scale(1./entriesOut);
-  
-  drawProjections(hBFOut,
+
+ drawProjections(hBFOut,
   		  kTRUE,
   		  1,36,
   		  gCentrality,
@@ -1621,7 +1649,9 @@ sFileName[iDir] += momDirectory;
   		  ptAssociatedMin,ptAssociatedMax,
   		  kTRUE,
   		  eventClass,
-  		  kTRUE);
+  		  kTRUE,
+		  kFALSE,
+		  bReduceRangeForMoments);
 
   drawProjections(hBFOut,
   		  kFALSE,
@@ -1632,7 +1662,9 @@ sFileName[iDir] += momDirectory;
   		  ptAssociatedMin,ptAssociatedMax,
   		  kTRUE,
   		  eventClass.Data(),
-  		  kTRUE);
+  		  kTRUE,
+		  kFALSE,
+		  bReduceRangeForMoments);
 
  // output
  TString outFileName = "balanceFunction2D.";
@@ -1672,7 +1704,7 @@ sFileName[iDir] += momDirectory;
 }
 
 //____________________________________________________________________//
-void GetWeightedMean1D(TH1D *gHistBalance, Bool_t kProjectInEta = kTRUE, Int_t fStartBin = 1, Int_t fStopBin = -1, Double_t &WM, Double_t &WME) {
+void GetWeightedMean1D(TH1D *gHistBalance, Bool_t kProjectInEta = kTRUE, Int_t fStartBin = 1, Int_t fStopBin = -1, Double_t &WM, Double_t &WME,Double_t rangeReduced = -1.) {
 
   //Prints the calculated width of the BF and its error
   Double_t gSumXi = 0.0, gSumBi = 0.0, gSumBiXi = 0.0;
@@ -1698,6 +1730,9 @@ void GetWeightedMean1D(TH1D *gHistBalance, Bool_t kProjectInEta = kTRUE, Int_t f
       if(currentBinCenter < 0) currentBinCenter = -currentBinCenter;
       if(currentBinCenter > TMath::Pi()) currentBinCenter = 2 * TMath::Pi() - currentBinCenter;
     }
+
+    if(rangeReduced > 0 && currentBinCenter > rangeReduced )
+      continue;
 
     gSumXi += currentBinCenter;
     gSumBi += gHistBalance->GetBinContent(i);
