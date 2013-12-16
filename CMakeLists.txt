@@ -231,8 +231,7 @@ add_custom_command(TARGET htmldoc
 		   COMMAND mkdir -p html
 		   COMMAND rm -rf html/roothtml
 		   COMMAND rm -f html/picts
-		   COMMAND cd html &&
-		   	    aliroot -q -b \"mkhtml.C(0,1)\"
+		   COMMAND cd html && aliroot -q -b mkhtml.C\\\(0,1\\\)
 		   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 # Include Vc, which provides the static libVc and the relevant CMake macros
@@ -406,7 +405,7 @@ COMMAND @echo "the AliRoot one." >> ${ALIMDCSPECFILE}
 COMMAND @echo "" >> ${ALIMDCSPECFILE}
 COMMAND @echo '\# list of files to be installed' >> ${ALIMDCSPECFILE}
 COMMAND @echo "%files" >> ${ALIMDCSPECFILE}
-COMMAND @echo '%defattr (-,root,root)' >> ${ALIMDCSPECFILE}
+COMMAND @echo "%defattr (-,root,root)" >> ${ALIMDCSPECFILE}
 COMMAND @echo "%{prefix}/lib/libAliMDC.a" >> ${ALIMDCSPECFILE}
 COMMAND @echo "%{prefix}/lib/libRoot.a" >> ${ALIMDCSPECFILE}
 COMMAND @echo "%{prefix}/lib/libpcre.a" >> ${ALIMDCSPECFILE}

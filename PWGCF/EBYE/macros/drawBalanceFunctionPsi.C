@@ -221,7 +221,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   SetPlotStyle();
   gStyle->SetPalette(1,0);
   
-  const Int_t gRebin = gDeltaEtaDeltaPhi; //rebin by 2 the Delta phi projection
+  const Int_t gRebin = 1.;//gDeltaEtaDeltaPhi; //rebin by 2 the Delta phi projection (old)
 
   //balance function
   AliTHn *hP = NULL;
