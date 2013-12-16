@@ -1778,7 +1778,7 @@ void AliAnalysisTriggerScalers::Print(Option_t* /* opt */) const
 
 //______________________________________________________________________________
 void AliAnalysisTriggerScalers::PrintIntegers(const std::vector<int>& integers,
-                                              const char sep,
+                                              char sep,
                                               std::ostream& out)
 {
   /// print a list of integers
