@@ -3,6 +3,8 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
                               Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvV1
                               Int_t enableQAPhotonTask = 0, // enable additional QA task
                               TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
+                              Bool_t doWeighting = kFALSE,  //enable Weighting
+                              TString generatorName = "DPMJET",
                               TString cutnumberAODBranch = "8000000060084000001500000" // cutnumber for AOD branch
                            ) {
  
@@ -103,76 +105,96 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
       // Shifting in pPb direction
       doEtaShiftIndCuts = kTRUE;
       stringShift = "pPb";
-      cutarray[ 0] = "8000001082093172003290000000"; mesonCutArray[ 0] = "01629045009000";  //standard cut Pi0 pPb
-      cutarray[ 1] = "8020001082093172003290000000"; mesonCutArray[ 1] = "01629045009000";  //standard cut Pi0 pPb
-      cutarray[ 2] = "8240001082093172003290000000"; mesonCutArray[ 2] = "01629045009000";  //standard cut Pi0 pPb
-      cutarray[ 3] = "8460001082093172003290000000"; mesonCutArray[ 3] = "01629045009000";  //standard cut Pi0 pPb
-      cutarray[ 4] = "8680001082093172003290000000"; mesonCutArray[ 4] = "01629045009000";  //standard cut Pi0 pPb
-      cutarray[ 5] = "8600001082093172003290000000"; mesonCutArray[ 5] = "01629045009000";  //standard cut Pi0 pPb
+      cutarray[ 0] = "8000011082093172003290000000"; mesonCutArray[ 0] = "01629045009000";  //standard cut Pi0 pPb
+      cutarray[ 1] = "8020011082093172003290000000"; mesonCutArray[ 1] = "01629045009000";  //standard cut Pi0 pPb
+      cutarray[ 2] = "8240011082093172003290000000"; mesonCutArray[ 2] = "01629045009000";  //standard cut Pi0 pPb
+      cutarray[ 3] = "8460011082093172003290000000"; mesonCutArray[ 3] = "01629045009000";  //standard cut Pi0 pPb
+      cutarray[ 4] = "8680011082093172003290000000"; mesonCutArray[ 4] = "01629045009000";  //standard cut Pi0 pPb
+      cutarray[ 5] = "8600011082093172003290000000"; mesonCutArray[ 5] = "01629045009000";  //standard cut Pi0 pPb
    } else if (trainConfig == 2) {
      // doEtaShiftIndCuts = kTRUE;
      // stringShift = "pPb";
-      cutarray[ 0] = "8000001072093172003290000000"; mesonCutArray[ 0] = "01627045009000"; 
-      cutarray[ 1] = "8020001072093172003290000000"; mesonCutArray[ 1] = "01627045009000"; 
-      cutarray[ 2] = "8240001072093172003290000000"; mesonCutArray[ 2] = "01627045009000"; 
-      cutarray[ 3] = "8460001072093172003290000000"; mesonCutArray[ 3] = "01627045009000"; 
-      cutarray[ 4] = "8680001072093172003290000000"; mesonCutArray[ 4] = "01627045009000"; 
-      cutarray[ 5] = "8600001072093172003290000000"; mesonCutArray[ 5] = "01627045009000"; 
+      cutarray[ 0] = "8000011072093172003290000000"; mesonCutArray[ 0] = "01627045009000"; 
+      cutarray[ 1] = "8020011072093172003290000000"; mesonCutArray[ 1] = "01627045009000"; 
+      cutarray[ 2] = "8240011072093172003290000000"; mesonCutArray[ 2] = "01627045009000"; 
+      cutarray[ 3] = "8460011072093172003290000000"; mesonCutArray[ 3] = "01627045009000"; 
+      cutarray[ 4] = "8680011072093172003290000000"; mesonCutArray[ 4] = "01627045009000"; 
+      cutarray[ 5] = "8600011072093172003290000000"; mesonCutArray[ 5] = "01627045009000"; 
    } else if (trainConfig == 3) {
      // doEtaShiftIndCuts = kTRUE;
      //  stringShift = "pPb";
-      cutarray[ 0] = "8000001002093172003290000000"; mesonCutArray[ 0] = "01621035009000"; 
-      cutarray[ 1] = "8020001002093172003290000000"; mesonCutArray[ 1] = "01621035009000"; 
-      cutarray[ 2] = "8240001002093172003290000000"; mesonCutArray[ 2] = "01621035009000"; 
-      cutarray[ 3] = "8460001002093172003290000000"; mesonCutArray[ 3] = "01621035009000"; 
-      cutarray[ 4] = "8680001002093172003290000000"; mesonCutArray[ 4] = "01621035009000"; 
-      cutarray[ 5] = "8600001002093172003290000000"; mesonCutArray[ 5] = "01621035009000"; 
+      cutarray[ 0] = "8000011002093172003290000000"; mesonCutArray[ 0] = "01621035009000"; 
+      cutarray[ 1] = "8020011002093172003290000000"; mesonCutArray[ 1] = "01621035009000"; 
+      cutarray[ 2] = "8240011002093172003290000000"; mesonCutArray[ 2] = "01621035009000"; 
+      cutarray[ 3] = "8460011002093172003290000000"; mesonCutArray[ 3] = "01621035009000"; 
+      cutarray[ 4] = "8680011002093172003290000000"; mesonCutArray[ 4] = "01621035009000"; 
+      cutarray[ 5] = "8600011002093172003290000000"; mesonCutArray[ 5] = "01621035009000"; 
    } else if(trainConfig == 4){
       // Shifting in pPb direction
       doEtaShiftIndCuts = kTRUE;
       stringShift = "pPb";
-      cutarray[ 0] = "8000002082093172003290000000"; mesonCutArray[ 0] = "01629045009000";  //standard cut Pi0 pPb
-      cutarray[ 1] = "8020002082093172003290000000"; mesonCutArray[ 1] = "01629045009000";  //standard cut Pi0 pPb
-      cutarray[ 2] = "8240002082093172003290000000"; mesonCutArray[ 2] = "01629045009000";  //standard cut Pi0 pPb
-      cutarray[ 3] = "8460002082093172003290000000"; mesonCutArray[ 3] = "01629045009000";  //standard cut Pi0 pPb
-      cutarray[ 4] = "8680002082093172003290000000"; mesonCutArray[ 4] = "01629045009000";  //standard cut Pi0 pPb
-      cutarray[ 5] = "8600002082093172003290000000"; mesonCutArray[ 5] = "01629045009000";  //standard cut Pi0 pPb
+      cutarray[ 0] = "8000012082093172003290000000"; mesonCutArray[ 0] = "01629045009000";  //standard cut Pi0 pPb
+      cutarray[ 1] = "8020012082093172003290000000"; mesonCutArray[ 1] = "01629045009000";  //standard cut Pi0 pPb
+      cutarray[ 2] = "8240012082093172003290000000"; mesonCutArray[ 2] = "01629045009000";  //standard cut Pi0 pPb
+      cutarray[ 3] = "8460012082093172003290000000"; mesonCutArray[ 3] = "01629045009000";  //standard cut Pi0 pPb
+      cutarray[ 4] = "8680012082093172003290000000"; mesonCutArray[ 4] = "01629045009000";  //standard cut Pi0 pPb
+      cutarray[ 5] = "8600012082093172003290000000"; mesonCutArray[ 5] = "01629045009000";  //standard cut Pi0 pPb
    } else if (trainConfig == 5) {
      // doEtaShiftIndCuts = kTRUE;
      // stringShift = "pPb";
-      cutarray[ 0] = "8000002072093172003290000000"; mesonCutArray[ 0] = "01627045009000";  //standard cut Pi0 pPb Single pT Cut changed
-      cutarray[ 1] = "8020002072093172003290000000"; mesonCutArray[ 1] = "01627045009000";  //standard cut Pi0 pPb Single pT Cut changed
-      cutarray[ 2] = "8240002072093172003290000000"; mesonCutArray[ 2] = "01627045009000";  //standard cut Pi0 pPb Single pT Cut changed
-      cutarray[ 3] = "8460002072093172003290000000"; mesonCutArray[ 3] = "01627045009000";  //standard cut Pi0 pPb Single pT Cut changed
-      cutarray[ 4] = "8680002072093172003290000000"; mesonCutArray[ 4] = "01627045009000";  //standard cut Pi0 pPb Single pT Cut changed
-      cutarray[ 5] = "8600002072093172003290000000"; mesonCutArray[ 5] = "01627045009000";  //standard cut Pi0 pPb Single pT Cut changed
+      cutarray[ 0] = "8000012072093172003290000000"; mesonCutArray[ 0] = "01627045009000";  //standard cut Pi0 pPb Single pT Cut changed
+      cutarray[ 1] = "8020012072093172003290000000"; mesonCutArray[ 1] = "01627045009000";  //standard cut Pi0 pPb Single pT Cut changed
+      cutarray[ 2] = "8240012072093172003290000000"; mesonCutArray[ 2] = "01627045009000";  //standard cut Pi0 pPb Single pT Cut changed
+      cutarray[ 3] = "8460012072093172003290000000"; mesonCutArray[ 3] = "01627045009000";  //standard cut Pi0 pPb Single pT Cut changed
+      cutarray[ 4] = "8680012072093172003290000000"; mesonCutArray[ 4] = "01627045009000";  //standard cut Pi0 pPb Single pT Cut changed
+      cutarray[ 5] = "8600012072093172003290000000"; mesonCutArray[ 5] = "01627045009000";  //standard cut Pi0 pPb Single pT Cut changed
    } else if (trainConfig == 6) {
      // doEtaShiftIndCuts = kTRUE;
      //  stringShift = "pPb";
-      cutarray[ 0] = "8000002002093172003290000000"; mesonCutArray[ 0] = "01621035009000";  //standard cut Pi0 pPb Single pT Cut changed
-      cutarray[ 1] = "8020002002093172003290000000"; mesonCutArray[ 1] = "01621035009000";  //standard cut Pi0 pPb Single pT Cut changed
-      cutarray[ 2] = "8240002002093172003290000000"; mesonCutArray[ 2] = "01621035009000";  //standard cut Pi0 pPb Single pT Cut changed
-      cutarray[ 3] = "8460002002093172003290000000"; mesonCutArray[ 3] = "01621035009000";  //standard cut Pi0 pPb Single pT Cut changed
-      cutarray[ 4] = "8680002002093172003290000000"; mesonCutArray[ 4] = "01621035009000";  //standard cut Pi0 pPb Single pT Cut changed
-      cutarray[ 5] = "8600002002093172003290000000"; mesonCutArray[ 5] = "01621035009000";  //standard cut Pi0 pPb Single pT Cut changed
+      cutarray[ 0] = "8000012002093172003290000000"; mesonCutArray[ 0] = "01621035009000";  //standard cut Pi0 pPb Single pT Cut changed
+      cutarray[ 1] = "8020012002093172003290000000"; mesonCutArray[ 1] = "01621035009000";  //standard cut Pi0 pPb Single pT Cut changed
+      cutarray[ 2] = "8240012002093172003290000000"; mesonCutArray[ 2] = "01621035009000";  //standard cut Pi0 pPb Single pT Cut changed
+      cutarray[ 3] = "8460012002093172003290000000"; mesonCutArray[ 3] = "01621035009000";  //standard cut Pi0 pPb Single pT Cut changed
+      cutarray[ 4] = "8680012002093172003290000000"; mesonCutArray[ 4] = "01621035009000";  //standard cut Pi0 pPb Single pT Cut changed
+      cutarray[ 5] = "8600012002093172003290000000"; mesonCutArray[ 5] = "01621035009000";  //standard cut Pi0 pPb Single pT Cut changed
    } else if (trainConfig == 7) {
      // doEtaShiftIndCuts = kTRUE;
      //  stringShift = "pPb";
-      cutarray[ 0] = "8000001002092970023220000000"; mesonCutArray[ 0] = "01621035009000"; 
-      cutarray[ 1] = "8000001002093663003800000000"; mesonCutArray[ 1] = "01621035009000"; 
-      cutarray[ 2] = "8000001002093260003800000000"; mesonCutArray[ 2] = "01621035009000"; 
-      cutarray[ 3] = "8000001002092370023220000000"; mesonCutArray[ 3] = "01621035009000";                       
-      cutarray[ 4] = "8000001002092770023220000000"; mesonCutArray[ 4] = "01621035009000";                       
-      cutarray[ 5] = "8000001002092551023220000000"; mesonCutArray[ 5] = "01621035009000";                       
+      cutarray[ 0] = "8000011002092970023220000000"; mesonCutArray[ 0] = "01621035009000"; 
+      cutarray[ 1] = "8000011002093663003800000000"; mesonCutArray[ 1] = "01621035009000"; 
+      cutarray[ 2] = "8000011002093260003800000000"; mesonCutArray[ 2] = "01621035009000"; 
+      cutarray[ 3] = "8000011002092370023220000000"; mesonCutArray[ 3] = "01621035009000";                       
+      cutarray[ 4] = "8000011002092770023220000000"; mesonCutArray[ 4] = "01621035009000";                       
+      cutarray[ 5] = "8000011002092551023220000000"; mesonCutArray[ 5] = "01621035009000";                       
    } else if (trainConfig == 8) {
      // doEtaShiftIndCuts = kTRUE;
      //  stringShift = "pPb";
-      cutarray[ 0] = "8000002002092970023220000000"; mesonCutArray[ 0] = "01621035009000"; 
-      cutarray[ 1] = "8000002002093663003800000000"; mesonCutArray[ 1] = "01621035009000"; 
-      cutarray[ 2] = "8000002002093260003800000000"; mesonCutArray[ 2] = "01621035009000"; 
-      cutarray[ 3] = "8000002002092370023220000000"; mesonCutArray[ 3] = "01621035009000";                       
-      cutarray[ 4] = "8000002002092770023220000000"; mesonCutArray[ 4] = "01621035009000";                       
-      cutarray[ 5] = "8000002002092551023220000000"; mesonCutArray[ 5] = "01621035009000";                          
+      cutarray[ 0] = "8000012002092970023220000000"; mesonCutArray[ 0] = "01621035009000"; 
+      cutarray[ 1] = "8000012002093663003800000000"; mesonCutArray[ 1] = "01621035009000"; 
+      cutarray[ 2] = "8000012002093260003800000000"; mesonCutArray[ 2] = "01621035009000"; 
+      cutarray[ 3] = "8000012002092370023220000000"; mesonCutArray[ 3] = "01621035009000";                       
+      cutarray[ 4] = "8000012002092770023220000000"; mesonCutArray[ 4] = "01621035009000";                       
+      cutarray[ 5] = "8000012002092551023220000000"; mesonCutArray[ 5] = "01621035009000";                          
+   } else if (trainConfig == 9) {
+     // doEtaShiftIndCuts = kTRUE;
+     //  stringShift = "pPb";
+      cutarray[ 0] = "8000011002092170003220000000"; mesonCutArray[ 0] = "01621035009000"; //just tighten Psi pair
+      cutarray[ 1] = "8000011002092170003260000000"; mesonCutArray[ 1] = "01621035009000"; //tighten Psi pair and chi2 in 2D
+      cutarray[ 2] = "8000011002092170008220000000"; mesonCutArray[ 2] = "01621035009000"; //tighten psi pair and qt in 2D
+      cutarray[ 3] = "8000011002092170008260000000"; mesonCutArray[ 3] = "01621035009000"; //tighten psi pair and chi2 in 2D and qt in 2D                      
+      cutarray[ 4] = "8000011002092170008220400000"; mesonCutArray[ 4] = "01621035009000"; //clean cuts
+      cutarray[ 5] = "8000011002092170008260400000"; mesonCutArray[ 5] = "01621035009000"; //clean cuts
+      
+   } else if (trainConfig == 10) {
+     // doEtaShiftIndCuts = kTRUE;
+     //  stringShift = "pPb";
+      cutarray[ 0] = "8000012002092170003220000000"; mesonCutArray[ 0] = "01621035009000"; //just tighten Psi pair
+      cutarray[ 1] = "8000012002092170003260000000"; mesonCutArray[ 1] = "01621035009000"; //tighten Psi pair and chi2 in 2D
+      cutarray[ 2] = "8000012002092170008220000000"; mesonCutArray[ 2] = "01621035009000"; //tighten psi pair and qt in 2D
+      cutarray[ 3] = "8000012002092170008260000000"; mesonCutArray[ 3] = "01621035009000"; //tighten psi pair and chi2 in 2D and qt in 2D                      
+      cutarray[ 4] = "8000012002092170008220400000"; mesonCutArray[ 4] = "01621035009000"; //clean cuts
+      cutarray[ 5] = "8000012002092170008260400000"; mesonCutArray[ 5] = "01621035009000"; //clean cuts
+            
    } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
@@ -196,6 +218,89 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
    for(Int_t i = 0; i<numberOfCuts; i++){
      
       analysisCuts[i] = new AliConversionCuts();
+      if (trainConfig == 1 ||trainConfig == 2 || trainConfig == 3 ){
+         if (i == 0 && doWeighting){
+            if (generatorName.CompareTo("DPMJET")==0){
+               analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A", "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
+            } else if (generatorName.CompareTo("HIJING")==0){
+               analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_MBV0A", "Eta_Hijing_LHC13e7_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
+            }
+         }
+         if (i == 1 && doWeighting){
+            if (generatorName.CompareTo("DPMJET")==0){
+               analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_0020V0A", "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_0020V0A", "","Pi0_Fit_Data_pPb_5023GeV_0020V0A","Eta_Fit_Data_pPb_5023GeV_0020V0A");
+            } else if (generatorName.CompareTo("HIJING")==0){
+               analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_0020V0A", "Eta_Hijing_LHC13e7_pPb_5023GeV_0020V0A", "","Pi0_Fit_Data_pPb_5023GeV_0020V0A","Eta_Fit_Data_pPb_5023GeV_0020V0A");
+            }
+         }
+         if (i == 2 && doWeighting){
+            if (generatorName.CompareTo("DPMJET")==0){
+               analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_2040V0A", "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_2040V0A", "","Pi0_Fit_Data_pPb_5023GeV_2040V0A","Eta_Fit_Data_pPb_5023GeV_2040V0A");
+            } else if (generatorName.CompareTo("HIJING")==0){
+               analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_2040V0A", "Eta_Hijing_LHC13e7_pPb_5023GeV_2040V0A", "","Pi0_Fit_Data_pPb_5023GeV_2040V0A","Eta_Fit_Data_pPb_5023GeV_2040V0A");
+            }
+         }
+         if (i == 3 && doWeighting){
+            if (generatorName.CompareTo("DPMJET")==0){
+               analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_4060V0A", "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_4060V0A", "","Pi0_Fit_Data_pPb_5023GeV_4060V0A","Eta_Fit_Data_pPb_5023GeV_4060V0A");
+            } else if (generatorName.CompareTo("HIJING")==0){
+               analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_4060V0A", "Eta_Hijing_LHC13e7_pPb_5023GeV_4060V0A", "","Pi0_Fit_Data_pPb_5023GeV_4060V0A","Eta_Fit_Data_pPb_5023GeV_4060V0A");
+            }
+         }
+         if (i == 4 && doWeighting){
+            if (generatorName.CompareTo("DPMJET")==0){
+               analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_6080V0A", "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_6080V0A", "","Pi0_Fit_Data_pPb_5023GeV_6080V0A","Eta_Fit_Data_pPb_5023GeV_6080V0A");
+            } else if (generatorName.CompareTo("HIJING")==0){
+               analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_6080V0A", "Eta_Hijing_LHC13e7_pPb_5023GeV_6080V0A", "","Pi0_Fit_Data_pPb_5023GeV_6080V0A","Eta_Fit_Data_pPb_5023GeV_6080V0A");
+            }
+         }
+         if (i == 5 && doWeighting){
+            if (generatorName.CompareTo("DPMJET")==0){
+               analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_60100V0A", "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_60100V0A", "","Pi0_Fit_Data_pPb_5023GeV_60100V0A","Eta_Fit_Data_pPb_5023GeV_60100V0A");
+            } else if (generatorName.CompareTo("HIJING")==0){
+               analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_60100V0A", "Eta_Hijing_LHC13e7_pPb_5023GeV_60100V0A", "","Pi0_Fit_Data_pPb_5023GeV_60100V0A","Eta_Fit_Data_pPb_5023GeV_60100V0A");
+            }
+         }
+      }
+      if (trainConfig == 4 ||trainConfig == 5 || trainConfig == 6 ){
+         if (i == 0 && doWeighting){
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
+           
+         }
+         if (i == 1 && doWeighting){
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_0020V0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_0020V0A", "","Pi0_Fit_Data_pPb_5023GeV_0020V0A","Eta_Fit_Data_pPb_5023GeV_0020V0A");
+            
+         }
+         if (i == 2 && doWeighting){
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_2040V0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_2040V0A", "","Pi0_Fit_Data_pPb_5023GeV_2040V0A","Eta_Fit_Data_pPb_5023GeV_2040V0A");
+            
+         }
+         if (i == 3 && doWeighting){
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_4060V0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_4060V0A", "","Pi0_Fit_Data_pPb_5023GeV_4060V0A","Eta_Fit_Data_pPb_5023GeV_4060V0A");
+         }
+         if (i == 4 && doWeighting){
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_6080V0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_6080V0A", "","Pi0_Fit_Data_pPb_5023GeV_6080V0A","Eta_Fit_Data_pPb_5023GeV_6080V0A");
+         }
+         if (i == 5 && doWeighting){
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_60100V0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_60100V0A", "","Pi0_Fit_Data_pPb_5023GeV_60100V0A","Eta_Fit_Data_pPb_5023GeV_60100V0A");
+         }
+      }
+      if (trainConfig == 7 || trainConfig == 9 ){
+         if (doWeighting){
+            if (generatorName.CompareTo("DPMJET")==0){
+               analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A", "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
+            } else if (generatorName.CompareTo("HIJING")==0){
+               analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_MBV0A", "Eta_Hijing_LHC13e7_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
+            }
+         }
+      }   
+      if (trainConfig == 8 || trainConfig == 10){
+         if (doWeighting){
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
+         }
+         
+      }   
+         
       analysisCuts[i]->InitializeCutsFromCutString(cutarray[i].Data());
       if (doEtaShiftIndCuts) {
          analysisCuts[i]->DoEtaShift(doEtaShiftIndCuts);
