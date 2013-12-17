@@ -889,6 +889,12 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
     // Reject any event that doesn't have any tracks, i.e. TPC is off
     if (fnTracks<1)
     {
+        if (fTrackQA==kTRUE)
+        {
+            fhTPCEventMult->Fill(fEventCentrality,0.0);
+            fpTPCEventMult->Fill(fEventCentrality,0.0);
+            fhEMCalTrackEventMult->Fill(fEventCentrality,0.0);
+        }
         AliWarning("No PicoTracks, Rejecting Event");
         return;
     }
@@ -905,6 +911,12 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
         InitChargedJets();
         GenerateTPCRandomConesPt();
         
+        if (fClusterQA==kTRUE)
+        {
+            fhEMCalEventMult->Fill(fEventCentrality,0.0);
+            fpEMCalEventMult->Fill(fEventCentrality,0.0);
+        }
+
         // Rho's
         if (fCalculateRhoJet>=2)
         {
@@ -3385,6 +3397,8 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos() :
     fhNEFSignal(0),
     fhNEFJetPt(0),
     fhNEFJetPtSignal(0),
+    fhNEFJetPtCen(0),
+    fhNEFJetPtCenSignal(0),
     fhNEFEtaPhi(0),
     fhNEFEtaPhiSignal(0),
     fhEtaPhiNEF(0),
@@ -3480,6 +3494,8 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name) :
     fhNEFSignal(0),
     fhNEFJetPt(0),
     fhNEFJetPtSignal(0),
+    fhNEFJetPtCen(0),
+    fhNEFJetPtCenSignal(0),
     fhNEFEtaPhi(0),
     fhNEFEtaPhiSignal(0),
     fhEtaPhiNEF(0),
@@ -3587,6 +3603,8 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name, cons
     fhNEFSignal(0),
     fhNEFJetPt(0),
     fhNEFJetPtSignal(0),
+    fhNEFJetPtCen(0),
+    fhNEFJetPtCenSignal(0),
     fhNEFEtaPhi(0),
     fhNEFEtaPhiSignal(0),
     fhEtaPhiNEF(0),
@@ -3918,6 +3936,18 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
         fhNEFJetPtSignal->GetZaxis()->SetTitle("1/N_{Events} dN/dNEFdp_{T}");
         fhNEFJetPtSignal->Sumw2();
 
+        fhNEFJetPtCen = new TH3D("fhNEFJetPtCen","Neutral Energy Fraction vs p_{T}^{jet} vs Centrality",fNEFBins,fNEFLow,fNEFUp,fPtBins,fPtLow,fPtUp,fCentralityBins,fCentralityLow,fCentralityUp);
+        fhNEFJetPtCen->GetXaxis()->SetTitle("NEF");
+        fhNEFJetPtCen->GetYaxis()->SetTitle("p_{T}^{jet} (GeV/c)");
+        fhNEFJetPtCen->GetZaxis()->SetTitle(Form("%s",CentralityString.Data()));
+        fhNEFJetPtCen->Sumw2();
+        
+        fhNEFJetPtCenSignal = new TH3D("fhNEFJetPtCenSignal","Neutral Energy Fraction vs p_{T}^{jet} vs Centrality",fNEFBins,fNEFLow,fNEFUp,fPtBins,fPtLow,fPtUp,fCentralityBins,fCentralityLow,fCentralityUp);
+        fhNEFJetPtCenSignal->GetXaxis()->SetTitle("NEF");
+        fhNEFJetPtCenSignal->GetYaxis()->SetTitle("p_{T}^{jet} (GeV/c)");
+        fhNEFJetPtCenSignal->GetZaxis()->SetTitle(Form("%s",CentralityString.Data()));
+        fhNEFJetPtCenSignal->Sumw2();
+
         // Eta-Phi Dependence
         fhNEFEtaPhi = new TH2D("fhNEFEtaPhi","Neutral Energy Fraction #eta-#varphi",TCBins, fEMCalEtaMin,fEMCalEtaMax,TCBins,fEMCalPhiMin,fEMCalPhiMax);
         fhNEFEtaPhi->GetXaxis()->SetTitle("#eta");
@@ -4002,6 +4032,8 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
         fNEFOutput->Add(fhNEFSignal);
         fNEFOutput->Add(fhNEFJetPt);
         fNEFOutput->Add(fhNEFJetPtSignal);
+        fNEFOutput->Add(fhNEFJetPtCen);
+        fNEFOutput->Add(fhNEFJetPtCenSignal);
         fNEFOutput->Add(fhNEFEtaPhi);
         fNEFOutput->Add(fhNEFEtaPhiSignal);
         fNEFOutput->Add(fhEtaPhiNEF);
@@ -4322,6 +4354,8 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::DoNEFAnalysis(Double_t nefCut, D
     Int_t tempCellID=0;
     Double_t tempCellTime=0.0;
     
+    Double_t event_centrality = event->GetCentrality()->GetCentralityPercentile(fCentralityTag);
+
     // First, do Jet QA
     for (i=0;i<nIndexJetList;i++)
     {
@@ -4336,6 +4370,7 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::DoNEFAnalysis(Double_t nefCut, D
         
         fhNEF->Fill(nef);
         fhNEFJetPt->Fill(nef,myJet->Pt());
+        fhNEFJetPtCen->Fill(nef,myJet->Pt(),event_centrality);
         fhNEFEtaPhi->Fill(eta,phi);
         fhEtaPhiNEF->Fill(eta,phi,nef);
         fhNEFTotalMult->Fill(nef,totalMult);
@@ -4389,6 +4424,7 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::DoNEFAnalysis(Double_t nefCut, D
                 {
                     fhNEFSignal->Fill(nef);
                     fhNEFJetPtSignal->Fill(nef,myJet->Pt());
+                    fhNEFJetPtCenSignal->Fill(nef,myJet->Pt(),event_centrality);
                     fhNEFEtaPhiSignal->Fill(eta,phi);
                     fhNEFTotalMultSignal->Fill(nef,totalMult);
                     fhNEFNeutralMultSignal->Fill(nef,neutralMult);
@@ -4403,6 +4439,7 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::DoNEFAnalysis(Double_t nefCut, D
                 {
                     fhNEFSignal->Fill(nef);
                     fhNEFJetPtSignal->Fill(nef,myJet->Pt());
+                    fhNEFJetPtCenSignal->Fill(nef,myJet->Pt(),event_centrality);
                     fhNEFEtaPhiSignal->Fill(eta,phi);
                     fhNEFTotalMultSignal->Fill(nef,totalMult);
                     fhNEFNeutralMultSignal->Fill(nef,neutralMult);

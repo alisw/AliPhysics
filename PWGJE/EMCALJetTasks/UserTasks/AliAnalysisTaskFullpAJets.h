@@ -198,6 +198,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         TH1D *fhNEFSignal; //!
         TH2D *fhNEFJetPt; //!
         TH2D *fhNEFJetPtSignal; //!
+        TH3D *fhNEFJetPtCen; //!
+        TH3D *fhNEFJetPtCenSignal; //!
         
         TH2D *fhNEFEtaPhi; //!
         TH2D *fhNEFEtaPhiSignal; //!

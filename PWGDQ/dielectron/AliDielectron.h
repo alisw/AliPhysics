@@ -129,6 +129,7 @@ public:
   void SetTRDcorrectionFilename(const Char_t* filename) {fTRDpidCorrectionFilename = filename;}
   void SetVZEROCalibrationFilename(const Char_t* filename) {fVZEROCalibrationFilename = filename;}
   void SetVZERORecenteringFilename(const Char_t* filename) {fVZERORecenteringFilename = filename;}
+  void SetEffMapFilename(const Char_t* filename) {fEffMapFilename = filename;}
 
   void SaveDebugTree();
 
@@ -200,6 +201,7 @@ private:
   TString fTRDpidCorrectionFilename;         // name for the file containing the single particle TRD pid corrections
   TString fVZEROCalibrationFilename;         // file containing VZERO channel-by-channel calibration
   TString fVZERORecenteringFilename;         // file containing VZERO Q-vector recentering averages
+  TString fEffMapFilename;                   // file containing single electron efficiencies
 
   void ProcessMC(AliVEvent *ev1);
   
@@ -215,7 +217,7 @@ private:
   AliDielectron(const AliDielectron &c);
   AliDielectron &operator=(const AliDielectron &c);
   
-  ClassDef(AliDielectron,6);
+  ClassDef(AliDielectron,7);
 };
 
 inline void AliDielectron::InitPairCandidateArrays()

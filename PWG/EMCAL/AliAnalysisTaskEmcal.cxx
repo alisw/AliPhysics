@@ -1,4 +1,4 @@
-// $Id: AliAnalysisTaskEmcal.cxx 64518 2013-10-14 12:44:52Z loizides $
+// $Id$
 //
 // Emcal base analysis task.
 //

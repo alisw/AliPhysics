@@ -30,7 +30,7 @@ class AliESDpid;
 class AliFemtoK0Analysis : public AliAnalysisTaskSE {
  public:
   AliFemtoK0Analysis();
-  AliFemtoK0Analysis(const char *name, bool SignDep = kFALSE, bool FieldPositive = kTRUE, bool OnlineCase = kTRUE, bool MeritCase = kTRUE, bool Case3D = kFALSE, float MinDL = 0.0, int MeritCutChoice = 2, float MinSep = 5.0, bool FlatCent = kFALSE);
+  AliFemtoK0Analysis(const char *name, bool SignDep = kFALSE, bool FieldPositive = kTRUE, bool OnlineCase = kTRUE, bool MeritCase = kTRUE, bool Case3D = kFALSE, float MinDL = 0.0, int MeritCutChoice = 2, float MinSep = 5.0, bool FlatCent = kFALSE, bool PsiBinning = kFALSE);
   virtual ~AliFemtoK0Analysis();
   AliFemtoK0Analysis(const AliFemtoK0Analysis&);
   AliFemtoK0Analysis& operator=(const AliFemtoK0Analysis&);
@@ -50,6 +50,7 @@ class AliFemtoK0Analysis : public AliAnalysisTaskSE {
   {
     kCentBins    = 16,
     kZVertexBins = 10,
+    kPsiBins	 = 4,
     kEventsToMix =  5,
     kMultLimit   = 300,              //maximum number of v0s, array size
  
@@ -66,9 +67,11 @@ class AliFemtoK0Analysis : public AliAnalysisTaskSE {
   int fMeritCutChoice;
   float fMinSep;
   bool fFlatCent;
+  bool fPsiBinning;
+
   int fEventCount;
 
-  AliFemtoK0EventCollection ***fEC; //!
+  AliFemtoK0EventCollection ****fEC; //!
   AliFemtoK0Event *fEvt; //!
 
   TRandom3* fRandomNumber; //!

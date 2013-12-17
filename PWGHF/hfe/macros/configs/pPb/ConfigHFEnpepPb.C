@@ -22,7 +22,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix
                 Double_t* tpcdEdxcutlow=NULL, Double_t* tpcdEdxcuthigh=NULL, 
                 Double_t TOFs=3., Int_t TOFmis=0, 
                 Int_t itshitpixel = 0, Int_t icent, 
-		            Double_t etami=-0.8, Double_t etama=0.8,
+		Double_t etami=-0.8, Double_t etama=0.8,
                 Double_t assETAm=-0.8, Double_t assETAp=0.8,
                 Int_t assITS=2, 
                 Int_t assTPCcl=100, Int_t assTPCPIDcl=80, 
@@ -30,7 +30,8 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix
                 Double_t *assTPCSminus=NULL, Double_t *assTPCSplus=NULL, 
                 Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kTRUE)
 {
-  Bool_t kAnalyseTaggedTracks = kTRUE;
+  Bool_t kAnalyseTaggedTracks = kFALSE;
+  Bool_t kApplyPreselection = kFALSE;
 
   //***************************************//
   //        Setting up the HFE cuts        //
@@ -238,7 +239,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix
     pidbackground->ConfigureTPCcentralityCut(a,cutmodelAssoc,tpcparamlow,tpcparamhigh);
   }
   pidbackground->ConfigureTPCdefaultCut(cutmodelAssoc,paramsTPCdEdxcutlowAssoc,paramsTPCdEdxcuthighAssoc[0]); // After introducing the pPb flag, pPb is merged with pp and this line defines the cut
-  backe->GetPIDBackgroundQAManager()->SetHighResolutionHistos();
+  //backe->GetPIDBackgroundQAManager()->SetHighResolutionHistos();
   backe->SetHFEBackgroundCuts(hfeBackgroundCuts);
 
   // Selection of associated tracks for the pool

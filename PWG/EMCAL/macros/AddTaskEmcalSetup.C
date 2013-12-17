@@ -3,7 +3,8 @@
 AliEmcalSetupTask* AddTaskEmcalSetup(
   const char *geop = 0,
   const char *oadp = 0,
-  const char *ocdp = 0 
+  const char *ocdp = 0, 
+  const char *objs = 0
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -30,6 +31,7 @@ AliEmcalSetupTask* AddTaskEmcalSetup(
   if (geop) eTask->SetGeoPath(geop);
   if (oadp) eTask->SetOadbPath(oadp);
   if (ocdp) eTask->SetOcdbPath(ocdp);
+  if (objs) eTask->SetObjs(objs);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

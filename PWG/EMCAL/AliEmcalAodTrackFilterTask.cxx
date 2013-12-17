@@ -1,4 +1,4 @@
-// $Id$
+// $Id: AliEmcalAodTrackFilterTask.cxx | Fri Dec 6 10:29:20 2013 +0100 | Constantin Loizides  $
 //
 // Class to filter Aod tracks
 //
@@ -6,17 +6,18 @@
 
 #include <TClonesArray.h>
 #include <TRandom3.h>
-#include "AliAODEvent.h"
-#include "AliAODTrack.h"
-#include "AliAnalysisManager.h"
-#include "AliLog.h"
-#include "AliAodTrackFilterTask.h"
+#include <AliAODEvent.h>
+#include <AliAODTrack.h>
+#include <AliAnalysisManager.h>
+#include <AliLog.h>
+#include <AliEMCALRecoUtils.h>
+#include "AliEmcalAodTrackFilterTask.h"
 
-ClassImp(AliAodTrackFilterTask)
+ClassImp(AliEmcalAodTrackFilterTask)
 
 //________________________________________________________________________
-AliAodTrackFilterTask::AliAodTrackFilterTask() : 
-  AliAnalysisTaskSE("AliAodTrackFilterTask"),
+AliEmcalAodTrackFilterTask::AliEmcalAodTrackFilterTask() : 
+  AliAnalysisTaskSE("AliEmcalAodTrackFilterTask"),
   fTracksOutName("PicoTracks"),
   fTracksInName("tracks"),
   fMinTrackPt(0),
@@ -31,6 +32,8 @@ AliAodTrackFilterTask::AliAodTrackFilterTask() :
   fIsMC(kFALSE),
   fCutMaxFrShTPCClus(0.4),
   fModifyTrack(kTRUE),
+  fDoPropagation(kFALSE),
+  fDist(440),
   fTracksIn(0),
   fTracksOut(0)
 {
@@ -41,7 +44,7 @@ AliAodTrackFilterTask::AliAodTrackFilterTask() :
 }
 
 //________________________________________________________________________
-AliAodTrackFilterTask::AliAodTrackFilterTask(const char *name) : 
+AliEmcalAodTrackFilterTask::AliEmcalAodTrackFilterTask(const char *name) : 
   AliAnalysisTaskSE(name),
   fTracksOutName("PicoTracks"),
   fTracksInName("tracks"),
@@ -57,6 +60,8 @@ AliAodTrackFilterTask::AliAodTrackFilterTask(const char *name) :
   fIsMC(kFALSE),
   fCutMaxFrShTPCClus(0.4),
   fModifyTrack(kTRUE),
+  fDoPropagation(kFALSE),
+  fDist(440),
   fTracksIn(0),
   fTracksOut(0)
 {
@@ -68,23 +73,22 @@ AliAodTrackFilterTask::AliAodTrackFilterTask(const char *name) :
 }
 
 //________________________________________________________________________
-AliAodTrackFilterTask::~AliAodTrackFilterTask()
+AliEmcalAodTrackFilterTask::~AliEmcalAodTrackFilterTask()
 {
   // Destructor.
 }
 
 //________________________________________________________________________
-void AliAodTrackFilterTask::UserCreateOutputObjects()
+void AliEmcalAodTrackFilterTask::UserCreateOutputObjects()
 {
   // Create my user objects.
 
   fTracksOut = new TClonesArray("AliAODTrack");
-  fTracksOut->SetOwner(kFALSE);
   fTracksOut->SetName(fTracksOutName);
 }
 
 //________________________________________________________________________
-void AliAodTrackFilterTask::UserExec(Option_t *) 
+void AliEmcalAodTrackFilterTask::UserExec(Option_t *) 
 {
   // Main loop, called for each event.
 
@@ -129,7 +133,6 @@ void AliAodTrackFilterTask::UserExec(Option_t *)
 	track->Phi() < fMinTrackPhi || track->Phi() > fMaxTrackPhi)
       continue;
 
-    Bool_t isEmc = kFALSE;
     Int_t type = -1;
 
     if (fAODfilterBits[0] < 0) {
@@ -154,15 +157,11 @@ void AliAodTrackFilterTask::UserExec(Option_t *)
 	continue;
       }
     }
+
     if (fCutMaxFrShTPCClus > 0) {
       Double_t frac = Double_t(track->GetTPCnclsS()) / Double_t(track->GetTPCncls());
       if (frac > fCutMaxFrShTPCClus) 
 	continue;
-    }
-    if (TMath::Abs(track->GetTrackEtaOnEMCal()) < 0.75 && 
-	track->GetTrackPhiOnEMCal() > 70 * TMath::DegToRad() &&
-	track->GetTrackPhiOnEMCal() < 190 * TMath::DegToRad()) {
-      isEmc = kTRUE;
     }
 
     if (fTrackEfficiency < 1) {
@@ -183,13 +182,23 @@ void AliAodTrackFilterTask::UserExec(Option_t *)
     }
 
     AliAODTrack *newt = new ((*fTracksOut)[nacc]) AliAODTrack(*track);
+    if (fDoPropagation)
+      AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(newt,fDist);
     if (fModifyTrack) {
       newt->SetLabel(label);
-      newt->SetType((AliAODTrack::AODTrk_t)type);
-      if (isEmc)
-	newt->SetStatus(AliVTrack::kEMCALmatch);
-      else 
-	newt->ResetStatus(AliVTrack::kEMCALmatch);
+      if (type==0) {
+        newt->SetBit(BIT(27),0);
+        newt->SetBit(BIT(28),0);
+      } else if (type==1) {
+        newt->SetBit(BIT(27),1);
+        newt->SetBit(BIT(28),0);
+      } else if (type==2) {
+        newt->SetBit(BIT(27),1);
+        newt->SetBit(BIT(28),1);
+      } else if (type==3) {
+        newt->SetBit(BIT(27),0);
+        newt->SetBit(BIT(28),1);
+      }
     }
     ++nacc;
   }

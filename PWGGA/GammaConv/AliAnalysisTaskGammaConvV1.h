@@ -115,10 +115,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TH2F **hESDMotherEtaPtY;
    TH2F **hESDMotherPi0PtAlpha;
    TH2F **hESDMotherEtaPtAlpha;
-   TH2F **hESDMotherPi0YEtaLowPtGamma;
-   TH2F **hESDMotherPi0YEtaHighPtGamma;
-   TH2F **hESDMotherEtaYEtaLowPtGamma;
-   TH2F **hESDMotherEtaYEtaHighPtGamma;
+   TH2F **hESDMotherPi0PtOpenAngle;
+   TH2F **hESDMotherEtaPtOpenAngle;
    TH1I **hMCHeaders;
    TH1F **hMCAllGammaPt;
    TH1F **hMCDecayGammaPi0Pt;
@@ -134,6 +132,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TH1F **hMCPi0Pt;
    TH1F **hMCPi0WOWeightPt;
    TH1F **hMCEtaPt;
+   TH1F **hMCEtaWOWeightPt;
    TH1F **hMCPi0InAccPt;
    TH1F **hMCEtaInAccPt;
    TH2F **hMCPi0PtY;
@@ -158,10 +157,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TH2F **hESDTrueEtaPtY;
    TH2F **hESDTruePi0PtAlpha;
    TH2F **hESDTrueEtaPtAlpha;
-   TH2F **hESDTruePi0YEtaLowPtGamma;
-   TH2F **hESDTruePi0YEtaHighPtGamma;
-   TH2F **hESDTrueEtaYEtaLowPtGamma;
-   TH2F **hESDTrueEtaYEtaHighPtGamma;
+   TH2F **hESDTruePi0PtOpenAngle;
+   TH2F **hESDTrueEtaPtOpenAngle;
    TH2F **hESDTrueMotherDalitzInvMassPt;
    TH1F **hESDTrueConvGammaPt;
    TH2F **hESDCombinatorialPt;
@@ -217,7 +214,7 @@ private:
    AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
 
 
-   ClassDef(AliAnalysisTaskGammaConvV1, 8);
+   ClassDef(AliAnalysisTaskGammaConvV1, 9);
 };
 
 #endif

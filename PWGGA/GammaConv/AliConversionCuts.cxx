@@ -596,7 +596,7 @@ void AliConversionCuts::InitCutHistograms(TString name, Bool_t preCut){
    }
    delete [] newBins;
 
-   hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",1000,0,100);
+   hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",100,0,100);
    fHistograms->Add(hCentrality);
    hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",100,0,100,4000,0,4000);
    fHistograms->Add(hCentralityVsNumberOfPrimaryTracks);
@@ -1786,7 +1786,7 @@ Bool_t AliConversionCuts::InitializeCutsFromCutString(const TString analysisCutS
       if(!SetCut(cutIds(ii),fCuts[ii]))return kFALSE;
    }
 
-   //PrintCuts();
+   PrintCutsWithValues();
 
    return kTRUE;
 }
@@ -2013,6 +2013,69 @@ void AliConversionCuts::PrintCuts() {
       printf("%-30s : %d \n", fgkCutNames[ic], fCuts[ic]);
    }
 }
+
+void AliConversionCuts::PrintCutsWithValues() {
+   // Print out current Cut Selection with value
+   if (fIsHeavyIon == 0) {
+      printf("Running in pp mode \n");
+      if (fSpecialTrigger == 0){
+        printf("\t only events triggered by V0OR will be analysed \n");
+      } else if (fSpecialTrigger == 1){
+        printf("\t only events triggered by V0AND will be analysed \n");
+      } else if (fSpecialTrigger == 2){
+         printf("\t only events where SDD was present will be analysed \n");
+      } else if (fSpecialTrigger == 3){
+         printf("\t only events where SDD was present will be analysed and triggered by VOAND\n");
+      } else if (fSpecialTrigger > 3){   
+         printf("\t only events triggered by %s \n", fSpecialTriggerName.Data());
+      }
+   } else if (fIsHeavyIon == 1){ 
+      printf("Running in PbPb mode \n");
+      if (fDetectorCentrality == 0){
+         printf("\t centrality selection based on V0M \n");
+      } else if (fDetectorCentrality == 1){
+         printf("\t centrality selection based on Cl1 \n");
+      }   
+      if (fModCentralityClass == 0){
+        printf("\t %d - %d \n", fCentralityMin*10, fCentralityMax*10);
+      } else if ( fModCentralityClass == 1){ 
+        printf("\t %d - %d \n", fCentralityMin*5, fCentralityMax*5);
+      } else if ( fModCentralityClass == 2){ 
+        printf("\t %d - %d \n", fCentralityMin*5+45, fCentralityMax*5+45);
+      } else if (fModCentralityClass == 3){
+        printf("\t %d - %d, with Track mult in MC as data \n", fCentralityMin*10, fCentralityMax*10);
+      } else if ( fModCentralityClass == 4){ 
+        printf("\t %d - %d, with Track mult in MC as data \n", fCentralityMin*5, fCentralityMax*5);
+      } else if ( fModCentralityClass == 5){ 
+        printf("\t %d - %d, with Track mult in MC as data \n", fCentralityMin*5+45, fCentralityMax*5+45);
+      }
+      if (fSpecialTrigger == 0){
+        printf("\t only events triggered by kMB, kCentral, kSemiCentral will be analysed \n");
+      } else if (fSpecialTrigger > 4){   
+         printf("\t only events triggered by %s \n", fSpecialTriggerName.Data());
+      }
+   } else if (fIsHeavyIon == 2){
+      printf("Running in pPb mode \n");
+      if (fDetectorCentrality == 0){
+         printf("\t centrality selection based on V0A \n");
+      } else if (fDetectorCentrality == 1){
+         printf("\t centrality selection based on Cl1 \n");
+      }   
+      if (fModCentralityClass == 0){
+        printf("\t %d - %d \n", fCentralityMin*10, fCentralityMax*10);
+      }
+      if (fSpecialTrigger == 0){
+        printf("\t only events triggered by kINT7 will be analysed \n");
+      } else if (fSpecialTrigger > 4){   
+         printf("\t only events triggered by %s \n", fSpecialTriggerName.Data());
+      }
+   }   
+   
+   
+   
+   
+}
+
 ///________________________________________________________________________
 Bool_t AliConversionCuts::SetIsHeavyIon(Int_t isHeavyIon)
 {   // Set Cut
@@ -3590,13 +3653,18 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
    AliGenCocktailEventHeader *cHeader = 0x0;
    AliAODMCHeader *cHeaderAOD = 0x0;
    Bool_t headerFound = kFALSE;
-
+   AliStack *fMCStack = 0x0;
+   TClonesArray *fMCStackAOD = 0x0;
    if(MCEvent->IsA()==AliMCEvent::Class()){
       cHeader = dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
       if(cHeader) headerFound = kTRUE;
+      fMCStack = dynamic_cast<AliStack*>(dynamic_cast<AliMCEvent*>(MCEvent)->Stack());
    }
    if(MCEvent->IsA()==AliAODEvent::Class()){ // MCEvent is a AODEvent in case of AOD
       cHeaderAOD = dynamic_cast<AliAODMCHeader*>(MCEvent->FindListObject(AliAODMCHeader::StdBranchName()));
+      fMCStackAOD = dynamic_cast<TClonesArray*>(MCEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+      
+      
       if(cHeaderAOD) headerFound = kTRUE;
    }
 
@@ -3612,18 +3680,38 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
       }
       AliGenEventHeader* gh = 0;
       fnHeaders = 0;
+      Int_t firstindexA = 0;
+      Int_t lastindexA =  -1;
       if(rejection == 1 || rejection == 3) fnHeaders = 1; // MinBiasHeader
       if(rejection == 2){ // TList of Headers Names
          for(Int_t i = 0; i<genHeaders->GetEntries();i++){
             gh = (AliGenEventHeader*)genHeaders->At(i);
             TString GeneratorName = gh->GetName();
+            lastindexA = lastindexA + gh->NProduced();
+//             cout << i << "\t" << GeneratorName.Data() << endl;
             for(Int_t j = 0; j<HeaderList->GetEntries();j++){
                TString GeneratorInList = ((TObjString*)HeaderList->At(j))->GetString();
                if(GeneratorName.CompareTo(GeneratorInList) == 0){
+                  if (GeneratorInList.CompareTo("PARAM") == 0){
+                     if(fMCStack){
+                        if (fMCStack->Particle(firstindexA)->GetPdgCode() == 111 || fMCStack->Particle(firstindexA)->GetPdgCode() == 221 ) {
+                           fnHeaders++;
+                           continue;
+                        }
+                     }   
+                     if ( fMCStackAOD){
+                        AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fMCStackAOD->At(firstindexA));
+                        if (  aodMCParticle->GetPdgCode() == 111 || aodMCParticle->GetPdgCode() == 221 ){
+                           fnHeaders++;
+                           continue;
+                       }   
+                     }
+                  }
                   fnHeaders++;
                   continue;
                }
             }
+            firstindexA = firstindexA + gh->NProduced();
          }
       }
 
@@ -3640,7 +3728,7 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
 
       Int_t firstindex = 0;
       Int_t lastindex =  -1;
-      Int_t nummer = 0;
+      Int_t number = 0;
       for(Int_t i = 0; i<genHeaders->GetEntries();i++){
          gh = (AliGenEventHeader*)genHeaders->At(i);
          TString GeneratorName = gh->GetName();
@@ -3648,12 +3736,35 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
          for(Int_t j = 0; j<HeaderList->GetEntries();j++){
             TString GeneratorInList = ((TObjString*)HeaderList->At(j))->GetString();
             if(GeneratorName.CompareTo(GeneratorInList) == 0){
-               fNotRejectedStart[nummer] = firstindex;
-               fNotRejectedEnd[nummer] = lastindex;
-               fGeneratorNames[nummer] = GeneratorName;
-               //cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
-               nummer++;
-               continue;
+               if (GeneratorInList.CompareTo("PARAM") == 0){
+                  if(fMCStack){
+                     if (fMCStack->Particle(firstindex)->GetPdgCode() == 111 || fMCStack->Particle(firstindex)->GetPdgCode() == 221 ) {
+                        fNotRejectedStart[number] = firstindex;
+                        fNotRejectedEnd[number] = lastindex;
+                        fGeneratorNames[number] = GeneratorName;
+                        number++;
+                        continue;
+                     }
+                  }   
+                  if ( fMCStackAOD){
+                     AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fMCStackAOD->At(firstindex));
+                     if (  aodMCParticle->GetPdgCode() == 111 || aodMCParticle->GetPdgCode() == 221 ){
+                        fNotRejectedStart[number] = firstindex;
+                        fNotRejectedEnd[number] = lastindex;
+                        fGeneratorNames[number] = GeneratorName;
+                        number++;
+                        continue;
+                     }   
+                  }
+                     
+               } else {
+                  fNotRejectedStart[number] = firstindex;
+                  fNotRejectedEnd[number] = lastindex;
+                  fGeneratorNames[number] = GeneratorName;
+   //                cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
+                   number++;
+                  continue;
+               }
             }
          }
          firstindex = firstindex + gh->NProduced();
@@ -3754,7 +3865,8 @@ Int_t AliConversionCuts::IsEventAcceptedByConversionCut(AliConversionCuts *Reade
 }
 //_________________________________________________________________________
 Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliStack *MCStack, AliVEvent *InputEvent){
-   if (!(period.CompareTo("LHC12f1a") == 0 || period.CompareTo("LHC12f1b") == 0  || period.CompareTo("LHC12i3") == 0 || period.CompareTo("LHC11a10a") == 0 || period.CompareTo("LHC11a10b") == 0 || period.CompareTo("LHC11a10b_bis") == 0 || period.CompareTo("LHC11a10a_bis") == 0 || period.CompareTo("LHC11a10b_plus") == 0 || period.Contains("LHC13d2"))) return 1.;
+   if (!(period.CompareTo("LHC12f1a") == 0 || period.CompareTo("LHC12f1b") == 0  || period.CompareTo("LHC12i3") == 0 || period.CompareTo("LHC11a10a") == 0 || period.CompareTo("LHC11a10b") == 0 || period.CompareTo("LHC11a10b_bis") == 0 || period.CompareTo("LHC11a10a_bis") == 0 || period.CompareTo("LHC11a10b_plus") == 0 || period.Contains("LHC13d2") || 
+   period.CompareTo("LHC13e7") == 0 || period.Contains("LHC13b2_efix"))) return 1.;
 
    Int_t kCaseGen = 0;
    for (Int_t i = 0; i < fnHeaders; i++){
@@ -3780,7 +3892,7 @@ Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliSta
          } else if (fGeneratorNames[i].CompareTo("NoCocktailGeneratorFound_Hijing") == 0){
             kCaseGen = 3;
          }
-         if (period.Contains("LHC13d2")){
+         if (period.Contains("LHC13d2") || period.CompareTo("LHC13e7") == 0 || period.Contains("LHC13b2_efix") ){
             kCaseGen = 3;
          }
       }
@@ -3901,8 +4013,15 @@ Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliSta
       if (functionResultData != 0. && functionResultMC != 0. && isfinite(functionResultData) && isfinite(functionResultMC)){
          weight = functionResultData/functionResultMC;
          if ( kCaseGen == 3){
-            if (!(fDoReweightHistoMCPi0 && hReweightMCHistPi0!= 0x0 && PDGCode ==  111)){
-               weight = 1.;
+            if (PDGCode ==  111){ 
+               if (!(fDoReweightHistoMCPi0 && hReweightMCHistPi0!= 0x0 && PDGCode ==  111)){
+                  weight = 1.;
+               }
+            } 
+            if (PDGCode ==  221){ 
+               if (!(fDoReweightHistoMCEta && hReweightMCHistEta!= 0x0 && PDGCode ==  221)){
+                  weight = 1.;
+               }
             }
          }
          if (!isfinite(functionResultData)) weight = 1.;

@@ -176,6 +176,7 @@ private:
    Double_t     fONcom; 
    Int_t        fNpart;          //Number of wounded (participating) nucleons in current event   
    Int_t        fNcoll;          //Number of binary collisions in current event
+   Int_t        fNcollw;         //Number of binary collisions in current event
    Double_t     fNcom;
    Double_t     fMeanr2;         //----------<r^2> of wounded nucleons
    Double_t     fMeanr3;         //----------<r^3> of wounded nucleons

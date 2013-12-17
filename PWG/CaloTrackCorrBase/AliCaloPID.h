@@ -242,7 +242,7 @@ class AliCaloPID : public TObject {
   
   void    SetSplitWidthSigma(Float_t s)        { fSplitWidthSigma        = s  ; }
 
-  void    SetPi0MassShiftHighECell(Float_t s)  { s = fMassShiftHighECell      ; }
+  void    SetPi0MassShiftHighECell(Float_t s)  { fMassShiftHighECell     = s  ; }
   
   void    SetPi0MassSelectionParameters    (Int_t inlm, Int_t iparam, Float_t param)
   { if(iparam < 6 ) fMassPi0Param[inlm][iparam] = param ; }

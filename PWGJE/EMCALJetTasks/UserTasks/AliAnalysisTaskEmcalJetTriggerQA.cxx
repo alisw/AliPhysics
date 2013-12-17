@@ -47,7 +47,6 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
   fh3PtEtaPhiTracks(0),
   fh3PtEtaPhiTracksOnEmcal(0),
   fh3PtEtaPhiTracksProp(0),
-  fh3PtEtaPhiTracksNoProp(0),
   fh3PtEtaPhiJetFull(0),
   fh3PtEtaPhiJetCharged(0),
   fh2NJetsPtFull(0),
@@ -98,7 +97,6 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
   fh3PtEtaPhiTracks(0),
   fh3PtEtaPhiTracksOnEmcal(0),
   fh3PtEtaPhiTracksProp(0),
-  fh3PtEtaPhiTracksNoProp(0),
   fh3PtEtaPhiJetFull(0),
   fh3PtEtaPhiJetCharged(0),
   fh2NJetsPtFull(0),
@@ -150,20 +148,15 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::SelectEvent() {
   if(!fTriggerClass.IsNull()) {
     //Check if requested trigger was fired
     TString firedTrigClass = InputEvent()->GetFiredTriggerClasses();
-    
-     if(fTriggerClass.Contains("J1") && fTriggerClass.Contains("J2")) {
-      if(!firedTrigClass.Contains("J1") || !firedTrigClass.Contains("J2") )
+
+    if(!firedTrigClass.Contains(fTriggerClass))
+      return kFALSE;
+    else if(fTriggerClass.Contains("J1") && fTriggerClass.Contains("J2")) { //if events with J1&&J2 are requested
+      if(!firedTrigClass.Contains("J1") || !firedTrigClass.Contains("J2") ) //check if both are fired
         return kFALSE;
     }
-    else {
-      if(!firedTrigClass.Contains(fTriggerClass))
-        return kFALSE;
-      if(fTriggerClass.Contains("J2") && firedTrigClass.Contains("J1")) //only accept J2 triggers which were not fired by J1 as well
-        return kFALSE;
-      else if(fTriggerClass.Contains("J1") && firedTrigClass.Contains("J2")) //only accept J2 triggers which were not fired by J1 as well
-        return kFALSE;
-    }
-     
+    else if(fTriggerClass.Contains("J1") && firedTrigClass.Contains("J2")) //if J2 is requested also add triggers which have J1&&J2. Reject if J1 is requested and J2 is fired
+      return kFALSE;
   }
 
   fhNEvents->Fill(1.5);
@@ -216,7 +209,7 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   Double_t *binsPt = new Double_t[fgkNPtBins+1];
   for(Int_t i=0; i<=fgkNPtBins; i++) binsPt[i]=(Double_t)kMinPt + (kMaxPt-kMinPt)/fgkNPtBins*(Double_t)i ;
 
-  Int_t fgkNPhiBins = 18*8;
+  Int_t fgkNPhiBins = 18*6;
   Float_t kMinPhi   = 0.;
   Float_t kMaxPhi   = 2.*TMath::Pi();
   Double_t *binsPhi = new Double_t[fgkNPhiBins+1];
@@ -240,7 +233,7 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   Double_t *binsConst = new Double_t[fgkNConstBins+1];
   for(Int_t i=0; i<=fgkNConstBins; i++) binsConst[i]=(Double_t)kMinConst + (kMaxConst-kMinConst)/fgkNConstBins*(Double_t)i ;
 
-  Int_t fgkNMeanPtBins = 200;
+  Int_t fgkNMeanPtBins = 100;
   Float_t kMinMeanPt   = 0.;
   Float_t kMaxMeanPt   = 20.;
   Double_t *binsMeanPt = new Double_t[fgkNMeanPtBins+1];
@@ -264,9 +257,9 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   Double_t *binsJetType = new Double_t[fgkNJetTypeBins+1];
   for(Int_t i=0; i<=fgkNJetTypeBins; i++) binsJetType[i]=(Double_t)kMinJetType + (kMaxJetType-kMinJetType)/fgkNJetTypeBins*(Double_t)i ;
 
-  Int_t fgkNTimeBins = 700;
-  Float_t kMinTime   = -400.;
-  Float_t kMaxTime   = 1000;
+  Int_t fgkNTimeBins = 100;
+  Float_t kMinTime   = -200.;
+  Float_t kMaxTime   = 200;
   Double_t *binsTime = new Double_t[fgkNTimeBins+1];
   for(Int_t i=0; i<=fgkNTimeBins; i++) binsTime[i]=(Double_t)kMinTime + (kMaxTime-kMinTime)/fgkNTimeBins*(Double_t)i ;
 
@@ -304,9 +297,6 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
 
   fh3PtEtaPhiTracksProp = new TH3F("fh3PtEtaPhiTracksProp","fh3PtEtaPhiTracksProp;#it{p}_{T}^{track};#eta;#varphi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PtEtaPhiTracksProp);
-
-  fh3PtEtaPhiTracksNoProp = new TH3F("fh3PtEtaPhiTracksNoProp","fh3PtEtaPhiTracksNoProp;#it{p}_{T}^{track};#eta;#varphi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
-  fOutput->Add(fh3PtEtaPhiTracksNoProp);
 
   fh3PtEtaPhiJetFull = new TH3F("fh3PtEtaPhiJetFull","fh3PtEtaPhiJetFull;#it{p}_{T}^{jet};#eta;#varphi",fgkNPtBins,binsPt,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PtEtaPhiJetFull);
@@ -436,29 +426,19 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
 {
   // Fill histograms.
 
-  //  Printf("fEntry %d",fEntry);
-
   AliParticleContainer *partCont = GetParticleContainer(0);
   if (partCont) {
     Int_t i = 0;
-    //Printf("id type  pt,eta,phi");
     AliPicoTrack *track = dynamic_cast<AliPicoTrack*>(partCont->GetNextAcceptParticle(0));
     while(track) {
-      //      if(track->GetTrackType()==0) {
-	Double_t trkphi = track->Phi()*TMath::RadToDeg();
-	fh3PtEtaPhiTracks->Fill(track->Pt(),track->Eta(),track->Phi());
-	if(track->IsEMCAL()) {
-	  i++;
-	  //	  Printf("%d %d %f,%f,%f",i,track->GetTrackType(),track->GetTrackPtOnEMCal(),track->GetTrackEtaOnEMCal(),track->GetTrackPhiOnEMCal());
-	  fh3PtEtaPhiTracksOnEmcal->Fill(track->GetTrackPtOnEMCal(),track->GetTrackEtaOnEMCal(),track->GetTrackPhiOnEMCal());
-	  if(TMath::Abs(track->Eta())<0.9 && trkphi > 10 && trkphi < 250 )
-	    fh3PtEtaPhiTracksProp->Fill(track->Pt(),track->Eta(),track->Phi());
-	}
-	else {
-	  if(TMath::Abs(track->Eta())<0.9 && trkphi > 10 && trkphi < 250 )
-	    fh3PtEtaPhiTracksNoProp->Fill(track->Pt(),track->Eta(),track->Phi());
-	}
-	//}
+      Double_t trkphi = track->Phi()*TMath::RadToDeg();
+      fh3PtEtaPhiTracks->Fill(track->Pt(),track->Eta(),track->Phi());
+      if(track->IsEMCAL()) {
+	i++;
+	fh3PtEtaPhiTracksOnEmcal->Fill(track->GetTrackPtOnEMCal(),track->GetTrackEtaOnEMCal(),track->GetTrackPhiOnEMCal());
+	if(TMath::Abs(track->Eta())<0.9 && trkphi > 10 && trkphi < 250 )
+	  fh3PtEtaPhiTracksProp->Fill(track->Pt(),track->Eta(),track->Phi());
+      }
       track = dynamic_cast<AliPicoTrack*>(partCont->GetNextAcceptParticle());
     }
 
