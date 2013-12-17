@@ -313,7 +313,7 @@ void AliTPCPIDResponse::SetSigma(Float_t res0, Float_t resN2) {
 }
 
 //_________________________________________________________________________
-Double_t AliTPCPIDResponse::GetExpectedSignal(const Float_t mom,
+Double_t AliTPCPIDResponse::GetExpectedSignal(Float_t mom,
 					      AliPID::EParticleType n) const {
   //
   // Deprecated function (for backward compatibility). Please use 
@@ -347,8 +347,8 @@ Double_t AliTPCPIDResponse::GetExpectedSignal(const Float_t mom,
 }
 
 //_________________________________________________________________________
-Double_t AliTPCPIDResponse::GetExpectedSigma(const Float_t mom, 
-                                             const Int_t nPoints,
+Double_t AliTPCPIDResponse::GetExpectedSigma(Float_t mom, 
+                                             Int_t nPoints,
                                              AliPID::EParticleType n) const {
   //
   // Deprecated function (for backward compatibility). Please use 
@@ -1064,7 +1064,7 @@ Double_t AliTPCPIDResponse::GetTrackTanTheta(const AliVTrack *track) const
 
 
 //_________________________________________________________________________
-Double_t AliTPCPIDResponse::GetMultiplicityCorrectionFast(const AliVTrack *track, const Double_t dEdxExpected, const Int_t multiplicity) const
+Double_t AliTPCPIDResponse::GetMultiplicityCorrectionFast(const AliVTrack *track, Double_t dEdxExpected, Int_t multiplicity) const
 {
   // NOTE: For expert use only -> Non-experts are advised to use the function without the "Fast" suffix or stick to AliPIDResponse directly.
   //
@@ -1220,7 +1220,7 @@ Double_t AliTPCPIDResponse::GetEtaAndMultiplicityCorrectedTrackdEdx(const AliVTr
 
 
 //_________________________________________________________________________
-Double_t AliTPCPIDResponse::GetMultiplicitySigmaCorrectionFast(const Double_t dEdxExpected, const Int_t multiplicity) const
+Double_t AliTPCPIDResponse::GetMultiplicitySigmaCorrectionFast(Double_t dEdxExpected, Int_t multiplicity) const
 {
   // NOTE: For expert use only -> Non-experts are advised to use the function without the "Fast" suffix or stick to AliPIDResponse directly.
   //
