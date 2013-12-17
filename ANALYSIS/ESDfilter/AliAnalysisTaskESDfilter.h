@@ -117,7 +117,7 @@ private:
   void ConvertZDC(const AliESDEvent& esd);
   Int_t ConvertHMPID(const AliESDEvent& esd);
   void ConvertTRD(const AliESDEvent& esd);
-  void PropagateTrackToEMCal(AliESDtrack *esdTrack);
+  void CopyCaloProps(AliESDtrack *esdt, AliAODTrack *aodt);
 
   TClonesArray& Tracks();
   TClonesArray& V0s();

@@ -553,16 +553,14 @@ void AliPIDResponse::InitialiseEvent(AliVEvent *event, Int_t pass, Int_t run)
   }
   
   // Set up TPC multiplicity for PbPb
-  //TODO Will NOT give the desired number for AODs -> Needs new variable/function in future.
-  // Fatal, if AOD event and correction enabled
-  //printf("DETECTED class: %s (%d)\n\n\n\n", event->IsA()->GetName(), fUseTPCMultiplicityCorrection);//TODO
-  if (fUseTPCMultiplicityCorrection && strcmp(event->IsA()->GetName(), "AliESDEvent") != 0) {
-    AliFatal("TPC multiplicity correction is enabled, but will NOT work for AOD events, only for ESD => Disabled multiplicity correction!");
-    fUseTPCMultiplicityCorrection = kFALSE;
+  if (fUseTPCMultiplicityCorrection) {
+    Int_t numESDtracks = event->GetNumberOfESDTracks();
+    if (numESDtracks < 0) {
+      AliError("Cannot obtain event multiplicity (number of ESD tracks < 0). If you are using AODs, this might be a too old production. Please disable the multiplicity correction to get a reliable PID result!");
+      numESDtracks = 0;
+    }
+    fTPCResponse.SetCurrentEventMultiplicity(numESDtracks);
   }
-  
-  if (fUseTPCMultiplicityCorrection)
-    fTPCResponse.SetCurrentEventMultiplicity(event->GetNumberOfTracks());
   else
     fTPCResponse.SetCurrentEventMultiplicity(0);
   
@@ -1301,13 +1299,29 @@ void AliPIDResponse::SetTPCParametrisation()
 
 
   //
-  // Setup multiplicity correction
+  // Setup multiplicity correction (only used for non-pp collisions)
   //
-  if (fUseTPCMultiplicityCorrection && !(fBeamType.CompareTo("PP") == 0)) {
+  
+  const Bool_t isPP = (fBeamType.CompareTo("PP") == 0);
+  
+  // 2013 pPb data taking at low luminosity
+  const Bool_t isPPb2013LowLuminosity = period.Contains("LHC13B") || period.Contains("LHC13C") || period.Contains("LHC13D");
+  // PbPb 2010, period 10h.pass2
+  //TODO Needs further development const Bool_t is10hpass2 = period.Contains("LHC10H") && recopass == 2;
+  
+  // If correction is available, but disabled (highly NOT recommended!), print warning
+  if (!fUseTPCMultiplicityCorrection && !isPP) {
+    //TODO: Needs further development if (is10hpass2 || isPPb2013LowLuminosity) {
+    if (isPPb2013LowLuminosity) {
+      AliWarning("Mulitplicity correction disabled, but correction parameters for this period exist. It is highly recommended to use enable the correction. Otherwise the splines might be off!");
+    }
+  }
+  
+  if (fUseTPCMultiplicityCorrection && !isPP) {
     AliInfo("Multiplicity correction enabled!");
     
     //TODO After testing, load parameters from outside       
-    /*TODO now correction for MC
+    /*TODO no correction for MC
     if (period.Contains("LHC11A10"))  {//LHC11A10A
       AliInfo("Using multiplicity correction parameters for 11a10!");
       fTPCResponse.SetParameterMultiplicityCorrection(0, 6.90133e-06);
@@ -1325,8 +1339,8 @@ void AliPIDResponse::SetTPCParametrisation()
       fTPCResponse.SetParameterMultiplicitySigmaCorrection(2, -6.36337e-01);
       fTPCResponse.SetParameterMultiplicitySigmaCorrection(3, 1.13479e-02);
     }
-    else*/ if (period.Contains("LHC13B") || period.Contains("LHC13C") || period.Contains("LHC13D"))  {// 2013 pPb data taking at low luminosity
-      AliInfo("Using multiplicity correction parameters for 13b.pass2!");
+    else*/ if (isPPb2013LowLuminosity)  {// 2013 pPb data taking at low luminosity
+      AliInfo("Using multiplicity correction parameters for 13b.pass2 (at least also valid for 13{c,d} and pass 3)!");
       
       fTPCResponse.SetParameterMultiplicityCorrection(0, -5.906e-06);
       fTPCResponse.SetParameterMultiplicityCorrection(1, -5.064e-04);
@@ -1360,7 +1374,8 @@ void AliPIDResponse::SetTPCParametrisation()
       fTPCResponse.SetParameterMultiplicitySigmaCorrection(3, 1.47931e-02);
       */
     }
-    else if (period.Contains("LHC10H") && recopass == 2) {    
+    /*TODO: Needs further development
+    else if (is10hpass2) {    
       AliInfo("Using multiplicity correction parameters for 10h.pass2!");
       fTPCResponse.SetParameterMultiplicityCorrection(0, 3.21636e-07);
       fTPCResponse.SetParameterMultiplicityCorrection(1, -6.65876e-04);
@@ -1377,6 +1392,7 @@ void AliPIDResponse::SetTPCParametrisation()
       fTPCResponse.SetParameterMultiplicitySigmaCorrection(2, -3.20788e-01);
       fTPCResponse.SetParameterMultiplicitySigmaCorrection(3, 1.07345e-02);
     }
+    */
     else {
       AliError(Form("Multiplicity correction is enabled, but no multiplicity correction parameters have been found for period %s.pass%d -> Mulitplicity correction DISABLED!", period.Data(), recopass));
       fUseTPCMultiplicityCorrection = kFALSE;
@@ -1398,20 +1414,17 @@ void AliPIDResponse::SetTPCParametrisation()
     fTPCResponse.ResetMultiplicityCorrectionFunctions();
   }
   
-  /*
-  //TODO NOW start
-  for (Int_t i = 0; i <= 4 + 1; i++) {
-    printf("parMultCorr: %d, %e\n", i, fTPCResponse.GetMultiplicityCorrectionFunction()->GetParameter(i));
+  if (fUseTPCMultiplicityCorrection) {
+    for (Int_t i = 0; i <= 4 + 1; i++) {
+      AliInfo(Form("parMultCorr: %d, %e", i, fTPCResponse.GetMultiplicityCorrectionFunction()->GetParameter(i)));
+    }
+    for (Int_t j = 0; j <= 2 + 1; j++) {
+      AliInfo(Form("parMultCorrTanTheta: %d, %e", j, fTPCResponse.GetMultiplicityCorrectionFunctionTanTheta()->GetParameter(j)));
+    }
+    for (Int_t j = 0; j <= 3 + 1; j++) {
+      AliInfo(Form("parMultSigmaCorr: %d, %e", j, fTPCResponse.GetMultiplicitySigmaCorrectionFunction()->GetParameter(j)));
+    }
   }
-  for (Int_t j = 0; j <= 2 + 1; j++) {
-    printf("parMultCorrTanTheta: %d, %e\n", j, fTPCResponse.GetMultiplicityCorrectionFunctionTanTheta()->GetParameter(j));
-  }
-  for (Int_t j = 0; j <= 3 + 1; j++) {
-    printf("parMultSigmaCorr: %d, %e\n", j, fTPCResponse.GetMultiplicitySigmaCorrectionFunction()->GetParameter(j));
-  }
-  
-  //TODO NOW end
-  */
   
   //
   // Setup old resolution parametrisation

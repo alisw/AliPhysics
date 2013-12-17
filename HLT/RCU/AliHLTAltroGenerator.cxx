@@ -116,7 +116,7 @@ int AliHLTAltroGenerator::Generate()
     HLTDebug("simulate channel %d: address %d", channel, channelAddress);
 
     // save beginning of this channel for better navigation
-    AliChannelPosition position={channelAddress, dataPos, 0};
+    AliChannelPosition position={static_cast<AliHLTUInt16_t>(channelAddress), dataPos, 0};
 
     // add channel address and bunch count at the beginning
     if (fpSimData->GetSize()<dataPos+2) fpSimData->Set(dataPos+2);

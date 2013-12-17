@@ -693,15 +693,11 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  Int_t loCircuit = crate->GetLocalBoardId(localStruct->GetId());
 
 	  if ( !loCircuit ) continue; // empty slot
-
+    
 	  AliMpLocalBoard* localBoard = AliMpDDLStore::Instance()->GetLocalBoard(loCircuit, false);
 
 	  nBoardsInReg++; // Not necessary when regional output will work
 	  countAllBoards++;
-
-	  // skip copy cards
-	  if( !localBoard->IsNotified()) 
-	    continue;
 
 	  AliMUONLocalTrigger inputLocalTrigger;
 	  inputLocalTrigger.SetLocalStruct(loCircuit, *localStruct);
@@ -717,6 +713,8 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  //Get regional inputs -> not checked, hardware read-out doesn't work
 	  //fTriggerInputRegionalDataLPt[0][loCircuit]=Int_t(((regHeader->GetInput(0))>>(2*iLocal))&1);
 	  //fTriggerInputRegionalDataLPt[1][loCircuit]=Int_t(((regHeader->GetInput(1))>>((2*iLocal)+1))&1);
+    
+    if ( ! localBoard->IsNotified() ) continue;
 
 	  //Get local in/outputs
 	  if (Int_t(localStruct->GetDec())!=0){
@@ -1232,6 +1230,8 @@ void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutLocal()
   while ( ( recoLocalTrigger = static_cast<AliMUONLocalTrigger*>(next()) ) )
   {  
     loCircuit = recoLocalTrigger->LoCircuit();
+    // FIXME: skip copy boards for the moment
+    if ( loCircuit > AliMUONConstants::NTriggerCircuit() ) continue;
     Int_t iboard = loCircuit - 1;
 
     FillRawsData(AliMUONQAIndices::kTriggerErrorLocalYCopyTest,loCircuit);
@@ -1273,6 +1273,8 @@ void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutLocal()
   while ( ( recoLocalTrigger = static_cast<AliMUONLocalTrigger*>(next()) ) )
   {  
     loCircuit = recoLocalTrigger->LoCircuit();
+    // FIXME: skip copy boards for the moment
+    if ( loCircuit > AliMUONConstants::NTriggerCircuit() ) continue;
     Int_t iboard = loCircuit - 1;
     
     AliMUONLocalTrigger* inputLocalTrigger = fTriggerStoreFromRaw->FindLocal(loCircuit);
