@@ -74,6 +74,8 @@ public:
   void Fill( AliFlowTrackCuts* rpCuts,
              AliFlowTrackCuts* poiCuts );
 
+  void FindDaughters(Bool_t keepDaughtersInRPselection=kFALSE);
+
   void SetMCReactionPlaneAngle(const AliMCEvent* mcEvent);
   using AliFlowEventSimple::SetMCReactionPlaneAngle;
 

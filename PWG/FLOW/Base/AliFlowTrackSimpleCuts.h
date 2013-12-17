@@ -49,10 +49,12 @@ class AliFlowTrackSimpleCuts : public TNamed {
   Double_t GetMassMin() const   {return this->fMassMin; }
   
   //simple method to check if the simple track passes the simple cuts:
-  Bool_t PassesCuts(const AliFlowTrackSimple *track) const;
-  Bool_t PassesCuts(TParticle* p) const;
+  Int_t PassesCuts(const AliFlowTrackSimple *track) const;
+  Int_t PassesCuts(TParticle* p) const;
 
-  virtual Bool_t IsSelected(TObject* obj, Int_t id=-1);
+  Int_t GetNumberOfPOIclasses() const {return fNumberOfPOIclasses;}
+
+  virtual Int_t IsSelected(TObject* obj, Int_t id=-1);
 
  protected:
   Bool_t   fCutPt; //cut on pt?
@@ -71,6 +73,7 @@ class AliFlowTrackSimpleCuts : public TNamed {
   Bool_t   fCutMass; // cut on mass?
   Double_t fMassMax; //max mass
   Double_t fMassMin; //min mass
+  Int_t    fNumberOfPOIclasses; //how many different POI classes do we recognize?
 
   ClassDef(AliFlowTrackSimpleCuts,2)
 };
