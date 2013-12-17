@@ -1605,8 +1605,6 @@ void AliAnaPi0::FillArmenterosThetaStar(Int_t pdg,             TLorentzVector me
   if(en > 20)             ebin = 3;
   if(ebin < 0 || ebin > 3) return ;
   
-  Float_t asym = 0;
-  if(daugh1.E()+daugh2.E() > 0) asym = TMath::Abs(daugh1.E()-daugh2.E())/(daugh1.E()+daugh2.E());
   
   if(pdg==111)
   {
@@ -1619,10 +1617,15 @@ void AliAnaPi0::FillArmenterosThetaStar(Int_t pdg,             TLorentzVector me
     fhArmPrimEta[ebin]->Fill(alphaArm,pTArm);
   }
   
-  if(GetDebug() > 2 ) printf("AliAnaPi0::FillArmenterosThetaStar() - E %f, alphaArm %f, pTArm %f, cos(theta*) %f\n",en,alphaArm,pTArm,cosThStar);
-  
-}
+  if(GetDebug() > 2 )
+  {
+    Float_t asym = 0;
+    if(daugh1.E()+daugh2.E() > 0) asym = TMath::Abs(daugh1.E()-daugh2.E())/(daugh1.E()+daugh2.E());
 
+    printf("AliAnaPi0::FillArmenterosThetaStar() - E %f, alphaArm %f, pTArm %f, cos(theta*) %f, asymmetry %1.3f\n",
+         en,alphaArm,pTArm,cosThStar,asym);
+  }
+}
 
 //_______________________________________________________________________________________
 void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,

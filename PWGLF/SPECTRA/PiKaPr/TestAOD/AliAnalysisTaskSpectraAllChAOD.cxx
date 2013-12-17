@@ -170,7 +170,7 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
   if(!fEventCuts->IsSelected(fAOD,fTrackCuts))return;//event selection
 
   //Default TPC priors
-  fHelperPID->GetPIDCombined()->SetDefaultTPCPriors();//FIXME maybe this can go in the UserCreateOutputObject?
+  if(fHelperPID->GetPIDType()==kBayes)fHelperPID->GetPIDCombined()->SetDefaultTPCPriors();//FIXME maybe this can go in the UserCreateOutputObject?
   
   Double_t Qvec=0.;//in case of MC we save space in the memory
   if(!fIsMC)Qvec=fEventCuts->GetqV0A();//FIXME we'll have to combine A and C

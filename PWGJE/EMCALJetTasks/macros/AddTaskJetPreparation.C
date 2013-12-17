@@ -19,8 +19,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   const Bool_t   makeTrigger        = kTRUE,
   const Bool_t   isEmcalTrain       = kFALSE,
   const Double_t trackeff           = 1.0,
-  const Bool_t   doAODTrackProp     = kFALSE,
-  const Bool_t   useTrackPropTask   = kTRUE
+  const Bool_t   doAODTrackProp     = kFALSE
 )
 {
   // Add task macros for all jet related helper tasks.
@@ -46,32 +45,25 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   if (makePicoTracks && (dType == "ESD" || dType == "AOD") )
   {
     TString inputTracks = "tracks";
-
+    const Double_t edist = 440;
     if (dType == "ESD")
     {
       inputTracks = "HybridTracks";
       TString trackCuts(Form("Hybrid_%s", period.Data()));
       // Hybrid tracks maker for ESD
-      gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalEsdTpcTrack.C");
-      AliEmcalEsdTpcTrackTask *hybTask = AddTaskEmcalEsdTpcTrack(inputTracks.Data(),trackCuts.Data());
+      gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalEsdTrackFilter.C");
+      AliEmcalEsdTrackFilterTask *hybTask = AddTaskEmcalEsdTrackFilter(inputTracks.Data(),trackCuts.Data());
+      hybTask->SetDoPropagation(kTRUE);
+      hybTask->SetDist(edist);
       hybTask->SelectCollisionCandidates(pSel);
-
-      if(useTrackPropTask) {
-	// Track propagator to extend track to the TPC boundaries
-	gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalTrackPropagator.C");
-	AliEmcalTrackPropagatorTask *propTask = AddTaskEmcalTrackPropagator(inputTracks.Data(),440.);
-	propTask->SelectCollisionCandidates(pSel);
-      }
-      else
-	hybTask->SetDoPropagation(kTRUE);
-    }
-    if(dType == "AOD" && doAODTrackProp) {
+    } else if(dType == "AOD" && doAODTrackProp) {
       // Track propagator to extend track to the EMCal surface
       gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalTrackPropagatorAOD.C");
-      AliEmcalTrackPropagatorTaskAOD *propTask = AddTaskEmcalTrackPropagatorAOD(inputTracks.Data(),440.);
+      AliEmcalTrackPropagatorTaskAOD *propTask = AddTaskEmcalTrackPropagatorAOD(inputTracks.Data());
+      propTask->SetDist(edist);
+      propTask->SetDoPropagation(kTRUE);
       propTask->SelectCollisionCandidates(pSel);
     }
-
 
     // Produce PicoTracks 
     gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPicoTrackMaker.C");
@@ -94,7 +86,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
 
   // Relate tracks and clusters
   gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalClusTrackMatcher.C");
-  AliEmcalClusTrackMatcherTask *emcalClus =  AddTaskEmcalClusTrackMatcher("EmcalTracks","EmcalClusters",0.1);
+  AliEmcalClusTrackMatcherTask *emcalClus =  AddTaskEmcalClusTrackMatcher("EmcalTracks","EmcalClusters",0.1,doHistos);
   emcalClus->SelectCollisionCandidates(pSel);
   if (isEmcalTrain)
     RequestMemory(emcalClus,100*1024);

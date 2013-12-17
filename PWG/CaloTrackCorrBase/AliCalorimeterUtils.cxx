@@ -1550,11 +1550,14 @@ void AliCalorimeterUtils::SplitEnergy(Int_t absId1, Int_t absId2,
     {
       //printf("iDigit %d, absId %d, Ecell %f\n",iDigit,absIdList[iDigit], cells->GetCellAmplitude(absIdList[iDigit]));
       sm = GetModuleNumberCellIndexes(absIdList[iDigit], calorimeter, icol, irow, iRCU) ;
-      if(icol > maxCol) maxCol = icol;
-      if(icol < minCol) minCol = icol;
-      if(irow > maxRow) maxRow = irow;
-      if(irow < minRow) minRow = irow;
-      hClusterMap->Fill(icol,irow,ec);
+      if(sm > -1 && sm  < 12) // just to avoid compilation warning
+      {
+        if(icol > maxCol) maxCol = icol;
+        if(icol < minCol) minCol = icol;
+        if(irow > maxRow) maxRow = irow;
+        if(irow < minRow) minRow = irow;
+        hClusterMap->Fill(icol,irow,ec);
+      }
     }
     
   }

@@ -427,7 +427,7 @@ Int_t AliHelperPID::FindMinNSigma(AliVTrack * trk,Bool_t FillQAHistos){
 Bool_t* AliHelperPID::GetDoubleCounting(AliVTrack * trk,Bool_t FIllQAHistos){ 
   //if a particle has double counting set fHasDoubleCounting[ipart]=kTRUE
   //fill DC histos
-  for(Int_t ipart=0;ipart<=kNSpecies;ipart++)fHasDoubleCounting[ipart]=kFALSE;//array with kTRUE for second (or third) identity of the track
+  for(Int_t ipart=0;ipart<kNSpecies;ipart++)fHasDoubleCounting[ipart]=kFALSE;//array with kTRUE for second (or third) identity of the track
   
   Int_t MinNSigma=FindMinNSigma(trk,kFALSE);//not filling the NSigmaRec histos
   

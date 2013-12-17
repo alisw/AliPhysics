@@ -10,6 +10,10 @@
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
 #include "AliExternalTrackParam.h"
+#include <AliMagF.h>
+#include <AliTrackerBase.h>
+#include <AliEMCALRecoUtils.h>
+
 #include "AliEmcalTrackPropagatorTaskAOD.h"
 
 ClassImp(AliEmcalTrackPropagatorTaskAOD)
@@ -87,6 +91,7 @@ void AliEmcalTrackPropagatorTaskAOD::UserExec(Option_t *)
   // get tracks from event if not yet there
   if (fTracksName == "tracks")
     am->LoadBranch("tracks");
+
   fTracks = dynamic_cast<TClonesArray*>((InputEvent()->FindListObject(fTracksName)));
   if (!fTracks) {
     AliError(Form("Could not get tracks %s, returning", fTracksName.Data()));
@@ -99,42 +104,9 @@ void AliEmcalTrackPropagatorTaskAOD::UserExec(Option_t *)
     AliAODTrack *aodTrack = static_cast<AliAODTrack*>(fTracks->At(i));
     if (!aodTrack)
       continue;
-    aodTrack->ResetStatus(AliVTrack::kEMCALmatch); //MV: necessary?
-    if(aodTrack->Pt()<fMinPtCut) 
-      continue;
-    if(aodTrack->GetTrackPtOnEMCal()>0) 
+    if(aodTrack->Pt()<fMinPtCut || aodTrack->GetTrackPtOnEMCal()>0) 
       continue;
 
-    Double_t phi = aodTrack->Phi()*TMath::RadToDeg();
-    if (TMath::Abs(aodTrack->Eta())>0.9 || phi <= 10 || phi >= 250) 
-      continue;
-
-    Double_t xyz[3], pxpypz[3], cv[21];
-    aodTrack->PxPyPz(pxpypz);  
-    aodTrack->XvYvZv(xyz);
-    aodTrack->GetCovarianceXYZPxPyPz(cv);  
-    AliExternalTrackParam *trackParam = new AliExternalTrackParam(xyz,pxpypz,cv,aodTrack->Charge());
-    //    AliExternalTrackParam *trackParam =  const_cast<AliExternalTrackParam*>(eTrack->GetInnerParam()); MV: note, not taking InnerParam in AOD, not available
-    if(!trackParam) 
-      continue;
-
-    // Extrapolate the track to EMCal surface
-    AliExternalTrackParam emcalParam(*trackParam);
-    Float_t etaout=-999, phiout=-999, ptout=-999;
-    Bool_t ret = fRecoUtils->ExtrapolateTrackToEMCalSurface(&emcalParam, 
-                                                            fDist, 
-                                                            aodTrack->M(), 
-                                                            fRecoUtils->GetStepSurface(), 
-                                                            etaout, 
-                                                            phiout,
-							    ptout);
-    if (!ret)
-      continue;
-    if (TMath::Abs(etaout)>0.75 || (phiout<70*TMath::DegToRad()) || (phiout>190*TMath::DegToRad()))
-      continue;
-    aodTrack->SetTrackPhiEtaPtOnEMCal(phiout, etaout, ptout);
-    aodTrack->SetStatus(AliVTrack::kEMCALmatch);
-
-    delete trackParam;
+    AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(aodTrack,fDist);
   }
 }

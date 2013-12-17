@@ -44,6 +44,7 @@ using namespace std;
 
 #include "AliTrackDiHadronPID.h"
 #include "AliHistToolsDiHadronPID.h"
+#include "AliFunctionsDiHadronPID.h"
 
 ClassImp(AliAODTrackCutsDiHadronPID);
 
@@ -1743,7 +1744,7 @@ void AliAODTrackCutsDiHadronPID::SetXaxisAcceptedFilterBits() {
 
 	while (((Int_t)fFilterMask) >= (1<<(largestBit)) ) {
 		if ((((Int_t)fFilterMask)&(1<<largestBit))==(1<<largestBit)) {
-			fullArraySizeTmp += TMath::Power(2, baseArraySizeTmp);
+			fullArraySizeTmp += AliFunctionsDiHadronPID::Power(2, baseArraySizeTmp);
 			baseArraySizeTmp++;
 		}
 		largestBit++;
@@ -1772,7 +1773,7 @@ void AliAODTrackCutsDiHadronPID::SetXaxisAcceptedFilterBits() {
 	Int_t iFullArray = 1;
 
 	for (Int_t ii = 1; ii < baseArraySize; ++ii) {
-		Int_t range = (iFullArray + TMath::Power(2,ii));
+		Int_t range = (iFullArray + AliFunctionsDiHadronPID::Power(2,ii));
 		for (Int_t jj = iFullArray; jj < range; ++jj) {
 			
 			fullArray[jj] = baseArray[ii];
@@ -1783,7 +1784,7 @@ void AliAODTrackCutsDiHadronPID::SetXaxisAcceptedFilterBits() {
 			}
 
 		}
-		iFullArray += TMath::Power(2,ii);
+		iFullArray += AliFunctionsDiHadronPID::Power(2,ii);
 
 	}
 

@@ -113,12 +113,17 @@ Bool_t AliAnalysisTaskEmcalDiJetBase::SelectEvent() {
   if(!fTriggerClass.IsNull()) {
     //Check if requested trigger was fired
     TString firedTrigClass = InputEvent()->GetFiredTriggerClasses();
+
     if(!firedTrigClass.Contains(fTriggerClass))
       return kFALSE;
-    if(fTriggerClass.Contains("J1") && firedTrigClass.Contains("J2")) //assign J1&J2 triggers to J2 category
+    else if(fTriggerClass.Contains("J1") && fTriggerClass.Contains("J2")) { //if events with J1&&J2 are requested
+      if(!firedTrigClass.Contains("J1") || !firedTrigClass.Contains("J2") ) //check if both are fired
+        return kFALSE;
+    }
+    else if(fTriggerClass.Contains("J1") && firedTrigClass.Contains("J2")) //if J2 is requested also add triggers which have J1&&J2. Reject if J1 is requested and J2 is fired
       return kFALSE;
   }
-
+  
   fhNEvents->Fill(1.5);
 
   fHistTrialsSelEvents->Fill(fPtHardBin, fNTrials);
@@ -282,7 +287,7 @@ Double_t AliAnalysisTaskEmcalDiJetBase::GetFractionSharedPt(const AliEmcalJet *j
  
   if(jetPtCh>0) {
 
-    if(fDebug>10)  AliInfo(Form("%s: nConstituents: %d, ch: %d  chne: %d ne: %d",GetName(),jetFull->GetNumberOfConstituents(),jetCharged->GetNumberOfTracks(),jetFull->GetNumberOfTracks(),jetFull->GetNumberOfClusters()));
+    AliDebug(11,Form("%s: nConstituents: %d, ch: %d  chne: %d ne: %d",GetName(),jetFull->GetNumberOfConstituents(),jetCharged->GetNumberOfTracks(),jetFull->GetNumberOfTracks(),jetFull->GetNumberOfClusters()));
     
     Double_t sumPt = 0.;
     AliVParticle *vpf = 0x0;
@@ -305,7 +310,7 @@ Double_t AliAnalysisTaskEmcalDiJetBase::GetFractionSharedPt(const AliEmcalJet *j
     fraction = sumPt/jetPtCh;
   }
 
-  if(fDebug>10) AliInfo(Form("%s: charged shared fraction: %.2f",GetName(),fraction));
+  AliDebug(11,Form("%s: charged shared fraction: %.2f",GetName(),fraction));
 
   return fraction;
 
@@ -432,7 +437,7 @@ void AliAnalysisTaskEmcalDiJetBase::MatchJetsGeo(Int_t cFull, Int_t cCharged,
   // check for "true" correlations
   for(int ifu = 0;ifu<nFullJets;ifu++){
     for(int ich = 0;ich<nChJets;ich++){
-      if(iDebug>10) AliInfo(Form("%s: Flag[%d][%d] %d ",GetName(),ifu,ich,iFlag[ifu*nChJets+ich]));
+      AliDebug(11,Form("%s: Flag[%d][%d] %d ",GetName(),ifu,ich,iFlag[ifu*nChJets+ich]));
       
       if(kMode==3){
         // we have a uniqe correlation
@@ -442,7 +447,7 @@ void AliAnalysisTaskEmcalDiJetBase::MatchJetsGeo(Int_t cFull, Int_t cCharged,
 	  AliEmcalJet *fullJet = static_cast<AliEmcalJet*>(GetJetFromArray(ifu, cFull));
 	  Double_t dR = GetDeltaR(fullJet,chJet); 
 
-	  if(iDebug>10) Printf("closest jets %d  %d  dR =  %f",ich,ifu,dR);
+	  AliDebug(11,Form("closest jets %d  %d  dR =  %f",ich,ifu,dR));
 
 	  chJet->SetClosestJet(fullJet,dR);
 	  fullJet->SetClosestJet(chJet,dR);

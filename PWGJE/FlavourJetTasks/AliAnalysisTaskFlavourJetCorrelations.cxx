@@ -790,6 +790,12 @@ void AliAnalysisTaskFlavourJetCorrelations::SideBandBackground(AliAODRecoCascade
    Double_t mPDGD0=TDatabasePDG::Instance()->GetParticle(421)->Mass();
    
    Int_t bin = fCuts->PtBin(candDstar->Pt());
+   if (bin < 0)
+     {
+       // coverity - issue related to /PWGHF/vertexingHF/AliRDHFCuts::PtBin(Double_t) const
+       AliFatal("bin < 0 used as an array index; check: /PWGHF/vertexingHF/AliRDHFCuts::PtBin(Double_t) const");
+       bin = 9999; // coverity - should be unreachable anyhow
+     }
    Float_t fourSigmal= mPDGD0-4.*fSigmaD0[bin] , sixSigmal= mPDGD0-8.*fSigmaD0[bin];
    Float_t fourSigmar= mPDGD0+4.*fSigmaD0[bin] , sixSigmar= mPDGD0+8.*fSigmaD0[bin];
    

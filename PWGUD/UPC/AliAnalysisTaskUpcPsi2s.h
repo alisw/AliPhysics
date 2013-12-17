@@ -47,6 +47,7 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   //trigger
   Bool_t fTrigger[ntrg];
   UInt_t fL0inputs, fL1inputs;
+  Bool_t fTOFtrig1, fTOFtrig2;
   Int_t fVtxContrib;
   Double_t fVtxPosX,fVtxPosY,fVtxPosZ;
   Double_t fVtxErrX,fVtxErrY,fVtxErrZ;
@@ -69,6 +70,9 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   TH1D *fHistUpcTriggersPerRun;
   TH1D *fHistZedTriggersPerRun;
   TH1D *fHistCvlnTriggersPerRun;
+  TH1D *fHistMBTriggersPerRun;
+  TH1D *fHistCentralTriggersPerRun;
+  TH1D *fHistSemiCentralTriggersPerRun;
   
   TList *fListHist;
   TH1D *fHistNeventsJPsi; 
