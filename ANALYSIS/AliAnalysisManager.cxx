@@ -2850,7 +2850,7 @@ void AliAnalysisManager::ApplyDebugOptions()
 }
 
 //______________________________________________________________________________
-Bool_t AliAnalysisManager::IsMacroLoaded(char filename)
+Bool_t AliAnalysisManager::IsMacroLoaded(const char * filename)
 {
 // Check if a macro was loaded.
    return fgMacroNames.Contains(filename);
