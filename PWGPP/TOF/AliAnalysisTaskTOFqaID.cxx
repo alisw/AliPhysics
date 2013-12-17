@@ -529,7 +529,7 @@ void AliAnalysisTaskTOFqaID::Terminate(Option_t *)
 }
 
 //---------------------------------------------------------------
-Int_t AliAnalysisTaskTOFqaID::GetStripIndex(const Int_t * const in)
+Int_t AliAnalysisTaskTOFqaID::GetStripIndex(const Int_t * in)
 {
   /* return tof strip index between 0 and 91 */
   
