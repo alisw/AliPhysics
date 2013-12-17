@@ -19,9 +19,14 @@ class AliESDFMD;
 #include "EventTimeTask.C"
 
 /**
+ * @defgroup pwglf_forward_eventtime Investigation of time-between-events 
+ * @ingroup pwglf_forward_trains_specific
+ */
+/**
  * Task to analyse the energy loss in the FMD rings as function of the
  * time to previous event.
  * 
+ * @ingroup pwglf_forward_eventtime
  */
 struct ELossTimeTask : public AliBaseESDTask
 {
@@ -281,6 +286,7 @@ protected:
      * Book histograms 
      * 
      * @param dir Parent list to add our list to
+     * @param dt  Histogram of time differences 
      * 
      * @return true on success 
      */
@@ -305,8 +311,8 @@ protected:
     /** 
      * Process a single event
      * 
-     * @param fmd FMD ESD data
-     * @param dt  Time-to-previous event
+     * @param fmd   FMD ESD data
+     * @param logDt Logarithm (base 10) of Time-to-previous event
      */
     void Event(AliESDFMD& fmd, Double_t logDt)
     {
