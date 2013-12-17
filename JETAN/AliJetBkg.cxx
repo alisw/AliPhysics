@@ -104,7 +104,7 @@ Bool_t AliJetBkg::SignalCutPass(Int_t id, Int_t nTracks)
 }
 
 //----------------------------------------------------------------
-Float_t AliJetBkg::CalcJetAreaEtaCut(Float_t radius, const Float_t etaJet)
+Float_t AliJetBkg::CalcJetAreaEtaCut(Float_t radius, Float_t etaJet)
 {
   // Calculate jet area taking into account an acceptance cut in eta
   AliUA1JetHeader* header = (AliUA1JetHeader*) fHeader;
@@ -125,7 +125,7 @@ Float_t AliJetBkg::CalcJetAreaEtaCut(Float_t radius, const Float_t etaJet)
 }
 
 //----------------------------------------------------------------
-void AliJetBkg::CalcJetAndBckgAreaEtaCut(Bool_t calcOutsideArea, Float_t radius, const Int_t nJets, const Float_t* etaJet, Float_t* &areaJet, Float_t &areaOut)
+void AliJetBkg::CalcJetAndBckgAreaEtaCut(Bool_t calcOutsideArea, Float_t radius, Int_t nJets, const Float_t* etaJet, Float_t* &areaJet, Float_t &areaOut)
 {
   // Calculate jet and bacground areas taking into account an acceptance cut in eta
 
