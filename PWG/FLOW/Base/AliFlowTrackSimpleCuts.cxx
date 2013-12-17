@@ -50,7 +50,8 @@ AliFlowTrackSimpleCuts::AliFlowTrackSimpleCuts(const char* name):
   fCharge(0),
   fCutMass(kFALSE),
   fMassMax(FLT_MAX),
-  fMassMin(-FLT_MAX)
+  fMassMin(-FLT_MAX),
+  fNumberOfPOIclasses(1)
 {
   //constructor 
 }
@@ -97,37 +98,37 @@ AliFlowTrackSimpleCuts::AliFlowTrackSimpleCuts(const char* name):
 //}
 
 //----------------------------------------------------------------------- 
-Bool_t AliFlowTrackSimpleCuts::IsSelected(TObject* obj, Int_t)
+Int_t AliFlowTrackSimpleCuts::IsSelected(TObject* obj, Int_t)
 {
   //check cuts
   TParticle* p = dynamic_cast<TParticle*>(obj);
   if (p) return PassesCuts(p);
   AliFlowTrackSimple* ts = dynamic_cast<AliFlowTrackSimple*>(obj);
   if (ts) return PassesCuts(ts);
-  return kFALSE; //default when passed a wrong type of object
+  return 0; //default when passed a wrong type of object
 }
 
 //----------------------------------------------------------------------- 
-Bool_t AliFlowTrackSimpleCuts::PassesCuts(const AliFlowTrackSimple *track) const
+Int_t AliFlowTrackSimpleCuts::PassesCuts(const AliFlowTrackSimple *track) const
 {
   //simple method to check if the simple track passes the simple cuts
-  if(fCutPt) {if (track->Pt() < fPtMin || track->Pt() >= fPtMax ) return kFALSE;}
-  if(fCutEta) {if (track->Eta() < fEtaMin || track->Eta() >= fEtaMax ) return kFALSE;}
-  if(fCutPhi) {if (track->Phi() < fPhiMin || track->Phi() >= fPhiMax ) return kFALSE;}
-  if(fCutCharge) {if (track->Charge() != fCharge) return kFALSE;}
-  if(fCutMass) {if (track->Mass() < fMassMin || track->Mass() >= fMassMax ) return kFALSE;}
+  if(fCutPt) {if (track->Pt() < fPtMin || track->Pt() >= fPtMax ) return 0;}
+  if(fCutEta) {if (track->Eta() < fEtaMin || track->Eta() >= fEtaMax ) return 0;}
+  if(fCutPhi) {if (track->Phi() < fPhiMin || track->Phi() >= fPhiMax ) return 0;}
+  if(fCutCharge) {if (track->Charge() != fCharge) return 0;}
+  if(fCutMass) {if (track->Mass() < fMassMin || track->Mass() >= fMassMax ) return 0;}
   //if(fCutPID) {if (track->PID() != fPID) return kFALSE;}
-  return kTRUE;
+  return 1;
 }
 
 //----------------------------------------------------------------------- 
-Bool_t AliFlowTrackSimpleCuts::PassesCuts(TParticle* track) const
+Int_t AliFlowTrackSimpleCuts::PassesCuts(TParticle* track) const
 {
   //simple method to check if the simple track passes the simple cuts
-  if(fCutPt)  {if (track->Pt() < fPtMin || track->Pt() >= fPtMax ) return kFALSE;}
-  if(fCutEta) {if (track->Eta() < fEtaMin || track->Eta() >= fEtaMax ) return kFALSE;}
-  if(fCutPhi) {if (track->Phi() < fPhiMin || track->Phi() >= fPhiMax ) return kFALSE;}
-  //if(fCutPID) {if (track->GetPdgCode() != fPID) return kFALSE;}
+  if(fCutPt)  {if (track->Pt() < fPtMin || track->Pt() >= fPtMax ) return 0;}
+  if(fCutEta) {if (track->Eta() < fEtaMin || track->Eta() >= fEtaMax ) return 0;}
+  if(fCutPhi) {if (track->Phi() < fPhiMin || track->Phi() >= fPhiMax ) return 0;}
+  //if(fCutPID) {if (track->GetPdgCode() != fPID) return 0;}
 
   //getting the charge from a tparticle is expensive
   //only do it if neccesary
@@ -135,14 +136,14 @@ Bool_t AliFlowTrackSimpleCuts::PassesCuts(TParticle* track) const
   {
     TParticlePDG* ppdg = track->GetPDG();
     Int_t charge = TMath::Nint(ppdg->Charge()/3.0); //mc particles have charge in units of 1/3e
-    return (charge==fCharge);
+    if (charge==fCharge) return 1;
   }
 
   if (fCutMass) {
     TParticlePDG* ppdg = track->GetPDG();
     if (ppdg->Mass() < fMassMin || ppdg->Mass() >= fMassMax )
-      return kFALSE;
+      return 0;
   }
 
-  return kTRUE;
+  return 1;
 }

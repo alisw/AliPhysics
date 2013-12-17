@@ -17,15 +17,11 @@
   AliFlowEvent: Event container for flow analysis
 
   origin:   Mikolaj Krzewicki  (mikolaj.krzewicki@cern.ch)
-  mods:     Redmer A. Bertens (rbertens@cern.ch)
 *****************************************************************/
 
 #include "Riostream.h"
-#include "TFile.h"
 #include "TList.h"
-#include "TH1.h"
 #include "TH2F.h"
-#include "TProfile.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
 #include "AliCFManager.h"
@@ -33,7 +29,6 @@
 #include "AliESDPmdTrack.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
-#include "AliOADBContainer.h"
 #include "AliGenCocktailEventHeader.h"
 #include "AliGenEposEventHeader.h"
 #include "AliGenHijingEventHeader.h"
@@ -43,7 +38,6 @@
 #include "AliFlowTrackCuts.h"
 #include "AliFlowEventSimple.h"
 #include "AliFlowTrack.h"
-#include "AliFlowVector.h"
 #include "AliFlowEvent.h"
 #include "AliLog.h"
 
@@ -53,78 +47,30 @@ ClassImp(AliFlowEvent)
 
 //-----------------------------------------------------------------------
 AliFlowEvent::AliFlowEvent():
-  AliFlowEventSimple(), fApplyRecentering(-1), fCachedRun(-1), fCurrentCentrality(-1)
+  AliFlowEventSimple()
 {
-    // constructor
-    for(Int_t i(0); i < 9; i++) {
-        for(Int_t j(0); j < 2; j++) {
-            for(Int_t k(0); k < 2; k++) {
-                fMeanQ[i][j][k] = 0.; 
-                fWidthQ[i][j][k] = 0.;  
-                fMeanQv3[i][j][k] = 0.; 
-                fWidthQv3[i][j][k] = 0.;
-            }
-        }
-    }
-
   //ctor
   cout << "AliFlowEvent: Default constructor to be used only by root for io" << endl;
 }
 
 //-----------------------------------------------------------------------
 AliFlowEvent::AliFlowEvent(Int_t n):
-  AliFlowEventSimple(n), fApplyRecentering(-1), fCachedRun(-1), fCurrentCentrality(-1)
+  AliFlowEventSimple(n)
 {
-    // constructor
-    for(Int_t i(0); i < 9; i++) {
-        for(Int_t j(0); j < 2; j++) {
-            for(Int_t k(0); k < 2; k++) {
-                fMeanQ[i][j][k] = 0.; 
-                fWidthQ[i][j][k] = 0.;  
-                fMeanQv3[i][j][k] = 0.; 
-                fWidthQv3[i][j][k] = 0.;
-            }
-        }
-    }
+  //ctor
 }
 
 //-----------------------------------------------------------------------
 AliFlowEvent::AliFlowEvent(const AliFlowEvent& event):
-  AliFlowEventSimple(event), fApplyRecentering(event.fApplyRecentering), fCachedRun(-1), fCurrentCentrality(-1)
+  AliFlowEventSimple(event)
 {
-    // copy constructor 
-    for(Int_t i(0); i < 9; i++) {
-        for(Int_t j(0); j < 2; j++) {
-            for(Int_t k(0); k < 2; k++) {
-                fMeanQ[i][j][k] = 0.; 
-                fWidthQ[i][j][k] = 0.;  
-                fMeanQv3[i][j][k] = 0.; 
-                fWidthQv3[i][j][k] = 0.;
-            }
-        }
-    }
+  //cpy ctor
 }
 
 //-----------------------------------------------------------------------
 AliFlowEvent& AliFlowEvent::operator=(const AliFlowEvent& event)
 {
-
   //assignment operator
-  if (&event==this) return *this;       // check self-assignment
-
-  fApplyRecentering = event.fApplyRecentering; 
-  fCachedRun = event.fCachedRun; 
-  fCurrentCentrality = event.fCurrentCentrality;
-  for(Int_t i(0); i < 9; i++) {
-      for(Int_t j(0); j < 2; j++) {
-          for(Int_t k(0); k < 2; k++) {
-              fMeanQ[i][j][k] = event.fMeanQ[i][j][k]; 
-              fWidthQ[i][j][k] = event.fWidthQ[i][j][k];  
-              fMeanQv3[i][j][k] = event.fMeanQv3[i][j][k]; 
-              fWidthQv3[i][j][k] = event.fWidthQv3[i][j][k];
-          }
-      }
-  }
   AliFlowEventSimple::operator=(event);
   return *this;
 }
@@ -199,20 +145,8 @@ void AliFlowEvent::SetMCReactionPlaneAngle(const AliMCEvent* mcEvent)
 AliFlowEvent::AliFlowEvent( const AliMCEvent* anInput,
                             const AliCFManager* rpCFManager,
                             const AliCFManager* poiCFManager):
-  AliFlowEventSimple(20), fApplyRecentering(-1), fCachedRun(-1), fCurrentCentrality(-1)
+  AliFlowEventSimple(20)
 {
-    // constructor
-    for(Int_t i(0); i < 9; i++) {
-        for(Int_t j(0); j < 2; j++) {
-            for(Int_t k(0); k < 2; k++) {
-                fMeanQ[i][j][k] = 0.; 
-                fWidthQ[i][j][k] = 0.;  
-                fMeanQv3[i][j][k] = 0.; 
-                fWidthQv3[i][j][k] = 0.;
-            }
-        }
-    }
-
   //Fills the event from the MC kinematic information
 
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
@@ -240,12 +174,12 @@ AliFlowEvent::AliFlowEvent( const AliMCEvent* anInput,
     if (rpOK && rpCFManager)
     {
       pTrack->SetForRPSelection(kTRUE);
-      fNumberOfRPs++;
+      IncrementNumberOfPOIs(0);
     }
     if (poiOK && poiCFManager)
     {
       pTrack->SetForPOISelection(kTRUE);
-      fNumberOfPOIs++;
+      IncrementNumberOfPOIs(1);
     }
 
     AddTrack(pTrack) ;
@@ -257,20 +191,8 @@ AliFlowEvent::AliFlowEvent( const AliMCEvent* anInput,
 AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
                             const AliCFManager* rpCFManager,
                             const AliCFManager* poiCFManager ):
-  AliFlowEventSimple(20),  fApplyRecentering(-1), fCachedRun(-1), fCurrentCentrality(-1)
+  AliFlowEventSimple(20)
 {
-    // constructor
-    for(Int_t i(0); i < 9; i++) {
-        for(Int_t j(0); j < 2; j++) {
-            for(Int_t k(0); k < 2; k++) {
-                fMeanQ[i][j][k] = 0.; 
-                fWidthQ[i][j][k] = 0.;  
-                fMeanQv3[i][j][k] = 0.; 
-                fWidthQv3[i][j][k] = 0.;
-            }
-        }
-    }
-   
   //Fills the event from the ESD
 
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
@@ -300,13 +222,13 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
     if(rpOK && rpCFManager)
     {
       pTrack->SetForRPSelection(kTRUE);
-      fNumberOfRPs++;
+      IncrementNumberOfPOIs(0);
     }
     //marking the particles used for diff. flow:
     if(poiOK && poiCFManager)
     {
       pTrack->SetForPOISelection(kTRUE);
-      fNumberOfPOIs++;
+      IncrementNumberOfPOIs(1);
     }
 
     AddTrack(pTrack);
@@ -317,20 +239,8 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 AliFlowEvent::AliFlowEvent( const AliAODEvent* anInput,
                             const AliCFManager* rpCFManager,
                             const AliCFManager* poiCFManager):
-  AliFlowEventSimple(20), fApplyRecentering(-1), fCachedRun(-1), fCurrentCentrality(-1)
+  AliFlowEventSimple(20)
 {
-    // constructor
-    for(Int_t i(0); i < 9; i++) {
-        for(Int_t j(0); j < 2; j++) {
-            for(Int_t k(0); k < 2; k++) {
-                fMeanQ[i][j][k] = 0.; 
-                fWidthQ[i][j][k] = 0.;  
-                fMeanQv3[i][j][k] = 0.; 
-                fWidthQv3[i][j][k] = 0.;
-            }
-        }
-    }
-
   //Fills the event from the AOD
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
 
@@ -358,12 +268,12 @@ AliFlowEvent::AliFlowEvent( const AliAODEvent* anInput,
     if (rpOK /* && rpCFManager */ ) // to be fixed - with CF managers uncommented only empty events (NULL in header files)
     {
       pTrack->SetForRPSelection(kTRUE);
-      fNumberOfRPs++;
+      IncrementNumberOfPOIs(0);
     }
     if (poiOK /* && poiCFManager*/ )
     {
       pTrack->SetForPOISelection(kTRUE);
-      fNumberOfPOIs++;
+      IncrementNumberOfPOIs(1);
     }
     AddTrack(pTrack);
   }
@@ -401,20 +311,8 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
                             KineSource anOption,
                             const AliCFManager* rpCFManager,
                             const AliCFManager* poiCFManager ):
-  AliFlowEventSimple(20), fApplyRecentering(-1), fCachedRun(-1), fCurrentCentrality(-1)
+  AliFlowEventSimple(20)
 {
-    // constructor
-    for(Int_t i(0); i < 9; i++) {
-        for(Int_t j(0); j < 2; j++) {
-            for(Int_t k(0); k < 2; k++) {
-                fMeanQ[i][j][k] = 0.; 
-                fWidthQ[i][j][k] = 0.;  
-                fMeanQv3[i][j][k] = 0.; 
-                fWidthQv3[i][j][k] = 0.;
-            }
-        }
-    }
-
   //fills the event with tracks from the ESD and kinematics from the MC info via the track label
   if (anOption==kNoKine)
   {
@@ -482,12 +380,12 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 
     if (rpOK && rpCFManager)
     {
-      fNumberOfRPs++;
+      IncrementNumberOfPOIs(0);
       pTrack->SetForRPSelection();
     }
     if (poiOK && poiCFManager) 
     { 
-      fNumberOfPOIs++;
+      IncrementNumberOfPOIs(1);
       pTrack->SetForPOISelection();
     }
 
@@ -500,20 +398,8 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 			    const AliMultiplicity* anInputTracklets,
 			    const AliCFManager* poiCFManager ):
-  AliFlowEventSimple(20), fApplyRecentering(-1), fCachedRun(-1), fCurrentCentrality(-1)
+  AliFlowEventSimple(20)
 {
-    // constructor
-    for(Int_t i(0); i < 9; i++) {
-        for(Int_t j(0); j < 2; j++) {
-            for(Int_t k(0); k < 2; k++) {
-                fMeanQ[i][j][k] = 0.; 
-                fWidthQ[i][j][k] = 0.;  
-                fMeanQv3[i][j][k] = 0.; 
-                fWidthQv3[i][j][k] = 0.;
-            }
-        }
-    }
-
 
   //Select the particles of interest from the ESD
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
@@ -538,7 +424,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
       //marking the particles used for the particle of interest (POI) selection:
       if(poiOK && poiCFManager)
 	{
-          fNumberOfPOIs++;
+          IncrementNumberOfPOIs(1);
 	  pTrack->SetForPOISelection(kTRUE);
 	  pTrack->SetSource(AliFlowTrack::kFromESD);
 	}
@@ -563,7 +449,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
     pTrack->SetEta(etaTr);
     pTrack->SetPhi(phiTr);
     //marking the particles used for the reference particle (RP) selection:
-    fNumberOfRPs++;
+    IncrementNumberOfPOIs(0);
     pTrack->SetForRPSelection(kTRUE);
     pTrack->SetSource(AliFlowTrack::kFromTracklet);
 
@@ -577,27 +463,15 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 AliFlowEvent::AliFlowEvent( const AliESDEvent* esd,
 			    const AliCFManager* poiCFManager,
                             Bool_t hybrid):
-  AliFlowEventSimple(20), fApplyRecentering(-1), fCachedRun(-1), fCurrentCentrality(-1)
+  AliFlowEventSimple(20)
 {
-    // constructor
-    for(Int_t i(0); i < 9; i++) {
-        for(Int_t j(0); j < 2; j++) {
-            for(Int_t k(0); k < 2; k++) {
-                fMeanQ[i][j][k] = 0.; 
-                fWidthQ[i][j][k] = 0.;  
-                fMeanQv3[i][j][k] = 0.; 
-                fWidthQv3[i][j][k] = 0.;
-            }
-        }
-    }
-
 
   //Select the particles of interest from the ESD
   Int_t iNumberOfInputTracks = esd->GetNumberOfTracks() ;
 
   //Double_t gPt = 0.0, gP = 0.0;
   Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};  //The impact parameters and their covariance.
-//  Double_t dca3D = 0.0;       FIXME unused variable
+  //Double_t dca3D = 0.0;
 
   AliESDtrack trackTPC;
 
@@ -640,7 +514,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* esd,
         else
           tpcTrack->PropagateToDCA(vertexTPC,esd->GetMagneticField(),100.,dca,cov);
 
-//        dca3D = TMath::Sqrt(TMath::Power(dca[0],2)+TMath::Power(dca[1],2));   FIXME unused variable
+        //dca3D = TMath::Sqrt(TMath::Power(dca[0],2)+TMath::Power(dca[1],2));
 
       }
 
@@ -653,13 +527,13 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* esd,
       if(poiOK && poiCFManager)
       {
         pTrack->SetForPOISelection(kTRUE);
-        fNumberOfPOIs++;
+        IncrementNumberOfPOIs(1);
       }
 
       if(useTPC)
       {
         pTrack->SetForRPSelection(kTRUE);
-        fNumberOfRPs++;
+        IncrementNumberOfPOIs(0);
       }
 
       AddTrack(pTrack);
@@ -672,20 +546,8 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* esd,
 AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 			    const TH2F* anInputFMDhist,
 			    const AliCFManager* poiCFManager ):
-  AliFlowEventSimple(20), fApplyRecentering(-1), fCachedRun(-1), fCurrentCentrality(-1)
+  AliFlowEventSimple(20)
 {
-    // constructor
-    for(Int_t i(0); i < 9; i++) {
-        for(Int_t j(0); j < 2; j++) {
-            for(Int_t k(0); k < 2; k++) {
-                fMeanQ[i][j][k] = 0.; 
-                fWidthQ[i][j][k] = 0.;  
-                fMeanQv3[i][j][k] = 0.; 
-                fWidthQv3[i][j][k] = 0.;
-            }
-        }
-    }
-
 
   //Select the particles of interest from the ESD
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
@@ -710,7 +572,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
       //marking the particles used for the particle of interest (POI) selection:
       if(poiOK && poiCFManager)
 	{
-          fNumberOfPOIs++; 
+          IncrementNumberOfPOIs(1);
 	  pTrack->SetForPOISelection(kTRUE);
 	  pTrack->SetSource(AliFlowTrack::kFromESD);
 	}
@@ -738,7 +600,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 	pTrack->SetWeight(weightFMD);
 	//marking the particles used for the reference particle (RP) selection:
 	pTrack->TagRP();
-	fNumberOfRPs++;
+	IncrementNumberOfPOIs(0);
 	pTrack->SetSource(AliFlowTrack::kFromFMD);
 
 	//Add the track to the flowevent
@@ -748,6 +610,34 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
     }
   }
 
+}
+
+//-----------------------------------------------------------------------
+void AliFlowEvent::FindDaughters(Bool_t keepDaughtersInRPselection)
+{
+  //each flow track holds it's esd track index as well as its daughters esd index.
+  //fill the array of daughters for every track with the pointers to flow tracks
+  //to associate the mothers with daughters directly
+  for (Int_t iTrack=0; iTrack<fMothersCollection->GetEntriesFast(); iTrack++)
+  {
+    AliFlowTrack* mother = static_cast<AliFlowTrack*>(fMothersCollection->At(iTrack));
+    if (!mother) continue;
+    if (mother->GetNDaughters()<1) continue;
+    for (Int_t iDaughterCandidate=0; iDaughterCandidate<fNumberOfTracks; iDaughterCandidate++)
+    {
+      AliFlowTrack* daughterCandidate = static_cast<AliFlowTrack*>(fTrackCollection->At(iDaughterCandidate));
+      Int_t esdIndexDaughterCandidate = daughterCandidate->GetID();
+      for (Int_t iDaughter=0; iDaughter<mother->GetNDaughters(); iDaughter++)
+      {
+        Int_t esdIndexDaughter = mother->GetIDDaughter(iDaughter);
+        if (esdIndexDaughter==esdIndexDaughterCandidate)
+        {
+          mother->SetDaughter(iDaughter,daughterCandidate);
+          daughterCandidate->SetForRPSelection(keepDaughtersInRPselection);
+        }
+      }
+    }
+  }
 }
 
 //-----------------------------------------------------------------------
@@ -769,52 +659,36 @@ void AliFlowEvent::Fill( AliFlowTrackCuts* rpCuts,
   AliFlowTrackCuts::trackParameterType sourceRP = rpCuts->GetParamType();
   AliFlowTrackCuts::trackParameterType sourcePOI = poiCuts->GetParamType();
   AliFlowTrack* pTrack=NULL;
-  
-  // if the source for rp's or poi's is the VZERO detector, get the calibration 
-  // and set the calibration parameters
-  if (sourceRP == AliFlowTrackCuts::kV0 || sourceRP == AliFlowTrackCuts::kVZERO) {
-      SetVZEROCalibrationForTrackCuts(rpCuts);
-//      for now, recentering is only applied if the user specifically asks for it
-//      by setting the flag to kTRUE in the ali flow track cuts
-      if(!rpCuts->GetApplyRecentering()) {
-          // if the user does not want to recenter, switch the flag
-          fApplyRecentering = -1;
-      }
-      // note: this flag is used in the overloaded implementation of Get2Qsub()
-      // and tells the function to use as Qsub vectors the recentered Q-vectors
-      // from the VZERO oadb file or from the event header
-  }
-  if (sourcePOI ==AliFlowTrackCuts::kV0 || sourcePOI == AliFlowTrackCuts::kVZERO) {
-      // probably no-one will choose vzero tracks as poi's ...
-      SetVZEROCalibrationForTrackCuts(poiCuts); 
-  }
+
   if (sourceRP==sourcePOI)
   {
     //loop over tracks
-    Int_t numberOfInputObject = rpCuts->GetNumberOfInputObjects();
-    for (Int_t i=0; i<numberOfInputObject; i++)
+    Int_t numberOfInputObjects = rpCuts->GetNumberOfInputObjects();
+    for (Int_t i=0; i<numberOfInputObjects; i++)
     {
       //get input object (particle)
       TObject* particle = rpCuts->GetInputObject(i);
 
       Bool_t rp = rpCuts->IsSelected(particle,i);
-      Bool_t poi = poiCuts->IsSelected(particle,i);
-      
-      if (!(rp||poi)) continue;
+      Int_t poiClass = poiCuts->IsSelected(particle,i);
 
-      //make new AliFLowTrack
+      if (!(rp||poiClass>0)) continue;
+
+      //make new AliFlowTrack
       if (rp)
       {
-        pTrack = ReuseTrack(fNumberOfTracks);
-        if (!rpCuts->FillFlowTrack(pTrack)) continue;
-        pTrack->TagRP(); fNumberOfRPs++;
-        if (poi) {pTrack->TagPOI(); fNumberOfPOIs++;}
+        pTrack = rpCuts->FillFlowTrack(fTrackCollection,fNumberOfTracks);
+        if (!pTrack) continue;
+        pTrack->TagRP(); IncrementNumberOfPOIs(0);
+        if (poiClass>0) {pTrack->Tag(poiClass); IncrementNumberOfPOIs(poiClass);}
+        if (pTrack->GetNDaughters()>0) fMothersCollection->Add(pTrack);
       }
-      else if (poi)
+      else if (poiClass>0)
       {
-        pTrack = ReuseTrack(fNumberOfTracks);
-        if (!poiCuts->FillFlowTrack(pTrack)) continue;
-        pTrack->TagPOI(); fNumberOfPOIs++;
+        pTrack = poiCuts->FillFlowTrack(fTrackCollection,fNumberOfTracks);
+        if (!pTrack) continue;
+        pTrack->Tag(poiClass); IncrementNumberOfPOIs(poiClass);
+        if (pTrack->GetNDaughters()>0) fMothersCollection->Add(pTrack);
       }
       fNumberOfTracks++;
     }//end of while (i < numberOfTracks)
@@ -823,50 +697,56 @@ void AliFlowEvent::Fill( AliFlowTrackCuts* rpCuts,
   {
     //here we have two different sources of particles, so we fill
     //them independently
-    //RP
-    Int_t numberOfInputObject = rpCuts->GetNumberOfInputObjects();
-    for (Int_t i=0; i<numberOfInputObject; i++)
-      {
-      TObject* particle = rpCuts->GetInputObject(i);
-      Bool_t rp = rpCuts->IsSelected(particle,i);
-      if (!rp) continue;
-      pTrack = ReuseTrack(fNumberOfTracks);
-      if (!rpCuts->FillFlowTrack(pTrack)) continue;
-      pTrack->TagRP();
-      fNumberOfRPs++;
-      fNumberOfTracks++;
-    }
     //POI
-    numberOfInputObject = poiCuts->GetNumberOfInputObjects();
-    for (Int_t i=0; i<numberOfInputObject; i++)
+    for (Int_t i=0; i<poiCuts->GetNumberOfInputObjects(); i++)
     {
       TObject* particle = poiCuts->GetInputObject(i);
-      Bool_t poi = poiCuts->IsSelected(particle,i);
-      if (!poi) continue;
-      pTrack = ReuseTrack(fNumberOfTracks);
-      if (!poiCuts->FillFlowTrack(pTrack)) continue;
-      pTrack->TagPOI();
-      fNumberOfPOIs++;
+      Int_t poiClass = poiCuts->IsSelected(particle,i);
+      if (poiClass<=0) continue;
+      pTrack = poiCuts->FillFlowTrack(fTrackCollection,fNumberOfTracks);
+      if (!pTrack) continue;
+      pTrack->Tag(poiClass);
+      IncrementNumberOfPOIs(poiClass);
       fNumberOfTracks++;
+      if (pTrack->GetNDaughters()>0) fMothersCollection->Add(pTrack);
+    }
+    //RP
+    Int_t numberOfInputObjects = rpCuts->GetNumberOfInputObjects();
+    for (Int_t i=0; i<numberOfInputObjects; i++)
+      {
+      TObject* particle = rpCuts->GetInputObject(i);
+      Int_t rp = rpCuts->IsSelected(particle,i);
+      if (rp<1) continue;
+      pTrack = rpCuts->FillFlowTrack(fTrackCollection,fNumberOfTracks);
+      if (!pTrack) continue;
+      pTrack->TagRP();
+      IncrementNumberOfPOIs(0);
+      fNumberOfTracks++;
+      if (pTrack->GetNDaughters()>0) fMothersCollection->Add(pTrack);
     }
   }
 }
 
 //-----------------------------------------------------------------------
-void AliFlowEvent::InsertTrack(AliFlowTrack *thisTrack) {
+void AliFlowEvent::InsertTrack(AliFlowTrack *track) {
   // adds a flow track at the end of the container
   AliFlowTrack *pTrack = ReuseTrack( fNumberOfTracks++ );
-  pTrack->SetPt( thisTrack->Pt() );
-  pTrack->SetPhi( thisTrack->Phi() );
-  pTrack->SetEta( thisTrack->Eta() );
-  pTrack->SetWeight( thisTrack->Weight() );
-  pTrack->SetCharge( thisTrack->Charge() );
-  pTrack->SetMass( thisTrack->Mass() );
-  pTrack->SetForRPSelection( thisTrack->InRPSelection() );
-  pTrack->SetForPOISelection( thisTrack->InPOISelection() );
-  if(thisTrack->InSubevent(0)) pTrack->SetForSubevent(0);
-  if(thisTrack->InSubevent(1)) pTrack->SetForSubevent(1);
-  pTrack->SetID( thisTrack->GetID() );
+  *pTrack = *track;
+  if (track->GetNDaughters()>0)
+  {
+    fMothersCollection->Add(track);
+  }
+  //pTrack->SetPt( track->Pt() );
+  //pTrack->SetPhi( track->Phi() );
+  //pTrack->SetEta( track->Eta() );
+  //pTrack->SetWeight( track->Weight() );
+  //pTrack->SetCharge( track->Charge() );
+  //pTrack->SetMass( track->Mass() );
+  //pTrack->SetForRPSelection( track->InRPSelection() );
+  //pTrack->SetForPOISelection( track->InPOISelection() );
+  //if(track->InSubevent(0)) pTrack->SetForSubevent(0);
+  //if(track->InSubevent(1)) pTrack->SetForSubevent(1);
+  //pTrack->SetID( track->GetID() );
   return;
 }
 
@@ -890,20 +770,8 @@ AliFlowTrack* AliFlowEvent::ReuseTrack(Int_t i)
 //-----------------------------------------------------------------------
 AliFlowEvent::AliFlowEvent( AliFlowTrackCuts* rpCuts,
                             AliFlowTrackCuts* poiCuts ):
-  AliFlowEventSimple(20), fApplyRecentering(kFALSE), fCachedRun(-1), fCurrentCentrality(-1)
+  AliFlowEventSimple(20)
 {
-    // constructor
-    for(Int_t i(0); i < 9; i++) {
-        for(Int_t j(0); j < 2; j++) {
-            for(Int_t k(0); k < 2; k++) {
-                fMeanQ[i][j][k] = 0.; 
-                fWidthQ[i][j][k] = 0.;  
-                fMeanQv3[i][j][k] = 0.; 
-                fWidthQv3[i][j][k] = 0.;
-            }
-        }
-    }
-
   //Fills the event from a vevent: AliESDEvent,AliAODEvent,AliMCEvent
   //the input data needs to be attached to the cuts
   //we have two cases, if we're cutting the same collection of tracks
@@ -920,34 +788,34 @@ AliFlowEvent::AliFlowEvent( AliFlowTrackCuts* rpCuts,
   if (sourceRP==sourcePOI)
   {
     //loop over tracks
-    Int_t numberOfInputObject = rpCuts->GetNumberOfInputObjects();
-    for (Int_t i=0; i<numberOfInputObject; i++)
+    Int_t numberOfInputObjects = rpCuts->GetNumberOfInputObjects();
+    for (Int_t i=0; i<numberOfInputObjects; i++)
     {
       //get input object (particle)
       TObject* particle = rpCuts->GetInputObject(i);
 
       Bool_t rp = rpCuts->IsSelected(particle,i);
-      Bool_t poi = poiCuts->IsSelected(particle,i);
+      Int_t poiClass = poiCuts->IsSelected(particle,i);
       
-      if (!(rp||poi)) continue;
+      if (!(rp||poiClass>0)) continue;
 
       //make new AliFLowTrack
       AliFlowTrack* pTrack = NULL;
       if (rp)
       {
-        pTrack = rpCuts->MakeFlowTrack();
+        pTrack = rpCuts->FillFlowTrack(fTrackCollection,fNumberOfTracks);
         if (!pTrack) continue;
-        pTrack->TagRP(); fNumberOfRPs++;
-        if (poi) {pTrack->TagPOI(); fNumberOfPOIs++;}
+        pTrack->TagRP(); IncrementNumberOfPOIs(0);
+        if (poiClass>0) {pTrack->Tag(poiClass); IncrementNumberOfPOIs(poiClass);}
       }
       else
-      if (poi)
+      if (poiClass>0)
       {
-        pTrack = poiCuts->MakeFlowTrack();
+        pTrack = poiCuts->FillFlowTrack(fTrackCollection,fNumberOfTracks);
         if (!pTrack) continue;
-        pTrack->TagPOI(); fNumberOfPOIs++;
+        pTrack->Tag(poiClass); IncrementNumberOfPOIs(poiClass);
       }
-      AddTrack(pTrack);
+      TrackAdded();
     }//end of while (i < numberOfTracks)
   }
   else if (sourceRP!=sourcePOI)
@@ -956,28 +824,28 @@ AliFlowEvent::AliFlowEvent( AliFlowTrackCuts* rpCuts,
     //them independently
     AliFlowTrack* pTrack = NULL;
     //RP
-    Int_t numberOfInputObject = rpCuts->GetNumberOfInputObjects();
-    for (Int_t i=0; i<numberOfInputObject; i++)
+    Int_t numberOfInputObjects = rpCuts->GetNumberOfInputObjects();
+    for (Int_t i=0; i<numberOfInputObjects; i++)
     {
       TObject* particle = rpCuts->GetInputObject(i);
       Bool_t rp = rpCuts->IsSelected(particle,i);
       if (!rp) continue;
-      pTrack = rpCuts->MakeFlowTrack();
+      pTrack = rpCuts->FillFlowTrack(fTrackCollection,fNumberOfTracks);
       if (!pTrack) continue;
-      pTrack->TagRP(); fNumberOfRPs++;
-      AddTrack(pTrack);
+      pTrack->TagRP(); IncrementNumberOfPOIs(0);
+      TrackAdded();
     }
     //POI
-    numberOfInputObject = poiCuts->GetNumberOfInputObjects();
-    for (Int_t i=0; i<numberOfInputObject; i++)
+    numberOfInputObjects = poiCuts->GetNumberOfInputObjects();
+    for (Int_t i=0; i<numberOfInputObjects; i++)
     {
       TObject* particle = poiCuts->GetInputObject(i);
-      Bool_t poi = poiCuts->IsSelected(particle,i);
-      if (!poi) continue;
-      pTrack = poiCuts->MakeFlowTrack();
+      Int_t poiClass = poiCuts->IsSelected(particle,i);
+      if (poiClass<=0) continue;
+      pTrack = poiCuts->FillFlowTrack(fTrackCollection,fNumberOfTracks);
       if (!pTrack) continue;
-      pTrack->TagPOI(); fNumberOfPOIs++;
-      AddTrack(pTrack);
+      pTrack->Tag(poiClass); IncrementNumberOfPOIs(poiClass);
+      TrackAdded();
     }
   }
 }
@@ -988,20 +856,8 @@ AliFlowEvent::AliFlowEvent( AliFlowTrackCuts* rpCuts,
 AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 			    const AliESDPmdTrack *pmdtracks,
 			    const AliCFManager* poiCFManager ):
-  AliFlowEventSimple(20), fApplyRecentering(kFALSE), fCachedRun(-1), fCurrentCentrality(-1)
+  AliFlowEventSimple(20)
 {
-    // constructor
-    for(Int_t i(0); i < 9; i++) {
-        for(Int_t j(0); j < 2; j++) {
-            for(Int_t k(0); k < 2; k++) {
-                fMeanQ[i][j][k] = 0.; 
-                fWidthQ[i][j][k] = 0.;  
-                fMeanQv3[i][j][k] = 0.; 
-                fWidthQv3[i][j][k] = 0.;
-            }
-        }
-    }
-
   Float_t GetPmdEta(Float_t xPos, Float_t yPos, Float_t zPos);
   Float_t GetPmdPhi(Float_t xPos, Float_t yPos);
   //Select the particles of interest from the ESD
@@ -1026,7 +882,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
       //marking the particles used for the particle of interest (POI) selection:
       if(poiOK && poiCFManager)
 	{
-          fNumberOfPOIs++;
+          IncrementNumberOfPOIs(1);
 	  pTrack->SetForPOISelection(kTRUE);
 	  pTrack->SetSource(AliFlowTrack::kFromESD);
 	}
@@ -1060,7 +916,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
       pTrack->SetEta(etacls);
       pTrack->SetPhi(phicls);
       //marking the particles used for the reference particle (RP) selection:
-      fNumberOfRPs++;
+      IncrementNumberOfPOIs(0);
       pTrack->SetForRPSelection(kTRUE);
       pTrack->SetSource(AliFlowTrack::kFromPMD);
       //Add the track to the flowevent
@@ -1104,305 +960,3 @@ Float_t GetPmdPhi(Float_t xPos, Float_t yPos)
 //---------------------------------------------------------------//
 
 
-void AliFlowEvent::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weightsList, Bool_t usePhiWeights, Bool_t usePtWeights, Bool_t useEtaWeights)
-{
-  // get q vectors for the subevents. if no recentering is necessary, get the guy from the flow event simple
-  AliFlowEventSimple::Get2Qsub(Qarray, n, weightsList, usePhiWeights, usePtWeights, useEtaWeights);
-  // else get the recentering from the cached info
-  if (fApplyRecentering == 2010)        // 10h style recentering
-  {     
-    // first retrieve the q-vectors from the AliFlowEventSimple:: routine
-    AliFlowVector vA = Qarray[0];
-    AliFlowVector vB = Qarray[1];
-    // extract the information form the current flow vectors
-    Double_t Qxc(vA.X());       // IMPORTANT: user is responsible for the sign of eta
-    Double_t Qyc(vA.Y());       // vzeroC has negative pseudorapidity and is taken as subevent A
-    Double_t Qxa(vB.X());       // vzeroA has positive pseudorapidity and is taken as subevent B
-    Double_t Qya(vB.Y());
-    // init some values for the corrections
-    
-    // values for vector a (VZEROA)
-    Double_t Qxamean(0);
-    Double_t Qxarms(1);
-    Double_t Qyamean(0);
-    Double_t Qyarms(1);
-    // values for vector b (VZEROC)
-    Double_t Qxcmean(0);
-    Double_t Qxcrms(1);
-    Double_t Qycmean(0);
-    Double_t Qycrms(1);	
-    
-    if( n == 2) {       // second order symmetry
-        Qxamean = fMeanQ[fCurrentCentrality][1][0];
-        Qxarms  = fWidthQ[fCurrentCentrality][1][0];
-        Qyamean = fMeanQ[fCurrentCentrality][1][1];
-        Qyarms  = fWidthQ[fCurrentCentrality][1][1];
-
-        Qxcmean = fMeanQ[fCurrentCentrality][0][0];
-        Qxcrms  = fWidthQ[fCurrentCentrality][0][0];
-        Qycmean = fMeanQ[fCurrentCentrality][0][1];
-        Qycrms  = fWidthQ[fCurrentCentrality][0][1];	
-    } else if (n == 3) {        // third order symmetry
-        Qxamean = fMeanQv3[fCurrentCentrality][1][0];
-        Qxarms  = fWidthQv3[fCurrentCentrality][1][0];
-        Qyamean = fMeanQv3[fCurrentCentrality][1][1];
-        Qyarms  = fWidthQv3[fCurrentCentrality][1][1];
-  
-        Qxcmean = fMeanQv3[fCurrentCentrality][0][0];
-        Qxcrms  = fWidthQv3[fCurrentCentrality][0][0];
-        Qycmean = fMeanQv3[fCurrentCentrality][0][1];
-        Qycrms  = fWidthQv3[fCurrentCentrality][0][1];	
-    }
-    // do the correction    
-    Double_t QxaCor = (Qxa - Qxamean)/Qxarms;
-    Double_t QyaCor = (Qya - Qyamean)/Qyarms;
-    Double_t QxcCor = (Qxc - Qxcmean)/Qxcrms;
-    Double_t QycCor = (Qyc - Qycmean)/Qycrms;
-    // update the vector
-    vA.Set(QxcCor, QycCor);
-    vB.Set(QxaCor, QyaCor);
-  } else if (fApplyRecentering == 2011) { // 11h style recentering
-    // in this case, the q-vectors are repaced by the ones from
-    // the event header
-     
-    // first retrieve the q-vectors from the AliFlowEventSimple:: routine
-    AliFlowVector vA = Qarray[0];
-    AliFlowVector vB = Qarray[1];
-
-    Double_t QxaCor = 0.;
-    Double_t QyaCor = 0.;
-    Double_t QxcCor = 0.;
-    Double_t QycCor = 0.;
-
-    // copy the new q-vectors from the cache
-    if(n == 2) {
-       QxaCor = fMeanQ[0][1][0]; 
-       QyaCor = fMeanQ[0][1][1];
-       QxcCor = fMeanQ[0][0][0];
-       QycCor = fMeanQ[0][0][1];
-    } else if (n == 3) {
-       QxaCor = fMeanQv3[0][1][0]; 
-       QyaCor = fMeanQv3[0][1][1];
-       QxcCor = fMeanQv3[0][0][0];
-       QycCor = fMeanQv3[0][0][1];
-    }
-    // set the new q-vectors (which in this case means REPLACING) 
-    vA.Set(QxcCor, QycCor);
-    vB.Set(QxaCor, QyaCor);
-  }
-}
-//_____________________________________________________________________________
-void AliFlowEvent::SetVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) {
-    // open calibration info, copied from AliAnalyisTaskVnV0.cxx
-    if(!cuts->GetEvent()) return; // coverity. we need to know the event to get the runnumber and centrlaity
-    // get the vzero centrality percentile (cc dependent calibration)
-    Float_t v0Centr(cuts->GetEvent()->GetCentrality()->GetCentralityPercentile("V0M"));
-    if(v0Centr < 5) fCurrentCentrality = 0;
-    else if(v0Centr < 10) fCurrentCentrality = 1;
-    else if(v0Centr < 20) fCurrentCentrality = 2;
-    else if(v0Centr < 30) fCurrentCentrality = 3;
-    else if(v0Centr < 40) fCurrentCentrality = 4;
-    else if(v0Centr < 50) fCurrentCentrality = 5;
-    else if(v0Centr < 60) fCurrentCentrality = 6;
-    else if(v0Centr < 70) fCurrentCentrality = 7;
-    else fCurrentCentrality = 8;
-
-    // if this event is from the same run as the previous event
-    // we can use the cached calibration values, no need to re-open the 
-    // aodb file
-    Int_t run(cuts->GetEvent()->GetRunNumber());
-//    printf ( " > run number is %i \n", run);
-    if(fCachedRun == run) {
-        // the runnumber did not change, no need to open the database again
-        // in case of 11h style recentering, update the q-sub vectors
-        if(fApplyRecentering == 2011) SetVZEROCalibrationForTrackCuts2011(cuts); 
-        return;
-    }
-    // set the chached run number
-    fCachedRun = run;
-    
-    TString oadbfilename = "$ALICE_ROOT/OADB/PWGCF/VZERO/VZEROcalibEP.root";
-    TFile *foadb = TFile::Open(oadbfilename.Data());
-
-    if(!foadb){
-	printf("OADB file %s cannot be opened\n",oadbfilename.Data());
-	return;
-    }
-
-    AliOADBContainer *cont = (AliOADBContainer*) foadb->Get("hMultV0BefCorr");
-    if(!cont){
-	printf("OADB object hMultV0BefCorr is not available in the file\n");
-	return;	
-    }
-    if(!(cont->GetObject(run))){
-        // if the multiplicity correction cannot be found for the specified run, 
-        // loop over the 11h runs to see if it's 11h data
-        Int_t runs11h[] = {170593, 170572, 170556, 170552, 170546, 170390, 170389, 170388, 170387, 170315, 170313, 170312, 170311, 170309, 170308, 170306, 170270, 170269, 170268, 170267, 170264, 170230, 170228, 170208, 170207, 170205, 170204, 170203, 170195, 170193, 170163, 170162, 170159, 170155, 170152, 170091, 170089, 170088, 170085, 170084, 170083, 170081, 170040, 170038, 170036, 170027, 169981, 169975, 169969, 169965, 169961, 169956, 169926, 169924, 169923, 169922, 169919, 169918, 169914, 169859, 169858, 169855, 169846, 169838, 169837, 169835, 169683, 169628, 169591, 169590, 169588, 169587, 169586, 169584, 169557, 169555, 169554, 169553, 169550, 169515, 169512, 169506, 169504, 169498, 169475, 169420, 169419, 169418, 169417, 169415, 169411, 169238, 169236, 169167, 169160, 169156, 169148, 169145, 169144, 169143, 169138, 169099, 169094, 169091, 169045, 169044, 169040, 169035, 168992, 168988, 168984, 168826, 168777, 168514, 168512, 168511, 168467, 168464, 168461, 168460, 168458, 168362, 168361, 168356, 168342, 168341, 168325, 168322, 168318, 168311, 168310, 168213, 168212, 168208, 168207, 168206, 168205, 168204, 168203, 168181, 168177, 168175, 168173, 168172, 168171, 168115, 168108, 168107, 168105, 168104, 168103, 168076, 168069, 168068, 168066, 167988, 167987, 167986, 167985, 167921, 167920, 167915, 167909, 167903, 167902, 167818, 167814, 167813, 167808, 167807, 167806, 167713, 167712, 167711, 167706, 167693};
-        for(Int_t r(0); r < 176; r++) {
-            if(run == runs11h[r]) {
-                printf(" > run has been identified as 11h < \n");
-                if(cuts->GetV0gainEqualizationPerRing()) {
-                    // enable or disable rings through the weights, weight 1. is enabled, 0. is disabled
-                    // start with the vzero c rings (segments 0 through 31)
-                    (cuts->GetUseVZERORing(0)) ? cuts->SetV0Cpol(0, 1.) : cuts->SetV0Cpol(0, 0.);
-                    (cuts->GetUseVZERORing(1)) ? cuts->SetV0Cpol(1, 1.) : cuts->SetV0Cpol(1, 0.);
-                    (cuts->GetUseVZERORing(2)) ? cuts->SetV0Cpol(2, 1.) : cuts->SetV0Cpol(2, 0.);
-                    (cuts->GetUseVZERORing(3)) ? cuts->SetV0Cpol(3, 1.) : cuts->SetV0Cpol(3, 0.);
-                    // same for vzero a
-                    (cuts->GetUseVZERORing(4)) ? cuts->SetV0Apol(0, 1.) : cuts->SetV0Apol(0, 0.);
-                    (cuts->GetUseVZERORing(5)) ? cuts->SetV0Apol(1, 1.) : cuts->SetV0Apol(1, 0.);
-                    (cuts->GetUseVZERORing(6)) ? cuts->SetV0Apol(2, 1.) : cuts->SetV0Apol(2, 0.);
-                    (cuts->GetUseVZERORing(7)) ? cuts->SetV0Apol(3, 1.) : cuts->SetV0Apol(3, 0.);
-                } else {
-                    // else enable all rings
-                    for(Int_t i(0); i < 4; i++) cuts->SetV0Cpol(i, 1.);
-                    for(Int_t i(0); i < 4; i++) cuts->SetV0Apol(i, 1.);
-                }
-                // pass a NULL pointer to the track cuts object
-                // the NULL pointer will identify 11h runs
-                cuts->SetV0gainEqualisation(NULL);
-                // this will identify the recentering style that is required. flight might be changed if recenetering is disabled
-                fApplyRecentering = 2011;
-                SetVZEROCalibrationForTrackCuts2011(cuts); 
-                return; // the rest of the steps are not necessary
-            }
-        }
-        // the run has not been identified as lhc11h data, so we assume a template calibration
-	printf("OADB object hMultV0BefCorr is not available for run %i (used run 137366)\n",run);
-	run = 137366;
-    }
-    printf(" > run has been identified as 10h < \n");
-    // step 1) get the proper multiplicity weights from the vzero signal
-    TProfile* fMultV0 = ((TH2F *) cont->GetObject(run))->ProfileX();
-
-    TF1 *fpol0 = new TF1("fpol0","pol0"); 
-    if(cuts->GetV0gainEqualizationPerRing()) {
-        // do the calibration per ring
-        // start with the vzero c rings (segments 0 through 31)
-        fMultV0->Fit(fpol0, "", "", 0, 8);
-        (cuts->GetUseVZERORing(0)) ? cuts->SetV0Cpol(0, fpol0->GetParameter(0)) : cuts->SetV0Cpol(0, 0.);
-        fMultV0->Fit(fpol0, "", "", 8, 16);
-        (cuts->GetUseVZERORing(1)) ? cuts->SetV0Cpol(1, fpol0->GetParameter(0)) : cuts->SetV0Cpol(1, 0.);
-        fMultV0->Fit(fpol0, "", "", 16, 24);
-        (cuts->GetUseVZERORing(2)) ? cuts->SetV0Cpol(2, fpol0->GetParameter(0)) : cuts->SetV0Cpol(2, 0.);
-        fMultV0->Fit(fpol0, "", "", 24, 32);
-        (cuts->GetUseVZERORing(3)) ? cuts->SetV0Cpol(3, fpol0->GetParameter(0)) : cuts->SetV0Cpol(3, 0.);
-        // same thing for vero A
-        fMultV0->Fit(fpol0, "", "", 32, 40);
-        (cuts->GetUseVZERORing(4)) ? cuts->SetV0Apol(0, fpol0->GetParameter(0)) : cuts->SetV0Apol(0, 0.);
-        fMultV0->Fit(fpol0, "", "", 40, 48);
-        (cuts->GetUseVZERORing(5)) ? cuts->SetV0Apol(1, fpol0->GetParameter(0)) : cuts->SetV0Apol(1, 0.);
-        fMultV0->Fit(fpol0, "", "", 48, 56);
-        (cuts->GetUseVZERORing(6)) ? cuts->SetV0Apol(2, fpol0->GetParameter(0)) : cuts->SetV0Apol(2, 0.);
-        fMultV0->Fit(fpol0, "", "", 56, 64);
-        (cuts->GetUseVZERORing(7)) ? cuts->SetV0Apol(3, fpol0->GetParameter(0)) : cuts->SetV0Apol(3, 0.);
-    } else {
-        // do the calibration in one go. the calibration will still be 
-        // stored per ring, but each ring has the same weight now
-       fMultV0->Fit(fpol0,"","",0,31);
-       for(Int_t i(0); i < 4; i++) cuts->SetV0Cpol(i, fpol0->GetParameter(0));
-       fMultV0->Fit(fpol0,"","",32,64);
-       for(Int_t i(0); i < 4; i++) cuts->SetV0Apol(i, fpol0->GetParameter(0));
-    }
-    // the parameters to weigh the vzero track cuts have been extracted now, 
-    // so we can pass them to the current track cuts obect
-    cuts->SetV0gainEqualisation(fMultV0);       // passed as a TH1
-
-    // step 2) reweight the q-vectors that will be  called by flow methods which use
-    // subevents
-    // underlying assumption is that subevent a uses VZEROA
-    // and subevent b uses VZEROC
-    for(Int_t iside=0;iside<2;iside++){
-	for(Int_t icoord=0;icoord<2;icoord++){
-	    for(Int_t i=0;i  < 9;i++){
-		char namecont[100];
-  		if(iside==0 && icoord==0)
-		  snprintf(namecont,100,"hQxc2_%i",i);
-		else if(iside==1 && icoord==0)
-		  snprintf(namecont,100,"hQxa2_%i",i);
-		else if(iside==0 && icoord==1)
-		  snprintf(namecont,100,"hQyc2_%i",i);
-		else if(iside==1 && icoord==1)
-		  snprintf(namecont,100,"hQya2_%i",i);
-
-		cont = (AliOADBContainer*) foadb->Get(namecont);
-		if(!cont){
-		    printf("OADB object %s is not available in the file\n",namecont);
-		    return;	
-		}
-	
-		if(!(cont->GetObject(run))){
-		    printf("OADB object %s is not available for run %i (used run 137366)\n",namecont,run);
-		    run = 137366;
-		}
-
-                // after grabbing all the info, set the CORRECTION TERMS to
-                // the 2nd and 3rd order qsub-vectors
-                // we do this here for all centralities, so that subsequent events
-                // can grab the correction from these cached values
-                fMeanQ[i][iside][icoord] = ((TH1F *) cont->GetObject(run))->GetMean();
-		fWidthQ[i][iside][icoord] = ((TH1F *) cont->GetObject(run))->GetRMS();
-
-		//for v3
-		if(iside==0 && icoord==0)
-		  snprintf(namecont,100,"hQxc3_%i",i);
-		else if(iside==1 && icoord==0)
-		  snprintf(namecont,100,"hQxa3_%i",i);
-		else if(iside==0 && icoord==1)
-		  snprintf(namecont,100,"hQyc3_%i",i);
-		else if(iside==1 && icoord==1)
-		  snprintf(namecont,100,"hQya3_%i",i);
-
-		cont = (AliOADBContainer*) foadb->Get(namecont);
-		if(!cont){
-		    printf("OADB object %s is not available in the file\n",namecont);
-		    return;	
-		}
-		
-		if(!(cont->GetObject(run))){
-		    printf("OADB object %s is not available for run %i (used run 137366)\n",namecont,run);
-		    run = 137366;
-		}
-		fMeanQv3[i][iside][icoord] = ((TH1F *) cont->GetObject(run))->GetMean();
-		fWidthQv3[i][iside][icoord] = ((TH1F *) cont->GetObject(run))->GetRMS();
-
-     	    }
-	}
-    }
-    // set the recentering style (might be switched back to -1 if recentering is disabeled)
-    fApplyRecentering = 2010;
-}
-//_____________________________________________________________________________
-void AliFlowEvent::SetVZEROCalibrationForTrackCuts2011(AliFlowTrackCuts* cuts)
-{
-    // load the vzero q-sub vectors
-    if(!cuts->GetEvent() || !cuts->GetEvent()->GetEventplane()) return;       // coverity
-    Double_t qxEPa = 0, qyEPa = 0;
-    Double_t qxEPc = 0, qyEPc = 0;
-    Double_t qxEPa3 = 0, qyEPa3 = 0;
-    Double_t qxEPc3 = 0, qyEPc3 = 0;
-
-    // get the q-vectors from the header 
-    cuts->GetEvent()->GetEventplane()->CalculateVZEROEventPlane(cuts->GetEvent(), 8, 2, qxEPa, qyEPa);
-    cuts->GetEvent()->GetEventplane()->CalculateVZEROEventPlane(cuts->GetEvent(), 9, 2, qxEPc, qyEPc);
-    cuts->GetEvent()->GetEventplane()->CalculateVZEROEventPlane(cuts->GetEvent(), 8, 3, qxEPa3, qyEPa3);
-    cuts->GetEvent()->GetEventplane()->CalculateVZEROEventPlane(cuts->GetEvent(), 9, 3, qxEPc3, qyEPc3);
- 
-    // store the values temporarily. this may seem
-    // inelegant, but we don't want to include
-    // aliflowtrackcuts or alivevnet in get2qsub
-
-    // qx and qy for vzero a, second harmonc
-    fMeanQ[0][1][0] = qxEPa;
-    fMeanQ[0][1][1] = qyEPa;
-    // qx and qx for vzero c, second harmonic
-    fMeanQ[0][0][0] = qxEPc;
-    fMeanQ[0][0][1] = qyEPc;
-    // qx and qy for vzero a, third harmonic
-    fMeanQv3[0][1][0] = qxEPa3;
-    fMeanQv3[0][1][1] = qyEPa3;
-    // qx and qy for vzero c, third harmonic
-    fMeanQv3[0][0][0] = qxEPc3;
-    fMeanQv3[0][0][1] = qyEPc3;
-} 
-//_____________________________________________________________________________

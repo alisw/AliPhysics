@@ -41,6 +41,7 @@ void redoFinish()
     if(!(mergedFileName == outputFileName))
     {
       TSystemFile *fileTemp = new TSystemFile(mergedFileFullPathName.Data(),".");
+      gSystem->Unlink("mergedAnalysisResultsTemp.root");
       fileTemp->Copy("mergedAnalysisResultsTemp.root");
       delete fileTemp;
     }

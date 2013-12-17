@@ -60,9 +60,9 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
 
   void          SetCutsEvent(AliFlowEventCuts* cutsEvent) {fCutsEvent=cutsEvent;}
   AliFlowEventCuts* GetCutsEvent() const {return fCutsEvent;}
-  void          SetCutsRP(AliFlowTrackCuts* cutsRP) {fCutContainer->Add(cutsRP); fCutsRP=cutsRP; cutsRP->SetFlowTagType(AliFlowTrackSimple::kRP);}
+  void          SetCutsRP(AliFlowTrackCuts* cutsRP) {fCutContainer->Add(cutsRP); fCutsRP=cutsRP;}
   AliFlowTrackCuts* GetCutsRP() const {return fCutsRP;} //to be reimplemented
-  void          SetCutsPOI(AliFlowTrackCuts* cutsPOI) {fCutContainer->Add(cutsPOI); fCutsPOI=cutsPOI; cutsPOI->SetFlowTagType(AliFlowTrackSimple::kPOI);}
+  void          SetCutsPOI(AliFlowTrackCuts* cutsPOI) {fCutContainer->Add(cutsPOI); fCutsPOI=cutsPOI;}
   AliFlowTrackCuts* GetCutsPOI() const {return fCutsPOI;} //to be reimplemented
 
   void          SetCFManager1(AliCFManager* cfmgr) {this->fCFManager1 = cfmgr; } 

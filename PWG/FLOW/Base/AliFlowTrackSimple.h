@@ -46,8 +46,17 @@ public:
   Int_t PID() const {return 0;}
   
   Bool_t InRPSelection() const; 
-  Bool_t InPOISelection() const; 
+  Bool_t InPOISelection(Int_t poiType=1) const; 
+  Bool_t IsPOItype(Int_t poiType) const;
+  void SetPOItype(Int_t poiType, Bool_t b=kTRUE);
   Bool_t InSubevent(Int_t i) const;
+  void TagRP(Bool_t b=kTRUE) {SetForRPSelection(b);} 
+  void TagPOI(Bool_t b=kTRUE) {SetForPOISelection(b);} 
+  void Tag(Int_t n, Bool_t b=kTRUE) {fFlowBits.SetBitNumber(n,b);}
+  Bool_t CheckTag(Int_t n) {return fFlowBits.TestBitNumber(n);}
+  void SetForSubevent(Int_t i); 
+  void ResetFlowTags() {fFlowBits.ResetAllBits();}
+  void ResetSubEventTags() {fSubEventBits.ResetAllBits();}
   Bool_t IsDead() const {return (fFlowBits.CountBits()==0);}
       
   void SetEta(Double_t eta);
@@ -58,14 +67,7 @@ public:
   void SetMass(Double_t mass);
   void SetForRPSelection(Bool_t b=kTRUE); 
   void SetForPOISelection(Bool_t b=kTRUE); 
-  void TagRP(Bool_t b=kTRUE) {SetForRPSelection(b);} 
-  void TagPOI(Bool_t b=kTRUE) {SetForPOISelection(b);} 
-  void Tag(Int_t n, Bool_t b=kTRUE) {fFlowBits.SetBitNumber(n,b);}
-  void CheckTag(Int_t n) {fFlowBits.TestBitNumber(n);}
-  void SetForSubevent(Int_t i); 
-  void ResetFlowTags() {fFlowBits.ResetAllBits();}
-  void ResetSubEventTags() {fSubEventBits.ResetAllBits();}
-  void Clear(Option_t* o="");
+  virtual void Clear(Option_t* o="");
   
   void ResolutionPt(Double_t resolution);
 
@@ -122,6 +124,12 @@ public:
   void  SetID(Int_t i) {fID=i;}
   Int_t GetID() const {return fID;}
 
+  virtual Int_t GetNDaughters() const {return 0;}
+  virtual void  AddDaughter(Int_t /*value*/) {}
+  virtual Int_t GetIDDaughter(Int_t /*value*/) const {return 0;}
+  virtual void SetDaughter(Int_t /*value*/, AliFlowTrackSimple* /*track*/) {}
+  virtual AliFlowTrackSimple *GetDaughter(Int_t /*value*/) const {return NULL;}
+
  private:
   AliFlowTrackSimple(Double_t phi, Double_t eta, Double_t pt, Double_t weight, Int_t charge, Double_t mass=-1);
   Double_t fEta;         // eta
@@ -153,9 +161,11 @@ inline Double_t AliFlowTrackSimple::Mass() const {
   return this->fMass; }
 //TBits
 inline Bool_t AliFlowTrackSimple::InRPSelection() const { 
-  return this->fFlowBits.TestBitNumber(kRP); }
-inline Bool_t AliFlowTrackSimple::InPOISelection() const { 
-  return this->fFlowBits.TestBitNumber(kPOI); }
+  return fFlowBits.TestBitNumber(kRP); }
+inline Bool_t AliFlowTrackSimple::InPOISelection(Int_t poiType) const { 
+  return fFlowBits.TestBitNumber(poiType); }
+inline Bool_t AliFlowTrackSimple::IsPOItype(Int_t poiType) const {
+  return fFlowBits.TestBitNumber(poiType); }
 inline Bool_t AliFlowTrackSimple::InSubevent(Int_t i) const { 
   return this->fSubEventBits.TestBitNumber(i); }
 
@@ -172,13 +182,17 @@ inline void AliFlowTrackSimple::SetCharge(Int_t val) {
   fCharge = val; }
 inline void AliFlowTrackSimple::SetMass(Double_t val) {
   fMass = val; }
-//TBits
+
+  //TBits
 inline void AliFlowTrackSimple::SetForRPSelection(Bool_t val) {
   fFlowBits.SetBitNumber(kRP,val); }
 inline void AliFlowTrackSimple::SetForPOISelection(Bool_t val) {
   fFlowBits.SetBitNumber(kPOI,val); }
 inline void AliFlowTrackSimple::SetForSubevent(Int_t i) {
   fSubEventBits.SetBitNumber(i,kTRUE); }
+
+inline void AliFlowTrackSimple::SetPOItype(Int_t poiType, Bool_t b) {
+  fFlowBits.SetBitNumber(poiType,b); }
 
 #endif
 
