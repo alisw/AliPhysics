@@ -332,7 +332,7 @@ AliEMCALRecoUtils::~AliEMCALRecoUtils()
 }
 
 //_______________________________________________________________________________
-Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(const Int_t absID, const Int_t bc,
+Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
                                               Float_t  & amp,    Double_t & time, 
                                               AliVCaloCells* cells) 
 {
@@ -461,7 +461,7 @@ Bool_t AliEMCALRecoUtils::CheckCellFiducialRegion(const AliEMCALGeometry* geom,
 //_______________________________________________________________________________
 Bool_t AliEMCALRecoUtils::ClusterContainsBadChannel(const AliEMCALGeometry* geom, 
                                                     const UShort_t* cellList, 
-                                                    const Int_t nCells)
+                                                    Int_t nCells)
 {
   // Check that in the cluster cells, there is no bad channel of those stored 
   // in fEMCALBadChannelMap or fPHOSBadChannelMap
@@ -492,8 +492,8 @@ Bool_t AliEMCALRecoUtils::ClusterContainsBadChannel(const AliEMCALGeometry* geom
 
 
 //___________________________________________________________________________
-Float_t AliEMCALRecoUtils::GetECross(const Int_t absID, const Double_t tcell,
-                                     AliVCaloCells* cells, const Int_t bc)
+Float_t AliEMCALRecoUtils::GetECross(Int_t absID, Double_t tcell,
+                                     AliVCaloCells* cells, Int_t bc)
 {
   //Calculate the energy in the cross around the energy given cell
   
@@ -568,7 +568,7 @@ Float_t AliEMCALRecoUtils::GetECross(const Int_t absID, const Double_t tcell,
 }
 
 //_____________________________________________________________________________________________
-Bool_t AliEMCALRecoUtils::IsExoticCell(const Int_t absID, AliVCaloCells* cells, const Int_t bc)
+Bool_t AliEMCALRecoUtils::IsExoticCell(Int_t absID, AliVCaloCells* cells, Int_t bc)
 {
   // Look to cell neighbourhood and reject if it seems exotic
   // Do before recalibrating the cells
@@ -598,7 +598,7 @@ Bool_t AliEMCALRecoUtils::IsExoticCell(const Int_t absID, AliVCaloCells* cells, 
 //___________________________________________________________________
 Bool_t AliEMCALRecoUtils::IsExoticCluster(const AliVCluster *cluster, 
                                           AliVCaloCells *cells, 
-                                          const Int_t bc) 
+                                          Int_t bc) 
 {
   // Check if the cluster highest energy tower is exotic
   
@@ -873,9 +873,9 @@ void AliEMCALRecoUtils::InitNonLinearityParam()
 }
 
 //_________________________________________________________
-Float_t  AliEMCALRecoUtils::GetDepth(const Float_t energy, 
-                                     const Int_t iParticle, 
-                                     const Int_t iSM) const 
+Float_t  AliEMCALRecoUtils::GetDepth(Float_t energy, 
+                                     Int_t iParticle, 
+                                     Int_t iSM) const 
 {
   //Calculate shower depth for a given cluster energy and particle type
 
@@ -1175,7 +1175,7 @@ void AliEMCALRecoUtils::InitEMCALBadChannelStatusMap()
 void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom, 
                                                  AliVCluster * cluster, 
                                                  AliVCaloCells * cells, 
-                                                 const Int_t bc)
+                                                 Int_t bc)
 {
   // Recalibrate the cluster energy and Time, considering the recalibration map 
   // and the energy of the cells and time that compose the cluster.
@@ -1248,7 +1248,7 @@ void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom,
 
 //_____________________________________________________________
 void AliEMCALRecoUtils::RecalibrateCells(AliVCaloCells * cells,
-                                         const Int_t bc)
+                                         Int_t bc)
 {
   // Recalibrate the cells time and energy, considering the recalibration map and the energy 
   // of the cells that compose the cluster.
@@ -1291,7 +1291,7 @@ void AliEMCALRecoUtils::RecalibrateCells(AliVCaloCells * cells,
 }
 
 //_______________________________________________________________________________________________________
-void AliEMCALRecoUtils::RecalibrateCellTime(const Int_t absId, const Int_t bc, Double_t & celltime) const
+void AliEMCALRecoUtils::RecalibrateCellTime(Int_t absId, Int_t bc, Double_t & celltime) const
 {
   // Recalibrate time of cell with absID  considering the recalibration map 
   // bc= bunch crossing number returned by esdevent->GetBunchCrossNumber();
@@ -2168,9 +2168,9 @@ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliVTrack *track,
 
 //------------------------------------------------------------------------------------
 Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *trkParam, 
-                                                         const Double_t emcalR,
-                                                         const Double_t mass, 
-                                                         const Double_t step, 
+                                                         Double_t emcalR,
+                                                         Double_t mass, 
+                                                         Double_t step, 
                                                          Float_t &eta, 
                                                          Float_t &phi,
 							 Float_t &pt)
@@ -2226,8 +2226,8 @@ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToPosition(AliExternalTrackParam *trkP
 //----------------------------------------------------------------------------------
 Bool_t AliEMCALRecoUtils::ExtrapolateTrackToCluster(AliExternalTrackParam *trkParam, 
                                                     const AliVCluster *cluster, 
-                                                    const Double_t mass, 
-                                                    const Double_t step, 
+                                                    Double_t mass, 
+                                                    Double_t step, 
                                                     Float_t &tmpEta, 
                                                     Float_t &tmpPhi)
 {
@@ -2258,7 +2258,7 @@ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToCluster(AliExternalTrackParam *trkPa
 }
 
 //_______________________________________________________________________
-void AliEMCALRecoUtils::GetMatchedResiduals(const Int_t clsIndex, 
+void AliEMCALRecoUtils::GetMatchedResiduals(Int_t clsIndex, 
                                             Float_t &dEta, Float_t &dPhi)
 {
   //Given a cluster index as in AliESDEvent::GetCaloCluster(clsIndex)
@@ -2395,7 +2395,7 @@ UInt_t AliEMCALRecoUtils::FindMatchedPosForTrack(Int_t trkIndex) const
 //__________________________________________________________________________
 Bool_t AliEMCALRecoUtils::IsGoodCluster(AliVCluster *cluster, 
                                         const AliEMCALGeometry *geom, 
-                                        AliVCaloCells* cells,const Int_t bc)
+                                        AliVCaloCells* cells, Int_t bc)
 {
   // check if the cluster survives some quality cut
   //
