@@ -39,6 +39,7 @@ AliAnalysisTaskEffContBF *AddTaskBalanceEffCont( TString  centralityEstimator="V
 
   // centrality
   if(centralityEstimator) {
+    taskEffContBF->UseCentrality();
     taskEffContBF->SetCentralityEstimator(centralityEstimator);
     taskEffContBF->SetCentralityPercentileRange(centrMin,centrMax);
   }
