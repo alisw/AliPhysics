@@ -383,13 +383,6 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
     }
   }
       
-  Printf("Got vertex axis %p (%d,%f,%f)", 
-	 &vtxAxis, 
-	 (&vtxAxis ? vtxAxis.GetNbins() : -1),
-	 (&vtxAxis ? vtxAxis.GetXmin() : -1),
-	 (&vtxAxis ? vtxAxis.GetXmax() : -1));
-  // if (&vtxAxis) vtxAxis.Dump();
-	 
   fVtxAxis.Set(vtxAxis.GetNbins(), vtxAxis.GetXmin(), vtxAxis.GetXmax());
   
   fCentAxis  = new TAxis(limits.GetSize()-1, limits.GetArray());

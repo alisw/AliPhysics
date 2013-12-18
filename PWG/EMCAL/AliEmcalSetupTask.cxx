@@ -25,7 +25,8 @@ AliEmcalSetupTask::AliEmcalSetupTask() :
   AliAnalysisTaskSE(),
   fOcdbPath(),
   fOadbPath("$ALICE_ROOT/OADB/EMCAL"),
-  fGeoPath("."),
+  fGeoPath("$ALICE_ROOT/OADB/EMCAL"),
+  fObjs("GRP ITS TPC TRD EMCAL"),
   fIsInit(kFALSE)
 {
   // Constructor.
@@ -37,6 +38,7 @@ AliEmcalSetupTask::AliEmcalSetupTask(const char *name) :
   fOcdbPath(),
   fOadbPath("$ALICE_ROOT/OADB/EMCAL"),
   fGeoPath("$ALICE_ROOT/OADB/EMCAL"),
+  fObjs("GRP ITS TPC TRD EMCAL"),
   fIsInit(kFALSE)
 {
   // Constructor.
@@ -106,7 +108,8 @@ void AliEmcalSetupTask::UserExec(Option_t *)
     GRPManager.SetMagField();
     AliInfo(Form("Loading geometry from OCDB"));
     AliGeomManager::LoadGeometry();
-    AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC TRD EMCAL");
+    if (!fObjs.IsNull())
+      AliGeomManager::ApplyAlignObjsFromCDB(fObjs);
   }
 
   TGeoManager *geo = AliGeomManager::GetGeometry();

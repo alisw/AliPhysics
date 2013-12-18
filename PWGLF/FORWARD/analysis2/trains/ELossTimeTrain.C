@@ -12,6 +12,7 @@ class AliAnalysisManager;
 /** 
  * Train to record time of each event 
  * 
+ * @ingroup pwglf_forward_eventtime
  */        
 class ELossTimeTrain : public TrainSetup
 {
@@ -28,8 +29,6 @@ public:
   }
   /** 
    * Create our tasks 
-   * 
-   * @param mgr Manager
    */
   void CreateTasks(AliAnalysisManager*)
   {
@@ -123,12 +122,22 @@ public:
 # include <SummaryDrawer.C>
 # include <TColor.h>
 
+/**
+ * Draw summary of the above train
+ * 
+ * @ingroup pwglf_forward_eventtime
+ */
 struct ELossTimeSummary : public SummaryDrawer 
 {
   enum EFlags { 
     kEventInspector    = 0x001, 
   };
-
+  /** 
+   * Run the class 
+   * 
+   * @param fname Filename 
+   * @param flags Flags
+   */
   void Run(const char* fname, UShort_t flags=0x01)
   {
     // --- Open the file -----------------------------------------------
@@ -165,6 +174,11 @@ struct ELossTimeSummary : public SummaryDrawer
 
     CloseCanvas();
   }
+  /** 
+   * Draw the title page 
+   * 
+   * @param c Parent collection
+   */
   void DrawTitlePage(TCollection* c)
   {
     fBody->cd();
@@ -198,6 +212,13 @@ struct ELossTimeSummary : public SummaryDrawer
     fParName->SetTextSize(save);
     fParVal->SetTextSize(save);
   }
+  /** 
+   * Draw a single ring
+   * 
+   * @param c     Parent collection
+   * @param ring  Ring name 
+   * @param dt    Histogram of delta time 
+   */
   void DrawRing(TCollection* c, const char* ring, TH1* dt)
   {
     TCollection* lring = GetCollection(c, ring);

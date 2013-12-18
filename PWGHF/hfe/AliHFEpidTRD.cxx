@@ -53,6 +53,7 @@ AliHFEpidTRD::AliHFEpidTRD() :
   , fRunNumber(0)
   , fElectronEfficiency(0.90)
   , fTotalChargeInSlice0(kFALSE)
+  , fTRDOldPIDMethod(kFALSE)
   , fTRD2DPID(kFALSE)
 {
   //
@@ -71,6 +72,7 @@ AliHFEpidTRD::AliHFEpidTRD(const char* name) :
   , fRunNumber(0)
   , fElectronEfficiency(0.91)
   , fTotalChargeInSlice0(kFALSE)
+  , fTRDOldPIDMethod(kFALSE)
   , fTRD2DPID(kFALSE)
 {
   //
@@ -89,6 +91,7 @@ AliHFEpidTRD::AliHFEpidTRD(const AliHFEpidTRD &ref):
   , fRunNumber(ref.fRunNumber)
   , fElectronEfficiency(ref.fElectronEfficiency)
   , fTotalChargeInSlice0(ref.fTotalChargeInSlice0)
+  , fTRDOldPIDMethod(ref.fTRDOldPIDMethod)
   , fTRD2DPID(ref.fTRD2DPID)
 {
   //
@@ -121,6 +124,7 @@ void AliHFEpidTRD::Copy(TObject &ref) const {
   target.fCutNTracklets = fCutNTracklets;
   target.fRunNumber = fRunNumber;
   target.fTotalChargeInSlice0 = fTotalChargeInSlice0;
+  target.fTRDOldPIDMethod = fTRDOldPIDMethod;
   target.fTRD2DPID = fTRD2DPID;
   target.fElectronEfficiency = fElectronEfficiency;
   memcpy(target.fThreshParams, fThreshParams, sizeof(Double_t) * kThreshParams);
@@ -141,9 +145,8 @@ Bool_t AliHFEpidTRD::InitializePID(Int_t run){
   //
   //
 
-  //if(fTRD2DPID) return Initialize2D(run);
-  if(fTRD2DPID) return kTRUE;
-  else return Initialize1D(run);
+  if(fTRDOldPIDMethod) return Initialize1D(run);
+  else return kTRUE;
 
 
 
@@ -187,8 +190,8 @@ Int_t AliHFEpidTRD::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
   //
   //
 
-    if(fTRD2DPID) return IsSelected2D(track, pidqa);
-    else return IsSelected1D(track, pidqa);
+   if(fTRDOldPIDMethod) return IsSelected1D(track, pidqa);
+   else return IsSelectedTRDPID(track, pidqa);
 
 
 }
@@ -256,7 +259,7 @@ Int_t AliHFEpidTRD::IsSelected1D(const AliHFEpidObject *track, AliHFEpidQAmanage
 }
 
 //______________________________________________________
-Int_t AliHFEpidTRD::IsSelected2D(const AliHFEpidObject *track, AliHFEpidQAmanager *pidqa) const {
+Int_t AliHFEpidTRD::IsSelectedTRDPID(const AliHFEpidObject *track, AliHFEpidQAmanager *pidqa) const {
   //
   // 2D TRD PID
   // 
@@ -298,8 +301,11 @@ Int_t AliHFEpidTRD::IsSelected2D(const AliHFEpidObject *track, AliHFEpidQAmanage
   if(centralitybin>=0) centrality=fCentralityLimitsdefault[centralitybin]+1;
   AliDebug(2, Form("Just before cutting Electron effi: %f %i %i %f\n", fElectronEfficiency,track->GetCentrality(),centralitybin,centrality));
 
-  if(fkPIDResponse->IdentifiedAsElectronTRD(track->GetRecTrack(),fElectronEfficiency,centrality,AliTRDPIDResponse::kLQ2D)){
-      AliDebug(2, Form("Electron effi: %f %i %i %f\n", fElectronEfficiency,track->GetCentrality(),centralitybin,centrality));
+  AliTRDPIDResponse::ETRDPIDMethod fTRDPIDMethod = AliTRDPIDResponse::kLQ1D;
+  if(fTRD2DPID) fTRDPIDMethod = AliTRDPIDResponse::kLQ2D;
+
+ if(fkPIDResponse->IdentifiedAsElectronTRD(track->GetRecTrack(),fElectronEfficiency,centrality,fTRDPIDMethod)){
+      AliDebug(2, Form("Electron effi: %f %i %i %f %i\n", fElectronEfficiency,track->GetCentrality(),centralitybin,centrality,fTRDPIDMethod));
       if(pidqa) pidqa->ProcessTrack(track, AliHFEpid::kTRDpid, AliHFEdetPIDqa::kAfterPID); 
       AliDebug(1,"PID qa done for step after\n");
       return 11;

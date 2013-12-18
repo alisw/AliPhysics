@@ -38,6 +38,7 @@ AliHadCorrTask::AliHadCorrTask() :
   fDoExact(kFALSE),
   fEsdMode(kTRUE),
   fOutClusters(0),
+  fHistMatchEtaPhiAll(0),
   fHistNclusvsCent(0),
   fHistNclusMatchvsCent(0),
   fHistEbefore(0),
@@ -87,6 +88,7 @@ AliHadCorrTask::AliHadCorrTask(const char *name, Bool_t histo) :
   fDoExact(kFALSE),
   fEsdMode(kTRUE),
   fOutClusters(0),
+  fHistMatchEtaPhiAll(0),
   fHistNclusvsCent(0),
   fHistNclusMatchvsCent(0),
   fHistEbefore(0),
@@ -380,6 +382,9 @@ void AliHadCorrTask::UserCreateOutputObjects()
 
   const Int_t nCentChBins = fNcentBins * 2;
 
+  fHistMatchEtaPhiAll = new TH2F("fHistMatchEtaPhiAll", "fHistMatchEtaPhiAll", fNbins, -0.1, 0.1, fNbins, -0.1, 0.1);
+  fOutput->Add(fHistMatchEtaPhiAll);
+
   for(Int_t icent=0; icent<nCentChBins; ++icent) {
     for(Int_t ipt=0; ipt<9; ++ipt) {
       for(Int_t ieta=0; ieta<2; ++ieta) {
@@ -597,6 +602,7 @@ void AliHadCorrTask::DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t 
       Int_t etabin = 0;
       if(track->Eta() > 0) etabin=1;
       fHistMatchEtaPhi[centbinch][mombin][etabin]->Fill(etadiff, phidiff);
+      fHistMatchEtaPhiAll->Fill(etadiff, phidiff);
     }
     
     Double_t etaCut   = 0.0;
@@ -745,6 +751,7 @@ Double_t AliHadCorrTask::ApplyHadCorrOneTrack(AliEmcalParticle *emccluster, Doub
       etabin = 1;
 	    
     fHistMatchEtaPhi[centbinch][mombin][etabin]->Fill(dEtaMin, dPhiMin);
+    fHistMatchEtaPhiAll->Fill(dEtaMin, dPhiMin);
     
     if (mom > 0) {
       fHistMatchEvsP[fCentBin]->Fill(energyclus, energyclus / mom);
@@ -866,7 +873,6 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
 	  if (track) {
 	    Int_t centbinchm = fCentBin;
 	    if (track->Charge()<0) centbinchm += fNcentBins;
-	    
 	    fHistEsubPchRat[centbinchm]->Fill(totalTrkP, Esub / totalTrkP);
 	    fHistEsubPch[centbinchm]->Fill(totalTrkP, Esub);
 	  }

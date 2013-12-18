@@ -30,7 +30,7 @@ public:
   void    SetJetPtBinMax(Float_t ptmax) { fJetPtBinMax = ptmax; }
   Float_t GetJetPtBinMax() const { return fJetPtBinMax; }
 
-  void SetJetBranchName(const char* const branchName) { strncpy(fJetBranchName, branchName, fgkStringLength-1); }
+  void SetJetBranchName(const char* branchName) { strncpy(fJetBranchName, branchName, fgkStringLength-1); }
   const char* GetJetBranchName() const { return fJetBranchName; }
 
   // histograms
@@ -90,7 +90,7 @@ protected:
   TH1  *fHist[kHistLast];	//! pointers to histogram
   const char *fShortTaskId;	//! short identifier for the task
 
-  TH1*&  GetHistogram(Hist_t hist, const Int_t idx = 0) { return fHist[hist + idx]; }
+  TH1*&  GetHistogram(Hist_t hist, Int_t idx = 0) { return fHist[hist + idx]; }
 
   TH1*   AddHistogram(Hist_t hist, const char *hid, TString title,
                       Int_t xbins, Float_t xmin, Float_t xmax, Int_t binType = 1);

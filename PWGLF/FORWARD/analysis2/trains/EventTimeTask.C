@@ -2,6 +2,7 @@
 #ifndef __CINT__
 # include <TTree.h>
 # include <TError.h>
+# include <TChain.h>
 #else
 class TTree;
 // Force load of libGui
@@ -12,6 +13,7 @@ class AliESDEvent;
 /**
  * Data structure to be filled by task - one for each event
  * 
+ * @ingroup pwglf_forward_eventtime
  */
 struct EventTimeData 
 {
@@ -31,6 +33,8 @@ struct EventTimeData
   UInt_t    fDetectors;
   /** Type of event - 7 is physics */
   UShort_t  fType;
+  /** GUID */
+  UChar_t   fGUID[42];
   /** 
    * Create a branch in a tree 
    * 
@@ -39,7 +43,7 @@ struct EventTimeData
   void CreateBranch(TTree* tree)
   {
     tree->Branch("event", &(this->fFull), 
-		 "full/l:time/i:detector:type/s");
+		 "full/l:time/i:detector:type/s:guid/C");
   }
   /** 
    * Set the address of a branch for reading back objects from the tree
@@ -76,15 +80,17 @@ struct EventTimeData
    * 
    * @param esd  Event 
    * @param dets List of active detectors in this event. 
+   * @param guid Current file GUID
    */
-  void Fill(AliESDEvent* esd, UInt_t dets);
+  void Fill(AliESDEvent* esd, UInt_t dets, const TString& guid);
 };
 
 #ifndef NO_TASK
 # ifndef __CINT__
 #  include <AliESDEvent.h>
 # endif
-inline void EventTimeData::Fill(AliESDEvent* esd, UInt_t dets)
+inline void EventTimeData::Fill(AliESDEvent* esd, UInt_t dets, 
+				const TString& guid)
 {
   ULong64_t period = esd->GetPeriodNumber();
   ULong64_t orbit  = esd->GetOrbitNumber();
@@ -93,9 +99,13 @@ inline void EventTimeData::Fill(AliESDEvent* esd, UInt_t dets)
   fTime            = esd->GetTimeStamp();//LDC time
   fDetectors       = dets; // esd->GetDAQDetectorPattern();
   fFull            = EncodeFull(period, orbit, bc);
+  Int_t i = 0;
+  for (i = 0; i < guid.Length() && i < 42; i++) fGUID[i] = guid[i];
+  for (; i < 42; i++) fGUID[i] = '\0';
+  fGUID[41] = '\0';
 }
 # else
-inline void EventTimeData::Fill(AliESDEvent*, UInt_t) 
+inline void EventTimeData::Fill(AliESDEvent*, UInt_t, const TString&) 
 {
   Warning("Fill", "Calling empty method - shouldn't happen");
 }
@@ -104,6 +114,7 @@ inline void EventTimeData::Fill(AliESDEvent*, UInt_t)
 #ifndef NO_TASK
 # ifndef __CINT__
 #  include <AliAnalysisManager.h>
+#  include <AliVEventHandler.h>
 #  include <AliESDEvent.h>
 #  include <TTree.h>
 #  include <TH2.h>
@@ -116,6 +127,7 @@ inline void EventTimeData::Fill(AliESDEvent*, UInt_t)
 #  include <AliDAQ.h>
 #  include <TObjArray.h>
 #  include <TDirectory.h>
+#  include <TUrl.h>
 # else
 class AliAnalysisManager;
 class TTree;
@@ -131,6 +143,7 @@ class TH2;
  *
  * @par Input: ESD 
  * @par Output:  A tree with a single branch 
+ * @ingroup pwglf_forward_eventtime
  */
 class EventTimeTask : public AliAnalysisTaskSE
 {
@@ -158,7 +171,8 @@ public:
     : AliAnalysisTaskSE(name), 
       fTree(0),
       fHistograms(0),
-      fDetVsType(0)
+      fDetVsType(0),
+      fGUID("")
   {
     DefineOutput(kListSlot, TList::Class());
     DefineOutput(kTreeSlot, TTree::Class());
@@ -172,6 +186,7 @@ public:
   void UserCreateOutputObjects()
   {
     Printf("Creating tree and histogram");
+    fGUID = "";
     fHistograms = new TList();
     fHistograms->SetOwner();
     fHistograms->SetName("L");
@@ -227,7 +242,7 @@ public:
       if ((1 << i) & mask) dets |= fDets[i];
     }
     // Printf("Event mask 0x%016llx -> 0x%08x", mask, dets);
-    fData.Fill(esd, dets);
+    fData.Fill(esd, dets, fGUID);
     fTree->Fill();
 
     UInt_t type      = esd->GetEventType();
@@ -238,6 +253,35 @@ public:
 
     PostData(kListSlot, fHistograms);
     PostData(kTreeSlot, fTree);
+  }
+  Bool_t UserNotify()
+  {
+    fGUID = "";
+    AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
+    AliVEventHandler*   inp = mgr->GetInputEventHandler();
+    if (!inp) { 
+      Warning("UserNotify", "No input handler");
+      return true;
+    }
+    TTree* tree = inp->GetTree();
+    if (!tree) { 
+      Warning("UserNotify", "No input tree");
+      return true;
+    }
+    TFile* file = tree->GetCurrentFile();
+    if (!file) { 
+      Warning("UserNotify", "No current file for tree");
+      return true;
+    }
+    const TUrl* url = file->GetEndpointUrl();
+    if (!url) { 
+      Warning("UserNotify", "No end point for file");
+      return false;
+    }
+    fGUID = gSystem->BaseName(url->GetFile());
+    Printf("Got GUID=%s from %s", fGUID.Data(), url->GetUrl());
+    
+    return true;
   }
   void LoadTriggerConfig(Int_t runNo)
   {
@@ -319,6 +363,7 @@ public:
   TList*              fHistograms; // List
   TH2D*               fDetVsType;  // Histogram
   std::vector<UInt_t> fDets;       // Per-trigger-bit detector mask 
+  TString             fGUID;
   
   ClassDef(EventTimeTask,3);
 };
@@ -333,6 +378,7 @@ typedef std::pair<ULong64_t,ULong64_t> EventTimeMapPair;
 /**
  * A map of event time-stamp to distance to previous event
  * 
+ * @ingroup pwglf_forward_eventtime
  */
 struct EventTimeMap : public TObject
 {
@@ -482,6 +528,8 @@ class TCanvas;
 
 /** 
  * A class to sort the tree and generate our timestamp->dT map.
+ *
+ * @ingroup pwglf_forward_eventtime
  */
 struct EventTimeSorter 
 {
@@ -525,17 +573,13 @@ struct EventTimeSorter
     CloseInput();
 
     // --- Get input -------------------------------------------------
-    TFile* input = TFile::Open(inputName, "READ");
-    if (!input) { 
-      Error("Run", "Failed to open \"%s\"", inputName);
+    TChain* chain = new TChain(treeName);
+    chain->Add(inputName);
+    if (chain->GetListOfFiles()->GetEntries() < 1) { 
+      Error("Run", "Failed to add \"%s\" to chain", inputName);
       return false;
     }
-    
-    fTree = static_cast<TTree*>(input->Get(treeName));
-    if (!fTree) { 
-      Error("Run", "Couldn't get tree \"%s\" from \"%s\"", treeName,inputName);
-      return false;
-    }
+    fTree = chain;
 
     // --- Set branch address ---------------------------------------
     fData.ReadBranch(fTree);

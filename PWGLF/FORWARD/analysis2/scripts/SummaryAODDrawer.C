@@ -668,7 +668,7 @@ protected:
       DrawParameter(y, "Fiducial cut.", Form("%f", fiducialCut), size);
 
     // p->cd(2);
-    Printf("Drawing skipped");
+    // Printf("Drawing skipped");
     TH1* skipped = GetH1(c, "skipped");
     if (skipped) { 
       skipped->SetFillColor(kRed+1);
@@ -679,11 +679,11 @@ protected:
     p = fBody->cd(2);
     p->Divide(1,2,0,0);
 
-    Printf("Drawing sumRings");
+    // Printf("Drawing sumRings");
     DrawInPad(p, 1, GetH2(c, "sumRings"), "colz"); 
-    Printf("Drawing coverage");
+    // Printf("Drawing coverage");
     DrawInPad(p, 2, GetH2(c, "coverage"), "colz");
-    Printf("Done drawing for now");
+    // Printf("Done drawing for now");
     PrintCanvas("Histogram collector");
 		
     
@@ -1098,7 +1098,7 @@ protected:
       }
       ll->Draw();
     }
-    Printf("Done drawing steps");
+    // Printf("Done drawing steps");
     PrintCanvas("Steps");
   }
 

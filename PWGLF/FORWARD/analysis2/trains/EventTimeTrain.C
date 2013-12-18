@@ -11,6 +11,7 @@ class AliAnalysisManager;
 /** 
  * Train to record time of each event 
  * 
+ * @ingroup pwglf_forward_eventtime
  */        
 class EventTimeTrain : public TrainSetup
 {
@@ -27,7 +28,6 @@ public:
   /** 
    * Create our tasks 
    * 
-   * @param mgr Manager
    */
   void CreateTasks(AliAnalysisManager*)
   {

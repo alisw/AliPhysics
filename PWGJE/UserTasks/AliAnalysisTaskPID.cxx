@@ -37,6 +37,10 @@ Contact: bhess@cern.ch
 
 ClassImp(AliAnalysisTaskPID)
 
+const Double_t AliAnalysisTaskPID::fgkEpsilon = 1e-8; // Double_t threshold above zero
+const Double_t AliAnalysisTaskPID::fgkOneOverSqrt2 = 0.707106781186547462; // = 1. / TMath::Sqrt2();
+const Double_t AliAnalysisTaskPID::fgkSigmaReferenceForTransitionPars = 0.05; // Reference sigma chosen to calculate transition parameters
+
 //________________________________________________________________________
 AliAnalysisTaskPID::AliAnalysisTaskPID()
   : AliAnalysisTaskPIDV0base()
