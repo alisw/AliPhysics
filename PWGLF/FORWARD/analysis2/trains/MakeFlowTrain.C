@@ -1,7 +1,6 @@
 /**
  * @file   MakeFlowTrain.C
- * @author Christian Holm Christensen <cholm@master.hehi.nbi.dk>
- * @date   Fri Jun  1 13:51:48 2012
+ * @author Alexander Hansen                                      
  * 
  * @brief  
  * 
@@ -12,7 +11,7 @@
 
 //====================================================================
 /**
- * Analysis train to make @f$ flow@f$
+ * Analysis train to make flow@
  * 
  *
  * @ingroup pwglf_forward_flow
@@ -22,27 +21,34 @@ class MakeFlowTrain : public TrainSetup
 {
 public:
   /** 
-   * Constructor.  Date and time must be specified when running this
-   * in Termiante mode on Grid
+   * Constructor.  
    * 
    * @param name     Name of train (free form)
    */
   MakeFlowTrain(const char* name)
   : TrainSetup(name)
   {
+    // General options
     fOptions.Add("mc", "Do MC analysis");
-    fOptions.Add("mom", "Flow moments to analyse", "234", "234");
-    fOptions.Add("eta-gap", "Whether to use an eta-gap", "[no,yes,both]", "both");
-    fOptions.Add("eg-value", "Set value in |eta| of the eta gap", "2.0");
+    fOptions.Add("max-mom", "2|3|4|5", "Max flow moment to analyse", "5");
     fOptions.Add("use-cent", "Whether to use the impact parameter for centrality");
-    fOptions.Add("afterburner", "What to afterburn", "[eta,phi,b,pid]", "");
-    fOptions.Add("ab-type", "Type of afterburner", "1|2|3|4", "");
-    fOptions.Add("ab-order", "Order of afterburner", "2|3|4|5|6", "");
-    fOptions.Add("sat-vtx", "Whether to use satellite interactions");
-    fOptions.Add("outlier-fmd", "Outlier cut for FMD", "NSIGMA", "4.0");
-    fOptions.Add("outlier-spd", "Outlier cut for SPD", "NSIGMA", "0.0");
+    fOptions.Add("mc-vtx", "Whether to get the vertex from the MC header");
+    fOptions.Add("afterburner", "[eta,phi,b,pid]", "What to afterburn", "");
+    fOptions.Add("ab-type", "1|2|3|4", "Type of afterburner", "");
+    fOptions.Add("ab-order", "2|3|4|5|6", "Order of afterburner", "");
+    fOptions.Add("fwd-dets", "[fmd,vzero]", "Forward detectors", "");
     fOptions.Set("type", "AOD");
     fOptions.Show(std::cout);
+    // QC specific options
+    fOptions.Add("QC", "Add QC tasks (requires AODs with FMD and SPD objects)");
+    fOptions.Add("qc-type", "[std,eta-gap,3cor,all]", "Which types of QC's to do", "both");
+    fOptions.Add("eg-value", "EGVALUE", "Set value in |eta| of the eta gap", "2.0");
+    fOptions.Add("tpc-tracks", "Whether to use TPC tracks for reference flow");
+    fOptions.Add("sat-vtx", "Whether to use satellite interactions");
+    fOptions.Add("outlier-fmd", "NSIGMA", "Outlier cut for FMD", "4.0");
+    fOptions.Add("outlier-spd", "NSIGMA", "Outlier cut for SPD", "4.0");
+    // EP specific options
+    fOptions.Add("EP", "Add EP tasks (requires VZERO AOD objects)");
   }
 protected:
   //__________________________________________________________________
@@ -54,7 +60,7 @@ protected:
   void CreateTasks(AliAnalysisManager* mgr)
   {
     // --- Output file name ------------------------------------------
-    AliAnalysisManager::SetCommonFileName("AnalysisResults.root");
+    AliAnalysisManager::SetCommonFileName("forward_flow.root");
 
     // --- Load libraries/pars ---------------------------------------
     fHelper->LoadLibrary("PWGLFforward2");
@@ -62,50 +68,99 @@ protected:
     // --- Set load path ---------------------------------------------
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
 			     gROOT->GetMacroPath()));
+    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/ANALYSIS/macros",
+                             gROOT->GetMacroPath()));
 
+    // --- Add the tasks ---------------------------------------------
+    Bool_t doQC = fOptions.AsBool("QC");
+    Bool_t doEP = fOptions.AsBool("EP");
+    if (doQC) AddQCTasks();
+    if (doEP) AddEPTasks();
+    if (!doQC && !doEP) Fatal("CreateTasks", "No flow tasks were added");
+
+  }
+  //__________________________________________________________________
+  /**
+   * Add the QC task(s)
+   */
+  void AddQCTasks()
+  {
     // --- Get the parameters ----------------------------------------
-    TString  type    = fOptions.Get("mom");
-    TString  etaGap  = fOptions.Get("eta-gap");
-    Double_t egValue = fOptions.AsDouble("eg-value");
-    Bool_t   useCent = fOptions.AsBool("use-cent");
-    TString  addFlow = fOptions.Get("afterburner");
-    Int_t    abType  = fOptions.AsInt("ab-type");
-    Int_t    abOrder = fOptions.AsInt("ab-order");
-    Bool_t   satVtx  = fOptions.AsBool("sat-vtx");
-    Double_t fmdCut  = fOptions.AsDouble("outlier-fmd");
-    Double_t spdCut  = fOptions.AsDouble("outlier-spd");
-    Bool_t   mc      = fOptions.AsBool("mc"); 
+    Int_t    moment   = fOptions.AsInt("max-mom");
+    TString  fwdDets  = fOptions.Get("fwd-dets");
+    TString  types    = fOptions.Get("qc-type");
+    Double_t egValue  = fOptions.AsDouble("eg-value");
+    Bool_t   tpcTr    = fOptions.AsBool("tpc-tracks");
+    Bool_t   useCent  = fOptions.AsBool("use-cent");
+    Bool_t   useMCVtx = fOptions.AsBool("mc-vtx");
+    TString  addFlow  = fOptions.Get("afterburner");
+    Int_t    abType   = fOptions.AsInt("ab-type");
+    Int_t    abOrder  = fOptions.AsInt("ab-order");
+    Bool_t   satVtx   = fOptions.AsBool("sat-vtx");
+    Double_t fmdCut   = fOptions.AsDouble("outlier-fmd");
+    Double_t spdCut   = fOptions.AsDouble("outlier-spd");
+    Bool_t   mc       = fOptions.AsBool("mc"); 
+
+    types.ToLower();
+    fwdDets.ToUpper();
+    Bool_t doFMD = fwdDets.Contains("FMD");
+    Bool_t doVZERO = fwdDets.Contains("VZERO");
+
+    TString args(TString::Format("AddTaskForwardFlowQC.C(%d,\"%%s\",%%d,%%d,%d,%f,%f,%f,%%d,%d,%d,%d,\"%s\",%d,%d)",
+			moment,
+			mc, 
+			fmdCut, 
+			spdCut,
+			egValue,
+			useCent,
+			useMCVtx,
+			satVtx, 
+			addFlow.Data(), 
+			abType, 
+			abOrder));
+    
+    // --- Add the task ----------------------------------------------
+    if (doFMD) {
+      if (types.Contains("std") || types.Contains("all")) {
+      	gROOT->Macro(Form(args.Data(), "FMD", false, false, false));
+      	if (tpcTr)
+	  gROOT->Macro(Form(args.Data(), "FMD", false, false, true));
+      }
+      if (types.Contains("eta-gap") || types.Contains("all"))
+      	gROOT->Macro(Form(args.Data(), "FMD", true, false, false));
+      if (types.Contains("3cor") || types.Contains("all"))
+      	gROOT->Macro(Form(args.Data(), "FMD", false, true, false));
+    }
+    if (doVZERO) {
+      if (types.Contains("std") || types.Contains("all")) {
+      	gROOT->Macro(Form(args.Data(), "VZERO", false, false, false));
+      	if (tpcTr)
+	  gROOT->Macro(Form(args.Data(), "VZERO", false, false, true));
+      }
+      if (types.Contains("eta-gap") || types.Contains("all"))
+      	gROOT->Macro(Form(args.Data(), "VZERO", true, false, false));
+      if (types.Contains("3cor") || types.Contains("all"))
+      	gROOT->Macro(Form(args.Data(), "VZERO", false, true, false));
+    }
+  }
+  //__________________________________________________________________
+  /**
+   * Add the EP task(s)
+   */
+  void AddEPTasks()
+  {
+    // --- Get the parameters ----------------------------------------
+    Int_t    moment   = fOptions.AsInt("max-mom");
+    TString  etaGap   = fOptions.Get("eta-gap");
+    TString  addFlow  = fOptions.Get("afterburner");
+    Int_t    abType   = fOptions.AsInt("ab-type");
+    Int_t    abOrder  = fOptions.AsInt("ab-order");
+    Bool_t   mc       = fOptions.AsBool("mc"); 
+    TString  fwdDets  = fOptions.Get("fwd-dets");
 
     // --- Add the task ----------------------------------------------
-    if (etaGap.Contains("no") || etaGap.Contains("false") ||
-        etaGap.Contains("both"))
-          gROOT->Macro(Form("AddTaskForwardFlow.C(\"%s\",%d,%d,%f,%f,%f,%d,%d,\"%s\",%d,%d)",
-		      type.Data(),
-		      kFALSE,
-		      mc, 
-		      fmdCut, 
-		      spdCut,
-		      egValue,
-		      useCent,
-		      satVtx, 
-		      addFlow.Data(), 
-		      abType, 
-		      abOrder));
-    
-    if (etaGap.Contains("yes") || etaGap.Contains("true") ||
-        etaGap.Contains("both"))
-          gROOT->Macro(Form("AddTaskForwardFlow.C(\"%s\",%d,%d,%f,%f,%f,%d,%d,\"%s\",%d,%d)",
-		      type.Data(),
-		      kTRUE,
-		      mc, 
-		      fmdCut, 
-		      spdCut, 
-		      egValue,
-		      useCent,
-		      satVtx, 
-		      addFlow.Data(), 
-		      abType, 
-		      abOrder));
+    gROOT->Macro("AddTaskEventplane.C");
+    gROOT->Macro(Form("AddTaskForwardFlowEP.C(%d, %d, \"%s\")", mc, moment, fwdDets.Data()));
   }
   //__________________________________________________________________
   /** 
