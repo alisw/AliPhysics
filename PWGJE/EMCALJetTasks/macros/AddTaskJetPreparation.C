@@ -61,7 +61,6 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
       gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalTrackPropagatorAOD.C");
       AliEmcalTrackPropagatorTaskAOD *propTask = AddTaskEmcalTrackPropagatorAOD(inputTracks.Data());
       propTask->SetDist(edist);
-      propTask->SetDoPropagation(kTRUE);
       propTask->SelectCollisionCandidates(pSel);
     }
 
