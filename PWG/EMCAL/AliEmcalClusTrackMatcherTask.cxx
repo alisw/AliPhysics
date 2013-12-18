@@ -20,7 +20,9 @@ ClassImp(AliEmcalClusTrackMatcherTask)
 //________________________________________________________________________
 AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask() : 
   AliAnalysisTaskEmcal("AliEmcalClusTrackMatcherTask",kFALSE),
-  fMaxDistance(0.06)
+  fMaxDistance(0.06),
+  fHistMatchEtaAll(0),
+  fHistMatchPhiAll(0)
 {
   // Constructor.
 
@@ -37,7 +39,9 @@ AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask() :
 //________________________________________________________________________
 AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask(const char *name, Bool_t histo) : 
   AliAnalysisTaskEmcal(name,histo),
-  fMaxDistance(0.06)
+  fMaxDistance(0.06),
+  fHistMatchEtaAll(0),
+  fHistMatchPhiAll(0)
 {
   // Standard constructor.
 
@@ -86,6 +90,11 @@ void AliEmcalClusTrackMatcherTask::UserCreateOutputObjects()
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
   const Int_t nCentChBins = fNcentBins * 2;
+
+  fHistMatchEtaAll = new TH1F("fHistMatchEtaAll", "fHistMatchEtaAll", 400, -0.2, 0.2);
+  fHistMatchPhiAll = new TH1F("fHistMatchPhiAll", "fHistMatchPhiAll", 400, -0.2, 0.2);
+  fOutput->Add(fHistMatchEtaAll);
+  fOutput->Add(fHistMatchPhiAll);
 
   for(Int_t icent=0; icent<nCentChBins; ++icent) {
     for(Int_t ipt=0; ipt<9; ++ipt) {
@@ -174,10 +183,11 @@ Bool_t AliEmcalClusTrackMatcherTask::Run()
 	    
 	fHistMatchEta[centbinch][mombin][etabin]->Fill(deta);
 	fHistMatchPhi[centbinch][mombin][etabin]->Fill(dphi);
+        fHistMatchEtaAll->Fill(deta);
+        fHistMatchPhiAll->Fill(dphi);
       }
     }
   }
-
 
   clusters->ResetCurrentID();
   while ((partC = static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle()))) {

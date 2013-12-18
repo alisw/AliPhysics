@@ -148,6 +148,7 @@ class AliConversionCuts : public AliAnalysisCuts {
    AliPIDResponse * GetPIDResponse() { return fPIDResponse;}
    
    void PrintCuts();
+   void PrintCutsWithValues();
 
    void InitCutHistograms(TString name="",Bool_t preCut = kTRUE);
    void SetFillCutHistograms(TString name="",Bool_t preCut = kTRUE){if(!fHistograms){InitCutHistograms(name,preCut);};}

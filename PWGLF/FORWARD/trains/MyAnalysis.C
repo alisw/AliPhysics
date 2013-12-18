@@ -60,16 +60,16 @@ public:
       AliAnalysisManager *mgr=AliAnalysisManager::GetAnalysisManager();
       AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
       if (inputHandler) {
-	Info("", "Got input handler");
-	TList *uiList = inputHandler->GetUserInfo();
-	if (uiList) {
-	  Info("", "Got user list:");
-	  uiList->ls();
-	
-	  fProd = new AliProdInfo(uiList);
-	  Info("", "Lising production information");
-	  fProd->List();
-	}
+        Info("", "Got input handler");
+        TList *uiList = inputHandler->GetUserInfo();
+        if (uiList) {
+          Info("", "Got user list:");
+          uiList->ls();
+        
+          fProd = new AliProdInfo(uiList);
+          Info("", "Lising production information");
+          fProd->List();
+        }
       }
     }
 

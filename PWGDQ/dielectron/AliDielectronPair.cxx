@@ -316,7 +316,7 @@ Double_t AliDielectronPair::PsiPair(Double_t MagField) const
 
 //______________________________________________
 Double_t AliDielectronPair::ThetaPhiCM(const AliVParticle* d1, const AliVParticle* d2, 
-                                       const Bool_t isHE, const Bool_t isTheta)
+                                       Bool_t isHE, Bool_t isTheta)
 {
   // The function calculates theta and phi in the mother rest frame with
   // respect to the helicity coordinate system and Collins-Soper coordinate system
@@ -373,7 +373,7 @@ Double_t AliDielectronPair::ThetaPhiCM(const AliVParticle* d1, const AliVParticl
 }
 
 //______________________________________________
-Double_t AliDielectronPair::ThetaPhiCM(const Bool_t isHE, const Bool_t isTheta) const {
+Double_t AliDielectronPair::ThetaPhiCM(Bool_t isHE, Bool_t isTheta) const {
   // The function calculates theta and phi in the mother rest frame with 
   // respect to the helicity coordinate system and Collins-Soper coordinate system
   // TO DO: generalize for different decays (only J/Psi->e+e- now)
@@ -630,7 +630,7 @@ Double_t AliDielectronPair::PhivPair(Double_t MagField) const
 }
 
 //______________________________________________
-Double_t AliDielectronPair::GetPairPlaneAngle(const Double_t v0rpH2,const Int_t VariNum)const
+Double_t AliDielectronPair::GetPairPlaneAngle(Double_t v0rpH2, Int_t VariNum)const
 {
 
   // Calculate the angle between electron pair plane and variables

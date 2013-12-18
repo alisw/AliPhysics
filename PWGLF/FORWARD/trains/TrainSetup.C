@@ -1,8 +1,8 @@
 /**
- * @defgroup pwglf_forward_trains Trains
+ * @defgroup pwglf_forward_trains Trains.
  * 
- * Train specifications 
- *
+ * Train specifications. 
+ * See also @ref train_setup_doc
  */
 /**
  * @file   TrainSetup.C

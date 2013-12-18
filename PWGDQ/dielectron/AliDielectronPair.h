@@ -130,13 +130,13 @@ public:
 
   Double_t ThetaPhiCM(Bool_t isHE, Bool_t isTheta) const;
   static Double_t ThetaPhiCM(const AliVParticle* d1, const AliVParticle* d2, 
-			                       const Bool_t isHE, const Bool_t isTheta);
+			                       Bool_t isHE, Bool_t isTheta);
 
   Double_t PsiPair(Double_t MagField)const; //Angle cut w.r.t. to magnetic field
   Double_t PhivPair(Double_t MagField)const; //Angle of ee plane w.r.t. to magnetic field
 
   //Calculate the angle between ee decay plane and variables
-  Double_t GetPairPlaneAngle(const Double_t kv0CrpH2, const Int_t VariNum) const;
+  Double_t GetPairPlaneAngle(Double_t kv0CrpH2, Int_t VariNum) const;
 
   Double_t GetCosPointingAngle(const AliVVertex *primVtx) const;
   Double_t GetArmAlpha() const;

@@ -24,7 +24,7 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
     
-  Int_t   GetStripIndex(const Int_t * const in);
+  Int_t   GetStripIndex(const Int_t * in);
   void    SetTrackFilter(AliAnalysisFilter *filter) {fTrackFilter = filter;};
   void    EnableAdvancedCheck(Bool_t enable){fEnableAdvancedCheck=enable;};
   void    SetExpTimeHistoRange(Float_t min, Float_t max){fExpTimeRangeMin=min; fExpTimeRangeMax=max;return;};

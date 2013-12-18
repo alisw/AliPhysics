@@ -223,11 +223,11 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   virtual void SetUpPIDcombined();
   
   static const Int_t fgkNumJetAxes = 3; // Number of additional axes for jets
-  static const Double_t fgkEpsilon = 1e-8; // Double_t threshold above zero
+  static const Double_t fgkEpsilon; // Double_t threshold above zero
   static const Int_t fgkMaxNumGenEntries = 1000; // Maximum number of generated detector responses per track and delta(Prime) and associated species
 
  private:
-  static const Double_t fgkOneOverSqrt2 = 0.707106781186547462; // = 1. / TMath::Sqrt2();
+  static const Double_t fgkOneOverSqrt2; // = 1. / TMath::Sqrt2();
   
   AliPIDCombined* fPIDcombined; //! PID combined object
   
@@ -256,7 +256,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   TF1* fConvolutedGausDeltaPrime; // Gaus convoluted with exponential tail to generate detector response (deltaPrime)
   
   Double_t fConvolutedGaussTransitionPars[3]; // Parameter for transition from gaussian parameters to asymmetric shape
-  static const Double_t fgkSigmaReferenceForTransitionPars = 0.05; // Reference sigma chosen to calculate transition parameters
+  static const Double_t fgkSigmaReferenceForTransitionPars; // Reference sigma chosen to calculate transition parameters
   
   Double_t fEtaAbsCutLow; // Lower cut value on |eta|
   Double_t fEtaAbsCutUp;  // Upper cut value on |eta|

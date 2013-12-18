@@ -185,7 +185,7 @@ AliForwardMultDists::AliForwardMultDists(const char* name)
     fUsePhiAcc(true),
     fIsSelected(false)
 {
-  /** 
+  /* 
    * User constructor 
    * 
    * @param name Name of the task 
@@ -197,7 +197,7 @@ AliForwardMultDists::AliForwardMultDists(const char* name)
 Bool_t
 AliForwardMultDists::Book()
 {
-  /** 
+  /* 
    * Create output objects - called at start of job in slave 
    * 
    */
@@ -207,10 +207,9 @@ AliForwardMultDists::Book()
 Bool_t
 AliForwardMultDists::PreData()
 {
-  /** 
+  /* 
    * Set-up internal structures on first seen event 
    * 
-   * @param hist Basic histogram template from AOD object 
    */
   AliAODEvent*       aod     = AliForwardUtil::GetAODEvent(this);
   AliAODForwardMult* forward = GetForward(*aod);
@@ -295,10 +294,10 @@ AliForwardMultDists::PreData()
 Bool_t
 AliForwardMultDists::Event(AliAODEvent& aod)
 {
-  /** 
+  /* 
    * Analyse a single event 
    * 
-   * @param option Not used
+   * @param aod Input event
    */
   AliAODForwardMult* forward = GetForward(aod, false, true);
   if (!forward) return false;
@@ -395,12 +394,9 @@ AliForwardMultDists::CheckEvent(const AliAODForwardMult& fwd)
 Bool_t
 AliForwardMultDists::Finalize()
 {
-  /** 
+  /*
    * Called at the end of the final processing of the job on the
    * full data set (merged data)
-   * 
-   * 
-   * @param option Not used
    */
   fResults->Add(fSums->FindObject("triggers")->Clone());
   fResults->Add(fSums->FindObject("status")->Clone());
@@ -458,7 +454,7 @@ AliForwardMultDists::Finalize()
 void
 AliForwardMultDists::ProjectX(const TH2& input, TH1& cache, Bool_t usePhiAcc)
 {
-  /** 
+  /*
    * Project a 2D histogram into a 1D histogram taking care to use
    * either the @f$\phi@f$ acceptance stored in the overflow bins, or
    * the @f$\eta@f$ coverage stored in the underflow bins.
@@ -497,7 +493,7 @@ AliForwardMultDists::ProjectX(const TH2& input, TH1& cache, Bool_t usePhiAcc)
 void
 AliForwardMultDists::ProjectX(const TH2* input, TH1* cache)
 {
-  /** 
+  /*
    * Project on @f$\eta@f$ axis.  If any of the pointers passed is
    * zero, do nothing.
    * 
@@ -536,7 +532,7 @@ void
 AliForwardMultDists::AddBin(Double_t etaLow, Double_t etaMax, 
 			    const TAxis& mAxis) 
 {
-  /** 
+  /*
    * Add an @f$\eta@f$ bin
    * 
    * @param etaLow Low cut on @f$\eta@f$
@@ -556,7 +552,7 @@ void
 AliForwardMultDists::AddBin(Double_t etaLow, Double_t etaMax, 
 			    UShort_t nMax, UShort_t nDiv)
 {
-  /** 
+  /* 
    * Add an @f$\eta@f$ bin
    * 
    * @param etaLow Low cut on @f$\eta@f$
@@ -586,7 +582,7 @@ AliForwardMultDists::AddBin(Double_t etaLow, Double_t etaMax,
 void
 AliForwardMultDists::Print(Option_t* option) const 
 {
-  /** 
+  /* 
    * Print this task 
    * 
    * @param option Not used
@@ -622,7 +618,7 @@ AliForwardMultDists::EtaBin::EtaBin()
     fTruthAccepted(0),
     fCoverage(0)
 {
-  /** 
+  /* 
    * I/O constructor
    */
 }
@@ -644,7 +640,7 @@ AliForwardMultDists::EtaBin::EtaBin(Double_t minEta, Double_t maxEta,
     fTruthAccepted(0),
     fCoverage(0)
 {
-  /** 
+  /*
    * User constructor 
    * 
    * @param minEta Least @f$\eta@f$ to consider 
@@ -833,7 +829,7 @@ void
 AliForwardMultDists::EtaBin::SetupForData(TList* list, const TH2& hist, 
 					  Bool_t useMC)
 {
-  /** 
+  /*
    * Set-up internal structures on first event. 
    * 
    * @param list  List to add information to
@@ -937,7 +933,7 @@ AliForwardMultDists::EtaBin::Process(const TH1& sumForward,
 				     Bool_t     accepted, 
 				     const TH1* mc)
 {
-  /** 
+  /*
    * Process a single event 
    * 
    * @param sumForward  Projection of forward data
@@ -1042,7 +1038,7 @@ AliForwardMultDists::EtaBin::Process(const TH1& sumForward,
 void
 AliForwardMultDists::EtaBin::Terminate(TList* in, TList* out)
 {
-  /** 
+  /*
    * Called at the end of the final processing of the job on the
    * full data set (merged data)
    * 

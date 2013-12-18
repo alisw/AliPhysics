@@ -37,7 +37,7 @@ AliAnalysisTaskSpectraAllChAOD* AddTaskSpectraAllChAOD(
       return NULL;
     }
   
-  AliSpectraAODTrackCuts  * trcuts = new AliSpectraAODTrackCuts("Track Cuts");  
+  AliSpectraAODTrackCuts  * trcuts = new AliSpectraAODTrackCuts(Form("TrackCuts%s",opt.Data()));  
   trcuts->SetDCA(DCA);
   trcuts->SetTrackBits(trkbit);
   trcuts->SetPt(pt);
@@ -46,7 +46,7 @@ AliAnalysisTaskSpectraAllChAOD* AddTaskSpectraAllChAOD(
   trcuts->SetMinTPCcls(minNclsTPC);
   trcuts->PrintCuts();
   
-  AliSpectraAODEventCuts * evcuts = new AliSpectraAODEventCuts("Event Cuts");
+  AliSpectraAODEventCuts * evcuts = new AliSpectraAODEventCuts(Form("EventCuts%s",opt.Data()));
   evcuts->SetQVectorCut(QvecCutMin,QvecCutMax);
   evcuts->SetCentralityCutMax(CentCutMax);  
   evcuts->SetCentralityCutMin(CentCutMin);
@@ -54,6 +54,7 @@ AliAnalysisTaskSpectraAllChAOD* AddTaskSpectraAllChAOD(
   evcuts->PrintCuts();
   
   AliHelperPID *pid=new AliHelperPID();
+  pid->SetName(Form("HelperPID%s",opt.Data()));
   pid->SetNSigmaCut(nsigmacut);
   pid->SetPIDType(PIDtype);
   if(PIDtype==3){
@@ -84,10 +85,10 @@ AliAnalysisTaskSpectraAllChAOD* AddTaskSpectraAllChAOD(
   
   cout<<"outputFileName:  "<<outputFileName<<endl;
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();      
-  AliAnalysisDataContainer *coutputpt1 = mgr->CreateContainer("chist",                      TList::Class(),     AliAnalysisManager::kOutputContainer,outputFileName);
-  AliAnalysisDataContainer *coutputpt2 = mgr->CreateContainer("cvcut", AliSpectraAODEventCuts::Class(),     AliAnalysisManager::kOutputContainer,outputFileName);
-  AliAnalysisDataContainer *coutputpt3 = mgr->CreateContainer("ctcut", AliSpectraAODTrackCuts::Class(),     AliAnalysisManager::kOutputContainer, outputFileName);
-  AliAnalysisDataContainer *coutputpt4 = mgr->CreateContainer("cpid",               AliHelperPID::Class(),     AliAnalysisManager::kOutputContainer, outputFileName);
+  AliAnalysisDataContainer *coutputpt1 = mgr->CreateContainer(Form("chist%s",opt.Data()),                      TList::Class(),     AliAnalysisManager::kOutputContainer,outputFileName);
+  AliAnalysisDataContainer *coutputpt2 = mgr->CreateContainer(Form("cvcut%s",opt.Data()), AliSpectraAODEventCuts::Class(),     AliAnalysisManager::kOutputContainer,outputFileName);
+  AliAnalysisDataContainer *coutputpt3 = mgr->CreateContainer(Form("ctcut%s",opt.Data()), AliSpectraAODTrackCuts::Class(),     AliAnalysisManager::kOutputContainer, outputFileName);
+  AliAnalysisDataContainer *coutputpt4 = mgr->CreateContainer(Form("cpid%s",opt.Data()),               AliHelperPID::Class(),     AliAnalysisManager::kOutputContainer, outputFileName);
   mgr->AddTask(task);
   
   mgr->ConnectInput(task, 0, cinput);

@@ -379,6 +379,7 @@ protected:
      * @param sums       Sum histograms
      * @param out        Per-event output histogram
      * @param sumRings   Sum per ring 
+     * @param skipped    Histogram of skipped rings 
      * @param cent       Event centrality
      * @param m          Merging method
      * @param skips      Which rings to skip

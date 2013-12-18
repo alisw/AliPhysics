@@ -157,7 +157,7 @@ void AliAnalysisTaskEmcalDiJetBase::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskEmcalDiJetBase::IsSameJet(const Int_t ijt, const Int_t ija, const Int_t type, const Bool_t isMC) {
+Bool_t AliAnalysisTaskEmcalDiJetBase::IsSameJet(Int_t ijt, Int_t ija, Int_t type, Bool_t isMC) {
    //check if two jets are the same one
 
    Bool_t bSame = kFALSE;
@@ -198,7 +198,7 @@ Bool_t AliAnalysisTaskEmcalDiJetBase::IsSameJet(const Int_t ijt, const Int_t ija
 
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskEmcalDiJetBase::GetJetPt(const AliEmcalJet *jet, const Int_t type) {
+Double_t AliAnalysisTaskEmcalDiJetBase::GetJetPt(const AliEmcalJet *jet, Int_t type) {
 
   if(!jet) return -99;
 
@@ -220,7 +220,7 @@ Double_t AliAnalysisTaskEmcalDiJetBase::GetZ(const AliVParticle *trk, const AliE
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskEmcalDiJetBase::GetZ(const Double_t trkPx, const Double_t trkPy, const Double_t trkPz, const Double_t jetPx, const Double_t jetPy, const Double_t jetPz) const
+Double_t AliAnalysisTaskEmcalDiJetBase::GetZ(Double_t trkPx, Double_t trkPy, Double_t trkPz, Double_t jetPx, Double_t jetPy, Double_t jetPz) const
 {
   // 
   // Get the z of a constituent inside of a jet
@@ -538,7 +538,7 @@ void AliAnalysisTaskEmcalDiJetBase::SetChargedFractionIndexMC() {
 }
 
 //_______________________________________________________________________
-AliEmcalJet* AliAnalysisTaskEmcalDiJetBase::GetLeadingJetOppositeHemisphere(const Int_t type, const Int_t typea, const AliEmcalJet *jetTrig) {
+AliEmcalJet* AliAnalysisTaskEmcalDiJetBase::GetLeadingJetOppositeHemisphere(Int_t type, Int_t typea, const AliEmcalJet *jetTrig) {
 
   // Get leading jet in opposite hemisphere from trigger jet
   // type = correlation type
@@ -585,7 +585,7 @@ AliEmcalJet* AliAnalysisTaskEmcalDiJetBase::GetLeadingJetOppositeHemisphere(cons
 }
 
 //_______________________________________________________________________
-AliEmcalJet* AliAnalysisTaskEmcalDiJetBase::GetSecondLeadingJetOppositeHemisphere(const Int_t type, const Int_t typea, const AliEmcalJet *jetTrig) {
+AliEmcalJet* AliAnalysisTaskEmcalDiJetBase::GetSecondLeadingJetOppositeHemisphere(Int_t type, Int_t typea, const AliEmcalJet *jetTrig) {
 
   // Get leading jet in opposite hemisphere from trigger jet
   // type = correlation type

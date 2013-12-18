@@ -586,7 +586,8 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	  } // if (outlier)
 	} // for (iphi)
       } // for (ieta)
-      Double_t outRatio = Double_t(nOut) / (nIn+nOut);
+      Int_t    nTotal   = (nIn+nOut);
+      Double_t outRatio = (nTotal > 0 ? Double_t(nOut) / nTotal : 0);
       rh->fOutliers->Fill(outRatio);
       if (outRatio < fMaxOutliers) rh->fPoisson.FillDiagnostics();
       else                         h->SetBit(AliForwardUtil::kSkipRing);

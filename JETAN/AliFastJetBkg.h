@@ -39,7 +39,7 @@ class AliFastJetBkg : public TObject
   Float_t          BkgStat();
   Float_t          BkgFastJetCone(TClonesArray* fAODJets);
 
-  Bool_t           EmcalAcceptance(const Float_t eta, const Float_t phi, const Float_t radius) const;
+  Bool_t           EmcalAcceptance(Float_t eta, Float_t phi, Float_t radius) const;
   static Double_t  BkgFunction(Double_t *x,Double_t *par);
     
  private:
