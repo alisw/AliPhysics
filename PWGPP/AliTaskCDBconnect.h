@@ -17,32 +17,21 @@ class AliESDInputHandler;
 class AliTaskCDBconnect : public AliAnalysisTask {
 private:
   Int_t                     fRun;            // Current run
-  Bool_t                    fRunChanged;     //! Flag for run change.
-  AliESDInputHandler       *fESDhandler;     //! Pointer to ESD input handler
-  AliESDEvent              *fESD;            //! Pointer to current ESD event
   AliGRPManager            *fGRPManager;     //! Pointer to GRP manager
 
   AliTaskCDBconnect(const AliTaskCDBconnect &other);
   AliTaskCDBconnect& operator=(const AliTaskCDBconnect &other);
-
+  void                      InitGRP();
+  //
 public:
   AliTaskCDBconnect();
   AliTaskCDBconnect(const char *name, const char *storage="raw://", Int_t run=0);
   virtual ~AliTaskCDBconnect();
-  AliESDInputHandler       *GetESDhandler() const {return fESDhandler;}
-  AliESDEvent              *GetEvent() const {return fESD;}
-  Int_t                     GetRun() const {return fRun;}
-  void                      InitGRP();
-  Bool_t                    RunChanged() const {return fRunChanged;}
-  void                      SetRunNumber(Int_t run) {fRun = run;}
-  // Run control
-  virtual void              ConnectInputData(Option_t *option = "");
-  virtual void              CreateOutputObjects();
-  virtual void              LocalInit();
-  virtual Bool_t            Notify();
+  Int_t                     GetRun()        const {return fRun;}
+  AliGRPManager*            GetGRPManager() const {return (AliGRPManager*)fGRPManager;}
   virtual void              Exec(Option_t *option);
-  virtual void              Terminate(Option_t *option);
+  virtual void              CreateOutputObjects();
     
-  ClassDef(AliTaskCDBconnect,1)  // Class giving CDB connectivity
+  ClassDef(AliTaskCDBconnect,2)  // Class giving CDB connectivity
 };
 #endif

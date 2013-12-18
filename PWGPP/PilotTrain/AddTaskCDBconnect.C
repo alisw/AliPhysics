@@ -1,4 +1,4 @@
-AliTaskCDBconnect* AddTaskCDBconnect(const char *path, Int_t run=0) 
+AliTaskCDBconnect* AddTaskCDBconnect(const char *path="raw://", Int_t run=0) 
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
