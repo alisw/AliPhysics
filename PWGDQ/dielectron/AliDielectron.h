@@ -131,12 +131,17 @@ public:
   void SetVZERORecenteringFilename(const Char_t* filename) {fVZERORecenteringFilename = filename;}
   void SetEffMapFilename(const Char_t* filename) {fEffMapFilename = filename;}
 
+  void SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+
   void SaveDebugTree();
 
 private:
 
   Bool_t fCutQA;                    // monitor cuts
   AliDielectronCutQA *fQAmonitor;   // monitoring of cuts
+  TF1 *fPostPIDCntrdCorr;   // post pid correction object for centroids
+  TF1 *fPostPIDWdthCorr;    // post pid correction object for widths
   AliAnalysisFilter fEventFilter;    // Event cuts
   AliAnalysisFilter fTrackFilter;    // leg cuts
   AliAnalysisFilter fPairPreFilter;  // pair prefilter cuts
@@ -217,7 +222,7 @@ private:
   AliDielectron(const AliDielectron &c);
   AliDielectron &operator=(const AliDielectron &c);
   
-  ClassDef(AliDielectron,6);
+  ClassDef(AliDielectron,7);
 };
 
 inline void AliDielectron::InitPairCandidateArrays()
