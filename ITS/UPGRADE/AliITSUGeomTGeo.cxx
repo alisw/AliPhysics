@@ -44,7 +44,7 @@ using namespace TMath;
 
 ClassImp(AliITSUGeomTGeo)
 
-
+UInt_t AliITSUGeomTGeo::fgUIDShift = 16;                // bit shift to go from mod.id to modUUID for TGeo
 const char* AliITSUGeomTGeo::fgkITSVolName = "ITSV";
 const char* AliITSUGeomTGeo::fgkITSLrName  = "ITSULayer";
 const char* AliITSUGeomTGeo::fgkITSLadName = "ITSULadder";
@@ -525,9 +525,9 @@ TGeoPNEntry* AliITSUGeomTGeo::GetPNEntry(Int_t index) const
     AliError("Can't get the matrix! gGeoManager doesn't exist or it is still opened!");
     return NULL;
   }
-
-  TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(GetSymName(index));
-  if (!pne) AliError(Form("The symbolic volume name %s does not correspond to a physical entry!",GetSymName(index)));
+  TGeoPNEntry* pne = gGeoManager->GetAlignableEntryByUID( ModuleVolUID(index) );
+  //  TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(GetSymName(index));
+  if (!pne) AliError(Form("The index %d does not correspond to a physical entry!",index));
   //
   return pne;
 }
@@ -574,6 +574,7 @@ Int_t AliITSUGeomTGeo::ExtractNumberOfLayers()
   //
   TGeoVolume *itsV = gGeoManager->GetVolume(fgkITSVolName);
   if (!itsV) AliFatal(Form("ITS volume %s is not in the geometry",fgkITSVolName));
+  SetUIDShift(itsV->GetUniqueID());
   //
   // Loop on all ITSV nodes, count Layer volumes by checking names
   // Build on the fly layer - wrapper correspondence
