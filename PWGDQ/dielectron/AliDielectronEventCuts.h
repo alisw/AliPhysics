@@ -20,6 +20,7 @@
 //#############################################################
 
 #include <TF1.h>
+#include <TVectorD.h>
 
 #include <AliAnalysisUtils.h>
 #include <AliAnalysisCuts.h>
@@ -38,7 +39,7 @@ public:
 
   virtual ~AliDielectronEventCuts();
 
-
+  void SetRunRejection(const TVectorD * vec)    { fRun.Use(vec->GetNrows(),vec->GetMatrixArray()); }
   void SetVertexType(EVtxType type)             { fVtxType=type;                }
   void SetVertexZ(Double_t zmin, Double_t zmax) { fVtxZmin=zmin; fVtxZmax=zmax; }
   void SetRequireVertex(Bool_t req=kTRUE)       { fRequireVtx=req;              }
@@ -61,6 +62,7 @@ public:
 
 private:
   static const char* fgkVtxNames[AliDielectronEventCuts::kVtxTracksOrSPD+1];  //vertex names
+  TVectorD fRun;                    // run rejection vector
   Double_t fVtxZmin;                // minimum z vertex position
   Double_t fVtxZmax;                // maximum z vertex position
   Bool_t   fRequireVtx;             // require a vertex
@@ -89,7 +91,7 @@ private:
   AliDielectronEventCuts &operator=(const AliDielectronEventCuts &c);
 
   
-  ClassDef(AliDielectronEventCuts,2)         // Dielectron EventCuts
+  ClassDef(AliDielectronEventCuts,3)         // Dielectron EventCuts
 };
 
 

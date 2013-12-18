@@ -67,6 +67,7 @@ The names are available via the function PairClassName(Int_t i)
 #include "AliDielectronSignalMC.h"
 #include "AliDielectronMixingHandler.h"
 #include "AliDielectronV0Cuts.h"
+#include "AliDielectronPID.h"
 
 #include "AliDielectron.h"
 
@@ -98,6 +99,8 @@ AliDielectron::AliDielectron() :
   TNamed("AliDielectron","AliDielectron"),
   fCutQA(kFALSE),
   fQAmonitor(0x0),
+  fPostPIDCntrdCorr(0x0),
+  fPostPIDWdthCorr(0x0),
   fEventFilter("EventFilter"),
   fTrackFilter("TrackFilter"),
   fPairPreFilter("PairPreFilter"),
@@ -142,6 +145,8 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   TNamed(name,title),
   fCutQA(kFALSE),
   fQAmonitor(0x0),
+  fPostPIDCntrdCorr(0x0),
+  fPostPIDWdthCorr(0x0),
   fEventFilter("EventFilter"),
   fTrackFilter("TrackFilter"),
   fPairPreFilter("PairPreFilter"),
@@ -188,6 +193,8 @@ AliDielectron::~AliDielectron()
   // Default destructor
   //
   if (fQAmonitor) delete fQAmonitor;
+  if (fPostPIDCntrdCorr) delete fPostPIDCntrdCorr;
+  if (fPostPIDWdthCorr) delete fPostPIDWdthCorr;
   if (fHistos) delete fHistos;
   if (fPairCandidates) delete fPairCandidates;
   if (fDebugTree) delete fDebugTree;
@@ -217,20 +224,29 @@ void AliDielectron::Init()
     fTrackRotator->SetPdgLegs(fPdgLeg1,fPdgLeg2);
   }
   if (fDebugTree) fDebugTree->SetDielectron(this);
-  if(fEstimatorFilename.Contains(".root")) AliDielectronVarManager::InitEstimatorAvg(fEstimatorFilename.Data());
+
+  TString allfiles = fEstimatorFilename;
+  allfiles+=fTRDpidCorrectionFilename;
+  allfiles+=fVZEROCalibrationFilename;
+  allfiles+=fVZERORecenteringFilename;
+  allfiles+=fEffMapFilename;
+  if(allfiles.Contains("alien://")) TGrid::Connect("alien://",0,0,"t");
+
+  if(fEstimatorFilename.Contains(".root"))        AliDielectronVarManager::InitEstimatorAvg(fEstimatorFilename.Data());
   if(fTRDpidCorrectionFilename.Contains(".root")) AliDielectronVarManager::InitTRDpidEffHistograms(fTRDpidCorrectionFilename.Data());
   if(fVZEROCalibrationFilename.Contains(".root")) AliDielectronVarManager::SetVZEROCalibrationFile(fVZEROCalibrationFilename.Data());
   if(fVZERORecenteringFilename.Contains(".root")) AliDielectronVarManager::SetVZERORecenteringFile(fVZERORecenteringFilename.Data());
-  if(fEffMapFilename.Contains(".root")) {
-    if(fEffMapFilename.Contains("alien://")) TGrid::Connect("alien://",0,0,"t");
-    AliDielectronVarManager::InitEffMap(fEffMapFilename.Data());
-  }
+  if(fEffMapFilename.Contains(".root"))           AliDielectronVarManager::InitEffMap(fEffMapFilename.Data());
+
 
   if (fMixing) fMixing->Init(this);
   if (fHistoArray) {
     fHistoArray->SetSignalsMC(fSignalsMC);
     fHistoArray->Init();
   }
+
+  if(fPostPIDCntrdCorr) AliDielectronPID::SetCentroidCorrFunction(fPostPIDCntrdCorr);
+  if(fPostPIDWdthCorr)  AliDielectronPID::SetWidthCorrFunction(fPostPIDWdthCorr);
 
   if (fCutQA) {
     fQAmonitor = new AliDielectronCutQA(Form("QAcuts_%s",GetName()),"QAcuts");
@@ -1363,4 +1379,21 @@ void AliDielectron::FillMCHistograms(const AliVEvent *ev) {
 
   } //loop: MCsignals
 
+}
+
+//______________________________________________
+void AliDielectron::SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary, UInt_t varz)
+{
+  fun->GetHistogram()->GetXaxis()->SetUniqueID(varx);
+  fun->GetHistogram()->GetYaxis()->SetUniqueID(vary);
+  fun->GetHistogram()->GetZaxis()->SetUniqueID(varz);
+  fPostPIDCntrdCorr=fun;
+}
+//______________________________________________
+void AliDielectron::SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary, UInt_t varz)
+{
+  fun->GetHistogram()->GetXaxis()->SetUniqueID(varx);
+  fun->GetHistogram()->GetYaxis()->SetUniqueID(vary);
+  fun->GetHistogram()->GetZaxis()->SetUniqueID(varz);
+  fPostPIDWdthCorr=fun;
 }
