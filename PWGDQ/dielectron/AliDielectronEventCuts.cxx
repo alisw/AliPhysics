@@ -238,7 +238,6 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
   Int_t run = ev->GetRunNumber();
   if(fRun.GetNrows()) {
     for(Int_t irun=0; irun<fRun.GetNrows(); irun++) {
-      printf("check run %.0f \n ",fRun(irun));
       if(fRun(irun)==run) return kFALSE;
     }
   }
