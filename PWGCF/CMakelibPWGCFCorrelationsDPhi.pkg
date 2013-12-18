@@ -28,6 +28,7 @@
 
 set ( SRCS  
     Correlations/DPhi/AliAnalysisTaskDptDptCorrelations.cxx
+    Correlations/DPhi/AliDptDptInMC.cxx
     Correlations/DPhi/AliAnalysisTask3PCorrelations.cxx 
     Correlations/DPhi/AliAnalysisTaskPhiCorrelations.cxx 
     Correlations/DPhi/AliPhiCorrelationsQATask.cxx 
