@@ -1373,7 +1373,7 @@ void AliForwardFlowTaskQC::VertexBin::CumulantsAccumulate(Double_t cent)
 	if (multA <= 3 || multB <= 3) return; 
 	// The reference flow is calculated 
 	// 2-particle
-	if ((fFlags & kStdQC) && !(fFlags & kTPC)) {
+	if ((fFlags & kStdQC)) {
 	  w2 = multA * (multA - 1.);
 	  two = dQnReA*dQnReA + dQnImA*dQnImA - multA;
 	} else {
@@ -1428,7 +1428,7 @@ void AliForwardFlowTaskQC::VertexBin::CumulantsAccumulate(Double_t cent)
 
       // Differential flow calculations for each eta bin is done:
       // 2-particle differential flow
-      if (!(fFlags & kEtaGap)) {
+      if ((fFlags & kStdQC) && !(fFlags & kTPC)) {
 	mq = mp;
 	qnRe = pnRe;
 	qnIm = pnIm;
@@ -1564,7 +1564,8 @@ void AliForwardFlowTaskQC::VertexBin::GetLimits(Int_t bin, Int_t& aLow, Int_t& a
   }
   // Try to catch cases where fEtaLimits and these values do not correspond to each other
   if (aHigh > fCumuNUARef->GetNbinsX() || bHigh > fCumuNUARef->GetNbinsX()) 
-    AliFatal(Form("Limits outside vtx range! (%d) - aHigh = %d, bHigh = %d, Nbins = %d", bin, aHigh, bHigh, fCumuNUARef->GetNbinsX()));
+    AliFatal(Form("Limits outside vtx range! (%d) - aHigh = %d, bHigh = %d, Nbins = %d", 
+      bin, aHigh, bHigh, fCumuNUARef->GetNbinsX()));
 }
 //_____________________________________________________________________
 void AliForwardFlowTaskQC::VertexBin::CumulantsAccumulate3Cor(Double_t cent) 
