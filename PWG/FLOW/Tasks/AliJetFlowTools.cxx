@@ -25,9 +25,8 @@
 //   used to construct the detector response function
 // and unfolds jet spectra with respect to the event plane. The user can choose
 // different alrogithms for unfolding which are available in (ali)root. RooUnfold 
-// libraries must be present on the system (see http://hepunx.rl.ac.uk/~adye/software/unfold/RooUnfold.html).
-// A test mode is available in which the spectrum is unfolded with a generated unity response
-// matrix.
+// libraries must be present on the system 
+// ( see http://hepunx.rl.ac.uk/~adye/software/unfold/RooUnfold.html ).
 // 
 // The weak spot of this class is the function PrepareForUnfolding, which will read
 // output from two output files and expects histograms with certain names and binning. 
@@ -41,7 +40,6 @@
 #include "TF1.h"
 #include "TH1D.h"
 #include "TH2D.h"
-#include "THStack.h"
 #include "TGraph.h"
 #include "TGraphErrors.h"
 #include "TCanvas.h"
@@ -109,12 +107,12 @@ AliJetFlowTools::AliJetFlowTools() :
     fFitStart           (75.),
     fSmoothenCounts     (kTRUE),
     fTestMode           (kFALSE),
-    fNoDphi             (kFALSE),
     fRawInputProvided   (kFALSE),
     fEventPlaneRes      (.63),
     fUseDetectorResponse(kTRUE),
     fUseDptResponse     (kTRUE),
     fTrainPower         (kTRUE),
+    fInOutUnfolding     (kTRUE),
     fRMSSpectrumIn      (0x0),
     fRMSSpectrumOut     (0x0),
     fRMSRatio           (0x0),
@@ -283,126 +281,128 @@ void AliJetFlowTools::Make() {
         fFullResponseIn->Write();
     }
     fActiveDir->cd();
-    TDirectoryFile* dirOut = new TDirectoryFile(Form("OutOfPlane___%s", fActiveString.Data()), Form("OutOfPlane___%s", fActiveString.Data()));
-    dirOut->cd();
-    switch (fUnfoldingAlgorithm) {
-        case kChi2 : {
-            unfoldedJetSpectrumOut = UnfoldSpectrumChi2(
-                measuredJetSpectrumOut,
-                resizedResponseOut,
-                kinematicEfficiencyOut,
-                measuredJetSpectrumTrueBinsOut,
-                TString("out"),
-                jetFindingEfficiency);
-            printf(" > Spectrum (out of plane) unfolded using kChi2 < \n");
-        } break;
-        case kBayesian : {
-            unfoldedJetSpectrumOut = UnfoldSpectrumBayesian(
-                measuredJetSpectrumOut,
-                resizedResponseOut,
-                kinematicEfficiencyOut,
-                measuredJetSpectrumTrueBinsOut,
-                TString("out"),
-                jetFindingEfficiency);
-            printf(" > Spectrum (out of plane) unfolded using kBayesian < \n");
-        } break;
-        case kBayesianAli : {
-            unfoldedJetSpectrumOut = UnfoldSpectrumBayesianAli(
-                measuredJetSpectrumOut,
-                resizedResponseOut,
-                kinematicEfficiencyOut,
-                measuredJetSpectrumTrueBinsOut,
-                TString("out"),
-                jetFindingEfficiency);
-            printf(" > Spectrum (out of plane) unfolded using kBayesianAli < \n");
-        } break;
-        case kSVD : {
-            unfoldedJetSpectrumOut = UnfoldSpectrumSVD(
-                measuredJetSpectrumOut,
-                resizedResponseOut,
-                kinematicEfficiencyOut,
-                measuredJetSpectrumTrueBinsOut,
-                TString("out"),
-                jetFindingEfficiency);
-            printf(" > Spectrum (out of plane) unfolded using kSVD < \n");
-        } break;
-        case kNone : {  // do nothing
-            resizedResponseOut->SetNameTitle("measuredSpectrumOut", "measured spectrum, out plane");
-            unfoldedJetSpectrumOut = ProtectHeap(measuredJetSpectrumOut, kTRUE, TString("out"));
-        } break;
-        default : {
-            printf(" > Selected unfolding method is not implemented yet ! \n");
-            return;
+    if(fInOutUnfolding) {
+        TDirectoryFile* dirOut = new TDirectoryFile(Form("OutOfPlane___%s", fActiveString.Data()), Form("OutOfPlane___%s", fActiveString.Data()));
+        dirOut->cd();
+        switch (fUnfoldingAlgorithm) {
+            case kChi2 : {
+                unfoldedJetSpectrumOut = UnfoldSpectrumChi2(
+                    measuredJetSpectrumOut,
+                    resizedResponseOut,
+                    kinematicEfficiencyOut,
+                    measuredJetSpectrumTrueBinsOut,
+                    TString("out"),
+                    jetFindingEfficiency);
+                printf(" > Spectrum (out of plane) unfolded using kChi2 < \n");
+            } break;
+            case kBayesian : {
+                unfoldedJetSpectrumOut = UnfoldSpectrumBayesian(
+                    measuredJetSpectrumOut,
+                    resizedResponseOut,
+                    kinematicEfficiencyOut,
+                    measuredJetSpectrumTrueBinsOut,
+                    TString("out"),
+                    jetFindingEfficiency);
+                printf(" > Spectrum (out of plane) unfolded using kBayesian < \n");
+            } break;
+            case kBayesianAli : {
+                unfoldedJetSpectrumOut = UnfoldSpectrumBayesianAli(
+                    measuredJetSpectrumOut,
+                    resizedResponseOut,
+                    kinematicEfficiencyOut,
+                    measuredJetSpectrumTrueBinsOut,
+                    TString("out"),
+                    jetFindingEfficiency);
+                printf(" > Spectrum (out of plane) unfolded using kBayesianAli < \n");
+            } break;
+            case kSVD : {
+                unfoldedJetSpectrumOut = UnfoldSpectrumSVD(
+                    measuredJetSpectrumOut,
+                    resizedResponseOut,
+                    kinematicEfficiencyOut,
+                    measuredJetSpectrumTrueBinsOut,
+                    TString("out"),
+                    jetFindingEfficiency);
+                printf(" > Spectrum (out of plane) unfolded using kSVD < \n");
+            } break;
+            case kNone : {  // do nothing
+                resizedResponseOut->SetNameTitle("measuredSpectrumOut", "measured spectrum, out plane");
+                unfoldedJetSpectrumOut = ProtectHeap(measuredJetSpectrumOut, kTRUE, TString("out"));
+            } break;
+            default : {
+                printf(" > Selected unfolding method is not implemented yet ! \n");
+                return;
+            }
         }
-    }
-    resizedResponseOut->SetNameTitle("ResponseMatrixOut", "response matrix in plane");
-    resizedResponseOut->SetXTitle("p_{T}^{true} [GeV/c]");
-    resizedResponseOut->SetYTitle("p_{T}^{rec} [GeV/c]");
-    resizedResponseOut = ProtectHeap(resizedResponseOut);
-    resizedResponseOut->Write();
-    kinematicEfficiencyOut->SetNameTitle("KinematicEfficiencyOut","Kinematic efficiency, Out plane");
-    kinematicEfficiencyOut = ProtectHeap(kinematicEfficiencyOut);
-    kinematicEfficiencyOut->Write();
-    fDetectorResponse->SetNameTitle("DetectorResponse", "Detector response matrix");
-    fDetectorResponse = ProtectHeap(fDetectorResponse, kFALSE);
-    fDetectorResponse->Write();
-    if(jetFindingEfficiency) jetFindingEfficiency->Write();
-    // optional histograms
-    if(fSaveFull) {
-        fSpectrumOut->SetNameTitle("[ORIG]JetSpectrum", "[INPUT]Jet spectrum, Out plane");
-        fSpectrumOut->Write();
-        fDptOutDist->SetNameTitle("[ORIG]DeltaPt", "#delta p_{T} distribution, Out plane");
-        fDptOutDist->Write();
-        fDptOut->SetNameTitle("[ORIG]DeltaPtMatrix","#delta p_{T} matrix, Out plane");
-        fDptOut->Write();
-        fFullResponseOut->SetNameTitle("[ORIG]ResponseMatrix", "Response matrix, Out plane");
-        fFullResponseOut->Write();
-    }
+        resizedResponseOut->SetNameTitle("ResponseMatrixOut", "response matrix in plane");
+        resizedResponseOut->SetXTitle("p_{T}^{true} [GeV/c]");
+        resizedResponseOut->SetYTitle("p_{T}^{rec} [GeV/c]");
+        resizedResponseOut = ProtectHeap(resizedResponseOut);
+        resizedResponseOut->Write();
+        kinematicEfficiencyOut->SetNameTitle("KinematicEfficiencyOut","Kinematic efficiency, Out plane");
+        kinematicEfficiencyOut = ProtectHeap(kinematicEfficiencyOut);
+        kinematicEfficiencyOut->Write();
+        fDetectorResponse->SetNameTitle("DetectorResponse", "Detector response matrix");
+        fDetectorResponse = ProtectHeap(fDetectorResponse, kFALSE);
+        fDetectorResponse->Write();
+        if(jetFindingEfficiency) jetFindingEfficiency->Write();
+        // optional histograms
+        if(fSaveFull) {
+            fSpectrumOut->SetNameTitle("[ORIG]JetSpectrum", "[INPUT]Jet spectrum, Out plane");
+            fSpectrumOut->Write();
+            fDptOutDist->SetNameTitle("[ORIG]DeltaPt", "#delta p_{T} distribution, Out plane");
+            fDptOutDist->Write();
+            fDptOut->SetNameTitle("[ORIG]DeltaPtMatrix","#delta p_{T} matrix, Out plane");
+            fDptOut->Write();
+            fFullResponseOut->SetNameTitle("[ORIG]ResponseMatrix", "Response matrix, Out plane");
+            fFullResponseOut->Write();
+        }
 
-    // write general output histograms to file
-    fActiveDir->cd();
-    if(unfoldedJetSpectrumIn && unfoldedJetSpectrumOut && unfoldedJetSpectrumIn && unfoldedJetSpectrumOut) {
-        TGraphErrors* ratio(GetRatio((TH1D*)unfoldedJetSpectrumIn->Clone("unfoldedLocal_in"), (TH1D*)unfoldedJetSpectrumOut->Clone("unfoldedLocal_out")));
-        if(ratio) {
-            ratio->SetNameTitle("RatioInOutPlane", "Ratio in plane, out of plane jet spectrum");
-            ratio->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-            ratio->GetYaxis()->SetTitle("yield IN / yield OUT");
-            ratio = ProtectHeap(ratio);
-            ratio->Write();
-            // write histo values to RMS files if both routines converged
-            // input values are weighted by their uncertainty
-            for(Int_t i(0); i < ratio->GetXaxis()->GetNbins(); i++) {
-                if(unfoldedJetSpectrumIn->GetBinError(i+1) > 0) fRMSSpectrumIn->Fill(fRMSSpectrumIn->GetBinCenter(i+1), unfoldedJetSpectrumIn->GetBinContent(i+1), 1./TMath::Power(unfoldedJetSpectrumIn->GetBinError(i+1), 2.));
-                if(unfoldedJetSpectrumOut->GetBinError(i+1) > 0) fRMSSpectrumOut->Fill(fRMSSpectrumOut->GetBinCenter(i+1), unfoldedJetSpectrumOut->GetBinContent(i+1), 1./TMath::Power(unfoldedJetSpectrumOut->GetBinError(i+1), 2.));
-                if(unfoldedJetSpectrumOut->GetBinContent(i+1) > 0) fRMSRatio->Fill(fRMSSpectrumIn->GetBinCenter(i+1), unfoldedJetSpectrumIn->GetBinContent(i+1) / unfoldedJetSpectrumOut->GetBinContent(i+1));
-           }
+        // write general output histograms to file
+        fActiveDir->cd();
+        if(unfoldedJetSpectrumIn && unfoldedJetSpectrumOut && unfoldedJetSpectrumIn && unfoldedJetSpectrumOut) {
+            TGraphErrors* ratio(GetRatio((TH1D*)unfoldedJetSpectrumIn->Clone("unfoldedLocal_in"), (TH1D*)unfoldedJetSpectrumOut->Clone("unfoldedLocal_out")));
+            if(ratio) {
+                ratio->SetNameTitle("RatioInOutPlane", "Ratio in plane, out of plane jet spectrum");
+                ratio->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+                ratio->GetYaxis()->SetTitle("yield IN / yield OUT");
+                ratio = ProtectHeap(ratio);
+                ratio->Write();
+                // write histo values to RMS files if both routines converged
+                // input values are weighted by their uncertainty
+                for(Int_t i(0); i < ratio->GetXaxis()->GetNbins(); i++) {
+                    if(unfoldedJetSpectrumIn->GetBinError(i+1) > 0) fRMSSpectrumIn->Fill(fRMSSpectrumIn->GetBinCenter(i+1), unfoldedJetSpectrumIn->GetBinContent(i+1), 1./TMath::Power(unfoldedJetSpectrumIn->GetBinError(i+1), 2.));
+                    if(unfoldedJetSpectrumOut->GetBinError(i+1) > 0) fRMSSpectrumOut->Fill(fRMSSpectrumOut->GetBinCenter(i+1), unfoldedJetSpectrumOut->GetBinContent(i+1), 1./TMath::Power(unfoldedJetSpectrumOut->GetBinError(i+1), 2.));
+                    if(unfoldedJetSpectrumOut->GetBinContent(i+1) > 0) fRMSRatio->Fill(fRMSSpectrumIn->GetBinCenter(i+1), unfoldedJetSpectrumIn->GetBinContent(i+1) / unfoldedJetSpectrumOut->GetBinContent(i+1));
+               }
+            }
+            TGraphErrors* v2(GetV2((TH1D*)unfoldedJetSpectrumIn->Clone("unfoldedLocal_inv2"), (TH1D*)unfoldedJetSpectrumOut->Clone("unfoldedLocal_outv2")));
+            if(v2) {
+                v2->SetNameTitle("v2", "v_{2} from different in, out of plane yield");
+                v2->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+                v2->GetYaxis()->SetTitle("v_{2}");
+                v2 = ProtectHeap(v2);
+                v2->Write();
+            }
+        } else if (unfoldedJetSpectrumOut && unfoldedJetSpectrumIn) {
+            TGraphErrors* ratio(GetRatio((TH1D*)unfoldedJetSpectrumIn->Clone("unfoldedLocal_in"), (TH1D*)unfoldedJetSpectrumOut->Clone("unfoldedLocal_out"), TString(""), kTRUE, fBinsRec->At(fBinsRec->GetSize()-1)));
+            if(ratio) {
+                ratio->SetNameTitle("[NC]RatioInOutPlane", "[NC]Ratio in plane, out of plane jet spectrum");
+                ratio->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+                ratio->GetYaxis()->SetTitle("yield IN / yield OUT");
+                ratio = ProtectHeap(ratio);
+                ratio->Write();
+            }
+            TGraphErrors* v2(GetV2((TH1D*)unfoldedJetSpectrumIn->Clone("unfoldedLocal_inv2"), (TH1D*)unfoldedJetSpectrumOut->Clone("unfoldedLocal_outv2")));
+             if(v2) {
+                v2->SetNameTitle("v2", "v_{2} from different in, out of plane yield");
+                v2->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+                v2->GetYaxis()->SetTitle("v_{2}");
+                v2 = ProtectHeap(v2);
+                v2->Write();
+            }
         }
-        TGraphErrors* v2(GetV2((TH1D*)unfoldedJetSpectrumIn->Clone("unfoldedLocal_inv2"), (TH1D*)unfoldedJetSpectrumOut->Clone("unfoldedLocal_outv2")));
-        if(v2) {
-            v2->SetNameTitle("v2", "v_{2} from different in, out of plane yield");
-            v2->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-            v2->GetYaxis()->SetTitle("v_{2}");
-            v2 = ProtectHeap(v2);
-            v2->Write();
-        }
-    } else if (unfoldedJetSpectrumOut && unfoldedJetSpectrumIn) {
-        TGraphErrors* ratio(GetRatio((TH1D*)unfoldedJetSpectrumIn->Clone("unfoldedLocal_in"), (TH1D*)unfoldedJetSpectrumOut->Clone("unfoldedLocal_out"), TString(""), kTRUE, fBinsRec->At(fBinsRec->GetSize()-1)));
-        if(ratio) {
-            ratio->SetNameTitle("[NC]RatioInOutPlane", "[NC]Ratio in plane, out of plane jet spectrum");
-            ratio->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-            ratio->GetYaxis()->SetTitle("yield IN / yield OUT");
-            ratio = ProtectHeap(ratio);
-            ratio->Write();
-        }
-        TGraphErrors* v2(GetV2((TH1D*)unfoldedJetSpectrumIn->Clone("unfoldedLocal_inv2"), (TH1D*)unfoldedJetSpectrumOut->Clone("unfoldedLocal_outv2")));
-         if(v2) {
-            v2->SetNameTitle("v2", "v_{2} from different in, out of plane yield");
-            v2->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-            v2->GetYaxis()->SetTitle("v_{2}");
-            v2 = ProtectHeap(v2);
-            v2->Write();
-        }
-    }
+    }   // end of if(fInOutUnfolding)
     fDeltaPtDeltaPhi->Write();
     fJetPtDeltaPhi->Write();
     // save the current state of the unfolding object
@@ -891,7 +891,7 @@ Bool_t AliJetFlowTools::PrepareForUnfolding()
         printf(" AliJetFlowTools::PrepareForUnfolding() no true or rec bins set, aborting ! \n");
         return kFALSE;
     }
-    if(!fRMSSpectrumIn) { // initialie the profiles which will hold the RMS values. if binning changes in between unfolding
+    if(!fRMSSpectrumIn && fInOutUnfolding) { // initialie the profiles which will hold the RMS values. if binning changes in between unfolding
                           // procedures, these profiles will be nonsensical, user is responsible
         fRMSSpectrumIn = new TProfile("fRMSSpectrumIn", "fRMSSpectrumIn", fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
         fRMSSpectrumOut = new TProfile("fRMSSpectrumOut", "fRMSSpectrumOut", fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
@@ -910,15 +910,15 @@ Bool_t AliJetFlowTools::PrepareForUnfolding()
     }
     fJetPtDeltaPhi = ProtectHeap(fJetPtDeltaPhi, kFALSE);
     // in plane spectrum
-    if(fNoDphi) {
-        fSpectrumIn = fJetPtDeltaPhi->ProjectionY(Form("_py_in_%s", spectrumName.Data()), 1, 40);
-        fSpectrumOut = fJetPtDeltaPhi->ProjectionY(Form("_py_out_%s", spectrumName.Data()), 1, 40);
+    if(!fInOutUnfolding) {
+        fSpectrumIn = fJetPtDeltaPhi->ProjectionY(Form("_py_in_%s", spectrumName.Data()), 1, 40, "e");
+        fSpectrumOut = fJetPtDeltaPhi->ProjectionY(Form("_py_out_%s", spectrumName.Data()), 1, 40, "e");
     } else {
-        fSpectrumIn = fJetPtDeltaPhi->ProjectionY(Form("_py_ina_%s", spectrumName.Data()), 1, 10);
-        fSpectrumIn->Add(fJetPtDeltaPhi->ProjectionY(Form("_py_inb_%s", spectrumName.Data()), 31, 40));
+        fSpectrumIn = fJetPtDeltaPhi->ProjectionY(Form("_py_ina_%s", spectrumName.Data()), 1, 10, "e");
+        fSpectrumIn->Add(fJetPtDeltaPhi->ProjectionY(Form("_py_inb_%s", spectrumName.Data()), 31, 40, "e"));
         fSpectrumIn = ProtectHeap(fSpectrumIn);
         // out of plane spectrum
-        fSpectrumOut = fJetPtDeltaPhi->ProjectionY(Form("_py_out_%s", spectrumName.Data()), 11, 30);
+        fSpectrumOut = fJetPtDeltaPhi->ProjectionY(Form("_py_out_%s", spectrumName.Data()), 11, 30, "e");
         fSpectrumOut = ProtectHeap(fSpectrumOut);
     }
     // normalize spectra to event count if requested
@@ -962,14 +962,14 @@ Bool_t AliJetFlowTools::PrepareForUnfolding()
     }
     fDeltaPtDeltaPhi = ProtectHeap(fDeltaPtDeltaPhi, kFALSE);
     // in plane delta pt distribution
-    if(fNoDphi) {
-        fDptInDist = fDeltaPtDeltaPhi->ProjectionY(Form("_py_in_%s", deltaptName.Data()), 1, 40);
-        fDptOutDist = fDeltaPtDeltaPhi->ProjectionY(Form("_py_out_%s", deltaptName.Data()), 1, 40);
+    if(!fInOutUnfolding) {
+        fDptInDist = fDeltaPtDeltaPhi->ProjectionY(Form("_py_in_%s", deltaptName.Data()), 1, 40, "e");
+        fDptOutDist = fDeltaPtDeltaPhi->ProjectionY(Form("_py_out_%s", deltaptName.Data()), 1, 40, "e");
     } else {
-        fDptInDist = fDeltaPtDeltaPhi->ProjectionY(Form("_py_ina_%s", deltaptName.Data()), 1, 10);
-        fDptInDist->Add(fDeltaPtDeltaPhi->ProjectionY(Form("_py_inb_%s", deltaptName.Data()), 31, 40));
+        fDptInDist = fDeltaPtDeltaPhi->ProjectionY(Form("_py_ina_%s", deltaptName.Data()), 1, 10, "e");
+        fDptInDist->Add(fDeltaPtDeltaPhi->ProjectionY(Form("_py_inb_%s", deltaptName.Data()), 31, 40, "e"));
         // out of plane delta pt distribution
-        fDptOutDist = fDeltaPtDeltaPhi->ProjectionY(Form("_py_out_%s", deltaptName.Data()), 11, 30);
+        fDptOutDist = fDeltaPtDeltaPhi->ProjectionY(Form("_py_out_%s", deltaptName.Data()), 11, 30, "e");
         fDptInDist = ProtectHeap(fDptInDist);
         fDptOutDist = ProtectHeap(fDptOutDist);
         // TODO get dpt response matrix from ConstructDPtResponseFromTH1D
@@ -1403,17 +1403,23 @@ void AliJetFlowTools::PostProcess(TString def, TString in, TString out, Int_t co
    }
    // prepare necessary canvasses
    TCanvas* canvasIn(new TCanvas("PearsonIn", "PearsonIn"));
-   TCanvas* canvasOut(new TCanvas("PearsonOut", "PearsonOut"));
+   TCanvas* canvasOut(0x0);
+   if(fInOutUnfolding) canvasOut = new TCanvas("PearsonOut", "PearsonOut");
    TCanvas* canvasRatioMeasuredRefoldedIn(new TCanvas("RefoldedIn", "RefoldedIn"));
-   TCanvas* canvasRatioMeasuredRefoldedOut(new TCanvas("RefoldedOut", "RefoldedOut"));
+   TCanvas* canvasRatioMeasuredRefoldedOut(0x0);
+   if(fInOutUnfolding) canvasRatioMeasuredRefoldedOut = new TCanvas("RefoldedOut", "RefoldedOut");
    TCanvas* canvasSpectraIn(new TCanvas("SpectraIn", "SpectraIn")); 
-   TCanvas* canvasSpectraOut(new TCanvas("SpectraOut", "SpectraOut"));
-   TCanvas* canvasRatio(new TCanvas("Ratio", "Ratio"));
-   TCanvas* canvasV2(new TCanvas("V2", "V2"));
+   TCanvas* canvasSpectraOut(0x0);
+   if(fInOutUnfolding) canvasSpectraOut = new TCanvas("SpectraOut", "SpectraOut");
+   TCanvas* canvasRatio(0x0);
+   if(fInOutUnfolding) canvasRatio = new TCanvas("Ratio", "Ratio");
+   TCanvas* canvasV2(0x0);
+   if(fInOutUnfolding) canvasV2 = new TCanvas("V2", "V2");
    TCanvas* canvasMISC(new TCanvas("MISC", "MISC"));
    TCanvas* canvasMasterIn(new TCanvas("defaultIn", "defaultIn"));
-   TCanvas* canvasMasterOut(new TCanvas("defaultOut", "defaultOut"));
-   canvasMISC->Divide(4, 2);
+   TCanvas* canvasMasterOut(0x0);
+   if(fInOutUnfolding) canvasMasterOut = new TCanvas("defaultOut", "defaultOut");
+   (fInOutUnfolding) ? canvasMISC->Divide(4, 2) : canvasMISC->Divide(4, 1);
    TDirectoryFile* defDir(0x0);
    
    // get an estimate of the number of outputs and find the default set
@@ -1424,30 +1430,26 @@ void AliJetFlowTools::PostProcess(TString def, TString in, TString out, Int_t co
            cacheMe++;
        }
    }
-   Int_t rows(TMath::Floor(cacheMe/(float)columns)+((cacheMe%4)>0));
+   Int_t rows(TMath::Floor(cacheMe/(float)columns)/*+((cacheMe%4)>0)*/);
    canvasIn->Divide(columns, rows);
-   canvasOut->Divide(columns, rows);
+   if(canvasOut) canvasOut->Divide(columns, rows);
    canvasRatioMeasuredRefoldedIn->Divide(columns, rows);
-   canvasRatioMeasuredRefoldedOut->Divide(columns, rows);
+   if(canvasRatioMeasuredRefoldedOut) canvasRatioMeasuredRefoldedOut->Divide(columns, rows);
    canvasSpectraIn->Divide(columns, rows);
-   canvasSpectraOut->Divide(columns, rows);
-   canvasRatio->Divide(columns, rows);
-   canvasV2->Divide(columns, rows);
+   if(canvasSpectraOut) canvasSpectraOut->Divide(columns, rows);
+   if(canvasRatio) canvasRatio->Divide(columns, rows);
+   if(canvasV2) canvasV2->Divide(columns, rows);
 
    canvasMasterIn->Divide(columns, rows);
-   canvasMasterOut->Divide(columns, rows);
+   if(canvasMasterOut) canvasMasterOut->Divide(columns, rows);
    // extract the default output 
    TH1D* deunfoldedJetSpectrumIn(0x0);
    TH1D* deunfoldedJetSpectrumOut(0x0);
-   THStack stackIn("StackRatioIn","StackRatioIn");
-   THStack stackOut("StackRatioOut", "StackRatioOut");
    if(defDir) {
        TDirectoryFile* defDirIn = (TDirectoryFile*)defDir->Get(Form("InPlane___%s", def.Data()));
        TDirectoryFile* defDirOut = (TDirectoryFile*)defDir->Get(Form("OutOfPlane___%s", def.Data()));
        if(defDirIn) deunfoldedJetSpectrumIn = (TH1D*)defDirIn->Get(Form("UnfoldedSpectrum_in_%s", def.Data()));
-       if(deunfoldedJetSpectrumIn) stackIn.Add(deunfoldedJetSpectrumIn);
        if(defDirOut) deunfoldedJetSpectrumOut = (TH1D*)defDirOut->Get(Form("UnfoldedSpectrum_out_%s", def.Data()));
-       if(deunfoldedJetSpectrumOut) stackOut.Add(deunfoldedJetSpectrumOut);
        printf(" > succesfully extracted default results < \n");
    }
  
@@ -1625,42 +1627,52 @@ void AliJetFlowTools::PostProcess(TString def, TString in, TString out, Int_t co
                }
            }
        }
-       canvasRatio->cd(j);
-       TGraphErrors* ratioYield((TGraphErrors*)tempDir->Get(Form("RatioInOutPlane_%s", dirName.Data())));
-       if(ratioYield) {
-           Style(ratioYield);
-           ratioYield->GetYaxis()->SetRangeUser(-1., 3.);
-           ratioYield->Draw("ac");
-       }
-       canvasV2->cd(j);
-       TGraphErrors* ratioV2((TGraphErrors*)tempDir->Get(Form("v2_%s", dirName.Data())));
-       if(ratioV2) {
-           Style(ratioV2);
-           ratioV2->GetYaxis()->SetRangeUser(-.25, .75);
-           ratioV2->Draw("ac");
+       if(canvasRatio && canvasV2) {
+           canvasRatio->cd(j);
+           TGraphErrors* ratioYield((TGraphErrors*)tempDir->Get(Form("RatioInOutPlane_%s", dirName.Data())));
+           if(ratioYield) {
+               Style(ratioYield);
+               ratioYield->GetYaxis()->SetRangeUser(-1., 3.);
+               ratioYield->Draw("ac");
+           }
+           canvasV2->cd(j);
+           TGraphErrors* ratioV2((TGraphErrors*)tempDir->Get(Form("v2_%s", dirName.Data())));
+           if(ratioV2) {
+               Style(ratioV2);
+               ratioV2->GetYaxis()->SetRangeUser(-.25, .75);
+               ratioV2->Draw("ac");
+           }
        }
    }
    TFile output(out.Data(), "RECREATE");
    SavePadToPDF(canvasIn);
    canvasIn->Write();
-   SavePadToPDF(canvasOut);
-   canvasOut->Write();
+   if(canvasOut) {
+       SavePadToPDF(canvasOut);
+       canvasOut->Write();
+   }
    SavePadToPDF(canvasRatioMeasuredRefoldedIn);
    canvasRatioMeasuredRefoldedIn->Write();
-   SavePadToPDF(canvasRatioMeasuredRefoldedOut);
-   canvasRatioMeasuredRefoldedOut->Write();
+   if(canvasRatioMeasuredRefoldedOut) {
+       SavePadToPDF(canvasRatioMeasuredRefoldedOut);
+       canvasRatioMeasuredRefoldedOut->Write();
+   }
    SavePadToPDF(canvasSpectraIn);
    canvasSpectraIn->Write();
-   SavePadToPDF(canvasSpectraOut);
-   canvasSpectraOut->Write();
-   SavePadToPDF(canvasRatio);
-   canvasRatio->Write();
-   SavePadToPDF(canvasV2);
-   canvasV2->Write();
+   if(canvasSpectraOut) {
+       SavePadToPDF(canvasSpectraOut);
+       canvasSpectraOut->Write();
+       SavePadToPDF(canvasRatio);
+       canvasRatio->Write();
+       SavePadToPDF(canvasV2);
+       canvasV2->Write();
+   }
    SavePadToPDF(canvasMasterIn);
    canvasMasterIn->Write();
-   SavePadToPDF(canvasMasterIn);
-   canvasMasterOut->Write();
+   if(canvasMasterOut) {
+       SavePadToPDF(canvasMasterOut);
+       canvasMasterOut->Write();
+   }
    SavePadToPDF(canvasMISC);
    canvasMISC->Write();
    output.Write();
