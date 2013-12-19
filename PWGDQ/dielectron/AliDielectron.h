@@ -131,6 +131,8 @@ public:
   void SetVZERORecenteringFilename(const Char_t* filename) {fVZERORecenteringFilename = filename;}
   void SetEffMapFilename(const Char_t* filename) {fEffMapFilename = filename;}
 
+  void SetZDCRecenteringFilename(const Char_t* filename) {fZDCRecenteringFilename = filename;}
+
   void SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
 
@@ -207,6 +209,7 @@ private:
   TString fVZEROCalibrationFilename;         // file containing VZERO channel-by-channel calibration
   TString fVZERORecenteringFilename;         // file containing VZERO Q-vector recentering averages
   TString fEffMapFilename;                   // file containing single electron efficiencies
+  TString fZDCRecenteringFilename;         // file containing ZDCQ-vector recentering averages
 
   void ProcessMC(AliVEvent *ev1);
   
