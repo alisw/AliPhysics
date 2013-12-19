@@ -802,9 +802,30 @@ void AliTPCcalibSummary::ProcessGain(Int_t irun, Int_t timeStamp){
   //
   static TVectorD vGainQMaxGraphRegion(3);
   static TVectorD vGainQTotGraphRegion(3);
-
+  //
   static TGraphErrors ggrPadEqualMax(36);
   static TGraphErrors ggrPadEqualTot(36);
+  //
+  static TGraphErrors ggrDipAngleMaxShort;
+  static TGraphErrors ggrDipAngleMaxMedium;
+  static TGraphErrors ggrDipAngleMaxLong;
+  static TGraphErrors ggrDipAngleMaxAbsolute;
+  //
+  static TGraphErrors ggrDipAngleTotShort;
+  static TGraphErrors ggrDipAngleTotMedium;
+  static TGraphErrors ggrDipAngleTotLong;
+  static TGraphErrors ggrDipAngleTotAbsolute;
+  //
+  static TVectorD vFitDipAngleParMaxShort(3);
+  static TVectorD vFitDipAngleParMaxMedium(3);
+  static TVectorD vFitDipAngleParMaxLong(3);
+  static TVectorD vFitDipAngleParMaxAbsolute(3);
+  //
+  static TVectorD vFitDipAngleParTotShort(3);
+  static TVectorD vFitDipAngleParTotMedium(3);
+  static TVectorD vFitDipAngleParTotLong(3);
+  static TVectorD vFitDipAngleParTotAbsolute(3);
+
   
   vGainGraphIROC.Zero();
   vGainGraphOROCmed.Zero();
@@ -827,6 +848,42 @@ void AliTPCcalibSummary::ProcessGain(Int_t irun, Int_t timeStamp){
     TGraphErrors * graphGainIROC       = (TGraphErrors *) gainSplines->FindObject("TGRAPHERRORS_MEAN_CHAMBERGAIN_SHORT_BEAM_ALL");
     TGraphErrors * graphGainOROCMedium = (TGraphErrors *) gainSplines->FindObject("TGRAPHERRORS_MEAN_CHAMBERGAIN_MEDIUM_BEAM_ALL");
     TGraphErrors * graphGainOROCLong   = (TGraphErrors *) gainSplines->FindObject("TGRAPHERRORS_MEAN_CHAMBERGAIN_LONG_BEAM_ALL");
+    //
+    //
+    TF1*  funDipAngleMax[4]={0x0,0x0,0x0,0x0};
+    TF1*  funDipAngleTot[4]={0x0,0x0,0x0,0x0};
+    TGraphErrors*  grDipAngleMax[4]={0x0,0x0,0x0,0x0};
+    TGraphErrors*  grDipAngleTot[4]={0x0,0x0,0x0,0x0};
+    const char* names[4]={"SHORT","MEDIUM","LONG","ABSOLUTE"};
+    for (Int_t iPadRegion=0; iPadRegion<4; ++iPadRegion) {
+      funDipAngleMax[iPadRegion]=(TF1*) gainSplines->FindObject(Form("TF1_QMAX_DIPANGLE_%s_BEAM_ALL",names[iPadRegion]));
+      funDipAngleTot[iPadRegion]=(TF1*) gainSplines->FindObject(Form("TF1_QTOT_DIPANGLE_%s_BEAM_ALL",names[iPadRegion]));
+      grDipAngleMax[iPadRegion]= (TGraphErrors*) gainSplines->FindObject(Form("TGRAPHERRORS_QMAX_DIPANGLE_%s_BEAM_ALL",names[iPadRegion]));
+      grDipAngleTot[iPadRegion]= (TGraphErrors*) gainSplines->FindObject(Form("TGRAPHERRORS_QTOT_DIPANGLE_%s_BEAM_ALL",names[iPadRegion]));
+    }
+    //
+    for(Int_t iPar=0; iPar < 3; iPar++) {
+      if (funDipAngleMax[0]) vFitDipAngleParMaxShort(iPar)    = funDipAngleMax[0]->GetParameter(iPar);
+      if (funDipAngleMax[1]) vFitDipAngleParMaxMedium(iPar)   = funDipAngleMax[1]->GetParameter(iPar);
+      if (funDipAngleMax[2]) vFitDipAngleParMaxLong(iPar)     = funDipAngleMax[2]->GetParameter(iPar);
+      if (funDipAngleMax[3]) vFitDipAngleParMaxAbsolute(iPar) = funDipAngleMax[3]->GetParameter(iPar);
+      //
+      if (funDipAngleTot[0]) vFitDipAngleParTotShort(iPar)    = funDipAngleTot[0]->GetParameter(iPar);
+      if (funDipAngleTot[1]) vFitDipAngleParTotMedium(iPar)   = funDipAngleTot[1]->GetParameter(iPar);
+      if (funDipAngleTot[2]) vFitDipAngleParTotLong(iPar)     = funDipAngleTot[2]->GetParameter(iPar);
+      if (funDipAngleTot[3]) vFitDipAngleParTotAbsolute(iPar) = funDipAngleTot[3]->GetParameter(iPar);
+    }
+    //
+    if (grDipAngleMax[0]) ggrDipAngleMaxShort    = * grDipAngleMax[0];
+    if (grDipAngleMax[1]) ggrDipAngleMaxMedium   = * grDipAngleMax[1];
+    if (grDipAngleMax[2]) ggrDipAngleMaxLong     = * grDipAngleMax[2];
+    if (grDipAngleMax[3]) ggrDipAngleMaxAbsolute = * grDipAngleMax[3];
+    //
+    if (grDipAngleTot[0]) ggrDipAngleTotShort    = * grDipAngleTot[0];
+    if (grDipAngleTot[1]) ggrDipAngleTotMedium   = * grDipAngleTot[1];
+    if (grDipAngleTot[2]) ggrDipAngleTotLong     = * grDipAngleTot[2];
+    if (grDipAngleTot[3]) ggrDipAngleTotAbsolute = * grDipAngleTot[3];
+    //
     //
     TGraphErrors *grPadEqualMax = (TGraphErrors * ) gainSplines->FindObject("TGRAPHERRORS_MEANQMAX_PADREGIONGAIN_BEAM_ALL");
     TGraphErrors *grPadEqualTot = (TGraphErrors * ) gainSplines->FindObject("TGRAPHERRORS_MEANQTOT_PADREGIONGAIN_BEAM_ALL");
@@ -872,6 +929,27 @@ void AliTPCcalibSummary::ProcessGain(Int_t irun, Int_t timeStamp){
     "rocGainErrOROCLong.="     << &vGainGraphOROClongErr <<
     "vGainQMaxGraphRegion.="   << &vGainQMaxGraphRegion<<
     "vGainQTotGraphRegion.="   << &vGainQTotGraphRegion<<
+    //
+    "vFitDipAngleParMaxShort.="   << &vFitDipAngleParMaxShort<<
+    "vFitDipAngleParMaxMedium.="  << &vFitDipAngleParMaxMedium<<
+    "vFitDipAngleParMaxLong.="    << &vFitDipAngleParMaxLong<<
+    "vFitDipAngleParMaxAbsolute.="<< &vFitDipAngleParMaxAbsolute<<
+    //
+    "vFitDipAngleParTotShort.="   << &vFitDipAngleParTotShort<<
+    "vFitDipAngleParTotMedium.="  << &vFitDipAngleParTotMedium<<
+    "vFitDipAngleParTotLong.="    << &vFitDipAngleParTotLong<<
+    "vFitDipAngleParTotAbsolute.="<< &vFitDipAngleParTotAbsolute<<    
+    //
+    "grDipAngleMaxShort.="        << &ggrDipAngleMaxShort    <<
+    "grDipAngleMaxSMedium.="       << &ggrDipAngleMaxMedium   <<
+    "grDipAngleMaxSLong.="         << &ggrDipAngleMaxLong     <<
+    "grDipAngleMaxSAbsolute.="     << &ggrDipAngleMaxAbsolute <<
+    //
+    "grDipAngleTotShort.="        << &ggrDipAngleTotShort    <<
+    "grDipAngleTotMedium.="       << &ggrDipAngleTotMedium   <<
+    "grDipAngleTotLong.="         << &ggrDipAngleTotLong     <<
+    "grDipAngleTotAbsolute.="     << &ggrDipAngleTotAbsolute <<
+    //
     "gainMIP="                 << gainMIP                <<
     "attachMIP="               << attachMIP              <<
     "dMIP="                    << dMIP                   <<
