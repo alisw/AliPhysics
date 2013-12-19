@@ -105,17 +105,17 @@ class AliJetFlowTools {
             fSmoothenCounts     = counts;
         }
         void            SetTestMode(Bool_t t)                   {fTestMode              = t;}
-        void            SetNoDphi(Bool_t n)                     {fNoDphi                = n;}
         void            SetEventPlaneResolution(Double_t r)     {fEventPlaneRes         = r;}
         void            SetUseDetectorResponse(Bool_t r)        {fUseDetectorResponse   = r;}
         void            SetUseDptResponse(Bool_t r)             {fUseDptResponse        = r;}
         void            SetTrainPowerFit(Bool_t t)              {fTrainPower            = t;}
+        void            SetUnfoldInOutPlane(Bool_t i)           {fInOutUnfolding        = i;}
         void            Make();
         void            Finish() {
             fOutputFile->cd();
-            fRMSSpectrumIn->Write();
-            fRMSSpectrumOut->Write();
-            fRMSRatio->Write();
+            if(fRMSSpectrumIn)  fRMSSpectrumIn->Write();
+            if(fRMSSpectrumOut) fRMSSpectrumOut->Write();
+            if(fRMSRatio)       fRMSRatio->Write();
             fOutputFile->Close();}
         void            PostProcess(
                 TString def,
@@ -244,6 +244,7 @@ class AliJetFlowTools {
         Bool_t                  fTrainPower;            // don't clear the params of fPower for call to Make
                                                         // might give more stable results, but also introduces
                                                         // a bias / dependency on previous iterations
+        Bool_t                  fInOutUnfolding;        // do the unfolding in in and out of plane orientation
         // members, set internally
         TProfile*               fRMSSpectrumIn;         // rms of in plane spectra of converged unfoldings
         TProfile*               fRMSSpectrumOut;        // rms of out of plane spectra of converged unfoldings
