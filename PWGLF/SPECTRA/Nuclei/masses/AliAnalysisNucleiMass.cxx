@@ -22,7 +22,7 @@
 #include "AliAnalysisManager.h"
 #include "TFile.h"
 
-ClassImp(AliAnalysisNucleiMass)
+ClassImp(AliAnalysisNucleiMass)//...
 
 //_____________________________________________________________________________
 AliAnalysisNucleiMass::AliAnalysisNucleiMass():
@@ -816,7 +816,7 @@ void AliAnalysisNucleiMass::GetZTpc(Double_t dedx, Double_t pTPC, Double_t M2, D
 
   //z^2_tpc = dedx^{Tpc} / dedx^{exp,Tof}_{z=1}
   
-  Z2=1000.1;
+  Z2=999.9;
   
   Double_t M=999.9;
   Double_t pTPC_pr=999.9;//rescaling of the pTPC for the proton
