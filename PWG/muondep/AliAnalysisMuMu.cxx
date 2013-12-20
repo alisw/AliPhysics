@@ -1574,7 +1574,7 @@ AliAnalysisMuMu::FitParticle(const char* particle,
     
     if (!hminv)
     {
-      if (!fBinning && bin->IsNullObject() )
+      if (!fBinning && bin->IsIntegrated() )
       {
         // old file, we only had MinvUSPt
         hminv = fMergeableCollection->Histo(Form("/%s/%s/%s/%s",eventType,trigger,centrality,pairCut),"MinvUSPt:py");
@@ -1665,11 +1665,11 @@ AliAnalysisMuMu::GetMCCB2Tails(const AliAnalysisMuMuBinning::Range& bin) const
   }
 
 
-  AliAnalysisMuMuSpectra* s = static_cast<AliAnalysisMuMuSpectra*>(SIM()->GetSpectra(bin.Type().Data(),bin.Flavour().Data()));
+  AliAnalysisMuMuSpectra* s = static_cast<AliAnalysisMuMuSpectra*>(SIM()->GetSpectra(bin.Quantity().Data(),bin.Flavour().Data()));
   
   if (!s)
   {
-    AliError(Form("Could not find spectra %s,%s for associated simulation",bin.Type().Data(),bin.Flavour().Data()));
+    AliError(Form("Could not find spectra %s,%s for associated simulation",bin.Quantity().Data(),bin.Flavour().Data()));
     fAssociatedSimulation->MC()->Print("*:Ali*");
     return par;
   }
@@ -3274,7 +3274,7 @@ AliAnalysisMuMuSpectra* AliAnalysisMuMu::RABy(const char* realFile, const char* 
     Double_t ylowcms, yhighcms;
     Double_t ylownorm, yhighnorm;
     
-    if ( bin->IsNullObject() )
+    if ( bin->IsIntegrated() )
     {
       ylowlab = -4;
       yhighlab = -2.5;
@@ -3330,7 +3330,7 @@ AliAnalysisMuMuSpectra* AliAnalysisMuMu::RABy(const char* realFile, const char* 
     r->Set("NofInputJpsi",rsim->GetValue("NofInputJpsi",accEffSubResultName),rsim->GetErrorStat("NofInputJpsi",accEffSubResultName));
     r->Set("AccEffJpsi",rsim->GetValue("AccEffJpsi",accEffSubResultName),rsim->GetErrorStat("AccEffJpsi",accEffSubResultName));
     
-    AliAnalysisMuMuBinning::Range* bincm = new AliAnalysisMuMuBinning::Range(bin->Particle(),bin->Type(),ylowcms,yhighcms);
+    AliAnalysisMuMuBinning::Range* bincm = new AliAnalysisMuMuBinning::Range(bin->What(),bin->Quantity(),ylowcms,yhighcms);
     
     r->SetBin(*bincm);
         
