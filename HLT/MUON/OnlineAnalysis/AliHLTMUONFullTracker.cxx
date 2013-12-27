@@ -90,7 +90,7 @@ class	TMap;
 
 class AliHLTMUONFullTracker;
 
-const Float_t AliHLTMUONFullTracker::fgkTrackDetCoordinate[3] = {
+const Double_t AliHLTMUONFullTracker::fgkTrackDetCoordinate[3] = {
   155.179+20.0,  166.234+20.0, 
   (AliMUONConstants::DefaultChamberZ(4)+ AliMUONConstants::DefaultChamberZ(5))/2.0
 };

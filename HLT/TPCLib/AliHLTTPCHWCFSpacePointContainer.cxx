@@ -463,7 +463,7 @@ void AliHLTTPCHWCFSpacePointContainer::Print(ostream& out, Option_t */*option*/)
        cl!=fClusters.end(); cl++) {
     str << " 0x" << hex << setw(8) << setfill('0') << cl->first << dec << cl->second << endl;
   }
-  out << str;
+  out << str.str();
 }
 
 AliHLTSpacePointContainer* AliHLTTPCHWCFSpacePointContainer::SelectByMask(AliHLTUInt32_t mask, bool /*bAlloc*/) const
@@ -888,7 +888,7 @@ void AliHLTTPCHWCFSpacePointContainer::AliHLTTPCHWCFSpacePointProperties::Print(
       << " " << setw(5) << decoder->GetCharge(fIndex) 
       << " " << setw(5) << decoder->GetQMax(fIndex)
       << " " << fTrackId << " " << fMCId << " " << fUsed;
-  out << str;
+  out << str.str();
 }
 
 ostream& operator<<(ostream &out, const AliHLTTPCHWCFSpacePointContainer::AliHLTTPCHWCFSpacePointProperties& p)

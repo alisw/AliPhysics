@@ -133,7 +133,7 @@ enum EAliAnalysisFlags {
    static Int_t        GetGlobalInt(const char *key, Bool_t &valid);
    static Double_t     GetGlobalDbl(const char *key, Bool_t &valid);
    TMap               *GetGlobals()               {return fGlobals;}
-   static Bool_t       IsMacroLoaded(const char filename);
+   static Bool_t       IsMacroLoaded(const char * filename);
    Bool_t              IsMCLoop() const           {return fMCLoop;}
    static Bool_t       IsPipe(std::ostream &out);
    Bool_t              IsProofMode() const        {return (fMode==kProofAnalysis)?kTRUE:kFALSE;}

@@ -526,7 +526,7 @@ class AliTRDtrapConfig : public TNamed
   class AliTRDtrapValue : public TObject {
   public:
     AliTRDtrapValue();
-    virtual ~AliTRDtrapValue() {}
+    virtual ~AliTRDtrapValue();
 
     virtual Bool_t Allocate(Alloc_t mode);
 

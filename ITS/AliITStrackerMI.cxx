@@ -752,9 +752,9 @@ Int_t AliITStrackerMI::PropagateBack(AliESDEvent *event) {
      fTrackToFollow.ResetCovariance(10.); fTrackToFollow.ResetClusters();
      if (RefitAt(AliITSRecoParam::GetrInsideITSscreen(),&fTrackToFollow,&t)) {
        if (!CorrectForTPCtoITSDeadZoneMaterial(&fTrackToFollow)) continue;
-       fTrackToFollow.SetLabel(t.GetLabel());
+       //       fTrackToFollow.SetLabel(t.GetLabel());              // why do we neet this
        //fTrackToFollow.CookdEdx();
-       CookLabel(&fTrackToFollow,0.); //For comparison only
+       CookLabel(&fTrackToFollow,0.); //For comparison only // why do we need this?
        fTrackToFollow.UpdateESDtrack(AliESDtrack::kITSout);
        //UseClusters(&fTrackToFollow);
        ntrk++;
@@ -833,7 +833,7 @@ Int_t AliITStrackerMI::RefitInward(AliESDEvent *event) {
        //       fTrackToFollow.CookdEdx();
        CookdEdx(&fTrackToFollow);
 
-       CookLabel(&fTrackToFollow,0.0); //For comparison only
+       CookLabel(&fTrackToFollow,0.0); //For comparison only // RS why do we need this?
 
        //The beam pipe
        if (CorrectForPipeMaterial(&fTrackToFollow,"inward")) {
@@ -3986,6 +3986,64 @@ void AliITStrackerMI::FlagFakes(const TObjArray &itsTracks)
   for (int i=6;i--;) delete refArr[i];
 }
 
+
+
+//------------------------------------------------------------------------
+void AliITStrackerMI::CookLabel(AliITStrackMI *track,Float_t wrong) const {
+  //--------------------------------------------------------------------
+  //This function "cooks" a track label. If label<0, this track is fake.
+  //--------------------------------------------------------------------
+  const int kMaxLbPerCl = 3;
+  int lbID[36],lbStat[36];
+  Int_t nLab=0, nCl = track->GetNumberOfClusters();
+  //
+  //  track->SetLabel(-1);
+  //  track->SetFakeRatio(0);
+  //
+  for (Int_t i=0;i<nCl;i++) { // fill all labels
+    Int_t cindex = track->GetClusterIndex(i);
+    //    Int_t l=(cindex & 0xf0000000) >> 28;
+    AliITSRecPoint *cl = (AliITSRecPoint*)GetCluster(cindex);
+    //
+    for (int imc=0;imc<kMaxLbPerCl;imc++) { // labels within single cluster
+      int trLb = cl->GetLabel(imc);
+      if (trLb<0) break;
+      // search this mc track in already accounted ones
+      int iLab;
+      for (iLab=0;iLab<nLab;iLab++) if (lbID[iLab]==trLb) break;
+      if (iLab<nLab) lbStat[iLab]++;
+      else {
+	lbID[nLab] = trLb;
+	lbStat[nLab++] = 1;
+      }
+    } // loop over given cluster's labels   
+  } // loop over clusters
+  //
+  if (nLab<1) return; // no labels at all
+  //
+  Int_t tpcLabel=-1; 
+  if (track->GetESDtrack() && track->GetESDtrack()->IsOn(AliESDtrack::kTPCin)){
+    tpcLabel = TMath::Abs(track->GetESDtrack()->GetTPCLabel());
+  }
+  //
+  // find majority label
+  if (nCl && nLab) {
+    int maxLab=0,tpcLabID=-1;
+    for (int ilb=nLab;ilb--;) {
+      int st = lbStat[ilb];
+      if (lbStat[maxLab]<st) maxLab = ilb;
+      if (lbID[ilb] == tpcLabel) tpcLabID = ilb;
+    }
+    // if there is an equal choice, prefer ITS label consistent with TPC label
+    if (tpcLabel>0 && (tpcLabID!=maxLab) && lbStat[maxLab]==lbStat[tpcLabID]) maxLab=tpcLabID;
+									       
+    track->SetFakeRatio(1.-float(lbStat[maxLab])/nCl);
+    track->SetLabel( lbStat[maxLab]>=nCl-wrong ? lbID[maxLab] : -lbID[maxLab]);
+  }
+  //
+}
+
+/*
 //------------------------------------------------------------------------
 void AliITStrackerMI::CookLabel(AliITStrackMI *track,Float_t wrong) const {
   //--------------------------------------------------------------------
@@ -4020,9 +4078,10 @@ void AliITStrackerMI::CookLabel(AliITStrackMI *track,Float_t wrong) const {
    } else {
      track->SetLabel(tpcLabel);
    }
-   AliDebug(2,Form(" nls %d wrong %d  label %d  tpcLabel %d\n",nclusters,nwrong,track->GetLabel(),tpcLabel));
-   
+   AliDebug(2,Form(" nls %d wrong %d  label %d  tpcLabel %d\n",nclusters,nwrong,track->GetLabel(),tpcLabel)); 
 }
+*/
+
 //------------------------------------------------------------------------
 void AliITStrackerMI::CookdEdx(AliITStrackMI* track){
   //
@@ -5334,3 +5393,4 @@ Int_t AliITStrackerMI::AliITSlayer::FindClusterForLabel(Int_t label, Int_t *stor
   }
   return nfound;
 }
+

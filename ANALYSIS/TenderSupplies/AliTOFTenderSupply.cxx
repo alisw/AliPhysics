@@ -16,9 +16,9 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// TOF tender: - load updated calibrations (for TOF and T0)
-//             - set tofHeader if missing in ESDs (2010 data)
-//             - re-apply PID 
+// TOF tender: for a description of what this tender does see
+//             https://twiki.cern.ch/twiki/bin/viewauth/ALICE/TOF
+//             It has to be used on LHC2010 data (and old MC productions)
 //             
 // Contacts: Pietro.Antonioli@bo.infn.it                                     //
 //           Francesco.Noferini@bo.infn.it                                   //
@@ -171,6 +171,7 @@ void AliTOFTenderSupply::Init()
       fLHC10dPatch=kFALSE;
       fT0IntercalibrationShift = 0;
       fT0DetectorAdjust=kFALSE;   // it was kTRUE
+      if (fIsMC) fT0DetectorAdjust=kTRUE;   // this will add smearing because LHC10b doesn't have start_time simulated
     }
     else if (run>=118503&&run<=121040) { //period="LHC10C";
       if (fRecoPass == 2) {fCorrectExpTimes=kTRUE; fCorrectTRDBug=kFALSE;}
@@ -178,18 +179,26 @@ void AliTOFTenderSupply::Init()
       fLHC10dPatch=kFALSE;
       fT0IntercalibrationShift = 0;
       fT0DetectorAdjust=kFALSE;
+      if (fIsMC) fT0DetectorAdjust=kTRUE;   // this will add smearing because LHC10b doesn't have start_time simulated
     }
     else if (run>=122195&&run<=126437) { //period="LHC10D";
-      fCorrectExpTimes=kFALSE;
-      fLHC10dPatch=kTRUE;
+      if (!fIsMC) {
+        fCorrectExpTimes=kFALSE;
+        fLHC10dPatch=kTRUE;
+      } else {
+        fCorrectExpTimes=kTRUE;    // for old MC the expected times bug was there
+        fLHC10dPatch=kFALSE;       // but not the fake geometry
+      }
       fT0IntercalibrationShift = 0;
       fT0DetectorAdjust=kFALSE;     // it was kTRUE
+      if (fIsMC) fT0DetectorAdjust=kTRUE;
     }
     else if (run>=127719&&run<=130850) { //period="LHC10E";
       fCorrectExpTimes=kFALSE;
       fLHC10dPatch=kFALSE;
       fT0IntercalibrationShift = 30.;
       fT0DetectorAdjust=kFALSE;      // it was kTRUE
+      if (fIsMC) fT0DetectorAdjust=kTRUE;
     }
     else if (run>=133004&&run<=135029) { //period="LHC10F";
       fTenderNoAction=kTRUE;
@@ -254,7 +263,7 @@ void AliTOFTenderSupply::Init()
   AliInfo(Form("|    LHC10d patch                   :  %d               |",fLHC10dPatch));
   AliInfo(Form("|    TOF resolution for TOFT0 maker :  %5.2f (ps)     |",fTOFPIDParams->GetTOFresolution()));
   AliInfo(Form("|    MC flag                        :  %d               |",fIsMC));
-  //  AliInfo(Form("|    T0 detector offsets applied    :  %d               |",fT0DetectorAdjust));
+  AliInfo(Form("|    T0 detector offsets applied    :  %d               |",fT0DetectorAdjust));
   //  AliInfo(Form("|    TOF/T0 intercalibration shift   :  %5.2f (ps)     |",fT0IntercalibrationShift));
   AliInfo("|******************************************************|");
 
@@ -279,6 +288,7 @@ void AliTOFTenderSupply::ProcessEvent()
   if (fTender->RunChanged()){ 
 
     Init();
+
     if (fTenderNoAction) return;            
     Int_t versionNumber = GetOCDBVersion(fTender->GetRun());
     fTOFCalib->SetRunParamsSpecificVersion(versionNumber);

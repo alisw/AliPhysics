@@ -53,18 +53,13 @@ class AliITSv11 : public AliITS {
     virtual void   Init(); 
     virtual void   SetDefaults();
     virtual void   StepManager();
-    virtual void   SetMinorVersion(Int_t v=2){ // Choose between existing minor versions
-	fMinorVersion = v;}
     virtual void SetDensityServicesByThickness(){// uses services density
 	// calculation based on the thickness of the services.
 	fByThick = kTRUE;}
     virtual void SetDensityServicesByMass(){// uses services density
 	// calculation based on the Mass of the services.
 	fByThick = kFALSE;}
-    virtual Int_t GetMajorVersion() const {// return Major Version Number
-	return fMajorVersion;}
-    virtual Int_t GetMinorVersion() const {// return Major Version Number
-	return fMinorVersion;}
+
 
  protected:
     void SetT2Lmatrix(Int_t uid, Double_t yShift,
@@ -76,8 +71,6 @@ class AliITSv11 : public AliITS {
 
     Bool_t fByThick;          // Flag to use services materials by thickness
                               // ture, or mass false.
-    Int_t  fMajorVersion;     // Major version number == IsVersion
-    Int_t  fMinorVersion;     // Minor version number
     Int_t  fIDMother;         //! ITS Mother Volume id.
 
     AliITSInitGeometry fInitGeom;   //! Get access to decoding and AliITSgeom init functions
@@ -86,7 +79,7 @@ class AliITSv11 : public AliITS {
     AliITSv11GeometrySSD     *fSSDgeom; //! SSD Geometry
     AliITSv11GeometrySupport *fSupgeom; //! Support Geometry
 
-    ClassDef(AliITSv11,3)  // ITS version 11 
+    ClassDef(AliITSv11,4)  // ITS version 11 
 };
  
 #endif

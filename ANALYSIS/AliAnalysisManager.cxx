@@ -329,6 +329,7 @@ Bool_t AliAnalysisManager::EventLoop(Long64_t nevents)
       ExecAnalysis();
    TList dummyList;
    PackOutput(&dummyList);
+   fIsRemote = kTRUE;
    Terminate();
    return kTRUE;
 }
@@ -445,7 +446,10 @@ Bool_t AliAnalysisManager::Init(TTree *tree)
    if (!fInitOK) return kFALSE;
    fTree = tree;
    if (fMode != kProofAnalysis) CreateReadCache();
-   fTable.Rehash(100);
+   else {
+     // cholm - here we should re-add to the table or branches 
+     fTable.Clear();
+   }
    AliAnalysisDataContainer *top = fCommonInput;
    if (!top) top = (AliAnalysisDataContainer*)fInputs->At(0);
    if (!top) {
@@ -454,6 +458,7 @@ Bool_t AliAnalysisManager::Init(TTree *tree)
    }
    top->SetData(tree);
    CheckBranches(kFALSE);
+   fTable.Rehash(100);
    if (fDebug > 1) {
       printf("<-AliAnalysisManager::Init(%s)\n", tree->GetName());
    }
@@ -1638,8 +1643,8 @@ void AliAnalysisManager::CheckBranches(Bool_t load)
             Error("CheckBranches", "Could not find branch %s",obj->GetName());
             continue;
          }
+         fTable.Add(br);
       }   
-      fTable.Add(br);
       if (load && br->GetReadEntry()!=GetCurrentEntry()) {
          br->GetEntry(GetCurrentEntry());
       }      
@@ -2845,7 +2850,7 @@ void AliAnalysisManager::ApplyDebugOptions()
 }
 
 //______________________________________________________________________________
-Bool_t AliAnalysisManager::IsMacroLoaded(const char filename)
+Bool_t AliAnalysisManager::IsMacroLoaded(const char * filename)
 {
 // Check if a macro was loaded.
    return fgMacroNames.Contains(filename);
