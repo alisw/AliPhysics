@@ -40,6 +40,8 @@ Double_t AliAnalysisTaskPIDV0base::fgCutGeo = 1.;
 Double_t AliAnalysisTaskPIDV0base::fgCutNcr = 0.85; 
 Double_t AliAnalysisTaskPIDV0base::fgCutNcl = 0.7;  
 
+UShort_t AliAnalysisTaskPIDV0base::fgCutPureNcl = 60;
+
 //________________________________________________________________________
 AliAnalysisTaskPIDV0base::AliAnalysisTaskPIDV0base()
   : AliAnalysisTaskSE()
@@ -50,7 +52,7 @@ AliAnalysisTaskPIDV0base::AliAnalysisTaskPIDV0base()
   , fV0KineCuts(0x0)
   , fIsPbpOrpPb(kFALSE)
   , fUsePhiCut(kFALSE)
-  , fUseTPCCutMIGeo(kFALSE)
+  , fTPCcutType(kNoCut)
   , fZvtxCutEvent(10.0)
   , fEtaCut(0.9)
   , fPhiCutLow(0x0)
@@ -84,7 +86,7 @@ AliAnalysisTaskPIDV0base::AliAnalysisTaskPIDV0base(const char *name)
   , fV0KineCuts(0x0)
   , fIsPbpOrpPb(kFALSE)
   , fUsePhiCut(kFALSE)
-  , fUseTPCCutMIGeo(kFALSE)
+  , fTPCcutType(kNoCut)
   , fZvtxCutEvent(10.0)
   , fEtaCut(0.9)
   , fPhiCutLow(0x0)
@@ -497,4 +499,18 @@ Bool_t AliAnalysisTaskPIDV0base::TPCCutMIGeo(const AliVTrack* track, const AliVE
   delete par;
   
   return kout;
+}
+
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskPIDV0base::TPCnclCut(const AliVTrack* track)
+{
+  //
+  // TPC Cut on TPCsignalN() only
+  //
+
+  if (!track)
+    return kFALSE;
+  
+  return (track->GetTPCsignalN() >= fgCutPureNcl);
 }

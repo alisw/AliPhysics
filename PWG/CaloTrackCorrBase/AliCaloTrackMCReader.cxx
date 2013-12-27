@@ -189,7 +189,7 @@ void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle,
     
     Char_t ttype= AliVCluster::kPHOSNeutral;	
     Int_t labels[] = {index};
-    Float_t x[] = {momentum.X(), momentum.Y(), momentum.Z()};
+    Double_t x[] = {momentum.X(), momentum.Y(), momentum.Z()};
     //Create object and write it to file
     AliAODCaloCluster *calo = new AliAODCaloCluster(index,1,labels,momentum.E(), x, NULL, ttype, 0);
     
@@ -214,7 +214,7 @@ void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle,
     
     Char_t ttype= AliVCluster::kEMCALClusterv1;
     Int_t labels[] = {index};
-    Float_t x[] = {momentum.X(), momentum.Y(), momentum.Z()};
+    Double_t x[] = {momentum.X(), momentum.Y(), momentum.Z()};
     //Create object and write it to file
     AliAODCaloCluster *calo = new AliAODCaloCluster(iParticle,1,labels,momentum.E(), x, NULL, ttype, 0);
     

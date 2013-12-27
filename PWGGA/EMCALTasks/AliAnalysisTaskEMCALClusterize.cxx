@@ -907,7 +907,7 @@ void AliAnalysisTaskEMCALClusterize::FillAODHeader()
   header->SetZDCP2Energy(fEvent->GetZDCP2Energy());
   header->SetZDCEMEnergy(fEvent->GetZDCEMEnergy(0),fEvent->GetZDCEMEnergy(1));
   
-  Float_t diamxy[2]={fEvent->GetDiamondX(),fEvent->GetDiamondY()};
+  Float_t diamxy[2]={(Float_t)fEvent->GetDiamondX(),(Float_t)fEvent->GetDiamondY()};
   Float_t diamcov[3];
   fEvent->GetDiamondCovXY(diamcov);
   header->SetDiamond(diamxy,diamcov);

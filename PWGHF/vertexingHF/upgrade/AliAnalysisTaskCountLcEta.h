@@ -38,9 +38,9 @@ public:
    Float_t GetEtaAbs() const {return fEtaAbs;}
    void SetEtaAbsMax(Float_t eta){fEtaAbsMax=eta;}
    Float_t GetEtaAbsMax() const {return fEtaAbsMax;}
-   void SetCuts(const Int_t ncuts, Double_t* cuts){fNcuts=ncuts; fCuts=cuts;}
+   void SetCuts(Int_t ncuts, Double_t* cuts){fNcuts=ncuts; fCuts=cuts;}
    Double_t* GetCuts() const {return fCuts;}
-   void SetCutNames(const Int_t ncuts, TString* cutnames){if (ncuts!=fNcuts) {Printf("ERROR! %d names, expected %d",ncuts,fNcuts); return;} else fCutNames=cutnames;}
+   void SetCutNames(Int_t ncuts, TString* cutnames){if (ncuts!=fNcuts) {Printf("ERROR! %d names, expected %d",ncuts,fNcuts); return;} else fCutNames=cutnames;}
    TString* GetCutNames() const {return fCutNames;}
    
    void SetInvMassCut(Double_t mass){fInvMassCut=mass;}

@@ -64,6 +64,10 @@ AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) :
   fMultiplicityCutMax(99999.),
   fqV0C(-999.),
   fqV0A(-999.),
+  fqV0Cx(-999.),
+  fqV0Ax(-999.),
+  fqV0Cy(-999.),
+  fqV0Ay(-999.),
   fPsiV0C(-999.),
   fPsiV0A(-999.),
   fCent(-999.),
@@ -343,6 +347,10 @@ Double_t AliSpectraAODEventCuts::CalculateQVectorLHC10h(){
   
   fqV0A = TMath::Sqrt((QxaCor2*QxaCor2 + QyaCor2*QyaCor2)/sumMa);
   fqV0C = TMath::Sqrt((QxcCor2*QxcCor2 + QycCor2*QycCor2)/sumMc);
+  fqV0Ax = QxaCor2*TMath::Sqrt(1./sumMa);
+  fqV0Cx = QxcCor2*TMath::Sqrt(1./sumMc);
+  fqV0Ay = QyaCor2*TMath::Sqrt(1./sumMa);
+  fqV0Cy = QycCor2*TMath::Sqrt(1./sumMc);
   
   ((TH2F*)fOutput->FindObject("fQVecACor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), fqV0A);
   ((TH2F*)fOutput->FindObject("fQVecCCor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), fqV0C);

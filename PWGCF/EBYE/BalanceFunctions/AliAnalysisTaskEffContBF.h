@@ -58,6 +58,7 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
     fCentralityEstimator("V0M"), 
     fCentralityPercentileMin(0.0), 
     fCentralityPercentileMax(5.0), 
+    fInjectedSignals(kFALSE),
     fVxMax(3.0), 
     fVyMax(3.0), 
     fVzMax(10.), 
@@ -105,6 +106,9 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
     fCentralityPercentileMin=min;
     fCentralityPercentileMax=max;
   }
+
+  //Injected signals
+  void SetRejectInjectedSignals() {fInjectedSignals = kTRUE;}
 
   //Track cuts
   void SetMinNumberOfTPCClusters(Double_t min) {
@@ -185,6 +189,8 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   Bool_t  fUseCentrality;// Bool_t use centrality or not
   TString fCentralityEstimator;//"V0M","TRK","TKL","ZDC","FMD"
   Float_t fCentralityPercentileMin, fCentralityPercentileMax; //min-max centrality percentile
+
+  Bool_t fInjectedSignals;//Flag for using the rejection of injected signals
 
   Double_t fVxMax;//vxmax
   Double_t fVyMax;//vymax

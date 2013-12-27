@@ -32,12 +32,15 @@ AliHadCorrTask::AliHadCorrTask() :
   fOutCaloName(),
   fPhiMatch(0.05),
   fEtaMatch(0.025),
-  fDoTrackClus(0),
+  fDoTrackClus(kTRUE),
   fHadCorr(0),
   fEexclCell(0),
   fDoExact(kFALSE),
   fEsdMode(kTRUE),
   fOutClusters(0),
+  fHistMatchEtaPhiAll(0),
+  fHistMatchEtaPhiAllTr(0),
+  fHistMatchEtaPhiAllCl(0),
   fHistNclusvsCent(0),
   fHistNclusMatchvsCent(0),
   fHistEbefore(0),
@@ -81,12 +84,15 @@ AliHadCorrTask::AliHadCorrTask(const char *name, Bool_t histo) :
   fOutCaloName("CaloClustersCorr"),
   fPhiMatch(0.05),
   fEtaMatch(0.025),
-  fDoTrackClus(1),
+  fDoTrackClus(kTRUE),
   fHadCorr(0),
   fEexclCell(0),
   fDoExact(kFALSE),
   fEsdMode(kTRUE),
   fOutClusters(0),
+  fHistMatchEtaPhiAll(0),
+  fHistMatchEtaPhiAllTr(0),
+  fHistMatchEtaPhiAllCl(0),
   fHistNclusvsCent(0),
   fHistNclusMatchvsCent(0),
   fHistEbefore(0),
@@ -372,13 +378,22 @@ void AliHadCorrTask::UserCreateOutputObjects()
 {
   // Create my user objects.
 
-  if (!fCreateHisto) return;
-
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
+
+  if (!fCreateHisto) return;
 
   TString name;
 
   const Int_t nCentChBins = fNcentBins * 2;
+
+  fHistMatchEtaPhiAll = new TH2F("fHistMatchEtaPhiAll", "fHistMatchEtaPhiAll", fNbins, -0.1, 0.1, fNbins, -0.1, 0.1);
+  fOutput->Add(fHistMatchEtaPhiAll);
+
+  fHistMatchEtaPhiAllTr = new TH2F("fHistMatchEtaPhiAllTr", "fHistMatchEtaPhiAllTr", fNbins, -0.1, 0.1, fNbins, -0.1, 0.1);
+  fOutput->Add(fHistMatchEtaPhiAllTr);
+
+  fHistMatchEtaPhiAllCl = new TH2F("fHistMatchEtaPhiAllCl", "fHistMatchEtaPhiAllCl", fNbins, -0.1, 0.1, fNbins, -0.1, 0.1);
+  fOutput->Add(fHistMatchEtaPhiAllCl);
 
   for(Int_t icent=0; icent<nCentChBins; ++icent) {
     for(Int_t ipt=0; ipt<9; ++ipt) {
@@ -517,6 +532,8 @@ void AliHadCorrTask::ExecOnce()
 //________________________________________________________________________
 void AliHadCorrTask::DoTrackLoop() 
 {
+  // Loop over tracks to provide some QA
+ 
   AliParticleContainer *tracks = static_cast<AliParticleContainer*>(fParticleCollArray.At(0));
   AliParticleContainer *clusters = static_cast<AliParticleContainer*>(fParticleCollArray.At(1));
 
@@ -540,7 +557,8 @@ void AliHadCorrTask::DoTrackLoop()
     Int_t Nclus = emctrack->GetNumberOfMatchedObj();
 
     for (Int_t iClus = 0; iClus < Nclus; ++iClus) {
-      AliEmcalParticle *emccluster = static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(emctrack->GetMatchedObjId(iClus)));
+      AliEmcalParticle *emccluster = 
+        static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(emctrack->GetMatchedObjId(iClus)));
       if (!emccluster) continue;
 
       AliVCluster *cluster = emccluster->GetCluster();
@@ -550,6 +568,7 @@ void AliHadCorrTask::DoTrackLoop()
       Double_t etadiff = 999;
       Double_t phidiff = 999;
       AliPicoTrack::GetEtaPhiDiff(track, cluster, phidiff, etadiff);
+      fHistMatchEtaPhiAllTr->Fill(etadiff,phidiff);
 
       if (TMath::Abs(phidiff) < fPhiMatch && TMath::Abs(etadiff) < fEtaMatch) NmatchClus++;
     }
@@ -558,27 +577,22 @@ void AliHadCorrTask::DoTrackLoop()
 }
 
 //________________________________________________________________________
-void AliHadCorrTask::DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t &totalTrkP, Int_t &Nmatches, Double_t &trkPMCfrac, Int_t &NMCmatches) 
+void AliHadCorrTask::DoMatchedTracksLoop(AliEmcalParticle *emccluster, 
+                                         Double_t &totalTrkP, Int_t &Nmatches, Double_t &trkPMCfrac, Int_t &NMCmatches) 
 {
   // Do the loop over matched tracks for cluster emccluster.
 
   AliParticleContainer *tracks = static_cast<AliParticleContainer*>(fParticleCollArray.At(0));
-
   AliVCluster *cluster = emccluster->GetCluster();
   Int_t iClus = emccluster->IdInCollection();
-  Double_t energyclus = cluster->E();
 
   // loop over matched tracks
   const Int_t Ntrks = emccluster->GetNumberOfMatchedObj();
   for (Int_t i = 0; i < Ntrks; ++i) {
     Int_t    iTrack = emccluster->GetMatchedObjId(i);
-    Double_t dR     = emccluster->GetMatchedObjDistance(i);
     
     AliEmcalParticle *emctrack = static_cast<AliEmcalParticle*>(tracks->GetAcceptParticle(iTrack));
     if (!emctrack) continue;
-
-    // check if track also points to cluster
-    if (fDoTrackClus && (emctrack->GetMatchedObjId(0)) != iClus) continue;
 
     AliVTrack *track = emctrack->GetTrack();
     if (!track) continue;
@@ -586,6 +600,11 @@ void AliHadCorrTask::DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t 
     Double_t etadiff = 999;
     Double_t phidiff = 999;
     AliPicoTrack::GetEtaPhiDiff(track, cluster, phidiff, etadiff);
+    if (fCreateHisto)
+      fHistMatchEtaPhiAllCl->Fill(etadiff, phidiff);
+
+    // check if track also points to cluster
+    if (fDoTrackClus && (emctrack->GetMatchedObjId(0)) != iClus) continue;
 
     Double_t mom       = track->P();
     UInt_t   mombin    = GetMomBin(mom); 
@@ -597,6 +616,7 @@ void AliHadCorrTask::DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t 
       Int_t etabin = 0;
       if(track->Eta() > 0) etabin=1;
       fHistMatchEtaPhi[centbinch][mombin][etabin]->Fill(etadiff, phidiff);
+      fHistMatchEtaPhiAll->Fill(etadiff, phidiff);
     }
     
     Double_t etaCut   = 0.0;
@@ -627,6 +647,8 @@ void AliHadCorrTask::DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t 
 
       if (fCreateHisto) {
         if (fHadCorr > 1) {
+          Double_t dR         = emccluster->GetMatchedObjDistance(i);
+          Double_t energyclus = cluster->E();
           fHistMatchdRvsEP[fCentBin]->Fill(dR, energyclus / mom);
         }
       }
@@ -645,6 +667,7 @@ Bool_t AliHadCorrTask::Run()
   AliParticleContainer *clusters = static_cast<AliParticleContainer*>(fParticleCollArray.At(1));
   AliEmcalParticle *emccluster = 0;
   
+  // provide some additional histograms
   if (fCreateHisto)
     DoTrackLoop();
 
@@ -719,20 +742,21 @@ Double_t AliHadCorrTask::ApplyHadCorrOneTrack(AliEmcalParticle *emccluster, Doub
   AliEmcalParticle *emctrack = static_cast<AliEmcalParticle*>(tracks->GetParticle(iMin));
   if (!emctrack) return energyclus;
 
-  // check if track also points to cluster
-  Int_t cid = emctrack->GetMatchedObjId();
-  if (fDoTrackClus && (cid!=emccluster->IdInCollection())) return energyclus;
-
   AliVTrack *track = emctrack->GetTrack();
   if (!track) return energyclus;
 
   Double_t mom = track->P();
   if (mom < 1e-6) return energyclus;
 
-  Double_t dRmin      = emccluster->GetMatchedObjDistance();
   Double_t dEtaMin    = 1e9;
   Double_t dPhiMin    = 1e9;
   AliPicoTrack::GetEtaPhiDiff(track, cluster, dPhiMin, dEtaMin);
+  if (fCreateHisto)
+    fHistMatchEtaPhiAllCl->Fill(dEtaMin, dPhiMin);
+
+  // check if track also points to cluster
+  Int_t cid = emctrack->GetMatchedObjId();
+  if (fDoTrackClus && (cid!=emccluster->IdInCollection())) return energyclus;
 
   UInt_t mombin = GetMomBin(mom);
   Int_t centbinch = fCentBin;
@@ -745,8 +769,10 @@ Double_t AliHadCorrTask::ApplyHadCorrOneTrack(AliEmcalParticle *emccluster, Doub
       etabin = 1;
 	    
     fHistMatchEtaPhi[centbinch][mombin][etabin]->Fill(dEtaMin, dPhiMin);
+    fHistMatchEtaPhiAll->Fill(dEtaMin, dPhiMin);
     
     if (mom > 0) {
+      Double_t dRmin      = emccluster->GetMatchedObjDistance();
       fHistMatchEvsP[fCentBin]->Fill(energyclus, energyclus / mom);
       fHistEoPCent->Fill(fCent, energyclus / mom);
       fHistMatchdRvsEP[fCentBin]->Fill(dRmin, energyclus / mom);
@@ -812,18 +838,18 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
   if ((energyclus - Esub) < clusEexcl) Esub = (energyclus - clusEexcl);
 
   // embedding
-  Double_t EsubMC = 0;
-  Double_t EsubBkg = 0;
-  Double_t EclusMC = 0;
-  Double_t EclusBkg = 0;
-  Double_t EclusCorr = 0;
-  Double_t EclusMCcorr = 0;
+  Double_t EsubMC       = 0;
+  Double_t EsubBkg      = 0;
+  Double_t EclusMC      = 0;
+  Double_t EclusBkg     = 0;
+  Double_t EclusCorr    = 0;
+  Double_t EclusMCcorr  = 0;
   Double_t EclusBkgcorr = 0;
   Double_t overSub = 0;
   if (fIsEmbedded) {
-    EsubMC = hadCorr * totalTrkP * trkPMCfrac;
-    EsubBkg = hadCorr * totalTrkP - EsubMC;
-    EclusMC = energyclus * cluster->GetMCEnergyFraction();
+    EsubMC   = hadCorr * totalTrkP * trkPMCfrac;
+    EsubBkg  = hadCorr * totalTrkP - EsubMC;
+    EclusMC  = energyclus * cluster->GetMCEnergyFraction();
     EclusBkg = energyclus - EclusMC;
  
     if (energyclus > Esub)
@@ -866,7 +892,6 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
 	  if (track) {
 	    Int_t centbinchm = fCentBin;
 	    if (track->Charge()<0) centbinchm += fNcentBins;
-	    
 	    fHistEsubPchRat[centbinchm]->Fill(totalTrkP, Esub / totalTrkP);
 	    fHistEsubPch[centbinchm]->Fill(totalTrkP, Esub);
 	  }

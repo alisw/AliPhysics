@@ -48,6 +48,7 @@ void CDFFunction(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t i
 AliDielectronBtoJPSItoEleCDFfitHandler::AliDielectronBtoJPSItoEleCDFfitHandler():
 	fIsParamFixed(49),
 	fPrintStatus(kFALSE),
+        fParamStartValues(),
 	fUp(0),
 	fX(0x0),
 	fM(0x0),
@@ -69,6 +70,7 @@ AliDielectronBtoJPSItoEleCDFfitHandler::AliDielectronBtoJPSItoEleCDFfitHandler(D
 		Double_t* invariantmass, Double_t *pt,Int_t *type, Int_t ncand) :
 	fIsParamFixed(49),
 	fPrintStatus(kFALSE),
+        fParamStartValues(),
 	fUp(0),
 	fX(decaytime),
 	fM(invariantmass),
@@ -148,6 +150,7 @@ AliDielectronBtoJPSItoEleCDFfitHandler& AliDielectronBtoJPSItoEleCDFfitHandler::
 	if (this!=&c) {
 		fIsParamFixed = c.fIsParamFixed;
 		fPrintStatus  = c.fPrintStatus;
+                for (Int_t i=0; i<49; ++i) fParamStartValues[i]=c.fParamStartValues[i];
 		fUp           = c.fUp;
 		fX            = c.fX;
 		fM            = c.fM;
@@ -167,6 +170,7 @@ AliDielectronBtoJPSItoEleCDFfitHandler::AliDielectronBtoJPSItoEleCDFfitHandler(c
 	TNamed(c),
 	fIsParamFixed(c.fIsParamFixed),
 	fPrintStatus(c.fPrintStatus),
+        fParamStartValues(),
 	fUp(c.fUp),
 	fX(c.fX),
 	fM(c.fM),
@@ -182,6 +186,7 @@ AliDielectronBtoJPSItoEleCDFfitHandler::AliDielectronBtoJPSItoEleCDFfitHandler(c
 	//
 	// Copy Constructor
 	//
+        for (Int_t i=0; i<49; ++i) fParamStartValues[i]=c.fParamStartValues[i];
 }
 //_______________________________________________________________________________________
 AliDielectronBtoJPSItoEleCDFfitHandler::~AliDielectronBtoJPSItoEleCDFfitHandler()

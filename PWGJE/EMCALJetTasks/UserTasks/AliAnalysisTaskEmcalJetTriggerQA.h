@@ -61,6 +61,8 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
 
   TH1F  *fhNEvents;                         //! Histo number of events
   TH3F  *fh3PtEtaPhiTracks;                 //! pt,eta,phi of tracks
+  TH3F  *fh3PtEtaPhiTracksOnEmcal;          //! pt,eta,phi of tracks
+  TH3F  *fh3PtEtaPhiTracksProp;             //! pt,eta,phi of tracks
   TH3F  *fh3PtEtaPhiJetFull;                //! pt,eta,phi of full jets
   TH3F  *fh3PtEtaPhiJetCharged;             //! pt,eta,phi of charged jets
   TH2F  *fh2NJetsPtFull;                    //! NJets per event vs pT,jet
@@ -94,6 +96,6 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetTriggerQA(const AliAnalysisTaskEmcalJetTriggerQA&);            // not implemented
   AliAnalysisTaskEmcalJetTriggerQA &operator=(const AliAnalysisTaskEmcalJetTriggerQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetTriggerQA, 6)
+  ClassDef(AliAnalysisTaskEmcalJetTriggerQA, 8)
 };
 #endif

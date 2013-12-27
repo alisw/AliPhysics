@@ -58,7 +58,6 @@ AliRsnCutTrackQuality::AliRsnCutTrackQuality(const char *name) :
 // Default constructor.
 // Initializes all cuts in such a way that all of them are disabled.
 //
-
    SetPtRange(0.0, 1E20);
    SetEtaRange(-1E20, 1E20);
 }
@@ -261,13 +260,18 @@ Bool_t AliRsnCutTrackQuality::CheckESD(AliESDtrack *track)
    cuts.SetRequireSigmaToVertex(kFALSE);
 
    // TPC related cuts for TPC+ITS tracks
-   cuts.SetMinNClustersTPC(fTPCminNClusters);
+   if (fIsUseCrossedRowsCut) {
+     cuts.SetMinNCrossedRowsTPC(fTPCminNCrossedRows);
+     cuts.SetMinRatioCrossedRowsOverFindableClustersTPC(fTPCminCrossedRowsOverFindableCls);
+   } else {
+     cuts.SetMinNClustersTPC(fTPCminNClusters);
+   }
    cuts.SetMaxChi2PerClusterTPC(fTPCmaxChi2);
    cuts.SetAcceptKinkDaughters(!fRejectKinkDaughters);
    cuts.SetMaxChi2TPCConstrainedGlobal(fCutMaxChi2TPCConstrainedVsGlobal);
-   cuts.SetMinNCrossedRowsTPC(fTPCminNCrossedRows);
-   cuts.SetMinRatioCrossedRowsOverFindableClustersTPC(fTPCminCrossedRowsOverFindableCls);
-   cuts.SetMinLengthActiveVolumeTPC(fCutMinLengthActiveVolumeTPC);
+
+   if (fIsUseLengthActiveVolumeTPCCut)
+     cuts.SetMinLengthActiveVolumeTPC(fCutMinLengthActiveVolumeTPC);
 
    // ITS related cuts for TPC+ITS tracks
    if (fSPDminNClusters > 0)
@@ -319,10 +323,11 @@ Bool_t AliRsnCutTrackQuality::CheckAOD(AliAODTrack *track)
 
 
    //step #1: check number of clusters 
-   if (track->GetTPCNcls() < fTPCminNClusters) {
+   if ((!fIsUseCrossedRowsCut) && (track->GetTPCNcls() < fTPCminNClusters)) {
       AliDebug(AliLog::kDebug + 2, "Too few TPC clusters. Rejected");
       return kFALSE;
    }
+ 
    if (track->GetITSNcls() < fITSminNClusters) {
       AliDebug(AliLog::kDebug + 2, "Too few ITS clusters. Rejected");
       return kFALSE;
@@ -339,23 +344,26 @@ Bool_t AliRsnCutTrackQuality::CheckAOD(AliAODTrack *track)
    }
 
    //step #2a: check number of crossed rows in TPC
-   Float_t nCrossedRowsTPC = track->GetTPCNCrossedRows();
-   if (nCrossedRowsTPC < fTPCminNCrossedRows) {
-     AliDebug(AliLog::kDebug + 2, "Too few TPC crossed rows. Rejected");
-     return kFALSE;
-   }
-   if (track->GetTPCNclsF()>0) {
-     Float_t ratioCrossedRowsOverFindableClustersTPC = nCrossedRowsTPC / track->GetTPCNclsF();
-     if (ratioCrossedRowsOverFindableClustersTPC < fTPCminCrossedRowsOverFindableCls){
-       AliDebug(AliLog::kDebug + 2, "Too few TPC crossed rows/findable clusters. Rejected");
+   if (fIsUseCrossedRowsCut) {
+     Float_t nCrossedRowsTPC = track->GetTPCNCrossedRows();
+     if (nCrossedRowsTPC < fTPCminNCrossedRows) {
+       AliDebug(AliLog::kDebug + 2, "Too few TPC crossed rows. Rejected");
        return kFALSE;
      }
-   } else {
-     AliDebug(AliLog::kDebug + 2, "Negative value for TPC crossed rows/findable clusters. Rejected");
-     return kFALSE;
+     if (track->GetTPCNclsF()>0) {
+       Float_t ratioCrossedRowsOverFindableClustersTPC = nCrossedRowsTPC / track->GetTPCNclsF();
+       if (ratioCrossedRowsOverFindableClustersTPC < fTPCminCrossedRowsOverFindableCls){
+	 AliDebug(AliLog::kDebug + 2, "Too few TPC crossed rows/findable clusters. Rejected");
+	 return kFALSE;
+       }
+     } else {
+       AliDebug(AliLog::kDebug + 2, "Negative value for TPC crossed rows/findable clusters. Rejected");
+       return kFALSE;
+     }
    }
    //step #2b: check on track length in active volume of TPC implemented only for ESD tracks
-     
+   //if (fIsUseLengthActiveVolumeTPCCut) { // not yet implemented in AODs}
+ 
    //step #3: reject kink daughters
    AliAODVertex *vertex = track->GetProdVertex();
    if (vertex && fRejectKinkDaughters) {
@@ -480,26 +488,40 @@ void AliRsnCutTrackQuality::SetDefaults2010()
 }
 
 //__________________________________________________________________________________________________
-void AliRsnCutTrackQuality::SetDefaults2011()
+void AliRsnCutTrackQuality::SetDefaultsHighPt2011(Bool_t useTPCCrossedRows)
 {
 //
 // Default settings for cuts used in 2011 (for high-pT)
 //
-   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,1);
+   fIsUseCrossedRowsCut=useTPCCrossedRows;
+   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE, useTPCCrossedRows);
    fESDtrackCuts->SetMinNCrossedRowsTPC(120); //default is min 70 crossed rows -> use 120 to go to higher pt
-   fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-   fESDtrackCuts->SetMaxChi2PerClusterITS(36);
    fESDtrackCuts->SetMaxFractionSharedTPCClusters(0.4);//default is not set --> use to go to higher pt
-   fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
- 
-   AddStatusFlag(AliESDtrack::kTPCin   , kTRUE);
-   AddStatusFlag(AliESDtrack::kTPCrefit, kTRUE);
-   AddStatusFlag(AliESDtrack::kITSrefit, kTRUE);
+   //fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);//already in 2011 std
+   //fESDtrackCuts->SetMaxChi2PerClusterITS(36);//already in 2011 std
+   //fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(36);//already in 2011 std
+   // AddStatusFlag(AliESDtrack::kTPCin   , kTRUE); //already in 2011 std
+   // AddStatusFlag(AliESDtrack::kTPCrefit, kTRUE);//already in 2011 std
+   // AddStatusFlag(AliESDtrack::kITSrefit, kTRUE);//already in 2011 std
    SetPtRange(0.15, 1E+20);
    SetEtaRange(-0.8, 0.8);
    SetAODTestFilterBit(10);
+   return;
 }
 
+//__________________________________________________________________________________________________
+void AliRsnCutTrackQuality::SetDefaults2011(Bool_t useTPCCrossedRows)
+{
+//
+// Default std cuts 2011 with crossed rows (=70)
+//
+  fIsUseCrossedRowsCut=useTPCCrossedRows;
+  fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,useTPCCrossedRows);
+  SetPtRange(0.15, 1E+20);
+  SetEtaRange(-0.8, 0.8);
+  SetAODTestFilterBit(5);
+  return;
+}
 //__________________________________________________________________________________________________
 const char *AliRsnCutTrackQuality::Binary(UInt_t number)
 {

@@ -28,7 +28,7 @@ AliAnalysisTaskHFE* ConfigHFEpPbTRD(Bool_t useMC, Bool_t isAOD, TString appendix
 				 Double_t TOFs=3., Int_t TOFmis=0,
 				 Int_t itshitpixel = 0, Int_t icent=1,
 				 Double_t etami=-0.8, Double_t etama=0.8,
-				 Int_t TRDtrigger=1, Int_t TRDtl=6, Int_t TRDeff=4,
+				 Int_t TRDtrigger=1, Int_t trdpidmethod=1, Int_t TRDtl=6, Int_t TRDeff=4,
 				 TString detector){
   
     Bool_t kAnalyseTaggedTracks = kTRUE;
@@ -187,7 +187,7 @@ AliAnalysisTaskHFE* ConfigHFEpPbTRD(Bool_t useMC, Bool_t isAOD, TString appendix
 
   if(TRDtl>0){
       AliHFEpidTRD *trdpid = pid->GetDetPID(AliHFEpid::kTRDpid);
-      trdpid->SetTRD2DPID();
+      if(trdpidmethod==2) trdpid->SetTRD2DPID();
       trdpid->SetElectronEfficiency(eeff[TRDeff]);   // efficiency
       trdpid->SetNTracklets(TRDtl);      // ntracklets threshold
       trdpid->SetCutNTracklets(TRDtl, kTRUE);

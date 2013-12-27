@@ -18,7 +18,7 @@ class TH2;
 class AliAODForwardMult;
 
 /**
- * Class to make raw @f$P(N_{ch})@f$ distributions 
+ * Class to make raw @f$ P(N_{ch})@f$ distributions 
  * 
  * @ingroup pwglf_forward_multdist
  */
@@ -26,18 +26,26 @@ class AliForwardMultDists : public AliBaseAODTask
 {
 public:
   enum { 
+    /** Mark for invalid pseudo-rapidity */
     kInvalidEta = 999
   };
+  /** 
+   * Histogram enumeration 
+   */
   enum { 
+    /** Measured */
     kAnalysis = 1, 
+    /** MC-truth */
     kMC       = 2, 
+    /** MC-truth Triggered */
     kTrigger  = 3, 
+    /** MC-truth w/vertex */
     kVertex   = 4, 
+    /** MC-truth triggered and w/vertex */
     kTriggerVertex = 5
   };
   /**
    * Structure to define @f$\eta@f$ bins with an @f$ N_{ch}@f$ axis 
-   * 
    */
   struct BinSpec 
   {
@@ -73,12 +81,12 @@ public:
      * @return Reference to the axis 
      */
     const TAxis& Axis() const;
-    Double_t fEtaMin;
-    Double_t fEtaMax;
-    Double_t fLow;
-    TArrayI  fN;
-    TArrayD  fD;
-    mutable TAxis    fAxis;
+    Double_t fEtaMin; // Least pseudo-rapidity
+    Double_t fEtaMax; // Largest pseudo-rapidity
+    Double_t fLow;    // Low cut 
+    TArrayI  fN;      // Number of bins
+    TArrayD  fD;      // Bin widths 
+    mutable TAxis    fAxis; // Our axis 
   };
 
   /** 
@@ -95,6 +103,10 @@ public:
    * Destructor
    */
   virtual ~AliForwardMultDists() {}
+  /** 
+   * @{ 
+   * @name Interface memer functions 
+   */
   /** 
    * Create output objects - called at start of job in slave 
    * 
@@ -128,14 +140,19 @@ public:
    * @return true on success
    */
   Bool_t Finalize();
+  /* @} */
+  /**
+   * @{
+   * @name Bin definitions 
+   */
   /** 
-   * Add an @f$\eta@f$ bin
+   * Add an @f$ \eta@f$ bin
    * 
    * @param spec Bin specification 
    */
   void AddBin(const BinSpec& spec);
   /** 
-   * Add an @f$\eta@f$ bin
+   * Add an @f$ \eta@f$ bin.
    * 
    * @param etaLow Low cut on @f$\eta@f$  
    * @param etaMax High cut on @f$\eta@f$ 
@@ -152,6 +169,7 @@ public:
    *
    */
   void AddBin(Double_t etaLow, Double_t etaMax, UShort_t nMax, UShort_t nDiv); 
+  /* @} */
   /** 
    * Whether to use the stored phi acceptance 
    * 

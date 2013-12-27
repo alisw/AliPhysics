@@ -28,9 +28,13 @@
 
 if((DEFINED ALIROOT_SVN_REVISION)) 
   add_definitions(-DALIROOT_SVN_REVISION=${ALIROOT_SVN_REVISION})
+elseif((DEFINED ALIROOT_REVISION)) 
+  add_definitions(-DALIROOT_REVISION=\"${ALIROOT_REVISION}\")
 endif((DEFINED ALIROOT_SVN_REVISION)) 
 if((DEFINED ALIROOT_SVN_BRANCH)) 
   add_definitions(-DALIROOT_SVN_BRANCH=\"${ALIROOT_SVN_BRANCH}\")
+elseif((DEFINED ALIROOT_BRANCH)) 
+  add_definitions(-DALIROOT_BRANCH=\"${ALIROOT_BRANCH}\")
 endif((DEFINED ALIROOT_SVN_BRANCH))
 
 set ( SRCS   
@@ -250,7 +254,7 @@ install ( FILES FORWARD/analysis2/AddTaskCentraldNdeta.C
                 FORWARD/analysis2/AddTaskCopyHeader.C
 		FORWARD/analysis2/AddTaskFMDELoss.C
 		FORWARD/analysis2/AddTaskFMDEventPlane.C
-		FORWARD/analysis2/AddTaskForwardFlow.C
+		FORWARD/analysis2/AddTaskForwardFlowQC.C
   		FORWARD/analysis2/AddTaskForwardMCCorr.C
                 FORWARD/analysis2/AddTaskForwardMult.C
                 FORWARD/analysis2/AddTaskForwardMultDists.C

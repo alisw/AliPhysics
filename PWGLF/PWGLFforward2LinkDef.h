@@ -149,6 +149,9 @@
 #endif
 #pragma link C++ class AliForwardFlowTaskQC+;
 #if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
+#pragma link C++ class AliForwardFlowTaskQC::CumuHistos+;
+#endif
+#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
 #pragma link C++ class AliForwardFlowTaskQC::VertexBin+;
 #endif
 #pragma link C++ class AliForwardMCCorrectionsTask+;

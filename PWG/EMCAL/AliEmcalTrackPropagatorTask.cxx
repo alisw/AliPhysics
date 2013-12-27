@@ -17,10 +17,12 @@ AliEmcalTrackPropagatorTask::AliEmcalTrackPropagatorTask() :
   AliAnalysisTaskSE("AliEmcalTrackPropagatorTask"),
   fRecoUtils(0),
   fTracksName(),
-  fDist(430),
+  fDist(440),
   fMinPtCut(0.35),
   fEsdEv(0),
-  fTracks(0)
+  fTracks(0),
+  fUseGlobalTrackParam(kFALSE),
+  fUseOuterTrackParam(kFALSE)
 {
   // Constructor.
 }
@@ -30,10 +32,12 @@ AliEmcalTrackPropagatorTask::AliEmcalTrackPropagatorTask(const char *name) :
   AliAnalysisTaskSE("AliEmcalTrackPropagatorTask"),
   fRecoUtils(0),
   fTracksName("TpcSpdVertexConstrainedTracks"),
-  fDist(430),
+  fDist(440),
   fMinPtCut(0.35),
   fEsdEv(0),
-  fTracks(0)
+  fTracks(0),
+  fUseGlobalTrackParam(kFALSE),
+  fUseOuterTrackParam(kFALSE)
 {
   // Constructor.
 
@@ -60,7 +64,7 @@ void AliEmcalTrackPropagatorTask::UserCreateOutputObjects()
 
   if (!fRecoUtils) {
     fRecoUtils = new AliEMCALRecoUtils;
-    fRecoUtils->SetStep(25);
+    fRecoUtils->SetStep(20);
     AliInfo("No reco utils given, creating default utils");
   }
 }
@@ -101,18 +105,27 @@ void AliEmcalTrackPropagatorTask::UserExec(Option_t *)
     if(eTrack->Pt()<fMinPtCut) 
       continue;
     Double_t phi = eTrack->Phi()*TMath::RadToDeg();
-    if (TMath::Abs(eTrack->Eta())>0.8 || phi <= 20 || phi >= 240) 
+    if (TMath::Abs(eTrack->Eta())>0.9 || phi <= 10 || phi >= 250) 
       continue;
-    AliExternalTrackParam *trackParam =  const_cast<AliExternalTrackParam*>(eTrack->GetInnerParam());
-    if(!trackParam) 
+    AliExternalTrackParam *trackParam;
+    if(fUseGlobalTrackParam) 
+      trackParam = dynamic_cast<AliExternalTrackParam*>(eTrack);
+    else if(fUseOuterTrackParam) 
+      trackParam =  const_cast<AliExternalTrackParam*>(eTrack->GetOuterParam());
+    else
+      trackParam =  const_cast<AliExternalTrackParam*>(eTrack->GetInnerParam());
+    if(!trackParam) {
+      Printf("trackParam not available");
       continue;
+    }
 
     // Extrapolate the track to EMCal surface
     AliExternalTrackParam emcalParam(*trackParam);
+
     Float_t etaout=-999, phiout=-999, ptout=-999;
     Bool_t ret = fRecoUtils->ExtrapolateTrackToEMCalSurface(&emcalParam, 
                                                             fDist, 
-                                                            fRecoUtils->GetMass(), 
+                                                            eTrack->GetMass(), 
                                                             fRecoUtils->GetStepSurface(), 
                                                             etaout, 
                                                             phiout,

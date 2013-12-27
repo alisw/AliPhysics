@@ -42,6 +42,8 @@ public:
   Bool_t IsSelected(TList * /*list*/) { return kFALSE; }
   Bool_t AcceptTrack(AliAODTrack * track);
   Bool_t AcceptTrack(AliESDtrack * track);
+  Bool_t GetDCA(const AliAODTrack * track, Double_t dca[2]);
+
 
   void DeleteTracks() { fOwnedTracks.Delete(); }
   void FillDCAHist(Float_t dcaz, Float_t dcaxy, AliVTrack * track);
@@ -82,20 +84,21 @@ protected :
   Bool_t fInitialized;
 
   TH2F * fhPhi;
-  TH2F * fhPt;
-  TH2F * fhPhiPt;
+  //TH2F * fhPt;
+  //TH2F * fhPhiPt;
   TH2F * fhdcaxyPt;
   TH2F * fhdcazPt;
   TH2F * fhdca;
   TH2F * fhnclpt;
   TH2F * fhnclsfpt;
+  TH2F * fhEtaPhi;
   
   TList * fHistograms;
 
   AliConversionTrackCuts(const AliConversionTrackCuts&); // not implemented
   AliConversionTrackCuts& operator=(const AliConversionTrackCuts&); // not implemented
 
-  ClassDef(AliConversionTrackCuts,3)
+  ClassDef(AliConversionTrackCuts,4)
 };
 
 #endif

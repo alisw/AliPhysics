@@ -221,7 +221,7 @@ public:
   virtual Bool_t   FillInputEvent(Int_t iEntry, const char *currentFileName)  ;
   virtual void     FillInputCTS() ;
   virtual void     FillInputEMCAL() ;
-  virtual void     FillInputEMCALAlgorithm(AliVCluster * clus, const Int_t iclus) ;
+  virtual void     FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus) ;
   virtual void     FillInputPHOS() ;
   virtual void     FillInputEMCALCells() ;
   virtual void     FillInputPHOSCells() ;
@@ -423,6 +423,12 @@ public:
   
   void             SwitchOnTrackHitSPDSelection()          { fSelectSPDHitTracks = kTRUE  ; }
   void             SwitchOffTrackHitSPDSelection()         { fSelectSPDHitTracks = kFALSE ; }
+
+  void             SwitchOnAODTrackSharedClusterSelection() { fSelectFractionTPCSharedClusters = kTRUE  ; }
+  void             SwitchOffAODTrackSharedClusterSelection(){ fSelectFractionTPCSharedClusters = kFALSE ; }
+
+  void             SetTPCSharedClusterFraction(Float_t fr) { fCutTPCSharedClustersFraction = fr   ; }
+  Float_t          GetTPCSharedClusterFraction() const     { return fCutTPCSharedClustersFraction ; }
   
   Int_t            GetTrackMultiplicity()            const { return fTrackMult            ; }
   Float_t          GetTrackMultiplicityEtaCut()      const { return fTrackMultEtaCut      ; }
@@ -548,7 +554,7 @@ public:
   virtual Float_t  GetPtHardAndClusterFactor()               const { return  fPtHardAndClusterPtFactor    ; }
   virtual void     SetPtHardAndClusterPtFactor(Float_t factor)     { fPtHardAndClusterPtFactor = factor   ; }		
   
-  virtual Bool_t   IsHIJINGLabel(const Int_t label);
+  virtual Bool_t   IsHIJINGLabel(Int_t label);
   void             SetGeneratorMinMaxParticles();
   void             SwitchOnAcceptOnlyHIJINGLabels()          { fAcceptOnlyHIJINGLabels = kTRUE  ; }
   void             SwitchOffAcceptOnlyHIJINGLabels()         { fAcceptOnlyHIJINGLabels = kFALSE ; }
@@ -644,6 +650,8 @@ public:
   Bool_t           fSelectHybridTracks ;       // Select CTS tracks of type hybrid (only for AODs)
   Bool_t           fSelectPrimaryTracks ;      // Select CTS tracks of type hybrid (only for AODs)
   Bool_t           fSelectSPDHitTracks ;       // Ensure that track hits SPD layers
+  Bool_t           fSelectFractionTPCSharedClusters; // Accept only TPC tracks with over a given fraction of shared clusters
+  Float_t          fCutTPCSharedClustersFraction;    // Fraction of TPC shared clusters to be accepted.
   Int_t            fTrackMult          ;       // Track multiplicity
   Float_t          fTrackMultEtaCut    ;       // Track multiplicity eta cut
   Bool_t           fReadStack          ;       // Access kine information from stack
@@ -764,7 +772,7 @@ public:
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,63)
+  ClassDef(AliCaloTrackReader,64)
   
 } ;
 

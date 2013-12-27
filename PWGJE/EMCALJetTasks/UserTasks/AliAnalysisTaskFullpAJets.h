@@ -5,6 +5,7 @@ class TString;
 class TH1D;
 class TH2D;
 class TH3D;
+class THnSparse;
 class TList;
 class TProfile;
 class TProfile2D;
@@ -53,7 +54,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         void SetJetR(Double_t jetR);
         void SetNEF(Double_t nef);
         void SetSignalTrackPtBias(Bool_t chargedBias);
-        
+
         // Getters
         Int_t GetTotalEntries();
         Int_t GetTotalJets();
@@ -133,6 +134,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         void SetLeadingChargedTrackPtRange(Int_t bins, Double_t low, Double_t up);
         void SetNEFRange(Int_t bins, Double_t low, Double_t up);
         void SetSignalTrackPtBias(Bool_t chargedBias);
+	void SetNEFJetDimensions(Int_t n);
+        void SetNEFClusterDimensions(Int_t n);     
 
         // User Defined Functions
         TList* GetOutputHistos();  //!
@@ -153,7 +156,6 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         TH1D *fh80100BSPt; //!
         TH1D *fhBSPt; //!
         TH2D *fhBSPtCen; //!
-        //TH3D *fhBSPtCenLCT; //!
         
         // This set of Histograms is for filling the Background Subtracted Signal Jet Spectra
         TH1D *fh020BSPtSignal; //!
@@ -188,33 +190,24 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         // Profiles
         TProfile *fpRho; //!
         TProfile *fpLJetRho; //!
-        TH2D *fhJetConstituentPt; //!
         TH2D *fhJetPtArea; //!
+        TH2D *fhJetConstituentPt; //!
+	TH2D *fhJetTracksPt; //!
+        TH2D *fhJetClustersPt; //!
+        TH2D *fhJetConstituentCounts; //!
+        TH2D *fhJetTracksCounts; //!
+        TH2D *fhJetClustersCounts; //!
         
         // Histograms for Neutral Energy Fraction
         TList *fNEFOutput; //! NEF QA Plots
-        
-        TH1D *fhNEF; //!
-        TH1D *fhNEFSignal; //!
-        TH2D *fhNEFJetPt; //!
-        TH2D *fhNEFJetPtSignal; //!
-        
-        TH2D *fhNEFEtaPhi; //!
-        TH2D *fhNEFEtaPhiSignal; //!
-        TH3D *fhEtaPhiNEF; //!
-        
-        TH2D *fhNEFTotalMult; //!
-        TH2D *fhNEFTotalMultSignal; //!
 
-        TH2D *fhNEFNeutralMult; //!
-        TH2D *fhNEFNeutralMultSignal; //!
-
-        TH1D *fhClusterShapeAll; //!
+	THnSparse *fhJetNEFInfo; //! Jet NEF Information Histogram
+        THnSparse *fhJetNEFSignalInfo; //! Signal Jet NEF Information Histogram
+        THnSparse *fhClusterNEFInfo; //! Cluster Jet NEF Information Histogram
+        THnSparse *fhClusterNEFSignalInfo; //! Cluster Signal Jet NEF Information Histogram
+        
+	TH1D *fhClusterShapeAll; //!
         TH2D *fhClusterPtCellAll; //!
-        TH3D *fhNEFJetPtFCross; //!
-        TH3D *fhNEFZLeadingFCross; //!
-        TH3D *fhNEFTimeCellCount; //!
-        TH3D *fhNEFTimeDeltaTime; //!
 
         // Variables
         const char *fName;  //!
@@ -256,7 +249,9 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         Int_t fNEFBins;
         Double_t fNEFLow;
         Double_t fNEFUp;
-        
+        Int_t fnDimJet;
+        Int_t fnDimCluster;
+
         // These members are 'sourced' from the base class and are initalized in the constructor
         Double_t fEMCalPhiMin;
         Double_t fEMCalPhiMax;
@@ -461,11 +456,6 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     TH2D *fhEMCalEventMult; //!
     TH2D *fhTPCEventMult; //!
     TH2D *fhEMCalTrackEventMult; //!
-    
-    TH3D *fhTrackEtaPhiPt;  //!
-    TH3D *fhGlobalTrackEtaPhiPt;  //!
-    TH3D *fhComplementaryTrackEtaPhiPt;  //!
-    TH3D *fhClusterEtaPhiPt;  //!
     
     TProfile *fpEMCalEventMult;  //!
     TProfile *fpTPCEventMult;  //!

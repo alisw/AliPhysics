@@ -582,7 +582,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
       TH2F *hNITSclsvsEtaDaughters=new TH2F(hname.Data(),"N ITS clusters vs #eta distribution of the daughter tracks;#eta;N ITS cls",80,-2.,2.,7,-0.5,6.5);
 
       hname="hSPDclsDaughters";
-      TH1I *hSPDclsDaughters = new TH1I(hname.Data(),"N SPD points distribution;;Entries",4,0,4);
+      TH1I *hSPDclsDaughters = new TH1I(hname.Data(),"N SPD points distribution;;Entries",4,-0.5,3.5);
       hSPDclsDaughters->GetXaxis()->SetBinLabel(1, "no SPD");
       hSPDclsDaughters->GetXaxis()->SetBinLabel(2, "kOnlyFirst");
       hSPDclsDaughters->GetXaxis()->SetBinLabel(3, "kOnlySecond");
@@ -637,7 +637,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
       TH2F *hNITSclsvsEtaAllTracks=new TH2F(hname.Data(),"N ITS clusters vs #eta distribution of the AOD tracks (ID>0);#eta;N ITS cls",80,-2.,2.,7,-0.5,6.5);
 
       hname="hSPDclsAllTracks";
-      TH1I *hSPDclsAllTracks = new TH1I(hname.Data(),"N SPD points distribution AOD tracks (ID>0);;Entries",4,0,4);
+      TH1I *hSPDclsAllTracks = new TH1I(hname.Data(),"N SPD points distribution AOD tracks (ID>0);;Entries",4,-0.5,3.5);
       hSPDclsAllTracks->GetXaxis()->SetBinLabel(1, "no SPD");
       hSPDclsAllTracks->GetXaxis()->SetBinLabel(2, "kOnlyFirst");
       hSPDclsAllTracks->GetXaxis()->SetBinLabel(3, "kOnlySecond");

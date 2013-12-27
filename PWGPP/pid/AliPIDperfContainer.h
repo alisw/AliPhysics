@@ -21,7 +21,7 @@
 class AliPIDperfContainer : public TNamed
 {
  public:
-  AliPIDperfContainer(const char *name,const Int_t nvar,const Int_t* binVar);
+  AliPIDperfContainer(const char *name, Int_t nvar,const Int_t* binVar);
   AliPIDperfContainer();
   ~AliPIDperfContainer();
   AliPIDperfContainer(const AliPIDperfContainer &old);

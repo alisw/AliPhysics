@@ -66,16 +66,16 @@ class AliAnalysisTaskEmcalDiJetBase : public AliAnalysisTaskEmcalJet {
   Double_t GetDeltaR(const AliEmcalJet* jet1, const AliEmcalJet* jet2) const;
 
   Double_t GetZ(const AliVParticle *trk, const AliEmcalJet *jet)       const;
-  Double_t GetZ(const Double_t trkPx, const Double_t trkPy, const Double_t trkPz, const Double_t jetPx, const Double_t jetPy, const Double_t jetPz) const;
+  Double_t GetZ(Double_t trkPx, Double_t trkPy, Double_t trkPz, Double_t jetPx, Double_t jetPy, Double_t jetPz) const;
 
-  AliEmcalJet* GetLeadingJetOppositeHemisphere(const Int_t type, const Int_t typea, const AliEmcalJet *jetTrig);
-  AliEmcalJet* GetSecondLeadingJetOppositeHemisphere(const Int_t type, const Int_t typea, const AliEmcalJet *jetTrig);
+  AliEmcalJet* GetLeadingJetOppositeHemisphere(Int_t type, Int_t typea, const AliEmcalJet *jetTrig);
+  AliEmcalJet* GetSecondLeadingJetOppositeHemisphere(Int_t type, Int_t typea, const AliEmcalJet *jetTrig);
 
  protected:
   virtual Bool_t                      RetrieveEventObjects();
 
-  Bool_t                      IsSameJet(const Int_t jt, const Int_t ja, const Int_t type, const Bool_t isMC = kFALSE);
-  Double_t                    GetJetPt(const AliEmcalJet *jet, const Int_t type);
+  Bool_t                      IsSameJet(Int_t jt, Int_t ja, Int_t type, Bool_t isMC = kFALSE);
+  Double_t                    GetJetPt(const AliEmcalJet *jet, Int_t type);
 
   void                        MatchJetsGeo(Int_t cFull, Int_t cCharged,
 					   Int_t iDebug = 0, Float_t maxDist = 0.3, Int_t type = 0);

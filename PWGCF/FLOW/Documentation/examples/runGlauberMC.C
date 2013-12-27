@@ -1,4 +1,4 @@
-void runGlauberMC()
+void runGlauberMC(Bool_t doPartProd=0,Int_t option=0,Int_t N=250000)
 {
   //load libraries
   gSystem->Load("libVMC");
@@ -11,7 +11,7 @@ void runGlauberMC()
   Int_t seed = time.GetSec();
   gRandom->SetSeed(seed);
 
-  Int_t nevents = 1000000; // number of events to simulate 
+  Int_t nevents = N; // number of events to simulate 
   // supported systems are e.g. "p", "d", "Si", "Au", "Pb", "U" 
   Option_t *sysA="Pb"; 
   Option_t *sysB="Pb";
@@ -30,7 +30,11 @@ void runGlauberMC()
   mcg.SetMinDistance(mind);
   mcg.Setr(r);
   mcg.Seta(a);
-  mcg.SetDoPartProduction(kTRUE);
+  if (option==1) 
+    mcg.SetDoFluc(0.55,78.5*0.92,0.82,kTRUE);
+  else if (option==2) 
+    mcg.SetDoFluc(1.01,72.5*0.92,0.74,kTRUE);
+  mcg.SetDoPartProduction(doPartProd);
   
   //////////////////
   mcg.SetdNdEtaType(AliGlauberMC::kNBDSV);

@@ -37,7 +37,7 @@ class AliHFEtrdPIDqaV1 : public AliHFEdetPIDqa{
     AliHFEtrdPIDqaV1(const Char_t *name);
     AliHFEtrdPIDqaV1(const AliHFEtrdPIDqaV1 &c);
     AliHFEtrdPIDqaV1 &operator=(const AliHFEtrdPIDqaV1 &o);
-    ~AliHFEtrdPIDqaV1(){}
+    ~AliHFEtrdPIDqaV1();
     virtual Long64_t Merge(TCollection *coll);
     virtual void Browse(TBrowser *b);
     virtual Bool_t IsFolder() const { return kTRUE; };

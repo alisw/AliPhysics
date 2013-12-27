@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_mfigueredo_JPsi(TString prod="",ULong64_t triggers=AliVEvent::kEMCEGA  | AliVEvent::kEMCEJE){
+AliAnalysisTask *AddTask_mfigueredo_JPsi(TString prod="",ULong64_t triggers=AliVEvent::kEMCEGA  | AliVEvent::kEMCEJE | AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB){
   
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -35,12 +35,12 @@ AliAnalysisTask *AddTask_mfigueredo_JPsi(TString prod="",ULong64_t triggers=AliV
 //   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDie");
  
   // trigger selection
-  ULong64_t triggerSets[]={AliVEvent::kEMCEGA ,AliVEvent::kEMCEJE};
-  const char* triggerNames[]={"EMCEGA","EMCEJE"};
+  ULong64_t triggerSets[]={AliVEvent::kEMCEGA ,AliVEvent::kEMCEJE,AliVEvent::kCentral , AliVEvent::kSemiCentral , AliVEvent::kMB};
+  const char* triggerNames[]={"EMCEGA","EMCEJE","Central","SemiCentral","MB"};
 
   // find out the configured triggers
   Int_t j=0;
-  for(j=0; j<2; j++) {
+  for(j=0; j<5; j++) {
     if(triggers!=triggerSets[j]) continue;
     else break;
   }
@@ -49,8 +49,6 @@ AliAnalysisTask *AddTask_mfigueredo_JPsi(TString prod="",ULong64_t triggers=AliV
   printf("production: %s MC: %d \n",  list.Data(),hasMC);
   printf("triggers:   %s \n",         triggerNames[j]  );
 
-  task = new AliAnalysisTaskMultiDielectron((Form("MultiDieData_%s",triggerNames[j])));
-   
   //load dielectron configuration file
   TString checkconfig="ConfigJpsi_mf_pp";
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(checkconfig.Data()))
@@ -59,11 +57,13 @@ AliAnalysisTask *AddTask_mfigueredo_JPsi(TString prod="",ULong64_t triggers=AliV
   //add dielectron analysis with different cuts to the task
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
     AliDielectron *jpsi; 
-    jpsi=ConfigJpsi_mf_PbPb(i,isAOD);
-    if (jpsi) task->AddDielectron(jpsi);
-    if (jpsi ) printf(" %s added\n",jpsi->GetName());
-  }
+    jpsi=ConfigJpsi_mf_PbPb(i,isAOD,triggerNames[j]);
 
+    // create unique title
+  	TString unitit = Form("%s_%s",triggerNames[j],jpsi->GetName()); // as in Julian's addtask
+  	task = new AliAnalysisTaskMultiDielectron(Form("MultiDieMF_%s",unitit.Data()));
+    if (jpsi) task->AddDielectron(jpsi);
+  
   //Add event filter
   AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
   if(isAOD) eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
@@ -84,31 +84,32 @@ AliAnalysisTask *AddTask_mfigueredo_JPsi(TString prod="",ULong64_t triggers=AliV
   //create data containers
   //----------------------
 
-  //create output container
-  TString containerName = "JPSI.root";
-  AliAnalysisDataContainer *cOutputHist1 =
-    mgr->CreateContainer(Form("mfigueredo_QA_%s",triggerNames[j]),
+ 	 //create output container
+ 	TString containerName = "JPSI.root";
+  	AliAnalysisDataContainer *cOutputHist1 =
+    mgr->CreateContainer(Form("mfigueredo_QA_%s",unitit.Data()),
 			 TList::Class(),
 			 AliAnalysisManager::kOutputContainer,
 			 containerName.Data());
 
-  AliAnalysisDataContainer *cOutputHist2 =
-    mgr->CreateContainer(Form("mfigueredo_CF_%s",triggerNames[j]),
+  	AliAnalysisDataContainer *cOutputHist2 =
+   	 mgr->CreateContainer(Form("mfigueredo_CF_%s",unitit.Data()),
 			 TList::Class(),
 			 AliAnalysisManager::kOutputContainer,
 			 containerName.Data());
 
-  AliAnalysisDataContainer *cOutputHist3 =
-    mgr->CreateContainer(Form("mfigueredo_EventStat_%s",triggerNames[j]),
+ 	 AliAnalysisDataContainer *cOutputHist3 =
+    	mgr->CreateContainer(Form("mfigueredo_EventStat_%s",unitit.Data()),
 			 TH1D::Class(),
 			 AliAnalysisManager::kOutputContainer,
 			 containerName.Data());
   
  
-  mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, cOutputHist1);
-  mgr->ConnectOutput(task, 2, cOutputHist2);
-  mgr->ConnectOutput(task, 3, cOutputHist3);
-  
+ 	mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
+ 	mgr->ConnectOutput(task, 1, cOutputHist1);
+	mgr->ConnectOutput(task, 2, cOutputHist2);
+  	mgr->ConnectOutput(task, 3, cOutputHist3);
+    printf(" %s added\n",jpsi->GetName());
+  }
   return task;
 }

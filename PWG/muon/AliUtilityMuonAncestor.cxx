@@ -52,7 +52,7 @@ fPx(0.),
 fPy(0.),
 fPz(0.),
 fMask(0),
-fAncestor(-999.)
+fAncestor(-999)
 {
   /// Default constructor
 }

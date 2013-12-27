@@ -61,6 +61,7 @@ class AliUEHistograms : public TNamed
   TH2F* GetCorrelationLeading2Phi() { return fCorrelationLeading2Phi; }
   TH2F* GetCorrelationMultiplicity() { return fCorrelationMultiplicity; }
   TH3F* GetYield() { return fYields; }
+  TH2F* GetInvYield() { return fInvYield2; }
   
   TH2F* GetEventCount()     { return fEventCount; }
   TH3F* GetEventCountDifferential() { return fEventCountDifferential; }
@@ -124,6 +125,7 @@ protected:
   TH2F* fCorrelationLeading2Phi;// delta phi (true vs reco) vs pT,lead,MC
   TH2F* fCorrelationMultiplicity; // number of mc particls vs reco particles (for pT > 0.5 GeV/c)
   TH3F* fYields;                // centrality vs pT vs eta
+  TH2F* fInvYield2; 		// invariant yield as cross check of tracking
   
   TH2F* fEventCount;            // event count as function of step, (for pp: event type (plus additional step -1 for all events without vertex range even in MC)) (for PbPb: centrality)
   TH3F* fEventCountDifferential;// event count as function of leading pT, step, event type
@@ -157,7 +159,7 @@ protected:
   
   Int_t fMergeCount;		// counts how many objects have been merged together
   
-  ClassDef(AliUEHistograms, 27)  // underlying event histogram container
+  ClassDef(AliUEHistograms, 29)  // underlying event histogram container
 };
 
 Float_t AliUEHistograms::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign)

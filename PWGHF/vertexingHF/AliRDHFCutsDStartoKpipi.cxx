@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id: AliRDHFCutsDStartoKpipi.cxx 61203 2013-03-02 22:52:17Z fprino $ */
 
 /////////////////////////////////////////////////////////////
 //
@@ -27,7 +27,6 @@
 
 #include <TDatabasePDG.h>
 #include <Riostream.h>
-
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODRecoCascadeHF.h"
 #include "AliRDHFCutsD0toKpi.h"
@@ -162,7 +161,8 @@ void AliRDHFCutsDStartoKpipi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *var
 
   AliAODRecoDecayHF2Prong* dd = (AliAODRecoDecayHF2Prong*)dstarD0pi->Get2Prong();
   
-   Int_t iter=-1;
+
+  Int_t iter=-1;
   if(fVarsForOpt[0]){
     iter++;
     if(TMath::Abs(pdgdaughters[0])==211) {
@@ -259,10 +259,10 @@ void AliRDHFCutsDStartoKpipi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *var
   return;
 }
 //---------------------------------------------------------------------------
-Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel) {
+Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODEvent* aod) {
   //
   // Apply selection for D*.
-  //
+  // Added functionality to remove the D0 daughters from primary vertex (not dafult) 
 
   fIsSelectedCuts=0;
   fIsSelectedPID=0;
@@ -305,8 +305,8 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel) {
      selectionLevel==AliRDHFCuts::kCandidate) {
     
     Double_t pt=d->Pt();
-    Int_t ptbin=PtBin(pt);
- 
+    Int_t ptbin=PtBin(pt);    
+    
     // DStarMass and D0mass
     Double_t mDSPDG = TDatabasePDG::Instance()->GetParticle(413)->Mass();
     Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
@@ -325,7 +325,7 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel) {
     if(d->AngleD0dkpPisoft() > fCutsRD[GetGlobalIndex(13,ptbin)]) return 0;
   
     // select D0 that passes D* cuts
-    returnvalue = IsD0FromDStarSelected(pt,dd,selectionLevel);
+    returnvalue = IsD0FromDStarSelected(pt,dd,selectionLevel, aod);
     if((b->Charge()==+1 && returnvalue==2) || (b->Charge()==-1 && returnvalue==1)) return 0; 
     
   }
@@ -360,10 +360,11 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel) {
 
 }
 //_________________________________________________________________________________________________
-Int_t AliRDHFCutsDStartoKpipi::IsD0FromDStarSelected(Double_t pt, TObject* obj,Int_t selectionLevel) const {
+Int_t AliRDHFCutsDStartoKpipi::IsD0FromDStarSelected(Double_t pt, TObject* obj,Int_t selectionLevel, AliAODEvent* aod) const {
   //
   // Apply selection for D0 from D*. The selection in on D0 prongs
-  //
+  // added functionality to recalculate the primary vertex without D0 prongs (not default)
+  // 
   
   if(!fCutsRD){
     cout<<"Cut matrice not inizialized. Exit..."<<endl;
@@ -389,7 +390,30 @@ Int_t AliRDHFCutsDStartoKpipi::IsD0FromDStarSelected(Double_t pt, TObject* obj,I
     Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
     // delta mass PDG
  
+    // add vertex recalculation without daughters
+    AliAODVertex *origownvtx=0x0;
+    if(fRemoveDaughtersFromPrimary  && !fUseMCVertex) {
+      if(dd->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*dd->GetOwnPrimaryVtx());
+      if(!RecalcOwnPrimaryVtx(dd,aod)) { 
+	CleanOwnPrimaryVtx(dd,aod,origownvtx);
+	return 0;
+      }
+    }
+    
+    
+    if(fUseMCVertex) {
+      if(dd->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*dd->GetOwnPrimaryVtx());
+      if(!SetMCPrimaryVtx(dd,aod)) {
+	CleanOwnPrimaryVtx(dd,aod,origownvtx);
+	return 0;
+      }
+    }
+    
     Int_t ptbin=PtBin(pt);
+    if (ptbin==-1) {
+      CleanOwnPrimaryVtx(dd,aod,origownvtx);
+      return 0;
+    }
     
     Double_t mD0,mD0bar,ctsD0,ctsD0bar;
   
@@ -400,38 +424,42 @@ Int_t AliRDHFCutsDStartoKpipi::IsD0FromDStarSelected(Double_t pt, TObject* obj,I
     if(dd->PtProng(1) < fCutsRD[GetGlobalIndex(3,ptbin)] || dd->PtProng(0) < fCutsRD[GetGlobalIndex(4,ptbin)]) okD0 = 0;
     if(dd->PtProng(0) < fCutsRD[GetGlobalIndex(3,ptbin)] || dd->PtProng(1) < fCutsRD[GetGlobalIndex(4,ptbin)]) okD0bar = 0;
     
-    if(!okD0 && !okD0bar) return 0;
+    if(!okD0 && !okD0bar) {CleanOwnPrimaryVtx(dd,aod,origownvtx); return 0;}
     
     if(TMath::Abs(dd->Getd0Prong(1)) > fCutsRD[GetGlobalIndex(5,ptbin)] || 
        TMath::Abs(dd->Getd0Prong(0)) > fCutsRD[GetGlobalIndex(6,ptbin)]) okD0 = 0;
     if(TMath::Abs(dd->Getd0Prong(0)) > fCutsRD[GetGlobalIndex(6,ptbin)] ||
        TMath::Abs(dd->Getd0Prong(1)) > fCutsRD[GetGlobalIndex(5,ptbin)]) okD0bar = 0;
-    if(!okD0 && !okD0bar) return 0;
+    if(!okD0 && !okD0bar) {CleanOwnPrimaryVtx(dd,aod,origownvtx); return 0;}
     
-    if(dd->GetDCA() > fCutsRD[GetGlobalIndex(1,ptbin)]) return 0;
+    if(dd->GetDCA() > fCutsRD[GetGlobalIndex(1,ptbin)]) {CleanOwnPrimaryVtx(dd,aod,origownvtx); return 0;}
     
     dd->InvMassD0(mD0,mD0bar);
     if(TMath::Abs(mD0-mD0PDG) > fCutsRD[GetGlobalIndex(0,ptbin)]) okD0 = 0;
     if(TMath::Abs(mD0bar-mD0PDG) > fCutsRD[GetGlobalIndex(0,ptbin)]) okD0bar = 0;
-    if(!okD0 && !okD0bar) return 0;
+    if(!okD0 && !okD0bar) {CleanOwnPrimaryVtx(dd,aod,origownvtx); return 0;}
     
     dd->CosThetaStarD0(ctsD0,ctsD0bar);
     if(TMath::Abs(ctsD0) > fCutsRD[GetGlobalIndex(2,ptbin)]) okD0 = 0;
     if(TMath::Abs(ctsD0bar) > fCutsRD[GetGlobalIndex(2,ptbin)]) okD0bar = 0;
-    if(!okD0 && !okD0bar) return 0;
+    if(!okD0 && !okD0bar) {CleanOwnPrimaryVtx(dd,aod,origownvtx); return 0;}
     
-    if(dd->Prodd0d0() > fCutsRD[GetGlobalIndex(7,ptbin)]) return 0;
+    if(dd->Prodd0d0() > fCutsRD[GetGlobalIndex(7,ptbin)]) {CleanOwnPrimaryVtx(dd,aod,origownvtx); return 0;}
     
-    if(dd->CosPointingAngle() < fCutsRD[GetGlobalIndex(8,ptbin)]) return 0;
+    if(dd->CosPointingAngle() < fCutsRD[GetGlobalIndex(8,ptbin)]) {CleanOwnPrimaryVtx(dd,aod,origownvtx); return 0;}
 
-    if(TMath::Abs(dd->CosPointingAngleXY()) < fCutsRD[GetGlobalIndex(14,ptbin)])  return 0;
+    if(TMath::Abs(dd->CosPointingAngleXY()) < fCutsRD[GetGlobalIndex(14,ptbin)]) {CleanOwnPrimaryVtx(dd,aod,origownvtx); return 0;}
 	
     Double_t normalDecayLengXY=(dd->NormalizedDecayLengthXY()*(dd->P()/dd->Pt()));
-    if (normalDecayLengXY < fCutsRD[GetGlobalIndex(15, ptbin)]) return 0;
+    if (normalDecayLengXY < fCutsRD[GetGlobalIndex(15, ptbin)]) {CleanOwnPrimaryVtx(dd,aod,origownvtx); return 0;}
 
     if (okD0) returnvalue=1; //cuts passed as D0
     if (okD0bar) returnvalue=2; //cuts passed as D0bar
     if (okD0 && okD0bar) returnvalue=3; //both
+
+    // unset recalculated primary vertex when not needed any more
+    CleanOwnPrimaryVtx(dd,aod,origownvtx);
+
   }
  
   return returnvalue;
@@ -788,15 +816,279 @@ void  AliRDHFCutsDStartoKpipi::SetStandardCutsPbPb2010(){
 
 //_____________________________________________________________________________
 void  AliRDHFCutsDStartoKpipi::SetStandardCutsPbPb2011(){
+  //
+  // Not implemented !!
+  //
+  SetStandardCutsPbPb2011DStar(0);
+  return;
+}
+//_________________________________here the PbPb vs pt _________________________________________
+void  AliRDHFCutsDStartoKpipi::SetStandardCutsPbPb2011DStar(TH1F *hfl){
 
   // Default 2010 PbPb cut object
-  SetStandardCutsPbPb2010();
 
-  // Enable all 2011 PbPb run triggers
-  //  
+  SetName("DStartoD0piCutsStandard2011");
+  SetTitle("Standard Cuts for D* analysis in PbPb 2011");
+
+  // EVENT CUTS
+  SetMinVtxContr(1);
+  // MAX Z-VERTEX CUT
+  SetMaxVtxZ(10.);
+
   SetTriggerClass("");
   ResetMaskAndEnableMBTrigger();
   EnableCentralTrigger();
   EnableSemiCentralTrigger();
+
+  // CENTRALITY SELECTION
+  SetMinCentrality(0.);
+  SetMaxCentrality(10.);
+  SetUseCentrality(AliRDHFCuts::kCentV0M);
+
+  // CUTS ON SINGLE TRACKS
+  AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
+  esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+  esdTrackCuts->SetRequireTPCRefit(kTRUE);
+  esdTrackCuts->SetRequireITSRefit(kTRUE);
+  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+  esdTrackCuts->SetMinDCAToVertexXY(0.);
+  esdTrackCuts->SetEtaRange(-0.8,0.8);
+  esdTrackCuts->SetPtRange(0.3,1.e10);
+  
+  esdTrackCuts->SetMaxDCAToVertexXY(1.);  
+  esdTrackCuts->SetMaxDCAToVertexZ(1.);
+
+
+  // CUTS on SOFT PION
+  AliESDtrackCuts* esdSoftPicuts=new AliESDtrackCuts();
+  esdSoftPicuts->SetRequireSigmaToVertex(kFALSE);
+  esdSoftPicuts->SetRequireTPCRefit(kTRUE);
+  esdSoftPicuts->SetRequireITSRefit(kTRUE);
+  esdSoftPicuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					  AliESDtrackCuts::kAny); //test d0 asimmetry
+  esdSoftPicuts->SetPtRange(0.1,10);
+
+  esdSoftPicuts->SetMaxDCAToVertexXY(1.);  
+  esdSoftPicuts->SetMaxDCAToVertexZ(1.);
+
+  SetSelectCandTrackSPDFirst(kTRUE, 4);
+
+  //nothing below 3 GeV/c, speed up the calculation
+  SetMinPtCandidate(3.0);
+
+  AddTrackCuts(esdTrackCuts);
+  AddTrackCutsSoftPi(esdSoftPicuts);
+
+  const Int_t nptbins =14;
+  const Double_t ptmax = 36.;
+  const Int_t nvars=16;
+  Float_t ptbins[nptbins+1];
+  ptbins[0]=0.5;	
+  ptbins[1]=1.;
+  ptbins[2]=2.;
+  ptbins[3]=3.;
+  ptbins[4]=4.;
+  ptbins[5]=5.;
+  ptbins[6]=6.;
+  ptbins[7]=7.;
+  ptbins[8]=8.;
+  ptbins[9]=10.;
+  ptbins[10]=12.;
+  ptbins[11]=16.;
+  ptbins[12]=20.;
+  ptbins[13]=24.;
+  ptbins[14]=ptmax;
+
+  SetGlobalIndex(nvars,nptbins);
+  SetPtBins(nptbins+1,ptbins);
+  
+  Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.032,220.*1E-4,0.9,0.5,0.5,500.*1E-4,500.*1E-4,-16000.*1E-8,0.85,0.3,0.1,0.05,100,0.5,-1.,9.},/* 0.5<pt<1*/
+						  {0.032,350.*1E-4,0.9,0.5,0.5,800.*1E-4,800.*1E-4,-20000.*1E-8,0.96,0.3,0.15,0.05,100,0.5,0.99,10.},/* 1<pt<2 */
+						  {0.032,300.*1E-4,0.9,0.5,0.5,900.*1E-4,900.*1E-4,-42000.*1E-8,0.96,0.3,0.15,0.05,100,0.5,0.99,9.},/* 2<pt<3 */
+						  {0.036,300.*1E-4,0.8,0.8,0.8,900.*1E-4,900.*1E-4,-39000.*1E-8,0.99,0.3,0.15,0.05,100,0.5,0.998,8.},/* 3<pt<4 */
+						  {0.038,225.*1E-4,0.8,1.0,1.0,1000.*1E-4,1000.*1E-4,-30000.*1E-8,0.99,0.3,0.15,0.05,100,0.5,0.998,7.5},/* 4<pt<5 */
+						  {0.045,200.*1E-4,1.0,1.0,1.0,1000.*1E-4,1000.*1E-4,-23000.*1E-8,0.99,0.3,0.15,0.05,100,0.5,0.998,7.},/* 5<pt<6 */
+						  {0.045,210.*1E-4,1.0,1.0,1.0,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.982,0.3,0.15,0.05,100,0.5,0.998,6.4},/* 6<pt<7 */
+						  {0.050,230.*1E-4,1.0,1.0,1.0,1000.*1E-4,1000.*1E-4,-12700.*1E-8,0.98,0.3,0.15,0.05,100,0.5,0.998,6.4},/* 7<pt<8 */
+						  {0.060,200.*1E-4,1.0,0.9,0.9,1000.*1E-4,1000.*1E-4,-7500.*1E-8,0.98,0.3,0.15,0.05,100,0.5,0.998,4.7},/* 8<pt<10 */
+						  {0.060,200.*1E-4,1.0,0.9,0.9,1000.*1E-4,1000.*1E-4,-7500.*1E-8,0.97,0.3,0.15,0.05,100,1.0,0.998,4.7},/* 10<pt<12 */
+						  {0.074,200.*1E-4,1.0,0.5,0.5,1500.*1E-4,1500.*1E-4,-7500.*1E-8,0.95,0.3,0.15,0.05,100,1.0,0.998,3},/* 12<pt<16 */
+						  {0.074,210.*1E-4,1.0,0.5,0.5,1500.*1E-4,1500.*1E-4,-5000.*1E-8,0.95,0.3,0.15,0.05,100,1.0,0.998,2.},/* 16<pt<20 */
+                                                  {0.074,220.*1E-4,1.0,0.5,0.5,1500.*1E-4,1500.*1E-4,-5000.*1E-8,0.93,0.3,0.15,0.05,100,1.0,0.995,2.},/* 20<pt<24 */
+						  {0.074,400.*1E-4,1.0,0.5,0.5,2000.*1E-4,2000.*1E-4,40000.*1E-8,0.7,0.3,0.15,0.05,100,1.0,0.9,1.}};/* 24<pt<36 */
+  
+  
+  //CREATE TRANSPOSE MATRIX...REVERSE INDICES as required by AliRDHFCuts
+  Float_t **cutsMatrixTransposeStand=new Float_t*[nvars];
+  for(Int_t iv=0;iv<nvars;iv++)cutsMatrixTransposeStand[iv]=new Float_t[nptbins];
+  
+  for (Int_t ibin=0;ibin<nptbins;ibin++){
+    for (Int_t ivar = 0; ivar<nvars; ivar++){
+      cutsMatrixTransposeStand[ivar][ibin]=cutsMatrixD0toKpiStand[ibin][ivar];      
+    }
+  }
+  
+  SetCuts(nvars,nptbins,cutsMatrixTransposeStand);
+
+  for(Int_t iv=0;iv<nvars;iv++) delete [] cutsMatrixTransposeStand[iv];
+  delete [] cutsMatrixTransposeStand;
+  cutsMatrixTransposeStand=NULL;
+  
+  // PID SETTINGS // --- 
+  AliAODPidHF* pidObj=new AliAODPidHF();
+  // pidObj->SetName("pid4DSatr");
+  Int_t mode=1;
+
+  pidObj->SetMatch(mode);
+  pidObj->SetSigma(0,3); // TPC -- 2 sigma for pt < 4
+  pidObj->SetSigma(3,3); // TOF
+  pidObj->SetTPC(kTRUE);
+  pidObj->SetTOF(kTRUE);
+  pidObj->SetOldPid(kFALSE);
+  
+  SetPidHF(pidObj);
+  SetUsePID(kTRUE);
+
+  // PID off for tracks with pt above 4 GeV/c
+  SetOffHighPtPIDinTPC(4.0);
+  SetRemoveDaughtersFromPrim(kFALSE);
+  // flattening
+  SetHistoForCentralityFlattening(hfl,0.,10,0.,0);
+
+  PrintAll();
+
+  delete pidObj;
+  pidObj=NULL;
+
+
+  return;
+}
+//-----------------------------------Here the multiplicity pp--------------------------------
+
+void  AliRDHFCutsDStartoKpipi::SetStandardCutsPP2010DStarMult(Bool_t rec){
+
+
+ //
+  // STANDARD CUTS USED FOR 2010 pp analysis (multiplicity)
+  //                                           
+  //
+
+  SetName("DStartoD0piCutsStandard");
+  SetTitle("Standard Cuts for D* analysis pp mult");
+  
+  // PILE UP REJECTION
+  SetOptPileup(AliRDHFCuts::kRejectPileupEvent);
+
+  // EVENT CUTS
+  SetMinVtxContr(1);
+   // MAX Z-VERTEX CUT
+  SetMaxVtxZ(10.);
+
+  // CUTS ON SINGLE TRACKS
+  AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
+  esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+  esdTrackCuts->SetRequireTPCRefit(kTRUE);
+  esdTrackCuts->SetRequireITSRefit(kTRUE);
+  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+  esdTrackCuts->SetMinDCAToVertexXY(0.);
+  esdTrackCuts->SetEtaRange(-0.8,0.8);
+  esdTrackCuts->SetPtRange(0.3,1.e10);
+
+  esdTrackCuts->SetMaxDCAToVertexXY(1.);  
+  esdTrackCuts->SetMaxDCAToVertexZ(1.);
+
+  
+  // CUTS on SOFT PION
+  AliESDtrackCuts* esdSoftPicuts=new AliESDtrackCuts();
+  esdSoftPicuts->SetRequireSigmaToVertex(kFALSE);
+  esdSoftPicuts->SetRequireTPCRefit(kFALSE);
+  esdSoftPicuts->SetRequireITSRefit(kTRUE);
+  esdSoftPicuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					  AliESDtrackCuts::kAny); 
+  esdSoftPicuts->SetPtRange(0.08,1.e10);
+  SetUseCentrality(kFALSE);
+
+  AddTrackCuts(esdTrackCuts);
+  AddTrackCutsSoftPi(esdSoftPicuts);
+
+  const Int_t nptbins =14;
+  const Double_t ptmax = 9999.;
+  const Int_t nvars=16;
+  Float_t ptbins[nptbins+1];
+  ptbins[0]=0.;
+  ptbins[1]=0.5;	
+  ptbins[2]=1.;
+  ptbins[3]=2.;
+  ptbins[4]=3.;
+  ptbins[5]=4.;
+  ptbins[6]=5.;
+  ptbins[7]=6.;
+  ptbins[8]=7.;
+  ptbins[9]=8.;
+  ptbins[10]=10.;
+  ptbins[11]=12.;
+  ptbins[12]=16.;
+  ptbins[13]=20.;
+  ptbins[14]=ptmax;
+
+  SetGlobalIndex(nvars,nptbins);
+  SetPtBins(nptbins+1,ptbins);
+  
+  Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.026,220.*1E-4,0.7,0.21,0.21,500.*1E-4,500.*1E-4,-2000.*1E-8,0.85,0.3,0.1,0.05,100,0.5,-1.,0.},/* pt<0.5*/
+						  {0.039,300.*1E-4,0.7,0.21,0.21,500.*1E-4,500.*1E-4,-16000.*1E-8,0.85,0.3,0.1,0.05,100,0.5,-1.,0.},/* 0.5<pt<1*/
+						  {0.022,400.*1E-4,0.8,0.7,0.7,800.*1E-4,800.*1E-4,-20000.*1E-8,0.8,0.3,0.3,0.05,100,0.5,-1.,0.},/* 1<pt<2 */
+						  {0.032,350.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-13000.*1E-8,0.9,0.3,0.3,0.05,100,0.8,-1.,0.},/* 2<pt<3 */
+						  {0.032,500.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.9,0.3,0.3,0.05,100,0.8,-1.,0.},/* 3<pt<4 */
+						  {0.032,700.*1E-4,0.9,0.9,0.9,1000.*1E-4,1000.*1E-4,10000.*1E-8,0.9,0.3,0.3,0.05,100,1.0,-1.,0.},/* 4<pt<5 */
+						  {0.036,1000.*1E-4,1.0,0.8,0.8,1000.*1E-4,1000.*1E-4,50000.*1E-8,0.9,0.3,0.3,0.05,100,1.0,-1.,0.},/* 5<pt<6 */
+						  {0.036,1000.*1E-4,1.0,0.8,0.8,1000.*1E-4,1000.*1E-4,100000.*1E-8,0.7,0.3,0.3,0.05,100,1.0,-1.,0.},/* 6<pt<7 */
+						  {0.036,1000.*1E-4,1.0,0.8,0.8,1200.*1E-4,1200.*1E-4,100000.*1E-8,0.6,0.3,0.3,0.05,100,1.0,-1.,0.},/* 7<pt<8 */
+						  {0.065,2000.*1E-4,1.0,0.3,0.3,2000.*1E-4,2000.*1E-4,1000000.*1E-8,0.5,0.3,0.3,0.05,100,1.0,-1.,0.},/* 8<pt<10 */
+						  {0.075,2000.*1E-4,1.0,0.3,0.3,2000.*1E-4,2000.*1E-4,1000000.*1E-8,0.3,0.3,0.3,0.05,100,1.0,-1.,0.},/* 10<pt<12 */
+						  {0.084,6000.*1E-4,1.0,0.3,0.3,1500.*1E-4,1500.*1E-4,1000000.*1E-8,0.1,0.3,0.1,0.05,100,1.0,-1.,0.},/* 12<pt<16 */
+						  {0.084,1000.*1E-4,1.0,1.0,1.0,1500.*1E-4,1500.*1E-4,1000000.*1E-8,0.7,0.3,0.1,0.05,100,1.0,-1.,0.},/* 16<pt<20 */
+						  {0.7,1000.*1E-4,1.0,1.0,1.0,1500.*1E-4,1500.*1E-4,1000000.*1E-8,0.7,0.3,0.1,0.05,100,1.0,-1.,0.}};/* pt>24 */
+  
+  
+  //CREATE TRANSPOSE MATRIX...REVERSE INDICES as required by AliRDHFCuts
+  Float_t **cutsMatrixTransposeStand=new Float_t*[nvars];
+  for(Int_t iv=0;iv<nvars;iv++)cutsMatrixTransposeStand[iv]=new Float_t[nptbins];
+  
+  for (Int_t ibin=0;ibin<nptbins;ibin++){
+    for (Int_t ivar = 0; ivar<nvars; ivar++){
+      cutsMatrixTransposeStand[ivar][ibin]=cutsMatrixD0toKpiStand[ibin][ivar];      
+    }
+  }
+  
+  SetCuts(nvars,nptbins,cutsMatrixTransposeStand);
+
+  for(Int_t iv=0;iv<nvars;iv++) delete [] cutsMatrixTransposeStand[iv];
+  delete [] cutsMatrixTransposeStand;
+  cutsMatrixTransposeStand=NULL;
+
+  // remove daughters from primary vertex
+  SetRemoveDaughtersFromPrim(rec);
+
+  // PID SETTINGS FOR D* analysis
+  AliAODPidHF* pidObj=new AliAODPidHF();
+  //pidObj->SetName("pid4DSatr");
+  Int_t mode=1;
+  pidObj->SetMatch(mode);
+  pidObj->SetSigma(0,3); // TPC
+  pidObj->SetSigma(3,3); // TOF
+  pidObj->SetTPC(kTRUE);
+  pidObj->SetTOF(kTRUE);
+  
+  SetPidHF(pidObj);
+  SetUsePID(kTRUE);
+  pidObj->SetOldPid(kTRUE);
+
+  PrintAll();
+
+  delete pidObj;
+  pidObj=NULL;
+
+  return;
+
 
 }

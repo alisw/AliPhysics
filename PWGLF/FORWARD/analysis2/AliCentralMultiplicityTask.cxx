@@ -136,12 +136,17 @@ AliCentralMultiplicityTask::PreData(const TAxis& vertex, const TAxis& eta)
   }
   fList->Add(hCoverage);
 
+  // Bins are 
+  TArrayD bins;
+  // N-bins, loweset order, higest order, return array
+  AliForwardUtil::MakeLogScale(300, 0, 5, bins);
   fNClusterTracklet = new TH2D("nClusterVsnTracklet", 
 			       "Total number of cluster vs number of tracklets",
-			       100, 0, 10000, 100, 0, 10000);
+			       bins.GetSize()-1, bins.GetArray(),
+			       bins.GetSize()-1, bins.GetArray());
   fNClusterTracklet->SetDirectory(0);
-  fNClusterTracklet->SetXTitle("# of free clusters");
-  fNClusterTracklet->SetYTitle("# of tracklets");
+  fNClusterTracklet->SetXTitle("N_{free cluster}");
+  fNClusterTracklet->SetYTitle("N_{tracklet}");
   fNClusterTracklet->SetStats(0);
   fList->Add(fNClusterTracklet);
 
