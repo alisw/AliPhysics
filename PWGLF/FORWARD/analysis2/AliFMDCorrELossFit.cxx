@@ -639,7 +639,7 @@ AliFMDCorrELossFit::ELossFit::CalculateQuality(Double_t maxChi2nu,
     Double_t red = fChi2 / fNu;
     if (red < maxChi2nu) qual += 4;
     else {
-      Int_t q = (maxChi2nu+decline - red) / decline * 4;
+      Int_t q = Int_t((maxChi2nu+decline - red) / decline * 4);
       if (q > 0) qual += q;
     }
   }

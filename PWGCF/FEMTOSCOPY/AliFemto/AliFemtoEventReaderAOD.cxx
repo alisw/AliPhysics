@@ -11,6 +11,7 @@
 
 #include "TFile.h"
 #include "TTree.h"
+#include "TRandom3.h"
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
 #include "AliAODVertex.h"
@@ -62,7 +63,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fMagFieldSign(1),
   fisEPVZ(kTRUE),
   fpA2013(kFALSE),
-  fDCAglobalTrack(kFALSE)
+  fDCAglobalTrack(kFALSE),
+  fFlatCent(kFALSE)
 {
   // default constructor
   fAllTrue.ResetAllBits(kTRUE);
@@ -93,7 +95,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fMagFieldSign(1),
   fisEPVZ(kTRUE),
   fpA2013(kFALSE),
-  fDCAglobalTrack(kFALSE)
+  fDCAglobalTrack(kFALSE),
+  fFlatCent(kFALSE)
 {
   // copy constructor
   fReadMC = aReader.fReadMC;
@@ -159,6 +162,7 @@ AliFemtoEventReaderAOD& AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fEstEventMult = aReader.fEstEventMult;
   fpA2013 = aReader.fpA2013;
   fDCAglobalTrack = aReader.fDCAglobalTrack;
+  fFlatCent= aReader.fFlatCent;
 
   return *this;
 }
@@ -358,6 +362,14 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
     }
   }
 
+  float percent = cent->GetCentralityPercentile("V0M");
+//flatten centrality dist.
+  if(percent < 9){
+    if(fFlatCent){
+      if(RejectEventCentFlat(fEvent->GetMagneticField(),percent)) return;
+    }
+  }
+
   int realnofTracks=0;   // number of track which we use in a analysis
   int tracksPrim=0;
 
@@ -542,7 +554,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
                 if (aodtrack->Eta() < 0.8)
                   tNormMult++;
       }
-     }
+    }
 
     CopyAODtoFemtoTrack(aodtrack, trackCopy);
 
@@ -696,7 +708,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
     }
     //    }
 
-   tEvent->TrackCollection()->push_back(trackCopy);//adding track to analysis
+    tEvent->TrackCollection()->push_back(trackCopy);//adding track to analysis
     realnofTracks++;//real number of tracks
   }
 
@@ -1442,3 +1454,25 @@ void AliFemtoEventReaderAOD::SetDCAglobalTrack(Bool_t dcagt)
   fDCAglobalTrack = dcagt;
 }
 
+
+bool AliFemtoEventReaderAOD::RejectEventCentFlat(float MagField, float CentPercent)
+{ // to flatten centrality distribution
+  bool RejectEvent = kFALSE;
+  int weightBinSign;
+  TRandom3* fRandomNumber = new TRandom3();  //for 3D, random sign switching
+  fRandomNumber->SetSeed(0);
+
+  if(MagField > 0) weightBinSign = 0;
+  else weightBinSign = 1;
+  float kCentWeight[2][9] = {{.878,.876,.860,.859,.859,.88,.873,.879,.894},
+                             {.828,.793,.776,.772,.775,.796,.788,.804,.839}};
+  int weightBinCent = (int) CentPercent;
+  if(fRandomNumber->Rndm() > kCentWeight[weightBinSign][weightBinCent]) RejectEvent = kTRUE;
+
+  return RejectEvent;
+}
+
+void AliFemtoEventReaderAOD::SetCentralityFlattening(Bool_t dcagt)
+{
+  fFlatCent = dcagt;
+}

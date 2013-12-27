@@ -56,6 +56,9 @@ class AliHadCorrTask : public AliAnalysisTaskEmcal {
 
   // QA plots
   TH2                   *fHistMatchEtaPhi[8][9][2];  //!deta vs. dphi of matched cluster-track pairs
+  TH2                   *fHistMatchEtaPhiAll;        //!deta vs. dphi of matched cluster-track pairs
+  TH2                   *fHistMatchEtaPhiAllTr;      //!deta vs. dphi of all cluster-track pairs (tr loop)
+  TH2                   *fHistMatchEtaPhiAllCl;      //!deta vs. dphi of all cluster-track pairs (cl loop)
   TH2                   *fHistMatchEvsP[4];          //!cluster energy vs. track momentum of matched pairs
   TH2                   *fHistNMatchEnergy[4];       //!n matches vs. cluster energy
   TH2                   *fHistNCellsEnergy[4][4];    //!n cells vs. cluster energy
@@ -70,8 +73,6 @@ class AliHadCorrTask : public AliAnalysisTaskEmcal {
   TH1                   *fHistEsubPch[8];            //!Esub vs. total momentum of matched tracks (only 1 match)
   TH2                   *fHistEsubPchRat[8];         //!Esub/momentum of matched tracks vs. total momentum of matched tracks (only 1 match)
   TH2                   *fHistEsubPchRatAll[8];      //!Esub/momentum of matched tracks vs. total momentum of matched tracks (all number of matches)
-
-  // Embedding QA plots
   TH2                   *fHistEmbTrackMatchesOversub[4];    //!Over-subtracted energy / cluster energy with embedded track matches (non-embedded matches < 5%)
   TH2                   *fHistNonEmbTrackMatchesOversub[4]; //!Over-subtracted energy / cluster energy with non-embedded track matches (embedded matches < 5%)
   TH2                   *fHistOversubMCClusters[4];         //!Over-subtracted energy / cluster energy (cluster MC energy fraction > 95%)
@@ -82,6 +83,6 @@ class AliHadCorrTask : public AliAnalysisTaskEmcal {
   AliHadCorrTask(const AliHadCorrTask&);            // not implemented
   AliHadCorrTask &operator=(const AliHadCorrTask&); // not implemented
 
-  ClassDef(AliHadCorrTask, 13) // Hadronic correction task
+  ClassDef(AliHadCorrTask, 14) // Hadronic correction task
 };
 #endif

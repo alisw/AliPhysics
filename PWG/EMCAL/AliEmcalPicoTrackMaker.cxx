@@ -116,9 +116,6 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
     InputEvent()->AddObject(fTracksOut);
   }
 
-  // clear container (normally a null operation as the event should clean it already)
-  fTracksOut->Clear();
-
   // test if we are in ESD or AOD mode
   Bool_t esdMode = kTRUE;
   if (dynamic_cast<AliAODEvent*>(InputEvent())!=0)
@@ -146,10 +143,19 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
       AliESDtrack *esdtrack = static_cast<AliESDtrack*>(track);
       if (fESDtrackCuts && !fESDtrackCuts->AcceptTrack(esdtrack))
 	continue;
-      type = esdtrack->GetTRDNchamberdEdx();
+      type = 0;
+      if (esdtrack->TestBit(BIT(27))) {
+        if (esdtrack->TestBit(BIT(28)))
+          type = 2;
+        else 
+          type =1;
+      }
       if (!fIncludeNoITS && (type==2))
 	continue;
-      isEmc = track->IsEMCAL();
+      if (TMath::Abs(esdtrack->GetTrackEtaOnEMCal()) < 0.75 && 
+	  esdtrack->GetTrackPhiOnEMCal() > 70 * TMath::DegToRad() &&
+	  esdtrack->GetTrackPhiOnEMCal() < 190 * TMath::DegToRad())
+	isEmc = kTRUE;
     } else {
       AliAODTrack *aodtrack = static_cast<AliAODTrack*>(track);
       if (fAODfilterBits[0] < 0) {

@@ -953,23 +953,69 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
       //Printf("P:%lf - N:%lf - PN:%lf - NP:%lf - PP:%lf - NN:%lf",fHistP->GetEntries(0),fHistN->GetEntries(0),fHistPN->GetEntries(0),fHistNP->GetEntries(0),fHistPP->GetEntries(0),fHistNN->GetEntries(0));
       
       // Project into the wanted space (1st: analysis step, 2nd: axis)
-      TH1D* hTemp1 = (TH1D*)fHistPN->Project(0,iVariablePair);
-      TH1D* hTemp2 = (TH1D*)fHistNP->Project(0,iVariablePair);
-      TH1D* hTemp3 = (TH1D*)fHistPP->Project(0,iVariablePair);
-      TH1D* hTemp4 = (TH1D*)fHistNN->Project(0,iVariablePair);
+      TH1D* hTempHelper1 = (TH1D*)fHistPN->Project(0,iVariablePair);
+      TH1D* hTempHelper2 = (TH1D*)fHistNP->Project(0,iVariablePair);
+      TH1D* hTempHelper3 = (TH1D*)fHistPP->Project(0,iVariablePair);
+      TH1D* hTempHelper4 = (TH1D*)fHistNN->Project(0,iVariablePair);
       TH1D* hTemp5 = (TH1D*)fHistP->Project(0,iVariableSingle);
       TH1D* hTemp6 = (TH1D*)fHistN->Project(0,iVariableSingle);
       
       // ============================================================================================
       // the same for event mixing
-      TH1D* hTemp1Mix = (TH1D*)fHistPNMix->Project(0,iVariablePair);
-      TH1D* hTemp2Mix = (TH1D*)fHistNPMix->Project(0,iVariablePair);
-      TH1D* hTemp3Mix = (TH1D*)fHistPPMix->Project(0,iVariablePair);
-      TH1D* hTemp4Mix = (TH1D*)fHistNNMix->Project(0,iVariablePair);
+      TH1D* hTempHelper1Mix = (TH1D*)fHistPNMix->Project(0,iVariablePair);
+      TH1D* hTempHelper2Mix = (TH1D*)fHistNPMix->Project(0,iVariablePair);
+      TH1D* hTempHelper3Mix = (TH1D*)fHistPPMix->Project(0,iVariablePair);
+      TH1D* hTempHelper4Mix = (TH1D*)fHistNNMix->Project(0,iVariablePair);
       TH1D* hTemp5Mix = (TH1D*)fHistPMix->Project(0,iVariableSingle);
       TH1D* hTemp6Mix = (TH1D*)fHistNMix->Project(0,iVariableSingle);
       // ============================================================================================
-      
+
+      hTempHelper1->Sumw2();
+      hTempHelper2->Sumw2();
+      hTempHelper3->Sumw2();
+      hTempHelper4->Sumw2();
+      hTemp5->Sumw2();
+      hTemp6->Sumw2();
+      hTempHelper1Mix->Sumw2();
+      hTempHelper2Mix->Sumw2();
+      hTempHelper3Mix->Sumw2();
+      hTempHelper4Mix->Sumw2();
+      hTemp5Mix->Sumw2();
+      hTemp6Mix->Sumw2();
+
+      // first put everything on positive x - axis (to be comparable with published data) --> ONLY IN THIS OPTION!
+
+      Double_t helperEndBin = 1.6;
+      if(iVariablePair==2) helperEndBin = TMath::Pi();
+
+      TH1D* hTempPos1 = new TH1D(Form("hTempPos1_%d_%d",iBinPsi,iBinVertex),Form("hTempPos1_%d_%d",iBinPsi,iBinVertex),hTempHelper1->GetNbinsX()/2,0,helperEndBin);
+      TH1D* hTempPos2 = new TH1D(Form("hTempPos2_%d_%d",iBinPsi,iBinVertex),Form("hTempPos2_%d_%d",iBinPsi,iBinVertex),hTempHelper2->GetNbinsX()/2,0,helperEndBin);
+      TH1D* hTempPos3 = new TH1D(Form("hTempPos3_%d_%d",iBinPsi,iBinVertex),Form("hTempPos3_%d_%d",iBinPsi,iBinVertex),hTempHelper3->GetNbinsX()/2,0,helperEndBin);
+      TH1D* hTempPos4 = new TH1D(Form("hTempPos4_%d_%d",iBinPsi,iBinVertex),Form("hTempPos4_%d_%d",iBinPsi,iBinVertex),hTempHelper4->GetNbinsX()/2,0,helperEndBin);
+      TH1D* hTempPos1Mix = new TH1D(Form("hTempPos1Mix_%d_%d",iBinPsi,iBinVertex),Form("hTempPos1Mix_%d_%d",iBinPsi,iBinVertex),hTempHelper1Mix->GetNbinsX()/2,0,helperEndBin);
+      TH1D* hTempPos2Mix = new TH1D(Form("hTempPos2Mix_%d_%d",iBinPsi,iBinVertex),Form("hTempPos2Mix_%d_%d",iBinPsi,iBinVertex),hTempHelper2Mix->GetNbinsX()/2,0,helperEndBin);
+      TH1D* hTempPos3Mix = new TH1D(Form("hTempPos3Mix_%d_%d",iBinPsi,iBinVertex),Form("hTempPos3Mix_%d_%d",iBinPsi,iBinVertex),hTempHelper3Mix->GetNbinsX()/2,0,helperEndBin);
+      TH1D* hTempPos4Mix = new TH1D(Form("hTempPos4Mix_%d_%d",iBinPsi,iBinVertex),Form("hTempPos4Mix_%d_%d",iBinPsi,iBinVertex),hTempHelper4Mix->GetNbinsX()/2,0,helperEndBin);
+
+      TH1D* hTemp1 = new TH1D(Form("hTemp1_%d_%d",iBinPsi,iBinVertex),Form("hTemp1_%d_%d",iBinPsi,iBinVertex),hTempHelper1->GetNbinsX()/2,0,helperEndBin);
+      TH1D* hTemp2 = new TH1D(Form("hTemp2_%d_%d",iBinPsi,iBinVertex),Form("hTemp2_%d_%d",iBinPsi,iBinVertex),hTempHelper2->GetNbinsX()/2,0,helperEndBin);
+      TH1D* hTemp3 = new TH1D(Form("hTemp3_%d_%d",iBinPsi,iBinVertex),Form("hTemp3_%d_%d",iBinPsi,iBinVertex),hTempHelper3->GetNbinsX()/2,0,helperEndBin);
+      TH1D* hTemp4 = new TH1D(Form("hTemp4_%d_%d",iBinPsi,iBinVertex),Form("hTemp4_%d_%d",iBinPsi,iBinVertex),hTempHelper4->GetNbinsX()/2,0,helperEndBin);
+      TH1D* hTemp1Mix = new TH1D(Form("hTemp1Mix_%d_%d",iBinPsi,iBinVertex),Form("hTemp1Mix_%d_%d",iBinPsi,iBinVertex),hTempHelper1Mix->GetNbinsX()/2,0,helperEndBin);
+      TH1D* hTemp2Mix = new TH1D(Form("hTemp2Mix_%d_%d",iBinPsi,iBinVertex),Form("hTemp2Mix_%d_%d",iBinPsi,iBinVertex),hTempHelper2Mix->GetNbinsX()/2,0,helperEndBin);
+      TH1D* hTemp3Mix = new TH1D(Form("hTemp3Mix_%d_%d",iBinPsi,iBinVertex),Form("hTemp3Mix_%d_%d",iBinPsi,iBinVertex),hTempHelper3Mix->GetNbinsX()/2,0,helperEndBin);
+      TH1D* hTemp4Mix = new TH1D(Form("hTemp4Mix_%d_%d",iBinPsi,iBinVertex),Form("hTemp4Mix_%d_%d",iBinPsi,iBinVertex),hTempHelper4Mix->GetNbinsX()/2,0,helperEndBin);
+
+
+      hTempPos1->Sumw2();
+      hTempPos2->Sumw2();
+      hTempPos3->Sumw2();
+      hTempPos4->Sumw2();
+      hTempPos1Mix->Sumw2();
+      hTempPos2Mix->Sumw2();
+      hTempPos3Mix->Sumw2();
+      hTempPos4Mix->Sumw2();
+
       hTemp1->Sumw2();
       hTemp2->Sumw2();
       hTemp3->Sumw2();
@@ -978,7 +1024,122 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
       hTemp2Mix->Sumw2();
       hTemp3Mix->Sumw2();
       hTemp4Mix->Sumw2();
-      
+
+
+      for(Int_t i=0;i<hTempHelper1->GetNbinsX();i++){
+
+	Double_t binCenter  = hTempHelper1->GetXaxis()->GetBinCenter(i+1);
+
+	if(iVariablePair==1){
+	  if(binCenter>0){
+	    hTempPos1->SetBinContent(hTempPos1->FindBin(binCenter),hTempHelper1->GetBinContent(i+1));
+	    hTempPos2->SetBinContent(hTempPos2->FindBin(binCenter),hTempHelper2->GetBinContent(i+1));
+	    hTempPos3->SetBinContent(hTempPos3->FindBin(binCenter),hTempHelper3->GetBinContent(i+1));
+	    hTempPos4->SetBinContent(hTempPos4->FindBin(binCenter),hTempHelper4->GetBinContent(i+1));
+	    hTempPos1Mix->SetBinContent(hTempPos1Mix->FindBin(binCenter),hTempHelper1Mix->GetBinContent(i+1));
+	    hTempPos2Mix->SetBinContent(hTempPos2Mix->FindBin(binCenter),hTempHelper2Mix->GetBinContent(i+1));
+	    hTempPos3Mix->SetBinContent(hTempPos3Mix->FindBin(binCenter),hTempHelper3Mix->GetBinContent(i+1));
+	    hTempPos4Mix->SetBinContent(hTempPos4Mix->FindBin(binCenter),hTempHelper4Mix->GetBinContent(i+1));
+
+	    hTempPos1->SetBinError(hTempPos1->FindBin(binCenter),hTempHelper1->GetBinError(i+1));
+	    hTempPos2->SetBinError(hTempPos2->FindBin(binCenter),hTempHelper2->GetBinError(i+1));
+	    hTempPos3->SetBinError(hTempPos3->FindBin(binCenter),hTempHelper3->GetBinError(i+1));
+	    hTempPos4->SetBinError(hTempPos4->FindBin(binCenter),hTempHelper4->GetBinError(i+1));
+	    hTempPos1Mix->SetBinError(hTempPos1Mix->FindBin(binCenter),hTempHelper1Mix->GetBinError(i+1));
+	    hTempPos2Mix->SetBinError(hTempPos2Mix->FindBin(binCenter),hTempHelper2Mix->GetBinError(i+1));
+	    hTempPos3Mix->SetBinError(hTempPos3Mix->FindBin(binCenter),hTempHelper3Mix->GetBinError(i+1));
+	    hTempPos4Mix->SetBinError(hTempPos4Mix->FindBin(binCenter),hTempHelper4Mix->GetBinError(i+1));
+	  }
+	  else{
+	    hTemp1->SetBinContent(hTemp1->FindBin(-binCenter),hTempHelper1->GetBinContent(i+1));
+	    hTemp2->SetBinContent(hTemp2->FindBin(-binCenter),hTempHelper2->GetBinContent(i+1));
+	    hTemp3->SetBinContent(hTemp3->FindBin(-binCenter),hTempHelper3->GetBinContent(i+1));
+	    hTemp4->SetBinContent(hTemp4->FindBin(-binCenter),hTempHelper4->GetBinContent(i+1));
+	    hTemp1Mix->SetBinContent(hTemp1Mix->FindBin(-binCenter),hTempHelper1Mix->GetBinContent(i+1));
+	    hTemp2Mix->SetBinContent(hTemp2Mix->FindBin(-binCenter),hTempHelper2Mix->GetBinContent(i+1));
+	    hTemp3Mix->SetBinContent(hTemp3Mix->FindBin(-binCenter),hTempHelper3Mix->GetBinContent(i+1));
+	    hTemp4Mix->SetBinContent(hTemp4Mix->FindBin(-binCenter),hTempHelper4Mix->GetBinContent(i+1));
+
+	    hTemp1->SetBinError(hTemp1->FindBin(-binCenter),hTempHelper1->GetBinError(i+1));
+	    hTemp2->SetBinError(hTemp2->FindBin(-binCenter),hTempHelper2->GetBinError(i+1));
+	    hTemp3->SetBinError(hTemp3->FindBin(-binCenter),hTempHelper3->GetBinError(i+1));
+	    hTemp4->SetBinError(hTemp4->FindBin(-binCenter),hTempHelper4->GetBinError(i+1));
+	    hTemp1Mix->SetBinError(hTemp1Mix->FindBin(-binCenter),hTempHelper1Mix->GetBinError(i+1));
+	    hTemp2Mix->SetBinError(hTemp2Mix->FindBin(-binCenter),hTempHelper2Mix->GetBinError(i+1));
+	    hTemp3Mix->SetBinError(hTemp3Mix->FindBin(-binCenter),hTempHelper3Mix->GetBinError(i+1));
+	    hTemp4Mix->SetBinError(hTemp4Mix->FindBin(-binCenter),hTempHelper4Mix->GetBinError(i+1));
+	  }
+	}
+	else if(iVariablePair==2){
+	  if(binCenter>0 && binCenter<TMath::Pi()){
+	    hTempPos1->SetBinContent(hTempPos1->FindBin(binCenter),hTempHelper1->GetBinContent(i+1));
+	    hTempPos2->SetBinContent(hTempPos2->FindBin(binCenter),hTempHelper2->GetBinContent(i+1));
+	    hTempPos3->SetBinContent(hTempPos3->FindBin(binCenter),hTempHelper3->GetBinContent(i+1));
+	    hTempPos4->SetBinContent(hTempPos4->FindBin(binCenter),hTempHelper4->GetBinContent(i+1));
+	    hTempPos1Mix->SetBinContent(hTempPos1Mix->FindBin(binCenter),hTempHelper1Mix->GetBinContent(i+1));
+	    hTempPos2Mix->SetBinContent(hTempPos2Mix->FindBin(binCenter),hTempHelper2Mix->GetBinContent(i+1));
+	    hTempPos3Mix->SetBinContent(hTempPos3Mix->FindBin(binCenter),hTempHelper3Mix->GetBinContent(i+1));
+	    hTempPos4Mix->SetBinContent(hTempPos4Mix->FindBin(binCenter),hTempHelper4Mix->GetBinContent(i+1));
+
+	    hTempPos1->SetBinError(hTempPos1->FindBin(binCenter),hTempHelper1->GetBinError(i+1));
+	    hTempPos2->SetBinError(hTempPos2->FindBin(binCenter),hTempHelper2->GetBinError(i+1));
+	    hTempPos3->SetBinError(hTempPos3->FindBin(binCenter),hTempHelper3->GetBinError(i+1));
+	    hTempPos4->SetBinError(hTempPos4->FindBin(binCenter),hTempHelper4->GetBinError(i+1));
+	    hTempPos1Mix->SetBinError(hTempPos1Mix->FindBin(binCenter),hTempHelper1Mix->GetBinError(i+1));
+	    hTempPos2Mix->SetBinError(hTempPos2Mix->FindBin(binCenter),hTempHelper2Mix->GetBinError(i+1));
+	    hTempPos3Mix->SetBinError(hTempPos3Mix->FindBin(binCenter),hTempHelper3Mix->GetBinError(i+1));
+	    hTempPos4Mix->SetBinError(hTempPos4Mix->FindBin(binCenter),hTempHelper4Mix->GetBinError(i+1));
+	  }
+	  else if(binCenter<0){
+	    hTemp1->SetBinContent(hTemp1->FindBin(-binCenter),hTempHelper1->GetBinContent(i+1));
+	    hTemp2->SetBinContent(hTemp2->FindBin(-binCenter),hTempHelper2->GetBinContent(i+1));
+	    hTemp3->SetBinContent(hTemp3->FindBin(-binCenter),hTempHelper3->GetBinContent(i+1));
+	    hTemp4->SetBinContent(hTemp4->FindBin(-binCenter),hTempHelper4->GetBinContent(i+1));
+	    hTemp1Mix->SetBinContent(hTemp1Mix->FindBin(-binCenter),hTempHelper1Mix->GetBinContent(i+1));
+	    hTemp2Mix->SetBinContent(hTemp2Mix->FindBin(-binCenter),hTempHelper2Mix->GetBinContent(i+1));
+	    hTemp3Mix->SetBinContent(hTemp3Mix->FindBin(-binCenter),hTempHelper3Mix->GetBinContent(i+1));
+	    hTemp4Mix->SetBinContent(hTemp4Mix->FindBin(-binCenter),hTempHelper4Mix->GetBinContent(i+1));
+
+	    hTemp1->SetBinError(hTemp1->FindBin(-binCenter),hTempHelper1->GetBinError(i+1));
+	    hTemp2->SetBinError(hTemp2->FindBin(-binCenter),hTempHelper2->GetBinError(i+1));
+	    hTemp3->SetBinError(hTemp3->FindBin(-binCenter),hTempHelper3->GetBinError(i+1));
+	    hTemp4->SetBinError(hTemp4->FindBin(-binCenter),hTempHelper4->GetBinError(i+1));
+	    hTemp1Mix->SetBinError(hTemp1Mix->FindBin(-binCenter),hTempHelper1Mix->GetBinError(i+1));
+	    hTemp2Mix->SetBinError(hTemp2Mix->FindBin(-binCenter),hTempHelper2Mix->GetBinError(i+1));
+	    hTemp3Mix->SetBinError(hTemp3Mix->FindBin(-binCenter),hTempHelper3Mix->GetBinError(i+1));
+	    hTemp4Mix->SetBinError(hTemp4Mix->FindBin(-binCenter),hTempHelper4Mix->GetBinError(i+1));
+	  }
+	  else{
+	    hTemp1->SetBinContent(hTemp1->FindBin(TMath::Pi()-binCenter),hTempHelper1->GetBinContent(i+1));
+	    hTemp2->SetBinContent(hTemp2->FindBin(TMath::Pi()-binCenter),hTempHelper2->GetBinContent(i+1));
+	    hTemp3->SetBinContent(hTemp3->FindBin(TMath::Pi()-binCenter),hTempHelper3->GetBinContent(i+1));
+	    hTemp4->SetBinContent(hTemp4->FindBin(TMath::Pi()-binCenter),hTempHelper4->GetBinContent(i+1));
+	    hTemp1Mix->SetBinContent(hTemp1Mix->FindBin(TMath::Pi()-binCenter),hTempHelper1Mix->GetBinContent(i+1));
+	    hTemp2Mix->SetBinContent(hTemp2Mix->FindBin(TMath::Pi()-binCenter),hTempHelper2Mix->GetBinContent(i+1));
+	    hTemp3Mix->SetBinContent(hTemp3Mix->FindBin(TMath::Pi()-binCenter),hTempHelper3Mix->GetBinContent(i+1));
+	    hTemp4Mix->SetBinContent(hTemp4Mix->FindBin(TMath::Pi()-binCenter),hTempHelper4Mix->GetBinContent(i+1));
+
+	    hTemp1->SetBinError(hTemp1->FindBin(TMath::Pi()-binCenter),hTempHelper1->GetBinError(i+1));
+	    hTemp2->SetBinError(hTemp2->FindBin(TMath::Pi()-binCenter),hTempHelper2->GetBinError(i+1));
+	    hTemp3->SetBinError(hTemp3->FindBin(TMath::Pi()-binCenter),hTempHelper3->GetBinError(i+1));
+	    hTemp4->SetBinError(hTemp4->FindBin(TMath::Pi()-binCenter),hTempHelper4->GetBinError(i+1));
+	    hTemp1Mix->SetBinError(hTemp1Mix->FindBin(TMath::Pi()-binCenter),hTempHelper1Mix->GetBinError(i+1));
+	    hTemp2Mix->SetBinError(hTemp2Mix->FindBin(TMath::Pi()-binCenter),hTempHelper2Mix->GetBinError(i+1));
+	    hTemp3Mix->SetBinError(hTemp3Mix->FindBin(TMath::Pi()-binCenter),hTempHelper3Mix->GetBinError(i+1));
+	    hTemp4Mix->SetBinError(hTemp4Mix->FindBin(TMath::Pi()-binCenter),hTempHelper4Mix->GetBinError(i+1));
+	  }
+	}
+      }
+
+      hTemp1->Add(hTempPos1);
+      hTemp2->Add(hTempPos2);
+      hTemp3->Add(hTempPos3);
+      hTemp4->Add(hTempPos4);
+      hTemp1Mix->Add(hTempPos1Mix);
+      hTemp2Mix->Add(hTempPos2Mix);
+      hTemp3Mix->Add(hTempPos3Mix);
+      hTemp4Mix->Add(hTempPos4Mix);
+
       hTemp1->Scale(1./hTemp5->GetEntries());
       hTemp3->Scale(1./hTemp5->GetEntries());
       hTemp2->Scale(1./hTemp6->GetEntries());
@@ -1011,6 +1172,23 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
 	h4->Add(hTemp4);
       }
 
+      delete hTemp1;
+      delete hTemp2;
+      delete hTemp3;
+      delete hTemp4;
+      delete hTemp1Mix;
+      delete hTemp2Mix;
+      delete hTemp3Mix;
+      delete hTemp4Mix;
+
+      delete hTempPos1;
+      delete hTempPos2;
+      delete hTempPos3;
+      delete hTempPos4;
+      delete hTempPos1Mix;
+      delete hTempPos2Mix;
+      delete hTempPos3Mix;
+      delete hTempPos4Mix;
     }
   }
 

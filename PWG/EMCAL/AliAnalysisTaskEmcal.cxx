@@ -1,4 +1,4 @@
-// $Id: AliAnalysisTaskEmcal.cxx 64518 2013-10-14 12:44:52Z loizides $
+// $Id$
 //
 // Emcal base analysis task.
 //
@@ -400,7 +400,7 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *)
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskEmcal::AcceptCluster(AliVCluster *clus, const Int_t c) const
+Bool_t AliAnalysisTaskEmcal::AcceptCluster(AliVCluster *clus, Int_t c) const
 {
   // Return true if cluster is accepted.
 
@@ -1040,7 +1040,7 @@ AliClusterContainer* AliAnalysisTaskEmcal::AddClusterContainer(const char *n) {
 }
 
 //________________________________________________________________________
-AliParticleContainer* AliAnalysisTaskEmcal::GetParticleContainer(const Int_t i) const {
+AliParticleContainer* AliAnalysisTaskEmcal::GetParticleContainer(Int_t i) const {
   // Get i^th particle container
 
   if(i<0 || i>fParticleCollArray.GetEntriesFast()) return 0;
@@ -1049,7 +1049,7 @@ AliParticleContainer* AliAnalysisTaskEmcal::GetParticleContainer(const Int_t i) 
 }
 
 //________________________________________________________________________
-AliClusterContainer* AliAnalysisTaskEmcal::GetClusterContainer(const Int_t i) const {
+AliClusterContainer* AliAnalysisTaskEmcal::GetClusterContainer(Int_t i) const {
   // Get i^th cluster container
 
   if(i<0 || i>fClusterCollArray.GetEntriesFast()) return 0;

@@ -45,6 +45,7 @@ const char* AliDielectronEventCuts::fgkVtxNames[AliDielectronEventCuts::kVtxTrac
 
 AliDielectronEventCuts::AliDielectronEventCuts() :
   AliAnalysisCuts(),
+  fRun(),
   fVtxZmin(0.),
   fVtxZmax(0.),
   fRequireVtx(kFALSE),
@@ -74,6 +75,7 @@ AliDielectronEventCuts::AliDielectronEventCuts() :
 //______________________________________________
 AliDielectronEventCuts::AliDielectronEventCuts(const char* name, const char* title) :
   AliAnalysisCuts(name, title),
+  fRun(),
   fVtxZmin(0.),
   fVtxZmax(0.),
   fRequireVtx(kFALSE),
@@ -231,6 +233,14 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
   
   AliAODEvent *ev=dynamic_cast<AliAODEvent*>(event);
   if (!ev) return kFALSE;
+
+  // run rejection
+  Int_t run = ev->GetRunNumber();
+  if(fRun.GetNrows()) {
+    for(Int_t irun=0; irun<fRun.GetNrows(); irun++) {
+      if(fRun(irun)==run) return kFALSE;
+    }
+  }
 
   if (fCentMin<fCentMax){
     AliCentrality *centrality=ev->GetCentrality();

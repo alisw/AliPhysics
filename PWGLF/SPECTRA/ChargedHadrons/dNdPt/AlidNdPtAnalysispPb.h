@@ -55,7 +55,7 @@ public :
   TFolder* GetAnalysisFolder() const {return fAnalysisFolder;}
 
   // Fill control histograms
-  void SetHistogramsOn(const Bool_t histOn=kTRUE) {fHistogramsOn = histOn;}
+  void SetHistogramsOn(Bool_t histOn=kTRUE) {fHistogramsOn = histOn;}
   Bool_t IsHistogramsOn() const {return fHistogramsOn;}
 
   // Define 0-multiplicity bin for LHC

@@ -46,13 +46,13 @@ Detailed description
 
 ClassImp(AliDielectronPID)
 
-TGraph *AliDielectronPID::fgFitCorr=0x0;
+TGraph  *AliDielectronPID::fgFitCorr=0x0;
 Double_t AliDielectronPID::fgCorr=0.0;
 Double_t AliDielectronPID::fgCorrdEdx=1.0;
-TF1 *AliDielectronPID::fgFunEtaCorr=0x0;
-TF1 *AliDielectronPID::fgFunCntrdCorr=0x0;
-TF1 *AliDielectronPID::fgFunWdthCorr=0x0;
-TGraph *AliDielectronPID::fgdEdxRunCorr=0x0;
+TF1     *AliDielectronPID::fgFunEtaCorr=0x0;
+TF1     *AliDielectronPID::fgFunCntrdCorr=0x0;
+TF1     *AliDielectronPID::fgFunWdthCorr=0x0;
+TGraph  *AliDielectronPID::fgdEdxRunCorr=0x0;
 
 AliDielectronPID::AliDielectronPID() :
   AliAnalysisCuts(),
@@ -660,23 +660,6 @@ Double_t AliDielectronPID::GetEtaCorr(const AliVTrack *track)
 }
 
 //______________________________________________
-void AliDielectronPID::SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary, UInt_t varz)
-{
-  fun->GetHistogram()->GetXaxis()->SetUniqueID(varx);
-  fun->GetHistogram()->GetYaxis()->SetUniqueID(vary);
-  fun->GetHistogram()->GetZaxis()->SetUniqueID(varz);
-  fgFunCntrdCorr=fun;
-}
-//______________________________________________
-void AliDielectronPID::SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary, UInt_t varz)
-{
-  fun->GetHistogram()->GetXaxis()->SetUniqueID(varx);
-  fun->GetHistogram()->GetYaxis()->SetUniqueID(vary);
-  fun->GetHistogram()->GetZaxis()->SetUniqueID(varz);
-  fgFunWdthCorr=fun;
-}
-
-//______________________________________________
 Double_t AliDielectronPID::GetPIDCorr(const AliVTrack *track, TF1 *fun)
 {
   //
@@ -693,6 +676,6 @@ Double_t AliDielectronPID::GetPIDCorr(const AliVTrack *track, TF1 *fun)
   if(dim>1) var[1] = values[fun->GetHistogram()->GetYaxis()->GetUniqueID()];
   if(dim>2) var[2] = values[fun->GetHistogram()->GetZaxis()->GetUniqueID()];
   Double_t corr = fun->Eval(var[0],var[1],var[2]);
-  // printf(" %d-dim CORR value: %f (track %p) \n",dim,corr,track);
+  //  printf("%d-dim CORR value: %f (track %p) \n",dim,corr,track);
   return corr;
 }

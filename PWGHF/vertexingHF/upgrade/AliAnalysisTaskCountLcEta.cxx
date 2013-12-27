@@ -43,7 +43,7 @@ ClassImp(AliAnalysisTaskCountLcEta) // adding the class to ROOT
 
 
 //__________________________________________________________________
-AliAnalysisTaskCountLcEta::AliAnalysisTaskCountLcEta(const char *name,const Int_t ncuts,Double_t *cuts)
+AliAnalysisTaskCountLcEta::AliAnalysisTaskCountLcEta(const char *name, Int_t ncuts,Double_t *cuts)
 : AliAnalysisTaskSE(name)
   , fESD(0)
   , fAOD(0)

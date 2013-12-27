@@ -179,7 +179,7 @@ const Double_t AliCDMesonBase::fgkMaxVerticesDistance = 5.; // upper border
 
 
 //------------------------------------------------------------------------------
-Int_t AliCDMesonBase::GetGapBin(TString tag, const Int_t gapcg,
+Int_t AliCDMesonBase::GetGapBin(TString tag, Int_t gapcg,
                                 Bool_t checkCentralActivity /* = kTRUE */)
 {
 	//
@@ -231,8 +231,8 @@ Int_t AliCDMesonBase::GetGapBin(TString tag, const Int_t gapcg,
 
 
 //------------------------------------------------------------------------------
-void AliCDMesonBase::CheckRange(Double_t &var, const Double_t min,
-                                const Double_t max)
+void AliCDMesonBase::CheckRange(Double_t &var, Double_t min,
+                                Double_t max)
 {
 	//
 	// check whether the value is with in the range specified with min and max
@@ -339,19 +339,19 @@ THnSparseD * AliCDMesonBase::GetThnMother(TString name /* = "CDMeson_Mother" */)
 
 
 //------------------------------------------------------------------------------
-void AliCDMesonBase::FillThnMother(THnSparseD *thn, const Double_t vNch,
-                                   const Double_t vCombCh,
-                                   const Double_t vCombPID, const Double_t vV0,
-                                   const Double_t vFMD, const Double_t vSPD,
-                                   const Double_t vTPC, const Double_t vMass,
-                                   const Double_t vPt,  const Double_t vOA,
-                                   const Double_t vCTS,
-                                   const Double_t vDaughterPt,
-                                   const Double_t vTrackResiduals,
-                                   const Double_t vVertexZ,
-                                   const Double_t vProcessType,
-                                   const Double_t vVertexCoincidence,
-                                   const Double_t vTrkltResiduals)
+void AliCDMesonBase::FillThnMother(THnSparseD *thn, Double_t vNch,
+                                   Double_t vCombCh,
+                                   Double_t vCombPID, Double_t vV0,
+                                   Double_t vFMD, Double_t vSPD,
+                                   Double_t vTPC, Double_t vMass,
+                                   Double_t vPt,  Double_t vOA,
+                                   Double_t vCTS,
+                                   Double_t vDaughterPt,
+                                   Double_t vTrackResiduals,
+                                   Double_t vVertexZ,
+                                   Double_t vProcessType,
+                                   Double_t vVertexCoincidence,
+                                   Double_t vTrkltResiduals)
 {
 	//
 	// fill ThnMother
@@ -378,7 +378,7 @@ void AliCDMesonBase::FillThnMother(THnSparseD *thn, const Double_t vNch,
 
 
 //------------------------------------------------------------------------------
-Int_t AliCDMesonBase::GetAxisMother(const TString name)
+Int_t AliCDMesonBase::GetAxisMother(TString name)
 {
 	//
 	// return axis number corresponding to the name
@@ -434,22 +434,22 @@ THnSparseD* AliCDMesonBase::GetThnEmptyEvents()
 
 
 //------------------------------------------------------------------------------
-void AliCDMesonBase::FillThnEmptyEvents(THnSparseD * thn, const Int_t eventType,
-                                        const Int_t multFMDA,
-                                        const Int_t multFMDC,
-                                        const Int_t multSPDIA,
-                                        const Int_t multSPDIC,
-                                        const Int_t multSPDOA,
-                                        const Int_t multSPDOC,
-                                        const Int_t multSPDtrkltA,
-                                        const Int_t multSPDtrkltC,
-                                        const Int_t fmdSum1I,
-                                        const Int_t fmdSum2I,
-                                        const Int_t fmdSum2O,
-                                        const Int_t fmdSum3I,
-                                        const Int_t fmdSum3O/*,
-                                        const Int_t multTPC,
-                                        const Int_t multTPCdiffVertex */)
+void AliCDMesonBase::FillThnEmptyEvents(THnSparseD * thn, Int_t eventType,
+                                        Int_t multFMDA,
+                                        Int_t multFMDC,
+                                        Int_t multSPDIA,
+                                        Int_t multSPDIC,
+                                        Int_t multSPDOA,
+                                        Int_t multSPDOC,
+                                        Int_t multSPDtrkltA,
+                                        Int_t multSPDtrkltC,
+                                        Int_t fmdSum1I,
+                                        Int_t fmdSum2I,
+                                        Int_t fmdSum2O,
+                                        Int_t fmdSum3I,
+                                        Int_t fmdSum3O/*,
+                                        Int_t multTPC,
+                                        Int_t multTPCdiffVertex */)
 {
 	//
 	// Fill ThnEmptyEvents
@@ -472,7 +472,7 @@ void AliCDMesonBase::FillThnEmptyEvents(THnSparseD * thn, const Int_t eventType,
 
 
 //------------------------------------------------------------------------------
-Int_t AliCDMesonBase::GetAxisEmptyEvents(const TString name)
+Int_t AliCDMesonBase::GetAxisEmptyEvents(TString name)
 {
 	//
 	// return axis number corresponding to the name
@@ -528,18 +528,18 @@ THnSparseD* AliCDMesonBase::GetThnMultiplicity()
 
 
 //------------------------------------------------------------------------------
-void AliCDMesonBase::FillThnMultiplicity(THnSparseD *thn, const Double_t vNch,
-                                         const Double_t vNsoft,
-                                         const Double_t vNcombined,
-                                         const Double_t vV0,
-                                         const Double_t vFMD,
-                                         const Double_t vSPD,
-                                         const Double_t vTPC,
-                                         const Double_t vNresidualTracks,
-                                         const Double_t vNresidualTracklets,
-                                         const Double_t vVertexZ,
-                                         const Double_t vVerticesDistance,
-                                         const Double_t vProcessType)
+void AliCDMesonBase::FillThnMultiplicity(THnSparseD *thn, Double_t vNch,
+                                         Double_t vNsoft,
+                                         Double_t vNcombined,
+                                         Double_t vV0,
+                                         Double_t vFMD,
+                                         Double_t vSPD,
+                                         Double_t vTPC,
+                                         Double_t vNresidualTracks,
+                                         Double_t vNresidualTracklets,
+                                         Double_t vVertexZ,
+                                         Double_t vVerticesDistance,
+                                         Double_t vProcessType)
 {
 	// fill ThnMultiplicity
 	// input list copied from GetTitle
@@ -561,7 +561,7 @@ void AliCDMesonBase::FillThnMultiplicity(THnSparseD *thn, const Double_t vNch,
 
 
 //------------------------------------------------------------------------------
-Int_t AliCDMesonBase::GetAxisMultiplicity(const TString name)
+Int_t AliCDMesonBase::GetAxisMultiplicity(TString name)
 {
 	//
 	// return axis number corresponding to the name
@@ -712,7 +712,7 @@ TObjArray* AliCDMesonBase::GetHistVZEROStudies(TList* l)
 
 //------------------------------------------------------------------------------
 void AliCDMesonBase::GetGapTriggers(THnSparseI* gaprun, Int_t gapCondition,
-                                    const Int_t run, Double_t& triggers,
+                                    Int_t run, Double_t& triggers,
                                     Double_t& total)
 {
 	// determine the number of certain triggers with a gap in the detectors
@@ -735,7 +735,7 @@ void AliCDMesonBase::GetGapTriggers(THnSparseI* gaprun, Int_t gapCondition,
 
 //------------------------------------------------------------------------------
 void AliCDMesonBase::GetNoGapTriggers(THnSparseI* gaprun, Int_t gapCondition,
-                                      const Int_t run, Double_t& triggers,
+                                      Int_t run, Double_t& triggers,
                                       Double_t& total)
 {
 	// determine the number of certain triggers with a NO gap in the detectors

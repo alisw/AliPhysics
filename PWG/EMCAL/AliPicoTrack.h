@@ -11,7 +11,7 @@ class AliPicoTrack: public AliVTrack {
  public:
   AliPicoTrack();
   AliPicoTrack(Double_t pt, Double_t eta, Double_t phi, Byte_t q, Int_t label, Byte_t type,
-               Double_t etaemc=0, Double_t phiemc=0, Double_t ptemc=0, Bool_t ise=0);
+               Double_t etaemc=0, Double_t phiemc=0, Double_t ptemc=0, Bool_t ise=0, Double_t mass=0.13957);
   ~AliPicoTrack() {;}
   AliPicoTrack(const AliPicoTrack &pc); 
   AliPicoTrack &operator=(const AliPicoTrack &pc);
@@ -31,7 +31,7 @@ class AliPicoTrack: public AliVTrack {
   Double_t Phi()                       const { return fPhi;    }
   Double_t Theta()                     const { return 2*TMath::ATan(TMath::Exp(-fEta));         }
   Double_t E()                         const { Double_t p=P(); return TMath::Sqrt(M()*M()+p*p); }
-  Double_t M()                         const { return 0.13957; }
+  Double_t M()                         const { return fM; }
   Double_t Eta()                       const { return fEta;    }
   Double_t Y()                         const { return 0.5*TMath::Log((E()+Pz())/(E()-Pz()));  }
   Short_t  Charge()                    const { return (char)fQ;}
@@ -69,6 +69,7 @@ class AliPicoTrack: public AliVTrack {
   Double32_t       fPt;       //[0,0,12]   pt at vertex
   Double32_t       fEta;      //[-1,1,12]  eta at vertex
   Double32_t       fPhi;      //[0,6.3,12] phi at vertex
+  Double32_t       fM;        //           mass
   Byte_t           fQ;        //           charge
   Int_t            fLabel;    //           label  
   Byte_t           fTrackType;//           0=global track; 1=w/o SPD, w/ ITS refit; 2=w/o SPD, w/o ITS refit
@@ -79,6 +80,6 @@ class AliPicoTrack: public AliVTrack {
   Short_t          fClusId;   //!          cluster id of matched cluster; -1 if not set
 
 
-  ClassDef(AliPicoTrack, 5) // Pico track class
+  ClassDef(AliPicoTrack, 6) // Pico track class
 };
 #endif

@@ -2959,15 +2959,6 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       noverlaps = GetMCAnalysisUtils()->GetNOverlaps(calo->GetLabels(), nlabels,tag,mesonLabel,GetReader(),overpdg);
     }
     
-    Int_t inlm = 2;
-    if     ( nMaxima == 1 ) inlm = 0;
-    else if( nMaxima == 2 ) inlm = 1;
-    else if( nMaxima < 1 )
-    {
-      Info("MakeShowerShapeIdentification","Wrong number of maxima %d\n",nMaxima);
-      return;
-    }
-    
     //mass of all clusters
     fhMass       ->Fill(mom.E() ,mass);
     fhMassPt     ->Fill(mom.Pt(),mass);

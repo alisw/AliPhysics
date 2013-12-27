@@ -129,6 +129,12 @@ public:
   void SetTRDcorrectionFilename(const Char_t* filename) {fTRDpidCorrectionFilename = filename;}
   void SetVZEROCalibrationFilename(const Char_t* filename) {fVZEROCalibrationFilename = filename;}
   void SetVZERORecenteringFilename(const Char_t* filename) {fVZERORecenteringFilename = filename;}
+  void SetEffMapFilename(const Char_t* filename) {fEffMapFilename = filename;}
+
+  void SetZDCRecenteringFilename(const Char_t* filename) {fZDCRecenteringFilename = filename;}
+
+  void SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
 
   void SaveDebugTree();
 
@@ -136,6 +142,8 @@ private:
 
   Bool_t fCutQA;                    // monitor cuts
   AliDielectronCutQA *fQAmonitor;   // monitoring of cuts
+  TF1 *fPostPIDCntrdCorr;   // post pid correction object for centroids
+  TF1 *fPostPIDWdthCorr;    // post pid correction object for widths
   AliAnalysisFilter fEventFilter;    // Event cuts
   AliAnalysisFilter fTrackFilter;    // leg cuts
   AliAnalysisFilter fPairPreFilter;  // pair prefilter cuts
@@ -200,6 +208,8 @@ private:
   TString fTRDpidCorrectionFilename;         // name for the file containing the single particle TRD pid corrections
   TString fVZEROCalibrationFilename;         // file containing VZERO channel-by-channel calibration
   TString fVZERORecenteringFilename;         // file containing VZERO Q-vector recentering averages
+  TString fEffMapFilename;                   // file containing single electron efficiencies
+  TString fZDCRecenteringFilename;         // file containing ZDCQ-vector recentering averages
 
   void ProcessMC(AliVEvent *ev1);
   
@@ -215,7 +225,7 @@ private:
   AliDielectron(const AliDielectron &c);
   AliDielectron &operator=(const AliDielectron &c);
   
-  ClassDef(AliDielectron,6);
+  ClassDef(AliDielectron,7);
 };
 
 inline void AliDielectron::InitPairCandidateArrays()

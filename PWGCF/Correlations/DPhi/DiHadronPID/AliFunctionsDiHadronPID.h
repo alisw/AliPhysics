@@ -18,6 +18,9 @@ protected:
 	~AliFunctionsDiHadronPID();
 
 public:
+	// Math.
+	static Int_t Power(Int_t base, Int_t power);
+
 	// Natural constants.
 	static Double_t Charge() {return 1.60217646e-19;}	// (C)
 	static Double_t C() {return 2.99792458e+8;}			// (m/s)
@@ -63,14 +66,6 @@ public:
 		Double_t mux, Double_t muy, Double_t sigmax, Double_t sigmay, 
 		Double_t tailx, Double_t taily, Double_t binwidthx = 1., Double_t binwidthy = 1.);
 
-	// FUNCTIONS THAT ARE NOT BEING USED ANYMORE.
-/*
-	static Double_t Gaussian1D(Double_t *x, Double_t *par);
-	static Double_t Gaussian1DTail(Double_t *x, Double_t *par);	
-	static Double_t Exponent(Double_t *x, Double_t *par);
-	static Double_t SimpleTOFfit(Double_t *x, Double_t *par);
-	static Double_t SimpleTOFfitWithTail(Double_t *x, Double_t *par);
-*/
 	// Penalty Functions.
 	static Double_t PolyPenalty(Double_t xx, Double_t center, Double_t flatwidth, Int_t polyorder);
 	static TCanvas* TestPolyPenalty(Double_t range = 3., Double_t center = 1., Double_t flatwidth = 1., Int_t polyorder = 3);

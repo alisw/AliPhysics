@@ -37,6 +37,10 @@ Contact: bhess@cern.ch
 
 ClassImp(AliAnalysisTaskPID)
 
+const Double_t AliAnalysisTaskPID::fgkEpsilon = 1e-8; // Double_t threshold above zero
+const Double_t AliAnalysisTaskPID::fgkOneOverSqrt2 = 0.707106781186547462; // = 1. / TMath::Sqrt2();
+const Double_t AliAnalysisTaskPID::fgkSigmaReferenceForTransitionPars = 0.05; // Reference sigma chosen to calculate transition parameters
+
 //________________________________________________________________________
 AliAnalysisTaskPID::AliAnalysisTaskPID()
   : AliAnalysisTaskPIDV0base()
@@ -905,9 +909,6 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     
     
     // Apply detector level track cuts
-    //if (track->GetTPCsignalN() < 60)
-    //  continue;
-    
     Double_t dEdxTPC = fPIDResponse->IsTunedOnData() ? fPIDResponse->GetTPCsignalTunedOnData(track) : track->GetTPCsignal();
     if (dEdxTPC <= 0)
       continue;
@@ -915,8 +916,12 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     if(fTrackFilter && !fTrackFilter->IsSelected(track))
       continue;
     
-    if (fUseTPCCutMIGeo) {
+    if (GetUseTPCCutMIGeo()) {
       if (!TPCCutMIGeo(track, fEvent))
+        continue;
+    }
+    else if (GetUseTPCnclCut()) {
+      if (!TPCnclCut(track))
         continue;
     }
     
@@ -1877,6 +1882,15 @@ void AliAnalysisTaskPID::PrintSettings(Bool_t printSystematicsSettings) const
   printf("Eta cut: %.2f <= |eta| <= %.2f\n", GetEtaAbsCutLow(), GetEtaAbsCutUp());
   printf("Phi' cut: %d\n", GetUsePhiCut());
   printf("TPCCutMIGeo: %d\n", GetUseTPCCutMIGeo());
+  if (GetUseTPCCutMIGeo()) {
+    printf("GetCutGeo: %f\n", GetCutGeo());
+    printf("GetCutNcr: %f\n", GetCutNcr());
+    printf("GetCutNcl: %f\n", GetCutNcl());
+  }
+  printf("TPCnclCut: %d\n", GetUseTPCnclCut());
+  if (GetUseTPCnclCut()) {
+    printf("GetCutPureNcl: %d\n", GetCutPureNcl());
+  }
   
   printf("\n");
   

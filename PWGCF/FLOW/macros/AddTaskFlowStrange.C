@@ -53,6 +53,7 @@ Bool_t SFT_gbSPVZE;
 Bool_t SFT_gbSPTPC;
 Bool_t SFT_gbSPVZEhalf;
 Bool_t SFT_gbQCTPC;
+Bool_t SFT_gbMCEP;
 Int_t SFT_gbHarmonic;
 TString SFT_gbVZEload;
 Bool_t SFT_gbVZEsave;
@@ -64,6 +65,8 @@ Int_t SFT_gbV0ARingMin;
 Int_t SFT_gbV0ARingMax;
 
 Bool_t SFT_gbUntagDaughter;
+Int_t SFT_gbPostMatched;
+Double_t SFT_gbVertexZcut;
 
 void AddTaskFlowStrange(TString configFile, TString alienaddress,
 			Int_t VZECm=0, Int_t VZECM=3, Int_t VZEAm=0, Int_t VZEAM=3) {
@@ -122,6 +125,7 @@ void AddTaskFlowStrange() {
   AliAnalysisTaskFlowStrange *taskSel = new AliAnalysisTaskFlowStrange(Form("FS_%s",SFT_gbStamp.Data()) );
   taskSel->SelectCollisionCandidates(SFT_gbTrigger);
   taskSel->SetReadESD(SFT_gbReadESD);
+  taskSel->SetPostMatched(SFT_gbPostMatched);
   taskSel->SetReadMC(SFT_gbReadMC);
   taskSel->SetAvoidExec(SFT_gbAvoidExec);
   taskSel->SetSkipSelection(SFT_gbSkipSelection);
@@ -149,6 +153,7 @@ void AddTaskFlowStrange() {
   taskSel->SetRFPMinTPCCls(SFT_gbRFPTPCncls);
 
   taskSel->SetDauUnTagProcedure(SFT_gbUntagDaughter);
+  taskSel->SetVertexZcut(SFT_gbVertexZcut);
 
   taskSel->SetDauMinNClsTPC(SFT_gbMinNClsTPC);
   taskSel->SetDauMinXRows(SFT_gbMinXRows);
@@ -207,17 +212,22 @@ void AddTaskFlowStrange() {
   if( (!SFT_gbQCTPC) && (!SFT_gbSPVZE) && (!SFT_gbSPTPC) ) return;
   //-------------------FLOWPACKAGE TASKS----------------------------
   AliFlowTrackSimpleCuts *filter[20], *filterhf[20][2]; // MASS BANDS
-  for(int mb=0; mb!=SFT_MassBands(SFT_gbSpecie); ++mb) {
+  int mbs = SFT_MassBands(SFT_gbSpecie);
+  if(SFT_gbPostMatched) mbs = 1;
+  for(int mb=0; mb!=mbs; ++mb) {
     filter[mb] = new AliFlowTrackSimpleCuts( Form("Filter_MB%d",mb) );
     filter[mb]->SetEtaMin( -0.8 ); filter[mb]->SetEtaMax( +0.8 );
-    filter[mb]->SetMassMin( SFT_MassBandLowEdge(SFT_gbSpecie,mb) ); filter[mb]->SetMassMax( SFT_MassBandLowEdge(SFT_gbSpecie,mb+1) );
+    Double_t minmass = SFT_MassBandLowEdge(SFT_gbSpecie,mb);
+    Double_t maxmass = SFT_MassBandLowEdge(SFT_gbSpecie,mb+1);
+    if(SFT_gbPostMatched) maxmass = SFT_MassBandLowEdge(SFT_gbSpecie,SFT_MassBands(SFT_gbSpecie));
+    filter[mb]->SetMassMin( minmass ); filter[mb]->SetMassMax( maxmass );
     //half window for POIs
     filterhf[mb][0] = new AliFlowTrackSimpleCuts( Form("Filterhf0_MB%d",mb) );
     filterhf[mb][0]->SetEtaMin( +0.0 ); filterhf[mb][0]->SetEtaMax( +0.8 );
-    filterhf[mb][0]->SetMassMin( SFT_MassBandLowEdge(SFT_gbSpecie,mb) ); filterhf[mb][0]->SetMassMax( SFT_MassBandLowEdge(SFT_gbSpecie,mb+1) );
+    filterhf[mb][0]->SetMassMin( minmass ); filterhf[mb][0]->SetMassMax( maxmass );
     filterhf[mb][1] = new AliFlowTrackSimpleCuts( Form("Filterhf1_MB%d",mb) );
     filterhf[mb][1]->SetEtaMin( -0.8 ); filterhf[mb][1]->SetEtaMax( -0.0 );
-    filterhf[mb][1]->SetMassMin( SFT_MassBandLowEdge(SFT_gbSpecie,mb) ); filterhf[mb][1]->SetMassMax( SFT_MassBandLowEdge(SFT_gbSpecie,mb+1) );
+    filterhf[mb][1]->SetMassMin( minmass ); filterhf[mb][1]->SetMassMax( maxmass );
     if(SFT_gbQCTPC) {
       SFT_AddQCmethod( Form("QCTPCMB%d",mb), exc_TPC, filter[mb]); // QC TPC
     }
@@ -229,6 +239,9 @@ void AddTaskFlowStrange() {
       SFT_AddSPmethod( Form("SPTPC4MB%d",mb), exc_TPC, filterhf[mb][0], "Qa", 0.4 ); // SP TPC Qa
       SFT_AddSPmethod( Form("SPTPC4MB%d",mb), exc_TPC, filterhf[mb][1], "Qb", 0.4 ); // SP TPC Qb
     }
+    if(SFT_gbMCEP) {
+      SFT_AddMCEPmethod( Form("MCEPMB%d",mb), exc_TPC, filter[mb]); // MCEP TPC
+    }
     if(SFT_gbSPVZE) {
       if(SFT_gbSPVZEhalf) {
 	SFT_AddSPmethod( Form("SPVZEMB%d",mb), exc_VZE, filterhf[mb][0], "Qa", 1.0 ); // SP VZE Qa
@@ -239,6 +252,27 @@ void AddTaskFlowStrange() {
       }
     }
   }
+}
+void SFT_AddMCEPmethod(char *name, AliAnalysisDataContainer *flowEvent, AliFlowTrackSimpleCuts *cutsPOI=NULL) {
+  TString fileName = AliAnalysisManager::GetCommonFileName();
+  TString myFolder = Form("%sv%d",SFT_gbFolder.Data(),SFT_gbHarmonic);
+  TString myName = Form("%sv%d_%s",name,SFT_gbHarmonic,SFT_gbSuffix.Data());
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  AliAnalysisDataContainer *flowEvent2 = mgr->CreateContainer( Form("Filter_%s", myName.Data()),
+                                                               AliFlowEventSimple::Class(),
+                                                               AliAnalysisManager::kExchangeContainer );
+  AliAnalysisTaskFilterFE *tskFilter = new AliAnalysisTaskFilterFE( Form("TaskFilter_%s",myName.Data()),
+                                                                    NULL, cutsPOI);
+  mgr->AddTask(tskFilter);
+  mgr->ConnectInput( tskFilter,0,flowEvent);
+  mgr->ConnectOutput(tskFilter,1,flowEvent2);
+  AliAnalysisDataContainer *outQC = mgr->CreateContainer( myName.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,
+                                                          Form("%s:FlowStrange_MCEP_%s",fileName.Data(),myFolder.Data()) );
+  AliAnalysisTaskMCEventPlane *tskQC = new AliAnalysisTaskMCEventPlane( Form("TaskMCEP_%s",myName.Data()) );
+  tskQC->SetHarmonic(SFT_gbHarmonic);
+  mgr->AddTask(tskQC);
+  mgr->ConnectInput( tskQC,0,flowEvent2);
+  mgr->ConnectOutput(tskQC,1,outQC);
 }
 void SFT_AddQCmethod(char *name, AliAnalysisDataContainer *flowEvent, AliFlowTrackSimpleCuts *cutsPOI=NULL) {
   TString fileName = AliAnalysisManager::GetCommonFileName();
@@ -289,6 +323,8 @@ void SFT_AddSPmethod(char *name, AliAnalysisDataContainer *flowEvent, AliFlowTra
   mgr->ConnectOutput(tskSP,1,outSP);
 }
 double SFT_MassBandLowEdge( int nv0, int mb ) {
+  if(nv0>10&&mb==0) return -5;
+  if(nv0>10&&mb==1) return +5;
   switch(nv0) {
   case(0):
     double lowEdge[14]={0.398, 0.420, 0.444, 0.468, 0.486,
@@ -301,8 +337,6 @@ double SFT_MassBandLowEdge( int nv0, int mb ) {
 			1.148, 1.158, 1.168};
     break;
   }
-  if(nv0>10&&mb==0) return -5;
-  if(nv0>10&&mb==1) return +5;
   return lowEdge[mb];
 }
 int SFT_MassBands( int nv0 ) {
@@ -346,10 +380,12 @@ void SFT_PrintConfig() {
   printf("* AVOIDEXEC  %3d                  *\n", SFT_gbAvoidExec );
   printf("* ESD  %3d                        *\n", SFT_gbReadESD );
   printf("* MC  %3d                         *\n", SFT_gbReadMC );
+  printf("* POSTMATCHED  %3d                *\n", SFT_gbPostMatched );
   printf("* EXTRAEVENTCUT  %3d              *\n", SFT_gbExtraEventCut );
   printf("* CENTMETHOD  %8s                 *\n", SFT_gbCentMethod.Data() );
   printf("* CENTPERMIN  %3d                 *\n", SFT_gbCentPerMin );
   printf("* CENTPERMAX  %3d                 *\n", SFT_gbCentPerMax );
+  printf("* VERTEXZ  %+9.6f             *\n", SFT_gbVertexZcut );
   printf("* SPECIE  %3d                     *\n", SFT_gbSpecie );
   printf("* HOMEMADE  %3d                   *\n", SFT_gbHomemade );
   printf("* ONLINE  %3d                     *\n", SFT_gbOnline );
@@ -380,6 +416,7 @@ void SFT_PrintConfig() {
   printf("* SPVZEHALF  %3d                  *\n", SFT_gbSPVZEhalf );
   printf("* SPTPC  %3d                      *\n", SFT_gbSPTPC );
   printf("* QCTPC  %3d                      *\n", SFT_gbQCTPC );
+  printf("* MCEP  %3d                       *\n", SFT_gbMCEP );
   printf("* SHRINKFP  %3d                   *\n", SFT_gbShrinkFP );
   printf("* RFFILTERBIT  %3d                *\n", SFT_gbRFPFilterBit );
   printf("* RFMINPT  %+9.6f             *\n", SFT_gbRFPminPt );
@@ -390,6 +427,7 @@ void SFT_PrintConfig() {
   printf("* RFMAXIPXY  %+9.6f           *\n", SFT_gbRFPmaxIPxy );
   printf("* RFMAXIPZ  %+9.6f            *\n", SFT_gbRFPmaxIPz );
   printf("* RFTPCNCLS  %3d                  *\n", SFT_gbRFPTPCncls );
+  printf("* WHICHPSI  %3d                   *\n", SFT_gbWhichPsi );
   printf("* VZELOAD  %8s            *\n", SFT_gbVZEload.Data() );
   printf("* VZELINEAR  %3d                  *\n", SFT_gbVZEmb );
   printf("* VZEPERDISK  %3d                 *\n", SFT_gbVZEpdisk );
@@ -489,8 +527,10 @@ void SFT_ReadConfig(TString ipf) {
       input >> SFT_gbSPVZEhalf;
     } else if(!varname.CompareTo("QCTPC")) {
       input >> SFT_gbQCTPC;
+    } else if(!varname.CompareTo("MCEP")) {
+      input >> SFT_gbMCEP;
     } else if(!varname.CompareTo("SHRINKFP")) {
-      input >> SFT_ShrinkFP;
+      input >> SFT_gbShrinkFP;
     } else if(!varname.CompareTo("RFFILTERBIT")) {
       input >> SFT_gbRFPFilterBit;
     } else if(!varname.CompareTo("RFMINPT")) {
@@ -521,6 +561,12 @@ void SFT_ReadConfig(TString ipf) {
       input >> SFT_gbAllCC;
     } else if(!varname.CompareTo("UNTAG")) {
       input >> SFT_gbUntagDaughter;
+    } else if(!varname.CompareTo("POSTMATCHED")) {
+      input >> SFT_gbPostMatched;
+    } else if(!varname.CompareTo("VERTEXZ")) {
+      input >> SFT_gbVertexZcut;
+    } else if(!varname.CompareTo("WHICHPSI")) {
+      input >> SFT_gbWhichPsi;
     } else {
       printf("I dont understand %s\n",varname.Data());
     }
@@ -580,11 +626,14 @@ void SFT_ResetVars() {
   SFT_gbSPVZEhalf=kFALSE;
   SFT_gbSPTPC=0;
   SFT_gbQCTPC=0;
+  SFT_gbMCEP=0;
   SFT_gbHarmonic=2;
   SFT_gbVZEload="no";
   SFT_gbVZEsave=0;
   SFT_gbVZEmb=0;
   SFT_gbVZEpdisk=0;
   SFT_gbUntagDaughter=kTRUE;
+  SFT_gbPostMatched=kFALSE;
   SFT_gbShrinkFP=kTRUE;
+  SFT_gbVertexZcut=10.0;
 }

@@ -25,6 +25,7 @@
 #include "AliParticleContainer.h"
 #include "AliEmcalTriggerPatchInfo.h"
 #include "AliAODHeader.h"
+#include "AliPicoTrack.h"
 
 #include "AliAnalysisTaskEmcalJetTriggerQA.h"
 
@@ -44,6 +45,8 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
   fNFastOR(16),
   fhNEvents(0),
   fh3PtEtaPhiTracks(0),
+  fh3PtEtaPhiTracksOnEmcal(0),
+  fh3PtEtaPhiTracksProp(0),
   fh3PtEtaPhiJetFull(0),
   fh3PtEtaPhiJetCharged(0),
   fh2NJetsPtFull(0),
@@ -92,6 +95,8 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
   fNFastOR(16),
   fhNEvents(0),
   fh3PtEtaPhiTracks(0),
+  fh3PtEtaPhiTracksOnEmcal(0),
+  fh3PtEtaPhiTracksProp(0),
   fh3PtEtaPhiJetFull(0),
   fh3PtEtaPhiJetCharged(0),
   fh2NJetsPtFull(0),
@@ -143,20 +148,17 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::SelectEvent() {
   if(!fTriggerClass.IsNull()) {
     //Check if requested trigger was fired
     TString firedTrigClass = InputEvent()->GetFiredTriggerClasses();
-    
-     if(fTriggerClass.Contains("J1") && fTriggerClass.Contains("J2")) {
-      if(!firedTrigClass.Contains("J1") || !firedTrigClass.Contains("J2") )
+
+    if(fTriggerClass.Contains("J1") && fTriggerClass.Contains("J2")) { //if events with J1&&J2 are requested
+      if(!firedTrigClass.Contains("J1") || !firedTrigClass.Contains("J2") ) //check if both are fired
         return kFALSE;
     }
     else {
       if(!firedTrigClass.Contains(fTriggerClass))
-        return kFALSE;
-      if(fTriggerClass.Contains("J2") && firedTrigClass.Contains("J1")) //only accept J2 triggers which were not fired by J1 as well
-        return kFALSE;
-      else if(fTriggerClass.Contains("J1") && firedTrigClass.Contains("J2")) //only accept J2 triggers which were not fired by J1 as well
-        return kFALSE;
+	return kFALSE;
+      else if(fTriggerClass.Contains("J1") && firedTrigClass.Contains("J2")) //if J2 is requested also add triggers which have J1&&J2. Reject if J1 is requested and J2 is fired
+	return kFALSE;
     }
-     
   }
 
   fhNEvents->Fill(1.5);
@@ -168,26 +170,25 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::SelectEvent() {
 //________________________________________________________________________
 void AliAnalysisTaskEmcalJetTriggerQA::FindTriggerPatch() {
 
-  //Code to get position of trigger
+  //Fill trigger patch histos for main trigger
 
   AliEmcalTriggerPatchInfo *patch = GetMainTriggerPatch();
   if(patch) {
     fMaxPatchEnergy = patch->GetPatchE();
     Double_t patchADCGeV = patch->GetADCAmpGeVRough();
-    if(patch->IsJetLow() && !patch->IsJetHigh()) {
+    if(patch->IsJetLow() && !patch->IsJetHigh()) { //main patch only fired low threshold trigger
       fh3PatchEnergyEtaPhiCenterJ2->Fill(patch->GetPatchE(),patch->GetEtaGeo(),patch->GetPhiGeo());
       fh3PatchADCEnergyEtaPhiCenterJ2->Fill(patchADCGeV,patch->GetEtaGeo(),patch->GetPhiGeo());
     }
-    else if(patch->IsJetHigh() && !patch->IsJetLow()) {
+    else if(patch->IsJetHigh() && !patch->IsJetLow()) { //main patch only fired high threshold trigger - should never happen
       fh3PatchEnergyEtaPhiCenterJ1->Fill(patch->GetPatchE(),patch->GetEtaGeo(),patch->GetPhiGeo());
       fh3PatchADCEnergyEtaPhiCenterJ1->Fill(patchADCGeV,patch->GetEtaGeo(),patch->GetPhiGeo());
     }
-    else if(patch->IsJetHigh() && patch->IsJetLow()) {
+    else if(patch->IsJetHigh() && patch->IsJetLow()) { //main patch fired both triggers
       fh3PatchEnergyEtaPhiCenterJ1J2->Fill(patch->GetPatchE(),patch->GetEtaGeo(),patch->GetPhiGeo());
       fh3PatchADCEnergyEtaPhiCenterJ1J2->Fill(patchADCGeV,patch->GetEtaGeo(),patch->GetPhiGeo());
     }
   }
-
 }
 
 //________________________________________________________________________
@@ -233,7 +234,7 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   Double_t *binsConst = new Double_t[fgkNConstBins+1];
   for(Int_t i=0; i<=fgkNConstBins; i++) binsConst[i]=(Double_t)kMinConst + (kMaxConst-kMinConst)/fgkNConstBins*(Double_t)i ;
 
-  Int_t fgkNMeanPtBins = 200;
+  Int_t fgkNMeanPtBins = 100;
   Float_t kMinMeanPt   = 0.;
   Float_t kMaxMeanPt   = 20.;
   Double_t *binsMeanPt = new Double_t[fgkNMeanPtBins+1];
@@ -257,9 +258,9 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   Double_t *binsJetType = new Double_t[fgkNJetTypeBins+1];
   for(Int_t i=0; i<=fgkNJetTypeBins; i++) binsJetType[i]=(Double_t)kMinJetType + (kMaxJetType-kMinJetType)/fgkNJetTypeBins*(Double_t)i ;
 
-  Int_t fgkNTimeBins = 700;
-  Float_t kMinTime   = -400.;
-  Float_t kMaxTime   = 1000;
+  Int_t fgkNTimeBins = 100;
+  Float_t kMinTime   = -200.;
+  Float_t kMaxTime   = 200;
   Double_t *binsTime = new Double_t[fgkNTimeBins+1];
   for(Int_t i=0; i<=fgkNTimeBins; i++) binsTime[i]=(Double_t)kMinTime + (kMaxTime-kMinTime)/fgkNTimeBins*(Double_t)i ;
 
@@ -291,6 +292,12 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
 
   fh3PtEtaPhiTracks = new TH3F("fh3PtEtaPhiTracks","fh3PtEtaPhiTracks;#it{p}_{T}^{track};#eta;#varphi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PtEtaPhiTracks);
+
+  fh3PtEtaPhiTracksOnEmcal = new TH3F("fh3PtEtaPhiTracksOnEmcal","fh3PtEtaPhiTracksOnEmcal;#it{p}_{T}^{track};#eta;#varphi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fOutput->Add(fh3PtEtaPhiTracksOnEmcal);
+
+  fh3PtEtaPhiTracksProp = new TH3F("fh3PtEtaPhiTracksProp","fh3PtEtaPhiTracksProp;#it{p}_{T}^{track};#eta;#varphi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fOutput->Add(fh3PtEtaPhiTracksProp);
 
   fh3PtEtaPhiJetFull = new TH3F("fh3PtEtaPhiJetFull","fh3PtEtaPhiJetFull;#it{p}_{T}^{jet};#eta;#varphi",fgkNPtBins,binsPt,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PtEtaPhiJetFull);
@@ -351,22 +358,22 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   fh3PtLeadJet2VsPatchEnergy = new TH3F("fh3PtLeadJet2VsPatchEnergy","fh3PtLeadJet2VsPatchEnergy;#it{p}_{T}^{jet 1};Amplitude_{patch};trig type",fgkNPtBins,binsPt,fgkNPtBins,binsPt,fgkNJetTypeBins,binsJetType);
   fOutput->Add(fh3PtLeadJet2VsPatchEnergy);
 
-  fh3PatchEnergyEtaPhiCenterJ1 = new TH3F("fh3PatchEnergyEtaPhiCenterJ1","fh3PatchEnergyEtaPhiCenterJ1;E_{patch};#eta;#phi",fgkNPtBins,binsPt,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fh3PatchEnergyEtaPhiCenterJ1 = new TH3F("fh3PatchEnergyEtaPhiCenterJ1","fh3PatchEnergyEtaPhiCenterJ1;E_{patch};#eta;#phi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PatchEnergyEtaPhiCenterJ1);
 
-  fh3PatchEnergyEtaPhiCenterJ2 = new TH3F("fh3PatchEnergyEtaPhiCenterJ2","fh3PatchEnergyEtaPhiCenterJ2;E_{patch};#eta;#phi",fgkNPtBins,binsPt,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fh3PatchEnergyEtaPhiCenterJ2 = new TH3F("fh3PatchEnergyEtaPhiCenterJ2","fh3PatchEnergyEtaPhiCenterJ2;E_{patch};#eta;#phi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PatchEnergyEtaPhiCenterJ2);
 
-  fh3PatchEnergyEtaPhiCenterJ1J2 = new TH3F("fh3PatchEnergyEtaPhiCenterJ1J2","fh3PatchEnergyEtaPhiCenterJ1J2;E_{patch};#eta;#phi",fgkNPtBins,binsPt,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fh3PatchEnergyEtaPhiCenterJ1J2 = new TH3F("fh3PatchEnergyEtaPhiCenterJ1J2","fh3PatchEnergyEtaPhiCenterJ1J2;E_{patch};#eta;#phi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PatchEnergyEtaPhiCenterJ1J2);
 
-  fh3PatchADCEnergyEtaPhiCenterJ1 = new TH3F("fh3PatchADCEnergyEtaPhiCenterJ1","fh3PatchADCEnergyEtaPhiCenterJ1;E_{ADC,patch};#eta;#phi",fgkNPtBins,binsPt,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fh3PatchADCEnergyEtaPhiCenterJ1 = new TH3F("fh3PatchADCEnergyEtaPhiCenterJ1","fh3PatchADCEnergyEtaPhiCenterJ1;E_{ADC,patch};#eta;#phi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PatchADCEnergyEtaPhiCenterJ1);
 
-  fh3PatchADCEnergyEtaPhiCenterJ2 = new TH3F("fh3PatchADCEnergyEtaPhiCenterJ2","fh3PatchADCEnergyEtaPhiCenterJ2;E_{ADC,patch};#eta;#phi",fgkNPtBins,binsPt,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fh3PatchADCEnergyEtaPhiCenterJ2 = new TH3F("fh3PatchADCEnergyEtaPhiCenterJ2","fh3PatchADCEnergyEtaPhiCenterJ2;E_{ADC,patch};#eta;#phi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PatchADCEnergyEtaPhiCenterJ2);
 
-  fh3PatchADCEnergyEtaPhiCenterJ1J2 = new TH3F("fh3PatchADCEnergyEtaPhiCenterJ1J2","fh3PatchADCEnergyEtaPhiCenterJ1J2;E_{ADC,patch};#eta;#phi",fgkNPtBins,binsPt,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fh3PatchADCEnergyEtaPhiCenterJ1J2 = new TH3F("fh3PatchADCEnergyEtaPhiCenterJ1J2","fh3PatchADCEnergyEtaPhiCenterJ1J2;E_{ADC,patch};#eta;#phi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PatchADCEnergyEtaPhiCenterJ1J2);
 
   fh2CellEnergyVsTime = new TH2F("fh2CellEnergyVsTime","fh2CellEnergyVsTime;E_{cell};time",fgkNEnBins,binsEn,fgkNTimeBins,binsTime);
@@ -420,16 +427,25 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
 {
   // Fill histograms.
 
+  //Tracks
   AliParticleContainer *partCont = GetParticleContainer(0);
   if (partCont) {
-    AliVParticle *track = partCont->GetNextAcceptParticle(0);
+    Int_t i = 0;
+    AliPicoTrack *track = dynamic_cast<AliPicoTrack*>(partCont->GetNextAcceptParticle(0));
     while(track) {
+      Double_t trkphi = track->Phi()*TMath::RadToDeg();
       fh3PtEtaPhiTracks->Fill(track->Pt(),track->Eta(),track->Phi());
-      track = partCont->GetNextAcceptParticle();
+      fh3PtEtaPhiTracksOnEmcal->Fill(track->GetTrackPtOnEMCal(),track->GetTrackEtaOnEMCal(),track->GetTrackPhiOnEMCal());
+      if(track->IsEMCAL()) {
+	i++;
+	if(TMath::Abs(track->Eta())<0.9 && trkphi > 10 && trkphi < 250 )
+	  fh3PtEtaPhiTracksProp->Fill(track->Pt(),track->Eta(),track->Phi());
+      }
+      track = dynamic_cast<AliPicoTrack*>(partCont->GetNextAcceptParticle());
     }
   }
 
-
+  //Clusters
   AliClusterContainer  *clusCont = GetClusterContainer(0);
   if (clusCont) {
     Int_t nclusters = clusCont->GetNClusters();
@@ -447,10 +463,7 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
 
       TLorentzVector lp;
       cluster->GetMomentum(lp, const_cast<Double_t*>(fVertex));
-
-      //Fill eta,phi,E of clusters here
       fh3EEtaPhiCluster->Fill(lp.E(),lp.Eta(),lp.Phi());
-
       if(fCaloCells) {
 	Double_t leadCellE = GetEnergyLeadingCell(cluster);
 	Double_t leadCellT = cluster->GetTOF();
@@ -459,6 +472,7 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
     }
   }
 
+  //cells
   if(fCaloCells) {
     const Short_t nCells   = fCaloCells->GetNumberOfCells();
 
@@ -517,18 +531,15 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
       if(jet->GetNumberOfTracks()>0)
 	fh2PtMeanPtConstituentsCharged->Fill(jetPt,sumPtCh/(double)(jet->GetNumberOfTracks()) );
 
-
       AliVCluster *vc = 0x0;
       Double_t sumPtNe = 0.;
       if (clusCont) {
 	for(Int_t icc=0; icc<jet->GetNumberOfClusters(); icc++) {
 	  vc = static_cast<AliVCluster*>(clusCont->GetCluster(icc));
 	  if(!vc) continue;
-
 	  TLorentzVector lp;
 	  vc->GetMomentum(lp, const_cast<Double_t*>(fVertex));
 	  sumPtNe+=lp.Pt();
-	  
 	}
 
 	if(jet->GetNumberOfClusters()>0)
@@ -540,7 +551,6 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
       Int_t nJetsInEvent = nJetsArr->At(i);
       fh2NJetsPtFull->Fill(nJetsInEvent,fh2NJetsPtFull->GetYaxis()->GetBinCenter(i));
     }
-
   }
 
   //Reset array to zero to also count charged jets
@@ -615,7 +625,6 @@ void AliAnalysisTaskEmcalJetTriggerQA::Terminate(Option_t *)
 Double_t AliAnalysisTaskEmcalJetTriggerQA::GetZ(const AliVParticle *trk, const AliEmcalJet *jet)          const
 {  
   // Get Z of constituent trk
-
   return GetZ(trk->Px(),trk->Py(),trk->Pz(),jet->Px(),jet->Py(),jet->Pz());
 }
 
@@ -625,9 +634,7 @@ Double_t AliAnalysisTaskEmcalJetTriggerQA::GetZ(const Double_t trkPx, const Doub
   // 
   // Get the z of a constituent inside of a jet
   //
-
   Double_t pJetSq = jetPx*jetPx+jetPy*jetPy+jetPz*jetPz;
-
   if(pJetSq>0.)
     return (trkPx*jetPx+trkPy*jetPy+trkPz*jetPz)/pJetSq;
   else {
@@ -671,7 +678,6 @@ Double_t AliAnalysisTaskEmcalJetTriggerQA::GetEnergyLeadingCell(const AliVCluste
     return fCaloCells->GetCellAmplitude(absID);
   else 
     return -1.;
-
 }
 
 //________________________________________________________________________

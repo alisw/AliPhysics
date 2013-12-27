@@ -119,6 +119,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fHistdEdxVsPTPCafterPIDelectron(NULL), //+++++++
   fHistNSigmaTPCvsPtafterPIDelectron(NULL), //+++++++
   fCentralityArrayBinsForCorrections(kCENTRALITY),
+  fCentralityWeights(0x0),
   fPIDResponse(0x0),
   fPIDCombined(0x0),
   fParticleOfInterest(kPion),
@@ -909,6 +910,13 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 		  // take only events inside centrality class
 		  if(fUseCentrality) {
 		    if((gRefMultiplicity > fCentralityPercentileMin) && (gRefMultiplicity < fCentralityPercentileMax)){
+
+		      // centrality weighting (optional for 2011 if central and semicentral triggers are used)
+		      if (fCentralityWeights && !AcceptEventCentralityWeight(gRefMultiplicity)){
+			AliInfo(Form("Rejecting event because of centrality weighting: %f", gRefMultiplicity));
+			return -1;
+		      }
+		      
 		      fHistEventStats->Fill(5,gRefMultiplicity); //events with correct centrality
 		      return gRefMultiplicity;		
 		    }//centrality class
@@ -2299,6 +2307,28 @@ Double_t AliAnalysisTaskBFPsi::GetEqualizationFactor(Int_t run,
   }
 
   return 1.0;
+}
+
+//____________________________________________________________________
+Bool_t AliAnalysisTaskBFPsi::AcceptEventCentralityWeight(Double_t centrality)
+{
+  // copied from AliAnalysisTaskPhiCorrelations
+  //
+  // rejects "randomly" events such that the centrality gets flat
+  // uses fCentralityWeights histogram
+
+  // TODO code taken and adapted from AliRDHFCuts; waiting for general class AliCentralityFlattening
+  
+  Double_t weight = fCentralityWeights->GetBinContent(fCentralityWeights->FindBin(centrality));
+  Double_t centralityDigits = centrality*100. - (Int_t)(centrality*100.);
+  
+  Bool_t result = kFALSE;
+  if (centralityDigits < weight) 
+    result = kTRUE;
+  
+  AliInfo(Form("Centrality: %f; Digits: %f; Weight: %f; Result: %d", centrality, centralityDigits, weight, result));
+  
+  return result;
 }
 
 //________________________________________________________________________

@@ -113,13 +113,18 @@ Bool_t AliAnalysisTaskEmcalDiJetBase::SelectEvent() {
   if(!fTriggerClass.IsNull()) {
     //Check if requested trigger was fired
     TString firedTrigClass = InputEvent()->GetFiredTriggerClasses();
+
     if(!firedTrigClass.Contains(fTriggerClass))
       return kFALSE;
-    if(fTriggerClass.Contains("J2") && firedTrigClass.Contains("J1")) //only accept J2 triggers which were not fired by J1 as well
+    else if(fTriggerClass.Contains("J1") && fTriggerClass.Contains("J2")) { //if events with J1&&J2 are requested
+      if(!firedTrigClass.Contains("J1") || !firedTrigClass.Contains("J2") ) //check if both are fired
+        return kFALSE;
+    }
+    else if(fTriggerClass.Contains("J1") && firedTrigClass.Contains("J2")) //if J2 is requested also add triggers which have J1&&J2. Reject if J1 is requested and J2 is fired
       return kFALSE;
   }
-
-   fhNEvents->Fill(1.5);
+  
+  fhNEvents->Fill(1.5);
 
   fHistTrialsSelEvents->Fill(fPtHardBin, fNTrials);
   
@@ -152,7 +157,7 @@ void AliAnalysisTaskEmcalDiJetBase::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskEmcalDiJetBase::IsSameJet(const Int_t ijt, const Int_t ija, const Int_t type, const Bool_t isMC) {
+Bool_t AliAnalysisTaskEmcalDiJetBase::IsSameJet(Int_t ijt, Int_t ija, Int_t type, Bool_t isMC) {
    //check if two jets are the same one
 
    Bool_t bSame = kFALSE;
@@ -193,7 +198,7 @@ Bool_t AliAnalysisTaskEmcalDiJetBase::IsSameJet(const Int_t ijt, const Int_t ija
 
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskEmcalDiJetBase::GetJetPt(const AliEmcalJet *jet, const Int_t type) {
+Double_t AliAnalysisTaskEmcalDiJetBase::GetJetPt(const AliEmcalJet *jet, Int_t type) {
 
   if(!jet) return -99;
 
@@ -215,7 +220,7 @@ Double_t AliAnalysisTaskEmcalDiJetBase::GetZ(const AliVParticle *trk, const AliE
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskEmcalDiJetBase::GetZ(const Double_t trkPx, const Double_t trkPy, const Double_t trkPz, const Double_t jetPx, const Double_t jetPy, const Double_t jetPz) const
+Double_t AliAnalysisTaskEmcalDiJetBase::GetZ(Double_t trkPx, Double_t trkPy, Double_t trkPz, Double_t jetPx, Double_t jetPy, Double_t jetPz) const
 {
   // 
   // Get the z of a constituent inside of a jet
@@ -282,7 +287,7 @@ Double_t AliAnalysisTaskEmcalDiJetBase::GetFractionSharedPt(const AliEmcalJet *j
  
   if(jetPtCh>0) {
 
-    if(fDebug>10)  AliInfo(Form("%s: nConstituents: %d, ch: %d  chne: %d ne: %d",GetName(),jetFull->GetNumberOfConstituents(),jetCharged->GetNumberOfTracks(),jetFull->GetNumberOfTracks(),jetFull->GetNumberOfClusters()));
+    AliDebug(11,Form("%s: nConstituents: %d, ch: %d  chne: %d ne: %d",GetName(),jetFull->GetNumberOfConstituents(),jetCharged->GetNumberOfTracks(),jetFull->GetNumberOfTracks(),jetFull->GetNumberOfClusters()));
     
     Double_t sumPt = 0.;
     AliVParticle *vpf = 0x0;
@@ -305,7 +310,7 @@ Double_t AliAnalysisTaskEmcalDiJetBase::GetFractionSharedPt(const AliEmcalJet *j
     fraction = sumPt/jetPtCh;
   }
 
-  if(fDebug>10) AliInfo(Form("%s: charged shared fraction: %.2f",GetName(),fraction));
+  AliDebug(11,Form("%s: charged shared fraction: %.2f",GetName(),fraction));
 
   return fraction;
 
@@ -432,7 +437,7 @@ void AliAnalysisTaskEmcalDiJetBase::MatchJetsGeo(Int_t cFull, Int_t cCharged,
   // check for "true" correlations
   for(int ifu = 0;ifu<nFullJets;ifu++){
     for(int ich = 0;ich<nChJets;ich++){
-      if(iDebug>10) AliInfo(Form("%s: Flag[%d][%d] %d ",GetName(),ifu,ich,iFlag[ifu*nChJets+ich]));
+      AliDebug(11,Form("%s: Flag[%d][%d] %d ",GetName(),ifu,ich,iFlag[ifu*nChJets+ich]));
       
       if(kMode==3){
         // we have a uniqe correlation
@@ -442,7 +447,7 @@ void AliAnalysisTaskEmcalDiJetBase::MatchJetsGeo(Int_t cFull, Int_t cCharged,
 	  AliEmcalJet *fullJet = static_cast<AliEmcalJet*>(GetJetFromArray(ifu, cFull));
 	  Double_t dR = GetDeltaR(fullJet,chJet); 
 
-	  if(iDebug>10) Printf("closest jets %d  %d  dR =  %f",ich,ifu,dR);
+	  AliDebug(11,Form("closest jets %d  %d  dR =  %f",ich,ifu,dR));
 
 	  chJet->SetClosestJet(fullJet,dR);
 	  fullJet->SetClosestJet(chJet,dR);
@@ -533,7 +538,7 @@ void AliAnalysisTaskEmcalDiJetBase::SetChargedFractionIndexMC() {
 }
 
 //_______________________________________________________________________
-AliEmcalJet* AliAnalysisTaskEmcalDiJetBase::GetLeadingJetOppositeHemisphere(const Int_t type, const Int_t typea, const AliEmcalJet *jetTrig) {
+AliEmcalJet* AliAnalysisTaskEmcalDiJetBase::GetLeadingJetOppositeHemisphere(Int_t type, Int_t typea, const AliEmcalJet *jetTrig) {
 
   // Get leading jet in opposite hemisphere from trigger jet
   // type = correlation type
@@ -580,7 +585,7 @@ AliEmcalJet* AliAnalysisTaskEmcalDiJetBase::GetLeadingJetOppositeHemisphere(cons
 }
 
 //_______________________________________________________________________
-AliEmcalJet* AliAnalysisTaskEmcalDiJetBase::GetSecondLeadingJetOppositeHemisphere(const Int_t type, const Int_t typea, const AliEmcalJet *jetTrig) {
+AliEmcalJet* AliAnalysisTaskEmcalDiJetBase::GetSecondLeadingJetOppositeHemisphere(Int_t type, Int_t typea, const AliEmcalJet *jetTrig) {
 
   // Get leading jet in opposite hemisphere from trigger jet
   // type = correlation type

@@ -1,5 +1,5 @@
-#ifndef ALIEMCALESDTPCTRACKTASK_H
-#define ALIEMCALESDTPCTRACKTASK_H
+#ifndef ALIEMCALESDTRACKFILTERTASK_H
+#define ALIEMCALESDTRACKFILTERTASK_H
 
 // $Id$
 
@@ -7,23 +7,27 @@ class TClonesArray;
 class AliESDEvent;
 class AliESDtrack;
 class AliESDtrackCuts;
+class AliEMCALRecoUtils;
 
 #include "AliAnalysisTaskSE.h"
+#include "AliESDtrackCuts.h"
 
-class AliEmcalEsdTpcTrackTask : public AliAnalysisTaskSE {
+class AliEmcalEsdTrackFilterTask : public AliAnalysisTaskSE {
  public:
-  AliEmcalEsdTpcTrackTask();
-  AliEmcalEsdTpcTrackTask(const char *name);
-  virtual ~AliEmcalEsdTpcTrackTask();
+  AliEmcalEsdTrackFilterTask();
+  AliEmcalEsdTrackFilterTask(const char *name);
+  virtual ~AliEmcalEsdTrackFilterTask();
 
   void UserCreateOutputObjects();
   void UserExec(Option_t *option);
    
+  void SetDist(Double_t d)                       { fDist             = d;    }
+  void SetDoPropagation(Bool_t b)                { fDoPropagation    = b;    }
   void SetDoSpdVtxConstrain(Bool_t b)            { fDoSpdVtxCon      = b;    }
   void SetHybridTrackCuts(AliESDtrackCuts *cuts) { fHybridTrackCuts  = cuts; }
+  void SetIncludeNoITS(Bool_t f)                 { fIncludeNoITS     = f;    }
   void SetTrackCuts(AliESDtrackCuts *cuts)       { fEsdTrackCuts     = cuts; }
   void SetTracksName(const char *name)           { fTracksName       = name; }
-  void SetIncludeNoITS(Bool_t f)                 { fIncludeNoITS     = f;    }
 
  protected:
   AliESDtrackCuts   *fEsdTrackCuts;      // esd track cuts
@@ -31,14 +35,16 @@ class AliEmcalEsdTpcTrackTask : public AliAnalysisTaskSE {
   AliESDtrackCuts   *fHybridTrackCuts;   // hybrid track cuts
   TString            fTracksName;        // name of tracks 
   Bool_t             fIncludeNoITS;      // includes tracks with failed ITS refit
+  Bool_t             fDoPropagation;     // propagate all hybrid tracks to EMCal surface
+  Double_t           fDist;              // distance to surface (440cm default)
   AliESDEvent       *fEsdEv;             //!esd event
   TClonesArray      *fTracks;            //!track array
 
  private:
-  AliEmcalEsdTpcTrackTask(const AliEmcalEsdTpcTrackTask&);            // not implemented
-  AliEmcalEsdTpcTrackTask &operator=(const AliEmcalEsdTpcTrackTask&); // not implemented
+  AliEmcalEsdTrackFilterTask(const AliEmcalEsdTrackFilterTask&);            // not implemented
+  AliEmcalEsdTrackFilterTask &operator=(const AliEmcalEsdTrackFilterTask&); // not implemented
 
-  ClassDef(AliEmcalEsdTpcTrackTask, 2); // Class to constrain TPC tracks to SPD vertex
+  ClassDef(AliEmcalEsdTrackFilterTask, 1); // Class to constrain TPC tracks to SPD vertex
 };
 
 #endif

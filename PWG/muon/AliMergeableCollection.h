@@ -37,6 +37,8 @@
 class TMap;
 class AliMergeableCollectionIterator;
 class TH1;
+class TH2;
+class TProfile;
 
 class AliMergeableCollection : public TFolder
 {
@@ -73,6 +75,15 @@ public:
 
   TH1* Histo(const char* fullIdentifier) const;
   TH1* Histo(const char* identifier, const char* objectName) const;
+
+  TH1* H1(const char* fullIdentifier) const { return Histo(fullIdentifier); }
+  TH1* H1(const char* identifier, const char* objectName) const { return Histo(identifier,objectName); }
+
+  TH2* H2(const char* fullIdentifier) const;
+  TH2* H2(const char* identifier, const char* objectName) const;
+
+  TProfile* Prof(const char* fullIdentifier) const;
+  TProfile* Prof(const char* identifier, const char* objectName) const;
 
   virtual TIterator* CreateIterator(Bool_t dir = kIterForward) const;
   
@@ -143,7 +154,7 @@ private:
   mutable Int_t fMapVersion; /// internal version of map (to avoid custom streamer...)
   mutable std::map<std::string,int> fMessages; //! log messages
   
-  ClassDef(AliMergeableCollection,3) /// A collection of mergeable objects
+  ClassDef(AliMergeableCollection,4) /// A collection of mergeable objects
 };
 
 class AliMergeableCollectionIterator : public TIterator

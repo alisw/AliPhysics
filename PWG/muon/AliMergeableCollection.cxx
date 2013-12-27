@@ -413,6 +413,13 @@ TH1*
 AliMergeableCollection::Histo(const char* identifier,
                               const char* objectName) const
 {
+  /// Get histogram key1/key2/.../objectName:action
+  /// action is used for 2D histograms :
+  /// might be px for projection along x-axis
+  /// py for projection along y-axis
+  /// pfx for profile along x-axis
+  /// pfy for profile along y-axis
+  
   TObject* o = GetObject(identifier,objectName);
   
   TObjArray* arr = TString(objectName).Tokenize(":");
@@ -469,6 +476,71 @@ AliMergeableCollection::HistoWithAction(const char* identifier, TObject* o, cons
   return static_cast<TH1*>(o);
 }
 
+//_____________________________________________________________________________
+TH2*
+AliMergeableCollection::H2(const char* fullIdentifier) const
+{
+  /// Short-cut method to grab a 2D histogram
+  /// Will return 0x0 if the object if not a TH2xxx
+
+  TObject* o = GetObject(fullIdentifier);
+  
+  if (o->IsA()->InheritsFrom(TH2::Class()))
+  {
+    return static_cast<TH2*>(o);
+  }
+  return 0x0;
+}
+
+//_____________________________________________________________________________
+TH2*
+AliMergeableCollection::H2(const char* identifier,
+                           const char* objectName) const
+{
+  /// Short-cut method to grab a 2D histogram
+  /// Will return 0x0 if the object if not a TH2xxx
+  
+  TObject* o = GetObject(identifier,objectName);
+  
+  if (o->IsA()->InheritsFrom(TH2::Class()))
+  {
+    return static_cast<TH2*>(o);
+  }
+  return 0x0;
+}
+
+//_____________________________________________________________________________
+TProfile*
+AliMergeableCollection::Prof(const char* fullIdentifier) const
+{
+  /// Short-cut method to grab a TProfile histogram
+  /// Will return 0x0 if the object if not a TProfile
+  
+  TObject* o = GetObject(fullIdentifier);
+  
+  if (o->IsA()->InheritsFrom(TProfile::Class()))
+  {
+    return static_cast<TProfile*>(o);
+  }
+  return 0x0;
+}
+
+//_____________________________________________________________________________
+TProfile*
+AliMergeableCollection::Prof(const char* identifier,
+                           const char* objectName) const
+{
+  /// Short-cut method to grab a TProfile histogram
+  /// Will return 0x0 if the object if not a TProfile
+  
+  TObject* o = GetObject(identifier,objectName);
+  
+  if (o->IsA()->InheritsFrom(TProfile::Class()))
+  {
+    return static_cast<TProfile*>(o);
+  }
+  return 0x0;
+}
 
 //_____________________________________________________________________________
 TObject* 
@@ -491,7 +563,6 @@ AliMergeableCollection::GetObject(const char* fullIdentifier) const
     return GetObject(GetIdentifier(fullIdentifier).Data(), GetObjectName(fullIdentifier));
   }
 }
-
 
 //_____________________________________________________________________________
 TObject* 
@@ -632,12 +703,7 @@ Bool_t AliMergeableCollection::InternalAdopt(const char* identifier, TObject* ob
   if ( obj->IsA()->InheritsFrom(TH1::Class()) ) (static_cast<TH1*> ( obj ))->SetDirectory(0);  
   
   hlist->AddLast(obj);
-  
-  // invalidate the TFolder structure, if any, so it will
-  // be recomputed next time Browse() is called
-  delete fFolders;
-  fFolders = 0x0;
-  
+    
   return kTRUE;
   
 }
@@ -932,8 +998,8 @@ AliMergeableCollection::Print(Option_t* option) const
   /// output to only those objects matching a given classname pattern
   ///
   
-  cout << Form("AliMergeableCollection(%s,%s) : %d keys and %d objects",
-               GetName(),GetTitle(),
+  cout << Form("AliMergeableCollection(%s,%s)[%p] : %d keys and %d objects",
+               GetName(),GetTitle(),this,
                NumberOfKeys(), NumberOfObjects()) << endl;
   
   if (!strlen(option)) return;
@@ -960,7 +1026,7 @@ AliMergeableCollection::Print(Option_t* option) const
   
   TObjArray* identifiers = SortAllIdentifiers();
   
-  printf("identifiers entries %i\n", identifiers->GetEntries());
+  std::cout << Form("Number of identifiers %d", identifiers->GetEntries()) << std::endl;
     
   TIter nextIdentifier(identifiers);
   
@@ -1097,7 +1163,8 @@ AliMergeableCollection::EstimateSize(Bool_t show) const
   while ( ( obj = next() ) )
   {
     UInt_t thissize=0;
-    if ( obj->IsA()->InheritsFrom(TH1::Class()) ) {
+    if ( obj->IsA()->InheritsFrom(TH1::Class()) || obj->IsA()->InheritsFrom(TProfile::Class()) )
+    {
       TH1* histo = static_cast<TH1*> (obj);
       Int_t nbins = (histo->GetNbinsX()+2);
     
@@ -1122,6 +1189,7 @@ AliMergeableCollection::EstimateSize(Bool_t show) const
       if (cname.Contains(TRegexp("I$")) ) nbytesPerBin = sizeof(Int_t);
       if (cname.Contains(TRegexp("F$")) ) nbytesPerBin = sizeof(Float_t);
       if (cname.Contains(TRegexp("D$")) ) nbytesPerBin = sizeof(Double_t);
+      if (cname=="TProfile") nbytesPerBin = sizeof(Double_t);
         
       if (!nbytesPerBin)
       {
@@ -1134,6 +1202,14 @@ AliMergeableCollection::EstimateSize(Bool_t show) const
       + strlen(histo->GetTitle());
       
       if ( hasErrors) thissize += nbins*8;
+      
+      if ( obj->IsA()->InheritsFrom(TProfile::Class()) )
+      {
+        TProfile* prof = static_cast<TProfile*>(obj);
+        TArrayD* d = prof->GetBinSumw2();
+        thissize += d->GetSize()*8*2; // 2 TArrayD
+        thissize += sizeof(prof) - sizeof(histo);
+      }
     }
     else if ( obj->IsA()->InheritsFrom(THnSparse::Class()) ) {
       THnSparse* sparse = static_cast<THnSparse*> (obj);

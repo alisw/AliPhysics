@@ -4,7 +4,7 @@
 
 ClassImp(AliPIDperfContainer);
 
-AliPIDperfContainer::AliPIDperfContainer(const char *name,const Int_t nvar,const Int_t* binVar) :
+AliPIDperfContainer::AliPIDperfContainer(const char *name, Int_t nvar,const Int_t* binVar) :
   TNamed(name,name),
   fNbinVar(new TArrayI(nvar)),
   fXmin(new TArrayF(nvar)),
