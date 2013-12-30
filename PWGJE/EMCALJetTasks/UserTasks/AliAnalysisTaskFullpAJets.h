@@ -2,9 +2,9 @@
 #define AliAnalysisTaskFullpAJets_H
 
 class TString;
-class TH1D;
-class TH2D;
-class TH3D;
+class TH1F;
+class TH2F;
+class TH3F;
 class THnSparse;
 class TList;
 class TProfile;
@@ -54,7 +54,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         void SetJetR(Double_t jetR);
         void SetNEF(Double_t nef);
         void SetSignalTrackPtBias(Bool_t chargedBias);
-
+        
         // Getters
         Int_t GetTotalEntries();
         Int_t GetTotalJets();
@@ -134,8 +134,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         void SetLeadingChargedTrackPtRange(Int_t bins, Double_t low, Double_t up);
         void SetNEFRange(Int_t bins, Double_t low, Double_t up);
         void SetSignalTrackPtBias(Bool_t chargedBias);
-	void SetNEFJetDimensions(Int_t n);
-        void SetNEFClusterDimensions(Int_t n);     
+        void SetNEFJetDimensions(Int_t n);
+        void SetNEFClusterDimensions(Int_t n);
 
         // User Defined Functions
         TList* GetOutputHistos();  //!
@@ -146,68 +146,71 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         
         // Histograms
         // This set of Histograms is for filling the Rho Spectral distributions
-        TH1D *fh020Rho; //!
-        TH1D *fh80100Rho; //!
-        TH1D *fhRho; //!
-        TH2D *fhRhoCen; //!
+        TH1F *fh020Rho; //!
+        TH1F *fh80100Rho; //!
+        TH1F *fhRho; //!
+        TH2F *fhRhoCen; //!
         
         // This set of Histograms is for filling the Background Subtracted Jet Spectra
-        TH1D *fh020BSPt; //!
-        TH1D *fh80100BSPt; //!
-        TH1D *fhBSPt; //!
-        TH2D *fhBSPtCen; //!
+        TH1F *fh020BSPt; //!
+        TH1F *fh80100BSPt; //!
+        TH1F *fhBSPt; //!
+        TH2F *fhBSPtCen; //!
         
         // This set of Histograms is for filling the Background Subtracted Signal Jet Spectra
-        TH1D *fh020BSPtSignal; //!
-        TH1D *fh80100BSPtSignal; //!
-        TH1D *fhBSPtSignal; //!
-        TH2D *fhBSPtCenSignal; //!
+        TH1F *fh020BSPtSignal; //!
+        TH1F *fh80100BSPtSignal; //!
+        TH1F *fhBSPtSignal; //!
+        TH2F *fhBSPtCenSignal; //!
         
         // This set of Histograms is for filling Delta Pt where the RC are at least 2R away from the leading Signal
-        TH1D *fh020DeltaPt; //!
-        TH1D *fh80100DeltaPt; //!
-        TH1D *fhDeltaPt; //!
-        TH2D *fhDeltaPtCen; //!
+        TH1F *fh020DeltaPt; //!
+        TH1F *fh80100DeltaPt; //!
+        TH1F *fhDeltaPt; //!
+        TH2F *fhDeltaPtCen; //!
         
         // This set of Histograms is for filling Delta Pt where the RC have to spatial restrictions
-        TH1D *fh020DeltaPtSignal; //!
-        TH1D *fh80100DeltaPtSignal; //!
-        TH1D *fhDeltaPtSignal; //!
-        TH2D *fhDeltaPtCenSignal; //!
+        TH1F *fh020DeltaPtSignal; //!
+        TH1F *fh80100DeltaPtSignal; //!
+        TH1F *fhDeltaPtSignal; //!
+        TH2F *fhDeltaPtCenSignal; //!
 
         // This set of Histograms is for filling Delta Pt with NColl
-        TH1D *fh020DeltaPtNColl; //!
-        TH1D *fh80100DeltaPtNColl; //!
-        TH1D *fhDeltaPtNColl; //!
-        TH2D *fhDeltaPtCenNColl; //!
+        TH1F *fh020DeltaPtNColl; //!
+        TH1F *fh80100DeltaPtNColl; //!
+        TH1F *fhDeltaPtNColl; //!
+        TH2F *fhDeltaPtCenNColl; //!
         
         // This set of Histograms is for filling Background Fluctuations Spectra
-        TH1D *fh020BckgFlucPt; //!
-        TH1D *fh80100BckgFlucPt; //!
-        TH1D *fhBckgFlucPt; //!
-        TH2D *fhBckgFlucPtCen; //!
+        TH1F *fh020BckgFlucPt; //!
+        TH1F *fh80100BckgFlucPt; //!
+        TH1F *fhBckgFlucPt; //!
+        TH2F *fhBckgFlucPtCen; //!
         
         // Profiles
         TProfile *fpRho; //!
         TProfile *fpLJetRho; //!
-        TH2D *fhJetPtArea; //!
-        TH2D *fhJetConstituentPt; //!
-	TH2D *fhJetTracksPt; //!
-        TH2D *fhJetClustersPt; //!
-        TH2D *fhJetConstituentCounts; //!
-        TH2D *fhJetTracksCounts; //!
-        TH2D *fhJetClustersCounts; //!
+        
+        // Jet Profile
+        TH2F *fhJetPtArea; //!
+
+        TH2F *fhJetConstituentPt; //!
+        TH2F *fhJetTracksPt; //!
+        TH2F *fhJetClustersPt; //!
+        TH2F *fhJetConstituentCounts; //!
+        TH2F *fhJetTracksCounts; //!
+        TH2F *fhJetClustersCounts; //!
         
         // Histograms for Neutral Energy Fraction
         TList *fNEFOutput; //! NEF QA Plots
-
-	THnSparse *fhJetNEFInfo; //! Jet NEF Information Histogram
+        
+        THnSparse *fhJetNEFInfo; //! Jet NEF Information Histogram
         THnSparse *fhJetNEFSignalInfo; //! Signal Jet NEF Information Histogram
         THnSparse *fhClusterNEFInfo; //! Cluster Jet NEF Information Histogram
         THnSparse *fhClusterNEFSignalInfo; //! Cluster Signal Jet NEF Information Histogram
-        
-	TH1D *fhClusterShapeAll; //!
-        TH2D *fhClusterPtCellAll; //!
+
+        TH1F *fhClusterShapeAll; //!
+        TH2F *fhClusterPtCellAll; //!
 
         // Variables
         const char *fName;  //!
@@ -249,9 +252,10 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         Int_t fNEFBins;
         Double_t fNEFLow;
         Double_t fNEFUp;
+        
         Int_t fnDimJet;
         Int_t fnDimCluster;
-
+        
         // These members are 'sourced' from the base class and are initalized in the constructor
         Double_t fEMCalPhiMin;
         Double_t fEMCalPhiMax;
@@ -424,38 +428,38 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     TList *flTrack; //! Track QA List
     TList *flCluster; //! Cluster QA List
     
-    TH1D *fhTrackPt;  //!
-    TH1D *fhTrackEta;  //!
-    TH1D *fhTrackPhi;  //!
-    TH1D *fhGlobalTrackPt;  //!
-    TH1D *fhGlobalTrackEta;  //!
-    TH1D *fhGlobalTrackPhi;  //!
-    TH1D *fhComplementaryTrackPt;  //!
-    TH1D *fhComplementaryTrackEta;  //!
-    TH1D *fhComplementaryTrackPhi;  //!
-    TH1D *fhClusterPt;  //!
-    TH1D *fhClusterEta;  //!
-    TH1D *fhClusterPhi;  //!
-    TH1D *fhCentrality; //!
-    TH1D *fhEMCalCellCounts;  //! Plots the distribution of cluster counts in the EMCal. Used to determine which cells are hot (if any...)
+    TH1F *fhTrackPt;  //!
+    TH1F *fhTrackEta;  //!
+    TH1F *fhTrackPhi;  //!
+    TH1F *fhGlobalTrackPt;  //!
+    TH1F *fhGlobalTrackEta;  //!
+    TH1F *fhGlobalTrackPhi;  //!
+    TH1F *fhComplementaryTrackPt;  //!
+    TH1F *fhComplementaryTrackEta;  //!
+    TH1F *fhComplementaryTrackPhi;  //!
+    TH1F *fhClusterPt;  //!
+    TH1F *fhClusterEta;  //!
+    TH1F *fhClusterPhi;  //!
+    TH1F *fhCentrality; //!
+    TH1F *fhEMCalCellCounts;  //! Plots the distribution of cluster counts in the EMCal. Used to determine which cells are hot (if any...)
     
-    TH2D *fhTrackEtaPhi;  //!
-    TH2D *fhTrackPhiPt;  //!
-    TH2D *fhTrackEtaPt;  //!
-    TH2D *fhGlobalTrackEtaPhi;  //!
-    TH2D *fhGlobalTrackPhiPt;  //!
-    TH2D *fhGlobalTrackEtaPt;  //!
-    TH2D *fhComplementaryTrackEtaPhi;  //!
-    TH2D *fhComplementaryTrackPhiPt;  //!
-    TH2D *fhComplementaryTrackEtaPt;  //!
+    TH2F *fhTrackEtaPhi;  //!
+    TH2F *fhTrackPhiPt;  //!
+    TH2F *fhTrackEtaPt;  //!
+    TH2F *fhGlobalTrackEtaPhi;  //!
+    TH2F *fhGlobalTrackPhiPt;  //!
+    TH2F *fhGlobalTrackEtaPt;  //!
+    TH2F *fhComplementaryTrackEtaPhi;  //!
+    TH2F *fhComplementaryTrackPhiPt;  //!
+    TH2F *fhComplementaryTrackEtaPt;  //!
 
-    TH2D *fhClusterEtaPhi; //!
-    TH2D *fhClusterPhiPt;  //!
-    TH2D *fhClusterEtaPt;  //!
+    TH2F *fhClusterEtaPhi; //!
+    TH2F *fhClusterPhiPt;  //!
+    TH2F *fhClusterEtaPt;  //!
     
-    TH2D *fhEMCalEventMult; //!
-    TH2D *fhTPCEventMult; //!
-    TH2D *fhEMCalTrackEventMult; //!
+    TH2F *fhEMCalEventMult; //!
+    TH2F *fhTPCEventMult; //!
+    TH2F *fhEMCalTrackEventMult; //!
     
     TProfile *fpEMCalEventMult;  //!
     TProfile *fpTPCEventMult;  //!
