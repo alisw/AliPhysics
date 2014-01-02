@@ -143,6 +143,10 @@ public:
   Double_t GetArmPt()    const;
   void GetDCA(const AliVVertex *primVtx, Double_t d0z0[2]) const;
 
+  // Calculate inner product of strong magnetic field and ee plane
+  Double_t PairPlaneMagInnerProduct(Double_t ZDCrpH1) const;
+
+
   // internal KF particle
   const AliKFParticle& GetKFParticle()       const { return fPair; }
   const AliKFParticle& GetKFFirstDaughter()  const { return fD1;   }

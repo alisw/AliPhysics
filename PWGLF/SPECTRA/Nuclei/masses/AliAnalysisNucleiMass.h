@@ -124,9 +124,9 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   TProfile *prPmeanVsBetaGamma[nBconf][18];       //!<p>/p vs beta*gamma (profile)
 
   //------------------------------Methods----------------------------------------
-  void GetMassFromPvertex(Double_t beta, Double_t p, Double_t &M2);
-  void GetZTpc(Double_t dedx, Double_t pTPC, Double_t M2, Double_t &Z2);
-  void GetMassFromExpTimes(Double_t beta, Double_t *IntTimes, Double_t *Mass2, Int_t iCorr, Double_t pVtx, Int_t FlagPid, Double_t charge);
+  void GetMassFromPvertex(Double_t beta, Double_t p, Double_t &M2);       //...*
+  void GetZTpc(Double_t dedx, Double_t pTPC, Double_t M2, Double_t &Z2);  //...*
+  void GetMassFromExpTimes(Double_t beta, Double_t *IntTimes, Double_t *Mass2, Int_t iCorr, Double_t pVtx, Int_t FlagPid, Double_t charge); //...*
  
   ClassDef(AliAnalysisNucleiMass, 1);
 };

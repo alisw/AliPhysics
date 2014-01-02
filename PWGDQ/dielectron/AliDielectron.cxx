@@ -132,7 +132,9 @@ AliDielectron::AliDielectron() :
   fTRDpidCorrectionFilename(""),
   fVZEROCalibrationFilename(""),
   fVZERORecenteringFilename(""),
-  fEffMapFilename("")
+  fEffMapFilename(""),
+  fZDCRecenteringFilename("")
+
 {
   //
   // Default constructor
@@ -178,7 +180,8 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fTRDpidCorrectionFilename(""),
   fVZEROCalibrationFilename(""),
   fVZERORecenteringFilename(""),
-  fEffMapFilename("")
+  fEffMapFilename(""),
+  fZDCRecenteringFilename("")
 {
   //
   // Named constructor
@@ -230,6 +233,7 @@ void AliDielectron::Init()
   allfiles+=fVZEROCalibrationFilename;
   allfiles+=fVZERORecenteringFilename;
   allfiles+=fEffMapFilename;
+  allfiles+=fZDCRecenteringFilename;
   if(allfiles.Contains("alien://")) TGrid::Connect("alien://",0,0,"t");
 
   if(fEstimatorFilename.Contains(".root"))        AliDielectronVarManager::InitEstimatorAvg(fEstimatorFilename.Data());
@@ -237,7 +241,7 @@ void AliDielectron::Init()
   if(fVZEROCalibrationFilename.Contains(".root")) AliDielectronVarManager::SetVZEROCalibrationFile(fVZEROCalibrationFilename.Data());
   if(fVZERORecenteringFilename.Contains(".root")) AliDielectronVarManager::SetVZERORecenteringFile(fVZERORecenteringFilename.Data());
   if(fEffMapFilename.Contains(".root"))           AliDielectronVarManager::InitEffMap(fEffMapFilename.Data());
-
+  if(fZDCRecenteringFilename.Contains(".root")) AliDielectronVarManager::SetZDCRecenteringFile(fZDCRecenteringFilename.Data());
 
   if (fMixing) fMixing->Init(this);
   if (fHistoArray) {
