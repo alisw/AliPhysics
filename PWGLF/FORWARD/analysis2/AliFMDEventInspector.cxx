@@ -641,11 +641,13 @@ AliFMDEventInspector::StoreProduction()
   Int_t   rootSVN           = p.GetRootSvnVersion();
   fProdPass                 = p.GetRecoPass();
   fProdMC                   = p.IsMC();
-
-  TObjArray* pp = TPRegexp("LHC([0-9]+)([a-z]+)").MatchS(period);
-  fProdYear     = static_cast<TObjString*>(pp->At(1))->String().Atoi();
-  fProdLetter   = static_cast<TObjString*>(pp->At(2))->String()[0];
-  pp->Delete();
+  
+  if (period.Length() > 0) {
+    TObjArray* pp = TPRegexp("LHC([0-9]+)([a-z]+)").MatchS(period);
+    fProdYear     = static_cast<TObjString*>(pp->At(1))->String().Atoi();
+    fProdLetter   = static_cast<TObjString*>(pp->At(2))->String()[0];
+    pp->Delete();
+  }
   
   out->Add(AliForwardUtil::MakeParameter("year", fProdYear));
   out->Add(AliForwardUtil::MakeParameter("letter", Int_t(fProdLetter)));
