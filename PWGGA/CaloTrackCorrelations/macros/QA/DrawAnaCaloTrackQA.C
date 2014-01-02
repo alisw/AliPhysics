@@ -795,6 +795,10 @@ void MCQA()
   TH1F* hPrimPi0Phi = (TH1F*) h2PrimPi0Phi->ProjectionY("PrimPi0Phi",binMin,1000);
   TH1F* hPrimEtaPhi = (TH1F*) h2PrimEtaPhi->ProjectionY("PrimEtaPhi",binMin,1000);
 
+  hPrimPhoPhi->Sumw2();
+  hPrimPi0Phi->Sumw2();
+  hPrimEtaPhi->Sumw2();
+
   hPrimPhoPhi->Scale(1./hPrimPhoPhi->Integral(0,1000));
   hPrimPi0Phi->Scale(1./hPrimPi0Phi->Integral(0,1000));
   hPrimEtaPhi->Scale(1./hPrimEtaPhi->Integral(0,1000));
@@ -814,20 +818,16 @@ void MCQA()
   hPrimPi0Phi->SetYTitle("1/total entries dN/d#phi");
   hPrimPi0Phi->SetTitle("Generated particles #phi for E > 3 GeV");
   hPrimPi0Phi->SetTitleOffset(1.6,"Y");
-  hPrimPi0Phi->Sumw2();
   hPrimPi0Phi->SetMarkerColor(4);
   hPrimPi0Phi->SetMarkerStyle(21);
   hPrimPi0Phi->Draw("");
   
-  hPrimPhoPhi->Sumw2();
   hPrimPhoPhi->SetMarkerColor(1);
   hPrimPhoPhi->SetMarkerStyle(20);
   Float_t scale = TMath::RadToDeg();
   ScaleXaxis(hPrimPhoPhi, TMath::RadToDeg());
   hPrimPhoPhi->Draw("same");
 
-
-  hPrimEtaPhi->Sumw2();
   hPrimEtaPhi->SetMarkerColor(2);
   hPrimEtaPhi->SetMarkerStyle(22);
   hPrimEtaPhi->Draw("same");
@@ -838,6 +838,10 @@ void MCQA()
   TH2F* h2PrimPhoEta = (TH2F*) GetHisto("AnaPhoton_hYPrim_MCPhoton");
   TH2F* h2PrimPi0Eta = (TH2F*) GetHisto("AnaPi0_hPrimPi0Rapidity");
   TH2F* h2PrimEtaEta = (TH2F*) GetHisto("AnaPi0_hPrimEtaRapidity");
+  
+  hPrimPhoEta->Sumw2();
+  hPrimEtaEta->Sumw2();
+  hPrimPi0Eta->Sumw2();
   
   Int_t binMin = hPrimPho->FindBin(3);
   
@@ -864,18 +868,15 @@ void MCQA()
   hPrimPi0Eta->SetYTitle("1/total entries dN/d#eta");
   hPrimPi0Eta->SetTitle("Generated particles #eta for E > 3 GeV");
   hPrimPi0Eta->SetTitleOffset(1.6,"Y");
-  hPrimPi0Eta->Sumw2();
   hPrimPi0Eta->SetMarkerColor(4);
   hPrimPi0Eta->SetMarkerStyle(21);
   hPrimPi0Eta->Draw("");
   
-  hPrimPhoEta->Sumw2();
   hPrimPhoEta->SetMarkerColor(1);
   hPrimPhoEta->SetMarkerStyle(20);
   Float_t scale = TMath::RadToDeg();
   hPrimPhoEta->Draw("same");
   
-  hPrimEtaEta->Sumw2();
   hPrimEtaEta->SetMarkerColor(2);
   hPrimEtaEta->SetMarkerStyle(22);
   hPrimEtaEta->Draw("same");

@@ -47,8 +47,11 @@ class AliMuonEventCuts : public AliAnalysisCuts
   /// Get trigger classes found in run
   TList* GetAllSelectedTrigClasses () const { return fAllSelectedTrigClasses; }
   const TObjArray* GetSelectedTrigClassesInEvent ( const AliVEvent* event );
+  const TObjArray* GetSelectedTrigClassesInEvent(const TString& firedTriggerClasses,
+                                                 UInt_t l0Inputs, UInt_t l1Inputs, UInt_t l2Inputs);
 
-  
+  UInt_t GetTriggerInputBitMaskFromInputName(const char* inputName) const;
+
   // Handle centrality
   void SetCentralityClasses(Int_t nCentralityBins = -1, Double_t* centralityBins = 0x0);
   /// Get centrality classes

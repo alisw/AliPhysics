@@ -68,6 +68,16 @@ set ( SRCS
     muon/AliAnalysisNonMuonTrackCuts.cxx
     muon/AliAnalysisNonPrimaryVertices.cxx
     muon/AliAnalysisTaskAOD2MuonAOD.cxx
+    muon/AliAnalysisTaskMuMu.cxx
+    muon/AliAnalysisMuMuBase.cxx
+    muon/AliAnalysisMuMuGlobal.cxx
+    muon/AliAnalysisMuMuCutRegistry.cxx
+    muon/AliAnalysisMuMuCutElement.cxx
+    muon/AliAnalysisMuMuEventCutter.cxx
+    muon/AliAnalysisMuMuCutCombination.cxx
+    muon/AliAnalysisMuMuSingle.cxx
+    muon/AliAnalysisMuMuMinv.cxx
+    muon/AliAnalysisMuMuNch.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -76,7 +86,7 @@ string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
 set ( DHDR  PWGmuonLinkDef.h)
 
-set ( EINCLUDE  PWG/muon ANALYSIS STEER/AOD STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  RooUnfold/src  PWG/muon ANALYSIS STEER/AOD STEER/ESD STEER/STEERBase)
 
 if( ALICE_TARGET STREQUAL "win32gcc")
         set ( PACKSOFLAGS  ${SOFLAGS} )

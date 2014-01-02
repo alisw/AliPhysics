@@ -5,9 +5,10 @@
 #include <TString.h>
 #include <TChain.h>
 #include <TTree.h>
-#include <TH1D.h>
-#include <TH2D.h>
-#include <TH3D.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TH3F.h>
+#include <THnSparse.h>
 #include <TCanvas.h>
 #include <TList.h>
 #include <TLorentzVector.h>
@@ -76,11 +77,6 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets() :
     fhEMCalEventMult(0),
     fhTPCEventMult(0),
     fhEMCalTrackEventMult(0),
-
-    fhTrackEtaPhiPt(0),
-    fhGlobalTrackEtaPhiPt(0),
-    fhComplementaryTrackEtaPhiPt(0),
-    fhClusterEtaPhiPt(0),
 
     fpEMCalEventMult(0),
     fpTPCEventMult(0),
@@ -240,11 +236,6 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets(const char *name) :
     fhEMCalEventMult(0),
     fhTPCEventMult(0),
     fhEMCalTrackEventMult(0),
-
-    fhTrackEtaPhiPt(0),
-    fhGlobalTrackEtaPhiPt(0),
-    fhComplementaryTrackEtaPhiPt(0),
-    fhClusterEtaPhiPt(0),
 
     fpEMCalEventMult(0),
     fpTPCEventMult(0),
@@ -464,7 +455,7 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
     Double_t multLow=0;
     Double_t multUp=200;
 
-    fhCentrality = new TH1D("fhCentrality","Event Centrality Distribution",fCentralityBins*CentralityBinMult,fCentralityLow,fCentralityUp);
+    fhCentrality = new TH1F("fhCentrality","Event Centrality Distribution",fCentralityBins*CentralityBinMult,fCentralityLow,fCentralityUp);
     fhCentrality->GetXaxis()->SetTitle(fCentralityTag);
     fhCentrality->GetYaxis()->SetTitle("1/N_{Events}");
     fhCentrality->Sumw2();
@@ -476,132 +467,114 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
         flTrack->SetName("TrackQA");
         
         // Hybrid Tracks
-        fhTrackPt = new TH1D("fhTrackPt","p_{T} distribution of tracks in event",10*fParticlePtBins,fParticlePtLow,fParticlePtUp);
+        fhTrackPt = new TH1F("fhTrackPt","p_{T} distribution of tracks in event",10*fParticlePtBins,fParticlePtLow,fParticlePtUp);
         fhTrackPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fhTrackPt->GetYaxis()->SetTitle("1/N_{Events} dN/dp_{T}");
         fhTrackPt->Sumw2();
         
-        fhTrackPhi = new TH1D("fhTrackPhi","#varphi distribution of tracks in event",TCBins,fTPCPhiMin,fTPCPhiMax);
+        fhTrackPhi = new TH1F("fhTrackPhi","#varphi distribution of tracks in event",TCBins,fTPCPhiMin,fTPCPhiMax);
         fhTrackPhi->GetXaxis()->SetTitle("#varphi");
         fhTrackPhi->GetYaxis()->SetTitle("1/N_{Events} dN/d#varphi");
         fhTrackPhi->Sumw2();
         
-        fhTrackEta = new TH1D("fhTrackEta","#eta distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax);
+        fhTrackEta = new TH1F("fhTrackEta","#eta distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax);
         fhTrackEta->GetXaxis()->SetTitle("#eta");
         fhTrackEta->GetYaxis()->SetTitle("1/N_{Events} dN/d#eta");
         fhTrackEta->Sumw2();
         
-        fhTrackEtaPhi = new TH2D("fhTrackEtaPhi","#eta-#varphi distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax,TCBins,fTPCPhiMin,fTPCPhiMax);
+        fhTrackEtaPhi = new TH2F("fhTrackEtaPhi","#eta-#varphi distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax,TCBins,fTPCPhiMin,fTPCPhiMax);
         fhTrackEtaPhi->GetXaxis()->SetTitle("#eta");
         fhTrackEtaPhi->GetYaxis()->SetTitle("#varphi");
         fhTrackEtaPhi->GetZaxis()->SetTitle("1/N_{Events} dN/d#etad#varphi");
         fhTrackEtaPhi->Sumw2();
         
-        fhTrackPhiPt = new TH2D("fhTrackPhiPt","#varphi-p_{T} distribution of tracks in event",TCBins,fTPCPhiMin,fTPCPhiMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
+        fhTrackPhiPt = new TH2F("fhTrackPhiPt","#varphi-p_{T} distribution of tracks in event",TCBins,fTPCPhiMin,fTPCPhiMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
         fhTrackPhiPt->GetXaxis()->SetTitle("#varphi");
         fhTrackPhiPt->GetYaxis()->SetTitle("p_{T} (GeV/c)");
         fhTrackPhiPt->GetZaxis()->SetTitle("1/N_{Events} dN/d#varphidp_{T}");
         fhTrackPhiPt->Sumw2();
         
-        fhTrackEtaPt = new TH2D("fhTrackEtaPt","#eta-p_{T} distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
+        fhTrackEtaPt = new TH2F("fhTrackEtaPt","#eta-p_{T} distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
         fhTrackEtaPt->GetXaxis()->SetTitle("#varphi");
         fhTrackEtaPt->GetYaxis()->SetTitle("p_{T} (GeV/c)");
         fhTrackEtaPt->GetZaxis()->SetTitle("1/N_{Events} dN/d#etadp_{T}");
         fhTrackEtaPt->Sumw2();
         
-        fhTrackEtaPhiPt = new TH3D("fhTrackEtaPhiPt","#eta-#varphi-p_{T} distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax,TCBins,fTPCPhiMin,fTPCPhiMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
-        fhTrackEtaPhiPt->GetXaxis()->SetTitle("#eta");
-        fhTrackEtaPhiPt->GetYaxis()->SetTitle("#varphi");
-        fhTrackEtaPhiPt->GetZaxis()->SetTitle("p_{T} (GeV/c)");
-        fhTrackEtaPhiPt->Sumw2();
-        
         // Global Tracks
-        fhGlobalTrackPt = new TH1D("fhGlobalTrackPt","Global p_{T} distribution of tracks in event",10*fParticlePtBins,fParticlePtLow,fParticlePtUp);
+        fhGlobalTrackPt = new TH1F("fhGlobalTrackPt","Global p_{T} distribution of tracks in event",10*fParticlePtBins,fParticlePtLow,fParticlePtUp);
         fhGlobalTrackPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fhGlobalTrackPt->GetYaxis()->SetTitle("1/N_{Events} dN/dp_{T}");
         fhGlobalTrackPt->Sumw2();
         
-        fhGlobalTrackPhi = new TH1D("fhGlobalTrackPhi","Global #varphi distribution of tracks in event",TCBins,fTPCPhiMin,fTPCPhiMax);
+        fhGlobalTrackPhi = new TH1F("fhGlobalTrackPhi","Global #varphi distribution of tracks in event",TCBins,fTPCPhiMin,fTPCPhiMax);
         fhGlobalTrackPhi->GetXaxis()->SetTitle("#varphi");
         fhGlobalTrackPhi->GetYaxis()->SetTitle("1/N_{Events} dN/d#varphi");
         fhGlobalTrackPhi->Sumw2();
         
-        fhGlobalTrackEta = new TH1D("fhGlobalTrackEta","Global #eta distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax);
+        fhGlobalTrackEta = new TH1F("fhGlobalTrackEta","Global #eta distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax);
         fhGlobalTrackEta->GetXaxis()->SetTitle("#eta");
         fhGlobalTrackEta->GetYaxis()->SetTitle("1/N_{Events} dN/d#eta");
         fhGlobalTrackEta->Sumw2();
         
-        fhGlobalTrackEtaPhi = new TH2D("fhGlobalTrackEtaPhi","Global #eta-#varphi distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax,TCBins,fTPCPhiMin,fTPCPhiMax);
+        fhGlobalTrackEtaPhi = new TH2F("fhGlobalTrackEtaPhi","Global #eta-#varphi distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax,TCBins,fTPCPhiMin,fTPCPhiMax);
         fhGlobalTrackEtaPhi->GetXaxis()->SetTitle("#eta");
         fhGlobalTrackEtaPhi->GetYaxis()->SetTitle("#varphi");
         fhGlobalTrackEtaPhi->GetZaxis()->SetTitle("1/N_{Events} dN/d#etad#varphi");
         fhGlobalTrackEtaPhi->Sumw2();
         
-        fhGlobalTrackPhiPt = new TH2D("fhGlobalTrackPhiPt","Global #varphi-p_{T} distribution of tracks in event",TCBins,fTPCPhiMin,fTPCPhiMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
+        fhGlobalTrackPhiPt = new TH2F("fhGlobalTrackPhiPt","Global #varphi-p_{T} distribution of tracks in event",TCBins,fTPCPhiMin,fTPCPhiMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
         fhGlobalTrackPhiPt->GetXaxis()->SetTitle("#varphi");
         fhGlobalTrackPhiPt->GetYaxis()->SetTitle("p_{T} (GeV/c)");
         fhGlobalTrackPhiPt->GetZaxis()->SetTitle("1/N_{Events} dN/d#varphidp_{T}");
         fhGlobalTrackPhiPt->Sumw2();
         
-        fhGlobalTrackEtaPt = new TH2D("fhGlobalTrackEtaPt","Global #eta-p_{T} distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
+        fhGlobalTrackEtaPt = new TH2F("fhGlobalTrackEtaPt","Global #eta-p_{T} distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
         fhGlobalTrackEtaPt->GetXaxis()->SetTitle("#varphi");
         fhGlobalTrackEtaPt->GetYaxis()->SetTitle("p_{T} (GeV/c)");
         fhGlobalTrackEtaPt->GetZaxis()->SetTitle("1/N_{Events} dN/d#etadp_{T}");
         fhGlobalTrackEtaPt->Sumw2();
         
-        fhGlobalTrackEtaPhiPt = new TH3D("fhGlobalTrackEtaPhiPt","Global #eta-#varphi-p_{T} distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax,TCBins,fTPCPhiMin,fTPCPhiMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
-        fhGlobalTrackEtaPhiPt->GetXaxis()->SetTitle("#eta");
-        fhGlobalTrackEtaPhiPt->GetYaxis()->SetTitle("#varphi");
-        fhGlobalTrackEtaPhiPt->GetZaxis()->SetTitle("p_{T} (GeV/c)");
-        fhGlobalTrackEtaPhiPt->Sumw2();
-        
         // Complementary Tracks
-        fhComplementaryTrackPt = new TH1D("fhComplementaryTrackPt","Complementary p_{T} distribution of tracks in event",10*fParticlePtBins,fParticlePtLow,fParticlePtUp);
+        fhComplementaryTrackPt = new TH1F("fhComplementaryTrackPt","Complementary p_{T} distribution of tracks in event",10*fParticlePtBins,fParticlePtLow,fParticlePtUp);
         fhComplementaryTrackPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fhComplementaryTrackPt->GetYaxis()->SetTitle("1/N_{Events} dN/dp_{T}");
         fhComplementaryTrackPt->Sumw2();
         
-        fhComplementaryTrackPhi = new TH1D("fhComplementaryTrackPhi","Complementary #varphi distribution of tracks in event",TCBins,fTPCPhiMin,fTPCPhiMax);
+        fhComplementaryTrackPhi = new TH1F("fhComplementaryTrackPhi","Complementary #varphi distribution of tracks in event",TCBins,fTPCPhiMin,fTPCPhiMax);
         fhComplementaryTrackPhi->GetXaxis()->SetTitle("#varphi");
         fhComplementaryTrackPhi->GetYaxis()->SetTitle("1/N_{Events} dN/d#varphi");
         fhComplementaryTrackPhi->Sumw2();
         
-        fhComplementaryTrackEta = new TH1D("fhComplementaryTrackEta","Complementary #eta distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax);
+        fhComplementaryTrackEta = new TH1F("fhComplementaryTrackEta","Complementary #eta distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax);
         fhComplementaryTrackEta->GetXaxis()->SetTitle("#eta");
         fhComplementaryTrackEta->GetYaxis()->SetTitle("1/N_{Events} dN/d#eta");
         fhComplementaryTrackEta->Sumw2();
         
-        fhComplementaryTrackEtaPhi = new TH2D("fhComplementaryTrackEtaPhi","Complementary #eta-#varphi distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax,TCBins,fTPCPhiMin,fTPCPhiMax);
+        fhComplementaryTrackEtaPhi = new TH2F("fhComplementaryTrackEtaPhi","Complementary #eta-#varphi distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax,TCBins,fTPCPhiMin,fTPCPhiMax);
         fhComplementaryTrackEtaPhi->GetXaxis()->SetTitle("#eta");
         fhComplementaryTrackEtaPhi->GetYaxis()->SetTitle("#varphi");
         fhComplementaryTrackEtaPhi->GetZaxis()->SetTitle("1/N_{Events} dN/d#etad#varphi");
         fhComplementaryTrackEtaPhi->Sumw2();
         
-        fhComplementaryTrackPhiPt = new TH2D("fhComplementaryTrackPhiPt","Complementary #varphi-p_{T} distribution of tracks in event",TCBins,fTPCPhiMin,fTPCPhiMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
+        fhComplementaryTrackPhiPt = new TH2F("fhComplementaryTrackPhiPt","Complementary #varphi-p_{T} distribution of tracks in event",TCBins,fTPCPhiMin,fTPCPhiMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
         fhComplementaryTrackPhiPt->GetXaxis()->SetTitle("#varphi");
         fhComplementaryTrackPhiPt->GetYaxis()->SetTitle("p_{T} (GeV/c)");
         fhComplementaryTrackPhiPt->GetZaxis()->SetTitle("1/N_{Events} dN/d#varphidp_{T}");
         fhComplementaryTrackPhiPt->Sumw2();
         
-        fhComplementaryTrackEtaPt = new TH2D("fhComplementaryTrackEtaPt","Complementary #eta-p_{T} distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
+        fhComplementaryTrackEtaPt = new TH2F("fhComplementaryTrackEtaPt","Complementary #eta-p_{T} distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
         fhComplementaryTrackEtaPt->GetXaxis()->SetTitle("#varphi");
         fhComplementaryTrackEtaPt->GetYaxis()->SetTitle("p_{T} (GeV/c)");
         fhComplementaryTrackEtaPt->GetZaxis()->SetTitle("1/N_{Events} dN/d#etadp_{T}");
         fhComplementaryTrackEtaPt->Sumw2();
         
-        fhComplementaryTrackEtaPhiPt = new TH3D("fhComplementaryTrackEtaPhiPt","Complementary #eta-#varphi-p_{T} distribution of tracks in event",TCBins,fTPCEtaMin,fTPCEtaMax,TCBins,fTPCPhiMin,fTPCPhiMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
-        fhComplementaryTrackEtaPhiPt->GetXaxis()->SetTitle("#eta");
-        fhComplementaryTrackEtaPhiPt->GetYaxis()->SetTitle("#varphi");
-        fhComplementaryTrackEtaPhiPt->GetZaxis()->SetTitle("p_{T} (GeV/c)");
-        fhComplementaryTrackEtaPhiPt->Sumw2();
-        
-        fhTPCEventMult = new TH2D("fhTPCEventMult","TPC Event Multiplcity vs Centrality",CentralityBinMult*fCentralityBins,fCentralityLow,fCentralityUp,multBins,multLow,multUp);
+        fhTPCEventMult = new TH2F("fhTPCEventMult","TPC Event Multiplcity vs Centrality",CentralityBinMult*fCentralityBins,fCentralityLow,fCentralityUp,multBins,multLow,multUp);
         fhTPCEventMult->GetXaxis()->SetTitle(fCentralityTag);
         fhTPCEventMult->GetYaxis()->SetTitle("Multiplicity");
         fhTPCEventMult->GetZaxis()->SetTitle("1/N_{Events} dN/dCentdN_{Charged}");
         fhTPCEventMult->Sumw2();
         
-        fhEMCalTrackEventMult = new TH2D("fhEMCalTrackEventMult","EMCal Track Event Multiplcity vs Centrality",CentralityBinMult*fCentralityBins,fCentralityLow,fCentralityUp,multBins,multLow,multUp);
+        fhEMCalTrackEventMult = new TH2F("fhEMCalTrackEventMult","EMCal Track Event Multiplcity vs Centrality",CentralityBinMult*fCentralityBins,fCentralityLow,fCentralityUp,multBins,multLow,multUp);
         fhEMCalTrackEventMult->GetXaxis()->SetTitle(fCentralityTag);
         fhEMCalTrackEventMult->GetYaxis()->SetTitle("Multiplicity");
         fhEMCalTrackEventMult->GetZaxis()->SetTitle("1/N_{Events} dN/dCentdN_{Neutral}");
@@ -623,21 +596,18 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
         flTrack->Add(fhTrackEtaPhi);
         flTrack->Add(fhTrackPhiPt);
         flTrack->Add(fhTrackEtaPt);
-        flTrack->Add(fhTrackEtaPhiPt);
         flTrack->Add(fhGlobalTrackPt);
         flTrack->Add(fhGlobalTrackEta);
         flTrack->Add(fhGlobalTrackPhi);
         flTrack->Add(fhGlobalTrackEtaPhi);
         flTrack->Add(fhGlobalTrackPhiPt);
         flTrack->Add(fhGlobalTrackEtaPt);
-        flTrack->Add(fhGlobalTrackEtaPhiPt);
         flTrack->Add(fhComplementaryTrackPt);
         flTrack->Add(fhComplementaryTrackEta);
         flTrack->Add(fhComplementaryTrackPhi);
         flTrack->Add(fhComplementaryTrackEtaPhi);
         flTrack->Add(fhComplementaryTrackPhiPt);
         flTrack->Add(fhComplementaryTrackEtaPt);
-        flTrack->Add(fhComplementaryTrackEtaPhiPt);
         flTrack->Add(fhTPCEventMult);
         flTrack->Add(fhEMCalTrackEventMult);
         flTrack->Add(fpTPCEventMult);
@@ -650,46 +620,40 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
         flCluster = new TList();
         flCluster->SetName("ClusterQA");
 
-        fhClusterPt = new TH1D("fhClusterPt","p_{T} distribution of clusters in event",10*fParticlePtBins,fParticlePtLow,fParticlePtUp);
+        fhClusterPt = new TH1F("fhClusterPt","p_{T} distribution of clusters in event",10*fParticlePtBins,fParticlePtLow,fParticlePtUp);
         fhClusterPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fhClusterPt->GetYaxis()->SetTitle("1/N_{Events} dN/dp_{T}");
         fhClusterPt->Sumw2();
         
-        fhClusterPhi = new TH1D("fhClusterPhi","#varphi distribution of clusters in event",TCBins,fTPCPhiMin,fTPCPhiMax);
+        fhClusterPhi = new TH1F("fhClusterPhi","#varphi distribution of clusters in event",TCBins,fTPCPhiMin,fTPCPhiMax);
         fhClusterPhi->GetXaxis()->SetTitle("#varphi");
         fhClusterPhi->GetYaxis()->SetTitle("1/N_{Events} dN/d#varphi");
         fhClusterPhi->Sumw2();
         
-        fhClusterEta = new TH1D("fhClusterEta","#eta distribution of clusters in event",TCBins,fTPCEtaMin,fTPCEtaMax);
+        fhClusterEta = new TH1F("fhClusterEta","#eta distribution of clusters in event",TCBins,fTPCEtaMin,fTPCEtaMax);
         fhClusterEta->GetXaxis()->SetTitle("#eta");
         fhClusterEta->GetYaxis()->SetTitle("1/N_{Events} dN/d#eta");
         fhClusterEta->Sumw2();
         
-        fhClusterEtaPhi = new TH2D("fhClusterEtaPhi","#eta-#varphi distribution of clusters in event",TCBins,fEMCalEtaMin,fEMCalEtaMax,TCBins,fEMCalPhiMin,fEMCalPhiMax);
+        fhClusterEtaPhi = new TH2F("fhClusterEtaPhi","#eta-#varphi distribution of clusters in event",TCBins,fEMCalEtaMin,fEMCalEtaMax,TCBins,fEMCalPhiMin,fEMCalPhiMax);
         fhClusterEtaPhi->GetXaxis()->SetTitle("#eta");
         fhClusterEtaPhi->GetYaxis()->SetTitle("#varphi");
         fhClusterEtaPhi->GetZaxis()->SetTitle("1/N_{Events} dN/d#etad#varphi");
         fhClusterEtaPhi->Sumw2();
         
-        fhClusterPhiPt = new TH2D("fhClusterPhiPt","#varphi-p_{T} distribution of clusters in event",TCBins,fEMCalPhiMin,fEMCalPhiMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
+        fhClusterPhiPt = new TH2F("fhClusterPhiPt","#varphi-p_{T} distribution of clusters in event",TCBins,fEMCalPhiMin,fEMCalPhiMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
         fhClusterPhiPt->GetXaxis()->SetTitle("#varphi");
         fhClusterPhiPt->GetYaxis()->SetTitle("p_{T} (GeV/c)");
         fhClusterPhiPt->GetZaxis()->SetTitle("1/N_{Events} dN/d#varphidp_{T}");
         fhClusterPhiPt->Sumw2();
         
-        fhClusterEtaPt = new TH2D("fhClusterEtaPt","#eta-p_{T} distribution of clusters in event",TCBins,fEMCalEtaMin,fEMCalEtaMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
+        fhClusterEtaPt = new TH2F("fhClusterEtaPt","#eta-p_{T} distribution of clusters in event",TCBins,fEMCalEtaMin,fEMCalEtaMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
         fhClusterEtaPt->GetXaxis()->SetTitle("#varphi");
         fhClusterEtaPt->GetYaxis()->SetTitle("p_{T} (GeV/c)");
         fhClusterEtaPt->GetZaxis()->SetTitle("1/N_{Events} dN/d#etadp_{T}");
         fhClusterEtaPt->Sumw2();
         
-        fhClusterEtaPhiPt = new TH3D("fhClusterEtaPhiPt","#eta-#varphi-p_{T} distribution of clusters in event",TCBins,fEMCalEtaMin,fEMCalEtaMax,TCBins,fEMCalPhiMin,fEMCalPhiMax,fParticlePtBins,fParticlePtLow,fParticlePtUp);
-        fhClusterEtaPhiPt->GetXaxis()->SetTitle("#eta");
-        fhClusterEtaPhiPt->GetYaxis()->SetTitle("#varphi");
-        fhClusterEtaPhiPt->GetZaxis()->SetTitle("p_{T} (GeV/c)");
-        fhClusterEtaPhiPt->Sumw2();
-        
-        fhEMCalEventMult = new TH2D("fhEMCalEventMult","EMCal Event Multiplcity vs Centrality",CentralityBinMult*fCentralityBins,fCentralityLow,fCentralityUp,multBins,multLow,multUp);
+        fhEMCalEventMult = new TH2F("fhEMCalEventMult","EMCal Event Multiplcity vs Centrality",CentralityBinMult*fCentralityBins,fCentralityLow,fCentralityUp,multBins,multLow,multUp);
         fhEMCalEventMult->GetXaxis()->SetTitle(fCentralityTag);
         fhEMCalEventMult->GetYaxis()->SetTitle("Multiplicity");
         fhEMCalEventMult->GetZaxis()->SetTitle("1/N_{Events} dN/dCentdN_{Neutral}");
@@ -704,7 +668,7 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
         fpClusterPtProfile->GetYaxis()->SetTitle("#varphi");
         fpClusterPtProfile->GetZaxis()->SetTitle("p_{T} density (GeV/Area)");
 
-        fhEMCalCellCounts = new TH1D("fhEMCalCellCounts","Distribtuion of cluster counts across the EMCal",fnEMCalCells,1,fnEMCalCells);
+        fhEMCalCellCounts = new TH1F("fhEMCalCellCounts","Distribtuion of cluster counts across the EMCal",fnEMCalCells,1,fnEMCalCells);
         fhEMCalCellCounts->GetXaxis()->SetTitle("Absoulute Cell Id");
         fhEMCalCellCounts->GetYaxis()->SetTitle("Counts per Event");
         fhEMCalCellCounts->Sumw2();
@@ -715,7 +679,6 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
         flCluster->Add(fhClusterEtaPhi);
         flCluster->Add(fhClusterPhiPt);
         flCluster->Add(fhClusterEtaPt);
-        flCluster->Add(fhClusterEtaPhiPt);
         flCluster->Add(fhEMCalEventMult);
         flCluster->Add(fpEMCalEventMult);
         flCluster->Add(fpClusterPtProfile);
@@ -1049,7 +1012,7 @@ void AliAnalysisTaskFullpAJets::TrackHisto()
     // Fill track histograms: Phi,Eta,Pt
     Int_t i,j;
     Int_t TCBins=100;
-    TH2D *hdummypT= new TH2D("hdummypT","",TCBins,fTPCEtaMin,fTPCEtaMax,TCBins,fTPCPhiMin,fTPCPhiMax);  //!
+    TH2F *hdummypT= new TH2F("hdummypT","",TCBins,fTPCEtaMin,fTPCEtaMax,TCBins,fTPCPhiMin,fTPCPhiMax);  //!
 
     for (i=0;i<fnTracks;i++)
     {
@@ -1060,7 +1023,6 @@ void AliAnalysisTaskFullpAJets::TrackHisto()
         fhTrackEtaPhi->Fill(vtrack->Eta(),vtrack->Phi());
         fhTrackPhiPt->Fill(vtrack->Phi(),vtrack->Pt());
         fhTrackEtaPt->Fill(vtrack->Eta(),vtrack->Pt());
-        fhTrackEtaPhiPt->Fill(vtrack->Eta(),vtrack->Phi(),vtrack->Pt());
         
         // Fill Associated Track Distributions for AOD QA Productions
         // Global Tracks
@@ -1072,7 +1034,6 @@ void AliAnalysisTaskFullpAJets::TrackHisto()
             fhGlobalTrackEtaPhi->Fill(vtrack->Eta(),vtrack->Phi());
             fhGlobalTrackPhiPt->Fill(vtrack->Phi(),vtrack->Pt());
             fhGlobalTrackEtaPt->Fill(vtrack->Eta(),vtrack->Pt());
-            fhGlobalTrackEtaPhiPt->Fill(vtrack->Eta(),vtrack->Phi(),vtrack->Pt());
         }
         // Complementary Tracks
         else if (vtrack->GetTrackType()==1)
@@ -1083,7 +1044,6 @@ void AliAnalysisTaskFullpAJets::TrackHisto()
             fhComplementaryTrackEtaPhi->Fill(vtrack->Eta(),vtrack->Phi());
             fhComplementaryTrackPhiPt->Fill(vtrack->Phi(),vtrack->Pt());
             fhComplementaryTrackEtaPt->Fill(vtrack->Eta(),vtrack->Pt());
-            fhComplementaryTrackEtaPhiPt->Fill(vtrack->Eta(),vtrack->Phi(),vtrack->Pt());
         }
         hdummypT->Fill(vtrack->Eta(),vtrack->Phi(),vtrack->Pt());
     }
@@ -1102,7 +1062,7 @@ void AliAnalysisTaskFullpAJets::ClusterHisto()
     // Fill cluster histograms: Phi,Eta,Pt
     Int_t i,j;
     Int_t TCBins=100;
-    TH2D *hdummypT= new TH2D("hdummypT","",TCBins,fEMCalEtaMin,fEMCalEtaMax,TCBins,fEMCalPhiMin,fEMCalPhiMax);  //!
+    TH2F *hdummypT= new TH2F("hdummypT","",TCBins,fEMCalEtaMin,fEMCalEtaMax,TCBins,fEMCalPhiMin,fEMCalPhiMax);  //!
     Int_t myCellID=-2;
     TLorentzVector *cluster_vec = new TLorentzVector;
     
@@ -1117,7 +1077,6 @@ void AliAnalysisTaskFullpAJets::ClusterHisto()
         fhClusterEtaPhi->Fill(cluster_vec->Eta(),cluster_vec->Phi());
         fhClusterPhiPt->Fill(cluster_vec->Phi(),cluster_vec->Pt());
         fhClusterEtaPt->Fill(cluster_vec->Eta(),cluster_vec->Pt());
-        fhClusterEtaPhiPt->Fill(cluster_vec->Eta(),cluster_vec->Phi(),cluster_vec->Pt());
         hdummypT->Fill(cluster_vec->Eta(),cluster_vec->Phi(),cluster_vec->Pt());
         fEMCALGeometry->GetAbsCellIdFromEtaPhi(cluster_vec->Eta(),cluster_vec->Phi(),myCellID);
         fhEMCalCellCounts->Fill(myCellID);
@@ -3389,29 +3348,22 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos() :
 
     fpRho(0),
     fpLJetRho(0),
-    fhJetConstituentPt(0),
+
     fhJetPtArea(0),
+    fhJetConstituentPt(0),
+    fhJetTracksPt(0),
+    fhJetClustersPt(0),
+    fhJetConstituentCounts(0),
+    fhJetTracksCounts(0),
+    fhJetClustersCounts(0),
 
     fNEFOutput(0),
-    fhNEF(0),
-    fhNEFSignal(0),
-    fhNEFJetPt(0),
-    fhNEFJetPtSignal(0),
-    fhNEFJetPtCen(0),
-    fhNEFJetPtCenSignal(0),
-    fhNEFEtaPhi(0),
-    fhNEFEtaPhiSignal(0),
-    fhEtaPhiNEF(0),
-    fhNEFTotalMult(0),
-    fhNEFTotalMultSignal(0),
-    fhNEFNeutralMult(0),
-    fhNEFNeutralMultSignal(0),
+    fhJetNEFInfo(0),
+    fhJetNEFSignalInfo(0),
+    fhClusterNEFInfo(0),
+    fhClusterNEFSignalInfo(0),
     fhClusterShapeAll(0),
     fhClusterPtCellAll(0),
-    fhNEFJetPtFCross(0),
-    fhNEFZLeadingFCross(0),
-    fhNEFTimeCellCount(0),
-    fhNEFTimeDeltaTime(0),
 
     fName(0),
     fCentralityTag(0),
@@ -3442,6 +3394,8 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos() :
     fNEFBins(0),
     fNEFLow(0),
     fNEFUp(0),
+    fnDimJet(0),
+    fnDimCluster(0),
     fEMCalPhiMin(1.39626),
     fEMCalPhiMax(3.26377),
     fEMCalEtaMin(-0.7),
@@ -3486,29 +3440,22 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name) :
 
     fpRho(0),
     fpLJetRho(0),
-    fhJetConstituentPt(0),
+
     fhJetPtArea(0),
+    fhJetConstituentPt(0),
+    fhJetTracksPt(0),
+    fhJetClustersPt(0),
+    fhJetConstituentCounts(0),
+    fhJetTracksCounts(0),
+    fhJetClustersCounts(0),
 
     fNEFOutput(0),
-    fhNEF(0),
-    fhNEFSignal(0),
-    fhNEFJetPt(0),
-    fhNEFJetPtSignal(0),
-    fhNEFJetPtCen(0),
-    fhNEFJetPtCenSignal(0),
-    fhNEFEtaPhi(0),
-    fhNEFEtaPhiSignal(0),
-    fhEtaPhiNEF(0),
-    fhNEFTotalMult(0),
-    fhNEFTotalMultSignal(0),
-    fhNEFNeutralMult(0),
-    fhNEFNeutralMultSignal(0),
+    fhJetNEFInfo(0),
+    fhJetNEFSignalInfo(0),
+    fhClusterNEFInfo(0),
+    fhClusterNEFSignalInfo(0),
     fhClusterShapeAll(0),
     fhClusterPtCellAll(0),
-    fhNEFJetPtFCross(0),
-    fhNEFZLeadingFCross(0),
-    fhNEFTimeCellCount(0),
-    fhNEFTimeDeltaTime(0),
 
     fName(0),
     fCentralityTag(0),
@@ -3539,6 +3486,8 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name) :
     fNEFBins(0),
     fNEFLow(0),
     fNEFUp(0),
+    fnDimJet(0),
+    fnDimCluster(0),
     fEMCalPhiMin(1.39626),
     fEMCalPhiMax(3.26377),
     fEMCalEtaMin(-0.7),
@@ -3595,29 +3544,22 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name, cons
 
     fpRho(0),
     fpLJetRho(0),
-    fhJetConstituentPt(0),
+
     fhJetPtArea(0),
+    fhJetConstituentPt(0),
+    fhJetTracksPt(0),
+    fhJetClustersPt(0),
+    fhJetConstituentCounts(0),
+    fhJetTracksCounts(0),
+    fhJetClustersCounts(0),
 
     fNEFOutput(0),
-    fhNEF(0),
-    fhNEFSignal(0),
-    fhNEFJetPt(0),
-    fhNEFJetPtSignal(0),
-    fhNEFJetPtCen(0),
-    fhNEFJetPtCenSignal(0),
-    fhNEFEtaPhi(0),
-    fhNEFEtaPhiSignal(0),
-    fhEtaPhiNEF(0),
-    fhNEFTotalMult(0),
-    fhNEFTotalMultSignal(0),
-    fhNEFNeutralMult(0),
-    fhNEFNeutralMultSignal(0),
+    fhJetNEFInfo(0),
+    fhJetNEFSignalInfo(0),
+    fhClusterNEFInfo(0),
+    fhClusterNEFSignalInfo(0),
     fhClusterShapeAll(0),
     fhClusterPtCellAll(0),
-    fhNEFJetPtFCross(0),
-    fhNEFZLeadingFCross(0),
-    fhNEFTimeCellCount(0),
-    fhNEFTimeDeltaTime(0),
 
     fName(0),
     fCentralityTag(0),
@@ -3648,6 +3590,8 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name, cons
     fNEFBins(0),
     fNEFLow(0),
     fNEFUp(0),
+    fnDimJet(0),
+    fnDimCluster(0),
     fEMCalPhiMin(1.39626),
     fEMCalPhiMax(3.26377),
     fEMCalEtaMin(-0.7),
@@ -3680,7 +3624,10 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::~AlipAJetHistos()
 
 void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
 {
+    Int_t i;
+    
     // Initialize Private Variables
+    Int_t TCBins = 100;
     fEMCalPhiMin=(80/(double)360)*2*TMath::Pi();
     fEMCalPhiMax=(187/(double)360)*2*TMath::Pi();
     fEMCalEtaMin=-0.7;
@@ -3699,25 +3646,25 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
     
     // Rho Spectral Plots
     RhoString = Form("%d-%d Centrality, Rho Spectrum",0,20);
-    fh020Rho = new TH1D("fh020Rho",RhoString,fRhoPtBins,fRhoPtLow,fRhoPtUp);
+    fh020Rho = new TH1F("fh020Rho",RhoString,fRhoPtBins,fRhoPtLow,fRhoPtUp);
     fh020Rho->GetXaxis()->SetTitle("p_{T}/Area (GeV/c)");
     fh020Rho->GetYaxis()->SetTitle("1/N_{Events} dN/d#rho");
     fh020Rho->Sumw2();
     
     RhoString = Form("%d-%d Centrality, Rho Spectrum",80,100);
-    fh80100Rho = new TH1D("fh80100Rho",RhoString,fRhoPtBins,fRhoPtLow,fRhoPtUp);
+    fh80100Rho = new TH1F("fh80100Rho",RhoString,fRhoPtBins,fRhoPtLow,fRhoPtUp);
     fh80100Rho->GetXaxis()->SetTitle("p_{T}/Area (GeV/c)");
     fh80100Rho->GetYaxis()->SetTitle("1/N_{Events} dN/d#rho");
     fh80100Rho->Sumw2();
     
     RhoString = Form("%d-%d Centrality, Rho Spectrum",0,100);
-    fhRho = new TH1D("fhRho",RhoString,fRhoPtBins,fRhoPtLow,fRhoPtUp);
+    fhRho = new TH1F("fhRho",RhoString,fRhoPtBins,fRhoPtLow,fRhoPtUp);
     fhRho->GetXaxis()->SetTitle("p_{T}/Area (GeV/c)");
     fhRho->GetYaxis()->SetTitle("1/N_{Events} dN/d#rho");
     fhRho->Sumw2();
     
     RhoString = "Rho Spectrum vs Centrality";
-    fhRhoCen = new TH2D("fhRhoCen",RhoString,fRhoPtBins,fRhoPtLow,fRhoPtUp,fCentralityBins,fCentralityLow,fCentralityUp);
+    fhRhoCen = new TH2F("fhRhoCen",RhoString,fRhoPtBins,fRhoPtLow,fRhoPtUp,fCentralityBins,fCentralityLow,fCentralityUp);
     fhRhoCen->GetXaxis()->SetTitle("p_{T}/Area (GeV/c)");
     fhRhoCen->GetYaxis()->SetTitle(Form("%s",CentralityString.Data()));
     fhRhoCen->GetZaxis()->SetTitle("1/N_{Events} dN/d#rho");
@@ -3725,50 +3672,50 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
     
     // Background Subtracted Plots
     PtString = Form("%d-%d Centrality, Background Subtracted Jet Spectrum",0,20);
-    fh020BSPt = new TH1D("fh020BSPt",PtString,fPtBins,fPtLow,fPtUp);
+    fh020BSPt = new TH1F("fh020BSPt",PtString,fPtBins,fPtLow,fPtUp);
     fh020BSPt->GetXaxis()->SetTitle("p_{T} - #rhoA (GeV/c)");
     fh020BSPt->GetYaxis()->SetTitle("1/N_{Events} dN/dp_{T}d#etad#varphi");
     fh020BSPt->Sumw2();
     
     PtString = Form("%d-%d Centrality, Background Subtracted Jet Spectrum",80,100);
-    fh80100BSPt = new TH1D("fh80100BSPt",PtString,fPtBins,fPtLow,fPtUp);
+    fh80100BSPt = new TH1F("fh80100BSPt",PtString,fPtBins,fPtLow,fPtUp);
     fh80100BSPt->GetXaxis()->SetTitle("p_{T} - #rhoA (GeV/c)");
     fh80100BSPt->GetYaxis()->SetTitle("1/N_{Events} dN/dp_{T}d#etad#varphi");
     fh80100BSPt->Sumw2();
     
     PtString = Form("%d-%d Centrality, Background Subtracted Jet Spectrum",0,100);
-    fhBSPt = new TH1D("fhBSPt",PtString,fPtBins,fPtLow,fPtUp);
+    fhBSPt = new TH1F("fhBSPt",PtString,fPtBins,fPtLow,fPtUp);
     fhBSPt->GetXaxis()->SetTitle("p_{T} - #rhoA (GeV/c)");
     fhBSPt->GetYaxis()->SetTitle("1/N_{Events} dN/dp_{T}d#etad#varphi");
     fhBSPt->Sumw2();
     
     PtString = "Background Subtracted Jet Spectrum vs Centrality";
-    fhBSPtCen = new TH2D("fhBSPtCen",PtString,fPtBins,fPtLow,fPtUp,fCentralityBins,fCentralityLow,fCentralityUp);
+    fhBSPtCen = new TH2F("fhBSPtCen",PtString,fPtBins,fPtLow,fPtUp,fCentralityBins,fCentralityLow,fCentralityUp);
     fhBSPtCen->GetXaxis()->SetTitle("p_{T} - #rhoA (GeV/c)");
     fhBSPtCen->GetYaxis()->SetTitle(Form("%s",CentralityString.Data()));
     fhBSPtCen->GetZaxis()->SetTitle("1/N_{Events} dN/dp_{T}d#etad#varphi");
     fhBSPtCen->Sumw2();
 
     PtString = Form("%d-%d Centrality, Background Subtracted Signal Jet Spectrum",0,20);
-    fh020BSPtSignal = new TH1D("fh020BSPtSignal",PtString,fPtBins,fPtLow,fPtUp);
+    fh020BSPtSignal = new TH1F("fh020BSPtSignal",PtString,fPtBins,fPtLow,fPtUp);
     fh020BSPtSignal->GetXaxis()->SetTitle("p_{T} - #rhoA (GeV/c)");
     fh020BSPtSignal->GetYaxis()->SetTitle("1/N_{Events} dN/dp_{T}d#etad#varphi");
     fh020BSPtSignal->Sumw2();
     
     PtString = Form("%d-%d Centrality, Background Subtracted Signal Jet Spectrum",80,100);
-    fh80100BSPtSignal = new TH1D("fh80100BSPtSignal",PtString,fPtBins,fPtLow,fPtUp);
+    fh80100BSPtSignal = new TH1F("fh80100BSPtSignal",PtString,fPtBins,fPtLow,fPtUp);
     fh80100BSPtSignal->GetXaxis()->SetTitle("p_{T} - #rhoA (GeV/c)");
     fh80100BSPtSignal->GetYaxis()->SetTitle("1/N_{Events} dN/dp_{T}d#etad#varphi");
     fh80100BSPtSignal->Sumw2();
     
     PtString = Form("%d-%d Centrality, Background Subtracted Signal Jet Spectrum",0,100);
-    fhBSPtSignal = new TH1D("fhBSPtSignal",PtString,fPtBins,fPtLow,fPtUp);
+    fhBSPtSignal = new TH1F("fhBSPtSignal",PtString,fPtBins,fPtLow,fPtUp);
     fhBSPtSignal->GetXaxis()->SetTitle("p_{T} - #rhoA (GeV/c)");
     fhBSPtSignal->GetYaxis()->SetTitle("1/N_{Events} dN/dp_{T}d#etad#varphi");
     fhBSPtSignal->Sumw2();
     
     PtString = "Background Subtracted Signal Jet Spectrum vs Centrality";
-    fhBSPtCenSignal = new TH2D("fhBSPtCenSignal",PtString,fPtBins,fPtLow,fPtUp,fCentralityBins,fCentralityLow,fCentralityUp);
+    fhBSPtCenSignal = new TH2F("fhBSPtCenSignal",PtString,fPtBins,fPtLow,fPtUp,fCentralityBins,fCentralityLow,fCentralityUp);
     fhBSPtCenSignal->GetXaxis()->SetTitle("p_{T} - #rhoA (GeV/c)");
     fhBSPtCenSignal->GetYaxis()->SetTitle(Form("%s",CentralityString.Data()));
     fhBSPtCenSignal->GetZaxis()->SetTitle("1/N_{Events} dN/dp_{T}d#etad#varphi");
@@ -3776,25 +3723,25 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
     
     // Delta Pt Plots with RC at least 2R away from Leading Signal
     DeltaPtString = Form("%d-%d Centrality, #deltap_{T} Spectrum",0,20);
-    fh020DeltaPt = new TH1D("fh020DeltaPt",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp);
+    fh020DeltaPt = new TH1F("fh020DeltaPt",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp);
     fh020DeltaPt->GetXaxis()->SetTitle("#deltap_{T} (GeV/c)");
     fh020DeltaPt->GetYaxis()->SetTitle("Probability Density");
     fh020DeltaPt->Sumw2();
     
     DeltaPtString = Form("%d-%d Centrality, #deltap_{T} Spectrum",80,100);
-    fh80100DeltaPt = new TH1D("fh80100DeltaPt",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp);
+    fh80100DeltaPt = new TH1F("fh80100DeltaPt",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp);
     fh80100DeltaPt->GetXaxis()->SetTitle("#deltap_{T} (GeV/c)");
     fh80100DeltaPt->GetYaxis()->SetTitle("Probability Density");
     fh80100DeltaPt->Sumw2();
     
     DeltaPtString = Form("%d-%d Centrality, #deltap_{T} Spectrum",0,100);
-    fhDeltaPt = new TH1D("fhDeltaPt",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp);
+    fhDeltaPt = new TH1F("fhDeltaPt",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp);
     fhDeltaPt->GetXaxis()->SetTitle("#deltap_{T} (GeV/c)");
     fhDeltaPt->GetYaxis()->SetTitle("Probability Density");
     fhDeltaPt->Sumw2();
     
     DeltaPtString = "#deltap_{T} Spectrum vs Centrality";
-    fhDeltaPtCen = new TH2D("fhDeltaPtCen",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp,fCentralityBins,fCentralityLow,fCentralityUp);
+    fhDeltaPtCen = new TH2F("fhDeltaPtCen",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp,fCentralityBins,fCentralityLow,fCentralityUp);
     fhDeltaPtCen->GetXaxis()->SetTitle("#deltap_{T} (GeV/c)");
     fhDeltaPtCen->GetYaxis()->SetTitle(Form("%s",CentralityString.Data()));
     fhDeltaPtCen->GetZaxis()->SetTitle("Probability Density");
@@ -3802,25 +3749,25 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
     
     // Delta Pt Plots with no spatial restrictions on RC
     DeltaPtString = Form("%d-%d Centrality, #deltap_{T} Spectrum",0,20);
-    fh020DeltaPtSignal = new TH1D("fh020DeltaPtSignal",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp);
+    fh020DeltaPtSignal = new TH1F("fh020DeltaPtSignal",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp);
     fh020DeltaPtSignal->GetXaxis()->SetTitle("#deltap_{T} (GeV/c)");
     fh020DeltaPtSignal->GetYaxis()->SetTitle("Probability Density");
     fh020DeltaPtSignal->Sumw2();
     
     DeltaPtString = Form("%d-%d Centrality, #deltap_{T} Spectrum",80,100);
-    fh80100DeltaPtSignal = new TH1D("fh80100DeltaPtSignal",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp);
+    fh80100DeltaPtSignal = new TH1F("fh80100DeltaPtSignal",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp);
     fh80100DeltaPtSignal->GetXaxis()->SetTitle("#deltap_{T} (GeV/c)");
     fh80100DeltaPtSignal->GetYaxis()->SetTitle("Probability Density");
     fh80100DeltaPtSignal->Sumw2();
     
     DeltaPtString = Form("%d-%d Centrality, #deltap_{T} Spectrum",0,100);
-    fhDeltaPtSignal = new TH1D("fhDeltaPtSignal",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp);
+    fhDeltaPtSignal = new TH1F("fhDeltaPtSignal",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp);
     fhDeltaPtSignal->GetXaxis()->SetTitle("#deltap_{T} (GeV/c)");
     fhDeltaPtSignal->GetYaxis()->SetTitle("Probability Density");
     fhDeltaPtSignal->Sumw2();
     
     DeltaPtString = "#deltap_{T} Spectrum vs Centrality";
-    fhDeltaPtCenSignal = new TH2D("fhDeltaPtCenSignal",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp,fCentralityBins,fCentralityLow,fCentralityUp);
+    fhDeltaPtCenSignal = new TH2F("fhDeltaPtCenSignal",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp,fCentralityBins,fCentralityLow,fCentralityUp);
     fhDeltaPtCenSignal->GetXaxis()->SetTitle("#deltap_{T} (GeV/c)");
     fhDeltaPtCenSignal->GetYaxis()->SetTitle(Form("%s",CentralityString.Data()));
     fhDeltaPtCenSignal->GetZaxis()->SetTitle("Probability Density");
@@ -3828,25 +3775,25 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
 
     // Delta Pt Plots with NColl restrictions on RC
     DeltaPtString = Form("%d-%d Centrality, #deltap_{T} Spectrum",0,20);
-    fh020DeltaPtNColl = new TH1D("fh020DeltaPtNColl",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp);
+    fh020DeltaPtNColl = new TH1F("fh020DeltaPtNColl",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp);
     fh020DeltaPtNColl->GetXaxis()->SetTitle("#deltap_{T} (GeV/c)");
     fh020DeltaPtNColl->GetYaxis()->SetTitle("Probability Density");
     fh020DeltaPtNColl->Sumw2();
     
     DeltaPtString = Form("%d-%d Centrality, #deltap_{T} Spectrum",80,100);
-    fh80100DeltaPtNColl = new TH1D("fh80100DeltaPtNColl",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp);
+    fh80100DeltaPtNColl = new TH1F("fh80100DeltaPtNColl",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp);
     fh80100DeltaPtNColl->GetXaxis()->SetTitle("#deltap_{T} (GeV/c)");
     fh80100DeltaPtNColl->GetYaxis()->SetTitle("Probability Density");
     fh80100DeltaPtNColl->Sumw2();
     
     DeltaPtString = Form("%d-%d Centrality, #deltap_{T} Spectrum",0,100);
-    fhDeltaPtNColl = new TH1D("fhDeltaPtNColl",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp);
+    fhDeltaPtNColl = new TH1F("fhDeltaPtNColl",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp);
     fhDeltaPtNColl->GetXaxis()->SetTitle("#deltap_{T} (GeV/c)");
     fhDeltaPtNColl->GetYaxis()->SetTitle("Probability Density");
     fhDeltaPtNColl->Sumw2();
     
     DeltaPtString = "#deltap_{T} Spectrum vs Centrality";
-    fhDeltaPtCenNColl = new TH2D("fhDeltaPtCenNColl",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp,fCentralityBins,fCentralityLow,fCentralityUp);
+    fhDeltaPtCenNColl = new TH2F("fhDeltaPtCenNColl",DeltaPtString,fDeltaPtBins,fDeltaPtLow,fDeltaPtUp,fCentralityBins,fCentralityLow,fCentralityUp);
     fhDeltaPtCenNColl->GetXaxis()->SetTitle("#deltap_{T} (GeV/c)");
     fhDeltaPtCenNColl->GetYaxis()->SetTitle(Form("%s",CentralityString.Data()));
     fhDeltaPtCenNColl->GetZaxis()->SetTitle("Probability Density");
@@ -3854,25 +3801,25 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
 
     // Background Fluctuations Pt Plots
     BckgFlucPtString = Form("%d-%d Centrality, Background Fluctuation p_{T} Spectrum",0,20);
-    fh020BckgFlucPt = new TH1D("fh020BckgFlucPt",PtString,fPtBins,fPtLow,fPtUp);
+    fh020BckgFlucPt = new TH1F("fh020BckgFlucPt",PtString,fPtBins,fPtLow,fPtUp);
     fh020BckgFlucPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     fh020BckgFlucPt->GetYaxis()->SetTitle("1/N_{Events} dN/dp_{T}d#etad#varphi");
     fh020BckgFlucPt->Sumw2();
     
     BckgFlucPtString = Form("%d-%d Centrality, Background Fluctuation p_{T} Spectrum",80,100);
-    fh80100BckgFlucPt = new TH1D("fh80100BckgFlucPt",BckgFlucPtString,fBckgFlucPtBins,fBckgFlucPtLow,fBckgFlucPtUp);
+    fh80100BckgFlucPt = new TH1F("fh80100BckgFlucPt",BckgFlucPtString,fBckgFlucPtBins,fBckgFlucPtLow,fBckgFlucPtUp);
     fh80100BckgFlucPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     fh80100BckgFlucPt->GetYaxis()->SetTitle("1/N_{Events} dN/dp_{T}d#etad#varphi");
     fh80100BckgFlucPt->Sumw2();
     
     BckgFlucPtString = Form("%d-%d Centrality, Background Fluctuation p_{T} Spectrum",0,100);
-    fhBckgFlucPt = new TH1D("fhBckgFlucPt",BckgFlucPtString,fBckgFlucPtBins,fBckgFlucPtLow,fBckgFlucPtUp);
+    fhBckgFlucPt = new TH1F("fhBckgFlucPt",BckgFlucPtString,fBckgFlucPtBins,fBckgFlucPtLow,fBckgFlucPtUp);
     fhBckgFlucPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     fhBckgFlucPt->GetYaxis()->SetTitle("1/N_{Events} dN/dp_{T}d#etad#varphi");
     fhBckgFlucPt->Sumw2();
     
     BckgFlucPtString = "Background Fluctuation p_{T} Spectrum vs Centrality";
-    fhBckgFlucPtCen = new TH2D("fhBckgFlucPtCen",BckgFlucPtString,fBckgFlucPtBins,fBckgFlucPtLow,fBckgFlucPtUp,fCentralityBins,fCentralityLow,fCentralityUp);
+    fhBckgFlucPtCen = new TH2F("fhBckgFlucPtCen",BckgFlucPtString,fBckgFlucPtBins,fBckgFlucPtLow,fBckgFlucPtUp,fCentralityBins,fCentralityLow,fCentralityUp);
     fhBckgFlucPtCen->GetXaxis()->SetTitle("#p_{T} (GeV/c)");
     fhBckgFlucPtCen->GetYaxis()->SetTitle(Form("%s",CentralityString.Data()));
     fhBckgFlucPtCen->GetZaxis()->SetTitle("1/N_{Events} dN/dp_{T}d#etad#varphi");
@@ -3889,22 +3836,54 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
     fpLJetRho->GetXaxis()->SetTitle("Leading Jet p_{T}");
     fpLJetRho->GetYaxis()->SetTitle("p_{T}/Area (GeV/c)");
 
-    // Jet pT vs Constituent pT
-    fhJetConstituentPt = new TH2D("fhJetConstituentPt","Jet constituents p_{T} distribution",fPtBins,fPtLow,fPtUp,10*fPtBins,fPtLow,fPtUp);
-    fhJetConstituentPt->GetXaxis()->SetTitle("Jet p_{T} (GeV/c)");
-    fhJetConstituentPt->GetYaxis()->SetTitle("Constituent p_{T} (GeV/c)");
-    fhJetConstituentPt->Sumw2();
-
     // Jet pT vs Area
     Int_t JetPtAreaBins=200;
     Double_t JetPtAreaLow=0.0;
     Double_t JetPtAreaUp=2.0;
 
-    fhJetPtArea = new TH2D("fhJetPtArea","Jet Area Distribution",fPtBins,fPtLow,fPtUp,JetPtAreaBins,JetPtAreaLow,JetPtAreaUp);
+    fhJetPtArea = new TH2F("fhJetPtArea","Jet Area Distribution",fPtBins,fPtLow,fPtUp,JetPtAreaBins,JetPtAreaLow,JetPtAreaUp);
     fhJetPtArea->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     fhJetPtArea->GetYaxis()->SetTitle("A_{jet}");
     fhJetPtArea->GetZaxis()->SetTitle("1/N_{Events} dN/dA_{jet}dp_{T}");
     fhJetPtArea->Sumw2();
+
+    // Jet pT vs Constituent pT
+    fhJetConstituentPt = new TH2F("fhJetConstituentPt","Jet constituents p_{T} distribution",fPtBins,fPtLow,fPtUp,10*fPtBins,fPtLow,fPtUp);
+    fhJetConstituentPt->GetXaxis()->SetTitle("Jet p_{T} (GeV/c)");
+    fhJetConstituentPt->GetYaxis()->SetTitle("Constituent p_{T} (GeV/c)");
+    fhJetConstituentPt->GetZaxis()->SetTitle("1/N_{Events} dN/dp_{T,jet}dp_{T,track}");
+    fhJetConstituentPt->Sumw2();
+
+    fhJetTracksPt = new TH2F("fhJetTracksPt","Jet constituents Tracks p_{T} distribution",fPtBins,fPtLow,fPtUp,10*fPtBins,fPtLow,fPtUp);
+    fhJetTracksPt->GetXaxis()->SetTitle("Jet p_{T} (GeV/c)");
+    fhJetTracksPt->GetYaxis()->SetTitle("Constituent Track p_{T} (GeV/c)");
+    fhJetTracksPt->GetZaxis()->SetTitle("1/N_{Events} dN/dp_{T,jet}dp_{T,track}");
+    fhJetTracksPt->Sumw2();
+
+    fhJetClustersPt = new TH2F("fhJetClustersPt","Jet constituents Clusters p_{T} distribution",fPtBins,fPtLow,fPtUp,10*fPtBins,fPtLow,fPtUp);
+    fhJetClustersPt->GetXaxis()->SetTitle("Jet p_{T} (GeV/c)");
+    fhJetClustersPt->GetYaxis()->SetTitle("Constituent Cluster p_{T} (GeV/c)");
+    fhJetClustersPt->GetZaxis()->SetTitle("1/N_{Events} dN/dp_{T,jet}dp_{T,cluster}");
+    fhJetClustersPt->Sumw2();
+
+    // Jet pT vs Constituent Counts
+    fhJetConstituentCounts = new TH2F("fhJetConstituentCounts","Jet constituents distribution",fPtBins,fPtLow,fPtUp,TCBins,0,(Double_t)TCBins);
+    fhJetConstituentCounts->GetXaxis()->SetTitle("Jet p_{T} (GeV/c)");
+    fhJetConstituentCounts->GetYaxis()->SetTitle("Constituent Count");
+    fhJetConstituentCounts->GetZaxis()->SetTitle("1/N_{Events} dN/dp_{T,jet}dN_{constituent}");
+    fhJetConstituentCounts->Sumw2();
+    
+    fhJetTracksCounts = new TH2F("fhJetTracksCounts","Jet constituents Tracks distribution",fPtBins,fPtLow,fPtUp,TCBins,0,(Double_t)TCBins);
+    fhJetTracksCounts->GetXaxis()->SetTitle("Jet p_{T} (GeV/c)");
+    fhJetTracksCounts->GetYaxis()->SetTitle("Constituent Track Count");
+    fhJetTracksCounts->GetZaxis()->SetTitle("1/N_{Events} dN/dp_{T,jet}dN_{track}");
+    fhJetTracksCounts->Sumw2();
+    
+    fhJetClustersCounts = new TH2F("fhJetClustersCounts","Jet constituents Clusters distribution",fPtBins,fPtLow,fPtUp,TCBins,0,(Double_t)TCBins);
+    fhJetClustersCounts->GetXaxis()->SetTitle("Jet p_{T} (GeV/c)");
+    fhJetClustersCounts->GetYaxis()->SetTitle("Constituent Cluster Count");
+    fhJetClustersCounts->GetZaxis()->SetTitle("1/N_{Events} dN/dp_{T,jet}dN_{cluster}");
+    fhJetClustersCounts->Sumw2();
 
     // Neutral Energy Fraction Histograms & QA
     if (fDoNEFQAPlots==kTRUE)
@@ -3913,140 +3892,101 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
         fNEFOutput->SetOwner();
         fNEFOutput->SetName("ListNEFQAPlots");
         
-        Int_t TCBins = 100;
-        fhNEF = new TH1D("fhNEF","Neutral Energy Fraction of All Jets",fNEFBins,fNEFLow,fNEFUp);
-        fhNEF->GetXaxis()->SetTitle("NEF");
-        fhNEF->GetYaxis()->SetTitle("1/N_{Events} dN/dNEF");
-        fhNEF->Sumw2();
+        SetNEFJetDimensions(8); // Order: nef,Jet Pt,Eta,Phi,Centrality,Constituent mult,Charged mult, Neutral mult
+        SetNEFClusterDimensions(10); // Order: nef,Jet Pt,Eta,Phi,Centrality,F_Cross,z_leading,t_cell,deltat_cell,Cell Count
+
+        Int_t dimJetBins[fnDimJet];
+        Double_t dimJetLow[fnDimJet];
+        Double_t dimJetUp[fnDimJet];
+
+        Int_t dimClusterBins[fnDimCluster];
+        Double_t dimClusterLow[fnDimCluster];
+        Double_t dimClusterUp[fnDimCluster];
+
+        // Establish dimensinality bin counts and bounds
+        // NEF
+        dimJetBins[0] = dimClusterBins[0] = fNEFBins;
+        dimJetLow[0] = dimClusterLow[0] = fNEFLow;
+        dimJetUp[0] = dimClusterUp[0] = fNEFUp;
+
+        // Jet Pt
+        dimJetBins[1] = dimClusterBins[1] = fPtBins;
+        dimJetLow[1] = dimClusterLow[1] = fPtLow;
+        dimJetUp[1] = dimClusterUp[1] = fPtUp;
+
+        // Eta-Phi
+        dimJetBins[2] = dimJetBins[3] = dimClusterBins[2] = dimClusterBins[3] = TCBins;
+        dimJetLow[2] = dimClusterLow[2] = fEMCalEtaMin;
+        dimJetUp[2] = dimClusterUp[2] = fEMCalEtaMax;
+        dimJetLow[3] = dimClusterLow[3] = fEMCalPhiMin;
+        dimJetUp[3] = dimClusterUp[3] = fEMCalPhiMax;
         
-        fhNEFSignal = new TH1D("fhNEFSignal","Neutral Energy Fraction of Signal Jets",fNEFBins,fNEFLow,fNEFUp);
-        fhNEFSignal->GetXaxis()->SetTitle("NEF");
-        fhNEFSignal->GetYaxis()->SetTitle("1/N_{Events} dN/dNEF");
-        fhNEFSignal->Sumw2();
-
-        fhNEFJetPt = new TH2D("fhNEFJetPt","Neutral Energy Fraction vs p_{T}^{jet}",fNEFBins,fNEFLow,fNEFUp,fPtBins,fPtLow,fPtUp);
-        fhNEFJetPt->GetXaxis()->SetTitle("NEF");
-        fhNEFJetPt->GetYaxis()->SetTitle("p_{T}^{jet} (GeV/c)");
-        fhNEFJetPt->GetZaxis()->SetTitle("1/N_{Events} dN/dNEFdp_{T}");
-        fhNEFJetPt->Sumw2();
-
-        fhNEFJetPtSignal = new TH2D("fhNEFJetPtSignal","Neutral Energy Fraction vs p_{T}^{jet}",fNEFBins,fNEFLow,fNEFUp,fPtBins,fPtLow,fPtUp);
-        fhNEFJetPtSignal->GetXaxis()->SetTitle("NEF");
-        fhNEFJetPtSignal->GetYaxis()->SetTitle("p_{T}^{jet} (GeV/c)");
-        fhNEFJetPtSignal->GetZaxis()->SetTitle("1/N_{Events} dN/dNEFdp_{T}");
-        fhNEFJetPtSignal->Sumw2();
-
-        fhNEFJetPtCen = new TH3D("fhNEFJetPtCen","Neutral Energy Fraction vs p_{T}^{jet} vs Centrality",fNEFBins,fNEFLow,fNEFUp,fPtBins,fPtLow,fPtUp,fCentralityBins,fCentralityLow,fCentralityUp);
-        fhNEFJetPtCen->GetXaxis()->SetTitle("NEF");
-        fhNEFJetPtCen->GetYaxis()->SetTitle("p_{T}^{jet} (GeV/c)");
-        fhNEFJetPtCen->GetZaxis()->SetTitle(Form("%s",CentralityString.Data()));
-        fhNEFJetPtCen->Sumw2();
+        // Centrality
+        dimJetBins[4] = dimClusterBins[4] = fCentralityBins;
+        dimJetLow[4] = dimClusterLow[4] = fCentralityLow;
+        dimJetUp[4] = dimClusterUp[4] = fCentralityUp;
         
-        fhNEFJetPtCenSignal = new TH3D("fhNEFJetPtCenSignal","Neutral Energy Fraction vs p_{T}^{jet} vs Centrality",fNEFBins,fNEFLow,fNEFUp,fPtBins,fPtLow,fPtUp,fCentralityBins,fCentralityLow,fCentralityUp);
-        fhNEFJetPtCenSignal->GetXaxis()->SetTitle("NEF");
-        fhNEFJetPtCenSignal->GetYaxis()->SetTitle("p_{T}^{jet} (GeV/c)");
-        fhNEFJetPtCenSignal->GetZaxis()->SetTitle(Form("%s",CentralityString.Data()));
-        fhNEFJetPtCenSignal->Sumw2();
-
-        // Eta-Phi Dependence
-        fhNEFEtaPhi = new TH2D("fhNEFEtaPhi","Neutral Energy Fraction #eta-#varphi",TCBins, fEMCalEtaMin,fEMCalEtaMax,TCBins,fEMCalPhiMin,fEMCalPhiMax);
-        fhNEFEtaPhi->GetXaxis()->SetTitle("#eta");
-        fhNEFEtaPhi->GetYaxis()->SetTitle("#varphi");
-        fhNEFEtaPhi->GetZaxis()->SetTitle("1/N{Events} dN/d#etad#varphi");
-        fhNEFEtaPhi->Sumw2();
-
-        fhNEFEtaPhiSignal = new TH2D("fhNEFEtaPhiSignal","Neutral Energy Fraction #eta-#varphi of Signal Jets",TCBins,fEMCalEtaMin,fEMCalEtaMax,TCBins,fEMCalPhiMin,fEMCalPhiMax);
-        fhNEFEtaPhiSignal->GetXaxis()->SetTitle("#eta");
-        fhNEFEtaPhiSignal->GetYaxis()->SetTitle("#varphi");
-        fhNEFEtaPhiSignal->GetZaxis()->SetTitle("1/N{Events} dN/d#etad#varphi");
-        fhNEFEtaPhiSignal->Sumw2();
-
-        fhEtaPhiNEF = new TH3D("fhEtaPhiNEF","Neutral Energy Fraction #eta-#varphi",TCBins, fEMCalEtaMin,fEMCalEtaMax,TCBins,fEMCalPhiMin,fEMCalPhiMax,fNEFBins,fNEFLow,fNEFUp);
-        fhEtaPhiNEF->GetXaxis()->SetTitle("#eta");
-        fhEtaPhiNEF->GetYaxis()->SetTitle("#varphi");
-        fhEtaPhiNEF->GetZaxis()->SetTitle("NEF");
-        fhEtaPhiNEF->Sumw2();
-
-        // Multiplicity Dependence
-        fhNEFTotalMult = new TH2D("fhNEFTotalMult","Total Multiplicity Distribution of Constituents",fNEFBins,fNEFLow,fNEFUp,TCBins,0,(Double_t)TCBins);
-        fhNEFTotalMult->GetXaxis()->SetTitle("NEF");
-        fhNEFTotalMult->GetYaxis()->SetTitle("Multiplicity");
-        fhNEFTotalMult->GetZaxis()->SetTitle("1/N_{Events} dN/dNEFdM");
-        fhNEFTotalMult->Sumw2();
+        // Jets Constituent Multiplicity Info {Total,Charged,Neutral}
+        for (i=5;i<8;i++)
+        {
+            dimJetBins[i] = TCBins;
+            dimJetLow[i] = 0.0;
+            dimJetUp[i] = (Double_t)TCBins;
+        }
         
-        fhNEFTotalMultSignal = new TH2D("fhNEFTotalMultSignal","Total Multiplicity Distribution of Constituents of Signal Jets",fNEFBins,fNEFLow,fNEFUp,TCBins,0,(Double_t)TCBins);
-        fhNEFTotalMultSignal->GetXaxis()->SetTitle("NEF");
-        fhNEFTotalMultSignal->GetYaxis()->SetTitle("Multiplicity");
-        fhNEFTotalMultSignal->GetZaxis()->SetTitle("1/N_{Events} dN/dNEFdM");
-        fhNEFTotalMultSignal->Sumw2();
+        // Cluster F_Cross
+        dimClusterBins[5] = TCBins;
+        dimClusterLow[5] = 0.0;
+        dimClusterUp[5] = 1.0;
         
-        fhNEFNeutralMult = new TH2D("fhNEFNeutralMult","Neutral Multiplicity Distribution of Constituents",fNEFBins,fNEFLow,fNEFUp,TCBins,0,(Double_t)TCBins);
-        fhNEFNeutralMult->GetXaxis()->SetTitle("NEF");
-        fhNEFNeutralMult->GetYaxis()->SetTitle("Multiplicity");
-        fhNEFNeutralMult->GetZaxis()->SetTitle("1/N_{Events} dN/dNEFdM");
-        fhNEFNeutralMult->Sumw2();
+        // Cluster z_leading
+        dimClusterBins[6] = TCBins;
+        dimClusterLow[6] = 0.0;
+        dimClusterUp[6] = 1.0;
+
+        // Cluster t_cell
+        dimClusterBins[7] = 400;
+        dimClusterLow[7] = -2e-07;
+        dimClusterUp[7] = 2e-07;
+
+        // Cluster delta t_cell
+        dimClusterBins[8] = 100;
+        dimClusterLow[8] = 0.0;
+        dimClusterUp[8] = 1e-07;
         
-        fhNEFNeutralMultSignal = new TH2D("fhNEFNeutralMultSignal","Neutral Multiplicity Distribution of Constituents of Signal Jets",fNEFBins,fNEFLow,fNEFUp,TCBins,0,(Double_t)TCBins);
-        fhNEFNeutralMultSignal->GetXaxis()->SetTitle("NEF");
-        fhNEFNeutralMultSignal->GetYaxis()->SetTitle("Multiplicity");
-        fhNEFNeutralMultSignal->GetZaxis()->SetTitle("1/N_{Events} dN/dNEFdM");
-        fhNEFNeutralMultSignal->Sumw2();
-        
+        // Cluster Cell Count
+        dimClusterBins[9] = TCBins;
+        dimClusterLow[9] = 0.0;
+        dimClusterUp[9] = 100.0;
+
+        fhJetNEFInfo = new THnSparseF("fhJetNEFInfo","Jet NEF Information Histogram",fnDimJet,dimJetBins,dimJetLow,dimJetUp);
+        fhJetNEFInfo->Sumw2();
+        fhJetNEFSignalInfo = new THnSparseF("fhJetNEFSignalInfo","Signal Jet NEF Information Histogram",fnDimJet,dimJetBins,dimJetLow,dimJetUp);
+        fhJetNEFSignalInfo->Sumw2();
+
+        fhClusterNEFInfo = new THnSparseF("fhClusterNEFInfo","Jet NEF Cluster Information Histogram",fnDimCluster,dimClusterBins,dimClusterLow,dimClusterUp);
+        fhClusterNEFInfo->Sumw2();
+        fhClusterNEFSignalInfo = new THnSparseF("fhClusterNEFSignalInfo","Signal Jet NEF Cluster Information Histogram",fnDimCluster,dimClusterBins,dimClusterLow,dimClusterUp);
+        fhClusterNEFSignalInfo->Sumw2();
+
         // Cluster Shape QA
-        fhClusterShapeAll = new TH1D("fhClusterShapeAll","Cluster Shape of all CaloClustersCorr",10*TCBins,0,10*TCBins);
+        fhClusterShapeAll = new TH1F("fhClusterShapeAll","Cluster Shape of all CaloClustersCorr",10*TCBins,0,10*TCBins);
         fhClusterShapeAll->GetXaxis()->SetTitle("Cells");
         fhClusterShapeAll->GetYaxis()->SetTitle("1/N_{Events} dN/dCells");
         fhClusterShapeAll->Sumw2();
 
-        fhClusterPtCellAll = new TH2D("fhClusterPtCellAll","Cluster p_{T} vs Cluster Shape of all CaloClustersCorr",fPtBins,fPtLow,fPtUp,10*TCBins,0,10*TCBins);
+        fhClusterPtCellAll = new TH2F("fhClusterPtCellAll","Cluster p_{T} vs Cluster Shape of all CaloClustersCorr",fPtBins,fPtLow,fPtUp,10*TCBins,0,10*TCBins);
         fhClusterPtCellAll->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fhClusterPtCellAll->GetYaxis()->SetTitle("Cells");
         fhClusterPtCellAll->GetZaxis()->SetTitle("1/N_{Events} dN/dp_{T}dCells");
         fhClusterPtCellAll->Sumw2();
 
-        fhNEFJetPtFCross = new TH3D("fhNEFJetPtFCross","NEF vs p_{T}^{jet} vs F_{Cross}",fNEFBins,fNEFLow,fNEFUp,fPtBins,fPtLow,fPtUp,TCBins,0,1.0);
-        fhNEFJetPtFCross->GetXaxis()->SetTitle("NEF");
-        fhNEFJetPtFCross->GetYaxis()->SetTitle("p_{T}^{jet} (GeV/c)");
-        fhNEFJetPtFCross->GetZaxis()->SetTitle("F_{Cross}");
-        fhNEFJetPtFCross->Sumw2();
-
-        fhNEFZLeadingFCross = new TH3D("fhNEFZLeadingFCross","NEF vs z_{Leading} vs F_{Cross}",fNEFBins,fNEFLow,fNEFUp,TCBins,0,1.0,TCBins,0,1.0);
-        fhNEFZLeadingFCross->GetXaxis()->SetTitle("NEF");
-        fhNEFZLeadingFCross->GetYaxis()->SetTitle("z_{Leading}");
-        fhNEFZLeadingFCross->GetZaxis()->SetTitle("F_{Cross}");
-        fhNEFZLeadingFCross->Sumw2();
-
-        fhNEFTimeCellCount = new TH3D("fhNEFTimeCellCount","NEF vs t_{cell} vs Cell Count",fNEFBins,fNEFLow,fNEFUp,400,-2e-07,2e-07,TCBins,0,100);
-        fhNEFTimeCellCount->GetXaxis()->SetTitle("NEF");
-        fhNEFTimeCellCount->GetYaxis()->SetTitle("t_{cell} (s)");
-        fhNEFTimeCellCount->GetZaxis()->SetTitle("Cell Count");
-        fhNEFTimeCellCount->Sumw2();
-
-        fhNEFTimeDeltaTime = new TH3D("fhNEFTimeDeltaTime","NEF vs t_{cell} vs #Deltat",fNEFBins,fNEFLow,fNEFUp,400,-2e-07,2e-06,TCBins,0,1e-07);
-        fhNEFTimeDeltaTime->GetXaxis()->SetTitle("NEF");
-        fhNEFTimeDeltaTime->GetYaxis()->SetTitle("t_{cell} (s)");
-        fhNEFTimeDeltaTime->GetZaxis()->SetTitle("#Deltat");
-        fhNEFTimeDeltaTime->Sumw2();
-        
-        fNEFOutput->Add(fhNEF);
-        fNEFOutput->Add(fhNEFSignal);
-        fNEFOutput->Add(fhNEFJetPt);
-        fNEFOutput->Add(fhNEFJetPtSignal);
-        fNEFOutput->Add(fhNEFJetPtCen);
-        fNEFOutput->Add(fhNEFJetPtCenSignal);
-        fNEFOutput->Add(fhNEFEtaPhi);
-        fNEFOutput->Add(fhNEFEtaPhiSignal);
-        fNEFOutput->Add(fhEtaPhiNEF);
-        fNEFOutput->Add(fhNEFTotalMult);
-        fNEFOutput->Add(fhNEFTotalMultSignal);
-        fNEFOutput->Add(fhNEFNeutralMult);
-        fNEFOutput->Add(fhNEFNeutralMultSignal);
+        fNEFOutput->Add(fhJetNEFInfo);
+        fNEFOutput->Add(fhJetNEFSignalInfo);
+        fNEFOutput->Add(fhClusterNEFInfo);
+        fNEFOutput->Add(fhClusterNEFSignalInfo);
         fNEFOutput->Add(fhClusterShapeAll);
         fNEFOutput->Add(fhClusterPtCellAll);
-        fNEFOutput->Add(fhNEFJetPtFCross);
-        fNEFOutput->Add(fhNEFZLeadingFCross);
-        fNEFOutput->Add(fhNEFTimeCellCount);
-        fNEFOutput->Add(fhNEFTimeDeltaTime);
         fOutput->Add(fNEFOutput);
     }
     
@@ -4081,8 +4021,13 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
     fOutput->Add(fhBckgFlucPtCen);
     fOutput->Add(fpRho);
     fOutput->Add(fpLJetRho);
-    fOutput->Add(fhJetConstituentPt);
     fOutput->Add(fhJetPtArea);
+    fOutput->Add(fhJetConstituentPt);
+    fOutput->Add(fhJetTracksPt);
+    fOutput->Add(fhJetClustersPt);
+    fOutput->Add(fhJetConstituentCounts);
+    fOutput->Add(fhJetTracksCounts);
+    fOutput->Add(fhJetClustersCounts);
 }
 
 void AliAnalysisTaskFullpAJets::AlipAJetHistos::SetName(const char *name)
@@ -4154,6 +4099,16 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::SetNEFRange(Int_t bins, Double_t
 void AliAnalysisTaskFullpAJets::AlipAJetHistos::SetSignalTrackPtBias(Bool_t chargedBias)
 {
     fSignalTrackBias = chargedBias;
+}
+
+void AliAnalysisTaskFullpAJets::AlipAJetHistos::SetNEFJetDimensions(Int_t n)
+{
+    fnDimJet = n;
+}
+
+void AliAnalysisTaskFullpAJets::AlipAJetHistos::SetNEFClusterDimensions(Int_t n)
+{
+    fnDimCluster = n;
 }
 
 void AliAnalysisTaskFullpAJets::AlipAJetHistos::FillRho(Double_t eventCentrality, Double_t rho)
@@ -4332,13 +4287,24 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::DoNEFAnalysis(Double_t nefCut, D
     {
         return;
     }
-    
+
     Int_t i,j,k;
+    
+    Double_t valJet[fnDimJet];
+    Double_t valCluster[fnDimJet];
+    for (i=0;i<fnDimJet;i++)
+    {
+        valJet[i]=0.0;
+        valCluster[i]=0.0;
+    }
+    
     Double_t nef=0.0;
+    Double_t jetPt=0.0;
     Double_t tempChargedHighPt=0.0;
     Double_t eta=0.0;
     Double_t phi=0.0;
     Int_t totalMult=0;
+    Int_t chargedMult=0;
     Int_t neutralMult=0;
     Int_t iSupMod = -1, absId = -1, ieta = -1, iphi = -1;
     Bool_t shared = kFALSE;
@@ -4355,6 +4321,7 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::DoNEFAnalysis(Double_t nefCut, D
     Double_t tempCellTime=0.0;
     
     Double_t event_centrality = event->GetCentrality()->GetCentralityPercentile(fCentralityTag);
+    valJet[4] = valCluster[4] = event_centrality;
 
     // First, do Jet QA
     for (i=0;i<nIndexJetList;i++)
@@ -4362,20 +4329,42 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::DoNEFAnalysis(Double_t nefCut, D
         AliEmcalJet *myJet = (AliEmcalJet*) jetList->At(indexJetList[i]);
         tempChargedHighPt = myJet->MaxTrackPt();
         nef=myJet->NEF();
+        jetPt=myJet->Pt();
         eta=myJet->Eta();
         phi=myJet->Phi();
         totalMult=myJet->GetNumberOfConstituents();
+        chargedMult = myJet->GetNumberOfTracks();
         neutralMult=myJet->GetNumberOfClusters();
         zLeading=myJet->MaxClusterPt()/myJet->Pt();
         
-        fhNEF->Fill(nef);
-        fhNEFJetPt->Fill(nef,myJet->Pt());
-        fhNEFJetPtCen->Fill(nef,myJet->Pt(),event_centrality);
-        fhNEFEtaPhi->Fill(eta,phi);
-        fhEtaPhiNEF->Fill(eta,phi,nef);
-        fhNEFTotalMult->Fill(nef,totalMult);
-        fhNEFNeutralMult->Fill(nef,neutralMult);
+        valJet[0] = valCluster[0] = nef;
+        valJet[1] = valCluster[1] = jetPt;
+        valJet[2] = valCluster[2] = eta;
+        valJet[3] = valCluster[3] = phi;
         
+        valJet[5] = totalMult;
+        valJet[6] = chargedMult;
+        valJet[7] = neutralMult;
+        
+        valCluster[6] = zLeading;
+
+        fhJetNEFInfo->Fill(valJet);
+        
+        if (fSignalTrackBias==kTRUE)
+        {
+            if (tempChargedHighPt>=signalCut && nef<=nefCut)
+            {
+                fhJetNEFSignalInfo->Fill(valJet);
+            }
+        }
+        else
+        {
+            if (jetPt>=signalCut && nef<=nefCut)
+            {
+                fhJetNEFSignalInfo->Fill(valJet);
+            }
+        }
+
         for (j=0;j<neutralMult;j++)
         {
             AliVCluster* vcluster = (AliVCluster*) orgClusterList->At(myJet->ClusterAt(j));
@@ -4384,10 +4373,6 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::DoNEFAnalysis(Double_t nefCut, D
             tCell = cells->GetCellTime(absId);
             eCross = recoUtils->GetECross(absId,tCell,cells,event->GetBunchCrossNumber());
             FCross = 1 - eCross/eSeed;
-            
-            fhNEFJetPtFCross->Fill(nef,myJet->Pt(),FCross);
-            fhNEFZLeadingFCross->Fill(nef,zLeading,FCross);
-            fhNEFTimeCellCount->Fill(nef,tCell,vcluster->GetNCells());
             
             // Obtain Delta t of Cluster
             lowTime=9.99e99;
@@ -4405,8 +4390,26 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::DoNEFAnalysis(Double_t nefCut, D
                     lowTime=tempCellTime;
                 }
             }
-            fhNEFTimeDeltaTime->Fill(nef,tCell,upTime-lowTime);
+            valCluster[5] = FCross;
+            valCluster[7] = tCell;
+            valCluster[8] = upTime-lowTime;
+            valCluster[9] = vcluster->GetNCells();
             
+            fhClusterNEFInfo->Fill(valCluster);
+            if (fSignalTrackBias==kTRUE)
+            {
+                if (tempChargedHighPt>=signalCut && nef<=nefCut)
+                {
+                    fhClusterNEFSignalInfo->Fill(valCluster);
+                }
+            }
+            else
+            {
+                if (myJet->Pt()>=signalCut && nef<=nefCut)
+                {
+                    fhClusterNEFSignalInfo->Fill(valCluster);
+                }
+            }
             tempCellID=0;
             tempCellTime=0.0;
             eSeed=0.0;
@@ -4416,41 +4419,13 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::DoNEFAnalysis(Double_t nefCut, D
             iSupMod=-1,absId=-1,ieta=-1,iphi=-1;
         }
 
-        if (fSignalTrackBias==kTRUE)
-        {
-            if (tempChargedHighPt>=signalCut)
-            {
-                if (nef<=nefCut)
-                {
-                    fhNEFSignal->Fill(nef);
-                    fhNEFJetPtSignal->Fill(nef,myJet->Pt());
-                    fhNEFJetPtCenSignal->Fill(nef,myJet->Pt(),event_centrality);
-                    fhNEFEtaPhiSignal->Fill(eta,phi);
-                    fhNEFTotalMultSignal->Fill(nef,totalMult);
-                    fhNEFNeutralMultSignal->Fill(nef,neutralMult);
-                }
-            }
-        }
-        else
-        {
-            if (myJet->Pt()>=signalCut)
-            {
-                if (nef<=nefCut)
-                {
-                    fhNEFSignal->Fill(nef);
-                    fhNEFJetPtSignal->Fill(nef,myJet->Pt());
-                    fhNEFJetPtCenSignal->Fill(nef,myJet->Pt(),event_centrality);
-                    fhNEFEtaPhiSignal->Fill(eta,phi);
-                    fhNEFTotalMultSignal->Fill(nef,totalMult);
-                    fhNEFNeutralMultSignal->Fill(nef,neutralMult);
-                }
-            }
-        }
         nef=0.0;
+        jetPt=0.0;
         tempChargedHighPt=0.0;
         eta=0.0;
         phi=0.0;
         totalMult=0;
+        chargedMult=0;
         neutralMult=0;
         zLeading=0.0;
     }
@@ -4474,15 +4449,20 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::FillMiscJetStats(TClonesArray *j
         AliEmcalJet *myJet = (AliEmcalJet*) jetList->At(indexJetList[i]);
 
         fhJetPtArea->Fill(myJet->Pt(),myJet->Area());
+        fhJetConstituentCounts->Fill(myJet->Pt(),myJet->GetNumberOfConstituents());
+        fhJetTracksCounts->Fill(myJet->Pt(),myJet->GetNumberOfTracks());
+        fhJetClustersCounts->Fill(myJet->Pt(),myJet->GetNumberOfClusters());
         for (j=0;j<myJet->GetNumberOfTracks();j++)
         {
             AliVTrack *vtrack = (AliVTrack*) myJet->TrackAt(j,trackList);
             fhJetConstituentPt->Fill(myJet->Pt(),vtrack->Pt());
+            fhJetTracksPt->Fill(myJet->Pt(),vtrack->Pt());
         }
         for (j=0;j<myJet->GetNumberOfClusters();j++)
         {
             AliVCluster *vcluster = (AliVCluster*) myJet->ClusterAt(j,clusterList);
             fhJetConstituentPt->Fill(myJet->Pt(),vcluster->E());
+            fhJetClustersPt->Fill(myJet->Pt(),vcluster->E());
         }
     }
 }
