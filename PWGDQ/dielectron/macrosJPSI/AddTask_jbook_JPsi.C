@@ -1,4 +1,5 @@
-AliAnalysisTask *AddTask_jbook_JPsi(Bool_t gridconf=kFALSE,
+AliAnalysisTask *AddTask_jbook_JPsi(TString config="1",
+				    Bool_t gridconf=kFALSE,
 				    Bool_t hasMC=kFALSE,
 				    ULong64_t triggers=AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB){
 
@@ -29,11 +30,13 @@ AliAnalysisTask *AddTask_jbook_JPsi(Bool_t gridconf=kFALSE,
   TString configFile("");
   printf("%s \n",gSystem->pwd());
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
-  if (!trainRoot.IsNull())
-    configFile="$TRAIN_ROOT/jbook_jpsi/ConfigJpsi_jb_PbPb.C";   // gsi config
+
+  // gsi config
+  if (!trainRoot.IsNull())  configFile="$TRAIN_ROOT/jbook_jpsi/ConfigJpsi_jb_PbPb.C";
+  // alien config
   else if(!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/j/jbook/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_jb_PbPb.C .")) {
     gSystem->Exec(Form("ls -l %s",gSystem->pwd()));
-    configFile=Form("%s/ConfigJpsi_jb_PbPb.C",gSystem->pwd());                        // alien config
+    configFile=Form("%s/ConfigJpsi_jb_PbPb.C",gSystem->pwd());
   }
   else {
     printf("ERROR: couldn't copy file %s from grid \n",
@@ -41,7 +44,7 @@ AliAnalysisTask *AddTask_jbook_JPsi(Bool_t gridconf=kFALSE,
     return;
   }
 
-  // using aliroot config
+  // aliroot config
   if(!gridconf && trainRoot.IsNull())
     configFile="$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_jb_PbPb.C"; // aliroot config
 
@@ -67,7 +70,7 @@ AliAnalysisTask *AddTask_jbook_JPsi(Bool_t gridconf=kFALSE,
   printf("triggers:   %s \n",         triggerNames[j]  );
   printf("config:     %s Grid: %d \n",configFile.Data(),gridconf);
 
-  //load dielectron configuration file
+  //load dielectron configuration file (only once)
   TString checkconfig="ConfigJpsi_jb_PbPb";
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(checkconfig.Data()))
     gROOT->LoadMacro(configFile.Data());
@@ -78,6 +81,9 @@ AliAnalysisTask *AddTask_jbook_JPsi(Bool_t gridconf=kFALSE,
   //add dielectron analysis with different cuts to the task
   for (Int_t i=0; i<nDie; ++i) { //nDie defined in config file
 
+    //only configs switched ON will pass
+    if(config(i,1)!="1") { printf(" %d switched OFF \n",i,config[i]); continue; }
+
     // load configuration
     AliDielectron *jpsi=ConfigJpsi_jb_PbPb(i,hasMC,triggers);
     if(!jpsi) continue;
@@ -85,7 +91,7 @@ AliAnalysisTask *AddTask_jbook_JPsi(Bool_t gridconf=kFALSE,
     // create unique title
     TString unitit = Form("%s_%s",triggerNames[j],jpsi->GetName());
 
-    // create single tasks instead of a multi task
+    // create single tasks instead of one multi task (decreasing size of CF container)
     task = new AliAnalysisTaskMultiDielectron(Form("MultiDieJB_%s",unitit.Data()));
     task->SetBeamEnergy(1380.);
     task->SetTriggerMask(triggers);
