@@ -114,6 +114,7 @@ class AliTwoParticlePIDCorr : public AliAnalysisTaskSE {
     fAssociatedSpecies=AssociatedSpecies;
     fcontainPIDasso=containPIDasso;
   }
+  void SetRejectPileUp(Bool_t rejectPileUp) {frejectPileUp=rejectPileUp;}
   void SetKinematicCuts(Float_t minPt, Float_t maxPt,Float_t mineta,Float_t maxeta)
   {
     fminPt=minPt;
@@ -133,6 +134,8 @@ class AliTwoParticlePIDCorr : public AliAnalysisTaskSE {
     fdcacut=dcacut;
     fdcacutvalue=dcacutvalue;
   }
+  void Setselectprimarydatareco(Bool_t onlyprimarydatareco) {fonlyprimarydatareco=onlyprimarydatareco;}
+  void SetselectprimaryTruth(Bool_t selectprimaryTruth) {fselectprimaryTruth=selectprimaryTruth;}
   void SetCombinedNSigmaCut(Double_t NSigmaPID) {fNSigmaPID=NSigmaPID;}
   void IgnoreoverlappedTracks(Bool_t UseExclusiveNSigma){fUseExclusiveNSigma=UseExclusiveNSigma;}
   void SetRemoveTracksT0Fill( Bool_t RemoveTracksT0Fill){fRemoveTracksT0Fill=RemoveTracksT0Fill;}
@@ -154,13 +157,19 @@ class AliTwoParticlePIDCorr : public AliAnalysisTaskSE {
     fRemoveWeakDecays=RemoveWeakDecays;
     fRemoveDuplicates=RemoveDuplicates;
   }
-  void SetEfficiency(Bool_t fillefficiency,Bool_t applyefficiency)
+  void SetEfficiency(Bool_t fillefficiency,Bool_t applyTrigefficiency,Bool_t applyAssoefficiency)
     {
       ffillefficiency=fillefficiency;
-      fapplyefficiency=applyefficiency;
+      fapplyTrigefficiency=applyTrigefficiency;
+      fapplyAssoefficiency=applyAssoefficiency;
+
     }
-   void SetSkipTrigEff(Bool_t SkipTrigEff) {fSkipTrigEff=SkipTrigEff;}
-   void SetSkipAssoEff(Bool_t SkipAssoEff) {fSkipAssoEff=SkipAssoEff;}
+  void SetComboeffPtRange(Double_t minPtComboeff,Double_t maxPtComboeff) {
+    fminPtComboeff=minPtComboeff;
+    fmaxPtComboeff=maxPtComboeff;}
+  //only one can be kTRUE at a time(for the next two Setters)
+  void Setmesoneffrequired(Bool_t mesoneffrequired) {fmesoneffrequired=mesoneffrequired;}
+  void Setkaonprotoneffrequired(Bool_t kaonprotoneffrequired){fkaonprotoneffrequired=kaonprotoneffrequired;}
    void SetOnlyOneEtaSide(Int_t OnlyOneEtaSide){fOnlyOneEtaSide=OnlyOneEtaSide;}
    void SetRejectResonanceDaughters(Int_t RejectResonanceDaughters){fRejectResonanceDaughters=RejectResonanceDaughters;}
 
@@ -193,14 +202,11 @@ fPtTOFPIDmax=PtTOFPIDmax;
     Bool_t fAssociatedSpeciesSelection;
     Int_t fTriggerSpecies;
     Int_t fAssociatedSpecies;
-  TString fCustomBinning;//for setting customized binning
-  TString fBinningString;//final binning string
-  Bool_t fcontainPIDtrig;
-  Bool_t fcontainPIDasso;
-    Int_t centmultbins;
-     //Int_t centmultbinseff=1;//integrated over multiplicity as efficiency has negligible dependence on multiplicity
-    Double_t centmultmin;
-    Double_t centmultmax;
+    TString fCustomBinning;//for setting customized binning
+    TString fBinningString;//final binning string
+    Bool_t fcontainPIDtrig;
+    Bool_t fcontainPIDasso;
+    Bool_t frejectPileUp;
     Float_t fminPt;
     Float_t fmaxPt;
     Float_t fmineta;
@@ -210,11 +216,14 @@ fPtTOFPIDmax=PtTOFPIDmax;
     Float_t fminpionsigmacut;
     Float_t fmaxpionsigmacut;
     Bool_t fselectprimaryTruth;
+    Bool_t fonlyprimarydatareco;
     Bool_t fdcacut;
     Double_t fdcacutvalue;
     Int_t kTrackVariablesPair ;
     Double_t fminPtTrig;
     Double_t fmaxPtTrig;
+    Double_t fminPtComboeff;
+    Double_t fmaxPtComboeff;
     Double_t fminPtAsso;
     Double_t fmaxPtAsso;
     TH1F *fhistcentrality;//!
@@ -241,6 +250,18 @@ fPtTOFPIDmax=PtTOFPIDmax;
 
     TH2F *fHistoTPCdEdx;//!
     TH2F *fHistoTOFbeta;//!
+    TH3F *fTPCTOFPion3d;//!
+    TH3F *fTPCTOFKaon3d;//!
+    TH3F *fTPCTOFProton3d;//!
+    TH1F *fPionPt;
+    TH1F *fPionEta;
+    TH1F *fPionPhi;
+    TH1F *fKaonPt;
+    TH1F *fKaonEta;
+    TH1F *fKaonPhi;
+    TH1F *fProtonPt;
+    TH1F *fProtonEta;
+    TH1F *fProtonPhi;
     // TH3F *fHistocentNSigmaTPC;//! nsigma TPC
     // TH3F *fHistocentNSigmaTOF;//! nsigma TOF 
     
@@ -258,18 +279,18 @@ fPtTOFPIDmax=PtTOFPIDmax;
     
     TH1F *fHistQA[16]; //!
      
-    THnSparse *fTHnrecomatchedallPid[5];//0 pion, 1 kaon,2 proton,3 mesons,4 all
-    THnSparse *fTHngenprimPidTruth[5];
-    THnSparse *effcorection[5];
+    THnSparse *fTHnrecomatchedallPid[6];//0 pion, 1 kaon,2 proton,3 mesons,4 kaons+protons,5 all
+    THnSparse *fTHngenprimPidTruth[6];
+    THnSparse *effcorection[6];
     // THnF *effmap[6];  
     //TH2F* fControlConvResoncances; //! control histograms for cuts on conversions and resonances
 
-    Int_t ClassifyTrack(AliAODTrack* track,Bool_t onlyprimary,AliAODVertex* vertex,Float_t magfield);
+    Int_t ClassifyTrack(AliAODTrack* track,AliAODVertex* vertex,Float_t magfield);
   Double_t* GetBinning(const char* configuration, const char* tag, Int_t& nBins);
 
 
   void Fillcorrelation(TObjArray *trackstrig,TObjArray *tracksasso,Double_t cent,Float_t vtx,Float_t bSign,Bool_t fPtOrder,Bool_t twoTrackEfficiencyCut,Bool_t mixcase,TString fillup);//mixcase=kTRUE in case of mixing; 
- Float_t GetTrackbyTrackeffvalue(AliAODTrack* track,Double_t cent,Float_t evzvtx, Int_t parpid,Bool_t mesoneffrequired);
+ Float_t GetTrackbyTrackeffvalue(AliAODTrack* track,Double_t cent,Float_t evzvtx, Int_t parpid);
 
 //Mixing functions
   void DefineEventPool();
@@ -315,10 +336,13 @@ fPtTOFPIDmax=PtTOFPIDmax;
     Bool_t fInjectedSignals;	  // check header to skip injected signals in MC
     Bool_t fRemoveWeakDecays;	   // remove secondaries from weak decays from tracks and particles
     Bool_t fRemoveDuplicates;// remove particles with the same label (double reconstruction)
-    Bool_t fapplyefficiency;//if kTRUE then eff correction calculation starts
+    Bool_t fapplyTrigefficiency;//if kTRUE then eff correction calculation starts
+    Bool_t fapplyAssoefficiency;//if kTRUE then eff correction calculation starts
     Bool_t ffillefficiency;//if kTRUE then THNsparses used for eff. calculation are filled up
     Bool_t fSkipAssoEff;
     Bool_t fSkipTrigEff;
+    Bool_t fmesoneffrequired;
+    Bool_t fkaonprotoneffrequired;
     AliAnalysisUtils*     fAnalysisUtils;      // points to class with common analysis utilities
   TFormula*      fDCAXYCut;          // additional pt dependent cut on DCA XY (only for AOD)
 
