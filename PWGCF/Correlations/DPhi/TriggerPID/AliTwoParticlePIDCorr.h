@@ -18,7 +18,7 @@ class AliAODTrack;
 class AliAODVertex;
 class AliEventPoolManager;
 class TFormula;
-class AliAnalysisUtils;
+//class AliAnalysisUtils;
 class LRCParticlePID;
 class AliVParticle;
 
@@ -114,7 +114,7 @@ class AliTwoParticlePIDCorr : public AliAnalysisTaskSE {
     fAssociatedSpecies=AssociatedSpecies;
     fcontainPIDasso=containPIDasso;
   }
-  void SetRejectPileUp(Bool_t rejectPileUp) {frejectPileUp=rejectPileUp;}
+  // void SetRejectPileUp(Bool_t rejectPileUp) {frejectPileUp=rejectPileUp;}
   void SetKinematicCuts(Float_t minPt, Float_t maxPt,Float_t mineta,Float_t maxeta)
   {
     fminPt=minPt;
@@ -133,6 +133,11 @@ class AliTwoParticlePIDCorr : public AliAnalysisTaskSE {
   {
     fdcacut=dcacut;
     fdcacutvalue=dcacutvalue;
+  }
+  void SetfillHistQA(Bool_t fillhistQAReco,Bool_t fillhistQATruth)
+  {
+    ffillhistQAReco=fillhistQAReco;
+    ffillhistQATruth=fillhistQATruth;
   }
   void Setselectprimarydatareco(Bool_t onlyprimarydatareco) {fonlyprimarydatareco=onlyprimarydatareco;}
   void SetselectprimaryTruth(Bool_t selectprimaryTruth) {fselectprimaryTruth=selectprimaryTruth;}
@@ -206,7 +211,7 @@ fPtTOFPIDmax=PtTOFPIDmax;
     TString fBinningString;//final binning string
     Bool_t fcontainPIDtrig;
     Bool_t fcontainPIDasso;
-    Bool_t frejectPileUp;
+    // Bool_t frejectPileUp;
     Float_t fminPt;
     Float_t fmaxPt;
     Float_t fmineta;
@@ -219,6 +224,8 @@ fPtTOFPIDmax=PtTOFPIDmax;
     Bool_t fonlyprimarydatareco;
     Bool_t fdcacut;
     Double_t fdcacutvalue;
+    Bool_t ffillhistQAReco;
+    Bool_t ffillhistQATruth;
     Int_t kTrackVariablesPair ;
     Double_t fminPtTrig;
     Double_t fmaxPtTrig;
@@ -343,7 +350,7 @@ fPtTOFPIDmax=PtTOFPIDmax;
     Bool_t fSkipTrigEff;
     Bool_t fmesoneffrequired;
     Bool_t fkaonprotoneffrequired;
-    AliAnalysisUtils*     fAnalysisUtils;      // points to class with common analysis utilities
+    //  AliAnalysisUtils*     fAnalysisUtils;      // points to class with common analysis utilities
   TFormula*      fDCAXYCut;          // additional pt dependent cut on DCA XY (only for AOD)
 
 
