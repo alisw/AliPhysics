@@ -339,9 +339,16 @@ Bool_t AliAnalysisTaskEmcalJetMassBkg::FillHistograms()
   // Fill histograms.
 
   const Float_t rcArea = fConeRadius * fConeRadius * TMath::Pi();
+
+  //Event properties
   Double_t rho = GetRhoVal(fContainerBase);
   Int_t trackMult = fTracksCont->GetNAcceptedParticles();
 
+  //Leading jet
+  AliEmcalJet* jet = NULL;
+  if (fJetsCont)
+    jet = fJetsCont->GetLeadingJet("rho");
+  
   TLorentzVector lvRC(0.,0.,0.,0.);
   Float_t RCpt = 0;
   Float_t RCeta = 0;
@@ -376,10 +383,8 @@ Bool_t AliAnalysisTaskEmcalJetMassBkg::FillHistograms()
       ++nRCAcc;
     }
 
-    if (fJetsCont) {
-
-      // Random cones far from leading jet(s)
-      AliEmcalJet* jet = fJetsCont->GetLeadingJet("rho");
+    if (fJetsCont && jet) {
+      // Random cones far away from leading jet(s)
       lvRC.SetPxPyPzE(0.,0.,0.,0.);
       RCpt = 0;
       RCeta = 0;
@@ -402,8 +407,9 @@ Bool_t AliAnalysisTaskEmcalJetMassBkg::FillHistograms()
     }
   }//RC loop
 
-  Double_t medianRC = TMath::Median(nRCAcc,massvecRC);
-  Double_t medianRCExLJ = TMath::Median(nRCExLJAcc,massvecRCExLJ);
+  Double_t medianRC, medianRCExLJ = 0.;
+  medianRC = TMath::Median(nRCAcc,massvecRC);
+  medianRCExLJ = TMath::Median(nRCExLJAcc,massvecRCExLJ);
 
   fh2CentVsMedianMassRC->Fill(fCent,medianRC);
   fh2CentVsMedianMassRCExLJ->Fill(fCent,medianRCExLJ);
@@ -411,8 +417,9 @@ Bool_t AliAnalysisTaskEmcalJetMassBkg::FillHistograms()
   fh2MultVsMedianMassRC->Fill(trackMult,medianRC);
   fh2MultVsMedianMassRCExLJ->Fill(trackMult,medianRCExLJ);
 
-  Double_t meanRC = TMath::Mean(nRCAcc,massvecRC);
-  Double_t meanRCExLJ = TMath::Mean(nRCExLJAcc,massvecRCExLJ);
+  Double_t meanRC = 0.; Double_t meanRCExLJ = 0.;
+  if(nRCAcc>0)   meanRC = TMath::Mean(nRCAcc,massvecRC);
+  if(nRCExLJAcc) meanRCExLJ = TMath::Mean(nRCExLJAcc,massvecRCExLJ);
 
   fh2CentVsMeanMassRC->Fill(fCent,meanRC);
   fh2CentVsMeanMassRCExLJ->Fill(fCent,meanRCExLJ);
@@ -420,8 +427,9 @@ Bool_t AliAnalysisTaskEmcalJetMassBkg::FillHistograms()
   fh2MultVsMeanMassRC->Fill(trackMult,meanRC);
   fh2MultVsMeanMassRCExLJ->Fill(trackMult,meanRCExLJ);
 
-  Double_t medianPerAreaRC = TMath::Median(nRCAcc,massPerAreavecRC);
-  Double_t medianPerAreaRCExLJ = TMath::Median(nRCExLJAcc,massPerAreavecRCExLJ);
+  Double_t medianPerAreaRC, medianPerAreaRCExLJ = 0.;
+  medianPerAreaRC = TMath::Median(nRCAcc,massPerAreavecRC);
+  medianPerAreaRCExLJ = TMath::Median(nRCExLJAcc,massPerAreavecRCExLJ);
 
   fh2CentVsMedianMassPerAreaRC->Fill(fCent,medianPerAreaRC);
   fh2CentVsMedianMassPerAreaRCExLJ->Fill(fCent,medianPerAreaRCExLJ);
@@ -430,14 +438,13 @@ Bool_t AliAnalysisTaskEmcalJetMassBkg::FillHistograms()
   fh2MultVsMedianMassPerAreaRCExLJ->Fill(trackMult,medianPerAreaRCExLJ);
 
 
-  if(fJetsCont) {
+  if(fJetsCont && jet) {
     //cone perpendicular to leading jet
     TLorentzVector lvPC(0.,0.,0.,0.);
     Float_t PCpt = 0;
     Float_t PCeta = 0;
     Float_t PCphi = 0;
     Float_t PCmass = 0.;  
-    AliEmcalJet* jet = fJetsCont->GetLeadingJet("rho");
     if(jet) {
       GetPerpCone(lvPC,PCpt, PCeta, PCphi, fTracksCont, fCaloClustersCont, jet);
       PCmass = lvPC.M();
