@@ -31,7 +31,8 @@ AliAnalysisTaskRho* AddTaskRho(
     ::Error("AddTaskRho", "This task requires an input event handler");
     return NULL;
   }
-  
+
+
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------

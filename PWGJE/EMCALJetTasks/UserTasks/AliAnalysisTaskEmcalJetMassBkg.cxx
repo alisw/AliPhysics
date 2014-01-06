@@ -65,7 +65,19 @@ AliAnalysisTaskEmcalJetMassBkg::AliAnalysisTaskEmcalJetMassBkg() :
   fh2MultVsMassRC(0),
   fh2MultVsMassRCExLJ(0),
   fh2MultVsMassPerpConeLJ(0),
-  fh2MultVsMassPerpConeTJ(0)
+  fh2MultVsMassPerpConeTJ(0),
+  fh2CentVsMedianMassRC(0),
+  fh2CentVsMedianMassRCExLJ(0),
+  fh2MultVsMedianMassRC(0),
+  fh2MultVsMedianMassRCExLJ(0),
+  fh2CentVsMeanMassRC(0),
+  fh2CentVsMeanMassRCExLJ(0),
+  fh2MultVsMeanMassRC(0),
+  fh2MultVsMeanMassRCExLJ(0),
+  fh2CentVsMedianMassPerAreaRC(0),
+  fh2CentVsMedianMassPerAreaRCExLJ(0),
+  fh2MultVsMedianMassPerAreaRC(0),
+  fh2MultVsMedianMassPerAreaRCExLJ(0)
 {
   // Default constructor.
 
@@ -122,7 +134,19 @@ AliAnalysisTaskEmcalJetMassBkg::AliAnalysisTaskEmcalJetMassBkg(const char *name)
   fh2MultVsMassRC(0),
   fh2MultVsMassRCExLJ(0),
   fh2MultVsMassPerpConeLJ(0),
-  fh2MultVsMassPerpConeTJ(0)
+  fh2MultVsMassPerpConeTJ(0),
+  fh2CentVsMedianMassRC(0),
+  fh2CentVsMedianMassRCExLJ(0),
+  fh2MultVsMedianMassRC(0),
+  fh2MultVsMedianMassRCExLJ(0),
+  fh2CentVsMeanMassRC(0),
+  fh2CentVsMeanMassRCExLJ(0),
+  fh2MultVsMeanMassRC(0),
+  fh2MultVsMeanMassRCExLJ(0),
+  fh2CentVsMedianMassPerAreaRC(0),
+  fh2CentVsMedianMassPerAreaRCExLJ(0),
+  fh2MultVsMedianMassPerAreaRC(0),
+  fh2MultVsMedianMassPerAreaRCExLJ(0)
 {
   // Standard constructor.
 
@@ -204,6 +228,42 @@ void AliAnalysisTaskEmcalJetMassBkg::UserCreateOutputObjects()
 
   fh2MultVsMassPerpConeTJ = new TH2F("fh2MultVsMassPerpConeTJ","fh2MultVsMassPerpConeTJ;#it{N}_{track};#it{M}_{RC}",nBinsMult,minMult,maxMult,nBinsPt,minPt,maxPt);
   fOutput->Add(fh2MultVsMassPerpConeTJ); 
+
+  fh2CentVsMedianMassRC = new TH2F("fh2CentVsMedianMassRC","fh2CentVsMedianMassRC;cent;#it{M}_{RC}",nBinsCent,minCent,maxCent,nBinsPt,minPt,maxPt);
+  fOutput->Add(fh2CentVsMedianMassRC);  
+
+  fh2CentVsMedianMassRCExLJ = new TH2F("fh2CentVsMedianMassRCExLJ","fh2CentVsMedianMassRCExLJ;cent;#it{M}_{RC}",nBinsCent,minCent,maxCent,nBinsPt,minPt,maxPt);
+  fOutput->Add(fh2CentVsMedianMassRCExLJ);  
+
+  fh2MultVsMedianMassRC = new TH2F("fh2MultVsMedianMassRC","fh2MultVsMedianMassRC;#it{N}_{track};#it{M}_{RC}",nBinsMult,minMult,maxMult,nBinsPt,minPt,maxPt);
+  fOutput->Add(fh2MultVsMedianMassRC);  
+
+  fh2MultVsMedianMassRCExLJ = new TH2F("fh2MultVsMedianMassRCExLJ","fh2MultVsMedianMassRCExLJ;#it{N}_{track};#it{M}_{RC}",nBinsMult,minMult,maxMult,nBinsPt,minPt,maxPt);
+  fOutput->Add(fh2MultVsMedianMassRCExLJ);  
+
+  fh2CentVsMeanMassRC = new TH2F("fh2CentVsMeanMassRC","fh2CentVsMeanMassRC;cent;#it{M}_{RC}",nBinsCent,minCent,maxCent,nBinsPt,minPt,maxPt);
+  fOutput->Add(fh2CentVsMeanMassRC);  
+
+  fh2CentVsMeanMassRCExLJ = new TH2F("fh2CentVsMeanMassRCExLJ","fh2CentVsMeanMassRCExLJ;cent;#it{M}_{RC}",nBinsCent,minCent,maxCent,nBinsPt,minPt,maxPt);
+  fOutput->Add(fh2CentVsMeanMassRCExLJ);  
+
+  fh2MultVsMeanMassRC = new TH2F("fh2MultVsMeanMassRC","fh2MultVsMeanMassRC;#it{N}_{track};#it{M}_{RC}",nBinsMult,minMult,maxMult,nBinsPt,minPt,maxPt);
+  fOutput->Add(fh2MultVsMeanMassRC);  
+
+  fh2MultVsMeanMassRCExLJ = new TH2F("fh2MultVsMeanMassRCExLJ","fh2MultVsMeanMassRCExLJ;#it{N}_{track};#it{M}_{RC}",nBinsMult,minMult,maxMult,nBinsPt,minPt,maxPt);
+  fOutput->Add(fh2MultVsMeanMassRCExLJ);  
+
+  fh2CentVsMedianMassPerAreaRC = new TH2F("fh2CentVsMedianMassPerAreaRC","fh2CentVsMedianMassPerAreaRC;cent;#it{M}_{RC}/A",nBinsCent,minCent,maxCent,nBinsPt,minPt,maxPt);
+  fOutput->Add(fh2CentVsMedianMassPerAreaRC);  
+
+  fh2CentVsMedianMassPerAreaRCExLJ = new TH2F("fh2CentVsMedianMassPerAreaRCExLJ","fh2CentVsMedianMassPerAreaRCExLJ;cent;#it{M}_{RC}/A",nBinsCent,minCent,maxCent,nBinsPt,minPt,maxPt);
+  fOutput->Add(fh2CentVsMedianMassPerAreaRCExLJ);  
+
+  fh2MultVsMedianMassPerAreaRC = new TH2F("fh2MultVsMedianMassPerAreaRC","fh2MultVsMedianMassPerAreaRC;#it{N}_{track};#it{M}_{RC}/A",nBinsMult,minMult,maxMult,nBinsPt,minPt,maxPt);
+  fOutput->Add(fh2MultVsMedianMassPerAreaRC);  
+
+  fh2MultVsMedianMassPerAreaRCExLJ = new TH2F("fh2MultVsMedianMassPerAreaRCExLJ","fh2MultVsMedianMassPerAreaRCExLJ;#it{N}_{track};#it{M}_{RC}/A",nBinsMult,minMult,maxMult,nBinsPt,minPt,maxPt);
+  fOutput->Add(fh2MultVsMedianMassPerAreaRCExLJ);  
 
   TString histName = "";
   TString histTitle = "";
@@ -287,6 +347,16 @@ Bool_t AliAnalysisTaskEmcalJetMassBkg::FillHistograms()
   Float_t RCeta = 0;
   Float_t RCphi = 0;
   Float_t RCmass = 0.;  
+
+  static Double_t massvecRC[999];
+  static Double_t massPerAreavecRC[999];
+
+  static Double_t massvecRCExLJ[999];
+  static Double_t massPerAreavecRCExLJ[999];
+
+  Int_t nRCAcc = 0;
+  Int_t nRCExLJAcc = 0;
+
   for (Int_t i = 0; i < fRCperEvent; i++) {
     // Simple random cones
     lvRC.SetPxPyPzE(0.,0.,0.,0.);
@@ -300,6 +370,10 @@ Bool_t AliAnalysisTaskEmcalJetMassBkg::FillHistograms()
       fpPtVsMassRC[fCentBin]->Fill(RCpt - rho*rcArea,RCmass);
       fh2CentVsMassRC->Fill(fCent,RCmass);
       fh2MultVsMassRC->Fill(trackMult,RCmass);
+
+      massvecRC[nRCAcc] = RCmass;
+      massPerAreavecRC[nRCAcc] = RCmass/rcArea;
+      ++nRCAcc;
     }
 
     if (fJetsCont) {
@@ -320,9 +394,41 @@ Bool_t AliAnalysisTaskEmcalJetMassBkg::FillHistograms()
 	fpPtVsMassRCExLJ[fCentBin]->Fill(RCpt - rho*rcArea,RCmass);
 	fh2CentVsMassRCExLJ->Fill(fCent,RCmass);
 	fh2MultVsMassRCExLJ->Fill(trackMult,RCmass);
+
+	massvecRCExLJ[nRCExLJAcc] = RCmass;
+	massPerAreavecRCExLJ[nRCExLJAcc] = RCmass/rcArea;
+	++nRCExLJAcc;
       }
     }
   }//RC loop
+
+  Double_t medianRC = TMath::Median(nRCAcc,massvecRC);
+  Double_t medianRCExLJ = TMath::Median(nRCExLJAcc,massvecRCExLJ);
+
+  fh2CentVsMedianMassRC->Fill(fCent,medianRC);
+  fh2CentVsMedianMassRCExLJ->Fill(fCent,medianRCExLJ);
+
+  fh2MultVsMedianMassRC->Fill(trackMult,medianRC);
+  fh2MultVsMedianMassRCExLJ->Fill(trackMult,medianRCExLJ);
+
+  Double_t meanRC = TMath::Mean(nRCAcc,massvecRC);
+  Double_t meanRCExLJ = TMath::Mean(nRCExLJAcc,massvecRCExLJ);
+
+  fh2CentVsMeanMassRC->Fill(fCent,meanRC);
+  fh2CentVsMeanMassRCExLJ->Fill(fCent,meanRCExLJ);
+
+  fh2MultVsMeanMassRC->Fill(trackMult,meanRC);
+  fh2MultVsMeanMassRCExLJ->Fill(trackMult,meanRCExLJ);
+
+  Double_t medianPerAreaRC = TMath::Median(nRCAcc,massPerAreavecRC);
+  Double_t medianPerAreaRCExLJ = TMath::Median(nRCExLJAcc,massPerAreavecRCExLJ);
+
+  fh2CentVsMedianMassPerAreaRC->Fill(fCent,medianPerAreaRC);
+  fh2CentVsMedianMassPerAreaRCExLJ->Fill(fCent,medianPerAreaRCExLJ);
+
+  fh2MultVsMedianMassPerAreaRC->Fill(trackMult,medianPerAreaRC);
+  fh2MultVsMedianMassPerAreaRCExLJ->Fill(trackMult,medianPerAreaRCExLJ);
+
 
   if(fJetsCont) {
     //cone perpendicular to leading jet

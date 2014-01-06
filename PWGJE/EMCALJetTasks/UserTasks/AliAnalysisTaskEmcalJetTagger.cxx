@@ -29,6 +29,9 @@
 #include "AliAnalysisManager.h"
 #include "AliJetContainer.h"
 
+#include "AliAODEvent.h"
+#include "AliESDEvent.h"
+
 #include "AliAnalysisTaskEmcalJetTagger.h"
 
 ClassImp(AliAnalysisTaskEmcalJetTagger)
@@ -45,7 +48,10 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger() :
   fh2PtJet1VsDeltaR(0),
   fh2PtJet1VsLeadPtAllSel(0),
   fh2PtJet1VsLeadPtTagged(0),
-  fh2PtJet1VsPtJet2(0)
+  fh2PtJet1VsPtJet2(0),
+  fh3PtJetDEtaDPhiConst(0),
+  fh2PtJetDRConst(0),
+  fh3PtJetAreaDRConst(0)
 {
   // Default constructor.
 
@@ -79,7 +85,10 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger(const char *name) :
   fh2PtJet1VsDeltaR(0),
   fh2PtJet1VsLeadPtAllSel(0),
   fh2PtJet1VsLeadPtTagged(0),
-  fh2PtJet1VsPtJet2(0)
+  fh2PtJet1VsPtJet2(0),
+  fh3PtJetDEtaDPhiConst(0),
+  fh2PtJetDRConst(0),
+  fh3PtJetAreaDRConst(0)
 {
   // Standard constructor.
 
@@ -161,6 +170,15 @@ void AliAnalysisTaskEmcalJetTagger::UserCreateOutputObjects()
 
   }
 
+  fh3PtJetDEtaDPhiConst = new TH3F("fh3PtJetDEtaDPhiConst","fh3PtJetDEtaDPhiConst;pT;#Delta #eta;#Delta #varphi",nBinsPt,minPt,maxPt,nBinsDEta,-1.,1.,nBinsDPhi,-1.,1.);
+  fOutput->Add(fh3PtJetDEtaDPhiConst);
+
+  fh2PtJetDRConst = new TH2F("fh2PtJetDRConst","fh2PtJetDRConst;pT;#Delta R",nBinsPt,minPt,maxPt,100,0.,1.);
+  fOutput->Add(fh2PtJetDRConst);
+
+  fh3PtJetAreaDRConst = new TH3F("fh3PtJetAreaDRConst","fh3PtJetAreaDRConst;pT;A;#Delta R",nBinsPt,minPt,maxPt,100,0.,1.,100,0.,1.);
+  fOutput->Add(fh3PtJetAreaDRConst);
+
   // =========== Switch on Sumw2 for all histos ===========
   for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
     TH1 *h1 = dynamic_cast<TH1*>(fOutput->At(i));
@@ -181,7 +199,7 @@ void AliAnalysisTaskEmcalJetTagger::UserCreateOutputObjects()
 Bool_t AliAnalysisTaskEmcalJetTagger::Run()
 {
   // Run analysis code here, if needed. It will be executed before FillHistograms().
-  
+
   if(fJetTaggingMethod==kGeo)
     MatchJetsGeo(fContainerBase,fContainerTag,0,0.3,2);
 
@@ -199,6 +217,21 @@ Bool_t AliAnalysisTaskEmcalJetTagger::FillHistograms()
 
     Double_t ptJet1 =  jet1->Pt() - GetRhoVal(fContainerBase)*jet1->Area();
     fh2PtJet1VsLeadPtAllSel[fCentBin]->Fill(ptJet1,jet1->MaxTrackPt());
+
+    //fill histo with angle between jet axis and constituents
+    for(Int_t icc=0; icc<jet1->GetNumberOfTracks(); icc++) {
+      AliVParticle *vp = static_cast<AliVParticle*>(jet1->TrackAt(icc, fTracks));
+      if(!vp) continue;
+      Double_t dEta = jet1->Eta()-vp->Eta();
+      Double_t dPhi = jet1->Phi()-vp->Phi();
+      if(dPhi<TMath::Pi()) dPhi+=TMath::TwoPi();
+      if(dPhi>TMath::Pi()) dPhi-=TMath::TwoPi();
+      fh3PtJetDEtaDPhiConst->Fill(ptJet1,dEta,dPhi);
+
+      Double_t dR = TMath::Sqrt(dPhi*dPhi+dEta*dEta);
+      fh2PtJetDRConst->Fill(ptJet1,dR);
+      fh3PtJetAreaDRConst->Fill(ptJet1,jet1->Area(),dR);
+    }
 
     if(jet1->GetTagStatus()<1 && fJetTaggingType==kTag)
       continue;
