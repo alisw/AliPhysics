@@ -119,6 +119,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         void FillBackgroundFluctuations(Double_t eventCentrality, Double_t rho, Double_t jetRadius);
         void FillLeadingJetPtRho(Double_t jetPt, Double_t rho);
         void DoNEFQAPlots(Bool_t doNEFAna);
+        void DoNEFSignalOnly(Bool_t doNEFSignalOnly);
         void DoNEFAnalysis(Double_t nefCut, Double_t signalCut, TClonesArray *jetList, Int_t *indexJetList, Int_t nIndexJetList, TObjArray *clusterList, TClonesArray *orgClusterList, AliVEvent *event, AliEMCALGeometry *geometry, AliEMCALRecoUtils *recoUtils, AliVCaloCells *cells);
         void FillMiscJetStats(TClonesArray *jetList, Int_t *indexJetList, Int_t nIndexJetList, TClonesArray *trackList, TClonesArray *clusterList);
         
@@ -247,6 +248,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         Double_t fLChargedTrackPtUp;
         
         Bool_t fDoNEFQAPlots;
+        Bool_t fDoNEFSignalOnly;
         Bool_t fSignalTrackBias;
 
         Int_t fNEFBins;
@@ -422,6 +424,11 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     {
         fCalculateRhoJet = doRhoJet;
     };
+    
+    inline void DoNEFSignalOnly(Bool_t doNEF)
+    {
+        fDoNEFSignalOnly = doNEF;
+    };
 
     private:
     TList *fOutput; //! Output list
@@ -511,6 +518,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     AliEMCALGeometry *fEMCALGeometry;  //!
     AliVCaloCells *fCells;  //!
     Bool_t fDoNEF;
+    Bool_t fDoNEFSignalOnly;
     Bool_t fSignalTrackBias;
     Bool_t fTrackQA;
     Bool_t fClusterQA;
