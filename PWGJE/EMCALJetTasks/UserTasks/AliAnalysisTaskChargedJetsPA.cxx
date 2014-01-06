@@ -42,6 +42,7 @@
 #include "AliAODMCParticle.h"
 #include "AliAnalysisUtils.h"
 #include "AliRhoParameter.h"
+#include "TVector3.h"
 
 #include "AliAnalysisTaskChargedJetsPA.h"
 using std::min;
@@ -84,6 +85,9 @@ void AliAnalysisTaskChargedJetsPA::Init()
     AddHistogram1D<TH1D>("hRawJetPt", "Raw jets p_{T} distribution (before cuts)", "", 500, 0., 250., "p_{T} (GeV/c)", "dN^{Jets}/dp_{T}");
     AddHistogram2D<TH2D>("hJetPt", "Jets p_{T} distribution", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
     AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKTImprovedCMS", "Jets p_{T} distribution, KT background (Improved CMS) subtracted", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");    
+    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedPP", "Jets p_{T} distribution, pp background subtracted", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
+
+
 
     AddHistogram2D<TProfile2D>("hJetPtSubtractedRhoKTImprovedCMS", "Mean subtracted KT (CMS w/o signal) background from jets", "COLZ", 600, 0, 150, fNumberOfCentralityBins, 0, 100, "Jet p_{T}", "Centrality", "#rho mean");
     AddHistogram2D<TH2D>("hJetPtSubtractedRhoKTImprovedCMS020", "Mean subtracted KT (CMS w/o signal) background from jets, 0-20", "COLZ", 600, 0, 150, 400,0.,40., "Jet p_{T} (GeV/c)", "#rho (GeV/c)", "dN^{Events}/dp_{T}#rho");
@@ -144,6 +148,7 @@ void AliAnalysisTaskChargedJetsPA::Init()
 
     AddHistogram2D<TH2D>("hDijetBackground", "Background density (dijets excluded)", "", 200, 0., 20., fNumberOfCentralityBins, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
     AddHistogram2D<TH2D>("hDijetBackgroundPerpendicular", "Background density (dijets excluded)", "", 200, 0., 20., fNumberOfCentralityBins, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
+    AddHistogram2D<TH2D>("hDijetBackgroundPerpendicularDeltaPt", "Background fluctuations #delta p_{T} (dijets excluded)", "", 1201, -80.0, 80.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
 
     if(fAnalyzeDeprecatedBackgrounds)
     {
@@ -1336,6 +1341,35 @@ void AliAnalysisTaskChargedJetsPA::GetTRBackgroundDensity(Int_t numberExcludeLea
 }
 
 //________________________________________________________________________
+void AliAnalysisTaskChargedJetsPA::GetPPBackgroundDensity(Double_t& background, AliEmcalJet* jet)
+{
+  // This is the background that was used for the pp 7 TeV ALICE paper
+  Double_t jetMom[3] = { jet->Px(), jet->Py(), jet->Pz() };
+  TVector3 jet3mom1(jetMom);
+  TVector3 jet3mom2(jetMom);
+  background = 0;
+
+  jet3mom1.RotateZ(TMath::Pi());
+  jet3mom2.RotateZ(-TMath::Pi());
+
+  for (int i = 0; i < fTrackArray->GetEntries(); i++)
+  {
+    AliVTrack* track = static_cast<AliVTrack*>(fTrackArray->At(i));
+
+    Double_t trackMom[3] = { track->Px(), track->Py(), track->Pz() };
+    TVector3 track3mom(trackMom);
+
+    Double_t dR1 = jet3mom1.DeltaR(track3mom);
+    Double_t dR2 = jet3mom2.DeltaR(track3mom);
+
+    if (dR1 <= fSignalJetRadius || dR2 <= fSignalJetRadius)
+      background += track3mom.Pt();
+  }
+
+  background /= (2 * TMath::Pi() * fSignalJetRadius * fSignalJetRadius);
+}
+
+//________________________________________________________________________
 void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
 {
   #ifdef DEBUGMODE
@@ -1397,7 +1431,7 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
   Double_t              backgroundKTImprovedCMSExternal = -1.0;
   Double_t              backgroundDijet = -1.0;
   Double_t              backgroundDijetPerpendicular = -1.0;
-
+  Double_t              deltaPtDijetPerpendicular = -10000.0;
   Double_t              backgroundKTPbPb = -1.0;
   Double_t              backgroundKTPbPbWithGhosts = -1.0;
   Double_t              backgroundKTCMS = -1.0;
@@ -1409,7 +1443,7 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
   Double_t              backgroundTRCone06 = -1.0;
   Double_t              backgroundTRCone08 = -1.0;
   Double_t              backgroundTRExact  = -1.0;
-
+  Double_t              backgroundPP       = -1.0;
   // Calculate background for different jet exclusions
 
   if (fAnalyzeBackground)
@@ -1538,6 +1572,10 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
         if(centralityPercentile<=20.0)
           FillHistogram("hJetPtSubtractedRhoKTImprovedCMS020", tmpJet->Pt(), backgroundKTImprovedCMS);
         
+        // pp background
+        GetPPBackgroundDensity(backgroundPP, tmpJet);
+        FillHistogram("hJetPtBgrdSubtractedPP", GetCorrectedJetPt(tmpJet, backgroundPP), centralityPercentile);
+
         if(fAnalyzeDeprecatedBackgrounds)
         {
           FillHistogram("hJetPtBgrdSubtractedTR", GetCorrectedJetPt(tmpJet, backgroundTRCone06), centralityPercentile);
@@ -1800,6 +1838,7 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
         Double_t dummyArea = 0;
         GetTRBackgroundDensity (2, backgroundDijet, dummyArea, fFirstLeadingJet, fSecondLeadingJet, kFALSE);
         GetTRBackgroundDensity (2, backgroundDijetPerpendicular, dummyArea, fFirstLeadingJet, fSecondLeadingJet, kTRUE);
+        deltaPtDijetPerpendicular = GetDeltaPt(backgroundDijetPerpendicular);
       }
     }
 
@@ -1838,7 +1877,10 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
       FillHistogram("hDijetBackground", backgroundDijet, centralityPercentile); 
     if (backgroundDijetPerpendicular >= 0)
       FillHistogram("hDijetBackgroundPerpendicular", backgroundDijetPerpendicular, centralityPercentile); 
-    
+    if (deltaPtDijetPerpendicular > -10000.)
+      FillHistogram("hDijetBackgroundPerpendicularDeltaPt", deltaPtDijetPerpendicular, centralityPercentile); 
+
+
     if(fAnalyzeDeprecatedBackgrounds)
     {
       FillHistogram("hKTBackgroundPbPb", backgroundKTPbPb, centralityPercentile);
