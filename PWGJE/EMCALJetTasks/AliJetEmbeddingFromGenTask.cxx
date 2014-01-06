@@ -119,6 +119,6 @@ void AliJetEmbeddingFromGenTask::Run()
       continue;
     if (pt>fPtMax)
       continue;
-    AddTrack(pt, eta, phi);
+    AddTrack(pt, eta, phi,0,0,0,0,0,0,part->GetMass());
   }
 }
