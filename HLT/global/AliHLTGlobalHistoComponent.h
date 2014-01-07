@@ -52,7 +52,7 @@
  * <h2>Output size:</h2>
  * Depending on the mode.
  *
- * @ingroup alihlt_util_components
+ * @ingroup alihlt_global_components
  */
 class AliHLTGlobalHistoComponent : public AliHLTTTreeProcessor
 {

@@ -22,7 +22,7 @@
  *
  * @author Chiara Oppedisano <Chiara.Oppedisano@to.infn.it>
  *         Jochen Thaeder <jochen@thaeder.de>
- * @ingroup alihlt_zdc
+ * @ingroup alihlt_global
  */
 void makeConfigurationObjectdNdPtAnalysis(const Char_t* param="-vertexZRange 20. -meanVertexXYZ 0. 0. 0. -meanVertexXYZSigma 1. 1. 10. -etaRange 0.9 -ptRange 0.15 1.e10 -maxDCAr 3.0 -maxDCAz 30.0 -maxDCAToVertexXY 3.0 -maxDCAToVertexZ 3.0 -requireSigmaToVertex 1", const Char_t* cdbUri=NULL,
 					  Int_t runMin=0, Int_t runMax=AliCDBRunRange::Infinity()) {

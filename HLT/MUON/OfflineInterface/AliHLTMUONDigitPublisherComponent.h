@@ -72,7 +72,7 @@ class AliMUONDataInterface;
  *      the generated raw DDL stream. The detector element ID numbers <number> should
  *      be in the range [100..1099]. <br>
  *
- * @ingroup alihlt_dimuon_component
+ * @ingroup alihlt_muon_components
  */
 class AliHLTMUONDigitPublisherComponent : public AliHLTOfflineDataSource
 {

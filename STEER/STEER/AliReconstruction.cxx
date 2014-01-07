@@ -1549,7 +1549,7 @@ void AliReconstruction::Begin(TTree *)
   }
 
   // Import ideal TGeo geometry and apply misalignment
-  if (!gGeoManager) {
+  if (!AliGeomManager::GetGeometry()) {
     TString geom(gSystem->DirName(fGAliceFileName));
     geom += "/geometry.root";
     AliGeomManager::LoadGeometry(geom.Data());

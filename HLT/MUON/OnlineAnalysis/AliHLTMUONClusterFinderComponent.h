@@ -92,7 +92,7 @@ class AliMUONRecoParam;
  * <h2>Output size:</h2>
  * Output size is about 25% of incoming raw input data for nominal p+p events.
  *
- * @ingroup alihlt_dimuon_component
+ * @ingroup alihlt_muon_components
  */
 class AliHLTMUONClusterFinderComponent : public AliHLTMUONProcessor
 {
