@@ -1,6 +1,8 @@
 #ifndef AliTPCdEdxInfo_H
 #define AliTPCdEdxInfo_H
 
+class TGraphErrors;
+class TObjArray;
 #include <TObject.h>
 
 class AliTPCdEdxInfo : public TObject 
@@ -38,14 +40,15 @@ public:
   Double_t GetTPCsignalMediumPadQmax() const {return fTPCsignalRegionQmax[1];}
   Double_t GetTPCsignalLongPadQmax()   const {return fTPCsignalRegionQmax[2];}
   Double_t GetTPCsignalOROCQmax()      const {return fTPCsignalRegionQmax[3];}
-  
-private:
+  static void     RegisterSectorCalibration(TGraphErrors* gainSector, Int_t regionID, Int_t calibID);
+private: 
 
   Double32_t  fTPCsignalRegion[4]; //[0.,0.,10] TPC dEdx signal in 4 different regions - 0 - IROC, 1- OROC medium, 2 - OROC long, 3- OROC all, (default truncation used)  - for qTot
   Double32_t  fTPCsignalRegionQmax[4]; //[0.,0.,10] TPC dEdx signal in 4 different regions - 0 - IROC, 1- OROC medium, 2 - OROC long, 3- OROC all, (default truncation used) - for qMax
   Char_t      fTPCsignalNRegion[3]; // number of clusters above threshold used in the dEdx calculation
   Char_t      fTPCsignalNRowRegion[3]; // number of crosed rows used in the dEdx calculation - signal below threshold included
-
+  //
+  static TObjArray *fArraySectorCalibration;
   
   ClassDef(AliTPCdEdxInfo,3)
 };

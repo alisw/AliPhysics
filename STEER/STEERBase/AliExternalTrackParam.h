@@ -218,7 +218,8 @@ class AliExternalTrackParam: public AliVTrack {
   void Print(Option_t* option = "") const;
   Double_t GetSnpAt(Double_t x,Double_t b) const;
   Bool_t GetXatLabR(Double_t r,Double_t &x, Double_t bz, Int_t dir=0) const;
-
+  //
+  Double_t GetParameterAtRadius(Double_t r, Double_t bz, Int_t &parType) const;
   //Deprecated
   Bool_t CorrectForMaterial(Double_t d, Double_t x0, Double_t mass,
 	 Double_t (*f)(Double_t)=AliExternalTrackParam::BetheBlochSolid);

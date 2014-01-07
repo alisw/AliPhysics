@@ -1,4 +1,6 @@
 #include "AliTPCdEdxInfo.h"
+#include "TObjArray.h"
+#include "TGraphErrors.h"
 
 //##################################################################
 //
@@ -8,7 +10,7 @@
 //
 //##################################################################
 
-
+TObjArray * AliTPCdEdxInfo::fArraySectorCalibration=0;
 
 ClassImp(AliTPCdEdxInfo)
 
@@ -212,4 +214,18 @@ Double_t AliTPCdEdxInfo::GetWeightedMean(Int_t qType, Int_t wType, Double_t w0, 
   }
   Double_t result = (sumw>0) ? sum/sumw:0;
   return result;
+}
+
+
+
+void  AliTPCdEdxInfo::RegisterSectorCalibration(TGraphErrors* gainSector, Int_t regionID, Int_t calibID){
+  //
+  // Register sector calibration
+  //
+  // create if arrray does not exist
+  if (!fArraySectorCalibration) fArraySectorCalibration= new TObjArray((calibID+1)*3*10); // boook space for calibration pointer
+  // resize if not enough booked
+  if (fArraySectorCalibration->GetSize()<(calibID+1)*3) fArraySectorCalibration->Expand((calibID+1)*3);
+  //
+  fArraySectorCalibration->AddAt(gainSector, 3*calibID+regionID);
 }
