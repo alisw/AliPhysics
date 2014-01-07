@@ -124,6 +124,7 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets() :
     fEMCALGeometry(0),
     fCells(0),
     fDoNEF(0),
+    fDoNEFSignalOnly(0),
     fSignalTrackBias(0),
     fTrackQA(0),
     fClusterQA(0),
@@ -283,6 +284,7 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets(const char *name) :
     fEMCALGeometry(0),
     fCells(0),
     fDoNEF(0),
+    fDoNEFSignalOnly(0),
     fSignalTrackBias(0),
     fTrackQA(0),
     fClusterQA(0),
@@ -692,7 +694,7 @@ void AliAnalysisTaskFullpAJets::UserCreateOutputObjects()
         
         fRhoChargedCMSScale = new AlipAJetHistos("RhoChargedCMSScale",fCentralityTag,fDoNEF);
         fRhoChargedCMSScale->SetSignalTrackPtBias(fSignalTrackBias);
-
+        fRhoChargedCMSScale->DoNEFSignalOnly(fDoNEFSignalOnly);
         fOutput->Add(fEMCalRawJets->GetOutputHistos());
         fOutput->Add(fRhoChargedCMSScale->GetOutputHistos());
 
@@ -3390,6 +3392,7 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos() :
     fLChargedTrackPtLow(0),
     fLChargedTrackPtUp(0),
     fDoNEFQAPlots(0),
+    fDoNEFSignalOnly(1),
     fSignalTrackBias(0),
     fNEFBins(0),
     fNEFLow(0),
@@ -3482,6 +3485,7 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name) :
     fLChargedTrackPtLow(0),
     fLChargedTrackPtUp(0),
     fDoNEFQAPlots(0),
+    fDoNEFSignalOnly(1),
     fSignalTrackBias(0),
     fNEFBins(0),
     fNEFLow(0),
@@ -3586,6 +3590,7 @@ AliAnalysisTaskFullpAJets::AlipAJetHistos::AlipAJetHistos(const char *name, cons
     fLChargedTrackPtLow(0),
     fLChargedTrackPtUp(0),
     fDoNEFQAPlots(0),
+    fDoNEFSignalOnly(1),
     fSignalTrackBias(0),
     fNEFBins(0),
     fNEFLow(0),
@@ -3959,13 +3964,9 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
         dimClusterLow[9] = 0.0;
         dimClusterUp[9] = 100.0;
 
-        fhJetNEFInfo = new THnSparseF("fhJetNEFInfo","Jet NEF Information Histogram",fnDimJet,dimJetBins,dimJetLow,dimJetUp);
-        fhJetNEFInfo->Sumw2();
         fhJetNEFSignalInfo = new THnSparseF("fhJetNEFSignalInfo","Signal Jet NEF Information Histogram",fnDimJet,dimJetBins,dimJetLow,dimJetUp);
         fhJetNEFSignalInfo->Sumw2();
 
-        fhClusterNEFInfo = new THnSparseF("fhClusterNEFInfo","Jet NEF Cluster Information Histogram",fnDimCluster,dimClusterBins,dimClusterLow,dimClusterUp);
-        fhClusterNEFInfo->Sumw2();
         fhClusterNEFSignalInfo = new THnSparseF("fhClusterNEFSignalInfo","Signal Jet NEF Cluster Information Histogram",fnDimCluster,dimClusterBins,dimClusterLow,dimClusterUp);
         fhClusterNEFSignalInfo->Sumw2();
 
@@ -3981,9 +3982,19 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::Init()
         fhClusterPtCellAll->GetZaxis()->SetTitle("1/N_{Events} dN/dp_{T}dCells");
         fhClusterPtCellAll->Sumw2();
 
-        fNEFOutput->Add(fhJetNEFInfo);
+        if (fDoNEFSignalOnly == kTRUE)
+        {
+            fhJetNEFInfo = new THnSparseF("fhJetNEFInfo","Jet NEF Information Histogram",fnDimJet,dimJetBins,dimJetLow,dimJetUp);
+            fhJetNEFInfo->Sumw2();
+
+            fhClusterNEFInfo = new THnSparseF("fhClusterNEFInfo","Jet NEF Cluster Information Histogram",fnDimCluster,dimClusterBins,dimClusterLow,dimClusterUp);
+            fhClusterNEFInfo->Sumw2();
+
+            fNEFOutput->Add(fhJetNEFInfo);
+            fNEFOutput->Add(fhClusterNEFInfo);
+            
+        }
         fNEFOutput->Add(fhJetNEFSignalInfo);
-        fNEFOutput->Add(fhClusterNEFInfo);
         fNEFOutput->Add(fhClusterNEFSignalInfo);
         fNEFOutput->Add(fhClusterShapeAll);
         fNEFOutput->Add(fhClusterPtCellAll);
@@ -4281,6 +4292,11 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::DoNEFQAPlots(Bool_t doNEFAna)
     fDoNEFQAPlots = doNEFAna;
 }
 
+void AliAnalysisTaskFullpAJets::AlipAJetHistos::DoNEFSignalOnly(Bool_t doNEFSignalOnly)
+{
+    fDoNEFSignalOnly = doNEFSignalOnly;
+}
+
 void AliAnalysisTaskFullpAJets::AlipAJetHistos::DoNEFAnalysis(Double_t nefCut, Double_t signalCut, TClonesArray *jetList, Int_t *indexJetList, Int_t nIndexJetList, TObjArray *clusterList, TClonesArray *orgClusterList, AliVEvent *event, AliEMCALGeometry *geometry, AliEMCALRecoUtils *recoUtils, AliVCaloCells *cells)
 {
     if (fDoNEFQAPlots==kFALSE)
@@ -4348,7 +4364,11 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::DoNEFAnalysis(Double_t nefCut, D
         
         valCluster[6] = zLeading;
 
-        fhJetNEFInfo->Fill(valJet);
+        // Supress filling of this histogram due to memory size of THnSparse when running over large datasets
+        if (fDoNEFSignalOnly == kFALSE)
+        {
+            fhJetNEFInfo->Fill(valJet);
+        }
         
         if (fSignalTrackBias==kTRUE)
         {
@@ -4395,7 +4415,11 @@ void AliAnalysisTaskFullpAJets::AlipAJetHistos::DoNEFAnalysis(Double_t nefCut, D
             valCluster[8] = upTime-lowTime;
             valCluster[9] = vcluster->GetNCells();
             
-            fhClusterNEFInfo->Fill(valCluster);
+            if (fDoNEFSignalOnly == kFALSE)
+            {
+                fhClusterNEFInfo->Fill(valCluster);
+            }
+
             if (fSignalTrackBias==kTRUE)
             {
                 if (tempChargedHighPt>=signalCut && nef<=nefCut)

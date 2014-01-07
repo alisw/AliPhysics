@@ -82,7 +82,7 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString config="1",
   for (Int_t i=0; i<nDie; ++i) { //nDie defined in config file
 
     //only configs switched ON will pass
-    if(config(i,1)!="1") { printf(" %d switched OFF \n",i,config[i]); continue; }
+    if(config.Length()<=i || config(i,1)!="1") { printf(" %d switched OFF \n",i); continue; }
 
     // load configuration
     AliDielectron *jpsi=ConfigJpsi_jb_PbPb(i,hasMC,triggers);

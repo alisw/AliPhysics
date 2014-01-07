@@ -498,9 +498,6 @@ void AliFemtoK0Analysis::Exec(Option_t *)
   }
 
   
-  int zBin=0;
-  double zStep=2*10/double(kZVertexBins), zstart=-10.;
-
   /////////////////////////////////////////////////
 
 
@@ -564,13 +561,15 @@ void AliFemtoK0Analysis::Exec(Option_t *)
   if(vertex[0]<10e-5 && vertex[1]<10e-5 &&  vertex[2]<10e-5) return;
   if(fabs(vertex[2]) > 10) return; // Z-vertex Cut
 
+  int zBin=0;
+  double zStep=2*10/double(kZVertexBins), zStart=-10.;
   for(int i=0; i<kZVertexBins; i++)
   {
-    if((vertex[2] > zstart+i*zStep) && (vertex[2] < zstart+(i+1)*zStep))
-    {
-      zBin=i;
-      break;
-    }
+   if((vertex[2] > zStart+i*zStep) && (vertex[2] < zStart+(i+1)*zStep))
+   {
+    zBin=i;
+    break;
+   }
   }
   
   //Event plane
@@ -578,12 +577,19 @@ void AliFemtoK0Analysis::Exec(Option_t *)
   AliEventplane *eventplane = fAOD->GetEventplane();
   if(fPsiBinning && !eventplane) return;
   double psiEP = eventplane->GetEventplane("V0",fAOD,2); //[-PI/2,PI/2]
-  if(psiEP < -0.25*PI) psiBin = 0;
-  else if(psiEP < 0.0) psiBin = 1;
-  else if(psiEP < 0.25*PI) psiBin = 2;
-  else psiBin = 3;
-  if(!fPsiBinning) psiBin = 0;
   ((TH1F*)fOutputList->FindObject("fHistPsi"))->Fill(psiEP);
+
+  double psiStep = PI/double(kPsiBins);
+  double psiStart = -0.5*PI;
+  for(int i=0; i<kPsiBins; i++)
+  {
+   if((psiEP > psiStart+i*psiStep) && (psiEP < psiStart+(i+1)*psiStep))
+   {
+    psiBin = i;
+    break;
+   }
+  }
+  if(!fPsiBinning) psiBin = 0;
 
 ////////////////////////////////////////////////////////////////
 //Cut Values and constants
