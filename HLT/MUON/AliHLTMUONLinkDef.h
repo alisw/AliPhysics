@@ -17,7 +17,7 @@
 // $Id$
 
 ///
-/// @file   HLTMUONLinkDef.h
+/// @file   AliHLTMUONLinkDef.h
 /// @author Artur Szostak <artursz@iafrica.com>
 /// @date   29 May 2007
 /// @brief  Linkdef file for dHLT.

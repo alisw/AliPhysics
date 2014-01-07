@@ -5,6 +5,8 @@
 
 cmake_minimum_required(VERSION 2.8.4 FATAL_ERROR)
 
+include("CMakehltdoc.conf")
+
 file(GLOB PACKAGES CMake*.pkg)
 
 ALICE_BuildModule()

@@ -15,7 +15,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
  /** 
- * @file   AliHLTCALOClusterizer.cxx
+ * @file   AliHLTCaloDigitMaker.cxx
  * @author Oystein Djuvsland
  * @date 
  * @brief  Digit maker for CALO HLT  

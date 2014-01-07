@@ -6,7 +6,7 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/// @file   AliHLTTPCQHistoComponent.h
+/// @file   AliHLTTPCClusterHistoComponent.h
 /// @author Gaute Ovrebekk
 /// @brief  Component for ploting charge in clusters
 ///
@@ -16,7 +16,7 @@
 #include "AliHLTTPCSpacePointData.h"
 
 /**
- * @class AliHLTTPCQHistoComponent
+ * @class AliHLTTPCClusterHistoComponent
  * Component for ploting charge in clusters
  * 
  * Component ID: \b TPCQHisto <br>

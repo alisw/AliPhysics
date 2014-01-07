@@ -19,7 +19,7 @@
 **
 *************************************************************************/
 
-/** @file   tutorial.c
+/** @file   SampleLib/tutorial.c
     @author Matthias Richter
     @date   
     @brief  HLT examples and tutorial. */

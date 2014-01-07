@@ -35,7 +35,8 @@ public:
   /// destructor
   ~AliHLTDataDeflaterSimple();
 
-  /// @class AliHLTDataDeflaterParameter definition of parameters
+  /// @class AliHLTDataDeflaterParameter 
+  //  definition of parameters
   class AliHLTDataDeflaterParameter {
   public:
     AliHLTDataDeflaterParameter()

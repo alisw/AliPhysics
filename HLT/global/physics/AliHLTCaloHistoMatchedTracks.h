@@ -7,7 +7,7 @@
 //* See cxx source for full Copyright notice                               *
 
 /** 
- * @file   AliHLTCaloHistoMatchedTracks
+ * @file   AliHLTCaloHistoMatchedTracks.h
  * @author Albin Gaignette and Svein Lindal slindal@fys.uio.no
  * @date 
  * @brief  Produces Invariant mass histograms of PHOS clusters
@@ -34,7 +34,7 @@ class TH2F;
  * Class produces physics histograms for PHOS. It takes a TClonesArray
  * of AliESDCalocluster as input and fills several histograms
  *
- * @ingroup alihlt_phos
+ * @ingroup alihlt_global
  */
 
 

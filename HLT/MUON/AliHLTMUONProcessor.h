@@ -47,7 +47,7 @@ class AliMUONRecoParam;
  *      Allows one to specify the path in which to dump the received data blocks
  *      if an error occurs. <br>
  *
- * @ingroup alihlt_dimuon_component
+ * @ingroup alihlt_muon_components
  */
 class AliHLTMUONProcessor : public AliHLTProcessor
 {

@@ -15,7 +15,7 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/// @file   AliHLTITSQHistoComponent.cxx
+/// @file   AliHLTITSQAComponent.cxx
 /// @author Piergiorgio Cerello cerello@to.infn.it
 /// @date   2009-07-03
 /// @brief  Interface component to the ITS QA
