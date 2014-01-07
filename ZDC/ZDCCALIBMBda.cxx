@@ -27,6 +27,7 @@ Trigger Types Used: Standalone Trigger
 #define MBCALIBDATA_FILE   "ZDCMBCalib.root"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <Riostream.h>
 #include <Riostream.h>
 
