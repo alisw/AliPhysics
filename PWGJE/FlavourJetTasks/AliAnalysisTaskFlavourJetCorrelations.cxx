@@ -792,9 +792,9 @@ void AliAnalysisTaskFlavourJetCorrelations::SideBandBackground(AliAODRecoCascade
    Int_t bin = fCuts->PtBin(candDstar->Pt());
    if (bin < 0)
      {
-       // coverity - issue related to /PWGHF/vertexingHF/AliRDHFCuts::PtBin(Double_t) const
-       AliFatal("bin < 0 used as an array index; check: /PWGHF/vertexingHF/AliRDHFCuts::PtBin(Double_t) const");
-       bin = 9999; // coverity - should be unreachable anyhow
+       // /PWGHF/vertexingHF/AliRDHFCuts::PtBin(Double_t) const may return values below zero depending on config.
+       bin = 9999; // void result code for coverity (bin later in the code non-zero) - will coverity pick up on this?
+       return;
      }
    Float_t fourSigmal= mPDGD0-4.*fSigmaD0[bin] , sixSigmal= mPDGD0-8.*fSigmaD0[bin];
    Float_t fourSigmar= mPDGD0+4.*fSigmaD0[bin] , sixSigmar= mPDGD0+8.*fSigmaD0[bin];
