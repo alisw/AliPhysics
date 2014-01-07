@@ -546,6 +546,9 @@ Bool_t AliAnalysisTaskEmcal::UserNotify()
 
   PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthard);
 
+  // TODO: Workaround
+  if((pthard < 0) || (pthard > 10))
+    pthard = 0;
   fHistTrials->Fill(pthard, trials);
   fHistXsection->Fill(pthard, xsection);
   fHistEvents->Fill(pthard, nevents);

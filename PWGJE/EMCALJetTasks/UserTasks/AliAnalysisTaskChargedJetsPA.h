@@ -75,6 +75,7 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
 
   void        GetTRBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoNoExclusion, Double_t& rhoConeExclusion02, Double_t& rhoConeExclusion04, Double_t& rhoConeExclusion06, Double_t& rhoConeExclusion08, Double_t& rhoExactExclusion);
   void        GetTRBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoMean, Double_t& area, AliEmcalJet* excludeJet1, AliEmcalJet* excludeJet2, Bool_t doSearchPerpendicular);
+  void        GetPPBackgroundDensity(Double_t& background, AliEmcalJet* jet);
   Double_t    GetConePt(Double_t eta, Double_t phi, Double_t radius);
   Double_t    GetPtHard();
   Double_t    GetPythiaTrials();

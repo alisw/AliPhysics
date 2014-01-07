@@ -61,13 +61,14 @@ AliAnalysisTaskEmcalJetMassBkg* AddTaskEmcalJetMassBkg(TString     kTracksName  
   TString rhoNameBase = "";
   if(rhoType==1) {
     rhoTaskBase = AttachRhoTask(kPeriod,kTracksName,kClusName,R,ptminTrack,etminClus);
-    rhoTaskBase->SetCentralityEstimator(CentEst);  
-    rhoTaskBase->SelectCollisionCandidates(AliVEvent::kAny);
-
-    if (strcmp(type,"TPC")==0)
-      rhoNameBase = rhoTaskBase->GetOutRhoName();
-    if (strcmp(type,"EMCAL")==0)
-      rhoNameBase = rhoTaskBase->GetOutRhoScaledName();
+    if(rhoTaskBase) {
+      rhoTaskBase->SetCentralityEstimator(CentEst);  
+      rhoTaskBase->SelectCollisionCandidates(AliVEvent::kAny);
+      if (strcmp(type,"TPC")==0)
+	rhoNameBase = rhoTaskBase->GetOutRhoName();
+      if (strcmp(type,"EMCAL")==0)
+	rhoNameBase = rhoTaskBase->GetOutRhoScaledName();
+    }
   }
 
   //Configure jet tagger task
@@ -221,11 +222,13 @@ AliAnalysisTaskRhoBase *AttachRhoTask(TString     kPeriod             ,// = "LHC
     sfunc->SetParameter(2,1.76458);
     sfunc->SetParameter(1,-0.0111656);
     sfunc->SetParameter(0,0.000107296);
+    TString rhoname = Form("RhoR%03dptmin%3.0f%s",(int)(100*R),ptminTrack*1000.0,kTracksName.Data());
+    Printf("rhoname: %s",rhoname.Data());
     AliAnalysisTaskRho *rhoTask = AddTaskRho(
 					     jetFinderKt->GetName(), 
 					     kTracksName, 
 					     kClusName, 
-					     Form("RhoR%03dptmin%3.0f",(int)(100*R),ptminTrack*1000.0), 
+					     rhoname, 
 					     R, 
 					     "TPC", 
 					     0.01, 
