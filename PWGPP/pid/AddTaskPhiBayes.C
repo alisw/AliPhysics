@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskPhiBayes(Bool_t ismc=kFALSE,Bool_t qa=kTRUE,Int_t filterbit=16,Int_t typeCol=2,Bool_t toEP=kFALSE){
+AliAnalysisTask *AddTaskPhiBayes(Bool_t ismc=kFALSE,Bool_t qa=kTRUE,Int_t filterbit=16,Int_t typeCol=2,Bool_t toEP=kFALSE,Int_t species = 2){
 
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -23,6 +23,7 @@ AliAnalysisTask *AddTaskPhiBayes(Bool_t ismc=kFALSE,Bool_t qa=kTRUE,Int_t filter
   task->SetFilterBit(filterbit);
   task->SetTypeCollisions(typeCol);
   task->SetCorrEP(toEP);
+  task->SetRefSpecies(species);
 
   AliPIDmaxProb *userCut = new AliPIDmaxProb("maxProbKaon");
   userCut->RequireTPC();

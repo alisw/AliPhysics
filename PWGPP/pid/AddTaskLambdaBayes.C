@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskLambdaBayes(Bool_t ismc=kFALSE,Bool_t qa=kTRUE,Int_t filterbit=4,Int_t typeCol=2,Bool_t toEP=kFALSE){
+AliAnalysisTask *AddTaskLambdaBayes(Bool_t ismc=kFALSE,Bool_t qa=kTRUE,Int_t filterbit=4,Int_t typeCol=2,Bool_t toEP=kFALSE,Int_t species=4){
 
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -23,6 +23,7 @@ AliAnalysisTask *AddTaskLambdaBayes(Bool_t ismc=kFALSE,Bool_t qa=kTRUE,Int_t fil
   task->SetFilterBit(filterbit);
   task->SetTypeCollisions(typeCol);
   task->SetCorrEP(toEP);
+  task->SetRefSpecies(species);
 
   AliPIDmaxProb *userCut = new AliPIDmaxProb("maxProbProton");
   userCut->RequireTPC();
