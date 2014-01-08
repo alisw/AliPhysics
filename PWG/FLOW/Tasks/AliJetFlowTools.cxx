@@ -1430,7 +1430,7 @@ void AliJetFlowTools::PostProcess(TString def, TString in, TString out, Int_t co
            cacheMe++;
        }
    }
-   Int_t rows(TMath::Floor(cacheMe/(float)columns)/*+((cacheMe%4)>0)*/);
+   Int_t rows(TMath::Floor(cacheMe/(float)columns)+((cacheMe%4)>0));
    canvasIn->Divide(columns, rows);
    if(canvasOut) canvasOut->Divide(columns, rows);
    canvasRatioMeasuredRefoldedIn->Divide(columns, rows);
@@ -1443,13 +1443,13 @@ void AliJetFlowTools::PostProcess(TString def, TString in, TString out, Int_t co
    canvasMasterIn->Divide(columns, rows);
    if(canvasMasterOut) canvasMasterOut->Divide(columns, rows);
    // extract the default output 
-   TH1D* deunfoldedJetSpectrumIn(0x0);
-   TH1D* deunfoldedJetSpectrumOut(0x0);
+   TH1D* defaultUnfoldedJetSpectrumIn(0x0);
+   TH1D* defaultUnfoldedJetSpectrumOut(0x0);
    if(defDir) {
        TDirectoryFile* defDirIn = (TDirectoryFile*)defDir->Get(Form("InPlane___%s", def.Data()));
        TDirectoryFile* defDirOut = (TDirectoryFile*)defDir->Get(Form("OutOfPlane___%s", def.Data()));
-       if(defDirIn) deunfoldedJetSpectrumIn = (TH1D*)defDirIn->Get(Form("UnfoldedSpectrum_in_%s", def.Data()));
-       if(defDirOut) deunfoldedJetSpectrumOut = (TH1D*)defDirOut->Get(Form("UnfoldedSpectrum_out_%s", def.Data()));
+       if(defDirIn) defaultUnfoldedJetSpectrumIn = (TH1D*)defDirIn->Get(Form("UnfoldedSpectrum_in_%s", def.Data()));
+       if(defDirOut) defaultUnfoldedJetSpectrumOut = (TH1D*)defDirOut->Get(Form("UnfoldedSpectrum_out_%s", def.Data()));
        printf(" > succesfully extracted default results < \n");
    }
  
@@ -1458,9 +1458,11 @@ void AliJetFlowTools::PostProcess(TString def, TString in, TString out, Int_t co
    TDirectoryFile* tempIn(0x0);
    TDirectoryFile*  tempOut(0x0);
    for(Int_t i(0), j(0); i < listOfKeys->GetSize(); i++) {
+       // read the directory by its name
        tempDir = dynamic_cast<TDirectoryFile*>(readMe.Get(listOfKeys->At(i)->GetName()));
        if(!tempDir) continue;
        TString dirName(tempDir->GetName());
+       // try to read the in- and out of plane subdirs
        tempIn = (TDirectoryFile*)tempDir->Get(Form("InPlane___%s", dirName.Data()));
        tempOut = (TDirectoryFile*)tempDir->Get(Form("OutOfPlane___%s", dirName.Data()));
        j++;
@@ -1477,7 +1479,8 @@ void AliJetFlowTools::PostProcess(TString def, TString in, TString out, Int_t co
                    Style(rIn);
                    printf(" > found RatioRefoldedMeasured < \n");
                    canvasRatioMeasuredRefoldedIn->cd(j);
-                   rIn->Draw("ac");
+                   rIn->SetFillColor(kRed);
+                   rIn->Draw("ap");
                }
                TH1D* dvector((TH1D*)tempIn->Get("dVector"));
                TH1D* avalue((TH1D*)tempIn->Get("SingularValuesOfAC"));
@@ -1513,14 +1516,15 @@ void AliJetFlowTools::PostProcess(TString def, TString in, TString out, Int_t co
            TH1D* unfoldedSpectrum((TH1D*)tempIn->Get(Form("UnfoldedSpectrum_in_%s", dirName.Data())));
            TH1D* refoldedSpectrum((TH1D*)tempIn->Get(Form("RefoldedSpectrum_in_%s", dirName.Data())));
            if(inputSpectrum && unfoldedSpectrum && refoldedSpectrum) {
-               if(deunfoldedJetSpectrumIn) {
-                   TH1D* temp((TH1D*)deunfoldedJetSpectrumIn->Clone(Form("deunfoldedJetSpectrumIn_%s", dirName.Data())));
+               if(defaultUnfoldedJetSpectrumIn) {
+                   Style(defaultUnfoldedJetSpectrumIn, kBlue, kUnfoldedSpectrum);
+                   TH1D* temp((TH1D*)defaultUnfoldedJetSpectrumIn->Clone(Form("defaultUnfoldedJetSpectrumIn_%s", dirName.Data())));
                    temp->Divide(unfoldedSpectrum);
                    temp->SetTitle(Form("ratio default unfolded / %s", dirName.Data()));
                    temp->GetXaxis()->SetTitle("p_{T} [GeV/c]");
                    temp->GetYaxis()->SetTitle(Form("%s / %s", def.Data(), dirName.Data()));
                    canvasMasterIn->cd(j);
-                   temp->GetXaxis()->SetRangeUser(0., 2);
+                   temp->GetYaxis()->SetRangeUser(0., 2);
                    temp->DrawCopy();
                }
                TH1F* fitStatus((TH1F*)tempIn->Get(Form("fitStatus_%s_in", dirName.Data())));
@@ -1558,7 +1562,8 @@ void AliJetFlowTools::PostProcess(TString def, TString in, TString out, Int_t co
                    Style(rOut);
                    printf(" > found RatioRefoldedMeasured < \n");
                    canvasRatioMeasuredRefoldedOut->cd(j);
-                   rOut->Draw("ac");
+                   rOut->SetFillColor(kRed);
+                   rOut->Draw("ap");
                }
                TH1D* dvector((TH1D*)tempOut->Get("dVector"));
                TH1D* avalue((TH1D*)tempOut->Get("SingularValuesOfAC"));
@@ -1594,14 +1599,15 @@ void AliJetFlowTools::PostProcess(TString def, TString in, TString out, Int_t co
            TH1D* unfoldedSpectrum((TH1D*)tempOut->Get(Form("UnfoldedSpectrum_out_%s", dirName.Data())));
            TH1D* refoldedSpectrum((TH1D*)tempOut->Get(Form("RefoldedSpectrum_out_%s", dirName.Data())));
            if(inputSpectrum && unfoldedSpectrum && refoldedSpectrum) {
-               if(deunfoldedJetSpectrumOut) {
-                   TH1D* temp((TH1D*)deunfoldedJetSpectrumOut->Clone(Form("deunfoldedJetSpectrumOut_%s", dirName.Data())));
+               if(defaultUnfoldedJetSpectrumOut) {
+                   Style(defaultUnfoldedJetSpectrumOut, kBlue, kUnfoldedSpectrum);
+                   TH1D* temp((TH1D*)defaultUnfoldedJetSpectrumOut->Clone(Form("defaultUnfoldedJetSpectrumOut_%s", dirName.Data())));
                    temp->Divide(unfoldedSpectrum);
                    temp->SetTitle(Form("ratio default unfolded / %s", dirName.Data()));
                    temp->GetXaxis()->SetTitle("p_{T} [GeV/c]");
                    temp->GetYaxis()->SetTitle(Form("%s / %s", def.Data(), dirName.Data()));
                    canvasMasterOut->cd(j);
-                   temp->GetXaxis()->SetRangeUser(0., 2.);
+                   temp->GetYaxis()->SetRangeUser(0., 2.);
                    temp->DrawCopy();
                }
                TH1F* fitStatus((TH1F*)tempOut->Get(Form("fitStatus_%s_out", dirName.Data())));
@@ -1633,14 +1639,16 @@ void AliJetFlowTools::PostProcess(TString def, TString in, TString out, Int_t co
            if(ratioYield) {
                Style(ratioYield);
                ratioYield->GetYaxis()->SetRangeUser(-1., 3.);
-               ratioYield->Draw("ac");
+               ratioYield->SetFillColor(kRed);
+               ratioYield->Draw("ap");
            }
            canvasV2->cd(j);
            TGraphErrors* ratioV2((TGraphErrors*)tempDir->Get(Form("v2_%s", dirName.Data())));
            if(ratioV2) {
                Style(ratioV2);
                ratioV2->GetYaxis()->SetRangeUser(-.25, .75);
-               ratioV2->Draw("ac");
+               ratioV2->SetFillColor(kRed);
+               ratioV2->Draw("ap");
            }
        }
    }
@@ -1756,12 +1764,16 @@ TGraphErrors* AliJetFlowTools::GetRatio(TH1 *h1, TH1* h2, TString name, Bool_t a
         binWidth = h1->GetXaxis()->GetBinWidth(i);
         if(h2->GetBinContent(j) > 0.) {
             ratio = h1->GetBinContent(i)/h2->GetBinContent(j);
+            /* original propagation of uncertainty
             Double_t A = 1./h2->GetBinContent(j)*h1->GetBinError(i);
             Double_t B = 0.;
             if(h2->GetBinError(j)>0.) {
                 B = -1.*h1->GetBinContent(i)/(h2->GetBinContent(j)*h2->GetBinContent(j))*h2->GetBinError(j);
                 error2 = A*A + B*B;
-            } else error2 = A*A;
+            } else error2 = A*A;        */
+            Double_t A = h1->GetBinError(i)/h1->GetBinContent(i);
+            Double_t B = h2->GetBinError(i)/h2->GetBinContent(i);
+            error2 = ratio*ratio*A*A+ratio*ratio*B*B;
             if(error2 > 0 ) error2 = TMath::Sqrt(error2);
             gr->SetPoint(gr->GetN(),binCent,ratio);
             gr->SetPointError(gr->GetN()-1,0.5*binWidth,error2);
