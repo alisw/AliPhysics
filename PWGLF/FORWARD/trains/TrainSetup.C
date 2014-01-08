@@ -706,7 +706,8 @@ protected:
       escaped.ReplaceAll(tmp, "_");
       p++;
     }
-    if (!datimeStr.IsNull()) {
+    if (!datimeStr.IsNull() && 
+	!datimeStr.EqualTo("none", TString::kIgnoreCase)) {
       TDatime datime;
       if (datimeStr.EqualTo("now", TString::kIgnoreCase)) 
 	datime.Set();

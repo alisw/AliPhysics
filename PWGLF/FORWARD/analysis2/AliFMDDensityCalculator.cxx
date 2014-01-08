@@ -296,10 +296,27 @@ AliFMDDensityCalculator::GetRingHistos(UShort_t d, Char_t r) const
   return static_cast<RingHistos*>(fRingHistos.At(idx));
 }
 
+namespace {
+  Double_t Rng2Cut(UShort_t d, Char_t r, Int_t xbin, TH2* h) 
+  {
+    Double_t ret = 1024;
+    if (xbin < 1 && xbin > h->GetXaxis()->GetNbins()) return ret;
+    Int_t ybin = 0;							
+    switch(d) {								
+    case 1: ybin = 1; break;						
+    case 2: ybin = (r=='i' || r=='I') ? 2 : 3; break;			
+    case 3: ybin = (r=='i' || r=='I') ? 4 : 5; break;			
+    default: return ret;
+    }									
+    ret = h->GetBinContent(xbin,ybin);					
+    return ret;
+  }
+}
+
 //____________________________________________________________________
 Double_t
 AliFMDDensityCalculator::GetMultCut(UShort_t d, Char_t r, Int_t ieta,
-				    Bool_t errors) const
+				    Bool_t /*errors*/) const
 {
   // 
   // Get the multiplicity cut.  If the user has set fMultCut (via
@@ -309,13 +326,14 @@ AliFMDDensityCalculator::GetMultCut(UShort_t d, Char_t r, Int_t ieta,
   // Return:
   //    Lower cut on multiplicity
   //
-  return fCuts.GetMultCut(d,r,ieta,errors);
+  return Rng2Cut(d, r, ieta, fLowCuts);
+  // return fCuts.GetMultCut(d,r,ieta,errors);
 }
     
 //____________________________________________________________________
 Double_t
 AliFMDDensityCalculator::GetMultCut(UShort_t d, Char_t r, Double_t eta,
-				    Bool_t errors) const
+				    Bool_t /*errors*/) const
 {
   // 
   // Get the multiplicity cut.  If the user has set fMultCut (via
@@ -325,7 +343,9 @@ AliFMDDensityCalculator::GetMultCut(UShort_t d, Char_t r, Double_t eta,
   // Return:
   //    Lower cut on multiplicity
   //
-  return fCuts.GetMultCut(d,r,eta,errors);
+  Int_t ieta = fLowCuts->GetXaxis()->FindBin(eta);				
+  return Rng2Cut(d, r, ieta, fLowCuts);
+  // return fCuts.GetMultCut(d,r,eta,errors);
 }
   
 //____________________________________________________________________
@@ -647,6 +667,32 @@ AliFMDDensityCalculator::FindMaxWeight(const AliFMDCorrELossFit* cor,
 			    AliFMDCorrELossFit::ELossFit::fgLeastWeight, 
 			    fMaxParticles);
 }
+//_____________________________________________________________________
+Int_t
+AliFMDDensityCalculator::FindMaxWeight(const AliFMDCorrELossFit* cor,
+				       UShort_t d, Char_t r, Double_t eta) const
+{
+  // 
+  // Find the max weight to use for FMD<i>dr</i> in eta bin @a iEta
+  // 
+  // Parameters:
+  //    cor   Correction
+  //    d     Detector 
+  //    r     Ring 
+  //    eta   Eta
+  //
+  DGUARD(fDebug, 10, "Find maximum weight in FMD density calculator");
+  if(!cor) return -1; 
+
+  AliFMDCorrELossFit::ELossFit* fit = cor->FindFit(d,r,eta, -1);
+  if (!fit) { 
+    // AliWarning(Form("No energy loss fit for FMD%d%c at eta=%f", d, r, eta));
+    return -1;
+  }
+  return fit->FindMaxWeight(2*AliFMDCorrELossFit::ELossFit::fgMaxRelError, 
+			    AliFMDCorrELossFit::ELossFit::fgLeastWeight, 
+			    fMaxParticles);
+}
   
 //_____________________________________________________________________
 void
@@ -659,6 +705,7 @@ AliFMDDensityCalculator::CacheMaxWeights(const TAxis& axis)
   AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
   const AliFMDCorrELossFit*     cor = fcm.GetELossFit();
   cor->CacheBins(fMinQuality);
+  cor->Print(fDebug > 5 ? "RCS" : "C");
 
   TAxis eta(axis.GetNbins(),
 	    axis.GetXmin(),
@@ -691,25 +738,21 @@ AliFMDDensityCalculator::CacheMaxWeights(const TAxis& axis)
   fLowCuts->GetYaxis()->SetBinLabel(3, "FMD2o");
   fLowCuts->GetYaxis()->SetBinLabel(4, "FMD3i");
   fLowCuts->GetYaxis()->SetBinLabel(5, "FMD3o");
-  
+
   for (Int_t i = 0; i < nEta; i++) {
+    Double_t leta = fMaxWeights->GetXaxis()->GetBinCenter(i+1);
     Double_t w[5];
-    w[0] = fFMD1iMax[i] = FindMaxWeight(cor, 1, 'I', i+1);
-    w[1] = fFMD2iMax[i] = FindMaxWeight(cor, 2, 'I', i+1);
-    w[2] = fFMD2oMax[i] = FindMaxWeight(cor, 2, 'O', i+1);
-    w[3] = fFMD3iMax[i] = FindMaxWeight(cor, 3, 'I', i+1);
-    w[4] = fFMD3oMax[i] = FindMaxWeight(cor, 3, 'O', i+1);
-    Double_t l[5];
-    l[0] = GetMultCut(1, 'I', i+1, false);
-    l[1] = GetMultCut(2, 'I', i+1, false);
-    l[2] = GetMultCut(2, 'O', i+1, false);
-    l[3] = GetMultCut(3, 'I', i+1, false);
-    l[4] = GetMultCut(3, 'O', i+1, false);
-    for (Int_t j = 0; j < 5; j++) { 
+    w[0] = fFMD1iMax[i] = FindMaxWeight(cor, 1, 'I', leta);
+    w[1] = fFMD2iMax[i] = FindMaxWeight(cor, 2, 'I', leta);
+    w[2] = fFMD2oMax[i] = FindMaxWeight(cor, 2, 'O', leta);
+    w[3] = fFMD3iMax[i] = FindMaxWeight(cor, 3, 'I', leta);
+    w[4] = fFMD3oMax[i] = FindMaxWeight(cor, 3, 'O', leta);
+    for (Int_t j = 0; j < 5; j++) 
       if (w[j] > 0) fMaxWeights->SetBinContent(i+1, j+1, w[j]);
-      if (l[j] > 0) fLowCuts->SetBinContent(i+1, j+1, l[j]);
-    }
   }
+
+  // Cache cuts in histogram
+  fCuts.FillHistogram(fLowCuts);
 }
 
 //_____________________________________________________________________
@@ -1045,6 +1088,7 @@ AliFMDDensityCalculator::CreateOutputObjects(TList* dir)
   
   // d->Add(sigma);
   d->Add(AliForwardUtil::MakeParameter("maxParticle",  fMaxParticles));
+  d->Add(AliForwardUtil::MakeParameter("minQuality",   fMinQuality));
   d->Add(AliForwardUtil::MakeParameter("method",       fUsePoisson));
   d->Add(AliForwardUtil::MakeParameter("phiAcceptance",fUsePhiAcceptance));
   d->Add(AliForwardUtil::MakeParameter("etaLumping",   fEtaLumping));
@@ -1120,6 +1164,7 @@ AliFMDDensityCalculator::Print(Option_t* option) const
   }
 
   PFV("Max(particles)",		fMaxParticles );
+  PFV("Min(quality)",           fMinQuality );
   PFV("Poisson method",		fUsePoisson );
   PFV("Eta lumping",		fEtaLumping );
   PFV("Phi lumping",		fPhiLumping );

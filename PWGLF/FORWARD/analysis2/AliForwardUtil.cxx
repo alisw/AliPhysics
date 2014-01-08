@@ -60,6 +60,8 @@ ULong_t AliForwardUtil::AliROOTRevision()
     ret |= (p << (32-4*(i+1)));
   }
   return ret;
+#else
+  return 0;
 #endif
 }
 //____________________________________________________________________

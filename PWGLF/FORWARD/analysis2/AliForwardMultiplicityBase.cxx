@@ -202,13 +202,13 @@ AliForwardMultiplicityBase::PreData(const TAxis& vertex, const TAxis& eta)
   if (what & AliForwardCorrectionManager::kAcceptance && !fcm.GetAcceptance())
     AliFatal("No acceptance corrections");
 
-  const AliFMDCorrELossFit* fits = fcm.GetELossFit();
-  fits->CacheBins(GetDensityCalculator().GetMinQuality());
+  // const AliFMDCorrELossFit* fits = fcm.GetELossFit();
+  // fits->CacheBins(GetDensityCalculator().GetMinQuality());
 
   InitMembers(eta,vertex);
   
-  GetSharingFilter()	.SetupForData(eta);
   GetDensityCalculator().SetupForData(eta);
+  GetSharingFilter()	.SetupForData(eta);
   GetCorrections()	.SetupForData(eta);
   GetHistCollector()	.SetupForData(vertex,eta);
 
