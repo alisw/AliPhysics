@@ -1,13 +1,16 @@
 /*
-  .x $HOME/rootlogon.C
-  .L /u/miranov/AliRoot/TPCdev/TPC/macros/data2011/CalibratedEdxRegion.C+
+  Macro to make an per region dEdx calibration.
+  Here we assue we have suufiecint ammount of V) PID selected tracks for the calibration
 
+  .x $HOME/rootlogon.C
+  .L $ALICE_ROOT/TPC/macros/CalibratedEdxRegion.C+
+  
  */
 
 #include "TTree.h"
 #include "TFile.h"
 #include "TH1.h"
-#include "TH2.h"
+#include "TH2.h" 
 #include "TCut.h"
 #include "TStatToolkit.h"
 #include "TGraphErrors.h"
@@ -68,7 +71,7 @@ void InitTrees(const char * v0file= "/hera/alice/miranov/ExpertQA/data/LHC13c/pa
     trees[itree]->SetAlias("phi1ROC2",TString::Format("track1.fIp.GetParameterAtRadius(%s+0,%2.2f,7)",rROC2.Data(),bz));
     //
     //
-    trees[itree]->SetAlias("side0","(track0.fIp.fP[3]>0&&track0.fIp.fP[1]>0)+2*(track0.fIp.fP[3]<0&&track0.fIp.fP[1]<0)");
+    trees[itree]->SetAlias("side0","(track0.fIp.fP[3]>0&&track0.fIp.fP[1]>0)+2*(track0.fIp.fP[3]<0&&track0.fIp.fP[1]<0)");  // 0 - both sides, 1- A side, 2- C side
     trees[itree]->SetAlias("side1","(track1.fIp.fP[3]>0&&track1.fIp.fP[1]>0)+2*(track1.fIp.fP[3]<0&&track1.fIp.fP[1]<0)");
   }
   /*
@@ -96,7 +99,7 @@ void MakeSectorCalibration(){
   //
   //
   //
-  for (Int_t itype=0; itype<3; itype++){
+  for (Int_t iregion=0; iregion<3; iregion++){
     //    
     TH2F *hisSectorROC=0;
     TH2F *hisSectorROCP=0;
@@ -104,8 +107,8 @@ void MakeSectorCalibration(){
     TGraphErrors * graphs[3]={0};
 
     for (Int_t itree=0; itree<3; itree++){
-      TString var0=TString::Format("track0.fTPCdEdxInfo.fTPCsignalRegion[%d]/dEdxExp0:18*(phi0ROC%d/pi+(side0-1))>>hisSectorROCP%d(36,0,36,60,20,80)",itype,itype,itype);
-      TString var1=TString::Format("track1.fTPCdEdxInfo.fTPCsignalRegion[%d]/dEdxExp1:18*(phi1ROC%d/pi+(side1-1))>>hisSectorROCM%d(36,0,36,60,20,80)",itype,itype,itype);
+      TString var0=TString::Format("track0.fTPCdEdxInfo.fTPCsignalRegion[%d]/dEdxExp0:18*(phi0ROC%d/pi+(side0-1))>>hisSectorROCPlus%d(36,0,36,60,20,80)",iregion,iregion,iregion);
+      TString var1=TString::Format("track1.fTPCdEdxInfo.fTPCsignalRegion[%d]/dEdxExp1:18*(phi1ROC%d/pi+(side1-1))>>hisSectorROCMinus%d(36,0,36,60,20,80)",iregion,iregion,iregion);
       
       trees[itree]->Draw(var0.Data(),cutASide0+cutPt0,"colzgoff");
       if (hisSectorROCP==0) {
@@ -117,15 +120,15 @@ void MakeSectorCalibration(){
       if (hisSectorROCM) hisSectorROCM->Add((TH2F*)trees[itree]->GetHistogram());      
     }
     hisSectorROC=(TH2F*)hisSectorROCP->Clone();
-    hisSectorROC->SetName(TString::Format("hisSectorROC%d(36,0,36,60,20,80)",itype));
+    hisSectorROC->SetName(TString::Format("hisSectorROCBoth%d(36,0,36,60,20,80)",iregion));
     hisSectorROC->Add(hisSectorROCM);
     //
     graphs[0]=TStatToolkit::MakeStat1D(hisSectorROC, 0, 0.85,4,20,1);    
     graphs[1]=TStatToolkit::MakeStat1D(hisSectorROCP, 0, 0.85,4,24,2);
     graphs[2]=TStatToolkit::MakeStat1D(hisSectorROCM, 0, 0.85,4,25,4);    
-    graphs[0]->SetName(TString::Format("graphSectorROC%d(36,0,36,60,20,80)",itype));
-    graphs[1]->SetName(TString::Format("graphSectorROC%d(36,0,36,60,20,80)",itype));
-    graphs[2]->SetName(TString::Format("graphSectorROC%d(36,0,36,60,20,80)",itype));
+    graphs[0]->SetName(TString::Format("graphSectorROCBoth%d(36,0,36,60,20,80)",iregion));
+    graphs[1]->SetName(TString::Format("graphSectorROCPlus%d(36,0,36,60,20,80)",iregion));
+    graphs[2]->SetName(TString::Format("graphSectorROCMinus%d(36,0,36,60,20,80)",iregion));
     graphs[0]->Draw("alp");
     TStatToolkit::MakeStat1D(hisSectorROCP, 0, 0.85,4,24,2)->Draw("lp");
     TStatToolkit::MakeStat1D(hisSectorROCM, 0, 0.85,4,25,4)->Draw("lp");
@@ -133,11 +136,14 @@ void MakeSectorCalibration(){
     histoArray->AddLast(hisSectorROCP);
     histoArray->AddLast(hisSectorROCM); 
     for (Int_t i=0; i<3; i++){
-      graphArray->AddLast()
+      graphArray->AddLast(graphs[i]);
     }
   }
-  calibrationFile->cd();
+  calibrationFile->mkdir("histos");
+  calibrationFile->cd("histos");
   histoArray->Write();
+  calibrationFile->mkdir("graphs");
+  calibrationFile->cd("graphs");
   graphArray->Write();
-
+  
 }
