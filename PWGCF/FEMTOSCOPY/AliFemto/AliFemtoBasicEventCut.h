@@ -30,7 +30,7 @@ public:
   int NEventsPassed() const;
   int NEventsFailed() const;
   bool GetAcceptBadVertex();
-  bool GetAcceptOnlyPhysics();
+  /* bool GetAcceptOnlyPhysics(); */
   void SetTriggerSelection(int trig);
 
   void SetEPVZERO(const float& lo, const float& hi);
@@ -73,7 +73,7 @@ inline AliFemtoBasicEventCut::AliFemtoBasicEventCut(AliFemtoBasicEventCut& c) : 
   fPsiEP[1] = c.fPsiEP[1];
 }
 
-inline AliFemtoBasicEventCut& AliFemtoBasicEventCut::operator=(AliFemtoBasicEventCut& c) {   
+inline AliFemtoBasicEventCut& AliFemtoBasicEventCut::operator=(AliFemtoBasicEventCut& c) {
   if (this != &c) {
     AliFemtoEventCut::operator=(c);
     fEventMult[0] = c.fEventMult[0];
