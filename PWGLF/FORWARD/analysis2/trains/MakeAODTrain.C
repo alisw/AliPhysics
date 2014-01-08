@@ -177,10 +177,9 @@ protected:
     OptionList          opts(fOptions);
     TString             cls("MakedNdetaTrain");
     TString             name(fName);
-    if (name.Contains("aod")) 
-      name.ReplaceAll("aod", "dndeta_inel");
-    else 
-      name.Append("_dndeta_inel");
+    Int_t               sys = fOptions.AsInt("sys", 0);
+    if (name.Contains("aod")) name.ReplaceAll("aod", "dndeta");
+    else                      name.Append("_dndeta");
     opts.Remove("forward-config");
     opts.Remove("central-config");
     opts.Remove("run");
@@ -205,7 +204,8 @@ protected:
     if (outString.IsNull()) outString = fEscapedName;
     TUrl    outUrl(outString);
     
-    if (uopts.Find("pattern")) uopts.Set("pattern", "*/AliAOD.root");
+    if (uopts.Find("pattern") && outString.EndsWith("AliAOD.root")) 
+      uopts.Set("pattern", "*/AliAOD.root");
     if (uopts.Find("concat")) uopts.Set("concat", true);
 
     std::stringstream s;
@@ -216,23 +216,34 @@ protected:
     opts.Set("type", "AOD");
     if (!fDatimeString.IsNull()) opts.Set("date", fDatimeString);
 
-    SaveSetupROOT("dNdeta_inel", cls, name, opts, &uopts);
-    if (asShellScript) 
-      SaveSetupShell("dndeta_inel", cls, name, opts, &uopts);
-
-    name.ReplaceAll("inel", "nsd");
-    opts.Set("trig", "V0AND");
-    opts.Set("scheme", "EVENT TRIGGER");
-    SaveSetupROOT("dNdeta_nsd", cls, name, opts, &uopts);
-    if (asShellScript) 
-      SaveSetupShell("dndeta_nsd", cls, name, opts, &uopts);
-
-    name.ReplaceAll("nsd", "inelgt0");
-    opts.Set("trig", "INELGT0");
-    opts.Set("scheme", "EVENT TRIGGER");
-    SaveSetupROOT("dNdeta_inelgt0", cls, name, opts, &uopts);
-    if (asShellScript) 
-      SaveSetupShell("dndeta_inelgt0", cls, name, opts, &uopts);
+    if (sys != 1) {
+      opts.Set("cent", true);
+      opts.Set("trig", "");
+      opts.Set("scheme", "");
+      SaveSetupROOT("dNdeta", cls, name, opts, &uopts);
+      if (asShellScript) 
+	SaveSetupShell("dndeta", cls, name, opts, &uopts);
+    }
+    else {
+      name.ReplaceAll("dndeta", "dndeta_inel");
+      SaveSetupROOT("dNdetaINEL", cls, name, opts, &uopts);
+      if (asShellScript) 
+	SaveSetupShell("dndeta_inel", cls, name, opts, &uopts);
+      
+      name.ReplaceAll("inel", "nsd");
+      opts.Set("trig", "V0AND");
+      opts.Set("scheme", "EVENT TRIGGER");
+      SaveSetupROOT("dNdetaNSD", cls, name, opts, &uopts);
+      if (asShellScript) 
+	SaveSetupShell("dndeta_nsd", cls, name, opts, &uopts);
+      
+      name.ReplaceAll("nsd", "inelgt0");
+      opts.Set("trig", "INELGT0");
+      opts.Set("scheme", "EVENT TRIGGER");
+      SaveSetupROOT("dNdetaINELGt0", cls, name, opts, &uopts);
+      if (asShellScript) 
+	SaveSetupShell("dndeta_inelgt0", cls, name, opts, &uopts);
+    }
 
     SaveSummarize();
     if (!fHelper || fHelper->Mode() != Helper::kGrid) return;

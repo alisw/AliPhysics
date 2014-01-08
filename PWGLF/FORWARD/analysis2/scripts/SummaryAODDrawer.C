@@ -206,7 +206,59 @@ protected:
     
     return ret;
   }
-    
+  //____________________________________________________________________
+  const Char_t* CutMethodName(Int_t lm) const
+  {
+    switch (lm) {
+    case 0: return "fixed";
+    case 1: return "fraction of MPV";
+    case 2: return "fit range";
+    case 3: return "Landau width";
+    case 4: return "Probability";
+    }
+    return "unknown";
+  }
+  //____________________________________________________________________
+  Int_t PrintCut(const TCollection* c, Double_t& y, const Char_t* name,
+		 Double_t size=0)
+  {
+    if (!c) return -1;
+
+    Int_t method = 0;
+    if (!GetParameter(c, "method", method)) return -1;
+
+    Double_t val = 0;
+    Bool_t   sig = false;
+    switch (method) {
+    case 0: // Fixed 
+      DrawParameter(y, name, "fixed", size); 
+      break;
+    case 1: // MPV
+      GetParameter(c, "frac", val);
+      DrawParameter(y, name, Form("Fraction of #Delta_{p} (%3d%%)",
+				  Int_t(val*100)), size);
+      break;
+    case 2: // Fit range
+      DrawParameter(y, name, "Fit range"); 
+      break;
+    case 3: // Landau width
+      GetParameter(c, "nXi", val);
+      GetParameter(c, "sigma", sig);
+      DrawParameter(y, name, Form("N#times%s#xi%s (N=%4.1f)",
+				  (sig ? "(" : ""),
+				  (sig ? "+#sigma)" : ""), 
+				  val), size);
+      break;
+    case 4: // Probability;
+      GetParameter(c, "probability", val);
+      DrawParameter(y, name, Form("P(#Delta)<%f", val), size);
+      break;
+    default:
+      DrawParameter(y, name, "Unknown", size);
+      break;
+    }
+    return method;
+  }
   //____________________________________________________________________
   void DrawSharingFilter()
   {
@@ -216,113 +268,112 @@ protected:
     TCollection* rc = GetCollection(fResults, "fmdSharingFilter");
     if (!rc) rc = c;
 
+    // --- Draw summary information ----------------------------------
     fBody->Divide(1, 3, 0, 0);
     fBody->cd(1);
   
     Double_t y = .8;
-    Bool_t   angle=false, lowSignal=false, simple=false;
+    Bool_t   angle=false, lowSignal=false, disabled=false;
 
     if (GetParameter(c, "angle", angle))
       DrawParameter(y, "Angle correct", (angle ? "yes" : "no")); 
     if (GetParameter(c, "lowSignal", lowSignal))
       DrawParameter(y, "Lower signal",  (lowSignal ? "yes" : "no"));
-    
-    if (GetParameter(c, "simple", simple))
-      DrawParameter(y, "Simple method", (simple ? "yes" : "no"));
     TParameter<int>* nFiles = 
       static_cast<TParameter<int>*>(GetObject(c, "nFiles"));
     if (nFiles)
-      DrawParameter(y, "# files merged", Form("%d", nFiles->GetVal()));
+      DrawParameter(y, "# files merged", Form("%d", nFiles->GetVal()));    
+    if (GetParameter(c, "disabled", disabled)) 
+      DrawParameter(y, "Merging disabled", (disabled ? "yes" : "no"));
 
+    Int_t lm    = 0;
+    Int_t hm    = 0;
+    TH2*  hLow  = 0;
+    TH2*  hHigh = 0;
+    if (!disabled) {
+      Bool_t simple=false, three=false;
+      if (GetParameter(c, "simple", simple))
+	DrawParameter(y, "Simple method", (simple ? "yes" : "no"));
+      if (GetParameter(c, "sumThree", three)) 
+	DrawParameter(y, "3-strip merging", (three ? "yes" : "no"));
     
-    TCollection* lc = GetCollection(c, "lCuts");
-    TCollection* hc = GetCollection(c, "hCuts");
-    Int_t lm, hm;
-    if (GetParameter(lc, "method", lm)) 
-      DrawParameter(y, "Low cut method", (lm == 0 ? "fixed" : 
-					  lm == 1 ? "fraction of MPV" : 
-					  lm == 2 ? "fit range" : 
-					  lm == 3 ? "Landau width" : 
-					  "unknown"));
-    if (GetParameter(hc, "method", hm)) 
-      DrawParameter(y, "High cut method", (hm == 0 ? "fixed" : 
-					  hm == 1 ? "fraction of MPV" : 
-					  hm == 2 ? "fit range" : 
-					  hm == 3 ? "Landau width" : 
-					  "unknown"));
-
-					  
-    TH2* hLow  = GetH2(c, "lowCuts");
-    TH2* hHigh = GetH2(c, "highCuts");
-    // if (hLow  && nFiles) hLow->Scale(1. / nFiles->GetVal());
-    // if (hHigh && nFiles) hHigh->Scale(1. / nFiles->GetVal());
-    DrawInPad(fBody, 2, hLow,  "colz");
-    DrawInPad(fBody, 3, hHigh, "colz");
-  
+      TCollection* lc = GetCollection(c, "lCuts");
+      TCollection* hc = GetCollection(c, "hCuts");
+      lm              = PrintCut(lc, y, "Low cut");
+      hm              = PrintCut(hc, y, "High cut");
+      hLow            = GetH2(c, "lowCuts");
+      hHigh           = GetH2(c, "highCuts");
+      // if (hLow  && nFiles) hLow->Scale(1. / nFiles->GetVal());
+      // if (hHigh && nFiles) hHigh->Scale(1. / nFiles->GetVal());
+      DrawInPad(fBody, 2, hLow,  "colz");
+      DrawInPad(fBody, 3, hHigh, "colz");
+    }
     PrintCanvas("Sharing filter");
 
-    Double_t savX = fParVal->GetX();
-    Double_t savY = fParVal->GetY();
-    fParVal->SetX(0.6);
-    fParVal->SetY(0.6);
-    const char* subs[] = { "FMD1I", "FMD2I", "FMD2O", "FMD3O", "FMD3I", 0 };
-    const char** ptr   = subs;
-    UShort_t     iq    = 1;
-    while (*ptr) { 
-      TCollection* sc = GetCollection(c, *ptr);
-      if (!sc) { ptr++; iq++; continue; }
-    
-      if (fLandscape) fBody->Divide(3, 2);
-      else            fBody->Divide(2,3);
-
-      TH1*    esdELoss = GetH1(sc, "esdEloss");
-      esdELoss->GetXaxis()->SetRangeUser(-.1, 2);
-      TGraph* lowCut   = CreateCutGraph(lm, iq,  hLow,  esdELoss, kYellow+1);
-      TGraph* highCut  = CreateCutGraph(hm, iq,  hHigh, esdELoss, kCyan+1);
-
-      DrawInPad(fBody, 1, esdELoss, "", kLogy,
-		"#Delta/#Delta_{mip} reconstructed and merged");
-      DrawInPad(fBody, 1, GetH1(sc, "anaEloss"), "same");
-      DrawInPad(fBody, 1, lowCut,  "lf same"); 
-      DrawInPad(fBody, 1, highCut, "lf same", kLogy|kLegend); 
-
-      DrawInPad(fBody, 2, GetH1(sc, "singleEloss"),    "",     kLogy,
-		"#Delta/#Delta_{mip} for single, double, and tripple hits");
-      DrawInPad(fBody, 2, GetH1(sc, "doubleEloss"),    "same", kLogy);
-      DrawInPad(fBody, 2, GetH1(sc, "tripleEloss"),    "same", kLogy|kLegend);  
-
-      DrawInPad(fBody, 3, GetH2(sc, "singlePerStrip"), "colz", kLogz);
-      // DrawInPad(fBody, 4, GetH1(sc, "distanceBefore"), "",     0x2);
-      // DrawInPad(fBody, 4, GetH1(sc, "distanceAfter"),  "same", 0x12);
-      DrawInPad(fBody, 4, GetH2(sc, "summed"),         "colz", 0x0);
-
-      TH2* nB = GetH2(sc, "neighborsBefore");
-      if (nB) { 
-	nB->GetXaxis()->SetRangeUser(0,8); 
-	nB->GetYaxis()->SetRangeUser(0,8); 
+    if (!disabled) {
+      // --- Draw rings individually -----------------------------------
+      Double_t savX = fParVal->GetX();
+      Double_t savY = fParVal->GetY();
+      fParVal->SetX(0.6);
+      fParVal->SetY(0.6);
+      const char** ptr   = GetRingNames(false);
+      UShort_t     iq    = 1;
+      while (*ptr) { 
+	TCollection* sc = GetCollection(c, *ptr);
+	if (!sc) { ptr++; iq++; continue; }
+	
+	if (fLandscape) fBody->Divide(3, 2);
+	else            fBody->Divide(2,3);
+	
+	TH1*    esdELoss = GetH1(sc, "esdEloss");
+	esdELoss->GetXaxis()->SetRangeUser(-.1, 2);
+	TGraph* lowCut   = CreateCutGraph(lm, iq,  hLow,  esdELoss, kYellow+1);
+	TGraph* highCut  = CreateCutGraph(hm, iq,  hHigh, esdELoss, kCyan+1);
+	
+	DrawInPad(fBody, 1, esdELoss, "", kLogy,
+		  "#Delta/#Delta_{mip} reconstructed and merged");
+	DrawInPad(fBody, 1, GetH1(sc, "anaEloss"), "same");
+	DrawInPad(fBody, 1, lowCut,  "lf same"); 
+	DrawInPad(fBody, 1, highCut, "lf same", kLogy|kLegend); 
+	
+	DrawInPad(fBody, 2, GetH1(sc, "singleEloss"),    "",    kLogy,
+		  "#Delta/#Delta_{mip} for single, double, and tripple hits");
+	DrawInPad(fBody, 2, GetH1(sc, "doubleEloss"),    "same",kLogy);
+	DrawInPad(fBody, 2, GetH1(sc, "tripleEloss"),    "same",kLogy|kLegend);
+	
+	DrawInPad(fBody, 3, GetH2(sc, "singlePerStrip"), "colz",kLogz);
+	// DrawInPad(fBody, 4, GetH1(sc, "distanceBefore"), "",     0x2);
+	// DrawInPad(fBody, 4, GetH1(sc, "distanceAfter"),  "same", 0x12);
+	DrawInPad(fBody, 4, GetH2(sc, "summed"),         "colz",0x0);
+	
+	TH2* nB = GetH2(sc, "neighborsBefore");
+	if (nB) { 
+	  nB->GetXaxis()->SetRangeUser(0,8); 
+	  nB->GetYaxis()->SetRangeUser(0,8); 
+	}
+	DrawInPad(fBody, 5, nB, "colz", kLogz);
+	DrawInPad(fBody, 5, GetH2(sc, "neighborsAfter"), "p same", kLogz,
+		  "Correlation of neighbors before and after merging");
+	DrawInPad(fBody, 6, GetH2(sc, "beforeAfter"),    "colz",   kLogz);
+	
+	PrintCanvas(Form("Sharing filter - %s", *ptr));
+	ptr++;
+	iq++;
       }
-      DrawInPad(fBody, 5, nB, "colz", kLogz);
-      DrawInPad(fBody, 5, GetH2(sc, "neighborsAfter"), "p same", kLogz,
-		"Correlation of neighbors before and after merging");
-      DrawInPad(fBody, 6, GetH2(sc, "beforeAfter"),    "colz",   kLogz);
-
-      PrintCanvas(Form("Sharing filter - %s", *ptr));
-      ptr++;
-      iq++;
+      fParVal->SetX(savX);
+      fParVal->SetY(savY);
     }
-    fParVal->SetX(savX);
-    fParVal->SetY(savY);
 
     // --- MC --------------------------------------------------------
     TCollection* cc = GetCollection(c, "esd_mc_comparion", false); // Spelling!
     if (!cc) return; // Not MC 
 
     DivideForRings(false, false);
-    DrawInRingPad(1, 'I', GetH2(cc, "FMD1i_corr"), "colz", kLogz);
-    DrawInRingPad(2, 'I', GetH2(cc, "FMD2i_corr"), "colz", kLogz);
-    DrawInRingPad(2, 'O', GetH2(cc, "FMD2o_corr"), "colz", kLogz);
-    DrawInRingPad(3, 'I', GetH2(cc, "FMD3i_corr"), "colz", kLogz);
-    DrawInRingPad(3, 'O', GetH2(cc, "FMD3o_corr"), "colz", kLogz);
+    const char** ptr = GetRingNames(false);
+    while (*ptr) { 
+      DrawInRingPad(GetH2(cc, Form("%s_corr", *ptr)), "colz", kLogz);
+      ptr++;
+    }
 
     PrintCanvas("Sharing filter - MC vs Reco");
 
@@ -462,7 +513,7 @@ protected:
       DrawParameter(y, "Max relative N_{outlier}",
 		    Form("%5.3f",maxOutliers),size);
     if (GetParameter(c, "outlierCut", outlierCut))
-      DrawParameter(y, "Max relative diviation",Form("%5.3f",outlierCut),size);
+      DrawParameter(y, "Max relative deviation",Form("%5.3f",outlierCut),size);
 
 
     TParameter<int>* nFiles = 
@@ -471,14 +522,7 @@ protected:
       DrawParameter(y, "# files merged", Form("%d", nFiles->GetVal()), size);
 
     TCollection* lc = GetCollection(c, "lCuts");
-    Int_t lm;
-    if (GetParameter(lc, "method", lm)) 
-      DrawParameter(y, "Low cut method", (lm == 0 ? "fixed" : 
-					  lm == 1 ? "fraction of MPV" : 
-					  lm == 2 ? "fit range" : 
-					  lm == 3 ? "Landau width" : 
-					  "unknown"), size);
-
+    PrintCut(lc, y, "Threshold", size);
 
     TVirtualPad* p = fBody; // fBody->cd(2);
     // p->Divide(3,1);
@@ -493,6 +537,7 @@ protected:
     }
     TH2* lCuts = GetH2(c, "lowCuts");
     TH2* maxW  = GetH2(c, "maxWeights");
+    if (lCuts)           lCuts->SetTitle("Thresholds");
     if (nFiles && lCuts) lCuts->Scale(1. / nFiles->GetVal());
     if (nFiles && maxW)  maxW->Scale(1. / nFiles->GetVal());
     DrawInPad(p, 2, accI); 
@@ -502,8 +547,7 @@ protected:
   
     PrintCanvas("Density calculator");
 
-    const char* subs[] = { "FMD1I", "FMD2I", "FMD2O", "FMD3O", "FMD3I", 0 };
-    const char** ptr   = subs;
+    const char** ptr   = GetRingNames(false);
     while (*ptr) { 
       TCollection* sc = GetCollection(c, *ptr);
       if (!sc) { ptr++; continue; }
@@ -557,12 +601,15 @@ protected:
 	fBody->cd(2);
 	Double_t in  = diff->GetEntries();
 	Double_t out = diffOut->GetEntries();
-	TLatex*  ltx = new TLatex(0.11, 0.89, 
-				  Form("Fraction: %7.3f%%", 100*out/(in+out)));
-	ltx->SetNDC();
-	ltx->SetTextAlign(13);
-	ltx->SetTextSize(0.06);
-	ltx->Draw();
+	if ((in+out) > 0) {
+	  TLatex*  ltx = new TLatex(0.11, 0.89, 
+				    Form("Fraction: %7.3f%%", 
+					 100*out/(in+out)));
+	  ltx->SetNDC();
+	  ltx->SetTextAlign(13);
+	  ltx->SetTextSize(0.06);
+	  ltx->Draw();
+	}
       }
       PrintCanvas(Form("Density calculator - %s", *ptr));
       ptr++;    
@@ -572,16 +619,16 @@ protected:
     if (!cc) return; // Not MC 
 
     fBody->Divide(2,5);
-    DrawInPad(fBody, 1, GetH2(cc, "FMD1I_corr_mc_esd"), "colz", kLogz);
-    DrawInPad(fBody, 3, GetH2(cc, "FMD2I_corr_mc_esd"), "colz", kLogz);
-    DrawInPad(fBody, 5, GetH2(cc, "FMD2O_corr_mc_esd"), "colz", kLogz);
-    DrawInPad(fBody, 7, GetH2(cc, "FMD3O_corr_mc_esd"), "colz", kLogz);
-    DrawInPad(fBody, 9, GetH2(cc, "FMD3I_corr_mc_esd"), "colz", kLogz);
-    DrawInPad(fBody, 2,  GetH1(cc, "FMD1I_diff_mc_esd"), "", kLogy);
-    DrawInPad(fBody, 4,  GetH1(cc, "FMD2I_diff_mc_esd"), "", kLogy);
-    DrawInPad(fBody, 6,  GetH1(cc, "FMD2O_diff_mc_esd"), "", kLogy);
-    DrawInPad(fBody, 8,  GetH1(cc, "FMD3O_diff_mc_esd"), "", kLogy);
-    DrawInPad(fBody, 10, GetH1(cc, "FMD3I_diff_mc_esd"), "", kLogy);
+    ptr   = GetRingNames(false);
+    Int_t cnt = 0;
+    while (*ptr) { 
+      DrawInPad(fBody, 2*cnt+1, GetH2(cc, Form("%s_corr_mc_esd", *ptr)),
+		"colz", kLogz);
+      DrawInPad(fBody, 2*(cnt+1), GetH2(cc, Form("%s_diff_mc_esd", *ptr)),
+		"", kLogz);
+      ptr++;
+      cnt++;
+    }
 
     PrintCanvas("Density calculator - MC vs Reco");
   }
@@ -612,12 +659,11 @@ protected:
     if (!cc) return; // Not MC 
     
     DivideForRings(false, false);
-
-    DrawInRingPad(1, 'I', GetH2(cc, "FMD1I_esd_vs_mc"), "colz", 0x0);
-    DrawInRingPad(2, 'I', GetH2(cc, "FMD2I_esd_vs_mc"), "colz", 0x0);
-    DrawInRingPad(2, 'O', GetH2(cc, "FMD2O_esd_vs_mc"), "colz", 0x0);
-    DrawInRingPad(3, 'O', GetH2(cc, "FMD3O_esd_vs_mc"), "colz", 0x0);
-    DrawInRingPad(3, 'I', GetH2(cc, "FMD3I_esd_vs_mc"), "colz", 0x0);
+    const char** ptr = GetRingNames(false);
+    while (*ptr) { 
+      DrawInRingPad(GetH2(cc, Form("%s_esd_vs_mc", *ptr)), "colz", 0x0);
+      ptr++;
+    }
 
     PrintCanvas("Corrector - MC vs Reco");
   }
@@ -698,18 +744,12 @@ protected:
       if (!vl) continue;
 
       DivideForRings(false, false);
-      
-      DrawInRingPad(1, 'I', GetH2(vl, "secMapFMD1I"), "colz", 0x0);
-      DrawInRingPad(2, 'I', GetH2(vl, "secMapFMD2I"), "colz", 0x0);
-      DrawInRingPad(2, 'O', GetH2(vl, "secMapFMD2O"), "colz", 0x0);
-      DrawInRingPad(3, 'O', GetH2(vl, "secMapFMD3O"), "colz", 0x0);
-      DrawInRingPad(3, 'I', GetH2(vl, "secMapFMD3I"), "colz", 0x0);
-      DrawInRingPad(1, 'I', GetH2(vl, "hitMapFMD1I"), "box same", 0x0);
-      DrawInRingPad(2, 'I', GetH2(vl, "hitMapFMD2I"), "box same", 0x0);
-      DrawInRingPad(2, 'O', GetH2(vl, "hitMapFMD2O"), "box same", 0x0);
-      DrawInRingPad(3, 'O', GetH2(vl, "hitMapFMD3O"), "box same", 0x0);
-      DrawInRingPad(3, 'I', GetH2(vl, "hitMapFMD3I"), "box same", 0x0);
-
+      const char** ptr = GetRingNames(false);
+      while (*ptr) { 
+	DrawInRingPad(GetH2(vl, Form("secMap%s", *ptr)), "colz", 0x0);
+	DrawInRingPad(GetH2(vl, Form("hitMap%s", *ptr)), "box same", 0x0);
+	ptr++;
+      }
       PrintCanvas(Form("Histogram Collector - Vertex bin %s", vl->GetName()));
     }
 
@@ -865,10 +905,11 @@ protected:
 
     TLegendEntry* e = 
       static_cast<TLegendEntry*>(leg->GetListOfPrimitives()->At(step-1));
-    e->SetMarkerColor(kBlack);
-    e->SetLineColor(kBlack);
-    e->SetTextColor(kBlack);
-
+    if (e) {
+      e->SetMarkerColor(kBlack);
+      e->SetLineColor(kBlack);
+      e->SetTextColor(kBlack);
+    }
 
     // p->cd();
     gROOT->SetSelectedPad(p);
@@ -911,10 +952,11 @@ protected:
     p->Update();
     p->cd();
 
-    e->SetMarkerColor(kGray);
-    e->SetLineColor(kGray);
-    e->SetTextColor(kGray);
-
+    if (e) {
+      e->SetMarkerColor(kGray);
+      e->SetLineColor(kGray);
+      e->SetTextColor(kGray);
+    }
     gStyle->SetOptTitle(1);
   }
 
@@ -1124,8 +1166,7 @@ protected:
 
     THStack* allPhi = new THStack("phiAcc", "#varphi Acceptance");
     THStack* allEta = new THStack("etaCov", "#eta Coverage");
-    const char*  rings[] = { "FMD1I", "FMD2I", "FMD2O", "FMD3I", "FMD3O", 0 };
-    const char** pring   = rings;
+    const char** pring   = GetRingNames(false);
     
     while ((*pring)) { 
       TCollection* cc     = GetCollection(c, *pring);

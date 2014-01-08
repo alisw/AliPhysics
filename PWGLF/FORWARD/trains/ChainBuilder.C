@@ -277,8 +277,8 @@ struct ChainBuilder
 
     TString pat(pattern);
     if (pat.IsNull()) {
-      if      (tN.EqualTo("esdTree")) pat = "AliESD";
-      else if (tN.EqualTo("aodTree")) pat = "AliAOD";
+      if      (tN.EqualTo("esdTree")) pat = "AliESD*";
+      else if (tN.EqualTo("aodTree")) pat = "AliAOD*";
       if ((flags & kVerbose)) Info("", "Pattern set to %s", pat.Data());
     }
     if ((flags & kVerbose))

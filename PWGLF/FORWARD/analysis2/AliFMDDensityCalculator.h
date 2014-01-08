@@ -281,6 +281,19 @@ protected:
 		      UShort_t d, Char_t r, Int_t iEta) const;
 
   /** 
+   * Find the max weight to use for FMD<i>dr</i> in eta @a eta
+   * 
+   * @param cor   Correction
+   * @param d     Detector 
+   * @param r     Ring 
+   * @param eta   Eta
+   *
+   * @return The maximum weight 
+   */
+  Int_t FindMaxWeight(const AliFMDCorrELossFit* cor,
+		      UShort_t d, Char_t r, Double_t iEta) const;
+
+  /** 
    * Find the max weights and cache them 
    * 
    * @param axis Default @f$\eta@f$ axis from parent task 

@@ -273,25 +273,9 @@ AliFMDSharingFilter::SetupForData(const TAxis& axis)
   fLowCuts->GetYaxis()->SetBinLabel(4, "FMD3i");
   fLowCuts->GetYaxis()->SetBinLabel(5, "FMD3o");
 
-  UShort_t ybin = 0;
-  for (UShort_t d = 1; d <= 3; d++) {
-    UShort_t nr = (d == 1 ? 1 : 2);
-    for (UShort_t q = 0; q < nr; q++) { 
-      Char_t r = (q == 0 ? 'I' : 'O');
-      ybin++;
-      for (UShort_t e = 1; e <= nEta; e++) { 
-	Double_t eta = eAxis.GetBinCenter(e);
-	
-	if (fDebug > 3) fHCuts.Print();
-
-	Double_t hcut = GetHighCut(d, r, eta, false);
-	Double_t lcut = GetLowCut(d, r, eta);
-	
-	if (hcut > 0) fHighCuts->SetBinContent(e, ybin, hcut);
-	if (lcut > 0) fLowCuts ->SetBinContent(e, ybin, lcut);
-      }
-    }
-  }
+  // Cache our cuts in histograms 
+  fLCuts.FillHistogram(fLowCuts);
+  fHCuts.FillHistogram(fHighCuts);
 }
 
 //____________________________________________________________________
@@ -575,7 +559,25 @@ AliFMDSharingFilter::SignalInStrip(const AliESDFMD& input,
   else                mult = DeAngleCorrect(mult, input.Eta(d,r,s,t));
   return mult;
 }
-//_____________________________________________________________________
+
+namespace {
+  Double_t Rng2Cut(UShort_t d, Char_t r, Double_t eta, TH2* h) {
+    Double_t ret = 1024;
+    Int_t ybin = 0;							
+    switch(d) {								
+    case 1: ybin = 1; break;						
+    case 2: ybin = (r=='i' || r=='I') ? 2 : 3; break;			
+    case 3: ybin = (r=='i' || r=='I') ? 4 : 5; break;			
+    default: return ret;
+    }									
+    Int_t xbin = h->GetXaxis()->FindBin(eta);				
+    if (xbin < 1 && xbin > h->GetXaxis()->GetNbins()) return ret;
+    ret = h->GetBinContent(xbin,ybin);					
+    return ret;
+  }
+}
+    
+  //_____________________________________________________________________
 Double_t 
 AliFMDSharingFilter::GetLowCut(UShort_t d, Char_t r, Double_t eta) const
 {
@@ -585,20 +587,22 @@ AliFMDSharingFilter::GetLowCut(UShort_t d, Char_t r, Double_t eta) const
   // However, if fLowCut is set (using SetLowCit) to a value greater
   // than 0, then that value is used.
   //
-  return fLCuts.GetMultCut(d,r,eta,false);
+  return Rng2Cut(d, r, eta, fLowCuts);
+  // return fLCuts.GetMultCut(d,r,eta,false);
 }
 			
 //_____________________________________________________________________
 Double_t 
 AliFMDSharingFilter::GetHighCut(UShort_t d, Char_t r, 
-				Double_t eta, Bool_t errors) const
+				Double_t eta, Bool_t /*errors*/) const
 {
   //
   // Get the high cut.  The high cut is defined as the 
   // most-probably-value peak found from the energy distributions, minus 
   // 2 times the width of the corresponding Landau.
   //
-  return fHCuts.GetMultCut(d,r,eta,errors); 
+  return Rng2Cut(d, r, eta, fHighCuts);
+  // return fHCuts.GetMultCut(d,r,eta,errors); 
 }
 
 //____________________________________________________________________
