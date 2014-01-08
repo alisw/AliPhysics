@@ -78,10 +78,28 @@ class AliAnalysisTaskEmcalJetMassBkg : public AliAnalysisTaskEmcalJet {
   TH2F             *fh2MultVsMassPerpConeLJ;      //!track multiplicity vs mass of RC perpendicular to leading jet
   TH2F             *fh2MultVsMassPerpConeTJ;      //!track multiplicity vs mass of RC perpendicular to tagged jets
 
+  TH2F             *fh2CentVsMedianMassRC;        //!cent vs median mass of all RC in event
+  TH2F             *fh2CentVsMedianMassRCExLJ;    //!cent vs meidan mass mass of all RC in event excluding area around leading jet
+
+  TH2F             *fh2MultVsMedianMassRC;        //!cent vs median mass of all RC in event
+  TH2F             *fh2MultVsMedianMassRCExLJ;    //!cent vs meidan mass mass of all RC in event excluding area around leading jet
+
+  TH2F             *fh2CentVsMeanMassRC;          //!cent vs median mass of all RC in event
+  TH2F             *fh2CentVsMeanMassRCExLJ;      //!cent vs meidan mass mass of all RC in event excluding area around leading jet
+
+  TH2F             *fh2MultVsMeanMassRC;          //!cent vs median mass of all RC in event
+  TH2F             *fh2MultVsMeanMassRCExLJ;      //!cent vs meidan mass mass of all RC in event excluding area around leading jet
+
+  TH2F             *fh2CentVsMedianMassPerAreaRC;     //!cent vs median mass of all RC in event
+  TH2F             *fh2CentVsMedianMassPerAreaRCExLJ; //!cent vs meidan mass mass of all RC in event excluding area around leading jet
+
+  TH2F             *fh2MultVsMedianMassPerAreaRC;     //!cent vs median mass of all RC in event
+  TH2F             *fh2MultVsMedianMassPerAreaRCExLJ; //!cent vs meidan mass mass of all RC in event excluding area around leading jet
+
   AliAnalysisTaskEmcalJetMassBkg(const AliAnalysisTaskEmcalJetMassBkg&);            // not implemented
   AliAnalysisTaskEmcalJetMassBkg &operator=(const AliAnalysisTaskEmcalJetMassBkg&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetMassBkg, 1)
+  ClassDef(AliAnalysisTaskEmcalJetMassBkg, 2)
 };
 #endif
 

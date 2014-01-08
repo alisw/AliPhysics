@@ -616,6 +616,7 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
    fmyOutput->Add(hDeltaRD);
    
    //background (side bands for the Dstar and like sign for D0)
+   fJetRadius=GetJetContainer(0)->GetJetRadius();
    TH2F* hInvMassptD = new TH2F("hInvMassptD",Form("D (Delta R < %.1f) invariant mass distribution p_{T}^{j} > threshold",fJetRadius),nbinsmass,fMinMass,fMaxMass,nbinsptD,ptDlims[0],ptDlims[1]);
    hInvMassptD->SetStats(kTRUE);
    hInvMassptD->GetXaxis()->SetTitle("mass (GeV)");
@@ -632,10 +633,10 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
       fmyOutput->Add(hInvMassptDbg);
       
    }
-   const Int_t nAxis=5;
-   const Int_t nbinsSparse[nAxis]={nbinsz,nbinsphi,nbinsptjet,nbinsptD,nbinsmass};
-   const Double_t minSparse[nAxis]={zlims[0],philims[0],ptjetlims[0],ptDlims[0],fMinMass};
-   const Double_t maxSparse[nAxis]={zlims[1],philims[1],ptjetlims[1],ptDlims[1],fMaxMass};
+   const Int_t nAxis=6;
+   const Int_t nbinsSparse[nAxis]={nbinsz,nbinsphi,nbinsptjet,nbinsptD,nbinsmass,2};
+   const Double_t minSparse[nAxis]={zlims[0],philims[0],ptjetlims[0],ptDlims[0],fMinMass,-0.5};
+   const Double_t maxSparse[nAxis]={zlims[1],philims[1],ptjetlims[1],ptDlims[1],fMaxMass, 1.5};
    THnSparseF *hsDphiz=new THnSparseF("hsDphiz","Z and #Delta#phi vs p_{T}^{jet}, p_{T}^{D}, and mass", nAxis, nbinsSparse, minSparse, maxSparse);
    hsDphiz->Sumw2();
    
@@ -728,7 +729,9 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsDstarJetCorr(AliAODRec
    
    TH3F* hPtJetWithD=(TH3F*)fmyOutput->FindObject("hPtJetWithD");
    THnSparseF* hsDphiz=(THnSparseF*)fmyOutput->FindObject("hsDphiz");
-   Double_t point[5]={z,dPhi,ptj,ptD,deltamass};
+   Int_t isSB=IsDzeroSideBand(dstar);
+   
+   Double_t point[6]={z,dPhi,ptj,ptD,deltamass,isSB};
 
    if(deltaR<fJetRadius) hPtJetWithD->Fill(ptj,deltamass,ptD);
    
@@ -744,7 +747,7 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsMCGenDJetCorr(Double_t
    Double_t pdgmass=0;
    TH3F* hPtJetWithD=(TH3F*)fmyOutput->FindObject("hPtJetWithD");
    THnSparseF* hsDphiz=(THnSparseF*)fmyOutput->FindObject("hsDphiz");
-   Double_t point[5]={z,dPhi,ptjet,ptD,pdgmass};
+   Double_t point[6]={z,dPhi,ptjet,ptD,pdgmass,0};
 
    if(fCandidateType==kD0toKpi) pdgmass=TDatabasePDG::Instance()->GetParticle(421)->Mass();
    if(fCandidateType==kDstartoKpipi) pdgmass=TDatabasePDG::Instance()->GetParticle(413)->Mass()-TDatabasePDG::Instance()->GetParticle(421)->Mass();
@@ -787,19 +790,7 @@ void AliAnalysisTaskFlavourJetCorrelations::SideBandBackground(AliAODRecoCascade
    TH2F* hDiffSideBand=(TH2F*)fmyOutput->FindObject("hDiffSideBand");
    TH3F* hPtJetWithDsb=(TH3F*)fmyOutput->FindObject("hPtJetWithDsb");
    
-   Double_t mPDGD0=TDatabasePDG::Instance()->GetParticle(421)->Mass();
-   
-   Int_t bin = fCuts->PtBin(candDstar->Pt());
-   if (bin < 0)
-     {
-       // coverity - issue related to /PWGHF/vertexingHF/AliRDHFCuts::PtBin(Double_t) const
-       AliFatal("bin < 0 used as an array index; check: /PWGHF/vertexingHF/AliRDHFCuts::PtBin(Double_t) const");
-       bin = 9999; // coverity - should be unreachable anyhow
-     }
-   Float_t fourSigmal= mPDGD0-4.*fSigmaD0[bin] , sixSigmal= mPDGD0-8.*fSigmaD0[bin];
-   Float_t fourSigmar= mPDGD0+4.*fSigmaD0[bin] , sixSigmar= mPDGD0+8.*fSigmaD0[bin];
-   
-   Double_t invM=candDstar->InvMassD0(),  deltaM=candDstar->DeltaInvMass(); 
+   Double_t deltaM=candDstar->DeltaInvMass(); 
    //Printf("Inv mass = %f between %f and %f or %f and %f?",invM, sixSigmal,fourSigmal,fourSigmar,sixSigmar);
    Double_t ptD=candDstar->Pt();
    Double_t ptjet=jet->Pt();
@@ -808,8 +799,9 @@ void AliAnalysisTaskFlavourJetCorrelations::SideBandBackground(AliAODRecoCascade
    if(dPhi>TMath::Pi())dPhi = dPhi - 2.*TMath::Pi();
    if(dPhi<(-1.*TMath::Pi()))dPhi = dPhi + 2.*TMath::Pi();
    
+   Int_t isSideBand=IsDzeroSideBand(candDstar);
    //fill the background histogram with the side bands or when looking at MC with the real background
-   if((invM>sixSigmal && invM<fourSigmal) || (invM>fourSigmar && invM<=sixSigmar)){  
+   if(isSideBand==1){
       hDiffSideBand->Fill(deltaM,ptD); // M(Kpipi)-M(Kpi) side band background    
       //hdeltaPhiDjaB->Fill(deltaM,ptD,dPhi);
       
@@ -884,4 +876,27 @@ Float_t AliAnalysisTaskFlavourJetCorrelations::DeltaR(AliVParticle *p1, AliVPart
    Double_t deltaR=TMath::Sqrt(dEta*dEta + dPhi*dPhi );
    return deltaR;
    
+}
+
+//_______________________________________________________________________________
+
+Int_t AliAnalysisTaskFlavourJetCorrelations::IsDzeroSideBand(AliAODRecoCascadeHF *candDstar){
+   
+   Double_t ptD=candDstar->Pt();
+   Int_t bin = fCuts->PtBin(ptD);
+   if (bin < 0){
+      // /PWGHF/vertexingHF/AliRDHFCuts::PtBin(Double_t) const may return values below zero depending on config.
+      bin = 9999; // void result code for coverity (bin later in the code non-zero) - will coverity pick up on this?      
+      return -1;  // out of bounds
+   }
+   
+   Double_t invM=candDstar->InvMassD0();
+   Double_t mPDGD0=TDatabasePDG::Instance()->GetParticle(421)->Mass();
+
+   Float_t fourSigmal= mPDGD0-4.*fSigmaD0[bin] , sixSigmal= mPDGD0-8.*fSigmaD0[bin];
+   Float_t fourSigmar= mPDGD0+4.*fSigmaD0[bin] , sixSigmar= mPDGD0+8.*fSigmaD0[bin];
+   
+   if((invM>=sixSigmal && invM<fourSigmal) || (invM>fourSigmar && invM<=sixSigmar)) return 1;
+   else return 0;   
+
 }
