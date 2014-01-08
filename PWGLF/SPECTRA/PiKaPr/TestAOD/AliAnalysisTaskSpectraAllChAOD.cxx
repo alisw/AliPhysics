@@ -57,6 +57,8 @@ AliAnalysisTaskSpectraAllChAOD::AliAnalysisTaskSpectraAllChAOD(const char *name)
   fEventCuts(0x0),
   fHelperPID(0x0),
   fIsMC(0),
+  fCharge(0),
+  fVZEROside(0),
   fOutput(0x0),
   fnCentBins(20),
   fnQvecBins(50)
@@ -173,7 +175,11 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
   if(fHelperPID->GetPIDType()==kBayes)fHelperPID->GetPIDCombined()->SetDefaultTPCPriors();//FIXME maybe this can go in the UserCreateOutputObject?
   
   Double_t Qvec=0.;//in case of MC we save space in the memory
-  if(!fIsMC)Qvec=fEventCuts->GetqV0A();//FIXME we'll have to combine A and C
+  if(!fIsMC){
+    if(fVZEROside==0)Qvec=fEventCuts->GetqV0A();
+    else if (fVZEROside==1)Qvec=fEventCuts->GetqV0C();
+  }
+
   Double_t Cent=fEventCuts->GetCent();
     
   // First do MC to fill up the MC particle array
@@ -189,6 +195,8 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
 	{
 	  AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(iMC);
 	  if(!partMC->Charge()) continue;//Skip neutrals
+	  if(fCharge != 0 && partMC->Charge() != fCharge) continue;//if fCharge != 0 only select fCharge
+	  
 	  if(partMC->Eta() < fTrackCuts->GetEtaMin() || partMC->Eta() > fTrackCuts->GetEtaMax())continue;//ETA CUT ON GENERATED!!!!!!!!!!!!!!!!!!!!!!!!!!
 	  
 	  //pt     cent    IDgen        isph        y
@@ -208,6 +216,7 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
   //main loop on tracks
   for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
     AliAODTrack* track = fAOD->GetTrack(iTracks);
+    if(fCharge != 0 && track->Charge() != fCharge) continue;//if fCharge != 0 only select fCharge 
     if (!fTrackCuts->IsSelected(track,kTRUE)) continue; //track selection (rapidity selection NOT in the standard cuts)
     Int_t IDrec=fHelperPID->GetParticleSpecies(track,kTRUE);//id from detector
     Double_t y= track->Y(fHelperPID->GetMass((AliHelperParticleSpecies_t)IDrec));
