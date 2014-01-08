@@ -1,4 +1,4 @@
-AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double_t jetRadius=0.4, Bool_t IsMC=kFALSE, const char* track_name="PicoTracks", const char* clus_name="caloClusters", const char* corrclus_name="caloClustersCorr", const char* mcpart_name="MCParticles", const char* Centrality_name="V0A", Double_t scaleFactor = 1.42, Double_t nefJetCut = 1.0, Bool_t doNEF=kFALSE, Bool_t signalTrackBias=kFALSE, Bool_t doTrackQA=kFALSE, Bool_t doClusterQA=kFALSE, Int_t calcRhoJet=0)
+AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double_t jetRadius=0.4, Bool_t IsMC=kFALSE, const char* track_name="PicoTracks", const char* clus_name="caloClusters", const char* corrclus_name="caloClustersCorr", const char* mcpart_name="MCParticles", const char* Centrality_name="V0A", Double_t scaleFactor = 1.42, Double_t nefJetCut = 1.0, Bool_t doNEF=kFALSE, Bool_t signalTrackBias=kFALSE, Bool_t doTrackQA=kFALSE, Bool_t doClusterQA=kFALSE, Int_t calcRhoJet=0, Bool_t doNEFSignalOnly=kTRUE)
 {
     char *usedTracks = track_name;
     char *usedClusters = clus_name;
@@ -54,10 +54,10 @@ AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double
         task->SetClusterPtCut(minMCPartPt);
         
         // ########## CHARGED JETS ##########
-        jetFinderTask = AddTaskEmcalJet(usedMCParticles,"",cKT,jetRadius,cCHARGEDJETS,minMCPartPt,minMCPartPt);
+        jetFinderTask = AddTaskEmcalJet(usedMCParticles,"",cKT,jetRadius,cCHARGEDJETS,minMCPartPt,minMCPartPt,0.01,1,"Jet");
         task->SetkTChargedJetName(jetFinderTask->GetName());
         
-        jetFinderTask = AddTaskEmcalJet(usedMCParticles,"",cANTIKT,jetRadius,cCHARGEDJETS,minMCPartPt,minMCPartPt);
+        jetFinderTask = AddTaskEmcalJet(usedMCParticles,"",cANTIKT,jetRadius,cCHARGEDJETS,minMCPartPt,minMCPartPt,0.01,1,"Jet");
         task->SetAkTChargedJetName(jetFinderTask->GetName());
         
         // ########## FULL JETS ##########
@@ -73,17 +73,17 @@ AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double
         task->SetClusterPtCut(minClusterPt);
 
         // ########## CHARGED JETS ##########
-        jetFinderTask = AddTaskEmcalJet(usedTracks,"",cKT,jetRadius,cCHARGEDJETS,minTrackPt,minClusterPt);
+        jetFinderTask = AddTaskEmcalJet(usedTracks,"",cKT,jetRadius,cCHARGEDJETS,minTrackPt,minClusterPt,0.01,1,"Jet");
         task->SetkTChargedJetName(jetFinderTask->GetName());
         
-        jetFinderTask = AddTaskEmcalJet(usedTracks,"",cANTIKT,jetRadius,cCHARGEDJETS,minTrackPt,minClusterPt);
+        jetFinderTask = AddTaskEmcalJet(usedTracks,"",cANTIKT,jetRadius,cCHARGEDJETS,minTrackPt,minClusterPt,0.01,1,"Jet");
         task->SetAkTChargedJetName(jetFinderTask->GetName());
         
         // ########## FULL JETS ##########
-        jetFinderTask = AddTaskEmcalJet(usedTracks,outClusName,cKT,jetRadius,cFULLJETS,minTrackPt,minClusterPt);
+        jetFinderTask = AddTaskEmcalJet(usedTracks,outClusName,cKT,jetRadius,cFULLJETS,minTrackPt,minClusterPt,0.01,1,"Jet");
         task->SetkTFullJetName(jetFinderTask->GetName());
 
-        jetFinderTask = AddTaskEmcalJet(usedTracks,outClusName,cANTIKT,jetRadius,cFULLJETS,minTrackPt,minClusterPt);
+        jetFinderTask = AddTaskEmcalJet(usedTracks,outClusName,cANTIKT,jetRadius,cFULLJETS,minTrackPt,minClusterPt,0.01,1,"Jet");
         task->SetAkTFullJetName(jetFinderTask->GetName());
     }
 
@@ -94,6 +94,7 @@ AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double
     task->SetNColl(7);
     task->SetNEFSignalJetCut(NEFSignalJetCut);
     task->DoNEFCalibration(doNEF);
+    task->DoNEFSignalOnly(doNEFSignalOnly);
     task->SetJetChargeBias(signalTrackBias);
     task->DoTrackQA(doTrackQA);
     task->DoClusterQA(doClusterQA);
@@ -106,5 +107,4 @@ AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double
     mgr->ConnectOutput(task,1,coutput);
 
     return task;
-
 }

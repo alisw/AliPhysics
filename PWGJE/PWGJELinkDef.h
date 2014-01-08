@@ -43,4 +43,9 @@
 #pragma link C++ class AliAnalysisTaskJetsTriggerTRD+;
 #pragma link C++ class AliAnalysisTaskJetProtonCorr+;
 #pragma link C++ class AliAnalysisTaskJetProtonCorr::AliHistCorr+;
+#pragma link C++ class AliAnalysisTaskIDFFTCF+;
+#pragma link C++ class AliAnalysisTaskIDFFTCF::AliFragFuncHistos+;
+#pragma link C++ class AliAnalysisTaskIDFFTCF::AliFragFuncQATrackHistos+;
+#pragma link C++ class AliAnalysisTaskIDFFTCF::AliFragFuncQAJetHistos+;
+#pragma link C++ class AliIDFFUtils+;
 #endif
