@@ -3421,7 +3421,7 @@ void  AliAnalysisTaskFragmentationFunction::AssociateGenRec(TList* tracksAODMCCh
 
 // _____________________________________________________________________________________________________________________________________________
 void AliAnalysisTaskFragmentationFunction::FillSingleTrackHistosRecGen(AliFragFuncQATrackHistos* trackQAGen, AliFragFuncQATrackHistos* trackQARec, TList* tracksGen, 
-								       const TArrayI& indexAODTr, const TArrayS& isRefGen, const Bool_t scaleStrangeness){
+								       const TArrayI& indexAODTr, const TArrayS& isRefGen, Bool_t scaleStrangeness){
 
   // fill QA for single track reconstruction efficiency
   
@@ -3464,7 +3464,7 @@ void AliAnalysisTaskFragmentationFunction::FillSingleTrackHistosRecGen(AliFragFu
 
 void  AliAnalysisTaskFragmentationFunction::FillJetTrackHistosRec(AliFragFuncHistos* ffhistRec, AliAODJet* jet, 
 								  TList* jetTrackList, const TList* tracksGen, const TList* tracksRec, const TArrayI& indexAODTr,
-								  const TArrayS& isRefGen, TList* jetTrackListTR, const Bool_t scaleStrangeness,
+								  const TArrayS& isRefGen, TList* jetTrackListTR, Bool_t scaleStrangeness,
 								  Bool_t fillJS, TProfile* hProNtracksLeadingJet, TProfile** hProDelRPtSum, TProfile* hProDelR80pcPt)
 {
   // fill objects for jet track reconstruction efficiency or secondaries contamination 
