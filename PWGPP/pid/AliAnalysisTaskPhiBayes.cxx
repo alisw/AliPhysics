@@ -75,7 +75,8 @@ AliAnalysisTaskPhiBayes::AliAnalysisTaskPhiBayes():
   fHchannelTOFdistr(0),
   fTypeCol(2),
   fPIDuserCut(NULL),
-  fToEP(kFALSE)
+  fToEP(kFALSE),
+  fSpeciesRef(3)
 {
   // Default constructor (should not be used)
   fList->SetName("contPhiBayes1");
@@ -147,7 +148,8 @@ AliAnalysisTaskPhiBayes::AliAnalysisTaskPhiBayes(const char *name):
   fHchannelTOFdistr(0),
   fTypeCol(2),
   fPIDuserCut(NULL),
-  fToEP(kFALSE)
+  fToEP(kFALSE),
+  fSpeciesRef(3)
 {
 
   DefineOutput(1, TList::Class());
@@ -537,7 +539,7 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
   Double_t probP[10] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
   Double_t probN[10] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
   Double_t nSigmaTPC,nSigmaTOF=6,nSigmaTPC2,nSigmaTOF2=6,nSigmaComb,nSigmaComb2;
-
+  Double_t nSigmaTPCRef,nSigmaTOFRef=6,nSigmaTPC2Ref,nSigmaTOF2Ref=6,nSigmaCombRef,nSigmaComb2Ref;
   
   AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(aodEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
   TClonesArray *mcArray = NULL;
@@ -623,7 +625,10 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
     if(!(KpTrack->Charge() > 0 && KpTrack->Pt() > 0.3  && TMath::Abs(KpTrack->Eta()) < 0.8)) continue;
 
     nSigmaTOF=5;
+    nSigmaTOFRef=5;
     nSigmaComb=5;
+    nSigmaCombRef=5;
+
     fPtKp=KpTrack->Pt(),fPhiKp=KpTrack->Phi(),fEtaKp=KpTrack->Eta();
     fPidKp=0;
 
@@ -633,6 +638,7 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
     fPIDCombined->GetPriors(KpTrack, oldpP, PIDResponse, detUsedP);
 
     nSigmaTPC = PIDResponse->NumberOfSigmasTPC(KpTrack,AliPID::kKaon);
+    nSigmaTPCRef = PIDResponse->NumberOfSigmasTPC(KpTrack,(AliPID::EParticleType) fSpeciesRef);
 
     if(! (TMath::Abs(nSigmaTPC) < 5)) continue;
 
@@ -672,6 +678,8 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
 	if(TMath::Abs(PIDResponse->NumberOfSigmasTPC(KpTrack,AliPID::kKaon))<1) fKaTOF[icentr]->Fill(fPtKp,nSigmaTOF);
 	if(TMath::Abs(nSigmaTOF)<1) fKaTPC[icentr]->Fill(fPtKp,PIDResponse->NumberOfSigmasTPC(KpTrack,AliPID::kKaon));
 	
+	nSigmaTOFRef = PIDResponse->NumberOfSigmasTOF(KpTrack,(AliPID::EParticleType) fSpeciesRef);
+
 	if(fIsMC){
 	  Float_t mismAdd = addMismatchForMC;
 	  if(KpTrack->Pt() < 1) mismAdd = addMismatchForMC/KpTrack->Pt();
@@ -687,6 +695,7 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
 	    Double_t times[10];
 	    KpTrack->GetIntegratedTimes(times);
 	    nSigmaTOF = TMath::Abs(timeRandom - times[3])/PIDResponse->GetTOFResponse().GetExpectedSigma(KpTrack->P(), times[3], AliPID::kKaon);
+	    nSigmaTOFRef = TMath::Abs(timeRandom - times[fSpeciesRef])/PIDResponse->GetTOFResponse().GetExpectedSigma(KpTrack->P(), times[fSpeciesRef], (AliPID::EParticleType) fSpeciesRef);
 	  }
 	}
 
@@ -700,20 +709,30 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
     
     if(tofMatch1){
       nSigmaComb = TMath::Sqrt(nSigmaTOF*nSigmaTOF + nSigmaTPC*nSigmaTPC);
+      nSigmaCombRef = TMath::Sqrt(nSigmaTOFRef*nSigmaTOFRef + nSigmaTPCRef*nSigmaTPCRef);
       if(nSigmaTOF < 5 && fCentrality < 20 && KpTrack->Pt() < 0.9 && KpTrack->Pt() > 0.8){
 	fCombsignal->Fill(nSigmaComb);
       }
     } else {
       nSigmaComb = TMath::Abs(nSigmaTPC);
+      nSigmaCombRef = TMath::Abs(nSigmaTPCRef);
     }
 
     // use sigmaTOF instead of sigmaComb
-    if(tofMatch1) nSigmaComb = nSigmaTOF;
+    if(tofMatch1){
+      nSigmaComb = nSigmaTOF;
+      nSigmaCombRef = nSigmaTOFRef;
+    }
 
     if(nSigmaComb < 2) nSigmaComb = 2;
     else if(nSigmaComb < 3) nSigmaComb = 3;
     else if(nSigmaComb < 5) nSigmaComb = 4.99;
     else nSigmaComb = 6;
+
+    if(nSigmaCombRef < 2) nSigmaCombRef = 2;
+    else if(nSigmaCombRef < 3) nSigmaCombRef = 3;
+    else if(nSigmaCombRef < 5) nSigmaCombRef = 4.99;
+    else nSigmaCombRef = 6;
 
     if(fPtKp > 4.299) fPtKp = 4.299;
 
@@ -745,11 +764,14 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
       fPIDCombined->GetPriors(KnTrack, oldpN, PIDResponse, detUsedN);
 
       nSigmaTPC2 = PIDResponse->NumberOfSigmasTPC(KnTrack,AliPID::kKaon);
+      nSigmaTPC2Ref = PIDResponse->NumberOfSigmasTPC(KnTrack,(AliPID::EParticleType) fSpeciesRef);
       
       if(! (TMath::Abs(nSigmaTPC2) < 5)) continue;
       
       nSigmaTOF2=5;
+      nSigmaTOF2Ref=5;
       nSigmaComb2=5;
+      nSigmaComb2Ref=5;
 
       Int_t tofMatch2 = (KnTrack->GetStatus() & AliVTrack::kTOFout) && (KnTrack->GetStatus() & AliVTrack::kTIME);
       /*
@@ -775,8 +797,10 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
 	  if(probN[3] > probN[2] && probN[3] > probN[4] && probN[3] > probN[0]) fPidKn += 128; // max prob
 	  
 	  nSigmaTOF2 = PIDResponse->NumberOfSigmasTOF(KnTrack,AliPID::kKaon);
+	  nSigmaTOF2Ref = PIDResponse->NumberOfSigmasTOF(KnTrack,(AliPID::EParticleType) fSpeciesRef);
 	  	  
 	  nSigmaTOF2 = TMath::Abs(nSigmaTOF2);
+	  nSigmaTOF2Ref = TMath::Abs(nSigmaTOF2Ref);
 	  
 	  if(fIsMC){
 	    Float_t mismAdd = addMismatchForMC;
@@ -793,6 +817,7 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
 	      Double_t times[10];
 	      KnTrack->GetIntegratedTimes(times);
 	      nSigmaTOF2 = TMath::Abs(timeRandom - times[3])/PIDResponse->GetTOFResponse().GetExpectedSigma(KnTrack->P(), times[3], AliPID::kKaon);
+	      nSigmaTOF2Ref = TMath::Abs(timeRandom - times[fSpeciesRef])/PIDResponse->GetTOFResponse().GetExpectedSigma(KnTrack->P(), times[fSpeciesRef], (AliPID::EParticleType) fSpeciesRef);
 	    }
 	  }
 
@@ -809,20 +834,30 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
 
       if(tofMatch2){
 	nSigmaComb2 = TMath::Sqrt(nSigmaTOF2*nSigmaTOF2+ nSigmaTPC2*nSigmaTPC2);
+	nSigmaComb2Ref = TMath::Sqrt(nSigmaTOF2Ref*nSigmaTOF2Ref+ nSigmaTPC2Ref*nSigmaTPC2Ref);
 	if(nSigmaTOF2 < 5 && fCentrality < 20 && KnTrack->Pt() < 1.2 && KnTrack->Pt() > 1){
 	  fCombsignal->Fill(nSigmaComb2);
 	}
       } else {
 	nSigmaComb2 = TMath::Abs(nSigmaTPC2);
+	nSigmaComb2Ref = TMath::Abs(nSigmaTPC2Ref);
       }
 
       // use sigmaTOF instead of sigmaComb
-      if(tofMatch2) nSigmaComb2 = nSigmaTOF2;
+      if(tofMatch2){
+	nSigmaComb2 = nSigmaTOF2;
+	nSigmaComb2Ref = nSigmaTOF2Ref;
+      }
 
       if(nSigmaComb2 < 2) nSigmaComb2 = 2;
       else if(nSigmaComb2 < 3) nSigmaComb2 = 3;
       else if(nSigmaComb2 < 5) nSigmaComb2 = 4.99;
       else nSigmaComb2 = 6;  
+
+      if(nSigmaComb2Ref < 2) nSigmaComb2Ref = 2;
+      else if(nSigmaComb2Ref < 3) nSigmaComb2Ref = 3;
+      else if(nSigmaComb2Ref < 5) nSigmaComb2Ref = 4.99;
+      else nSigmaComb2Ref = 6;  
 
       Bool_t isTrue = kFALSE;
 
@@ -861,6 +896,7 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
       if(fPtKn > 4.299) fPtKn = 4.299;
 
       Float_t xTOfill[] = {fPtPhi,KpTrack->Eta(),fPtKp,fPtKn,(fPidKp%128)*0.01,(fPidKn%128)*0.01,tofMatch1,tofMatch2,isTrue,nSigmaComb,nSigmaComb2,deltaphi1,deltaphi2,fPsi};
+      Float_t xTOfill2[] = {fPtPhi,KpTrack->Eta(),fPtKp,fPtKn,(fPidKp%128)*0.01,(fPidKn%128)*0.01,tofMatch1,tofMatch2,isTrue,nSigmaComb,nSigmaComb2,deltaphi1,deltaphi2,fPsi};
       
       Int_t ipt = 0;
       while(fPtPhiMin[ipt] < fPtPhi && ipt < nPtBin){
@@ -870,9 +906,18 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
       if(ipt < 0) ipt = 0; // just to be sure
 
       if(TMath::Abs(fEtaPhi) < 0.8 && fPtKp > 0.3 && fPtKn > 0.3){
+	if(fSpeciesRef != 3){
+          xTOfill[4] = probP[fSpeciesRef];
+          xTOfill2[5] = probN[fSpeciesRef];
+	  
+          xTOfill[9] = nSigmaCombRef;
+          xTOfill2[10] = nSigmaComb2Ref;
+        }
+
+
 	if((fPidKn%128) > 80) fContPid->Fill(0,fMassV0,fCentrality,xTOfill); // use tagging on negative track
         xTOfill[1] = KnTrack->Eta();
-	if((fPidKp%128) > 80) fContPid2->Fill(0,fMassV0,fCentrality,xTOfill);// use tagging on positive track
+	if((fPidKp%128) > 80) fContPid2->Fill(0,fMassV0,fCentrality,xTOfill2);// use tagging on positive track
 
 	if(fPIDuserCut){
 	  Float_t xUser[] = {KpTrack->Eta(),fPtKp,isTrue,0,deltaphi1,fPsi};
