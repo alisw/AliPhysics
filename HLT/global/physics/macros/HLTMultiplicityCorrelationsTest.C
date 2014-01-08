@@ -7,7 +7,7 @@
  * Results are written to disk by a rootfile writer
  *
  * @author Jochen Thaeder <jochen@thaeder.de>
- * @ingroup alihlt_physics
+ * @ingroup alihlt_global
  */
 
 

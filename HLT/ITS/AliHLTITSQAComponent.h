@@ -6,7 +6,7 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/// @file   AliHLTITSQHistoComponent.h
+/// @file   AliHLTITSQAComponent.h
 /// @author Piergiorgio Cerello cerello@to.infn.it
 /// @date   2009-07-03
 /// @brief  Interface component to the ITS QA

@@ -6,7 +6,7 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/// @file   AliHLTDataHuffman.h
+/// @file   AliHLTHuffman.h
 /// @author Thorsten Kollegger, Matthias Richter
 /// @date   2011-08-14
 /// @brief  Huffman code generator/encoder/decode

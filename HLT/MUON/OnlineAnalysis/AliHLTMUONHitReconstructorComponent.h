@@ -144,7 +144,7 @@ extern "C" struct AliHLTMUONHitRecoLutRow;
  * <h2>Output size:</h2>
  * Output size is about 10% of incoming raw input data for nominal p+p events.
  *
- * @ingroup alihlt_dimuon_component
+ * @ingroup alihlt_muon_components
  */
 class AliHLTMUONHitReconstructorComponent : public AliHLTMUONProcessor
 {
