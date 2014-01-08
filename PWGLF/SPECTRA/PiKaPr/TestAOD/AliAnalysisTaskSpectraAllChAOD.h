@@ -46,6 +46,9 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
   void SetCharge(Int_t charge = 0)    {fCharge = charge; };
   Int_t GetCharge()           const           { return fCharge;};
   
+  void SetVZEROside(Int_t side = 0)    {fVZEROside = side; };
+  Int_t GetVZEROside()           const           { return fVZEROside;};
+  
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
