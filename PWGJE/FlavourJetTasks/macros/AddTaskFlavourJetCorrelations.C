@@ -58,6 +58,7 @@ AliAnalysisTaskFlavourJetCorrelations *AddTaskFlavourJetCorrelations(
   task->SetMC(theMCon);
   task->SetUseReco(reco);
   task->SetTriggerOnLeadingJet(triggerOnLeadingJet);
+  task->SetJetAcceptanceType(cutType);
 
   mgr->AddTask(task);
 

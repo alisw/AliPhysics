@@ -91,7 +91,8 @@ class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet
   void MCBackground(AliAODRecoDecayHF *candbg, AliEmcalJet *jet);
   void FillMassHistograms(Double_t mass,Double_t ptD, Double_t deltaR);
   void FlagFlavour(AliVParticle* charm, AliEmcalJet* jet);
-  
+  Int_t IsDzeroSideBand(AliAODRecoCascadeHF *candDstar);
+
  private:
   
   AliAnalysisTaskFlavourJetCorrelations(const AliAnalysisTaskFlavourJetCorrelations &source);
