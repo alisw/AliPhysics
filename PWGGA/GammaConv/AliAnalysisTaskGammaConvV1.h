@@ -27,11 +27,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    void InitBack();
 
    void SetIsHeavyIon(Int_t flag){
-      if (flag == 1 || flag ==2 ){
-         fIsHeavyIon = 1;    
-      } else {
-         fIsHeavyIon = 0;    
-      }
+      fIsHeavyIon = flag;    
+      
    }
 
    void SetIsMC(Bool_t isMC){fIsMC=isMC;}
@@ -201,7 +198,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    Int_t fnCuts;
    Int_t fiCut;
    Bool_t fMoveParticleAccordingToVertex;
-   Bool_t fIsHeavyIon;
+   Int_t fIsHeavyIon;
    Bool_t fDoMesonAnalysis;
    Int_t fDoMesonQA;
    Int_t fDoPhotonQA;
@@ -214,7 +211,7 @@ private:
    AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
 
 
-   ClassDef(AliAnalysisTaskGammaConvV1, 9);
+   ClassDef(AliAnalysisTaskGammaConvV1, 10);
 };
 
 #endif
