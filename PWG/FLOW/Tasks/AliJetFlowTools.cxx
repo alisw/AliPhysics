@@ -1758,7 +1758,7 @@ TGraphErrors* AliJetFlowTools::GetRatio(TH1 *h1, TH1* h2, TString name, Bool_t a
     gr->GetXaxis()->SetTitle("p_{T} [GeV/c]");
     Double_t binCent(0.), ratio(0.), error2(0.), binWidth(0.);
     TH1* dud((TH1*)h1->Clone("dud"));
-    if(!dud->Divide(h1, h2)) {
+    if(!dud->Divide(h1, h2, 1., 1., "B")) {
         for(Int_t i(1); i <= h1->GetNbinsX(); i++) {
             binCent = h1->GetXaxis()->GetBinCenter(i);
             if(xmax > 0. && binCent > xmax) continue;
