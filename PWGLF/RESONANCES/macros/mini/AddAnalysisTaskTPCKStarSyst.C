@@ -148,14 +148,14 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTPCKStarSyst
    if((!isMC) && (enableSyst))
      {
    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigTPCanalysisKStarSyst.C");
-   if (!ConfigTPCanalysisKStar(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableSyst, DCAxyFormula, dcazmax, minNcls, maxX2cls, minCrossedRows, maxClsCrossedRows, enableMonitor, isMC&IsMcTrueOnly, 313, aodNN)) return 0x0;  
+   if (!ConfigTPCanalysisKStarSyst(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableSyst, DCAxyFormula, dcazmax, minNcls, maxX2cls, minCrossedRows, maxClsCrossedRows, enableMonitor, isMC&IsMcTrueOnly, 313, aodNN)) return 0x0;  
      }
 
    //for systematic checks
    if((isMC) && (enableSyst)) {
      gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigTPCanalysisKStarSyst.C");
-     if (!ConfigTPCanalysisKStarMC(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableSyst, DCAxyFormula, dcazmax, minNcls, maxX2cls, minCrossedRows, maxClsCrossedRows, enableMonitor, isMC&IsMcTrueOnly, 313, aodN)) return 0x0; //K*
-     if (!ConfigTPCanalysisKStarMC(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa,enableSyst, DCAxyFormula, dcazmax, minNcls, maxX2cls, minCrossedRows, maxClsCrossedRows, enableMonitor, isMC&IsMcTrueOnly, -313, aodN)) return 0x0; //anti-K* 
+     if (!ConfigTPCanalysisKStarSyst(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableSyst, DCAxyFormula, dcazmax, minNcls, maxX2cls, minCrossedRows, maxClsCrossedRows, enableMonitor, isMC&IsMcTrueOnly, 313, aodN)) return 0x0; //K*
+     if (!ConfigTPCanalysisKStarSyst(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa,enableSyst, DCAxyFormula, dcazmax, minNcls, maxX2cls, minCrossedRows, maxClsCrossedRows, enableMonitor, isMC&IsMcTrueOnly, -313, aodN)) return 0x0; //anti-K* 
    }
    
    //

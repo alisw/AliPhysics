@@ -44,6 +44,8 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
   fTriggerType(-1),
   fNFastOR(16),
   fhNEvents(0),
+  fHistRhovsCentFull(0),
+  fHistRhovsCentCharged(0),
   fh3PtEtaPhiTracks(0),
   fh3PtEtaPhiTracksOnEmcal(0),
   fh3PtEtaPhiTracksProp(0),
@@ -94,6 +96,8 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
   fTriggerType(-1),
   fNFastOR(16),
   fhNEvents(0),
+  fHistRhovsCentFull(0),
+  fHistRhovsCentCharged(0),
   fh3PtEtaPhiTracks(0),
   fh3PtEtaPhiTracksOnEmcal(0),
   fh3PtEtaPhiTracksProp(0),
@@ -203,6 +207,16 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
 
   fhNEvents = new TH1F("fhNEvents","fhNEvents;selection;N_{evt}",5,0,5);
   fOutput->Add(fhNEvents);
+
+  fHistRhovsCentFull = new TH2F("fHistRhovsCentFull", "fHistRhovsCentFull", 101, -1,  100, 300, 0., 300.);
+  fHistRhovsCentFull->GetXaxis()->SetTitle("Centrality (%)");
+  fHistRhovsCentFull->GetYaxis()->SetTitle("s#rho_{ch} (GeV/c * rad^{-1})");
+  fOutput->Add(fHistRhovsCentFull);
+
+  fHistRhovsCentCharged = new TH2F("fHistRhovsCentCharged", "fHistRhovsCentCharged", 101, -1,  100, 300, 0., 300.);
+  fHistRhovsCentCharged->GetXaxis()->SetTitle("Centrality (%)");
+  fHistRhovsCentCharged->GetYaxis()->SetTitle("#rho_{ch} (GeV/c * rad^{-1})");
+  fOutput->Add(fHistRhovsCentCharged);
 
   Int_t fgkNPtBins = 200;
   Float_t kMinPt   = -50.;
@@ -486,8 +500,12 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
     }
   }
 
+  //Jets
   Double_t ptLeadJet1 = 0.;
   Double_t ptLeadJet2 = 0.;
+
+  fHistRhovsCentFull->Fill(fCent,GetRhoVal(fContainerFull));
+  fHistRhovsCentCharged->Fill(fCent,GetRhoVal(fContainerCharged));
 
   TArrayI *nJetsArr = new TArrayI(fh2NJetsPtFull->GetNbinsY()+1);
   nJetsArr->Reset(0);

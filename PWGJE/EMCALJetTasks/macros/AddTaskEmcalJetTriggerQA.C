@@ -103,6 +103,9 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
 
   task->SetUseAliAnaUtils(kTRUE);
 
+  if(kPeriod.Contains("LHC13b4")) 
+    task-SetIsPythia(kTRUE);
+
   mgr->AddTask(task);
 
   //Connnect input

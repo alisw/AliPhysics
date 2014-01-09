@@ -481,6 +481,9 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
    } else if (periodName.CompareTo("LHC12a17x_fix")==0){
       TObjString *Header1 = new TObjString("PARAM");
       HeaderList->Add(Header1);
+   } else if (periodName.CompareTo("LHC14a1x")==0){
+      TObjString *Header1 = new TObjString("BOX");
+      HeaderList->Add(Header1);
    }
    
    ConvCutList->SetOwner(kTRUE);

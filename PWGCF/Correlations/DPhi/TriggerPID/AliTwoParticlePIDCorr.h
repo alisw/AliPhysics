@@ -193,7 +193,7 @@ fPtTOFPIDmax=PtTOFPIDmax;
     TString    fCentralityMethod;     // Method to determine centrality
     TString    fSampleType;     // pp,p-Pb,Pb-Pb
     Int_t    fnTracksVertex;        // QA tracks pointing to principal vertex
-    AliAODVertex* trkVtx;
+    AliAODVertex* trkVtx;//!
     Float_t zvtx;
     Int_t    fFilterBit;         // track selection cuts
     Double_t fzvtxcut;
@@ -260,15 +260,15 @@ fPtTOFPIDmax=PtTOFPIDmax;
     TH3F *fTPCTOFPion3d;//!
     TH3F *fTPCTOFKaon3d;//!
     TH3F *fTPCTOFProton3d;//!
-    TH1F *fPionPt;
-    TH1F *fPionEta;
-    TH1F *fPionPhi;
-    TH1F *fKaonPt;
-    TH1F *fKaonEta;
-    TH1F *fKaonPhi;
-    TH1F *fProtonPt;
-    TH1F *fProtonEta;
-    TH1F *fProtonPhi;
+    TH1F *fPionPt;//!
+    TH1F *fPionEta;//!
+    TH1F *fPionPhi;//!
+    TH1F *fKaonPt;//!
+    TH1F *fKaonEta;//!
+    TH1F *fKaonPhi;//!
+    TH1F *fProtonPt;//!
+    TH1F *fProtonEta;//!
+    TH1F *fProtonPhi;//!
     // TH3F *fHistocentNSigmaTPC;//! nsigma TPC
     // TH3F *fHistocentNSigmaTOF;//! nsigma TOF 
     
@@ -286,9 +286,9 @@ fPtTOFPIDmax=PtTOFPIDmax;
     
     TH1F *fHistQA[16]; //!
      
-    THnSparse *fTHnrecomatchedallPid[6];//0 pion, 1 kaon,2 proton,3 mesons,4 kaons+protons,5 all
-    THnSparse *fTHngenprimPidTruth[6];
-    THnSparse *effcorection[6];
+    THnSparse *fTHnrecomatchedallPid[6];//!                 //0 pion, 1 kaon,2 proton,3 mesons,4 kaons+protons,5 all
+    THnSparse *fTHngenprimPidTruth[6];//!
+    THnSparse *effcorection[6];//!
     // THnF *effmap[6];  
     //TH2F* fControlConvResoncances; //! control histograms for cuts on conversions and resonances
 
@@ -301,11 +301,11 @@ fPtTOFPIDmax=PtTOFPIDmax;
 
 //Mixing functions
   void DefineEventPool();
-  // AliAnalysisUtils *fUtils;//!
+  // AliAnalysisUtils *fUtils;
   AliEventPoolManager    *fPoolMgr;//! 
   TClonesArray          *fArrayMC;//!
-  TString          fAnalysisType;//!          // "MC", "ESD", "AOD"
-  TString fefffilename;//!
+  TString          fAnalysisType;          // "MC", "ESD", "AOD"
+  TString fefffilename;
 
     //PID part histograms
 
