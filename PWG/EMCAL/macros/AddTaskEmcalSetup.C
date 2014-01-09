@@ -41,6 +41,6 @@ AliEmcalSetupTask* AddTaskEmcalSetup(
   
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
-  mgr->ConnectInput  (eTask, 0,  cinput1 );
+  mgr->ConnectInput(eTask, 0,  cinput1 );
   return eTask;
 }

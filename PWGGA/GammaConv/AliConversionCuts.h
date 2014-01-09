@@ -132,7 +132,7 @@ class AliConversionCuts : public AliAnalysisCuts {
    
    // Cut Selection
    Bool_t EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent);
-   Int_t IsEventAcceptedByConversionCut(AliConversionCuts *ReaderCuts, AliVEvent *InputEvent, AliMCEvent *MCEvent, Bool_t isHeavyIon);
+   Int_t IsEventAcceptedByConversionCut(AliConversionCuts *ReaderCuts, AliVEvent *InputEvent, AliMCEvent *MCEvent, Int_t isHeavyIon);
    Bool_t PhotonIsSelected(AliConversionPhotonBase * photon, AliVEvent  * event);
    Bool_t PhotonIsSelectedMC(TParticle *particle,AliStack *fMCStack,Bool_t checkForConvertedGamma=kTRUE);
    Bool_t PhotonIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray,Bool_t checkForConvertedGamma=kTRUE);
