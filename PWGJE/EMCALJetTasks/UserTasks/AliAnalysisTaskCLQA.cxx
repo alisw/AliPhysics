@@ -1,4 +1,4 @@
-// $Id$
+// $Id: $
 //
 // Constantin's Task
 //
@@ -45,9 +45,10 @@ ClassImp(AliAnalysisTaskCLQA)
 //________________________________________________________________________
 AliAnalysisTaskCLQA::AliAnalysisTaskCLQA() : 
   AliAnalysisTaskEmcal("AliAnalysisTaskCLQA", kTRUE),
+  fDo2013VertexCut(1),
   fDoTracking(1), fDoMuonTracking(0), fDoCumulants(0), fDoCumNtuple(0),
-  fCumPtMin(0.3), fCumPtMax(5.0), fCumEtaMin(-1.0), fCumEtaMax(1.0), fCumMmin(15),
-  fCentCL1In(0), fCentV0AIn(0),
+  fCumPtMin(0.3), fCumPtMax(5.0), fCumEtaMin(-1.0), fCumEtaMax(1.0), fCumMmin(15), 
+  fCumMbins(250), fCentCL1In(0), fCentV0AIn(0),
   fNtupCum(0), fNtupCumInfo(0), fNtupZdcInfo(0)
 {
   // Default constructor.
@@ -59,9 +60,10 @@ AliAnalysisTaskCLQA::AliAnalysisTaskCLQA() :
 //________________________________________________________________________
 AliAnalysisTaskCLQA::AliAnalysisTaskCLQA(const char *name) : 
   AliAnalysisTaskEmcal(name, kTRUE),
+  fDo2013VertexCut(1),
   fDoTracking(1), fDoMuonTracking(0), fDoCumulants(0), fDoCumNtuple(0),
   fCumPtMin(0.3), fCumPtMax(5.0), fCumEtaMin(-1.0), fCumEtaMax(1.0), fCumMmin(15),
-  fCentCL1In(0), fCentV0AIn(0),
+  fCumMbins(250), fCentCL1In(0), fCentV0AIn(0),
   fNtupCum(0), fNtupCumInfo(0), fNtupZdcInfo(0)
 {
   // Standard constructor.
@@ -102,16 +104,18 @@ Bool_t AliAnalysisTaskCLQA::FillHistograms()
   if (TMath::Abs(vz)>10)
     return kTRUE;
 
-  if ((run>=188356&&run<=188366) || (run>=195344&&run<=197388)) {
-    AliAnalysisUtils anau;
-    if (anau.IsFirstEventInChunk(event))
-      return kFALSE;
-    if (!anau.IsVertexSelected2013pA(event))
-      return kFALSE;
+  if (fDo2013VertexCut) {
+    if ((run>=188356&&run<=188366) || (run>=195344&&run<=197388)) {
+      AliAnalysisUtils anau;
+      if (anau.IsFirstEventInChunk(event))
+	return kFALSE;
+      if (!anau.IsVertexSelected2013pA(event))
+	return kFALSE;
+    }
   }
 
   // accepted events
-  fHists[9]->Fill(1);
+  fHists[9]->Fill(1,run);
 
   AliCentrality *cent = InputEvent()->GetCentrality();
   Double_t v0acent = cent->GetCentralityPercentile("V0A");
@@ -138,6 +142,15 @@ Bool_t AliAnalysisTaskCLQA::FillHistograms()
           fHists[23]->Fill(pt,v0acent);
           fHists[24]->Fill(pt,znacent);
         }
+	AliPicoTrack *picot = dynamic_cast<AliPicoTrack*>(track);
+	if (picot) {
+	  Int_t ttype = picot->GetTrackType();
+	  fHists[25+ttype]->Fill(phi,pt);
+	  if (picot->IsEMCAL()) {
+	    Double_t dphi = TVector2::Phi_mpi_pi(phi-picot->GetTrackPhiOnEMCal());
+	    fHists[28]->Fill(dphi,pt);
+	  }
+	}
       }
     }
   }
@@ -191,7 +204,6 @@ Bool_t AliAnalysisTaskCLQA::FillHistograms()
             if (muonTrack->GetMatchTrigger() < 0.5) 
               continue;
           }
-
         }
       }
     }
@@ -242,6 +254,7 @@ void AliAnalysisTaskCLQA::RunCumulants(Double_t Mmin, Double_t ptmin, Double_t p
   Double_t ptmaxall=0,ptsumall=0,pt2sumall=0,ptsumall2=0;
   Double_t tsa00=0,tsa10=0,tsa11=0;
   Double_t Q2r=0,Q2i=0;
+  Double_t Q3r=0,Q3i=0;
   Double_t Q4r=0,Q4i=0;
   Double_t Q6r=0,Q6i=0;
   Double_t mpt=0,mpt2=0,ptmaxq=0;
@@ -293,6 +306,8 @@ void AliAnalysisTaskCLQA::RunCumulants(Double_t Mmin, Double_t ptmin, Double_t p
     ts11 += py*py/pt;
     Q2r  += TMath::Cos(2*phi);
     Q2i  += TMath::Sin(2*phi);
+    Q3r  += TMath::Cos(3*phi);
+    Q3i  += TMath::Sin(3*phi);
     Q4r  += TMath::Cos(4*phi);
     Q4i  += TMath::Sin(4*phi);
     Q6r  += TMath::Cos(6*phi);
@@ -302,12 +317,58 @@ void AliAnalysisTaskCLQA::RunCumulants(Double_t Mmin, Double_t ptmin, Double_t p
   if (M<=1)
     return;
 
+  Int_t pmult=0;
+  Double_t v2g=0;
+  Double_t v3g=0;
+  for (Int_t i=0; i<ntracks; ++i) {
+    AliVParticle *track1 = dynamic_cast<AliVParticle*>(fTracks->At(i));
+    if (!track1)
+      continue;
+    if (track1->Charge()==0)
+      continue;
+    Double_t eta1 = track1->Eta();
+    if ((eta1<etamin) || (eta1>etamax))
+      continue;
+    Double_t pt1 = track1->Pt();
+    if ((pt1<ptmin) || (pt1>ptmax))
+      continue;
+    Double_t phi1 = track1->Phi();
+    for (Int_t j = i+1; j<ntracks; ++j) {
+      AliVParticle *track2 = dynamic_cast<AliVParticle*>(fTracks->At(j));
+      if (!track2)
+	continue;
+      if (track2->Charge()==0)
+	continue;
+      Double_t eta2 = track2->Eta();
+      if ((eta2<etamin) || (eta2>etamax))
+	continue;
+      Double_t pt2 = track2->Pt();
+      if ((pt2<ptmin) || (pt2>ptmax))
+	continue;
+      Double_t deta=TMath::Abs(eta2-eta1);
+      if(deta<1)
+	continue;
+      Double_t dphi=TVector2::Phi_0_2pi(phi1-track2->Phi());
+      pmult++;
+      v2g+=TMath::Cos(2*dphi);
+      v3g+=TMath::Cos(3*dphi);
+    }      
+  }
+
+  if (pmult>0) {
+    v2g/=pmult;
+    v3g/=pmult;
+  }
+
   std::complex<double> q2(Q2r,Q2i);
+  std::complex<double> q3(Q3r,Q3i);
   std::complex<double> q4(Q4r,Q4i);
   std::complex<double> q6(Q6r,Q6i);
   Double_t Q22   = std::abs(q2)*std::abs(q2);
+  Double_t Q32   = std::abs(q3)*std::abs(q3);
   Double_t Q42   = std::abs(q4)*std::abs(q4);
   Double_t Q62   = std::abs(q6)*std::abs(q6);
+  Double_t Q32re = std::real(q6*std::conj(q3)*std::conj(q3));
   Double_t Q42re = std::real(q4*std::conj(q2)*std::conj(q2));
   Double_t Q6are = std::real(q4*q2*std::conj(q2)*std::conj(q2)*std::conj(q2));
   Double_t Q6bre = std::real(q6*std::conj(q2)*std::conj(q2)*std::conj(q2));
@@ -414,33 +475,48 @@ void AliAnalysisTaskCLQA::RunCumulants(Double_t Mmin, Double_t ptmin, Double_t p
   Bool_t fillCumHist = kTRUE;
   if (fillCumHist) {
     Int_t  run = InputEvent()->GetRunNumber();
-    if ((run>=188356&&run<=188366) || (run>=195344&&run<=197388)) {
-      if (anau.IsFirstEventInChunk(event))
-	fillCumHist = kFALSE;
-      if (!anau.IsVertexSelected2013pA(event))
-	fillCumHist = kFALSE;
+    if (fDo2013VertexCut) {
+      if ((run>=188356&&run<=188366) || (run>=195344&&run<=197388)) {
+	if (anau.IsFirstEventInChunk(event))
+	  fillCumHist = kFALSE;
+	if (!anau.IsVertexSelected2013pA(event))
+	  fillCumHist = kFALSE;
+      }
     }
     Double_t vz = InputEvent()->GetPrimaryVertex()->GetZ();
     if (TMath::Abs(vz)>10)
       fillCumHist = kFALSE;
   }
   if (fillCumHist) {
+    AliVVZERO *vzero = InputEvent()->GetVZEROData();
+    Double_t v0a = vzero->GetMTotV0A();
+    Double_t v0c = vzero->GetMTotV0C();
+    Double_t v0m = vzero->GetMTotV0A()+vzero->GetMTotV0C();
     fHists[112]->Fill(Mall);
     fHists[113]->Fill(M);
-    if (M>1)
-      fHists[114]->Fill(M,(Q22-M)/(M-1));
+    fHists[117]->Fill(v0a,M);
+    fHists[118]->Fill(v0c,M);
+    fHists[119]->Fill(v0a+v0c,M);
+    if (M>1) {
+      fHists[114]->Fill(M,(Q22-M)/M/(M-1));
+      fHists[120]->Fill(M,(Q32-M)/M/(M-1));
+      fHists[122]->Fill(M,v2g);
+      fHists[123]->Fill(M,v3g);
+    }
     if (M>3) {
       Double_t qc4tmp = (Q22*Q22+Q42-2*Q42re-4*(M-2)*Q22+2*M*(M-3));
-      fHists[115]->Fill(M,qc4tmp/(M-1)/(M-2)/(M-3));
+      fHists[115]->Fill(M,qc4tmp/M/(M-1)/(M-2)/(M-3));
+      qc4tmp = (Q32*Q32+Q62-2*Q32re-4*(M-2)*Q32+2*M*(M-3));
+      fHists[121]->Fill(M,qc4tmp/M/(M-1)/(M-2)/(M-3));
     }
     if (M>5) {
       Double_t qc6tmp = Q22*Q22*Q22 + 9*Q42*Q22 - 6*Q6are 
                       + 4*Q6bre - 12*Q6cre 
-	              + 18*(M-4)*Q42re + 4*Q62*
+	              + 18*(M-4)*Q42re + 4*Q62
                       - 9*(M-4)*Q22*Q22 - 9*(M-4)*Q42
                       + 18*(M-2)*(M-5)*Q22
-                      -6*(M-4)*(M-5);
-      fHists[116]->Fill(M,qc6tmp/(M-1)/(M-2)/(M-3)/(M-4)/(M-5));
+                      - 6*M*(M-4)*(M-5);
+      fHists[116]->Fill(M,qc6tmp/M/(M-1)/(M-2)/(M-3)/(M-4)/(M-5));
     }
   }
 
@@ -510,7 +586,7 @@ void AliAnalysisTaskCLQA::UserCreateOutputObjects()
   fOutput->Add(fHists[1]);
   fHists[2] = new TH1D("fVertexZnc",";vertex z (cm)",51,-25.5,25.5);
   fOutput->Add(fHists[2]);
-  fHists[9] = new TH1D("fAccepted","",1,0.5,1.5);
+  fHists[9] = new TProfile("fAccepted","",1,0.5,1.5);
   fOutput->Add(fHists[9]);
   fHists[10] = new TH1D("fV0ACent",";percentile",20,0,100);
   fOutput->Add(fHists[10]);
@@ -533,6 +609,18 @@ void AliAnalysisTaskCLQA::UserCreateOutputObjects()
     fHists[24] = new TH2D("fPtZNATracks",";#p_{T} (GeV/c);percentile",100,0,20,20,0,100);
     fHists[24]->Sumw2();
     fOutput->Add(fHists[24]);
+    fHists[25] = new TH2D("fPhiPtTracks_type0",";#phi;p_{T} (GeV/c)",60,0,TMath::TwoPi(),40,0,20);
+    fHists[25]->Sumw2();
+    fOutput->Add(fHists[25]);
+    fHists[26] = new TH2D("fPhiPtTracks_type1",";#phi;p_{T} (GeV/c)",60,0,TMath::TwoPi(),40,0,20);
+    fHists[26]->Sumw2();
+    fOutput->Add(fHists[26]);
+    fHists[27] = new TH2D("fPhiPtTracks_type2",";#phi;p_{T} (GeV/c)",60,0,TMath::TwoPi(),40,0,20);
+    fHists[27]->Sumw2();
+    fOutput->Add(fHists[27]);
+    fHists[28] = new TH2D("fDPhiPtTracks",";#Delta#phi;p_{T} (GeV/c)",60,-TMath::Pi(),TMath::Pi(),40,0,20);
+    fHists[28]->Sumw2();
+    fOutput->Add(fHists[28]);
   }
 
   if (fDoMuonTracking) {
@@ -566,11 +654,11 @@ void AliAnalysisTaskCLQA::UserCreateOutputObjects()
     fOutput->Add(fHists[104]);
     fHists[105] = new TH3D("fCumPtEtaZNA",";p_{T} (GeV/c);#eta",100,0,25,20,-2,2,10,0,100);
     fOutput->Add(fHists[105]);
-    fHists[106] = new TH1D("fCumCL1MC",";#tracks",2500,0,2500);
+    fHists[106] = new TH1D("fCumCL1MC",";#tracks",fCumMbins,0,fCumMbins);
     fOutput->Add(fHists[106]);
-    fHists[107] = new TH1D("fCumV0AMC",";#tracks",2500,0,2500);
+    fHists[107] = new TH1D("fCumV0AMC",";#tracks",fCumMbins,0,fCumMbins);
     fOutput->Add(fHists[107]);
-    fHists[108] = new TH1D("fCumV0CMC",";#tracks",2500,0,2500);
+    fHists[108] = new TH1D("fCumV0CMC",";#tracks",fCumMbins,0,fCumMbins);
     fOutput->Add(fHists[108]);
     fHists[109] = new TH1D("fCumCl1Cent",";percentile",10,0,100);
     fOutput->Add(fHists[109]);
@@ -578,16 +666,33 @@ void AliAnalysisTaskCLQA::UserCreateOutputObjects()
     fOutput->Add(fHists[110]);
     fHists[111] = new TH1D("fCumZNACent",";percentile",10,0,100);
     fOutput->Add(fHists[111]);
-    fHists[112] = new TH1D("fCumMall",";mult",2500,0,2500);
+    fHists[112] = new TH1D("fCumMall",";mult",fCumMbins,0,fCumMbins);
     fOutput->Add(fHists[112]);
-    fHists[113] = new TH1D("fCumM",";mult",2500,0,2500);
+    fHists[113] = new TH1D("fCumM",";mult",fCumMbins,0,fCumMbins);
     fOutput->Add(fHists[113]);
-    fHists[114] = new TProfile("fCumQC2",";qc2",2500,0,2500);
+    fHists[114] = new TProfile("fCumQC2",";qc2",fCumMbins,0,fCumMbins);
     fOutput->Add(fHists[114]);
-    fHists[115] = new TProfile("fCumQC4",";qc4",2500,0,2500);
+    fHists[115] = new TProfile("fCumQC4",";qc4",fCumMbins,0,fCumMbins);
     fOutput->Add(fHists[115]);
-    fHists[116] = new TProfile("fCumQC6",";qc6",2500,0,2500);
+    fHists[116] = new TProfile("fCumQC6",";qc6",fCumMbins,0,fCumMbins);
     fOutput->Add(fHists[116]);
+    Int_t v0bins=1000;
+    if (fCumMbins>1000)
+      v0bins=25000;
+    fHists[117] = new TH2D("fCumV0ACentVsM",";v0a;M",v0bins,0,v0bins,fCumMbins,0,fCumMbins);
+    fOutput->Add(fHists[117]);
+    fHists[118] = new TH2D("fCumV0CCentVsM",";v0c;M",v0bins,0,v0bins,fCumMbins,0,fCumMbins);
+    fOutput->Add(fHists[118]);
+    fHists[119] = new TH2D("fCumV0MCentVsM",";v0m;M",v0bins,0,v0bins,fCumMbins,0,fCumMbins);
+    fOutput->Add(fHists[119]);
+    fHists[120] = new TProfile("fCum3QC2",";qc2",fCumMbins,0,fCumMbins);
+    fOutput->Add(fHists[120]);
+    fHists[121] = new TProfile("fCum3QC4",";qc4",fCumMbins,0,fCumMbins);
+    fOutput->Add(fHists[121]);
+    fHists[122] = new TProfile("fEtaGapV2",";M",fCumMbins,0,fCumMbins);
+    fOutput->Add(fHists[122]);
+    fHists[123] = new TProfile("fEtaGapV3",";M",fCumMbins,0,fCumMbins);
+    fOutput->Add(fHists[123]);
 
     fNtupCum = new TTree("NtupCum", "Ntuple for cumulant analysis");
     if (1) {
