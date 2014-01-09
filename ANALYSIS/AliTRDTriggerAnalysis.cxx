@@ -55,6 +55,7 @@ AliTRDTriggerAnalysis::AliTRDTriggerAnalysis() :
   // ctor
 
   memset(fTriggerFlags, 0, sizeof(fTriggerFlags));
+  memset(fTriggerContribs, 0, sizeof(fTriggerContribs));
 }
 
 AliTRDTriggerAnalysis::~AliTRDTriggerAnalysis()
