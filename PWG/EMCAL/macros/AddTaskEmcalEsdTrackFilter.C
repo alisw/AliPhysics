@@ -45,6 +45,16 @@ AliEmcalEsdTrackFilterTask* AddTaskEmcalEsdTrackFilter(
     dataSet = kLHC11a;
     dataSetLabel = "LHC11a";
   }
+  else if (strTrackCuts.Contains("lhc10e") ||   strTrackCuts.Contains("lhc10d") ||
+	   strTrackCuts.Contains("lhc10e20") ||  strTrackCuts.Contains("lhc10f6a") ||
+	   strTrackCuts.Contains("lhc11a1a") ||  strTrackCuts.Contains("lhc11a1b") ||
+	   strTrackCuts.Contains("lhc11a1c") ||  strTrackCuts.Contains("lhc11a1d") ||
+	   strTrackCuts.Contains("lhc11a1e") ||  strTrackCuts.Contains("lhc11a1f") ||
+	   strTrackCuts.Contains("lhc11a1g") ||  strTrackCuts.Contains("lhc11a1h") ||
+	   strTrackCuts.Contains("lhc11a1i") ||  strTrackCuts.Contains("lhc11a1j")) {
+    dataSet = kLHC11a;
+    dataSetLabel = "LHC10e";
+  }
   else if (strTrackCuts.Contains("lhc11c")) {
     dataSet = kLHC11c;
     dataSetLabel = "LHC11c";
@@ -73,10 +83,35 @@ AliEmcalEsdTrackFilterTask* AddTaskEmcalEsdTrackFilter(
     dataSet = kLHC11h;
     dataSetLabel = "LHC13c";
   }
+  else if (strTrackCuts.Contains("lhc13d"))
+  {
+    dataSet = kLHC11h;
+    dataSetLabel = "LHC13d";
+  }
+  else if (strTrackCuts.Contains("lhc13e"))
+  {
+    dataSet = kLHC11h;
+    dataSetLabel = "LHC13e";
+  }
+  else if (strTrackCuts.Contains("lhc13f"))
+  {
+    dataSet = kLHC11h;
+    dataSetLabel = "LHC13f";
+  }
+  else if (strTrackCuts.Contains("lhc13g"))
+  {
+    dataSet = kLHC11h;
+    dataSetLabel = "LHC13g";
+  }
   else if (strTrackCuts.Contains("lhc12a15f"))
   {
     dataSet = kLHC11h;
     dataSetLabel = "LHC12a15f";
+  }
+  else if (strTrackCuts.Contains("lhc13b4"))
+  {
+    dataSet = kLHC11h;
+    dataSetLabel = "LHC13b4";
   }
   else if (strTrackCuts.Contains("lhc12a15g"))
   {
