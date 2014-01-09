@@ -161,7 +161,7 @@ fnTracksVertex(1),  // QA tracks pointing to principal vertex (= 3 default)
   fTHnTrigcountMCTruthPrim(0),
   fPoolMgr(0x0),
   fArrayMC(0),
-  fAnalysisType("AOD"), 
+  fAnalysisType("MCAOD"), 
   fefffilename(""),
   twoTrackEfficiencyCutValue(0.02),
 //fControlConvResoncances(0),
@@ -307,7 +307,7 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr(const char *name) // All data membe
   fTHnTrigcountMCTruthPrim(0),
    fPoolMgr(0x0),
   fArrayMC(0),
-  fAnalysisType("AOD"),
+  fAnalysisType("MCAOD"),
    fefffilename(""), 
   twoTrackEfficiencyCutValue(0.02),
 //fControlConvResoncances(0),
@@ -619,7 +619,7 @@ if(fcontainPIDtrig && fcontainPIDasso){
 	//fmaxPtComboeff=fmaxPtTrig;
 //THnSparses for calculation of efficiency
 
-if(fAnalysisType == "MCAOD" && ffillefficiency) {
+ if((fAnalysisType =="MCAOD") && ffillefficiency) {
      const Int_t nDim = 4;//       cent zvtx  pt   eta
      Int_t fBinsCh[nDim] = {iBinPair[0], iBinPair[1], nPteffbin ,nEtaBin};//**********************change it
      Double_t fMinCh[nDim] = { dBinsPair[0][0],dBinsPair[1][0], Pteff[0], EtaBin[0] };
@@ -628,7 +628,7 @@ if(fAnalysisType == "MCAOD" && ffillefficiency) {
 TString Histrename;
 for(Int_t jj=0;jj<6;jj++)//PID type binning
     {
-   Histrename="fTHnrecomatchedallPid";Histrename+=jj;
+  Histrename="fTHnrecomatchedallPid";Histrename+=jj;
   fTHnrecomatchedallPid[jj] = new THnSparseF(Histrename.Data(),"cent:zvtx::Pt:eta", nDim, fBinsCh, fMinCh, fMaxCh); 
   fTHnrecomatchedallPid[jj]->Sumw2(); 
   fTHnrecomatchedallPid[jj]->GetAxis(0)->Set(iBinPair[0], dBinsPair[0]);
@@ -721,7 +721,7 @@ for(Int_t i=0; i<kTrackVariablesPair;i++){
 
 
   //ThnSparse for Correlation plots(truth MC)
-    if(fAnalysisType == "MCAOD" && ffilltrigIDassoIDMCTRUTH) {//remember that in this case uidentified means other than pions, kaons, protons
+     if((fAnalysisType == "MCAOD") && ffilltrigIDassoIDMCTRUTH) {//remember that in this case uidentified means other than pions, kaons, protons
       fCorrelatonTruthPrimary = new THnSparseF("fCorrelatonTruthPrimary","cent:zvtx:pttrig:ptasso:deltaeta:deltaphi", kTrackVariablesPair, fBins, fMin, fMax); 
   fCorrelatonTruthPrimary->Sumw2();
 for(Int_t i=0; i<kTrackVariablesPair;i++){
@@ -772,7 +772,7 @@ for(Int_t i=0; i<3;i++){
   fOutput->Add(fTHnTrigcount);
 	  }
   
-if(fAnalysisType == "MCAOD" && ffilltrigIDassoIDMCTRUTH) {
+  if((fAnalysisType =="MCAOD") && ffilltrigIDassoIDMCTRUTH) {
   //ThSparse for trigger counting(truth MC)
 fTHnTrigcountMCTruthPrim = new THnSparseF("fTHnTrigcountMCTruthPrim","cent:zvtx:pt", dims, fBinst, fMint, fMaxt); 
   fTHnTrigcountMCTruthPrim->Sumw2();
@@ -783,7 +783,7 @@ if(fcontainPIDtrig)    SetAsymmetricBin(fTHnTrigcountMCTruthPrim,3,dBinsPair[6],
   fOutput->Add(fTHnTrigcountMCTruthPrim);
  }
 
-if(fAnalysisType == "MCAOD"){
+if(fAnalysisType=="MCAOD"){
   if(ffillhistQATruth)
     {
   MCtruthpt=new TH1F ("MCtruthpt","ptdistributiontruthprim",100,0.,10.);
@@ -1220,11 +1220,11 @@ if(pool2)  pool2->UpdatePool(CloneAndReduceTrackList(tracksMCtruth));//ownership
 if(tracksMCtruth) delete tracksMCtruth;
 
 //now deal with reco tracks
-//TObjArray* tracksUNID=0;
+   //TObjArray* tracksUNID=0;
    TObjArray* tracksUNID = new TObjArray;
    tracksUNID->SetOwner(kTRUE);
 
-   // TObjArray* tracksID=0;
+   //TObjArray* tracksID=0;
    TObjArray* tracksID = new TObjArray;
    tracksID->SetOwner(kTRUE);
 
@@ -1619,12 +1619,10 @@ void AliTwoParticlePIDCorr::doAODevent()
   
 if(fSampleType=="pPb" || fSampleType=="PbPb") if (cent_v0 < 0)  return;//for pp case it is the multiplicity
 
-   TObjArray* tracksUNID=0;
-   tracksUNID= new TObjArray;//track info before doing PID
+   TObjArray*  tracksUNID= new TObjArray;//track info before doing PID
    tracksUNID->SetOwner(kTRUE);  // IMPORTANT!
 
-   TObjArray* tracksID=0;
-   tracksID= new TObjArray;//only pions, kaons,protonsi.e. after doing the PID selection
+   TObjArray* tracksID= new TObjArray;//only pions, kaons,protonsi.e. after doing the PID selection
    tracksID->SetOwner(kTRUE);  // IMPORTANT!
  
      Double_t trackscount=0.0;//in case of pp this will give the multiplicity after the track loop(only for unidentified particles that pass the filterbit and kinematic cuts)
@@ -1980,7 +1978,7 @@ if(ffilltrigIDassoUNID==kFALSE && ffilltrigIDassoID==kTRUE){
       if(fillup=="trigIDassoID")  fTHnTrigcount->Fill(trigval,1.0/trackefftrig); 
     }
 
- if(fAnalysisType == "MCAOD" && fillup=="trigIDassoIDMCTRUTH") fTHnTrigcountMCTruthPrim->Fill(trigval,1.0/trackefftrig); //In truth MC case "Unidentified" means any particle other than pion,kaon or proton and no efficiency correction(default value 1.0)************************be careful!!!!  
+ if(fillup=="trigIDassoIDMCTRUTH") fTHnTrigcountMCTruthPrim->Fill(trigval,1.0/trackefftrig); //In truth MC case "Unidentified" means any particle other than pion,kaon or proton and no efficiency correction(default value 1.0)************************be careful!!!!  
   }
 
     //asso loop starts within trigger loop
@@ -2191,7 +2189,7 @@ if(!fcontainPIDtrig && fcontainPIDasso) vars[6]=particlepidasso;
     if(mixcase==kFALSE)  fTHnCorrID->Fill(vars,1.0/effweight);
     if(mixcase==kTRUE)  fTHnCorrIDmix->Fill(vars,1.0/effweight);
       }
-    if(fAnalysisType == "MCAOD" && fillup=="trigIDassoIDMCTRUTH")//******************************************for TRUTH MC particles
+    if(fillup=="trigIDassoIDMCTRUTH")//******************************************for TRUTH MC particles
       {//in this case effweight should be 1 always 
      if(mixcase==kFALSE)  fCorrelatonTruthPrimary->Fill(vars,1.0/effweight); 
      if(mixcase==kTRUE) fCorrelatonTruthPrimarymix->Fill(vars,1.0/effweight);
@@ -2652,7 +2650,7 @@ const Int_t MaxNofTracks=50000;
 const Int_t NofVrtxBins=10+(1+10)*2;
 Double_t ZvrtxBins[NofVrtxBins+1]={ -10,   -8,  -6,  -4,  -2,   0,   2,   4,   6,   8,  10, 
 				       90,  92,  94,  96,  98, 100, 102, 104, 106, 108, 110, 
-				      190, 192, 194, 196, 198, 200, 202, 204, 206, 208, 210, 
+				      190, 192, 194, 196, 198, 200, 202, 204, 206, 208, 210 
 				      };
  if (fSampleType=="pp"){
 const Int_t  NofCentBins=5;
