@@ -2292,7 +2292,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
         }
       }
       else {
-        Printf("ERROR: zero jet pid tasks!\n");
+        Printf("WARNING: zero jet pid tasks!\n");
         fUseJetPIDtask = kFALSE;
       }
     }
@@ -2314,8 +2314,8 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
         }
       }
       else {
-        Printf("ERROR: zero inclusive pid tasks!\n");
-        fUseJetPIDtask = kFALSE;
+        Printf("WARNING: zero inclusive pid tasks!\n");
+        fUseInclusivePIDtask = kFALSE;
       }
     }
   }
@@ -2725,8 +2725,10 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
           Double_t valuesGenYield[AliAnalysisTaskPID::kGenYieldNumAxes] = { mcID, pT, centPercent, -1, -1, -1, -1 };
 
           for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
-            valuesGenYield[fInclusivePIDtask[i]->GetIndexOfChargeAxisGenYield()] = chargeMC;
-            fInclusivePIDtask[i]->FillGeneratedYield(valuesGenYield);
+            if (fInclusivePIDtask[i]->IsInAcceptedEtaRange(TMath::Abs(part->Eta()))) {
+              valuesGenYield[fInclusivePIDtask[i]->GetIndexOfChargeAxisGenYield()] = chargeMC;
+              fInclusivePIDtask[i]->FillGeneratedYield(valuesGenYield);
+            }
           }
           
           Double_t valuesEff[AliAnalysisTaskPID::kEffNumAxes] = { mcID, pT, part->Eta(), chargeMC,
@@ -2839,8 +2841,10 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
             for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
               if ((!fInclusivePIDtask[i]->GetUseTPCCutMIGeo() && !fInclusivePIDtask[i]->GetUseTPCnclCut()) ||
                   (survivedTPCCutMIGeo && fInclusivePIDtask[i]->GetUseTPCCutMIGeo()) ||
-                  (survivedTPCnclCut && fInclusivePIDtask[i]->GetUseTPCnclCut()))
-                fInclusivePIDtask[i]->ProcessTrack(inclusiveaod, pdg, centPercent, -1); // no jet pT since inclusive spectrum 
+                  (survivedTPCnclCut && fInclusivePIDtask[i]->GetUseTPCnclCut())) {
+                    if (fInclusivePIDtask[i]->IsInAcceptedEtaRange(TMath::Abs(inclusiveaod->Eta())))
+                      fInclusivePIDtask[i]->ProcessTrack(inclusiveaod, pdg, centPercent, -1); // no jet pT since inclusive spectrum 
+              }
             }
             
             if (gentrack) {
@@ -3016,8 +3020,10 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
             Double_t valuesGenYield[AliAnalysisTaskPID::kGenYieldNumAxes] = { mcID, trackPt, centPercent, jetPt, z, xi, chargeMC };
             
             for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
-              valuesGenYield[fJetPIDtask[i]->GetIndexOfChargeAxisGenYield()] = chargeMC;
-              fJetPIDtask[i]->FillGeneratedYield(valuesGenYield);
+              if (fJetPIDtask[i]->IsInAcceptedEtaRange(TMath::Abs(part->Eta()))) {
+                valuesGenYield[fJetPIDtask[i]->GetIndexOfChargeAxisGenYield()] = chargeMC;
+                fJetPIDtask[i]->FillGeneratedYield(valuesGenYield);
+              }
             }
             
             
@@ -3213,8 +3219,10 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
         for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
           if ((!fJetPIDtask[i]->GetUseTPCCutMIGeo() && !fJetPIDtask[i]->GetUseTPCnclCut()) ||
               (survivedTPCCutMIGeo && fJetPIDtask[i]->GetUseTPCCutMIGeo()) ||
-              (survivedTPCnclCut && fJetPIDtask[i]->GetUseTPCnclCut()))
-            fJetPIDtask[i]->ProcessTrack(aodtrack, pdg, centPercent, jetPt);
+              (survivedTPCnclCut && fJetPIDtask[i]->GetUseTPCnclCut())) {
+                if (fJetPIDtask[i]->IsInAcceptedEtaRange(TMath::Abs(aodtrack->Eta())))
+                  fJetPIDtask[i]->ProcessTrack(aodtrack, pdg, centPercent, jetPt);
+          }
         }
         
         if (fIDFFMode && ((!fJetPIDtask[0]->GetUseTPCCutMIGeo() && !fJetPIDtask[0]->GetUseTPCnclCut()) ||
