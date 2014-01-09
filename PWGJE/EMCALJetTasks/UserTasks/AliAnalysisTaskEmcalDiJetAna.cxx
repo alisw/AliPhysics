@@ -38,6 +38,7 @@ ClassImp(AliAnalysisTaskEmcalDiJetAna)
 AliAnalysisTaskEmcalDiJetAna::AliAnalysisTaskEmcalDiJetAna() : 
   AliAnalysisTaskEmcalDiJetBase("AliAnalysisTaskEmcalDiJetAna"),
   fDoMatchFullCharged(kTRUE),
+  fNKtBins(30),
   fNDiJetEtaBins(1),
   fNAjBins(1),
   fh2CentRhoCh(0),
@@ -72,6 +73,7 @@ AliAnalysisTaskEmcalDiJetAna::AliAnalysisTaskEmcalDiJetAna() :
 AliAnalysisTaskEmcalDiJetAna::AliAnalysisTaskEmcalDiJetAna(const char *name) : 
   AliAnalysisTaskEmcalDiJetBase(name),
   fDoMatchFullCharged(kTRUE),
+  fNKtBins(30),
   fNDiJetEtaBins(1),
   fNAjBins(1),
   fh2CentRhoCh(0),
@@ -161,7 +163,7 @@ void AliAnalysisTaskEmcalDiJetAna::UserCreateOutputObjects()
   const Int_t nBinsSparse0 = 7;
   const Int_t nBinsPtW      = 30;
   const Int_t nBinsDPhi     = 72;
-  const Int_t nBinsKt       = 30;
+  const Int_t nBinsKt       = fNKtBins;
   const Int_t nBinsDiJetEta = fNDiJetEtaBins;//40;
   const Int_t nBinsCentr    = fNcentBins;
   const Int_t nBinsAj       = fNAjBins;//20
