@@ -214,7 +214,7 @@ public:
      * 
      * @return requested histogram
      */
-    TH1* Get(const Char_t t, Int_t n, UInt_t nua = 0) const;
+    TH1* Get(Char_t t, Int_t n, UInt_t nua = 0) const;
     /**
      * Connect internal lists to output
      *
@@ -439,7 +439,7 @@ protected:
      * @param dNdetaRef dN/deta histogram
      * @param dNdetaDiff dN/deta histogram
      */
-    void Calculate3CorFlow(CumuHistos& cumu2h, TH2I* quality, TH1D* chist, TH2D* dNDetaRef, TH2D* dNdetaDiff) const;
+    void Calculate3CorFlow(CumuHistos& cumu2h, TH2I* quality, TH1D* chist, TH2D* dNdetaRef, TH2D* dNdetaDiff) const;
     /**
      * Solve coupled eqs. to get v_n
      * 
