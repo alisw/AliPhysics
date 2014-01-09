@@ -85,7 +85,7 @@ const char* AliConversionCuts::fgkCutNames[AliConversionCuts::kNCuts] = {
    "SharedElectronCuts", //23
    "RejectToCloseV0s", //24
    "DcaRPrimVtx", //25
-   "DcaZPrimVtx" //26
+   "DcaZPrimVtx", //26
    "EvetPlane" //27
 };
 
@@ -3692,7 +3692,7 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
             for(Int_t j = 0; j<HeaderList->GetEntries();j++){
                TString GeneratorInList = ((TObjString*)HeaderList->At(j))->GetString();
                if(GeneratorName.CompareTo(GeneratorInList) == 0){
-                  if (GeneratorInList.CompareTo("PARAM") == 0){
+                  if (GeneratorInList.CompareTo("PARAM") == 0 || GeneratorInList.CompareTo("BOX") == 0 ){
                      if(fMCStack){
                         if (fMCStack->Particle(firstindexA)->GetPdgCode() == 111 || fMCStack->Particle(firstindexA)->GetPdgCode() == 221 ) {
                            fnHeaders++;
@@ -3736,7 +3736,7 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
          for(Int_t j = 0; j<HeaderList->GetEntries();j++){
             TString GeneratorInList = ((TObjString*)HeaderList->At(j))->GetString();
             if(GeneratorName.CompareTo(GeneratorInList) == 0){
-               if (GeneratorInList.CompareTo("PARAM") == 0){
+               if (GeneratorInList.CompareTo("PARAM") == 0 || GeneratorInList.CompareTo("BOX") == 0 ){
                   if(fMCStack){
                      if (fMCStack->Particle(firstindex)->GetPdgCode() == 111 || fMCStack->Particle(firstindex)->GetPdgCode() == 221 ) {
                         fNotRejectedStart[number] = firstindex;
@@ -3831,16 +3831,16 @@ Int_t AliConversionCuts::IsParticleFromBGEvent(Int_t index, AliStack *MCStack, A
    return accepted;
 }
 //_________________________________________________________________________
-Int_t AliConversionCuts::IsEventAcceptedByConversionCut(AliConversionCuts *ReaderCuts, AliVEvent *InputEvent, AliMCEvent *MCEvent, Bool_t isHeavyIon){
+Int_t AliConversionCuts::IsEventAcceptedByConversionCut(AliConversionCuts *ReaderCuts, AliVEvent *InputEvent, AliMCEvent *MCEvent, Int_t isHeavyIon){
 
    if ( !IsTriggerSelected(InputEvent) )
       return 3;
 
-   if(isHeavyIon && !(IsCentralitySelected(InputEvent,MCEvent)))
+   if(isHeavyIon != 0 && !(IsCentralitySelected(InputEvent,MCEvent)))
       return 1; // Check Centrality --> Not Accepted => eventQuality = 1
       
       
-   if(!isHeavyIon && GetIsFromPileup()){
+   if(isHeavyIon == 0 && GetIsFromPileup()){
       if(InputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.)){
 
          return 6; // Check Pileup --> Not Accepted => eventQuality = 6

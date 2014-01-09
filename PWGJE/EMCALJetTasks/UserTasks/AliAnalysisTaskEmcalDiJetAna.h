@@ -26,9 +26,9 @@ class AliAnalysisTaskEmcalDiJetAna : public AliAnalysisTaskEmcalDiJetBase {
 
   //Setters
   void                        SetMatchFullCharged(Bool_t b)        { fDoMatchFullCharged = b;}
+  void                        SetNKtBins(Int_t n)                  { fNKtBins = n;           }
   void                        SetNDiJetEtaBins(Int_t n)            { fNDiJetEtaBins = n;     }
   void                        SetNAjBins(Int_t n)                  { fNAjBins = n;           }
-
 
   //Getters
   Int_t                       GetPtTriggerBin(Double_t pt);
@@ -53,8 +53,9 @@ class AliAnalysisTaskEmcalDiJetAna : public AliAnalysisTaskEmcalDiJetBase {
 
  private:
   Bool_t            fDoMatchFullCharged;                  //  do full-charged matching histos
-  Int_t             fNDiJetEtaBins;                       // nbins in dijet eta axis
-  Int_t             fNAjBins;                             // nbins in Aj axis
+  Int_t             fNKtBins;                             // nbins on kT axis
+  Int_t             fNDiJetEtaBins;                       // nbins on dijet eta axis
+  Int_t             fNAjBins;                             // nbins on Aj axis
   TH2F             *fh2CentRhoCh;                         //! cent vs rho charged
   TH2F             *fh2CentRhoScaled;                     //! cent vs rho scaled
   TH3F             *fh3PtEtaPhiJetFull;                   //! pt,eta,phi of full jets
@@ -85,6 +86,6 @@ class AliAnalysisTaskEmcalDiJetAna : public AliAnalysisTaskEmcalDiJetBase {
   AliAnalysisTaskEmcalDiJetAna(const AliAnalysisTaskEmcalDiJetAna&);            // not implemented
   AliAnalysisTaskEmcalDiJetAna &operator=(const AliAnalysisTaskEmcalDiJetAna&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalDiJetAna, 10) // dijet analysis task
+  ClassDef(AliAnalysisTaskEmcalDiJetAna, 11) // dijet analysis task
 };
 #endif

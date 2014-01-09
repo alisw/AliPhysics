@@ -1757,13 +1757,15 @@ TGraphErrors* AliJetFlowTools::GetRatio(TH1 *h1, TH1* h2, TString name, Bool_t a
     TGraphErrors *gr = new TGraphErrors();
     gr->GetXaxis()->SetTitle("p_{T} [GeV/c]");
     Double_t binCent(0.), ratio(0.), error2(0.), binWidth(0.);
-    for(Int_t i(1); i <= h1->GetNbinsX(); i++) {
-        binCent = h1->GetXaxis()->GetBinCenter(i);
-        if(xmax > 0. && binCent > xmax) continue;
-        j = h2->FindBin(binCent);
-        binWidth = h1->GetXaxis()->GetBinWidth(i);
-        if(h2->GetBinContent(j) > 0.) {
-            ratio = h1->GetBinContent(i)/h2->GetBinContent(j);
+    TH1* dud((TH1*)h1->Clone("dud"));
+    if(!dud->Divide(h1, h2, 1., 1., "B")) {
+        for(Int_t i(1); i <= h1->GetNbinsX(); i++) {
+            binCent = h1->GetXaxis()->GetBinCenter(i);
+            if(xmax > 0. && binCent > xmax) continue;
+            j = h2->FindBin(binCent);
+            binWidth = h1->GetXaxis()->GetBinWidth(i);
+            if(h2->GetBinContent(j) > 0.) {
+                ratio = h1->GetBinContent(i)/h2->GetBinContent(j);
             /* original propagation of uncertainty
             Double_t A = 1./h2->GetBinContent(j)*h1->GetBinError(i);
             Double_t B = 0.;
@@ -1771,19 +1773,30 @@ TGraphErrors* AliJetFlowTools::GetRatio(TH1 *h1, TH1* h2, TString name, Bool_t a
                 B = -1.*h1->GetBinContent(i)/(h2->GetBinContent(j)*h2->GetBinContent(j))*h2->GetBinError(j);
                 error2 = A*A + B*B;
             } else error2 = A*A;        */
-            Double_t A = h1->GetBinError(i)/h1->GetBinContent(i);
-            Double_t B = h2->GetBinError(i)/h2->GetBinContent(i);
-            error2 = ratio*ratio*A*A+ratio*ratio*B*B;
-            if(error2 > 0 ) error2 = TMath::Sqrt(error2);
-            gr->SetPoint(gr->GetN(),binCent,ratio);
-            gr->SetPointError(gr->GetN()-1,0.5*binWidth,error2);
+                Double_t A = h1->GetBinError(i)/h1->GetBinContent(i);
+                Double_t B = h2->GetBinError(i)/h2->GetBinContent(i);
+                error2 = ratio*ratio*A*A+ratio*ratio*B*B;
+                if(error2 > 0 ) error2 = TMath::Sqrt(error2);
+                gr->SetPoint(gr->GetN(),binCent,ratio);
+                gr->SetPointError(gr->GetN()-1,0.5*binWidth,error2);
+            }
+        }
+    } else {
+        for(Int_t i(1); i <= h1->GetNbinsX(); i++) {
+            binCent = dud->GetXaxis()->GetBinCenter(i);
+            if(xmax > 0. && binCent > xmax) continue;
+            binWidth = dud->GetXaxis()->GetBinWidth(i);
+            gr->SetPoint(gr->GetN(),binCent,dud->GetBinContent(i));
+            gr->SetPointError(gr->GetN()-1,0.5*binWidth,dud->GetBinError(i));
         }
     }
+
     if(appendFit) {
         TF1* fit(new TF1("lin", "pol0", 10, 100));
         gr->Fit(fit);
     }
     if(strcmp(name, "")) gr->SetNameTitle(name.Data(), name.Data());
+    if(dud) delete dud;
     return gr;
 }
 //_____________________________________________________________________________

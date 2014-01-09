@@ -50,6 +50,7 @@
 //	- added Case3D to switch off all 3D objects (11/27/13)
 //	- added centrality flattening routine (and switch) (12/04/13)
 //	- added event plane stuff (12/11/13)
+//	- added NPsiBins argument (1/8/14)
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -104,6 +105,7 @@ AliAnalysisTaskSE(),
   fMinSep(0.0),
   fFlatCent(kFALSE),
   fPsiBinning(kFALSE),
+  fNPsiBins(0),
   fEventCount(0),
   fEC(0x0),
   fEvt(0X0),
@@ -115,7 +117,7 @@ AliAnalysisTaskSE(),
 {
 }
 //________________________________________________________________________
-AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool SignDep, bool FieldPositive, bool OnlineCase, bool MeritCase, bool Case3D, float MinDL, int MeritCutChoice, float MinSep, bool FlatCent, bool PsiBinning) 
+AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool SignDep, bool FieldPositive, bool OnlineCase, bool MeritCase, bool Case3D, float MinDL, int MeritCutChoice, float MinSep, bool FlatCent, bool PsiBinning, int NPsiBins) 
 : AliAnalysisTaskSE(name),
   fSignDep(SignDep),
   fFieldPos(FieldPositive),
@@ -127,6 +129,7 @@ AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool SignDep, bool Fiel
   fMinSep(MinSep),
   fFlatCent(FlatCent),
   fPsiBinning(PsiBinning),
+  fNPsiBins(0),
   fEventCount(0),
   fEC(0x0),
   fEvt(0X0),
@@ -147,6 +150,7 @@ AliFemtoK0Analysis::AliFemtoK0Analysis(const char *name, bool SignDep, bool Fiel
   fMinSep 		= MinSep;
   fFlatCent		= FlatCent;
   fPsiBinning	= PsiBinning;
+  fNPsiBins		= NPsiBins;
 
   // Define output slots here 
   // Output slot #1
@@ -166,6 +170,7 @@ AliFemtoK0Analysis::AliFemtoK0Analysis(const AliFemtoK0Analysis &obj)
   fMinSep(obj.fMinSep),
   fFlatCent(obj.fFlatCent),
   fPsiBinning(obj.fPsiBinning),
+  fNPsiBins(obj.fNPsiBins),
   fEventCount(obj.fEventCount),
   fEC(obj.fEC),
   fEvt(obj.fEvt),
@@ -192,6 +197,7 @@ AliFemtoK0Analysis &AliFemtoK0Analysis::operator=(const AliFemtoK0Analysis &obj)
  fMinSep		= obj.fMinSep;
  fFlatCent		= obj.fFlatCent;
  fPsiBinning	= obj.fPsiBinning;
+ fNPsiBins		= obj.fNPsiBins;
  fEventCount 	= obj.fEventCount;
  fEC 		= obj.fEC;
  fEvt 		= obj.fEvt;
@@ -211,7 +217,7 @@ AliFemtoK0Analysis::~AliFemtoK0Analysis()
   {
     for(unsigned short j=0; j<kCentBins; j++)
     {
-	  for(unsigned short k=0; k<kPsiBins; k++)
+	  for(unsigned short k=0; k<fNPsiBins; k++)
 	  {
         fEC[i][j][k]->~AliFemtoK0EventCollection();
         fEC[i][j][k] = NULL;
@@ -242,9 +248,9 @@ void AliFemtoK0Analysis::MyInit()
     
     for(unsigned short j=0; j<kCentBins; j++)
     {
-      fEC[i][j] = new AliFemtoK0EventCollection *[kPsiBins];
+      fEC[i][j] = new AliFemtoK0EventCollection *[fNPsiBins];
 
-      for(unsigned short k=0; k<kPsiBins; k++)
+      for(unsigned short k=0; k<fNPsiBins; k++)
 	  {
 	    fEC[i][j][k] = new AliFemtoK0EventCollection(kEventsToMix+1, kMultLimit);
       }
@@ -579,9 +585,9 @@ void AliFemtoK0Analysis::Exec(Option_t *)
   double psiEP = eventplane->GetEventplane("V0",fAOD,2); //[-PI/2,PI/2]
   ((TH1F*)fOutputList->FindObject("fHistPsi"))->Fill(psiEP);
 
-  double psiStep = PI/double(kPsiBins);
+  double psiStep = PI/double(fNPsiBins);
   double psiStart = -0.5*PI;
-  for(int i=0; i<kPsiBins; i++)
+  for(int i=0; i<fNPsiBins; i++)
   {
    if((psiEP > psiStart+i*psiStep) && (psiEP < psiStart+(i+1)*psiStep))
    {

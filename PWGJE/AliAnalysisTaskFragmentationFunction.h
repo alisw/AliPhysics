@@ -270,12 +270,12 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   void     AssociateGenRec(TList* tracksAODMCCharged,TList* tracksRec, TArrayI& indexAODTr,TArrayI& indexMCTr,TArrayS& isRefGen,TH2F* fh2PtRecVsGen);
 
   void     FillSingleTrackHistosRecGen(AliFragFuncQATrackHistos* trackQAGen, AliFragFuncQATrackHistos* trackQARec, TList* tracksGen, 
-				       const TArrayI& indexAODTr, const TArrayS& isRefGen, const Bool_t scaleStrangeness = kFALSE);
+				       const TArrayI& indexAODTr, const TArrayS& isRefGen, Bool_t scaleStrangeness = kFALSE);
 
 
   void     FillJetTrackHistosRec(AliFragFuncHistos* histRec,  AliAODJet* jet, 
 				 TList* jetTrackList, const TList* tracksGen, const TList* tracksRec, const TArrayI& indexAODTr,
-				 const TArrayS& isRefGen, TList* jetTrackListTR = 0, const Bool_t scaleStrangeness = kFALSE,
+				 const TArrayS& isRefGen, TList* jetTrackListTR = 0, Bool_t scaleStrangeness = kFALSE,
 				 Bool_t fillJS = kFALSE, TProfile* hProNtracksLeadingJet = 0, TProfile** hProDelRPtSum = 0, TProfile* hProDelR80pcPt = 0);
 
 
