@@ -113,6 +113,7 @@ AliDielectron::AliDielectron() :
   fPdgLeg2(11),
   fSignalsMC(0x0),
   fNoPairing(kFALSE),
+  fProcessLS(kTRUE),
   fUseKF(kTRUE),
   fHistoArray(0x0),
   fHistos(0x0),
@@ -161,6 +162,7 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fPdgLeg2(11),
   fSignalsMC(0x0),
   fNoPairing(kFALSE),
+  fProcessLS(kTRUE),
   fUseKF(kTRUE),
   fHistoArray(0x0),
   fHistos(0x0),
@@ -334,7 +336,8 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
     // create pairs and fill pair candidate arrays
     for (Int_t itrackArr1=0; itrackArr1<4; ++itrackArr1){
       for (Int_t itrackArr2=itrackArr1; itrackArr2<4; ++itrackArr2){
-        FillPairArrays(itrackArr1, itrackArr2);
+	if(!fProcessLS && GetPairIndex(itrackArr1,itrackArr2)!=kEv1PM) continue;
+	FillPairArrays(itrackArr1, itrackArr2);
       }
     }
 

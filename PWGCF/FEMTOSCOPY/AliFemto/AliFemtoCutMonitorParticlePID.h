@@ -20,7 +20,7 @@ class TList;
 #include "AliFemtoCutMonitor.h"
 
 class AliFemtoCutMonitorParticlePID : public AliFemtoCutMonitor{
-  
+
 public:
   AliFemtoCutMonitorParticlePID();
   AliFemtoCutMonitorParticlePID(const char *aName, Int_t aTOFParticle);
@@ -39,7 +39,7 @@ public:
   virtual void Fill(const AliFemtoEvent* aEvent,const AliFemtoParticleCollection* aCollection)
   {AliFemtoCutMonitor::Fill(aEvent, aCollection);}
   virtual void Fill(const AliFemtoParticleCollection* aCollection1,const AliFemtoParticleCollection* aCollection2) {AliFemtoCutMonitor::Fill(aCollection1, aCollection2);}
-  void SetTOFParticle(Int_t ipart);
+ /* void SetTOFParticle(Int_t ipart); */
 
   void Write();
 
