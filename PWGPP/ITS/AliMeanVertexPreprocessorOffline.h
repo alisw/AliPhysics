@@ -1,5 +1,5 @@
 #ifndef ALI_MEANVERTEX_PREPROCESSOROFFLINE_H
-#define ALI_MEANVERTEX_PREPRECESSOROFFLINE_H
+#define ALI_MEANVERTEX_PREPROCESSOROFFLINE_H
 
 /* Copyright(c) 1998-2011, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
