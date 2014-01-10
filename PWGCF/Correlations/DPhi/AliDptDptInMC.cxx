@@ -1270,7 +1270,7 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
                   continue;
 		}
 
-              if(!t->IsPhysicalPrimary()) continue;                                                                                      
+	      //if(!t->IsPhysicalPrimary()) continue;                                                                                      
               // Remove neutral tracks                                      
               if(t->Charge() == 0) continue;                                                                                              
 	      //Exclude Weak Decay Resonances                                                                                                          
@@ -1283,14 +1283,15 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
 		    if(motherTrack) {
 		      Int_t pdgCodeOfMother = motherTrack->GetPdgCode();
 
-		      if(pdgCodeOfMother == 311   ||
-                          pdgCodeOfMother == -311  ||
-                          pdgCodeOfMother == 3122  ||
+		      if(pdgCodeOfMother == 311  ||
+			 pdgCodeOfMother == -311 ||
+			 pdgCodeOfMother == 310  ||
+			 pdgCodeOfMother == 3122 ||
 			 pdgCodeOfMother == -3122) continue;
-
 		    }
 		  }
 		}
+
 
 	      //Exclude electrons with PDG                                                                                                 
 	      if(fExcludeElectronsInMC) {
