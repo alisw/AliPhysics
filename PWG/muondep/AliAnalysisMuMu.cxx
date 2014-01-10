@@ -2960,7 +2960,11 @@ void AliAnalysisMuMu::TriggerCountCoverage(const char* triggerList,
   {
     ++n;
     current += it->first;
-    Double_t percent = ( total > 0.0 ? current*100.0/total : 0.0);
+    Double_t percent = 0.0;
+    if ( total > 0.0 )
+    {
+      percent = current*100.0/total;
+    }
     std::cout << Form("%10lld",it->first) << " " << it->second << " percentage of total = " << Form("%7.2f %% %3d",percent,n ) << std::endl;
   }
 
