@@ -2327,7 +2327,7 @@ inline void AliDielectronVarManager::InitZDCRecenteringHistograms(Int_t runNo) {
 
   TFile file(fgZDCRecenteringFile.Data());
   if (!file.IsOpen()) return;
-  cout << fgZDCRecenteringFile << endl;
+
   fgZDCRecentering[0][0] = (TProfile3D*)file.Get(Form("RUN%06d_QxA_Recent", runNo));
   fgZDCRecentering[0][1] = (TProfile3D*)file.Get(Form("RUN%06d_QyA_Recent", runNo));
   fgZDCRecentering[1][0] = (TProfile3D*)file.Get(Form("RUN%06d_QxC_Recent", runNo));
