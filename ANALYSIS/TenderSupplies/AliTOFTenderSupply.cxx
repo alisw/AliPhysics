@@ -1299,7 +1299,7 @@ Double_t AliTOFTenderSupply::SampleT0Signal(Int_t side, Double_t zvertex, Double
     else printf(" --> signal wil not be generated: ");
   }
   if (pu < p) signal = gRandom->Gaus(0.,resolution[side]);
-  Printf(" %f ",signal);
+  if (fDebugLevel >1) Printf(" %f ",signal);
   return signal;
 }
 
