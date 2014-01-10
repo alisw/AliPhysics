@@ -60,6 +60,8 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
   Int_t              fNFastOR;               // size of trigger patch fNFastORxfNFastOR
 
   TH1F  *fhNEvents;                         //! Histo number of events
+  TH2F  *fHistRhovsCentFull;                //!rho vs. centrality
+  TH2F  *fHistRhovsCentCharged;             //!rho vs. centrality
   TH3F  *fh3PtEtaPhiTracks;                 //! pt,eta,phi of tracks
   TH3F  *fh3PtEtaPhiTracksOnEmcal;          //! pt,eta,phi of tracks
   TH3F  *fh3PtEtaPhiTracksProp;             //! pt,eta,phi of tracks
@@ -96,6 +98,6 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetTriggerQA(const AliAnalysisTaskEmcalJetTriggerQA&);            // not implemented
   AliAnalysisTaskEmcalJetTriggerQA &operator=(const AliAnalysisTaskEmcalJetTriggerQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetTriggerQA, 8)
+  ClassDef(AliAnalysisTaskEmcalJetTriggerQA, 9)
 };
 #endif

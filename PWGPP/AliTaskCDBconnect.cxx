@@ -116,3 +116,10 @@ void AliTaskCDBconnect::Exec(Option_t* /*option*/)
     InitGRP();
   }
 }
+
+//______________________________________________________________________________
+void AliTaskCDBconnect::SetSpecificStorage(const char* calibType, const char* dbString)
+{
+    AliCDBManager *cdb = AliCDBManager::Instance();
+    cdb->SetSpecificStorage(calibType,dbString);
+ }

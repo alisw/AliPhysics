@@ -20,7 +20,8 @@ void AddTaskFlowCentralityPIDSP(Int_t centralitysel,
 			       Float_t etamin=-0.8,
 			       Float_t etamax=0.8,	 
                                TString uniqueStr="",
-			       Int_t side      = 0 )
+			       Int_t side      = 0,
+			       Int_t filterbit=1)
 {
   // Define the range for eta subevents (for SP method)
   Double_t minA = -5;
@@ -129,7 +130,7 @@ void AddTaskFlowCentralityPIDSP(Int_t centralitysel,
 
   // POI TRACK CUTS:
   AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts("TPConlyPOI");
-//  cutsPOI->GetBayesianResponse()->ForceOldDedx(); // for 2010 data to use old TPC PID Response instead of the official one
+  cutsPOI->GetBayesianResponse()->ForceOldDedx(); // for 2010 data to use old TPC PID Response instead of the official one
   cutsPOI->SetParamType(poitype);
   cutsPOI->SetParamMix(poimix);
   cutsPOI->SetPtRange(0.0,10.);
@@ -155,7 +156,7 @@ void AddTaskFlowCentralityPIDSP(Int_t centralitysel,
   //cutsPOI->GetESDpid().GetTPCResponse().SetBetheBlochParameters(4.36414e-02,1.75977e+01,1.14385e-08,2.27907e+00,3.36699e+00);
   //cutsPOI->GetESDpid().GetTPCResponse().SetMip(49);
   cutsPOI->SetMinimalTPCdedx(10.);
-  cutsPOI->SetAODfilterBit(1);
+  cutsPOI->SetAODfilterBit(filterbit);
   cutsPOI->SetQA(doQA);
   cutsPOI->SetPriors((centrMin+centrMax)*0.5); // set priors and PID as a function of the centrality
 

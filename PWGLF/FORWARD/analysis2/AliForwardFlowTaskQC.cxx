@@ -1007,7 +1007,7 @@ AliForwardFlowTaskQC::VertexBin::operator=(const AliForwardFlowTaskQC::VertexBin
   fdNdedpDiffAcc = o.fdNdedpDiffAcc;
   fOutliers      = o.fOutliers;
   fDebug         = o.fDebug;
-  for (UInt_t i = 0; i < sizeof(fEtaLims)/sizeof(Int_t); i++) fEtaLims[i] = o.fEtaLims[i];
+  for (UInt_t i = 0; i < sizeof(fEtaLims)/sizeof(Double_t); i++) fEtaLims[i] = o.fEtaLims[i];
 
   return *this;
 }
@@ -1878,7 +1878,6 @@ void AliForwardFlowTaskQC::VertexBin::CalculateReferenceFlow(CumuHistos& cumu2h,
   TH3D* cumuRef = 0; 
   TH2D* cumu2 = 0;
   TH2D* cumu2NUAold = 0;
-  TH2D* cumu2NUA = 0;
   TH2D* cumu4 = 0;
   TH2D* cumu4NUA = 0;
   Int_t qualityFactor = ((fFlags & kStdQC) ? 8 : 4); // used for correctly filling in quality hists
@@ -1887,7 +1886,6 @@ void AliForwardFlowTaskQC::VertexBin::CalculateReferenceFlow(CumuHistos& cumu2h,
     cumu2 = (TH2D*)cumu2h.Get('r', n, CumuHistos::kNoNUA);
     if ((fFlags & kNUAcorr)) {
       cumu2NUAold = (TH2D*)cumu2h.Get('r', n, CumuHistos::kNUAOld);
-      cumu2NUA = (TH2D*)cumu2h.Get('r', n, CumuHistos::kNUA);
     }
     if ((fFlags & kStdQC)) {
       cumu4 = (TH2D*)cumu4h.Get('r', n, CumuHistos::kNoNUA);
@@ -2021,7 +2019,6 @@ void AliForwardFlowTaskQC::VertexBin::CalculateDifferentialFlow(CumuHistos& cumu
   TH3D* cumuDiff = 0; 
   TH2D* cumu2 = 0;
   TH2D* cumu2NUAold = 0;
-  TH2D* cumu2NUA = 0;
   TH2D* cumu4 = 0;
   TH2D* cumu4NUA = 0;
   Int_t qualityFactor = ((fFlags & kStdQC) ? 8 : 4); // used for correctly filling in quality hists
@@ -2030,9 +2027,8 @@ void AliForwardFlowTaskQC::VertexBin::CalculateDifferentialFlow(CumuHistos& cumu
     cumu2 = (TH2D*)cumu2h.Get('d', n, CumuHistos::kNoNUA);
     if ((fFlags & kNUAcorr)) {
       cumu2NUAold = (TH2D*)cumu2h.Get('d', n, CumuHistos::kNUAOld);
-      cumu2NUA = (TH2D*)cumu2h.Get('d', n, CumuHistos::kNUA);
     }
-    if (!(fFlags & kEtaGap)) {
+    if ((fFlags & kStdQC)) {
       cumu4 = (TH2D*)cumu4h.Get('d',n);
       if ((fFlags & kNUAcorr)) cumu4NUA = (TH2D*)cumu4h.Get('d', n, CumuHistos::kNUAOld);
     }
@@ -2119,7 +2115,7 @@ void AliForwardFlowTaskQC::VertexBin::CalculateDifferentialFlow(CumuHistos& cumu
        
 	Double_t fourPrime = w4pFourPrime / w4p;
 	Double_t qc4Prime = fourPrime-2.*twoPrime*two; 
-	cumu4->Fill(eta, cent, qc4Prime);
+	if (cumu4) cumu4->Fill(eta, cent, qc4Prime);
 
 	if ((fFlags & kNUAcorr)) {
 	  qc4Prime += - cosP1nPsi*cosP1nPhi1M1nPhi2M1nPhi3
@@ -2144,7 +2140,7 @@ void AliForwardFlowTaskQC::VertexBin::CalculateDifferentialFlow(CumuHistos& cumu
 //	Double_t vnFourDiff = - qc4Prime / TMath::Power(-qc4, 0.75);
 	if (!TMath::IsNaN(qc4Prime*mpqMult)) {
 	  quality->Fill((n-2)*qualityFactor+7, Int_t(cent));
-	  if ((fFlags & kNUAcorr)) cumu4NUA->Fill(eta, cent, qc4Prime);
+	  if (cumu4NUA) cumu4NUA->Fill(eta, cent, qc4Prime);
 	}
 	else 
 	  quality->Fill((n-2)*qualityFactor+8, Int_t(cent));
@@ -2176,13 +2172,10 @@ void AliForwardFlowTaskQC::VertexBin::Calculate3CorFlow(CumuHistos& cumu2h, TH2I
   TH3D* cumuDiff = 0; 
   TH2D* cumu2r = 0;
   TH2D* cumu2rNUAold = 0;
-  TH2D* cumu2rNUA = 0;
   TH2D* cumu2a = 0;
   TH2D* cumu2aNUAold = 0;
-  TH2D* cumu2aNUA = 0;
   TH2D* cumu2b = 0;
   TH2D* cumu2bNUAold = 0;
-  TH2D* cumu2bNUA = 0;
   // Loop over cumulant histogram for final calculations 
   for (Int_t n = 2; n <= fMaxMoment; n++) { // Moment loop begins
     cumu2r = (TH2D*)cumu2h.Get('r', n, CumuHistos::kNoNUA);
@@ -2190,11 +2183,8 @@ void AliForwardFlowTaskQC::VertexBin::Calculate3CorFlow(CumuHistos& cumu2h, TH2I
     cumu2b = (TH2D*)cumu2h.Get('b', n, CumuHistos::kNoNUA);
     if ((fFlags & kNUAcorr)) {
       cumu2rNUAold = (TH2D*)cumu2h.Get('r', n, CumuHistos::kNUAOld);
-      cumu2rNUA = (TH2D*)cumu2h.Get('r', n, CumuHistos::kNUA);
       cumu2aNUAold = (TH2D*)cumu2h.Get('a', n, CumuHistos::kNUAOld);
-      cumu2aNUA = (TH2D*)cumu2h.Get('a', n, CumuHistos::kNUA);
       cumu2bNUAold = (TH2D*)cumu2h.Get('b', n, CumuHistos::kNUAOld);
-      cumu2bNUA = (TH2D*)cumu2h.Get('b', n, CumuHistos::kNUA);
     }
     cumuRef  = (TH3D*)fCumuHists.Get('r',n);
     cumuDiff = (TH3D*)fCumuHists.Get('d',n);
@@ -2374,7 +2364,7 @@ void AliForwardFlowTaskQC::VertexBin::SolveCoupledFlowEquations(CumuHistos& cumu
 		      Int_t(cumu.Get(type, 2, CumuHistos::kNUAOld)->GetYaxis()->GetBinUpEdge(cBin)),
 		      cumu.Get(type, 2, CumuHistos::kNUAOld)->GetXaxis()->GetBinCenter(eBin), 
 		      type, fType.Data(), fVzMin, fVzMax, 
-		      ((fFlags & kEtaGap) ? ", eta-gap" : "")));
+		      GetQCType(fFlags, kTRUE)));
       // Go back to v_n for ref. keep <<2'>> for diff. flow).
       for (Int_t n = 0; n < fMaxMoment-1; n++) {
 	Double_t vnTwo = 0;
@@ -2794,7 +2784,7 @@ const Char_t* AliForwardFlowTaskQC::GetQCType(UShort_t flags, Bool_t prependUS)
   return type.Data();
 }
 //_____________________________________________________________________
-TH1* AliForwardFlowTaskQC::CumuHistos::Get(const Char_t t, Int_t n, UInt_t nua) const
+TH1* AliForwardFlowTaskQC::CumuHistos::Get(Char_t t, Int_t n, UInt_t nua) const
 {
   //
   //  Get histogram/profile for type t and moment n
@@ -2877,6 +2867,7 @@ void AliForwardFlowTaskQC::CumuHistos::Add(TH1* h) const
   TString name = h->GetName();
   if (name.Contains("Ref")) {
     if (fRefHists) fRefHists->Add(h);
+    else AliFatal("CumuHistos::Add() - fRefHists does not exist");
     // Check that the list correspond to fMaxMoments
     if (fRefHists->GetEntries() > (fNUA+1)*(fMaxMoment-1.)) 
       AliError("CumuHistos::Add wrong number of hists in ref list, "
@@ -2884,6 +2875,7 @@ void AliForwardFlowTaskQC::CumuHistos::Add(TH1* h) const
   }
   else if (name.Contains("Diff")) {
     if (fDiffHists) fDiffHists->Add(h);
+    else AliFatal("CumuHistos::Add() - fDiffHists does not exist");
     // Check that the list correspond to fMaxMoment
     if (fDiffHists->GetEntries() > 2*(fNUA+1)*(fMaxMoment-1.)) 
       AliError("CumuHistos::Add wrong number of hists in diff list, "

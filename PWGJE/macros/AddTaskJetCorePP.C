@@ -25,6 +25,7 @@ AliAnalysisTaskJetCorePP* AddTaskJetCorePP(
    const Char_t* mcFullFlag="",  // real="", all jets= "MC"    
    const Char_t* mcChargFlag="",  // real="", charged jets = "MC2" 
    Bool_t bfillrespmx=0,  // 0=dont fill resp mx histos, 1=fill histos
+   Bool_t bDiceEff=0,  // 0=leave efficiency as it is,  1= reduce efficiency by constant amount via SetFixedEfficiency
    Int_t triggerType=0,  //0=single incl trigger, 1=leading track, 2=hadron pt>10 
    Int_t evtRangeLow=0,   //last digit of range of ESD event number
    Int_t evtRangeHigh=9,  //first digit of range of ESD event number
@@ -70,13 +71,20 @@ AliAnalysisTaskJetCorePP* AddTaskJetCorePP(
    otherparams = otherparams + Form("_Filter%05d",(UInt_t) trkFilterMask);
    otherparams = otherparams + Form("_Cut%05d",(Int_t) (1000*trackLowPtCut));
 
-   if(analBranch.BeginsWith("clustersAOD"))
+   if(analBranch.BeginsWith("clustersAOD")){
       otherparams = otherparams + Form("_Skip%02d",0);
+   }
    
    analBranch   = analBranch   + jet   + otherparams; //antikt jet 
    analBranchBg = analBranchBg + jetbg + otherparams; //kt bg jet
 
+   if(bDiceEff){ //dicing efficiency relates rec only
+      analBranch   = analBranch   + "Detector10Fr0"; //dice=1, smear=0, change eff fraction =0
+      analBranchBg = analBranchBg + "Detector10Fr0"; 
+   }
+
    //clustersAOD_ANTIKT04_B0_Filter00272_Cut00150_Skip00   
+   //clustersAOD_ANTIKT04_B0_Filter00272_Cut00150_Skip00_Detector10Fr0   
    //Skip00 none of the most energetic jets is ommited
    //Cut00150  pT min cut on track
    //Filter00272
