@@ -1,10 +1,13 @@
 void sim(Int_t nev=5) {
-  if (!strcmp(gSystem->GetBuildArch(),"win32gcc")) {
-    gSystem->Load("libProof");
-    gSystem->Load("libGui");
-    gROOT->Macro("loadlibssim.C");
-    new AliRun("gAlice","The ALICE Off-line Simulation Framework");
-  }
+  // Libraries required by geant321
+  gSystem->Load("liblhapdf");      // Parton density functions
+  gSystem->Load("libEGPythia6");   // TGenerator interface
+  gSystem->Load("libpythia6");     // Pythia
+  gSystem->Load("libAliPythia6");  // ALICE specific implementations
+  gSystem->Load("libdpmjet");      // DPMJET
+  gSystem->Load("libTDPMjet");     // DPMJET interface
+
+  gSystem->Load("libgeant321");
 
   AliSimulation simulator;
   simulator.SetMakeSDigits("TRD TOF PHOS HMPID EMCAL MUON FMD ZDC PMD T0 VZERO");
