@@ -220,7 +220,7 @@ private:
    const Double_t fCellArea; //cell area
    Double_t fSafetyMargin; //enlarge a bit the jet size to avoid contamination of UE
 
-   ClassDef(AliAnalysisTaskJetCorePP, 10);  //has to end with number larger than 0
+   ClassDef(AliAnalysisTaskJetCorePP, 11);  //has to end with number larger than 0
 };
 
 #endif
