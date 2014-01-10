@@ -33,7 +33,7 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
     fVZEROside(0),
     fOutput(0x0),
     fnCentBins(20),
-    fnQvecBins(50)
+    fnQvecBins(40)
       {}
   AliAnalysisTaskSpectraAllChAOD(const char *name);
   virtual ~AliAnalysisTaskSpectraAllChAOD() {
