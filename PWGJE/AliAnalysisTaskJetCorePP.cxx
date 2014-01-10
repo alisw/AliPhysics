@@ -552,7 +552,7 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
 
    //Centrality, A, pTjet, pTtrigg, dphi
    const Int_t dimSpec   = 5;
-   const Int_t nBinsSpec[dimSpec]     = {nBinsCentrality, 100,   220,  50, TMath::Nint(10*(TMath::Pi()-fkDeltaPhiCut))};
+   const Int_t nBinsSpec[dimSpec]     = {nBinsCentrality,  50,   110,  50, TMath::Nint(10*(TMath::Pi()-fkDeltaPhiCut))};
    const Double_t lowBinSpec[dimSpec] = {0.0,             0.0,   -20, 0.0, fkDeltaPhiCut};
    const Double_t hiBinSpec[dimSpec]  = {100.0,           1.0, 200.0,50.0, TMath::Pi()};
    fHJetSpec = new THnSparseF("fHJetSpec",
@@ -574,9 +574,9 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
    //------------------- HISTOS FOR DIAGNOSTIC ----------------------
    //A, pTjet, pTjet-pTUe, pTUe, rhoUe     bg estimate from kT median
    const Int_t    dimSpecMed   = 5;
-   const Int_t    nBinsSpecMed[dimSpecMed]  = {50,     50,  120,     50,   50};
+   const Int_t    nBinsSpecMed[dimSpecMed]  = {25,     50,    60,    20,   20};
    const Double_t lowBinSpecMed[dimSpecMed] = {0.0,   0.0, -20.0,   0.0,  0.0};
-   const Double_t hiBinSpecMed[dimSpecMed]  = {1.0, 100.0, 100.0,  20.0, 20.0};
+   const Double_t hiBinSpecMed[dimSpecMed]  = {1.0, 100.0, 100.0,  10.0, 20.0};
    fHJetUeMedian = new THnSparseF("fHJetUeMedian",
                    "Recoil jet spectrum [A,pTjet,pTjet-pTUe, pTUe, rhoUe]",
                    dimSpecMed, nBinsSpecMed, lowBinSpecMed, hiBinSpecMed);
@@ -589,7 +589,7 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
 
    //rho bacground reconstructed data
    const Int_t    dimRho   = 2;
-   const Int_t    nBinsRho[dimRho]  = {200  , 200};
+   const Int_t    nBinsRho[dimRho]  = {50  ,   50};
    const Double_t lowBinRho[dimRho] = {0.0  , 0.0};
    const Double_t hiBinRho[dimRho]  = {20.0 , 20.0};
 
@@ -682,20 +682,20 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
    if(fIsChargedMC){   
       if(fFillRespMx){
          //Fill response matrix only once 
-         fhJetPtGenVsJetPtRec = new TH2D("fhJetPtGenVsJetPtRec","JetPtGenVsJetPtRec", 200,0,200, 200,0,200); 
+         fhJetPtGenVsJetPtRec = new TH2D("fhJetPtGenVsJetPtRec","JetPtGenVsJetPtRec", 100,0,200, 100,0,200); 
          fOutputList->Add(fhJetPtGenVsJetPtRec); //gen MC charg jet pt spectrum versus rec charged jet pt spectrum
          //....
-         fhJetPtGenVsJetPtRecSubUeMedian = new TH2D("fhJetPtGenVsJetPtRecSubUeMedian","fhJetPtGenVsJetPtRecSubUeMedian", 220,-20,200, 220,-20,200); 
+         fhJetPtGenVsJetPtRecSubUeMedian = new TH2D("fhJetPtGenVsJetPtRecSubUeMedian","fhJetPtGenVsJetPtRecSubUeMedian", 110,-20,200, 110,-20,200); 
          fOutputList->Add(fhJetPtGenVsJetPtRecSubUeMedian); // with kT median bg subtr 
          //....
          fhJetPtGenVsJetPtRecSubUeCone=(TH2D*)fhJetPtGenVsJetPtRecSubUeMedian->Clone("fhJetPtGenVsJetPtRecSubUeCone");
          fhJetPtGenVsJetPtRecSubUeCone->SetTitle("fhJetPtGenVsJetPtRecSubUeCone");
          fOutputList->Add(fhJetPtGenVsJetPtRecSubUeCone); // with weighted kT median bg subtr 
          //....
-         fhJetPtGen = new TH1D("fhJetPtGen","Jet Pt (MC Gen)",200,0,200); //MC generator charged jet pt spectrum
+         fhJetPtGen = new TH1D("fhJetPtGen","Jet Pt (MC Gen)",100,0,200); //MC generator charged jet pt spectrum
          fOutputList->Add(fhJetPtGen);  
          //....
-         fhJetPtSubUeMedianGen = new TH1D("fhJetPtSubUeMedianGen","Jet Pt - UE pT (MC Gen)",220,-20,200); 
+         fhJetPtSubUeMedianGen = new TH1D("fhJetPtSubUeMedianGen","Jet Pt - UE pT (MC Gen)",110,-20,200); 
          fOutputList->Add(fhJetPtSubUeMedianGen);  // with kT median bg subtr
          //....
          fhJetPtSubUeConeGen = (TH1D*) fhJetPtSubUeMedianGen->Clone("fhJetPtSubUeConeGen");
@@ -703,10 +703,10 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
       
          //....
          if(fIsFullMC){
-            fhJetPtGenChargVsJetPtGenFull = new TH2D("fhJetPtGenChargVsJetPtGenFull","fhJetPtGenChargVsJetPtGenFull", 200,0,200, 200,0,200);
+            fhJetPtGenChargVsJetPtGenFull = new TH2D("fhJetPtGenChargVsJetPtGenFull","fhJetPtGenChargVsJetPtGenFull", 100,0,200, 100,0,200);
             fOutputList->Add(fhJetPtGenChargVsJetPtGenFull); //gen full MC jet pt versus gen charged jet MC pt
          //....
-            fhJetPtGenFull = new TH1D("fhJetPtGenFull","Jet Pt (MC Full jets Gen)",200,0,200); //MC generator full jet pt spectrum
+            fhJetPtGenFull = new TH1D("fhJetPtGenFull","Jet Pt (MC Full jets Gen)",100,0,200); //MC generator full jet pt spectrum
             fOutputList->Add(fhJetPtGenFull); 
          }
       }
