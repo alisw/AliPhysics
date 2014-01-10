@@ -26,7 +26,24 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-file(GLOB SRCS "EveHLT/*.cxx")
+#file(GLOB SRCS "EveHLT/*.cxx")
+set ( SRCS
+  EveHLT/AliEveEventBuffer.cxx
+  EveHLT/AliEveEventBufferHomer.cxx
+  EveHLT/AliEveEventBufferOffline.cxx
+  EveHLT/AliEveHLTEventManager.cxx
+  EveHLT/AliEveHLTEventManagerEditor.cxx
+  EveHLT/AliEveHLTEventManagerHomer.cxx
+  EveHLT/AliEveHLTEventManagerOffline.cxx
+  EveHLT/AliEveHltGeometry.cxx
+  EveHLT/AliEveHOMERManager.cxx
+  EveHLT/AliEveHOMERManagerEditor.cxx
+  EveHLT/AliEveHOMERSource.cxx
+  EveHLT/AliEveHOMERSourceList.cxx
+  EveHLT/AliEveHOMERSourceMapByDet.cxx
+  EveHLT/AliEveHOMERSourceMapByType.cxx
+  EveHLT/AliEveHOMERSourceMap.cxx
+  )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 

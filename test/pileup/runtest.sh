@@ -1,11 +1,5 @@
 #!/bin/sh
-if [ "$ALICE_TARGET" = "win32gcc" ]
-    then
-    REXE=root_exe.exe
-else
-    REXE=aliroot
-fi
-
+REXE=aliroot
 
 rm -rf *.root *.dat *.log fort* hlt hough raw* *.inp *.o
 ${REXE} -b -q sim.C      2>&1 | tee sim.log
