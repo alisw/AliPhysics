@@ -165,7 +165,7 @@ void doeffPi(Int_t pos,Float_t prob,Float_t etaminkp,Float_t etamaxkp){
   if(prob > 0.1999){
     kGoodMatch = kFALSE;
     kSigma2vs3 = kFALSE;
-    if(! kOverAll) require5sigma = kTRUE;
+//    if(! kOverAll) require5sigma = kTRUE;
     if(!isMC) weightS = -0.95;
   }
 
