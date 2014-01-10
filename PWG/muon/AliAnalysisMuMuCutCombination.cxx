@@ -123,9 +123,12 @@ Bool_t AliAnalysisMuMuCutCombination::IsEqual(const TObject* obj) const
   if ( IsTrackCutter() != other->IsTrackCutter() ) return kFALSE;
   if ( IsTrackPairCutter() != other->IsTrackPairCutter() ) return kFALSE;
   if ( IsTriggerClassCutter() != other->IsTriggerClassCutter() ) return kFALSE;
+
+  if ( !fCuts && !other->fCuts ) return kTRUE;
+
+  // no cuts, nothing to check further...
   
-  if ( fCuts && !other->fCuts ) return kFALSE;
-  if ( !fCuts && other->fCuts ) return kFALSE;
+  if ( ( fCuts && !other->fCuts ) || ( !fCuts && other->fCuts ) ) return kFALSE;
   
   if ( fCuts->GetEntries() != other->fCuts->GetEntries() ) return kFALSE;
   
