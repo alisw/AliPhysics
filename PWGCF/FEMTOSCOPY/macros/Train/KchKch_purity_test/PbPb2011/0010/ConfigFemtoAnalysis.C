@@ -27,6 +27,7 @@
 #include "AliFemtoShareQualityTPCEntranceSepPairCut.h"
 #include "AliFemtoPairCutAntiGamma.h"
 #include "AliFemtoPairCutRadialDistance.h"
+#include "AliFemtoPairCutRadialDistanceKK.h"
 #include "AliFemtoQinvCorrFctn.h"
 #include "AliFemtoShareQualityCorrFctn.h"
 #include "AliFemtoTPCInnerCorrFctn.h"
@@ -54,31 +55,40 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   double PionMass = 0.13956995;
   double KaonMass = 0.493677;
-  const int cMu=4;
-  const int cKt=8;
+  const int cMu=1;
+  const int cKt=5;
 
   //-------Single track cuts------------------------------------------------->
   double DCAxy=2.4;//cm // our standard is 0.20 cm; super narrow was 0.015cm
   double DCAz =3.0;//cm // our standard is 0.15 cm;
   //-------Single track cuts-------------------------------------------------<
+  //=======Double track cuts=================================================>
+  //Dhevan's : PhiStarDifferenceMinimum=0.06; EtaDifferenceMinimum=0.02;
+  double PhiStarDifferenceMinimum=0.017; //[radian]
+  double EtaDifferenceMinimum=0.015; //[radian]
+  //=======Double track cuts=================================================<
 
   // Switches for QA analyses
   // int runmults[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
   // int multbins[11] = {30, 70, 150, 310, 590, 990, 1570, 2370, 2370, 2370, 6500};
 
-  int runmults[cMu] = {1, 0, 0, 0};
+  int runmults[4] = {1, 0, 0, 0};
   //int multbins[11] = {0, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900};
-  int multbins[cMu+1] = {0, 100, 300, 500, 900};
+  //Orig Kch in PbPb
+  //int multbins[cMu+1] = {0, 100, 300, 500, 900};
+  //Test for flat part of centrality distribution....
+  int multbins[5] = {0, 50, 300, 500, 900};
+  //.................................................
 
   int runch[2] = {1, 1};
   const char *chrgs[2] = { "Kp", "Km"};
   
   
   int runktdep = 1;
-  double ktrng[cKt+1] = {0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0, 1.3};
+  double ktrng[cKt+1] = {0.2, 0.36, 0.48, 0.6, 1.0, 1.5};
 // double ktrng[8] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 2.0};
 
-  int run3d = 0;
+  int run3d = 1;
   int runshlcms = 0;
 
   int runtype = 2; // Types 0 - global, 1 - ITS only, 2 - TPC Inner
@@ -122,6 +132,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
     Reader->SetFilterBit(7);
     Reader->SetCentralityPreSelection(0, 100);
+    Reader->SetDCAglobalTrack(kTRUE);//option the DCA information from global tracks (ITS+TPC)
     
   AliFemtoManager* Manager=new AliFemtoManager();
   Manager->SetEventReader(Reader);
@@ -146,7 +157,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   AliFemtoCutMonitorParticlePID *cutFail2PIDetaphitpc[20];
 //AliFemtoPairCutAntiGamma      *sqpcetaphitpc[20];
 //    AliFemtoShareQualityTPCEntranceSepPairCut      *sqpcetaphitpc[20];
-   AliFemtoPairCutRadialDistance      *sqpcetaphitpc[20];
+  //AliFemtoPairCutRadialDistance      *sqpcetaphitpc[20];//AliFemto dphi* cut
+  AliFemtoPairCutRadialDistanceKK      *sqpcetaphitpc[20];//Dhevan's dphi* cut
   AliFemtoCorrFctnDirectYlm     *cylmetaphitpc[20];
   AliFemtoCorrFctnDEtaDPhi      *cdedpetaphi[20*10];//20->20*10 due to kT
   AliFemtoChi2CorrFctn          *cchiqinvetaphitpc[20];
@@ -203,7 +215,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	    
 	  dtc1etaphitpc[aniter]->SetPt(0.14,1.5);
 	  //	  dtc1etaphitpc[aniter]->SetEta(-1.2,1.2);
-	  dtc1etaphitpc[aniter]->SetEta(-0.8,0.8);
+	  dtc1etaphitpc[aniter]->SetEta(-0.5,0.5);
 	  // 	//    dtc1etaphitpc[aniter]->SetEta(-0.5,0.5);
 ///	  dtc1etaphitpc[aniter]->SetMass(PionMass);
 	  dtc1etaphitpc[aniter]->SetMass(KaonMass);
@@ -213,17 +225,20 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 		  
 ///////   ----!!!!!!	   
 	  dtc1etaphitpc[aniter]->SetMostProbableKaon();  //!!!!!!
-	  dtc1etaphitpc[aniter]->SetNsigmaTPCle250(1.5);
+	  //------------------- November 2013 -----------------------------------< 
+	  //New class in AliFemo: PWGCF/FEMTOSCOPY/AliFemtoUser/AliFemtoKKTrackCut.cxx
+	  dtc1etaphitpc[aniter]->SetNsigmaTPCle250(2.0);
 	  dtc1etaphitpc[aniter]->SetNsigmaTPC250_400(2.0);
-	  dtc1etaphitpc[aniter]->SetNsigmaTPC400_450(0.0);
-	  dtc1etaphitpc[aniter]->SetNsigmaTPC450_500(0.0);
+	  dtc1etaphitpc[aniter]->SetNsigmaTPC400_450(2.0);
+	  dtc1etaphitpc[aniter]->SetNsigmaTPC450_500(2.0);
 	  dtc1etaphitpc[aniter]->SetNsigmaTPCge500(3.0);
-	      
-	   dtc1etaphitpc[aniter]->SetNsigmaTOF500_800(2.0);
-	   dtc1etaphitpc[aniter]->SetNsigmaTOF800_1000(1.5);
-	   dtc1etaphitpc[aniter]->SetNsigmaTOFge1000(1.0);
+	  // new cuts are stronger, better separation of pion in TOF 
+	  // when momentum is greater then 800 MeV/c
+	  dtc1etaphitpc[aniter]->SetNsigmaTOF500_800(2.0);
+	  dtc1etaphitpc[aniter]->SetNsigmaTOF800_1000(1.5);
+	  dtc1etaphitpc[aniter]->SetNsigmaTOFge1000(1.0);
+	  //------------------- November 2013 ----------------------------------->
 
-	  
 ////	  	  dtc1etaphitpc[aniter]->SetMostProbablePion();
 	  // 	// Track quality cuts
 	  if (runtype == 0) {
@@ -285,7 +300,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	//  sqpcetaphitpc[aniter] = new AliFemtoShareQualityTPCEntranceSepPairCut();
 	  
           if (ichg < 2) {
-    	  sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistance();
+	    //sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistance();//AliFemto dphi* cut
+    	  sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistanceKK();  //Dhevan's dphi* cut
 	  if (runtype == 0) {
 	    sqpcetaphitpc[aniter]->SetShareQualityMax(1.0);
 	    sqpcetaphitpc[aniter]->SetShareFractionMax(0.05);
@@ -297,11 +313,11 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 //ml	    sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.02);
 
         
-	   //--------- km:  eta-phi* standard custs ----------->>>>
-     	    sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.017);
-            sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.015);
-            sqpcetaphitpc[aniter]->SetMinimumRadius(0.8);
-	   //--------- km:  eta-phi* standard custs -----------<<<
+	   //--------- km:  eta-phi* Dhevan's custs ----------->>>>
+     	    sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(PhiStarDifferenceMinimum);
+            sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(EtaDifferenceMinimum);
+           //sqpcetaphitpc[aniter]->SetMinimumRadius(0.8);//not need for AliFemtoPairCutRadialDistanceKK()
+	   //--------- km:  eta-phi* Dhevan's custs -----------<<<
 
           //////////////sqpcetaphitpc[aniter]->SetMagneticFieldSign(1);
 	  
@@ -323,11 +339,11 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 //  void SetMinimumRadius(double minrad);
 //  void SetMagneticFieldSign(int magsign);
 
-	   //--------- km:  eta-phi* standard custs ----------->>>>
-     	    sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.017);
-            sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.015);
-            sqpcetaphitpc[aniter]->SetMinimumRadius(0.8);
-	   //--------- km:  eta-phi* standard custs -----------<<<
+	   //--------- km:  eta-phi* Dhevan's custs ----------->>>>
+     	    sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(PhiStarDifferenceMinimum);
+            sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(EtaDifferenceMinimum);
+           //sqpcetaphitpc[aniter]->SetMinimumRadius(0.8);//not need for AliFemtoPairCutRadialDistanceKK()
+	   //--------- km:  eta-phi* Dhevan's custs -----------<<<
 
          /////////sqpcetaphitpc[aniter]->SetMagneticFieldSign(1);
      //sqpcetaphitpc[aniter]->SetMagneticFieldSign(1.0);
@@ -345,11 +361,11 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 //ml	    sqpcetaphitpc[aniter]->SetRadialDistanceMinimum(1.2, 0.045);
 //ml	    sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.016);
 
-	   //--------- km:  eta-phi* standard custs ----------->>>>
-     	    sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.017);
-            sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.015);
-            sqpcetaphitpc[aniter]->SetMinimumRadius(0.8);
-	   //--------- km:  eta-phi* standard custs -----------<<<
+	   //--------- km:  eta-phi* Dhevan's custs ----------->>>>
+     	    sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(PhiStarDifferenceMinimum);
+            sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(EtaDifferenceMinimum);
+           //sqpcetaphitpc[aniter]->SetMinimumRadius(0.8);//not need for AliFemtoPairCutRadialDistanceKK()
+	   //--------- km:  eta-phi* Dhevan's custs -----------<<<
 
            ////////sqpcetaphitpc[aniter]->SetMagneticFieldSign(1);
 	 
