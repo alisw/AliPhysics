@@ -1277,11 +1277,13 @@ Double_t AliTOFTenderSupply::SampleT0Signal(Int_t side, Double_t zvertex, Double
   Double_t resolution[2] = {75.,65.};
   if (side == 0) {
     if (zvertex >= 5. && zvertex <= 10.) {
-      p = 0.84 - exp(-1.03 - 0.31*tracklets);
+//      p = 0.84 - exp(-1.03 - 0.31*tracklets);
+        p = 0.88 - exp(-1.1 - 0.32*tracklets);
     }
     else if (zvertex >=-10. && zvertex <5.) {
-      p = 0.82 - exp(-0.81 - 0.25*tracklets);
-    }
+//      p = 0.82 - exp(-0.81 - 0.25*tracklets);
+        p = 0.77 - exp(-0.88 - 0.25*tracklets);    
+   }
   } else if (side == 1) {
     if (zvertex >= -10. && zvertex < -5.) {
       p = 0.99 - exp(-0.74 - 0.34*tracklets);
