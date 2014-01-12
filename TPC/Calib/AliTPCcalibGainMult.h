@@ -132,7 +132,7 @@ private:
   AliTPCcalibGainMult(const AliTPCcalibGainMult&); 
   AliTPCcalibGainMult& operator=(const AliTPCcalibGainMult&); 
 
-  ClassDef(AliTPCcalibGainMult, 3); 
+  ClassDef(AliTPCcalibGainMult, 4); 
 };
 
 #endif

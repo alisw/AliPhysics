@@ -1311,9 +1311,9 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainChamberByChamber(){
   // get chamber by chamber gain
   //
   if (!fGainMult) return kFALSE;
-  TGraphErrors *grShort  = fGainMult->GetGainPerChamber(0);
-  TGraphErrors *grMedium = fGainMult->GetGainPerChamber(1);
-  TGraphErrors *grLong   = fGainMult->GetGainPerChamber(2);
+  TGraphErrors *grShort  = fGainMult->GetGainPerChamberRobust(0);
+  TGraphErrors *grMedium = fGainMult->GetGainPerChamberRobust(1);
+  TGraphErrors *grLong   = fGainMult->GetGainPerChamberRobust(2);
   if (grShort==0x0 || grMedium==0x0 || grLong==0x0) {
     delete grShort;
     delete grMedium;
