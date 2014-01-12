@@ -84,6 +84,8 @@ class AliAnalysisTaskEmcalDiJetBase : public AliAnalysisTaskEmcalJet {
   void                        SetChargedFractionIndex();
   void                        SetChargedFractionIndexMC();
 
+  void                        SetPtMinTriggerJet(Double_t ptmin)  {fPtMinTriggerJet = ptmin;}
+
   Bool_t                     fDebug;                      // debug level
   JetCorrelationType         fJetCorrelationType;         // type of correlation between jets
   JetFullChargedMatchingType fJetFullChargedMatchingType; //matching type between full and charged jets to be used
