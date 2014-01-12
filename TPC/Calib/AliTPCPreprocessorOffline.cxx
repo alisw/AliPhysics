@@ -1171,6 +1171,7 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainDipAngle(Int_t padRegion)  {
   // padRegion -- 0: short, 1: medium, 2: long, 3: absolute calibration of full track
   //
   if (!fGainMult) return kFALSE;
+  if (!(fGainMult->GetHistTopology())) return kFALSE;
   //
   // "dEdxRatioMax","dEdxRatioTot","padType","mult","driftlength"
   TObjArray arrMax;
