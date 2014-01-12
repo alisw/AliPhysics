@@ -146,9 +146,9 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
       type = 0;
       if (esdtrack->TestBit(BIT(27))) {
         if (esdtrack->TestBit(BIT(28)))
-          type = 2;
+          type = 1;
         else 
-          type =1;
+          type =2;
       }
       if (!fIncludeNoITS && (type==2))
 	continue;
