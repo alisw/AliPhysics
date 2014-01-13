@@ -374,8 +374,20 @@ void AliFemtoK0Analysis::UserCreateOutputObjects()
 
   TH1F *fHistPsi = new TH1F("fHistPsi","",90,-PI/2,PI/2);
   fOutputList->Add(fHistPsi);
+  TH2F *fHistPhi = new TH2F("fHistPhi","",kCentBins,.5,kCentBins+.5,180,0,2*PI);
+  fOutputList->Add(fHistPhi);
   TH2F *fHistPhiPsi = new TH2F("fHistPhiPsi","",kCentBins,.5,kCentBins+.5,180,0,2*PI);
   fOutputList->Add(fHistPhiPsi);
+  
+
+  TH3F *fHistDPhi = new TH3F("fHistDPhi","",kCentBins,.5,kCentBins+.5,200,0.,2.,90,0,PI);
+  TH3F *fHistDPhiBkg = new TH3F("fHistDPhiBkg","",kCentBins,.5,kCentBins+.5,200,0.,2.,90,0,PI);
+  TH3F *fHistDPhiPsi = new TH3F("fHistDPhiPsi","",kCentBins,.5,kCentBins+.5,200,0.,2.,90,0,PI);
+  TH3F *fHistDPhiPsiBkg = new TH3F("fHistDPhiPsiBkg","",kCentBins,.5,kCentBins+.5,200,0.,2.,90,0,PI);
+  fOutputList->Add(fHistDPhi);
+  fOutputList->Add(fHistDPhiBkg);
+  fOutputList->Add(fHistDPhiPsi);
+  fOutputList->Add(fHistDPhiPsiBkg);
 
 /////////Pair Distributions///////////////////
 
@@ -830,6 +842,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
         if(v0PhiPsi < 0) v0PhiPsi += 2.*PI;
         else if (v0PhiPsi > 2.*PI) v0PhiPsi -= 2.*PI;
 		else{};
+        tempK0[v0Count].fPhi	= v0Phi;
         tempK0[v0Count].fPhiPsi = v0PhiPsi; 
         
         //for separation
@@ -918,6 +931,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
     ((TH1F*)fOutputList->FindObject("fHistPy"))		->Fill((fEvt)->fK0Particle[i].fMomentum[1]);
     ((TH1F*)fOutputList->FindObject("fHistPz"))		->Fill((fEvt)->fK0Particle[i].fMomentum[2]);
 
+    ((TH2F*)fOutputList->FindObject("fHistPhi"))	->Fill(centBin+1,(fEvt)->fK0Particle[i].fPhi);
     ((TH2F*)fOutputList->FindObject("fHistPhiPsi"))	->Fill(centBin+1,(fEvt)->fK0Particle[i].fPhiPsi);
 
     for(int evnum=0; evnum<kEventsToMix+1; evnum++)// Event buffer loop: evnum=0 is the current event, all other evnum's are past events
@@ -1144,7 +1158,12 @@ void AliFemtoK0Analysis::Exec(Option_t *)
         if(phipsi2 > PI) phipsi2 = phipsi2-PI;
         if(phipsi1 < 0.25*PI || phipsi1 > 0.75*PI) inPlane1 = kTRUE;
         if(phipsi2 < 0.25*PI || phipsi2 > 0.75*PI) inPlane2 = kTRUE;
-	
+
+		//for dphi, dphipsi
+		float dPhi = fabs((fEvt)->fK0Particle[i].fPhi - (fEvt+evnum)->fK0Particle[j].fPhi);
+        if(dPhi > PI) dPhi = 2*PI-dPhi;
+        float dPhiPsi = fabs((fEvt)->fK0Particle[i].fPhiPsi - (fEvt+evnum)->fK0Particle[j].fPhiPsi);
+        if(dPhiPsi > PI) dPhiPsi = 2*PI-dPhiPsi;
 
         if(evnum==0) //Same Event
         {     
@@ -1166,6 +1185,11 @@ void AliFemtoK0Analysis::Exec(Option_t *)
              ((TH3F*)fOutputList->FindObject("fHistQinvSignalEPIn"))->Fill(centBin+1, pairKt, qinv);
            else if(!inPlane1 && !inPlane2)
              ((TH3F*)fOutputList->FindObject("fHistQinvSignalEPOut"))->Fill(centBin+1, pairKt, qinv);
+
+           //dPhi,dPhiPsi
+		   ((TH3F*)fOutputList->FindObject("fHistDPhi"))->Fill(centBin+1,pairKt,dPhi);
+		   ((TH3F*)fOutputList->FindObject("fHistDPhiPsi"))->Fill(centBin+1,pairKt,dPhiPsi);
+
            
            //for mass bin study
            //if(CL1 && CL2) ((TH3F*)fOutputList->FindObject("fHistCLCLSignal"))->Fill(centBin+1, pairKt, qinv);	   
@@ -1222,6 +1246,9 @@ void AliFemtoK0Analysis::Exec(Option_t *)
              ((TH3F*)fOutputList->FindObject("fHistQinvBkgEPIn"))->Fill(centBin+1, pairKt, qinv);
            else if(!inPlane1 && !inPlane2)
              ((TH3F*)fOutputList->FindObject("fHistQinvBkgEPOut"))->Fill(centBin+1, pairKt, qinv);
+
+		   ((TH3F*)fOutputList->FindObject("fHistDPhiBkg"))->Fill(centBin+1,pairKt,dPhi);
+		   ((TH3F*)fOutputList->FindObject("fHistDPhiPsiBkg"))->Fill(centBin+1,pairKt,dPhiPsi);
 
            //for mass bin study
            //if(CL1 && CL2) ((TH3F*)fOutputList->FindObject("fHistCLCLBkg"))->Fill(centBin+1, pairKt, qinv);	   
