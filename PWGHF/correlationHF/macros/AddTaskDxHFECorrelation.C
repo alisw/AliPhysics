@@ -111,6 +111,9 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
   TString extraname="";
   TString cutFilename="";
   Bool_t addPIDqa=kFALSE;
+  Bool_t bTuneOnData=kFALSE;
+  Bool_t cutOnClusters=kTRUE;
+  Bool_t bUpgradeStudies=kFALSE;
 
   cout << endl << "===============================================" << endl;
   cout << "Setting up Correlation task: " << configuration << endl;
@@ -274,6 +277,21 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
 	    else if(argument.CompareTo("allEMCAL")==0) {triggerMask=(AliVEvent::kEMC1|AliVEvent::kEMC7|AliVEvent::kEMC8); cout<<"all"<<endl;}
 	    continue;
 	  }
+	  if (argument.BeginsWith("tuneondata")) {
+	    bTuneOnData=kTRUE;
+	    cout <<"Use tuneondata for PIDresponsetask" << endl;
+	    continue;
+	  }
+	  if(argument.BeginsWith("TPCcrossedrows")){
+	    cutOnClusters=kFALSE;
+	    cout << "Cut on TPC crossed rows "  << endl; 
+	    continue;
+	  }
+	  if(argument.BeginsWith("upgradestudies")){
+	    bUpgradeStudies=kTRUE;
+	    system=1;
+	    cout << "Settings for upgradestudies" << endl;
+	  }
 	  cout << "Adding argument " << argument << endl;
 	  taskOptions+=" "+argument;
 	  
@@ -302,7 +320,7 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
   if (!pidTask) {
     gROOT->LoadMacro(pidTaskMacro);
     TString pidFunction;
-    pidFunction.Form("AddTaskPIDResponse(%d, %d)", bUseMC, kTRUE);
+    pidFunction.Form("AddTaskPIDResponse(%d, %d)", bUseMC, kTRUE,bTuneOnData);
     gROOT->ProcessLine(pidFunction);
     if (pManager->GetTask(pidTaskName)==NULL) {
       ::Error("AddTaskDxHFECorrelation", Form("failed to add PID task '%s' from macro '%s'",
@@ -371,15 +389,24 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
     // TODO: think about p-Pb
     RDHFD0toKpi->SetStandardCutsPbPb2011();
     
-    // For centrality 0-10%, add centrality flattening
-    //NB! NEED FOR THE MOMENT THE FILE!
-    TFile *fFlat=TFile::Open("CentrDistrBins005.root","READ");
-    TCanvas *c=fFlat->Get("cintegral");
-    TH1F *hfl=(TH1F*)c->FindObject("hint");
-    RDHFD0toKpi->SetHistoForCentralityFlattening(hfl,0.,10.,0.,0);
-    //  RDHFD0toKpi->SetUseCentrality(AliRDHFCuts::kCentV0M);
-    RDHFD0toKpi->SetMinCentrality(0.);// 40.*1.01
-    RDHFD0toKpi->SetMaxCentrality(10.);// 80.*1.01
+    if(bUpgradeStudies){
+
+      RDHFD0toKpi->SetOptPileup(AliRDHFCuts::kNoPileupSelection);
+      RDHFD0toKpi->SetUsePhysicsSelection(kFALSE);
+      RDHFD0toKpi->SetUseAnyTrigger();
+      RDHFD0toKpi->SetUseCentrality(AliRDHFCuts::kCentOff);
+    }
+    else{
+      // For centrality 0-10%, add centrality flattening
+      //NB! NEED FOR THE MOMENT THE FILE!
+      TFile *fFlat=TFile::Open("CentrDistrBins005.root","READ");
+      TCanvas *c=fFlat->Get("cintegral");
+      TH1F *hfl=(TH1F*)c->FindObject("hint");
+      RDHFD0toKpi->SetHistoForCentralityFlattening(hfl,0.,10.,0.,0);
+      //  RDHFD0toKpi->SetUseCentrality(AliRDHFCuts::kCentV0M);
+      RDHFD0toKpi->SetMinCentrality(0.);// 40.*1.01
+      RDHFD0toKpi->SetMaxCentrality(10.);// 80.*1.01
+    }
   }
 
   //p-Pb
