@@ -144,12 +144,10 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
       if (fESDtrackCuts && !fESDtrackCuts->AcceptTrack(esdtrack))
 	continue;
       type = 0;
-      if (esdtrack->TestBit(BIT(27))) {
-        if (esdtrack->TestBit(BIT(28)))
-          type = 2;
-        else 
-          type =1;
-      }
+      if (esdtrack->TestBit(BIT(27)) && !esdtrack->TestBit(BIT(28)))
+	type = 1;
+      else if (!esdtrack->TestBit(BIT(27)) && esdtrack->TestBit(BIT(28)))
+	type = 2;
       if (!fIncludeNoITS && (type==2))
 	continue;
       if (TMath::Abs(esdtrack->GetTrackEtaOnEMCal()) < 0.75 && 

@@ -11,7 +11,7 @@
 
 //this line for local: AliAnalysisTaskFemto *AddTaskFemtoKchHBT(const char *configMacroName="ConfigFemtoAnalysis.C", const char *configMacroParameters="" )
 
-AliAnalysisTaskFemto *AddTaskFemtoKchHBT1090(TString configMacroName, const char *containerName="femtolist", const char *configMacroParameters="" )
+AliAnalysisTaskFemto *AddTaskFemtoKchHBT1090(TString configMacroName, const char *containerName="lmlist090", const char *configMacroParameters="" )
 {
 // Creates a proton analysis task and adds it to the analysis manager.
   
@@ -71,7 +71,7 @@ AliAnalysisTaskFemto *AddTaskFemtoKchHBT1090(TString configMacroName, const char
   //==============================================================================
   TString outputfile = AliAnalysisManager::GetCommonFileName();  
   outputfile += ":PWG2FEMTO";
-  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer("femtolist",  TList::Class(),
+  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer("lmlist090",  TList::Class(),
   							       AliAnalysisManager::kOutputContainer,outputfile);
 
 
