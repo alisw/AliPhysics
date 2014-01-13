@@ -19,6 +19,8 @@
 
 class AliVEvent;
 class AliVParticle;
+class AliAODMCHeader;
+class AliAODTrack;
 class TH1;
 
 using std::vector;
@@ -175,7 +177,10 @@ class AliDxHFEToolsMC {
   /// mapping of pdg code to enum
   int MapPDGMotherLabel(int pdg) const;
 
- protected:
+  void GetTrackPrimaryGenerator(AliAODTrack *track,TString &nameGen, bool kine=kFALSE);
+  TString GetGenerator(Int_t label, AliAODMCHeader* header);
+
+protected:
 
  private:
   /// copy contructor prohibited
@@ -195,6 +200,7 @@ class AliDxHFEToolsMC {
 
   int fSequence;           //  sequence of checks
   TObjArray* fMCParticles; //! pointer to external array of MC particles
+  AliAODMCHeader* fMCHeader; //! pointer to external MC header
   vector<int> fPDGs;       //  PDGs to be selected
   vector<int> fMotherPDGs; //  mother PDGs to be selected
   TH1* fHistPDG;           //  control histogram pdg of selected particle

@@ -86,12 +86,14 @@ THnSparse* AliDxHFECorrelationMC::DefineTHnSparse()
   // here is the only place to change the dimension
   static const int sizeEventdphi = 10;  
   static const int sizeEventdphiReduced = 5;  
-  static const int sizeEventdphiRedMC = 7;  
+  static const int sizeEventdphiRedMC = 8;  
   const double pi=TMath::Pi();
   Double_t minPhi=GetMinPhi();
   Double_t maxPhi=GetMaxPhi();
   THnSparse* thn=NULL;
+  int nrMotherEl=AliDxHFEToolsMC::kNrOrginMother+AliDxHFEParticleSelectionMCEl::kNrBackground;
 
+  cout << "nrMotherEl:  " << nrMotherEl << "     " <<AliDxHFEToolsMC::kNrOrginMother << "  " <<AliDxHFEParticleSelectionMCEl::kNrBackground<< endl;
   // TODO: Everything here needed for eventmixing? 
   TString name;
   name.Form("%s info", GetName());
@@ -99,11 +101,11 @@ THnSparse* AliDxHFECorrelationMC::DefineTHnSparse()
   if(fRunMode==kFullMode){
     InitTHnSparseArray(sizeEventdphi);
 
-    // 			                        0        1     2      3      4      5       6      7    8      9
-    // 			                      D0invmass  PtD0 PhiD0 PtbinD0 Pte   dphi    dEta OrigD0 origEl process
-    int         binsEventdphi[sizeEventdphi] = {   200,    100,  100,  21,   100,  64,     100,   10,     14,  100 };
-    double      minEventdphi [sizeEventdphi] = { 1.5648,     0,    0,   0,     0, minPhi, -2.0, -1.5,   -1.5, -0.5 };
-    double      maxEventdphi [sizeEventdphi] = { 2.1648,    50, 2*pi,  20,    10, maxPhi,  2.0,  8.5,   12.5, 99.5 };
+    // 			                        0        1     2      3      4      5       6      7    8            9
+    // 			                      D0invmass  PtD0 PhiD0 PtbinD0 Pte   dphi    dEta OrigD0 origEl      process
+    int         binsEventdphi[sizeEventdphi] = {   200,    100,  100,  21,   100,  64,     100,   10,  nrMotherEl+1 ,  100 };
+    double      minEventdphi [sizeEventdphi] = { 1.5648,     0,    0,   0,     0, minPhi, -2.0, -1.5,   -1.5,       -0.5 };
+    double      maxEventdphi [sizeEventdphi] = { 2.1648,    50, 2*pi,  20,    10, maxPhi,  2.0,  8.5,  nrMotherEl-0.5, 99.5 };
     const char* nameEventdphi[sizeEventdphi] = {
       "D0InvMass",
       "PtD0",
@@ -120,11 +122,11 @@ THnSparse* AliDxHFECorrelationMC::DefineTHnSparse()
   }
   else if(fRunMode==kReducedModeFullMCInfo){
     InitTHnSparseArray(sizeEventdphiRedMC);
-    // 			                                       0        1    2     3      4      5       6     
-    // 			                                  D0invmass  PtD0   Pte   dphi    dEta OrigD0 origEl
-    int         binsEventdphiRedMC[sizeEventdphiRedMC] = {   200,    100,   100,  64,     100,   10,     14 };
-    double      minEventdphiRedMC [sizeEventdphiRedMC] = { 1.5648,     0,     0, minPhi, -2.0, -1.5,   -1.5 };
-    double      maxEventdphiRedMC [sizeEventdphiRedMC] = { 2.1648,    50,    10, maxPhi,  2.0,  8.5,   12.5 };
+    // 			                                       0        1    2     3      4      5       6          7
+    // 			                                  D0invmass  PtD0   Pte   dphi    dEta OrigD0 origEl    generatorEl
+    int         binsEventdphiRedMC[sizeEventdphiRedMC] = {   200,    100,   100,  64,     100,   10, nrMotherEl+1,    4 };
+    double      minEventdphiRedMC [sizeEventdphiRedMC] = { 1.5648,     0,     0, minPhi, -2.0, -1.5,   -1.5,       -1.5 };
+    double      maxEventdphiRedMC [sizeEventdphiRedMC] = { 2.1648,    50,    10, maxPhi,  2.0,  8.5, nrMotherEl-0.5,2.5 };
     const char* nameEventdphiRedMC[sizeEventdphiRedMC] = {
       "D0InvMass",
       "PtD0",
@@ -188,7 +190,7 @@ Bool_t AliDxHFECorrelationMC::TestParticle(AliVParticle* p, Int_t id){
       }
     }
   }
-
+  //TODO add for background from HF
   // Test to see if test for D/el and whether to do further selection
   if(id==kElectron){
     if(!fStoreOriginEl==kAll){
@@ -262,6 +264,12 @@ int AliDxHFECorrelationMC::FillParticleProperties(AliVParticle* tr, AliVParticle
       data[i++]=assoc->GetOriginMother();
       data[i++]=ptrigger->GetOriginMother();
     }
+    if(AliDxHFECorrelation::GetTriggerParticleType()==kD){
+      data[i++]=assoc->GetGenerator();
+    }
+    else {
+      data[i++]=ptrigger->GetGenerator();
+    }
   }
   if(fRunMode==kFullMode ) data[i++]=fMCEventType;
   return i;
@@ -332,7 +340,7 @@ int AliDxHFECorrelationMC::ParseArguments(const char* arguments)
       else if (argument.CompareTo("hadrons")==0){ fStoreOriginEl=kHadrons; AliInfo("Store electrons candidates from hadrons");}
       continue;
     }  
-    if (argument.BeginsWith("reducedMode") || argument.BeginsWith("reducedmode")){
+    if ((argument.CompareTo("reducedMode")==0) || (argument.CompareTo("reducedmode")==0)){
       fRunMode=kReducedMode;
       AliInfo("Running in Reduced mode");
       continue;

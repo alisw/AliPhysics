@@ -46,7 +46,9 @@ class AliReducedParticle : public AliVParticle
   AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Int_t mcLabel, Int_t trackid, Double_t impPar, Bool_t checkSoftPi, Short_t charge,Double_t weight);
   AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Int_t mcLabel);
   AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, int charge, int orginmother); 
+  AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, int charge, int orginmother, int generator); 
   AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Double_t invmass, int ptbin, int orginmother=0);
+
   
   ~AliReducedParticle();
   
@@ -62,6 +64,7 @@ class AliReducedParticle : public AliVParticle
   virtual Double_t GetInvMass() const {return fInvMass;}
   virtual int GetPtBin() const  {return fPtBin;}
   virtual int GetOriginMother() const {return fOriginMother;}
+  virtual int GetGenerator() const {return fGenerator;}
   void SetWeight(Double_t weight){fWeight=weight;}
   Double_t GetWeight(){return fWeight;}
   
@@ -110,6 +113,7 @@ class AliReducedParticle : public AliVParticle
   Double_t fWeight;   // track weight (e.g. 1/efficiency)
   int fPtBin;          // Ptbin of Dmesons
   int fOriginMother;   //  Holds the origin motherquark (process)
+  int fGenerator;      // the particle generator
   
   
   ClassDef(AliReducedParticle, 4); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing

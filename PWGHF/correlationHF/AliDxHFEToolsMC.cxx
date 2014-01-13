@@ -26,6 +26,9 @@
 #include "AliAODMCParticle.h"
 #include "AliVEvent.h"
 #include "AliVParticle.h"
+#include "AliAODTrack.h"
+#include "AliAODMCHeader.h"
+#include "AliGenEventHeader.h"
 #include "AliLog.h"
 #include "TObjArray.h"
 #include "TString.h"
@@ -42,6 +45,7 @@ ClassImp(AliDxHFEToolsMC)
 AliDxHFEToolsMC::AliDxHFEToolsMC(const char* option)
   : fSequence(kMCLast)
   , fMCParticles(NULL)
+  , fMCHeader(NULL)
   , fPDGs()
   , fMotherPDGs()
   , fHistPDG(NULL)
@@ -186,6 +190,13 @@ int AliDxHFEToolsMC::InitMCParticles(const AliVEvent* pEvent)
     AliWarningClass(Form("ignoring MC info '%s' of wrong type '%s', expecting TObjArray", branchname.Data(), o->ClassName()));
     return -ENODATA;
   }
+
+  fMCHeader = dynamic_cast<AliAODMCHeader*>(pEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+  if(!fMCHeader){
+    AliWarningClass(Form("ignoring MC info header of wrong type"));
+    return -ENODATA;
+  }
+  
   fNrMCParticles=fMCParticles->GetEntriesFast();
   return 0;
 }
@@ -504,4 +515,71 @@ bool AliDxHFEToolsMC::CheckMCParticle(AliVParticle* p, int* pdgParticleResult){
 
   return bKeep;
 
+}
+
+//_____________________________________________________________________
+void AliDxHFEToolsMC::GetTrackPrimaryGenerator(AliAODTrack *track,TString &nameGen, bool kine){
+
+  // method to check if a track comes from a given generator
+
+  Int_t lab=track->GetLabel();
+  if(lab<0) return;
+  nameGen=GetGenerator(lab,fMCHeader);
+  
+  Int_t countControl=0;
+
+  AliAODMCParticle *mcpart=NULL;
+
+  while(nameGen.IsWhitespace()){
+
+    if(!kine){ // fetch particle from reconstructed
+      mcpart= (AliAODMCParticle*)fMCParticles->At(lab);
+    }
+    else{ //MC array
+      if(countControl>0) {
+	mcpart= (AliAODMCParticle*)fMCParticles->At(lab);
+      }
+      else
+	mcpart=(AliAODMCParticle*)track;
+
+    }
+    if(!mcpart){
+      printf("IsTrackInjected - BREAK: No valid AliAODMCParticle at label %i\n",lab);
+      break;
+    }
+    Int_t mother = mcpart->GetMother();
+    if(mother<0){
+      printf("IsTrackInjected - BREAK: Reached primary particle without valid mother\n");
+      break;
+    }
+    lab=mother;
+    nameGen=GetGenerator(mother,fMCHeader);
+    countControl++;
+ 
+  }
+  
+  return;
+}
+
+//______________________________________________________________________
+TString AliDxHFEToolsMC::GetGenerator(Int_t label, AliAODMCHeader* header){
+  // get the name of the generator that produced a given particle
+
+  Int_t nsumpart=0;
+  TString empty="";
+  TList *lh=header->GetCocktailHeaders();
+  if(!lh){
+    cout << "no cocktail header" << endl;
+    return empty;
+  }
+  Int_t nh=lh->GetEntries();
+  for(Int_t i=0;i<nh;i++){
+    AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
+    TString genname=gh->GetName();
+    Int_t npart=gh->NProduced();
+    if(label>=nsumpart && label<(nsumpart+npart)) return genname;
+    nsumpart+=npart;
+  }
+
+  return empty;
 }
