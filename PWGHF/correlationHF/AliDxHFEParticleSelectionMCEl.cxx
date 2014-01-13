@@ -59,6 +59,8 @@ AliDxHFEParticleSelectionMCEl::AliDxHFEParticleSelectionMCEl(const char* opt)
   , fMCInfo(kMCLast)
   , fRemoveEfromD0(kFALSE)
   , fRemoveSecondary(kFALSE)
+  , fUseGenerator(kFALSE)
+  , fGenerator(-1)
 {
   // constructor
   // 
@@ -169,42 +171,46 @@ THnSparse* AliDxHFEParticleSelectionMCEl::DefineTHnSparse()
   THnSparse* thn=NULL;
   name.Form("%s info", GetName());
 
+  int nrMotherEl=AliDxHFEToolsMC::kNrOrginMother+kNrBackground;
+
   if(fStoreCutStepInfo){
-    const int thnSizeExt =5;
+    const int thnSizeExt =6;
 
     InitTHnSparseArray(thnSizeExt);
 
     // TODO: Redo binning of distributions more?
-    //     		              0    1      2     3     
-    // 	 	                      Pt   Phi   Eta   mother 
-    int    thnBinsExt[thnSizeExt] = { 100,  100, 100,    15, kNCutLabels-1 };
-    double thnMinExt [thnSizeExt] = {   0,    0, -1.,  -1.5, kRecKineITSTPC-0.5};
-    double thnMaxExt [thnSizeExt] = {  10, 2*Pi,  1.,  13.5, kSelected-0.5};
+    //     		              0    1      2     3              4             5
+    // 	 	                      Pt   Phi   Eta   mother       generator    CutstepInfo
+    int    thnBinsExt[thnSizeExt] = { 100,  100, 100,nrMotherEl+1,      4,        kNCutLabels-1 };
+    double thnMinExt [thnSizeExt] = {   0,    0, -1.,  -1.5,        -1.5,    kRecKineITSTPC-0.5};
+    double thnMaxExt [thnSizeExt] = {  10, 2*Pi,  1.,nrMotherEl-0.5, 2.5,       kSelected-0.5};
     const char* thnNamesExt[thnSizeExt]={
       "Pt",
       "Phi",
       "Eta", 
       "Mother", //bin==-1: Not MC truth electron
+      "Generator",
       "Last survived cut step"
     };
     thn=(THnSparse*)CreateControlTHnSparse(name,thnSizeExt,thnBinsExt,thnMinExt,thnMaxExt,thnNamesExt);
   }
   else{
 
-    const int thnSize =4;
+    const int thnSize =5;
     InitTHnSparseArray(thnSize);
 
     // TODO: Redo binning of distributions more?
-    //     		       0       1      2     3     
-    // 	 	               Pt     Phi   Eta   mother 
-    int    thnBins[thnSize] = { 100,  50, 100,    15  };
-    double thnMin [thnSize] = {   0,    0, -1.,  -1.5  };
-    double thnMax [thnSize] = {  10, 2*Pi,  1.,  13.5  };
+    //     		       0       1      2     3           4 
+    // 	 	               Pt     Phi   Eta   mother     generator 
+    int    thnBins[thnSize] = { 100,  50, 100, nrMotherEl+1,      4  };
+    double thnMin [thnSize] = {   0,    0, -1.,  -1.5    ,     -1.5 };
+    double thnMax [thnSize] = {  10, 2*Pi,  1.,nrMotherEl-0.5,  2.5};
     const char* thnNames[thnSize]={
       "Pt",
       "Phi",
       "Eta", 
       "Mother", //bin==-1: Not MC truth electron
+      "Generator"
     };
     thn=(THnSparse*)CreateControlTHnSparse(name,thnSize,thnBins,thnMin,thnMax,thnNames);
 
@@ -228,13 +234,15 @@ int AliDxHFEParticleSelectionMCEl::FillParticleProperties(AliVParticle* p, Doubl
   data[i++]=p->Pt();
   data[i++]=p->Phi();
   data[i++]=p->Eta();
-  if (trRP) data[i]=trRP->GetOriginMother();
-  else data[i]=fOriginMother;
+  if (trRP) data[i++]=trRP->GetOriginMother();
+  else data[i++]=fOriginMother;
+  data[i]=fGenerator;
   i++; // take out of conditionals to be save
   if (i<dimension) {
     if(fStoreCutStepInfo) data[i]=GetLastSurvivedCutsStep();
     i++; // take out of conditionals to be save
   }
+  i++; // take out of conditionals to be save
   return i;
 }
 
@@ -329,7 +337,8 @@ int AliDxHFEParticleSelectionMCEl::CheckMC(AliVParticle* p, const AliVEvent* pEv
     if(TMath::Abs(mcp->Eta())>0.8){ return 0;}
   }
 
-  int pdgMother=0;
+  int pdgFirstMother=0;  
+  int pdgOriginMother=0;
   int pdgParticle=-1;
   if (!fUseKine && !fMCTools.CheckMCParticle(p, &pdgParticle)) {
     // rejected by pdg (and maybe IsPhysicalPrimary
@@ -343,43 +352,56 @@ int AliDxHFEParticleSelectionMCEl::CheckMC(AliVParticle* p, const AliVEvent* pEv
   }
 
   // Find PDG of first mother
-  pdgMother=fMCTools.FindMotherPDG(p,AliDxHFEToolsMC::kGetFirstMother);
+  pdgFirstMother=fMCTools.FindMotherPDG(p,AliDxHFEToolsMC::kGetFirstMother);
 
-  if(fRemoveEfromD0 && ( TMath::Abs(pdgMother)==AliDxHFEToolsMC::kPDGD0)){
+  if(fRemoveEfromD0 && ( TMath::Abs(pdgFirstMother)==AliDxHFEToolsMC::kPDGD0)){
     AliDebug(2,"Electron comes from D0");
     return 0;
   }
 
   // Check if first mother is counted as background
-  Bool_t isNotBackground=fMCTools.RejectByPDG(pdgMother,fMotherPDGs);
+  Bool_t isNotBackground=fMCTools.RejectByPDG(pdgFirstMother,fMotherPDGs);
   Int_t selection=-1;
+
+  // loops back to find original quark + if there was a gluon. 
+  pdgOriginMother=fMCTools.FindMotherPDG(p,AliDxHFEToolsMC::kGetOriginMother);
+  int motherCode=fMCTools.GetOriginMother();
+  bool partHF=kFALSE;
+
+  // Test if the origin mother is HF
+  if(motherCode>=AliDxHFEToolsMC::kOriginCharm && motherCode<=AliDxHFEToolsMC::kOriginBeauty)
+    partHF=kTRUE;
+
+  if(motherCode>=AliDxHFEToolsMC::kOriginGluonCharm && motherCode<=AliDxHFEToolsMC::kOriginGluonBeauty)
+    partHF=kTRUE;
+
 
   if(!isNotBackground){
     // Set fOriginMother if mother is counted as background
     // TODO: Could this be done in a more elegant way?
-    switch(pdgMother){
-    case(AliDxHFEToolsMC::kPDGpi0): fOriginMother=AliDxHFEToolsMC::kNrOrginMother; break;
-    case(AliDxHFEToolsMC::kPDGeta): fOriginMother=AliDxHFEToolsMC::kNrOrginMother+1; break;
-    case(AliDxHFEToolsMC::kPDGgamma): fOriginMother=AliDxHFEToolsMC::kNrOrginMother+2;break;
-    case(AliDxHFEToolsMC::kPDGJpsi): fOriginMother=AliDxHFEToolsMC::kNrOrginMother+3;break;
+    switch(pdgFirstMother){
+    case(AliDxHFEToolsMC::kPDGpi0): if(partHF) fOriginMother=AliDxHFEToolsMC::kNrOrginMother+kPi0HF; else fOriginMother=AliDxHFEToolsMC::kNrOrginMother+kPi0; break;
+    case(AliDxHFEToolsMC::kPDGeta): if(partHF) fOriginMother=AliDxHFEToolsMC::kNrOrginMother+kEtaHF; else fOriginMother=AliDxHFEToolsMC::kNrOrginMother+kEta; break;
+    case(AliDxHFEToolsMC::kPDGgamma): if(partHF) fOriginMother=AliDxHFEToolsMC::kNrOrginMother+kGammaHF; else fOriginMother=AliDxHFEToolsMC::kNrOrginMother+kGamma;break;
+    case(AliDxHFEToolsMC::kPDGJpsi): fOriginMother=AliDxHFEToolsMC::kNrOrginMother+kJPsi; break;
     }
     selection=kNonHFE;
   }
   else{
     // If loop over Stack, also checks if First mother is a HF meson
-    Bool_t isHFmeson =fMCTools.TestMotherHFMeson(TMath::Abs(pdgMother));
+    Bool_t isHFmeson =fMCTools.TestMotherHFMeson(TMath::Abs(pdgFirstMother));
 
     if(isHFmeson){
-      // If first mother is a HF meson, loops back to find 
-      // original quark + if there was a gluon. Result is 
-      // stored in fOriginMother
-      pdgMother=fMCTools.FindMotherPDG(p,AliDxHFEToolsMC::kGetOriginMother);
-      fOriginMother=fMCTools.GetOriginMother();
+      // If first mother is a HF meson,
+      //Result is  stored in fOriginMother
+      //pdgMother=fMCTools.FindMotherPDG(p,AliDxHFEToolsMC::kGetOriginMother);
+      fOriginMother=motherCode; //fMCTools.GetOriginMother();
     }
     else{
       //NotHFmother
-      ((TH1D*)fHistoList->FindObject("fPDGNotHFMother"))->Fill(pdgMother);
-      fOriginMother=AliDxHFEToolsMC::kNrOrginMother+4;
+      ((TH1D*)fHistoList->FindObject("fPDGNotHFMother"))->Fill(pdgFirstMother);
+      if(partHF) fOriginMother=AliDxHFEToolsMC::kNrOrginMother+kOtherHF;
+      else fOriginMother=AliDxHFEToolsMC::kNrOrginMother+kOther;
       selection=kNonHFE;
     }
 
@@ -413,6 +435,33 @@ int AliDxHFEParticleSelectionMCEl::CheckMC(AliVParticle* p, const AliVEvent* pEv
     return 0;
   }
 
+  TString nameGen;	
+  fGenerator=0;// adding per track: -1 hijing; 0-pythiaHF; 2-the rest  --> -2= pure hijing -> back ok (but check identity); 0= phytia,pythia-> ok for checking signal; reject the rest: -1 (Hij,pyt), 1 (hij, rest), 2 (pythia,rest) ,4 (rest,rest) 
+      
+  if(fUseGenerator){
+    //    originvsGen=-1; 
+   
+    AliAODTrack *aodtrack = static_cast<AliAODTrack *>(p);
+    if(!aodtrack) {cout << "no AODtrack" << endl; return -1;}
+	   
+    if(fUseKine){
+      fMCTools.GetTrackPrimaryGenerator(aodtrack,nameGen,kTRUE);
+    }
+    else{
+      fMCTools.GetTrackPrimaryGenerator(aodtrack,nameGen);
+    }
+  
+
+    if(nameGen.Contains("ijing")){
+      //cout << "hijing generator" << endl;
+      fGenerator=1;
+    }
+    else if(nameGen.Contains("ythia")){
+      //cout << "pythia generator" << endl;
+      fGenerator=2;
+    }
+  }
+
   return 1;
 }
 
@@ -425,7 +474,7 @@ void AliDxHFEParticleSelectionMCEl::Clear(const char* option)
 AliVParticle *AliDxHFEParticleSelectionMCEl::CreateParticle(AliVParticle* track)
 {
 
-  AliReducedParticle *part = new AliReducedParticle(track->Eta(), track->Phi(), track->Pt(),track->Charge(),fOriginMother);
+  AliReducedParticle *part = new AliReducedParticle(track->Eta(), track->Phi(), track->Pt(),track->Charge(),fOriginMother,fGenerator);
 
   return part;
 
@@ -525,6 +574,12 @@ int AliDxHFEParticleSelectionMCEl::ParseArguments(const char* arguments)
       AliInfo("Do test on MC info last");
       fMCInfo=kMCLast;
       continue;
+    }
+    if(argument.BeginsWith("usegenerator")){
+      AliInfo("Select source also based on generator");
+      fUseGenerator=kTRUE;	    
+      continue;
+
     }
     // forwarding of single argument works, unless key-option pairs separated
     // by blanks are introduced

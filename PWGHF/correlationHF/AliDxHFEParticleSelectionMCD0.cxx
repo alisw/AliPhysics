@@ -239,15 +239,35 @@ int AliDxHFEParticleSelectionMCD0::IsSelected(AliVParticle* p, const AliVEvent* 
 	fMCTools.FindMotherPDG(p);
 	fOriginMother=fMCTools.GetOriginMother();
 	if(fRequireD0toKpi){
-	  //	  AliAODRecoDecayHF2Prong *particle = dynamic_cast<AliAODRecoDecayHF2Prong*>(p);
 
-	  //Int_t pdgDgD0toKpi[2]={AliDxHFEToolsMC::kPDGkaon,AliDxHFEToolsMC::kPDGpion};
 	  TClonesArray* fMCArray = dynamic_cast<TClonesArray*>(fMCTools.GetMCArray());
 	  if(!fMCArray) {cout << "no array" << endl; return 0;}
 
-	  //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx). Checks both D0s and daughters
-	  //Int_t MClabel=particle->MatchToMC(AliDxHFEToolsMC::kPDGD0,fMCArray,2,pdgDgD0toKpi); 
-	  //if(MClabel<0){ AliDebug(2,"MClabel is smaller than 0");return 0;}
+	  //Make sure only two daughters
+	  int nrDaughters=mcPart->GetNDaughters();
+	  if(nrDaughters!= 2)
+	    return 0;
+
+	  Int_t label0 = mcPart->GetDaughter(0);
+	  Int_t label1 = mcPart->GetDaughter(1);
+	  AliDebug(2,Form("label0 = %d, label1 = %d",label0,label1));
+
+	  if (label1<=0 || label0 <= 0){
+	    AliDebug(2, Form("The MC particle doesn't have correct daughters, skipping!!"));
+	    return 0;  
+	  }
+
+	  //fetch daughters
+	  AliAODMCParticle* mcPartDaughter0 = dynamic_cast<AliAODMCParticle*>(fMCArray->At(label0));
+	  AliAODMCParticle* mcPartDaughter1 = dynamic_cast<AliAODMCParticle*>(fMCArray->At(label1));
+	  int pdg0 = TMath::Abs(mcPartDaughter0->PdgCode());
+	  int pdg1 = TMath::Abs(mcPartDaughter1->PdgCode());
+
+	  //Check pdg of daughters
+	  if(!(pdg0==AliDxHFEToolsMC::kPDGkaon || pdg0==AliDxHFEToolsMC::kPDGpion))
+	    return 0;
+	  if(!(pdg1==AliDxHFEToolsMC::kPDGkaon || pdg1==AliDxHFEToolsMC::kPDGpion))
+	    return 0;
 	}
 	iResult=1;
       }

@@ -431,33 +431,66 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 
       if(fUseGenerator){
 	if(fSelectElSource==kHFPythia && originvsGen!=kHFPythia){
-	  selected=kFALSE;
+	  continue;
 	}
-	if(fSelectElSource==knonHFHijing && originvsGen!=knonHFHijing){
-	  selected=kFALSE;
+	if(fSelectElSource==knonHFPythia && !(originvsGen==kDalitzHF || originvsGen==kConvElHF || originvsGen==kOtherBkgHF)){
+	  continue;
+	}
+	if(fSelectElSource==knonHFHijing && !(originvsGen==kDalitz || originvsGen==kConvEl || originvsGen==kOtherBkg)){
+	  continue;
+	}
+	if(fSelectElSource==kDalitzHijing && originvsGen!=kDalitzHijing){
+	  continue;
+	}
+	if(fSelectElSource==kDalitzHFPythia && originvsGen!=kDalitzHFPythia){
+	  continue;
 	}
 
 	if(fSelectElSource==kConvElHijing && originvsGen!=kConvElHijing){
-	  selected=kFALSE;
+	  continue;
+	}
+	if(fSelectElSource==kConvElHFPythia && originvsGen!=kConvElHFPythia){
+	  continue;
 	}
 	if(fSelectElSource==kHadronHijing && originvsGen!=kHadronHijing){
-	  selected=kFALSE;
+	  continue;
+	}
+	if(fSelectElSource==kOtherBkgHijing && originvsGen!=kOtherBkgHijing){
+	  continue;
+	}
+
+	if(fSelectElSource==kOtherBkgHFPythia && originvsGen!=kOtherBkgHFPythia){
+	  continue;
 	}
       }
       else{
 
 	if(fSelectElSource==kHF && originvsGen!=kHF){
-	  selected=kFALSE;
+	  continue;
 	}
-	if(fSelectElSource==knonHF && originvsGen!=knonHF){
-	  selected=kFALSE;
+	if(fSelectElSource==knonHF && !(originvsGen==kDalitz || originvsGen==kDalitzHF || originvsGen==kConvEl || originvsGen==kConvElHF || originvsGen==kOtherBkgHF || originvsGen==kOtherBkg )){
+	  continue;
 	}
-
+	if(fSelectElSource==kDalitz && originvsGen!=kDalitz){
+	  continue;
+	}
+	if(fSelectElSource==kDalitzHF && originvsGen!=kDalitzHF){
+	  continue;
+	}
 	if(fSelectElSource==kConvEl && originvsGen!=kConvEl){
-	  selected=kFALSE;
+	  continue;
+	}
+	if(fSelectElSource==kConvElHF && originvsGen!=kConvElHF){
+	  continue;
+	}
+	if(fSelectElSource==kOtherBkgHF && originvsGen!=kOtherBkgHF){
+	  continue;
+	}
+	if(fSelectElSource==kOtherBkg && originvsGen!=kOtherBkg){
+	  continue;
 	}
 	if(fSelectElSource==kHadron && originvsGen!=kHadron){
-	  selected=kFALSE;
+	  continue;
 	}
       }
 
@@ -612,7 +645,7 @@ void AliCFSingleTrackEfficiencyTask::UserExec(Option_t *)
 	  
       }
       if(fSelNHFE->IsLS()){
-	cout <<"LS pt: " << vtrack->Pt() << endl;
+	//cout <<"LS pt: " << vtrack->Pt() << endl;
 	((TH1F*)fQAHistList->FindObject("fPtLScut"))->Fill(vtrack->Pt());
 	if(fCutLS){
 	  //Not selected
@@ -709,11 +742,16 @@ int AliCFSingleTrackEfficiencyTask::CheckBackgroundSource(AliVParticle* track, c
 
     //  if(origin==AliDxHFEToolsMC::kOriginGluonCharm || origin==AliDxHFEToolsMC::kOriginGluonBeauty) cout << "HELLO" << endl;
 
-    Bool_t isConversion=(origin==AliDxHFEToolsMC::kNrOrginMother+2);
-  
-
+    Bool_t isConversion=(origin==AliDxHFEToolsMC::kNrOrginMother+AliDxHFEParticleSelectionMCEl::kGamma);
+    Bool_t isConversionHF=(origin==AliDxHFEToolsMC::kNrOrginMother+AliDxHFEParticleSelectionMCEl::kGammaHF);
 
     bool isHF=(isCharm || isBeauty);
+
+    bool isDalitz=(origin==AliDxHFEToolsMC::kNrOrginMother+AliDxHFEParticleSelectionMCEl::kPi0 || (origin==AliDxHFEToolsMC::kNrOrginMother+AliDxHFEParticleSelectionMCEl::kEta));
+    bool isDalitzHF=(origin==AliDxHFEToolsMC::kNrOrginMother+AliDxHFEParticleSelectionMCEl::kPi0HF || (origin==AliDxHFEToolsMC::kNrOrginMother+AliDxHFEParticleSelectionMCEl::kEtaHF));
+
+    bool isBkgOther =(origin==AliDxHFEToolsMC::kNrOrginMother+AliDxHFEParticleSelectionMCEl::kOther);
+    bool isBkgOtherHF=(origin==AliDxHFEToolsMC::kNrOrginMother+AliDxHFEParticleSelectionMCEl::kOtherHF || origin==AliDxHFEToolsMC::kNrOrginMother+AliDxHFEParticleSelectionMCEl::kJPsi);
 
     if(isHF){
       originvsGen=kHF;
@@ -740,17 +778,60 @@ int AliCFSingleTrackEfficiencyTask::CheckBackgroundSource(AliVParticle* track, c
 	}
       
       }
-      else{
-	originvsGen=knonHF;
+      else if(isConversionHF){
+	originvsGen=kConvElHF;
 	if(fUseGenerator){
 	  if(generator==0)
-	    originvsGen=knonHFGen0;
+	    originvsGen=kConvElHFGen0;
 	  if(generator==1)
-	    originvsGen=knonHFHijing;
+	    originvsGen=kConvElHFHijing;
 	  if(generator==2)
-	    originvsGen=knonHFPythia;
-	}      
-
+	    originvsGen=kConvElHFPythia;
+	}
+      }
+      else if(isDalitzHF){
+	originvsGen=kDalitzHF;
+	if(fUseGenerator){
+	  if(generator==0)
+	    originvsGen=kDalitzHFGen0;
+	  if(generator==1)
+	    originvsGen=kDalitzHFHijing;
+	  if(generator==2)
+	    originvsGen=kDalitzHFPythia;
+	}
+      }
+      else if(isDalitz){
+	originvsGen=kDalitz;
+	if(fUseGenerator){
+	  if(generator==0)
+	    originvsGen=kDalitzGen0;
+	  if(generator==1)
+	    originvsGen=kDalitzHijing;
+	  if(generator==2)
+	    originvsGen=kDalitzPythia;
+	}
+      }
+      else if(isBkgOther){
+	originvsGen=kOtherBkg;
+	if(fUseGenerator){
+	  if(generator==0)
+	    originvsGen=kOtherBkgGen0;
+	  if(generator==1)
+	    originvsGen=kOtherBkgHijing;
+	  if(generator==2)
+	    originvsGen=kOtherBkgPythia;
+	}
+      }
+      else if(isBkgOtherHF){
+	originvsGen=kOtherBkgHF;
+	if(fUseGenerator){
+	  if(generator==0)
+	    originvsGen=kOtherBkgHFGen0;
+	  if(generator==1)
+	    originvsGen=kOtherBkgHFHijing;
+	  if(generator==2)
+	    originvsGen=kOtherBkgHFPythia;
+	}  
       }
     }
   }
@@ -980,14 +1061,14 @@ void AliCFSingleTrackEfficiencyTask::UserCreateOutputObjects() {
     "Good MC events",
     "Good Reconstructed events"
   };
-  
+  int nrMotherEl=AliDxHFEToolsMC::kNrOrginMother+AliDxHFEParticleSelectionMCEl::kNrBackground;
   fQAHistList->Add(CreateControlHistogram("fHistEventsProcessed","Event Info",3,cutBinNames));
 
   fQAHistList->Add(CreateControlHistogram("fElectronPt","electron pt",100,0.,10));
   fQAHistList->Add(CreateControlHistogram("fElectronPtStart","electron pt Start",100,0.,10));
   fQAHistList->Add(CreateControlHistogram("fhGenerator","Which Generator",3,-0.5,2.5));
-  fQAHistList->Add(CreateControlHistogram("fhOriginKine","Electron source origin Kine",15,-1.5,13.5));
-  fQAHistList->Add(CreateControlHistogram("fhOriginReco","Electron source origin Reco",15,-1.5,13.5));
+  fQAHistList->Add(CreateControlHistogram("fhOriginKine","Electron source origin Kine",nrMotherEl,-1.5,nrMotherEl-1.5));
+  fQAHistList->Add(CreateControlHistogram("fhOriginReco","Electron source origin Reco",nrMotherEl,-1.5,nrMotherEl-1.5));
 
   fQAHistList->Add(CreateControlHistogram("fhElGenerator","Which generator + el source",kNrSources,-0.5,kNrSources-0.5));
 
@@ -1135,12 +1216,23 @@ int AliCFSingleTrackEfficiencyTask::ParseArguments(const char* arguments)
       argument.ReplaceAll("elsource=", "");
       
       if(argument.CompareTo("HFEPythia")==0){ cout << " setting HFE as source from Pythia " << endl; fUseGenerator=kTRUE; fSelectElSource=kHFPythia;}
-      else if(argument.CompareTo("nonHFEHijing")==0) {cout << " setting nonHFE as source from Hijing" << endl; fUseGenerator=kTRUE; fSelectElSource=knonHFHijing;}
+      else if(argument.CompareTo("nonHFEHijing")==0){ cout << " setting nonHFE as source from Hijing " << endl; fSelectElSource=knonHFHijing;}
+      else if(argument.CompareTo("nonHFEPythia")==0){ cout << " setting nonHFE as source from Pythia " << endl; fSelectElSource=knonHFPythia;}
+      else if(argument.CompareTo("DalitzHijing")==0) {cout << " setting Dalitz as source from Hijing" << endl; fUseGenerator=kTRUE; fSelectElSource=kDalitzHijing;}
+      else if(argument.CompareTo("DalitzHFPythia")==0) {cout << " setting Dalitz HF as source from Pythia" << endl; fUseGenerator=kTRUE; fSelectElSource=kDalitzHFPythia;}
       else if(argument.CompareTo("convHijing")==0){ cout << " setting conv as source from Hijing" << endl; fUseGenerator=kTRUE; fSelectElSource=kConvElHijing; }
+      else if(argument.CompareTo("convHFPythia")==0){ cout << " setting conv HF as source from Pythia" << endl; fUseGenerator=kTRUE; fSelectElSource=kConvElHFPythia; }
+      else if(argument.CompareTo("otherBkgHijing")==0) {cout << " setting other e background as source from Hijing" << endl; fUseGenerator=kTRUE; fSelectElSource=kOtherBkgHijing;}
+      else if(argument.CompareTo("otherBkgHFPythia")==0) {cout << " setting other e background HF as source from Pythia" << endl; fUseGenerator=kTRUE; fSelectElSource=kOtherBkgHFPythia;}
       else if(argument.CompareTo("hadronHijing")==0){ cout << " setting hadron as source from Hijing" << endl; fMCCuts->SetSelectPdg(AliSingleTrackEffCuts::kPDGSelectNotPdg); fUseGenerator=kTRUE; fSelectElSource=kHadronHijing; }
       else if(argument.CompareTo("HFE")==0){ cout << " setting HFE as source " << endl; fSelectElSource=kHF;}
-      else if(argument.CompareTo("nonHFE")==0) {cout << " setting nonHFE as source " << endl; fSelectElSource=knonHF;}
+      else if(argument.CompareTo("nonHFE")==0){ cout << " setting nonHFE as source " << endl; fSelectElSource=knonHF;}
+      else if(argument.CompareTo("Dalitz")==0) {cout << " setting Dalitz as source " << endl; fSelectElSource=kDalitz;}
+      else if(argument.CompareTo("DalitzHF")==0) {cout << " setting DalitzHF as source " << endl; fSelectElSource=kDalitzHF;}
       else if(argument.CompareTo("conv")==0){ cout << " setting conv as source " << endl; fSelectElSource=kConvEl; }
+      else if(argument.CompareTo("convHF")==0){ cout << " setting conv as source " << endl; fSelectElSource=kConvElHF; }
+      else if(argument.CompareTo("otherBkg")==0){ cout << " setting other background as source " << endl; fSelectElSource=kOtherBkg; }
+      else if(argument.CompareTo("otherBkgHF")==0){ cout << " setting other background as source " << endl; fSelectElSource=kOtherBkgHF; }
       else if(argument.CompareTo("hadron")==0){ cout << " setting hadron as source " << endl; fMCCuts->SetSelectPdg(AliSingleTrackEffCuts::kPDGSelectNotPdg); fSelectElSource=kHadron; }
 
       else AliFatal(Form("unknown argument '%s'", argument.Data()));
@@ -1311,27 +1403,60 @@ void AliCFSingleTrackEfficiencyTask::CheckAODParticles(){
       if(fSelectElSource==kHFPythia && originvsGen!=kHFPythia){
 	continue;
       }
-      if(fSelectElSource==knonHFHijing && originvsGen!=knonHFHijing){
+      if(fSelectElSource==knonHFPythia && !(originvsGen==kDalitzHF || originvsGen==kConvElHF || originvsGen==kOtherBkgHF)){
+	continue;
+      }
+      if(fSelectElSource==knonHFHijing && !(originvsGen==kDalitz || originvsGen==kConvEl || originvsGen==kOtherBkg)){
+	continue;
+      }
+      if(fSelectElSource==kDalitzHijing && originvsGen!=kDalitzHijing){
+	continue;
+      }
+      if(fSelectElSource==kDalitzHFPythia && originvsGen!=kDalitzHFPythia){
 	continue;
       }
 
       if(fSelectElSource==kConvElHijing && originvsGen!=kConvElHijing){
 	continue;
       }
+      if(fSelectElSource==kConvElHFPythia && originvsGen!=kConvElHFPythia){
+	continue;
+      }
       if(fSelectElSource==kHadronHijing && originvsGen!=kHadronHijing){
+	continue;
+      }
+      if(fSelectElSource==kOtherBkgHijing && originvsGen!=kOtherBkgHijing){
+	continue;
+      }
+
+      if(fSelectElSource==kOtherBkgHFPythia && originvsGen!=kOtherBkgHFPythia){
 	continue;
       }
     }
     else{
 
+      if(fSelectElSource==knonHF && !(originvsGen==kDalitz || originvsGen==kDalitzHF || originvsGen==kConvEl || originvsGen==kConvElHF || originvsGen==kOtherBkgHF || originvsGen==kOtherBkg )){
+	continue;
+      }
       if(fSelectElSource==kHF && originvsGen!=kHF){
 	continue;
       }
-      if(fSelectElSource==knonHF && originvsGen!=knonHF){
+      if(fSelectElSource==kDalitz && originvsGen!=kDalitz){
 	continue;
       }
-
+      if(fSelectElSource==kDalitzHF && originvsGen!=kDalitzHF){
+	continue;
+      }
       if(fSelectElSource==kConvEl && originvsGen!=kConvEl){
+	continue;
+      }
+      if(fSelectElSource==kConvElHF && originvsGen!=kConvElHF){
+	continue;
+      }
+      if(fSelectElSource==kOtherBkgHF && originvsGen!=kOtherBkgHF){
+	continue;
+      }
+      if(fSelectElSource==kOtherBkg && originvsGen!=kOtherBkg){
 	continue;
       }
       if(fSelectElSource==kHadron && originvsGen!=kHadron){
