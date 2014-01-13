@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////
-//                                                               //            
-// AddTaskFlowTPCTOFQCSP macro                                     //
+//                                                               //
+// AddTaskFlowITSTPCTOFQCSP macro                                     //
 // Author: Andrea Dubla, Utrecht University, 2012                //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
@@ -12,41 +12,49 @@ class AliFlowEventSimpleCuts;
 class AliAnalysisDataContainer;
 class AliHFEextraCuts;
 
-AliAnalysisTaskFlowTPCTOFQCSP* AddTaskFlowTPCTOFQCSP(
-                                              TString uniqueID = "",
-                                              Float_t centrMin ,
-                                              Float_t centrMax ,
-                                              Double_t InvmassCut,
-                                              Int_t Trigger,
-                                              Double_t pTCut,
-                                              Double_t minTPCnsigma,
-                                              Double_t maxTPCnsigma,
-                                              Double_t minTOFnSigma,
-                                              Double_t maxTOFnSigma,
-                                              Int_t minTPCCluster,
-                                              Int_t TPCS,
-                                              Int_t Vz,
-                                              AliHFEextraCuts::ITSPixel_t pixel,
-                                              Bool_t PhotonicElectronDCA = kTRUE,
-                                              Bool_t PhiCut = kFALSE,
-                                              Bool_t QaPidSparse = kFALSE,
-                                              const char *Cent = "V0M",
-                                              Bool_t QC = kTRUE, // use qc2 and qc4
-                                              Bool_t SP_TPC = kTRUE, //use tpc sp method
-                                              Bool_t VZERO_SP = kFALSE, // use vzero sp method
-                                              Int_t harmonic = 2,
-                                              Bool_t shrinkSP = kTRUE,
-                                              Bool_t debug = kFALSE,
-                                              Int_t RPFilterBit = 1,
-                                              Bool_t op_ang = kFALSE,
-                                              Double_t op_angle_cut = 3.
-                                              )
+AliAnalysisTaskFlowITSTPCTOFQCSP* AddTaskFlowITSTPCTOFQCSP(
+                                                     TString uniqueID = "",
+                                                     Float_t centrMin ,
+                                                     Float_t centrMax ,
+                                                     Double_t InvmassCut,
+                                                     Int_t Trigger,
+                                                     Bool_t multCorrcut,
+                                                     Double_t pTCutmin,
+                                                     Double_t pTCutmax,
+                                                     Double_t minTOFnSigma,
+                                                     Double_t maxTOFnSigma,
+                                                     Double_t minITSnsigmaLowpT,
+                                                     Double_t maxITSnsigmaLowpT,
+                                                     Double_t minITSnsigmaHighpT,
+                                                     Double_t maxITSnsigmaHighpT,
+                                                     Double_t minTPCnsigmaLowpT,
+                                                     Double_t maxTPCnsigmaLowpT,
+                                                     Double_t minTPCnsigmaHighpT,
+                                                     Double_t maxTPCnsigmaHighpT,
+                                                     Int_t minTPCCluster,
+                                                     Int_t TPCS,
+                                                     AliHFEextraCuts::ITSPixel_t pixel,
+                                                     Bool_t PhotonicElectronDCA = kFALSE,
+                                                    // Bool_t QaPidSparse = kFALSE,
+                                                     const char *Cent = "V0M",
+                                                     Bool_t QC = kTRUE, // use qc2 and qc4
+                                                     Bool_t SP_TPC = kTRUE, //use tpc sp method
+                                                     Bool_t VZERO_SP = kFALSE, // use vzero sp method
+                                                     Int_t harmonic = 2,
+                                                     Bool_t shrinkSP = kTRUE,
+                                                     Bool_t debug = kFALSE,
+                                                     Int_t RPFilterBit = 1,
+                                                     Bool_t op_ang = kFALSE,
+                                                     Int_t Vz = 10,
+                                                     Double_t op_angle_cut = 3.,
+                                                     TString histoflatname = "alien:///alice/cern.ch/user/a/adubla/CentrDistrBins005.root"
+                                                     )
 
 {
-
-
-
-    if(debug) cout << " === Adding Task ElectFlow === " << endl;    
+    
+    
+    
+    if(debug) cout << " === Adding Task ElectFlow === " << endl;
     TString fileName = AliAnalysisManager::GetCommonFileName();
     fileName += ":ElectroID_";
     fileName += uniqueID;
@@ -60,38 +68,44 @@ AliAnalysisTaskFlowTPCTOFQCSP* AddTaskFlowTPCTOFQCSP(
         if(debug) cout << " Fatal error: no imput event handler found!" << endl;
         return 0x0;
     }
-
-//create a task
-  AliAnalysisTaskFlowTPCTOFQCSP *taskHFE = ConfigHFEStandardCuts(minTPCCluster, pixel);    //kTRUE if MC
     
-  if(debug) cout << " === AliAnalysisTaskFlowTPCTOFQCSP === " << taskHFE << endl;
-  if(!taskHFE) {
+    //create a task
+    AliAnalysisTaskFlowITSTPCTOFQCSP *taskHFE = ConfigHFEStandardCuts(kFALSE, minTPCCluster, pixel);    //kTRUE if MC
+    
+    if(debug) cout << " === AliAnalysisTaskFlowITSTPCTOFQCSP === " << taskHFE << endl;
+    if(!taskHFE) {
         if(debug) cout << " --> Unexpected error occurred: NO TASK WAS CREATED! (could be a library problem!) " << endl;
         return 0x0;
     }
+    taskHFE->SetTrigger(Trigger);
     
-// Set centrality percentiles and method V0M, FMD, TRK, TKL, CL0, CL1, V0MvsFMD, TKLvsV0M, ZEMvsZDC
-  taskHFE->SetCentralityParameters(centrMin, centrMax, Cent);
-  taskHFE->SetInvariantMassCut(InvmassCut);
-  taskHFE->SetpTCuttrack(pTCut);
-  taskHFE->SetTrigger(Trigger);
-  taskHFE->SetTPCS(TPCS);
-  taskHFE->SetVz(Vz);
-  taskHFE->SetIDCuts(minTPCnsigma, maxTPCnsigma, minTOFnSigma, maxTOFnSigma);
-  taskHFE->SetQAPIDSparse(QaPidSparse);
-  taskHFE->SetPhiCut(PhiCut);
-  taskHFE->SelectPhotonicElectronMethod(PhotonicElectronDCA);
-  taskHFE->SetOpeningAngleflag(op_ang);
-  taskHFE->SetOpeningAngleCut(op_angle_cut);
+    if(Trigger==0 || Trigger==4){
+        TFile *fFlat=TFile::Open(histoflatname.Data());
+        TCanvas *c=fFlat->Get("cintegral");
+        TH1F *hfl=(TH1F*)c->FindObject("hint");
+        taskHFE->SetHistoForCentralityFlattening(hfl,centrMin,centrMax,0.,0);
+    }
+    // Set centrality percentiles and method V0M, FMD, TRK, TKL, CL0, CL1, V0MvsFMD, TKLvsV0M, ZEMvsZDC
+    taskHFE->SetCentralityParameters(centrMin, centrMax, Cent);
+    taskHFE->SetInvariantMassCut(InvmassCut);
+    taskHFE->SetpTCuttrack(pTCutmin, pTCutmax);
+    taskHFE->SetTPCS(TPCS);
+    taskHFE->SetVz(Vz);
+    taskHFE->SetIDCuts(minTOFnSigma, maxTOFnSigma, minITSnsigmaLowpT, maxITSnsigmaLowpT, minITSnsigmaHighpT, maxITSnsigmaHighpT, minTPCnsigmaLowpT, maxTPCnsigmaLowpT, minTPCnsigmaHighpT, maxTPCnsigmaHighpT);
+  //  taskHFE->SetQAPIDSparse(QaPidSparse);
+    taskHFE->SelectPhotonicElectronMethod(PhotonicElectronDCA);
+    taskHFE->SetOpeningAngleflag(op_ang);
+    taskHFE->SetOpeningAngleCut(op_angle_cut);
+    taskHFE->SetMultCorrelationCut(multCorrcut);
+
     
-    
-//set RP cuts for flow package analysis
-  cutsRP = new AliFlowTrackCuts(Form("RFPcuts%s",uniqueID));
+    //set RP cuts for flow package analysis
+    cutsRP = new AliFlowTrackCuts(Form("RFPcuts%s",uniqueID));
     if(!cutsRP) {
         if(debug) cout << " Fatal error: no RP cuts found, could be a library problem! " << endl;
         return 0x0;
     }
-
+    
     if(!VZERO_SP) {
         AliFlowTrackCuts::trackParameterType rptype = AliFlowTrackCuts::kGlobal;
         cutsRP->SetParamType(rptype);
@@ -114,50 +128,73 @@ AliAnalysisTaskFlowTPCTOFQCSP* AddTaskFlowTPCTOFQCSP(
         QC = kFALSE;
         if(debug) cout << "    --> VZERO RP's " << cutsRP << endl;
     }
-
+    
     AliFlowTrackSimpleCuts *POIfilterLeft = new AliFlowTrackSimpleCuts();
     AliFlowTrackSimpleCuts *POIfilterRight = new AliFlowTrackSimpleCuts();
     if(SP_TPC){
         POIfilterLeft->SetEtaMin(-0.8);
         POIfilterLeft->SetEtaMax(0.0);
         POIfilterLeft->SetMassMin(263731); POIfilterLeft->SetMassMax(263733);
-
+        
         POIfilterRight->SetEtaMin(0.0);
         POIfilterRight->SetEtaMax(0.8);
         POIfilterRight->SetMassMin(263731); POIfilterRight->SetMassMax(263733);
     }
-
+    
     
     AliFlowTrackSimpleCuts *POIfilterVZERO = new AliFlowTrackSimpleCuts();
     if(VZERO_SP || QC){
         POIfilterVZERO->SetEtaMin(-0.8);
         POIfilterVZERO->SetEtaMax(0.8);
         POIfilterVZERO->SetMassMin(263731); POIfilterVZERO->SetMassMax(263733);
- 
+        
     }
- 
+    
+    
+    AliFlowTrackSimpleCuts *POIfilterLeftH = new AliFlowTrackSimpleCuts();
+    AliFlowTrackSimpleCuts *POIfilterRightH = new AliFlowTrackSimpleCuts();
+    if(SP_TPC){
+        POIfilterLeftH->SetEtaMin(-0.8);
+        POIfilterLeftH->SetEtaMax(0.0);
+        POIfilterLeftH->SetMassMin(2636); POIfilterLeftH->SetMassMax(2638);
+        
+        POIfilterRightH->SetEtaMin(0.0);
+        POIfilterRightH->SetEtaMax(0.8);
+        POIfilterRightH->SetMassMin(2636); POIfilterRightH->SetMassMax(2638);
+    }
+    
+    
+    AliFlowTrackSimpleCuts *POIfilterQCH = new AliFlowTrackSimpleCuts();
+    if(QC){
+        POIfilterQCH->SetEtaMin(-0.8);
+        POIfilterQCH->SetEtaMax(0.8);
+        POIfilterQCH->SetMassMin(2636); POIfilterQCH->SetMassMax(2638);
+        
+    }
+    
+    
     
     taskHFE->SetRPCuts(cutsRP);
- 
- 
- AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(Form("ccontainer0_%s",uniqueID.Data()),TList::Class(),AliAnalysisManager::kOutputContainer,fileName);
-  
- mgr->ConnectInput(taskHFE,0,mgr->GetCommonInputContainer());
- mgr->ConnectOutput(taskHFE,1,coutput3);
     
- 
+    
+    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(Form("ccontainer0_%s",uniqueID.Data()),TList::Class(),AliAnalysisManager::kOutputContainer,fileName);
+    
+    mgr->ConnectInput(taskHFE,0,mgr->GetCommonInputContainer());
+    mgr->ConnectOutput(taskHFE,1,coutput3);
+    
+    
     if(debug) cout << " === RECEIVED REQUEST FOR FLOW ANALYSIS === " << endl;
     AliAnalysisDataContainer *flowEvent = mgr->CreateContainer(Form("FlowContainer_%s",uniqueID.Data()), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
     mgr->ConnectOutput(taskHFE, 2, flowEvent);
-    if(debug) cout << "    --> Created IO containers " << flowEvent << endl;   
+    if(debug) cout << "    --> Created IO containers " << flowEvent << endl;
+  
     
-    
-  mgr->AddTask(taskHFE);
+    mgr->AddTask(taskHFE);
     
     if (QC) {  // add qc tasks
         TPCTOFnew::AddQCmethod(Form("QCTPCin_%s",uniqueID.Data()), harmonic, flowEvent,  debug ,uniqueID, -0.8, -0.0, 0.0, 0.8,false,POIfilterVZERO);
         if(debug) cout << "    --> Hanging QC task ...succes! "<< endl;
-    }   
+    }
     if (SP_TPC) {  // add sp subevent tasks
         TPCTOFnew::AddSPmethod(Form("SPTPCQa_in_%s", uniqueID.Data()), -0.8, -.0, .0, +0.8, "Qa", harmonic, flowEvent, false, shrinkSP, debug,uniqueID, false, POIfilterRight);
         if(debug) cout << "    --> Hanging SP Qa task ... succes!" << endl;
@@ -170,17 +207,16 @@ AliAnalysisTaskFlowTPCTOFQCSP* AddTaskFlowTPCTOFQCSP(
         TPCTOFnew::AddSPmethod(Form("SPVZEROQb_in_%s", uniqueID.Data()), -0.8, -.0, .0, +0.8, "Qb", harmonic, flowEvent, false, shrinkSP, debug,uniqueID, true, POIfilterVZERO);
         if(debug) cout << "    --> Hanging SP Qb task ... succes!"<< endl;
     }
-
-
     
-return taskHFE;
-
+    
+    return taskHFE;
+    
 }
 
 //_____________________________________________________________________________
 //_____________________________________________________________________________
-                    
-AliAnalysisTaskFlowTPCTOFQCSP* ConfigHFEStandardCuts(Int_t minTPCCulster,AliHFEextraCuts::ITSPixel_t pixel){
+
+AliAnalysisTaskFlowITSTPCTOFQCSP* ConfigHFEStandardCuts(Bool_t useMC,Int_t minTPCCulster,AliHFEextraCuts::ITSPixel_t pixel){
     //
     // HFE standard task configuration
     //
@@ -190,7 +226,7 @@ AliAnalysisTaskFlowTPCTOFQCSP* ConfigHFEStandardCuts(Int_t minTPCCulster,AliHFEe
     AliHFEcuts *hfecuts = new AliHFEcuts("hfeCuts","HFE Standard Cuts");  //TODO....change the cuts values to PbPb
     //  hfecuts->CreateStandardCuts();
     hfecuts->SetMinNClustersTPC(minTPCCulster);
-    hfecuts->SetMinNClustersITS(3);
+    hfecuts->SetMinNClustersITS(5);//5 for ITS pid.....usually i used 3.
     hfecuts->SetMinNTrackletsTRD(0);
     hfecuts->SetMinRatioTPCclusters(0.6);
     
@@ -198,7 +234,7 @@ AliAnalysisTaskFlowTPCTOFQCSP* ConfigHFEStandardCuts(Int_t minTPCCulster,AliHFEe
     //   hfecuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
     hfecuts->SetRequireITSPixel();
     hfecuts->SetCutITSpixel(pixel);//kAny
-    hfecuts->SetMaxChi2perClusterITS(-1);
+    hfecuts->SetMaxChi2perClusterITS(36);  //new from ALberto
     hfecuts->SetMaxChi2perClusterTPC(3.5);
     hfecuts->SetCheckITSLayerStatus(kFALSE); // shud be put back
     //  hfecuts->UnsetVertexRequirement();
@@ -207,13 +243,13 @@ AliAnalysisTaskFlowTPCTOFQCSP* ConfigHFEStandardCuts(Int_t minTPCCulster,AliHFEe
     //hfecuts->SetSigmaToVertex(10);
     hfecuts->SetTOFPIDStep(kFALSE);
     //  hfecuts->SetQAOn();
-    hfecuts->SetPtRange(0, 30);
+    hfecuts->SetPtRange(0, 5.);
     
-    AliAnalysisTaskFlowTPCTOFQCSP *task = new AliAnalysisTaskFlowTPCTOFQCSP("HFE_Flow_TPCTOF");
+    AliAnalysisTaskFlowITSTPCTOFQCSP *task = new AliAnalysisTaskFlowITSTPCTOFQCSP("HFE_Flow_TPCTOF");
     printf("*************************************************************");
     printf("task -------------------------------------------- %p\n ", task);
     printf("*************************************************************\n");
-
+    
     
     task->SetHFECuts(hfecuts);
     
@@ -222,16 +258,17 @@ AliAnalysisTaskFlowTPCTOFQCSP* ConfigHFEStandardCuts(Int_t minTPCCulster,AliHFEe
     //  task->SetRemovePileUp(kTRUE);
     
     // Define PID
- //   AliHFEpid *pid = task->GetPID();
- //   if(useMC) pid->SetHasMCData(kTRUE);
- //   pid->AddDetector("TPC", 0);
-   // pid->AddDetector("EMCAL", 1);
-    
- //   printf("*************************************\n");
- //   printf("Configuring standard Task:\n");
+       AliHFEpid *pid = task->GetPID();
+       if(useMC) pid->SetHasMCData(kTRUE);
+    pid->AddDetector("ITS", 0);
+    pid->AddDetector("TOF", 1);
+    pid->AddDetector("TPC", 2);
+
+       printf("*************************************\n");
+       printf("Configuring standard Task:\n");
     //  task->PrintStatus();
-  //  pid->PrintStatus();
-  //  printf("*************************************\n");
+      pid->PrintStatus();
+      printf("*************************************\n");
     return task;
     
     
@@ -308,6 +345,4 @@ namespace TPCTOFnew{
     }
     //_____________________________________________________________________________
 }
-
-
 

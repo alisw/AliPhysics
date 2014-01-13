@@ -907,7 +907,7 @@ void AliFragmentationFunctionCorrections::SetHistoBins(const Int_t jetPtSlice, c
 }
 
 //_____________________________________________________________________________________________________________________________________
-TArrayD* AliFragmentationFunctionCorrections::GetHistoBins(const Int_t jetPtSlice,  const Int_t type)
+TArrayD* AliFragmentationFunctionCorrections::GetHistoBins(const Int_t& jetPtSlice, const Int_t& type)
 { 
   // set histo bins for jet pt slice
   // if binning undefined for any slice, original binning will be used
