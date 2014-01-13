@@ -1,62 +1,4 @@
-// One can use the configuration macro in compiled mode by
-// root [0] gSystem->Load("libgeant321");
-// root [0] gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include\
-//                   -I$ALICE_ROOT -I$ALICE/geant3/TGeant3");
-// root [0] .x grun.C(1,"ConfigPPR.C++")
-
-#if !defined(__CINT__) || defined(__MAKECINT__)
-#include <Riostream.h>
-#include <TRandom.h>
-#include <TSystem.h>
-#include <TVirtualMC.h>
-#include <TGeant3TGeo.h>
-#include <TPDGCode.h>
-#include <TF1.h>
-#include <TGeoGlobalMagField.h>
-#include "STEER/STEER/AliRunLoader.h"
-#include "STEER/STEER/AliRun.h"
-#include "STEER/STEER/AliConfig.h"
-#include "STEER/STEER/AliGenerator.h"
-#include "STEER/STEER/AliSimulation.h"
-#include "STEER/STEERBase/AliLog.h"
-#include "STEER/STEERBase/AliMagF.h"
-#include "PYTHIA6/AliDecayerPythia.h"
-#include "EVGEN/AliGenHIJINGpara.h"
-#include "THijing/AliGenHijing.h"
-#include "EVGEN/AliGenCocktail.h"
-#include "EVGEN/AliGenSlowNucleons.h"
-#include "EVGEN/AliSlowNucleonModelExp.h"
-#include "EVGEN/AliGenParam.h"
-#include "EVGEN/AliGenMUONlib.h"
-#include "EVGEN/AliGenSTRANGElib.h"
-#include "EVGEN/AliGenMUONCocktail.h"
-#include "EVGEN/AliGenCocktail.h"
-#include "EVGEN/AliGenGeVSim.h"
-#include "EVGEN/AliGeVSimParticle.h"
-#include "PYTHIA6/AliGenPythia.h"
-#include "STRUCT/AliBODY.h"
-#include "STRUCT/AliMAG.h"
-#include "STRUCT/AliABSOv3.h"
-#include "STRUCT/AliDIPOv3.h"
-#include "STRUCT/AliHALLv3.h"
-#include "STRUCT/AliFRAMEv2.h"
-#include "STRUCT/AliSHILv3.h"
-#include "STRUCT/AliPIPEv3.h"
-#include "ITS/AliITSv11.h"
-#include "TPC/AliTPCv2.h"
-#include "TOF/AliTOFv6T0.h"
-#include "HMPID/AliHMPIDv3.h"
-#include "ZDC/AliZDCv4.h"
-#include "TRD/AliTRDv1.h"
-#include "FMD/AliFMDv1.h"
-#include "MUON/AliMUONv1.h"
-#include "PHOS/AliPHOSv1.h"
-#include "PMD/AliPMDv1.h"
-#include "T0/AliT0v1.h"
-#include "EMCAL/AliEMCALv2.h"
-#include "ACORDE/AliACORDEv1.h"
-#include "VZERO/AliVZEROv7.h"
-#endif
+// Underlying events
 
 enum PprRun_t 
 {
@@ -149,25 +91,12 @@ void Config()
     cout<<"Seed for random number generation= "<<gRandom->GetSeed()<<endl; 
 
 
-   // libraries required by geant321
-#if defined(__CINT__)
-    gSystem->Load("liblhapdf");
-    gSystem->Load("libEGPythia6");
-    gSystem->Load("libpythia6");
-    gSystem->Load("libAliPythia6");
-    gSystem->Load("libgeant321");
-    
-    if (srun >= kHijing_cent1 && srun <= kHijing_pA) 
-      {
-	gSystem->Load("libhijing");
-	gSystem->Load("libTHijing");
-      }
-#endif
-
     new     TGeant3TGeo("C++ Interface to Geant3");
 
   // Output every 100 tracks
-  ((TGeant3*)gMC)->SetSWIT(4,100);
+    TVirtualMC * vmc = TVirtualMC::GetMC();
+
+    ((TGeant3*)vmc)->SetSWIT(4,100);
 
     AliRunLoader* rl=0x0;
 
@@ -209,7 +138,7 @@ void Config()
       break;
     }
     decayer->Init();
-    gMC->SetExternalDecayer(decayer);
+    vmc->SetExternalDecayer(decayer);
     //
     //
     //=======================================================================
@@ -219,35 +148,35 @@ void Config()
     // --- Specify event type to be tracked through the ALICE setup
     // --- All positions are in cm, angles in degrees, and P and E in GeV
 
-    gMC->SetProcess("DCAY",1);
-    gMC->SetProcess("PAIR",1);
-    gMC->SetProcess("COMP",1);
-    gMC->SetProcess("PHOT",1);
-    gMC->SetProcess("PFIS",0);
-    gMC->SetProcess("DRAY",0);
-    gMC->SetProcess("ANNI",1);
-    gMC->SetProcess("BREM",1);
-    gMC->SetProcess("MUNU",1);
-    gMC->SetProcess("CKOV",1);
-    gMC->SetProcess("HADR",1);
-    gMC->SetProcess("LOSS",2);
-    gMC->SetProcess("MULS",1);
-    gMC->SetProcess("RAYL",1);
+    vmc->SetProcess("DCAY",1);
+    vmc->SetProcess("PAIR",1);
+    vmc->SetProcess("COMP",1);
+    vmc->SetProcess("PHOT",1);
+    vmc->SetProcess("PFIS",0);
+    vmc->SetProcess("DRAY",0);
+    vmc->SetProcess("ANNI",1);
+    vmc->SetProcess("BREM",1);
+    vmc->SetProcess("MUNU",1);
+    vmc->SetProcess("CKOV",1);
+    vmc->SetProcess("HADR",1);
+    vmc->SetProcess("LOSS",2);
+    vmc->SetProcess("MULS",1);
+    vmc->SetProcess("RAYL",1);
 
     Float_t cut = 1.e-3;        // 1MeV cut by default
     Float_t tofmax = 1.e10;
 
-    gMC->SetCut("CUTGAM", cut);
-    gMC->SetCut("CUTELE", cut);
-    gMC->SetCut("CUTNEU", cut);
-    gMC->SetCut("CUTHAD", cut);
-    gMC->SetCut("CUTMUO", cut);
-    gMC->SetCut("BCUTE",  cut); 
-    gMC->SetCut("BCUTM",  cut); 
-    gMC->SetCut("DCUTE",  cut); 
-    gMC->SetCut("DCUTM",  cut); 
-    gMC->SetCut("PPCUTM", cut);
-    gMC->SetCut("TOFMAX", tofmax); 
+    vmc->SetCut("CUTGAM", cut);
+    vmc->SetCut("CUTELE", cut);
+    vmc->SetCut("CUTNEU", cut);
+    vmc->SetCut("CUTHAD", cut);
+    vmc->SetCut("CUTMUO", cut);
+    vmc->SetCut("BCUTE",  cut); 
+    vmc->SetCut("BCUTM",  cut); 
+    vmc->SetCut("DCUTE",  cut); 
+    vmc->SetCut("DCUTM",  cut); 
+    vmc->SetCut("PPCUTM", cut);
+    vmc->SetCut("TOFMAX", tofmax); 
 
     // Generator Configuration
     AliGenerator* gener = GeneratorFactory(srun);
@@ -1437,7 +1366,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
       Int_t particle;
       // Xi
       particle = kXiMinus;
-      AliGenParam *genXi = new AliGenParam(16,particle,lib->GetPt(particle),lib->GetY(particle),lib->GetIp(particle));
+      AliGenParam *genXi = new AliGenParam(16,lib,particle);
       genXi->SetPtRange(0., 12.);
       genXi->SetYRange(-1.1, 1.1);
       genXi->SetForceDecay(kNoDecay);	
@@ -1445,7 +1374,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
       //
       // Omega
       particle = kOmegaMinus;
-      AliGenParam *genOmega = new AliGenParam(10,particle,lib->GetPt(particle),lib->GetY(particle),lib->GetIp(particle));     
+      AliGenParam *genOmega = new AliGenParam(10,lib,particle);
       genOmega->SetPtRange(0, 12.);
       genOmega->SetYRange(-1.1, 1.1);
       genOmega->SetForceDecay(kNoDecay);

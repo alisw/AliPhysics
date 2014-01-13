@@ -1,53 +1,4 @@
-//
-// Configuration for the first physics production 2008
-//
-
-// One can use the configuration macro in compiled mode by
-// root [0] gSystem->Load("libgeant321");
-// root [0] gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include\
-//                   -I$ALICE_ROOT -I$ALICE/geant3/TGeant3");
-// root [0] .x grun.C(1,"Config.C++")
-
-#if !defined(__CINT__) || defined(__MAKECINT__)
-#include <Riostream.h>
-#include <TRandom.h>
-#include <TDatime.h>
-#include <TSystem.h>
-#include <TVirtualMC.h>
-#include <TGeant3TGeo.h>
-#include "STEER/AliRunLoader.h"
-#include "STEER/AliRun.h"
-#include "STEER/AliConfig.h"
-#include "PYTHIA6/AliDecayerPythia.h"
-#include "PYTHIA6/AliGenPythia.h"
-#include "TDPMjet/AliGenDPMjet.h"
-#include "STEER/AliMagF.h"
-#include "STRUCT/AliBODY.h"
-#include "STRUCT/AliMAG.h"
-#include "STRUCT/AliABSOv3.h"
-#include "STRUCT/AliDIPOv3.h"
-#include "STRUCT/AliHALLv3.h"
-#include "STRUCT/AliFRAMEv2.h"
-#include "STRUCT/AliSHILv3.h"
-#include "STRUCT/AliPIPEv3.h"
-#include "ITS/AliITSv11.h"
-#include "TPC/AliTPCv2.h"
-#include "TOF/AliTOFv6T0.h"
-#include "HMPID/AliHMPIDv3.h"
-#include "ZDC/AliZDCv4.h"
-#include "TRD/AliTRDv1.h"
-#include "TRD/AliTRDgeometry.h"
-#include "FMD/AliFMDv1.h"
-#include "MUON/AliMUONv1.h"
-#include "PHOS/AliPHOSv1.h"
-#include "PHOS/AliPHOSSimParam.h"
-#include "PMD/AliPMDv1.h"
-#include "T0/AliT0v1.h"
-#include "EMCAL/AliEMCALv2.h"
-#include "ACORDE/AliACORDEv1.h"
-#include "VZERO/AliVZEROv7.h"
-#endif
-
+// Pileup generation
 
 enum PDC06Proc_t 
 {
@@ -96,15 +47,6 @@ void Config()
   gRandom->SetSeed(seed);
   cerr<<"Seed for random number generation= "<<seed<<endl; 
 
-  // Libraries required by geant321
-#if defined(__CINT__)
-  gSystem->Load("liblhapdf");      // Parton density functions
-  gSystem->Load("libEGPythia6");   // TGenerator interface
-  gSystem->Load("libpythia6");     // Pythia
-  gSystem->Load("libAliPythia6");  // ALICE specific implementations
-  gSystem->Load("libgeant321");
-#endif
-
   new TGeant3TGeo("C++ Interface to Geant3");
 
   //=======================================================================
@@ -137,36 +79,37 @@ void Config()
   // --- Specify event type to be tracked through the ALICE setup
   // --- All positions are in cm, angles in degrees, and P and E in GeV
 
+  TVirtualMC * vmc = TVirtualMC::GetMC();
 
-    gMC->SetProcess("DCAY",1);
-    gMC->SetProcess("PAIR",1);
-    gMC->SetProcess("COMP",1);
-    gMC->SetProcess("PHOT",1);
-    gMC->SetProcess("PFIS",0);
-    gMC->SetProcess("DRAY",0);
-    gMC->SetProcess("ANNI",1);
-    gMC->SetProcess("BREM",1);
-    gMC->SetProcess("MUNU",1);
-    gMC->SetProcess("CKOV",1);
-    gMC->SetProcess("HADR",1);
-    gMC->SetProcess("LOSS",2);
-    gMC->SetProcess("MULS",1);
-    gMC->SetProcess("RAYL",1);
+    vmc->SetProcess("DCAY",1);
+    vmc->SetProcess("PAIR",1);
+    vmc->SetProcess("COMP",1);
+    vmc->SetProcess("PHOT",1);
+    vmc->SetProcess("PFIS",0);
+    vmc->SetProcess("DRAY",0);
+    vmc->SetProcess("ANNI",1);
+    vmc->SetProcess("BREM",1);
+    vmc->SetProcess("MUNU",1);
+    vmc->SetProcess("CKOV",1);
+    vmc->SetProcess("HADR",1);
+    vmc->SetProcess("LOSS",2);
+    vmc->SetProcess("MULS",1);
+    vmc->SetProcess("RAYL",1);
 
     Float_t cut = 1.e-3;        // 1MeV cut by default
     Float_t tofmax = 1.e10;
 
-    gMC->SetCut("CUTGAM", cut);
-    gMC->SetCut("CUTELE", cut);
-    gMC->SetCut("CUTNEU", cut);
-    gMC->SetCut("CUTHAD", cut);
-    gMC->SetCut("CUTMUO", cut);
-    gMC->SetCut("BCUTE",  cut); 
-    gMC->SetCut("BCUTM",  cut); 
-    gMC->SetCut("DCUTE",  cut); 
-    gMC->SetCut("DCUTM",  cut); 
-    gMC->SetCut("PPCUTM", cut);
-    gMC->SetCut("TOFMAX", tofmax); 
+    vmc->SetCut("CUTGAM", cut);
+    vmc->SetCut("CUTELE", cut);
+    vmc->SetCut("CUTNEU", cut);
+    vmc->SetCut("CUTHAD", cut);
+    vmc->SetCut("CUTMUO", cut);
+    vmc->SetCut("BCUTE",  cut); 
+    vmc->SetCut("BCUTM",  cut); 
+    vmc->SetCut("DCUTE",  cut); 
+    vmc->SetCut("DCUTM",  cut); 
+    vmc->SetCut("PPCUTM", cut);
+    vmc->SetCut("TOFMAX", tofmax); 
 
 
 
@@ -177,7 +120,7 @@ void Config()
   TVirtualMCDecayer* decayer = new AliDecayerPythia();
   decayer->SetForceDecay(kAll);
   decayer->Init();
-  gMC->SetExternalDecayer(decayer);
+  vmc->SetExternalDecayer(decayer);
 
   //=========================//
   // Generator Configuration //
@@ -472,10 +415,6 @@ AliGenerator* MbPhojet()
       comment = comment.Append(" pp at 14 TeV: Pythia low-pt");
 //
 //    DPMJET
-#if defined(__CINT__)
-  gSystem->Load("libdpmjet");      // Parton density functions
-  gSystem->Load("libTDPMjet");      // Parton density functions
-#endif
       AliGenDPMjet* dpmjet = new AliGenDPMjet(-1); 
       dpmjet->SetMomentumRange(0, 999999.);
       dpmjet->SetThetaRange(0., 180.);

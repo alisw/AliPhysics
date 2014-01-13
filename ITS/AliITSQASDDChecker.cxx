@@ -1284,14 +1284,7 @@ Bool_t  AliITSQASDDChecker::MakeSDDImage( TObjArray ** list, AliQAv1::TASKINDEX_
     case AliQAv1::kNULLTASKINDEX:; case  AliQAv1::kNTASKINDEX: 
       {
 	Int_t ts=(Int_t)task;
-	TString str;
-	if(ts>-1 && ts <9){
-	  str= AliQAv1::GetTaskName(task);
-	}
-	else {
-	  str="UNDEFINED";
-	}
-	AliWarning(Form("No histograms for this task ( %s ) \n", str.Data())); 
+	AliWarning(Form("No histograms for this task number %d  \n", ts)); 
 	rval=kFALSE;
       }
       break;

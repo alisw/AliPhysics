@@ -659,7 +659,7 @@ void AliPIDResponse::SetRecoInfo()
   
   TPRegexp reg(".*(LHC1[1-3][a-z]+[0-9]+[a-z_]*)/.*");
   if (hasProdInfo) reg=TPRegexp("LHC1[1-2][a-z]+[0-9]+[a-z_]*");
-  TPRegexp reg12a17("LHC1[2-3][a-z]");
+  TPRegexp reg12a17("LHC1[2-4][a-z]");
 
   //find the period by run number (UGLY, but not stored in ESD and AOD... )
   if (fRun>=114737&&fRun<=117223)      { fLHCperiod="LHC10B"; fMCperiodTPC="LHC10D1";  }
@@ -1309,15 +1309,19 @@ void AliPIDResponse::SetTPCParametrisation()
   // PbPb 2010, period 10h.pass2
   //TODO Needs further development const Bool_t is10hpass2 = period.Contains("LHC10H") && recopass == 2;
   
+  
+  // In case of MC without(!) tune on data activated for the TPC, don't use the multiplicity correction for the moment
+  Bool_t isMCandNotTPCtuneOnData = fIsMC && !(fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC));
+  
   // If correction is available, but disabled (highly NOT recommended!), print warning
-  if (!fUseTPCMultiplicityCorrection && !isPP) {
+  if (!fUseTPCMultiplicityCorrection && !isPP && !isMCandNotTPCtuneOnData) {
     //TODO: Needs further development if (is10hpass2 || isPPb2013LowLuminosity) {
     if (isPPb2013LowLuminosity) {
       AliWarning("Mulitplicity correction disabled, but correction parameters for this period exist. It is highly recommended to use enable the correction. Otherwise the splines might be off!");
     }
   }
   
-  if (fUseTPCMultiplicityCorrection && !isPP) {
+  if (fUseTPCMultiplicityCorrection && !isPP && !isMCandNotTPCtuneOnData) {
     AliInfo("Multiplicity correction enabled!");
     
     //TODO After testing, load parameters from outside       
@@ -1407,8 +1411,16 @@ void AliPIDResponse::SetTPCParametrisation()
     // directly and use it for calculations - which should still give valid results, even if
     // the multiplicity correction is explicitely enabled in such expert calls.
     
+    TString reasonForDisabling = "requested by user";
+    if (fUseTPCMultiplicityCorrection) {
+      if (isPP)
+        reasonForDisabling = "pp collisions";
+      else
+        reasonForDisabling = "MC w/o tune on data";
+    }
+    
     AliInfo(Form("Multiplicity correction %sdisabled (%s)!", fUseTPCMultiplicityCorrection ? "automatically " : "",
-                 fUseTPCMultiplicityCorrection ? "pp collisions" : "requested by user"));
+                 reasonForDisabling.Data()));
     
     fUseTPCMultiplicityCorrection = kFALSE;
     fTPCResponse.ResetMultiplicityCorrectionFunctions();
