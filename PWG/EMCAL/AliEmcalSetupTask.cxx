@@ -103,26 +103,26 @@ void AliEmcalSetupTask::UserExec(Option_t *)
       man->SetDefaultStorage(fOcdbPath);
     } else { // use local copy of OCDB
       TString tmpdir=gSystem->WorkingDirectory();
+      if (gSystem->AccessPathName(tmpdir))
+	tmpdir = "/tmp";
       tmpdir+="/";
       tmpdir+=gSystem->GetUid();
       tmpdir+="-";
       TDatime t;
       tmpdir+=t.Get();
       tmpdir+="-";
-      fLocalOcdb = tmpdir;
-      fLocalOcdb+=gRandom->Integer(999999999);
-      gSystem->MakeDirectory(fLocalOcdb);
       Int_t counter = 0;
-      while (gSystem->AccessPathName(fLocalOcdb)) {
+      fLocalOcdb = tmpdir;
+      fLocalOcdb+=gRandom->Integer(999999999999);
+      while (!gSystem->AccessPathName(fLocalOcdb)) {
 	fLocalOcdb = tmpdir;
-	fLocalOcdb+=gRandom->Integer(999999999);
-	gSystem->MakeDirectory(fLocalOcdb);
-	gSystem->Exec("ls");
+	fLocalOcdb+=gRandom->Integer(999999999999);
 	counter++;
 	if (counter>100) {
 	  AliFatal(Form("Could not create local directory for OCDB at %s",tmpdir.Data()));
 	}
       }
+      gSystem->MakeDirectory(fLocalOcdb);
       TString filename(Form("$ALICE_ROOT/PWG/EMCAL/data/%d.dat",year));
       TString cmd(Form("cd %s && tar -xf %s",fLocalOcdb.Data(),filename.Data()));
       Int_t ret = gSystem->Exec(cmd);
@@ -143,7 +143,7 @@ void AliEmcalSetupTask::UserExec(Option_t *)
   if (man) {
     if (man->GetRun()!=runno)
       man->SetRun(runno);
-    AliInfo(Form("Loading grp data from OCDB"));
+    AliInfo(Form("Loading grp data from OCDB for run %d", runno));
     AliGRPManager GRPManager;
     GRPManager.ReadGRPEntry();
     GRPManager.SetMagField();
