@@ -344,8 +344,8 @@ Bool_t AliForwardMCFlowTaskQC::FillMCHist()
   // Add flow if set to do so in AddTask function
   //
   fHistdNdedpMC.Reset();
-  Int_t minEta = -3.75;
-  Int_t maxEta = 5.;
+  Double_t minEta = -3.75;
+  Double_t maxEta = 5.;
 
   //retreive MC particles from event
   TClonesArray* mcArray = 
