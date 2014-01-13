@@ -193,10 +193,10 @@ void AliEmcalAodTrackFilterTask::UserExec(Option_t *)
         newt->SetBit(BIT(27),1);
         newt->SetBit(BIT(28),0);
       } else if (type==2) {
-        newt->SetBit(BIT(27),1);
+        newt->SetBit(BIT(27),0);
         newt->SetBit(BIT(28),1);
       } else if (type==3) {
-        newt->SetBit(BIT(27),0);
+        newt->SetBit(BIT(27),1);
         newt->SetBit(BIT(28),1);
       }
     }
