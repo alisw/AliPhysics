@@ -71,7 +71,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"TRDpidProb2D_Electrons", "P(2dim. PID_{e}^{TRD})",                             ""},
   {"TRDpidProb2D_Pions",     "P(2dim. PID_{#pi}^{TRD})",                           ""},
   {"TRDphi",                 "#phi^{TRD}",                                         ""},
-  {"TRDpidEffLeg",           "#epsilon^{TRD legs}(PID)",                           ""},
+  {"TRDpidEffLeg",           "#varepsilon^{TRD legs}(PID)",                           ""},
   {"TRD_signal",             "TRD d#it{E}/d#it{x} + TR",                           "(a.u.)"},
 
   {"ImpactParXY",            "#it{dca}_{xy}",                                      "(cm)"},
@@ -134,8 +134,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"EMCAL_M20",              "M20 EMCAL showershape param.",                       ""},
   {"EMCAL_Dispersion",       "EMCAL dispersion param.",                            ""},
 
-  {"EffLeg",                 "A#times#epsilon",                                    ""},
-  {"OneOverEffLeg",          "(A#times#epsilon)^{-1}",                             ""},
+  {"EffLeg",                 "A#times#varepsilon",                                    ""},
+  {"OneOverEffLeg",          "(A#times#varepsilon)^{-1}",                             ""},
   {"V0Index0",               "V0Index0",                                           ""},
   {"KinkIndex0",             "KinkIndex0",                                         ""},
   //
@@ -207,11 +207,11 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"PseudoProperTimeErr",    "#tau error",                                         "(#mus)"},
   {"PseudoProperTimeResolution", "(#tau-#tau^{MC truth})",                         "(#mus)"},
   {"PseudoProperTimePull",   "#frac{(#tau-#tau^{MC truth})}{#tau error}",          ""},
-  {"TRDpidEffPair",          "#epsilon^{TRD pair}(PID)",                           ""},
+  {"TRDpidEffPair",          "#varepsilon^{TRD pair}(PID)",                           ""},
   {"MomAsymDau1",            "#it{p}^{leg1}/#it{p}^{pair}",                        ""},
   {"MomAsymDau2",            "#it{p}^{leg2}/#it{p}^{pair}",                        ""},
-  {"EffPair",                "A#times#epsilon",                                    ""},
-  {"OneOverEffPair",         "(A#times#epsilon)^{-1}",                             ""},
+  {"EffPair",                "A#times#varepsilon",                                    ""},
+  {"OneOverEffPair",         "(A#times#varepsilon)^{-1}",                             ""},
   {"RndmPair",               "P",                                                  ""},
   {"Pairs",                  "pairs/event",                                        ""},
   //
