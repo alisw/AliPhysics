@@ -69,6 +69,20 @@ class AliDxHFEParticleSelectionMCEl : public AliDxHFEParticleSelectionEl {
     kMCOnly=2
   };
 
+  enum{
+    kPi0HF=0,
+    kPi0=1,
+    kEtaHF=2,
+    kEta=3,
+    kGammaHF=4,
+    kGamma=5,
+    kJPsi=6,
+    kOtherHF=7,
+    kOther=8,
+    kNrBackground=9
+  };
+
+
  protected:
 
  private:
@@ -96,6 +110,8 @@ class AliDxHFEParticleSelectionMCEl : public AliDxHFEParticleSelectionEl {
   Int_t fMCInfo;                       // What to check and in which order
   Bool_t fRemoveEfromD0;               // Removing electrons decaying from a D0
   Bool_t fRemoveSecondary;             // whether or not to remove secondary tracks
+  Bool_t fUseGenerator;                // whether or not to check generator for particle
+  Int_t fGenerator;                    // which generator was used to produce particle
 
 
   ClassDef(AliDxHFEParticleSelectionMCEl, 4);
