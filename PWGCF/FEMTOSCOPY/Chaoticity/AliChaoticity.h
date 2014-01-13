@@ -81,6 +81,7 @@ class AliChaoticity : public AliAnalysisTaskSE {
   void SetTabulatePairs(Bool_t tabulate) {fTabulatePairs = tabulate;}
   void SetPbPbCase(Bool_t pbpb) {fPbPbcase = pbpb;}
   void SetGenerateSignal(Bool_t gen) {fGenerateSignal = gen;}
+  void SetGeneratorOnly(Bool_t genOnly) {fGeneratorOnly = genOnly;}
   void SetCentBinRange(Int_t low, Int_t high) {fCentBinLowLimit = low; fCentBinHighLimit = high;}
   void SetLEGOCase(Bool_t lego) {fLEGO = lego;}
   void SetFilterBit(UInt_t filterbit) {fFilterBit = filterbit;}
@@ -235,6 +236,7 @@ class AliChaoticity : public AliAnalysisTaskSE {
   Bool_t fAODcase;
   Bool_t fPbPbcase;
   Bool_t fGenerateSignal;
+  Bool_t fGeneratorOnly;
   Bool_t fPdensityExplicitLoop;
   Bool_t fPdensityPairCut;
   Bool_t fTabulatePairs;
