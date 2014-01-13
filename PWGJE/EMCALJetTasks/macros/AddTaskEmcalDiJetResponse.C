@@ -101,6 +101,8 @@ AliAnalysisTaskEmcalDiJetResponse* AddTaskEmcalDiJetResponse(TString     kTracks
 
   taskDiJet->SetResponseVar(responseVar);
 
+  taskDiJet->SetPtMinTriggerJet(0.);
+
   mgr->AddTask(taskDiJet);
 
   //Connnect input
