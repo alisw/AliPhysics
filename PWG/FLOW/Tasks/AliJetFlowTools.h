@@ -109,8 +109,12 @@ class AliJetFlowTools {
         void            SetUseDetectorResponse(Bool_t r)        {fUseDetectorResponse   = r;}
         void            SetUseDptResponse(Bool_t r)             {fUseDptResponse        = r;}
         void            SetTrainPowerFit(Bool_t t)              {fTrainPower            = t;}
-        void            SetUnfoldInOutPlane(Bool_t i)           {fInOutUnfolding        = i;}
+        void            SetDphiUnfolding(Bool_t i)              {fDphiUnfolding         = i;}
+        void            SetDphiDptUnfolding(Bool_t i)           {fDphiDptUnfolding      = i;}
+        void            SetExLJDpt(Bool_t i)                    {fExLJDpt               = i;}
+        void            SetWeightFunction(TF1* w)               {fResponseMaker->SetRMMergeWeightFunction(w);}
         void            Make();
+        void            MakeAU();       // test function, use with caution (09012014)
         void            Finish() {
             fOutputFile->cd();
             if(fRMSSpectrumIn)  fRMSSpectrumIn->Write();
@@ -119,9 +123,9 @@ class AliJetFlowTools {
             fOutputFile->Close();}
         void            PostProcess(
                 TString def,
+                Int_t columns = 4,
                 TString in = "UnfoldedSpectra.root", 
-                TString out = "ProcessedSpectra.root", 
-                Int_t columns = 4) const;
+                TString out = "ProcessedSpectra.root") const;
         Bool_t          SetRawInput (
                 TH2D* detectorResponse, // detector response matrix
                 TH1D* jetPtIn,          // in plane jet spectrum
@@ -161,12 +165,19 @@ class AliJetFlowTools {
         static void     SetDebug(Int_t d)               {AliUnfolding::SetDebug(d);}
     private:
         Bool_t          PrepareForUnfolding(); 
+        Bool_t          PrepareForUnfolding(Int_t low, Int_t up);
         TH1D*           GetPrior(                       const TH1D* measuredJetSpectrum,
                                                         const TH2D* resizedResponse,
                                                         const TH1D* kinematicEfficiency,
                                                         const TH1D* measuredJetSpectrumTrueBins,
                                                         const TString suffix,
                                                         const TH1D* jetFindingEfficiency);
+        TH1D*           UnfoldWrapper(                  const TH1D* measuredJetSpectrum, 
+                                                        const TH2D* resizedResponse,
+                                                        const TH1D* kinematicEfficiency,
+                                                        const TH1D* measuredJetSpectrumTrueBins,
+                                                        const TString suffix,
+                                                        const TH1D* jetFindingEfficiency = 0x0);
         TH1D*           UnfoldSpectrumChi2(             const TH1D* measuredJetSpectrum, 
                                                         const TH2D* resizedResponse,
                                                         const TH1D* kinematicEfficiency,
@@ -236,15 +247,16 @@ class AliJetFlowTools {
         Float_t                 fFitStart;              // from this value, use smoothening
         Bool_t                  fSmoothenCounts;        // fill smoothened spectrum with counts
         Bool_t                  fTestMode;              // unfold with unity response for testing
-        Bool_t                  fNoDphi;                // no dphi dependence in unfolding
         Bool_t                  fRawInputProvided;      // input histograms provided, not read from file
         Double_t                fEventPlaneRes;         // event plane resolution for current centrality
         Bool_t                  fUseDetectorResponse;   // add detector response to unfolding
         Bool_t                  fUseDptResponse;        // add dpt response to unfolding
         Bool_t                  fTrainPower;            // don't clear the params of fPower for call to Make
-                                                        // might give more stable results, but also introduces
+                                                        // might give more stable results, but possibly introduces
                                                         // a bias / dependency on previous iterations
-        Bool_t                  fInOutUnfolding;        // do the unfolding in in and out of plane orientation
+        Bool_t                  fDphiUnfolding;         // do the unfolding in in and out of plane orientation
+        Bool_t                  fDphiDptUnfolding;      // do the unfolding in dphi and dpt bins (to fit v2)
+        Bool_t                  fExLJDpt;               // exclude randon cones with leading jet
         // members, set internally
         TProfile*               fRMSSpectrumIn;         // rms of in plane spectra of converged unfoldings
         TProfile*               fRMSSpectrumOut;        // rms of out of plane spectra of converged unfoldings
