@@ -342,32 +342,16 @@ TH1D* AliJetFlowTools::UnfoldWrapper(
     // wrapper function to call specific unfolding routine
     TH1D* (AliJetFlowTools::*myFunction)(const TH1D*, const TH2D*, const TH1D*, const TH1D*, const TString, const TH1D*);
     // initialize functon pointer
-    switch (fUnfoldingAlgorithm) {
-        case kChi2 : {
-            myFunction = &AliJetFlowTools::UnfoldSpectrumChi2;
-            break; 
-        }
-        case kBayesian : {
-            myFunction = &AliJetFlowTools::UnfoldSpectrumBayesian;
-            break;
-        }
-        case kBayesianAli : {
-            myFunction = &AliJetFlowTools::UnfoldSpectrumBayesianAli;
-            break;
-        }
-        case kSVD : {
-            myFunction = &AliJetFlowTools::UnfoldSpectrumSVD;
-            break;
-        }
-        case kNone : {
-            TH1D* clone((TH1D*)resizedResponse->Clone("clone"));
-            clone->SetNameTitle(Form("measuredSpectrum_%s", suffix.Data()), Form("measured spectrum %s", suffix.Data()));
-            return clone;
-        }
-        default : {
-            return 0x0;
-        }
+    if(fUnfoldingAlgorithm == kChi2)                    myFunction = &AliJetFlowTools::UnfoldSpectrumChi2;
+    else if(fUnfoldingAlgorithm == kBayesian)           myFunction = &AliJetFlowTools::UnfoldSpectrumBayesian;
+    else if(fUnfoldingAlgorithm == kBayesianAli)        myFunction = &AliJetFlowTools::UnfoldSpectrumBayesianAli;
+    else if(fUnfoldingAlgorithm == kSVD)                myFunction = &AliJetFlowTools::UnfoldSpectrumSVD;
+    else if(fUnfoldingAlgorithm == kNone) {
+        TH1D* clone((TH1D*)measuredJetSpectrum->Clone("clone"));
+        clone->SetNameTitle(Form("MeasuredJetSpectrum%s", suffix.Data()), Form("measuredJetSpectrum %s", suffix.Data()));
+        return clone;
     }
+    else return 0x0; 
     // do the actual unfolding with the selected function
     return (this->*myFunction)( measuredJetSpectrum, resizedResponse, kinematicEfficiency, measuredJetSpectrumTrueBins, suffix, jetFindingEfficiency);
 } 
@@ -1256,7 +1240,7 @@ TH1D* AliJetFlowTools::SmoothenPrior(TH1D* spectrum, TF1* function, Double_t min
     if(start > max) printf(" > cannot extrapolate fit beyond fit range ! < " );
     TH1D* temp = (TH1D*)spectrum->Clone(Form("%s_smoothened", spectrum->GetName()));
     temp->Sumw2();      // if already called on the original, this will give off a warning but do nothing
-    TFitResultPtr r = temp->Fit(function, "VIS", "", min, max);
+    TFitResultPtr r = temp->Fit(function, "", "", min, max);
     if((int)r == 0) {   // MINUIT status
         for(Int_t i(0); i < temp->GetNbinsX() + 1; i++) {
             if(temp->GetBinCenter(i) > start) {     // from this pt value use extrapolation
@@ -1405,7 +1389,7 @@ void AliJetFlowTools::Style(TGraph* h, EColor col, histoType type)
     }
 }
 //_____________________________________________________________________________
-void AliJetFlowTools::PostProcess(TString def, Int_t columns, TString in, TString out) const
+void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, Float_t rangeUp, TString in, TString out) const
 {
    // go through the output file and perform post processing routines
    // can either be performed in one go with the unfolding, or at a later stage
@@ -1442,7 +1426,10 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, TString in, TStrin
    if(fDphiUnfolding) canvasMasterOut = new TCanvas("defaultOut", "defaultOut");
    (fDphiUnfolding) ? canvasMISC->Divide(4, 2) : canvasMISC->Divide(4, 1);
    TDirectoryFile* defDir(0x0);
-   
+   TCanvas* canvasProfiles(new TCanvas("canvasProfiles", "canvasProfiles"));
+   canvasProfiles->Divide(2);
+   TProfile* ratioProfile(new TProfile("ratioProfile", "ratioProfile", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
+   TProfile* v2Profile(new TProfile("v2Profile", "v2Profile", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
    // get an estimate of the number of outputs and find the default set
    Int_t cacheMe(0);
    for(Int_t i(0); i < listOfKeys->GetSize(); i++) {
@@ -1753,9 +1740,17 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, TString in, TStrin
        if(canvasRatio && canvasV2) {
            canvasRatio->cd(j);
            TGraphErrors* ratioYield((TGraphErrors*)tempDir->Get(Form("RatioInOutPlane_%s", dirName.Data())));
+           Double_t _tempx(0), _tempy(0);
            if(ratioYield) {
                Style(ratioYield);
+               for(Int_t b(0); b < fBinsTrue->GetSize(); b++) {
+                   ratioYield->GetPoint(b+1, _tempx, _tempy);
+                   ratioProfile->Fill(_tempx, _tempy);
+               }
+               ratioProfile->GetYaxis()->SetRangeUser(-1., 3.);
+               ratioProfile->GetXaxis()->SetRangeUser(rangeLow, rangeUp);
                ratioYield->GetYaxis()->SetRangeUser(-1., 3.);
+               ratioYield->GetXaxis()->SetRangeUser(rangeLow, rangeUp);
                ratioYield->SetFillColor(kRed);
                ratioYield->Draw("ap");
            }
@@ -1763,13 +1758,29 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, TString in, TStrin
            TGraphErrors* ratioV2((TGraphErrors*)tempDir->Get(Form("v2_%s", dirName.Data())));
            if(ratioV2) {
                Style(ratioV2);
+               for(Int_t b(0); b < fBinsTrue->GetSize(); b++) {
+                   ratioV2->GetPoint(b+1, _tempx, _tempy);
+                   v2Profile->Fill(_tempx, _tempy);
+
+               }
+               v2Profile->GetYaxis()->SetRangeUser(-1., 3.);
+               v2Profile->GetXaxis()->SetRangeUser(rangeLow, rangeUp);
                ratioV2->GetYaxis()->SetRangeUser(-.25, .75);
+               ratioV2->GetXaxis()->SetRangeUser(rangeLow, rangeUp);
                ratioV2->SetFillColor(kRed);
                ratioV2->Draw("ap");
            }
        }
    }
    TFile output(out.Data(), "RECREATE");
+   canvasProfiles->cd(1);
+   Style(ratioProfile);
+   ratioProfile->DrawCopy();
+   canvasProfiles->cd(2);
+   Style(v2Profile);
+   v2Profile->DrawCopy();
+   SavePadToPDF(canvasProfiles);
+   canvasProfiles->Write(); 
    SavePadToPDF(canvasIn);
    canvasIn->Write();
    if(canvasOut) {
