@@ -2030,6 +2030,7 @@ void AliAnalysisTaskPID::PrintSystematicsSettings() const
   printf("EtaCorrHighP:\t%f\n", GetSystematicScalingEtaCorrectionHighMomenta());
   printf("SigmaPara:\t%f\n", GetSystematicScalingEtaSigmaPara());
   printf("MultCorr:\t%f\n", GetSystematicScalingMultCorrection());
+  printf("TOF mode: %d\n", GetTOFmode());
   
   printf("\n\n");
 }
