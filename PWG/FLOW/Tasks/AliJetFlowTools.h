@@ -124,6 +124,8 @@ class AliJetFlowTools {
         void            PostProcess(
                 TString def,
                 Int_t columns = 4,
+                Float_t rangeLow = 20,
+                Float_t rangeUp = 80,
                 TString in = "UnfoldedSpectra.root", 
                 TString out = "ProcessedSpectra.root") const;
         Bool_t          SetRawInput (
