@@ -383,16 +383,17 @@ void AliHadCorrTask::UserCreateOutputObjects()
   if (!fCreateHisto) return;
 
   TString name;
+  TString temp;
 
   const Int_t nCentChBins = fNcentBins * 2;
 
-  fHistMatchEtaPhiAll = new TH2F("fHistMatchEtaPhiAll", "fHistMatchEtaPhiAll", fNbins, -0.1, 0.1, fNbins, -0.1, 0.1);
+  fHistMatchEtaPhiAll = new TH2F("fHistMatchEtaPhiAll", "fHistMatchEtaPhiAll;#Delta#eta;#Delta#phi", fNbins, -0.1, 0.1, fNbins, -0.1, 0.1);
   fOutput->Add(fHistMatchEtaPhiAll);
 
-  fHistMatchEtaPhiAllTr = new TH2F("fHistMatchEtaPhiAllTr", "fHistMatchEtaPhiAllTr", fNbins, -0.1, 0.1, fNbins, -0.1, 0.1);
+  fHistMatchEtaPhiAllTr = new TH2F("fHistMatchEtaPhiAllTr", "fHistMatchEtaPhiAllTr;#Delta#eta;#Delta#phi", fNbins, -0.1, 0.1, fNbins, -0.1, 0.1);
   fOutput->Add(fHistMatchEtaPhiAllTr);
 
-  fHistMatchEtaPhiAllCl = new TH2F("fHistMatchEtaPhiAllCl", "fHistMatchEtaPhiAllCl", fNbins, -0.1, 0.1, fNbins, -0.1, 0.1);
+  fHistMatchEtaPhiAllCl = new TH2F("fHistMatchEtaPhiAllCl", "fHistMatchEtaPhiAllCl;#Delta#eta;#Delta#phi", fNbins, -0.1, 0.1, fNbins, -0.1, 0.1);
   fOutput->Add(fHistMatchEtaPhiAllCl);
 
   for(Int_t icent=0; icent<nCentChBins; ++icent) {
@@ -400,50 +401,69 @@ void AliHadCorrTask::UserCreateOutputObjects()
       for(Int_t ieta=0; ieta<2; ++ieta) {
 	name = Form("fHistMatchEtaPhi_%i_%i_%i",icent,ipt,ieta);
 	fHistMatchEtaPhi[icent][ipt][ieta] = new TH2F(name, name, fNbins, -0.1, 0.1, fNbins, -0.1, 0.1);
+	fHistMatchEtaPhi[icent][ipt][ieta]->SetXTitle("#Delta#eta");
+	fHistMatchEtaPhi[icent][ipt][ieta]->SetYTitle("#Delta#phi");
 	fOutput->Add(fHistMatchEtaPhi[icent][ipt][ieta]);
       }
     }
 
     name = Form("fHistEsubPch_%i",icent);
-    fHistEsubPch[icent]=new TH1F(name, name, fNbins, fMinBinPt, fMaxBinPt);
+    temp = Form("%s (Nmatches==1)",name.Data());
+    fHistEsubPch[icent]=new TH1F(name, temp, fNbins, fMinBinPt, fMaxBinPt);
+    fHistEsubPch[icent]->SetXTitle("#sum p (GeV) weighted with E_{sub}");
     fOutput->Add(fHistEsubPch[icent]);
     
     name = Form("fHistEsubPchRat_%i",icent);
-    fHistEsubPchRat[icent]=new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt, fNbins*2, 0., 10.);
+    temp = Form("%s (Nmatches==1)",name.Data());
+    fHistEsubPchRat[icent]=new TH2F(name, temp, fNbins, fMinBinPt, fMaxBinPt, fNbins*2, 0., 10.);
+    fHistEsubPchRat[icent]->SetXTitle("#Sigma p (GeV)");
+    fHistEsubPchRat[icent]->SetYTitle("E_{sub} / #sum p");
     fOutput->Add(fHistEsubPchRat[icent]);
 
     name = Form("fHistEsubPchRatAll_%i",icent);
-    fHistEsubPchRatAll[icent]=new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt, fNbins*2, 0., 10.);
+    temp = Form("%s (all Nmatches)",name.Data());
+    fHistEsubPchRatAll[icent]=new TH2F(name, temp, fNbins, fMinBinPt, fMaxBinPt, fNbins*2, 0., 10.);
+    fHistEsubPchRatAll[icent]->SetXTitle("#Sigma p (GeV)");
+    fHistEsubPchRatAll[icent]->SetYTitle("E_{sub} / #sum p");
     fOutput->Add(fHistEsubPchRatAll[icent]);
     
     if (icent<fNcentBins) {
       for(Int_t itrk=0; itrk<4; ++itrk) {
 	name = Form("fHistNCellsEnergy_%i_%i",icent,itrk);
-	fHistNCellsEnergy[icent][itrk]  = new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt, 101, -0.5, 100.5);
+	temp = Form("%s (Nmatches==%d);N_{cells};E_{clus} (GeV)",name.Data(),itrk);
+	fHistNCellsEnergy[icent][itrk]  = new TH2F(name, temp, fNbins, fMinBinPt, fMaxBinPt, 101, -0.5, 100.5);
 	fOutput->Add(fHistNCellsEnergy[icent][itrk]);
       }
 
       name = Form("fHistMatchEvsP_%i",icent);
+      temp = Form("%s (all Nmatches)",name.Data());
       fHistMatchEvsP[icent] = new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt, fNbins*2, 0., 10.);
+      fHistMatchEvsP[icent]->SetXTitle("E_{clus} (GeV)");
+      fHistMatchEvsP[icent]->SetYTitle("E_{clus} / #sum p");
       fOutput->Add(fHistMatchEvsP[icent]);
 
       name = Form("fHistMatchdRvsEP_%i",icent);
-      fHistMatchdRvsEP[icent] = new TH2F(name, name, fNbins, 0., 0.2, fNbins*2, 0., 10.);
+      temp = Form("%s (all Nmatches)",name.Data());
+      fHistMatchdRvsEP[icent] = new TH2F(name, temp, fNbins, 0., 0.2, fNbins*2, 0., 10.);
+      fHistMatchdRvsEP[icent]->SetXTitle("#Delta R between track and cluster");
+      fHistMatchdRvsEP[icent]->SetYTitle("E_{clus} / p");
       fOutput->Add(fHistMatchdRvsEP[icent]);
 
       name = Form("fHistNMatchEnergy_%i",icent);
-      fHistNMatchEnergy[icent]  = new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt, 101, -0.5, 100.5);
+      fHistNMatchEnergy[icent] = new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt, 101, -0.5, 100.5);
+      fHistNMatchEnergy[icent]->SetXTitle("E_{clus} (GeV)");
+      fHistNMatchEnergy[icent]->SetYTitle("N_{matches}");
       fOutput->Add(fHistNMatchEnergy[icent]);
     }
   }
 
-  fHistNclusvsCent      = new TH1F("Nclusvscent",      "NclusVsCent",      100, 0, 100);
-  fHistNclusMatchvsCent = new TH1F("NclusMatchvscent", "NclusMatchVsCent", 100, 0, 100);
-  fHistEbefore          = new TH1F("Ebefore",          "Ebefore",          100, 0, 100);
-  fHistEafter           = new TH1F("Eafter",           "Eafter",           100, 0, 100);
-  fHistEoPCent          = new TH2F("EoPCent",          "EoPCent",          100, 0, 100, fNbins*2, 0, 10);
-  fHistNMatchCent       = new TH2F("NMatchesCent",     "NMatchesCent",     100, 0, 100, 11, -0.5,  10.5);
-  fHistNClusMatchCent   = new TH2F("NClusMatchesCent", "NClusMatchesCent", 100, 0, 100, 11, -0.5,  10.5);
+  fHistNclusvsCent      = new TH1F("Nclusvscent",      "NclusVsCent; Cent (%)",                     100, 0, 100);
+  fHistNclusMatchvsCent = new TH1F("NclusMatchvscent", "NclusMatchVsCent (all Nmatches); Cent (%)", 100, 0, 100);
+  fHistEbefore          = new TH1F("Ebefore",          "Ebefore; Cent (%); E_{clus} (GeV)",         100, 0, 100);
+  fHistEafter           = new TH1F("Eafter",           "Eafter;  Cent (%); E_{clus} (GeV)",         100, 0, 100);
+  fHistEoPCent          = new TH2F("EoPCent",          "EoPCent; Cent (%); E_{clus} / #sum p",      100, 0, 100, fNbins*2, 0, 10);
+  fHistNMatchCent       = new TH2F("NMatchesCent",     "NMatchesCent; Cent (%); Nmatches",          100, 0, 100, 11, -0.5,  10.5);
+  fHistNClusMatchCent   = new TH2F("NClusMatchesCent", "NClusMatchesCent; Cent (%); Nmatches",      100, 0, 100, 11, -0.5,  10.5);
 
   fOutput->Add(fHistNclusMatchvsCent);
   fOutput->Add(fHistNclusvsCent);
@@ -640,10 +660,10 @@ void AliHadCorrTask::DoMatchedTracksLoop(AliEmcalParticle *emccluster,
     if ((phidiff < phiCuthi && phidiff > phiCutlo) && TMath::Abs(etadiff) < etaCut) {
       if (track->GetLabel() > fMinMCLabel) {
 	++NMCmatches;
-	trkPMCfrac += track->P();
+	trkPMCfrac += mom;
       }
       ++Nmatches;
-      totalTrkP += track->P();
+      totalTrkP += mom;
 
       if (fCreateHisto) {
         if (fHadCorr > 1) {
