@@ -658,11 +658,17 @@ protected:
    */
   virtual Bool_t GetVertex(const AliAODForwardMult* aodfm);
   /**
+   * Get VZERO Data
+   *
+   * @return VZERO data object
+   */
+  AliVVZERO* GetVZERO() const;
+  /**
    * Fill VZERO d^2N/detadphi hist
    *
    * @param aodvzero: AliAODVZERO object
    */
-  void FillVZEROHist(AliAODVZERO* aodVZero);
+  void FillVZEROHist(AliVVZERO* vzero);
   /**
    * Print the setup of the task
    */
