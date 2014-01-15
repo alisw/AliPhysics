@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id: AliSimulation.cxx 63204 2013-06-26 13:33:28Z rgrosso $ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -156,11 +156,11 @@ using std::ofstream;
 ClassImp(AliSimulation)
 
 AliSimulation *AliSimulation::fgInstance = 0;
-const char* AliSimulation::fgkDetectorName[AliSimulation::fgkNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE"
+const char* AliSimulation::fgkDetectorName[AliSimulation::fgkNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE","AD",
 // #ifdef MFT_UPGRADE
 //                                                                             ,"MFT"
 // #endif 
-                                                                            ,"MFT"    // AU
+                                                                            "MFT"    // AU
 									    ,"HLT"
 };
 

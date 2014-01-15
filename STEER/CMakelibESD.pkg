@@ -49,6 +49,7 @@ set ( SRCS
     ESD/AliMeanVertex.cxx 
     ESD/AliESDCaloCells.cxx 
     ESD/AliESDACORDE.cxx 
+    ESD/AliESDAD.cxx 
     ESD/AliESDVZEROfriend.cxx 
     ESD/AliESDHandler.cxx 
     ESD/AliTrackerBase.cxx  

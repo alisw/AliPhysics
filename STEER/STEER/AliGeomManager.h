@@ -128,7 +128,8 @@ public:
 //   #else
 //   static const Int_t   fgkNDetectors = 15;              // number of detectors
 //   #endif
-  static const Int_t   fgkNDetectors = 16;              // number of detectors    // AU
+  //static const Int_t   fgkNDetectors = 16;              // number of detectors    // AU
+  static const Int_t   fgkNDetectors = 17;              // number of detectors    + AD
   static const char *  fgkDetectorName[fgkNDetectors] ; // name of detectors
   static Int_t       fgNalignable[fgkNDetectors];
 

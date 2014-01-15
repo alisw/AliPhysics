@@ -34,7 +34,7 @@ class AliRecoParam : public TObject
 // #else
 //     kNDetectors = 16 // number of detectors (last one is GRP!)
 // #endif
-    kNDetectors = 17 // number of detectors (last one is MFT!)   // AU
+    kNDetectors = 18 // number of detectors (last one is AD)   // AU
   };
   enum EventSpecie_t {kDefault = 1,
 		      kLowMult = 2,

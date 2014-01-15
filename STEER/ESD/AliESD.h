@@ -5,7 +5,7 @@
  * See cxx source for full Copyright notice                               */
 
 
-/* $Id$ */
+/* $Id: AliESD.h 52237 2011-10-20 19:26:08Z hristov $ */
 
 //-------------------------------------------------------------------------
 //                          Class AliESD
@@ -33,6 +33,7 @@
 #include "AliMultiplicity.h"
 #include "AliRawDataErrorLog.h"
 #include "AliESDACORDE.h"
+#include "AliESDAD.h"
 #ifdef MFT_UPGRADE
 //#include "AliESDMFT.h"
 #endif
@@ -246,6 +247,11 @@ public:
   #endif
   void SetACORDEData(AliESDACORDE * obj){ fESDACORDE = new AliESDACORDE(*obj); } 
   AliESDACORDE *GetACORDEDAta(){ return fESDACORDE; }
+  void SetADData(AliESDAD * obj){ fESDAD = new AliESDAD(*obj); } 
+  AliESDAD *GetADData(){ return fESDAD; }
+
+
+
   AliRawDataErrorLog *GetErrorLog(Int_t i) const {
     return (AliRawDataErrorLog *)fErrorLogs.UncheckedAt(i);
   }
@@ -317,6 +323,7 @@ protected:
   AliESDFMD   *fESDFMD;   // FMD object containing rough multiplicity
   AliESDVZERO *fESDVZERO; // VZERO object containing rough multiplicity
   AliESDACORDE *fESDACORDE; // ACORDE ESD object containing bit pattern
+  AliESDAD *fESDAD; // AD ESD object containing bit pattern
   #ifdef MFT_UPGRADE
   //AliESDMFT *fESDMFT; // MFT object containing rough multiplicity
   #endif

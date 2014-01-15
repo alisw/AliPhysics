@@ -1,4 +1,4 @@
-// $Id$
+// $Id: AliEveEventManager.cxx 59994 2012-12-14 10:03:06Z quark $
 // Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
 
 /**************************************************************************
@@ -1249,7 +1249,7 @@ Bool_t AliEveEventManager::InitRecoParam()
     // the available reco-param objects from there.
 
     fgRecoParam = new AliRecoParam;
-    const Int_t  kNDetectors = 14;
+    const Int_t  kNDetectors = 15;
 
     static const TEveException kEH("AliEveEventManager::InitRecoParam");
 
@@ -1289,7 +1289,7 @@ Bool_t AliEveEventManager::InitRecoParam()
         }
     }
 
-    const char* fgkDetectorName[kNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE" };
+    const char* fgkDetectorName[kNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE", "AD" };
 
 
     for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
