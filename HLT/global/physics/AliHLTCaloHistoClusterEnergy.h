@@ -17,7 +17,7 @@
 #define ALIHLTCALOHISTOCLUSTERENERGY
 
 /** 
- * @file   AliHLTCaloHistoClusterEnergy
+ * @file   AliHLTCaloHistoClusterEnergy.cxx
  * @author Svein Lindal slindal@fys.uio.no
  * @date 
  * @brief  Produces histograms of cluster energy distributions
@@ -51,7 +51,7 @@ class TString;
  * 
  * 
  * 
- * @ingroup alihlt_phos
+ * @ingroup alihlt_global
  */
 
 class AliHLTCaloHistoClusterEnergy : public AliHLTCaloHistoProducer {

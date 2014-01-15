@@ -6,7 +6,7 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTTRDOfflineTrackerV1Component
+/** @file   AliHLTTRDOfflineTrackerV1Component.cxx
     @author 
     @date   2009-08-31
     @brief  

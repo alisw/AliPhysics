@@ -1952,7 +1952,7 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
 // Writes one or more JDL's corresponding to findex. If findex is negative,
 // all run numbers are considered in one go (jdl). For non-negative indices
 // they correspond to the indices in the array fInputFiles.
-   if (!fInputFiles) return kFALSE;
+   if (!fInputFiles && !fMCLoop) return kFALSE;
    TObject *os;
    TString workdir;
    if (!fProductionMode && !fGridWorkingDir.BeginsWith("/alice")) workdir = gGrid->GetHomeDirectory();

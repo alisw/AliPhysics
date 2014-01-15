@@ -178,14 +178,23 @@ set(LIBS ${ROOTCLIBS} ${ROOTPLIBS} ${SYSLIBS})
 #If the sources were taken from Git
 if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
  include(GetGitRevisionDescription)
+ 
  find_package(Git)
+ 
  if(GIT_FOUND)
   get_git_head_revision(GIT_REFSPEC GIT_SHA1)
-  message(STATUS "Aliroot Revision - ${GIT_SHA1} Branch - ${GIT_REFSPEC}")
+  message(STATUS "Aliroot branch - ${GIT_REFSPEC} Revision - ${GIT_SHA1} ")
+
+  STRING(REGEX REPLACE "^(.+/)(.+)/(.*)$" "\\2" BRANCH_TYPE "${GIT_REFSPEC}" )
+  
+  if(BRANCH_TYPE STREQUAL "heads")
+   set(ALIROOT_REVISION "ThisIsaBranchNoRevisionProvided")
+  else()
+   set(ALIROOT_REVISION ${GIT_SHA1})
+  endif()
 
   STRING(REGEX REPLACE "^(.+/)(.+/)(.*)$" "\\3" SHORT_BRANCH "${GIT_REFSPEC}" )
 
-  set(ALIROOT_REVISION ${GIT_SHA1})
   set(ALIROOT_BRANCH ${SHORT_BRANCH})
 
  else()

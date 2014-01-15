@@ -7,7 +7,7 @@
 //* See cxx source for full Copyright notice                               *
 
 /** 
- * @file   AliHLTCaloHistoCellEnergy
+ * @file   AliHLTCaloHistoCellEnergy.h
  * @author Svein Lindal <slindal@fys.uio.no>
  * @date 
  * @brief  Produces Invariant mass histograms of PHOS clusters
@@ -39,7 +39,7 @@ class TString;
  * Histograms (1D):
  *  * - Invariant mass of two clusters
  * 
- * @ingroup alihlt_phos
+ * @ingroup alihlt_global
  */
 
 

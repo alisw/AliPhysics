@@ -19,7 +19,7 @@
 **
 *************************************************************************/
 
-/** @file   tutorial.c
+/** @file   EVE/tutorial.c
     @author Matthias Richter
     @date   
     @brief  HLT examples and tutorial. */
