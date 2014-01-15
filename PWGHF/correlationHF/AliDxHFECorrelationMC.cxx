@@ -297,7 +297,7 @@ double AliDxHFECorrelationMC::GetD0Eff(AliVParticle* tr, Double_t evMult){
   AliHFAssociatedTrackCuts* cuts=dynamic_cast<AliHFAssociatedTrackCuts*>(GetCuts());
   if (!cuts) {
     if (GetCuts())
-      AliError(Form("cuts object of wrong type %s, required AliHFAssociatedTrackCuts", fCuts->ClassName()));
+      AliError(Form("cuts object of wrong type %s, required AliHFAssociatedTrackCuts", cuts->ClassName()));
     else
       AliError("mandatory cuts object missing");
     return -EINVAL;
