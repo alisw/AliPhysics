@@ -21,19 +21,21 @@ class AliEmcalSetupTask : public AliAnalysisTaskSE {
   void SetOcdbPath(const char *n) { fOcdbPath = n; }
   void SetObjs(const char *n)     { fObjs     = n; }
   void UserExec(Option_t *option);
+  void Terminate(Option_t *option);
 
  protected:
-  TString            fOcdbPath;        // path to ocdb (def=none)
+  TString            fOcdbPath;        // path to ocdb (def=uselocal)
   TString            fOadbPath;        // path to oadb
   TString            fGeoPath;         // path to geometry
   TString            fObjs;            // string of objects for alignment to apply
   Bool_t             fIsInit;          //!=true then already initialized 
+  TString            fLocalOcdb;       //!path to local ocdb
 
  private:
   AliEmcalSetupTask(const AliEmcalSetupTask&);            // not implemented
   AliEmcalSetupTask &operator=(const AliEmcalSetupTask&); // not implemented
 
-  ClassDef(AliEmcalSetupTask, 3); // Class to setup geometry for EMCal
+  ClassDef(AliEmcalSetupTask, 4); // Class to setup geometry for EMCal
 };
 
 #endif

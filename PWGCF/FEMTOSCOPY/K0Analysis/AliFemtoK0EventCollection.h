@@ -59,6 +59,7 @@ class AliFemtoK0Particle  // Reconstructed K0s parameters needed for correlation
   float fNegXYZ[9][3];	//corrected daughter TPC positions
 
   //for event plane
+  double fPhi;
   double fPhiPsi;
 
   ClassDef(AliFemtoK0Particle, 1);

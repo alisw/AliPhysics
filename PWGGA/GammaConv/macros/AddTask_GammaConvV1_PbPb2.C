@@ -158,6 +158,8 @@ void AddTask_GammaConvV1_PbPb2(  Int_t trainConfig = 1,  //change different set 
       cutarray[ 0] = "5890001032092970023220000000"; mesonCutArray[ 0] = "01523065009000";    
    } else if (trainConfig == 31) { 
       cutarray[ 0] = "5080001002092970023220000000"; mesonCutArray[ 0] = "01525065009000";    
+   } else if (trainConfig == 32) { 
+      cutarray[ 0] = "5080002002092970023220000000"; mesonCutArray[ 0] = "01525065009000";    
    } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
@@ -167,7 +169,7 @@ void AddTask_GammaConvV1_PbPb2(  Int_t trainConfig = 1,  //change different set 
    TList *MesonCutList = new TList();
 
    TList *HeaderList = new TList();
-   TObjString *Header1 = new TObjString("pi0_1");
+   TObjString *Header1 = new TObjString("BOX");
    HeaderList->Add(Header1);
 //    TObjString *Header3 = new TObjString("eta_2");
 //    HeaderList->Add(Header3);

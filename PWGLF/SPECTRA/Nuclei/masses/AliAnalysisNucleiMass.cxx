@@ -22,7 +22,7 @@
 #include "AliAnalysisManager.h"
 #include "TFile.h"
 
-ClassImp(AliAnalysisNucleiMass)
+ClassImp(AliAnalysisNucleiMass)//...
 
 //_____________________________________________________________________________
 AliAnalysisNucleiMass::AliAnalysisNucleiMass():

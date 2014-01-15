@@ -536,7 +536,7 @@ Double_t  AliFastJetBkg::BkgFunction(Double_t */*x*/,Double_t */*par*/)
 }
 
 //___________________________________________________________________
-Bool_t AliFastJetBkg::EmcalAcceptance(const Float_t eta, const Float_t phi, const Float_t radius) const
+Bool_t AliFastJetBkg::EmcalAcceptance(Float_t eta, Float_t phi, Float_t radius) const
 {
   // Apply emcal acceptance cuts
   // To be updated

@@ -89,7 +89,14 @@ AliHFEtrdPIDqaV1 &AliHFEtrdPIDqaV1::operator=(const AliHFEtrdPIDqaV1 &o){
   
   return *this;
 }
+//____________________________________________________________
+AliHFEtrdPIDqaV1::~AliHFEtrdPIDqaV1(){
+  //
+  // Deconstructor
+  //
+  if(fHistos) delete fHistos;
 
+}
 //_________________________________________________________
 Long64_t AliHFEtrdPIDqaV1::Merge(TCollection *coll){
   //

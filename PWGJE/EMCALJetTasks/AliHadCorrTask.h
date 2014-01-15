@@ -57,6 +57,8 @@ class AliHadCorrTask : public AliAnalysisTaskEmcal {
   // QA plots
   TH2                   *fHistMatchEtaPhi[8][9][2];  //!deta vs. dphi of matched cluster-track pairs
   TH2                   *fHistMatchEtaPhiAll;        //!deta vs. dphi of matched cluster-track pairs
+  TH2                   *fHistMatchEtaPhiAllTr;      //!deta vs. dphi of all cluster-track pairs (tr loop)
+  TH2                   *fHistMatchEtaPhiAllCl;      //!deta vs. dphi of all cluster-track pairs (cl loop)
   TH2                   *fHistMatchEvsP[4];          //!cluster energy vs. track momentum of matched pairs
   TH2                   *fHistNMatchEnergy[4];       //!n matches vs. cluster energy
   TH2                   *fHistNCellsEnergy[4][4];    //!n cells vs. cluster energy

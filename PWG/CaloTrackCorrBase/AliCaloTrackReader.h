@@ -221,7 +221,7 @@ public:
   virtual Bool_t   FillInputEvent(Int_t iEntry, const char *currentFileName)  ;
   virtual void     FillInputCTS() ;
   virtual void     FillInputEMCAL() ;
-  virtual void     FillInputEMCALAlgorithm(AliVCluster * clus, const Int_t iclus) ;
+  virtual void     FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus) ;
   virtual void     FillInputPHOS() ;
   virtual void     FillInputEMCALCells() ;
   virtual void     FillInputPHOSCells() ;
@@ -554,7 +554,7 @@ public:
   virtual Float_t  GetPtHardAndClusterFactor()               const { return  fPtHardAndClusterPtFactor    ; }
   virtual void     SetPtHardAndClusterPtFactor(Float_t factor)     { fPtHardAndClusterPtFactor = factor   ; }		
   
-  virtual Bool_t   IsHIJINGLabel(const Int_t label);
+  virtual Bool_t   IsHIJINGLabel(Int_t label);
   void             SetGeneratorMinMaxParticles();
   void             SwitchOnAcceptOnlyHIJINGLabels()          { fAcceptOnlyHIJINGLabels = kTRUE  ; }
   void             SwitchOffAcceptOnlyHIJINGLabels()         { fAcceptOnlyHIJINGLabels = kFALSE ; }

@@ -166,7 +166,8 @@ AliEmcalJet* AliJetContainer::GetLeadingJet(const char* opt)
 
   if (option.Contains("rho")) {
     while ((jet = GetNextAcceptJet())) {
-      if (jet->Pt()-jet->Area()*fRho->GetVal() > jetMax->Pt()-jetMax->Area()*fRho->GetVal()) jetMax = jet;
+      if ( (jet->Pt()-jet->Area()*GetRhoVal()) > (jetMax->Pt()-jetMax->Area()*GetRhoVal()) )
+	jetMax = jet;
     }
   }
   else {

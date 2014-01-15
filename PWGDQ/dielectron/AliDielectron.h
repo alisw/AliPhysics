@@ -77,6 +77,7 @@ public:
 
   void SetCutQA(Bool_t qa=kTRUE) { fCutQA=qa; }
   void SetNoPairing(Bool_t noPairing=kTRUE) { fNoPairing=noPairing; }
+  void SetProcessLS(Bool_t doLS=kTRUE) { fProcessLS=doLS; }
   void SetUseKF(Bool_t useKF=kTRUE) { fUseKF=useKF; }
   const TObjArray* GetTrackArray(Int_t i) const {return (i>=0&&i<4)?&fTracks[i]:0;}
   const TObjArray* GetPairArray(Int_t i)  const {return (i>=0&&i<11)?
@@ -131,12 +132,19 @@ public:
   void SetVZERORecenteringFilename(const Char_t* filename) {fVZERORecenteringFilename = filename;}
   void SetEffMapFilename(const Char_t* filename) {fEffMapFilename = filename;}
 
+  void SetZDCRecenteringFilename(const Char_t* filename) {fZDCRecenteringFilename = filename;}
+
+  void SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+
   void SaveDebugTree();
 
 private:
 
   Bool_t fCutQA;                    // monitor cuts
   AliDielectronCutQA *fQAmonitor;   // monitoring of cuts
+  TF1 *fPostPIDCntrdCorr;   // post pid correction object for centroids
+  TF1 *fPostPIDWdthCorr;    // post pid correction object for widths
   AliAnalysisFilter fEventFilter;    // Event cuts
   AliAnalysisFilter fTrackFilter;    // leg cuts
   AliAnalysisFilter fPairPreFilter;  // pair prefilter cuts
@@ -152,6 +160,7 @@ private:
   TObjArray* fSignalsMC;      // array of AliDielectronSignalMC
 
   Bool_t fNoPairing;    // if to skip pairing, can be used for track QA only
+  Bool_t fProcessLS; // do the like-sign pairing (default kTRUE)
   Bool_t fUseKF;    // if to skip pairing, can be used for track QA only
 
   AliDielectronHF *fHistoArray;   // Histogram framework
@@ -202,6 +211,7 @@ private:
   TString fVZEROCalibrationFilename;         // file containing VZERO channel-by-channel calibration
   TString fVZERORecenteringFilename;         // file containing VZERO Q-vector recentering averages
   TString fEffMapFilename;                   // file containing single electron efficiencies
+  TString fZDCRecenteringFilename;         // file containing ZDCQ-vector recentering averages
 
   void ProcessMC(AliVEvent *ev1);
   
@@ -217,7 +227,7 @@ private:
   AliDielectron(const AliDielectron &c);
   AliDielectron &operator=(const AliDielectron &c);
   
-  ClassDef(AliDielectron,7);
+  ClassDef(AliDielectron,8);
 };
 
 inline void AliDielectron::InitPairCandidateArrays()

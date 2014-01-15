@@ -83,6 +83,7 @@ fCentMax(100.),
 fNInputTracksMin(0),
 fNInputTracksMax(-1),
 fRequireITSRefit(0),
+fApplySharedClusterCut(0),
 fAngStructCloseTracks(0),
 fCheckMethods(0),
 fDoEventMixing(0), 
@@ -213,6 +214,7 @@ fCentMax(100.),
 fNInputTracksMin(0),
 fNInputTracksMax(-1),
 fRequireITSRefit(0),
+fApplySharedClusterCut(0),
 fAngStructCloseTracks(0),
 fCheckMethods(0),
 fDoEventMixing(0),
@@ -1158,9 +1160,13 @@ Int_t  AliAnalysisTaskJetCore::GetListOfTracks(TList *list){
       else if(fFilterType == 1)bGood = tr->IsHybridTPCConstrainedGlobal();
       else if(fFilterType == 2)bGood = tr->IsHybridGlobalConstrainedGlobal();    
       if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
-      if(fRequireITSRefit==0){if((tr->GetStatus()&AliESDtrack::kITSrefit)==0)continue;}
+      if(fRequireITSRefit==1){if((tr->GetStatus()&AliESDtrack::kITSrefit)==0)continue;}
       if(bGood==false) continue;
-      if(TMath::Abs(tr->Eta())>0.9)continue;
+      if (fApplySharedClusterCut) {
+           Double_t frac = Double_t(tr->GetTPCnclsS()) /Double_t(tr->GetTPCncls());
+           if (frac > 0.4) continue;
+      }
+     if(TMath::Abs(tr->Eta())>0.9)continue;
       if(tr->Pt()<0.15)continue;
       list->Add(tr);
       iCount++;
@@ -1218,8 +1224,12 @@ Int_t  AliAnalysisTaskJetCore::SelectTrigger(TList *list,Double_t minT,Double_t 
       else if(fFilterType == 1)bGood = tr->IsHybridTPCConstrainedGlobal();
       else if(fFilterType == 2)bGood = tr->IsHybridGlobalConstrainedGlobal();
       if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
-       if(fRequireITSRefit==0){if((tr->GetStatus()&AliESDtrack::kITSrefit)==0)continue;}
+       if(fRequireITSRefit==1){if((tr->GetStatus()&AliESDtrack::kITSrefit)==0)continue;}
       if(bGood==false) continue;
+      if (fApplySharedClusterCut) {
+           Double_t frac = Double_t(tr->GetTPCnclsS()) /Double_t(tr->GetTPCncls());
+           if (frac > 0.4) continue;
+      }
       if(TMath::Abs(tr->Eta())>0.9)continue;
       if(tr->Pt()<0.15)continue;
       list->Add(tr);

@@ -1559,7 +1559,13 @@ Bool_t AliDalitzElectronCuts::SetPsiPairCut(Int_t psiCut) {
         fDeltaPhiCutMin = 0.0;
         fDeltaPhiCutMax = 0.12;
         break;
-    
+  case 4:
+        fDoPsiPairCut = kTRUE;
+        fPsiPairCut = 0.30;
+        fDeltaPhiCutMin = 0.0;
+        fDeltaPhiCutMax = 0.12;
+        break;
+      
   default:
       cout<<"Warning: PsiPairCut not defined "<<fPsiPairCut<<endl;
       return kFALSE;

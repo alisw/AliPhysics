@@ -1,7 +1,7 @@
 #ifndef AliPicoTrack_H
 #define AliPicoTrack_H
 
-// $Id$
+// $Id: AliPicoTrack.h | Thu Dec 5 20:45:29 2013 +0100 | Constantin Loizides  $
 
 #include "AliVTrack.h"
 #include <TMath.h>
@@ -52,15 +52,13 @@ class AliPicoTrack: public AliVTrack {
   Double_t GetBz()                     const { return 0;       }
   void     GetBxByBz(Double_t b[3])    const { b[0]=0;b[1]=0;b[2]=0; }
   Bool_t   GetCovarianceXYZPxPyPz(Double_t /*cv*/[21]) const { return 0; }
+  Double_t GetTrackPhiOnEMCal()        const { return fPhiEmc ; }
+  Double_t GetTrackEtaOnEMCal()        const { return fEtaEmc ; }
+  Double_t GetTrackPtOnEMCal()         const { return fPtEmc  ; }
+  Double_t GetTrackPOnEMCal()          const { return fPtEmc*TMath::CosH(fEtaEmc);}
+  void     SetTrackPhiEtaPtOnEMCal(Double_t eta, Double_t phi, Double_t pt) { fEtaEmc = eta; fPhiEmc = phi; fPtEmc = pt;}
   Int_t    Compare(const TObject* obj) const;
   Bool_t   PropagateToDCA(const AliVVertex *, Double_t, Double_t, Double_t *, Double_t *) { return 0; }
-
-  virtual Double_t GetTrackPhiOnEMCal() const { return fPhiEmc ; }
-  virtual Double_t GetTrackEtaOnEMCal() const { return fEtaEmc ; }
-  virtual Double_t GetTrackPtOnEMCal() const  { return fPtEmc  ; }
-  virtual Double_t GetTrackPOnEMCal() const   { return fPtEmc*TMath::CosH(fEtaEmc);}
-  virtual void SetTrackPhiEtaPtOnEMCal(Double_t eta, Double_t phi, Double_t pt) { fEtaEmc = eta; fPhiEmc = phi; fPtEmc = pt;}
-
   void     SetEMCALcluster(Int_t id)         { fClusId = id;   }
 
   static void GetEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
@@ -78,7 +76,6 @@ class AliPicoTrack: public AliVTrack {
   Double32_t       fPtEmc;    //[0,0,12]   pt at emcal surface
   Bool_t           fEmcal;    //           is true if track propagated to emcal
   Short_t          fClusId;   //!          cluster id of matched cluster; -1 if not set
-
 
   ClassDef(AliPicoTrack, 6) // Pico track class
 };

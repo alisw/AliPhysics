@@ -63,6 +63,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         // setters - analysis setup
         void                    SetDebugMode(Int_t d)                           {fDebug = d;}
         void                    SetAttachToEvent(Bool_t b)                      {fAttachToEvent = b;}
+        void                    SetSemiCentralInclusive(Bool_t b)               {fSemiCentralInclusive = b;}
         void                    SetFillHistograms(Bool_t b)                     {fFillHistograms = b;}
         void                    SetFillQAHistograms(Bool_t qa)                  {fFillQAHistograms = qa;}
         void                    SetReduceBinsXYByFactor(Float_t x, Float_t y)   {fReduceBinsXByFactor = x;
@@ -170,6 +171,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         Int_t                   fDebug;                 // debug level (0 none, 1 fcn calls, 2 verbose)
         Bool_t                  fLocalInit;             //! is the analysis initialized?
         Bool_t                  fAttachToEvent;         // attach local rho to the event
+        Bool_t                  fSemiCentralInclusive;  // semi central inclusive event selection
         Bool_t                  fFillHistograms;        // fill histograms
         Bool_t                  fFillQAHistograms;      // fill qa histograms
         Float_t                 fReduceBinsXByFactor;   // reduce the bins on x-axis of histo's by this much
@@ -303,7 +305,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         AliAnalysisTaskRhoVnModulation(const AliAnalysisTaskRhoVnModulation&);                  // not implemented
         AliAnalysisTaskRhoVnModulation& operator=(const AliAnalysisTaskRhoVnModulation&);       // not implemented
 
-        ClassDef(AliAnalysisTaskRhoVnModulation, 16);
+        ClassDef(AliAnalysisTaskRhoVnModulation, 17);
 };
 
 #endif

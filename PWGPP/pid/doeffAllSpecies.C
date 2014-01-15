@@ -137,7 +137,7 @@ performAllPr(){
   rebinsize = 1; // don't change this, not choice here!!!
   kGoodMatch=kFALSE;
   kSigma2vs3 = kFALSE;
-  kSigma2vs3TPC = kFALSE;
+  //kSigma2vs3TPC = kFALSE;
   require5sigma = kFALSE;
   bayesVsigma = kFALSE;
   kTOFmatch = kFALSE;
@@ -175,10 +175,10 @@ performAllPr(){
   kSigma2vs3=kFALSE;
 
   // eff 2 sigma / eff 3 sigma TPC
-  kSigma2vs3TPC=kTRUE;
-  doeffPr(1,0.1,etamin,etamax);
-  doeffPr(0,0.1,etamin,etamax);
-  kSigma2vs3TPC=kFALSE;
+  //kSigma2vs3TPC=kTRUE;
+  //doeffPr(1,0.1,etamin,etamax);
+  //doeffPr(0,0.1,etamin,etamax);
+  //kSigma2vs3TPC=kFALSE;
 
   kOverAll=kTRUE;
   // TPC|TOF overall eff

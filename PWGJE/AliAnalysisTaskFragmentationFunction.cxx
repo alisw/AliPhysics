@@ -2703,7 +2703,6 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 	  TList* perpjettracklistGen1 = new TList();
 	  TList* perpjettracklistGen2 = new TList();
 
-	  Double_t sumPtGenPerp  = 0.;
 	  Double_t sumPtGenPerp1 = 0.;
 	  Double_t sumPtGenPerp2 = 0.;
 	  GetTracksTiltedwrpJetAxis(TMath::Pi()/2.,fTracksAODMCCharged, perpjettracklistGen1, jet, TMath::Abs(GetFFRadius()) , sumPtGenPerp1); 
@@ -2711,36 +2710,31 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 
 	  perpjettracklistGen->AddAll(perpjettracklistGen1);
 	  perpjettracklistGen->AddAll(perpjettracklistGen2);
-	  sumPtGenPerp = 0.5*(sumPtGenPerp1+sumPtGenPerp2);
 
 	  TList* perpjettracklistGenSecNS  = new TList();
 	  TList* perpjettracklistGenSecNS1 = new TList();
 	  TList* perpjettracklistGenSecNS2 = new TList();
 
-          Double_t sumPtGenPerpNS;
-          Double_t sumPtGenPerpNS1;
-          Double_t sumPtGenPerpNS2;
+          Double_t sumPtGenPerpNS1 = 0;
+          Double_t sumPtGenPerpNS2 = 0;
           GetTracksTiltedwrpJetAxis(TMath::Pi()/2.,fTracksAODMCChargedSecNS, perpjettracklistGenSecNS1, jet, TMath::Abs(GetFFRadius()) , sumPtGenPerpNS1); 
           GetTracksTiltedwrpJetAxis(-1*TMath::Pi()/2.,fTracksAODMCChargedSecNS, perpjettracklistGenSecNS2, jet, TMath::Abs(GetFFRadius()) , sumPtGenPerpNS2); 
 
 	  perpjettracklistGenSecNS->AddAll(perpjettracklistGenSecNS1);
 	  perpjettracklistGenSecNS->AddAll(perpjettracklistGenSecNS2);
-	  sumPtGenPerpNS = 0.5*(sumPtGenPerpNS1+sumPtGenPerpNS2);
 
 
 	  TList* perpjettracklistGenSecS  = new TList();
 	  TList* perpjettracklistGenSecS1 = new TList();
 	  TList* perpjettracklistGenSecS2 = new TList();
 
-          Double_t sumPtGenPerpS;
-          Double_t sumPtGenPerpS1;
-          Double_t sumPtGenPerpS2;
+          Double_t sumPtGenPerpS1 = 0;
+          Double_t sumPtGenPerpS2 = 0;
           GetTracksTiltedwrpJetAxis(TMath::Pi()/2.,fTracksAODMCChargedSecS, perpjettracklistGenSecS1, jet, TMath::Abs(GetFFRadius()) , sumPtGenPerpS1); 
           GetTracksTiltedwrpJetAxis(-1*TMath::Pi()/2.,fTracksAODMCChargedSecS, perpjettracklistGenSecS2, jet, TMath::Abs(GetFFRadius()) , sumPtGenPerpS2); 
 
 	  perpjettracklistGenSecS->AddAll(perpjettracklistGenSecS1);
 	  perpjettracklistGenSecS->AddAll(perpjettracklistGenSecS2);
-	  sumPtGenPerpS = 0.5*(sumPtGenPerpS1+sumPtGenPerpS2);
 
 
           if(perpjettracklistGen->GetSize() != perpjettracklistGen1->GetSize() + perpjettracklistGen2->GetSize()){
@@ -3274,7 +3268,7 @@ void AliAnalysisTaskFragmentationFunction::SetProperties(TH1* h,const char* x, c
 
 // ________________________________________________________________________________________________________________________________________________________
 void AliAnalysisTaskFragmentationFunction::GetJetTracksPointing(TList* inputlist, TList* outputlist, const AliAODJet* jet, 
-								   const Double_t radius, Double_t& sumPt, const Double_t minPtL, const Double_t maxPt, Bool_t& isBadPt)
+								const Double_t& radius, Double_t& sumPt, const Double_t& minPtL, const Double_t& maxPt, Bool_t& isBadPt)
 {
   // fill list of tracks in cone around jet axis  
 
@@ -3315,7 +3309,8 @@ void AliAnalysisTaskFragmentationFunction::GetJetTracksPointing(TList* inputlist
 }
 
 // _________________________________________________________________________________________________________________________________________________________________
-void AliAnalysisTaskFragmentationFunction::GetJetTracksTrackrefs(TList* list, const AliAODJet* jet, const Double_t minPtL, const Double_t maxPt, Bool_t& isBadPt)
+void AliAnalysisTaskFragmentationFunction::GetJetTracksTrackrefs(TList* list, const AliAODJet* jet, const Double_t& minPtL, 
+								 const Double_t& maxPt, Bool_t& isBadPt)
 {
   // list of jet tracks from trackrefs
   
@@ -3421,7 +3416,7 @@ void  AliAnalysisTaskFragmentationFunction::AssociateGenRec(TList* tracksAODMCCh
 
 // _____________________________________________________________________________________________________________________________________________
 void AliAnalysisTaskFragmentationFunction::FillSingleTrackHistosRecGen(AliFragFuncQATrackHistos* trackQAGen, AliFragFuncQATrackHistos* trackQARec, TList* tracksGen, 
-								       const TArrayI& indexAODTr, const TArrayS& isRefGen, const Bool_t scaleStrangeness){
+								       const TArrayI& indexAODTr, const TArrayS& isRefGen, Bool_t scaleStrangeness){
 
   // fill QA for single track reconstruction efficiency
   
@@ -3464,7 +3459,7 @@ void AliAnalysisTaskFragmentationFunction::FillSingleTrackHistosRecGen(AliFragFu
 
 void  AliAnalysisTaskFragmentationFunction::FillJetTrackHistosRec(AliFragFuncHistos* ffhistRec, AliAODJet* jet, 
 								  TList* jetTrackList, const TList* tracksGen, const TList* tracksRec, const TArrayI& indexAODTr,
-								  const TArrayS& isRefGen, TList* jetTrackListTR, const Bool_t scaleStrangeness,
+								  const TArrayS& isRefGen, TList* jetTrackListTR, Bool_t scaleStrangeness,
 								  Bool_t fillJS, TProfile* hProNtracksLeadingJet, TProfile** hProDelRPtSum, TProfile* hProDelR80pcPt)
 {
   // fill objects for jet track reconstruction efficiency or secondaries contamination 
@@ -3996,7 +3991,7 @@ void AliAnalysisTaskFragmentationFunction::GetClusterTracksMedian(TList* outputl
   // get median cluster
 
   AliAODJet* medianCluster = 0;
-  Double_t   medianDensity = 0;
+  //Double_t   medianDensity = 0;
 
   if(TMath::Odd(nBckgClusters)){
     
@@ -4006,7 +4001,7 @@ void AliAnalysisTaskFragmentationFunction::GetClusterTracksMedian(TList* outputl
     Double_t clusterPt = medianCluster->Pt();
     Double_t area      = medianCluster->EffectiveAreaCharged();
     
-    if(area>0) medianDensity = clusterPt/area;
+    //if(area>0) medianDensity = clusterPt/area;
   }
   else{
 
@@ -4026,7 +4021,7 @@ void AliAnalysisTaskFragmentationFunction::GetClusterTracksMedian(TList* outputl
     Double_t area2      = medianCluster2->EffectiveAreaCharged();
     if(area2>0) density2 = clusterPt2/area2;
     
-    medianDensity = 0.5*(density1+density2);
+    //medianDensity = 0.5*(density1+density2);
     
     medianCluster = ( (fRandom->Rndm()>0.5) ? medianCluster1 : medianCluster2 );  // select one randomly to avoid adding areas
   }
@@ -4619,7 +4614,7 @@ void AliAnalysisTaskFragmentationFunction::FillBckgHistos(Int_t type, TList* inp
 }
 
 //_____________________________________________________________________________________
-Double_t AliAnalysisTaskFragmentationFunction::GetMCStrangenessFactor(const Double_t pt)
+Double_t AliAnalysisTaskFragmentationFunction::GetMCStrangenessFactor(const Double_t& pt)
 {
   // factor strangeness data/MC as function of pt from UE analysis (Sara Vallero)
 

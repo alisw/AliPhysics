@@ -180,7 +180,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
    fnCuts(0),
    fiCut(0),
    fMoveParticleAccordingToVertex(kTRUE),
-   fIsHeavyIon(kFALSE),
+   fIsHeavyIon(0),
    fDoMesonAnalysis(kTRUE),
    fDoMesonQA(0),
    fDoPhotonQA(0),
@@ -314,7 +314,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
    fnCuts(0),
    fiCut(0),
    fMoveParticleAccordingToVertex(kTRUE),
-   fIsHeavyIon(kFALSE),
+   fIsHeavyIon(0),
    fDoMesonAnalysis(kTRUE),
    fDoMesonQA(0),
    fDoPhotonQA(0),
@@ -498,14 +498,18 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects()
       hNEvents[iCut]->GetXaxis()->SetBinLabel(8,"no SDD");
       hNEvents[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
       fESDList[iCut]->Add(hNEvents[iCut]);
-      if(fIsHeavyIon) hNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",4000,0,4000);
+      
+      if(fIsHeavyIon == 1) hNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",4000,0,4000);
+      else if(fIsHeavyIon == 2) hNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",400,0,400);
       else hNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",200,0,200);
       fESDList[iCut]->Add(hNGoodESDTracks[iCut]);
-      if(fIsHeavyIon) hNGammaCandidates[iCut] = new TH1I("GammaCandidates","GammaCandidates",100,0,100);
+      if(fIsHeavyIon == 1) hNGammaCandidates[iCut] = new TH1I("GammaCandidates","GammaCandidates",100,0,100);
+      else if(fIsHeavyIon == 2) hNGammaCandidates[iCut] = new TH1I("GammaCandidates","GammaCandidates",50,0,50);
       else hNGammaCandidates[iCut] = new TH1I("GammaCandidates","GammaCandidates",50,0,50);
       fESDList[iCut]->Add(hNGammaCandidates[iCut]);
-      if(fIsHeavyIon) hNV0Tracks[iCut] = new TH1I("V0 Multiplicity","V0 Multiplicity",30000,0,30000);
-      else hNV0Tracks[iCut] = new TH1I("V0 Multiplicity","V0 Multiplicity",2000,0,2000);
+      if(fIsHeavyIon == 1) hNV0Tracks[iCut] = new TH1I("V0 Multiplicity","V0 Multiplicity",30000,0,30000);
+      else if(fIsHeavyIon == 2) hNV0Tracks[iCut] = new TH1I("V0 Multiplicity","V0 Multiplicity",2500,0,2500);
+      else hNV0Tracks[iCut] = new TH1I("V0 Multiplicity","V0 Multiplicity",1500,0,1500);
       fESDList[iCut]->Add(hNV0Tracks[iCut]);
       hEtaShift[iCut] = new TProfile("Eta Shift","Eta Shift",1, -0.5,0.5);
       fESDList[iCut]->Add(hEtaShift[iCut]);
@@ -939,7 +943,7 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
    // ------------------- BeginEvent ----------------------------
 
    AliEventplane *EventPlane = fInputEvent->GetEventplane();
-   if(fIsHeavyIon)fEventPlaneAngle = EventPlane->GetEventplane("V0",fInputEvent,2);
+   if(fIsHeavyIon ==1)fEventPlaneAngle = EventPlane->GetEventplane("V0",fInputEvent,2);
    else fEventPlaneAngle=0.0;
    
    if(fIsMC && fInputEvent->IsA()==AliAODEvent::Class() && !(fV0Reader->AreAODsRelabeled())){
@@ -1096,7 +1100,7 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
                ProcessTruePhotonCandidatesAOD(PhotonCandidate);
          }
          if (fIsFromMBHeader && fDoPhotonQA == 2){
-            if (fIsHeavyIon && PhotonCandidate->Pt() > 0.399 && PhotonCandidate->Pt() < 12.){
+            if (fIsHeavyIon == 1 && PhotonCandidate->Pt() > 0.399 && PhotonCandidate->Pt() < 12.){
                fPtGamma = PhotonCandidate->Pt();
                fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
                fRConvPhoton = PhotonCandidate->GetConversionRadius();
@@ -1152,7 +1156,7 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
          } else GammaCandidatesStepTwo->Add(PhotonCandidate); // Close v0s cut enabled -> add to list two
          
            if (fIsFromMBHeader && fDoPhotonQA == 2){
-            if (fIsHeavyIon && PhotonCandidate->Pt() > 0.399 && PhotonCandidate->Pt() < 12.){
+            if (fIsHeavyIon ==1 && PhotonCandidate->Pt() > 0.399 && PhotonCandidate->Pt() < 12.){
                fPtGamma = PhotonCandidate->Pt();
                fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
                fRConvPhoton = PhotonCandidate->GetConversionRadius();

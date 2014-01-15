@@ -51,10 +51,10 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   enum ErrorCode { kNoErrors = 1, kWarning = 0, kError = -1};
   
   enum dataAxes { kDataMCID = 0, kDataSelectSpecies = 1, kDataPt = 2, kDataDeltaPrimeSpecies = 3, kDataCentrality = 4,
-                  kDataJetPt = 5, kDataZ = 6, kDataXi = 7, kDataCharge = 8, kDataNumAxes = 9 };
+                  kDataJetPt = 5, kDataZ = 6, kDataXi = 7, kDataCharge = 8, kDataTOFpidInfo = 9, kDataNumAxes = 10 };
 
   enum genAxes { kGenMCID = 0, kGenSelectSpecies = 1, kGenPt = 2, kGenDeltaPrimeSpecies = 3, kGenCentrality = 4,
-                 kGenJetPt = 5, kGenZ = 6, kGenXi = 7, kGenCharge = 8, kGenNumAxes = 9 };
+                 kGenJetPt = 5, kGenZ = 6, kGenXi = 7, kGenCharge = 8, kGenTOFpidInfo = 9, kGenNumAxes = 10 };
   
   enum genYieldAxes { kGenYieldMCID = 0, kGenYieldPt = 1, kGenYieldCentrality = 2, kGenYieldJetPt = 3, kGenYieldZ = 4, kGenYieldXi = 5,
                       kGenYieldCharge = 6, kGenYieldNumAxes = 7 };
@@ -67,6 +67,9 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   enum EffSteps { kStepGenWithGenCuts = 0, kStepRecWithGenCuts = 1, kStepRecWithGenCutsMeasuredObs = 2,
                   kStepRecWithRecCutsMeasuredObs = 3, kStepRecWithRecCutsMeasuredObsPrimaries = 4,
                   kStepRecWithRecCutsMeasuredObsStrangenessScaled = 5, kStepRecWithRecCutsPrimaries = 6, kNumSteps = 7};
+  
+  enum TOFpidInfo { kNoTOFinfo = -2, kNoTOFpid = -1, kTOFpion = 0, kTOFkaon = 1, kTOFproton = 2, kNumTOFspecies = 3,
+                    kNumTOFpidInfoBins = 5 };
   
   static Int_t PDGtoMCID(Int_t pdg);
   
@@ -83,6 +86,11 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
     { return fStoreAdditionalJetInformation ? kGenCharge : kGenCharge - fgkNumJetAxes; };
   Int_t GetIndexOfChargeAxisGenYield() const
     { return fStoreAdditionalJetInformation ? kGenYieldCharge : kGenYieldCharge - fgkNumJetAxes; };
+  
+  Int_t GetIndexOfTOFpidInfoAxisData() const
+    { return fStoreAdditionalJetInformation ? kDataTOFpidInfo : kDataTOFpidInfo - fgkNumJetAxes; };
+  Int_t GetIndexOfTOFpidInfoAxisGen() const
+    { return fStoreAdditionalJetInformation ? kGenTOFpidInfo : kGenTOFpidInfo - fgkNumJetAxes; };
   
   Bool_t FillXsec(Double_t xsection)
     { if (!fh1Xsec) return kFALSE; fh1Xsec->Fill("<#sigma>", xsection); return kTRUE; };
@@ -150,6 +158,9 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   Bool_t GetTakeIntoAccountMuons() const { return fTakeIntoAccountMuons; };
   void SetTakeIntoAccountMuons(Bool_t flag) { fTakeIntoAccountMuons = flag; };
   
+  Int_t GetTOFmode() const { return fTOFmode; };
+  void SetTOFmode(Int_t tofMode) { fTOFmode = tofMode; };
+  
   Bool_t GetUseTPCDefaultPriors() const { return fTPCDefaultPriors; };
   void SetUseTPCDefaultPriors(Bool_t flag) { fTPCDefaultPriors = flag; };
   
@@ -165,6 +176,8 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   Double_t GetEtaAbsCutLow() const { return fEtaAbsCutLow; };
   Double_t GetEtaAbsCutUp() const { return fEtaAbsCutUp; };
   Bool_t SetEtaAbsCutRange(Double_t lowerLimit, Double_t upperLimit);
+  
+  Bool_t IsInAcceptedEtaRange(Double_t etaAbs) const { return (etaAbs >= fEtaAbsCutLow && etaAbs <= fEtaAbsCutUp); };
   
   Double_t GetSystematicScalingSplines() const { return fSystematicScalingSplines; };
   void SetSystematicScalingSplines(Double_t scaleFactor) 
@@ -207,6 +220,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
                                                           Bool_t smearByError,
                                                           Bool_t takeIntoAccountSysError = kFALSE) const;
   
+  TOFpidInfo GetTOFType(const AliVTrack* track, Int_t tofMode) const;
   
  protected:
   void CheckDoAnyStematicStudiesOnTheExpectedSignal();
@@ -222,12 +236,12 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   virtual void SetUpPtResHist(THnSparse* hist, Double_t* binsPt, Double_t* binsJetPt, Double_t* binsCent) const;
   virtual void SetUpPIDcombined();
   
-  static const Int_t fgkNumJetAxes = 3; // Number of additional axes for jets
-  static const Double_t fgkEpsilon = 1e-8; // Double_t threshold above zero
-  static const Int_t fgkMaxNumGenEntries = 1000; // Maximum number of generated detector responses per track and delta(Prime) and associated species
+  static const Int_t fgkNumJetAxes; // Number of additional axes for jets
+  static const Double_t fgkEpsilon; // Double_t threshold above zero
+  static const Int_t fgkMaxNumGenEntries; // Maximum number of generated detector responses per track and delta(Prime) and associated species
 
  private:
-  static const Double_t fgkOneOverSqrt2 = 0.707106781186547462; // = 1. / TMath::Sqrt2();
+  static const Double_t fgkOneOverSqrt2; // = 1. / TMath::Sqrt2();
   
   AliPIDCombined* fPIDcombined; //! PID combined object
   
@@ -255,8 +269,9 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   const Double_t fkDeltaPrimeUpLimit; // Upper deltaPrime limit
   TF1* fConvolutedGausDeltaPrime; // Gaus convoluted with exponential tail to generate detector response (deltaPrime)
   
+  Int_t fTOFmode; // TOF mode used for TOF PID info (affects num sigma inclusion/exclusion)
   Double_t fConvolutedGaussTransitionPars[3]; // Parameter for transition from gaussian parameters to asymmetric shape
-  static const Double_t fgkSigmaReferenceForTransitionPars = 0.05; // Reference sigma chosen to calculate transition parameters
+  static const Double_t fgkSigmaReferenceForTransitionPars; // Reference sigma chosen to calculate transition parameters
   
   Double_t fEtaAbsCutLow; // Lower cut value on |eta|
   Double_t fEtaAbsCutUp;  // Upper cut value on |eta|
@@ -349,7 +364,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   AliAnalysisTaskPID(const AliAnalysisTaskPID&); // not implemented
   AliAnalysisTaskPID& operator=(const AliAnalysisTaskPID&); // not implemented
   
-  ClassDef(AliAnalysisTaskPID, 13);
+  ClassDef(AliAnalysisTaskPID, 14);
 };
 
 
