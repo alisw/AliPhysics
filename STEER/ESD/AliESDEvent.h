@@ -5,7 +5,7 @@
  * See cxx source for full Copyright notice                               */
 
 
-/* $Id$ */
+/* $Id: AliESDEvent.h 64008 2013-08-28 13:09:59Z hristov $ */
 
 //-------------------------------------------------------------------------
 //                          Class AliESDEvent
@@ -29,6 +29,7 @@
 #include "AliESDTZERO.h"
 #include "AliESDZDC.h"
 #include "AliESDACORDE.h"
+#include "AliESDAD.h"
 
 // AliESDtrack has to be included so that the compiler 
 // knows its inheritance tree (= that it is a AliVParticle).
@@ -66,6 +67,7 @@ class AliCentrality;
 class AliEventplane;
 class TRefArray;
 class AliESDACORDE;
+class AliESDAD;
 class AliESDHLTDecision;
 class AliESDCosmicTrack;
 
@@ -107,6 +109,7 @@ public:
 		       kPHOSCells,
 		       kErrorLogs,
                        kESDACORDE,
+                       kESDAD,
 		       kTOFHeader,
                        kCosmicTracks,
 		       kESDListN
@@ -264,6 +267,13 @@ public:
  // ACORDE
   AliESDACORDE *GetACORDEData() const { return fESDACORDE;}
   void SetACORDEData(AliESDACORDE * obj);
+
+ // AD
+  AliESDAD *GetADData() const { return fESDAD;}
+  void SetADData(AliESDAD * obj);
+
+
+
 
   void SetESDfriend(const AliESDfriend *f) const;
   void GetESDfriend(AliESDfriend *f) const;
@@ -530,6 +540,7 @@ protected:
   AliESDCaloTrigger* fPHOSTrigger;     //! PHOS Trigger information
   AliESDCaloTrigger* fEMCALTrigger;    //! PHOS Trigger information
   AliESDACORDE    *fESDACORDE;        //! ACORDE ESD object caontaining bit pattern
+  AliESDAD    *fESDAD;        //! AD ESD object caontaining bit pattern
   AliESDTrdTrigger *fTrdTrigger;      //! TRD trigger information
 
   TClonesArray *fSPDPileupVertices;//! Pileup primary vertices reconstructed by SPD 

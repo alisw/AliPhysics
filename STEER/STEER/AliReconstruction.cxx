@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id: AliReconstruction.cxx 63911 2013-08-19 16:46:41Z hristov $ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -211,7 +211,7 @@ using std::endl;
 
 //_____________________________________________________________________________
 const char* AliReconstruction::fgkStopEvFName = "_stopEvent_";
-const char* AliReconstruction::fgkDetectorName[AliReconstruction::kNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE"
+const char* AliReconstruction::fgkDetectorName[AliReconstruction::kNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE","AD"
 // #ifdef MFT_UPGRADE
 //                                                                                   , "MFT"
 // #endif 

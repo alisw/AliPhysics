@@ -1,4 +1,4 @@
-// $Id$
+// $Id: AliEveEventManager.h 59763 2012-11-27 12:42:41Z hristov $
 // Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
 
 /**************************************************************************

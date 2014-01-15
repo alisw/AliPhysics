@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id: AliESDEvent.cxx 64008 2013-08-28 13:09:59Z hristov $ */
 
 //-----------------------------------------------------------------
 //           Implementation of the AliESDEvent class
@@ -69,6 +69,7 @@
 #include "AliRawDataErrorLog.h"
 #include "AliLog.h"
 #include "AliESDACORDE.h"
+#include "AliESDAD.h"
 #include "AliESDHLTDecision.h"
 #include "AliCentrality.h"
 #include "AliESDCosmicTrack.h"
@@ -117,6 +118,7 @@ ClassImp(AliESDEvent)
 							"PHOSCells",
 							"AliRawDataErrorLogs",
 							"AliESDACORDE",
+							"AliESDAD",
 							"AliTOFHeader",
                                                         "CosmicTracks"
                               #ifdef MFT_UPGRADE
@@ -141,6 +143,7 @@ AliESDEvent::AliESDEvent():
   fPHOSTrigger(0),
   fEMCALTrigger(0),
   fESDACORDE(0),
+  fESDAD(0),
   fTrdTrigger(0),
   fSPDPileupVertices(0),
   fTrkPileupVertices(0),
@@ -191,6 +194,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fPHOSTrigger(new AliESDCaloTrigger(*esd.fPHOSTrigger)),
   fEMCALTrigger(new AliESDCaloTrigger(*esd.fEMCALTrigger)),
   fESDACORDE(new AliESDACORDE(*esd.fESDACORDE)),
+  fESDAD(new AliESDAD(*esd.fESDAD)),
   fTrdTrigger(new AliESDTrdTrigger(*esd.fTrdTrigger)),
   fSPDPileupVertices(new TClonesArray(*esd.fSPDPileupVertices)),
   fTrkPileupVertices(new TClonesArray(*esd.fTrkPileupVertices)),
@@ -257,6 +261,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   AddObject(fCosmicTracks);
   AddObject(fErrorLogs);
   AddObject(fESDACORDE);
+  AddObject(fESDAD);
   AddObject(fTOFHeader);
   AddObject(fMuonClusters);
   AddObject(fMuonPads);
@@ -487,6 +492,13 @@ void AliESDEvent::ResetStdContent()
     fESDACORDE->~AliESDACORDE();
     new (fESDACORDE) AliESDACORDE();	
   } 
+
+  if(fESDAD){
+    fESDAD->~AliESDAD();
+    new (fESDAD) AliESDAD();	
+  } 
+
+
   if(fESDTZERO) fESDTZERO->Reset(); 
   // CKB no clear/reset implemented
   if(fTPCVertex){
@@ -1370,6 +1382,13 @@ void AliESDEvent::SetACORDEData(AliESDACORDE * obj)
     *fESDACORDE = *obj;
 }
 
+void AliESDEvent::SetADData(AliESDAD * obj)
+{
+  if(fESDAD)
+    *fESDAD = *obj;
+}
+
+
 
 void AliESDEvent::GetESDfriend(AliESDfriend *ev) const 
 {
@@ -1439,6 +1458,7 @@ void AliESDEvent::GetStdContent()
   fPHOSCells = (AliESDCaloCells*)fESDObjects->FindObject(fgkESDListName[kPHOSCells]);
   fErrorLogs = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kErrorLogs]);
   fESDACORDE = (AliESDACORDE*)fESDObjects->FindObject(fgkESDListName[kESDACORDE]);
+  fESDAD = (AliESDAD*)fESDObjects->FindObject(fgkESDListName[kESDAD]);
   fTOFHeader = (AliTOFHeader*)fESDObjects->FindObject(fgkESDListName[kTOFHeader]);
   fCosmicTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kCosmicTracks]);
   #ifdef MFT_UPGRADE
@@ -1506,6 +1526,7 @@ void AliESDEvent::CreateStdContent()
   AddObject(new AliESDCaloCells());
   AddObject(new TClonesArray("AliRawDataErrorLog",0));
   AddObject(new AliESDACORDE()); 
+  AddObject(new AliESDAD()); 
   AddObject(new AliTOFHeader());
   AddObject(new TClonesArray("AliESDCosmicTrack",0));
   #ifdef MFT_UPGRADE
