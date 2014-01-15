@@ -9,22 +9,22 @@ AliAnalysisTask *AddTask_Asako_LMEEPbPb2011AODCent(Bool_t runAll=kFALSE,Bool_t s
   }
 
 
-//  create task and add it to the manager
-//	gSystem->AddIncludePath("$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE");
+  //  create task and add it to the manager
+  //gSystem->AddIncludePath("$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE");
 
 
   TString configBasePath("$TRAIN_ROOT/cbaumann_dielectron/");
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
 
-      if (trainRoot.IsNull()) configBasePath= "$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/";
- //   if (trainRoot.IsNull()) configBasePath= "/home/tsuji/nfs/AliceAna/aniso/v21/";
+   if (trainRoot.IsNull()) configBasePath= "$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/";
+   //   if (trainRoot.IsNull()) configBasePath= "/home/tsuji/nfs/AliceAna/pol2/Cent/";
   
 
   if (getFromAlien &&
       (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cbaumann/PWGDQ/dielectron/macrosLMEE/ConfigAsakoLMEEPbPb2011AOD.C .")) &&
       (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cbaumann/PWGDQ/dielectron/macrosLMEE/LMEECutLibAsako.C ."))
-     ) {
-        configBasePath=Form("%s/",gSystem->pwd());
+	  ) {
+	configBasePath=Form("%s/",gSystem->pwd());
   }
 
   TString configFile("ConfigAsakoLMEEPbPb2011AOD.C");
@@ -60,11 +60,11 @@ AliAnalysisTask *AddTask_Asako_LMEEPbPb2011AODCent(Bool_t runAll=kFALSE,Bool_t s
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDiEData");
   if (!hasMC) task->UsePhysicsSelection();
   task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
-//  task->SelectCollisionCandidates(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
-//  task->SetRejectPileup();
+  //  task->SelectCollisionCandidates(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
+  //  task->SetRejectPileup();
   task->SelectCollisionCandidates(AliVEvent::kAny);  
   task->SetEventFilter(cutlib->GetEventCuts(LMEECutLibAsako::kPbPb2011TPCandTOF)); //
-	
+  
 
   //load dielectron configuration file
 
@@ -97,8 +97,8 @@ AliAnalysisTask *AddTask_Asako_LMEEPbPb2011AODCent(Bool_t runAll=kFALSE,Bool_t s
   
   //if (PIDbaseline) {
   //AliDielectron *lowmass7=ConfigLMEEPbPb2011AOD(7,hasMC,bESDANA);
-  //	task->AddDielectron(lowmass7);
-  //	printf("add: %s\n",lowmass7->GetName());
+  //task->AddDielectron(lowmass7);
+  //printf("add: %s\n",lowmass7->GetName());
   //}
 
   mgr->AddTask(task);
@@ -106,33 +106,33 @@ AliAnalysisTask *AddTask_Asako_LMEEPbPb2011AODCent(Bool_t runAll=kFALSE,Bool_t s
   //create output container
   AliAnalysisDataContainer *coutput1 =
 	mgr->CreateContainer("asako_LMEEPbPb2011_tree",
-		TTree::Class(),
-		AliAnalysisManager::kExchangeContainer,
-		"LMEEoutput.root");
+						 TTree::Class(),
+						 AliAnalysisManager::kExchangeContainer,
+						 "LMEEoutput.root");
 
   AliAnalysisDataContainer *cOutputHist1 =
 	mgr->CreateContainer("asako_LMEEPbPb2011_out",
-		TList::Class(),
-		AliAnalysisManager::kOutputContainer,
-		"LMEEoutput.root");
+						 TList::Class(),
+						 AliAnalysisManager::kOutputContainer,
+						 "LMEEoutput.root");
 
   /*  AliAnalysisDataContainer *cOutputHist2 =
-	  mgr->CreateContainer("cbaumann_lowmass_CF",
-	  TList::Class(),
-	  AliAnalysisManager::kOutputContainer,
-	  "cbaumann_lowmass_CF.root");
-	  */
+	    mgr->CreateContainer("cbaumann_lowmass_CF",
+		  TList::Class(),
+		    AliAnalysisManager::kOutputContainer,
+			  "cbaumann_lowmass_CF.root");
+  */
   AliAnalysisDataContainer *cOutputHist2 =
 	mgr->CreateContainer("asako_LMEEPbPb2011_CF",
-		TList::Class(),
-		AliAnalysisManager::kOutputContainer,
-		"LMEEoutput.root");
+						 TList::Class(),
+						 AliAnalysisManager::kOutputContainer,
+						 "LMEEoutput.root");
 
   AliAnalysisDataContainer *cOutputHist3 =
 	mgr->CreateContainer("asako_EventStatPbPb2011",
-		TH1D::Class(),
-		AliAnalysisManager::kOutputContainer,
-		"LMEEoutput.root");
+						 TH1D::Class(),
+						 AliAnalysisManager::kOutputContainer,
+						 "LMEEoutput.root");
 
 
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
@@ -143,5 +143,4 @@ AliAnalysisTask *AddTask_Asako_LMEEPbPb2011AODCent(Bool_t runAll=kFALSE,Bool_t s
 
   return task;
 }
-
 
