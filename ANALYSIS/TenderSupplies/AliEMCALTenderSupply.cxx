@@ -1236,10 +1236,12 @@ Int_t AliEMCALTenderSupply::InitTimeCalibration()
   }
   
   // Here, it looks for a specific pass
-  TObjArray *arrayBCpass=(TObjArray*)arrayBC->FindObject(fFilepass); 
+  TString pass = fFilepass;
+  if(fFilepass=="calo_spc") pass ="pass1";
+  TObjArray *arrayBCpass=(TObjArray*)arrayBC->FindObject(pass);
   if (!arrayBCpass)
   {
-    AliError(Form("No external time calibration set for: %d -%s", runBC,fFilepass.Data()));
+    AliError(Form("No external time calibration set for: %d -%s", runBC,pass.Data()));
     return 2; 
   }
 
