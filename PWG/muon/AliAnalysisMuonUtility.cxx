@@ -33,18 +33,20 @@
 #include "TFile.h"
 
 // STEER includes
-#include "AliInputEventHandler.h"
-#include "AliAODHeader.h"
 #include "AliAODEvent.h"
-#include "AliAODTrack.h"
+#include "AliAODHeader.h"
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
-#include "AliMCEvent.h"
-#include "AliMCParticle.h"
+#include "AliAODTrack.h"
+#include "AliAODTZERO.h"
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
-#include "AliVVertex.h"
+#include "AliESDTZERO.h"
+#include "AliInputEventHandler.h"
 #include "AliLog.h"
+#include "AliMCEvent.h"
+#include "AliMCParticle.h"
+#include "AliVVertex.h"
 #include "AliStack.h"
 
 // CORRFW includes
@@ -548,6 +550,43 @@ TString AliAnalysisMuonUtility::GetTrackHistory ( const AliVParticle* track, con
   return trackHistory;
 }
 
+//________________________________________________________________________
+Bool_t AliAnalysisMuonUtility::EAGetTZEROFlags(const AliVEvent* event, Bool_t& backgroundFlag, Bool_t& pileupFlag, Bool_t& satelliteFlag)
+{
+  // get the TZERO decisions
+  // return false if there's no tzero information in this event
+  
+  Bool_t rv(kFALSE);
+  
+  if ( event->IsA() == AliESDEvent::Class() )
+  {
+    const AliESDTZERO* tzero = static_cast<AliESDEvent*>(const_cast<AliVEvent*>(event))->GetESDTZERO();
+    if ( tzero )
+    {
+      backgroundFlag = tzero->GetBackgroundFlag();
+      pileupFlag = tzero->GetPileupFlag();
+      satelliteFlag = tzero->GetSatellite();
+      rv = kTRUE;
+    }
+  }
+  else if ( event->IsA() == AliAODEvent::Class() )
+  {
+    AliAODTZERO* tzero = static_cast<const AliAODEvent*>(event)->GetTZEROData();
+    if ( tzero )
+    {
+      backgroundFlag = tzero->GetBackgroundFlag();
+      pileupFlag = tzero->GetPileupFlag();
+      satelliteFlag = tzero->GetSatellite();
+      rv = kTRUE;
+    }
+  }
+  else
+  {
+    AliErrorClass(Form("Unknown class for the event = %s",event->ClassName()));
+  }
+  
+  return rv;
+}
 
 //_______________________________________________________________________
 Bool_t AliAnalysisMuonUtility::SetSparseRange(AliCFGridSparse* gridSparse,

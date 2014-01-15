@@ -73,6 +73,8 @@ class AliAnalysisMuonUtility : public TObject {
   static UInt_t GetMCProcess ( const AliVParticle* mcParticle );
   static UInt_t GetStatusCode ( const AliVParticle* mcParticle );
   
+  static Bool_t EAGetTZEROFlags(const AliVEvent* event, Bool_t& backgroundFlag, Bool_t& pileupFlag, Bool_t& satelliteFlag);
+
   // A useful constant
   static Double_t MuonMass2();
   

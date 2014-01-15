@@ -89,8 +89,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        RemoveParticleContainer(Int_t i=0)                      { fParticleCollArray.RemoveAt(i);} 
   void                        RemoveClusterContainer(Int_t i=0)                       { fClusterCollArray.RemoveAt(i);} 
 
-  AliParticleContainer       *GetParticleContainer(const Int_t i=0)   const;
-  AliClusterContainer        *GetClusterContainer(const Int_t i=0)    const;
+  AliParticleContainer       *GetParticleContainer(Int_t i=0)   const;
+  AliClusterContainer        *GetClusterContainer(Int_t i=0)    const;
   AliParticleContainer       *GetParticleContainer(const char* name)  const;
   AliClusterContainer        *GetClusterContainer(const char* name)   const;
 
@@ -102,8 +102,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TClonesArray               *GetArrayFromEvent(const char *name, const char *clname=0);
   Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard);
 
-  TClonesArray               *GetParticleArray(const Int_t i=0)                  const;
-  TClonesArray               *GetClusterArray(const Int_t i=0)                   const;
+  TClonesArray               *GetParticleArray(Int_t i=0)                  const;
+  TClonesArray               *GetClusterArray(Int_t i=0)                   const;
 
   AliVParticle               *GetAcceptParticleFromArray(Int_t p, Int_t c=0)     const;
   AliVCluster                *GetAcceptClusterFromArray(Int_t cl, Int_t c=0)     const;

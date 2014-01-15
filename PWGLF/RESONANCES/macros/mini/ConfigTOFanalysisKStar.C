@@ -49,9 +49,12 @@ Bool_t ConfigTOFanalysisKStar
   } else {
     //use defult quality cuts (std 2010 or 2011)
     cutSetQ  = new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit), AliRsnCutSetDaughterParticle::kQualityStd2011, AliPID::kPion, -1.0, aodFilterBit);
+    cutSetQ->SetUse2011StdQualityCuts(kTRUE);
     cutSetPi = new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",cutPiCandidate, nsigmaPi), cutPiCandidate, AliPID::kPion, nsigmaPi, aodFilterBit);
+    cutSetPi->SetUse2011StdQualityCuts(kTRUE);
     cutSetK  = new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutPiCandidate, nsigmaKa), cutKaCandidate, AliPID::kKaon, nsigmaKa, aodFilterBit);
-  }
+    cutSetK->SetUse2011StdQualityCuts(kTRUE);
+   }
   
   Int_t iCutQ = task->AddTrackCuts(cutSetQ);
   Int_t iCutPi = task->AddTrackCuts(cutSetPi);

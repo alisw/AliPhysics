@@ -440,6 +440,26 @@ void AliMuonEventCuts::SetTrigClassLevels ( TString pattern )
 }
 
 //________________________________________________________________________
+UInt_t AliMuonEventCuts::GetTriggerInputBitMaskFromInputName(const char* inputName) const
+{
+  // Get trigger input bit from its name
+  
+  if (!fTrigInputsMap)
+  {
+    AliError("No Inputs Map available");
+    return TMath::Limits<UInt_t>::Max();
+  }
+  
+  TObjString* s = static_cast<TObjString*>(fTrigInputsMap->FindObject(inputName));
+  if (!s)
+  {
+    AliError(Form("Did not find input %s",inputName));
+    return TMath::Limits<UInt_t>::Max();    
+  }
+  return s->GetUniqueID();
+}
+
+//________________________________________________________________________
 TArrayI AliMuonEventCuts::GetTrigClassPtCutLevel ( const TString trigClassName ) const
 {
   /// Get trigger class pt cut level for tracking/trigger matching
@@ -544,6 +564,20 @@ void AliMuonEventCuts::SetDefaultTrigInputsMap ()
   trigInputsMap += "1EJE:19";
   
   SetTrigInputsMap(trigInputsMap);
+}
+
+//________________________________________________________________________
+const TObjArray*
+AliMuonEventCuts::GetSelectedTrigClassesInEvent(const TString& firedTriggerClasses,
+                                                UInt_t l0Inputs, UInt_t l1Inputs,
+                                                UInt_t l2Inputs)
+{
+  /// Return the selected trigger classes in the fired trigger classes
+  /// give also the L0,L1,L2 input bit masks
+  
+  BuildTriggerClasses(firedTriggerClasses,l0Inputs,l1Inputs,l2Inputs);
+
+  return fSelectedTrigClassesInEvent;
 }
 
 //________________________________________________________________________

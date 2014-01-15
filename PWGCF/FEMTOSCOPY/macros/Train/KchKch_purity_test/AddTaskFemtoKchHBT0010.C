@@ -11,7 +11,7 @@
 
 //this line for local: AliAnalysisTaskFemto *AddTaskFemtoKchHBT(const char *configMacroName="ConfigFemtoAnalysis.C", const char *configMacroParameters="" )
 
-AliAnalysisTaskFemto *AddTaskFemtoKchHBT0010(TString configMacroName, const char *containerName="femtolist", const char *configMacroParameters="" )
+AliAnalysisTaskFemto *AddTaskFemtoKchHBT0010(TString configMacroName, const char *containerName="lmlist005", const char *configMacroParameters="" )
 {
 // Creates a proton analysis task and adds it to the analysis manager.
   
@@ -56,7 +56,7 @@ AliAnalysisTaskFemto *AddTaskFemtoKchHBT0010(TString configMacroName, const char
   //[root@alicethinks Train]# ln -s /scratch/AliWork/PbPb2.76/Train2013/KchHBT KchHBT
   //
   AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_ROOT/"+configMacroName,configMacroParameters,kFALSE);
-  taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);// this a new line for train
+  taskfemto->SelectCollisionCandidates(AliVEvent::kCentral );// this a new line for train
   mgr->AddTask(taskfemto);
 
   // D. Configure the analysis task. Extra parameters can be used via optional
@@ -68,7 +68,7 @@ AliAnalysisTaskFemto *AddTaskFemtoKchHBT0010(TString configMacroName, const char
   //==============================================================================
   TString outputfile = AliAnalysisManager::GetCommonFileName();  
   outputfile += ":PWG2FEMTO";
-  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer("femtolist",  TList::Class(),
+  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer("lmlist005",  TList::Class(),
   							       AliAnalysisManager::kOutputContainer,outputfile);
 
 

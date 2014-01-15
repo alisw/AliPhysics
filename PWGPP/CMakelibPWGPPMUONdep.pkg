@@ -27,7 +27,13 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-file ( GLOB SRCS16 "MUON/dep/*.cxx" )
+#file ( GLOB SRCS16 "MUON/dep/*.cxx" )
+set ( SRCS16
+  MUON/dep/AliAnalysisTaskMuonFakes.cxx
+  MUON/dep/AliAnalysisTaskMuonPerformance.cxx
+  MUON/dep/AliAnalysisTaskMuonResolution.cxx
+  MUON/dep/AliAnalysisTaskMuonTrackingEff.cxx
+  )
 
 list ( APPEND SRCS 
   ${SRCS16}

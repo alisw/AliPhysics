@@ -57,9 +57,11 @@ AliAnalysisTaskSpectraAllChAOD::AliAnalysisTaskSpectraAllChAOD(const char *name)
   fEventCuts(0x0),
   fHelperPID(0x0),
   fIsMC(0),
+  fCharge(0),
+  fVZEROside(0),
   fOutput(0x0),
   fnCentBins(20),
-  fnQvecBins(50)
+  fnQvecBins(40)
 {
   // Default constructor
   DefineInput(0, TChain::Class());
@@ -88,9 +90,9 @@ void AliAnalysisTaskSpectraAllChAOD::UserCreateOutputObjects()
   //dimensions of THnSparse for tracks
   const Int_t nvartrk=8;
   //                                             pt          cent        Q vec     IDrec     IDgen       isph           iswd      y
-  Int_t    binsHistRealTrk[nvartrk] = {      nptBins, fnCentBins,   fnQvecBins,        3,        3,         2,          2,       2};
-  Double_t xminHistRealTrk[nvartrk] = {         0.,          0.,            0.,     -0.5,      -0.5,      -0.5,        -0.5,   -0.5};
-  Double_t xmaxHistRealTrk[nvartrk] = {       10.,       100.,          10.,      2.5,      2.5,       1.5,         1.5,     0.5};    
+  Int_t    binsHistRealTrk[nvartrk] = {      nptBins, fnCentBins,   fnQvecBins,        4,        3,         2,          2,       2};
+  Double_t xminHistRealTrk[nvartrk] = {         0.,          0.,            0.,     -1.5,      -0.5,      -0.5,        -0.5,   -0.5};
+  Double_t xmaxHistRealTrk[nvartrk] = {       10.,       100.,            8.,      2.5,      2.5,       1.5,         1.5,     0.5};    
   THnSparseF* NSparseHistTrk = new THnSparseF("NSparseHistTrk","NSparseHistTrk",nvartrk,binsHistRealTrk,xminHistRealTrk,xmaxHistRealTrk);
   NSparseHistTrk->GetAxis(0)->SetTitle("#it{p}_{T,rec}");
   NSparseHistTrk->GetAxis(0)->SetName("pT_rec");
@@ -173,7 +175,11 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
   if(fHelperPID->GetPIDType()==kBayes)fHelperPID->GetPIDCombined()->SetDefaultTPCPriors();//FIXME maybe this can go in the UserCreateOutputObject?
   
   Double_t Qvec=0.;//in case of MC we save space in the memory
-  if(!fIsMC)Qvec=fEventCuts->GetqV0A();//FIXME we'll have to combine A and C
+  if(!fIsMC){
+    if(fVZEROside==0)Qvec=fEventCuts->GetqV0A();
+    else if (fVZEROside==1)Qvec=fEventCuts->GetqV0C();
+  }
+
   Double_t Cent=fEventCuts->GetCent();
     
   // First do MC to fill up the MC particle array
@@ -189,6 +195,8 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
 	{
 	  AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(iMC);
 	  if(!partMC->Charge()) continue;//Skip neutrals
+	  if(fCharge != 0 && partMC->Charge() != fCharge) continue;//if fCharge != 0 only select fCharge
+	  
 	  if(partMC->Eta() < fTrackCuts->GetEtaMin() || partMC->Eta() > fTrackCuts->GetEtaMax())continue;//ETA CUT ON GENERATED!!!!!!!!!!!!!!!!!!!!!!!!!!
 	  
 	  //pt     cent    IDgen        isph        y
@@ -208,6 +216,7 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
   //main loop on tracks
   for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
     AliAODTrack* track = fAOD->GetTrack(iTracks);
+    if(fCharge != 0 && track->Charge() != fCharge) continue;//if fCharge != 0 only select fCharge 
     if (!fTrackCuts->IsSelected(track,kTRUE)) continue; //track selection (rapidity selection NOT in the standard cuts)
     Int_t IDrec=fHelperPID->GetParticleSpecies(track,kTRUE);//id from detector
     Double_t y= track->Y(fHelperPID->GetMass((AliHelperParticleSpecies_t)IDrec));
@@ -236,6 +245,22 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
     varTrk[5]=(Double_t)isph;
     varTrk[6]=(Double_t)iswd;
     varTrk[7]=y;
+    ((THnSparseF*)fOutput->FindObject("NSparseHistTrk"))->Fill(varTrk);//track loop
+    
+    //for nsigma PID fill double counting of ID
+    if(fHelperPID->GetPIDType()<kBayes){//only nsigma
+      Bool_t *HasDC;
+      HasDC=fHelperPID->GetDoubleCounting(track,kTRUE);//get the array with double counting
+      for(Int_t ipart=0;ipart<kNSpecies;ipart++){
+	if(HasDC[ipart]==kTRUE){
+	  varTrk[3]=(Double_t)ipart;
+	  ((THnSparseF*)fOutput->FindObject("NSparseHistTrk"))->Fill(varTrk);//track loop
+	}
+      }
+    }
+    
+    //fill all charged (-1)
+    varTrk[3]=-1.;
     ((THnSparseF*)fOutput->FindObject("NSparseHistTrk"))->Fill(varTrk);//track loop
     
     //Printf("a track");

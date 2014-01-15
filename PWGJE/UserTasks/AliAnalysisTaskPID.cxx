@@ -37,6 +37,14 @@ Contact: bhess@cern.ch
 
 ClassImp(AliAnalysisTaskPID)
 
+const Int_t AliAnalysisTaskPID::fgkNumJetAxes = 3; // Number of additional axes for jets
+const Double_t AliAnalysisTaskPID::fgkEpsilon = 1e-8; // Double_t threshold above zero
+const Int_t AliAnalysisTaskPID::fgkMaxNumGenEntries = 500; // Maximum number of generated detector responses per track and delta(Prime) and associated species
+
+const Double_t AliAnalysisTaskPID::fgkOneOverSqrt2 = 0.707106781186547462; // = 1. / TMath::Sqrt2();
+
+const Double_t AliAnalysisTaskPID::fgkSigmaReferenceForTransitionPars = 0.05; // Reference sigma chosen to calculate transition
+
 //________________________________________________________________________
 AliAnalysisTaskPID::AliAnalysisTaskPID()
   : AliAnalysisTaskPIDV0base()
@@ -59,6 +67,7 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   , fkDeltaPrimeLowLimit(0.02)
   , fkDeltaPrimeUpLimit(40.0)
   , fConvolutedGausDeltaPrime(0x0)
+  , fTOFmode(1)
   , fEtaAbsCutLow(0.0)
   , fEtaAbsCutUp(0.9)
   , fDoAnySystematicStudiesOnTheExpectedSignal(kFALSE)
@@ -181,6 +190,7 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   , fkDeltaPrimeLowLimit(0.02)
   , fkDeltaPrimeUpLimit(40.0)
   , fConvolutedGausDeltaPrime(0x0)
+  , fTOFmode(1)
   , fEtaAbsCutLow(0.0)
   , fEtaAbsCutUp(0.9)
   , fDoAnySystematicStudiesOnTheExpectedSignal(kFALSE)
@@ -550,45 +560,73 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   const Double_t xiMin = 0.;
   const Double_t xiMax = 7.;
   
+  const Int_t nTOFpidInfoBins = kNumTOFpidInfoBins;
+  const Double_t tofPIDinfoMin = kNoTOFinfo;
+  const Double_t tofPIDinfoMax = kNoTOFinfo + kNumTOFpidInfoBins;
+  
   // MC PID, SelectSpecies, pT, deltaPrimeSpecies, centrality percentile, jet pT, z = track_pT/jet_pT, xi = log(1/z)
-  Int_t binsNoJets[nBinsNoJets] =    { nMCPIDbins, nSelSpeciesBins,         nPtBins,                 deltaPrimeNBins,  
-                                       nCentBins, nChargeBins};
-  Int_t binsJets[nBinsJets]     =    { nMCPIDbins, nSelSpeciesBins,         nPtBins,                 deltaPrimeNBins,           
-                                       nCentBins,                      nJetPtBins, nZBins, nXiBins, nChargeBins };
+  Int_t binsNoJets[nBinsNoJets] =    { nMCPIDbins,
+                                       nSelSpeciesBins,
+                                       nPtBins,
+                                       deltaPrimeNBins,
+                                       nCentBins,
+                                       nChargeBins,
+                                       nTOFpidInfoBins };
+  
+  Int_t binsJets[nBinsJets]     =    { nMCPIDbins,
+                                       nSelSpeciesBins,
+                                       nPtBins,
+                                       deltaPrimeNBins,           
+                                       nCentBins,
+                                       nJetPtBins,
+                                       nZBins,
+                                       nXiBins,
+                                       nChargeBins,
+                                       nTOFpidInfoBins };
+  
   Int_t *bins = fStoreAdditionalJetInformation ? &binsJets[0] : &binsNoJets[0];
   
-  Double_t xminNoJets[nBinsNoJets] = {   mcPIDmin,   selSpeciesMin,       binsPt[0],               deltaPrimeBins[0],                       
-                                       binsCent[0], binsCharge[0]};
-  Double_t xminJets[nBinsJets] =     {   mcPIDmin,   selSpeciesMin,       binsPt[0],               deltaPrimeBins[0],                       
-                                       binsCent[0],                  binsJetPt[0],   zMin,   xiMin, binsCharge[0] };
+  Double_t xminNoJets[nBinsNoJets] = { mcPIDmin,  
+                                       selSpeciesMin,
+                                       binsPt[0],
+                                       deltaPrimeBins[0],                       
+                                       binsCent[0],
+                                       binsCharge[0],
+                                       tofPIDinfoMin };
+  
+  Double_t xminJets[nBinsJets] =     { mcPIDmin,
+                                       selSpeciesMin,
+                                       binsPt[0],
+                                       deltaPrimeBins[0],                       
+                                       binsCent[0],
+                                       binsJetPt[0],
+                                       zMin,
+                                       xiMin,
+                                       binsCharge[0],
+                                       tofPIDinfoMin };
+  
   Double_t *xmin = fStoreAdditionalJetInformation? &xminJets[0] : &xminNoJets[0];
 
-  Double_t xmaxNoJets[nBinsNoJets] = {   mcPIDmax,   selSpeciesMax, binsPt[nPtBins], deltaPrimeBins[deltaPrimeNBins], 
-                                       binsCent[nCentBins], binsCharge[nChargeBins] };
-  Double_t xmaxJets[nBinsJets] =     {   mcPIDmax,   selSpeciesMax, binsPt[nPtBins], deltaPrimeBins[deltaPrimeNBins], 
-                                       binsCent[nCentBins], binsJetPt[nJetPtBins],   zMax,   xiMax, binsCharge[nChargeBins] };
+  Double_t xmaxNoJets[nBinsNoJets] = { mcPIDmax,
+                                       selSpeciesMax,
+                                       binsPt[nPtBins],
+                                       deltaPrimeBins[deltaPrimeNBins], 
+                                       binsCent[nCentBins],
+                                       binsCharge[nChargeBins],
+                                       tofPIDinfoMax };
+  
+  Double_t xmaxJets[nBinsJets] =     { mcPIDmax,
+                                       selSpeciesMax,
+                                       binsPt[nPtBins],
+                                       deltaPrimeBins[deltaPrimeNBins], 
+                                       binsCent[nCentBins],
+                                       binsJetPt[nJetPtBins],
+                                       zMax,
+                                       xiMax,
+                                       binsCharge[nChargeBins],
+                                       tofPIDinfoMax };
+  
   Double_t *xmax = fStoreAdditionalJetInformation? &xmaxJets[0] : &xmaxNoJets[0];
-  
-  /*OLD with TOF, p_TPC_Inner and p_vertex and deltaSpecies
-  const Int_t nBins = 8;
-  //TODO In case of memory trouble: Remove deltaTOFspecies and p(Vertex) (can be added later, if needed)?
-  //TODO IF everything is working fine: p(TPC_inner) and p(Vertex) can be removed, since everything in the analysis is only a 
-  // function of pT -> Reduces memory consumption significantly!!!
-  
-  // MC PID, SelectSpecies, P(TPC_inner), pT, p(Vertex), deltaSpecies, deltaPrimeSpecies, deltaTOFspecies
-  const Int_t deltaPrimeNBins = 201;
-  
-  const Int_t deltaNBins = 801;
-  const Double_t deltaLowLimit = -200.;
-  const Double_t deltaUpLimit = 200.;
-  
-  Int_t bins[nBins] = 
-    {  5, 4, nPtBins, nPtBins, nPtBins, deltaNBins, deltaPrimeNBins, 501 }; 
-  Double_t xmin[nBins] = 
-    {  0., 0., 0., 0., 0., deltaLowLimit, fkDeltaPrimeLowLimit, -5000.};
-  Double_t xmax[nBins] = 
-    {  5., 4., 50.0, 50.0, 50.0, deltaUpLimit, fkDeltaPrimeUpLimit, 5000.};
-  */
   
   fConvolutedGausDeltaPrime->SetNpx(deltaPrimeNBins);
 
@@ -796,7 +834,9 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   if(fDebug > 2)
     printf("File: %s, Line: %d: UserCreateOutputObjects -> Posting output data\n", (char*)__FILE__, __LINE__);
   
-  PostOutputData();
+  PostData(1, fOutputContainer);
+  PostData(2, fContainerEff);
+  PostData(3, fPtResolutionContainer);
   
   if(fDebug > 2)
     printf("File: %s, Line: %d: UserCreateOutputObjects -> Done\n", (char*)__FILE__, __LINE__);
@@ -864,7 +904,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
         // - Species must be one of those in question (everything else goes to the overflow bin of mcID)
         
         // Geometrie should be the same as on the reconstructed level -> By definition analysis within this eta interval
-        if (TMath::Abs(mcPart->Eta()) < fEtaAbsCutLow || TMath::Abs(mcPart->Eta()) > fEtaAbsCutUp)  continue;
+        if (!IsInAcceptedEtaRange(TMath::Abs(mcPart->Eta()))) continue;
         
         Int_t mcID = PDGtoMCID(mcPart->PdgCode());
         
@@ -950,7 +990,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
         // For efficiency: Reconstructed track has survived all cuts on the detector level (excluding acceptance)
         // and has an associated MC track which is a physical primary and was generated inside the acceptance
         if (fMC->IsPhysicalPrimary(TMath::Abs(label)) &&
-            (TMath::Abs(mcTrack->Eta()) >= fEtaAbsCutLow && TMath::Abs(mcTrack->Eta()) <= fEtaAbsCutUp)) {
+            IsInAcceptedEtaRange(TMath::Abs(mcTrack->Eta()))) {
           
           // AliMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
           Double_t value[kEffNumAxes] = { mcID, mcTrack->Pt(), mcTrack->Eta(), mcTrack->Charge() / 3., centralityPercentile,
@@ -965,7 +1005,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     }
    
     // Only process tracks inside the desired eta window    
-    if (TMath::Abs(track->Eta()) < fEtaAbsCutLow || TMath::Abs(track->Eta()) > fEtaAbsCutUp)  continue;
+    if (!IsInAcceptedEtaRange(TMath::Abs(track->Eta()))) continue;
    
     if (fDoPID) 
       ProcessTrack(track, pdg, centralityPercentile, -1); // No jet information in this case -> Set jet pT to -1
@@ -1677,6 +1717,57 @@ Double_t AliAnalysisTaskPID::GetMCStrangenessFactorCMS(AliMCEvent* mcEvent, AliM
 
 
 // _________________________________________________________________________________
+AliAnalysisTaskPID::TOFpidInfo AliAnalysisTaskPID::GetTOFType(const AliVTrack* track, Int_t tofMode) const
+{
+  // Get the (locally defined) particle type judged by TOF
+
+  if (!fPIDResponse) {
+    Printf("ERROR: fEvent not available -> Cannot determine TOF type!");
+    return kNoTOFinfo;
+  }
+   
+  // Check kTOFout, kTIME, mismatch
+  const AliPIDResponse::EDetPidStatus tofStatus = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track);
+  if (tofStatus != AliPIDResponse::kDetPidOk)
+    return kNoTOFinfo;
+
+  Double_t nsigma[kNumTOFspecies] = { -999., -999., -999. };
+  nsigma[kTOFpion]   = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion);
+  nsigma[kTOFkaon]   = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon);
+  nsigma[kTOFproton] = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton);
+
+  Double_t inclusion = -999;
+  Double_t exclusion = -999;
+  
+  if (tofMode == 0) {
+    inclusion = 1.5;
+    exclusion = 3;
+  }
+  else if (tofMode == 1) {
+    inclusion = 2;
+    exclusion = 3;
+  }
+  else if (tofMode == 2) {
+    inclusion = 2.5;
+    exclusion = 3;
+  }
+  else {
+    Printf("ERROR: Bad TOF mode: %d!", tofMode);
+    return kNoTOFinfo;
+  }
+
+  if (TMath::Abs(nsigma[kTOFpion]) < inclusion && TMath::Abs(nsigma[kTOFkaon]) > exclusion && TMath::Abs(nsigma[kTOFproton]) > exclusion)
+    return kTOFpion;
+  if (TMath::Abs(nsigma[kTOFpion]) > exclusion && TMath::Abs(nsigma[kTOFkaon]) < inclusion && TMath::Abs(nsigma[kTOFproton]) > exclusion)
+    return kTOFkaon;
+  if (TMath::Abs(nsigma[kTOFpion]) > exclusion && TMath::Abs(nsigma[kTOFkaon]) > exclusion && TMath::Abs(nsigma[kTOFproton]) < inclusion)
+    return kTOFproton;
+
+  return kNoTOFpid;
+}
+
+
+// _________________________________________________________________________________
 Bool_t AliAnalysisTaskPID::IsSecondaryWithStrangeMotherMC(AliMCEvent* mcEvent, Int_t partLabel)
 {
   // Check whether particle is a secondary with strange mother, i.e. returns kTRUE if a strange mother is found
@@ -1902,6 +1993,7 @@ void AliAnalysisTaskPID::PrintSettings(Bool_t printSystematicsSettings) const
   printf("Use convoluted Gauss: %d\n", GetUseConvolutedGaus());
   printf("Accuracy of non-Gaussian tail: %e\n", GetAccuracyNonGaussianTail());
   printf("Take into account muons: %d\n", GetTakeIntoAccountMuons());
+  printf("TOF mode: %d\n", GetTOFmode());
   printf("\nParams for transition from gauss to asymmetric shape:\n");
   printf("[0]: %e\n", GetConvolutedGaussTransitionPar(0));
   printf("[1]: %e\n", GetConvolutedGaussTransitionPar(1));
@@ -2187,12 +2279,6 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
                                                               fPIDResponse->UseTPCEtaCorrection(),
                                                               fPIDResponse->UseTPCMultiplicityCorrection()); 
   }
-  /*OLD with deltaSpecies
-  Double_t deltaElectron = dEdxTPC - dEdxEl;
-  Double_t deltaKaon = dEdxTPC - dEdxKa;
-  Double_t deltaPion = dEdxTPC - dEdxPi;
-  Double_t deltaProton = dEdxTPC - dEdxPr;
-  */
   
   Double_t deltaPrimeElectron = (dEdxEl > 0) ? dEdxTPC / dEdxEl : -1;
   if (dEdxEl <= 0)  {
@@ -2217,17 +2303,6 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
     Printf("Error: Expected TPC signal <= 0 for proton hypothesis");
     return kFALSE;
   }
-      
-  /*TODO for TOF 
-  // TOF signal
-  Double_t times[AliPID::kSPECIES];
-  track->GetIntegratedTimes(times);
-  AliTOFPIDResponse tofPIDResponse = fPIDResponse->GetTOFResponse();
-  Float_t electronDeltaTOF = GetDeltaTOF(track, &tofPIDResponse, times, AliPID::kElectron);
-  Float_t pionDeltaTOF = GetDeltaTOF(track, &tofPIDResponse, times, AliPID::kPion);
-  Float_t kaonDeltaTOF = GetDeltaTOF(track, &tofPIDResponse, times, AliPID::kKaon);
-  Float_t protonDeltaTOF = GetDeltaTOF(track, &tofPIDResponse, times, AliPID::kProton);
-  */
   
   if(fDebug > 2)
     printf("File: %s, Line: %d: ProcessTrack -> Compute probabilities\n", (char*)__FILE__, __LINE__);
@@ -2298,6 +2373,7 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   pTPC = temp;
   */
   
+  TOFpidInfo tofPIDinfo = GetTOFType(track, fTOFmode);
   
   Double_t entry[fStoreAdditionalJetInformation ? kDataNumAxes : kDataNumAxes - fgkNumJetAxes];
   entry[kDataMCID] = binMC;
@@ -2313,30 +2389,20 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   }
   
   entry[GetIndexOfChargeAxisData()] = trackCharge;
-  
-  /*OLD with TOF, p_TPC_Inner and p_vertex and deltaSpecies
-  // MC PID, SelectSpecies, P(TPC_inner), pT, p(Vertex), deltaSpecies, deltaPrimeSpecies, deltaTOFspecies
-  Double_t entry[8] = { binMC, 0, pTPC, pT, p, deltaElectron, deltaPrimeElectron, electronDeltaTOF };
-  */
+  entry[GetIndexOfTOFpidInfoAxisData()] = tofPIDinfo;
   
   fhPIDdataAll->Fill(entry);
   
   entry[kDataSelectSpecies] = 1;
-  //OLD with deltaSpecies entry[5] = deltaKaon;
   entry[kDataDeltaPrimeSpecies] = deltaPrimeKaon;
-  //TODO for TOF entry[7] = kaonDeltaTOF;
   fhPIDdataAll->Fill(entry);
     
   entry[kDataSelectSpecies] = 2;
-  //OLD with deltaSpecies entry[5] = deltaPion;
   entry[kDataDeltaPrimeSpecies] = deltaPrimePion;
-  //TODO for TOF entry[7] = pionDeltaTOF;
   fhPIDdataAll->Fill(entry);
     
   entry[kDataSelectSpecies] = 3;
-  //OLD with deltaSpecies entry[5] = deltaProton;
   entry[kDataDeltaPrimeSpecies] = deltaPrimeProton;
-  //TODO for TOF entry[7] = protonDeltaTOF;
   fhPIDdataAll->Fill(entry);
   
   
@@ -2356,17 +2422,19 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   }
   
   genEntry[GetIndexOfChargeAxisGen()] = trackCharge;
+  genEntry[GetIndexOfTOFpidInfoAxisGen()] = tofPIDinfo;
   
-  //OLD with deltaSpecies Double_t genEntry[5] = { binMC, 0, pT, -999, -999 }; // MC PID, SelectSpecies, pT, deltaSpecies, deltaPrimeSpecies
+  // Generate numGenEntries "responses" with fluctuations around the expected values.
+  // fgkMaxNumGenEntries = 500 turned out to give reasonable templates even for highest track pT in 15-20 GeV/c jet pT bin.
+  Int_t numGenEntries = fgkMaxNumGenEntries; // fgkMaxNumGenEntries = 500
   
+  /*OLD: Different number of responses depending on pT and jet pT for fgkMaxNumGenEntries = 1000
+   * => Problem: If threshold to higher number of responses inside a bin (or after rebinning), then the template
+   * is biased to the higher pT.
   // Generate numGenEntries "responses" with fluctuations around the expected values.
   // The higher the (transverse) momentum, the more "responses" will be generated in order not to run out of statistics too fast.
   Int_t numGenEntries = 10;
-  if (pT >= 5) 
-    numGenEntries *= 5;
-  else if (pT >= 2)
-    numGenEntries *= 2;
-  
+ 
   // Jets have even worse statistics, therefore, scale numGenEntries further
   if (jetPt >= 40)
     numGenEntries *= 20;
@@ -2376,10 +2444,13 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
     numGenEntries *= 2;
   
   
+  
   // Do not generate more entries than available in memory!
   if (numGenEntries > fgkMaxNumGenEntries)// fgkMaxNumGenEntries = 1000
     numGenEntries = fgkMaxNumGenEntries;
-      
+  */
+  
+  
   ErrorCode errCode = kNoErrors;
   
   if(fDebug > 2)
@@ -2417,57 +2488,22 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   errCode = GenerateDetectorResponse(errCode, dEdxPr / dEdxPi, sigmaPr / dEdxPi, fGenRespPrDeltaPrimePi, numGenEntries);
   errCode = GenerateDetectorResponse(errCode, 1.,              sigmaPr / dEdxPr, fGenRespPrDeltaPrimePr, numGenEntries);
   
-  
-  /*OLD with deltaSpecies 
-  // Delta
-  
-  // Electrons
-  errCode = GenerateDetectorResponse(errCode, 0.,              sigmaEl, fGenRespElDeltaEl, numGenEntries, usePureGausForDelta);
-  errCode = GenerateDetectorResponse(errCode, dEdxEl - dEdxKa, sigmaEl, fGenRespElDeltaKa, numGenEntries, usePureGausForDelta);
-  errCode = GenerateDetectorResponse(errCode, dEdxEl - dEdxPi, sigmaEl, fGenRespElDeltaPi, numGenEntries, usePureGausForDelta);
-  errCode = GenerateDetectorResponse(errCode, dEdxEl - dEdxPr, sigmaEl, fGenRespElDeltaPr, numGenEntries, usePureGausForDelta);
-  
-  // Kaons
-  errCode = GenerateDetectorResponse(errCode, dEdxKa - dEdxEl, sigmaKa, fGenRespKaDeltaEl, numGenEntries, usePureGausForDelta);
-  errCode = GenerateDetectorResponse(errCode, 0.,              sigmaKa, fGenRespKaDeltaKa, numGenEntries, usePureGausForDelta);
-  errCode = GenerateDetectorResponse(errCode, dEdxKa - dEdxPi, sigmaKa, fGenRespKaDeltaPi, numGenEntries, usePureGausForDelta);
-  errCode = GenerateDetectorResponse(errCode, dEdxKa - dEdxPr, sigmaKa, fGenRespKaDeltaPr, numGenEntries, usePureGausForDelta);
-  
-  // Pions
-  errCode = GenerateDetectorResponse(errCode, dEdxPi - dEdxEl, sigmaPi, fGenRespPiDeltaEl, numGenEntries, usePureGausForDelta);
-  errCode = GenerateDetectorResponse(errCode, dEdxPi - dEdxKa, sigmaPi, fGenRespPiDeltaKa, numGenEntries, usePureGausForDelta);
-  errCode = GenerateDetectorResponse(errCode, 0.,              sigmaPi, fGenRespPiDeltaPi, numGenEntries, usePureGausForDelta);
-  errCode = GenerateDetectorResponse(errCode, dEdxPi - dEdxPr, sigmaPi, fGenRespPiDeltaPr, numGenEntries, usePureGausForDelta);
-  
-  // Muons
-  errCode = GenerateDetectorResponse(errCode, dEdxMu - dEdxEl, sigmaMu, fGenRespMuDeltaEl, numGenEntries, usePureGausForDelta);
-  errCode = GenerateDetectorResponse(errCode, dEdxMu - dEdxKa, sigmaMu, fGenRespMuDeltaKa, numGenEntries, usePureGausForDelta);
-  errCode = GenerateDetectorResponse(errCode, dEdxMu - dEdxPi, sigmaMu, fGenRespMuDeltaPi, numGenEntries, usePureGausForDelta);
-  errCode = GenerateDetectorResponse(errCode, dEdxMu - dEdxPr, sigmaMu, fGenRespMuDeltaPr, numGenEntries, usePureGausForDelta);
-  
-  // Protons
-  errCode = GenerateDetectorResponse(errCode, dEdxPr - dEdxEl, sigmaPr, fGenRespPrDeltaEl, numGenEntries, usePureGausForDelta);
-  errCode = GenerateDetectorResponse(errCode, dEdxPr - dEdxKa, sigmaPr, fGenRespPrDeltaKa, numGenEntries, usePureGausForDelta);
-  errCode = GenerateDetectorResponse(errCode, dEdxPr - dEdxPi, sigmaPr, fGenRespPrDeltaPi, numGenEntries, usePureGausForDelta);
-  errCode = GenerateDetectorResponse(errCode, 0.,              sigmaPr, fGenRespPrDeltaPr, numGenEntries, usePureGausForDelta);
-  */
-  
   if (errCode != kNoErrors) {
-    if (errCode == kWarning) {
-      //Printf("Warning: Questionable detector response for track, most likely due to very low number of PID clusters! Debug output (dEdx_expected, sigma_expected):");
+    if (errCode == kWarning && fDebug > 1) {
+      Printf("Warning: Questionable detector response for track, most likely due to very low number of PID clusters! Debug output (dEdx_expected, sigma_expected):");
     }
     else 
       Printf("Error: Failed to generate detector response for track - skipped! Debug output (dEdx_expected, sigma_expected):");
     
-    /*
-    Printf("Pr: %e, %e", dEdxPr, sigmaPr);
-    Printf("Pi: %e, %e", dEdxPi, sigmaPi);
-    Printf("El: %e, %e", dEdxEl, sigmaEl);
-    Printf("Mu: %e, %e", dEdxMu, sigmaMu);
-    Printf("Ka: %e, %e", dEdxKa, sigmaKa);
-    Printf("track: dEdx %f, pTPC %f, eta %f, ncl %d\n", track->GetTPCsignal(), track->GetTPCmomentum(), track->Eta(), 
-           track->GetTPCsignalN());
-    */
+    if (fDebug > 1) {
+      Printf("Pr: %e, %e", dEdxPr, sigmaPr);
+      Printf("Pi: %e, %e", dEdxPi, sigmaPi);
+      Printf("El: %e, %e", dEdxEl, sigmaEl);
+      Printf("Mu: %e, %e", dEdxMu, sigmaMu);
+      Printf("Ka: %e, %e", dEdxKa, sigmaKa);
+      Printf("track: dEdx %f, pTPC %f, eta %f, ncl %d\n", track->GetTPCsignal(), track->GetTPCmomentum(), track->Eta(), 
+            track->GetTPCsignalN());
+    }
     
     if (errCode != kWarning) {
       fhSkippedTracksForSignalGeneration->Fill(track->GetTPCmomentum(), track->GetTPCsignalN());
@@ -2495,108 +2531,88 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
     
     // Electrons
     genEntry[kGenSelectSpecies] = 0;
-    //OLD with deltaSpecies genEntry[3] = fGenRespElDeltaEl[n];
     genEntry[kGenDeltaPrimeSpecies] = fGenRespElDeltaPrimeEl[n];
     fhGenEl->Fill(genEntry);
     
     genEntry[kGenSelectSpecies] = 1;
-    //OLD with deltaSpecies genEntry[3] = fGenRespElDeltaKa[n];
     genEntry[kGenDeltaPrimeSpecies] = fGenRespElDeltaPrimeKa[n];
     fhGenEl->Fill(genEntry);
     
     genEntry[kGenSelectSpecies] = 2;
-    //OLD with deltaSpecies genEntry[3] = fGenRespElDeltaPi[n];
     genEntry[kGenDeltaPrimeSpecies] = fGenRespElDeltaPrimePi[n];
     fhGenEl->Fill(genEntry);
     
     genEntry[kGenSelectSpecies] = 3;
-    //OLD with deltaSpecies genEntry[3] = fGenRespElDeltaPr[n];
     genEntry[kGenDeltaPrimeSpecies] = fGenRespElDeltaPrimePr[n];
     fhGenEl->Fill(genEntry);
     
     // Kaons
     genEntry[kGenSelectSpecies] = 0;
-    //OLD with deltaSpecies genEntry[3] = fGenRespKaDeltaEl[n];
     genEntry[kGenDeltaPrimeSpecies] = fGenRespKaDeltaPrimeEl[n];
     fhGenKa->Fill(genEntry);
     
     genEntry[kGenSelectSpecies] = 1;
-    //OLD with deltaSpecies genEntry[3] = fGenRespKaDeltaKa[n];
     genEntry[kGenDeltaPrimeSpecies] = fGenRespKaDeltaPrimeKa[n];
     fhGenKa->Fill(genEntry);
     
     genEntry[kGenSelectSpecies] = 2;
-    //OLD with deltaSpecies genEntry[3] = fGenRespKaDeltaPi[n];
     genEntry[kGenDeltaPrimeSpecies] = fGenRespKaDeltaPrimePi[n];
     fhGenKa->Fill(genEntry);
     
     genEntry[kGenSelectSpecies] = 3;
-    //OLD with deltaSpecies genEntry[3] = fGenRespKaDeltaPr[n];
     genEntry[kGenDeltaPrimeSpecies] = fGenRespKaDeltaPrimePr[n];
     fhGenKa->Fill(genEntry);
     
     // Pions
     genEntry[kGenSelectSpecies] = 0;
-    //OLD with deltaSpecies genEntry[3] = fGenRespPiDeltaEl[n];
     genEntry[kGenDeltaPrimeSpecies] = fGenRespPiDeltaPrimeEl[n];
     fhGenPi->Fill(genEntry);
     
     genEntry[kGenSelectSpecies] = 1;
-    //OLD with deltaSpecies genEntry[3] = fGenRespPiDeltaKa[n];
     genEntry[kGenDeltaPrimeSpecies] = fGenRespPiDeltaPrimeKa[n];
     fhGenPi->Fill(genEntry);
     
     genEntry[kGenSelectSpecies] = 2;
-    //OLD with deltaSpecies genEntry[3] = fGenRespPiDeltaPi[n];
     genEntry[kGenDeltaPrimeSpecies] = fGenRespPiDeltaPrimePi[n];
     fhGenPi->Fill(genEntry);
     
     genEntry[kGenSelectSpecies] = 3;
-    //OLD with deltaSpecies genEntry[3] = fGenRespPiDeltaPr[n];
     genEntry[kGenDeltaPrimeSpecies] = fGenRespPiDeltaPrimePr[n];
     fhGenPi->Fill(genEntry);
     
     if (fTakeIntoAccountMuons) {
       // Muons, if desired
       genEntry[kGenSelectSpecies] = 0;
-      //OLD with deltaSpecies genEntry[3] = fGenRespMuDeltaEl[n];
       genEntry[kGenDeltaPrimeSpecies] = fGenRespMuDeltaPrimeEl[n];
       fhGenMu->Fill(genEntry);
       
       genEntry[kGenSelectSpecies] = 1;
-      //OLD with deltaSpecies genEntry[3] = fGenRespMuDeltaKa[n];
       genEntry[kGenDeltaPrimeSpecies] = fGenRespMuDeltaPrimeKa[n];
       fhGenMu->Fill(genEntry);
       
       genEntry[kGenSelectSpecies] = 2;
-      //OLD with deltaSpecies genEntry[3] = fGenRespMuDeltaPi[n];
       genEntry[kGenDeltaPrimeSpecies] = fGenRespMuDeltaPrimePi[n];
       fhGenMu->Fill(genEntry);
       
       genEntry[kGenSelectSpecies] = 3;
-      //OLD with deltaSpecies genEntry[3] = fGenRespMuDeltaPr[n];
       genEntry[kGenDeltaPrimeSpecies] = fGenRespMuDeltaPrimePr[n];
       fhGenMu->Fill(genEntry);
     }
     
     // Protons
     genEntry[kGenSelectSpecies] = 0;
-    //OLD with deltaSpecies genEntry[3] = fGenRespPrDeltaEl[n];
     genEntry[kGenDeltaPrimeSpecies] = fGenRespPrDeltaPrimeEl[n];
     fhGenPr->Fill(genEntry);
     
     genEntry[kGenSelectSpecies] = 1;
-    //OLD with deltaSpecies genEntry[3] = fGenRespPrDeltaKa[n];
     genEntry[kGenDeltaPrimeSpecies] = fGenRespPrDeltaPrimeKa[n];
     fhGenPr->Fill(genEntry);
     
     genEntry[kGenSelectSpecies] = 2;
-    //OLD with deltaSpecies genEntry[3] = fGenRespPrDeltaPi[n];
     genEntry[kGenDeltaPrimeSpecies] = fGenRespPrDeltaPrimePi[n];
     fhGenPr->Fill(genEntry);
     
     genEntry[kGenSelectSpecies] = 3;
-    //OLD with deltaSpecies genEntry[3] = fGenRespPrDeltaPr[n];
     genEntry[kGenDeltaPrimeSpecies] = fGenRespPrDeltaPrimePr[n];
     fhGenPr->Fill(genEntry);
   }
@@ -2970,6 +2986,14 @@ void AliAnalysisTaskPID::SetUpGenHist(THnSparse* hist, Double_t* binsPt, Double_
   }
   
   hist->GetAxis(GetIndexOfChargeAxisGen())->SetTitle("Charge (e_{0})");
+  
+  hist->GetAxis(GetIndexOfTOFpidInfoAxisGen())->SetTitle("TOF PID Info");
+  // Offset is (TMath::Abs(kNoTOFinfo) + 1), such that bin 1 (= first label) corresponds to kNoTOFinfo (< 0)
+  hist->GetAxis(GetIndexOfTOFpidInfoAxisGen())->SetBinLabel(kNoTOFinfo + (TMath::Abs(kNoTOFinfo) + 1), "No TOF Info");
+  hist->GetAxis(GetIndexOfTOFpidInfoAxisGen())->SetBinLabel(kNoTOFpid + (TMath::Abs(kNoTOFinfo) + 1), "No TOF PID");
+  hist->GetAxis(GetIndexOfTOFpidInfoAxisGen())->SetBinLabel(kTOFpion + (TMath::Abs(kNoTOFinfo) + 1), "#pi");
+  hist->GetAxis(GetIndexOfTOFpidInfoAxisGen())->SetBinLabel(kTOFkaon + (TMath::Abs(kNoTOFinfo) + 1), "K");
+  hist->GetAxis(GetIndexOfTOFpidInfoAxisGen())->SetBinLabel(kTOFproton + (TMath::Abs(kNoTOFinfo) + 1), "p");
 }
 
 
@@ -3045,36 +3069,13 @@ void AliAnalysisTaskPID::SetUpHist(THnSparse* hist, Double_t* binsPt, Double_t* 
   
   hist->GetAxis(GetIndexOfChargeAxisData())->SetTitle("Charge (e_{0})");
   
-  /*OLD with TOF, p_TPC_Inner and p_vertex
-  // MC PID, SelectSpecies, P(TPC_inner), pT, p(Vertex), deltaSpecies, deltaPrimeSpecies, deltaTOFspecies
-  hist->SetBinEdges(2, binsPt);
-  hist->SetBinEdges(3, binsPt);
-  hist->SetBinEdges(4, binsPt);
-                          
-  // Set axes titles
-  hist->GetAxis(0)->SetTitle("MC PID");
-  hist->GetAxis(0)->SetBinLabel(1, "e");
-  hist->GetAxis(0)->SetBinLabel(2, "K");
-  hist->GetAxis(0)->SetBinLabel(3, "#mu");
-  hist->GetAxis(0)->SetBinLabel(4, "#pi");
-  hist->GetAxis(0)->SetBinLabel(5, "p");
-  
-  hist->GetAxis(1)->SetTitle("Select Species");
-  hist->GetAxis(1)->SetBinLabel(1, "e");
-  hist->GetAxis(1)->SetBinLabel(2, "K");
-  hist->GetAxis(1)->SetBinLabel(3, "#pi");
-  hist->GetAxis(1)->SetBinLabel(4, "p");
-  
-  hist->GetAxis(2)->SetTitle("P_{TPC_inner} (GeV/c)");
-  hist->GetAxis(3)->SetTitle("P_{T} (GeV/c)");
-  hist->GetAxis(4)->SetTitle("P_{vertex} (GeV/c)");
-  
-  hist->GetAxis(5)->SetTitle("TPC #Delta_{species} (arb. unit)");
-  
-  hist->GetAxis(6)->SetTitle("TPC #Delta'_{species} (arb. unit)");
-  
-  hist->GetAxis(7)->SetTitle("#Delta TOF_{species} (ps)");
-  */
+  hist->GetAxis(GetIndexOfTOFpidInfoAxisData())->SetTitle("TOF PID Info");
+  // Offset is (TMath::Abs(kNoTOFinfo) + 1), such that bin 1 (= first label) corresponds to kNoTOFinfo (< 0)
+  hist->GetAxis(GetIndexOfTOFpidInfoAxisData())->SetBinLabel(kNoTOFinfo + (TMath::Abs(kNoTOFinfo) + 1), "No TOF Info");
+  hist->GetAxis(GetIndexOfTOFpidInfoAxisData())->SetBinLabel(kNoTOFpid + (TMath::Abs(kNoTOFinfo) + 1), "No TOF PID");
+  hist->GetAxis(GetIndexOfTOFpidInfoAxisData())->SetBinLabel(kTOFpion + (TMath::Abs(kNoTOFinfo) + 1), "#pi");
+  hist->GetAxis(GetIndexOfTOFpidInfoAxisData())->SetBinLabel(kTOFkaon + (TMath::Abs(kNoTOFinfo) + 1), "K");
+  hist->GetAxis(GetIndexOfTOFpidInfoAxisData())->SetBinLabel(kTOFproton + (TMath::Abs(kNoTOFinfo) + 1), "p");
 }
 
 

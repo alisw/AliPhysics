@@ -411,8 +411,8 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
   fHistNeventsJPsi->Fill(4);
   fHistNeventsPsi2s->Fill(4);
 
-   Int_t nGoodTracks=0;
   //Two tracks loop
+  Int_t nGoodTracks = 0;
   Int_t TrackIndex[5] = {-1,-1,-1,-1,-1};
   
   TLorentzVector vLepton[4], vPion[4], vCandidate, vDilepton;
@@ -421,71 +421,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
   Double_t jRecTPCsignal[5];
   Int_t mass[3]={-1,-1,-1};
   
-  //Two track loop
-  for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
-    AliAODTrack *trk = aod->GetTrack(itr);
-    if( !trk ) continue;
-
-      if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
-      if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
-      if(trk->GetTPCNcls() < 70)continue;
-      if(trk->Chi2perNDF() > 4)continue;
-      if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1))) continue;
-      Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
-      if(!trk->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
-      if(TMath::Abs(dca[1]) > 2) continue;
-      if(TMath::Abs(dca[0]) > 0.2) continue;
-     
-      TrackIndex[nGoodTracks] = itr;
-      nGoodTracks++;
-				  
-      if(nGoodTracks > 2) break;  
-  }//Track loop
-
-  if(nGoodTracks == 2){
-  	  fHistNeventsJPsi->Fill(5);
-  	  for(Int_t i=0; i<2; i++){
-	  	AliAODTrack *trk = aod->GetTrack(TrackIndex[i]);		
-      		if(trk->Pt() > 1) nHighPt++;     
-      		jRecTPCsignal[nLepton] = trk->GetTPCsignal();     
-      		qLepton[nLepton] = trk->Charge();
-      		if(jRecTPCsignal[nLepton] > 40 && jRecTPCsignal[nLepton] < 70){
-      				vLepton[nLepton].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), muonMass);
-				mass[nLepton] = 0;
-				}
-      		if(jRecTPCsignal[nLepton] > 70 && jRecTPCsignal[nLepton] < 100){
-      				vLepton[nLepton].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), electronMass);
-				mass[nLepton] = 1;
-				}
-       		nLepton++;		
-  		}		
-  	if(nLepton == 2){
-	 	if(qLepton[0]*qLepton[1] > 0) fHistNeventsJPsi->Fill(6);
-		if(qLepton[0]*qLepton[1] < 0){
-			fHistNeventsJPsi->Fill(7);
-			if(nHighPt > 0){
-				fHistNeventsJPsi->Fill(8);
-				fHistTPCsignalJPsi->Fill(jRecTPCsignal[0],jRecTPCsignal[1]);
-				if(nHighPt == 2) fHistNeventsJPsi->Fill(9);
-				if(mass[0] == mass[1] && mass[0] != -1) {
-					fHistNeventsJPsi->Fill(10);
-					vCandidate = vLepton[0]+vLepton[1];
-					if( vCandidate.M() > 2.8 && vCandidate.M() < 3.2) fHistDiLeptonPtJPsi->Fill(vLepton[0].Pt(),vLepton[1].Pt());
-					if(mass[0] == 0) {
-						fHistDiMuonMass->Fill(vCandidate.M());
-						fHistNeventsJPsi->Fill(11);
-						}
-  					if(mass[0] == 1) {
-						fHistDiElectronMass->Fill(vCandidate.M());
-						fHistNeventsJPsi->Fill(12);
-   						}
-					}
-				}
-			}
-		}
-  }
-  
-  nGoodTracks = 0;
+   
   //Four track loop
   for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
     AliAODTrack *trk = aod->GetTrack(itr);
@@ -496,7 +432,10 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
       if(trk->GetTPCNcls() < 50)continue;
       if(trk->Chi2perNDF() > 4)continue;
       Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
-      if(!trk->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
+      AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
+      if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
+      delete trk_clone;
+
       if(TMath::Abs(dca[1]) > 2) continue;
      
       TrackIndex[nGoodTracks] = itr;
@@ -554,6 +493,77 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
 		}
   }
   
+  nGoodTracks = 0;
+  //Two track loop
+  for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
+    AliAODTrack *trk = aod->GetTrack(itr);
+    if( !trk ) continue;
+
+      if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
+      if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
+      if(trk->GetTPCNcls() < 70)continue;
+      if(trk->Chi2perNDF() > 4)continue;
+      if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1))) continue;
+      Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
+      AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
+      if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
+      delete trk_clone;
+      if(TMath::Abs(dca[1]) > 2) continue;
+      if(TMath::Abs(dca[0]) > 0.2) continue;
+     
+      TrackIndex[nGoodTracks] = itr;
+      nGoodTracks++;
+				  
+      if(nGoodTracks > 2) break;  
+  }//Track loop
+  
+   nLepton=0; nPion=0; nHighPt=0;
+  mass[0]= -1; mass[1]= -1, mass[2]= -1;
+
+  if(nGoodTracks == 2){
+  	  fHistNeventsJPsi->Fill(5);
+  	  for(Int_t i=0; i<2; i++){
+	  	AliAODTrack *trk = aod->GetTrack(TrackIndex[i]);		
+      		if(trk->Pt() > 1) nHighPt++;     
+      		jRecTPCsignal[nLepton] = trk->GetTPCsignal();     
+      		qLepton[nLepton] = trk->Charge();
+      		if(jRecTPCsignal[nLepton] > 40 && jRecTPCsignal[nLepton] < 70){
+      				vLepton[nLepton].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), muonMass);
+				mass[nLepton] = 0;
+				}
+      		if(jRecTPCsignal[nLepton] > 70 && jRecTPCsignal[nLepton] < 100){
+      				vLepton[nLepton].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), electronMass);
+				mass[nLepton] = 1;
+				}
+       		nLepton++;		
+  		}		
+  	if(nLepton == 2){
+	 	if(qLepton[0]*qLepton[1] > 0) fHistNeventsJPsi->Fill(6);
+		if(qLepton[0]*qLepton[1] < 0){
+			fHistNeventsJPsi->Fill(7);
+			if(nHighPt > 0){
+				fHistNeventsJPsi->Fill(8);
+				fHistTPCsignalJPsi->Fill(jRecTPCsignal[0],jRecTPCsignal[1]);
+				if(nHighPt == 2) fHistNeventsJPsi->Fill(9);
+				if(mass[0] == mass[1] && mass[0] != -1) {
+					fHistNeventsJPsi->Fill(10);
+					vCandidate = vLepton[0]+vLepton[1];
+					if( vCandidate.M() > 2.8 && vCandidate.M() < 3.2) fHistDiLeptonPtJPsi->Fill(vLepton[0].Pt(),vLepton[1].Pt());
+					if(mass[0] == 0) {
+						fHistDiMuonMass->Fill(vCandidate.M());
+						fHistNeventsJPsi->Fill(11);
+						}
+  					if(mass[0] == 1) {
+						fHistDiElectronMass->Fill(vCandidate.M());
+						fHistNeventsJPsi->Fill(12);
+   						}
+					}
+				}
+			}
+		}
+  }
+  
+ 
   PostData(4, fListHist);
 
 }
@@ -617,7 +627,47 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   
   Int_t nGoodTracks=0;
   Int_t TrackIndex[5] = {-1,-1,-1,-1,-1};
+  
+   //Four track loop
+  for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
+    AliAODTrack *trk = aod->GetTrack(itr);
+    if( !trk ) continue;
 
+      if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
+      if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
+      if(trk->GetTPCNcls() < 50)continue;
+      if(trk->Chi2perNDF() > 4)continue;
+      Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
+      AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
+      if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
+      delete trk_clone;
+      if(!trk->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
+      if(TMath::Abs(dca[1]) > 2) continue;
+
+      TrackIndex[nGoodTracks] = itr;
+      nGoodTracks++;
+				  
+      if(nGoodTracks > 4) break;  
+  }//Track loop
+  
+  
+  if(nGoodTracks == 4){
+  	  for(Int_t i=0; i<4; i++){
+	  	AliAODTrack *trk = aod->GetTrack(TrackIndex[i]);
+		
+		Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
+		AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
+      		if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
+      		delete trk_clone;
+		
+		new((*fPsi2sAODTracks)[i]) AliAODTrack(*trk);
+		((AliAODTrack*)((*fPsi2sAODTracks)[i]))->SetDCA(dca[0],dca[1]);//to get DCAxy trk->DCA(); to get DCAz trk->ZAtDCA();
+		 		
+  		}
+  fPsi2sTree ->Fill();
+  }
+ //
+  nGoodTracks = 0;
   //Two track loop
   for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
     AliAODTrack *trk = aod->GetTrack(itr);
@@ -629,7 +679,9 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
       if(trk->Chi2perNDF() > 4)continue;
       if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1))) continue;
       Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
-      if(!trk->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
+      AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
+      if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
+      delete trk_clone;
       if(TMath::Abs(dca[1]) > 2) continue;
       if(TMath::Abs(dca[0]) > 0.2) continue;
      
@@ -644,49 +696,17 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
 	  	AliAODTrack *trk = aod->GetTrack(TrackIndex[i]);
 		
 		Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
-		trk->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov);
+		AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
+      		if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
+      		delete trk_clone;
 				
-		trk->SetDCA(dca[0],dca[1]); //to get DCAxy trk->DCA(); to get DCAz trk->ZAtDCA();
 		new((*fJPsiAODTracks)[i]) AliAODTrack(*trk); 
+		((AliAODTrack*)((*fJPsiAODTracks)[i]))->SetDCA(dca[0],dca[1]);//to get DCAxy trk->DCA(); to get DCAz trk->ZAtDCA();
 		
   		}
   fJPsiTree ->Fill();
   }
 
-  nGoodTracks = 0;
-  //Four track loop
-  for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
-    AliAODTrack *trk = aod->GetTrack(itr);
-    if( !trk ) continue;
-
-      if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
-      if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
-      if(trk->GetTPCNcls() < 50)continue;
-      if(trk->Chi2perNDF() > 4)continue;
-      Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
-      if(!trk->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
-      if(TMath::Abs(dca[1]) > 2) continue;
-     
-      TrackIndex[nGoodTracks] = itr;
-      nGoodTracks++;
-				  
-      if(nGoodTracks > 4) break;  
-  }//Track loop
-  
-  
-  if(nGoodTracks == 4){
-  	  for(Int_t i=0; i<4; i++){
-	  	AliAODTrack *trk = aod->GetTrack(TrackIndex[i]);
-		
-		Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
-		trk->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov);
-		
-		trk->SetDCA(dca[0],dca[1]); //to get DCAxy trk->DCA(); to get DCAz trk->ZAtDCA();
-		new((*fPsi2sAODTracks)[i]) AliAODTrack(*trk); 
-		
-  		}
-  fPsi2sTree ->Fill();
-  }
   
   PostData(1, fJPsiTree);
   PostData(2, fPsi2sTree);
