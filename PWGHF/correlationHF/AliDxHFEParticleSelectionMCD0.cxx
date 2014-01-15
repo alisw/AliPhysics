@@ -451,7 +451,7 @@ double AliDxHFEParticleSelectionMCD0::GetD0Eff(AliVParticle* tr){
   AliHFAssociatedTrackCuts* cuts=dynamic_cast<AliHFAssociatedTrackCuts*>(GetEffCutObject());
   if (!cuts) {
     if (GetEffCutObject())
-      AliError(Form("cuts object of wrong type %s, required AliHFAssociatedTrackCuts", fCuts->ClassName()));
+      AliError(Form("cuts object of wrong type %s, required AliHFAssociatedTrackCuts", cuts->ClassName()));
     else
       AliError("mandatory cuts object missing");
     return -EINVAL;
