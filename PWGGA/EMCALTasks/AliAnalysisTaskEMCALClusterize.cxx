@@ -1035,6 +1035,7 @@ TString AliAnalysisTaskEMCALClusterize::GetPass()
   else if (pass.Contains("ass3")) return TString("pass3");
   else if (pass.Contains("ass4")) return TString("pass4");
   else if (pass.Contains("ass5")) return TString("pass5");
+  else if (pass.Contains("LHC11c") && pass.Contains("spc_calo") ) return TString("spc_calo");
   else if (pass.Contains("calo") || pass.Contains("high_lumi"))
   {
     printf("AliAnalysisTaskEMCALClusterize::GetPass() - Path contains <calo> or <high-lumi>, set as <pass1>\n");
