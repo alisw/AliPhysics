@@ -113,10 +113,10 @@ void AliEmcalSetupTask::UserExec(Option_t *)
       tmpdir+="-";
       Int_t counter = 0;
       fLocalOcdb = tmpdir;
-      fLocalOcdb+=gRandom->Integer((UInt_t)999999999999);
+      fLocalOcdb += Form("%d%d%d%",gRandom->Integer(999999999),gRandom->Integer(999999999),gRandom->Integer(999999999));
       while (!gSystem->AccessPathName(fLocalOcdb)) {
 	fLocalOcdb = tmpdir;
-	fLocalOcdb+=gRandom->Integer((UInt_t)999999999999);
+	fLocalOcdb += Form("%d%d%d%",gRandom->Integer(999999999),gRandom->Integer(999999999),gRandom->Integer(999999999));
 	counter++;
 	if (counter>100) {
 	  AliFatal(Form("Could not create local directory for OCDB at %s",tmpdir.Data()));

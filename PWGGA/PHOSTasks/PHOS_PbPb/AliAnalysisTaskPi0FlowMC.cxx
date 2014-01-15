@@ -264,14 +264,18 @@ void AliAnalysisTaskPi0FlowMC::SelectPhotonClusters()
     Int_t primary=FindPrimary(cluster,sure) ;
     photon->SetPrimary(primary);
     photon->SetWeight(PrimaryWeight(primary)) ;
+  }
 
+  for (Int_t i1=0; i1<fCaloPhotonsPHOS->GetEntriesFast(); i1++) {
+    AliCaloPhoton * photon = (AliCaloPhoton*)fCaloPhotonsPHOS->At(i1);
+    Int_t primary = photon->GetPrimary();
     TParticle* p = fStack->Particle(primary);
-    
     if(p->R() >kRCut) {
       if(p->GetPdgCode()==11 || p->GetPdgCode()==-11) continue;
-      else { fCaloPhotonsPHOS->Remove(photon); fCaloPhotonsPHOS->Compress(); } 
-    } 
-  }  
+      else { fCaloPhotonsPHOS->Remove(photon); fCaloPhotonsPHOS->Compress(); }
+    }
+  }
+    
 }
 
 void AliAnalysisTaskPi0FlowMC::FillSelectedClusterHistograms()

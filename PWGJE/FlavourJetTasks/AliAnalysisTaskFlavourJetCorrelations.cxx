@@ -303,8 +303,12 @@ void AliAnalysisTaskFlavourJetCorrelations::UserExec(Option_t *)
    TH1F* hEjet=(TH1F*)fmyOutput->FindObject("hEjet");
    TH1F* hNtrArr=(TH1F*)fmyOutput->FindObject("hNtrArr");
    TH1F* hNJetPerEv=(TH1F*)fmyOutput->FindObject("hNJetPerEv");
-   TH1F* hdeltaRJetTracks=((TH1F*)fmyOutput->FindObject("hdeltaRJetTracks"));
-   
+   TH1F* hdeltaRJetTracks=(TH1F*)fmyOutput->FindObject("hdeltaRJetTracks");
+   TH1F* hNDPerEvNoJet=(TH1F*)fmyOutput->FindObject("hNDPerEvNoJet");
+   TH1F* hptDPerEvNoJet=(TH1F*)fmyOutput->FindObject("hptDPerEvNoJet");
+   TH1F* hNJetPerEvNoD=(TH1F*)fmyOutput->FindObject("hNJetPerEvNoD");
+   TH1F* hPtJetPerEvNoD=(TH1F*)fmyOutput->FindObject("hPtJetPerEvNoD");  
+       
    hstat->Fill(0);
    
    // fix for temporary bug in ESDfilter 
@@ -317,15 +321,26 @@ void AliAnalysisTaskFlavourJetCorrelations::UserExec(Option_t *)
    if(!iseventselected) return;
    
    hstat->Fill(1);
-   
-   //trigger on jets
-   
-   Int_t njets=GetJetContainer()->GetNJets();
-   if(njets == 0) return;
 
    //retrieve charm candidates selected
    Int_t candidates = candidatesArr->GetEntriesFast();
+  
+   //trigger on jets
    
+   Int_t njets=GetJetContainer()->GetNJets();
+   if(njets == 0) {
+      hstat->Fill(6, candidates);
+      hNDPerEvNoJet->Fill(candidates);
+      for(Int_t iD=0;iD<candidates;iD++){
+      	 AliVParticle* cand=(AliVParticle*)candidatesArr->At(iD);
+      	 if(!cand) continue;
+      	 hptDPerEvNoJet->Fill(cand->Pt());
+      
+      }
+      return;
+      
+   }
+    
    // we start with jets
    Double_t ejet   = 0;
    Double_t phiJet = 0;
@@ -393,6 +408,11 @@ void AliAnalysisTaskFlavourJetCorrelations::UserExec(Option_t *)
       	 
       }//end loop on jet tracks
       
+      if(candidates==0){
+      	 hstat->Fill(7);
+      	 hPtJetPerEvNoD->Fill(jet->Pt());
+      }
+      
       //Printf("N candidates %d ", candidates);
       for(Int_t ic = 0; ic < candidates; ic++) {
       	 
@@ -427,7 +447,7 @@ void AliAnalysisTaskFlavourJetCorrelations::UserExec(Option_t *)
    } // end of jet loop
    
    hNJetPerEv->Fill(cntjet);
-   
+   if(candidates==0) hNJetPerEvNoD->Fill(cntjet);
    PostData(1,fmyOutput);
    
 }
@@ -522,13 +542,15 @@ Double_t AliAnalysisTaskFlavourJetCorrelations::Z(AliVParticle* part,AliEmcalJet
 Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
    
    // Statistics 
-   TH1I* hstat=new TH1I("hstat","Statistics",6,-0.5,5.5);
+   TH1I* hstat=new TH1I("hstat","Statistics",8,-0.5,7.5);
    hstat->GetXaxis()->SetBinLabel(1,"N ev anal");
    hstat->GetXaxis()->SetBinLabel(2,"N ev sel");
-   hstat->GetXaxis()->SetBinLabel(3,"N cand sel cuts");
+   hstat->GetXaxis()->SetBinLabel(3,"N cand sel & jet");
    hstat->GetXaxis()->SetBinLabel(4,"N jets");
    hstat->GetXaxis()->SetBinLabel(5,"N cand in jet");
    hstat->GetXaxis()->SetBinLabel(6,"N jet rej");
+   hstat->GetXaxis()->SetBinLabel(7,"N cand sel & !jet");
+   hstat->GetXaxis()->SetBinLabel(8,"N jets & !D");
    hstat->SetNdivisions(1);
    fmyOutput->Add(hstat);
    
@@ -562,7 +584,15 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
       fmyOutput->Add(hPtPion);
       
    }
-   
+   // D related histograms
+      TH1F *hNDPerEvNoJet=new TH1F("hNDPerEvNoJet","Number of candidates per event with no jets; N candidate/ev with no jet", 20, 0., 20.);
+      hNDPerEvNoJet->Sumw2();
+      fmyOutput->Add(hNDPerEvNoJet);
+
+      TH1F *hptDPerEvNoJet=new TH1F("hptDPerEvNoJet","pt distribution of candidates per events with no jets; p_{t}^{D} (GeV/c)",nbinsptD, ptDlims[0],ptDlims[1]);
+      hptDPerEvNoJet->Sumw2();
+      fmyOutput->Add(hptDPerEvNoJet);
+
    // jet related fistograms
    
    TH1F* hEjetTrks      = new TH1F("hEjetTrks",  "Jet tracks energy distribution;Energy (GeV)",500,0,200);
@@ -594,9 +624,16 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
    
    TH1F* hNtrArr= new TH1F("hNtrArr", "Number of tracks in the array of jets; number of tracks",500,0,1000);
    hNtrArr->Sumw2();
+   
    TH1F *hNJetPerEv=new TH1F("hNJetPerEv","Number of jets used per event; number of jets/ev",10,-0.5,9.5);
    hNJetPerEv->Sumw2();
    
+   TH1F *hNJetPerEvNoD=new TH1F("hNJetPerEvNoD","Number of jets per event with no D; number of jets/ev with no D",10,-0.5,9.5);
+   hNJetPerEvNoD->Sumw2();
+   
+   TH1F *hPtJetPerEvNoD=new TH1F("hPtJetPerEvNoD","pt distribution of jets per event with no D; p_{T}^{jet} (GeV/c)",nbinsptjet,ptjetlims[0],ptjetlims[1]);
+   hPtJetPerEvNoD->Sumw2();
+    
    fmyOutput->Add(hEjetTrks);
    fmyOutput->Add(hPhiJetTrks);
    fmyOutput->Add(hEtaJetTrks);
@@ -610,6 +647,8 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
    fmyOutput->Add(hdeltaRJetTracks);
    fmyOutput->Add(hNtrArr);
    fmyOutput->Add(hNJetPerEv);
+   fmyOutput->Add(hNJetPerEvNoD);
+   fmyOutput->Add(hPtJetPerEvNoD);
    
    TH1F* hDeltaRD=new TH1F("hDeltaRD","#Delta R distribution of D candidates selected;#Delta R",200, 0.,10.);
    hDeltaRD->Sumw2();
