@@ -363,7 +363,8 @@ protected:
     TH2D*     fNeighborsAfter;  // Correlation of neighbors 
     TH2D*     fSumESD;          // Summed ESD signal 
     TH2D*     fSum;             // Summed cluster signal 
-    ClassDef(RingHistos,3);
+    TH1D*     fNConsecutive;    // # consecutive strips with signal > low cut
+    ClassDef(RingHistos,4);
   };
   /** 
    * Get the ring histogram container 

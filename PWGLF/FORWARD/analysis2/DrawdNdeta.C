@@ -119,6 +119,8 @@ struct dNdetaDrawer
       fCentAxis(0),          // Centrality axis
       fTriggerEff(1),        // Trigger efficency 
       fExtTriggerEff(false), // True if fTriggerEff was read 
+      fCentMin(0),           // Least centrality to plot
+      fCentMax(100),         // Largest centrality to plot
       // Resulting plots 
       fResults(0),           // Stack of results 
       fRatios(0),            // Stack of ratios 
@@ -267,6 +269,18 @@ struct dNdetaDrawer
     fVtxAxis = new TAxis(10, vzMin, vzMax);
     fVtxAxis->SetName("vtxAxis");
     fVtxAxis->SetTitle(Form("v_{z}#in[%+5.1f,%+5.1f]cm", vzMin, vzMax));
+  }
+  //__________________________________________________________________
+  /** 
+   * Set the centrality range in centimeters 
+   * 
+   * @param centMin Min @f$ v_z@f$
+   * @param centMax Max @f$ v_z@f$
+   */
+  void SetCentralityRange(UShort_t centMin, UShort_t centMax) 
+  {
+    fCentMin = centMin;
+    fCentMax = centMax;
   }
   //__________________________________________________________________
   /** 
@@ -582,6 +596,23 @@ struct dNdetaDrawer
       fVtxAxis->SetName("vtxAxis");
       fVtxAxis->SetTitle("v_{z} range unspecified");
     }
+    if (fCentAxis) {
+      TArrayD  bins(fCentAxis->GetNbins()+1);
+      Int_t    nBins = 0;
+      Double_t high  = -1;
+      for (Int_t i = 1; i <= fCentAxis->GetNbins(); i++) {
+	Double_t binLow  = fCentAxis->GetBinLowEdge(i);
+	Double_t binHigh = fCentAxis->GetBinUpEdge(i);
+	if (binLow  < fCentMin-.5) continue;
+	if (binHigh > fCentMax+.5) continue;
+	high = binHigh;
+	bins[nBins] = binLow;
+	nBins++;
+      }
+      bins[nBins] = high;
+      fCentAxis->Set(nBins, bins.GetArray());
+    }
+	
 
     if (fOptions & kVerbose) {
       TString centTxt("none");
@@ -2403,6 +2434,8 @@ struct dNdetaDrawer
   TAxis*       fCentAxis;     // Centrality axis
   Float_t      fTriggerEff;   // Trigger efficiency 
   Bool_t       fExtTriggerEff;// True if read externally 
+  UShort_t     fCentMin;      // Least centrality to plot
+  UShort_t     fCentMax;      // Largest centrality to plot
   /* @} */
   /** 
    * @{ 
@@ -2619,6 +2652,8 @@ DrawdNdeta(const char* filename="forward_dndeta.root",
 	   UShort_t    sys=0,
 	   UShort_t    trg=0,
 	   Float_t     eff=0,
+	   UShort_t    centMin=0,
+	   UShort_t    centMax=100,
 	   Float_t     vzMin=999, 
 	   Float_t     vzMax=-999,
 	   const char* base="", 
@@ -2645,6 +2680,7 @@ DrawdNdeta(const char* filename="forward_dndeta.root",
   if (eff > 0) d.SetTriggerEfficiency(eff); // Trigger efficiency
   if (vzMin < 999 && vzMax > -999) 
     d.SetVertexRange(vzMin,vzMax); // Collision vertex range (cm)
+  d.SetCentralityRange(centMin,centMax); // Collision vertex range (cm)
   d.Run(filename, flags, outflg);
 }
 //____________________________________________________________________
