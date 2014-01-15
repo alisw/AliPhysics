@@ -375,7 +375,9 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
     
     if(trecal)
     {
-      TObjArray *trecalpass=(TObjArray*)trecal->FindObject(pass);
+      TString passM = pass;
+      if(pass=="spc_calo") passM = "pass1";
+      TObjArray *trecalpass=(TObjArray*)trecal->FindObject(passM);
 
       if(trecalpass)
       {
