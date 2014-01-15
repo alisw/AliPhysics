@@ -1815,6 +1815,8 @@ void AliEMCALTenderSupply::GetPass()
   else if (fname.Contains("pass3")) fFilepass = TString("pass3");
   else if (fname.Contains("pass4")) fFilepass = TString("pass4");
   else if (fname.Contains("pass5")) fFilepass = TString("pass5");
+  else if (fname.Contains("LHC11c") &&
+           fname.Contains("spc_calo")) fFilepass = TString("spc_calo");
   else if (fname.Contains("calo") || fname.Contains("high_lumi"))
 
   {
