@@ -24,6 +24,7 @@
 #include "AliADReconstructor.h"
 #include "AliESDEvent.h"
 #include "AliADdigit.h"
+#include "AliESDAD.h"
 
 ClassImp(AliADReconstructor)
 
