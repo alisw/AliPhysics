@@ -46,6 +46,7 @@
 #include "AliEmcalJet.h"
 #include "AliAODJet.h"
 #include "AliAODJetEventBackground.h"
+#include "AliAnalysisHelperJetTasks.h"
 
 #include <iostream>
 using std::cout;
@@ -265,7 +266,7 @@ void AliAnalysisTaskHJetDphi::UserCreateOutputObjects()
    Bool_t oldStatus = TH1::AddDirectoryStatus();
    if(fAnaType==1) TH1::AddDirectory(kFALSE);
 
-  fhEventStat = new TH1F("fhEventStat","Event statistics for jet analysis",9,0,9);
+  fhEventStat = new TH1F("fhEventStat","Event statistics for jet analysis",8,0,8);
   fhEventStat->GetXaxis()->SetBinLabel(1,"All");
   fhEventStat->GetXaxis()->SetBinLabel(2,"PS");
   fhEventStat->GetXaxis()->SetBinLabel(3,"Vtx");
@@ -273,8 +274,7 @@ void AliAnalysisTaskHJetDphi::UserCreateOutputObjects()
   fhEventStat->GetXaxis()->SetBinLabel(5,"kMB");
   fhEventStat->GetXaxis()->SetBinLabel(6,"kCentral");
   fhEventStat->GetXaxis()->SetBinLabel(7,"kSemiCentral");
-  fhEventStat->GetXaxis()->SetBinLabel(8,"kEMCEGA");
-  fhEventStat->GetXaxis()->SetBinLabel(9,"kEMCEJE");
+  fhEventStat->GetXaxis()->SetBinLabel(8,"kJetService");
   fOutputList->Add(fhEventStat);
 
   fhNTrials = new TH1F("fhNTrials","Number of trials",1,0,1);
@@ -583,8 +583,9 @@ void AliAnalysisTaskHJetDphi::UserExec(Option_t *)
       else if (trigger & AliVEvent::kCentral) fhEventStat->Fill(6.5);
       else fhEventStat->Fill(4.5);
     }
-  if(fTriggerType==1) fhEventStat->Fill(7.5);
-  if(fTriggerType==2) fhEventStat->Fill(8.5);
+
+  if(!AliAnalysisHelperJetTasks::Selected()) return;
+  fhEventStat->Fill(7.5);
   
     // GetCentrality
   if(fCollisionSystem=="PbPb")
