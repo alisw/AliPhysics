@@ -12,14 +12,7 @@
 //  kFALSE --> initialization failed (some config gave errors)
 //
 
-Bool_t usePhi   = 1;
-Bool_t useKStar = 1;
-Bool_t usePhiRAA = 1;
-
- //set to kTRUE if using data AOD049 - needed to enable centrality patch
-Bool_t isAOD049 = 0;
-
-AliRsnMiniAnalysisTask * AddAnalysisTaskRsnMini
+AliRsnMiniAnalysisTask * AddAnalysisTaskPhiRAApPb
 (
    Bool_t      isMC,
    Bool_t      isPP,
@@ -36,42 +29,38 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskRsnMini
 
    // create the task and connect with physics selection
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask("RSN", isMC);
-   if (isAOD049 && !isMC && !isPP){
-     task->SetUseCentralityPatch(kTRUE);
-   }
-   mgr->AddTask(task);
+   task->UseESDTriggerMask(AliVEvent::kINT7);
    
    // settings
-   if (isPP) 
+   if (isPP)
       task->UseMultiplicity("QUALITY");
    else
-      task->UseCentrality("V0M");
+      task->UseCentrality("V0A");
    
    // set mixing
    task->UseContinuousMix();
    //task->UseBinnedMix();
    task->SetNMix(nmix);
-   task->SetMaxDiffVz(1.0);
-   task->SetMaxDiffMult(10.0);
+   task->SetMaxDiffVz(5.0);
+   task->SetMaxDiffMult(20.0);
    task->SetMaxDiffAngle(1E20);
-   
+
+   mgr->AddTask(task);
+
    //
    // -- EVENT CUTS (same for all configs) ---------------------------------------------------------
    //
    
-   // cut on primary vertex:
-   // - 2nd argument --> |Vz| range
-   // - 3rd argument --> minimum required number of contributors
-   // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
-   AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
-   
-   // set the check for pileup
-   if (isPP) cutVertex->SetCheckPileUp(kTRUE);
+   AliRsnCutEventUtils *cutEventUtils = new AliRsnCutEventUtils("cutEventUtils", kTRUE, kTRUE);
+   cutEventUtils->SetUseVertexSelection2013pA(kTRUE);
+   cutEventUtils->SetMinPlpContribSPD(5);
+
+
       
    // define and fill cut set
    AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
-   eventCuts->AddCut(cutVertex);
-   eventCuts->SetCutScheme(cutVertex->GetName());
+   eventCuts->AddCut(cutEventUtils);
+   eventCuts->SetCutScheme(cutEventUtils->GetName());
    
    // set cuts in task
    task->SetEventCuts(eventCuts);
@@ -99,45 +88,27 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskRsnMini
    //
    
    AliRsnCutMiniPair *cutY = new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
-   cutY->SetRangeD(-0.5, 0.5);
+   cutY->SetRangeD(-0.765, -0.165);
+
+   AliRsnCutMiniPair *cutY2 = new AliRsnCutMiniPair("cutRapidity2", AliRsnCutMiniPair::kRapidityRange);
+   cutY2->SetRangeD(-0.465, 0.035);
    
    AliRsnCutSet *cutsPair = new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
    cutsPair->AddCut(cutY);
    cutsPair->SetCutScheme(cutY->GetName());
    
+   AliRsnCutSet *cutsPair2 = new AliRsnCutSet("pairCuts2", AliRsnTarget::kMother);
+   cutsPair2->AddCut(cutY2);
+   cutsPair2->SetCutScheme(cutY2->GetName());
+
    //
    // -- CONFIGS -----------------------------------------------------------------------------------
    //
    
-   if (usePhiRAA){
-	   if (!isMC) {
-	      gROOT->LoadMacro(Form("%s/ConfigPhiRAApp.C", path));
-	      if (!ConfigPhiRAApp(task, isMC, isPP, "", cutsPair)) return 0x0;
-	   }
-   }
 
-   if (usePhi) {
-      if (isPP) {
-         gROOT->LoadMacro(Form("%s/ConfigPhi.C", path));
-         if (!ConfigPhi(task, isMC, "", cutsPair)) return 0x0;
-      } else {
-         gROOT->LoadMacro(Form("%s/ConfigPhiPbPb.C", path));
-         if (!ConfigPhiPbPb(task, isMC, "", cutsPair)) return 0x0;
-      }
-      if (isMC) {
-         gROOT->LoadMacro(Form("%s/ConfigPhiMC.C", path));
-         if (!ConfigPhiMC(task, isPP, "", cutsPair)) return 0x0;
-      }
-   }
-   
-   if (useKStar) {
-      gROOT->LoadMacro(Form("%s/ConfigKStar.C", path));
-      if (!ConfigKStar(task, isMC, "", cutsPair)) return 0x0;
-      if (isMC) {
-         gROOT->LoadMacro(Form("%s/ConfigKStarMC.C", path));
-         if (!ConfigKStarMC(task, isPP, "", cutsPair)) return 0x0;
-      }
-   }
+   gROOT->LoadMacro(Form("%s/ConfigPhiRAApPb.C", path));
+   if (!ConfigPhiRAApPb(task, isMC, isPP, "", cutsPair, cutsPair2)) return 0x0;
+
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------
