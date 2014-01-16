@@ -20,6 +20,7 @@ ClassImp(AliEmcalClusterMaker)
 AliEmcalClusterMaker::AliEmcalClusterMaker() : 
   AliAnalysisTaskEmcal("AliEmcalClusterMaker", kFALSE),
   fOutCaloName(),
+  fRecoUtils(0),
   fEsdMode(kTRUE),
   fOutClusters(0)
 {
@@ -30,6 +31,7 @@ AliEmcalClusterMaker::AliEmcalClusterMaker() :
 AliEmcalClusterMaker::AliEmcalClusterMaker(const char *name, Bool_t histo) : 
   AliAnalysisTaskEmcal(name, histo),
   fOutCaloName("EmcClusters"),
+  fRecoUtils(0),
   fEsdMode(kTRUE),
   fOutClusters(0)
 {
