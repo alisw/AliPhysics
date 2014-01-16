@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id: AliESD.cxx 54579 2012-02-14 12:22:34Z shahoian $ */
 
 //-----------------------------------------------------------------
 //           Implementation of the ESD class
@@ -74,6 +74,7 @@ AliESD::AliESD():
   fESDFMD(0x0),
   fESDVZERO(0x0),
   fESDACORDE(0x0),
+  fESDAD(0x0),
   fErrorLogs("AliRawDataErrorLog",5)
   #ifdef MFT_UPGRADE
  // ,fESDMFT(0x0)
@@ -140,6 +141,7 @@ AliESD::AliESD(const AliESD& esd):
   fESDFMD(esd.fESDFMD),
   fESDVZERO(esd.fESDVZERO),
   fESDACORDE(esd.fESDACORDE),
+  fESDAD(esd.fESDAD),
   fErrorLogs(*((TClonesArray*)esd.fErrorLogs.Clone()))
   #ifdef MFT_UPGRADE
   //, fESDMFT(esd.fESDMFT)
@@ -180,6 +182,7 @@ AliESD::~AliESD()
   delete fPHOSTriggerPosition;
   delete fPHOSTriggerAmplitudes;
   delete fESDACORDE;
+  delete fESDAD;
   #ifdef MFT_UPGRADE
 //  delete fESDMFT;
   #endif
@@ -263,6 +266,12 @@ void AliESD::Reset()
       fESDACORDE->~AliESDACORDE();
       new (fESDACORDE) AliESDACORDE();	
   }	
+
+ if (fESDAD){
+      fESDAD->~AliESDAD();
+      new (fESDAD) AliESDAD();	
+  }	
+
 //
   #ifdef MFT_UPGRADE
  // if (fESDMFT){

@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
+/* $Id: AliReconstruction.h 63911 2013-08-19 16:46:41Z hristov $ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -175,7 +175,8 @@ public:
 // #else
 //     kNDetectors = 15   // number of detectors
 // #endif 
-    kNDetectors = 16   // number of detectors    // AU
+    //kNDetectors = 16   // number of detectors    // AU
+    kNDetectors = 17   // number of detectors    + AD
   };
   static Int_t   GetDetIndex(const char * detector);
   static const char** GetDetectorNames() { return fgkDetectorName; }

@@ -232,6 +232,7 @@ void Config()
     Int_t   iEMCAL  = 1;
     Int_t   iVZERO  = 1;
     Int_t   iACORDE = 1;
+    Int_t   iAD = 0;
 
     //=================== Alice BODY parameters =============================
     AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
@@ -382,7 +383,15 @@ void Config()
         AliVZERO *VZERO = new AliVZEROv7("VZERO", "normal VZERO");
     }
  
-             
+      if (iAD)
+    {
+        //=================== AD parameters ============================
+        AliAD *AD = new AliADv1("AD", "normal AD test");
+	AD->SetADAToInstalled(kTRUE);
+	AD->SetADCToInstalled(kTRUE);
+    }
+ 
+        
 }
 
 Float_t EtaToTheta(Float_t arg){

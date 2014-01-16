@@ -2,7 +2,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
+/* $Id: ESDLinkDef.h 54829 2012-02-25 20:47:28Z morsch $ */
 
 #pragma link off all globals;
 #pragma link off all classes;
@@ -73,6 +73,7 @@
 #pragma link C++ class  AliESDVZERO+;
 #pragma link C++ class  AliESDTZERO+;
 #pragma link C++ class  AliESDACORDE+;
+#pragma link C++ class  AliESDAD+;
 #ifdef MFT_UPGRADE
 //#pragma link C++ class  AliESDMFT+;
 #endif
