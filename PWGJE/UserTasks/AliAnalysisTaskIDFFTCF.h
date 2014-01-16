@@ -220,10 +220,10 @@ class AliAnalysisTaskIDFFTCF : public AliAnalysisTaskSE {
   static  void   SetProperties(TH1* h,const char* x, const char* y,const char* z);
   static  void   SetProperties(THnSparse* h,const Int_t dim, const char** labels);
 
-  void SetTPCCutMode(const Int_t mode){ fTPCCutMode = mode; }
+  void SetTPCCutMode(Int_t mode){ fTPCCutMode = mode; }
   Int_t GetTPCCutMode(){return fTPCCutMode; }
 
-  void SetTOFCutMode(const Int_t mode){ fTOFCutMode = mode; }
+  void SetTOFCutMode(Int_t mode){ fTOFCutMode = mode; }
   Int_t GetTOFCutMode(){return fTOFCutMode; }
 
   void   SetHighPtThreshold(Float_t pt = 5.) { fQATrackHighPtThreshold = pt; }
@@ -257,21 +257,21 @@ class AliAnalysisTaskIDFFTCF : public AliAnalysisTaskSE {
   Float_t  GetFFMaxTrackPt() const { return fFFMaxTrackPt; }
   Float_t  GetFFMinNTracks() const { return fFFMinnTracks; }
 
-  void	   GetJetTracksTrackrefs(TList* l, const AliAODJet* j, const Double_t minPtL, const Double_t maxPt, Bool_t& isBadPt);
-  void	   GetJetTracksPointing(TList* in, TList* out, const AliAODJet* j, const Double_t r, Double_t& sumPt, const Double_t minPtL, const Double_t maxPt, Bool_t& isBadPt);  
+  void	   GetJetTracksTrackrefs(TList* l, const AliAODJet* j, const Double_t minPtL, Double_t maxPt, Bool_t& isBadPt);
+  void	   GetJetTracksPointing(TList* in, TList* out, const AliAODJet* j, Double_t r, Double_t& sumPt, Double_t minPtL, Double_t maxPt, Bool_t& isBadPt);  
 
   void     AssociateGenRec(TList* tracksAODMCCharged,TList* tracksRec, TArrayI& indexAODTr,TArrayI& indexMCTr,TArrayS& isRefGen,TH2F* fh2PtRecVsGen);
 
   void     FillSingleTrackHistosRecGen(AliFragFuncQATrackHistos* trackQAGen, AliFragFuncQATrackHistos* trackQARec, TList* tracksGen, 
-				       const TArrayI& indexAODTr, const TArrayS& isRefGen, const Int_t pdg = 0, const Bool_t scaleGFL = kFALSE);
+				       const TArrayI& indexAODTr, const TArrayS& isRefGen, Int_t pdg = 0, Bool_t scaleGFL = kFALSE);
 
 
   void     FillJetTrackHistosRec(AliFragFuncHistos* histRec,  AliAODJet* jet, 
 				 TList* jetTrackList, const TList* tracksGen, const TList* tracksRec, const TArrayI& indexAODTr,
-				 const TArrayS& isRefGen, TList* jetTrackListTR = 0, const Int_t pdg = 0, const Bool_t scaleGFL = kFALSE);
+				 const TArrayS& isRefGen, TList* jetTrackListTR = 0, Int_t pdg = 0, Bool_t scaleGFL = kFALSE);
 
 
-  Float_t  CalcJetArea(const Float_t etaJet, const Float_t rc) const;
+  Float_t  CalcJetArea(Float_t etaJet, Float_t rc) const;
  
   void     BookQAHistos(TList* list = 0, AliFragFuncQATrackHistos** rec = 0, TString strTitRec = "", AliFragFuncQATrackHistos** gen = 0, TString strTitGen = "",
 			AliFragFuncQATrackHistos** sec = 0, TString strTitSec = "");
@@ -279,8 +279,8 @@ class AliAnalysisTaskIDFFTCF : public AliAnalysisTaskSE {
   void     BookFFHistos(TList* list, AliFragFuncHistos** rec = 0, TString strTitRec = "", AliFragFuncHistos** gen = 0, TString strTitGen = "",
 			AliFragFuncHistos** sec = 0, TString strTitSec = "");
 
-  Double_t  TrackingPtGeantFlukaCorrectionPrMinus(const Double_t pTmc);
-  Double_t  TrackingPtGeantFlukaCorrectionKaMinus(const Double_t pTmc);
+  Double_t  TrackingPtGeantFlukaCorrectionPrMinus(Double_t pTmc);
+  Double_t  TrackingPtGeantFlukaCorrectionKaMinus(Double_t pTmc);
     
 
   // Consts
