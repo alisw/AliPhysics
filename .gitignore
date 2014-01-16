@@ -31,7 +31,7 @@ G__*.h
 *.exp
 *.manifest
 *.rootmap
-CMakeLists.txt
+# CMakeLists.txt
 
 # Backup files from common editors
 *.swp

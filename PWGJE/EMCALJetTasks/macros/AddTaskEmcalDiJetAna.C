@@ -1,20 +1,3 @@
-Double_t fitf(Double_t *x, Double_t *par) {
-  //5 parameters, 0: transition from f0 to f2, 1: pol0, 2-4: pol2
-  Double_t trans = par[0];
-
-  TF1 *f0 = new TF1("f0","pol0",0,trans);
-  TF1 *f2 = new TF1("f2","pol2",trans,100);
-
-  Double_t fitval = 0.;
-  if(x[0]<par[0]) 
-    fitval = par[1];
-  else
-    fitval = par[2]+x[0]*par[3]+x[0]*x[0]*par[4];
-
-  return fitval;
-
-}
-
 AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName         = "PicoTracks", 
 						   TString     kClusName           = "caloClusterCorr",
 						   Double_t    R                   = 0.4, 
@@ -28,7 +11,8 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
 						   Double_t    ptTrackBias         = 0.,
 						   Int_t       corrType            = AliAnalysisTaskEmcalDiJetBase::kCorrelateTwo,
 						   Float_t     nefCut              = 0.95,
-						   Int_t       nCentBins           = 5
+						   Int_t       nCentBins           = 5,
+						   Double_t    scaleFact           = 1.42
 						   ) {
   
   enum AlgoType {kKT, kANTIKT};
@@ -68,11 +52,8 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
     jetFinderKt->SetMinJetPt(0.);
     jetFinderAKt  = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus);
     
-    TF1 *fScale = new TF1("fScale","1.42",0.,100.);
-    /*
-    TF1 *fScale = new TF1("fit",fitf,0,100,5);
-    fScale->SetParameters(60.,1.41363e+00,7.95329e-01,1.95281e-02,-1.55196e-04);
-    */
+    TF1 *fScale = new TF1("fScale","[0]",0.,100.);
+    fScale->SetParameter(0,scaleFact);
     TString rhoSparseName = Form("RhoSparseR%03d",(int)(100*R));
     rhoTask = AddTaskRhoSparse(jetFinderKt->GetName(),
 			       jetFinderAKt->GetName(),
@@ -115,8 +96,6 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
   taskDiJet->AddParticleContainer(kTracksName.Data());
   taskDiJet->AddClusterContainer(kClusName.Data());
    
-  //taskDiJet->SetAnaType(AliAnalysisTaskEmcalDev::kEMCAL);
-
   taskDiJet->SetContainerFull(0);
   taskDiJet->SetContainerCharged(1);
   taskDiJet->AddJetContainer(strJetsFull.Data(),"EMCAL",R);

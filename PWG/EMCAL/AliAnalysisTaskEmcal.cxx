@@ -408,7 +408,7 @@ Bool_t AliAnalysisTaskEmcal::AcceptCluster(AliVCluster *clus, Int_t c) const
     return kFALSE;
 
   AliClusterContainer *cont = GetClusterContainer(c);
-  if(!cont) {
+  if (!cont) {
     AliError(Form("%s:Container %d not found",GetName(),c));
     return 0;
   }
@@ -426,7 +426,7 @@ Bool_t AliAnalysisTaskEmcal::AcceptTrack(AliVParticle *track, Int_t c) const
     return kFALSE;
 
   AliParticleContainer *cont = GetParticleContainer(c);
-  if(!cont) {
+  if (!cont) {
     AliError(Form("%s:Container %d not found",GetName(),c));
     return 0;
   }
@@ -447,7 +447,7 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
   fXsec = 0;
   fTrials = 1;
 
-  if(file.Contains(".zip#")){
+  if (file.Contains(".zip#")) {
     Ssiz_t pos1 = file.Index("root_archive",12,0,TString::kExact);
     Ssiz_t pos = file.Index("#",1,pos1,TString::kExact);
     Ssiz_t pos2 = file.Index(".root",5,TString::kExact);
@@ -474,22 +474,22 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
   // problem that we cannot really test the existance of a file in a archive so we have to live with open error message from root
   TFile *fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")); 
   
-  if(!fxsec){
+  if (!fxsec) {
     // next trial fetch the histgram file
     fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root"));
-    if(!fxsec){
+    if (!fxsec) {
 	// not a severe condition but inciate that we have no information
       return kFALSE;
     }
     else{
       // find the tlist we want to be independtent of the name so use the Tkey
       TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0); 
-      if(!key){
+      if (!key) {
 	fxsec->Close();
 	return kFALSE;
       }
       TList *list = dynamic_cast<TList*>(key->ReadObj());
-      if(!list){
+      if (!list) {
 	fxsec->Close();
 	return kFALSE;
       }
@@ -500,7 +500,7 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
   } // no tree pyxsec.root
   else {
     TTree *xtree = (TTree*)fxsec->Get("Xsection");
-    if(!xtree){
+    if (!xtree) {
       fxsec->Close();
       return kFALSE;
     }
@@ -547,7 +547,7 @@ Bool_t AliAnalysisTaskEmcal::UserNotify()
   PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthard);
 
   // TODO: Workaround
-  if((pthard < 0) || (pthard > 10))
+  if ((pthard < 0) || (pthard > 10))
     pthard = 0;
   fHistTrials->Fill(pthard, trials);
   fHistXsection->Fill(pthard, xsection);
@@ -579,28 +579,28 @@ void AliAnalysisTaskEmcal::ExecOnce()
   }
 
   //Load all requested track branches - each container knows name already
-  for(Int_t i =0; i<fParticleCollArray.GetEntriesFast(); i++) {
+  for (Int_t i =0; i<fParticleCollArray.GetEntriesFast(); i++) {
     AliParticleContainer *cont = static_cast<AliParticleContainer*>(fParticleCollArray.At(i));
     cont->SetArray(InputEvent());
   }
 
   if (fParticleCollArray.GetEntriesFast()>0) {
     fTracks = GetParticleArray(0);
-    if(!fTracks) {
+    if (!fTracks) {
       AliError(Form("%s: Could not retrieve first track branch!", GetName()));
       return;
     }
   }
 
   //Load all requested cluster branches - each container knows name already
-  for(Int_t i =0; i<fClusterCollArray.GetEntriesFast(); i++) {
+  for (Int_t i =0; i<fClusterCollArray.GetEntriesFast(); i++) {
     AliClusterContainer *cont = static_cast<AliClusterContainer*>(fClusterCollArray.At(i));
     cont->SetArray(InputEvent());
   }
 
-  if(fClusterCollArray.GetEntriesFast()>0) {
+  if (fClusterCollArray.GetEntriesFast()>0) {
     fCaloClusters = GetClusterArray(0);
-    if(!fCaloClusters) {
+    if (!fCaloClusters) {
       AliError(Form("%s: Could not retrieve first cluster branch!", GetName()));
       return;
     }
@@ -677,7 +677,7 @@ AliAnalysisTaskEmcal::TriggerType AliAnalysisTaskEmcal::GetTriggerType()
 {
   // Get trigger type: kND, kJ1, kJ2
  
-  if(!fTriggerPatchInfo)
+  if (!fTriggerPatchInfo)
     return kND;
   
   //number of patches in event
@@ -687,15 +687,15 @@ AliAnalysisTaskEmcal::TriggerType AliAnalysisTaskEmcal::GetTriggerType()
   Int_t nJ1 = 0;
   Int_t nJ2 = 0;
   AliEmcalTriggerPatchInfo *patch;
-  for(Int_t iPatch = 0; iPatch < nPatch; iPatch++ ){
+  for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
     patch = (AliEmcalTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
-    if(patch->IsJetHigh()) nJ1++;
-    if(patch->IsJetLow())  nJ2++;
+    if (patch->IsJetHigh()) nJ1++;
+    if (patch->IsJetLow())  nJ2++;
   }
 
-  if(nJ1>0) 
+  if (nJ1>0) 
     return kJ1;
-  else if(nJ2>0)
+  else if (nJ2>0)
     return kJ2;
   else
     return kND;
@@ -766,7 +766,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
   }
 
   if (fTriggerTypeSel != kND) {
-    if(fTriggerType != fTriggerTypeSel) {
+    if (fTriggerType != fTriggerTypeSel) {
       if (fGeneralHistograms) 
 	fHistEventRejection->Fill("trigTypeSel",1);
       return kFALSE;
@@ -801,13 +801,13 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     Int_t ntracks = GetNParticles(0);
     for (Int_t i = 0; i < ntracks; i++) {
       AliVParticle *track = GetAcceptParticleFromArray(i,0);
-      if(!track)
+      if (!track)
 	continue;
 
       Double_t phiMin = fGeom->GetArm1PhiMin() * TMath::DegToRad();
       Double_t phiMax = fGeom->GetArm1PhiMax() * TMath::DegToRad();
       Int_t runNumber = InputEvent()->GetRunNumber();
-      if(runNumber>=177295 && runNumber<=197470) { //small SM masked in 2012 and 2013
+      if (runNumber>=177295 && runNumber<=197470) { //small SM masked in 2012 and 2013
 	phiMin = 1.4;   
 	phiMax = TMath::Pi();
       }
@@ -831,11 +831,11 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     Int_t ntracks = GetNParticles(0);
     for (Int_t i = 0; i < ntracks; i++) {
       AliVParticle *track = GetAcceptParticleFromArray(i,0);
-      if(!track)
+      if (!track)
 	continue;
       if (track->Pt() > fTrackPtCut) {
 	nTracksAcc++;
-	if(nTracksAcc>=fMinNTrack)
+	if (nTracksAcc>=fMinNTrack)
 	  break;
       }
     }
@@ -846,19 +846,19 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     }
   }
 
-  if(fUseAliAnaUtils) {
-    if(!fAliAnalysisUtils)
+  if (fUseAliAnaUtils) {
+    if (!fAliAnalysisUtils)
       fAliAnalysisUtils = new AliAnalysisUtils();
     fAliAnalysisUtils->SetMinVtxContr(2);
     fAliAnalysisUtils->SetMaxVtxZ(10.);
 
-    if(!fAliAnalysisUtils->IsVertexSelected2013pA(InputEvent())) {
+    if (!fAliAnalysisUtils->IsVertexSelected2013pA(InputEvent())) {
       if (fGeneralHistograms) 
 	fHistEventRejection->Fill("VtxSel2013pA",1);
       return kFALSE;
     }
 
-    if(fAliAnalysisUtils->IsPileUpEvent(InputEvent())) {
+    if (fAliAnalysisUtils->IsPileUpEvent(InputEvent())) {
       fHistEventRejection->Fill("PileUp",1);
       return kFALSE;
     }
@@ -934,7 +934,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
     AliCentrality *aliCent = InputEvent()->GetCentrality();
     if (aliCent) {
       fCent = aliCent->GetCentralityPercentile(fCentEst.Data());
-      if(fNcentBins==4) {
+      if (fNcentBins==4) {
 	if      (fCent >=  0 && fCent <   10) fCentBin = 0;
 	else if (fCent >= 10 && fCent <   30) fCentBin = 1;
 	else if (fCent >= 30 && fCent <   50) fCentBin = 2;
@@ -947,7 +947,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       else {
 	Double_t centWidth = (fMaxCent-fMinCent)/(Double_t)fNcentBins;
 	fCentBin = TMath::FloorNint(fCent/centWidth);
-	if(fCentBin>=fNcentBins) {
+	if (fCentBin>=fNcentBins) {
 	  AliWarning(Form("%s: fCentBin too large: cent = %f fCentBin = %d. Assuming 99", GetName(),fCent,fCentBin));
 	  fCentBin = fNcentBins-1;
 	}
@@ -978,7 +978,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
 	AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
 
 	if (aodMCH) {
-	  for(UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
+	  for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
 	    fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
 	    if (fPythiaHeader) break;
 	  }
@@ -1012,7 +1012,7 @@ AliParticleContainer* AliAnalysisTaskEmcal::AddParticleContainer(const char *n) 
   // will be called in AddTask macro
 
   TString tmp = TString(n);
-  if(tmp.IsNull()) return 0;
+  if (tmp.IsNull()) return 0;
 
   AliParticleContainer *cont = 0x0;
   cont = new AliParticleContainer();
@@ -1031,7 +1031,7 @@ AliClusterContainer* AliAnalysisTaskEmcal::AddClusterContainer(const char *n) {
   // will be called in AddTask macro
 
   TString tmp = TString(n);
-  if(tmp.IsNull()) return 0;
+  if (tmp.IsNull()) return 0;
 
   AliClusterContainer *cont = 0x0;
   cont = new AliClusterContainer();
@@ -1046,7 +1046,7 @@ AliClusterContainer* AliAnalysisTaskEmcal::AddClusterContainer(const char *n) {
 AliParticleContainer* AliAnalysisTaskEmcal::GetParticleContainer(Int_t i) const {
   // Get i^th particle container
 
-  if(i<0 || i>fParticleCollArray.GetEntriesFast()) return 0;
+  if (i<0 || i>fParticleCollArray.GetEntriesFast()) return 0;
   AliParticleContainer *cont = static_cast<AliParticleContainer*>(fParticleCollArray.At(i));
   return cont;
 }
@@ -1055,7 +1055,7 @@ AliParticleContainer* AliAnalysisTaskEmcal::GetParticleContainer(Int_t i) const 
 AliClusterContainer* AliAnalysisTaskEmcal::GetClusterContainer(Int_t i) const {
   // Get i^th cluster container
 
-  if(i<0 || i>fClusterCollArray.GetEntriesFast()) return 0;
+  if (i<0 || i>fClusterCollArray.GetEntriesFast()) return 0;
   AliClusterContainer *cont = static_cast<AliClusterContainer*>(fClusterCollArray.At(i));
   return cont;
 }
@@ -1081,7 +1081,7 @@ TClonesArray* AliAnalysisTaskEmcal::GetParticleArray(Int_t i) const {
   // Get i^th TClonesArray with AliVParticle
 
   AliParticleContainer *cont = GetParticleContainer(i);
-  if(!cont) {
+  if (!cont) {
     AliError(Form("%s: Particle container %d not found",GetName(),i));
     return 0;
   }
@@ -1094,7 +1094,7 @@ TClonesArray* AliAnalysisTaskEmcal::GetClusterArray(Int_t i) const {
   // Get i^th TClonesArray with AliVCluster
 
   AliClusterContainer *cont = GetClusterContainer(i);
-  if(!cont) {
+  if (!cont) {
     AliError(Form("%s:Cluster container %d not found",GetName(),i));
     return 0;
   }
@@ -1107,7 +1107,7 @@ AliVParticle* AliAnalysisTaskEmcal::GetAcceptParticleFromArray(Int_t p, Int_t c)
   // If particle not accepted return 0
 
   AliParticleContainer *cont = GetParticleContainer(c);
-  if(!cont) {
+  if (!cont) {
     AliError(Form("%s: Particle container %d not found",GetName(),c));
     return 0;
   }
@@ -1122,7 +1122,7 @@ AliVCluster* AliAnalysisTaskEmcal::GetAcceptClusterFromArray(Int_t cl, Int_t c) 
   // If particle not accepted return 0
 
   AliClusterContainer *cont = GetClusterContainer(c);
-  if(!cont) {
+  if (!cont) {
     AliError(Form("%s: Cluster container %d not found",GetName(),c));
     return 0;
   }
@@ -1136,7 +1136,7 @@ Int_t AliAnalysisTaskEmcal::GetNParticles(Int_t i) const {
   // Get number of entries in particle array i
 
   AliParticleContainer *cont = GetParticleContainer(i);
-  if(!cont) {
+  if (!cont) {
     AliError(Form("%s: Particle container %d not found",GetName(),i));
     return 0;
   }
@@ -1148,7 +1148,7 @@ Int_t AliAnalysisTaskEmcal::GetNClusters(Int_t i) const {
   // Get number of entries in cluster array i
 
   AliClusterContainer *cont = GetClusterContainer(i);
-  if(!cont) {
+  if (!cont) {
     AliError(Form("%s: Cluster container %d not found",GetName(),i));
     return 0;
   }
@@ -1159,10 +1159,10 @@ Int_t AliAnalysisTaskEmcal::GetNClusters(Int_t i) const {
 AliEmcalTriggerPatchInfo* AliAnalysisTaskEmcal::GetMainTriggerPatch() {
   //get main trigger match; if not known yet, look for it and cache
 
-  if(fMainTriggerPatch) 
+  if (fMainTriggerPatch) 
     return fMainTriggerPatch;
 
-  if(!fTriggerPatchInfo) {
+  if (!fTriggerPatchInfo) {
     AliError(Form("%s: fTriggerPatchInfo not available",GetName()));
     return 0;
   }
@@ -1172,16 +1172,14 @@ AliEmcalTriggerPatchInfo* AliAnalysisTaskEmcal::GetMainTriggerPatch() {
 
   //extract main trigger patch
   AliEmcalTriggerPatchInfo *patch;
-  for(Int_t iPatch = 0; iPatch < nPatch; iPatch++ ){
+  for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
     
     patch = (AliEmcalTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
-    if( patch->IsMainTrigger() ) {
+    if (patch->IsMainTrigger()) {
       fMainTriggerPatch = patch;
       break;
     }
   }
 
   return fMainTriggerPatch;
-
 }
-

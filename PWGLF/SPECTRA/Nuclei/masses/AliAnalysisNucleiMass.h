@@ -15,6 +15,7 @@ class TH2F;
 class TH2D;
 class TH1F;
 class TF1;
+class TF2;
 class TH2D;
 class TGraph;
 class AliESDtrackCuts;
@@ -49,6 +50,7 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   //Settings
   void SetisSignalCheck(Int_t IsSignalCheck=2) {kSignalCheck=IsSignalCheck;}
   void SetMtofMethod(Int_t iMtofMethod=1) {iMtof=iMtofMethod;}
+  void SetPvtxNucleiCorrection(Int_t kMomVtxCorr=1) {kPvtxCorr=kMomVtxCorr;}
 
  private:
   AliAnalysisNucleiMass(const AliAnalysisNucleiMass &old); 
@@ -69,8 +71,10 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   Int_t NminTpcCluster;                            // Number of minimum TPC clusters
   Int_t iTrdCut;                                   // iTrdCut==0-> No TRD cut; iTrdCut==1-> Yes TRD cut: yes TRD; iTrdCut==2->Yes TRD cut: no TRD; 
   Int_t kSignalCheck;                              // kSignalCheck==1->Fill all plots ; kSignalCheck==0->Fill only TH1 ; kSignalCheck==2-> Fill TH1 and some TH2 usefull in analysis
-  Int_t iMtof;                                     // iMtof==1->m~pVtx ; iMtof==2->m~pExp ; iMtof==4->m~pExp(MCcorrected) for (d,He3); iMtof==4->m~pExp(MCcorrected) (p,d,He3)
-  
+  Int_t iMtof;                                     // iMtof==1->m~pVtx ; iMtof==2->m~pExp ; iMtof==4->m~<p> (same correction for particle and antiparticle) ; iMtof==8->m~<p> (different correction for particle and antiparticle) 
+  //Use only iMtof<=2; In the next commit also iMtof>2 will work well... 
+  Int_t kPvtxCorr;                                 // kPvtxCorr==1->Momentum at the primary vertex for (anti)nuclei is rescaled ; kPvtxCorr==0->no correction
+
   //other:
   Int_t iBconf;                                   //! If Magnetic Field configuration is down or up
   Bool_t kTOF;                                    //! kTOFout and kTIME required
@@ -101,11 +105,11 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   TH2F *fBetaTofVSp[nBconf][2];                   //! beta vs pVtx
   TProfile *hBetaExp[nBconf][9];                  //! TOF expected beta
   TH2F *fNsigmaTof[nBconf][9];                    //! NsigmaTOF vs. pT
-  TH2F *fNsigmaTof_DcaCut[nBconf][18];                    //! NsigmaTOF vs. pT
+  TH2F *fNsigmaTof_DcaCut[nBconf][18];            //! NsigmaTOF vs. pT
 
   //TPC and TOF conbined
-  TH2F *fM2vsPt_NoTpcCut[nBconf][2][2];           //! M2 vs. Pt w/o the DCAxyCut
-  TH2F *fM2vsPt[nBconf][2][18];                   //! M2 vs. Pt with NsigmaTpcCut for each particle species, w/o the DCAxyCut
+  TH2F *fM2vsP_NoTpcCut[nBconf][2][2];            //! M2 vs. P w/o the DCAxyCut
+  TH2F *fM2vsP[nBconf][2][18];                    //! M2 vs. P with NsigmaTpcCut for each particle species, w/o the DCAxyCut
   TH2F *fM2vsZ[nBconf][10];                       //! M2 vs. Z in various pT bins
 
   //DCA distributions
@@ -115,18 +119,31 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   //TOF mass distributions
   TH1D *hM2CutDCAxy[nBconf][18][nbin];            //! Tof m2 distribution in DCAxyCut and with NsigmaTpcCut
   TH1D *hM2CutGroundDCAxy[nBconf][18][nbin];      //! Tof m2 distribution in the background of DCAxyCut (secondary nuclei selection) and with NsigmaTpcCut
- 
-  //Parametrizations
-  TF1 *fPmeanVsPexp[3];                           //! Parameterization of (<p>-pExp)/pExp vs pExp for p,d,He3
 
   //...
-  TH2F *fPmeanVsBetaGamma[nBconf][18];            //!<p>/p vs beta*gamma (TH1)
-  TProfile *prPmeanVsBetaGamma[nBconf][18];       //!<p>/p vs beta*gamma (profile)
+  TH2F *fPmeanVsBetaGamma[nBconf][18];            //! <p>/p vs beta*gamma for pi,K,p
+  TProfile *prPmeanVsBetaGamma[nBconf][18];       //! <p>/p vs beta*gamma for pi,K,p (profile)
+  
+  //Parameterizations:
+  TF2 *fPvtxTrueVsReco[2];                        //! TF1 pVtx_True vs pVtx_Reco calculated with MC for d, He3
+  TProfile *prPvtxTrueVsReco[nBconf][2];          //! TProfile pVtx_True vs pVtx_Reco calculated with MC for d, He3 (as Check)
 
+  TF1 *fPmeanVsBGcorr[10];                        //! <p>/p as a function of beta*gamma for pi,K,p,d,He3
+  TProfile *prPmeanVsBGcorr[nBconf][10];          //! <p>/p vs beta*gamma for pi,K,p,d,He3 as calculated from the parameterization (as Check)
+ 
   //------------------------------Methods----------------------------------------
-  void GetMassFromPvertex(Double_t beta, Double_t p, Double_t &M2);       //...*
-  void GetZTpc(Double_t dedx, Double_t pTPC, Double_t M2, Double_t &Z2);  //...*
-  void GetMassFromExpTimes(Double_t beta, Double_t *IntTimes, Double_t *Mass2, Int_t iCorr, Double_t pVtx, Int_t FlagPid, Double_t charge); //...*
+  void MomVertexCorrection(Double_t p, Double_t *pC, Double_t eta, Int_t FlagPid);
+  
+  void GetMassFromPvertex(Double_t beta, Double_t p, Double_t &M2);
+  void GetZTpc(Double_t dedx, Double_t pTPC, Double_t M2, Double_t &Z2);
+
+  void GetMassFromPvertexCorrected(Double_t beta, Double_t *pC, Double_t *Mass2);
+  
+  void GetMassFromExpTimes(Double_t beta, Double_t *IntTimes, Double_t *Mass2);
+  void GetPmeanVsBetaGamma(Double_t *IntTimes, Double_t *pVtx, Int_t FlagPid, Int_t FlagPidTof, Double_t charge, Double_t DCAxy);
+
+  void GetMassFromMeanMom(Double_t beta, Double_t *IntTimes, Double_t *pVtx, Double_t charge, Double_t *Mass2, Int_t FlagPid, Int_t FlagPidTof, Double_t DCAxy);
+  
  
   ClassDef(AliAnalysisNucleiMass, 1);
 };
