@@ -36,7 +36,7 @@ if(ALICE_TARGET MATCHES "macosx")
 
 endif(ALICE_TARGET MATCHES "macosx")
 
-set ( EINCLUDE )
+set ( EINCLUDE MICROCERN MICROCERN/kerngen)
 
 set ( PACKFFLAGS  "${FFLAGS} -IMICROCERN/kerngen")
 
