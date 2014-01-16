@@ -22,7 +22,13 @@ AliEmcalClusterMaker::AliEmcalClusterMaker() :
   fOutCaloName(),
   fRecoUtils(0),
   fEsdMode(kTRUE),
-  fOutClusters(0)
+  fOutClusters(0),
+  fEnergyDistBefore(0),
+  fEtaPhiDistBefore(0),
+  fEnergyTimeHistBefore(0),
+  fEnergyDistAfter(0),
+  fEtaPhiDistAfter(0),
+  fEnergyTimeHistAfter(0)
 {
   // Default constructor.
 }
@@ -33,7 +39,13 @@ AliEmcalClusterMaker::AliEmcalClusterMaker(const char *name, Bool_t histo) :
   fOutCaloName("EmcClusters"),
   fRecoUtils(0),
   fEsdMode(kTRUE),
-  fOutClusters(0)
+  fOutClusters(0),
+  fEnergyDistBefore(0),
+  fEtaPhiDistBefore(0),
+  fEnergyTimeHistBefore(0),
+  fEnergyDistAfter(0),
+  fEtaPhiDistAfter(0),
+  fEnergyTimeHistAfter(0)
 {
   // Standard constructor.
   
@@ -55,9 +67,26 @@ void AliEmcalClusterMaker::UserCreateOutputObjects()
 
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
-  if (fRecoUtils)
+  if (fRecoUtils) {
+    fRecoUtils->InitNonLinearityParam();
     fRecoUtils->Print("");
-  //  PostData(1, fOutput);
+  }
+
+  if (!fCreateHisto) return;
+
+  fEnergyDistBefore = new TH1F("hEnergyDistBefore","hEnergyDistBefore;E_{clus} (GeV)",1500,0,150);
+  fOutput->Add(fEnergyDistBefore);
+  fEtaPhiDistBefore = new TH2F("hEtaPhiDistBefore","hEtaPhiDistBefore;#eta;#phi",280,-0.7,0.7,800,1.3,3.3);
+  fOutput->Add(fEtaPhiDistBefore);
+  fEnergyTimeHistBefore = new TH2F("hEnergyTimeDistBefore","hEnergyTimeDistBefore;E_{clus} (GeV);time",60,0,30,500,0,1e-6);
+  fOutput->Add(fEnergyTimeHistBefore);
+  fEnergyDistAfter = new TH1F("hEnergyDistAfter","hEnergyDistAfter;E_{clus} (GeV)",1500,0,150);
+  fOutput->Add(fEnergyDistAfter);
+  fEtaPhiDistAfter = new TH2F("hEtaPhiDistAfter","hEtaPhiDistAfter;#eta;#phi",280,-0.7,0.7,800,1.3,3.3);
+  fOutput->Add(fEtaPhiDistAfter);
+  fEnergyTimeHistAfter = new TH2F("hEnergyTimeDistAfter","hEnergyTimeDistAfter;E_{clus} (GeV);time",60,0,30,500,0,1e-6);
+  fOutput->Add(fEnergyTimeHistAfter);
+  PostData(1, fOutput);
 }
 
 //________________________________________________________________________
@@ -105,6 +134,16 @@ Bool_t AliEmcalClusterMaker::Run()
     AliVCluster *clus = static_cast<AliVCluster*>(fCaloClusters->At(i));
     if (!clus || !clus->IsEMCAL())
       continue;
+
+    if (fCreateHisto) {
+      fEnergyDistBefore->Fill(clus->E());
+      Float_t pos[3] ={0,0,0};
+      clus->GetPosition(pos);
+      TVector3 vec(pos);
+      fEtaPhiDistBefore->Fill(vec.Eta(),vec.Phi());
+      fEnergyTimeHistBefore->Fill(clus->E(),clus->GetTOF());
+    }
+
     AliVCluster *oc = 0;
     if (fEsdMode) {
       AliESDCaloCluster *ec = dynamic_cast<AliESDCaloCluster*>(clus);
@@ -128,6 +167,16 @@ Bool_t AliEmcalClusterMaker::Run()
     if (!AcceptCluster(oc))
       continue;
     clusCount++;
+
+    if (fCreateHisto) {
+      fEnergyDistAfter->Fill(oc->E());
+      Float_t pos[3] ={0,0,0};
+      oc->GetPosition(pos);
+      TVector3 vec(pos);
+      fEtaPhiDistAfter->Fill(vec.Eta(),vec.Phi());
+      fEnergyTimeHistAfter->Fill(oc->E(),oc->GetTOF());
+    }
+
   }
   if ((clusCount>0) && (clusCount==fOutClusters->GetEntries()))
     fOutClusters->RemoveAt(clusCount);
