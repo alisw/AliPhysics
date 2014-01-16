@@ -229,7 +229,7 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
 }
 AliAnalysisTaskESDfilter::~AliAnalysisTaskESDfilter(){
     if(fIsPidOwner) delete fESDpid;
-    delete fRefitVertexTracksCuts;
+    delete[] fRefitVertexTracksCuts;
 }
 
 //______________________________________________________________________________
