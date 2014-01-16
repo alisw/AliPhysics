@@ -276,11 +276,13 @@ void TStatToolkit::LTM(TH1 * his, TVectorD *param , Float_t fraction,  Bool_t ve
   Double_t *data  = new Double_t[nentries];
   Int_t npoints=0;
   for (Int_t ibin=1;ibin<nbins; ibin++){
-    Float_t entriesI = his->GetBinContent(ibin);
-    Float_t xcenter= his->GetBinCenter(ibin);
+    Double_t entriesI = his->GetBinContent(ibin);
+    //Double_t xcenter= his->GetBinCenter(ibin);
+    Double_t x0 =  his->GetXaxis()->GetBinLowEdge(ibin);
+    Double_t w  =  his->GetXaxis()->GetBinWidth(ibin);
     for (Int_t ic=0; ic<entriesI; ic++){
       if (npoints<nentries){
-	data[npoints]= xcenter;
+	data[npoints]= x0+w*Double_t((ic+0.5)/entriesI);
 	npoints++;
       }
     }
@@ -324,28 +326,35 @@ void TStatToolkit::MedianFilter(TH1 * his1D, Int_t nmedian){
 Bool_t TStatToolkit::LTMHisto(TH1 *his1D, TVectorD &params , Float_t fraction){
   //
   // LTM : Trimmed mean on histogram - Modified version for binned data
+  // 
   // Robust statistic to estimate properties of the distribution
-  // See http://en.wikipedia.org/w/index.php?title=Trimmed_estimator&oldid=582847999
+  // To handle binning error special treatment
+  // for definition of unbinned data see:
+  //     http://en.wikipedia.org/w/index.php?title=Trimmed_estimator&oldid=582847999
   //
-  // Paramters:
+  // Function parameters:
   //     his1D   - input histogram
   //     params  - vector with parameters
   //             - 0 - area
   //             - 1 - mean
-  //             - 2 - rms
+  //             - 2 - rms 
   //             - 3 - error estimate of mean
-  //             - 4 - dummy
+  //             - 4 - error estimate of RMS
   //             - 5 - first accepted bin position
   //             - 6 - last accepted  bin position
   //
   Int_t nbins    = his1D->GetNbinsX();
   Int_t nentries = (Int_t)his1D->GetEntries();
+  const Double_t kEpsilon=0.0000000001;
+
   if (nentries<=0) return 0;
+  if (fraction>1) fraction=0;
+  if (fraction<0) return 0;
   TVectorD vectorX(nbins);
   TVectorD vectorMean(nbins);
   TVectorD vectorRMS(nbins);
   Double_t sumCont=0;
-  for (Int_t ibin0=1; ibin0<nbins; ibin0++) sumCont+=his1D->GetBinContent(ibin0);
+  for (Int_t ibin0=1; ibin0<=nbins; ibin0++) sumCont+=his1D->GetBinContent(ibin0);
   //
   Double_t minRMS=his1D->GetRMS()*10000;
   Int_t maxBin=0;
@@ -359,19 +368,66 @@ Bool_t TStatToolkit::LTMHisto(TH1 *his1D, TVectorD &params , Float_t fraction){
       sum0+=cont;
       sum1+=cont*x;
       sum2+=cont*x*x;
-      if (sum0>fraction*sumCont) break;
+      if ( (ibin0!=ibin1) && sum0>=fraction*sumCont) break;
     }
     vectorX[ibin0]=his1D->GetBinCenter(ibin0);
-    if (sum0>fraction*sumCont){
+    if (sum0<fraction*sumCont) continue;
+    //
+    // substract fractions of bin0 and bin1 to keep sum0=fration*sumCont
+    //
+    Double_t diff = sum0-fraction*sumCont;
+    Double_t mean = sum1/sum0;
+    //
+    Double_t x0=his1D->GetBinCenter(ibin0);
+    Double_t x1=his1D->GetBinCenter(ibin1);
+    Double_t y0=his1D->GetBinContent(ibin0);
+    Double_t y1=his1D->GetBinContent(ibin1);
+    //
+    Double_t d = y0+y1-diff;    //enties to keep 
+    Double_t w0=0,w1=0;
+    if (y0<=kEpsilon&&y1>kEpsilon){
+      w1=d/y1;
+    } 
+    if (y1<=kEpsilon&&y0>kEpsilon){
+      w0=d/y0;
+    }
+    if (y0>kEpsilon && y1>kEpsilon && x1>x0  ){
+      w0 = (d*(x1-mean))/((x1-x0)*y0);
+      w1 = (d-y0*w0)/y1;
+      //
+      if (w0>1) {w1+=(w0-1)*y0/y1; w0=1;}
+      if (w1>1) {w0+=(w1-1)*y1/y0; w1=1;}
+    }  
+    if ( (x1>x0) &&TMath::Abs(y0*w0+y1*w1-d)>kEpsilon*sum0){
+      printf(" TStatToolkit::LTMHisto error\n");
+    }
+    sum0-=y0+y1;
+    sum1-=y0*x0;
+    sum1-=y1*x1;
+    sum2-=y0*x0*x0;
+    sum2-=y1*x1*x1;
+    //
+    Double_t xx0=his1D->GetXaxis()->GetBinUpEdge(ibin0)-0.5*w0*his1D->GetBinWidth(ibin0);
+    Double_t xx1=his1D->GetXaxis()->GetBinLowEdge(ibin1)+0.5*w1*his1D->GetBinWidth(ibin1);
+    sum0+=y0*w0+y1*w1;
+    sum1+=y0*w0*xx0;
+    sum1+=y1*w1*xx1;
+    sum2+=y0*w0*xx0*xx0;
+    sum2+=y1*w1*xx1*xx1;
+
+    //
+    // choose the bin with smallest rms
+    //
+    if (sum0>0){
       vectorMean[ibin0]=sum1/sum0;
-      vectorRMS[ibin0]=TMath::Sqrt(sum2/sum0-vectorMean[ibin0]*vectorMean[ibin0]);
+      vectorRMS[ibin0]=TMath::Sqrt(TMath::Abs(sum2/sum0-vectorMean[ibin0]*vectorMean[ibin0]));
       if (vectorRMS[ibin0]<minRMS){
 	minRMS=vectorRMS[ibin0];
 	params[0]=sum0;
 	params[1]=vectorMean[ibin0];
 	params[2]=vectorRMS[ibin0];
 	params[3]=vectorRMS[ibin0]/TMath::Sqrt(sumCont*fraction);
-	params[4]=0;
+	params[4]=0; // what is the formula for error of RMS???
 	params[5]=ibin0;
 	params[6]=ibin1;
 	params[7]=his1D->GetBinCenter(ibin0);
@@ -383,7 +439,6 @@ Bool_t TStatToolkit::LTMHisto(TH1 *his1D, TVectorD &params , Float_t fraction){
     }
   }
   return kTRUE;
-
 }
 
 
@@ -845,8 +900,8 @@ TGraphErrors * TStatToolkit::MakeStat1D(TH2 * his, Int_t deltaBin, Double_t frac
       err = projection->GetRMSError();
     }
     if (returnType==2 || returnType==3){
-      if (returnType==2) stat= vecLTM[1];
-      if (returnType==3) stat= vecLTM[2];	
+      if (returnType==2) {stat= vecLTM[1];  err =projection->GetRMSError();}
+	if (returnType==3) {stat= vecLTM[2];	 err =projection->GetRMSError();}
     }
     if (returnType==4|| returnType==5){
       projection->Fit(&f1,"QN","QN", vecLTM[7], vecLTM[8]);
