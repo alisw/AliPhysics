@@ -17,6 +17,7 @@ class AliAODEvent;
 class AliPIDResponse;  
 class AliAODMCParticle;
 class AliAODTrack;
+class TH2F;
 
 #include "TNamed.h"
 
