@@ -98,6 +98,16 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString config="1",
     if(strlen(onlineRejection[j])) task->SetFiredTriggerName(onlineRejection[j],kTRUE);
     if(!hasMC) task->UsePhysicsSelection();
 
+    // event filter
+    AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("vertex","vertex");
+    if(isAOD) eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
+    eventCuts->SetRequireVertex();
+    eventCuts->SetMinVtxContributors(1);
+    eventCuts->SetVertexZ(-10.,+10.);
+    eventCuts->SetCentralityRange(0,90.);
+    eventCuts->Print();
+    task->SetEventFilter(eventCuts);
+   
     // add dielectron to the task and manager
     task->AddDielectron(jpsi);
     mgr->AddTask(task);
