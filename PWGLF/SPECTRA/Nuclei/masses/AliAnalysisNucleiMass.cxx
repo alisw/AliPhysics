@@ -740,7 +740,7 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 	this->GetZTpc(dedx,pTPC,M2,Z2);
 	
 	Double_t Mass2[9];
-	//-----------------------------M2 as a function of momentum to the primary vertex if iMtof==1---------------------------------
+	//-----------------------------M2 as a function of the momentum to the primary vertex if iMtof==1---------------------------------
 	if(iMtof==1) this->GetMassFromPvertexCorrected(beta,pC,Mass2);
 
 	if(iMtof>1) this->GetPmeanVsBetaGamma(exptimes,pC,FlagPid,FlagPidTof,charge,DCAxy);
