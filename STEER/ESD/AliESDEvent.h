@@ -19,6 +19,7 @@
 #include <TObject.h>
 #include <TTree.h>
 #include <TArrayF.h>
+#include <TObjArray.h>
 
 
 #include "AliVEvent.h"
@@ -42,6 +43,8 @@
 
 #include "AliESDVZERO.h"
 #include "AliESDTrdTrack.h"
+#include "AliESDTOFcluster.h"
+
 #ifdef MFT_UPGRADE
 //#include "AliESDMFT.h"
 #endif
@@ -302,7 +305,10 @@ public:
   AliTOFHeader *GetTOFHeader() const {return fTOFHeader;}
   Float_t GetEventTimeSpread() const {if (fTOFHeader) return fTOFHeader->GetT0spread(); else return 0.;}
   Float_t GetTOFTimeResolution() const {if (fTOFHeader) return fTOFHeader->GetTOFResolution(); else return 0.;}
-
+  TObjArray *GetTOFcluster() const {return fTOFcluster;}
+  void SetTOFcluster(Int_t ntofclusters,AliESDTOFcluster *cluster,Int_t *mapping=NULL);
+  void SetTOFcluster(Int_t ntofclusters,AliESDTOFcluster *cluster[],Int_t *mapping=NULL);
+  Int_t GetNTOFclusters() const {return fNTOFclusters;}
 
   void SetMultiplicity(const AliMultiplicity *mul);
 
@@ -581,7 +587,10 @@ protected:
   UInt_t fDAQDetectorPattern; // Detector pattern from DAQ: bit 0 is SPD, bit 4 is TPC, etc. See event.h
   UInt_t fDAQAttributes; // Third word of attributes from DAQ: bit 7 corresponds to HLT decision 
 
-  ClassDef(AliESDEvent,19)  //ESDEvent class 
+  Int_t fNTOFclusters;     //! N TOF clusters matchable
+  TObjArray *fTOFcluster; //! TOF clusters
+
+  ClassDef(AliESDEvent,20)  //ESDEvent class 
 };
 #endif 
 

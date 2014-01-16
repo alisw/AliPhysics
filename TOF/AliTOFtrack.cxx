@@ -72,8 +72,13 @@ AliTOFtrack::AliTOFtrack(const AliESDtrack& t) :
 
   if ((t.GetStatus()&AliESDtrack::kTIME) == 0) return;
   StartTimeIntegral();
-  Double_t times[10]; t.GetIntegratedTimes(times); SetIntegratedTimes(times);
-  SetIntegratedLength(t.GetIntegratedLength());
+  Double_t times[10]; 
+  for(Int_t isp=0;isp<AliPID::kSPECIESC;isp++){
+    times[isp] = t.GetIntegratedTimesOld(isp); // in ps
+  }
+
+  SetIntegratedTimes(times);
+  SetIntegratedLength(t.GetIntegratedLengthOld());
 
 }              
 

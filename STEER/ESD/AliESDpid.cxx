@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id: AliESDpid.cxx 64123 2013-09-05 15:09:53Z morsch $ */
 
 //-----------------------------------------------------------------
 //           Implementation of the combined PID class
@@ -61,7 +61,7 @@ Int_t AliESDpid::MakePID(AliESDEvent *event, Bool_t TPConly, Float_t timeZeroTOF
     MakeTPCPID(track);
     if (!TPConly) {
       MakeITSPID(track);
-      MakeTOFPID(track, timeZeroTOF);
+      //MakeTOFPID(track, timeZeroTOF);
       //MakeHMPIDPID(track);
       //MakeTRDPID(track);
     }

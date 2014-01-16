@@ -92,6 +92,7 @@ set ( SRCS
     STEERBase/AliVTrdTracklet.cxx
     STEERBase/AliGenEventHeaderTunedPbPb.cxx
     STEERBase/AliDummyHandler.cxx
+    STEERBase/AliVTOFcluster.cxx
   )
 
 string(REPLACE ".cxx" ".h" HDRS  "${SRCS}")

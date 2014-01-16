@@ -2,7 +2,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
+/* $Id: STEERBaseLinkDef.h 65235 2013-12-02 15:40:49Z jgrosseo $ */
 
 #pragma link off all globals;
 #pragma link off all classes;
@@ -132,6 +132,8 @@
 #pragma link C++ class AliVTrdTrack+;
 #pragma link C++ class AliVTrdTracklet+;
 #pragma link C++ class AliGenEventHeaderTunedPbPb+;
+
+#pragma link C++ class AliVTOFcluster+;
 
 #endif
 
