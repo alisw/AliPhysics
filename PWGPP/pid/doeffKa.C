@@ -97,8 +97,8 @@ int LoadLib(){
   kLoaded = kTRUE;
 
   // check if MC
-  Float_t x[] = {xmin[0]+0.001,xmin[1]+0.001,xmin[2]+0.001,xmin[3]+0.001,xmin[4]+0.001,xmin[5]+0.001,xmin[6]+0.001,xmin[7]+0.001,1/*trueMC*/,xmin[9],xmin[10]};
-  Float_t x2[] = {xmax[0],xmax[1],xmax[2],xmax[3],xmax[4],xmax[5],xmax[6],xmax[7],xmax[8],xmax[9],xmax[10]};
+  Float_t x[] = {xmin[0]+0.001,xmin[1]+0.001,xmin[2]+0.001,xmin[3]+0.001,xmin[4]+0.001,xmin[5]+0.001,xmin[6]+0.001,xmin[7]+0.001,1/*trueMC*/,xmin[9],xmin[10],xmin[11],xmin[12],xmin[13]};
+  Float_t x2[] = {xmax[0],xmax[1],xmax[2],xmax[3],xmax[4],xmax[5],xmax[6],xmax[7],xmax[8],xmax[9],xmax[10],xmax[11],xmax[12],xmax[13]};
 
   AliPIDperfContainer *tmp = (AliPIDperfContainer *) fContPid1;
   TH1D *h = tmp->GetQA(0, x, x2)->ProjectionX("checkMC");
@@ -294,7 +294,9 @@ void doeffKa(Int_t pos,Float_t prob,Float_t etaminkp,Float_t etamaxkp){
 
     b[i][0] = b[i][0]-b2[i][0]*weightS;
 
-    efferr[i] = TMath::Sqrt(b[i][1]*b[i][1]/b[i][0]/b[i][0] + b2[i][1]*b2[i][1]/b2[i][0]/b2[i][0])*(b2[i][0]+b2[i][1])*(1+weightS*(b2[i][0]-b2[i][1])/b[i][0])/b[i][0];//*(1-eff[i]);//der2*der2*(b[i][1]*b[i][1] - b2[i][1]*b2[i][1]));
+
+    efferr[i] = TMath::Abs(b[i][1]*b[i][1]/b[i][0]/b[i][0] + b2[i][1]*b2[i][1]/b2[i][0]/b2[i][0])*(b2[i][0]+b2[i][1])*(1+weightS*(b2[i][0]-b2[i][1])/b[i][0])/b[i][0];//*(1-eff[i]);//der2*der2*(b[i][1]*b[i][1] - b2[i][1]*b2[i][1]));
+    efferr[i] = TMath::Sqrt(efferr[i]);
 
     if(TMath::Abs(efferr[i]) > 1)efferr[i]=1;
   }
@@ -561,9 +563,13 @@ void fit(TH1D *h,Float_t *a,char *opt,char *opt2,Float_t pt){
  Float_t sigma = 0.0044;//TMath::Abs(ftmp->GetParameter(2));
 
  Float_t signI = ftmp2->Integral(mean-10*sigma,mean+10*sigma)/h->GetBinWidth(1);
- Float_t backI = ftmp3->Integral(mean-3*sigma,mean+3*sigma)/h->GetBinWidth(1);
+ if(signI < 1) signI = 1;
 
- Float_t errI = TMath::Sqrt(ftmp->GetParError(0)*ftmp->GetParError(0)/(0.001+ftmp->GetParameter(0))/(0.001+ftmp->GetParameter(0)));
+ Float_t backI = ftmp3->Integral(mean-3*sigma,mean+3*sigma)/h->GetBinWidth(1);
+ if(backI < 1) backI = 1;
+
+ Float_t errI = TMath::Abs(ftmp->GetParError(0)*ftmp->GetParError(0)/(0.001+ftmp->GetParameter(0))/(0.001+ftmp->GetParameter(0)));
+ errI = TMath::Sqrt(errI);
 
  printf("signal(5 sigma) = %f +/- %f(fit) +/- %f(stat)\n",signI,errI*signI,TMath::Sqrt(signI));
  printf("backgr(3sigma) = %f\n",backI);
