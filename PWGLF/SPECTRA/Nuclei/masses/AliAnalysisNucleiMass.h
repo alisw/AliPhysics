@@ -72,7 +72,7 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   Int_t iTrdCut;                                   // iTrdCut==0-> No TRD cut; iTrdCut==1-> Yes TRD cut: yes TRD; iTrdCut==2->Yes TRD cut: no TRD; 
   Int_t kSignalCheck;                              // kSignalCheck==1->Fill all plots ; kSignalCheck==0->Fill only TH1 ; kSignalCheck==2-> Fill TH1 and some TH2 usefull in analysis
   Int_t iMtof;                                     // iMtof==1->m~pVtx ; iMtof==2->m~pExp ; iMtof==4->m~<p> (same correction for particle and antiparticle) ; iMtof==8->m~<p> (different correction for particle and antiparticle) 
-  //To use only iMtof<=2; In the next commit also iMtof>2 will work well... 
+  //Use only iMtof<=2; In the next commit also iMtof>2 will work well... 
   Int_t kPvtxCorr;                                 // kPvtxCorr==1->Momentum at the primary vertex for (anti)nuclei is rescaled ; kPvtxCorr==0->no correction
 
   //other:
