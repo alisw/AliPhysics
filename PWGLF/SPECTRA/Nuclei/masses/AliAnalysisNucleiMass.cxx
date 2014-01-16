@@ -16,13 +16,14 @@
 #include "TH2D.h"
 #include "TH1F.h"
 #include "TF1.h"
+#include "TF2.h"
 #include "TGraph.h"
 #include "TProfile.h"
 #include "AliESDtrackCuts.h"
 #include "AliAnalysisManager.h"
 #include "TFile.h"
 
-ClassImp(AliAnalysisNucleiMass)//...
+ClassImp(AliAnalysisNucleiMass)
 
 //_____________________________________________________________________________
 AliAnalysisNucleiMass::AliAnalysisNucleiMass():
@@ -37,6 +38,7 @@ AliAnalysisNucleiMass::AliAnalysisNucleiMass():
   iTrdCut(0),
   kSignalCheck(1),
   iMtof(1),
+  kPvtxCorr(1),
   iBconf(0),                                  
   kTOF(0),               
   fAOD(NULL), 
@@ -63,6 +65,7 @@ AliAnalysisNucleiMass::AliAnalysisNucleiMass(const char *name):
   iTrdCut(0),
   kSignalCheck(1),
   iMtof(1),
+  kPvtxCorr(1),
   iBconf(0),                                  
   kTOF(0),               
   fAOD(NULL), 
@@ -118,14 +121,14 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
   snprintf(name[16],20,"#bar{He3}");
   snprintf(name[17],20,"#bar{He4}");
   
-  Double_t binPt[nbin+1];
+  Double_t binP[nbin+1];
   for(Int_t i=0;i<nbin+1;i++) {
-    binPt[i]=0.4+0.1*i;
+    binP[i]=0.4+0.1*i;
   }
   
   Char_t name_nbin[nbin][200];
   for(Int_t j=0;j<nbin;j++) {
-    snprintf(name_nbin[j],200,"%.1f<Pt<%.1f",binPt[j],binPt[j+1]);
+    snprintf(name_nbin[j],200,"%.1f<P<%.1f",binP[j],binP[j+1]);
   }
   
   for(Int_t iB=0;iB<nBconf;iB++) {
@@ -143,8 +146,8 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
     hPhi[iB] = new TH1F("hPhi_Analyzed","#phi distribution after the track cuts;#phi (rad.)",90,0,6.3);//Each TRD supermodule is divided for 5 (DeltaPhi(TRD)=0.35 theoretical)
     
     Int_t hbins[2];
-    if(kSignalCheck>1) {hbins[0]=100; hbins[1]=90;}
-    else if(kSignalCheck==0) {hbins[0]=1; hbins[1]=1;}
+    if(kSignalCheck!=0) {hbins[0]=100; hbins[1]=90;}
+    else {hbins[0]=1; hbins[1]=1;}
     fEtaPhi[iB] = new TH2F("fEtaPhi_Analyzed","|#eta| vs. #phi after the track cuts;|#eta|;#phi (rad.)",hbins[0],0.0,1.0,hbins[1],0,6.3);
 
     hNTpcCluster[iB] = new TH1F("hNTpcCluster","Number of the TPC clusters after the track cuts;n_{cl}^{TPC}",300,0,300);
@@ -181,7 +184,7 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
     Char_t title_fNsigmaTpc_kTOF[nSpec][200];
     for(Int_t i=0;i<nSpec;i++) {
       snprintf(name_fNsigmaTpc_kTOF[i],200,"NsigmaTpc_%s_kTOF",name[i]);
-      snprintf(title_fNsigmaTpc_kTOF[i],200,"NsigmaTpc_kTOF_%s in DCAxyCut;p_{T}/|z| (GeV/c);n_{#sigma_{TPC}}^{%s}",name[i],name[i]);
+      snprintf(title_fNsigmaTpc_kTOF[i],200,"NsigmaTpc_kTOF_%s in DCAxyCut;p/|z| (GeV/c);n_{#sigma_{TPC}}^{%s}",name[i],name[i]);
       fNsigmaTpc_kTOF[iB][i] = new TH2F(name_fNsigmaTpc_kTOF[i],title_fNsigmaTpc_kTOF[i],hbins[0],0,5,hbins[1],-5,5);
     }
 
@@ -211,8 +214,8 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
 
     Char_t name_fNsigmaTof_DcaCut[nSpec][200];
     Char_t title_fNsigmaTof_DcaCut[nSpec][200];    
-    if(kSignalCheck>1) {hbins[0]=100; hbins[1]=100;}
-    else if(kSignalCheck==0) {hbins[0]=1; hbins[1]=1;}
+    if(kSignalCheck==1) {hbins[0]=100; hbins[1]=100;}
+    else {hbins[0]=1; hbins[1]=1;}
     for(Int_t i=0;i<nSpec;i++) {
       snprintf(name_fNsigmaTof_DcaCut[i],200,"NsigmaTof_DcaCut_%s",name[i]);
       snprintf(title_fNsigmaTof_DcaCut[i],200,"NsigmaTof_%s with DCAxyCut;p_{T}/|z| (GeV/c);n_{#sigma_{TOF}}^{%s}",name[i],name[i]);
@@ -221,33 +224,33 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
 
     if(kSignalCheck==1) {hbins[0]=8000; hbins[1]=100;}
     else {hbins[0]=1; hbins[1]=1;}
-    fM2vsPt_NoTpcCut[iB][0][0] = new TH2F("fM2vsPt_NoTpcCut_pos","m^{2}/z^{2}_{TOF} vs p_{T}/|z| (positive charge);m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4});p_{T}/|z| (GeV/c)",hbins[0],0,10,hbins[1],0,5);
-    fM2vsPt_NoTpcCut[iB][0][1] = new TH2F("fM2vsPt_NoTpcCut_neg","m^{2}/z^{2}_{TOF} vs p_{T}/|z| (negative charge);m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4});p_{T}/|z| (GeV/c)",hbins[0],0,10,hbins[1],0,5);
+    fM2vsP_NoTpcCut[iB][0][0] = new TH2F("fM2vsP_NoTpcCut_pos","m^{2}/z^{2}_{TOF} vs p/|z| (positive charge);m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4});p/|z| (GeV/c)",hbins[0],0,10,hbins[1],0,5);
+    fM2vsP_NoTpcCut[iB][0][1] = new TH2F("fM2vsP_NoTpcCut_neg","m^{2}/z^{2}_{TOF} vs p/|z| (negative charge);m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4});p/|z| (GeV/c)",hbins[0],0,10,hbins[1],0,5);
 
     if(kSignalCheck==1) {hbins[0]=8000; hbins[1]=100;}
     else if(kSignalCheck==0) {hbins[0]=1; hbins[1]=1;}
     else if(kSignalCheck==2) {hbins[0]=1000; hbins[1]=100;}
-    fM2vsPt_NoTpcCut[iB][1][0] = new TH2F("fM2vsPt_NoTpcCut_DCAxyCut_pos","m^{2}/z^{2}_{TOF} vs p_{T}/|z| (positive charge) with DCAxy cut;m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4});p_{T}/|z| (GeV/c)",hbins[0],0,10,hbins[1],0,5);
-    fM2vsPt_NoTpcCut[iB][1][1] = new TH2F("fM2vsPt_NoTpcCut_DCAxyCut_neg","m^{2}/z^{2}_{TOF} vs p_{T}/|z| (negative charge) with DCAxy cut;m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4});p_{T}/|z| (GeV/c)",hbins[0],0,10,hbins[1],0,5);
+    fM2vsP_NoTpcCut[iB][1][0] = new TH2F("fM2vsP_NoTpcCut_DCAxyCut_pos","m^{2}/z^{2}_{TOF} vs p/|z| (positive charge) with DCAxy cut;m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4});p/|z| (GeV/c)",hbins[0],0,10,hbins[1],0,5);
+    fM2vsP_NoTpcCut[iB][1][1] = new TH2F("fM2vsP_NoTpcCut_DCAxyCut_neg","m^{2}/z^{2}_{TOF} vs p/|z| (negative charge) with DCAxy cut;m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4});p/|z| (GeV/c)",hbins[0],0,10,hbins[1],0,5);
 
-    Char_t name_fM2vsPt[2][18][300]; 
-    Char_t title_fM2vsPt[2][18][300]; 
+    Char_t name_fM2vsP[2][18][300]; 
+    Char_t title_fM2vsP[2][18][300]; 
 
     for(Int_t i=0;i<nSpec;i++) {
-      snprintf(name_fM2vsPt[0][i],300,"fM2vsPt_%s",name[i]);
-      snprintf(title_fM2vsPt[0][i],300,"m^{2}/z^{2}_{TOF} vs p_{T}/|z| of %s with a NsigmaTpcCut;m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4});p_{T}/|z| (GeV/c)",name[i]);
+      snprintf(name_fM2vsP[0][i],300,"fM2vsPc_%s",name[i]);
+      snprintf(title_fM2vsP[0][i],300,"m^{2}/z^{2}_{TOF} vs p/|z| of %s with a NsigmaTpcCut (pReco->pTrue for nuclei);m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4});p/|z| (GeV/c)",name[i]);
       
-      snprintf(name_fM2vsPt[1][i],300,"fM2vsPt_%s_DCAxyCut",name[i]);
-      snprintf(title_fM2vsPt[1][i],300,"m^{2}/z^{2}_{TOF} vs p_{T}/|z| of %s with a NsigmaTpcCut and with the DCAxy cut;m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4});p_{T}/|z| (GeV/c)",name[i]);
+      snprintf(name_fM2vsP[1][i],300,"fM2vsPc_%s_DCAxyCut",name[i]);
+      snprintf(title_fM2vsP[1][i],300,"m^{2}/z^{2}_{TOF} vs p/|z| of %s with a NsigmaTpcCut and with the DCAxy cut (pReco->pTrue for nuclei);m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4});p/|z| (GeV/c)",name[i]);
 
       if(kSignalCheck==1) {hbins[0]=8000; hbins[1]=100;}
       else {hbins[0]=1; hbins[1]=1;}
-      fM2vsPt[iB][0][i] = new TH2F(name_fM2vsPt[0][i],title_fM2vsPt[0][i],hbins[0],0,10,hbins[1],0,5);
+      fM2vsP[iB][0][i] = new TH2F(name_fM2vsP[0][i],title_fM2vsP[0][i],hbins[0],0,10,hbins[1],0,5);
       
       if(kSignalCheck==1) {hbins[0]=8000; hbins[1]=100;}
       else if(kSignalCheck==0) {hbins[0]=1; hbins[1]=1;}
       else if(kSignalCheck==2) {hbins[0]=1000; hbins[1]=100;}
-      fM2vsPt[iB][1][i] = new TH2F(name_fM2vsPt[1][i],title_fM2vsPt[1][i],hbins[0],0,10,hbins[1],0,5);
+      fM2vsP[iB][1][i] = new TH2F(name_fM2vsP[1][i],title_fM2vsP[1][i],hbins[0],0,10,hbins[1],0,5);
     }
     
     if(kSignalCheck==1) {hbins[0]=4000; hbins[1]=1000;}
@@ -307,40 +310,13 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
       }
     }
 
-    //Parameterizations:
-    fPmeanVsPexp[0]=new TF1("fPmeanVsPexp_p","[2]-[0]*TMath::Exp(-(TMath::Max(x,[3])*[1]))",0,20);
-    fPmeanVsPexp[1]=new TF1("fPmeanVsPexp_d","[2]-[0]*TMath::Exp(-(TMath::Max(x,[3])*[1]))",0,20);
-    fPmeanVsPexp[2]=new TF1("fPmeanVsPexp_He3","[2]-[0]*TMath::Exp(-(TMath::Max(x,[3])*[1]))",0,20);
-           
-    Double_t fpars_p[4]={5.14500484596484148e-03,9.74729863202270397e-01,0.0,1.00607413672776569e+00};
-    Double_t fpars_d[4]={3.16023942908439243e-02,1.24005027514358490e+00,-1.50000000000000003e-03,1.40607413672776560e+00};
-    Double_t fpars_He3[4]={2.73329079591698026e-02,1.53005942367188852e+00,-4.10231310888738848e-03,1.20607413672776564e+00};
-    fPmeanVsPexp[0]->SetParameters(fpars_p);
-    fPmeanVsPexp[1]->SetParameters(fpars_d);
-    fPmeanVsPexp[2]->SetParameters(fpars_He3);
-
-    /*Char_t title_Xaxis[3][200];
-    Char_t title_Yaxis[3][200];
-    snprintf(title_Xaxis[0],200,"p(t_{exp}^{%s})",namePart[4]);
-    snprintf(title_Yaxis[0],200,"p(t_{TOF})-p(t_{exp}^{%s})/p(t_{exp}^{%s})",namePart[4],namePart[4]);
-    snprintf(title_Xaxis[1],200,"p(t_{exp}^{%s})",namePart[5]);
-    snprintf(title_Yaxis[1],200,"p(t_{TOF})-p(t_{exp}^{%s})/p(t_{exp}^{%s})",namePart[5],namePart[5]);
-    snprintf(title_Xaxis[2],200,"p(t_{exp}^{%s})",namePart[7]);
-    snprintf(title_Yaxis[2],200,"p(t_{TOF})-p(t_{exp}^{%s})/p(t_{exp}^{%s})",namePart[7],namePart[7]);
-    for(Int_t i=0;i<3;i++){
-      fPmeanVsPexp[i]->GetXaxis()->SetTitle(title_Xaxis[i]);
-      fPmeanVsPexp[i]->GetYaxis()->SetTitle(title_Yaxis[i]);
-      fPmeanVsPexp[i]->SetTitle("Parameterization calculated with Monte Carlo (LHC13d15)");
-      }*/
-    //end parameterizations
-
     Char_t name_fPmeanVsBetaGamma[18][200];
     Char_t title_fPmeanVsBetaGamma[18][200];
     
     hbins[0]=200; hbins[1]=200;
     for(Int_t iS=0;iS<nSpec;iS++) {
       snprintf(name_fPmeanVsBetaGamma[iS],200,"fPmeanVsPvtx_%s",name[iS]);
-      snprintf(title_fPmeanVsBetaGamma[iS],200,"<p>/p_{vtx} vs #beta#gamma of %s;p_{vtx}/m_{%s};<p>_{%s}/p_{vtx}",name[iS],name[iS],name[iS]);
+      snprintf(title_fPmeanVsBetaGamma[iS],200,"<p>/p_{vtx} vs #beta#gamma of %s (in DCAxyCut);p_{vtx}/m_{%s};<p>_{%s}/p_{vtx}",name[iS],name[iS],name[iS]);
       fPmeanVsBetaGamma[iB][iS]=new TH2F(name_fPmeanVsBetaGamma[iS],title_fPmeanVsBetaGamma[iS],hbins[0],0,10,hbins[1],0.8,1.2);
     }	
     
@@ -349,8 +325,133 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
     
     for(Int_t iS=0;iS<nSpec;iS++) {
       snprintf(name_prPmeanVsBetaGamma[iS],200,"prPmeanVsPvtx_%s",name[iS]);
-      snprintf(title_prPmeanVsBetaGamma[iS],200,"<p>/p_{vtx} vs #beta#gamma of %s;p_{vtx}/m_{%s};<p>_{%s}/p_{vtx}",name[iS],name[iS],name[iS]);
+      snprintf(title_prPmeanVsBetaGamma[iS],200,"<p>/p_{vtx} vs #beta#gamma of %s (in DCAxyCut);p_{vtx}/m_{%s};<p>_{%s}/p_{vtx}",name[iS],name[iS],name[iS]);
       prPmeanVsBetaGamma[iB][iS]=new TProfile(name_prPmeanVsBetaGamma[iS],title_prPmeanVsBetaGamma[iS],hbins[0],0,10,0.8,1.2,"");
+    }	
+    
+    //for (bar)d
+    fPvtxTrueVsReco[0]=new TF2("fcorr_d","([0]*TMath::Power(x,[1])+[2])*(TMath::Power((TMath::Exp([3]*x)+[4]),[5]*TMath::Power(y,[6])));|#eta|;p_{true}/p_{reco}",0.0001,100,0,1);//for (bar)d
+    fPvtxTrueVsReco[0]->SetParameter(0,0.031263);
+    fPvtxTrueVsReco[0]->SetParameter(1,-3.276770);
+    fPvtxTrueVsReco[0]->SetParameter(2,1.000113);
+    fPvtxTrueVsReco[0]->SetParameter(3,-5.195875);
+    fPvtxTrueVsReco[0]->SetParameter(4,1.000674);
+    fPvtxTrueVsReco[0]->SetParameter(5,2.870503);
+    fPvtxTrueVsReco[0]->SetParameter(6,3.777729);
+    
+    fPvtxTrueVsReco[0]->SetNpx(fPvtxTrueVsReco[0]->GetNpx()*10);
+        
+    //for (bar)He3
+    fPvtxTrueVsReco[1]=new TF2("fcorr_He","([0]*TMath::Power(x,[1])+[2])*(TMath::Power((TMath::Exp([3]*x)+[4]),[5]*TMath::Power(y,[6])));|#eta|;p_{true}/p_{reco}",0.0001,100,0,1);//for (bar)He3
+    fPvtxTrueVsReco[1]->SetParameter(0,0.037986);
+    fPvtxTrueVsReco[1]->SetParameter(1,-2.707620);
+    fPvtxTrueVsReco[1]->SetParameter(2,1.000742);
+    fPvtxTrueVsReco[1]->SetParameter(3,-4.934743);
+    fPvtxTrueVsReco[1]->SetParameter(4,1.001640);
+    fPvtxTrueVsReco[1]->SetParameter(5,2.744372);
+    fPvtxTrueVsReco[1]->SetParameter(6,3.528561);
+
+    fPvtxTrueVsReco[1]->SetNpx(fPvtxTrueVsReco[1]->GetNpx()*10);
+
+    prPvtxTrueVsReco[iB][0]=new TProfile("prPvtxTrueVsReco_d","p_{true} vs p_{reco} of d and dbar;p_{reco} (GeV/c); p_{true}/p_{reco} (d)",200,0,10);
+    prPvtxTrueVsReco[iB][1]=new TProfile("prPvtxTrueVsReco_He3","p_{true} vs p_{reco} of He3 and He3bar;p_{reco} (GeV/c);p_{true}/p_{reco} (He3)",200,0,10);
+
+    Char_t nameTemp[10][200];
+    snprintf(nameTemp[0],200,"#pi^{+}");
+    snprintf(nameTemp[1],200,"K^{+}");
+    snprintf(nameTemp[2],200,"p");
+    snprintf(nameTemp[3],200,"d");
+    snprintf(nameTemp[4],200,"He3");
+    snprintf(nameTemp[5],200,"#pi^{-}");
+    snprintf(nameTemp[6],200,"K^{-}");
+    snprintf(nameTemp[7],200,"#bar{p}");
+    snprintf(nameTemp[8],200,"#bar{d}");
+    snprintf(nameTemp[9],200,"#bar{He3}");
+    
+    Double_t pars_fPmeanVsBGcorr[10][3];
+    //particle
+    for(Int_t i=0;i<5;i++) {
+      if(i==0) {//pi
+	pars_fPmeanVsBGcorr[i][0]=4.89956e-02;
+	pars_fPmeanVsBGcorr[i][1]=-6.46308e-01;
+	pars_fPmeanVsBGcorr[i][2]=1.00462e+00;
+      }
+      else if(i==1) {//K
+	pars_fPmeanVsBGcorr[i][0]=3.06216e-02;
+	pars_fPmeanVsBGcorr[i][1]=-2.10247e+00;
+	pars_fPmeanVsBGcorr[i][2]=9.97142e-01;
+      }
+      else if(i==2) {//p
+	pars_fPmeanVsBGcorr[i][0]=1.58652e-02;
+	pars_fPmeanVsBGcorr[i][1]=-2.64898e+00;
+	pars_fPmeanVsBGcorr[i][2]=9.97176e-01;
+      }
+      else if(i==3) {//d
+	pars_fPmeanVsBGcorr[i][0]=0.011233;
+	pars_fPmeanVsBGcorr[i][1]=-2.389911;
+	pars_fPmeanVsBGcorr[i][2]=0.997176;
+      }
+      else if(i==4) {//He3
+	pars_fPmeanVsBGcorr[i][0]=0.030884;
+	pars_fPmeanVsBGcorr[i][1]=-2.124273;
+	pars_fPmeanVsBGcorr[i][2]=0.997176;
+      }
+    }
+    //antiparticle
+    if(iMtof==8) {
+      for(Int_t i=5;i<10;i++) {
+	if(i==0+5) {//pi-
+	  pars_fPmeanVsBGcorr[i][0]=6.86083e-02;
+	  pars_fPmeanVsBGcorr[i][1]=-8.37051e-01;
+	  pars_fPmeanVsBGcorr[i][2]=1.00589e+00;
+	}
+	else if(i==1+5) {//K-
+	  pars_fPmeanVsBGcorr[i][0]=3.26139e-02;
+	  pars_fPmeanVsBGcorr[i][1]=-2.08158e+00;
+	  pars_fPmeanVsBGcorr[i][2]=9.99782e-01;
+	}
+	else if(i==2+5) {//pbar
+	  pars_fPmeanVsBGcorr[i][0]=1.58118e-02;
+	  pars_fPmeanVsBGcorr[i][1]=-2.66903e+00;
+	  pars_fPmeanVsBGcorr[i][2]=9.99201e-01;
+	}
+	else if(i==3+5) {//dbar
+	  pars_fPmeanVsBGcorr[i][0]=0.011195;
+	  pars_fPmeanVsBGcorr[i][1]=-2.407999;
+	  pars_fPmeanVsBGcorr[i][2]=0.999201;
+	}
+	else if(i==4+5) {//He3bar
+	  pars_fPmeanVsBGcorr[i][0]=0.030780;
+	  pars_fPmeanVsBGcorr[i][1]=-2.140350;
+	  pars_fPmeanVsBGcorr[i][2]=0.999201;
+	}
+      }
+    }
+    else {//else if(iMtof!=8)
+      for(Int_t i=5;i<10;i++) {
+	pars_fPmeanVsBGcorr[i][0]=pars_fPmeanVsBGcorr[i-5][0];
+	pars_fPmeanVsBGcorr[i][1]=pars_fPmeanVsBGcorr[i-5][1];
+	pars_fPmeanVsBGcorr[i][2]=pars_fPmeanVsBGcorr[i-5][2];
+      }
+    }
+    
+    Char_t name_fPmeanVsBGcorr[10][200];
+    
+    for(Int_t i=0;i<10;i++) {
+      snprintf(name_fPmeanVsBGcorr[i],200,"fPmeanVsBGcorr_%s",nameTemp[i]);
+      fPmeanVsBGcorr[i]=new TF1(name_fPmeanVsBGcorr[i],"[2]-[0]*TMath::Power(x,[1]);p_{vtx}/m;<p>/p",0.0001,100);
+      fPmeanVsBGcorr[i]->SetParameters(pars_fPmeanVsBGcorr[i]);
+      fPmeanVsBGcorr[i]->SetNpx(fPmeanVsBGcorr[i]->GetNpx()*10);
+    }
+
+    Char_t name_prPmeanVsBGcorr[10][200];
+    Char_t title_prPmeanVsBGcorr[10][200];
+   
+    hbins[0]=200;
+    for(Int_t iS=0;iS<10;iS++) {
+      snprintf(name_prPmeanVsBGcorr[iS],200,"prPmeanVsBGcorr_%s",nameTemp[iS]);
+      snprintf(title_prPmeanVsBGcorr[iS],200,"<p>/p_{vtx} vs #beta#gamma of %s as parameterized in input TF1 (in DCAxyCut);p_{vtx}/m_{%s};<p>_{%s}/p_{vtx}",nameTemp[iS],nameTemp[iS],nameTemp[iS]);
+      prPmeanVsBGcorr[iB][iS]=new TProfile(name_prPmeanVsBGcorr[iS],title_prPmeanVsBGcorr[iS],hbins[0],0,10,0.8,1.2,"");
     }	
 
     fList[iB]->Add(htemp[iB]);
@@ -358,52 +459,58 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
     for(Int_t i=0;i<2;i++) fList[iB]->Add(hZvertex[iB][i]);
     fList[iB]->Add(hEta[iB]);
     fList[iB]->Add(hPhi[iB]);
-    fList[iB]->Add(fEtaPhi[iB]);
+    //fList[iB]->Add(fEtaPhi[iB]);
     fList[iB]->Add(hNTpcCluster[iB]);
     fList[iB]->Add(hNTrdSlices[iB]);
-    for(Int_t i=0;i<2;i++) fList[iB]->Add(fdEdxVSp[iB][i]);
-    for(Int_t i=0;i<nPart;i++) fList[iB]->Add(hDeDxExp[iB][i]);
-    for(Int_t i=0;i<nPart;i++) fList[iB]->Add(fNsigmaTpc[iB][i]);
+    //for(Int_t i=0;i<2;i++) fList[iB]->Add(fdEdxVSp[iB][i]);
+    //for(Int_t i=0;i<nPart;i++) fList[iB]->Add(hDeDxExp[iB][i]);
+    //for(Int_t i=0;i<nPart;i++) fList[iB]->Add(fNsigmaTpc[iB][i]);
     for(Int_t i=0;i<nPart;i++) {
       if(kSignalCheck!=1) 
 	if(i<3 || i==6 || i==8) continue;//e,mu,pi,t,he4 excluded
-      fList[iB]->Add(fNsigmaTpc_kTOF[iB][i]);
-      fList[iB]->Add(fNsigmaTpc_kTOF[iB][i+nPart]);
+      //fList[iB]->Add(fNsigmaTpc_kTOF[iB][i]);
+      //fList[iB]->Add(fNsigmaTpc_kTOF[iB][i+nPart]);
     }
-    for(Int_t i=0;i<2;i++) fList[iB]->Add(fBetaTofVSp[iB][i]);
-    for(Int_t i=0;i<nPart;i++) fList[iB]->Add(hBetaExp[iB][i]);
-    for(Int_t i=0;i<nPart;i++) fList[iB]->Add(fNsigmaTof[iB][i]);
+    //for(Int_t i=0;i<2;i++) fList[iB]->Add(fBetaTofVSp[iB][i]);
+    //for(Int_t i=0;i<nPart;i++) fList[iB]->Add(hBetaExp[iB][i]);
+    //for(Int_t i=0;i<nPart;i++) fList[iB]->Add(fNsigmaTof[iB][i]);
     for(Int_t i=0;i<nPart;i++) {
       if(kSignalCheck!=1) 
 	if(i<3 || i==6 || i==8) continue;//e,mu,pi,t,he4 excluded
-      fList[iB]->Add(fNsigmaTof_DcaCut[iB][i]);
-      fList[iB]->Add(fNsigmaTof_DcaCut[iB][i+nPart]);
+      //fList[iB]->Add(fNsigmaTof_DcaCut[iB][i]);
+      //fList[iB]->Add(fNsigmaTof_DcaCut[iB][i+nPart]);
     }
-    for(Int_t i=0;i<2;i++) fList[iB]->Add(fM2vsPt_NoTpcCut[iB][0][i]);
-    for(Int_t i=0;i<2;i++) fList[iB]->Add(fM2vsPt_NoTpcCut[iB][1][i]);
+    //for(Int_t i=0;i<2;i++) fList[iB]->Add(fM2vsP_NoTpcCut[iB][0][i]);
+    //for(Int_t i=0;i<2;i++) fList[iB]->Add(fM2vsP_NoTpcCut[iB][1][i]);
     for(Int_t i=0;i<nPart;i++) {
       if(i<3 || i==6 || i==8) continue;//e,mu,pi,t,he4 excluded
-      fList[iB]->Add(fM2vsPt[iB][0][i]);
-      fList[iB]->Add(fM2vsPt[iB][0][i+nPart]);
+      //fList[iB]->Add(fM2vsP[iB][0][i]);
+      //fList[iB]->Add(fM2vsP[iB][0][i+nPart]);
     }
     for(Int_t i=0;i<nPart;i++){
       if(kSignalCheck!=1) 
 	if(i<3 || i==6 || i==8) continue;//e,mu,pi,t,he4 excluded
-      fList[iB]->Add(fM2vsPt[iB][1][i]);
-      fList[iB]->Add(fM2vsPt[iB][1][i+nPart]);
+      fList[iB]->Add(fM2vsP[iB][1][i]);
+      fList[iB]->Add(fM2vsP[iB][1][i+nPart]);
+    }
+    for(Int_t i=0;i<2;i++){
+      //fList[iB]->Add(fPvtxTrueVsReco[i]);
+      fList[iB]->Add(prPvtxTrueVsReco[iB][i]);
     }
     if(iMtof!=1) {
       for(Int_t i=0;i<nPart;i++){
-	if(i<3 || i==6 || i==8) continue;//e,mu,pi,t,he4 excluded
+	if(i<2) continue;//e,mu excluded
 	fList[iB]->Add(fPmeanVsBetaGamma[iB][i]);
 	fList[iB]->Add(prPmeanVsBetaGamma[iB][i]);
 	fList[iB]->Add(fPmeanVsBetaGamma[iB][i+nPart]);
 	fList[iB]->Add(prPmeanVsBetaGamma[iB][i+nPart]);
       }
     }
-    if(iMtof==8) for(Int_t i=0;i<3;i++) fList[iB]->Add(fPmeanVsPexp[i]);
-    else if(iMtof==4) for(Int_t i=1;i<3;i++) fList[iB]->Add(fPmeanVsPexp[i]);
-    for(Int_t i=0;i<10;i++) fList[iB]->Add(fM2vsZ[iB][i]);
+    if(iMtof>2) {
+      //for(Int_t i=0;i<10;i++)fList[iB]->Add(fPmeanVsBGcorr[i]);
+      for(Int_t i=0;i<10;i++)fList[iB]->Add(prPmeanVsBGcorr[iB][i]);
+    }
+    //for(Int_t i=0;i<10;i++) fList[iB]->Add(fM2vsZ[iB][i]);
     for(Int_t i=0;i<nPart;i++){
       if(kSignalCheck!=1) 
 	if(i<3 || i==6 || i==8) continue;//e,mu,pi,t,he4 excluded
@@ -422,7 +529,7 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
     // Post output data.
     PostData(1, fList[0]);
     PostData(2, fList[1]);
-    
+        
   }//end iB loop
 }
 //______________________________________________________________________________
@@ -526,7 +633,7 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
       
       //-------------------------------------end TRACK CUTS----------------------------------
 
-      //Track info:
+      //-------------------------------------Track info--------------------------------------
       Double_t phi= track->Phi();
       
       hEta[iBconf]->Fill(etaAbs);
@@ -552,25 +659,37 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
       
       Int_t stdFlagPid[9] = {1,2,4,8,16,32,64,128,256};//e,#mu,#pi,K,p,d,t,3He,4He
       Int_t FlagPid = 0;
+      
+      for(Int_t iS=0;iS<9;iS++){
+	nsigmaTPC[iS] = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType) iS);
+	//TPC identification:
+	if(TMath::Abs(nsigmaTPC[iS])<NsigmaTpcCut) {
+	  FlagPid += ((Int_t)TMath::Power(2,iS));
+	}
+      }
+      //Correction of the momentum to the vertex for (anti)nuclei
+      Double_t pC[9];
+      for(Int_t iS=0;iS<9;iS++)	pC[iS]=p;
+      this->MomVertexCorrection(p,pC,etaAbs,FlagPid);
 
+      //More TPC info:
       for(Int_t iS=0;iS<9;iS++){
 	expdedx[iS] = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, (AliPID::EParticleType) iS, AliTPCPIDResponse::kdEdxDefault, kTRUE);
 	hDeDxExp[iBconf][iS]->Fill(pTPC,expdedx[iS]);
 	nsigmaTPC[iS] = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType) iS);
 	fNsigmaTpc[iBconf][iS]->Fill(pTPC,nsigmaTPC[iS]);
 	if(charge>0) {//positive particle
-	  if(kTOF && (TMath::Abs(DCAxy)<DCAxyCut)) fNsigmaTpc_kTOF[iBconf][iS]->Fill(pt,nsigmaTPC[iS]);
+	  if(kTOF && (TMath::Abs(DCAxy)<DCAxyCut)) fNsigmaTpc_kTOF[iBconf][iS]->Fill(p,nsigmaTPC[iS]);
 	}
 	else {//negative particle
-	  if(kTOF && (TMath::Abs(DCAxy)<DCAxyCut)) fNsigmaTpc_kTOF[iBconf][iS+nPart]->Fill(pt,nsigmaTPC[iS]);
+	  if(kTOF && (TMath::Abs(DCAxy)<DCAxyCut)) fNsigmaTpc_kTOF[iBconf][iS+nPart]->Fill(p,nsigmaTPC[iS]);
 	}
-
-	//TPC identification:
-	if(TMath::Abs(nsigmaTPC[iS])<NsigmaTpcCut) {
+	/*
+	  if(TMath::Abs(nsigmaTPC[iS])<NsigmaTpcCut) {
 	  FlagPid += ((Int_t)TMath::Power(2,iS));
-	}
+	  }*/
       }
-      
+          
       if(charge>0) fdEdxVSp[iBconf][0]->Fill(pTPC,dedx);
       else fdEdxVSp[iBconf][1]->Fill(pTPC,dedx);
 
@@ -592,6 +711,9 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 	beta=exptimes[0];
 	beta=beta/tof;//beta = L/tof/c = t_e/tof
 	
+	Int_t FlagPidTof = 0;
+	Double_t NsigmaTofCut = 2.0;
+	
 	Double_t nsigmaTOF[9];
 	for(Int_t iS=0;iS<9;iS++){
 	  nsigmaTOF[iS] = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType) iS);
@@ -604,72 +726,77 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 	    hBetaExp[iBconf][iS+nPart]->Fill(p,exptimes[0]/exptimes[iS]);
 	    if(TMath::Abs(DCAxy)<DCAxyCut) fNsigmaTof_DcaCut[iBconf][iS+nPart]->Fill(pt,nsigmaTOF[iS]);
 	  }
+
+	  //TOF identification:
+	  if(TMath::Abs(nsigmaTOF[iS])<NsigmaTofCut) {
+	    FlagPidTof += ((Int_t)TMath::Power(2,iS));
+	  }
 	}
+	
 	if(charge>0) fBetaTofVSp[iBconf][0]->Fill(p,beta);
 	else fBetaTofVSp[iBconf][1]->Fill(p,beta);
 		
 	this->GetMassFromPvertex(beta,p,M2);
 	this->GetZTpc(dedx,pTPC,M2,Z2);
-		
-	//-----------------------------M2 as a function of expected times, if iMtof>1---------------------------------
+	
 	Double_t Mass2[9];
-	if(iMtof>1) this->GetMassFromExpTimes(beta,exptimes,Mass2,iMtof,p,FlagPid,charge);
-		
+	//-----------------------------M2 as a function of momentum to the primary vertex if iMtof==1---------------------------------
+	if(iMtof==1) this->GetMassFromPvertexCorrected(beta,pC,Mass2);
+
+	if(iMtof>1) this->GetPmeanVsBetaGamma(exptimes,pC,FlagPid,FlagPidTof,charge,DCAxy);
+	
+	//-----------------------------M2 as a function of expected times---------------------------------
+	if(iMtof==2) this->GetMassFromExpTimes(beta,exptimes,Mass2);
+	 
+	//-----------------------------M2 as a function of mean momentum calculated from expected time and extrapolated to the (anti)nuclei---------------------------------
+	if(iMtof>2) this->GetMassFromMeanMom(beta,exptimes,pC,charge,Mass2,FlagPid,FlagPidTof,DCAxy);
+
 	//-------------------------------Squared Mass TH2 distributions-----------------------
 	if(charge>0) {
 	  //without TPC
-	  fM2vsPt_NoTpcCut[iBconf][0][0]->Fill(M2,pt);
-	  if(TMath::Abs(DCAxy)<DCAxyCut) fM2vsPt_NoTpcCut[iBconf][1][0]->Fill(M2,pt);
+	  fM2vsP_NoTpcCut[iBconf][0][0]->Fill(M2,p);
+	  if(TMath::Abs(DCAxy)<DCAxyCut) fM2vsP_NoTpcCut[iBconf][1][0]->Fill(M2,p);
 	  //with TPC
 	  for(Int_t iS=0;iS<9;iS++) {
-	    //-----------------------------M2 as a function of expected times, if iMtof>1---------------------------------
-	    if(iMtof>1) {
-	      M2=999.9;
-	      M2=Mass2[iS];
-	    }
+	    M2=999.9;
+	    M2=Mass2[iS];
 	    //-----------------
 	    if(FlagPid & stdFlagPid[iS]) {
-	      fM2vsPt[iBconf][0][iS]->Fill(M2,pt);
-	      if(TMath::Abs(DCAxy)<DCAxyCut) fM2vsPt[iBconf][1][iS]->Fill(M2,pt);
+	      fM2vsP[iBconf][0][iS]->Fill(M2,pC[iS]);
+	      if(TMath::Abs(DCAxy)<DCAxyCut) fM2vsP[iBconf][1][iS]->Fill(M2,pC[iS]);
 	    }
 	  }
 	}
 	else {//charge<0
 	  //without TPC
-	  fM2vsPt_NoTpcCut[iBconf][0][1]->Fill(M2,pt);
-	  if(TMath::Abs(DCAxy)<DCAxyCut) fM2vsPt_NoTpcCut[iBconf][1][1]->Fill(M2,pt);
+	  fM2vsP_NoTpcCut[iBconf][0][1]->Fill(M2,p);
+	  if(TMath::Abs(DCAxy)<DCAxyCut) fM2vsP_NoTpcCut[iBconf][1][1]->Fill(M2,p);
 	   //with TPC
 	  for(Int_t iS=0;iS<9;iS++) {
-	    //-----------------------------M2 as a function of expected times, if iMtof>1---------------------------------
-	    if(iMtof>1) {
-	      M2=999.9;
-	      M2=Mass2[iS];
-	    }
+	    M2=999.9;
+	    M2=Mass2[iS];
 	    //-----------------
 	    if(FlagPid & stdFlagPid[iS]) {
-	      fM2vsPt[iBconf][0][iS+nPart]->Fill(M2,pt);
-	      if(TMath::Abs(DCAxy)<DCAxyCut) fM2vsPt[iBconf][1][iS+nPart]->Fill(M2,pt);
+	      fM2vsP[iBconf][0][iS+nPart]->Fill(M2,pC[iS]);
+	      if(TMath::Abs(DCAxy)<DCAxyCut) fM2vsP[iBconf][1][iS+nPart]->Fill(M2,pC[iS]);
 	    }
 	  }
 	}
 	
 	//------------------------------start DCA and Squared Mass TH1 distributions-------------------------
-	Double_t binPt[nbin+1];
+	Double_t binP[nbin+1];
 	for(Int_t i=0;i<nbin+1;i++) {
-	  binPt[i]=0.4+i*0.1;
+	  binP[i]=0.4+i*0.1;
 	}
 
 	if(charge>0) {
 	  for(Int_t iS=0;iS<9;iS++) {
-	    //-----------------------------M2 as a function of expected times, if iMtof>1---------------------------------
-	    if(iMtof>1) {
-	      M2=999.9;
-	      M2=Mass2[iS];
-	    }
-	    //-----------------
+	    M2=999.9;
+	    M2=Mass2[iS];
+	    
 	    if(FlagPid & stdFlagPid[iS]) {
 	      for(Int_t j=0;j<nbin;j++) {
-		if(pt>binPt[j] && pt<binPt[j+1]) {
+		if(pC[iS]>binP[j] && pC[iS]<binP[j+1]) {
 		  hDCAxy[iBconf][iS][j]->Fill(DCAxy);
 		  hDCAxy[iBconf][iS][j]->Fill(-DCAxy);
 		  hDCAz[iBconf][iS][j]->Fill(DCAz);
@@ -682,21 +809,18 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 		  }
 		  break;
 		}
-	      }//end loop on the pT bins (j)
+	      }//end loop on the p bins (j)
 	    }
 	  }//end loop on the particle species (iS)
 	}
 	else {//charge<0
 	  for(Int_t iS=0;iS<9;iS++) {
-	    //-----------------------------M2 as a function of expected times, if iMtof>1---------------------------------
-	    if(iMtof>1) {
-	      M2=999.9;
-	      M2=Mass2[iS];
-	    }
-	    //-----------------
+	    M2=999.9;
+	    M2=Mass2[iS];
+	    	    
 	    if(FlagPid & stdFlagPid[iS]) {
 	      for(Int_t j=0;j<nbin;j++) {
-		if(pt>binPt[j] && pt<binPt[j+1]) {
+		if(pC[iS]>binP[j] && pC[iS]<binP[j+1]) {
 		  hDCAxy[iBconf][iS+nPart][j]->Fill(DCAxy);
 		  hDCAxy[iBconf][iS+nPart][j]->Fill(-DCAxy);
 		  hDCAz[iBconf][iS+nPart][j]->Fill(DCAz);
@@ -709,7 +833,7 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 		  }
 		  break;
 		}
-	      }//end loop on the pT bins (j)
+	      }//end loop on the p bins (j)
 	    }
 	  }//end loop on the particle species (iS)
 	}
@@ -729,8 +853,6 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 	  }
 	}
 	
-	
-
       }//end kTOF available
     }//end track loop
   }//end loop on the events
@@ -743,71 +865,31 @@ void AliAnalysisNucleiMass::Terminate(Option_t *)
   Printf("Terminate()");
 }
 //_____________________________________________________________________________
-void AliAnalysisNucleiMass::GetMassFromPvertex(Double_t beta, Double_t p, Double_t &M2) {
-  
-  M2 = p*p*(1-beta*beta)/(beta*beta);
-
-  return;
-  
-}
-//____________________________________________________________________________________________________________
-void AliAnalysisNucleiMass::GetMassFromExpTimes(Double_t beta, Double_t *IntTimes, Double_t *Mass2, Int_t iCorr, Double_t pVtx, Int_t FlagPid, Double_t charge) {
- 
-  // m = p_exp/beta/gamma where p_exp = mPDG*beta_exp*gamma_exp; beta_exp = L/t_exp/c = t_e/t_exp ; beta=L/tof/c = t_e/tof
-  // In this way m_tof = mPDG only if tof=t_exp
-  
-  Double_t massOverZ[9] = {0.000511,0.105658,0.139570,0.493677,0.938272,1.875612859,2.808921005,1.404195741,1.863689620};
-    
-  Double_t beta2Exp[9];
-  Double_t p2Exp[9];
-  
-  Double_t pExp[9];
-  Double_t CorrFactor=0.0;
+void AliAnalysisNucleiMass::MomVertexCorrection(Double_t p, Double_t *pC, Double_t eta, Int_t FlagPid){
 
   Int_t stdFlagPid[9] = {1,2,4,8,16,32,64,128,256};//e,#mu,#pi,K,p,d,t,3He,4He
 
   for(Int_t iS=0;iS<9;iS++) {
-    beta2Exp[iS]=IntTimes[0]/IntTimes[iS];//beta = L/tof*c = t_e/tof
-    beta2Exp[iS]=beta2Exp[iS]*beta2Exp[iS];
-    if((1-beta2Exp[iS])==0) {
-      Mass2[iS]=999.9;
-      continue;
-    }
-    p2Exp[iS]=massOverZ[iS]*massOverZ[iS]*beta2Exp[iS]/(1-beta2Exp[iS]);
-    
-    //--------------------for MC corrections
-    if(p2Exp[iS]<0) {
-      Mass2[iS]=999.9;
-      continue;
-    }
-    pExp[iS]=TMath::Sqrt(p2Exp[iS]);
-    
-    CorrFactor=0.0;
-    if(iCorr & 12) {//iCorr==4 || iCorr==8
-      if(iCorr==8 && iS==4) CorrFactor=fPmeanVsPexp[0]->Eval(pExp[iS]);
-      
-      if(iS==5) CorrFactor=fPmeanVsPexp[1]->Eval(pExp[iS]);
-      else if(iS==7) CorrFactor=fPmeanVsPexp[2]->Eval(pExp[iS]);
-      CorrFactor=pExp[iS]*CorrFactor;
-      pExp[iS]=pExp[iS]+CorrFactor;//CorrFactor is negative so pExp(Corrected)<pExp
-    }
-    p2Exp[iS]=pExp[iS]*pExp[iS];
-    //------------
-    Mass2[iS]=p2Exp[iS]*(1-beta*beta)/(beta*beta);
-  
-    //------------
     if(FlagPid & stdFlagPid[iS]) {
-      if(charge>0){
-	fPmeanVsBetaGamma[iBconf][iS]->Fill(pVtx/massOverZ[iS],pExp[iS]/pVtx);
-	prPmeanVsBetaGamma[iBconf][iS]->Fill(pVtx/massOverZ[iS],pExp[iS]/pVtx);
+      if(iS==5) {
+	if(kPvtxCorr==1) pC[iS]=pC[iS]*fPvtxTrueVsReco[0]->Eval(pC[iS],TMath::Abs(eta));//for (bar)d
+	prPvtxTrueVsReco[iBconf][0]->Fill(p,pC[iS]/p);
       }
-      else {
-	fPmeanVsBetaGamma[iBconf][iS+nPart]->Fill(pVtx/massOverZ[iS],pExp[iS]/pVtx);
-	prPmeanVsBetaGamma[iBconf][iS+nPart]->Fill(pVtx/massOverZ[iS],pExp[iS]/pVtx);
+      else if(iS==7) {
+	if(kPvtxCorr==1) pC[iS]=pC[iS]*fPvtxTrueVsReco[1]->Eval(pC[iS],TMath::Abs(eta));//for (bar)He3
+	prPvtxTrueVsReco[iBconf][1]->Fill(p,pC[iS]/p);
       }
     }
-  }//end loop on the particle species
+  }
   
+  return;
+  
+}
+//_____________________________________________________________________________
+void AliAnalysisNucleiMass::GetMassFromPvertex(Double_t beta, Double_t p, Double_t &M2) {
+  
+  M2 = p*p*(1-beta*beta)/(beta*beta);
+
   return;
   
 }
@@ -832,3 +914,156 @@ void AliAnalysisNucleiMass::GetZTpc(Double_t dedx, Double_t pTPC, Double_t M2, D
   
   return;
 }
+//_________________________________________________________________________________________________________________________
+void AliAnalysisNucleiMass::GetMassFromPvertexCorrected(Double_t beta, Double_t *pC, Double_t *Mass2) {
+  
+  for(Int_t iS=0;iS<9;iS++) Mass2[iS] = pC[iS]*pC[iS]*(1-beta*beta)/(beta*beta);
+
+  return;
+}  
+//____________________________________________________________________________________________________________
+void AliAnalysisNucleiMass::GetMassFromExpTimes(Double_t beta, Double_t *IntTimes, Double_t *Mass2) {
+ 
+  // m = p_exp/beta/gamma where p_exp = mPDG*beta_exp*gamma_exp; beta_exp = L/t_exp/c = t_e/t_exp ; beta=L/tof/c = t_e/tof
+  // In this way m_tof = mPDG only if tof=t_exp
+  
+  Double_t massOverZ[9] = {0.000511,0.105658,0.139570,0.493677,0.938272,1.875612859,2.808921005,1.404195741,1.863689620};
+    
+  Double_t beta2Exp[9];
+  Double_t p2Exp[9];
+  
+  //Double_t pExp[9];
+  
+  for(Int_t iS=0;iS<9;iS++) {
+    beta2Exp[iS]=IntTimes[0]/IntTimes[iS];//beta = L/tof*c = t_e/tof
+    beta2Exp[iS]=beta2Exp[iS]*beta2Exp[iS];
+    if((1-beta2Exp[iS])==0) {
+      Mass2[iS]=999.9;
+      continue;
+    }
+    p2Exp[iS]=massOverZ[iS]*massOverZ[iS]*beta2Exp[iS]/(1-beta2Exp[iS]);
+    
+    //--------------------for MC corrections
+    if(p2Exp[iS]<0) {
+      Mass2[iS]=999.9;
+      continue;
+    }
+    //pExp[iS]=TMath::Sqrt(p2Exp[iS]);
+    
+    //------------
+    Mass2[iS]=p2Exp[iS]*(1-beta*beta)/(beta*beta);
+  }//end loop on the particle species
+  
+  return;
+}
+//____________________________________________________________________________________________________________
+void AliAnalysisNucleiMass::GetPmeanVsBetaGamma(Double_t *IntTimes, Double_t *pVtx, Int_t FlagPid, Int_t FlagPidTof, Double_t charge, Double_t DCAxy) {
+ 
+  // m = p_exp/beta/gamma where p_exp = mPDG*beta_exp*gamma_exp; beta_exp = L/t_exp/c = t_e/t_exp ; beta=L/tof/c = t_e/tof
+  // In this way m_tof = mPDG only if tof=t_exp
+  
+  Double_t massOverZ[9] = {0.000511,0.105658,0.139570,0.493677,0.938272,1.875612859,2.808921005,1.404195741,1.863689620};
+    
+  Double_t beta2Exp[9];
+  Double_t p2Exp[9];
+  
+  Double_t pExp[9];
+  
+  Int_t stdFlagPid[9] = {1,2,4,8,16,32,64,128,256};//e,#mu,#pi,K,p,d,t,3He,4He
+
+  for(Int_t iS=0;iS<9;iS++) {
+    beta2Exp[iS]=IntTimes[0]/IntTimes[iS];//beta = L/tof*c = t_e/tof
+    beta2Exp[iS]=beta2Exp[iS]*beta2Exp[iS];
+    if((1-beta2Exp[iS])==0) {
+      continue;
+    }
+    p2Exp[iS]=massOverZ[iS]*massOverZ[iS]*beta2Exp[iS]/(1-beta2Exp[iS]);
+    
+    if(p2Exp[iS]<0) {
+      continue;
+    }
+    pExp[iS]=TMath::Sqrt(p2Exp[iS]);
+       
+    if((FlagPid & stdFlagPid[iS]) && (FlagPidTof & stdFlagPid[iS])) {
+      if(TMath::Abs(DCAxy)>DCAxyCut) continue;
+      if(charge>0){
+	fPmeanVsBetaGamma[iBconf][iS]->Fill(pVtx[iS]/massOverZ[iS],pExp[iS]/pVtx[iS]);
+	prPmeanVsBetaGamma[iBconf][iS]->Fill(pVtx[iS]/massOverZ[iS],pExp[iS]/pVtx[iS]);
+      }
+      else {
+	fPmeanVsBetaGamma[iBconf][iS+nPart]->Fill(pVtx[iS]/massOverZ[iS],pExp[iS]/pVtx[iS]);
+	prPmeanVsBetaGamma[iBconf][iS+nPart]->Fill(pVtx[iS]/massOverZ[iS],pExp[iS]/pVtx[iS]);
+      }
+    }
+  }//end loop on the particle species
+  
+  return;
+  
+}
+//____________________________________________________________________________________________________________
+void AliAnalysisNucleiMass::GetMassFromMeanMom(Double_t beta, Double_t *IntTimes, Double_t *pVtx, Double_t charge, Double_t *Mass2, Int_t FlagPid, Int_t FlagPidTof, Double_t DCAxy) {//Double_t *Mass2, Int_t iCorr
+ 
+  // m = p_exp/beta/gamma where p_exp = mPDG*beta_exp*gamma_exp; beta_exp = L/t_exp/c = t_e/t_exp ; beta=L/tof/c = t_e/tof
+  // In this way m_tof = mPDG only if tof=t_exp
+  
+  Double_t massOverZ[9] = {0.000511,0.105658,0.139570,0.493677,0.938272,1.875612859,2.808921005,1.404195741,1.863689620};
+    
+  Double_t beta2Exp[9];
+  Double_t p2Exp[9];
+  
+  Double_t pExp[9];
+  
+  Int_t stdFlagPid[9] = {1,2,4,8,16,32,64,128,256};//e,#mu,#pi,K,p,d,t,3He,4He
+
+  for(Int_t iS=0;iS<9;iS++) {
+    if(iS==2 || iS==3 || iS==4 || iS==5 || iS==7) {
+      if(charge>0) {
+	if(iS!=7) p2Exp[iS]=pVtx[iS]*fPmeanVsBGcorr[iS-2]->Eval(pVtx[iS]/massOverZ[iS]);
+	else p2Exp[iS]=pVtx[iS]*fPmeanVsBGcorr[iS-3]->Eval(pVtx[iS]/massOverZ[iS]);
+      }
+      else if(charge<0) {
+	if(iS!=7) p2Exp[iS]=pVtx[iS]*fPmeanVsBGcorr[iS+3]->Eval(pVtx[iS]/massOverZ[iS]);
+	else p2Exp[iS]=pVtx[iS]*fPmeanVsBGcorr[iS+2]->Eval(pVtx[iS]/massOverZ[iS]);
+      }
+      p2Exp[iS]*=p2Exp[iS];
+    }
+    else {
+      beta2Exp[iS]=IntTimes[0]/IntTimes[iS];//beta = L/tof*c = t_e/tof
+      beta2Exp[iS]=beta2Exp[iS]*beta2Exp[iS];
+      if((1-beta2Exp[iS])==0) {
+	Mass2[iS]=999.9;
+	continue;
+      }
+      p2Exp[iS]=massOverZ[iS]*massOverZ[iS]*beta2Exp[iS]/(1-beta2Exp[iS]);
+    }
+    //--------------------for MC corrections
+    if(p2Exp[iS]<0) {
+      Mass2[iS]=999.9;
+      continue;
+    }
+    pExp[iS]=TMath::Sqrt(p2Exp[iS]);
+    
+    //------------
+    Mass2[iS]=p2Exp[iS]*(1-beta*beta)/(beta*beta);
+    
+    //-----------
+    if(TMath::Abs(DCAxy)>DCAxyCut) continue;
+    if(iS==2 || iS==3 || iS==4 || iS==5 || iS==7) {
+      if((FlagPid & stdFlagPid[iS]) && (FlagPidTof & stdFlagPid[iS])) {
+	if(charge>0) {
+	  if(iS!=7) prPmeanVsBGcorr[iBconf][iS-2]->Fill(pVtx[iS]/massOverZ[iS],pExp[iS]/pVtx[iS]);
+	  else prPmeanVsBGcorr[iBconf][iS-3]->Fill(pVtx[iS]/massOverZ[iS],pExp[iS]/pVtx[iS]);
+	}
+	else if(charge<0) {
+	  if(iS!=7) prPmeanVsBGcorr[iBconf][iS+3]->Fill(pVtx[iS]/massOverZ[iS],pExp[iS]/pVtx[iS]);
+	  else prPmeanVsBGcorr[iBconf][iS+2]->Fill(pVtx[iS]/massOverZ[iS],pExp[iS]/pVtx[iS]);
+	}
+      }
+    }
+
+  }//end loop on the particle species
+  
+  return;
+  
+}
+
