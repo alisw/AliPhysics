@@ -71,6 +71,13 @@ AliForwardMCMultiplicityTask::AliForwardMCMultiplicityTask(const char* name)
   // Parameters:
   //    name Name of task 
   //
+  fPrimary = new TH2D("primary", "MC Primaries", 1,0,1,20,0,TMath::TwoPi());
+  fPrimary->SetXTitle("#eta");
+  fPrimary->SetYTitle("#varphi [radians]");
+  fPrimary->SetZTitle("d^{2}N_{ch}/d#etad#phi");
+  fPrimary->Sumw2();
+  fPrimary->SetStats(0);
+  fPrimary->SetDirectory(0);
 }
 
 //____________________________________________________________________
@@ -92,16 +99,7 @@ AliForwardMCMultiplicityTask::CreateBranches(AliAODHandler* ah)
   AliForwardMultiplicityBase::CreateBranches(ah);
 
   TObject* mcobj = &fMCAODFMD;
-  ah->AddBranch("AliAODForwardMult", &mcobj);
-
-  fPrimary = new TH2D("primary", "MC Primaries", 1,0,1,20,0,TMath::TwoPi());
-  fPrimary->SetXTitle("#eta");
-  fPrimary->SetYTitle("#varphi [radians]");
-  fPrimary->SetZTitle("d^{2}N_{ch}/d#etad#phi");
-  fPrimary->Sumw2();
-  fPrimary->SetStats(0);
-  fPrimary->SetDirectory(0);
-    
+  ah->AddBranch("AliAODForwardMult", &mcobj);    
   ah->AddBranch("TH2D", &fPrimary);
 }
 

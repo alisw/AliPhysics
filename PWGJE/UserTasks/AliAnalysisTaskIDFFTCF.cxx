@@ -2377,7 +2377,7 @@ Int_t AliAnalysisTaskIDFFTCF::GetListOfJets(TList *list, Int_t type)
 }
 
 // _________________________________________________________________________________________________________
-void AliAnalysisTaskIDFFTCF::SetProperties(THnSparse* h,const Int_t dim, const char** labels)
+void AliAnalysisTaskIDFFTCF::SetProperties(THnSparse* h, Int_t dim, const char** labels)
 {
   // Set properties of THnSparse 
 
@@ -2413,7 +2413,7 @@ void AliAnalysisTaskIDFFTCF::SetProperties(TH1* h,const char* x, const char* y, 
 
 // ________________________________________________________________________________________________________________________________________________________
 void AliAnalysisTaskIDFFTCF::GetJetTracksPointing(TList* inputlist, TList* outputlist, const AliAODJet* jet, 
-						  const Double_t radius, Double_t& sumPt, const Double_t minPtL, const Double_t maxPt, Bool_t& isBadPt)
+						  Double_t radius, Double_t& sumPt, Double_t minPtL, Double_t maxPt, Bool_t& isBadPt)
 {
   // fill list of tracks in cone around jet axis  
 
@@ -2454,7 +2454,7 @@ void AliAnalysisTaskIDFFTCF::GetJetTracksPointing(TList* inputlist, TList* outpu
 }
 
 // _________________________________________________________________________________________________________________________________________________________________
-void AliAnalysisTaskIDFFTCF::GetJetTracksTrackrefs(TList* list, const AliAODJet* jet, const Double_t minPtL, const Double_t maxPt, Bool_t& isBadPt)
+void AliAnalysisTaskIDFFTCF::GetJetTracksTrackrefs(TList* list, const AliAODJet* jet, Double_t minPtL, Double_t maxPt, Bool_t& isBadPt)
 {
   // list of jet tracks from trackrefs
   
@@ -2560,7 +2560,7 @@ void  AliAnalysisTaskIDFFTCF::AssociateGenRec(TList* tracksAODMCCharged,TList* t
 
 // _____________________________________________________________________________________________________________________________________________
 void AliAnalysisTaskIDFFTCF::FillSingleTrackHistosRecGen(AliFragFuncQATrackHistos* trackQAGen, AliFragFuncQATrackHistos* trackQARec, TList* tracksGen, 
-							 const TArrayI& indexAODTr, const TArrayS& isRefGen, const Int_t pdg, const Bool_t scaleGFL){
+							 const TArrayI& indexAODTr, const TArrayS& isRefGen, Int_t pdg, Bool_t scaleGFL){
 
   // fill QA for single track reconstruction efficiency
   
@@ -2611,7 +2611,7 @@ void AliAnalysisTaskIDFFTCF::FillSingleTrackHistosRecGen(AliFragFuncQATrackHisto
 
 void  AliAnalysisTaskIDFFTCF::FillJetTrackHistosRec(AliFragFuncHistos* ffhistRec, AliAODJet* jet, 
 						    TList* jetTrackList, const TList* tracksGen, const TList* tracksRec, const TArrayI& indexAODTr,
-						    const TArrayS& isRefGen, TList* jetTrackListTR, const Int_t pdg, const Bool_t scaleGFL)
+						    const TArrayS& isRefGen, TList* jetTrackListTR, Int_t pdg, Bool_t scaleGFL)
 {
   // fill objects for jet track reconstruction efficiency or secondaries contamination 
   // arguments histGen/histRec can be of different type: AliFragFuncHistos*, AliFragFuncIntraJetHistos*, ...
@@ -2809,7 +2809,7 @@ void AliAnalysisTaskIDFFTCF::BookFFHistos(TList* list, AliFragFuncHistos** rec, 
 }
 
 //____________________________________________________________________________________
-Double_t  AliAnalysisTaskIDFFTCF::TrackingPtGeantFlukaCorrectionPrMinus(const Double_t pTmc)
+Double_t  AliAnalysisTaskIDFFTCF::TrackingPtGeantFlukaCorrectionPrMinus(Double_t pTmc)
 {
   // GEANT-FLUKA correction for pbar from Roberto via Benjamin
 
@@ -2818,7 +2818,7 @@ Double_t  AliAnalysisTaskIDFFTCF::TrackingPtGeantFlukaCorrectionPrMinus(const Do
 }
 
 //____________________________________________________________________________________
-Double_t  AliAnalysisTaskIDFFTCF::TrackingPtGeantFlukaCorrectionKaMinus(const Double_t pTmc)
+Double_t  AliAnalysisTaskIDFFTCF::TrackingPtGeantFlukaCorrectionKaMinus(Double_t pTmc)
 {
 
   // GEANT-FLUKA correction for K- from Roberto via Benjamin

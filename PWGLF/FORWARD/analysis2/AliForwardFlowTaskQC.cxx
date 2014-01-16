@@ -30,7 +30,7 @@
 #include "AliAODCentralMult.h"
 #include "AliAODEvent.h"
 #include "AliForwardUtil.h"
-#include "AliAODVZERO.h"
+#include "AliVVZERO.h"
 #include "AliAODVertex.h"
 #include "AliCentrality.h"
 #include "AliESDEvent.h"
@@ -322,11 +322,11 @@ Bool_t AliForwardFlowTaskQC::Analyze()
   // Get detector objects
   AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(fAOD->FindListObject("Forward"));
   AliAODCentralMult* aodcmult = static_cast<AliAODCentralMult*>(fAOD->FindListObject("CentralClusters"));
-  AliAODVZERO* aodvzero = fAOD->GetVZEROData();
+  AliVVZERO* vzero = GetVZERO();
   if ((fFlowFlags & kVZERO)) {
-    if (aodvzero) {
+    if (vzero) {
       fHistdNdedpV0.Reset();
-      FillVZEROHist(aodvzero);
+      FillVZEROHist(vzero);
     }
   }
 
@@ -335,7 +335,7 @@ Bool_t AliForwardFlowTaskQC::Analyze()
     fHistEventSel->Fill(kNoForward);
     return kFALSE; 
   }
-  else if ((fFlowFlags & kVZERO) && !aodvzero) {
+  else if ((fFlowFlags & kVZERO) && !vzero) {
     fHistEventSel->Fill(kNoForward);
     return kFALSE; 
   }
@@ -860,13 +860,35 @@ Bool_t AliForwardFlowTaskQC::GetVertex(const AliAODForwardMult* aodfm)
   }
 }
 // _____________________________________________________________________
-void AliForwardFlowTaskQC::FillVZEROHist(AliAODVZERO* aodVZero)
+AliVVZERO* AliForwardFlowTaskQC::GetVZERO() const
+{
+  AliVVZERO* vzero = 0;
+  // Get input type
+  UShort_t input = AliForwardUtil::CheckForAOD();
+  switch (input) {
+    // If AOD input, simply get the track array from the event
+    case 1: vzero = (AliVVZERO*)fAOD->GetVZEROData();
+	    break;
+    case 2: {
+    // If ESD input get event, apply track cuts
+	      AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
+	      if (!esd) return 0;
+	      vzero = (AliVVZERO*)esd->GetVZEROData();
+	      break;
+	    }
+    default: AliFatal("Neither ESD or AOD input. This should never happen");
+    	    break;
+  }
+  return vzero;
+}
+// _____________________________________________________________________
+void AliForwardFlowTaskQC::FillVZEROHist(AliVVZERO* vzero)
 {
   //
   //  Loops over VZERO data object and fill up d^2N/detadphi histogram for flow analysis
   //
   //  Parameters:
-  //   aodVZero: VZERO AOD data object
+  //   vzero: VZERO AOD data object
   //
   Int_t ring = 0;
   Int_t bin = 0;
@@ -887,7 +909,7 @@ void AliForwardFlowTaskQC::FillVZEROHist(AliAODVZERO* aodVZero)
       eta = fHistdNdedpV0.GetXaxis()->GetBinCenter(bin);
       fHistdNdedpV0.SetBinContent(bin, 0, 1);
     }
-    Float_t amp = aodVZero->GetMultiplicity(i);
+    Float_t amp = vzero->GetMultiplicity(i);
     amp /= eq[i];
     Double_t phi = TMath::Pi()/8.+TMath::TwoPi()*i/8.;
     while (phi > TMath::TwoPi()) phi -= TMath::TwoPi();

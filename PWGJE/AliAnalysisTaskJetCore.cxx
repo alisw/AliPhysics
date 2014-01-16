@@ -1,4 +1,3 @@
-
 // ******************************************
 // This task computes several jet observables like 
 // the fraction of energy in inner and outer coronnas,
@@ -603,7 +602,17 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    // -- event selection --
    fHistEvtSelection->Fill(1); // number of events before event selection
 
-   // physics selection
+
+       Bool_t selected=kTRUE;
+       selected = AliAnalysisHelperJetTasks::Selected();
+       if(!selected){
+      // no selection by the service task, we continue
+       PostData(1,fOutputList);
+       return;}
+    
+
+
+  // physics selection: this is now redundant, all should appear as accepted after service task selection
    AliInputEventHandler* inputHandler = (AliInputEventHandler*)
    ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
 	 std::cout<<inputHandler->IsEventSelected()<<" "<<fOfflineTrgMask<<std::endl;
@@ -614,6 +623,8 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
       return;
    }
 
+
+      
    // vertex selection
    if(!aod){
      if(fDebug) Printf("%s:%d No AOD",(char*)__FILE__,__LINE__);

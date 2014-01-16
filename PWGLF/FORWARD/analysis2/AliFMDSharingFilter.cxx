@@ -273,25 +273,9 @@ AliFMDSharingFilter::SetupForData(const TAxis& axis)
   fLowCuts->GetYaxis()->SetBinLabel(4, "FMD3i");
   fLowCuts->GetYaxis()->SetBinLabel(5, "FMD3o");
 
-  UShort_t ybin = 0;
-  for (UShort_t d = 1; d <= 3; d++) {
-    UShort_t nr = (d == 1 ? 1 : 2);
-    for (UShort_t q = 0; q < nr; q++) { 
-      Char_t r = (q == 0 ? 'I' : 'O');
-      ybin++;
-      for (UShort_t e = 1; e <= nEta; e++) { 
-	Double_t eta = eAxis.GetBinCenter(e);
-	
-	if (fDebug > 3) fHCuts.Print();
-
-	Double_t hcut = GetHighCut(d, r, eta, false);
-	Double_t lcut = GetLowCut(d, r, eta);
-	
-	if (hcut > 0) fHighCuts->SetBinContent(e, ybin, hcut);
-	if (lcut > 0) fLowCuts ->SetBinContent(e, ybin, lcut);
-      }
-    }
-  }
+  // Cache our cuts in histograms 
+  fLCuts.FillHistogram(fLowCuts);
+  fHCuts.FillHistogram(fHighCuts);
 }
 
 //____________________________________________________________________
@@ -344,10 +328,12 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 	// `twoLow' flags if we saw two consequtive strips with a 
 	// signal between the two cuts. 
 	Bool_t   twoLow          = kFALSE;
+        Int_t    nStripsAboveCut = 0;
+	
 	for(UShort_t t = 0; t < nstr; t++) {
 	  // nDistanceBefore++;
 	  // nDistanceAfter++;
-	  
+
 	  output.SetMultiplicity(d,r,s,t,0.);
 	  Float_t mult         = SignalInStrip(input,d,r,s,t);
 	  Float_t multNext     = (t<nstr-1) ? SignalInStrip(input,d,r,s,t+1) :0;
@@ -408,6 +394,14 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 	    eTotal = -1;
 	    used   = false;
 	    twoLow = false;
+	    if (t > 0)	
+	      histos->fNConsecutive->Fill(nStripsAboveCut);
+	    if (mult == AliESDFMD::kInvalidMult)
+	      // Why not fill immidiately here? 
+	      nStripsAboveCut = -1;
+	    else
+	      // Why not fill immidiately here? 
+	      nStripsAboveCut = 0;	
 	    continue;
 	  }
 
@@ -415,7 +409,21 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 	  histos->fBefore->Fill(mult);
 
 	  Double_t mergedEnergy = mult;
-	  
+	  // it seems to me that this logic could be condensed a bit
+          if(mult > GetLowCut(d, r, eta)) {		  
+	    if(nStripsAboveCut < 1) {
+	      if(t > 0)
+		histos->fNConsecutive->Fill(nStripsAboveCut);
+	      nStripsAboveCut=0;
+	    }
+	    nStripsAboveCut++;
+	  }	
+	  else {
+	    if (t > 0)
+	      histos->fNConsecutive->Fill(nStripsAboveCut);
+	    nStripsAboveCut=0;
+	  }		
+
 	  if (!fMergingDisabled) {
 	    mergedEnergy = 0;
 
@@ -525,6 +533,7 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 	  
 	  output.SetMultiplicity(d,r,s,t,mergedEnergy);
 	} // for strip
+	histos->fNConsecutive->Fill(nStripsAboveCut); // fill the last sector 
       } // for sector
     } // for ring 
   } // for detector
@@ -575,7 +584,25 @@ AliFMDSharingFilter::SignalInStrip(const AliESDFMD& input,
   else                mult = DeAngleCorrect(mult, input.Eta(d,r,s,t));
   return mult;
 }
-//_____________________________________________________________________
+
+namespace {
+  Double_t Rng2Cut(UShort_t d, Char_t r, Double_t eta, TH2* h) {
+    Double_t ret = 1024;
+    Int_t ybin = 0;							
+    switch(d) {								
+    case 1: ybin = 1; break;						
+    case 2: ybin = (r=='i' || r=='I') ? 2 : 3; break;			
+    case 3: ybin = (r=='i' || r=='I') ? 4 : 5; break;			
+    default: return ret;
+    }									
+    Int_t xbin = h->GetXaxis()->FindBin(eta);				
+    if (xbin < 1 && xbin > h->GetXaxis()->GetNbins()) return ret;
+    ret = h->GetBinContent(xbin,ybin);					
+    return ret;
+  }
+}
+    
+  //_____________________________________________________________________
 Double_t 
 AliFMDSharingFilter::GetLowCut(UShort_t d, Char_t r, Double_t eta) const
 {
@@ -585,20 +612,22 @@ AliFMDSharingFilter::GetLowCut(UShort_t d, Char_t r, Double_t eta) const
   // However, if fLowCut is set (using SetLowCit) to a value greater
   // than 0, then that value is used.
   //
-  return fLCuts.GetMultCut(d,r,eta,false);
+  return Rng2Cut(d, r, eta, fLowCuts);
+  // return fLCuts.GetMultCut(d,r,eta,false);
 }
 			
 //_____________________________________________________________________
 Double_t 
 AliFMDSharingFilter::GetHighCut(UShort_t d, Char_t r, 
-				Double_t eta, Bool_t errors) const
+				Double_t eta, Bool_t /*errors*/) const
 {
   //
   // Get the high cut.  The high cut is defined as the 
   // most-probably-value peak found from the energy distributions, minus 
   // 2 times the width of the corresponding Landau.
   //
-  return fHCuts.GetMultCut(d,r,eta,errors); 
+  return Rng2Cut(d, r, eta, fHighCuts);
+  // return fHCuts.GetMultCut(d,r,eta,errors); 
 }
 
 //____________________________________________________________________
@@ -849,7 +878,9 @@ AliFMDSharingFilter::RingHistos::RingHistos()
     fNeighborsBefore(0),
     fNeighborsAfter(0),
     fSumESD(0),
-    fSum(0) // ,
+    fSum(0),
+    fNConsecutive(0)	
+     // ,
     // fHits(0),
     // fNHits(0)
 {
@@ -874,7 +905,9 @@ AliFMDSharingFilter::RingHistos::RingHistos(UShort_t d, Char_t r)
     fNeighborsBefore(0),
     fNeighborsAfter(0),
     fSumESD(0),
-    fSum(0) //,
+    fSum(0),
+    fNConsecutive(0)	
+     //,
     // fHits(0),
     // fNHits(0)
 {
@@ -948,8 +981,6 @@ AliFMDSharingFilter::RingHistos::RingHistos(UShort_t d, Char_t r)
   fDistanceAfter->SetFillColor(kGreen+1);
   fDistanceAfter->SetDirectory(0);
 #endif
-
-
   
   Double_t max = 15;
   Double_t min = -1;
@@ -986,7 +1017,23 @@ AliFMDSharingFilter::RingHistos::RingHistos(UShort_t d, Char_t r)
   fSum->SetTitle("Summed cluster signal");
   fSum->SetZTitle("#sum_{cluster} #Delta/#Delta_{mip}(#eta,#varphi) ");
   fSum->SetDirectory(0);
+ 
+  // Perhaps we need to ensure that this histogram has enough range to
+  // accommondate all possible ranges - that is, from -1 to the number
+  // of strips in this ring(-type) - i.e., NStrips().  Perhaps the
+  // axis should be defined with increasin bin size - e.g.,
+  //
+  //   -1.5,-.5,.5,1.5,...,100.5,128.5,192.5,...,NStrips()
+  // 
+  fNConsecutive = new TH1D("nConsecutive","# consecutive strips above low cut",
+			   201,-1.5,199.5);
+  fNConsecutive->SetXTitle("N_{strips}");
+  fNConsecutive->SetYTitle("N_{entries}");
+  fNConsecutive->SetFillColor(kYellow+2);
+  fNConsecutive->SetFillStyle(3001); 
+  fNConsecutive->SetDirectory(0);
   
+ 
 #if 0  
   fHits = new TH1D("hits", "Number of hits", 200, 0, 200000);
   fHits->SetDirectory(0);
@@ -1009,7 +1056,9 @@ AliFMDSharingFilter::RingHistos::RingHistos(const RingHistos& o)
     fNeighborsBefore(o.fNeighborsBefore),
     fNeighborsAfter(o.fNeighborsAfter),
     fSumESD(o.fSumESD), //,
-    fSum(o.fSum) //,
+    fSum(o.fSum),
+    fNConsecutive(o.fNConsecutive)
+     //,
     // fHits(o.fHits),
     // fNHits(o.fNHits)
 {
@@ -1044,7 +1093,8 @@ AliFMDSharingFilter::RingHistos::operator=(const RingHistos& o)
   if (fSingle) 	       delete  fSingle;
   if (fDouble) 	       delete  fDouble;
   if (fTriple)         delete  fTriple;
-  if (fSinglePerStrip) delete fSinglePerStrip;
+  if (fSinglePerStrip) delete  fSinglePerStrip;
+  if (fNConsecutive)   delete  fNConsecutive;
   // if (fDistanceBefore) delete fDistanceBefore;
   // if (fDistanceAfter)  delete fDistanceAfter;
   // if (fHits)   	       delete fHits;
@@ -1064,6 +1114,7 @@ AliFMDSharingFilter::RingHistos::operator=(const RingHistos& o)
   // fHits            = static_cast<TH1D*>(o.fHits->Clone());
   fSumESD          = static_cast<TH2D*>(o.fSumESD->Clone());
   fSum             = static_cast<TH2D*>(o.fSum->Clone());
+  fNConsecutive    = static_cast<TH1D*>(o.fNConsecutive->Clone());
 
   return *this;
 }
@@ -1114,6 +1165,10 @@ AliFMDSharingFilter::RingHistos::Terminate(const TList* dir, Int_t nEvents)
   TH2D* summedESD = static_cast<TH2D*>(l->FindObject("summedESD"));
   if (summedESD) summedESD->Scale(1./nEvents);
   fSumESD = summedESD;
+
+  TH1D* consecutive = static_cast<TH1D*>(l->FindObject("nConsecutive"));
+  if (consecutive) consecutive->Scale(1./nEvents);
+  fNConsecutive= consecutive;
 }
 
 //____________________________________________________________________
@@ -1142,6 +1197,7 @@ AliFMDSharingFilter::RingHistos::CreateOutputObjects(TList* dir)
   // d->Add(fHits);
   d->Add(fSumESD);
   d->Add(fSum);
+  d->Add(fNConsecutive);
 
   // Removed to avoid doubly adding the list which destroys 
   // the merging

@@ -101,8 +101,10 @@ void AliEmcalClusTrackMatcherTask::UserCreateOutputObjects()
       for(Int_t ieta=0; ieta<2; ++ieta) {
 	TString nameEta(Form("fHistMatchEta_%i_%i_%i",icent,ipt,ieta));
 	fHistMatchEta[icent][ipt][ieta] = new TH1F(nameEta, nameEta, 400, -0.2, 0.2);
+	fHistMatchEta[icent][ipt][ieta]->SetXTitle("#Delta#eta");
 	TString namePhi(Form("fHistMatchPhi_%i_%i_%i",icent,ipt,ieta));
 	fHistMatchPhi[icent][ipt][ieta] = new TH1F(namePhi, namePhi, 400, -0.2, 0.2);
+	fHistMatchPhi[icent][ipt][ieta]->SetXTitle("#Delta#phi");
 	fOutput->Add(fHistMatchEta[icent][ipt][ieta]);
 	fOutput->Add(fHistMatchPhi[icent][ipt][ieta]);
       }

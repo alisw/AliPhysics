@@ -92,6 +92,20 @@ public:
 
 protected:
   /** 
+   * Get null terminated array of ring names 
+   * 
+   * @param lower If true, return in the form FMD[1-3][io], otherwise 
+   *              in the form FMD[1-3][IO]
+   * 
+   * @return Null terminated array of ring names 
+   */
+  static const Char_t** GetRingNames(Bool_t lower=false) 
+  {
+    static const Char_t* lN[]={ "FMD1i", "FMD2i", "FMD2o", "FMD3o", "FMD3i", 0};
+    static const Char_t* uN[]={ "FMD1I", "FMD2I", "FMD2O", "FMD3O", "FMD3I", 0};
+    return (lower ? lN : uN);
+  }
+  /** 
    * Get the standard color for a ring  
    *
    * @param d Detector
@@ -465,8 +479,7 @@ protected:
     if (stack->GetHists()->GetEntries() <= 0 ||stack->GetMaximum() < 1) { 
       // Info("GetStack", "No entries in %s", name.Data());
       stack->GetHists()->Delete();
-      const char* subs[] = { "FMD1I", "FMD2I", "FMD2O", "FMD3O", "FMD3I", 0 };
-      const char** ptr   = subs;
+      const char** ptr   = GetRingNames(false);
       while (*ptr) { 
 	TCollection* sc = GetCollection(parent, *ptr, true);
 	if (!sc) { ptr++; continue; }
@@ -1097,6 +1110,18 @@ protected:
     // return fBody->GetPad(no);
   }
   //__________________________________________________________________
+  TVirtualPad* RingPad(const char* name) const
+  {
+    TString n(name);
+    Int_t idx = n.Index("FMD");
+    if (n == kNPOS) return 0;
+    n.Remove(0, idx+3);
+    Int_t det = n.Atoi();
+    n.Remove(0,1);
+    Char_t rng = n[0];
+    return RingPad(det, rng);
+  }
+  //__________________________________________________________________
   /** 
    * Draw an object in pad 
    * 
@@ -1118,6 +1143,55 @@ protected:
     if (!p) {
       Warning("DrawInRingPad", "No pad found for FMD%d%c", d, r);
       return;
+    }
+    DrawInPad(p, h, opts, flags, title);
+  }
+  /** 
+   * Draw object in a ring pad
+   * 
+   * @param name    Name of ring
+   * @param h       Object to draw
+   * @param opts    Options
+   * @param flags   Flags
+   * @param title   Possible new title
+   */
+  void DrawInRingPad(const char* name, 
+		     TObject*    h, 
+		     Option_t*   opts="", 
+		     UShort_t    flags=0x0, 
+		     const char* title="")
+  {
+    TVirtualPad* p = RingPad(name);
+    if (!p) {
+      Warning("DrawInRingPad", "No pad found for \"%s\"", name);
+      return;
+    }
+    DrawInPad(p, h, opts, flags, title);
+  }
+  /** 
+   * Draw object in a ring pad. Which pad to draw in depends on the
+   * name or title of the drawn object (must contain the ring name as
+   * a sub-string).
+   * 
+   * @param h       Object to draw
+   * @param opts    Options
+   * @param flags   Flags
+   * @param title   Possible new title
+   */
+  void DrawInRingPad(TObject*    h, 
+		     Option_t*   opts="", 
+		     UShort_t    flags=0x0, 
+		     const char* title="")
+  {
+    if (!h) return;
+    TVirtualPad* p = RingPad(h->GetName());
+    if (!p) {
+      p = RingPad(h->GetTitle());
+      if (!p) {
+	Warning("DrawInRingPad", "No pad found for %s/%s", 
+		h->GetName(), h->GetTitle());
+	return;
+      }
     }
     DrawInPad(p, h, opts, flags, title);
   }

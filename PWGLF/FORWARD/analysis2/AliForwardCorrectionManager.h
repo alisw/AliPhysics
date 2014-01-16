@@ -225,7 +225,7 @@ public:
    * 
    * @return Get the energy loss fits corrections object or null pointer
    */
-  const AliFMDCorrELossFit* GetELossFits() const { return GetELossFits(); }
+  const AliFMDCorrELossFit* GetELossFits() const { return GetELossFit(); }
   /** 
    * Get the secondary correction map
    * 

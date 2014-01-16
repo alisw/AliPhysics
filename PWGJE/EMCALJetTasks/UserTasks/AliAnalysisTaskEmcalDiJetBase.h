@@ -56,6 +56,8 @@ class AliAnalysisTaskEmcalDiJetBase : public AliAnalysisTaskEmcalJet {
   void SetDoFullCharged(Bool_t b)           { fDoFullCharged    = b;}
   void SetDoFullFull(Bool_t b)              { fDoFullFull       = b;}
 
+  void SetPtMinTriggerJet(Double_t ptmin)  {fPtMinTriggerJet = ptmin;}
+
   void SetMinSharedFraction(Double_t f)     { fMinFractionShared = f;}
 
   void ResetMatchFlag()                     { fMatchingDone = kFALSE; }
@@ -83,8 +85,6 @@ class AliAnalysisTaskEmcalDiJetBase : public AliAnalysisTaskEmcalJet {
 
   void                        SetChargedFractionIndex();
   void                        SetChargedFractionIndexMC();
-
-  void                        SetPtMinTriggerJet(Double_t ptmin)  {fPtMinTriggerJet = ptmin;}
 
   Bool_t                     fDebug;                      // debug level
   JetCorrelationType         fJetCorrelationType;         // type of correlation between jets

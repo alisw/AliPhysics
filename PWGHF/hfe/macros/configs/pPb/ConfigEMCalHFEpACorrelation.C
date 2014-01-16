@@ -82,6 +82,9 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	task->SetCorrelationAnalysis();
 	task->SetAODanalysis(isAOD);
 	task->SetEventMixing(kTRUE);
+	
+	task->SetAssHadronPtRange(0.5,2.0);
+	
 	if(configIndex==11) task->SetSPDCutForHadrons()
 	
 	if(configIndex==10) task->SetCentralityEstimator(1);
@@ -106,6 +109,8 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	if(centralityIndex==0) task->SetCentrality(0,20);
 	if(centralityIndex==1) task->SetCentrality(20,60);
 	if(centralityIndex==2) task->SetCentrality(60,100);
+	if(centralityIndex==3) task->SetCentrality(0,10);
+	if(centralityIndex==4) task->SetCentrality(10,20);
 ///_______________________________________________________________________________________________________________
 
 ///_______________________________________________________________________________________________________________

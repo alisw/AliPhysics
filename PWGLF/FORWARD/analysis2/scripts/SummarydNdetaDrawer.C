@@ -196,11 +196,25 @@ protected:
     gROOT->SetMacroPath(savPath);
 
     // If we have V0AND trigger, get NSD other data
-    Int_t   oT = (trigger == 0x2000) ? 0x4 : trigger;
-    TString oC = Form("RefData::GetData(%hu,%hu,%hu,%hu,%hu,0xF)", 
-		      sys, sNN, oT, cLow, cHigh);
-    TMultiGraph* other = 
-      reinterpret_cast<TMultiGraph*>(gROOT->ProcessLine(oC));
+    TMultiGraph* other = 0;
+    if (!centAxis) {
+      Int_t   oT = (trigger == 0x2000) ? 0x4 : trigger;
+      TString oC = Form("RefData::GetData(%hu,%hu,%hu,%hu,%hu,0xF)", 
+			sys, sNN, oT, cLow, cHigh);
+      other = reinterpret_cast<TMultiGraph*>(gROOT->ProcessLine(oC));
+    }
+    else { 
+      other = new TMultiGraph("other", "");
+      Int_t nCent = centAxis->GetNbins();
+      for (Int_t i = 1; i <= nCent; i++) { 
+	TString oC = Form("RefData::GetData(%hu,%hu,%hu,%hu,%hu,0xF)", 
+			  sys, sNN, 0, UShort_t(centAxis->GetBinLowEdge(i)),
+			  UShort_t(centAxis->GetBinUpEdge(i)));
+	TMultiGraph* oM = 
+	  reinterpret_cast<TMultiGraph*>(gROOT->ProcessLine(oC));
+	if (oM) other->Add(oM);
+      }
+    }
     if (other) {
       // p1->Clear();
       // other->Draw("ap");
@@ -210,9 +224,12 @@ protected:
       // rC->Draw("same nostack");
       TObject* g = 0;
       TIter    nextG(other->GetListOfGraphs());
-      while ((g = nextG()))
+      while ((g = nextG())) {
+	// Printf("Drawing %s/%s", g->GetName(), g->GetTitle());
         g->DrawClone("same p");
+      }
     }
+    
 
     fBody->cd();
     p2->Draw();
@@ -225,10 +242,19 @@ protected:
     l->SetFillStyle(0);
     l->SetBorderSize(0);
     CleanStack(rC, l, onlyMB ? 0 : centAxis);
+    TString seen;
     if (other) { 
       TIter nextG(other->GetListOfGraphs());
       TObject* g = 0;
-      while ((g = nextG())) l->AddEntry(g, g->GetTitle(), "p");
+      while ((g = nextG())) {
+	if (seen.Index(g->GetTitle()) != kNPOS) continue;
+	seen.Append(Form("|%s", g->GetTitle()));
+	TLegendEntry* e = l->AddEntry("dummy", g->GetTitle(), "p");
+	TGraph* gg = static_cast<TGraph*>(g);
+	e->SetMarkerStyle(gg->GetMarkerStyle());
+	e->SetMarkerSize(gg->GetMarkerSize());
+	e->SetMarkerColor(kBlack);
+      }
     }
     l->Draw();
 
@@ -370,7 +396,7 @@ protected:
     DrawParameter(y, "#sqrt{s_{NN}}",tSNN);
     DrawParameter(y, "Trigger",GetObject(c,"trigger")->GetTitle());
     TObject* oscheme = GetObject(c,"scheme");
-    TString  scheme  = oscheme->GetTitle();
+    TString  scheme  = oscheme ? oscheme->GetTitle() : "";
     if (scheme.IsNull()) scheme = "1/N_{accepted}";
     DrawParameter(y, "Normalization scheme", scheme);
     
@@ -412,7 +438,7 @@ protected:
 
     TLegend* l = new TLegend(0.1, 0.1, 0.9, 0.9, 
 			     onlyMB || !centAxis? "" : "Centralities");
-    l->SetNColumns(2);
+    l->SetNColumns(fLandscape ? 1 : 2);
     l->SetFillStyle(0);
     l->SetBorderSize(0);
 
@@ -422,13 +448,27 @@ protected:
     THStack* dndeta5  = CleanStack(dndeta5_, 0, 0);
 
     if (!onlyMB) {
-      fBody->Divide(1, 3, 0, 0);
+      Double_t y1 = fLandscape ? 0  : .3;
+      Double_t x2 = fLandscape ? .7 : 1;
+      Double_t x1 = fLandscape ? x2 : 0;
+      Double_t y2 = fLandscape ? 1  : y1;
+      TPad* p1 = new TPad("p1", "p1", 0,  y1, x2, 1,  0, 0);
+      TPad* p2 = new TPad("p2", "p2", x1, 0,  1,  y2, 0, 0);
+      fBody->cd();
+      p1->Draw();
+      p1->cd();
+      fBody->cd();
+      p2->Draw();
+      p2->cd();
+      p1->Divide(1,2,0,0);
+
+      // fBody->Divide(1, 3, 0, 0);
       
-      DrawInPad(fBody, 1, l, "");
-      DrawInPad(fBody, 2, dndeta,  "nostack");
-      DrawInPad(fBody, 3, dndeta5, "nostack");
-      fBody->GetPad(2)->SetGridx();
-      fBody->GetPad(3)->SetGridx();
+      DrawInPad(p2, 0, l, "");
+      DrawInPad(p1, 1, dndeta,  "nostack");
+      DrawInPad(p1, 2, dndeta5, "nostack");
+      p1->GetPad(1)->SetGridx();
+      p1->GetPad(2)->SetGridx();
       
       PrintCanvas(Form("%s results - stacks", base.Data()));
     }
@@ -485,6 +525,7 @@ protected:
 
     norm->SetFillColor(kGreen+1);
     norm->SetFillStyle(3001);
+
 
     fBody->Divide(2, 3, 0.05, 0);
 
@@ -613,7 +654,11 @@ protected:
     Bool_t   ok    = false;
     while ((h = static_cast<TH1*>(next()))) {
       TString name(h->GetTitle());
-      if (name.Contains("_mirror")) continue;
+      TString nme(h->GetName());
+      if (nme.Contains("_mirror", TString::kIgnoreCase)) {
+	// Printf("Ignore %s/%s in stack", nme.Data(), name.Data());
+	continue;
+      }
       if (l && !ok) { 
 	j++;
 	if (axis) 
@@ -625,6 +670,7 @@ protected:
 	  name.ReplaceAll("dNdeta", " - work in progress");
 	}
 	ok = axis && axis->GetBinUpEdge(j) > 100;
+	// Printf("Adding entry %d: %s/%s", j,  nme.Data(), name.Data());
 	TLegendEntry* e = l->AddEntry("dummy", name, "f");
 	e->SetFillStyle(1001);
 	e->SetFillColor(h->GetMarkerColor());
