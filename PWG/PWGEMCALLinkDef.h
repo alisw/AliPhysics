@@ -13,6 +13,7 @@
 #pragma link C++ class AliEmcalClusterMaker+;
 #pragma link C++ class AliEmcalCompatTask+;
 #pragma link C++ class AliEmcalContainer+;
+#pragma link C++ class AliEmcalDebugTask+;
 #pragma link C++ class AliEmcalEsdTrackFilterTask;
 #pragma link C++ class AliEmcalMCTrackSelector+;
 #pragma link C++ class AliEmcalParticle+;
