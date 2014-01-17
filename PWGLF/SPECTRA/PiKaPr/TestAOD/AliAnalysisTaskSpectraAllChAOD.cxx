@@ -195,7 +195,7 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
 	{
 	  AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(iMC);
 	  if(!partMC->Charge()) continue;//Skip neutrals
-	  if(fCharge != 0 && partMC->Charge() != fCharge) continue;//if fCharge != 0 only select fCharge
+	  if(fCharge != 0 && partMC->Charge()*fCharge < 0.) continue;//if fCharge != 0 only select fCharge
 	  
 	  if(partMC->Eta() < fTrackCuts->GetEtaMin() || partMC->Eta() > fTrackCuts->GetEtaMax())continue;//ETA CUT ON GENERATED!!!!!!!!!!!!!!!!!!!!!!!!!!
 	  
