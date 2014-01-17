@@ -298,7 +298,8 @@ int AliHLTGlobalEsdConverterComponent::DoEvent(const AliHLTComponentEventData& /
   int iResult=0;
   if (!fESD) return -ENODEV;
 
-  if (IsDataEvent()) fBenchmark.StartNewEvent();
+  if (!IsDataEvent()) return iResult;
+  fBenchmark.StartNewEvent();
   fBenchmark.Start(0);
 
   AliESDEvent* pESD = fESD;
@@ -349,7 +350,7 @@ int AliHLTGlobalEsdConverterComponent::DoEvent(const AliHLTComponentEventData& /
   }
 
   fBenchmark.Stop(0);
-  HLTInfo( fBenchmark.GetStatistics() );
+  HLTWarning( fBenchmark.GetStatistics() );
 
   return iResult;
 }

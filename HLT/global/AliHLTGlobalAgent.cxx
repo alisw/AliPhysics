@@ -30,6 +30,7 @@
 
 // header files of library components
 #include "AliHLTGlobalTrackMergerComponent.h"
+#include "AliHLTGlobalFlatEsdConverterComponent.h"
 #include "AliHLTGlobalEsdConverterComponent.h"
 #include "AliHLTGlobalVertexerComponent.h"
 #include "AliHLTGlobalOfflineVertexerComponent.h"
@@ -75,6 +76,7 @@ int AliHLTGlobalAgent::RegisterComponents(AliHLTComponentHandler* pHandler) cons
   assert(pHandler);
   if (!pHandler) return -EINVAL;
   pHandler->AddComponent(new AliHLTGlobalTrackMergerComponent);
+  pHandler->AddComponent(new AliHLTGlobalFlatEsdConverterComponent);
   pHandler->AddComponent(new AliHLTGlobalEsdConverterComponent);
   pHandler->AddComponent(new AliHLTGlobalVertexerComponent);
   pHandler->AddComponent(new AliHLTGlobalOfflineVertexerComponent);
@@ -120,11 +122,12 @@ int AliHLTGlobalAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandler
     delete pTokens;
     pTokens=NULL;
   }
+  cout<<endl<<"\n\nConfiguring inputs to global HLT Vertexer: %s\n\n"<<vertexerInputs.Data()<<endl<<endl;
   if (!vertexerInputs.IsNull()) {
-    HLTInfo("Configuring inputs to global HLT Vertexer: %s", vertexerInputs.Data());
+    HLTInfo("\n\nConfiguring inputs to global HLT Vertexer: %s\n\n", vertexerInputs.Data());
     pHandler->CreateConfiguration("GLOBAL-vertexer","GlobalVertexer",vertexerInputs,"");
   } else {
-    HLTWarning("No inputs to global HLT Vertexer found");
+    HLTWarning("\n\nNo inputs to global HLT Vertexer found\n\n");
   }
 
   /////////////////////////////////////////////////////////////////////////////////////
@@ -132,7 +135,7 @@ int AliHLTGlobalAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandler
   // assembly of the global ESD
 
   // define the inputs to the global ESD
-  TString esdInputs="TPC-globalmerger TPC-mcTrackMarker ITS-tracker GLOBAL-vertexer ITS-SPD-vertexer TPC-dEdx VZERO-RECO";
+  TString esdInputs="TPC-globalmerger TPC-mcTrackMarker ITS-tracker TPC-ClusterTransformation GLOBAL-vertexer ITS-SPD-vertexer TPC-dEdx VZERO-RECO";
 
   // check for the availibility
   pTokens=esdInputs.Tokenize(" ");
@@ -155,6 +158,7 @@ int AliHLTGlobalAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandler
     HLTWarning("No inputs to global HLT ESD found");
   }
 
+  pHandler->CreateConfiguration("GLOBAL-flat-esd-converter", "GlobalFlatEsdConverter", esdInputs.Data(), "");
   pHandler->CreateConfiguration("GLOBAL-esd-converter", "GlobalEsdConverter", esdInputs.Data(), "");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////

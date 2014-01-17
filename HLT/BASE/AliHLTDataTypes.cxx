@@ -118,6 +118,10 @@ const AliHLTComponentDataType kAliHLTDataTypeV0Finder = AliHLTComponentDataTypeI
 const char kAliHLTESDObjectDataTypeIDstring[8] = kAliHLTESDObjectDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeESDObject = AliHLTComponentDataTypeInitializer(kAliHLTESDObjectDataTypeIDstring, kAliHLTDataOriginAny);
 
+/** Flat ESD data specification */
+const char kAliHLTFlatESDDataTypeIDstring[8] = kAliHLTFlatESDDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeFlatESD = AliHLTComponentDataTypeInitializer(kAliHLTFlatESDDataTypeIDstring, kAliHLTDataOriginAny);
+
 /** ESD content specification */
 const char kAliHLTESDContentDataTypeIDstring[8] = kAliHLTESDContentDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeESDContent = AliHLTComponentDataTypeInitializer(kAliHLTESDContentDataTypeIDstring, kAliHLTDataOriginAny);
