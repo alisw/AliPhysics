@@ -1,7 +1,7 @@
 #ifndef AliPicoTrack_H
 #define AliPicoTrack_H
 
-// $Id: AliPicoTrack.h | Thu Dec 5 20:45:29 2013 +0100 | Constantin Loizides  $
+// $Id$
 
 #include "AliVTrack.h"
 #include <TMath.h>
@@ -61,7 +61,8 @@ class AliPicoTrack: public AliVTrack {
   Bool_t   PropagateToDCA(const AliVVertex *, Double_t, Double_t, Double_t *, Double_t *) { return 0; }
   void     SetEMCALcluster(Int_t id)         { fClusId = id;   }
 
-  static void GetEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
+  static void GetEtaPhiDiff(const AliVTrack *t, const AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
+  static Byte_t GetTrackType(const AliVTrack *t);
 
  protected:
   Double32_t       fPt;       //[0,0,12]   pt at vertex
