@@ -80,7 +80,7 @@ Int_t AliPicoTrack::Compare(const TObject* obj) const
 }
 
 //_________________________________________________________________________________________________
-void AliPicoTrack::GetEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff)
+void AliPicoTrack::GetEtaPhiDiff(const AliVTrack *t, const AliVCluster *v, Double_t &phidiff, Double_t &etadiff)
 {
   // Calculate phi and eta difference between track and cluster.
  
@@ -103,4 +103,19 @@ void AliPicoTrack::GetEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff
   Double_t cphi     = cpos.Phi();
   etadiff=veta-ceta;
   phidiff=TVector2::Phi_mpi_pi(vphi-cphi);
+}
+
+//_________________________________________________________________________________________________
+Byte_t AliPicoTrack::GetTrackType(const AliVTrack *t)
+{
+  // Get track type encoded from bits 20 and 21.
+
+  Byte_t ret = 0;
+  if (t->TestBit(BIT(20)) && !t->TestBit(BIT(21)))
+    ret = 1;
+  else if (!t->TestBit(BIT(20)) && t->TestBit(BIT(21)))
+    ret = 2;
+  else if (t->TestBit(BIT(20)) && t->TestBit(BIT(21)))
+    ret = 3;
+  return ret;
 }
