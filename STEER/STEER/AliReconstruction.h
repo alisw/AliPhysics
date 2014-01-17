@@ -363,6 +363,9 @@ private:
   // Plane Efficiency Evaluation
   Bool_t         fRunPlaneEff ;      // Evaluate Plane Efficiency
 
+  // PID
+  AliESDpid*     fESDpid;                      // PID object
+
   // New members needed in order to split Run method
   // into InitRun,RunEvent,FinishRun methods
   AliESDEvent*         fesd;        //! Pointer to the ESD event object
@@ -407,7 +410,7 @@ private:
   Int_t                fMaxVMEM;        //  max VMEM memory, MB
   static const char*   fgkStopEvFName;  //  filename for stop.event stamp
   //
-  ClassDef(AliReconstruction, 46)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 47)      // class for running the reconstruction
 };
 
 #endif

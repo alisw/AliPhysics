@@ -66,7 +66,7 @@ AliTOFtrack::AliTOFtrack(const AliESDtrack& t) :
   //
   SetLabel(t.GetLabel());
   SetChi2(0.);
-  SetMass(t.GetMass());
+  SetMass(t.GetMassForTracking());
 
   Set(t.GetX(),t.GetAlpha(),t.GetParameter(),t.GetCovariance());
 

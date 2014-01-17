@@ -263,7 +263,7 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
       AliLog::SetClassDebugLevel("AliITSUTrackerGlo",dbg ? 10:0);
       */
 #ifdef _ITSU_DEBUG_
-      AliDebug(1,Form("Processing track %d(esd%d) | M=%.3f Pt=%.3f | MCLabel: %d",itr,trID,fCurrESDtrack->GetMass(kTRUE),fCurrESDtrack->Pt(),fCurrESDtrMClb));//RS
+      AliDebug(1,Form("Processing track %d(esd%d) | M=%.3f Pt=%.3f | MCLabel: %d",itr,trID,fCurrESDtrack->GetMassForTracking(kTRUE),fCurrESDtrack->Pt(),fCurrESDtrMClb));//RS
 #endif
       FindTrack(fCurrESDtrack, trID);
     }   
@@ -680,8 +680,7 @@ AliITSUTrackHyp* AliITSUTrackerGlo::InitHypothesis(AliESDtrack *esdTr, Int_t esd
   //
   fCountProlongationTrials++;
   //
-  fCurrMass = esdTr->GetMass();
-  if (fCurrMass<kPionMass*0.9) fCurrMass = kPionMass; // don't trust to mu, e identification from TPCin
+  fCurrMass = esdTr->GetMassForTracking();
   //
   hyp = new AliITSUTrackHyp(fNLrActive);
   hyp->SetESDTrack(esdTr);
