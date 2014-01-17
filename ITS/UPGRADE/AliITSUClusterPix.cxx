@@ -97,6 +97,7 @@ Bool_t AliITSUClusterPix::GetGlobalXYZ(Float_t xyz[3]) const
     xyz[0] = GetX();
     xyz[1] = GetY();
     xyz[2] = GetZ();
+    return kTRUE;
   }
   //
   Double_t lxyz[3] = {0, 0, 0};
