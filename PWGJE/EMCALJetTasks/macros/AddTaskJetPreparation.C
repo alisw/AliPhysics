@@ -64,8 +64,8 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
       esdfilter->SetDist(edist);
       esdfilter->SelectCollisionCandidates(pSel);
     } else if (dType == "AOD") {
-      gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskAodTrackFilter.C");
-      AliEmcalAodTrackFilterTask *aodfilter = AddTaskAodTrackFilter(inputTracks.Data(),"tracks",period.Data());
+      gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalAodTrackFilter.C");
+      AliEmcalAodTrackFilterTask *aodfilter = AddTaskEmcalAodTrackFilter(inputTracks.Data(),"tracks",period.Data());
       if (doAODTrackProp) {
 	aodfilter->SetDist(edist);
 	aodfilter->SetDoPropagation(kTRUE);
@@ -98,7 +98,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   if (isEmcalTrain)
     RequestMemory(emcalClus,100*1024);
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskHadCorr.C"); 
+  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskHadCorr.C"); 
   AliHadCorrTask *hCorr = AddTaskHadCorr("EmcalTracks","EmcalClusters",outClusName,hadcorr,
 					 minPtEt,phiMatch,etaMatch,Eexcl,trackclus,doHistos);
   hCorr->SelectCollisionCandidates(pSel);
