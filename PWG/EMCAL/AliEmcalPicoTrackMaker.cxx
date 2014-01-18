@@ -137,23 +137,18 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
 	track->Phi() < fMinTrackPhi || track->Phi() > fMaxTrackPhi)
       continue;
 
-    Bool_t isEmc = kFALSE;
     Int_t type = -1;
     if (esdMode) {
       AliESDtrack *esdtrack = static_cast<AliESDtrack*>(track);
       if (fESDtrackCuts && !fESDtrackCuts->AcceptTrack(esdtrack))
 	continue;
       type = 0;
-      if (esdtrack->TestBit(BIT(27)) && !esdtrack->TestBit(BIT(28)))
+      if (esdtrack->TestBit(BIT(20)) && !esdtrack->TestBit(BIT(21)))
 	type = 1;
-      else if (!esdtrack->TestBit(BIT(27)) && esdtrack->TestBit(BIT(28)))
+      else if (!esdtrack->TestBit(BIT(20)) && esdtrack->TestBit(BIT(21)))
 	type = 2;
       if (!fIncludeNoITS && (type==2))
 	continue;
-      if (TMath::Abs(esdtrack->GetTrackEtaOnEMCal()) < 0.75 && 
-	  esdtrack->GetTrackPhiOnEMCal() > 70 * TMath::DegToRad() &&
-	  esdtrack->GetTrackPhiOnEMCal() < 190 * TMath::DegToRad())
-	isEmc = kTRUE;
     } else {
       AliAODTrack *aodtrack = static_cast<AliAODTrack*>(track);
       if (fAODfilterBits[0] < 0) {
@@ -183,10 +178,6 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
 	if (frac > fCutMaxFractionSharedTPCClusters) 
 	  continue;
       }
-      if (TMath::Abs(track->GetTrackEtaOnEMCal()) < 0.75 && 
-	  track->GetTrackPhiOnEMCal() > 70 * TMath::DegToRad() &&
-	  track->GetTrackPhiOnEMCal() < 190 * TMath::DegToRad())
-	isEmc = kTRUE;
     }
 
     if (fTrackEfficiency < 1) {
@@ -194,6 +185,12 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
       if (fTrackEfficiency < r) 
 	continue;
     }
+
+    Bool_t isEmc = kFALSE;
+    if (TMath::Abs(track->GetTrackEtaOnEMCal()) < 0.75 && 
+	track->GetTrackPhiOnEMCal() > 70 * TMath::DegToRad() &&
+	track->GetTrackPhiOnEMCal() < 190 * TMath::DegToRad())
+      isEmc = kTRUE;
 
     Int_t label = 0;
     if (fIsMC) {

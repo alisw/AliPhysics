@@ -187,17 +187,17 @@ void AliEmcalAodTrackFilterTask::UserExec(Option_t *)
     if (fModifyTrack) {
       newt->SetLabel(label);
       if (type==0) {
-        newt->SetBit(BIT(27),0);
-        newt->SetBit(BIT(28),0);
+        newt->SetBit(BIT(20),0);
+        newt->SetBit(BIT(21),0);
       } else if (type==1) {
-        newt->SetBit(BIT(27),1);
-        newt->SetBit(BIT(28),0);
+        newt->SetBit(BIT(20),1);
+        newt->SetBit(BIT(21),0);
       } else if (type==2) {
-        newt->SetBit(BIT(27),0);
-        newt->SetBit(BIT(28),1);
+        newt->SetBit(BIT(20),0);
+        newt->SetBit(BIT(21),1);
       } else if (type==3) {
-        newt->SetBit(BIT(27),1);
-        newt->SetBit(BIT(28),1);
+        newt->SetBit(BIT(20),1);
+        newt->SetBit(BIT(21),1);
       }
     }
     ++nacc;
