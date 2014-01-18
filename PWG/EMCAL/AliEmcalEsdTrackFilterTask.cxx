@@ -180,7 +180,6 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
 
 	UInt_t status = etrack->GetStatus();
         if (etrack->GetConstrainedParam() && (((status&AliESDtrack::kITSrefit)!=0) || fIncludeNoITS)) {
-	  cout << "test " << fIncludeNoITS << endl;
           AliESDtrack *newTrack = new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
           const AliExternalTrackParam* constrainParam = etrack->GetConstrainedParam();
           newTrack->Set(constrainParam->GetX(),
