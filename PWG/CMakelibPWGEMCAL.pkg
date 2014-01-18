@@ -53,6 +53,7 @@ set ( SRCS
  EMCAL/AliEmcalTriggerSetupInfo.cxx
  EMCAL/AliEsdSkimTask.cxx
  EMCAL/AliEsdTrackExt.cxx
+ EMCAL/AliHadCorrTask.cxx
  EMCAL/AliParticleContainer.cxx
  EMCAL/AliPicoTrack.cxx
 )
