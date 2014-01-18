@@ -1,6 +1,6 @@
 // $Id$
 
-AliEmcalAodTrackFilterTask* AddTaskAodTrackFilter(
+AliEmcalAodTrackFilterTask* AddTaskEmcalAodTrackFilter(
   const char *name         = "FilterTracks",
   const char *inname       = "tracks",
   const char *runperiod    = "",
