@@ -1209,7 +1209,7 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   Float_t corrTimeGain = 1;
   TObjArray * timeGainSplines = 0x0;
   TGraphErrors * grPadEqual = 0x0;
-  TGraphErrors*  grChamberGain[3]={0x0,0x0,0x0};
+  TGraphErrors*  grChamberGain[4]={0x0,0x0,0x0,0x0};
   TF1*  funDipAngle[4]={0x0,0x0,0x0,0x0};
   //
   //
