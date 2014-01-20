@@ -72,7 +72,7 @@ using namespace std;
 AliJetFlowTools::AliJetFlowTools() :
     fResponseMaker      (new AliAnaChargedJetResponseMaker()),
     fPower              (new TF1("fPower","[0]*TMath::Power(x,-([1]))",0.,300.)),
-    fSaveFull           (kFALSE),
+    fSaveFull           (kTRUE),
     fActiveString       (""),
     fActiveDir          (0x0),
     fInputList          (0x0),
@@ -326,6 +326,12 @@ void AliJetFlowTools::Make() {
         }
     }   // end of if(fDphiUnfolding)
     fDeltaPtDeltaPhi->Write();
+    unfoldedJetSpectrumIn->Sumw2();
+    ProtectHeap(unfoldedJetSpectrumIn, kFALSE);
+    unfoldedJetSpectrumIn->Write();
+    unfoldedJetSpectrumOut->Sumw2();
+    ProtectHeap(unfoldedJetSpectrumOut, kFALSE);
+    unfoldedJetSpectrumOut->Write();
     fJetPtDeltaPhi->Write();
     // save the current state of the unfolding object
     SaveConfiguration(unfoldedJetSpectrumIn ? kTRUE : kFALSE, unfoldedJetSpectrumOut ? kTRUE : kFALSE);
@@ -1747,9 +1753,9 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                    ratioYield->GetPoint(b+1, _tempx, _tempy);
                    ratioProfile->Fill(_tempx, _tempy);
                }
-               ratioProfile->GetYaxis()->SetRangeUser(-1., 3.);
+               ratioProfile->GetYaxis()->SetRangeUser(-0., 2.);
                ratioProfile->GetXaxis()->SetRangeUser(rangeLow, rangeUp);
-               ratioYield->GetYaxis()->SetRangeUser(-1., 3.);
+               ratioYield->GetYaxis()->SetRangeUser(-0., 2.);
                ratioYield->GetXaxis()->SetRangeUser(rangeLow, rangeUp);
                ratioYield->SetFillColor(kRed);
                ratioYield->Draw("ap");
@@ -1763,7 +1769,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                    v2Profile->Fill(_tempx, _tempy);
 
                }
-               v2Profile->GetYaxis()->SetRangeUser(-1., 3.);
+               v2Profile->GetYaxis()->SetRangeUser(-0., 2.);
                v2Profile->GetXaxis()->SetRangeUser(rangeLow, rangeUp);
                ratioV2->GetYaxis()->SetRangeUser(-.25, .75);
                ratioV2->GetXaxis()->SetRangeUser(rangeLow, rangeUp);

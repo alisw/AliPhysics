@@ -109,7 +109,6 @@ void AliEmcalAodTrackFilterTask::UserExec(Option_t *)
 
     if (!track)
       continue;
-
     Int_t type = -1;
     if (fAODfilterBits[0] < 0) {
       if (track->IsHybridGlobalConstrainedGlobal())
@@ -153,17 +152,17 @@ void AliEmcalAodTrackFilterTask::UserExec(Option_t *)
 	AliDebug(2,Form("Track %d with label==0", iTracks));
     }
     if (type==0) {
-      newt->SetBit(BIT(20),0);
-      newt->SetBit(BIT(21),0);
+      newt->SetBit(BIT(22),0);
+      newt->SetBit(BIT(23),0);
     } else if (type==1) {
-      newt->SetBit(BIT(20),1);
-      newt->SetBit(BIT(21),0);
+      newt->SetBit(BIT(22),1);
+      newt->SetBit(BIT(23),0);
     } else if (type==2) {
-      newt->SetBit(BIT(20),0);
-      newt->SetBit(BIT(21),1);
+      newt->SetBit(BIT(22),0);
+      newt->SetBit(BIT(23),1);
     } else if (type==3) {
-      newt->SetBit(BIT(20),1);
-      newt->SetBit(BIT(21),1);
+      newt->SetBit(BIT(22),1);
+      newt->SetBit(BIT(23),1);
     }
     ++nacc;
   }
