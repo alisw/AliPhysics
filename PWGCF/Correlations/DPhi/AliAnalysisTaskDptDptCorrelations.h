@@ -117,7 +117,10 @@ public:
   virtual     void    SetDcaZMin(double v)            { _dcaZMin           = v; } 
   virtual     void    SetDcaZMax(double v)            { _dcaZMax           = v; } 
   virtual     void    SetDcaXYMin(double v)           { _dcaXYMin          = v; } 
-  virtual     void    SetDcaXYMax(double v)           { _dcaXYMax          = v; } 
+  virtual     void    SetDcaXYMax(double v)           { _dcaXYMax          = v; }
+  virtual     void    SetTPCNclus(int v)              { _tpcnclus          = v; }
+  virtual     void    SetChi2PerNDF(double v)         { _chi2ndf           = v; }
+ 
   virtual     void    SetDedxMin(double v)            { _dedxMin           = v; } 
   virtual     void    SetDedxMax(double v)            { _dedxMax           = v; } 
   virtual     void    SetNClusterMin(int v)           { _nClusterMin       = v; } 
@@ -170,6 +173,9 @@ protected:
   int      _nClusterMin; 
   int      _trackFilterBit;
   Double_t fNSigmaCut;  
+
+  int _tpcnclus;
+  double _chi2ndf;
 
   //double _min_eta_1;
   //double _max_eta_1;
