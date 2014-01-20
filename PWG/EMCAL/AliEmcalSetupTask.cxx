@@ -67,6 +67,10 @@ void AliEmcalSetupTask::ConnectInputData(Option_t *option)
   if (fOcdbPath.Length()==0)
     return;
 
+  AliCDBManager *man = AliCDBManager::Instance();
+  if (man->IsDefaultStorageSet()) 
+    return;
+
   if (fIsInit)
     return;
 
