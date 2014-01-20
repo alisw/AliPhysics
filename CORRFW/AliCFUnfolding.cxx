@@ -93,6 +93,7 @@
 #include "TH3D.h"
 #include "TRandom3.h"
 
+
 ClassImp(AliCFUnfolding)
 
 //______________________________________________________________
@@ -238,6 +239,7 @@ AliCFUnfolding::~AliCFUnfolding() {
   if (fRandom3)            delete fRandom3;
   if (fDeltaUnfoldedP)     delete fDeltaUnfoldedP;
   if (fDeltaUnfoldedN)     delete fDeltaUnfoldedN;
+ 
 }
 
 //______________________________________________________________
@@ -271,6 +273,8 @@ void AliCFUnfolding::Init() {
   fDeltaUnfoldedN = (THnSparse*)fPrior->Clone();
   fDeltaUnfoldedN->SetTitle("");
   fDeltaUnfoldedN->Reset();
+
+
 }
 
 
@@ -481,12 +485,19 @@ void AliCFUnfolding::CalculateCorrelatedErrors() {
 
   // Get statistical errors for final unfolded spectrum
   // ie. spread of each pt bin in fDeltaUnfoldedP
-  Double_t sigma       = 0.;
+  Double_t meanx2 = 0.;
+  Double_t mean = 0.;
+  Double_t checksigma = 0.;
+  Double_t entriesInBin = 0.;
   for (Long_t iBin=0; iBin<fUnfoldedFinal->GetNbins(); iBin++) {
     fUnfoldedFinal->GetBinContent(iBin,fCoordinatesN_M);
-    sigma = fDeltaUnfoldedP->GetBinError(fCoordinatesN_M);
+    mean = fDeltaUnfoldedP->GetBinContent(fCoordinatesN_M);
+    meanx2 = fDeltaUnfoldedP->GetBinError(fCoordinatesN_M);
+    entriesInBin = fDeltaUnfoldedN->GetBinContent(fCoordinatesN_M);
+    if(entriesInBin > 1.) checksigma = TMath::Sqrt((entriesInBin/(entriesInBin-1.))*TMath::Abs(meanx2-mean*mean));
+    //printf("mean %f, meanx2 %f, sigmacheck %f, nentries %f\n",mean, meanx2, checksigma,entriesInBin);
     //AliDebug(2,Form("filling error %e\n",sigma));
-    fUnfoldedFinal->SetBinError(fCoordinatesN_M,sigma);
+    fUnfoldedFinal->SetBinError(fCoordinatesN_M,checksigma);
   }
 
   // now errors are calculated
@@ -539,23 +550,25 @@ void AliCFUnfolding::FillDeltaUnfoldedProfile() {
     Double_t entriesInBin = fDeltaUnfoldedN->GetBinContent(fCoordinatesN_M);
     //AliDebug(2,Form("%e %e ==> delta = %e\n",fUnfoldedFinal->GetBinContent(iBin,fCoordinatesN_M),fUnfolded->GetBinContent(iBin),deltaInBin));
 
+    //printf("deltaInBin %f\n",deltaInBin);
+    //printf("pt %f\n",ptaxis->GetBinCenter(iBin+1));
+    
     Double_t mean_n = fDeltaUnfoldedP->GetBinContent(fCoordinatesN_M) ;
     Double_t mean_nplus1 = mean_n ;
     mean_nplus1 *= entriesInBin ;
     mean_nplus1 += deltaInBin ;
     mean_nplus1 /= (entriesInBin+1) ;
 
-    Double_t sigma = fDeltaUnfoldedP->GetBinContent(fCoordinatesN_M) ;
-    sigma *= sigma ;
-    sigma *= entriesInBin ;
-    sigma += ( (entriesInBin*entriesInBin+entriesInBin) * TMath::Power(mean_nplus1 - mean_n,2) ) ;
-    sigma /= (entriesInBin+1) ;
-    sigma = TMath::Sqrt(sigma) ;
+    Double_t meanx2_n = fDeltaUnfoldedP->GetBinError(fCoordinatesN_M) ;
+    Double_t meanx2_nplus1 = meanx2_n ;
+    meanx2_nplus1 *= entriesInBin ;
+    meanx2_nplus1 += (deltaInBin*deltaInBin) ;
+    meanx2_nplus1 /= (entriesInBin+1) ;
 
     //AliDebug(2,Form("sigma = %e\n",sigma));
 
+    fDeltaUnfoldedP->SetBinError(fCoordinatesN_M,meanx2_nplus1) ;
     fDeltaUnfoldedP->SetBinContent(fCoordinatesN_M,mean_nplus1) ;
-    fDeltaUnfoldedP->SetBinError  (fCoordinatesN_M,sigma) ;
     fDeltaUnfoldedN->SetBinContent(fCoordinatesN_M,entriesInBin+1);
   }
 }
