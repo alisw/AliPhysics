@@ -113,11 +113,11 @@ Byte_t AliPicoTrack::GetTrackType(const AliVTrack *t)
   // Get track type encoded from bits 20 and 21.
 
   Byte_t ret = 0;
-  if (t->TestBit(BIT(20)) && !t->TestBit(BIT(21)))
+  if (t->TestBit(BIT(22)) && !t->TestBit(BIT(23)))
     ret = 1;
-  else if (!t->TestBit(BIT(20)) && t->TestBit(BIT(21)))
+  else if (!t->TestBit(BIT(22)) && t->TestBit(BIT(23)))
     ret = 2;
-  else if (t->TestBit(BIT(20)) && t->TestBit(BIT(21)))
+  else if (t->TestBit(BIT(22)) && t->TestBit(BIT(23)))
     ret = 3;
   return ret;
 }
