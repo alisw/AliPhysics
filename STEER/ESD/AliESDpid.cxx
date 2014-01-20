@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id: AliESDpid.cxx 64123 2013-09-05 15:09:53Z morsch $ */
 
 //-----------------------------------------------------------------
 //           Implementation of the combined PID class
@@ -61,7 +61,7 @@ Int_t AliESDpid::MakePID(AliESDEvent *event, Bool_t TPConly, Float_t timeZeroTOF
     MakeTPCPID(track);
     if (!TPConly) {
       MakeITSPID(track);
-      MakeTOFPID(track, timeZeroTOF);
+      //MakeTOFPID(track, timeZeroTOF);
       //MakeHMPIDPID(track);
       //MakeTRDPID(track);
     }
@@ -466,4 +466,30 @@ Float_t AliESDpid::GetNumberOfSigmasTOFold(const AliVParticle *track, AliPID::EP
   
   Double_t expTime = fTOFResponse.GetExpectedSignal(vtrack,type);
   return (tofTime - fTOFResponse.GetStartTime(vtrack->P()) - expTime)/fTOFResponse.GetExpectedSigma(vtrack->P(),expTime,AliPID::ParticleMassZ(type));
+}
+
+//_________________________________________________________________________
+void AliESDpid::SetMassForTracking(AliESDtrack *esdtr) const
+{
+  // assign mass for tracking
+  //
+  int pid = AliPID::kPion; // this should be substituted by real most probable TPC pid (e,mu -> pion) or poin if no PID possible
+  //
+  if (pid<AliPID::kPion || pid>AliPID::kSPECIESC-1) pid = AliPID::kPion;
+  //
+  esdtr->SetMassForTracking( AliPID::ParticleCharge(pid)==1 ? AliPID::ParticleMass(pid) : -AliPID::ParticleMass(pid));
+  //
+}
+
+
+//_________________________________________________________________________
+void AliESDpid::MakePIDForTracking(AliESDEvent *event) const
+{
+  // assign masses using for tracking
+  Int_t nTrk=event->GetNumberOfTracks();
+  for (Int_t iTrk=nTrk; iTrk--;) {  
+    AliESDtrack *track = event->GetTrack(iTrk);
+    SetMassForTracking(track);
+  }
+
 }

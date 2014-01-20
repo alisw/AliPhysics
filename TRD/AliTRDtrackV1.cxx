@@ -132,7 +132,7 @@ AliTRDtrackV1::AliTRDtrackV1(const AliESDtrack &t) : AliKalmanTrack()
   SetLabel(t.GetLabel());
   SetChi2(0.0);
 
-  SetMass(t.GetMass(kTRUE));
+  SetMass(t.GetMassForTracking());
   AliKalmanTrack::SetNumberOfClusters(t.GetTRDncls()); 
   Int_t ti[]={-1, -1, -1, -1, -1, -1}; t.GetTRDtracklets(&ti[0]);
   for(int ip=0; ip<kNplane; ip++){ 
@@ -669,6 +669,7 @@ Bool_t AliTRDtrackV1::PropagateTo(Double_t xk, Double_t xx0, Double_t xrho)
 
     // Energy losses
     Double_t p2    = (1.0 + GetTgl()*GetTgl()) / (GetSigned1Pt()*GetSigned1Pt());
+    if (fMass<0) p2 *= 4; // q=2
     Double_t beta2 = p2 / (p2 + fMass*fMass);
     if ((beta2 < 1.0e-10) || 
         ((5940.0 * beta2/(1.0 - beta2 + 1.0e-10) - beta2) < 0.0)) {
@@ -678,6 +679,7 @@ Bool_t AliTRDtrackV1::PropagateTo(Double_t xk, Double_t xx0, Double_t xrho)
     Double_t dE    = 0.153e-3 / beta2 
                    * (TMath::Log(5940.0 * beta2/(1.0 - beta2 + 1.0e-10)) - beta2)
                    * xrho;
+    if (fMass<0) dE *= 4; // q=2
     fBudget[0] += xrho;
 
     /*

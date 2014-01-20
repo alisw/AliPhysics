@@ -40,7 +40,7 @@ ClassImp(AliKalmanTrack)
   // Default constructor
   //
 
-  for(Int_t i=0; i<AliPID::kSPECIES; i++) fIntegratedTime[i] = 0;
+  for(Int_t i=0; i<AliPID::kSPECIESC; i++) fIntegratedTime[i] = 0;
 }
 
 AliKalmanTrack::AliKalmanTrack(const AliKalmanTrack &t):
@@ -57,7 +57,7 @@ AliKalmanTrack::AliKalmanTrack(const AliKalmanTrack &t):
   // Copy constructor
   //
   
-  for (Int_t i=0; i<AliPID::kSPECIES; i++)
+  for (Int_t i=0; i<AliPID::kSPECIESC; i++)
       fIntegratedTime[i] = t.fIntegratedTime[i];
 }
 
@@ -70,7 +70,7 @@ AliKalmanTrack& AliKalmanTrack::operator=(const AliKalmanTrack&o){
     fMass = o.fMass;
     fN = o.fN;
     fStartTimeIntegral = o.fStartTimeIntegral;
-    for(Int_t i = 0;i<AliPID::kSPECIES;++i)fIntegratedTime[i] = o.fIntegratedTime[i];
+    for(Int_t i = 0;i<AliPID::kSPECIESC;++i)fIntegratedTime[i] = o.fIntegratedTime[i];
     fIntegratedLength = o.fIntegratedLength;
   }
   return *this;
@@ -90,7 +90,7 @@ void AliKalmanTrack::StartTimeIntegral()
   //  AliWarning("Reseting Recorded Time.");
 
   fStartTimeIntegral = kTRUE;
-  for(Int_t i=0; i<AliPID::kSPECIES; i++) fIntegratedTime[i] = 0;  
+  for(Int_t i=0; i<AliPID::kSPECIESC; i++) fIntegratedTime[i] = 0;  
   fIntegratedLength = 0;
 }
 
@@ -124,20 +124,18 @@ void AliKalmanTrack:: AddTimeStep(Double_t length)
   fIntegratedLength += length;
 
   Double_t xr, param[5];
-  Double_t pt, tgl;
   
   GetExternalParameters(xr, param);
-  pt =  1/param[4] ;
-  tgl = param[3];
+  double tgl = param[3];
 
-  Double_t p = TMath::Abs(pt * TMath::Sqrt(1+tgl*tgl));
+  Double_t p2inv = param[4]*param[4]/(1+tgl*tgl);
 
   //  if (length > 100) return;
 
-  for (Int_t i=0; i<AliPID::kSPECIES; i++) {
+  for (Int_t i=0; i<AliPID::kSPECIESC; i++) {
     
-    Double_t mass = AliPID::ParticleMass(i);
-    Double_t correction = TMath::Sqrt( pt*pt * (1 + tgl*tgl) + mass * mass ) / p;
+    Double_t massz = AliPID::ParticleMassZ(i);
+    Double_t correction = TMath::Sqrt( 1. + massz*massz*p2inv ); // 1/beta
     Double_t time = length * correction / kcc;
 
     fIntegratedTime[i] += time;
@@ -163,7 +161,7 @@ Double_t AliKalmanTrack::GetIntegratedTime(Int_t pdg) const
     return 0.;
   }
 
-  for (Int_t i=0; i<AliPID::kSPECIES; i++)
+  for (Int_t i=0; i<AliPID::kSPECIESC; i++)
     if (AliPID::ParticleCode(i) == TMath::Abs(pdg)) return fIntegratedTime[i];
 
   AliWarning(Form("Particle type [%d] not found", pdg));
@@ -171,10 +169,10 @@ Double_t AliKalmanTrack::GetIntegratedTime(Int_t pdg) const
 }
 
 void AliKalmanTrack::GetIntegratedTimes(Double_t *times) const {
-  for (Int_t i=0; i<AliPID::kSPECIES; i++) times[i]=fIntegratedTime[i];
+  for (Int_t i=0; i<AliPID::kSPECIESC; i++) times[i]=fIntegratedTime[i];
 }
 
 void AliKalmanTrack::SetIntegratedTimes(const Double_t *times) {
-  for (Int_t i=0; i<AliPID::kSPECIES; i++) fIntegratedTime[i]=times[i];
+  for (Int_t i=0; i<AliPID::kSPECIESC; i++) fIntegratedTime[i]=times[i];
 }
 

@@ -563,7 +563,6 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
   // temporary
   Int_t noesd = 0;
   {/* Read ESD tracks */
-    Double_t pimass = TDatabasePDG::Instance()->GetParticle(211)->Mass();
     Int_t nentr=event->GetNumberOfTracks();
     noesd=nentr;
     //    Info("Clusters2Tracks", "Number of ESD tracks: %d\n", nentr);
@@ -580,9 +579,6 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
       t->GetDZ(GetX(),GetY(),GetZ(),t->GetDP());              //I.B.
       Double_t vdist = TMath::Sqrt(t->GetD(0)*t->GetD(0)+t->GetD(1)*t->GetD(1));
 
-
-      // look at the ESD mass hypothesys !
-      if (t->GetMass()<0.9*pimass) t->SetMass(pimass); 
       // write expected q
       t->SetExpQ(TMath::Max(0.8*t->GetESDtrack()->GetTPCsignal(),30.));
 

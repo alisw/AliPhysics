@@ -27,6 +27,21 @@
 #pragma link C++ class  AliESDfriend+;                                                                                                           
 #pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="unsigned char fTRDpidQuality"  version="[-49]" target="fTRDntracklets" targetType="unsigned char" code="{newObj->SetTRDntracklets(onfile.fTRDpidQuality);}"
 // see http://root.cern.ch/svn/root/trunk/io/doc/DataModelEvolution.txt
+
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Int_t fTOFLabel[3]"  version="[-68]" target="fTOFLabel" targetType="Int_t*" code="{fTOFLabel = new Int_t[3];for(Int_t i=0;i < 3;i++) fTOFLabel[i]=onfile.fTOFLabel[i];}"
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTrackTime[5]"  version="[-68]" target="fTrackTime" targetType="Double32_t*" include="AliPID.h" code="{fTrackTime = new Double32_t[AliPID::kSPECIESC];for(Int_t isp=0;isp < 5;isp++) fTrackTime[isp]=onfile.fTrackTime[isp];}"
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTrackLength"  version="[-68]" target="fTrackLength" targetType="Double32_t" code="{fTrackLength=onfile.fTrackLength;}"
+
+
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTOFsignal"  version="[-68]" target="fTOFsignal" targetType="Double32_t" code="{fTOFsignal=onfile.fTOFsignal;}"
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTOFsignalToT"  version="[-68]" target="fTOFsignalToT" targetType="Double32_t" code="{fTOFsignalToT=onfile.fTOFsignalToT;}"
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTOFsignalRaw"  version="[-68]" target="fTOFsignalRaw" targetType="Double32_t" code="{fTOFsignalRaw=onfile.fTOFsignalRaw;}"
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTOFsignalDx"  version="[-68]" target="fTOFsignalDx" targetType="Double32_t" code="{fTOFsignalDx=onfile.fTOFsignalDx;}"
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTOFsignalDz"  version="[-68]" target="fTOFsignalDz" targetType="Double32_t" code="{fTOFsignalDz=onfile.fTOFsignalDz;}"
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Short_t fTOFdeltaBC"  version="[-68]" target="fTOFdeltaBC" targetType="Short_t" code="{fTOFdeltaBC=onfile.fTOFdeltaBC;}"
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Short_t fTOFl0l1"  version="[-68]" target="fTOFl0l1" targetType="Short_t" code="{fTOFl0l1=onfile.fTOFl0l1;}"
+
+
 #pragma link C++ class  AliESDtrack+;
 #pragma read sourceClass="AliESDfriendTrack" targetClass="AliESDfriendTrack" source="Int_t fITSindex" version="[-3]" \
         target="fnMaxITScluster, fITSindex" targetType="Int_t, Int_t*" code="{fnMaxITScluster = 12; fITSindex= new Int_t[fnMaxITScluster]; memcpy(fITSindex, &(onfile.fITSindex), fnMaxITScluster*sizeof(Int_t));}"
@@ -113,6 +128,8 @@
 
 #pragma link C++ class  AliV0vertexer+;
 #pragma link C++ class  AliCascadeVertexer+;
+
+#pragma link C++ class  AliESDTOFcluster+;
 
 #pragma link C++ function AliESDUtils::GetCorrV0(const AliESDEvent*,Float_t &);
 #pragma link C++ function AliESDUtils::GetCorrSPD2(Float_t,Float_t);

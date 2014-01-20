@@ -21,6 +21,7 @@ Bool_t      useSysInfo          = kFALSE; // use sys info
 //==============================================================================
 Int_t       iAODhandler        = 1;      // Analysis produces an AOD or dAOD's
 Int_t       iESDfilter         = 1;      // ESD to AOD filter (barrel + muon tracks)
+Int_t       iESDfilterReVtx    = -1;     // Request revertexing in ESD filtering
 Int_t       iMUONcopyAOD       = 1;      // Task that copies only muon events in a separate AOD (PWG3)
 Int_t       iJETAN             = 1;      // Jet analysis (PWG4)
 Int_t       iJETANdelta        = 1;      // Jet delta AODs
@@ -69,7 +70,10 @@ void AODtrain(Int_t merge=0)
    printf("=  Configuring analysis train for:                               =\n");
    if (usePhysicsSelection)   printf("=  Physics selection                                                =\n");
    if (useTender)    printf("=  TENDER                                                        =\n");
-   if (iESDfilter)   printf("=  ESD filter                                                    =\n");
+   if (iESDfilter)   {
+     printf("=  ESD filter                                                    =\n");
+     if (iESDfilterReVtx>=0)  printf("=  ESD event revertexed before filterering, algo %2d              =\n",iESDfilterReVtx);
+   }
    if (iMUONcopyAOD) printf("=  MUON copy AOD                                                 =\n");
    if (iJETAN)       printf("=  Jet analysis                                                  =\n");
    if (iJETANdelta)  printf("=     Jet delta AODs                                             =\n");
@@ -220,15 +224,17 @@ void AddAnalysisTasks(const char *cdb_location){
 
    if (iESDfilter) {
       //  ESD filter task configuration.
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C");
+      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/ESDfilter/macros/AddTaskESDFilter.C");
+      AliAnalysisTaskESDfilter *taskesdfilter = 0;
       if (iMUONcopyAOD) {
          printf("Registering delta AOD file\n");
          mgr->RegisterExtraFile("AliAOD.Muons.root");
          mgr->RegisterExtraFile("AliAOD.Dimuons.root");
-         AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, kTRUE, kFALSE, kFALSE /*usePhysicsSelection*/,kFALSE,kTRUE,kFALSE,kFALSE,run_flag);
+         taskesdfilter = AddTaskESDFilter(useKFILTER, kTRUE, kFALSE, kFALSE /*usePhysicsSelection*/,kFALSE,kTRUE,kFALSE,kFALSE,run_flag);
       } else {
-   	   AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, kFALSE, kFALSE, kFALSE /*usePhysicsSelection*/,kFALSE,kTRUE,kFALSE,kFALSE,run_flag); // others
+	taskesdfilter = AddTaskESDFilter(useKFILTER, kFALSE, kFALSE, kFALSE /*usePhysicsSelection*/,kFALSE,kTRUE,kFALSE,kFALSE,run_flag); // others
       }   
+      if (iESDfilterReVtx>=0 && taskesdfilter) taskesdfilter->SetRefitVertexTracks(iESDfilterReVtx);
    }   
 
 // ********** PWG3 wagons ******************************************************           

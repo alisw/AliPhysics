@@ -142,7 +142,7 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t, TTreeSRedirector *pcstream) :
   const Double_t kmaxC[4]={10,10,0.1,0.1};  // cuts on the rms /fP0,fP1,fP2,fP3
   SetNumberOfClusters(t.GetTPCclusters(fIndex));
   SetLabel(t.GetLabel());
-  SetMass(t.GetMass());
+  SetMass(t.GetMassForTracking());
   for (Int_t i=0; i<4;i++) fPoints[i]=0.;
   for (Int_t i=0; i<12;i++) fKinkPoint[i]=0.;
   for (Int_t i=0; i<3;i++) fKinkIndexes[i]=0;

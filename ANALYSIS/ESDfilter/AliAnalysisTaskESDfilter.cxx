@@ -65,6 +65,7 @@
 #include "AliAODTrdTrack.h"
 #include "AliAODTrdTracklet.h"
 #include "AliEMCALRecoUtils.h"
+#include "AliESDUtils.h"
 
 using std::cout;
 using std::endl;
@@ -124,7 +125,9 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
   fIsPidOwner(kFALSE),
   fTPCaloneTrackCuts(0),
   fDoPropagateTrackToEMCal(kTRUE),
-  fEMCalSurfaceDistance(440)
+  fEMCalSurfaceDistance(440),
+  fRefitVertexTracks(-1),
+  fRefitVertexTracksCuts(0)
 {
   // Default constructor
     fV0Cuts[0] =  33.   ;   // max allowed chi2
@@ -198,7 +201,9 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
     fIsPidOwner(kFALSE),
     fTPCaloneTrackCuts(0),
     fDoPropagateTrackToEMCal(kTRUE),
-    fEMCalSurfaceDistance(440)
+    fEMCalSurfaceDistance(440),
+    fRefitVertexTracks(-1),
+    fRefitVertexTracksCuts(0)
 {
   // Constructor
 
@@ -224,7 +229,9 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
 }
 AliAnalysisTaskESDfilter::~AliAnalysisTaskESDfilter(){
     if(fIsPidOwner) delete fESDpid;
+    delete[] fRefitVertexTracksCuts;
 }
+
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::UserCreateOutputObjects()
 {
@@ -304,6 +311,8 @@ void AliAnalysisTaskESDfilter::PrintTask(Option_t *option, Int_t indent) const
 	cout << spaces.Data() << Form("PHOS triggers  are %s",fArePHOSTriggerEnabled ? "ENABLED":"DISABLED") << endl;
 	cout << spaces.Data() << Form("Tracklets      are %s",fAreTrackletsEnabled ? "ENABLED":"DISABLED") << endl;  
 	cout << spaces.Data() << Form("PropagateTrackToEMCal  is %s", fDoPropagateTrackToEMCal ? "ENABLED":"DISABLED") << endl; 
+	if (fRefitVertexTracks<0) cout << spaces.Data() << Form("RefitVerteTracks is DISABLED") << endl;
+	else cout << spaces.Data() << Form("RefitVerteTracks is ENABLED to %d",fRefitVertexTracks) << endl;
 }
 
 //______________________________________________________________________________
@@ -2274,6 +2283,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD()
   if(!esd)return;
 
   AliCodeTimerAuto("",0);
+
+  if (fRefitVertexTracks) AliESDUtils::RefitESDVertexTracks(esd,fRefitVertexTracks,fRefitVertexTracksCuts);
   
   fOldESDformat = ( esd->GetAliESDOld() != 0x0 );
  
@@ -2556,7 +2567,7 @@ void AliAnalysisTaskESDfilter::SetDetectorRawSignals(AliAODPid *aodpid, AliESDtr
  aodpid->SetTRDChi2(track->GetTRDchi2());
 
  //TOF PID  
- Double_t times[AliPID::kSPECIES]; track->GetIntegratedTimes(times);
+ Double_t times[AliPID::kSPECIESC]; track->GetIntegratedTimes(times);
  aodpid->SetIntegratedTimes(times);
 
    //  Float_t tzeroTrack = fESDpid->GetTOFResponse().GetStartTime(track->P());
@@ -2628,5 +2639,15 @@ void  AliAnalysisTaskESDfilter::CopyCaloProps(AliESDtrack *tre, AliAODTrack *tra
 }
 
 //______________________________________________________________________________
-
-
+void AliAnalysisTaskESDfilter::SetRefitVertexTracks(Int_t algo, Double_t* cuts)
+{
+  // request vertexTrack reprocessing from ESDtracks
+  // if algo>=0 and cuts==0 then algo is interpreted as the algorithm ID to be run with default cuts
+  // otherwise it is number of cuts to digest
+  fRefitVertexTracks = algo;
+  //
+  if (algo>0 && cuts) {
+    fRefitVertexTracksCuts = new Double_t[fRefitVertexTracks];
+    for (int i=fRefitVertexTracks;i--;) fRefitVertexTracksCuts[i] = cuts[i];
+  }
+}

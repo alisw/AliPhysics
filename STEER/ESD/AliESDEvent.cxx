@@ -171,7 +171,9 @@ AliESDEvent::AliESDEvent():
   fEventplane(0),
   fDetectorStatus(0xFFFFFFFF),
   fDAQDetectorPattern(0xFFFF),
-  fDAQAttributes(0xFFFF)
+  fDAQAttributes(0xFFFF),
+  fNTOFclusters(0),
+  fTOFcluster(new TObjArray(1))
   #ifdef MFT_UPGRADE
 //  , fESDMFT(0)
   #endif
@@ -223,7 +225,10 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fEventplane(new AliEventplane(*esd.fEventplane)),
   fDetectorStatus(esd.fDetectorStatus),
   fDAQDetectorPattern(esd.fDAQDetectorPattern),
-  fDAQAttributes(esd.fDAQAttributes)
+  fDAQAttributes(esd.fDAQAttributes),
+  fNTOFclusters(esd.fNTOFclusters),
+  //  fTOFcluster(esd.fTOFcluster)
+  fTOFcluster(new TObjArray(*(esd.fTOFcluster)))
   #ifdef MFT_UPGRADE
 //  , fESDMFT(new AliESDMFT(*esd.fESDMFT))
   #endif
@@ -269,14 +274,13 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
 //  AddObject(fESDMFT);
   #endif
   GetStdContent();
-
 }
 
 //______________________________________________________________________________
 AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
 
   // Assignment operator
-
+  printf("operator = ESD\n");
   if(&source == this) return *this;
   AliVEvent::operator=(source);
 
@@ -370,6 +374,10 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
   fDetectorStatus = source.fDetectorStatus;
   fDAQDetectorPattern = source.fDAQDetectorPattern;
   fDAQAttributes = source.fDAQAttributes;
+  fNTOFclusters = source.fNTOFclusters;
+
+  *fTOFcluster = *source.fTOFcluster;
+  //  fTOFcluster = new TObjArray(*(source.fTOFcluster));
 
   return *this;
 }
@@ -393,6 +401,11 @@ AliESDEvent::~AliESDEvent()
   if (fCentrality) delete fCentrality;
   if (fEventplane) delete fEventplane;
   
+
+  if(fTOFcluster){
+    fTOFcluster->Clear();
+    delete fTOFcluster;
+  }
 }
 
 void AliESDEvent::Copy(TObject &obj) const {
@@ -1640,9 +1653,12 @@ void AliESDEvent::WriteToTree(TTree* tree) const {
       tree->Bronch(branchname, obj->ClassName(), fESDObjects->GetObjectRef(obj),kBufsize, splitLevel);
     }
   }
+
   tree->Branch("fDetectorStatus",(void*)&fDetectorStatus,"fDetectorStatus/l");
   tree->Branch("fDAQDetectorPattern",(void*)&fDAQDetectorPattern,"fDAQDetectorPattern/i");
   tree->Branch("fDAQAttributes",(void*)&fDAQAttributes,"fDAQAttributes/i");
+  tree->Branch("fNTOFclusters",(void *) &fNTOFclusters,"fNTOFclusters/i");
+  tree->Branch("fTOFcluster","TObjArray",(void *) &fTOFcluster);
 }
 
 
@@ -1745,6 +1761,8 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
       tree->SetBranchAddress("fDetectorStatus",&fDetectorStatus); //PH probably redundant
       tree->SetBranchAddress("fDAQDetectorPattern",&fDAQDetectorPattern);
       tree->SetBranchAddress("fDAQAttributes",&fDAQAttributes);
+      if(tree->GetBranch("fNTOFclusters")) tree->SetBranchAddress("fNTOFclusters",(UInt_t *) &fNTOFclusters);
+      if(tree->GetBranch("fTOFcluster")) tree->SetBranchAddress("fTOFcluster",&fTOFcluster);
       GetStdContent(); 
       fOldMuonStructure = fESDObjects->TestBit(BIT(23));
       fConnected = true;
@@ -1811,6 +1829,9 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
     tree->SetBranchAddress("fDetectorStatus",&fDetectorStatus);
     tree->SetBranchAddress("fDAQDetectorPattern",&fDAQDetectorPattern);
     tree->SetBranchAddress("fDAQAttributes",&fDAQAttributes);
+    if(tree->GetBranch("fNTOFclusters")) tree->SetBranchAddress("fNTOFclusters",(UInt_t *) &fNTOFclusters);
+    if(tree->GetBranch("fTOFcluster")) tree->SetBranchAddress("fTOFcluster",&fTOFcluster);
+
     GetStdContent();
     // when reading back we are not owner of the list 
     // must not delete it
@@ -1849,6 +1870,9 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
     tree->SetBranchAddress("fDetectorStatus",&fDetectorStatus);
     tree->SetBranchAddress("fDAQDetectorPattern",&fDAQDetectorPattern);
     tree->SetBranchAddress("fDAQAttributes",&fDAQAttributes);
+    if(tree->GetBranch("fNTOFclusters")) tree->SetBranchAddress("fNTOFclusters",(UInt_t *) &fNTOFclusters);
+    if(tree->GetBranch("fTOFcluster")) tree->SetBranchAddress("fTOFcluster",&fTOFcluster);
+
     GetStdContent();
     // when reading back we are not owner of the list 
     // must not delete it
@@ -2171,4 +2195,47 @@ Float_t AliESDEvent::GetVZEROEqMultiplicity(Int_t i) const
   Float_t factor = fESDRun->GetVZEROEqFactors(i)*8./factorSum;
 
   return (fESDVZERO->GetMultiplicity(i)/factor);
+}
+
+void AliESDEvent::SetTOFcluster(Int_t ntofclusters,AliESDTOFcluster *cluster,Int_t *mapping){
+  fNTOFclusters = 0;
+
+  fTOFcluster->Clear();
+  fTOFcluster->Expand(1);      
+      
+  for(Int_t i=0;i < ntofclusters;i++){
+
+    if(cluster[i].GetNMatchableTracks() || !mapping){
+      fTOFcluster->Expand(fNTOFclusters+1);      
+      fTOFcluster->AddAt(&cluster[i],fNTOFclusters);
+      if(mapping)
+	mapping[i] = fNTOFclusters;
+      fNTOFclusters++;
+    }
+  }
+  if(mapping)
+    printf("TOF cluster before of matching = %i , after = %i\n",ntofclusters,fNTOFclusters);
+   
+
+}
+void AliESDEvent::SetTOFcluster(Int_t ntofclusters,AliESDTOFcluster *cluster[],Int_t *mapping){
+  fNTOFclusters = 0;
+
+  fTOFcluster->Clear();
+  fTOFcluster->Expand(1);      
+      
+  for(Int_t i=0;i < ntofclusters;i++){
+
+    if(cluster[i]->GetNMatchableTracks() || !mapping){
+      fTOFcluster->Expand(fNTOFclusters+1);      
+      fTOFcluster->AddAt(cluster[i],fNTOFclusters);
+      if(mapping)
+	mapping[i] = fNTOFclusters;
+      fNTOFclusters++;
+    }
+  }
+  if(mapping)
+    printf("TOF cluster before of matching = %i , after = %i\n",ntofclusters,fNTOFclusters);
+   
+
 }

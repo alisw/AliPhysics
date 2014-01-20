@@ -41,7 +41,7 @@ set ( FSRCS  lhapdf5.5.1/src/alphas.f lhapdf5.5.1/src/commoninit.f lhapdf5.5.1/s
 
 if( ALICE_TARGET STREQUAL "solarisCC5")
 	  set ( PACKFFLAGS "${FFLAGS} -free")
-elseif( ALICE_TARGET STREQUAL "linuxicc")
+elseif( ALICE_TARGET STREQUAL "linuxx8664icc")
 	 	set ( PACKFFLAGS "${FFLAGS} -nofixed" )
 else()
 		set ( PACKFFLAGS "${FFLAGS} -ffree-form")
