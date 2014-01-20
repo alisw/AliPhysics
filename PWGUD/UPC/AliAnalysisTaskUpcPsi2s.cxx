@@ -117,6 +117,7 @@ void AliAnalysisTaskUpcPsi2s::Init()
 {
   
   for(Int_t i=0; i<ntrg; i++) fTrigger[i] = kFALSE;
+  for(Int_t i=0; i<4; i++) fTOFphi[i] = -666;
 
 }//Init
 
@@ -172,6 +173,7 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   
   fJPsiTree ->Branch("fTOFtrig1", &fTOFtrig1, "fTOFtrig1/O");
   fJPsiTree ->Branch("fTOFtrig2", &fTOFtrig2, "fTOFtrig2/O");
+  fJPsiTree ->Branch("fTOFphi", &fTOFphi[0], "fTOFphi[4]/D");
   
   fJPsiTree ->Branch("fVtxPosX", &fVtxPosX, "fVtxPosX/D");
   fJPsiTree ->Branch("fVtxPosY", &fVtxPosY, "fVtxPosY/D");
@@ -211,6 +213,7 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   
   fPsi2sTree ->Branch("fTOFtrig1", &fTOFtrig1, "fTOFtrig1/O");
   fPsi2sTree ->Branch("fTOFtrig2", &fTOFtrig2, "fTOFtrig2/O");
+  fPsi2sTree ->Branch("fTOFphi", &fTOFphi[0], "fTOFphi[4]/D");
   
   fPsi2sTree ->Branch("fVtxPosX", &fVtxPosX, "fVtxPosX/D");
   fPsi2sTree ->Branch("fVtxPosY", &fVtxPosY, "fVtxPosY/D");
@@ -382,7 +385,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
   //Trigger
   TString trigger = aod->GetFiredTriggerClasses();
   
-  if( !trigger.Contains("CCUP4-B") ) return;
+  if( !trigger.Contains("CCUP") ) return;
   
   fHistNeventsJPsi->Fill(2);
   fHistNeventsPsi2s->Fill(2);
@@ -585,14 +588,19 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   //Trigger
   TString trigger = aod->GetFiredTriggerClasses();
   
-  if( !trigger.Contains("CCUP4-B") ) return;
+  fTrigger[0]  = trigger.Contains("CCUP4-B"); // Central UPC Pb-Pb 2011
+  fTrigger[1]  = trigger.Contains("CCUP2-B"); // Double gap
+  fTrigger[2]  = trigger.Contains("CCUP7-B"); // Central UPC p-Pb 2013
+  
+  Bool_t isTriggered = kFALSE;
+  for(Int_t i=0; i<ntrg; i++) {
+    if( fTrigger[i] ) isTriggered = kTRUE;
+  }
+  if( !isTriggered ) return;
 
   //trigger inputs
   fL0inputs = aod->GetHeader()->GetL0TriggerInputs();
-  fL1inputs = aod->GetHeader()->GetL1TriggerInputs();
-  
-  //TOF trigger info (0OMU)
-  
+  fL1inputs = aod->GetHeader()->GetL1TriggerInputs();  
 
   //Event identification
   fPerNum = aod ->GetPeriodNumber();
@@ -628,47 +636,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   Int_t nGoodTracks=0;
   Int_t TrackIndex[5] = {-1,-1,-1,-1,-1};
   
-   //Four track loop
-  for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
-    AliAODTrack *trk = aod->GetTrack(itr);
-    if( !trk ) continue;
-
-      if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
-      if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
-      if(trk->GetTPCNcls() < 50)continue;
-      if(trk->Chi2perNDF() > 4)continue;
-      Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
-      AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
-      if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
-      delete trk_clone;
-      if(!trk->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
-      if(TMath::Abs(dca[1]) > 2) continue;
-
-      TrackIndex[nGoodTracks] = itr;
-      nGoodTracks++;
-				  
-      if(nGoodTracks > 4) break;  
-  }//Track loop
-  
-  
-  if(nGoodTracks == 4){
-  	  for(Int_t i=0; i<4; i++){
-	  	AliAODTrack *trk = aod->GetTrack(TrackIndex[i]);
-		
-		Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
-		AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
-      		if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
-      		delete trk_clone;
-		
-		new((*fPsi2sAODTracks)[i]) AliAODTrack(*trk);
-		((AliAODTrack*)((*fPsi2sAODTracks)[i]))->SetDCA(dca[0],dca[1]);//to get DCAxy trk->DCA(); to get DCAz trk->ZAtDCA();
-		 		
-  		}
-  fPsi2sTree ->Fill();
-  }
- //
-  nGoodTracks = 0;
-  //Two track loop
+   //Two track loop
   for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
     AliAODTrack *trk = aod->GetTrack(itr);
     if( !trk ) continue;
@@ -703,10 +671,60 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
 		new((*fJPsiAODTracks)[i]) AliAODTrack(*trk); 
 		((AliAODTrack*)((*fJPsiAODTracks)[i]))->SetDCA(dca[0],dca[1]);//to get DCAxy trk->DCA(); to get DCAz trk->ZAtDCA();
 		
+		Double_t pos[3]={0,0,0};
+    		if(!trk->GetXYZAt(378,aod->GetMagneticField(),pos)) fTOFphi[i] = -666;
+    		else {
+		     fTOFphi[i] =  TMath::ATan2(pos[1],pos[0])*TMath::RadToDeg();
+    		     if(fTOFphi[i] < 0) fTOFphi[i]+=(2*TMath::Pi()*TMath::RadToDeg());
+		     }		
   		}
   fJPsiTree ->Fill();
   }
+  
+   nGoodTracks = 0;
+   //Four track loop
+  for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
+    AliAODTrack *trk = aod->GetTrack(itr);
+    if( !trk ) continue;
 
+      if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
+      if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
+      if(trk->GetTPCNcls() < 50)continue;
+      if(trk->Chi2perNDF() > 4)continue;
+      Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
+      AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
+      if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
+      delete trk_clone;
+      if(!trk->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
+      if(TMath::Abs(dca[1]) > 2) continue;
+
+      TrackIndex[nGoodTracks] = itr;
+      nGoodTracks++;
+				  
+      if(nGoodTracks > 4) break;  
+  }//Track loop
+    
+  if(nGoodTracks == 4){
+  	  for(Int_t i=0; i<4; i++){
+	  	AliAODTrack *trk = aod->GetTrack(TrackIndex[i]);
+		
+		Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
+		AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
+      		if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
+      		delete trk_clone;
+		
+		new((*fPsi2sAODTracks)[i]) AliAODTrack(*trk);
+		((AliAODTrack*)((*fPsi2sAODTracks)[i]))->SetDCA(dca[0],dca[1]);//to get DCAxy trk->DCA(); to get DCAz trk->ZAtDCA();
+				
+		Double_t pos[3]={0,0,0};
+    		if(!trk->GetXYZAt(378,aod->GetMagneticField(),pos)) fTOFphi[i] = -666;
+    		else {
+		     fTOFphi[i] =  TMath::ATan2(pos[1],pos[0])*TMath::RadToDeg();
+    		     if(fTOFphi[i] < 0) fTOFphi[i]+=(2*TMath::Pi()*TMath::RadToDeg());
+		     } 		
+  		}
+  fPsi2sTree ->Fill();
+  }
   
   PostData(1, fJPsiTree);
   PostData(2, fPsi2sTree);
@@ -774,7 +792,7 @@ void AliAnalysisTaskUpcPsi2s::RunESDhist()
   //Trigger
   TString trigger = esd->GetFiredTriggerClasses();
   
-  if( !trigger.Contains("CCUP4-B") ) return;
+  if( !trigger.Contains("CCUP") ) return;
   
   fHistNeventsJPsi->Fill(2);
   fHistNeventsPsi2s->Fill(2);
@@ -963,11 +981,19 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
   fEvtNum = ((TTree*) GetInputData(0))->GetTree()->GetReadEntry();
   fRunNum = esd->GetRunNumber();
 
-  //Trigger
+   //Trigger
   TString trigger = esd->GetFiredTriggerClasses();
   
-  if( !trigger.Contains("CCUP4-B") ) return;
-
+  fTrigger[0]  = trigger.Contains("CCUP4-B"); // Central UPC Pb-Pb 2011
+  fTrigger[1]  = trigger.Contains("CCUP2-B"); // Double gap
+  fTrigger[2]  = trigger.Contains("CCUP7-B"); // Central UPC p-Pb 2013
+  
+  Bool_t isTriggered = kFALSE;
+  for(Int_t i=0; i<ntrg; i++) {
+    if( fTrigger[i] ) isTriggered = kTRUE;
+  }
+  if( !isTriggered ) return;
+  
   //trigger inputs
   fL0inputs = esd->GetHeader()->GetL0TriggerInputs();
   fL1inputs = esd->GetHeader()->GetL1TriggerInputs();
@@ -1040,6 +1066,12 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
 				
 		new((*fJPsiESDTracks)[i]) AliESDtrack(*trk); 
 		
+		Double_t pos[3]={0,0,0};
+    		if(!trk->GetXYZAt(378,esd->GetMagneticField(),pos)) fTOFphi[i] = -666;
+    		else {
+		     fTOFphi[i] =  TMath::ATan2(pos[1],pos[0])*TMath::RadToDeg();
+    		     if(fTOFphi[i] < 0) fTOFphi[i]+=(2*TMath::Pi()*TMath::RadToDeg());
+		     } 		
   		}
   fJPsiTree ->Fill();
   }
@@ -1071,8 +1103,14 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
 		AliExternalTrackParam cParam;
       		trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam);// to get trk->GetImpactParameters(DCAxy,DCAz);
 
-		new((*fPsi2sESDTracks)[i]) AliESDtrack(*trk); 
-		
+		new((*fPsi2sESDTracks)[i]) AliESDtrack(*trk);
+		 
+		Double_t pos[3]={0,0,0};
+    		if(!trk->GetXYZAt(378,esd->GetMagneticField(),pos)) fTOFphi[i] = -666;
+    		else {
+		     fTOFphi[i] =  TMath::ATan2(pos[1],pos[0])*TMath::RadToDeg();
+    		     if(fTOFphi[i] < 0) fTOFphi[i]+=(2*TMath::Pi()*TMath::RadToDeg());
+		     } 		
   		}
   fPsi2sTree ->Fill();
   }
@@ -1088,33 +1126,4 @@ void AliAnalysisTaskUpcPsi2s::Terminate(Option_t *)
 
   cout<<"Analysis complete."<<endl;
 }//Terminate
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
