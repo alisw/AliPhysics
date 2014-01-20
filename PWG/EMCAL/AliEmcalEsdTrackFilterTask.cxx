@@ -4,16 +4,15 @@
 //
 // Author: C.Loizides
 
+#include "AliEmcalEsdTrackFilterTask.h"
 #include <TClonesArray.h>
 #include <TGeoGlobalMagField.h>
 #include <AliAnalysisManager.h>
+#include <AliEMCALRecoUtils.h>
 #include <AliESDEvent.h>
 #include <AliESDtrackCuts.h>
 #include <AliMagF.h>
 #include <AliTrackerBase.h>
-#include <AliEMCALRecoUtils.h>
-
-#include "AliEmcalEsdTrackFilterTask.h"
 
 ClassImp(AliEmcalEsdTrackFilterTask)
 
@@ -170,30 +169,28 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
 
       if (fEsdTrackCuts->AcceptTrack(etrack)) {
 
-        new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
-        AliESDtrack *newTrack = static_cast<AliESDtrack*>(fTracks->At(ntrnew));
+        AliESDtrack *newTrack = new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
 	if (fDoPropagation) 
 	  AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(newTrack,fDist);
-        newTrack->SetBit(BIT(27),0); 
-        newTrack->SetBit(BIT(28),0);
+        newTrack->SetBit(BIT(20),0); 
+        newTrack->SetBit(BIT(21),0);
         ++ntrnew;
       } else if (fHybridTrackCuts->AcceptTrack(etrack)) {
 
 	UInt_t status = etrack->GetStatus();
-        if (etrack->GetConstrainedParam() && ((status&AliESDtrack::kITSrefit)!=0 || fIncludeNoITS)) {
-          new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
-          AliESDtrack *newTrack = static_cast<AliESDtrack*>(fTracks->At(ntrnew));
+        if (etrack->GetConstrainedParam() && (((status&AliESDtrack::kITSrefit)!=0) || fIncludeNoITS)) {
+          AliESDtrack *newTrack = new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
           const AliExternalTrackParam* constrainParam = etrack->GetConstrainedParam();
           newTrack->Set(constrainParam->GetX(),
                         constrainParam->GetAlpha(),
                         constrainParam->GetParameter(),
                         constrainParam->GetCovariance());
 	  if ((status&AliESDtrack::kITSrefit)==0) {
-            newTrack->SetBit(BIT(27),0); //type 2
-            newTrack->SetBit(BIT(28),1);
+            newTrack->SetBit(BIT(20),0); //type 2
+            newTrack->SetBit(BIT(21),1);
           } else {
-            newTrack->SetBit(BIT(27),1); //type 1
-            newTrack->SetBit(BIT(28),0);
+            newTrack->SetBit(BIT(20),1); //type 1
+            newTrack->SetBit(BIT(21),0);
           }
 	  if (fDoPropagation) 	
 	    AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(newTrack,fDist);

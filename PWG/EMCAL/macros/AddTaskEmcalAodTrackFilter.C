@@ -1,18 +1,10 @@
 // $Id$
 
-AliAodTrackFilterTask* AddTaskAodTrackFilter(
-  const char *name         = "filtertracks",
+AliEmcalAodTrackFilterTask* AddTaskEmcalAodTrackFilter(
+  const char *name         = "FilterTracks",
   const char *inname       = "tracks",
   const char *runperiod    = "",
-  Double_t ptmin           = 0,
-  Double_t ptmax           = 1000,
-  Double_t etamin          = -10,
-  Double_t etamax          = +10,
-  Double_t phimin          = -10,
-  Double_t phimax          = +10,
-  Double_t trackeff        = 1.0,
-  Bool_t   modTracks       = kTRUE,
-  const char *taskName     = "AliAodTrackFilterTask"
+  const char *taskName     = "AliEmcalAodTrackFilterTask"
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -42,33 +34,30 @@ AliAodTrackFilterTask* AddTaskAodTrackFilter(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  AliAodTrackFilterTask *eTask = new AliAodTrackFilterTask(taskName);
-  eTask->SetTracksOutName(name);
-  eTask->SetTracksInName(inname);
-  eTask->SetTrackPtLimits(ptmin, ptmax);
-  eTask->SetTrackEtaLimits(etamin, etamax);
-  eTask->SetTrackPhiLimits(phimin, phimax);
-  eTask->SetTrackEfficiency(trackeff);
-  eTask->SetModifyTrack(modTracks);
+  AliEmcalAodTrackFilterTask *aodTask = new AliEmcalAodTrackFilterTask(taskName);
+  aodTask->SetTracksOutName(name);
+  aodTask->SetTracksInName(inname);
+  aodTask->SetMC(kFALSE);
+  Bool_t doProp = kFALSE;
 
   TString runPeriod(runperiod);
   Bool_t includeNoITS = kFALSE;
   runPeriod.ToLower();
-  if (runPeriod == "lhc11h" || runPeriod == "lhc13b" || runPeriod == "lhc13c" || runPeriod == "lhc13d" || runPeriod == "lhc13e" || runPeriod == "lhc13f" || runPeriod == "lhc13g" || runPeriod == "lhc12g" || runPeriod == "lhc10h") {
-    eTask->SetAODfilterBits(256,512); // hybrid tracks for LHC11h
-    eTask->SetMC(kFALSE);
+  if (runPeriod == "lhc11h" || runPeriod == "lhc13b" || runPeriod == "lhc13c" || 
+      runPeriod == "lhc13d" || runPeriod == "lhc13e" || runPeriod == "lhc13f" || 
+      runPeriod == "lhc13g" || runPeriod == "lhc12g" || runPeriod == "lhc10h") {
+    aodTask->SetAODfilterBits(256,512); // hybrid tracks
     if(runPeriod == "lhc10h")
       includeNoITS = kTRUE;
   } else if (runPeriod == "lhc12a15e" || runPeriod == "lhc13b4" || runPeriod == "lhc13b4_fix" || runPeriod == "lhc12a15f") {
-    eTask->SetAODfilterBits(256,512); // hybrid tracks for LHC12a15e, LHC13b4, and LHC12a15f
-    eTask->SetMC(kTRUE);
-  } else if (runPeriod == "lhc11a" || runPeriod == "lhc10hold") {
-    eTask->SetAODfilterBits(256,16); // hybrid tracks for LHC11a
-    eTask->SetMC(kFALSE);
+    aodTask->SetAODfilterBits(256,512); // hybrid tracks
+    aodTask->SetMC(kTRUE);
+  } else if (runPeriod == "lhc11a" || runPeriod == "lhc10d" || runPeriod == "lhc10e" || runPeriod == "lhc10hold") {
+    aodTask->SetAODfilterBits(256,16); // hybrid tracks
     includeNoITS = kTRUE;
   } else if (runPeriod.Contains("lhc12a15a")) {
-    eTask->SetAODfilterBits(256,16); // hybrid tracks for LHC12a15a
-    eTask->SetMC(kTRUE);
+    aodTask->SetAODfilterBits(256,16); // hybrid tracks
+    aodTask->SetMC(kTRUE);
     includeNoITS = kTRUE;
   } else if (runPeriod.Contains(":")) {
     TObjArray *arr = runPeriod.Tokenize(":");
@@ -76,22 +65,30 @@ AliAodTrackFilterTask* AddTaskAodTrackFilter(
     TString arg2("-1");
     if (arr->GetEntries()>1)
       arg2 = arr->At(1)->GetName();
-    eTask->SetAODfilterBits(arg1.Atoi(),arg2.Atoi());
+    if (arr->GetEntries()>2) {
+      TString arg3 = arr->At(2)->GetName();
+      if (arg3.Contains("includeNoITS=kTRUE"))
+	includeNoITS=kTRUE;
+      if (arg3.Contains("doProp=kTRUE"))
+	doProp=kTRUE;
+    }
+    aodTask->SetAODfilterBits(arg1.Atoi(),arg2.Atoi());
     delete arr;
   } else {
     if (!runPeriod.IsNull())
       ::Warning("Run period %s not known. It will use IsHybridGlobalConstrainedGlobal.", runPeriod.Data());
   }
-  eTask->SetIncludeNoITS(includeNoITS);
+  aodTask->SetIncludeNoITS(includeNoITS);
+  aodTask->SetDoPropagation(doProp);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------
-  mgr->AddTask(eTask);
+  mgr->AddTask(aodTask);
   
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
-  mgr->ConnectInput  (eTask, 0,  cinput1 );
+  mgr->ConnectInput  (aodTask, 0,  cinput1 );
   
-  return eTask;
+  return aodTask;
 }
