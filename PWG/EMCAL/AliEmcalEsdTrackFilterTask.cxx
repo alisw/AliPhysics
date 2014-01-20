@@ -172,8 +172,8 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
         AliESDtrack *newTrack = new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
 	if (fDoPropagation) 
 	  AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(newTrack,fDist);
-        newTrack->SetBit(BIT(20),0); 
-        newTrack->SetBit(BIT(21),0);
+        newTrack->SetBit(BIT(22),0); 
+        newTrack->SetBit(BIT(23),0);
         ++ntrnew;
       } else if (fHybridTrackCuts->AcceptTrack(etrack)) {
 
@@ -186,11 +186,11 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
                         constrainParam->GetParameter(),
                         constrainParam->GetCovariance());
 	  if ((status&AliESDtrack::kITSrefit)==0) {
-            newTrack->SetBit(BIT(20),0); //type 2
-            newTrack->SetBit(BIT(21),1);
+            newTrack->SetBit(BIT(22),0); //type 2
+            newTrack->SetBit(BIT(23),1);
           } else {
-            newTrack->SetBit(BIT(20),1); //type 1
-            newTrack->SetBit(BIT(21),0);
+            newTrack->SetBit(BIT(22),1); //type 1
+            newTrack->SetBit(BIT(23),0);
           }
 	  if (fDoPropagation) 	
 	    AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(newTrack,fDist);

@@ -45,14 +45,15 @@ AliEmcalAodTrackFilterTask* AddTaskEmcalAodTrackFilter(
   runPeriod.ToLower();
   if (runPeriod == "lhc11h" || runPeriod == "lhc13b" || runPeriod == "lhc13c" || 
       runPeriod == "lhc13d" || runPeriod == "lhc13e" || runPeriod == "lhc13f" || 
-      runPeriod == "lhc13g" || runPeriod == "lhc12g" || runPeriod == "lhc10h") {
+      runPeriod == "lhc13g" || runPeriod == "lhc12g" || runPeriod == "lhc10h" ||
+      runPeriod == "lhc10d" || runPeriod == "lhc10e" || runPeriod == "lhc12d") {
     aodTask->SetAODfilterBits(256,512); // hybrid tracks
-    if(runPeriod == "lhc10h")
+    if (runPeriod == "lhc10h" || runPeriod == "lhc10d" || runPeriod == "lhc10e")
       includeNoITS = kTRUE;
   } else if (runPeriod == "lhc12a15e" || runPeriod == "lhc13b4" || runPeriod == "lhc13b4_fix" || runPeriod == "lhc12a15f") {
     aodTask->SetAODfilterBits(256,512); // hybrid tracks
     aodTask->SetMC(kTRUE);
-  } else if (runPeriod == "lhc11a" || runPeriod == "lhc10d" || runPeriod == "lhc10e" || runPeriod == "lhc10hold") {
+  } else if (runPeriod == "lhc11a" || runPeriod == "lhc10hold") {
     aodTask->SetAODfilterBits(256,16); // hybrid tracks
     includeNoITS = kTRUE;
   } else if (runPeriod.Contains("lhc12a15a")) {
