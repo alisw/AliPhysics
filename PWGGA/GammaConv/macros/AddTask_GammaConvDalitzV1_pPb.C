@@ -2,6 +2,9 @@ void AddTask_GammaConvDalitzV1_pPb(    Int_t trainConfig = 1,
                                        Bool_t isMC       = kFALSE, //run MC 
                                        Bool_t enableQAMesonTask = kTRUE, //enable QA in AliAnalysisTaskGammaConvDalitzV1
                                        Bool_t enableDoMesonChic = kFALSE, // enable additional Chic analysis
+				       TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
+                                       Bool_t doWeighting = kFALSE,  //enable Weighting
+                                       TString generatorName = "DPMJET",				
                                        TString cutnumberAODBranch = "0000000060084001001500000"
                                   ) {
 
@@ -172,24 +175,45 @@ void AddTask_GammaConvDalitzV1_pPb(    Int_t trainConfig = 1,
 
    if( trainConfig == 1 ) {
 
-        ConvCutarray[0] = "8000000082093603007200000000"; ElecCutarray[0] = "9047540025810262170"; MesonCutarray[0] = "01039035009000"; //standard cut Pi0 PbPb 00-100
-        ConvCutarray[1] = "8000000082093603007200000000"; ElecCutarray[1] = "9047540025810261170"; MesonCutarray[1] = "01039035009000"; //standard cut Pi0 PbPb 00-100 + Single Pt primary > 0.100 GeV
-        ConvCutarray[2] = "8000000082094603007200000000"; ElecCutarray[2] = "9047540025810262170"; MesonCutarray[2] = "01039035009000"; //standard cut Pi0 PbPb 00-100 + dEdx electron gamma   -6 ,7 sigmas
-        ConvCutarray[3] = "8000000082093603007203000000"; ElecCutarray[3] = "9047540025810262170"; MesonCutarray[3] = "01039035009000"; //standard cut Pi0 PbPb 00-100  do Aysemtri cut
-        ConvCutarray[4] = "8000000082093603007200000000"; ElecCutarray[4] = "9051540025810262170"; MesonCutarray[4] = "01039035009000"; //standard cut Pi0 PbPb 00-100
-        ConvCutarray[5] = "8000000082093603007200000000"; ElecCutarray[5] = "9051540025810262170"; MesonCutarray[5] = "01039035009000"; //standard cut Pi0 PbPb 00-100 Standard cut + dEdx primary -3, 5 and  3.0  , -10 pion rejection
+        ConvCutarray[0] = "8000011082093603007200000000"; ElecCutarray[0] = "9047540025810262170"; MesonCutarray[0] = "01039035009000"; //standard cut Pi0 PbPb 00-100
+        ConvCutarray[1] = "8000011082093603007200000000"; ElecCutarray[1] = "9047540025810261170"; MesonCutarray[1] = "01039035009000"; //standard cut Pi0 PbPb 00-100 + Single Pt primary > 0.100 GeV
+        ConvCutarray[2] = "8000011082094603007200000000"; ElecCutarray[2] = "9047540025810262170"; MesonCutarray[2] = "01039035009000"; //standard cut Pi0 PbPb 00-100 + dEdx electron gamma   -6 ,7 sigmas
+        ConvCutarray[3] = "8000011082093603007203000000"; ElecCutarray[3] = "9047540025810262170"; MesonCutarray[3] = "01039035009000"; //standard cut Pi0 PbPb 00-100  do Aysemtri cut
+        ConvCutarray[4] = "8000011082093603007200000000"; ElecCutarray[4] = "9051540025810262170"; MesonCutarray[4] = "01039035009000"; //standard cut Pi0 PbPb 00-100
+        ConvCutarray[5] = "8000011082093603007200000000"; ElecCutarray[5] = "9051540025810262170"; MesonCutarray[5] = "01039035009000"; //standard cut Pi0 PbPb 00-100 Standard cut + dEdx primary -3, 5 and  3.0  , -10 pion rejection
 
-   } else if( trainConfig == 2 ) {
+   } 
+  else if( trainConfig == 2 ) {
 
-        ConvCutarray[0] = "8000000082093603007200000000"; ElecCutarray[0] = "9047540025810262170"; MesonCutarray[0] = "01039035009000"; //standard cut Pi0 PbPb 00-100
-        ConvCutarray[1] = "8020000082093603007200000000"; ElecCutarray[1] = "9047540025810262170"; MesonCutarray[1] = "01039035009000"; //standard cut Pi0 PbPb 00-20
-        ConvCutarray[2] = "8240000082093603007200000000"; ElecCutarray[2] = "9047540025810262170"; MesonCutarray[2] = "01039035009000"; //standard cut Pi0 PbPb 20-40
-        ConvCutarray[3] = "8460000082093603007200000000"; ElecCutarray[3] = "9047540025810262170"; MesonCutarray[3] = "01039035009000"; //standard cut Pi0 PbPb 40-60
-        ConvCutarray[4] = "8680000082093603007200000000"; ElecCutarray[4] = "9047540025810262170"; MesonCutarray[4] = "01039035009000"; //standard cut Pi0 PbPb 60-80        
-        ConvCutarray[5] = "8600000082093603007200000000"; ElecCutarray[5] = "9047540025810262170"; MesonCutarray[5] = "01039035009000"; //standard cut Pi0 PbPb 60-100
+        ConvCutarray[0] = "8000011082093603007200000000"; ElecCutarray[0] = "9047540025810262170"; MesonCutarray[0] = "01039035009000"; //standard cut Pi0 PbPb 00-100
+        ConvCutarray[1] = "8020011082093603007200000000"; ElecCutarray[1] = "9047540025810262170"; MesonCutarray[1] = "01039035009000"; //standard cut Pi0 PbPb 00-20
+        ConvCutarray[2] = "8240011082093603007200000000"; ElecCutarray[2] = "9047540025810262170"; MesonCutarray[2] = "01039035009000"; //standard cut Pi0 PbPb 20-40
+        ConvCutarray[3] = "8460011082093603007200000000"; ElecCutarray[3] = "9047540025810262170"; MesonCutarray[3] = "01039035009000"; //standard cut Pi0 PbPb 40-60
+        ConvCutarray[4] = "8680011082093603007200000000"; ElecCutarray[4] = "9047540025810262170"; MesonCutarray[4] = "01039035009000"; //standard cut Pi0 PbPb 60-80        
+        ConvCutarray[5] = "8600011082093603007200000000"; ElecCutarray[5] = "9047540025810262170"; MesonCutarray[5] = "01039035009000"; //standard cut Pi0 PbPb 60-100
+
+ }
+
+else if( trainConfig == 3 ) {
+
+        ConvCutarray[0] = "8000011082093603007200000000"; ElecCutarray[0] = "9047540025810262171"; MesonCutarray[0] = "01039035009000"; //standard cut Pi0 PbPb 00-100
+        ConvCutarray[1] = "8020011082093603007200000000"; ElecCutarray[1] = "9047540025810262171"; MesonCutarray[1] = "01039035009000"; //standard cut Pi0 PbPb 00-20
+        ConvCutarray[2] = "8240011082093603007200000000"; ElecCutarray[2] = "9047540025810262171"; MesonCutarray[2] = "01039035009000"; //standard cut Pi0 PbPb 20-40
+        ConvCutarray[3] = "8460011082093603007200000000"; ElecCutarray[3] = "9047540025810262171"; MesonCutarray[3] = "01039035009000"; //standard cut Pi0 PbPb 40-60
+        ConvCutarray[4] = "8680011082093603007200000000"; ElecCutarray[4] = "9047540025810262171"; MesonCutarray[4] = "01039035009000"; //standard cut Pi0 PbPb 60-80        
+        ConvCutarray[5] = "8600011082093603007200000000"; ElecCutarray[5] = "9047540025810262171"; MesonCutarray[5] = "01039035009000"; //standard cut Pi0 PbPb 60-100
+
+ } else if( trainConfig == 4 ) {
+
+        ConvCutarray[0] = "8000012082093603007200000000"; ElecCutarray[0] = "9047540025810262171"; MesonCutarray[0] = "01039035009000"; //standard cut Pi0 PbPb 00-100
+        ConvCutarray[1] = "8020012082093603007200000000"; ElecCutarray[1] = "9047540025810262171"; MesonCutarray[1] = "01039035009000"; //standard cut Pi0 PbPb 00-20
+        ConvCutarray[2] = "8240012082093603007200000000"; ElecCutarray[2] = "9047540025810262171"; MesonCutarray[2] = "01039035009000"; //standard cut Pi0 PbPb 20-40
+        ConvCutarray[3] = "8460012082093603007200000000"; ElecCutarray[3] = "9047540025810262171"; MesonCutarray[3] = "01039035009000"; //standard cut Pi0 PbPb 40-60
+        ConvCutarray[4] = "8680012082093603007200000000"; ElecCutarray[4] = "9047540025810262171"; MesonCutarray[4] = "01039035009000"; //standard cut Pi0 PbPb 60-80        
+        ConvCutarray[5] = "8600012082093603007200000000"; ElecCutarray[5] = "9047540025810262171"; MesonCutarray[5] = "01039035009000"; //standard cut Pi0 PbPb 60-100
    }
 
-
+	
 
    TList *ConvCutList  = new TList();
    TList *MesonCutList = new TList();
@@ -218,7 +242,80 @@ void AddTask_GammaConvDalitzV1_pPb(    Int_t trainConfig = 1,
             cout<<"ERROR: analysisCuts [" <<i<<"]"<<endl;
             return 0;
       }
-      else {
+   else {
+
+   if ( trainConfig == 3 ){
+
+         if (i == 0 && doWeighting){
+
+            if (generatorName.CompareTo("DPMJET")==0){
+               analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A", "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
+            } else if (generatorName.CompareTo("HIJING")==0){
+               analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_MBV0A", "Eta_Hijing_LHC13e7_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
+            }
+         }
+         if (i == 1 && doWeighting){
+            if (generatorName.CompareTo("DPMJET")==0){
+               analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_0020V0A", "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_0020V0A", "","Pi0_Fit_Data_pPb_5023GeV_0020V0A","Eta_Fit_Data_pPb_5023GeV_0020V0A");
+            } else if (generatorName.CompareTo("HIJING")==0){
+               analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_0020V0A", "Eta_Hijing_LHC13e7_pPb_5023GeV_0020V0A", "","Pi0_Fit_Data_pPb_5023GeV_0020V0A","Eta_Fit_Data_pPb_5023GeV_0020V0A");
+            }
+         }
+         if (i == 2 && doWeighting){
+            if (generatorName.CompareTo("DPMJET")==0){
+               analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_2040V0A", "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_2040V0A", "","Pi0_Fit_Data_pPb_5023GeV_2040V0A","Eta_Fit_Data_pPb_5023GeV_2040V0A");
+            } else if (generatorName.CompareTo("HIJING")==0){
+               analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_2040V0A", "Eta_Hijing_LHC13e7_pPb_5023GeV_2040V0A", "","Pi0_Fit_Data_pPb_5023GeV_2040V0A","Eta_Fit_Data_pPb_5023GeV_2040V0A");
+            }
+         }
+         if (i == 3 && doWeighting){
+            if (generatorName.CompareTo("DPMJET")==0){
+               analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_4060V0A", "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_4060V0A", "","Pi0_Fit_Data_pPb_5023GeV_4060V0A","Eta_Fit_Data_pPb_5023GeV_4060V0A");
+            } else if (generatorName.CompareTo("HIJING")==0){
+               analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_4060V0A", "Eta_Hijing_LHC13e7_pPb_5023GeV_4060V0A", "","Pi0_Fit_Data_pPb_5023GeV_4060V0A","Eta_Fit_Data_pPb_5023GeV_4060V0A");
+            }
+         }
+         if (i == 4 && doWeighting){
+            if (generatorName.CompareTo("DPMJET")==0){
+               analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_6080V0A", "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_6080V0A", "","Pi0_Fit_Data_pPb_5023GeV_6080V0A","Eta_Fit_Data_pPb_5023GeV_6080V0A");
+            } else if (generatorName.CompareTo("HIJING")==0){
+               analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_6080V0A", "Eta_Hijing_LHC13e7_pPb_5023GeV_6080V0A", "","Pi0_Fit_Data_pPb_5023GeV_6080V0A","Eta_Fit_Data_pPb_5023GeV_6080V0A");
+            }
+         }
+         if (i == 5 && doWeighting){
+            if (generatorName.CompareTo("DPMJET")==0){
+               analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_60100V0A", "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_60100V0A", "","Pi0_Fit_Data_pPb_5023GeV_60100V0A","Eta_Fit_Data_pPb_5023GeV_60100V0A");
+            } else if (generatorName.CompareTo("HIJING")==0){
+               analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_60100V0A", "Eta_Hijing_LHC13e7_pPb_5023GeV_60100V0A", "","Pi0_Fit_Data_pPb_5023GeV_60100V0A","Eta_Fit_Data_pPb_5023GeV_60100V0A");
+            }
+         }
+      }
+      else if (trainConfig == 4 ){
+
+         if (i == 0 && doWeighting){
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
+         }
+         if (i == 1 && doWeighting){
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_0020V0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_0020V0A", "","Pi0_Fit_Data_pPb_5023GeV_0020V0A","Eta_Fit_Data_pPb_5023GeV_0020V0A");
+            
+         }
+         if (i == 2 && doWeighting){
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_2040V0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_2040V0A", "","Pi0_Fit_Data_pPb_5023GeV_2040V0A","Eta_Fit_Data_pPb_5023GeV_2040V0A");
+            
+         }
+         if (i == 3 && doWeighting){
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_4060V0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_4060V0A", "","Pi0_Fit_Data_pPb_5023GeV_4060V0A","Eta_Fit_Data_pPb_5023GeV_4060V0A");
+         }
+         if (i == 4 && doWeighting){
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_6080V0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_6080V0A", "","Pi0_Fit_Data_pPb_5023GeV_6080V0A","Eta_Fit_Data_pPb_5023GeV_6080V0A");
+         }
+         if (i == 5 && doWeighting){
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_60100V0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_60100V0A", "","Pi0_Fit_Data_pPb_5023GeV_60100V0A","Eta_Fit_Data_pPb_5023GeV_60100V0A");
+         }
+      }
+        
+
+
       
 	if (doEtaShiftIndCuts) {
          analysisCuts[i]->DoEtaShift(doEtaShiftIndCuts);
@@ -227,7 +324,7 @@ void AddTask_GammaConvDalitzV1_pPb(    Int_t trainConfig = 1,
         ConvCutList->Add(analysisCuts[i]);
         analysisCuts[i]->SetFillCutHistograms("",kFALSE);
         analysisCuts[i]->SetAcceptedHeader(HeaderList);
-      }
+   }
 
 
 
@@ -256,9 +353,7 @@ void AddTask_GammaConvDalitzV1_pPb(    Int_t trainConfig = 1,
         ElecCutList->Add(analysisElecCuts[i]);
         analysisElecCuts[i]->SetFillCutHistograms("",kFALSE,cutName); 
        }
-
-
-        
+     
 
    }
 
