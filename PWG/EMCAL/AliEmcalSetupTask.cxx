@@ -18,6 +18,7 @@
 #include "AliGeomManager.h"
 #include "AliMagF.h"
 #include "AliOADBContainer.h"
+#include "AliTender.h"
 
 ClassImp(AliEmcalSetupTask)
 
@@ -29,7 +30,8 @@ AliEmcalSetupTask::AliEmcalSetupTask() :
   fGeoPath("$ALICE_ROOT/OADB/EMCAL"),
   fObjs("GRP ITS TPC TRD EMCAL"),
   fIsInit(kFALSE),
-  fLocalOcdb()
+  fLocalOcdb(),
+  fLocalOcdbStor()
 {
   // Constructor.
 }
@@ -42,7 +44,8 @@ AliEmcalSetupTask::AliEmcalSetupTask(const char *name) :
   fGeoPath("$ALICE_ROOT/OADB/EMCAL"),
   fObjs("GRP ITS TPC TRD EMCAL"),
   fIsInit(kFALSE),
-  fLocalOcdb()
+  fLocalOcdb(),
+  fLocalOcdbStor()
 {
   // Constructor.
   fBranchNames = "ESD:AliESDHeader.,AliESDRun.";
@@ -52,6 +55,54 @@ AliEmcalSetupTask::AliEmcalSetupTask(const char *name) :
 AliEmcalSetupTask::~AliEmcalSetupTask()
 {
   // Destructor.
+}
+
+//________________________________________________________________________
+void AliEmcalSetupTask::ConnectInputData(Option_t *option)
+{
+  // Connect input data
+
+  AliAnalysisTaskSE::ConnectInputData(option);
+
+  if (fOcdbPath.Length()==0)
+    return;
+
+  if (fIsInit)
+    return;
+
+  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
+  if (!am)
+    return;
+
+  TObjArray *tasks = am->GetTasks();
+  if (!tasks)
+    return;
+
+  AliTender *tender = 0;
+  for (Int_t i=0; i<tasks->GetEntries(); ++i) {
+    tender = dynamic_cast<AliTender*>(tasks->At(i));
+    if (tender)
+      break;
+  }
+
+  if (!tender)
+    return;
+
+  if (fOcdbPath != "uselocal") {
+    tender->SetDefaultCDBStorage(fOcdbPath);
+    return;
+  }
+
+  Int_t runno = AliAnalysisManager::GetAnalysisManager()->GetRunFromPath();
+  if (runno<=0) {
+    AliWarning(Form("Disabling tender, ignore possible message from tender below"));
+    tender->SetDefaultCDBStorage("donotuse");
+    return;
+  }
+
+  AliWarning(Form("Intercepting tender for run %d, ignore possible message from tender below", runno));
+  Setup(runno);
+  tender->SetDefaultCDBStorage(fLocalOcdbStor);
 }
 
 //________________________________________________________________________
@@ -71,8 +122,19 @@ void AliEmcalSetupTask::UserExec(Option_t *)
   am->LoadBranch("AliESDRun.");
   am->LoadBranch("AliESDHeader.");
 
-  // Setup AliEMCALGeometry corresponding to year
   Int_t runno = InputEvent()->GetRunNumber();
+  Setup(runno);
+}
+
+//________________________________________________________________________
+void AliEmcalSetupTask::Setup(Int_t runno) 
+{
+  // Setup everything
+
+  if (runno<=0)
+    return;
+
+  // Setup AliEMCALGeometry corresponding to year
   TString geoname("EMCAL_COMPLETE12SMV1");
   Int_t year = 2013;
   if (runno<=139517) {
@@ -113,10 +175,10 @@ void AliEmcalSetupTask::UserExec(Option_t *)
       tmpdir+="-";
       Int_t counter = 0;
       fLocalOcdb = tmpdir;
-      fLocalOcdb += Form("%d%d%d%",gRandom->Integer(999999999),gRandom->Integer(999999999),gRandom->Integer(999999999));
+      fLocalOcdb += Form("%d%d%d",gRandom->Integer(999999999),gRandom->Integer(999999999),gRandom->Integer(999999999));
       while (!gSystem->AccessPathName(fLocalOcdb)) {
 	fLocalOcdb = tmpdir;
-	fLocalOcdb += Form("%d%d%d%",gRandom->Integer(999999999),gRandom->Integer(999999999),gRandom->Integer(999999999));
+	fLocalOcdb += Form("%d%d%d",gRandom->Integer(999999999),gRandom->Integer(999999999),gRandom->Integer(999999999));
 	counter++;
 	if (counter>100) {
 	  AliFatal(Form("Could not create local directory for OCDB at %s",tmpdir.Data()));
@@ -133,6 +195,7 @@ void AliEmcalSetupTask::UserExec(Option_t *)
 	locdb+=year;
 	AliInfo(Form("Setting up local OCDB at %s",locdb.Data()));
 	man->SetDefaultStorage(locdb);
+	fLocalOcdbStor = locdb;
       } else {
 	AliFatal(Form("Could not set up local OCDB at %s",fLocalOcdb.Data()));
       }
