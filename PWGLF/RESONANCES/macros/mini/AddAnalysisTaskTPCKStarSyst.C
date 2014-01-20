@@ -1,5 +1,5 @@
 /***************************************************************************
-              fbellini@cern.ch - last modified on 06/08/2012
+              subhash.singha@cern.ch - last modified on 20/01/2014
 //
 // General macro to configure the RSN analysis task.
 // It calls all configs desired by the user, by means
@@ -148,7 +148,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTPCKStarSyst
    if((!isMC) && (enableSyst))
      {
    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigTPCanalysisKStarSyst.C");
-   if (!ConfigTPCanalysisKStarSyst(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableSyst, DCAxyFormula, dcazmax, minNcls, maxX2cls, minCrossedRows, maxClsCrossedRows, enableMonitor, isMC&IsMcTrueOnly, 313, aodNN)) return 0x0;  
+   if (!ConfigTPCanalysisKStarSyst(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableSyst, DCAxyFormula, dcazmax, minNcls, maxX2cls, minCrossedRows, maxClsCrossedRows, enableMonitor, isMC&IsMcTrueOnly, 313, aodN)) return 0x0;  
      }
 
    //for systematic checks
