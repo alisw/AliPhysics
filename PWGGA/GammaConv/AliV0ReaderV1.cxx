@@ -364,6 +364,7 @@ Bool_t AliV0ReaderV1::ProcessESDV0s()
 ///________________________________________________________________________
 AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t currentV0Index)
 {
+//   cout << currentV0Index << endl;
    // Reconstruct conversion photon from ESD v0
    fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kPhotonIn);
 
@@ -372,48 +373,54 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
       fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kOnFly);
       return 0x0;
    }
-
+  
    // TrackLabels
    Int_t currentTrackLabels[2]={-1,-1};
 
    // Get Daughter KF Particles
 
    const AliExternalTrackParam *fCurrentExternalTrackParamPositive=GetExternalTrackParamP(fCurrentV0,currentTrackLabels[0]);
+//    cout << fCurrentExternalTrackParamPositive << "\t" << currentTrackLabels[0] << endl;
    const AliExternalTrackParam *fCurrentExternalTrackParamNegative=GetExternalTrackParamN(fCurrentV0,currentTrackLabels[1]);
-
+//    cout << fCurrentExternalTrackParamNegative << "\t" << currentTrackLabels[1] << endl;
    if(!fCurrentExternalTrackParamPositive||!fCurrentExternalTrackParamNegative)return 0x0;
 
    // Apply some Cuts before Reconstruction
 
    AliVTrack * posTrack = fConversionCuts->GetTrack(fInputEvent,currentTrackLabels[0]);
    AliVTrack * negTrack = fConversionCuts->GetTrack(fInputEvent,currentTrackLabels[1]);
-
    if(!negTrack || !posTrack) {
       fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kNoTracks);
       return 0x0;
    }
-
    // Track Cuts
    if(!fConversionCuts->TracksAreSelected(negTrack, posTrack)){
       fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kTrackCuts);
       return 0x0;
    }
-
-   // PID Cuts
-   if(!fConversionCuts->dEdxCuts(negTrack) || !fConversionCuts->dEdxCuts(posTrack)) {
+   if (!fConversionCuts->dEdxCuts(posTrack)) {
       fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kdEdxCuts);
       return 0x0;
    }
-
+   // PID Cuts
+   if(!fConversionCuts->dEdxCuts(negTrack)) {
+      fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kdEdxCuts);
+      return 0x0;
+   }
+ 
    // Reconstruct Photon
 
    AliKFConversionPhoton *fCurrentMotherKF=NULL;
-
+//    fUseConstructGamma = kFALSE;
+//    cout << "construct gamma " << endl;
    AliKFParticle fCurrentNegativeKFParticle(*(fCurrentExternalTrackParamNegative),11);
+//    cout << fCurrentExternalTrackParamNegative << "\t" << endl;
    AliKFParticle fCurrentPositiveKFParticle(*(fCurrentExternalTrackParamPositive),-11);
-
+//    cout << fCurrentExternalTrackParamPositive << "\t"  << endl;
+//    cout << currentTrackLabels[0] << "\t" << currentTrackLabels[1] << endl;
+//    cout << "construct gamma " <<fUseConstructGamma << endl;
+   
    // Reconstruct Gamma
-
    if(fUseConstructGamma){
       fCurrentMotherKF = new AliKFConversionPhoton();
       fCurrentMotherKF->ConstructGamma(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
@@ -431,7 +438,6 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
    fCurrentMotherKF->SetV0Index(currentV0Index);
 
    //Set MC Label
-
    if(fMCEvent){
 
       AliStack *fMCStack= fMCEvent->Stack();
@@ -460,8 +466,7 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
 
    Double_t PsiPair=GetPsiPair(fCurrentV0,fCurrentExternalTrackParamPositive,fCurrentExternalTrackParamNegative);
    fCurrentMotherKF->SetPsiPair(PsiPair);
-
-
+ 
    // Recalculate ConversionPoint
    Double_t dca[2]={0,0};
    if(fUseOwnXYZCalculation){
@@ -492,7 +497,7 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
       return 0x0;
    }
 
-   //     cout << currentV0Index <<" \t after: \t" <<fCurrentMotherKF->GetPx() << "\t" << fCurrentMotherKF->GetPy() << "\t" << fCurrentMotherKF->GetPz()  << endl;
+//    cout << currentV0Index <<" \t after: \t" <<fCurrentMotherKF->GetPx() << "\t" << fCurrentMotherKF->GetPy() << "\t" << fCurrentMotherKF->GetPz()  << endl;
 
    fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kPhotonOut);
    return fCurrentMotherKF;
