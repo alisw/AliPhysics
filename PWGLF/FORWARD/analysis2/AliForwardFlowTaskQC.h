@@ -150,7 +150,9 @@ public:
     kNUAcorr = 0x020, // Apply full NUA correction
     kFMD     = 0x040, // Use FMD for forward flow
     kVZERO   = 0x080, // Use VZERO for forward flow
-    kTPC     = 0x100  // Use TPC tracks for reference flow
+    kTPC     = 0x100, // Use TPC tracks for reference flow
+    kSPD     = 0x200, // SPD object flag
+    kMC      = 0x400  // MC object flag
   };
   /**
    * struct to handle cumulant calculations and control histograms

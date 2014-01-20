@@ -136,14 +136,17 @@ void AliForwardMCFlowTaskQC::InitVertexBins()
     // FMD
     if ((fFlowFlags & kFMD)) {
       fBinsForwardTR.Add(new VertexBin(vL, vH, fMaxMoment, "FMDTR", fFlowFlags, fFMDCut, fEtaGap));
-      if (!(fFlowFlags & k3Cor)) fBinsCentralTR.Add(new VertexBin(vL, vH, fMaxMoment, "SPDTR", fFlowFlags, fSPDCut, fEtaGap));
+      if (!(fFlowFlags & k3Cor)) 
+        fBinsCentralTR.Add(new VertexBin(vL, vH, fMaxMoment, "SPDTR", fFlowFlags|kSPD, fSPDCut, fEtaGap));
       if (isNUA) fFlowFlags ^= kNUAcorr;
-      fBinsMC.Add(new VertexBin(vL, vH, fMaxMoment, "MC-FMD", fFlowFlags, -1, fEtaGap));
+      fBinsMC.Add(new VertexBin(vL, vH, fMaxMoment, "MC-FMD", fFlowFlags|kMC, -1, fEtaGap));
+      if ((fFlowFlags & kStdQC)) 
+	fBinsMC.Add(new VertexBin(vL, vH, fMaxMoment, "MC-SPD", fFlowFlags|kMC|kSPD, -1, fEtaGap));
       if (isNUA) fFlowFlags ^= kNUAcorr;
     }
     // VZERO
     else if ((fFlowFlags & kVZERO)) {
-      fBinsMC.Add(new VertexBin(vL, vH, fMaxMoment, "MC-VZERO", fFlowFlags, -1, fEtaGap));
+      fBinsMC.Add(new VertexBin(vL, vH, fMaxMoment, "MC-VZERO", fFlowFlags|kMC, -1, fEtaGap));
     }
   }
 }
