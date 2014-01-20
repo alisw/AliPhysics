@@ -158,6 +158,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TH2F **hESDTrueEtaPtOpenAngle;
    TH2F **hESDTrueMotherDalitzInvMassPt;
    TH1F **hESDTrueConvGammaPt;
+   TH1F **hESDTrueConvGammaEta;
    TH2F **hESDCombinatorialPt;
    TH1F **hESDTruePrimaryConvGammaPt;
    TH2F **hESDTruePrimaryConvGammaESDPtMCPt;
