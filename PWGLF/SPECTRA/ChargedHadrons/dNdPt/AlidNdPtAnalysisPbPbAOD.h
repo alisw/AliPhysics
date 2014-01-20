@@ -168,9 +168,13 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     TH1F	*fPt; // simple pT histogramm
     TH1F	*fMCPt; // simple pT truth histogramm
     THnSparseF 	*fZvPtEtaCent; //-> Zv:Pt:Eta:Cent
+    THnSparseF 	*fPhiPtEtaCent; //-> Phi:Pt:Eta:Cent
     THnSparseF 	*fMCRecPrimZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent
     THnSparseF 	*fMCGenZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent
     THnSparseF 	*fMCRecSecZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent, only secondaries
+    THnSparseF 	*fMCRecPrimPhiPtEtaCent; //-> MC Phi:Pt:Eta:Cent
+    THnSparseF 	*fMCGenPhiPtEtaCent; //-> MC Phi:Pt:Eta:Cent
+    THnSparseF 	*fMCRecSecPhiPtEtaCent; //-> MC Phi:Pt:Eta:Cent, only secondaries
     TH1F	*fEventStatistics; // contains statistics of number of events after each cut
     TH1F	*fEventStatisticsCentrality; // contains number of events vs centrality, events need to have a track in kinematic range
     TH1F	*fMCEventStatisticsCentrality; // contains MC number of events vs centrality, events need to have a track in kinematic range

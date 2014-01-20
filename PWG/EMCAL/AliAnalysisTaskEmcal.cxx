@@ -117,7 +117,6 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
 
   fParticleCollArray.SetOwner(kTRUE);
   fClusterCollArray.SetOwner(kTRUE);
-
 }
 
 //________________________________________________________________________

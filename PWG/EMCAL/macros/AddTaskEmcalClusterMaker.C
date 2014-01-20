@@ -1,6 +1,7 @@
 // $Id$
 
 AliEmcalClusterMaker* AddTaskEmcalClusterMaker(
+  const UInt_t nonLinFunct   = AliEMCALRecoUtils::kBeamTestCorrected,
   const char *nClusters      = 0,
   const char *outClusName    = "EmcCaloClusters",
   const Bool_t   histo       = kFALSE,
@@ -39,7 +40,9 @@ AliEmcalClusterMaker* AddTaskEmcalClusterMaker(
   TString name(Form("EmcalClusterMaker_%s", outClusName));
   AliEmcalClusterMaker *ecm = new AliEmcalClusterMaker(name, histo);
   ecm->SetOutClusName(outClusName);
-
+  AliEMCALRecoUtils *ru = new AliEMCALRecoUtils;
+  ru->SetNonLinearityFunction(nonLinFunct);
+  ecm->SetRecoUtils(ru);
   AliClusterContainer *clusCont = ecm->AddClusterContainer(nClusters);
   //if (clusCont) clusCont->SetParticlePtCut(minPt);
 

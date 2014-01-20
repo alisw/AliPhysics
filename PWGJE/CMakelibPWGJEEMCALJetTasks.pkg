@@ -39,7 +39,6 @@ set ( SRCS
  EMCALJetTasks/AliAnalysisTaskScale.cxx
  EMCALJetTasks/AliEmcalJet.cxx
  EMCALJetTasks/AliEmcalJetTask.cxx
- EMCALJetTasks/AliHadCorrTask.cxx
  EMCALJetTasks/AliJetConstituentTagCopier.cxx
  EMCALJetTasks/AliJetContainer.cxx
  EMCALJetTasks/AliJetEmbeddingFromAODTask.cxx

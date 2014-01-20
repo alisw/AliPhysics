@@ -268,6 +268,14 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         TH1F*                   fHistPsiVZEROC;          //! psi 2 from vzero c
         TH1F*                   fHistPsiVZERO;           //! psi 2 from combined vzero
         TH1F*                   fHistPsiTPC;             //! psi 2 from tpc
+        TH2F*                   fHistPsiVZEROAV0M;      //! psi 2 from vzero a
+        TH2F*                   fHistPsiVZEROCV0M;      //! psi 2 from vzero c
+        TH2F*                   fHistPsiVZEROVV0M;      //! psi 2 from combined vzero
+        TH2F*                   fHistPsiTPCiV0M;        //! psi 2 from tpc
+        TH2F*                   fHistPsiVZEROATRK;      //! psi 2 from vzero a
+        TH2F*                   fHistPsiVZEROCTRK;      //! psi 2 from vzero c
+        TH2F*                   fHistPsiVZEROTRK;       //! psi 2 from combined vzero
+        TH2F*                   fHistPsiTPCTRK;         //! psi 2 from tpc
         // background
         TH1F*                   fHistRhoPackage[10];     //! rho as estimated by emcal jet package
         TH1F*                   fHistRho[10];            //! background
@@ -305,7 +313,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         AliAnalysisTaskRhoVnModulation(const AliAnalysisTaskRhoVnModulation&);                  // not implemented
         AliAnalysisTaskRhoVnModulation& operator=(const AliAnalysisTaskRhoVnModulation&);       // not implemented
 
-        ClassDef(AliAnalysisTaskRhoVnModulation, 17);
+        ClassDef(AliAnalysisTaskRhoVnModulation, 18);
 };
 
 #endif
