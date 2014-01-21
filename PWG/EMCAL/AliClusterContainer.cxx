@@ -17,6 +17,7 @@ ClassImp(AliClusterContainer)
 AliClusterContainer::AliClusterContainer():
   AliEmcalContainer("AliClusterContainer"),
   fClusPtCut(0.15),
+  fClusECut(0.15),
   fClusTimeCutLow(-10),
   fClusTimeCutUp(10),
   fClusterBitMap(0),
@@ -32,6 +33,7 @@ AliClusterContainer::AliClusterContainer():
 AliClusterContainer::AliClusterContainer(const char *name):
   AliEmcalContainer(name),
   fClusPtCut(0.15),
+  fClusECut(0.15),
   fClusTimeCutLow(-10),
   fClusTimeCutUp(10),
   fClusterBitMap(0),
@@ -193,6 +195,9 @@ Bool_t AliClusterContainer::AcceptCluster(AliVCluster *clus) const
   }
 
   if (clus->GetTOF() > fClusTimeCutUp || clus->GetTOF() < fClusTimeCutLow)
+    return kFALSE;
+
+  if (clus->E()<fClusECut)
     return kFALSE;
 
   TLorentzVector nPart;
