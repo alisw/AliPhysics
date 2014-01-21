@@ -1479,7 +1479,7 @@ Bool_t AliConversionCuts::dEdxCuts(AliVTrack *fCurrentTrack){
    if((fCurrentTrack->GetStatus() & AliESDtrack::kTOFpid) && !(fCurrentTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
       if(hTOFbefore){
          Double_t t0 = fPIDResponse->GetTOFResponse().GetStartTime(fCurrentTrack->P());
-         Double_t times[5];
+         Double_t  times[AliPID::kSPECIESC];
          fCurrentTrack->GetIntegratedTimes(times);
          Double_t TOFsignal = fCurrentTrack->GetTOFsignal();
          Double_t dT = TOFsignal - t0 - times[0];
