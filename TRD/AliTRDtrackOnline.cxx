@@ -300,9 +300,11 @@ AliTRDtrackResiduals::AliTRDtrackResiduals(const AliTRDtrackResiduals &rhs) :
 
 AliTRDtrackResiduals& AliTRDtrackResiduals::operator=(const AliTRDtrackResiduals &rhs)
 {
-  ROOT::Math::IBaseFunctionMultiDim::operator=(rhs);
-  fTrack = rhs.fTrack;
-  fParam = rhs.fParam;
+  if (&rhs != this) {
+    ROOT::Math::IBaseFunctionMultiDim::operator=(rhs);
+    fTrack = rhs.fTrack;
+    fParam = rhs.fParam;
+  }
 
   return *this;
 }
