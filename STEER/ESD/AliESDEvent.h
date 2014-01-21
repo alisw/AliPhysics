@@ -45,9 +45,6 @@
 #include "AliESDTrdTrack.h"
 #include "AliESDTOFcluster.h"
 
-#ifdef MFT_UPGRADE
-//#include "AliESDMFT.h"
-#endif
 
 class AliESDfriend;
 class AliESDHLTtrack;
@@ -116,9 +113,6 @@ public:
 		       kTOFHeader,
                        kCosmicTracks,
 		       kESDListN
-	           #ifdef MFT_UPGRADE
-	//           , kESDMFT
-	           #endif
   };
 
   AliESDEvent();
@@ -260,12 +254,6 @@ public:
   // VZERO 
   AliESDVZERO *GetVZEROData() const { return fESDVZERO; }
   void SetVZEROData(const AliESDVZERO * obj);
-	
-  #ifdef MFT_UPGRADE
-  // MFT 
-//  AliESDMFT *GetMFTData() const { return fESDMFT; }
-//  void SetMFTData(AliESDMFT * obj);
-  #endif
 	
  // ACORDE
   AliESDACORDE *GetACORDEData() const { return fESDACORDE;}

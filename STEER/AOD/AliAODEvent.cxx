@@ -57,10 +57,7 @@ ClassImp(AliAODEvent)
 						      "AliAODZDC",
 						      "AliTOFHeader",
 						      "trdTracks"
-#ifdef MFT_UPGRADE	  
-						      ,"AliAODMFT"
-#endif						      
-						      
+			      						      
 };
 //______________________________________________________________________________
 AliAODEvent::AliAODEvent() :
@@ -89,9 +86,6 @@ AliAODEvent::AliAODEvent() :
   fAODZDC(0),
   fTOFHeader(0),
   fTrdTracks(0)
-#ifdef MFT_UPGRADE
-  ,fAODMFT(0)
-#endif
 {
   // default constructor
   if (TClass::IsCallingNew() != TClass::kDummyNew) fAODObjects = new TList();
@@ -124,9 +118,6 @@ AliAODEvent::AliAODEvent(const AliAODEvent& aod):
   fAODZDC(new AliAODZDC(*aod.fAODZDC)),
   fTOFHeader(new AliTOFHeader(*aod.fTOFHeader)),
   fTrdTracks(new TClonesArray(*aod.fTrdTracks))
-#ifdef MFT_UPGRADE
-  ,fAODMFT(new AliAODMFT(*aod.fAODMFT))
-#endif
 {
   // Copy constructor
   AddObject(fHeader);
@@ -150,9 +141,6 @@ AliAODEvent::AliAODEvent(const AliAODEvent& aod):
   AddObject(fAODZDC);
   AddObject(fTOFHeader);
   AddObject(fTrdTracks);
-#ifdef MFT_UPGRADE	
-  AddObject(fAODVZERO);
-#endif
   fConnected = aod.fConnected;
   GetStdContent();
   CreateStdFolders();
@@ -326,9 +314,6 @@ void AliAODEvent::CreateStdContent()
   AddObject(new AliAODZDC());
   AddObject(new AliTOFHeader());
   AddObject(new TClonesArray("AliAODTrdTrack", 0));
-#ifdef MFT_UPGRADE
-  AddObject(new AliAODMFT());
-#endif
   // set names
   SetStdNames();
 
@@ -420,9 +405,6 @@ void AliAODEvent::GetStdContent()
   fAODZDC        = (AliAODZDC*)fAODObjects->FindObject("AliAODZDC");
   fTOFHeader     = (AliTOFHeader*)fAODObjects->FindObject("AliTOFHeader");
   fTrdTracks     = (TClonesArray*)fAODObjects->FindObject("trdTracks");
-#ifdef MFT_UPGRADE
-  fAODMFT        = (AliAODMFT*)fAODObjects->FindObject("AliAODMFT");
-#endif
 }
 
 //______________________________________________________________________________
