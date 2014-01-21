@@ -4,7 +4,7 @@ AliEmcalClusterMaker* AddTaskEmcalClusterMaker(
   const UInt_t nonLinFunct   = AliEMCALRecoUtils::kBeamTestCorrected,
   const char *nClusters      = 0,
   const char *outClusName    = "EmcCaloClusters",
-  const Double_t emin
+  const Double_t emin        = 0.3,
   const Bool_t   histo       = kFALSE,
   const char *outputname     = "AnalysisResults.root"
 )
@@ -45,7 +45,7 @@ AliEmcalClusterMaker* AddTaskEmcalClusterMaker(
   ru->SetNonLinearityFunction(nonLinFunct);
   ecm->SetRecoUtils(ru);
   AliClusterContainer *clusCont = ecm->AddClusterContainer(nClusters);
-  //if (clusCont) clusCont->SetParticlePtCut(minPt);
+  clusCont->SetParticleECut(emin);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
