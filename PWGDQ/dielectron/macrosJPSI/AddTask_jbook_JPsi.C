@@ -48,6 +48,14 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString config="1",
   if(!gridconf && trainRoot.IsNull())
     configFile="$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_jb_PbPb.C"; // aliroot config
 
+  // load efficiency maps
+  if(!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/j/jbook/PWGDQ/dielectron/files/effMap*.root ."))
+    gSystem->Exec(Form("ls -l %s",gSystem->pwd()));
+  else {
+    printf("ERROR: couldn't copy file %s from grid \n",
+           "alien:///alice/cern.ch/user/j/jbook/PWGDQ/dielectron/files/effMap*.root");
+    return;
+  }
 
   //create task
   AliAnalysisTaskMultiDielectron *task;

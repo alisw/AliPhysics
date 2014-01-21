@@ -386,6 +386,8 @@ class AliConversionCuts : public AliAnalysisCuts {
    TString fNameFitDataEta; //Fit name for fit to spectrum of etas in Data
    TString fNameFitDataK0s; //Fit name for fit to spectrum of k0s in Data
    // Histograms
+   TH1F* hEtaDistV0s; //eta-distribution of all V0s after Finder selection
+   TH1F* hEtaDistV0sAfterdEdxCuts; //eta-distribution of all V0s after Finder selection after dEdx cuts
    TH1F *hdEdxCuts;  // bookkeeping for dEdx cuts
    TH2F *hTPCdEdxbefore; // TPC dEdx before cuts
    TH2F *hTPCdEdxafter; // TPC dEdx after cuts

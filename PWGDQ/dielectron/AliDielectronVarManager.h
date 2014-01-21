@@ -1553,7 +1553,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
     Fill(leg1, valuesLeg1);
     Fill(leg2, valuesLeg2);
     values[AliDielectronVarManager::kPairEff] = valuesLeg1[AliDielectronVarManager::kLegEff] *valuesLeg2[AliDielectronVarManager::kLegEff];
-    values[AliDielectronVarManager::kOneOverPairEff] = (values[AliDielectronVarManager::kPairEff]>0.0 ? 1./values[AliDielectronVarManager::kPairEff] : 0.0);
+    values[AliDielectronVarManager::kOneOverPairEff] = (values[AliDielectronVarManager::kPairEff]>0.0 ? 1./values[AliDielectronVarManager::kPairEff] : 1.0);
 
   }
   values[AliDielectronVarManager::kRndmPair] = gRandom->Rndm();
