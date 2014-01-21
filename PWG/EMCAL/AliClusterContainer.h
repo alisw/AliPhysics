@@ -27,6 +27,7 @@ class AliClusterContainer : public AliEmcalContainer {
   AliVCluster                *GetNextCluster(Int_t i=-1)                  ;
   Int_t                       GetNClusters()                         const { return GetNEntries();   }
   void                        SetClassName(const char *clname);
+  void                        SetClusECut(Double_t cut)                    { fClusECut      = cut ; }
   void                        SetClusPtCut(Double_t cut)                   { fClusPtCut      = cut ; }
   void                        SetClusTimeCut(Double_t min, Double_t max)   { fClusTimeCutLow = min ; fClusTimeCutUp = max ; }
   void                        SetClusterBitMap(UInt_t m)                   { fClusterBitMap     = m ; }
