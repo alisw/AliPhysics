@@ -245,11 +245,15 @@ for(Int_t i=0; i<nEvts; i++) {
 	\begin{lstlisting}
 mcep->Finish(); 
 qc->Finish(); \end{lstlisting}
-	\item This concludes the analysis and now we can write the results into a file:
-	\begin{lstlisting}
-TFile *outputFile = new TFile("AnalysisResults.root","RECREATE");
+	\item This concludes the analysis and now we can write the results into a file. Two options for writing the input to a file are available: 
+     \begin{itemize}
+     \item Create a new output file and write the output to this file
+     \begin{lstlisting}
+TFile *outputFile = new TFile("mcep_ouput.root","RECREATE");
 mcep->WriteHistograms();
+TFile *outputFile = new TFile("qc_ouput.root","RECREATE");
 qc->WriteHistograms();\end{lstlisting}
+Please note that writing the 
 \end{enumerate}
 
 \section{What is in the output file?}
