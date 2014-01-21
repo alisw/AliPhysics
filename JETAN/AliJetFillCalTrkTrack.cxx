@@ -85,7 +85,7 @@ AliJetFillCalTrkTrack::~AliJetFillCalTrkTrack()
 }
 
 //-----------------------------------------------------------------------
-void AliJetFillCalTrkTrack::Exec(Option_t* const /*option*/)
+void AliJetFillCalTrkTrack::Exec(Option_t const * /*option*/)
 {
   // Main method.
   // Fill AliJetFillCalTrkTrack the with the charged particle information

@@ -1892,7 +1892,8 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
 					    Double_t ptTriggerMax,
 					    Double_t ptAssociatedMin,
 					    Double_t ptAssociatedMax,
-					    AliBalancePsi *bMixed) {
+					    AliBalancePsi *bMixed,
+					    Bool_t normToTrig) {
 
   // Returns the 2D correlation function for "type"(PN,NP,PP,NN) pairs,
   // does the division by event mixing inside,
@@ -1960,6 +1961,24 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
       else if(type=="ALL"){
 	fSame  = GetCorrelationFunctionChargeIndependent(binPsiLowEdge,binPsiUpEdge,binVertexLowEdge,binVertexUpEdge,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
 	fMixed = bMixed->GetCorrelationFunctionChargeIndependent(binPsiLowEdge,binPsiUpEdge,binVertexLowEdge,binVertexUpEdge,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+      }
+
+      if(fMixed && normToTrig){
+	
+	// normalization of Event mixing to 1 at (0,0) --> Jan Fietes method
+	// do it only on away-side (due to two-track cuts)
+	Double_t mixedNorm = fMixed->Integral(fMixed->GetXaxis()->FindBin(0-10e-5),fMixed->GetXaxis()->FindBin(0+10e-5),fMixed->GetNbinsY()/2+1,fMixed->GetNbinsY());
+	mixedNorm /= 0.5 * fMixed->GetNbinsY() *(fMixed->GetXaxis()->FindBin(0.01) - fMixed->GetXaxis()->FindBin(-0.01) + 1);
+
+	// finite bin correction
+	Double_t binWidthEta = fMixed->GetXaxis()->GetBinWidth(fMixed->GetNbinsX());
+	Double_t maxEta      = fMixed->GetXaxis()->GetBinUpEdge(fMixed->GetNbinsX());
+	
+	Double_t finiteBinCorrection = -1.0 / (2*maxEta) * binWidthEta / 2 + 1;
+	Printf("Finite bin correction: %f", finiteBinCorrection);
+	mixedNorm /= finiteBinCorrection;
+	
+	fMixed->Scale(1./mixedNorm);
       }
 
       if(fSame && fMixed){

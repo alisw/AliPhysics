@@ -218,7 +218,7 @@ class AliAnalysisTaskIDFFTCF : public AliAnalysisTaskSE {
 
   static  void   SetProperties(TH1* h,const char* x, const char* y);
   static  void   SetProperties(TH1* h,const char* x, const char* y,const char* z);
-  static  void   SetProperties(THnSparse* h,const Int_t dim, const char** labels);
+  static  void   SetProperties(THnSparse* h, Int_t dim, const char** labels);
 
   void SetTPCCutMode(Int_t mode){ fTPCCutMode = mode; }
   Int_t GetTPCCutMode(){return fTPCCutMode; }
