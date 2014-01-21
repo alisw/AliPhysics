@@ -997,7 +997,7 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
 
   Double_t dedx = track->GetTPCsignal();
   if (dedx < fMinimalTPCdedx) pass=kFALSE;
-  Double_t time[5];
+  Double_t time[9];
   track->GetIntegratedTimes(time);
   if (fQA) {
     Double_t momTPC = track->GetTPCmomentum();
@@ -2115,7 +2115,7 @@ Bool_t AliFlowTrackCuts::PassesTOFbetaSimpleCut(const AliESDtrack* track )
   Float_t trackT0 = fESDpid.GetTOFResponse().GetStartTime(p);
   Float_t timeTOF = track->GetTOFsignal()- trackT0; 
   Float_t beta = l/timeTOF/c;
-  Double_t integratedTimes[5] = {-1.0,-1.0,-1.0,-1.0,-1.0};
+  Double_t integratedTimes[9] = {-1.0,-1.0,-1.0,-1.0,-1.0, -1.0, -1.0, -1.0, -1.0};
   track->GetIntegratedTimes(integratedTimes);
   Float_t betaHypothesis[5] = {0.0,0.0,0.0,0.0,0.0};
   Float_t s[5] = {0.0,0.0,0.0,0.0,0.0};
@@ -2149,7 +2149,7 @@ Bool_t AliFlowTrackCuts::PassesTOFbetaSimpleCut(const AliESDtrack* track )
 Float_t AliFlowTrackCuts::GetBeta(const AliVTrack* track)
 {
   //get beta
-  Double_t integratedTimes[5] = {-1.0,-1.0,-1.0,-1.0,-1.0};
+  Double_t integratedTimes[9] = {-1.0,-1.0,-1.0,-1.0,-1.0, -1.0, -1.0, -1.0, -1.0};
   track->GetIntegratedTimes(integratedTimes);
 
   const Float_t c = 2.99792457999999984e-02;  
@@ -2177,7 +2177,7 @@ Bool_t AliFlowTrackCuts::PassesTOFbetaCut(const AliAODTrack* track )
   if (!goodtrack) return kFALSE;
 
   const Float_t c = 2.99792457999999984e-02;
-  Double_t integratedTimes[5] = {-1.0,-1.0,-1.0,-1.0,-1.0};
+  Double_t integratedTimes[9] = {-1.0,-1.0,-1.0,-1.0,-1.0, -1.0, -1.0, -1.0, -1.0};
   track->GetIntegratedTimes(integratedTimes);
   Float_t l = integratedTimes[0]*c;
 
@@ -2251,8 +2251,7 @@ Bool_t AliFlowTrackCuts::PassesTOFbetaCut(const AliESDtrack* track )
        return kFALSE;
   
   Float_t beta = GetBeta(track);
-
-  Double_t integratedTimes[5] = {-1.0,-1.0,-1.0,-1.0,-1.0};
+  Double_t integratedTimes[9] = {-1.0,-1.0,-1.0,-1.0,-1.0, -1.0, -1.0, -1.0, -1.0};
   track->GetIntegratedTimes(integratedTimes);
 
   //construct the pid index because it's not AliPID::EParticleType
@@ -3973,7 +3972,7 @@ Bool_t AliFlowTrackCuts::TPCTOFagree(const AliVTrack *track)
   Float_t mass[5] = {5.10998909999999971e-04,1.05658000000000002e-01,1.39570000000000000e-01,4.93676999999999977e-01,9.38271999999999995e-01};
   
 
-  Double_t exptimes[5];
+  Double_t exptimes[9];
   track->GetIntegratedTimes(exptimes);
   
   Float_t dedx = track->GetTPCsignal();
