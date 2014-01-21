@@ -85,7 +85,7 @@ AliITSUTrackHyp::AliITSUTrackHyp(const AliESDtrack &src)
   if (src.IsOn(AliESDtrack::kTIME)) {
     StartTimeIntegral();
     SetIntegratedLength(src.GetIntegratedLength());
-    double times[AliPID::kSPECIES];
+    double times[AliPID::kSPECIESC];
     src.GetIntegratedTimes(times);
     SetIntegratedTimes(times);
   }
@@ -134,7 +134,7 @@ AliITSUTrackHyp &AliITSUTrackHyp::operator=(const AliESDtrack &src)
   if (src.IsOn(AliESDtrack::kTIME)) {
     StartTimeIntegral();
     SetIntegratedLength(src.GetIntegratedLength());
-    double times[AliPID::kSPECIES];
+    double times[AliPID::kSPECIESC];
     src.GetIntegratedTimes(times);
     SetIntegratedTimes(times);
   }
