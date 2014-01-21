@@ -277,7 +277,7 @@ void AliESDpid::MakeTOFPID(AliESDtrack *track, Float_t /*timeZeroTOF*/) const
   Int_t ibin = fTOFResponse.GetMomBin(track->GetP());
   Float_t timezero = fTOFResponse.GetT0bin(ibin);
 
-  Double_t time[AliPID::kSPECIES];
+  Double_t time[AliPID::kSPECIESC];
   track->GetIntegratedTimes(time);
 
   Double_t sigma[AliPID::kSPECIES];
@@ -397,7 +397,7 @@ Bool_t AliESDpid::CheckTOFMatching(AliESDtrack *track) const{
   //
     Bool_t status = kFALSE;
     
-    Double_t exptimes[5];
+    Double_t exptimes[AliPID::kSPECIESC];
     track->GetIntegratedTimes(exptimes);
     
     Float_t p = track->P();
