@@ -236,11 +236,10 @@ void AliAnalysisTaskJetMatching::DoGeometricMatchingEtaPhi()
     Int_t iSource(fSourceJets->GetEntriesFast()), iTarget(fTargetJets->GetEntriesFast());
     for(Int_t i(0); i < iSource; i++) {
         AliEmcalJet* sourceJet(static_cast<AliEmcalJet*>(fSourceJets->At(i)));
-        if(!PassesCuts(sourceJet)) continue;
-        if(fUseEmcalBaseJetCuts && !AcceptJet(sourceJet, 0)) continue;
+        if(!PassesCuts(sourceJet, 0)) continue;
         for(Int_t j(0); j < iTarget; j++) {
             AliEmcalJet* targetJet(static_cast<AliEmcalJet*>(fTargetJets->At(j)));
-            if(!PassesCuts(targetJet)) continue;
+            if(!PassesCuts(targetJet, 1)) continue;
             if (fUseEmcalBaseJetCuts && !AcceptJet(targetJet, 1)) continue;
             if((TMath::Abs(sourceJet->Eta() - targetJet->Eta()) < fMatchEta )) {
                 Double_t sourcePhi(sourceJet->Phi()), targetPhi(targetJet->Phi());
@@ -252,8 +251,7 @@ void AliAnalysisTaskJetMatching::DoGeometricMatchingEtaPhi()
                         if(fDebug > 0) printf(" > Entering first bbijection test \n");
                         for(Int_t k(i); k < iSource; k++) {
                             AliEmcalJet* candidateSourceJet(static_cast<AliEmcalJet*>(fSourceJets->At(k)));
-                            if(!PassesCuts(candidateSourceJet)) continue;
-                            if(fUseEmcalBaseJetCuts && !AcceptJet(candidateSourceJet, 0)) continue;
+                            if(PassesCuts(candidateSourceJet, 0)) continue;
                             if(fDebug > 0) printf("source distance %.2f \t candidate distance %.2f \n", GetR(sourceJet, targetJet),GetR(candidateSourceJet, targetJet));
                             if(GetR(sourceJet, targetJet) > GetR(candidateSourceJet, targetJet)) {
                                 isBestMatch = kFALSE;
@@ -285,11 +283,10 @@ void AliAnalysisTaskJetMatching::DoGeometricMatchingR()
     Int_t iSource(fSourceJets->GetEntriesFast()), iTarget(fTargetJets->GetEntriesFast());
     for(Int_t i(0); i < iSource; i++) {
         AliEmcalJet* sourceJet(static_cast<AliEmcalJet*>(fSourceJets->At(i)));
-        if(!PassesCuts(sourceJet)) continue;
-        else if (fUseEmcalBaseJetCuts && !AcceptJet(sourceJet, 0)) continue;
+        if(!PassesCuts(sourceJet, 0)) continue;
         for(Int_t j(0); j < iTarget; j++) {
             AliEmcalJet* targetJet(static_cast<AliEmcalJet*>(fTargetJets->At(j)));
-            if(!PassesCuts(targetJet)) continue;
+            if(!PassesCuts(targetJet, 1)) continue;
             else if (fUseEmcalBaseJetCuts && !AcceptJet(targetJet, 1)) continue;
             if(GetR(sourceJet, targetJet) <= fMatchR) {
                 Bool_t isBestMatch(kTRUE);
@@ -297,8 +294,7 @@ void AliAnalysisTaskJetMatching::DoGeometricMatchingR()
                     if(fDebug > 0) printf(" > Entering first bijection test \n");
                     for(Int_t k(i); k < iSource; k++) {
                         AliEmcalJet* candidateSourceJet(static_cast<AliEmcalJet*>(fSourceJets->At(k)));
-                        if(!PassesCuts(candidateSourceJet)) continue;
-                        if(fUseEmcalBaseJetCuts && !AcceptJet(candidateSourceJet, 0)) continue;
+                        if(!PassesCuts(candidateSourceJet, 0)) continue;
                         if(fDebug > 0) printf("source distance %.2f \t candidate distance %.2f \n", GetR(sourceJet, targetJet),GetR(candidateSourceJet, targetJet));
                         if(GetR(sourceJet, targetJet) > GetR(candidateSourceJet, targetJet)) {
                             isBestMatch = kFALSE;
@@ -476,6 +472,7 @@ void AliAnalysisTaskJetMatching::FillMatchedJetHistograms()
             fProfQAMatched->Fill(0.5, TMath::Abs((fMatchedJetContainer[i][0]->Pt()-sourceRho)-(fMatchedJetContainer[i][1]->Pt()-targetRho)));
             fProfQAMatched->Fill(1.5, TMath::Abs(fMatchedJetContainer[i][0]->Eta()-fMatchedJetContainer[i][1]->Eta()));
             fProfQAMatched->Fill(2.5, TMath::Abs(fMatchedJetContainer[i][0]->Phi()-fMatchedJetContainer[i][1]->Phi()));
+            
             fHistSourceMatchedJetPt->Fill(fMatchedJetContainer[i][0]->Pt()-sourceRho, fMatchedJetContainer[i][1]->Pt()-targetRho);
             if(fDoDetectorResponse) {
                 fProfFracPtJets->Fill(fMatchedJetContainer[i][0]->Pt()-sourceRho, (fMatchedJetContainer[i][1]->Pt()-targetRho) / (fMatchedJetContainer[i][0]->Pt()-sourceRho));
