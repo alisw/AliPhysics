@@ -1186,14 +1186,16 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainDipAngle(Int_t padRegion)  {
   } else {
     fGainMult->GetHistTopology()->GetAxis(1)->SetRangeUser(1,1); //Qmax
     histQmax = (TH2D*) fGainMult->GetHistTopology()->Projection(0,2);
+    histQmax->SetName("fGainMult_GetHistPadEqual_11");
     fGainMult->GetHistTopology()->GetAxis(1)->SetRangeUser(0,0); //Qtot
     histQtot = (TH2D*) fGainMult->GetHistTopology()->Projection(0,2);
+    histQtot->SetName("fGainMult_GetHistPadEqual_00");
   }
-  //
+  //  
   histQmax->FitSlicesY(0,0,-1,0,"QNR",&arrMax);
+  TH1D * corrMax = (TH1D*)arrMax.At(1)->Clone();
   histQtot->FitSlicesY(0,0,-1,0,"QNR",&arrTot);
-  TH1D * corrMax = (TH1D*)arrMax.At(1);
-  TH1D * corrTot = (TH1D*)arrTot.At(1);
+  TH1D * corrTot = (TH1D*)arrTot.At(1)->Clone();
   corrMax->Scale(1./histQmax->GetMean(2));
   corrTot->Scale(1./histQtot->GetMean(2));
   //
