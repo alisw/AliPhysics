@@ -4,6 +4,7 @@ AliEmcalClusterMaker* AddTaskEmcalClusterMaker(
   const UInt_t nonLinFunct   = AliEMCALRecoUtils::kBeamTestCorrected,
   const char *nClusters      = 0,
   const char *outClusName    = "EmcCaloClusters",
+  const Double_t emin
   const Bool_t   histo       = kFALSE,
   const char *outputname     = "AnalysisResults.root"
 )
