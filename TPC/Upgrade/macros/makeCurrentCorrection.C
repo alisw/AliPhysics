@@ -1,6 +1,7 @@
 /*
-.x $HOME/rootlogon.C
 .x $ALICE_ROOT/TPC/Upgrade/macros/NimStyle.C
+
+.x $HOME/rootlogon.C
 
 .L $ALICE_ROOT/TPC/Upgrade/macros/makeCurrentCorrection.C+
 
@@ -462,9 +463,9 @@ void MakeSmoothKernelStudy(Int_t npoints, Int_t nkernels, Int_t mapID){
     if (TMath::Abs(drphiInput)>cutMaxDist) continue; // beter condition needed
     //
     for (Int_t i=0; i<nkernels; i++) {
-      sigmaKernelR[i]    = 1.+25.*gRandom->Rndm(); 
-      sigmaKernelRPhi[i] = 1.+25.*gRandom->Rndm();
-      sigmaKernelZ[i]    = 1.+25.*gRandom->Rndm();
+      sigmaKernelR[i]    = 0.5+30.*TMath::Power(gRandom->Rndm(),2); 
+      sigmaKernelRPhi[i] = 0.5+30.*TMath::Power(gRandom->Rndm(),2);
+      sigmaKernelZ[i]    = 0.5+30.*TMath::Power(gRandom->Rndm(),2);
       fitSumW[i]=0;
     }
     for (Int_t idphi=-12; idphi<=12; idphi++){
@@ -639,7 +640,7 @@ void MakeSmoothKernelStudyDraw(Int_t npoints){
   canvasInOut->SaveAs("canvasDistortionAlignmentInOut.pdf");
   canvasInOut->SaveAs("canvasDistortionAlignmentInOut.png");
   //
-  // 1.b)
+  // 1.b) phi modulation plots
   //
   TCanvas * canvasPhi= new TCanvas("canvasPhi","canvasPhi",800,600);
   canvasPhi->Divide(1,3,0,0);
@@ -649,26 +650,29 @@ void MakeSmoothKernelStudyDraw(Int_t npoints){
     chain->SetMarkerStyle(25);
     chain->SetMarkerSize(0.3);
     canvasPhi->cd(1);
-    chain->Draw("(drphiOutput-drphiInput):sector","abs((drphiOutput-drphiInput))<0.2&&abs(r-110)<30","",npoints);
+    chain->Draw("(drphiOutput-drphiInput):sector","abs((drphiOutput-drphiInput))<0.2&&abs(r-100)<20","",npoints);
     canvasPhi->cd(2);
     chain->Draw("(drphiOutput-drphiInput):sector","abs((drphiOutput-drphiInput))<0.2&&abs(r-160)<25","",npoints);
     canvasPhi->cd(3);
     chain->Draw("(drphiOutput-drphiInput):sector","abs((drphiOutput-drphiInput))<0.2&&abs(r-220)<30","",npoints);
   }
-  TCanvas * canvasPhi2= new TCanvas("canvasPhi","canvasPhi",800,600);
-  canvasPhi2->Divide(1,3,0,0);
+  canvasPhi->SaveAs("canvasDistortionPhiSlice.pdf");
+
+  TCanvas * canvasDistortionSliceHisto= new TCanvas("canvasDistortionSliceHisto","canvasDistortionSliceHisto",800,600);
+  canvasDistortionSliceHisto->Divide(1,3,0,0);
   gStyle->SetOptTitle(1);
   chain->SetAlias("sector","9*phi/pi");
   {
     chain->SetMarkerStyle(25);
     chain->SetMarkerSize(0.3);
-    canvasPhi2->cd(1);
-    chain->Draw("(drphiOutput-drphiInput):sector-int(sector)","abs((drphiOutput-drphiInput))<0.2&&abs(r-110)<30","colz");
-    canvasPhi2->cd(2);
-    chain->Draw("(drphiOutput-drphiInput):sector-int(sector)","abs((drphiOutput-drphiInput))<0.2&&abs(r-160)<25","colz");
-    canvasPhi2->cd(3);
-    chain->Draw("(drphiOutput-drphiInput):sector-int(sector)","abs((drphiOutput-drphiInput))<0.2&&abs(r-220)<30","colz");
+    canvasDistortionSliceHisto->cd(1);
+    chain->Draw("(drphiOutput-drphiInput):sector-int(sector)>>hisSec100(40,0,1,50,-0.2,0.2)","abs((drphiOutput-drphiInput))<0.2&&abs(r-110)<30","colz");
+    canvasDistortionSliceHisto->cd(2);
+    chain->Draw("(drphiOutput-drphiInput):sector-int(sector)>>hisSec160(40,0,1,50,-0.2,0.2)","abs((drphiOutput-drphiInput))<0.2&&abs(r-160)<25","colz");
+    canvasDistortionSliceHisto->cd(3);
+    chain->Draw("(drphiOutput-drphiInput):sector-int(sector)>>hisSec2200(40,0,1,50,-0.2,0.2)","abs((drphiOutput-drphiInput))<0.2&&abs(r-220)<30","colz");
   }
+  canvasDistortionSliceHisto->SaveAs("canvasDistortionSectorSliceHisto.pdf");
 
 
   //
