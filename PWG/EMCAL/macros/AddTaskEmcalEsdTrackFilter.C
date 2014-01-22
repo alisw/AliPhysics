@@ -1,8 +1,9 @@
 // $Id$
 
 AliEmcalEsdTrackFilterTask* AddTaskEmcalEsdTrackFilter(
-  const char *name              = "AliEmcalEsdTrackFilter",
-  const char *trackCuts         = "Hybrid_LHC11h"
+  const char *name              = "TrackFilter",
+  const char *trackCuts         = "Hybrid_LHC11h",
+  const char *taskName          = "AliEmcalEsdTrackFilterTask"
 )
 { 
   enum CutsType {
@@ -154,7 +155,7 @@ AliEmcalEsdTrackFilterTask* AddTaskEmcalEsdTrackFilter(
 
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
   Bool_t includeNoITS = kFALSE;
-  AliEmcalEsdTrackFilterTask *eTask = new AliEmcalEsdTrackFilterTask(); // default is TPC only tracks constrained to the vertex
+  AliEmcalEsdTrackFilterTask *eTask = new AliEmcalEsdTrackFilterTask(taskName); // default is TPC only tracks constrained to the vertex
 
   if ((dataSet == kLHC11c && cutsType == kHybrid) ||
       (dataSet == kLHC11d && cutsType == kHybrid) ||

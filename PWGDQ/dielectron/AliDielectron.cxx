@@ -101,6 +101,7 @@ AliDielectron::AliDielectron() :
   fQAmonitor(0x0),
   fPostPIDCntrdCorr(0x0),
   fPostPIDWdthCorr(0x0),
+  fLegEffMap(0x0),
   fEventFilter("EventFilter"),
   fTrackFilter("TrackFilter"),
   fPairPreFilter("PairPreFilter"),
@@ -133,7 +134,6 @@ AliDielectron::AliDielectron() :
   fTRDpidCorrectionFilename(""),
   fVZEROCalibrationFilename(""),
   fVZERORecenteringFilename(""),
-  fEffMapFilename(""),
   fZDCRecenteringFilename("")
 
 {
@@ -182,7 +182,6 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fTRDpidCorrectionFilename(""),
   fVZEROCalibrationFilename(""),
   fVZERORecenteringFilename(""),
-  fEffMapFilename(""),
   fZDCRecenteringFilename("")
 {
   //
@@ -200,6 +199,7 @@ AliDielectron::~AliDielectron()
   if (fQAmonitor) delete fQAmonitor;
   if (fPostPIDCntrdCorr) delete fPostPIDCntrdCorr;
   if (fPostPIDWdthCorr) delete fPostPIDWdthCorr;
+  if (fLegEffMap) delete fLegEffMap;
   if (fHistos) delete fHistos;
   if (fPairCandidates) delete fPairCandidates;
   if (fDebugTree) delete fDebugTree;
@@ -230,20 +230,14 @@ void AliDielectron::Init()
   }
   if (fDebugTree) fDebugTree->SetDielectron(this);
 
-  TString allfiles = fEstimatorFilename;
-  allfiles+=fTRDpidCorrectionFilename;
-  allfiles+=fVZEROCalibrationFilename;
-  allfiles+=fVZERORecenteringFilename;
-  allfiles+=fEffMapFilename;
-  allfiles+=fZDCRecenteringFilename;
-  if(allfiles.Contains("alien://")) TGrid::Connect("alien://",0,0,"t");
-
   if(fEstimatorFilename.Contains(".root"))        AliDielectronVarManager::InitEstimatorAvg(fEstimatorFilename.Data());
   if(fTRDpidCorrectionFilename.Contains(".root")) AliDielectronVarManager::InitTRDpidEffHistograms(fTRDpidCorrectionFilename.Data());
   if(fVZEROCalibrationFilename.Contains(".root")) AliDielectronVarManager::SetVZEROCalibrationFile(fVZEROCalibrationFilename.Data());
   if(fVZERORecenteringFilename.Contains(".root")) AliDielectronVarManager::SetVZERORecenteringFile(fVZERORecenteringFilename.Data());
-  if(fEffMapFilename.Contains(".root"))           AliDielectronVarManager::InitEffMap(fEffMapFilename.Data());
   if(fZDCRecenteringFilename.Contains(".root")) AliDielectronVarManager::SetZDCRecenteringFile(fZDCRecenteringFilename.Data());
+
+  if(fLegEffMap) AliDielectronVarManager::SetLegEffMap(fLegEffMap);
+
 
   if (fMixing) fMixing->Init(this);
   if (fHistoArray) {
@@ -1403,4 +1397,21 @@ void AliDielectron::SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary, UIn
   fun->GetHistogram()->GetYaxis()->SetUniqueID(vary);
   fun->GetHistogram()->GetZaxis()->SetUniqueID(varz);
   fPostPIDWdthCorr=fun;
+}
+//______________________________________________
+void AliDielectron::InitLegEffMap(TString filename)
+{
+  // init an efficiency object for on-the-fly correction calculations
+  fLegEffMap=0x0;
+  if(filename.Contains("alien://") && !gGrid) TGrid::Connect("alien://",0,0,"t");
+
+  TFile* file=TFile::Open(filename.Data());
+  if(!file) return;
+  THnBase *hGen = (THnBase*) file->Get("hGenerated");
+  THnBase *hFnd = (THnBase*) file->Get("hFound");
+  if(!hFnd || !hGen) return;
+
+  fLegEffMap  = (THnBase*) hFnd->Clone("effMap");
+  fLegEffMap->Divide(hGen);
+  printf("[I] AliDielectron::InitLegEffMap efficiency maps %s loaded! \n",filename.Data());
 }
