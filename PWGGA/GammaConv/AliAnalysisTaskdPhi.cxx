@@ -311,7 +311,7 @@ void AliAnalysisTaskdPhi::UserCreateOutputObjects() {
    MEHistograms->Add(hMEvents);
 
    hTrackCent = new TH2I("hTrackCent", "N accepted tracks vs centrality",
-			 fAxisCent.GetNbins() > 2 ? 100 : 1, fAxisCent.GetBinLowEdge(1), fAxisCent.GetBinUpEdge(fAxisCent.GetNbins()),
+			 fAxisCent.GetNbins() > 2 ? 90 : 1, fAxisCent.GetBinLowEdge(1), fAxisCent.GetBinUpEdge(fAxisCent.GetNbins()),
 			 750, 0, 1500);
    MEHistograms->Add(hTrackCent);
 
@@ -529,11 +529,33 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
     }
   }
 
+
+  ///Initialize track cuts. Delete tracks that have been constrained to vertex (copies)
   AliConversionTrackCuts * tc = dynamic_cast<AliConversionTrackCuts*>(fTrackFilter);
   if(tc) {
     tc->SetEvent(fInputEvent);
     tc->DeleteTracks();
   }
+  
+  for(Int_t i = 0; i < fTrackFilters[0].GetEntriesFast(); i++){
+    AliConversionTrackCuts * tct = dynamic_cast<AliConversionTrackCuts*>(fTrackFilters[0].At(i));
+    if(tct) {
+      tct->SetEvent(fInputEvent);
+      tct->DeleteTracks();
+    }
+  }
+  for(Int_t i = 0; i < fTrackFilters[1].GetEntriesFast(); i++){
+    AliConversionTrackCuts * tct = dynamic_cast<AliConversionTrackCuts*>(fTrackFilters[1].At(i));
+    if(tct) {
+      tct->SetEvent(fInputEvent);
+      tct->DeleteTracks();
+    }
+  }
+  
+
+
+
+
 
   Double_t centrality = 0.0;
   Double_t eventPlane = 0.0;
