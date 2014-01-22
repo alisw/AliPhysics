@@ -63,18 +63,18 @@ void readDigits(int nev=-1,int evStart=0)
     sDigTree=dl->TreeS();
     digTree=dl->TreeD();
     //
-    sDigTree->SetBranchAddress("ITS",&sDigArr);
+    if (sDigTree) sDigTree->SetBranchAddress("ITS",&sDigArr);
     digTree->SetBranchAddress("ITSDigitsPix",&digArr);
 
     for (int imod=0;imod<nModules;imod++) {
-      sDigTree->GetEntry(imod);
+      if (sDigTree) sDigTree->GetEntry(imod);
       digTree->GetEntry(imod);      
       int detType = gm->GetModuleDetTypeID(imod);
       AliITSUSegmentationPix* segm = (AliITSUSegmentationPix*)gm->GetSegmentationByID(detType);
       int lay,lad,det;
       int nsdig = sDigArr->GetEntries();
       int ndig  = digArr->GetEntries();
-      if (nsdig<1) continue;
+      if (ndig<1) continue;
       gm->GetModuleId(imod, lay,lad,det);
       printf("\nModule %3d: (det %2d in ladder %2d of Layer %d) |NSDigits: %4d NDigits: %4d\n",imod,det,lad,lay,nsdig,ndig);
       //

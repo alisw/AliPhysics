@@ -185,6 +185,7 @@ AliESDtrack::AliESDtrack() :
   fHMPIDqn(0),
   fHMPIDcluIdx(-1),
   fCaloIndex(kEMCALNoMatch),
+  fMassForTracking(0.13957),
   fHMPIDtrkTheta(0),
   fHMPIDtrkPhi(0),
   fHMPIDsignal(0),
@@ -259,14 +260,7 @@ AliESDtrack::AliESDtrack() :
 
   Int_t i;
   for (i=kNITSchi2Std;i--;) fITSchi2Std[i] = 0;
-  for (i=0; i<AliPID::kSPECIES; i++) {
-    fR[i]=0.;
-    fITSr[i]=0.;
-    fTPCr[i]=0.;
-    fTRDr[i]=0.;
-    fTOFr[i]=0.;
-    fHMPIDr[i]=0.;
-  }
+  for (i=0; i<AliPID::kSPECIES; i++) fR[i]=fITSr[i]=fTPCr[i]=fTRDr[i]=fTOFr[i]=fHMPIDr[i]=0.;
   
   for (i=0; i<3; i++)   { fKinkIndexes[i]=0;}
   for (i=0; i<3; i++)   { fV0Indexes[i]=0;}
@@ -305,6 +299,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fHMPIDqn(track.fHMPIDqn),
   fHMPIDcluIdx(track.fHMPIDcluIdx),
   fCaloIndex(track.fCaloIndex),
+  fMassForTracking(track.fMassForTracking),
   fHMPIDtrkTheta(track.fHMPIDtrkTheta),
   fHMPIDtrkPhi(track.fHMPIDtrkPhi),
   fHMPIDsignal(track.fHMPIDsignal),
@@ -454,6 +449,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fHMPIDqn(0),
   fHMPIDcluIdx(-1),
   fCaloIndex(kEMCALNoMatch),
+  fMassForTracking(0.13957),
   fHMPIDtrkTheta(0),
   fHMPIDtrkPhi(0),
   fHMPIDsignal(0),
@@ -536,14 +532,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   // Reset all the arrays
   Int_t i;
   for (i=kNITSchi2Std;i--;) fITSchi2Std[i] = 0;
-  for (i=0; i<AliPID::kSPECIES; i++) {
-    fR[i]=0.;
-    fITSr[i]=0.;
-    fTPCr[i]=0.;
-    fTRDr[i]=0.;
-    fTOFr[i]=0.;
-    fHMPIDr[i]=0.;
-  }
+  for (i=0; i<AliPID::kSPECIES; i++) fR[i]=fITSr[i]=fTPCr[i]=fTRDr[i]=fTOFr[i]=fHMPIDr[i]=0.;
   
   for (i=0; i<3; i++)   { fKinkIndexes[i]=0;}
   for (i=0; i<3; i++)   { fV0Indexes[i]=-1;}
@@ -647,6 +636,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fHMPIDqn(0),
   fHMPIDcluIdx(-1),
   fCaloIndex(kEMCALNoMatch),
+  fMassForTracking(0.13957),
   fHMPIDtrkTheta(0),
   fHMPIDtrkPhi(0),
   fHMPIDsignal(0),
@@ -721,14 +711,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   // Reset all the arrays
   Int_t i;
   for (i=kNITSchi2Std;i--;) fITSchi2Std[i] = 0;
-  for (i=0; i<AliPID::kSPECIES; i++) {
-    fR[i]=0.;
-    fITSr[i]=0.;
-    fTPCr[i]=0.;
-    fTRDr[i]=0.;
-    fTOFr[i]=0.;
-    fHMPIDr[i]=0.;
-  }
+  for (i=0; i<AliPID::kSPECIES; i++) fR[i]=fITSr[i]=fTPCr[i]=fTRDr[i]=fTOFr[i]=fHMPIDr[i]=0.;
   
   for (i=0; i<3; i++)   { fKinkIndexes[i]=0;}
   for (i=0; i<3; i++)   { fV0Indexes[i]=-1;}
@@ -787,34 +770,10 @@ AliESDtrack::AliESDtrack(TParticle * part) :
 
   // Set the PID
   Int_t indexPID = 99;
+  if (pdgCode<0) pdgCode = -pdgCode;
+  for (i=0;i<AliPID::kSPECIES;i++) if (pdgCode==AliPID::ParticleCode(i)) {indexPID = i; break;}
 
-  switch (TMath::Abs(pdgCode)) {
-
-  case  11: // electron
-    indexPID = 0;
-    break;
-
-  case 13: // muon
-    indexPID = 1;
-    break;
-
-  case 211: // pion
-    indexPID = 2;
-    break;
-
-  case 321: // kaon
-    indexPID = 3;
-    break;
-
-  case 2212: // proton
-    indexPID = 4;
-    break;
-
-  default:
-    break;
-  }
-
-  // If the particle is not e,mu,pi,K or p the PID probabilities are set to 0
+  // If the particle is not valid charged the PID probabilities are set to 0
   if (indexPID < AliPID::kSPECIES) {
     fR[indexPID]=1.;
     fITSr[indexPID]=1.;
@@ -979,6 +938,8 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
     fTOFr[i]  = source.fTOFr[i];
     fHMPIDr[i] = source.fHMPIDr[i];
   }
+  
+  fMassForTracking = source.fMassForTracking;
 
   fHMPIDtrkTheta = source.fHMPIDtrkTheta;
   fHMPIDtrkPhi   = source.fHMPIDtrkPhi;
@@ -1317,6 +1278,7 @@ void AliESDtrack::MakeMiniESDtrack(){
   fHMPIDcluIdx = -1;     
   fHMPIDsignal = 0;     
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fHMPIDr[i] = 0;
+  fMassForTracking = 0.13957;
   fHMPIDtrkTheta = 0;     
   fHMPIDtrkPhi = 0;      
   fHMPIDtrkX = 0;     

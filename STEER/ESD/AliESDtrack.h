@@ -91,6 +91,8 @@ public:
   Int_t    GetPID(Bool_t tpcOnly=kFALSE)  const;
   Int_t    GetTOFBunchCrossing(Double_t b=0, Bool_t pidTPConly=kTRUE) const;
   Double_t GetMass(Bool_t tpcOnly=kFALSE) const {return AliPID::ParticleMass(GetPID(tpcOnly));}
+  Double_t GetMassForTracking() const {return fMassForTracking;}
+  void     SetMassForTracking(Double_t m) {fMassForTracking = m;}
   Double_t M() const;
   Double_t E() const;
   Double_t Y() const;
@@ -470,12 +472,13 @@ protected:
   Int_t     fKinkIndexes[3]; // array of indexes of posible kink candidates 
   Int_t     fV0Indexes[3];   // array of indexes of posible kink candidates 
 
-  Double32_t   fR[AliPID::kSPECIES]; //[0.,0.,8] combined "detector response probability"
-  Double32_t   fITSr[AliPID::kSPECIES]; //[0.,0.,8] "detector response probabilities" (for the PID)
-  Double32_t   fTPCr[AliPID::kSPECIES]; //[0.,0.,8] "detector response probabilities" (for the PID)
-  Double32_t   fTRDr[AliPID::kSPECIES]; //[0.,0.,8] "detector response probabilities" (for the PID)  
-  Double32_t   fTOFr[AliPID::kSPECIES]; //[0.,0.,8] "detector response probabilities" (for the PID)
-  Double32_t   fHMPIDr[AliPID::kSPECIES];//[0.,0.,8] "detector response probabilities" (for the PID)
+  Double32_t   fR[AliPID::kSPECIES]; //! [0.,0.,8] combined "detector response probability"
+  Double32_t   fITSr[AliPID::kSPECIES]; //! [0.,0.,8] "detector response probabilities" (for the PID)
+  Double32_t   fTPCr[AliPID::kSPECIES]; //! [0.,0.,8] "detector response probabilities" (for the PID)
+  Double32_t   fTRDr[AliPID::kSPECIES]; //! [0.,0.,8] "detector response probabilities" (for the PID)  
+  Double32_t   fTOFr[AliPID::kSPECIES]; //! [0.,0.,8] "detector response probabilities" (for the PID)
+  Double32_t   fHMPIDr[AliPID::kSPECIES];//! [0.,0.,8] "detector response probabilities" (for the PID)
+  Double32_t   fMassForTracking;         // mass used for tracking
 
   Double32_t fHMPIDtrkTheta;//[-2*pi,2*pi,16] theta of the track extrapolated to the HMPID, LORS
   // how much of this is needed?
@@ -579,7 +582,7 @@ protected:
   static bool fgkOnlineMode; //! indicate the online mode to skip some of the functionality
 
   AliESDtrack & operator=(const AliESDtrack & );
-  ClassDef(AliESDtrack,69)  //ESDtrack 
+  ClassDef(AliESDtrack,70)  //ESDtrack 
 };
 
 

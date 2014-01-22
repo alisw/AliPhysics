@@ -418,7 +418,7 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterialdEdx
   // "xTimesRho" - is the product length*density (g/cm^2).
   //     It should be passed as negative when propagating tracks 
   //     from the intreaction point to the outside of the central barrel. 
-  // "mass" - the mass of this particle (GeV/c^2).
+  // "mass" - the mass of this particle (GeV/c^2). Negative mass means charge=2 particle
   // "dEdx" - mean enery loss (GeV/(g/cm^2)
   // "anglecorr" - switch for the angular correction
   //------------------------------------------------------------------
@@ -439,6 +439,7 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterialdEdx
   } 
 
   Double_t p=GetP();
+  if (mass<0) p += p; // q=2 particle 
   Double_t p2=p*p;
   Double_t beta2=p2/(p2 + mass*mass);
 
@@ -454,6 +455,7 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterialdEdx
       double lt = 1+0.038*TMath::Log(TMath::Abs(xOverX0));
       if (lt>0) theta2 *= lt*lt;
     }
+    if (mass<0) theta2 *= 4; // q=2 particle
     if(theta2>TMath::Pi()*TMath::Pi()) return kFALSE;
     cC22 = theta2*((1.-fP2)*(1.+fP2))*(1. + fP3*fP3);
     cC33 = theta2*(1. + fP3*fP3)*(1. + fP3*fP3);
@@ -467,7 +469,6 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterialdEdx
      Double_t dE=dEdx*xTimesRho;
      Double_t e=TMath::Sqrt(p2 + mass*mass);
      if ( TMath::Abs(dE) > 0.3*e ) return kFALSE; //30% energy loss is too much!
-     //cP4 = (1.- e/p2*dE);
      if ( (1.+ dE/p2*(dE + 2*e)) < 0. ) return kFALSE;
      cP4 = 1./TMath::Sqrt(1.+ dE/p2*(dE + 2*e));  //A precise formula by Ruben !
      if (TMath::Abs(fP4*cP4)>100.) return kFALSE; //Do not track below 10 MeV/c
@@ -502,16 +503,20 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterial
   // "xTimesRho" - is the product length*density (g/cm^2). 
   //     It should be passed as negative when propagating tracks 
   //     from the intreaction point to the outside of the central barrel. 
-  // "mass" - the mass of this particle (GeV/c^2).
+  // "mass" - the mass of this particle (GeV/c^2). mass<0 means charge=2
   // "anglecorr" - switch for the angular correction
   // "Bethe" - function calculating the energy loss (GeV/(g/cm^2)) 
   //------------------------------------------------------------------
   Double_t bg=GetP()/mass;
-  if (bg<kAlmost0) {
-    AliDebug(2,Form("Non-positive beta*gamma = %e, mass = %e",bg,mass));
-    return kFALSE;
+  if (mass<0) {
+    if (mass<-990) {
+      AliDebug(2,Form("Mass %f corresponds to unknown PID particle",mass));
+      return kFALSE;
+    }
+    bg = -2*bg;
   }
   Double_t dEdx=Bethe(bg);
+  if (mass<0) dEdx *= 4;
 
   return CorrectForMeanMaterialdEdx(xOverX0,xTimesRho,mass,dEdx,anglecorr);
 }
@@ -531,7 +536,7 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterialZA
   // "xTimesRho" - is the product length*density (g/cm^2). 
   //     It should be passed as negative when propagating tracks 
   //     from the intreaction point to the outside of the central barrel. 
-  // "mass" - the mass of this particle (GeV/c^2).
+  // "mass" - the mass of this particle (GeV/c^2). mass<0 means charge=2 particle
   // "density"  - mean density (g/cm^3)
   // "zOverA"   - mean Z/A
   // "exEnergy" - mean exitation energy (GeV)
@@ -544,8 +549,15 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterialZA
   //------------------------------------------------------------------
 
   Double_t bg=GetP()/mass;
+  if (mass<0) {
+    if (mass<-990) {
+      AliDebug(2,Form("Mass %f corresponds to unknown PID particle = %e",mass));
+      return kFALSE;
+    }
+    bg = -2*bg;
+  }
   Double_t dEdx=BetheBlochGeant(bg,density,jp1,jp2,exEnergy,zOverA);
-
+  if (mass<0) dEdx *= 4;
   return CorrectForMeanMaterialdEdx(xOverX0,xTimesRho,mass,dEdx,anglecorr);
 }
 

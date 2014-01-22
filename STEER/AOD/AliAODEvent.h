@@ -36,9 +36,6 @@
 #include "AliAODHMPIDrings.h"
 #include "AliAODZDC.h"
 #include "AliAODTrdTrack.h"
-#ifdef MFT_UPGRADE
-#include "AliAODMFT.h"
-#endif
 
 class TTree;
 class TFolder;
@@ -69,9 +66,6 @@ class AliAODEvent : public AliVEvent {
 		       kAODZDC,
 		       kTOFHeader,                       
 		       kAODTrdTracks,
-#ifdef MFT_UPGRADE
-	           kAODVZERO,
-#endif
 		       kAODListN
   };
 
@@ -312,10 +306,6 @@ class AliAODEvent : public AliVEvent {
   //ZDC
   AliAODZDC   *GetZDCData() const { return fAODZDC; }
 
-#ifdef MFT_UPGRADE
-  // MFT 
-  AliAODMFT *GetMFTData() const { return fAODMFT; }
-#endif
 
   private :
 
@@ -347,9 +337,6 @@ class AliAODEvent : public AliVEvent {
                              //  It contains also TOF time resolution
                              //  and T0spread as written in OCDB
   TClonesArray    *fTrdTracks;    //! TRD AOD tracks (triggered)
-#ifdef MFT_UPGRADE
-  AliAODMFT       *fAODMFT;       //! VZERO AOD
-#endif
   
   static const char* fAODListName[kAODListN]; //!
 

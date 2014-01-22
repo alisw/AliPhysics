@@ -274,7 +274,7 @@ AliTrackerBase::PropagateTrackTo(AliExternalTrackParam *track, Double_t xToGo,
   // Propagates the track to the plane X=xk (cm) using the magnetic field map 
   // and correcting for the crossed material.
   //
-  // mass     - mass used in propagation - used for energy loss correction
+  // mass     - mass used in propagation - used for energy loss correction (if <0 then q = 2)
   // maxStep  - maximal step for propagation
   //
   //  Origin: Marian Ivanov,  Marian.Ivanov@cern.ch
@@ -343,7 +343,7 @@ AliTrackerBase::PropagateTrackToBxByBz(AliExternalTrackParam *track,
   // taking into account all the three components of the magnetic field 
   // and correcting for the crossed material.
   //
-  // mass     - mass used in propagation - used for energy loss correction
+  // mass     - mass used in propagation - used for energy loss correction (if <0 then q=2)
   // maxStep  - maximal step for propagation
   //
   //  Origin: Marian Ivanov,  Marian.Ivanov@cern.ch
