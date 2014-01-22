@@ -941,9 +941,9 @@ void AliTPCcalibSummary::ProcessGain(Int_t irun, Int_t timeStamp){
     "vFitDipAngleParTotAbsolute.="<< &vFitDipAngleParTotAbsolute<<    
     //
     "grDipAngleMaxShort.="        << &ggrDipAngleMaxShort    <<
-    "grDipAngleMaxSMedium.="       << &ggrDipAngleMaxMedium   <<
-    "grDipAngleMaxSLong.="         << &ggrDipAngleMaxLong     <<
-    "grDipAngleMaxSAbsolute.="     << &ggrDipAngleMaxAbsolute <<
+    "grDipAngleMaxMedium.="       << &ggrDipAngleMaxMedium   <<
+    "grDipAngleMaxLong.="         << &ggrDipAngleMaxLong     <<
+    "grDipAngleMaxAbsolute.="     << &ggrDipAngleMaxAbsolute <<
     //
     "grDipAngleTotShort.="        << &ggrDipAngleTotShort    <<
     "grDipAngleTotMedium.="       << &ggrDipAngleTotMedium   <<

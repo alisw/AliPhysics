@@ -1179,6 +1179,8 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainDipAngle(Int_t padRegion)  {
   //
   TH2D * histQmax = 0x0;
   TH2D * histQtot = 0x0;
+  fGainMult->GetHistPadEqual()->GetAxis(4)->SetRangeUser(-0.85,0.85);
+  fGainMult->GetHistTopology()->GetAxis(2)->SetRangeUser(-0.85,0.85);
   if (padRegion < 3) {
     fGainMult->GetHistPadEqual()->GetAxis(2)->SetRangeUser(padRegion,padRegion); // short,medium,long
     histQmax = (TH2D*) fGainMult->GetHistPadEqual()->Projection(0,4);
@@ -1203,6 +1205,12 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainDipAngle(Int_t padRegion)  {
   //
   TGraphErrors * graphMax = new TGraphErrors(corrMax);
   TGraphErrors * graphTot = new TGraphErrors(corrTot);
+  Double_t meanMax = TMath::Mean(graphMax->GetN(), graphMax->GetY());
+  Double_t meanTot = TMath::Mean(graphTot->GetN(), graphTot->GetY());
+  //
+  for (Int_t ipoint=0; ipoint<graphMax->GetN(); ipoint++) {graphMax->GetY()[ipoint]/=meanMax;}
+  for (Int_t ipoint=0; ipoint<graphTot->GetN(); ipoint++) {graphTot->GetY()[ipoint]/=meanTot;}
+
   //
   graphMax->SetNameTitle(Form("TGRAPHERRORS_QMAX_DIPANGLE_%s_BEAM_ALL",names[padRegion]),
 			Form("TGRAPHERRORS_QMAX_DIPANGLE_%s_BEAM_ALL",names[padRegion]));
@@ -1211,6 +1219,8 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainDipAngle(Int_t padRegion)  {
   //
   fGainArray->AddLast(graphMax);
   fGainArray->AddLast(graphTot);
+  //
+  // Normalization to 1 (mean of the graph.fY --> 1)
   //
   TF1 * funMax= new TF1("","1++abs(x)++abs(x*x)");
   TF1 * funTot= new TF1("","1++abs(x)++abs(x*x)");
@@ -1827,3 +1837,11 @@ Int_t AliTPCPreprocessorOffline::GetStatus()
 
   return fCalibrationStatus;
 }
+
+/*
+  Short sequence to acces the calbration entry:
+  TFile *f = TFile::Open("CalibObjects.root");
+  AliTPCcalibGainMult      * fGainMult = (AliTPCcalibGainMult      *)f->Get("TPCCalib/calibGainMult");
+  
+ 
+*/
