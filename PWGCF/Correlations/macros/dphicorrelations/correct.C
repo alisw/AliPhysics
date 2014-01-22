@@ -7,6 +7,7 @@ void* gSecond = 0;
 Float_t gForceRange = -1;
 Int_t gEnergy = 900;
 Int_t gRegion = 0;
+Float_t gZVtxRange = -1;
 const char* gText = "";
 TString Sign[]={"Plus","Minus"};
 enum ECharge_t {
@@ -1832,6 +1833,8 @@ void SetupRanges(void* obj)
 //   ((AliUEHistograms*) obj)->SetEtaRange(-0.99, 0.99); Printf("WARNING: Setting eta Range!");
   ((AliUEHistograms*) obj)->SetPtRange(gpTMin, gpTMax);
   ((AliUEHistograms*) obj)->SetCombineMinMax(kTRUE);
+  if (gZVtxRange > 0)
+    ((AliUEHistograms*) obj)->SetZVtxRange(-gZVtxRange+0.01, gZVtxRange-0.01);
 }
 
 void DrawRatios(const char* name, void* correctedVoid, void* comparisonVoid, Int_t compareStep = -1, Int_t compareRegion = 2, Float_t ptLeadMin = -1, Float_t ptLeadMax = -1)
@@ -2297,7 +2300,7 @@ void ModifyComposition(const char* fileNameData, const char* fileNameCorrections
     Printf("Largest deviation in region %d is %f", i, largestDeviation[i]);
 }    
 
-void MergeList(const char* prefix = "", Bool_t copy = kFALSE)
+void MergeList(const char* prefix = "", const char* suffix = "", Bool_t copy = kFALSE)
 {
   loadlibs();
   gSystem->Load("libPWGflowBase");
@@ -2317,7 +2320,7 @@ void MergeList(const char* prefix = "", Bool_t copy = kFALSE)
       continue;
 
     TString fileName;
-    fileName.Form("%s%s", prefix, line.Data());
+    fileName.Form("%s%s%s", prefix, line.Data(), suffix);
 //     fileName.Form("alien://%s", line.Data());
     Printf("%s", fileName.Data());
     
@@ -7939,19 +7942,9 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
     }
   }
   
-  //   return;
-  
-  if (0)
-  {
-    h->SetZVtxRange(-0.99, 0.99);
-    hMixed->SetZVtxRange(-0.99, 0.99);
-    h2->SetZVtxRange(-0.99, 0.99);
-    hMixed2->SetZVtxRange(-0.99, 0.99);
-  }
-  
   for (Int_t i=0; i<maxLeadingPt; i++)
   {
-    for (Int_t j=1; j<maxAssocPt; j++)
+    for (Int_t j=2; j<maxAssocPt; j++)
     {
       if(0){
 	if(j!=(i+1))continue;
@@ -7996,11 +7989,9 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
       
 	GetSumOfRatios(h, hMixed, &hist1,  step, 0,   10, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, normalizePerTrigger); 
 	GetSumOfRatios(h, hMixed, &hist5,  step, 10,  20, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, normalizePerTrigger); 
-	GetSumOfRatios(h, hMixed, &hist4,  step, 20,  40, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, normalizePerTrigger); 
-	GetSumOfRatios(h, hMixed, &hist6,  step, 40,  60, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, normalizePerTrigger); 
-	GetSumOfRatios(h, hMixed, &hist2,  step, 60,  80, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, normalizePerTrigger); 
-// 	GetSumOfRatios(h, hMixed, &hist7,  step, 70,  80, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, normalizePerTrigger); 
-// 	GetSumOfRatios(h, hMixed, &hist8,  step, 80,  90, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, normalizePerTrigger); 
+	GetSumOfRatios(h, hMixed, &hist4,  step, 20,  30, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, normalizePerTrigger); 
+	GetSumOfRatios(h, hMixed, &hist6,  step, 30,  50, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, normalizePerTrigger); 
+	GetSumOfRatios(h, hMixed, &hist2,  step, 50,  80, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, normalizePerTrigger); 
 
 	if (h2)
 	  GetSumOfRatios(h2, hMixed2, &hist3,  step, 0,  -1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
@@ -8127,9 +8118,9 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
 
 	GetDistAndFlow(h, hMixed, &hist1,  0, step, 1,   6,  leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs, -1, kTRUE); 
 	GetDistAndFlow(h, hMixed, &hist5,  0, step, 7,  7, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs, -1, kTRUE); 
-	GetDistAndFlow(h, hMixed, &hist4,  0, step, 8,  9, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs, -1, kTRUE); 
-	GetDistAndFlow(h, hMixed, &hist6,  0, step, 10,  11, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs, -1, kTRUE); 
-	GetDistAndFlow(h, hMixed, &hist2,  0, step, 12,  13, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs, -1, kTRUE);
+	GetDistAndFlow(h, hMixed, &hist4,  0, step, 8,  8, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs, -1, kTRUE); 
+	GetDistAndFlow(h, hMixed, &hist6,  0, step, 9,  10, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs, -1, kTRUE); 
+	GetDistAndFlow(h, hMixed, &hist2,  0, step, 11,  13, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs, -1, kTRUE);
 
 	if (h2)
 	  GetDistAndFlow(h2, hMixed2, &hist3,  0, step, 0, -1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs);
@@ -8145,9 +8136,9 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
 // 	return;
 
 	GetDistAndFlow(h, hMixed, &hist5,  0, step, 10,  20, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs); 
-	GetDistAndFlow(h, hMixed, &hist4,  0, step, 20,  40, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs); 
-	GetDistAndFlow(h, hMixed, &hist6,  0, step, 40,  60, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs); 
-	GetDistAndFlow(h, hMixed, &hist2,  0, step, 60,  80, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs);
+	GetDistAndFlow(h, hMixed, &hist4,  0, step, 20,  30, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs); 
+	GetDistAndFlow(h, hMixed, &hist6,  0, step, 30,  50, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs); 
+	GetDistAndFlow(h, hMixed, &hist2,  0, step, 50,  80, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs);
 // 	step = 6;
 	if (h2)
 	  GetDistAndFlow(h2, hMixed2, &hist3,  0, step, 0, -1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs);
@@ -8263,6 +8254,149 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
     file = TFile::Open(outputFile, "UPDATE");
     triggers->Write();
     file->Close();    
+  }
+    
+  delete h;
+  delete hMixed;
+}
+
+Int_t gMCBinning = -1;
+void ExtractNSPeakShapesMC(const char* fileNamePbPb, const char* fileNamepp = 0, const char* outputFile = "dphi_corr.root")
+{
+  loadlibs();
+  
+  file = TFile::Open(outputFile, "RECREATE");
+  file->Close();
+  
+  Int_t leadingPtOffset = 1;
+    
+  Int_t maxLeadingPt = 4;
+  Int_t maxAssocPt = 6;
+
+  //PbPb, NS peak shapes
+  Float_t leadingPtArr[] = { 1.0, 2.0, 3.0, 4.0, 8.0, 15.0, 20.0 };
+  Float_t assocPtArr[] =     { 0.15, 0.5, 1.0, 2.0, 3.0, 4.0, 8.0, 10.0, 12.0 };
+  
+  TList* list = 0;
+  AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileNamePbPb, &list);
+  hMixed = (AliUEHistograms*) GetUEHistogram(fileNamePbPb, 0, kTRUE);
+  
+  TList* list2 = 0;
+  AliUEHistograms* h2 = 0;
+  AliUEHistograms* hMixed2 = 0;
+  if (fileNamepp)
+  {
+    h2 = (AliUEHistograms*) GetUEHistogram(fileNamepp, &list2);
+    hMixed2 = (AliUEHistograms*) GetUEHistogram(fileNamepp, 0, kTRUE);
+  }
+
+  for (Int_t i=0; i<maxLeadingPt; i++)
+  {
+    for (Int_t j=2; j<maxAssocPt; j++)
+    {
+      gpTMin = assocPtArr[j] + 0.01;
+      gpTMax = assocPtArr[j+1] - 0.01;
+      
+      if(gpTMin >= gpTMax)continue;
+	
+      SetupRanges(h);
+      SetupRanges(hMixed);
+      SetupRanges(h2);
+      SetupRanges(hMixed2);
+
+      if(1) if (assocPtArr[j] >= leadingPtArr[i+leadingPtOffset])
+	continue;
+  
+      TH1* hist1 = 0;
+      TH1* hist2 = 0;
+      TH1* hist3 = 0;
+      TH1* hist4 = 0;
+      TH1* hist5 = 0;
+      TH1* hist6 = 0;
+      
+      Bool_t equivMixedBin = 1;
+      Bool_t scaleToPairs = kTRUE;
+      Int_t histType = 1;
+
+      if (gMCBinning == 1) // HIJING
+      {
+	// PbPb, MC, impact parameter binning
+	Int_t step = 0;
+	
+	GetDistAndFlow(h, hMixed, &hist1,  0, step, 1,   6,  leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs, -1, kTRUE); 
+	GetDistAndFlow(h, hMixed, &hist5,  0, step, 7,  7, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs, -1, kTRUE); 
+	GetDistAndFlow(h, hMixed, &hist4,  0, step, 8,  8, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs, -1, kTRUE); 
+	GetDistAndFlow(h, hMixed, &hist6,  0, step, 9,  10, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs, -1, kTRUE); 
+	GetDistAndFlow(h, hMixed, &hist2,  0, step, 11,  13, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs, -1, kTRUE);
+
+	if (h2)
+	  GetDistAndFlow(h2, hMixed2, &hist3,  0, step, 0, -1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs);
+      }
+      else if (gMCBinning == 2) // AMPT
+      {
+	// PbPb, MC, impact parameter binning
+	Int_t step = 0;
+	
+	GetDistAndFlow(h, hMixed, &hist1,  0, step, 1,   2,  leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs, -1, kTRUE); 
+	GetDistAndFlow(h, hMixed, &hist5,  0, step, 3,  3, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs, -1, kTRUE); 
+	GetDistAndFlow(h, hMixed, &hist4,  0, step, 4,  4, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs, -1, kTRUE); 
+	GetDistAndFlow(h, hMixed, &hist6,  0, step, 5,  6, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs, -1, kTRUE); 
+	GetDistAndFlow(h, hMixed, &hist2,  0, step, 7,  9, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs, -1, kTRUE);
+
+	if (h2)
+	  GetDistAndFlow(h2, hMixed2, &hist3,  0, step, 0, -1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs);
+      }
+      
+      file = TFile::Open(outputFile, "UPDATE");
+      
+      if (hist1)
+      {
+	hist1->SetName(Form("dphi_%d_%d_%d", i, j, 0));
+	hist1->Write();
+      }
+      
+      if (hist2)
+      {
+	hist2->SetName(Form("dphi_%d_%d_%d", i, j, 1));
+	hist2->Write();
+      }
+      
+      if (hist4)
+      {
+	hist4->SetName(Form("dphi_%d_%d_%d", i, j, 3));
+	hist4->Write();
+      }
+
+      if (hist5)
+      {
+	hist5->SetName(Form("dphi_%d_%d_%d", i, j, 4));
+	hist5->Write();
+      }
+      
+      if (hist6)
+      {
+	hist6->SetName(Form("dphi_%d_%d_%d", i, j, 5));
+	hist6->Write();
+      }
+      
+      if (hist3)
+      {
+	hist3->SetName(Form("dphi_%d_%d_%d", i, j, 2));
+	TString title(hist3->GetTitle());
+	title.ReplaceAll("0--1%", "pp");
+	hist3->SetTitle(title);
+	hist3->Write();
+      }
+      
+      file->Close();
+
+      delete hist1;
+      delete hist2;
+      delete hist3;
+      delete hist4;
+      delete hist5;
+      delete hist6;
+    }
   }
     
   delete h;
@@ -9058,11 +9192,18 @@ void RemoveWing(const char* fileName, const char* outputFile)
   Int_t maxAssocPt = 11;
 
   Int_t nHists = 6;
-  for (Int_t histId = 0; histId < nHists; histId++)
+  for (Int_t i=0; i<maxLeadingPt; i++)
   {
-    for (Int_t i=0; i<maxLeadingPt; i++)
+    triggers = (TH1*) file->Get(Form("triggers_%d", i));
+    if (triggers)
     {
-      for (Int_t j=0; j<maxAssocPt; j++)
+      file2 = TFile::Open(outputFile, "UPDATE");
+      triggers->Write();
+      file2->Close();
+    }
+    for (Int_t j=0; j<maxAssocPt; j++)
+    {
+      for (Int_t histId = 0; histId < nHists; histId++)
       {
 	hist = (TH2*) file->Get(Form("dphi_%d_%d_%d", i, j, histId));
 	if (!hist)
@@ -11472,7 +11613,7 @@ void TrackingEfficiencyCentralityDependence(const char* fileName, Int_t step1 = 
 
 TGraphErrors* ReadHepdata(const char* fileName, Bool_t errorsAreAdded = kFALSE, Int_t skipYErrors = 0, Int_t skipXerrors = 1)
 {
-  // expected format: x [x2] y [ye] [ye2] [xe]
+  // expected format: x [x2] [x3] y [ye] [ye2] [xe]
   //
   // skipYErrors:   0 --> ye present
   //                1 --> no errors ye
@@ -11482,6 +11623,7 @@ TGraphErrors* ReadHepdata(const char* fileName, Bool_t errorsAreAdded = kFALSE, 
   // skipXerrors:   0 --> xe present
   //                1 --> no errors xe
   //                2 --> x2 present, xe not present and is calculated from x2 - x
+  //		    3 --> x2 and x3 present, ignored
   
   ifstream fin(fileName);
 
@@ -11511,6 +11653,12 @@ TGraphErrors* ReadHepdata(const char* fileName, Bool_t errorsAreAdded = kFALSE, 
       fin >> x2;
       xe = (x2 - x + 1) / 2;
       x = x + (x2 - x) / 2;
+    }
+    
+    if (skipXerrors == 3)
+    {
+      fin >> x2;
+      fin >> x2;
     }
     
     fin >> y;
@@ -12575,33 +12723,159 @@ void RAA(const char* fileName, const char* fileName2)
   raa_central->Draw("PSAME");
 }
 
-void PtComparison(const char* fileName, const char* fileName2 = 0)
+void PtComparison(const char* fileName, const char* fileName2 = 0, const char* tag = 0)
 {
   loadlibs();
 
   c = new TCanvas;
   c2 = new TCanvas;
+  c2->SetGridx();
+  c2->SetGridy();
     
   for (Int_t j=0; j<2; j++)
   {
     if (j == 0)
-      AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileName);
+      AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileName, 0, kFALSE, tag);
     else
     {
       if (!fileName2)
         break;
         
-      AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileName2);
+      AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileName2, 0, kFALSE, tag);
     }
     
-    //new TCanvas; h->GetCorrelationpT()->Draw("COLZ");
-    
-    ptHist3 = h->GetCorrelationpT()->ProjectionY(Form("proj1_%d", j), 1, 5);
+    ptHist3 = h->GetInvYield()->ProjectionY("pt1", h->GetInvYield()->GetXaxis()->FindBin(0.01), h->GetInvYield()->GetXaxis()->FindBin(4.99));
     ptHist3->GetXaxis()->SetRangeUser(0, 20);
     
     //h->GetCentralityDistribution()->Draw(); new TCanvas;
     
     Int_t nEvents = h->GetCentralityDistribution()->Integral(h->GetCentralityDistribution()->FindBin(0.01), h->GetCentralityDistribution()->FindBin(4.99));
+    Printf("%d", nEvents);
+    ptHist3->Scale(1.0 / 1.6 / TMath::TwoPi() / nEvents / ptHist3->GetBinWidth(1));
+    
+    c->cd();
+    ptHist3->SetLineStyle(j+1);
+    ptHist3->DrawCopy((j == 0) ? "HIST" : "HISTSAME")->SetLineColor(1);
+    
+    centralPt = (TH1*) ptHist3->Clone();
+  
+    if (1)
+    {
+      ptHist3 = h->GetInvYield()->ProjectionY("pt2", h->GetInvYield()->GetXaxis()->FindBin(70.01), h->GetInvYield()->GetXaxis()->FindBin(79.99));
+      ptHist3->GetXaxis()->SetRangeUser(0, 20);
+    
+      Int_t nEvents = h->GetCentralityDistribution()->Integral(h->GetCentralityDistribution()->FindBin(70.1), h->GetCentralityDistribution()->FindBin(79.9));
+      Printf("%d", nEvents);
+      ptHist3->Scale(1.0 / 1.6 / TMath::TwoPi() / nEvents / ptHist3->GetBinWidth(1));
+    
+      ptHist3->SetLineStyle(j+1);
+      ptHist3->DrawCopy("HISTSAME")->SetLineColor(2);
+    }
+    peripheralPt = (TH1*) ptHist3->Clone();
+
+    if (1)
+    {
+      ptHist3 = h->GetInvYield()->ProjectionY("pt3", h->GetInvYield()->GetXaxis()->FindBin(20.01), h->GetInvYield()->GetXaxis()->FindBin(29.99));
+      ptHist3->GetXaxis()->SetRangeUser(0, 20);
+    
+      Int_t nEvents = h->GetCentralityDistribution()->Integral(h->GetCentralityDistribution()->FindBin(20.1), h->GetCentralityDistribution()->FindBin(29.9));
+      Printf("%d", nEvents);
+      ptHist3->Scale(1.0 / 1.6 / TMath::TwoPi() / nEvents / ptHist3->GetBinWidth(1));
+    
+      ptHist3->SetLineStyle(j+1);
+      ptHist3->DrawCopy("HISTSAME")->SetLineColor(4);
+    }
+    
+    if (0)
+    {
+      // first paper
+      dndpt_central = ReadHepdata("raa_dndpt_central.txt", kFALSE, 3);
+      dndpt_peripheral = ReadHepdata("raa_dndpt_peripheral.txt", kFALSE, 3);
+    }
+    else
+    {
+      // second paper
+      dndpt_central = ReadHepdata("raa2_dndpt_05.txt", kFALSE, 1, 3);
+      dndpt_midcentral = ReadHepdata("raa2_dndpt_2030.txt", kFALSE, 1, 3);
+      dndpt_peripheral = ReadHepdata("raa2_dndpt_7080.txt", kFALSE, 1, 3);
+    }
+  
+//   RemovePointsBelowX(dndpt_central, 1);
+//   RemovePointsBelowX(dndpt_peripheral, 1);
+//   
+//   NormalizeTo(dndpt_central, 1);
+//   NormalizeTo(dndpt_peripheral, 10);
+
+    dndpt_central->Draw("*SAME");
+    dndpt_peripheral->SetLineColor(2);
+    dndpt_peripheral->SetMarkerColor(2);
+    dndpt_peripheral->Draw("*SAME");
+    dndpt_midcentral->SetLineColor(4);
+    dndpt_midcentral->SetMarkerColor(4);
+    dndpt_midcentral->Draw("*SAME");
+    
+    gPad->SetLogy();
+    
+    c2->cd();
+    
+    for (Int_t i=1; i<ptHist3->GetNbinsX(); i++)
+      ptHist3->SetBinContent(i, ptHist3->GetBinContent(i) / dndpt_midcentral->Eval(ptHist3->GetBinCenter(i), 0, "S"));
+  
+    for (Int_t i=1; i<centralPt->GetNbinsX(); i++)
+      centralPt->SetBinContent(i, centralPt->GetBinContent(i) / dndpt_central->Eval(centralPt->GetBinCenter(i), 0, "S"));
+  
+    for (Int_t i=1; i<peripheralPt->GetNbinsX(); i++)
+      peripheralPt->SetBinContent(i, peripheralPt->GetBinContent(i) / dndpt_peripheral->Eval(peripheralPt->GetBinCenter(i), 0, "S"));
+
+//     ptHist3->Rebin(2); ptHist3->Scale(0.5);
+//     centralPt->Rebin(2); centralPt->Scale(0.5);
+  
+    ptHist3->GetXaxis()->SetRangeUser(0.51, 19);
+    ptHist3->GetYaxis()->SetRangeUser(0.5, 1.5);
+    ptHist3->DrawCopy((j == 0) ? "" : "SAME")->SetLineColor(4);
+    centralPt->DrawCopy("SAME")->SetLineColor(1);
+    peripheralPt->DrawCopy("SAME")->SetLineColor(2);
+  }
+}
+
+void PtComparisonOld(const char* fileName, const char* fileName2 = 0)
+{
+  // use GetCorrectedYields to get input file
+  
+  loadlibs();
+
+  c = new TCanvas;
+  c2 = new TCanvas;
+  c2->SetGridx();
+  c2->SetGridy();
+    
+  for (Int_t j=0; j<2; j++)
+  {
+    if (j == 0)
+    {
+      TFile::Open(fileName);
+    }
+    else
+    {
+      if (!fileName2)
+        break;
+        
+      TFile::Open(fileName2);
+    }
+    yieldCorr = (TH3F*) gFile->Get("fYieldsCorr");
+    eventDist = (TH1*) gFile->Get("events");
+    
+    //new TCanvas; h->GetCorrelationpT()->Draw("COLZ");
+    
+    yieldCorr->GetXaxis()->SetRangeUser(0.1, 4.9);
+    yieldCorr->GetZaxis()->SetRangeUser(-0.79, 0.79);
+    
+    ptHist3 = yieldCorr->Project3D(Form("y1_%d", j));
+    ptHist3->GetXaxis()->SetRangeUser(0, 20);
+    
+    //h->GetCentralityDistribution()->Draw(); new TCanvas;
+    
+    Int_t nEvents = eventDist->Integral(eventDist->FindBin(0.1), eventDist->FindBin(4.9));
     Printf("%d", nEvents);
     ptHist3->Scale(1.0 / 1.6 / TMath::TwoPi() / nEvents / ptHist3->GetBinWidth(1));
     
@@ -12618,28 +12892,60 @@ void PtComparison(const char* fileName, const char* fileName2 = 0)
     ptHist3->SetLineStyle(j+1);
     ptHist3->DrawCopy((j == 0) ? "HIST" : "HISTSAME")->SetLineColor(1);
 
-    centralPt = (TH1*) ptHist3->Clone();;
+    centralPt = (TH1*) ptHist3->Clone();
   
     if (1)
     {
-      ptHist3 = h->GetCorrelationpT()->ProjectionY(Form("proj2_%d", j), 71, 80);
+      yieldCorr->GetZaxis()->SetRangeUser(-0.79, 0.79);
+      yieldCorr->GetXaxis()->SetRangeUser(70.1, 79.9);
+      ptHist3 = yieldCorr->Project3D(Form("y2_%d", j));
       ptHist3->GetXaxis()->SetRangeUser(0, 20);
     
-      Int_t nEvents = h->GetCentralityDistribution()->Integral(h->GetCentralityDistribution()->FindBin(70.01), h->GetCentralityDistribution()->FindBin(79.99));
-      ptHist3->Scale(1.0 / 1.6 / TMath::TwoPi() / nEvents / ptHist3->GetBinWidth(1));
-      //ptHist3->Scale(10.0 / ptHist3->Integral(ptHist3->GetXaxis()->FindBin(1.01), ptHist3->GetNbinsX()) / 3 / 0.6);
+      Int_t nEvents = eventDist->Integral(eventDist->FindBin(70.1), eventDist->FindBin(79.9));
       Printf("%d", nEvents);
+      ptHist3->Scale(1.0 / 1.6 / TMath::TwoPi() / nEvents / ptHist3->GetBinWidth(1));
     
       for (Int_t i=2; i<ptHist3->GetNbinsX(); i++)
         ptHist3->SetBinContent(i, ptHist3->GetBinContent(i) / ptHist3->GetBinCenter(i));
         //ptHist3->SetBinContent(i, ptHist3->GetBinContent(i) / ptHist3->GetBinLowEdge(i));
+
+      ptHist3->SetLineStyle(j+1);
+      ptHist3->DrawCopy("HISTSAME")->SetLineColor(2);
+    }
+    peripheralPt = (TH1*) ptHist3->Clone();
+
+    if (1)
+    {
+      yieldCorr->GetZaxis()->SetRangeUser(-0.79, 0.79);
+      yieldCorr->GetXaxis()->SetRangeUser(20.1, 29.9);
+      ptHist3 = yieldCorr->Project3D(Form("y2_%d", j));
+      ptHist3->GetXaxis()->SetRangeUser(0, 20);
+    
+      Int_t nEvents = eventDist->Integral(eventDist->FindBin(20.1), eventDist->FindBin(29.9));
+      Printf("%d", nEvents);
+      ptHist3->Scale(1.0 / 1.6 / TMath::TwoPi() / nEvents / ptHist3->GetBinWidth(1));
+    
+      for (Int_t i=2; i<ptHist3->GetNbinsX(); i++)
+        ptHist3->SetBinContent(i, ptHist3->GetBinContent(i) / ptHist3->GetBinCenter(i));
+        //ptHist3->SetBinContent(i, ptHist3->GetBinContent(i) / ptHist3->GetBinLowEdge(i));
+
+      ptHist3->SetLineStyle(j+1);
+      ptHist3->DrawCopy("HISTSAME")->SetLineColor(4);
     }
     
-    ptHist3->SetLineStyle(j+1);
-    ptHist3->DrawCopy("HISTSAME")->SetLineColor(2);
-    
-    dndpt_central = ReadHepdata("raa_dndpt_central.txt", kFALSE, 3);
-    dndpt_peripheral = ReadHepdata("raa_dndpt_peripheral.txt", kFALSE, 3);
+    if (0)
+    {
+      // first paper
+      dndpt_central = ReadHepdata("raa_dndpt_central.txt", kFALSE, 3);
+      dndpt_peripheral = ReadHepdata("raa_dndpt_peripheral.txt", kFALSE, 3);
+    }
+    else
+    {
+      // second paper
+      dndpt_central = ReadHepdata("raa2_dndpt_05.txt", kFALSE, 1, 3);
+      dndpt_midcentral = ReadHepdata("raa2_dndpt_2030.txt", kFALSE, 1, 3);
+      dndpt_peripheral = ReadHepdata("raa2_dndpt_7080.txt", kFALSE, 1, 3);
+    }
   
 //   RemovePointsBelowX(dndpt_central, 1);
 //   RemovePointsBelowX(dndpt_peripheral, 1);
@@ -12651,22 +12957,31 @@ void PtComparison(const char* fileName, const char* fileName2 = 0)
     dndpt_peripheral->SetLineColor(2);
     dndpt_peripheral->SetMarkerColor(2);
     dndpt_peripheral->Draw("*SAME");
+    dndpt_midcentral->SetLineColor(4);
+    dndpt_midcentral->SetMarkerColor(4);
+    dndpt_midcentral->Draw("*SAME");
     
     gPad->SetLogy();
     
     c2->cd();
     
     for (Int_t i=1; i<ptHist3->GetNbinsX(); i++)
-      ptHist3->SetBinContent(i, ptHist3->GetBinContent(i) / dndpt_peripheral->Eval(ptHist3->GetBinCenter(i)));
+      ptHist3->SetBinContent(i, ptHist3->GetBinContent(i) / dndpt_midcentral->Eval(ptHist3->GetBinCenter(i), 0, "S"));
   
     for (Int_t i=1; i<centralPt->GetNbinsX(); i++)
-      centralPt->SetBinContent(i, centralPt->GetBinContent(i) / dndpt_central->Eval(centralPt->GetBinCenter(i)));
+      centralPt->SetBinContent(i, centralPt->GetBinContent(i) / dndpt_central->Eval(centralPt->GetBinCenter(i), 0, "S"));
   
-    ptHist3->Rebin(2); ptHist3->Scale(0.5);
-    centralPt->Rebin(2); centralPt->Scale(0.5);
+    for (Int_t i=1; i<peripheralPt->GetNbinsX(); i++)
+      peripheralPt->SetBinContent(i, peripheralPt->GetBinContent(i) / dndpt_peripheral->Eval(peripheralPt->GetBinCenter(i), 0, "S"));
+
+//     ptHist3->Rebin(2); ptHist3->Scale(0.5);
+//     centralPt->Rebin(2); centralPt->Scale(0.5);
   
-    ptHist3->DrawCopy((j == 0) ? "" : "SAME")->SetLineColor(2);
+    ptHist3->GetXaxis()->SetRangeUser(0.51, 19);
+    ptHist3->GetYaxis()->SetRangeUser(0.5, 1.5);
+    ptHist3->DrawCopy((j == 0) ? "" : "SAME")->SetLineColor(4);
     centralPt->DrawCopy("SAME")->SetLineColor(1);
+    peripheralPt->DrawCopy("SAME")->SetLineColor(2);
   }
 
   return;
@@ -13131,6 +13446,8 @@ void SaveEfficiencyCorrection(const char* fileName, const char* tag = "", Bool_t
   // icharge is needed because GF correction applies only to negative particles, 0:Positive 1:negative
   // ApplyGFCorrection, for Geant3 version >= v1.14 this correction is not needed anymore for antiprotons
   // the number of TRD modules installed depends on the year
+  
+  Printf("condenseCentrality: %d; extrapolateHighpT: %d", condenseCentrality, extrapolateHighpT);
   
   loadlibs();
   
@@ -14125,7 +14442,7 @@ void RewriteObjects(const char* fileName)
   Int_t nAxes = ((AliTHn*) h->GetUEHist(2)->GetTrackHist(0)->GetNVar());
   Printf("We have %d axes", nAxes);
   
-  TString histId; histId.Form("%dR", nAxes-1);
+  TString histId; histId.Form("%dRC", nAxes-1);
   Printf("%s", histId.Data());
   
   AliUEHistograms* hNew = new AliUEHistograms(h->GetName(), histId);
@@ -14650,7 +14967,7 @@ void CheckBin(const char* fileName)
   sparse->Projection(0, 4)->Draw("colz");
 }
 
-void GetCorrectedYields(const char* fileName, const char* correctionFile, Int_t partSpecies=-1 )
+void GetCorrectedYields(const char* fileName, const char* correctionFile, const char* tagCorrections = "", Int_t partSpecies=-1 )
 {
   loadlibs();
 
@@ -14661,30 +14978,7 @@ void GetCorrectedYields(const char* fileName, const char* correctionFile, Int_t 
   new TCanvas; yieldsUncorr->DrawCopy();
 //   new TCanvas; yieldsUncorr->ProjectionX("x1")->DrawCopy();
  
-  // normalize per event
-  centrDist = h->GetCentralityCorrelation()->ProjectionX();
-  new TCanvas; centrDist->Draw();
-
-  for (Int_t x=1; x<=yieldsUncorr->GetNbinsX(); x++)
-  {
-    Double_t factor = centrDist->GetBinContent(centrDist->FindBin(yieldsUncorr->GetXaxis()->GetBinCenter(x)));
-//     Printf("%d %f %d %f", x, yieldsUncorr->GetXaxis()->GetBinCenter(x), centrDist->FindBin(yieldsUncorr->GetXaxis()->GetBinCenter(x)), factor);
-    if (factor <= 0)
-      continue;
-    
-    for (Int_t y=0; y<=yieldsUncorr->GetNbinsY()+1; y++)
-      for (Int_t z=0; z<=yieldsUncorr->GetNbinsZ()+1; z++)
-      {
-	if (yieldsUncorr->GetBinContent(x, y, z) <= 0)
-	  continue;
-	yieldsUncorr->SetBinContent(x, y, z, yieldsUncorr->GetBinContent(x, y, z) / factor);
-	yieldsUncorr->SetBinError(x, y, z, yieldsUncorr->GetBinError(x, y, z) / factor);
-      }
-  }
-
-//   new TCanvas; yieldsUncorr->ProjectionX("x2")->DrawCopy(); return;
-  
-  AliUEHistograms* hCorr = (AliUEHistograms*) GetUEHistogram(correctionFile);
+  AliUEHistograms* hCorr = (AliUEHistograms*) GetUEHistogram(correctionFile, 0, kFALSE, tagCorrections);
   if(partSpecies!=-1){
     Double_t epsilon=0.001;
     hCorr->GetUEHist(2)->GetTrackHistEfficiency()->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(partSpecies-epsilon,partSpecies+epsilon);
@@ -14728,6 +15022,40 @@ void GetCorrectedYields(const char* fileName, const char* correctionFile, Int_t 
   TFile::Open("corr_yield.root", "RECREATE");
   yieldsCorr->Write();
   gFile->Close();
+  
+  // normalize per event
+  centrDist = h->GetCentralityCorrelation()->ProjectionX();
+  new TCanvas; centrDist->Draw();
+
+  for (Int_t x=1; x<=yieldsCorr->GetNbinsX(); x++)
+  {
+    Double_t factor = centrDist->Integral(centrDist->FindBin(yieldsCorr->GetXaxis()->GetBinLowEdge(x)+0.0001), centrDist->FindBin(yieldsCorr->GetXaxis()->GetBinUpEdge(x)-0.0001));
+//     Printf("%d %f %f %d %d %f", x, yieldsCorr->GetXaxis()->GetBinLowEdge(x), yieldsCorr->GetXaxis()->GetBinUpEdge(x), centrDist->FindBin(yieldsCorr->GetXaxis()->GetBinLowEdge(x)+0.0001), centrDist->FindBin(yieldsCorr->GetXaxis()->GetBinUpEdge(x)-0.0001), factor);
+    if (factor <= 0)
+      continue;
+    
+    for (Int_t y=0; y<=yieldsCorr->GetNbinsY()+1; y++)
+      for (Int_t z=0; z<=yieldsCorr->GetNbinsZ()+1; z++)
+      {
+	if (yieldsCorr->GetBinContent(x, y, z) > 0)
+	{
+	  yieldsCorr->SetBinContent(x, y, z, yieldsCorr->GetBinContent(x, y, z) / factor);
+	  yieldsCorr->SetBinError(x, y, z, yieldsCorr->GetBinError(x, y, z) / factor);
+	}
+	if (yieldsUncorr->GetBinContent(x, y, z) > 0)
+	{
+	  yieldsUncorr->SetBinContent(x, y, z, yieldsUncorr->GetBinContent(x, y, z) / factor);
+	  yieldsUncorr->SetBinError(x, y, z, yieldsUncorr->GetBinError(x, y, z) / factor);
+	}
+      }
+  }
+
+  TFile::Open("corr_yield.root", "UPDATE");
+  yieldsCorr->Write("fYieldsCorr_per_event");
+  centrDist->Write("events");
+  gFile->Close();
+
+  //   new TCanvas; yieldsUncorr->ProjectionX("x2")->DrawCopy(); return;
   
   yieldsUncorr->GetXaxis()->SetRangeUser(1, yieldsUncorr->GetNbinsX());
 
@@ -14908,3 +15236,151 @@ void Browse(const char* fileName)
   new TBrowser;
 }
 
+void CalculateCentralityWeights(const char* fileName)
+{
+  loadlibs();
+
+  AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileName);
+
+  // data
+//   Bool_t bins = kFALSE;
+//   Int_t n = 5;
+//   Int_t binning[] = { 0, 10, 20, 30, 50, 80 };
+//   TH1* centralityDist = h->GetCentralityCorrelation()->ProjectionX();
+
+  // AMPT
+  Bool_t bins = kTRUE;
+  Int_t n = 5;
+  Int_t binning[] = { 1, 3, 4, 5, 7, 10 };
+  TH1* centralityDist = h->GetCentralityDistribution();
+  
+  new TCanvas;
+  centralityDist->DrawCopy();
+  
+  for (Int_t i=0; i<n; i++)
+  {
+    if (bins)
+    {
+      Int_t minBin = binning[i];
+      Int_t maxBin = binning[i+1]-1;
+    }
+    else
+    {
+      Int_t minBin = centralityDist->FindBin(binning[i]+0.01);
+      Int_t maxBin = centralityDist->FindBin(binning[i+1]-0.01);
+    }
+    
+    Float_t min = centralityDist->GetBinContent(minBin);
+    for (Int_t bin=minBin; bin<=maxBin; bin++)
+      min = TMath::Min(min, centralityDist->GetBinContent(bin));
+    
+    for (Int_t bin=minBin; bin<=maxBin; bin++)
+      centralityDist->SetBinContent(bin, min / centralityDist->GetBinContent(bin));
+  }
+  
+  for (Int_t bin=centralityDist->FindBin(binning[n]+0.01); bin<=centralityDist->GetNbinsX(); bin++)
+    centralityDist->SetBinContent(bin, 1);
+  
+  new TCanvas;
+  centralityDist->DrawCopy();
+  
+  file = TFile::Open("centralityWeights.root", "RECREATE");
+  centralityDist->Write("weights");
+  file->Close();  
+}
+
+Double_t gIntegral = 0;
+Double_t FitFunctionGauss(Double_t *x, Double_t *par)
+{
+  Double_t integralGaussian = TMath::Erf(1.8/TMath::Sqrt(2)/par[2]);
+  Double_t par0 = gIntegral / integralGaussian;
+  
+  return par0/TMath::Sqrt(TMath::TwoPi())/par[2] * TMath::Exp(-0.5*x[0]*x[0]/par[2]/par[2]); 
+}
+
+void correction_gauss_one(Float_t begin, Float_t end, Bool_t silent = kTRUE)
+{
+  graph = new TGraph;
+  graph2 = new TGraph;
+  for (Float_t f=0.1; f<1.0; f+=0.01)
+  {
+    TH1* hist = new TH1F("hist", "", 60, -3, 3);
+    TF1* func = new TF1("func", "gaus(0)", -5, 5);
+    if (!silent)
+      f = 0.85;
+    func->SetParameters(1, 0, f);
+    hist->FillRandom("func", 1000000);
+    hist->Sumw2();
+    hist->Scale(1.0 / hist->GetMaximum());
+  //   hist->GetXaxis()->SetRangeUser(-1.39, 1.39);
+    hist->SetLineWidth(2);
+    
+    clone = (TH1*) hist->Clone("clone");
+    
+    if (1)
+    {
+      for (Int_t i=hist->FindBin(-0.29); i<=hist->FindBin(0.29); i++)
+	hist->SetBinError(i, 1e4);
+    }    
+
+    if (!silent)
+    {
+      new TCanvas;
+      hist->Draw();
+    }
+    
+    func = new TF1("func", &FitFunctionGauss, -end, end, 3);
+    func->FixParameter(0, 0);
+    func->FixParameter(1, 0);
+    func->SetParLimits(2, 0, 2);
+    func->SetParameters(1, 0, 0.5);
+    
+//     hist->Fit("gaus", (silent) ? "0" : "", "", -end+0.01, end-0.01);
+    gIntegral = hist->Integral(hist->FindBin(-1.79), hist->FindBin(1.79), "width");
+    hist->Fit(func, (silent) ? "0" : "", "", -end+0.01, end-0.01);
+    Float_t first = ((TF1*) hist->GetListOfFunctions()->First())->GetParameter(2);
+    hist->GetYaxis()->SetRangeUser(-0.2, 1.05);
+    
+    Float_t offset = hist->Integral(hist->FindBin(begin+0.01), hist->FindBin(end-0.01)) / (hist->FindBin(end-0.01) - hist->FindBin(begin+0.01) + 1);
+    Printf("%f", offset);
+    
+    TF1* constant = new TF1("constant", "1", -5, 5);
+    clone->Add(constant, -offset);
+    clone->SetLineColor(2);
+    if (!silent)
+      clone->Draw("same");
+//     clone->Fit("gaus", (silent) ? "0" : "", "SAME", -end+0.01, end-0.01);
+    gIntegral = clone->Integral(clone->FindBin(-1.79), clone->FindBin(1.79), "width");
+    clone->Fit(func, (silent) ? "0" : "", "SAME", -end+0.01, end-0.01);
+    Float_t second = ((TF1*) clone->GetListOfFunctions()->First())->GetParameter(2);
+
+    Printf("%f %f", first, second);
+    graph->SetPoint(graph->GetN(), second, first);
+    graph2->SetPoint(graph2->GetN(), second, first / second);
+    
+    if (!silent)
+      return;
+  }
+  
+  new TCanvas;
+  graph->Draw("A*");
+
+  new TCanvas;
+  graph2->Draw("A*");
+//   Printf("%f %f", hist->GetRMS(), clone->GetRMS());
+  
+  graph2->Write(Form("corr_%.1f_%.1f", begin, end));
+}
+
+void correction_gauss()
+{
+  new TCanvas;
+  
+  TFile::Open("sigma_correction.root", "RECREATE");
+  
+  gauss_one(1.4, 1.8);
+  gauss_one(1.2, 1.8);
+  gauss_one(0.5, 1.0);
+  
+  gFile->Close();
+}
