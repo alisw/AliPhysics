@@ -1,7 +1,6 @@
 // $Id$
 
 AliAnalysisTaskSE *AddTaskEMCALTender(
-  const char *perstr    = "LHC11h",//string defining period
   Bool_t distBC         = kTRUE,   //distance to bad channel
   Bool_t recalibClus    = kTRUE,   //recalibrate cluster energy
   Bool_t recalcClusPos  = kTRUE,   //recalculate cluster position
@@ -13,14 +12,14 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
   Bool_t remBC          = kTRUE,   //remove bad channels
   UInt_t nonLinFunct    = AliEMCALRecoUtils::kBeamTestCorrected,
   Bool_t reclusterize   = kTRUE,   //reclusterize
-  Float_t seedthresh    = 0.3,     //seed threshold
-  Float_t cellthresh    = 0.05,    //cell threshold
+  Float_t seedthresh    = 0.100,   //seed threshold
+  Float_t cellthresh    = 0.050,   //cell threshold
   UInt_t clusterizer    = AliEMCALRecParam::kClusterizerv2,
-  Bool_t trackMatch     = kFALSE,  //track matching
+  Bool_t trackMatch     = kTRUE,   //track matching
   Bool_t updateCellOnly = kFALSE,  //only change if you run your own clusterizer task
   Float_t timeMin       = 100e-9,  //minimum time of physical signal in a cell/digit (s)
   Float_t timeMax       = 900e-9,  //maximum time of physical signal in a cell/digit (s)
-  Float_t timeCut       = 50e-9,   //maximum time difference between the digits inside EMC cluster (s)
+  Float_t timeCut       = 900e-9,  //maximum time difference between the digits inside EMC cluster (s)
   const char *pass      = 0        //string defining pass (use none if figured out from path)
 ) 
 {
@@ -40,23 +39,12 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
   AliAnalysisTaskSE *ana = 0;
   AliAnalysisDataContainer *coutput1 = 0;
 
-  TString period(perstr);
-  period.ToLower();
-  if (period == "lhc12a15e")
-    nonLinFunct = AliEMCALRecoUtils::kPi0MCv3;
-  else if (period == "lhc12a15a")
-    nonLinFunct = AliEMCALRecoUtils::kPi0MCv2;
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/ConfigEmcalTenderSupply.C");
 
   AliEMCALTenderSupply *EMCALSupply = ConfigEmcalTenderSupply(distBC, recalibClus, recalcClusPos, nonLinearCorr, remExotic, 
 							      fidRegion, calibEnergy, calibTime, remBC, nonLinFunct, reclusterize, seedthresh, 
 							      cellthresh, clusterizer, trackMatch, updateCellOnly, timeMin, timeMax, timeCut);
-
-  if (!period.Contains("lhc10h") && !period.Contains("lhc11h")) {
-    ::Info("AddTaskEMCALTender.C","Switching on TrackMatching() since it is not PbPb");
-    EMCALSupply->SwitchOnTrackMatch();
-  }
 
   if (pass) 
     EMCALSupply->SetPass(pass);
@@ -68,13 +56,11 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
     alitender->AddSupply(EMCALSupply);
     alitender->SetDefaultCDBStorage("raw://"); 
     ana = alitender;
-
     coutput1 = mgr->CreateContainer("emcal_tender_event", 
 				    AliESDEvent::Class(), 
 				    AliAnalysisManager::kExchangeContainer, 
 				    "default_tender");
-  }
-  else if (evhand->InheritsFrom("AliAODInputHandler")) {
+  } else if (evhand->InheritsFrom("AliAODInputHandler")) {
     AliEmcalTenderTask* emcaltender = mgr->GetTopTasks()->FindObject("AliEmcalTenderTask"); 
     if (!emcaltender)
       emcaltender = new  AliEmcalTenderTask("AliEmcalTenderTask");
@@ -84,8 +70,7 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
 				    AliAODEvent::Class(), 
 				    AliAnalysisManager::kExchangeContainer, 
 				    "default_tender");
-  }
-  else {
+  } else {
     ::Error("AddTaskEMCALTender", "Input event handler not recognized, AOD/ESD expected. Returning...");
     return NULL;
   }
