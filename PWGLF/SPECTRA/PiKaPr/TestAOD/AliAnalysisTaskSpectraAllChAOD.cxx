@@ -91,8 +91,8 @@ void AliAnalysisTaskSpectraAllChAOD::UserCreateOutputObjects()
   const Int_t nvartrk=8;
   //                                             pt          cent        Q vec     IDrec     IDgen       isph           iswd      y
   Int_t    binsHistRealTrk[nvartrk] = {      nptBins, fnCentBins,   fnQvecBins,        4,        3,         2,          2,       2};
-  Double_t xminHistRealTrk[nvartrk] = {         0.,          0.,            0.,     -1.5,      -0.5,      -0.5,        -0.5,   -0.5};
-  Double_t xmaxHistRealTrk[nvartrk] = {       10.,       100.,            8.,      2.5,      2.5,       1.5,         1.5,     0.5};    
+  Double_t xminHistRealTrk[nvartrk] = {         0.,          0.,            0.,      -.5,      -0.5,      -0.5,        -0.5,   -0.5};
+  Double_t xmaxHistRealTrk[nvartrk] = {       10.,       100.,            8.,      3.5,      2.5,       1.5,         1.5,     0.5};    
   THnSparseF* NSparseHistTrk = new THnSparseF("NSparseHistTrk","NSparseHistTrk",nvartrk,binsHistRealTrk,xminHistRealTrk,xmaxHistRealTrk);
   NSparseHistTrk->GetAxis(0)->SetTitle("#it{p}_{T,rec}");
   NSparseHistTrk->GetAxis(0)->SetName("pT_rec");
@@ -195,7 +195,7 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
 	{
 	  AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(iMC);
 	  if(!partMC->Charge()) continue;//Skip neutrals
-	  if(fCharge != 0 && partMC->Charge() != fCharge) continue;//if fCharge != 0 only select fCharge
+	  if(fCharge != 0 && partMC->Charge()*fCharge < 0.) continue;//if fCharge != 0 only select fCharge
 	  
 	  if(partMC->Eta() < fTrackCuts->GetEtaMin() || partMC->Eta() > fTrackCuts->GetEtaMax())continue;//ETA CUT ON GENERATED!!!!!!!!!!!!!!!!!!!!!!!!!!
 	  
@@ -259,8 +259,8 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
       }
     }
     
-    //fill all charged (-1)
-    varTrk[3]=-1.;
+    //fill all charged (4)
+    varTrk[3]=4.;
     ((THnSparseF*)fOutput->FindObject("NSparseHistTrk"))->Fill(varTrk);//track loop
     
     //Printf("a track");

@@ -1,7 +1,6 @@
 // $Id$
 
 AliAnalysisTaskSE* AddTaskJetPreparation(
-  const char*    dataType           = "ESD",
   const char*    periodstr          = "LHC11h",
   const char*    usedTracks         = "PicoTracks",
   const char*    usedMCParticles    = "MCParticlesSelected",
@@ -31,12 +30,20 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
     return 0;
   }
 
+  AliVEventHandler *evhand = mgr->GetInputEventHandler();
+  if (!evhand) {
+    Error("AddTaskJetPreparation", "This task requires an input event handler");
+    return NULL;
+  }
+
   // Set trackcuts according to period. Every period used should be definied here
   TString period(periodstr);
   TString clusterColName(usedClusters);
   TString particleColName(usedMCParticles);
-  TString dType(dataType);
 
+  TString dType("ESD");
+  if (!evhand->InheritsFrom("AliESDInputHandler")) 
+    dType = "AOD";
   if ((dType == "AOD") && (clusterColName == "CaloClusters"))
     clusterColName = "caloClusters";
   if ((dType == "ESD") && (clusterColName == "caloClusters"))
@@ -44,31 +51,32 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
 
   if (makePicoTracks && (dType == "ESD" || dType == "AOD") )
   {
-    TString inputTracks = "tracks";
+    // Filter tracks
+    TString inputTracks = "AODFilterTracks";
     const Double_t edist = 440;
     if (dType == "ESD")
     {
-      inputTracks = "HybridTracks";
+      inputTracks = "ESDFilterTracks";
       TString trackCuts(Form("Hybrid_%s", period.Data()));
-      // Hybrid tracks maker for ESD
       gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalEsdTrackFilter.C");
-      AliEmcalEsdTrackFilterTask *hybTask = AddTaskEmcalEsdTrackFilter(inputTracks.Data(),trackCuts.Data());
-      hybTask->SetDoPropagation(kTRUE);
-      hybTask->SetDist(edist);
-      hybTask->SelectCollisionCandidates(pSel);
-    } else if(dType == "AOD" && doAODTrackProp) {
-      // Track propagator to extend track to the EMCal surface
-      gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalTrackPropagatorAOD.C");
-      AliEmcalTrackPropagatorTaskAOD *propTask = AddTaskEmcalTrackPropagatorAOD(inputTracks.Data());
-      propTask->SetDist(edist);
-      propTask->SelectCollisionCandidates(pSel);
+      AliEmcalEsdTrackFilterTask *esdfilter = AddTaskEmcalEsdTrackFilter(inputTracks.Data(),trackCuts.Data());
+      esdfilter->SetDoPropagation(kTRUE);
+      esdfilter->SetDist(edist);
+      esdfilter->SelectCollisionCandidates(pSel);
+    } else if (dType == "AOD") {
+      gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalAodTrackFilter.C");
+      AliEmcalAodTrackFilterTask *aodfilter = AddTaskEmcalAodTrackFilter(inputTracks.Data(),"tracks",period.Data());
+      if (doAODTrackProp) {
+	aodfilter->SetDist(edist);
+	aodfilter->SetDoPropagation(kTRUE);
+      }
+      aodfilter->SelectCollisionCandidates(pSel);
     }
-
     // Produce PicoTracks 
     gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPicoTrackMaker.C");
-    AliEmcalPicoTrackMaker *pTrackTask = AddTaskEmcalPicoTrackMaker("PicoTracks", inputTracks.Data(), period.Data());
-    pTrackTask->SelectCollisionCandidates(pSel);
+    AliEmcalPicoTrackMaker *pTrackTask = AddTaskEmcalPicoTrackMaker("PicoTracks", inputTracks.Data());
     pTrackTask->SetTrackEfficiency(trackeff);
+    pTrackTask->SelectCollisionCandidates(pSel);
   }
 
   // Produce particles used for hadronic correction
@@ -90,10 +98,10 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   if (isEmcalTrain)
     RequestMemory(emcalClus,100*1024);
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskHadCorr.C"); 
-  AliHadCorrTask *hCorr = AddTaskHadCorr("EmcalTracks","EmcalClusters",outClusName,hadcorr,minPtEt,phiMatch,etaMatch,Eexcl,trackclus,doHistos);
+  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskHadCorr.C"); 
+  AliHadCorrTask *hCorr = AddTaskHadCorr("EmcalTracks","EmcalClusters",outClusName,hadcorr,
+					 minPtEt,phiMatch,etaMatch,Eexcl,trackclus,doHistos);
   hCorr->SelectCollisionCandidates(pSel);
-
   if (isEmcalTrain) {
     if (doHistos)
       RequestMemory(hCorr,500*1024);

@@ -384,6 +384,7 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
     
 
   fHeader->fInputFileName  = inpfile->GetName();
+  fHeader->fRunNumber =  runnumber;
   fHeader->fTrClassMask    = fVev->GetHeader()->GetTriggerMask();
   fHeader->fTrCluster      = fVev->GetHeader()->GetTriggerCluster();
   AliCentrality *cent = InputEvent()->GetCentrality();

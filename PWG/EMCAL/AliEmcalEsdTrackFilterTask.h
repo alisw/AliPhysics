@@ -5,9 +5,7 @@
 
 class TClonesArray;
 class AliESDEvent;
-class AliESDtrack;
 class AliESDtrackCuts;
-class AliEMCALRecoUtils;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliESDtrackCuts.h"
@@ -18,9 +16,6 @@ class AliEmcalEsdTrackFilterTask : public AliAnalysisTaskSE {
   AliEmcalEsdTrackFilterTask(const char *name);
   virtual ~AliEmcalEsdTrackFilterTask();
 
-  void UserCreateOutputObjects();
-  void UserExec(Option_t *option);
-   
   void SetDist(Double_t d)                       { fDist             = d;    }
   void SetDoPropagation(Bool_t b)                { fDoPropagation    = b;    }
   void SetDoSpdVtxConstrain(Bool_t b)            { fDoSpdVtxCon      = b;    }
@@ -30,6 +25,9 @@ class AliEmcalEsdTrackFilterTask : public AliAnalysisTaskSE {
   void SetTracksName(const char *name)           { fTracksName       = name; }
 
  protected:
+  void UserCreateOutputObjects();
+  void UserExec(Option_t *option);
+
   AliESDtrackCuts   *fEsdTrackCuts;      // esd track cuts
   Bool_t             fDoSpdVtxCon;       // if true then do vertex constraint
   AliESDtrackCuts   *fHybridTrackCuts;   // hybrid track cuts

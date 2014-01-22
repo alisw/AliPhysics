@@ -186,7 +186,7 @@ void AliDielectronHF::UserProfile(const char* histClass, UInt_t valTypeP,
 
   // store variales in axes
   UInt_t valType[4] = {0};
-  valType[0]=valTypeX;     valType[1]=valTypeY; valType[3]=valTypeP;
+  valType[0]=valTypeX;     valType[1]=valTypeY; valType[2]=valTypeP;
   AliDielectronHistos::StoreVariables(hist, valType);
   hist->SetUniqueID(valTypeW); // store weighting variable
 

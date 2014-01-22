@@ -30,6 +30,7 @@
 #pragma link C++ class AliEmcalTriggerSetupInfo+;
 #pragma link C++ class AliEsdSkimTask+;
 #pragma link C++ class AliEsdTrackExt+;
+#pragma link C++ class AliHadCorrTask+;
 #pragma link C++ class AliParticleContainer+;
 #pragma link C++ class AliPicoTrack+;
 

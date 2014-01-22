@@ -548,8 +548,8 @@ void AliAnalysisTaskFlowStrange::AddQACandidates() {
 
     tList=new TList(); tList->SetName("RecMth"); tList->SetOwner(); AddCandidatesSpy(tList,true); fList->Add(tList);
     tList=new TList(); tList->SetName("TrkMth"); tList->SetOwner(); AddTracksSpy(tList,true); fList->Add(tList);
-    tList=new TList(); tList->SetName("RecUNMth"); tList->SetOwner(); AddCandidatesSpy(tList,true); fList->Add(tList);
-    tList=new TList(); tList->SetName("TrkUNMth"); tList->SetOwner(); AddTracksSpy(tList,true); fList->Add(tList);
+    tList=new TList(); tList->SetName("RecUNMth"); tList->SetOwner(); AddCandidatesSpy(tList,false); fList->Add(tList);
+    tList=new TList(); tList->SetName("TrkUNMth"); tList->SetOwner(); AddTracksSpy(tList,false); fList->Add(tList);
 
     tList=new TList(); tList->SetName("NegNegMth"); tList->SetOwner(); AddCandidatesSpy(tList,true); fList->Add(tList);
     tList=new TList(); tList->SetName("NegPosMth"); tList->SetOwner(); AddCandidatesSpy(tList,true); fList->Add(tList);
@@ -1340,28 +1340,22 @@ void AliAnalysisTaskFlowStrange::ReadFromAODv0(AliAODEvent *tAOD) {
 	if(labelpos<0||labelneg<0) FillTrackSpy("TrkNegMth",true);
 	else FillTrackSpy("TrkPosMth",true);
       } else {
-        FillCandidateSpy("RecUNMth",true);
+        FillCandidateSpy("RecUNMth",false);
 	if(fPostMatched<0) {
 	  fDecayIDneg = iT->GetID();
 	  fDecayIDpos = jT->GetID();
 	  MakeTrack();
 	}
         LoadTrack(&ieT,iT->Chi2perNDF());
-	fDaughterMatchPhi=mcpos->Phi();
-	fDaughterMatchEta=mcpos->Eta();
-	fDaughterMatchPt=mcpos->Pt();
         ieT.GetDZ(pos[0], pos[1], pos[2], tAOD->GetMagneticField(), ip);
         fDaughterImpactParameterXY = ip[0];
         fDaughterImpactParameterZ = ip[1];
-        FillTrackSpy("TrkUNMth",true);
+        FillTrackSpy("TrkUNMth",false);
         LoadTrack(&jeT,jT->Chi2perNDF());
-	fDaughterMatchPhi=mcneg->Phi();
-	fDaughterMatchEta=mcneg->Eta();
-	fDaughterMatchPt=mcneg->Pt();
         jeT.GetDZ(pos[0], pos[1], pos[2], tAOD->GetMagneticField(), ip);
         fDaughterImpactParameterXY = ip[0];
         fDaughterImpactParameterZ = ip[1];
-        FillTrackSpy("TrkUNMth",true);
+        FillTrackSpy("TrkUNMth",false);
       }
       if(feeddown) {
         FillCandidateSpy("MthFDW",true);
