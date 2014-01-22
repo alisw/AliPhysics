@@ -45,7 +45,7 @@ AliEmcalClusterMaker* AddTaskEmcalClusterMaker(
   ru->SetNonLinearityFunction(nonLinFunct);
   ecm->SetRecoUtils(ru);
   AliClusterContainer *clusCont = ecm->AddClusterContainer(nClusters);
-  clusCont->SetParticleECut(emin);
+  clusCont->SetClusECut(emin);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
