@@ -66,15 +66,15 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     virtual void Terminate(Option_t *);
     
     // Set binning for Histograms (if not set default binning is used)
-    void SetBinsMult(Int_t nbins, Double_t* edges) 		{ Printf("[I] Setting Mult Bins"); fMultNbins = nbins; fBinsMult = GetArrayClone(nbins,edges); }
-    void SetBinsPt(Int_t nbins, Double_t* edges) 		{ Printf("[I] Setting pT Bins"); fPtNbins = nbins; fBinsPt = GetArrayClone(nbins,edges); }
-    void SetBinsPtCorr(Int_t nbins, Double_t* edges) 		{ Printf("[I] Setting pTcorr Bins"); fPtCorrNbins = nbins; fBinsPtCorr = GetArrayClone(nbins,edges); }
-    void SetBinsPtCheck(Int_t nbins, Double_t* edges) 		{ Printf("[I] Setting pTcheck Bins"); fPtCheckNbins = nbins; fBinsPtCheck = GetArrayClone(nbins,edges); }
-    void SetBinsEta(Int_t nbins, Double_t* edges) 		{ Printf("[I] Setting Eta Bins"); fEtaNbins = nbins; fBinsEta = GetArrayClone(nbins,edges); }
-    void SetBinsEtaCheck(Int_t nbins, Double_t* edges) 		{ Printf("[I] Setting EtaCheck Bins"); fEtaCheckNbins = nbins; fBinsEtaCheck = GetArrayClone(nbins,edges); }
-    void SetBinsZv(Int_t nbins, Double_t* edges) 		{ Printf("[I] Setting Zv Bins"); fZvNbins = nbins; fBinsZv= GetArrayClone(nbins,edges); }
-    void SetBinsCentrality(Int_t nbins, Double_t* edges) 	{ Printf("[I] Setting Cent Bins"); fCentralityNbins = nbins; fBinsCentrality = GetArrayClone(nbins,edges); }
-    void SetBinsPhi(Int_t nbins, Double_t* edges) 		{ Printf("[I] Setting Phi Bins"); fPhiNbins = nbins; fBinsPhi = GetArrayClone(nbins,edges); }
+    void SetBinsMult(Int_t nbins, Double_t* edges) 			{ Printf("[I] Setting Mult Bins"); fMultNbins = nbins; fBinsMult = GetArrayClone(nbins,edges); }
+    void SetBinsPt(Int_t nbins, Double_t* edges) 			{ Printf("[I] Setting pT Bins"); fPtNbins = nbins; fBinsPt = GetArrayClone(nbins,edges); }
+    void SetBinsPtCorr(Int_t nbins, Double_t* edges) 			{ Printf("[I] Setting pTcorr Bins"); fPtCorrNbins = nbins; fBinsPtCorr = GetArrayClone(nbins,edges); }
+    void SetBinsPtCheck(Int_t nbins, Double_t* edges) 			{ Printf("[I] Setting pTcheck Bins"); fPtCheckNbins = nbins; fBinsPtCheck = GetArrayClone(nbins,edges); }
+    void SetBinsEta(Int_t nbins, Double_t* edges) 			{ Printf("[I] Setting Eta Bins"); fEtaNbins = nbins; fBinsEta = GetArrayClone(nbins,edges); }
+    void SetBinsEtaCheck(Int_t nbins, Double_t* edges) 			{ Printf("[I] Setting EtaCheck Bins"); fEtaCheckNbins = nbins; fBinsEtaCheck = GetArrayClone(nbins,edges); }
+    void SetBinsZv(Int_t nbins, Double_t* edges) 			{ Printf("[I] Setting Zv Bins"); fZvNbins = nbins; fBinsZv= GetArrayClone(nbins,edges); }
+    void SetBinsCentrality(Int_t nbins, Double_t* edges) 		{ Printf("[I] Setting Cent Bins"); fCentralityNbins = nbins; fBinsCentrality = GetArrayClone(nbins,edges); }
+    void SetBinsPhi(Int_t nbins, Double_t* edges) 			{ Printf("[I] Setting Phi Bins"); fPhiNbins = nbins; fBinsPhi = GetArrayClone(nbins,edges); }
     
     // set event cut variables
     void SetCutMaxZVertex( Double_t d)					{ fCutMaxZVertex = d; }
@@ -93,8 +93,14 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     Bool_t AreRelativeCutsEnabled()					{ return fUseRelativeCuts; }
     
     // setter and getter track quality cut parameters
+    void SetFilterBit(Int_t b)						{ fFilterBit = b; };
+    Int_t GetFilterBit()						{ return fFilterBit; }
+    
     void SetCutRequireTPCRefit(Bool_t *b) 				{ fCutRequireTPCRefit = b; } 
     Bool_t IsTPCRefitRequired() 					{ return fCutRequireTPCRefit; } 
+    
+    void SetCutRequireITSRefit(Bool_t *b) 				{ fCutRequireITSRefit = b; } 
+    Bool_t IsITSRefitRequired() 					{ return fCutRequireITSRefit; } 
     
     void SetCutMinNClustersTPC(Double_t d)				{ fCutMinNumberOfClusters = d; }
     Double_t GetCutMinNClustersTPC()					{ return fCutMinNumberOfClusters; }
@@ -121,7 +127,6 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     void SetCutMaxFractionSharedTPCClusters(Double_t d) 		{ fCutMaxFractionSharedTPCClusters = d; }
     void SetCutMaxDCAToVertexZ(Double_t d) 				{ fCutMaxDCAToVertexZ = d; }
     void SetCutMaxDCAToVertexXY(Double_t d) 				{ fCutMaxDCAToVertexXY = d; }
-    void SetCutRequireITSRefit(Bool_t *b) 				{ fCutRequireITSRefit = b; } 
     void SetCutMaxChi2PerClusterITS(Double_t d) 			{ fCutMaxChi2PerClusterITS = d; }
     void SetCutDCAToVertex2D(Bool_t *b) 				{ fCutDCAToVertex2D = b; } 
     void SetCutRequireSigmaToVertex(Bool_t *b) 				{ fCutRequireSigmaToVertex = b; } 
@@ -169,6 +174,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     TH1F	*fMCPt; // simple pT truth histogramm
     THnSparseF 	*fZvPtEtaCent; //-> Zv:Pt:Eta:Cent
     THnSparseF 	*fPhiPtEtaCent; //-> Phi:Pt:Eta:Cent
+    THnSparseF 	*fPtResptCent; //-> 1/pt:ResolutionPt:Cent
     THnSparseF 	*fMCRecPrimZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent
     THnSparseF 	*fMCGenZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent
     THnSparseF 	*fMCRecSecZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent, only secondaries
@@ -215,8 +221,10 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     Double_t fCutEtaMax;
     
     // track quality cut variables
+    Int_t	fFilterBit;
     Bool_t 	fUseRelativeCuts;
     Bool_t 	fCutRequireTPCRefit;
+    Bool_t 	fCutRequireITSRefit;
     Double_t	fCutMinNumberOfClusters;
     Double_t	fCutPercMinNumberOfClusters;
     Double_t 	fCutMinNumberOfCrossedRows;
@@ -226,7 +234,6 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     Double_t 	fCutMaxFractionSharedTPCClusters;
     Double_t 	fCutMaxDCAToVertexZ;
     Double_t 	fCutMaxDCAToVertexXY;
-    Bool_t 	fCutRequireITSRefit;
     Double_t 	fCutMaxChi2PerClusterITS;
     Bool_t 	fCutDCAToVertex2D;
     Bool_t 	fCutRequireSigmaToVertex;
