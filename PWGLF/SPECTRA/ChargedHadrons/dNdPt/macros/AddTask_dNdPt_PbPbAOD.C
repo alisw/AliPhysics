@@ -1,5 +1,6 @@
 AlidNdPtAnalysisPbPbAOD *AddTask_dNdPt_PbPbAOD( UInt_t uTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral , 
 						Double_t dNCrossedRowsTPC = 100, 
+						Int_t iFilterBit = AliAODTrack::kTrkGlobal,
 						char *contName = "dNdPtPbPbAOD")
 {
   Printf("===============BAUM================");
@@ -43,8 +44,11 @@ AlidNdPtAnalysisPbPbAOD *AddTask_dNdPt_PbPbAOD( UInt_t uTriggerMask = AliVEvent:
   Double_t binsPhi[] = {0 ,0.10472 ,0.20944 ,0.314159 ,0.418879 ,0.523599 ,0.628319 ,0.733038 ,0.837758 ,0.942478 ,1.0472 ,1.15192 ,1.25664 ,1.36136 ,1.46608 ,1.5708 ,1.67552 ,1.78024 ,1.88496 ,1.98968 ,2.0944 ,2.19911 ,2.30383 ,2.40855 ,2.51327 ,2.61799 ,2.72271 ,2.82743 ,2.93215 ,3.03687 ,3.14159 ,3.24631 ,3.35103 ,3.45575 ,3.56047 ,3.66519 ,3.76991 ,3.87463 ,3.97935 ,4.08407 ,4.18879 ,4.29351 ,4.39823 ,4.50295 ,4.60767 ,4.71239 ,4.81711 ,4.92183 ,5.02655 ,5.13127 ,5.23599 ,5.34071 ,5.44543 ,5.55015 ,5.65487 ,5.75959 ,5.86431 ,5.96903 ,6.07375 ,6.17847 ,6.28319};
   Int_t nBinPhi = sizeof(binsPhi)/sizeof(Double_t);
   task->SetBinsPhi(nBinPhi, binsPhi);
+    
+  task->SetFilterBit(iFilterBit);
   
   ::Info("AddTask_dNdPt_PbPbAOD",Form("CrossedRowCut set to %.0f", task->GetCutMinNCrossedRowsTPC()));
+  ::Info("AddTask_dNdPt_PbPbAOD",Form("FilterBit set to %d", task->GetFilterBit()));
   
   mgr->AddTask(task);
   

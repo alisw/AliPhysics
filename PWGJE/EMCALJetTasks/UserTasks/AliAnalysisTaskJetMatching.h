@@ -87,7 +87,8 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJet
         // setters - analysis details
         /* inline */    Bool_t PassesCuts(const AliVTrack* track) const {
             return (!track || TMath::Abs(track->Eta()) > 0.9 || track->Phi() < 0 || track->Phi() > TMath::TwoPi()) ? kFALSE : kTRUE; }
-        /* inline */    Bool_t PassesCuts(AliEmcalJet* jet) const { return (jet) ? kTRUE : kFALSE; }
+        /* inline */    Bool_t PassesCuts(AliEmcalJet* jet, Int_t c)  { if(!fUseEmcalBaseJetCuts) return (jet) ? kTRUE : kFALSE; 
+            else return AcceptJet(jet, c);}
         /* inline */    void ClearMatchedJetsCache() {
             for (Int_t i(0); i < fNoMatchedJets; i++) {
                 fMatchedJetContainer[i][0] = 0x0; fMatchedJetContainer[i][1] = 0x0; }
