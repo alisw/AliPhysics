@@ -1,4 +1,4 @@
-void AddMCGeneratorHandler()
+AliInputEventHandler* AddMCGeneratorHandler()
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) ::Fatal("handlers", "No analysis manager");
@@ -32,4 +32,6 @@ void AddMCGeneratorHandler()
   newlibs += gSystem->Getenv("GEN_LIBRARIES");
   plugin->SetGeneratorLibs(newlibs);
   mgr->SetMCtruthEventHandler(mcInputHandler);
+  
+  return mcInputHandler;
 }
