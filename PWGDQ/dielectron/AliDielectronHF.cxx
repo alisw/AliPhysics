@@ -55,7 +55,7 @@ ClassImp(AliDielectronHF)
 AliDielectronHF::AliDielectronHF() :
   TNamed(),
   fArrPairType(),
-  fPairType(kOSonly),
+  fPairType(kSeOnlyOS),
   fSignalsMC(0x0),
   fAxes(kMaxCuts),
   fHasMC(kFALSE),
@@ -79,7 +79,7 @@ AliDielectronHF::AliDielectronHF() :
 AliDielectronHF::AliDielectronHF(const char* name, const char* title) :
   TNamed(name, title),
   fArrPairType(),
-  fPairType(kOSonly),
+  fPairType(kSeOnlyOS),
   fSignalsMC(0x0),
   fAxes(kMaxCuts),
   fHasMC(kFALSE),
@@ -465,7 +465,7 @@ void AliDielectronHF::Fill(Int_t index, Double_t * const valuesPair, Double_t * 
     // do not fill the histogram
     if(!selected) continue;
 
-    // fill the object with Pair and event values (TODO: this needs to be changed)
+    // fill the object with Pair and event values
     TObjArray *tmp = (TObjArray*) histArr->At(ihist);
     TString title = tmp->GetName();
     AliDebug(10,title.Data());
@@ -501,7 +501,7 @@ void AliDielectronHF::Init()
   Int_t sizeAdd  = 1; 
 
   // fill object array with the array of bin cells
-  TObjArray *histArr = new TObjArray();
+  TObjArray *histArr = new TObjArray(0);
   if(!histArr) return;
   histArr->SetOwner(kTRUE);
   histArr->Expand(size);
@@ -558,9 +558,22 @@ void AliDielectronHF::Init()
   if(fPairType != kMConly) {
     for(istep=0; istep<AliDielectron::kEv1PMRot+1; istep++) {
       //    for(Int_t i=steps; i<steps+AliDielectron::kEv1PMRot+1; i++) {
-      fArrPairType[istep]=(TObjArray*)histArr->Clone(AliDielectron::PairClassName(istep));
-      ((TObjArray*)fArrPairType[istep])->SetOwner();
-      if(!IsPairTypeSelected(istep))  ((TObjArray*)fArrPairType[istep])->Delete();
+      if(IsPairTypeSelected(istep)) {
+	// add a deep copy of the array
+	fArrPairType[istep]=(TObjArray*)histArr->Clone(AliDielectron::PairClassName(istep));
+	((TObjArray*)fArrPairType[istep])->SetOwner();
+      }
+      else {
+	fArrPairType[istep]=new TObjArray(0);
+	((TObjArray*)fArrPairType[istep])->SetOwner();
+	((TObjArray*)fArrPairType[istep])->SetName(AliDielectron::PairClassName(istep));
+      }
+      // fArrPairType[istep]=(TObjArray*)histArr->Clone(AliDielectron::PairClassName(istep));
+      // ((TObjArray*)fArrPairType[istep])->SetOwner();
+      // if(!IsPairTypeSelected(istep)) {
+      // 	((TObjArray*)fArrPairType[istep])->Delete();
+      // 	((TObjArray*)fArrPairType[istep])->Expand(0);
+      // }
     } //end: loop over pair types
   }
 
@@ -610,28 +623,31 @@ Bool_t AliDielectronHF::IsPairTypeSelected(Int_t itype)
   if(fPairType==kAll) return kTRUE;
 
   switch(itype) {
-  case AliDielectron::kEv1PP: 
+  case AliDielectron::kEv1PP:
   case AliDielectron::kEv1MM:
-    if(fPairType==kOSandLS)   selected = kTRUE;
+    if(fPairType==kSeAll || fPairType==kSeMeAll || fPairType==kSeReAll )   selected = kTRUE;
     break;
-  case AliDielectron::kEv1PM: selected = kTRUE;
+  case AliDielectron::kEv1PM:
+    if(fPairType!=kMeOnlyOS)  selected = kTRUE;
     break;
   case AliDielectron::kEv1PEv2P:
-  case AliDielectron::kEv1MEv2P:
-  case AliDielectron::kEv1PEv2M:
   case AliDielectron::kEv1MEv2M:
-    if(fPairType==kOSandMIX)  selected = kTRUE;
+    if(fPairType==kMeAll || fPairType==kSeMeAll)   selected = kTRUE;
+    break;
+  case AliDielectron::kEv1PEv2M:
+  case AliDielectron::kEv1MEv2P:
+    if(fPairType==kMeAll || fPairType==kSeMeAll || fPairType==kMeOnlyOS || fPairType==kSeMeOnlyOS)   selected = kTRUE;
     break;
   case AliDielectron::kEv2PP:
-  case AliDielectron::kEv2PM: 
+  case AliDielectron::kEv2PM:
   case AliDielectron::kEv2MM:
     selected = kFALSE;
     break;
   case AliDielectron::kEv1PMRot:
-    if(fPairType==kOSandROT)  selected = kTRUE;
+    if(fPairType==kSeReAll || fPairType==kSeReOnlyOS)   selected = kTRUE;
     break;
   }
-  
+
   return selected;
 
 }
