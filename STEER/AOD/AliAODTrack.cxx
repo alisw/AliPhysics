@@ -905,7 +905,7 @@ Bool_t AliAODTrack::GetXYZAt(Double_t x, Double_t b, Double_t *r) const
   Double_t radPos2 = fPosition[0]*fPosition[0]+fPosition[1]*fPosition[1];  
   Double_t radMax  = 45.; // approximately ITS outer radius
   if (radPos2 < radMax*radMax) { // inside the ITS     
-     alpha = TMath::ATan2(fMomentum[1],fMomentum[0]);
+    alpha = fMomentum[1]; //TMath::ATan2(fMomentum[1],fMomentum[0]); // fMom is pt,phi,theta!
   } else { // outside the ITS
      Float_t phiPos = TMath::Pi()+TMath::ATan2(-fPosition[1], -fPosition[0]);
      alpha = 
@@ -927,7 +927,7 @@ Bool_t AliAODTrack::GetXYZAt(Double_t x, Double_t b, Double_t *r) const
   
   // Get the vertex of origin and the momentum
   TVector3 ver(fPosition[0],fPosition[1],fPosition[2]);
-  TVector3 mom(fMomentum[0],fMomentum[1],fMomentum[2]);
+  TVector3 mom(Px(),Py(),Pz());
   //
   // avoid momenta along axis
   if (TMath::Abs(mom[0])<kSafe) mom[0] = TMath::Sign(kSafe*TMath::Abs(mom[1]), mom[0]);
@@ -958,7 +958,6 @@ Bool_t AliAODTrack::GetXYZAt(Double_t x, Double_t b, Double_t *r) const
   r[0] = x;
   r[1] = param0 + dx*(f1+f2)/(r1+r2);
   r[2] = param1 + dx*(r2 + f2*(f1+f2)/(r1+r2))*param3;//Thanks to Andrea & Peter
-
   return Local2GlobalPosition(r,alpha);
 }
 

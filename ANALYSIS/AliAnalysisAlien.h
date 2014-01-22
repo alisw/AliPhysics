@@ -82,7 +82,7 @@ public:
    virtual void        SetInputFormat(const char *format="xml-single")   {fInputFormat = format;}
    virtual void        SetMaxInitFailed(Int_t nfail=5)                   {fMaxInitFailed = nfail;}
    virtual void        SetTerminateFiles(const char *list)               {fTerminateFiles = list;}
-   virtual void        SetMergeExcludes(const char *list)                {fMergeExcludes = list;};
+   virtual void        SetMergeExcludes(const char *list)                {fMergeExcludes = list; fMergeExcludes.ReplaceAll(",", " "); }
    virtual void        SetMergeViaJDL(Bool_t on=kTRUE)                   {fMergeViaJDL = on ? 1 : 0;}
    virtual void        SetMergeDirName(const char *name)                 {fMergeDirName = name;}
    virtual void        SetMasterResubmitThreshold(Int_t percentage)      {fMasterResubmitThreshold = percentage;}
@@ -92,7 +92,7 @@ public:
    virtual void        SetJDLName(const char *name="analysis.jdl")       {fJDLName = name;}
    virtual void        SetPreferedSE(const char *se);
    virtual void        SetProductionMode(Int_t mode=1)                   {fProductionMode = mode;}
-   virtual void        SetRegisterExcludes(const char *list)             {fRegisterExcludes = list;}
+   virtual void        SetRegisterExcludes(const char *list)             {fRegisterExcludes = list; fRegisterExcludes.ReplaceAll(",", " "); }
    virtual void        SetRunPrefix(const char *prefix);
    virtual void        SetOutputSingleFolder(const char *folder)         {fOutputSingle = folder; fSplitMode="file"; fSplitMaxInputFileNumber=1;}
    virtual void        SetFastReadOption(Bool_t on=kTRUE)                {fFastReadOption = on ? 1 : 0;}
