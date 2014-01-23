@@ -1,29 +1,19 @@
-/////////////////////////////////////////////////////////////////////////////////////////////
-//
-// AddTask* macro for flow analysis
-// Creates a Flow Event task and adds it to the analysis manager.
-// Sets the cuts using the correction framework (CORRFW) classes.
-// Also creates Flow Analysis tasks and connects them to the output of the flow event task.
-//
-/////////////////////////////////////////////////////////////////////////////////////////////
-#include <stdio.h>
-#include <stdlib.h>
-
-void AddTaskFlowHigherOrdersAllPID(Int_t triggerSelectionString,
-				   Float_t centrMin=0.,
-				   Float_t centrMax=100.,
+void AddTaskFlowHigherOrdersAllPID(Int_t triggerSelectionString=AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral,
+                                   Float_t centrMin=0.,
+                                   Float_t centrMax=100.,
                                    Float_t etamin=-0.8,
                                    Float_t etamax=0.8,
-				   TString fileNameBase="output",
-				   TString uniqueStr="",
-				   Int_t AODfilterBitRP = 768,
-				   Int_t AODfilterBitPOI = 768,
-				   Int_t charge=0,
-                                   Bool_t doQA=kFALSE,
-				   Bool_t doPIDQA=kFALSE,
+                                   TString fileNameBase="output",
+                                   TString uniqueStr="",
+                                   Int_t AODfilterBitRP = 768,
+                                   Int_t AODfilterBitPOI = 768,
+                                   Int_t charge=0,
+                                   Bool_t doQA=kTRUE,
+                                   Bool_t doPIDQA=kFALSE,
                                    Bool_t isPID = kFALSE,
+                                   Bool_t is2011 = kTRUE,
                                    AliPID::EParticleType particleType=AliPID::kPion,
-                                   AliFlowTrackCuts::PIDsource sourcePID = AliFlowTrackCuts::kTOFbayesian) {
+                                   AliFlowTrackCuts::PIDsource sourcePID=AliFlowTrackCuts::kTOFbayesian) {
   // Define the range for eta subevents (for SP method)
   Double_t minA = -0.8;//
   Double_t maxA = 0.8;//
@@ -82,6 +72,7 @@ void AddTaskFlowHigherOrdersAllPID(Int_t triggerSelectionString,
   //===========================================================================
   // EVENTS CUTS:
   AliFlowEventCuts* cutsEvent = new AliFlowEventCuts("event cuts");
+  cutsEvent->SetUsedDataset(is2011);
   cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
   cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
 //  cutsEvent->SetRefMultMethod(AliFlowEventCuts::kVZERO);
@@ -90,7 +81,8 @@ void AddTaskFlowHigherOrdersAllPID(Int_t triggerSelectionString,
   cutsEvent->SetPrimaryVertexZrange(-10.,10.);
   cutsEvent->SetQA(doQA);
   cutsEvent->SetCutTPCmultiplicityOutliers();
-  
+
+
   // RP TRACK CUTS:
 //  AliFlowTrackCuts* cutsRP2 = AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts();
   AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts("TPConlyRP");
@@ -390,4 +382,5 @@ void AddTaskFlowHigherOrdersAllPID(Int_t triggerSelectionString,
  
 
 }
+
 
