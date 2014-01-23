@@ -116,7 +116,7 @@ void AliCaloClusterInfo::FillCaloClusterInfo(AliVCluster* const clust, Int_t rel
   if (cpv  > 2.)      this->SetPIDBit(BIT(0));
   if (cpv  > 4.)      this->SetPIDBit(BIT(2));
   if (disp < 2.5*2.5) this->SetPIDBit(BIT(1));
-  if (disp > 1.5*1.5) this->SetPIDBit(BIT(3));
+  if (disp < 1.5*1.5) this->SetPIDBit(BIT(3));
 
   return;
 }
@@ -135,13 +135,27 @@ Bool_t AliCaloClusterInfo::IsInFiducialRegion(Int_t cellX, Int_t cellZ)
 Bool_t AliCaloClusterInfo::CheckIsClusterFromPi0(AliStack* const stack, Int_t &pi0Indx)
 {
   if (GetLabel()>-1) {
-    TParticle* gamma = stack->Particle(GetLabel());
-    if (gamma->GetPdgCode() == 22) {
-      pi0Indx = gamma->GetFirstMother();
-      if (pi0Indx>-1 && ((TParticle*)stack->Particle(pi0Indx))->GetPdgCode() == 111) 
+    TParticle* track = stack->Particle(GetLabel());
+    if (track->GetPdgCode() == 22) {
+      pi0Indx = track->GetFirstMother();
+      if (pi0Indx>-1 && ((TParticle*)stack->Particle(pi0Indx))->GetPdgCode() == 111)
         return kTRUE;
       else return kFALSE;
-    } else return kFALSE; 
+    }
+    else if (TMath::Abs(track->GetPdgCode()) == 11)
+      if (track->GetFirstMother()>-1 && ((TParticle*)stack->Particle(track->GetFirstMother()))->GetPdgCode() == 22) {
+        TParticle *gamma = stack->Particle(track->GetFirstMother());
+        pi0Indx = gamma->GetFirstMother();
+        if (pi0Indx>-1 && ((TParticle*)stack->Particle(pi0Indx))->GetPdgCode() == 111) {
+          Int_t gamma1 = ((TParticle*)stack->Particle(pi0Indx))->GetFirstDaughter();
+          Int_t gamma2 = ((TParticle*)stack->Particle(pi0Indx))->GetLastDaughter();
+          if (GetLabel() == (((TParticle*)stack->Particle(gamma1))->Pt()>((TParticle*)stack->Particle(gamma2))->Pt() ? gamma1 : gamma2))
+            return kTRUE;
+          else return kFALSE;
+        }
+        else return kFALSE;
+      } else return kFALSE;
+    else return kFALSE;
   } else return kFALSE;
 }
 
