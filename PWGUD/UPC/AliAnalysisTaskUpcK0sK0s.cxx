@@ -61,7 +61,7 @@ using std::endl;
 
 //_____________________________________________________________________________
 AliAnalysisTaskUpcK0sK0s::AliAnalysisTaskUpcK0sK0s() 
-  : AliAnalysisTaskSE(),fType(0),fRunTree(kTRUE),fRunHist(kTRUE),hCounter(0),fK0sTree(0),
+  : AliAnalysisTaskSE(),fType(0),fRunTree(kTRUE),fRunHist(kTRUE),fK0sTree(0),
     fRunNum(0),fPerNum(0),fOrbNum(0),fL0inputs(0),fL1inputs(0),fVtxContrib(0),fBCrossNum(0),fNtracklets(0),
     fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
@@ -77,7 +77,7 @@ AliAnalysisTaskUpcK0sK0s::AliAnalysisTaskUpcK0sK0s()
 
 //_____________________________________________________________________________
 AliAnalysisTaskUpcK0sK0s::AliAnalysisTaskUpcK0sK0s(const char *name) 
-  : AliAnalysisTaskSE(name),fType(0),fRunTree(kTRUE),fRunHist(kTRUE),hCounter(0),fK0sTree(0),
+  : AliAnalysisTaskSE(name),fType(0),fRunTree(kTRUE),fRunHist(kTRUE),fK0sTree(0),
     fRunNum(0),fPerNum(0),fOrbNum(0),fL0inputs(0),fL1inputs(0),fVtxContrib(0),fBCrossNum(0),fNtracklets(0),
     fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
@@ -93,8 +93,7 @@ AliAnalysisTaskUpcK0sK0s::AliAnalysisTaskUpcK0sK0s(const char *name)
   Init();
 
   DefineOutput(1, TTree::Class());
-  DefineOutput(2, TH1I::Class());
-  DefineOutput(3, TList::Class());
+  DefineOutput(2, TList::Class());
 
 }//AliAnalysisTaskUpcK0sK0s
 
@@ -114,10 +113,6 @@ AliAnalysisTaskUpcK0sK0s::~AliAnalysisTaskUpcK0sK0s()
      delete fK0sTree;
      fK0sTree = 0x0;
   }
-  if(hCounter){
-     delete hCounter;
-     hCounter = 0x0;
-  }
   if(fListHist){
      delete fListHist;
      fListHist = 0x0;
@@ -129,7 +124,6 @@ AliAnalysisTaskUpcK0sK0s::~AliAnalysisTaskUpcK0sK0s()
 //_____________________________________________________________________________
 void AliAnalysisTaskUpcK0sK0s::UserCreateOutputObjects()
 {
-   hCounter = new TH1I("hCounter", "hCounter", 34000, 1., 34001.);
 
   //input file
   fDataFilnam = new TObjString();
@@ -178,12 +172,11 @@ void AliAnalysisTaskUpcK0sK0s::UserCreateOutputObjects()
   fHistTriggersPerRun = new TH1D("fHistTriggersPerRun", "fHistTriggersPerRun", 3000, 167000.5, 170000.5);
   fListHist->Add(fHistTriggersPerRun);
     
-  fHistK0sMass = new TH1D("fHistK0sMass","fHistK0sMass",200,0.4,0.6);
+  fHistK0sMass = new TH2D("fHistK0sMass","fHistK0sMass",20,0.45,0.55,20,0.45,0.55);
   fListHist->Add(fHistK0sMass);
   
   PostData(1, fK0sTree);
-  PostData(2, hCounter);
-  PostData(3, fListHist);
+  PostData(2, fListHist);
 
 }//UserCreateOutputObjects
 
@@ -301,14 +294,12 @@ void AliAnalysisTaskUpcK0sK0s::RunAODhist()
   	//SortArray(TrackID);
   	//SortArray(V0TrackID);
 	//for(Int_t i=0; i<4; i++) if (TrackID[i] != V0TrackID[i]) return;
-  	for(Int_t i=0; i<2; i++){
-	  	AliAODv0 *v0 = aod->GetV0(V0Index[i]);				
-		fHistK0sMass->Fill(v0->MassK0Short());
-		}
+	AliAODv0 *v00 = aod->GetV0(V0Index[0]);	
+	AliAODv0 *v01 = aod->GetV0(V0Index[1]);				
+	fHistK0sMass->Fill(v00->MassK0Short(),v01->MassK0Short());		
   }
-
   
-  PostData(3, fListHist);
+  PostData(2, fListHist);
 
 }
 
@@ -326,20 +317,10 @@ void AliAnalysisTaskUpcK0sK0s::RunAODtree()
   fEvtNum = ((TTree*) GetInputData(0))->GetTree()->GetReadEntry();
   fRunNum = aod ->GetRunNumber();
 
-  hCounter->Fill( 1 );
-
   //Trigger
   TString trigger = aod->GetFiredTriggerClasses();
   
   if( !trigger.Contains("CCUP4-B") ) return;
-
-  Bool_t isTRG = kFALSE;
-  for(Int_t i=1; i<ntrg; i++) {
-    if( fTrigger[i] ) {isTRG = kTRUE; hCounter->Fill( fRunNum - 167806 + 1 + i*2000 );}
-  }
-  if( !isTRG ) {PostData(2, hCounter); return;}
-
-  hCounter->Fill( 2 );
 
   //trigger inputs
   fL0inputs = aod->GetHeader()->GetL0TriggerInputs();
@@ -428,7 +409,7 @@ void AliAnalysisTaskUpcK0sK0s::RunAODtree()
   if(nGoodV0s == 2 && nGoodTracks == 4){
   	//SortArray(TrackID);
   	//SortArray(V0TrackID);
-	//for{Int_t i=0; i<4; i++} if (TrackID[i] != V0TrackID[i]) {PostData(2, hCounter); return;}
+	//for{Int_t i=0; i<4; i++} if (TrackID[i] != V0TrackID[i]) return;
   	for(Int_t i=0; i<2; i++){
 	  	AliAODv0 *v0 = aod->GetV0(V0Index[i]);
 		AliAODTrack *pTrack=(AliAODTrack *)v0->GetDaughter(0); //0->Positive Daughter
@@ -443,7 +424,6 @@ void AliAnalysisTaskUpcK0sK0s::RunAODtree()
   }
   
   PostData(1, fK0sTree);   
-  PostData(2, hCounter);
 
 }//RunAOD
 
@@ -464,111 +444,6 @@ void AliAnalysisTaskUpcK0sK0s::SortArray(Double_t *dArray) {
 void AliAnalysisTaskUpcK0sK0s::RunESD()
 {
 
-  /*/input event
-  AliESDEvent *esd = (AliESDEvent*) InputEvent();
-  if(!esd) return;
-
-  //input data
-  const char *filnam = ((TTree*) GetInputData(0))->GetCurrentFile()->GetName();
-  fDataFilnam->Clear();
-  fDataFilnam->SetString(filnam);
-  fEvtNum = ((TTree*) GetInputData(0))->GetTree()->GetReadEntry();
-  fRunNum = esd->GetRunNumber();
-
-  hCounter->Fill( 1 );
-
-  //Trigger
-  TString trigger = esd->GetFiredTriggerClasses();
-  
-  fTrigger[0]   = trigger.Contains("CINT7-B");
-  fTrigger[1]   = trigger.Contains("CCUP4-B"); // CE 
-  fTrigger[2]   = trigger.Contains("CCUP4-E"); // CE 
-
-  Bool_t isTRG = kFALSE;
-  for(Int_t i=1; i<ntrg; i++) {
-    if( fTrigger[i] ) {isTRG = kTRUE; hCounter->Fill( fRunNum - 167806 + 1 + i*2000 );}
-  }
-  if( !isTRG ) {PostData(3, hCounter); return;}
-
-  hCounter->Fill( 2 );
-
-  //trigger inputs
-  fL0inputs = esd->GetHeader()->GetL0TriggerInputs();
-  fL1inputs = esd->GetHeader()->GetL1TriggerInputs();
-
-  //Event identification
-  fPerNum = esd->GetPeriodNumber();
-  fOrbNum = esd->GetOrbitNumber();
-  fBCrossNum = esd->GetBunchCrossNumber();
-
-  //primary vertex
-  AliESDVertex *fESDVertex = (AliESDVertex*) esd->GetPrimaryVertex();
-  fVtxContrib = fESDVertex->GetNContributors();
-
-  //Tracklets
-  fNtracklets = esd->GetMultiplicity()->GetNumberOfTracklets();
-
-  //VZERO, ZDC
-  AliESDVZERO *fV0data = esd->GetVZEROData();
-  AliESDZDC *fZDCdata = esd->GetESDZDC();
-  
-  fV0Adecision = fV0data->GetV0ADecision();
-  fV0Cdecision = fV0data->GetV0CDecision();
-  fZDCAenergy = fZDCdata->GetZN2TowerEnergy()[0];
-  fZDCCenergy = fZDCdata->GetZN1TowerEnergy()[0];
-  
-  Int_t nGoodTracks=0;
-  Int_t TrackIndex[5] = {-1,-1,-1,-1,-1};
-  
-  //Track loop
-  for(Int_t itr=0; itr<esd ->GetNumberOfTracks(); itr++) {
-    AliESDtrack *trk = esd->GetTrack(itr);
-    if( !trk ) continue;
-
-      if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
-      if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
-      if(trk->GetTPCNcls() < 50)continue;
-      if(trk->GetTPCchi2()/trk->GetTPCNcls() > 4)continue;
-      Float_t dca[2] = {0.0,0.0}; AliExternalTrackParam cParam;
-      if(!trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam)) continue;
-      trk->GetImpactParameters(dca[0],dca[1]);
-      if(TMath::Abs(dca[1]) > 2) continue;
-      
-      TrackIndex[nGoodTracks] = itr;
-      nGoodTracks++;
-      if(nGoodTracks > 4) break;   
-  }//Track loop
-
-  if(nGoodTracks == 2){
-  	  for(Int_t i=0; i<2; i++){
-	  	AliESDtrack *trk = esd->GetTrack(TrackIndex[i]);
-		
-		AliExternalTrackParam cParam;
-      		trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam);// to get trk->GetImpactParameters(DCAxy,DCAz);
-				
-		new((*fJPsiESDTracks)[i]) AliESDtrack(*trk); 
-		
-  		}
-  fJPsiTree ->Fill();
-  PostData(1, fJPsiTree);
-  }
-  
-  if(nGoodTracks == 4){
-  	  for(Int_t i=0; i<4; i++){
-	  	AliESDtrack *trk = esd->GetTrack(TrackIndex[i]);
-		
-		AliExternalTrackParam cParam;
-      		trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam);// to get trk->GetImpactParameters(DCAxy,DCAz);
-
-		new((*fPsi2sESDTracks)[i]) AliESDtrack(*trk); 
-		
-  		}
-  fPsi2sTree ->Fill();
-  PostData(2, fPsi2sTree);
-  }
-    
-  PostData(3, hCounter);
-/*/
 }//RunESD
 
 //_____________________________________________________________________________

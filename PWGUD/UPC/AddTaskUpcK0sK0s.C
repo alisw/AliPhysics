@@ -27,14 +27,12 @@ AliAnalysisTaskUpcK0sK0s *AddTaskUpcK0sK0s(Bool_t runTree = kTRUE,Bool_t runHist
    // Create containers for input/output
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput = mgr->CreateContainer("K0sTree", TTree::Class(), AliAnalysisManager::kOutputContainer,Form("%s:K0sK0s", AliAnalysisManager::GetCommonFileName()));
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("Counter", TH1I::Class(), AliAnalysisManager::kOutputContainer, Form("%s:K0sK0s", AliAnalysisManager::GetCommonFileName()));
-  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("ListHist", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:K0sK0s", AliAnalysisManager::GetCommonFileName()));
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("K0sListHist", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:K0sK0s", AliAnalysisManager::GetCommonFileName()));
 
   // Connect input/output
   mgr->ConnectInput(task, 0, cinput);
   mgr->ConnectOutput(task, 1, coutput);
   mgr->ConnectOutput(task, 2, coutput2);
-  mgr->ConnectOutput(task, 3, coutput3);
 
 return task;
 }
