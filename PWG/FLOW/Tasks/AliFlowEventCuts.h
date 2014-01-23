@@ -136,10 +136,10 @@ class AliFlowEventCuts : public TNamed {
   Bool_t fCutImpactParameter; //cut on impact parameter (MC header)
   Double_t fImpactParameterMin; // min impact parameter
   Double_t fImpactParameterMax; // max impact parameter
-  TH2F *fhistTPCvsGlobalMult; //correlation between TPCMult and GlobalMult
+  TH2F *fhistTPCvsGlobalMult; //!correlation between TPCMult and GlobalMult
   Bool_t fData2011; //2011 data is used
 
-  ClassDef(AliFlowEventCuts,4)
+  ClassDef(AliFlowEventCuts,5)
 };
 
 #endif
