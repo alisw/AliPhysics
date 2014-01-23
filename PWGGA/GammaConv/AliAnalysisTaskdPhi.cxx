@@ -243,32 +243,32 @@ void AliAnalysisTaskdPhi::UserCreateOutputObjects() {
   for(Int_t igf = 0; igf < fV0Filters[0].GetEntriesFast(); igf ++){
     AliConversionCuts * f = dynamic_cast<AliConversionCuts*>(fV0Filters[0].At(igf));
     if(f) {
-      f->InitCutHistograms(Form("V0Filter_%d", -(igf+1)), kFALSE);
-      fHistograms->Add(f->GetCutHistograms());
+      TList * histograms = f->GetCutHistograms();
+      if(histograms) fHistograms->Add(f->GetCutHistograms());
     }
   }
 
   for(Int_t igf = 0; igf < fV0Filters[1].GetEntriesFast(); igf ++){
     AliConversionCuts * f = dynamic_cast<AliConversionCuts*>(fV0Filters[1].At(igf));
     if(f) {
-      f->InitCutHistograms(Form("V0Filter_%d", igf+1), kFALSE);
-      fHistograms->Add(f->GetCutHistograms());
+      TList * histograms = f->GetCutHistograms();
+      if(histograms) fHistograms->Add(f->GetCutHistograms());
     }
   }
 
   for(Int_t igf = 0; igf < fMesonFilters[0].GetEntriesFast(); igf ++){
     AliConversionMesonCuts * f = dynamic_cast<AliConversionMesonCuts*>(fMesonFilters[0].At(igf));
     if(f) {
-      f->InitCutHistograms(Form("PionFilter_%d", -(igf+1)), kFALSE);
-      fHistograms->Add(f->GetCutHistograms());
+      TList * histograms = f->GetCutHistograms();
+      if(histograms) fHistograms->Add(f->GetCutHistograms());
     }
   }
 
   for(Int_t igf = 0; igf < fMesonFilters[1].GetEntriesFast(); igf ++){
     AliConversionMesonCuts * f = dynamic_cast<AliConversionMesonCuts*>(fMesonFilters[1].At(igf));
     if(f) {
-      f->InitCutHistograms(Form("PionFilter_%d", igf+1), kFALSE);
-      fHistograms->Add(f->GetCutHistograms());
+      TList * histograms = f->GetCutHistograms();
+      if(histograms) fHistograms->Add(f->GetCutHistograms());
     }
   }
 
@@ -558,15 +558,12 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 
 
   Double_t centrality = 0.0;
-  Double_t eventPlane = 0.0;
   Double_t vertexz = fInputEvent->GetPrimaryVertex()->GetZ();
   if(isAOD) {
     AliAODHeader * header = static_cast<AliAODHeader*>(fInputEvent->GetHeader());
     centrality = header->GetCentrality();
-    eventPlane = header->GetEventplane();
   } else {
     centrality = static_cast<AliESDEvent*>(fInputEvent)->GetCentrality()->GetCentralityPercentile("V0M");
-    eventPlane = fInputEvent->GetEventplane()->GetEventplane("Q");
   }
   
   
@@ -577,7 +574,6 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
   if(DebugLevel () > 4) {
     cout << "centrality: " << centrality <<  " " << GetBin(fAxisCent, centrality) << endl;
     cout << "vertexz: " << vertexz <<  " " << GetBin(fAxisZ, vertexz) << endl;
-    cout << "eventPlane: " << eventPlane <<  " " << endl;
   }
   
   

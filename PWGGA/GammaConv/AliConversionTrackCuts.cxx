@@ -359,7 +359,7 @@ TList * AliConversionTrackCuts::CreateHistograms() {
   fHistograms->SetOwner(kTRUE);
   fHistograms->SetName("trackCuts");
 
-  fhPhi = new TH2F("phi", "phi", 5, -0.5, 4.5, 32, 0, TMath::TwoPi());
+  fhPhi = new TH2F(Form("phi_%s", GetName()), Form("phi_%s", GetTitle()), 5, -0.5, 4.5, 32, 0, TMath::TwoPi());
   // TAxis * xax = fhPhi->GetXaxis();
   // for(Int_t i = 0; i < kNCuts; i++){
   // 	xax->SetBinLabel(xax->FindFixBin(i), fgkCutNames[i]);
@@ -367,7 +367,7 @@ TList * AliConversionTrackCuts::CreateHistograms() {
   fHistograms->Add(fhPhi);
   
 
-  fhEtaPhi = new TH2F("etahpi", "etaphi", 36, -0.9, 0.9, 32, 0, TMath::TwoPi());
+  fhEtaPhi = new TH2F(Form("etaphi_%s",GetName()), Form("etaphi_%s", GetTitle()), 36, -0.9, 0.9, 32, 0, TMath::TwoPi());
   fHistograms->Add(fhEtaPhi);
 
   // fhPt = new TH2F("pt", "pt", kNCuts+2, kPreCut -0.5, kNCuts + 0.5, 
@@ -381,13 +381,13 @@ TList * AliConversionTrackCuts::CreateHistograms() {
   //  fhPhiPt = new TH2F("phipt", "phipt", 100, 0, 100, 64, 0, TMath::TwoPi());
   //fHistograms->Add(fhPhiPt);
 
-  fhdcaxyPt = new TH2F("dcaxypt", "dcaxypt", 20, 0, 20, 50, -2.5, 2.5);
+  fhdcaxyPt = new TH2F(Form("dcaxypt_%s", GetName()),  Form("dcaxypt_%s", GetTitle()), 20, 0, 20, 50, -2.5, 2.5);
   fHistograms->Add(fhdcaxyPt);
 
-  fhdcazPt = new TH2F("dcazpt", "dcazpt", 20, 0, 20, 70, -3.5, 3.5);
+  fhdcazPt = new TH2F(Form("dcazpt_%s", GetName()),  Form("dcazpt_%s", GetTitle()), 20, 0, 20, 70, -3.5, 3.5);
   fHistograms->Add(fhdcazPt);
 
-  fhdca = new TH2F("dca", "dca", 70, -3.5, 3.5, 50, -2.5, 2.5);
+  fhdca = new TH2F(Form("dca_%s", GetName()),  Form("dca_%s", GetTitle()), 70, -3.5, 3.5, 50, -2.5, 2.5);
   fhdca->SetXTitle("dca z");
   fhdca->SetYTitle("dca xy");
 
