@@ -13,6 +13,7 @@
 class AliVCluster;
 class AliESDCaloCluster;
 class AliAODCaloCluster;
+class AliVEvent;
 
 #include "TObject.h"
 
@@ -52,6 +53,8 @@ class AliPHOSClusterSelection : TObject {
   Float_t fMaxDispR2; // dispersion cut
   Float_t fMaxDispCoreR2; // dispersion cut of core cells
   Float_t fMaxTOF; // TOF cut
+
+  AliVEvent* GetCurrentEvent() const;
   
   ClassDef(AliPHOSClusterSelection, 1);
 };
