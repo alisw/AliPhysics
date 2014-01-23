@@ -21,7 +21,6 @@
 #include "TVectorD.h"
 #include "TMatrixD.h"
 #include "TH1.h"
-#include "THnSparse.h"
 #include "TClonesArray.h"
 #include "TTreeStream.h"
 
@@ -80,8 +79,6 @@ public:
   AliTPCtrackFast();
   void Add(AliTPCtrackFast &track2);
   void MakeTrack();
-  void UpdatedEdxHisto();
-  void MakeHisto();
   static void Simul(const char* simul, Int_t ntracks);
   Double_t  CookdEdxNtot(Double_t f0,Float_t f1);
   Double_t  CookdEdxQtot(Double_t f0,Float_t f1);
@@ -99,15 +96,6 @@ public:
   TClonesArray *fCl;   // array of clusters  
   //
   Bool_t   fInit;      // initialization flag
-  THnSparse    *fHistoNtot;    // histograms of trunc mean Ntot
-  THnSparse    *fHistoQtot;    // histograms of trunc mean Qtot
-  THnSparse    *fHistoQNtot;   // histograms of trunc mean Qtot/Ntot
-  //
-  THnSparse    *fHistoDtot;    // histograms of trunc mean digit tot
-  THnSparse    *fHistoDmax;    // histograms of trunc mean digit max
-  THnSparse    *fHistoDtotRaw;    // histograms of trunc mean digit tot
-  THnSparse    *fHistoDmaxRaw;    // histograms of trunc mean digit max
-
   //
   //
   ClassDef(AliTPCtrackFast,2)  // container for
@@ -133,14 +121,7 @@ AliTPCtrackFast::AliTPCtrackFast():
   fAngleZ(0),
   fN(0),
   fCl(0),
-  fInit(kFALSE),
-  fHistoNtot(0),
-  fHistoQtot(0),
-  fHistoQNtot(0),
-  fHistoDtot(0),
-  fHistoDmax(0),
-  fHistoDtotRaw(0),
-  fHistoDmaxRaw(0)
+  fInit(kFALSE)
 {
   //
   //
@@ -150,96 +131,9 @@ AliTPCtrackFast::AliTPCtrackFast():
 void AliTPCtrackFast::Add(AliTPCtrackFast &track2){
   if (!track2.fInit) return;
   
-  fHistoNtot->Add(track2.fHistoNtot);    // histograms of trunc mean Ntot
-  fHistoQtot->Add(track2.fHistoQtot);    // histograms of trunc mean Qtot
-  fHistoQNtot->Add(track2.fHistoQNtot);   // histograms of trunc mean Qtot/Ntot
-  //
-  fHistoDtot->Add(track2.fHistoDtot);    // histograms of trunc mean digit tot
-  fHistoDmax->Add(track2.fHistoDmax);    // histograms of trunc mean digit max
-  fHistoDtotRaw->Add(track2.fHistoDtotRaw);    // histograms of trunc mean digit tot
-  fHistoDmaxRaw->Add(track2.fHistoDmaxRaw);    // histograms of trunc mean digit max
 }
 
-void AliTPCtrackFast::MakeHisto(){
-  //
-  // make default histo
-  //
-  // dEdx histogram THnSparse
-  // 0 - value
-  // 1 - fMNprim - number of generated primaries
-  // 2 - fNpoints
-  // 3 - fFraction
-  // 4 - fDiff
-  // 5 - fAngleY
-  // 6 - fAngleZ
-  
-  Double_t xmin[7],  xmax[7];
-  Int_t    nbins[7];
-  if (fInit) return;
-  //
-  nbins[1] = 10; xmin[1]=10;  xmax[1]=30;    // fMNprim
-  nbins[2] = 8;  xmin[2]=80;  xmax[2]=160;   // fNPoints
-  nbins[3] = 6;  xmin[3]=0.45; xmax[3]=1.05;     // trunc mean fraction
 
-  nbins[4] = 5;  xmin[4]=0.0; xmax[4]=0.4;   // fDiff
-  nbins[5] = 10; xmin[5]=0;   xmax[5]=2;     // fAngleY
-  nbins[6] = 10; xmin[6]=0;   xmax[6]=2;     // fAngleZ
-  //
-  nbins[0] =100; xmin[0]=2; xmax[0]=8;
-  fHistoNtot = new THnSparseF("dNdxall/dNdxprim","dNdxall/dNdxprim", 4, nbins, xmin,xmax);
-  nbins[0] =100; xmin[0]=2; xmax[0]=8;
-  fHistoQtot = new THnSparseF("dQdx/dNdxprim","dQdxall/dNdxprim", 4, nbins, xmin,xmax);
-  nbins[0] =100; xmin[0]=0.5; xmax[0]=1.5;
-  fHistoQNtot = new THnSparseF("dQdx/dNdxprim","dQdxprim/dNdxprim", 4, nbins, xmin,xmax);
-  //
-  nbins[0] =100; xmin[0]=0.05; xmax[0]=8;
-  fHistoDtot = new THnSparseF("dQtotdx/dNdxprim","dQtotdx/dNdx", 7, nbins, xmin,xmax);
-  fHistoDmax = new THnSparseF("dQmaxdx/dNdxprim","dQmaxdx/dNdx", 7, nbins, xmin,xmax);
-  fHistoDtotRaw = new THnSparseF("raw dQtotdx/dNdxprim","raw dQtotdx/dNdx", 7, nbins, xmin,xmax);
-  fHistoDmaxRaw = new THnSparseF("raw dQmaxdx/dNdxprim","raw dQmaxdx/dNdx", 7, nbins, xmin,xmax);
-  fInit=kTRUE;
-}
-
-void  AliTPCtrackFast::UpdatedEdxHisto(){
-  //
-  //fill default histo
-  //
-  if (!fInit) MakeHisto();
-  Double_t x[7];
-  x[1] = fMNprim;
-  x[2] = fN;
-  //
-  x[4] = fDiff;
-  x[5] = TMath::Abs(fAngleY);
-  x[6] = TMath::Abs(fAngleZ);
-
-  for (Int_t i=0;i<7;i++){
-    Float_t frac = 0.5+Float_t(i)*0.1;
-    x[3] = frac;
-    Double_t cNtot = CookdEdxNtot(0.01,frac);
-    Double_t cQtot = CookdEdxQtot(0.01,frac);
-    // MC -using hits
-    x[0] = cNtot/fMNprim;
-    fHistoNtot->Fill(x);
-    x[0] = cQtot/fMNprim;
-    fHistoQtot->Fill(x);
-    x[0] = cQtot/cNtot;
-    fHistoQNtot->Fill(x);
-    // MC - using digits 
-    Double_t dQtot = CookdEdxDtot(0.01,frac,1,2.5,1,kTRUE);
-    Double_t dQmax = CookdEdxDmax(0.01,frac,1,2.5,1,kTRUE);
-    Double_t dQrawtot = CookdEdxDtot(0.01,frac,1,2.5,1,kFALSE);
-    Double_t dQrawmax = CookdEdxDmax(0.01,frac,1,2.5,1,kFALSE);
-    x[0] = dQtot/fMNprim;
-    fHistoDtot->Fill(x);
-    x[0] = dQmax/fMNprim;
-    fHistoDmax->Fill(x);
-    x[0] = dQrawtot/fMNprim;
-    fHistoDtotRaw->Fill(x);
-    x[0] = dQrawmax/fMNprim;
-    fHistoDmaxRaw->Fill(x);
-  }
-}
 
 void AliTPCtrackFast::MakeTrack(){
   //
@@ -259,7 +153,6 @@ void AliTPCtrackFast::MakeTrack(){
     cluster->GenerElectrons();
     cluster->Digitize();
   }
-  UpdatedEdxHisto();
 }
 
 Double_t  AliTPCtrackFast::CookdEdxNtot(Double_t f0,Float_t f1){
@@ -344,7 +237,7 @@ void AliTPCtrackFast::Simul(const char* fname, Int_t ntracks){
   // 
   //
   AliTPCtrackFast fast;
-  TTreeSRedirector cstream(fname);
+  TTreeSRedirector cstream(fname,"recreate");
   for (Int_t itr=0; itr<ntracks; itr++){
     //
     fast.fMNprim=(5+50*gRandom->Rndm());
