@@ -31,7 +31,7 @@ class AliFlowEventCuts : public TNamed {
   AliFlowEventCuts(const AliFlowEventCuts& someCuts);
   AliFlowEventCuts& operator=(const AliFlowEventCuts& someCuts);
   virtual  ~AliFlowEventCuts();
-  
+   
   virtual Bool_t IsSelected(TObject* obj, TObject *objmc);
 
   Bool_t PassesCuts(AliVEvent* event, AliMCEvent *mcevent);
@@ -59,7 +59,7 @@ class AliFlowEventCuts : public TNamed {
   void SetCutSPDvertexerAnomaly(Bool_t b=kTRUE) {fCutSPDvertexerAnomaly=b;}
   void SetCutZDCtiming(Bool_t c=kTRUE) {fCutZDCtiming=c;}
   void SetCutSPDTRKVtxZ(Bool_t b=kTRUE) {fCutSPDTRKVtxZ=b;}
-  void SetCutTPCmultiplicityOutliers(Bool_t b=kTRUE) {fCutTPCmultiplicityOutliers=b;}
+  void SetCutTPCmultiplicityOutliers(Bool_t b=kTRUE) {fCutTPCmultiplicityOutliers=b;}  
 
   Int_t GetNumberOfTracksMax() const {return fNumberOfTracksMax;}
   Int_t GetNumberOfTracksMin() const {return fNumberOfTracksMin;}
@@ -87,9 +87,11 @@ class AliFlowEventCuts : public TNamed {
                                                                fCutCentralityPercentile=kTRUE; }
   void SetCentralityPercentileMethod( refMultMethod m) {fCentralityPercentileMethod=m;}
   void SetUseCentralityUnchecked(Bool_t b=kTRUE) {fUseCentralityUnchecked=b;}
-  
+  void SetUsedDataset(Bool_t b=kTRUE) {fData2011=b;}
   void Browse(TBrowser* b);
   Long64_t Merge(TCollection* list);  
+  TH2F *GetCorrelationTPCvsGlobalMultiplicity() {return fhistTPCvsGlobalMult;}  
+
 
  private:
   TList* fQA; //QA
@@ -134,6 +136,8 @@ class AliFlowEventCuts : public TNamed {
   Bool_t fCutImpactParameter; //cut on impact parameter (MC header)
   Double_t fImpactParameterMin; // min impact parameter
   Double_t fImpactParameterMax; // max impact parameter
+  TH2F *fhistTPCvsGlobalMult; //correlation between TPCMult and GlobalMult
+  Bool_t fData2011; //2011 data is used
 
   ClassDef(AliFlowEventCuts,4)
 };
