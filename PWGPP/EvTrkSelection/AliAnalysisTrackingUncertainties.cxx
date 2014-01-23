@@ -120,26 +120,41 @@ void AliAnalysisTrackingUncertainties::UserCreateOutputObjects()
   fListHist = new TList();
   fListHist->SetOwner(kTRUE);
   //
-  // basic QA and statistics histograms
+  // (1.) basic QA and statistics histograms
   //
   TH2F * histVertexSelection = new TH2F("histVertexSelection", "vertex selection; vertex z (cm); accepted/rejected", 100, -50., 50., 2, -0.5, 1.5);
   fListHist->Add(histVertexSelection);
   //
-  // track cut variation histograms
+  // (2.) track cut variation histograms
+  //
   InitializeTrackCutHistograms();
   //
+  // (3.) ITS -> TPC matching histograms
   //
-  // matching histograms
+  Int_t    binsMatch[kNumberOfAxes] = { 10,   50,    20,            18,  6};
+  Double_t minMatch[kNumberOfAxes]  = {  0,  0.1,    -1,             0, -0.5};
+  Double_t maxMatch[kNumberOfAxes]  = {200,   20,    +1, 2*TMath::Pi(),  5.5};
+  //
+  TString axisNameMatch[kNumberOfAxes]  = {"matchChi2","pT","eta","phi","pid"};
+  TString axisTitleMatch[kNumberOfAxes] = {"matchChi2","pT","eta","phi","pid"};
+  //
+  THnF * hBestMatch = new THnF("hBestMatch","ITS -> TPC matching ",kNumberOfAxes, binsMatch, minMatch, maxMatch);
+  for (Int_t iaxis=0; iaxis<kNumberOfAxes;iaxis++){
+    hBestMatch->GetAxis(iaxis)->SetName(axisNameMatch[iaxis]);
+    hBestMatch->GetAxis(iaxis)->SetTitle(axisTitleMatch[iaxis]);
+  }
+  BinLogAxis(hBestMatch, 1);
+  fListHist->Add(hBestMatch);
+  //
+  //
   //
   const int nbPt=40;
   const double ptMax=5;
   //
   TH2F * hNMatch    = new TH2F("hNMatch","N Matches",nbPt,0,ptMax,kMaxMatch+1,-0.5,kMaxMatch+0.5);
-  TH2F * hBestMatch = new TH2F("hBestMatch","Best Match Chi2",nbPt,0,ptMax,2*int(TMath::Max(1.1,kMaxChi2)),0,kMaxChi2);
   TH2F * hAllMatch  = new TH2F("hAllMatch","All Matches Chi2",nbPt,0,ptMax,2*int(TMath::Max(1.1,kMaxChi2)),0,kMaxChi2);
   TH2F * hAllMatchGlo  = new TH2F("hAllMatchGlo","All Matches Chi2",nbPt,0,ptMax,2*int(TMath::Max(1.1,kMaxChi2)),0,kMaxChi2);
   fListHist->Add(hNMatch);
-  fListHist->Add(hBestMatch);
   fListHist->Add(hAllMatch);
   fListHist->Add(hAllMatchGlo);
   //
@@ -248,7 +263,7 @@ void  AliAnalysisTrackingUncertainties::ProcessItsTpcMatching(){
   // initialize histograms
   //
   TH2F * hNMatch      = (TH2F*) fListHist->FindObject("hNMatch");
-  TH2F * hBestMatch   = (TH2F*) fListHist->FindObject("hBestMatch");
+  THnF * hBestMatch   = (THnF*) fListHist->FindObject("hBestMatch");
   TH2F * hAllMatch    = (TH2F*) fListHist->FindObject("hAllMatch");
   TH2F * hAllMatchGlo = (TH2F*) fListHist->FindObject("hAllMatchGlo");  
   //
@@ -272,7 +287,14 @@ void  AliAnalysisTrackingUncertainties::ProcessItsTpcMatching(){
     }
     //
     hNMatch->Fill(pt,nmatch);
-    if (nmatch>0) hBestMatch->Fill(pt,fMatchChi[0]);
+    if (nmatch>0) { // matched tracks
+      Double_t vecHistMatch[kNumberOfAxes] = {fMatchChi[0], pt, trSA->Eta(), trSA->Phi(), 0};
+      hBestMatch->Fill(vecHistMatch);
+    } else {        // un-matched tracks -> should be in overflow bin
+      Double_t vecHistMatch[kNumberOfAxes] = {9999999., pt, trSA->Eta(), trSA->Phi(), 0};
+      hBestMatch->Fill(vecHistMatch);      
+    }
+    //
     for (int imt=nmatch;imt--;) {
       hAllMatch->Fill(pt,fMatchChi[imt]);
       if (fMatchTr[imt]->IsOn(AliESDtrack::kITSrefit)) hAllMatchGlo->Fill(pt,fMatchChi[imt]);
@@ -347,10 +369,15 @@ void AliAnalysisTrackingUncertainties::ProcessTrackCutVariation() {
   //
   // initialize histograms
   //
-  THnF * histNcl     = (THnF *) fListHist->FindObject("histNcl");
-  THnF * histChi2Tpc = (THnF *) fListHist->FindObject("histChi2Tpc");
-  THnF * histDcaZ    = (THnF *) fListHist->FindObject("histDcaZ");
-  THnF * histSpd     = (THnF *) fListHist->FindObject("histSpd");
+  THnF * histNcl         = (THnF *) fListHist->FindObject("histNcl");
+  THnF * histChi2Tpc     = (THnF *) fListHist->FindObject("histChi2Tpc");
+  THnF * histDcaZ        = (THnF *) fListHist->FindObject("histDcaZ");
+  THnF * histSpd         = (THnF *) fListHist->FindObject("histSpd");
+  THnF * histNcr         = (THnF *) fListHist->FindObject("histNcr");
+  THnF * histCRoverFC    = (THnF *) fListHist->FindObject("histCRoverFC");
+  THnF * histChi2Its     = (THnF *) fListHist->FindObject("histChi2Its");
+  THnF * histTpcLength   = (THnF *) fListHist->FindObject("histTpcLength");
+  THnF * histTpcItsMatch = (THnF *) fListHist->FindObject("histTpcItsMatch");
   //
   Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z for the vertex cut
   //
@@ -360,17 +387,42 @@ void AliAnalysisTrackingUncertainties::ProcessTrackCutVariation() {
     //
     // relevant variables
     //
-    Int_t nclsTPC = track->GetTPCncls();
-    Float_t pT  = track->Pt();
-    Float_t eta = track->Eta();
-    Float_t phi = track->Phi();
-    Float_t chi2TPC = track->GetTPCchi2();
-    Double_t pid = Double_t(GetPid(track));
+    Double_t pid        = Double_t(GetPid(track));
+    //
+    Int_t nclsTPC       = track->GetTPCncls();
+    Float_t pT          = track->Pt();
+    Float_t eta         = track->Eta();
+    Float_t phi         = track->Phi();
+    Float_t chi2TPC     = track->GetTPCchi2();
+    Float_t ncrTPC      = track->GetTPCCrossedRows();
+    Int_t nclsTPCF      = track->GetTPCNclsF(); 
+    Float_t nCRoverFC   = track->GetTPCCrossedRows();
+    Double_t chi2ITS    = track->GetITSchi2();
+    Int_t nclsITS       = track->GetITSclusters(0);
+    Float_t tpcLength   = 0.;
+
+    if (track->GetInnerParam() && track->GetESDEvent()) {
+      tpcLength = track->GetLengthInActiveZone(1, 1.8, 220, track->GetESDEvent()->GetMagneticField());
+    }
+
     if (nclsTPC != 0) {
       chi2TPC /= nclsTPC; 
     } else {
       chi2TPC = 999.;
     }
+
+    if (nclsTPCF !=0) {
+      nCRoverFC /= nclsTPCF;
+    } else {
+      nCRoverFC = 999.;
+    }
+
+    if (nclsITS != 0){
+      chi2ITS /= nclsITS;
+    }else {
+      chi2ITS = 999.;
+    }
+
     //
     track->GetImpactParameters(dca, cov);
     //
@@ -379,8 +431,10 @@ void AliAnalysisTrackingUncertainties::ProcessTrackCutVariation() {
     Int_t minNclsTPC = fESDtrackCuts->GetMinNClusterTPC();
     fESDtrackCuts->SetMinNClustersTPC(0);
     if (fESDtrackCuts->AcceptTrack(track)) {
-      Double_t vecHistNcl[kNumberOfAxes] = {nclsTPC, pT, eta, phi, pid};
-      histNcl->Fill(vecHistNcl);
+      for(Int_t iPid = 0; iPid < 6; iPid++) {
+	Double_t vecHistNcl[kNumberOfAxes] = {nclsTPC, pT, eta, phi, iPid};
+	if (IsConsistentWithPid(iPid, track)) histNcl->Fill(vecHistNcl);
+      }
     }
     fESDtrackCuts->SetMinNClustersTPC(minNclsTPC);
     //
@@ -389,8 +443,10 @@ void AliAnalysisTrackingUncertainties::ProcessTrackCutVariation() {
     Float_t maxChi2 = fESDtrackCuts->GetMaxChi2PerClusterTPC();
     fESDtrackCuts->SetMaxChi2PerClusterTPC(999.);
     if (fESDtrackCuts->AcceptTrack(track)) {
-      Double_t vecHistChi2Tpc[kNumberOfAxes] = {chi2TPC, pT, eta, phi, pid};
-      histChi2Tpc->Fill(vecHistChi2Tpc);
+      for(Int_t iPid = 0; iPid < 6; iPid++) {
+	Double_t vecHistChi2Tpc[kNumberOfAxes] = {chi2TPC, pT, eta, phi, iPid};
+	if (IsConsistentWithPid(iPid, track)) histChi2Tpc->Fill(vecHistChi2Tpc);
+      }
     }
     fESDtrackCuts->SetMaxChi2PerClusterTPC(maxChi2);
     //
@@ -399,8 +455,10 @@ void AliAnalysisTrackingUncertainties::ProcessTrackCutVariation() {
     Float_t maxDcaZ = fESDtrackCuts->GetMaxDCAToVertexZ();
     fESDtrackCuts->SetMaxDCAToVertexZ(999.);
     if (fESDtrackCuts->AcceptTrack(track)) {
-      Double_t vecHistDcaZ[kNumberOfAxes] = {TMath::Abs(dca[1]), pT, eta, phi, pid};
-      histDcaZ->Fill(vecHistDcaZ);
+      for(Int_t iPid = 0; iPid < 6; iPid++) {
+	Double_t vecHistDcaZ[kNumberOfAxes] = {TMath::Abs(dca[1]), pT, eta, phi, iPid};
+	if (IsConsistentWithPid(iPid, track)) histDcaZ->Fill(vecHistDcaZ);
+      }
     }
     fESDtrackCuts->SetMaxDCAToVertexZ(maxDcaZ);
     //
@@ -410,11 +468,97 @@ void AliAnalysisTrackingUncertainties::ProcessTrackCutVariation() {
     if (fESDtrackCuts->AcceptTrack(track)) {
       Int_t hasPoint = 0;
       if (track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) hasPoint = 1;
-      Double_t vecHistSpd[kNumberOfAxes] = {hasPoint, pT, eta, phi, pid};
-      histSpd->Fill(vecHistSpd);
+      for(Int_t iPid = 0; iPid < 6; iPid++) {
+	Double_t vecHistSpd[kNumberOfAxes] = {hasPoint, pT, eta, phi, iPid};
+	if (IsConsistentWithPid(iPid, track)) histSpd->Fill(vecHistSpd);
+      }
     }
     fESDtrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
-
+    //
+    // (5.) fill number of crossed rows histogram
+    //
+    //Int_t minNcrTPC = fESDtrackCuts->GetMinNCrossedRowsTPC(); //wait for getter in ESDtrackCuts
+    Int_t minNcrTPC = 0;  //for now use standard value from 2010 !!
+    fESDtrackCuts->SetMinNCrossedRowsTPC(0);
+    if (fESDtrackCuts->AcceptTrack(track)) {
+      for(Int_t iPid = 0; iPid < 6; iPid++) {
+	Double_t vecHistNcr[kNumberOfAxes] = {ncrTPC, pT, eta, phi, iPid};
+	if (IsConsistentWithPid(iPid, track)) histNcr->Fill(vecHistNcr);
+      }
+    }
+    fESDtrackCuts->SetMinNCrossedRowsTPC(minNcrTPC);
+    //
+    // (6.) fill crossed rows over findable clusters histogram
+    //
+    //Int_t minCRoverFC = fESDtrackCuts->GetMinRatioCrossedRowsOverFindableClustersTPC(); //wait for getter in ESDtrackCuts
+    Int_t minCRoverFC = 0.; //for now use standard value from 2010 !!
+    fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.);
+    if (fESDtrackCuts->AcceptTrack(track)) {
+       for(Int_t iPid = 0; iPid < 6; iPid++) {
+	 Double_t vecHistCRoverFC[kNumberOfAxes] = {nCRoverFC, pT, eta, phi, iPid};
+	 if (IsConsistentWithPid(iPid, track)) histCRoverFC->Fill(vecHistCRoverFC);
+       }
+    }
+    fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(minCRoverFC);
+    //
+    // (7.) fill chi2 ITS histogram
+    //
+    Float_t maxChi2ITS = fESDtrackCuts->GetMaxChi2PerClusterITS();
+    fESDtrackCuts->SetMaxChi2PerClusterITS(999.);
+    if (fESDtrackCuts->AcceptTrack(track)) {
+      for(Int_t iPid = 0; iPid < 6; iPid++) {
+	Double_t vecHistChi2ITS[kNumberOfAxes] = {chi2ITS, pT, eta, phi, iPid};
+	if (IsConsistentWithPid(iPid, track)) histChi2Its->Fill(vecHistChi2ITS);
+      }
+    }
+    fESDtrackCuts->SetMaxChi2PerClusterITS(maxChi2ITS);
+    //
+    // (8.) fill active length in TPC histogram
+    //
+    Int_t minTpcLength = fESDtrackCuts->GetMinLengthActiveVolumeTPC();
+    fESDtrackCuts->SetMinLengthActiveVolumeTPC(0);
+    if (fESDtrackCuts->AcceptTrack(track)) {
+      for(Int_t iPid = 0; iPid < 6; iPid++) {
+	Double_t vecHistTpcLength[kNumberOfAxes] = {tpcLength, pT, eta, phi, iPid};
+	if (IsConsistentWithPid(iPid, track)) histTpcLength->Fill(vecHistTpcLength);
+      }
+    }
+    fESDtrackCuts->SetMinLengthActiveVolumeTPC(minTpcLength);
+    //
+    // (9.) fill TPC->ITS matching efficiency histogram
+    //
+    Bool_t isMatched = kFALSE;
+    // remove all ITS requirements
+    //
+    // Leonardo and Emilia: 
+    //  -> beautify this (save the previous cut)
+    //  -> check if really all cuts related to the matching are removed
+    //  -> histogram with default cuts
+    //  -> if MC is available: fill it only for true primaries
+    //  -> Postprocessing: plot histogram with 1 divided by histogram with 0 as a function of pT/eta/phi
+    // 
+    //
+    fESDtrackCuts->SetRequireITSRefit(kFALSE);
+    fESDtrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
+    fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(99999.);
+    fESDtrackCuts->SetMaxChi2PerClusterITS(999999.);
+    //
+    TString str = fESDtrackCuts->GetMaxDCAToVertexXYPtDep();
+    fESDtrackCuts->SetMaxDCAToVertexXYPtDep();
+    if (fESDtrackCuts->AcceptTrack(track)) {
+      UInt_t status = track->GetStatus();
+      isMatched  = status&AliESDtrack::kITSrefit; // this will be obsolete
+      for(Int_t iPid = 0; iPid < 6; iPid++) {
+	Double_t vecHistTpcItsMatch[kNumberOfAxes] = {isMatched, pT, eta, phi, iPid};
+	if (IsConsistentWithPid(iPid, track)) histTpcItsMatch->Fill(vecHistTpcItsMatch); // fill with 0 here
+      }
+    }
+    fESDtrackCuts->SetRequireITSRefit(kTRUE);
+    fESDtrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+    fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+    fESDtrackCuts->SetMaxDCAToVertexXYPtDep(str.Data());
+    fESDtrackCuts->SetMaxChi2PerClusterITS(36);
+    // fill with 1 here
 
   } // end of track loop
 
@@ -511,9 +655,9 @@ AliAnalysisTrackingUncertainties::ESpecies_t AliAnalysisTrackingUncertainties::G
     if((isProton = IsProton(tr,useTPCTOF))) nspec++;
     if(nspec != 1) return kUndef;   // No decision or ambiguous decision;
     if(isElectron) return kSpecElectron;
-    if(isPion) return kSpecElectron;
-    if(isProton) return kSpecElectron;
-    if(isKaon) return kSpecElectron;
+    if(isPion) return kSpecPion;
+    if(isProton) return kSpecProton;
+    if(isKaon) return kSpecKaon;
     return kUndef;
 }
 
@@ -543,30 +687,54 @@ Bool_t AliAnalysisTrackingUncertainties::IsElectron(const AliESDtrack * const tr
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTrackingUncertainties::IsPion(const AliESDtrack * const /*tr*/, Bool_t /*useTPCPTOF*/) const{
-    //
-    // Selectron of pion candidates
-    // @TODO: To be implemented
-    //
-    return kFALSE;
+Bool_t AliAnalysisTrackingUncertainties::IsConsistentWithPid(Int_t type, const AliESDtrack * const tr) {
+  //
+  // just check if the PID is consistent with a given hypothesis in order to 
+  // investigate effects which are only dependent on the energy loss.
+  //
+  if (type == kSpecPion)     return IsPion(tr);
+  if (type == kSpecKaon)     return IsKaon(tr);
+  if (type == kSpecProton)   return IsProton(tr);
+  if (type == kSpecElectron) return IsElectron(tr);
+  if (type == kAll)          return kTRUE;
+  return kFALSE;
+
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTrackingUncertainties::IsKaon(const AliESDtrack * const /*tr*/, Bool_t /*useTPCPTOF*/) const {
-    //
-    // Selection of kaon candidates
-    // @TODO: To be implemented
-    //
-    return kFALSE;
+Bool_t AliAnalysisTrackingUncertainties::IsPion(const AliESDtrack * const tr, Bool_t /*useTPCPTOF*/) const{
+  //
+  // Selectron of pion candidates
+  // @TODO: To be implemented
+  //
+  Float_t nsigmaPionTPC = fESDpid->NumberOfSigmasTPC(tr, AliPID::kPion);
+  if (TMath::Abs(nsigmaPionTPC) < 3) return kTRUE;
+  return kFALSE;
+
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTrackingUncertainties::IsProton(const AliESDtrack * const /*tr*/, Bool_t /*useTPCPTOF*/) const{
-    // 
-    // Selection of proton candidates
-    // @TODO: To be implemented
-    //
-    return kFALSE;
+Bool_t AliAnalysisTrackingUncertainties::IsKaon(const AliESDtrack * const tr, Bool_t /*useTPCPTOF*/) const {
+  //
+  // Selection of kaon candidates
+  // @TODO: To be implemented
+  //
+  Float_t nsigmaKaonTPC = fESDpid->NumberOfSigmasTPC(tr, AliPID::kKaon);
+  if (TMath::Abs(nsigmaKaonTPC) < 3) return kTRUE;
+  return kFALSE;
+
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTrackingUncertainties::IsProton(const AliESDtrack * const tr, Bool_t /*useTPCPTOF*/) const{
+  // 
+  // Selection of proton candidates
+  // @TODO: To be implemented
+  //
+  Float_t nsigmaProtonTPC = fESDpid->NumberOfSigmasTPC(tr, AliPID::kProton);
+  if (TMath::Abs(nsigmaProtonTPC) < 3) return kTRUE;
+  return kFALSE;
+  
 }
 
 //________________________________________________________________________
@@ -576,7 +744,7 @@ void AliAnalysisTrackingUncertainties::InitializeTrackCutHistograms() {
   //
   //
   // (1.) number of clusters       
-  //                               0-ncl, 1-pt, 2-eta,         3-phi, 4-pid(0,unid,etc.)
+  //                               0-ncl, 1-pt, 2-eta,         3-phi, 4-pid(0-3 -> electron-proton, 4 -> undef, 5 -> all)
   Int_t    binsNcl[kNumberOfAxes] = { 40,   50,    20,            18,  6};
   Double_t minNcl[kNumberOfAxes]  = { 20,  0.1,    -1,             0, -0.5};
   Double_t maxNcl[kNumberOfAxes]  = {160,   20,    +1, 2*TMath::Pi(),  5.5};
@@ -594,7 +762,7 @@ void AliAnalysisTrackingUncertainties::InitializeTrackCutHistograms() {
   }
   //
   // (2.) chi2/cls-TPC            
-  //                                  0-chi2, 1-pt, 2-eta,         3-phi, 4-pid(0,unid,etc.)
+  //                                  0-chi2, 1-pt, 2-eta,         3-phi, 4-pid(0-3 -> electron-proton, 4 -> undef, 5 -> all)
   Int_t    binsChi2Tpc[kNumberOfAxes] = { 40,   50,    20,            18,  6};
   Double_t minChi2Tpc[kNumberOfAxes]  = {  0,  0.1,    -1,             0, -0.5};
   Double_t maxChi2Tpc[kNumberOfAxes]  = {  8,   20,    +1, 2*TMath::Pi(),  5.5};
@@ -602,7 +770,7 @@ void AliAnalysisTrackingUncertainties::InitializeTrackCutHistograms() {
   TString axisNameChi2Tpc[kNumberOfAxes]  = {"chi2tpc","pT","eta","phi","pid"};
   TString axisTitleChi2Tpc[kNumberOfAxes] = {"chi2tpc","pT","eta","phi","pid"};
   //
-  THnF * histChi2Tpc = new THnF("histChi2Tpc","number of clusters histogram",kNumberOfAxes, binsChi2Tpc, minChi2Tpc, maxChi2Tpc);
+  THnF * histChi2Tpc = new THnF("histChi2Tpc","chi2 per cls. in TPC",kNumberOfAxes, binsChi2Tpc, minChi2Tpc, maxChi2Tpc);
   BinLogAxis(histChi2Tpc, 1);
   fListHist->Add(histChi2Tpc);
   //
@@ -612,7 +780,7 @@ void AliAnalysisTrackingUncertainties::InitializeTrackCutHistograms() {
   }
   //
   // (3.) dca_z
-  //                               0-dcaZ, 1-pt, 2-eta,         3-phi, 4-pid(0,unid,etc.)
+  //                               0-dcaZ, 1-pt, 2-eta,         3-phi, 4-pid(0-3 -> electron-proton, 4 -> undef, 5 -> all)
   Int_t    binsDcaZ[kNumberOfAxes] = { 20,   50,    20,            18,  6};
   Double_t minDcaZ[kNumberOfAxes]  = {  0,  0.1,    -1,             0, -0.5};
   Double_t maxDcaZ[kNumberOfAxes]  = {  4,   20,    +1, 2*TMath::Pi(),  5.5};
@@ -620,7 +788,7 @@ void AliAnalysisTrackingUncertainties::InitializeTrackCutHistograms() {
   TString axisNameDcaZ[kNumberOfAxes]  = {"dcaZ","pT","eta","phi","pid"};
   TString axisTitleDcaZ[kNumberOfAxes] = {"dcaZ","pT","eta","phi","pid"};
   //
-  THnF * histDcaZ = new THnF("histDcaZ","number of clusters histogram",kNumberOfAxes, binsDcaZ, minDcaZ, maxDcaZ);
+  THnF * histDcaZ = new THnF("histDcaZ","dca_z to prim. vtx.",kNumberOfAxes, binsDcaZ, minDcaZ, maxDcaZ);
   BinLogAxis(histDcaZ, 1);
   fListHist->Add(histDcaZ);
   //
@@ -630,7 +798,7 @@ void AliAnalysisTrackingUncertainties::InitializeTrackCutHistograms() {
   }
   //
   // (4.) hit in SPD layer
-  //                              0-spdHit, 1-pt, 2-eta,         3-phi, 4-pid(0,unid,etc.)
+  //                              0-spdHit, 1-pt, 2-eta,         3-phi, 4-pid(0-3 -> electron-proton, 4 -> undef, 5 -> all)
   Int_t    binsSpd[kNumberOfAxes] = {    2,   50,    20,            18,  6};
   Double_t minSpd[kNumberOfAxes]  = { -0.5,  0.1,    -1,             0, -0.5};
   Double_t maxSpd[kNumberOfAxes]  = {  1.5,   20,    +1, 2*TMath::Pi(),  5.5};
@@ -638,13 +806,103 @@ void AliAnalysisTrackingUncertainties::InitializeTrackCutHistograms() {
   TString axisNameSpd[kNumberOfAxes]  = {"spdHit","pT","eta","phi","pid"};
   TString axisTitleSpd[kNumberOfAxes] = {"spdHit","pT","eta","phi","pid"};
   //
-  THnF * histSpd = new THnF("histSpd","number of clusters histogram",kNumberOfAxes, binsSpd, minSpd, maxSpd);
+  THnF * histSpd = new THnF("histSpd","hit in SPD layer or not",kNumberOfAxes, binsSpd, minSpd, maxSpd);
   BinLogAxis(histSpd, 1);
   fListHist->Add(histSpd);
   //
   for (Int_t iaxis=0; iaxis<kNumberOfAxes;iaxis++){
     histSpd->GetAxis(iaxis)->SetName(axisNameSpd[iaxis]);
     histSpd->GetAxis(iaxis)->SetTitle(axisTitleSpd[iaxis]);
+  }
+  //
+  // (5.) number of crossed rows       
+  //                               0-ncr, 1-pt, 2-eta,         3-phi, 4-pid(0,unid,etc.)
+  Int_t    binsNcr[kNumberOfAxes] = { 40,   50,    20,            18,  6};
+  Double_t minNcr[kNumberOfAxes]  = { 20,  0.1,    -1,             0, -0.5};
+  Double_t maxNcr[kNumberOfAxes]  = {160,   20,    +1, 2*TMath::Pi(),  5.5};
+  //
+  TString axisNameNcr[kNumberOfAxes]  = {"Ncr","pT","eta","phi","pid"};
+  TString axisTitleNcr[kNumberOfAxes] = {"Ncr","pT","eta","phi","pid"};
+  //
+  THnF * histNcr = new THnF("histNcr","number of crossed rows TPC histogram",kNumberOfAxes, binsNcr, minNcr, maxNcr);
+  BinLogAxis(histNcr, 1);
+  fListHist->Add(histNcr);
+  //
+  for (Int_t iaxis=0; iaxis<kNumberOfAxes;iaxis++){
+    histNcr->GetAxis(iaxis)->SetName(axisNameNcr[iaxis]);
+    histNcr->GetAxis(iaxis)->SetTitle(axisTitleNcr[iaxis]);
+  }
+  //
+  // (6.) ratio crossed rows over findable clusters       
+  //                                0-CRoverFC, 1-pt, 2-eta,         3-phi, 4-pid(0,unid,etc.)
+  Int_t    binsCRoverFC[kNumberOfAxes] = {  26,   50,    20,            18,  6};
+  Double_t minCRoverFC[kNumberOfAxes]  = { 0.4,  0.1,    -1,             0, -0.5};
+  Double_t maxCRoverFC[kNumberOfAxes]  = { 1.8,   20,    +1, 2*TMath::Pi(),  5.5};
+  //
+  TString axisNameCRoverFC[kNumberOfAxes]  = {"CRoverFC","pT","eta","phi","pid"};
+  TString axisTitleCRoverFC[kNumberOfAxes] = {"CRoverFC","pT","eta","phi","pid"};
+  //
+  THnF * histCRoverFC = new THnF("histCRoverFC","number of crossed rows over findable clusters histogram",kNumberOfAxes, binsCRoverFC, minCRoverFC, maxCRoverFC);
+  BinLogAxis(histCRoverFC, 1);
+  fListHist->Add(histCRoverFC);
+  //
+  for (Int_t iaxis=0; iaxis<kNumberOfAxes;iaxis++){
+    histCRoverFC->GetAxis(iaxis)->SetName(axisNameCRoverFC[iaxis]);
+    histCRoverFC->GetAxis(iaxis)->SetTitle(axisTitleCRoverFC[iaxis]);
+  }
+  //
+  // (7.) max chi2 / ITS cluster       
+  //                               0-Chi2Its, 1-pt, 2-eta,         3-phi, 4-pid(0,unid,etc.)
+  Int_t    binsChi2Its[kNumberOfAxes] = { 25,   50,    20,            18,  6};
+  Double_t minChi2Its[kNumberOfAxes]  = {  0,  0.1,    -1,             0, -0.5};
+  Double_t maxChi2Its[kNumberOfAxes]  = { 50,   20,    +1, 2*TMath::Pi(),  5.5};
+  //
+  TString axisNameChi2Its[kNumberOfAxes]  = {"Chi2Its","pT","eta","phi","pid"};
+  TString axisTitleChi2Its[kNumberOfAxes] = {"Chi2Its","pT","eta","phi","pid"};
+  //
+  THnF * histChi2Its = new THnF("histChi2Its","number of crossed rows TPC histogram",kNumberOfAxes, binsChi2Its, minChi2Its, maxChi2Its);
+  BinLogAxis(histChi2Its, 1);
+  fListHist->Add(histChi2Its);
+  //
+  for (Int_t iaxis=0; iaxis<kNumberOfAxes;iaxis++){
+    histChi2Its->GetAxis(iaxis)->SetName(axisNameChi2Its[iaxis]);
+    histChi2Its->GetAxis(iaxis)->SetTitle(axisTitleChi2Its[iaxis]);
+  }
+  //
+  // (8.) tpc active volume length       
+  //                                0-TpcLength, 1-pt, 2-eta,         3-phi, 4-pid(0,unid,etc.)
+  Int_t    binsTpcLength[kNumberOfAxes] = {  40,   50,    20,            18,  6};
+  Double_t minTpcLength[kNumberOfAxes]  = {   0,  0.1,    -1,             0, -0.5};
+  Double_t maxTpcLength[kNumberOfAxes]  = { 170,   20,    +1, 2*TMath::Pi(),  5.5};
+  //
+  TString axisNameTpcLength[kNumberOfAxes]  = {"TpcLength","pT","eta","phi","pid"};
+  TString axisTitleTpcLength[kNumberOfAxes] = {"TpcLength","pT","eta","phi","pid"};
+  //
+  THnF * histTpcLength = new THnF("histTpcLength","number of crossed rows TPC histogram",kNumberOfAxes, binsTpcLength, minTpcLength, maxTpcLength);
+  BinLogAxis(histTpcLength, 1);
+  fListHist->Add(histTpcLength);
+  //
+  for (Int_t iaxis=0; iaxis<kNumberOfAxes;iaxis++){
+    histTpcLength->GetAxis(iaxis)->SetName(axisNameTpcLength[iaxis]);
+    histTpcLength->GetAxis(iaxis)->SetTitle(axisTitleTpcLength[iaxis]);
+  }
+  //
+  // (9.) match TPC->ITS
+  //                                  0-is matched, 1-pt, 2-eta,         3-phi, 4-pid(0-3 -> electron-proton, 4 -> undef, 5 -> all)
+  Int_t    binsTpcItsMatch[kNumberOfAxes] = {    2,   50,    20,            18,  6};
+  Double_t minTpcItsMatch[kNumberOfAxes]  = { -0.5,  0.1,    -1,             0, -0.5};
+  Double_t maxTpcItsMatch[kNumberOfAxes]  = {  1.5,   20,    +1, 2*TMath::Pi(),  5.5};
+  //
+  TString axisNameTpcItsMatch[kNumberOfAxes]  = {"isMatched","pT","eta","phi","pid"};
+  TString axisTitleTpcItsMatch[kNumberOfAxes] = {"isMatched","pT","eta","phi","pid"};
+  //
+  THnF * histTpcItsMatch = new THnF("histTpcItsMatch","TPC -> ITS matching",kNumberOfAxes, binsTpcItsMatch, minTpcItsMatch, maxTpcItsMatch);
+  BinLogAxis(histTpcItsMatch, 1);
+  fListHist->Add(histTpcItsMatch);
+  //
+  for (Int_t iaxis=0; iaxis<kNumberOfAxes;iaxis++){
+    histTpcItsMatch->GetAxis(iaxis)->SetName(axisNameTpcItsMatch[iaxis]);
+    histTpcItsMatch->GetAxis(iaxis)->SetTitle(axisTitleTpcItsMatch[iaxis]);
   }
 
 
