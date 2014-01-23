@@ -36,9 +36,6 @@ class AliAnalysisTaskUpcK0sK0s : public AliAnalysisTaskSE {
   Bool_t fRunTree; 
   Bool_t fRunHist;
   
-  //counter
-  TH1I *hCounter; //!
-
   //event tree
   TTree *fK0sTree;
   //tree variables
@@ -66,7 +63,7 @@ class AliAnalysisTaskUpcK0sK0s : public AliAnalysisTaskSE {
   
   TList *fListHist;
   TH1D *fHistTriggersPerRun;
-  TH1D *fHistK0sMass;
+  TH2D *fHistK0sMass;
   
   AliAnalysisTaskUpcK0sK0s(const AliAnalysisTaskUpcK0sK0s&); //not implemented
   AliAnalysisTaskUpcK0sK0s& operator =(const AliAnalysisTaskUpcK0sK0s&); //not implemented
