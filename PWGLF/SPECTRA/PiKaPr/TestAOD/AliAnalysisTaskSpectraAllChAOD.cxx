@@ -260,8 +260,8 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
       }
     }
     
-    //fill all charged (4)
-    varTrk[3]=4.;
+    //fill all charged (3)
+    varTrk[3]=3.;
     ((THnSparseF*)fOutput->FindObject("NSparseHistTrk"))->Fill(varTrk);//track loop
     
     //Printf("a track");
