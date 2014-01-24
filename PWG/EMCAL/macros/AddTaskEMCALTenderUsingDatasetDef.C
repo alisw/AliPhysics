@@ -33,6 +33,17 @@ AliAnalysisTaskSE *AddTaskEMCALTenderUsingDatasetDef(
     nonLinFunct = AliEMCALRecoUtils::kPi0MCv3;
   else if (period == "lhc12a15a")
     nonLinFunct = AliEMCALRecoUtils::kPi0MCv2;
+  else if(period == "lhc13b" || period == "lhc13c" || period == "lhc13d" || period == "lhc13e" || period == "lhc13f" || period == "lhc13g" || 
+	  period == "lhc13b4" || period == "lhc13b4_fix" || period == "lhc13b4_plus") {
+    reclusterize = kTRUE;
+    seedthresh = 0.3;
+    cellthresh = 0.05;
+    else if(period == "lhc13b" || period == "lhc13c" || period == "lhc13d" || period == "lhc13e" || period == "lhc13f" || period == "lhc13g") {
+      timeMin = -50e-9;
+      timeMax =  50e-9;
+      timeCut =  1e6;
+    }
+  }
 
   AliAnalysisTaskSE *task = AddTaskEMCALTender(
     distBC, recalibClus, recalcClusPos, nonLinearCorr,
