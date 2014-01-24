@@ -2439,6 +2439,20 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
       return;
     }
   }
+  
+  
+  // Count events with trigger selection, note: Set centrality percentile fix to -1 for pp for PID framework
+  if (fUseJetPIDtask) {
+    for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
+      fJetPIDtask[i]->IncrementEventCounter(fIsPP ? -1. : centPercent, AliAnalysisTaskPID::kTriggerSel);
+    }
+  }
+  
+  if (fUseInclusivePIDtask) {
+    for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
+      fInclusivePIDtask[i]->IncrementEventCounter(fIsPP ? -1. : centPercent, AliAnalysisTaskPID::kTriggerSel);
+    }
+  }
 
   // *** vertex cut ***
   AliAODVertex* primVtx = fAOD->GetPrimaryVertex();
@@ -2452,11 +2466,33 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
   
   
   if (fDebug > 1) Printf("%s:%d primary vertex selection: %d", (char*)__FILE__,__LINE__,nTracksPrim);
-  if(!nTracksPrim){
+  if(nTracksPrim <= 0) {
     if (fDebug > 1) Printf("%s:%d primary vertex selection: event REJECTED...",(char*)__FILE__,__LINE__); 
     fh1EvtSelection->Fill(3.);
     PostData(1, fCommonHistList);
     return;
+  }
+  
+  TString primVtxName(primVtx->GetName());
+
+  if(primVtxName.CompareTo("TPCVertex",TString::kIgnoreCase) == 1){
+    if (fDebug > 1) Printf("%s:%d primary vertex selection: TPC vertex, event REJECTED...",(char*)__FILE__,__LINE__);
+    fh1EvtSelection->Fill(5.);
+    PostData(1, fCommonHistList);
+    return;
+  }
+  
+  // Count events with trigger selection and vtx cut, note: Set centrality percentile fix to -1 for pp for PID framework
+  if (fUseJetPIDtask) {
+    for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
+      fJetPIDtask[i]->IncrementEventCounter(fIsPP ? -1. : centPercent, AliAnalysisTaskPID::kTriggerSelAndVtxCut);
+    }
+  }
+  
+  if (fUseInclusivePIDtask) {
+    for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
+      fInclusivePIDtask[i]->IncrementEventCounter(fIsPP ? -1. : centPercent, AliAnalysisTaskPID::kTriggerSelAndVtxCut);
+    }
   }
   
   fh1VertexZ->Fill(primVtx->GetZ());
@@ -2468,15 +2504,19 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
     return; 
   }
   
-  TString primVtxName(primVtx->GetName());
-
-  if(primVtxName.CompareTo("TPCVertex",TString::kIgnoreCase) == 1){
-    if (fDebug > 1) Printf("%s:%d primary vertex selection: TPC vertex, event REJECTED...",(char*)__FILE__,__LINE__);
-    fh1EvtSelection->Fill(5.);
-    PostData(1, fCommonHistList);
-    return;
+  // Count events with trigger selection and vtx cut, note: Set centrality percentile fix to -1 for pp for PID framework
+  if (fUseJetPIDtask) {
+    for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
+      fJetPIDtask[i]->IncrementEventCounter(fIsPP ? -1. : centPercent, AliAnalysisTaskPID::kTriggerSelAndVtxCutAndZvtxCut);
+    }
   }
-
+  
+  if (fUseInclusivePIDtask) {
+    for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
+      fInclusivePIDtask[i]->IncrementEventCounter(fIsPP ? -1. : centPercent, AliAnalysisTaskPID::kTriggerSelAndVtxCutAndZvtxCut);
+    }
+  }
+  
   if (fDebug > 1) Printf("%s:%d event ACCEPTED ...",(char*)__FILE__,__LINE__); 
   fh1EvtSelection->Fill(0.);
   fh1EvtCent->Fill(centPercent);
@@ -3603,14 +3643,12 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
   if (fUseJetPIDtask) {
     for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
       fJetPIDtask[i]->PostOutputData();
-      fJetPIDtask[i]->IncrementEventsProcessed(centPercent);
     }
   }
   
   if (fUseInclusivePIDtask) {
     for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
       fInclusivePIDtask[i]->PostOutputData();
-      fInclusivePIDtask[i]->IncrementEventsProcessed(centPercent);
     }
   }
 }

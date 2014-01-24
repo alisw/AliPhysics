@@ -127,6 +127,8 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   , fGenRespPrDeltaPr(new Double_t[fgkMaxNumGenEntries])
   */
   , fhEventsProcessed(0x0)
+  , fhEventsTriggerSel(0x0)
+  , fhEventsTriggerSelVtxCut(0x0) 
   , fhSkippedTracksForSignalGeneration(0x0)
   , fhMCgeneratedYieldsPrimaries(0x0)
   , fh2FFJetPtRec(0x0)
@@ -250,6 +252,8 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   , fGenRespPrDeltaPr(new Double_t[fgkMaxNumGenEntries])
   */
   , fhEventsProcessed(0x0)
+  , fhEventsTriggerSel(0x0)
+  , fhEventsTriggerSelVtxCut(0x0) 
   , fhSkippedTracksForSignalGeneration(0x0)
   , fhMCgeneratedYieldsPrimaries(0x0)
   , fh2FFJetPtRec(0x0)
@@ -667,18 +671,31 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
     SetUpGenHist(fhGenPr, binsPt, deltaPrimeBins, binsCent, binsJetPt);
     fOutputContainer->Add(fhGenPr);
     
-    
-    fhEventsProcessed = new TH1D("fhEventsProcessed","Number of processed events;Centrality percentile", nCentBins,
-                                 binsCent);
-    fhEventsProcessed->Sumw2();
-    fOutputContainer->Add(fhEventsProcessed);
-    
     fhSkippedTracksForSignalGeneration = new TH2D("fhSkippedTracksForSignalGeneration",
                                                   "Number of tracks skipped for the signal generation;P_{T}^{gen} (GeV/c);TPC signal N", 
                                                   nPtBins, binsPt, 161, -0.5, 160.5);
     fhSkippedTracksForSignalGeneration->Sumw2();
     fOutputContainer->Add(fhSkippedTracksForSignalGeneration);
   }
+  
+  
+  fhEventsProcessed = new TH1D("fhEventsProcessed",
+                               "Number of events passing trigger selection, vtx and zvtx cuts;Centrality percentile", 
+                               nCentBins, binsCent);
+  fhEventsProcessed->Sumw2();
+  fOutputContainer->Add(fhEventsProcessed);
+  
+  fhEventsTriggerSelVtxCut = new TH1D("fhEventsTriggerSelVtxCut",
+                                      "Number of events passing trigger selection and vtx cut;Centrality percentile", 
+                                      nCentBins, binsCent);
+  fhEventsTriggerSelVtxCut->Sumw2();
+  fOutputContainer->Add(fhEventsTriggerSelVtxCut);
+  
+  fhEventsTriggerSel = new TH1D("fhEventsTriggerSel",
+                                "Number of events passing trigger selection;Centrality percentile", 
+                                nCentBins, binsCent);
+  fOutputContainer->Add(fhEventsTriggerSel);
+  fhEventsTriggerSel->Sumw2();
   
   
   // Generated yields within acceptance
@@ -870,7 +887,14 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
   if (!fPIDResponse || !fPIDcombined)
     return;
   
-  if (!GetVertexIsOk(fEvent))
+  Double_t centralityPercentile = -1;
+  if (fStoreCentralityPercentile)
+    centralityPercentile = fEvent->GetCentrality()->GetCentralityPercentile(fCentralityEstimator.Data());
+  
+  IncrementEventCounter(centralityPercentile, kTriggerSel);
+  
+  // Check if vertex is ok, but don't apply cut on z position
+  if (!GetVertexIsOk(fEvent, kFALSE))
     return;
   
   fESD = dynamic_cast<AliESDEvent*>(fEvent);
@@ -881,14 +905,15 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
   if(primaryVertex->GetNContributors() <= 0) 
     return;
   
+  IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCut);
+  
+  // Now check again, but also require z position to be in desired range
+  if (!GetVertexIsOk(fEvent, kTRUE))
+    return;
+  
+  IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCutAndZvtxCut);
+  
   Double_t magField = fEvent->GetMagneticField();
-  
-  //OLD with DeltaSpecies const Bool_t usePureGausForDelta = kTRUE;
-  
-
-  Double_t centralityPercentile = -1;
-  if (fStoreCentralityPercentile)
-    centralityPercentile = fEvent->GetCentrality()->GetCentralityPercentile(fCentralityEstimator.Data());
   
   if (fMC) {
     if (fDoPID || fDoEfficiency) {
@@ -1039,8 +1064,6 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     }
   } //track loop 
   
-  IncrementEventsProcessed(centralityPercentile);
-
   if(fDebug > 2)
     printf("File: %s, Line: %d: UserExec -> Processing done\n", (char*)__FILE__, __LINE__);
   
