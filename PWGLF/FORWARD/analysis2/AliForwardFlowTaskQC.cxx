@@ -192,6 +192,9 @@ void AliForwardFlowTaskQC::UserCreateOutputObjects()
   InitHists();
   if (fFlowFlags & kTPC) {
     fESDTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+    fESDTrackCuts->SetPtRange(0.2, 5.0);
+    fESDTrackCuts->SetEtaRange(-0.8, 0.8);
+    fESDTrackCuts->SetMinNClustersTPC(70);
   }
   PrintFlowSetup();
 
@@ -1311,7 +1314,7 @@ Bool_t AliForwardFlowTaskQC::VertexBin::FillTracks(TObjArray* trList, UShort_t m
   AliVTrack* tr = 0;
   AliAODTrack* aodTr = 0;
   // Cuts for AOD tracks (have already been applied to ESD tracks)
-  const Double_t pTMin = 0.5, pTMax = 20., etaMin = -0.8, etaMax = 0.8, minNCl = 50;
+  const Double_t pTMin = 0.2, pTMax = 5., etaMin = -0.8, etaMax = 0.8, minNCl = 70;
   for (Int_t i = 0; i < nTr; i++) { // track loop
     tr = (AliVTrack*)trList->At(i);
     if (!tr) continue;
