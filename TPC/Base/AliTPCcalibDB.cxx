@@ -1768,6 +1768,13 @@ void AliTPCcalibDB::UpdateChamberHighVoltageData()
       }
 
       fChamberHVgoodFraction[iROC]=Float_t(ngood)/Float_t(nPointsSampled);
+    } else if (!gr && !sensor->GetFit() ){
+      // This is an exception handling.
+      // It was observed that for some rund in the 2010 data taking no HV info is available
+      //    for some sectors. However they were active. So take care about this
+      fChamberHVmedian[iROC]       = fParam->GetNominalVoltage(iROC);
+      fChamberHVgoodFraction[iROC] = 1.;
+      AliWarning(Form("ROC %d detected without HV Splines and HV graph. Will set median HV to nominal voltage",iROC));
     } else {
       AliError(Form("No Graph or too few points found for HV sensor of ROC %d",iROC));
     }
