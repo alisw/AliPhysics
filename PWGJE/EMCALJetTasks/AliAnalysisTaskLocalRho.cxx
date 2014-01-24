@@ -53,7 +53,7 @@ AliAnalysisTaskLocalRho::AliAnalysisTaskLocalRho() :
   fFitModulationType(kNoFit), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fDetectorType(kTPC), 
   fFitModulationOptions("WLQI"), fRunModeType(kGrid), fFitModulation(0), fMinPvalue(0.01), fMaxPvalue(1), 
   fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), 
-  fSoftTrackMaxPt(5.), fHistPvalueCDF(0), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), 
+  fSoftTrackMaxPt(5.), fHistPvalueCDF(0), fHistRhoStatusCent(0), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), 
   fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kTRUE), fOutputList(0), 
   fOutputListGood(0), fOutputListBad(0), fHistSwap(0), fHistAnalysisSummary(0), fProfV2(0), fProfV2Cumulant(0), 
   fProfV3(0), fProfV3Cumulant(0) 
@@ -75,7 +75,7 @@ AliAnalysisTaskLocalRho::AliAnalysisTaskLocalRho(const char* name, runModeType t
   fFitModulationType(kNoFit), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fDetectorType(kTPC), 
   fFitModulationOptions("WLQI"), fRunModeType(type), fFitModulation(0), fMinPvalue(0.01), fMaxPvalue(1), 
   fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), 
-  fSoftTrackMaxPt(5.), fHistPvalueCDF(0), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), 
+  fSoftTrackMaxPt(5.), fHistPvalueCDF(0), fHistRhoStatusCent(0), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), 
   fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kTRUE), fOutputList(0), 
   fOutputListGood(0), fOutputListBad(0), fHistSwap(0), fHistAnalysisSummary(0), fProfV2(0), fProfV2Cumulant(0), 
   fProfV3(0), fProfV3Cumulant(0) 
@@ -200,6 +200,7 @@ void AliAnalysisTaskLocalRho::UserCreateOutputObjects()
   }
   // cdf of chisquare distribution
   fHistPvalueCDF = BookTH1F("fHistPvalueCDF", "CDF #chi^{2}", 500, 0, 1);
+  fHistRhoStatusCent = BookTH2F("fHistRhoStatusCent", "centrality", "status [0=ok, 1=failed]", 101, -1, 100, 2, -.5, 1.5);
   // vn profiles
   Float_t temp[fCentralityClasses->GetSize()];
   for(Int_t i(0); i < fCentralityClasses->GetSize(); i++) temp[i] = fCentralityClasses->At(i);
@@ -868,6 +869,7 @@ Bool_t AliAnalysisTaskLocalRho::CorrectRho(Double_t psi2, Double_t psi3)
   Double_t CDF(1.-ChiSquareCDF(fFitModulation->GetNDF(), fFitModulation->GetChisquare()));
   if(fFillHistograms) fHistPvalueCDF->Fill(CDF);
   if(CDF > fMinPvalue && CDF < fMaxPvalue && ( fAbsVnHarmonics && fFitModulation->GetMinimum(0, TMath::TwoPi()) > 0)) { // fit quality
+    if(fFillHistograms) fHistRhoStatusCent->Fill(fCent, 0.);
     // for LOCAL didactic purposes, save the  best and the worst fits
     // this routine can produce a lot of output histograms (it's not memory 'safe') and will not work on GRID 
     // since the output will become unmergeable (i.e. different nodes may produce conflicting output)
@@ -898,6 +900,7 @@ Bool_t AliAnalysisTaskLocalRho::CorrectRho(Double_t psi2, Double_t psi3)
     default : break;
     }
   } else {    // if the fit is of poor quality revert to the original rho estimate
+    if(fFillHistograms) fHistRhoStatusCent->Fill(fCent, 1.);
     switch (fRunModeType) { // again see if we want to save the fit
     case kLocal : {
       static Int_t didacticCounterWorst(0);
