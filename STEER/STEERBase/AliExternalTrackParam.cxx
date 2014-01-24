@@ -551,7 +551,7 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterialZA
   Double_t bg=GetP()/mass;
   if (mass<0) {
     if (mass<-990) {
-      AliDebug(2,Form("Mass %f corresponds to unknown PID particle = %e",mass));
+      AliDebug(2,Form("Mass %f corresponds to unknown PID particle",mass));
       return kFALSE;
     }
     bg = -2*bg;
