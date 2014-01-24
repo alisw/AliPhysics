@@ -900,7 +900,6 @@ Bool_t AliAODTrack::GetXYZAt(Double_t x, Double_t b, Double_t *r) const
   //conversion of track parameter representation is
   //based on the implementation of AliExternalTrackParam::Set(...)
   //maybe some of this code can be moved to AliVTrack to avoid code duplication
-  const double kSafe = 1e-5;
   Double_t alpha=0.0;
   Double_t radPos2 = fPosition[0]*fPosition[0]+fPosition[1]*fPosition[1];  
   Double_t radMax  = 45.; // approximately ITS outer radius
@@ -912,27 +911,10 @@ Bool_t AliAODTrack::GetXYZAt(Double_t x, Double_t b, Double_t *r) const
      TMath::DegToRad()*(20*((((Int_t)(phiPos*TMath::RadToDeg()))/20))+10);
   }
   //
-  Double_t cs=TMath::Cos(alpha), sn=TMath::Sin(alpha);
-  // protection:  avoid alpha being too close to 0 or +-pi/2
-  if (TMath::Abs(sn)<kSafe) {
-    alpha = kSafe;
-    cs=TMath::Cos(alpha);
-    sn=TMath::Sin(alpha);
-  }
-  else if (cs<kSafe) {
-    alpha -= TMath::Sign(kSafe, alpha);
-    cs=TMath::Cos(alpha);
-    sn=TMath::Sin(alpha);    
-  }
-  
   // Get the vertex of origin and the momentum
   TVector3 ver(fPosition[0],fPosition[1],fPosition[2]);
   TVector3 mom(Px(),Py(),Pz());
   //
-  // avoid momenta along axis
-  if (TMath::Abs(mom[0])<kSafe) mom[0] = TMath::Sign(kSafe*TMath::Abs(mom[1]), mom[0]);
-  if (TMath::Abs(mom[1])<kSafe) mom[1] = TMath::Sign(kSafe*TMath::Abs(mom[0]), mom[1]);
-
   // Rotate to the local coordinate system
   ver.RotateZ(-alpha);
   mom.RotateZ(-alpha);

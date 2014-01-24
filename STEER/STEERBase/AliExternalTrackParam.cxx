@@ -1810,14 +1810,28 @@ AliExternalTrackParam::GetZAt(Double_t x, Double_t b, Double_t &z) const {
   //---------------------------------------------------------------------
   Double_t dx=x-fX;
   if(TMath::Abs(dx)<=kAlmost0) {z=fP[1]; return kTRUE;}
-
-  Double_t f1=fP[2], f2=f1 + dx*GetC(b);
+  Double_t crv=GetC(b);
+  Double_t x2r = crv*dx;
+  Double_t f1=fP[2], f2=f1 + x2r;
 
   if (TMath::Abs(f1) >= kAlmost1) return kFALSE;
   if (TMath::Abs(f2) >= kAlmost1) return kFALSE;
   
   Double_t r1=sqrt((1.-f1)*(1.+f1)), r2=sqrt((1.-f2)*(1.+f2));
-  z = fP[1] + dx*(r2 + f2*(f1+f2)/(r1+r2))*fP[3]; // Many thanks to P.Hristov !
+  double dy2dx = (f1+f2)/(r1+r2);
+  if (TMath::Abs(x2r)<0.05) {
+    z = fP[1] + dx*(r2 + f2*dy2dx)*fP[3]; // Many thanks to P.Hristov !    
+  }
+  else {
+    // for small dx/R the linear apporximation of the arc by the segment is OK,
+    // but at large dx/R the error is very large and leads to incorrect Z propagation
+    // angle traversed delta = 2*asin(dist_start_end / R / 2), hence the arc is: R*deltaPhi
+    // The dist_start_end is obtained from sqrt(dx^2+dy^2) = x/(r1+r2)*sqrt(2+f1*f2+r1*r2)
+    // Similarly, the rotation angle in linear in dx only for dx<<R
+    double chord = dx*TMath::Sqrt(1+dy2dx*dy2dx);   // distance from old position to new one
+    double rot = 2*TMath::ASin(0.5*chord*crv); // angular difference seen from the circle center
+    z = fP[1] + rot/crv*fP[3];    
+  }
   return kTRUE;
 }
 
@@ -1829,17 +1843,29 @@ AliExternalTrackParam::GetXYZAt(Double_t x, Double_t b, Double_t *r) const {
   //---------------------------------------------------------------------
   Double_t dx=x-fX;
   if(TMath::Abs(dx)<=kAlmost0) return GetXYZ(r);
-
-  Double_t f1=fP[2], f2=f1 + dx*GetC(b);
-
+  Double_t crv=GetC(b);
+  Double_t x2r = crv*dx;
+  Double_t f1=fP[2], f2=f1 + dx*crv;
   if (TMath::Abs(f1) >= kAlmost1) return kFALSE;
   if (TMath::Abs(f2) >= kAlmost1) return kFALSE;
   
   Double_t r1=TMath::Sqrt((1.-f1)*(1.+f1)), r2=TMath::Sqrt((1.-f2)*(1.+f2));
+  double dy2dx = (f1+f2)/(r1+r2);
   r[0] = x;
-  r[1] = fP[0] + dx*(f1+f2)/(r1+r2);
-  r[2] = fP[1] + dx*(r2 + f2*(f1+f2)/(r1+r2))*fP[3];//Thanks to Andrea & Peter
-
+  r[1] = fP[0] + dx*dy2dx;
+  if (TMath::Abs(x2r)<0.05) {
+    r[2] = fP[1] + dx*(r2 + f2*dy2dx)*fP[3];//Thanks to Andrea & Peter
+  }
+  else {
+    // for small dx/R the linear apporximation of the arc by the segment is OK,
+    // but at large dx/R the error is very large and leads to incorrect Z propagation
+    // angle traversed delta = 2*asin(dist_start_end / R / 2), hence the arc is: R*deltaPhi
+    // The dist_start_end is obtained from sqrt(dx^2+dy^2) = x/(r1+r2)*sqrt(2+f1*f2+r1*r2)
+    // Similarly, the rotation angle in linear in dx only for dx<<R
+    double chord = dx*TMath::Sqrt(1+dy2dx*dy2dx);   // distance from old position to new one
+    double rot = 2*TMath::ASin(0.5*chord*crv); // angular difference seen from the circle center
+    r[2] = fP[1] + rot/crv*fP[3];
+  }
   return Local2GlobalPosition(r,fAlpha);
 }
 
