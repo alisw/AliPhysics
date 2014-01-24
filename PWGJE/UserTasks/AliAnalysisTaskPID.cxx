@@ -1765,16 +1765,16 @@ AliAnalysisTaskPID::TOFpidInfo AliAnalysisTaskPID::GetTOFType(const AliVTrack* t
   Double_t exclusion = -999;
   
   if (tofMode == 0) {
-    inclusion = 2;
-    exclusion = 2;
+    inclusion = 1;
+    exclusion = 2.5;
   }
   else if (tofMode == 1) {
-    inclusion = 2;
-    exclusion = 3;
+    inclusion = 1.5;
+    exclusion = 2.5;
   }
   else if (tofMode == 2) {
-    inclusion = 3;
-    exclusion = 3;
+    inclusion = 2;
+    exclusion = 2.5;
   }
   else {
     Printf("ERROR: Bad TOF mode: %d!", tofMode);
@@ -1783,7 +1783,7 @@ AliAnalysisTaskPID::TOFpidInfo AliAnalysisTaskPID::GetTOFType(const AliVTrack* t
   
   // Smaller exclusion cut for electron band in order not to sacrifise too much TOF pions,
   // but still have a reasonably small electron contamination
-  Double_t exclusionForEl = exclusion / 2.;
+  Double_t exclusionForEl = 1.5;
   
   // Exclusion cut on electrons for pions because the precision of pions is good and
   // the contamination of electron can not be ignored (although effect on pions is small
