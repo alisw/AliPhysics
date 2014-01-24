@@ -54,7 +54,7 @@ class AliFlowTrackSimpleCuts : public TNamed {
 
   Int_t GetNumberOfPOIclasses() const {return fNumberOfPOIclasses;}
 
-  virtual Int_t IsSelected(TObject* obj, Int_t id=-1);
+  virtual Bool_t IsSelected(TObject* obj, Int_t id=-1);
 
  protected:
   Bool_t   fCutPt; //cut on pt?
