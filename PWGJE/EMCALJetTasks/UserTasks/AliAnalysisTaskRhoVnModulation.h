@@ -82,6 +82,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         void                    SetUseScaledRho(Bool_t s)                       {fUseScaledRho = s; }
         void                    SetRandomSeed(TRandom3* r)                      {if (fRandom) delete fRandom; fRandom = r; }
         void                    SetModulationFit(TF1* fit);
+        void                    SetUseControlFit(Bool_t c);
         void                    SetModulationFitMinMaxP(Float_t m, Float_t n)   {fMinPvalue = m; fMaxPvalue = n; }
         void                    SetModulationFitType(fitModulationType type)    {fFitModulationType = type; }
         void                    SetQCnRecoveryType(qcRecovery type)             {fQCRecovery = type; }
@@ -204,6 +205,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         Int_t                   fMappedRunNumber;       //! mapped runnumer (for QA)
         Int_t                   fInCentralitySelection; //! centrality bin
         TF1*                    fFitModulation;         //-> modulation fit for rho
+        TF1*                    fFitControl;            //-> control fit
         Float_t                 fMinPvalue;             // minimum value of p
         Float_t                 fMaxPvalue;             // maximum value of p
         const char*             fNameJetClones;         //! collection of tclones array with jets
