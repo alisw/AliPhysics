@@ -138,6 +138,7 @@ class AliAnalysisTaskLocalRho : public AliAnalysisTaskEmcalJet {
   Float_t                 fSoftTrackMaxPt;        // max pt for soft tracks
   // general qa histograms
   TH1F*                   fHistPvalueCDF;         //! cdf value of chisquare p
+  TH2F*                   fHistRhoStatusCent;     //! status of rho vs centrality
   // general settings
   Bool_t                  fAbsVnHarmonics;        // force postive local rho
   Float_t                 fExcludeLeadingJetsFromFit;    // exclude n leading jets from fit
@@ -160,6 +161,6 @@ class AliAnalysisTaskLocalRho : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskLocalRho(const AliAnalysisTaskLocalRho&);                  // not implemented
   AliAnalysisTaskLocalRho& operator=(const AliAnalysisTaskLocalRho&);       // not implemented
 
-  ClassDef(AliAnalysisTaskLocalRho, 4);
+  ClassDef(AliAnalysisTaskLocalRho, 5);
 };
 #endif
