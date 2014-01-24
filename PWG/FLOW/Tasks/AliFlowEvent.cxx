@@ -1111,6 +1111,93 @@ Float_t GetPmdPhi(Float_t xPos, Float_t yPos)
 }
 //---------------------------------------------------------------//
 
+void AliFlowEvent::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weightsList, Bool_t usePhiWeights, Bool_t usePtWeights, Bool_t useEtaWeights)
+{
+  // get q vectors for the subevents. if no recentering is necessary, get the guy from the flow event simple
+  AliFlowEventSimple::Get2Qsub(Qarray, n, weightsList, usePhiWeights, usePtWeights, useEtaWeights);
+  // else get the recentering from the cached info
+  if (fApplyRecentering == 2010)        // 10h style recentering
+  {     
+    // first retrieve the q-vectors from the AliFlowEventSimple:: routine
+    AliFlowVector vA = Qarray[0];
+    AliFlowVector vB = Qarray[1];
+    // extract the information form the current flow vectors
+    Double_t Qxc(vA.X());       // IMPORTANT: user is responsible for the sign of eta
+    Double_t Qyc(vA.Y());       // vzeroC has negative pseudorapidity and is taken as subevent A
+    Double_t Qxa(vB.X());       // vzeroA has positive pseudorapidity and is taken as subevent B
+    Double_t Qya(vB.Y());
+    // init some values for the corrections
+    
+    // values for vector a (VZEROA)
+    Double_t Qxamean(0);
+    Double_t Qxarms(1);
+    Double_t Qyamean(0);
+    Double_t Qyarms(1);
+    // values for vector b (VZEROC)
+    Double_t Qxcmean(0);
+    Double_t Qxcrms(1);
+    Double_t Qycmean(0);
+    Double_t Qycrms(1);	
+    
+    if( n == 2) {       // second order symmetry
+        Qxamean = fMeanQ[fCurrentCentrality][1][0];
+        Qxarms  = fWidthQ[fCurrentCentrality][1][0];
+        Qyamean = fMeanQ[fCurrentCentrality][1][1];
+        Qyarms  = fWidthQ[fCurrentCentrality][1][1];
+
+        Qxcmean = fMeanQ[fCurrentCentrality][0][0];
+        Qxcrms  = fWidthQ[fCurrentCentrality][0][0];
+        Qycmean = fMeanQ[fCurrentCentrality][0][1];
+        Qycrms  = fWidthQ[fCurrentCentrality][0][1];	
+    } else if (n == 3) {        // third order symmetry
+        Qxamean = fMeanQv3[fCurrentCentrality][1][0];
+        Qxarms  = fWidthQv3[fCurrentCentrality][1][0];
+        Qyamean = fMeanQv3[fCurrentCentrality][1][1];
+        Qyarms  = fWidthQv3[fCurrentCentrality][1][1];
+  
+        Qxcmean = fMeanQv3[fCurrentCentrality][0][0];
+        Qxcrms  = fWidthQv3[fCurrentCentrality][0][0];
+        Qycmean = fMeanQv3[fCurrentCentrality][0][1];
+        Qycrms  = fWidthQv3[fCurrentCentrality][0][1];	
+    }
+    // do the correction    
+    Double_t QxaCor = (Qxa - Qxamean)/Qxarms;
+    Double_t QyaCor = (Qya - Qyamean)/Qyarms;
+    Double_t QxcCor = (Qxc - Qxcmean)/Qxcrms;
+    Double_t QycCor = (Qyc - Qycmean)/Qycrms;
+    // update the vector
+    vA.Set(QxcCor, QycCor);
+    vB.Set(QxaCor, QyaCor);
+  } else if (fApplyRecentering == 2011) { // 11h style recentering
+    // in this case, the q-vectors are repaced by the ones from
+    // the event header
+     
+    // first retrieve the q-vectors from the AliFlowEventSimple:: routine
+    AliFlowVector vA = Qarray[0];
+    AliFlowVector vB = Qarray[1];
+
+    Double_t QxaCor = 0.;
+    Double_t QyaCor = 0.;
+    Double_t QxcCor = 0.;
+    Double_t QycCor = 0.;
+
+    // copy the new q-vectors from the cache
+    if(n == 2) {
+       QxaCor = fMeanQ[0][1][0]; 
+       QyaCor = fMeanQ[0][1][1];
+       QxcCor = fMeanQ[0][0][0];
+       QycCor = fMeanQ[0][0][1];
+    } else if (n == 3) {
+       QxaCor = fMeanQv3[0][1][0]; 
+       QyaCor = fMeanQv3[0][1][1];
+       QxcCor = fMeanQv3[0][0][0];
+       QycCor = fMeanQv3[0][0][1];
+    }
+    // set the new q-vectors (which in this case means REPLACING) 
+    vA.Set(QxcCor, QycCor);
+    vB.Set(QxaCor, QyaCor);
+  }
+}
 //_____________________________________________________________________________
 void AliFlowEvent::SetVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) {
     // open calibration info, copied from AliAnalyisTaskVnV0.cxx
@@ -1161,26 +1248,26 @@ void AliFlowEvent::SetVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) {
         for(Int_t r(0); r < 176; r++) {
             if(run == runs11h[r]) {
                 printf(" > run has been identified as 11h < \n");
-                if(cuts->GetV0gainEqualizationPerRing()) {
+                if(cuts->GetVZEROgainEqualizationPerRing()) {
                     // enable or disable rings through the weights, weight 1. is enabled, 0. is disabled
                     // start with the vzero c rings (segments 0 through 31)
-                    (cuts->GetUseVZERORing(0)) ? cuts->SetV0Cpol(0, 1.) : cuts->SetV0Cpol(0, 0.);
-                    (cuts->GetUseVZERORing(1)) ? cuts->SetV0Cpol(1, 1.) : cuts->SetV0Cpol(1, 0.);
-                    (cuts->GetUseVZERORing(2)) ? cuts->SetV0Cpol(2, 1.) : cuts->SetV0Cpol(2, 0.);
-                    (cuts->GetUseVZERORing(3)) ? cuts->SetV0Cpol(3, 1.) : cuts->SetV0Cpol(3, 0.);
+                    (cuts->GetUseVZERORing(0)) ? cuts->SetVZEROCpol(0, 1.) : cuts->SetVZEROCpol(0, 0.);
+                    (cuts->GetUseVZERORing(1)) ? cuts->SetVZEROCpol(1, 1.) : cuts->SetVZEROCpol(1, 0.);
+                    (cuts->GetUseVZERORing(2)) ? cuts->SetVZEROCpol(2, 1.) : cuts->SetVZEROCpol(2, 0.);
+                    (cuts->GetUseVZERORing(3)) ? cuts->SetVZEROCpol(3, 1.) : cuts->SetVZEROCpol(3, 0.);
                     // same for vzero a
-                    (cuts->GetUseVZERORing(4)) ? cuts->SetV0Apol(0, 1.) : cuts->SetV0Apol(0, 0.);
-                    (cuts->GetUseVZERORing(5)) ? cuts->SetV0Apol(1, 1.) : cuts->SetV0Apol(1, 0.);
-                    (cuts->GetUseVZERORing(6)) ? cuts->SetV0Apol(2, 1.) : cuts->SetV0Apol(2, 0.);
-                    (cuts->GetUseVZERORing(7)) ? cuts->SetV0Apol(3, 1.) : cuts->SetV0Apol(3, 0.);
+                    (cuts->GetUseVZERORing(4)) ? cuts->SetVZEROApol(0, 1.) : cuts->SetVZEROApol(0, 0.);
+                    (cuts->GetUseVZERORing(5)) ? cuts->SetVZEROApol(1, 1.) : cuts->SetVZEROApol(1, 0.);
+                    (cuts->GetUseVZERORing(6)) ? cuts->SetVZEROApol(2, 1.) : cuts->SetVZEROApol(2, 0.);
+                    (cuts->GetUseVZERORing(7)) ? cuts->SetVZEROApol(3, 1.) : cuts->SetVZEROApol(3, 0.);
                 } else {
                     // else enable all rings
-                    for(Int_t i(0); i < 4; i++) cuts->SetV0Cpol(i, 1.);
-                    for(Int_t i(0); i < 4; i++) cuts->SetV0Apol(i, 1.);
+                    for(Int_t i(0); i < 4; i++) cuts->SetVZEROCpol(i, 1.);
+                    for(Int_t i(0); i < 4; i++) cuts->SetVZEROApol(i, 1.);
                 }
                 // pass a NULL pointer to the track cuts object
                 // the NULL pointer will identify 11h runs
-                cuts->SetV0gainEqualisation(NULL);
+                cuts->SetVZEROgainEqualisation(NULL);
                 // this will identify the recentering style that is required. flight might be changed if recenetering is disabled
                 fApplyRecentering = 2011;
                 SetVZEROCalibrationForTrackCuts2011(cuts); 
@@ -1188,45 +1275,45 @@ void AliFlowEvent::SetVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) {
             }
         }
         // the run has not been identified as lhc11h data, so we assume a template calibration
-	printf("OADB object hMultV0BefCorr is not available for run %i (used run 137366)\n",run);
+	printf("OADB object hMultVZEROBefCorr is not available for run %i (used run 137366)\n",run);
 	run = 137366;
     }
     printf(" > run has been identified as 10h < \n");
     // step 1) get the proper multiplicity weights from the vzero signal
-    TProfile* fMultV0 = ((TH2F *) cont->GetObject(run))->ProfileX();
+    TProfile* fMultVZERO = ((TH2F *) cont->GetObject(run))->ProfileX();
 
     TF1 *fpol0 = new TF1("fpol0","pol0"); 
-    if(cuts->GetV0gainEqualizationPerRing()) {
+    if(cuts->GetVZEROgainEqualizationPerRing()) {
         // do the calibration per ring
         // start with the vzero c rings (segments 0 through 31)
-        fMultV0->Fit(fpol0, "", "", 0, 8);
-        (cuts->GetUseVZERORing(0)) ? cuts->SetV0Cpol(0, fpol0->GetParameter(0)) : cuts->SetV0Cpol(0, 0.);
-        fMultV0->Fit(fpol0, "", "", 8, 16);
-        (cuts->GetUseVZERORing(1)) ? cuts->SetV0Cpol(1, fpol0->GetParameter(0)) : cuts->SetV0Cpol(1, 0.);
-        fMultV0->Fit(fpol0, "", "", 16, 24);
-        (cuts->GetUseVZERORing(2)) ? cuts->SetV0Cpol(2, fpol0->GetParameter(0)) : cuts->SetV0Cpol(2, 0.);
-        fMultV0->Fit(fpol0, "", "", 24, 32);
-        (cuts->GetUseVZERORing(3)) ? cuts->SetV0Cpol(3, fpol0->GetParameter(0)) : cuts->SetV0Cpol(3, 0.);
+        fMultVZERO->Fit(fpol0, "", "", 0, 8);
+        (cuts->GetUseVZERORing(0)) ? cuts->SetVZEROCpol(0, fpol0->GetParameter(0)) : cuts->SetVZEROCpol(0, 0.);
+        fMultVZERO->Fit(fpol0, "", "", 8, 16);
+        (cuts->GetUseVZERORing(1)) ? cuts->SetVZEROCpol(1, fpol0->GetParameter(0)) : cuts->SetVZEROCpol(1, 0.);
+        fMultVZERO->Fit(fpol0, "", "", 16, 24);
+        (cuts->GetUseVZERORing(2)) ? cuts->SetVZEROCpol(2, fpol0->GetParameter(0)) : cuts->SetVZEROCpol(2, 0.);
+        fMultVZERO->Fit(fpol0, "", "", 24, 32);
+        (cuts->GetUseVZERORing(3)) ? cuts->SetVZEROCpol(3, fpol0->GetParameter(0)) : cuts->SetVZEROCpol(3, 0.);
         // same thing for vero A
-        fMultV0->Fit(fpol0, "", "", 32, 40);
-        (cuts->GetUseVZERORing(4)) ? cuts->SetV0Apol(0, fpol0->GetParameter(0)) : cuts->SetV0Apol(0, 0.);
-        fMultV0->Fit(fpol0, "", "", 40, 48);
-        (cuts->GetUseVZERORing(5)) ? cuts->SetV0Apol(1, fpol0->GetParameter(0)) : cuts->SetV0Apol(1, 0.);
-        fMultV0->Fit(fpol0, "", "", 48, 56);
-        (cuts->GetUseVZERORing(6)) ? cuts->SetV0Apol(2, fpol0->GetParameter(0)) : cuts->SetV0Apol(2, 0.);
-        fMultV0->Fit(fpol0, "", "", 56, 64);
-        (cuts->GetUseVZERORing(7)) ? cuts->SetV0Apol(3, fpol0->GetParameter(0)) : cuts->SetV0Apol(3, 0.);
+        fMultVZERO->Fit(fpol0, "", "", 32, 40);
+        (cuts->GetUseVZERORing(4)) ? cuts->SetVZEROApol(0, fpol0->GetParameter(0)) : cuts->SetVZEROApol(0, 0.);
+        fMultVZERO->Fit(fpol0, "", "", 40, 48);
+        (cuts->GetUseVZERORing(5)) ? cuts->SetVZEROApol(1, fpol0->GetParameter(0)) : cuts->SetVZEROApol(1, 0.);
+        fMultVZERO->Fit(fpol0, "", "", 48, 56);
+        (cuts->GetUseVZERORing(6)) ? cuts->SetVZEROApol(2, fpol0->GetParameter(0)) : cuts->SetVZEROApol(2, 0.);
+        fMultVZERO->Fit(fpol0, "", "", 56, 64);
+        (cuts->GetUseVZERORing(7)) ? cuts->SetVZEROApol(3, fpol0->GetParameter(0)) : cuts->SetVZEROApol(3, 0.);
     } else {
         // do the calibration in one go. the calibration will still be 
         // stored per ring, but each ring has the same weight now
-       fMultV0->Fit(fpol0,"","",0,31);
-       for(Int_t i(0); i < 4; i++) cuts->SetV0Cpol(i, fpol0->GetParameter(0));
-       fMultV0->Fit(fpol0,"","",32,64);
-       for(Int_t i(0); i < 4; i++) cuts->SetV0Apol(i, fpol0->GetParameter(0));
+       fMultVZERO->Fit(fpol0,"","",0,31);
+       for(Int_t i(0); i < 4; i++) cuts->SetVZEROCpol(i, fpol0->GetParameter(0));
+       fMultVZERO->Fit(fpol0,"","",32,64);
+       for(Int_t i(0); i < 4; i++) cuts->SetVZEROApol(i, fpol0->GetParameter(0));
     }
     // the parameters to weigh the vzero track cuts have been extracted now, 
     // so we can pass them to the current track cuts obect
-    cuts->SetV0gainEqualisation(fMultV0);       // passed as a TH1
+    cuts->SetVZEROgainEqualisation(fMultVZERO);       // passed as a TH1
 
     // step 2) reweight the q-vectors that will be  called by flow methods which use
     // subevents
