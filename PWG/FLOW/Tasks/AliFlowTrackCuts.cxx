@@ -526,7 +526,7 @@ void AliFlowTrackCuts::SetCutMC( Bool_t b )
 //-----------------------------------------------------------------------
 Bool_t AliFlowTrackCuts::IsSelected(TObject* obj, Int_t id)
 {
-  //return the 
+  //check cuts
   AliVParticle* vparticle = dynamic_cast<AliVParticle*>(obj);
 //if (vparticle) return PassesCuts(vparticle);                // XZhang 20120604
   if (vparticle) {                                            // XZhang 20120604
@@ -1459,253 +1459,253 @@ Bool_t AliFlowTrackCuts::FillFlowTrack(AliFlowTrack* track) const
   }
 }
 
-//-----------------------------------------------------------------------
-AliFlowTrack* AliFlowTrackCuts::MakeFlowTrackSPDtracklet() const
-{
-  //make a flow track from tracklet
-  AliFlowTrack* flowtrack=NULL;
-  TParticle *tmpTParticle=NULL;
-  AliMCParticle* tmpAliMCParticle=NULL;
-  switch (fParamMix)
-  {
-    case kPure:
-      flowtrack = new AliFlowTrack();
-      flowtrack->SetPhi(fTrackPhi);
-      flowtrack->SetEta(fTrackEta);
-      flowtrack->SetWeight(fTrackWeight);
-      break;
-    case kTrackWithMCkine:
-      if (!fMCparticle) return NULL;
-      flowtrack = new AliFlowTrack();
-      flowtrack->SetPhi( fMCparticle->Phi() );
-      flowtrack->SetEta( fMCparticle->Eta() );
-      flowtrack->SetPt( fMCparticle->Pt() );
-      break;
-    case kTrackWithMCpt:
-      if (!fMCparticle) return NULL;
-      flowtrack = new AliFlowTrack();
-      flowtrack->SetPhi(fTrackPhi);
-      flowtrack->SetEta(fTrackEta);
-      flowtrack->SetWeight(fTrackWeight);
-      flowtrack->SetPt(fMCparticle->Pt());
-      break;
-    case kTrackWithPtFromFirstMother:
-      if (!fMCparticle) return NULL;
-      flowtrack = new AliFlowTrack();
-      flowtrack->SetPhi(fTrackPhi);
-      flowtrack->SetEta(fTrackEta);
-      flowtrack->SetWeight(fTrackWeight);
-      tmpTParticle = fMCparticle->Particle();
-      tmpAliMCParticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(tmpTParticle->GetFirstMother()));
-      flowtrack->SetPt(tmpAliMCParticle->Pt());
-      break;
-    default:
-      flowtrack = new AliFlowTrack();
-      flowtrack->SetPhi(fTrackPhi);
-      flowtrack->SetEta(fTrackEta);
-      flowtrack->SetWeight(fTrackWeight);
-      break;
-  }
-  flowtrack->SetSource(AliFlowTrack::kFromTracklet);
-  return flowtrack;
-}
-
-//-----------------------------------------------------------------------
-AliFlowTrack* AliFlowTrackCuts::MakeFlowTrackVParticle() const
-{
-  //make flow track from AliVParticle (ESD,AOD,MC)
-  if (!fTrack) return NULL;
-  AliFlowTrack* flowtrack=NULL;
-  TParticle *tmpTParticle=NULL;
-  AliMCParticle* tmpAliMCParticle=NULL;
-  AliExternalTrackParam* externalParams=NULL;
-  AliESDtrack* esdtrack=NULL;
-  switch(fParamMix)
-  {
-    case kPure:
-      flowtrack = new AliFlowTrack(fTrack);
-      break;
-    case kTrackWithMCkine:
-      flowtrack = new AliFlowTrack(fMCparticle);
-      break;
-    case kTrackWithMCPID:
-      flowtrack = new AliFlowTrack(fTrack);
-      //flowtrack->setPID(...) from mc, when implemented
-      break;
-    case kTrackWithMCpt:
-      if (!fMCparticle) return NULL;
-      flowtrack = new AliFlowTrack(fTrack);
-      flowtrack->SetPt(fMCparticle->Pt());
-      break;
-    case kTrackWithPtFromFirstMother:
-      if (!fMCparticle) return NULL;
-      flowtrack = new AliFlowTrack(fTrack);
-      tmpTParticle = fMCparticle->Particle();
-      tmpAliMCParticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(tmpTParticle->GetFirstMother()));
-      flowtrack->SetPt(tmpAliMCParticle->Pt());
-      break;
-    case kTrackWithTPCInnerParams:
-      esdtrack = dynamic_cast<AliESDtrack*>(fTrack);
-      if (!esdtrack) return NULL;
-      externalParams = const_cast<AliExternalTrackParam*>(esdtrack->GetTPCInnerParam());
-      if (!externalParams) return NULL;
-      flowtrack = new AliFlowTrack(externalParams);
-      break;
-    default:
-      flowtrack = new AliFlowTrack(fTrack);
-      break;
-  }
-  if (fParamType==kMC) 
-  {
-    flowtrack->SetSource(AliFlowTrack::kFromMC);
-    flowtrack->SetID(fTrackLabel);
-  }
-  else if (dynamic_cast<AliESDtrack*>(fTrack))
-  {
-    flowtrack->SetSource(AliFlowTrack::kFromESD);
-    flowtrack->SetID(static_cast<AliVTrack*>(fTrack)->GetID());
-  }
-  else if (dynamic_cast<AliAODTrack*>(fTrack)) 
-  {
-    flowtrack->SetSource(AliFlowTrack::kFromAOD);
-    flowtrack->SetID(static_cast<AliVTrack*>(fTrack)->GetID());
-  }
-  else if (dynamic_cast<AliMCParticle*>(fTrack)) 
-  {
-    flowtrack->SetSource(AliFlowTrack::kFromMC);
-    flowtrack->SetID(static_cast<AliVTrack*>(fTrack)->GetID());
-  }
-  return flowtrack;
-}
-
-//-----------------------------------------------------------------------
-AliFlowTrack* AliFlowTrackCuts::MakeFlowTrackPMDtrack() const
-{
-  //make a flow track from PMD track
-  AliFlowTrack* flowtrack=NULL;
-  TParticle *tmpTParticle=NULL;
-  AliMCParticle* tmpAliMCParticle=NULL;
-  switch (fParamMix)
-  {
-    case kPure:
-      flowtrack = new AliFlowTrack();
-      flowtrack->SetPhi(fTrackPhi);
-      flowtrack->SetEta(fTrackEta);
-      flowtrack->SetWeight(fTrackWeight);
-      break;
-    case kTrackWithMCkine:
-      if (!fMCparticle) return NULL;
-      flowtrack = new AliFlowTrack();
-      flowtrack->SetPhi( fMCparticle->Phi() );
-      flowtrack->SetEta( fMCparticle->Eta() );
-      flowtrack->SetWeight(fTrackWeight);
-      flowtrack->SetPt( fMCparticle->Pt() );
-      break;
-    case kTrackWithMCpt:
-      if (!fMCparticle) return NULL;
-      flowtrack = new AliFlowTrack();
-      flowtrack->SetPhi(fTrackPhi);
-      flowtrack->SetEta(fTrackEta);
-      flowtrack->SetWeight(fTrackWeight);
-      flowtrack->SetPt(fMCparticle->Pt());
-      break;
-    case kTrackWithPtFromFirstMother:
-      if (!fMCparticle) return NULL;
-      flowtrack = new AliFlowTrack();
-      flowtrack->SetPhi(fTrackPhi);
-      flowtrack->SetEta(fTrackEta);
-      flowtrack->SetWeight(fTrackWeight);
-      tmpTParticle = fMCparticle->Particle();
-      tmpAliMCParticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(tmpTParticle->GetFirstMother()));
-      flowtrack->SetPt(tmpAliMCParticle->Pt());
-      break;
-    default:
-      flowtrack = new AliFlowTrack();
-      flowtrack->SetPhi(fTrackPhi);
-      flowtrack->SetEta(fTrackEta);
-      flowtrack->SetWeight(fTrackWeight);
-      break;
-  }
-
-  flowtrack->SetSource(AliFlowTrack::kFromPMD);
-  return flowtrack;
-}
-
-//-----------------------------------------------------------------------
-AliFlowTrack* AliFlowTrackCuts::MakeFlowTrackVZERO() const
-{
-  //make a flow track from VZERO
-  AliFlowTrack* flowtrack=NULL;
-  TParticle *tmpTParticle=NULL;
-  AliMCParticle* tmpAliMCParticle=NULL;
-  switch (fParamMix)
-  {
-    case kPure:
-      flowtrack = new AliFlowTrack();
-      flowtrack->SetPhi(fTrackPhi);
-      flowtrack->SetEta(fTrackEta);
-      flowtrack->SetWeight(fTrackWeight);
-      break;
-    case kTrackWithMCkine:
-      if (!fMCparticle) return NULL;
-      flowtrack = new AliFlowTrack();
-      flowtrack->SetPhi( fMCparticle->Phi() );
-      flowtrack->SetEta( fMCparticle->Eta() );
-      flowtrack->SetWeight(fTrackWeight);
-      flowtrack->SetPt( fMCparticle->Pt() );
-      break;
-    case kTrackWithMCpt:
-      if (!fMCparticle) return NULL;
-      flowtrack = new AliFlowTrack();
-      flowtrack->SetPhi(fTrackPhi);
-      flowtrack->SetEta(fTrackEta);
-      flowtrack->SetWeight(fTrackWeight);
-      flowtrack->SetPt(fMCparticle->Pt());
-      break;
-    case kTrackWithPtFromFirstMother:
-      if (!fMCparticle) return NULL;
-      flowtrack = new AliFlowTrack();
-      flowtrack->SetPhi(fTrackPhi);
-      flowtrack->SetEta(fTrackEta);
-      flowtrack->SetWeight(fTrackWeight);
-      tmpTParticle = fMCparticle->Particle();
-      tmpAliMCParticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(tmpTParticle->GetFirstMother()));
-      flowtrack->SetPt(tmpAliMCParticle->Pt());
-      break;
-    default:
-      flowtrack = new AliFlowTrack();
-      flowtrack->SetPhi(fTrackPhi);
-      flowtrack->SetEta(fTrackEta);
-      flowtrack->SetWeight(fTrackWeight);
-      break;
-  }
-
-  flowtrack->SetSource(AliFlowTrack::kFromVZERO);
-  return flowtrack;
-}
-
-//-----------------------------------------------------------------------
-AliFlowTrack* AliFlowTrackCuts::MakeFlowTrack() const
-{
-  //get a flow track constructed from whatever we applied cuts on
-  //caller is resposible for deletion
-  //if construction fails return NULL
-  //TODO: for tracklets, PMD and VZERO we probably need just one method,
-  //something like MakeFlowTrackGeneric(), wait with this until
-  //requirements quirks are known.
-  switch (fParamType)
-  {
-    case kSPDtracklet:
-      return MakeFlowTrackSPDtracklet();
-    case kPMD:
-      return MakeFlowTrackPMDtrack();
-    case kVZERO:
-      return MakeFlowTrackVZERO();
-    default:
-      return MakeFlowTrackVParticle();
-  }
-}
-
+////-----------------------------------------------------------------------
+//AliFlowTrack* AliFlowTrackCuts::MakeFlowTrackSPDtracklet() const
+//{
+//  //make a flow track from tracklet
+//  AliFlowTrack* flowtrack=NULL;
+//  TParticle *tmpTParticle=NULL;
+//  AliMCParticle* tmpAliMCParticle=NULL;
+//  switch (fParamMix)
+//  {
+//    case kPure:
+//      flowtrack = new AliFlowTrack();
+//      flowtrack->SetPhi(fTrackPhi);
+//      flowtrack->SetEta(fTrackEta);
+//      flowtrack->SetWeight(fTrackWeight);
+//      break;
+//    case kTrackWithMCkine:
+//      if (!fMCparticle) return NULL;
+//      flowtrack = new AliFlowTrack();
+//      flowtrack->SetPhi( fMCparticle->Phi() );
+//      flowtrack->SetEta( fMCparticle->Eta() );
+//      flowtrack->SetPt( fMCparticle->Pt() );
+//      break;
+//    case kTrackWithMCpt:
+//      if (!fMCparticle) return NULL;
+//      flowtrack = new AliFlowTrack();
+//      flowtrack->SetPhi(fTrackPhi);
+//      flowtrack->SetEta(fTrackEta);
+//      flowtrack->SetWeight(fTrackWeight);
+//      flowtrack->SetPt(fMCparticle->Pt());
+//      break;
+//    case kTrackWithPtFromFirstMother:
+//      if (!fMCparticle) return NULL;
+//      flowtrack = new AliFlowTrack();
+//      flowtrack->SetPhi(fTrackPhi);
+//      flowtrack->SetEta(fTrackEta);
+//      flowtrack->SetWeight(fTrackWeight);
+//      tmpTParticle = fMCparticle->Particle();
+//      tmpAliMCParticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(tmpTParticle->GetFirstMother()));
+//      flowtrack->SetPt(tmpAliMCParticle->Pt());
+//      break;
+//    default:
+//      flowtrack = new AliFlowTrack();
+//      flowtrack->SetPhi(fTrackPhi);
+//      flowtrack->SetEta(fTrackEta);
+//      flowtrack->SetWeight(fTrackWeight);
+//      break;
+//  }
+//  flowtrack->SetSource(AliFlowTrack::kFromTracklet);
+//  return flowtrack;
+//}
+//
+////-----------------------------------------------------------------------
+//AliFlowTrack* AliFlowTrackCuts::MakeFlowTrackVParticle() const
+//{
+//  //make flow track from AliVParticle (ESD,AOD,MC)
+//  if (!fTrack) return NULL;
+//  AliFlowTrack* flowtrack=NULL;
+//  TParticle *tmpTParticle=NULL;
+//  AliMCParticle* tmpAliMCParticle=NULL;
+//  AliExternalTrackParam* externalParams=NULL;
+//  AliESDtrack* esdtrack=NULL;
+//  switch(fParamMix)
+//  {
+//    case kPure:
+//      flowtrack = new AliFlowTrack(fTrack);
+//      break;
+//    case kTrackWithMCkine:
+//      flowtrack = new AliFlowTrack(fMCparticle);
+//      break;
+//    case kTrackWithMCPID:
+//      flowtrack = new AliFlowTrack(fTrack);
+//      //flowtrack->setPID(...) from mc, when implemented
+//      break;
+//    case kTrackWithMCpt:
+//      if (!fMCparticle) return NULL;
+//      flowtrack = new AliFlowTrack(fTrack);
+//      flowtrack->SetPt(fMCparticle->Pt());
+//      break;
+//    case kTrackWithPtFromFirstMother:
+//      if (!fMCparticle) return NULL;
+//      flowtrack = new AliFlowTrack(fTrack);
+//      tmpTParticle = fMCparticle->Particle();
+//      tmpAliMCParticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(tmpTParticle->GetFirstMother()));
+//      flowtrack->SetPt(tmpAliMCParticle->Pt());
+//      break;
+//    case kTrackWithTPCInnerParams:
+//      esdtrack = dynamic_cast<AliESDtrack*>(fTrack);
+//      if (!esdtrack) return NULL;
+//      externalParams = const_cast<AliExternalTrackParam*>(esdtrack->GetTPCInnerParam());
+//      if (!externalParams) return NULL;
+//      flowtrack = new AliFlowTrack(externalParams);
+//      break;
+//    default:
+//      flowtrack = new AliFlowTrack(fTrack);
+//      break;
+//  }
+//  if (fParamType==kMC) 
+//  {
+//    flowtrack->SetSource(AliFlowTrack::kFromMC);
+//    flowtrack->SetID(fTrackLabel);
+//  }
+//  else if (dynamic_cast<AliESDtrack*>(fTrack))
+//  {
+//    flowtrack->SetSource(AliFlowTrack::kFromESD);
+//    flowtrack->SetID(static_cast<AliVTrack*>(fTrack)->GetID());
+//  }
+//  else if (dynamic_cast<AliAODTrack*>(fTrack)) 
+//  {
+//    flowtrack->SetSource(AliFlowTrack::kFromAOD);
+//    flowtrack->SetID(static_cast<AliVTrack*>(fTrack)->GetID());
+//  }
+//  else if (dynamic_cast<AliMCParticle*>(fTrack)) 
+//  {
+//    flowtrack->SetSource(AliFlowTrack::kFromMC);
+//    flowtrack->SetID(static_cast<AliVTrack*>(fTrack)->GetID());
+//  }
+//  return flowtrack;
+//}
+//
+////-----------------------------------------------------------------------
+//AliFlowTrack* AliFlowTrackCuts::MakeFlowTrackPMDtrack() const
+//{
+//  //make a flow track from PMD track
+//  AliFlowTrack* flowtrack=NULL;
+//  TParticle *tmpTParticle=NULL;
+//  AliMCParticle* tmpAliMCParticle=NULL;
+//  switch (fParamMix)
+//  {
+//    case kPure:
+//      flowtrack = new AliFlowTrack();
+//      flowtrack->SetPhi(fTrackPhi);
+//      flowtrack->SetEta(fTrackEta);
+//      flowtrack->SetWeight(fTrackWeight);
+//      break;
+//    case kTrackWithMCkine:
+//      if (!fMCparticle) return NULL;
+//      flowtrack = new AliFlowTrack();
+//      flowtrack->SetPhi( fMCparticle->Phi() );
+//      flowtrack->SetEta( fMCparticle->Eta() );
+//      flowtrack->SetWeight(fTrackWeight);
+//      flowtrack->SetPt( fMCparticle->Pt() );
+//      break;
+//    case kTrackWithMCpt:
+//      if (!fMCparticle) return NULL;
+//      flowtrack = new AliFlowTrack();
+//      flowtrack->SetPhi(fTrackPhi);
+//      flowtrack->SetEta(fTrackEta);
+//      flowtrack->SetWeight(fTrackWeight);
+//      flowtrack->SetPt(fMCparticle->Pt());
+//      break;
+//    case kTrackWithPtFromFirstMother:
+//      if (!fMCparticle) return NULL;
+//      flowtrack = new AliFlowTrack();
+//      flowtrack->SetPhi(fTrackPhi);
+//      flowtrack->SetEta(fTrackEta);
+//      flowtrack->SetWeight(fTrackWeight);
+//      tmpTParticle = fMCparticle->Particle();
+//      tmpAliMCParticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(tmpTParticle->GetFirstMother()));
+//      flowtrack->SetPt(tmpAliMCParticle->Pt());
+//      break;
+//    default:
+//      flowtrack = new AliFlowTrack();
+//      flowtrack->SetPhi(fTrackPhi);
+//      flowtrack->SetEta(fTrackEta);
+//      flowtrack->SetWeight(fTrackWeight);
+//      break;
+//  }
+//
+//  flowtrack->SetSource(AliFlowTrack::kFromPMD);
+//  return flowtrack;
+//}
+//
+////-----------------------------------------------------------------------
+//AliFlowTrack* AliFlowTrackCuts::MakeFlowTrackVZERO() const
+//{
+//  //make a flow track from VZERO
+//  AliFlowTrack* flowtrack=NULL;
+//  TParticle *tmpTParticle=NULL;
+//  AliMCParticle* tmpAliMCParticle=NULL;
+//  switch (fParamMix)
+//  {
+//    case kPure:
+//      flowtrack = new AliFlowTrack();
+//      flowtrack->SetPhi(fTrackPhi);
+//      flowtrack->SetEta(fTrackEta);
+//      flowtrack->SetWeight(fTrackWeight);
+//      break;
+//    case kTrackWithMCkine:
+//      if (!fMCparticle) return NULL;
+//      flowtrack = new AliFlowTrack();
+//      flowtrack->SetPhi( fMCparticle->Phi() );
+//      flowtrack->SetEta( fMCparticle->Eta() );
+//      flowtrack->SetWeight(fTrackWeight);
+//      flowtrack->SetPt( fMCparticle->Pt() );
+//      break;
+//    case kTrackWithMCpt:
+//      if (!fMCparticle) return NULL;
+//      flowtrack = new AliFlowTrack();
+//      flowtrack->SetPhi(fTrackPhi);
+//      flowtrack->SetEta(fTrackEta);
+//      flowtrack->SetWeight(fTrackWeight);
+//      flowtrack->SetPt(fMCparticle->Pt());
+//      break;
+//    case kTrackWithPtFromFirstMother:
+//      if (!fMCparticle) return NULL;
+//      flowtrack = new AliFlowTrack();
+//      flowtrack->SetPhi(fTrackPhi);
+//      flowtrack->SetEta(fTrackEta);
+//      flowtrack->SetWeight(fTrackWeight);
+//      tmpTParticle = fMCparticle->Particle();
+//      tmpAliMCParticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(tmpTParticle->GetFirstMother()));
+//      flowtrack->SetPt(tmpAliMCParticle->Pt());
+//      break;
+//    default:
+//      flowtrack = new AliFlowTrack();
+//      flowtrack->SetPhi(fTrackPhi);
+//      flowtrack->SetEta(fTrackEta);
+//      flowtrack->SetWeight(fTrackWeight);
+//      break;
+//  }
+//
+//  flowtrack->SetSource(AliFlowTrack::kFromVZERO);
+//  return flowtrack;
+//}
+//
+////-----------------------------------------------------------------------
+//AliFlowTrack* AliFlowTrackCuts::MakeFlowTrack() const
+//{
+//  //get a flow track constructed from whatever we applied cuts on
+//  //caller is resposible for deletion
+//  //if construction fails return NULL
+//  //TODO: for tracklets, PMD and VZERO we probably need just one method,
+//  //something like MakeFlowTrackGeneric(), wait with this until
+//  //requirements quirks are known.
+//  switch (fParamType)
+//  {
+//    case kSPDtracklet:
+//      return MakeFlowTrackSPDtracklet();
+//    case kPMD:
+//      return MakeFlowTrackPMDtrack();
+//    case kVZERO:
+//      return MakeFlowTrackVZERO();
+//    default:
+//      return MakeFlowTrackVParticle();
+//  }
+//}
+//
 //-----------------------------------------------------------------------
 Bool_t AliFlowTrackCuts::IsPhysicalPrimary() const
 {
@@ -4183,7 +4183,7 @@ Bool_t AliFlowTrackCuts::PassesVZEROcuts(Int_t id)
     //this is only needed in pass1 of LHC10h
     Float_t multVZERO[fgkNumberOfVZEROtracks];
     Float_t dummy=0.0;
-    AliESDUtils::GetCorrVZERO((AliESDEvent*)fEvent,dummy,multVZERO);
+    AliESDUtils::GetCorrV0((AliESDEvent*)fEvent,dummy,multVZERO);
     fTrackWeight = multVZERO[id];
   }
 

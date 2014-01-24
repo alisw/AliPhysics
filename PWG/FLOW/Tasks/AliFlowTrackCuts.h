@@ -139,9 +139,6 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void SetMaxKinkInvMassKmu(Double_t m) {fMaxKinkInvMassKmu=m;}
   void SetMinKinkInvMassKmu(Double_t m) {fMinKinkInvMassKmu=m;}
 
-  //VZEROs
-  //
-
   Double_t GetMinKinkAngle() const {return fMinKinkAngle;}
   Double_t GetMinKinkRadius() const {return fMinKinkRadius;}
   Double_t GetMaxKinkRadius() const {return fMaxKinkRadius;}
@@ -251,8 +248,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void SetLinearizeVZEROresponse( Bool_t b=kTRUE ) {fLinearizeVZEROresponse=b;}
 
   //these should maybe be protected
-  Bool_t PassesCuts(AliVParticle* track, Bool_t passOther=kTRUE);
-  Bool_t PassesESDcuts(AliESDtrack* track, Bool_t passOther=kTRUE);
+  Bool_t PassesCuts(AliVParticle* track);
+  Bool_t PassesESDcuts(AliESDtrack* track);
   Bool_t PassesAODcuts(const AliAODTrack* track, Bool_t passFid=kTRUE);
   Bool_t PassesPMDcuts(const AliESDPmdTrack* track);
   Bool_t PassesVZEROcuts(Int_t id);
