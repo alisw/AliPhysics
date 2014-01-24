@@ -50,7 +50,7 @@ AliAnalysisTaskLocalRho::AliAnalysisTaskLocalRho() :
   fDebug(0), fInitialized(0), fAttachToEvent(kTRUE), fFillHistograms(kFALSE), fNoEventWeightsForQC(kTRUE), 
   fUseScaledRho(0), fCentralityClasses(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), 
   fUserSuppliedR3(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fInCentralitySelection(-1), 
-  fFitModulationType(kNoFit), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fDetectorType(kTPC), 
+  fFitModulationType(kNoFit), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kFALSE), fDetectorType(kTPC), 
   fFitModulationOptions("WLQI"), fRunModeType(kGrid), fFitModulation(0), fMinPvalue(0.01), fMaxPvalue(1), 
   fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), 
   fSoftTrackMaxPt(5.), fHistPvalueCDF(0), fHistRhoStatusCent(0), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), 
@@ -72,7 +72,7 @@ AliAnalysisTaskLocalRho::AliAnalysisTaskLocalRho(const char* name, runModeType t
   fDebug(0), fInitialized(0), fAttachToEvent(kTRUE), fFillHistograms(kFALSE), fNoEventWeightsForQC(kTRUE), 
   fUseScaledRho(0), fCentralityClasses(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), 
   fUserSuppliedR3(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fInCentralitySelection(-1), 
-  fFitModulationType(kNoFit), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fDetectorType(kTPC), 
+  fFitModulationType(kNoFit), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kFALSE), fDetectorType(kTPC), 
   fFitModulationOptions("WLQI"), fRunModeType(type), fFitModulation(0), fMinPvalue(0.01), fMaxPvalue(1), 
   fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), 
   fSoftTrackMaxPt(5.), fHistPvalueCDF(0), fHistRhoStatusCent(0), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), 
@@ -815,21 +815,60 @@ Bool_t AliAnalysisTaskLocalRho::CorrectRho(Double_t psi2, Double_t psi3)
     }
   }
   fHistSwap->Reset();                 // clear the histogram
-  TH1F _tempSwap;
+  TH1F _tempSwap;     // on stack for quick access
+  TH1F _tempSwapN;    // on stack for quick access, bookkeeping histogram
   if(fRebinSwapHistoOnTheFly) {
     if(fNAcceptedTracks < 49) fNAcceptedTracks = 49;       // avoid aliasing effects
     _tempSwap = TH1F("_tempSwap", "_tempSwap", TMath::CeilNint(TMath::Sqrt(fNAcceptedTracks)), 0, TMath::TwoPi());
+    if(fUsePtWeightErrorPropagation) _tempSwapN = TH1F("_tempSwapN", "_tempSwapN", TMath::CeilNint(TMath::Sqrt(fNAcceptedTracks)), 0, TMath::TwoPi());
     if(fUsePtWeight) _tempSwap.Sumw2();
   }
   else _tempSwap = *fHistSwap;         // now _tempSwap holds the desired histo
+  // non poissonian error when using pt weights
+  Double_t totalpts(0.), totalptsquares(0.), totalns(0.);
   for(Int_t i(0); i < iTracks; i++) {
     AliVTrack* track = static_cast<AliVTrack*>(fTracks->At(i));
     if(fExcludeLeadingJetsFromFit > 0 &&( (TMath::Abs(track->Eta() - excludeInEta) < GetJetContainer()->GetJetRadius()*fExcludeLeadingJetsFromFit ) || (TMath::Abs(track->Eta()) - GetJetContainer()->GetJetRadius() - GetJetContainer()->GetJetEtaMax() ) > 0 )) continue;
     if(!PassesCuts(track) || track->Pt() > fSoftTrackMaxPt || track->Pt() < fSoftTrackMinPt) continue;
-    if(fUsePtWeight) _tempSwap.Fill(track->Phi(), track->Pt());
-    else _tempSwap.Fill(track->Phi());
+    if(fUsePtWeight) {
+      _tempSwap.Fill(track->Phi(), track->Pt());
+      if(fUsePtWeightErrorPropagation) {
+        totalpts += track->Pt();
+        totalptsquares += track->Pt()*track->Pt();
+        totalns += 1;
+        _tempSwapN.Fill(track->Phi());
+      }
+    }
+  else _tempSwap.Fill(track->Phi());
   }
-  //    for(Int_t i(0); i < _tempSwap.GetXaxis()->GetNbins(); i++) _tempSwap.SetBinError(1+i, TMath::Sqrt(_tempSwap.GetBinContent(1+i)));
+  if(fUsePtWeight && fUsePtWeightErrorPropagation) {
+    // in the case of pt weights overwrite the poissonian error estimate which is assigned by root by a more sophisticated appraoch
+    // the assumption here is that the bin error will be dominated by the uncertainty in the mean pt in a bin and in the uncertainty
+    // of the number of tracks in a bin, the first of which will be estimated from the sample standard deviation of all tracks in the 
+    // event, for the latter use a poissonian estimate. the two contrubitions are assumed to be uncorrelated
+    if(totalns < 1) return kFALSE; // not one track passes the cuts
+    for(Int_t l = 0; l < _tempSwap.GetNbinsX(); l++) {
+      if(_tempSwapN.GetBinContent(l+1) == 0) {
+        _tempSwap.SetBinContent(l+1,0);
+        _tempSwap.SetBinError(l+1,0);
+      }
+      else {
+        Double_t vartimesnsq = totalptsquares*totalns - totalpts*totalpts;
+        Double_t variance = vartimesnsq/(totalns*(totalns-1.));
+        Double_t SDOMSq = variance / _tempSwapN.GetBinContent(l+1);
+        Double_t SDOMSqOverMeanSq = SDOMSq * _tempSwapN.GetBinContent(l+1) * _tempSwapN.GetBinContent(l+1) / (_tempSwapN.GetBinContent(l+1) * _tempSwapN.GetBinContent(l+1));
+        Double_t poissonfrac = 1./_tempSwapN.GetBinContent(l+1);
+        Double_t vartotalfrac = SDOMSqOverMeanSq + poissonfrac;
+        Double_t vartotal = vartotalfrac * _tempSwap.GetBinContent(l+1) * _tempSwap.GetBinContent(l+1);
+        if(vartotal > 0.0001) _tempSwap.SetBinError(l+1,TMath::Sqrt(vartotal));
+        else {
+          _tempSwap.SetBinContent(l+1,0);
+          _tempSwap.SetBinError(l+1,0);
+        }
+      }
+    }
+  }
+
   fFitModulation->SetParameter(0, fLocalRho->GetVal());
   switch (fFitModulationType) {
   case kNoFit : { fFitModulation->FixParameter(0, fLocalRho->GetVal() ); 
