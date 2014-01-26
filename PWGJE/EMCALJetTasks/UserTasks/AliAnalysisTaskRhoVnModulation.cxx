@@ -394,15 +394,15 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
         /* fHistDeltaPtDeltaPhi2Rand[i] =  BookTH2F("fHistDeltaPtDeltaPhi2Rand", "#phi - #Psi_{TPC}", "#delta p_{t} [GeV/c]", 50, 0, TMath::Pi(), 100, -50, 100, i); */
         /* fHistDeltaPtDeltaPhi3Rand[i] =  BookTH2F("fHistDeltaPtDeltaPhi3Rand", "#phi - #Psi_{TPC}", "#delta p_{t} [GeV/c]", 50, 0, TMath::TwoPi()/3., 100, -50, 100, i); */
         // jet histograms (after kinematic cuts)
-        fHistJetPtRaw[i] =             BookTH1F("fHistJetPtRaw", "p_{t} RAW [GeV/c]", 200, -50, 150, i);
-        fHistJetPt[i] =                BookTH1F("fHistJetPt", "p_{t} [GeV/c]", 350, -100, 250, i);
+        fHistJetPtRaw[i] =             BookTH1F("fHistJetPtRaw", "p_{t, jet} RAW [GeV/c]", 200, -50, 150, i);
+        fHistJetPt[i] =                BookTH1F("fHistJetPt", "p_{t, jet} [GeV/c]", 350, -100, 250, i);
         if(fFillQAHistograms)   fHistJetEtaPhi[i] =            BookTH2F("fHistJetEtaPhi", "#eta", "#phi", 100, -1, 1, 100, 0, TMath::TwoPi(), i);
-        fHistJetPtArea[i] =            BookTH2F("fHistJetPtArea", "p_{t} [GeV/c]", "Area", 175, -100, 250, 30, 0, 0.9, i);
-        fHistJetPtConstituents[i] =    BookTH2F("fHistJetPtConstituents", "p_{t} [GeV/c]", "Area", 350, -100, 250, 60, 0, 150, i);
+        fHistJetPtArea[i] =            BookTH2F("fHistJetPtArea", "p_{t, jet} [GeV/c]", "Area", 175, -100, 250, 30, 0, 0.9, i);
+        fHistJetPtConstituents[i] =    BookTH2F("fHistJetPtConstituents", "p_{t, jet} [GeV/c]", "Area", 350, -100, 250, 60, 0, 150, i);
         fHistJetEtaRho[i] =            BookTH2F("fHistJetEtaRho", "#eta", "#rho", 100, -1, 1, 100, 0, 300, i);
         // in plane and out of plane spectra
-        fHistJetPsi2Pt[i] =          BookTH2F("fHistJetPsi2Pt", Form("#phi_{jet} - #Psi_{2, %s}", detector.Data()), "p_{t} [GeV/c]", 40, 0., TMath::Pi(), 350, -100, 250, i);
-        fHistJetPsi3Pt[i] =          BookTH2F("fHistJetPsi3Pt", Form("#phi_{jet} - #Psi_{3, %s}", detector.Data()), "p_{t} [GeV/c]", 40, 0., TMath::TwoPi()/3., 350, -100, 250, i);
+        fHistJetPsi2Pt[i] =          BookTH2F("fHistJetPsi2Pt", Form("#phi_{jet} - #Psi_{2, %s}", detector.Data()), "p_{t, jet} [GeV/c]", 40, 0., TMath::Pi(), 350, -100, 250, i);
+        fHistJetPsi3Pt[i] =          BookTH2F("fHistJetPsi3Pt", Form("#phi_{jet} - #Psi_{3, %s}", detector.Data()), "p_{t, jet} [GeV/c]", 40, 0., TMath::TwoPi()/3., 350, -100, 250, i);
         // profiles for all correlator permutations which are necessary to calculate each second and third order event plane resolution
         fProfV2Resolution[i] = new TProfile(Form("fProfV2Resolution_%i", i), Form("fProfV2Resolution_%i", i), 11, -0.5, 10.5);
         fProfV2Resolution[i]->GetXaxis()->SetBinLabel(3, "<cos(2(#Psi_{VZEROA} - #Psi_{VZEROC}))>");
