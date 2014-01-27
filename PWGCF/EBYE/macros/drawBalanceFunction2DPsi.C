@@ -1540,6 +1540,8 @@ void mergeBFPsi2D(TString momDirectory = "./",
   TGaxis::SetMaxDigits(3);
   gStyle->SetPalette(55,0);
 
+  cout<<"REDUCE"<<bReduceRangeForMoments<<"  "<<endl;
+
   const Int_t nMaxDirectories = 4; // maximum number of directories to merge (set to 4 for now)
   TString sDirectory[nMaxDirectories];
   Int_t nDirectories = nMaxDirectories;

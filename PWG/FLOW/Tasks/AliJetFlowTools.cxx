@@ -156,14 +156,19 @@ void AliJetFlowTools::Make() {
     }
     // 1a) resize the jet spectrum according to the binning scheme in fBinsTrue
     //     parts of the spectrum can end up in over or underflow bins
+/*
+    Double_t binsTrue[] = {-50, -45, -40, -35, -30,-25, -20,-15, -10,-5,  0, 5, 10, 15, 20,25, 30,35, 40,45, 50, 55, 60,65, 70, 75,80,85, 90,95, 100};
+        TArrayD* temparray = new TArrayD(sizeof(binsTrue)/sizeof(binsTrue[0]), binsTrue);
+    TH1D* measuredJetSpectrumIn  = RebinTH1D(fSpectrumIn, temparray, TString("resized_in_"), kFALSE);
+    TH1D* measuredJetSpectrumOut = RebinTH1D(fSpectrumOut, temparray,  TString("resized_out_"), kFALSE);
+    */
     TH1D* measuredJetSpectrumIn  = RebinTH1D(fSpectrumIn, fBinsRec, TString("resized_in_"), kFALSE);
-    TH1D* measuredJetSpectrumOut = RebinTH1D(fSpectrumOut, fBinsRec, TString("resized_out_"), kFALSE);
-
+    TH1D* measuredJetSpectrumOut = RebinTH1D(fSpectrumOut, fBinsRec,  TString("resized_out_"), kFALSE);
+    
     // 1b) resize the jet spectrum to 'true' bins. can serve as a prior and as a template for unfolding
     // the template will be used as a prior for the chi2 unfolding
     TH1D* measuredJetSpectrumTrueBinsIn  = RebinTH1D(fSpectrumIn, fBinsTrue, TString("in"), kFALSE);
     TH1D* measuredJetSpectrumTrueBinsOut = RebinTH1D(fSpectrumOut, fBinsTrue, TString("out"), kFALSE);
-
     // get the full response matrix from the dpt and the detector response
     fDetectorResponse = NormalizeTH2D(fDetectorResponse);
     // get the full response matrix. if test mode is chosen, the full response is replace by a unity matrix
@@ -223,8 +228,8 @@ void AliJetFlowTools::Make() {
         TString("in"),
         jetFindingEfficiency);
     resizedResponseIn->SetNameTitle("ResponseMatrixIn", "response matrix in plane");
-    resizedResponseIn->SetXTitle("p_{T}^{true} [GeV/c]");
-    resizedResponseIn->SetYTitle("p_{T}^{rec} [GeV/c]");
+    resizedResponseIn->SetXTitle("p_{T, jet}^{true} [GeV/c]");
+    resizedResponseIn->SetYTitle("p_{T, jet}^{rec} [GeV/c]");
     resizedResponseIn = ProtectHeap(resizedResponseIn);
     resizedResponseIn->Write();
     kinematicEfficiencyIn->SetNameTitle("KinematicEfficiencyIn","Kinematic efficiency, in plane");
@@ -257,8 +262,8 @@ void AliJetFlowTools::Make() {
                     TString("out"),
                     jetFindingEfficiency);
         resizedResponseOut->SetNameTitle("ResponseMatrixOut", "response matrix in plane");
-        resizedResponseOut->SetXTitle("p_{T}^{true} [GeV/c]");
-        resizedResponseOut->SetYTitle("p_{T}^{rec} [GeV/c]");
+        resizedResponseOut->SetXTitle("p_{T, jet}^{true} [GeV/c]");
+        resizedResponseOut->SetYTitle("p_{T, jet}^{rec} [GeV/c]");
         resizedResponseOut = ProtectHeap(resizedResponseOut);
         resizedResponseOut->Write();
         kinematicEfficiencyOut->SetNameTitle("KinematicEfficiencyOut","Kinematic efficiency, Out plane");
@@ -286,7 +291,7 @@ void AliJetFlowTools::Make() {
             TGraphErrors* ratio(GetRatio((TH1D*)unfoldedJetSpectrumIn->Clone("unfoldedLocal_in"), (TH1D*)unfoldedJetSpectrumOut->Clone("unfoldedLocal_out")));
             if(ratio) {
                 ratio->SetNameTitle("RatioInOutPlane", "Ratio in plane, out of plane jet spectrum");
-                ratio->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+                ratio->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
                 ratio->GetYaxis()->SetTitle("yield IN / yield OUT");
                 ratio = ProtectHeap(ratio);
                 ratio->Write();
@@ -301,7 +306,7 @@ void AliJetFlowTools::Make() {
             TGraphErrors* v2(GetV2((TH1D*)unfoldedJetSpectrumIn->Clone("unfoldedLocal_inv2"), (TH1D*)unfoldedJetSpectrumOut->Clone("unfoldedLocal_outv2")));
             if(v2) {
                 v2->SetNameTitle("v2", "v_{2} from different in, out of plane yield");
-                v2->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+                v2->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
                 v2->GetYaxis()->SetTitle("v_{2}");
                 v2 = ProtectHeap(v2);
                 v2->Write();
@@ -310,7 +315,7 @@ void AliJetFlowTools::Make() {
             TGraphErrors* ratio(GetRatio((TH1D*)unfoldedJetSpectrumIn->Clone("unfoldedLocal_in"), (TH1D*)unfoldedJetSpectrumOut->Clone("unfoldedLocal_out"), TString(""), kTRUE, fBinsRec->At(fBinsRec->GetSize()-1)));
             if(ratio) {
                 ratio->SetNameTitle("[NC]RatioInOutPlane", "[NC]Ratio in plane, out of plane jet spectrum");
-                ratio->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+                ratio->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
                 ratio->GetYaxis()->SetTitle("yield IN / yield OUT");
                 ratio = ProtectHeap(ratio);
                 ratio->Write();
@@ -318,7 +323,7 @@ void AliJetFlowTools::Make() {
             TGraphErrors* v2(GetV2((TH1D*)unfoldedJetSpectrumIn->Clone("unfoldedLocal_inv2"), (TH1D*)unfoldedJetSpectrumOut->Clone("unfoldedLocal_outv2")));
              if(v2) {
                 v2->SetNameTitle("v2", "v_{2} from different in, out of plane yield");
-                v2->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+                v2->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
                 v2->GetYaxis()->SetTitle("v_{2}");
                 v2 = ProtectHeap(v2);
                 v2->Write();
@@ -335,6 +340,12 @@ void AliJetFlowTools::Make() {
     fJetPtDeltaPhi->Write();
     // save the current state of the unfolding object
     SaveConfiguration(unfoldedJetSpectrumIn ? kTRUE : kFALSE, unfoldedJetSpectrumOut ? kTRUE : kFALSE);
+    TH1D* unfoldedJetSpectrumInForSub((TH1D*)unfoldedJetSpectrumIn->Clone("forSubIn"));
+    TH1D* unfoldedJetSpectrumOutForSub((TH1D*)unfoldedJetSpectrumOut->Clone("forSubOut"));
+    unfoldedJetSpectrumInForSub->Add(unfoldedJetSpectrumOutForSub, -1.);
+    unfoldedJetSpectrumInForSub= ProtectHeap(unfoldedJetSpectrumInForSub);
+    unfoldedJetSpectrumInForSub->Write();
+
 }
 //_____________________________________________________________________________
 TH1D* AliJetFlowTools::UnfoldWrapper(
@@ -583,8 +594,8 @@ TH1D* AliJetFlowTools::UnfoldSpectrumSVD(
 
     // save more general bookkeeeping histograms to the output directory
     responseMatrixLocalTransposePrior->SetNameTitle("TransposeResponseMatrix", "Transpose of response matrix, normalize with prior");
-    responseMatrixLocalTransposePrior->SetXTitle("p_{T}^{true} [GeV/c]");
-    responseMatrixLocalTransposePrior->SetYTitle("p_{T}^{rec} [GeV/c]");
+    responseMatrixLocalTransposePrior->SetXTitle("p_{T, jet}^{true} [GeV/c]");
+    responseMatrixLocalTransposePrior->SetYTitle("p_{T, jet}^{rec} [GeV/c]");
     responseMatrixLocalTransposePrior->Write();
     priorLocal->SetNameTitle("PriorOriginal", "Prior, original");
     priorLocal->SetXTitle("p_{t} [GeV/c]");
@@ -811,8 +822,8 @@ TH1D* AliJetFlowTools::UnfoldSpectrumBayesian(
 
     // save more general bookkeeeping histograms to the output directory
     responseMatrixLocalTransposePrior->SetNameTitle("TransposeResponseMatrix", "Transpose of response matrix, normalize with prior");
-    responseMatrixLocalTransposePrior->SetXTitle("p_{T}^{true} [GeV/c]");
-    responseMatrixLocalTransposePrior->SetYTitle("p_{T}^{rec} [GeV/c]");
+    responseMatrixLocalTransposePrior->SetXTitle("p_{T, jet}^{true} [GeV/c]");
+    responseMatrixLocalTransposePrior->SetYTitle("p_{T, jet}^{rec} [GeV/c]");
     responseMatrixLocalTransposePrior->Write();
     priorLocal->SetNameTitle("PriorOriginal", "Prior, original");
     priorLocal->SetXTitle("p_{t} [GeV/c]");
@@ -948,13 +959,13 @@ Bool_t AliJetFlowTools::PrepareForUnfolding()
     }
     fDptIn = new TH2D(*rfIn);
     fDptIn->SetNameTitle(Form("dpt_response_INPLANE_%i", fCentralityBin), Form("dpt_response_INPLANE_%i", fCentralityBin));
-    fDptIn->GetXaxis()->SetTitle("p_{T}^{gen} [GeV/c]");
-    fDptIn->GetYaxis()->SetTitle("p_{T}^{rec} [GeV/c]");
+    fDptIn->GetXaxis()->SetTitle("p_{T, jet}^{gen} [GeV/c]");
+    fDptIn->GetYaxis()->SetTitle("p_{T, jet}^{rec} [GeV/c]");
     fDptIn = ProtectHeap(fDptIn);
     fDptOut = new TH2D(*rfOut);
     fDptOut->SetNameTitle(Form("dpt_response_OUTOFPLANE_%i", fCentralityBin), Form("dpt_response_OUTOFPLANE_%i", fCentralityBin));
-    fDptOut->GetXaxis()->SetTitle("p_{T}^{gen} [GeV/c]");
-    fDptOut->GetYaxis()->SetTitle("p_{T}^{rec} [GeV/c]");
+    fDptOut->GetXaxis()->SetTitle("p_{T, jet}^{gen} [GeV/c]");
+    fDptOut->GetYaxis()->SetTitle("p_{T, jet}^{rec} [GeV/c]");
     fDptOut = ProtectHeap(fDptOut);
     
     fRefreshInput = kTRUE;     // force cloning of the input
@@ -1012,8 +1023,8 @@ Bool_t AliJetFlowTools::PrepareForUnfolding(Int_t low, Int_t up) {
     }
     fDptIn = new TH2D(*rfIn);
     fDptIn->SetNameTitle(Form("dpt_response_INPLANE_%i", fCentralityBin), Form("dpt_response_INPLANE_%i", fCentralityBin));
-    fDptIn->GetXaxis()->SetTitle("p_{T}^{gen} [GeV/c]");
-    fDptIn->GetYaxis()->SetTitle("p_{T}^{rec} [GeV/c]");
+    fDptIn->GetXaxis()->SetTitle("p_{T, jet}^{gen} [GeV/c]");
+    fDptIn->GetYaxis()->SetTitle("p_{T, jet}^{rec} [GeV/c]");
     fDptIn = ProtectHeap(fDptIn);
     
     return kTRUE;
@@ -1325,27 +1336,27 @@ void AliJetFlowTools::Style(TH1* h, EColor col, histoType type)
     switch (type) {
         case kInPlaneSpectrum : {
             h->SetTitle("IN PLANE");
-            h->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+            h->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
             h->GetYaxis()->SetTitle("counts");
         } break;
         case kOutPlaneSpectrum : {
             h->SetTitle("OUT OF PLANE");
-            h->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+            h->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
             h->GetYaxis()->SetTitle("counts");
        } break;
        case kUnfoldedSpectrum : {
             h->SetTitle("UNFOLDED");
-            h->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+            h->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
             h->GetYaxis()->SetTitle("counts");
        } break;
        case kFoldedSpectrum : {
             h->SetTitle("FOLDED");
-            h->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+            h->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
             h->GetYaxis()->SetTitle("counts");
        } break;
        case kMeasuredSpectrum : {
             h->SetTitle("MEASURED");
-            h->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+            h->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
             h->GetYaxis()->SetTitle("counts");
        } break;
        default : break;
@@ -1368,31 +1379,467 @@ void AliJetFlowTools::Style(TGraph* h, EColor col, histoType type)
     switch (type) {
         case kInPlaneSpectrum : {
             h->SetTitle("IN PLANE");
-            h->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+            h->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
             h->GetYaxis()->SetTitle("counts");
         } break;
         case kOutPlaneSpectrum : {
             h->SetTitle("OUT OF PLANE");
-            h->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+            h->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
             h->GetYaxis()->SetTitle("counts");
        } break;
        case kUnfoldedSpectrum : {
             h->SetTitle("UNFOLDED");
-            h->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+            h->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
             h->GetYaxis()->SetTitle("counts");
        } break;
        case kFoldedSpectrum : {
             h->SetTitle("FOLDED");
-            h->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+            h->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
             h->GetYaxis()->SetTitle("counts");
        } break;
        case kMeasuredSpectrum : {
             h->SetTitle("MEASURED");
-            h->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+            h->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
             h->GetYaxis()->SetTitle("counts");
        } break;
        default : break;
     }
+}
+//_____________________________________________________________________________
+void AliJetFlowTools::DoSystematics(Int_t nominalIn, Int_t nominalOut, TArrayI* variationsIn, TArrayI* variationsOut, Int_t columns, Float_t rangeLow, Float_t rangeUp, TString in, TString out) const
+{
+   // do systematics. structure of this function is similar to that of PostProcess, however
+   // in this case a nomial index can be supplied as well as an array of systematic checks
+   //
+   // FIXME make separate canvas for nominal value
+   //
+   if(fOutputFile && !fOutputFile->IsZombie()) fOutputFile->Close();
+   TFile readMe(in.Data(), "READ");     // open file read-only
+   if(readMe.IsZombie()) {
+       printf(" > Fatal error, couldn't read %s for post processing ! < \n", in.Data());
+       return;
+   }
+   printf("\n\n\n\t\t DOSYSTEMATICS \n > Recovered the following file structure : \n <");
+   readMe.ls();
+   TList* listOfKeys((TList*)readMe.GetListOfKeys());
+   if(!listOfKeys) {
+       printf(" > Fatal error, couldn't retrieve list of keys. Input file might have been corrupted ! < \n");
+       return;
+   }
+   // check input params
+   if(variationsIn->GetSize() != variationsOut->GetSize()) {
+       printf(" > DoSystematics: fatal error, input arrays have different sizes ! < \n ");
+       return;
+   }
+   TDirectoryFile* defRootDirIn(dynamic_cast<TDirectoryFile*>(readMe.Get(listOfKeys->At(nominalIn)->GetName())));
+   TDirectoryFile* defRootDirOut(dynamic_cast<TDirectoryFile*>(readMe.Get(listOfKeys->At(nominalOut)->GetName())));
+   if(!(defRootDirIn && defRootDirOut)) {
+       printf(" > DoSystematics: fatal error, couldn't retrieve nominal values ! < \n ");
+       return;
+   }
+   TString defIn(defRootDirIn->GetName());
+   TString defOut(defRootDirOut->GetName());
+   // prepare necessary canvasses
+   TCanvas* canvasIn(new TCanvas("SYSTPearsonIn", "SYSTPearsonIn"));
+   TCanvas* canvasOut(0x0);
+   if(fDphiUnfolding) canvasOut = new TCanvas("SYSTPearsonOut", "SYSTPearsonOut");
+   TCanvas* canvasRatioMeasuredRefoldedIn(new TCanvas("SYSTRefoldedIn", "SYSTRefoldedIn"));
+   TCanvas* canvasRatioMeasuredRefoldedOut(0x0);
+   if(fDphiUnfolding) canvasRatioMeasuredRefoldedOut = new TCanvas("SYSTRefoldedOut", "SYSTRefoldedOut");
+   TCanvas* canvasSpectraIn(new TCanvas("SYSTSpectraIn", "SYSTSpectraIn")); 
+   TCanvas* canvasSpectraOut(0x0);
+   if(fDphiUnfolding) canvasSpectraOut = new TCanvas("SYSTSpectraOut", "SYSTSpectraOut");
+   TCanvas* canvasRatio(0x0);
+   if(fDphiUnfolding) canvasRatio = new TCanvas("SYSTRatio", "SYSTRatio");
+   TCanvas* canvasV2(0x0);
+   if(fDphiUnfolding) canvasV2 = new TCanvas("SYSTV2", "SYSTV2");
+   TCanvas* canvasMISC(new TCanvas("SYSTMISC", "SYSTMISC"));
+   TCanvas* canvasMasterIn(new TCanvas("SYSTdefaultIn", "SYSTdefaultIn"));
+   TCanvas* canvasMasterOut(0x0);
+   if(fDphiUnfolding) canvasMasterOut = new TCanvas("SYSTdefaultOut", "SYSTdefaultOut");
+   (fDphiUnfolding) ? canvasMISC->Divide(4, 2) : canvasMISC->Divide(4, 1);
+   
+   TCanvas* canvasProfiles(new TCanvas("SYSTcanvasProfiles", "SYSTcanvasProfiles"));
+   canvasProfiles->Divide(2);
+   TProfile* ratioProfile(new TProfile("SYSTratioProfile", "SYSTratioProfile", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
+   TProfile* v2Profile(new TProfile("SYSTv2Profile", "SYSTv2Profile", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
+   // get an estimate of the number of outputs and find the default set
+   Int_t rows(TMath::Floor(variationsIn->GetSize()/(float)columns)+((variationsIn->GetSize()%columns)>0));
+   canvasIn->Divide(columns, rows);
+   if(canvasOut) canvasOut->Divide(columns, rows);
+   canvasRatioMeasuredRefoldedIn->Divide(columns, rows);
+   if(canvasRatioMeasuredRefoldedOut) canvasRatioMeasuredRefoldedOut->Divide(columns, rows);
+   canvasSpectraIn->Divide(columns, rows);
+   if(canvasSpectraOut) canvasSpectraOut->Divide(columns, rows);
+   if(canvasRatio) canvasRatio->Divide(columns, rows);
+   if(canvasV2) canvasV2->Divide(columns, rows);
+   canvasMasterIn->Divide(columns, rows);
+   if(canvasMasterOut) canvasMasterOut->Divide(columns, rows);
+
+   // prepare a separate set of canvases to hold the nominal points
+   TCanvas* canvasNominalIn(new TCanvas("NominalPearsonIn", "NominalPearsonIn"));
+   TCanvas* canvasNominalOut(0x0);
+   if(fDphiUnfolding) canvasNominalOut = new TCanvas("NominalPearsonOut", "NominalPearsonOut");
+   TCanvas* canvasNominalRatioMeasuredRefoldedIn(new TCanvas("NominalRefoldedIn", "NominalRefoldedIn"));
+   TCanvas* canvasNominalRatioMeasuredRefoldedOut(0x0);
+   if(fDphiUnfolding) canvasNominalRatioMeasuredRefoldedOut = new TCanvas("NominalRefoldedOut", "NominalRefoldedOut");
+   TCanvas* canvasNominalSpectraIn(new TCanvas("NominalSpectraIn", "NominalSpectraIn")); 
+   TCanvas* canvasNominalSpectraOut(0x0);
+   if(fDphiUnfolding) canvasNominalSpectraOut = new TCanvas("NominalSpectraOut", "NominalSpectraOut");
+   TCanvas* canvasNominalRatio(0x0);
+   if(fDphiUnfolding) canvasNominalRatio = new TCanvas("NominalRatio", "NominalRatio");
+   TCanvas* canvasNominalV2(0x0);
+   if(fDphiUnfolding) canvasNominalV2 = new TCanvas("NominalV2", "NominalV2");
+   TCanvas* canvasNominalMISC(new TCanvas("NominalMISC", "NominalMISC"));
+   TCanvas* canvasNominalMasterIn(new TCanvas("NominaldefaultIn", "NominaldefaultIn"));
+   TCanvas* canvasNominalMasterOut(0x0);
+   if(fDphiUnfolding) canvasNominalMasterOut = new TCanvas("NominaldefaultOut", "NominaldefaultOut");
+   (fDphiUnfolding) ? canvasNominalMISC->Divide(4, 2) : canvasNominalMISC->Divide(4, 1);
+  
+   columns = 1;         rows = 1; 
+   canvasNominalIn->Divide(columns, rows);
+   if(canvasNominalOut) canvasNominalOut->Divide(columns, rows);
+   canvasNominalRatioMeasuredRefoldedIn->Divide(columns, rows);
+   if(canvasNominalRatioMeasuredRefoldedOut) canvasNominalRatioMeasuredRefoldedOut->Divide(columns, rows);
+   canvasNominalSpectraIn->Divide(columns, rows);
+   if(canvasNominalSpectraOut) canvasNominalSpectraOut->Divide(columns, rows);
+   if(canvasNominalRatio) canvasNominalRatio->Divide(columns, rows);
+   if(canvasNominalV2) canvasNominalV2->Divide(columns, rows);
+
+   canvasNominalMasterIn->Divide(columns, rows);
+   if(canvasNominalMasterOut) canvasNominalMasterOut->Divide(columns, rows);
+
+   // extract the default output 
+   TH1D* defaultUnfoldedJetSpectrumIn(0x0);
+   TH1D* defaultUnfoldedJetSpectrumOut(0x0);
+   TDirectoryFile* defDirIn = (TDirectoryFile*)defRootDirIn->Get(Form("InPlane___%s", defIn.Data()));
+   TDirectoryFile* defDirOut = (TDirectoryFile*)defRootDirOut->Get(Form("OutOfPlane___%s", defOut.Data()));
+   if(defDirIn) defaultUnfoldedJetSpectrumIn = (TH1D*)defDirIn->Get(Form("UnfoldedSpectrum_in_%s", defIn.Data()));
+   if(defDirOut) defaultUnfoldedJetSpectrumOut = (TH1D*)defDirOut->Get(Form("UnfoldedSpectrum_out_%s", defOut.Data()));
+   printf(" > succesfully extracted default results < \n");
+ 
+   // loop through the directories, only plot the graphs if the deconvolution converged
+   TDirectoryFile* tempDirIn(0x0); 
+   TDirectoryFile* tempDirOut(0x0);
+   TDirectoryFile* tempIn(0x0);
+   TDirectoryFile* tempOut(0x0);
+   TH1D* unfoldedSpectrumInForRatio(0x0);
+   TH1D* unfoldedSpectrumOutForRatio(0x0);
+   for(Int_t i(0), j(-1); i < variationsIn->GetSize(); i++) {
+       tempDirIn = (dynamic_cast<TDirectoryFile*>(readMe.Get(listOfKeys->At(variationsIn->At(i))->GetName())));
+       tempDirOut = (dynamic_cast<TDirectoryFile*>(readMe.Get(listOfKeys->At(variationsOut->At(i))->GetName())));
+       if(!(tempDirIn && tempDirOut)) {
+           printf(" > DoSystematics: couldn't get a set of variations < \n");
+           continue;
+       }
+       TString dirNameIn(tempDirIn->GetName());
+       TString dirNameOut(tempDirOut->GetName());
+       // try to read the in- and out of plane subdirs
+       tempIn = (TDirectoryFile*)tempDirIn->Get(Form("InPlane___%s", dirNameIn.Data()));
+       tempOut = (TDirectoryFile*)tempDirOut->Get(Form("OutOfPlane___%s", dirNameOut.Data()));
+       j++;
+       if(tempIn) { 
+           // to see if the unfolding converged try to extract the pearson coefficients
+           TH2D* pIn((TH2D*)tempIn->Get(Form("PearsonCoefficients_in_%s", dirNameIn.Data())));
+           if(pIn) {
+               printf(" - %s in plane converged \n", dirNameIn.Data());
+               canvasIn->cd(j);
+               if(i==0) canvasNominalIn->cd(j);
+               Style(gPad, "PEARSON");
+               pIn->DrawCopy("colz");
+               TGraphErrors* rIn((TGraphErrors*)tempIn->Get(Form("RatioRefoldedMeasured_%s", dirNameIn.Data())));
+               if(rIn) {
+                   Style(rIn);
+                   printf(" > found RatioRefoldedMeasured < \n");
+                   canvasRatioMeasuredRefoldedIn->cd(j);
+                   if(i==0) canvasNominalRatioMeasuredRefoldedIn->cd(j);
+                   rIn->SetFillColor(kRed);
+                   rIn->Draw("ap");
+               }
+               TH1D* dvector((TH1D*)tempIn->Get("dVector"));
+               TH1D* avalue((TH1D*)tempIn->Get("SingularValuesOfAC"));
+               TH2D* rm((TH2D*)tempIn->Get(Form("ResponseMatrixIn_%s", dirNameIn.Data())));
+               TH1D* eff((TH1D*)tempIn->Get(Form("KinematicEfficiencyIn_%s", dirNameIn.Data())));
+               if(dvector && avalue && rm && eff) {
+                   Style(dvector);
+                   Style(avalue);
+                   Style(rm);
+                   Style(eff);
+                   canvasMISC->cd(1);
+                   if(i==0) canvasNominalMISC->cd(1);
+                   Style(gPad, "SPECTRUM");
+                   dvector->DrawCopy();
+                   canvasMISC->cd(2);
+                   if(i==0) canvasNominalMISC->cd(2);
+                   Style(gPad, "SPECTRUM");
+                   avalue->DrawCopy();
+                   canvasMISC->cd(3);
+                   if(i==0) canvasNominalMISC->cd(3);
+                   Style(gPad, "PEARSON");
+                   rm->DrawCopy("colz");
+                   canvasMISC->cd(4);
+                   if(i==0) canvasNominalMISC->cd(4);
+                   eff->DrawCopy();
+               } else if(rm && eff) {
+                   Style(rm);
+                   Style(eff);
+                   canvasMISC->cd(3);
+                   if(i==0) canvasNominalMISC->cd(3);
+                   Style(gPad, "PEARSON");
+                   rm->DrawCopy("colz");
+                   canvasMISC->cd(4);
+                   if(i==0) canvasNominalMISC->cd(4);
+                   eff->DrawCopy();
+               }
+           }
+           TH1D* inputSpectrum((TH1D*)tempIn->Get(Form("InputSpectrum_in_%s", dirNameIn.Data())));
+           TH1D* unfoldedSpectrum((TH1D*)tempIn->Get(Form("UnfoldedSpectrum_in_%s", dirNameIn.Data())));
+           unfoldedSpectrumInForRatio = ProtectHeap(unfoldedSpectrum, kFALSE, TString("ForRatio"));
+           TH1D* refoldedSpectrum((TH1D*)tempIn->Get(Form("RefoldedSpectrum_in_%s", dirNameIn.Data())));
+           if(inputSpectrum && unfoldedSpectrum && refoldedSpectrum) {
+               if(defaultUnfoldedJetSpectrumIn) {
+                   Style(defaultUnfoldedJetSpectrumIn, kBlue, kUnfoldedSpectrum);
+                   TH1D* temp((TH1D*)defaultUnfoldedJetSpectrumIn->Clone(Form("defaultUnfoldedJetSpectrumIn_%s", dirNameIn.Data())));
+                   temp->Divide(unfoldedSpectrum);
+                   temp->SetTitle(Form("[%s] / [%s]", defIn.Data(), dirNameIn.Data()));
+                   temp->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
+                   temp->GetYaxis()->SetTitle("ratio");
+                   canvasMasterIn->cd(j);
+                   if(i==0) canvasNominalMasterIn->cd(j);
+                   temp->GetYaxis()->SetRangeUser(0., 2);
+                   temp->DrawCopy();
+               }
+               TH1F* fitStatus((TH1F*)tempIn->Get(Form("fitStatus_%s_in", dirNameIn.Data())));
+               canvasSpectraIn->cd(j);
+               if(i==0) canvasNominalSpectraIn->cd(j);
+               Style(gPad);
+               Style(unfoldedSpectrum, kRed, kUnfoldedSpectrum);
+               unfoldedSpectrum->DrawCopy();
+               Style(inputSpectrum, kGreen, kMeasuredSpectrum);
+               inputSpectrum->DrawCopy("same");
+               Style(refoldedSpectrum, kBlue, kFoldedSpectrum);
+               refoldedSpectrum->DrawCopy("same");
+               TLegend* l(AddLegend(gPad));
+               Style(l);
+               if(fitStatus && fitStatus->GetNbinsX() == 4) { // only available in chi2 fit
+                   Float_t chi(fitStatus->GetBinContent(1));
+                   Float_t pen(fitStatus->GetBinContent(2));
+                   Int_t dof((int)fitStatus->GetBinContent(3));
+                   Float_t beta(fitStatus->GetBinContent(4));
+                   l->AddEntry((TObject*)0, Form("#chi %.2f \tP %.2f \tDOF %i, #beta %.2f", chi, pen, dof, beta), "");
+               } else if (fitStatus) { // only available in SVD fit
+                   Int_t reg((int)fitStatus->GetBinContent(1));
+                   l->AddEntry((TObject*)0, Form("REG %i", reg), "");
+               }
+           }
+       }
+       if(tempOut) {
+           TH2D* pOut((TH2D*)tempOut->Get(Form("PearsonCoefficients_out_%s", dirNameOut.Data())));
+           if(pOut) {
+               printf(" - %s out of plane converged \n", dirNameOut.Data());
+               canvasOut->cd(j);
+               if(i==0) canvasNominalOut->cd(j);
+               Style(gPad, "PEARSON");
+               pOut->DrawCopy("colz");
+               TGraphErrors* rOut((TGraphErrors*)tempOut->Get(Form("RatioRefoldedMeasured_%s", dirNameOut.Data())));
+               if(rOut) {
+                   Style(rOut);
+                   printf(" > found RatioRefoldedMeasured < \n");
+                   canvasRatioMeasuredRefoldedOut->cd(j);
+                   if(i==0) canvasNominalRatioMeasuredRefoldedOut->cd(j);
+                   rOut->SetFillColor(kRed);
+                   rOut->Draw("ap");
+               }
+               TH1D* dvector((TH1D*)tempOut->Get("dVector"));
+               TH1D* avalue((TH1D*)tempOut->Get("SingularValuesOfAC"));
+               TH2D* rm((TH2D*)tempOut->Get(Form("ResponseMatrixOut_%s", dirNameOut.Data())));
+               TH1D* eff((TH1D*)tempOut->Get(Form("KinematicEfficiencyOut_%s", dirNameOut.Data())));
+               if(dvector && avalue && rm && eff) {
+                   Style(dvector);
+                   Style(avalue);
+                   Style(rm);
+                   Style(eff);
+                   canvasMISC->cd(5);
+                   if(i==0) canvasNominalMISC->cd(5);
+                   Style(gPad, "SPECTRUM");
+                   dvector->DrawCopy();
+                   canvasMISC->cd(6);
+                   if(i==0) canvasNominalMISC->cd(6);
+                   Style(gPad, "SPECTRUM");
+                   avalue->DrawCopy();
+                   canvasMISC->cd(7);
+                   if(i==0) canvasNominalMISC->cd(7);
+                   Style(gPad, "PEARSON");
+                   rm->DrawCopy("colz");
+                   canvasMISC->cd(8);
+                   if(i==0) canvasNominalMISC->cd(8);
+                   eff->DrawCopy();
+               } else if(rm && eff) {
+                   Style(rm);
+                   Style(eff);
+                   canvasMISC->cd(7);
+                   if(i==0) canvasNominalMISC->cd(7);
+                   Style(gPad, "PEARSON");
+                   rm->DrawCopy("colz");
+                   canvasMISC->cd(8);
+                   if(i==0) canvasNominalMISC->cd(8);
+                   eff->DrawCopy();
+               }
+           }
+           TH1D* inputSpectrum((TH1D*)tempOut->Get(Form("InputSpectrum_out_%s", dirNameOut.Data())));
+           TH1D* unfoldedSpectrum((TH1D*)tempOut->Get(Form("UnfoldedSpectrum_out_%s", dirNameOut.Data())));
+           unfoldedSpectrumOutForRatio = ProtectHeap(unfoldedSpectrum, kFALSE, TString("ForRatio"));
+           TH1D* refoldedSpectrum((TH1D*)tempOut->Get(Form("RefoldedSpectrum_out_%s", dirNameOut.Data())));
+           if(inputSpectrum && unfoldedSpectrum && refoldedSpectrum) {
+               if(defaultUnfoldedJetSpectrumOut) {
+                   Style(defaultUnfoldedJetSpectrumOut, kBlue, kUnfoldedSpectrum);
+                   TH1D* temp((TH1D*)defaultUnfoldedJetSpectrumOut->Clone(Form("defaultUnfoldedJetSpectrumOut_%s", dirNameOut.Data())));
+                   temp->Divide(unfoldedSpectrum);
+                   temp->SetTitle(Form("ratio nominal [%s] / [%s]", defOut.Data(), dirNameOut.Data()));
+                   temp->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
+                   temp->GetYaxis()->SetTitle("ratio");
+                   canvasMasterOut->cd(j);
+                   if(i==0) canvasNominalMasterOut->cd(j);
+                   temp->GetYaxis()->SetRangeUser(0., 2.);
+                   temp->DrawCopy();
+               }
+               TH1F* fitStatus((TH1F*)tempOut->Get(Form("fitStatus_%s_out", dirNameOut.Data())));
+               canvasSpectraOut->cd(j);
+               if(i==0) canvasNominalSpectraOut->cd(j);
+               Style(gPad);
+               Style(unfoldedSpectrum, kRed, kUnfoldedSpectrum);
+               unfoldedSpectrum->DrawCopy();
+               Style(inputSpectrum, kGreen, kMeasuredSpectrum);
+               inputSpectrum->DrawCopy("same");
+               Style(refoldedSpectrum, kBlue, kFoldedSpectrum);
+               refoldedSpectrum->DrawCopy("same");
+               TLegend* l(AddLegend(gPad));
+               Style(l);
+               if(fitStatus && fitStatus->GetNbinsX() == 4) { // only available in chi2 fit
+                   Float_t chi(fitStatus->GetBinContent(1));
+                   Float_t pen(fitStatus->GetBinContent(2));
+                   Int_t dof((int)fitStatus->GetBinContent(3));
+                   Float_t beta(fitStatus->GetBinContent(4));
+                   l->AddEntry((TObject*)0, Form("#chi %.2f \tP %.2f \tDOF %i, #beta %.2f", chi, pen, dof, beta), "");
+               } else if (fitStatus) { // only available in SVD fit
+                   Int_t reg((int)fitStatus->GetBinContent(1));
+                   l->AddEntry((TObject*)0, Form("REG %i", reg), "");
+               }
+           }
+       }
+       if(canvasRatio && canvasV2) {
+           canvasRatio->cd(j);
+           if(i==0) canvasNominalRatio->cd(j);
+           TGraphErrors* ratioYield(GetRatio(unfoldedSpectrumInForRatio, unfoldedSpectrumOutForRatio, TString(Form("ratio [in=%s, out=%s]", dirNameIn.Data(), dirNameOut.Data()))));
+           Double_t _tempx(0), _tempy(0);
+           if(ratioYield) {
+               Style(ratioYield);
+               for(Int_t b(0); b < fBinsTrue->GetSize(); b++) {
+                   ratioYield->GetPoint(b+1, _tempx, _tempy);
+                   ratioProfile->Fill(_tempx, _tempy);
+               }
+               ratioProfile->GetYaxis()->SetRangeUser(-0., 2.);
+               ratioProfile->GetXaxis()->SetRangeUser(rangeLow, rangeUp);
+               ratioYield->GetYaxis()->SetRangeUser(-0., 2.);
+               ratioYield->GetXaxis()->SetRangeUser(rangeLow, rangeUp);
+               ratioYield->SetFillColor(kRed);
+               ratioYield->Draw("ap");
+           }
+           canvasV2->cd(j);
+           if(i==0) canvasNominalV2->cd(j);
+           TGraphErrors* ratioV2(GetV2(unfoldedSpectrumInForRatio,unfoldedSpectrumOutForRatio, .7, TString(Form("v_{2} [in=%s, out=%s]", dirNameIn.Data(), dirNameOut.Data()))));
+           if(ratioV2) {
+               Style(ratioV2);
+               for(Int_t b(0); b < fBinsTrue->GetSize(); b++) {
+                   ratioV2->GetPoint(b+1, _tempx, _tempy);
+                   v2Profile->Fill(_tempx, _tempy);
+
+               }
+               v2Profile->GetYaxis()->SetRangeUser(-0., 2.);
+               v2Profile->GetXaxis()->SetRangeUser(rangeLow, rangeUp);
+               ratioV2->GetYaxis()->SetRangeUser(-.25, .75);
+               ratioV2->GetXaxis()->SetRangeUser(rangeLow, rangeUp);
+               ratioV2->SetFillColor(kRed);
+               ratioV2->Draw("ap");
+           }
+       }
+       delete unfoldedSpectrumInForRatio;
+       delete unfoldedSpectrumOutForRatio;
+   }
+   TFile output(out.Data(), "RECREATE");
+   // save the canvasses
+   canvasProfiles->cd(1);
+   Style(ratioProfile);
+   ratioProfile->DrawCopy();
+   canvasProfiles->cd(2);
+   Style(v2Profile);
+   v2Profile->DrawCopy();
+   SavePadToPDF(canvasProfiles);
+   canvasProfiles->Write(); 
+   SavePadToPDF(canvasIn);
+   canvasIn->Write();
+   if(canvasOut) {
+       SavePadToPDF(canvasOut);
+       canvasOut->Write();
+   }
+   SavePadToPDF(canvasRatioMeasuredRefoldedIn);
+   canvasRatioMeasuredRefoldedIn->Write();
+   if(canvasRatioMeasuredRefoldedOut) {
+       SavePadToPDF(canvasRatioMeasuredRefoldedOut);
+       canvasRatioMeasuredRefoldedOut->Write();
+   }
+   SavePadToPDF(canvasSpectraIn);
+   canvasSpectraIn->Write();
+   if(canvasSpectraOut) {
+       SavePadToPDF(canvasSpectraOut);
+       canvasSpectraOut->Write();
+       SavePadToPDF(canvasRatio);
+       canvasRatio->Write();
+       SavePadToPDF(canvasV2);
+       canvasV2->Write();
+   }
+   SavePadToPDF(canvasMasterIn);
+   canvasMasterIn->Write();
+   if(canvasMasterOut) {
+       SavePadToPDF(canvasMasterOut);
+       canvasMasterOut->Write();
+   }
+   SavePadToPDF(canvasMISC);
+   canvasMISC->Write();
+   // save the nomial canvasses
+   SavePadToPDF(canvasNominalIn);
+   canvasNominalIn->Write();
+   if(canvasNominalOut) {
+       SavePadToPDF(canvasNominalOut);
+       canvasNominalOut->Write();
+   }
+   SavePadToPDF(canvasNominalRatioMeasuredRefoldedIn);
+   canvasNominalRatioMeasuredRefoldedIn->Write();
+   if(canvasNominalRatioMeasuredRefoldedOut) {
+       SavePadToPDF(canvasNominalRatioMeasuredRefoldedOut);
+       canvasNominalRatioMeasuredRefoldedOut->Write();
+   }
+   SavePadToPDF(canvasNominalSpectraIn);
+   canvasNominalSpectraIn->Write();
+   if(canvasNominalSpectraOut) {
+       SavePadToPDF(canvasNominalSpectraOut);
+       canvasNominalSpectraOut->Write();
+       SavePadToPDF(canvasNominalRatio);
+       canvasNominalRatio->Write();
+       SavePadToPDF(canvasNominalV2);
+       canvasNominalV2->Write();
+   }
+   SavePadToPDF(canvasNominalMasterIn);
+   canvasNominalMasterIn->Write();
+   if(canvasNominalMasterOut) {
+       SavePadToPDF(canvasNominalMasterOut);
+       canvasNominalMasterOut->Write();
+   }
+   SavePadToPDF(canvasNominalMISC);
+   canvasNominalMISC->Write();
+
+   output.Write();
+   output.Close();
 }
 //_____________________________________________________________________________
 void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, Float_t rangeUp, TString in, TString out) const
@@ -1444,7 +1891,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
            cacheMe++;
        }
    }
-   Int_t rows(TMath::Floor(cacheMe/(float)columns)+((cacheMe%4)>0));
+   Int_t rows(TMath::Floor(cacheMe/(float)columns)+((cacheMe%columns)>0));
    canvasIn->Divide(columns, rows);
    if(canvasOut) canvasOut->Divide(columns, rows);
    canvasRatioMeasuredRefoldedIn->Divide(columns, rows);
@@ -1545,7 +1992,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                             TH1D* temp((TH1D*)defaultUnfoldedJetSpectrumIn->Clone(Form("defaultUnfoldedJetSpectrumIn_%s", dirName.Data())));
                             temp->Divide(unfoldedSpectrum);
                             temp->SetTitle(Form("ratio default unfolded / %s", dirName.Data()));
-                            temp->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+                            temp->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
                             temp->GetYaxis()->SetTitle(Form("%s / %s", def.Data(), dirName.Data()));
                             canvasMasterIn->cd(j);
                             temp->GetYaxis()->SetRangeUser(0., 2);
@@ -1631,7 +2078,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                    TH1D* temp((TH1D*)defaultUnfoldedJetSpectrumIn->Clone(Form("defaultUnfoldedJetSpectrumIn_%s", dirName.Data())));
                    temp->Divide(unfoldedSpectrum);
                    temp->SetTitle(Form("ratio default unfolded / %s", dirName.Data()));
-                   temp->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+                   temp->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
                    temp->GetYaxis()->SetTitle(Form("%s / %s", def.Data(), dirName.Data()));
                    canvasMasterIn->cd(j);
                    temp->GetYaxis()->SetRangeUser(0., 2);
@@ -1714,7 +2161,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                    TH1D* temp((TH1D*)defaultUnfoldedJetSpectrumOut->Clone(Form("defaultUnfoldedJetSpectrumOut_%s", dirName.Data())));
                    temp->Divide(unfoldedSpectrum);
                    temp->SetTitle(Form("ratio default unfolded / %s", dirName.Data()));
-                   temp->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+                   temp->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
                    temp->GetYaxis()->SetTitle(Form("%s / %s", def.Data(), dirName.Data()));
                    canvasMasterOut->cd(j);
                    temp->GetYaxis()->SetRangeUser(0., 2.);
@@ -1869,12 +2316,12 @@ Bool_t AliJetFlowTools::SetRawInput (
     }
     fDptIn = ConstructDPtResponseFromTH1D(fDptInDist, fAvoidRoundingError);
     fDptIn->SetNameTitle(Form("dpt_response_INPLANE_%i", fCentralityBin), Form("dpt_response_INPLANE_%i", fCentralityBin));
-    fDptIn->GetXaxis()->SetTitle("p_{T}^{gen} [GeV/c]");
-    fDptIn->GetYaxis()->SetTitle("p_{T}^{rec} [GeV/c]");
+    fDptIn->GetXaxis()->SetTitle("p_{T, jet}^{gen} [GeV/c]");
+    fDptIn->GetYaxis()->SetTitle("p_{T, jet}^{rec} [GeV/c]");
     fDptOut = ConstructDPtResponseFromTH1D(fDptOutDist, fAvoidRoundingError);
     fDptOut->SetNameTitle(Form("dpt_response_OUTOFPLANE_%i", fCentralityBin), Form("dpt_response_OUTOFPLANE_%i", fCentralityBin));
-    fDptOut->GetXaxis()->SetTitle("p_{T}^{gen} [GeV/c]");
-    fDptOut->GetYaxis()->SetTitle("p_{T}^{rec} [GeV/c]");
+    fDptOut->GetXaxis()->SetTitle("p_{T, jet}^{gen} [GeV/c]");
+    fDptOut->GetYaxis()->SetTitle("p_{T, jet}^{rec} [GeV/c]");
     
     return kTRUE;
 }
@@ -1889,7 +2336,7 @@ TGraphErrors* AliJetFlowTools::GetRatio(TH1 *h1, TH1* h2, TString name, Bool_t a
     }
     Int_t j(0);
     TGraphErrors *gr = new TGraphErrors();
-    gr->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    gr->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
     Double_t binCent(0.), ratio(0.), error2(0.), binWidth(0.);
     TH1* dud((TH1*)h1->Clone("dud"));
     dud->Sumw2();
@@ -1952,7 +2399,7 @@ TGraphErrors* AliJetFlowTools::GetV2(TH1 *h1, TH1* h2, Double_t r, TString name)
     }
     Int_t j(0);
     TGraphErrors *gr = new TGraphErrors();
-    gr->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    gr->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
     Float_t binCent(0.), ratio(0.), error2(0.), binWidth(0.);
     Double_t pre(TMath::Pi()/(4.*r)), in(0.), out(0.), ein(0.), eout(0.);
     for(Int_t i(1); i <= h1->GetNbinsX(); i++) {
@@ -2129,7 +2576,7 @@ void AliJetFlowTools::ResetAliUnfolding() {
      AliUnfolding::SetDebug(1);
 }
 //_____________________________________________________________________________
-TH1D* AliJetFlowTools::ProtectHeap(TH1D* protect, Bool_t kill, TString suffix) {
+TH1D* AliJetFlowTools::ProtectHeap(TH1D* protect, Bool_t kill, TString suffix) const {
     // protect heap by adding unique qualifier to name
     if(!protect) return 0x0;
     TH1D* p = (TH1D*)protect->Clone();
@@ -2141,7 +2588,7 @@ TH1D* AliJetFlowTools::ProtectHeap(TH1D* protect, Bool_t kill, TString suffix) {
     return p;
 }
 //_____________________________________________________________________________
-TH2D* AliJetFlowTools::ProtectHeap(TH2D* protect, Bool_t kill, TString suffix) {
+TH2D* AliJetFlowTools::ProtectHeap(TH2D* protect, Bool_t kill, TString suffix) const {
     // protect heap by adding unique qualifier to name
     if(!protect) return 0x0;
     TH2D* p = (TH2D*)protect->Clone();
@@ -2153,7 +2600,7 @@ TH2D* AliJetFlowTools::ProtectHeap(TH2D* protect, Bool_t kill, TString suffix) {
     return p;
 }
 //_____________________________________________________________________________
-TGraphErrors* AliJetFlowTools::ProtectHeap(TGraphErrors* protect, Bool_t kill, TString suffix) {
+TGraphErrors* AliJetFlowTools::ProtectHeap(TGraphErrors* protect, Bool_t kill, TString suffix) const {
     // protect heap by adding unique qualifier to name
     if(!protect) return 0x0;
     TGraphErrors* p = (TGraphErrors*)protect->Clone();
@@ -2234,8 +2681,8 @@ void AliJetFlowTools::MakeAU() {
             jetFindingEfficiency);
         if(i==5) {
             resizedResponseIn->SetNameTitle(Form("ResponseMatrix_%s", stringArray[i].Data()), Form("response matrix %s", stringArray[i].Data()));
-            resizedResponseIn->SetXTitle("p_{T}^{true} [GeV/c]");
-            resizedResponseIn->SetYTitle("p_{T}^{rec} [GeV/c]");
+            resizedResponseIn->SetXTitle("p_{T, jet}^{true} [GeV/c]");
+            resizedResponseIn->SetYTitle("p_{T, jet}^{rec} [GeV/c]");
             resizedResponseIn = ProtectHeap(resizedResponseIn);
             resizedResponseIn->Write();
             kinematicEfficiencyIn->SetNameTitle(Form("KinematicEfficiency_%s", stringArray[i].Data()), Form("Kinematic efficiency, %s", stringArray[i].Data()));
