@@ -59,11 +59,9 @@ void LoadMyLibs() {
   CheckLoadLibrary("libTOFbase");
   CheckLoadLibrary("libTOFrec");
   CheckLoadLibrary("libTOFsim");
-  #ifdef MFT_UPGRADE
   CheckLoadLibrary("libMFTbase");
   CheckLoadLibrary("libMFTrec");
   CheckLoadLibrary("libMFTsim");
-  #endif
   CheckLoadLibrary("libPWGPP");
 }
 

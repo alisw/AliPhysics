@@ -135,10 +135,11 @@ class AliAnalysisTaskEMCALPhoton : public AliAnalysisTaskSE {
 class AliPhotonHeaderObj : public TObject
 {
   public: AliPhotonHeaderObj() :
-  TObject(), fInputFileName(""), fTrClassMask(0), fTrCluster(0), fV0Cent(0), fV0(0), fCl1Cent(0), 
+  TObject(), fInputFileName(""),fRunNumber(0), fTrClassMask(0), fTrCluster(0), fV0Cent(0), fV0(0), fCl1Cent(0), 
     fCl1(0), fTrCent(0), fTr(0), fNClus(0), fNCells(0), fTrackMult(0), fNMcParts(0)  {;}
   public:
   TString       fInputFileName;  // used for normalization purposes in MC productions
+  Int_t         fRunNumber;      // event run number
   ULong64_t     fTrClassMask;    //         trigger class mask
   UChar_t       fTrCluster;      //         trigger cluster mask
   Double32_t    fV0Cent;         //[0,0,16] v0 cent
@@ -152,7 +153,7 @@ class AliPhotonHeaderObj : public TObject
   Int_t         fTrackMult;
   Int_t         fNMcParts;
 
-  ClassDef(AliPhotonHeaderObj,5)
+  ClassDef(AliPhotonHeaderObj,6)
 };
 
 class AliPhotonConvObj : public TObject

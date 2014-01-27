@@ -63,6 +63,12 @@ Int_t SFT_gbV0CRingMin;
 Int_t SFT_gbV0CRingMax;
 Int_t SFT_gbV0ARingMin;
 Int_t SFT_gbV0ARingMax;
+Int_t SFT_gbDauITS0On;
+Int_t SFT_gbDauITS1On;
+Int_t SFT_gbDauITS2On;
+Int_t SFT_gbDauITS3On;
+Int_t SFT_gbDauITS4On;
+Int_t SFT_gbDauITS5On;
 
 Bool_t SFT_gbUntagDaughter;
 Int_t SFT_gbPostMatched;
@@ -164,6 +170,12 @@ void AddTaskFlowStrange() {
   taskSel->SetDauMinPt(SFT_gbMinPt);
   taskSel->SetDauMinImpactParameterXY(SFT_gbMinImpactParameterXY);
   taskSel->SetDauMaxNSigmaPID(SFT_gbMaxNSigmaPID);
+  taskSel->SetDauITSLayer(0,SFT_gbDauITS0On);
+  taskSel->SetDauITSLayer(1,SFT_gbDauITS1On);
+  taskSel->SetDauITSLayer(2,SFT_gbDauITS2On);
+  taskSel->SetDauITSLayer(3,SFT_gbDauITS3On);
+  taskSel->SetDauITSLayer(4,SFT_gbDauITS4On);
+  taskSel->SetDauITSLayer(5,SFT_gbDauITS5On);
 
   taskSel->SetMaxRapidity(SFT_gbMaxRapidity);
   taskSel->SetMaxDCAdaughters(SFT_gbMaxDCAdaughters);
@@ -432,6 +444,12 @@ void SFT_PrintConfig() {
   printf("* VZELINEAR  %3d                  *\n", SFT_gbVZEmb );
   printf("* VZEPERDISK  %3d                 *\n", SFT_gbVZEpdisk );
   printf("* VZESAVE  %3d                    *\n", SFT_gbVZEsave );
+  printf("* DAUITS0  %3d                    *\n", SFT_gbDauITS0On );
+  printf("* DAUITS1  %3d                    *\n", SFT_gbDauITS1On );
+  printf("* DAUITS2  %3d                    *\n", SFT_gbDauITS2On );
+  printf("* DAUITS3  %3d                    *\n", SFT_gbDauITS3On );
+  printf("* DAUITS4  %3d                    *\n", SFT_gbDauITS4On );
+  printf("* DAUITS5  %3d                    *\n", SFT_gbDauITS5On );
   printf("***********************************\n");
 }
 void SFT_ReadConfig(TString ipf) {
@@ -567,6 +585,18 @@ void SFT_ReadConfig(TString ipf) {
       input >> SFT_gbVertexZcut;
     } else if(!varname.CompareTo("WHICHPSI")) {
       input >> SFT_gbWhichPsi;
+    } else if(!varname.CompareTo("DAUITS0")) {
+      input >> SFT_gbDauITS0On;
+    } else if(!varname.CompareTo("DAUITS1")) {
+      input >> SFT_gbDauITS1On;
+    } else if(!varname.CompareTo("DAUITS2")) {
+      input >> SFT_gbDauITS2On;
+    } else if(!varname.CompareTo("DAUITS3")) {
+      input >> SFT_gbDauITS3On;
+    } else if(!varname.CompareTo("DAUITS4")) {
+      input >> SFT_gbDauITS4On;
+    } else if(!varname.CompareTo("DAUITS5")) {
+      input >> SFT_gbDauITS5On;
     } else {
       printf("I dont understand %s\n",varname.Data());
     }
@@ -636,4 +666,10 @@ void SFT_ResetVars() {
   SFT_gbPostMatched=kFALSE;
   SFT_gbShrinkFP=kTRUE;
   SFT_gbVertexZcut=10.0;
+  SFT_gbDauITS0On=-1;
+  SFT_gbDauITS1On=-1;
+  SFT_gbDauITS2On=-1;
+  SFT_gbDauITS3On=-1;
+  SFT_gbDauITS4On=-1;
+  SFT_gbDauITS5On=-1;
 }

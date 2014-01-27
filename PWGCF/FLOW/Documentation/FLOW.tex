@@ -189,14 +189,26 @@ The intro to everything.
 \chapter{A Quick Start}
 \section{The flow package}
 \label{quickstart}
-The \texttt{ALICE flow package}\index{flow package}\index{ALICE flow package|see{flow package}}\footnote{The ALICE flow package is part of AliROOT\index{AliROOT}, the ALICE extension of the ROOT framework, which can be obtained from \href{http://git.cern.ch/pub/AliRoot}{http://git.cern.ch/pub/AliRoot}. The flow package itself is located in the folder \texttt{\$ALICE\_ROOT/PWG/FLOW/}, where \texttt{\$ALICE\_ROOT} refers to the source directory of AliROOT.} 
+The \texttt{ALICE flow package}\index{flow package}\index{ALICE flow package|see{flow package}}\footnote{The \texttt{ALICE} flow package is part of \texttt{AliROOT}\index{AliROOT}, the ALICE extension of the \texttt{ROOT} framework, which can be obtained from \href{http://git.cern.ch/pub/AliRoot}{http://git.cern.ch/pub/AliRoot}. The flow package itself is located in the folder \texttt{\$ALICE\_ROOT/PWG/FLOW/}, where \texttt{\$ALICE\_ROOT} refers to the source directory of \texttt{AliROOT}.} 
 contains most known flow analysis methods.  In this chapter we give a few examples how to setup an
 analysis for the most common cases. The chapters that follow provide more detailed information on the structure of the code 
 and settings of the various flow methods. 
 This write-up is however not a complete listing of the methods, for this the reader is referred to the header files.
  
-\section{On the fly}
-The macro \texttt{Documentation/examples/runFlowOnTheFlyExample.C}\index{On the fly}\index{runFlowOnTheFlyExample.C}\footnote{In aliroot, this macro can be found at \\ \texttt{\$ALICE\_ROOT/PWGCF/FLOW/Documentation/examples/runFlowOnTheFlyExample}} is a basic example of how the flow package works. 
+\section{On the fly - getting started on a Toy MC}
+To get started with the \texttt{flow package} we begin by generating a few simple Toy Monte Carlo events and performing a flow analysis on these simulated events. The steps which will be followed will be the same as when performing an analysis on data: 
+\begin{enumerate}
+\item Prepare your \texttt{(Ali)ROOT} session by loaded the necessary libraries
+\item Create the analysis method objects
+\item Initialize the methods (which creates their histograms)
+\item Define track cuts
+\item Create flow events, which is a container class holding all necessary information (e.g. tracks) for the flow analysis of an event (collision) and actually do the analysis
+\item Finish the analysis, which will calculate the final $v_n$ values
+\item Write the results to an output file
+\end{enumerate}
+In this Monte Carlo exercise, the flow event class will not receive data from a detector (e.g. an \texttt{NTuple}) , but instead generate toy events itself. 
+
+The macro \texttt{runFlowOnTheFlyExample.C}\index{On the fly}\index{runFlowOnTheFlyExample.C}\footnote{In aliroot, this macro can be found at \\ \texttt{\$ALICE\_ROOT/PWGCF/FLOW/Documentation/examples/runFlowOnTheFlyExample}} is a basic example of how the flow package works. 
 In this section we explain the main pieces of that macro.
 \begin{enumerate}
 	\item To use the flow code the flow library needs to be loaded. In\index{libraries, AliROOT} \texttt{AliROOT}:
@@ -226,13 +238,25 @@ AliFlowTrackSimpleCuts *cutsRP = new AliFlowTrackSimpleCuts();
 AliFlowTrackSimpleCuts *cutsPOI = new AliFlowTrackSimpleCuts();
 cutsPOI->SetPtMin(0.2);
 cutsPOI->SetPtMax(2.0);	\end{lstlisting}
-	\item Now we are ready to start the analysis. For a quick start we make an event on the fly, tag the reference particles and particles of interest  and pass it to the two flow methods. \\
+	\item Now we are ready to start the analysis. For a quick start we make an event on the fly, tag the reference particles and particles of interest  and pass it to the two flow methods. 
+	
+	We do this in an event loop. First define the number of events that need to be created, their multiplicity, and a value $v_2$ value, which can either be supplied as a fixed number (no $p_t$ dependence) of a function (to generate $p_t$ differential flow\footnote{The on the fly event generator is not limited to the generation of the second harmonic $v_2$, but to get started, this is a nice example}
+	
+	\begin{lstlisting}
+	Int_t nEvents = 1000;	// generate 1000 events
+	Int_t mult = 2000;		// use track multiplicity of 2000
+	Double_t v2 = .05;		// 5 pct integrated flow
+	// or sample differential flow
+	TF1* diffv2 = new TF1("diffv2", "((x<1.)*(0.1/1.)*x+(x>=1.)*0.1)", 0., 20.); \end{lstlisting}
+	
+Now we have all the ingredients to our first flow analysis	
+	
 	\begin{lstlisting}
 for(Int_t i=0; i<nEvts; i++) { 
       // make an event with mult particles 
       AliFlowEventSimple* event = new AliFlowEventSimple(mult,AliFlowEventSimple::kGenerate);
       // modify the tracks adding the flow value v2
-      event->AddV2(v2);
+      event->AddV2(diffv2);
       // select the particles for the reference flow
       event->TagRP(cutsRP);
       // select the particles for differential flow
@@ -240,35 +264,151 @@ for(Int_t i=0; i<nEvts; i++) {
       // do flow analysis with various methods:
       mcep->Make(event);
       qc->Make(event);
-}\end{lstlisting}
+} \end{lstlisting}
 	\item To fill the histograms which contain the final results we have to call Finish for each method:
 	\begin{lstlisting}
 mcep->Finish(); 
 qc->Finish(); \end{lstlisting}
-	\item This concludes the analysis and now we can write the results into a file:
-	\begin{lstlisting}
-TFile *outputFile = new TFile("AnalysisResults.root","RECREATE");
+	\item This concludes the analysis and now we can write the results into a file. Two options for writing the input to a file are available: 
+     \begin{itemize}
+     \item Create a new output file and write the output to this file
+     \begin{lstlisting}
+TFile *outputFile = new TFile("outputMCEPanalysis.root","RECREATE");
 mcep->WriteHistograms();
-qc->WriteHistograms();\end{lstlisting}
+TFile *outputFile = new TFile("outputQCanalysis.root","RECREATE");
+qc->WriteHistograms();
+\end{lstlisting}
+
+Please note that this will create a new output file, and overwrite any existing filse called \texttt{AnalysisResults.root}.
+
+\item  To write the output of multiple analyses into subdirectories of one file, one can do the following:
+\begin{lstlisting}
+TFile *outputFile = new TFile("AnalysisResults.root","RECREATE");
+TDirectoryFile* dirQC = new TDiretoryFile("outputQCanalysis", "outputQCanalysis");
+qc->WriteHistograms(dirQC);
+TDirectoryFile* dirMCEP = new TDiretoryFile("outputMCEPanalysis", "outputMCEPanalysis");
+mcep->WriteHistograms(dirMCEP);
+\end{lstlisting}
+
+
+Note that \texttt{AnalysisResults.root} \index{AnalysisResults.root} is the default name given to analyses in \texttt{AliROOT}. Many macros in \texttt{AliROOT} will expect a file \texttt{AnalyisResults.root} as input, so for most users it will be convenient to follow this convention.
+
+When done with running the analysis, do not forget to write the file to disk by calling
+\begin{lstlisting}
+TFile::Close();	// write the buffered file to disk \end{lstlisting}
 \end{enumerate}
 
-\section{What is in the output file?}
-\index{output file}Now we have written the results into a file, but what is in there?
+\section{What is in the output file ?}
+\index{output file} Now we have written the results into a file, but what is in there? 
 
-\section{Reading events from file}
+Although the output of different flow analysis techniques might differ slightly as a result of their different approaches at estimating $v_2$, the output files containers are always built in a similar way. 
+
+\subsection{AliFlowCommonHists - Output objects}
+Objects of two types are stored in the output of the flow analysis\footnote{Make sure that \texttt{libPWGflowBase.so} is loaded in your \texttt{(Ali)ROOT} session, otherwise these objects will be unknown.}
+\begin{enumerate}
+\item \texttt{AliFlowCommonHist}, which is a class that contains common histograms for the flow analysis (e.g. QA histograms and histograms that contain the analysis flags which were used). Depending on the type of flow analysis that was used, this object contains histograms from the following list:
+\begin{lstlisting}
+  Bool_t    fBookOnlyBasic;       // book and fill only control histos needed for all methods
+  TH1F*     fHistMultRP;          // multiplicity for RP selection
+  TH1F*     fHistMultPOI;         // multiplicity for POI selection
+  TH2F*     fHistMultPOIvsRP;     // multiplicity for POI versus RP
+  TH1F*     fHistPtRP;            // pt distribution for RP selection
+  TH1F*     fHistPtPOI;           // pt distribution for POI selection
+  TH1F*     fHistPtSub0;          // pt distribution for subevent 0
+  TH1F*     fHistPtSub1;          // pt distribution for subevent 1
+  TH1F*     fHistPhiRP;           // phi distribution for RP selection
+  TH1F*     fHistPhiPOI;          // phi distribution for POI selection
+  TH1F*     fHistPhiSub0;         // phi distribution for subevent 0
+  TH1F*     fHistPhiSub1;         // phi distribution for subevent 1
+  TH1F*     fHistEtaRP;           // eta distribution for RP selection
+  TH1F*     fHistEtaPOI;          // eta distribution for POI selection
+  TH1F*     fHistEtaSub0;         // eta distribution for subevent 0
+  TH1F*     fHistEtaSub1;         // eta distribution for subevent 1
+  TH2F*     fHistPhiEtaRP;        // eta vs phi for RP selection
+  TH2F*     fHistPhiEtaPOI;       // eta vs phi for POI selection
+  TProfile* fHistProMeanPtperBin; // mean pt for each pt bin (for POI selection)
+  TH2F*     fHistWeightvsPhi;     // particle weight vs particle phi
+  TH1F*     fHistQ;               // Qvector distribution
+  TH1F*     fHistAngleQ;          // distribution of angle of Q vector
+  TH1F*     fHistAngleQSub0;      // distribution of angle of subevent 0 Q vector
+  TH1F*     fHistAngleQSub1;      // distribution of angle of subevent 1 Q vector
+  TProfile* fHarmonic;            // harmonic 
+  TProfile* fRefMultVsNoOfRPs;    // <reference multiplicity> versus # of RPs
+  TH1F*     fHistRefMult;         // reference multiplicity distribution
+  TH2F*     fHistMassPOI;         // mass distribution for POI selection \end{lstlisting}
+  This information is from the header file of the AliFlowCommonHist object\footnote{The headers of both output objects can be found in \texttt{\$ALICE\_ROOT/PWG/FLOW/Base/}.}
+  \item \texttt{AliFlowCommonHistResults} is an object designed to hold the results of the flow analysis. The possible histograms stored in this object are
+  \begin{lstlisting}
+  TH1D* fHistIntFlow; // reference flow
+  TH1D* fHistChi;     // resolution
+  // RP = Reference Particles:  
+  TH1D* fHistIntFlowRP;     // integrated flow of RPs
+  TH1D* fHistDiffFlowPtRP;  // differential flow (Pt) of RPs
+  TH1D* fHistDiffFlowEtaRP; // differential flow (Eta) of RPs
+  // POI = Particles Of Interest:
+  TH1D* fHistIntFlowPOI;     // integrated flow of POIs
+  TH1D* fHistDiffFlowPtPOI;  // differential flow (Pt) of POIs
+  TH1D* fHistDiffFlowEtaPOI; // differential flow (Eta) of POIs \end{lstlisting}
+  
+  \end{enumerate}
+  The titles of the histograms in the output object differ from the names of the pointers given in the two lists printed above, but the lists give an overview of what is available; the easiest way however of getting acquainted with where to find histograms in the output is browsing them in \texttt{ROOT's TBrowser} (see figure \ref{fig:browserExample}).
+  \begin{lstlisting}
+  new TBrowser(); \end{lstlisting}
+\begin{SCfigure}
+ \includegraphics[width=0.70\textwidth]{figs/browserExample.png}
+ \caption[TBrowser with output file]{Example of output file opened in a TBrowser, results of differential $v_2$ analysis with second order Q-cumulant analysis are shown.}
+ \label{fig:browserExample}
+\end{SCfigure}
+Analysis specific outputs will be discussed in later sections. 
+
+
+\subsubsection{Comparing flow results}
+A convenient way of comparing the results of the different flow analysis strategies that have been used is invoking the macro \texttt{compareFlowResults.C}\footnote{\texttt{\$ALICE\_ROOT/PWGCF/FLOW/macros/compareFlowResults.C}}.  This macro will read the analysis output file \texttt{AnalysisResults.root}, extract the requested results from it and plot them. For a full overview of what can be done with the macro, the reader is referred to the macro itself and its ample documentation. To run the macro on the dataset that we have just generated, simply do
+\begin{lstlisting}
+.L compareFlowResults.C
+compareFlowResults(TSring(""))	// the empty suffix indicates on the fly events \end{lstlisting}
+
+\begin{SCfigure}
+ \includegraphics[width=0.70\textwidth]{figs/compareFlowResults.png}
+ \caption[Comparing on the fly flow results]{Example of inspecting the output file of the on the fly analysis with the \texttt{compareFlowResults.C macro}.}
+ \label{fig:browserExample}
+\end{SCfigure}
+
+
+\subsection{AliFlowCommonConstants - The Common Constants class}
+All flow analysis use a common output container to store their histograms. To set the configuration for the histograms in these containers - e.g. the $p_t$ ranges of histograms, the number of bins, etc, etc - all flow analysis methods initialize their output containers using variables from a global instance of the \texttt{AliFlowCommonConstants}\index{AliFlowCommonConstants} class. This global object, which can be obtained via the a static function
+\begin{lstlisting}
+static AliFlowCommonConstants* GetMaster(); \end{lstlisting} 
+can be tuned to the  user's liking by requesting a pointer to it via the static access method, and using the available setter functions, e.g. the following
+\begin{lstlisting}
+AliFlowCommonConstants* cc = AliFlowCommonConstants::GetMaster();
+cc->SetNbinsPt(10);
+cc->SetPtMin(0);
+cc->SetPtMax(10); \end{lstlisting}
+will result in an analysis which is performed in 10 $p_t$ bins of 1 GeV/$c$ width. For a full overview of the available common constants the user is referred to the class header\footnote{\texttt{\$ALICE\_ROOT/PWG/FLOW/Base/AliFlowCommonConstants.h}}.
+
+
+\subsection{redoFinish.C}
+\index{redoFinish.C} When analysis is run in parallel, resulting in large, merged files (e.g. when running on \texttt{GRID}) the output of the flow analysis tasks in \texttt{AnalysisResults.root} is typically wrong, as merging files via \texttt{ROOT's} \texttt{TFileMerger} will trivially sum up results in all histograms. 
+
+The \texttt{redoFinish.C}\footnote{\texttt{\$ALICE\_ROOT/PWGCF/FLOW/macros/refoFinish.C}} macro re-evaluates all output that cannot trivially be merged. To use \texttt{redoFinish.C}, make sure your analysis output file is called \texttt{mergedAnalysisResults.root} and simply run the macro
+\begin{lstlisting}
+.L redoFinish.C
+redoFinish(); \end{lstlisting}
+\texttt{redoFinish.C} will produce a new \texttt{AnalysisResults.root} file with the corrected results by calling the \texttt{::Finish()} function on all known output structures in the \texttt{mergedAnalysisResults.root} file. Additionally \texttt{redoFinish.C} can be used to repeat the call to \texttt{::Finish()} with different settings, which might alter the outcome of the flow analysis (e.g. use a different strategy to correct for non-uniform acceptance). This will be explained in more detail in the following sections. 
+
+\section{Getting started on Data}
+
 The macro \texttt{Documentation/examples/runFlowReaderExample.C} \index{runFlowReaderExample.C}is an example how to setup a flow analysis if the events are already generated and
 for example are stored in ntuples.
  
 \section{A simple flow analysis in ALICE using Tasks}
-The macro \texttt{Documentation/examples/runFlowTaskExample.C} \index{runFlowTaskExample.C}is an example how to setup a flow analysis using the full ALICE Analysis Framework.
-
-%-----------------------------------------------------------------------
+The macro \texttt{Documentation/examples/runFlowTaskExample.C} \index{runFlowTaskExample.C}is an example how to setup a flow analysis using the full \texttt{ALICE} Analysis Framework.
 
 \chapter{The Flow Event}
 \label{flowevent}
 Here we describe the flowevent, flowtracks, general cuts and cuts for RPs POIs.
 OntheFly, AfterBurner. Filling with ESD, AOD, Ntuples, etc.  
-%-----------------------------------------------------------------------
 
 \chapter{The Program}
 \label{The Program}

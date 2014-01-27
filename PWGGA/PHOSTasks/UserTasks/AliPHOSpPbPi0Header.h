@@ -82,11 +82,11 @@ class AliPHOSpPbPi0Header : public TNamed {
                                     // 1, centrality max
                                     // 2, centrality min
 
-  enum { kAll,      kCpv,       kDisp,       kBoth,          kCpv2,      kDisp2,      kBoth2,     kPIDs                   };   // PID
-  enum { kPtClu,    kEtaClu,    kPhiClu,     kM02Clu,        kM20Clu,    kTOFClu,     kNCellsClu, kNClustersClu, kVarsClu };   // clusters
-  enum { kPtPi0,    kEtaPi0,    kPhiPi0,     kAsyPi0,        kAnglePi0,  kInvMassPi0, kVarsPi0                            };   // pi0
-  enum { kPtMixPi0, kEtaMixPi0, kPhiMixPi0,  kInvMassMixPi0, kVarsMixPi0                                                  };   // Mixed pi0
-  enum { kPtMC,     kRadiusMC,  kRapidityMC, kPhiMC,         kInvMassMC, kVarsMC                                          };   // MC
+  enum { kAll,      kCpv,        kDisp,       kBoth,          kCpv2,      kDisp2,      kBoth2,     kPIDs                   };   // PID
+  enum { kPtClu,    kEtaClu,     kPhiClu,     kM02Clu,        kM20Clu,    kTOFClu,     kNCellsClu, kNClustersClu, kVarsClu };   // clusters
+  enum { kPtPi0,    kEtaPi0,     kPhiPi0,     kAsyPi0,        kAnglePi0,  kInvMassPi0, kVarsPi0                            };   // pi0
+  enum { kPtMixPi0, kEtaMixPi0,  kPhiMixPi0,  kInvMassMixPi0, kVarsMixPi0                                                  };   // Mixed pi0
+  enum { kPtMC,     kRapidityMC, kRadiusMC,   kPhiMC,         kInvMassMC, kVarsMC                                          };   // MC
 
   Double_t fVtx[3];                 // position of vtx
   TString  fFiredTriggerClass;      // trigger class

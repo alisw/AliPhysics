@@ -74,6 +74,7 @@ class AliAnalysisTaskLocalRho : public AliAnalysisTaskEmcalJet {
   void                    SetModulationFitOptions(TString opt)            {fFitModulationOptions = opt; }
   void                    SetReferenceDetector(detectorType type)         {fDetectorType = type; }
   void                    SetUsePtWeight(Bool_t w)                        {fUsePtWeight = w; }
+  void                    SetUsePtWeightErrorPropagation(Bool_t w)        {fUsePtWeightErrorPropagation = w;}
   void                    SetRunModeType(runModeType type)                {fRunModeType = type; }
   void                    SetForceAbsVnHarmonics(Bool_t f)                {fAbsVnHarmonics = f; }
   void                    SetExcludeLeadingJetsFromFit(Float_t n)         {fExcludeLeadingJetsFromFit = n; }
@@ -123,6 +124,7 @@ class AliAnalysisTaskLocalRho : public AliAnalysisTaskEmcalJet {
   fitModulationType       fFitModulationType;     // fit modulation type
   qcRecovery              fQCRecovery;            // recovery type for e-by-e qc method
   Bool_t                  fUsePtWeight;           // use dptdphi instead of dndphi
+  Bool_t                  fUsePtWeightErrorPropagation; // recalculate the bin error on the dpt dphi histogram
   detectorType            fDetectorType;          // type of detector used for modulation fit
   TString                 fFitModulationOptions;  // fit options for modulation fit
   runModeType             fRunModeType;           // run mode type 
@@ -138,6 +140,7 @@ class AliAnalysisTaskLocalRho : public AliAnalysisTaskEmcalJet {
   Float_t                 fSoftTrackMaxPt;        // max pt for soft tracks
   // general qa histograms
   TH1F*                   fHistPvalueCDF;         //! cdf value of chisquare p
+  TH2F*                   fHistRhoStatusCent;     //! status of rho vs centrality
   // general settings
   Bool_t                  fAbsVnHarmonics;        // force postive local rho
   Float_t                 fExcludeLeadingJetsFromFit;    // exclude n leading jets from fit
@@ -160,6 +163,6 @@ class AliAnalysisTaskLocalRho : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskLocalRho(const AliAnalysisTaskLocalRho&);                  // not implemented
   AliAnalysisTaskLocalRho& operator=(const AliAnalysisTaskLocalRho&);       // not implemented
 
-  ClassDef(AliAnalysisTaskLocalRho, 4);
+  ClassDef(AliAnalysisTaskLocalRho, 5);
 };
 #endif

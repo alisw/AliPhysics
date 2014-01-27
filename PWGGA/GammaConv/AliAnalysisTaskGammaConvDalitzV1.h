@@ -110,12 +110,16 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     TList **fGammasPool;
     AliConversionCuts *fConversionCuts;
     TH1F **hESDConvGammaPt;
+    TH1F **hESDConvGammaEta;
+    TH2F **hESDConvGammaZR;
     TH1F **hESDDalitzElectronPt;
     TH1F **hESDDalitzPositronPt;
     TH1F **hESDDalitzElectronPhi;
     TH1F **hESDDalitzPositronPhi;
     TH1F **hESDDalitzElectronAfterPt;
     TH1F **hESDDalitzPositronAfterPt;
+    TH1F **hESDDalitzElectronAfterEta;
+    TH1F **hESDDalitzPositronAfterEta;
     TH1F **hESDDalitzElectronAfterPhi;
     TH1F **hESDDalitzPositronAfterPhi;
     TH2F **hESDDalitzElectronAfterNFindClsTPC;

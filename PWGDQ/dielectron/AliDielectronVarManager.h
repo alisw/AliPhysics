@@ -441,7 +441,7 @@ public:
   static void InitAODpidUtil(Int_t type=0);
   static void InitEstimatorAvg(const Char_t* filename);
   static void InitTRDpidEffHistograms(const Char_t* filename);
-  static Bool_t InitEffMap(const Char_t* filename);
+  static void SetLegEffMap(THnBase *map) { fgEffMap=map; }
   static void SetVZEROCalibrationFile(const Char_t* filename) {fgVZEROCalibrationFile = filename;}
   
   static void SetVZERORecenteringFile(const Char_t* filename) {fgVZERORecenteringFile = filename;}
@@ -1553,7 +1553,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
     Fill(leg1, valuesLeg1);
     Fill(leg2, valuesLeg2);
     values[AliDielectronVarManager::kPairEff] = valuesLeg1[AliDielectronVarManager::kLegEff] *valuesLeg2[AliDielectronVarManager::kLegEff];
-    values[AliDielectronVarManager::kOneOverPairEff] = (values[AliDielectronVarManager::kPairEff]>0.0 ? 1./values[AliDielectronVarManager::kPairEff] : 0.0);
+    values[AliDielectronVarManager::kOneOverPairEff] = (values[AliDielectronVarManager::kPairEff]>0.0 ? 1./values[AliDielectronVarManager::kPairEff] : 1.0);
 
   }
   values[AliDielectronVarManager::kRndmPair] = gRandom->Rndm();
@@ -1843,7 +1843,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
 								     values[AliDielectronVarManager::kv0C3rpH2]) ); 
 
   Double_t ZDCqvec[3][2];
-  memset(ZDCqvec, 0, sizeof(ZDCqvec));
+  memset(ZDCqvec, 999, sizeof(ZDCqvec));
   GetZDCRP(event, ZDCqvec);
 
   values[AliDielectronVarManager::kZDCArpH1] = TMath::ATan2(ZDCqvec[0][1], ZDCqvec[0][0]);
@@ -2219,26 +2219,6 @@ inline void AliDielectronVarManager::InitTRDpidEffHistograms(const Char_t* filen
   }
 }
 
-inline Bool_t AliDielectronVarManager::InitEffMap(const Char_t* filename) {
-  //
-  // init an efficiency object for on-the-fly correction calculations
-  //
-  fgEffMap=0x0;
-  TFile* file=TFile::Open(filename);
-  if(!file) return 0;
-  THnBase *hGen = (THnBase*) file->Get("hGenerated");
-  THnBase *hFnd = (THnBase*) file->Get("hFound");
-  if(!hFnd || !hGen) return 0;
-
-  fgEffMap  = (THnBase*) hFnd->Clone("effMap");
-  fgEffMap->Reset();
-  fgEffMap->Sumw2();
-  fgEffMap->Divide(hFnd, hGen);//, 1, 1, "");  //assume uncorrelated err, otherwise give option "B"
-  printf("[I] AliDielectronVarManager::InitEffMap efficiency maps loaded! \n");
-  return 1;
-  
-}
-
 inline Double_t AliDielectronVarManager::GetSingleLegEff(Double_t * const values) {
   //
   // get the single leg efficiency for a given particle
@@ -2580,6 +2560,7 @@ inline void AliDielectronVarManager::GetZDCRP(const AliVEvent* event, Double_t q
                                { 20, 0.04, 0.08},   //    vertex x nbin, min, max
                                { 20, 0.25, 0.29} }; //    vertex y nbin, min, max
 
+  if(!event->GetZDCData()) return;
   AliVZDC* aliZDC = event->GetZDCData();
   ZDCTEnergy[Aside] = (Double_t *)aliZDC -> GetZNATowerEnergy();
   ZDCTEnergy[Cside] = (Double_t *)aliZDC -> GetZNCTowerEnergy();
