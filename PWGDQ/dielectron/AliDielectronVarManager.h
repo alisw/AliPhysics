@@ -2235,7 +2235,7 @@ inline Double_t AliDielectronVarManager::GetSingleLegEff(Double_t * const values
     //    printf(" (%d,%f,%s) \t",idx[idim],values[var],fgEffMap->GetAxis(idim)->GetName());
   }
   //  printf(" bin content %f+-%f \n",fgEffMap->GetBinContent(idx), fgEffMap->GetBinError(idx));
-  if(fgEffMap->GetBinContent(idx)<0.01) return 0.0;
+  //  if(fgEffMap->GetBinContent(idx)<0.01) return 0.0;
   //  if(fgEffMap->GetBinError(idx)/fgEffMap->GetBinContent(idx)>0.2) return 0.0;
   return (fgEffMap->GetBinContent(idx));
 }
