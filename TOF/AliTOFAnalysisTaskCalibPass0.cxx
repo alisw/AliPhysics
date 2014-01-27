@@ -314,7 +314,7 @@ AliTOFAnalysisTaskCalibPass0::UserExec(Option_t *)
   /* loop over ESD tracks */
   Int_t nTracks = fESDEvent->GetNumberOfTracks();
   AliESDtrack *track;
-  Double_t eta, costheta, pt, time, timei[AliPID::kSPECIES], deltat, deltaz;
+  Double_t eta, costheta, pt, time, timei[AliPID::kSPECIESC], deltat, deltaz;
   for (Int_t itrk = 0; itrk < nTracks; itrk++) {
     /* get track */
     track = fESDEvent->GetTrack(itrk);
