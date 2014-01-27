@@ -477,8 +477,9 @@ void DetectorK::AddTPC(Float_t phiResMean, Float_t zResMean, Int_t skip) {
   AddLayer((char*)"OFC",   254.0,0.01367); // Outer Field cage
 
   // % Radiation Lengths ... Average per TPC row  (i.e. total/159 )
-  Float_t radLBoubdary = 0.0165;
-  Float_t rBoundary = 70.0; // cm
+  const int kNPassiveBound = 2;
+  const Float_t radLBoubdary[kNPassiveBound] = {0.05, 0.0165};
+  const Float_t rBoundary[kNPassiveBound] = {50, 70.0}; // cm
 
   Float_t radLPerRow = 0.000036;
   
@@ -496,8 +497,10 @@ void DetectorK::AddTPC(Float_t phiResMean, Float_t zResMean, Int_t skip) {
   Float_t row64Radius          =  135.1  ;    // cm
   Float_t row128Radius         =  199.2  ;    // cm                       
  
-  // add boundary between ITS and TPC
-  AddLayer("tpc_boundary",rBoundary,radLBoubdary); // dummy errors
+  // add boundaries between ITS and TPC
+  for (int i=0;i<kNPassiveBound;i++) {
+    AddLayer(Form("tpc_boundary%d",i),rBoundary[i],radLBoubdary[i]); // dummy errors
+  }
 
   for ( Int_t k = 0 ; k < tpcRows ; k++ ) {
     
