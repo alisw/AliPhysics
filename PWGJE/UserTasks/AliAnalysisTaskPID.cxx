@@ -1765,16 +1765,16 @@ AliAnalysisTaskPID::TOFpidInfo AliAnalysisTaskPID::GetTOFType(const AliVTrack* t
   Double_t exclusion = -999;
   
   if (tofMode == 0) {
-    inclusion = 1;
-    exclusion = 2.5;
+    inclusion = 1.;
+    exclusion = 2.;
   }
-  else if (tofMode == 1) {
-    inclusion = 1.5;
+  else if (tofMode == 1) { // default
+    inclusion = 1.;
     exclusion = 2.5;
   }
   else if (tofMode == 2) {
-    inclusion = 2;
-    exclusion = 2.5;
+    inclusion = 1.5;
+    exclusion = 2.;
   }
   else {
     Printf("ERROR: Bad TOF mode: %d!", tofMode);
