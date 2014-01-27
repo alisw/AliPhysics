@@ -76,9 +76,6 @@
 #include "AliTriggerConfiguration.h"
 #include "AliTriggerClass.h"
 #include "AliTriggerCluster.h"
-#ifdef MFT_UPGRADE
-#include "AliESDMFT.h"
-#endif
 #include "AliEventplane.h"
 
 
@@ -120,11 +117,7 @@ ClassImp(AliESDEvent)
 							"AliESDACORDE",
 							"AliESDAD",
 							"AliTOFHeader",
-                                                        "CosmicTracks"
-                              #ifdef MFT_UPGRADE
-//	                        , "AliESDMFT"
-							#endif
-  };
+                                                        "CosmicTracks"};
 
 //______________________________________________________________________________
 AliESDEvent::AliESDEvent():
@@ -174,9 +167,6 @@ AliESDEvent::AliESDEvent():
   fDAQAttributes(0xFFFF),
   fNTOFclusters(0),
   fTOFcluster(new TObjArray(1))
-  #ifdef MFT_UPGRADE
-//  , fESDMFT(0)
-  #endif
 {
 }
 //______________________________________________________________________________
@@ -229,11 +219,6 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fNTOFclusters(esd.fNTOFclusters),
   //  fTOFcluster(esd.fTOFcluster)
   fTOFcluster(new TObjArray(*(esd.fTOFcluster)))
-  #ifdef MFT_UPGRADE
-//  , fESDMFT(new AliESDMFT(*esd.fESDMFT))
-  #endif
-
-
 {
   printf("copying ESD event...\n");   // AU
   // CKB init in the constructor list and only add here ...
@@ -270,9 +255,6 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   AddObject(fTOFHeader);
   AddObject(fMuonClusters);
   AddObject(fMuonPads);
-  #ifdef MFT_UPGRADE
-//  AddObject(fESDMFT);
-  #endif
   GetStdContent();
 }
 
@@ -542,12 +524,6 @@ void AliESDEvent::ResetStdContent()
     fTrdTrigger->~AliESDTrdTrigger();
     new (fTrdTrigger) AliESDTrdTrigger();
   }
-  #ifdef MFT_UPGRADE
-  //if(fESDMFT){
-//	fESDMFT->~AliESDMFT();
-//	new (fESDMFT) AliESDMFT();
- // }  
-  #endif
 	
   if(fPHOSTrigger)fPHOSTrigger->DeAllocate(); 
   if(fEMCALTrigger)fEMCALTrigger->DeAllocate(); 
@@ -650,10 +626,6 @@ void AliESDEvent::Print(Option_t *) const
   printf("                 muClusters %d\n", fMuonClusters ? fMuonClusters->GetEntriesFast() : 0);
   printf("                 muPad     %d\n", fMuonPads ? fMuonPads->GetEntriesFast() : 0);
   if (fCosmicTracks) printf("                 Cosmics   %d\n",  GetNumberOfCosmicTracks());
-  #ifdef MFT_UPGRADE
-  //printf("                 MFT     %s\n", (fESDMFT ? "yes" : "no"));
-  #endif
-	
 	
   TObject* pHLTDecision=GetHLTTriggerDecision();
   printf("HLT trigger decision: %s\n", pHLTDecision?pHLTDecision->GetOption():"not available");
@@ -1381,13 +1353,6 @@ void AliESDEvent::SetTZEROData(const AliESDTZERO * obj)
     *fESDTZERO = *obj;
 }
 
-#ifdef MFT_UPGRADE
-//void AliESDEvent::SetMFTData(AliESDMFT * obj)
-//{ 
-//  if(fESDMFT)
-//	*fESDMFT = *obj;
-//}
-#endif
 
 void AliESDEvent::SetACORDEData(AliESDACORDE * obj)
 {
@@ -1474,9 +1439,6 @@ void AliESDEvent::GetStdContent()
   fESDAD = (AliESDAD*)fESDObjects->FindObject(fgkESDListName[kESDAD]);
   fTOFHeader = (AliTOFHeader*)fESDObjects->FindObject(fgkESDListName[kTOFHeader]);
   fCosmicTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kCosmicTracks]);
-  #ifdef MFT_UPGRADE
- // fESDMFT = (AliESDMFT*)fESDObjects->FindObject(fgkESDListName[kESDMFT]);
-  #endif
 }
 
 void AliESDEvent::SetStdNames(){
@@ -1542,9 +1504,6 @@ void AliESDEvent::CreateStdContent()
   AddObject(new AliESDAD()); 
   AddObject(new AliTOFHeader());
   AddObject(new TClonesArray("AliESDCosmicTrack",0));
-  #ifdef MFT_UPGRADE
-  //AddObject(new AliESDMFT());
-  #endif
 	
   // check the order of the indices against enum...
 
@@ -1972,11 +1931,6 @@ void AliESDEvent::CopyFromOldESD()
       AddCaloCluster(fESDOld->GetCaloCluster(i));
     }
 	  
-	#ifdef MFT_UPGRADE  
-	// MFT
-//	if (fESDOld->GetMFTData()) SetMFTData(fESDOld->GetMFTData());
-    #endif
-
   }// if fesdold
 }
 

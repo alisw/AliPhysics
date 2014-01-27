@@ -156,13 +156,7 @@ using std::ofstream;
 ClassImp(AliSimulation)
 
 AliSimulation *AliSimulation::fgInstance = 0;
-const char* AliSimulation::fgkDetectorName[AliSimulation::fgkNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE","AD",
-// #ifdef MFT_UPGRADE
-//                                                                             ,"MFT"
-// #endif 
-                                                                            "MFT"    // AU
-									    ,"HLT"
-};
+const char* AliSimulation::fgkDetectorName[AliSimulation::fgkNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE","AD","MFT","HLT"};
 
 //_____________________________________________________________________________
 AliSimulation::AliSimulation(const char* configFileName,

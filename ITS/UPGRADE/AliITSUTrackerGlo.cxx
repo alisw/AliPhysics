@@ -305,7 +305,7 @@ Int_t AliITSUTrackerGlo::PropagateBack(AliESDEvent *esdEv)
   Double_t xyzTrk[3],xyzVtx[3]={GetX(),GetY(),GetZ()};
   AliITSUTrackHyp dummyTr;
   const double kWatchStep=10.; // for larger steps watch arc vs segment difference
-  Double_t times[AliPID::kSPECIES];
+  Double_t times[AliPID::kSPECIESC];
   //
   for (int itr=0;itr<fNTracksESD;itr++) {
     fCurrESDtrack = esdEv->GetTrack(itr);

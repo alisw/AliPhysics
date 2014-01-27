@@ -37,7 +37,10 @@ Bool_t doPIDqa        = 1; //new
 //==============================================================================
  TString configPWGHFd2h = (iCollision==0)?"$ALICE_ROOT/PWGHF/vertexingHF/ConfigVertexingHF.C"
                           :"$ALICE_ROOT/PWGHF/vertexingHF/ConfigVertexingHF_highmult.C";
-                                                 
+
+
+Double_t    *cutsESDfilterReVtx = 0;     // optional cuts for revertexing
+                                             
 // Temporaries.
 void AODmerge();
 void AddAnalysisTasks();
@@ -234,7 +237,7 @@ void AddAnalysisTasks(const char *cdb_location){
       } else {
 	taskesdfilter = AddTaskESDFilter(useKFILTER, kFALSE, kFALSE, kFALSE /*usePhysicsSelection*/,kFALSE,kTRUE,kFALSE,kFALSE,run_flag); // others
       }   
-      if (iESDfilterReVtx>=0 && taskesdfilter) taskesdfilter->SetRefitVertexTracks(iESDfilterReVtx);
+      if (iESDfilterReVtx>=0 && taskesdfilter) taskesdfilter->SetRefitVertexTracks(iESDfilterReVtx, cutsESDfilterReVtx);
    }   
 
 // ********** PWG3 wagons ******************************************************           

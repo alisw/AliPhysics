@@ -215,7 +215,8 @@ class AliAODTrack : public AliVTrack {
     return GetPosition(p); }
   
   Bool_t GetXYZAt(Double_t x, Double_t b, Double_t *r) const;
-  
+  Bool_t GetXYZatR(Double_t xr,Double_t bz, Double_t *xyz=0, Double_t* alpSect=0) const;  
+
   Bool_t GetCovarianceXYZPxPyPz(Double_t cv[21]) const {
     return GetCovMatrix(cv);}
 

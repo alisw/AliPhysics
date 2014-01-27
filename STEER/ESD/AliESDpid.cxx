@@ -40,7 +40,7 @@
 
 ClassImp(AliESDpid)
 
-Int_t AliESDpid::MakePID(AliESDEvent *event, Bool_t TPConly, Float_t timeZeroTOF) const {
+Int_t AliESDpid::MakePID(AliESDEvent *event, Bool_t TPConly, Float_t /*timeZeroTOF*/) const {
   //
   //  Calculate probabilities for all detectors, except if TPConly==kTRUE
   //  and combine PID
@@ -277,7 +277,7 @@ void AliESDpid::MakeTOFPID(AliESDtrack *track, Float_t /*timeZeroTOF*/) const
   Int_t ibin = fTOFResponse.GetMomBin(track->GetP());
   Float_t timezero = fTOFResponse.GetT0bin(ibin);
 
-  Double_t time[AliPID::kSPECIES];
+  Double_t time[AliPID::kSPECIESC];
   track->GetIntegratedTimes(time);
 
   Double_t sigma[AliPID::kSPECIES];
@@ -397,7 +397,7 @@ Bool_t AliESDpid::CheckTOFMatching(AliESDtrack *track) const{
   //
     Bool_t status = kFALSE;
     
-    Double_t exptimes[5];
+    Double_t exptimes[AliPID::kSPECIESC];
     track->GetIntegratedTimes(exptimes);
     
     Float_t p = track->P();
@@ -473,7 +473,31 @@ void AliESDpid::SetMassForTracking(AliESDtrack *esdtr) const
 {
   // assign mass for tracking
   //
-  int pid = AliPID::kPion; // this should be substituted by real most probable TPC pid (e,mu -> pion) or poin if no PID possible
+
+  // in principle AliPIDCombined could be used to also set priors
+  //AliPIDCombined pidProb;
+  //pidProb.SetDetectorMask(kDetTPC);              // use only TPC information, couls also be changed
+  //pidProb.SetSelectedSpecies(AliPID::kSPECIESC); // number of species to use
+  //pidProb.SetDefaultTPCPriors();                 // load default priors
+
+  Double_t prob[AliPID::kSPECIESC]={0.};
+  EDetPidStatus pidStatus=ComputePIDProbability(kTPC, esdtr, AliPID::kSPECIESC, prob);
+  // check if a valid signal was found, otherwise return pion mass
+  if (pidStatus!=kDetPidOk) {
+    esdtr->SetMassForTracking(AliPID::kPion);
+    return;
+  }
+
+  // or with AliPIDCombined
+  // pidProb.ComputeProbabilities(esdtr, this, p);
+
+  // find max probability
+  Float_t max=0.;
+  Int_t pid=-1;
+  for (Int_t i=0; i<AliPID::kSPECIESC; ++i) if (prob[i]>max) {pid=i; max=prob[i];}
+
+  //int pid = AliPID::kPion; // this should be substituted by real most probable TPC pid (e,mu -> pion) or poin if no PID possible
+
   //
   if (pid<AliPID::kPion || pid>AliPID::kSPECIESC-1) pid = AliPID::kPion;
   //
