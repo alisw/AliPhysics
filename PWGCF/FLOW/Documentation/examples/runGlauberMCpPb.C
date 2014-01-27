@@ -1,4 +1,4 @@
-void runGlauberMCpPb(Int_t option=0,Int_t N=250000)
+void runGlauberMCpPb(Int_t option=0,Int_t N=250000,Bool_t qparts=kFALSE)
 {
   //load libraries
   gSystem->Load("libVMC");
@@ -16,20 +16,22 @@ void runGlauberMCpPb(Int_t option=0,Int_t N=250000)
   Option_t *sysA="p"; 
   Option_t *sysB="Pb";
   Double_t signn=70; // inelastic nucleon nucleon cross section
-  //const char *fname="GlauberMC_PbPb_ntuple.root"; // name output file
-
-  // run the code to produce an ntuple:
-  //  AliGlauberMC::runAndSaveNucleons(10000,"Pb","Pb",72);
   Double_t mind=0.4;
-  //  AliGlauberMC::RunAndSaveNtuple(nevents,sysA,sysB,signn,mind);
-  Double_t r=6.62;
-  Double_t a=0.546;
   const char *fname="glau_ppb_ntuple.root";
+
+  if (qparts) {
+    signn/=9;
+    mind=0;
+  }
 
   AliGlauberMC mcg(sysA,sysB,signn);
   mcg.SetMinDistance(mind);
-  mcg.Setr(r);
-  mcg.Seta(a);
+  if (qparts) {
+    AliGlauberNucleus &na = mcg.GetNucA();
+    na.SetN(3*na.GetN());
+    AliGlauberNucleus &nb = mcg.GetNucB();
+    nb.SetN(3*nb.GetN());
+  }
   if (option==1) 
     mcg.SetDoFluc(0.55,78.5,0.82,kTRUE);
   else if (option==2) 
