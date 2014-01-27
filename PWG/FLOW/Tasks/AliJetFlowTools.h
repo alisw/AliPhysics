@@ -128,6 +128,16 @@ class AliJetFlowTools {
                 Float_t rangeUp = 80,
                 TString in = "UnfoldedSpectra.root", 
                 TString out = "ProcessedSpectra.root") const;
+        void            DoSystematics(
+                Int_t nominalIn,
+                Int_t nominalOut,
+                TArrayI* variationsIn,
+                TArrayI* variationsOut,
+                Int_t columns = 4,
+                Float_t rangeLow = 20,
+                Float_t rangeUp = 80,
+                TString in = "UnfoldedSpectra.root", 
+                TString out = "Systematics.root") const;
         Bool_t          SetRawInput (
                 TH2D* detectorResponse, // detector response matrix
                 TH1D* jetPtIn,          // in plane jet spectrum
@@ -208,9 +218,9 @@ class AliJetFlowTools {
         // give object a unique name via the 'protect heap' functions. 
         // may seem redundant, but some internal functions of root (e.g.
         // ProjectionY()) check for existing objects by name and re-use them
-        TH1D*           ProtectHeap(TH1D* protect, Bool_t kill = kTRUE, TString suffix = "");
-        TH2D*           ProtectHeap(TH2D* protect, Bool_t kill = kTRUE, TString suffix = "");
-        TGraphErrors*   ProtectHeap(TGraphErrors* protect, Bool_t kill = kTRUE, TString suffix = "");
+        TH1D*           ProtectHeap(TH1D* protect, Bool_t kill = kTRUE, TString suffix = "") const;
+        TH2D*           ProtectHeap(TH2D* protect, Bool_t kill = kTRUE, TString suffix = "") const;
+        TGraphErrors*   ProtectHeap(TGraphErrors* protect, Bool_t kill = kTRUE, TString suffix = "") const;
         // members, accessible via setters
         AliAnaChargedJetResponseMaker*  fResponseMaker; // utility object
         TF1*                    fPower;                 // smoothening fit

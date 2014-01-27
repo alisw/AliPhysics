@@ -118,7 +118,7 @@ _dedxMax              ( 100000),
 _nClusterMin          ( 80), 
 _trackFilterBit       (0),
 fNSigmaCut            (3.),
-fAnalysisType ("AOD"),
+fAnalysisType ("MCAOD"),
 fExcludeResonancesInMC (kFALSE),
 fExcludeElectronsInMC (kFALSE), 
 _field    ( 1.),
@@ -386,6 +386,7 @@ fESDEvent(0),
 fInputHandler(0),
 fPIDResponse(0),
 _outputHistoList(0),
+fArrayMC (0),
 _twoPi         ( 2.0 * 3.1415927),
 _eventCount    ( 0), 
 _debugLevel    ( 0),
@@ -412,6 +413,11 @@ _dedxMax              ( 100000),
 _nClusterMin          ( 80), 
 _trackFilterBit       ( 0),
 fNSigmaCut            ( 3.),
+
+fAnalysisType ("MCAOD"),
+fExcludeResonancesInMC (kFALSE),
+fExcludeElectronsInMC (kFALSE), 
+
 _field    ( 1.),
 _nTracks  ( 0 ),
 _mult0    ( 0 ),
@@ -1270,7 +1276,7 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
                   continue;
 		}
 
-	      //if(!t->IsPhysicalPrimary()) continue;                                                                                      
+              //if(!t->IsPhysicalPrimary()) continue;                                                                                      
               // Remove neutral tracks                                      
               if(t->Charge() == 0) continue;                                                                                              
 	      //Exclude Weak Decay Resonances                                                                                                          
@@ -1291,7 +1297,6 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
 		    }
 		  }
 		}
-
 
 	      //Exclude electrons with PDG                                                                                                 
 	      if(fExcludeElectronsInMC) {
@@ -1384,8 +1389,11 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
                 }
 
 	      if (t->Charge() < 0 && eta > _min_eta_2 && eta < _max_eta_2 && pt > _min_pt_2 && pt < _max_pt_2)
-
+		
                 {
+		  _etadis->Fill(eta);
+                  _phidis->Fill(phi);
+
                   iPhi   = int( phi/_width_phi_2);
 
                   if (iPhi<0 || iPhi>=_nBins_phi_2 )

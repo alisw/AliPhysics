@@ -95,6 +95,8 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void   SetFilterBit( UInt_t val )        { fFilterBit = val;  }
     void   SetDCAXYCut(TFormula* value)      { fDCAXYCut = value; }
     void   SetSharedClusterCut(Float_t value) { fSharedClusterCut = value; }
+    void   SetCrossedRowsCut(Int_t value)    { fCrossedRowsCut = value; }
+    void   SetFoundFractionCut(Double_t value) { fFoundFractionCut = value; }
     void   SetTrackStatus(UInt_t status)     { fTrackStatus = status; }
     void   SetCheckMotherPDG(Bool_t checkpdg) { fCheckMotherPDG = checkpdg; }
     
@@ -200,6 +202,8 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Double_t            fPtMin;                // Min pT to start correlations
     TFormula*           fDCAXYCut;             // additional pt dependent cut on DCA XY (only for AOD)
     Double_t            fSharedClusterCut;  // cut on shared clusters (only for AOD)
+    Int_t		fCrossedRowsCut;   // cut on crossed rows (only for AOD)
+    Double_t	 	fFoundFractionCut;     // cut on crossed rows/findable clusters (only for AOD)
     UInt_t           	fFilterBit;            // Select tracks from an specific track cut 
     UInt_t         	fTrackStatus;          // if non-0, the bits set in this variable are required for each track
     UInt_t         	fSelectBit;            // Select events according to AliAnalysisTaskJetServices bit maps 
@@ -231,7 +235,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef(AliAnalysisTaskPhiCorrelations, 42); // Analysis task for delta phi correlations
+    ClassDef(AliAnalysisTaskPhiCorrelations, 43); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle

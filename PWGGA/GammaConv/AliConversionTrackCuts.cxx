@@ -15,7 +15,7 @@
 
 /// @file   AliConversionTrackCuts.cxx
 /// @author Svein Lindal
-/// @brief  Base class for analysation of conversion particle - track correlations
+/// @brief  Base class for analysation of conversion particle - track correlations - track cuts
 
 
 #include "AliConversionTrackCuts.h"
@@ -51,8 +51,8 @@ AliConversionTrackCuts::AliConversionTrackCuts() :
   fEsdTrackCutsExtra2(NULL),
   fEvent(NULL),
   fFilterBit(2048),
-  fDCAZmax(-1),
-  fDCAXYmax(-1),
+  fDCAZmax(3.2*3.2),
+  fDCAXYmax(2.4*2.4),
   fOwnedTracks(),
   fInitialized(kFALSE),
   fhPhi(NULL),
@@ -127,25 +127,28 @@ void AliConversionTrackCuts::DefineESDCuts() {
   const Int_t filterbit = fFilterBit;
 
   if (filterbit == 128) {
-    fEsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-    fEsdTrackCuts->SetMinNClustersTPC(70);
-    
+    if(!fEsdTrackCuts) {
+      fEsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+      fEsdTrackCuts->SetMinNClustersTPC(70);
+    }
   }  else if (filterbit == 256) {
-    // syst study
-    fEsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-    fEsdTrackCuts->SetMinNClustersTPC(80);
-    fEsdTrackCuts->SetMaxChi2PerClusterTPC(3);
-    fEsdTrackCuts->SetMaxDCAToVertexZ(2.7);
-    fEsdTrackCuts->SetMaxDCAToVertexXY(1.9);
-    
+    if(!fEsdTrackCuts) {
+      // syst study
+      fEsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+      fEsdTrackCuts->SetMinNClustersTPC(80);
+      fEsdTrackCuts->SetMaxChi2PerClusterTPC(3);
+      fEsdTrackCuts->SetMaxDCAToVertexZ(2.7);
+      fEsdTrackCuts->SetMaxDCAToVertexXY(1.9);
+    }
   }  else if (filterbit == 512) {
-    // syst study
-    fEsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-    fEsdTrackCuts->SetMinNClustersTPC(60);
-    fEsdTrackCuts->SetMaxChi2PerClusterTPC(5);
-    fEsdTrackCuts->SetMaxDCAToVertexZ(3.7);
-    fEsdTrackCuts->SetMaxDCAToVertexXY(2.9);
-    
+    if(!fEsdTrackCuts) {
+      // syst study
+      fEsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+      fEsdTrackCuts->SetMinNClustersTPC(60);
+      fEsdTrackCuts->SetMaxChi2PerClusterTPC(5);
+      fEsdTrackCuts->SetMaxDCAToVertexZ(3.7);
+      fEsdTrackCuts->SetMaxDCAToVertexXY(2.9);
+    }
   } else if (filterbit == 1024) {
     if(!fEsdTrackCuts) {
       fEsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
@@ -194,38 +197,75 @@ void AliConversionTrackCuts::DefineESDCuts() {
   }
 }
 
+
 //______________________________________________________________________________
 Bool_t AliConversionTrackCuts::AcceptTrack(AliESDtrack * track) {
   //Check esd track
+  FillHistograms(kPreCut, track);
+
+
+  if( fFilterBit == 256) {
+
+    ///Standalone tpc tracks constrained
+    const AliExternalTrackParam * param = track->GetConstrainedParam();
+    if(param) {
+      AliESDtrack* esdTrack = new AliESDtrack(*track);
+      esdTrack->CopyFromVTrack(param);
+      track = esdTrack;
+      fOwnedTracks.Add(track);
+
+      if( !fEsdTrackCuts->IsSelected(track)) return kFALSE;
+
+      FillHistograms(1, track);
+
+      Double_t dca[2];
+      GetDCA(track, dca);
+      
+      FillDCAHist(dca[1], dca[0], track);
+      if(fhEtaPhi) fhEtaPhi->Fill(track->Eta(), track->Phi());
+      
+      return kTRUE;
+    } else {
+      return kFALSE;
+    }
+
+    return kFALSE;
+  }
+
 
   if(!fInitialized) {
     DefineESDCuts();
-    if(fDCAXYmax > 0) {
-      if(fEsdTrackCuts) fEsdTrackCuts->SetMaxDCAToVertexXY(fDCAXYmax);
-    }
-    if(fDCAZmax > 0) {
-      if(fEsdTrackCuts) fEsdTrackCuts->SetMaxDCAToVertexZ(fDCAZmax);
-    }
+    // if(fDCAXYmax > 0) {
+    //   if(fEsdTrackCuts) fEsdTrackCuts->SetMaxDCAToVertexXY(fDCAXYmax);
+    // }
+    // if(fDCAZmax > 0) {
+    //   if(fEsdTrackCuts) fEsdTrackCuts->SetMaxDCAToVertexZ(fDCAZmax);
+    // }
   
     fInitialized = kTRUE;
   }
 
-  FillHistograms(kPreCut, track);
 
+  Double_t dca[2];
+  GetDCA(track, dca);
 
   
-  if( !fEsdTrackCuts->IsSelected(track)) return kFALSE;
-
-
   ///If only one track cuts then it has passed the cuts
   if( !(fEsdTrackCutsExtra1 && fEsdTrackCutsExtra2)) {
     FillHistograms(1, track);
+    FillDCAHist(dca[1], dca[0], track);
+    if(fhEtaPhi) fhEtaPhi->Fill(track->Eta(), track->Phi());
     return kTRUE;
   }
+
   ///If passing extra
   if (fEsdTrackCutsExtra1 && fEsdTrackCutsExtra1->IsSelected(track)) {
-    FillHistograms(2, track);
     FillHistograms(1, track);
+    FillHistograms(2, track);
+
+    FillDCAHist(dca[1], dca[0], track);
+    if(fhEtaPhi) fhEtaPhi->Fill(track->Eta(), track->Phi());
+    
     return kTRUE;
   } 
 
@@ -240,6 +280,10 @@ Bool_t AliConversionTrackCuts::AcceptTrack(AliESDtrack * track) {
 
       FillHistograms(3, track);
       FillHistograms(1, track);
+
+      FillDCAHist(dca[1], dca[0], track);
+      if(fhEtaPhi) fhEtaPhi->Fill(track->Eta(), track->Phi());
+
       return kTRUE;
     } else {
       return kFALSE;
@@ -261,61 +305,124 @@ Bool_t AliConversionTrackCuts::AcceptTrack(AliESDtrack * track) {
   // ///Get impact parameters
   // Double_t extCov[15];
   // track->GetExternalCovariance(extCov);
-  // Float_t b[2];
-  // Float_t bCov[3];
-  // track->GetImpactParameters(b,bCov);
-  // if (bCov[0]<=0 || bCov[2]<=0) {
-  //   AliDebug(1, "Estimated b resolution lower or equal zero!");
-  //   bCov[0]=0; bCov[2]=0;
-  // }
-  
-  // Float_t dcaToVertexXY = b[0];
-  // Float_t dcaToVertexZ = b[1];
-  // FillDCAHist(dcaToVertexZ, dcaToVertexXY, track);
   // return kTRUE;
 }
 
 Bool_t AliConversionTrackCuts::AcceptTrack(AliAODTrack * track) {
   //Check aod track
-
+  
   FillHistograms(kPreCut, track);
-
-  if(!track->IsHybridGlobalConstrainedGlobal()) return kFALSE;
-
-   if (!(track->GetStatus() & AliVTrack::kITSrefit)) {
-     return kFALSE;
-   }
- 
-
-
-  //The cluster sharing cut can be done with:
-  Double_t frac = Double_t(track->GetTPCnclsS()) / Double_t(track->GetTPCncls());
-  if (frac > 0.4) return kFALSE;
-
-
-  ///Do dca xy cut!
-  FillHistograms(1, track);
-
-  ///DCA
-  Double_t dca[2] = { -999, -999};
-  //Bool_t dcaok = 
-  GetDCA(track, dca);
-  FillDCAHist(dca[1], dca[0], track);
   
+  if (fFilterBit == 768) {
+    if(!track->IsHybridGlobalConstrainedGlobal()) return kFALSE;
+      
+    if (!(track->GetStatus() & AliVTrack::kITSrefit)) {
+      return kFALSE;
+    }
+      
+    //The cluster sharing cut can be done with:
+    Double_t frac = Double_t(track->GetTPCnclsS()) / Double_t(track->GetTPCncls());
+    if (frac > 0.4) return kFALSE;
+      
+    ///Do dca xy cut!
+    FillHistograms(1, track);
+      
+    ///DCA
+    Double_t dca[2] = { -999, -999};
+    //Bool_t dcaok = 
+    GetDCA(track, dca);
+    FillDCAHist(dca[1], dca[0], track);
+      
+      
+    if(track->IsGlobalConstrained()) {
+      FillHistograms(3, track);
+    } else {
+      FillHistograms(2, track);
+    }
+      
+    if(fhEtaPhi) fhEtaPhi->Fill(track->Eta(), track->Phi());
+      
+    return kTRUE;
+    
+    ////////////////////////////////
+    //// Standalone
+    ////////////////////////////////
+  } else  if(fFilterBit == 256) {
+    if(!track->IsTPCConstrained()) return kFALSE;
 
-  if(track->IsGlobalConstrained()) {
-    FillHistograms(3, track);
-  } else {
+
+
+    ///DCA
+    Double_t dca[2] = { -999, -999};
+    GetDCA(track, dca);
+
+    if( (dca[0]*dca[0]/fDCAXYmax + dca[1]*dca[1]/fDCAZmax) > 1 ) {
+      FillHistograms(3, track);
+      return kFALSE;
+    }
+
+    if(track->GetTPCncls() < 70) {
+      FillHistograms(4, track);
+      return kFALSE;
+    }
+
+    AliAODVertex * vtx = track->GetProdVertex();
+    if (vtx->GetType() == AliAODVertex::kKink ) {
+      FillHistograms(5, track);
+      return kFALSE;
+    }
+
+    if(track->Chi2perNDF() > 36) {
+      FillHistograms(6, track);
+      return kFALSE;
+    }
+    if(track->Chi2perNDF() > 26) {
+      FillHistograms(7, track);
+      return kFALSE;
+    }
+    if(track->Chi2perNDF() > 16) {
+      FillHistograms(8, track);
+      return kFALSE;
+    }
+    if(track->Chi2perNDF() > 4) {
+      FillHistograms(9, track);
+      return kFALSE;
+    }
+
+
+
+    FillDCAHist(dca[1], dca[0], track);
+
     FillHistograms(2, track);
-  }
-  
-  if(fhEtaPhi) fhEtaPhi->Fill(track->Eta(), track->Phi());
+    if(fhEtaPhi) fhEtaPhi->Fill(track->Eta(), track->Phi());
+    return kTRUE;
 
+  }
+  return kFALSE;
+}
+
+
+///______________________________________________________________________________
+Bool_t AliConversionTrackCuts::GetDCA(const AliESDtrack *track, Double_t dcaxyz[2]) {
+  ///Get track dca esd trck
+  Float_t dca[2];
+  Float_t bCov[3];
+  track->GetImpactParameters(dca,bCov);
+  if (bCov[0]<=0 || bCov[2]<=0) {
+    AliDebug(1, "Estimated b resolution lower or equal zero!");
+    bCov[0]=0; bCov[2]=0;
+    return kFALSE;
+  }
+
+  dcaxyz[0] = dca[0];
+  dcaxyz[1] = dca[1];
+  
   return kTRUE;
 }
 
-///______________________________________________________________________________
+///_____________________________________________________________________________
 Bool_t AliConversionTrackCuts::GetDCA(const AliAODTrack *track, Double_t dca[2]) {
+  ///Get track dca aod trck
   if(track->TestBit(AliAODTrack::kIsDCA)){
     dca[0]=track->DCA();
     dca[1]=track->ZAtDCA();
@@ -331,7 +438,7 @@ Bool_t AliConversionTrackCuts::GetDCA(const AliAODTrack *track, Double_t dca[2])
     Float_t xstart = etp.GetX();
     if(xstart>3.) {
       dca[0]=-999.;
-    dca[1]=-999.;
+      dca[1]=-999.;
     //printf("This method can be used only for propagation inside the beam pipe \n");
     return kFALSE;
     }
@@ -417,11 +524,6 @@ void AliConversionTrackCuts::FillDCAHist(Float_t dcaz, Float_t dcaxy, AliVTrack 
   if(fhdcazPt) fhdcazPt->Fill(track->Pt(), dcaz);
   if(fhdca) fhdca->Fill(dcaz, dcaxy);
 }
-
-
-
-
-
 
 
 

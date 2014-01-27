@@ -22,7 +22,7 @@ Int_t color[]={kBlack,kRed,kOrange+1,kYellow+1,kGreen+2,kBlue,kCyan+1,kViolet,kM
 
 //_______________________________________________________________________
 void DrawAnaCaloTrackQA(TString listName = "Pi0IM_GammaTrackCorr_EMCAL_default",
-                        TString fileName = "AnalysisResultsQATrain.root",
+                        TString fileName = "AnalysisResults.root",
                         Bool_t export = kFALSE)
 {
 
@@ -42,16 +42,16 @@ void DrawAnaCaloTrackQA(TString listName = "Pi0IM_GammaTrackCorr_EMCAL_default",
   gStyle->SetTitleFontSize(0.06);
 
   //Plot basic Calorimeter QA
-  CaloQA();
+  //CaloQA();
 
   //Plot basic Track QA
-  TrackQA();
+  //TrackQA();
 
   //Plot basic Pi0 QA
-  Pi0QA();
+  //Pi0QA();
 
   //Plot basic correlation QA
-  CorrelationQA();
+  //CorrelationQA();
   
   // MC basic QA plots, cluster origins (only if it run on MC)
   MCQA();
@@ -694,9 +694,13 @@ void MCQA()
   if(!h2ClusterPho) return;
   
   
-  TH1F* hPrimPho = (TH1F*) GetHisto("QA_hGenMCAccE_Photon");
-  TH1F* hPrimPi0 = (TH1F*) GetHisto("QA_hGenMCAccE_Pi0");
-  TH1F* hPrimEta = (TH1F*) GetHisto("QA_hGenMCAccE_Eta");
+//  TH1F* hPrimPho = (TH1F*) GetHisto("QA_hGenMCAccE_Photon");
+//  TH1F* hPrimPi0 = (TH1F*) GetHisto("QA_hGenMCAccE_Pi0");
+//  TH1F* hPrimEta = (TH1F*) GetHisto("QA_hGenMCAccE_Eta");
+
+  TH1F* hPrimPho = (TH1F*) GetHisto("AnaPhoton_hPtPrim_MCPhoton");
+  TH1F* hPrimPi0 = (TH1F*) GetHisto("AnaPi0_hPrimPi0Pt");
+  TH1F* hPrimEta = (TH1F*) GetHisto("AnaPi0_hPrimEtaPt");
   
   TCanvas * cmc = new TCanvas(Form("MCHisto_%s",histoTag.Data()),"",1000,1000);
   cmc->Divide(2,2);
@@ -713,7 +717,8 @@ void MCQA()
   hClusterPho->SetMarkerColor(1);
   hClusterPho->SetMarkerStyle(20);
   hClusterPho->SetAxisRange(0.,50.,"X");
-  hClusterPho->SetXTitle("E_{rec,gen} (GeV)");
+  //hClusterPho->SetXTitle("E_{rec,gen} (GeV)");
+  hClusterPho->SetXTitle("E_{rec}, p_{T,gen} (GeV)");
   hClusterPho->Draw("");
 
   hClusterPi0->Sumw2();
@@ -838,10 +843,10 @@ void MCQA()
   TH2F* h2PrimPhoEta = (TH2F*) GetHisto("AnaPhoton_hYPrim_MCPhoton");
   TH2F* h2PrimPi0Eta = (TH2F*) GetHisto("AnaPi0_hPrimPi0Rapidity");
   TH2F* h2PrimEtaEta = (TH2F*) GetHisto("AnaPi0_hPrimEtaRapidity");
-  
-  hPrimPhoEta->Sumw2();
-  hPrimEtaEta->Sumw2();
-  hPrimPi0Eta->Sumw2();
+
+  h2PrimPhoEta->Sumw2();
+  h2PrimEtaEta->Sumw2();
+  h2PrimPi0Eta->Sumw2();
   
   Int_t binMin = hPrimPho->FindBin(3);
   

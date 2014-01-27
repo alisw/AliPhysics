@@ -364,143 +364,144 @@ Bool_t AliV0ReaderV1::ProcessESDV0s()
 ///________________________________________________________________________
 AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t currentV0Index)
 {
-//   cout << currentV0Index << endl;
-   // Reconstruct conversion photon from ESD v0
-   fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kPhotonIn);
+	//   cout << currentV0Index << endl;
+	// Reconstruct conversion photon from ESD v0
+	fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kPhotonIn);
 
-   //checks if on the fly mode is set
-   if(!fConversionCuts->SelectV0Finder(fCurrentV0->GetOnFlyStatus())){
-      fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kOnFly);
-      return 0x0;
-   }
-  
-   // TrackLabels
-   Int_t currentTrackLabels[2]={-1,-1};
+	//checks if on the fly mode is set
+	if(!fConversionCuts->SelectV0Finder(fCurrentV0->GetOnFlyStatus())){
+		fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kOnFly);
+		return 0x0;
+	}
+	
+	// TrackLabels
+	Int_t currentTrackLabels[2]={-1,-1};
 
-   // Get Daughter KF Particles
+	// Get Daughter KF Particles
 
-   const AliExternalTrackParam *fCurrentExternalTrackParamPositive=GetExternalTrackParamP(fCurrentV0,currentTrackLabels[0]);
-//    cout << fCurrentExternalTrackParamPositive << "\t" << currentTrackLabels[0] << endl;
-   const AliExternalTrackParam *fCurrentExternalTrackParamNegative=GetExternalTrackParamN(fCurrentV0,currentTrackLabels[1]);
-//    cout << fCurrentExternalTrackParamNegative << "\t" << currentTrackLabels[1] << endl;
-   if(!fCurrentExternalTrackParamPositive||!fCurrentExternalTrackParamNegative)return 0x0;
+	const AliExternalTrackParam *fCurrentExternalTrackParamPositive=GetExternalTrackParamP(fCurrentV0,currentTrackLabels[0]);
+	//    cout << fCurrentExternalTrackParamPositive << "\t" << currentTrackLabels[0] << endl;
+	const AliExternalTrackParam *fCurrentExternalTrackParamNegative=GetExternalTrackParamN(fCurrentV0,currentTrackLabels[1]);
+	//    cout << fCurrentExternalTrackParamNegative << "\t" << currentTrackLabels[1] << endl;
+	if(!fCurrentExternalTrackParamPositive||!fCurrentExternalTrackParamNegative)return 0x0;
 
-   // Apply some Cuts before Reconstruction
+	// Apply some Cuts before Reconstruction
 
-   AliVTrack * posTrack = fConversionCuts->GetTrack(fInputEvent,currentTrackLabels[0]);
-   AliVTrack * negTrack = fConversionCuts->GetTrack(fInputEvent,currentTrackLabels[1]);
-   if(!negTrack || !posTrack) {
-      fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kNoTracks);
-      return 0x0;
-   }
-   // Track Cuts
-   if(!fConversionCuts->TracksAreSelected(negTrack, posTrack)){
-      fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kTrackCuts);
-      return 0x0;
-   }
-   if (!fConversionCuts->dEdxCuts(posTrack)) {
-      fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kdEdxCuts);
-      return 0x0;
-   }
-   // PID Cuts
-   if(!fConversionCuts->dEdxCuts(negTrack)) {
-      fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kdEdxCuts);
-      return 0x0;
-   }
- 
-   // Reconstruct Photon
+	AliVTrack * posTrack = fConversionCuts->GetTrack(fInputEvent,currentTrackLabels[0]);
+	AliVTrack * negTrack = fConversionCuts->GetTrack(fInputEvent,currentTrackLabels[1]);
+	if(!negTrack || !posTrack) {
+		fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kNoTracks);
+		return 0x0;
+	}
+	// Track Cuts
+	if(!fConversionCuts->TracksAreSelected(negTrack, posTrack)){
+		fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kTrackCuts);
+		return 0x0;
+	}
+	
+	fConversionCuts->FillV0EtaBeforedEdxCuts(fCurrentV0->Eta());
+	if (!fConversionCuts->dEdxCuts(posTrack)) {
+		fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kdEdxCuts);
+		return 0x0;
+	}
+	// PID Cuts
+	if(!fConversionCuts->dEdxCuts(negTrack)) {
+		fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kdEdxCuts);
+		return 0x0;
+	}
+	fConversionCuts->FillV0EtaAfterdEdxCuts(fCurrentV0->Eta());
+	// Reconstruct Photon
+	AliKFConversionPhoton *fCurrentMotherKF=NULL;
+	//    fUseConstructGamma = kFALSE;
+	//    cout << "construct gamma " << endl;
+	AliKFParticle fCurrentNegativeKFParticle(*(fCurrentExternalTrackParamNegative),11);
+	//    cout << fCurrentExternalTrackParamNegative << "\t" << endl;
+	AliKFParticle fCurrentPositiveKFParticle(*(fCurrentExternalTrackParamPositive),-11);
+	//    cout << fCurrentExternalTrackParamPositive << "\t"  << endl;
+	//    cout << currentTrackLabels[0] << "\t" << currentTrackLabels[1] << endl;
+	//    cout << "construct gamma " <<fUseConstructGamma << endl;
+	
+	// Reconstruct Gamma
+	if(fUseConstructGamma){
+		fCurrentMotherKF = new AliKFConversionPhoton();
+		fCurrentMotherKF->ConstructGamma(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
+	}else{
+		fCurrentMotherKF = new AliKFConversionPhoton(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
+		fCurrentMotherKF->SetMassConstraint(0,0.0001);
+	}
 
-   AliKFConversionPhoton *fCurrentMotherKF=NULL;
-//    fUseConstructGamma = kFALSE;
-//    cout << "construct gamma " << endl;
-   AliKFParticle fCurrentNegativeKFParticle(*(fCurrentExternalTrackParamNegative),11);
-//    cout << fCurrentExternalTrackParamNegative << "\t" << endl;
-   AliKFParticle fCurrentPositiveKFParticle(*(fCurrentExternalTrackParamPositive),-11);
-//    cout << fCurrentExternalTrackParamPositive << "\t"  << endl;
-//    cout << currentTrackLabels[0] << "\t" << currentTrackLabels[1] << endl;
-//    cout << "construct gamma " <<fUseConstructGamma << endl;
-   
-   // Reconstruct Gamma
-   if(fUseConstructGamma){
-      fCurrentMotherKF = new AliKFConversionPhoton();
-      fCurrentMotherKF->ConstructGamma(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
-   }else{
-      fCurrentMotherKF = new AliKFConversionPhoton(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
-      fCurrentMotherKF->SetMassConstraint(0,0.0001);
-   }
+	// Set Track Labels
 
-   // Set Track Labels
+	fCurrentMotherKF->SetTrackLabels(currentTrackLabels[0],currentTrackLabels[1]);
 
-   fCurrentMotherKF->SetTrackLabels(currentTrackLabels[0],currentTrackLabels[1]);
+	// Set V0 index
 
-   // Set V0 index
+	fCurrentMotherKF->SetV0Index(currentV0Index);
 
-   fCurrentMotherKF->SetV0Index(currentV0Index);
+	//Set MC Label
+	if(fMCEvent){
 
-   //Set MC Label
-   if(fMCEvent){
+		AliStack *fMCStack= fMCEvent->Stack();
 
-      AliStack *fMCStack= fMCEvent->Stack();
+		Int_t labelp=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,fCurrentMotherKF->GetTrackLabelPositive())->GetLabel());
+		Int_t labeln=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,fCurrentMotherKF->GetTrackLabelNegative())->GetLabel());
 
-      Int_t labelp=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,fCurrentMotherKF->GetTrackLabelPositive())->GetLabel());
-      Int_t labeln=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,fCurrentMotherKF->GetTrackLabelNegative())->GetLabel());
+		TParticle *fNegativeMCParticle = fMCStack->Particle(labeln);
+		TParticle *fPositiveMCParticle = fMCStack->Particle(labelp);
 
-      TParticle *fNegativeMCParticle = fMCStack->Particle(labeln);
-      TParticle *fPositiveMCParticle = fMCStack->Particle(labelp);
+		if(fPositiveMCParticle&&fNegativeMCParticle){
+			fCurrentMotherKF->SetMCLabelPositive(labelp);
+			fCurrentMotherKF->SetMCLabelNegative(labeln);
+		}
+	}
 
-      if(fPositiveMCParticle&&fNegativeMCParticle){
-         fCurrentMotherKF->SetMCLabelPositive(labelp);
-         fCurrentMotherKF->SetMCLabelNegative(labeln);
-      }
-   }
+	// Update Vertex (moved for same eta compared to old)
+	//      cout << currentV0Index <<" \t before: \t" << fCurrentMotherKF->GetPx() << "\t" << fCurrentMotherKF->GetPy() << "\t" << fCurrentMotherKF->GetPz()  << endl;
+	if(fUseImprovedVertex == kTRUE){
+		AliKFVertex primaryVertexImproved(*fInputEvent->GetPrimaryVertex());
+		//        cout << "Prim Vtx: " << primaryVertexImproved.GetX() << "\t" << primaryVertexImproved.GetY() << "\t" << primaryVertexImproved.GetZ() << endl;
+		primaryVertexImproved+=*fCurrentMotherKF;
+		fCurrentMotherKF->SetProductionVertex(primaryVertexImproved);
+	}
+	// SetPsiPair
 
-   // Update Vertex (moved for same eta compared to old)
-   //      cout << currentV0Index <<" \t before: \t" << fCurrentMotherKF->GetPx() << "\t" << fCurrentMotherKF->GetPy() << "\t" << fCurrentMotherKF->GetPz()  << endl;
-   if(fUseImprovedVertex == kTRUE){
-      AliKFVertex primaryVertexImproved(*fInputEvent->GetPrimaryVertex());
-      //        cout << "Prim Vtx: " << primaryVertexImproved.GetX() << "\t" << primaryVertexImproved.GetY() << "\t" << primaryVertexImproved.GetZ() << endl;
-      primaryVertexImproved+=*fCurrentMotherKF;
-      fCurrentMotherKF->SetProductionVertex(primaryVertexImproved);
-   }
-   // SetPsiPair
+	Double_t PsiPair=GetPsiPair(fCurrentV0,fCurrentExternalTrackParamPositive,fCurrentExternalTrackParamNegative);
+	fCurrentMotherKF->SetPsiPair(PsiPair);
+	
+	// Recalculate ConversionPoint
+	Double_t dca[2]={0,0};
+	if(fUseOwnXYZCalculation){
+		Double_t convpos[3]={0,0,0};
+		if(!GetConversionPoint(fCurrentExternalTrackParamPositive,fCurrentExternalTrackParamNegative,convpos,dca)){
+			fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kConvPointFail);
+			delete fCurrentMotherKF;
+			fCurrentMotherKF=NULL;
+			return 0x0;
+		}
 
-   Double_t PsiPair=GetPsiPair(fCurrentV0,fCurrentExternalTrackParamPositive,fCurrentExternalTrackParamNegative);
-   fCurrentMotherKF->SetPsiPair(PsiPair);
- 
-   // Recalculate ConversionPoint
-   Double_t dca[2]={0,0};
-   if(fUseOwnXYZCalculation){
-      Double_t convpos[3]={0,0,0};
-      if(!GetConversionPoint(fCurrentExternalTrackParamPositive,fCurrentExternalTrackParamNegative,convpos,dca)){
-         fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kConvPointFail);
-         delete fCurrentMotherKF;
-         fCurrentMotherKF=NULL;
-         return 0x0;
-      }
+		fCurrentMotherKF->SetConversionPoint(convpos);
+	}
 
-      fCurrentMotherKF->SetConversionPoint(convpos);
-   }
-
-   if(fCurrentMotherKF->GetNDF() > 0.)
-      fCurrentMotherKF->SetChi2perNDF(fCurrentMotherKF->GetChi2()/fCurrentMotherKF->GetNDF());   //->Photon is created before all chi2 relevant changes are performed, set it "by hand"
+	if(fCurrentMotherKF->GetNDF() > 0.)
+		fCurrentMotherKF->SetChi2perNDF(fCurrentMotherKF->GetChi2()/fCurrentMotherKF->GetNDF());   //->Photon is created before all chi2 relevant changes are performed, set it "by hand"
 
 
-   // Set Dilepton Mass (moved down for same eta compared to old)
-   fCurrentMotherKF->SetMass(fCurrentMotherKF->M());
+	// Set Dilepton Mass (moved down for same eta compared to old)
+	fCurrentMotherKF->SetMass(fCurrentMotherKF->M());
 
-   // Apply Photon Cuts
+	// Apply Photon Cuts
 
-   if(!fConversionCuts->PhotonCuts(fCurrentMotherKF,fInputEvent)){
-      fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kPhotonCuts);
-      delete fCurrentMotherKF;
-      fCurrentMotherKF=NULL;
-      return 0x0;
-   }
+	if(!fConversionCuts->PhotonCuts(fCurrentMotherKF,fInputEvent)){
+		fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kPhotonCuts);
+		delete fCurrentMotherKF;
+		fCurrentMotherKF=NULL;
+		return 0x0;
+	}
 
-//    cout << currentV0Index <<" \t after: \t" <<fCurrentMotherKF->GetPx() << "\t" << fCurrentMotherKF->GetPy() << "\t" << fCurrentMotherKF->GetPz()  << endl;
+	//    cout << currentV0Index <<" \t after: \t" <<fCurrentMotherKF->GetPx() << "\t" << fCurrentMotherKF->GetPy() << "\t" << fCurrentMotherKF->GetPz()  << endl;
 
-   fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kPhotonOut);
-   return fCurrentMotherKF;
+	fConversionCuts->FillPhotonCutIndex(AliConversionCuts::kPhotonOut);
+	return fCurrentMotherKF;
 }
 
 ///________________________________________________________________________

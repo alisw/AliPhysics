@@ -65,6 +65,8 @@ AliAnalyseLeadingTrackUE::AliAnalyseLeadingTrackUE() :
   fEventSelection(AliVEvent::kMB|AliVEvent::kUserDefined),
   fDCAXYCut(0),
   fSharedClusterCut(-1),
+  fCrossedRowsCut(-1),
+  fFoundFractionCut(-1),
   fEsdTrackCuts(0x0), 
   fEsdTrackCutsExtra1(0x0), 
   fEsdTrackCutsExtra2(0x0), 
@@ -718,6 +720,21 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
 	{
 	  Double_t frac = Double_t(((AliAODTrack*)part)->GetTPCnclsS()) / Double_t(((AliAODTrack*)part)->GetTPCncls());
 	  if (frac > fSharedClusterCut)
+	    return 0;
+	}
+	
+	if (fCrossedRowsCut >= 0)
+	{
+	  if (((AliAODTrack*) part)->GetTPCNCrossedRows() < fCrossedRowsCut)
+	    return 0;
+	}
+	
+	if (fFoundFractionCut >= 0)
+	{
+	  UInt_t findableClusters = ((AliAODTrack*) part)->GetTPCNclsF();
+	  if (findableClusters == 0)
+	    return 0;
+	  if (((Double_t) ((AliAODTrack*) part)->GetTPCNCrossedRows() / findableClusters) < fFoundFractionCut)
 	    return 0;
 	}
 

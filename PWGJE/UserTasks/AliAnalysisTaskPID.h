@@ -71,6 +71,8 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   enum TOFpidInfo { kNoTOFinfo = -2, kNoTOFpid = -1, kTOFpion = 0, kTOFkaon = 1, kTOFproton = 2, kNumTOFspecies = 3,
                     kNumTOFpidInfoBins = 5 };
   
+  enum EventCounterType { kTriggerSel = 0, kTriggerSelAndVtxCut = 1, kTriggerSelAndVtxCutAndZvtxCut = 2 };
+  
   static Int_t PDGtoMCID(Int_t pdg);
   
   static void GetJetTrackObservables(Double_t trackPt, Double_t jetPt, Double_t& z, Double_t& xi);
@@ -104,7 +106,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   Bool_t FillGenJets(Double_t centralityPercentile, Double_t jetPt, Double_t norm = -1.);
   Bool_t FillRecJets(Double_t centralityPercentile, Double_t jetPt, Double_t norm = -1.);
   
-  Bool_t IncrementEventsProcessed(Double_t centralityPercentile);
+  Bool_t IncrementEventCounter(Double_t centralityPercentile, EventCounterType type);
   
   void PostOutputData();
   
@@ -343,7 +345,10 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   Double_t* fGenRespPrDeltaPr; //! Generated responses for a single track
   */
   
-  TH1D* fhEventsProcessed; //! Histo holding the number of processed events
+  TH1D* fhEventsProcessed; //! Histo holding the number of processed events (i.e. passing trigger selection, vtx and zvtx cuts
+  TH1D* fhEventsTriggerSel; //! Histo holding the number of events passing trigger selection
+  TH1D* fhEventsTriggerSelVtxCut; //! Histo holding the number of events passing trigger selection and vtx cut
+  
   TH2D* fhSkippedTracksForSignalGeneration; //! Number of tracks that have been skipped for the signal generation
   THnSparseD* fhMCgeneratedYieldsPrimaries; //! Histo holding the generated (no reco, no cuts) primary particle yields in considered eta range
   
@@ -364,7 +369,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   AliAnalysisTaskPID(const AliAnalysisTaskPID&); // not implemented
   AliAnalysisTaskPID& operator=(const AliAnalysisTaskPID&); // not implemented
   
-  ClassDef(AliAnalysisTaskPID, 14);
+  ClassDef(AliAnalysisTaskPID, 15);
 };
 
 
@@ -463,19 +468,36 @@ inline Bool_t AliAnalysisTaskPID::FillPtResolution(Int_t mcID, const Double_t* v
  
 
 //_____________________________________________________________________________
-inline Bool_t AliAnalysisTaskPID::IncrementEventsProcessed(Double_t centralityPercentile)
+inline Bool_t AliAnalysisTaskPID::IncrementEventCounter(Double_t centralityPercentile, AliAnalysisTaskPID::EventCounterType type)
 {
-  // Increment the number of processed events for the given centrality percentile
+  // Increment the number of events for the given centrality percentile and the corresponding counter type
   
-  if (!fDoPID)
-    return kFALSE;
-  
-  if (!fhEventsProcessed) {
-    AliError("Histogram for number of events not initialised -> cannot be incremented!");
-    return kFALSE;
+  if (type == kTriggerSel) {
+    if (!fhEventsTriggerSel) {
+      AliError("Histogram for number of events (kTriggerSel) not initialised -> cannot be incremented!");
+      return kFALSE;
+    }
+    
+    fhEventsTriggerSel->Fill(centralityPercentile);
+  }
+  else if (type == kTriggerSelAndVtxCut) {
+    if (!fhEventsTriggerSelVtxCut) {
+      AliError("Histogram for number of events (kTriggerSelAndVtxCut) not initialised -> cannot be incremented!");
+      return kFALSE;
+    }
+    
+    fhEventsTriggerSelVtxCut->Fill(centralityPercentile);
+  }
+  else if (type == kTriggerSelAndVtxCutAndZvtxCut) {
+    if (!fhEventsProcessed) {
+      AliError("Histogram for number of events (kTriggerSelAndVtxCutAndZvtxCut) not initialised -> cannot be incremented!");
+      return kFALSE;
+    }
+    
+    fhEventsProcessed->Fill(centralityPercentile);
   }
   
-  fhEventsProcessed->Fill(centralityPercentile);
+  
   return kTRUE;
 };
 

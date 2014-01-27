@@ -51,16 +51,19 @@ class AliAnalysisTrackingUncertainties : public AliAnalysisTaskSE {
       kSpecPion = 1,
       kSpecKaon = 2,
       kSpecProton = 3,
-      kUndef = 4
+      kUndef = 4,
+      kAll = 5
   };
   //
   void   BinLogAxis(const THn *h, Int_t axisNumber);
   Bool_t IsVertexAccepted(AliESDEvent * esd, Float_t &vertexZ);
   ESpecies_t GetPid(const AliESDtrack * const tr, Bool_t useTPCTOF = kFALSE) const;
   Bool_t IsElectron(const AliESDtrack * const tr, Bool_t useTPCTOF = kFALSE) const;
-  Bool_t IsPion(const AliESDtrack * const /*tr*/, Bool_t /*useTPCTOF = kFALSE*/) const;
-  Bool_t IsKaon(const AliESDtrack * const /*tr*/, Bool_t /*useTPCTOF = kFALSE*/) const;
-  Bool_t IsProton(const AliESDtrack * const /*tr*/, Bool_t /*useTPCTOF = kFALSE*/) const;
+  Bool_t IsPion(const AliESDtrack * const tr, Bool_t useTPCTOF = kFALSE) const;
+  Bool_t IsKaon(const AliESDtrack * const tr, Bool_t useTPCTOF = kFALSE) const;
+  Bool_t IsProton(const AliESDtrack * const tr, Bool_t useTPCTOF = kFALSE) const;
+  //
+  Bool_t IsConsistentWithPid(Int_t type, const AliESDtrack * const tr);
   //
   //
   //

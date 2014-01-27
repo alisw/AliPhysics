@@ -422,8 +422,12 @@ AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14"
     trackCuts = CreateTrackCutsPWGJE(10001006);
   }
   if(trackType==0 && cuts==5) {
-    //Cuts global tracks with ITSrefit requirement and SPDrequirement for jet analysis + NCrossedRowsCut>120 recommended in 2011
+    //Cuts global tracks with ITSrefit requirement and SPDrequirement for jet analysis + NCrossedRowsCut>70 recommended in 2011
     trackCuts = CreateTrackCutsPWGJE(10001008);
+  }
+  if(trackType==0 && cuts==6) {
+    //Cuts global tracks with ITSrefit requirement and no SPDrequirement for jet analysis + NCrossedRowsCut>70 recommended in 2011
+    trackCuts = CreateTrackCutsPWGJE(10051008);
   }
   
   if(trackType==0 && cuts==2) {
@@ -449,7 +453,7 @@ AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14"
     trackCuts = CreateTrackCutsPWGJE(10011006);
   }
   if(trackType==7 && cuts==5) {
-    // tight global tracks  + NCrossedRowsCut>120 recommended in 2011
+    // tight global tracks  + NCrossedRowsCut>70 recommended in 2011
     trackCuts = CreateTrackCutsPWGJE(10011008);
   }
   if(trackType==7 && cuts==2) {

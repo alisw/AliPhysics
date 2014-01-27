@@ -230,9 +230,10 @@ Bool_t AliAnalysisTaskPIDV0base::PhiPrimeCut(const AliVTrack* track, Double_t ma
 
 
 //______________________________________________________________________________
-Bool_t AliAnalysisTaskPIDV0base::GetVertexIsOk(AliVEvent* event) const
+Bool_t AliAnalysisTaskPIDV0base::GetVertexIsOk(AliVEvent* event, Bool_t doVtxZcut) const
 {
-  // Check whether vertex ful-fills quality requirements
+  // Check whether vertex ful-fills quality requirements.
+  // Apply cut on z-position of vertex if doVtxZcut = kTRUE.
   
   AliAODEvent* aod = 0x0;
   AliESDEvent* esd = 0x0;
@@ -273,9 +274,11 @@ Bool_t AliAnalysisTaskPIDV0base::GetVertexIsOk(AliVEvent* event) const
       
     if (TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ()) > 0.5)
       return kFALSE;
-
-    if (TMath::Abs(zvtx) > fZvtxCutEvent) //Default: 10 cm
-      return kFALSE;
+    
+    if (doVtxZcut) {
+      if (TMath::Abs(zvtx) > fZvtxCutEvent) //Default: 10 cm
+        return kFALSE;
+    }
       
     return kTRUE;
   }
@@ -287,9 +290,11 @@ Bool_t AliAnalysisTaskPIDV0base::GetVertexIsOk(AliVEvent* event) const
     
   if (!primaryVertex || primaryVertex->GetNContributors() <= 0)
     return kFALSE;
-      
-  if (TMath::Abs(primaryVertex->GetZ()) >= fZvtxCutEvent) //Default: 10 cm
-    return kFALSE;
+  
+  if (doVtxZcut) {
+    if (TMath::Abs(primaryVertex->GetZ()) > fZvtxCutEvent) //Default: 10 cm
+      return kFALSE;
+  }
   
   return kTRUE;
 }

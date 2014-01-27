@@ -57,6 +57,7 @@ AliAnalysisTaskSpectraAllChAOD::AliAnalysisTaskSpectraAllChAOD(const char *name)
   fEventCuts(0x0),
   fHelperPID(0x0),
   fIsMC(0),
+  fDoDoubleCounting(0),
   fCharge(0),
   fVZEROside(0),
   fOutput(0x0),
@@ -248,7 +249,7 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
     ((THnSparseF*)fOutput->FindObject("NSparseHistTrk"))->Fill(varTrk);//track loop
     
     //for nsigma PID fill double counting of ID
-    if(fHelperPID->GetPIDType()<kBayes){//only nsigma
+    if(fHelperPID->GetPIDType()<kBayes && fDoDoubleCounting){//only nsigma
       Bool_t *HasDC;
       HasDC=fHelperPID->GetDoubleCounting(track,kTRUE);//get the array with double counting
       for(Int_t ipart=0;ipart<kNSpecies;ipart++){
@@ -259,8 +260,9 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
       }
     }
     
-    //fill all charged (4)
-    varTrk[3]=4.;
+    //fill all charged (3)
+    varTrk[3]=3.;
+    varTrk[4]=3.;
     ((THnSparseF*)fOutput->FindObject("NSparseHistTrk"))->Fill(varTrk);//track loop
     
     //Printf("a track");

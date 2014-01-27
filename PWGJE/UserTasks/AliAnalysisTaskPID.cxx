@@ -127,6 +127,8 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   , fGenRespPrDeltaPr(new Double_t[fgkMaxNumGenEntries])
   */
   , fhEventsProcessed(0x0)
+  , fhEventsTriggerSel(0x0)
+  , fhEventsTriggerSelVtxCut(0x0) 
   , fhSkippedTracksForSignalGeneration(0x0)
   , fhMCgeneratedYieldsPrimaries(0x0)
   , fh2FFJetPtRec(0x0)
@@ -250,6 +252,8 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   , fGenRespPrDeltaPr(new Double_t[fgkMaxNumGenEntries])
   */
   , fhEventsProcessed(0x0)
+  , fhEventsTriggerSel(0x0)
+  , fhEventsTriggerSelVtxCut(0x0) 
   , fhSkippedTracksForSignalGeneration(0x0)
   , fhMCgeneratedYieldsPrimaries(0x0)
   , fh2FFJetPtRec(0x0)
@@ -667,18 +671,31 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
     SetUpGenHist(fhGenPr, binsPt, deltaPrimeBins, binsCent, binsJetPt);
     fOutputContainer->Add(fhGenPr);
     
-    
-    fhEventsProcessed = new TH1D("fhEventsProcessed","Number of processed events;Centrality percentile", nCentBins,
-                                 binsCent);
-    fhEventsProcessed->Sumw2();
-    fOutputContainer->Add(fhEventsProcessed);
-    
     fhSkippedTracksForSignalGeneration = new TH2D("fhSkippedTracksForSignalGeneration",
                                                   "Number of tracks skipped for the signal generation;P_{T}^{gen} (GeV/c);TPC signal N", 
                                                   nPtBins, binsPt, 161, -0.5, 160.5);
     fhSkippedTracksForSignalGeneration->Sumw2();
     fOutputContainer->Add(fhSkippedTracksForSignalGeneration);
   }
+  
+  
+  fhEventsProcessed = new TH1D("fhEventsProcessed",
+                               "Number of events passing trigger selection, vtx and zvtx cuts;Centrality percentile", 
+                               nCentBins, binsCent);
+  fhEventsProcessed->Sumw2();
+  fOutputContainer->Add(fhEventsProcessed);
+  
+  fhEventsTriggerSelVtxCut = new TH1D("fhEventsTriggerSelVtxCut",
+                                      "Number of events passing trigger selection and vtx cut;Centrality percentile", 
+                                      nCentBins, binsCent);
+  fhEventsTriggerSelVtxCut->Sumw2();
+  fOutputContainer->Add(fhEventsTriggerSelVtxCut);
+  
+  fhEventsTriggerSel = new TH1D("fhEventsTriggerSel",
+                                "Number of events passing trigger selection;Centrality percentile", 
+                                nCentBins, binsCent);
+  fOutputContainer->Add(fhEventsTriggerSel);
+  fhEventsTriggerSel->Sumw2();
   
   
   // Generated yields within acceptance
@@ -870,7 +887,14 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
   if (!fPIDResponse || !fPIDcombined)
     return;
   
-  if (!GetVertexIsOk(fEvent))
+  Double_t centralityPercentile = -1;
+  if (fStoreCentralityPercentile)
+    centralityPercentile = fEvent->GetCentrality()->GetCentralityPercentile(fCentralityEstimator.Data());
+  
+  IncrementEventCounter(centralityPercentile, kTriggerSel);
+  
+  // Check if vertex is ok, but don't apply cut on z position
+  if (!GetVertexIsOk(fEvent, kFALSE))
     return;
   
   fESD = dynamic_cast<AliESDEvent*>(fEvent);
@@ -881,14 +905,15 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
   if(primaryVertex->GetNContributors() <= 0) 
     return;
   
+  IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCut);
+  
+  // Now check again, but also require z position to be in desired range
+  if (!GetVertexIsOk(fEvent, kTRUE))
+    return;
+  
+  IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCutAndZvtxCut);
+  
   Double_t magField = fEvent->GetMagneticField();
-  
-  //OLD with DeltaSpecies const Bool_t usePureGausForDelta = kTRUE;
-  
-
-  Double_t centralityPercentile = -1;
-  if (fStoreCentralityPercentile)
-    centralityPercentile = fEvent->GetCentrality()->GetCentralityPercentile(fCentralityEstimator.Data());
   
   if (fMC) {
     if (fDoPID || fDoEfficiency) {
@@ -1039,8 +1064,6 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     }
   } //track loop 
   
-  IncrementEventsProcessed(centralityPercentile);
-
   if(fDebug > 2)
     printf("File: %s, Line: %d: UserExec -> Processing done\n", (char*)__FILE__, __LINE__);
   
@@ -1720,7 +1743,7 @@ Double_t AliAnalysisTaskPID::GetMCStrangenessFactorCMS(AliMCEvent* mcEvent, AliM
 AliAnalysisTaskPID::TOFpidInfo AliAnalysisTaskPID::GetTOFType(const AliVTrack* track, Int_t tofMode) const
 {
   // Get the (locally defined) particle type judged by TOF
-
+  
   if (!fPIDResponse) {
     Printf("ERROR: fEvent not available -> Cannot determine TOF type!");
     return kNoTOFinfo;
@@ -1730,39 +1753,64 @@ AliAnalysisTaskPID::TOFpidInfo AliAnalysisTaskPID::GetTOFType(const AliVTrack* t
   const AliPIDResponse::EDetPidStatus tofStatus = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track);
   if (tofStatus != AliPIDResponse::kDetPidOk)
     return kNoTOFinfo;
-
-  Double_t nsigma[kNumTOFspecies] = { -999., -999., -999. };
+  
+  Double_t nsigma[kNumTOFspecies + 1] = { -999., -999., -999., -999. };
+  const Int_t kTOFelectron = kTOFproton + 1;
   nsigma[kTOFpion]   = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion);
   nsigma[kTOFkaon]   = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon);
   nsigma[kTOFproton] = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton);
-
+  nsigma[kTOFelectron] = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kElectron);
+  
   Double_t inclusion = -999;
   Double_t exclusion = -999;
   
   if (tofMode == 0) {
-    inclusion = 1.5;
-    exclusion = 3;
+    inclusion = 1.;
+    exclusion = 2.;
   }
-  else if (tofMode == 1) {
-    inclusion = 2;
-    exclusion = 3;
+  else if (tofMode == 1) { // default
+    inclusion = 1.;
+    exclusion = 2.5;
   }
   else if (tofMode == 2) {
-    inclusion = 2.5;
-    exclusion = 3;
+    inclusion = 1.5;
+    exclusion = 2.;
   }
   else {
     Printf("ERROR: Bad TOF mode: %d!", tofMode);
     return kNoTOFinfo;
   }
-
-  if (TMath::Abs(nsigma[kTOFpion]) < inclusion && TMath::Abs(nsigma[kTOFkaon]) > exclusion && TMath::Abs(nsigma[kTOFproton]) > exclusion)
+  
+  // Smaller exclusion cut for electron band in order not to sacrifise too much TOF pions,
+  // but still have a reasonably small electron contamination
+  Double_t exclusionForEl = 1.5;
+  
+  // Exclusion cut on electrons for pions because the precision of pions is good and
+  // the contamination of electron can not be ignored (although effect on pions is small
+  // due to overall small electron fraction, the contamination would completely bias the
+  // electron fraction).
+  // The electron exclsuion cut is also applied to kaons and protons for consistency, but
+  // there should be no effect. This is because there is already the exclusion cut on pions 
+  // and pions and electrons completely overlap in the region, where electrons and pions
+  // fall inside the inclusion cut of kaons/protons.
+  if (TMath::Abs(nsigma[kTOFpion]) < inclusion && TMath::Abs(nsigma[kTOFkaon]) > exclusion && TMath::Abs(nsigma[kTOFproton]) > exclusion
+      && TMath::Abs(nsigma[kTOFelectron]) > exclusionForEl)
     return kTOFpion;
-  if (TMath::Abs(nsigma[kTOFpion]) > exclusion && TMath::Abs(nsigma[kTOFkaon]) < inclusion && TMath::Abs(nsigma[kTOFproton]) > exclusion)
+  if (TMath::Abs(nsigma[kTOFpion]) > exclusion && TMath::Abs(nsigma[kTOFkaon]) < inclusion && TMath::Abs(nsigma[kTOFproton]) > exclusion
+      && TMath::Abs(nsigma[kTOFelectron]) > exclusionForEl)
     return kTOFkaon;
-  if (TMath::Abs(nsigma[kTOFpion]) > exclusion && TMath::Abs(nsigma[kTOFkaon]) > exclusion && TMath::Abs(nsigma[kTOFproton]) < inclusion)
+  if (TMath::Abs(nsigma[kTOFpion]) > exclusion && TMath::Abs(nsigma[kTOFkaon]) > exclusion && TMath::Abs(nsigma[kTOFproton]) < inclusion
+      && TMath::Abs(nsigma[kTOFelectron]) > exclusionForEl)
     return kTOFproton;
-
+  
+  // There are no TOF electrons selected because the purity is rather bad, even for small momenta
+  // (also a small mismatch probability significantly affects electrons because their fraction
+  // is small). There is no need for TOF electrons anyway, since the dEdx distribution of kaons and 
+  // protons in a given pT bin (also at the dEdx crossings) is very different from that of electrons.
+  // This is due to the steeply falling dEdx of p and K with momentum, whereas the electron dEdx stays
+  // rather constant.
+  // As a result, the TPC fit yields a more accurate electron fraction than the TOF selection can do.
+  
   return kNoTOFpid;
 }
 
@@ -2030,6 +2078,7 @@ void AliAnalysisTaskPID::PrintSystematicsSettings() const
   printf("EtaCorrHighP:\t%f\n", GetSystematicScalingEtaCorrectionHighMomenta());
   printf("SigmaPara:\t%f\n", GetSystematicScalingEtaSigmaPara());
   printf("MultCorr:\t%f\n", GetSystematicScalingMultCorrection());
+  printf("TOF mode: %d\n", GetTOFmode());
   
   printf("\n\n");
 }

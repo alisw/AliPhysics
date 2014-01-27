@@ -21,7 +21,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //     displaced tracks
   AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
-  esdTrackCuts->SetMinNClustersTPC(50);
+  esdTrackCuts->SetMinNClustersTPC(70);
   esdTrackCuts->SetRequireITSRefit(kTRUE);
   //esdTrackCuts->SetMinNClustersITS(4);
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
