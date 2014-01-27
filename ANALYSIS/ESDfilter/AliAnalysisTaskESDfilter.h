@@ -184,9 +184,10 @@ private:
   Double_t fEMCalSurfaceDistance;   // EMCal surface distance from the center of the detector (r = 440 by default)
   //
   Int_t     fRefitVertexTracks;      // request to refit the vertex if >=0 (algoID if cuts not supplied, otherwise ncuts)
-  Double_t* fRefitVertexTracksCuts;  // optional cuts for vertex refit
+  Int_t     fRefitVertexTracksNCuts; // number of cut parameters
+  Double_t* fRefitVertexTracksCuts;  //[fRefitVertexTracksNCuts] optional cuts for vertex refit
   
-  ClassDef(AliAnalysisTaskESDfilter, 18); // Analysis task for standard ESD filtering
+  ClassDef(AliAnalysisTaskESDfilter, 19); // Analysis task for standard ESD filtering
 };
 
 #endif

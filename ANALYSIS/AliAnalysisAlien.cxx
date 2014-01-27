@@ -3698,9 +3698,11 @@ const char *AliAnalysisAlien::GetListOfFiles(const char *type)
       return files.Data();
    }
    if (mgr->GetOutputEventHandler()) {
-      aodfiles = mgr->GetOutputEventHandler()->GetOutputFileName();
+      aodfiles = "";
+      if (mgr->GetOutputEventHandler()->GetFillAOD())
+         aodfiles = mgr->GetOutputEventHandler()->GetOutputFileName();
       TString extraaod = mgr->GetOutputEventHandler()->GetExtraOutputs();
-      if (!extraaod.IsNull()) {
+      if (!extraaod.IsNull() && mgr->GetOutputEventHandler()->GetFillExtension()) {
          aodfiles += ",";
          aodfiles += extraaod;
       }

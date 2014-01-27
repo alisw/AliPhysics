@@ -127,6 +127,7 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
   fDoPropagateTrackToEMCal(kTRUE),
   fEMCalSurfaceDistance(440),
   fRefitVertexTracks(-1),
+  fRefitVertexTracksNCuts(0),
   fRefitVertexTracksCuts(0)
 {
   // Default constructor
@@ -203,6 +204,7 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
     fDoPropagateTrackToEMCal(kTRUE),
     fEMCalSurfaceDistance(440),
     fRefitVertexTracks(-1),
+    fRefitVertexTracksNCuts(0),
     fRefitVertexTracksCuts(0)
 {
   // Constructor
@@ -2284,7 +2286,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD()
 
   AliCodeTimerAuto("",0);
 
-  if (fRefitVertexTracks) AliESDUtils::RefitESDVertexTracks(esd,fRefitVertexTracks,fRefitVertexTracksCuts);
+  if (fRefitVertexTracks) AliESDUtils::RefitESDVertexTracks(esd,fRefitVertexTracks,
+							    fRefitVertexTracksNCuts ? fRefitVertexTracksCuts:0);
   
   fOldESDformat = ( esd->GetAliESDOld() != 0x0 );
  
@@ -2649,5 +2652,6 @@ void AliAnalysisTaskESDfilter::SetRefitVertexTracks(Int_t algo, Double_t* cuts)
   if (algo>0 && cuts) {
     fRefitVertexTracksCuts = new Double_t[fRefitVertexTracks];
     for (int i=fRefitVertexTracks;i--;) fRefitVertexTracksCuts[i] = cuts[i];
+    fRefitVertexTracksNCuts = fRefitVertexTracks;
   }
 }

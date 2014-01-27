@@ -26,6 +26,8 @@ enum EEventHandlerFlags {
     // Handled tree
     virtual TTree       *GetTree() const { return NULL; }
     virtual Option_t    *GetDataType() const { return NULL; }
+    virtual Bool_t       GetFillAOD() const {return kTRUE;}
+    virtual Bool_t       GetFillExtension() const {return kTRUE;}
     virtual void         SetFillAOD(Bool_t) {}
     virtual void         SetFillExtension(Bool_t) {}
     // Input

@@ -218,6 +218,7 @@ class AliExternalTrackParam: public AliVTrack {
   void Print(Option_t* option = "") const;
   Double_t GetSnpAt(Double_t x,Double_t b) const;
   Bool_t GetXatLabR(Double_t r,Double_t &x, Double_t bz, Int_t dir=0) const;
+  Bool_t GetXYZatR(Double_t xr,Double_t bz, Double_t *xyz=0, Double_t* alpSect=0) const;
 
   //Deprecated
   Bool_t CorrectForMaterial(Double_t d, Double_t x0, Double_t mass,
