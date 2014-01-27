@@ -68,6 +68,8 @@ AliAnalysisTaskdPhi::AliAnalysisTaskdPhi(const char *name) : AliAnalysisTaskSE(n
   fTracks(),
   hMEvents(NULL),
   hTrackCent(NULL),
+  hTrigPt(NULL),
+  hTrackPt(NULL),
   // fPhotonCorr(NULL),
   // fPionCorr(NULL), 
   fDeltaAODBranchName("AliAODGammaConversion_gamma"), 
@@ -311,9 +313,16 @@ void AliAnalysisTaskdPhi::UserCreateOutputObjects() {
    MEHistograms->Add(hMEvents);
 
    hTrackCent = new TH2I("hTrackCent", "N accepted tracks vs centrality",
-			 fAxisCent.GetNbins() > 2 ? 90 : 1, fAxisCent.GetBinLowEdge(1), fAxisCent.GetBinUpEdge(fAxisCent.GetNbins()),
-			 750, 0, 1500);
+			 fAxisCent.GetNbins() > 1 ? 10*(fAxisCent.GetXmax() - fAxisCent.GetXmin())  : 1, 
+			 fAxisCent.GetXmin(), fAxisCent.GetXmax(),
+			 fAxisCent.GetNbins() > 1 ? 900 : 50, 0,
+			 fAxisCent.GetNbins() > 1 ? 1800 : 50);
    MEHistograms->Add(hTrackCent);
+
+   hTrigPt = new TH2F("hTrigPt", "trigger pt", 100, 0, 10, fAxisCent.GetNbins(), fAxisCent.GetXmin(), fAxisCent.GetXmax()); 
+   MEHistograms->Add(hTrigPt);
+   hTrackPt = new TH2F("hTrackPt", "track pt", 100, 0, 10, fAxisCent.GetNbins(), fAxisCent.GetXmin(), fAxisCent.GetXmax()); 
+   MEHistograms->Add(hTrackPt);
 
    Int_t ntrackfilters[2] = {fTrackFilters[0].GetEntriesFast(), fTrackFilters[1].GetEntriesFast()};
    fkTrackAxis = kTRUE;
@@ -601,6 +610,7 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
     if(!photon) continue;
     if(!fV0Filter || fV0Filter->PhotonIsSelected(photon, fInputEvent)) {
       ggammas->Add(photon);
+      hTrigPt->Fill(photon->Pt(), centrality);
     } else {
       for(Int_t igf = 0; igf < fV0Filters[1].GetEntriesFast(); igf++) {
 	AliConversionCuts * gfilter = dynamic_cast<AliConversionCuts*>(fV0Filters[1].At(igf));
@@ -642,6 +652,7 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
     if(track->Pt() < aptlim[0] || track->Pt() > aptlim[1]) continue;
     if(track->Eta() < aetalim[0] || track->Eta() > aetalim[1]) continue;
     if(fTrackFilter->IsSelected(track)) {
+      hTrackPt->Fill(track->Pt(), centrality);
       ttracks->Add(track);
     } else {
       ///upside cuts

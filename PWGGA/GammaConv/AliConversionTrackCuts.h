@@ -43,6 +43,7 @@ public:
   Bool_t AcceptTrack(AliAODTrack * track);
   Bool_t AcceptTrack(AliESDtrack * track);
   Bool_t GetDCA(const AliAODTrack * track, Double_t dca[2]);
+  Bool_t GetDCA(const AliESDtrack * track, Double_t dca[2]);
 
 
   void DeleteTracks() { fOwnedTracks.Delete(); }
@@ -52,8 +53,8 @@ public:
   ~AliConversionTrackCuts();
   
   void      SetEsdTrackCuts(AliESDtrackCuts * trackcuts) { fEsdTrackCuts = trackcuts; }
-  void      SetDCAZmax(Double_t value)  { fDCAZmax = value; }
-  void      SetDCAXYmax(Double_t value) { fDCAXYmax = value; }
+  void      SetDCAZmax(Double_t value)  { fDCAZmax = value*value; }
+  void      SetDCAXYmax(Double_t value) { fDCAXYmax = value*value; }
   void      SetFilterBit(Int_t value)   { fFilterBit = value; }
   void      SetEvent(AliVEvent * event)  { fEvent = event; }
 
