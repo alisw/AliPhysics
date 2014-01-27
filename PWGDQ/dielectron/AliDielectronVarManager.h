@@ -2230,7 +2230,7 @@ inline Double_t AliDielectronVarManager::GetSingleLegEff(Double_t * const values
   for(Int_t idim=0; idim<dim; idim++) {
     UInt_t var = GetValueType(fgEffMap->GetAxis(idim)->GetName());
     idx[idim] = fgEffMap->GetAxis(idim)->FindBin(values[var]);
-    /* if(idx[idim] < 0 || idx[idim]>fgEffMap->GetAxis(idim)->GetNbins()) */
+    if(idx[idim] < 0 || idx[idim]>fgEffMap->GetAxis(idim)->GetNbins()) return 0.0;
     /*   printf(" [E] AliDielectronVarManager::GetSingleLegEff values %f for %s not found in axis range \n",values[var],fgEffMap->GetAxis(idim)->GetName()); */
     //    printf(" (%d,%f,%s) \t",idx[idim],values[var],fgEffMap->GetAxis(idim)->GetName());
   }
