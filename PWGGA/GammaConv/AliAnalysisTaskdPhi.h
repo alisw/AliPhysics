@@ -111,6 +111,9 @@ private:
 
   TH2I * hMEvents; //event histrogam
   TH2I * hTrackCent; //event histrogam
+  TH2F * hTrigPt; // trigger pt
+  TH2F * hTrackPt; // track pt
+
 
   //AliAnaConvCorrBase * fPhotonCorr; //photon
   //AliAnaConvCorrPion * fPionCorr; //poin
@@ -143,7 +146,7 @@ private:
   AliAnalysisTaskdPhi(const AliAnalysisTaskdPhi&); // not implemented
   AliAnalysisTaskdPhi& operator=(const AliAnalysisTaskdPhi&); // not implemented
   
-  ClassDef(AliAnalysisTaskdPhi, 8); 
+  ClassDef(AliAnalysisTaskdPhi, 9); 
 };
 
 inline THnSparseF * AliAnalysisTaskdPhi::GetMEHistogram(Int_t binz, Int_t binc, TObjArray * array) {
