@@ -166,6 +166,7 @@ void AliPHOSTenderSupply::InitTender()
       if(!matrixes->At(mod)) continue;
       fPHOSGeo->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod) ;
       printf(".........Adding Matrix(%d), geo=%p\n",mod,fPHOSGeo) ;
+      ((TGeoHMatrix*)matrixes->At(mod))->Print() ;
     }
   }
   
@@ -309,11 +310,11 @@ void AliPHOSTenderSupply::ProcessEvent()
       cluPHOS.SetE(CorrectNonlinearity(cluPHOS.E()));// Users's nonlinearity
 
       //Correct Misalignment
-      CorrectPHOSMisalignment(global,mod) ;
-      position[0]=global.X() ;
-      position[1]=global.Y() ;
-      position[2]=global.Z() ;
-      cluPHOS.SetPosition(position) ; 
+//      CorrectPHOSMisalignment(global,mod) ;
+//      position[0]=global.X() ;
+//      position[1]=global.Y() ;
+//      position[2]=global.Z() ;
+//      cluPHOS.GetPosition(position) ; 
 
       //Eval CoreDispersion
       Double_t m02=0.,m20=0.;
@@ -378,12 +379,12 @@ void AliPHOSTenderSupply::ProcessEvent()
       cluPHOS.SetE(CorrectNonlinearity(cluPHOS.E()));// Users's nonlinearity
 
       //Correct Misalignment
-      cluPHOS.GetPosition(position);
-      global.SetXYZ(position[0],position[1],position[2]);
-      CorrectPHOSMisalignment(global,mod) ;
-      position[0]=global.X() ;
-      position[1]=global.Y() ;
-      position[2]=global.Z() ;
+//      cluPHOS.GetPosition(position);
+//      global.SetXYZ(position[0],position[1],position[2]);
+//      CorrectPHOSMisalignment(global,mod) ;
+//      position[0]=global.X() ;
+//      position[1]=global.Y() ;
+//      position[2]=global.Z() ;
 
       clu->SetPosition(position);                       //rec.point position in MARS
       clu->SetE(cluPHOS.E());                           //total or core particle energy
@@ -854,4 +855,5 @@ void AliPHOSTenderSupply::DistanceToBadChannel(Int_t mod, TVector3 * locPos, Dou
   }
   
 }
+
 
