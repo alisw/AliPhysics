@@ -154,6 +154,8 @@ class AliConversionCuts : public AliAnalysisCuts {
    void SetFillCutHistograms(TString name="",Bool_t preCut = kTRUE){if(!fHistograms){InitCutHistograms(name,preCut);};}
    TList *GetCutHistograms(){return fHistograms;}
    void FillPhotonCutIndex(Int_t photoncut){if(hCutIndex)hCutIndex->Fill(photoncut);}
+   void FillV0EtaBeforedEdxCuts(Float_t v0Eta){if(hEtaDistV0s)hEtaDistV0s->Fill(v0Eta);}
+   void FillV0EtaAfterdEdxCuts(Float_t v0Eta){if(hEtaDistV0sAfterdEdxCuts)hEtaDistV0sAfterdEdxCuts->Fill(v0Eta);}
    void SetEtaShift(Double_t etaShift) {
       fEtaShift = etaShift;
       fLineCutZRSlope = tan(2*atan(exp(-fEtaCut + etaShift)));
@@ -423,7 +425,7 @@ class AliConversionCuts : public AliAnalysisCuts {
    TString fSpecialTriggerName; // Name of the Special Triggers
 private:
 
-   ClassDef(AliConversionCuts,7)
+   ClassDef(AliConversionCuts,8)
 };
 
 
