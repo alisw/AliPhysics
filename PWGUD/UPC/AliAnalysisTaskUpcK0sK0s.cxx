@@ -22,7 +22,7 @@
 #include "TTree.h"
 #include "TClonesArray.h"
 #include "TParticle.h"
-#include "TObjString.h"
+#include "TString.h"
 #include "TFile.h"
 #include "TDatabasePDG.h"
 #include "TLorentzVector.h"
@@ -125,10 +125,6 @@ AliAnalysisTaskUpcK0sK0s::~AliAnalysisTaskUpcK0sK0s()
 void AliAnalysisTaskUpcK0sK0s::UserCreateOutputObjects()
 {
 
-  //input file
-  fDataFilnam = new TObjString();
-  fDataFilnam->SetString("");
-
     //vertices
   fK0sAODv0s = new TClonesArray("AliAODv0", 1000);
   fK0sESDv0s = new TClonesArray("AliESDv0", 1000);
@@ -196,11 +192,11 @@ void AliAnalysisTaskUpcK0sK0s::UserExec(Option_t *)
 //_____________________________________________________________________________
 void AliAnalysisTaskUpcK0sK0s::RunAODhist()
 {
-
+  
   //input event
   AliAODEvent *aod = (AliAODEvent*) InputEvent();
   if(!aod) return;
-
+  //cout<<"File: "<<(aod->GetHeader()->GetESDFileName()).Data()<<" Event: "<<aod->GetHeader()->GetEventNumberESDFile()<<endl;
 
   //Trigger
   TString trigger = aod->GetFiredTriggerClasses();
@@ -228,7 +224,7 @@ void AliAnalysisTaskUpcK0sK0s::RunAODhist()
   
   fZDCAenergy = fZDCdata->GetZNATowerEnergy()[0];
   fZDCCenergy = fZDCdata->GetZNCTowerEnergy()[0];
-  if( fZDCAenergy > 6000 || fZDCCenergy > 6000) return;
+  if( fZDCAenergy > 8200 || fZDCCenergy > 8200) return;
   
   Int_t nGoodV0s=0;
   Int_t V0Index[3] = {-1,-1,-1};
@@ -251,6 +247,8 @@ void AliAnalysisTaskUpcK0sK0s::RunAODhist()
 
     if ( pTrack->Charge() == nTrack->Charge())continue;
 
+      if(!(pTrack->GetStatus() & AliESDtrack::kITSrefit) ) continue;
+      if(!(nTrack->GetStatus() & AliESDtrack::kITSrefit) ) continue;
       if(!(pTrack->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
       if(!(nTrack->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
       if(pTrack->GetTPCNcls() < 50)continue;
@@ -296,7 +294,8 @@ void AliAnalysisTaskUpcK0sK0s::RunAODhist()
 	//for(Int_t i=0; i<4; i++) if (TrackID[i] != V0TrackID[i]) return;
 	AliAODv0 *v00 = aod->GetV0(V0Index[0]);	
 	AliAODv0 *v01 = aod->GetV0(V0Index[1]);				
-	fHistK0sMass->Fill(v00->MassK0Short(),v01->MassK0Short());		
+	fHistK0sMass->Fill(v00->MassK0Short(),v01->MassK0Short());
+			
   }
   
   PostData(2, fListHist);
@@ -311,11 +310,9 @@ void AliAnalysisTaskUpcK0sK0s::RunAODtree()
   if(!aod) return;
 
   //input data
-  const char *filnam = ((TTree*) GetInputData(0))->GetCurrentFile()->GetName();
-  fDataFilnam->Clear();
-  fDataFilnam->SetString(filnam);
-  fEvtNum = ((TTree*) GetInputData(0))->GetTree()->GetReadEntry();
-  fRunNum = aod ->GetRunNumber();
+  fDataFilnam = aod->GetHeader()->GetESDFileName();
+  fEvtNum = aod->GetHeader()->GetEventNumberESDFile();
+  fRunNum = aod->GetRunNumber();
 
   //Trigger
   TString trigger = aod->GetFiredTriggerClasses();
@@ -369,6 +366,8 @@ void AliAnalysisTaskUpcK0sK0s::RunAODtree()
 
       if(!(pTrack->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
       if(!(nTrack->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
+      if(!(pTrack->GetStatus() & AliESDtrack::kITSrefit) ) continue;
+      if(!(nTrack->GetStatus() & AliESDtrack::kITSrefit) ) continue;
       if(pTrack->GetTPCNcls() < 50)continue;
       if(nTrack->GetTPCNcls() < 50)continue;
       if(pTrack->Chi2perNDF() > 4)continue;
