@@ -425,6 +425,10 @@ AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14"
     //Cuts global tracks with ITSrefit requirement and SPDrequirement for jet analysis + NCrossedRowsCut>70 recommended in 2011
     trackCuts = CreateTrackCutsPWGJE(10001008);
   }
+  if(trackType==0 && cuts==6) {
+    //Cuts global tracks with ITSrefit requirement and no SPDrequirement for jet analysis + NCrossedRowsCut>70 recommended in 2011
+    trackCuts = CreateTrackCutsPWGJE(10051008);
+  }
   
   if(trackType==0 && cuts==2) {
     //Cuts global tracks with ITSrefit requirement but without SPD
