@@ -29,7 +29,12 @@ public:
     kSymBin
   };
   enum EPairType {
-    kOSonly=0,  kOSandLS, kOSandROT, kOSandMIX, kAll, kMConly
+    //    kOSonly=0,  kOSandLS, kOSandROT, kOSandMIX, kAll, kMConly
+    kAll=0, kMConly,
+    kSeAll,   kSeOnlyOS,
+    kMeAll,   kMeOnlyOS,
+    kSeMeAll, kSeMeOnlyOS,
+    kSeReAll, kSeReOnlyOS,
   };
 
   AliDielectronHF();
@@ -40,7 +45,7 @@ public:
   void Init();
   void SetSignalsMC(TObjArray* array)    {fSignalsMC = array;}
   void SetStepForMCGenerated(Bool_t switcher=kTRUE)    {fStepGenerated = switcher;}
-  void SetPairTypes(EPairType ptype=kOSonly) { fPairType=ptype; }
+  void SetPairTypes(EPairType ptype) { fPairType=ptype; }
 
   // functions to add 1-dimensional objects
   void UserProfile(const char* histClass, UInt_t valTypeP,

@@ -36,6 +36,7 @@ fPt(0),
 fMCPt(0),
 fZvPtEtaCent(0),
 fPhiPtEtaCent(0),
+fPtResptCent(0),
 fMCRecPrimZvPtEtaCent(0),
 fMCGenZvPtEtaCent(0),
 fMCRecSecZvPtEtaCent(0),
@@ -75,8 +76,10 @@ fCutPtMax(200.),
 fCutEtaMin(-0.8),
 fCutEtaMax(0.8),    
 // track quality cut variables
+fFilterBit(AliAODTrack::kTrkGlobal),
 fUseRelativeCuts(kFALSE),
 fCutRequireTPCRefit(kTRUE),
+fCutRequireITSRefit(kTRUE),
 fCutMinNumberOfClusters(60),
 fCutPercMinNumberOfClusters(0.2),
 fCutMinNumberOfCrossedRows(120.),
@@ -86,7 +89,6 @@ fCutMaxChi2PerClusterTPC(4.),
 fCutMaxFractionSharedTPCClusters(0.4),
 fCutMaxDCAToVertexZ(3.0),
 fCutMaxDCAToVertexXY(3.0),
-fCutRequireITSRefit(kTRUE),
 fCutMaxChi2PerClusterITS(36.),
 fCutDCAToVertex2D(kFALSE),
 fCutRequireSigmaToVertex(kFALSE),
@@ -219,6 +221,10 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   Int_t binsPhiPtEtaCent[4]={fPhiNbins-1,fPtNbins-1,fEtaNbins-1,fCentralityNbins-1};
   Int_t binsZvMultCent[3]={fZvNbins-1,fMultNbins-1,fCentralityNbins-1};
   
+  Int_t binsOneOverPtPtResCent[3]={400,300,11};
+  Double_t minbinsOneOverPtPtResCent[3]={0,0,0}; 
+  Double_t maxbinsOneOverPtPtResCent[3]={1,0.015,100};
+  
   // define Histograms
   fZvPtEtaCent = new THnSparseF("fZvPtEtaCent","Zv:Pt:Eta:Centrality",4,binsZvPtEtaCent);
   fZvPtEtaCent->SetBinEdges(0,fBinsZv);
@@ -242,7 +248,13 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fPhiPtEtaCent->GetAxis(3)->SetTitle("Centrality");
   fPhiPtEtaCent->Sumw2();
   
-
+  fPtResptCent = new THnSparseF("fPtResptCent","OneOverPt:PtRes:Centrality",3,binsOneOverPtPtResCent, minbinsOneOverPtPtResCent, maxbinsOneOverPtPtResCent);
+  fPtResptCent->SetBinEdges(2, fBinsCentrality);
+  fPtResptCent->GetAxis(0)->SetTitle("1/pT (GeV/c)^{-1}");
+  fPtResptCent->GetAxis(1)->SetTitle("#sigma(1/pT)");
+  fPtResptCent->GetAxis(2)->SetTitle("centrality");
+  fPtResptCent->Sumw2();
+  
   
   fMCRecPrimZvPtEtaCent = new THnSparseF("fMCRecPrimZvPtEtaCent","mcZv:mcPt:mcEta:Centrality",4,binsZvPtEtaCent);
   fMCRecPrimZvPtEtaCent->SetBinEdges(0,fBinsZv);
@@ -491,7 +503,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
     }
     
     Int_t binsCheckPtEtaPhi[5] = { iNbin, fPtCheckNbins-1, fEtaCheckNbins-1, 18, fCentralityNbins-1};
-//     Int_t binsCheckPtEtaPhi[5] = { iNbin, fPtNbins-1, fEtaCheckNbins-1, 18, fCentralityNbins-1};
+    //     Int_t binsCheckPtEtaPhi[5] = { iNbin, fPtNbins-1, fEtaCheckNbins-1, 18, fCentralityNbins-1};
     Double_t minCheckPtEtaPhi[5] = { dBinMin,  0, -1.5, 0., 0, };
     Double_t maxCheckPtEtaPhi[5] = { dBinMax, 100, 1.5, 2.*TMath::Pi(), 100};
     
@@ -531,6 +543,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   // Add Histos, Profiles etc to List
   fOutputList->Add(fZvPtEtaCent);
   fOutputList->Add(fPhiPtEtaCent);
+  fOutputList->Add(fPtResptCent);
   fOutputList->Add(fPt);
   fOutputList->Add(fMCRecPrimZvPtEtaCent);
   fOutputList->Add(fMCGenZvPtEtaCent);
@@ -814,9 +827,9 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
       dMCTrackZvPtEtaCent[3] = dCentrality;
       
       dMCTrackPhiPtEtaCent[0] = mcPart->Phi();
-    dMCTrackPhiPtEtaCent[1] = mcPart->Pt();
-    dMCTrackPhiPtEtaCent[2] = mcPart->Eta();
-    dMCTrackPhiPtEtaCent[3] = dCentrality;
+      dMCTrackPhiPtEtaCent[1] = mcPart->Pt();
+      dMCTrackPhiPtEtaCent[2] = mcPart->Eta();
+      dMCTrackPhiPtEtaCent[3] = dCentrality;
       
       if(bIsPrimary && bIsHijingParticle)
       {
@@ -982,14 +995,15 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr, Double_t dCentr
   Short_t sign = tr->Charge();
   Double_t xyz[50];
   Double_t pxpypz[50];
-  Double_t cv[100];
+  Double_t cv[21];
   
-  for(Int_t i = 0; i < 100; i++) cv[i] = 0;
+  for(Int_t i = 0; i < 21; i++) cv[i] = 0;
   for(Int_t i = 0; i < 50; i++) xyz[i] = 0;
   for(Int_t i = 0; i < 50; i++) pxpypz[i] = 0;
-
+  
   tr->GetXYZ(xyz);
   tr->GetPxPyPz(pxpypz);
+  tr->GetCovarianceXYZPxPyPz(cv);
   
   // similar error occured as this one:
   // See https://savannah.cern.ch/bugs/?102721
@@ -997,20 +1011,22 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr, Double_t dCentr
   // Andrea Dainese now first does the beam pipe
   // check and then copies from the vtrack (was the other
   // way around) to avoid the crash in the etp::Set()
-
-//   if(xyz[0]*xyz[0]+xyz[1]*xyz[1] > 3.*3.) { return kFALSE; }
+  
+  //   if(xyz[0]*xyz[0]+xyz[1]*xyz[1] > 3.*3.) { return kFALSE; }
   
   AliExternalTrackParam * par = new AliExternalTrackParam(xyz, pxpypz, cv, sign);
   if(!par) { return kFALSE; }
   AliESDtrack dummy;
-//   Double_t dLength = dummy.GetLengthInActiveZone(par,3,236, -5 ,0,0);
-//   Double_t dLengthInTPC = GetLengthInTPC(tr, 1.8, 220, bMagZ);
-
+  //   Double_t dLength = dummy.GetLengthInActiveZone(par,3,236, -5 ,0,0);
+  //   Double_t dLengthInTPC = GetLengthInTPC(tr, 1.8, 220, bMagZ);
+  
   Double_t dLengthInTPC = dummy.GetLengthInActiveZone(par,3,236, bMagZ ,0,0);
   Double_t dNClustersTPC = tr->GetTPCNcls();
   Double_t dCrossedRowsTPC = tr->GetTPCClusterInfo(2,1);
   Double_t dFindableClustersTPC = tr->GetTPCNclsF();
   Double_t dChi2PerClusterTPC = (dNClustersTPC>0)?tr->Chi2perNDF()*(dNClustersTPC-5)/dNClustersTPC:-1.; // see AliDielectronVarManager.h
+  Double_t dOneOverPt = tr->OneOverPt();
+  Double_t dSigmaOneOverPt = TMath::Sqrt(par->GetSigma1Pt2());
   
   //   hAllCrossedRowsTPC->Fill(dCrossedRowsTPC);
   
@@ -1032,7 +1048,8 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr, Double_t dCentr
   if( DoCutLengthInTPCPtDependent() && ( dLengthInTPC < GetPrefactorLengthInTPCPtDependent()*(130-5*TMath::Abs(1./tr->Pt())) )  ) { return kFALSE; }
   
   // filter bit 5
-  if(!(tr->TestFilterBit(AliAODTrack::kTrkGlobal)) ) { return kFALSE; } 
+  //   if(!(tr->TestFilterBit(AliAODTrack::kTrkGlobal)) ) { return kFALSE; }
+  if(!(tr->TestFilterBit(GetFilterBit())) ) { return kFALSE; } 
   
   // filter bit 4
   //   if(!(tr->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA)) ) { return kFALSE; }
@@ -1040,75 +1057,30 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr, Double_t dCentr
   //   hFilterCrossedRowsTPC->Fill(dCrossedRowsTPC);
   
   
-   if(dFindableClustersTPC == 0) {return kFALSE; }
-   if(dCrossedRowsTPC < GetCutMinNCrossedRowsTPC()) { return kFALSE; }
-   if( (dCrossedRowsTPC/dFindableClustersTPC) < GetCutMinRatioCrossedRowsOverFindableClustersTPC() ) { return kFALSE; }
-   if(dNClustersTPC < GetCutMinNClustersTPC()) { return kFALSE; }
+  if(dFindableClustersTPC == 0) {return kFALSE; }
+  if(dCrossedRowsTPC < GetCutMinNCrossedRowsTPC()) { return kFALSE; }
+  if( (dCrossedRowsTPC/dFindableClustersTPC) < GetCutMinRatioCrossedRowsOverFindableClustersTPC() ) { return kFALSE; }
+  if(dNClustersTPC < GetCutMinNClustersTPC()) { return kFALSE; }
   
-  if (!(tr->GetStatus() & AliVTrack::kITSrefit)) { return kFALSE; } // no ITS refit
-  
-  // do a relativ cut in Nclusters, both time at 80% of mean
-  //   if(fIsMonteCarlo) 
-  //   { 
-    //     if(dNClustersTPC < 88) { return kFALSE; }
-    //   }
-    //   else
-    //   {
-      //     if(dNClustersTPC < 76) { return kFALSE; }
+  if (IsITSRefitRequired() && !(tr->GetStatus() & AliVTrack::kITSrefit)) { return kFALSE; } // no ITS refit
+    
+    // do a relativ cut in Nclusters, both time at 80% of mean
+    //   if(fIsMonteCarlo) 
+    //   { 
+      //     if(dNClustersTPC < 88) { return kFALSE; }
       //   }
-      
-      
-      FillDebugHisto(dCheck, dKine, dCentrality, kTRUE);
-      
-      
-      //   hAccNclsTPC->Fill(dNClustersTPC);
-      //   hAccCrossedRowsTPC->Fill(dCrossedRowsTPC);
-      //   Double_t dFindableClustersTPC = tr->GetTPCNclsF();
-      //   Double_t dChi2PerClusterTPC = (dNClustersTPC>0)?tr->Chi2perNDF()*(dNClustersTPC-5)/dNClustersTPC:-1.; // see AliDielectronVarManager.h
-      //   
-      //   Bool_t bIsFromKink = kFALSE;
-      //   if(tr->GetProdVertex()->GetType() == AliAODVertex::kKink) bIsFromKink = kTRUE;
-      //   
-      //   // from AliAnalysisTaskPIDqa.cxx
-      //   ULong_t uStatus = tr->GetStatus();
-      //   Bool_t bHasRefitTPC = kFALSE;
-      //   Bool_t bHasRefitITS = kFALSE;
-      //   
-      //   if ((uStatus & AliVTrack::kTPCrefit) == AliVTrack::kTPCrefit) bHasRefitTPC = kTRUE;
-      //   if ((uStatus & AliVTrack::kITSrefit) == AliVTrack::kITSrefit) bHasRefitITS = kTRUE;
-      //   
-      //   // from AliDielectronVarManager.h
-      //   Bool_t bHasHitInSPD = kFALSE;
-      //   for (Int_t iC=0; iC<2; iC++) 
+      //   else
       //   {
-	//     if (((tr->GetITSClusterMap()) & (1<<(iC))) > 0) {  bHasHitInSPD = kTRUE;  }
+	//     if(dNClustersTPC < 76) { return kFALSE; }
 	//   }
-	//   
-	//   Double_t dNClustersITS = tr->GetITSNcls();
 	
-	// cuts to be done:
-	// TPC  
-	//   esdTrackCuts->SetMinNCrossedRowsTPC(70);
-	//   esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-	//   
-	//   esdTrackCuts->SetMaxChi2PerClusterTPC(4);
-	//   esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
-	//   esdTrackCuts->SetRequireTPCRefit(kTRUE);
-	// ITS
-	//   esdTrackCuts->SetRequireITSRefit(kTRUE);
-	//   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,	 AliESDtrackCuts::kAny);
-	//   
-	//   esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
-	//   esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
-	//   
-	//   esdTrackCuts->SetMaxDCAToVertexZ(2);
-	//   esdTrackCuts->SetDCAToVertex2D(kFALSE);
-	//   esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-	//   
-	//   esdTrackCuts->SetMaxChi2PerClusterITS(36);
+	// fill histogram for pT resolution correction
+	Double_t dPtResolutionHisto[3] = { dOneOverPt, dSigmaOneOverPt, dCentrality };
+	fPtResptCent->Fill(dPtResolutionHisto);
 	
-	//     delete [] dKine;
-	//     delete [] dCheck;
+	// fill debug histogram for all accepted tracks
+	FillDebugHisto(dCheck, dKine, dCentrality, kTRUE);
+
 	return kTRUE;
 }
 

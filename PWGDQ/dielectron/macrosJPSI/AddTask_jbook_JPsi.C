@@ -48,7 +48,6 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString config="1",
   if(!gridconf && trainRoot.IsNull())
     configFile="$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_jb_PbPb.C"; // aliroot config
 
-
   //create task
   AliAnalysisTaskMultiDielectron *task;
 

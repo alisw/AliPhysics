@@ -195,6 +195,8 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) :
    fNameFitDataPi0(""),
    fNameFitDataEta(""),
    fNameFitDataK0s(""),
+   hEtaDistV0s(NULL),
+   hEtaDistV0sAfterdEdxCuts(NULL),
    hdEdxCuts(NULL),
    hTPCdEdxbefore(NULL),
    hTPCdEdxafter(NULL),
@@ -347,6 +349,8 @@ AliConversionCuts::AliConversionCuts(const AliConversionCuts &ref) :
    fNameFitDataPi0(ref.fNameFitDataPi0),
    fNameFitDataEta(ref.fNameFitDataEta),
    fNameFitDataK0s(ref.fNameFitDataK0s),
+   hEtaDistV0s(NULL),
+   hEtaDistV0sAfterdEdxCuts(NULL),
    hdEdxCuts(NULL),
    hTPCdEdxbefore(NULL),
    hTPCdEdxafter(NULL),
@@ -512,6 +516,9 @@ void AliConversionCuts::InitCutHistograms(TString name, Bool_t preCut){
       fHistograms->Add(hInvMassbefore);
       hArmenterosbefore=new TH2F(Form("Armenteros_before %s",GetCutNumber().Data()),"Armenteros_before",200,-1,1,1000,0,1.);
       fHistograms->Add(hArmenterosbefore);
+      hEtaDistV0s = new TH1F(Form("Eta_before %s",GetCutNumber().Data()),"Eta_before",2000,-2,2);
+      fHistograms->Add(hEtaDistV0s);
+
    }
    hInvMassafter=new TH1F(Form("InvMass_after %s",GetCutNumber().Data()),"InvMass_after",1000,0,0.3);
    fHistograms->Add(hInvMassafter);
@@ -571,6 +578,9 @@ void AliConversionCuts::InitCutHistograms(TString name, Bool_t preCut){
 
    hTOFSigafter=new TH2F(Form("Gamma_TOFSig_after %s",GetCutNumber().Data()),"TOF Sigma Gamma after" ,150,0.03,20,400,-6,10);
    fHistograms->Add(hTOFSigafter);
+
+   hEtaDistV0sAfterdEdxCuts = new TH1F(Form("Eta_afterdEdx %s",GetCutNumber().Data()),"Eta_afterdEdx",2000,-2,2);
+   fHistograms->Add(hEtaDistV0sAfterdEdxCuts);
 
    hPsiPairDeltaPhiafter=new TH2F(Form("Gamma_PsiPairDeltaPhi_after %s",GetCutNumber().Data()),"Psi Pair vs Delta Phi Gamma after" ,200,-2,2,200,-2,2);
    fHistograms->Add(hPsiPairDeltaPhiafter);
@@ -999,7 +1009,6 @@ Bool_t AliConversionCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVEvent *
 
    // Fill Histos before Cuts
    if(hInvMassbefore)hInvMassbefore->Fill(photon->GetMass());
-
    if(hArmenterosbefore)hArmenterosbefore->Fill(photon->GetArmenterosAlpha(),photon->GetArmenterosQt());
 
    // Gamma selection based on QT from Armenteros
@@ -1170,13 +1179,13 @@ Bool_t AliConversionCuts::PhotonIsSelected(AliConversionPhotonBase *photon, AliV
       FillPhotonCutIndex(kTrackCuts);
       return kFALSE;
    }
-
+   if (hEtaDistV0s)hEtaDistV0s->Fill(photon->GetPhotonEta());
    // dEdx Cuts
    if(!dEdxCuts(negTrack) || !dEdxCuts(posTrack)) {
       FillPhotonCutIndex(kdEdxCuts);
       return kFALSE;
    }
-
+   if (hEtaDistV0sAfterdEdxCuts)hEtaDistV0sAfterdEdxCuts->Fill(photon->GetPhotonEta());
    // Photon Cuts
    if(!PhotonCuts(photon,event)){
       FillPhotonCutIndex(kPhotonCuts);
@@ -1376,7 +1385,6 @@ Bool_t AliConversionCuts::TracksAreSelected(AliVTrack * negTrack, AliVTrack * po
 ///________________________________________________________________________
 Bool_t AliConversionCuts::dEdxCuts(AliVTrack *fCurrentTrack){
    // Electron Identification Cuts for Photon reconstruction
-
    if(!fPIDResponse){InitPIDResponse();}// Try to reinitialize PID Response
    if(!fPIDResponse){AliError("No PID Response"); return kTRUE;}// if still missing fatal error
 
@@ -1385,7 +1393,6 @@ Bool_t AliConversionCuts::dEdxCuts(AliVTrack *fCurrentTrack){
    if(hTPCdEdxSigbefore)hTPCdEdxSigbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kElectron));
    if(hTPCdEdxbefore)hTPCdEdxbefore->Fill(fCurrentTrack->P(),fCurrentTrack->GetTPCsignal());
    cutIndex++;
-
 
    if(fDodEdxSigmaCut == kTRUE){
       // TPC Electron Line
@@ -1433,7 +1440,6 @@ Bool_t AliConversionCuts::dEdxCuts(AliVTrack *fCurrentTrack){
       }
    }
    cutIndex++;
-
    if(fDoProtonRejectionLowP == kTRUE){
       if( fCurrentTrack->P()<fPIDMinPProtonRejectionLowP ){
          if( abs(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kProton))<fPIDnSigmaAtLowPAroundProtonLine){
@@ -1473,7 +1479,7 @@ Bool_t AliConversionCuts::dEdxCuts(AliVTrack *fCurrentTrack){
    if((fCurrentTrack->GetStatus() & AliESDtrack::kTOFpid) && !(fCurrentTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
       if(hTOFbefore){
          Double_t t0 = fPIDResponse->GetTOFResponse().GetStartTime(fCurrentTrack->P());
-         Double_t times[5];
+         Double_t  times[AliPID::kSPECIESC];
          fCurrentTrack->GetIntegratedTimes(times);
          Double_t TOFsignal = fCurrentTrack->GetTOFsignal();
          Double_t dT = TOFsignal - t0 - times[0];
@@ -1490,7 +1496,6 @@ Bool_t AliConversionCuts::dEdxCuts(AliVTrack *fCurrentTrack){
       if(hTOFSigafter)hTOFSigafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron));
    }
    cutIndex++;
-
    // Apply TRD PID
    if(fDoTRDPID){
       if(!fPIDResponse->IdentifiedAsElectronTRD(fCurrentTrack,fPIDTRDEfficiency)){
@@ -1503,7 +1508,7 @@ Bool_t AliConversionCuts::dEdxCuts(AliVTrack *fCurrentTrack){
    if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
    if(hTPCdEdxSigafter)hTPCdEdxSigafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kElectron));
    if(hTPCdEdxafter)hTPCdEdxafter->Fill(fCurrentTrack->P(),fCurrentTrack->GetTPCsignal());
-  
+   
    return kTRUE;
 }
 
@@ -3300,9 +3305,23 @@ Bool_t AliConversionCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCE
 Bool_t AliConversionCuts::VertexZCut(AliVEvent *event){
    // Cut on z position of primary vertex
    Double_t fVertexZ=event->GetPrimaryVertex()->GetZ();
-
+   Double_t fVertexZSPD = 0;
+   AliESDEvent *fESDEvent=dynamic_cast<AliESDEvent*>(event);
+   if(fESDEvent){
+      fVertexZSPD = fESDEvent->GetPrimaryVertexSPD()->GetZ();
+   } 
+   AliAODEvent *fAODEvent=dynamic_cast<AliAODEvent*>(event);
+   if(fAODEvent){
+      fVertexZSPD = fAODEvent->GetPrimaryVertexSPD()->GetZ();
+   }
+  
    if(abs(fVertexZ)>fMaxVertexZ)return kFALSE;
 
+   TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
+                                                ->GetTask("V0ReaderV1"))->GetPeriodName();
+   if (periodName.CompareTo("LHC11h")==0){
+     if (abs(fVertexZ-fVertexZSPD) > 0.1) return kFALSE;
+   }						
    if (fIsHeavyIon == 2){
      if(fUtils->IsFirstEventInChunk(event)) return kFALSE;
      if(!fUtils->IsVertexSelected2013pA(event)) return kFALSE;
@@ -4069,6 +4088,7 @@ void AliConversionCuts::GetCorrectEtaShiftFromPeriod(TString periodName){
       periodName.CompareTo("LHC13b2_efix_p2") == 0 || //MC DPMJET, anchr LHC13b+c
       periodName.CompareTo("LHC13b2_efix_p3") == 0 || //MC DPMJET, anchr LHC13b+c
       periodName.CompareTo("LHC13b2_efix_p4") == 0 || //MC DPMJET, anchr LHC13b+c
+      periodName.CompareTo("LHC13e7") == 0 || //MC DPMJET, anchr LHC13b+c
       periodName.CompareTo("LHC13b3") == 0 || //MC HIJING, weighted to number of events per run, anchor LHC13b
       periodName.CompareTo("LHC13b2") == 0 ||  // MC DPMJET, wrong energy, anchor LHC13b
       periodName.CompareTo("LHC13b2_plus") == 0 || // MC DPMJET, weighted to number event per run, anchor LHC13b

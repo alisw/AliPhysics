@@ -82,6 +82,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         void                    SetUseScaledRho(Bool_t s)                       {fUseScaledRho = s; }
         void                    SetRandomSeed(TRandom3* r)                      {if (fRandom) delete fRandom; fRandom = r; }
         void                    SetModulationFit(TF1* fit);
+        void                    SetUseControlFit(Bool_t c);
         void                    SetModulationFitMinMaxP(Float_t m, Float_t n)   {fMinPvalue = m; fMaxPvalue = n; }
         void                    SetModulationFitType(fitModulationType type)    {fFitModulationType = type; }
         void                    SetQCnRecoveryType(qcRecovery type)             {fQCRecovery = type; }
@@ -89,6 +90,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         void                    SetReferenceDetector(detectorType type)         {fDetectorType = type; }
         void                    SetCollisionType(collisionType type)            {fCollisionType = type; }
         void                    SetUsePtWeight(Bool_t w)                        {fUsePtWeight = w; }
+        void                    SetUsePtWeightErrorPropagation(Bool_t w)        {fUsePtWeightErrorPropagation = w; }
         void                    SetRunModeType(runModeType type)                {fRunModeType = type; }
         void                    SetAbsVertexZ(Float_t v)                        {fAbsVertexZ = v; }
         void                    SetMinDistanceRctoLJ(Float_t m)                 {fMinDisanceRCtoLJ = m; }
@@ -193,6 +195,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         fitModulationType       fFitModulationType;     // fit modulation type
         qcRecovery              fQCRecovery;            // recovery type for e-by-e qc method
         Bool_t                  fUsePtWeight;           // use dptdphi instead of dndphi
+        Bool_t                  fUsePtWeightErrorPropagation;   // recalculate the bin errors in case of pt weighting 
         detectorType            fDetectorType;          // type of detector used for modulation fit
         TString                 fFitModulationOptions;  // fit options for modulation fit
         runModeType             fRunModeType;           // run mode type 
@@ -202,6 +205,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         Int_t                   fMappedRunNumber;       //! mapped runnumer (for QA)
         Int_t                   fInCentralitySelection; //! centrality bin
         TF1*                    fFitModulation;         //-> modulation fit for rho
+        TF1*                    fFitControl;            //-> control fit
         Float_t                 fMinPvalue;             // minimum value of p
         Float_t                 fMaxPvalue;             // maximum value of p
         const char*             fNameJetClones;         //! collection of tclones array with jets
@@ -223,6 +227,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         TH2F*                   fHistRunnumbersEta;     //! run numbers averaged eta
         TH1F*                   fHistPvaluePDF;         //! pdf value of chisquare p
         TH1F*                   fHistPvalueCDF;         //! cdf value of chisquare p
+        TH2F*                   fHistRhoStatusCent;     //! status of rho as function of centrality
         // general settings
         Float_t                 fMinDisanceRCtoLJ;      // min distance between rc and leading jet
         Float_t                 fRandomConeRadius;      // radius of random cone
@@ -313,7 +318,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         AliAnalysisTaskRhoVnModulation(const AliAnalysisTaskRhoVnModulation&);                  // not implemented
         AliAnalysisTaskRhoVnModulation& operator=(const AliAnalysisTaskRhoVnModulation&);       // not implemented
 
-        ClassDef(AliAnalysisTaskRhoVnModulation, 18);
+        ClassDef(AliAnalysisTaskRhoVnModulation, 19);
 };
 
 #endif

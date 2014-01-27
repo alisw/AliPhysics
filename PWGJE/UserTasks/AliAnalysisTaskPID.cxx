@@ -1720,7 +1720,7 @@ Double_t AliAnalysisTaskPID::GetMCStrangenessFactorCMS(AliMCEvent* mcEvent, AliM
 AliAnalysisTaskPID::TOFpidInfo AliAnalysisTaskPID::GetTOFType(const AliVTrack* track, Int_t tofMode) const
 {
   // Get the (locally defined) particle type judged by TOF
-
+  
   if (!fPIDResponse) {
     Printf("ERROR: fEvent not available -> Cannot determine TOF type!");
     return kNoTOFinfo;
@@ -1730,39 +1730,64 @@ AliAnalysisTaskPID::TOFpidInfo AliAnalysisTaskPID::GetTOFType(const AliVTrack* t
   const AliPIDResponse::EDetPidStatus tofStatus = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track);
   if (tofStatus != AliPIDResponse::kDetPidOk)
     return kNoTOFinfo;
-
-  Double_t nsigma[kNumTOFspecies] = { -999., -999., -999. };
+  
+  Double_t nsigma[kNumTOFspecies + 1] = { -999., -999., -999., -999. };
+  const Int_t kTOFelectron = kTOFproton + 1;
   nsigma[kTOFpion]   = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion);
   nsigma[kTOFkaon]   = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon);
   nsigma[kTOFproton] = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton);
-
+  nsigma[kTOFelectron] = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kElectron);
+  
   Double_t inclusion = -999;
   Double_t exclusion = -999;
   
   if (tofMode == 0) {
-    inclusion = 1.5;
-    exclusion = 3;
+    inclusion = 2;
+    exclusion = 2;
   }
   else if (tofMode == 1) {
     inclusion = 2;
     exclusion = 3;
   }
   else if (tofMode == 2) {
-    inclusion = 2.5;
+    inclusion = 3;
     exclusion = 3;
   }
   else {
     Printf("ERROR: Bad TOF mode: %d!", tofMode);
     return kNoTOFinfo;
   }
-
-  if (TMath::Abs(nsigma[kTOFpion]) < inclusion && TMath::Abs(nsigma[kTOFkaon]) > exclusion && TMath::Abs(nsigma[kTOFproton]) > exclusion)
+  
+  // Smaller exclusion cut for electron band in order not to sacrifise too much TOF pions,
+  // but still have a reasonably small electron contamination
+  Double_t exclusionForEl = exclusion / 2.;
+  
+  // Exclusion cut on electrons for pions because the precision of pions is good and
+  // the contamination of electron can not be ignored (although effect on pions is small
+  // due to overall small electron fraction, the contamination would completely bias the
+  // electron fraction).
+  // The electron exclsuion cut is also applied to kaons and protons for consistency, but
+  // there should be no effect. This is because there is already the exclusion cut on pions 
+  // and pions and electrons completely overlap in the region, where electrons and pions
+  // fall inside the inclusion cut of kaons/protons.
+  if (TMath::Abs(nsigma[kTOFpion]) < inclusion && TMath::Abs(nsigma[kTOFkaon]) > exclusion && TMath::Abs(nsigma[kTOFproton]) > exclusion
+      && TMath::Abs(nsigma[kTOFelectron]) > exclusionForEl)
     return kTOFpion;
-  if (TMath::Abs(nsigma[kTOFpion]) > exclusion && TMath::Abs(nsigma[kTOFkaon]) < inclusion && TMath::Abs(nsigma[kTOFproton]) > exclusion)
+  if (TMath::Abs(nsigma[kTOFpion]) > exclusion && TMath::Abs(nsigma[kTOFkaon]) < inclusion && TMath::Abs(nsigma[kTOFproton]) > exclusion
+      && TMath::Abs(nsigma[kTOFelectron]) > exclusionForEl)
     return kTOFkaon;
-  if (TMath::Abs(nsigma[kTOFpion]) > exclusion && TMath::Abs(nsigma[kTOFkaon]) > exclusion && TMath::Abs(nsigma[kTOFproton]) < inclusion)
+  if (TMath::Abs(nsigma[kTOFpion]) > exclusion && TMath::Abs(nsigma[kTOFkaon]) > exclusion && TMath::Abs(nsigma[kTOFproton]) < inclusion
+      && TMath::Abs(nsigma[kTOFelectron]) > exclusionForEl)
     return kTOFproton;
-
+  
+  // There are no TOF electrons selected because the purity is rather bad, even for small momenta
+  // (also a small mismatch probability significantly affects electrons because their fraction
+  // is small). There is no need for TOF electrons anyway, since the dEdx distribution of kaons and 
+  // protons in a given pT bin (also at the dEdx crossings) is very different from that of electrons.
+  // This is due to the steeply falling dEdx of p and K with momentum, whereas the electron dEdx stays
+  // rather constant.
+  // As a result, the TPC fit yields a more accurate electron fraction than the TOF selection can do.
+  
   return kNoTOFpid;
 }
 
@@ -2030,6 +2055,7 @@ void AliAnalysisTaskPID::PrintSystematicsSettings() const
   printf("EtaCorrHighP:\t%f\n", GetSystematicScalingEtaCorrectionHighMomenta());
   printf("SigmaPara:\t%f\n", GetSystematicScalingEtaSigmaPara());
   printf("MultCorr:\t%f\n", GetSystematicScalingMultCorrection());
+  printf("TOF mode: %d\n", GetTOFmode());
   
   printf("\n\n");
 }

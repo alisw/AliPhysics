@@ -48,11 +48,13 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   Bool_t fTrigger[ntrg];
   UInt_t fL0inputs, fL1inputs;
   Bool_t fTOFtrig1, fTOFtrig2;
+  Double_t fTOFphi[4];
   Int_t fVtxContrib;
-  Double_t fVtxPosX,fVtxPosY,fVtxPosZ;
-  Double_t fVtxErrX,fVtxErrY,fVtxErrZ;
+  Double_t fVtxPos[3];
+  Double_t fVtxErr[3];
   Double_t fVtxChi2,fVtxNDF;
-  UShort_t fBCrossNum, fNtracklets;
+  Double_t fKfVtxPos[3];
+  UShort_t fBCrossNum, fNtracklets, fNLooseTracks;
   //vzero, zdc
   Double_t fZDCAenergy, fZDCCenergy;
   Int_t fV0Adecision, fV0Cdecision;

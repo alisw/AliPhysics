@@ -1127,9 +1127,9 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
     h.SetXYZ(-dd[0],-dd[1],-dd[2]);
 
 
-    if (onl==1)fHistMassDPi->Fill(lInvMassLambda);
+    if (offl==1)fHistMassDPi->Fill(lInvMassLambda);
 
-    if (offl==1){
+    if (onl==1){
       fHistMassLPi->Fill(lInvMassLambda);
       
       negE.SetXYZM(mn[0],mn[1],mn[2],cElectronMass);

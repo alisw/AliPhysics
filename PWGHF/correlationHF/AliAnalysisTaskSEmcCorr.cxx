@@ -15,11 +15,10 @@
 
 /////////////////////////////////////////////////////////////
 //
-// Class AliAnalysisTaskSECharmFraction
-// AliAnalysisTaskSE for the extraction of the fraction of prompt charm
-// using the charm hadron impact parameter to the primary vertex
-//
-// Author: Andrea Rossi, andrea.rossi@pd.infn.it
+// Class AliAnalysisTaskSEmcCorr
+// AliAnalysisTaskSE for studying HF-(hadron,electrons) and hadron-hadron correlations
+//     at MC level
+// Author: Andrea Rossi, andrea.rossi@cern.ch
 /////////////////////////////////////////////////////////////
 
 
@@ -222,7 +221,6 @@ void AliAnalysisTaskSEmcCorr::UserExec(Option_t */*option*/){
   }
 
 
-  if(!aod)return;
 
   fNentries->Fill(1);
 
