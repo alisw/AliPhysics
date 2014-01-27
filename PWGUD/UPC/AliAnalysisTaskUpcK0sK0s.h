@@ -50,7 +50,7 @@ class AliAnalysisTaskUpcK0sK0s : public AliAnalysisTaskSE {
   Double_t fZDCAenergy, fZDCCenergy;
   Int_t fV0Adecision, fV0Cdecision;
   //input data
-  TObjString *fDataFilnam;
+  TString fDataFilnam;
   Short_t fRecoPass;
   Long64_t fEvtNum;
   //vertices
