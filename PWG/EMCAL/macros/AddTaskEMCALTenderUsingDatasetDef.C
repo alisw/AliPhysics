@@ -38,9 +38,14 @@ AliAnalysisTaskSE *AddTaskEMCALTenderUsingDatasetDef(
     reclusterize = kTRUE;
     seedthresh = 0.3;
     cellthresh = 0.05;
-    else if(period == "lhc13b" || period == "lhc13c" || period == "lhc13d" || period == "lhc13e" || period == "lhc13f" || period == "lhc13g") {
+    if(period == "lhc13b" || period == "lhc13c" || period == "lhc13d" || period == "lhc13e" || period == "lhc13f" || period == "lhc13g") {
       timeMin = -50e-9;
       timeMax =  50e-9;
+      timeCut =  1e6;
+    }
+    else if(period == "lhc13b4" || period == "lhc13b4_fix" || period == "lhc13b4_plus") {
+      timeMin = -1;
+      timeMax =  1e6;
       timeCut =  1e6;
     }
   }
