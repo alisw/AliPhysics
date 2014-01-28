@@ -280,17 +280,20 @@ void LoadLibs()
   gSystem->Load("libVZEROrec");
   gSystem->Load("libTENDER");
   gSystem->Load("libTENDERSupplies");
+  gSystem->Load("libPWGTools");
   gSystem->Load("libPWGEMCAL");
   gSystem->Load("libPWGGAEMCALTasks");
-  gSystem->Load("libPWGTools");
   gSystem->Load("libPWGCFCorrelationsBase");
   gSystem->Load("libPWGCFCorrelationsDPhi");
 
   //load CGAL, Fastjet and SISCone
   gSystem->Load("libCGAL");
   gSystem->Load("libfastjet");
+    //For FastJet 3.x use siscon*,fastjetplugins for 2.x use SISConePlugin
   gSystem->Load("libSISConePlugin");
-
+  //  gSystem->Load("libsiscone");
+  //  gSystem->Load("libsiscone_spherical");
+  //  gSystem->Load("libfastjetplugins");
   gSystem->Load("libJETAN");
   gSystem->Load("libFASTJETAN");
   gSystem->Load("libPWGJEEMCALJetTasks");
