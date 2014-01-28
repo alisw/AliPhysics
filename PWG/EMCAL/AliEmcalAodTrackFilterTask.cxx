@@ -21,7 +21,7 @@ AliEmcalAodTrackFilterTask::AliEmcalAodTrackFilterTask() :
   fTracksOutName("PicoTracks"),
   fTracksInName("tracks"),
   fIncludeNoITS(kTRUE),
-  fCutMaxFrShTPCClus(0.4),
+  fCutMaxFrShTPCClus(0),
   fUseNegativeLabels(kTRUE),
   fIsMC(kFALSE),
   fDoPropagation(kFALSE),
@@ -41,7 +41,7 @@ AliEmcalAodTrackFilterTask::AliEmcalAodTrackFilterTask(const char *name) :
   fTracksOutName("PicoTracks"),
   fTracksInName("tracks"),
   fIncludeNoITS(kTRUE),
-  fCutMaxFrShTPCClus(0.4),
+  fCutMaxFrShTPCClus(0),
   fUseNegativeLabels(kTRUE),
   fIsMC(kFALSE),
   fDoPropagation(kFALSE),
@@ -135,8 +135,9 @@ void AliEmcalAodTrackFilterTask::UserExec(Option_t *)
 
     if (fCutMaxFrShTPCClus > 0) {
       Double_t frac = Double_t(track->GetTPCnclsS()) / Double_t(track->GetTPCncls());
-      if (frac > fCutMaxFrShTPCClus) 
+      if (frac > fCutMaxFrShTPCClus) {
 	continue;
+      }
     }
 
     AliAODTrack *newt = new ((*fTracksOut)[nacc]) AliAODTrack(*track);

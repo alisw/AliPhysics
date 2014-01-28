@@ -126,6 +126,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fNCrossedRowsNCrossedRowsFit(0x0),
   fNClustersNCrossedRows(0x0),
   fNClustersNCrossedRowsFit(0x0),
+  fPtNClustersNClustersFitMap(0x0),
   fPtRelUncertainty1PtNCrossedRows(0x0),
   fPtRelUncertainty1PtNCrossedRowsFit(0x0),
   fPtChi2Gold(0x0),
@@ -229,6 +230,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fNCrossedRowsNCrossedRowsFit(0x0),
   fNClustersNCrossedRows(0x0),
   fNClustersNCrossedRowsFit(0x0),
+  fPtNClustersNClustersFitMap(0x0),
   fPtRelUncertainty1PtNCrossedRows(0x0),
   fPtRelUncertainty1PtNCrossedRowsFit(0x0),
   fPtChi2Gold(0x0),
@@ -636,6 +638,9 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
 
   fNClustersNCrossedRowsFit = new TH2F("fNClustersNCrossedRowsFit","fNClustersNCrossedRowsFit",fgkNNClustersTPCBins,binsNClustersTPC,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fNClustersNCrossedRowsFit);
+
+  fPtNClustersNClustersFitMap = new TH3F("fPtNClustersNClustersFitMap","fPtNClustersNClustersFitMap;p_{T};N_{cls};N_{cls}^{fit map}",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC,fgkNNClustersTPCBins,binsNClustersTPC);
+  fHistList->Add(fPtNClustersNClustersFitMap);
 
   fPtRelUncertainty1PtNCrossedRows = new TH3F("fPtRelUncertainty1PtNCrossedRows","fPtRelUncertainty1PtNCrossedRows",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fPtRelUncertainty1PtNCrossedRows);
@@ -1203,6 +1208,9 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
     Float_t crossedRowsTPCNClsFFit = 1.;
     if(track->GetTPCNclsF()>0.) crossedRowsTPCNClsFFit = fVariables->At(23)/track->GetTPCNclsF();
     fVariables->SetAt(crossedRowsTPCNClsFFit,24);
+
+    TBits fitmap = track->GetTPCFitMap();
+    fPtNClustersNClustersFitMap->Fill(track->Pt(),track->GetTPCNcls(),(float)fitmap.CountBits());
     
     FillHistograms();
   
