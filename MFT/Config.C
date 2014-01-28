@@ -232,7 +232,7 @@ void Config() {
   }
   if (iPIPE) {
     //    AliPIPE *PIPE = new AliPIPEv3("PIPE", "Beam Pipe");
-    AliPIPE *PIPE = new AliPIPEv4("PIPE", "Beam Pipe", 1.98, 0.08);
+    AliPIPE *PIPE = new AliPIPEv4("PIPE", "Beam Pipe");
   }
   if (iZDC) {
     AliZDC *ZDC = new AliZDCv3("ZDC", "normal ZDC");
