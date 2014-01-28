@@ -60,7 +60,6 @@
 // Authors : Dmitri Peressounko
 // Date    : 28.05.2011
 // Modified: 03.08.2012 Henrik Qvigstad
-/* $Id$ */
 
 ClassImp(AliAnalysisTaskPi0Flow);
 
@@ -653,46 +652,10 @@ void AliAnalysisTaskPi0Flow::SelectPhotonClusters()
     Double_t ecore;
     ecore = CoreEnergy(clu,cells);
 
-    //if ESD, Apply re-Calibreation
     Double_t origo[3] = {0,0,0}; // don't rely on event vertex, assume (0,0,0)
-    if( fEventESD ) {
-      AliPHOSEsdCluster cluPHOS1( *(AliESDCaloCluster*) (clu) );
-      cluPHOS1.Recalibrate(fPHOSCalibData, static_cast<AliESDCaloCells*> (cells)); // modify the cell energies
-      Reclusterize(&cluPHOS1) ;
-      cluPHOS1.EvalAll(kLogWeight, fVertexVector);         // recalculate the cluster parameters
-      cluPHOS1.SetE(fNonLinCorr->Eval(cluPHOS1.E()));// Users's nonlinearity
 
-      if(cluPHOS1.E()<0.3) continue; // check energy again
-
-      //correct misalignment
-      TVector3 localPos;
-      const Float_t shiftX[6]={0.,-2.3,-2.11,-1.53,0.,0.} ;
-      const Float_t shiftZ[6]={0.,-0.4, 0.52, 0.8,0.,0.} ;
-      fPHOSGeo->Global2Local(localPos,global,mod) ;
-      fPHOSGeo->Local2Global(mod,localPos.X()+shiftX[mod],localPos.Z()+shiftZ[mod],global);
-      position[0]=global.X() ;
-      position[1]=global.Y() ;
-      position[2]=global.Z() ;
-      cluPHOS1.SetPosition(position);
-
-      cluPHOS1.GetMomentum(lorentzMomentum ,origo);
-      
-      //TODO: Check, this may be LHC10h specific:
-      if(mod==2) lorentzMomentum*=135.5/134.0 ;
-      if(mod==3) lorentzMomentum*=135.5/137.2 ;
-      if(mod==2) ecore*=135.5/134.0 ;
-      if(mod==3) ecore*=135.5/137.2 ;
-	
-    }
-    else if (fEventAOD) { // is ! ESD, AOD.
-      AliESDCaloCluster* aodCluster = (AliESDCaloCluster*) (clu);
-      aodCluster->GetMomentum(lorentzMomentum ,origo);
-    }
-    else {
-      AliError("(Calo)Cluster is neither ESD nor AOD");
-      continue;
-    }
-
+    AliESDCaloCluster* aodCluster = (AliESDCaloCluster*) (clu);
+    aodCluster->GetMomentum(lorentzMomentum ,origo);
 
     FillHistogram(Form("hCluLowM%d",mod),cellX,cellZ,1.);
     if(lorentzMomentum.E()>1.5){
