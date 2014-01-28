@@ -151,6 +151,8 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fQAmonitor(0x0),
   fPostPIDCntrdCorr(0x0),
   fPostPIDWdthCorr(0x0),
+  fLegEffMap(0x0),
+  fPairEffMap(0x0),
   fEventFilter("EventFilter"),
   fTrackFilter("TrackFilter"),
   fPairPreFilter("PairPreFilter"),
