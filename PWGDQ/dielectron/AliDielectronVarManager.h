@@ -2229,14 +2229,14 @@ inline Double_t AliDielectronVarManager::GetSingleLegEff(Double_t * const values
   //
   // get the single leg efficiency for a given particle
   //
-  if(!fgEffMap) return -1.;
+  if(!fgLegEffMap) return -1.;
 
   Int_t dim=fgLegEffMap->GetNdimensions();
   Int_t idx[dim];
   for(Int_t idim=0; idim<dim; idim++) {
     UInt_t var = GetValueType(fgLegEffMap->GetAxis(idim)->GetName());
     idx[idim] = fgLegEffMap->GetAxis(idim)->FindBin(values[var]);
-    if(idx[idim] < 0 || idx[idim]>fgEffMap->GetAxis(idim)->GetNbins()) return 0.0;
+    if(idx[idim] < 0 || idx[idim]>fgLegEffMap->GetAxis(idim)->GetNbins()) return 0.0;
     /*   printf(" [E] AliDielectronVarManager::GetSingleLegEff values %f for %s not found in axis range \n",values[var],fgLegEffMap->GetAxis(idim)->GetName()); */
     //    printf(" (%d,%f,%s) \t",idx[idim],values[var],fgLegEffMap->GetAxis(idim)->GetName());
   }
