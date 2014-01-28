@@ -889,7 +889,7 @@ int AliDxHFEParticleSelectionEl::ParseArguments(const char* arguments)
     }
     if(argument.BeginsWith("maxPtCombinedPID=")){
       argument.ReplaceAll("maxPtCombinedPID=", "");
-      fMaxPtCombinedPID=argument.Atoi();
+      fMaxPtCombinedPID=argument.Atof();
       AliInfo(Form("Using only TPC PID over %f GeV/c",fMaxPtCombinedPID));
       continue;
     }
