@@ -18,6 +18,7 @@
 
 #include <TNamed.h>
 #include <TObjArray.h>
+#include <THnBase.h>
 
 #include <AliAnalysisFilter.h>
 #include <AliKFParticle.h>
@@ -131,7 +132,8 @@ public:
   void SetVZEROCalibrationFilename(const Char_t* filename) {fVZEROCalibrationFilename = filename;}
   void SetVZERORecenteringFilename(const Char_t* filename) {fVZERORecenteringFilename = filename;}
   void SetZDCRecenteringFilename(const Char_t* filename) {fZDCRecenteringFilename = filename;}
-  void InitLegEffMap(TString filename);
+  void InitLegEffMap(TString filename)  { fLegEffMap=InitEffMap(filename)  ;}
+  void InitPairEffMap(TString filename) { fPairEffMap=InitEffMap(filename) ;}
 
   void SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
@@ -145,6 +147,7 @@ private:
   TF1 *fPostPIDCntrdCorr;   // post pid correction object for centroids
   TF1 *fPostPIDWdthCorr;    // post pid correction object for widths
   THnBase *fLegEffMap;      // single electron efficiency map
+  THnBase *fPairEffMap;      // pair efficiency map
   AliAnalysisFilter fEventFilter;    // Event cuts
   AliAnalysisFilter fTrackFilter;    // leg cuts
   AliAnalysisFilter fPairPreFilter;  // pair prefilter cuts
@@ -202,6 +205,7 @@ private:
   void ClearArrays();
   
   TObjArray* PairArray(Int_t i);
+  THnBase* InitEffMap(TString filename);
   
   static const char* fgkTrackClassNames[4];   //Names for track arrays
   static const char* fgkPairClassNames[11];   //Names for pair arrays
@@ -226,7 +230,7 @@ private:
   AliDielectron(const AliDielectron &c);
   AliDielectron &operator=(const AliDielectron &c);
   
-  ClassDef(AliDielectron,9);
+  ClassDef(AliDielectron,10);
 };
 
 inline void AliDielectron::InitPairCandidateArrays()
