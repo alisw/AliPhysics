@@ -299,6 +299,22 @@ int AliDxHFECorrelation::ParseArguments(const char* arguments)
       }
       continue;
     }
+    if (argument.BeginsWith("minphi=")) {
+      argument.ReplaceAll("minphi=", "");
+      fMinPhi=argument.Atof();
+      AliInfo(Form("changing fMinPhi: %f ",fMinPhi));
+      continue;
+    }
+    if (argument.BeginsWith("maxphi=")) {
+      argument.ReplaceAll("maxphi=", "");
+      if (argument.BeginsWith("2pi")) {
+	fMaxPhi=2*TMath::Pi();
+      }
+      else
+	fMaxPhi=argument.Atof();
+      AliInfo(Form("changing fMaxPhi: %f ",fMaxPhi));
+      continue;
+    }
     if (argument.BeginsWith("trigger=")){
       argument.ReplaceAll("trigger=", "");
       if (argument.CompareTo("D")==0) { fTriggerParticleType=kD; AliInfo("Trigger on D"); }
