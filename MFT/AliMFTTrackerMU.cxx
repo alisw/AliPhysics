@@ -29,7 +29,7 @@
 #include "AliGeomManager.h"
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
-#include "AliESDMuonGlobalTrack.h"
+//#include "AliESDMuonGlobalTrack.h"
 #include "AliMFTTrackerMU.h"
 #include "TMath.h"
 #include "AliRun.h"
@@ -258,11 +258,11 @@ Int_t AliMFTTrackerMU::Clusters2Tracks(AliESDEvent *event) {
 
       //----------------------- Save the information to the AliESDMuonForwardTrack object
 
-      AliESDMuonGlobalTrack *myESDTrack = event->NewMuonGlobalTrack();
-      myESDTrack -> SetPxPyPz(newTrack->Px(), newTrack->Py(), newTrack->Pz());
-      myESDTrack -> SetChi2(newTrack->GetGlobalChi2());
-      myESDTrack -> SetCharge(newTrack->GetCharge());
-      myESDTrack -> SetMatchTrigger(newTrack->GetMatchTrigger());
+//       AliESDMuonGlobalTrack *myESDTrack = event->NewMuonGlobalTrack();
+//       myESDTrack -> SetPxPyPz(newTrack->Px(), newTrack->Py(), newTrack->Pz());
+//       myESDTrack -> SetChi2(newTrack->GetGlobalChi2());
+//       myESDTrack -> SetCharge(newTrack->GetCharge());
+//       myESDTrack -> SetMatchTrigger(newTrack->GetMatchTrigger());
       
       //---------------------------------------------------------------------------------
 
