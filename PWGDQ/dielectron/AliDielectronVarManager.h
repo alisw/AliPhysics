@@ -441,7 +441,8 @@ public:
   static void InitAODpidUtil(Int_t type=0);
   static void InitEstimatorAvg(const Char_t* filename);
   static void InitTRDpidEffHistograms(const Char_t* filename);
-  static void SetLegEffMap(THnBase *map) { fgEffMap=map; }
+  static void SetLegEffMap( THnBase *map) { fgLegEffMap=map; }
+  static void SetPairEffMap(THnBase *map) { fgPairEffMap=map; }
   static void SetVZEROCalibrationFile(const Char_t* filename) {fgVZEROCalibrationFile = filename;}
   
   static void SetVZERORecenteringFile(const Char_t* filename) {fgVZERORecenteringFile = filename;}
@@ -459,6 +460,7 @@ public:
   static TProfile* GetEstimatorHistogram(Int_t period, Int_t type) {return fgMultEstimatorAvg[period][type];}
   static Double_t GetTRDpidEfficiency(Int_t runNo, Double_t centrality, Double_t eta, Double_t trdPhi, Double_t pout, Double_t& effErr);
   static Double_t GetSingleLegEff(Double_t * const values);
+  static Double_t GetPairEff(Double_t * const values);
 
   static const AliKFVertex* GetKFVertex() {return fgKFVertex;}
   
@@ -501,7 +503,8 @@ private:
   static TProfile        *fgMultEstimatorAvg[4][9];  // multiplicity estimator averages (4 periods x 9 estimators)
   static Double_t         fgTRDpidEffCentRanges[10][4];   // centrality ranges for the TRD pid efficiency histograms
   static TH3D            *fgTRDpidEff[10][4];   // TRD pid efficiencies from conversion electrons
-  static THnBase         *fgEffMap;             // single electron efficiencies
+  static THnBase         *fgLegEffMap;             // single electron efficiencies
+  static THnBase         *fgPairEffMap;             // pair efficiencies
   static TString          fgVZEROCalibrationFile;  // file with VZERO channel-by-channel calibrations
   static TString          fgVZERORecenteringFile;  // file with VZERO Q-vector averages needed for event plane recentering
   static TProfile2D      *fgVZEROCalib[64];           // 1 histogram per VZERO channel
@@ -1549,13 +1552,16 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 
   Double_t valuesLeg1[AliDielectronVarManager::kNMaxValues];
   Double_t valuesLeg2[AliDielectronVarManager::kNMaxValues];
-  if (leg1 && leg2 && fgEffMap) {
+  if (leg1 && leg2 && fgLegEffMap) {
     Fill(leg1, valuesLeg1);
     Fill(leg2, valuesLeg2);
     values[AliDielectronVarManager::kPairEff] = valuesLeg1[AliDielectronVarManager::kLegEff] *valuesLeg2[AliDielectronVarManager::kLegEff];
-    values[AliDielectronVarManager::kOneOverPairEff] = (values[AliDielectronVarManager::kPairEff]>0.0 ? 1./values[AliDielectronVarManager::kPairEff] : 1.0);
-
   }
+  else if(fgPairEffMap) {
+    values[AliDielectronVarManager::kPairEff] = GetPairEff(values);
+  }
+  values[AliDielectronVarManager::kOneOverPairEff] = (values[AliDielectronVarManager::kPairEff]>0.0 ? 1./values[AliDielectronVarManager::kPairEff] : 1.0);
+
   values[AliDielectronVarManager::kRndmPair] = gRandom->Rndm();
 }
 
@@ -2225,19 +2231,36 @@ inline Double_t AliDielectronVarManager::GetSingleLegEff(Double_t * const values
   //
   if(!fgEffMap) return -1.;
 
-  Int_t dim=fgEffMap->GetNdimensions();
+  Int_t dim=fgLegEffMap->GetNdimensions();
   Int_t idx[dim];
   for(Int_t idim=0; idim<dim; idim++) {
-    UInt_t var = GetValueType(fgEffMap->GetAxis(idim)->GetName());
-    idx[idim] = fgEffMap->GetAxis(idim)->FindBin(values[var]);
+    UInt_t var = GetValueType(fgLegEffMap->GetAxis(idim)->GetName());
+    idx[idim] = fgLegEffMap->GetAxis(idim)->FindBin(values[var]);
     if(idx[idim] < 0 || idx[idim]>fgEffMap->GetAxis(idim)->GetNbins()) return 0.0;
-    /*   printf(" [E] AliDielectronVarManager::GetSingleLegEff values %f for %s not found in axis range \n",values[var],fgEffMap->GetAxis(idim)->GetName()); */
-    //    printf(" (%d,%f,%s) \t",idx[idim],values[var],fgEffMap->GetAxis(idim)->GetName());
+    /*   printf(" [E] AliDielectronVarManager::GetSingleLegEff values %f for %s not found in axis range \n",values[var],fgLegEffMap->GetAxis(idim)->GetName()); */
+    //    printf(" (%d,%f,%s) \t",idx[idim],values[var],fgLegEffMap->GetAxis(idim)->GetName());
   }
-  //  printf(" bin content %f+-%f \n",fgEffMap->GetBinContent(idx), fgEffMap->GetBinError(idx));
-  //  if(fgEffMap->GetBinContent(idx)<0.01) return 0.0;
-  //  if(fgEffMap->GetBinError(idx)/fgEffMap->GetBinContent(idx)>0.2) return 0.0;
-  return (fgEffMap->GetBinContent(idx));
+  //  printf(" bin content %f+-%f \n",fgLegEffMap->GetBinContent(idx), fgLegEffMap->GetBinError(idx));
+  //  if(fgLegEffMap->GetBinContent(idx)<0.01) return 0.0;
+  //  if(fgLegEffMap->GetBinError(idx)/fgLegEffMap->GetBinContent(idx)>0.2) return 0.0;
+  return (fgLegEffMap->GetBinContent(idx));
+}
+
+inline Double_t AliDielectronVarManager::GetPairEff(Double_t * const values) {
+  //
+  // get the pair efficiency for given pair kinematics
+  //
+  if(!fgPairEffMap) return -1.;
+
+  Int_t dim=fgPairEffMap->GetNdimensions();
+  Int_t idx[dim];
+  for(Int_t idim=0; idim<dim; idim++) {
+    UInt_t var = GetValueType(fgPairEffMap->GetAxis(idim)->GetName());
+    idx[idim] = fgPairEffMap->GetAxis(idim)->FindBin(values[var]);
+    if(idx[idim] < 0 || idx[idim]>fgPairEffMap->GetAxis(idim)->GetNbins()) return 0.0;
+  }
+  //  printf(" bin content %f+-%f \n",fgPairEffMap->GetBinContent(idx), fgPairEffMap->GetBinError(idx));
+  return (fgPairEffMap->GetBinContent(idx));
 }
 
 

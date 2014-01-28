@@ -102,6 +102,7 @@ AliDielectron::AliDielectron() :
   fPostPIDCntrdCorr(0x0),
   fPostPIDWdthCorr(0x0),
   fLegEffMap(0x0),
+  fPairEffMap(0x0),
   fEventFilter("EventFilter"),
   fTrackFilter("TrackFilter"),
   fPairPreFilter("PairPreFilter"),
@@ -200,6 +201,7 @@ AliDielectron::~AliDielectron()
   if (fPostPIDCntrdCorr) delete fPostPIDCntrdCorr;
   if (fPostPIDWdthCorr) delete fPostPIDWdthCorr;
   if (fLegEffMap) delete fLegEffMap;
+  if (fPairEffMap) delete fPairEffMap;
   if (fHistos) delete fHistos;
   if (fPairCandidates) delete fPairCandidates;
   if (fDebugTree) delete fDebugTree;
@@ -236,7 +238,8 @@ void AliDielectron::Init()
   if(fVZERORecenteringFilename.Contains(".root")) AliDielectronVarManager::SetVZERORecenteringFile(fVZERORecenteringFilename.Data());
   if(fZDCRecenteringFilename.Contains(".root")) AliDielectronVarManager::SetZDCRecenteringFile(fZDCRecenteringFilename.Data());
 
-  if(fLegEffMap) AliDielectronVarManager::SetLegEffMap(fLegEffMap);
+  if(fLegEffMap)  AliDielectronVarManager::SetLegEffMap(fLegEffMap);
+  if(fPairEffMap) AliDielectronVarManager::SetPairEffMap(fPairEffMap);
 
 
   if (fMixing) fMixing->Init(this);
@@ -1399,19 +1402,18 @@ void AliDielectron::SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary, UIn
   fPostPIDWdthCorr=fun;
 }
 //______________________________________________
-void AliDielectron::InitLegEffMap(TString filename)
+THnBase* AliDielectron::InitEffMap(TString filename)
 {
   // init an efficiency object for on-the-fly correction calculations
-  fLegEffMap=0x0;
   if(filename.Contains("alien://") && !gGrid) TGrid::Connect("alien://",0,0,"t");
 
   TFile* file=TFile::Open(filename.Data());
-  if(!file) return;
+  if(!file) return 0x0;
   THnBase *hGen = (THnBase*) file->Get("hGenerated");
   THnBase *hFnd = (THnBase*) file->Get("hFound");
-  if(!hFnd || !hGen) return;
+  if(!hFnd || !hGen) return 0x0;
 
-  fLegEffMap  = (THnBase*) hFnd->Clone("effMap");
-  fLegEffMap->Divide(hGen);
+  hFnd->Divide(hGen);
   printf("[I] AliDielectron::InitLegEffMap efficiency maps %s loaded! \n",filename.Data());
+  return ((THnBase*) hFnd->Clone("effMap"));
 }
