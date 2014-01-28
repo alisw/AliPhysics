@@ -195,7 +195,6 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   TH3F *fPtRelUncertainty1PtNPointITS;         //! Pt vs relUncertainty1Pt vs NPointITS
   TH3F *fPtRelUncertainty1PtITSClusterMap;     //! Pt vs relUncertainty1Pt vs byte of ITS clustermap
 
-
   TH3F *fPtRelUncertainty1PtChi2;              //! Pt vs relUncertainty1Pt vs Chi2TPC/NClus
   TH3F *fPtRelUncertainty1PtChi2Iter1;         //! Pt vs relUncertainty1Pt vs Chi2TPC/NClusIter1
   TH3F *fPtRelUncertainty1PtPhi;               //! Pt vs relUncertainty1PtPhi
@@ -208,12 +207,13 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   TH3F *fPtNCrRNCrRNClusF;                     //! Pt vs NCrossedRows vs NCrossedRows/NClusF 
   TH2F *fPtNCrossedRowsFit;                    //! Pt vs NCrossedRows from NClusterFitMap
   TH3F *fPtNCrossedRowsFitPhi;                 //! Pt vs NCrossedRows from FitMap vs Phi
-  TH3F *fPtNCrossedRowsNClusFFitPhi;              //! Pt vs NCrossedRows/NClusF from NClusterFitMap
+  TH3F *fPtNCrossedRowsNClusFFitPhi;           //! Pt vs NCrossedRows/NClusF from NClusterFitMap
   TH2F *fNCrossedRowsNCrossedRowsFit;          //! NCrossedRows from ClusterMap vs NCrossedRows from NClusterFitMap
   TH2F *fNClustersNCrossedRows;                //! NClusters vs NCrossedRows
   TH2F *fNClustersNCrossedRowsFit;             //! NClusters vs NCrossedRows from fit map
-  TH3F *fPtRelUncertainty1PtNCrossedRows;       //! Pt vs relUncertainty1Pt vs NCrossedRows
-  TH3F *fPtRelUncertainty1PtNCrossedRowsFit;    //! Pt vs relUncertainty1Pt vs NCrossedRowsFitMap
+  TH3F *fPtNClustersNClustersFitMap;           //! pT vs ncls vs ncls from fit map
+  TH3F *fPtRelUncertainty1PtNCrossedRows;      //! Pt vs relUncertainty1Pt vs NCrossedRows
+  TH3F *fPtRelUncertainty1PtNCrossedRowsFit;   //! Pt vs relUncertainty1Pt vs NCrossedRowsFitMap
 
   TH2F *fPtChi2Gold;                           //! Pt vs Chi2 between global and TPC constrained track
   TH2F *fPtChi2GGC;                            //! Pt vs Chi2 between global and global constrained track
@@ -240,6 +240,6 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
 
   TList *fHistList; //! List of Histograms
  
-  ClassDef(AliPWG4HighPtTrackQA,4) 
+  ClassDef(AliPWG4HighPtTrackQA,5) 
 };
 #endif
