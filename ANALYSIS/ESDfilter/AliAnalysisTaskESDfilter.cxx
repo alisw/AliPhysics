@@ -442,7 +442,7 @@ AliAODHeader* AliAnalysisTaskESDfilter::ConvertHeader(const AliESDEvent& esd)
   header->SetRefMultiplicityComb05(AliESDtrackCuts::GetReferenceMultiplicity(&esd,estType,0.5));
   header->SetRefMultiplicityComb08(AliESDtrackCuts::GetReferenceMultiplicity(&esd,estType,0.8));
   //
-  Float_t diamxy[2]={esd.GetDiamondX(),esd.GetDiamondY()};
+  Float_t diamxy[2]={(Float_t)esd.GetDiamondX(),(Float_t)esd.GetDiamondY()};
   Float_t diamcov[3]; 
   esd.GetDiamondCovXY(diamcov);
   header->SetDiamond(diamxy,diamcov);
@@ -621,6 +621,7 @@ void AliAnalysisTaskESDfilter::ConvertCascades(const AliESDEvent& esd)
 	    aodTrack->SetTPCNCrossedRows(UShort_t(esdCascadeBach->GetTPCCrossedRows()));
 	    aodTrack->SetIntegratedLength(esdCascadeBach->GetIntegratedLength());
 	    aodTrack->SetTOFLabel(tofLabel);
+	    CopyCaloProps(esdCascadeBach,aodTrack);
 	    fAODTrackRefs->AddAt(aodTrack,idxBachFromCascade);
 	    
 	    if (esdCascadeBach->GetSign() > 0) ++fNumberOfPositiveTracks;
@@ -709,6 +710,7 @@ void AliAnalysisTaskESDfilter::ConvertCascades(const AliESDEvent& esd)
 	aodTrack->SetTPCNCrossedRows(UShort_t(esdCascadePos->GetTPCCrossedRows()));
 	aodTrack->SetIntegratedLength(esdCascadePos->GetIntegratedLength());
 	aodTrack->SetTOFLabel(tofLabel);
+	CopyCaloProps(esdCascadePos,aodTrack);
         fAODTrackRefs->AddAt(aodTrack,idxPosFromV0Dghter);
         
         if (esdCascadePos->GetSign() > 0) ++fNumberOfPositiveTracks;
@@ -760,6 +762,7 @@ void AliAnalysisTaskESDfilter::ConvertCascades(const AliESDEvent& esd)
 	aodTrack->SetTPCNCrossedRows(UShort_t(esdCascadeNeg->GetTPCCrossedRows()));
 	aodTrack->SetIntegratedLength(esdCascadeNeg->GetIntegratedLength());
 	aodTrack->SetTOFLabel(tofLabel);
+	CopyCaloProps(esdCascadeNeg,aodTrack);
         fAODTrackRefs->AddAt(aodTrack,idxNegFromV0Dghter);
         
         if (esdCascadeNeg->GetSign() > 0) ++fNumberOfPositiveTracks;

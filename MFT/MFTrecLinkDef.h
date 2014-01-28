@@ -7,6 +7,7 @@
 #pragma link off all functions;
  
 #pragma link C++ class  AliMFTReconstructor+;
+#pragma link C++ class  AliMFTTrackerMU+;
 #pragma link C++ class  AliMFTClusterFinder+;
 #pragma link C++ class  AliMuonForwardTrack+;
 #pragma link C++ class  AliMuonForwardTrackPair+;

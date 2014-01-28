@@ -91,7 +91,7 @@ void AliMFTReconstructor::Init() {
     ((TClonesArray*)fDigits->At(iPlane))->SetOwner(kTRUE);
   }
   
-  AliInfo("    ************* Using the MFT reconstructor! ****** ");
+  AliInfo(" ************* Using the MFT reconstructor! ************ ");
   
   return;
 
@@ -159,3 +159,30 @@ void AliMFTReconstructor::Reconstruct(TTree *digitsTree, TTree *clustersTree) co
 }
 
 //====================================================================================================================================================
+
+AliTracker* AliMFTReconstructor::CreateTracker() const {
+
+  // Create a MFT tracker: global MUON+MFT tracks
+
+  AliMFTTrackerMU *tracker = new AliMFTTrackerMU();   // tracker for muon tracks (MFT + MUON) 
+
+  return tracker;
+  
+}
+
+//====================================================================================================================================================
+
+AliTracker* AliMFTReconstructor::CreateTrackleter() const {
+
+  AliInfo("Not implemented");
+
+  // Create a MFT tracker: standalone MFT tracks
+
+  //  AliMFTTrackerSA *tracker = new AliMFTTrackerSA();   // tracker for MFT tracks
+
+  return NULL;
+  
+}
+
+//====================================================================================================================================================
+
