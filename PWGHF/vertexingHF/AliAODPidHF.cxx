@@ -73,7 +73,8 @@ AliAODPidHF::AliAODPidHF():
   fTPCResponse(new AliTPCPIDResponse()),
   fPriorsH(),
   fCombDetectors(kTPCTOF),
-  fUseCombined(kFALSE)
+  fUseCombined(kFALSE),
+  fDefaultPriors(kTRUE)
 {
   //
   // Default constructor
@@ -154,7 +155,8 @@ AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
   fPidCombined(0x0),
   fTPCResponse(0x0),
   fCombDetectors(pid.fCombDetectors),
-  fUseCombined(pid.fUseCombined)
+  fUseCombined(pid.fUseCombined),
+  fDefaultPriors(pid.fDefaultPriors)  
 {
   
   fnSigmaCompat=new Double_t[fnNSigmaCompat];
@@ -963,8 +965,12 @@ void AliAODPidHF::SetUpCombinedPID(){
   // Configuration of combined Bayesian PID
 
   fPidCombined->SetSelectedSpecies(AliPID::kSPECIES);
-  for (Int_t ispecies=0;ispecies<AliPID::kSPECIES;++ispecies) {
-    fPidCombined->SetPriorDistribution(static_cast<AliPID::EParticleType>(ispecies),fPriorsH[ispecies]);
+  if(!fDefaultPriors){
+  	for (Int_t ispecies=0;ispecies<AliPID::kSPECIES;++ispecies) {
+    	fPidCombined->SetPriorDistribution(static_cast<AliPID::EParticleType>(ispecies),fPriorsH[ispecies]);
+  	}
+  }else{
+  	fPidCombined->SetDefaultTPCPriors(); 
   }
   switch (fCombDetectors){
   case kTPCTOF:
