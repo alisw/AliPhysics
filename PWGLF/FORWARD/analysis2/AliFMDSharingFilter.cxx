@@ -115,9 +115,8 @@ AliFMDSharingFilter::AliFMDSharingFilter(const char* title)
   fRingHistos.Add(new RingHistos(3, 'I'));
   fRingHistos.Add(new RingHistos(3, 'O'));
 
-  fHCuts.SetNXi(1);
-  fHCuts.SetIncludeSigma(1);
-  fLCuts.SetMultCuts(.15);
+  fHCuts.Set(AliFMDMultCuts::kLandauSigmaWidth, 1);
+  fLCuts.Set(AliFMDMultCuts::kFixed, .15);
 
   // fExtraDead.Reset(-1);
 }
