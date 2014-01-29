@@ -132,7 +132,7 @@ public:
 	   UShort_t    field,
 	   Bool_t      mc=false, 
 	   Bool_t      sat=false,
-	   Option_t*   /*options*/="",
+	   Option_t*   options="",
 	   const char* local="")
   {
     AliForwardCorrectionManager& mgr = AliForwardCorrectionManager::Instance();
@@ -171,7 +171,11 @@ public:
 
     TString out;
     MakeFileName(out, name); // , runNo, sys, sNN, field, mc, sat);
-    CreateCanvas(out);
+
+    TString opts(options);
+    opts.ToUpper();
+    Bool_t landscape = opts.Contains("LANDSCAPE");
+    CreateCanvas(out, landscape);
 
     fBody->cd();
     Double_t y = .8;
@@ -748,14 +752,14 @@ protected:
     }
 
     fBody->cd();
-    fits->Draw("error");
+    fits->Draw("error good");
     PrintCanvas("Fit overview");
     if (!details) return;
 
     //__________________________________________________________________
     // Draw relative parameter errors 
     fBody->cd();
-    fits->Draw("relative");
+    fits->Draw("relative good");
     PrintCanvas("Relative parameter errors");
 
     //__________________________________________________________________
