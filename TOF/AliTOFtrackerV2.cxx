@@ -190,9 +190,10 @@ Int_t AliTOFtrackerV2::PropagateBack(AliESDEvent * const event) {
   fNseeds = ntrk;
 
   //Load ESD tracks into a local Array of ESD Seeds
-  for (Int_t i=0; i<fNseeds; i++)
+  for (Int_t i=0; i<fNseeds; i++){
     fSeeds->AddLast(event->GetTrack(i));
-
+    event->GetTrack(i)->SetESDEvent(event);
+  }
   //Prepare ESD tracks candidates for TOF Matching
   CollectESD();
 
