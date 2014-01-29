@@ -63,7 +63,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
                             kTPCstandalone, 
                             kSPDtracklet,
                             kPMD,
-                            kV0,    //neutral v0 particle
+                            kV0,    //neutral reconstructed v0 particle
                             kVZERO, //forward VZERO detector
                             kMUON,  // XZhang 20120604
                             kKink
@@ -212,6 +212,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   AliMCParticle* GetMCparticle() const {return fMCparticle;}
   //AliFlowTrack* MakeFlowTrack() const;
   Bool_t FillFlowTrack(AliFlowTrack* track) const;
+  //FillFlowTrackV0(TObjArray* trackCollection, Int_t trackIndex) const
   AliFlowTrack* FillFlowTrack(TObjArray* trackCollection, Int_t trackIndex) const;
   Bool_t IsPhysicalPrimary() const; 
   static Bool_t IsPhysicalPrimary(AliMCEvent* p, Int_t label, Bool_t requiretransported=kTRUE); 
