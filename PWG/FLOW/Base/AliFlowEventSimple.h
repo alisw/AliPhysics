@@ -50,12 +50,12 @@ class AliFlowEventSimple: public TObject {
   Int_t    NumberOfTracks() const                   { return fNumberOfTracks; }
   Int_t    GetReferenceMultiplicity() const         { return fReferenceMultiplicity; }
   void     SetReferenceMultiplicity( Int_t m )      { fReferenceMultiplicity = m; }
-  Int_t    GetEventNSelTracksRP() const             { return fNumberOfPOIs[0]; } 
-  void     SetEventNSelTracksRP(Int_t nr)           { fNumberOfPOIs[0] = nr; }  
-  Int_t    GetEventNSelTracksPOI() const            { return fNumberOfPOIs[0]; } 
-  void     SetEventNSelTracksPOI(Int_t np)          { fNumberOfPOIs[0] = np; }  
-  Int_t    GetNumberOfRPs() const                   { return fNumberOfPOIs[0]; }
-  void     SetNumberOfRPs( Int_t nr )               { fNumberOfPOIs[0]=nr; }
+  Int_t    GetEventNSelTracksRP() const             { return GetNumberOfPOIs(0); } 
+  void     SetEventNSelTracksRP(Int_t nr)           { SetNumberOfPOIs(nr,0); }  
+  Int_t    GetEventNSelTracksPOI() const            { return GetNumberOfPOIs(1); } 
+  void     SetEventNSelTracksPOI(Int_t np)          { SetNumberOfPOIs(np,1); }  
+  Int_t    GetNumberOfRPs() const                   { return GetNumberOfPOIs(0); }
+  void     SetNumberOfRPs( Int_t nr )               { SetNumberOfPOIs(nr,0); }
   Int_t    GetNumberOfPOIs(Int_t i=1) const         { return (i<fNumberOfPOItypes)?fNumberOfPOIs[i]:0; }
   void     SetNumberOfPOIs( Int_t nubmerOfPOIs, Int_t poiType=1 );
   void     IncrementNumberOfPOIs(Int_t poiType=1);
@@ -102,7 +102,7 @@ class AliFlowEventSimple: public TObject {
   void AddV2( TF1* ptDepV2 );
   void DefineDeadZone( Double_t etaMin, Double_t etaMax, Double_t phiMin, Double_t phiMax );
   Int_t CleanUpDeadTracks();
-  void ClearFast();
+  virtual void ClearFast();
  
   static TF1* SimplePtSpectrum();
   static TF1* SimplePtDepV2();

@@ -49,6 +49,8 @@
 #include "AliVParticle.h"
 #include "AliVVZERO.h"
 #include "AliMCParticle.h"
+#include "AliESDkink.h"
+#include "AliESDv0.h"
 #include "AliESDtrack.h"
 #include "AliESDMuonTrack.h"   // XZhang 20120604
 #include "AliMultiplicity.h"
@@ -62,6 +64,10 @@
 #include "AliESDPmdTrack.h"
 #include "AliESDUtils.h" //TODO
 #include "AliFlowBayesianPID.h"
+#include "AliFlowCandidateTrack.h"
+#include "AliKFParticle.h"
+#include "AliESDVZERO.h"
+#include "AliFlowCommonConstants.h"
 
 ClassImp(AliFlowTrackCuts)
 
@@ -113,9 +119,22 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fPmdAdc(0.),
   fCutPmdNcell(kFALSE),
   fPmdNcell(0.),  
+  fMinKinkAngle(TMath::DegToRad()*2.),
+  fMinKinkRadius(130.),
+  fMaxKinkRadius(200.),
+  fMinKinkQt(.05),
+  fMaxKinkQt(.5),
+  fMinKinkInvMassKmu(0.),
+  fMaxKinkInvMassKmu(0.6),
+  fForceTPCstandalone(kFALSE),
+  fRequireKinkDaughters(kFALSE),
   fParamType(kGlobal),
   fParamMix(kPure),
+  fKink(NULL),
+  fV0(NULL),
   fTrack(NULL),
+  fTrackMass(0.),
+  fTrackPt(0.),
   fTrackPhi(0.),
   fTrackEta(0.),
   fTrackWeight(1.),
@@ -205,9 +224,22 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fPmdAdc(0.),
   fCutPmdNcell(kFALSE),
   fPmdNcell(0.),  
+  fMinKinkAngle(TMath::DegToRad()*2.),
+  fMinKinkRadius(130.),
+  fMaxKinkRadius(200.),
+  fMinKinkQt(0.05),
+  fMaxKinkQt(0.5),
+  fMinKinkInvMassKmu(0.0),
+  fMaxKinkInvMassKmu(0.6),
+  fForceTPCstandalone(kFALSE),
+  fRequireKinkDaughters(kFALSE),
   fParamType(kGlobal),
   fParamMix(kPure),
+  fKink(NULL),
+  fV0(NULL),
   fTrack(NULL),
+  fTrackMass(0.),
+  fTrackPt(0.),
   fTrackPhi(0.),
   fTrackEta(0.),
   fTrackWeight(1.),
@@ -299,9 +331,22 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fPmdAdc(that.fPmdAdc),
   fCutPmdNcell(that.fCutPmdNcell),
   fPmdNcell(that.fPmdNcell),  
+  fMinKinkAngle(that.fMinKinkAngle),
+  fMinKinkRadius(that.fMinKinkRadius),
+  fMaxKinkRadius(that.fMaxKinkRadius),
+  fMinKinkQt(that.fMinKinkQt),
+  fMaxKinkQt(that.fMaxKinkQt),
+  fMinKinkInvMassKmu(that.fMinKinkInvMassKmu),
+  fMaxKinkInvMassKmu(that.fMaxKinkInvMassKmu),
+  fForceTPCstandalone(that.fForceTPCstandalone),
+  fRequireKinkDaughters(that.fRequireKinkDaughters),
   fParamType(that.fParamType),
   fParamMix(that.fParamMix),
+  fKink(NULL),
+  fV0(NULL),
   fTrack(NULL),
+  fTrackMass(0.),
+  fTrackPt(0.),
   fTrackPhi(0.),
   fTrackEta(0.),
   fTrackWeight(1.),
@@ -412,11 +457,24 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fPmdAdc=that.fPmdAdc;
   fCutPmdNcell=that.fCutPmdNcell;
   fPmdNcell=that.fPmdNcell;
+  fMinKinkAngle=that.fMinKinkAngle;
+  fMinKinkRadius=that.fMinKinkRadius;
+  fMaxKinkRadius=that.fMaxKinkRadius;
+  fMinKinkQt=that.fMinKinkQt;
+  fMaxKinkQt=that.fMaxKinkQt;
+  fMinKinkInvMassKmu=that.fMinKinkInvMassKmu;
+  fMaxKinkInvMassKmu=that.fMaxKinkInvMassKmu;
+  fForceTPCstandalone=that.fForceTPCstandalone;
+  fRequireKinkDaughters=that.fRequireKinkDaughters;
   
   fParamType=that.fParamType;
   fParamMix=that.fParamMix;
 
+  fKink=NULL;
+  fV0=NULL;
   fTrack=NULL;
+  fTrackMass=0.;
+  fTrackPt=0.;
   fTrackEta=0.;
   fTrackPhi=0.;
   fTrackWeight=1.;
@@ -544,6 +602,11 @@ Bool_t AliFlowTrackCuts::IsSelected(TObject* obj, Int_t id)
   if (pmdtrack) return PassesPMDcuts(pmdtrack);
   AliVEvent* vvzero = dynamic_cast<AliVEvent*>(obj); // should be removed; left for protection only
   if (vvzero) return PassesVZEROcuts(id);
+  AliESDkink* kink = dynamic_cast<AliESDkink*>(obj);
+  if (kink) return PassesCuts(kink);
+  //AliESDv0* v0 = dynamic_cast<AliESDv0*>(obj);
+  //if (v0) return PassesCuts(v0);
+  
   return kFALSE;  //default when passed wrong type of object
 }
 
@@ -574,7 +637,7 @@ Bool_t AliFlowTrackCuts::PassesCuts(const AliFlowTrackSimple* track)
   //check cuts on a flowtracksimple
 
   //clean up from last iteration
-  fTrack = NULL;
+  ClearTrack();
   return AliFlowTrackSimpleCuts::PassesCuts(track);
 }
 
@@ -586,9 +649,7 @@ Bool_t AliFlowTrackCuts::PassesCuts(const AliMultiplicity* tracklet, Int_t id)
   if (id<0) return kFALSE;
 
   //clean up from last iteration, and init label
-  fTrack = NULL;
-  fMCparticle=NULL;
-  fTrackLabel=-999;
+  ClearTrack();
 
   fTrackPhi = tracklet->GetPhi(id);
   fTrackEta = tracklet->GetEta(id);
@@ -619,9 +680,7 @@ Bool_t AliFlowTrackCuts::PassesCuts(const AliAODTracklets* tracklet, Int_t id)
   if (id<0) return kFALSE;
 
   //clean up from last iteration, and init label
-  fTrack = NULL;
-  fMCparticle=NULL;
-  fTrackLabel=-999;
+  ClearTrack();
 
   fTrackPhi = tracklet->GetPhi(id);
 //fTrackEta = tracklet->GetEta(id);
@@ -704,6 +763,130 @@ Bool_t AliFlowTrackCuts::PassesMCcuts()
 }
 
 //-----------------------------------------------------------------------
+Bool_t AliFlowTrackCuts::PassesCuts(const AliESDv0* v0)
+{
+  //check if the v0 passes cuts
+
+  //clean up from last iteration
+  ClearTrack();
+  
+  fV0 = const_cast<AliESDv0*>(v0);
+
+  Bool_t pass = kTRUE;
+
+  //first, extract/prepare the v0
+  if (!v0->GetOnFlyStatus()) return kFALSE; //skip offline V0 finder
+  const AliExternalTrackParam *negHelix=v0->GetParamN();
+  const AliExternalTrackParam *posHelix=v0->GetParamP();
+  AliVParticle *v0tracks[2];
+  v0tracks[0] = fEvent->GetTrack(v0->GetNindex());
+  v0tracks[1] = fEvent->GetTrack(v0->GetPindex());
+  if( v0tracks[1]->Charge() < 0)
+  {
+    v0tracks[1] = fEvent->GetTrack(v0->GetNindex());
+    v0tracks[0] = fEvent->GetTrack(v0->GetPindex());
+    negHelix=v0->GetParamP();
+    posHelix=v0->GetParamN();
+  }
+
+  int KalmanPidPairs[4][2] =
+  {
+    {-11,11}, // e-,e+ (gamma)
+    {-211,2212}, // pi- p (lambda)
+    {-2212,211}, // anti-p pi+ (anti-lambda)
+    {-211,211} // pi-  pi+ (Kshort)
+    //   {-321,321} // K- K+ (phi)
+  };
+    
+  Int_t id = 3;
+  //refit using a mass hypothesis
+  AliKFParticle v0trackKFneg(*(negHelix),KalmanPidPairs[id][0]);
+  AliKFParticle v0trackKFpos(*(posHelix),KalmanPidPairs[id][1]);
+  AliKFParticle v0particleRefit;
+  v0particleRefit += v0trackKFneg;
+  v0particleRefit += v0trackKFpos;
+  Double_t invMassErr= -999;
+  v0particleRefit.GetMass(fTrackMass,invMassErr);
+  //Double_t openAngle = v0trackKFneg.GetAngle(v0trackKFpos);
+  fTrackEta = v0particleRefit.GetEta();
+  fTrackPt = v0particleRefit.GetPt();
+  fTrackPhi = TMath::Pi()+v0particleRefit.GetPhi();
+  ////find out which mass bin and put the number in fPOItype
+  //Int_t massBins = AliFlowCommonConstants::GetMaster()->GetNbinsMass();
+  //Double_t massMin = AliFlowCommonConstants::GetMaster()->GetMassMin();
+  //Double_t massMax = AliFlowCommonConstants::GetMaster()->GetMassMax();
+  //fPOItype = 1 + int(massBins*(fTrackMass-massMin)/(massMax-massMin));
+  
+  /////////////////////////////////////////////////////////////////////////////
+  //apply cuts
+  if ( v0tracks[0]->Charge() == v0tracks[1]->Charge() ) pass=kFALSE;
+  if ( v0tracks[0]->Pt()<0.15 || v0tracks[1]->Pt()<0.15 ) pass=kFALSE;
+
+  return pass;
+}
+
+//-----------------------------------------------------------------------
+Bool_t AliFlowTrackCuts::PassesCuts(const AliESDkink* kink)
+{
+  //check if the kink passes cuts
+  
+  //clean up from last iteration
+  ClearTrack();
+  fKink=const_cast<AliESDkink*>(kink);
+
+  Bool_t pass = kTRUE;
+
+  Float_t kinkAngle = kink->GetAngle(2);
+  if (kinkAngle<fMinKinkAngle) pass = kFALSE;
+  Double_t kinkRadius = kink->GetR();
+  if (kinkRadius<fMinKinkRadius || kinkRadius>fMaxKinkRadius) pass = kFALSE;
+
+  //Qt
+  const TVector3 motherMfromKink(kink->GetMotherP());
+  const TVector3 daughterMfromKink(kink->GetDaughterP());
+  Float_t qt=kink->GetQt();
+  if ( qt < fMinKinkQt || qt > fMaxKinkQt) pass = kFALSE;
+
+  //invariant mass
+  Float_t energyDaughterMu = TMath::Sqrt( daughterMfromKink.Mag()*daughterMfromKink.Mag()+
+                                          0.105658*0.105658 );
+  Float_t p1XM = motherMfromKink.Px();
+  Float_t p1YM = motherMfromKink.Py();
+  Float_t p1ZM = motherMfromKink.Pz();
+  Float_t p2XM = daughterMfromKink.Px();
+  Float_t p2YM = daughterMfromKink.Py();
+  Float_t p2ZM = daughterMfromKink.Pz();
+  Float_t p3Daughter = TMath::Sqrt( ((p1XM-p2XM)*(p1XM-p2XM))+((p1YM-p2YM)*(p1YM-p2YM))+
+                                    ((p1ZM-p2ZM)*(p1ZM-p2ZM)) );
+  Double_t invariantMassKmu = TMath::Sqrt( (energyDaughterMu+p3Daughter)*(energyDaughterMu+p3Daughter)-
+                                           motherMfromKink.Mag()*motherMfromKink.Mag() );
+  if (invariantMassKmu > fMaxKinkInvMassKmu) pass=kFALSE;
+  if (invariantMassKmu < fMinKinkInvMassKmu) pass=kFALSE;
+  fTrackMass=invariantMassKmu;
+
+  if (fQA)
+  {
+    QAbefore(13)->Fill(qt);
+    if (pass) QAafter(13)->Fill(qt);
+    QAbefore(14)->Fill(invariantMassKmu);
+    if (pass) QAafter(14)->Fill(invariantMassKmu);
+    const Double_t* kinkPosition = kink->GetPosition();
+    QAbefore(15)->Fill(kinkPosition[0],kinkPosition[1]);
+    if (pass) QAafter(15)->Fill(kinkPosition[0],kinkPosition[1]);
+    QAbefore(16)->Fill(motherMfromKink.Mag(),kinkAngle*TMath::RadToDeg());
+    if (pass) QAafter(16)->Fill(motherMfromKink.Mag(),kinkAngle*TMath::RadToDeg());
+  }
+
+  //mother track cuts
+  Int_t indexKinkMother = kink->GetIndex(0);
+  AliESDtrack* motherTrack = dynamic_cast<AliESDtrack*>(fEvent->GetTrack(indexKinkMother));
+  if (!motherTrack) return kFALSE;
+  if (!PassesCuts(motherTrack)) pass = kFALSE;
+  
+  return pass;
+}
+
+//-----------------------------------------------------------------------
 Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
 {
   //check cuts for an ESD vparticle
@@ -712,7 +895,8 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
   //  start by preparing the track parameters to cut on //////////
   ////////////////////////////////////////////////////////////////
   //clean up from last iteration
-  fTrack=NULL; 
+  ClearTrack();
+  Bool_t pass=kTRUE;
 
   //get the label and the mc particle
   fTrackLabel = (fFakesAreOK)?TMath::Abs(vparticle->GetLabel()):vparticle->GetLabel();
@@ -742,7 +926,6 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
   //because it may be different from global, not needed for aodTrack because we dont do anything funky there
   if (esdTrack) esdTrack = static_cast<AliESDtrack*>(fTrack);
   
-  Bool_t pass=kTRUE;
   //check the common cuts for the current particle fTrack (MC,AOD,ESD)
   Double_t pt = fTrack->Pt();
   Double_t p = fTrack->P();
@@ -1112,6 +1295,8 @@ Bool_t AliFlowTrackCuts::PassesESDcuts(AliESDtrack* track)
     QAbefore(6)->Fill(pt,dcaz);
     if (pass) QAafter(5)->Fill(pt,dcaxy);
     if (pass) QAafter(6)->Fill(pt,dcaz);
+    QAbefore(17)->Fill(Float_t(track->GetKinkIndex(0)));
+    if (pass) QAafter(17)->Fill(Float_t(track->GetKinkIndex(0)));
   }
 
   return pass;
@@ -1153,7 +1338,23 @@ void AliFlowTrackCuts::HandleESDtrack(AliESDtrack* track)
       else fMCparticle=NULL;
       break;
     default:
-      fTrack = track;
+      if (fForceTPCstandalone)
+      {
+        if (!track->FillTPCOnlyTrack(fTPCtrack))
+        {
+          fTrack=NULL;
+          fMCparticle=NULL;
+          fTrackLabel=-998;
+          return;
+        }
+        fTrack = &fTPCtrack;
+        //recalculate the label and mc particle, they may differ as TPClabel != global label
+        fTrackLabel = (fFakesAreOK)?TMath::Abs(fTrack->GetLabel()):fTrack->GetLabel();
+        if (fMCevent) fMCparticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(fTrackLabel));
+        else fMCparticle=NULL;
+      }
+      else 
+        fTrack = track;
       break;
   }
 }
@@ -1322,6 +1523,209 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetStandardMuonTrackCuts(Bool_t isMC, Int_t 
 }
 
 //-----------------------------------------------------------------------
+//AliFlowTrack* AliFlowTrackCuts::FillFlowTrackV0(TObjArray* trackCollection, Int_t trackIndex) const
+//{
+//  //fill flow track from a reconstructed V0 (topological)
+//  AliFlowTrack* flowtrack = static_cast<AliFlowTrack*>(trackCollection->At(trackIndex));
+//  if (flowtrack)
+//  {
+//    flowtrack->Clear();
+//  }
+//  else 
+//  {
+//    flowtrack = new AliFlowCandidateTrack();
+//    trackCollection->AddAtAndExpand(flowtrack,trackIndex);
+//  }
+//
+//  TParticle *tmpTParticle=NULL;
+//  AliMCParticle* tmpAliMCParticle=NULL;
+//  AliExternalTrackParam* externalParams=NULL;
+//  AliESDtrack* esdtrack=NULL;
+//  switch(fParamMix)
+//  {
+//    case kPure:
+//      flowtrack->Set(fTrack);
+//      break;
+//    case kTrackWithMCkine:
+//      flowtrack->Set(fMCparticle);
+//      break;
+//    case kTrackWithMCPID:
+//      flowtrack->Set(fTrack);
+//      //flowtrack->setPID(...) from mc, when implemented
+//      break;
+//    case kTrackWithMCpt:
+//      if (!fMCparticle) return NULL;
+//      flowtrack->Set(fTrack);
+//      flowtrack->SetPt(fMCparticle->Pt());
+//      break;
+//    case kTrackWithPtFromFirstMother:
+//      if (!fMCparticle) return NULL;
+//      flowtrack->Set(fTrack);
+//      tmpTParticle = fMCparticle->Particle();
+//      tmpAliMCParticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(tmpTParticle->GetFirstMother()));
+//      flowtrack->SetPt(tmpAliMCParticle->Pt());
+//      break;
+//    case kTrackWithTPCInnerParams:
+//      esdtrack = dynamic_cast<AliESDtrack*>(fTrack);
+//      if (!esdtrack) return NULL;
+//      externalParams = const_cast<AliExternalTrackParam*>(esdtrack->GetTPCInnerParam());
+//      if (!externalParams) return NULL;
+//      flowtrack->Set(externalParams);
+//      break;
+//    default:
+//      flowtrack->Set(fTrack);
+//      break;
+//  }
+//  if (fParamType==kMC) 
+//  {
+//    flowtrack->SetSource(AliFlowTrack::kFromMC);
+//    flowtrack->SetID(fTrackLabel);
+//  }
+//  else if (dynamic_cast<AliAODTrack*>(fTrack))
+//  {
+//    if (fParamType==kMUON)                            // XZhang 20120604
+//      flowtrack->SetSource(AliFlowTrack::kFromMUON);  // XZhang 20120604
+//    else                                              // XZhang 20120604
+//      flowtrack->SetSource(AliFlowTrack::kFromAOD);   // XZhang 20120604
+//    flowtrack->SetID(static_cast<AliVTrack*>(fTrack)->GetID());
+//  }
+//  else if (dynamic_cast<AliMCParticle*>(fTrack)) 
+//  {
+//    flowtrack->SetSource(AliFlowTrack::kFromMC);
+//    flowtrack->SetID(static_cast<AliVTrack*>(fTrack)->GetID());
+//  }
+//
+//  if (fV0)
+//  {
+//    //add daughter indices
+//  }
+//
+//  return flowtrack;
+//}
+
+//-----------------------------------------------------------------------
+AliFlowTrack* AliFlowTrackCuts::FillFlowTrackKink(TObjArray* trackCollection, Int_t trackIndex) const
+{
+  //fill flow track from AliVParticle (ESD,AOD,MC)
+  AliFlowTrack* flowtrack = static_cast<AliFlowTrack*>(trackCollection->At(trackIndex));
+  if (flowtrack)
+  {
+    flowtrack->Clear();
+  }
+  else 
+  {
+    flowtrack = new AliFlowCandidateTrack();
+    trackCollection->AddAtAndExpand(flowtrack,trackIndex);
+  }
+
+  TParticle *tmpTParticle=NULL;
+  AliMCParticle* tmpAliMCParticle=NULL;
+  AliExternalTrackParam* externalParams=NULL;
+  AliESDtrack* esdtrack=NULL;
+  switch(fParamMix)
+  {
+    case kPure:
+      flowtrack->Set(fTrack);
+      break;
+    case kTrackWithMCkine:
+      flowtrack->Set(fMCparticle);
+      break;
+    case kTrackWithMCPID:
+      flowtrack->Set(fTrack);
+      //flowtrack->setPID(...) from mc, when implemented
+      break;
+    case kTrackWithMCpt:
+      if (!fMCparticle) return NULL;
+      flowtrack->Set(fTrack);
+      flowtrack->SetPt(fMCparticle->Pt());
+      break;
+    case kTrackWithPtFromFirstMother:
+      if (!fMCparticle) return NULL;
+      flowtrack->Set(fTrack);
+      tmpTParticle = fMCparticle->Particle();
+      tmpAliMCParticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(tmpTParticle->GetFirstMother()));
+      flowtrack->SetPt(tmpAliMCParticle->Pt());
+      break;
+    case kTrackWithTPCInnerParams:
+      esdtrack = dynamic_cast<AliESDtrack*>(fTrack);
+      if (!esdtrack) return NULL;
+      externalParams = const_cast<AliExternalTrackParam*>(esdtrack->GetTPCInnerParam());
+      if (!externalParams) return NULL;
+      flowtrack->Set(externalParams);
+      break;
+    default:
+      flowtrack->Set(fTrack);
+      break;
+  }
+  if (fParamType==kMC) 
+  {
+    flowtrack->SetSource(AliFlowTrack::kFromMC);
+    flowtrack->SetID(fTrackLabel);
+  }
+  else if (dynamic_cast<AliESDtrack*>(fTrack))
+  {
+    flowtrack->SetSource(AliFlowTrack::kFromESD);
+    flowtrack->SetID(static_cast<AliVTrack*>(fTrack)->GetID());
+  }
+  else if (dynamic_cast<AliESDMuonTrack*>(fTrack))                                  // XZhang 20120604
+  {                                                                                 // XZhang 20120604
+    flowtrack->SetSource(AliFlowTrack::kFromMUON);                                  // XZhang 20120604
+    flowtrack->SetID((Int_t)static_cast<AliESDMuonTrack*>(fTrack)->GetUniqueID());  // XZhang 20120604
+  }                                                                                 // XZhang 20120604
+  else if (dynamic_cast<AliAODTrack*>(fTrack))
+  {
+    if (fParamType==kMUON)                            // XZhang 20120604
+      flowtrack->SetSource(AliFlowTrack::kFromMUON);  // XZhang 20120604
+    else                                              // XZhang 20120604
+      flowtrack->SetSource(AliFlowTrack::kFromAOD);   // XZhang 20120604
+    flowtrack->SetID(static_cast<AliVTrack*>(fTrack)->GetID());
+  }
+  else if (dynamic_cast<AliMCParticle*>(fTrack)) 
+  {
+    flowtrack->SetSource(AliFlowTrack::kFromMC);
+    flowtrack->SetID(static_cast<AliVTrack*>(fTrack)->GetID());
+  }
+
+  if (fKink)
+  {
+    Int_t indexMother = fKink->GetIndex(0);
+    Int_t indexDaughter = fKink->GetIndex(1);
+    flowtrack->SetID(indexMother);
+    flowtrack->AddDaughter(indexDaughter);
+    flowtrack->SetMass(1.);
+    flowtrack->SetSource(AliFlowTrack::kFromKink);
+  }
+
+  flowtrack->SetMass(fTrackMass);
+
+  return flowtrack;
+}
+
+//-----------------------------------------------------------------------
+AliFlowTrack* AliFlowTrackCuts::FillFlowTrackGeneric(TObjArray* trackCollection, Int_t trackIndex) const
+{
+  //fill a flow track from tracklet,vzero,pmd,...
+  AliFlowTrack* flowtrack = static_cast<AliFlowTrack*>(trackCollection->At(trackIndex));
+  if (flowtrack)
+  {
+    flowtrack->Clear();
+  }
+  else 
+  {
+    flowtrack = new AliFlowTrack();
+    trackCollection->AddAtAndExpand(flowtrack,trackIndex);
+  }
+  
+  if (FillFlowTrackGeneric(flowtrack)) return flowtrack;
+  else 
+  {
+    trackCollection->RemoveAt(trackIndex);
+    delete flowtrack;
+    return NULL;
+  }
+}
+
+//-----------------------------------------------------------------------
 Bool_t AliFlowTrackCuts::FillFlowTrackGeneric(AliFlowTrack* flowtrack) const
 {
   //fill a flow track from tracklet,vzero,pmd,...
@@ -1333,12 +1737,15 @@ Bool_t AliFlowTrackCuts::FillFlowTrackGeneric(AliFlowTrack* flowtrack) const
       flowtrack->SetPhi(fTrackPhi);
       flowtrack->SetEta(fTrackEta);
       flowtrack->SetWeight(fTrackWeight);
+      flowtrack->SetPt(fTrackPt);
+      flowtrack->SetMass(fTrackMass);
       break;
     case kTrackWithMCkine:
       if (!fMCparticle) return kFALSE;
       flowtrack->SetPhi( fMCparticle->Phi() );
       flowtrack->SetEta( fMCparticle->Eta() );
       flowtrack->SetPt( fMCparticle->Pt() );
+      flowtrack->SetMass(fTrackMass);
       break;
     case kTrackWithMCpt:
       if (!fMCparticle) return kFALSE;
@@ -1346,6 +1753,7 @@ Bool_t AliFlowTrackCuts::FillFlowTrackGeneric(AliFlowTrack* flowtrack) const
       flowtrack->SetEta(fTrackEta);
       flowtrack->SetWeight(fTrackWeight);
       flowtrack->SetPt(fMCparticle->Pt());
+      flowtrack->SetMass(fTrackMass);
       break;
     case kTrackWithPtFromFirstMother:
       if (!fMCparticle) return kFALSE;
@@ -1355,15 +1763,43 @@ Bool_t AliFlowTrackCuts::FillFlowTrackGeneric(AliFlowTrack* flowtrack) const
       tmpTParticle = fMCparticle->Particle();
       tmpAliMCParticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(tmpTParticle->GetFirstMother()));
       flowtrack->SetPt(tmpAliMCParticle->Pt());
+      flowtrack->SetMass(fTrackMass);
       break;
     default:
       flowtrack->SetPhi(fTrackPhi);
       flowtrack->SetEta(fTrackEta);
       flowtrack->SetWeight(fTrackWeight);
+      flowtrack->SetPt(fTrackPt);
+      flowtrack->SetMass(fTrackMass);
       break;
   }
   flowtrack->SetSource(AliFlowTrack::kFromTracklet);
   return kTRUE;
+}
+
+//-----------------------------------------------------------------------
+AliFlowTrack* AliFlowTrackCuts::FillFlowTrackVParticle(TObjArray* trackCollection, Int_t trackIndex) const
+{
+  //fill flow track from AliVParticle (ESD,AOD,MC)
+  
+  AliFlowTrack* flowtrack = static_cast<AliFlowTrack*>(trackCollection->At(trackIndex));
+  if (flowtrack)
+  {
+    flowtrack->Clear();
+  }
+  else 
+  {
+    flowtrack = new AliFlowTrack();
+    trackCollection->AddAtAndExpand(flowtrack,trackIndex);
+  }
+
+  if (FillFlowTrackVParticle(flowtrack)) return flowtrack;
+  else
+  {
+    trackCollection->RemoveAt(trackIndex);
+    delete flowtrack;
+    return NULL;
+  }
 }
 
 //-----------------------------------------------------------------------
@@ -1438,7 +1874,30 @@ Bool_t AliFlowTrackCuts::FillFlowTrackVParticle(AliFlowTrack* flowtrack) const
     flowtrack->SetSource(AliFlowTrack::kFromMC);
     flowtrack->SetID(static_cast<AliVTrack*>(fTrack)->GetID());
   }
+  flowtrack->SetMass(fTrackMass);
   return kTRUE;
+}
+
+//-----------------------------------------------------------------------
+AliFlowTrack* AliFlowTrackCuts::FillFlowTrack(TObjArray* trackCollection, Int_t trackIndex) const
+{
+  //fill a flow track constructed from whatever we applied cuts on
+  //return true on success
+  switch (fParamType)
+  {
+    case kSPDtracklet:
+      return FillFlowTrackGeneric(trackCollection, trackIndex);
+    case kPMD:
+      return FillFlowTrackGeneric(trackCollection, trackIndex);
+    case kVZERO:
+      return FillFlowTrackGeneric(trackCollection, trackIndex);
+    case kKink:
+      return FillFlowTrackKink(trackCollection, trackIndex);
+    //case kV0:
+    //  return FillFlowTrackV0(trackCollection, trackIndex);
+    default:
+      return FillFlowTrackVParticle(trackCollection, trackIndex);
+  }
 }
 
 //-----------------------------------------------------------------------
@@ -1705,7 +2164,7 @@ Bool_t AliFlowTrackCuts::FillFlowTrack(AliFlowTrack* track) const
 //      return MakeFlowTrackVParticle();
 //  }
 //}
-//
+
 //-----------------------------------------------------------------------
 Bool_t AliFlowTrackCuts::IsPhysicalPrimary() const
 {
@@ -1910,6 +2369,21 @@ void AliFlowTrackCuts::DefineHistograms()
   before->Add(new TH2F("TOFkProton",";p_{t}[GeV/c];TOF signal - IT",   kNbinsP,binsP,1000,-2e4, 2e4));//12
   after->Add( new TH2F("TOFkProton",";p_{t}[GeV/c];TOF signal - IT",   kNbinsP,binsP,1000,-2e4, 2e4));//12
 
+  //kink stuff
+  before->Add(new TH1F("KinkQt",";q_{t}[GeV/c];counts", 200, 0., 0.3));//13
+  after->Add(new TH1F("KinkQt",";q_{t}[GeV/c];counts", 200, 0., 0.3));//13
+
+  before->Add(new TH1F("KinkMinv",";m_{inv}(#mu#nu)[GeV/c^{2}];counts;Kink M_{inv}", 200, 0., 0.7));//14
+  after->Add(new TH1F("KinkMinv",";m_{inv}(#mu#nu)[GeV/c^{2}];counts;Kink M_{inv}", 200, 0., 0.7));//14
+
+  before->Add(new TH2F("KinkVertex",";x[cm];y[cm];Kink vertex position",250,-250.,250., 250,-250.,250.));//15
+  after->Add(new TH2F("KinkVertex",";x[cm];y[cm];Kink vertex position",250,-250.,250., 250,-250.,250.));//15
+
+  before->Add(new TH2F("KinkAngleMp",";p_{mother}[GeV/c];Kink decay angle [deg];", 100,0.,6., 100,0.,80.));//16
+  after->Add(new TH2F("KinkAngleMp",";p_{mother}[GeV/c];Kink decay angle [deg];", 100,0.,6., 100,0.,80.));//16
+
+  before->Add(new TH1F("KinkIndex",";Kink index;counts", 2, 0., 2.));//17
+  after->Add(new TH1F("KinkIndex",";Kink index;counts", 2, 0., 2.));//17
   TH1::AddDirectory(adddirstatus);
 }
 
@@ -1944,6 +2418,14 @@ Int_t AliFlowTrackCuts::GetNumberOfInputObjects() const
       esd = dynamic_cast<AliESDEvent*>(fEvent);      // XZhang 20120604
       if (esd) return esd->GetNumberOfMuonTracks();  // XZhang 20120604
       return fEvent->GetNumberOfTracks();  // if AOD // XZhang 20120604
+    case kKink:
+      esd = dynamic_cast<AliESDEvent*>(fEvent);
+      if (!esd) return 0;
+      return esd->GetNumberOfKinks();
+    case kV0:
+      esd = dynamic_cast<AliESDEvent*>(fEvent);
+      if (!esd) return 0;
+      return esd->GetNumberOfV0s();
     default:
       if (!fEvent) return 0;
       return fEvent->GetNumberOfTracks();
@@ -1976,20 +2458,27 @@ TObject* AliFlowTrackCuts::GetInputObject(Int_t i)
       if (!esd) return NULL;
       return esd->GetPmdTrack(i);
     case kVZERO:
-      //esd = dynamic_cast<AliESDEvent*>(fEvent);
-      //if (!esd) //contributed by G.Ortona
-      //{
-      //  AliAODEvent* aod = dynamic_cast<AliAODEvent*>(fEvent);
-      //  if(!aod)return NULL;
-      //  return aod->GetVZEROData();
-      //}
-      //return esd->GetVZEROData();
-      return fEvent; // left only for compatibility
+      esd = dynamic_cast<AliESDEvent*>(fEvent);
+      if (!esd) //contributed by G.Ortona
+      {
+        aod = dynamic_cast<AliAODEvent*>(fEvent);
+        if(!aod)return NULL;
+        return aod->GetVZEROData();
+      }
+      return esd->GetVZEROData();
     case kMUON:                                  // XZhang 20120604
       if (!fEvent) return NULL;                  // XZhang 20120604
       esd = dynamic_cast<AliESDEvent*>(fEvent);  // XZhang 20120604
       if (esd) return esd->GetMuonTrack(i);      // XZhang 20120604
       return fEvent->GetTrack(i);  // if AOD     // XZhang 20120604
+    case kKink:
+      esd = dynamic_cast<AliESDEvent*>(fEvent);
+      if (!esd) return NULL;
+      return esd->GetKink(i);
+    case kV0:
+      esd = dynamic_cast<AliESDEvent*>(fEvent);
+      if (!esd) return NULL;
+      return esd->GetV0(i);
     default:
       if (!fEvent) return NULL;
       return fEvent->GetTrack(i);
@@ -2000,13 +2489,26 @@ TObject* AliFlowTrackCuts::GetInputObject(Int_t i)
 void AliFlowTrackCuts::Clear(Option_t*)
 {
   //clean up
-  fTrack=NULL;
   fMCevent=NULL;
+  fEvent=NULL;
+  ClearTrack();
+}
+
+//-----------------------------------------------------------------------
+void AliFlowTrackCuts::ClearTrack(Option_t*)
+{
+  //clean up last track
+  fKink=NULL;
+  fV0=NULL;
+  fTrack=NULL;
   fMCparticle=NULL;
   fTrackLabel=-997;
   fTrackWeight=1.0;
   fTrackEta=0.0;
   fTrackPhi=0.0;
+  fTrackPt=0.0;
+  fPOItype=1;
+  fTrackMass=0.;
 }
 //-----------------------------------------------------------------------
 Bool_t AliFlowTrackCuts::PassesAODpidCut(const AliAODTrack* track )
@@ -4093,6 +4595,10 @@ const char* AliFlowTrackCuts::GetParamTypeName(trackParameterType type)
       return "VZERO";
     case kMUON:       // XZhang 20120604
       return "MUON";  // XZhang 20120604
+    case kKink:
+      return "Kink";
+    case kV0:
+      return "V0";
     default:
       return "unknown";
   }
@@ -4136,9 +4642,7 @@ Bool_t AliFlowTrackCuts::PassesVZEROcuts(Int_t id)
   if (id<0) return kFALSE;
 
   //clean up from last iter
-  fTrack = NULL;
-  fMCparticle=NULL;
-  fTrackLabel=-995;
+  ClearTrack();
 
   fTrackPhi = TMath::PiOver4()*(0.5+id%8);
 
@@ -4198,7 +4702,7 @@ Bool_t AliFlowTrackCuts::PassesVZEROcuts(Int_t id)
 Bool_t AliFlowTrackCuts::PassesMuonCuts(AliVParticle* vparticle)
 {
 // XZhang 20120604
-  fTrack=NULL;
+  ClearTrack();
   fTrackLabel = (fFakesAreOK)?TMath::Abs(vparticle->GetLabel()):vparticle->GetLabel();
   if (fMCevent) fMCparticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(fTrackLabel));
   else fMCparticle=NULL;

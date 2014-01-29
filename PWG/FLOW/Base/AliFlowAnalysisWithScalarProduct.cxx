@@ -380,7 +380,6 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
     Double_t dPhi = pTrack->Phi();
     Double_t dPt  = pTrack->Pt();
     Double_t dEta = pTrack->Eta();
-    Double_t dMass = pTrack->Mass();
 
     //calculate vU
     TVector2 vU;

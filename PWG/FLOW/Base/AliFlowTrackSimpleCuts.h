@@ -74,7 +74,7 @@ class AliFlowTrackSimpleCuts : public TNamed {
   Bool_t   fCutMass; // cut on mass?
   Double_t fMassMax; //max mass
   Double_t fMassMin; //min mass
-  Int_t    fPOItype; //how many different POI classes do we recognize?
+  Int_t    fPOItype; //which poi type do we produce? (RP=0, POI=1,2,3,4,5...)
 
   ClassDef(AliFlowTrackSimpleCuts,2)
 };
