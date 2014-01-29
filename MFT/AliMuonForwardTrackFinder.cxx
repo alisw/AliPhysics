@@ -576,7 +576,7 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
 	fCurrentTrack = (AliMuonForwardTrack*) fCandidateTracks->UncheckedAt(iTrack);
 	// if the old track is compatible with the new cluster, the track is updated and inserted as new track in the array 
 	// (several new tracks can be created for one old track)
-	if (FindClusterInPlane(iPlane) == 2) {
+	if (FindClusterInPlane(iPlane) == kDiverged) {
 	  fGlobalTrackingDiverged = kTRUE;
 	  if (fScaleSigmaClusterCut>0) fScaleSigmaClusterCut -= 0.1;
 	  return 6;
@@ -927,7 +927,7 @@ Int_t AliMuonForwardTrackFinder::FindClusterInPlane(Int_t planeId) {
     if (isGoodChi2) {
       AliDebug(3, Form("accepting cluster: chi2=%f (cut = %f)\n", chi2, chi2cut));
       AliMuonForwardTrack *newTrack = new ((*fCandidateTracks)[fCandidateTracks->GetEntriesFast()]) AliMuonForwardTrack(*fCurrentTrack);
-      if (fCandidateTracks->GetEntriesFast() > fMaxNCandidates) return 2;
+      if (fCandidateTracks->GetEntriesFast() > fMaxNCandidates) return kDiverged;
       newTrack->AddTrackParamAtMFTCluster(currentParamFront, *cluster);    // creating new track param and attaching the cluster
       AliDebug(2, Form("After plane %02d: newTrack->GetNMFTClusters() = %d (fCurrentTrack->GetNMFTClusters() = %d)", 
 		       planeId, newTrack->GetNMFTClusters(), fCurrentTrack->GetNMFTClusters()));
@@ -981,7 +981,7 @@ Int_t AliMuonForwardTrackFinder::FindClusterInPlane(Int_t planeId) {
     if (isGoodChi2) {
       AliDebug(3,Form("accepting cluster: chi2=%f (cut = %f)\n", chi2, chi2cut));
       AliMuonForwardTrack *newTrack = new ((*fCandidateTracks)[fCandidateTracks->GetEntriesFast()]) AliMuonForwardTrack(*fCurrentTrack);
-      if (fCandidateTracks->GetEntriesFast() > fMaxNCandidates) return 2;
+      if (fCandidateTracks->GetEntriesFast() > fMaxNCandidates) return kDiverged;
       newTrack->AddTrackParamAtMFTCluster(currentParamBack, *cluster);    // creating new track param and attaching the cluster
       AliDebug(2, Form("After plane %02d: newTrack->GetNMFTClusters() = %d (fCurrentTrack->GetNMFTClusters() = %d)", 
 		       planeId, newTrack->GetNMFTClusters(), fCurrentTrack->GetNMFTClusters()));
@@ -1013,7 +1013,7 @@ Int_t AliMuonForwardTrackFinder::FindClusterInPlane(Int_t planeId) {
     }
   }
 
-  return 0;
+  return kConverged;
   
 }
 
