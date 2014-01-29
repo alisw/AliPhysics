@@ -46,14 +46,16 @@ class AliJetFlowTools {
             kNone };                    // no unfolding
         enum prior {                    // prior that is used for unfolding
             kPriorChi2,                 // prior from chi^2 method
-            kPriorMeasured };           // use measured spectrum as prior
+            kPriorMeasured,             // use measured spectrum as prior
+            kPriorPythia };             // use pythia spectrum as prior
         enum histoType {                // histogram identifier, only used internally
-            kInPlaneSpectrum,
+            kInPlaneSpectrum,           // default style for spectrum
             kOutPlaneSpectrum,
             kUnfoldedSpectrum,
             kFoldedSpectrum,
             kMeasuredSpectrum,
-            kEmpty };
+            kBar,                       // default style for bar histogram
+            kEmpty };                   // default style
         // setters, interface to the class
         void            SetSaveFull(Bool_t b)           {fSaveFull              = b;}
         void            SetInputList(TList* list)       {
@@ -92,6 +94,7 @@ class AliJetFlowTools {
         void            SetAvoidRoundingError(Bool_t r)         {fAvoidRoundingError    = r;}
         void            SetUnfoldingAlgorithm(unfoldingAlgorithm ua)    {fUnfoldingAlgorithm                    = ua;}
         void            SetPrior(prior p)                       {fPrior                 = p;}
+        void            SetPrior(prior p, TH1D* spectrum)       {fPrior                 = p; fPriorUser         = spectrum;}
         void            SetNormalizeSpectra(Bool_t b)           {fNormalizeSpectra      = b;}
         void            SetNormalizeSpectra(Int_t e)            { // use to normalize to this no of events
             fEventCount         = e;
@@ -128,16 +131,27 @@ class AliJetFlowTools {
                 Float_t rangeUp = 80,
                 TString in = "UnfoldedSpectra.root", 
                 TString out = "ProcessedSpectra.root") const;
-        void            DoSystematics(
-                Int_t nominalIn,
-                Int_t nominalOut,
+        void            GetCorrelatedUncertainty(
                 TArrayI* variationsIn,
                 TArrayI* variationsOut,
+                TString type = "",
                 Int_t columns = 4,
                 Float_t rangeLow = 20,
                 Float_t rangeUp = 80,
                 TString in = "UnfoldedSpectra.root", 
-                TString out = "Systematics.root") const;
+                TString out = "CorrelatedUncertainty.root") const;
+        void            GetShapeUncertainty(
+                TArrayI* regularizationIn,
+                TArrayI* regularizationOut,
+                TArrayI* trueBinIn = 0x0,
+                TArrayI* trueBinOut = 0x0,
+                TArrayI* recBinIn = 0x0,
+                TArrayI* recBinOut = 0x0,
+                Int_t columns = 4,
+                Float_t rangeLow = 20,
+                Float_t rangeUp = 80,
+                TString in = "UnfoldedSpectra.root", 
+                TString out = "ShapeUncertainty.root") const;
         Bool_t          SetRawInput (
                 TH2D* detectorResponse, // detector response matrix
                 TH1D* jetPtIn,          // in plane jet spectrum
@@ -161,13 +175,15 @@ class AliJetFlowTools {
         void            SaveConfiguration(Bool_t convergedIn, Bool_t convergedOut) const;
         static TMatrixD*        CalculatePearsonCoefficients(TMatrixD* covmat);
         static TH1D*    SmoothenPrior(TH1D* spectrum, TF1* function, Double_t min, Double_t max, Double_t start, Bool_t kill = kTRUE, Bool_t counts = kTRUE);
-        // set styles
+        // set style
+        void            SetTitleFontSize(Double_t s)    {fTitleFontSize = s;}
+        static void     Style();
         static void     Style(TCanvas* c, TString style = "PEARSON");
         static void     Style(TVirtualPad* c, TString style = "SPECTRUM");
         static void     Style(TLegend* l);
         static void     Style(TH1* h, EColor col = kBlue, histoType = kEmpty);
         static void     Style(TGraph* h, EColor col = kBlue, histoType = kEmpty);
-        static TLegend* AddLegend(TVirtualPad* p)       {return p->BuildLegend(.27, .61, .88, .88);}
+        static TLegend* AddLegend(TVirtualPad* p)       {return p->BuildLegend(.565, .663, .882, .883);}
         static void     SavePadToPDF(TVirtualPad* pad)  {pad->SaveAs(Form("%s.pdf", pad->GetName()));}
         // interface to AliUnfolding, not necessary but nice to have all parameters in one place
         static void     SetMinuitStepSize(Float_t s)    {AliUnfolding::SetMinuitStepSize(s);}
@@ -214,6 +230,20 @@ class AliJetFlowTools {
                                                         const TH1D* measuredJetSpectrumTrueBins,
                                                         const TString suffix,
                                                         const TH1D* jetFindingEfficiency = 0x0);
+        void            DoIntermediateSystematics(
+                TArrayI* variationsIn,
+                TArrayI* variationsOut,
+                TH1D*& relativeErrorInUp,
+                TH1D*& relativeErrorInLow,
+                TH1D*& relativeErrorOutUp,
+                TH1D*& relativeErrorOutLow,
+                TH1D*& relativeSystematicIn,
+                TH1D*& relativeSystematicOut,
+                Int_t columns,
+                Float_t rangeLow,
+                Float_t rangeUp,
+                TFile* readMe, 
+                TString source = "") const;
         static void     ResetAliUnfolding();
         // give object a unique name via the 'protect heap' functions. 
         // may seem redundant, but some internal functions of root (e.g.
@@ -243,6 +273,7 @@ class AliJetFlowTools {
         Bool_t                  fAvoidRoundingError;    // set dpt to zero for small values far from the diagonal
         unfoldingAlgorithm      fUnfoldingAlgorithm;    // algorithm used for unfolding
         prior                   fPrior;                 // prior for unfolding
+        TH1D*                   fPriorUser;             // user supplied prior (e.g. pythia spectrum)
         TArrayD*                fBinsTrue;              // pt true bins
         TArrayD*                fBinsRec;               // pt rec bins
         TArrayD*                fBinsTruePrior;         // holds true bins for the chi2 prior for SVD. setting this is optional
@@ -269,6 +300,7 @@ class AliJetFlowTools {
         Bool_t                  fDphiUnfolding;         // do the unfolding in in and out of plane orientation
         Bool_t                  fDphiDptUnfolding;      // do the unfolding in dphi and dpt bins (to fit v2)
         Bool_t                  fExLJDpt;               // exclude randon cones with leading jet
+        Double_t                fTitleFontSize;         // title font size
         // members, set internally
         TProfile*               fRMSSpectrumIn;         // rms of in plane spectra of converged unfoldings
         TProfile*               fRMSSpectrumOut;        // rms of out of plane spectra of converged unfoldings
