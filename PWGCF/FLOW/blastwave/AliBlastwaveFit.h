@@ -52,7 +52,7 @@ public:
     Double_t EvalYield(Double_t pt){if(fFunctionYield) return fFunctionYield->Eval(pt); else return 0;};
     Double_t EvalV2(Double_t pt){if(fFunctionV2) return fFunctionV2->Eval(pt); else return 0;};
     
-    void SetSpectrumObj(TObject *obj){fSpectraObj = obj;if(fSpectraObj && fSpectraObj->InheritsFrom("TH1")) fSpectraObjCopy=(TH1 *)fSpectraObj;else if(fSpectraObj && fSpectraObj->InheritsFrom("TGraphErrors")) fSpectraObjCopy=((TGraphErrors *)fSpectraObj)->GetHistogram();};
+    void SetSpectrumObj(TObject *obj);
     void SetV2Obj(TObject *obj){fV2Obj = obj;};
    
     TObject *GetSpectrumObj(){return fSpectraObj;};
