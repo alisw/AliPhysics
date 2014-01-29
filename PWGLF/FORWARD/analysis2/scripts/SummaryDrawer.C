@@ -61,7 +61,13 @@ public:
     kGridx  = 0x100, 
     kGridy  = 0x200, 
     kGridz  = 0x400,
-    kSilent = 0x800
+    kSilent = 0x800,
+    kNorth  = 0x1000, 
+    kMiddle = 0x2000,
+    kSouth  = 0x3000, 
+    kEast   = 0x10000, 
+    kCenter = 0x20000,
+    kWest   = 0x30000
   };
   enum { 
     kLandscape         = 0x100, 
@@ -91,6 +97,7 @@ public:
   virtual ~SummaryDrawer() {}
 
 protected:
+  //____________________________________________________________________
   /** 
    * Get null terminated array of ring names 
    * 
@@ -105,6 +112,7 @@ protected:
     static const Char_t* uN[]={ "FMD1I", "FMD2I", "FMD2O", "FMD3O", "FMD3I", 0};
     return (lower ? lN : uN);
   }
+  //____________________________________________________________________
   /** 
    * Get the standard color for a ring  
    *
@@ -118,6 +126,24 @@ protected:
     return ((d == 1 ? kRed : (d == 2 ? kGreen : kBlue))
 	    + ((r == 'I' || r == 'i') ? 2 : -3));
   }
+  //____________________________________________________________________
+  TLegend* DrawRingLegend(TVirtualPad* p, UInt_t flags)
+  {
+    TLegend* l = MakeLegend(p, flags, false);
+
+    for (UShort_t i = 0; i < 5; i++) {
+      UShort_t      d = (i+1)/2+1;
+      Char_t        r = (i/2 == 1) ? 'i' : 'o';
+      TLegendEntry* e = l->AddEntry("dummy", Form("FMD%d%c", d, r), "f");
+      e->SetFillColor(RingColor(d, r));
+      e->SetFillStyle(1001);
+      e->SetLineColor(kBlack);
+    }
+   
+    l->Draw();
+    return l;
+  }
+  //____________________________________________________________________
   static void SysString(UShort_t sys, TString& str)
   {
     str = "?";
@@ -127,6 +153,7 @@ protected:
     case 3: str = "pPb"; break;
     }
   }
+  //____________________________________________________________________
   static void SNNString(UShort_t sNN, TString& str)
   {
     str = "?";
@@ -134,6 +161,7 @@ protected:
     else if (sNN < 3000) str = Form("%4.2fTeV", 0.001*sNN);
     else                 str = Form("%dTeV", sNN/1000);
   }
+  //____________________________________________________________________
   /** 
    * Append an & to a string and the next term.
    * 
@@ -145,6 +173,7 @@ protected:
     if (!trg.IsNull()) trg.Append(" & ");
     trg.Append(what);
   }
+  //____________________________________________________________________
   static void TriggerString(ULong_t trigger, TString& str)
   {
     str = "";
@@ -665,10 +694,6 @@ protected:
    */
   void PrintCanvas(const TString& title, Float_t size=.7)
   {
-    TString tit;
-    tit.Form("pdf %s Title:%s", fLandscape ? "Landscape" : "",
-	     title.Data());
-
     fTop->cd();
     fHeader->SetTextSize(size);
     fHeader->DrawLatex(.5,.5,title);
@@ -678,12 +703,23 @@ protected:
     fCanvas->cd();
 
     if (fPDF) {
+      TString tit;
+      tit.Form("pdf %s Title:%s", fLandscape ? "Landscape" : "",
+	       title.Data());
+
+#ifdef DEBUG
+      Info("PrintCanvas", "Printing to %s (%s)", 
+	   fCanvas->GetTitle(), tit.Data());
+#else
       gSystem->RedirectOutput("/dev/null");
+#endif
       fCanvas->Print(fCanvas->GetTitle(), tit);
+#ifndef DEBUG
       gSystem->RedirectOutput(0);
+#endif
       fLastTitle = title;
       Pause();
-
+      
       ClearCanvas();
     }
   }
@@ -719,7 +755,7 @@ protected:
 		 Int_t        padNo, 
 		 TObject*     h, 
 		 Option_t*    opts="",
-		 UShort_t     flags=0x0,
+		 UInt_t       flags=0x0,
 		 const char*  title="")
   {
     TVirtualPad* p = c->GetPad(padNo);
@@ -795,6 +831,52 @@ protected:
     if (title && title[0] != '\0') tmp->SetTitle(title);
   }    
   //__________________________________________________________________
+  static void GetLegendPosition(UInt_t    flags, TVirtualPad* p, 
+				Double_t& x1,    Double_t&    y1, 
+				Double_t& x2,    Double_t&    y2)
+  {
+    UInt_t   horiz = (flags & 0xF0000);
+    UInt_t   verti = (flags & 0xF000);
+    Double_t eps   = .01;
+    Double_t dY    = .4;
+    Double_t dX    = .4;
+    Double_t yB    = p->GetBottomMargin()+eps;
+    Double_t yT    = 1-p->GetTopMargin()-eps;
+    Double_t xL    = p->GetLeftMargin()+eps;
+    Double_t xR    = 1-p->GetRightMargin()-eps;
+    switch (verti) { 
+    case kNorth:  y1 = yT-dY;           break;
+    case kSouth:  y1 = yB;              break;
+    case kMiddle: y1 = (yB+yT-dY)/2;    break;
+    }
+    y2 = TMath::Min(y1 + dY, yT);
+    
+    switch (horiz) { 
+    case kEast:   x1 = xL;              break;
+    case kWest:   x1 = xR-dX;           break;
+    case kCenter: x1 = (xL+xR-dX)/2;    break;
+    }
+    x2 = TMath::Min(x1 + dX, xR);
+  } 
+  TLegend* MakeLegend(TVirtualPad* p, UInt_t flags, Bool_t autoFill)
+  {
+    Double_t x1 = fParVal->GetX();
+    Double_t y1 = fParVal->GetY();
+    Double_t x2 = 0;
+    Double_t y2 = 0;
+    GetLegendPosition(flags, p, x1, y1, x2, y2);
+
+    //Printf("Legend at (%f,%f)x(%f,%f)", x1, y1, x2, y2);
+    TLegend* l = 0;
+    if (autoFill) l = p->BuildLegend(x1, y1, x2, y2);
+    else          l = new TLegend(x1, y1, x2, y2);
+    l->SetFillColor(0);
+    l->SetFillStyle(0);
+    l->SetBorderSize(0);
+
+    return l;
+  }
+  //__________________________________________________________________
   /** 
    * Draw an object in pad 
    * 
@@ -807,7 +889,7 @@ protected:
   void DrawInPad(TVirtualPad* p, 
 		 TObject*     h, 
 		 Option_t*    opts="",
-		 UShort_t     flags=0x0,
+		 UInt_t       flags=0x0,
 		 const char*  title="")
   {
     if (!p) { 
@@ -840,16 +922,8 @@ protected:
     }
     DrawObjClone(h, o, title);
     
-    if (flags& kLegend) { 
-      Double_t x1 = fParVal->GetX();
-      Double_t y1 = fParVal->GetY();
-      Double_t x2 = TMath::Min(x1+.5, .99);
-      Double_t y2 = TMath::Min(y1+.5, .99-p->GetTopMargin());
-      //Printf("Legend at (%f,%f)x(%f,%f)", x1, y1, x2, y2);
-      TLegend* l = p->BuildLegend(x1, y1, x2, y2);
-      l->SetFillColor(0);
-      l->SetFillStyle(0);
-      l->SetBorderSize(0);
+    if (flags & kLegend) {
+      MakeLegend(p, flags, true);
     }
     p->Modified();
     p->Update();
@@ -921,10 +995,7 @@ protected:
       a2->Draw();
     }
     if (flags& kLegend) { 
-      TLegend* l = p->BuildLegend();
-      l->SetFillColor(0);
-      l->SetFillStyle(0);
-      l->SetBorderSize(0);
+      MakeLegend(p, flags, true);
     }
     p->Modified();
     p->Update();
@@ -1395,7 +1466,6 @@ protected:
 
     PrintCanvas("Track density");  
   }
-
   //__________________________________________________________________
   TCanvas* fCanvas;  // Our canvas 
   TPad*    fTop;     // Top part 

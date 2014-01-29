@@ -156,14 +156,16 @@ protected:
   //____________________________________________________________________
   void DrawVertexBins(Bool_t forward)
   {
-    // Info("DrawVertexBins", "Drawing %s vertex bins",
-    //      forward ? "Forward" : "Central");
     TH1* vtxHist = GetH1(fSums, "vtxAxis");
     if (!vtxHist) return;
     
+    Info("DrawVertexBins", "Drawing %s vertex bins - %d bins",
+	 forward ? "Forward" : "Central", vtxHist->GetNbinsX());
+
     TAxis* vtxAxis = vtxHist->GetXaxis();
     for (Int_t i = 1; i <= vtxAxis->GetNbins(); i++) {
-      // Info("", "Bin %d", i);
+      Info("DrawVertexBins", " - Bin %d (%+5.1f - %+5.1f)", i,
+	   vtxAxis->GetBinLowEdge(i), vtxAxis->GetBinUpEdge(i));
       TCollection* c = GetVertexList(fSums, *vtxAxis, i);
       if (!c) continue;
       
@@ -175,7 +177,7 @@ protected:
 	    DrawInRingPad(d,r, GetH2(c, Form("FMD%d%c_cache",d,r)), "colz");
 	  }
 	}
-	DrawInPad(fBody, 2, GetH2(c, "primary"), "colz");
+	DrawInPad(fBody, (fLandscape ? 4: 2), GetH2(c, "primary"), "colz");
       }
       else {
 	fBody->Divide(1,3, 0, 0);
@@ -184,7 +186,7 @@ protected:
 	DrawInPad(fBody, 2, GetH2(c, "clusters"), "colz");
 	DrawInPad(fBody, 3, GetH2(c, "primary"), "colz");
       }
-      PrintCanvas(Form("%s sums - Vertex bin %+5.1f - %+5.1f",
+      PrintCanvas(Form("%s sums - IP_{z} bin %+5.1f - %+5.1f",
 		       (forward ? "Forward" : "Central"),
 		       vtxAxis->GetBinLowEdge(i), 
 		       vtxAxis->GetBinUpEdge(i)));
@@ -193,13 +195,15 @@ protected:
   //____________________________________________________________________
   void DrawResults(Bool_t forward)
   {
-    // Info("DrawVertexBins", "Drawing resulting %s vertex bins",
-    //      forward ? "Forward" : "Central");
+    Info("DrawResults", "Drawing resulting %s vertex bins",
+	 forward ? "Forward" : "Central");
     TH1* vtxHist = GetH1(fSums, "vtxAxis");
     if (!vtxHist) return;
     
     TAxis* vtxAxis = vtxHist->GetXaxis();
     for (Int_t i = 1; i <= vtxAxis->GetNbins(); i++) {
+      Info("DrawResults", " - Bin %d (%+5.1f - %+5.1f)", i,
+	   vtxAxis->GetBinLowEdge(i), vtxAxis->GetBinUpEdge(i));
       TCollection* c = GetVertexList(fResults, *vtxAxis, i);
       if (!c) continue;
 
@@ -317,7 +321,7 @@ protected:
 	pp->SetLeftMargin(0.10);
 	DrawInPad(fBody, 8, ratio, "colz");
       }
-      PrintCanvas(Form("%s results - Vertex bin %+5.1f - %+5.1f",
+      PrintCanvas(Form("%s results - IP_{z} bin %+5.1f - %+5.1f",
 		       (forward ? "Forward" : "Central"),
 		       vtxAxis->GetBinLowEdge(i), 
 		       vtxAxis->GetBinUpEdge(i)));
