@@ -346,8 +346,6 @@ fPtTOFPIDmax=PtTOFPIDmax;
     Bool_t fapplyTrigefficiency;//if kTRUE then eff correction calculation starts
     Bool_t fapplyAssoefficiency;//if kTRUE then eff correction calculation starts
     Bool_t ffillefficiency;//if kTRUE then THNsparses used for eff. calculation are filled up
-    Bool_t fSkipAssoEff;
-    Bool_t fSkipTrigEff;
     Bool_t fmesoneffrequired;
     Bool_t fkaonprotoneffrequired;
     //  AliAnalysisUtils*     fAnalysisUtils;      // points to class with common analysis utilities
