@@ -494,16 +494,17 @@ Bool_t AliAnalysisTaskPhiFlow::PassesDCACut(AliAODTrack* track) const
         if(fQA) {
             Double_t b[2] = { -99., -99.};
             Double_t bCov[3] = { -99., -99., -99.};
-            track->PropagateToDCA(fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), 100., b, bCov);
-            fDCAXYQA->Fill(b[0]);
-            fDCAZQA->Fill(b[1]);
-            fDCAPrim->Fill(track->Pt(), b[0]);
+            if(track->PropagateToDCA(fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), 100., b, bCov)) {
+                fDCAXYQA->Fill(b[0]);
+                fDCAZQA->Fill(b[1]);
+                fDCAPrim->Fill(track->Pt(), b[0]);
+            }
         }
         return kTRUE;
     }
     Double_t b[2] = { -99., -99.};
     Double_t bCov[3] = { -99., -99., -99.};
-    track->PropagateToDCA(fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), 100., b, bCov);
+    if(!track->PropagateToDCA(fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), 100., b, bCov)) return kFALSE;
     if((!fIsMC)&&fQA) fDCAMaterial->Fill(track->Pt(), b[0]);
     if( (fDCAConfig[0] < -.9) && ( (TMath::Abs(b[0]) > fDCAConfig[1]) || (TMath::Abs(b[1]) > fDCAConfig[2])) ) return kFALSE;
     if(fDCAConfig[0] > .9) {
@@ -949,7 +950,7 @@ void AliAnalysisTaskPhiFlow::IsMC()
      if (fDebug>1) cout << " Received MC kaon " << endl;
      Double_t b[2] = { -99., -99.};
      Double_t bCov[3] = { -99., -99., -99.};
-     track->PropagateToDCA(fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), 100., b, bCov);
+     if(!track->PropagateToDCA(fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), 100., b, bCov)) return;
      // find corresponding mc particle
      AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(TMath::Abs(track->GetLabel()));
      if (!partMC) {
