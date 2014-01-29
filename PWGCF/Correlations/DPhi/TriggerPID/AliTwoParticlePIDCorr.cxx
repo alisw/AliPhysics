@@ -24,6 +24,7 @@
 #include "TH3F.h"
 #include "TList.h"
 #include "TFile.h"
+#include "TGrid.h"
 
 #include "AliCentrality.h"
 #include "Riostream.h"
@@ -161,7 +162,7 @@ fnTracksVertex(1),  // QA tracks pointing to principal vertex (= 3 default)
   fTHnTrigcountMCTruthPrim(0),
   fPoolMgr(0x0),
   fArrayMC(0),
-  fAnalysisType("MCAOD"), 
+  fAnalysisType("AOD"), 
   fefffilename(""),
   twoTrackEfficiencyCutValue(0.02),
 //fControlConvResoncances(0),
@@ -307,7 +308,7 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr(const char *name) // All data membe
   fTHnTrigcountMCTruthPrim(0),
    fPoolMgr(0x0),
   fArrayMC(0),
-  fAnalysisType("MCAOD"),
+  fAnalysisType("AOD"),
    fefffilename(""), 
   twoTrackEfficiencyCutValue(0.02),
 //fControlConvResoncances(0),
@@ -859,6 +860,9 @@ for(Int_t jj=0;jj<6;jj++)// PID type binning
   fOutput->Add(effcorection[jj]);
     }
 // TFile *fsifile = new TFile(fefffilename,"READ");
+
+ if (TString(fefffilename).BeginsWith("alien:"))
+    TGrid::Connect("alien:");
  TFile *fileT=TFile::Open(fefffilename);
  TString Nameg;
 for(Int_t jj=0;jj<6;jj++)//type binning
@@ -1943,7 +1947,7 @@ if (fOnlyOneEtaSide != 0)
       Float_t trigphi=trig->Phi();
       Float_t trackefftrig=1.0;
       if(fapplyTrigefficiency) trackefftrig=trig->geteffcorrectionval();
-      // cout<<"*******************trackefftrig="<<trackefftrig<<endl;
+      //cout<<"*******************trackefftrig="<<trackefftrig<<endl;
 	Double_t* trigval;
 	Int_t dim=3;
 	if(fcontainPIDtrig) dim=4;
