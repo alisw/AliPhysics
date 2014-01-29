@@ -69,11 +69,8 @@ const Int_t kTrackVariablesPair   = 5;       // track variables in histogram (pa
 
 namespace myAliPID {
   
-  const Char_t* kPIDTypeName[] = {"ITS","TPC","TOF","HMPID"} ;
-  const Char_t* kParticleSpeciesName[] = { "Electrons","Muons","Pions","Kaons","Protons","Undefined" } ;
-
-  //enum PIDType { kNSigmaITS=0, kNSigmaTPC, kNSigmaTOF, kNSigmaHMP, kNSigmaTPCTOF, kNSigmaPIDType = kNSigmaTPCTOF };
-  enum PIDType { kNSigmaITS=0, kNSigmaTPC, kNSigmaTOF, kNSigmaHMP, kNSigmaPIDType };
+  //enum PIDType { kMyNSigmaITS=0, kMyNSigmaTPC, kMyNSigmaTOF, kMyNSigmaHMP, kMyNSigmaTPCTOF, kMyNSigmaPIDType = kMyNSigmaTPCTOF };
+  enum PIDType { kMyNSigmaITS=0, kMyNSigmaTPC, kMyNSigmaTOF, kMyNSigmaHMP, kMyNSigmaPIDType };
   enum AliParticleSpeciesQA { fPartElectronQA=0, fPartMuonQA, fPartPionQA, fPartKaonQA, fPartProtonQA, fPartNSpeciesQA, fPartUndefinedQA = 999 };
   enum AliParticleSpecies { fPartPionMinus=1, fPartPionPlus, fPartKaonMinus, fPartKaonPlus, fPartProtonMinus, fPartProtonPlus, fPartHadronMinus, fPartHadronPlus, fPartNSpecies, fPartUndefined = 999 };
 }
@@ -153,14 +150,14 @@ class AliAnalysisTaskPidPidCorrelations : public AliAnalysisTaskSE { //
   void  		AddSettingsTree();
   void  		Analyse();
 	
-  void		FillCorrelations(TObjArray* particles, TObjArray* particlesMixed, Double_t centrality, Double_t zVtx, Double_t bSign, Bool_t twoTrackEfficiencyCut, Double_t twoTrackEfficiencyCutValue, Int_t step, Double_t weight);
+  void		FillCorrelations(TObjArray* particles, TObjArray* particlesMixed, Double_t centrality, Double_t zVtx, Double_t bSign, Bool_t twoTrackEfficiencyCut, Double_t twoTrackEfficiencyCutValue, /*Int_t step,*/ Double_t weight);
   Bool_t 	CheckMcDistributions(TClonesArray* arrayMC, AliAODMCHeader* mcHeader);
   TString 	GetGenerator(Int_t label, AliAODMCHeader* MCheader);
   Bool_t 	IsFromHijingBg(Int_t mcTrackLabel);
   void 		FillMcGeneratorHistos(TString genLabel);
   Bool_t  	VertexSelection(TObject* obj, Int_t ntracks, Int_t centBin, Double_t gVxMax, Double_t gVyMax, Double_t gVzMax);
   void 		CleanUp(TObjArray* tracks, TObject* mcObj);
-  TObjArray* 	AcceptTracks(Int_t centBin, TObject* arrayMC, Bool_t onlyprimaries, Bool_t useCuts);
+  TObjArray* 	AcceptTracks(Int_t centBin, TObject* arrayMC, /*Bool_t onlyprimaries,*/ Bool_t useCuts);
   TObjArray*    	AcceptMcTracks(Int_t centBin, Bool_t onlyprimaries, Bool_t useCuts);
   TObjArray* 	AcceptMcRecoMachedTracks(Int_t centBin, Bool_t onlyprimaries, Bool_t useCuts);
   Double_t* 	GetBinning(const Char_t* configuration, const Char_t* tag, Int_t& nBins);
@@ -361,7 +358,7 @@ class AliAnalysisTaskPidPidCorrelations : public AliAnalysisTaskSE { //
   Double_t	nsigmaTOF[fPartNSpeciesQA];
   Double_t	nsigmaHMPID[fPartNSpeciesQA];
 
-  Double_t 	fnsigmas[fPartNSpeciesQA][kNSigmaPIDType]; // nsigma values
+  Double_t 	fnsigmas[fPartNSpeciesQA][kMyNSigmaPIDType]; // nsigma values
 
   TH2F*		fHistTPCdEdx[fNMaxBinsCentrality];		//! TPC dEdx
   TH2F*		fHistTOFbeta[fNMaxBinsCentrality];		//! TOF beta
