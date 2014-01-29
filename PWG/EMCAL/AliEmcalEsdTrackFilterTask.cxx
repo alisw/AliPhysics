@@ -71,10 +71,14 @@ void AliEmcalEsdTrackFilterTask::UserCreateOutputObjects()
   fTracks = new TClonesArray("AliESDtrack");
   fTracks->SetName(fTracksName);
 
-  if (!fEsdTrackCuts) {
-    AliInfo("No track cuts given, creating default (standard only TPC) cuts");
-    fEsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-    fEsdTrackCuts->SetPtRange(0.15,1e3);
+  if (fDoSpdVtxCon) {
+    if (!fEsdTrackCuts) {
+      AliInfo("No track cuts given, creating default (standard only TPC) cuts");
+      fEsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+      fEsdTrackCuts->SetPtRange(0.15,1e3);
+    } 
+  } else {
+    AliWarning("No track cuts given, but maybe this is indeed intended?");
   }
 }
 
@@ -143,6 +147,8 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
           delete ntrack;
           continue;
         }
+	if (fDoPropagation) 	
+	  AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(ntrack,fDist);
         new ((*fTracks)[ntrnew++]) AliESDtrack(*ntrack);
         delete ntrack;
       }
@@ -152,9 +158,11 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
         AliESDtrack *etrack = fEsdEv->GetTrack(i);
         if (!etrack)
           continue;
-        if (!fEsdTrackCuts->AcceptTrack(etrack))
+	if ((fEsdTrackCuts!=0) && !fEsdTrackCuts->AcceptTrack(etrack))
           continue;
-        new ((*fTracks)[ntrnew++]) AliESDtrack(*etrack);
+        AliESDtrack *ntrack = new ((*fTracks)[ntrnew++]) AliESDtrack(*etrack);
+	if (fDoPropagation) 	
+	  AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(ntrack,fDist);
       }
     }
 

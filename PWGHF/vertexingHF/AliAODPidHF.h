@@ -158,7 +158,8 @@ class AliAODPidHF : public TObject{
     return fCombDetectors;
   }
   Bool_t GetUseCombined() {return fUseCombined;}
-
+  Bool_t GetDefaultPriors() {return fDefaultPriors;}
+ 
   Int_t RawSignalPID (AliAODTrack *track, TString detector) const;
   Bool_t IsKaonRaw (AliAODTrack *track, TString detector) const;
   Bool_t IsPionRaw (AliAODTrack *track, TString detector) const;
@@ -190,7 +191,7 @@ class AliAODPidHF : public TObject{
   void SetPriorsHistos(TString priorFileName);
   void SetUpCombinedPID();
   void SetUseCombined(Bool_t useCombined=kTRUE) {fUseCombined=useCombined;}
-
+  void SetUseDefaultPriors(Bool_t defaultP)	    {fDefaultPriors=defaultP;}
   Int_t ApplyPidTPCRaw(AliAODTrack *track,Int_t specie) const;
   Int_t ApplyPidTOFRaw(AliAODTrack *track,Int_t specie) const;
   Int_t ApplyPidITSRaw(AliAODTrack *track,Int_t specie) const;
@@ -240,8 +241,9 @@ class AliAODPidHF : public TObject{
   TH1F* fPriorsH[AliPID::kSPECIES]; // priors histos
   ECombDetectors fCombDetectors; // detectors to be involved for combined PID
   Bool_t fUseCombined; // detectors to be involved for combined PID
+  Bool_t fDefaultPriors; // use default priors for combined PID
 
-  ClassDef(AliAODPidHF,20) // AliAODPid for heavy flavor PID
+  ClassDef(AliAODPidHF,21) // AliAODPid for heavy flavor PID
 
     };
 

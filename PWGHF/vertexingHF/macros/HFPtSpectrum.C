@@ -38,7 +38,7 @@
 //  9) Flag to decide if there is need to evaluate the dependence on the energy loss
 //
 
-enum centrality{ kpp7, kpp276, k07half, kpPb0100, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k80100 };
+enum centrality{ kpp7, kpp276, k07half, kpPb0100, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100 };
 enum BFDSubtrMethod { knone, kfc, kNb };
 enum RaavsEP {kPhiIntegrated, kInPlane, kOutOfPlane};
 enum rapidity{ kdefault, k08to04, k07to04, k04to01, k01to01, k01to04, k04to07, k04to08 };
@@ -60,10 +60,10 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
 
   // Set the meson and decay
   // (only D0 -> K pi, D+--> K pi pi & D* --> D0 pi & D+s -->KKpi implemented here)
-  Bool_t isD0Kpi = false;
+  Bool_t isD0Kpi = true;
   Bool_t isDplusKpipi = false;
   Bool_t isDstarD0pi = false;
-  Bool_t isDsKKpi = true;
+  Bool_t isDsKKpi = false;
   Bool_t isLctopKpi = false;
   if (isD0Kpi && isDplusKpipi && isDstarD0pi && isDsKKpi) {
     cout << "Sorry, can not deal with more than one correction at the same time"<<endl;
@@ -111,6 +111,8 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     tab = 1.20451; tabUnc = 0.071843;
   } else if ( cc == k5060 ) {
     tab = 1.32884; tabUnc = 0.0929536;
+  } else if ( cc == k5080 ) {
+    tab = 0.719; tabUnc = 0.054;
   } else if ( cc == k6080 ) {
     tab = 0.419; tabUnc = 0.033;
   } else if ( cc == k80100 ){
@@ -247,8 +249,8 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
 
   //
   // Read the file of the EP resolution correction
-  TFile *EPf;
-  TH1D *hEPresolCorr;
+  TFile *EPf=0;
+  TH1D *hEPresolCorr=0;
   if(isRaavsEP>0.){
     EPf = new TFile(epResolfile,"read");
     if(isRaavsEP==kInPlane) hEPresolCorr = (TH1D*)EPf->Get("hCorrEPresol_InPlane");
@@ -366,8 +368,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     systematics->SetIsLowEnergy(true);
   }
   else if ( cc == kpPb0100 ){ 
-    systematics->SetCollisionType(0); 
-    cout <<endl<<" Beware pPb systematics not yet implemented, using pp at 7 TeV !!"<<endl<<endl; 
+    systematics->SetCollisionType(2); 
   }
   //
   else if( cc!=kpp7 )  {
