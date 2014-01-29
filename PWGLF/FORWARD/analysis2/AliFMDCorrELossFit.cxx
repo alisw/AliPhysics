@@ -452,7 +452,7 @@ AliFMDCorrELossFit::ELossFit::FindProbabilityCut(Double_t low) const
   TF1*     f   = 0;
   TGraph*  g   = 0;
   try {
-    if (!(f = GetF1())) 
+    if (!(f = GetF1(1,5))) // First landau up to Delta/Delta_{mip}=5
       throw TString("Didn't TF1 object");
     if (!(g = new TGraph(f, "i")))
       throw TString("Failed to integrate function");
@@ -779,6 +779,8 @@ AliFMDCorrELossFit::operator=(const AliFMDCorrELossFit& o)
   return *this;
 }
 #define CACHE(BIN,IDX,OFFSET) fCache[IDX*OFFSET+BIN-1]
+#define CACHEDR(BIN,D,R,OFFSET) \
+  CACHE(BIN,(D == 1 ? 0 : (D - 2) * 2 + 1 + (R=='I' || R=='i' ? 0 : 1)),OFFSET)
 
 //____________________________________________________________________
 void
@@ -1071,9 +1073,11 @@ AliFMDCorrELossFit::FindFit(UShort_t  d, Char_t r, Int_t etabin,
   }
   DMSG(fDebug, 10, "Got ringArray %s for FMD%d%c", ringArray->GetName(), d, r);
   if (fCache.GetSize() <= 0) CacheBins(minQ);
+#if 0
   Int_t idx = (d == 1 ? 0 : 
 	       (d - 2) * 2 + 1 + (r=='I' || r=='i' ? 0 : 1));
-  Int_t bin = CACHE(etabin, idx, fEtaAxis.GetNbins());
+#endif
+  Int_t bin = CACHEDR(etabin, d, r, fEtaAxis.GetNbins());
   
   if (bin < 0 || bin > ringArray->GetEntriesFast()) return 0;
   
@@ -1249,7 +1253,7 @@ namespace {
 TList*
 AliFMDCorrELossFit::GetStacks(Bool_t   err, 
 			      Bool_t   rel, 
-			      Bool_t   /*good*/, 
+			      Bool_t   good, 
 			      UShort_t maxN) const
 {
   // Get a list of THStacks 
@@ -1299,16 +1303,18 @@ AliFMDCorrELossFit::GetStacks(Bool_t   err,
     if (!fRings.At(i)) continue;
     TObjArray* a     = static_cast<TObjArray*>(fRings.At(i));
     Int_t      nFits = a->GetEntriesFast();
-    Int_t      color = AliForwardUtil::RingColor(IDX2DET(i), IDX2RING(i));
+    UShort_t   d     = IDX2DET(i);
+    Char_t     r     = IDX2RING(i);
+    Int_t      color = AliForwardUtil::RingColor(d, r);
 
-    TH1D* hChi    = MakeHist(fEtaAxis,a->GetName(), "chi2",   color);
-    TH1D* hC      = MakeHist(fEtaAxis,a->GetName(), "c",      color);
-    TH1D* hDelta  = MakeHist(fEtaAxis,a->GetName(), "delta",  color);
-    TH1D* hXi     = MakeHist(fEtaAxis,a->GetName(), "xi",     color);
-    TH1D* hSigma  = MakeHist(fEtaAxis,a->GetName(), "sigma",  color);
+    TH1* hChi    = MakeHist(fEtaAxis,a->GetName(), "chi2",   color);
+    TH1* hC      = MakeHist(fEtaAxis,a->GetName(), "c",      color);
+    TH1* hDelta  = MakeHist(fEtaAxis,a->GetName(), "delta",  color);
+    TH1* hXi     = MakeHist(fEtaAxis,a->GetName(), "xi",     color);
+    TH1* hSigma  = MakeHist(fEtaAxis,a->GetName(), "sigma",  color);
     // TH1D* hSigmaN = MakeHist(fEtaAxis,a->GetName(), "sigman", color);
-    TH1D* hN      = MakeHist(fEtaAxis,a->GetName(), "n",      color);
-    TH1D* hA[maxN];
+    TH1* hN      = MakeHist(fEtaAxis,a->GetName(), "n",      color);
+    TH1* hA[maxN];
     const char* ho = (rel || !err ? "hist" : "e");
     sChi2nu->Add(hChi,   "hist"); // 0
     sC     ->Add(hC,     ho);     // 1
@@ -1326,77 +1332,64 @@ AliFMDCorrELossFit::GetStacks(Bool_t   err,
       hA[k-1] = MakeHist(fEtaAxis,a->GetName(), Form("a%02d",k+1), color);
       static_cast<THStack*>(stacks->At(kN+k))->Add(hA[k-1], ho);
     }
-			  
-    for (Int_t j = 0; j < nFits; j++) {
-      ELossFit* f = static_cast<ELossFit*>(a->At(j));
-      if (!f) continue;
-
-      Int_t     b       = f->fBin;
-      Double_t  vChi2nu = (rel ? f->fQuality 
-			   : (f->fNu <= 0 ? 0 : f->fChi2 / f->fNu));
-      Double_t  vC      = (rel ? (f->fC     >0 ?f->fEC     /f->fC      :0) 
-			   : f->fC);
-      Double_t  vDelta  = (rel ? (f->fDelta >0 ?f->fEDelta /f->fDelta  :0) 
-			   : f->fDelta);
-      Double_t  vXi     = (rel ? (f->fXi    >0 ?f->fEXi    /f->fXi     :0) 
-			   : f->fXi);
-      Double_t  vSigma  = (rel ? (f->fSigma >0 ?f->fESigma /f->fSigma  :0) 
-			   : f->fSigma);
-      Int_t     nW      = (rel ? CACHE(j,i,fEtaAxis.GetNbins()) : 
-			   f->FindMaxWeight());
-      // Double_t  sigman = (rel ? (f->fSigmaN>0 ?f->fESigmaN/f->fSigmaN :0) 
-      //                     : f->SigmaN); 
-      hChi   ->SetBinContent(b, vChi2nu);
-      hN     ->SetBinContent(b, nW);
-      hC     ->SetBinContent(b, vC);
-      hDelta ->SetBinContent(b, vDelta);
-      hXi    ->SetBinContent(b, vXi);
-      hSigma ->SetBinContent(b, vSigma);
-      // if (vChi2nu > 1e-12) {
-      // 	min[kChi2nu] = TMath::Min(min[kChi2nu], vChi2nu);
-      // 	max[kChi2nu] = TMath::Max(max[kChi2nu], vChi2nu);
-      // }
-      // if (vC > 1e-12) {
-      // 	min[kC] = TMath::Min(min[kC], vC);
-      // 	max[kC] = TMath::Max(max[kC], vC);
-      // }
-      // if (vDelta > 1e-12) {
-      // 	min[kDelta] = TMath::Min(min[kDelta], vDelta);
-      // 	max[kDelta] = TMath::Max(max[kDelta], vDelta);
-      // }
-      // if (vXi > 1e-12) {
-      // 	min[kXi] = TMath::Min(min[kXi], vXi);
-      // 	max[kXi] = TMath::Max(max[kXi], vXi);
-      // }
-      // if (vSigma > 1e-12) {
-      // 	min[kSigma] = TMath::Min(min[kSigma], vSigma);
-      // 	max[kSigma] = TMath::Max(max[kSigma], vSigma);
-      // }
-      // if (nW > 1e-12) { 
-      // 	min[kN] = TMath::Min(min[kN], Double_t(nW));
-      // 	max[kN] = TMath::Max(max[kN], Double_t(nW));
-      // }
-      // hSigmaN->SetBinContent(b,  sigman);
-      if (!rel) {
-	hC     ->SetBinError(b, f->fEC);
-	hDelta ->SetBinError(b, f->fEDelta);
-	hXi    ->SetBinError(b, f->fEXi);
-	hSigma ->SetBinError(b, f->fESigma);
-	// hSigmaN->SetBinError(b, f->fESigmaN);
+    
+    if (good) {
+      for (Int_t j = 1; j <= fEtaAxis.GetNbins(); j++) {
+	ELossFit* f = FindFit(d, r, j, 20);
+	if (!f) continue;
+	
+	UpdateStackHist(f, rel, j, hChi, hN, hC, hDelta, hXi, hSigma, maxN, hA);
       }
-      for (Int_t k = 0; k < f->fN-1 && k < maxN; k++) { 
-	Double_t vA = (rel ? (f->fA[k] > 0 ? f->fEA[k] / f->fA[k] : 0) 
-		       : f->fA[k]);
-	hA[k]->SetBinContent(b, vA);
-	if (!rel) hA[k]->SetBinError(b, f->fEA[k]);
-	// if (vA > 1e-12) {
-	//   min[kN+1+k] = TMath::Min(min[kN+1+k], vA);
-	//   max[kN+1+k] = TMath::Max(max[kN+1+k], vA);
-	// }
+    }
+    else {
+      for (Int_t j = 0; j < nFits; j++) {
+	ELossFit* f = static_cast<ELossFit*>(a->At(j));
+	if (!f) continue;
+	
+	UpdateStackHist(f, rel, CACHE(j,i,fEtaAxis.GetNbins()), 
+			hChi, hN, hC, hDelta, hXi, hSigma, maxN, hA);
       }
     }
   }
   return stacks;
+}
+//____________________________________________________________________
+void
+AliFMDCorrELossFit::UpdateStackHist(ELossFit* f,    Bool_t rel, 
+				    Int_t     used, 
+				    TH1*      hChi, TH1*   hN, 
+				    TH1*      hC,   TH1*   hDelta, 
+				    TH1*      hXi,  TH1*   hSigma, 
+				    Int_t     maxN, TH1**  hA) const
+{
+  Int_t    b      =f->fBin;
+  Double_t chi2nu =(rel ? f->fQuality : (f->fNu <= 0 ? 0 : f->fChi2 / f->fNu));
+  Double_t c      =(rel ? (f->fC     >0 ?f->fEC     /f->fC     :0) : f->fC);
+  Double_t delta  =(rel ? (f->fDelta >0 ?f->fEDelta /f->fDelta :0) : f->fDelta);
+  Double_t xi     =(rel ? (f->fXi    >0 ?f->fEXi    /f->fXi    :0) : f->fXi);
+  Double_t sigma  =(rel ? (f->fSigma >0 ?f->fESigma /f->fSigma :0) : f->fSigma);
+  Int_t    w      =(rel ? used : f->FindMaxWeight());
+  // Double_t  sigman = (rel ? (f->fSigmaN>0 ?f->fESigmaN/f->fSigmaN :0) 
+  //                     : f->SigmaN); 
+  hChi   ->SetBinContent(b, chi2nu);
+  hN     ->SetBinContent(b, w);
+  hC     ->SetBinContent(b, c);
+  hDelta ->SetBinContent(b, delta);
+  hXi    ->SetBinContent(b, xi);
+  hSigma ->SetBinContent(b, sigma);
+
+  if (!rel) {
+    hC     ->SetBinError(b, f->fEC);
+    hDelta ->SetBinError(b, f->fEDelta);
+    hXi    ->SetBinError(b, f->fEXi);
+    hSigma ->SetBinError(b, f->fESigma);
+    // hSigmaN->SetBinError(b, f->fESigmaN);
+  }
+  for (Int_t k = 0; k < f->fN-1 && k < maxN; k++) { 
+    Double_t a = (rel ? (f->fA[k] > 0 ? f->fEA[k] / f->fA[k] : 0) : f->fA[k]);
+    hA[k]->SetBinContent(b, a);
+    if (!rel) hA[k]->SetBinError(b, f->fEA[k]);
+  }
 }
 
 //____________________________________________________________________
