@@ -46,8 +46,8 @@ class AliFlowVector: public TVector2 {
   Double_t GetMult() const {return fMult;};                    // Get sum of weights
   void SetHarmonic(Int_t h) {fHarmonic = h;}             //set the harmonic
   Int_t GetHarmonic() const {return fHarmonic;}          //get the harmonic
-  void SetFlowTagType(Int_t t) {fPOItype=t;}
-  Int_t GetFlowTagType() const {return fPOItype;}
+  void SetPOItype(Int_t t) {fPOItype=t;}
+  Int_t GetPOItype() const {return fPOItype;}
   void SetSubeventNumber(Int_t n) {fSubeventNumber=n;}
   Int_t GetSubeventNumber() const {return fSubeventNumber;}
   void Clear(Option_t* option="");
