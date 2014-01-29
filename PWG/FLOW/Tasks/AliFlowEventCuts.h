@@ -83,9 +83,6 @@ class AliFlowEventCuts : public AliFlowEventSimpleCuts {
   //Int_t GetRefMult() {return fRefMult;}
   Int_t GetReferenceMultiplicity(AliVEvent* event, AliMCEvent *mcEvent) {return RefMult(event,mcEvent);}
   const char* CentrMethName(refMultMethod method) const;
-  void SetCentralityPercentileRange(Float_t min, Float_t max){ fCentralityPercentileMin=min;
-                                                               fCentralityPercentileMax=max;
-                                                               fCutCentralityPercentile=kTRUE; }
   void SetCentralityPercentileMethod( refMultMethod m) {fCentralityPercentileMethod=m;}
   void SetUseCentralityUnchecked(Bool_t b=kTRUE) {fUseCentralityUnchecked=b;}
 
@@ -130,11 +127,8 @@ class AliFlowEventCuts : public AliFlowEventSimpleCuts {
   Bool_t fCutSPDvertexerAnomaly; //cut on the spd vertexer anomaly
   Bool_t fCutSPDTRKVtxZ; //require compatibility between SPDvertexz TRKvertexz
   Bool_t fCutTPCmultiplicityOutliers; //cut TPC multiplicity outliers
-  Bool_t fCutCentralityPercentile; //cut on centrality perc. from AliESDCentrality
   Bool_t fUseCentralityUnchecked; //use the unchecked method
   refMultMethod fCentralityPercentileMethod; //where to get the percentile from
-  Float_t fCentralityPercentileMax; // max centr. perc
-  Float_t fCentralityPercentileMin; // min centr. perc
   Bool_t fCutZDCtiming;   //cut on ZDC timing
   AliTriggerAnalysis fTrigAna; //trigger analysis object
   Bool_t fCutImpactParameter; //cut on impact parameter (MC header)

@@ -50,16 +50,15 @@ class AliFlowEventSimple: public TObject {
   Int_t    NumberOfTracks() const                   { return fNumberOfTracks; }
   Int_t    GetReferenceMultiplicity() const         { return fReferenceMultiplicity; }
   void     SetReferenceMultiplicity( Int_t m )      { fReferenceMultiplicity = m; }
-  Int_t    GetEventNSelTracksRP() const             { return fNumberOfFlowTags[0]; } 
-  void     SetEventNSelTracksRP(Int_t nr)           { fNumberOfFlowTags[0] = nr; }  
-  Int_t    GetEventNSelTracksPOI() const            { return fNumberOfFlowTags[0]; } 
-  void     SetEventNSelTracksPOI(Int_t np)          { fNumberOfFlowTags[0] = np; }  
-  Int_t    GetNumberOfRPs() const                   { return fNumberOfFlowTags[0]; }
-  void     SetNumberOfRPs( Int_t nr )               { fNumberOfFlowTags[0]=nr; }
-  Int_t    GetNumberOfPOIs(Int_t i=1) const         { return (i<fNumberOfFlowTagClasses)?fNumberOfFlowTags[i]:0; }
-  void     SetNumberOfPOIs( Int_t np, Int_t tagClass=1 );
-  void     IncrementNumberOfPOIs(Int_t poiType);
-  void     SetNumberOfFlowTagClasses(Int_t n);
+  Int_t    GetEventNSelTracksRP() const             { return fNumberOfPOIs[0]; } 
+  void     SetEventNSelTracksRP(Int_t nr)           { fNumberOfPOIs[0] = nr; }  
+  Int_t    GetEventNSelTracksPOI() const            { return fNumberOfPOIs[0]; } 
+  void     SetEventNSelTracksPOI(Int_t np)          { fNumberOfPOIs[0] = np; }  
+  Int_t    GetNumberOfRPs() const                   { return fNumberOfPOIs[0]; }
+  void     SetNumberOfRPs( Int_t nr )               { fNumberOfPOIs[0]=nr; }
+  Int_t    GetNumberOfPOIs(Int_t i=1) const         { return (i<fNumberOfPOItypes)?fNumberOfPOIs[i]:0; }
+  void     SetNumberOfPOIs( Int_t nubmerOfPOIs, Int_t poiType=1 );
+  void     IncrementNumberOfPOIs(Int_t poiType=1);
 
   void     SetUseGlauberMCSymmetryPlanes()          { fUseGlauberMCSymmetryPlanes = kTRUE; }
   void     SetUseExternalSymmetryPlanes(TF1 *gPsi1Psi3 = 0x0,
@@ -147,7 +146,7 @@ class AliFlowEventSimple: public TObject {
   Bool_t                  fUserModified;              // did we modify the event in any way (afterburner etc) ?
   TParameter<Int_t>*      fNumberOfTracksWrap;        //! number of tracks in TBrowser
   TParameter<Int_t>*      fNumberOfRPsWrap;           //! number of tracks that have passed the RP selection in TBrowser
-  TParameter<Int_t>*      fNumberOfFlowTagsWrap;          //! number of tracks that have passed the POI selection in TBrowser
+  TParameter<Int_t>*      fNumberOfPOIsWrap;          //! number of tracks that have passed the POI selection in TBrowser
   TParameter<Double_t>*   fMCReactionPlaneAngleWrap;  //! the angle of the reaction plane from the MC truth in TBrowser
   Int_t*                  fShuffledIndexes;           //! placeholder for randomized indexes
   Bool_t                  fShuffleTracks;             // do we shuffle tracks on get?
@@ -155,8 +154,8 @@ class AliFlowEventSimple: public TObject {
   Double_t                fCentrality;                //centrality
  
  private:
-  Int_t                   fNumberOfFlowTagClasses;    // how many different flow particle types do we have? (RP,POI,POI_2,...)
-  Int_t*                  fNumberOfFlowTags;          //[fNumberOfFlowTagClasses] number of tracks that have passed the POI selection
+  Int_t                   fNumberOfPOItypes;    // how many different flow particle types do we have? (RP,POI,POI_2,...)
+  Int_t*                  fNumberOfPOIs;          //[fNumberOfPOItypes] number of tracks that have passed the POI selection
 
   ClassDef(AliFlowEventSimple,1)
 };

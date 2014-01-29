@@ -228,9 +228,6 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Double_t GetPmdEta(Float_t xPos, Float_t yPos, Float_t zPos);
   Double_t GetPmdPhi(Float_t xPos, Float_t yPos);  
 
-  Int_t GetPOItype() const {return fPOItype;}
-  void SetPOItype(Int_t t) {fPOItype=t;}
-
   //PID
   void SetPID(AliPID::EParticleType pid, PIDsource s=kTOFpid, Double_t prob=0.9)
              {fParticleID=pid; fPIDsource=s; fParticleProbability=prob; fCutPID=kTRUE; InitPIDcuts();}
@@ -364,8 +361,6 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Float_t fPmdAdc;      //value of cluster ADC
   Bool_t  fCutPmdNcell; //cut on cluster ncell
   Float_t fPmdNcell;    //value of cluster ncell
-
-  Int_t fPOItype;          //what kind of POI do we have? (1,2,3,...) for RP re still return 1 or so
 
   Double_t fMinKinkAngle; //max kink angle
   Double_t fMinKinkRadius; //min kink radius

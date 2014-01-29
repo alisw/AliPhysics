@@ -51,7 +51,7 @@ AliFlowTrackSimpleCuts::AliFlowTrackSimpleCuts(const char* name):
   fCutMass(kFALSE),
   fMassMax(FLT_MAX),
   fMassMin(-FLT_MAX),
-  fNumberOfPOIclasses(1)
+  fPOItype(1)
 {
   //constructor 
 }
@@ -109,7 +109,7 @@ Bool_t AliFlowTrackSimpleCuts::IsSelected(TObject* obj, Int_t)
 }
 
 //----------------------------------------------------------------------- 
-Int_t AliFlowTrackSimpleCuts::PassesCuts(const AliFlowTrackSimple *track) const
+Bool_t AliFlowTrackSimpleCuts::PassesCuts(const AliFlowTrackSimple *track) const
 {
   //simple method to check if the simple track passes the simple cuts
   if(fCutPt) {if (track->Pt() < fPtMin || track->Pt() >= fPtMax ) return 0;}
@@ -122,7 +122,7 @@ Int_t AliFlowTrackSimpleCuts::PassesCuts(const AliFlowTrackSimple *track) const
 }
 
 //----------------------------------------------------------------------- 
-Int_t AliFlowTrackSimpleCuts::PassesCuts(TParticle* track) const
+Bool_t AliFlowTrackSimpleCuts::PassesCuts(TParticle* track) const
 {
   //simple method to check if the simple track passes the simple cuts
   if(fCutPt)  {if (track->Pt() < fPtMin || track->Pt() >= fPtMax ) return 0;}

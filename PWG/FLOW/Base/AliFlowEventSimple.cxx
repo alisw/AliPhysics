@@ -68,14 +68,14 @@ AliFlowEventSimple::AliFlowEventSimple():
   fUserModified(kFALSE),
   fNumberOfTracksWrap(NULL),
   fNumberOfRPsWrap(NULL),
-  fNumberOfFlowTagsWrap(NULL),
+  fNumberOfPOIsWrap(NULL),
   fMCReactionPlaneAngleWrap(NULL),
   fShuffledIndexes(NULL),
   fShuffleTracks(kFALSE),
   fMothersCollection(NULL),
   fCentrality(-1.),
-  fNumberOfFlowTagClasses(2),
-  fNumberOfFlowTags(NULL)
+  fNumberOfPOItypes(2),
+  fNumberOfPOIs(NULL)
 {
   cout << "AliFlowEventSimple: Default constructor to be used only by root for io" << endl;
 }
@@ -107,14 +107,14 @@ AliFlowEventSimple::AliFlowEventSimple( Int_t n,
   fUserModified(kFALSE),
   fNumberOfTracksWrap(NULL),
   fNumberOfRPsWrap(NULL),
-  fNumberOfFlowTagsWrap(NULL),
+  fNumberOfPOIsWrap(NULL),
   fMCReactionPlaneAngleWrap(NULL),
   fShuffledIndexes(NULL),
   fShuffleTracks(kFALSE),
   fMothersCollection(new TObjArray()),
   fCentrality(-1.),
-  fNumberOfFlowTagClasses(2),
-  fNumberOfFlowTags(new Int_t[fNumberOfFlowTagClasses])
+  fNumberOfPOItypes(2),
+  fNumberOfPOIs(new Int_t[fNumberOfPOItypes])
 {
   //ctor
   // if second argument is set to AliFlowEventSimple::kGenerate
@@ -147,50 +147,47 @@ AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& anEvent):
   fUserModified(anEvent.fUserModified),
   fNumberOfTracksWrap(anEvent.fNumberOfTracksWrap),
   fNumberOfRPsWrap(anEvent.fNumberOfRPsWrap),
-  fNumberOfFlowTagsWrap(anEvent.fNumberOfFlowTagsWrap),
+  fNumberOfPOIsWrap(anEvent.fNumberOfPOIsWrap),
   fMCReactionPlaneAngleWrap(anEvent.fMCReactionPlaneAngleWrap),
   fShuffledIndexes(NULL),
   fShuffleTracks(anEvent.fShuffleTracks),
   fMothersCollection(new TObjArray()),
   fCentrality(anEvent.fCentrality),
-  fNumberOfFlowTagClasses(anEvent.fNumberOfFlowTagClasses),
-  fNumberOfFlowTags(new Int_t[fNumberOfFlowTagClasses])
+  fNumberOfPOItypes(anEvent.fNumberOfPOItypes),
+  fNumberOfPOIs(new Int_t[fNumberOfPOItypes])
 {
   //copy constructor
-  memcpy(fNumberOfFlowTags,anEvent.fNumberOfFlowTags,fNumberOfFlowTagClasses*sizeof(Int_t));
+  memcpy(fNumberOfPOIs,anEvent.fNumberOfPOIs,fNumberOfPOItypes*sizeof(Int_t));
 }
 
 //-----------------------------------------------------------------------
-void AliFlowEventSimple::SetNumberOfPOIs( Int_t np, Int_t tagClass)
-{
-  //set the number of POIs increasing the size of the array in necessary
-  if (tagClass>=fNumberOfFlowTagClasses) SetNumberOfFlowTagClasses(tagClass+1);
-  fNumberOfFlowTags[tagClass] = np;
-}
-
-//-----------------------------------------------------------------------
-void AliFlowEventSimple::IncrementNumberOfPOIs(Int_t tagClass)
-{
-  if (tagClass>=fNumberOfFlowTagClasses) SetNumberOfFlowTagClasses(tagClass+1);
-  fNumberOfFlowTags[tagClass]++;
-}
-
-//-----------------------------------------------------------------------
-void AliFlowEventSimple::SetNumberOfFlowTagClasses(Int_t n)
+void AliFlowEventSimple::SetNumberOfPOIs( Int_t numberOfPOIs, Int_t poiType)
 {
   //set the number of poi classes, resize the array if larger is needed
   //never shrink the array
   //never decrease the stored number
-  if (n>fNumberOfFlowTagClasses)
+  if (poiType>=fNumberOfPOItypes)
   {
+    Int_t n = poiType+1;
     Int_t* tmp = new Int_t[n];
     for (Int_t j=0; j<n; j++) { tmp[j]=0; }       
-    memcpy(tmp,fNumberOfFlowTags,fNumberOfFlowTagClasses*sizeof(Int_t));
-    delete [] fNumberOfFlowTags;
-    fNumberOfFlowTags = tmp;
-    fNumberOfFlowTagClasses = n;
+    memcpy(tmp,fNumberOfPOIs,fNumberOfPOItypes*sizeof(Int_t));
+    delete [] fNumberOfPOIs;
+    fNumberOfPOIs = tmp;
+    fNumberOfPOItypes = n;
   }
+  
+  fNumberOfPOIs[poiType] = numberOfPOIs;
 }
+
+//-----------------------------------------------------------------------
+void AliFlowEventSimple::IncrementNumberOfPOIs(Int_t poiType)
+{
+
+  if (poiType>=fNumberOfPOItypes) SetNumberOfPOIs(0,poiType);
+  fNumberOfPOIs[poiType]++;
+}
+
 //-----------------------------------------------------------------------
 AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEvent)
 {
@@ -201,10 +198,10 @@ AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEv
   fTrackCollection = (TObjArray*)(anEvent.fTrackCollection)->Clone(); //deep copy
   fReferenceMultiplicity = anEvent.fReferenceMultiplicity;
   fNumberOfTracks = anEvent.fNumberOfTracks;
-  fNumberOfFlowTagClasses = anEvent.fNumberOfFlowTagClasses;
-  delete [] fNumberOfFlowTags;
-  fNumberOfFlowTags=new Int_t[fNumberOfFlowTagClasses];
-  memcpy(fNumberOfFlowTags,anEvent.fNumberOfFlowTags,fNumberOfFlowTagClasses*sizeof(Int_t));
+  fNumberOfPOItypes = anEvent.fNumberOfPOItypes;
+  delete [] fNumberOfPOIs;
+  fNumberOfPOIs=new Int_t[fNumberOfPOItypes];
+  memcpy(fNumberOfPOIs,anEvent.fNumberOfPOIs,fNumberOfPOItypes*sizeof(Int_t));
   fUseGlauberMCSymmetryPlanes = anEvent.fUseGlauberMCSymmetryPlanes;
   fUseExternalSymmetryPlanes = anEvent.fUseExternalSymmetryPlanes;
   fPsi1 = anEvent.fPsi1;
@@ -221,7 +218,7 @@ AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEv
   fUserModified=anEvent.fUserModified;
   fNumberOfTracksWrap = anEvent.fNumberOfTracksWrap;
   fNumberOfRPsWrap = anEvent.fNumberOfRPsWrap;
-  fNumberOfFlowTagsWrap = anEvent.fNumberOfFlowTagsWrap;
+  fNumberOfPOIsWrap = anEvent.fNumberOfPOIsWrap;
   fMCReactionPlaneAngleWrap=anEvent.fMCReactionPlaneAngleWrap;
   fShuffleTracks=anEvent.fShuffleTracks;
   delete [] fShuffledIndexes;
@@ -236,11 +233,11 @@ AliFlowEventSimple::~AliFlowEventSimple()
   delete fTrackCollection;
   delete fNumberOfTracksWrap;
   delete fNumberOfRPsWrap;
-  delete fNumberOfFlowTagsWrap;
+  delete fNumberOfPOIsWrap;
   delete fMCReactionPlaneAngleWrap;
   delete fShuffledIndexes;
   delete fMothersCollection;
-  delete [] fNumberOfFlowTags;
+  delete [] fNumberOfPOIs;
 }
 
 //-----------------------------------------------------------------------
@@ -514,7 +511,7 @@ AliFlowVector AliFlowEventSimple::GetQ( Int_t n,
   vQ.Set(dQX,dQY);
   vQ.SetMult(sumOfWeights);
   vQ.SetHarmonic(iOrder);
-  vQ.SetFlowTagType(AliFlowTrackSimple::kRP);
+  vQ.SetPOItype(AliFlowTrackSimple::kRP);
   vQ.SetSubeventNumber(-1);
 
   return vQ;
@@ -656,7 +653,7 @@ void AliFlowEventSimple::Get2Qsub( AliFlowVector* Qarray,
     Qarray[s].Set(dQX,dQY);
     Qarray[s].SetMult(sumOfWeights);
     Qarray[s].SetHarmonic(iOrder);
-    Qarray[s].SetFlowTagType(AliFlowTrackSimple::kRP);
+    Qarray[s].SetPOItype(AliFlowTrackSimple::kRP);
     Qarray[s].SetSubeventNumber(s);
 
     //reset
@@ -675,7 +672,7 @@ void AliFlowEventSimple::Print(Option_t *option) const
   //             ===============================================
   //   printf( "TH1.Print Name  = %s, Entries= %d, Total sum= %g\n",GetName(),Int_t(fEntries),GetSumOfWeights());
   printf( "Class.Print Name = %s, #tracks= %d, Number of RPs= %d, Number of POIs = %d, MC EventPlaneAngle= %f\n",
-          GetName(),fNumberOfTracks, fNumberOfFlowTags[0], fNumberOfFlowTags[1], fMCReactionPlaneAngle );
+          GetName(),fNumberOfTracks, fNumberOfPOIs[0], fNumberOfPOIs[1], fMCReactionPlaneAngle );
 
   TString optionstr(option);
   if (!optionstr.Contains("all")) return;
@@ -704,10 +701,10 @@ void AliFlowEventSimple::Browse(TBrowser *b)
     fNumberOfRPsWrap = new TParameter<int>("fNumberOfRPs", GetNumberOfRPs());
     b->Add(fNumberOfRPsWrap);
   }
-  if (!fNumberOfFlowTagsWrap)
+  if (!fNumberOfPOIsWrap)
   {
-    fNumberOfFlowTagsWrap = new TParameter<int>("fNumberOfFlowTags", GetNumberOfPOIs());
-    b->Add(fNumberOfFlowTagsWrap);
+    fNumberOfPOIsWrap = new TParameter<int>("fNumberOfPOIs", GetNumberOfPOIs());
+    b->Add(fNumberOfPOIsWrap);
   }
   if (!fMCReactionPlaneAngleWrap)
   {
@@ -740,14 +737,14 @@ AliFlowEventSimple::AliFlowEventSimple( TTree* inputTree,
   fUserModified(kFALSE),
   fNumberOfTracksWrap(NULL),
   fNumberOfRPsWrap(NULL),
-  fNumberOfFlowTagsWrap(NULL),
+  fNumberOfPOIsWrap(NULL),
   fMCReactionPlaneAngleWrap(NULL),
   fShuffledIndexes(NULL),
   fShuffleTracks(kFALSE),
   fMothersCollection(new TObjArray()),
   fCentrality(-1.),
-  fNumberOfFlowTagClasses(poiCuts->GetNumberOfPOIclasses()+1),
-  fNumberOfFlowTags(new Int_t[fNumberOfFlowTagClasses])
+  fNumberOfPOItypes(2),
+  fNumberOfPOIs(new Int_t[fNumberOfPOItypes])
 {
   //constructor, fills the event from a TTree of kinematic.root files
   //applies RP and POI cuts, tags the tracks
@@ -766,9 +763,10 @@ AliFlowEventSimple::AliFlowEventSimple( TTree* inputTree,
     if (!pParticle->IsPrimary()) continue;
 
     Bool_t rpOK = (rpCuts->PassesCuts(pParticle)>0);
-    Int_t poiType = poiCuts->PassesCuts(pParticle);
+    Bool_t poiOK = poiCuts->PassesCuts(pParticle);
+    Int_t poiType = poiCuts->GetPOItype();
     
-    if (rpOK || poiType>0)
+    if (rpOK || poiOK)
     {
       AliFlowTrackSimple* pTrack = new AliFlowTrackSimple(pParticle);
 
@@ -776,15 +774,15 @@ AliFlowEventSimple::AliFlowEventSimple( TTree* inputTree,
       if(rpOK)
       {
         pTrack->TagRP(kTRUE);
-        fNumberOfFlowTags[0]++;
-        cout<<"numberOfRPs = "<<fNumberOfFlowTags[0]<<endl;
+        IncrementNumberOfPOIs(0);
+        cout<<"numberOfRPs = "<<fNumberOfPOIs[0]<<endl;
       }
       //marking the particles used for diff. flow:
-      if(poiType>0)
+      if(poiOK)
       {
         pTrack->Tag(poiType);
-        fNumberOfFlowTags[poiType]++;
-        printf("fNumberOfFlowTags[%i] = %i",poiType,fNumberOfFlowTags[poiType]);
+        IncrementNumberOfPOIs(poiType);
+        printf("fNumberOfPOIs[%i] = %i",poiType,fNumberOfPOIs[poiType]);
       }
       //adding a particles which were used either for int. or diff. flow to the list
       AddTrack(pTrack);
@@ -993,11 +991,11 @@ void AliFlowEventSimple::TagRP( const AliFlowTrackSimpleCuts* cuts )
     Bool_t rpTrack=track->InRPSelection();
     if (pass) 
     {
-      if (!rpTrack) fNumberOfFlowTags[0]++; //only increase if not already tagged
+      if (!rpTrack) fNumberOfPOIs[0]++; //only increase if not already tagged
     }
     else
     {
-      if (rpTrack) fNumberOfFlowTags[0]--; //only decrease if detagging
+      if (rpTrack) fNumberOfPOIs[0]--; //only decrease if detagging
     }
     track->SetForRPSelection(pass);
   }
@@ -1015,11 +1013,11 @@ void AliFlowEventSimple::TagPOI( const AliFlowTrackSimpleCuts* cuts, Int_t poiTy
     Bool_t poiTrack=track->InPOISelection();
     if (pass) 
     {
-      if (!poiTrack) fNumberOfFlowTags[poiType]++; //only increase if not already tagged
+      if (!poiTrack) fNumberOfPOIs[poiType]++; //only increase if not already tagged
     }
     else
     {
-      if (poiTrack) fNumberOfFlowTags[poiType]--; //only decrease if detagging
+      if (poiTrack) fNumberOfPOIs[poiType]--; //only decrease if detagging
     }
     track->Tag(poiType,pass);
   }
@@ -1040,12 +1038,12 @@ void AliFlowEventSimple::DefineDeadZone( Double_t etaMin,
     Double_t phi = track->Phi();
     if (eta>etaMin && eta<etaMax && phi>phiMin && phi<phiMax)
     {
-      if (track->InRPSelection()) {fNumberOfFlowTags[0]--;}
-      for (Int_t j=1; j<fNumberOfFlowTagClasses; j++)
+      if (track->InRPSelection()) {fNumberOfPOIs[0]--;}
+      for (Int_t j=1; j<fNumberOfPOItypes; j++)
       {
-        if (track->CheckTag(j)) {fNumberOfFlowTags[j]--;}
+        if (track->CheckTag(j)) {fNumberOfPOIs[j]--;}
       }
-      track->ResetFlowTags();
+      track->ResetPOItype();
     }
   }
 }
@@ -1088,9 +1086,9 @@ void AliFlowEventSimple::ClearFast()
   //clear the counters without deleting allocated objects so they can be reused
   fReferenceMultiplicity = 0;
   fNumberOfTracks = 0;
-  for (Int_t i=0; i<fNumberOfFlowTagClasses; i++)
+  for (Int_t i=0; i<fNumberOfPOItypes; i++)
   {
-    fNumberOfFlowTags[i] = 0;
+    fNumberOfPOIs[i] = 0;
   }
   fMCReactionPlaneAngle = 0.0;
   fMCReactionPlaneAngleIsSet = kFALSE;
