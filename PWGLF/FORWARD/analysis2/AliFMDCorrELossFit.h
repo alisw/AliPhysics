@@ -18,6 +18,7 @@
 #include <TObjArray.h>
 #include <TArrayI.h>
 class TF1;
+class TH1;
 class TBrowser;
 
 /** 
@@ -558,7 +559,9 @@ public:
    * @name Find fits 
    */
   /** 
-   * Find the fit corresponding to the specified parameters 
+   * Find the fit corresponding to the specified parameters.  This
+   * uses the cache map of good fits for the look-up.  For un-cached
+   * look-up see GetFit.
    * 
    * @param d      Detector 
    * @param r      Ring 
@@ -570,7 +573,9 @@ public:
   ELossFit* FindFit(UShort_t d, Char_t r, Double_t eta,
 		    UShort_t minQ) const;
   /** 
-   * Find the fit corresponding to the specified parameters 
+   * Find the fit corresponding to the specified parameters.  This
+   * uses the cache map of good fits for the look-up.  For un-cached
+   * look-up see GetFit. 
    * 
    * @param d      Detector 
    * @param r      Ring 
@@ -582,7 +587,9 @@ public:
   ELossFit* FindFit(UShort_t d, Char_t r, Int_t etabin,
 		    UShort_t minQ) const;
   /** 
-   * Find the fit corresponding to the specified parameters 
+   * Find the fit corresponding to the specified parameters.  Note,
+   * the a cache-map of good fits isn't used for this look-up.  To use
+   * the cache, use FindFit.
    * 
    * @param d   Detector 
    * @param r   Ring 
@@ -592,7 +599,9 @@ public:
    */
   ELossFit* GetFit(UShort_t d, Char_t r, Double_t eta) const;
   /** 
-   * Find the fit corresponding to the specified parameters 
+   * Find the fit corresponding to the specified parameters. Note,
+   * the a cache-map of good fits isn't used for this look-up.  To use
+   * the cache, use FindFit.
    * 
    * @param d      Detector 
    * @param r      Ring 
@@ -732,7 +741,12 @@ public:
    */
   void Print(Option_t* option="R") const; //*MENU*
   /** 
-   * Get a list of THStack - one for each parameter 
+   * Get a list of THStack - one for each parameter.  
+   *
+   * If @a err is true, then error bars are set too.  If @a rel is
+   * true, then the relative error (rather than the absolute value) is
+   * filled into the histograms.  If @a good is true, then we use the
+   * cache-map of good fits rather than all fits.
    * 
    * @param err  Show errors
    * @param rel  Show relative errors 
@@ -753,7 +767,28 @@ protected:
    * @return Pointer to ring array, or newly created container 
    */
   TObjArray* GetOrMakeRingArray(UShort_t d, Char_t r);
-
+  /** 
+   * Fill fit values into stack histograms 
+   * 
+   * @param f         Fit
+   * @param rel       If true, fill in relative errors
+   * @param used      The bin begin used for this fit 
+   * @param hChi      @f$\chi^2/\nu@f$ histogram 
+   * @param hN        @f$ N_{a}@f$ - number of components - histogram
+   * @param hC        @f$ C@f$ - prefactor - histogram
+   * @param hDelta    @f$ \Delta_p@f$ - most-probably value - histogram
+   * @param hXi       @f$ \xi@f$ - Landau 'width' - histogram 
+   * @param hSigma    @f$ \sigma@f$ - Gaussian smear - histogram 
+   * @param maxN      @f$ N_{a,max}@f$ Largest possible @f$ N@f$ 
+   * @param hA        @f$ a_{i}, i=\{2,..,N_{a,max}\}@f$ - histogram
+   */
+  void UpdateStackHist(ELossFit* f,     Bool_t rel, 
+		       Int_t     used, 
+		       TH1*      hChi, TH1*   hN, 
+		       TH1*      hC,   TH1*   hDelta, 
+		       TH1*      hXi,  TH1*   hSigma, 
+		       Int_t     maxN, TH1**  hA) const;
+		       
   TObjArray  fRings;    // Array of rings
   TAxis      fEtaAxis;  // Eta axis used
   Double_t   fLowCut;   // Low cut used when fitting 
