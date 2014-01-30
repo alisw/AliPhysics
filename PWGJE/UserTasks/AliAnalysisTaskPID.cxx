@@ -71,7 +71,9 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   , fEtaAbsCutLow(0.0)
   , fEtaAbsCutUp(0.9)
   , fDoAnySystematicStudiesOnTheExpectedSignal(kFALSE)
-  , fSystematicScalingSplines(1.0)
+  , fSystematicScalingSplinesThreshold(50.)
+  , fSystematicScalingSplinesBelowThreshold(1.0)
+  , fSystematicScalingSplinesAboveThreshold(1.0)
   , fSystematicScalingEtaCorrectionMomentumThr(0.35)
   , fSystematicScalingEtaCorrectionLowMomenta(1.0)
   , fSystematicScalingEtaCorrectionHighMomenta(1.0)
@@ -196,7 +198,9 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   , fEtaAbsCutLow(0.0)
   , fEtaAbsCutUp(0.9)
   , fDoAnySystematicStudiesOnTheExpectedSignal(kFALSE)
-  , fSystematicScalingSplines(1.0)
+  , fSystematicScalingSplinesThreshold(50.)
+  , fSystematicScalingSplinesBelowThreshold(1.0)
+  , fSystematicScalingSplinesAboveThreshold(1.0)
   , fSystematicScalingEtaCorrectionMomentumThr(0.35)
   , fSystematicScalingEtaCorrectionLowMomenta(1.0)
   , fSystematicScalingEtaCorrectionHighMomenta(1.0)
@@ -1089,7 +1093,9 @@ void AliAnalysisTaskPID::CheckDoAnyStematicStudiesOnTheExpectedSignal()
   
   fDoAnySystematicStudiesOnTheExpectedSignal = kFALSE;
   
-  if (TMath::Abs(fSystematicScalingSplines - 1.0) > fgkEpsilon) {
+  
+  if ((TMath::Abs(fSystematicScalingSplinesBelowThreshold - 1.0) > fgkEpsilon) ||
+      (TMath::Abs(fSystematicScalingSplinesAboveThreshold - 1.0) > fgkEpsilon)) {
     fDoAnySystematicStudiesOnTheExpectedSignal = kTRUE;
     return;
   }
@@ -2072,7 +2078,9 @@ void AliAnalysisTaskPID::PrintSystematicsSettings() const
   // Print current settings for systematic studies.
   
   printf("\n\nSettings for systematics for task %s:\n", GetName());
-  printf("Splines:\t%f\n", GetSystematicScalingSplines());
+  printf("SplinesThr:\t%f\n", GetSystematicScalingSplinesThreshold());
+  printf("SplinesBelowThr:\t%f\n", GetSystematicScalingSplinesBelowThreshold());
+  printf("SplinesAboveThr:\t%f\n", GetSystematicScalingSplinesAboveThreshold());
   printf("EtaCorrMomThr:\t%f\n", GetSystematicScalingEtaCorrectionMomentumThr());
   printf("EtaCorrLowP:\t%f\n", GetSystematicScalingEtaCorrectionLowMomenta());
   printf("EtaCorrHighP:\t%f\n", GetSystematicScalingEtaCorrectionHighMomenta());
@@ -2169,12 +2177,47 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
     dEdxPr = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault, kFALSE, kFALSE);
     
     // Scale splines, if desired
-    if (TMath::Abs(fSystematicScalingSplines - 1.0) > fgkEpsilon) {
-      dEdxEl *= fSystematicScalingSplines;
-      dEdxKa *= fSystematicScalingSplines;
-      dEdxPi *= fSystematicScalingSplines;
-      dEdxMu *= fTakeIntoAccountMuons ? fSystematicScalingSplines : 1.;
-      dEdxPr *= fSystematicScalingSplines;
+    if ((TMath::Abs(fSystematicScalingSplinesBelowThreshold - 1.0) > fgkEpsilon) ||
+        (TMath::Abs(fSystematicScalingSplinesAboveThreshold - 1.0) > fgkEpsilon)) {
+       
+      // Tune turn-on of correction for pions (not so relevant for the other species, since at very large momenta)
+      const Double_t pTPC = track->GetTPCmomentum();
+      Double_t bg = 0;
+      Double_t scaleFactor = 1.;
+      Double_t usedSystematicScalingSplines = 1.;
+        
+      bg = pTPC / AliPID::ParticleMass(AliPID::kElectron);
+      scaleFactor = 0.5 * (1. + TMath::Erf((bg - fSystematicScalingSplinesThreshold) / 4.));
+      usedSystematicScalingSplines = fSystematicScalingSplinesBelowThreshold * (1 - scaleFactor)
+                                            + fSystematicScalingSplinesAboveThreshold * scaleFactor;
+      dEdxEl *= usedSystematicScalingSplines;
+      
+      bg = pTPC / AliPID::ParticleMass(AliPID::kKaon);
+      scaleFactor = 0.5 * (1. + TMath::Erf((bg - fSystematicScalingSplinesThreshold) / 4.));
+      usedSystematicScalingSplines = fSystematicScalingSplinesBelowThreshold * (1 - scaleFactor)
+                                            + fSystematicScalingSplinesAboveThreshold * scaleFactor;
+      dEdxKa *= usedSystematicScalingSplines;
+      
+      bg = pTPC / AliPID::ParticleMass(AliPID::kPion);
+      scaleFactor = 0.5 * (1. + TMath::Erf((bg - fSystematicScalingSplinesThreshold) / 4.));
+      usedSystematicScalingSplines = fSystematicScalingSplinesBelowThreshold * (1 - scaleFactor)
+                                            + fSystematicScalingSplinesAboveThreshold * scaleFactor;
+      dEdxPi *= usedSystematicScalingSplines;
+      
+      if (fTakeIntoAccountMuons) {
+        bg = pTPC / AliPID::ParticleMass(AliPID::kMuon);
+        scaleFactor = 0.5 * (1. + TMath::Erf((bg - fSystematicScalingSplinesThreshold) / 4.));
+        usedSystematicScalingSplines = fSystematicScalingSplinesBelowThreshold * (1 - scaleFactor)
+                                              + fSystematicScalingSplinesAboveThreshold * scaleFactor;
+        dEdxMu *= usedSystematicScalingSplines;
+      }
+      
+      
+      bg = pTPC / AliPID::ParticleMass(AliPID::kProton);
+      scaleFactor = 0.5 * (1. + TMath::Erf((bg - fSystematicScalingSplinesThreshold) / 4.));
+      usedSystematicScalingSplines = fSystematicScalingSplinesBelowThreshold * (1 - scaleFactor)
+                                            + fSystematicScalingSplinesAboveThreshold * scaleFactor;
+      dEdxPr *= usedSystematicScalingSplines;
     }
     
     // Get the eta correction factors for the (modified) expected dEdx
