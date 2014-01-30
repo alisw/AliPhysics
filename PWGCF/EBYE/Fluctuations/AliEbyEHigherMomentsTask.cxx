@@ -442,7 +442,7 @@ void AliEbyEHigherMomentsTask::doMCAODEvent(){
   fTHnCentNplusNminusChTruth->Fill(fContainerChTruth);//MC -Truth ch. particles
   
   //cout << fCentrality << " " << positiveSumMCRec << " " << negativeSumMCRec <<endl;
-  cout <<fCentrality<<"   " << positiveSumMCTruth << " " << negativeSumMCTruth << endl;
+  //cout <<fCentrality<<"   " << positiveSumMCTruth << " " << negativeSumMCTruth << endl;
   //cout <<"   " << posPidSumMCRec << " " << negPidSumMCRec << endl;
   //cout <<"   " << posPidSumMCTruth << " " << negPidSumMCTruth << endl;
   //cout <<"---------------------------------" << endl;
@@ -456,10 +456,10 @@ void AliEbyEHigherMomentsTask::doMCAODEvent(){
     ptContainer[i] = PtCh[i-1];
     ptContainerMC[i] = ptChMC[i-1];
     //cout <<" "<< PtCh[i-1]<<endl;
-    cout<< " MC=" << ptChMC[i-1];
+    //  cout<< " MC=" << ptChMC[i-1];
   }
 
-  cout << endl;
+  //cout << endl;
 
   fPtBinNplusNminusCh->Fill(ptContainer);
   fPtBinNplusNminusChTruth->Fill(ptContainerMC);
