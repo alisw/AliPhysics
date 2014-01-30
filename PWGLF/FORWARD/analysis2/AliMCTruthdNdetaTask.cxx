@@ -35,15 +35,6 @@ AliMCTruthdNdetaTask::AliMCTruthdNdetaTask(const char* /* name */)
   //   name    Name of task 
 }
 
-//____________________________________________________________________
-AliMCTruthdNdetaTask::AliMCTruthdNdetaTask(const AliMCTruthdNdetaTask& o)
-  : AliBasedNdetaTask(o), 
-    fHasData(o.fHasData)
-{
-  // 
-  // Copy constructor
-  // 
-}
 
 //____________________________________________________________________
 AliBasedNdetaTask::CentralityBin*
@@ -66,7 +57,7 @@ AliMCTruthdNdetaTask::MakeCentralityBin(const char* name, Short_t l, Short_t h)
 
 //____________________________________________________________________
 TH2D*
-AliMCTruthdNdetaTask::GetHistogram(const AliAODEvent* aod, Bool_t mc)
+AliMCTruthdNdetaTask::GetHistogram(const AliAODEvent& aod, Bool_t mc)
 {
   // 
   // Retrieve the histogram 
@@ -80,13 +71,12 @@ AliMCTruthdNdetaTask::GetHistogram(const AliAODEvent* aod, Bool_t mc)
   //
   if (!fHasData) return 0;
   if (mc) return 0;
-  TObject* obj = aod->FindListObject("primary");
-  // We should have a forward object at least 
-  if (!obj) {
+
+  TH2D* ret = GetPrimary(aod);
+  if (!ret) {
     fHasData = false;
     return 0;
   }
-  TH2D* ret = static_cast<TH2D*>(obj);
   Int_t nY  = ret->GetNbinsY();
   // Need to fill under-/overflow bin with 1's 
   for (Int_t i = 1; i <= ret->GetNbinsX(); i++)  {
@@ -97,8 +87,8 @@ AliMCTruthdNdetaTask::GetHistogram(const AliAODEvent* aod, Bool_t mc)
 }
 
 //________________________________________________________________________
-void 
-AliMCTruthdNdetaTask::Terminate(Option_t *option) 
+Bool_t
+AliMCTruthdNdetaTask::Finalize() 
 {
   // 
   // Called at end of event processing.. 
@@ -109,9 +99,9 @@ AliMCTruthdNdetaTask::Terminate(Option_t *option)
   //    option Not used 
   if (!fHasData) {
     AliInfo("The MC truth dN/deta task didn't get any data");
-    return;
+    return false;
   }
-  AliBasedNdetaTask::Terminate(option);
+  AliBasedNdetaTask::Finalize();
 
   THStack* truth      = new THStack("dndetaTruth", "dN/d#eta MC Truth");
   THStack* truthRebin = new THStack(Form("dndetaTruth_rebin%02d", fRebin), 
@@ -120,7 +110,7 @@ AliMCTruthdNdetaTask::Terminate(Option_t *option)
   TIter next(fListOfCentralities);
   CentralityBin* bin = 0;
   while ((bin = static_cast<CentralityBin*>(next()))) {
-    if (fCentAxis && bin->IsAllBin()) continue;
+    if (HasCentrality() && bin->IsAllBin()) continue;
 
     TList* results = bin->GetResults();
     if (!results) continue; 
@@ -139,7 +129,7 @@ AliMCTruthdNdetaTask::Terminate(Option_t *option)
     delete truth;
     truth = 0;
   }
-  if (truth) fOutput->Add(truth);
+  if (truth) fResults->Add(truth);
 
   // If available output rebinned stack 
   if (!truthRebin->GetHists() || 
@@ -148,7 +138,8 @@ AliMCTruthdNdetaTask::Terminate(Option_t *option)
     delete truthRebin;
     truthRebin = 0;
   }
-  if (truthRebin) fOutput->Add(truthRebin);  
+  if (truthRebin) fResults->Add(truthRebin);  
+  return true;
 }
 
 //========================================================================
@@ -244,7 +235,7 @@ AliMCTruthdNdetaTask::CentralityBin::End(TList*      sums,
     Int_t n  = (triggerMask == AliAODForwardMult::kNSD ? 
 		Int_t(fTriggers->GetBinContent(AliAODForwardMult::kBinMCNSD)) : 
 		Int_t(fTriggers->GetBinContent(AliAODForwardMult::kBinAll)));
-    AliInfo(Form("Normalising MC truth to %d (%d additions)", n, n0));
+    DMSG(fDebug,0,"Normalising MC truth to %d (%d additions)", n, n0);
     
     TH1D* dndetaTruth = fSumTruth->ProjectionX("dndetaTruth",1,
 					       fSumTruth->GetNbinsY(),"e");
@@ -258,10 +249,10 @@ AliMCTruthdNdetaTask::CentralityBin::End(TList*      sums,
     fOutput->Add(dndetaTruth);
     fOutput->Add(Rebin(dndetaTruth, rebin, cutEdges));
   }
-  TH1* dndeta          = GetResult(0,     false, "");
-  TH1* dndetaSym       = GetResult(0,     true,  "");
-  TH1* dndeta_rebin    = GetResult(rebin, false, "");
-  TH1* dndetaSym_rebin = GetResult(rebin, true,  "");
+  TH1* dndeta          =                       GetResult(0,     false, "");
+  TH1* dndetaSym       = symmetrice          ? GetResult(0,     true,  "") : 0;
+  TH1* dndeta_rebin    = rebin               ? GetResult(rebin, false, "") : 0;
+  TH1* dndetaSym_rebin = symmetrice && rebin ? GetResult(rebin, true,  "") : 0;
   if (dndeta)    
     dndeta->SetTitle("Monte-Carlo truth (selected)");
   if (dndetaSym) 

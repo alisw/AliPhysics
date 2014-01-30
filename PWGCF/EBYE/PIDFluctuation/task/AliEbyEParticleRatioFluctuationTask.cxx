@@ -46,7 +46,8 @@
 #include "AliAODHeader.h"
 #include "AliAODpidUtil.h"
 #include "AliHelperPID.h"
-
+using std::endl;
+using std::cout;
 #include "AliEbyEParticleRatioFluctuationTask.h"
 
 ClassImp(AliEbyEParticleRatioFluctuationTask)
@@ -135,7 +136,7 @@ void AliEbyEParticleRatioFluctuationTask::UserExec( Option_t * ){
 
   AliAODEvent* event = dynamic_cast<AliAODEvent*>(InputEvent());
   if (!event) {
-    cout<< "ERROR 01: AOD not found " <<endl;
+    Printf("ERROR 01: AOD not found ");
     return;
   }
 

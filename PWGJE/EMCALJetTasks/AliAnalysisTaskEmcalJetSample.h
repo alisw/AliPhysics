@@ -5,6 +5,9 @@
 
 class TH1;
 class TH2;
+class AliJetContainer;
+class AliParticleContainer;
+class AliClusterContainer;
 
 #include "AliAnalysisTaskEmcalJet.h"
 
@@ -19,6 +22,7 @@ class AliAnalysisTaskEmcalJetSample : public AliAnalysisTaskEmcalJet {
   void                        Terminate(Option_t *option);
 
  protected:
+  void                        ExecOnce();
   Bool_t                      FillHistograms()   ;
   Bool_t                      Run()              ;
 
@@ -31,10 +35,14 @@ class AliAnalysisTaskEmcalJetSample : public AliAnalysisTaskEmcalJet {
   TH2                        *fHistJetsPtLeadHad[4];       //!Jet pt vs. leading hadron
   TH2                        *fHistJetsCorrPtArea[4];      //!Jet pt - bkg vs. area
 
+  AliJetContainer            *fJetsCont;                   //!Jets
+  AliParticleContainer       *fTracksCont;                 //!Tracks
+  AliClusterContainer        *fCaloClustersCont;           //!Clusters  
+
  private:
   AliAnalysisTaskEmcalJetSample(const AliAnalysisTaskEmcalJetSample&);            // not implemented
   AliAnalysisTaskEmcalJetSample &operator=(const AliAnalysisTaskEmcalJetSample&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetSample, 1) // jet sample analysis task
+  ClassDef(AliAnalysisTaskEmcalJetSample, 2) // jet sample analysis task
 };
 #endif

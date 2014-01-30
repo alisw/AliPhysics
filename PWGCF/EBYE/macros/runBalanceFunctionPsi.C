@@ -104,7 +104,7 @@ void runBalanceFunctionPsi(
       }
       else if((bAOD)&&(!bMCtruth)) {
 	chain = new TChain("aodTree");
-	for(Int_t i = 1; i < 2; i++) {
+	for(Int_t i = 1; i < 20; i++) {
 	  filename = "/glusterfs/alice1/alice2/pchrist/pp/LHC10c/7TeV/Data/Set";
 	  filename += i; filename += "/AliAOD.root";
 	  chain->Add(filename.Data());
@@ -133,7 +133,7 @@ void runBalanceFunctionPsi(
     }//local mode
 
     // input handler (ESD or AOD)
-    Aliveventhandler* inputH = NULL;
+    AliVEventHandler* inputH = NULL;
     if(!bAOD){
       inputH = new AliESDInputHandler();
     }
@@ -215,16 +215,10 @@ void runBalanceFunctionPsi(
     AliVZEROEPSelectionTask* epSelTask = AddTaskVZEROEPSelection();
 
     //Add the BF task (all centralities)
-    
     gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/macros/AddTaskBalancePsiCentralityTrain.C"); 
-    //for (Int_t i = 0; i<numberOfCentralityBins; i++) {
-    //Double_t lowCentralityBinEdge = centralityArray[i];
-    //Double_t highCentralityBinEdge = centralityArray[i+1];
-    //Printf("\nWagon for centrality bin %i: %.0f-%.0f",i,lowCentralityBinEdge,highCentralityBinEdge);
-    //AliAnalysisTaskBFPsi *task = AddTaskBalancePsiCentralityTrain(lowCentralityBinEdge,highCentralityBinEdge,0,1,0,"V0M",vZ[0],DCAxy[0],DCAz[0],ptMin[0],ptMax[0],etaMin[0],etaMax[0],-1,-1,kUsePID,bResonancesCut,bUseHBTCut,bUseConversionCut,bMomentumDifferenceCut,128,0,"AnalysisResults","Centrality","AOD",1); 
-      //} // end of for (Int_t i=0; i<numberOfCentralityBins; i++)
 
-    AddTaskBalancePsiCentralityTrain(0, 500, kFALSE, kTRUE, kFALSE, "", 10, -1, -1, 0.2, 20.0, -0.8, 0.8, -1, -1, kUsePID, kTRUE, kTRUE, kTRUE, kTRUE, 0.1, 128, 1, "AnalysisResults","Multiplicity","AOD",kTRUE, kNSigmaElectronRejection);
+    AliAnalysisTaskBFPsi *taskBF = AddTaskBalancePsiCentralityTrain(0, 500, kFALSE, kTRUE, kFALSE, "V0M", 10, -1, -1, 0.2, 20.0, -0.8, 0.8, -1, -1, kUsePID, kFALSE, kTRUE, 0.02, kFALSE, 0.04, kTRUE, 0.1, 128, 1, "AnalysisResults","TE","Multiplicity","AOD",kTRUE, kNSigmaElectronRejection);
+    //taskBF->SetDebugLevel();
 
     // enable debug printouts
     //mgr->SetDebugLevel(2);

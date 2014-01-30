@@ -1,9 +1,7 @@
 #ifndef AliJetContainer_H
 #define AliJetContainer_H
 
-//
-// container with name, TClonesArray and cuts for jets
-//
+// $Id$
 
 class TClonesArray;
 class TString;
@@ -39,38 +37,33 @@ class AliJetContainer : public AliEmcalContainer {
   void LoadLocalRho(AliVEvent *event);
 
   void                        SetJetAcceptanceType(JetAcceptanceType type)         { fJetAcceptanceType          = type ; }
-
   void                        ResetCuts();
-
   void                        SetJetEtaPhiEMCAL() ;
   void                        SetJetEtaPhiTPC()   ;
   void                        SetRunNumber(Int_t r)                                { fRunNumber = r;                      }
-
   void                        SetJetEtaLimits(Float_t min, Float_t max)            { fJetMinEta = min, fJetMaxEta = max ; }
   void                        SetJetPhiLimits(Float_t min, Float_t max)            { fJetMinPhi = min, fJetMaxPhi = max ; }
   void                        SetJetAreaCut(Float_t cut)                           { fJetAreaCut     = cut              ; }
-  void                        SetPercAreaCut(Float_t p)                            { if(fJetRadius==0.) AliWarning("JetRadius not set. Area cut will be 0"); fJetAreaCut = p*TMath::Pi()*fJetRadius*fJetRadius; }
+  void                        SetPercAreaCut(Float_t p)                            { if(fJetRadius==0.) AliWarning("JetRadius not set. Area cut will be 0"); 
+                                                                                     fJetAreaCut = p*TMath::Pi()*fJetRadius*fJetRadius; }
   void                        SetZLeadingCut(Float_t zemc, Float_t zch)            { fZLeadingEmcCut = zemc; fZLeadingChCut = zch ; }
   void                        SetNEFCut(Float_t min = 0., Float_t max = 1.)        { fNEFMinCut = min; fNEFMaxCut = max;  }
-
   void                        SetAreaEmcCut(Double_t a = 0.99)                     { fAreaEmcCut     = a                ; }
   void                        SetJetPtCut(Float_t cut)                             { fJetPtCut       = cut              ; }
   void                        SetJetRadius(Float_t r)                              { fJetRadius      = r                ; } 
   virtual void                SetRhoName(const char *n)                            { fRhoName        = n                ; }
   virtual void                SetLocalRhoName(const char *n)                       { fLocalRhoName   = n                ; }
+  void                        SetFlavourCut(Int_t myflavour)                       { fFlavourSelection = myflavour;}
   void                        SetMaxClusterPt(Float_t b)                           { fMaxClusterPt   = b                ; }
   void                        SetMaxTrackPt(Float_t b)                             { fMaxTrackPt     = b                ; }
   void                        SetPtBiasJetClus(Float_t b)                          { fPtBiasJetClus  = b                ; }
   void                        SetNLeadingJets(Int_t t)                             { fNLeadingJets   = t                ; }
   void                        SetPtBiasJetTrack(Float_t b)                         { fPtBiasJetTrack = b                ; }
-
   void                        SetLeadingHadronType(Int_t t)                        { fLeadingHadronType = t             ; }
   void                        SetJetBitMap(UInt_t m)                               { fJetBitMap      = m                ; }
   void                        SetJetTrigger(UInt_t t=AliVEvent::kEMCEJE)           { fJetTrigger     = t                ; }
-
   void                        ConnectParticleContainer(AliParticleContainer *c)    { fParticleContainer = c             ; }
   void                        ConnectClusterContainer(AliClusterContainer *c)      { fClusterContainer  = c             ; }
-
   AliEmcalJet                *GetLeadingJet(const char* opt="")          ;
   AliEmcalJet                *GetJet(Int_t i)                       const;
   AliEmcalJet                *GetAcceptJet(Int_t i)                 const;
@@ -80,7 +73,8 @@ class AliJetContainer : public AliEmcalContainer {
   AliEmcalJet                *GetNextJet(Int_t i=-1)                     ;
   void                        GetMomentum(TLorentzVector &mom, Int_t i) const;
   Bool_t                      AcceptJet(AliEmcalJet* jet)           const;
-  Bool_t                      AcceptBiasJet(AliEmcalJet* jet)       const; 
+  Bool_t                      AcceptBiasJet(AliEmcalJet* jet)       const;
+  Int_t                       GetFlavourCut()                       const    {return fFlavourSelection;}
   Int_t                       GetNJets()                            const    {return GetNEntries();}
   Double_t                    GetLeadingHadronPt(AliEmcalJet* jet)  const;
   void                        GetLeadingHadronMomentum(TLorentzVector &mom, AliEmcalJet* jet)  const;
@@ -88,7 +82,7 @@ class AliJetContainer : public AliEmcalContainer {
   Double_t                    GetZLeadingEmc(AliEmcalJet *jet)      const;
   Double_t                    GetZLeadingCharged(AliEmcalJet *jet)  const;
   AliRhoParameter            *GetRhoParameter()                              {return fRho;}
-  Double_t                    GetRhoVal()                           const    { if (fRho) return fRho->GetVal(); else return 0;}
+  Double_t                    GetRhoVal()                           const    {if (fRho) return fRho->GetVal(); else return 0;}
   const TString&              GetRhoName()                          const    {return fRhoName;}
   AliLocalRhoParameter       *GetLocalRhoParameter()                const    {return fLocalRho;}
   const TString&              GetLocalRhoName()                     const    {return fLocalRhoName;}
@@ -109,6 +103,7 @@ class AliJetContainer : public AliEmcalContainer {
   Float_t                     fJetRadius;            //  jet radius
   TString                     fRhoName;              //  Name of rho object
   TString                     fLocalRhoName;         //  Name of local rho object
+  Int_t                       fFlavourSelection;     //  selection on jet flavour
   Float_t                     fPtBiasJetTrack;       //  select jets with a minimum pt track
   Float_t                     fPtBiasJetClus;        //  select jets with a minimum pt cluster
   Float_t                     fJetPtCut;             //  cut on jet pt
@@ -140,10 +135,8 @@ class AliJetContainer : public AliEmcalContainer {
   AliJetContainer(const AliJetContainer& obj); // copy constructor
   AliJetContainer& operator=(const AliJetContainer& other); // assignment
 
-  ClassDef(AliJetContainer,5);
+  ClassDef(AliJetContainer,6);
 
 };
 
 #endif
-
-

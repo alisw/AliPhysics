@@ -28,8 +28,8 @@ class AliJetBkg : public TObject
   void    SetCalTrkEvent(AliJetCalTrkEvent *evt)  {fEvent=evt;}
   Bool_t  PtCutPass(Int_t id, Int_t nTracks);
   Bool_t  SignalCutPass(Int_t id, Int_t nTracks);
-  Float_t CalcJetAreaEtaCut(Float_t radius, const Float_t etaJet);
-  void    CalcJetAndBckgAreaEtaCut(Bool_t calcOutsideArea, Float_t rc, const Int_t nJ, const Float_t* etaJet, Float_t* &areaJet, Float_t &areaOut);
+  Float_t CalcJetAreaEtaCut(Float_t radius, Float_t etaJet);
+  void    CalcJetAndBckgAreaEtaCut(Bool_t calcOutsideArea, Float_t rc, Int_t nJ, const Float_t* etaJet, Float_t* &areaJet, Float_t &areaOut);
  
   void    SubtractBackg(const Int_t& nIn, const Int_t&nJ, Float_t&EtbgTotalN, Float_t&sigmaN, 
 			const Float_t* ptT, const Float_t* etaT, const Float_t* phiT, 

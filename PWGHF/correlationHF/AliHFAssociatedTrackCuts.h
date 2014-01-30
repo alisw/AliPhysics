@@ -54,7 +54,7 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 	Bool_t IsSelected(TList*  list) {if(list) return kTRUE; return kFALSE;};
 	Bool_t IsSelected(TObject*  obj) {if(obj) return kTRUE; return kFALSE;};
 	Bool_t IsInAcceptance();
-	Bool_t IsHadronSelected(AliAODTrack * track,const AliESDVertex *primary=0x0,const Double_t magfield=0);
+	Bool_t IsHadronSelected(AliAODTrack * track,const AliESDVertex *primary=0x0, Double_t magfield=0);
 	Bool_t CheckHadronKinematic(Double_t pt, Double_t d0); 
 	Bool_t Charge(Short_t charge, AliAODTrack* track);
 	Bool_t CheckKaonCompatibility(AliAODTrack * track, Bool_t useMc, TClonesArray* mcArray, Int_t method=1);

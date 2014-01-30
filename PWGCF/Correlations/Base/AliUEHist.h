@@ -110,6 +110,7 @@ class AliUEHist : public TObject
   Float_t GetTrackEtaCut() { return fTrackEtaCut; }
   void SetTrackEtaCut(Float_t value) { fTrackEtaCut = value; }
   void SetWeightPerEvent(Bool_t flag)   { fWeightPerEvent = flag; }
+  void SetSkipScaleMixedEvent(Bool_t flag)  { fSkipScaleMixedEvent = flag; }
   
   void SetContaminationEnhancement(TH1F* hist)    { fContaminationEnhancement = hist; }
   
@@ -142,8 +143,8 @@ protected:
   void WeightHistogram(TH3* hist1, TH1* hist2);
   void MultiplyHistograms(THnSparse* grid, THnSparse* target, TH1* histogram, Int_t var1, Int_t var2);
 
-  AliCFContainer* fTrackHist[4];      // container for track level distributions in four regions (toward, away, min, max) and at four analysis steps
-  AliCFContainer* fEventHist;         // container for event level distribution at four analysis steps
+  AliCFContainer* fTrackHist[4];      // container for track level distributions in four regions (toward, away, min, max) and at all analysis steps
+  AliCFContainer* fEventHist;         // container for event level distribution at all analysis steps
   AliCFContainer* fTrackHistEfficiency; // container for tracking efficiency and contamination (all particles filled including leading one): axes: eta, pT, particle species
   TH3F* fFakePt;
  
@@ -161,7 +162,8 @@ protected:
   
   Bool_t fCombineMinMax;              // flag to combine min and max to a general towards region
   Float_t fTrackEtaCut;               // cut used during production of histograms (needed for finite bin correction in GetSumOfRatios)
-  Bool_t fWeightPerEvent;	// weight with the number of trigger particles per event
+  Bool_t fWeightPerEvent;	      // weight with the number of trigger particles per event
+  Bool_t fSkipScaleMixedEvent;        // scale the mixed event with (0, 0) plus finite bin correction (default: kTRUE)
   
   AliCFContainer* fCache;             //! cache variable for GetTrackEfficiency
   
@@ -170,7 +172,7 @@ protected:
   
   TString fHistogramType;             // what is stored in this histogram
   
-  ClassDef(AliUEHist, 13) // underlying event histogram container
+  ClassDef(AliUEHist, 14) // underlying event histogram container
 };
 
 #endif

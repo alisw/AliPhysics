@@ -44,6 +44,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 				    Int_t nCentralityBins, 
 				    Double_t *centralityArrayForCorrections);
   //========================correction
+  // void SetDebugLevel() {fDebugLevel = kTRUE;} //hides overloaded virtual function
 
   void SetAnalysisObject(AliBalancePsi *const analysis) {
     fBalance         = analysis;
@@ -68,7 +69,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   //==============AOD analysis==============//
   void SetAODtrackCutBit(Int_t bit){
-    nAODtrackCutBit = bit;
+    fnAODtrackCutBit = bit;
   }
 
   void SetKinematicsCutsAOD(Double_t ptmin, Double_t ptmax, Double_t etamin, Double_t etamax){
@@ -119,6 +120,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   }
 
   //multiplicity
+  void SetMultiplicityEstimator(const char* multiplicityEstimator) {fMultiplicityEstimator = multiplicityEstimator;}
+  const char* GetMultiplicityEstimator(void)  const              {return fMultiplicityEstimator;}
   void SetMultiplicityRange(Double_t min, Double_t max) {
     fUseMultiplicity = kTRUE;
     fNumberOfAcceptedTracksMin = min;
@@ -128,7 +131,11 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   void UseOfflineTrigger() {fUseOfflineTrigger = kTRUE;}
   void CheckFirstEventInChunk() {fCheckFirstEventInChunk = kTRUE;}
   void CheckPileUp() {fCheckPileUp = kTRUE;}
+  void CheckPrimaryFlagAOD() {fCheckPrimaryFlagAOD = kTRUE;}
   void UseMCforKinematics() {fUseMCforKinematics = kTRUE;}
+  void SetCentralityWeights(TH1* hist) { fCentralityWeights = hist; }
+  Bool_t AcceptEventCentralityWeight(Double_t centrality);
+
   
   //Acceptance filter
   void SetAcceptanceParameterization(TF1 *parameterization) {
@@ -153,6 +160,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     void SetEventClass(TString receivedEventClass){
         fEventClass = receivedEventClass;
     }
+    
+  void SetCustomBinning(TString receivedCustomBinning) { fCustomBinning = receivedCustomBinning; }
+
 
     // electron rejection
     void SetElectronRejection(Double_t gMaxNSigma){
@@ -171,10 +181,12 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
       fElectronRejectionMaxPt  = maxPt;
     }
 
+    void SetVZEROCalibrationFile(const char* filename, const char* lhcPeriod);
 
  private:
   Double_t    IsEventAccepted(AliVEvent* event);
   Double_t    GetRefMultiOrCentrality(AliVEvent* event);
+  Double_t    GetReferenceMultiplicityFromAOD(AliVEvent* event);
   Double_t    GetEventPlane(AliVEvent* event);
   //===============================correction
   Double_t    GetTrackbyTrackCorrectionMatrix(Double_t vEta, 
@@ -185,7 +197,12 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   //===============================correction
   TObjArray* GetAcceptedTracks(AliVEvent* event, Double_t gCentrality, Double_t gReactionPlane);
   TObjArray* GetShuffledTracks(TObjArray* tracks, Double_t gCentrality);
+
+  Double_t GetChannelEqualizationFactor(Int_t run, Int_t channel);
+  Double_t GetEqualizationFactor(Int_t run, const char *side);
  
+  Bool_t fDebugLevel; // debug level
+
   TClonesArray* fArrayMC; //! AOD object  //+++++++++++++++++++++
   AliBalancePsi *fBalance; //BF object
   Bool_t fRunShuffling;//run shuffling or not
@@ -210,6 +227,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH1F *fHistVx; //x coordinate of the primary vertex
   TH1F *fHistVy; //y coordinate of the primary vertex
   TH2F *fHistVz; //z coordinate of the primary vertex
+
+  TH2F *fHistTPCvsVZEROMultiplicity; //VZERO vs TPC reference multiplicity
+  TH2F *fHistVZEROSignal; //VZERO channel vs signal
 
   TH2F *fHistEventPlane; //event plane distribution
 
@@ -237,6 +257,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2D *fHistProbTPCTOFvsPtbeforePID;//TOF/TPC probability vs pT before PID cuts (QA histogram)
   TH2D *fHistNSigmaTPCvsPtbeforePID;//TPC nsigma vs pT before PID cuts (QA histogram)
   TH2D *fHistNSigmaTOFvsPtbeforePID;//TOF nsigma vs pT before PID cuts (QA histogram)
+  TH2D *fHistBetaVsdEdXbeforePID;//TPCTOF  before PID cuts (QA histogram)//+++++++++++++++++++++
+  TH2D *fHistNSigmaTPCTOFvsPtbeforePID;//TPCTOF  before PID cuts (QA histogram)//+++++++++++++++++++++
   TH2D *fHistdEdxVsPTPCafterPID;//TPC dEdx vs momentum after PID cuts (QA histogram)
   TH2D *fHistBetavsPTOFafterPID;//beta vs momentum after PID cuts (QA histogram)
   TH2D *fHistProbTPCvsPtafterPID; //TPC probability vs pT after PID cuts (QA histogram)
@@ -244,11 +266,20 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2D *fHistProbTPCTOFvsPtafterPID;//TOF/TPC probability vs pT after PID cuts (QA histogram)
   TH2D *fHistNSigmaTPCvsPtafterPID;//TPC nsigma vs pT after PID cuts (QA histogram)
   TH2D *fHistNSigmaTOFvsPtafterPID;//TOF nsigma vs pT after PID cuts (QA histogram)
+  TH2D *fHistBetaVsdEdXafterPID;//TPCTOF  before PID cuts (QA histogram)//+++++++++++++++++++++
+  TH2D *fHistNSigmaTPCTOFvsPtafterPID;//TPCTOF  before PID cuts (QA histogram)//+++++++++++++++++++++
+
+  TH2D *fHistdEdxVsPTPCbeforePIDelectron; //+++++++
+  TH2D *fHistNSigmaTPCvsPtbeforePIDelectron; //+++++++
+  TH2D *fHistdEdxVsPTPCafterPIDelectron; //+++++++
+  TH2D *fHistNSigmaTPCvsPtafterPIDelectron; //+++++++
   
   TH3F *fHistCorrectionPlus[kCENTRALITY]; //====correction
   TH3F *fHistCorrectionMinus[kCENTRALITY]; //===correction
   Double_t fCentralityArrayForCorrections[kCENTRALITY];
   Int_t fCentralityArrayBinsForCorrections;
+
+  TH1* fCentralityWeights;		     // for centrality flattening
 
   AliPIDResponse *fPIDResponse;     //! PID response object
   AliPIDCombined       *fPIDCombined;     //! combined PID object
@@ -267,7 +298,6 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Double_t fElectronRejectionNSigma;//nsigma cut for electron rejection
   Double_t fElectronRejectionMinPt;//minimum pt for electron rejection (default = 0.)
   Double_t fElectronRejectionMaxPt;//maximum pt for electron rejection (default = 1000.)
-
   //============PID============//
 
   AliESDtrackCuts *fESDtrackCuts; //ESD track cuts
@@ -279,21 +309,24 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Double_t fImpactParameterMin;//impact parameter min (used for MC)
   Double_t fImpactParameterMax;//impact parameter max (used for MC)
 
+  TString fMultiplicityEstimator;//"V0M","V0A","V0C","TPC"
   Bool_t fUseMultiplicity;//use the multiplicity cuts
   Double_t fNumberOfAcceptedTracksMin;//min. number of number of accepted tracks (used for the multiplicity dependence study - pp)
   Double_t fNumberOfAcceptedTracksMax;//max. number of number of accepted tracks (used for the multiplicity dependence study - pp)
   TH2F *fHistNumberOfAcceptedTracks;//hisot to store the number of accepted tracks
+  TH1F *fHistMultiplicity;//hisot to store the number of accepted tracks //++++++++++++++++++
 
   Bool_t fUseOfflineTrigger;//Usage of the offline trigger selection
   Bool_t fCheckFirstEventInChunk;//Usage of the "First Event in Chunk" check (not needed for new productions)
   Bool_t fCheckPileUp;//Usage of the "Pile-Up" event check
+  Bool_t fCheckPrimaryFlagAOD;// Usage of check on AliAODtrack::kPrimary (default = OFF)
   Bool_t fUseMCforKinematics;//Usage of MC information for filling the kinematics information of particles (only in MCAODrec mode)
 
   Double_t fVxMax;//vxmax
   Double_t fVyMax;//vymax
   Double_t fVzMax;//vzmax
 
-  Int_t nAODtrackCutBit;//track cut bit from track selection (only used for AODs)
+  Int_t fnAODtrackCutBit;//track cut bit from track selection (only used for AODs)
 
   Double_t fPtMin;//only used for AODs
   Double_t fPtMax;//only used for AODs
@@ -327,7 +360,12 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Bool_t fUseMCPdgCode; //Boolean to analyze a set of particles in MC
   Int_t fPDGCodeToBeAnalyzed; //Analyze a set of particles in MC
   TString fEventClass; //Can be "EventPlane", "Centrality", "Multiplicity"
+  TString fCustomBinning;//for setting customized binning (for output AliTHn of AliBalancePsi)
   
+  //VZERO calibration
+  TH1F *fHistVZEROAGainEqualizationMap;//VZERO calibration map
+  TH1F *fHistVZEROCGainEqualizationMap;//VZERO calibration map
+  TH2F *fHistVZEROChannelGainEqualizationMap; //VZERO calibration map
 
   AliAnalysisTaskBFPsi(const AliAnalysisTaskBFPsi&); // not implemented
   AliAnalysisTaskBFPsi& operator=(const AliAnalysisTaskBFPsi&); // not implemented

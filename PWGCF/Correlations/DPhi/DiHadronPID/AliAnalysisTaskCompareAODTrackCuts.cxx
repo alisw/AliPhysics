@@ -67,12 +67,14 @@ AliAnalysisTaskCompareAODTrackCuts::AliAnalysisTaskCompareAODTrackCuts():
 	fIsMC(kFALSE),
 	fVerbose(kFALSE),
 	fCalculateTOFMismatch(kFALSE),	
-	fMismatchMethod(0),	
+	fUseMismatchFileFromHomeDir(kTRUE),
+	fUseNSigmaOnPIDAxes(kFALSE),	
 	fEventCuts(0x0),
 	fTrackCuts(0x0),
 	fInclusiveTimes(0x0),
 	fT0Fill(0x0),
 	fLvsEta(0x0),
+	fGlobalPtvsTPCPt(0x0),
 	fLvsEtaProjections(0x0),
 	fCurrentAODEvent(0x0),
 	fCurrentAODTrack(0x0),
@@ -93,12 +95,14 @@ AliAnalysisTaskCompareAODTrackCuts::AliAnalysisTaskCompareAODTrackCuts(const cha
 	fIsMC(kFALSE),
 	fVerbose(kFALSE),
 	fCalculateTOFMismatch(kFALSE),	
-	fMismatchMethod(0),	
+	fUseMismatchFileFromHomeDir(kTRUE),	
+	fUseNSigmaOnPIDAxes(kFALSE),	
 	fEventCuts(0x0),
 	fTrackCuts(0x0),
 	fInclusiveTimes(0x0),
 	fT0Fill(0x0),
 	fLvsEta(0x0),
+	fGlobalPtvsTPCPt(0x0),
 	fLvsEtaProjections(0x0),
 	fCurrentAODEvent(0x0),
 	fCurrentAODTrack(0x0),
@@ -159,11 +163,15 @@ void AliAnalysisTaskCompareAODTrackCuts::UserCreateOutputObjects() {
 	fInclusiveTimes = new TH2F("fInclusiveTimes","Inclusive Times;#eta;t (ps)",100,0,1.,1500,10000.,25000.);
 	fOutputList->Add(fInclusiveTimes);
 
+	// Create the diagram correlating TPC and Global transverse momenta.
+	fGlobalPtvsTPCPt = new TH2F("fGlobalPtvsTPCPt","Global p_{T} vs TPC p_{T}; Global p_{T}; TPC p_{T}",100,0,10,100,0,10);
+	fOutputList->Add(fGlobalPtvsTPCPt);
+
 	// Creating Global Tracks Array
 	fGlobalTracksArray = new TObjArray();
 
 	// Loading the appropriate external mismatch histograms.
-	if (fCalculateTOFMismatch) LoadExternalMismatchHistos(fMismatchMethod);
+	if (fCalculateTOFMismatch) LoadExternalMismatchHistos();
 
 	PostData(1,fOutputList);
 
@@ -228,7 +236,9 @@ AliAODTrack* AliAnalysisTaskCompareAODTrackCuts::GetGlobalTrack(AliAODTrack* tra
 void AliAnalysisTaskCompareAODTrackCuts::UserExec(Option_t*) {
 
 	if (fDebug > 0) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
-
+	Int_t nmismatched = 0;
+	Int_t nmatched = 0;
+	Int_t nnotof = 0;
 	// Input Current Event.
 	fCurrentAODEvent = dynamic_cast<AliAODEvent*>(InputEvent());
 	if (!fCurrentAODEvent) {
@@ -264,6 +274,7 @@ void AliAnalysisTaskCompareAODTrackCuts::UserExec(Option_t*) {
 		
 			// Put the MC Particle in the Label array.
 			AliAODMCParticle* CurrentAODMCParticle = (AliAODMCParticle*) mcArray->At(iParticle);
+			//cout << "PR: " << CurrentAODMCParticle->IsPhysicalPrimary() << " SW: " << CurrentAODMCParticle->IsSecondaryFromWeakDecay() << " SM: " << CurrentAODMCParticle->IsSecondaryFromMaterial() << endl;
 			mcArrayLabel->AddAtAndExpand(CurrentAODMCParticle,CurrentAODMCParticle->Label());
     		//cout<<"Index: "<<iParticle<<" Label: "<<CurrentAODMCParticle->Label()<<endl;
 
@@ -322,6 +333,10 @@ void AliAnalysisTaskCompareAODTrackCuts::UserExec(Option_t*) {
 			// Q: Do we really need to create the arraylabel object or is the original MC array already nicely ordered. (NOTE THAT WE TAKE THE MC PARTICLES FROM THE mcArray)
 			if (fIsMC) fCurrentDiHadronPIDTrack = new AliTrackDiHadronPID(fCurrentAODTrack,GetGlobalTrack(fCurrentAODTrack),(AliAODMCParticle*)mcArray->At(TMath::Abs(fCurrentAODTrack->GetLabel())),fPIDResponse);
 			else fCurrentDiHadronPIDTrack = new AliTrackDiHadronPID(fCurrentAODTrack,GetGlobalTrack(fCurrentAODTrack),0x0,fPIDResponse);
+		
+			// Fill histogram of Global p_T vs TPC-only p_T
+			fGlobalPtvsTPCPt->Fill(GetGlobalTrack(fCurrentAODTrack)->Pt(), fCurrentAODTrack->Pt());
+
 		} else {
 			if (fIsMC) fCurrentDiHadronPIDTrack = new AliTrackDiHadronPID(fCurrentAODTrack,0x0,(AliAODMCParticle*)mcArray->At(TMath::Abs(fCurrentAODTrack->GetLabel())),fPIDResponse);
 			else fCurrentDiHadronPIDTrack = new AliTrackDiHadronPID(fCurrentAODTrack,0x0,0x0,fPIDResponse);
@@ -338,13 +353,18 @@ void AliAnalysisTaskCompareAODTrackCuts::UserExec(Option_t*) {
 		if (requestedflags&trackflags) {fInclusiveTimes->Fill(TMath::Abs(fCurrentDiHadronPIDTrack->Eta()),fCurrentDiHadronPIDTrack->GetTOFsignal());}
 
 		Double_t rndhittime = -1.e21;
-		if (fCalculateTOFMismatch) rndhittime = GenerateRandomHit(fMismatchMethod,fCurrentDiHadronPIDTrack->Eta());
+		if (fCalculateTOFMismatch) rndhittime = GenerateRandomHit(fCurrentDiHadronPIDTrack->Eta());
 
 		// Loop over all Track Cuts.
 		for (Int_t iCuts = 0; iCuts < fTrackCuts->GetEntries(); iCuts++) {
 			if (fIsMC) ((AliAODTrackCutsDiHadronPID*)fTrackCuts->At(iCuts))->IsSelectedReconstructedMC(fCurrentDiHadronPIDTrack);
 			else ((AliAODTrackCutsDiHadronPID*)fTrackCuts->At(iCuts))->IsSelectedData(fCurrentDiHadronPIDTrack,rndhittime);
 		}
+
+		Int_t tofmatchstat = fCurrentDiHadronPIDTrack->GetTOFMatchingStatus();
+		if (tofmatchstat==0) {nmatched++;}
+		if (tofmatchstat==1) {nmismatched++;}
+		if (tofmatchstat==2) {nnotof++;}
 
 		// Delete Current DiHadronPIDTrack.
 		delete fCurrentDiHadronPIDTrack;
@@ -357,12 +377,14 @@ void AliAnalysisTaskCompareAODTrackCuts::UserExec(Option_t*) {
 		((AliAODTrackCutsDiHadronPID*)fTrackCuts->At(iCuts))->EventIsDone(fIsMC);
 	}
 	
+	//cout << "Matched: "<<nmatched<<" Mismatched: "<<nmismatched<<" No TOF hit: "<<nnotof<<endl;
+
 	PostData(1,fOutputList);
 
 } 
 
 // -----------------------------------------------------------------------
-Bool_t AliAnalysisTaskCompareAODTrackCuts::LoadExternalMismatchHistos(Int_t /*mismatchmethod*/) {
+Bool_t AliAnalysisTaskCompareAODTrackCuts::LoadExternalMismatchHistos() {
 
 	//
 	// Attempting to load a root file containing information needed
@@ -372,13 +394,26 @@ Bool_t AliAnalysisTaskCompareAODTrackCuts::LoadExternalMismatchHistos(Int_t /*mi
 	if (fDebug > 0) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
 	// Opening external TOF file.
-	if (fDebug > 0) cout<<"Trying to open TOFmismatchHistos.root ..."<<endl;
 	TFile* fin = 0x0;
-	fin = TFile::Open("alien:///alice/cern.ch/user/m/mveldhoe/rootfiles/TOFmismatchHistos.root");
+	
+	// The default is that the file TOFmismatchHistos.root is taken from the /rootfiles/ directory, 
+	// and this works fine when running on the train. When the user submits the jobs himself, he can
+	// choose to not take the file from the home dir, but upload one along with the source code.
+	// If in this case the file is not found, the program tries to get the file from the root directory
+	// anyway.
+	if (fUseMismatchFileFromHomeDir == kFALSE) {
+		fin = TFile::Open("TOFmismatchHistos.root");
+		if (!fin) {AliWarning("Tried to open uploaded TOFmismatchHistos.root, but failed");}
+	}
+
+	if (!fin) {fin = TFile::Open("alien:///alice/cern.ch/user/m/mveldhoe/rootfiles/TOFmismatchHistos.root");}
+	
 	if (!fin) {
-		AliWarning("Couln't open TOFmismatchHistos, will not calculate mismatches...");
+		AliWarning("Couln't open TOFmismatchHistos.root, will not calculate mismatches...");
 		fCalculateTOFMismatch = kFALSE;
 		return kFALSE;
+	} else {
+		AliInfo("Sucessfully loaded TOFmismatchHistos.root");
 	}
 
 	// Check if the required histograms are present.
@@ -420,7 +455,7 @@ Bool_t AliAnalysisTaskCompareAODTrackCuts::LoadExternalMismatchHistos(Int_t /*mi
 }
 
 // -----------------------------------------------------------------------
-Double_t AliAnalysisTaskCompareAODTrackCuts::GenerateRandomHit(Int_t /* method */, Double_t eta) {
+Double_t AliAnalysisTaskCompareAODTrackCuts::GenerateRandomHit(Double_t eta) {
 
 	//
 	// Returns a random TOF time.
@@ -467,6 +502,67 @@ Double_t AliAnalysisTaskCompareAODTrackCuts::GenerateRandomHit(Int_t /* method *
 }
 
 // -----------------------------------------------------------------------
+void AliAnalysisTaskCompareAODTrackCuts::SetUseNSigmaOnPIDAxes(Bool_t UseNSigma) {
+
+	// Will use NSigma on all PID axes. Will also change all track cuts objects
+	// owned by this task.
+	if (fDebug > 0) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	fUseNSigmaOnPIDAxes = UseNSigma;
+
+	if (fTrackCuts) {
+		for (Int_t iCut = 0; iCut < fTrackCuts->GetSize(); ++iCut) {
+			AliAODTrackCutsDiHadronPID* cutstmp = (AliAODTrackCutsDiHadronPID*)(fTrackCuts->At(iCut));
+			if (cutstmp) {cutstmp->SetUseNSigmaOnPIDAxes(UseNSigma);}
+			else {cout << Form("%s -> WARNING: Found an empty spot in the track cuts array...",__func__) << endl;}
+		}
+	}
+}
+
+// -----------------------------------------------------------------------
+void AliAnalysisTaskCompareAODTrackCuts::SetEventCuts(AliAODEventCutsDiHadronPID* eventcuts) {
+
+	if (fDebug > 0) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (!eventcuts) {cout << Form("%s -> ERROR: No Event Cuts Object provided.",__func__) << endl; return;}
+
+	fEventCuts = eventcuts;
+
+}
+
+// -----------------------------------------------------------------------
+void AliAnalysisTaskCompareAODTrackCuts::AddTrackCuts(AliAODTrackCutsDiHadronPID* trackcuts) {
+
+	if (fDebug > 0) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (!trackcuts) {cout << Form("%s -> ERROR: No Track Cuts Object provided.",__func__) << endl; return;}
+	if (!fTrackCuts) {cout << Form("%s -> ERROR: No Track Cuts array available.",__func__) << endl; return;}
+
+	// The setting of the task propagates to the imported track cuts object.
+	trackcuts->SetUseNSigmaOnPIDAxes(fUseNSigmaOnPIDAxes);
+
+	fTrackCuts->AddLast(trackcuts);
+
+}
+
+// -----------------------------------------------------------------------
+void AliAnalysisTaskCompareAODTrackCuts::SetDebugLevel(Int_t debuglvl) {
+
+	// Sets debug level to a certain value, as well as the debug level of the
+	// track cuts objects and event cut object.
+	if (fDebug > 0) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	fDebug = debuglvl;
+
+	if (fEventCuts) {fEventCuts->SetDebugLevel(debuglvl);}
+
+	if (fTrackCuts) {
+		for (Int_t iTrackCutObj = 0; iTrackCutObj < fTrackCuts->GetEntriesFast(); ++iTrackCutObj) {
+			((AliTrackDiHadronPID*)fTrackCuts->At(iTrackCutObj))->SetDebugLevel(debuglvl);
+		}
+	}
+
+}
+
+// -----------------------------------------------------------------------
 void AliAnalysisTaskCompareAODTrackCuts::Terminate(Option_t*) {
 
 	if (fDebug > 0) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
@@ -481,5 +577,3 @@ void AliAnalysisTaskCompareAODTrackCuts::Terminate(Option_t*) {
 	}
 
 }
-
-// -----------------------------------------------------------------------

@@ -13,7 +13,7 @@
 
 //________________________________________________________________________
 AliEmcalJetFinder::AliEmcalJetFinder() :
-  TNamed("EmcalJetFinder","EmcalJetFinder"), fFastjetWrapper(0), fInputVectorIndex(0), fJetCount(0), fJetArray(), fGhostArea(0.005), fRadius(0.4), fJetAlgorithm(0), fTrackMaxEta(0.9), fJetMaxEta(0.5), fJetMinPt(0), fJetMinArea(0)
+  TNamed("EmcalJetFinder","EmcalJetFinder"), fFastjetWrapper(0), fInputVectorIndex(0), fJetCount(0), fJetArray(), fGhostArea(0.005), fRadius(0.4), fJetAlgorithm(0), fRecombScheme(-1), fTrackMaxEta(0.9), fJetMaxEta(0.5), fJetMinPt(0), fJetMinArea(0)
 {
   // Constructor
   fFastjetWrapper = new AliFJWrapper("FJWrapper", "FJWrapper");
@@ -21,7 +21,7 @@ AliEmcalJetFinder::AliEmcalJetFinder() :
 
 //________________________________________________________________________
 AliEmcalJetFinder::AliEmcalJetFinder(const char* name) :
-  TNamed(name, name), fFastjetWrapper(0), fInputVectorIndex(0), fJetCount(0), fJetArray(), fGhostArea(0.005), fRadius(0.4), fJetAlgorithm(0), fTrackMaxEta(0.9), fJetMaxEta(0.5), fJetMinPt(0), fJetMinArea(0)
+  TNamed(name, name), fFastjetWrapper(0), fInputVectorIndex(0), fJetCount(0), fJetArray(), fGhostArea(0.005), fRadius(0.4), fJetAlgorithm(0), fRecombScheme(-1), fTrackMaxEta(0.9), fJetMaxEta(0.5), fJetMinPt(0), fJetMinArea(0)
 {
   // Constructor
   fFastjetWrapper = new AliFJWrapper("FJWrapper", "FJWrapper");
@@ -55,6 +55,8 @@ Bool_t AliEmcalJetFinder::FindJets()
     fFastjetWrapper->SetAlgorithm(fastjet::antikt_algorithm);  
   if(fJetAlgorithm == 1)
     fFastjetWrapper->SetAlgorithm(fastjet::kt_algorithm);  
+  if(fRecombScheme>0)
+    fFastjetWrapper->SetRecombScheme(static_cast<fastjet::RecombinationScheme>(fRecombScheme));
 
   fFastjetWrapper->SetMaxRap(fTrackMaxEta);
 
@@ -97,6 +99,13 @@ Bool_t AliEmcalJetFinder::FindJets()
 void AliEmcalJetFinder::AddInputVector(Double_t px, Double_t py, Double_t pz)
 {
   fFastjetWrapper->AddInputVector(px, py, pz, TMath::Sqrt(px*px + py*py + pz*pz), fInputVectorIndex + 100);
+  fInputVectorIndex++;
+}
+
+//________________________________________________________________________
+void AliEmcalJetFinder::AddInputVector(Double_t px, Double_t py, Double_t pz, Double_t E)
+{
+  fFastjetWrapper->AddInputVector(px, py, pz, E, fInputVectorIndex + 100);
   fInputVectorIndex++;
 }
 

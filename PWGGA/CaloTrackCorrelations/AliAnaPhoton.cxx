@@ -719,9 +719,9 @@ void AliAnaPhoton::FillAcceptanceHistograms()
   }	// read AOD MC
 }
 
-//__________________________________________________________________________________________________________________________
-void  AliAnaPhoton::FillEMCALTriggerClusterBCHistograms(const Int_t idcalo, const Float_t ecluster, const Float_t tofcluster,
-                                                        const Float_t etacluster, const Float_t phicluster)
+//________________________________________________________________________________________________________________
+void  AliAnaPhoton::FillEMCALTriggerClusterBCHistograms(Int_t idcalo,       Float_t ecluster,  Float_t tofcluster,
+                                                        Float_t etacluster, Float_t phicluster)
 
 {
   // Fill trigger related histograms
@@ -870,11 +870,9 @@ void  AliAnaPhoton::FillEMCALTriggerClusterBCHistograms(const Int_t idcalo, cons
   
 }
 
-//______________________________________________________________________________________________
-void  AliAnaPhoton::FillClusterPileUpHistograms(AliVCluster * calo,       const Bool_t matched,
-                                                const Float_t ptcluster,
-                                                const Float_t etacluster, const Float_t phicluster,
-                                                const Float_t l0cluster)
+//_________________________________________________________________________________________________________
+void  AliAnaPhoton::FillClusterPileUpHistograms(AliVCluster * calo, Bool_t matched,     Float_t ptcluster,
+                                                Float_t etacluster, Float_t phicluster, Float_t l0cluster)
 {
   // Fill some histograms related to pile up before any cluster cut is applied
   
@@ -1481,15 +1479,18 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag)
       } // embedded
       
     }//photon   no conversion
+    else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton)     &&
+               GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) &&
+              !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)        &&
+              !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta))
+    {
+      mcIndex = kmcssConversion ;
+    }//conversion photon
+
     else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron))
     {
       mcIndex = kmcssElectron ;
     }//electron
-    else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) &&
-              GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) )
-    {
-      mcIndex = kmcssConversion ;
-    }//conversion photon
     else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)  )
     {
       mcIndex = kmcssPi0 ;
@@ -3154,21 +3155,21 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       fhYPrimMC[i]  = new TH2F(Form("hYPrim_MC%s",ppname[i].Data()),
                                Form("primary photon %s : Rapidity ",pptype[i].Data()),
-                               nptbins,ptmin,ptmax,800,-8,8);
+                               nptbins,ptmin,ptmax,200,-2,2);
       fhYPrimMC[i]->SetYTitle("Rapidity");
       fhYPrimMC[i]->SetXTitle("E (GeV)");
       outputContainer->Add(fhYPrimMC[i]) ;
       
       fhEtaPrimMC[i]  = new TH2F(Form("hEtaPrim_MC%s",ppname[i].Data()),
                                Form("primary photon %s : #eta",pptype[i].Data()),
-                               nptbins,ptmin,ptmax,800,-8,8);
+                               nptbins,ptmin,ptmax,200,-2,2);
       fhEtaPrimMC[i]->SetYTitle("#eta");
       fhEtaPrimMC[i]->SetXTitle("E (GeV)");
       outputContainer->Add(fhEtaPrimMC[i]) ;
       
       fhPhiPrimMC[i]  = new TH2F(Form("hPhiPrim_MC%s",ppname[i].Data()),
                                  Form("primary photon %s : #phi ",pptype[i].Data()),
-                                 nptbins,ptmin,ptmax,nphibins,phimin,phimax);
+                                 nptbins,ptmin,ptmax,nphibins,0,TMath::TwoPi());
       fhPhiPrimMC[i]->SetYTitle("#phi (rad)");
       fhPhiPrimMC[i]->SetXTitle("E (GeV)");
       outputContainer->Add(fhPhiPrimMC[i]) ;

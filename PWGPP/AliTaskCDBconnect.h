@@ -21,6 +21,7 @@ private:
 
   AliTaskCDBconnect(const AliTaskCDBconnect &other);
   AliTaskCDBconnect& operator=(const AliTaskCDBconnect &other);
+
   void                      InitGRP();
   //
 public:
@@ -31,6 +32,7 @@ public:
   AliGRPManager*            GetGRPManager() const {return (AliGRPManager*)fGRPManager;}
   virtual void              Exec(Option_t *option);
   virtual void              CreateOutputObjects();
+  void                      SetSpecificStorage(const char* calibType, const char* dbString);
     
   ClassDef(AliTaskCDBconnect,2)  // Class giving CDB connectivity
 };

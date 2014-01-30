@@ -55,6 +55,8 @@ class AliAnalysisTaskLambdaBayes : public AliAnalysisTaskSE {
 
   void SetPIDuserCut(AliPIDperfCut *usercut){fPIDuserCut = usercut;};
 
+  void SetRefSpecies(Int_t species) {fSpeciesRef = species;}
+
  private:
   AliAnalysisTaskLambdaBayes(const AliAnalysisTaskLambdaBayes &old); 
   AliAnalysisTaskLambdaBayes& operator=(const AliAnalysisTaskLambdaBayes &source); 
@@ -149,8 +151,9 @@ class AliAnalysisTaskLambdaBayes : public AliAnalysisTaskSE {
   AliPIDperfCut *fPIDuserCut;  // pid user cut to be cheked
 
   Bool_t fToEP;        // correlate to TPC EP
+  Int_t fSpeciesRef;    // reference species (default = 4, proton)
 
-  ClassDef(AliAnalysisTaskLambdaBayes, 4);    //Analysis task for Bayesian (Lambda)
+  ClassDef(AliAnalysisTaskLambdaBayes, 5);    //Analysis task for Bayesian (Lambda)
 };
 
 #endif

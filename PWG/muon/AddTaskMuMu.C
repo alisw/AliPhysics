@@ -1,14 +1,13 @@
 ///
-/// Configure a task to get invariant mass spectrum of dimuons
+/// Configuration example of a task to get invariant mass spectrum of dimuons
 ///
-/// author: L. Aphecetche (Subatech) (laurent.aphecetche - at - subatech.in2p3.fr)
+/// \author: L. Aphecetche (Subatech) (laurent.aphecetche - at - subatech.in2p3.fr)
 ///
 
 AliAnalysisTask* AddTaskMuMu(const char* outputname, 
-							 TList* triggerClassesToConsider, 
-							 const char* beamYear, 
-							 TArrayF* centralities,
-							 Bool_t simulations)                                    
+                             TList* triggerClassesToConsider,
+                             const char* beamYear,
+                             Bool_t simulations)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -27,186 +26,203 @@ AliAnalysisTask* AddTaskMuMu(const char* outputname,
   
   // Configure analysis
   //===========================================================================  
-  
-  AliAnalysisTaskMuMu* task;
-  
+
   if (simulations && triggerClassesToConsider )
   {
-    triggerClassesToConsider->Add(new TObjString("CMULLO-B-NOPF-MUON"));
-	triggerClassesToConsider->Add(new TObjString("CMSNGL-B-NOPF-MUON"));
-	triggerClassesToConsider->Add(new TObjString("ANY"));
+//    triggerClassesToConsider->Add(new TObjString("CMULLO-B-NOPF-MUON"));
+//    triggerClassesToConsider->Add(new TObjString("CMSNGL-B-NOPF-MUON"));
+    triggerClassesToConsider->Add(new TObjString("ANY"));
+
+//    triggerClassesToConsider->Add(new TObjString("MB1"));
+//    triggerClassesToConsider->Add(new TObjString("C0T0A"));
+
+    //    triggerClassesToConsider->Add(new TObjString("MULow"));
+//    triggerClassesToConsider->Add(new TObjString("V0L"));
+//    triggerClassesToConsider->Add(new TObjString("V0R"));
+//
+// for dpmjet simulations (at least) we have the following "triggers" :
+//    C0T0A,C0T0C,MB1,MBBG1,V0L,V0R,MULow,EMPTY,MBBG3,MULL,MULU,MUHigh
+  }
+
+  AliAnalysisTaskMuMu* task = new AliAnalysisTaskMuMu;
+  
+  AliAnalysisMuMuEventCutter* eventCutter = new AliAnalysisMuMuEventCutter(triggerClassesToConsider);
+  
+  AliAnalysisMuMuCutRegistry* cr = task->CutRegistry();
+  
+  AliAnalysisMuMuCutElement* eventTrue = cr->AddEventCut(*eventCutter,"IsTrue","const AliVEvent&","");
+
+  AliAnalysisMuMuCutElement* ps = eventTrue;
+  
+  if (!simulations)
+  {
+    ps = cr->AddEventCut(*eventCutter,"IsPhysicsSelected","const AliInputEventHandler&","");
+  }
+
+  AliAnalysisMuMuCutElement* triggerSelection = cr->AddTriggerClassCut(*eventCutter,"SelectTriggerClass","const TString&,TString&,UInt_t,UInt_t,UInt_t","");
+
+  cr->AddCutCombination(triggerSelection);
+  
+//  AliAnalysisMuMuCutElement* cutVDM = cr->AddEventCut(*eventCutter,"IsPhysicsSelectedVDM","const AliVEvent&","");
+//
+//  AliAnalysisMuMuCutElement* cutTZEROPileUp = cr->AddEventCut(*eventCutter,"IsTZEROPileUp","const AliVEvent&","");
+//
+//  AliAnalysisMuMuCutElement* notTZEROPileUp = cr->Not(*cutTZEROPileUp);
+
+  cr->AddCutCombination(ps);
+
+  task->SetBeamYear(beamYear);
+
+  AliAnalysisMuMuGlobal* globalAnalysis = 0x0;//new AliAnalysisMuMuGlobal;
+  
+  AliAnalysisMuMuSingle* singleAnalysis = new AliAnalysisMuMuSingle;
+  
+  AliAnalysisMuMuMinv* minvAnalysis = new AliAnalysisMuMuMinv;
+
+//  TFile f("$HOME/Downloads/ResponseMatrix_QASPDZPSALL_ANY.root");
+//  TH2* h = static_cast<TH2*>(f.Get("ResponseMatrix"));
+  
+  AliAnalysisMuMuNch* nchAnalysis = new AliAnalysisMuMuNch; // (0x0,-2,2,-40,40);
+  
+//  AliAnalysisMuMuNch(TH2* spdCorrection=0x0,
+//                     Int_t nbinsEta=10, Double_t etaMin=-0.5, Double_t etaMax=0.5,
+//                     Int_t nbinsZ=320, Double_t zmin=-40, Double_t zmax=40);
+
+
+  if ( globalAnalysis )
+  {
+    AliAnalysisMuMuCutElement* triggerAll = cr->AddTriggerClassCut(*globalAnalysis,"SelectAnyTriggerClass","const TString&,TString&","");
+    
+    cr->AddCutCombination(triggerAll);
+    
+    task->AdoptSubAnalysis(globalAnalysis);
   }
   
-  if ( triggerClassesToConsider ) 
+  if ( nchAnalysis )
   {
-    task = new AliAnalysisTaskMuMu((inputDataType=="ESD"),triggerClassesToConsider,beamYear,centralities);    
-  }
-  else 
-  {
-    task = new AliAnalysisTaskMuMu((inputDataType=="ESD"),beamYear,centralities);    
+//    AliAnalysisMuMuCutElement* trketa2 = cr->AddEventCut(*nchAnalysis,"HasAtLeastNTrackletsInEtaRange","const AliVEvent&,Int_t, Double_t& , Double_t& ","1,-2.0,2.0");
+//    AliAnalysisMuMuCutElement* trketa1 = cr->AddEventCut(*nchAnalysis,"HasAtLeastNTrackletsInEtaRange","const AliVEvent&,Int_t, Double_t& , Double_t& ","1,-1.0,1.0");
+//    AliAnalysisMuMuCutElement* trk5eta1 = cr->AddEventCut(*nchAnalysis,"HasAtLeastNTrackletsInEtaRange","const AliVEvent&,Int_t, Double_t& , Double_t& ","5,-1.0,1.0");
+//    
+//    cr->AddCutCombination(ps,trketa1);
+//    cr->AddCutCombination(ps,trk5eta1);
+//    cr->AddCutCombination(ps,trketa2);
+    
+    AliAnalysisMuMuCutElement* cutZ18= cr->AddEventCut(*eventCutter,"IsAbsZBelowValue","const AliVEvent&,Double_t","18");
+    
+    AliAnalysisMuMuCutElement* cutZ10 = cr->AddEventCut(*eventCutter,"IsAbsZBelowValue","const AliVEvent&,Double_t","10");
+    
+    cr->AddCutCombination(ps,cutZ18);
+    cr->AddCutCombination(ps,cutZ10);
+    
+    task->AdoptSubAnalysis(nchAnalysis);
   }
   
-  task->AddEventCut("ALL",AliAnalysisTaskMuMu::kEventAll);
-
-if (!simulations) 
+  if ( singleAnalysis )
   {
-  	task->AddEventCut("PSALL",AliAnalysisTaskMuMu::kEventAll | AliAnalysisTaskMuMu::kEventPS);  
-//  	task->AddEventCut("OFFLINE1",AliAnalysisTaskMuMu::kEventAll | AliAnalysisTaskMuMu::kEventPS | AliAnalysisTaskMuMu::kEventOFFLINEMUL1);  
-//  	task->AddEventCut("REJECTED",AliAnalysisTaskMuMu::kEventAll | AliAnalysisTaskMuMu::kEventREJECTED);  
-   }
+    AliAnalysisMuMuCutElement* trackTrue = cr->AddTrackCut(*cr,"AlwaysTrue","const AliVParticle&","");
+    AliAnalysisMuMuCutElement* rabs = cr->AddTrackCut(*singleAnalysis,"IsRabsOK","const AliVParticle&","");
+    AliAnalysisMuMuCutElement* eta = cr->AddTrackCut(*singleAnalysis,"IsEtaInRange","const AliVParticle&,Double_t&,Double_t&","-4.0,-2.5");
+    
+    cr->AddCutCombination(trackTrue);
+
+    cr->AddCutCombination(rabs);
+    
+    cr->AddCutCombination(eta);
+
+    cr->AddCutCombination(rabs,eta);
+
+    task->AdoptSubAnalysis(singleAnalysis);
+
+    if ( minvAnalysis )
+    {
+      AliAnalysisMuMuCutElement* pairTrue = cr->AddTrackPairCut(*cr,"AlwaysTrue","const AliVParticle&, const AliVParticle&","");
+      
+      AliAnalysisMuMuCutElement* pairy = cr->AddTrackPairCut(*minvAnalysis,"IsRapidityInRange","const AliVParticle&,const AliVParticle&,Double_t&,Double_t&","-4,-2.5");
   
-//  task->AddEventCut("PSALLNOTZEROPILEUP",AliAnalysisTaskMuMu::kEventAll | AliAnalysisTaskMuMu::kEventPS | AliAnalysisTaskMuMu::kEventNOTZEROPILEUP);  
+      cr->AddCutCombination(rabs,eta,pairy);
 
-//  task->AddEventCut("PSALLMUL1", AliAnalysisTaskMuMu::kEventAll | AliAnalysisTaskMuMu::kEventPS | AliAnalysisTaskMuMu::kEventOFFLINEMUL1);
+      cr->AddCutCombination(rabs,pairy);
 
-//  task->AddEventCut("PSALLMUL2", AliAnalysisTaskMuMu::kEventAll | AliAnalysisTaskMuMu::kEventPS | AliAnalysisTaskMuMu::kEventOFFLINEMUL2);
+      cr->AddCutCombination(pairy);
 
-//   task->AddSingleCut("MATCHLOWRABSDCA",
-//                      AliAnalysisTaskMuMu::kAll|AliAnalysisTaskMuMu::kMatchedLow|AliAnalysisTaskMuMu::kRabs|AliAnalysisTaskMuMu::kDCA);
-// 
-   task->AddSingleCut("MATCHLOWRABS",
-                      AliAnalysisTaskMuMu::kAll|AliAnalysisTaskMuMu::kMatchedLow|AliAnalysisTaskMuMu::kRabs);
+      cr->AddCutCombination(pairTrue);
 
-   task->AddSingleCut("MATCHLOWRABSETA",
-                      AliAnalysisTaskMuMu::kAll|AliAnalysisTaskMuMu::kMatchedLow|AliAnalysisTaskMuMu::kRabs);
-
-  task->AddSingleCut("MATCHLOWRABSETADCA",
-                     AliAnalysisTaskMuMu::kAll|AliAnalysisTaskMuMu::kMatchedLow|AliAnalysisTaskMuMu::kRabs|AliAnalysisTaskMuMu::kEta|AliAnalysisTaskMuMu::kDCA);
-
-
-//  task->AddPairCut("ALL",AliAnalysisTaskMuMu::kAll);
-
-   task->AddPairCut("MATCHLOWRABSBOTH",
-                    AliAnalysisTaskMuMu::kAll|AliAnalysisTaskMuMu::kMatchedLow|AliAnalysisTaskMuMu::kRabs,
-                    AliAnalysisTaskMuMu::kAll|AliAnalysisTaskMuMu::kMatchedLow|AliAnalysisTaskMuMu::kRabs);
-
-   task->AddPairCut("MATCHLOWRABSETABOTH",
-                    AliAnalysisTaskMuMu::kAll|AliAnalysisTaskMuMu::kMatchedLow|AliAnalysisTaskMuMu::kRabs|AliAnalysisTaskMuMu::kEta,
-                    AliAnalysisTaskMuMu::kAll|AliAnalysisTaskMuMu::kMatchedLow|AliAnalysisTaskMuMu::kRabs|AliAnalysisTaskMuMu::kEta);
-
-   task->AddPairCut("MATCHLOWRABSETADCABOTH",
-                    AliAnalysisTaskMuMu::kAll|AliAnalysisTaskMuMu::kMatchedLow|AliAnalysisTaskMuMu::kRabs|AliAnalysisTaskMuMu::kEta|AliAnalysisTaskMuMu::kDCA,
-                    AliAnalysisTaskMuMu::kAll|AliAnalysisTaskMuMu::kMatchedLow|AliAnalysisTaskMuMu::kRabs|AliAnalysisTaskMuMu::kEta|AliAnalysisTaskMuMu::kDCA);
-
-// igor binning
-
-task->AddBin("psi","pt", 0.0, 0.5,"IGOR");
-task->AddBin("psi","pt", 0.5, 1.0,"IGOR");
-task->AddBin("psi","pt", 1.0, 1.5,"IGOR");
-task->AddBin("psi","pt", 1.5, 2.0,"IGOR");
-task->AddBin("psi","pt", 2.0, 2.5,"IGOR");
-task->AddBin("psi","pt", 2.5, 3.0,"IGOR");
-task->AddBin("psi","pt", 3.0, 3.5,"IGOR");
-task->AddBin("psi","pt", 3.5, 4.0,"IGOR");
-task->AddBin("psi","pt", 4.0, 4.5,"IGOR");
-task->AddBin("psi","pt", 4.5, 5.0,"IGOR");
-task->AddBin("psi","pt", 5.0, 6.0,"IGOR");
-task->AddBin("psi","pt", 6.0, 7.0,"IGOR");
-task->AddBin("psi","pt", 7.0, 8.0,"IGOR");
-task->AddBin("psi","pt", 8.0, 9.0,"IGOR");
-task->AddBin("psi","pt", 9.0,11.0,"IGOR");
-task->AddBin("psi","pt",11.0,13.0,"IGOR");
-task->AddBin("psi","pt",13.0,15.0,"IGOR");
-
-// roberta binning
-task->AddBin("psi","pt",0.0,1.0,"ROBERTA");
-task->AddBin("psi","pt",1.0,2.0,"ROBERTA");
-task->AddBin("psi","pt",2.0,3.0,"ROBERTA");
-task->AddBin("psi","pt",3.0,4.0,"ROBERTA");
-task->AddBin("psi","pt",4.0,5.0,"ROBERTA");
-task->AddBin("psi","pt",5.0,6.0,"ROBERTA");
-task->AddBin("psi","pt",6.0,8.0,"ROBERTA");
-
-/*
-
-  for ( Int_t i = 0; i < 10; ++i ) 
-  {
-    Double_t xmin = i*1.0;
-    
-  	task->AddBin("psi","pt",xmin,xmin+1.0);
-  }
-
-  for ( Int_t i = 0; i < 5; ++i ) 
-  {
-    Double_t xmin = 10+i*2.0;
-    
-  	task->AddBin("psi","pt",xmin,xmin+2.0);
-  }
-
-  for ( Int_t i = 0; i < 6; ++i ) 
-  {
-    Double_t xmin = -4+i*0.25;
-    
-  	task->AddBin("psi","y",xmin,xmin+0.25);
-  }
-
-  Int_t nphiSteps = 18;
-  
-  for ( Int_t i = 0; i < nphiSteps; ++i ) 
-  {
-    Double_t xstep = 2*TMath::Pi()/nphiSteps;
-    Double_t xmin = -TMath::Pi() + i*xstep;
-    
-  	task->AddBin("psi","phi",xmin,xmin+xstep);
+      task->AdoptSubAnalysis(minvAnalysis);
+    }
   }
   
-  */
+  /// below are the kind of configurations that can be performed :
+  /// - adding cuts (at event, track or pair level)
+  /// - adding bins (in pt, y, centrality, etc...) for minv (and meanpt)
+
+  AliAnalysisMuMuBinning* binning = task->Binning();
   
-  Double_t ymin(-4.0);
-  Double_t ymax(-3.43);
-
-  Double_t ymin(-4.0);
-  Double_t ymax(-3.43);
-
-  task->AddBin("psi","y",-4,-2.5,"ILAB");
+  if (minvAnalysis)
+  {
+    binning->AddBin("psi","pt");
+    
+    // pt binning
+    
+    binning->AddBin("psi","pt", 0.0, 1.0,"IGOR");
+    binning->AddBin("psi","pt", 1.0, 2.0,"IGOR");
+    binning->AddBin("psi","pt", 2.0, 3.0,"IGOR");
+    binning->AddBin("psi","pt", 3.0, 4.0,"IGOR");
+    binning->AddBin("psi","pt", 4.0, 5.0,"IGOR");
+    binning->AddBin("psi","pt", 5.0, 6.0,"IGOR");
+    binning->AddBin("psi","pt", 6.0, 7.0,"IGOR");
+    binning->AddBin("psi","pt", 7.0, 9.0,"IGOR");
+    binning->AddBin("psi","pt", 9.0,11.0,"IGOR");
+    binning->AddBin("psi","pt",11.0,15.0,"IGOR");
+    binning->AddBin("psi","pt",15.0,25.0,"IGOR");
+    
+    // y binning
+    
+    binning->AddBin("psi","y",-4,-2.5,"ILAB");
+    
+    for ( Int_t i = 0; i < 6; ++i )
+    {
+      Double_t y = -4+i*0.25;
+      
+      binning->AddBin("psi","y",y,y+0.25,"6PACK");
+    }
+    
+    // nch binning
+    if (nchAnalysis)
+    {
+      binning->AddBin("psi","nch",0.0,30.0,"JAVI"); // 0 - 29
+      binning->AddBin("psi","nch",29.0,42.0,"JAVI"); // 30 - 41
+      binning->AddBin("psi","nch",41.0,56.0,"JAVI"); // 42 - 55
+      binning->AddBin("psi","nch",55.0,72.0,"JAVI"); // 56 - 72
+      binning->AddBin("psi","nch",72.0,301.0,"JAVI"); // 73 - 300
+    }
+  }
   
-  task->AddBin("psi","y",ymin,ymax,"ICOMMON");
+  // v0 centrality binning
+  
+  binning->AddBin("centrality","v0a");
+//  binning->AddBin("centrality","v0a",0,5);
+//  binning->AddBin("centrality","v0a",5,10);
+//  binning->AddBin("centrality","v0a",10,20);
+//  binning->AddBin("centrality","v0a",20,40);
+//  binning->AddBin("centrality","v0a",40,60);
+//  binning->AddBin("centrality","v0a",60,80);
+//  binning->AddBin("centrality","v0a",80,100);
 
-  for ( Int_t i = 0; i < 6; ++i ) 
-  {
-    Double_t y = -4+i*0.25;
-    
-    task->AddBin("psi","y",y,y+0.25,"6PACK");
-  }
-
-/*  
-  for ( Int_t i = 0; i < 20; ++i ) 
-  {
-    Double_t xmin = i*0.25;
-    
-  	task->AddBin("psi","y vs pt",xmin,xmin+0.25,ymin,ymax);
-  }
-
-  for ( Int_t i = 0; i < 4; ++i ) 
-  {
-    Double_t xmin = 5+i*1.0;
-    
-  	task->AddBin("psi","y vs pt",xmin,xmin+1.0,ymin,ymax);
-  }
-
-*/
-/*
-  task->CreateMesh("psi","pt","y");
-*/
-
+  // disable some histograms if we don't want them
   task->DisableHistograms("^V02D");
   task->DisableHistograms("^dca");
   task->DisableHistograms("^Chi12");
   task->DisableHistograms("^Rabs12");
-  
+
+  // add the configured task to the analysis manager
   mgr->AddTask(task);  
-  
-  static int n(0);
-  
-  ++n;
-  
-  if ( n > 1 ) containerName += Form("%d",n);
   
   // Create containers for input/output
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();  
 
   AliAnalysisDataContainer *coutputHC = 
-  mgr->CreateContainer("HC",AliMergeableCollection::Class(),AliAnalysisManager::kOutputContainer,outputname);
+  mgr->CreateContainer("OC",AliMergeableCollection::Class(),AliAnalysisManager::kOutputContainer,outputname);
 
   AliAnalysisDataContainer *coutputCC = 
   mgr->CreateContainer("CC",AliCounterCollection::Class(),AliAnalysisManager::kOutputContainer,outputname);

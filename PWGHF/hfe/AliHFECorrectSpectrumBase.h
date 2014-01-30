@@ -97,8 +97,8 @@ class AliHFECorrectSpectrumBase : public TNamed{
     AliHFECorrectSpectrumBase &operator=(const AliHFECorrectSpectrumBase &ref);
     virtual void Copy(TObject &o) const;
     AliCFContainer *GetContainer(AliHFECorrectSpectrumBase::CFContainer_t contt);
-    AliCFContainer *GetSlicedContainer(AliCFContainer *cont, Int_t ndim, Int_t *dimensions,Int_t source=-1,Chargetype_t charge=kAllCharge,Int_t centralitylow=-1, Int_t centralityhigh=-1);
-    THnSparseF *GetSlicedCorrelation(THnSparseF *correlationmatrix,Int_t nDim, Int_t *dimensions,Chargetype_t charge=kAllCharge,Int_t centralitylow=-1, Int_t centralityhigh=-1) const;
+    AliCFContainer *GetSlicedContainer(AliCFContainer *cont, Int_t ndim, Int_t *dimensions,Int_t source=-1,Chargetype_t charge=kAllCharge,Int_t centralitylow=-1, Int_t centralityhigh=-1, Bool_t doCentralityProjection = kTRUE);
+    THnSparseF *GetSlicedCorrelation(THnSparseF *correlationmatrix,Int_t nDim, Int_t *dimensions,Chargetype_t charge=kAllCharge,Int_t centralitylow=-1, Int_t centralityhigh=-1, Bool_t doCentralityProjection = kTRUE) const;
     TObject* GetSpectrum(const AliCFContainer * const c, Int_t step);
     TObject* GetEfficiency(const AliCFContainer * const c, Int_t step, Int_t step0);
 

@@ -42,9 +42,9 @@ public:
   void SetMaxEEMinv(Double_t maxeeminv);
   void SetMaxThetaDiff(Double_t maxdtheta);
   void SetTPCEntranceSepMinimum(double dtpc);
-  void SetTPCExitSepMinimum(double dtpc);
+  /* void SetTPCExitSepMinimum(double dtpc); */
   void SetDataType(AliFemtoDataType type);
-  
+
  protected:
   Double_t fMaxEEMinv; // Maximum allowed ee Minv
   Double_t fMaxDTheta; // Maximum polar angle difference

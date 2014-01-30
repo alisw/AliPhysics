@@ -28,13 +28,14 @@
 //
 //-----------------------------------------------------------------------
 
-/* $Id$ */
+/* $Id: AliHFCorrelator.h 63605 2013-07-19 13:08:41Z arossi $ */
 
 #include "AliHFAssociatedTrackCuts.h"
 #include "AliEventPoolManager.h"
 #include "AliVParticle.h"
 #include "AliReducedParticle.h"
 #include "AliVertexingHFUtils.h"
+#include "AliRDHFCuts.h"
 
 
 class AliHFCorrelator : public TNamed
@@ -43,7 +44,8 @@ class AliHFCorrelator : public TNamed
  public:
 	
 	AliHFCorrelator();
-	AliHFCorrelator(const Char_t* name, AliHFAssociatedTrackCuts *cuts, Bool_t ppOrPbPb);
+	AliHFCorrelator(const Char_t* name, AliHFAssociatedTrackCuts *cuts, Bool_t useCentrality);
+    AliHFCorrelator(const Char_t* name, AliHFAssociatedTrackCuts *cuts, Bool_t useCentrality, AliRDHFCuts *cutObject);
 	virtual ~AliHFCorrelator();
 	
 	// enum for setting which associated particle type to work with
@@ -60,6 +62,12 @@ class AliHFCorrelator : public TNamed
 		fPhiMin = min; fPhiMax = max;
 		if(TMath::Abs(fPhiMin-fPhiMax) != 2*TMath::Pi()) AliInfo("AliHFCorrelator::Warning: the delta phi interval is not set to 2 Pi");
 	}
+    void SetDMesonCutObject(AliRDHFCuts* cutObject){
+        if(fDMesonCutObject) delete fDMesonCutObject;
+       
+        fDMesonCutObject = cutObject;
+         if(!fDMesonCutObject) printf("AliHFCorrelator::warning! D meson object not implemented correctly!");
+    }
 	void SetEventMixing(Bool_t mixON){fmixing=mixON;}
 	void SetTriggerParticleProperties(Double_t ptTrig, Double_t phiTrig, Double_t etaTrig)
 	{fPtTrigger = ptTrig; fPhiTrigger = phiTrig; fEtaTrigger = etaTrig;}
@@ -94,12 +102,15 @@ class AliHFCorrelator : public TNamed
 	TObjArray * GetTrackArray(){return fAssociatedTracks;}
 	AliHFAssociatedTrackCuts* GetSelectionCuts() {return fhadcuts;}
 	AliReducedParticle* GetAssociatedParticle() {return fReducedPart;}
+    
+    AliRDHFCuts*  GetDMesonCutObject(){return fDMesonCutObject;}
 	
 	Int_t GetNofTracks(){return fNofTracks;}
 	Int_t GetNofEventsInPool(){return fPoolContent;}
 
 	Double_t GetDeltaPhi(){return fDeltaPhi;} // Delta Phi, needs to be called after the method correlate 
 	Double_t GetDeltaEta(){return fDeltaEta;} // Delta Eta
+    Double_t GetCentrality(){return fMultCentr;} // centrality or multiplicity
 	
 	Double_t GetAssociatedKZeroInvariantmass(){return fk0InvMass;}
 	
@@ -119,6 +130,7 @@ class AliHFCorrelator : public TNamed
 	AliEventPool * fPool; //! Pool for event mixing
 	AliHFAssociatedTrackCuts* fhadcuts;//! hadron cuts
 	AliAODEvent * fAODEvent;//! AOD Event
+    AliRDHFCuts * fDMesonCutObject; //! D meson cut object
 	TObjArray* fAssociatedTracks; // Array of associated tracks
 	TClonesArray* fmcArray; //mcarray
 	AliReducedParticle * fReducedPart; // reduced AOD particle;
@@ -128,7 +140,7 @@ class AliHFCorrelator : public TNamed
 	
 	Bool_t fmixing;// switch for event mixing
 	Bool_t fmontecarlo; // switch for MonteCarlo
-	Bool_t fsystem; // select pp (kFALSE) or PbPb (kTRUE)
+	Bool_t fUseCentrality; // select between multiplicity (kFALSE) or centrality (kTRUE)
 	Bool_t fUseReco; // switch to use reconstruction (kTRUE) or MC truth (kFALSE)
 	
 	Int_t fselect; // 1 for hadrons, 2 for kaons, 3 for KZeros
@@ -140,6 +152,8 @@ class AliHFCorrelator : public TNamed
 	
 	Double_t fPhiMin; // min for phi
 	Double_t fPhiMax; // max for phi
+    
+    Double_t fMultCentr; // multiplicty/centrality for the event
 	
 	Double_t fPtTrigger; // pt of the trigger D meson
 	Double_t fPhiTrigger; // phi of the trigger D meson
@@ -152,7 +166,7 @@ class AliHFCorrelator : public TNamed
 	Double_t fk0InvMass; // KZero invariant mass
 	
 	
-	ClassDef(AliHFCorrelator,3); // class for HF correlations	
+	ClassDef(AliHFCorrelator,4); // class for HF correlations
 };
 
 

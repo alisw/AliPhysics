@@ -2,6 +2,7 @@ AliAnalysisTaskSEDmesonsFilterCJ *AddTaskSEDmesonsFilterCJ(
   AliAnalysisTaskSEDmesonsFilterCJ::ECandidateType cand = AliAnalysisTaskSEDmesonsFilterCJ::kDstartoKpipi,
   TString filename = "DStartoKpipiCuts.root",
   Bool_t theMCon = kFALSE,
+  Bool_t reco = kTRUE /*must be true if theMCon is false*/,
   TString suffix = "")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -45,9 +46,15 @@ AliAnalysisTaskSEDmesonsFilterCJ *AddTaskSEDmesonsFilterCJ(
 
   // create the task
   AliAnalysisTaskSEDmesonsFilterCJ *task = new AliAnalysisTaskSEDmesonsFilterCJ("AnaTaskSEDmesonsFilterCJ",analysiscuts,cand);
+  if(!theMCon) reco=kTRUE;
   task->SetMC(theMCon); //D meson settings
+  task->SetUseReco(reco);
   mgr->AddTask(task);
-
+  if(theMCon) {
+     suffix+="MC";
+     if(reco) suffix+="rec";  
+  }
+  
   TString candname="DStar"; 
   if(cand==0)  candname="D0";
   

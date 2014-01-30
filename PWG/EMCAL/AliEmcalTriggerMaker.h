@@ -8,9 +8,9 @@ class AliEmcalTriggerSetupInfo;
 class AliAODCaloTrigger;
 class AliVVZERO;
 
-#include "AliAnalysisTaskEmcalDev.h"
+#include "AliAnalysisTaskEmcal.h"
 
-class AliEmcalTriggerMaker : public AliAnalysisTaskEmcalDev {
+class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
  public:
   AliEmcalTriggerMaker();
   AliEmcalTriggerMaker(const char *name);
@@ -28,6 +28,9 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcalDev {
   
   void SetV0InName(const char *name) { fV0InName      = name; }
 
+  Int_t IsEGA(Int_t level) {if (level > 1 || level < 0) AliError("EGA: check the requested threshold"); return fEGA[level];}
+  Int_t IsEJE(Int_t level) {if (level > 1 || level < 0) AliError("EJE: check the requested threshold"); return fEJE[level];}
+  
  protected:  
   TString            fCaloTriggersOutName;    // name of output track array
   TString            fCaloTriggerSetupOutName;    // name of output track array
@@ -40,6 +43,9 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcalDev {
   Double_t           fPatchADCSimple[48][64]; //! patch map for simple offline trigger
   Int_t              fThresholdConstants[4][3]; // simple offline trigger thresholds constants
 
+  Int_t              fEGA[2];
+  Int_t              fEJE[2];
+  
  private:
   AliEmcalTriggerMaker(const AliEmcalTriggerMaker&);            // not implemented
   AliEmcalTriggerMaker &operator=(const AliEmcalTriggerMaker&); // not implemented

@@ -1,4 +1,4 @@
-// $Id: AliAnalysisTaskEmcalJetSpectraMECpA.cxx 3010 2012-06-10 05:40:56Z loizides $
+// $Id$
 //
 // Jet spectrum task.
 //

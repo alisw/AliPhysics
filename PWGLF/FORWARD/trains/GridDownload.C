@@ -24,8 +24,9 @@ class TString;
 /** 
  * Get one file 
  * 
- * @param base Base name 
- * @param dir  Directory 
+ * @param base   Base name 
+ * @param dir    Directory 
+ * @param unpack If true, also unzip the retrieved archive 
  * 
  * @return true on success 
  */

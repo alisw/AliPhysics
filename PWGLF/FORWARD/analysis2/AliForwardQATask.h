@@ -13,16 +13,14 @@
  * 
  * @ingroup pwglf_forward_aod
  */
-#include <AliAnalysisTaskSE.h>
+#include "AliBaseESDTask.h"
 #include "AliFMDEventInspector.h"
 #include "AliFMDSharingFilter.h"
 #include "AliFMDDensityCalculator.h"
 #include "AliFMDEnergyFitter.h"
 #include <AliESDFMD.h>
-class AliForwardCorrectionManager;
 class AliESDEvent;
 class TH2D;
-class TList;
 class TAxis;
 
 /** 
@@ -41,7 +39,7 @@ class TAxis;
  * @ingroup pwglf_forward_tasks
  * 
  */
-class AliForwardQATask : public AliAnalysisTaskSE
+class AliForwardQATask : public AliBaseESDTask
 {
 public:
   /** 
@@ -55,43 +53,83 @@ public:
    */
   AliForwardQATask();
   /** 
-   * Copy constructor 
-   * 
-   * @param o Object to copy from 
-   */
-  AliForwardQATask(const AliForwardQATask& o);
-  /** 
-   * Assignment operator 
-   * 
-   * @param o Object to assign from 
-   * 
-   * @return Reference to this object 
-   */
-  AliForwardQATask& operator=(const AliForwardQATask& o);
-  /** 
    * @{ 
    * @name Interface methods 
    */
   /** 
-   * Create output objects 
+   * Called when initialising the train. 
    * 
+   * @return Always true
    */
-  virtual void UserCreateOutputObjects();
+  virtual Bool_t Setup();
+  /** 
+   * Book output objects. Derived class should define this to book
+   * output objects on the processing output list @c fList before the
+   * actual event processing.  This is called on the master and on
+   * each slave.
+   * 
+   * If this member function returns false, the execution is stopped
+   * with a fatal signal.
+   *
+   * @return true on success. 
+   */
+  virtual Bool_t Book();
+  /** 
+   * Called after reading in the first event. Here we can setup stuff
+   * depending on the conditions we're running under.
+   * 
+   * @return true on success.  If this returns false, then we turn the
+   * task into a zombie and we do no more processing.
+   */
+  virtual Bool_t PreData(const TAxis& vertex, const TAxis& eta);
+  
+  /** 
+   * Called before processing a single event - should not do anything
+   * but clear data, etc.
+   * 
+   * @return true on success
+   */
+  virtual Bool_t PreEvent();
   /** 
    * Process each event 
    *
-   * @param option Not used
+   * @param esd Event
+   * 
+   * @return true on success
    */  
-  virtual void UserExec(Option_t* option);
+  virtual Bool_t Event(AliESDEvent& esd);
   /** 
    * End of job
    * 
-   * @param option Not used 
+   * @return true on success
    */
-  virtual void Terminate(Option_t* option);
+  virtual Bool_t Finalize();
   /** 
    * @} 
    */
+  /** 
+   * @{ 
+   * @name Default axes 
+   */
+  /** 
+   * Set the default eta axis to use in case we didn't get one from
+   * the read-in corretions.  Override this if the sub class should go
+   * on even without a valid eta axis from the corrections (e.g. QA
+   * task)
+   * 
+   * @return null
+   */
+  virtual TAxis* DefaultEtaAxis() const;
+  /** 
+   * Set the default eta axis to use in case we didn't get one from
+   * the read-in corretions.  Override this if the sub class should go
+   * on even without a valid eta axis from the corrections (e.g. QA
+   * task)
+   * 
+   * @return null
+   */
+  virtual TAxis* DefaultVertexAxis() const;
+  /* @} */
   /** 
    * @{ 
    * @name Access to sub-algorithms 
@@ -161,63 +199,29 @@ public:
   void Print(Option_t* option="") const;
 protected: 
   /** 
-   * Check if all needed corrections are there and accounted for.  If not,
-   * do a Fatal exit 
+   * Copy constructor 
    * 
-   * @param what Which corrections is needed
-   * 
-   * @return true if all present, false otherwise
-   */  
-  Bool_t CheckCorrections(UInt_t what);
+   * @param o Object to copy from 
+   */
+  AliForwardQATask(const AliForwardQATask& o);
   /** 
-   * Read corrections
+   * Assignment operator 
    * 
+   * @param o Object to assign from 
    * 
-   * @param pe  On return, the eta axis
-   * @param pv  On return ,the vertex axis 
-   * @param mc  True assume MC input
-   * 
-   * @return true ons succcss
+   * @return Reference to this object 
    */
-  virtual Bool_t ReadCorrections(const TAxis*& pe, 
-				 const TAxis*& pv,
-				 Bool_t mc=false,
-				 Bool_t sat=false);
-  /**
-   * Get the ESD event. IF this is the first event, initialise.  If
-   * initialisation failes, return a null pointer. 
-   *
-   * @return Pointer to ESD event structure, or null
-   */
-  virtual AliESDEvent* GetESDEvent();
-  /** 
-   * Initialise the sub objects and stuff.  Called on first event 
-   * @return false on error. 
-   */
-  virtual Bool_t  SetupForData();
+  AliForwardQATask& operator=(const AliForwardQATask& o);
 
-  Bool_t fEnableLowFlux;// Whether to use low-flux specific code
-  Bool_t fFirstEvent;   // Whether the event is the first seen 
-  /**
-   * A pointer to the corrections manager.  This is here to make the
-   * corrections manager persistent - that is, when we write the
-   * analysis train to a file (as done in PROOF) we should also write
-   * down the corrections mananger.   This pointer ensures that. 
-   */
-  AliForwardCorrectionManager* fCorrManager; // Pointer to corrections manager
-
-  AliESDFMD              fESDFMD;       // Sharing corrected ESD object
-  AliForwardUtil::Histos fHistos;       // Cache histograms 
-
+  Bool_t                  fEnableLowFlux;// Whether to use low-flux code
+  AliESDFMD               fESDFMD;       // Sharing corrected ESD object
+  AliForwardUtil::Histos  fHistos;       // Cache histograms 
   AliFMDEventInspector    fEventInspector;    // Algorithm
   AliFMDEnergyFitter      fEnergyFitter;      // Algorithm
   AliFMDSharingFilter     fSharingFilter;     // Algorithm
   AliFMDDensityCalculator fDensityCalculator; // Algorithm
 
-  TList* fList; // Output list 
-  Int_t fDebug; // Debug flag
-
-  ClassDef(AliForwardQATask,2) // Forward QA class
+  ClassDef(AliForwardQATask,3) // Forward QA class
 };
 
 #endif

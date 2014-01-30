@@ -17,8 +17,12 @@
  * is broken (cannot be read by Acrobat Reader on Windows and MacOSX)
  * and one should pass it through a filter to correct these problems.
  * 
+ * @param runNo   Run number
+ * @param sys     Collision system 
+ * @param sNN     Collision energy in GeV
+ * @param field   L3 field strength
  * @param fname   File name 
- * @param option  Drawing options 
+ * @param details Drawing options 
  *
  * @ingroup pwglf_forward_scripts_corr
  */

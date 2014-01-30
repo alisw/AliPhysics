@@ -35,10 +35,14 @@
 #include <TImage.h>
 #include <TRandom.h>
 #include <TParameter.h>
+#include <TGClient.h>
 #include <fstream>
 #include <iostream>
 /** Systematic error color */
-#define SYSERR_COLOR kBlue-10
+// #define SYSERR_COLOR kGray;
+// #define SYSERR_COLOR kBlue-10
+// #define SYSERR_COLOR kCyan-10
+#define SYSERR_COLOR TColor::GetColor(220, 220, 255)
 /** Systematic error style */
 #define SYSERR_STYLE 1001
 
@@ -52,6 +56,33 @@ Double_t myFunc(Double_t* xp, Double_t* pp);
  */
 struct dNdetaDrawer 
 {
+  enum EFlags { 
+    kShowRatios    = 0x0001, 
+    kShowLeftRight = 0x0002, 
+    kShowSysError  = 0x0004, 
+    kShowRings     = 0x0008,
+    kCutEdges      = 0x0010,
+    kRemoveOuters  = 0x0020, 
+    kUseFinalMC    = 0x0040,
+    kUseEmpirical  = 0x0080,
+    kForceMB       = 0x0100,
+    kMirror        = 0x0200,
+    kExport        = 0x0400, 
+    kAddExec       = 0x0800,
+    kOldFormat     = 0x1000,
+    kVerbose       = 0x2000,
+    kHiRes         = 0x4000,
+    kExtraWhite    = 0x8000,
+    kDefaultOptions = 0xCE07
+  };
+  enum EOutFormat { 
+    kPNG     = 0x1, 
+    kPDF     = 0x2, 
+    kROOT    = 0x4, 
+    kScript  = 0x8,
+    kAllFormats = 0xF
+  };
+  
   /**
    * POD of data for range zooming 
    */
@@ -69,45 +100,35 @@ struct dNdetaDrawer
    * 
    */
   dNdetaDrawer()
-    : // Options 
-    fShowRatios(false),    // Show ratios 
-    fShowLeftRight(false), // Show asymmetry 
-    fShowRings(false),     // Show rings too
-    fExport(false),        // Export data to script
-    fCutEdges(false),      // Whether to cut edges
-    fRemoveOuters(false),  // Whether to remove outers
-    fShowOthers(0),        // Show other data
-    fMirror(false), 
-    fForceMB(false),    
-    fAddExec(false),
-    fSaveAsPDF(false), 
-    fSaveAsPNG(false), 
-    fSaveAsROOT(false),
-    fSaveAsScript(false),
-    // Settings 
-    fRebin(0),             // Rebinning factor 
-    fFwdSysErr(0.076),     // Systematic error in forward range
-    fCenSysErr(0),         // Systematic error in central range 
-    fTitle(""),            // Title on plot
-    fBase(""),             // Optional base name of output files
-    fClusterScale(""),     // Scaling of clusters to tracklets      
-    // Read (or set) information 
-    fTrigString(0),        // Trigger string (read, or set)
-    fNormString(0),        // Normalisation string (read, or set)
-    fSNNString(0),         // Energy string (read, or set)
-    fSysString(0),         // Collision system string (read or set)
-    fVtxAxis(0),           // Vertex cuts (read or set)
-    fCentAxis(0),          // Centrality axis
-    fTriggerEff(1),        // Trigger efficency 
-    fExtTriggerEff(false), // True if fTriggerEff was read 
-    // Resulting plots 
-    fResults(0),           // Stack of results 
-    fRatios(0),            // Stack of ratios 
-    fLeftRight(0),         // Left-right asymmetry
-    fOthers(0),            // Older data 
-    fTriggers(0),          // Number of triggers
-    fTruth(0),             // Pointer to truth 
-    fRangeParam(0)         // Parameter object for range zoom 
+    : fOptions(kDefaultOptions),
+      fFormats(kAllFormats),
+      fShowOthers(0),        // Show other data
+      // Settings 
+      fRebin(0),             // Rebinning factor 
+      fFwdSysErr(0.076),     // Systematic error in forward range
+      fCenSysErr(0),         // Systematic error in central range 
+      fTitle(""),            // Title on plot
+      fBase(""),             // Optional base name of output files
+      fClusterScale(""),     // Scaling of clusters to tracklets      
+      // Read (or set) information 
+      fTrigString(0),        // Trigger string (read, or set)
+      fNormString(0),        // Normalisation string (read, or set)
+      fSNNString(0),         // Energy string (read, or set)
+      fSysString(0),         // Collision system string (read or set)
+      fVtxAxis(0),           // Vertex cuts (read or set)
+      fCentAxis(0),          // Centrality axis
+      fTriggerEff(1),        // Trigger efficency 
+      fExtTriggerEff(false), // True if fTriggerEff was read 
+      fCentMin(0),           // Least centrality to plot
+      fCentMax(100),         // Largest centrality to plot
+      // Resulting plots 
+      fResults(0),           // Stack of results 
+      fRatios(0),            // Stack of ratios 
+      fLeftRight(0),         // Left-right asymmetry
+      fOthers(0),            // Older data 
+      fTriggers(0),          // Number of triggers
+      fTruth(0),             // Pointer to truth 
+      fRangeParam(0)         // Parameter object for range zoom 
   {
     fRangeParam = new RangeParam;
     fRangeParam->fMasterAxis = 0;
@@ -115,6 +136,9 @@ struct dNdetaDrawer
     fRangeParam->fSlave1Pad  = 0;
     fRangeParam->fSlave2Axis = 0;
     fRangeParam->fSlave2Pad  = 0;
+
+    TColor* sysErr = gROOT->GetColor(kSysErrColor);
+    sysErr->SetAlpha(0.7);
   }
   /** 
    * Cpoy constructor 
@@ -150,61 +174,13 @@ struct dNdetaDrawer
   }
 
   //==================================================================
-  /** 
-   * @{ 
-   * @name Set parameters 
-   */
-  void SetOld(Bool_t use=true) { fOld = use; }
-  /** 
-   * Show other (UA5, CMS, ...) data 
-   * 
-   * @param x Whether to show or not 
-   */
-  void SetShowOthers(UShort_t x)    { fShowOthers = x; }
-  //__________________________________________________________________
-  /** 
-   * Whether to show ratios or not.  If there's nothing to compare to,
-   * the ratio panel will be implicitly disabled
-   * 
-   * @param x Whether to show or not 
-   */
-  void SetShowRatios(Bool_t x)    { fShowRatios = x; }
-  //__________________________________________________________________
-  /** 
-   * 
-   * Whether to show the left/right asymmetry 
-   *
-   * @param x To show or not 
-   */
-  void SetShowLeftRight(Bool_t x) { fShowLeftRight = x; }
-  //__________________________________________________________________
-  /** 
-   * Whether to show rings 
-   * 
-   * @param x To show or not 
-   */
-  void SetShowRings(Bool_t x) { fShowRings = x; }
-  //__________________________________________________________________
-  /** 
-   * Whether to export results to a script 
-   *
-   * @param x Wheter to export results to a script
-   */
-  void SetExport(Bool_t x)     { fExport = x; }
-  //__________________________________________________________________
+  void SetShowOthers(UInt_t others) { fShowOthers = others; }
   /** 
    * Set the rebinning factor 
    * 
    * @param x Rebinning factor (must be a divisor in the number of bins) 
    */
   void SetRebin(UShort_t x)       { fRebin = x; }
-  //__________________________________________________________________
-  /** 
-   * Wheter to cut away the edges 
-   * 
-   * @param x Whether or not to cut away edges 
-   */
-  void SetCutEdges(Bool_t x)      { fCutEdges = x; }
   //__________________________________________________________________
   /** 
    * Set the title of the plot
@@ -219,10 +195,6 @@ struct dNdetaDrawer
    * @param x Base name 
    */
   void SetBase(TString x) { fBase = x; }
-  void SetSaveAsPNG(Bool_t x) { fSaveAsPNG = x; }
-  void SetSaveAsPDF(Bool_t x) { fSaveAsPDF = x; }
-  void SetSaveAsROOT(Bool_t x) { fSaveAsROOT = x; }
-  void SetSaveAsScript(Bool_t x) { fSaveAsScript = x; }
   //__________________________________________________________________
   /** 
    * Set the systematic error in the forward region
@@ -237,26 +209,6 @@ struct dNdetaDrawer
    * @param e Systematic error in the forward region 
    */
   void SetCentralSysError(Double_t e=0) { fCenSysErr = e; }
-  /** 
-   * Force the plot of minimum bias, even if centrality dependent data
-   * is present
-   * 
-   * @param force if true, force minimum bias
-   */
-  void SetForceMB(Bool_t force=true) { fForceMB = force; }
-  /** 
-   * Force the plot of minimum bias, even if centrality dependent data
-   * is present
-   * 
-   * @param add if true, force minimum bias
-   */
-  void SetAddExec(Bool_t add=true) { fAddExec = add; }
-  /** 
-   * Mirror data to regions with no coverage (@f$-5.0<\eta<-3.5@f$)
-   * 
-   * @param mirror If true, mirror data 
-   */
-  void SetMirror(Bool_t mirror=true) { fMirror = mirror; }
   /** 
    * Set the 'Final MC' correction file.  This is needed if the
    * secondary maps where produced using the old code
@@ -320,6 +272,18 @@ struct dNdetaDrawer
   }
   //__________________________________________________________________
   /** 
+   * Set the centrality range in centimeters 
+   * 
+   * @param centMin Min @f$ v_z@f$
+   * @param centMax Max @f$ v_z@f$
+   */
+  void SetCentralityRange(UShort_t centMin, UShort_t centMax) 
+  {
+    fCentMin = centMin;
+    fCentMax = centMax;
+  }
+  //__________________________________________________________________
+  /** 
    * Set the trigger mask (overrides what's in the file)
    * 
    * @param trig Trigger mask (0x1: INEL, 0x2: INEL>0, 0x4: NSD)
@@ -355,8 +319,16 @@ struct dNdetaDrawer
    * 
    * @param filename  File containing the data 
    */
-  void Run(const char* filename="forward_dndeta.root") 
+  void Run(const char* filename="forward_dndeta.root",
+	   UInt_t flags=kDefaultOptions, UInt_t formats=kAllFormats) 
   {
+    fOptions          = flags;
+    fFormats          = formats;
+    SetForwardSysError(flags & kShowSysError ? 0.076 : 0);
+    SetFinalMC        (flags & kUseFinalMC ? "forward_dndetamc.root" : "");
+    SetEmpirical      (flags & kUseEmpirical ? "EmpiricalCorrection.root" : "");
+    // SetBase(base);
+
     Double_t max = 0, rmax=0, amax=0;
 
     gStyle->SetPalette(1);
@@ -370,14 +342,14 @@ struct dNdetaDrawer
     Info("Run", "Drawing results from %s", file->GetName());
 
     // --- Get forward list ------------------------------------------
-    TList* forward = static_cast<TList*>(file->Get("ForwardResults"));
+    TList* forward = static_cast<TList*>(file->Get("ForwarddNdetaResults"));
     if (!forward) { 
-      Error("Run", "Couldn't find list ForwardResults");
+      Error("Run", "Couldn't find list ForwarddNdetaResults");
       return;
     }
-    TList* sums = static_cast<TList*>(file->Get("ForwardSums"));
+    TList* sums = static_cast<TList*>(file->Get("ForwarddNdetaSums"));
     if (!sums) { 
-      Error("Run", "Couldn't find list ForwardSums");
+      Error("Run", "Couldn't find list ForwarddNdetaSums");
       return;
     }
     TParameter<bool>* p = 
@@ -407,14 +379,14 @@ struct dNdetaDrawer
 	 "   Scaling of clusters to tracklets: %s\n"
 	 "   Final MC correction file:         %s\n"
 	 "   Empirical correction file:        %s",
-	 (fShowRatios    ? "yes" : "no"), 
-	 (fShowLeftRight ? "yes" : "no"),
-	 (fShowRings     ? "yes" : "no"),
-	 (fExport        ? "yes" : "no"), 
-	 (fCutEdges      ? "yes" : "no"),
-	 (fRemoveOuters  ? "yes" : "no"),
-	 (fMirror        ? "yes" : "no"),
-	 (fForceMB       ? "yes" : "no"),
+	 ((fOptions & kShowRatios)    ? "yes" : "no"), 
+	 ((fOptions & kShowLeftRight) ? "yes" : "no"),
+	 ((fOptions & kShowRings)     ? "yes" : "no"),
+	 ((fOptions & kExport)        ? "yes" : "no"), 
+	 ((fOptions & kCutEdges)      ? "yes" : "no"),
+	 ((fOptions & kRemoveOuters)  ? "yes" : "no"),
+	 ((fOptions & kMirror)        ? "yes" : "no"),
+	 ((fOptions & kForceMB)       ? "yes" : "no"),
 	 fShowOthers, fRebin, (100*fFwdSysErr), (100*fCenSysErr), 
 	 fTitle.Data(), fClusterScale.Data(), fFinalMC.Data(), 
 	 fEmpirical.Data());
@@ -429,12 +401,12 @@ struct dNdetaDrawer
     gROOT->SetMacroPath(savPath);
 
     // --- Get the central results -----------------------------------
-    TList* clusters = static_cast<TList*>(file->Get("CentralResults"));
-    if (!clusters) Warning("Run", "Couldn't find list CentralResults");
+    TList* clusters = static_cast<TList*>(file->Get("CentraldNdetaResults"));
+    if (!clusters) Warning("Run", "Couldn't find list CentraldNdetaResults");
 
     // --- Get the central results -----------------------------------
-    TList* mcTruth = static_cast<TList*>(file->Get("MCTruthResults"));
-    if (!mcTruth) Warning("Run", "Couldn't find list MCTruthResults");
+    TList* mcTruth = static_cast<TList*>(file->Get("MCTruthdNdetaResults"));
+    if (!mcTruth) Warning("Run", "Couldn't find list MCTruthdNdetaResults");
 
     // --- Make our containtes ---------------------------------------
     fResults   = new THStack("results", "Results");
@@ -452,13 +424,13 @@ struct dNdetaDrawer
 		fFinalMC.Data());
       }
       else { 
-	forwardMC = static_cast<TList*>(finalMC->Get("ForwardResults"));
+	forwardMC = static_cast<TList*>(finalMC->Get("ForwarddNdetaResults"));
 	if (!forwardMC) 
-	  Warning("Run", "Couldn't find list ForwardResults for final MC");
+	  Warning("Run","Couldn't find list ForwarddNdetaResults for final MC");
 #if 0
-	centralMC = static_cast<TList*>(finalMC->Get("CentralResults"));
+	centralMC = static_cast<TList*>(finalMC->Get("CentradNdetalResults"));
 	if (!centralMC) 
-	  Warning("Run", "Couldn't find list CentralResults for final MC");
+	  Warning("Run","Couldn't find list CentraldNdetaResults for final MC");
 #endif
       }
     }
@@ -497,20 +469,19 @@ struct dNdetaDrawer
 
     // --- Loop over input data --------------------------------------
     TObjArray truths;
-    FetchResults(mcTruth,  0, 0, "MCTruth", max, rmax, amax,truths);
-    TObjArray* fwdA = FetchResults(forward,  forwardMC, empCorr, "Forward", 
+    FetchTopResults(mcTruth,  0, 0, "MCTruth", max, rmax, amax,truths);
+    TObjArray* fwdA = FetchTopResults(forward,  forwardMC, empCorr, "Forward", 
 				   max, rmax, amax,truths);
-    TObjArray* cenA = FetchResults(clusters, 0, 0, "Central", 
+    TObjArray* cenA = FetchTopResults(clusters, 0, 0, "Central", 
 				   max, rmax, amax,truths);
 
     // --- Get trigger information -----------------------------------
     // TList* sums = static_cast<TList*>(file->Get("ForwardSums"));
     if (sums) {
-      TList* all = 0;
-      if (fOld) all = sums;
-      else      all = static_cast<TList*>(sums->FindObject("all"));
+      TList* all = (fOptions & kOldFormat ? sums : 
+		    static_cast<TList*>(sums->FindObject("all")));
       if (all) {
-	fTriggers = FetchResult(all, "triggers");
+	fTriggers = FetchHistogram(all, "triggers");
 	if (!fTriggers) all->ls();
       }
       else  {
@@ -538,13 +509,13 @@ struct dNdetaDrawer
 	fRatios->GetHists()->GetEntries() <= 0) { 
       Warning("Run", "No ratio data found - disabling that");
       // fRatios->ls();
-      fShowRatios = false;
+      fOptions &= ~kShowRatios;
     }
     if (!fLeftRight->GetHists() || 
 	fLeftRight->GetHists()->GetEntries() <= 0) { 
       Warning("Run", "No left/right data found - disabling that");
       // fLeftRight->ls();
-      fShowLeftRight = false;
+      fOptions &= ~kShowLeftRight;
     }
     if (fFwdSysErr > 0) { 
       if (fCenSysErr <= 0) fCenSysErr = fFwdSysErr;
@@ -558,11 +529,11 @@ struct dNdetaDrawer
 	TF1* f   = FitMerged(tmp, low, high);
 	MakeSysError(tmp, cen, fwd, f);
 	delete f;
-	Info("", "Adding systematic error histogram %s", 
-	     tmp->GetName());
+	if (fOptions & kVerbose) 
+	  Info("", "Adding systematic error histogram %s", tmp->GetName());
 	fResults->GetHists()->AddFirst(tmp, "e5");
 
-	if (!fMirror) continue;
+	if (!(fOptions & kMirror)) continue;
 
 	TH1* tmp2 = Symmetrice(tmp);
 	tmp2->SetFillColor(tmp->GetFillColor());
@@ -625,39 +596,58 @@ struct dNdetaDrawer
       fVtxAxis->SetName("vtxAxis");
       fVtxAxis->SetTitle("v_{z} range unspecified");
     }
-
-    TString centTxt("none");
-    if (fCentAxis) { 
-      Int_t nCent = fCentAxis->GetNbins();
-      centTxt = Form("%d bins", nCent);
-      for (Int_t i = 0; i <= nCent; i++) 
-	centTxt.Append(Form("%c%d", i == 0 ? ' ' : '-', 
-			    int(fCentAxis->GetXbins()->At(i))));
+    if (fCentAxis) {
+      TArrayD  bins(fCentAxis->GetNbins()+1);
+      Int_t    nBins = 0;
+      Double_t high  = -1;
+      for (Int_t i = 1; i <= fCentAxis->GetNbins(); i++) {
+	Double_t binLow  = fCentAxis->GetBinLowEdge(i);
+	Double_t binHigh = fCentAxis->GetBinUpEdge(i);
+	if (binLow  < fCentMin-.5) continue;
+	if (binHigh > fCentMax+.5) continue;
+	high = binHigh;
+	bins[nBins] = binLow;
+	nBins++;
+      }
+      bins[nBins] = high;
+      fCentAxis->Set(nBins, bins.GetArray());
     }
-    Info("FetchInformation", 
-	 "Initialized for\n"
-	 "   Trigger:       %-30s  (0x%x)\n"
-	 "   Efficiency:    %-6.4f\n"
-	 "   sqrt(sNN):     %-30s  (%dGeV)\n"
-	 "   System:        %-30s  (%d)\n"
-	 "   Vz range:      %-30s  (%f,%f)\n"
-	 "   Normalization: %-30s  (%d)\n"
-	 "   Centrality:    %s\n"
-	 "   Options:       %s",
-	 fTrigString->GetTitle(), fTrigString->GetUniqueID(), 
-	 fTriggerEff,
-	 fSNNString->GetTitle(),  fSNNString->GetUniqueID(), 
-	 fSysString->GetTitle(),  fSysString->GetUniqueID(), 
-	 fVtxAxis->GetTitle(), fVtxAxis->GetXmin(), fVtxAxis->GetXmax(),
-	 fNormString->GetTitle(), fNormString->GetUniqueID(),
-	 centTxt.Data(), (options ? options->GetTitle() : "none"));
+	
+
+    if (fOptions & kVerbose) {
+      TString centTxt("none");
+      if (fCentAxis) { 
+	Int_t nCent = fCentAxis->GetNbins();
+	centTxt = Form("%d bins", nCent);
+	for (Int_t i = 0; i <= nCent; i++) 
+	  centTxt.Append(Form("%c%d", i == 0 ? ' ' : '-', 
+			      int(fCentAxis->GetXbins()->At(i))));
+      }
+      Info("FetchInformation", 
+	   "Initialized for\n"
+	   "   Trigger:       %-30s  (0x%x)\n"
+	   "   Efficiency:    %-6.4f\n"
+	   "   sqrt(sNN):     %-30s  (%dGeV)\n"
+	   "   System:        %-30s  (%d)\n"
+	   "   Vz range:      %-30s  (%f,%f)\n"
+	   "   Normalization: %-30s  (%d)\n"
+	   "   Centrality:    %s\n"
+	   "   Options:       %s",
+	   fTrigString->GetTitle(), fTrigString->GetUniqueID(), 
+	   fTriggerEff,
+	   fSNNString->GetTitle(),  fSNNString->GetUniqueID(), 
+	   fSysString->GetTitle(),  fSysString->GetUniqueID(), 
+	   fVtxAxis->GetTitle(), fVtxAxis->GetXmin(), fVtxAxis->GetXmax(),
+	   fNormString->GetTitle(), fNormString->GetUniqueID(),
+	   centTxt.Data(), (options ? options->GetTitle() : "none"));
+    }
     if (fSysString->GetUniqueID() == 3) {
-      Info("FetchResults", "Left/Right assymmetry, mirror, and systematic "
+      Info("FetchTopResults", "Left/Right assymmetry, mirror, and systematic "
 	   "errors explicitly disabled for pPb");
-      fShowLeftRight = false;
-      fMirror        = false;
-      fFwdSysErr     = 0;
-      fCenSysErr     = 0;
+      fOptions   &= ~kShowLeftRight;
+      fOptions   &= ~kMirror;
+      fFwdSysErr =  0;
+      fCenSysErr =  0;
     }
   }
   //__________________________________________________________________
@@ -672,14 +662,22 @@ struct dNdetaDrawer
     Long_t   ret   = 
       gROOT->ProcessLine(Form("RefData::GetData(%d,%d,%d,%d,%d,%d);",
 			      sys,snn,trg,centLow,centHigh,fShowOthers));
-    if (!ret) return 0;
+    if (!ret) {
+      Warning("FetchOthers", 
+	      "No other data for %s %s %s %3d%%-%3d%% central (0x%x)", 
+	      fSysString  ? fSysString->GetTitle()  : "unknown", 
+	      fTrigString ? fTrigString->GetTitle() : "unknown", 
+	      fSNNString  ? fSNNString->GetTitle()  : "unknown", 
+	      centLow, centHigh, fShowOthers);
+      return 0;
+    }
 
     thisOther = reinterpret_cast<TMultiGraph*>(ret);    
     return thisOther;
   }
   //__________________________________________________________________
   /** 
-   * Get the results from the top-level list 
+   * Get the results from the top-level list (MC, SPD, FMD)
    * 
    * @param list    List 
    * @param mcList  List of histograms from MC
@@ -693,25 +691,25 @@ struct dNdetaDrawer
    * @return Array of results
    */
   TObjArray* 
-  FetchResults(const TList*  list, 
-	       const TList*  mcList,
-	       TGraphErrors* empCorr,
-	       const char*   name, 
-	       Double_t&     max,
-	       Double_t&     rmax,
-	       Double_t&     amax,
-	       TObjArray&    truths)
+  FetchTopResults(const TList*  list, 
+		  const TList*  mcList,
+		  TGraphErrors* empCorr,
+		  const char*   name, 
+		  Double_t&     max,
+		  Double_t&     rmax,
+		  Double_t&     amax,
+		  TObjArray&    truths)
   {
     if (!list) return 0;
     UShort_t   n = HasCent() ? fCentAxis->GetNbins() : 0;
-    // Info("FetchResults","got %d centrality bins", n);
+    // Info("FetchTopResults","got %d centrality bins", n);
     if (n == 0) {
       TH1*  h = FetchOne(list, mcList, empCorr, name, "all",
 			 FetchOthers(0,0), -1000, 0, 
 			 max, rmax, amax, fTruth);
       if (!h) return 0;
       TObjArray* a = new TObjArray;
-      // Info("FetchResults", "Adding %s to result stack", h->GetName());
+      // Info("FetchTopResults", "Adding %s to result stack", h->GetName());
       a->AddAt(h, 0);
       return a;
     }
@@ -732,96 +730,34 @@ struct dNdetaDrawer
 			 centTxt.Data(), max, rmax, amax, fTruth);
       if (!h) continue;
       if (ot != tt) { 
-	//Info("FetchResults", "old truth=%p new truth=%p (%s)", ot, tt, name);
+	//Info("FetchTopResults", "old truth=%p new truth=%p (%s)", 
+	//     ot, tt, name);
 	truths.AddAt(tt, i);
       }
-      // Info("FetchResults", "Adding %p to result stack", h);
+      // Info("FetchTopResults", "Adding %p to result stack", h);
       a->AddAt(h, i);
     }
     return a;
   } 
   //__________________________________________________________________
   /** 
-   * Get the color for a centrality bin
+   * Steer retrieval one centrality bin results
    * 
-   * @param bin Centrality bin 
+   * @param list          Input list
+   * @param mcList        Possible MC list
+   * @param empCorr       Possible empirical correction
+   * @param name          Name of bing 
+   * @param folderName    What sub-folder to get 
+   * @param others        What else to plot 
+   * @param col           Color 
+   * @param txt           Centrality text 
+   * @param max           Current maximum, on return new maximum 
+   * @param rmax          Current range maximum, on return new maximum 
+   * @param amax          Current A maximum, on return new maximum 
+   * @param truth         Possible MC truth histogram 
    * 
-   * @return Color 
+   * @return 
    */
-  Int_t GetCentralityColor(Int_t bin) const
-  {
-    if (fCentAxis->GetNbins() < 6) { 
-      switch (bin) { 
-      case 1: return kRed+2;
-      case 2: return kGreen+2;
-      case 3: return kBlue+1;
-      case 4: return kCyan+1;
-      case 5: return kMagenta+1;
-      case 6: return kYellow+2;
-      }
-    }
-    UShort_t centLow  = fCentAxis->GetBinLowEdge(bin);
-    UShort_t centHigh = fCentAxis->GetBinUpEdge(bin);
-    Float_t  fc       = (centLow+double(centHigh-centLow)/2) / 100;
-    Int_t    nCol     = gStyle->GetNumberOfColors();
-    Int_t    icol     = TMath::Min(nCol-1,int(fc * nCol + .5));
-    Int_t    col      = gStyle->GetColorPalette(icol);
-    //Info("GetCentralityColor","%3d: %3d-%3d -> %3d",bin,centLow,centHigh,col);
-    return col;
-  }
-  //__________________________________________________________________
-  /** 
-   * Set attributed on a histogram 
-   * 
-   * @param h     Histogram
-   * @param color Color 
-   */
-  void SetAttributes(TH1* h, Int_t color)
-  {
-    if (!h) return;
-    if (color < 0) return;
-    // h->SetLineColor(color);
-    h->SetMarkerColor(color);
-    // h->SetFillColor(color);
-  }
-  //__________________________________________________________________
-  /** 
-   * Set attributed on a graph 
-   * 
-   * @param g     Graph
-   * @param color Color 
-   */
-  void SetAttributes(TGraph* g, Int_t color)
-  {
-    if (!g) return;
-    if (color < 0) return;
-    // g->SetLineColor(color);
-    g->SetMarkerColor(color);
-    // g->SetFillColor(color);
-  }
-  //__________________________________________________________________
-  /** 
-   * Modify the title 
-   * 
-   */
-  void ModifyTitle(TNamed* h, const char* /*centTxt*/)
-  {
-    if (!h) return;
-
-    TString title(h->GetTitle());
-    title.ReplaceAll("ALICE ","");
-    if (title.Contains("Central")) 
-      title.ReplaceAll("Central", "SPD clusters");
-    if (title.Contains("Forward"))
-      title.ReplaceAll("Forward", "FMD");
-    h->SetTitle(title);
-    
-    
-    return;
-    // if (!centTxt || !h) return;
-    // h->SetTitle(Form("%s, %s", h->GetTitle(), centTxt));
-  }
-  //__________________________________________________________________
   TH1* FetchOne(const TList*  list, 
 		const TList*  mcList,
 		TGraphErrors* empCorr,
@@ -829,15 +765,14 @@ struct dNdetaDrawer
 		const char*   folderName,
 		TMultiGraph*  others, 
 		Int_t         col,
-		const char*   txt,
+		const char*   /* txt */,
 		Double_t&     max,
 		Double_t&     rmax,
 		Double_t&     amax,
 		TH1*&         truth)
   {
-    TList* folder = 0;
-    if (fOld) folder = const_cast<TList*>(list); 
-    else      folder = static_cast<TList*>(list->FindObject(folderName));
+    TList* folder = (fOptions & kOldFormat ? const_cast<TList*>(list) :
+		     static_cast<TList*>(list->FindObject(folderName)));
     if (!folder) {
       Error("FetchResults", "Couldn't find list '%s' in %s", 
 	    folderName, list->GetName());
@@ -851,10 +786,13 @@ struct dNdetaDrawer
 		"Didn't find the list '%s' in %s for final MC correction", 
 		folderName, mcList->GetName());
     }
-    TObject* normCalc = folder->FindObject("normCalc");
-    if (normCalc) Info("FetchOne", "%s:\n%s", folderName, normCalc->GetTitle());
-    TH1* h = FetchResults(folder, mcFolder, empCorr, name, 
-			  others, col, txt, max, rmax, amax, truth);
+    if (fOptions & kVerbose) {
+      TObject* normCalc = folder->FindObject("normCalc");
+      if (normCalc) Info("FetchOne", "%s:\n%s", 
+			 folderName, normCalc->GetTitle());
+    }
+    TH1* h = FetchCentResults(folder, mcFolder, empCorr, name, 
+			      others, col, folderName, max, rmax, amax, truth);
     return h;
   }
   //__________________________________________________________________
@@ -875,25 +813,25 @@ struct dNdetaDrawer
    *
    * @return Histogram of results 
    */
-  TH1* FetchResults(const TList*  list, 
-		    const TList*  mcList, 
-		    TGraphErrors* empCorr,
-		    const char*   name, 
-		    TMultiGraph*  thisOther,
-		    Int_t         color,
-		    const char*   centTxt,
-		    Double_t&     max,
-		    Double_t&     rmax,
-		    Double_t&     amax, 
-		    TH1*&         truth)
+  TH1* FetchCentResults(const TList*  list, 
+			const TList*  mcList, 
+			TGraphErrors* empCorr,
+			const char*   name, 
+			TMultiGraph*  thisOther,
+			Int_t         color,
+			const char*   centTxt,
+			Double_t&     max,
+			Double_t&     rmax,
+			Double_t&     amax, 
+			TH1*&         truth)
   {
     
-    TH1* dndeta      = FetchResult(list, Form("dndeta%s", name));
-    TH1* dndetaMC    = FetchResult(list, Form("dndeta%sMC", name));
-    TH1* dndetaTruth = FetchResult(list, "dndetaTruth");
+    TH1* dndeta      = FetchHistogram(list, Form("dndeta%s", name));
+    TH1* dndetaMC    = FetchHistogram(list, Form("dndeta%sMC", name));
+    TH1* dndetaTruth = FetchHistogram(list, "dndetaTruth");
 
-    if (mcList && FetchResult(mcList, "finalMCCorr")) 
-      Warning("FetchResults", "dNdeta already corrected for final MC");
+    if (mcList && FetchHistogram(mcList, "finalMCCorr")) 
+      Warning("FetchCentResults", "dNdeta already corrected for final MC");
     else 
       CorrectFinalMC(dndeta, mcList);
       
@@ -937,7 +875,7 @@ struct dNdetaDrawer
       truth = dndetaTruth;
     }
     else {
-      if (fShowRings) {
+      if ((fOptions & kShowRings)) {
 	THStack* rings = static_cast<THStack*>(list->FindObject("dndetaRings"));
 	if (rings) { 
 	  TIter next(rings->GetHists());
@@ -946,10 +884,10 @@ struct dNdetaDrawer
 	    max = TMath::Max(max, AddHistogram(fResults, hist));
 	}
       }
-      // Info("FetchResults", "Got %p, %p, %p from %s with name %s, max=%f", 
+      // Info("FetchCentResults", "Got %p, %p, %p from %s with name %s, max=%f",
       //      dndeta, dndetaMC, dndetaTruth, list->GetName(), name, max);
       
-      if (fShowLeftRight) {
+      if ((fOptions & kShowLeftRight)) {
 	fLeftRight->Add(Asymmetry(dndeta,    amax));
 	fLeftRight->Add(Asymmetry(dndetaMC,  amax));
       }
@@ -987,8 +925,8 @@ struct dNdetaDrawer
     if (!dndeta) return;
     if (!mcList) return;
 
-    TH1* dndetaMC    = FetchResult(mcList, dndeta->GetName());
-    TH1* dndetaTruth = FetchResult(mcList, "dndetaTruth");
+    TH1* dndetaMC    = FetchHistogram(mcList, dndeta->GetName());
+    TH1* dndetaTruth = FetchHistogram(mcList, "dndetaTruth");
     if (!dndetaMC || !dndetaTruth) return;
     
     TH1* corr = static_cast<TH1*>(dndetaMC->Clone("finalMCCorr"));
@@ -1035,14 +973,16 @@ struct dNdetaDrawer
     gStyle->SetTitleFont(kFont, "xyz");
     gStyle->SetLabelFont(kFont, "xyz");
     
-    Int_t    h  = 800;
-    Int_t    w  = 800; // h / TMath::Sqrt(2);
+    Int_t    h  = (gROOT->IsBatch() ? 
+		   ((fOptions & kHiRes) ? 1600 : 900) :
+		   gClient->GetDisplayHeight());
+    Int_t    w  = h; // h / TMath::Sqrt(2);
     Double_t y1 = 0;
     Double_t y2 = 0;
     Double_t y3 = 0;
-    if (!fShowRatios)    w  *= 1.3;
+    if (!(fOptions & kShowRatios))    w  *= 1.3;
     else                 y1 =  0.3;
-    if (!fShowLeftRight) w  *= 1.3;
+    if (!(fOptions & kShowLeftRight)) w  *= 1.3;
     else { 
       Double_t y11 = y1;
       y1 = (y11 > 0.0001 ? 0.4 : 0.2);
@@ -1068,6 +1008,7 @@ struct dNdetaDrawer
     TString trg(fTrigString->GetTitle());
     Int_t   nev  = 0;
     if (fTriggers) nev = fTriggers->GetBinContent(1);
+    if (HasCent()) trg = "CENT";
     trg          = trg.Strip(TString::kBoth);
     trg.ReplaceAll(" ", "_");
     trg.ReplaceAll(">", "Gt");
@@ -1081,13 +1022,16 @@ struct dNdetaDrawer
     fBase.ReplaceAll("<ipmin>", Form("%c%02d",vMin<0?'m':'p',TMath::Abs(vMin)));
     fBase.ReplaceAll("<ipmax>", Form("%c%02d",vMax<0?'m':'p',TMath::Abs(vMax)));
     fBase.ReplaceAll("<nev>",   Form("%09d",  nev));
-    if (fSaveAsPNG)   c->SaveAs(Form("%s.png",  fBase.Data()));
-    if (fSaveAsROOT)  c->SaveAs(Form("%s.root", fBase.Data()));
-    if (fSaveAsScript)c->SaveAs(Form("%s.C",    fBase.Data()));
-    if (fSaveAsPDF)   c->SaveAs(Form("%s.pdf",  fBase.Data()));
-    TString exp(fBase);
-    exp.ReplaceAll("dndeta", "export");
-    Export(exp);
+    if ((fFormats & kPNG))   c->SaveAs(Form("%s.png",  fBase.Data()));
+    if ((fFormats & kROOT))  c->SaveAs(Form("%s.root", fBase.Data()));
+    if ((fFormats & kScript))c->SaveAs(Form("%s.C",    fBase.Data()));
+    if ((fFormats & kPDF))   c->SaveAs(Form("%s.pdf",  fBase.Data()));
+    if (fOptions & kExport) {
+      TString exp(fBase);
+      exp.ReplaceAll("dndeta", "export");
+      exp.ReplaceAll("dNdeta", "export");
+      Export(exp);
+    }
   }
   //__________________________________________________________________
   /** 
@@ -1169,9 +1113,9 @@ struct dNdetaDrawer
       // Add entry for systematic errors 
       TLegendEntry* d0 = l->AddEntry("d0", Form("%4.1f%% Systematic error", 
 						100*fFwdSysErr), "f");
-      d0->SetLineColor(SYSERR_COLOR);
-      d0->SetMarkerColor(SYSERR_COLOR);
-      d0->SetFillColor(SYSERR_COLOR);
+      d0->SetLineColor(kSysErrColor);
+      d0->SetMarkerColor(kSysErrColor);
+      d0->SetFillColor(kSysErrColor);
       d0->SetFillStyle(SYSERR_STYLE);
       d0->SetMarkerStyle(0);
       d0->SetLineWidth(0);
@@ -1188,7 +1132,7 @@ struct dNdetaDrawer
       dd->SetLineColor(0);
       dd->SetMarkerSize(0);
     }
-    if (fMirror) {
+    if ((fOptions & kMirror)) {
       // Add entry for 'data'
       TLegendEntry* d1 = l->AddEntry("d1", "Data", "lp");
       d1->SetLineColor(kBlack);
@@ -1252,14 +1196,14 @@ struct dNdetaDrawer
     p1->SetBorderMode(0);
     p1->SetBottomMargin(yd > 0.001 ? 0.001 : 0.1);
     p1->SetRightMargin(kRightMargin);
-    if (fShowLeftRight || fShowRatios) p1->SetGridx();
+    if ((fOptions & kShowLeftRight) || (fOptions & kShowRatios)) p1->SetGridx();
     p1->SetTicks(1,1);
     p1->SetNumber(1);
     p1->Draw();
     p1->cd();
 
-    Info("PlotResults", "Plotting results with max=%f", max);
-    fResults->SetMaximum(1.15*max);
+    // Info("PlotResults", "Plotting results with max=%f", max);
+    fResults->SetMaximum((fOptions & kExtraWhite ? 1.4 : 1.15)*max);
     fResults->SetMinimum(yd > 0.00001 ? -0.02*max : 0);
     // fResults->SetMinimum(yd > 0.00001 ? -0.02*max : 0);
 
@@ -1283,10 +1227,24 @@ struct dNdetaDrawer
     // Make a legend in the main result pad
     BuildCentLegend(.12, 1-p1->GetTopMargin()-.01-.5,  
 		    .35, 1-p1->GetTopMargin()-.01-.1);
-    Double_t x1 = (HasCent() ? .7 : .15); 
-    Double_t x2 = (HasCent() ? 1-p1->GetRightMargin()-.01: .90);
-    Double_t y1 = (HasCent() ? .5: p1->GetBottomMargin()+.01); 
-    Double_t y2 = (HasCent() ? 1-p1->GetTopMargin()-.01-.15 : .35);
+    Double_t x1 = .15;
+    Double_t x2 = .90;
+    Double_t y1 = p1->GetBottomMargin()+.01;
+    Double_t y2 = .35;
+    if (HasCent()) { 
+      if (fOptions & kExtraWhite) { 
+	x1 = .40;
+	x2 = .60;
+	y1 = .70;
+	y2 = 1-p1->GetTopMargin()-0.06;
+      }
+      else {
+	x1 = .70;
+	x2 = 1-p1->GetRightMargin()-.01;
+	y1 = .50;
+	y2 = 1-p1->GetTopMargin()-0.16;
+      }
+    }
 		   
     BuildLegend(fResults, fOthers, x1, y1, x2, y2);
 
@@ -1424,7 +1382,7 @@ struct dNdetaDrawer
    */
   void PlotRatios(Double_t max, Double_t y1, Double_t y2) 
   {
-    if (fShowRatios == 0) return;
+    if ((fOptions & kShowRatios) == 0) return;
 
     bool isBottom = (y1 < 0.0001);
     Double_t yd = y2 - y1;
@@ -1476,7 +1434,7 @@ struct dNdetaDrawer
     // Replot the ratios on top
     fRatios->DrawClone("nostack e1 same");
 
-    if (fAddExec) {
+    if ((fOptions & kAddExec)) {
       if (isBottom) {
 	fRangeParam->fMasterAxis = FindXAxis(p2, fRatios->GetName());
 	p2->AddExec("range", Form("RangeExec((dNdetaDrawer::RangeParam*)%p)", 
@@ -1498,7 +1456,7 @@ struct dNdetaDrawer
    */
   void PlotLeftRight(Double_t max, Double_t y1, Double_t y2) 
   {
-    if (!fShowLeftRight) return;
+    if (!(fOptions & kShowLeftRight)) return;
 
     bool isBottom = (y1 < 0.0001);
     Double_t yd = y2 - y1;
@@ -1565,6 +1523,92 @@ struct dNdetaDrawer
    * @{ 
    * @name Data utility functions 
    */
+  //__________________________________________________________________
+  /** 
+   * Get the color for a centrality bin
+   * 
+   * @param bin Centrality bin 
+   * 
+   * @return Color 
+   */
+  Int_t GetCentralityColor(Int_t bin) const
+  {
+    if (fCentAxis->GetNbins() < 6) { 
+      switch (bin) { 
+      case 1: return kRed+2;
+      case 2: return kGreen+2;
+      case 3: return kBlue+1;
+      case 4: return kCyan+1;
+      case 5: return kMagenta+1;
+      case 6: return kYellow+2;
+      }
+    }
+    UShort_t centLow  = fCentAxis->GetBinLowEdge(bin);
+    UShort_t centHigh = fCentAxis->GetBinUpEdge(bin);
+    Float_t  fc       = (centLow+double(centHigh-centLow)/2) / 100;
+    Int_t    nCol     = gStyle->GetNumberOfColors();
+    Int_t    icol     = TMath::Min(nCol-1,int(fc * nCol + .5));
+    Int_t    col      = gStyle->GetColorPalette(icol);
+    //Info("GetCentralityColor","%3d: %3d-%3d -> %3d",bin,centLow,centHigh,col);
+    return col;
+  }
+  //__________________________________________________________________
+  /** 
+   * Set attributed on a histogram 
+   * 
+   * @param h     Histogram
+   * @param color Color 
+   */
+  void SetAttributes(TH1* h, Int_t color)
+  {
+    if (!h) return;
+    if (color < 0) return;
+    // h->SetLineColor(color);
+    h->SetMarkerColor(color);
+    // h->SetFillColor(color);
+  }
+  //__________________________________________________________________
+  /** 
+   * Set attributed on a graph 
+   * 
+   * @param g     Graph
+   * @param color Color 
+   */
+  void SetAttributes(TGraph* g, Int_t color)
+  {
+    if (!g) return;
+    if (color < 0) return;
+    // g->SetLineColor(color);
+    g->SetMarkerColor(color);
+    // g->SetFillColor(color);
+  }
+  //__________________________________________________________________
+  /** 
+   * Modify the title 
+   * 
+   */
+  void ModifyTitle(TNamed* h, const char* centTxt)
+  {
+    if (!h) return;
+
+    TString title(h->GetTitle());
+    title.ReplaceAll("ALICE ","");
+    if (title.Contains("Central")) 
+      title.ReplaceAll("CentraldNdeta", "SPD clusters");
+    if (title.Contains("Forward"))
+      title.ReplaceAll("ForwarddNdeta", "FMD");
+    h->SetTitle(title);
+
+    if (centTxt && centTxt[0] != '\0') {
+      TString name(h->GetName());
+      name.Append(Form("_%s", centTxt));
+      h->SetName(name);
+    }
+    
+    return;
+    // if (!centTxt || !h) return;
+    // h->SetTitle(Form("%s, %s", h->GetTitle(), centTxt));
+  }
   /** 
    * Get a result from the passed list
    * 
@@ -1573,7 +1617,7 @@ struct dNdetaDrawer
    * 
    * @return Histogram
    */
-  TH1* FetchResult(const TList* list, const char* name) const 
+  TH1* FetchHistogram(const TList* list, const char* name) const 
   {
     if (!list) return 0;
     
@@ -1630,7 +1674,7 @@ struct dNdetaDrawer
     stack->Add(hist, option);
 
     // Now symmetrice the histogram 
-    if (fMirror) {
+    if ((fOptions & kMirror)) {
       sym = Symmetrice(hist);
       stack->Add(sym, option);
     }
@@ -1673,7 +1717,7 @@ struct dNdetaDrawer
 
 	if (c <= 0) continue;
 
-	if (fCutEdges) {
+	if ((fOptions & kCutEdges)) {
 	  if (h->GetBinContent(bin+1)<=0 || 
 	      h->GetBinContent(bin-1)<=0) {
 	    Warning("Rebin", "removing bin %d=%f of %s (%d=%f,%d=%f)", 
@@ -1910,8 +1954,8 @@ struct dNdetaDrawer
       }
     }
     if (!r) {
-      Warning("Ratio", "Don't know how to divide a %s (%s) with a %s (%s)", 
-	      o1->ClassName(), o1->GetName(), o2->ClassName(), o2->GetName());
+      // Warning("Ratio", "Don't know how to divide a %s (%s) with a %s (%s)", 
+      //         o1->ClassName(),o1->GetName(),o2->ClassName(),o2->GetName());
       return 0;
     }
     // Check that the histogram isn't empty
@@ -1980,7 +2024,23 @@ struct dNdetaDrawer
   TH1* RatioHH(const TH1* h1, const TH1* h2) const
   {
     if (!h1 || !h2) return 0;
+    Bool_t bad = false;
+    if (h1->GetNbinsX() != h2->GetNbinsX()) {
+      Error("RatioHH", "They have differnet number of bins");
+      bad = true;
+    }
+    for (Int_t i = 1; i <= h1->GetNbinsX(); i++) {
+      if (h1->GetXaxis()->GetBinLowEdge(i) != 
+	  h2->GetXaxis()->GetBinLowEdge(i)) {
+	// Error("RatioHH", "They have incompatible variable bins");
+	bad = true;
+	break;
+      }
+    }
+    if (bad) return 0;
+    
     TH1* t1 = static_cast<TH1*>(h1->Clone("tmp"));
+    // Printf("Dividing %s with %s", h1->GetName(), h2->GetName());
     t1->Divide(h2);
     return t1;
   }
@@ -2197,7 +2257,8 @@ struct dNdetaDrawer
 		       tmpf->GetParameter(2)/4);
     fit->SetParLimits(3, 0, 100);
     fit->SetParLimits(4, 0, 100);
-    tmp->Fit(fit,"0W","");
+    const char* fitOpts = (fOptions & kVerbose ? "0W" : "Q0W");
+    tmp->Fit(fit,fitOpts,"");
 
     delete tmpf;
     return fit;
@@ -2232,16 +2293,16 @@ struct dNdetaDrawer
     TString name(tmp->GetName());
     name.ReplaceAll("Merged", "SysError");
     tmp->SetName(name);
-    tmp->SetMarkerColor(SYSERR_COLOR);
-    tmp->SetLineColor(SYSERR_COLOR);
-    tmp->SetFillColor(SYSERR_COLOR);
+    tmp->SetMarkerColor(kSysErrColor);
+    tmp->SetLineColor(kSysErrColor);
+    tmp->SetFillColor(kSysErrColor);
     tmp->SetFillStyle(SYSERR_STYLE);
     tmp->SetMarkerStyle(0);
     tmp->SetLineWidth(0);
   }
   void CorrectForward(TH1* h) const
   {
-    if (!fRemoveOuters) return;
+    if (!(fOptions & kRemoveOuters)) return;
     
     for (Int_t i = 1; i <= h->GetNbinsX(); i++) { 
       Double_t eta = h->GetBinCenter(i);
@@ -2282,6 +2343,7 @@ struct dNdetaDrawer
       Error("Export", "Failed to open output file %s", fname.Data());
       return;
     }
+    Info("Export", "Exporting data to %s", fname.Data());
     outf << "// Create by dNdetaDrawer\n"
 	 << "void " << bname << "(THStack* stack, TLegend* l, Int_t m)\n"
 	 << "{"
@@ -2331,7 +2393,10 @@ struct dNdetaDrawer
    * 
    * @return True if we should do centrality dependent ploting 
    */
-  Bool_t HasCent() const { return fCentAxis && !fForceMB; }
+  Bool_t HasCent() const 
+  { 
+    return fCentAxis && fCentAxis->GetNbins() > 0 && !(fOptions & kForceMB); 
+  }
 
 
 
@@ -2340,20 +2405,9 @@ struct dNdetaDrawer
    * @{ 
    * @name Options 
    */
-  Bool_t       fShowRatios;   // Show ratios 
-  Bool_t       fShowLeftRight;// Show asymmetry 
-  Bool_t       fShowRings;    // Show rings too
-  Bool_t       fExport;       // Export results to file
-  Bool_t       fCutEdges;     // Whether to cut edges
-  Bool_t       fRemoveOuters; // Whether to remove outers
+  UInt_t       fOptions;      // Options 
+  UInt_t       fFormats;      // Output formats
   UShort_t     fShowOthers;   // Show other data
-  Bool_t       fMirror;       // Whether to mirror 
-  Bool_t       fForceMB;      // Force min-bias
-  Bool_t       fAddExec;      // Add code to do combined zooms
-  Bool_t       fSaveAsPDF;    // Flag whether to save as PDF
-  Bool_t       fSaveAsPNG;    // Flag whether to save as PNG
-  Bool_t       fSaveAsROOT;   // Flag whether to save as ROOT file
-  Bool_t       fSaveAsScript; // Flag whether to save as ROOT script
   /* @} */
   /** 
    * @{ 
@@ -2380,6 +2434,8 @@ struct dNdetaDrawer
   TAxis*       fCentAxis;     // Centrality axis
   Float_t      fTriggerEff;   // Trigger efficiency 
   Bool_t       fExtTriggerEff;// True if read externally 
+  UShort_t     fCentMin;      // Least centrality to plot
+  UShort_t     fCentMax;      // Largest centrality to plot
   /* @} */
   /** 
    * @{ 
@@ -2393,7 +2449,6 @@ struct dNdetaDrawer
   TH1*         fTruth;        // Pointer to truth 
   /* @} */
   RangeParam*  fRangeParam;   // Parameter object for range zoom 
-  Bool_t       fOld;
 
   static const Float_t kRightMargin;
   static const Int_t   kFont;
@@ -2401,6 +2456,7 @@ struct dNdetaDrawer
   static const Int_t   kAliceRed;
   static const Int_t   kAlicePurple;
   static const Int_t   kAliceYellow;
+  static const Int_t   kSysErrColor;
 };
 
 const Float_t dNdetaDrawer::kRightMargin = 0.02;
@@ -2409,6 +2465,7 @@ const Int_t   dNdetaDrawer::kAliceBlue   = TColor::GetColor(40,   58, 68);
 const Int_t   dNdetaDrawer::kAliceRed    = TColor::GetColor(226,   0, 26);
 const Int_t   dNdetaDrawer::kAlicePurple = TColor::GetColor(202,  71, 67);
 const Int_t   dNdetaDrawer::kAliceYellow = TColor::GetColor(238, 125, 17);
+const Int_t   dNdetaDrawer::kSysErrColor = SYSERR_COLOR;
 
 
 //____________________________________________________________________
@@ -2509,56 +2566,60 @@ void RangeExec(dNdetaDrawer::RangeParam* p)
 void
 Usage()
 {
-  printf("Usage: DrawdNdeta(FILE,TITLE,REBIN,OTHERS,FLAGS,"
-	 "SNN,SYS,TRIG,IPZMIN,IPZMAX,BASE,FMT)\n"
-	 "  const char* FILE   File name to open (\"forward_dndeta.root\")\n"
-	 "  const char* TITLE  Title to put on plot (\"\")\n"
-	 "  UShort_t    REBIN  Rebinning factor (1)\n"
-	 "  UShort_t    OTHERS Other data to draw - more below (0x7)\n"
-	 "  UShort_t    FLAGS  Visualisation flags - more below (0x7)\n"
-	 "  UShort_t    SYS    (optional) 1:pp, 2:PbPb, 3:pPb\n"
-	 "  UShort_t    SNN    (optional) sqrt(s_NN) in GeV\n"
-	 "  UShort_t    TRIG   (optional) 1: INEL, 2: INEL>0, 4: NSD, ...\n"
-	 "  Float_t     EFF    (optional) Trigger efficiency\n"
-	 "  Float_t     IPZMIN (optional) Least z coordinate of IP\n"
-	 "  Float_t     IPZMAX (optional) Largest z coordinate of IP\n"
-	 "  const char* BASE   (optional) base name of output files\n"
-	 "  UShort_t    FMT    (optional) Output formats\n"
-	 "\n"
-	 " OTHERS is a bit mask of\n"
-	 "  0x1     Show UA5 data (INEL,NSD, ppbar, 900GeV)\n"
-	 "  0x2     Show CMS data (NSD, pp)\n"
-	 "  0x4     Show published ALICE data (INEL,INEL>0,NSD, pp)\n"
-	 "  0x8     Show event genertor data\n"
-	 "\n"
-	 " FLAGS is a bit mask of\n"
-	 "  0x1     Show ratios of data to other data and possibly MC\n"
-	 "  0x2     Show left-right asymmetry\n"
-	 "  0x4     Show systematic error band\n"
-	 "  0x8     Show individual ring results (INEL only)\n"
-	 "  0x10    Cut edges when rebinning\n"
-	 "  0x20    Remove FMDxO points\n"
-	 "  0x40    Do not make our own canvas\n"
-	 "  0x80    Force use of MB\n"
-	 "  0x100   Mirror data\n"
-	 "  0x200   Apply `final MC' correction\n"
-	 "  0x400   Apply `Emperical' correction\n"
-	 "  0x800   Export results to script\n"
-	 "  0x1000  Add code to do combined zooms on eta axis\n"
-	 "  0x2000  Assume old-style input\n"
-	 "\n"
-	 " FMD is a bit mask of\n"
-	 "  0x1     Make PNG output\n"
-	 "  0x2     Make PDF output\n"
-	 "  0x4     Make ROOT file output\n"
-	 "  0x8     Make ROOT script output\n"
-	 "\n"
-	 "0x200 requires the file forward_dndetamc.root\n"
-	 "0x400 requires the file EmpiricalCorrection.root\n"
-	 "To specify that you want ratios, force MB, apply empirical "
-	 "correction, and export to script, set flags to\n\n"
-	 "  0x1|0x80|0x400|0x800=0xC81\n\n"
-	 );
+  std::ostream& o = std::cout;
+  o << "Usage: DrawdNdeta(FILE,TITLE,REBIN,OTHERS,FLAGS,"
+    << "SNN,SYS,TRIG,IPZMIN,IPZMAX,BASE,FMT)\n"
+    << "  const char* FILE   File name to open (\"forward_dndeta.root\")\n"
+    << "  const char* TITLE  Title to put on plot (\"\")\n"
+    << "  UShort_t    REBIN  Rebinning factor (1)\n"
+    << "  UShort_t    OTHERS Other data to draw - more below (0x7)\n"
+    << "  UShort_t    FLAGS  Visualisation flags - more below (0x7)\n"
+    << "  UShort_t    SYS    (optional) 1:pp, 2:PbPb, 3:pPb\n"
+    << "  UShort_t    SNN    (optional) sqrt(s_NN) in GeV\n"
+    << "  UShort_t    TRIG   (optional) 1: INEL, 2: INEL>0, 4: NSD, ...\n"
+    << "  Float_t     EFF    (optional) Trigger efficiency\n"
+    << "  Float_t     IPZMIN (optional) Least z coordinate of IP\n"
+    << "  Float_t     IPZMAX (optional) Largest z coordinate of IP\n"
+    << "  const char* BASE   (optional) base name of output files\n"
+    << "  UShort_t    FMT    (optional) Output formats\n"
+    << "\n";
+  o << " OTHERS is a bit mask of\n"
+    << "  0x1     Show UA5 data (INEL,NSD, ppbar, 900GeV)\n"
+    << "  0x2     Show CMS data (NSD, pp)\n"
+    << "  0x4     Show published ALICE data (INEL,INEL>0,NSD, pp)\n"
+    << "  0x8     Show event genertor data\n"
+    << "\n";
+  o << " FMT is a bit mask of\n"
+    << "  0x1     Make PNG output\n"
+    << "  0x2     Make PDF output\n"
+    << "  0x4     Make ROOT file output\n"
+    << "  0x8     Make ROOT script output\n"
+    << "\n";
+  o << " FLAGS is a bit mask of\n"
+    << "  0x1     Show ratios of data to other data and possibly MC\n"
+    << "  0x2     Show left-right asymmetry\n"
+    << "  0x4     Show systematic error band\n"
+    << "  0x8     Show individual ring results (INEL only)\n"
+    << "  0x10    Cut edges when rebinning\n"
+    << "  0x20    Remove FMDxO points\n"
+    << "  0x40    Apply `final MC' correction\n"
+    << "  0x80    Apply `Emperical' correction\n"
+    << "  0x100   Force use of MB\n"
+    << "  0x200   Mirror data\n"
+    << "  0x400   Export results to script\n"
+    << "  0x800   Add code to do combined zooms on eta axis\n"
+    << "  0x1000  Assume old-style input\n"
+    << "  0x2000  Be verbose\n"
+    << "  0x4000  Hi-res batch output\n"
+    << "  0x8000  Add aditional white-space above results\n"
+    << "\n";
+  o << "0x200 requires the file forward_dndetamc.root\n"
+    << "0x400 requires the file EmpiricalCorrection.root\n"
+    << "To specify that you want ratios, force MB, apply empirical "
+    << "correction, and export to script, set flags to\n\n"
+    << "   0x1|0x100|0x80|0x400=0x581\n"
+    << std::endl;
+
 }
 
 //____________________________________________________________________
@@ -2573,8 +2634,11 @@ Usage()
  * @param sNN       (optional) Collision energy [GeV]
  * @param sys       (optional) Collision system (1: pp, 2: PbPb)
  * @param trg       (optional) Trigger (1: INEL, 2: INEL>0, 4: NSD)   
+ * @param eff       (optional) Trigger efficiency 
  * @param vzMin     Least @f$ v_z@f$
  * @param vzMax     Largest @f$ v_z@f$
+ * @param base      Base name 
+ * @param outflg    Output flags 
  *
  * @ingroup pwglf_forward_dndeta
  */
@@ -2583,15 +2647,17 @@ DrawdNdeta(const char* filename="forward_dndeta.root",
 	   const char* title="",
 	   UShort_t    rebin=5, 
 	   UShort_t    others=0x7,
-	   UShort_t    flags=0x187,
+	   UShort_t    flags=dNdetaDrawer::kDefaultOptions,
 	   UShort_t    sNN=0, 
 	   UShort_t    sys=0,
 	   UShort_t    trg=0,
 	   Float_t     eff=0,
+	   UShort_t    centMin=0,
+	   UShort_t    centMax=100,
 	   Float_t     vzMin=999, 
 	   Float_t     vzMax=-999,
 	   const char* base="", 
-	   UShort_t    outflg=0xf)
+	   UShort_t    outflg=dNdetaDrawer::kAllFormats)
 {
   TString fname(filename);
   fname.ToLower();
@@ -2605,25 +2671,7 @@ DrawdNdeta(const char* filename="forward_dndeta.root",
   d.SetRebin(rebin);
   d.SetTitle(title);
   d.SetShowOthers(others);
-  d.SetShowRatios(flags & 0x1);
-  d.SetShowLeftRight(flags & 0x2);
-  d.SetForwardSysError(flags & 0x4 ? 0.076 : 0);
-  d.SetShowRings(flags & 0x8);
-  d.SetCutEdges(flags & 0x10);
-  d.fRemoveOuters = (flags & 0x20);
-  d.SetExport(flags & 0x40);
-  d.SetForceMB(flags & 0x80);
-  d.SetMirror(flags & 0x100);
-  d.SetFinalMC(flags & 0x200 ? "forward_dndetamc.root" : "");
-  d.SetEmpirical(flags & 0x400 ? "EmpiricalCorrection.root" : "");
-  d.SetExport(flags & 0x800);
-  d.SetAddExec(flags & 0x1000);
-  d.SetOld(flags & 0x2000);
   d.SetBase(base);
-  d.SetSaveAsPNG(outflg & 0x1);
-  d.SetSaveAsPDF(outflg & 0x2);
-  d.SetSaveAsROOT(outflg & 0x4);
-  d.SetSaveAsScript(outflg & 0x8);
   // d.fClusterScale = "1.06 -0.003*x +0.0119*x*x";
   // Do the below if your input data does not contain these settings 
   if (sNN > 0) d.SetSNN(sNN);     // Collision energy per nucleon pair (GeV)
@@ -2632,7 +2680,8 @@ DrawdNdeta(const char* filename="forward_dndeta.root",
   if (eff > 0) d.SetTriggerEfficiency(eff); // Trigger efficiency
   if (vzMin < 999 && vzMax > -999) 
     d.SetVertexRange(vzMin,vzMax); // Collision vertex range (cm)
-  d.Run(filename);
+  d.SetCentralityRange(centMin,centMax); // Collision vertex range (cm)
+  d.Run(filename, flags, outflg);
 }
 //____________________________________________________________________
 //

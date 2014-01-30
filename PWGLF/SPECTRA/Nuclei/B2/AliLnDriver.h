@@ -75,9 +75,7 @@ class AliLnDriver: public TObject
 	void SetSameFeedDownCorr(Bool_t flag=1) { fSameFdwn = flag; }
 	
 	void SetPidProcedure(Int_t proc) { fPidProc=proc; }
-	
 	void SetPidEfficiency(Double_t eff) { fPidEff=eff; }
-	
 	void SetAddFakeTracks(Bool_t flag=1) { fAddFakeTracks = flag; }
 	
 	void SetDebugLevel(Int_t level) { fDebugLevel = level; }
@@ -94,7 +92,6 @@ class AliLnDriver: public TObject
 	TString fOutputCorTag;  // tag for correction file
 	
 	Double_t fTrigEff[3];   // trigger efficiency, stat. and syst. errors
-	Double_t fXsec[3];      // total inelastic cross section, stat. and syst. errors
 	Bool_t  fIsOnlyGen;     // if it is only generation
 	Bool_t  fINEL;          // extrapolate to inelastic events
 	
@@ -108,7 +105,7 @@ class AliLnDriver: public TObject
 	Double_t fPtMax;        // maximum pt value
 	Bool_t   fPid;          // enable pid correction
 	Double_t fPidPt;        // minimum pt value for pid correction
-	Bool_t   fSecondaries;  // correction of secondaries
+	Bool_t   fSecondaries;  // enable correction of secondaries
 	Int_t    fSecProc;      // procedure to estimate fractions
 	Int_t    fMatDCAxyMod;  // DCAxy model for correction of secondaries
 	Bool_t   fANucTemplate; // enable antinucleus as template for primaries
@@ -121,7 +118,7 @@ class AliLnDriver: public TObject
 	Double_t fBkgMax;       // upper limit for removing background
 	Double_t fIntMin;       // lower limit for integration
 	Double_t fIntMax;       // upper limit for integration
-	Bool_t   fEfficiency;   // efficiency correction
+	Bool_t   fEfficiency;   // enable efficiency correction
 	Bool_t   fG3Fluka;      // enable G3/Fluka correction for TPC
 	Double_t fScMat;        // scaling factor for material fraction
 	Double_t fScFd;         // scaling factor for feed-down fraction
@@ -138,16 +135,16 @@ class AliLnDriver: public TObject
 	TString fOutputPtCorrDebug; // output filename for debugging pt corrections
 	TString fOutputPtDebug;     // output filename for debugging pt
 	
-	Bool_t fFitFrac;        // fit for fraction of secondaries
+	Bool_t fFitFrac;        // enable fit to fractions
 	Bool_t fFdwnCorr;       // enable feed-down correction
 	Bool_t fSameFdwn;       // same feed-down correction for positives and negatives
 	Bool_t fMCtoINEL;       // MC to extrapolate to inel or for triggering events
 	
 	Bool_t fAddFakeTracks;  // include fake tracks in the efficiency and templates
 	
-	Int_t fPidProc;  // pid procedure on the pt distribution
+	Int_t fPidProc;  // pid procedure for the pt distribution
 	
-	Double_t fPidEff;  // pid efficiency for all pt
+	Double_t fPidEff;  // pid efficiency for all pt bins
 	
 	Int_t fDebugLevel; // 0 no verbose, > 1 verbose
 	

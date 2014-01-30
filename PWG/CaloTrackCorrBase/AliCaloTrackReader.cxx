@@ -60,6 +60,7 @@
 #include "AliCaloTrackReader.h"
 // ---- Jets ----
 #include "AliAODJet.h"
+#include "AliAODJetEventBackground.h"
 
 ClassImp(AliCaloTrackReader)
 
@@ -86,9 +87,10 @@ fFillCTS(0),                 fFillEMCAL(0),                   fFillPHOS(0),
 fFillEMCALCells(0),          fFillPHOSCells(0),
 fRecalculateClusters(kFALSE),fCorrectELinearity(kTRUE),
 fSelectEmbeddedClusters(kFALSE),
-fTrackStatus(0),             fTrackFilterMask(0),
+fTrackStatus(0),             fTrackFilterMask(0),             fTrackFilterMaskComplementary(0),
 fESDtrackCuts(0),            fESDtrackComplementaryCuts(0),   fConstrainTrack(kFALSE),
-fSelectHybridTracks(0),      fSelectSPDHitTracks(kFALSE),
+fSelectHybridTracks(0),      fSelectPrimaryTracks(0),
+fSelectSPDHitTracks(0),      fSelectFractionTPCSharedClusters(0), fCutTPCSharedClustersFraction(0),
 fTrackMult(0),               fTrackMultEtaCut(0.9),
 fReadStack(kFALSE),          fReadAODMCParticles(kFALSE),
 fDeltaAODFileName(""),       fFiredTriggerClassName(""),
@@ -125,10 +127,12 @@ fTimeStampRunMin(0),         fTimeStampRunMax(0),
 fNPileUpClusters(-1),        fNNonPileUpClusters(-1),         fNPileUpClustersCut(3),
 fVertexBC(-200),             fRecalculateVertexBC(0),
 fCentralityClass(""),        fCentralityOpt(0),
-fEventPlaneMethod(""),       fImportGeometryFromFile(kFALSE), fImportGeometryFilePath(""),
+fEventPlaneMethod(""),
 fAcceptOnlyHIJINGLabels(0),  fNMCProducedMin(0), fNMCProducedMax(0),
 fFillInputNonStandardJetBranch(kFALSE),
 fNonStandardJets(new TClonesArray("AliAODJet",100)),fInputNonStandardJetBranchName("jets"),
+fFillInputBackgroundJetBranch(kFALSE), 
+fBackgroundJets(0x0),fInputBackgroundJetBranchName("jets"),
 fAcceptEventsWithBit(0),     fRejectEventsWithBit(0)
 {
   //Ctor
@@ -191,7 +195,8 @@ AliCaloTrackReader::~AliCaloTrackReader()
     else               fNonStandardJets->Delete() ;
     delete fNonStandardJets ;
   }
-  
+  delete fBackgroundJets ;
+
   fRejectEventsWithBit.Reset();
   fAcceptEventsWithBit.Reset();
   
@@ -205,7 +210,7 @@ AliCaloTrackReader::~AliCaloTrackReader()
 }
 
 //________________________________________________________________________
-Bool_t  AliCaloTrackReader::AcceptDCA(const Float_t pt, const Float_t dca)
+Bool_t  AliCaloTrackReader::AcceptDCA(Float_t pt, Float_t dca)
 {
   // Accept track if DCA is smaller than function
   
@@ -412,7 +417,7 @@ void AliCaloTrackReader::SetGeneratorMinMaxParticles()
       fNMCProducedMin = fNMCProducedMax;
       fNMCProducedMax+= eventHeader2->NProduced();
       
-      if(name == "Hijing") return ;
+			if(name.Contains("Hijing",TString::kIgnoreCase)) return ;
     }
         
   }
@@ -435,7 +440,7 @@ void AliCaloTrackReader::SetGeneratorMinMaxParticles()
       fNMCProducedMin = fNMCProducedMax;
       fNMCProducedMax+= eventHeader->NProduced();
       
-      if(name == "Hijing") return ;
+			if(name.Contains("Hijing",TString::kIgnoreCase)) return ;
     }
         
   }
@@ -472,7 +477,7 @@ AliGenEventHeader* AliCaloTrackReader::GetGenEventHeader() const
       
       //printf("Generator %d: Class Name %s, Name %s, title %s \n",igen, eventHeader2->ClassName(), name.Data(), eventHeader2->GetTitle());
       
-      if(name == "Hijing") return eventHeader2 ;
+			if(name.Contains("Hijing",TString::kIgnoreCase)) return eventHeader2 ;
     }
 
     return 0x0;
@@ -494,7 +499,7 @@ AliGenEventHeader* AliCaloTrackReader::GetGenEventHeader() const
       
       //printf("Generator %d: Class Name %s, Name %s, title %s \n",igen, eventHeader->ClassName(), name.Data(), eventHeader->GetTitle());
       
-      if(name == "Hijing") return eventHeader ;
+			if(name.Contains("Hijing",TString::kIgnoreCase)) return eventHeader ;
     }
     
     return 0x0;
@@ -611,17 +616,7 @@ void AliCaloTrackReader::Init()
     fReadStack          = kFALSE;
     fReadAODMCParticles = kFALSE;
   }
-  
-  // Init geometry, I do not like much to do it like this ...
-  if(fImportGeometryFromFile && !gGeoManager)
-  {
-    if(fImportGeometryFilePath=="") // If not specified, set a default location
-      fImportGeometryFilePath = "$ALICE_ROOT/OADB/EMCAL/geometry_2011.root"; // "$ALICE_ROOT/EVE/alice-data/default_geo.root"
-    
-    printf("AliCaloTrackReader::Init() - Import %s\n",fImportGeometryFilePath.Data());
-    TGeoManager::Import(fImportGeometryFilePath) ; // default need file "geometry.root" in local dir!!!!
-  }
-  
+
   if(!fESDtrackCuts)
     fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); //initialize with TPC only tracks
 	
@@ -668,6 +663,10 @@ void AliCaloTrackReader::InitParameters()
   //fTrackStatus|=AliESDtrack::kITSrefit;
   fTrackStatus     = 0;
   fTrackFilterMask = 128; //For AODs, but what is the difference between fTrackStatus and fTrackFilterMask?
+  fTrackFilterMaskComplementary = 0; // in case of hybrid tracks, without using the standard method
+  
+  fSelectFractionTPCSharedClusters = kTRUE;
+  fCutTPCSharedClustersFraction = 0.4,
   
   fESDtrackCuts = 0;
   fESDtrackComplementaryCuts = 0;
@@ -697,8 +696,6 @@ void AliCaloTrackReader::InitParameters()
   fPHOSClusters    = new TObjArray();
   fTriggerAnalysis = new AliTriggerAnalysis;
   fAODBranchList   = new TList ;
-  
-  fImportGeometryFromFile = kFALSE;
   
   fPileUpParamSPD[0] = 3   ; fPileUpParamSPD[1] = 0.8 ;
   fPileUpParamSPD[2] = 3.0 ; fPileUpParamSPD[3] = 2.0 ; fPileUpParamSPD[4] = 5.0;
@@ -737,7 +734,10 @@ void AliCaloTrackReader::InitParameters()
   fInputNonStandardJetBranchName = "jets";
   fFillInputNonStandardJetBranch = kFALSE;
   if(!fNonStandardJets) fNonStandardJets = new TClonesArray("AliAODJet",100);
-  
+  fInputBackgroundJetBranchName = "jets";
+  fFillInputBackgroundJetBranch = kFALSE; 
+  if(!fBackgroundJets) fBackgroundJets = new AliAODJetEventBackground();
+
 }
 
 //___________________________________________________________________
@@ -870,8 +870,8 @@ Bool_t AliCaloTrackReader::IsHIJINGLabel(Int_t label)
   }//AOD
 }
 
-//___________________________________________________________
-Bool_t AliCaloTrackReader::IsInTimeWindow(const Double_t tof, const Float_t energy) const
+//__________________________________________________________________________
+Bool_t AliCaloTrackReader::IsInTimeWindow(Double_t tof, Float_t energy) const
 {
   // Cluster time selection window
   
@@ -949,9 +949,8 @@ Bool_t AliCaloTrackReader::IsPileUpFromNotSPDAndNotEMCal() const
   else                                            return kFALSE;
 }
 
-//_________________________________________________________________________
-Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
-                                          const char * /*currentFileName*/)
+//___________________________________________________________________________________
+Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileName*/)
 {
   //Fill the event counter and input lists that are needed, called by the analysis maker.
   
@@ -1241,6 +1240,9 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   //one specified jet branch
   if(fFillInputNonStandardJetBranch)
     FillInputNonStandardJets();
+  if(fFillInputBackgroundJetBranch)
+    FillInputBackgroundJets();
+
   
   return kTRUE ;
 }
@@ -1317,9 +1319,8 @@ void AliCaloTrackReader::GetVertex(Double_t vertex[3]) const
   vertex[2]=fVertex[0][2];
 }
 
-//____________________________________________________________
-void AliCaloTrackReader::GetVertex(Double_t vertex[3],
-                                   const Int_t evtIndex) const
+//__________________________________________________________________________
+void AliCaloTrackReader::GetVertex(Double_t vertex[3], Int_t evtIndex) const
 {
   //Return vertex position for mixed event, recover the vertex in a particular event.
   
@@ -1485,14 +1486,21 @@ void AliCaloTrackReader::FillInputCTS()
                                aodtrack->GetType(),AliAODTrack::kPrimary,
                                aodtrack->IsHybridGlobalConstrainedGlobal());
         
-        
-        if (fSelectHybridTracks)
+        if (fSelectHybridTracks && fTrackFilterMaskComplementary == 0)
         {
           if (!aodtrack->IsHybridGlobalConstrainedGlobal())       continue ;
         }
         else
         {
-          if ( aodtrack->TestFilterBit(fTrackFilterMask)==kFALSE) continue ;
+          Bool_t accept = aodtrack->TestFilterBit(fTrackFilterMask);
+          
+          if(!fSelectHybridTracks && !accept) continue ;
+          
+          if(fSelectHybridTracks)
+          {
+            Bool_t acceptcomplement = aodtrack->TestFilterBit(fTrackFilterMaskComplementary);
+            if (!accept && !acceptcomplement) continue ;
+          }
         }
         
         if(fSelectSPDHitTracks)
@@ -1500,9 +1508,26 @@ void AliCaloTrackReader::FillInputCTS()
           if(!aodtrack->HasPointOnITSLayer(0) && !aodtrack->HasPointOnITSLayer(1)) continue ;
         }
         
-        if (aodtrack->GetType()!= AliAODTrack::kPrimary)          continue ;
+        if ( fSelectFractionTPCSharedClusters )
+        {
+          Double_t frac = Double_t(aodtrack->GetTPCnclsS()) / Double_t(aodtrack->GetTPCncls());
+          if (frac > fCutTPCSharedClustersFraction)
+          {
+             if (fDebug > 2 )printf("\t Reject track, shared cluster fraction %f > %f\n",frac, fCutTPCSharedClustersFraction);
+            continue ;
+          }
+        }
         
-        if (fDebug > 2 ) printf("AliCaloTrackReader::FillInputCTS(): \t accepted track! \n");
+        if ( fSelectPrimaryTracks )
+        {
+          if ( aodtrack->GetType()!= AliAODTrack::kPrimary )
+          {
+             if (fDebug > 2 ) printf("\t Remove not primary track\n");
+            continue ;
+          }
+        }
+
+        if (fDebug > 2 ) printf("\t accepted track! \n");
         
         //In case of AODs, TPC tracks cannot be propagated back to primary vertex,
         // info stored here
@@ -1567,7 +1592,7 @@ void AliCaloTrackReader::FillInputCTS()
       //else printf("Accept track time %f and bc = %d\n",tof,trackBC);
       
     }
-    
+
     //Count the tracks in eta < 0.9
     //printf("Eta %f cut  %f\n",TMath::Abs(track->Eta()),fTrackMultEtaCut);
     if(TMath::Abs(track->Eta())< fTrackMultEtaCut) fTrackMult++;
@@ -1577,8 +1602,8 @@ void AliCaloTrackReader::FillInputCTS()
     if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"CTS")) continue;
     
     if(fDebug > 2 && momentum.Pt() > 0.1)
-      printf("AliCaloTrackReader::FillInputCTS() - Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
-             momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
+      printf("AliCaloTrackReader::FillInputCTS() - Selected tracks pt %3.2f, phi %3.2f, eta %3.2f\n",
+             momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
     
     if (fMixedEvent)  track->SetID(itrack);
     
@@ -1600,9 +1625,8 @@ void AliCaloTrackReader::FillInputCTS()
   
 }
 
-//__________________________________________________________________
-void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus,
-                                                 const Int_t iclus)
+//_______________________________________________________________________________
+void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus)
 {
   //Fill the EMCAL data in the array, do it
   
@@ -2020,6 +2044,44 @@ void AliCaloTrackReader::FillInputNonStandardJets()
   
 }
 
+//_________________________________________________
+void AliCaloTrackReader::FillInputBackgroundJets()
+{
+  //
+  //fill array with Background jets
+  //
+  // Adam T. Matyja
+  
+  if(fDebug > 2 ) printf("AliCaloTrackReader::FillInputBackgroundJets()\n");
+  //
+  //check if branch name is given
+  if(!fInputBackgroundJetBranchName.Length())
+  {
+    Printf("No background jet branch name specified. Specify among existing ones.");
+    fInputEvent->Print();
+    abort();
+  }
+  
+  fBackgroundJets = (AliAODJetEventBackground*)(fInputEvent->FindListObject(fInputBackgroundJetBranchName.Data()));
+  
+  if(!fBackgroundJets)
+  {
+    //check if jet branch exist; exit if not
+    Printf("%s:%d no reconstructed jet array with name %s in AOD", (char*)__FILE__,__LINE__,fInputBackgroundJetBranchName.Data());
+    fInputEvent->Print();
+    abort();
+  }
+  else
+  {
+    if(fDebug > 1){
+      printf("AliCaloTrackReader::FillInputBackgroundJets()\n");
+      fBackgroundJets->Print("");
+    }
+  }
+  
+}
+
+
 //________________________________________________
 Bool_t AliCaloTrackReader::CheckForPrimaryVertex()
 {
@@ -2055,7 +2117,7 @@ Bool_t AliCaloTrackReader::CheckForPrimaryVertex()
 }
 
 //________________________________________________________________________________
-TArrayI AliCaloTrackReader::GetTriggerPatches(const Int_t tmin, const Int_t tmax )
+TArrayI AliCaloTrackReader::GetTriggerPatches(Int_t tmin, Int_t tmax )
 {
   // Select the patches that triggered
   // Depend on L0 or L1
@@ -2204,7 +2266,7 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
   Bool_t  badClMax    = kFALSE;
   Bool_t  badCeMax    = kFALSE;
   Bool_t  exoMax      = kFALSE;
-  Int_t   absIdMaxTrig= -1;
+//  Int_t   absIdMaxTrig= -1;
   Int_t   absIdMaxMax = -1;
   
   Int_t   nOfHighECl  = 0 ;
@@ -2233,7 +2295,7 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
     
     Bool_t   badCluster = GetCaloUtils()->GetEMCALRecoUtils()->ClusterContainsBadChannel(GetCaloUtils()->GetEMCALGeometry(),
                                                                                          clus->GetCellsAbsId(),clus->GetNCells());
-    UShort_t cellMax[]  = {absIdMax};
+    UShort_t cellMax[]  = {(UShort_t) absIdMax};
     Bool_t   badCell    = GetCaloUtils()->GetEMCALRecoUtils()->ClusterContainsBadChannel(GetCaloUtils()->GetEMCALGeometry(),cellMax,1);
     
     // if cell is bad, it can happen that time calibration is not available,
@@ -2307,7 +2369,7 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
               fTriggerClusterIndex = iclus;
               fTriggerClusterId    = idclus;
               fIsTriggerMatch      = kTRUE;
-              absIdMaxTrig         = absIdMax;
+//              absIdMaxTrig         = absIdMax;
             }
           }
         }// cell patch loop
@@ -2477,12 +2539,13 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("Use EMCAL Cells =     %d\n",     fFillEMCALCells) ;
   printf("Use PHOS  Cells =     %d\n",     fFillPHOSCells) ;
   printf("Track status    =     %d\n", (Int_t) fTrackStatus) ;
-  printf("AODs Track filter mask  =  %d or hybrid %d, SPD hit %d\n", (Int_t) fTrackFilterMask,fSelectHybridTracks,fSelectSPDHitTracks) ;
+  printf("AODs Track filter mask  =  %d or hybrid %d (if filter bit comp %d), select : SPD hit %d, primary %d\n",
+         (Int_t) fTrackFilterMask, fSelectHybridTracks, (Int_t) fTrackFilterMaskComplementary, fSelectSPDHitTracks,fSelectPrimaryTracks) ;
   printf("Track Mult Eta Cut =  %d\n", (Int_t) fTrackMultEtaCut) ;
   printf("Write delta AOD =     %d\n",     fWriteOutputDeltaAOD) ;
   printf("Recalculate Clusters = %d, E linearity = %d\n",    fRecalculateClusters, fCorrectELinearity) ;
   
-  printf("Use Triggers selected in SE base class %d; If not what trigger Mask? %d; Trigger max for mixed %d \n",
+  printf("Use Triggers selected in SE base class %d; If not what Trigger Mask? %d; MB Trigger Mask for mixed %d \n",
          fEventTriggerAtSE, fEventTriggerMask,fMixEventTriggerMask);
   
   if(fComparePtHardAndClusterPt)
@@ -2586,7 +2649,8 @@ void AliCaloTrackReader::ResetLists()
   fV0Mul[0] = 0;   fV0Mul[1] = 0;
   
   if(fNonStandardJets) fNonStandardJets -> Clear("C");
-  
+  fBackgroundJets->Reset();
+
 }
 
 //___________________________________________

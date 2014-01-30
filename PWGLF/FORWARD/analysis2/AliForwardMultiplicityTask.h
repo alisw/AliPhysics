@@ -20,7 +20,7 @@
 #include "AliFMDDensityCalculator.h"
 #include "AliFMDCorrector.h"
 #include "AliFMDHistCollector.h"
-#include "AliFMDEnergyFitter.h"
+// #include "AliFMDEnergyFitter.h"
 #include "AliFMDEventPlaneFinder.h"
 #include <AliESDFMD.h>
 class AliESDEvent;
@@ -59,34 +59,24 @@ public:
    */
   AliForwardMultiplicityTask();
   /** 
-   * Copy constructor 
-   * 
-   * @param o Object to copy from 
-   */
-  AliForwardMultiplicityTask(const AliForwardMultiplicityTask& o);
-  /** 
-   * Assignment operator 
-   * 
-   * @param o Object to assign from 
-   * 
-   * @return Reference to this object 
-   */
-  AliForwardMultiplicityTask& operator=(const AliForwardMultiplicityTask& o);
-  /** 
    * @{ 
    * @name Interface methods 
    */
   /** 
+   * Called before processing a single event - should not do anything
+   * but clear data, etc.
+   * 
+   * @return true on success
+   */
+  virtual Bool_t PreEvent();
+  /** 
    * Process each event 
    *
-   * @param option Not used
-   */  
-  virtual void UserExec(Option_t* option);
-  /** 
-   * Called on the slaves when the job has finished. 
+   * @param esd Event
    * 
-   */
-  virtual void FinishTaskOutput();
+   * @return true on success
+   */  
+  virtual Bool_t Event(AliESDEvent& esd);
   /** 
    * @} 
    */
@@ -170,6 +160,20 @@ public:
    * @} 
    */
 protected: 
+  /** 
+   * Copy constructor 
+   * 
+   * @param o Object to copy from 
+   */
+  AliForwardMultiplicityTask(const AliForwardMultiplicityTask& o);
+  /** 
+   * Assignment operator 
+   * 
+   * @param o Object to assign from 
+   * 
+   * @return Reference to this object 
+   */
+  AliForwardMultiplicityTask& operator=(const AliForwardMultiplicityTask& o);
 
   AliESDFMD               fESDFMD;            // Sharing corrected ESD object
   AliFMDEventInspector    fEventInspector;    // Algorithm

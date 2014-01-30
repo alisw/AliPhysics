@@ -70,7 +70,7 @@ class AliFragmentationFunctionCorrections : public TObject {
 
   void SetHistoBins(const Int_t jetPtSlice, const Int_t sizeBins, Double_t* bins,Int_t type);
   void SetHistoBins(const Int_t jetPtSlice, const Int_t nBinsLimits, Double_t* binsLimits, Double_t* binsWidth,Int_t type);
-  TArrayD* GetHistoBins(const Int_t jetPtSlice,  const Int_t type);
+  TArrayD* GetHistoBins(const Int_t& jetPtSlice, const Int_t& type);
 
   void SetHistoBinsSinglePt(const Int_t sizeBins, Double_t* bins);
   void SetHistoBinsSinglePt(const Int_t nBinsLimits, Double_t* binsLimits, Double_t* binsWidth);

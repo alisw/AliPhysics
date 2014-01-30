@@ -46,7 +46,7 @@ class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet
   enum ECandidateType{ kD0toKpi, kDstartoKpipi };
 
   AliAnalysisTaskFlavourJetCorrelations();
-  AliAnalysisTaskFlavourJetCorrelations(const Char_t* name,AliRDHFCuts* cuts, ECandidateType candtype, TString jetArrName);
+  AliAnalysisTaskFlavourJetCorrelations(const Char_t* name,AliRDHFCuts* cuts, ECandidateType candtype);
   virtual ~AliAnalysisTaskFlavourJetCorrelations();
 
   virtual void     UserCreateOutputObjects();
@@ -61,6 +61,10 @@ class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet
   // set MC usage
   void   SetMC(Bool_t theMCon) {fUseMCInfo = theMCon;}
   Bool_t GetMC() const {return fUseMCInfo;}
+  // set usage of reconstructed tracks
+  void   SetUseReco(Bool_t reco) {fUseReco=reco;}
+  Bool_t GetUseReco() {return fUseReco;}
+  
   
   void SetMassLimits(Double_t range, Int_t pdg);
   void SetMassLimits(Double_t lowlimit, Double_t uplimit);
@@ -78,12 +82,17 @@ class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet
   Bool_t SetD0WidthForDStar(Int_t nptbins,Float_t* width);
 
   //Bool_t   FillMCDJetInfo(AliPicoTrack *jetTrk,AliEmcalJet* jet, TClonesArray *mcArray,Double_t ptjet);
-  void FillHistogramsRecoJetCorr(AliAODRecoDecayHF* candidate, AliEmcalJet *jet);
+  void FillHistogramsRecoJetCorr(AliVParticle* candidate, AliEmcalJet *jet);
   void FillHistogramsD0JetCorr(AliAODRecoDecayHF* candidate, Double_t dPhi, Double_t z, Double_t ptD, Double_t ptj, Double_t deltaR, AliAODEvent* aodEvent);
 
   void FillHistogramsDstarJetCorr(AliAODRecoCascadeHF* dstar, Double_t dPhi, Double_t z, Double_t ptD, Double_t ptj,Double_t deltaR);
+  void FillHistogramsMCGenDJetCorr(Double_t dPhi, Double_t z,Double_t ptD,Double_t ptjet,Double_t deltaR);
+  void SideBandBackground(AliAODRecoCascadeHF *candDstar, AliEmcalJet *jet);
+  void MCBackground(AliAODRecoDecayHF *candbg, AliEmcalJet *jet);
+  void FillMassHistograms(Double_t mass,Double_t ptD, Double_t deltaR);
+  void FlagFlavour(AliVParticle* charm, AliEmcalJet* jet);
+  Int_t IsDzeroSideBand(AliAODRecoCascadeHF *candDstar);
 
-  void FillHistograms(Double_t mass,Double_t dphi, Double_t z,Double_t ptD, Double_t deltaR);
  private:
   
   AliAnalysisTaskFlavourJetCorrelations(const AliAnalysisTaskFlavourJetCorrelations &source);
@@ -92,22 +101,16 @@ class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet
   Double_t Z(AliVParticle* part,AliEmcalJet* jet) const;
   Float_t DeltaR(AliVParticle *p1, AliVParticle *p2) const;
 
-  /*
-  Bool_t IsD(Int_t pdg) const;
-  Bool_t IsD(Int_t pdg,Int_t abspdgD) const;
-  Bool_t PartFromC(AliMCParticle* mother) const;
-  Int_t GetFirstMother(Int_t lab,TClonesArray* mcarr) const; 
-  Int_t FindPDGInFamily(Int_t labpart,Int_t pdgcode, TClonesArray *mcArray) const;
-  */
 
   Bool_t fUseMCInfo;             //  Use MC info
+  Bool_t fUseReco;               // use reconstructed tracks when running on MC
   Int_t  fCandidateType;         // Dstar or D0
   Int_t  fPDGmother;             // PDG code of D meson
   Int_t  fNProngs;               // number of prong of the decay channel  
   Int_t  fPDGdaughters[4];       // PDG codes of daughters
   Float_t fSigmaD0[30];          //
   TString fBranchName;           // AOD branch name
-  TList *fOutput;                //! user output
+  TList *fmyOutput;                //! user output
   AliRDHFCuts *fCuts;            // Cuts 
 
   Double_t fMinMass;             // mass lower limit histogram
@@ -116,8 +119,9 @@ class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet
   TString  fJetArrName;          // name of the jet array, taken from the task running the jet finder
   TString fCandArrName;          // string which correspond to the candidate type
   Bool_t fLeadingJetOnly;        // use only the leading jet in the event to make the correlations
+  Double_t fJetRadius;           // jet radius (filled from the JetContainer)
 
-  ClassDef(AliAnalysisTaskFlavourJetCorrelations,1); // class for charm-jet correlations
+  ClassDef(AliAnalysisTaskFlavourJetCorrelations,2); // class for charm-jet correlations
 };
 
 #endif

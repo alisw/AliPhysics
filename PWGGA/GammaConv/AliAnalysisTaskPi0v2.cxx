@@ -22,6 +22,9 @@ using namespace std;
 
 ClassImp(AliAnalysisTaskPi0v2)
 
+const Double_t AliAnalysisTaskPi0v2::kGCfirstYBinSpectra = 0.;
+const Double_t AliAnalysisTaskPi0v2::kGClastYBinSpectra = 8.;
+
 //________________________________________________________________________
     AliAnalysisTaskPi0v2::AliAnalysisTaskPi0v2(const char *name,Int_t harmonic) : AliAnalysisTaskSE(name),
     fV0Reader(NULL),

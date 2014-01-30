@@ -254,13 +254,13 @@ AliAnalysisTaskHdibaryonLPpi::AliAnalysisTaskHdibaryonLPpi(const char *name) : A
   fESDtrackCutsV0->SetRequireTPCRefit(kTRUE);
   fESDtrackCutsV0->SetEtaRange(-0.9,0.9);
   fESDtrackCutsV0->SetPtRange(0.2,1.5);
-  fESDtrackCutsV0->SetMinDCAToVertexXY(3);
-  fESDtrackCutsV0->SetMinDCAToVertexZ(3);
+  fESDtrackCutsV0->SetMinDCAToVertexXY(2); //war inzwischen 1 & 3
+  fESDtrackCutsV0->SetMinDCAToVertexZ(2); //war inzwischen 1 & 3
 
   fESDCutsV0 = new AliESDv0Cuts("AliESDCutsV0","AliESDCutsV0");
   fESDCutsV0->SetMaxDcaV0Daughters(1.0);
-  fESDCutsV0->SetMinDcaNegToVertex(2.0);
-  fESDCutsV0->SetMinDcaPosToVertex(2.0);
+  fESDCutsV0->SetMinDcaNegToVertex(2); //1.5
+    fESDCutsV0->SetMinDcaPosToVertex(2); //1.5
 
   //ESD Track cuts
   fEsdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");    
@@ -293,7 +293,8 @@ void AliAnalysisTaskHdibaryonLPpi::UserCreateOutputObjects()
   // Called once
 
  fHistList = new TList();
- 
+ fHistList->SetOwner();
+
  fHistMassDPi = new TH1F("fHistMassDPi", "Invariant mass distribution p+#pi^{-} ", 500, 1.0, 1.25);
  fHistMassDPi->GetXaxis()->SetTitle("Invariant mass p+#pi^{-} (GeV/c^{2})");
  fHistMassDPi->GetYaxis()->SetTitle("Entries");
@@ -718,6 +719,14 @@ void AliAnalysisTaskHdibaryonLPpi::UserCreateOutputObjects()
 
   fHistNdim = new THnSparseF("fHistNdim","THnS;InvMass, InvMassLambda, pointingAngle, armPoAlpha, armPoQt, pTL, pTH, d0p, d0n, dcaHd, dca, decayL, cosPA, centr, multi, mcinf;InvMassH", 16,binsD01,xminD01,xmaxD01);
   fHistList->Add(fHistNdim);
+
+ AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+ AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+ fPIDtpcESD = inputHandler->GetPIDResponse();
+
+// Post output data (if histograms are not used later, PostData is at least called here)
+  PostData(1, fHistList);
+
 }
 
  //________________________________________________________________________
@@ -771,6 +780,12 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
   
   fESD = dynamic_cast<AliESDEvent *>(fInputEvent);
 
+    if (!fESD) {
+      //Printf("ERROR: fESD not available");
+      return;
+    }
+
+
   const AliESDVertex *vertex = fESD->GetPrimaryVertexTracks();
   if (vertex->GetNContributors()<1) 
     {
@@ -790,9 +805,11 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
       AliCentrality *esdCentrality = fESD->GetCentrality();
       centrality = esdCentrality->GetCentralityClass10("V0M"); // centrality percentile determined with V0
       centrPerc = esdCentrality->GetCentralityPercentile("V0M");
-      if (centrality < 0. || centrality > 8.) return; //0 bis 80 %
+//      if (centrality < 0. || centrality > 8.) return; //0 bis 80 %
+      if (centrality > 8) return; //0 bis 80 %
       //  cout<<"Centrality: "<< centrality << endl;
     }
+
 
   fHistCentrality->Fill(centrality);   
 
@@ -830,13 +847,13 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
   Int_t runNumber = 0;
   //  itrk = 0;
   runNumber = fESD->GetRunNumber();
-  
+/*  
   if (!fPIDtpcESD) fPIDtpcESD = ((AliESDInputHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetESDpid();
   if (!fPIDtpcESD) {
     fPIDtpcESD = new AliESDpid(); // HACK FOR MC PBPB --> PLEASE REMOVE AS SOON AS POSSIBLE
     fPIDtpcESD->GetTPCResponse().SetBetheBlochParameters(1.28778e+00/50., 3.13539e+01, TMath::Exp(-3.16327e+01), 1.87901e+00, 6.41583e+00);
   }
-
+*/
   Double_t pionK=1;
   Double_t pK=1;
  
@@ -1089,6 +1106,7 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
     
     decayLength=sqrt(dd[0]*dd[0]+dd[1]*dd[1]+dd[2]*dd[2]);
 
+      if (decayVertex == NULL) cout << "Lambda decay vtx pointer NULL" << endl;
     if (decayVertex) delete decayVertex;
 
     TLorentzVector negPio1;
@@ -1115,9 +1133,10 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
 
     h.SetXYZ(-dd[0],-dd[1],-dd[2]);
 
-    if (onl==1)fHistMassDPi->Fill(lInvMassLambda);
 
-    if (offl==1||onl==1){
+    if (offl==1)fHistMassDPi->Fill(lInvMassLambda);
+
+    if (onl==1){
       fHistMassLPi->Fill(lInvMassLambda);
       
       negE.SetXYZM(mn[0],mn[1],mn[2],cElectronMass);
@@ -1238,7 +1257,14 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
 	  
 	    if (!fEsdTrackCuts->AcceptTrack(trackN)) continue;
 	    if (!fESDtrackCutsV0->AcceptTrack(trackN)) continue;
-	    
+
+	    Double_t bz = fESD->GetMagneticField();
+	   
+	    Double_t xthiss(0.0);
+	    Double_t xpp(0.0);
+	    Double_t dca = trackN->GetDCA(trackP,bz,xthiss,xpp);
+	    if (dca>0.5) continue;
+
 	    negPi.SetXYZM(mn[0],mn[1],mn[2],cPionMass);
 	    posP.SetXYZM(mp[0],mp[1],mp[2],cProtonMass);
 	    negPio.SetXYZM(trackN->Px(),trackN->Py(),trackN->Pz(),cPionMass);
@@ -1255,9 +1281,9 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
 	      pionK=0.7;
 	    }
 	    
-	    if (!HasMC()){
+	  //  if (!HasMC()){
 	      if (TMath::Abs(fPIDtpcESD->NumberOfSigmasTPC(trackN, AliPID::kPion)) > 3) continue;
-	    }
+	  //  }
 	    fHistPionPIDBb->Fill(trackN->GetInnerParam()->GetP(), trackN->GetTPCsignal());
 
 	    trkArray1->AddAt(trackP,0);
@@ -1272,20 +1298,21 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
 	    
 	    decayLengthH=sqrt(dd1[0]*dd1[0]+dd1[1]*dd1[1]+dd1[2]*dd1[2]);
 
-            Double_t bz = fESD->GetMagneticField();
+	      //            Double_t bz = fESD->GetMagneticField();
 	    
 	    trackP->PropagateToDCA(decayVertex1, bz, 10);
 	    trackN->PropagateToDCA(decayVertex1, bz, 10);
 
-	    Double_t xthiss(0.0);
-	    Double_t xpp(0.0);
-	    Double_t dca = trackN->GetDCA(trackP,bz,xthiss,xpp);
+	      //	    Double_t xthiss(0.0);
+	      //	    Double_t xpp(0.0);
+	      //	    Double_t dca = trackN->GetDCA(trackP,bz,xthiss,xpp);
 
+	      if (decayVertex1 == NULL) cout << "Secondary decay vtx pointer NULL" << endl;
 	    if (decayVertex1) delete decayVertex1;
 	    h1.SetXYZ(-dd1[0],-dd1[1],-dd1[2]);
 
 	    //	    if (dca>1) continue;
-	    if (dca>0.1) continue;
+	      //	    if (dca>0.1) continue;
 
 	    fourSum=threeSum+posProt;
 
@@ -1304,8 +1331,8 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
 	    Double_t rapidity = hDibaryon.Rapidity();
 	    if(rapidity > 1.0 || rapidity < -1.0) continue;
 
-	    Double_t vec[16]={hDibaryon.M(), lInvMassLambda, pointingAngleH, alfa, qt, lPtLambda, hDibaryon.Pt(), posPionKF.GetDistanceFromVertex(primVtx), protonKF.GetDistanceFromVertex(primVtx), dca, protonKF.GetDistanceFromVertex(posPionKF), TMath::Cos(pointingAngleH), centrPerc, refMultTpc, mcStatus};
-            fHistNdim->Fill(vec);
+	      //Double_t vec[16]={hDibaryon.M(), lInvMassLambda, pointingAngleH, alfa, qt, lPtLambda, hDibaryon.Pt(), posPionKF.GetDistanceFromVertex(primVtx), protonKF.GetDistanceFromVertex(primVtx), dca, protonKF.GetDistanceFromVertex(posPionKF), TMath::Cos(pointingAngleH), centrPerc, refMultTpc, mcStatus};
+	      //fHistNdim->Fill(vec);
 
 	    fHistRap->Fill(rapidity);
 	    //if (pointingAngleH > 0.1) continue;
@@ -1379,10 +1406,10 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
 	    ppK=lambdaH+posProt;
 	    fHistMassLambdaP->Fill(ppK.M());
 
-	    //  fHistNdim = new THnSparseF("fHistNdim","THnS;InvMass, InvMassLambda, pointingAngle, armPoAlpha, armPoQt, pTL, pTH, d0p, d0n, dcaHd, dca, decayL, cosPA, centr, multi, mcinf;InvMassH", 16,binsD01,xminD01,xmaxD01);
+	      //fHistNdim = new THnSparseF("fHistNdim","THnS;InvMass, InvMassLambda, pointingAngle, armPoAlpha, armPoQt, pTL, pTH, d0p, d0n, dcaHd, dca, decayL, cosPA, centr, multi, mcinf;InvMassH", 16,binsD01,xminD01,xmaxD01);
 
-	    //	    Double_t vec[16]={hDibaryon.M(), lInvMassLambda, pointingAngleH, alfa, qt, lPtLambda, hDibaryon.Pt(), posPionKF.GetDistanceFromVertex(primVtx), protonKF.GetDistanceFromVertex(primVtx), dca, protonKF.GetDistanceFromVertex(posPionKF), TMath::Cos(pointingAngleH), centrPerc, refMultTpc, mcStatus};
-	    //	    fHistNdim->Fill(vec);
+	    	    Double_t vec[16]={hDibaryon.M(), lInvMassLambda, pointingAngleH, alfa, qt, lPtLambda, hDibaryon.Pt(), posPionKF.GetDistanceFromVertex(primVtx), protonKF.GetDistanceFromVertex(primVtx), dca, protonKF.GetDistanceFromVertex(posPionKF), TMath::Cos(pointingAngleH), centrPerc, refMultTpc, mcStatus};
+		      fHistNdim->Fill(vec);
 
 	  }
 	}
@@ -1539,6 +1566,8 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
   // Post output data.
   PostData(1,fHistList);
   //PostData(0,fHistList);
+
+    if (listCrossV0 == NULL) return;
 
   if (listCrossV0) delete listCrossV0;
   if (esdVer1) delete esdVer1;

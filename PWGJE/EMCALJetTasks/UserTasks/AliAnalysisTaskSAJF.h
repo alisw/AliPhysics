@@ -8,9 +8,9 @@ class THnSparse;
 
 #include <TH3F.h>
 
-#include "AliAnalysisTaskEmcalJetDev.h"
+#include "AliAnalysisTaskEmcalJet.h"
 
-class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJetDev {
+class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
  public:
 
   AliAnalysisTaskSAJF();

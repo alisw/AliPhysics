@@ -17,7 +17,7 @@ ClassImp(AliEmcalParticleMaker)
 
 //________________________________________________________________________
 AliEmcalParticleMaker::AliEmcalParticleMaker() : 
-  AliAnalysisTaskEmcalDev("AliEmcalParticleMaker",kFALSE),
+  AliAnalysisTaskEmcal("AliEmcalParticleMaker",kFALSE),
   fTracksOutName("EmcalTracks"),
   fCaloOutName("EmcalClusters"),
   fTracksOut(0),
@@ -28,7 +28,7 @@ AliEmcalParticleMaker::AliEmcalParticleMaker() :
 
 //________________________________________________________________________
 AliEmcalParticleMaker::AliEmcalParticleMaker(const char *name) : 
-  AliAnalysisTaskEmcalDev(name,kFALSE),
+  AliAnalysisTaskEmcal(name,kFALSE),
   fTracksOutName("EmcalTracks"),
   fCaloOutName("EmcalClusters"),
   fTracksOut(0),
@@ -49,7 +49,7 @@ void AliEmcalParticleMaker::ExecOnce()
 {
   // Init the analysis.
 
-  AliAnalysisTaskEmcalDev::ExecOnce();
+  AliAnalysisTaskEmcal::ExecOnce();
 
   if (!fInitialized)
     return;
@@ -92,11 +92,8 @@ Bool_t AliEmcalParticleMaker::Run()
   if (fTracks && fTracksOut) {
     // clear container (normally a null operation as the event should clean it already)
     fTracksOut->Delete();
-
-    // loop over tracks
     const Int_t Ntracks = fTracks->GetEntries();
     for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
-      
       AliVTrack *track = static_cast<AliVTrack*>(fTracks->At(iTracks));
       new ((*fTracksOut)[iTracks]) AliEmcalParticle(track, iTracks);
     }
@@ -105,12 +102,14 @@ Bool_t AliEmcalParticleMaker::Run()
   if (fCaloClusters && fCaloClustersOut) {
     // clear container (normally a null operation as the event should clean it already)
     fCaloClustersOut->Delete();
-
-    // loop over clusters
     const Int_t Nclusters = fCaloClusters->GetEntries();
-    for (Int_t iClusters = 0; iClusters < Nclusters; ++iClusters) {
+    for (Int_t iClusters = 0, iN=0; iClusters < Nclusters; ++iClusters) {
       AliVCluster *cluster = static_cast<AliVCluster*>(fCaloClusters->At(iClusters));
-      new ((*fCaloClustersOut)[iClusters]) AliEmcalParticle(cluster, iClusters, fVertex[0], fVertex[1], fVertex[2]);
+      /* commented because for simplicity prefer to keep indices aligned (CL)
+        if (!cluster->IsEMCAL())
+        continue;
+      */
+      new ((*fCaloClustersOut)[iN++]) AliEmcalParticle(cluster, iClusters, fVertex[0], fVertex[1], fVertex[2]);
     }
   }
   return kTRUE;

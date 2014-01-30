@@ -84,6 +84,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fRecalibrateWithClusterTime(0)
 , fMaxEvent(0),           fDoTrackMatching(kFALSE)
 , fSelectCell(kFALSE),    fSelectCellMinE(0),         fSelectCellMinFrac(0)
+, fRejectBelowThreshold(kFALSE)
 , fRemoveLEDEvents(kTRUE),fRemoveExoticEvents(kFALSE)
 , fImportGeometryFromFile(kFALSE), fImportGeometryFilePath("") 
 , fOADBSet(kFALSE),       fAccessOADB(kTRUE),         fOADBFilePath("")
@@ -124,6 +125,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fRecalibrateWithClusterTime(0)
 , fMaxEvent(0),             fDoTrackMatching(kFALSE)
 , fSelectCell(kFALSE),      fSelectCellMinE(0),         fSelectCellMinFrac(0)
+, fRejectBelowThreshold(kFALSE)
 , fRemoveLEDEvents(kTRUE),  fRemoveExoticEvents(kFALSE)
 , fImportGeometryFromFile(kFALSE), fImportGeometryFilePath("")
 , fOADBSet(kFALSE),         fAccessOADB(kTRUE),        fOADBFilePath("")
@@ -373,7 +375,9 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
     
     if(trecal)
     {
-      TObjArray *trecalpass=(TObjArray*)trecal->FindObject(pass);
+      TString passM = pass;
+      if(pass=="spc_calo") passM = "pass1";
+      TObjArray *trecalpass=(TObjArray*)trecal->FindObject(passM);
 
       if(trecalpass)
       {
@@ -905,7 +909,7 @@ void AliAnalysisTaskEMCALClusterize::FillAODHeader()
   header->SetZDCP2Energy(fEvent->GetZDCP2Energy());
   header->SetZDCEMEnergy(fEvent->GetZDCEMEnergy(0),fEvent->GetZDCEMEnergy(1));
   
-  Float_t diamxy[2]={fEvent->GetDiamondX(),fEvent->GetDiamondY()};
+  Float_t diamxy[2]={(Float_t)fEvent->GetDiamondX(),(Float_t)fEvent->GetDiamondY()};
   Float_t diamcov[3];
   fEvent->GetDiamondCovXY(diamcov);
   header->SetDiamond(diamxy,diamcov);
@@ -1033,6 +1037,7 @@ TString AliAnalysisTaskEMCALClusterize::GetPass()
   else if (pass.Contains("ass3")) return TString("pass3");
   else if (pass.Contains("ass4")) return TString("pass4");
   else if (pass.Contains("ass5")) return TString("pass5");
+  else if (pass.Contains("LHC11c") && pass.Contains("spc_calo") ) return TString("spc_calo");
   else if (pass.Contains("calo") || pass.Contains("high_lumi"))
   {
     printf("AliAnalysisTaskEMCALClusterize::GetPass() - Path contains <calo> or <high-lumi>, set as <pass1>\n");
@@ -1061,7 +1066,8 @@ void AliAnalysisTaskEMCALClusterize::Init()
   if(fMaxEvent          <= 0) fMaxEvent          = 1000000000;
   if(fSelectCellMinE    <= 0) fSelectCellMinE    = 0.005;     
   if(fSelectCellMinFrac <= 0) fSelectCellMinFrac = 0.001;
-  
+  fRejectBelowThreshold = kFALSE;
+
   //Centrality
   if(fCentralityClass  == "") fCentralityClass  = "V0M";
   
@@ -1161,7 +1167,7 @@ void AliAnalysisTaskEMCALClusterize::InitClusterization()
       fClusterizer->SetPar5  (i, fRecParam->GetPar5(i));
       fClusterizer->SetPar6  (i, fRecParam->GetPar6(i));
     }//end of loop over parameters
-    
+    fClusterizer->SetRejectBelowThreshold(fRejectBelowThreshold);//here we set option of unfolding: split or reject energy
     fClusterizer->InitClusterUnfolding();
     
   }// to unfold

@@ -134,6 +134,13 @@ void AliAnalysisKinkESDMC::UserCreateOutputObjects()
                         1.1, 1.2, 1.3, 1.4, 1.5, 1.6,1.7,1.8,1.9,  2.0,
                          2.2, 2.4, 2.6, 2.8,  3.0,   3.3, 3.6, 3.9,
                          4.2, 4.6,5.0, 5.4, 5.9,  6.5,   7.0,7.5, 8.0,8.5,  9.2, 10., 11., 12., 13.5,15.0 };  // David K0
+//
+//! ! ! ! !  KINK FROM HERE --------------->
+                  Double_t gPt7Comb[48] = { 
+0.25,0.30,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0, 1.1, 1.2,
+1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9,
+3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.2, 4.4, 4.6, 4.8,5.0, 5.5, 6.0
+ };  // 25/11/2013 from Francesco
 /*
    Double_t gPt7TOF[47] = { 0.2,0.25, 0.3,0.35,  0.4,0.45,  0.5,0.55,  0.6,0.65,  0.7,0.75,  0.8, 0.85, 0.9, 0.95, 1.0,
                         1.1, 1.2, 1.3, 1.4, 1.5, 1.6,1.7,1.8,1.9,  2.0,
@@ -146,21 +153,21 @@ void AliAnalysisKinkESDMC::UserCreateOutputObjects()
 	fHistQt1= new TH1F("fHistQt1", "Q_{T} distribution",100, 0.0,.300); 
 	fHistQt2= new TH1F("fHistQt2", "Q_{T} distribution",100, 0.0,.300); 
 //	fHistPtKaon = new TH1F("fHistPtKaon", "P_{T}Kaon distribution",200, 0.0,10.0); 
-	fHistPtKaon = new TH1F("fHistPtKaon", "P_{T}Kaon distribution",44,gPt7K0); 
-	fHistPtKPDG = new TH1F("fHistPtKPDG", "P_{T}Kaon distribution",44, gPt7K0   ); 
+	fHistPtKaon = new TH1F("fHistPtKaon", "P_{T}Kaon distribution",47,gPt7Comb ); 
+	fHistPtKPDG = new TH1F("fHistPtKPDG", "P_{T}Kaon distribution",47, gPt7Comb   ); 
 	fHistEta= new TH1F("fHistEta", "Eta distribution", 26,-1.3, 1.3); 
 	fHistEtaK= new TH1F("fHistEtaK", "EtaK distribution", 26,-1.3, 1.3); 
-	fptKMC= new TH1F("fptKMC", "P_{T}Kaon generated",44,  gPt7K0  ); 
+	fptKMC= new TH1F("fptKMC", "P_{T}Kaon generated",47,  gPt7Comb  ); 
 	fMultiplMC= new TH1F("fMultiplMC", " charge particle multipl",100, 0.0,2500.);
 	fESDMult= new TH1F("fESDMult", "charge multipliESD",100, 0.0,100.); 
 	frad= new TH1F("frad", "radius  K ESD recon",100,0.,1000.); 
 	fradMC= new TH1F("fradMC", "radius  K generated",100,0.,1000.); 
-	fKinkKaon= new TH1F("fKinkKaon", "P_{T}Kaon kinks identi", 44, gPt7K0  ); 
-	fKinkKaonBg= new TH1F("fKinkKaonBg", "P_{T}Kaon kinks backgr",44 , gPt7K0  ); 
+	fKinkKaon= new TH1F("fKinkKaon", "P_{T}Kaon kinks identi", 47, gPt7Comb  ); 
+	fKinkKaonBg= new TH1F("fKinkKaonBg", "P_{T}Kaon kinks backgr",47 , gPt7Comb ); 
 	//fM1kaon= new TH1F("fM1kaon","Invar m(kaon) from kink->mu+netrino decay",180,0.1, 1.0); 
 	fM1kaon= new TH1F("fM1kaon","Invar m(kaon) from kink->mu+netrino decay",600,0.1, 0.7); 
-	fgenPtEtR= new TH1F("fgenPtEtR", "P_{T}Kaon distribution", 44, gPt7K0  ); 
-	fPtKink= new TH1F("fPtKink", "P_{T}Kaon Kink  bution",44, gPt7K0   ); 
+	fgenPtEtR= new TH1F("fgenPtEtR", "P_{T}Kaon distribution", 47, gPt7Comb  ); 
+	fPtKink= new TH1F("fPtKink", "P_{T}Kaon Kink  bution",47, gPt7Comb  ); 
 	fcodeH   = new TH2F("fcodeH", "code vrs dcode dist. kinks,K",100,0.,2500.,100,0.,2500.);
 	fdcodeH = new TH2F("fdcodeH", "code vrs dcode dist. kinks,K",100,0.,2500.,100,0.,2500.);
 	fAngMomK= new TH2F("fAngMomK","Decay angle vrs Mother Mom,K",100,0.0,10.0,80,0.,80.);
@@ -188,25 +195,25 @@ void AliAnalysisKinkESDMC::UserCreateOutputObjects()
 	fZvYv= new TH2F("fZvYv","Yv-Zv main vtx",60,-0.5,0.5, 60, -15., 15.);
 	fXvYv= new TH2F("fXvYv","Xv-Yv main vtx", 60,-1.5,1.5, 60, -1.5, 1.5);
 	fPtPrKink=new TH1F("fPtPrKink","pt of ESD  kaonKink tracks",300, 0.0,15.0);
-	fgenPtEtRP= new TH1F("fgenPtEtRP", "P_{T}Kaon distribution positive", 44, gPt7K0  ); 
-	fgenPtEtRN= new TH1F("fgenPtEtRN", "P_{T}Kaon distribution negative", 44, gPt7K0  ); 
-	fkinkKaonP= new TH1F("fKinkKaonP", "P_{T}Kaon distribution positive", 44, gPt7K0  ); 
-	fkinkKaonN= new TH1F("fKinkKaonN", "P_{T}Kaon distribution negative", 44, gPt7K0  ); 
+	fgenPtEtRP= new TH1F("fgenPtEtRP", "P_{T}Kaon distribution positive", 47, gPt7Comb  ); 
+	fgenPtEtRN= new TH1F("fgenPtEtRN", "P_{T}Kaon distribution negative", 47, gPt7Comb  ); 
+	fkinkKaonP= new TH1F("fKinkKaonP", "P_{T}Kaon distribution positive", 47, gPt7Comb  ); 
+	fkinkKaonN= new TH1F("fKinkKaonN", "P_{T}Kaon distribution negative", 47, gPt7Comb  ); 
 	frapidESDK= new TH1F("frapidESDK", "rapidity distribution", 26,-1.3, 1.3); 
 	frapidKMC = new TH1F("frapidKMC ", "rapidity distri  MC  ",26,-1.3, 1.3); 
-	fPtKPlMC= new TH1F("fPtKPlMC", "P_{T}Kaon Pos  generated", 44, gPt7K0  ); 
-	fPtKMnMC= new TH1F("fPtKMnMC", "P_{T}Kaon Minusgenerated",44 , gPt7K0  ); 
-	fHistPtKaoP= new TH1F("fHistPtKaoP", "P_{T}Kaon Pos ESD", 44, gPt7K0  ); 
-	fHistPtKaoN= new TH1F("fHistPtKaoN", "P_{T}Kaon Neg ESD", 44, gPt7K0  ); 
-	fHiPtKPDGP= new TH1F("fHiPtKPDGP", "P_{T}Kaon Pos ESD", 44,  gPt7K0 ); 
-	fHiPtKPDGN= new TH1F("fHiPtKPDGN", "P_{T}Kaon neg ESD", 44, gPt7K0  ); 
-	fKinKBGP  = new TH1F("fKinKBGP  ", "P_{T}Kaon Pos ESD", 44, gPt7K0  ); 
-	fKinKBGN= new TH1F("fKinKBGN", "P_{T}Kaon neg ESD", 44, gPt7K0  ); 
+	fPtKPlMC= new TH1F("fPtKPlMC", "P_{T}Kaon Pos  generated", 47, gPt7Comb  ); 
+	fPtKMnMC= new TH1F("fPtKMnMC", "P_{T}Kaon Minusgenerated",47 , gPt7Comb  ); 
+	fHistPtKaoP= new TH1F("fHistPtKaoP", "P_{T}Kaon Pos ESD", 47, gPt7Comb   ); 
+	fHistPtKaoN= new TH1F("fHistPtKaoN", "P_{T}Kaon Neg ESD", 47, gPt7Comb   ); 
+	fHiPtKPDGP= new TH1F("fHiPtKPDGP", "P_{T}Kaon Pos ESD", 47,  gPt7Comb  ); 
+	fHiPtKPDGN= new TH1F("fHiPtKPDGN", "P_{T}Kaon neg ESD", 47, gPt7Comb   ); 
+	fKinKBGP  = new TH1F("fKinKBGP  ", "P_{T}Kaon Pos ESD", 47, gPt7Comb   ); 
+	fKinKBGN= new TH1F("fKinKBGN", "P_{T}Kaon neg ESD", 47, gPt7Comb   ); 
 	fQtKMu= new TH1F("fQtKMu", "Q_{T} distribution  K to mu ",100, 0.0,.300); 
 	fQtKPi= new TH1F("fQtKPi", "Q_{T} distribution K to pi",100, 0.0,.300); 
 	fQtKEl= new TH1F("fQtKEl", "Q_{T} distribution   K to elec",100, 0.0,.300); 
-	fFakepipi = new TH1F("fFakepipi", "P_{T}fake pipi   ",44 , gPt7K0  ); 
-	fFakeKPi = new TH1F("fFakeKPi", "P_{T}fake Kpi   ", 44, gPt7K0  ); 
+	fFakepipi = new TH1F("fFakepipi", "P_{T}fake pipi   ",47 , gPt7Comb   ); 
+	fFakeKPi = new TH1F("fFakeKPi", "P_{T}fake Kpi   ", 47, gPt7Comb   ); 
 	fDCAkink = new TH1F("fDCAkink", "DCA kink vetrex ",50, 0.0,1.0); 
 	fDCAkinkBG = new TH1F("fDCAkinkBG", "DCA kink vetrex ",50, 0.0,1.0); 
 	fPosiKink= new TH2F("fPosiKink", "Y vrx kink Vrex ",100, -300.0,300.0,100, -300, 300.); 

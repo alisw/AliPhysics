@@ -1,7 +1,7 @@
 #ifndef ALIANALYSISTASKRHOSPARSE_H
 #define ALIANALYSISTASKRHOSPARSE_H
 
-// $Id: AliAnalysisTaskRho.h 58408 2012-09-03 07:00:58Z loizides $
+// $Id$
 
 #include "AliAnalysisTaskRhoBase.h"
 

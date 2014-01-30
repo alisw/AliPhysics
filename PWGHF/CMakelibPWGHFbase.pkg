@@ -37,4 +37,4 @@ string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
 set ( DHDR  PWGHFbaseLinkDef.h)
 
-set ( EINCLUDE  PWGHF/base STEER/STEERBase)
+set ( EINCLUDE  PWGHF/base STEER/STEERBase ANALYSIS)

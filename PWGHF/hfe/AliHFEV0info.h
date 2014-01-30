@@ -16,7 +16,7 @@
 // Stores aditional information about the V0 candidates
 // author: M.Fasel@gsi.de
 //
-#ifndef ALIHFEV0INF0_H
+#ifndef ALIHFEV0INFO_H
 #define ALIHFEV0INFO_H
 
 #ifndef ROOT_TObject

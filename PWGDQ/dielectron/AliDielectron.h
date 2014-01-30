@@ -18,6 +18,7 @@
 
 #include <TNamed.h>
 #include <TObjArray.h>
+#include <THnBase.h>
 
 #include <AliAnalysisFilter.h>
 #include <AliKFParticle.h>
@@ -77,6 +78,7 @@ public:
 
   void SetCutQA(Bool_t qa=kTRUE) { fCutQA=qa; }
   void SetNoPairing(Bool_t noPairing=kTRUE) { fNoPairing=noPairing; }
+  void SetProcessLS(Bool_t doLS=kTRUE) { fProcessLS=doLS; }
   void SetUseKF(Bool_t useKF=kTRUE) { fUseKF=useKF; }
   const TObjArray* GetTrackArray(Int_t i) const {return (i>=0&&i<4)?&fTracks[i]:0;}
   const TObjArray* GetPairArray(Int_t i)  const {return (i>=0&&i<11)?
@@ -129,6 +131,12 @@ public:
   void SetTRDcorrectionFilename(const Char_t* filename) {fTRDpidCorrectionFilename = filename;}
   void SetVZEROCalibrationFilename(const Char_t* filename) {fVZEROCalibrationFilename = filename;}
   void SetVZERORecenteringFilename(const Char_t* filename) {fVZERORecenteringFilename = filename;}
+  void SetZDCRecenteringFilename(const Char_t* filename) {fZDCRecenteringFilename = filename;}
+  void InitLegEffMap(TString filename)  { fLegEffMap=InitEffMap(filename)  ;}
+  void InitPairEffMap(TString filename) { fPairEffMap=InitEffMap(filename) ;}
+
+  void SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
 
   void SaveDebugTree();
 
@@ -136,6 +144,10 @@ private:
 
   Bool_t fCutQA;                    // monitor cuts
   AliDielectronCutQA *fQAmonitor;   // monitoring of cuts
+  TF1 *fPostPIDCntrdCorr;   // post pid correction object for centroids
+  TF1 *fPostPIDWdthCorr;    // post pid correction object for widths
+  THnBase *fLegEffMap;      // single electron efficiency map
+  THnBase *fPairEffMap;      // pair efficiency map
   AliAnalysisFilter fEventFilter;    // Event cuts
   AliAnalysisFilter fTrackFilter;    // leg cuts
   AliAnalysisFilter fPairPreFilter;  // pair prefilter cuts
@@ -151,6 +163,7 @@ private:
   TObjArray* fSignalsMC;      // array of AliDielectronSignalMC
 
   Bool_t fNoPairing;    // if to skip pairing, can be used for track QA only
+  Bool_t fProcessLS; // do the like-sign pairing (default kTRUE)
   Bool_t fUseKF;    // if to skip pairing, can be used for track QA only
 
   AliDielectronHF *fHistoArray;   // Histogram framework
@@ -192,6 +205,7 @@ private:
   void ClearArrays();
   
   TObjArray* PairArray(Int_t i);
+  THnBase* InitEffMap(TString filename);
   
   static const char* fgkTrackClassNames[4];   //Names for track arrays
   static const char* fgkPairClassNames[11];   //Names for pair arrays
@@ -200,6 +214,7 @@ private:
   TString fTRDpidCorrectionFilename;         // name for the file containing the single particle TRD pid corrections
   TString fVZEROCalibrationFilename;         // file containing VZERO channel-by-channel calibration
   TString fVZERORecenteringFilename;         // file containing VZERO Q-vector recentering averages
+  TString fZDCRecenteringFilename;         // file containing ZDCQ-vector recentering averages
 
   void ProcessMC(AliVEvent *ev1);
   
@@ -215,7 +230,7 @@ private:
   AliDielectron(const AliDielectron &c);
   AliDielectron &operator=(const AliDielectron &c);
   
-  ClassDef(AliDielectron,5);
+  ClassDef(AliDielectron,10);
 };
 
 inline void AliDielectron::InitPairCandidateArrays()

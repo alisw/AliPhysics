@@ -1,18 +1,3 @@
-/**************************************************************************
- * Copyright(c) 1998-2013, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-
 //#####################################################
 //#                                                   # 
 //#          Analysis Task for Lc analysis on ESD     #
@@ -35,6 +20,8 @@
 #include "TLorentzVector.h"
 #include "TParticle.h"
 #include "TDatabasePDG.h"
+#include <TStopwatch.h>
+#include <TClonesArray.h>
 #include <exception>
 
 #include "AliAnalysisTaskSE.h"
@@ -54,8 +41,9 @@
 
 ClassImp(AliAnalysisTaskCountLcEta) // adding the class to ROOT
 
+
 //__________________________________________________________________
-AliAnalysisTaskCountLcEta::AliAnalysisTaskCountLcEta(const char *name,const Int_t ncuts,Double_t *cuts)
+AliAnalysisTaskCountLcEta::AliAnalysisTaskCountLcEta(const char *name, Int_t ncuts,Double_t *cuts)
 : AliAnalysisTaskSE(name)
   , fESD(0)
   , fAOD(0)
@@ -72,8 +60,9 @@ AliAnalysisTaskCountLcEta::AliAnalysisTaskCountLcEta(const char *name,const Int_
   , fCutNames(0)
   , fLooserPtTrack(0)
   , fInvMassCut(0.024)
+  , fThreesigmas(0)
 {
-  // Default constructor 
+  // Standard constructor 
 	
   // Define input and output slots here
   DefineInput(0, TChain::Class()); // Input slot #0 works with a TChain
@@ -93,8 +82,13 @@ AliAnalysisTaskCountLcEta::AliAnalysisTaskCountLcEta(const char *name,const Int_
   }
   fLooserPtTrack=pt;
   Printf("INFO: Looser pt cuts = %f",fLooserPtTrack);
-}
+  
+  Double_t mLc=TDatabasePDG::Instance()->GetParticle(4122)->Mass();
+  fThreesigmas=new Double_t[2];
+  fThreesigmas[0]=mLc-fInvMassCut;
+  fThreesigmas[1]=mLc+fInvMassCut;
 
+}
 
 //__________________________________________________________________
 AliAnalysisTaskCountLcEta::AliAnalysisTaskCountLcEta(): AliAnalysisTaskSE()
@@ -113,24 +107,39 @@ AliAnalysisTaskCountLcEta::AliAnalysisTaskCountLcEta(): AliAnalysisTaskSE()
   , fCutNames(0)
   , fLooserPtTrack(0)
   , fInvMassCut(0.024)
-{
+  , fThreesigmas(0)
+  {
+     //default constructor
+     Double_t mLc=TDatabasePDG::Instance()->GetParticle(4122)->Mass();
+     fThreesigmas=new Double_t[2];
+     fThreesigmas[0]=mLc-fInvMassCut;
+     fThreesigmas[1]=mLc+fInvMassCut;
+  	  
+  }
 
-}
+//__________________________________________________________________
+AliAnalysisTaskCountLcEta::AliAnalysisTaskCountLcEta(const AliAnalysisTaskCountLcEta& source): AliAnalysisTaskSE()
+  , fESD(source.fESD)
+  , fAOD(source.fAOD)
+  , fAnalysisType(source.fAnalysisType) 
+  , fEvt(source.fEvt) 
+  , fOutList(source.fOutList)
+  , fEnableMCQA(source.fEnableMCQA)
+  , fhNevt(source.fhNevt)
+  , fEtaAbs(source.fEtaAbs)
+  , fEtaAbsMax(source.fEtaAbsMax)
+  , fFillBkg(source.fFillBkg)
+  , fNcuts(source.fNcuts)
+  , fCuts(source.fCuts)
+  , fCutNames(source.fCutNames)
+  , fLooserPtTrack(source.fLooserPtTrack)
+  , fInvMassCut(source.fInvMassCut)
+  , fThreesigmas(source.fThreesigmas)
+  {
+   //copy constructor
+ 
+  }
 
-//________________________________________________________________________
-AliAnalysisTaskCountLcEta::~AliAnalysisTaskCountLcEta()
-{
-  // Destructor
-
-  if(fESD) { delete fESD; fESD=0; }
-  if(fAOD) { delete fAOD; fAOD=0; }
-  if(fhNevt) { delete fhNevt; fhNevt=0; }
-  if(fCuts) { delete [] fCuts; fCuts=0; }
-  if(fCutNames) { delete [] fCutNames; fCutNames=0; }
-  if(fOutList) { delete fOutList; fOutList=0; }
-
-
-}
 //__________________________________________________________________
 void AliAnalysisTaskCountLcEta::UserCreateOutputObjects() {
   // Create histograms. Called once
@@ -242,23 +251,36 @@ void AliAnalysisTaskCountLcEta::UserCreateOutputObjects() {
   hLcpKpiInEta->Sumw2();
   fOutList->Add(hLcpKpiInEta);
 
-  TH1F* hRejection=new TH1F("hRejection","Reason of track rejection",4,-0.5,3.5);
+  TH1F* hRejection=new TH1F("hRejection","Reason of track rejection",7,-0.5,6.5);
   hRejection->GetXaxis()->SetBinLabel(1,"not primary");
   hRejection->GetXaxis()->SetBinLabel(2,"out of beam pipe");
   hRejection->GetXaxis()->SetBinLabel(3,"p_{T} cut");
   hRejection->GetXaxis()->SetBinLabel(4,Form("|#eta|>%.1f",fEtaAbs));
+  hRejection->GetXaxis()->SetBinLabel(5,"Track Selected!");
+  hRejection->GetXaxis()->SetBinLabel(6,"Candidate Sel (pt cuts)");
+  hRejection->GetXaxis()->SetBinLabel(7,"Candidate Sel (also mass)");
   hRejection->GetXaxis()->SetNdivisions(1,kFALSE);
   fOutList->Add(hRejection);
   //background
   if(fFillBkg){
   	TH2F* hPtEtaBkg=new TH2F("hPtEtaBkg","P_{T} distribution of background tracks;p_{T} (GeV/c);#eta",100,0.,20.,40,-10.,10.);
   	fOutList->Add(hPtEtaBkg);
-	TH2F* hPtEtaMCCandB=new TH2F("hPtEtaMCCandB","p_{T} distribution of background candidates;p_{T} (GeV/c);#eta_{acc}",100,0.,20.,60,-1.5,1.5);
-	hPtEtaMCCandB->Sumw2();
-	fOutList->Add(hPtEtaMCCandB);
-	TH2F* hMassEtaMCCandB=new TH2F("hMassEtaMCCandB","Invariant mass distribution of background candidates;inv mass (GeV);#eta_{acc}",400,2.261,2.309,60,-1.5,1.5);
-	hMassEtaMCCandB->Sumw2();
-	fOutList->Add(hMassEtaMCCandB);
+  	
+	TH1F* hPtEtaMCCandBMid=new TH1F("hPtEtaMCCandBMid","p_{T} distribution of background candidates |#eta| <0.8;p_{T} (GeV/c)",100,0.,20.);
+	hPtEtaMCCandBMid->Sumw2();
+	fOutList->Add(hPtEtaMCCandBMid);
+	
+	TH1F* hPtEtaMCCandBUpg=new TH1F("hPtEtaMCCandBUpg","p_{T} distribution of background candidates |#eta| <1.5;p_{T} (GeV/c)",100,0.,20.);
+	hPtEtaMCCandBUpg->Sumw2();
+	fOutList->Add(hPtEtaMCCandBUpg);
+	
+	TH1F* hMassEtaMCCandBMid=new TH1F("hMassEtaMCCandBMid","Invariant mass distribution of background candidates |#eta| <0.8;inv mass (GeV)",400,2.261,2.309);
+	hMassEtaMCCandBMid->Sumw2();
+	fOutList->Add(hMassEtaMCCandBMid);
+	
+	TH1F* hMassEtaMCCandBUpg=new TH1F("hMassEtaMCCandBUpg","Invariant mass distribution of background candidates |#eta| <1.5;inv mass (GeV)",400,2.261,2.309);
+	hMassEtaMCCandBUpg->Sumw2();
+	fOutList->Add(hMassEtaMCCandBUpg);
 
 
  }
@@ -279,7 +301,7 @@ void AliAnalysisTaskCountLcEta::UserExec(Option_t *) {
   
   AliMCEvent* mcEvent = mcHandler->MCEvent();
   if (!mcEvent) { Printf("ERROR: Could not retrieve MC event"); return;}
-  printf("MC Event %p \n",mcEvent);
+  printf("MC Event %p",mcEvent);
   AliStack* stack = mcEvent->Stack();
   if (!stack) { printf( "Stack not available"); return;}
   const AliVVertex *vtx=mcEvent->GetPrimaryVertex();
@@ -291,126 +313,117 @@ void AliAnalysisTaskCountLcEta::UserExec(Option_t *) {
 
   // run MC QA 
   if (fEnableMCQA) {
-
+ 
+     //histograms
+     TH2F* hPtEtaBkg=(TH2F*)fOutList->FindObject("hPtEtaBkg");
+ 
     //Int_t nPrims = stack->GetNprimary();
     Int_t nMCTracks = stack->GetNtrack();
-    //histograms
-    TH2F* hPtEtaBkg=(TH2F*)fOutList->FindObject("hPtEtaBkg");
-    TH2F* hPtEtaCand=(TH2F*)fOutList->FindObject("hPtEtaMCCandB");
-    TH2F* hMassEtaCand=(TH2F*)fOutList->FindObject("hMassEtaMCCandB");
+ 
+    Printf("Loop on %d tracks, %d combinations max \n",nMCTracks, nMCTracks*(nMCTracks-1)*(nMCTracks-2));
+    TStopwatch time;
+    time.Start();
+    // loop over particle in the stack and save the selected ones in an array
+    TClonesArray arrPartSelpos("TParticle",nMCTracks);
+    TClonesArray arrPartSelneg("TParticle",nMCTracks);
+    Int_t nPartSelpos=0, nPartSelneg=0, nLc=0;
+    for (Int_t istack = 0; istack < nMCTracks; istack++){
+      TParticle* particle=(TParticle*)stack->Particle(istack);
+      if(!particle) continue;
+      Int_t ch=particle->GetPdgCode();
+      Int_t pdgcode=TMath::Abs(ch);
+      
+      if(pdgcode==4122) { //signal
+      	 FillHistosL(particle,stack);
+      	 nLc++;
+      	 continue; 
+      }
+      //background
+      Bool_t selected=SelectTrack(particle,kTRUE);
+      if(!selected) continue;
+      
+      if(ch>0) {
+      	 new(arrPartSelpos[nPartSelpos]) TParticle(*particle);
+      	 nPartSelpos++;	 
+      }
+      if(ch<0) {
+      	 new(arrPartSelneg[nPartSelneg]) TParticle(*particle);
+      	 nPartSelneg++;
+      }
+     
+    }
+    Printf("INFO: %d Lc, %d positive and %d negative background particle selected", nLc, nPartSelpos, nPartSelneg);
     
     // loop over primary particles for quark and heavy hadrons
-    for (Int_t igen = 0; igen < nMCTracks; igen++){
-      TParticle* particle=(TParticle*)stack->Particle(igen);
+    for (Int_t igen = 0; igen < nPartSelpos; igen++){ //nMCTracks     
+      //TParticle* particle=(TParticle*)stack->Particle(igen);
+      TParticle* particle=(TParticle*)arrPartSelpos.UncheckedAt(igen);
       Int_t ch1=particle->GetPdgCode();
       Int_t pdgcode=TMath::Abs(ch1);
       if(ch1>0) ch1=+1;
       if(ch1<0) ch1=-1;
       
-      if(pdgcode==4122) FillHistosL(particle,stack);
 
-      if(fFillBkg && particle->IsPrimary() && (pdgcode==2212 || pdgcode==321 || pdgcode==211)) hPtEtaBkg->Fill(particle->Pt(),particle->Eta());
+
+      if(fFillBkg && particle->IsPrimary() && (pdgcode==2212 || pdgcode==321 || pdgcode==211))
+      	 hPtEtaBkg->Fill(particle->Pt(),particle->Eta());
   
-      //Printf("First loop");
+     
       Bool_t selected=SelectTrack(particle,kTRUE);
       if(!selected) continue;
-      for(Int_t j=0;fFillBkg && j<nMCTracks;j++){//second loop
+      //Printf("Selected First loop");
+      for(Int_t j=0;fFillBkg && j<nPartSelneg;j++){//second loop
+ 
 	if(igen==j) continue;
-	TParticle* part2=(TParticle*)stack->Particle(j);
-	Int_t ch2=part2->GetPdgCode();
-	pdgcode=TMath::Abs(ch2);
-	if(ch2>0) ch2=+1;
-	if(ch2<0) ch2=-1;
+	TParticle* part2=(TParticle*)arrPartSelneg.UncheckedAt(j);//(TParticle*)stack->Particle(j);
 
-	if(!part2->IsPrimary()) continue;
-	//check charge 
-	if(ch1==ch2) continue;
-	selected=SelectTrack(part2);
-	if(!selected) continue;
+ 
+	for(Int_t k=0;fFillBkg && k<nPartSelpos;k++){//third loop on pos
 
-
-	for(Int_t k=0;fFillBkg && k<nMCTracks;k++){//third loop
 	  if(igen==k || j==k) continue;
-	  TParticle* part3=(TParticle*)stack->Particle(k);
-	  Int_t ch3=part3->GetPdgCode();
-	  pdgcode=TMath::Abs(ch3);
-	  if(ch3>0) ch3=+1;
-	  if(ch3<0) ch3=-1;
 
-	  if(!part3->IsPrimary()) continue;
-	  //check charge 
-	  if(ch1==(-1)*ch3) continue;
-	  selected=SelectTrack(part3);
-	  if(!selected) continue;
-	  Float_t eta1=particle->Eta();
+	  TParticle* part3=(TParticle*)arrPartSelpos.UncheckedAt(k);//(TParticle*)stack->Particle(k);
+
+ 	  Float_t eta1=particle->Eta();
 	  Float_t eta2=part2->Eta();
 	  Float_t eta3=part3->Eta();
 	  Float_t etamax=TMath::Abs(eta1); if(TMath::Abs(eta2)>etamax) etamax=TMath::Abs(eta2); if(TMath::Abs(eta3)>etamax) etamax=TMath::Abs(eta3);
+	  if(etamax>fEtaAbsMax) continue;
+	  FillHistogramsBackgroundCandidates(particle, part2, part3, etamax);
+ 	
+	}//end third loop on pos
+ 
+ 	for(Int_t k=0;fFillBkg && k<nPartSelneg;k++){//third loop on neg
 
-	  //candidates
-	  Bool_t hyppKpi=kTRUE;
-	  hyppKpi=SelectTracksForCandidate(particle,part2,part3);
-	  Bool_t hyppiKp=kTRUE;
-	  hyppiKp=SelectTracksForCandidate(part3,part2,particle);
-	  Double_t invmasspKpi=0,invmasspiKp=0;
+	  if(igen==k || j==k) continue;
 
-	  TLorentzVector *candpKpi;
-	  invmasspKpi=InvMass(particle,part2,part3,candpKpi);
-	  
-	  TLorentzVector *candpiKp;
-	  invmasspiKp=InvMass(part3,part2,particle,candpiKp);
-	  
-	  Double_t mLc=TDatabasePDG::Instance()->GetParticle(4122)->Mass();
-	  Double_t threesigmas[2]={mLc-fInvMassCut,mLc+fInvMassCut};
-	  
-	  if(invmasspKpi < threesigmas[0] || invmasspKpi > threesigmas[1] ) hyppKpi=kFALSE;
-	  if(invmasspiKp < threesigmas[0] || invmasspiKp > threesigmas[1] ) hyppiKp=kFALSE;
-	  if(!hyppKpi && !hyppiKp) {
-	    delete candpiKp;
-	    delete candpKpi;
+	  TParticle* part3=(TParticle*)arrPartSelneg.UncheckedAt(k);//(TParticle*)stack->Particle(k);
 
-	    continue;
-	  }
-
-	  //Double_t pcandpKpi=candpKpi->P();
-	  //Double_t pcandpiKp=candpiKp->P();
-	  Double_t ptcandpKpi=candpKpi->Pt();
-	  Double_t ptcandpiKp=candpiKp->Pt();
-
-	  //Fill histograms
-
-	  Int_t binetamaxpos=hPtEtaCand->GetYaxis()->FindBin(etamax);
-	  Int_t binetamaxneg=hPtEtaCand->GetYaxis()->FindBin((-1)*etamax);
-	  Double_t width=hPtEtaCand->GetYaxis()->GetBinWidth(binetamaxpos);
-	  //Double_t etaminhist=hPtEtaCand->GetYaxis()->GetBinLowEdge(binetamaxneg);
-
-	  for(Int_t i=binetamaxneg;i<=binetamaxpos;i++){
-	    Double_t content=hMassEtaCand->GetYaxis()->GetBinLowEdge(i)+0.5*width;
-
-	    if(hyppKpi) {
-	      hPtEtaCand->Fill(ptcandpKpi,content);
-	      hMassEtaCand->Fill(candpKpi->M(),content);
-	    }
-	    if(hyppiKp) {
-	      hPtEtaCand->Fill(ptcandpiKp,content);
-	      hMassEtaCand->Fill(candpiKp->M(),content);
-	      
-	    }
-
-	  }
-
-	  delete candpiKp;
-	  delete candpKpi;
-	}//end third loop
+ 	  Float_t eta1=particle->Eta();
+	  Float_t eta2=part2->Eta();
+	  Float_t eta3=part3->Eta();
+	  Float_t etamax=TMath::Abs(eta1); if(TMath::Abs(eta2)>etamax) etamax=TMath::Abs(eta2); if(TMath::Abs(eta3)>etamax) etamax=TMath::Abs(eta3);
+	  if(etamax>fEtaAbsMax) continue;
+	  FillHistogramsBackgroundCandidates(particle, part2, part3, etamax);
+ 
+	}//end third loop on neg
+ 
       }//end second loop
-
+ 
     }//end loop on generated tracks
+    time.Stop();
+    time.Print();
+    time.Start();
+
+    arrPartSelpos.Delete();
+    arrPartSelneg.Delete();
+  
 
   } // end of MC QA loop
 
-
+  
   fEvt++;		// event number
-
+  
   PostData(1, fOutList);
 }
 
@@ -440,8 +453,9 @@ Bool_t AliAnalysisTaskCountLcEta::SelectTrack(TParticle *p,Bool_t fillh){
   Double_t eta=TMath::Abs(p->Eta());
   if(eta>fEtaAbs) {
     if(fillh) hrej->Fill(3);
-    if(eta>1.5) return kFALSE;
+    if(eta>fEtaAbsMax) return kFALSE;
   }
+  hrej->Fill(4);
   return kTRUE;
 }
 
@@ -450,12 +464,18 @@ Bool_t AliAnalysisTaskCountLcEta::SelectTracksForCandidate(TParticle* pion, TPar
   if(pion->Pt()<fCuts[0]) return kFALSE;
   if(kaon->Pt()<fCuts[1]) return kFALSE;
   if(proton->Pt()<fCuts[2]) return kFALSE;
+   TH1F* hrej=(TH1F*)fOutList->FindObject("hRejection");
+  hrej->Fill(5);
 
   return kTRUE;
 }
 
-Double_t AliAnalysisTaskCountLcEta::InvMass(TParticle *p1p,TParticle *pn,TParticle *p2p,TLorentzVector *&candp1ppnp2p){
+Double_t AliAnalysisTaskCountLcEta::InvMass(TParticle *p1p,TParticle *pn,TParticle *p2p,
+	TLorentzVector *&candp1ppnp2p){
 
+  // TStopwatch watch;
+  // watch.Start();
+  //the TLorentzVector is created with NEW, remember to delete it!!
   Double_t pxp1=p1p->Px(),pyp1=p1p->Py(),pzp1=p1p->Pz();
   Double_t pxp2=p2p->Px(),pyp2=p2p->Py(),pzp2=p2p->Pz();
   Double_t pxpn=pn->Px(),pypn=pn->Py(),pzpn=pn->Pz();
@@ -477,10 +497,85 @@ Double_t AliAnalysisTaskCountLcEta::InvMass(TParticle *p1p,TParticle *pn,TPartic
   
   Double_t invmass=TMath::Sqrt(energy*energy-p2);
   candp1ppnp2p=new TLorentzVector(p[0],p[1],p[2],energy);
-
+  // watch.Stop();
+  // watch.Print();
   return invmass;
 
 }
+
+void AliAnalysisTaskCountLcEta::FillHistogramsBackgroundCandidates(TParticle *p1,TParticle *p2,TParticle *p3, Double_t etamax){
+   
+    //histograms
+    TH1F* hPtEtaCandMid=(TH1F*)fOutList->FindObject("hPtEtaMCCandBMid");
+    TH1F* hMassEtaCandMid=(TH1F*)fOutList->FindObject("hMassEtaMCCandBMid");
+    TH1F* hPtEtaCandUpg=(TH1F*)fOutList->FindObject("hPtEtaMCCandBUpg");
+    TH1F* hMassEtaCandUpg=(TH1F*)fOutList->FindObject("hMassEtaMCCandBUpg");
+    TH1F* hrej=(TH1F*)fOutList->FindObject("hRejection");
+
+   //candidates
+   Bool_t hyppKpi=kTRUE;
+   hyppKpi=SelectTracksForCandidate(p1,p2,p3);
+   Bool_t hyppiKp=kTRUE;
+   hyppiKp=SelectTracksForCandidate(p3,p2,p1);
+   if(!hyppKpi && !hyppiKp) return;
+   Double_t invmasspKpi=0,invmasspiKp=0;
+   //Printf("Selected Candidates");
+   TLorentzVector *candpKpi=0x0;
+   TLorentzVector *candpiKp=0x0;
+   
+   invmasspKpi=InvMass(p1,p2,p3,candpKpi);
+   invmasspiKp=InvMass(p3,p2,p1,candpiKp);
+   
+   if(invmasspKpi < fThreesigmas[0] || invmasspKpi > fThreesigmas[1] ) hyppKpi=kFALSE;
+   if(invmasspiKp < fThreesigmas[0] || invmasspiKp > fThreesigmas[1] ) hyppiKp=kFALSE;
+   
+   if(!hyppKpi && !hyppiKp) {
+      //Printf("Out of 3 sigmas Lc");
+      delete candpiKp;
+      delete candpKpi;
+      
+      return;
+   }
+   // if(hyppKpi) Printf("INV MASS pKpi %f",invmasspKpi);
+   // if(hyppiKp) Printf("piKp inv mass %f",invmasspiKp);
+   hrej->Fill(6);
+   //Double_t pcandpKpi=candpKpi->P();
+   //Double_t pcandpiKp=candpiKp->P();
+   Double_t ptcandpKpi=candpKpi->Pt();
+   Double_t ptcandpiKp=candpiKp->Pt();
+   //Printf("Filling hstograms");
+   //Fill histograms
+   if(etamax<0.8){
+      if(hyppKpi){  
+      	 hPtEtaCandUpg->Fill(ptcandpKpi);
+      	 hMassEtaCandUpg->Fill(candpKpi->M());
+      	 hPtEtaCandMid->Fill(ptcandpKpi);
+      	 hMassEtaCandMid->Fill(candpKpi->M());
+      }
+      if(hyppiKp) {
+      	 hPtEtaCandMid->Fill(ptcandpiKp);
+      	 hMassEtaCandMid->Fill(candpiKp->M());	      
+      	 hPtEtaCandUpg->Fill(ptcandpiKp);
+      	 hMassEtaCandUpg->Fill(candpiKp->M());
+      }
+   } else{ //eta >0.8 && <fAbsEta
+      if(hyppKpi){
+      	 hPtEtaCandUpg->Fill(ptcandpKpi);
+      	 hMassEtaCandUpg->Fill(candpKpi->M());
+      }
+      if(hyppiKp) {
+      	 hPtEtaCandUpg->Fill(ptcandpiKp);
+      	 hMassEtaCandUpg->Fill(candpiKp->M());
+      	 
+      }
+      
+   }
+   
+   delete candpiKp;
+   delete candpKpi;
+   
+}
+
 //__________________________________________________________________
 void AliAnalysisTaskCountLcEta::Terminate(Option_t *) {
 		

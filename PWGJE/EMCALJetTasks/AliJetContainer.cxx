@@ -1,5 +1,6 @@
+// $Id$
 //
-// Jet Container
+// Container with name, TClonesArray and cuts for jets
 //
 // Author: M. Verweij
 
@@ -24,6 +25,7 @@ AliJetContainer::AliJetContainer():
   fJetRadius(0),
   fRhoName(),
   fLocalRhoName(),
+  fFlavourSelection(0),
   fPtBiasJetTrack(0),
   fPtBiasJetClus(0),
   fJetPtCut(1),
@@ -62,6 +64,7 @@ AliJetContainer::AliJetContainer(const char *name):
   fJetRadius(0),
   fRhoName(),
   fLocalRhoName(),
+  fFlavourSelection(0),
   fPtBiasJetTrack(0),
   fPtBiasJetClus(0),
   fJetPtCut(1),
@@ -163,7 +166,8 @@ AliEmcalJet* AliJetContainer::GetLeadingJet(const char* opt)
 
   if (option.Contains("rho")) {
     while ((jet = GetNextAcceptJet())) {
-      if (jet->Pt()-jet->Area()*fRho->GetVal() > jetMax->Pt()-jetMax->Area()*fRho->GetVal()) jetMax = jet;
+      if ( (jet->Pt()-jet->Area()*GetRhoVal()) > (jetMax->Pt()-jetMax->Area()*GetRhoVal()) )
+	jetMax = jet;
     }
   }
   else {
@@ -297,42 +301,49 @@ Bool_t AliJetContainer::AcceptBiasJet(AliEmcalJet *jet) const
 //________________________________________________________________________
 Bool_t AliJetContainer::AcceptJet(AliEmcalJet *jet) const
 {   
-  // Return true if jet is accepted.
-  if (!jet)
-    return kFALSE;
 
-  if (jet->TestBits(fJetBitMap) != (Int_t)fJetBitMap)
-    return kFALSE;
+   // Return true if jet is accepted.
 
-  if (jet->Pt() <= fJetPtCut) 
-    return kFALSE;
- 
-  if (jet->Area() <= fJetAreaCut) 
-    return kFALSE;
+   if (!jet)
+      return kFALSE;
 
-  if (jet->AreaEmc()<fAreaEmcCut)
-    return kFALSE;
+   if (jet->TestBits(fJetBitMap) != (Int_t)fJetBitMap)
+      return kFALSE;
 
-  if( GetZLeadingCharged(jet)>fZLeadingChCut ||  GetZLeadingEmc(jet)>fZLeadingEmcCut)
-    return kFALSE;
+   if (jet->Pt() <= fJetPtCut) 
+      return kFALSE;
 
-  if(jet->NEF()<fNEFMinCut || jet->NEF()>fNEFMaxCut)
-    return kFALSE;
+   if (jet->Area() <= fJetAreaCut) 
+      return kFALSE;
 
-  if (!AcceptBiasJet(jet))
-    return kFALSE;
-  
-  if (jet->MaxTrackPt() > fMaxTrackPt || jet->MaxClusterPt() > fMaxClusterPt)
-    return kFALSE;
+   if (jet->AreaEmc() < fAreaEmcCut)
+      return kFALSE;
+   
+   if (fZLeadingChCut < 1 && GetZLeadingCharged(jet) > fZLeadingChCut)
+      return kFALSE;
+   
+   if (fZLeadingEmcCut < 1 && GetZLeadingEmc(jet) > fZLeadingEmcCut)
+      return kFALSE;
 
- 
-  Double_t jetPhi = jet->Phi();
-  Double_t jetEta = jet->Eta();
-  
-  if (fJetMinPhi < 0) // if limits are given in (-pi, pi) range
-    jetPhi -= TMath::Pi() * 2;
-
-  return (Bool_t)(jetEta > fJetMinEta && jetEta < fJetMaxEta && jetPhi > fJetMinPhi && jetPhi < fJetMaxPhi);
+   if (jet->NEF() < fNEFMinCut || jet->NEF() > fNEFMaxCut)
+      return kFALSE;
+   
+   if (!AcceptBiasJet(jet))
+      return kFALSE;
+   
+   if (jet->MaxTrackPt() > fMaxTrackPt || jet->MaxClusterPt() > fMaxClusterPt)
+      return kFALSE;
+   
+   if (fFlavourSelection != 0 && !jet->TestFlavourTag(fFlavourSelection))
+      return kFALSE;
+   
+   Double_t jetPhi = jet->Phi();
+   Double_t jetEta = jet->Eta();
+   
+   if (fJetMinPhi < 0) // if limits are given in (-pi, pi) range
+      jetPhi -= TMath::Pi() * 2;
+   
+   return (Bool_t)(jetEta > fJetMinEta && jetEta < fJetMaxEta && jetPhi > fJetMinPhi && jetPhi < fJetMaxPhi);
 }
 
 //________________________________________________________________________
@@ -388,7 +399,7 @@ void AliJetContainer::GetLeadingHadronMomentum(TLorentzVector &mom, AliEmcalJet 
 Double_t AliJetContainer::GetZLeadingEmc(AliEmcalJet *jet) const
 {
 
-  if (fClusterContainer && fClusterContainer->GetArray() ) {
+  if (fClusterContainer && fClusterContainer->GetArray()) {
     TLorentzVector mom;
     
     AliVCluster *cluster = jet->GetLeadingCluster(fClusterContainer->GetArray());
@@ -430,7 +441,7 @@ Double_t AliJetContainer::GetZ(AliEmcalJet *jet, TLorentzVector mom) const
 
   Double_t pJetSq = jet->Px()*jet->Px() + jet->Py()*jet->Py() + jet->Pz()*jet->Pz();
 
-  if(pJetSq>0.)
+  if(pJetSq>1e-6)
     return (mom.Px()*jet->Px() + mom.Py()*jet->Py() + mom.Pz()*jet->Pz())/pJetSq;
   else {
     AliWarning(Form("%s: strange, pjet*pjet seems to be zero pJetSq: %f",GetName(), pJetSq));
@@ -457,7 +468,7 @@ void AliJetContainer::SetJetEtaPhiEMCAL()
   else {
     AliWarning("Could not get instance of AliEMCALGeometry. Using manual settings for EMCAL year 2011!!");
     SetJetEtaLimits(-0.7+fJetRadius,0.7-fJetRadius);
-    SetJetPhiLimits(1.4+fJetRadius,TMath::Pi()-fJetRadius);
+    SetJetPhiLimits(1.405+fJetRadius,3.135-fJetRadius);
   }
 }
 

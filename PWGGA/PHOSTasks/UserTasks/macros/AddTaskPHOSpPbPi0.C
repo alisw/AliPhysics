@@ -1,7 +1,7 @@
-AliAnalysisTaskSEPHOSpPbPi0* AddTaskPHOSpPbPi0(UInt_t triggerTag = 0, Bool_t isMCtruth=kFALSE, Bool_t isBadMap=kFALSE, Double_t width = 0.)
+AliAnalysisTaskSEPHOSpPbPi0* AddTaskPHOSpPbPi0(UInt_t triggerTag = 0, Bool_t isMCtruth=kFALSE)
 {
 // Creates a task to analysis pi0 in p-Pb collisions with PHOS
-// Author: H. Zhu - 05/14/2013
+// Author: H. Zhu - 01/23/2014
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -25,42 +25,29 @@ AliAnalysisTaskSEPHOSpPbPi0* AddTaskPHOSpPbPi0(UInt_t triggerTag = 0, Bool_t isM
   Float_t cBin[nBins+1] = {0., 20., 40., 60., 80., 90., 100.}; TArrayF tCent(nBins+1, cBin);
   Int_t   buffer[nBins] = { 40,  80,  80,  100, 100, 100    }; TArrayI tBuffer(nBins, buffer);
 
-  Double_t cutsEvent[4] = {  1.,    // 0, min of VtxNCont
-                            10.,    // 1, max of VtxZ
-                             0.,    // 2, min of Centrality
-                           100.  }; // 3, max of Centrality
+  Double_t cutsEvent[3] = { 10.,    // 0, max of VtxZ
+                             0.,    // 1, min of Centrality
+                           100.  }; // 2, max of Centrality
 
   Double_t cutsCaloCl[5] = { 0.3,    // 0, min of cluster Energy
                              2.,     // 1, min of NCells
                              0.2,    // 2, min of M02
                              2.5,    // 3, min of DistToBad
-                             7e-8 }; // 4, max of TOF
+                             1e-7 }; // 4, max of TOF
 
   AliAnalysisTaskSEPHOSpPbPi0 *task = new AliAnalysisTaskSEPHOSpPbPi0("TaskPHOSpPbPi0");
   task->SetUseMC(isMCtruth);
   task->SetXBins(tCent, tBuffer);
   task->SetEventCuts(cutsEvent);
   task->SetCaloClCuts(cutsCaloCl);
-  task->SetDecaliWidth(width);    // for decalibration
-  task->SetRemovePileup(kFALSE);  // not remove pileup events
-  task->SetUseFiducialCut(kTRUE); // use fiducial cut
+  task->SetRemovePileup(kTRUE);    // remove pileup events
+  task->SetUseFiducialCut(kTRUE);  // use fiducial cut
+  task->SetUseTOFCut(kTRUE);       // use TOF cut
   task->SetDebugLevel(-1);
 
   if (triggerTag==0) task->SelectCollisionCandidates(AliVEvent::kINT7);
-  if (triggerTag==1) task->SelectCollisionCandidates(AliVEvent::kPHI7);
-  if (triggerTag==2) task->SelectCollisionCandidates(AliVEvent::kMB);
-
-  // Bad maps for PHOS
-  if (isBadMap) {
-    AliOADBContainer badmapContainer("phosBadMap");
-    badmapContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSBadMaps.root","phosBadMap");
-    TObjArray *maps = (TObjArray*)badmapContainer.GetObject(144871,"phosBadMap"); //run number LHC11a
-
-    for (Int_t mod=1;mod<4; mod++) {
-      TH2I * h = (TH2I*)maps->At(mod);
-      if(h) task->SetPHOSBadMap(mod,h);
-    }
-  }
+  else if (triggerTag==1) task->SelectCollisionCandidates(AliVEvent::kPHI7);
+  else if (triggerTag==2) task->SelectCollisionCandidates(AliVEvent::kMB);
 
   mgr->AddTask(task);
 

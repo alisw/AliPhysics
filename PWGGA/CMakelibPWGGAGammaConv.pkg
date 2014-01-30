@@ -44,6 +44,7 @@ set ( SRCS
         GammaConv/AliGammaConversionAODBGHandler.cxx
         GammaConv/AliAnalysisTaskConversionQA.cxx
         GammaConv/AliAnalysisTaskMaterial.cxx
+        GammaConv/AliAnalysisTaskResolution.cxx
 	GammaConv/AliAnalysisTaskPi0v2.cxx
         GammaConv/AliAnalysisTaskGammaConvV1.cxx
         GammaConv/AliAnalysisTaskGammaConvDalitzV1.cxx
@@ -62,4 +63,4 @@ set ( DHDR  PWGGAGammaConvLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE  PWGGA/GammaConv CORRFW STEER/AOD STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  PWGGA/GammaConv CORRFW STEER/AOD STEER/ESD STEER/STEERBase ANALYSIS)

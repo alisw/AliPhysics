@@ -155,7 +155,7 @@ AliRDHFCutsLctoV0::AliRDHFCutsLctoV0(const AliRDHFCutsLctoV0 &source) :
   if (source.fPidHFV0neg) fPidHFV0neg = new AliAODPidHF(*(source.fPidHFV0neg));
   else fPidHFV0neg = new AliAODPidHF();
 
-  if (source.fV0daughtersCuts) fV0daughtersCuts = new AliESDtrackCuts(*(source.fV0daughtersCuts));
+  if (source.fV0daughtersCuts) AddTrackCutsV0daughters(source.fV0daughtersCuts);
   else fV0daughtersCuts = new AliESDtrackCuts();
 
 }
@@ -354,11 +354,9 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
   //
 
   if (!fCutsRD) {
-    cout<<"Cut matrice not inizialized. Exit..."<<endl;
+    AliFatal("Cut matrice not inizialized. Exit...");
     return 0;
   }
-
-  //PrintAll();
 
   AliAODRecoCascadeHF* d = (AliAODRecoCascadeHF*)obj;
   if (!d) {
@@ -373,13 +371,6 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
 
   if (d->GetNDaughters()!=2) {
     AliDebug(2,Form("No 2 daughters for current cascade (nDaughters=%d)",d->GetNDaughters()));
-    return 0;
-  }
-
-  AliVTrack *cascTrk0 = dynamic_cast<AliVTrack*>(d->GetDaughter(0));
-  AliVTrack *cascTrk1 = dynamic_cast<AliVTrack*>(d->GetDaughter(1));
-  if (!cascTrk0 || !cascTrk1) {
-    AliDebug(2,"At least one of V0daughters doesn't exist");
     return 0;
   }
 
@@ -409,15 +400,8 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
   // Get the V0 daughter tracks
   AliAODTrack *v0positiveTrack = dynamic_cast<AliAODTrack*>(d->Getv0PositiveTrack());
   AliAODTrack *v0negativeTrack = dynamic_cast<AliAODTrack*>(d->Getv0NegativeTrack());
-  //AliVTrack *trk0 = dynamic_cast<AliVTrack*>(v0->GetDaughter(0));
-  //AliVTrack *trk1 = dynamic_cast<AliVTrack*>(v0->GetDaughter(1));
   if (!v0positiveTrack || !v0negativeTrack ) {
     AliDebug(2,"No V0 daughters' objects");
-    return 0;
-  }
-
-  if (v0positiveTrack->GetLabel()<0 || v0negativeTrack->GetLabel()<0) {
-    AliDebug(2,Form("At least one of V0daughters has label negative (%d %d)",v0positiveTrack->GetLabel(),v0negativeTrack->GetLabel()));
     return 0;
   }
 
@@ -427,29 +411,22 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
   }
 
   //if(fUseTrackSelectionWithFilterBits && d->HasBadDaughters()) return 0;
-  if ( fUseTrackSelectionWithFilterBits && !(bachelorTrack->TestFilterMask(BIT(4))) ) return 0;
+  if ( fUseTrackSelectionWithFilterBits && !(bachelorTrack->TestFilterMask(BIT(4))) ) {
+    AliDebug(2,"Check on the bachelor FilterBit: no BIT(4). Candidate rejected.");
+    return 0;
+  }
+
+  Int_t returnvalueTrack = 7;
 
   // selection on daughter tracks
   if (selectionLevel==AliRDHFCuts::kAll ||
       selectionLevel==AliRDHFCuts::kTracks) {
 
-    if (fIsCandTrackSPDFirst && d->Pt()<fMaxPtCandTrackSPDFirst) {
-      if (!bachelorTrack->HasPointOnITSLayer(0)) return 0;
-    }
-    if (fTrackCuts && fV0daughtersCuts) {
-      AliAODVertex *vAOD = (AliAODVertex*)d->GetPrimaryVtx();
-      Double_t pos[3]; vAOD->GetXYZ(pos);
-      Double_t cov[6]; vAOD->GetCovarianceMatrix(cov);
-      const AliESDVertex vESD(pos,cov,100.,100);
-      if ( !(IsDaughterSelected(bachelorTrack,&vESD,fTrackCuts)) ||
-	   !(IsDaughterSelected(v0negativeTrack,&vESD,fV0daughtersCuts)) ||
-	   !(IsDaughterSelected(v0positiveTrack,&vESD,fV0daughtersCuts)) ) return 0;
-    }
+    if (!AreLctoV0DaughtersSelected(d)) return 0;
 
   }
 
   Bool_t okLck0sp=kTRUE, okLcLpi=kTRUE, okLcLBarpi=kTRUE;
-  Bool_t okK0spipi=kTRUE, okLppi=kTRUE, okLBarpip=kTRUE;
 
   // selection on candidate
   if (selectionLevel==AliRDHFCuts::kAll ||
@@ -470,6 +447,9 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
     Double_t mlambda  = v0->MassLambda();
     Double_t malambda = v0->MassAntiLambda();
     Double_t mLcLpi   = d->InvMassLctoLambdaPi();
+
+    Bool_t okK0spipi=kTRUE, okLppi=kTRUE, okLBarpip=kTRUE;
+    Bool_t isNotK0S = kTRUE, isNotLambda = kTRUE, isNotLambdaBar = kTRUE, isNotGamma = kTRUE;
 
     // cut on Lc mass with K0S+p hypothesis
     if (TMath::Abs(mLck0sp-mLcPDG) > fCutsRD[GetGlobalIndex(0,ptbin)]) {
@@ -503,9 +483,35 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
       AliDebug(4,Form(" V0 mass is %2.2e and does not correspond to LambdaBar cut",malambda));
     }
 
-    okLck0sp   = okLck0sp   && okK0spipi;
-    okLcLpi    = okLcLpi    && okLppi;
-    okLcLBarpi = okLcLBarpi && okLBarpip;
+    // cut on K0S invariant mass veto
+    if (TMath::Abs(v0->MassK0Short()-mk0sPDG) < fCutsRD[GetGlobalIndex(12,ptbin)]) { // K0S invariant mass veto
+      AliDebug(4,Form(" veto on K0S invariant mass doesn't pass the cut"));
+      //return 0;
+      isNotK0S=kFALSE;
+    }
+
+    // cut on Lambda/LambdaBar invariant mass veto
+    if (TMath::Abs(v0->MassLambda()-mLPDG) < fCutsRD[GetGlobalIndex(13,ptbin)]) { // Lambda invariant mass veto
+      AliDebug(4,Form(" veto on Lambda invariant mass doesn't pass the cut"));
+      isNotLambda=kFALSE;
+      //return 0;
+    }
+      if (TMath::Abs(v0->MassAntiLambda()-mLPDG) < fCutsRD[GetGlobalIndex(13,ptbin)] ) { // LambdaBar invariant mass veto
+      AliDebug(4,Form(" veto on LambdaBar invariant mass doesn't pass the cut"));
+      isNotLambdaBar=kFALSE;
+      //return 0;
+    }
+
+    // cut on gamma invariant mass veto
+    if (v0->InvMass2Prongs(0,1,11,11) < fCutsRD[GetGlobalIndex(14,ptbin)]) { // K0S invariant mass veto
+      AliDebug(4,Form(" veto on gamma invariant mass doesn't pass the cut"));
+      isNotGamma=kFALSE;
+      //return 0;
+    }
+
+    okLck0sp   = okLck0sp   && okK0spipi && isNotLambda && isNotLambdaBar && isNotGamma;
+    okLcLpi    = okLcLpi    && okLppi    && isNotK0S    && isNotLambdaBar && isNotGamma;
+    okLcLBarpi = okLcLBarpi && okLBarpip && isNotK0S    && isNotLambda    && isNotGamma;
 
     if (!okLck0sp && !okLcLpi && !okLcLBarpi) return 0;
 
@@ -553,25 +559,6 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
       return 0;
     }
 
-    // cut on K0S invariant mass veto
-    if (TMath::Abs(v0->MassK0Short()-mk0sPDG) < fCutsRD[GetGlobalIndex(12,ptbin)]) { // K0S invariant mass veto
-      AliDebug(4,Form(" veto on K0S invariant mass doesn't pass the cut"));
-      return 0;
-    }
-
-    // cut on Lambda/LambdaBar invariant mass veto
-    if (TMath::Abs(v0->MassLambda()-mLPDG) < fCutsRD[GetGlobalIndex(13,ptbin)] ||
-	TMath::Abs(v0->MassAntiLambda()-mLPDG) < fCutsRD[GetGlobalIndex(13,ptbin)] ) { // Lambda/LambdaBar invariant mass veto
-      AliDebug(4,Form(" veto on K0S invariant mass doesn't pass the cut"));
-      return 0;
-    }
-
-    // cut on gamma invariant mass veto
-    if (v0->InvMass2Prongs(0,1,11,11) < fCutsRD[GetGlobalIndex(14,ptbin)]) { // K0S invariant mass veto
-      AliDebug(4,Form(" veto on gamma invariant mass doesn't pass the cut"));
-      return 0;
-    }
-
     // cut on V0 pT min
     if (v0->Pt() < fCutsRD[GetGlobalIndex(15,ptbin)]) { // V0 pT min
       AliDebug(4,Form(" V0 track Pt=%2.2e > %2.2e",v0->Pt(),fCutsRD[GetGlobalIndex(15,ptbin)]));
@@ -604,9 +591,9 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
 
   Int_t returnvalueTot = 0;
   if ( fUsePID )
-    returnvalueTot = CombinePIDCuts(returnvalue,returnvaluePID);
+    returnvalueTot = CombineCuts(returnvalueTrack,returnvalue,returnvaluePID);
   else
-    returnvalueTot = returnvalue;
+    returnvalueTot = CombineCuts(returnvalueTrack,returnvalue,7);
 
   return returnvalueTot;
 
@@ -618,7 +605,10 @@ Int_t AliRDHFCutsLctoV0::IsSelectedPID(AliAODRecoDecayHF* obj) {
   // fPidHFV0pos -> PID object for positive V0 daughter
   // fPidHFV0neg -> PID object for negative V0 daughter
 
-  if (!fUsePID || !obj) return 7; // all hypothesis are valid
+  if (!fUsePID || !obj) {
+    AliDebug(2,"PID selection inactive. Candidate accepted.");
+    return 7; // all hypothesis are valid
+  }
 
   if (fPidHF->GetPidResponse()==0x0 ||
       fPidHFV0pos->GetPidResponse()==0x0 ||
@@ -832,10 +822,13 @@ void AliRDHFCutsLctoV0::CheckPID(AliAODTrack *bachelor, AliAODTrack *v0Neg, AliA
 
 }
 //----------------
-Int_t AliRDHFCutsLctoV0::CombinePIDCuts(Int_t returnvalue, Int_t returnvaluePID) const {
-  // combine PID with topological cuts
+Int_t AliRDHFCutsLctoV0::CombineCuts(Int_t returnvalueTrack, Int_t returnvalue, Int_t returnvaluePID) const {
+  //
+  // combine track selection, topological cuts and PID
+  //
 
- Int_t returnvalueTot=returnvalue&returnvaluePID;
+ Int_t returnvalueTot=returnvalueTrack&returnvalue;
+ returnvalueTot=returnvalueTot&returnvaluePID;
 
  return returnvalueTot;
 }
@@ -847,7 +840,7 @@ Int_t AliRDHFCutsLctoV0::IsSelectedSingleCut(TObject* obj, Int_t selectionLevel,
   //
 
   if (!fCutsRD) {
-    cout<<"Cut matrice not inizialized. Exit..."<<endl;
+    AliDebug(2,"Cut matrice not inizialized. Exit...");
     return 0;
   }
 
@@ -864,13 +857,6 @@ Int_t AliRDHFCutsLctoV0::IsSelectedSingleCut(TObject* obj, Int_t selectionLevel,
 
   if (d->GetNDaughters()!=2) {
     AliDebug(2,Form("No 2 daughters for current cascade (nDaughters=%d)",d->GetNDaughters()));
-    return 0;
-  }
-
-  AliVTrack *cascTrk0 = dynamic_cast<AliVTrack*>(d->GetDaughter(0));
-  AliVTrack *cascTrk1 = dynamic_cast<AliVTrack*>(d->GetDaughter(1));
-  if (!cascTrk0 || !cascTrk1) {
-    AliDebug(2,"At least one of V0daughters doesn't exist");
     return 0;
   }
 
@@ -900,15 +886,8 @@ Int_t AliRDHFCutsLctoV0::IsSelectedSingleCut(TObject* obj, Int_t selectionLevel,
   // Get the V0 daughter tracks
   AliAODTrack *v0positiveTrack = dynamic_cast<AliAODTrack*>(d->Getv0PositiveTrack());
   AliAODTrack *v0negativeTrack = dynamic_cast<AliAODTrack*>(d->Getv0NegativeTrack());
-  //AliVTrack *trk0 = dynamic_cast<AliVTrack*>(v0->GetDaughter(0));
-  //AliVTrack *trk1 = dynamic_cast<AliVTrack*>(v0->GetDaughter(1));
   if (!v0positiveTrack || !v0negativeTrack ) {
     AliDebug(2,"No V0 daughters' objects");
-    return 0;
-  }
-
-  if (v0positiveTrack->GetLabel()<0 || v0negativeTrack->GetLabel()<0) {
-    AliDebug(2,Form("At least one of V0daughters has label negative (%d %d)",v0positiveTrack->GetLabel(),v0negativeTrack->GetLabel()));
     return 0;
   }
 
@@ -918,25 +897,18 @@ Int_t AliRDHFCutsLctoV0::IsSelectedSingleCut(TObject* obj, Int_t selectionLevel,
   }
 
   //if(fUseTrackSelectionWithFilterBits && d->HasBadDaughters()) return 0;
-  if ( fUseTrackSelectionWithFilterBits && !(bachelorTrack->TestFilterMask(BIT(4))) ) return 0;
+  if ( fUseTrackSelectionWithFilterBits && !(bachelorTrack->TestFilterMask(BIT(4))) ) {
+    AliDebug(2,"Check on the bachelor FilterBit: no BIT(4). Candidate rejected.");
+    return 0;
+  }
+
 
   // selection on daughter tracks
   if (selectionLevel==AliRDHFCuts::kAll ||
       selectionLevel==AliRDHFCuts::kTracks) {
 
-    if (fIsCandTrackSPDFirst && d->Pt()<fMaxPtCandTrackSPDFirst) {
-      if (!bachelorTrack->HasPointOnITSLayer(0)) return 0;
-    }
-    if (fTrackCuts && fV0daughtersCuts) {
-      AliAODVertex *vAOD = (AliAODVertex*)d->GetPrimaryVtx();
-      Double_t pos[3]; vAOD->GetXYZ(pos);
-      Double_t cov[6]; vAOD->GetCovarianceMatrix(cov);
-      const AliESDVertex vESD(pos,cov,100.,100);
-      if ( !(IsDaughterSelected(bachelorTrack,&vESD,fTrackCuts)) ||
-	   !(IsDaughterSelected(v0negativeTrack,&vESD,fV0daughtersCuts)) ||
-	   !(IsDaughterSelected(v0positiveTrack,&vESD,fV0daughtersCuts)) ) return 0;
-    }
-    //if (!AreDaughtersSelected(d)) return 0;
+    if (!AreLctoV0DaughtersSelected(d)) return 0;
+
   }
 
   Bool_t okLck0sp=kFALSE, okLcLpi=kFALSE, okLcLBarpi=kFALSE;
@@ -1086,7 +1058,7 @@ Int_t AliRDHFCutsLctoV0::IsSelectedSingleCut(TObject* obj, Int_t selectionLevel,
 
   Int_t returnvalueTot = 0;
   //if ( fUsePID )
-  //returnvalueTot = CombinePIDCuts(returnvalue,returnvaluePID);
+  //returnvalueTot = CombineCuts(returnvalue,returnvaluePID);
   //else
   returnvalueTot = returnvalue;
 
@@ -1283,6 +1255,7 @@ void AliRDHFCutsLctoV0::PrintAll() const {
   printf("Physics selection: %s\n",fUsePhysicsSelection ? "Yes" : "No");
   printf("Pileup rejection: %s\n",(fOptPileup > 0) ? "Yes" : "No");
   printf("UseTrackSelectionWithFilterBits: %s\n",fUseTrackSelectionWithFilterBits ? "Yes" : "No");
+  printf("Reject kink: %s\n",fKinkReject ? "Yes" : "No");
   if(fOptPileup==1) printf(" -- Reject pileup event");
   if(fOptPileup==2) printf(" -- Reject tracks from pileup vtx");
   if(fUseCentrality>0) {
@@ -1294,7 +1267,7 @@ void AliRDHFCutsLctoV0::PrintAll() const {
     printf("Centrality class considered: %.1f-%.1f, estimated with %s",fMinCentrality,fMaxCentrality,estimator.Data());
   }
   if(fIsCandTrackSPDFirst) printf("Check for candidates with pt < %2.2f, that daughters fullfill kFirst criteria\n",fMaxPtCandTrackSPDFirst);
-  /*
+
   if(fVarNames){
     cout<<"Array of variables"<<endl;
     for(Int_t iv=0;iv<fnVars;iv++){
@@ -1333,8 +1306,15 @@ void AliRDHFCutsLctoV0::PrintAll() const {
    }
    cout<<endl;
   }
-  */
 
+  if (fTrackCuts) {
+    Float_t eta1=0, eta2=0; fTrackCuts->GetEtaRange(eta1,eta2);
+    cout << " etaRange for Bachelor: [" << eta1 << "," << eta2 << "]\n";
+  }
+  if (fV0daughtersCuts) {
+    Float_t eta3=0, eta4=0; fV0daughtersCuts->GetEtaRange(eta3,eta4);
+    cout << " etaRange for V0daughters: [" << eta3 << "," << eta4 << "]\n";
+  }
   return;
 
 }
@@ -1367,4 +1347,102 @@ Bool_t AliRDHFCutsLctoV0::IsInFiducialAcceptance(Double_t pt, Double_t y) const
   }
   //
   return kTRUE;
+}
+//---------------------------------------------------------------------------
+Bool_t AliRDHFCutsLctoV0::AreLctoV0DaughtersSelected(AliAODRecoDecayHF *dd) const{
+  //
+  // Daughter tracks selection
+  //
+
+  AliAODRecoCascadeHF* d = (AliAODRecoCascadeHF*)dd;
+  if (!d) {
+    AliDebug(2,"AliAODRecoCascadeHF null");
+    return kFALSE;
+  }
+
+  if (!fTrackCuts) {
+    AliFatal("Cut object is not defined for bachelor. Candidate accepted.");
+    return kFALSE;
+  }
+
+  AliAODTrack * bachelorTrack = dynamic_cast<AliAODTrack*>(d->GetBachelor());
+  if (!bachelorTrack) return kFALSE;
+
+  if (fIsCandTrackSPDFirst && d->Pt()<fMaxPtCandTrackSPDFirst) {
+      if(!bachelorTrack->HasPointOnITSLayer(0)) return kFALSE;
+  }
+
+  if (fKinkReject != (!(fTrackCuts->GetAcceptKinkDaughters())) ) {
+    AliError(Form("Not compatible setting: fKinkReject=%1d - fTrackCuts->GetAcceptKinkDaughters()=%1d",fKinkReject, fTrackCuts->GetAcceptKinkDaughters()));
+    return kFALSE;
+  }
+
+  AliAODVertex *vAOD = d->GetPrimaryVtx();
+  Double_t pos[3]; vAOD->GetXYZ(pos);
+  Double_t cov[6]; vAOD->GetCovarianceMatrix(cov);
+  const AliESDVertex vESD(pos,cov,100.,100);
+
+  if (!IsDaughterSelected(bachelorTrack,&vESD,fTrackCuts)) return kFALSE;
+
+  if (!fV0daughtersCuts) {
+    AliFatal("Cut object is not defined for V0daughters. Candidate accepted.");
+    return kFALSE;
+  }
+
+  AliAODv0 * v0 = dynamic_cast<AliAODv0*>(d->Getv0());
+  if (!v0) return kFALSE;
+  AliAODTrack *v0positiveTrack = dynamic_cast<AliAODTrack*>(d->Getv0PositiveTrack());
+  if (!v0positiveTrack) return kFALSE;
+  AliAODTrack *v0negativeTrack = dynamic_cast<AliAODTrack*>(d->Getv0NegativeTrack());
+  if (!v0negativeTrack) return kFALSE;
+
+
+  Float_t etaMin=0, etaMax=0; fV0daughtersCuts->GetEtaRange(etaMin,etaMax);
+  if ( (v0positiveTrack->Eta()<=etaMin || v0positiveTrack->Eta()>=etaMax) ||
+       (v0negativeTrack->Eta()<=etaMin || v0negativeTrack->Eta()>=etaMax) ) return kFALSE;
+  Float_t ptMin=0, ptMax=0; fV0daughtersCuts->GetPtRange(ptMin,ptMax);
+  if ( (v0positiveTrack->Pt()<=ptMin || v0positiveTrack->Pt()>=ptMax) ||
+       (v0negativeTrack->Pt()<=ptMin || v0negativeTrack->Pt()>=ptMax) ) return kFALSE;
+
+  // Condition on nTPCclusters
+  if (fV0daughtersCuts->GetMinNClusterTPC()>0) {
+    if ( ( ( v0positiveTrack->GetTPCClusterInfo(2,1) ) < fV0daughtersCuts->GetMinNClusterTPC() ) || 
+	 ( ( v0negativeTrack->GetTPCClusterInfo(2,1) ) < fV0daughtersCuts->GetMinNClusterTPC() ) ) return kFALSE;
+  }
+
+  // kTPCrefit status
+  if (v0->GetOnFlyStatus()==kFALSE) { // only for offline V0s
+    if (fV0daughtersCuts->GetRequireTPCRefit()) {
+      if( !(v0positiveTrack->GetStatus() & AliESDtrack::kTPCrefit)) return kFALSE;
+      if( !(v0negativeTrack->GetStatus() & AliESDtrack::kTPCrefit)) return kFALSE;
+    }
+  }
+  // kink condition
+  if (!fV0daughtersCuts->GetAcceptKinkDaughters()) {
+    AliAODVertex *maybeKinkPos = (AliAODVertex*)v0positiveTrack->GetProdVertex();
+    AliAODVertex *maybeKinkNeg = (AliAODVertex*)v0negativeTrack->GetProdVertex();
+    if (maybeKinkPos->GetType()==AliAODVertex::kKink ||
+	maybeKinkNeg->GetType()==AliAODVertex::kKink) return kFALSE;
+  }
+  // Findable clusters > 0 condition - from V0 analysis
+  //if( v0positiveTrack->GetTPCNclsF()<=0 || v0negativeTrack->GetTPCNclsF()<=0 ) return kFALSE;
+  /*
+    Float_t lPosTrackCrossedRows = v0positiveTrack->GetTPCClusterInfo(2,1);
+    Float_t lNegTrackCrossedRows = v0positiveTrack->GetTPCClusterInfo(2,1);
+    fTreeVariableLeastNbrCrossedRows = (Int_t) lPosTrackCrossedRows;
+    if( lNegTrackCrossedRows < fTreeVariableLeastNbrCrossedRows )
+    fTreeVariableLeastNbrCrossedRows = (Int_t) lNegTrackCrossedRows;
+    //Compute ratio Crossed Rows / Findable clusters
+    //Note: above test avoids division by zero!
+    Float_t lPosTrackCrossedRowsOverFindable = lPosTrackCrossedRows / ((double)(pTrack->GetTPCNclsF()));
+    Float_t lNegTrackCrossedRowsOverFindable = lNegTrackCrossedRows / ((double)(nTrack->GetTPCNclsF()));
+    fTreeVariableLeastRatioCrossedRowsOverFindable = lPosTrackCrossedRowsOverFindable;
+    if( lNegTrackCrossedRowsOverFindable < fTreeVariableLeastRatioCrossedRowsOverFindable )
+    fTreeVariableLeastRatioCrossedRowsOverFindable = lNegTrackCrossedRowsOverFindable;
+    //Lowest Cut Level for Ratio Crossed Rows / Findable = 0.8, set here
+    if ( fTreeVariableLeastRatioCrossedRowsOverFindable < 0.8 ) return kFALSE;
+  */
+
+  return kTRUE;
+
 }

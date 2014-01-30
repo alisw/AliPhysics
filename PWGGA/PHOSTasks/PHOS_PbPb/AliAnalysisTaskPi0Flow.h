@@ -45,6 +45,7 @@ public:
     /* virtual void   Terminate(Option_t *); */
 
     void SetPeriod(Period period) { fPeriod = period;}
+    void SetCentralityEstimator(const char * centr) {fCentralityEstimator = centr;}
     void EnableTOFCut(Bool_t enable = kTRUE, Double_t TOFCut = 100.e-9, Bool_t fillWide=kFALSE){fTOFCutEnabled=enable; fTOFCut=TOFCut; fFillWideTOF=fillWide;}
     
     void SetCentralityBinning(const TArrayD& edges, const TArrayI& nMixed);
@@ -147,24 +148,24 @@ protected:
 
 
 protected:
-    // transiant constants
-    static const Int_t kNMod = 5;
+    // transient constants
+    static const Int_t    kNMod = 5;
 
     // constants:
-    static const Double_t kLogWeight= 4.5 ; // log weight for recalibration.
-    static const Double_t kAlphaCut=0.7 ;
-    static const Bool_t doESDReCalibration = kTRUE;
-    static const Int_t kNCenBins = 9; // see EvalV0ReactionPlane()
+    static const Double_t kLogWeight ; // log weight for recalibration.
+    static const Double_t kAlphaCut ;
+    static const Bool_t   doESDReCalibration;
+    static const Int_t    kNCenBins = 9; // see EvalV0ReactionPlane()
 
     // cluster cut variables:
-    static const Double_t kMinClusterEnergy = 0.3;
-    static const Double_t kMinBCDistance = 2.5;  //distance to nearest bad channel
-    static const Int_t kMinNCells = 3;
-    static const Double_t kMinM02 = 0.2;
+    static const Double_t kMinClusterEnergy;
+    static const Double_t kMinBCDistance;  //distance to nearest bad channel
+    static const Int_t    kMinNCells;
+    static const Double_t kMinM02;
 
     // Binning, [vtx, centrality, reaction-plane]
-    static const Int_t kNVtxZBins = 1;
-    static const Double_t kCentCutoff = 90.; // Ignore Centrality over 90%
+    static const Int_t    kNVtxZBins;
+    static const Double_t kCentCutoff; // Ignore Centrality over 90%
     TArrayD fCentEdges;  // Centrality Bin Lower edges
     TArrayI fCentNMixed; // Number of mixed events for each centrality bin
     UInt_t fNEMRPBins;
@@ -218,8 +219,9 @@ protected:
 
 
     // Step 4: Centrality
-    Float_t fCentralityV0M ; //!Centrality of the currecnt event
-    Int_t fCentBin ;       //! Current centrality bin
+    TString fCentralityEstimator; //! Centrality estimator ("V0M", "ZNA")
+    Float_t fCentrality ;         //! Centrality of the current event
+    Int_t   fCentBin ;            //! Current centrality bin
 
     // Step 5: Reaction Plane
     Bool_t fHaveTPCRP ; //! Is TPC RP defined?
@@ -235,7 +237,7 @@ protected:
     TObjArray* fCaloPhotonsPHOSLists; //! array of TList, Containers for events with PHOS photons
 
 
-    ClassDef(AliAnalysisTaskPi0Flow, 2); // PHOS analysis task
+    ClassDef(AliAnalysisTaskPi0Flow, 3); // PHOS analysis task
 };
 
 #endif

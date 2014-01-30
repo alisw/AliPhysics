@@ -30,8 +30,13 @@ public:
       kTOFnsigmaPi,// TOF number of sigmas pion
       kTOFnsigmaK, // TOF number of sigmas kaon
       kTOFnsigmaP, // TOF number of sigmas proton
+      kTOFdeltaPi, // TOF t-texp for pion hypothesis
+      kTOFdeltaK, // TOF t-texp for pion hypothesis
+      kTOFdeltaP, // TOF t-texp for pion hypothesis
       kNITSclusters,  // n ITS clusters
       kNTPCclusters,  // n TPC clusters
+      kNTPCcrossedRows,  // n TPC crossed rows
+      kNTPCcrossedRowsFclusters,  // n TPC crossed rows over findable clusters
       kITSchi2,     // ITS chi^2
       kTPCchi2,     // TPC chi^2
       kDCAXY,       // DCA xy

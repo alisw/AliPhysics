@@ -2,6 +2,14 @@
 //                         AddTaskJetFlowToyMC                               //
 //   Author: Redmer A. Bertens, Utrecht University, 2013, rbertens@cern.ch   //
 ///////////////////////////////////////////////////////////////////////////////
+
+/* AddTask macro for jet flow toy mc task
+ * task uses an afterburner to tune vn in the pico track 
+ * selection which can be used by a jet finder 
+ * note that this task does not generate MC particles, it changes
+ * the azimuthal distribution of already available tracks
+*/
+
 class AliAnalysisDataContainer;
 class AliAnalysisTaskJetFlowMC;
 

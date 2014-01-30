@@ -61,7 +61,8 @@ AliAnalysisTaskTrigChEff::AliAnalysisTaskTrigChEff() :
   fCountTypeKeys(0x0),
   fHistoTypeKeys(0x0),
   fEffMethodKeys(0x0),
-  fUseGhosts(kFALSE),
+  fMatchTrigKeys(0x0),
+//  fUseGhosts(kFALSE),
   fList(0x0)
 {
   /// Default ctor.
@@ -74,7 +75,8 @@ AliAnalysisTaskTrigChEff::AliAnalysisTaskTrigChEff(const char *name, const AliMu
   fCountTypeKeys(0x0),
   fHistoTypeKeys(0x0),
   fEffMethodKeys(0x0),
-  fUseGhosts(kFALSE),
+  fMatchTrigKeys(0x0),
+//  fUseGhosts(kFALSE),
   fList(0x0)
 {
   //
@@ -97,6 +99,7 @@ AliAnalysisTaskTrigChEff::~AliAnalysisTaskTrigChEff()
   delete fCountTypeKeys;
   delete fHistoTypeKeys;
   delete fEffMethodKeys;
+  delete fMatchTrigKeys;
   if ( ! AliAnalysisManager::GetAnalysisManager() || ! AliAnalysisManager::GetAnalysisManager()->IsProofMode() ) {
     delete fList;
   }
@@ -129,7 +132,7 @@ Bool_t AliAnalysisTaskTrigChEff::FillEffHistoList(TString physSel, TString trigC
   TH1* histo = 0x0;
   Bool_t isOk = kTRUE;
   for ( Int_t icount=0; icount<kNcounts; ++icount ) {
-    histoName = GetHistoName(kHchamberEff, icount, -1, -1, -1);
+    histoName = GetHistoName(kHchamberEff, icount, -1, -1, -1, -1);
     histoPattern = Form("%s%s", histoName.Data(), trackSelection.Data());
     histo = (TH1*)GetSum(physSel, trigClassNames, centrality, histoPattern);
     if ( histo ) {
@@ -142,7 +145,7 @@ Bool_t AliAnalysisTaskTrigChEff::FillEffHistoList(TString physSel, TString trigC
   }
   for ( Int_t icount=0; icount<kNcounts; ++icount ) {
     for ( Int_t ich=0; ich<4; ++ich ) {
-      histoName = GetHistoName(kHslatEff, icount, ich, -1, -1);
+      histoName = GetHistoName(kHslatEff, icount, ich, -1, -1, -1);
       histoPattern = Form("%s%s", histoName.Data(), trackSelection.Data());
       histo = (TH1*)GetSum(physSel, trigClassNames, centrality, histoPattern);
       if ( histo ) {
@@ -156,7 +159,7 @@ Bool_t AliAnalysisTaskTrigChEff::FillEffHistoList(TString physSel, TString trigC
   }
   for ( Int_t icount=0; icount<kNcounts; ++icount ) {
     for ( Int_t ich=0; ich<4; ++ich ) {
-      histoName = GetHistoName(kHboardEff, icount, ich, -1, -1);
+      histoName = GetHistoName(kHboardEff, icount, ich, -1, -1, -1);
       histoPattern = Form("%s%s", histoName.Data(), trackSelection.Data());
       histo = (TH1*)GetSum(physSel, trigClassNames, centrality, histoPattern);
       if ( histo ) {
@@ -169,7 +172,7 @@ Bool_t AliAnalysisTaskTrigChEff::FillEffHistoList(TString physSel, TString trigC
     }
   }
   
-  histoName = GetHistoName(kHcheckBoard, -1, -1, -1, -1);
+  histoName = GetHistoName(kHcheckBoard, -1, -1, -1, -1, -1);
   histoPattern = Form("%s%s", histoName.Data(), trackSelection.Data());
   histo = (TH1*)GetSum(physSel, trigClassNames, centrality, histoPattern);
   if ( histo ) {
@@ -195,26 +198,28 @@ void AliAnalysisTaskTrigChEff::FinishTaskOutput()
   for ( Int_t isel=0; isel<kNselections; ++isel ) {
     for ( Int_t itrig=0; itrig<GetAllSelectedTrigClasses()->GetEntries(); ++itrig ) {
       for ( Int_t icent=1; icent<=GetCentralityClasses()->GetNbins(); ++icent ) {
-        for ( Int_t imethod=0; imethod<kNeffMethods; ++imethod ) {
-          for ( Int_t itype=0; itype<kNhistoTypes; ++itype ) {
-            for ( Int_t icount=-1; icount<kNcounts; ++icount ) {
-              for ( Int_t ich=-1; ich<4; ++ich ) {
-                for ( Int_t imatch=kMatchApt; imatch<kMatchHpt; ++imatch ) {
-                  TH1* histo = 0x0;
-                  for ( Int_t jmatch=imatch+1; jmatch<=kMatchHpt; ++jmatch ) {
-                    histoName = GetHistoName(itype, icount, ich, jmatch, imethod);
-                    TH1* histoAdd = (TH1*)fMergeableCollection->GetObject(Form("/%s/%s/%s/",fPhysSelKeys->At(isel)->GetName(), GetAllSelectedTrigClasses()->At(itrig)->GetName(), GetCentralityClasses()->GetBinLabel(icent)), histoName);
-                    if ( ! histoAdd ) continue;
-                    histoName = GetHistoName(itype, icount, ich, imatch, imethod);
-                    if ( ! histo ) histo = (TH1*)GetMergeableObject(fPhysSelKeys->At(isel)->GetName(), GetAllSelectedTrigClasses()->At(itrig)->GetName(), GetCentralityClasses()->GetBinLabel(icent), histoName);
-                    AliDebug(2,Form("Adding %s (%g) to %s (%g)", histoAdd->GetName(), histoAdd->Integral(), histo->GetName(), histo->Integral()));
-                    histo->Add(histoAdd);
-                  } // loop on higher pt matching
-                } // loop on match trigger
-              } // loop on chamber
-            } // loop on count type
-          } // loop on histo type
-        } // loop on eff method
+        for ( Int_t itrackSel=0; itrackSel<kNtrackSel; ++itrackSel ) {
+          for ( Int_t imethod=0; imethod<kNeffMethods; ++imethod ) {
+            for ( Int_t itype=0; itype<kNhistoTypes; ++itype ) {
+              for ( Int_t icount=-1; icount<kNcounts; ++icount ) {
+                for ( Int_t ich=-1; ich<4; ++ich ) {
+                  for ( Int_t imatch=kMatchApt; imatch<kMatchHpt; ++imatch ) {
+                    TH1* histo = 0x0;
+                    for ( Int_t jmatch=imatch+1; jmatch<=kMatchHpt; ++jmatch ) {
+                      histoName = GetHistoName(itype, icount, ich, itrackSel, jmatch, imethod);
+                      TH1* histoAdd = (TH1*)fMergeableCollection->GetObject(Form("/%s/%s/%s/",fPhysSelKeys->At(isel)->GetName(), GetAllSelectedTrigClasses()->At(itrig)->GetName(), GetCentralityClasses()->GetBinLabel(icent)), histoName);
+                      if ( ! histoAdd ) continue;
+                      histoName = GetHistoName(itype, icount, ich, itrackSel, imatch, imethod);
+                      if ( ! histo ) histo = (TH1*)GetMergeableObject(fPhysSelKeys->At(isel)->GetName(), GetAllSelectedTrigClasses()->At(itrig)->GetName(), GetCentralityClasses()->GetBinLabel(icent), histoName);
+                      AliDebug(2,Form("Adding %s (%g) to %s (%g)", histoAdd->GetName(), histoAdd->Integral(), histo->GetName(), histo->Integral()));
+                      histo->Add(histoAdd);
+                    } // loop on higher pt matching
+                  } // loop on match trigger
+                } // loop on chamber
+              } // loop on count type
+            } // loop on histo type
+          } // loop on eff method
+        } // loop on track selection
       } // loop on centrality
     } // loop on trigger classes
   } // loop on physics selection
@@ -222,7 +227,7 @@ void AliAnalysisTaskTrigChEff::FinishTaskOutput()
   TString physSel = fPhysSelKeys->At(kPhysSelPass)->GetName();
   TString trigClass = "ANY";
   TString centrality = "all";
-  TString histoPattern = Form("%s%s",fTrackSelKeys->At(kMatchApt)->GetName(),fEffMethodKeys->At(kEffFromTrack)->GetName());
+  TString histoPattern = GetHistoName(-1,-1,-1,kSelectTrack,kMatchApt,kEffFromTrack);
   
   FillEffHistoList(physSel, trigClass, centrality, histoPattern, fList);
 
@@ -237,8 +242,8 @@ void AliAnalysisTaskTrigChEff::InitLocalKeys()
   /// Initialyze objects
   //
   
-  TString trackSelNames = "MatchNoTrackSelCut MatchApt MatchLpt MatchHpt"; 
-  fTrackSelKeys = trackSelNames.Tokenize(" ");
+  TString matchTrigNames = "Nopt Apt Lpt Hpt";
+  fMatchTrigKeys = matchTrigNames.Tokenize(" ");
   
   TString countTypeNames = "bendPlaneCount nonBendPlaneCount bothPlanesCount allTracksCount";
   fCountTypeKeys = countTypeNames.Tokenize(" ");
@@ -248,6 +253,9 @@ void AliAnalysisTaskTrigChEff::InitLocalKeys()
   
   TString effMethodKeys = "FromTrk FromTrg";
   fEffMethodKeys = effMethodKeys.Tokenize(" ");
+  
+  TString trackSelNames = "Match NoSelMatch";
+  fTrackSelKeys = trackSelNames.Tokenize(" ");
 }
 
 //___________________________________________________________________________
@@ -276,51 +284,53 @@ void AliAnalysisTaskTrigChEff::MyUserCreateOutputObjects()
   TH1* histo;
   TH2F* histo2D;
   
-  for ( Int_t imethod=0; imethod<kNeffMethods; ++imethod ) {
-    for ( Int_t itrackSel = 0; itrackSel<kNtrackSel; ++itrackSel ) {
-      for ( Int_t icount=0; icount<kNcounts; ++icount ) {
-        histoName = GetHistoName(kHchamberEff, icount, -1, itrackSel, imethod);
-        histo = new TH1F(histoName, histoName,
-                         nChamberBins, chamberLow, chamberHigh);
-        histo->GetXaxis()->SetTitle(chamberName);
-        histo->GetYaxis()->SetTitle(yAxisTitle);
-        AddObjectToCollection(histo);
-      } // loop on counts
-      
-      for ( Int_t icount=0; icount<kNcounts; ++icount ) {
-        for ( Int_t ich=0; ich<4; ++ich ) {
-          histoName = GetHistoName(kHslatEff, icount, ich, itrackSel, imethod);
+  for ( Int_t itrackSel = 0; itrackSel<kNtrackSel; ++itrackSel ) {
+    for ( Int_t imethod=0; imethod<kNeffMethods; ++imethod ) {
+      for ( Int_t imatch = 0; imatch<kNtrigMatch; ++imatch ) {
+        for ( Int_t icount=0; icount<kNcounts; ++icount ) {
+          histoName = GetHistoName(kHchamberEff, icount, -1, itrackSel, imatch, imethod);
           histo = new TH1F(histoName, histoName,
-                           nSlatBins, slatLow, slatHigh);
-          histo->GetXaxis()->SetTitle(slatName);
+                           nChamberBins, chamberLow, chamberHigh);
+          histo->GetXaxis()->SetTitle(chamberName);
           histo->GetYaxis()->SetTitle(yAxisTitle);
           AddObjectToCollection(histo);
-        } // loop on chamber
-      } // loop on counts
+        } // loop on counts
       
-      for ( Int_t icount=0; icount<kNcounts; ++icount ) {
-        for ( Int_t ich=0; ich<4; ++ich ) {
-          histoName = GetHistoName(kHboardEff, icount, ich, itrackSel, imethod);
-          histo = new TH1F(histoName, histoName,
-                           nBoardBins, boardLow, boardHigh);
-          histo->GetXaxis()->SetTitle(boardName);
-          histo->GetYaxis()->SetTitle(yAxisTitle);
-          AddObjectToCollection(histo);
-        } // loop on chamber
-      } // loop on counts
+        for ( Int_t icount=0; icount<kNcounts; ++icount ) {
+          for ( Int_t ich=0; ich<4; ++ich ) {
+            histoName = GetHistoName(kHslatEff, icount, ich, itrackSel, imatch, imethod);
+            histo = new TH1F(histoName, histoName,
+                             nSlatBins, slatLow, slatHigh);
+            histo->GetXaxis()->SetTitle(slatName);
+            histo->GetYaxis()->SetTitle(yAxisTitle);
+            AddObjectToCollection(histo);
+          } // loop on chamber
+        } // loop on counts
       
-      histoName = GetHistoName(kHcheckBoard, -1, -1, itrackSel, imethod);
-      histo2D = new TH2F(histoName.Data(), "Rejected tracks motivation", 
-                         5, 20.5, 25.5, nBoardBins, boardLow, boardHigh);
-      histo2D->GetXaxis()->SetBinLabel(1,"Many pads");
-      histo2D->GetXaxis()->SetBinLabel(2,"Few pads");
-      histo2D->GetXaxis()->SetBinLabel(3,"Outside geom");
-      histo2D->GetXaxis()->SetBinLabel(4,"Tracker track");
-      histo2D->GetXaxis()->SetBinLabel(5,"Masked board");
-      histo2D->GetYaxis()->SetTitle(boardName);
-      AddObjectToCollection(histo2D);
-    } // loop on track selection
-  } // loop on eff method
+        for ( Int_t icount=0; icount<kNcounts; ++icount ) {
+          for ( Int_t ich=0; ich<4; ++ich ) {
+            histoName = GetHistoName(kHboardEff, icount, ich, itrackSel, imatch, imethod);
+            histo = new TH1F(histoName, histoName,
+                             nBoardBins, boardLow, boardHigh);
+            histo->GetXaxis()->SetTitle(boardName);
+            histo->GetYaxis()->SetTitle(yAxisTitle);
+            AddObjectToCollection(histo);
+          } // loop on chamber
+        } // loop on counts
+      
+        histoName = GetHistoName(kHcheckBoard, -1, -1, itrackSel, imatch, imethod);
+        histo2D = new TH2F(histoName.Data(), "Rejected tracks motivation",
+                           5, 20.5, 25.5, nBoardBins, boardLow, boardHigh);
+        histo2D->GetXaxis()->SetBinLabel(1,"Many pads");
+        histo2D->GetXaxis()->SetBinLabel(2,"Few pads");
+        histo2D->GetXaxis()->SetBinLabel(3,"Outside geom");
+        histo2D->GetXaxis()->SetBinLabel(4,"Tracker track");
+        histo2D->GetXaxis()->SetBinLabel(5,"Masked board");
+        histo2D->GetYaxis()->SetTitle(boardName);
+        AddObjectToCollection(histo2D);
+      } // loop on trig match
+    } // loop on eff method
+  } // loop on track selection
 
   fMuonTrackCuts->Print();
   
@@ -331,15 +341,16 @@ void AliAnalysisTaskTrigChEff::MyUserCreateOutputObjects()
 }
 
 //___________________________________________________________________________
-TString AliAnalysisTaskTrigChEff::GetHistoName(Int_t itype, Int_t icount, Int_t ichamber, Int_t itrackSel, Int_t imethod)
+TString AliAnalysisTaskTrigChEff::GetHistoName(Int_t itype, Int_t icount, Int_t ichamber, Int_t itrackSel, Int_t imatch, Int_t imethod)
 {
   /// Get histogram index
   TString histoName = "";
-  if ( itype < kHcheckBoard && icount >= 0 ) histoName += ((TObjString*)fCountTypeKeys->At(icount))->GetString();
-  histoName += ((TObjString*)fHistoTypeKeys->At(itype))->GetString();
+  if ( itype < kHcheckBoard && icount >= 0 ) histoName += static_cast<TObjString*>(fCountTypeKeys->At(icount))->GetString();
+  if ( itype >= 0 ) histoName += ((TObjString*)fHistoTypeKeys->At(itype))->GetString();
   if ( ichamber >= 0 ) histoName += Form("Ch%i", 11+ichamber);
-  if ( itrackSel >= 0 ) histoName += ((TObjString*)fTrackSelKeys->At(itrackSel))->GetString();
-  if ( imethod >= 0 ) histoName += ((TObjString*)fEffMethodKeys->At(imethod))->GetString();
+  if ( itrackSel >= 0 ) histoName += static_cast<TObjString*>(fTrackSelKeys->At(itrackSel))->GetString();
+  if ( imatch >= 0 ) histoName += static_cast<TObjString*>(fMatchTrigKeys->At(imatch))->GetString();
+  if ( imethod >= 0 ) histoName += static_cast<TObjString*>(fEffMethodKeys->At(imethod))->GetString();
   return histoName;
 }
 
@@ -357,32 +368,30 @@ void AliAnalysisTaskTrigChEff::ProcessEvent(TString physSel, const TObjArray& se
   TArrayI othersEfficient(4);
 
   AliVParticle* track = 0x0;
-
-  Int_t itrackSel = -1;
+  
+  UInt_t addMask[4] = {0, AliMuonTrackCuts::kMuMatchApt, AliMuonTrackCuts::kMuMatchApt|AliMuonTrackCuts::kMuMatchLpt, AliMuonTrackCuts::kMuMatchApt|AliMuonTrackCuts::kMuMatchLpt|AliMuonTrackCuts::kMuMatchHpt};
 
   Int_t nTracks = AliAnalysisMuonUtility::GetNTracks(InputEvent());
   for ( Int_t itrack = 0; itrack < nTracks; ++itrack ) {
     track = AliAnalysisMuonUtility::GetTrack(itrack,InputEvent());
 
     Bool_t matchTracker = AliAnalysisMuonUtility::IsMuonTrack(track);
-    if ( ! matchTracker && ! fUseGhosts ) continue;
 
     Int_t matchTrig = AliAnalysisMuonUtility::GetMatchTrigger(track);
-    itrackSel = matchTrig;
     UInt_t selection = fMuonTrackCuts->GetSelectionMask(track);
-    Bool_t isSelected = ( ( selection & fMuonTrackCuts->GetFilterMask() ) == fMuonTrackCuts->GetFilterMask() );
-    if ( matchTrig == 1 && ( ( selection & AliMuonTrackCuts::kMuMatchApt ) == 0 ) ) isSelected = kFALSE;
-    if ( matchTrig == 2 && ( ( selection & AliMuonTrackCuts::kMuMatchLpt ) == 0 ) ) isSelected = kFALSE;
-    if ( matchTrig == 3 && ( ( selection & AliMuonTrackCuts::kMuMatchHpt ) == 0 ) ) isSelected = kFALSE;
-    if ( ! isSelected ) itrackSel = kNoSelCutApt;
+    
+    // Apply the sharp pt cut according to the matched pt level of the track
+    UInt_t filterMask = fMuonTrackCuts->GetFilterMask() | addMask[matchTrig];
+    Bool_t isSelected = ( ( selection & filterMask ) == filterMask );
 
     for ( Int_t imethod=0; imethod<kNeffMethods; ++imethod ) {
       if ( imethod == kEffFromTrack ) {
-        if ( track->P() < 10. ) continue;
+        if ( ! matchTracker || track->P() < 10. ) continue;
         pattern = AliAnalysisMuonUtility::GetMUONTrigHitsMapTrk(track);
         board = AliESDMuonTrack::GetCrossedBoard(pattern);
       }
       else {
+        if ( matchTrig == 0 ) continue;
         pattern = AliAnalysisMuonUtility::GetMUONTrigHitsMapTrg(track);
         board = ( AliAnalysisMuonUtility::IsAODEvent(InputEvent()) ) ? AliESDMuonTrack::GetCrossedBoard(pattern) : ((AliESDMuonTrack*)track)->LoCircuit();
       }
@@ -390,11 +399,14 @@ void AliAnalysisTaskTrigChEff::ProcessEvent(TString physSel, const TObjArray& se
       Int_t effFlag = AliESDMuonTrack::GetEffFlag(pattern);
       
       if ( effFlag < AliESDMuonTrack::kChEff ) {
-        for ( Int_t itrig=0; itrig<selectTrigClasses.GetEntries(); ++itrig ) {
-          TString trigClassName = ((TObjString*)selectTrigClasses.At(itrig))->GetString();
+        for ( Int_t itrackSel=0; itrackSel<kNtrackSel; ++itrackSel ) {
+          if ( itrackSel == kSelectTrack && ! isSelected ) continue;
+          for ( Int_t itrig=0; itrig<selectTrigClasses.GetEntries(); ++itrig ) {
+            TString trigClassName = ((TObjString*)selectTrigClasses.At(itrig))->GetString();
           
-          histoName = GetHistoName(kHcheckBoard, -1, -1, itrackSel, imethod);
-          ((TH2F*)GetMergeableObject(physSel, trigClassName, centrality, histoName))->Fill(AliESDMuonTrack::GetSlatOrInfo(pattern), board);
+            histoName = GetHistoName(kHcheckBoard, -1, -1, itrackSel, matchTrig, imethod);
+            ((TH2F*)GetMergeableObject(physSel, trigClassName, centrality, histoName))->Fill(AliESDMuonTrack::GetSlatOrInfo(pattern), board);
+          }
         }
         continue; // Track not good for efficiency calculation
       }
@@ -440,24 +452,27 @@ void AliAnalysisTaskTrigChEff::ProcessEvent(TString physSel, const TObjArray& se
           kTRUE
         };
         
-        for (Int_t icount=0; icount<kNcounts; ++icount){
-          if ( ! fillHisto[icount] ) continue;
-          for ( Int_t itrig=0; itrig<selectTrigClasses.GetEntries(); ++itrig ) {
-            TString trigClassName = ((TObjString*)selectTrigClasses.At(itrig))->GetString();
+        for ( Int_t itrackSel=0; itrackSel<kNtrackSel; ++itrackSel ) {
+          if ( itrackSel == kSelectTrack && ! isSelected ) continue;
+          for (Int_t icount=0; icount<kNcounts; ++icount){
+            if ( ! fillHisto[icount] ) continue;
+            for ( Int_t itrig=0; itrig<selectTrigClasses.GetEntries(); ++itrig ) {
+              TString trigClassName = ((TObjString*)selectTrigClasses.At(itrig))->GetString();
+              
+              histoName = GetHistoName(kHchamberEff, icount, -1, itrackSel, matchTrig, imethod);
+              ((TH1*)GetMergeableObject(physSel, trigClassName, centrality, histoName))->Fill(iChamber);
             
-            histoName = GetHistoName(kHchamberEff, icount, -1, itrackSel, imethod);
-            ((TH1*)GetMergeableObject(physSel, trigClassName, centrality, histoName))->Fill(iChamber);
+              if ( effFlag < AliESDMuonTrack::kSlatEff ) continue; // Track crossed different slats
+              histoName = GetHistoName(kHslatEff, icount, ich, itrackSel, matchTrig, imethod);
+              ((TH1*)GetMergeableObject(physSel, trigClassName, centrality, histoName))->Fill(slat);
             
-            if ( effFlag < AliESDMuonTrack::kSlatEff ) continue; // Track crossed different slats
-            histoName = GetHistoName(kHslatEff, icount, ich, itrackSel, imethod);
-            ((TH1*)GetMergeableObject(physSel, trigClassName, centrality, histoName))->Fill(slat);
-            
-            if ( effFlag < AliESDMuonTrack::kBoardEff ) continue; // Track crossed different boards
-            histoName = GetHistoName(kHboardEff, icount, ich, itrackSel, imethod);
-            ((TH1*)GetMergeableObject(physSel, trigClassName, centrality, histoName))->Fill(board);
-          } // loop on trigger classes
-        } // loop on chambers
-      } // loop on count types
+              if ( effFlag < AliESDMuonTrack::kBoardEff ) continue; // Track crossed different boards
+              histoName = GetHistoName(kHboardEff, icount, ich, itrackSel, matchTrig, imethod);
+              ((TH1*)GetMergeableObject(physSel, trigClassName, centrality, histoName))->Fill(board);
+            } // loop on trigger classes
+          } // loop on count types
+        } // loop on track selection
+      } // loop on chambers
     } // loop on tracks
   } // loop on eff methods
   
@@ -504,7 +519,7 @@ void AliAnalysisTaskTrigChEff::Terminate(Option_t *)
   }
   delete optArr;
   
-  if ( trackSel.GetEntries() == 0 ) trackSel.Add(new TObjString(fTrackSelKeys->At(kMatchApt)->GetName()));
+  if ( trackSel.GetEntries() == 0 ) trackSel.Add(new TObjString(GetHistoName(-1,-1,-1,kSelectTrack,kMatchApt,-1)));
   if ( methodSel.GetEntries() == 0 ) methodSel.Add(new TObjString(fEffMethodKeys->At(kEffFromTrack)->GetName()));
 
   furtherOpt.ToUpper();
@@ -541,11 +556,14 @@ void AliAnalysisTaskTrigChEff::Terminate(Option_t *)
           for ( Int_t icent=0; icent<centrality->GetEntries(); ++icent ) {
             for ( Int_t imethodSel=0; imethodSel<methodSel.GetEntries(); ++imethodSel ) {
               for ( Int_t itrackSel=0; itrackSel<trackSel.GetEntries(); ++itrackSel ) {
-                histoName = GetHistoName(chosenType, kAllTracks, ich, -1, -1); // partial name
+                histoName = GetHistoName(chosenType, kAllTracks, ich, -1, -1, -1); // partial name
                 histoName += Form("%s%s",trackSel.At(itrackSel)->GetName(),methodSel.At(imethodSel)->GetName());
                 den = (TH1*)GetSum(physSel->At(isel)->GetName(), trigClasses->At(itrig)->GetName(), centrality->At(icent)->GetName(), histoName.Data());
-                if ( ! den ) continue;
-                histoName = GetHistoName(chosenType, icount, ich, -1, -1); // partial name
+                if ( ! den ) {
+                  printf("Warning: cannot find %s\n", histoName.Data());
+                  continue;
+                }
+                histoName = GetHistoName(chosenType, icount, ich, -1, -1, -1); // partial name
                 histoName += Form("%s%s",trackSel.At(itrackSel)->GetName(),methodSel.At(imethodSel)->GetName());
                 num = (TH1*)GetSum(physSel->At(isel)->GetName(), trigClasses->At(itrig)->GetName(), centrality->At(icent)->GetName(), histoName.Data());
                 if ( ! num ) continue;
@@ -645,9 +663,9 @@ void AliAnalysisTaskTrigChEff::Terminate(Option_t *)
           can->Divide(2,2);
         
         for ( Int_t ich=-1; ich<4; ich++ ) {
-          histoName = GetHistoName(baseIndex[itype], icount, ich, -1, -1);
+          histoName = GetHistoName(baseIndex[itype], icount, ich, -1, -1, -1);
           num = (TH1*)fList->FindObject(histoName.Data());
-          histoName = GetHistoName(baseIndex[itype], kNcounts-1, ich, -1, -1);
+          histoName = GetHistoName(baseIndex[itype], kNcounts-1, ich, -1, -1, -1);
           den = (TH1*)fList->FindObject(histoName.Data());
           if ( ! num || ! den ) continue;
           effGraph = new TGraphAsymmErrors(num, den, "e0");
@@ -668,9 +686,14 @@ void AliAnalysisTaskTrigChEff::Terminate(Option_t *)
     AliInfo(Form("Creating file %s", outFileOptList->At(0)->GetName()));
     TList* effList = GetEffHistoList(outFileOptList->At(1)->GetName(), outFileOptList->At(2)->GetName(), outFileOptList->At(3)->GetName(), outFileOptList->At(4)->GetName());
     effList->SetName(GetOutputSlot(2)->GetContainer()->GetName());
-    TFile* outFile = TFile::Open(outFileOptList->At(0)->GetName(), "RECREATE");
-    effList->Write(effList->GetName(),TObject::kSingleKey);
-    outFile->Close();
+    if ( effList ->GetEntries() == 0 ) {
+      printf("\nWarning: no histograms satisfying the requested conditions.\n(%s %s %s %s).\nOutput %s not created.\n", outFileOptList->At(1)->GetName(), outFileOptList->At(2)->GetName(), outFileOptList->At(3)->GetName(), outFileOptList->At(4)->GetName(),outFileOptList->At(0)->GetName());
+    }
+    else {
+      TFile* outFile = TFile::Open(outFileOptList->At(0)->GetName(), "RECREATE");
+      effList->Write(effList->GetName(),TObject::kSingleKey);
+      outFile->Close();
+    }
     delete effList;
     delete outFileOptList;
   }

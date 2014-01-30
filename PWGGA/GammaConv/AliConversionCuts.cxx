@@ -85,7 +85,8 @@ const char* AliConversionCuts::fgkCutNames[AliConversionCuts::kNCuts] = {
    "SharedElectronCuts", //23
    "RejectToCloseV0s", //24
    "DcaRPrimVtx", //25
-   "DcaZPrimVtx" //26
+   "DcaZPrimVtx", //26
+   "EvetPlane" //27
 };
 
 
@@ -134,10 +135,8 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) :
    fPIDMinPProtonRejectionLowP(2),
    fPIDMinPPionRejectionLowP(0),
    fDoQtGammaSelection(kTRUE),
-   fDoHighPtQtGammaSelection(kFALSE),
+   fDo2DQt(kFALSE),
    fQtMax(100),
-   fHighPtQtMax(0.),
-   fPtBorderForQt(0),
    fXVertexCut(0.),
    fYVertexCut(0.),
    fZVertexCut(0.),
@@ -160,6 +159,7 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) :
    fRemovePileUp(kFALSE),
    fOpeningAngle(0.005),
    fPsiPairCut(10000),
+   fDo2DPsiPairChi2(kFALSE),
    fCosPAngleCut(10000),
    fDoToCloseV0sCut(kFALSE),
    fRejectExtraSignals(0),
@@ -173,6 +173,7 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) :
    fElectronLabelArray(NULL),
    fDCAZPrimVtxCut(1000),
    fDCARPrimVtxCut(1000),
+   fInPlaneOutOfPlane(0),
    fConversionPointXArray(0.0),
    fConversionPointYArray(0.0),
    fConversionPointZArray(0.0),
@@ -194,6 +195,8 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) :
    fNameFitDataPi0(""),
    fNameFitDataEta(""),
    fNameFitDataK0s(""),
+   hEtaDistV0s(NULL),
+   hEtaDistV0sAfterdEdxCuts(NULL),
    hdEdxCuts(NULL),
    hTPCdEdxbefore(NULL),
    hTPCdEdxafter(NULL),
@@ -202,6 +205,7 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) :
    hTOFbefore(NULL),
    hTOFSigbefore(NULL),
    hTOFSigafter(NULL),
+   hPsiPairDeltaPhiafter(NULL),
    hTrackCuts(NULL),
    hPhotonCuts(NULL),
    hInvMassbefore(NULL),
@@ -214,6 +218,7 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) :
    hCentrality(NULL),
    hCentralityVsNumberOfPrimaryTracks(NULL),
    hVertexZ(NULL),
+   hEventPlanePhi(NULL),
    hTriggerClass(NULL),
    hTriggerClassSelected(NULL),
    hReweightMCHistPi0(NULL),
@@ -284,10 +289,8 @@ AliConversionCuts::AliConversionCuts(const AliConversionCuts &ref) :
    fPIDMinPProtonRejectionLowP(ref.fPIDMinPProtonRejectionLowP),
    fPIDMinPPionRejectionLowP(ref.fPIDMinPPionRejectionLowP),
    fDoQtGammaSelection(ref.fDoQtGammaSelection),
-   fDoHighPtQtGammaSelection(ref.fDoHighPtQtGammaSelection),
+   fDo2DQt(ref.fDo2DQt),
    fQtMax(ref.fQtMax),
-   fHighPtQtMax(ref.fHighPtQtMax),
-   fPtBorderForQt(ref.fPtBorderForQt),
    fXVertexCut(ref.fXVertexCut),
    fYVertexCut(ref.fYVertexCut),
    fZVertexCut(ref.fZVertexCut),
@@ -310,6 +313,7 @@ AliConversionCuts::AliConversionCuts(const AliConversionCuts &ref) :
    fRemovePileUp(ref.fRemovePileUp),
    fOpeningAngle(ref.fOpeningAngle),
    fPsiPairCut(ref.fPsiPairCut),
+   fDo2DPsiPairChi2(ref.fDo2DPsiPairChi2),
    fCosPAngleCut(ref.fCosPAngleCut),
    fDoToCloseV0sCut(ref.fDoToCloseV0sCut),
    fRejectExtraSignals(ref.fRejectExtraSignals),
@@ -323,6 +327,7 @@ AliConversionCuts::AliConversionCuts(const AliConversionCuts &ref) :
    fElectronLabelArray(NULL),
    fDCAZPrimVtxCut(ref.fDCAZPrimVtxCut),
    fDCARPrimVtxCut(ref.fDCAZPrimVtxCut),
+   fInPlaneOutOfPlane(ref.fInPlaneOutOfPlane),
    fConversionPointXArray(ref.fConversionPointXArray),
    fConversionPointYArray(ref.fConversionPointYArray),
    fConversionPointZArray(ref.fConversionPointZArray),
@@ -344,6 +349,8 @@ AliConversionCuts::AliConversionCuts(const AliConversionCuts &ref) :
    fNameFitDataPi0(ref.fNameFitDataPi0),
    fNameFitDataEta(ref.fNameFitDataEta),
    fNameFitDataK0s(ref.fNameFitDataK0s),
+   hEtaDistV0s(NULL),
+   hEtaDistV0sAfterdEdxCuts(NULL),
    hdEdxCuts(NULL),
    hTPCdEdxbefore(NULL),
    hTPCdEdxafter(NULL),
@@ -352,6 +359,7 @@ AliConversionCuts::AliConversionCuts(const AliConversionCuts &ref) :
    hTOFbefore(NULL),
    hTOFSigbefore(NULL),
    hTOFSigafter(NULL),
+   hPsiPairDeltaPhiafter(NULL),
    hTrackCuts(NULL),
    hPhotonCuts(NULL),
    hInvMassbefore(NULL),
@@ -364,6 +372,7 @@ AliConversionCuts::AliConversionCuts(const AliConversionCuts &ref) :
    hCentrality(NULL),
    hCentralityVsNumberOfPrimaryTracks(NULL),
    hVertexZ(NULL),
+   hEventPlanePhi(NULL),
    hTriggerClass(NULL),
    hTriggerClassSelected(NULL),
    hReweightMCHistPi0(ref.hReweightMCHistPi0),
@@ -462,7 +471,7 @@ void AliConversionCuts::InitCutHistograms(TString name, Bool_t preCut){
 //       fHistograms->Add(fFitDataK0s);
 //    }
    // IsPhotonSelected
-   hCutIndex=new TH1F(Form("IsPhotonSelected %s",GetCutNumber().Data()),"IsPhotonSelected",10,-0.5,9.5);
+   hCutIndex=new TH1F(Form("IsPhotonSelected %s",GetCutNumber().Data()),"IsPhotonSelected",11,-0.5,10.5);
    hCutIndex->GetXaxis()->SetBinLabel(kPhotonIn+1,"in");
    hCutIndex->GetXaxis()->SetBinLabel(kOnFly+1,"onfly");
    hCutIndex->GetXaxis()->SetBinLabel(kNoTracks+1,"no tracks");
@@ -470,6 +479,7 @@ void AliConversionCuts::InitCutHistograms(TString name, Bool_t preCut){
    hCutIndex->GetXaxis()->SetBinLabel(kTrackCuts+1,"Track cuts");
    hCutIndex->GetXaxis()->SetBinLabel(kConvPointFail+1,"ConvPoint fail");
    hCutIndex->GetXaxis()->SetBinLabel(kPhotonCuts+1,"PhotonCuts");
+   hCutIndex->GetXaxis()->SetBinLabel(kEventPlane+1,"EventPlane");
    hCutIndex->GetXaxis()->SetBinLabel(kPhotonOut+1,"out");
    fHistograms->Add(hCutIndex);
 
@@ -506,6 +516,9 @@ void AliConversionCuts::InitCutHistograms(TString name, Bool_t preCut){
       fHistograms->Add(hInvMassbefore);
       hArmenterosbefore=new TH2F(Form("Armenteros_before %s",GetCutNumber().Data()),"Armenteros_before",200,-1,1,1000,0,1.);
       fHistograms->Add(hArmenterosbefore);
+      hEtaDistV0s = new TH1F(Form("Eta_before %s",GetCutNumber().Data()),"Eta_before",2000,-2,2);
+      fHistograms->Add(hEtaDistV0s);
+
    }
    hInvMassafter=new TH1F(Form("InvMass_after %s",GetCutNumber().Data()),"InvMass_after",1000,0,0.3);
    fHistograms->Add(hInvMassafter);
@@ -566,6 +579,12 @@ void AliConversionCuts::InitCutHistograms(TString name, Bool_t preCut){
    hTOFSigafter=new TH2F(Form("Gamma_TOFSig_after %s",GetCutNumber().Data()),"TOF Sigma Gamma after" ,150,0.03,20,400,-6,10);
    fHistograms->Add(hTOFSigafter);
 
+   hEtaDistV0sAfterdEdxCuts = new TH1F(Form("Eta_afterdEdx %s",GetCutNumber().Data()),"Eta_afterdEdx",2000,-2,2);
+   fHistograms->Add(hEtaDistV0sAfterdEdxCuts);
+
+   hPsiPairDeltaPhiafter=new TH2F(Form("Gamma_PsiPairDeltaPhi_after %s",GetCutNumber().Data()),"Psi Pair vs Delta Phi Gamma after" ,200,-2,2,200,-2,2);
+   fHistograms->Add(hPsiPairDeltaPhiafter);
+
    TAxis *AxisAfter = hTPCdEdxSigafter->GetXaxis();
    Int_t bins = AxisAfter->GetNbins();
    Double_t from = AxisAfter->GetXmin();
@@ -587,6 +606,11 @@ void AliConversionCuts::InitCutHistograms(TString name, Bool_t preCut){
    }
    delete [] newBins;
 
+   hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",100,0,100);
+   fHistograms->Add(hCentrality);
+   hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",100,0,100,4000,0,4000);
+   fHistograms->Add(hCentralityVsNumberOfPrimaryTracks);
+
    // Event Cuts and Info
    if(preCut){
       hV0EventCuts=new TH1F(Form("ESD_EventCuts %s",GetCutNumber().Data()),"Event Cuts",7,-0.5,6.5);
@@ -599,10 +623,6 @@ void AliConversionCuts::InitCutHistograms(TString name, Bool_t preCut){
       hV0EventCuts->GetXaxis()->SetBinLabel(7,"out");
       fHistograms->Add(hV0EventCuts);
 
-      hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",1000,0,100);
-      fHistograms->Add(hCentrality);
-      hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",100,0,100,4000,0,4000);
-      fHistograms->Add(hCentralityVsNumberOfPrimaryTracks);
       hVertexZ=new TH1F(Form("VertexZ %s",GetCutNumber().Data()),"VertexZ",1000,-50,50);
       fHistograms->Add(hVertexZ);
 
@@ -681,6 +701,11 @@ void AliConversionCuts::InitCutHistograms(TString name, Bool_t preCut){
       hTriggerClassSelected->GetXaxis()->SetBinLabel(33,"V0AND");
       hTriggerClassSelected->GetXaxis()->SetBinLabel(34,"NOT kFastOnly");
       fHistograms->Add(hTriggerClassSelected);
+      
+      hEventPlanePhi=new TH1F(Form("EventPlaneMinusPhotonAngle %s",GetCutNumber().Data()),"EventPlaneMinusPhotonAngle",360,-TMath::Pi(),TMath::Pi());
+      fHistograms->Add(hEventPlanePhi);
+
+      
    }
    TH1::AddDirectory(kTRUE);
 }
@@ -984,7 +1009,6 @@ Bool_t AliConversionCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVEvent *
 
    // Fill Histos before Cuts
    if(hInvMassbefore)hInvMassbefore->Fill(photon->GetMass());
-
    if(hArmenterosbefore)hArmenterosbefore->Fill(photon->GetArmenterosAlpha(),photon->GetArmenterosQt());
 
    // Gamma selection based on QT from Armenteros
@@ -1033,6 +1057,16 @@ Bool_t AliConversionCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVEvent *
       return kFALSE;
    }
 
+   Double_t magField = event->GetMagneticField();
+   if( magField  < 0.0 ){
+      magField =  1.0;
+   } else {
+      magField =  -1.0;
+   }
+   
+   AliVTrack * electronCandidate = GetTrack(event,photon->GetTrackLabelNegative() );
+   AliVTrack * positronCandidate = GetTrack(event,photon->GetTrackLabelPositive() );
+   Double_t deltaPhi = magField * TVector2::Phi_mpi_pi( electronCandidate->Phi()-positronCandidate->Phi());
 
    cutIndex++; //7
    if(!PsiPairCut(photon)) {
@@ -1071,7 +1105,7 @@ Bool_t AliConversionCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVEvent *
    // Histos after Cuts
    if(hInvMassafter)hInvMassafter->Fill(photon->GetMass());
    if(hArmenterosafter)hArmenterosafter->Fill(photon->GetArmenterosAlpha(),photon->GetArmenterosQt());
-
+   if(hPsiPairDeltaPhiafter)hPsiPairDeltaPhiafter->Fill(deltaPhi,photon->GetPsiPair());
    return kTRUE;
 
 }
@@ -1145,13 +1179,13 @@ Bool_t AliConversionCuts::PhotonIsSelected(AliConversionPhotonBase *photon, AliV
       FillPhotonCutIndex(kTrackCuts);
       return kFALSE;
    }
-
+   if (hEtaDistV0s)hEtaDistV0s->Fill(photon->GetPhotonEta());
    // dEdx Cuts
    if(!dEdxCuts(negTrack) || !dEdxCuts(posTrack)) {
       FillPhotonCutIndex(kdEdxCuts);
       return kFALSE;
    }
-
+   if (hEtaDistV0sAfterdEdxCuts)hEtaDistV0sAfterdEdxCuts->Fill(photon->GetPhotonEta());
    // Photon Cuts
    if(!PhotonCuts(photon,event)){
       FillPhotonCutIndex(kPhotonCuts);
@@ -1167,18 +1201,11 @@ Bool_t AliConversionCuts::PhotonIsSelected(AliConversionPhotonBase *photon, AliV
 Bool_t AliConversionCuts::ArmenterosQtCut(AliConversionPhotonBase *photon)
 {   // Armenteros Qt Cut
 
-   if(fDoHighPtQtGammaSelection){
-      if(photon->GetPhotonPt() < fPtBorderForQt){
-         if(photon->GetArmenterosQt()>fQtMax){
-            return kFALSE;
-         }
-      } else {
-         if(photon->GetArmenterosQt()>fHighPtQtMax){
-            return kFALSE;
-         }
+   if(fDo2DQt){
+      if ( !(TMath::Power(photon->GetArmenterosAlpha()/0.95,2)+TMath::Power(photon->GetArmenterosQt()/fQtMax,2) < 1) ){
+         return kFALSE;
       }
    } else {
-
       if(photon->GetArmenterosQt()>fQtMax){
          return kFALSE;
       }
@@ -1358,7 +1385,6 @@ Bool_t AliConversionCuts::TracksAreSelected(AliVTrack * negTrack, AliVTrack * po
 ///________________________________________________________________________
 Bool_t AliConversionCuts::dEdxCuts(AliVTrack *fCurrentTrack){
    // Electron Identification Cuts for Photon reconstruction
-
    if(!fPIDResponse){InitPIDResponse();}// Try to reinitialize PID Response
    if(!fPIDResponse){AliError("No PID Response"); return kTRUE;}// if still missing fatal error
 
@@ -1367,7 +1393,6 @@ Bool_t AliConversionCuts::dEdxCuts(AliVTrack *fCurrentTrack){
    if(hTPCdEdxSigbefore)hTPCdEdxSigbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kElectron));
    if(hTPCdEdxbefore)hTPCdEdxbefore->Fill(fCurrentTrack->P(),fCurrentTrack->GetTPCsignal());
    cutIndex++;
-
 
    if(fDodEdxSigmaCut == kTRUE){
       // TPC Electron Line
@@ -1415,7 +1440,6 @@ Bool_t AliConversionCuts::dEdxCuts(AliVTrack *fCurrentTrack){
       }
    }
    cutIndex++;
-
    if(fDoProtonRejectionLowP == kTRUE){
       if( fCurrentTrack->P()<fPIDMinPProtonRejectionLowP ){
          if( abs(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kProton))<fPIDnSigmaAtLowPAroundProtonLine){
@@ -1455,7 +1479,7 @@ Bool_t AliConversionCuts::dEdxCuts(AliVTrack *fCurrentTrack){
    if((fCurrentTrack->GetStatus() & AliESDtrack::kTOFpid) && !(fCurrentTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
       if(hTOFbefore){
          Double_t t0 = fPIDResponse->GetTOFResponse().GetStartTime(fCurrentTrack->P());
-         Double_t times[5];
+         Double_t  times[AliPID::kSPECIESC];
          fCurrentTrack->GetIntegratedTimes(times);
          Double_t TOFsignal = fCurrentTrack->GetTOFsignal();
          Double_t dT = TOFsignal - t0 - times[0];
@@ -1472,7 +1496,6 @@ Bool_t AliConversionCuts::dEdxCuts(AliVTrack *fCurrentTrack){
       if(hTOFSigafter)hTOFSigafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron));
    }
    cutIndex++;
-
    // Apply TRD PID
    if(fDoTRDPID){
       if(!fPIDResponse->IdentifiedAsElectronTRD(fCurrentTrack,fPIDTRDEfficiency)){
@@ -1485,6 +1508,7 @@ Bool_t AliConversionCuts::dEdxCuts(AliVTrack *fCurrentTrack){
    if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
    if(hTPCdEdxSigafter)hTPCdEdxSigafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kElectron));
    if(hTPCdEdxafter)hTPCdEdxafter->Fill(fCurrentTrack->P(),fCurrentTrack->GetTPCsignal());
+   
    return kTRUE;
 }
 
@@ -1767,7 +1791,7 @@ Bool_t AliConversionCuts::InitializeCutsFromCutString(const TString analysisCutS
       if(!SetCut(cutIds(ii),fCuts[ii]))return kFALSE;
    }
 
-   //PrintCuts();
+   PrintCutsWithValues();
 
    return kTRUE;
 }
@@ -1967,6 +1991,15 @@ Bool_t AliConversionCuts::SetCut(cutIds cutID, const Int_t value) {
          return kTRUE;
       } else return kFALSE;
 
+   case kInPlaneOutOfPlane:
+   if( SetInPlaneOutOfPlane(value)) {
+      fCuts[kInPlaneOutOfPlane] = value;
+      UpdateCutString();
+      return kTRUE;
+   } else return kFALSE;
+
+
+      
 
    case kNCuts:
       AliError("Cut id out of range");
@@ -1985,6 +2018,69 @@ void AliConversionCuts::PrintCuts() {
       printf("%-30s : %d \n", fgkCutNames[ic], fCuts[ic]);
    }
 }
+
+void AliConversionCuts::PrintCutsWithValues() {
+   // Print out current Cut Selection with value
+   if (fIsHeavyIon == 0) {
+      printf("Running in pp mode \n");
+      if (fSpecialTrigger == 0){
+        printf("\t only events triggered by V0OR will be analysed \n");
+      } else if (fSpecialTrigger == 1){
+        printf("\t only events triggered by V0AND will be analysed \n");
+      } else if (fSpecialTrigger == 2){
+         printf("\t only events where SDD was present will be analysed \n");
+      } else if (fSpecialTrigger == 3){
+         printf("\t only events where SDD was present will be analysed and triggered by VOAND\n");
+      } else if (fSpecialTrigger > 3){   
+         printf("\t only events triggered by %s \n", fSpecialTriggerName.Data());
+      }
+   } else if (fIsHeavyIon == 1){ 
+      printf("Running in PbPb mode \n");
+      if (fDetectorCentrality == 0){
+         printf("\t centrality selection based on V0M \n");
+      } else if (fDetectorCentrality == 1){
+         printf("\t centrality selection based on Cl1 \n");
+      }   
+      if (fModCentralityClass == 0){
+        printf("\t %d - %d \n", fCentralityMin*10, fCentralityMax*10);
+      } else if ( fModCentralityClass == 1){ 
+        printf("\t %d - %d \n", fCentralityMin*5, fCentralityMax*5);
+      } else if ( fModCentralityClass == 2){ 
+        printf("\t %d - %d \n", fCentralityMin*5+45, fCentralityMax*5+45);
+      } else if (fModCentralityClass == 3){
+        printf("\t %d - %d, with Track mult in MC as data \n", fCentralityMin*10, fCentralityMax*10);
+      } else if ( fModCentralityClass == 4){ 
+        printf("\t %d - %d, with Track mult in MC as data \n", fCentralityMin*5, fCentralityMax*5);
+      } else if ( fModCentralityClass == 5){ 
+        printf("\t %d - %d, with Track mult in MC as data \n", fCentralityMin*5+45, fCentralityMax*5+45);
+      }
+      if (fSpecialTrigger == 0){
+        printf("\t only events triggered by kMB, kCentral, kSemiCentral will be analysed \n");
+      } else if (fSpecialTrigger > 4){   
+         printf("\t only events triggered by %s \n", fSpecialTriggerName.Data());
+      }
+   } else if (fIsHeavyIon == 2){
+      printf("Running in pPb mode \n");
+      if (fDetectorCentrality == 0){
+         printf("\t centrality selection based on V0A \n");
+      } else if (fDetectorCentrality == 1){
+         printf("\t centrality selection based on Cl1 \n");
+      }   
+      if (fModCentralityClass == 0){
+        printf("\t %d - %d \n", fCentralityMin*10, fCentralityMax*10);
+      }
+      if (fSpecialTrigger == 0){
+        printf("\t only events triggered by kINT7 will be analysed \n");
+      } else if (fSpecialTrigger > 4){   
+         printf("\t only events triggered by %s \n", fSpecialTriggerName.Data());
+      }
+   }   
+   
+   
+   
+   
+}
+
 ///________________________________________________________________________
 Bool_t AliConversionCuts::SetIsHeavyIon(Int_t isHeavyIon)
 {   // Set Cut
@@ -2197,7 +2293,7 @@ Bool_t AliConversionCuts::SetEtaCut(Int_t etaCut)
       fEtaCutMin     = -0.1;
       fLineCutZRSlopeMin = 0.;
       break;
-   case 1:  // 1.2  // changed from 1.2 to 0.6 on 2013.06.10
+   case 1:  // 0.6  // changed from 1.2 to 0.6 on 2013.06.10
       fEtaCut     = 0.6;
       fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
       fEtaCutMin     = -0.1;
@@ -2209,8 +2305,8 @@ Bool_t AliConversionCuts::SetEtaCut(Int_t etaCut)
       fEtaCutMin     = -0.1;
       fLineCutZRSlopeMin = 0.;
       break;
-   case 3: // 0.8
-      fEtaCut     = 0.8;
+   case 3: // 0.65
+      fEtaCut     = 0.65;
       fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
       fEtaCutMin     = -0.1;
       fLineCutZRSlopeMin = 0.;
@@ -2234,11 +2330,19 @@ Bool_t AliConversionCuts::SetEtaCut(Int_t etaCut)
       fLineCutZRSlopeMin = 0.;
       break;
    case 7:
-      fEtaCut     = 0.3;
-      fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
-      fEtaCutMin     = -0.1;
-      fLineCutZRSlopeMin = 0.;
-      break;
+      if (fIsHeavyIon==1){
+         fEtaCut     = 0.7;
+         fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
+         fEtaCutMin     = -0.1;
+         fLineCutZRSlopeMin = 0.;
+         break;
+      } else {   
+         fEtaCut     = 0.3;
+         fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
+         fEtaCutMin     = -0.1;
+         fLineCutZRSlopeMin = 0.;
+         break;
+      }
    // case 8: // 0.1 - 0.8
    //    fEtaCut     = 0.9;
    //    fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
@@ -2302,11 +2406,11 @@ Bool_t AliConversionCuts::SetRCut(Int_t RCut){
       break;
    case 8:
       fMaxR = 180.;
-      fMinR = 35.;
+      fMinR = 12.5;
       break;
    case 9:
-      fMaxR = 35.;
-      fMinR = 5.;
+      fMaxR = 180.;
+      fMinR = 7.5;
       break;
 
    default:
@@ -2683,52 +2787,44 @@ Bool_t AliConversionCuts::SetQtMaxCut(Int_t QtMaxCut)
    case 0: //
       fQtMax=1.;
       fDoQtGammaSelection=kFALSE;
-      fDoHighPtQtGammaSelection=kFALSE;
-      fHighPtQtMax=100.;
-      fPtBorderForQt=100.;
+      fDo2DQt=kFALSE;
       break;
    case 1:
       fQtMax=0.1;
-      fDoHighPtQtGammaSelection=kFALSE;
-      fHighPtQtMax=100.;
-      fPtBorderForQt=100.;
+      fDo2DQt=kFALSE;
       break;
    case 2:
       fQtMax=0.07;
-      fDoHighPtQtGammaSelection=kFALSE;
-      fHighPtQtMax=100.;
-      fPtBorderForQt=100.;
+      fDo2DQt=kFALSE;
       break;
    case 3:
       fQtMax=0.05;
-      fDoHighPtQtGammaSelection=kFALSE;
-      fHighPtQtMax=100.;
-      fPtBorderForQt=100.;
+      fDo2DQt=kFALSE;
       break;
    case 4:
       fQtMax=0.03;
-      fDoHighPtQtGammaSelection=kFALSE;
-      fHighPtQtMax=100.;
-      fPtBorderForQt=100.;
+      fDo2DQt=kFALSE;
       break;
    case 5:
       fQtMax=0.02;
-      fDoHighPtQtGammaSelection=kFALSE;
-      fHighPtQtMax=100.;
-      fPtBorderForQt=100.;
+      fDo2DQt=kFALSE;
       break;
    case 6:
       fQtMax=0.02;
-      fDoHighPtQtGammaSelection=kTRUE;
-      fHighPtQtMax=0.06;
-      fPtBorderForQt=2.5;
+      fDo2DQt=kTRUE;
       break;
    case 7:
       fQtMax=0.15;
-      fDoHighPtQtGammaSelection=kFALSE;
-      fHighPtQtMax=100.;
-      fPtBorderForQt=100.;
+      fDo2DQt=kFALSE;
       break;
+   case 8:
+      fQtMax=0.05;
+      fDo2DQt=kTRUE;
+      break;   
+   case 9:
+      fQtMax=0.03;
+      fDo2DQt=kTRUE;
+      break;      
    default:
       AliError(Form("Warning: QtMaxCut not defined %d",QtMaxCut));
       return kFALSE;
@@ -2793,19 +2889,23 @@ Bool_t AliConversionCuts::SetPsiPairCut(Int_t psiCut) {
       fPsiPairCut = 0.035; //
       break;
    case 4:
-      fPsiPairCut = 0.15; //
-      break;
-   case 5:
       fPsiPairCut = 0.2; //
+      break;   
+   case 5:
+      fPsiPairCut = 0.1; //
+      fDo2DPsiPairChi2 = kTRUE;
       break;
    case 6:
-      fPsiPairCut = 0.03; //
+      fPsiPairCut = 0.05; //
+      fDo2DPsiPairChi2 = kTRUE;
       break;
    case 7:
-      fPsiPairCut = 0.025; //
+      fPsiPairCut = 0.035; //
+      fDo2DPsiPairChi2 = kTRUE;
       break;
    case 8:
-      fPsiPairCut = 0.01; //
+      fPsiPairCut = 0.2; //
+      fDo2DPsiPairChi2 = kTRUE; //
       break;
    case 9:
       fPsiPairCut = 0.5; //
@@ -2836,6 +2936,11 @@ Bool_t AliConversionCuts::SetPhotonAsymmetryCut(Int_t doPhotonAsymmetryCut){
       fMinPPhotonAsymmetryCut=3.5;
       fMinPhotonAsymmetry=0.06;
       break;
+   case 3:
+      fDoPhotonAsymmetryCut=1;
+      fMinPPhotonAsymmetryCut=0.0;
+      fMinPhotonAsymmetry=0.05;
+      break; 
    default:
       AliError(Form("PhotonAsymmetryCut not defined %d",doPhotonAsymmetryCut));
       return kFALSE;
@@ -2848,28 +2953,28 @@ Bool_t AliConversionCuts::SetCosPAngleCut(Int_t cosCut) {
 
    switch(cosCut){
    case 0:
-      fCosPAngleCut = TMath::Pi(); // -1
+      fCosPAngleCut = -1; 
       break;
    case 1:
-      fCosPAngleCut = 0.1; // 0.99500
+      fCosPAngleCut = 0; 
       break;
    case 2:
-      fCosPAngleCut = 0.05; // 0.99875
+      fCosPAngleCut = 0.5; 
       break;
    case 3:
-      fCosPAngleCut = 0.025; // 0.99969
+      fCosPAngleCut = 0.75; 
       break;
    case 4:
-      fCosPAngleCut = 0.01; // 0.99995
+      fCosPAngleCut = 0.85; 
       break;
    case 5:
-      fCosPAngleCut = 0.2; // 0.98007
+      fCosPAngleCut = 0.88; 
       break;
    case 6:
-      fCosPAngleCut = 0.5; // 0.87758
+      fCosPAngleCut = 0.9;
       break;
    case 7:
-      fCosPAngleCut = 0.075; // 0.73169
+      fCosPAngleCut = 0.95;
       break;
    default:
       AliError(Form("Cosine Pointing Angle cut not defined %d",cosCut));
@@ -3030,6 +3135,26 @@ Bool_t AliConversionCuts::SetDCARPhotonPrimVtxCut(Int_t DCARPhotonPrimVtx){
    return kTRUE;
 }
 
+///________________________________________________________________________
+Bool_t AliConversionCuts::SetInPlaneOutOfPlane(Int_t inOutPlane){
+   // Set Cut
+   switch(inOutPlane){
+   case 0:  //
+      fInPlaneOutOfPlane = 0; // No Event Plane
+      break;
+   case 1:  //
+      fInPlaneOutOfPlane = 1; // In-Plane
+      break;
+   case 2:  //
+      fInPlaneOutOfPlane = 2; // Out-Of-Plane
+      break;
+   default:
+      cout<<"Warning: In-Plane or Out-Of-Plane not defined "<<inOutPlane<<endl;
+      return kFALSE;
+   }
+   return kTRUE;
+}
+
 
 //-------------------------------------------------------------
 Double_t AliConversionCuts::GetCentrality(AliVEvent *event)
@@ -3180,13 +3305,27 @@ Bool_t AliConversionCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCE
 Bool_t AliConversionCuts::VertexZCut(AliVEvent *event){
    // Cut on z position of primary vertex
    Double_t fVertexZ=event->GetPrimaryVertex()->GetZ();
-
+   Double_t fVertexZSPD = 0;
+   AliESDEvent *fESDEvent=dynamic_cast<AliESDEvent*>(event);
+   if(fESDEvent){
+      fVertexZSPD = fESDEvent->GetPrimaryVertexSPD()->GetZ();
+   } 
+   AliAODEvent *fAODEvent=dynamic_cast<AliAODEvent*>(event);
+   if(fAODEvent){
+      fVertexZSPD = fAODEvent->GetPrimaryVertexSPD()->GetZ();
+   }
+  
    if(abs(fVertexZ)>fMaxVertexZ)return kFALSE;
 
+   TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
+                                                ->GetTask("V0ReaderV1"))->GetPeriodName();
+   if (periodName.CompareTo("LHC11h")==0){
+     if (abs(fVertexZ-fVertexZSPD) > 0.1) return kFALSE;
+   }						
    if (fIsHeavyIon == 2){
      if(fUtils->IsFirstEventInChunk(event)) return kFALSE;
      if(!fUtils->IsVertexSelected2013pA(event)) return kFALSE;
-
+     if(fUtils->IsPileUpEvent(event)) return kFALSE;
    }
 
    return kTRUE;
@@ -3393,7 +3532,7 @@ Int_t AliConversionCuts::GetFirstTPCRow(Double_t radius){
 
 Bool_t AliConversionCuts::CosinePAngleCut(const AliConversionPhotonBase * photon, AliVEvent * event) const {
    ///Check if passes cosine of pointing angle cut
-   if(GetCosineOfPointingAngle(photon, event) < (TMath::Cos(fCosPAngleCut))){
+   if(GetCosineOfPointingAngle(photon, event) < fCosPAngleCut){
       return kFALSE;
    }
    return kTRUE;
@@ -3435,10 +3574,17 @@ Double_t AliConversionCuts::GetCosineOfPointingAngle( const AliConversionPhotonB
 ///________________________________________________________________________
 Bool_t AliConversionCuts::PsiPairCut(const AliConversionPhotonBase * photon) const {
 
-   if(photon->GetPsiPair() > fPsiPairCut){
-      return kFALSE;}
-   else{return kTRUE;}
-
+   if (fDo2DPsiPairChi2){
+      if (abs(photon->GetPsiPair()) < -fPsiPairCut/fChi2CutConversion*photon->GetChi2perNDF() + fPsiPairCut ){  
+         return kTRUE;
+      } else {
+         return kFALSE;
+      }    
+   } else {
+      if(abs(photon->GetPsiPair()) > fPsiPairCut){
+         return kFALSE;}
+      else{return kTRUE;}
+   } 
 }
 
 ///________________________________________________________________________
@@ -3526,13 +3672,18 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
    AliGenCocktailEventHeader *cHeader = 0x0;
    AliAODMCHeader *cHeaderAOD = 0x0;
    Bool_t headerFound = kFALSE;
-
+   AliStack *fMCStack = 0x0;
+   TClonesArray *fMCStackAOD = 0x0;
    if(MCEvent->IsA()==AliMCEvent::Class()){
       cHeader = dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
       if(cHeader) headerFound = kTRUE;
+      fMCStack = dynamic_cast<AliStack*>(dynamic_cast<AliMCEvent*>(MCEvent)->Stack());
    }
    if(MCEvent->IsA()==AliAODEvent::Class()){ // MCEvent is a AODEvent in case of AOD
       cHeaderAOD = dynamic_cast<AliAODMCHeader*>(MCEvent->FindListObject(AliAODMCHeader::StdBranchName()));
+      fMCStackAOD = dynamic_cast<TClonesArray*>(MCEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+      
+      
       if(cHeaderAOD) headerFound = kTRUE;
    }
 
@@ -3548,18 +3699,38 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
       }
       AliGenEventHeader* gh = 0;
       fnHeaders = 0;
+      Int_t firstindexA = 0;
+      Int_t lastindexA =  -1;
       if(rejection == 1 || rejection == 3) fnHeaders = 1; // MinBiasHeader
       if(rejection == 2){ // TList of Headers Names
          for(Int_t i = 0; i<genHeaders->GetEntries();i++){
             gh = (AliGenEventHeader*)genHeaders->At(i);
             TString GeneratorName = gh->GetName();
+            lastindexA = lastindexA + gh->NProduced();
+//             cout << i << "\t" << GeneratorName.Data() << endl;
             for(Int_t j = 0; j<HeaderList->GetEntries();j++){
                TString GeneratorInList = ((TObjString*)HeaderList->At(j))->GetString();
                if(GeneratorName.CompareTo(GeneratorInList) == 0){
+                  if (GeneratorInList.CompareTo("PARAM") == 0 || GeneratorInList.CompareTo("BOX") == 0 ){
+                     if(fMCStack){
+                        if (fMCStack->Particle(firstindexA)->GetPdgCode() == 111 || fMCStack->Particle(firstindexA)->GetPdgCode() == 221 ) {
+                           fnHeaders++;
+                           continue;
+                        }
+                     }   
+                     if ( fMCStackAOD){
+                        AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fMCStackAOD->At(firstindexA));
+                        if (  aodMCParticle->GetPdgCode() == 111 || aodMCParticle->GetPdgCode() == 221 ){
+                           fnHeaders++;
+                           continue;
+                       }   
+                     }
+                  }
                   fnHeaders++;
                   continue;
                }
             }
+            firstindexA = firstindexA + gh->NProduced();
          }
       }
 
@@ -3576,7 +3747,7 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
 
       Int_t firstindex = 0;
       Int_t lastindex =  -1;
-      Int_t nummer = 0;
+      Int_t number = 0;
       for(Int_t i = 0; i<genHeaders->GetEntries();i++){
          gh = (AliGenEventHeader*)genHeaders->At(i);
          TString GeneratorName = gh->GetName();
@@ -3584,12 +3755,35 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
          for(Int_t j = 0; j<HeaderList->GetEntries();j++){
             TString GeneratorInList = ((TObjString*)HeaderList->At(j))->GetString();
             if(GeneratorName.CompareTo(GeneratorInList) == 0){
-               fNotRejectedStart[nummer] = firstindex;
-               fNotRejectedEnd[nummer] = lastindex;
-               fGeneratorNames[nummer] = GeneratorName;
-               //cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
-               nummer++;
-               continue;
+               if (GeneratorInList.CompareTo("PARAM") == 0 || GeneratorInList.CompareTo("BOX") == 0 ){
+                  if(fMCStack){
+                     if (fMCStack->Particle(firstindex)->GetPdgCode() == 111 || fMCStack->Particle(firstindex)->GetPdgCode() == 221 ) {
+                        fNotRejectedStart[number] = firstindex;
+                        fNotRejectedEnd[number] = lastindex;
+                        fGeneratorNames[number] = GeneratorName;
+                        number++;
+                        continue;
+                     }
+                  }   
+                  if ( fMCStackAOD){
+                     AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fMCStackAOD->At(firstindex));
+                     if (  aodMCParticle->GetPdgCode() == 111 || aodMCParticle->GetPdgCode() == 221 ){
+                        fNotRejectedStart[number] = firstindex;
+                        fNotRejectedEnd[number] = lastindex;
+                        fGeneratorNames[number] = GeneratorName;
+                        number++;
+                        continue;
+                     }   
+                  }
+                     
+               } else {
+                  fNotRejectedStart[number] = firstindex;
+                  fNotRejectedEnd[number] = lastindex;
+                  fGeneratorNames[number] = GeneratorName;
+   //                cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
+                   number++;
+                  continue;
+               }
             }
          }
          firstindex = firstindex + gh->NProduced();
@@ -3656,15 +3850,16 @@ Int_t AliConversionCuts::IsParticleFromBGEvent(Int_t index, AliStack *MCStack, A
    return accepted;
 }
 //_________________________________________________________________________
-Int_t AliConversionCuts::IsEventAcceptedByConversionCut(AliConversionCuts *ReaderCuts, AliVEvent *InputEvent, AliMCEvent *MCEvent, Bool_t isHeavyIon){
+Int_t AliConversionCuts::IsEventAcceptedByConversionCut(AliConversionCuts *ReaderCuts, AliVEvent *InputEvent, AliMCEvent *MCEvent, Int_t isHeavyIon){
 
    if ( !IsTriggerSelected(InputEvent) )
       return 3;
 
-   if(isHeavyIon && !(IsCentralitySelected(InputEvent,MCEvent)))
+   if(isHeavyIon != 0 && !(IsCentralitySelected(InputEvent,MCEvent)))
       return 1; // Check Centrality --> Not Accepted => eventQuality = 1
-
-   if(!isHeavyIon && GetIsFromPileup()){
+      
+      
+   if(isHeavyIon == 0 && GetIsFromPileup()){
       if(InputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.)){
 
          return 6; // Check Pileup --> Not Accepted => eventQuality = 6
@@ -3679,12 +3874,18 @@ Int_t AliConversionCuts::IsEventAcceptedByConversionCut(AliConversionCuts *Reade
    if( (IsSpecialTrigger() == 1 || IsSpecialTrigger() == 3) && !hasV0And)
       return 8; // V0AND requested but no fired
 
+   if(hCentrality)hCentrality->Fill(GetCentrality(InputEvent));
+   if(hCentralityVsNumberOfPrimaryTracks)
+      hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(InputEvent),
+                                             ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
+                                                ->GetTask("V0ReaderV1"))->GetNumberOfPrimaryTracks());     
 
    return 0;
 }
 //_________________________________________________________________________
 Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliStack *MCStack, AliVEvent *InputEvent){
-   if (!(period.CompareTo("LHC12f1a") == 0 || period.CompareTo("LHC12f1b") == 0  || period.CompareTo("LHC12i3") == 0 || period.CompareTo("LHC11a10a") == 0 || period.CompareTo("LHC11a10b") == 0 || period.CompareTo("LHC11a10b_bis") == 0 || period.CompareTo("LHC11a10a_bis") == 0 || period.CompareTo("LHC11a10b_plus") == 0 || period.Contains("LHC13d2"))) return 1.;
+   if (!(period.CompareTo("LHC12f1a") == 0 || period.CompareTo("LHC12f1b") == 0  || period.CompareTo("LHC12i3") == 0 || period.CompareTo("LHC11a10a") == 0 || period.CompareTo("LHC11a10b") == 0 || period.CompareTo("LHC11a10b_bis") == 0 || period.CompareTo("LHC11a10a_bis") == 0 || period.CompareTo("LHC11a10b_plus") == 0 || period.Contains("LHC13d2") || 
+   period.CompareTo("LHC13e7") == 0 || period.Contains("LHC13b2_efix"))) return 1.;
 
    Int_t kCaseGen = 0;
    for (Int_t i = 0; i < fnHeaders; i++){
@@ -3710,7 +3911,7 @@ Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliSta
          } else if (fGeneratorNames[i].CompareTo("NoCocktailGeneratorFound_Hijing") == 0){
             kCaseGen = 3;
          }
-         if (period.Contains("LHC13d2")){
+         if (period.Contains("LHC13d2") || period.CompareTo("LHC13e7") == 0 || period.Contains("LHC13b2_efix") ){
             kCaseGen = 3;
          }
       }
@@ -3824,83 +4025,6 @@ Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliSta
          functionResultData = fFitDataK0s->Eval(mesonPt);
       }
 
-//       Float_t a = 0.;
-//       Float_t b = 0.;
-//       Float_t c = 0.;
-//       Float_t d = 0.;
-//       Float_t e = 0.;
-//       if ( PDGCode ==  111 ){
-//          if (fModCentralityClass == 1 && fCentralityMin == 0 && fCentralityMax == 1 ){ // 0-5 % PbPb
-//             a = 25.8747458223;
-//             b = 5.8761820045;
-//             c = -33.9928191673;
-//             d = 3.0731850142;
-//             e = 13.2500447620;
-//          } else if (fModCentralityClass == 1 && fCentralityMin == 1 && fCentralityMax == 2){ // 5-10% PbPb
-//             a = 21.7518148922;
-//             b = 5.8441200081;
-//             c = -17.1497051691;
-//             d = 2.3799090842;
-//             e = 5.4346404718;
-//          } else if (fModCentralityClass == 0 && fCentralityMin == 0 && fCentralityMax == 1){ // 0-10% PbPb
-//             a = 22.9852133622;
-//             b = 5.8602063916;
-//             c = -17.0992478654;
-//             d = 2.4426218039;
-//             e = 5.1194526345;
-//          } else if (fModCentralityClass == 0 && fCentralityMin == 1 && fCentralityMax == 2){ // 10-20% PbPb
-//             a = 19.3237333776;
-//             b = 5.8145906958;
-//             c = -13.8316665424;
-//             d = 2.3737630637;
-//             e = 4.7690300693;
-//          } else if (fModCentralityClass == 0 && fCentralityMin == 2 && fCentralityMax == 4){ // 20-40% PbPb
-//             a = 11.2656032751;
-//             b = 5.8003194354;
-//             c = -13.3936105929;
-//             d = 2.3371452334;
-//             e = 4.4726244958;
-//          } else if (fModCentralityClass == 0 && fCentralityMin == 4 && fCentralityMax == 6){ // 40-60% PbPb
-//             a = 4.1578154081;
-//             b = 5.6450005163;
-//             c = -8.4309375240;
-//             d = 1.8918308704;
-//             e = 2.9429194709;
-//          } else if (fModCentralityClass == 0 && fCentralityMin == 6 && fCentralityMax == 8){ // 60-80% PbPb
-//             a = 1.0635443810;
-//             b = 5.1337469970;
-//             c = -8.5906997238;
-//             d = 2.9794995997;
-//             e = 3.9294980048;
-//          }  else if (fModCentralityClass == 0 && fCentralityMin == 0 && fCentralityMax == 2){ // 0-20% PbPb
-//             a = 21.7018745556;
-//             b = 5.9019352094;
-//             c = -14.2295510326;
-//             d = 2.2104490688;
-//             e = 4.2969671500;
-//          }  else if (fModCentralityClass == 0 && fCentralityMin == 0 && fCentralityMax == 4){ // 0-40% PbPb
-//             a = 16.8227412106;
-//             b = 5.8660502207;
-//             c = -12.0978551215;
-//             d = 2.1695068981;
-//             e = 3.5349621182;
-//          }   else if (fModCentralityClass == 0 && fCentralityMin == 0 && fCentralityMax == 8){ // 0-80% PbPb
-//             a = 9.4675681080;
-//             b = 5.8114944205;
-//             c = -10.4901523616;
-//             d = 2.0607982712;
-//             e = 2.9262259130;
-//          }   else if (fModCentralityClass == 0 && fCentralityMin == 4 && fCentralityMax == 8){ // 60-80% PbPb
-//             a = 2.5985551785;
-//             b = 5.4118895738;
-//             c = -8.2510958428;
-//             d = 2.2551249190;
-//             e = 3.0700919491;
-//          }
-//
-//          functionResultData = a*TMath::Power(mesonPt,-1*(b+c/(TMath::Power(mesonPt,d)+e)));
-//       }
-
    }
 
    Double_t weight = 1;
@@ -3908,8 +4032,15 @@ Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliSta
       if (functionResultData != 0. && functionResultMC != 0. && isfinite(functionResultData) && isfinite(functionResultMC)){
          weight = functionResultData/functionResultMC;
          if ( kCaseGen == 3){
-            if (!(fDoReweightHistoMCPi0 && hReweightMCHistPi0!= 0x0 && PDGCode ==  111)){
-               weight = 1.;
+            if (PDGCode ==  111){ 
+               if (!(fDoReweightHistoMCPi0 && hReweightMCHistPi0!= 0x0 && PDGCode ==  111)){
+                  weight = 1.;
+               }
+            } 
+            if (PDGCode ==  221){ 
+               if (!(fDoReweightHistoMCEta && hReweightMCHistEta!= 0x0 && PDGCode ==  221)){
+                  weight = 1.;
+               }
             }
          }
          if (!isfinite(functionResultData)) weight = 1.;
@@ -3953,6 +4084,11 @@ void AliConversionCuts::GetCorrectEtaShiftFromPeriod(TString periodName){
       periodName.CompareTo("LHC13c2") == 0 || //MC Starlight, coherent J/Psi, UPC muon anchor LHC13d+e
       periodName.CompareTo("LHC13b4") == 0 || //MC Pythia 6 (Jet-Jet), anchor LHC13b
       periodName.CompareTo("LHC13b2_fix_1") == 0 || //MC DPMJET, anchr LHC13b+c
+      periodName.CompareTo("LHC13b2_efix_p1") == 0 || //MC DPMJET, anchr LHC13b+c
+      periodName.CompareTo("LHC13b2_efix_p2") == 0 || //MC DPMJET, anchr LHC13b+c
+      periodName.CompareTo("LHC13b2_efix_p3") == 0 || //MC DPMJET, anchr LHC13b+c
+      periodName.CompareTo("LHC13b2_efix_p4") == 0 || //MC DPMJET, anchr LHC13b+c
+      periodName.CompareTo("LHC13e7") == 0 || //MC DPMJET, anchr LHC13b+c
       periodName.CompareTo("LHC13b3") == 0 || //MC HIJING, weighted to number of events per run, anchor LHC13b
       periodName.CompareTo("LHC13b2") == 0 ||  // MC DPMJET, wrong energy, anchor LHC13b
       periodName.CompareTo("LHC13b2_plus") == 0 || // MC DPMJET, weighted to number event per run, anchor LHC13b
@@ -3983,3 +4119,35 @@ void AliConversionCuts::GetCorrectEtaShiftFromPeriod(TString periodName){
       }
    else printf(" Gamma Conversion Cuts %s :: Automatic Eta Shift requested but Period is not known -> No Shift \n\n",(GetCutNumber()).Data());
 }
+
+///________________________________________________________________________
+Bool_t AliConversionCuts::InPlaneOutOfPlaneCut(Double_t photonPhi, Double_t eventPlaneAngle, Bool_t fill){
+   
+   //GetPhotonPhi() 0-2 Pi  //eventPlaneAngle -1pi-1pi
+   eventPlaneAngle=eventPlaneAngle+TMath::Pi();
+   Double_t gammaToEPAngle = eventPlaneAngle-photonPhi;
+   if(gammaToEPAngle < 0) gammaToEPAngle=gammaToEPAngle+2*TMath::Pi();
+   gammaToEPAngle = gammaToEPAngle-TMath::Pi(); // angle from -pi +pi
+
+   if(!fInPlaneOutOfPlane){
+      if(fill&&hEventPlanePhi)hEventPlanePhi->Fill(gammaToEPAngle);
+      return kTRUE;
+   }
+   else if(fInPlaneOutOfPlane == 1){
+      if(abs(gammaToEPAngle)<=0.25*TMath::Pi() || abs(gammaToEPAngle)>=0.75*TMath::Pi()){
+         if(fill&&hEventPlanePhi)hEventPlanePhi->Fill(gammaToEPAngle);
+         return kTRUE;
+      }
+      else return kFALSE;
+   }
+   else if(fInPlaneOutOfPlane == 2){
+      if(abs(gammaToEPAngle)>0.25*TMath::Pi() && abs(gammaToEPAngle)<0.75*TMath::Pi()){
+         if(fill&&hEventPlanePhi)hEventPlanePhi->Fill(gammaToEPAngle);
+         return kTRUE;
+      }
+      else return kFALSE;
+   }
+   return kFALSE;
+
+}
+

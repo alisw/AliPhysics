@@ -1,5 +1,8 @@
+enum AlgoType {kKT, kANTIKT};
+enum JetType  {kFULLJETS, kCHARGEDJETS, kNEUTRALJETS};
+
 AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksName         = "PicoTracks", 
-							   TString     kClusName           = "caloClusterCorr",
+							   TString     kClusName           = "caloClustersCorr",
 							   Double_t    R                   = 0.4, 
 							   Double_t    ptminTrack          = 0.15, 
 							   Double_t    etminClus           = 0.3, 
@@ -8,12 +11,10 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
 							   TString     kEmcalCellsName     = "",
 							   const char *CentEst             = "V0A",
 							   Int_t       pSel                = AliVEvent::kINT7,
-							   Float_t     nefCut              = 0.95
+							   Float_t     nefCut              = 10.,
+							   TString     kEmcalTriggers      = "",
+							   TString     kPeriod             = "LHC13b"
 							   ) {
-
-  enum AlgoType {kKT, kANTIKT};
-  enum JetType  {kFULLJETS, kCHARGEDJETS, kNEUTRALJETS};
-
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
@@ -50,38 +51,17 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
     jetFinderTask2 = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus);
   }
 
+  // jetFinderTask1->SetRecombSheme(0);
+  // jetFinderTask2->SetRecombSheme(0);
+
   TString strJets1 = jetFinderTask1->GetName();
   TString strJets2 = jetFinderTask2->GetName();
 
-  // Add kt jet finder and rho task in case we want background subtraction
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");
-  AliEmcalJetTask *jetFinderKt;
-  AliEmcalJetTask *jetFinderAKt;
-  AliAnalysisTaskRhoSparse *rhoTask;
+  AliAnalysisTaskRhoBase *rhoTask;
   if(rhoType==1) {
-    jetFinderKt   = AddTaskEmcalJet(kTracksName, kClusName, kKT, R, kCHARGEDJETS, ptminTrack, etminClus);
-    jetFinderKt->SetMinJetPt(0.);
-    jetFinderAKt  = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus);
-    TF1 *fScale = new TF1("fScale","1.42",0.,100.);
-    rhoTask = AddTaskRhoSparse(
-			       jetFinderKt->GetName(),
-			       jetFinderAKt->GetName(),
-			       kTracksName,
-			       kClusName,
-			       Form("RhoSparseR%03d",(int)(100*R)),
-			       R,
-			       "TPC",
-			       0.01,
-			       0.15,
-			       0,
-			       fScale,
-			       0,
-			       kTRUE,
-			       Form("RhoSparseR%03d",(int)(100*R)),
-			       kTRUE
-			       );
-    rhoTask->SetCentralityEstimator(CentEst);
-    
+    rhoTask = AttachRhoTask(kPeriod,kTracksName,kClusName,R,ptminTrack,etminClus);
+    rhoTask->SetCentralityEstimator(CentEst);  
+    rhoTask->SelectCollisionCandidates(AliVEvent::kAny);
   }
 
   TString wagonName = Form("TriggerQA_%s_%s_TC%s",strJets1.Data(),strJets2.Data(),trigClass.Data());
@@ -94,8 +74,12 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
   task->SetContainerFull(0);
   task->SetContainerCharged(1);
   AliJetContainer *jetCont0 = task->AddJetContainer(strJets1.Data(),"EMCAL",R);
+  if(rhoType==1) task->SetRhoName(rhoTask->GetOutRhoScaledName(),0);
   AliJetContainer *jetCont1 = NULL;
-  if(strJets2.Contains("Charged")) jetCont1 = task->AddJetContainer(strJets2.Data(),"TPC",R);
+  if(strJets2.Contains("Charged")) {
+    jetCont1 = task->AddJetContainer(strJets2.Data(),"TPC",R);
+    if(rhoType==1) task->SetRhoName(rhoTask->GetOutRhoName(),1);
+  }
   else { 
     jetCont1 = task->AddJetContainer(strJets2.Data(),"EMCAL",R);
     task->SetZLeadingCut(0.98,0.98,1);
@@ -111,10 +95,16 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
 
   task->SetTriggerClass(trigClass.Data());
   task->SetCaloCellsName(kEmcalCellsName.Data());
+  task->SetCaloTriggerPatchInfoName(kEmcalTriggers.Data());
 
   task->SetCentralityEstimator(CentEst);
 
   task->SelectCollisionCandidates(pSel);
+
+  task->SetUseAliAnaUtils(kTRUE);
+
+  if(kPeriod.Contains("LHC13b4")) 
+    task-SetIsPythia(kTRUE);
 
   mgr->AddTask(task);
 
@@ -132,5 +122,82 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
   mgr->ConnectOutput(task,1,coutput1);
 
   return task;  
+
+}
+
+
+AliAnalysisTaskRhoBase *AttachRhoTask(TString     kPeriod             = "LHC13b",
+				      TString     kTracksName         = "PicoTracks", 
+				      TString     kClusName           = "caloClustersCorr",
+				      Double_t    R                   = 0.4, 
+				      Double_t    ptminTrack          = 0.15, 
+				      Double_t    etminClus           = 0.3 
+				      ) {
+  
+  AliAnalysisTaskRhoBase *rhoTaskBase;
+
+  kPeriod.ToLower();
+
+  // Add kt jet finder and rho task in case we want background subtraction
+  AliEmcalJetTask *jetFinderKt;
+  AliEmcalJetTask *jetFinderAKt;
+  jetFinderKt   = AddTaskEmcalJet(kTracksName, kClusName, kKT, R, kCHARGEDJETS, ptminTrack, etminClus);
+  jetFinderAKt  = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus);
+
+  if(kPeriod.EqualTo("lhc13b") || kPeriod.EqualTo("lhc13c") || kPeriod.EqualTo("lhc13d") || kPeriod.EqualTo("lhc13e") || kPeriod.EqualTo("lhc13f")) {
+
+
+    jetFinderKt->SetMinJetPt(0.);
+
+    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");  
+    TF1 *fScale = new TF1("fScale","1.42",0.,100.); //scale factor for pPb
+    AliAnalysisTaskRhoSparse *rhoTaskSparse = AddTaskRhoSparse(
+			       jetFinderKt->GetName(),
+			       jetFinderAKt->GetName(),
+			       kTracksName,
+			       kClusName,
+			       Form("RhoSparseR%03d",(int)(100*R)),
+			       R,
+			       "TPC",
+			       0.01,
+			       0.15,
+			       0,
+			       fScale,
+			       0,
+			       kTRUE,
+			       Form("RhoSparseR%03d",(int)(100*R)),
+			       kTRUE
+			       );
+    rhoTaskSparse->SetUseAliAnaUtils(kTRUE);
+
+    rhoTaskBase = dynamic_cast<AliAnalysisTaskRhoBase*>rhoTaskSparse;
+  }
+  else if(kPeriod.EqualTo("lhc10h") || kPeriod.EqualTo("lhc11h") ) {
+
+    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRho.C");
+
+    TF1* sfunc = new TF1("sfunc","[0]*x*x+[1]*x+[2]",-1,100);
+    sfunc->SetParameter(2,1.76458);
+    sfunc->SetParameter(1,-0.0111656);
+    sfunc->SetParameter(0,0.000107296);
+    AliAnalysisTaskRho *rhoTask = AddTaskRho(
+					     jetFinderKt->GetName(), 
+					     kTracksName, 
+					     kClusName, 
+					     Form("RhoR%03d",(int)(100*R)), 
+					     R, 
+					     "TPC", 
+					     0.01, 
+					     0, 
+					     sfunc, 
+					     2, 
+					     kTRUE);
+    rhoTask->SetHistoBins(100,0,250);
+
+    rhoTaskBase = dynamic_cast<AliAnalysisTaskRhoBase*>rhoTask;
+
+  }
+
+  return rhoTaskBase;
 
 }

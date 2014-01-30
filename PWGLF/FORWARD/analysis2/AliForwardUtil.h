@@ -22,6 +22,7 @@ class TH1I;
 class TH1;
 class TF1;
 class TAxis;
+class TArrayD;
 class AliESDEvent;
 class AliAODEvent;
 class AliAnalysisTaskSE;
@@ -34,6 +35,9 @@ class AliAnalysisTaskSE;
 class AliForwardUtil : public TObject
 {
 public:
+  enum { 
+    kSkipRing = (1 << 19) // Bit for skipping a histogram
+  };
   /** 
    * Get the standard color for a ring  
    *
@@ -273,6 +277,19 @@ public:
   static void GetParameter(TObject* o, Double_t& value);
   static void GetParameter(TObject* o, Bool_t& value);
   static void GetParameter(TObject* o, ULong_t& value);
+  /* @} */
+
+  //==================================================================
+  /** 
+   * @{ 
+   * @name Axis functions 
+   */
+  static TAxis* MakeFullIpZAxis(Int_t nCenter=20);
+  static void MakeFullIpZAxis(Int_t nCenter, TArrayD& bins);
+  static void MakeLogScale(Int_t nBins, Int_t minOrder, Int_t maxOrder, TArrayD& bins);
+  static void PrintTask(const TObject& o);
+  static void PrintName(const char* name);
+  static void PrintField(const char* name, const char* value, ...);
   /* @} */
 
   //==================================================================
@@ -724,7 +741,7 @@ public:
      * Constructor
      * 
      */
-    RingHistos() : fDet(0), fRing('\0'), fName("") {}
+    RingHistos() : fDet(0), fRing('\0'), fName(""), fkNSector(0), fkNStrip(0) {}
     /** 
      * 
      * 
@@ -732,7 +749,9 @@ public:
      * @param r Ring 
      */
     RingHistos(UShort_t d, Char_t r) 
-      : fDet(d), fRing(r), fName(TString::Format("FMD%d%c", d, r)) 
+      : fDet(d), fRing(r), fName(TString::Format("FMD%d%c", d, r)),
+	fkNSector(r == 'i' || r == 'I' ? 20 : 40), 
+	fkNStrip(r == 'i' || r == 'I' ? 512 : 256)
     {}
     /** 
      * Copy constructor
@@ -740,7 +759,8 @@ public:
      * @param o Object to copy from 
      */
     RingHistos(const RingHistos& o) 
-      : TObject(o), fDet(o.fDet), fRing(o.fRing), fName(o.fName)
+      : TObject(o), fDet(o.fDet), fRing(o.fRing), fName(o.fName),
+	fkNSector(o.fkNSector), fkNStrip(o.fkNStrip)
     {}
     /** 
      * 
@@ -760,6 +780,8 @@ public:
       fDet  = o.fDet;
       fRing = o.fRing;
       fName = o.fName;
+      fkNSector = o.fkNSector;
+      fkNStrip  = o.fkNStrip;
       return *this;
     }
     /** 
@@ -803,9 +825,19 @@ public:
      * @return Name of this ring 
      */
     const char* GetName() const { return fName.Data(); } 
+    /** 
+     * Get number of sectors 
+     */
+    const UShort_t& NSector() const { return fkNSector; }
+    /** 
+     * Get number of strips 
+     */
+    const UShort_t& NStrip() const { return fkNStrip; }
     UShort_t fDet;   // Detector
     Char_t   fRing;  // Ring
     TString  fName;  // Name
+    UShort_t fkNSector; // Number of sectors 
+    UShort_t fkNStrip;  // Number of strips 
 
     ClassDef(RingHistos,1) 
   };

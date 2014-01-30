@@ -12,41 +12,22 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-//#include <TBranch.h>
-//#include <TCanvas.h>
-//#include <TChain.h>
-//#include <TFile.h>
-//#include <TH1F.h>
-//#include <TH1I.h>
-//#include <TH2F.h>
+
 #include <TList.h>
-//#include <TLorentzVector.h>
 #include <TMath.h>
 #include <TObjArray.h>
 #include <TObject.h>
-//#include <TProfile.h>
-//#include <TRandom.h>
-//#include <TSystem.h>
-//#include <TTree.h>
 #include <TVector3.h>
 
 #include "AliAnalyseLeadingTrackUE.h"
-//#include "AliAnalysisTask.h"
 
-//#include "AliAnalysisHelperJetTasks.h"
-//#include "AliAnalysisManager.h"
 #include "AliAODEvent.h"
-//#include "AliAODHandler.h"
-//#include "AliAODJet.h"
 #include "AliAODMCParticle.h"
 #include "AliAODTrack.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
-//#include "AliGenPythiaEventHeader.h"
 #include "AliInputEventHandler.h"
-//#include "AliKFVertex.h"
-//#include "AliLog.h"
 #include "AliMCEvent.h"
 #include "AliVParticle.h"
 #include "AliAODMCHeader.h"
@@ -83,6 +64,9 @@ AliAnalyseLeadingTrackUE::AliAnalyseLeadingTrackUE() :
   fTrackPtMin(0),
   fEventSelection(AliVEvent::kMB|AliVEvent::kUserDefined),
   fDCAXYCut(0),
+  fSharedClusterCut(-1),
+  fCrossedRowsCut(-1),
+  fFoundFractionCut(-1),
   fEsdTrackCuts(0x0), 
   fEsdTrackCutsExtra1(0x0), 
   fEsdTrackCutsExtra2(0x0), 
@@ -171,6 +155,7 @@ void AliAnalyseLeadingTrackUE::DefineESDCuts(Int_t filterbit) {
     fEsdTrackCuts->SetDCAToVertex2D(kTRUE);
     fEsdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
     fEsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
+    fEsdTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
 
     // Add SPD requirement 
     fEsdTrackCutsExtra1 = new AliESDtrackCuts("SPD", "Require 1 cluster in SPD");
@@ -300,10 +285,11 @@ void AliAnalyseLeadingTrackUE::RemoveInjectedSignals(TObjArray* tracks, TObject*
       Printf("WARNING: No mother found for particle %d:", part->GetLabel());
       continue;
     }
-   
+
+//     Printf("%d %d %d", i, part->GetLabel(), mother->GetLabel());
     if (mother->GetLabel() >= maxLabel)
     {
-//       Printf("Removing %d with label %d", i, part->GetLabel()); part->Dump();
+//       Printf("Removing %d with label %d", i, part->GetLabel()); ((AliMCParticle*)part)->Particle()->Print(); ((AliMCParticle*)mother)->Particle()->Print();
       TObject* object = tracks->RemoveAt(i);
       if (tracks->IsOwner())
 	delete object;
@@ -380,7 +366,7 @@ TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject*
   // particleSpecies: -1 all particles are returned
   //                  0 (pions) 1 (kaons) 2 (protons) 3 (others) particles
   // speciesOnTracks if kFALSE, particleSpecies is only applied on the matched MC particle (not on the track itself)
-
+  
   Int_t nTracks = NParticles(obj);
   TObjArray* tracks = new TObjArray;
   
@@ -404,6 +390,8 @@ TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject*
 	  delete part;
         continue;
       }
+      
+//     Printf("%p %p %d Accepted %d %f %f %f", obj, arrayMC, particleSpecies, ipart, part->Eta(), part->Phi(), part->Pt());
     
     if (arrayMC) {
       Int_t label = part->GetLabel();
@@ -715,7 +703,7 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
 	    return 0;
 	  
 	  Double_t pos[2];
-	  Double_t covar[2];
+	  Double_t covar[3];
 	  AliAODTrack* clone = (AliAODTrack*) part->Clone();
 	  Bool_t success = clone->PropagateToDCA(vertex, aodEvent->GetHeader()->GetMagneticField(), 3, pos, covar);
 	  delete clone;
@@ -725,6 +713,28 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
 // 	  Printf("%f", ((AliAODTrack*)part)->DCA());
 // 	  Printf("%f", pos[0]);
 	  if (TMath::Abs(pos[0]) > fDCAXYCut->Eval(part->Pt()))
+	    return 0;
+	}
+	
+	if (fSharedClusterCut >= 0)
+	{
+	  Double_t frac = Double_t(((AliAODTrack*)part)->GetTPCnclsS()) / Double_t(((AliAODTrack*)part)->GetTPCncls());
+	  if (frac > fSharedClusterCut)
+	    return 0;
+	}
+	
+	if (fCrossedRowsCut >= 0)
+	{
+	  if (((AliAODTrack*) part)->GetTPCNCrossedRows() < fCrossedRowsCut)
+	    return 0;
+	}
+	
+	if (fFoundFractionCut >= 0)
+	{
+	  UInt_t findableClusters = ((AliAODTrack*) part)->GetTPCNclsF();
+	  if (findableClusters == 0)
+	    return 0;
+	  if (((Double_t) ((AliAODTrack*) part)->GetTPCNCrossedRows() / findableClusters) < fFoundFractionCut)
 	    return 0;
 	}
 

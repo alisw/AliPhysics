@@ -98,6 +98,8 @@ public:
    void   SetDoPartProduction(Bool_t b) { fDoPartProd = b; }
    void   Setr(Double_t r)  {fANucleus.SetR(r); fBNucleus.SetR(r);}
    void   Seta(Double_t a)  {fANucleus.SetA(a); fBNucleus.SetA(a);}
+   void   SetDoFluc(Double_t omega, Double_t sig0, Double_t lam, Bool_t on=kTRUE) 
+            {fDoFluc=on;fOmega=omega;fSig0=sig0;fLambda=lam;}
    static void       PrintVersion()         {cout << "AliGlauberMC " << Version() << endl;}
    static const char *Version()             {return "v1.2";}
    static void       RunAndSaveNtuple( Int_t n,
@@ -174,6 +176,7 @@ private:
    Double_t     fONcom; 
    Int_t        fNpart;          //Number of wounded (participating) nucleons in current event   
    Int_t        fNcoll;          //Number of binary collisions in current event
+   Int_t        fNcollw;         //Number of binary collisions in current event
    Double_t     fNcom;
    Double_t     fMeanr2;         //----------<r^2> of wounded nucleons
    Double_t     fMeanr3;         //----------<r^3> of wounded nucleons
@@ -242,9 +245,15 @@ private:
    Double_t     fX;              //hard particle production fraction
    Double_t     fNpp;            //Multiplicity normalization
    Bool_t       fDoPartProd;     //=1 then particle production on
+   Double_t     fBNN;            //average NN impact parameter
+   Bool_t       fDoFluc;         //=kTRUE then fluc sigma (only useful for pPb)
+   Double_t     fOmega;          //fluctuation parameter
+   Double_t     fSig0;           //regularization parameter 
+   Double_t     fLambda;         //lambda parameter
+   TF1         *fSigFluc;        //!parameterization for fluctuating sigNN
    Bool_t       CalcResults(Double_t bgen);
 
-   ClassDef(AliGlauberMC,3)
+   ClassDef(AliGlauberMC,4)
 };
 
 #endif

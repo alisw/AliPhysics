@@ -46,7 +46,9 @@ AliFemtoK0Particle::AliFemtoK0Particle() :
  fPPos(),
  fPNeg(),
  fPosXYZ(),
- fNegXYZ()
+ fNegXYZ(),
+ fPhi(0),
+ fPhiPsi(0)
 {
   //Default constructor
 }
@@ -73,7 +75,9 @@ AliFemtoK0Particle::AliFemtoK0Particle(const AliFemtoK0Particle &obj) :
  fPPos(),
  fPNeg(),
  fPosXYZ(),
- fNegXYZ()
+ fNegXYZ(),
+ fPhi(),
+ fPhiPsi()
 
 {
   // copy constructor
@@ -112,6 +116,8 @@ AliFemtoK0Particle &AliFemtoK0Particle::operator=(const AliFemtoK0Particle &obj)
    fNegXYZ[j][i] = obj.fNegXYZ[j][i];
   }
  }
+ fPhi = obj.fPhi;
+ fPhiPsi = obj.fPhiPsi;
  return (*this);
 }
 //_____________________________________________________________________________
@@ -152,9 +158,11 @@ AliFemtoK0Event &AliFemtoK0Event::operator=(const AliFemtoK0Event &obj)
 AliFemtoK0Event::~AliFemtoK0Event()
 {
  //Destructor
- if(fK0Particle) delete fK0Particle;
+ if(fK0Particle){
+  delete fK0Particle;
+  fK0Particle = NULL;
+ }
 }
-
 //_____________________________________________________________________________
 AliFemtoK0EventCollection::AliFemtoK0EventCollection() : 
  fBufferSize(0),
@@ -211,10 +219,11 @@ AliFemtoK0EventCollection::~AliFemtoK0EventCollection()
  for(int i =0; i < fBufferSize; i++){
   if((fEvt + i)->fK0Particle != NULL){
    delete [] (fEvt + i)->fK0Particle;
+   (fEvt + i)->fK0Particle = NULL;
   }
  }
  
- delete [] fEvt;
+ delete [] fEvt; fEvt = NULL;
 }
 //_____________________________________________________________________________
 void AliFemtoK0EventCollection::FIFOShift(){ //Shift elements in FIFO by one and clear last element in FIFO 
@@ -229,4 +238,3 @@ void AliFemtoK0EventCollection::FIFOShift(){ //Shift elements in FIFO by one and
   (fEvt)->fFillStatus=0;
 
 }
-

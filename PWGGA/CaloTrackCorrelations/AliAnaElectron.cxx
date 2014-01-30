@@ -222,8 +222,8 @@ Bool_t  AliAnaElectron::ClusterSelected(AliVCluster* calo, TLorentzVector mom, I
     
 }
 
-//__________________________________________________________________________________________________________
-void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t mcTag, const Int_t pidTag)
+//______________________________________________________________________________________________
+void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag, Int_t pidTag)
 {
   
   //Fill cluster Shower Shape histograms
@@ -332,14 +332,10 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, const Int_
       
     }  // embedded fraction    
     
-    // Get the fraction of the cluster energy that carries the cell with highest energy
-    Int_t absID             =-1 ;
-    Float_t maxCellFraction = 0.;
-    Int_t index             = 0 ;
-    absID = GetCaloUtils()->GetMaxEnergyCell(cells, cluster,maxCellFraction);
-    
     // Check the origin and fill histograms
-    if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) && 
+    Int_t index = -1;
+
+    if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) &&
        !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) &&
        !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0) &&
        !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta))
@@ -376,7 +372,7 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, const Int_
           fhMCElectronELambda0NOverlap   ->Fill(energy, lambda0);
         }
         else {
-          printf("AliAnaElectron::FillShowerShapeHistogram() - n overlaps = %d!!", noverlaps);
+          printf("AliAnaElectron::FillShowerShapeHistogram() - n overlaps = %d for ancestor %d!!", noverlaps, ancLabel);
         }
       }//No embedding
       
@@ -427,10 +423,8 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, const Int_
       fhMCEDispPhi        [pidIndex][index]-> Fill(energy,dPhi);
       fhMCESumEtaPhi      [pidIndex][index]-> Fill(energy,sEtaPhi);
       fhMCEDispEtaPhiDiff [pidIndex][index]-> Fill(energy,dPhi-dEta);
-      if(dEta+dPhi>0)fhMCESphericity     [pidIndex][index]-> Fill(energy,(dPhi-dEta)/(dEta+dPhi));  
-      
+      if(dEta+dPhi>0)fhMCESphericity     [pidIndex][index]-> Fill(energy,(dPhi-dEta)/(dEta+dPhi));
     }
-    
     
   }//MC data
   
@@ -1367,11 +1361,10 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
                               aodpart.Pt(), aodpart.GetIdentifiedParticleType());
     
     //FIXME, this to MakeAnalysisFillHistograms ...
-    Int_t absID             = 0; 
     Float_t maxCellFraction = 0;
     
-    absID = GetCaloUtils()->GetMaxEnergyCell(cells, calo,maxCellFraction);
-    fhMaxCellDiffClusterE[pidIndex]->Fill(aodpart.E(),maxCellFraction);
+    Int_t absID = GetCaloUtils()->GetMaxEnergyCell(cells, calo,maxCellFraction);
+    if(absID>=0)fhMaxCellDiffClusterE[pidIndex]->Fill(aodpart.E(),maxCellFraction);
     fhNCellsE[pidIndex]            ->Fill(aodpart.E(),calo->GetNCells());
     fhNLME[pidIndex]               ->Fill(aodpart.E(),nMaxima);
     fhTimeE[pidIndex]              ->Fill(aodpart.E(),calo->GetTOF()*1.e9);
@@ -1474,7 +1467,7 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
       }
       
       Float_t eprim   = 0;
-      Float_t ptprim  = 0;
+      //Float_t ptprim  = 0;
       if(GetReader()->ReadStack()){
         
         if(label >=  stack->GetNtrack()) {
@@ -1489,7 +1482,7 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
         }
         
         eprim   = primary->Energy();
-        ptprim  = primary->Pt();		
+        //ptprim  = primary->Pt();
         
       }
       else if(GetReader()->ReadAODMCParticles()){
@@ -1512,7 +1505,7 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
         }
         
         eprim   = aodprimary->E();
-        ptprim  = aodprimary->Pt();
+        //ptprim  = aodprimary->Pt();
         
       }
       

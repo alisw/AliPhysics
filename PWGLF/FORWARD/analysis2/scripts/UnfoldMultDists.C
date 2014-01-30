@@ -1,3 +1,13 @@
+/**
+ * @file   UnfoldMultDists.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Tue Nov 12 09:25:52 2013
+ * 
+ * @brief  A class to do unfolding 
+ * 
+ * 
+ * @ingroup pwglf_forward_multdist
+ */
 #include <TFile.h>
 #include <TList.h>
 #include <TH1.h>
@@ -18,6 +28,7 @@
 /**
  * Class to do unfolding of raw histograms produced by AliForwardMultDists 
  * 
+ * @ingroup pwglf_forward_multdist
  */
 struct Unfolder
 {
@@ -71,6 +82,7 @@ struct Unfolder
    * @param c    Collection
    * @param name Name of object
    * @param cl   Possible class to check against
+   * @param verbose  Be verbose
    * 
    * @return Pointer to object or null
    */
@@ -94,8 +106,9 @@ struct Unfolder
   /** 
    * Get a collection 
    * 
-   * @param c 
-   * @param name 
+   * @param c        Parent collection
+   * @param name     Name of object to findf
+   * @param verbose  Be verbose
    * 
    * @return 
    */
@@ -112,6 +125,7 @@ struct Unfolder
    * 
    * @param c    Collection
    * @param name Nanme of histogram
+   * @param verbose  Be verbose
    * 
    * @return Pointer to object or null
    */
@@ -124,6 +138,7 @@ struct Unfolder
    * 
    * @param c    Collection
    * @param name Nanme of histogram
+   * @param verbose  Be verbose
    * 
    * @return Pointer to object or null
    */
@@ -136,6 +151,7 @@ struct Unfolder
    * 
    * @param c    Collection
    * @param name Parameter name 
+   * @param v    Value
    * 
    * @return Value 
    */
@@ -149,6 +165,7 @@ struct Unfolder
    * 
    * @param c    Collection
    * @param name Parameter name 
+   * @param v    Value
    * 
    * @return Value 
    */
@@ -162,6 +179,7 @@ struct Unfolder
    * 
    * @param c    Collection
    * @param name Parameter name 
+   * @param v    Value
    * 
    * @return Value 
    */
@@ -173,9 +191,9 @@ struct Unfolder
   /** 
    * Get the method identifier 
    * 
-   * @param method 
+   * @param method Method 
    * 
-   * @return 
+   * @return Method identifier 
    */    
   static UInt_t MethodId(TString& method) 
   {
@@ -251,12 +269,12 @@ struct Unfolder
    *   [number]       := 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 
    * @endverbatim
    *
-   * That is, the bin @f$ -3\lt\eta\gt3@f$ is labeled
-   * <b>m3d00_p3d00</b>, @f$ 0\lt\eta\gt2.5@f$ is <b>p0d00_p2d50</b> 
+   * That is, the bin @f$ -3\le\eta\ge3@f$ is labeled
+   * <b>m3d00_p3d00</b>, @f$ 0\le\eta\ge2.5@f$ is <b>p0d00_p2d50</b> 
    *
    * @a measuredFile and @a corrFile can point to the same file.  If
    * @a corrFile is not specified, it is assumed that @a measuredFile
-   * has the expected @a corrFile <emph>in addition</emph> to the
+   * has the expected @a corrFile @e in @e addition to the
    * expected content of that file.
    * 
    * @param measuredFile Name of file containing measured data
@@ -280,13 +298,11 @@ struct Unfolder
     // Get some info from the input collection 
     UShort_t sys;
     UShort_t sNN; 
-    UShort_t maxN; 
     ULong_t  trig; 
     Double_t minZ; 
     Double_t maxZ;
     GetParameter(mTop, "sys",     sys);	  
-    GetParameter(mTop, "snn",     sNN);	  
-    GetParameter(mTop, "maxN",    maxN);	  
+    GetParameter(mTop, "sNN",     sNN);	  
     GetParameter(mTop, "trigger", trig);
     GetParameter(mTop, "minIpZ",  minZ); 
     GetParameter(mTop, "maxIpZ",  maxZ); 
@@ -307,7 +323,8 @@ struct Unfolder
     if (mId == 0xDeadBeef) return;
 
     // Store information 
-    SaveInformation(out,meth,mId,regParam,sys,sNN,trig,minZ,maxZ,maxN);
+    SaveInformation(out,meth,mId,regParam,sys,sNN,trig,minZ,maxZ,
+		    corrFile.IsNull());
 
     // Load other data 
     TString savPath(gROOT->GetMacroPath());
@@ -336,6 +353,12 @@ struct Unfolder
 
     SaveSummarize();
   }
+  /** 
+   * Append an & to a string and the next term.
+   * 
+   * @param trg  Output string
+   * @param what Term
+   */
   static void AppendAnd(TString& trg, const TString& what)
   {
     if (!trg.IsNull()) trg.Append(" & ");
@@ -353,7 +376,7 @@ struct Unfolder
    * @param trigger  Trigger mask 
    * @param minIpZ   Least z coordinate of interaction point
    * @param maxIpZ   Largest z coordinate of interaction point
-   * @param maxN     Largest @f$N_{ch}@f$ to consider 
+   * @param self     Self-consistency check
    */
   void SaveInformation(TDirectory* dir, 
 		       const TString& method,
@@ -364,15 +387,20 @@ struct Unfolder
 		       UInt_t         trigger,
 		       Double_t       minIpZ, 
 		       Double_t       maxIpZ, 
-		       UShort_t       maxN) const
+		       Bool_t         self) const
   {
     dir->cd();
+
+    TParameter<bool>* pM = new TParameter<bool>("self", self);
+    pM->SetBit(BIT(19));
+    pM->Write();
 
     TNamed* outMeth = new TNamed("method", method.Data());
     outMeth->SetUniqueID(mId);
     outMeth->Write();
 
     TParameter<double>* pR = new TParameter<double>("regParam", regParam);
+    pR->SetBit(BIT(19));
     pR->Write();
     
     TString tS = (sys == 1 ? "pp" : sys == 2 ? "PbPb" : sys == 3 ? "pPb" : "?");
@@ -435,13 +463,12 @@ struct Unfolder
     pT->Write();
     
     TParameter<double>* pY = new TParameter<double>("minIpZ", minIpZ);
+    pY->SetBit(BIT(19));
     pY->Write();
 
     TParameter<double>* pZ = new TParameter<double>("maxIpZ", maxIpZ);
+    pZ->SetBit(BIT(19));
     pZ->Write();
-
-    TParameter<int>* pN = new TParameter<int>("maxN", maxN);
-    pN->Write();
   }
   /** 
    * Save a script to do a summary of this step 
@@ -470,6 +497,8 @@ struct Unfolder
    * @param method       Unfolding method to use 
    * @param regParam     Regularisation parameter
    * @param out          Output directory. 
+   * @param sys          Collision system
+   * @param sNN          Collision energy 
    */
   void ProcessType(TCollection* measured, 
 		   TCollection* corrections,
@@ -493,6 +522,8 @@ struct Unfolder
 					 "Unfolded P(#it{N}_{ch})");
     THStack*  allCorrected = new THStack("corrected",
 					 "Corrected P(#it{N}_{ch})");
+    THStack*  allRatio     = (sys != 1 ? 0 : 
+			      new THStack("ratios", "Ratios to other"));
     TMultiGraph* allALICE  = (sys != 1 ? 0 : 
 			      new TMultiGraph("alice", "ALICE Published"));
     TMultiGraph* allCMS    = (sys != 1 ? 0 : 
@@ -525,9 +556,14 @@ struct Unfolder
       THStack* binS = ProcessBin(mBin, cBin, method, r, dir);
       if (!binS) continue;
 
+      TH1* result = 0;
       Bin2Stack(binS, i, allMeasured, allTruth, allTruthA, 
-		allUnfolded, allCorrected);
-      Other2Stack(o->GetName(), i, sNN, allALICE, allCMS);
+		allUnfolded, allCorrected, result);
+
+      TGraph* alice = 0;
+      TGraph* cms   = 0;
+      Other2Stack(o->GetName(), i, sNN, allALICE, allCMS, alice, cms);
+      Ratio2Stack(i, result, alice, cms, allRatio);
       i++;
     }
     dir->Add(allMeasured);
@@ -546,6 +582,12 @@ struct Unfolder
 	dir->Add(allCMS);
       else 
 	delete allCMS;
+    }
+    if (allRatio && allRatio->GetHists()) { 
+      if (allRatio->GetHists()->GetEntries() > 0) 
+	dir->Add(allRatio);
+      else 
+	delete allRatio;
     }
   }
   /** 
@@ -567,7 +609,7 @@ struct Unfolder
   {
     Printf("   Processing %s ...", measured->GetName());
     // Try to get the data 
-    TH1* inRaw    = GetH1(measured, "rawDist");
+    TH1* inRaw    = GetH1(measured,    "rawDist");
     TH1* inTruth  = GetH1(corrections, "truth");
     TH1* inTruthA = GetH1(corrections, "truthAccepted");
     TH1* inTrgVtx = GetH1(corrections, "triggerVertex");
@@ -593,7 +635,7 @@ struct Unfolder
     Double_t             r        = regParam;
     RooUnfold::Algorithm algo     = (RooUnfold::Algorithm)method;
     RooUnfold*           unfolder = RooUnfold::New(algo, &matrix, inRaw, r);
-    unfolder->SetVerbose(1);
+    unfolder->SetVerbose(0);
 
     // Do the unfolding and get the result
     TH1* res = unfolder->Hreco();
@@ -743,13 +785,15 @@ struct Unfolder
    * @param accepted  All MC accepted @f$ P(N_{ch})@f$ 
    * @param unfolded  All unfolded @f$ P(N_{ch})@f$ 
    * @param corrected All corrected @f$ P(N_{ch})@f$ 
+   * @param result    The result in this bin
    */
   void Bin2Stack(const THStack* bin, Int_t i, 
 		 THStack* measured, 
 		 THStack* truth, 
 		 THStack* accepted, 
 		 THStack* unfolded,
-		 THStack* corrected)
+		 THStack* corrected,
+		 TH1*&    result)
   {
     Int_t open, closed;
     Double_t factor; 
@@ -776,6 +820,7 @@ struct Unfolder
       cln->SetMarkerStyle(sty);
       cln->SetMarkerSize(size);
       cln->Scale(factor); // Scale by 10^i
+      if (col == kColorCorrected) result = cln;
 
       // Make sure we do not get the old legend 
       TObject* tst = cln->FindObject("legend");
@@ -814,9 +859,12 @@ struct Unfolder
    * @param sNN      Center of mass energy 
    * @param allALICE Stack of ALICE data 
    * @param allCMS   Stack of CMS data 
+   * @param alice    Possible ALICE result on return
+   * @param cms      Possible CMS result on return
    */
   void Other2Stack(const TString& name, Int_t i,
-		   UShort_t sNN, TMultiGraph* allALICE, TMultiGraph* allCMS) 
+		   UShort_t sNN, TMultiGraph* allALICE, TMultiGraph* allCMS,
+		   TGraph*& alice, TGraph*& cms) 
   {
     if (!allALICE && !allCMS) return;
 
@@ -824,6 +872,7 @@ struct Unfolder
     tmp.ReplaceAll("p", "+");
     tmp.ReplaceAll("m", "-");
     tmp.ReplaceAll("_", " ");
+    tmp.ReplaceAll("d", ".");
     TObjArray* tokens = tmp.Tokenize(" ");
     if (!tokens || tokens->GetEntriesFast() < 2) { 
       Error("Other2Stack", "Failed to decode eta range from %s", name.Data());
@@ -834,9 +883,12 @@ struct Unfolder
     Double_t eta2 = static_cast<TObjString*>(tokens->At(1))->String().Atof();
     tokens->Delete();
     
-    if (TMath::Abs(eta2-eta1) > 1e3) 
+    if (TMath::Abs(eta2+eta1) > 1e-3) {
       // Not symmetric bin 
+      // Info("Other2Stack", "bin [%f,%f] is not symmetric (%f)",
+      //      eta1, eta2, TMath::Abs(eta2-eta1));
       return;
+    }
     Double_t aEta = TMath::Abs(eta1);
 
     Int_t open, closed;
@@ -851,6 +903,7 @@ struct Unfolder
 	g->SetMarkerColor(kColorALICE);
 	g->SetMarkerSize(size);
 	allALICE->Add(g, "p same");
+	alice = g;
       }
     }
     if (allCMS) {
@@ -860,11 +913,74 @@ struct Unfolder
 	g->SetMarkerColor(kColorCMS);
 	g->SetMarkerSize(size);
 	allCMS->Add(g, "p same");
+	cms = g;
       }
     }
-
-    
   }
+  /** 
+   * Create ratios to other data 
+   * 
+   * @param ib      Bin number  
+   * @param res     Result
+   * @param alice   ALICE result if any
+   * @param cms     CMS result if any
+   * @param all     Stack to add ratio to 
+   */
+  void Ratio2Stack(Int_t ib, TH1* res, TGraph* alice, TGraph* cms, THStack* all)
+  {
+    if (!all || !res || !(alice || cms)) return;
+
+    Int_t        off  = 5*ib;
+    TGraph*      gs[] = { (alice ? alice : cms), (alice ? cms : 0), 0 };
+    TGraph**     pg   = gs;
+    while (*pg) { 
+      TGraph*     g = *pg;
+      const char* n = (g == alice ? "ALICE" : "CMS");
+
+      TH1*    r = static_cast<TH1*>(res->Clone(Form("ratio%s", n)));
+      TString tit(r->GetTitle());
+      tit.ReplaceAll("Corrected", Form("Ratio to %s", n));
+      r->SetTitle(tit);
+      r->SetMarkerColor(g->GetMarkerColor());
+      r->SetLineColor(g->GetLineColor());
+
+      TObject* tst = r->FindObject("legend");
+      if (tst) r->GetListOfFunctions()->Remove(tst);
+
+      for (Int_t i = 1; i <= r->GetNbinsX(); i++) {
+	Double_t c = r->GetBinContent(i);
+	Double_t e = r->GetBinError(i);
+	Double_t o = g->Eval(r->GetBinCenter(i));
+	if (o < 1e-12) { 
+	  r->SetBinContent(i, 0);
+	  r->SetBinError(i, 0);
+	  continue;
+	}
+	r->SetBinContent(i, (c - o) / o + off);
+	r->SetBinError(i, e / o);
+      }
+      all->Add(r);
+      pg++;
+    }
+    TLegend* leg = StackLegend(all);
+    if (!leg) return;
+      
+    TString   txt      = res->GetTitle();
+    txt.ReplaceAll("Corrected P(#it{N}_{ch}) in ", "");
+    if      (ib == 0) txt.Append(" "); // (#times1)");
+    // else if (ib == 1) txt.Append(" (#times10)");
+    else              txt.Append(Form(" (+%d)", off));
+
+    TObject* dummy = 0;
+    TLegendEntry* e = leg->AddEntry(dummy, txt, "p");
+    e->SetMarkerStyle(res->GetMarkerStyle());
+    e->SetMarkerSize(res->GetMarkerSize());
+    e->SetMarkerColor(kBlack);
+    e->SetFillColor(0);
+    e->SetFillStyle(0);
+    e->SetLineColor(kBlack);
+  }
+
   /** 
    * Get or create a stack legend.  This is done by adding a TLegend
    * object to the list of functions for the first histogram in the
@@ -905,16 +1021,16 @@ struct Unfolder
   TGraphAsymmErrors* GetOther(UShort_t type, Double_t eta, UShort_t sNN,
 			      Int_t factor)
   {
-    TString oC = Form("OtherPNch::GetData(%hu,%f,%hu)", 
+    TString oC = Form("OtherPNch::GetData(%hu,%f,%hu);", 
                       type, eta, sNN);
     TGraphAsymmErrors* g = 
       reinterpret_cast<TGraphAsymmErrors*>(gROOT->ProcessLine(oC));
     if (!g) { 
-      Warning("GetOther", "No other data found for type=%d eta=%f sNN=%d",
-	      type, eta, sNN);
+      // Warning("GetOther", "No other data found for type=%d eta=%f sNN=%d",
+      //         type, eta, sNN);
       return 0;
     }
-
+  
 
     for (Int_t j = 0; j < g->GetN(); j++) { 
       g->SetPoint(j, g->GetX()[j], g->GetY()[j]*factor);

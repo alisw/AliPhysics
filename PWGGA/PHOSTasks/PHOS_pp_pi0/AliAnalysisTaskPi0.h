@@ -29,8 +29,8 @@ public:
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
-  void SetBCgap(const Double_t bcgap) {fBCgap = bcgap;}
-  void SetRecalib(const Int_t mod, const Double_t recalib)
+  void SetBCgap(Double_t bcgap) {fBCgap = bcgap;}
+  void SetRecalib(Int_t mod, Double_t recalib)
   {
     if (mod<1 || mod>5) AliFatal(Form("Wrong module number: %d",mod));
     else fRecalib[mod-1] = recalib;

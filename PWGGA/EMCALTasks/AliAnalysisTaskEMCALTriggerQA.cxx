@@ -952,11 +952,11 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   
   //map for cells and patches
   
-  Double_t emcalCell     [fgkFALTRORows][fgkFALTROCols], emcalCellL1G  [fgkFALTRORows][fgkFALTROCols],emcalCellL1G2 [fgkFALTRORows][fgkFALTROCols],emcalCellL1G_ [fgkFALTRORows][fgkFALTROCols];
+  Double_t emcalCell     [fgkFALTRORows][fgkFALTROCols], emcalCellL1G  [fgkFALTRORows][fgkFALTROCols],emcalCellL1G2 [fgkFALTRORows][fgkFALTROCols];
   Double_t emcalCellL1J  [fgkFALTRORows][fgkFALTROCols], emcalCellL1J2 [fgkFALTRORows][fgkFALTROCols],emcalTrigL0   [fgkFALTRORows][fgkFALTROCols];
   Double_t emcalTrigL0L1G[fgkFALTRORows][fgkFALTROCols], emcalTrigL0L1J[fgkFALTRORows][fgkFALTROCols];
   Double_t emcalTrigL1G  [fgkFALTRORows][fgkFALTROCols], emcalTrigL1G2 [fgkFALTRORows][fgkFALTROCols],emcalTrigL1J  [fgkFALTRORows][fgkFALTROCols], emcalTrigL1J2 [fgkFALTRORows][fgkFALTROCols],emcalTrigL1  [fgkFALTRORows][fgkFALTROCols];
-  Double_t emcalPatchL0  [fgkFALTRORows][fgkFALTROCols], emcalPatchL1G [fgkFALTRORows][fgkFALTROCols],emcalPatchL1G2[fgkFALTRORows][fgkFALTROCols], emcalPatchL1J[fgkFALTRORows][fgkFALTROCols], emcalPatchL1J2[fgkFALTRORows][fgkFALTROCols];
+  //Double_t emcalPatchL0  [fgkFALTRORows][fgkFALTROCols], emcalPatchL1G [fgkFALTRORows][fgkFALTROCols],emcalPatchL1G2[fgkFALTRORows][fgkFALTROCols], emcalPatchL1J[fgkFALTRORows][fgkFALTROCols], emcalPatchL1J2[fgkFALTRORows][fgkFALTROCols];
   
   for (Int_t i = 0; i < fgkFALTRORows; i++)
   {
@@ -973,14 +973,13 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       emcalCell[i][j]      = 0.;
       emcalCellL1G[i][j]   = 0.;
       emcalCellL1G2[i][j]  = 0.;
-      emcalCellL1G_[i][j]  = 0.;
       emcalCellL1J[i][j]   = 0.;
       emcalCellL1J2[i][j]  = 0.;
-      emcalPatchL0[i][j]   = 0.;
-      emcalPatchL1G[i][j]  = 0.;
-      emcalPatchL1G2[i][j] = 0.;
-      emcalPatchL1J[i][j]  = 0.;
-      emcalPatchL1J2[i][j] = 0.;
+//      emcalPatchL0[i][j]   = 0.;
+//      emcalPatchL1G[i][j]  = 0.;
+//      emcalPatchL1G2[i][j] = 0.;
+//      emcalPatchL1J[i][j]  = 0.;
+//      emcalPatchL1J2[i][j] = 0.;
     }
   }
   
@@ -1088,7 +1087,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       if (l0fired)
       {
          nL0Patch += nTimes;
-         emcalPatchL0[posY][posX] = 1.;
+         //emcalPatchL0[posY][posX] = 1.;
          fhL0Patch->Fill(posX,posY);
       }
 			
@@ -1107,7 +1106,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       {
 //	cout << "(bit >> fBitEGA) & 0x1"<<endl;
         nL1Patch ++;
-        emcalPatchL1G[posY][posX] = 1.;
+        //emcalPatchL1G[posY][posX] = 1.;
         if( bL1G  ) fhL1GPatch ->Fill(posX,posY);
         if( bL1G2 ) fhL1G2Patch->Fill(posX,posY);
         if (ts > 0 && bL1G)  emcalTrigL1G [posY][posX] = ts;
@@ -1118,7 +1117,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       if (bit >> fBitEJE & 0x1)
       {
         nL1Patch ++;
-        emcalPatchL1J[posY][posX] = 1.;
+        //emcalPatchL1J[posY][posX] = 1.;
         if( bL1J  ) fhL1JPatch ->Fill(posX,posY);
         if( bL1J2 ) fhL1J2Patch->Fill(posX,posY);
         if (ts > 0 && bL1J ) emcalTrigL1J [posY][posX] = ts;

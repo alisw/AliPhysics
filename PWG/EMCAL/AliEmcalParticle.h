@@ -36,9 +36,9 @@ class AliEmcalParticle: public AliVParticle {
   Double_t          Eta()       const { return fEta; }
   Double_t          Y()         const { if (fTrack) return fTrack->Y(); return fEta; }
   Short_t           Charge()    const { if (fTrack) return fTrack->Charge(); else return 0; }
-  Int_t   GetLabel()    const { if (fTrack) return fTrack->GetLabel(); return fCluster->GetLabel(); }
-  Int_t   PdgCode()     const { return 0; }
-  const Double_t *PID() const { return 0; }
+  Int_t             GetLabel()  const { if (fTrack) return fTrack->GetLabel(); return fCluster->GetLabel(); }
+  Int_t             PdgCode()   const { return 0; }
+  const Double_t   *PID()       const { return 0; }
 
   AliVCluster*      GetCluster()           const { return fCluster                                                  ; }
   Int_t             GetMatchedObjId(UShort_t i = 0)         const { return fNMatched > i ? fMatchedIds[i]  : -1     ; }
@@ -49,7 +49,7 @@ class AliEmcalParticle: public AliVParticle {
   Double_t          GetTrackEtaOnEMCal()   const { if (fTrack) return fTrack->GetTrackEtaOnEMCal(); else return -999; }
   Int_t             IdInCollection()       const { return fId                                                       ; }
   Bool_t            IsCluster()            const { return (Bool_t) fCluster != 0                                    ; }
-  Bool_t            IsEMCAL()              const { if (fCluster) return kTRUE; 
+  Bool_t            IsEMCAL()              const { if (fCluster) return fCluster->IsEMCAL(); 
                                                    if (fTrack)   return fTrack->IsEMCAL(); 
                                                    return kFALSE; }
   Bool_t            IsTrack()              const { return (Bool_t) fTrack   != 0                                    ; }

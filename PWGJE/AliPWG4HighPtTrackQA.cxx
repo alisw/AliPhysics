@@ -18,7 +18,7 @@
 // of tracks and track selection criteria
 // Output: Histograms for different set of cuts
 //-----------------------------------------------------------------------
-// Author : Marta Verweij - UU
+// Author : M. Verweij - UU
 //-----------------------------------------------------------------------
 
 #ifndef ALIPWG4HIGHPTTRACKQA_CXX
@@ -52,7 +52,6 @@
 #include "AliCentrality.h"
 #include "AliAODVertex.h"
 #include "AliAODEvent.h"
-//#include "AliAnalysisHelperJetTasks.h"
 
 using namespace std; //required for resolving the 'cout' symbol
 
@@ -69,11 +68,12 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fTrackCutsTPConly(0x0), 
   fTrackType(0),
   fFilterMask(0),
+  fIncludeNoITS(kFALSE),
   fSigmaConstrainedMax(-1.),
   fPtMax(100.),
   fIsPbPb(0),
   fCentClass(10),
-  fNVariables(25),
+  fNVariables(26),
   fVariables(0x0),
   fITSClusterMap(0),
   fAvgTrials(1),
@@ -92,6 +92,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fPtSel(0),    
   fPtPhi(0x0),
   fPtEta(0x0),
+  fPtEtaPhi(0x0),
   fPtDCA2D(0x0),
   fPtDCAZ(0x0),
   fPtNClustersTPC(0x0),
@@ -100,6 +101,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fPtNClustersTPCShared(0x0),
   fPtNClustersTPCSharedFrac(0x0),
   fPtNPointITS(0x0),
+  fPtNPointITSPhi(0x0),
   fPtChi2C(0x0),
   fPtNSigmaToVertex(0x0),
   fPtRelUncertainty1Pt(0x0),
@@ -110,7 +112,6 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fPtRelUncertainty1PtChi2(0x0),
   fPtRelUncertainty1PtChi2Iter1(0x0),
   fPtRelUncertainty1PtPhi(0x0),
-  fPtUncertainty1Pt(0x0),
   fPtChi2PerClusterTPC(0x0),
   fPtChi2PerClusterTPCIter1(0x0),
   fPtNCrossedRows(0x0),
@@ -123,6 +124,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fNCrossedRowsNCrossedRowsFit(0x0),
   fNClustersNCrossedRows(0x0),
   fNClustersNCrossedRowsFit(0x0),
+  fPtNClustersNClustersFitMap(0x0),
   fPtRelUncertainty1PtNCrossedRows(0x0),
   fPtRelUncertainty1PtNCrossedRowsFit(0x0),
   fPtChi2Gold(0x0),
@@ -130,6 +132,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fPtChi2GoldPhi(0x0),
   fPtChi2GGCPhi(0x0),
   fChi2GoldChi2GGC(0x0),
+  fPtChi2ITSPhi(0x0),
   fPtSigmaY2(0x0),
   fPtSigmaZ2(0x0),
   fPtSigmaSnp2(0x0),
@@ -169,11 +172,12 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fTrackCutsTPConly(0x0), 
   fTrackType(0),
   fFilterMask(0),
+  fIncludeNoITS(kFALSE),
   fSigmaConstrainedMax(-1.),
   fPtMax(100.),
   fIsPbPb(0),
   fCentClass(10),
-  fNVariables(25),
+  fNVariables(26),
   fVariables(0x0),
   fITSClusterMap(0),
   fAvgTrials(1),
@@ -192,6 +196,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fPtSel(0),
   fPtPhi(0x0),
   fPtEta(0x0),
+  fPtEtaPhi(0x0),
   fPtDCA2D(0x0),
   fPtDCAZ(0x0),
   fPtNClustersTPC(0x0),
@@ -200,6 +205,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fPtNClustersTPCShared(0x0),
   fPtNClustersTPCSharedFrac(0x0),
   fPtNPointITS(0x0),
+  fPtNPointITSPhi(0x0),
   fPtChi2C(0x0),
   fPtNSigmaToVertex(0x0),
   fPtRelUncertainty1Pt(0x0),
@@ -210,7 +216,6 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fPtRelUncertainty1PtChi2(0x0),
   fPtRelUncertainty1PtChi2Iter1(0x0),
   fPtRelUncertainty1PtPhi(0x0),
-  fPtUncertainty1Pt(0x0),
   fPtChi2PerClusterTPC(0x0),
   fPtChi2PerClusterTPCIter1(0x0),
   fPtNCrossedRows(0x0),
@@ -223,6 +228,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fNCrossedRowsNCrossedRowsFit(0x0),
   fNClustersNCrossedRows(0x0),
   fNClustersNCrossedRowsFit(0x0),
+  fPtNClustersNClustersFitMap(0x0),
   fPtRelUncertainty1PtNCrossedRows(0x0),
   fPtRelUncertainty1PtNCrossedRowsFit(0x0),
   fPtChi2Gold(0x0),
@@ -230,6 +236,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fPtChi2GoldPhi(0x0),
   fPtChi2GGCPhi(0x0),
   fChi2GoldChi2GGC(0x0),
+  fPtChi2ITSPhi(0x0),
   fPtSigmaY2(0x0),
   fPtSigmaZ2(0x0),
   fPtSigmaSnp2(0x0),
@@ -507,6 +514,7 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
 
   fh1NTracksReject = new TH1F("fh1NTracksReject","fh1NTracksReject",1,-0.5,0.5);
   fh1NTracksReject->Fill("noHybridTrack",0);
+  fh1NTracksReject->Fill("noITSrefit",0);
   fh1NTracksReject->Fill("noESDtrack",0);
   fh1NTracksReject->Fill("noTPCInner",0);
   fh1NTracksReject->Fill("FillTPC",0);
@@ -530,6 +538,9 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
  
   fPtEta = new TH2F("fPtEta","fPtEta",fgkNPtBins,binsPt,fgkNEtaBins,binsEta);
   fHistList->Add(fPtEta);
+
+  fPtEtaPhi = new TH3F("fPtEtaPhi","fPtEtaPhi",fgkNPtBins,binsPt,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fHistList->Add(fPtEtaPhi);
  
   fPtDCA2D = new TH2F("fPtDCA2D","fPtDCA2D",fgkNPtBins,binsPt,fgkNDCA2DBins,binsDCA2D);
   fHistList->Add(fPtDCA2D);
@@ -554,6 +565,9 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
  
   fPtNPointITS = new TH2F("fPtNPointITS","fPtNPointITS",fgkNPtBins,binsPt,fgkNNPointITSBins,binsNPointITS);
   fHistList->Add(fPtNPointITS);
+
+  fPtNPointITSPhi = new TH3F("fPtNPointITSPhi","fPtNPointITSPhi",fgkNPtBins,binsPt,fgkNNPointITSBins,binsNPointITS,fgkNPhiBins,binsPhi);
+  fHistList->Add(fPtNPointITSPhi);
  
   fPtChi2C = new TH2F("fPtChi2C","fPtChi2C",fgkNPtBins,binsPt,fgkNChi2CBins,binsChi2C);
   fHistList->Add(fPtChi2C);
@@ -585,9 +599,6 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   fPtRelUncertainty1PtPhi = new TH3F("fPtRelUncertainty1PtPhi","fPtRelUncertainty1PtPhi",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNPhiBins,binsPhi);
   fHistList->Add(fPtRelUncertainty1PtPhi);
 
-  fPtUncertainty1Pt = new TH2F("fPtUncertainty1Pt","fPtUncertainty1Pt",fgkNPtBins,binsPt,fgkNUncertainty1PtBins,binsUncertainty1Pt);
-  fHistList->Add(fPtUncertainty1Pt);
- 
   fPtChi2PerClusterTPC = new TH2F("fPtChi2PerClusterTPC","fPtChi2PerClusterTPC",fgkNPtBins,binsPt,fgkNChi2PerClusBins,binsChi2PerClus);
   fHistList->Add(fPtChi2PerClusterTPC);
  
@@ -624,6 +635,9 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   fNClustersNCrossedRowsFit = new TH2F("fNClustersNCrossedRowsFit","fNClustersNCrossedRowsFit",fgkNNClustersTPCBins,binsNClustersTPC,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fNClustersNCrossedRowsFit);
 
+  fPtNClustersNClustersFitMap = new TH3F("fPtNClustersNClustersFitMap","fPtNClustersNClustersFitMap;p_{T};N_{cls};N_{cls}^{fit map}",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC,fgkNNClustersTPCBins,binsNClustersTPC);
+  fHistList->Add(fPtNClustersNClustersFitMap);
+
   fPtRelUncertainty1PtNCrossedRows = new TH3F("fPtRelUncertainty1PtNCrossedRows","fPtRelUncertainty1PtNCrossedRows",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fPtRelUncertainty1PtNCrossedRows);
 
@@ -645,6 +659,8 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   fChi2GoldChi2GGC = new TH2F("fChi2GoldChi2GGC","fChi2GoldChi2GGC;#chi^{2}_{gold};#chi^{2}_{ggc}",fgkNChi2CBins,binsChi2C,fgkNChi2CBins,binsChi2C);
   fHistList->Add(fChi2GoldChi2GGC);
 
+  fPtChi2ITSPhi = new TH3F("fPtChi2ITSPhi","fPtChi2ITSPhi;p_{T};#chi^{2}_{ITS};#varphi",fgkNPtBins,binsPt,fgkNChi2CBins,binsChi2C,fgkNPhiBins,binsPhi);
+  fHistList->Add(fPtChi2ITSPhi);
 
   fPtSigmaY2 = new TH2F("fPtSigmaY2","fPtSigmaY2",fgkN1PtBins,bins1Pt,fgkNSigmaY2Bins,binsSigmaY2);
   fHistList->Add(fPtSigmaY2);
@@ -991,6 +1007,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
     22: Chi2 between global and global constrained
     23: #crossed rows from fit map
     24: (#crossed rows)/(#findable clusters) from fit map
+    25: chi2ITS
   */
 
   for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
@@ -1190,6 +1207,11 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
     Float_t crossedRowsTPCNClsFFit = 1.;
     if(track->GetTPCNclsF()>0.) crossedRowsTPCNClsFFit = fVariables->At(23)/track->GetTPCNclsF();
     fVariables->SetAt(crossedRowsTPCNClsFFit,24);
+
+    fVariables->SetAt(track->GetITSchi2(),25);
+
+    TBits fitmap = track->GetTPCFitMap();
+    fPtNClustersNClustersFitMap->Fill(track->Pt(),track->GetTPCNcls(),(float)fitmap.CountBits());
     
     FillHistograms();
   
@@ -1225,6 +1247,13 @@ void AliPWG4HighPtTrackQA::DoAnalysisAOD() {
     if( !aodtrack->TestFilterMask(fFilterMask) ) {
       fh1NTracksReject->Fill("noHybridTrack",1);
       continue;
+    }
+
+    if(!fIncludeNoITS) {
+      if ((aodtrack->GetStatus()&AliESDtrack::kITSrefit)==0) {
+	fh1NTracksReject->Fill("noITSrefit",1);
+	continue;
+      }
     }
 
     fVariables->Reset(0.);
@@ -1281,6 +1310,8 @@ void AliPWG4HighPtTrackQA::DoAnalysisAOD() {
     if(aodtrack->GetTPCNclsF()>0.) crossedRowsTPCNClsFFit = fVariables->At(23)/aodtrack->GetTPCNclsF();
     fVariables->SetAt(crossedRowsTPCNClsFFit,24); //(#crossed rows)/(#findable clusters) from fit map
 
+    fVariables->SetAt(0.,25);
+
     fPtAll->Fill(fVariables->At(0));
 
     FillHistograms();
@@ -1298,11 +1329,12 @@ void AliPWG4HighPtTrackQA::FillHistograms() {
   fPtSel->Fill(fVariables->At(0));
   fPtPhi->Fill(fVariables->At(0),fVariables->At(1));
   fPtEta->Fill(fVariables->At(0),fVariables->At(2));
+  fPtEtaPhi->Fill(fVariables->At(0),fVariables->At(2),fVariables->At(1));
   fPtDCA2D->Fill(fVariables->At(0),fVariables->At(3));
   fPtDCAZ->Fill(fVariables->At(0),fVariables->At(4));
   fPtNClustersTPC->Fill(fVariables->At(0),fVariables->At(5));
   fPtNPointITS->Fill(fVariables->At(0),fVariables->At(6));
-
+  fPtNPointITSPhi->Fill(fVariables->At(0),fVariables->At(6),fVariables->At(1));
   
   fPtNClustersTPCIter1->Fill(fVariables->At(0),fVariables->At(18));
   fPtNClustersTPCIter1Phi->Fill(fVariables->At(0),fVariables->At(18),fVariables->At(1));
@@ -1327,7 +1359,6 @@ void AliPWG4HighPtTrackQA::FillHistograms() {
     fPtRelUncertainty1PtChi2Iter1->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(19)/fVariables->At(18));
   fPtRelUncertainty1PtPhi->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(1));
   
-  fPtUncertainty1Pt->Fill(fVariables->At(0),TMath::Sqrt(fVariables->At(17)));
   fPtSigmaY2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(13)));
   fPtSigmaZ2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(14)));
   fPtSigmaSnp2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(15)));
@@ -1367,6 +1398,9 @@ void AliPWG4HighPtTrackQA::FillHistograms() {
   fPtRelUncertainty1PtNCrossedRows->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(11));
   fPtRelUncertainty1PtNCrossedRowsFit->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(23));
 
+  if(fVariables->At(6)>0.)
+    fPtChi2ITSPhi->Fill(fVariables->At(0),fVariables->At(25)/fVariables->At(6),fVariables->At(1));
+
 }
 
 //________________________________________________________________________
@@ -1390,8 +1424,6 @@ Bool_t AliPWG4HighPtTrackQA::PythiaInfoFromFile(const char* currFile,Float_t &fX
     // not an archive take the basename....
     file.ReplaceAll(gSystem->BaseName(file.Data()),"");
   }
-  //  Printf("%s",file.Data());
-   
 
   TFile *fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")); // problem that we cannot really test the existance of a file in a archive so we have to lvie with open error message from root
   if(!fxsec){

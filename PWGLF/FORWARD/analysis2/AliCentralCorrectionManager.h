@@ -100,12 +100,14 @@ public:
   /** 
    * Read in corrections based on the parameters given 
    * 
+   * @param runNumber       Run number
    * @param collisionSystem Collision system
    * @param cmsNN           Center of mass energy per nuclean pair [GeV]
    * @param field           Magnetic field setting [kG]
    * @param mc              Monte-carlo switch
    * @param what            What to read in. 
    * @param force           Force (re-)reading of specified things
+   * @param satelliteCollisions For satellite collisions
    * 
    * @return 
    */
@@ -120,12 +122,14 @@ public:
   /** 
    * Read in correction based on passed parameters
    * 
+   * @param runNumber       Run number
    * @param collisionSystem Collision system string 
    * @param cmsNN           Center of mass energy per nucleon pair [GeV]
    * @param field           Magnetic field [kG]
    * @param mc              Monte-carlo switch
    * @param what            What to read in 
    * @param force           Force (re-)reading of specified things
+   * @param satelliteCollisions For satellite collisions
    * 
    * @return true on success
    */
@@ -143,6 +147,12 @@ public:
    * @return The vertex axis or null
    */
   const TAxis* GetVertexAxis() const;
+  /** 
+   * Get the @f$\eta@f$ axis
+   * 
+   * @return The @f$\eta@f$ axis or null
+   */
+  const TAxis* GetEtaAxis() const { return 0; }
   /** 
    * Get the secondary correction map
    * 

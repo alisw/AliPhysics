@@ -27,6 +27,7 @@ class AliMuonEventCuts;
 class AliMuonTrackCuts;
 class AliMuonPairCuts;
 class AliVVertex;
+class AliUtilityMuonAncestor;
 
 class AliVAnalysisMuon : public AliAnalysisTaskSE {
  public:
@@ -81,6 +82,7 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
     kBeautyMu,      ///< Mu from beauty
     kQuarkoniumMu,  ///< Mu from resonance
     kWbosonMu,      ///< Mu from W
+    kZbosonMu,      ///< Mu from Z
     kDecayMu,       ///< Decay mu
     kSecondaryMu,   ///< Secondary mu
     kRecoHadron,    ///< Reconstructed hadron
@@ -112,8 +114,7 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   /////////////////////
     
   // Methods for MC
-  Int_t GetParticleType ( AliVParticle* track , Bool_t forceReachFirstAncestor = kFALSE);
-  Int_t RecoTrackMother (AliVParticle* mcParticle, Bool_t forceReachFirstAncestor = kFALSE );
+  Int_t GetParticleType ( AliVParticle* track );
   
   // Methods for mergeable object collections
   Bool_t AddObjectToCollection(TObject* object, Int_t index = -1);
@@ -131,6 +132,7 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   TObjArray* fSrcKeys;         ///< MC sources names
   TObjArray* fPhysSelKeys;     ///< Physics selection names
   THashList* fWeights;         ///< List of objects to weight histograms
+  AliUtilityMuonAncestor* fUtilityMuonAncestor; ///< Utility to get the muon ancestor
   
   AliCounterCollection* fEventCounters;  //!< event counters
   AliMergeableCollection* fMergeableCollection; //!< collection of mergeable objects
@@ -144,7 +146,7 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   void CreateMergeableObjects(TString physSel, TString trigClassName, TString centrality);
   TObjArray* fOutputPrototypeList; //!< List of prototype object to be used in collection
 
-  ClassDef(AliVAnalysisMuon, 5);
+  ClassDef(AliVAnalysisMuon, 6);
 };
 
 #endif

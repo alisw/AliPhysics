@@ -17,6 +17,7 @@
 #include "AliCentralCorrAcceptance.h"
 #include "AliCentralCorrSecondaryMap.h"
 #include "AliForwardUtil.h"
+#include "AliAODForwardMult.h"
 #include "AliLog.h"
 #include "AliAODHandler.h"
 #include "AliInputEventHandler.h"
@@ -64,60 +65,49 @@ AliCentralMCMultiplicityTask::AliCentralMCMultiplicityTask()
   DGUARD(fDebug, 3,"Default CTOR of AliCentralMCMultiplicityTask");
 }
 //____________________________________________________________________
-AliCentralMCMultiplicityTask::AliCentralMCMultiplicityTask(const AliCentralMCMultiplicityTask& o)
-  : AliCentralMultiplicityTask(o),
-    fTrackDensity(o.fTrackDensity),
-    fAODMCCentral(o.fAODMCCentral)
-{
-  //
-  // Copy constructor 
-  // 
-  DGUARD(fDebug, 3,"COPY CTOR of AliCentralMCMultiplicityTask");
-}
-//____________________________________________________________________
-AliCentralMCMultiplicityTask&
-AliCentralMCMultiplicityTask::operator=(const AliCentralMCMultiplicityTask& o)
-{
-  // 
-  // Assignment operator 
-  //
-  DGUARD(fDebug,3,"Assignment of AliCentralMCMultiplicityTask");
-  if (&o == this) return *this; 
-  AliCentralMultiplicityTask::operator=(o);
-  fAODMCCentral     = o.fAODMCCentral;
-  fTrackDensity     = o.fTrackDensity;
-  return *this;
-}
-//____________________________________________________________________
-void AliCentralMCMultiplicityTask::UserCreateOutputObjects() 
+void
+AliCentralMCMultiplicityTask::CreateBranches(AliAODHandler* ah) 
 {
   // 
   // Create output objects 
   // 
   //
   DGUARD(fDebug,1,"Create user output in AliCentralMCMultiplicityTask");
-  AliCentralMultiplicityTask::UserCreateOutputObjects();
+  AliCentralMultiplicityTask::CreateBranches(ah);
 
-  AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
-  AliAODHandler*      ah = 
-    dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler());
-  if (ah) {	 
+  if (!ah) 
     // AliFatal("No AOD output handler set in analysis manager");
-  
-    TObject* obj = &fAODMCCentral;
-    ah->AddBranch("AliAODCentralMult", &obj);
-  }
-  fTrackDensity.CreateOutputObjects(fList);
+    return;
 
+  
+  TObject* obj = &fAODMCCentral;
+  ah->AddBranch("AliAODCentralMult", &obj);
 }
 //____________________________________________________________________
-void AliCentralMCMultiplicityTask::FindEtaLimits()
+Bool_t
+AliCentralMCMultiplicityTask::Book()
 {
-  AliCentralMultiplicityTask::FindEtaLimits();
-  fAODMCCentral.Init(*(fAODCentral.GetHistogram().GetXaxis()));  
+  AliCentralMultiplicityTask::Book();
+  fTrackDensity.CreateOutputObjects(fList);
+  return true;
 }
 //____________________________________________________________________
-void AliCentralMCMultiplicityTask::UserExec(Option_t* option) 
+Bool_t AliCentralMCMultiplicityTask::PreData(const TAxis& v, const TAxis& e)
+{
+  AliCentralMultiplicityTask::PreData(v, e);
+  fAODMCCentral.Init(e);  
+  return true;
+}
+
+//____________________________________________________________________
+Bool_t AliCentralMCMultiplicityTask::PreEvent()
+{
+  AliCentralMultiplicityTask::PreEvent();  
+  fAODMCCentral.Clear("");
+  return true;
+}
+//____________________________________________________________________
+Bool_t AliCentralMCMultiplicityTask::Event(AliESDEvent& esd) 
 {
   // 
   // Process each event 
@@ -126,49 +116,57 @@ void AliCentralMCMultiplicityTask::UserExec(Option_t* option)
   //    option Not used
   //  
   DGUARD(fDebug,1,"Process event in AliCentralMCMultiplicityTask");
-  fAODMCCentral.Clear("");
 
-  // Call base class 
-  AliCentralMultiplicityTask::UserExec(option);
+  fIvz               = 0;
+  Bool_t   lowFlux   = kFALSE;
+  UInt_t   triggers  = 0;
+  UShort_t ivz       = 0;
+  TVector3 ip;
+  Double_t cent      = -1;
+  UShort_t nClusters = 0;
+  UInt_t   found     = fInspector.Process(&esd, triggers, lowFlux, 
+					  ivz, ip, cent, nClusters);
 
-  // check if we need this event 
-  AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
-  AliAODHandler*      ah = 
-    dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler());
-  if (ah) {  
-    //  AliFatal("No AOD output handler set in analysis manager");    
-    // if base class did not want this event, then neither to we 
-    if (!ah->GetFillAOD() || fIvz <= 0) return;
-  } 
+  // Make sure AOD is filled
+  MarkEventForStore();
+
+  // Is this accepted for analysis? 
+  Bool_t isAccepted = true;
+
+  // No event or no trigger 
+  if (found &  AliFMDEventInspector::kNoEvent)    isAccepted = false;
+  if (found &  AliFMDEventInspector::kNoTriggers) isAccepted = false;
+  if (found &  AliFMDEventInspector::kNoSPD)      isAccepted = false;
+  if (found &  AliFMDEventInspector::kNoVertex)   isAccepted = false;
+  if (triggers & AliAODForwardMult::kPileUp)      isAccepted = false;
+  if (found &  AliFMDEventInspector::kBadVertex)  isAccepted = false; 
+
+  VtxBin* bin = static_cast<VtxBin*>(fVtxList->At(ivz));
+  if (!bin) return false;
+
+  //Doing analysis
+  if (isAccepted) {
+    const AliMultiplicity* spdmult = esd.GetMultiplicity();
+    TH2D&                  aodHist = fAODCentral.GetHistogram();
+
+    ProcessESD(aodHist, spdmult);
+    bin->Correct(aodHist, fUseSecondary, fUseAcceptance);
+  
+    if (triggers & AliAODForwardMult::kInel) 
+      fHData->Add(&(fAODCentral.GetHistogram()));
+  }
+
   const AliMCEvent*  mcEvent = MCEvent();
-  if (!mcEvent) return;
+  if (!mcEvent) return false;
   TH2D&              hist    = fAODMCCentral.GetHistogram();
 
-  AliCentralCorrectionManager& ccm = 
-    AliCentralCorrectionManager::Instance();
 
-  Double_t vz = ccm.GetSecondaryMap()->GetVertexAxis().GetBinCenter(fIvz);
-    // GetManager().GetSecMap()->GetVertexAxis().GetBinCenter(fIvz);
-
-  fTrackDensity.Calculate(*mcEvent, vz, hist, NULL);
-  
-  VtxBin* bin = static_cast<VtxBin*>(fVtxList->At(fIvz));
-  if (!bin) return;
+  fTrackDensity.Calculate(*mcEvent, ip.Z(), hist, NULL);
   bin->Correct(hist, fUseSecondary, fUseAcceptance, false);
+
+  return true;
 }
 
-//____________________________________________________________________
-void AliCentralMCMultiplicityTask::Terminate(Option_t* option) 
-{
-  // 
-  // End of job
-  // 
-  // Parameters:
-  //    option Not used 
-  //
-  DGUARD(fDebug,1,"Final analysis of merge in AliCentralMCMultiplicityTask");
-  AliCentralMultiplicityTask::Terminate(option);
-}
 //____________________________________________________________________
 void
 AliCentralMCMultiplicityTask::Print(Option_t* option) const

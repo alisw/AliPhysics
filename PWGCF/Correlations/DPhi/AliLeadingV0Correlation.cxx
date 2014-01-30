@@ -8,6 +8,7 @@
 #include <TChain.h>
 #include <TFile.h>
 #include <TMath.h>
+#include <TH1.h>
 #include <TTree.h>
 #include <TRandom.h>
 #include <THnSparse.h>
@@ -37,8 +38,9 @@
 
 #include "AliLeadingV0Correlation.h"
 
-#define CorrBinsX 240
-#define CorrBinsY 260
+#define CorrBinsX 24
+#define CorrBinsY 26
+
 
 Double_t PI =TMath::Pi();
 
@@ -48,62 +50,68 @@ ClassImp(V0Correlationparticle)
 //---------------------------------------------------------------------------------------
 AliLeadingV0Correlation::AliLeadingV0Correlation()
    : AliAnalysisTaskSE(),
-	fAODEvent(0x0),
-	fPoolMgr(0x0),
-	fPIDResponse(0x0),
-	fAnalyseUE(0x0),
-	fPoolMaxNEvents(0), 
-	fPoolMinNTracks(0), 
-	fMinEventsToMix(0),
-	fNzVtxBins(0), 
-	fNCentBins(0),
-	fcollidingSys(""),
-	fpvzcut(0),
-	fTrackEtaCut(0),
-	fFilterBit(128),
-	fAnalysisMC(0),
-	fCase(0),
-	fRemovePileUP(0),
-    fRemoveAutoCorr(0),
-	fRapidityCut(0),
-	fV0radius(0),
-	fV0PostoPVz(0),
-	fV0NegtoPVz(0),
-	fDCAV0Daughters(0),
-	fCPAK0(0),
-	fCPALam(0),
-	fRejectLamK0(0),
-	fRejectK0Lam(0),
-    fSigmaPID(0),
-	fCutCTK0(0),
-	fCutCTLa(0),
-	fMassCutK0(0),
-	fMassCutLa(0),
-	fUseChargeHadrons(kTRUE), 
-	fPtMin(0.15),
-	fOutputList(0),
-	fHistEventViceGen(0),
-	fHistEventViceReconst(0),
-	fHistMCGenK0(0),
-	fHistMCGenLAM(0),
-	fHistMCGenALAM(0),
-	fHistReconstK0(0),
-	fHistReconstLA(0),
-	fHistReconstALA(0),
-	fHistMCAssoK0(0),
-	fHistMCAssoLA(0),
-	fHistMCAssoALA(0),
-	fHistReconstSib(0),
-	fHistReconstMix(0),
-	fHistReconstSibMC(0),
-	fHistReconstMixMC(0),
-	fHistReconstSibMCAssoc(0),
-	fHistReconstMixMCAssoc(0),
-	fHistTriggerSib(0),
-	fHistTriggerMix(0),
-	fHistTriggerSibMC(0),
-	fHistTriggerMixMC(0)
-{
+	fAODEvent					(0x0),
+	fPoolMgr					(0x0),
+	fPIDResponse				(0x0),
+	fAnalyseUE					(0x0),
+	fPoolMaxNEvents				(0), 
+	fPoolMinNTracks				(0), 
+	fMinEventsToMix				(0),
+	fNzVtxBins					(0), 
+	fNCentBins					(0),
+	fcollidingSys				(""),
+	fpvzcut						(0),
+	fTrackEtaCut				(0.9),
+	fFilterBit					(128),
+	fAnalysisMC					(0),
+	fCase						(0),
+	fRemoveAutoCorr				(0),
+	fRapidityCut				(0),
+	fV0radius					(0),
+	fV0PostoPVz					(0),
+	fV0NegtoPVz					(0),
+	fDCAV0Daughters				(0),
+	fCPAK0						(0),
+	fCPALam						(0),
+	fRejectLamK0				(0),
+	fRejectK0Lam				(0),
+    fSigmaPID					(0),
+	fCutCTK0					(0),
+	fCutCTLa					(0),
+	fMassCutK0					(0),
+	fMassCutLa					(0),
+	fTriglow					(0),
+	fTrighigh					(0),
+	fUseChargeHadrons			(kTRUE), 
+	fPtMin						(0.15),
+	fOutputList					(0),
+	fHist_Mult_B4_Trg_Sel		(0),
+	fHist_Mult_Af_Trg_Sel		(0),
+	fHist_Mult_PVz_Cut			(0),
+	fHist_Mult_SPD_PVz			(0),
+	fHist_Mult_SPD_PVz_Pileup	(0),
+	fHistPVx					(0),
+	fHistPVy					(0),
+	fHistPVz					(0),
+	fHistPVxAnalysis			(0),
+	fHistPVyAnalysis			(0),
+	fHistPVzAnalysis			(0),
+	fHistEventViceGen			(0),
+	fHistEventViceReconst		(0),
+	fHistMCGenK0				(0),
+	fHistMCGenLAM				(0),
+	fHistMCGenALAM				(0),
+	fHistReconstK0				(0),
+	fHistReconstLA				(0),
+	fHistReconstALA				(0),
+	fHistMCAssoK0				(0),
+	fHistMCAssoLA				(0),
+	fHistMCAssoALA				(0),
+	fHistReconstSib				(0),
+	fHistReconstMix				(0),
+	fHistTriggerSib				(0),
+	fHistTriggerMix				(0)
+{	
 
   for(Int_t iBin = 0; iBin < 100; iBin++){
     fZvtxBins[iBin] = 0.;
@@ -113,61 +121,67 @@ AliLeadingV0Correlation::AliLeadingV0Correlation()
 //---------------------------------------------------------------------------------------
 AliLeadingV0Correlation::AliLeadingV0Correlation(const char *name)
    : AliAnalysisTaskSE(name),
-	fAODEvent(0x0),
-	fPoolMgr(0x0),
-    fPIDResponse(0x0),
-	fAnalyseUE(0x0),
-	fPoolMaxNEvents(0), 
-	fPoolMinNTracks(0), 
-	fMinEventsToMix(0),
-	fNzVtxBins(0), 
-	fNCentBins(0),
-	fcollidingSys(""),
-	fpvzcut(0),
-    fTrackEtaCut(0),
-    fFilterBit(128),
-	fAnalysisMC(0),
-	fCase(0),
-	fRemovePileUP(0),
-	fRemoveAutoCorr(0),
-    fRapidityCut(0),
-	fV0radius(0),
-	fV0PostoPVz(0),
-	fV0NegtoPVz(0),
-	fDCAV0Daughters(0),
-	fCPAK0(0),
-	fCPALam(0),
-	fRejectLamK0(0),
-	fRejectK0Lam(0),
-    fSigmaPID(0),
-	fCutCTK0(0),
-	fCutCTLa(0),
-	fMassCutK0(0),
-	fMassCutLa(0),
-	fUseChargeHadrons(kTRUE), 
-	fPtMin(0.15),
-	fOutputList(0),
-	fHistEventViceGen(0),
-	fHistEventViceReconst(0),
-	fHistMCGenK0(0),
-	fHistMCGenLAM(0),
-	fHistMCGenALAM(0),
-	fHistReconstK0(0),
-	fHistReconstLA(0),
-	fHistReconstALA(0),
-	fHistMCAssoK0(0),
-	fHistMCAssoLA(0),
-	fHistMCAssoALA(0),
-	fHistReconstSib(0),
-	fHistReconstMix(0),
-	fHistReconstSibMC(0),
-	fHistReconstMixMC(0),
-	fHistReconstSibMCAssoc(0),
-	fHistReconstMixMCAssoc(0),
-	fHistTriggerSib(0),
-	fHistTriggerMix(0),
-	fHistTriggerSibMC(0),
-	fHistTriggerMixMC(0)
+	fAODEvent					(0x0),
+	fPoolMgr					(0x0),
+    fPIDResponse				(0x0),
+	fAnalyseUE					(0x0),
+	fPoolMaxNEvents				(0), 
+	fPoolMinNTracks				(0), 
+	fMinEventsToMix				(0),
+	fNzVtxBins					(0), 
+	fNCentBins					(0),
+	fcollidingSys				(""),
+	fpvzcut						(0),
+    fTrackEtaCut				(0.9),
+    fFilterBit					(128),
+	fAnalysisMC					(0),
+	fCase						(0),
+	fRemoveAutoCorr				(0),
+    fRapidityCut				(0),
+	fV0radius					(0),
+	fV0PostoPVz					(0),
+	fV0NegtoPVz					(0),
+	fDCAV0Daughters				(0),
+	fCPAK0						(0),
+	fCPALam						(0),
+	fRejectLamK0				(0),
+	fRejectK0Lam				(0),
+    fSigmaPID					(0),
+	fCutCTK0					(0),
+	fCutCTLa					(0),
+	fMassCutK0					(0),
+	fMassCutLa					(0),
+	fTriglow					(0),
+	fTrighigh					(0),
+	fUseChargeHadrons			(kTRUE), 
+	fPtMin						(0.15),
+	fOutputList					(0),
+	fHist_Mult_B4_Trg_Sel		(0),
+	fHist_Mult_Af_Trg_Sel		(0),
+	fHist_Mult_PVz_Cut			(0),
+	fHist_Mult_SPD_PVz			(0),
+	fHist_Mult_SPD_PVz_Pileup	(0),
+	fHistPVx					(0),
+	fHistPVy					(0),
+	fHistPVz					(0),
+	fHistPVxAnalysis			(0),
+	fHistPVyAnalysis			(0),
+	fHistPVzAnalysis			(0),
+	fHistEventViceGen			(0),
+	fHistEventViceReconst		(0),
+	fHistMCGenK0				(0),
+	fHistMCGenLAM				(0),
+	fHistMCGenALAM				(0),
+	fHistReconstK0				(0),
+	fHistReconstLA				(0),
+	fHistReconstALA				(0),
+	fHistMCAssoK0				(0),
+	fHistMCAssoLA				(0),
+	fHistMCAssoALA				(0),
+	fHistReconstSib				(0),
+	fHistReconstMix				(0),
+	fHistTriggerSib				(0),
+	fHistTriggerMix				(0)
 
 {	
   for(Int_t iBin = 0; iBin < 100; iBin++){
@@ -188,18 +202,54 @@ AliLeadingV0Correlation::~AliLeadingV0Correlation()
 void AliLeadingV0Correlation::UserCreateOutputObjects()
 {	
 	fAnalyseUE =new AliAnalyseLeadingTrackUE();
+	if(!fAnalysisMC)
+	{
 	fAnalyseUE->SetParticleSelectionCriteria(fFilterBit,fUseChargeHadrons,fTrackEtaCut,fPtMin);
 	fAnalyseUE->DefineESDCuts(fFilterBit);
+	}
 	
 	fOutputList = new TList();
 	fOutputList->SetOwner();
 	
+	fHist_Mult_B4_Trg_Sel = new TH1F("fHist_Mult_B4_Trg_Sel","Tracks per event;Nbr of Tracks;Events", 1000, 0, 10000); 		
+	fOutputList->Add(fHist_Mult_B4_Trg_Sel);
+	
+	fHist_Mult_Af_Trg_Sel = new TH1F("fHist_Mult_Af_Trg_Sel","Tracks per event;Nbr of Tracks;Events",1000, 0, 10000); 		
+	fOutputList->Add(fHist_Mult_Af_Trg_Sel);
+	
+	fHist_Mult_PVz_Cut = new TH1F("fHist_Mult_PVz_Cut","Tracks per event;Nbr of Tracks;Events",1000, 0, 10000); 		
+	fOutputList->Add(fHist_Mult_PVz_Cut);
+	
+	fHist_Mult_SPD_PVz = new TH1F("fHist_Mult_SPD_PVz","Tracks per event;Nbr of Tracks;Events",1000, 0, 10000); 		
+	fOutputList->Add(fHist_Mult_SPD_PVz);
+	
+	fHist_Mult_SPD_PVz_Pileup = new TH1F("fHist_Mult_SPD_PVz_Pileup","Tracks per event;Nbr of Tracks;Events",1000, 0, 10000); 		
+	fOutputList->Add(fHist_Mult_SPD_PVz_Pileup);
+	
+	fHistPVx = new TH1F("fHistPVx","PV x position;Nbr of Evts;x", 200, -0.5, 0.5); 		
+	fOutputList->Add(fHistPVx);
+	
+	fHistPVy = new TH1F("fHistPVy","PV y position;Nbr of Evts;y",200, -0.5, 0.5); 		
+	fOutputList->Add(fHistPVy);
+	
+	fHistPVz = new TH1F("fHistPVz","PV z position;Nbr of Evts;z",400, -20, 20); 		
+	fOutputList->Add(fHistPVz);
+	
+	fHistPVxAnalysis = new TH1F("fHistPVxAnalysis","PV x position;Nbr of Evts;x", 200, -0.5, 0.5); 		
+	fOutputList->Add(fHistPVxAnalysis);
+	
+	fHistPVyAnalysis = new TH1F("fHistPVyAnalysis","PV y position;Nbr of Evts;y",200, -0.5, 0.5); 		
+	fOutputList->Add(fHistPVyAnalysis);
+	
+	fHistPVzAnalysis = new TH1F("fHistPVzAnalysis","PV z position;Nbr of Evts;z",400, -20, 20); 		
+	fOutputList->Add(fHistPVzAnalysis);
+	
 	//---------------------------------------------- Events histograms -----------------------------------------------------//
 	//0-PVx,1-PVy,2-PVz,3-MULT,4-CENT
-	const Int_t ndimsEV = 5;
-	Int_t    binsEV[ndimsEV] = { 100,  100, 200, 1000,100};
-	Double_t xminEV[ndimsEV] = {-0.5, -0.5,-20 ,    0,  0};
-	Double_t xmaxEV[ndimsEV] = { 0.5,  0.5, 20 ,20000,100};
+	const Int_t ndimsEV = 3;
+	Int_t    binsEV[ndimsEV] = { 200,  100,100};
+	Double_t xminEV[ndimsEV] = {-20 ,    0,  0};
+	Double_t xmaxEV[ndimsEV] = { 20 ,  300,100};
 	
 	fHistEventViceGen= new THnSparseD("fHistEventViceGen", "fHistEventViceGen", ndimsEV, binsEV, xminEV, xmaxEV);
 	fOutputList->Add(fHistEventViceGen);
@@ -208,14 +258,14 @@ void AliLeadingV0Correlation::UserCreateOutputObjects()
 	fOutputList->Add(fHistEventViceReconst);
 	
 	//0-YK0,1-Pt
-	const Int_t ndimsGenMC = 4;
-	Int_t    binsGenMCLA[ndimsGenMC] = {160,240, 140,100};
-	Double_t xminGenMCLA[ndimsGenMC] = { -4,  0,1.06,  0};
-	Double_t xmaxGenMCLA[ndimsGenMC] = {  4, 12, 1.2,100};  
+	const Int_t ndimsGenMC = 3;
+	Int_t    binsGenMCLA[ndimsGenMC] = {120, 140,100};
+	Double_t xminGenMCLA[ndimsGenMC] = {  0,1.06,  0};
+	Double_t xmaxGenMCLA[ndimsGenMC] = {  6, 1.2,100};  
 	
-	Int_t    binsGenMCK0[ndimsGenMC] = {160,240, 200,100};
-	Double_t xminGenMCK0[ndimsGenMC] = { -4,  0, 0.4,  0};
-	Double_t xmaxGenMCK0[ndimsGenMC] = {  4, 12, 0.6,100};
+	Int_t    binsGenMCK0[ndimsGenMC] = {120, 200,100};
+	Double_t xminGenMCK0[ndimsGenMC] = {  0, 0.4,  0};
+	Double_t xmaxGenMCK0[ndimsGenMC] = {  6, 0.6,100};
 	
 	fHistMCGenLAM  = new THnSparseD("fHistMCGenLAM" , "fHistMCGenLAM" , ndimsGenMC, binsGenMCLA, xminGenMCLA, xmaxGenMCLA);
 	fOutputList->Add(fHistMCGenLAM);
@@ -226,33 +276,37 @@ void AliLeadingV0Correlation::UserCreateOutputObjects()
 	fHistMCGenK0   = new THnSparseD("fHistMCGenK0"  , "fHistMCGenK0"  , ndimsGenMC, binsGenMCK0, xminGenMCK0, xmaxGenMCK0);
 	fOutputList->Add(fHistMCGenK0);
 	
-	const Int_t ndims=10;    //MK0  mLA  MALA DCAP DCAN  RV0 DVD   CPA  PT   cent
-	Int_t    bins[ndims] = {  200,  140,  140, 500, 500, 110,110,   200,240  ,100};
-	Double_t xmin[ndims] = {  0.4, 1.06, 1.06,   0,   0,   0,  0, 0.997,  0  ,  0};
-	Double_t xmax[ndims] = {  0.6,  1.2,  1.2,  10,  10, 110,1.1, 1.007, 12  ,100};	
+	const Int_t ndims=3;    //MK0  mLA  MALA PT   cent
+	Int_t    binsK0[ndims] = {  200, 120  ,100};
+	Double_t xminK0[ndims] = {  0.4,   0  ,  0};
+	Double_t xmaxK0[ndims] = {  0.6,   6  ,100};
+	 
+	Int_t    binsLA[ndims] = {  140, 120  ,100};
+	Double_t xminLA[ndims] = { 1.06,   0  ,  0};
+	Double_t xmaxLA[ndims] = {  1.2,   6  ,100};
 	
 	
-	fHistReconstK0= new THnSparseD("fHistReconstK0"  , "fHistReconstK0",  ndims, bins, xmin, xmax);
+	fHistReconstK0= new THnSparseD("fHistReconstK0"  , "fHistReconstK0",  ndims, binsK0, xminK0, xmaxK0);
 	fHistReconstK0->Sumw2();
 	fOutputList->Add(fHistReconstK0);
 	
-	fHistReconstLA= new THnSparseD("fHistReconstLA"  , "fHistReconstLA",  ndims, bins, xmin, xmax);
+	fHistReconstLA= new THnSparseD("fHistReconstLA"  , "fHistReconstLA",  ndims, binsLA, xminLA, xmaxLA);
 	fHistReconstLA->Sumw2();
 	fOutputList->Add(fHistReconstLA);
 	
-	fHistReconstALA= new THnSparseD("fHistReconstALA", "fHistReconstALA", ndims, bins, xmin, xmax);
+	fHistReconstALA= new THnSparseD("fHistReconstALA", "fHistReconstALA", ndims, binsLA, xminLA, xmaxLA);
 	fHistReconstALA->Sumw2();
 	fOutputList->Add(fHistReconstALA);
 	
-	fHistMCAssoK0= new THnSparseD("fHistMCAssoK0"   , "fHistMCAssoK0"   , ndims, bins, xmin, xmax);
+	fHistMCAssoK0= new THnSparseD("fHistMCAssoK0"   , "fHistMCAssoK0"   , ndims, binsK0, xminK0, xmaxK0);
 	fHistMCAssoK0->Sumw2();
 	fOutputList->Add(fHistMCAssoK0);
 	
-	fHistMCAssoLA= new THnSparseD("fHistMCAssoLA"   , "fHistMCAssoLA"   , ndims, bins, xmin, xmax);
+	fHistMCAssoLA= new THnSparseD("fHistMCAssoLA"   , "fHistMCAssoLA"   , ndims, binsLA, xminLA, xmaxLA);
 	fHistMCAssoLA->Sumw2();
 	fOutputList->Add(fHistMCAssoLA);
 	
-	fHistMCAssoALA= new THnSparseD("fHistMCAssoALA" , "fHistMCAssoALA" ,  ndims, bins, xmin, xmax);
+	fHistMCAssoALA= new THnSparseD("fHistMCAssoALA" , "fHistMCAssoALA" ,  ndims, binsLA, xminLA, xmaxLA);
 	fHistMCAssoALA->Sumw2();
 	fOutputList->Add(fHistMCAssoALA);
 	
@@ -260,11 +314,11 @@ void AliLeadingV0Correlation::UserCreateOutputObjects()
 	
 	//0-pTK0,1-PhiK0,2-EtaK0,3-DPhiK0,4-DEtaK0,5-TYPE,6-CutSet
 	const Int_t ndimsv0CORR = 7;       
-	Int_t    binsv0CORR[ndimsv0CORR] = {240, 200,          200,CorrBinsX,      CorrBinsY,4,100};
+	Int_t    binsv0CORR[ndimsv0CORR] = {120, 200,          200,CorrBinsX,      CorrBinsY,4,100};
 	
 	Double_t xminv0CORR[ndimsv0CORR] = {  0,   0,-fTrackEtaCut,    -PI/2,-2*fTrackEtaCut,0,0};
 	
-	Double_t xmaxv0CORR[ndimsv0CORR] = { 12,2*PI, fTrackEtaCut,   3*PI/2, 2*fTrackEtaCut,4,100};
+	Double_t xmaxv0CORR[ndimsv0CORR] = {  6,2*PI, fTrackEtaCut,   3*PI/2, 2*fTrackEtaCut,4,100};
 	
 	fHistReconstSib= new THnSparseD("fHistReconstSib", "fHistReconstSib", ndimsv0CORR, binsv0CORR, xminv0CORR, xmaxv0CORR);
 	fHistReconstSib->Sumw2();
@@ -274,27 +328,11 @@ void AliLeadingV0Correlation::UserCreateOutputObjects()
 	fHistReconstMix->Sumw2();
 	fOutputList->Add(fHistReconstMix);
 	
-	fHistReconstSibMC= new THnSparseD("fHistReconstSibMC", "fHistReconstSibMC", ndimsv0CORR, binsv0CORR, xminv0CORR, xmaxv0CORR);
-	fHistReconstSibMC->Sumw2();
-	fOutputList->Add(fHistReconstSibMC);
-	
-	fHistReconstMixMC= new THnSparseD("fHistReconstMixMC", "fHistReconstMixMC", ndimsv0CORR, binsv0CORR, xminv0CORR, xmaxv0CORR);
-	fHistReconstMixMC->Sumw2();
-	fOutputList->Add(fHistReconstMixMC);
-	
-	fHistReconstSibMCAssoc= new THnSparseD("fHistReconstSibMCAssoc", "fHistReconstSibMCAssoc", ndimsv0CORR, binsv0CORR, xminv0CORR, xmaxv0CORR);
-	fHistReconstSibMCAssoc->Sumw2();
-	fOutputList->Add(fHistReconstSibMCAssoc);
-	
-	fHistReconstMixMCAssoc= new THnSparseD("fHistReconstMixMCAssoc", "fHistReconstMixMCAssoc", ndimsv0CORR, binsv0CORR, xminv0CORR, xmaxv0CORR);
-	fHistReconstMixMCAssoc->Sumw2();
-	fOutputList->Add(fHistReconstMixMCAssoc);
-	
 	//0-pt,1-PHI,2-Eta
-	const Int_t triggerdims       =4;
-	Int_t binsTrig[triggerdims]   ={240, 200,          200,100};
-	Double_t xminTrig[triggerdims]={  6,   0,-fTrackEtaCut,  0};
-	Double_t xmaxTrig[triggerdims]={ 12,2*PI, fTrackEtaCut,100};
+	const Int_t triggerdims       =2;
+	Int_t binsTrig[triggerdims]   ={       100, 100};
+	Double_t xminTrig[triggerdims]={  fTriglow,   0};
+	Double_t xmaxTrig[triggerdims]={ fTrighigh, 100};
 	
 	fHistTriggerSib= new THnSparseD("fHistTriggerSib", "fHistTriggerSib", triggerdims, binsTrig, xminTrig, xmaxTrig);
 	fHistTriggerSib->Sumw2();
@@ -304,13 +342,6 @@ void AliLeadingV0Correlation::UserCreateOutputObjects()
 	fHistTriggerMix->Sumw2();
 	fOutputList->Add(fHistTriggerMix);
 	
-	fHistTriggerSibMC= new THnSparseD("fHistTriggerSibMC", "fHistTriggerSibMC", triggerdims, binsTrig, xminTrig, xmaxTrig);
-	fHistTriggerSibMC->Sumw2();
-	fOutputList->Add(fHistTriggerSibMC);
-	
-	fHistTriggerMixMC= new THnSparseD("fHistTriggerMixMC", "fHistTriggerMixMC", triggerdims, binsTrig, xminTrig, xmaxTrig);
-	fHistTriggerMixMC->Sumw2();
-	fOutputList->Add(fHistTriggerMixMC);
 	
 	//----------------------------------------------Event Pool-----------------------------------------------------//
 	fPoolMgr = new AliEventPoolManager(fPoolMaxNEvents, fPoolMinNTracks, fNCentBins, fCentBins, fNzVtxBins, fZvtxBins);
@@ -337,9 +368,20 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 	Int_t multiplicityMC  = -1;
 	Double_t MultipOrCent = -1; 
 	Double_t CentPecentMC = -1;
-	Double_t CentPecentAfterPhySel   = -1;
+	Double_t CentPecentAfterPhySel    = -1;
+	Int_t    nTrackMultiplicity       = -1;
+	Float_t lPrimaryTrackMultiplicity = 0;
 	
-	if(fcollidingSys=="PbPb2010" || fcollidingSys=="PbPb2011"){   
+	nTrackMultiplicity              = (InputEvent())->GetNumberOfTracks();
+    for (Int_t itrack = 0; itrack<nTrackMultiplicity; itrack++) {
+		AliAODTrack* track = fAODEvent->GetTrack(itrack);
+		if(!fAnalysisMC) if (track->TestFilterBit(fFilterBit)) lPrimaryTrackMultiplicity++;
+		lPrimaryTrackMultiplicity++;
+    }
+
+	fHist_Mult_B4_Trg_Sel->Fill(lPrimaryTrackMultiplicity);
+	
+	if(fcollidingSys=="PbPb"){   
 	AliCentrality *centralityObjMC = fAODEvent->GetHeader()->GetCentralityP();
 		CentPecentMC  = centralityObjMC->GetCentralityPercentileUnchecked("V0M");
 		if ((CentPecentMC < 0.)||(CentPecentMC > 90)) return;
@@ -349,8 +391,11 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 	Double_t poolmin    = CentBins[0];
 	Double_t poolmax    = CentBins[fNCentBins];
 	
+	//----------------------------------------------------------
+	// Efficency denomenator comes before the physics selection
+	//----------------------------------------------------------
 	
-	Double_t  dimEventviceMC[5];
+	Double_t  dimEventviceMC[3];
 	if(fAnalysisMC)    //Efficency denomenator comes before the physics selection
 	{
 		AliAODMCHeader *aodMCheader = (AliAODMCHeader*)fAODEvent->FindListObject(AliAODMCHeader::StdBranchName());
@@ -358,27 +403,18 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 		
 		if (TMath::Abs(mcZv) >= fpvzcut) return;
 		
-		dimEventviceMC[0]=aodMCheader->GetVtxX();;
-		dimEventviceMC[1]=aodMCheader->GetVtxY();;
-		dimEventviceMC[2]=aodMCheader->GetVtxZ();;
+		dimEventviceMC[0]=aodMCheader->GetVtxZ();
 		
 		TClonesArray *mcArray = (TClonesArray*)fAODEvent->FindListObject(AliAODMCParticle::StdBranchName());
 		if(!mcArray)return;
 		
-		TObjArray *selectedTracksLeadingMC=fAnalyseUE->FindLeadingObjects(mcArray);
-		if(!selectedTracksLeadingMC) return;
-		selectedTracksLeadingMC->SetOwner(kTRUE);
-		
-		TObjArray * selectedV0sMC =new TObjArray;
-		selectedV0sMC->SetOwner(kTRUE);
-		
 		Int_t nMCTracks = mcArray->GetEntriesFast();
 		
-		if(fcollidingSys=="PbPb2010" || fcollidingSys=="PbPb2011") multiplicityMC=CentPecentMC;
+		if(fcollidingSys=="PbPb") multiplicityMC=CentPecentMC;
 		if(fcollidingSys=="PP")   multiplicityMC=nMCTracks;
 		
-		dimEventviceMC[3]=nMCTracks;
-		dimEventviceMC[4]=CentPecentMC;
+		dimEventviceMC[1]=nMCTracks;
+		dimEventviceMC[2]=CentPecentMC;
 		fHistEventViceGen->Fill(dimEventviceMC);
 		
 		for (Int_t iMC = 0; iMC<nMCTracks; iMC++)
@@ -389,8 +425,8 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 			Double_t mcTrackPt  = mcTrack->Pt();
 			if ((mcTrackPt<fPtMin)||(mcTrackPt>6.0)) continue;
 			
-			Double_t mcTrackEta = mcTrack->Eta();
-			Double_t mcTrackPhi = mcTrack->Phi();
+			//Double_t mcTrackEta = mcTrack->Eta();
+			//Double_t mcTrackPhi = mcTrack->Phi();
 			Bool_t TrIsPrime    = mcTrack->IsPhysicalPrimary();
 			Bool_t TrPtMin      = mcTrackPt>fPtMin;
 			Bool_t TrCharge     = (mcTrack->Charge())!=0;
@@ -404,82 +440,124 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 			Bool_t V0RapMax       = TMath::Abs(mcRapidity)<fRapidityCut;
 			Double_t mcMass       = mcTrack->M();
 			
-			Double_t mcK0[4] = {mcRapidity,mcTrackPt,mcMass,multiplicityMC};
-			Double_t mcLa[4] = {mcRapidity,mcTrackPt,mcMass,multiplicityMC};
-			Double_t mcAl[4] = {mcRapidity,mcTrackPt,mcMass,multiplicityMC};
+			Double_t mcK0[3] = {mcTrackPt,mcMass,multiplicityMC};
+			Double_t mcLa[3] = {mcTrackPt,mcMass,multiplicityMC};
+			Double_t mcAl[3] = {mcTrackPt,mcMass,multiplicityMC};
 			
 			
 			Bool_t IsK0 = mcPartPdg==310;
 			if (IsK0 && V0RapMax && TrIsPrime) 
 			{
 				fHistMCGenK0->Fill(mcK0);
-				selectedV0sMC->Add(new V0Correlationparticle(mcTrackEta,mcTrackPhi,mcTrackPt,1));
 			} 
 			
 			Bool_t IsLambda = mcPartPdg==3122;
 			if (IsLambda && V0RapMax && TrIsPrime) 
 			{
 				fHistMCGenLAM->Fill(mcLa);
-				selectedV0sMC->Add(new V0Correlationparticle(mcTrackEta,mcTrackPhi,mcTrackPt,2));
 			}
 			
 			Bool_t IsAntiLambda = mcPartPdg==-3122;
 			if (IsAntiLambda && V0RapMax && TrIsPrime) 
 			{	
 				fHistMCGenALAM->Fill(mcAl);
-				selectedV0sMC->Add(new V0Correlationparticle(mcTrackEta,mcTrackPhi,mcTrackPt,3));
 			}			
 		}
-		FillCorrelationSibling(multiplicityMC,selectedTracksLeadingMC,selectedV0sMC,fHistTriggerSibMC,fHistReconstSibMC);
-		FillCorrelationMixing(multiplicityMC,mcZv,poolmax,poolmin,selectedTracksLeadingMC,selectedV0sMC,fHistTriggerMixMC,fHistReconstMixMC);
     }
 	
-	// Physics selection  
+	// End Loop over MC condition
+	
+	//------------------------------------------------
+	// Physics Selection
+	//------------------------------------------------ 
 	UInt_t maskIsSelected = inEvMain->IsEventSelected();
 	Bool_t isSelected = ((maskIsSelected & AliVEvent::kMB)== AliVEvent::kMB 
 					  || (maskIsSelected & AliVEvent::kCentral)== AliVEvent::kCentral 
 					  || (maskIsSelected & AliVEvent::kSemiCentral)== AliVEvent::kSemiCentral);
     if (!isSelected) return;
 	
-	// Remove pile up
-	if(fRemovePileUP)
-	if(fAODEvent->IsPileupFromSPD()) return;
+	//------------------------------------------------
+	// After Trigger Selection
+	//------------------------------------------------
 	
-	Double_t  dimEventviceReal[5];
-	Double_t  lPrimaryVtxPosition[3];
+	fHist_Mult_Af_Trg_Sel->Fill(lPrimaryTrackMultiplicity);
+	
+	//------------------------------------------------
+	// Getting: Primary Vertex + MagField Info
+	//------------------------------------------------
+	Double_t  dimEventviceReal[3];
+	Double_t  lBestPrimaryVtxPos[3];
+	Double_t  tPrimaryVtxPosition[3];
 	Double_t  lV0Position[3];
 	
 	
-	if(fcollidingSys=="PbPb2010" || fcollidingSys=="PbPb2011"){  //
+	if(fcollidingSys=="PbPb"){  //
 	AliCentrality *centralityObj = fAODEvent->GetHeader()->GetCentralityP();
 		CentPecentAfterPhySel  = centralityObj->GetCentralityPercentileUnchecked("V0M");
 		if ((CentPecentAfterPhySel < 0.)||(CentPecentAfterPhySel > 90)) return;
 	} //
 	
-	AliAODVertex *myPrimVertex = fAODEvent->GetPrimaryVertex();
-	if (!myPrimVertex) return;
-	myPrimVertex->GetXYZ(lPrimaryVtxPosition);
+	AliAODVertex *lPrimaryBestAODVtx = fAODEvent->GetPrimaryVertex();
+	if (!lPrimaryBestAODVtx) return;
+	// get the best primary vertex available for the event
+	// As done in AliCascadeVertexer, we keep the one which is the best one available.
+	// between : Tracking vertex > SPD vertex > TPC vertex > default SPD vertex
+	// This one will be used for next calculations (DCA essentially)
+	lPrimaryBestAODVtx->GetXYZ(lBestPrimaryVtxPos);
 	
-	Double_t lPVx = lPrimaryVtxPosition[0];
-	Double_t lPVy = lPrimaryVtxPosition[1];
-	Double_t lPVz = lPrimaryVtxPosition[2];
+	const AliVVertex *primaryVtx = fAODEvent->GetPrimaryVertex();
+	tPrimaryVtxPosition[0] = primaryVtx->GetX();
+	tPrimaryVtxPosition[1] = primaryVtx->GetY();
+	tPrimaryVtxPosition[2] = primaryVtx->GetZ();
+	fHistPVx->Fill( tPrimaryVtxPosition[0] );
+	fHistPVy->Fill( tPrimaryVtxPosition[1] );
+	fHistPVz->Fill( tPrimaryVtxPosition[2] );
+	
+	//------------------------------------------------
+	// Primary Vertex Z position: SKIP
+	//------------------------------------------------
+	
+	Double_t lPVx = lBestPrimaryVtxPos[0];
+	Double_t lPVy = lBestPrimaryVtxPos[1];
+	Double_t lPVz = lBestPrimaryVtxPos[2];
 	
 	if ((TMath::Abs(lPVz)) >= fpvzcut) return ;
 	if (TMath::Abs(lPVx)<10e-5 && TMath::Abs(lPVy)<10e-5 && TMath::Abs(lPVz)<10e-5) return;
+	fHist_Mult_PVz_Cut->Fill(lPrimaryTrackMultiplicity);
 	
-	dimEventviceReal[0]=lPVx;
-    dimEventviceReal[1]=lPVy;
-    dimEventviceReal[2]=lPVz;
+	//------------------------------------------------
+	// Only look at events with well-established PV
+	//------------------------------------------------
 	
-	multiplicity = fAODEvent->GetNTracks();
+	const AliAODVertex *lPrimaryTrackingAODVtxCheck = fAODEvent->GetPrimaryVertex();
+	const AliAODVertex *lPrimarySPDVtx = fAODEvent->GetPrimaryVertexSPD();
+	if (!lPrimarySPDVtx && !lPrimaryTrackingAODVtxCheck )return;
 	
-	dimEventviceReal[3]=multiplicity;
-	dimEventviceReal[4]=CentPecentAfterPhySel;
+	fHist_Mult_SPD_PVz->Fill(lPrimaryTrackMultiplicity);
+
+	
+	//------------------------------------------------
+	// Pileup Rejection
+	//------------------------------------------------
+	
+	// FIXME : quality selection regarding pile-up rejection 
+	if(fAODEvent->IsPileupFromSPD()) return;
+	fHist_Mult_SPD_PVz_Pileup->Fill(lPrimaryTrackMultiplicity);
+	
+	fHistPVxAnalysis->Fill(tPrimaryVtxPosition[0]);
+	fHistPVyAnalysis->Fill(tPrimaryVtxPosition[1]);
+	fHistPVzAnalysis->Fill(tPrimaryVtxPosition[2]);
+	
+    dimEventviceReal[0]=tPrimaryVtxPosition[2];
+	multiplicity       = fAODEvent->GetNTracks();
+	
+	dimEventviceReal[1]=multiplicity;
+	dimEventviceReal[2]=CentPecentAfterPhySel;
 	
 	fHistEventViceReconst->Fill(dimEventviceReal);
 	
 	if(fcollidingSys=="PP")MultipOrCent=multiplicity;
-	if(fcollidingSys=="PbPb2010" || fcollidingSys=="PbPb2011")MultipOrCent=CentPecentAfterPhySel;
+	if(fcollidingSys=="PbPb")MultipOrCent=CentPecentAfterPhySel;
 
 	//---------------------------------------------------------------------------------------------
 	
@@ -494,18 +572,16 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 	Double_t lPzV0s       = 0; Double_t lAlphaV0 = 0, lPtArmV0           = 0;
 	Double_t lPV0s        = 0;
 	
-	TObjArray *selectedTracksLeading=fAnalyseUE->FindLeadingObjects(fAODEvent);
+	TObjArray *selectedTracksLeading=0;
+	selectedTracksLeading=fAnalyseUE->FindLeadingObjects(fAODEvent);
 	if(!selectedTracksLeading) return;
 	selectedTracksLeading->SetOwner(kTRUE);
 	
 	TObjArray * selectedV0s = new TObjArray;
 	selectedV0s->SetOwner(kTRUE);
 	
-	TObjArray * selectedV0sAssoc = new TObjArray;
-	selectedV0sAssoc->SetOwner(kTRUE);
-	
 	Int_t nV0s = fAODEvent->GetNumberOfV0s();
-	
+	cout << nV0s <<endl;
 	for (Int_t i = 0; i < nV0s; i++) 
 	{ // start of V0 slection loop
 		AliAODv0* aodV0 = dynamic_cast<AliAODv0 *>(fAODEvent->GetV0(i));
@@ -523,14 +599,14 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 		
 		// VO's main characteristics to check the reconstruction cuts
 		lDcaV0Daughters    = aodV0->DcaV0Daughters();
-		lV0cosPointAngle   = aodV0->CosPointingAngle(lPrimaryVtxPosition);
+		lV0cosPointAngle   = aodV0->CosPointingAngle(lBestPrimaryVtxPos);
 		
 		aodV0->GetXYZ(lV0Position);
 		
 		lV0Radius      = TMath::Sqrt(lV0Position[0]*lV0Position[0]+lV0Position[1]*lV0Position[1]);
-		lV0DecayLength = TMath::Sqrt(TMath::Power(lV0Position[0] - lPrimaryVtxPosition[0],2) +
-									 TMath::Power(lV0Position[1] - lPrimaryVtxPosition[1],2) +
-									 TMath::Power(lV0Position[2] - lPrimaryVtxPosition[2],2));
+		lV0DecayLength = TMath::Sqrt(TMath::Power(lV0Position[0] - tPrimaryVtxPosition[0],2) +
+									 TMath::Power(lV0Position[1] - tPrimaryVtxPosition[1],2) +
+									 TMath::Power(lV0Position[2] - tPrimaryVtxPosition[2],2));
 		
 		// DCA between daughter and Primary Vertex:
 		if (myTrackPos) lDcaPosToPrimVertex = aodV0->DcaPosToPrimVertex();
@@ -571,7 +647,7 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
         if (pPid)
         {
             Double_t pdMom = pPid->GetTPCmomentum();
-            if (pdMom<1.0 && (fcollidingSys=="PbPb2010"||fcollidingSys=="PbPb2011"))
+            if (pdMom<1.0 && (fcollidingSys=="PbPb"))
             {
                 nSigmaPosPion   = fPIDResponse->NumberOfSigmasTPC(myTrackPos, AliPID::kPion);
                 nSigmaPosProton = fPIDResponse->NumberOfSigmasTPC(myTrackPos, AliPID::kProton);
@@ -587,7 +663,7 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
         if (nPid)
         {
             Double_t ndMom = nPid->GetTPCmomentum();
-            if (ndMom<1.0 && (fcollidingSys=="PbPb2010"||fcollidingSys=="PbPb2011"))
+            if (ndMom<1.0 && (fcollidingSys=="PbPb"))
             {
                 nSigmaNegPion   = fPIDResponse->NumberOfSigmasTPC(myTrackNeg, AliPID::kPion);
                 nSigmaNegProton = fPIDResponse->NumberOfSigmasTPC(myTrackNeg, AliPID::kProton);
@@ -625,14 +701,15 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 		Bool_t laRapcut = (TMath::Abs(lRapLambda)     < fRapidityCut);
 		Bool_t alaRapcut= (TMath::Abs(lRapAntiLambda) < fRapidityCut);
 		
+		if(fcollidingSys=="PbPb")if(lV0Radius>=100) continue;
 		
 		Bool_t k0cutset = IsAcseptedK0(lV0Radius,lDcaPosToPrimVertex,lDcaNegToPrimVertex,lDcaV0Daughters,lV0cosPointAngle,lInvMassLambda,lInvMassAntiLambda);
 		Bool_t lacutset = IsAcseptedLA(lV0Radius,lDcaPosToPrimVertex,lDcaNegToPrimVertex,lDcaV0Daughters,lV0cosPointAngle,lInvMassK0);
 		Bool_t alacutset= IsAcseptedLA(lV0Radius,lDcaNegToPrimVertex,lDcaPosToPrimVertex,lDcaV0Daughters,lV0cosPointAngle,lInvMassK0);
 		
-		Double_t spK0[10] = {lInvMassK0, lInvMassLambda,lInvMassAntiLambda,lDcaPosToPrimVertex,lDcaNegToPrimVertex,lV0Radius,lDcaV0Daughters,lV0cosPointAngle,lPtV0s,MultipOrCent};
-		Double_t spLa[10] = {lInvMassK0, lInvMassLambda,lInvMassAntiLambda,lDcaPosToPrimVertex,lDcaNegToPrimVertex,lV0Radius,lDcaV0Daughters,lV0cosPointAngle,lPtV0s,MultipOrCent};
-		Double_t spAl[10] = {lInvMassK0, lInvMassLambda,lInvMassAntiLambda,lDcaPosToPrimVertex,lDcaNegToPrimVertex,lV0Radius,lDcaV0Daughters,lV0cosPointAngle,lPtV0s,MultipOrCent};
+		Double_t spK0[3] = {lInvMassK0, lPtV0s,MultipOrCent};
+		Double_t spLa[3] = {lInvMassLambda,lPtV0s,MultipOrCent};
+		Double_t spAl[3] = {lInvMassAntiLambda,lPtV0s,MultipOrCent};
 	
 		switch (fCase) {
 			case 1:
@@ -689,7 +766,7 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 				break;
 				
 			default:
-				cout << "No case selected "<<endl;
+				AliInfo(Form("No case selected"));
 				break;
 		}
 		
@@ -717,20 +794,15 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 			Int_t MotherPdg  = mcPosMother->GetPdgCode();
 			Bool_t IsPrime   = mcPosMother->IsPhysicalPrimary();
 			
-			Double_t rcK0[10] = {lInvMassK0, lInvMassLambda,lInvMassAntiLambda,lDcaPosToPrimVertex,lDcaNegToPrimVertex,lV0Radius,lDcaV0Daughters,lV0cosPointAngle,lPtV0s,MultipOrCent};
-			Double_t rcLa[10] = {lInvMassK0, lInvMassLambda,lInvMassAntiLambda,lDcaPosToPrimVertex,lDcaNegToPrimVertex,lV0Radius,lDcaV0Daughters,lV0cosPointAngle,lPtV0s,MultipOrCent};
-			Double_t rcAl[10] = {lInvMassK0, lInvMassLambda,lInvMassAntiLambda,lDcaPosToPrimVertex,lDcaNegToPrimVertex,lV0Radius,lDcaV0Daughters,lV0cosPointAngle,lPtV0s,MultipOrCent};
+			Double_t rcK0[3] = {lInvMassK0, lPtV0s,MultipOrCent};
+			Double_t rcLa[3] = {lInvMassLambda,lPtV0s,MultipOrCent};
+			Double_t rcAl[3] = {lInvMassAntiLambda,lPtV0s,MultipOrCent};
 			
 			switch (fCase) {
 				case 1:
 					fHistMCAssoK0->Fill(rcK0); 
-					if(IsK0InvMass(lInvMassK0))selectedV0sAssoc->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,1));
-					
 					fHistMCAssoLA->Fill(rcLa);
-					if(IsLambdaInvMass(lInvMassLambda))selectedV0sAssoc->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,2));
-					
 					fHistMCAssoALA->Fill(rcAl);
-					if(IsLambdaInvMass(lInvMassAntiLambda))selectedV0sAssoc->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,3));
 					
 					break;
 					
@@ -741,7 +813,6 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 															IsPrime))
 					{
 						fHistMCAssoK0->Fill(rcK0); 
-						if(IsK0InvMass(lInvMassK0))selectedV0sAssoc->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,1));
 					}
 					
 					if ((lactcut && laRapcut && lacutset)&&(MotherPdg     == 3122 && 
@@ -750,7 +821,6 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 															IsPrime)) 
 					{
 						fHistMCAssoLA->Fill(rcLa);
-						if(IsLambdaInvMass(lInvMassLambda))selectedV0sAssoc->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,2));
 					}
 					
 					if ((alactcut && alaRapcut && alacutset)&&(MotherPdg     == -3122 && 
@@ -759,7 +829,6 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 															   IsPrime))
 					{
 						fHistMCAssoALA->Fill(rcAl);
-						if(IsLambdaInvMass(lInvMassAntiLambda))selectedV0sAssoc->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,3));
 					}
 					
 					break;
@@ -771,7 +840,6 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 																	   IsPrime))
 					{
 						fHistMCAssoK0->Fill(rcK0); 
-						if(IsK0InvMass(lInvMassK0))selectedV0sAssoc->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,1));
 					}
 					
 					if ((lactcut && laRapcut && lacutset)&&(MotherPdg     == 3122 && 
@@ -780,7 +848,6 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 															IsPrime)) 
 					{
 						fHistMCAssoLA->Fill(rcLa);
-						if(IsLambdaInvMass(lInvMassLambda))selectedV0sAssoc->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,2));
 					}
 					
 					if ((alactcut && alaRapcut && alacutset)&&(MotherPdg     == -3122 && 
@@ -789,22 +856,18 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 															   IsPrime))
 					{
 						fHistMCAssoALA->Fill(rcAl);
-						if(IsLambdaInvMass(lInvMassAntiLambda))selectedV0sAssoc->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,3));
 					}
 					break;
 					
 				default:
-					cout << "No case selected "<<endl;
+					AliInfo(Form("No case selected"));
 					break;
 			}	
     	}
 	} 	
 	
 	FillCorrelationSibling(MultipOrCent,selectedTracksLeading,selectedV0s,fHistTriggerSib,fHistReconstSib);
-	FillCorrelationMixing(MultipOrCent,lPVz,poolmax,poolmin,selectedTracksLeading,selectedV0s,fHistTriggerMix,fHistReconstMix);
-	
-	FillCorrelationSibling(MultipOrCent,selectedTracksLeading,selectedV0sAssoc,0,fHistReconstSibMCAssoc);
-	FillCorrelationMixing(MultipOrCent,lPVz,poolmax,poolmin,selectedTracksLeading,selectedV0sAssoc,0,fHistReconstMixMCAssoc);
+	FillCorrelationMixing(MultipOrCent,tPrimaryVtxPosition[2],poolmax,poolmin,selectedTracksLeading,selectedV0s,fHistTriggerMix,fHistReconstMix);
 	
 	PostData(1,fOutputList);
 }	
@@ -942,7 +1005,7 @@ void AliLeadingV0Correlation::FillCorrelationSibling(Double_t MultipOrCent,
 									  THnSparse*associateHist)
 {
 	Double_t  binsv0CORR[7];
-	Double_t  binsTrigSib[4];
+	Double_t  binsTrigSib[2];
 	Int_t counterSibMCA=0;
 	
     for(Int_t i=0;i<triggerArray->GetEntriesFast();i++)
@@ -957,14 +1020,13 @@ void AliLeadingV0Correlation::FillCorrelationSibling(Double_t MultipOrCent,
 		Double_t triggerPhi = trigger->Phi();
 		Double_t triggerEta = trigger->Eta();
 		
-		if(triggerPt<6.0||triggerPt>12.0)continue;
+		if(triggerPt<fTriglow||triggerPt>fTrighigh)continue;
 		counterSibMCA++;
+		
 		if(counterSibMCA==triggerArray->GetEntriesFast()){
 			
 			binsTrigSib[0]=triggerPt;
-			binsTrigSib[1]=triggerPhi;
-			binsTrigSib[2]=triggerEta;
-			binsTrigSib[3]=MultipOrCent;
+			binsTrigSib[1]=MultipOrCent;
 			
 			if(triggerHist)triggerHist->Fill(binsTrigSib);
 			
@@ -986,8 +1048,8 @@ void AliLeadingV0Correlation::FillCorrelationSibling(Double_t MultipOrCent,
 				
 				associateHist->Fill(binsv0CORR);
 			}
+		  }
 		}
-	}
 }
 //---------------------------------------------------------------------------------------
 void AliLeadingV0Correlation::FillCorrelationMixing(Double_t MultipOrCentMix,
@@ -1002,12 +1064,12 @@ void AliLeadingV0Correlation::FillCorrelationMixing(Double_t MultipOrCentMix,
 	if(TMath::Abs(pvxMix)>=fpvzcut || MultipOrCentMix>poolmax || MultipOrCentMix < poolmin)
 	{
 		if(fcollidingSys=="PP")AliInfo(Form("pp Event with Zvertex = %.2f cm and multiplicity = %.0f out of pool bounds, SKIPPING",pvxMix,MultipOrCentMix));
-		if(fcollidingSys=="PbPb2010" || fcollidingSys=="PbPb2011") AliInfo(Form("PbPb Event with Zvertex = %.2f cm and centrality = %.1f  out of pool bounds, SKIPPING",pvxMix,MultipOrCentMix));
+		if(fcollidingSys=="PbPb") AliInfo(Form("PbPb Event with Zvertex = %.2f cm and centrality = %.1f  out of pool bounds, SKIPPING",pvxMix,MultipOrCentMix));
 		return;
 	}
 	
 	Double_t  binsv0CORRMix[7];
-	Double_t  binsTrigMix[4];
+	Double_t  binsTrigMix[2];
 	Double_t  counterMix=0;
 	
 	AliEventPool* pool = fPoolMgr->GetEventPool(MultipOrCentMix, pvxMix);
@@ -1031,15 +1093,13 @@ void AliLeadingV0Correlation::FillCorrelationMixing(Double_t MultipOrCentMix,
 				Double_t trigEta  = trig->Eta();
 				Double_t trigPt   = trig->Pt();
 				
-				if(trigPt<6.0||trigPt>12.0)continue;
+				if(trigPt<fTriglow||trigPt>fTrighigh)continue;
 				counterMix++;
 				
 				if(counterMix==triggerArray->GetEntriesFast()){
 					
 					binsTrigMix[0]=trigPt;
-					binsTrigMix[1]=trigPhi;
-					binsTrigMix[2]=trigEta;
-					binsTrigMix[3]=MultipOrCentMix;
+					binsTrigMix[1]=MultipOrCentMix;
 					
 					if(triggerHist)triggerHist->Fill(binsTrigMix);
 					
@@ -1060,11 +1120,11 @@ void AliLeadingV0Correlation::FillCorrelationMixing(Double_t MultipOrCentMix,
 						binsv0CORRMix[6]=MultipOrCentMix;
 						
 						associateHist->Fill(binsv0CORRMix);
+						}
 					}
 				}
 			}
 		}
-	}
 	
 	TObjArray* tracksClone = new TObjArray;
 	tracksClone->SetOwner(kTRUE);

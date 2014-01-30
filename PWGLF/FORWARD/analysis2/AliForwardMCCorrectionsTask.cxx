@@ -12,6 +12,7 @@
 // Corrections used 
 // 
 #include "AliForwardMCCorrectionsTask.h"
+#include "AliForwardCorrectionManager.h"
 #include "AliTriggerAnalysis.h"
 #include "AliPhysicsSelection.h"
 #include "AliLog.h"
@@ -35,45 +36,11 @@
 #include <iostream>
 
 //====================================================================
-namespace {
-  const char* GetEventName(Bool_t tr, Bool_t vtx) 
-  {
-    return Form("nEvents%s%s", (tr ? "Tr" : ""), (vtx ? "Vtx" : ""));
-  }
-#if 0
-  const char* GetHitsName(UShort_t d, Char_t r) 
-  {
-    return Form("hitsFMD%d%c", d, r);
-  }
-  const char* GetStripsName(UShort_t d, Char_t r)
-  {
-    return Form("stripsFMD%d%c", d, r);
-  }
-  const char* GetPrimaryName(Char_t r, Bool_t trVtx)
-  {
-    return Form("primaries%s%s", 
-		((r == 'I' || r == 'i') ? "Inner" : "Outer"), 
-		(trVtx ? "TrVtx" : "All"));
-  }
-#endif
-}
-
-//====================================================================
 AliForwardMCCorrectionsTask::AliForwardMCCorrectionsTask()
-  : AliAnalysisTaskSE(),
-    fInspector(),
+  : AliBaseMCCorrectionsTask(),
     fTrackDensity(),
     fESDFMD(),
-    fVtxBins(0),
-    fFirstEvent(true),
-    fHEvents(0), 
-    fHEventsTr(0), 
-    fHEventsTrVtx(0),
-    fVtxAxis(),
-    fEtaAxis(),
-    fList(),
-    fUseESDVertexCoordinate(false),
-    fCalculateafterESDeventcuts(false)
+    fSecCorr(0)
 {
   // 
   // Constructor 
@@ -85,377 +52,49 @@ AliForwardMCCorrectionsTask::AliForwardMCCorrectionsTask()
 
 //____________________________________________________________________
 AliForwardMCCorrectionsTask::AliForwardMCCorrectionsTask(const char* name)
-  : AliAnalysisTaskSE(name),
-    fInspector("eventInspector"), 
+  : AliBaseMCCorrectionsTask(name, &(AliForwardCorrectionManager::Instance())),
     fTrackDensity("trackDensity"),
     fESDFMD(),
-    fVtxBins(0),
-    fFirstEvent(true),
-    fHEvents(0), 
-    fHEventsTr(0), 
-    fHEventsTrVtx(0),
-    fVtxAxis(10,-10,10), 
-    fEtaAxis(200,-4,6),
-    fList(),
-    fUseESDVertexCoordinate(false),
-    fCalculateafterESDeventcuts(false)
-
+    fSecCorr(0)
 {
   // 
   // Constructor 
   // 
   // Parameters:
   //    name Name of task 
-  //
-  DefineOutput(1, TList::Class());
-  DefineOutput(2, TList::Class());
-  fBranchNames = 
-    "ESD:AliESDRun.,AliESDHeader.,AliMultiplicity.,"
-    "AliESDFMD.,SPDVertex.,PrimaryVertex.";
+}
+
+
+//____________________________________________________________________
+AliBaseMCCorrectionsTask::VtxBin*
+AliForwardMCCorrectionsTask::CreateVtxBin(Double_t low, Double_t high)
+{
+  return new AliForwardMCCorrectionsTask::VtxBin(low,high, fEtaAxis);
 }
 
 //____________________________________________________________________
-AliForwardMCCorrectionsTask::AliForwardMCCorrectionsTask(const AliForwardMCCorrectionsTask& o)
-  : AliAnalysisTaskSE(o),
-    fInspector(o.fInspector),
-    fTrackDensity(),
-    fESDFMD(o.fESDFMD),
-    fVtxBins(0),
-    fFirstEvent(o.fFirstEvent),
-    fHEvents(o.fHEvents), 
-    fHEventsTr(o.fHEventsTr), 
-    fHEventsTrVtx(o.fHEventsTrVtx),
-    fVtxAxis(10,-10,10), 
-    fEtaAxis(200,-4,6),
-    fList(o.fList),
-    fUseESDVertexCoordinate(o.fUseESDVertexCoordinate),
-    fCalculateafterESDeventcuts(o.fCalculateafterESDeventcuts)
-	
+Bool_t
+AliForwardMCCorrectionsTask::PreEvent()
 {
-  // 
-  // Copy constructor 
-  // 
-  // Parameters:
-  //    o Object to copy from 
-  //
-}
-
-//____________________________________________________________________
-AliForwardMCCorrectionsTask&
-AliForwardMCCorrectionsTask::operator=(const AliForwardMCCorrectionsTask& o)
-{
-  // 
-  // Assignment operator 
-  // 
-  // Parameters:
-  //    o Object to assign from 
-  // 
-  // Return:
-  //    Reference to this object 
-  //
-  if (&o == this) return *this;
-  fInspector         = o.fInspector;
-  fTrackDensity      = o.fTrackDensity;
-  fESDFMD            = o.fESDFMD;
-  fVtxBins           = o.fVtxBins;
-  fFirstEvent        = o.fFirstEvent;
-  fHEvents           = o.fHEvents;
-  fHEventsTr         = o.fHEventsTr;
-  fHEventsTrVtx      = o.fHEventsTrVtx;
-  SetVertexAxis(o.fVtxAxis);
-  SetEtaAxis(o.fEtaAxis);
-  fUseESDVertexCoordinate=o.fUseESDVertexCoordinate;
-  fCalculateafterESDeventcuts=o.fCalculateafterESDeventcuts;
-
-  return *this;
-}
-
-//____________________________________________________________________
-void
-AliForwardMCCorrectionsTask::Init()
-{
-  // 
-  // Initialize the task 
-  // 
-  //
-}
-
-//____________________________________________________________________
-void
-AliForwardMCCorrectionsTask::SetVertexAxis(Int_t nBin, Double_t min, 
-					   Double_t max)
-{
-  // 
-  // Set the vertex axis to use
-  // 
-  // Parameters:
-  //    nBins Number of bins
-  //    vzMin Least @f$z@f$ coordinate of interation point
-  //    vzMax Largest @f$z@f$ coordinate of interation point
-  //
-  if (max < min) { 
-    Double_t tmp = min;
-    min          = max;
-    max          = tmp;
-  }
-/*
-  if (min < -10) 
-    AliWarning(Form("Minimum vertex %f < -10, make sure you want this",min));
-  if (max > +10) 
-    AliWarning(Form("Minimum vertex %f > +10, make sure you want this",max));
-*/
-  fVtxAxis.Set(nBin, min, max);
-}
-//____________________________________________________________________
-void
-AliForwardMCCorrectionsTask::SetVertexAxis(const TAxis& axis)
-{
-  // 
-  // Set the vertex axis to use
-  // 
-  // Parameters:
-  //    axis Axis
-  //
-  SetVertexAxis(axis.GetNbins(),axis.GetXmin(),axis.GetXmax());
-}
-
-//____________________________________________________________________
-void
-AliForwardMCCorrectionsTask::SetEtaAxis(Int_t nBin, Double_t min, Double_t max)
-{
-  // 
-  // Set the eta axis to use
-  // 
-  // Parameters:
-  //    nBins Number of bins
-  //    vzMin Least @f$\eta@f$ 
-  //    vzMax Largest @f$\eta@f$ 
-  //
-  if (max < min) { 
-    Double_t tmp = min;
-    min          = max;
-    max          = tmp;
-  }
-  if (min < -4) 
-    AliWarning(Form("Minimum eta %f < -4, make sure you want this",min));
-  if (max > +6) 
-    AliWarning(Form("Minimum eta %f > +6, make sure you want this",max));
-  fEtaAxis.Set(nBin, min, max);
-}
-//____________________________________________________________________
-void
-AliForwardMCCorrectionsTask::SetEtaAxis(const TAxis& axis)
-{
-  // 
-  // Set the eta axis to use
-  // 
-  // Parameters:
-  //    axis Axis
-  //
-  SetEtaAxis(axis.GetNbins(),axis.GetXmin(),axis.GetXmax());
-}
-
-//____________________________________________________________________
-void
-AliForwardMCCorrectionsTask::DefineBins(TList* l)
-{
-  if (!fVtxBins) fVtxBins = new TObjArray(fVtxAxis.GetNbins(), 1);
-  if (fVtxBins->GetEntries() > 0) return;
-
-  fVtxBins->SetOwner();
-  for (Int_t  i    = 1; i <= fVtxAxis.GetNbins(); i++) { 
-    Double_t  low  = fVtxAxis.GetBinLowEdge(i);
-    Double_t  high = fVtxAxis.GetBinUpEdge(i);
-    VtxBin*   bin  = new VtxBin(low, high, fEtaAxis);
-    fVtxBins->AddAt(bin, i);
-    bin->CreateOutputObjects(l);
-  }
-}
-
-//____________________________________________________________________
-void
-AliForwardMCCorrectionsTask::UserCreateOutputObjects()
-{
-  // 
-  // Create output objects 
-  // 
-  //
-  fList = new TList;
-  fList->SetOwner();
-  fList->SetName(Form("%sSums", GetName()));
-
-  DefineBins(fList);
-
-  fHEvents = new TH1I(GetEventName(false,false),
-		      "Number of all events", 
-		      fVtxAxis.GetNbins(), 
-		      fVtxAxis.GetXmin(), 
-		      fVtxAxis.GetXmax());
-  fHEvents->SetXTitle("v_{z} [cm]");
-  fHEvents->SetYTitle("# of events");
-  fHEvents->SetFillColor(kBlue+1);
-  fHEvents->SetFillStyle(3001);
-  fHEvents->SetDirectory(0);
-  fList->Add(fHEvents);
-
-  fHEventsTr = new TH1I(GetEventName(true, false), 
-			"Number of triggered events",
-			fVtxAxis.GetNbins(), 
-			fVtxAxis.GetXmin(), 
-			fVtxAxis.GetXmax());
-  fHEventsTr->SetXTitle("v_{z} [cm]");
-  fHEventsTr->SetYTitle("# of events");
-  fHEventsTr->SetFillColor(kRed+1);
-  fHEventsTr->SetFillStyle(3001);
-  fHEventsTr->SetDirectory(0);
-  fList->Add(fHEventsTr);
-
-  fHEventsTrVtx = new TH1I(GetEventName(true,true),
-			   "Number of events w/trigger and vertex", 
-			   fVtxAxis.GetNbins(), 
-			   fVtxAxis.GetXmin(), 
-			   fVtxAxis.GetXmax());
-  fHEventsTrVtx->SetXTitle("v_{z} [cm]");
-  fHEventsTrVtx->SetYTitle("# of events");
-  fHEventsTrVtx->SetFillColor(kBlue+1);
-  fHEventsTrVtx->SetFillStyle(3001);
-  fHEventsTrVtx->SetDirectory(0);
-  fList->Add(fHEventsTrVtx);
-
-  // Copy axis objects to output 
-  TH1* vtxAxis = new TH1D("vtxAxis", "Vertex axis", 
-			  fVtxAxis.GetNbins(), 
-			  fVtxAxis.GetXmin(), 
-			  fVtxAxis.GetXmax());
-  TH1* etaAxis = new TH1D("etaAxis", "Eta axis", 
-			  fEtaAxis.GetNbins(), 
-			  fEtaAxis.GetXmin(), 
-			  fEtaAxis.GetXmax());
-  fList->Add(vtxAxis);
-  fList->Add(etaAxis);
-
-  AliInfo(Form("Initialising sub-routines: %p, %p", 
-	       &fInspector, &fTrackDensity));
-  fInspector.CreateOutputObjects(fList);
-  fTrackDensity.CreateOutputObjects(fList);
-
-  PostData(1, fList);
-}
-//____________________________________________________________________
-void
-AliForwardMCCorrectionsTask::UserExec(Option_t*)
-{
-  // 
-  // Process each event 
-  // 
-  // Parameters:
-  //    option Not used
-  //  
-
-  // Get the input data - MC event
-  AliMCEvent*  mcEvent = MCEvent();
-  if (!mcEvent) { 
-    AliWarning("No MC event found");
-    return;
-  }
-
-  // Get the input data - ESD event
-  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
-  if (!esd) { 
-    AliWarning("No ESD event found for input event");
-    return;
-  }
-
-  // --- Read in the data --------------------------------------------
-  LoadBranches();
-
-  //--- Read run information -----------------------------------------
-  if (fFirstEvent && esd->GetESDRun()) {
-    fInspector.ReadRunDetails(esd);
-    
-    AliInfo(Form("Initializing with parameters from the ESD:\n"
-		 "         AliESDEvent::GetBeamEnergy()   ->%f\n"
-		 "         AliESDEvent::GetBeamType()     ->%s\n"
-		 "         AliESDEvent::GetCurrentL3()    ->%f\n"
-		 "         AliESDEvent::GetMagneticField()->%f\n"
-		 "         AliESDEvent::GetRunNumber()    ->%d\n",
-		 esd->GetBeamEnergy(),
-		 esd->GetBeamType(),
-		 esd->GetCurrentL3(),
-		 esd->GetMagneticField(),
-		 esd->GetRunNumber()));
-
-    fInspector.SetupForData(fVtxAxis);
-
-    Print();
-    fFirstEvent = false;
-  }
-
-  // Some variables 
-  UInt_t   triggers  = 0;    // Trigger bits
-  Bool_t   lowFlux   = true; // Low flux flag
-  UShort_t iVz       = 0;    // Vertex bin from ESD
-  TVector3 ip(1024,1024,1000);
-  Double_t cent      = -1;   // Centrality 
-  UShort_t iVzMc     = 0;    // Vertex bin from MC
-  Double_t vZMc      = 1000; // Z coordinate of IP vertex from MC
-  Double_t b         = -1;   // Impact parameter
-  Double_t cMC       = -1;   // Centrality estimate from b
-  Int_t    nPart     = -1;   // Number of participants 
-  Int_t    nBin      = -1;   // Number of binary collisions 
-  Double_t phiR      = 100;  // Reaction plane from MC
-  UShort_t nClusters = 0;    // Number of SPD clusters 
-  // Process the data 
-  UInt_t retESD = fInspector.Process(esd, triggers, lowFlux, iVz, ip, 
-				     cent, nClusters);
-
-  Bool_t isAccepted = true;
-  if(fCalculateafterESDeventcuts) {
-    if (retESD & AliFMDEventInspector::kNoEvent)    isAccepted = false; 
-    if (retESD & AliFMDEventInspector::kNoTriggers) isAccepted = false; 
-    if (retESD & AliFMDEventInspector::kNoVertex)   isAccepted = false;
-    if (retESD & AliFMDEventInspector::kNoFMD)      isAccepted = false;  
-    if (!isAccepted) return; 
-    // returns if there is not event , does not pass phys selection ,
-    // has no veretx and lack of FMD data.
-    // with good veretx outside z range it will continue
-  }		
-
-
-  fInspector.ProcessMC(mcEvent, triggers, iVzMc, vZMc, 
-		       b, cMC, nPart, nBin, phiR);
-
-  Bool_t isInel   = triggers & AliAODForwardMult::kInel;
-  Bool_t hasVtx   = retESD == AliFMDMCEventInspector::kOk;
-
-  // Fill the event count histograms 
-  if (isInel)           fHEventsTr->Fill(vZMc);
-  if (isInel && hasVtx) fHEventsTrVtx->Fill(vZMc);
-  fHEvents->Fill(vZMc);
-
-  // Now find our vertex bin object 
-  VtxBin* bin = 0;
-  UShort_t usedZbin=iVzMc; 
-  if(fUseESDVertexCoordinate)
-	usedZbin=iVz;
-
-
-  if (usedZbin > 0 && usedZbin <= fVtxAxis.GetNbins()) 
-    bin = static_cast<VtxBin*>(fVtxBins->At(usedZbin));
-  if (!bin) { 
-    // AliError(Form("No vertex bin object @ %d (%f)", iVzMc, vZMc));
-    return;
-  }
-
   // Clear our ESD object 
   fESDFMD.Clear();
+  return true;
+}
 
-  // Get FMD data 
-  AliESDFMD* esdFMD = esd->GetFMDData();
-  
-  // Now process our input data and store in own ESD object 
-  fTrackDensity.Calculate(*esdFMD, *mcEvent, vZMc, fESDFMD, bin->fPrimary);
-  bin->fCounts->Fill(0.5);
+//____________________________________________________________________
+Bool_t
+AliForwardMCCorrectionsTask::ProcessESD(const AliESDEvent& esd, 
+					const AliMCEvent& mc, 
+					AliBaseMCCorrectionsTask::VtxBin& bin,
+					Double_t          vz)
+{
+  AliESDFMD* esdFMD = esd.GetFMDData();
+
+  fTrackDensity.Calculate(*esdFMD, mc, vz, fESDFMD, bin.fPrimary);
+  bin.fCounts->Fill(0.5);
+
+  AliForwardMCCorrectionsTask::VtxBin& vb = 
+    static_cast<AliForwardMCCorrectionsTask::VtxBin&>(bin);
 
   // And then bin the data in our vtxbin 
   for (UShort_t d=1; d<=3; d++) { 
@@ -464,7 +103,7 @@ AliForwardMCCorrectionsTask::UserExec(Option_t*)
       Char_t      r = (q == 0 ? 'I' : 'O');
       UShort_t    ns= (q == 0 ?  20 :  40);
       UShort_t    nt= (q == 0 ? 512 : 256);
-      TH2D*       h = bin->fHists.Get(d,r);
+      TH2D*       h = vb.fHists.Get(d,r);
 
       for (UShort_t s=0; s<ns; s++) { 
 	for (UShort_t t=0; t<nt; t++) {
@@ -479,159 +118,63 @@ AliForwardMCCorrectionsTask::UserExec(Option_t*)
       } // for s 
     } // for q 
   } // for d
-
-  PostData(1, fList);
+  return true;
 }
 //____________________________________________________________________
 void
-AliForwardMCCorrectionsTask::Terminate(Option_t*)
+AliForwardMCCorrectionsTask::CreateCorrections(TList* results)
 {
-  // 
-  // End of job
-  // 
-  // Parameters:
-  //    option Not used 
-  //
-
-  fList = dynamic_cast<TList*>(GetOutputData(1));
-  if (!fList) {
-    AliError("No output list defined");
-    return;
-  }
-
-  DefineBins(fList);
-
-  // Output list 
-  TList* output = new TList;
-  output->SetOwner();
-  output->SetName(Form("%sResults", GetName()));
-
-  // --- Fill correction object --------------------------------------
-  AliFMDCorrSecondaryMap* corr = new AliFMDCorrSecondaryMap;
-  corr->SetVertexAxis(fVtxAxis);
-  corr->SetEtaAxis(fEtaAxis);
-  
-  TIter     next(fVtxBins);
-  VtxBin*   bin = 0;
-  UShort_t  iVz = 1;
-  while ((bin = static_cast<VtxBin*>(next()))) 
-    bin->Terminate(fList, output, iVz++, corr);
-
-  output->Add(corr);
-
-  PostData(2, output);
+  fSecCorr = new AliFMDCorrSecondaryMap;
+  fSecCorr->SetVertexAxis(fVtxAxis);
+  fSecCorr->SetEtaAxis(fEtaAxis);
+  results->Add(fSecCorr);
 }
+
+//____________________________________________________________________
+Bool_t 
+AliForwardMCCorrectionsTask::FinalizeVtxBin(AliBaseMCCorrectionsTask::VtxBin* 
+					    bin,  UShort_t iVz) 
+{
+  
+  AliForwardMCCorrectionsTask::VtxBin* vb = 
+    static_cast<AliForwardMCCorrectionsTask::VtxBin*>(bin);
+  vb->Terminate(fList, fResults, iVz, fSecCorr);
+  return true;
+}
+
 
 //____________________________________________________________________
 void
 AliForwardMCCorrectionsTask::Print(Option_t* option) const
 {
-  std::cout << ClassName() << "\n"
-	    << "  Vertex bins:      " << fVtxAxis.GetNbins() << '\n'
-	    << "  Vertex range:     [" << fVtxAxis.GetXmin() 
-	    << "," << fVtxAxis.GetXmax() << "]\n"
-	    << "  Eta bins:         " << fEtaAxis.GetNbins() << '\n'
-	    << "  Eta range:        [" << fEtaAxis.GetXmin() 
-	    << "," << fEtaAxis.GetXmax() << "]"
-	    << std::endl;
+  AliBaseMCCorrectionsTask::Print(option);
   gROOT->IncreaseDirLevel();
-  fInspector.Print(option);
   fTrackDensity.Print(option);
   gROOT->DecreaseDirLevel();
 }
 
 //====================================================================
-const char*
-AliForwardMCCorrectionsTask::VtxBin::BinName(Double_t low, 
-					     Double_t high) 
-{
-  static TString buf;
-  buf = Form("vtx%+05.1f_%+05.1f", low, high);
-  buf.ReplaceAll("+", "p");
-  buf.ReplaceAll("-", "m");
-  buf.ReplaceAll(".", "d");
-  return buf.Data();
-}
-
-
-//____________________________________________________________________
 AliForwardMCCorrectionsTask::VtxBin::VtxBin()
-  : fHists(), 
-    fPrimary(0),
-    fCounts(0)
+  : AliBaseMCCorrectionsTask::VtxBin(),
+    fHists()
 {
 }
 //____________________________________________________________________
 AliForwardMCCorrectionsTask::VtxBin::VtxBin(Double_t low, 
 					    Double_t high, 
 					    const TAxis& axis)
-  : TNamed(BinName(low, high), 
-	   Form("%+5.1fcm<v_{z}<%+5.1fcm", low, high)),
-    fHists(), 
-    fPrimary(0),
-    fCounts(0)
+  :  AliBaseMCCorrectionsTask::VtxBin(low, high, axis, 40),
+    fHists()
 {
   fHists.Init(axis);
-
-  fPrimary = new TH2D("primary", "Primaries", 
-		      axis.GetNbins(), axis.GetXmin(), axis.GetXmax(), 
-		      40, 0, 2*TMath::Pi());
-  fPrimary->SetXTitle("#eta");
-  fPrimary->SetYTitle("#varphi [radians]");
-  fPrimary->Sumw2();
-  fPrimary->SetDirectory(0);
-
-  fCounts = new TH1D("counts", "Counts", 1, 0, 1);
-  fCounts->SetXTitle("Events");
-  fCounts->SetYTitle("# of Events");
-  fCounts->SetDirectory(0);
 }
 
-//____________________________________________________________________
-AliForwardMCCorrectionsTask::VtxBin::VtxBin(const VtxBin& o)
-  : TNamed(o),
-    fHists(o.fHists),
-    fPrimary(0), 
-    fCounts(0)
-{
-  if (o.fPrimary) {
-    fPrimary = static_cast<TH2D*>(o.fPrimary->Clone());
-    fPrimary->SetDirectory(0);
-  }
-  if (o.fCounts) {
-    fCounts = static_cast<TH1D*>(o.fCounts->Clone());
-    fCounts->SetDirectory(0);
-  }
-}
 
 //____________________________________________________________________
-AliForwardMCCorrectionsTask::VtxBin&
-AliForwardMCCorrectionsTask::VtxBin::operator=(const VtxBin& o)
-{
-  if (&o == this) return *this;
-  TNamed::operator=(o);
-  fHists   = o.fHists;
-  fPrimary = 0;
-  fCounts  = 0;
-  if (o.fPrimary) {
-    fPrimary = static_cast<TH2D*>(o.fPrimary->Clone());
-    fPrimary->SetDirectory(0);
-  }
-  if (o.fCounts) {
-    fCounts = static_cast<TH1D*>(o.fCounts->Clone());
-    fCounts->SetDirectory(0);
-  }
-  return *this;
-}
-
-//____________________________________________________________________
-void
+TList*
 AliForwardMCCorrectionsTask::VtxBin::CreateOutputObjects(TList* l)
 {
-  TList* d = new TList;
-  d->SetName(GetName());
-  d->SetOwner();
-  l->Add(d);
+  TList* d = AliBaseMCCorrectionsTask::VtxBin::CreateOutputObjects(l);
 
   d->Add(fHists.fFMD1i);
   d->Add(fHists.fFMD2i);
@@ -639,8 +182,7 @@ AliForwardMCCorrectionsTask::VtxBin::CreateOutputObjects(TList* l)
   d->Add(fHists.fFMD3i);
   d->Add(fHists.fFMD3o);
 
-  d->Add(fPrimary);
-  d->Add(fCounts);
+  return d;
 }
 
 //____________________________________________________________________

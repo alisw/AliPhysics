@@ -4,7 +4,7 @@
  * @ingroup pwglf_forward_scripts
  */
 void
-LoadLibs()
+LoadLibs(bool alsoHit=false)
 {
 
   gROOT->LoadClass("TVirtualMC",              "libVMC");
@@ -18,6 +18,18 @@ LoadLibs()
   gROOT->LoadClass("AliAnalysisTaskSE",       "libANALYSISalice");
   gROOT->LoadClass("AliOADBPhysicsSelection"  "libOADB");
   gROOT->LoadClass("AliAODForwardMult",       "libPWGLFforward2");
+
+  if (!alsoHit) return;
+  
+  gROOT->LoadClass("TProof",                  "libProof");
+  gROOT->LoadClass("TGFrame",                 "libGui");
+  gROOT->LoadClass("AliCDBManager",           "libCDB");
+  gROOT->LoadClass("AliRawVEvent",            "libRAWDatabase");
+  gROOT->LoadClass("AliHit",                  "libSTEER");
+  gROOT->LoadClass("AliFMDDigit"              "libFMDbase");
+  gROOT->LoadClass("AliFMDHit",               "libFMDsim");
+  gROOT->LoadClass("AliFMDMCHitEnergyFitter", "libPWGLFforwardhit");
+  
 }
 //
 // EOF

@@ -25,6 +25,7 @@
 #pragma link C++ class AliAnalysisTaskParticleEfficiency+;
 
 #pragma link C++ class AliAnalysisTaskSpectraAOD+;
+#pragma link C++ class AliAnalysisTaskSpectraAllChAOD+;
 #pragma link C++ class AliSpectraAODEventCuts+;
 #pragma link C++ class AliSpectraAODHistoManager+;
 #pragma link C++ class AliSpectraAODPID+;
@@ -40,7 +41,11 @@
 
 #pragma link C++ class AliLnID+;
 #pragma link C++ class AliLnHistoMap+;
+#pragma link C++ class AliLnAODtrackCuts+;
 #pragma link C++ class AliAnalysisTaskB2+;
+#pragma link C++ class AliAnalysisTaskB2AOD+;
 #pragma link C++ class AliAnalysisNucleiMass+;
+
+#pragma link C++ class AliAnalysisDeuteronpA+;
 
 #endif

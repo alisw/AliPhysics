@@ -33,7 +33,6 @@ performAllPi(){
   rebinsize = 1; // don't change this, not choice here!!!
   kGoodMatch=kFALSE;
   kSigma2vs3 = kFALSE;
-  kSigma2vs3TPC = kFALSE;
   require5sigma = kFALSE;
   bayesVsigma = kFALSE;
   kTOFmatch = kFALSE;
@@ -69,12 +68,6 @@ performAllPi(){
   doeffPi(1,0.1,etamin,etamax);
   doeffPi(0,0.1,etamin,etamax);
   kSigma2vs3=kFALSE;
-
-  // eff 2 sigma / eff 3 sigma TPC
-  kSigma2vs3TPC=kTRUE;
-  doeffPi(1,0.1,etamin,etamax);
-  doeffPi(0,0.1,etamin,etamax);
-  kSigma2vs3TPC=kFALSE;
   
   kOverAll=kTRUE;
   // TPC|TOF overall eff
@@ -137,7 +130,6 @@ performAllPr(){
   rebinsize = 1; // don't change this, not choice here!!!
   kGoodMatch=kFALSE;
   kSigma2vs3 = kFALSE;
-  kSigma2vs3TPC = kFALSE;
   require5sigma = kFALSE;
   bayesVsigma = kFALSE;
   kTOFmatch = kFALSE;
@@ -173,12 +165,6 @@ performAllPr(){
   doeffPr(1,0.1,etamin,etamax);
   doeffPr(0,0.1,etamin,etamax);
   kSigma2vs3=kFALSE;
-
-  // eff 2 sigma / eff 3 sigma TPC
-  kSigma2vs3TPC=kTRUE;
-  doeffPr(1,0.1,etamin,etamax);
-  doeffPr(0,0.1,etamin,etamax);
-  kSigma2vs3TPC=kFALSE;
 
   kOverAll=kTRUE;
   // TPC|TOF overall eff
@@ -232,7 +218,7 @@ performAllKa(){
   gROOT->LoadMacro("$ALICE_ROOT/PWGPP/pid/doeffKa.C++");
 
   // tune these parameters
-  cmin = 1; // centrality min 1
+  cmin = 4; // centrality min 1
   cmax = 10;// centrality max 10
   Float_t etamin = -0.8;
   Float_t etamax = 0.8;
@@ -241,7 +227,6 @@ performAllKa(){
   rebinsize = 1; // don't change this, not choice here!!!
   kGoodMatch=kFALSE;
   kSigma2vs3 = kFALSE;
-  kSigma2vs3TPC = kFALSE;
   require5sigma = kFALSE;
   bayesVsigma = kFALSE;
   kTOFmatch = kFALSE;
@@ -259,7 +244,7 @@ performAllKa(){
   doeffKa(0,0.1,etamin,etamax);
   doeffKa(1,0.2,etamin,etamax);
   doeffKa(1,0.4,etamin,etamax);
-  doeffKa(1,0.6,etamin,etamax);
+ doeffKa(1,0.6,etamin,etamax);
   doeffKa(1,0.8,etamin,etamax);
   doeffKa(0,0.2,etamin,etamax);
   doeffKa(0,0.4,etamin,etamax);
@@ -277,12 +262,6 @@ performAllKa(){
   doeffKa(1,0.1,etamin,etamax);
   doeffKa(0,0.1,etamin,etamax);
   kSigma2vs3=kFALSE;
-
-  // eff 2 sigma / eff 3 sigma TPC
-  kSigma2vs3TPC=kTRUE;
-  doeffKa(1,0.1,etamin,etamax);
-  doeffKa(0,0.1,etamin,etamax);
-  kSigma2vs3TPC=kFALSE;
 
   kOverAll=kTRUE;
   // TPC|TOF overall eff

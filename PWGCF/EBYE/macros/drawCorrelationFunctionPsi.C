@@ -1,6 +1,5 @@
-const Int_t numberOfCentralityBins = 12;
-//TString centralityArray[numberOfCentralityBins] = {"0-4","4-5","6-14","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3"};
-TString centralityArray[numberOfCentralityBins] = {"0-100","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3"};
+const Int_t numberOfCentralityBins = 13;
+TString centralityArray[numberOfCentralityBins] = {"0-80","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3","92-8500"};
 
 const Int_t gRebin = 1;
 
@@ -551,8 +550,17 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     
     // normalization to 1 at (0,0) --> Jan Fietes method
     if(normToTrig){
-      Double_t mixedNorm = gHistPN[2]->Integral(gHistPN[2]->GetXaxis()->FindBin(0-10e-5),gHistPN[2]->GetXaxis()->FindBin(0+10e-5),1,gHistPN[2]->GetNbinsX());
-      mixedNorm /= gHistPN[2]->GetNbinsY()*(gHistPN[2]->GetXaxis()->FindBin(0.01) - gHistPN[2]->GetXaxis()->FindBin(-0.01) + 1);
+      Double_t mixedNorm = gHistPN[2]->Integral(gHistPN[2]->GetXaxis()->FindBin(0-10e-5),gHistPN[2]->GetXaxis()->FindBin(0+10e-5),gHistPN[2]->GetNbinsY()/2 + 1,gHistPN[2]->GetNbinsY());
+      mixedNorm /= 0.5 * gHistPN[2]->GetNbinsY()*(gHistPN[2]->GetXaxis()->FindBin(0.01) - gHistPN[2]->GetXaxis()->FindBin(-0.01) + 1);
+
+      // finite bin correction
+      Double_t binWidthEta = gHistPN[2]->GetXaxis()->GetBinWidth(gHistPN[2]->GetNbinsX());
+      Double_t maxEta      = gHistPN[2]->GetXaxis()->GetBinUpEdge(gHistPN[2]->GetNbinsX());
+	
+      Double_t finiteBinCorrection = -1.0 / (2*maxEta) * binWidthEta / 2 + 1;
+      //Printf("Finite bin correction: %f", finiteBinCorrection);
+      mixedNorm /= finiteBinCorrection;
+      
       gHistPN[2]->Scale(1./mixedNorm);
     } 
 
@@ -574,7 +582,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     //cPN[2]->SaveAs(pngName.Data());
 
     //Correlation function (+-)
-    gHistPN[3] = b->GetCorrelationFunction("PN",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
+    gHistPN[3] = b->GetCorrelationFunction("PN",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig);
     gHistPN[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
     if(normToTrig)
       gHistPN[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
@@ -608,8 +616,17 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
 
     // normalization to 1 at (0,0) --> Jan Fietes method
     if(normToTrig){
-      Double_t mixedNorm = gHistPN[2]->Integral(gHistPN[2]->GetXaxis()->FindBin(0-10e-5),gHistPN[2]->GetXaxis()->FindBin(0+10e-5),1,gHistPN[2]->GetNbinsX());
-      mixedNorm /= gHistPN[2]->GetNbinsY()*(gHistPN[2]->GetXaxis()->FindBin(0.01) - gHistPN[2]->GetXaxis()->FindBin(-0.01) + 1);
+      Double_t mixedNorm = gHistPN[2]->Integral(gHistPN[2]->GetXaxis()->FindBin(0-10e-5),gHistPN[2]->GetXaxis()->FindBin(0+10e-5),gHistPN[2]->GetNbinsY()/2 + 1,gHistPN[2]->GetNbinsY());
+      mixedNorm /= 0.5 * gHistPN[2]->GetNbinsY()*(gHistPN[2]->GetXaxis()->FindBin(0.01) - gHistPN[2]->GetXaxis()->FindBin(-0.01) + 1);
+
+      // finite bin correction
+      Double_t binWidthEta = gHistPN[2]->GetXaxis()->GetBinWidth(gHistPN[2]->GetNbinsX());
+      Double_t maxEta      = gHistPN[2]->GetXaxis()->GetBinUpEdge(gHistPN[2]->GetNbinsX());
+	
+      Double_t finiteBinCorrection = -1.0 / (2*maxEta) * binWidthEta / 2 + 1;
+      //Printf("Finite bin correction: %f", finiteBinCorrection);
+      mixedNorm /= finiteBinCorrection;
+
       gHistPN[2]->Scale(1./mixedNorm);
     } 
 
@@ -747,8 +764,17 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     }
     // normalization to 1 at (0,0) --> Jan Fietes method
     if(normToTrig){
-      Double_t mixedNorm = gHistNP[2]->Integral(gHistNP[2]->GetXaxis()->FindBin(0-10e-5),gHistNP[2]->GetXaxis()->FindBin(0+10e-5),1,gHistNP[2]->GetNbinsX());
-      mixedNorm /= gHistNP[2]->GetNbinsY()*(gHistNP[2]->GetXaxis()->FindBin(0.01) - gHistNP[2]->GetXaxis()->FindBin(-0.01) + 1);
+      Double_t mixedNorm = gHistNP[2]->Integral(gHistNP[2]->GetXaxis()->FindBin(0-10e-5),gHistNP[2]->GetXaxis()->FindBin(0+10e-5),gHistNP[2]->GetNbinsY()/2 + 1,gHistNP[2]->GetNbinsY());
+      mixedNorm /= 0.5 * gHistNP[2]->GetNbinsY()*(gHistNP[2]->GetXaxis()->FindBin(0.01) - gHistNP[2]->GetXaxis()->FindBin(-0.01) + 1);
+
+      // finite bin correction
+      Double_t binWidthEta = gHistNP[2]->GetXaxis()->GetBinWidth(gHistNP[2]->GetNbinsX());
+      Double_t maxEta      = gHistNP[2]->GetXaxis()->GetBinUpEdge(gHistNP[2]->GetNbinsX());
+	
+      Double_t finiteBinCorrection = -1.0 / (2*maxEta) * binWidthEta / 2 + 1;
+      //Printf("Finite bin correction: %f", finiteBinCorrection);
+      mixedNorm /= finiteBinCorrection;
+
       gHistNP[2]->Scale(1./mixedNorm);
     } 
 
@@ -770,7 +796,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     //cNP[2]->SaveAs(pngName.Data());
 
     //Correlation function (-+)
-    gHistNP[3] = b->GetCorrelationFunction("NP",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
+    gHistNP[3] = b->GetCorrelationFunction("NP",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig);
     gHistNP[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
     if(normToTrig)
       gHistNP[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
@@ -804,8 +830,17 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
 
     // normalization to 1 at (0,0) --> Jan Fietes method
     if(normToTrig){
-      Double_t mixedNorm = gHistNP[2]->Integral(gHistNP[2]->GetXaxis()->FindBin(0-10e-5),gHistNP[2]->GetXaxis()->FindBin(0+10e-5),1,gHistNP[2]->GetNbinsX());
-      mixedNorm /= gHistNP[2]->GetNbinsY()*(gHistNP[2]->GetXaxis()->FindBin(0.01) - gHistNP[2]->GetXaxis()->FindBin(-0.01) + 1);
+      Double_t mixedNorm = gHistNP[2]->Integral(gHistNP[2]->GetXaxis()->FindBin(0-10e-5),gHistNP[2]->GetXaxis()->FindBin(0+10e-5),gHistNP[2]->GetNbinsY()/2 + 1,gHistNP[2]->GetNbinsY());
+      mixedNorm /= 0.5 * gHistNP[2]->GetNbinsY()*(gHistNP[2]->GetXaxis()->FindBin(0.01) - gHistNP[2]->GetXaxis()->FindBin(-0.01) + 1);
+
+      // finite bin correction
+      Double_t binWidthEta = gHistNP[2]->GetXaxis()->GetBinWidth(gHistNP[2]->GetNbinsX());
+      Double_t maxEta      = gHistNP[2]->GetXaxis()->GetBinUpEdge(gHistNP[2]->GetNbinsX());
+	
+      Double_t finiteBinCorrection = -1.0 / (2*maxEta) * binWidthEta / 2 + 1;
+      //Printf("Finite bin correction: %f", finiteBinCorrection);
+      mixedNorm /= finiteBinCorrection;
+
       gHistNP[2]->Scale(1./mixedNorm);
     } 
 
@@ -944,8 +979,17 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     }
     // normalization to 1 at (0,0) --> Jan Fietes method
     if(normToTrig){
-      Double_t mixedNorm = gHistPP[2]->Integral(gHistPP[2]->GetXaxis()->FindBin(0-10e-5),gHistPP[2]->GetXaxis()->FindBin(0+10e-5),1,gHistPP[2]->GetNbinsX());
-      mixedNorm /= gHistPP[2]->GetNbinsY()*(gHistPP[2]->GetXaxis()->FindBin(0.01) - gHistPP[2]->GetXaxis()->FindBin(-0.01) + 1);
+      Double_t mixedNorm = gHistPP[2]->Integral(gHistPP[2]->GetXaxis()->FindBin(0-10e-5),gHistPP[2]->GetXaxis()->FindBin(0+10e-5),gHistPP[2]->GetNbinsY()/2 + 1,gHistPP[2]->GetNbinsY());
+      mixedNorm /= 0.5 * gHistPP[2]->GetNbinsY()*(gHistPP[2]->GetXaxis()->FindBin(0.01) - gHistPP[2]->GetXaxis()->FindBin(-0.01) + 1);
+
+      // finite bin correction
+      Double_t binWidthEta = gHistPP[2]->GetXaxis()->GetBinWidth(gHistPP[2]->GetNbinsX());
+      Double_t maxEta      = gHistPP[2]->GetXaxis()->GetBinUpEdge(gHistPP[2]->GetNbinsX());
+	
+      Double_t finiteBinCorrection = -1.0 / (2*maxEta) * binWidthEta / 2 + 1;
+      //Printf("Finite bin correction: %f", finiteBinCorrection);
+      mixedNorm /= finiteBinCorrection;
+
       gHistPP[2]->Scale(1./mixedNorm);
     } 
 
@@ -967,7 +1011,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     //cPP[2]->SaveAs(pngName.Data());
 
     //Correlation function (++)
-    gHistPP[3] = b->GetCorrelationFunction("PP",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
+    gHistPP[3] = b->GetCorrelationFunction("PP",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig);
     gHistPP[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
     if(normToTrig)
       gHistPP[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
@@ -1000,8 +1044,17 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     }
     // normalization to 1 at (0,0) --> Jan Fietes method
     if(normToTrig){
-      Double_t mixedNorm = gHistPP[2]->Integral(gHistPP[2]->GetXaxis()->FindBin(0-10e-5),gHistPP[2]->GetXaxis()->FindBin(0+10e-5),1,gHistPP[2]->GetNbinsX());
-      mixedNorm /= gHistPP[2]->GetNbinsY()*(gHistPP[2]->GetXaxis()->FindBin(0.01) - gHistPP[2]->GetXaxis()->FindBin(-0.01) + 1);
+      Double_t mixedNorm = gHistPP[2]->Integral(gHistPP[2]->GetXaxis()->FindBin(0-10e-5),gHistPP[2]->GetXaxis()->FindBin(0+10e-5),gHistPP[2]->GetNbinsY()/2 + 1,gHistPP[2]->GetNbinsY());
+      mixedNorm /= 0.5 * gHistPP[2]->GetNbinsY()*(gHistPP[2]->GetXaxis()->FindBin(0.01) - gHistPP[2]->GetXaxis()->FindBin(-0.01) + 1);
+
+      // finite bin correction
+      Double_t binWidthEta = gHistPP[2]->GetXaxis()->GetBinWidth(gHistPP[2]->GetNbinsX());
+      Double_t maxEta      = gHistPP[2]->GetXaxis()->GetBinUpEdge(gHistPP[2]->GetNbinsX());
+	
+      Double_t finiteBinCorrection = -1.0 / (2*maxEta) * binWidthEta / 2 + 1;
+      //Printf("Finite bin correction: %f", finiteBinCorrection);
+      mixedNorm /= finiteBinCorrection;
+
       gHistPP[2]->Scale(1./mixedNorm);
     } 
 
@@ -1139,8 +1192,17 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     }
     // normalization to 1 at (0,0) --> Jan Fietes method
     if(normToTrig){
-      Double_t mixedNorm = gHistNN[2]->Integral(gHistNN[2]->GetXaxis()->FindBin(0-10e-5),gHistNN[2]->GetXaxis()->FindBin(0+10e-5),1,gHistNN[2]->GetNbinsX());
-      mixedNorm /= gHistNN[2]->GetNbinsY()*(gHistNN[2]->GetXaxis()->FindBin(0.01) - gHistNN[2]->GetXaxis()->FindBin(-0.01) + 1);
+      Double_t mixedNorm = gHistNN[2]->Integral(gHistNN[2]->GetXaxis()->FindBin(0-10e-5),gHistNN[2]->GetXaxis()->FindBin(0+10e-5),gHistNN[2]->GetNbinsY()/2 + 1,gHistNN[2]->GetNbinsY());
+      mixedNorm /= 0.5 * gHistNN[2]->GetNbinsY()*(gHistNN[2]->GetXaxis()->FindBin(0.01) - gHistNN[2]->GetXaxis()->FindBin(-0.01) + 1);
+
+     // finite bin correction
+      Double_t binWidthEta = gHistNN[2]->GetXaxis()->GetBinWidth(gHistNN[2]->GetNbinsX());
+      Double_t maxEta      = gHistNN[2]->GetXaxis()->GetBinUpEdge(gHistNN[2]->GetNbinsX());
+	
+      Double_t finiteBinCorrection = -1.0 / (2*maxEta) * binWidthEta / 2 + 1;
+      //Printf("Finite bin correction: %f", finiteBinCorrection);
+      mixedNorm /= finiteBinCorrection;
+
       gHistNN[2]->Scale(1./mixedNorm);
     } 
 
@@ -1162,7 +1224,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     //cNN[2]->SaveAs(pngName.Data());
 
     //Correlation function (--)
-    gHistNN[3] = b->GetCorrelationFunction("NN",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
+    gHistNN[3] = b->GetCorrelationFunction("NN",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig);
     gHistNN[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
     if(normToTrig)
       gHistNN[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
@@ -1195,8 +1257,17 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     }
     // normalization to 1 at (0,0) --> Jan Fietes method
     if(normToTrig){
-      Double_t mixedNorm = gHistNN[2]->Integral(gHistNN[2]->GetXaxis()->FindBin(0-10e-5),gHistNN[2]->GetXaxis()->FindBin(0+10e-5),1,gHistNN[2]->GetNbinsX());
-      mixedNorm /= gHistNN[2]->GetNbinsY()*(gHistNN[2]->GetXaxis()->FindBin(0.01) - gHistNN[2]->GetXaxis()->FindBin(-0.01) + 1);
+      Double_t mixedNorm = gHistNN[2]->Integral(gHistNN[2]->GetXaxis()->FindBin(0-10e-5),gHistNN[2]->GetXaxis()->FindBin(0+10e-5),gHistNN[2]->GetNbinsY()/2 + 1,gHistNN[2]->GetNbinsY());
+      mixedNorm /= 0.5 * gHistNN[2]->GetNbinsY()*(gHistNN[2]->GetXaxis()->FindBin(0.01) - gHistNN[2]->GetXaxis()->FindBin(-0.01) + 1);
+
+     // finite bin correction
+      Double_t binWidthEta = gHistNN[2]->GetXaxis()->GetBinWidth(gHistNN[2]->GetNbinsX());
+      Double_t maxEta      = gHistNN[2]->GetXaxis()->GetBinUpEdge(gHistNN[2]->GetNbinsX());
+	
+      Double_t finiteBinCorrection = -1.0 / (2*maxEta) * binWidthEta / 2 + 1;
+      //Printf("Finite bin correction: %f", finiteBinCorrection);
+      mixedNorm /= finiteBinCorrection;
+
       gHistNN[2]->Scale(1./mixedNorm);
     } 
 

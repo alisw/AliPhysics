@@ -1,7 +1,7 @@
-// 0       1       2       3       4  5  6 	        7     8             9                            10         11
-// nsyield,asyield,nswidth,aswidth,v2,v3,nsasyieldratio,v3/v2,remainingpeak,remainingjetyield/ridgeyield,chi2(v2v3),baseline
+// 0       1       2       3       4  5  6 	        7     8             9                            10         11       12
+// nsyield,asyield,nswidth,aswidth,v2,v3,nsasyieldratio,v3/v2,remainingpeak,remainingjetyield/ridgeyield,chi2(v2v3),baseline,v1
 const char* graphTitles[] = { "NS Ridge Yield", "AS Ridge Yield", "NS Width", "AS Width", "v2", "v3", "NS Yield / AS Yield", "v3 / v2", "remaining peak in %", "remaining jet / NS yield in %", "chi2/ndf", "baseline", "v1" };
-const Int_t NGraphs = 28; // pt index
+const Int_t NGraphs = 10; // pt index  //10 for the paper
 const Int_t NHists = 13; 
 TGraphErrors*** graphs = 0;
 
@@ -73,6 +73,15 @@ void DrawLatex(Float_t x, Float_t y, Int_t color, const char* text, Float_t text
   latex->Draw();
 }
 
+void ScaleHistError(TH1D* h, Double_t scaling)
+{
+  for(Int_t ibin=1;ibin<=h->GetNbinsX();ibin++){
+    //printf("Error %d Before: %f",ibin,h->GetBinError(ibin));
+    h->SetBinError(ibin,scaling*h->GetBinError(ibin));
+    //Printf("Error %d after: %f",ibin,h->GetBinError(ibin));
+  }
+}
+
 void PadFor2DCorr()
 {
   gPad->SetPad(0, 0, 1, 1);
@@ -124,7 +133,8 @@ void DivideGraphs(TGraphErrors* graph1, TGraphErrors* graph2)
 	}
 
       Float_t value = graph1->GetY()[bin1] / graph2Extrapolated;
-      Float_t error = value * TMath::Sqrt(TMath::Power(graph1->GetEY()[bin1] / graph1->GetY()[bin1], 2) + TMath::Power(graph2->GetEY()[bin2] / graph2->GetY()[bin2], 2));
+      if(0)Float_t error = value * TMath::Sqrt(TMath::Power(graph1->GetEY()[bin1] / graph1->GetY()[bin1], 2) + TMath::Power(graph2->GetEY()[bin2] / graph2->GetY()[bin2], 2)); //for the comparisons
+      else Float_t error = value * TMath::Sqrt(TMath::Abs(TMath::Power(graph1->GetEY()[bin1] / graph1->GetY()[bin1], 2) - TMath::Power(graph2->GetEY()[bin2] / graph2->GetY()[bin2], 2))); //for the syst error evaluation
 
       graph1->GetY()[bin1] = value;
       graph1->GetEY()[bin1] = error;
@@ -956,7 +966,9 @@ void CorrelationSubtractionAll(const char* fileName, Int_t centr = 0)
     CorrelationSubtraction(fileName, is[i], js[i], centr, graphs[0], 0);
 }
 
-Int_t gStudySystematic = 0; // 10 = exclusion zone to 0.5; 11 = exclusion off; 12 = exclusion 0.8 and mirror to AS; 13 = scale peripheral; 14 = exclusion 1.2; 20 = non closure; 30 = baseline; 40 = track cuts;  41 = pair cuts; 50/51 = cms comparison; 60 = other peripheral bin ; 70 = 2 Sigma PID
+Int_t gStudySystematic = 0; // 10 = exclusion zone to 0.5; 11 = exclusion off; 12 = exclusion 0.8 and mirror to AS; 13 = scale peripheral; 14 = exclusion 1.2; 20 = non closure;
+//30 = baseline; 31 = analytical; 32=pileup; 40 = track cuts;  41 = pair cuts; 50/51 = cms comparison; 60 = other peripheral bin ;
+// 70=2sigma PID;71 = exclusive nsigma PID; 72 = contamination NOT subtracted; 73= Contamination TuneOnData; 74=T0Fill
 Int_t gParticleSpecie = 0;//0:Hadrons 1:Pions 2:Kaons 3:Protons
 const char* gParticleSpecieName[] = {"Hadrons","Pions","Kaons","Protons"};
 
@@ -968,19 +980,19 @@ void CorrelationSubtractionHistogram(const char* fileName, Bool_t centralityAxis
 {
   if (gBinning == 0)
   {
-    Int_t n = 5; //merging og 2.5 - 4
-    Int_t is[] = { 0, 1, 2, 3, 4 };
-    Int_t js[] = { 1, 2, 3, 4, 5 };
-    Bool_t symm[] = { 1, 1, 1, 1, 1, 1 };
+    Int_t n = 10; //fine binning with low pt TPC only
+    Int_t is[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    Int_t js[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+    Bool_t symm[] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
   }
   
   if (gBinning == 1)
   {
     // for extraction when trigger pT is from whole range
-    Int_t n = 8;
-    Int_t is[] =    { 0, 0, 0, 0, 0, 0, 0, 0 };
-    Int_t js[] =    { 1, 2, 3, 4, 5, 6, 7, 9 };
-    Bool_t symm[] = { 1, 1, 1, 1, 1, 1, 1, 1 };
+    Int_t n = 6;
+    Int_t is[] =    { 0, 0, 0, 0, 0, 0, 0 };
+    Int_t js[] =    { 1, 2, 3, 4, 5, 6, 9 };
+    Bool_t symm[] = { 1, 1, 1, 1, 1, 1, 1 };
   }
 
   if (gBinning == 2)
@@ -1005,7 +1017,7 @@ void CorrelationSubtractionHistogram(const char* fileName, Bool_t centralityAxis
   if (gBinning == 4)
   {
     // default with all but only symmetric bins
-    Int_t n = 7;
+    Int_t n = 6;
     // sorted by pT,T
     Int_t is[] =    { 0, 1, 2, 3, 4, 5, 8 };
     Int_t js[] =    { 1, 2, 3, 4, 5, 6, 9 };
@@ -1107,18 +1119,25 @@ void CorrelationSubtractionHistogram(const char* fileName, Bool_t centralityAxis
 
 void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr, TGraphErrors** graph, Float_t axisOffset, Bool_t silent = kFALSE, Bool_t symmetricpT = kFALSE, Bool_t centralityAxis = kTRUE)
 {
-  Printf(Form("Getting dphi_%d_%d_%d from %s", i, j, centr,fileName));
-  TFile::Open(fileName);
+  Printf(Form("\033[1;31mGetting dphi_%d_%d_%d from %s\033[m", i, j, centr,fileName));
+  //TFile::Open(fileName);
+  //TH2* hist1 = (TH2*) gFile->Get(Form("dphi_%d_%d_%d", i, j, centr));
+  //TH2* hist2 = (TH2*) gFile->Get(Form("dphi_%d_%d_%d", i, j, ((gStudySystematic == 60) ? 6 : 4)));
+  //TH1* refMult = (TH1*) gFile->Get("refMult");
   
-  TH2* hist1 = (TH2*) gFile->Get(Form("dphi_%d_%d_%d", i, j, centr));
-  TH2* hist2 = (TH2*) gFile->Get(Form("dphi_%d_%d_%d", i, j, ((gStudySystematic == 60) ? 6 : 4)));
-  TH1* refMult = (TH1*) gFile->Get("refMult");
+  TH1::AddDirectory(kFALSE);
+  fin=TFile::Open(fileName);
+  TH2* hist1 = (TH2*) fin->Get(Form("dphi_%d_%d_%d", i, j, centr));
+  TH2* hist2 = (TH2*) fin->Get(Form("dphi_%d_%d_%d", i, j, ((gStudySystematic == 60) ? 6 : 4)));
+  TH1* refMult = (TH1*) fin->Get("refMult");
+  
+  if (!hist1 || !hist2)
+    return;
 
   hist1 = (TH2*) hist1->Clone();
   hist2 = (TH2*) hist2->Clone();
+  refMult = (TH1*) refMult->Clone();
   
-  if (!hist1 || !hist2)
-    return 0;
   // NOTE fix normalization. these 2d correlations come out of AliUEHist normalized by dphi bin width, but not deta
   hist1->Scale(1.0 / hist1->GetYaxis()->GetBinWidth(1));
   hist2->Scale(1.0 / hist2->GetYaxis()->GetBinWidth(1));
@@ -1149,7 +1168,7 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
 	centrality = 0.5 * (TString(tokens->At(3)->GetName()).Atoi() + TString(tokens->At(2)->GetName()).Atoi());
     }
   
-  hist1->GetYaxis()->SetRangeUser(-1.99, 1.99); hist2->GetYaxis()->SetRangeUser(-1.99, 1.99);
+  hist1->GetYaxis()->SetRangeUser(-1.59, 1.59); hist2->GetYaxis()->SetRangeUser(-1.59, 1.59);
   if (!silent)
     {
       new TCanvas; 
@@ -1167,71 +1186,131 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
   
   if (gStudySystematic == 13)
     {
-      Float_t factor[10][10][10][4];
+      Float_t factor[11][11][10][4];
     
       if (1)
 	{
-	  // From Leonardo, Apr 18th 2013
-	  factor[0][1][0][0] = 0.130;
-	  factor[0][1][1][0] = 0.115;
-	  factor[0][1][3][0] = 0.089;
-	  factor[1][2][0][0] = 0.106;
-	  factor[1][2][1][0] = 0.088;
-	  factor[1][2][3][0] = 0.069;
-	  factor[2][3][0][0] = 0.085;
-	  factor[2][3][1][0] = 0.074;
-	  factor[2][3][3][0] = 0.056;
-	  factor[3][4][0][0] = 0.055;
-	  factor[3][4][1][0] = 0.059;
-	  factor[3][4][3][0] = 0.034;
-	  factor[4][5][0][0] = 0.021;
-	  factor[4][5][1][0] = 0.034;
-	  factor[4][5][3][0] = 0.025;
-	  factor[0][1][0][1] = 0.134;
-	  factor[0][1][1][1] = 0.121;
-	  factor[0][1][3][1] = 0.092;
-	  factor[1][2][0][1] = 0.110;
-	  factor[1][2][1][1] = 0.090;
-	  factor[1][2][3][1] = 0.071;
-	  factor[2][3][0][1] = 0.085;
-	  factor[2][3][1][1] = 0.068;
-	  factor[2][3][3][1] = 0.048;
-	  factor[3][4][0][1] = 0.055;
-	  factor[3][4][1][1] = 0.066;
-	  factor[3][4][3][1] = 0.045;
-	  factor[4][5][0][1] = -0.010;
-	  factor[4][5][1][1] = 0.002;
-	  factor[4][5][3][1] = 0.004;
-	  factor[0][1][0][2] = 0.040;
-	  factor[0][1][1][2] = 0.062;
-	  factor[0][1][3][2] = 0.050;
-	  factor[1][2][0][2] = 0.108;
-	  factor[1][2][1][2] = 0.099;
-	  factor[1][2][3][2] = 0.096;
-	  factor[2][3][0][2] = 0.083;
-	  factor[2][3][1][2] = 0.081;
-	  factor[2][3][3][2] = 0.061;
-	  factor[3][4][0][2] = 0.049;
-	  factor[3][4][1][2] = 0.072;
-	  factor[3][4][3][2] = 0.024;
-	  factor[4][5][0][2] = 0.023;
-	  factor[4][5][1][2] = 0.049;
-	  factor[4][5][3][2] = 0.018;
-	  factor[0][1][0][3] = -0.192;
-	  factor[0][1][1][3] = 0.003;
-	  factor[0][1][3][3] = 0.093;
-	  factor[1][2][0][3] = 0.001;
-	  factor[1][2][1][3] = -0.008;
-	  factor[1][2][3][3] = 0.054;
-	  factor[2][3][0][3] = 0.083;
-	  factor[2][3][1][3] = 0.090;
-	  factor[2][3][3][3] = 0.071;
-	  factor[3][4][0][3] = 0.140;
-	  factor[3][4][1][3] = 0.163;
-	  factor[3][4][3][3] = 0.095;
-	  factor[4][5][0][3] = 0.078;
-	  factor[4][5][1][3] = 0.055;
-	  factor[4][5][3][3] = 0.081;
+	  // From Leonardo, May 13th 2013
+	  factor[0][1][0][0] = 0.149;
+	  factor[0][1][1][0] = 0.123;
+	  factor[0][1][3][0] = 0.093;
+	  factor[1][2][0][0] = 0.135;
+	  factor[1][2][1][0] = 0.116;
+	  factor[1][2][3][0] = 0.083;
+	  factor[2][3][0][0] = 0.125;
+	  factor[2][3][1][0] = 0.104;
+	  factor[2][3][3][0] = 0.086;
+	  factor[3][4][0][0] = 0.100;
+	  factor[3][4][1][0] = 0.095;
+	  factor[3][4][3][0] = 0.072;
+	  factor[4][5][0][0] = 0.084;
+	  factor[4][5][1][0] = 0.070;
+	  factor[4][5][3][0] = 0.061;
+	  factor[5][6][0][0] = 0.064;
+	  factor[5][6][1][0] = 0.057;
+	  factor[5][6][3][0] = 0.036;
+	  factor[6][7][0][0] = 0.059;
+	  factor[6][7][1][0] = 0.053;
+	  factor[6][7][3][0] = 0.042;
+	  factor[7][8][0][0] = 0.008;
+	  factor[7][8][1][0] = 0.008;
+	  factor[7][8][3][0] = 0.021;
+	  factor[8][9][0][0] = 0.002;
+	  factor[8][9][1][0] = 0.011;
+	  factor[8][9][3][0] = 0.023;
+	  factor[9][10][0][0] = -0.025;
+	  factor[9][10][1][0] = -0.016;
+	  factor[9][10][3][0] = 0.008;
+	  factor[0][1][0][1] = 0.150;
+	  factor[0][1][1][1] = 0.125;
+	  factor[0][1][3][1] = 0.097;
+	  factor[1][2][0][1] = 0.137;
+	  factor[1][2][1][1] = 0.116;
+	  factor[1][2][3][1] = 0.084;
+	  factor[2][3][0][1] = 0.134;
+	  factor[2][3][1][1] = 0.113;
+	  factor[2][3][3][1] = 0.085;
+	  factor[3][4][0][1] = 0.103;
+	  factor[3][4][1][1] = 0.101;
+	  factor[3][4][3][1] = 0.073;
+	  factor[4][5][0][1] = 0.090;
+	  factor[4][5][1][1] = 0.075;
+	  factor[4][5][3][1] = 0.065;
+	  factor[5][6][0][1] = 0.061;
+	  factor[5][6][1][1] = 0.052;
+	  factor[5][6][3][1] = 0.038;
+	  factor[6][7][0][1] = 0.058;
+	  factor[6][7][1][1] = 0.050;
+	  factor[6][7][3][1] = 0.036;
+	  factor[7][8][0][1] = -0.017;
+	  factor[7][8][1][1] = 0.012;
+	  factor[7][8][3][1] = 0.018;
+	  factor[8][9][0][1] = -0.027;
+	  factor[8][9][1][1] = -0.031;
+	  factor[8][9][3][1] = -0.021;
+	  factor[9][10][0][1] = -0.064;
+	  factor[9][10][1][1] = -0.055;
+	  factor[9][10][3][1] = -0.016;
+	  factor[0][1][0][2] = 0.;
+	  factor[0][1][1][2] = 0.;
+	  factor[0][1][3][2] = 0.;
+	  factor[1][2][0][2] = 0.030;
+	  factor[1][2][1][2] = 0.092;
+	  factor[1][2][3][2] = -0.001;
+	  factor[2][3][0][2] = 0.005;
+	  factor[2][3][1][2] = 0.059;
+	  factor[2][3][3][2] = 0.077;
+	  factor[3][4][0][2] = 0.075;
+	  factor[3][4][1][2] = 0.071;
+	  factor[3][4][3][2] = 0.030;
+	  factor[4][5][0][2] = 0.071;
+	  factor[4][5][1][2] = 0.064;
+	  factor[4][5][3][2] = 0.059;
+	  factor[5][6][0][2] = 0.074;
+	  factor[5][6][1][2] = 0.066;
+	  factor[5][6][3][2] = 0.029;
+	  factor[6][7][0][2] = 0.047;
+	  factor[6][7][1][2] = 0.062;
+	  factor[6][7][3][2] = 0.026;
+	  factor[7][8][0][2] = 0.027;
+	  factor[7][8][1][2] = -0.003;
+	  factor[7][8][3][2] = 0.011;
+	  factor[8][9][0][2] = 0.024;
+	  factor[8][9][1][2] = 0.031;
+	  factor[8][9][3][2] = 0.036;
+	  factor[9][10][0][2] = 0.005;
+	  factor[9][10][1][2] = 0.017;
+	  factor[9][10][3][2] = 0.041;
+	  factor[0][1][0][3] = 0.;
+	  factor[0][1][1][3] = 0.;
+	  factor[0][1][3][3] = 0.;
+	  factor[1][2][0][3] = -0.146;
+	  factor[1][2][1][3] = -0.095;
+	  factor[1][2][3][3] = -0.023;
+	  factor[2][3][0][3] = -0.273;
+	  factor[2][3][1][3] = -0.003;
+	  factor[2][3][3][3] = 0.040;
+	  factor[3][4][0][3] = -0.245;
+	  factor[3][4][1][3] = 0.030;
+	  factor[3][4][3][3] = 0.110;
+	  factor[4][5][0][3] = -0.038;
+	  factor[4][5][1][3] = 0.036;
+	  factor[4][5][3][3] = -0.004;
+	  factor[5][6][0][3] = -0.053;
+	  factor[5][6][1][3] = 0.047;
+	  factor[5][6][3][3] = 0.057;
+	  factor[6][7][0][3] = 0.052;
+	  factor[6][7][1][3] = 0.060;
+	  factor[6][7][3][3] = 0.062;
+	  factor[7][8][0][3] = 0.075;
+	  factor[7][8][1][3] = 0.093;
+	  factor[7][8][3][3] = 0.050;
+	  factor[8][9][0][3] = 0.073;
+	  factor[8][9][1][3] = 0.083;
+	  factor[8][9][3][3] = 0.017;
+	  factor[9][10][0][3] = 0.023;
+	  factor[9][10][1][3] = 0.037;
+	  factor[9][10][3][3] = 0.013;
 	}
       Printf("i=%d  j=%d centr=%d",i,j,centr);
       Printf("Using factor[i][j][centr][gParticleSpecie] %f", factor[i][j][centr][gParticleSpecie]);
@@ -1292,6 +1371,197 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
 	  //       Printf("%f %f %f", centrality, xValue1, xValue2);
 	}
     }
+ 
+  Printf("ContaminationCorrection: peak before correction for contamination %f",hist1->GetBinContent(hist1->GetXaxis()->FindBin(0),hist1->GetXaxis()->FindBin(0)));  
+  if(gStudySystematic != 72)//gStudySystematic = 72 means no contamination correction
+    {
+      if(gParticleSpecie==2 || gParticleSpecie==3)//for kaons and protons, contamination from Pions
+       	{
+	  Bool_t DrawCont=0;
+	  Printf("ContaminationCorrection: PARTICLE SPECIE: %d",gParticleSpecie);
+	  //get the file with PID efficiencies
+	  const char * filenameID="~/Dropbox/pid-ridge/pPb/contamination_files/Contamination3SigpPbMCNorm.root";
+	  if(gStudySystematic==70)filenameID="~/Dropbox/pid-ridge/pPb/contamination_files/Contamination2SigpPbMCNorm.root";
+	  if(gStudySystematic==71)filenameID="~/Dropbox/pid-ridge/pPb/contamination_files/Contamination3SigpPbExclusiveMCNorm.root";
+	  if(gStudySystematic==73)filenameID="~/Dropbox/pid-ridge/pPb/contamination_files/Contamination3SigpPbTuneOnDataMCNorm.root";
+	  filecont = TFile::Open(filenameID);
+	  if(!filecont)Printf("Contamination file %s not found, skipping the contamination correction",filenameID);
+	  else{
+	    TH2F *fHistID=(TH2F*)filecont->Get(Form("fHistID%d",i));
+	    Printf("\nContaminationCorrection: for %s",gParticleSpecieName[gParticleSpecie]);
+	    TString fileNamePions=Form("%s",fileName);
+	    fileNamePions.ReplaceAll((gParticleSpecie==2)?"Kaons":"Protons","Pions");
+	    Printf(Form("ContaminationCorrection: Getting dphi_%d_%d_%d from %s", i, j, centr,fileNamePions.Data()));
+	    //get the pion correlation function in central and peripheral
+	    filePion= TFile::Open(fileNamePions.Data());
+	    TH2* hist1Pions = (TH2*) filePion->Get(Form("dphi_%d_%d_%d", i, j, centr));
+	    TH2* hist2Pions = (TH2*) filePion->Get(Form("dphi_%d_%d_%d", i, j, ((gStudySystematic == 60) ? 6 : 4)));
+	    hist1Pions = (TH2*) hist1Pions->Clone();
+	    hist2Pions = (TH2*) hist2Pions->Clone();
+	    if (!hist1Pions || !hist2Pions)
+	      return 0;
+	    hist1Pions->Scale(1.0 / hist1Pions->GetYaxis()->GetBinWidth(1));
+	    hist2Pions->Scale(1.0 / hist2Pions->GetYaxis()->GetBinWidth(1));
+	    Double_t PIDeffPiInSpecie=fHistID->GetBinContent(2,(gParticleSpecie==2)?3:4);
+	    Double_t PIDeffSpecie=fHistID->GetBinContent((gParticleSpecie==2)?3:4,(gParticleSpecie==2)?3:4);
+	    Double_t scaling=PIDeffPiInSpecie/PIDeffSpecie;
+	    //for protons we remove the pions identified as kaons
+	    if(gParticleSpecie==3){
+	      Double_t PionsAsKaons=fHistID->GetBinContent(3,4)/fHistID->GetBinContent(4,4)*fHistID->GetBinContent(2,3)/fHistID->GetBinContent(3,3);
+	      scaling -= PionsAsKaons;
+	    }
+	    Printf("ContaminationCorrection: Scaling pion correlarion function by %f",scaling);
+	    if(DrawCont){
+	      TCanvas *ccont=new TCanvas(Form("ContPionsIn%s_%d_%d_%d",gParticleSpecieName[gParticleSpecie], i, j, centr),Form("ContPionsIn%s_%d_%d_%d",gParticleSpecieName[gParticleSpecie], i, j, centr),1600,1200);
+	      ccont->Divide(2,3);
+	      ccont->cd(1);
+	      hist1->DrawCopy("SURF1");
+	      ccont->cd(2);
+	      hist2->DrawCopy("SURF1");
+	      TCanvas *ccont_bis=new TCanvas(Form("ContPionsIn%s_bis_%d_%d_%d",gParticleSpecieName[gParticleSpecie], i, j, centr),Form("ContPionsIn%s_bis_%d_%d_%d",gParticleSpecieName[gParticleSpecie], i, j, centr),1600,1200);
+	      ccont_bis->Divide(2,2);
+	      ccont_bis->cd(1);
+	      projCentBef=(TH1F*)hist1->ProjectionX()->Clone();
+	      projCentBef->SetMinimum(0.7*projCentBef->GetMinimum());
+	      projCentBef->DrawCopy("");
+	      ccont_bis->cd(2);
+	      projPerBef=(TH1F*)hist2->ProjectionX()->Clone();
+	      projPerBef->SetMinimum(0.7*projPerBef->GetMinimum());
+	      projPerBef->DrawCopy("");
+	    }
+	    
+	    //remove the contamination
+	    hist1Pions->Scale(scaling);
+	    hist1->Add(hist1Pions,-1);
+	    hist2Pions->Scale(scaling);
+	    hist2->Add(hist2Pions,-1);
+	    
+	    if(DrawCont){
+	      ccont->cd(3);
+	      hist1Pions->DrawCopy("SURF1");
+	      ccont->cd(4);
+	      hist2Pions->DrawCopy("SURF1");
+	      ccont->cd(5);
+	      hist1->DrawCopy("SURF1");
+	      ccont->cd(6);
+	      hist2->DrawCopy("SURF1");
+	      ccont->SaveAs(Form("ContPionsIn%s_%d_%d_%d.png",gParticleSpecieName[gParticleSpecie], i, j, centr));
+	      
+	      ccont_bis->cd(1);
+	      projCentAft=(TH1F*)hist1->ProjectionX()->Clone();
+	      projCentAft->SetLineColor(4);
+	      projCentAft->DrawCopy("same");
+	      ccont_bis->cd(2);
+	      projPerAft=(TH1F*)hist2->ProjectionX()->Clone();
+	      projPerAft->SetLineColor(4);
+	      projPerAft->DrawCopy("same");
+	      projCentAft->Divide(projCentBef);
+	      projCentAft->SetMinimum(.7);
+	      projCentAft->SetMaximum(1.);
+	      ccont_bis->cd(3);
+	      projCentAft->DrawCopy("");
+	      projPerAft->Divide(projPerBef);
+	      projPerAft->SetMinimum(.7);
+	      projPerAft->SetMaximum(1.);
+	      ccont_bis->cd(4);
+	      projPerAft->DrawCopy("");
+	      ccont_bis->SaveAs(Form("ContPionsIn%s_bis_%d_%d_%d.png",gParticleSpecieName[gParticleSpecie], i, j, centr));
+	    }
+	    
+	    delete hist1Pions;
+	    delete hist2Pions;
+	    filePion->Close();
+	    delete filePion;
+	    
+	    if(gParticleSpecie==3)
+	    {
+	      Printf("ContaminationCorrection: for %s also the contamination from Kaons is considered",gParticleSpecieName[gParticleSpecie]);
+	      TString fileNameKaons=Form("%s",fileName);
+	      fileNameKaons.ReplaceAll("Protons","Kaons");
+	      Printf(Form("ContaminationCorrection: Getting dphi_%d_%d_%d from %s", i, j, centr,fileNameKaons.Data()));
+	      //get the Kaon correlation function
+	      fileKaon= TFile::Open(fileNameKaons.Data());     
+	      TH2* hist1Kaons = (TH2*) fileKaon->Get(Form("dphi_%d_%d_%d", i, j, centr));
+	      TH2* hist2Kaons = (TH2*) fileKaon->Get(Form("dphi_%d_%d_%d", i, j, ((gStudySystematic == 60) ? 6 : 4)));
+	      hist1Kaons = (TH2*) hist1Kaons->Clone();
+	      hist2Kaons = (TH2*) hist2Kaons->Clone();
+	      if (!hist1Kaons || !hist2Kaons)
+		return 0;
+	      hist1Kaons->Scale(1.0 / hist1Kaons->GetYaxis()->GetBinWidth(1));
+	      hist2Kaons->Scale(1.0 / hist2Kaons->GetYaxis()->GetBinWidth(1));
+	      Double_t PIDeffKInSpecie=fHistID->GetBinContent(3,4);
+	      Double_t PIDeffSpecie=fHistID->GetBinContent(4,4);
+	      Printf("ContaminationCorrection: Scaling kaon correlarion function by %f",PIDeffKInSpecie/PIDeffSpecie);
+	      if(DrawCont){
+		TCanvas *ccont=new TCanvas(Form("ContKaonsIn%s_%d_%d_%d",gParticleSpecieName[gParticleSpecie], i, j, centr),Form("ContKaonsIn%s_%d_%d_%d",gParticleSpecieName[gParticleSpecie], i, j, centr),1600,1200);
+		ccont->Divide(2,3);
+		ccont->cd(1);
+		hist1->DrawCopy("SURF1");
+		ccont->cd(2);
+		hist2->DrawCopy("SURF1");
+		TCanvas *ccont_bis=new TCanvas(Form("ContKaonsIn%s_bis_%d_%d_%d",gParticleSpecieName[gParticleSpecie], i, j, centr),Form("ContKaonsIn%s_bis_%d_%d_%d",gParticleSpecieName[gParticleSpecie], i, j, centr),1600,1200);
+		ccont_bis->Divide(2,2);
+		ccont_bis->cd(1);
+		projCentBef=(TH1F*)hist1->ProjectionX()->Clone();
+		projCentBef->SetMinimum(0.7*projCentBef->GetMinimum());
+		projCentBef->DrawCopy("");
+		ccont_bis->cd(2);
+		projPerBef=(TH1F*)hist2->ProjectionX()->Clone();
+		projPerBef->SetMinimum(0.7*projPerBef->GetMinimum());
+		projPerBef->DrawCopy("");
+	      }
+	      //remove the contamination
+	      hist1Kaons->Scale(PIDeffKInSpecie/PIDeffSpecie);
+	      hist1->Add(hist1Kaons,-1);
+	      hist2Kaons->Scale(PIDeffKInSpecie/PIDeffSpecie);
+	      hist2->Add(hist2Kaons,-1);
+	      
+	      if(DrawCont){
+		ccont->cd(3);
+		hist1Kaons->DrawCopy("SURF1");
+		ccont->cd(4);
+		hist2Kaons->DrawCopy("SURF1");
+		ccont->cd(5);
+		hist1->DrawCopy("SURF1");
+		ccont->cd(6);
+		hist2->DrawCopy("SURF1");
+		ccont->SaveAs(Form("ContKaonsIn%s_%d_%d_%d.png",gParticleSpecieName[gParticleSpecie], i, j, centr));
+		
+		ccont_bis->cd(1);
+		projCentAft=(TH1F*)hist1->ProjectionX()->Clone();
+		projCentAft->SetLineColor(4);
+		projCentAft->DrawCopy("same");
+		ccont_bis->cd(2);
+		projPerAft=(TH1F*)hist2->ProjectionX()->Clone();
+		projPerAft->SetLineColor(4);
+		projPerAft->DrawCopy("same");
+		projCentAft->Divide(projCentBef);
+		projCentAft->SetMinimum(.7);
+		projCentAft->SetMaximum(1.);
+		ccont_bis->scd(3);
+		projCentAft->DrawCopy("");
+		projPerAft->Divide(projPerBef);
+		projPerAft->SetMinimum(.7);
+		projPerAft->SetMaximum(1.);
+		ccont_bis->cd(4);
+		projPerAft->DrawCopy("");
+		ccont_bis->SaveAs(Form("ContKaonsIn%s_bis_%d_%d_%d.png",gParticleSpecieName[gParticleSpecie], i, j, centr));
+	      }
+	      
+	      delete hist1Kaons;
+	      delete hist2Kaons;
+	      fileKaon->Close();
+	      delete fileKaon;
+	      
+	    }//end contamination k-> p correction
+	    delete fHistID;
+	    filecont->Close();
+	    delete filecont;
+	    
+	  }
+	}
+    }
+  Printf("ContaminationCorrection: peak after correction for contamination %f",hist1->GetBinContent(hist1->GetXaxis()->FindBin(0),hist1->GetXaxis()->FindBin(0)));
   
   Float_t exclusion = (gDoEtaGap)?0.8:0.;
   if (gStudySystematic == 10)
@@ -1318,6 +1588,21 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
   Float_t baseLine2 = hist2->IntegralAndError(phi1Z, phi2Z, eta1, eta6, baseLineE2);
   baseLine2 /= (phi2Z - phi1Z + 1) * (eta6 - eta1 + 1);
   baseLineE2 /= (phi2Z - phi1Z + 1) * (eta6 - eta1 + 1);
+
+  // get baseline of peripheral bin with large eta gap
+  Int_t eta1Alternative = hist1->GetYaxis()->FindBin(-etaMax + 0.001);
+  Int_t eta2Alternative = hist1->GetYaxis()->FindBin(-1.2 - 0.001);
+  Int_t eta3Alternative = hist1->GetYaxis()->FindBin(1.2 + 0.001);
+  Int_t eta6Alternative = hist1->GetYaxis()->FindBin(etaMax - 0.001);
+  Int_t phi1ZAlternative = hist1->GetXaxis()->FindBin(-TMath::Pi()/2 + 0.001);
+  Int_t phi2ZAlternative = hist1->GetXaxis()->FindBin( TMath::Pi()/2 - 0.001);
+  
+  Float_t baseLine2NSGapE, baseLine2NSGapE2;
+  Float_t baseLine2NSGap = hist2->IntegralAndError(phi1ZAlternative, phi2ZAlternative, eta1Alternative, eta2Alternative, baseLine2NSGapE);
+  baseLine2NSGap += hist2->IntegralAndError(phi1ZAlternative, phi2ZAlternative, eta3Alternative, eta6Alternative, baseLine2NSGapE2);
+  baseLine2NSGapE = TMath::Sqrt(baseLine2NSGapE * baseLine2NSGapE + baseLine2NSGapE2 * baseLine2NSGapE2);
+  baseLine2NSGap /= (phi2ZAlternative - phi1ZAlternative + 1) * (eta2Alternative - eta1Alternative + 1 + eta6Alternative - eta3Alternative + 1);
+  baseLine2NSGapE /= (phi2ZAlternative - phi1ZAlternative + 1) * (eta2Alternative - eta1Alternative + 1 + eta6Alternative - eta3Alternative + 1);
   
   if(gDoSubtraction)hist1->Add(hist2, -1);
   
@@ -1364,29 +1649,49 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
 	  new TCanvas; projAll->DrawCopy();
 	}
 
-      // From Leonardo, Apr 18th 2013
-      Float_t ratioNSAS[10][10][10][4];
-      ratioNSAS[0][1][4][0] = 3.166786;
-      ratioNSAS[1][2][4][0] = 1.595074;
-      ratioNSAS[2][3][4][0] = 1.451555;
-      ratioNSAS[3][4][4][0] = 1.371433;
-      ratioNSAS[4][5][4][0] = 1.581739;
-      ratioNSAS[0][1][4][1] = 3.177672;
-      ratioNSAS[1][2][4][1] = 1.628396;
-      ratioNSAS[2][3][4][1] = 1.497103;
-      ratioNSAS[3][4][4][1] = 1.430801;
-      ratioNSAS[4][5][4][1] = 1.627891;
-      ratioNSAS[0][1][4][2] = 2.820564;
-      ratioNSAS[1][2][4][2] = 1.526886;
-      ratioNSAS[2][3][4][2] = 1.415753;
-      ratioNSAS[3][4][4][2] = 1.195244;
-      ratioNSAS[4][5][4][2] = 1.519867;
-      ratioNSAS[0][1][4][3] = 1.825534;
-      ratioNSAS[1][2][4][3] = 1.143225;
-      ratioNSAS[2][3][4][3] = 1.090177;
-      ratioNSAS[3][4][4][3] = 1.239809;
-      ratioNSAS[4][5][4][3] = 1.091130;
-      
+      // From Leonardo, May 13th 2013
+      Float_t ratioNSAS[11][11][10][4];
+      ratioNSAS[0][1][4][0] = 10.038837;
+      ratioNSAS[1][2][4][0] = 20.915680;
+      ratioNSAS[2][3][4][0] = 4.098666;
+      ratioNSAS[3][4][4][0] = 1.938575;
+      ratioNSAS[4][5][4][0] = 1.497449;
+      ratioNSAS[5][6][4][0] = 1.347500;
+      ratioNSAS[6][7][4][0] = 1.324648;
+      ratioNSAS[7][8][4][0] = 1.216035;
+      ratioNSAS[8][9][4][0] = 1.368158;
+      ratioNSAS[9][10][4][0] = 1.266968;
+      ratioNSAS[0][1][4][1] = 9.373508;
+      ratioNSAS[1][2][4][1] = 23.253038;
+      ratioNSAS[2][3][4][1] = 4.220990;
+      ratioNSAS[3][4][4][1] = 1.986368;
+      ratioNSAS[4][5][4][1] = 1.568330;
+      ratioNSAS[5][6][4][1] = 1.391750;
+      ratioNSAS[6][7][4][1] = 1.362769;
+      ratioNSAS[7][8][4][1] = 1.286650;
+      ratioNSAS[8][9][4][1] = 1.378538;
+      ratioNSAS[9][10][4][1] = 1.218215;
+      ratioNSAS[0][1][4][2] = 1.218215;
+      ratioNSAS[1][2][4][2] = 7.452086;
+      ratioNSAS[2][3][4][2] = 3.062357;
+      ratioNSAS[3][4][4][2] = 1.837979;
+      ratioNSAS[4][5][4][2] = 1.514644;
+      ratioNSAS[5][6][4][2] = 1.339316;
+      ratioNSAS[6][7][4][2] = 1.272703;
+      ratioNSAS[7][8][4][2] = 1.072318;
+      ratioNSAS[8][9][4][2] = 1.225454;
+      ratioNSAS[9][10][4][2] = 1.369174;
+      ratioNSAS[0][1][4][3] = 1.369174;
+      ratioNSAS[1][2][4][3] = 4.612473;
+      ratioNSAS[2][3][4][3] = 2.182566;
+      ratioNSAS[3][4][4][3] = 1.313707;
+      ratioNSAS[4][5][4][3] = 1.088053;
+      ratioNSAS[5][6][4][3] = 1.063619;
+      ratioNSAS[6][7][4][3] = 1.021951;
+      ratioNSAS[7][8][4][3] = 1.119735;
+      ratioNSAS[8][9][4][3] = 1.196465;
+      ratioNSAS[9][10][4][3] = 1.043333;
+
       Printf("i=%d  j=%d centr=%d",i,j,centr);
       Printf("Using NS/AS ratio %f", ratioNSAS[i][j][4][gParticleSpecie]);
 
@@ -1413,6 +1718,49 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
   proj->Scale(1.0 / (etaMax * 2));
   proj->Rebin(2); proj->Scale(0.5);
   
+  if(gParticleSpecie!=0)//we take into account the double counting in the error
+    {
+      Printf("ALIVE");
+      Double_t ErrorScalingFactor[4][10];//this is the ratio ID/all. array is [partSpecie][ipt]
+      
+      ErrorScalingFactor[1][0]=0.947;
+      ErrorScalingFactor[1][1]=0.857;
+      ErrorScalingFactor[1][2]=0.505;
+      ErrorScalingFactor[1][3]=0.477;
+      ErrorScalingFactor[1][4]=0.457;
+      ErrorScalingFactor[1][5]=0.430;
+      ErrorScalingFactor[1][6]=0.402;
+      ErrorScalingFactor[1][7]=0.373;
+      ErrorScalingFactor[1][8]=0.354;
+      ErrorScalingFactor[1][9]=0.352;
+
+      ErrorScalingFactor[2][0]=0.013;
+      ErrorScalingFactor[2][1]=0.041;
+      ErrorScalingFactor[2][2]=0.039;
+      ErrorScalingFactor[2][3]=0.072;
+      ErrorScalingFactor[2][4]=0.101;
+      ErrorScalingFactor[2][5]=0.120;
+      ErrorScalingFactor[2][6]=0.141;
+      ErrorScalingFactor[2][7]=0.163;
+      ErrorScalingFactor[2][8]=0.162;
+      ErrorScalingFactor[2][9]=0.175;
+
+      ErrorScalingFactor[3][0]=0.002;
+      ErrorScalingFactor[3][1]=0.008;
+      ErrorScalingFactor[3][2]=0.015;
+      ErrorScalingFactor[3][3]=0.038;
+      ErrorScalingFactor[3][4]=0.054;
+      ErrorScalingFactor[3][5]=0.073;
+      ErrorScalingFactor[3][6]=0.101;
+      ErrorScalingFactor[3][7]=0.123;
+      ErrorScalingFactor[3][8]=0.142;
+      ErrorScalingFactor[3][9]=0.151;
+      
+      Printf("Scaling error of DPhi projection by %f",ErrorScalingFactor[gParticleSpecie][i]);
+      ScaleHistError(proj,TMath::Sqrt(1.+ErrorScalingFactor[gParticleSpecie][i]));
+    }
+  
+
   if(gExcludeNearSidePeakFromPhiProj)
     {
       Double_t phicut=1.;
@@ -1430,10 +1778,17 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
       Printf(">> Non closure ratio from file non_closure_%s.root",gParticleSpecieName[gParticleSpecie]);
       file2 = TFile::Open(Form("non_closure_files/non_closure_%s.root",gParticleSpecieName[gParticleSpecie]));
       non_closure = (TH1*) file2->Get(Form("non_closure_%d_%d_%d", i, j, 0));
+      TF1 *pol0=new TF1("pol0","pol0",-1.6,1.6);
+      non_closure->Fit(pol0,"");
+      Printf("Pol0 is from the fit of the non-closure is %f",pol0->GetParameter(0));
       for (Int_t bin=1; bin<=non_closure->GetNbinsX(); bin++)
 	non_closure->SetBinError(bin, 0);
     
       proj->Multiply(non_closure);
+      baseLine*=pol0->GetParameter(0);
+      delete non_closure;
+      file2->Close();
+      delete file2;
     }
   
   //   proj = hist1->ProjectionX("proj1x", hist1->GetYaxis()->FindBin(0.5), eta6);
@@ -1469,7 +1824,7 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
   AddPoint(graph[8], xValue1, 100.0 * ySubPeak / yPeak, 0, 0);
   
   hist1->Rebin2D(4, 4); hist1->Scale(1.0 / 16);
-  hist1->GetYaxis()->SetRangeUser(-1.99, 1.99);
+  hist1->GetYaxis()->SetRangeUser(-1.59, 1.59);
   
   TString fitOption = "0I";
   if (!silent)
@@ -1564,7 +1919,7 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
       etaProj3->Rebin(2); etaProj3->Scale(0.5);
       etaProj->GetXaxis()->SetRangeUser(-1.99, 1.99);
       //     etaProj->GetYaxis()->SetRangeUser(TMath::Min(etaProj->GetMinimum(), etaProj3->GetMinimum()) * 0.8, TMath::Max(etaProj->GetMaximum(), etaProj3->GetMaximum()) * 1.2);
-      etaProj->GetYaxis()->SetRangeUser(proj->GetMinimum(0.00001) * 0.98, proj->GetMaximum() * 1.1);
+      if(proj->GetMinimum()!=0)etaProj->GetYaxis()->SetRangeUser(proj->GetMinimum(0.00001) * 0.98, (gDoSubtraction)?proj->GetMaximum() * 1.1:proj->GetMaximum() * 1.3);
       etaProj2->SetLineColor(2); etaProj2->SetMarkerColor(2);
       etaProj3->SetLineColor(4); etaProj3->SetMarkerColor(4);
       etaProj->SetMarkerStyle(24);
@@ -1604,7 +1959,7 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
       proj->SetMarkerSize(0.7);
       //proj->SetMinimum(proj->GetMinimum() * 0.98); proj->SetMaximum(proj->GetMaximum() * 1.065);
       //proj->GetYaxis()->SetRangeUser(proj->GetMinimum(0.00001) * 0.98,proj->GetMaximum() * 1.6);
-      proj->GetYaxis()->SetRangeUser(proj->GetMinimum(0.00001) * 0.98,proj->GetMaximum() * 1.3);
+      if(proj->GetMinimum()!=0)proj->GetYaxis()->SetRangeUser(proj->GetMinimum(0.00001) * 0.98,(gDoSubtraction)?proj->GetMaximum() * 1.1:proj->GetMaximum() * 1.3);
       proj->Draw("E0 X0");
       fitOption = "I";
     
@@ -1618,7 +1973,7 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
 	}
     }
   
-  fileProj = TFile::Open("dphi_proj.root", "UPDATE");
+  fileProj = TFile::Open(Form("dphi_proj_Part%d_%s.root",gParticleSpecie,(gDoSubtraction)?"Sub":"NoSub"), "UPDATE");
   proj->Write(Form("proj_%d_%d_%d_%d", i, j, centr, gStudySystematic));
   fileProj->Close();
 
@@ -1696,32 +2051,52 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
   }else{//v2 calculated from the fit 
     Printf("vn calculated from fit!");
     if (v2v3->GetParameter(1) > 0)
-      {
-    	v2value = TMath::Sqrt(v2v3->GetParameter(1) / (baseLine + diffMinParam0));
-    	v2E = 0.5 * v2value * TMath::Sqrt(v2v3->GetParError(1) * v2v3->GetParError(1) / v2v3->GetParameter(1) / v2v3->GetParameter(1) + baseLineE * baseLineE / baseLine / baseLine);
-    	if (symmetricpT)
-    	  AddPoint(graph[4], xValue1vn, v2value, 0, v2E);
-      }
+    {
+      if(gDoSubtraction){
+	if (1)
+	{
+	  v2value = TMath::Sqrt(v2v3->GetParameter(1) / (baseLine + diffMinParam0));
+	  v2E = 0.5 * v2value * TMath::Sqrt(v2v3->GetParError(1) * v2v3->GetParError(1) / v2v3->GetParameter(1) / v2v3->GetParameter(1) + baseLineE * baseLineE / baseLine / baseLine);
+	  Printf("-> v2 = %f +- %f (%f %f = %f)", v2value, v2E, baseLine, diffMinParam0, baseLine + diffMinParam0);
+	}
+	else
+	{
+	  v2value = TMath::Sqrt(v2v3->GetParameter(1) / (v2v3->GetParameter(0) + baseLine2NSGap));
+	  v2E = 0.5 * v2value * TMath::Sqrt(v2v3->GetParError(1) * v2v3->GetParError(1) / v2v3->GetParameter(1) / v2v3->GetParameter(1) + v2v3->GetParError(0) * v2v3->GetParError(0) / v2v3->GetParameter(0) / v2v3->GetParameter(0) + baseLine2NSGapE * baseLine2NSGapE / baseLine2NSGap / baseLine2NSGap);
+	  Printf("-> v2 = %f +- %f (%f %f = %f)", v2value, v2E, v2v3->GetParameter(0), baseLine2NSGap, v2v3->GetParameter(0) + baseLine2NSGap);
+	}
+      }else{
+	v2value = TMath::Sqrt(v2v3->GetParameter(1) / v2v3->GetParameter(0));
+	v2E = 0.5 * v2value * TMath::Sqrt(v2v3->GetParError(1) * v2v3->GetParError(1) / v2v3->GetParameter(1) / v2v3->GetParameter(1) + v2v3->GetParError(0) * v2v3->GetParError(0) / v2v3->GetParameter(0) / v2v3->GetParameter(0));
+      }       
+    }
+    if (symmetricpT)//all points filled (even if v2v3->GetParameter(1) < 0), easier to plot after (same point number for different particles)
+      AddPoint(graph[4], xValue1vn, v2value, 0, v2E);
     
     if (v2v3->GetParameter(2) > 0)
-      {
+    {
+      if(gDoSubtraction){
 	v3 = TMath::Sqrt(v2v3->GetParameter(2) / (baseLine + diffMinParam0));
 	v3E = 0.5 * v3 * TMath::Sqrt(v2v3->GetParError(2) * v2v3->GetParError(2) / v2v3->GetParameter(2) / v2v3->GetParameter(2) + baseLineE * baseLineE / baseLine / baseLine);
-	if (symmetricpT)
-	  AddPoint(graph[5], xValue2vn, v3, 0, v3E);
+      }else{
+	v3 = TMath::Sqrt(v2v3->GetParameter(2) / v2v3->GetParameter(0));
+	v3E = 0.5 * v3 * TMath::Sqrt(v2v3->GetParError(2) * v2v3->GetParError(2) / v2v3->GetParameter(2) / v2v3->GetParameter(2) + v2v3->GetParError(0) * v2v3->GetParError(0) / v2v3->GetParameter(0) / v2v3->GetParameter(0));
       }
-      
-// 	Float_t v1 = TMath::Sqrt(TMath::Abs(v2v3->GetParameter(3)) / (baseLine + diffMinParam0));
-// 	Float_t v1E = 0.5 * v1 * TMath::Sqrt(v2v3->GetParError(3) * v2v3->GetParError(3) / v2v3->GetParameter(3) / v2v3->GetParameter(3) + baseLineE * baseLineE / baseLine / baseLine);
-// 	if (v2v3->GetParameter(3) < 0)
-// 	  v1 = -v1;
-
-	Float_t v1 = TMath::Abs(v2v3->GetParameter(3)) / (baseLine + diffMinParam0);
-	Float_t v1E = v1 * TMath::Sqrt(v2v3->GetParError(3) * v2v3->GetParError(3) / v2v3->GetParameter(3) / v2v3->GetParameter(3) + baseLineE * baseLineE / baseLine / baseLine);
-
-	if (symmetricpT)
-	  AddPoint(graph[12], xValue2vn, v1, 0, v1E);
-// 	Printf("v1: %f %f", v1, v1E);
+    }
+    if (symmetricpT)
+      AddPoint(graph[5], xValue2vn, v3, 0, v3E);
+    
+    // 	Float_t v1 = TMath::Sqrt(TMath::Abs(v2v3->GetParameter(3)) / (baseLine + diffMinParam0));
+    // 	Float_t v1E = 0.5 * v1 * TMath::Sqrt(v2v3->GetParError(3) * v2v3->GetParError(3) / v2v3->GetParameter(3) / v2v3->GetParameter(3) + baseLineE * baseLineE / baseLine / baseLine);
+    // 	if (v2v3->GetParameter(3) < 0)
+    // 	  v1 = -v1;
+    
+    Float_t v1 = TMath::Abs(v2v3->GetParameter(3)) / (baseLine + diffMinParam0);
+    Float_t v1E = v1 * TMath::Sqrt(v2v3->GetParError(3) * v2v3->GetParError(3) / v2v3->GetParameter(3) / v2v3->GetParameter(3) + baseLineE * baseLineE / baseLine / baseLine);
+    
+    if (symmetricpT)
+      AddPoint(graph[12], xValue2vn, v1, 0, v1E);
+    // 	Printf("v1: %f %f", v1, v1E);
   }
   
   if (v2value > 0 && v3 > 0 && symmetricpT)
@@ -1919,6 +2294,11 @@ void CorrelationSubtraction(const char* fileName, Int_t i, Int_t j, Int_t centr,
   Printf("Yields: %f +- %f ; %f +- %f", nsYield, nsYieldE, asYield, asYieldE);
   Printf("Yield ratio: %f   baseline for yield %f",nsYield / asYield,min);
 
+  delete hist1;
+  delete hist2;
+  delete refMult;
+  fin->Close();
+  delete fin;
 }
 
 Int_t colors[] = { 1, 2, 3, 4, kGray+1, 6, 7, 8 };
@@ -1944,7 +2324,7 @@ void DrawSeveral(Int_t n, const char** graphFiles, Int_t id)
   TCanvas* canvas2 = new TCanvas(Form("%s_%d_ratio", baseName.Data(), id), Form("%s_%d", baseName.Data(), id), 800, 600);
   gPad->SetGridx();
   gPad->SetGridy();
-  dummy = new TH2F(Form("hist_%s_%d_ratio", graphFiles[0], id), Form(";%s;%s ratio", graphs[0][id]->GetXaxis()->GetTitle(), graphs[0][id]->GetYaxis()->GetTitle()), 100, 0, 60, 100, 0, 2);
+  dummy = new TH2F(Form("hist_%s_%d_ratio", graphFiles[0], id), Form(";%s;%s ratio", graphs[0][id]->GetXaxis()->GetTitle(), graphs[0][id]->GetYaxis()->GetTitle()), 100, 0,(gDoSubtraction)? 60:100, 100, 0, 2);
   dummy->SetStats(0);
   dummy->DrawCopy();
 
@@ -2050,6 +2430,7 @@ void GetSystematic(const char* baseFile = "dphi_corr_pA_121119_3.root",TString f
   
   gROOT->SetBatch(kTRUE);
   
+  gStudySystematic = 0;
   CorrelationSubtractionHistogram(baseFile, kTRUE, fileTag + ".root",fileTagHadrons + ".root");
   
   gStudySystematic = 10;
@@ -2066,57 +2447,77 @@ void GetSystematic(const char* baseFile = "dphi_corr_pA_121119_3.root",TString f
 
   gStudySystematic = 14;
   CorrelationSubtractionHistogram(baseFile, kTRUE, fileTag + "_exclusion12.root",fileTagHadrons + "_exclusion12.root");
-    
-  gStudySystematic = 20;
-  CorrelationSubtractionHistogram(baseFile, kTRUE, fileTag + "_nonclosure.root",fileTagHadrons + "_nonclosure.root");
+  
+  //gStudySystematic = 20;
+  //CorrelationSubtractionHistogram(baseFile, kTRUE, fileTag + "_nonclosure.root",fileTagHadrons + "_nonclosure.root");
   
   gStudySystematic = 30;
   CorrelationSubtractionHistogram(baseFile, kTRUE, fileTag + "_baseline.root",fileTagHadrons + "_baseline.root");
   
+  gStudySystematic = 31;
+  gUseAnalyticalVn=1;
+  CorrelationSubtractionHistogram(baseFile, kTRUE, fileTag + "_analytical.root",fileTagHadrons + "_analytical.root");
+  gUseAnalyticalVn=0;
+  
   gStudySystematic = 40;
-  baseFile2=Form("~/Dropbox/pid-ridge/pPb/dphi_corr_LHC13bc_AOD126_20130417_%s_SystTrkCuts.root",gParticleSpecieName[gParticleSpecie]);
+  baseFile2=Form("~/Dropbox/pid-ridge/pPb/dphi_corr_LHC13bc_20130510_%s_SystTrkCuts.root",gParticleSpecieName[gParticleSpecie]);
   CorrelationSubtractionHistogram(baseFile2.Data(), kTRUE, fileTag + "_trackcuts.root",fileTagHadrons + "_trackcuts.root");
   
   gStudySystematic = 41;
-  baseFile2=Form("~/Dropbox/pid-ridge/pPb/dphi_corr_LHC13bc_AOD126_20130417_%s_PairCuts.root",gParticleSpecieName[gParticleSpecie]);
+  baseFile2=Form("~/Dropbox/pid-ridge/pPb/dphi_corr_LHC13bc_20130510_%s_PairCuts.root",gParticleSpecieName[gParticleSpecie]);
   CorrelationSubtractionHistogram(baseFile2.Data(), kTRUE, fileTag + "_paircuts.root",fileTagHadrons + "_paircuts.root");
-
+  
+  gStudySystematic = 32;
+  baseFile2=Form("~/Dropbox/pid-ridge/pPb/dphi_corr_LHC13bc_20130517_%s_Pileup.root",gParticleSpecieName[gParticleSpecie]);
+  CorrelationSubtractionHistogram(baseFile2.Data(), kTRUE, fileTag + "_pileup.root",fileTagHadrons + "_pileup.root");
+  
   gStudySystematic = 60;
   CorrelationSubtractionHistogram(baseFile, kTRUE, fileTag + "_otherperipheral.root",fileTagHadrons + "_otherperipheral.root");
   
   if(gParticleSpecie!=0)
-    {//PID
+    {
+      //PID
       gStudySystematic = 70;
-      baseFile2=Form("~/Dropbox/pid-ridge/pPb/dphi_corr_LHC13bc_AOD126_20130417_%s_Syst2Sig.root",gParticleSpecieName[gParticleSpecie]);
-      CorrelationSubtractionHistogram(baseFile2.Data(), kTRUE, fileTag + "_syst2sig.root",fileTagHadrons + "_syst2sig.root");
+      baseFile2=Form("~/Dropbox/pid-ridge/pPb/dphi_corr_LHC13bc_20130510_%s_Syst2Sig.root",gParticleSpecieName[gParticleSpecie]);
+      CorrelationSubtractionHistogram(baseFile2.Data(), kTRUE, fileTag + "_syst2sig.root",fileTagHadrons + ".root");
       
       gStudySystematic = 71;
-      baseFile2=Form("~/Dropbox/pid-ridge/pPb/dphi_corr_LHC13bc_AOD126_20130417_%s_Syst1Sig.root",gParticleSpecieName[gParticleSpecie]);
-      CorrelationSubtractionHistogram(baseFile2.Data(), kTRUE, fileTag + "_syst1sig.root",fileTagHadrons + "_syst1sig.root");
+      baseFile2=Form("~/Dropbox/pid-ridge/pPb/dphi_corr_LHC13bc_20130510_%s_SystExclusive.root",gParticleSpecieName[gParticleSpecie]);
+      CorrelationSubtractionHistogram(baseFile2.Data(), kTRUE, fileTag + "_systexclusive.root",fileTagHadrons + ".root");
       
       gStudySystematic = 72;
-      baseFile2=Form("~/Dropbox/pid-ridge/pPb/dphi_corr_LHC13bc_AOD126_20130417_%s_SystExclusive.root",gParticleSpecieName[gParticleSpecie]);
-      CorrelationSubtractionHistogram(baseFile2.Data(), kTRUE, fileTag + "_systexclusive.root",fileTagHadrons + "_systexclusive.root");
+      CorrelationSubtractionHistogram(baseFile, kTRUE, fileTag + "_Nocontamination.root",fileTagHadrons + ".root");
       
+      gStudySystematic = 73;
+      CorrelationSubtractionHistogram(baseFile, kTRUE, fileTag + "_contaminationTuneOnData.root",fileTagHadrons + ".root");
+      
+      gStudySystematic = 74;
+      baseFile2=Form("~/Dropbox/pid-ridge/pPb/dphi_corr_LHC13bc_20130517_%s_T0Fill.root",gParticleSpecieName[gParticleSpecie]);
+      CorrelationSubtractionHistogram(baseFile2.Data(), kTRUE, fileTag + "_T0Fill.root",fileTagHadrons + ".root");
     }
 }
-  
-void DrawSystematics(TString fileTag = "graphs_121119")
+
+void DrawSystematics(TString fileTag = "graphs_121119",Int_t igroup)
 {
-  if (0)
+ 
+  if (igroup==0)
     {
       const Int_t n = 6;
-      const char* filesBase[] = { "", "_exclusion05", "_exclusion12", "_exclusion00", "_exclusionAS", "_exclusionScale" };
+      const char* filesBase[] = { "", "_exclusion05", "_exclusion12", "_analytical", "_exclusionAS", "_exclusionScale" };
     }
-  else if(1)
+  else if(igroup==1)
     {
       const Int_t n = 6;
-      const char* filesBase[] = { "", "_paircuts" ,"_trackcuts", "_nonclosure", "_baseline", "_otherperipheral" };
+      const char* filesBase[] = { "", "_paircuts" ,"_trackcuts", "_baseline", "_otherperipheral","_pileup" };
+      //const Int_t n = 3;
+      //const char* filesBase[] = { "", "_paircuts" ,"_trackcuts" };
     }
   else
     {
-      const Int_t n = 4;
-      const char* filesBase[] = { "", "_syst2sig" ,"_syst1sig", "_systexclusive"};
+      const Int_t n = 6;
+      const char* filesBase[] = { "", "_syst2sig", "_systexclusive", "_Nocontamination", "_contaminationTuneOnData","_T0Fill"};
+      //const Int_t n = 2;
+      //const char* filesBase[] = { "", "_contamination"};
     }
   
   const char* files[n];
@@ -2127,8 +2528,8 @@ void DrawSystematics(TString fileTag = "graphs_121119")
       files[i] = str->Data();
     }
   
-  const Int_t plots = 3;
-  Int_t ids[7] = { 0, 1, 4 };
+  const Int_t plots = 1;
+  Int_t ids[7] = { 4 };
   
   for (Int_t i=0; i<plots; i++)
     {
@@ -2136,9 +2537,11 @@ void DrawSystematics(TString fileTag = "graphs_121119")
       //     break;
     }
   
-  new TCanvas;
+  TCanvas *ctext=new TCanvas("ctext","ctext",1200,500);
   for (Int_t i=0; i<n; i++)
     DrawLatex(0.2, 0.9 - 0.1 * i, colors[i], files[i]);
+  ctext->SaveAs(Form("%sLegend.eps",fileTag.Data()));
+
 }
 
 void DrawSeveral(const char* graphFile1, const char* graphFile2, const char* graphFile3, Int_t id)
@@ -2829,22 +3232,32 @@ void UnfoldUsingVnHadrons(TGraphErrors*** Inputgraphs,const char* graphFileHadro
 	graphsHadrons[i][id]->GetPoint(ipointHad,xHadrons,yHadrons);
 	if(ipointHad>10){//the hadron point is missing
 	  NoHad=1;
-	  break;
 	}
       }
-      if(NoHad)continue;//if hadron measurement is missing skip the point (unfolding not possible)
-      ex=Inputgraphs[i][id]->GetErrorX(ipoint);
-      ey=Inputgraphs[i][id]->GetErrorY(ipoint);
-      exHadrons=graphsHadrons[i][id]->GetErrorX(ipointHad);
-      eyHadrons=graphsHadrons[i][id]->GetErrorY(ipointHad);
-      printf("(v%d) Input file: %f  %f +- %f  Hadrons: %f  %f +- %f",(id==4)?2:3,x,y,ey,xHadrons,yHadrons,eyHadrons);
-      Double_t unfoldedVal=(y*y)/yHadrons;
-      Inputgraphs[i][id]->SetPoint(ipoint,x,unfoldedVal);
-      Inputgraphs[i][id]->SetPointError(ipoint,ex,unfoldedVal*TMath::Sqrt((2*ey/y)*(2*ey/y)+(eyHadrons/yHadrons)*(eyHadrons/yHadrons)));
-      Inputgraphs[i][id]->GetPoint(ipoint,x,y);
-      ex=Inputgraphs[i][id]->GetErrorX(ipoint);
-      ey=Inputgraphs[i][id]->GetErrorY(ipoint);
-      Printf("  AfterCorrection:  %f  %f +- %f",x,y,ey);
+      if(NoHad){//if hadron measurement is missing skip the point (unfolding not possible)
+	Printf("missing hadron point relative to graph point %d, set to 0",ipoint);
+	Inputgraphs[i][id]->SetPoint(ipoint,0,0);
+	Inputgraphs[i][id]->SetPointError(ipoint,0,0);
+      }else{
+	if(y==0 || yHadrons==0){
+	  Printf("Point %d is 0",ipoint);
+	  Inputgraphs[i][id]->SetPoint(ipoint,0,0);
+	  Inputgraphs[i][id]->SetPointError(ipoint,0,0);
+	  continue;
+	}
+	ex=Inputgraphs[i][id]->GetErrorX(ipoint);
+	ey=Inputgraphs[i][id]->GetErrorY(ipoint);
+	exHadrons=graphsHadrons[i][id]->GetErrorX(ipointHad);
+	eyHadrons=graphsHadrons[i][id]->GetErrorY(ipointHad);
+	printf("(v%d) Input file: %f  %f +- %f  Hadrons: %f  %f +- %f",(id==4)?2:3,x,y,ey,xHadrons,yHadrons,eyHadrons);
+	Double_t unfoldedVal=(y*y)/yHadrons;
+	Inputgraphs[i][id]->SetPoint(ipoint,x,unfoldedVal);
+	Inputgraphs[i][id]->SetPointError(ipoint,ex,unfoldedVal*TMath::Sqrt((2*ey/y)*(2*ey/y)+(eyHadrons/yHadrons)*(eyHadrons/yHadrons)));
+	Inputgraphs[i][id]->GetPoint(ipoint,x,y);
+	ex=Inputgraphs[i][id]->GetErrorX(ipoint);
+	ey=Inputgraphs[i][id]->GetErrorY(ipoint);
+	Printf("  AfterCorrection:  %f  %f +- %f",x,y,ey);
+      }
     }
   }
   delete graphsHadrons;
@@ -2862,7 +3275,7 @@ void DivideOutReferenceParticle(const char* graphFile, const char* outputFile = 
 
   for (Int_t graphID = 4; graphID <= 4; graphID++) //v2 + v3
   {
-    const Int_t posFullPt = 7; // position where vn for unfolding is located (i.e. full pT,a and pT,t range)
+    const Int_t posFullPt = 6; // position where vn for unfolding is located (i.e. full pT,a and pT,t range)
     Bool_t allPt = TString(graphFile).Contains("allpt");
     Int_t maxPt = (allPt) ? posFullPt : NGraphs;
     for (Int_t i=0; i<maxPt; i++)
@@ -2921,15 +3334,15 @@ void ExtractForSkalarProductComparisonAllSpecies()
 {
   gROOT->SetBatch(kTRUE);
 
-  TString baseInput("dphi_corr_130515");
-  TString baseOutput("graphs_130515b");
-  baseOutput += "_nosub";
+  TString baseInput("dphi_corr_LHC13bc_20130604");
+  TString baseOutput("graphs_130618_otherbaseline");
+//   baseOutput += "_nosub";
 //   TString postfix("_wingremoved");
   TString postfix;
   
   if (1)
   {
-    gBinning = 4;
+    gBinning = 0;
     gReferenceFile = baseOutput + ".root";
     ExtractForSkalarProductComparison(baseInput + "_Hadrons" + postfix, baseOutput, kTRUE); 
     ExtractForSkalarProductComparison(baseInput + "_Pions" + postfix, baseOutput + "_pions", kTRUE);
@@ -2940,14 +3353,13 @@ void ExtractForSkalarProductComparisonAllSpecies()
   if (0)
   {
     gBinning = 1;
-    baseInput = "dphi_corr_130506";
     baseInput += "_allpt";
     baseOutput += "_allpt";
     gReferenceFile = baseOutput + ".root";
-    ExtractForSkalarProductComparison(baseInput + "_Hadrons" + postfix, baseOutput, kTRUE); 
-    ExtractForSkalarProductComparison(baseInput + "_Pions" + postfix, baseOutput + "_pions", kTRUE);
-    ExtractForSkalarProductComparison(baseInput + "_Protons" + postfix, baseOutput + "_protons", kTRUE);
-    ExtractForSkalarProductComparison(baseInput + "_Kaons" + postfix, baseOutput + "_kaons", kTRUE);
+    ExtractForSkalarProductComparison(baseInput + "_55_Hadrons_symmetrized" + postfix, baseOutput, kTRUE); 
+    ExtractForSkalarProductComparison(baseInput + "_63_Pions" + postfix, baseOutput + "_pions", kTRUE);
+    ExtractForSkalarProductComparison(baseInput + "_63_Protons" + postfix, baseOutput + "_protons", kTRUE);
+    ExtractForSkalarProductComparison(baseInput + "_63_Kaons" + postfix, baseOutput + "_kaons", kTRUE);
   }
 }
 

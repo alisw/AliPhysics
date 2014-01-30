@@ -154,7 +154,7 @@ private:
   
   TH1F        *fHistCount; //Counting of events and different decay parameters
   
-  AliESDpid   *fPIDtpcESD; //PID
+  AliPIDResponse *fPIDtpcESD;     //! PID response object 
   TH1F        *fHistTriggerStat;                         //! Trigger statistics
   TH1F        *fHistTriggerStatAfterEventSelection;      //! Trigger statistics
   TH3F        *fHistMassHcentMult; // Inv. mass vs. centrality vs. multiplicity

@@ -33,11 +33,11 @@
 
 using namespace std;
 
-int FileSetting=0;// 0(standard), 1(r3 Lambda), 2(TTC), 3(PID), 4(Pos B), 5(Neg B), 6(GaussR8to5), 7(GaussR11to6), 8(4 kt bins old TTC cuts)
+int FileSetting=0;// 0(standard), 1(r3 Lambda), 2(TTC), 3(PID), 4(Pos B), 5(Neg B), 6(GaussR8to5), 7(GaussR11to6), 8(4 kt bins old TTC cuts), 9 (FB5and7overlap)
 bool MCcase_def=kFALSE;// MC data?
 int CHARGE_def=-1;// -1 or +1: + or - pions for same-charge case, --+ or ++- for mixed-charge case
 bool SameCharge_def=kTRUE;// 3-pion same-charge?
-int EDbin_def=1;// 0 or 1: Kt3 bin
+int EDbin_def=0;// 0 or 1: Kt3 bin
 //
 bool IncludeG_def=kFALSE;// Include coherence?
 bool IncludeEW_def=kTRUE;// Include EdgeWorth coefficients?
@@ -351,7 +351,7 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
       if(FileSetting==6) myfile = new TFile("Results/PDC_11h_GaussR8to5.root","READ");// Gaussian
       if(FileSetting==7) myfile = new TFile("Results/PDC_11h_GaussR11to6.root","READ");// Gaussian
       if(FileSetting==8) myfile = new TFile("Results/PDC_11h_4ktbins.root","READ");// 4 kt bins (0.035TTC)
-      if(FileSetting==9) myfile = new TFile("Results/PDC_11h_2Kt3bins.root","READ");// 2 Kt3 bins
+      if(FileSetting==9) myfile = new TFile("Results/PDC_11h_FB5and7overlap.root","READ");// FB5and7overlap
     }
   }else{// pp
     cout<<"pp not currently supported"<<endl;
@@ -937,8 +937,8 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
       //
       K2SS_e[i] = sqrt(pow((K2SS[i]-1)*0.02,2) + pow((K2SS[i]-Gamov(+1, AvgQinvSS[i]))*0.02,2));
       K2OS_e[i] = sqrt(pow((K2OS[i]-1)*0.02,2) + pow((K2OS[i]-Gamov(-1, AvgQinvOS[i]))*0.02,2));
-      //K2SS_e[i] = 0.001;
-      //K2OS_e[i] = 0.001;
+      //K2SS_e[i] = 0.0001;
+      //K2OS_e[i] = 0.0001;
       
       //
       if(iteration<2){
@@ -988,11 +988,6 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
       MyMinuit.mnexcm( "RELease", tmp,  1,  err );// Rcoh
     }
     
-    //MyMinuit.DefineParameter(3, parName[3].c_str(), 10.88, stepSize[3], minVal[3], maxVal[3]); MyMinuit.FixParameter(3);// Rch
-    //MyMinuit.DefineParameter(4, parName[4].c_str(), 5., stepSize[4], minVal[4], maxVal[4]); MyMinuit.FixParameter(4);// Rcoh
-    MyMinuit.DefineParameter(7, parName[7].c_str(), 0, stepSize[7], minVal[7], maxVal[7]); MyMinuit.FixParameter(7);// k5
-    MyMinuit.DefineParameter(8, parName[8].c_str(), 0, stepSize[8], minVal[8], maxVal[8]); MyMinuit.FixParameter(8);// k6
-    //
     if(!IncludeEW){
       if(!IncludeEWfromTherm){
 	// kappa3=0.24, kappa4=0.16 for testing
@@ -1030,7 +1025,13 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
       MyMinuit.DefineParameter(9, parName[9].c_str(), 1.002, stepSize[9], minVal[9], maxVal[9]); MyMinuit.FixParameter(9);// N_2
     }
     
- 
+    //MyMinuit.DefineParameter(3, parName[3].c_str(), 10.5, stepSize[3], minVal[3], maxVal[3]); MyMinuit.FixParameter(3);// Rch
+    //MyMinuit.DefineParameter(4, parName[4].c_str(), 5., stepSize[4], minVal[4], maxVal[4]); MyMinuit.FixParameter(4);// Rcoh
+    //MyMinuit.DefineParameter(5, parName[5].c_str(), 0, stepSize[5], minVal[5], maxVal[5]); MyMinuit.FixParameter(5);// k3 
+    //MyMinuit.DefineParameter(6, parName[6].c_str(), 0, stepSize[6], minVal[6], maxVal[6]); MyMinuit.FixParameter(6);// k4
+    MyMinuit.DefineParameter(7, parName[7].c_str(), 0, stepSize[7], minVal[7], maxVal[7]); MyMinuit.FixParameter(7);// k5
+    MyMinuit.DefineParameter(8, parName[8].c_str(), 0, stepSize[8], minVal[8], maxVal[8]); MyMinuit.FixParameter(8);// k6
+    //
     int ierflg=0;
     double arglist[10];
     //arglist[0]=2;// improve Minimization Strategy (1 is default)
@@ -1158,6 +1159,15 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
     fitC2os->FixParameter(i,OutputPar[i]);
     fitC2os->SetParError(i,OutputPar_e[i]);
   }
+  TH1D *fitC2ss_h=new TH1D("fitC2ss_h","",C2_ss->GetNbinsX(),0,C2_ss->GetXaxis()->GetBinUpEdge(C2_ss->GetNbinsX()));
+  TH1D *fitC2os_h=new TH1D("fitC2os_h","",C2_os->GetNbinsX(),0,C2_os->GetXaxis()->GetBinUpEdge(C2_os->GetNbinsX()));
+  fitC2ss_h->SetLineWidth(2); fitC2os_h->SetLineWidth(2);
+  fitC2ss_h->SetLineColor(2); fitC2os_h->SetLineColor(4);
+  for(int bin=1; bin<=fitC2ss_h->GetNbinsX(); bin++){
+    double qinv=(bin-0.5)*0.005;
+    fitC2ss_h->SetBinContent(bin, fitC2ss->Eval(qinv));
+    fitC2os_h->SetBinContent(bin, fitC2os->Eval(qinv));
+  }
 
   if(!MCcase){
     C2_ss->DrawCopy();
@@ -1170,9 +1180,9 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
     C2_os_Ksys->DrawCopy("E2 same");
     C2_ss->DrawCopy("same");
     C2_os->DrawCopy("same");
-    fitC2ss->DrawCopy("same");
     fitC2os->SetLineColor(4);
-    fitC2os->DrawCopy("same");
+    fitC2ss_h->DrawCopy("C same");
+    fitC2os_h->DrawCopy("C same");
     MJ_bkg_ss->SetLineColor(1);
     MJ_bkg_ss->Draw("same");
     legend1->AddEntry(MJ_bkg_ss,"Non-femto bkg","l");
@@ -1502,7 +1512,9 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
   TH1D *c3_hist = new TH1D("c3_hist","",Q3BINS,0,0.2);
   TH1D *c3_hist_STAR = new TH1D("c3_hist_STAR","",Q3BINS,0,0.2);
   TProfile *MomRes_2d = new TProfile("MomRes_2d","",Q3BINS,0,0.2, 0,20.,"");
-  TProfile *MomRes_3d = new TProfile("MomRes_3d","",Q3BINS,0,0.2, 0,20.,"");
+  TProfile *MomRes_3d_term1 = new TProfile("MomRes_3d_term1","",Q3BINS,0,0.2, 0,20.,"");
+  TProfile *MomRes_3d_term2 = new TProfile("MomRes_3d_term2","",Q3BINS,0,0.2, 0,20.,"");
+  TProfile *MomRes_3d_term5 = new TProfile("MomRes_3d_term5","",Q3BINS,0,0.2, 0,20.,"");
   TH1D *r3_num_Q3 = new TH1D("r3_num_Q3","",Q3BINS,0,0.2);
   TH1D *r3_den_Q3 = new TH1D("r3_den_Q3","",Q3BINS,0,0.2);
   r3_num_Q3->GetXaxis()->SetTitle("Q_{3} (GeV/c)");
@@ -1626,7 +1638,9 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
 	    TERM4 *= MomRes_term2_pp[i-1]*MomRes_term2_pp[j-1]*MomRes_term1_pp[k-1];
 	    TERM5 *= MomRes_term2_pp[i-1]*MomRes_term2_pp[j-1]*MomRes_term2_pp[k-1];*/
 	    //MomRes_2d->Fill(Q3, MomRes_term1_pp[i-1]*MomRes_term1_pp[j-1]*MomRes_term1_pp[k-1]);
-	    //MomRes_3d->Fill(Q3, MomRes3d[0][0]->GetBinContent(Q12bin, Q13bin, Q23bin));
+	    MomRes_3d_term1->Fill(Q3, MomRes3d[0][0]->GetBinContent(Q12bin, Q13bin, Q23bin),TERM1);
+	    MomRes_3d_term2->Fill(Q3, MomRes3d[0][1]->GetBinContent(Q12bin, Q13bin, Q23bin),TERM2);
+	    MomRes_3d_term5->Fill(Q3, MomRes3d[0][4]->GetBinContent(Q12bin, Q13bin, Q23bin),TERM5);
 	  }else{
 	    if(CHARGE==-1){// pi-pi-pi+
 	      TERM1 *= (MomRes3d[1][0]->GetBinContent(Q12bin, Q13bin, Q23bin)-1)*MRCShift+1;
@@ -1634,25 +1648,28 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
 	      TERM3 *= (MomRes3d[1][2]->GetBinContent(Q12bin, Q13bin, Q23bin)-1)*MRCShift+1;
 	      TERM4 *= (MomRes3d[1][3]->GetBinContent(Q12bin, Q13bin, Q23bin)-1)*MRCShift+1;
 	      TERM5 *= (MomRes3d[1][4]->GetBinContent(Q12bin, Q13bin, Q23bin)-1)*MRCShift+1;
-	      /*TERM1 *= MomRes_term1_pp[i-1]*MomRes_term1_mp[j-1]*MomRes_term1_mp[k-1];
-	      TERM2 *= MomRes_term1_pp[i-1]*MomRes_term2_mp[j-1]*MomRes_term2_mp[k-1];
-	      TERM3 *= MomRes_term2_pp[i-1]*MomRes_term1_mp[j-1]*MomRes_term2_mp[k-1];
-	      TERM4 *= MomRes_term2_pp[i-1]*MomRes_term2_mp[j-1]*MomRes_term1_mp[k-1];
-	      TERM5 *= MomRes_term2_pp[i-1]*MomRes_term2_mp[j-1]*MomRes_term2_mp[k-1];*/
+	      //TERM1 *= MomRes_term1_pp[i-1]*MomRes_term1_mp[j-1]*MomRes_term1_mp[k-1];
+	      //TERM2 *= MomRes_term1_pp[i-1]*MomRes_term2_mp[j-1]*MomRes_term2_mp[k-1];
+	      //TERM3 *= MomRes_term2_pp[i-1]*MomRes_term1_mp[j-1]*MomRes_term2_mp[k-1];
+	      //TERM4 *= MomRes_term2_pp[i-1]*MomRes_term2_mp[j-1]*MomRes_term1_mp[k-1];
+	      //TERM5 *= MomRes_term2_pp[i-1]*MomRes_term2_mp[j-1]*MomRes_term2_mp[k-1];
+	      
 	    }else {// pi-pi+pi+
 	      TERM1 *= (MomRes3d[1][0]->GetBinContent(Q23bin, Q13bin, Q12bin)-1)*MRCShift+1;
 	      TERM2 *= (MomRes3d[1][3]->GetBinContent(Q23bin, Q13bin, Q12bin)-1)*MRCShift+1;
 	      TERM3 *= (MomRes3d[1][2]->GetBinContent(Q23bin, Q13bin, Q12bin)-1)*MRCShift+1;
 	      TERM4 *= (MomRes3d[1][1]->GetBinContent(Q23bin, Q13bin, Q12bin)-1)*MRCShift+1;
 	      TERM5 *= (MomRes3d[1][4]->GetBinContent(Q23bin, Q13bin, Q12bin)-1)*MRCShift+1;
-	      /*TERM1 *= MomRes_term1_mp[i-1]*MomRes_term1_mp[j-1]*MomRes_term1_pp[k-1];
-	      TERM2 *= MomRes_term1_mp[i-1]*MomRes_term2_mp[j-1]*MomRes_term2_pp[k-1];
-	      TERM3 *= MomRes_term2_mp[i-1]*MomRes_term1_mp[j-1]*MomRes_term2_pp[k-1];
-	      TERM4 *= MomRes_term2_mp[i-1]*MomRes_term2_mp[j-1]*MomRes_term1_pp[k-1];
-	      TERM5 *= MomRes_term2_mp[i-1]*MomRes_term2_mp[j-1]*MomRes_term2_pp[k-1];*/
+	      //TERM1 *= MomRes_term1_mp[i-1]*MomRes_term1_mp[j-1]*MomRes_term1_pp[k-1];
+	      //TERM2 *= MomRes_term1_mp[i-1]*MomRes_term2_mp[j-1]*MomRes_term2_pp[k-1];
+	      //TERM3 *= MomRes_term2_mp[i-1]*MomRes_term1_mp[j-1]*MomRes_term2_pp[k-1];
+	      //TERM4 *= MomRes_term2_mp[i-1]*MomRes_term2_mp[j-1]*MomRes_term1_pp[k-1];
+	      //TERM5 *= MomRes_term2_mp[i-1]*MomRes_term2_mp[j-1]*MomRes_term2_pp[k-1];
 	    }
 	    //MomRes_2d->Fill(Q3, MomRes_term1_pp[i-1]*MomRes_term1_mp[j-1]*MomRes_term1_mp[k-1]);// always treats 12 as ss pair
-	    //MomRes_3d->Fill(Q3, MomRes3d[1][0]->GetBinContent(Q12bin, Q13bin, Q23bin));
+	    MomRes_3d_term1->Fill(Q3, MomRes3d[1][0]->GetBinContent(Q12bin, Q13bin, Q23bin), TERM1);
+	    MomRes_3d_term2->Fill(Q3, MomRes3d[1][1]->GetBinContent(Q12bin, Q13bin, Q23bin),TERM2);
+	    MomRes_3d_term5->Fill(Q3, MomRes3d[1][4]->GetBinContent(Q12bin, Q13bin, Q23bin),TERM5);
 	  }
 	}
 	//
@@ -1662,7 +1679,11 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
 	  if(LamType==1) TwoFrac=TwoFracr3;// r3
 	  else TwoFrac = OutputPar[1];// c3
 	  
-	  OneFrac=pow(TwoFrac,.5); ThreeFrac=pow(TwoFrac,1.5);// 0.494, 1.475 for M=3
+	  if(LamType==0 && FileSetting==9) TwoFrac=0.8;// for FB5and7overlap choose a fixed higher lambda
+
+	  OneFrac=pow(TwoFrac,0.5); // 0.495 to bring baseline up
+	  ThreeFrac=pow(TwoFrac,1.5);
+	  
 	  // finite-multiplicity method
 	  //OneFrac = (1+sqrt(1 + 4*AvgN[Mbin]*TwoFrac*(AvgN[Mbin]-1)))/(2*AvgN[Mbin]);
 	  //ThreeFrac = (OneFrac*AvgN[Mbin]*(OneFrac*AvgN[Mbin]-1)*(OneFrac*AvgN[Mbin]-2))/(AvgN[Mbin]*(AvgN[Mbin]-1)*(AvgN[Mbin]-2));
@@ -1783,19 +1804,19 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
 	double arg12 = Q12*radius_exp;
 	double arg13 = Q13*radius_exp;
 	double arg23 = Q23*radius_exp;
-	//Float_t EW12 = 1 + 0.24/(6.*pow(2.,1.5))*(8.*pow(arg12,3) - 12.*arg12);
-	//EW12 += 0.16/(24.*pow(2.,2))*(16.*pow(arg12,4) -48.*pow(arg12,2) + 12);
-	//Float_t EW13 = 1 + 0.24/(6.*pow(2.,1.5))*(8.*pow(arg13,3) - 12.*arg13);
-	//EW13 += 0.16/(24.*pow(2.,2))*(16.*pow(arg13,4) -48.*pow(arg13,2) + 12);
-	//Float_t EW23 = 1 + 0.24/(6.*pow(2.,1.5))*(8.*pow(arg23,3) - 12.*arg23);
-	//EW23 += 0.16/(24.*pow(2.,2))*(16.*pow(arg23,4) -48.*pow(arg23,2) + 12);
+	Float_t EW12 = 1 + 0.2/(6.*pow(2.,1.5))*(8.*pow(arg12,3) - 12.*arg12);
+	EW12 += 0.45/(24.*pow(2.,2))*(16.*pow(arg12,4) -48.*pow(arg12,2) + 12);
+	Float_t EW13 = 1 + 0.2/(6.*pow(2.,1.5))*(8.*pow(arg13,3) - 12.*arg13);
+	EW13 += 0.45/(24.*pow(2.,2))*(16.*pow(arg13,4) -48.*pow(arg13,2) + 12);
+	Float_t EW23 = 1 + 0.2/(6.*pow(2.,1.5))*(8.*pow(arg23,3) - 12.*arg23);
+	EW23 += 0.45/(24.*pow(2.,2))*(16.*pow(arg23,4) -48.*pow(arg23,2) + 12);
 	
-	Float_t EW12 = 1 + OutputPar[5]/(6.*pow(2.,1.5))*(8.*pow(arg12,3) - 12.*arg12);
-	EW12 += OutputPar[6]/(24.*pow(2.,2))*(16.*pow(arg12,4) -48.*pow(arg12,2) + 12);
-	Float_t EW13 = 1 + OutputPar[5]/(6.*pow(2.,1.5))*(8.*pow(arg13,3) - 12.*arg13);
-	EW13 += OutputPar[6]/(24.*pow(2.,2))*(16.*pow(arg13,4) -48.*pow(arg13,2) + 12);
-	Float_t EW23 = 1 + OutputPar[5]/(6.*pow(2.,1.5))*(8.*pow(arg23,3) - 12.*arg23);
-	EW23 += OutputPar[6]/(24.*pow(2.,2))*(16.*pow(arg23,4) -48.*pow(arg23,2) + 12);
+	//Float_t EW12 = 1 + OutputPar[5]/(6.*pow(2.,1.5))*(8.*pow(arg12,3) - 12.*arg12);
+	//EW12 += OutputPar[6]/(24.*pow(2.,2))*(16.*pow(arg12,4) -48.*pow(arg12,2) + 12);
+	//Float_t EW13 = 1 + OutputPar[5]/(6.*pow(2.,1.5))*(8.*pow(arg13,3) - 12.*arg13);
+	//EW13 += OutputPar[6]/(24.*pow(2.,2))*(16.*pow(arg13,4) -48.*pow(arg13,2) + 12);
+	//Float_t EW23 = 1 + OutputPar[5]/(6.*pow(2.,1.5))*(8.*pow(arg23,3) - 12.*arg23);
+	//EW23 += OutputPar[6]/(24.*pow(2.,2))*(16.*pow(arg23,4) -48.*pow(arg23,2) + 12);
 	//
 	double cumulant_exp=0, term1_exp=0;
 	if(SameCharge) {
@@ -1955,24 +1976,39 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
   if(!MCcase) c3_hist->Draw("same");
   //legend2->AddEntry(c3_hist,"#font[12]{c}_{3} (cumulant correlation)","p");
   
-  //for(int ii=0; ii<10; ii++) cout<<c3_hist->GetBinContent(ii+1)<<", ";
-  
+  if(SameCharge){
+    //for(int ii=0; ii<10; ii++) cout<<c3_hist->GetBinContent(ii+1)<<", ";
+    TF1 *c3Fit=new TF1("c3Fit","[0]*(1+[1]*exp(-pow([2]*x/0.19733,2)/2.))",0,0.2);
+    //TF1 *c3Fit=new TF1("c3Fit","[0]*(1+[1]*exp(-pow([2]*x/0.19733,2)/2.) * (1 + (-0.12/(6.*pow(2,1.5))*(8.*pow([2]*x/0.19733,3) - 12.*pow([2]*x/0.19733,1))) + (0.43/(24.*pow(2,2))*(16.*pow([2]*x/0.19733,4) -48.*pow([2]*x/0.19733,2) + 12))))",0,1);
+    c3Fit->SetParameter(0,1);
+    c3Fit->SetParameter(1,2);
+    c3Fit->SetParameter(2,6);
+    //c3Fit->FixParameter(1,0.8545);
+    //c3Fit->FixParameter(2,8.982);
+    //c3_hist->Fit(c3Fit,"IME","",0,0.11);
+    //cout<<"Chi2/NDF = "<<c3Fit->GetChisquare()/c3Fit->GetNDF()<<endl;
+  }
+
   GenSignalExpected_num->SetMarkerStyle(20);
   //GenSignalExpected_num->Draw("same");
   //legend2->AddEntry(GenSignalExpected_num,"#kappa_{3}=0.24, #kappa_{4}=0.16, #lambda=0.68, R=6 fm","p");
   //legend2->AddEntry(GenSignalExpected_num,"Edeworth expectation (fully chaotic)","p");
 
-  /*MomRes_2d->SetMarkerStyle(20);
-  MomRes_3d->SetMarkerStyle(20);
-  MomRes_3d->SetMarkerColor(4);
-  MomRes_2d->GetXaxis()->SetTitle("Q_{3} (GeV/c)");
-  MomRes_2d->GetYaxis()->SetTitle("< MRC >");
-  MomRes_2d->SetTitle("");
-  MomRes_2d->Draw();
-  legend2->AddEntry(MomRes_2d,"2D: Triple pair product","p");
-  MomRes_3d->Draw("same");
-  legend2->AddEntry(MomRes_3d,"3D","p");
-  */
+  //MomRes_2d->SetMarkerStyle(20);
+  //MomRes_3d->SetMarkerStyle(20);
+  //MomRes_3d->SetMarkerColor(4);
+  //MomRes_2d->GetXaxis()->SetTitle("Q_{3} (GeV/c)");
+  //MomRes_2d->GetYaxis()->SetTitle("< MRC >");
+  //MomRes_2d->SetTitle("");
+  //MomRes_2d->Draw();
+  //legend2->AddEntry(MomRes_2d,"2D: Triple pair product","p");
+  MomRes_3d_term2->SetLineColor(2);
+  MomRes_3d_term5->SetLineColor(4);
+  //MomRes_3d_term1->Draw();
+  //MomRes_3d_term2->Draw("same");
+  //MomRes_3d_term5->Draw("same");
+  //legend2->AddEntry(MomRes_3d,"3D","p");
+  
   legend2->Draw("same");
   
   //cout<<c3_hist->Integral(8,10)/3.<<endl;
@@ -2605,6 +2641,8 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
     C2_os_Ksys->Write("C2_os_Ksys");
     fitC2ss->Write("fitC2ss");
     fitC2os->Write("fitC2os");
+    fitC2ss_h->Write("fitC2ss_h");
+    fitC2os_h->Write("fitC2os_h");
     if(IncludeEWfromTherm) {
       fitC2ssTherm->Write("fitC2ssTherm");
       fitC2osTherm->Write("fitC2osTherm");
@@ -2721,7 +2759,8 @@ void fcnC2_Global(int& npar, double* deriv, double& f, double par[], int flag){
   for(int i=1; i<BINRANGE_C2global; i++){
     
     qinvSS = AvgQinvSS[i];
-    
+    //if(qinvSS>0.08) continue;
+
     if(!GofP) Dp=fabs(par[2])/(1-fabs(par[2]));// p independent
     else Dp = fabs(par[2])/(1-fabs(par[2]));
     
@@ -3378,10 +3417,10 @@ void ReadMomResFile(int rvalue, double lambda){
     MomResDev_term2_pp[i] = 1.;
   }
  
-
   TString *momresfilename = new TString("MomResFile");
   momresfilename->Append("_Offline_");
   if(FileSetting==3) momresfilename->Append("PID1p5");
+  else if(FileSetting==9) momresfilename->Append("FB5and7overlap");
   else momresfilename->Append("11h");
   momresfilename->Append(".root");// no corresponding file for 10h
   

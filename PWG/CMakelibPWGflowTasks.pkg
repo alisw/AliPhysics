@@ -51,7 +51,6 @@ set ( SRCS
     FLOW/Tasks/AliAnalysisTaskQAPmdflow.cxx 
     FLOW/Tasks/AliFlowBayesianPID.cxx
     FLOW/Tasks/AliAnalysisTaskPhiFlow.cxx
-    FLOW/Tasks/AliAnalysisTwoParticleResonanceFlowTask.cxx
     FLOW/Tasks/AliAnalysisTaskFilterFE.cxx
     FLOW/Tasks/AliAnalysisTaskVnV0.cxx
     FLOW/Tasks/AliFlowVZEROResults.cxx
@@ -59,6 +58,7 @@ set ( SRCS
     FLOW/Tasks/AliAnalysisTaskFlowEPCascade.cxx
     FLOW/Tasks/AliAnalysisTaskJetFlow.cxx
     FLOW/Tasks/AliAnalysisTaskJetFlowMC.cxx
+    FLOW/Tasks/AliAnalysisTaskMultiparticleCorrelations.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -71,4 +71,4 @@ if( ALICE_TARGET STREQUAL "win32gcc")
         set ( ELIBS -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lPWGflowBase -lPWGEMCAL -lPWGJEEMCALJetTasks -lPWGmuon -lANALYSISalice -lANALYSIS -lAOD -lESD -lSTEERBase ${ROOTCLIBS} -lEG )
 endif( ALICE_TARGET STREQUAL "win32gcc")
 
-set ( EINCLUDE PWG/FLOW/Base PWG/FLOW/Tasks STEER/ESD STEER/STEERBase PWG/EMCAL PWGJE/EMCALJetTasks PWGJE/EMCALJetTasks/UserTasks PWG/muon)
+set ( EINCLUDE PWG/FLOW/Base PWG/FLOW/Tasks STEER/ESD STEER/AOD STEER/STEERBase PWG/EMCAL PWGJE/EMCALJetTasks PWGJE/EMCALJetTasks/UserTasks PWG/muon ANALYSIS)

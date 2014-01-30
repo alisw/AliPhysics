@@ -31,16 +31,28 @@ class AliRDHFCutsDStartoKpipi : public AliRDHFCuts
   virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters);
 
   using AliRDHFCuts::IsSelected;
-  virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel);
-  Int_t IsD0FromDStarSelected(Double_t pt, TObject* obj,Int_t selectionLevel) const; 
+  virtual Int_t IsSelected(TObject* obj, Int_t selectionLevel, AliAODEvent* aod);
+  virtual Int_t IsSelected(TObject* obj, Int_t selectionLevel) {return IsSelected(obj,selectionLevel,0);}
+
+  Int_t IsD0FromDStarSelected(Double_t pt, TObject* obj,Int_t selectionLevel, AliAODEvent* aod) const;
+  Int_t IsD0FromDStarSelected(Double_t pt, TObject* obj,Int_t selectionLevel) {return IsD0FromDStarSelected(pt,obj,selectionLevel,0);};
+
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF *rd);
   virtual Int_t SelectPID(AliAODTrack *track, Int_t type);
   virtual Bool_t IsInFiducialAcceptance(Double_t pt,Double_t y) const;
   Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(9,iPtBin)] : 1.e6);} // for the Dstar
   Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(1,iPtBin)] : 1.e6);} // for the D0
+
+  // standard cuts
   virtual void SetStandardCutsPP2010();
   virtual void SetStandardCutsPbPb2010();
-  virtual void SetStandardCutsPbPb2011();  
+  virtual void SetStandardCutsPbPb2011();
+
+  // standard cuts 
+  void SetStandardCutsPbPb2011DStar(TH1F *hfl);
+  void SetStandardCutsPP2010DStarMult(Bool_t rec = kFALSE);
+
+  
   void SetMaxPtPid(Float_t maxPt){fMaxPtPid = maxPt;}
 
   void SetOffHighPtPIDinTPC(Float_t TPCrem =999.){fTPCflag = TPCrem;}

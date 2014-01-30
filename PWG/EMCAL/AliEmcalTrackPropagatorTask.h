@@ -1,12 +1,9 @@
 #ifndef ALIEMCALTRACKPROPAGATORTASK_H
 #define ALIEMCALTRACKPROPAGATORTASK_H
 
-// $Id$
+// $Id: AliEmcalTrackPropagatorTask.h | Mon Dec 9 12:59:28 2013 +0100 | Constantin Loizides  $
 
 class TClonesArray;
-class AliEMCALRecoUtils;
-class AliESDEvent;
-class AliESDtrack;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -16,27 +13,26 @@ class AliEmcalTrackPropagatorTask : public AliAnalysisTaskSE {
   AliEmcalTrackPropagatorTask(const char *name);
   virtual ~AliEmcalTrackPropagatorTask();
 
-  void UserCreateOutputObjects();
-  void UserExec(Option_t *option);
-   
-  void SetDist(Double_t d)                 { fDist       = d;    }
-  void SetMinPt(Double_t pt)               { fMinPtCut = pt;     }
-  void SetRecoUtils(AliEMCALRecoUtils *ru) { fRecoUtils  = ru;   }
-  void SetTracksName(const char *name)     { fTracksName = name; }
+  void               SetDist(Double_t d)                 { fDist               = d;    }
+  void               SetOnlyIfNotSet(Bool_t b)           { fOnlyIfNotSet       = b; }
+  void               SetTracksInName(const char *n)      { fTracksInName       = n; }
+  void               SetTracksOutName(const char *n)     { fTracksOutName      = n; }
 
  protected:
-  AliEMCALRecoUtils *fRecoUtils;         // esd reco utils
-  TString            fTracksName;        // name of tracks 
-  Double_t           fDist;              // distance to surface (430cm default)
-  Double_t           fMinPtCut;          // minimum track pt cut (500 MeV/c default)
-  AliESDEvent       *fEsdEv;             //!esd event
-  TClonesArray      *fTracks;            //!track array
+  void               UserCreateOutputObjects();
+  void               UserExec(Option_t *option);
+   
+  TString            fTracksInName;      // name of tracks in  
+  TString            fTracksOutName;     // name of tracks out
+  Double_t           fDist;              // distance to surface (440cm default)
+  Bool_t             fOnlyIfNotSet;      // only attempt if not already at surface
+  TClonesArray      *fTracksIn;          //!track array in
+  TClonesArray      *fTracksOut;         //!track array out
 
  private:
   AliEmcalTrackPropagatorTask(const AliEmcalTrackPropagatorTask&);            // not implemented
   AliEmcalTrackPropagatorTask &operator=(const AliEmcalTrackPropagatorTask&); // not implemented
 
-  ClassDef(AliEmcalTrackPropagatorTask, 1); // Class to propagate and store track parameters at EMCAL surface
+  ClassDef(AliEmcalTrackPropagatorTask, 2); // Class to propagate and store track parameters at EMCAL surface
 };
-
 #endif

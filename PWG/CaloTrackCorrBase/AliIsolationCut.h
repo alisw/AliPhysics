@@ -47,27 +47,27 @@ class AliIsolationCut : public TObject {
   void       MakeIsolationCut(TObjArray * plCTS, TObjArray * plNe, 
                               AliCaloTrackReader * reader, 
                               AliCaloPID * pid, 
-                              const Bool_t bFillAOD,
-                              AliAODPWG4ParticleCorrelation  * pCandidate, const TString &aodObjArrayName,
+                              Bool_t bFillAOD,
+                              AliAODPWG4ParticleCorrelation  * pCandidate, TString aodObjArrayName,
                               Int_t &n, Int_t & nfrac, Float_t &ptsum, Bool_t & isolated) const ;  
   
   void       Print(const Option_t * opt) const ;
   
-  Float_t    Radius(const Float_t etaCandidate, const Float_t phiCandidate, const Float_t eta, const Float_t phi) const ; 
+  Float_t    Radius(Float_t etaCandidate, Float_t phiCandidate, Float_t eta, Float_t phi) const ;
   
   // Cone background studies medthods
   
-  Float_t  CalculateExcessAreaFraction(const Float_t excess) const ;
+  Float_t  CalculateExcessAreaFraction(Float_t excess) const ;
 
-  void     CalculateUEBandClusterNormalization(AliCaloTrackReader * reader,          const Float_t   etaC, const Float_t phiC,
-                                               const Float_t   phiUEptsumCluster,    const Float_t   etaUEptsumCluster,
-                                                     Float_t & phiUEptsumClusterNorm,      Float_t & etaUEptsumClusterNorm,
-                                                     Float_t & excessFracEta,              Float_t & excessFracPhi              ) const ;
+  void     CalculateUEBandClusterNormalization(AliCaloTrackReader * reader,     Float_t   etaC, Float_t phiC,
+                                               Float_t   phiUEptsumCluster,     Float_t   etaUEptsumCluster,
+                                               Float_t & phiUEptsumClusterNorm, Float_t & etaUEptsumClusterNorm,
+                                               Float_t & excessFracEta,         Float_t & excessFracPhi              ) const ;
   
-  void     CalculateUEBandTrackNormalization  (AliCaloTrackReader * reader,          const Float_t   etaC, const Float_t phiC,
-                                               const Float_t   phiUEptsumTrack,      const Float_t   etaUEptsumTrack,
-                                                     Float_t & phiUEptsumTrackNorm,        Float_t & etaUEptsumTrackNorm,
-                                                     Float_t & excessFracEta,              Float_t & excessFracPhi              )   const ;
+  void     CalculateUEBandTrackNormalization  (AliCaloTrackReader * reader,     Float_t   etaC,  Float_t phiC,
+                                               Float_t   phiUEptsumTrack,       Float_t   etaUEptsumTrack,
+                                               Float_t & phiUEptsumTrackNorm,   Float_t & etaUEptsumTrackNorm,
+                                               Float_t & excessFracEta,         Float_t & excessFracPhi              )   const ;
 
   void 	   GetCoeffNormBadCell(AliAODPWG4ParticleCorrelation * pCandidate,
                                AliCaloTrackReader * reader, 

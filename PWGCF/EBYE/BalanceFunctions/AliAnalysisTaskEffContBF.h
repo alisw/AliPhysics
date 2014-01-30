@@ -30,8 +30,10 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
     fHistCentrality(0), 
     fHistNMult(0), 
     fHistVz(0),
-    fHistContaminationSecondaries(0),
-    fHistContaminationPrimaries(0),
+    fHistContaminationSecondariesPlus(0),
+    fHistContaminationSecondariesMinus(0),
+    fHistContaminationPrimariesPlus(0),
+    fHistContaminationPrimariesMinus(0),
     fHistGeneratedEtaPtPhiPlus(0),
     fHistSurvivedEtaPtPhiPlus(0),
     fHistGeneratedEtaPtPhiMinus(0),
@@ -52,10 +54,11 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
     fHistSurvivedPhiEtaMinusMinus(0),
     fHistGeneratedPhiEtaPlusMinus(0),
     fHistSurvivedPhiEtaPlusMinus(0), 
-    fAnalysisMode(0), 
+    fUseCentrality(kFALSE), 
     fCentralityEstimator("V0M"), 
     fCentralityPercentileMin(0.0), 
     fCentralityPercentileMax(5.0), 
+    fInjectedSignals(kFALSE),
     fVxMax(3.0), 
     fVyMax(3.0), 
     fVzMax(10.), 
@@ -72,14 +75,9 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
     fEtaRangeMax(1.6), 
     fPtRangeMin(0.0), 
     fPtRangeMax(20.0), 
-    fPhiRangeMin(0.0),
-    fPhiRangeMax(360.), 
-    fdPhiRangeMax(180.), 
     fEtaBin(100),
     fdEtaBin(64),
     fPtBin(100),
-    fPhiBin(100),
-    fdPhiBin(90), 
     fHistSurvived4EtaPtPhiPlus(0), 
     fHistSurvived8EtaPtPhiPlus(0){}
     AliAnalysisTaskEffContBF(const char *name);
@@ -101,6 +99,7 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   }
 
   //Centrality
+  void UseCentrality() { fUseCentrality = kTRUE;}
   void SetCentralityEstimator(const char* centralityEstimator) {
     fCentralityEstimator = centralityEstimator;}
   void SetCentralityPercentileRange(Float_t min, Float_t max) { 
@@ -108,8 +107,8 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
     fCentralityPercentileMax=max;
   }
 
-  void SetAnalysisMode(const char* analysisMode) {
-    fAnalysisMode = analysisMode;}
+  //Injected signals
+  void SetRejectInjectedSignals() {fInjectedSignals = kTRUE;}
 
   //Track cuts
   void SetMinNumberOfTPCClusters(Double_t min) {
@@ -137,14 +136,6 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
     fPtRangeMin = minRangePt;
     fPtRangeMax = maxRangePt;
     fPtBin = binPt;}  
-  void SetPhiRange(Double_t minRangePhi, Double_t maxRangePhi,Int_t binPhi,Double_t maxRangedPhi,Int_t bindPhi ){
-    fPhiRangeMin = minRangePhi;
-    fPhiRangeMax = maxRangePhi;
-    fPhiBin = binPhi;
-    fdPhiRangeMax = maxRangedPhi;
-    fdPhiBin = bindPhi;
-  } 
-
  private:
   AliAODEvent* fAOD; //! AOD object  
   TClonesArray *fArrayMC; //! array of MC particles  
@@ -158,8 +149,11 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   TH1F        *fHistVz;//!
 
   // output histograms
-  TH3D        *fHistContaminationSecondaries;//!
-  TH3D        *fHistContaminationPrimaries;//!
+  TH3D        *fHistContaminationSecondariesPlus;//!
+  TH3D        *fHistContaminationSecondariesMinus;//!
+  TH3D        *fHistContaminationPrimariesPlus;//!
+  TH3D        *fHistContaminationPrimariesMinus;//!
+  
   // output histograms (single particles)
   TH3D        *fHistGeneratedEtaPtPhiPlus;//!correction map for positives (generated)
   TH3D        *fHistSurvivedEtaPtPhiPlus;//!correction map positives (survived)
@@ -192,10 +186,11 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   TH2F        *fHistGeneratedPhiEtaPlusMinus;//!correction map for +- (generated)
   TH2F        *fHistSurvivedPhiEtaPlusMinus;//!correction map +- (survived)
 
-  TString fAnalysisMode;//"TPC", "Global"
-
+  Bool_t  fUseCentrality;// Bool_t use centrality or not
   TString fCentralityEstimator;//"V0M","TRK","TKL","ZDC","FMD"
   Float_t fCentralityPercentileMin, fCentralityPercentileMax; //min-max centrality percentile
+
+  Bool_t fInjectedSignals;//Flag for using the rejection of injected signals
 
   Double_t fVxMax;//vxmax
   Double_t fVyMax;//vymax
@@ -212,15 +207,10 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   Double_t fEtaRangeMax; // acceptance cuts
   Double_t fPtRangeMin;  //acceptance cuts
   Double_t fPtRangeMax;  //acceptance cuts
-  Double_t fPhiRangeMin; //acceptance cuts
-  Double_t fPhiRangeMax; // acceptance cuts
-  Double_t fdPhiRangeMax; // acceptance cuts
   
   Int_t fEtaBin;  //acceptance cuts
   Int_t fdEtaBin;  //acceptance cuts
   Int_t fPtBin; //acceptance cuts
-  Int_t fPhiBin; // acceptance cuts
-  Int_t fdPhiBin; // acceptance cuts
 
   TH3F        *fHistSurvived4EtaPtPhiPlus;//!
   TH3F        *fHistSurvived8EtaPtPhiPlus;//!

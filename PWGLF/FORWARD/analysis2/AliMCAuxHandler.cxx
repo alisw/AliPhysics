@@ -5,6 +5,7 @@
 #include <TFile.h>
 #include <TClonesArray.h>
 #include <TROOT.h>
+#include <TSystem.h>
 #include <AliStack.h>
 #include <AliMCEvent.h>
 
@@ -58,9 +59,13 @@ AliMCAuxHandler::Init(Option_t* opt)
   // 
   // @return true on success 
   AliDebugF(10,"AliMCAuxHandler::Init(\"%s\")", opt);
+  // Info("","AliMCAuxHandler::Init(\"%s\") - detector: %s, class: %s", 
+  //      opt, GetName(), GetTitle());
 
   TString option(opt);
-  if (option.EqualTo("proof") || option.EqualTo("local")) return true;
+  if (option.EqualTo("proof") || 
+      option.EqualTo("local") || 
+      option.EqualTo("lite")) return true;
 
   TString t = "Tree";
   TString b = "";
@@ -81,6 +86,14 @@ AliMCAuxHandler::Init(Option_t* opt)
     else 
       t = "";
   }
+  else {
+    AliWarningF("Couldn't get the class description of %s", GetTitle());
+    AliWarning("The list of loaded libraries is");
+    gSystem->ListLibraries("");
+    return false;
+  }
+      
+  // Info("Init", "Tree-name: %s, file-base: %s", t.Data(), b.Data());
   if (!t.IsNull()) fTreeName = t;
   if (!b.IsNull()) fFileBase = b;
 
@@ -113,6 +126,7 @@ AliMCAuxHandler::BeginEvent(Long64_t entry)
   // 
   // @return true on success
   AliDebugF(10,"AliMCAuxHandler::BeginEvent(%lld)", entry);
+  // Info("","AliMCAuxHandler::BeginEvent(%lld)", entry);
 
   if (entry == -1) 
     fEvent++;
@@ -151,6 +165,7 @@ AliMCAuxHandler::Notify(const char* path)
   //
   // @return true on success
   AliDebugF(10,"AliMCAuxHandler::Notify(\"%s\")", path);
+  // Info("","AliMCAuxHandler::Notify(\"%s\")", path);
   return true;
 }
 //____________________________________________________________________
@@ -160,7 +175,7 @@ AliMCAuxHandler::FinishEvent()
   // Called at the end of an event 
   // 
   // @return true on success
-  AliDebug(10,"AliMCAuxHandler::FinishEvent()");
+  // AliDebug(10,"AliMCAuxHandler::FinishEvent()");
   return true;
 }
 //____________________________________________________________________
@@ -195,6 +210,7 @@ AliMCAuxHandler::ResetIO()
 
   TString* path = GetParentPath();
   AliDebugF(10,"Got parent path %s", path ? path->Data() : "null");
+  // Info("ResetIO","Got parent path %s", path ? path->Data() : "null");
 
   if (fFile) { 
     delete fFile;
@@ -207,6 +223,7 @@ AliMCAuxHandler::OpenFile(Int_t fileNo)
 {
   TString* path = GetParentPath();
   AliDebugF(10,"Got parent path %s", path ? path->Data() : "null");
+  // Info("OpenFile","Got parent path %s", path ? path->Data() : "null");
   if (!path) return false;
 
   TString ext("");
@@ -218,7 +235,8 @@ AliMCAuxHandler::OpenFile(Int_t fileNo)
   TString fn = TString::Format("%s%s.%s%s.root", 
 			       path->Data(), GetName(), 
 			       fFileBase.Data(), ext.Data());
-  Info("Init", "Opening %s", fn.Data());
+  AliDebugF(10,"Opening %s", fn.Data());
+  // Info("OpenFile", "Opening %s", fn.Data());
   fFile = TFile::Open(fn, "READ");
   if (!fFile) { 
     AliErrorF("Failed to open %s", fn.Data());
@@ -238,6 +256,7 @@ AliMCAuxHandler::LoadEvent(Int_t iev)
   // 
   // @return true on success 
   AliDebugF(10,"AliMCAuxHandler::LoadEvent(%d)", iev);
+  // Info("","AliMCAuxHandler::LoadEvent(%d)", iev);
 
   Int_t iNew = iev / fNEventsPerFile;
   if (iNew != fFileNumber) { 

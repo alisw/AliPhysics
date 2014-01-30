@@ -56,11 +56,14 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fJetEtaMax(+1),
   fGhostArea(0.005),
   fMinMCLabel(0),
+  fRecombScheme(fastjet::pt_scheme),
   fTrackEfficiency(1.),
   fIsInit(0),
   fIsPSelSet(0),
   fIsMcPart(0),
   fIsEmcPart(0),
+  fLegacyMode(kFALSE),
+  fCodeDebug(kFALSE),
   fJets(0),
   fEvent(0),
   fTracks(0),
@@ -94,11 +97,14 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fJetEtaMax(+1),
   fGhostArea(0.005),
   fMinMCLabel(0),
+  fRecombScheme(fastjet::pt_scheme),
   fTrackEfficiency(1.),
   fIsInit(0),
   fIsPSelSet(0),
   fIsMcPart(0),
   fIsEmcPart(0),
+  fLegacyMode(kFALSE),
+  fCodeDebug(kFALSE),
   fJets(0),
   fEvent(0),
   fTracks(0),
@@ -134,6 +140,9 @@ void AliEmcalJetTask::UserExec(Option_t *)
     fIsInit = kTRUE;
   }
 
+  // clear the jet array (normally a null operation)
+  fJets->Delete();
+
   FindJets();
 }
 
@@ -151,7 +160,6 @@ void AliEmcalJetTask::FindJets()
     cout << "WARNING NO TRACKS OR CLUSTERS:"  <<endl;
     return;
   }
-
 
   TString name("kt");
   fastjet::JetAlgorithm jalgo(fastjet::kt_algorithm);
@@ -176,7 +184,8 @@ void AliEmcalJetTask::FindJets()
   fjw.SetAreaType(fastjet::active_area_explicit_ghosts);
   fjw.SetGhostArea(fGhostArea);
   fjw.SetR(fRadius);
-  fjw.SetAlgorithm(jalgo);  
+  fjw.SetAlgorithm(jalgo);
+  fjw.SetRecombScheme(static_cast<fastjet::RecombinationScheme>(fRecombScheme)); 
   fjw.SetMaxRap(fEtaMax);
   fjw.Clear();
 
@@ -239,7 +248,7 @@ void AliEmcalJetTask::FindJets()
 
       // offset of 100 for consistency with cluster ids
       AliDebug(2,Form("Track %d accepted (label = %d, pt = %f)", iTracks, t->GetLabel(), t->Pt()));
-      fjw.AddInputVector(t->Px(), t->Py(), t->Pz(), t->P(), iTracks + 100);  
+      fjw.AddInputVector(t->Px(), t->Py(), t->Pz(), t->E(), iTracks + 100);
     }
   }
 
@@ -328,7 +337,12 @@ void AliEmcalJetTask::FindJets()
       fjw.AddInputVector(cPx, cPy, cPz, TMath::Sqrt(cPx*cPx+cPy*cPy+cPz*cPz), -iClus - 100);
     }
   }
-  
+
+  // setting legacy mode
+  if (fLegacyMode) { 
+    fjw.SetLegacyMode(kTRUE);
+  }
+
   // run jet finder
   fjw.Run();
 
@@ -560,7 +574,6 @@ Bool_t AliEmcalJetTask::DoInit()
   }
 
   // add jets to event if not yet there
-  fJets->Delete();
   if (!(fEvent->FindListObject(fJetsName)))
     fEvent->AddObject(fJets);
   else {

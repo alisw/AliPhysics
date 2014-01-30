@@ -1,4 +1,4 @@
-AliFemtoK0Analysis *AddTaskK0Femto(bool FieldPositive = kTRUE, bool OnlineCase = kTRUE, bool MeritCase = kTRUE, float MinDL = 0.0){
+AliFemtoK0Analysis *AddTaskK0Femto(bool SignDep = kFALSE, bool FieldPositive = kTRUE, bool OnlineCase = kTRUE, bool MeritCase = kTRUE, bool Case3D = kFALSE, float MinDL = 0.0, int MeritCutChoice = 4, float MinSep = 5.0, bool FlatCent = kFALSE, bool PsiBinning = kFALSE, int NPsiBins = 18, TString nameSpec = "NoSpec"){
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -6,13 +6,17 @@ AliFemtoK0Analysis *AddTaskK0Femto(bool FieldPositive = kTRUE, bool OnlineCase =
     return NULL;
   }
 
-  AliFemtoK0Analysis *K0Task = new AliFemtoK0Analysis("K0Task", FieldPositive, OnlineCase, MeritCase, MinDL);
+  AliFemtoK0Analysis *K0Task = new AliFemtoK0Analysis("K0Task", SignDep, FieldPositive, OnlineCase, MeritCase, Case3D, MinDL, MeritCutChoice, MinSep, FlatCent, PsiBinning, NPsiBins);
   if(!K0Task) exit(-1);
   mgr->AddTask(K0Task);
 
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
-  if(FieldPositive) outputFileName += ":PWGCF.outputK0Analysis_FieldPos.root";
-  else outputFileName += ":PWGCF.outputK0Analysis_FieldNeg.root";
+  outputFileName += ":PWGCF.outputK0Analysis_";
+  outputFileName += nameSpec;
+  if(SignDep){
+   if(FieldPositive) outputFileName += "_FieldPos.root";
+   else outputFileName += "_FieldNeg.root";
+  }
   AliAnalysisDataContainer *coutputK0 = mgr->CreateContainer("MyList", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName.Data());
 
   mgr->ConnectInput(K0Task, 0, mgr->GetCommonInputContainer());

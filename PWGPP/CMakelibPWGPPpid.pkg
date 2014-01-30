@@ -25,7 +25,15 @@
 # ARLIBS - Archive Libraries and objects for linking (Executables only)          #
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
-file ( GLOB SRCS16 "pid/*.cxx" )
+#file ( GLOB SRCS16 "pid/*.cxx" )
+set ( SRCS16
+  pid/AliAnalysisTaskK0sBayes.cxx
+  pid/AliAnalysisTaskLambdaBayes.cxx
+  pid/AliAnalysisTaskPhiBayes.cxx
+  pid/AliPIDmaxProb.cxx
+  pid/AliPIDperfContainer.cxx
+  pid/AliPIDperfCut.cxx
+  )
 
 list ( APPEND SRCS 
   ${SRCS16}
@@ -38,4 +46,4 @@ set ( DHDR PWGPPpidLinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE  PWGPP/pid STEER/STEER STEER/STEERBase STEER/AOD STEER/ESD)
+set ( EINCLUDE  PWGPP/pid STEER/STEER STEER/STEERBase STEER/AOD STEER/ESD ANALYSIS)

@@ -31,38 +31,31 @@
 
 //====================================================================
 AliForwardQATask::AliForwardQATask()
-  : AliAnalysisTaskSE(),
+  : AliBaseESDTask(),
     fEnableLowFlux(false), 
-    fFirstEvent(true),
-    fCorrManager(0),
     fESDFMD(),
     fHistos(),
     fEventInspector(),
     fEnergyFitter(),
     fSharingFilter(),
-    fDensityCalculator(),
-    fList(0),
-    fDebug(0)
+    fDensityCalculator()
 {
   // 
   // Constructor
   //
+  fCloneList = true;
 }
 
 //____________________________________________________________________
 AliForwardQATask::AliForwardQATask(const char* name)
-  : AliAnalysisTaskSE(name),
+  : AliBaseESDTask(name, "", &(AliForwardCorrectionManager::Instance())),
     fEnableLowFlux(false), 
-    fFirstEvent(true),
-    fCorrManager(0),
     fESDFMD(),
     fHistos(),
     fEventInspector("event"),
     fEnergyFitter("energy"),
     fSharingFilter("sharing"), 
-    fDensityCalculator("density"),
-    fList(0),
-    fDebug(0)
+    fDensityCalculator("density")
 {
   // 
   // Constructor 
@@ -70,9 +63,6 @@ AliForwardQATask::AliForwardQATask(const char* name)
   // Parameters:
   //    name Name of task 
   //
-  DefineOutput(1, TList::Class());
-  DefineOutput(2, TList::Class());
-  fCorrManager = &AliForwardCorrectionManager::Instance(); 
   fEnergyFitter.SetNParticles(1); // Just find the 1st peak 
   fEnergyFitter.SetDoMakeObject(false); 
   fEnergyFitter.SetUseIncreasingBins(true);
@@ -80,63 +70,8 @@ AliForwardQATask::AliForwardQATask(const char* name)
   fEnergyFitter.SetLowCut(0.4);
   fEnergyFitter.SetFitRangeBinWidth(4);
   fEnergyFitter.SetMinEntries(1000);
+  fCloneList = true;
 }
-
-//____________________________________________________________________
-AliForwardQATask::AliForwardQATask(const AliForwardQATask& o)
-  : AliAnalysisTaskSE(o),
-    fEnableLowFlux(o.fEnableLowFlux), 
-    fFirstEvent(o.fFirstEvent),
-    fCorrManager(o.fCorrManager),
-    fESDFMD(o.fESDFMD),
-    fHistos(o.fHistos),
-    fEventInspector(o.fEventInspector),
-    fEnergyFitter(o.fEnergyFitter),
-    fSharingFilter(o.fSharingFilter),
-    fDensityCalculator(o.fDensityCalculator),
-    fList(o.fList),
-    fDebug(o.fDebug) 
-{
-  // 
-  // Copy constructor 
-  // 
-  // Parameters:
-  //    o Object to copy from 
-  //
-  DefineOutput(1, TList::Class());
-  DefineOutput(2, TList::Class());
-}
-
-//____________________________________________________________________
-AliForwardQATask&
-AliForwardQATask::operator=(const AliForwardQATask& o)
-{
-  // 
-  // Assignment operator 
-  // 
-  // Parameters:
-  //    o Object to assign from 
-  // 
-  // Return:
-  //    Reference to this object 
-  //
-  if (&o == this) return *this;
-  AliAnalysisTaskSE::operator=(o);
-
-  fEnableLowFlux     = o.fEnableLowFlux;
-  fFirstEvent        = o.fFirstEvent;
-  fCorrManager       = o.fCorrManager;
-  fEventInspector    = o.fEventInspector;
-  fEnergyFitter      = o.fEnergyFitter;
-  fSharingFilter     = o.fSharingFilter;
-  fDensityCalculator = o.fDensityCalculator;
-  fHistos            = o.fHistos;
-  fList              = o.fList;
-  fDebug             = o.fDebug;
-
-  return *this;
-}
-
 //____________________________________________________________________
 void
 AliForwardQATask::SetDebug(Int_t dbg)
@@ -147,213 +82,120 @@ AliForwardQATask::SetDebug(Int_t dbg)
   // Parameters:
   //    dbg Debug level
   //
-  fDebug = dbg;
-  fEventInspector.SetDebug(dbg);
-  fEnergyFitter.SetDebug(dbg);
-  fSharingFilter.SetDebug(dbg);
-  fDensityCalculator.SetDebug(dbg);
+  AliBaseESDTask::        SetDebug(dbg);
+  GetEnergyFitter()     .SetDebug(dbg);
+  GetSharingFilter()    .SetDebug(dbg);
+  GetDensityCalculator().SetDebug(dbg);
 }
 
 //____________________________________________________________________
-Bool_t 
-AliForwardQATask::CheckCorrections(UInt_t what)
+TAxis*
+AliForwardQATask::DefaultEtaAxis() const
 {
-  // 
-  // Check if all needed corrections are there and accounted for.  If not,
-  // do a Fatal exit 
-  // 
-  // Parameters:
-  //    what Which corrections is needed
-  // 
-  // Return:
-  //    true if all present, false otherwise
-  //  
+  static TAxis* a = new TAxis(240, -6, 6);
+  return a;
+}
+//____________________________________________________________________
+TAxis*
+AliForwardQATask::DefaultVertexAxis() const
+{
+  static TAxis* a = new TAxis(10, -10, 10);
+  return a;
+}
 
-  AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
-  // Check that we have the energy loss fits, needed by 
-  //   AliFMDSharingFilter 
-  //   AliFMDDensityCalculator 
-  if (what & AliForwardCorrectionManager::kELossFits) {
-    if (!fcm.GetELossFit()) { 
-      AliWarning("No energy loss fits");
-      
-      // Fall-back values if we do not have the energy loss fits 
-      AliFMDMultCuts& sfLCuts = GetSharingFilter().GetLCuts();
-      if (sfLCuts.GetMethod() != AliFMDMultCuts::kFixed) { 
-	Double_t cut = 0.3;
-	AliWarningF("Using fixed cut @ %f for the lower bound "
-		    "of the sharing filter", cut);
-	sfLCuts.SetMultCuts(cut);
-      }
-      AliFMDMultCuts& sfHCuts = GetSharingFilter().GetHCuts();
-      if (sfHCuts.GetMethod() != AliFMDMultCuts::kFixed) { 
-	Double_t cut = 100;
-	AliWarningF("Using fixed cut @ %f for the upper bound "
-		    "of the sharing filter", cut);
-	sfHCuts.SetMultCuts(cut);
-      }
-      AliFMDMultCuts& dcCuts  = GetDensityCalculator().GetCuts();
-      if (dcCuts.GetMethod() != AliFMDMultCuts::kFixed) { 
-	Double_t cut = 0.3;
-	AliWarningF("Using fixed cut @ %f for the lower bound "
-		    "of the density calculator", cut);
-	dcCuts.SetMultCuts(cut);
-      }
-    }
-    else 
-      fcm.GetELossFit()->CacheBins(GetDensityCalculator().GetMinQuality());
-  }
-
+//____________________________________________________________________
+Bool_t
+AliForwardQATask::Setup()
+{
+  fEnergyFitter.Init();
   return true;
 }
 
 //____________________________________________________________________
 Bool_t
-AliForwardQATask::ReadCorrections(const TAxis*& pe, 
-				  const TAxis*& pv, 
-				  Bool_t        mc,
-				  Bool_t        sat)
+AliForwardQATask::Book()
 {
-  //
-  // Read corrections
-  //
+  // 
+  // Create output objects 
+  // 
   //
   UInt_t what = AliForwardCorrectionManager::kAll;
   what ^= AliForwardCorrectionManager::kDoubleHit;
   what ^= AliForwardCorrectionManager::kVertexBias;
   what ^= AliForwardCorrectionManager::kAcceptance;
   what ^= AliForwardCorrectionManager::kMergingEfficiency;
-
-  AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
-  // We allow fall-back queries so that we may proceed in case we have no 
-  // valid corrections 
-  fcm.SetEnableFallBack(true); 
-  if (!fcm.Init(GetEventInspector().GetRunNumber(), 
-		GetEventInspector().GetCollisionSystem(),
-		GetEventInspector().GetEnergy(),
-		GetEventInspector().GetField(),
-		mc,
-		sat,
-		what,
-		false)) return false;
-  if (!CheckCorrections(what)) {
-    return false;
-  }
-
-  // Sett our persistency pointer 
-  // fCorrManager = &fcm;
-
-  // Get the eta axis from the secondary maps - if read in
-  if (!pe) {
-    pe = fcm.GetEtaAxis();
-    if (!pe) AliFatal("No eta axis defined");
-  }
-  // Get the vertex axis from the secondary maps - if read in
-  if (!pv) {
-    pv = fcm.GetVertexAxis();
-    if (!pv) AliFatal("No vertex axis defined");
-  }
-
+  what ^= AliForwardCorrectionManager::kELossFits;
+  fNeededCorrections = what;
+  fExtraCorrections  = AliForwardCorrectionManager::kELossFits;
+  
+  fEnergyFitter.CreateOutputObjects(fList);
+  fSharingFilter.CreateOutputObjects(fList);
+  fDensityCalculator.CreateOutputObjects(fList);
+  
   return true;
-}
-
-//____________________________________________________________________
-AliESDEvent*
-AliForwardQATask::GetESDEvent()
-{
-  //
-  // Get the ESD event. IF this is the first event, initialise
-  //
-  DGUARD(fDebug,2,"Get the ESD event");
-  if (IsZombie()) {
-    DMSG(fDebug,3,"We're a Zombie - bailing out");
-    return 0;
-  }
-  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
-  if (!esd) {
-    AliWarning("No ESD event found for input event");
-    return 0;
-  }
-
-  // On the first event, initialize the parameters
-  if (fFirstEvent && esd->GetESDRun()) {
-    GetEventInspector().ReadRunDetails(esd);
-
-    AliInfoF("Initializing with parameters from the ESD:\n"
-	     "         AliESDEvent::GetBeamEnergy()   ->%f\n"
-	     "         AliESDEvent::GetBeamType()     ->%s\n"
-	     "         AliESDEvent::GetCurrentL3()    ->%f\n"
-	     "         AliESDEvent::GetMagneticField()->%f\n"
-	     "         AliESDEvent::GetRunNumber()    ->%d",
-	     esd->GetBeamEnergy(),
-	     esd->GetBeamType(),
-	     esd->GetCurrentL3(),
-	     esd->GetMagneticField(),
-	     esd->GetRunNumber());
-
-
-    if (!SetupForData()) {
-      AliWarning("Initialisation of sub algorithms failed!");
-      SetZombie(true);
-      esd = 0;
-      return 0;
-    }
-    AliInfoF("Clearing first event flag from %s to false", 
-	     fFirstEvent ? "true" : "false");
-    fFirstEvent = false;
-  }
-  return esd;
 }
 //____________________________________________________________________
 Bool_t
-AliForwardQATask::SetupForData()
+AliForwardQATask::PreData(const TAxis& /*vertex*/, const TAxis& eta)
 {
   // 
   // Initialise the sub objects and stuff.  Called on first event 
   // 
   //
-  const TAxis* pe = 0;
-  const TAxis* pv = 0;
-
-  if (!ReadCorrections(pe,pv))  { 
-    AliWarning("Using default binning");
-    pv = new TAxis(10,-10, 10);
-    pe = new TAxis(240,-6,6);
+  AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
+  // We allow fall-back queries so that we may proceed in case we have no 
+  // valid corrections 
+  if (!fcm.GetELossFit()) { 
+    AliWarning("No energy loss fits");
+    
+    // Fall-back values if we do not have the energy loss fits 
+    AliFMDMultCuts& sfLCuts = GetSharingFilter().GetLCuts();
+    if (sfLCuts.GetMethod() != AliFMDMultCuts::kFixed) { 
+      Double_t cut = 0.3;
+      AliWarningF("Using fixed cut @ %f for the lower bound "
+		  "of the sharing filter", cut);
+      sfLCuts.SetMultCuts(cut);
+    }
+    AliFMDMultCuts& sfHCuts = GetSharingFilter().GetHCuts();
+    if (sfHCuts.GetMethod() != AliFMDMultCuts::kFixed) { 
+      Double_t cut = 100;
+      AliWarningF("Using fixed cut @ %f for the upper bound "
+		  "of the sharing filter", cut);
+      sfHCuts.SetMultCuts(cut);
+    }
+    AliFMDMultCuts& dcCuts  = GetDensityCalculator().GetCuts();
+    if (dcCuts.GetMethod() != AliFMDMultCuts::kFixed) { 
+      Double_t cut = 0.3;
+      AliWarningF("Using fixed cut @ %f for the lower bound "
+		  "of the density calculator", cut);
+      dcCuts.SetMultCuts(cut);
+    }
   }
+  else 
+    fcm.GetELossFit()->CacheBins(GetDensityCalculator().GetMinQuality());
 
-  fHistos.Init(*pe);
+  fHistos.Init(eta);
 
-  fEventInspector.SetupForData(*pv);
-  fEnergyFitter.SetupForData(*pe);
-  fSharingFilter.SetupForData(*pe);
-  fDensityCalculator.SetupForData(*pe);
-
-  this->Print();
+  // GetEventInspector().SetupForData(vertex);
+  GetEnergyFitter()     .SetupForData(eta);
+  GetSharingFilter()    .SetupForData(eta);
+  GetDensityCalculator().SetupForData(eta);
 
   return true;
 }
 
 //____________________________________________________________________
-void
-AliForwardQATask::UserCreateOutputObjects()
+Bool_t
+AliForwardQATask::PreEvent()
 {
-  // 
-  // Create output objects 
-  // 
-  //
-  fList = new TList;
-  fList->SetOwner();
-  
-  fEventInspector.CreateOutputObjects(fList);
-  fEnergyFitter.CreateOutputObjects(fList);
-  fSharingFilter.CreateOutputObjects(fList);
-  fDensityCalculator.CreateOutputObjects(fList);
-
-  PostData(1, fList);
+  // Clear stuff 
+  fHistos.Clear();
+  fESDFMD.Clear();
+  return true;
 }
 //____________________________________________________________________
-void
-AliForwardQATask::UserExec(Option_t*)
+Bool_t
+AliForwardQATask::Event(AliESDEvent& esd)
 {
   // 
   // Process each event 
@@ -363,33 +205,21 @@ AliForwardQATask::UserExec(Option_t*)
   //  
   DGUARD(fDebug,1,"Process the input event");
 
-  // static Int_t cnt = 0;
-  // cnt++;
-  // Get the input data 
-  AliESDEvent* esd = GetESDEvent();
-  if (!esd) { 
-    AliWarning("Got no ESD event");
-    return;
-  }
   if (fFirstEvent) { 
     // If the first event flag wasn't cleared in the above call to
     // GetESDEvent, we should not do anything, since nothing has been
     // initialised yet, so we opt out here (with a warning) 
     AliWarning("Nothing has been initialized yet, opt'ing out");
-    return;
+    return false;
   }
 
-  // Clear stuff 
-  fHistos.Clear();
-  fESDFMD.Clear();
-  
   Bool_t   lowFlux   = kFALSE;
   UInt_t   triggers  = 0;
   UShort_t ivz       = 0;
   TVector3 ip;
   Double_t cent      = -1;
   UShort_t nClusters = 0;
-  UInt_t   found     = fEventInspector.Process(esd, triggers, lowFlux, 
+  UInt_t   found     = fEventInspector.Process(&esd, triggers, lowFlux, 
 					       ivz, ip, cent, nClusters);
   
   Bool_t ok = true;
@@ -407,7 +237,7 @@ AliForwardQATask::UserExec(Option_t*)
   if (!ok) { 
     DMSG(fDebug,2,"Event failed selection: %s", 
 	 AliFMDEventInspector::CodeString(found));
-    return;
+    return false;
   }
   DMSG(fDebug,2,"Event triggers: %s", 
        AliAODForwardMult::GetTriggerString(triggers));
@@ -416,34 +246,34 @@ AliForwardQATask::UserExec(Option_t*)
   if (!fEnableLowFlux) lowFlux = false;
 
   // Get FMD data 
-  AliESDFMD* esdFMD = esd->GetFMDData();
+  AliESDFMD* esdFMD = esd.GetFMDData();
   
   // Run the energy loss fitter 
   if (!fEnergyFitter.Accumulate(*esdFMD, cent, 
 				triggers & AliAODForwardMult::kEmpty)) {
     AliWarning("Energy fitter failed");
-    return;
+    return false;
   }
   
   //  // Apply the sharing filter (or hit merging or clustering if you like)
   if (!fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD, ip.Z())) { 
     AliWarning("Sharing filter failed!");
-    return;
+    return false;
   }
  
   // Calculate the inclusive charged particle density 
   if (!fDensityCalculator.Calculate(fESDFMD, fHistos, lowFlux, cent, ip)) { 
     // if (!fDensityCalculator.Calculate(*esdFMD, fHistos, ivz, lowFlux)) { 
     AliWarning("Density calculator failed!");
-    return;
+    return false;
   }
   
-  PostData(1, fList);
+  return true;
 }
 
 //____________________________________________________________________
-void
-AliForwardQATask::Terminate(Option_t*)
+Bool_t
+AliForwardQATask::Finalize()
 {
   // 
   // End of job
@@ -455,24 +285,12 @@ AliForwardQATask::Terminate(Option_t*)
   TStopwatch swt;
   swt.Start();
 
-  TList* list = dynamic_cast<TList*>(GetOutputData(1));
-  if (!list) {
-    AliError(Form("No output list defined (%p)", GetOutputData(1)));
-    if (GetOutputData(1)) GetOutputData(1)->Print();
-    return;
-  }
-  
-  // Make a deep copy and post that as output 2 
-  TList* list2 = static_cast<TList*>(list->Clone(Form("%sResults", 
-						      list->GetName())));
-  list2->SetOwner();
-
   // Get our histograms from the container 
-  TH1I* hEventsTr    = 0;//static_cast<TH1I*>(list->FindObject("nEventsTr"));
-  TH1I* hEventsTrVtx = 0;//static_cast<TH1I*>(list->FindObject("nEventsTrVtx"));
+  TH1I* hEventsTr    = 0;
+  TH1I* hEventsTrVtx = 0;
   TH1I* hEventsAcc   = 0;
   TH1I* hTriggers    = 0;
-  if (!fEventInspector.FetchHistograms(list, 
+  if (!fEventInspector.FetchHistograms(fList, 
 				       hEventsTr, 
 				       hEventsTrVtx, 
 				       hEventsAcc,
@@ -480,28 +298,26 @@ AliForwardQATask::Terminate(Option_t*)
     AliError(Form("Didn't get histograms from event selector "
 		  "(hEventsTr=%p,hEventsTrVtx=%p,hEventsAcc=%p)", 
 		  hEventsTr, hEventsTrVtx,hEventsAcc));
-    return;
+    return false;
   }
 
   TStopwatch swf;
   swf.Start();
-  fEnergyFitter.Fit(list2);
+  fEnergyFitter.Fit(fResults);
   swf.Stop();
   AliInfoF("Fitting took %d real-time seconds, and %f CPU seconds", 
 	   Int_t(swf.RealTime()), swf.CpuTime());
 
-  fSharingFilter.Terminate(list,list2,Int_t(hEventsTr->Integral()));
-  fDensityCalculator.Terminate(list,list2,Int_t(hEventsTrVtx->Integral()));
+  fSharingFilter.Terminate(fList,fResults,Int_t(hEventsTr->Integral()));
+  fDensityCalculator.Terminate(fList,fResults,Int_t(hEventsTrVtx->Integral()));
 
   if (fDebug) AliInfoF("Posting post processing results to %s", 
-		       list2->GetName());
-  PostData(2, list2);
-
+		       fResults->GetName());
   swt.Stop();
-  AliInfoF("Terminate took %d real-time seconds, and %f CPU seconds", 
+  AliInfoF("Finalize took %d real-time seconds, and %f CPU seconds", 
 	   Int_t(swt.RealTime()), swt.CpuTime());
 
-  
+  return true;
 }
 
 //____________________________________________________________________
@@ -514,19 +330,8 @@ AliForwardQATask::Print(Option_t* option) const
   // Parameters:
   //    option Not used
   //
-  
-  std::cout << ClassName() << ": " << GetName() << "\n" 
-	    << "  Enable low flux code:   " << (fEnableLowFlux ? "yes" : "no") 
-	    << "\n"
-	    << "  Off-line trigger mask:  0x" 
-	    << std::hex     << std::setfill('0') 
-	    << std::setw (8) << fOfflineTriggerMask 
-	    << std::dec     << std::setfill (' ') << std::endl;
+  AliBaseESDTask::Print(option);
   gROOT->IncreaseDirLevel();
-  if (fCorrManager) fCorrManager->Print();
-  else  
-    std::cout << "  Correction manager not set yet" << std::endl;
-  GetEventInspector()   .Print(option);
   GetEnergyFitter()     .Print(option);
   GetSharingFilter()    .Print(option);
   GetDensityCalculator().Print(option);

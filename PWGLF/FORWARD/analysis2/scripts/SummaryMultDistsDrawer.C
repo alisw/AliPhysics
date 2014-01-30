@@ -6,8 +6,6 @@ class SummaryMultDistsDrawer : public SummaryDrawer
 {
 public:
   enum { 
-    kLandscape = 0x20,
-    kPause     = 0x40,
     kNormal    = 0xF
   };
   SummaryMultDistsDrawer() 
@@ -30,12 +28,13 @@ public:
     pdfName.ReplaceAll(".root", ".pdf");
     CreateCanvas(pdfName, flags & kLandscape);
 
-    // --- Make a Title page -------------------------------------------
-    DrawTitlePage();
-
     // --- Force MB for pp ---------------------------------------------
     TCollection* c   = GetCollection(file, "ForwardMultSums");
-    
+
+    // --- Make a Title page -------------------------------------------
+    DrawTitlePage(c);
+
+    // --- Overview plots ----------------------------------------------
     fBody->Divide(1,3);
     DrawInPad(fBody, 1, GetH1(c, "triggers"),   "hist text30");
     DrawInPad(fBody, 2, GetH1(c, "status"),     "hist text30");
@@ -68,14 +67,14 @@ protected:
     TRegexp     check(re);
 
     if (!o->IsA()->InheritsFrom(TCollection::Class())) {
-      Warning("GetEtaBin", "Don't know how to deal with %s - a %s",
-		o->GetName(), o->ClassName());
-      return 0;;
+      // Warning("GetEtaBin", "Don't know how to deal with %s - a %s",
+      //         o->GetName(), o->ClassName());
+      return 0;
     }
     TString oN(o->GetName());
     if (oN.Index(check) == kNPOS) { 
-      Warning("GetEtaBin", "Collection %s does not match %s",
-		oN.Data(), re);
+      // Warning("GetEtaBin", "Collection %s does not match %s",
+      //         oN.Data(), re);
       return 0;
     }
     Int_t    ul     = oN.Index("_");
@@ -95,7 +94,7 @@ protected:
   //____________________________________________________________________
   void DrawSumCollection(TCollection* top, const TString& name)
   {
-    TCollection* c = GetCollection(top, name);
+    TCollection* c = GetCollection(top, name, false);
     if (!c) return;
 
     PrintCanvas(Form("Sums - %s", name.Data()));
@@ -110,11 +109,13 @@ protected:
 
       fBody->Divide(2,2);
       DrawInPad(fBody, 1, GetH1(bin, "rawDist"), "",          kLogy);
-      DrawInPad(fBody, 1, GetH1(bin, "truthAccepted"),"same", kLogy);
-      DrawInPad(fBody, 1, GetH1(bin, "truth"),        "same", kLogy|kLegend);
+      DrawInPad(fBody, 1, GetH1(bin, "truthAccepted",false),"same", 
+		kLogy|kSilent);
+      DrawInPad(fBody, 1, GetH1(bin, "truth",false),   "same", 
+		kLogy|kLegend|kSilent);
       DrawInPad(fBody, 2, GetH1(bin, "coverage"));
       DrawInPad(fBody, 3, GetH2(bin, "corr"),     "colz");
-      DrawInPad(fBody, 4, GetH2(bin, "response"), "colz", kLogz);
+      DrawInPad(fBody, 4, GetH2(bin, "response",false), "colz",kLogz|kSilent);
       
       PrintCanvas(Form("%+5.1f < #eta < %+5.1f", etaMin, etaMax));
     }
@@ -122,7 +123,7 @@ protected:
   //____________________________________________________________________
   void DrawResCollection(TCollection* top, const TString& name)
   {
-    TCollection* c = GetCollection(top, name);
+    TCollection* c = GetCollection(top, name, false);
     if (!c) return;
 
     THStack* s = GetStack(c, "all");
@@ -171,30 +172,67 @@ protected:
 
       fBody->Divide(2,3);
       DrawInPad(fBody, 1, GetH1(bin, "rawDist"),      "",     kLogy);
-      DrawInPad(fBody, 1, GetH1(bin, "truthAccepted"),"same", kLogy);
-      DrawInPad(fBody, 1, GetH1(bin, "truth"),        "same", kLogy|kLegend);
+      DrawInPad(fBody, 1, GetH1(bin, "truthAccepted", false),
+		"same", kSilent);
+      DrawInPad(fBody, 1, GetH1(bin, "truth", false),"same", kSilent|kLegend);
       DrawInPad(fBody, 2, GetH1(bin, "coverage"));
-      DrawInPad(fBody, 3, GetH2(bin, "corr"),     "colz");
-      DrawInPad(fBody, 4, GetH2(bin, "response"), "colz", kLogz);
-      DrawInPad(fBody, 5, GetH1(bin, "triggerVertex"));
+      DrawInPad(fBody, 3, GetH2(bin, "corr"),            "colz");
+      DrawInPad(fBody, 4, GetH2(bin, "response", false), "colz", kLogz|kSilent);
+      DrawInPad(fBody, 5, GetH1(bin, "triggerVertex", false), "", kSilent);
       
       PrintCanvas(Form("%+5.1f < #eta < %+5.1f", etaMin, etaMax));
     }
   }
   //____________________________________________________________________
-  void DrawTitlePage()
+  void DrawTitlePage(const TCollection* c)
   {
     fBody->cd();
     
-    Double_t y = .9;
-    TLatex* ltx = new TLatex(.5, y, "P(#it{N}_{ch} )");
+    Double_t y = .7;
+    TLatex* ltx = new TLatex(.5, y, "AOD #rightarrow P(#it{N}_{ch} )");
     ltx->SetTextSize(0.07);
-    ltx->SetTextFont(22);
+    ltx->SetTextFont(62);
     ltx->SetTextAlign(22);
     ltx->SetNDC();
     ltx->Draw();
+
+    Bool_t mc = GetObject(c, "mcVertex", false) != 0;
+    if (mc) { 
+      y -= 0.05;
+      TLatex* sub = new TLatex(.5, y, "(Simulation input)");
+      sub->SetTextSize(0.04);
+      sub->SetTextFont(42);
+      sub->SetTextAlign(22);
+      sub->SetNDC();
+      sub->Draw();
+    }
+
+    Double_t save = fParName->GetTextSize();
+    fParName->SetTextSize(0.03);
+    fParVal->SetTextSize(0.03);
+    y = .6;
     
-    PrintCanvas("Multiplicity Distributions");
+    UShort_t sys;
+    UShort_t sNN;
+    ULong_t  trig;
+    Double_t minIpZ;
+    Double_t maxIpZ;
+    GetParameter(c, "sys",     sys);
+    GetParameter(c, "sNN",     sNN);
+    GetParameter(c, "trigger", trig);
+    GetParameter(c, "minIpZ",  minIpZ);
+    GetParameter(c, "maxIpZ",  maxIpZ);
+    
+    TString tT; TriggerString(trig, tT); DrawParameter(y, "Trigger", tT);
+    TString tS; SysString(sys, tS);      DrawParameter(y, "System", tS);
+    TString tE; SNNString(sNN, tE);      DrawParameter(y, "#sqrt{s_{NN}}", tE);
+    DrawParameter(y, "IP_{z} range", Form("%+5.2fcm - %+5.2fcm", 
+					  minIpZ, maxIpZ));
+						       
+    PrintCanvas("Title page");
+    fParName->SetTextSize(save);
+    fParVal->SetTextSize(save);
+
   }
 };
 //
