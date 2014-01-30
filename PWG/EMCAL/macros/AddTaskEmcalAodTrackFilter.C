@@ -38,10 +38,10 @@ AliEmcalAodTrackFilterTask* AddTaskEmcalAodTrackFilter(
   aodTask->SetTracksOutName(name);
   aodTask->SetTracksInName(inname);
   aodTask->SetMC(kFALSE);
-  Bool_t doProp = kFALSE;
 
-  TString runPeriod(runperiod);
   Bool_t includeNoITS = kFALSE;
+  Bool_t doProp = kFALSE;
+  TString runPeriod(runperiod);
   runPeriod.ToLower();
   if (runPeriod == "lhc11h" || runPeriod == "lhc13b" || runPeriod == "lhc13c" || 
       runPeriod == "lhc13d" || runPeriod == "lhc13e" || runPeriod == "lhc13f" || 
@@ -81,6 +81,7 @@ AliEmcalAodTrackFilterTask* AddTaskEmcalAodTrackFilter(
   }
   aodTask->SetIncludeNoITS(includeNoITS);
   aodTask->SetDoPropagation(doProp);
+  //aodTask->SetAttemptProp(kTRUE);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
@@ -88,8 +89,8 @@ AliEmcalAodTrackFilterTask* AddTaskEmcalAodTrackFilter(
   mgr->AddTask(aodTask);
   
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
-  mgr->ConnectInput  (aodTask, 0,  cinput1 );
+  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
+  mgr->ConnectInput(aodTask, 0,  cinput1 );
   
   return aodTask;
 }
