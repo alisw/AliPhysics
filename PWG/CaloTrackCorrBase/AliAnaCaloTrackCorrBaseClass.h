@@ -40,6 +40,9 @@ class AliPHOSGeoUtils;
 class AliCentrality;
 class AliEventplane;
 
+//jets
+class AliAODJetEventBackground;
+
 class AliAnaCaloTrackCorrBaseClass : public TObject {
 	
 public:   
@@ -123,7 +126,8 @@ public:
 
   //jets
   virtual TClonesArray*  GetNonStandardJets()              const { return fReader->GetNonStandardJets() ;}
-	
+  virtual AliAODJetEventBackground*  GetBackgroundJets()   const { return fReader->GetBackgroundJets() ;}
+
   // Common analysis switchs 
   
   virtual Bool_t         IsDataMC()                        const { return fDataMC                ; }
@@ -326,7 +330,7 @@ private:
   AliAnaCaloTrackCorrBaseClass(              const AliAnaCaloTrackCorrBaseClass & bc) ; // cpy ctor
   AliAnaCaloTrackCorrBaseClass & operator = (const AliAnaCaloTrackCorrBaseClass & bc) ; // cpy assignment
   
-  ClassDef(AliAnaCaloTrackCorrBaseClass,21)
+  ClassDef(AliAnaCaloTrackCorrBaseClass,22)
 } ;
 
 

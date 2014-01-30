@@ -60,6 +60,7 @@
 #include "AliCaloTrackReader.h"
 // ---- Jets ----
 #include "AliAODJet.h"
+#include "AliAODJetEventBackground.h"
 
 ClassImp(AliCaloTrackReader)
 
@@ -130,6 +131,8 @@ fEventPlaneMethod(""),
 fAcceptOnlyHIJINGLabels(0),  fNMCProducedMin(0), fNMCProducedMax(0),
 fFillInputNonStandardJetBranch(kFALSE),
 fNonStandardJets(new TClonesArray("AliAODJet",100)),fInputNonStandardJetBranchName("jets"),
+fFillInputBackgroundJetBranch(kFALSE), 
+fBackgroundJets(0x0),fInputBackgroundJetBranchName("jets"),
 fAcceptEventsWithBit(0),     fRejectEventsWithBit(0)
 {
   //Ctor
@@ -192,7 +195,8 @@ AliCaloTrackReader::~AliCaloTrackReader()
     else               fNonStandardJets->Delete() ;
     delete fNonStandardJets ;
   }
-  
+  delete fBackgroundJets ;
+
   fRejectEventsWithBit.Reset();
   fAcceptEventsWithBit.Reset();
   
@@ -730,7 +734,10 @@ void AliCaloTrackReader::InitParameters()
   fInputNonStandardJetBranchName = "jets";
   fFillInputNonStandardJetBranch = kFALSE;
   if(!fNonStandardJets) fNonStandardJets = new TClonesArray("AliAODJet",100);
-  
+  fInputBackgroundJetBranchName = "jets";
+  fFillInputBackgroundJetBranch = kFALSE; 
+  if(!fBackgroundJets) fBackgroundJets = new AliAODJetEventBackground();
+
 }
 
 //___________________________________________________________________
@@ -1233,6 +1240,9 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   //one specified jet branch
   if(fFillInputNonStandardJetBranch)
     FillInputNonStandardJets();
+  if(fFillInputBackgroundJetBranch)
+    FillInputBackgroundJets();
+
   
   return kTRUE ;
 }
@@ -2034,6 +2044,44 @@ void AliCaloTrackReader::FillInputNonStandardJets()
   
 }
 
+//_________________________________________________
+void AliCaloTrackReader::FillInputBackgroundJets()
+{
+  //
+  //fill array with Background jets
+  //
+  // Adam T. Matyja
+  
+  if(fDebug > 2 ) printf("AliCaloTrackReader::FillInputBackgroundJets()\n");
+  //
+  //check if branch name is given
+  if(!fInputBackgroundJetBranchName.Length())
+  {
+    Printf("No background jet branch name specified. Specify among existing ones.");
+    fInputEvent->Print();
+    abort();
+  }
+  
+  fBackgroundJets = (AliAODJetEventBackground*)(fInputEvent->FindListObject(fInputBackgroundJetBranchName.Data()));
+  
+  if(!fBackgroundJets)
+  {
+    //check if jet branch exist; exit if not
+    Printf("%s:%d no reconstructed jet array with name %s in AOD", (char*)__FILE__,__LINE__,fInputBackgroundJetBranchName.Data());
+    fInputEvent->Print();
+    abort();
+  }
+  else
+  {
+    if(fDebug > 1){
+      printf("AliCaloTrackReader::FillInputBackgroundJets()\n");
+      fBackgroundJets->Print("");
+    }
+  }
+  
+}
+
+
 //________________________________________________
 Bool_t AliCaloTrackReader::CheckForPrimaryVertex()
 {
@@ -2601,7 +2649,8 @@ void AliCaloTrackReader::ResetLists()
   fV0Mul[0] = 0;   fV0Mul[1] = 0;
   
   if(fNonStandardJets) fNonStandardJets -> Clear("C");
-  
+  fBackgroundJets->Reset();
+
 }
 
 //___________________________________________
