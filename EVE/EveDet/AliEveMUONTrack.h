@@ -32,7 +32,7 @@ class AliEveMUONTrack: public TEveTrack
   virtual void MakeTrack(Bool_t /*recurse*/=kFALSE) {}
 
   void  MakeMUONTrack(AliMUONTrack *mtrack);
-  void  MakeMUONTriggerTrack(AliMUONTriggerTrack *mtrack);
+  void  MakeMUONTriggerTrack(AliESDMuonTrack *mtrack);
   void  MakeESDTrack(AliESDMuonTrack *mtrack);
   void  MakeMCTrack(TParticle *part);
   void  MakeRefTrack(AliMUONTrack *mtrack);
