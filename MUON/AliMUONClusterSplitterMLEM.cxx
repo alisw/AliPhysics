@@ -116,7 +116,7 @@ AliMUONClusterSplitterMLEM::AddBin(TH2 *mlem,
   
   Int_t nx = mlem->GetNbinsX();
   Int_t ny = mlem->GetNbinsY();
-  Double_t cont1, cont = mlem->GetCellContent(jc,ic);
+  Double_t cont1, cont = mlem->GetBinContent(mlem->GetBin(jc,ic));
   AliMUONPad *pixPtr = 0;
   
   Int_t ie = TMath::Min(ic+1,ny), je = TMath::Min(jc+1,nx);
@@ -124,7 +124,7 @@ AliMUONClusterSplitterMLEM::AddBin(TH2 *mlem,
     for (Int_t j = TMath::Max(jc-1,1); j <= je; ++j) {
       if (i != ic && j != jc) continue;
       if (used[(i-1)*nx+j-1]) continue;
-      cont1 = mlem->GetCellContent(j,i);
+      cont1 = mlem->GetBinContent(mlem->GetBin(j,i));
       if (mode && cont1 > cont) continue;
       used[(i-1)*nx+j-1] = kTRUE;
       if (cont1 < fLowestPixelCharge) continue;
@@ -827,7 +827,7 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
     {
       indx = (i-1)*nx + j - 1;
       if (used[indx]) continue;
-      cont = mlem->GetCellContent(j,i);
+      cont = mlem->GetBinContent(mlem->GetBin(j,i));
       if (cont < fLowestPixelCharge) continue;
       pix = new TObjArray(20);
       used[indx] = 1;

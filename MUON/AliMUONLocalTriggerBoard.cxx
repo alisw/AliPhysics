@@ -207,17 +207,6 @@ AliMUONLocalTriggerBoard::~AliMUONLocalTriggerBoard()
 
 
 //___________________________________________
-Int_t AliMUONLocalTriggerBoard::GetNumber() const 
-{
-/// return board number for notified boards
-
-    if (fMpLocalBoard->IsNotified())
-	return fMpLocalBoard->GetId();
-    else 
-	return 0;
-}
-
-//___________________________________________
 void AliMUONLocalTriggerBoard::Reset()
 {
 /// reset board
@@ -250,49 +239,11 @@ void AliMUONLocalTriggerBoard::ResetResponse()
 
 
 //___________________________________________
-void AliMUONLocalTriggerBoard::Setbit(Int_t strip, Int_t cathode, Int_t chamber)
-{
-/// 0 .. LBS   :   N-1 .. MSB
-   TBits w, m;
-
-   UShort_t xy = fXY[cathode][chamber], mask = fMask[cathode][chamber];
-
-   w.Set(16,&xy);
-   m.Set(16,&mask);
-
-   Int_t s = strip - int(strip / 16) * 16;
-
-   w.SetBitNumber(s);
-   
-   w &= m;
-
-   UShort_t value;
-
-   w.Get(&value);
-
-   fXY[cathode][chamber] = value;
-}
-
-//___________________________________________
 void AliMUONLocalTriggerBoard::SetbitM(Int_t strip, Int_t cathode, Int_t chamber)
 {
 /// 0 .. LBS   :   N-1 .. MSB
-   TBits w, m;
-
-   UShort_t xy = fXY[cathode][chamber], mask = fMask[cathode][chamber];
-
-   w.Set(16,&xy);
-   m.Set(16,&mask);
-
-   w.SetBitNumber(strip);
-   
-   w &= m;
-
-   UShort_t value;
-
-   w.Get(&value);
-
-   fXY[cathode][chamber] = value;
+  UShort_t stripBit = ( (1<<strip) & 0xFFFF );
+  fXY[cathode][chamber] |= ( stripBit & fMask[cathode][chamber] );
 }
 
 

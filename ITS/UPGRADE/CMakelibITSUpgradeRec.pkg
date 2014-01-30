@@ -39,6 +39,7 @@ set ( SRCS
     AliITSUTrackCond.cxx
     AliITSUTrackHyp.cxx
     AliITSUMatLUT.cxx
+    AliITSUVertexer.cxx
 
 #
 #    v0/AliITSlayerUpgrade.cxx 

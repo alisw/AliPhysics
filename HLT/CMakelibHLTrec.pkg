@@ -49,7 +49,7 @@ set ( MODULE_DHDR )
 
 set ( EINCLUDE  "HLT/rec HLT/BASE HLT/BASE/HOMER RAW STEER/STEER STEER/ESD STEER/STEERBase")
 
-set ( ELIBS  "HLTbase CDB ESD STEERBase STEER RAWDatarec RAWDatabase")
+set ( ELIBS  "HLTbase CDB ESD STEERBase STEER RAWDatarec RAWDatabase ANALYSIS")
 
 include ("CMakehlt.conf")
 

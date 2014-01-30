@@ -65,7 +65,8 @@ AliTPCAltroEmulator *  AliTPCReconstructor::fAltroEmulator=0;    // ALTRO emulat
 
 AliTPCReconstructor::AliTPCReconstructor():
 AliReconstructor(),
-fClusterer(NULL)
+fClusterer(NULL),
+fArrSplines(NULL)
 {
   //
   // default constructor
@@ -85,7 +86,8 @@ fClusterer(NULL)
 
 AliTPCReconstructor::AliTPCReconstructor(const AliTPCReconstructor& /*rec*/):
 AliReconstructor(),
-fClusterer(NULL)
+fClusterer(NULL),
+fArrSplines(NULL)
 {
   //
   // Dummy copu constructor
@@ -103,6 +105,7 @@ AliTPCReconstructor& AliTPCReconstructor::operator=(const AliTPCReconstructor&){
 AliTPCReconstructor::~AliTPCReconstructor()
 {
   if (fClusterer)   delete fClusterer;
+  delete fArrSplines;
 }
 
 //_____________________________________________________________________________
@@ -172,47 +175,61 @@ void AliTPCReconstructor::SetSplinesFromOADB(const char* tmplt, AliESDpid *esdPI
   //  load splines from the OADB using 'template'
   //
 
-  TString stemplate(tmplt);
-  
-  TString fileNamePIDresponse("$ALICE_ROOT/OADB/COMMON/PID/data/TPCPIDResponse.root");
-  TFile f(fileNamePIDresponse.Data());
-  
-  TObjArray *arrPidResponseMaster=0x0;
-  
-  if (f.IsOpen() && !f.IsZombie()){
-    arrPidResponseMaster=dynamic_cast<TObjArray*>(f.Get("TPCPIDResponse"));
-  }
-  f.Close();
+  // only load splines if not already set
+  if (!fArrSplines) {
+    fArrSplines=new TObjArray(Int_t(AliPID::kSPECIES));
+    fArrSplines->SetOwner();
+    TString stemplate(tmplt);
 
-  if (!arrPidResponseMaster){
-    AliError("PID response array not found, cannot assign proper splines");
-    return;
+    TString fileNamePIDresponse("$ALICE_ROOT/OADB/COMMON/PID/data/TPCPIDResponse.root");
+    TFile f(fileNamePIDresponse.Data());
+
+    TObjArray *arrPidResponseMaster=0x0;
+
+    if (f.IsOpen() && !f.IsZombie()){
+      arrPidResponseMaster=dynamic_cast<TObjArray*>(f.Get("TPCPIDResponse"));
+    }
+    f.Close();
+
+    if (!arrPidResponseMaster){
+      AliError("PID response array not found, cannot assign proper splines");
+      return;
+    }
+
+    for (Int_t ispec=0; ispec<AliPID::kSPECIES; ++ispec)
+    {
+      Int_t ispec2=ispec;
+      if (ispec==Int_t(AliPID::kMuon)) ispec2=Int_t(AliPID::kPion);
+
+      TString particle=AliPID::ParticleName(ispec2);
+      particle.ToUpper();
+
+      TString splineName;
+      splineName.Form(stemplate.Data(),particle.Data());
+      TObject *spline=arrPidResponseMaster->FindObject(splineName.Data());
+      if (!spline) {
+        AliError(Form("No spline found for '%s'", splineName.Data()));
+        continue;
+      };
+      AliInfo(Form("Adding Response function %d:%s",ispec,splineName.Data()));
+      fArrSplines->AddAt(spline->Clone(), ispec);
+    }    
+    arrPidResponseMaster->Delete();
+    delete arrPidResponseMaster;
+    if (fArrSplines->GetEntries()!=Int_t(AliPID::kSPECIES)) {
+      AliError("Splines not found for all species, cannot use proper PID");
+      delete fArrSplines;
+      fArrSplines=NULL;
+      return;
+    }
   }
 
-  Int_t hasSplines=0;
   for (Int_t ispec=0; ispec<AliPID::kSPECIES; ++ispec)
   {
-    Int_t ispec2=ispec;
-    if (ispec==Int_t(AliPID::kMuon)) ispec2=Int_t(AliPID::kPion);
-    
-    TString particle=AliPID::ParticleName(ispec2);
-    particle.ToUpper();
-
-    TString splineName;
-    splineName.Form(stemplate.Data(),particle.Data());
-    TObject *spline=arrPidResponseMaster->FindObject(splineName.Data());
-    if (!spline) {
-      AliError(Form("No spline found for '%s'", splineName.Data()));
-      continue;
-    };
-    AliInfo(Form("Adding Response function %d:%s",ispec,splineName.Data()));
-    
-    esdPID->GetTPCResponse().SetResponseFunction( (AliPID::EParticleType)ispec, spline );
-    ++hasSplines;
+    esdPID->GetTPCResponse().SetResponseFunction( (AliPID::EParticleType)ispec, fArrSplines->UncheckedAt(ispec) );
   }
 
-  if (hasSplines==Int_t(AliPID::kSPECIES)) esdPID->GetTPCResponse().SetUseDatabase(kTRUE);
-  else AliError("Splines not found for all species, cannot use proper PID");
+  esdPID->GetTPCResponse().SetUseDatabase(kTRUE);
 }
 
 //_____________________________________________________________________________
@@ -295,14 +312,16 @@ void AliTPCReconstructor::ParseOptions( AliTPCtracker* tracker ) const
     
     AliInfo(Form("Overide TPC RecoParam with option %s",option.Data()));
     
-    if (!option.Contains("useRAW"))
+    if (option.Contains("useRAW")) {
       useHLTClusters = 1;
-    if (!option.Contains("useRAWorHLT"))
-      useHLTClusters = 2;
-    if (!option.Contains("useHLT"))
+      if (option.Contains("useRAWorHLT"))
+	useHLTClusters = 2;
+    }
+    else if (option.Contains("useHLT")) {
       useHLTClusters = 3;
-    if (!option.Contains("useHLTorRAW"))
-      useHLTClusters = 4;
+      if (option.Contains("useHLTorRAW"))
+	useHLTClusters = 4;
+    }
   }
   else {
     const AliTPCRecoParam* param = GetRecoParam();

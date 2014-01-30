@@ -20,9 +20,11 @@
 #ifndef VC_COMMON_MEMORYFWD_H
 #define VC_COMMON_MEMORYFWD_H
 
+namespace AliRoot {
 namespace Vc
 {
     template<typename V, size_t Size1 = 0, size_t Size2 = 0> class Memory;
 } // namespace Vc
+} // namespace AliRoot
 
 #endif // VC_COMMON_MEMORYFWD_H

@@ -53,6 +53,11 @@ class AliGenDPMjet : public AliGenMC
 
     virtual void    SetGenImpPar(Float_t bValue) {fGenImpPar=bValue;}
     virtual Float_t GetGenImpPar() {return fGenImpPar;}
+
+    // Trigger on a single particle (not related to calorimeter trigger above)
+    virtual void    SetTriggerParticle(Int_t particle = 0, Float_t etamax = 0.9, Float_t ptmin = -1, Float_t ptmax = 1000) 
+	{fTriggerParticle = particle; fTriggerEta = etamax; fTriggerMinPt = ptmin; fTriggerMaxPt = ptmax;}
+
     virtual void    SetTriggerChargedMultiplicity(Int_t multiplicity, 
 						  Float_t etamax = 0, Float_t ptmin = -1.) 
     {fTriggerMultiplicity = multiplicity; fTriggerMultiplicityEta = etamax; 
@@ -88,6 +93,10 @@ class AliGenDPMjet : public AliGenMC
     Int_t         fDecayAll;       // Flag to switch on long-lived particle decays
     Float_t	  fGenImpPar;	   // GeneratedImpactParameter
     DpmProcess_t  fProcess;        // Process type
+    Int_t   fTriggerParticle;       // Trigger on this particle ...
+    Float_t fTriggerEta;            // .. within |eta| < fTriggerEta
+    Float_t fTriggerMinPt;          // .. within pt > fTriggerMinPt
+    Float_t fTriggerMaxPt;          // .. within pt < fTriggerMaxPt
     // Multiplicity Trigger
     Int_t         fTriggerMultiplicity;      // Triggered multiplicity
     Float_t       fTriggerMultiplicityEta;   // Triggered multiplicity eta cut

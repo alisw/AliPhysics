@@ -1,4 +1,13 @@
 void sim(Int_t nev=20) {
+
+  gSystem->Load("liblhapdf");
+  gSystem->Load("libEGPythia6");
+  gSystem->Load("libpythia6");
+  gSystem->Load("libAliPythia6");
+  gSystem->Load("libhijing");
+  gSystem->Load("libTHijing");
+  gSystem->Load("libgeant321");
+
   if (gSystem->Getenv("EVENT"))
    nev = atoi(gSystem->Getenv("EVENT")) ;   
   
@@ -16,7 +25,7 @@ void sim(Int_t nev=20) {
   simulator.SetQARefDefaultStorage("local://$ALICE_ROOT/QAref") ;
 
   for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
-    simulator.SetQACycles(det, nev+1) ;
+    simulator.SetQACycles((AliQAv1::DETECTORINDEX_t)det, nev+1) ;
   }
   
   TStopwatch timer;

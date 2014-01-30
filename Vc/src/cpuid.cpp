@@ -18,7 +18,9 @@
 */
 
 #include <Vc/cpuid.h>
+#include <Vc/global.h>
 
+namespace AliRoot {
 namespace Vc
 {
 CpuId::uint   CpuId::s_ecx0 = 0;
@@ -46,10 +48,13 @@ CpuId::uchar  CpuId::s_processorFamily = 0;
 CpuId::ProcessorType CpuId::s_processorType = CpuId::IntelReserved;
 bool   CpuId::s_noL2orL3 = false;
 
-#ifdef _MSC_VER
+#ifdef VC_MSVC
 } // better not include intrin.h inside the Vc namespace :)
+} // namespace AliRoot
 #include <intrin.h>
-namespace Vc {
+namespace AliRoot {
+namespace Vc
+{
 #define CPUID(leaf) \
     do { \
         int out[4]; \
@@ -613,5 +618,6 @@ void CpuId::interpret(uchar byte, bool *checkLeaf4)
     }
 }
 } // namespace Vc
+} // namespace AliRoot
 
 // vim: sw=4 sts=4 et tw=100

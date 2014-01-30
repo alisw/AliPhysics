@@ -12,12 +12,13 @@
 //--------------------------------------------------------------------
 
 #include "TObject.h"
-#include "TList.h"
 
 #include "AliTRDtrackletGTU.h"
 #include "AliTRDgtuParam.h"
 
 class TTree;
+class TList;
+class TClonesArray;
 class TBranch;
 class AliTRDtrackGTU;
 class AliESDEvent;
@@ -32,7 +33,7 @@ class AliTRDgtuTMU : public TObject {
 
   Bool_t AddTracklet(AliTRDtrackletGTU *tracklet, Int_t link);
 
-  Bool_t RunTMU(TList *ListOfTracks = 0x0, AliESDEvent *esd = 0x0);
+  Bool_t RunTMU(TList *ListOfTracks = 0x0, AliESDEvent *esd = 0x0, Int_t outLabel = -1);
   Bool_t Reset();
 
   // ----- successive stages of the processing in the TMU -----
@@ -51,6 +52,7 @@ protected:
   TObjArray **fTrackletsPostInput; // holding all tracklets of a layer
 				   // after sorting/calculation in input units
   TList **fZChannelTracklets; // holding all tracklets for layer and z-channel
+  TClonesArray *fTrackArray; // array of tracks
   TList **fTracks; // lists of tracks
   AliTRDgtuParam *fGtuParam; // pointer to the instance of the GtuParam class
 

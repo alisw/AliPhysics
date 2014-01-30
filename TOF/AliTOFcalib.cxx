@@ -127,7 +127,7 @@ author: Chiara Zampolli, zampolli@bo.infn.it
 class TROOT;
 class TStyle;
 
-extern TROOT *gROOT;
+//extern TROOT *gROOT;
 extern TStyle *gStyle;
 
 ClassImp(AliTOFcalib)
@@ -2386,7 +2386,7 @@ AliTOFcalib::CalibrateESD(AliESDEvent *event)
   /* loop over tracks */
   AliESDtrack *track = NULL;
   Int_t index, l0l1, deltaBC;
-  Double_t time, tot, corr, texp[AliPID::kSPECIES];
+  Double_t time, tot, corr, texp[AliPID::kSPECIESC];
   UInt_t timestamp = event->GetTimeStamp();
   for (Int_t itrk = 0; itrk < event->GetNumberOfTracks(); itrk++) {
 
@@ -2507,7 +2507,7 @@ AliTOFcalib::CalibrateTExp(AliESDEvent *event) const
 
   /* loop over tracks */
   AliESDtrack *track = NULL;
-  Double_t texp[AliPID::kSPECIES];
+  Double_t texp[AliPID::kSPECIESC];
   for (Int_t itrk = 0; itrk < event->GetNumberOfTracks(); itrk++) {
 
     /* get track */

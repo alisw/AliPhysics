@@ -1398,9 +1398,8 @@ void AliITS::UpdateInternalGeometry(){
 //   AliDebug(1,"Delete ITSgeom and create a new one reading TGeo");
 
   AliITSVersion_t version = (AliITSVersion_t)IsVersion();
-  Int_t minor = 0;
   AliITSInitGeometry initgeom;
-  AliITSgeom* geom = initgeom.CreateAliITSgeom(version,minor);
+  AliITSgeom* geom = initgeom.CreateAliITSgeom(version);
   SetITSgeom(geom);
 }
 //______________________________________________________________________

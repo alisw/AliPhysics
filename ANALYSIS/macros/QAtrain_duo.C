@@ -186,8 +186,12 @@ void AddAnalysisTasks(const char *suffix, const char *cdb_location)
   //
   if (doCDBconnect) {
     gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskCDBconnect.C");
-    AliTaskCDBconnect *taskCDB = AddTaskCDBconnect(cdb_location, run_number);
+    AliTaskCDBconnect *taskCDB = AddTaskCDBconnect(cdb_location, run_number);    
+//    AliTaskCDBconnect *taskCDB = AddTaskCDBconnect();
     if (!taskCDB) return;
+    AliCDBManager *cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage(cdb_location);
+//    taskCDB->SetRunNumber(run_number);
   }    
   
   //

@@ -71,7 +71,11 @@ AliTrackerBase::AliTrackerBase(const AliTrackerBase &atr):
 Double_t AliTrackerBase::GetBz()
 {
   AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
-  if (!fld) return 0.5*kAlmost0Field;
+  if (!fld) {
+    AliFatalClass("Field is not loaded");
+    //if (!fld) 
+    return  0.5*kAlmost0Field;
+  }
   Double_t bz = fld->SolenoidField();
   return TMath::Sign(0.5*kAlmost0Field,bz) + bz;
 }
@@ -82,7 +86,11 @@ Double_t AliTrackerBase::GetBz(const Double_t *r) {
   // Returns Bz (kG) at the point "r" .
   //------------------------------------------------------------------
   AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
-  if (!fld) return  0.5*kAlmost0Field;
+  if (!fld) {
+    AliFatalClass("Field is not loaded");
+    //  if (!fld) 
+    return  0.5*kAlmost0Field;
+  }
   Double_t bz = fld->GetBz(r);
   return  TMath::Sign(0.5*kAlmost0Field,bz) + bz;
 }
@@ -94,9 +102,10 @@ void AliTrackerBase::GetBxByBz(const Double_t r[3], Double_t b[3]) {
   //------------------------------------------------------------------
   AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   if (!fld) {
-     b[0] = b[1] = 0.;
-     b[2] = 0.5*kAlmost0Field;
-     return;
+    AliFatalClass("Field is not loaded");
+    // b[0] = b[1] = 0.;
+    // b[2] = 0.5*kAlmost0Field;
+    return;
   }
 
   if (fld->IsUniform()) {
@@ -142,7 +151,7 @@ Double_t AliTrackerBase::MeanMaterialBudget(const Double_t *start, const Double_
   for (Int_t i=0;i<6;i++) bparam[i]=0;
 
   if (!gGeoManager) {
-    AliErrorClass("No TGeo\n");
+    AliFatalClass("No TGeo\n");
     return 0.;
   }
   //
@@ -265,7 +274,7 @@ AliTrackerBase::PropagateTrackTo(AliExternalTrackParam *track, Double_t xToGo,
   // Propagates the track to the plane X=xk (cm) using the magnetic field map 
   // and correcting for the crossed material.
   //
-  // mass     - mass used in propagation - used for energy loss correction
+  // mass     - mass used in propagation - used for energy loss correction (if <0 then q = 2)
   // maxStep  - maximal step for propagation
   //
   //  Origin: Marian Ivanov,  Marian.Ivanov@cern.ch
@@ -411,7 +420,7 @@ AliTrackerBase::PropagateTrackToBxByBz(AliExternalTrackParam *track,
   // taking into account all the three components of the magnetic field 
   // and correcting for the crossed material.
   //
-  // mass     - mass used in propagation - used for energy loss correction
+  // mass     - mass used in propagation - used for energy loss correction (if <0 then q=2)
   // maxStep  - maximal step for propagation
   //
   //  Origin: Marian Ivanov,  Marian.Ivanov@cern.ch

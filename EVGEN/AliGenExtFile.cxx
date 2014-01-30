@@ -31,6 +31,7 @@
 
 #include <Riostream.h>
 
+#include "AliLog.h"
 #include "AliGenExtFile.h"
 #include "AliRunLoader.h"
 #include "AliHeader.h"
@@ -108,10 +109,13 @@ void AliGenExtFile::Generate()
       Warning("AliGenExtFile::Generate","\nNo more events in external file!!!\nLast event may be empty or incomplete.\n");
       return;
     }
-    TParticle* iparticle = 0x0;
-    while ((iparticle=fReader->NextParticle()) ) ;
+    for (Int_t i=0; i<nTracks; ++i) {
+      if (NULL == fReader->NextParticle())
+	AliFatal("Error while skipping tracks");
+    }
     cout << "Skipping event " << ie << endl;
   }  
+  fStartEvent = 0; // do not skip events the second time 
 
   while(1) {
     Int_t nTracks = fReader->NextEvent(); 	

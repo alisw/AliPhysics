@@ -37,7 +37,7 @@ class AliTRDPIDParams : public TNamed{
     Bool_t GetThresholdParameters(Int_t ntracklets, Double_t efficiency, Double_t *params, Double_t centrality = -1) const;
     void SetThresholdParameters(Int_t ntracklets, Double_t effMin, Double_t effMax, Double_t *params, Double_t centrality = -1);
 
-  private:
+  /* private: */
     class AliTRDPIDThresholds : public TObject{
     public:
       AliTRDPIDThresholds();
@@ -60,7 +60,10 @@ class AliTRDPIDParams : public TNamed{
       Double_t fEfficiency[2];    //
       Double_t fParams[4];        //
 
+      // #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
+      // Private - cannot be streamed 
       ClassDef(AliTRDPIDThresholds, 1);
+      // #endif
     };
 
     class AliTRDPIDCentrality : public TObject{
@@ -81,13 +84,19 @@ class AliTRDPIDParams : public TNamed{
        TSortedList *fEntries;       //
        Double_t fMinCentrality;     //
        Double_t fMaxCentrality;     //
+
+       // #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
+       // Private - cannot be streamed
        ClassDef(AliTRDPIDCentrality, 1);
+       // #endif
     };
+  private:
 
     AliTRDPIDCentrality *FindCentrality(Double_t centrality) const;
     AliTRDPIDParams &operator=(const AliTRDPIDParams &);
     static const Double_t kVerySmall;
     TList *fEntries; //
+
 
     ClassDef(AliTRDPIDParams, 2);
 };

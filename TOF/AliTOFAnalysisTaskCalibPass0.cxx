@@ -92,6 +92,7 @@ AliTOFAnalysisTaskCalibPass0::AliTOFAnalysisTaskCalibPass0() :
   fHistoVertexTimestamp(NULL),
   fHistoDeltatTimestamp(NULL),
   fHistoDeltazEta(NULL),
+  fHistoDeltatEta(NULL),
   fHistoDeltazCosTheta(NULL),
   fHistoAcceptedTracksEtaPt(NULL),
   fHistoMatchedTracksEtaPt(NULL)
@@ -175,6 +176,7 @@ AliTOFAnalysisTaskCalibPass0::InitRun()
   fHistoVertexTimestamp->SetTitle(Form("run: %d, startTimestamp: %u, BPTX: %d", fRunNumber, fStartTime, useBPTX));
   fHistoDeltatTimestamp->SetTitle(Form("run: %d, startTimestamp: %u, BPTX: %d", fRunNumber, fStartTime, useBPTX));
   fHistoDeltazEta->SetTitle(Form("run: %d, startTimestamp: %u, BPTX: %d", fRunNumber, fStartTime, useBPTX));
+  fHistoDeltatEta->SetTitle(Form("run: %d, startTimestamp: %u, BPTX: %d", fRunNumber, fStartTime, useBPTX));
   fHistoDeltazCosTheta->SetTitle(Form("run: %d, startTimestamp: %u, BPTX: %d", fRunNumber, fStartTime, useBPTX));
   fHistoAcceptedTracksEtaPt->SetTitle(Form("run: %d, startTimestamp: %u, BPTX: %d", fRunNumber, fStartTime, useBPTX));
   fHistoMatchedTracksEtaPt->SetTitle(Form("run: %d, startTimestamp: %u, BPTX: %d", fRunNumber, fStartTime, useBPTX));
@@ -274,6 +276,9 @@ AliTOFAnalysisTaskCalibPass0::UserCreateOutputObjects()
   fHistoDeltazEta = new TH2F("hHistoDeltazEta", "Matching residuals (longitudinal);#eta;#Deltaz (cm);", etaBins, etaMin, etaMax, deltazBins, deltazMin, deltazMax);
   fHistoList->Add(fHistoDeltazEta);
 
+  fHistoDeltatEta = new TH2F("hHistoDeltatEta", "Global time shift (T0-fill) vs #eta; #eta; t - t_{exp}^{(#pi)} (ps);", etaBins, etaMin, etaMax, deltatBins, deltatMin, deltatMax);
+  fHistoList->Add(fHistoDeltatEta);
+
   fHistoDeltazCosTheta = new TH2F("hHistoDeltazCosTheta", "Matching residuals (longitudinal);cos #theta;#Deltaz (cm);", etaBins, etaMin, etaMax, deltazBins, deltazMin, deltazMax);
   fHistoList->Add(fHistoDeltazCosTheta);
 
@@ -309,7 +314,7 @@ AliTOFAnalysisTaskCalibPass0::UserExec(Option_t *)
   /* loop over ESD tracks */
   Int_t nTracks = fESDEvent->GetNumberOfTracks();
   AliESDtrack *track;
-  Double_t eta, costheta, pt, time, timei[AliPID::kSPECIES], deltat, deltaz;
+  Double_t eta, costheta, pt, time, timei[AliPID::kSPECIESC], deltat, deltaz;
   for (Int_t itrk = 0; itrk < nTracks; itrk++) {
     /* get track */
     track = fESDEvent->GetTrack(itrk);
@@ -338,6 +343,7 @@ AliTOFAnalysisTaskCalibPass0::UserExec(Option_t *)
     /* fill histos */
     fHistoDeltatTimestamp->Fill(fElapsedTime, deltat);
     fHistoDeltazEta->Fill(eta, deltaz);
+    fHistoDeltatEta->Fill(eta, deltat);
     fHistoDeltazCosTheta->Fill(costheta, deltaz);
     
   } /* end of loop over ESD tracks */
@@ -447,6 +453,7 @@ AliTOFAnalysisTaskCalibPass0::DoProcessOutput(const Char_t *filename, AliCDBStor
   TH2F *histoVertexTimestamp = NULL;
   TH2F *histoDeltatTimestamp = NULL;
   TH2F *histoDeltazEta = NULL;
+  TH2F *histoDeltatEta = NULL;
   TH2F *histoDeltazCosTheta = NULL;
   TH2F *histoAcceptedTracksEtaPt = NULL;
   TH2F *histoMatchedTracksEtaPt = NULL;
@@ -455,6 +462,7 @@ AliTOFAnalysisTaskCalibPass0::DoProcessOutput(const Char_t *filename, AliCDBStor
     histoVertexTimestamp = (TH2F *)list->FindObject("hHistoVertexTimestamp");
     histoDeltatTimestamp = (TH2F *)list->FindObject("hHistoDeltatTimestamp");
     histoDeltazEta = (TH2F *)list->FindObject("hHistoDeltazEta");
+    histoDeltatEta = (TH2F *)list->FindObject("hHistoDeltatEta");
     histoDeltazCosTheta = (TH2F *)list->FindObject("hHistoDeltazCosTheta");
     histoAcceptedTracksEtaPt = (TH2F *)list->FindObject("hHistoAcceptedTracksEtaPt");
     histoMatchedTracksEtaPt = (TH2F *)list->FindObject("hHistoMatchedTracksEtaPt");
@@ -464,6 +472,7 @@ AliTOFAnalysisTaskCalibPass0::DoProcessOutput(const Char_t *filename, AliCDBStor
     histoVertexTimestamp = (TH2F *)file->Get("hHistoVertexTimestamp");
     histoDeltatTimestamp = (TH2F *)file->Get("hHistoDeltatTimestamp");
     histoDeltazEta = (TH2F *)file->Get("hHistoDeltazEta");
+    histoDeltatEta = (TH2F *)file->Get("hHistoDeltatEta");
     histoDeltazCosTheta = (TH2F *)file->Get("hHistoDeltazCosTheta");
     histoAcceptedTracksEtaPt = (TH2F *)file->Get("hHistoAcceptedTracksEtaPt");
     histoMatchedTracksEtaPt = (TH2F *)file->Get("hHistoMatchedTracksEtaPt");
@@ -481,6 +490,11 @@ AliTOFAnalysisTaskCalibPass0::DoProcessOutput(const Char_t *filename, AliCDBStor
   }
   if (!histoDeltazEta) {
     AliError(Form("cannot get \"hHistoDeltazEta\" object from file %s", filename));
+    fStatus = kInputError;
+    return kFALSE;
+  }
+  if (!histoDeltatEta) {
+    AliError(Form("cannot get \"hHistoDeltatEta\" object from file %s", filename));
     fStatus = kInputError;
     return kFALSE;
   }

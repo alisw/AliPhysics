@@ -816,6 +816,29 @@ void AliTRDtrapConfig::PrintDatx(ostream &os, UInt_t addr, UInt_t data, Int_t ro
 }
 
 
+void AliTRDtrapConfig::PrintVerify(ostream &os, Int_t det, Int_t rob, Int_t mcm) const
+{
+  // print verification file in datx format
+
+  for (Int_t iReg = 0; iReg < kLastReg; ++iReg) {
+    os << std::setw(5) << 9
+       << std::setw(8) << GetRegAddress((TrapReg_t) iReg)
+       << std::setw(12) << GetTrapReg((TrapReg_t) iReg, det, rob, mcm)
+       << std::setw(8) << AliTRDfeeParam::AliToExtAli(rob, mcm)
+       << std::endl;
+  }
+
+  for (Int_t iWord = 0; iWord < fgkDmemWords; ++iWord) {
+    if (GetDmemUnsigned(fgkDmemStartAddress + iWord, det, rob, mcm) == 0)
+      continue;
+    os << std::setw(5) << 9
+       << std::setw(8) << fgkDmemStartAddress + iWord
+       << std::setw(12) << GetDmemUnsigned(fgkDmemStartAddress + iWord, det, rob, mcm)
+       << std::setw(8) << AliTRDfeeParam::AliToExtAli(rob, mcm)
+       << std::endl;
+  }
+}
+
 AliTRDtrapConfig::AliTRDtrapValue::AliTRDtrapValue() :
   TObject(),
   fAllocMode(kAllocGlobal),
@@ -827,6 +850,11 @@ AliTRDtrapConfig::AliTRDtrapValue::AliTRDtrapValue() :
   fValid[0] = kTRUE;
 }
 
+AliTRDtrapConfig::AliTRDtrapValue::~AliTRDtrapValue()
+{
+  delete [] fData;
+  delete [] fValid;
+}
 
 Bool_t AliTRDtrapConfig::AliTRDtrapValue::Allocate(Alloc_t alloc)
 {

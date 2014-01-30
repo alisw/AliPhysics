@@ -5,15 +5,37 @@
 # vc_set_preferred_compiler_flags
 #
 #=============================================================================
-# Copyright 2009-2012   Matthias Kretz <kretz@kde.org>
+# Copyright 2009-2013   Matthias Kretz <kretz@kde.org>
 #
-# Distributed under the OSI-approved BSD License (the "License");
-# see accompanying file CmakeCopyright.txt for details.
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
 #
-# This software is distributed WITHOUT ANY WARRANTY; without even the
-# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# See the License for more information.
+#  * Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+#
+#  * Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#
+#  * The names of Kitware, Inc., the Insight Consortium, or the names of
+#    any consortium members, or of any contributors, may not be used to
+#    endorse or promote products derived from this software without
+#    specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER AND CONTRIBUTORS ``AS IS''
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
+# ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
+
+cmake_minimum_required(VERSION 2.8.3)
 
 get_filename_component(_currentDir "${CMAKE_CURRENT_LIST_FILE}" PATH)
 include ("${_currentDir}/UserWarning.cmake")
@@ -22,24 +44,27 @@ include ("${_currentDir}/OptimizeForArchitecture.cmake")
 
 macro(vc_determine_compiler)
    if(NOT DEFINED Vc_COMPILER_IS_INTEL)
+      execute_process(COMMAND "${CMAKE_CXX_COMPILER}" "--version" OUTPUT_VARIABLE _cxx_compiler_version ERROR_VARIABLE _cxx_compiler_version)
       set(Vc_COMPILER_IS_INTEL false)
       set(Vc_COMPILER_IS_OPEN64 false)
       set(Vc_COMPILER_IS_CLANG false)
       set(Vc_COMPILER_IS_MSVC false)
       set(Vc_COMPILER_IS_GCC false)
-      if(CMAKE_CXX_COMPILER MATCHES "/(icpc|icc)$")
+      if(CMAKE_CXX_COMPILER MATCHES "(icpc|icc)$")
          set(Vc_COMPILER_IS_INTEL true)
          exec_program(${CMAKE_C_COMPILER} ARGS -dumpversion OUTPUT_VARIABLE Vc_ICC_VERSION)
          message(STATUS "Detected Compiler: Intel ${Vc_ICC_VERSION}")
       elseif(CMAKE_CXX_COMPILER MATCHES "(opencc|openCC)$")
          set(Vc_COMPILER_IS_OPEN64 true)
          message(STATUS "Detected Compiler: Open64")
-      elseif(CMAKE_CXX_COMPILER MATCHES "clang\\+\\+$")
+      elseif(CMAKE_CXX_COMPILER MATCHES "clang\\+\\+$" OR "${_cxx_compiler_version}" MATCHES "clang")
          set(Vc_COMPILER_IS_CLANG true)
-         message(STATUS "Detected Compiler: Clang")
+         exec_program(${CMAKE_CXX_COMPILER} ARGS --version OUTPUT_VARIABLE Vc_CLANG_VERSION)
+         string(REGEX MATCH "[0-9]+\\.[0-9]+(\\.[0-9]+)?" Vc_CLANG_VERSION "${Vc_CLANG_VERSION}")
+         message(STATUS "Detected Compiler: Clang ${Vc_CLANG_VERSION}")
       elseif(MSVC)
          set(Vc_COMPILER_IS_MSVC true)
-         message(STATUS "Detected Compiler: MSVC")
+         message(STATUS "Detected Compiler: MSVC ${MSVC_VERSION}")
       elseif(CMAKE_COMPILER_IS_GNUCXX)
          set(Vc_COMPILER_IS_GCC true)
          exec_program(${CMAKE_C_COMPILER} ARGS -dumpversion OUTPUT_VARIABLE Vc_GCC_VERSION)
@@ -82,20 +107,20 @@ macro(vc_set_gnu_buildtype_flags)
    set(CMAKE_CXX_FLAGS_DEBUG          "-g3"          CACHE STRING "Flags used by the compiler during debug builds." FORCE)
    set(CMAKE_CXX_FLAGS_MINSIZEREL     "-Os -DNDEBUG" CACHE STRING "Flags used by the compiler during release minsize builds." FORCE)
    set(CMAKE_CXX_FLAGS_RELEASE        "-O3 -DNDEBUG" CACHE STRING "Flags used by the compiler during release builds (/MD /Ob1 /Oi /Ot /Oy /Gs will produce slightly less optimized but smaller files)." FORCE)
-   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELEASE} -g" CACHE STRING "Flags used by the compiler during Release with Debug Info builds." FORCE)
+   set(CMAKE_CXX_FLAGS_RELWITHDEBUG   "-O3"          CACHE STRING "Flags used by the compiler during release builds containing runtime checks." FORCE)
+   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBUG} -g" CACHE STRING "Flags used by the compiler during Release with Debug Info builds." FORCE)
    set(CMAKE_C_FLAGS_DEBUG          "${CMAKE_CXX_FLAGS_DEBUG}"          CACHE STRING "Flags used by the compiler during debug builds." FORCE)
    set(CMAKE_C_FLAGS_MINSIZEREL     "${CMAKE_CXX_FLAGS_MINSIZEREL}"     CACHE STRING "Flags used by the compiler during release minsize builds." FORCE)
    set(CMAKE_C_FLAGS_RELEASE        "${CMAKE_CXX_FLAGS_RELEASE}"        CACHE STRING "Flags used by the compiler during release builds (/MD /Ob1 /Oi /Ot /Oy /Gs will produce slightly less optimized but smaller files)." FORCE)
+   set(CMAKE_C_FLAGS_RELWITHDEBUG   "${CMAKE_CXX_FLAGS_RELWITHDEBUG}"   CACHE STRING "Flags used by the compiler during release builds containing runtime checks." FORCE)
    set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}" CACHE STRING "Flags used by the compiler during Release with Debug Info builds." FORCE)
-   if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+   if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebug")
       set(ENABLE_STRICT_ALIASING true CACHE BOOL "Enables strict aliasing rules for more aggressive optimizations")
       if(NOT ENABLE_STRICT_ALIASING)
-         set(CMAKE_CXX_FLAGS_RELEASE        "${CMAKE_CXX_FLAGS_RELEASE} -fno-strict-aliasing ")
-         set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -fno-strict-aliasing ")
-         set(CMAKE_C_FLAGS_RELEASE        "${CMAKE_C_FLAGS_RELEASE} -fno-strict-aliasing ")
-         set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -fno-strict-aliasing ")
+         AddCompilerFlag(-fno-strict-aliasing)
       endif(NOT ENABLE_STRICT_ALIASING)
    endif()
+   mark_as_advanced(CMAKE_CXX_FLAGS_RELWITHDEBUG CMAKE_C_FLAGS_RELWITHDEBUG)
 endmacro()
 
 macro(vc_add_compiler_flag VAR _flag)
@@ -125,6 +150,12 @@ macro(vc_check_assembler)
          if(_as_version VERSION_LESS "2.18.93")
             UserWarning("Your binutils is too old (${_as_version}). Some optimizations of Vc will be disabled.")
             add_definitions(-DVC_NO_XGETBV) # old assembler doesn't know the xgetbv instruction
+            set(Vc_AVX_INTRINSICS_BROKEN true)
+            set(Vc_XOP_INTRINSICS_BROKEN true)
+            set(Vc_FMA4_INTRINSICS_BROKEN true)
+         elseif(_as_version VERSION_LESS "2.21.0")
+            UserWarning("Your binutils is too old (${_as_version}) for XOP instructions. They will therefore not be provided in libVc.")
+            set(Vc_XOP_INTRINSICS_BROKEN true)
          endif()
       endif()
    endif(APPLE)
@@ -136,9 +167,9 @@ macro(vc_check_fpmath)
    check_cxx_source_runs("int main() { return sizeof(void*) != 8; }" Vc_VOID_PTR_IS_64BIT)
    if(NOT Vc_VOID_PTR_IS_64BIT)
       exec_program(${CMAKE_C_COMPILER} ARGS -dumpmachine OUTPUT_VARIABLE _gcc_machine)
-      if(_gcc_machine MATCHES "[x34567]86")
+      if(_gcc_machine MATCHES "[x34567]86" OR _gcc_machine STREQUAL "mingw32")
          vc_add_compiler_flag(Vc_DEFINITIONS "-mfpmath=sse")
-      endif(_gcc_machine MATCHES "[x34567]86")
+      endif()
    endif()
 endmacro()
 
@@ -158,6 +189,7 @@ macro(vc_set_preferred_compiler_flags)
    set(Vc_SSE_INTRINSICS_BROKEN false)
    set(Vc_AVX_INTRINSICS_BROKEN false)
    set(Vc_XOP_INTRINSICS_BROKEN false)
+   set(Vc_FMA4_INTRINSICS_BROKEN false)
 
    if(Vc_COMPILER_IS_OPEN64)
       ##################################################################################################
@@ -189,14 +221,22 @@ macro(vc_set_preferred_compiler_flags)
       endif()
 
       vc_check_assembler()
+
+      # Open64 4.5.1 still doesn't ship immintrin.h
+      set(Vc_AVX_INTRINSICS_BROKEN true)
    elseif(Vc_COMPILER_IS_GCC)
       ##################################################################################################
       #                                              GCC                                               #
       ##################################################################################################
       if(_add_warning_flags)
-         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -W -Wall -Wswitch -Wformat -Wchar-subscripts -Wparentheses -Wmultichar -Wtrigraphs -Wpointer-arith -Wcast-align -Wreturn-type -Wno-unused-function -ansi -pedantic -Wno-long-long -Wshadow")
-         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall -Wswitch -Wformat -Wchar-subscripts -Wparentheses -Wmultichar -Wtrigraphs -Wpointer-arith -Wcast-align -Wreturn-type -Wno-unused-function -ansi -pedantic -Wno-long-long -Wshadow")
-         AddCompilerFlag("-Wimplicit")
+         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -W -Wall -Wswitch -Wformat -Wchar-subscripts -Wparentheses -Wmultichar -Wtrigraphs -Wpointer-arith -Wcast-align -Wreturn-type -Wno-unused-function -pedantic -Wno-long-long -Wshadow")
+         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall -Wswitch -Wformat -Wchar-subscripts -Wparentheses -Wmultichar -Wtrigraphs -Wpointer-arith -Wcast-align -Wreturn-type -Wno-unused-function -pedantic -Wno-long-long -Wshadow")
+         if(NOT WIN32)
+            # the -ansi flag makes MinGW unusable, so maybe it's better to omit it
+            set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ansi")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ansi")
+         endif()
+         AddCompilerFlag("-Wundef")
          AddCompilerFlag("-Wold-style-cast")
          AddCompilerFlag("-Wno-variadic-macros")
          if(Vc_GCC_VERSION VERSION_GREATER "4.5.2" AND Vc_GCC_VERSION VERSION_LESS "4.6.4")
@@ -242,9 +282,21 @@ macro(vc_set_preferred_compiler_flags)
          string(REPLACE " -Wparentheses " " " CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
          string(REPLACE " -Wparentheses " " " CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
          set(Vc_DEFINITIONS "${Vc_DEFINITIONS} -Wno-parentheses")
+
+         UserWarning("GCC 4.4.x shows false positives for -Wstrict-aliasing, thus we rather disable the warning. Use a newer GCC for better warnings.")
+         AddCompilerFlag("-Wno-strict-aliasing")
+
+         UserWarning("GCC 4.4.x shows false positives for -Wuninitialized, thus we rather disable the warning. Use a newer GCC for better warnings.")
+         AddCompilerFlag("-Wno-uninitialized")
+      elseif(Vc_GCC_VERSION VERSION_EQUAL 4.6.0)
+         UserWarning("GCC 4.6.0 miscompiles AVX loads/stores, leading to spurious segfaults. Disabling AVX per default.")
+         set(Vc_AVX_INTRINSICS_BROKEN true)
       elseif(Vc_GCC_VERSION VERSION_EQUAL 4.7.0)
          UserWarning("GCC 4.7.0 miscompiles at -O3, adding -fno-predictive-commoning to the compiler flags as workaround")
          set(Vc_DEFINITIONS "${Vc_DEFINITIONS} -fno-predictive-commoning")
+      elseif(Vc_GCC_VERSION VERSION_EQUAL 4.8.0)
+         UserWarning("GCC 4.8.0 miscompiles at -O3, adding -fno-tree-vectorize to the compiler flags as workaround")
+         set(Vc_DEFINITIONS "${Vc_DEFINITIONS} -fno-tree-vectorize")
       endif()
 
       vc_check_fpmath()
@@ -272,6 +324,18 @@ macro(vc_set_preferred_compiler_flags)
          set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ALIAS_FLAGS}")
       endif()
       vc_add_compiler_flag(Vc_DEFINITIONS "-diag-disable 913")
+      # Disable warning #13211 "Immediate parameter to intrinsic call too large". (sse/vector.tcc rotated(int))
+      vc_add_compiler_flag(Vc_DEFINITIONS "-diag-disable 13211")
+
+      if(NOT "$ENV{DASHBOARD_TEST_FROM_CTEST}" STREQUAL "")
+         # disable warning #2928: the __GXX_EXPERIMENTAL_CXX0X__ macro is disabled when using GNU version 4.6 with the c++0x option
+         # this warning just adds noise about problems in the compiler - but I'm only interested in seeing problems in Vc
+         vc_add_compiler_flag(Vc_DEFINITIONS "-diag-disable 2928")
+      endif()
+
+      # Intel doesn't implement the XOP or FMA4 intrinsics
+      set(Vc_XOP_INTRINSICS_BROKEN true)
+      set(Vc_FMA4_INTRINSICS_BROKEN true)
    elseif(Vc_COMPILER_IS_MSVC)
       if(_add_warning_flags)
          AddCompilerFlag("/wd4800") # Disable warning "forcing value to bool"
@@ -292,14 +356,33 @@ macro(vc_set_preferred_compiler_flags)
       # get rid of the min/max macros
       set(Vc_DEFINITIONS "${Vc_DEFINITIONS} -DNOMINMAX")
 
-      # MSVC doesn't implement the XOP intrinsics
+      # MSVC doesn't implement the XOP or FMA4 intrinsics
       set(Vc_XOP_INTRINSICS_BROKEN true)
+      set(Vc_FMA4_INTRINSICS_BROKEN true)
+
+      if(MSVC_VERSION LESS 1700)
+         UserWarning("MSVC before 2012 has a broken std::vector::resize implementation. STL + Vc code will probably not compile.")
+      endif()
    elseif(Vc_COMPILER_IS_CLANG)
       # for now I don't know of any arguments I want to pass. -march and stuff is tried by OptimizeForArchitecture...
+      if(Vc_CLANG_VERSION VERSION_EQUAL "3.0")
+         UserWarning("Clang 3.0 has serious issues to compile Vc code and will most likely crash when trying to do so.\nPlease update to a recent clang version.")
+      elseif(Vc_CLANG_VERSION VERSION_LESS "3.3")
+         # the LLVM assembler gets FMAs wrong (bug 15040)
+         vc_add_compiler_flag(Vc_DEFINITIONS "-no-integrated-as")
+      endif()
 
       # disable these warnings because clang shows them for function overloads that were discarded via SFINAE
       vc_add_compiler_flag(Vc_DEFINITIONS "-Wno-local-type-template-args")
       vc_add_compiler_flag(Vc_DEFINITIONS "-Wno-unnamed-type-template-args")
+
+      AddCompilerFlag(-stdlib=libc++)
+   endif()
+
+   if(NOT Vc_COMPILER_IS_MSVC)
+     if(NOT Vc_COMPILER_IS_INTEL)
+       vc_add_compiler_flag(Vc_DEFINITIONS "-ffp-contract=fast")
+     endif()
    endif()
 
    OptimizeForArchitecture()
@@ -317,5 +400,152 @@ macro(vc_set_preferred_compiler_flags)
             message(WARNING "The selected value for VC_IMPL (${VC_IMPL}) will not work because the relevant instructions are not enabled via compiler flags.")
          endif()
       endif()
+   endif()
+endmacro()
+
+# helper macro for vc_compile_for_all_implementations
+macro(_vc_compile_one_implementation _objs _impl)
+   list(FIND _disabled_targets "${_impl}" _disabled_index)
+   list(FIND _only_targets "${_impl}" _only_index)
+   if(${_disabled_index} EQUAL -1 AND (NOT _only_targets OR ${_only_index} GREATER -1))
+      set(_extra_flags)
+      set(_ok FALSE)
+      foreach(_flag ${ARGN})
+         if(_flag STREQUAL "NO_FLAG")
+            set(_ok TRUE)
+            break()
+         endif()
+         string(REPLACE " " ";" _flag_list "${_flag}")
+         foreach(_flag ${_flag_list})
+            AddCompilerFlag(${_flag} CXX_RESULT _ok)
+            if(NOT _ok)
+               break()
+            endif()
+         endforeach()
+         if(_ok)
+            set(_extra_flags ${_flag_list})
+            break()
+         endif()
+      endforeach()
+
+      set(_outfile_flag -c -o)
+      if(Vc_COMPILER_IS_MSVC)
+         # MSVC for 64bit does not recognize /arch:SSE2 anymore. Therefore we set override _ok if _impl
+         # says SSE
+         if("${_impl}" MATCHES "SSE")
+            set(_ok TRUE)
+         endif()
+         set(_outfile_flag /c /Fo)
+      endif()
+
+      if(_ok)
+         get_filename_component(_out "${_vc_compile_src}" NAME_WE)
+         get_filename_component(_ext "${_vc_compile_src}" EXT)
+         if(Vc_COMPILER_IS_MSVC)
+            set(_out "${_out}_${_impl}${_ext}.obj")
+         else()
+            set(_out "${_out}_${_impl}${_ext}.o")
+         endif()
+         add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${_out}
+            COMMAND ${CMAKE_CXX_COMPILER} ${_flags} ${_extra_flags}
+            -DVC_IMPL=${_impl}
+            ${_outfile_flag}${_out} ${CMAKE_CURRENT_SOURCE_DIR}/${_vc_compile_src}
+            MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/${_vc_compile_src}
+            IMPLICIT_DEPENDS CXX ${CMAKE_CURRENT_SOURCE_DIR}/${_vc_compile_src}
+            COMMENT "Building CXX object ${_out}"
+            WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+            VERBATIM
+            )
+         list(APPEND ${_objs} "${CMAKE_CURRENT_BINARY_DIR}/${_out}")
+      endif()
+   endif()
+endmacro()
+
+# Generate compile rules for the given C++ source file for all available implementations and return
+# the resulting list of object files in _obj
+# all remaining arguments are additional flags
+# Example:
+#   vc_compile_for_all_implementations(_objs src/trigonometric.cpp FLAGS -DCOMPILE_BLAH EXCLUDE Scalar)
+#   add_executable(executable main.cpp ${_objs})
+macro(vc_compile_for_all_implementations _objs _src)
+   set(${_objs})
+
+   # remove all -march, -msse, etc. flags from the flags we want to pass
+   string(REPLACE "${Vc_ARCHITECTURE_FLAGS}" "" _flags "${Vc_DEFINITIONS}")
+   string(REPLACE "-DVC_IMPL=[^ ]*" "" _flags "${_flags}")
+
+   # capture the -march= switch as -mtune; if there is none skip it
+   if(Vc_ARCHITECTURE_FLAGS MATCHES "-march=")
+      string(REGEX REPLACE "^.*-march=([^ ]*).*$" "-mtune=\\1" _tmp "${Vc_ARCHITECTURE_FLAGS}")
+      set(_flags "${_flags} ${_tmp}")
+   endif()
+
+   unset(_disabled_targets)
+   unset(_only_targets)
+   set(_state 0)
+   foreach(_arg ${ARGN})
+      if(_arg STREQUAL "FLAGS")
+         set(_state 1)
+      elseif(_arg STREQUAL "EXCLUDE")
+         set(_state 2)
+      elseif(_arg STREQUAL "ONLY")
+         set(_state 3)
+      elseif(_state EQUAL 1)
+         set(_flags "${_flags} ${_arg}")
+      elseif(_state EQUAL 2)
+         list(APPEND _disabled_targets "${_arg}")
+      elseif(_state EQUAL 3)
+         list(APPEND _only_targets "${_arg}")
+      else()
+         message(FATAL_ERROR "incorrect argument to vc_compile_for_all_implementations")
+      endif()
+   endforeach()
+
+   # make a semicolon separated list of all flags
+   string(TOUPPER "${CMAKE_BUILD_TYPE}" _tmp)
+   set(_tmp "CMAKE_CXX_FLAGS_${_tmp}")
+   string(REPLACE " " ";" _tmp "${CMAKE_CXX_FLAGS} ${${_tmp}} ${_flags}")
+   set(_flags)
+   foreach(item ${_tmp})
+      if(item MATCHES "^[^']*'[^']*$")
+         if(_str)
+            list(APPEND _flags "${_str} ${item}")
+            unset(_str)
+         else()
+            set(_str "${item}")
+         endif()
+      else()
+         list(APPEND _flags "${item}")
+      endif()
+   endforeach()
+   get_directory_property(_inc INCLUDE_DIRECTORIES)
+   foreach(_i ${_inc})
+      list(APPEND _flags "-I${_i}")
+   endforeach()
+
+   set(_vc_compile_src "${_src}")
+
+   _vc_compile_one_implementation(${_objs} Scalar NO_FLAG)
+   if(NOT Vc_SSE_INTRINSICS_BROKEN)
+      _vc_compile_one_implementation(${_objs} SSE2   "-msse2"   "-xSSE2"   "/arch:SSE2")
+      _vc_compile_one_implementation(${_objs} SSE3   "-msse3"   "-xSSE3"   "/arch:SSE2")
+      _vc_compile_one_implementation(${_objs} SSSE3  "-mssse3"  "-xSSSE3"  "/arch:SSE2")
+      _vc_compile_one_implementation(${_objs} SSE4_1 "-msse4.1" "-xSSE4.1" "/arch:SSE2")
+      _vc_compile_one_implementation(${_objs} SSE4_2 "-msse4.2" "-xSSE4.2" "/arch:SSE2")
+      _vc_compile_one_implementation(${_objs} SSE3+SSE4a  "-msse4a")
+   endif()
+   if(NOT Vc_AVX_INTRINSICS_BROKEN)
+      _vc_compile_one_implementation(${_objs} AVX      "-mavx"    "-xAVX"    "/arch:AVX")
+      if(NOT Vc_XOP_INTRINSICS_BROKEN)
+         if(NOT Vc_FMA4_INTRINSICS_BROKEN)
+	   if (NOT Vc_COMPILER_IS_INTEL)
+             _vc_compile_one_implementation(${_objs} SSE+XOP+FMA4 "-mxop -mfma4"        ""    "")
+             _vc_compile_one_implementation(${_objs} AVX+XOP+FMA4 "-mavx -mxop -mfma4"  ""    "")
+	  endif()
+         endif()
+         _vc_compile_one_implementation(${_objs} SSE+XOP+FMA "-mxop -mfma"        ""    "")
+         _vc_compile_one_implementation(${_objs} AVX+XOP+FMA "-mavx -mxop -mfma"  ""    "")
+      endif()
+      _vc_compile_one_implementation(${_objs} AVX+FMA "-mavx -mfma"  ""    "")
    endif()
 endmacro()

@@ -24,6 +24,7 @@
 #include "limits.h"
 #include "macros.h"
 
+namespace AliRoot {
 namespace Vc
 {
 namespace AVX
@@ -35,10 +36,10 @@ namespace AVX
      * The \p e value will be an integer defining the power-of-two exponent
      */
     inline double_v frexp(double_v::AsArg v, int_v *e) {
-        const __m256d exponentBits = Const<double>::exponentMask().dataD();
-        const __m256d exponentPart = _mm256_and_pd(v.data(), exponentBits);
-        e->data() = _mm256_sub_epi32(_mm256_srli_epi64(avx_cast<__m256i>(exponentPart), 52), _mm256_set1_epi32(0x3fe));
-        const __m256d exponentMaximized = _mm256_or_pd(v.data(), exponentBits);
+        const m256d exponentBits = Const<double>::exponentMask().dataD();
+        const m256d exponentPart = _mm256_and_pd(v.data(), exponentBits);
+        e->data() = _mm256_sub_epi32(_mm256_srli_epi64(avx_cast<m256i>(exponentPart), 52), _mm256_set1_epi32(0x3fe));
+        const m256d exponentMaximized = _mm256_or_pd(v.data(), exponentBits);
         double_v ret = _mm256_and_pd(exponentMaximized, _mm256_broadcast_sd(reinterpret_cast<const double *>(&c_general::frexpMask)));
         double_m zeroMask = v == double_v::Zero();
         ret(isnan(v) || !isfinite(v) || zeroMask) = v;
@@ -46,22 +47,22 @@ namespace AVX
         return ret;
     }
     inline float_v frexp(float_v::AsArg v, int_v *e) {
-        const __m256 exponentBits = Const<float>::exponentMask().data();
-        const __m256 exponentPart = _mm256_and_ps(v.data(), exponentBits);
-        e->data() = _mm256_sub_epi32(_mm256_srli_epi32(avx_cast<__m256i>(exponentPart), 23), _mm256_set1_epi32(0x7e));
-        const __m256 exponentMaximized = _mm256_or_ps(v.data(), exponentBits);
-        float_v ret = _mm256_and_ps(exponentMaximized, avx_cast<__m256>(_mm256_set1_epi32(0xbf7fffffu)));
+        const m256 exponentBits = Const<float>::exponentMask().data();
+        const m256 exponentPart = _mm256_and_ps(v.data(), exponentBits);
+        e->data() = _mm256_sub_epi32(_mm256_srli_epi32(avx_cast<m256i>(exponentPart), 23), _mm256_set1_epi32(0x7e));
+        const m256 exponentMaximized = _mm256_or_ps(v.data(), exponentBits);
+        float_v ret = _mm256_and_ps(exponentMaximized, avx_cast<m256>(_mm256_set1_epi32(0xbf7fffffu)));
         ret(isnan(v) || !isfinite(v) || v == float_v::Zero()) = v;
         e->setZero(v == float_v::Zero());
         return ret;
     }
     inline sfloat_v frexp(sfloat_v::AsArg v, short_v *e) {
-        const __m256 exponentBits = Const<float>::exponentMask().data();
-        const __m256 exponentPart = _mm256_and_ps(v.data(), exponentBits);
-        e->data() = _mm_sub_epi16(_mm_packs_epi32(_mm_srli_epi32(avx_cast<__m128i>(exponentPart), 23),
-                    _mm_srli_epi32(avx_cast<__m128i>(hi128(exponentPart)), 23)), _mm_set1_epi16(0x7e));
-        const __m256 exponentMaximized = _mm256_or_ps(v.data(), exponentBits);
-        sfloat_v ret = _mm256_and_ps(exponentMaximized, avx_cast<__m256>(_mm256_set1_epi32(0xbf7fffffu)));
+        const m256 exponentBits = Const<float>::exponentMask().data();
+        const m256 exponentPart = _mm256_and_ps(v.data(), exponentBits);
+        e->data() = _mm_sub_epi16(_mm_packs_epi32(_mm_srli_epi32(avx_cast<m128i>(exponentPart), 23),
+                    _mm_srli_epi32(avx_cast<m128i>(hi128(exponentPart)), 23)), _mm_set1_epi16(0x7e));
+        const m256 exponentMaximized = _mm256_or_ps(v.data(), exponentBits);
+        sfloat_v ret = _mm256_and_ps(exponentMaximized, avx_cast<m256>(_mm256_set1_epi32(0xbf7fffffu)));
         ret(isnan(v) || !isfinite(v) || v == sfloat_v::Zero()) = v;
         e->setZero(v == sfloat_v::Zero());
         return ret;
@@ -74,8 +75,8 @@ namespace AVX
     inline double_v ldexp(double_v::AsArg v, int_v::AsArg _e) {
         int_v e = _e;
         e.setZero((v == double_v::Zero()).dataI());
-        const __m256i exponentBits = _mm256_slli_epi64(e.data(), 52);
-        return avx_cast<__m256d>(_mm256_add_epi64(avx_cast<__m256i>(v.data()), exponentBits));
+        const m256i exponentBits = _mm256_slli_epi64(e.data(), 52);
+        return avx_cast<m256d>(_mm256_add_epi64(avx_cast<m256i>(v.data()), exponentBits));
     }
     inline float_v ldexp(float_v::AsArg v, int_v::AsArg _e) {
         int_v e = _e;
@@ -86,20 +87,25 @@ namespace AVX
         short_v e = _e;
         e.setZero(static_cast<short_m>(v == sfloat_v::Zero()));
         e = e << (23 - 16);
-        const __m256i exponentBits = concat(_mm_unpacklo_epi16(_mm_setzero_si128(), e.data()),
+        const m256i exponentBits = concat(_mm_unpacklo_epi16(_mm_setzero_si128(), e.data()),
                 _mm_unpackhi_epi16(_mm_setzero_si128(), e.data()));
         return (v.reinterpretCast<int_v>() + int_v(exponentBits)).reinterpretCast<sfloat_v>();
     }
 
-    static inline float_v floor(float_v::AsArg v) { return _mm256_floor_ps(v.data()); }
-    static inline sfloat_v floor(sfloat_v::AsArg v) { return _mm256_floor_ps(v.data()); }
-    static inline double_v floor(double_v::AsArg v) { return _mm256_floor_pd(v.data()); }
+    static Vc_ALWAYS_INLINE  float_v trunc( float_v::AsArg v) { return _mm256_round_ps(v.data(), 0x3); }
+    static Vc_ALWAYS_INLINE sfloat_v trunc(sfloat_v::AsArg v) { return _mm256_round_ps(v.data(), 0x3); }
+    static Vc_ALWAYS_INLINE double_v trunc(double_v::AsArg v) { return _mm256_round_pd(v.data(), 0x3); }
 
-    static inline float_v ceil(float_v::AsArg v) { return _mm256_ceil_ps(v.data()); }
-    static inline sfloat_v ceil(sfloat_v::AsArg v) { return _mm256_ceil_ps(v.data()); }
-    static inline double_v ceil(double_v::AsArg v) { return _mm256_ceil_pd(v.data()); }
+    static Vc_ALWAYS_INLINE float_v floor(float_v::AsArg v) { return _mm256_floor_ps(v.data()); }
+    static Vc_ALWAYS_INLINE sfloat_v floor(sfloat_v::AsArg v) { return _mm256_floor_ps(v.data()); }
+    static Vc_ALWAYS_INLINE double_v floor(double_v::AsArg v) { return _mm256_floor_pd(v.data()); }
+
+    static Vc_ALWAYS_INLINE float_v ceil(float_v::AsArg v) { return _mm256_ceil_ps(v.data()); }
+    static Vc_ALWAYS_INLINE sfloat_v ceil(sfloat_v::AsArg v) { return _mm256_ceil_ps(v.data()); }
+    static Vc_ALWAYS_INLINE double_v ceil(double_v::AsArg v) { return _mm256_ceil_pd(v.data()); }
 } // namespace AVX
 } // namespace Vc
+} // namespace AliRoot
 
 #include "undomacros.h"
 #define VC__USE_NAMESPACE AVX

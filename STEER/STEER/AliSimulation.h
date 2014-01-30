@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
+/* $Id: AliSimulation.h 63170 2013-06-24 14:20:10Z morsch $ */
 
 //
 // class for running generation, simulation and digitization
@@ -206,12 +206,7 @@ private:
   time_t          fTimeEnd;            // EOR time-stamp
   
   //QA stuff
-//   #ifdef MFT_UPGRADE
-//   static const Int_t   fgkNDetectors = 16 ;             // number of detectors
-//   #else
-//   static const Int_t   fgkNDetectors = 15 ;             // number of detectors
-//   #endif
-  static const Int_t   fgkNDetectors = 16 ;             // number of detectors    // AU
+  static const Int_t   fgkNDetectors = 17 ;             // number of detectors    + AD
   static const char *  fgkDetectorName[fgkNDetectors] ; // names of detectors
   TString              fQADetectors ;                   // list of detectors to be QA'ed 	
   TString              fQATasks ;                       // list of QA tasks to be performed	

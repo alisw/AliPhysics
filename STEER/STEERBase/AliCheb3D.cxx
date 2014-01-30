@@ -23,6 +23,7 @@
 #include <TH1.h>
 #include "AliCheb3D.h"
 #include "AliCheb3DCalc.h"
+#include "AliLog.h"
 
 ClassImp(AliCheb3D)
 
@@ -343,8 +344,7 @@ void AliCheb3D::PrepareBoundaries(const Float_t  *bmin, const Float_t  *bmax)
     fBMax[i]   = bmax[i];
     fBScale[i] = bmax[i]-bmin[i];
     if (fBScale[i]<=0) { 
-      Error("PrepareBoundaries","Boundaries for %d-th dimension are not increasing: %+.4e %+.4e\nStop\n",i,fBMin[i],fBMax[i]);
-      exit(1);
+      AliFatal(Form("Boundaries for %d-th dimension are not increasing: %+.4e %+.4e\nStop\n",i,fBMin[i],fBMax[i]));
     }
     fBOffset[i] = bmin[i] + fBScale[i]/2.0;
     fBScale[i] = 2./fBScale[i];
@@ -735,22 +735,22 @@ void AliCheb3D::LoadData(FILE* stream)
 {
   // load coefficients data from stream
   //
-  if (!stream) {Error("LoadData","No stream provided.\nStop"); exit(1);}
+  if (!stream) {AliFatal("No stream provided.\nStop");}
   TString buffs;
   Clear();
   AliCheb3DCalc::ReadLine(buffs,stream);
-  if (!buffs.BeginsWith("START")) {Error("LoadData","Expected: \"START <fit_name>\", found \"%s\"\nStop\n",buffs.Data());exit(1);}
+  if (!buffs.BeginsWith("START")) {AliFatal(Form("Expected: \"START <fit_name>\", found \"%s\"\nStop\n",buffs.Data()));}
   SetName(buffs.Data()+buffs.First(' ')+1);
   //
   AliCheb3DCalc::ReadLine(buffs,stream); // N output dimensions
   fDimOut = buffs.Atoi(); 
-  if (fDimOut<1) {Error("LoadData","Expected: '<number_of_output_dimensions>', found \"%s\"\nStop\n",buffs.Data());exit(1);}
+  if (fDimOut<1) {AliFatal(Form("Expected: '<number_of_output_dimensions>', found \"%s\"\nStop\n",buffs.Data()));}
   //
   SetDimOut(fDimOut);
   //
   AliCheb3DCalc::ReadLine(buffs,stream); // Interpolation abs. precision
   fPrec = buffs.Atof();
-  if (fPrec<=0) {Error("LoadData","Expected: '<abs.precision>', found \"%s\"\nStop\n",buffs.Data());exit(1);}
+  if (fPrec<=0) {AliFatal(Form("Expected: '<abs.precision>', found \"%s\"\nStop\n",buffs.Data()));}
   //
   for (int i=0;i<3;i++) { // Lower boundaries of interpolation region
     AliCheb3DCalc::ReadLine(buffs,stream);
@@ -768,8 +768,7 @@ void AliCheb3D::LoadData(FILE* stream)
   // check end_of_data record
   AliCheb3DCalc::ReadLine(buffs,stream);
   if (!buffs.BeginsWith("END") || !buffs.Contains(GetName())) {
-    Error("LoadData","Expected \"END %s\", found \"%s\".\nStop\n",GetName(),buffs.Data());
-    exit(1);
+    AliFatal(Form("Expected \"END %s\", found \"%s\".\nStop\n",GetName(),buffs.Data()));
   }
   //
 }

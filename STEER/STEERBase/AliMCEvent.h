@@ -18,7 +18,7 @@
 #include <TRefArray.h>
 #include <TClonesArray.h>
 
-#include <AliVEvent.h>
+#include "AliVEvent.h"
 #include "AliVHeader.h"
 #include "AliVParticle.h"
 #include "AliVVertex.h"
@@ -111,6 +111,7 @@ public:
     // Services
     virtual void      ConnectTreeE (TTree* tree);
     virtual void      ConnectTreeK (TTree* tree);
+    virtual void      ConnectHeaderAndStack(AliHeader* header);
     virtual void      ConnectTreeTR(TTree* tree);
     virtual void      Clean();
     virtual void      InitEvent();
@@ -146,14 +147,11 @@ public:
   virtual AliVVZERO    *GetVZEROData() const {return 0;}
   virtual AliVZDC      *GetZDCData()   const {return 0;}
     
-//   #ifdef MFT_UPGRADE
-//   virtual AliVMFT *GetMFTData() const {return 0;}
-//   #endif
-  virtual AliVMFT *GetMFTData() const {return 0;}    // AU
-	
+
 private:
     virtual void      ReorderAndExpandTreeTR();
     virtual Int_t     FindIndexAndEvent(Int_t oldidx, AliMCEvent*& event) const;
+    void 	      UpdateEventInformation();
     
 private: 
     // Stanndard implementation for ESD production

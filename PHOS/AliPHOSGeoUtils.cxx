@@ -376,8 +376,7 @@ void AliPHOSGeoUtils::RelPosInAlice(Int_t id, TVector3 & pos ) const
   // Converts the absolute numbering into the global ALICE coordinate system
   
   if (!gGeoManager){
-    printf("Geo manager not initialized\n");
-    abort();
+    AliFatal("Geo manager not initialized\n");
   }
     
   Int_t relid[4] ;

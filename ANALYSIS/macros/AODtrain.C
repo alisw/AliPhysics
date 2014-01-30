@@ -21,6 +21,7 @@ Bool_t      useSysInfo          = kFALSE; // use sys info
 //==============================================================================
 Int_t       iAODhandler        = 1;      // Analysis produces an AOD or dAOD's
 Int_t       iESDfilter         = 1;      // ESD to AOD filter (barrel + muon tracks)
+Int_t       iESDfilterReVtx    = -1;     // Request revertexing in ESD filtering
 Int_t       iMUONcopyAOD       = 1;      // Task that copies only muon events in a separate AOD (PWG3)
 Int_t       iJETAN             = 1;      // Jet analysis (PWG4)
 Int_t       iJETANdelta        = 1;      // Jet delta AODs
@@ -36,7 +37,10 @@ Bool_t doPIDqa        = 1; //new
 //==============================================================================
  TString configPWGHFd2h = (iCollision==0)?"$ALICE_ROOT/PWGHF/vertexingHF/ConfigVertexingHF.C"
                           :"$ALICE_ROOT/PWGHF/vertexingHF/ConfigVertexingHF_highmult.C";
-                                                 
+
+
+Double_t    *cutsESDfilterReVtx = 0;     // optional cuts for revertexing
+                                             
 // Temporaries.
 void AODmerge();
 void AddAnalysisTasks();
@@ -44,6 +48,8 @@ Bool_t LoadCommonLibraries();
 Bool_t LoadAnalysisLibraries();
 Bool_t LoadLibrary(const char *);
 TChain *CreateChain();
+const char *cdbPath = "raw://";
+Int_t run_number = 0;
 
 //______________________________________________________________________________
 void AODtrain(Int_t merge=0)
@@ -67,7 +73,10 @@ void AODtrain(Int_t merge=0)
    printf("=  Configuring analysis train for:                               =\n");
    if (usePhysicsSelection)   printf("=  Physics selection                                                =\n");
    if (useTender)    printf("=  TENDER                                                        =\n");
-   if (iESDfilter)   printf("=  ESD filter                                                    =\n");
+   if (iESDfilter)   {
+     printf("=  ESD filter                                                    =\n");
+     if (iESDfilterReVtx>=0)  printf("=  ESD event revertexed before filterering, algo %2d              =\n",iESDfilterReVtx);
+   }
    if (iMUONcopyAOD) printf("=  MUON copy AOD                                                 =\n");
    if (iJETAN)       printf("=  Jet analysis                                                  =\n");
    if (iJETANdelta)  printf("=     Jet delta AODs                                             =\n");
@@ -110,7 +119,7 @@ void AODtrain(Int_t merge=0)
    // Debugging if needed
    if (useDBG) mgr->SetDebugLevel(3);
 
-   AddAnalysisTasks();
+   AddAnalysisTasks(cdbPath);
    if (merge) {
       AODmerge();
       mgr->InitAnalysis();
@@ -134,7 +143,7 @@ void AODtrain(Int_t merge=0)
 }                                                                                                                                          
                                                                                                                                             
 //______________________________________________________________________________                                                           
-void AddAnalysisTasks(){                                                                                                                                          
+void AddAnalysisTasks(const char *cdb_location){                                                                                                                                          
   // Add all analysis task wagons to the train                                                                                               
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();                                                                     
 
@@ -169,10 +178,10 @@ void AddAnalysisTasks(){
   //
   if (doCDBconnect && !useTender) {
     gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskCDBconnect.C");
-    AliTaskCDBconnect *taskCDB = AddTaskCDBconnect();
+    AliTaskCDBconnect *taskCDB = AddTaskCDBconnect(cdb_location, run_number);
     if (!taskCDB) return;
     AliCDBManager *cdb = AliCDBManager::Instance();
-    cdb->SetDefaultStorage("raw://");
+    cdb->SetDefaultStorage(cdb_location);
 //    taskCDB->SetRunNumber(run_number);
   }    
  
@@ -218,15 +227,17 @@ void AddAnalysisTasks(){
 
    if (iESDfilter) {
       //  ESD filter task configuration.
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C");
+      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/ESDfilter/macros/AddTaskESDFilter.C");
+      AliAnalysisTaskESDfilter *taskesdfilter = 0;
       if (iMUONcopyAOD) {
          printf("Registering delta AOD file\n");
          mgr->RegisterExtraFile("AliAOD.Muons.root");
          mgr->RegisterExtraFile("AliAOD.Dimuons.root");
-         AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, kTRUE, kFALSE, kFALSE /*usePhysicsSelection*/,kFALSE,kTRUE,kFALSE,kFALSE,run_flag);
+         taskesdfilter = AddTaskESDFilter(useKFILTER, kTRUE, kFALSE, kFALSE /*usePhysicsSelection*/,kFALSE,kTRUE,kFALSE,kFALSE,run_flag);
       } else {
-   	   AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, kFALSE, kFALSE, kFALSE /*usePhysicsSelection*/,kFALSE,kTRUE,kFALSE,kFALSE,run_flag); // others
+	taskesdfilter = AddTaskESDFilter(useKFILTER, kFALSE, kFALSE, kFALSE /*usePhysicsSelection*/,kFALSE,kTRUE,kFALSE,kFALSE,run_flag); // others
       }   
+      if (iESDfilterReVtx>=0 && taskesdfilter) taskesdfilter->SetRefitVertexTracks(iESDfilterReVtx, cutsESDfilterReVtx);
    }   
 
 // ********** PWG3 wagons ******************************************************           

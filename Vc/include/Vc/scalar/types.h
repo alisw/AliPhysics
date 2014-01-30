@@ -30,6 +30,7 @@
 
 #include "../common/types.h"
 
+namespace AliRoot {
 namespace Vc
 {
     namespace Scalar
@@ -38,5 +39,6 @@ namespace Vc
         template<typename T> class Vector;
     } // namespace Scalar
 } // namespace Vc
+} // namespace AliRoot
 
 #endif // VC_SCALAR_TYPES_H

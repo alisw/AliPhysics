@@ -17,8 +17,8 @@ void rec() {
   reco.SetRunPlaneEff(kTRUE);
   
   for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
-    reco.SetQACycles(det, 999) ;
-    reco.SetQAWriteExpert(det) ; 
+    reco.SetQACycles((AliQAv1::DETECTORINDEX_t)det, 999) ;
+    reco.SetQAWriteExpert((AliQAv1::DETECTORINDEX_t)det) ; 
   }
 
   reco.SetInput("raw.root");

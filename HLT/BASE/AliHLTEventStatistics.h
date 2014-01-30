@@ -25,12 +25,6 @@
  * event and run summary handling for the HLT chain.
  */
 
-/**
- * @defgroup alihlt_trigger Trigger components for the HLT.
- * This section describes the handling of different triggers of the HLT.
- * @ingroup alihlt_modules
- */
-
 #include "TObject.h"
 #include "TString.h"
 

@@ -87,7 +87,7 @@ Int_t AliHLTGlobalTrackMatcher::AddTrackToCluster(Int_t tId, TArrayI* matchedTra
   return nMatches;
 }
 
-Int_t AliHLTGlobalTrackMatcher::AddTrackToCluster(Int_t tId, Int_t* matchArray, bool bestMatch, Int_t nMatches ){
+Int_t AliHLTGlobalTrackMatcher::AddTrackToCluster(Int_t tId, Int_t* clustersArray, Bool_t bestMatch, Int_t nMatches ){
 
   //  HLTInfo("Adding track %d to cluster with %d previous matches", tId, nMatches);
   
@@ -99,10 +99,10 @@ Int_t AliHLTGlobalTrackMatcher::AddTrackToCluster(Int_t tId, Int_t* matchArray, 
  
    
   if(bestMatch) {
-    matchArray[nMatches] = matchArray[0];
-    matchArray[0] = tId;
+    clustersArray[nMatches] = clustersArray[0];
+    clustersArray[0] = tId;
   } else  {
-    matchArray[nMatches] = tId;
+    clustersArray[nMatches] = tId;
   }
 
   return nMatches;

@@ -29,7 +29,6 @@
 set ( SRCS  	
     AliAnalysisTaskSE.cxx 
     AliAnalysisTaskME.cxx 
-    AliAnalysisTaskESDfilter.cxx 
     AliAnalysisTaskMCParticleFilter.cxx 
     AliKineTrackCuts.cxx 
     AliESDtrackCuts.cxx 

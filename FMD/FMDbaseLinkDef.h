@@ -42,7 +42,7 @@
 // #pragma link C++ class  AliFMDAltroWriter+;
 
 #else
-# error Not for compilation 
+// # error Not for compilation 
 #endif
 //
 // EOF

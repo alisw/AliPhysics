@@ -32,6 +32,7 @@
 #define VC_COMMON_EXPONENTIAL_H
 
 #include "macros.h"
+namespace AliRoot {
 namespace Vc
 {
 namespace Common
@@ -49,11 +50,13 @@ namespace Common
     template<typename T> struct TypenameForLdexp { typedef Vector<int> Type; };
     template<> struct TypenameForLdexp<Vc::sfloat> { typedef Vector<short> Type; };
 
-    template<typename T> static inline Vector<T> exp(Vector<T> x) {
+    template<typename T> static inline Vector<T> exp(VC_ALIGNED_PARAMETER(Vector<T>) _x) {
         typedef Vector<T> V;
         typedef typename V::Mask M;
         typedef typename TypenameForLdexp<T>::Type I;
         typedef Const<T> C;
+
+        V x(_x);
 
         const M overflow  = x > MAXLOGF;
         const M underflow = x < MINLOGF;
@@ -135,6 +138,7 @@ namespace VC__USE_NAMESPACE
     using Vc::Common::exp;
 } // namespace VC__USE_NAMESPACE
 } // namespace Vc
+} // namespace AliRoot
 #include "undomacros.h"
 
 #endif // VC_COMMON_EXPONENTIAL_H

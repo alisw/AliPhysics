@@ -1867,7 +1867,7 @@ Int_t AliTRDtrackerV1::PropagateToX(AliTRDtrackV1 &t, Double_t xToGo, Double_t m
 
 /*    // Correct for mean material budget
     Double_t dEdx(0.),
-             bg(t.GetP()/mass);
+             bg(TMath::Abs(t.GetP()/mass));
     if(AliLog::GetDebugLevel("TRD", "AliTRDtrackerV1")>=3){
       const char *pn[] = {"rho", "x/X0", "<A>", "<Z>", "L", "<Z/A>", "Nb"};
       printf("D-AliTRDtrackerV1::PropagateTo(): x[%6.2f] bg[%6.2f]\n", xpos, bg);

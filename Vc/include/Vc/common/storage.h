@@ -22,78 +22,86 @@
 
 #include "aliasingentryhelper.h"
 #include "macros.h"
+#include "types.h"
 
+namespace AliRoot {
 namespace Vc
 {
 namespace Common
 {
 
-template<typename _VectorType, typename _EntryType> class VectorMemoryUnion
+template<typename _VectorType, typename _EntryType, typename VectorTypeBase = _VectorType> class VectorMemoryUnion
 {
     public:
         typedef _VectorType VectorType;
         typedef _EntryType EntryType;
-        typedef EntryType AliasingEntryType MAY_ALIAS;
-        inline VectorMemoryUnion() {}
+        typedef EntryType AliasingEntryType Vc_MAY_ALIAS;
+        Vc_ALWAYS_INLINE VectorMemoryUnion() { assertCorrectAlignment(&v()); }
 #if defined VC_ICC || defined VC_MSVC
-        inline VectorMemoryUnion(const VectorType &x) { data.v = x; }
-        inline VectorMemoryUnion &operator=(const VectorType &x) {
+        Vc_ALWAYS_INLINE VectorMemoryUnion(const VectorType &x) { data.v = x; assertCorrectAlignment(&data.v); }
+        Vc_ALWAYS_INLINE VectorMemoryUnion &operator=(const VectorType &x) {
             data.v = x; return *this;
         }
 
-        VectorType &v() { return data.v; }
-        const VectorType &v() const { return data.v; }
+        Vc_ALWAYS_INLINE Vc_PURE VectorType &v() { return reinterpret_cast<VectorType &>(data.v); }
+        Vc_ALWAYS_INLINE Vc_PURE const VectorType &v() const { return reinterpret_cast<const VectorType &>(data.v); }
 
 #if defined VC_ICC
-        AliasingEntryHelper<VectorMemoryUnion<VectorType, EntryType> > m(int index) {
-            return AliasingEntryHelper<VectorMemoryUnion<VectorType, EntryType> >(this, index);
+        Vc_ALWAYS_INLINE Vc_PURE AliasingEntryHelper<VectorMemoryUnion> m(size_t index) {
+            return AliasingEntryHelper<VectorMemoryUnion>(this, index);
         }
-        void assign(int index, EntryType x) {
+        Vc_ALWAYS_INLINE void assign(size_t index, EntryType x) {
             data.m[index] = x;
         }
-        EntryType read(int index) const {
+        Vc_ALWAYS_INLINE Vc_PURE EntryType read(size_t index) const {
             return data.m[index];
         }
 #else
-        EntryType &m(int index) {
+        Vc_ALWAYS_INLINE Vc_PURE EntryType &m(size_t index) {
             return data.m[index];
         }
 #endif
 
-        EntryType m(int index) const {
+        Vc_ALWAYS_INLINE Vc_PURE EntryType m(size_t index) const {
             return data.m[index];
         }
 
+#ifdef VC_COMPILE_BENCHMARKS
+    public:
+#endif
     private:
         union VectorScalarUnion {
-            VectorType v;
-            EntryType m[sizeof(VectorType)/sizeof(EntryType)];
+            VectorTypeBase v;
+            EntryType m[sizeof(VectorTypeBase)/sizeof(EntryType)];
         } data;
 #else
-        inline VectorMemoryUnion(VectorType x) : data(x) {}
-        inline VectorMemoryUnion &operator=(VectorType x) {
+        Vc_ALWAYS_INLINE VectorMemoryUnion(VectorType x) : data(x) { assertCorrectAlignment(&data); }
+        Vc_ALWAYS_INLINE VectorMemoryUnion &operator=(VectorType x) {
             data = x; return *this;
         }
 
-        inline VectorType &v() { return data; }
-        inline const VectorType &v() const { return data; }
+        Vc_ALWAYS_INLINE Vc_PURE VectorType &v() { return data; }
+        Vc_ALWAYS_INLINE Vc_PURE const VectorType &v() const { return data; }
 
-        inline AliasingEntryType &m(int index) {
+        Vc_ALWAYS_INLINE Vc_PURE AliasingEntryType &m(size_t index) {
             return reinterpret_cast<AliasingEntryType *>(&data)[index];
         }
 
-        inline EntryType m(int index) const {
+        Vc_ALWAYS_INLINE Vc_PURE EntryType m(size_t index) const {
             return reinterpret_cast<const AliasingEntryType *>(&data)[index];
         }
 
     private:
+#ifdef VC_COMPILE_BENCHMARKS
+    public:
+#endif
         VectorType data;
 #endif
 };
 
 #if VC_GCC == 0x40700 || (VC_GCC >= 0x40600 && VC_GCC <= 0x40603)
 // workaround bug 52736 in GCC
-template<typename T, typename V> static inline T &vectorMemoryUnionAliasedMember(V *data, int index) {
+template<typename T, typename V> static Vc_ALWAYS_INLINE Vc_CONST T &vectorMemoryUnionAliasedMember(V *data, size_t index) {
     if (__builtin_constant_p(index) && index == 0) {
         T *ret;
         asm("mov %1,%0" : "=r"(ret) : "r"(data));
@@ -102,19 +110,20 @@ template<typename T, typename V> static inline T &vectorMemoryUnionAliasedMember
         return reinterpret_cast<T *>(data)[index];
     }
 }
-template<> inline VectorMemoryUnion<__m128d, double>::AliasingEntryType &VectorMemoryUnion<__m128d, double>::m(int index) {
+template<> Vc_ALWAYS_INLINE Vc_PURE VectorMemoryUnion<__m128d, double>::AliasingEntryType &VectorMemoryUnion<__m128d, double>::m(size_t index) {
     return vectorMemoryUnionAliasedMember<AliasingEntryType>(&data, index);
 }
-template<> inline VectorMemoryUnion<__m128i, long long>::AliasingEntryType &VectorMemoryUnion<__m128i, long long>::m(int index) {
+template<> Vc_ALWAYS_INLINE Vc_PURE VectorMemoryUnion<__m128i, long long>::AliasingEntryType &VectorMemoryUnion<__m128i, long long>::m(size_t index) {
     return vectorMemoryUnionAliasedMember<AliasingEntryType>(&data, index);
 }
-template<> inline VectorMemoryUnion<__m128i, unsigned long long>::AliasingEntryType &VectorMemoryUnion<__m128i, unsigned long long>::m(int index) {
+template<> Vc_ALWAYS_INLINE Vc_PURE VectorMemoryUnion<__m128i, unsigned long long>::AliasingEntryType &VectorMemoryUnion<__m128i, unsigned long long>::m(size_t index) {
     return vectorMemoryUnionAliasedMember<AliasingEntryType>(&data, index);
 }
 #endif
 
 } // namespace Common
 } // namespace Vc
+} // namespace AliRoot
 
 #include "undomacros.h"
 

@@ -107,6 +107,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
 
   Float_t  fCentV0M;            // percentile centrality from V0
   Float_t  fCentV0A;            // percentile centrality from V0A
+  Float_t  fCentV0A123;         // percentile centrality from V0A-123
   Float_t  fCentV0C;            // percentile centrality from V0C
   Float_t  fCentV0MEq;          // percentile centrality from V0 equalized channel
   Float_t  fCentV0AEq;          // percentile centrality from V0A equalized channel
@@ -146,6 +147,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
 
   TH1F    *fHtempV0M;           // histogram with centrality vs multiplicity using V0
   TH1F    *fHtempV0A;           // histogram with centrality vs multiplicity using V0A
+  TH1F    *fHtempV0A123;        // histogram with centrality vs multiplicity using V0A-123
   TH1F    *fHtempV0C;           // histogram with centrality vs multiplicity using V0C
   TH1F    *fHtempV0MEq;         // histogram with centrality vs multiplicity using V0  equalized channel
   TH1F    *fHtempV0AEq;         // histogram with centrality vs multiplicity using V0A equalized channel
@@ -187,6 +189,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
 
   TH1F *fHOutCentV0M    ;       //control histogram for centrality
   TH1F *fHOutCentV0A    ;       //control histogram for centrality
+  TH1F *fHOutCentV0A123 ;       //control histogram for centrality
   TH1F *fHOutCentV0C    ;       //control histogram for centrality
   TH1F *fHOutCentV0MEq  ;       //control histogram for centrality
   TH1F *fHOutCentV0AEq  ;       //control histogram for centrality
@@ -253,6 +256,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH2F *fHOutMultV0AC;          //control histogram for multiplicity
   TH1F *fHOutMultV0M ;          //control histogram for multiplicity
   TH1F *fHOutMultV0A ;          //control histogram for multiplicity
+  TH1F *fHOutMultV0A123 ;       //control histogram for multiplicity
   TH1F *fHOutMultV0C ;          //control histogram for multiplicity
   TH1F *fHOutMultV0MEq ;        //control histogram for multiplicity
   TH1F *fHOutMultV0AEq ;        //control histogram for multiplicity
@@ -306,7 +310,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH1F *fHOutVertex ;           //control histogram for vertex SPD
   TH1F *fHOutVertexT0 ;         //control histogram for vertex T0
 
-  ClassDef(AliCentralitySelectionTask, 28); 
+  ClassDef(AliCentralitySelectionTask, 29); 
 };
 
 #endif

@@ -29,12 +29,7 @@ class AliRecoParam : public TObject
   //
   enum {
     kNSpecies = 5,   // number of event species
-// #ifdef MFT_UPGRADE  
-//     kNDetectors = 17 // number of detectors (last one is MFT!)
-// #else
-//     kNDetectors = 16 // number of detectors (last one is GRP!)
-// #endif
-    kNDetectors = 17 // number of detectors (last one is MFT!)   // AU
+    kNDetectors = 18 // number of detectors (last one is AD) 
   };
   enum EventSpecie_t {kDefault = 1,
 		      kLowMult = 2,

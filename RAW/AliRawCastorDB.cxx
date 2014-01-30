@@ -52,7 +52,9 @@ AliRawCastorDB::AliRawCastorDB(AliRawEventV2 *event,
       init = 1;
    }
 
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
    if (fRawDB) fRawDB->UseCache(50, 0x200000);  //0x100000 = 1MB)
+#endif
 }
 
 //______________________________________________________________________________

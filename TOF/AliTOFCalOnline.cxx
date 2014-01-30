@@ -30,7 +30,7 @@ $Log$
 #include "AliTOFCalOnline.h"
 #include "AliTOFGeometryV5.h"
 
-extern TROOT *gROOT;
+//extern TROOT *gROOT;
 
 ClassImp(AliTOFCalOnline)
 

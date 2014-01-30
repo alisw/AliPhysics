@@ -105,6 +105,7 @@ author: Silvia Arcelli, arcelli@bo.infn.it
 #include "AliTOFAlignment.h"
 #include "AliSurveyObj.h"
 #include "AliSurveyPoint.h"
+#include <cstdlib>
 
 ClassImp(AliTOFAlignment)
 

@@ -23,6 +23,12 @@
 
 #include <Vc/global.h>
 
+#if VC_GCC && !__OPTIMIZE__
+// GCC uses lots of old-style-casts in macros that disguise as intrinsics
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#endif
+
 #ifdef VC_MSVC
 # define ALIGN(n) __declspec(align(n))
 # define STRUCT_ALIGN1(n) ALIGN(n)
@@ -36,97 +42,112 @@
 #endif
 
 #define FREE_STORE_OPERATORS_ALIGNED(alignment) \
-        void *operator new(size_t size) { return _mm_malloc(size, alignment); } \
-        void *operator new(size_t, void *p) { return p; } \
-        void *operator new[](size_t size) { return _mm_malloc(size, alignment); } \
-        void operator delete(void *ptr, size_t) { _mm_free(ptr); } \
-        void operator delete[](void *ptr, size_t) { _mm_free(ptr); }
+        inline void *operator new(size_t size) { return _mm_malloc(size, alignment); } \
+        inline void *operator new(size_t, void *p) { return p; } \
+        inline void *operator new[](size_t size) { return _mm_malloc(size, alignment); } \
+        inline void operator delete(void *ptr, size_t) { _mm_free(ptr); } \
+        inline void operator delete[](void *ptr, size_t) { _mm_free(ptr); }
+
+#ifdef VC_CXX11
+#define Vc_ALIGNOF(_TYPE_) alignof(_TYPE_)
+#else
+#define Vc_ALIGNOF(_TYPE_) __alignof(_TYPE_)
+#endif
 
 #ifdef VC_CLANG
-#  define INTRINSIC __attribute__((always_inline))
-#  define INTRINSIC_L
-#  define INTRINSIC_R INTRINSIC
-#  define FLATTEN
-#  define CONST __attribute__((const))
-#  define CONST_L
-#  define CONST_R CONST
-#  define PURE __attribute__((pure))
-#  define PURE_L
-#  define PURE_R PURE
-#  define MAY_ALIAS __attribute__((may_alias))
-#  define ALWAYS_INLINE __attribute__((always_inline))
-#  define ALWAYS_INLINE_L
-#  define ALWAYS_INLINE_R ALWAYS_INLINE
+#  define Vc_INTRINSIC_L inline
+#  define Vc_INTRINSIC_R __attribute__((always_inline))
+#  define Vc_INTRINSIC Vc_INTRINSIC_L Vc_INTRINSIC_R
+#  define Vc_FLATTEN
+#  define Vc_CONST __attribute__((const))
+#  define Vc_CONST_L
+#  define Vc_CONST_R Vc_CONST
+#  define Vc_PURE __attribute__((pure))
+#  define Vc_PURE_L
+#  define Vc_PURE_R Vc_PURE
+#  define Vc_MAY_ALIAS __attribute__((may_alias))
+#  define Vc_ALWAYS_INLINE_L inline
+#  define Vc_ALWAYS_INLINE_R __attribute__((always_inline))
+#  define Vc_ALWAYS_INLINE Vc_ALWAYS_INLINE_L Vc_ALWAYS_INLINE_R
 #  define VC_IS_UNLIKELY(x) __builtin_expect(x, 0)
 #  define VC_IS_LIKELY(x) __builtin_expect(x, 1)
 #  define VC_RESTRICT __restrict__
+#  define VC_DEPRECATED(msg)
 #elif defined(__GNUC__)
-#  if VC_GCC < 0x40300 || defined(VC_OPEN64)
+#  if (defined(VC_GCC) && VC_GCC < 0x40300) || defined(VC_OPEN64)
 // GCC 4.1 and 4.2 ICE on may_alias. Since Open64 uses the GCC 4.2 frontend it has the same problem.
-#    define MAY_ALIAS
+#    define Vc_MAY_ALIAS
 #  else
-#    define MAY_ALIAS __attribute__((__may_alias__))
+#    define Vc_MAY_ALIAS __attribute__((__may_alias__))
 #  endif
-#  if VC_GCC < 0x40200
+#  if (defined(VC_GCC) && VC_GCC < 0x40300)
 // GCC 4.1 fails with "sorry unimplemented: inlining failed"
-#    define INTRINSIC __attribute__((__flatten__))
-#  elif VC_GCC < 0x40300 || defined(VC_OPEN64)
+#    define Vc_INTRINSIC_R __attribute__((__flatten__))
+#  elif defined(VC_OPEN64)
 // the GCC 4.2 frontend doesn't know the __artificial__ attribute
-#    define INTRINSIC __attribute__((__flatten__, __always_inline__))
+#    define Vc_INTRINSIC_R __attribute__((__flatten__, __always_inline__))
 #  else
-#    define INTRINSIC __attribute__((__flatten__, __always_inline__, __artificial__))
+#    define Vc_INTRINSIC_R __attribute__((__flatten__, __always_inline__, __artificial__))
 #  endif
-#  define INTRINSIC_L
-#  define INTRINSIC_R INTRINSIC
-#  define FLATTEN __attribute__((__flatten__))
-#  define CONST __attribute__((__const__))
-#  define CONST_L
-#  define CONST_R CONST
-#  define PURE __attribute__((__pure__))
-#  define PURE_L
-#  define PURE_R PURE
-#  define ALWAYS_INLINE __attribute__((__always_inline__))
-#  define ALWAYS_INLINE_L
-#  define ALWAYS_INLINE_R ALWAYS_INLINE
+#  define Vc_INTRINSIC_L inline
+#  define Vc_INTRINSIC Vc_INTRINSIC_L Vc_INTRINSIC_R
+#  define Vc_FLATTEN __attribute__((__flatten__))
+#  define Vc_ALWAYS_INLINE_L inline
+#  define Vc_ALWAYS_INLINE_R __attribute__((__always_inline__))
+#  define Vc_ALWAYS_INLINE Vc_ALWAYS_INLINE_L Vc_ALWAYS_INLINE_R
+#  ifdef VC_ICC
+     // ICC miscompiles if there are functions marked as pure or const
+#    define Vc_PURE
+#    define Vc_CONST
+#  else
+#    define Vc_PURE __attribute__((__pure__))
+#    define Vc_CONST __attribute__((__const__))
+#  endif
+#  define Vc_CONST_L
+#  define Vc_CONST_R Vc_CONST
+#  define Vc_PURE_L
+#  define Vc_PURE_R Vc_PURE
 #  define VC_IS_UNLIKELY(x) __builtin_expect(x, 0)
 #  define VC_IS_LIKELY(x) __builtin_expect(x, 1)
 #  define VC_RESTRICT __restrict__
+#  define VC_DEPRECATED(msg) __attribute__((__deprecated__(msg)))
 #else
-#  define FLATTEN
-#  ifdef PURE
-#    undef PURE
+#  define Vc_FLATTEN
+#  ifdef Vc_PURE
+#    undef Vc_PURE
 #  endif
-#  define MAY_ALIAS
+#  define Vc_MAY_ALIAS
 #  ifdef VC_MSVC
-#    define ALWAYS_INLINE __forceinline
-#    define ALWAYS_INLINE_L ALWAYS_INLINE
-#    define ALWAYS_INLINE_R
-#    define CONST __declspec(noalias)
-#    define CONST_L CONST
-#    define CONST_R
-#    define PURE /*CONST*/
-#    define PURE_L PURE
-#    define PURE_R
-#    define INTRINSIC __forceinline
-#    define INTRINSIC_L INTRINSIC
-#    define INTRINSIC_R
+#    define Vc_ALWAYS_INLINE inline __forceinline
+#    define Vc_ALWAYS_INLINE_L Vc_ALWAYS_INLINE
+#    define Vc_ALWAYS_INLINE_R
+#    define Vc_CONST __declspec(noalias)
+#    define Vc_CONST_L Vc_CONST
+#    define Vc_CONST_R
+#    define Vc_PURE /*Vc_CONST*/
+#    define Vc_PURE_L Vc_PURE
+#    define Vc_PURE_R
+#    define Vc_INTRINSIC inline __forceinline
+#    define Vc_INTRINSIC_L Vc_INTRINSIC
+#    define Vc_INTRINSIC_R
 #  else
-#    define ALWAYS_INLINE
-#    define ALWAYS_INLINE_L
-#    define ALWAYS_INLINE_R
-#    define CONST
-#    define CONST_L
-#    define CONST_R
-#    define PURE
-#    define PURE_L
-#    define PURE_R
-#    define INTRINSIC
-#    define INTRINSIC_L
-#    define INTRINSIC_R
+#    define Vc_ALWAYS_INLINE
+#    define Vc_ALWAYS_INLINE_L
+#    define Vc_ALWAYS_INLINE_R
+#    define Vc_CONST
+#    define Vc_CONST_L
+#    define Vc_CONST_R
+#    define Vc_PURE
+#    define Vc_PURE_L
+#    define Vc_PURE_R
+#    define Vc_INTRINSIC
+#    define Vc_INTRINSIC_L
+#    define Vc_INTRINSIC_R
 #  endif
 #  define VC_IS_UNLIKELY(x) x
 #  define VC_IS_LIKELY(x) x
 #  define VC_RESTRICT __restrict
+#  define VC_DEPRECATED(msg) __declspec(deprecated(msg))
 #endif
 
 #if __cplusplus >= 201103 /*C++11*/
@@ -134,12 +155,12 @@
 #define _VC_CONSTEXPR_L _VC_CONSTEXPR
 #define _VC_CONSTEXPR_R
 #else
-#define _VC_CONSTEXPR inline INTRINSIC CONST
-#define _VC_CONSTEXPR_L inline INTRINSIC_L CONST_R
-#define _VC_CONSTEXPR_R INTRINSIC_R CONST_R
+#define _VC_CONSTEXPR Vc_INTRINSIC Vc_CONST
+#define _VC_CONSTEXPR_L Vc_INTRINSIC_L Vc_CONST_L
+#define _VC_CONSTEXPR_R Vc_INTRINSIC_R Vc_CONST_R
 #endif
 
-#if (defined(__GXX_EXPERIMENTAL_CXX0X__) && VC_GCC >= 0x40600) || __cplusplus >= 201103
+#ifdef VC_CXX11
 # define _VC_NOEXCEPT noexcept
 #else
 # define _VC_NOEXCEPT throw()
@@ -176,11 +197,15 @@ do {} while ( false )
 #define for_all_vector_entries(_it_, _code_) \
   unrolled_loop16(_it_, 0, Size, _code_)
 
+#ifdef VC_ASSERT
+#define VC_EXTERNAL_ASSERT 1
+#else
 #ifdef NDEBUG
 #define VC_ASSERT(x)
 #else
 #include <assert.h>
 #define VC_ASSERT(x) assert(x);
+#endif
 #endif
 
 #ifdef VC_CLANG
@@ -195,16 +220,18 @@ do {} while ( false )
 #define _VC_CAT_HELPER(a, b, c, d) a##b##c##d
 #define _VC_CAT(a, b, c, d) _VC_CAT_HELPER(a, b, c, d)
 
-#if __cplusplus >= 201103 /*C++11*/ || VC_MSVC >= 160000000
+#if __cplusplus >= 201103 /*C++11*/ || (defined(VC_MSVC) && VC_MSVC >= 160000000)
 #define VC_STATIC_ASSERT_NC(cond, msg) \
     static_assert(cond, #msg)
 #define VC_STATIC_ASSERT(cond, msg) VC_STATIC_ASSERT_NC(cond, msg)
 #else // C++98
+namespace AliRoot {
 namespace Vc {
     namespace {
         template<bool> struct STATIC_ASSERT_FAILURE;
         template<> struct STATIC_ASSERT_FAILURE<true> {};
 }}
+} // namespace AliRoot
 
 #define VC_STATIC_ASSERT_NC(cond, msg) \
     typedef STATIC_ASSERT_FAILURE<cond> _VC_CAT(static_assert_failed_on_line_,__LINE__,_,msg); \
@@ -219,19 +246,30 @@ namespace Vc {
         Value = (X == 0 ? 1 : X)
     }; };
     template<int center> struct exponentToMultiplier<center,center> { enum { X = 1, Value = X }; };
-    template<int center> struct exponentToMultiplier<   -1, center> { enum { X = 0 }; };
-    template<int center> struct exponentToMultiplier< -256, center> { enum { X = 0 }; };
-    template<int center> struct exponentToMultiplier< -512, center> { enum { X = 0 }; };
-    template<int center> struct exponentToMultiplier<-1024, center> { enum { X = 0 }; };
+    template<int center> struct exponentToMultiplier<   -1, center> { enum { X = 0, Value = 1 }; };
+    template<int center> struct exponentToMultiplier< -128, center> { enum { X = 0, Value = 1 }; };
+    template<int center> struct exponentToMultiplier< -256, center> { enum { X = 0, Value = 1 }; };
+    template<int center> struct exponentToMultiplier< -384, center> { enum { X = 0, Value = 1 }; };
+    template<int center> struct exponentToMultiplier< -512, center> { enum { X = 0, Value = 1 }; };
+    template<int center> struct exponentToMultiplier< -640, center> { enum { X = 0, Value = 1 }; };
+    template<int center> struct exponentToMultiplier< -768, center> { enum { X = 0, Value = 1 }; };
+    template<int center> struct exponentToMultiplier< -896, center> { enum { X = 0, Value = 1 }; };
+    template<int center> struct exponentToMultiplier<-1024, center> { enum { X = 0, Value = 1 }; };
 
-    template<int e> struct exponentToDivisor { enum {
-        X = exponentToDivisor<e + 1>::X * 2,
-      Value = (X == 0 ? 1 : X)
+    template<int e, int center> struct exponentToDivisor { enum {
+        X = exponentToDivisor<e + 1, center>::X * ((center - e < 31) ? 2 : 1),
+        Value = (X == 0 ? 1 : X)
     }; };
-    template<> struct exponentToDivisor<0> { enum { X = 1, Value = X }; };
-    template<> struct exponentToDivisor<256> { enum { X = 0 }; };
-    template<> struct exponentToDivisor<512> { enum { X = 0 }; };
-    template<> struct exponentToDivisor<1024> { enum { X = 0 }; };
+    template<int center> struct exponentToDivisor<center, center> { enum { X = 1, Value = X }; };
+    template<int center> struct exponentToDivisor<     1, center> { enum { X = 0, Value = 1 }; };
+    template<int center> struct exponentToDivisor<   128, center> { enum { X = 0, Value = 1 }; };
+    template<int center> struct exponentToDivisor<   256, center> { enum { X = 0, Value = 1 }; };
+    template<int center> struct exponentToDivisor<   384, center> { enum { X = 0, Value = 1 }; };
+    template<int center> struct exponentToDivisor<   512, center> { enum { X = 0, Value = 1 }; };
+    template<int center> struct exponentToDivisor<   640, center> { enum { X = 0, Value = 1 }; };
+    template<int center> struct exponentToDivisor<   768, center> { enum { X = 0, Value = 1 }; };
+    template<int center> struct exponentToDivisor<   896, center> { enum { X = 0, Value = 1 }; };
+    template<int center> struct exponentToDivisor<  1024, center> { enum { X = 0, Value = 1 }; };
 #endif // VC_COMMON_MACROS_H_ONCE
 
 #define _CAT_IMPL(a, b) a##b
@@ -239,19 +277,25 @@ namespace Vc {
 
 #define Vc_buildDouble(sign, mantissa, exponent) \
     ((static_cast<double>((mantissa & 0x000fffffffffffffull) | 0x0010000000000000ull) / 0x0010000000000000ull) \
-    * exponentToMultiplier<exponent, 0>::Value \
+    * exponentToMultiplier<exponent,  0>::Value \
     * exponentToMultiplier<exponent, 30>::Value \
     * exponentToMultiplier<exponent, 60>::Value \
     * exponentToMultiplier<exponent, 90>::Value \
-    / exponentToDivisor<exponent>::Value \
+    / exponentToDivisor<exponent,   0>::Value \
+    / exponentToDivisor<exponent, -30>::Value \
+    / exponentToDivisor<exponent, -60>::Value \
+    / exponentToDivisor<exponent, -90>::Value \
     * static_cast<double>(sign))
 #define Vc_buildFloat(sign, mantissa, exponent) \
     ((static_cast<float>((mantissa & 0x007fffffu) | 0x00800000) / 0x00800000) \
-    * exponentToMultiplier<exponent, 0>::Value \
+    * exponentToMultiplier<exponent,  0>::Value \
     * exponentToMultiplier<exponent, 30>::Value \
     * exponentToMultiplier<exponent, 60>::Value \
     * exponentToMultiplier<exponent, 90>::Value \
-    / exponentToDivisor<exponent>::Value \
+    / exponentToDivisor<exponent,   0>::Value \
+    / exponentToDivisor<exponent, -30>::Value \
+    / exponentToDivisor<exponent, -60>::Value \
+    / exponentToDivisor<exponent, -90>::Value \
     * static_cast<float>(sign))
 
 #define _VC_APPLY_IMPL_1(macro, a, b, c, d, e) macro(a)
@@ -312,5 +356,24 @@ namespace Vc {
 
 #define VC_EXACT_TYPE(_test, _reference, _type) \
     typename EnableIf<IsEqualType<_test, _reference>::Value, _type>::Value
+
+#ifdef VC_PASSING_VECTOR_BY_VALUE_IS_BROKEN
+#define VC_ALIGNED_PARAMETER(_Type) const _Type &
+#else
+#define VC_ALIGNED_PARAMETER(_Type) const _Type
+#endif
+
+#ifndef Vc__make_unique
+#define Vc__make_unique(name) _VC_CAT(Vc__,name,_,__LINE__)
+#endif
+
+#if defined(VC_ICC) || defined(VC_CLANG)
+#define VC_OFFSETOF(Type, member) (reinterpret_cast<const char *>(&reinterpret_cast<const Type *>(0)->member) - reinterpret_cast<const char *>(0))
+#elif defined(VC_GCC) && VC_GCC < 0x40500
+#define VC_OFFSETOF(Type, member) (reinterpret_cast<const char *>(&reinterpret_cast<const Type *>(0x1000)->member) - reinterpret_cast<const char *>(0x1000))
+#else
+#define VC_OFFSETOF(Type, member) offsetof(Type, member)
+#endif
+
 
 #endif // VC_COMMON_MACROS_H

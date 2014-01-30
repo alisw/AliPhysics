@@ -102,6 +102,11 @@
 #pragma link C++ class  AliTRDgtuSim+;
 #pragma link C++ class  AliTRDgtuTMU+;
 #pragma link C++ class  AliTRDtrackGTU+;
+#pragma link C++ class  AliTRDtrackOnline+;
+#pragma link C++ class  AliTRDtrackParametrization+;
+#pragma link C++ class  AliTRDtrackParametrizationStraightLine+;
+#pragma link C++ class  AliTRDtrackParametrizationCurved+;
+#pragma link C++ class  AliTRDtrackPosition+;
 #pragma link C++ class  AliTRDonlineTrackMatching+;
 
 #pragma link C++ class  AliTRDhit+;

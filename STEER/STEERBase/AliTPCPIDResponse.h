@@ -132,9 +132,9 @@ public:
   // Fast functions for expert use only
   Double_t GetEtaCorrectionFast(const AliVTrack *track, Double_t dEdxSplines) const;
   
-  Double_t GetMultiplicityCorrectionFast(const AliVTrack *track, const Double_t dEdxExpected, const Int_t multiplicity) const;
+  Double_t GetMultiplicityCorrectionFast(const AliVTrack *track, Double_t dEdxExpected, Int_t multiplicity) const;
   
-  Double_t GetMultiplicitySigmaCorrectionFast(const Double_t dEdxExpected, const Int_t multiplicity) const;
+  Double_t GetMultiplicitySigmaCorrectionFast(Double_t dEdxExpected, Int_t multiplicity) const;
   
   Double_t GetSigmaPar1Fast(const AliVTrack *track, AliPID::EParticleType species,
                             Double_t dEdx, const TSpline3* responseFunction) const;
@@ -190,13 +190,13 @@ public:
   void ResetSplines();
 
   //OLD
-  Double_t GetExpectedSignal(const Float_t mom,
+  Double_t GetExpectedSignal(Float_t mom,
                      AliPID::EParticleType n=AliPID::kKaon) const;
-  Double_t GetExpectedSigma(const Float_t mom, const Int_t nPoints,
+  Double_t GetExpectedSigma(Float_t mom, Int_t nPoints,
                             AliPID::EParticleType n=AliPID::kKaon) const;
-  Float_t  GetNumberOfSigmas(const Float_t mom, 
-                             const Float_t dEdx, 
-			                       const Int_t nPoints,
+  Float_t  GetNumberOfSigmas(Float_t mom, 
+                             Float_t dEdx, 
+			     Int_t nPoints,
                              AliPID::EParticleType n=AliPID::kKaon) const {
     //
     // Deprecated function (for backward compatibility). Please use 

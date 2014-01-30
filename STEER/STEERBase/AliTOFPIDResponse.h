@@ -9,13 +9,13 @@
 //   Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------
 
-#include "TObject.h"
+#include <TObject.h>
+#include <TF1.h>
 #include "AliPID.h"
 #include "AliVParticle.h"
 #include "AliVTrack.h"
 
 class AliTOFPIDParams;
-class TF1;
 class TH1F;
 class TH1D;
 
@@ -37,7 +37,7 @@ public:
   Double_t GetExpectedSigma(Float_t mom, Float_t tof, AliPID::EParticleType type) const;
   Double_t GetExpectedSignal(const AliVTrack *track, AliPID::EParticleType type) const;
 
-  Double_t GetMismatchProbability(Double_t p,Double_t mass) const;
+  Double_t GetMismatchProbability(Double_t time,Double_t eta) const;
 
   static Double_t GetTailRandomValue(Float_t pt=1.0,Float_t eta=0.0,Float_t time=0.0,Float_t addmism=0.0); // generate a random value to add a tail to TOF time (for MC analyses), addmism = additional mismatch in percentile
   static Double_t GetMismatchRandomValue(Float_t eta); // generate a random value for mismatched tracks (for MC analyses)
@@ -66,6 +66,9 @@ public:
   void SetTrackParameter(Int_t ip,Float_t value){if(ip>=0 && ip < 4) fPar[ip] = value;};
   Float_t GetTrackParameter(Int_t ip){if(ip>=0 && ip < 4) return fPar[ip]; else return -1.0;};
   Int_t GetTOFchannel(AliVParticle *trk) const;
+
+  Float_t GetTOFtail() {if(fTOFtailResponse) return fTOFtailResponse->GetParameter(3);else return -1;};
+  void    SetTOFtail(Float_t tail);
 
  private:
   Double_t fSigma;        // intrinsic TOF resolution

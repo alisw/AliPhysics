@@ -42,6 +42,7 @@ AliTransportMonitor::AliTransportMonitorVol::AliTransportMonitorVol()
                     :TNamed(),
                      fNtypes(0),
                      fTotalTime(0),
+                     fNSteps(0),
                      fPData(0),
                      fTimeRZ(0),
                      fParticles()
@@ -69,6 +70,7 @@ void AliTransportMonitor::AliTransportMonitorVol::StepInfo(
   data.fEdt += energy*dt;
   data.fTime += dt;
   fTotalTime += dt;
+  fNSteps += 1.;
   if (!fTimeRZ) {
     Bool_t status = TH1::AddDirectoryStatus();
     TH1::AddDirectory(kFALSE);
@@ -90,7 +92,7 @@ PMonData &AliTransportMonitor::AliTransportMonitorVol::GetPMonData(Int_t pdg)
   //
   // unknown heavy fragment ?
   //  TParticlePDG* pdgP = (TDatabasePDG::Instance())->GetParticle(pdg);
-  Int_t apdg = abs(pdg);
+  Int_t apdg = TMath::Abs(pdg);
   if ((apdg > 10000) 
       && (apdg != 1000010020)
       && (apdg != 1000010030)
@@ -251,7 +253,7 @@ void AliTransportMonitor::Print(Option_t *volName) const
   TIter next(fVolumeMon);
   AliTransportMonitorVol *volMon;
   Int_t ncrossed = 0;
-  TH1F *hnames = new TH1F("volume timing", "relative volume timing", 3,0,3);
+  TH1F *hnames = new TH1F("volume_timing", "relative volume timing", 3,0,3);
   hnames->SetStats(0);
   hnames->SetFillColor(38);
   hnames->SetBit(TH1::kCanRebin);

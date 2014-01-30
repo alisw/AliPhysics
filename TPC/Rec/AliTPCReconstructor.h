@@ -12,6 +12,7 @@ class AliTPCParam;
 class AliTPCclusterer;
 class AliTPCtracker;
 class AliTPCAltroEmulator;
+class TObjArray;
 
 class AliTPCReconstructor: public AliReconstructor {
 public:
@@ -50,6 +51,8 @@ private:
   static Int_t               fgStreamLevel; // flag for streaming      - for TPC reconstruction
   AliTPCclusterer*           fClusterer;   // TPC clusterer
   static AliTPCAltroEmulator * fAltroEmulator;    // ALTRO emulator
+
+  TObjArray *fArrSplines;                  // array of pid splines
 
   void SetSplinesFromOADB(const char* tmplt, AliESDpid *esdPID);
   

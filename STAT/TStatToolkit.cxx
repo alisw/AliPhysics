@@ -48,6 +48,11 @@
 
 #include "TStatToolkit.h"
 
+
+using std::cout;
+using std::cerr;
+using std::endl;
+
  
 ClassImp(TStatToolkit) // Class implementation to enable ROOT I/O
  
@@ -1606,7 +1611,7 @@ Int_t  TStatToolkit::SetStatusAlias(TTree * tree, const char * expr, const char 
   */
   //
   Int_t entries = tree->Draw(expr,cut,"goff");
-  if (entries<=1){
+  if (entries<1){
     printf("Expression or cut not valid:\t%s\t%s\n", expr, cut);
     return 0;
   }

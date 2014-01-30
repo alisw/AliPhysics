@@ -418,7 +418,7 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterialdEdx
   // "xTimesRho" - is the product length*density (g/cm^2).
   //     It should be passed as negative when propagating tracks 
   //     from the intreaction point to the outside of the central barrel. 
-  // "mass" - the mass of this particle (GeV/c^2).
+  // "mass" - the mass of this particle (GeV/c^2). Negative mass means charge=2 particle
   // "dEdx" - mean enery loss (GeV/(g/cm^2)
   // "anglecorr" - switch for the angular correction
   //------------------------------------------------------------------
@@ -439,6 +439,7 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterialdEdx
   } 
 
   Double_t p=GetP();
+  if (mass<0) p += p; // q=2 particle 
   Double_t p2=p*p;
   Double_t beta2=p2/(p2 + mass*mass);
 
@@ -454,6 +455,7 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterialdEdx
       double lt = 1+0.038*TMath::Log(TMath::Abs(xOverX0));
       if (lt>0) theta2 *= lt*lt;
     }
+    if (mass<0) theta2 *= 4; // q=2 particle
     if(theta2>TMath::Pi()*TMath::Pi()) return kFALSE;
     cC22 = theta2*((1.-fP2)*(1.+fP2))*(1. + fP3*fP3);
     cC33 = theta2*(1. + fP3*fP3)*(1. + fP3*fP3);
@@ -467,7 +469,6 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterialdEdx
      Double_t dE=dEdx*xTimesRho;
      Double_t e=TMath::Sqrt(p2 + mass*mass);
      if ( TMath::Abs(dE) > 0.3*e ) return kFALSE; //30% energy loss is too much!
-     //cP4 = (1.- e/p2*dE);
      if ( (1.+ dE/p2*(dE + 2*e)) < 0. ) return kFALSE;
      cP4 = 1./TMath::Sqrt(1.+ dE/p2*(dE + 2*e));  //A precise formula by Ruben !
      if (TMath::Abs(fP4*cP4)>100.) return kFALSE; //Do not track below 10 MeV/c
@@ -502,13 +503,21 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterial
   // "xTimesRho" - is the product length*density (g/cm^2). 
   //     It should be passed as negative when propagating tracks 
   //     from the intreaction point to the outside of the central barrel. 
-  // "mass" - the mass of this particle (GeV/c^2).
+  // "mass" - the mass of this particle (GeV/c^2). mass<0 means charge=2
   // "anglecorr" - switch for the angular correction
   // "Bethe" - function calculating the energy loss (GeV/(g/cm^2)) 
   //------------------------------------------------------------------
-  
+
   Double_t bg=GetP()/mass;
+  if (mass<0) {
+    if (mass<-990) {
+      AliDebug(2,Form("Mass %f corresponds to unknown PID particle",mass));
+      return kFALSE;
+    }
+    bg = -2*bg;
+  }
   Double_t dEdx=Bethe(bg);
+  if (mass<0) dEdx *= 4;
 
   return CorrectForMeanMaterialdEdx(xOverX0,xTimesRho,mass,dEdx,anglecorr);
 }
@@ -528,7 +537,7 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterialZA
   // "xTimesRho" - is the product length*density (g/cm^2). 
   //     It should be passed as negative when propagating tracks 
   //     from the intreaction point to the outside of the central barrel. 
-  // "mass" - the mass of this particle (GeV/c^2).
+  // "mass" - the mass of this particle (GeV/c^2). mass<0 means charge=2 particle
   // "density"  - mean density (g/cm^3)
   // "zOverA"   - mean Z/A
   // "exEnergy" - mean exitation energy (GeV)
@@ -541,8 +550,16 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterialZA
   //------------------------------------------------------------------
 
   Double_t bg=GetP()/mass;
+  if (mass<0) {
+    if (mass<-990) {
+      AliDebug(2,Form("Mass %f corresponds to unknown PID particle",mass));
+      return kFALSE;
+    }
+    bg = -2*bg;
+  }
   Double_t dEdx=BetheBlochGeant(bg,density,jp1,jp2,exEnergy,zOverA);
 
+  if (mass<0) dEdx *= 4;
   return CorrectForMeanMaterialdEdx(xOverX0,xTimesRho,mass,dEdx,anglecorr);
 }
 
@@ -1796,13 +1813,28 @@ AliExternalTrackParam::GetZAt(Double_t x, Double_t b, Double_t &z) const {
   Double_t dx=x-fX;
   if(TMath::Abs(dx)<=kAlmost0) {z=fP[1]; return kTRUE;}
 
-  Double_t f1=fP[2], f2=f1 + dx*GetC(b);
+  Double_t crv=GetC(b);
+  Double_t x2r = crv*dx;
+  Double_t f1=fP[2], f2=f1 + x2r;
 
   if (TMath::Abs(f1) >= kAlmost1) return kFALSE;
   if (TMath::Abs(f2) >= kAlmost1) return kFALSE;
   
   Double_t r1=sqrt((1.-f1)*(1.+f1)), r2=sqrt((1.-f2)*(1.+f2));
-  z = fP[1] + dx*(r2 + f2*(f1+f2)/(r1+r2))*fP[3]; // Many thanks to P.Hristov !
+  double dy2dx = (f1+f2)/(r1+r2);
+  if (TMath::Abs(x2r)<0.05) {
+    z = fP[1] + dx*(r2 + f2*dy2dx)*fP[3]; // Many thanks to P.Hristov !    
+  }
+  else {
+    // for small dx/R the linear apporximation of the arc by the segment is OK,
+    // but at large dx/R the error is very large and leads to incorrect Z propagation
+    // angle traversed delta = 2*asin(dist_start_end / R / 2), hence the arc is: R*deltaPhi
+    // The dist_start_end is obtained from sqrt(dx^2+dy^2) = x/(r1+r2)*sqrt(2+f1*f2+r1*r2)
+    // Similarly, the rotation angle in linear in dx only for dx<<R
+    double chord = dx*TMath::Sqrt(1+dy2dx*dy2dx);   // distance from old position to new one
+    double rot = 2*TMath::ASin(0.5*chord*crv); // angular difference seen from the circle center
+    z = fP[1] + rot/crv*fP[3];    
+  }
   return kTRUE;
 }
 
@@ -1815,15 +1847,30 @@ AliExternalTrackParam::GetXYZAt(Double_t x, Double_t b, Double_t *r) const {
   Double_t dx=x-fX;
   if(TMath::Abs(dx)<=kAlmost0) return GetXYZ(r);
 
-  Double_t f1=fP[2], f2=f1 + dx*GetC(b);
+  Double_t crv=GetC(b);
+  Double_t x2r = crv*dx;
+  Double_t f1=fP[2], f2=f1 + dx*crv;
 
   if (TMath::Abs(f1) >= kAlmost1) return kFALSE;
   if (TMath::Abs(f2) >= kAlmost1) return kFALSE;
   
   Double_t r1=TMath::Sqrt((1.-f1)*(1.+f1)), r2=TMath::Sqrt((1.-f2)*(1.+f2));
+  double dy2dx = (f1+f2)/(r1+r2);
   r[0] = x;
-  r[1] = fP[0] + dx*(f1+f2)/(r1+r2);
-  r[2] = fP[1] + dx*(r2 + f2*(f1+f2)/(r1+r2))*fP[3];//Thanks to Andrea & Peter
+  r[1] = fP[0] + dx*dy2dx;
+  if (TMath::Abs(x2r)<0.05) {
+    r[2] = fP[1] + dx*(r2 + f2*dy2dx)*fP[3];//Thanks to Andrea & Peter
+  }
+  else {
+    // for small dx/R the linear apporximation of the arc by the segment is OK,
+    // but at large dx/R the error is very large and leads to incorrect Z propagation
+    // angle traversed delta = 2*asin(dist_start_end / R / 2), hence the arc is: R*deltaPhi
+    // The dist_start_end is obtained from sqrt(dx^2+dy^2) = x/(r1+r2)*sqrt(2+f1*f2+r1*r2)
+    // Similarly, the rotation angle in linear in dx only for dx<<R
+    double chord = dx*TMath::Sqrt(1+dy2dx*dy2dx);   // distance from old position to new one
+    double rot = 2*TMath::ASin(0.5*chord*crv); // angular difference seen from the circle center
+    r[2] = fP[1] + rot/crv*fP[3];
+  }
 
   return Local2GlobalPosition(r,fAlpha);
 }
@@ -2259,47 +2306,52 @@ void AliExternalTrackParam::CheckCovariance() {
   // In case the diagonal element is bigger than the maximal allowed value, it is set to
   // the limit and the off-diagonal elements that correspond to it are set to zero.
 
-    fC[0] = TMath::Abs(fC[0]);
-    if (fC[0]>kC0max) {
-      fC[0] = kC0max;
-      fC[1] = 0;
-      fC[3] = 0;
-      fC[6] = 0;
-      fC[10] = 0;
-    }
-    fC[2] = TMath::Abs(fC[2]);
-    if (fC[2]>kC2max) {
-      fC[2] = kC2max;
-      fC[1] = 0;
-      fC[4] = 0;
-      fC[7] = 0;
-      fC[11] = 0;
-    }
-    fC[5] = TMath::Abs(fC[5]);
-    if (fC[5]>kC5max) {
-      fC[5] = kC5max;
-      fC[3] = 0;
-      fC[4] = 0;
-      fC[8] = 0;
-      fC[12] = 0;
-    }
-    fC[9] = TMath::Abs(fC[9]);
-    if (fC[9]>kC9max) {
-      fC[9] = kC9max;
-      fC[6] = 0;
-      fC[7] = 0;
-      fC[8] = 0;
-      fC[13] = 0;
-    }
-    fC[14] = TMath::Abs(fC[14]);
-    if (fC[14]>kC14max) {
-      fC[14] = kC14max;
-      fC[10] = 0;
-      fC[11] = 0;
-      fC[12] = 0;
-      fC[13] = 0;
-    }
-    
+  fC[0] = TMath::Abs(fC[0]);
+  if (fC[0]>kC0max) {
+    double scl = TMath::Sqrt(kC0max/fC[0]);
+    fC[0] = kC0max;
+    fC[1] *= scl;
+    fC[3] *= scl;
+    fC[6] *= scl;
+    fC[10] *= scl;
+  }
+  fC[2] = TMath::Abs(fC[2]);
+  if (fC[2]>kC2max) {
+    double scl = TMath::Sqrt(kC2max/fC[2]);
+    fC[2] = kC2max;
+    fC[1] *= scl;
+    fC[4] *= scl;
+    fC[7] *= scl;
+    fC[11] *= scl;
+  }
+  fC[5] = TMath::Abs(fC[5]);
+  if (fC[5]>kC5max) {
+    double scl = TMath::Sqrt(kC5max/fC[5]);
+    fC[5] = kC5max;
+    fC[3] *= scl;
+    fC[4] *= scl;
+    fC[8] *= scl;
+    fC[12] *= scl;
+  }
+  fC[9] = TMath::Abs(fC[9]);
+  if (fC[9]>kC9max) {
+    double scl = TMath::Sqrt(kC9max/fC[9]);
+    fC[9] = kC9max;
+    fC[6] *= scl;
+    fC[7] *= scl;
+    fC[8] *= scl;
+    fC[13] *= scl;
+  }
+  fC[14] = TMath::Abs(fC[14]);
+  if (fC[14]>kC14max) {
+    double scl = TMath::Sqrt(kC14max/fC[14]);
+    fC[14] = kC14max;
+    fC[10] *= scl;
+    fC[11] *= scl;
+    fC[12] *= scl;
+    fC[13] *= scl;
+  }
+      
     // The part below is used for tests and normally is commented out    
 //     TMatrixDSym m(5);
 //     TVectorD eig(5);
@@ -2468,68 +2520,140 @@ Bool_t AliExternalTrackParam::GetXatLabR(Double_t r,Double_t &x, Double_t bz, In
   //
   return kTRUE;
 }
-
-
-Double_t  AliExternalTrackParam::GetParameterAtRadius(Double_t r, Double_t bz, Int_t &parType) const
+//_________________________________________________________
+Bool_t AliExternalTrackParam::GetXYZatR(Double_t xr,Double_t bz, Double_t *xyz, Double_t* alpSect) const
 {
+  // This method has 3 modes of behaviour
+  // 1) xyz[3] array is provided but alpSect pointer is 0: calculate the position of track intersection 
+  //    with circle of radius xr and fill it in xyz array
+  // 2) alpSect pointer is provided: find alpha of the sector where the track reaches local coordinate xr
+  //    Note that in this case xr is NOT the radius but the local coordinate.
+  //    If the xyz array is provided, it will be filled by track lab coordinates at local X in this sector
+  // 3) Neither alpSect nor xyz pointers are provided: just check if the track reaches radius xr
   //
-  // Get track parameters at the radius of interest.
-  // Given function is aimed to be used to interactivelly (tree->Draw())
-  // access track properties at different radii
   //
-  // TO BE USED WITH SPECICAL CARE - 
-  //     it is aimed to be used for rough calculation as constant field and  
-  //     no correction for material is used
-  //  
-  // r  - radius of interest
-  // bz - magentic field 
-  // retun values dependens on parType:
-  //    parType = 0  -gx 
-  //    parType = 1  -gy 
-  //    parType = 2  -gz 
+  double crv = GetC(bz);
+  if ( (TMath::Abs(bz))<kAlmost0Field ) crv=0.;
+  const double &fy = fP[0];
+  const double &fz = fP[1];
+  const double &sn = fP[2];
+  const double &tgl = fP[3];
   //
-  //    parType = 3  -pgx 
-  //    parType = 4  -pgy 
-  //    parType = 5  -pgz
+  // general circle parameterization:
+  // x = (r0+tR)cos(phi0) - tR cos(t+phi0)
+  // y = (r0+tR)sin(phi0) - tR sin(t+phi0)
+  // where qb is the sign of the curvature, tR is the track's signed radius and r0 
+  // is the DCA of helix to origin
   //
-  //    parType = 6  - r
-  //    parType = 7  - global position phi
-  //    parType = 8  - global direction phi
-  //    parType = 9  - direction phi- positionphi
-  if (parType<0) {
-    parType=-1;
-     return 0;
+  double tR = 1./crv;            // track radius signed
+  double cs = TMath::Sqrt((1-sn)*(1+sn));
+  double x0 = fX - sn*tR;        // helix center coordinates
+  double y0 = fy + cs*tR;
+  double phi0 = TMath::ATan2(y0,x0);  // angle of PCA wrt to the origin
+  if (tR<0) phi0 += TMath::Pi();
+  if      (phi0 > TMath::Pi()) phi0 -= 2.*TMath::Pi();
+  else if (phi0 <-TMath::Pi()) phi0 += 2.*TMath::Pi();
+  double cs0 = TMath::Cos(phi0);
+  double sn0 = TMath::Sin(phi0);
+  double r0 = x0*cs0 + y0*sn0 - tR; // DCA to origin
+  double r2R = 1.+r0/tR;
+  //
+  //
+  if (r2R<kAlmost0) return kFALSE;  // helix is centered at the origin, no specific intersection with other concetric circle
+  if (!xyz && !alpSect) return kTRUE;
+  double xr2R = xr/tR;
+  double r2Ri = 1./r2R;
+  // the intersection cos(t) = [1 + (r0/tR+1)^2 - (r0/tR)^2]/[2(1+r0/tR)]
+  double cosT = 0.5*(r2R + (1-xr2R*xr2R)*r2Ri);
+  if ( TMath::Abs(cosT)>kAlmost1 ) {
+    //    printf("Does not reach : %f %f\n",r0,tR);
+    return kFALSE; // track does not reach the radius xr
   }
-  Double_t xyz[3];
-  Double_t pxyz[3];  
-  Double_t localX=0;
-  Bool_t res = GetXatLabR(r,localX,bz,1);
-  if (!res) {
-    parType=-1;
-    return 0;
+  //
+  double t = TMath::ACos(cosT);
+  if (tR<0) t = -t;
+  // intersection point
+  double xyzi[3];
+  xyzi[0] = x0 - tR*TMath::Cos(t+phi0);
+  xyzi[1] = y0 - tR*TMath::Sin(t+phi0);
+  if (xyz) { // if postition is requested, then z is needed:
+    double t0 = TMath::ATan2(cs,-sn) - phi0;
+    double z0 = fz - t0*tR*tgl;    
+    xyzi[2] = z0 + tR*t*tgl;
+  }
+  else xyzi[2] = 0;
+  //
+  Local2GlobalPosition(xyzi,fAlpha);
+  //
+  if (xyz) {
+    xyz[0] = xyzi[0];
+    xyz[1] = xyzi[1];
+    xyz[2] = xyzi[2];
   }
   //
-  // position parameters
-  // 
-  GetXYZAt(localX,bz,xyz); 
-  if (parType<3)   {
-    return xyz[parType];
+  if (alpSect) {
+    double &alp = *alpSect;
+    // determine the sector of crossing
+    double phiPos = TMath::Pi()+TMath::ATan2(-xyzi[1],-xyzi[0]);
+    int sect = ((Int_t)(phiPos*TMath::RadToDeg()))/20;
+    alp = TMath::DegToRad()*(20*sect+10);
+    double x2r,f1,f2,r1,r2,dx,dy2dx,yloc=0, ylocMax = xr*TMath::Tan(TMath::Pi()/18); // min max Y within sector at given X
+    //
+    while(1) {
+      Double_t ca=TMath::Cos(alp-fAlpha), sa=TMath::Sin(alp-fAlpha);
+      if ((cs*ca+sn*sa)<0) {
+	AliDebug(1,Form("Rotation to target sector impossible: local cos(phi) would become %.2f",cs*ca+sn*sa));
+	return kFALSE;
+      }
+      //
+      f1 = sn*ca - cs*sa;
+      if (TMath::Abs(f1) >= kAlmost1) {
+	AliDebug(1,Form("Rotation to target sector impossible: local sin(phi) would become %.2f",f1));
+	return kFALSE;
+      }
+      //
+      double tmpX =  fX*ca + fy*sa;
+      double tmpY = -fX*sa + fy*ca;
+      //
+      // estimate Y at X=xr
+      dx=xr-tmpX;
+      x2r = crv*dx;
+      f2=f1 + x2r;
+      if (TMath::Abs(f2) >= kAlmost1) {
+	AliDebug(1,Form("Propagation in target sector failed ! %.10e",f2));
+	return kFALSE;
+      }
+      r1 = TMath::Sqrt((1.-f1)*(1.+f1));
+      r2 = TMath::Sqrt((1.-f2)*(1.+f2));
+      dy2dx = (f1+f2)/(r1+r2);
+      yloc = tmpY + dx*dy2dx;
+      if      (yloc>ylocMax)  {alp += 2*TMath::Pi()/18; sect++;}
+      else if (yloc<-ylocMax) {alp -= 2*TMath::Pi()/18; sect--;}
+      else break;
+      if      (alp >= TMath::Pi()) alp -= 2*TMath::Pi();
+      else if (alp < -TMath::Pi()) alp += 2*TMath::Pi();
+      //      if (sect>=18) sect = 0;
+      //      if (sect<=0) sect = 17;
+    }
+    //
+    // if alpha was requested, then recalculate the position at intersection in sector
+    if (xyz) {
+      xyz[0] = xr;
+      xyz[1] = yloc;
+      if (TMath::Abs(x2r)<0.05) xyz[2] = fz + dx*(r2 + f2*dy2dx)*tgl;
+      else {
+	// for small dx/R the linear apporximation of the arc by the segment is OK,
+	// but at large dx/R the error is very large and leads to incorrect Z propagation
+	// angle traversed delta = 2*asin(dist_start_end / R / 2), hence the arc is: R*deltaPhi
+	// The dist_start_end is obtained from sqrt(dx^2+dy^2) = x/(r1+r2)*sqrt(2+f1*f2+r1*r2)
+	// Similarly, the rotation angle in linear in dx only for dx<<R
+	double chord = dx*TMath::Sqrt(1+dy2dx*dy2dx);   // distance from old position to new one
+	double rot = 2*TMath::ASin(0.5*chord*crv); // angular difference seen from the circle center
+	xyz[2] = fz + rot/crv*tgl;
+      }
+      Local2GlobalPosition(xyz,alp);
+    }
   }
-  if (parType==6) return TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
-  if (parType==7) return TMath::ATan2(xyz[1],xyz[0]);
+  return kTRUE;  
   //
-  // momenta parameters
-  //
-  GetPxPyPzAt(localX,bz,pxyz); 
-  if (parType==8) return TMath::ATan2(pxyz[1],pxyz[0]);
-  if (parType==9) {
-    Double_t diff = TMath::ATan2(pxyz[1],pxyz[0])-TMath::ATan2(xyz[1],xyz[0]);
-    if (diff>TMath::Pi()) diff-=TMath::TwoPi();
-    if (diff<-TMath::Pi()) diff+=TMath::TwoPi();
-    return diff;
-  }
-  if (parType>=3&&parType<6) {
-    return pxyz[parType%3];
-  }
-  return 0;
 }

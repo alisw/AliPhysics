@@ -39,7 +39,7 @@ struct AliHLTTracksData;
  *      AliESDZDC,AliESDFMD,Cascades,Kinks,AliRawDataErrorLogs,AliESDACORDE
  *      leave blank to disable the option
  *
- * @ingroup alihlt_tpc_components
+ * @ingroup alihlt_global_components
  */
 class AliHLTGlobalEsdConverterComponent : public AliHLTProcessor
 {

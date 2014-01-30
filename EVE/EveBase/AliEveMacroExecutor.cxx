@@ -92,7 +92,9 @@ void AliEveMacroExecutor::RemoveMacros()
 
 /******************************************************************************/
 
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
 #include "Api.h"
+#endif
 #include "TInterpreter.h"
 
 void AliEveMacroExecutor::ExecMacros()
@@ -132,13 +134,14 @@ void AliEveMacroExecutor::ExecMacros()
       result = gInterpreter->ProcessLine(cmd, &error);
       AliSysInfo::AddStamp(Form("%s_%s_after",mac->GetMacro().Data(), mac->GetFunc().Data()));
 
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
       // Try to fix broken cint state? Code taken form pyroot.
       if (G__get_return(0) > G__RETURN_NORMAL)
       {
 	printf ("*** FIXING CINT STATE AFTER RETURN ***\n");
 	G__security_recover(0);
       }
-
+#endif
       if (error != TInterpreter::kNoError)
       {
         mac->SetExecError();
@@ -161,14 +164,14 @@ void AliEveMacroExecutor::ExecMacros()
     catch(TEveException& exc)
     {
       mac->SetExecException(exc);
-
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
       // Try to fix broken cint state? Code taken form pyroot.
       if (G__get_return(0) > G__RETURN_NORMAL)
       {
 	printf ("*** FIXING CINT STATE AFTER EXCEPTION ***\n");
 	G__security_recover(0);
       }
-
+#endif
       Error("ExecMacros", "Executing %s::%s, caught exception: '%s'.",
 	    mac->GetMacro().Data(), cmd.Data(), exc.Data());
     }

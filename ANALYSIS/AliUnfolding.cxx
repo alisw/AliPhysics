@@ -1078,16 +1078,16 @@ Double_t AliUnfolding::RegularizationPowerLaw(TVectorD& params)
     middle = TMath::Power(params[i-1] / fgUnfoldedAxis->GetBinWidth(i),fgPowern);
 
     if(middle>0) {
-      right  = TMath::Power(params[i] / fgUnfoldedAxis->GetBinWidth(i),fgPowern)/middle;
+      right  = TMath::Power(params[i] / fgUnfoldedAxis->GetBinWidth(i+1),fgPowern)/middle;
 
       left   = TMath::Power(params[i-2] / fgUnfoldedAxis->GetBinWidth(i-1),fgPowern)/middle;
       
       middle = 1.;
       
       Double_t der1 = (right - middle) / ((fgUnfoldedAxis->GetBinWidth(i+1) + fgUnfoldedAxis->GetBinWidth(i)) / 2);
-      Double_t der2 = (middle - left) / ((fgUnfoldedAxis->GetBinWidth(i-1) + fgUnfoldedAxis->GetBinWidth(i-2)) / 2);
+      Double_t der2 = (middle - left) / ((fgUnfoldedAxis->GetBinWidth(i) + fgUnfoldedAxis->GetBinWidth(i-1)) / 2);
     
-      chi2 += (der1 - der2) * (der1 - der2)/ ( fgUnfoldedAxis->GetBinWidth(i)/2. + fgUnfoldedAxis->GetBinWidth(i-1) + fgUnfoldedAxis->GetBinWidth(i-2)/2.)/( fgUnfoldedAxis->GetBinWidth(i)/2. + fgUnfoldedAxis->GetBinWidth(i-1) + fgUnfoldedAxis->GetBinWidth(i-2)/2.);// / error;
+      chi2 += (der1 - der2) * (der1 - der2)/ ( fgUnfoldedAxis->GetBinWidth(i+1)/2. + fgUnfoldedAxis->GetBinWidth(i) + fgUnfoldedAxis->GetBinWidth(i-1)/2.)/( fgUnfoldedAxis->GetBinWidth(i+1)/2. + fgUnfoldedAxis->GetBinWidth(i) + fgUnfoldedAxis->GetBinWidth(i-1)/2.);// / error;
       //   printf("i: %d chi2 = %f\n",i,chi2);
     }
 
@@ -1114,14 +1114,13 @@ Double_t AliUnfolding::RegularizationLogLog(TVectorD& params)
     if ((*fgEfficiency)(i-1) == 0 || (*fgEfficiency)(i) == 0 || (*fgEfficiency)(i-2) == 0)
      continue;
 
-
-    Double_t right  = log(params[i] / (*fgEfficiency)(i) / fgUnfoldedAxis->GetBinWidth(i));
-    Double_t middle = log(params[i-1] / (*fgEfficiency)(i-1) / fgUnfoldedAxis->GetBinWidth(i-1));
-    Double_t left   = log(params[i-2] / (*fgEfficiency)(i-2) / fgUnfoldedAxis->GetBinWidth(i-2));
+    Double_t right  = log(params[i] / (*fgEfficiency)(i) / fgUnfoldedAxis->GetBinWidth(i+1));
+    Double_t middle = log(params[i-1] / (*fgEfficiency)(i-1) / fgUnfoldedAxis->GetBinWidth(i));
+    Double_t left   = log(params[i-2] / (*fgEfficiency)(i-2) / fgUnfoldedAxis->GetBinWidth(i-1));
     
     Double_t der1 = (right - middle) / ( log(fgUnfoldedAxis->GetBinCenter(i+1)) - log(fgUnfoldedAxis->GetBinCenter(i)) );
     Double_t der2 = (middle - left) /( log(fgUnfoldedAxis->GetBinCenter(i)) - log(fgUnfoldedAxis->GetBinCenter(i-1)) );
-
+    
     double tmp = (log(fgUnfoldedAxis->GetBinCenter(i+1)) - log(fgUnfoldedAxis->GetBinCenter(i-1)))/2.;
     Double_t dder = (der1-der2) / tmp;
 
@@ -1347,9 +1346,6 @@ void AliUnfolding::DrawResults(TH2* correlation, TH1* efficiency, TH1* measured,
       params[i] = -params[i];
     }
     params[i]=TMath::Sqrt(params[i]);
-
-    //cout << "params[" << i << "] " << params[i] << endl;
-
   } 
 
   Double_t chi2;

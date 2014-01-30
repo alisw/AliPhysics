@@ -71,6 +71,7 @@ public:
   virtual Float_t GetECALocalMaxCut()                 const { return fECALocMaxCut;            } 
   virtual Float_t GetECALogWeight()                   const { return fECAW0;                   }
   virtual Float_t GetMinECut()                        const { return fMinECut;                 } 
+  virtual Bool_t  GetRejectBelowThreshold()           const { return fRejectBelowThreshold;    }
 
   virtual void    SetTimeMin(Float_t t)		                  { fTimeMin = t;                    }
   virtual void    SetTimeMax(Float_t t)		                  { fTimeMax = t;                    }
@@ -79,6 +80,7 @@ public:
   virtual void    SetMinECut(Float_t mine)                  { fMinECut      = mine;            }
   virtual void    SetECALocalMaxCut(Float_t cut)            { fECALocMaxCut = cut;             }
   virtual void    SetECALogWeight(Float_t w)                { fECAW0        = w;               }
+  virtual void    SetRejectBelowThreshold(Bool_t reject)    { fRejectBelowThreshold = reject;  }
   
   //Unfolding
 
@@ -88,7 +90,8 @@ public:
   virtual void    SetPar6     (Int_t ipar, Double_t par)    { fPar6  [ipar] = par;             }
   virtual void    InitClusterUnfolding()                    {
     fClusterUnfolding=new AliEMCALUnfolding(fGeom,fECALocMaxCut,fSSPars,fPar5,fPar6); 
-    fClusterUnfolding->SetThreshold(fMinECut);                                                 }
+    fClusterUnfolding->SetThreshold(fMinECut);
+    fClusterUnfolding->SetRejectBelowThreshold(fRejectBelowThreshold);                         }
 
   //NxN (only used in NxN clusterizer)
   
@@ -141,6 +144,7 @@ protected:
   Float_t  fECALocMaxCut;               // minimum energy difference to distinguish local maxima in a cluster
   Float_t  fECAW0;                      // logarithmic weight for the cluster center of gravity calculation
   Float_t  fMinECut;                    // minimum energy for a digit to be a member of a cluster
+  Bool_t   fRejectBelowThreshold;       // split (false-default) or reject (true) cell energy below threshold after UF 
   
   AliEMCALUnfolding *fClusterUnfolding; //!pointer to unfolding object
   Double_t fSSPars[8];                  // shower shape parameters 
@@ -151,7 +155,7 @@ protected:
   AliEMCALClusterizer(              const AliEMCALClusterizer &);
   AliEMCALClusterizer & operator = (const AliEMCALClusterizer &);
   
-  ClassDef(AliEMCALClusterizer,7)  // Clusterization algorithm class 
+  ClassDef(AliEMCALClusterizer,8)  // Clusterization algorithm class 
   
 };
 #endif // AliEMCALCLUSTERIZER_H

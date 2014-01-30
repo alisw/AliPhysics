@@ -601,17 +601,17 @@ void AliMUONClusterFinderPeakCOG::BuildPixArrayOneCathode(AliMUONCluster& cluste
   for (Int_t i = 1; i <= nbins[0]; ++i) {
     Double_t x = xaxis->GetBinCenter(i);
     for (Int_t j = 1; j <= nbins[1]; ++j) {
-      if (hist2->GetCellContent(i,j) < 0.01525) continue; // JC: adc -> fc
+      if (hist2->GetBinContent(hist2->GetBin(i,j)) < 0.01525) continue; // JC: adc -> fc
       if (cath0 != cath1) {
 	// Two-sided cluster
-	Double_t cont = hist2->GetCellContent(i,j);
+	Double_t cont = hist2->GetBinContent(hist2->GetBin(i,j));
 	if (cont < 999.) continue;
 	if (cont-Int_t(cont/1000.)*1000. < 0.07625) continue; // JC: adc -> fc
       }
-      //if (hist2->GetCellContent(i,j) < 1.1 && cluster.Multiplicity(0) && 
+      //if (hist2->GetBinContent(hist2->GetBin(i,j)) < 1.1 && cluster.Multiplicity(0) && 
       //  cluster.Multiplicity(1)) continue;
       Double_t y = yaxis->GetBinCenter(j);
-      Double_t charge = hist1->GetCellContent(i,j);
+      Double_t charge = hist1->GetBinContent(hist1->GetBin(i,j));
       AliMUONPad* pixPtr = new AliMUONPad(x, y, width[0], width[1], charge);
       fPixArray->Add(pixPtr);
     }  
@@ -652,11 +652,11 @@ void AliMUONClusterFinderPeakCOG::PadOverHist(Int_t idir, Int_t ix0, Int_t iy0, 
     else {
       // Fill histogram
       Double_t cont = pad->Charge();
-      if (hist2->GetCellContent(ix0, ixy) > 0.01525) // JC: adc -> fc
-	cont = TMath::Min (hist1->GetCellContent(ix0, ixy), cont) 
-	     + TMath::Min (TMath::Max(hist1->GetCellContent(ix0, ixy),cont)*0.1, 1.525); // JC: adc -> fc
-      hist1->SetCellContent(ix0, ixy, cont);
-      hist2->SetCellContent(ix0, ixy, hist2->GetCellContent(ix0, ixy)+amask);
+      if (hist2->GetBinContent(hist2->GetBin(ix0, ixy)) > 0.01525) // JC: adc -> fc
+	cont = TMath::Min (hist1->GetBinContent(hist1->GetBin(ix0, ixy)), cont) 
+	  + TMath::Min (TMath::Max(hist1->GetBinContent(hist1->GetBin(ix0, ixy)),cont)*0.1, 1.525); // JC: adc -> fc
+      hist1->SetBinContent(hist1->GetBin(ix0, ixy), cont);
+      hist2->SetBinContent(hist2->GetBin(ix0, ixy), hist2->GetBinContent(hist2->GetBin(ix0, ixy))+amask);
     }
   }
 
@@ -669,11 +669,11 @@ void AliMUONClusterFinderPeakCOG::PadOverHist(Int_t idir, Int_t ix0, Int_t iy0, 
     else {
       // Fill histogram
       Double_t cont = pad->Charge();
-      if (hist2->GetCellContent(ix0, ixy) > 0.01525) // JC: adc -> fc
-	cont = TMath::Min (hist1->GetCellContent(ix0, ixy), cont)
-	     + TMath::Min (TMath::Max(hist1->GetCellContent(ix0, ixy),cont)*0.1,1.525);  // JC: adc -> fc
-      hist1->SetCellContent(ix0, ixy, cont);
-      hist2->SetCellContent(ix0, ixy, hist2->GetCellContent(ix0, ixy)+amask);
+      if (hist2->GetBinContent(hist2->GetBin(ix0, ixy)) > 0.01525) // JC: adc -> fc
+	cont = TMath::Min (hist1->GetBinContent(hist1->GetBin(ix0, ixy)), cont)
+	  + TMath::Min (TMath::Max(hist1->GetBinContent(hist1->GetBin(ix0, ixy)),cont)*0.1,1.525);  // JC: adc -> fc
+      hist1->SetBinContent(hist1->GetBin(ix0, ixy), cont);
+      hist2->SetBinContent( hist2->GetBin(ix0, ixy), hist2->GetBinContent(hist2->GetBin(ix0, ixy))+amask);
     }
   }
 }
@@ -723,7 +723,7 @@ Int_t AliMUONClusterFinderPeakCOG::FindLocalMaxima(TObjArray *pixArray, Int_t *l
   for (Int_t i = 1; i <= ny; ++i) {
     indx = (i-1) * nx;
     for (Int_t j = 1; j <= nx; ++j) {
-      if (fHistAnode->GetCellContent(j,i) < 0.07625) continue; // JC: adc -> fc
+      if (fHistAnode->GetBinContent(fHistAnode->GetBin(j,i)) < 0.07625) continue; // JC: adc -> fc
       //if (isLocalMax[indx+j-1] < 0) continue;
       if (isLocalMax[indx+j-1] != 0) continue;
       FlagLocalMax(fHistAnode, i, j, isLocalMax);
@@ -735,7 +735,7 @@ Int_t AliMUONClusterFinderPeakCOG::FindLocalMaxima(TObjArray *pixArray, Int_t *l
     for (Int_t j = 1; j <= nx; ++j) {
       if (isLocalMax[indx+j-1] > 0) { 
 	localMax[nMax] = indx + j - 1; 
-	maxVal[nMax++] = fHistAnode->GetCellContent(j,i);
+	maxVal[nMax++] = fHistAnode->GetBinContent(fHistAnode->GetBin(j,i));
 	if (nMax > 99) break;
       }
     }
@@ -756,7 +756,7 @@ void AliMUONClusterFinderPeakCOG::FlagLocalMax(TH2D *hist, Int_t i, Int_t j, Int
 
   Int_t nx = hist->GetNbinsX();
   Int_t ny = hist->GetNbinsY();
-  Int_t cont = TMath::Nint (hist->GetCellContent(j,i));
+  Int_t cont = TMath::Nint (hist->GetBinContent(hist->GetBin(j,i)));
   Int_t cont1 = 0, indx = (i-1)*nx+j-1, indx1 = 0, indx2 = 0;
 
   Int_t ie = i + 2, je = j + 2;
@@ -767,7 +767,7 @@ void AliMUONClusterFinderPeakCOG::FlagLocalMax(TH2D *hist, Int_t i, Int_t j, Int
       if (j1 < 1 || j1 > nx) continue;
       if (i == i1 && j == j1) continue;
       indx2 = indx1 + j1 - 1;
-      cont1 = TMath::Nint (hist->GetCellContent(j1,i1));
+      cont1 = TMath::Nint (hist->GetBinContent(hist->GetBin(j1,i1)));
       if (cont < cont1) { isLocalMax[indx] = -1; return; }
       else if (cont > cont1) isLocalMax[indx2] = -1;
       else { // the same charge
@@ -826,7 +826,7 @@ void AliMUONClusterFinderPeakCOG::FindCluster(AliMUONCluster& cluster,
   Double_t wy = fHistAnode->GetYaxis()->GetBinWidth(1)/2;  
   Double_t yc = fHistAnode->GetYaxis()->GetBinCenter(ic);
   Double_t xc = fHistAnode->GetXaxis()->GetBinCenter(jc);
-  Double_t cont = fHistAnode->GetCellContent(jc,ic);
+  Double_t cont = fHistAnode->GetBinContent(fHistAnode->GetBin(jc,ic));
   AliMUONPad pixel(xc, yc, wx, wy, cont);
   if (fDebug) pixel.Print("full"); 
 

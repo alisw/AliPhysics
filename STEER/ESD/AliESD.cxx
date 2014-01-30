@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id: AliESD.cxx 54579 2012-02-14 12:22:34Z shahoian $ */
 
 //-----------------------------------------------------------------
 //           Implementation of the ESD class
@@ -74,10 +74,8 @@ AliESD::AliESD():
   fESDFMD(0x0),
   fESDVZERO(0x0),
   fESDACORDE(0x0),
+  fESDAD(0x0),
   fErrorLogs("AliRawDataErrorLog",5)
-  #ifdef MFT_UPGRADE
- // ,fESDMFT(0x0)
-  #endif
 {
   // 
   // Standar constructor
@@ -140,10 +138,8 @@ AliESD::AliESD(const AliESD& esd):
   fESDFMD(esd.fESDFMD),
   fESDVZERO(esd.fESDVZERO),
   fESDACORDE(esd.fESDACORDE),
+  fESDAD(esd.fESDAD),
   fErrorLogs(*((TClonesArray*)esd.fErrorLogs.Clone()))
-  #ifdef MFT_UPGRADE
-  //, fESDMFT(esd.fESDMFT)
-  #endif
 {
   // 
   // copy constructor
@@ -180,9 +176,7 @@ AliESD::~AliESD()
   delete fPHOSTriggerPosition;
   delete fPHOSTriggerAmplitudes;
   delete fESDACORDE;
-  #ifdef MFT_UPGRADE
-//  delete fESDMFT;
-  #endif
+  delete fESDAD;
   fErrorLogs.Delete();
 
 }
@@ -263,13 +257,13 @@ void AliESD::Reset()
       fESDACORDE->~AliESDACORDE();
       new (fESDACORDE) AliESDACORDE();	
   }	
+
+ if (fESDAD){
+      fESDAD->~AliESDAD();
+      new (fESDAD) AliESDAD();	
+  }	
+
 //
-  #ifdef MFT_UPGRADE
- // if (fESDMFT){
-//	  fESDMFT->~AliESDMFT();
-//	  new (fESDMFT) AliESDMFT();	
-//  }
-  #endif
 //
   fErrorLogs.Delete();
 }
@@ -594,9 +588,6 @@ void AliESD::Print(Option_t *) const
   printf("                 emcal     %d\n", GetNumberOfEMCALClusters());
   printf("                 FMD       %s\n", (fESDFMD ? "yes" : "no"));
   printf("                 VZERO     %s\n", (fESDVZERO ? "yes" : "no"));
-  #ifdef MFT_UPGRADE
- // printf("                 MFT       %s\n", (fESDMFT ? "yes" : "no"));
-  #endif
 }
 
 void AliESD::SetESDfriend(const AliESDfriend *ev) {
