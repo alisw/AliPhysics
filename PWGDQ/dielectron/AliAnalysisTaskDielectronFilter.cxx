@@ -156,6 +156,7 @@ if(fCreateNanoAOD && isAOD){
    extDielectron->GetAOD()->GetStdContent();
    }else if(fCreateNanoAOD && !isAOD){AliWarning("Filtered-Nano AODs creation works only on AODs ");  } 
   
+  PostData(1, const_cast<THashList*>(fDielectron->GetHistogramList()));
   PostData(2,fEventStat);
 }
 
@@ -197,7 +198,7 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
   //before physics selection
   fEventStat->Fill(kAllEvents);
   if (isSelected==0||isRejected) {
-    PostData(3,fEventStat);
+    PostData(2,fEventStat);
     return;
   }
   //after physics selection
