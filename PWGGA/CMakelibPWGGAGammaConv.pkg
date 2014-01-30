@@ -38,8 +38,6 @@ set ( SRCS
 	GammaConv/AliConversionMesonCuts.cxx
 	GammaConv/AliDalitzElectronCuts.cxx
 	GammaConv/AliDalitzElectronSelector.cxx
-	GammaConv/AliPrimaryPionCuts.cxx
-	GammaConv/AliPrimaryPionSelector.cxx        
 	GammaConv/AliV0ReaderV1.cxx
 	GammaConv/AliConversionAODBGHandlerRP.cxx
 	GammaConv/AliConversionTrackCuts.cxx
