@@ -282,6 +282,7 @@ void LoadLibs()
   gSystem->Load("libTENDERSupplies");
   gSystem->Load("libPWGTools");
   gSystem->Load("libPWGEMCAL");
+  gSystem->Load("libESDfilter");
   gSystem->Load("libPWGGAEMCALTasks");
   gSystem->Load("libPWGCFCorrelationsBase");
   gSystem->Load("libPWGCFCorrelationsDPhi");
