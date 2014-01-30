@@ -27,6 +27,9 @@
 #ifndef ROOT_TCollection
 #  include "TCollection.h"
 #endif
+#ifndef ROOT_TFolder
+#  include "TFolder.h"
+#endif
 #include "Riostream.h"
 #include <map>
 #include <string>
@@ -34,8 +37,10 @@
 class TMap;
 class AliMergeableCollectionIterator;
 class TH1;
+class TH2;
+class TProfile;
 
-class AliMergeableCollection : public TNamed
+class AliMergeableCollection : public TFolder
 {
   friend class AliMergeableCollectionIterator; // our iterator class
 
@@ -50,7 +55,9 @@ public:
   
   Bool_t Adopt(TObject* obj);
   Bool_t Adopt(const char* identifier, TObject* obj);
-    
+  
+  virtual void Browse(TBrowser* b);
+  
   virtual void Clear(Option_t *option="") { Delete(option); }
   
   virtual TObject* FindObject(const char* fullIdentifier) const;
@@ -69,11 +76,22 @@ public:
   TH1* Histo(const char* fullIdentifier) const;
   TH1* Histo(const char* identifier, const char* objectName) const;
 
+  TH1* H1(const char* fullIdentifier) const { return Histo(fullIdentifier); }
+  TH1* H1(const char* identifier, const char* objectName) const { return Histo(identifier,objectName); }
+
+  TH2* H2(const char* fullIdentifier) const;
+  TH2* H2(const char* identifier, const char* objectName) const;
+
+  TProfile* Prof(const char* fullIdentifier) const;
+  TProfile* Prof(const char* identifier, const char* objectName) const;
+
   virtual TIterator* CreateIterator(Bool_t dir = kIterForward) const;
   
   virtual TList* CreateListOfKeys(Int_t index) const;
   
   virtual TList* CreateListOfObjectNames(const char* identifier) const;
+  
+  using TFolder::Remove;
   
   virtual TObject* Remove(const char* fullIdentifier);
   
@@ -136,7 +154,7 @@ private:
   mutable Int_t fMapVersion; /// internal version of map (to avoid custom streamer...)
   mutable std::map<std::string,int> fMessages; //! log messages
   
-  ClassDef(AliMergeableCollection,1) /// A collection of mergeable objects
+  ClassDef(AliMergeableCollection,4) /// A collection of mergeable objects
 };
 
 class AliMergeableCollectionIterator : public TIterator

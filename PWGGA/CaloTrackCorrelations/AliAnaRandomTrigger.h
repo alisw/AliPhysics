@@ -24,7 +24,7 @@ class AliAnaRandomTrigger : public AliAnaCaloTrackCorrBaseClass {
   AliAnaRandomTrigger() ; // default ctor
   virtual ~AliAnaRandomTrigger() { ; } //virtual dtor
 
-  Bool_t       ExcludeDeadBadRegions(const Float_t eta, const Float_t phi);
+  Bool_t       ExcludeDeadBadRegions(Float_t eta, Float_t phi);
   
   TObjString * GetAnalysisCuts();
   

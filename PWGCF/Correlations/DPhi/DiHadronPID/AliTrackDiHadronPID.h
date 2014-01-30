@@ -35,43 +35,23 @@ private:
 
 // Check functions.
 public:
-	Bool_t IsBasicTrackInfoAvailable() const { 
-		if (!fBasicInfoAvailable) cout<<"Basic Track Info not available."<<endl; 
-		return fBasicInfoAvailable;
-	}
-	Bool_t IsFlagInfoAvailable() const { 
-		if (!fFlagsAvailable) cout<<"Flag Info not available."<<endl; 
-		return fFlagsAvailable;
-	}
-	Bool_t IsDCAInfoAvailable() const { 
-		if (!fDCAInfoAvailable) cout<<"DCA Info not available."<<endl; 
-		return fDCAInfoAvailable;
-	}
-	Bool_t IsITSInfoAvailable() const { 
-		if (!fITSInfoAvailable) cout<<"ITS Info not available."<<endl; 
-		return fITSInfoAvailable;
-	}
-	Bool_t IsTPCInfoAvailable() const { 
-		if (!fTPCInfoAvailable) cout<<"TPC Info not available."<<endl; 
-		return fTPCInfoAvailable;
-	}
-	Bool_t IsTOFInfoAvailable() const { 
-		if (!fTOFInfoAvailable) cout<<"TOF Info not available."<<endl; 
-		return fTOFInfoAvailable;
-	}
-	Bool_t IsMCInfoAvailable() const { 
-		if (!fMCInfoAvailable) cout<<"MC Info not available."<<endl; 
-		return fMCInfoAvailable;
-	}			
+	Bool_t IsBasicTrackInfoAvailable() const {return fBasicInfoAvailable;}
+	Bool_t IsFlagInfoAvailable() const {return fFlagsAvailable;}
+	Bool_t IsDCAInfoAvailable() const {return fDCAInfoAvailable;}
+	Bool_t IsITSInfoAvailable() const {return fITSInfoAvailable;}
+	Bool_t IsTPCInfoAvailable() const {return fTPCInfoAvailable;}
+	Bool_t IsTOFInfoAvailable() const {return fTOFInfoAvailable;}
+	Bool_t IsMCInfoAvailable() const {return fMCInfoAvailable;}			
 
 public:
 // Getting Track Parameters. Functionality is the same as AOD track,
 // unless stated otherwise.
+	Bool_t UnknownSpecies(Int_t species) const;
 	Double_t Pt() const {return fPt;}
 	Double_t Eta() const {return fEta;}
 	Double_t Phi() const {return fPhi;}
 	Double_t Y(Int_t species) {
-		if (species >= 0 && species < 3) return fY[species];
+		if (UnknownSpecies(species)) return fY[species];
 		else return -999.;
 	}
 
@@ -82,46 +62,45 @@ public:
 
 	Int_t GetID() const {return fID;}
 	Int_t GetLabel() const {return fLabel;}
+	void GetTOFLabel(Int_t* label) const {label[0] = fTOFLabel[0]; label[1] = fTOFLabel[1]; label[2] = fTOFLabel[2];}
 	Short_t Charge() const {return fCharge;}
 	Int_t GetNclsTPC() const {return fNclsTPC;}
 
 	Double_t GetZAtDCA() const {return fDCAz;}
 	Double_t GetXYAtDCA() const {return fDCAxy;}
 
+	// TOF related Getters.
 	Double_t GetTOFsignal() const {return fTOFsignal;}
 	Double_t GetTOFsignalMinusExpected(Int_t species) const {
-		if (species < 0 || species > 2) {
-			cout<<"ERROR: Unknown species"<<endl;
-			return -10e10;
-		}
+		if (UnknownSpecies(species)) {return -10e10;}
 		return fTOFsignalMinusExpected[species];
 	}
 	Double_t GetTOFsignalExpected(Int_t species) const {
-		if (species < 0 || species > 2) {
-			cout<<"ERROR: Unknown species"<<endl;
-			return -10e10;
-		}
+		if (UnknownSpecies(species)) {return -10e10;}
 		return (fTOFsignal - fTOFsignalMinusExpected[species]);
 	}
+	Double_t GetTOFsigmaExpected(Int_t species) {
+		if (UnknownSpecies(species)) {return -10e10;}
+		if (GetNumberOfSigmasTOF(species) < 10e-10) {return -10e30;}
+		return (GetTOFsignalMinusExpected(species)/GetNumberOfSigmasTOF(species));
+	}
 	Double_t GetNumberOfSigmasTOF(Int_t species) const {
-		if (species < 0 || species > 2) {
-			cout<<"ERROR: Unknown species"<<endl;
-			return -10e10;
-		}
+		if (UnknownSpecies(species)) {return -10e10;}
 		return fTOFNsigma[species];
 	}
-	Double_t GetNumberOfSigmasTPC(Int_t species) const {
-		if (species < 0 || species > 2) {
-			cout<<"ERROR: Unknown species"<<endl;
-			return -10e10;
-		}
-		return fTPCNsigma[species];
+	Int_t GetTOFMatchingStatus() const {return fTOFMatchingStatus;}
+	Bool_t IsTOFMismatch() const {
+		if (fTOFMatchingStatus==1) {return kTRUE;}
+		else {return kFALSE;}
 	}
-	Bool_t IsTOFmismatch() const {return fIsTOFmismatch;}
 
 	Double_t GetTPCsignal() const {return fTPCsignal;}
 	Double_t GetTPCsignalMinusExpected(Int_t species) const {return fTPCsignalMinusExpected[species];}
 	Double_t GetTPCmomentum() const {return fTPCmomentum;}
+	Double_t GetNumberOfSigmasTPC(Int_t species) const {
+		if (UnknownSpecies(species)) {return -10e10;}
+		return fTPCNsigma[species];
+	}
 
 	Char_t GetITSClusterMap() const {return fITSClusterMap;}
 	Bool_t HasPointOnITSLayer(Int_t layer) const {
@@ -168,7 +147,7 @@ private:
 // Pointers to original Tracks etc (cannot be returned, will not be streamed/saved).
 	AliAODTrack*		fAODTrack;			//! Original AOD Track.
 	AliAODTrack*		fAODGlobalTrack;	//! Corresponding Global AOD Track.
-	const AliAODEvent*	fAODEvent;			//!	Original AOD Event.
+	AliAODEvent*		fAODEvent;			//!	Original AOD Event.
 	AliAODMCParticle*	fAODMCParticle;		//! Original MC Particle.
 	AliPIDResponse*		fPIDResponse;		//!	Original PID Response.
 
@@ -192,6 +171,7 @@ private:
 
 	Short_t				fID;				// Track ID.
 	Int_t 				fLabel;				// Track Label.
+	Int_t				fTOFLabel[3];		// Track TOF label.
 
 	Short_t				fCharge;			// Charge (is a Char_t in AliAODTrack)
 	Int_t				fNclsTPC;			// Number of clusters in TPC.
@@ -201,14 +181,14 @@ private:
 	Double_t			fDCAxy;				// xy at DCA.
 
 // PID Info.
-	Double_t			fTOFsignal;
+	Double_t			fTOFsignal;			
 	Double_t			fTOFsignalMinusExpected[3];
 	Double_t			fTOFNsigma[3];
-	Bool_t				fIsTOFmismatch;
-	Double_t			fTPCsignal;
+	Int_t				fTOFMatchingStatus;		// 0 -> match, 1 -> mismatch, 2 -> no TOF hit.
+	Double_t			fTPCsignal;			
 	Double_t			fTPCsignalMinusExpected[3];
 	Double_t			fTPCNsigma[3];
-	Double_t			fTPCmomentum;
+	Double_t			fTPCmomentum;		
 	UChar_t				fITSClusterMap;
 	Bool_t				fITSHits[6];
 
@@ -222,7 +202,13 @@ private:
 	Bool_t				fIsSecondaryFromWeakDecay;
 	Bool_t				fIsSecondaryFromMaterial;
 
+// Static variables.
+public:
+	static Double_t 	fSigmaTOFStd;
+	static Double_t 	fSigmaTPCStd;
+
 // Debug.
+private:
 	Int_t				fDebug;				// Debug flag.
 
 	ClassDef(AliTrackDiHadronPID,1);

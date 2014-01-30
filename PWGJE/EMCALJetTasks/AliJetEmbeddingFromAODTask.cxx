@@ -1,4 +1,4 @@
-// $Id: AliJetEmbeddingFromAODTask.cxx $
+// $Id$
 //
 // Jet embedding from AOD task.
 //
@@ -98,7 +98,8 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask() :
   fHistAODFileError(0),
   fHistNotEmbedded(0),
   fHistEmbeddingQA(0),
-  fHistRejectedEvents(0)
+  fHistRejectedEvents(0),
+  fEmbeddingCount(0)
 {
   // Default constructor.
   SetSuffix("AODEmbedding");
@@ -167,7 +168,8 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask(const char *name, Bool_t 
   fHistAODFileError(0),
   fHistNotEmbedded(0),
   fHistEmbeddingQA(0),
-  fHistRejectedEvents(0)
+  fHistRejectedEvents(0),
+  fEmbeddingCount(0)
 {
   // Standard constructor.
   SetSuffix("AODEmbedding");
@@ -336,6 +338,8 @@ Bool_t AliJetEmbeddingFromAODTask::OpenNextFile()
   
   if (fHistFileMatching)
     fHistFileMatching->Fill(fCurrentFileID, fCurrentAODFileID-1);
+
+  fEmbeddingCount = 0;
   
   return kTRUE;
 }
@@ -415,6 +419,8 @@ Bool_t AliJetEmbeddingFromAODTask::GetNextEntry()
 
   if (!fCurrentAODTree)
     return kFALSE;
+
+  fEmbeddingCount++;
 
   return kTRUE;
 }
@@ -616,7 +622,7 @@ void AliJetEmbeddingFromAODTask::Run()
 	      else {
 		AliDebug(3, "Track not embedded because ITS refit failed.");
 		continue;
-	    }
+	      }
 	    }
 	    else {
 	      type = 1;
@@ -644,6 +650,11 @@ void AliJetEmbeddingFromAODTask::Run()
 	    else
 	      type = ptrack->GetLabel();
 	    isEmc = ptrack->IsEMCAL();
+
+	    if (!fIncludeNoITS && type==2) {
+	      AliDebug(3, "Track not embedded because ITS refit failed.");
+	      continue;
+	    }
 	  }
 	}
 	

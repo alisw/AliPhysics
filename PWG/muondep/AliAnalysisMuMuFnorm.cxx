@@ -16,7 +16,7 @@
 ///
 /// AliAnalysisMuMuFnorm : class to encapsulate computation(s)
 /// of the normalisation factor used to get the equivalent
-/// number of MB events from the number of CMUL triggers
+/// number of MB events from the number of REF triggers
 ///
 /// The computed objects are stored within a AliMergeableCollection
 /// with 3 subdirectories, dependinf on their type
@@ -62,6 +62,7 @@ fCounterCollection(cc),
 fMergeableCollection(0x0),
 fIsOwner(kTRUE),
 fOCDBPath(ocdbpath),
+fResult(0x0),
 fIsCompactGraphs(compactGraphs),
 fReferenceTriggerType(refTriggerType)
 {
@@ -83,11 +84,11 @@ AliAnalysisMuMuFnorm::~AliAnalysisMuMuFnorm()
 //_____________________________________________________________________________
 void AliAnalysisMuMuFnorm::ComputeFnorm()
 {
-  /// Compute the CMUL to CINT ratio(s)
+  /// Compute the REF to CINT ratio(s)
   ///
   /// Using offline method
-  ///   - in one go CINT/CMUL
-  ///   - in two steps CINT/CMSL and CMSL/CMUL
+  ///   - in one go CINT/REF
+  ///   - in two steps CINT/CMSL and CMSL/REF
   ///
   /// Using scaler method
   ///   - bare scaler values
@@ -135,7 +136,7 @@ void AliAnalysisMuMuFnorm::ComputeFnorm()
   ComputeGraphRelDif("FnormOffline2PUPS","FnormOffline2");
   ComputeGraphRelDif("FnormOffline2PUPS","FnormOffline2PS");
   
-  ComputeGraphRelDif("CorrectionPSMB","CorrectionPSMUL");
+  ComputeGraphRelDif("CorrectionPSMB","CorrectionPSREF");
 
 //  for ( Int_t i = 0; i < 4; ++i )
 ///  {
@@ -166,8 +167,8 @@ void AliAnalysisMuMuFnorm::ComputeFnorm()
 //_____________________________________________________________________________
 void AliAnalysisMuMuFnorm::ComputeCorrectionFactors(Int_t eventSelectionCorrected)
 {
-  /// Compute individual graphs for the correction factors (PS_CMUL, PS_CINT,
-  /// F_pile-up,PS_CINT/PS_CMUL) used in the computation of (some) Fnorm factors
+  /// Compute individual graphs for the correction factors (PS_REF, PS_CINT,
+  /// F_pile-up,PS_CINT/PS_REF) used in the computation of (some) Fnorm factors
   ///
 
   TString graphName(Form("CorrectionGlobal%s",GetEventSelectionName(eventSelectionCorrected).Data()));;
@@ -198,11 +199,11 @@ void AliAnalysisMuMuFnorm::ComputeCorrectionFactors(Int_t eventSelectionCorrecte
   
   TGraphErrors* gPSCINT = GetGraph(Form("Correction%s%s",GetEventSelectionName(eventSelectionCorrected).Data(),GetTriggerTypeName(AliAnalysisMuMuFnorm::kMB).Data()));
                                    
-  TGraphErrors* gPSCMUL = GetGraph(Form("Correction%s%s", GetEventSelectionName(eventSelectionCorrected).Data(), GetTriggerTypeName(AliAnalysisMuMuFnorm::kMUL).Data()));
+  TGraphErrors* gPSREF = GetGraph(Form("Correction%s%s", GetEventSelectionName(eventSelectionCorrected).Data(), GetTriggerTypeName(fReferenceTriggerType).Data()));
                                    
   TGraphErrors* gPU = GetGraph(Form("CorrectionPU%s%s",GetEventSelectionName(eventSelectionCorrected).Data(), GetTriggerTypeName(AliAnalysisMuMuFnorm::kMB).Data()));
   
-  if ( !gPSCINT || !gPSCMUL || !gPU )
+  if ( !gPSCINT || !gPSREF || !gPU )
   {
     AliError("Did not get the relevant graphs. Cannot work");
     return;
@@ -219,15 +220,15 @@ void AliAnalysisMuMuFnorm::ComputeCorrectionFactors(Int_t eventSelectionCorrecte
       x = TString(gPSCINT->GetXaxis()->GetBinLabel(i)).Atoi();
     }
     
-    yGlobal = gPSCINT->GetY()[i] * gPU->GetY()[i] / gPSCMUL->GetY()[i];
+    yGlobal = gPSCINT->GetY()[i] * gPU->GetY()[i] / gPSREF->GetY()[i];
     
     yGlobalErr = yGlobal*AliAnalysisMuMuResult::ErrorABC(gPSCINT->GetY()[i],gPSCINT->GetEY()[i],
-                                                         gPSCMUL->GetY()[i],gPSCMUL->GetEY()[i],
+                                                         gPSREF->GetY()[i],gPSREF->GetEY()[i],
                                                          gPU->GetY()[i],gPU->GetEY()[i]);
     
-    y = gPSCINT->GetY()[i] / gPSCMUL->GetY()[i];
+    y = gPSCINT->GetY()[i] / gPSREF->GetY()[i];
     yerr = y * AliAnalysisMuMuResult::ErrorAB(gPSCINT->GetY()[i],gPSCINT->GetEY()[i],
-                                              gPSCMUL->GetY()[i],gPSCMUL->GetEY()[i]);
+                                              gPSREF->GetY()[i],gPSREF->GetEY()[i]);
 
     vx.push_back(x);
     vxerr.push_back(gPSCINT->GetEX()[i]);
@@ -253,20 +254,21 @@ void AliAnalysisMuMuFnorm::ComputeCorrectionFactors(Int_t eventSelectionCorrecte
 //_____________________________________________________________________________
 void AliAnalysisMuMuFnorm::ComputeFnormOffline(Int_t nstep, Bool_t pileUpCorrected, Int_t eventSelectionCorrected)
 {
-  /// Compute MB to CMUL ratio using offline method, either in 1 or 2 steps
+  /// Compute MB to REF ratio using offline method, either in 1 or 2 steps
   
   TString name("FnormOffline");
   TString title("Computed using offline information");
+  TString refInput = Form("0%s",GetTriggerTypeName(fReferenceTriggerType).Data());
   
   if (nstep==1)
   {
     name += "1";
-    title += " in one step (CINT/CINT&0MUL)";
+    title += Form(" in one step (CINT/CINT&%s)",refInput.Data());
   }
   else
   {
     name += "2";
-    title += " in two steps (CMSL/CMSL&0MUL x CINT/CINT&MSL)";
+    title += Form(" in two steps (CMSL/CMSL&%s x CINT/CINT&0MSL)",refInput.Data());
   }
   
   if (pileUpCorrected)
@@ -306,7 +308,7 @@ void AliAnalysisMuMuFnorm::ComputeFnormOffline(Int_t nstep, Bool_t pileUpCorrect
     
     TString mbTrigger = GetTriggerClassName(kMB,runNumber);
     TString muonTrigger = GetTriggerClassName(kMSL,runNumber);
-    TString dimuonTrigger = GetTriggerClassName(kMUL,runNumber);
+//    TString refTrigger = GetTriggerClassName(fReferenceTriggerType,runNumber);
     
     if (!mbTrigger.Length())
     {
@@ -316,18 +318,20 @@ void AliAnalysisMuMuFnorm::ComputeFnormOffline(Int_t nstep, Bool_t pileUpCorrect
     
     Double_t nofMB = GetSum(mbTrigger.Data(),runNumber,eventSelectionCorrected);
     Double_t nofMSL(0.0);
-    Double_t nofMSLw0MUL(0.0);
+    Double_t nofMSLw0REF(0.0);
     
     if ( nstep==2 )
     {
       nofMSL = GetSum(muonTrigger.Data(),runNumber,eventSelectionCorrected);
-      nofMSLw0MUL = GetSum(Form("%s&0MUL",muonTrigger.Data()),runNumber,eventSelectionCorrected);
+      TString counterName = muonTrigger;
+      if ( fReferenceTriggerType != kMSL ) counterName += Form("&%s",refInput.Data());
+      nofMSLw0REF = GetSum(counterName,runNumber,eventSelectionCorrected);
     }
     
-    Double_t nofMBw0MUL = GetSum(Form("%s&0MUL",mbTrigger.Data()),runNumber,eventSelectionCorrected);
+    Double_t nofMBw0REF = GetSum(Form("%s&%s",mbTrigger.Data(),refInput.Data()),runNumber,eventSelectionCorrected);
     Double_t nofMBw0MSL = GetSum(Form("%s&0MSL",mbTrigger.Data()),runNumber,eventSelectionCorrected);
     
-    if ( !nofMBw0MUL ) continue;
+    if ( !nofMBw0REF ) continue;
     if ( !nofMBw0MSL && nstep == 2 ) continue;
     
     Double_t purityMB(1.0);
@@ -356,24 +360,24 @@ void AliAnalysisMuMuFnorm::ComputeFnormOffline(Int_t nstep, Bool_t pileUpCorrect
       nofMB *= pileUpFactor;
     }
         
-    double value = nofMBw0MUL > 0.0 ? nofMB/nofMBw0MUL : 0.0;
+    double value = nofMBw0REF > 0.0 ? nofMB/nofMBw0REF : 0.0;
     double error = value*AliAnalysisMuMuResult::ErrorABC(nofMB,TMath::Sqrt(nofMB),
-                                                              nofMBw0MUL,TMath::Sqrt(nofMBw0MUL),
+                                                              nofMBw0REF,TMath::Sqrt(nofMBw0REF),
                                                               pileUpFactor,pileUpFactorError);
     
     if ( nstep == 2 )
     {
-      value = (nofMB/nofMSLw0MUL)*(nofMSL/nofMBw0MSL);
+      value = (nofMB/nofMSLw0REF)*(nofMSL/nofMBw0MSL);
       
       if ( runNumber == 196310 )
       {
-        AliDebug(1,Form("RUN %09d %d-%d-%d value=%e nofMB %e nofMSLw0MUL %e nofMSL %e nofMBw0MSL %e",
+        AliDebug(1,Form("RUN %09d %d-%d-%d value=%e nofMB %e nofMSLw%s %e nofMSL %e nofMBw0MSL %e",
                         runNumber,nstep,pileUpCorrected,eventSelectionCorrected,
-                        value,nofMB,nofMSLw0MUL,nofMSL,nofMBw0MSL));
+                        value,nofMB,refInput.Data(),nofMSLw0REF,nofMSL,nofMBw0MSL));
       }
       
       error = value*AliAnalysisMuMuResult::ErrorABCD(nofMB,TMath::Sqrt(nofMB),
-                                                          nofMSLw0MUL,TMath::Sqrt(nofMSLw0MUL),
+                                                          nofMSLw0REF,TMath::Sqrt(nofMSLw0REF),
                                                           nofMSL,TMath::Sqrt(nofMSL),
                                                           nofMBw0MSL,TMath::Sqrt(nofMBw0MSL));
     }
@@ -396,7 +400,7 @@ void AliAnalysisMuMuFnorm::ComputeFnormOffline(Int_t nstep, Bool_t pileUpCorrect
 void AliAnalysisMuMuFnorm::ComputeFnormScalers(Bool_t pileUpCorrected,
                                                Int_t eventSelectionCorrected)
 {
-  /// Compute the MB to CMUL ratio using the scalers method (from OCDB)
+  /// Compute the MB to REF ratio using the scalers method (from OCDB)
   ///
   /// i.e. Fnorm = L0B(MB) x PS(MB) x Fpile-up / ( L0B(REF) x PS(REF) )
   ///
@@ -457,7 +461,7 @@ void AliAnalysisMuMuFnorm::ComputeFnormScalers(Bool_t pileUpCorrected,
     Int_t runNumber = *it;
     
     TString mbTrigger = GetTriggerClassName(kMB,runNumber);
-    TString refTrigger = GetTriggerClassName(fReferenceTriggerType,runNumber);
+//    TString refTrigger = GetTriggerClassName(fReferenceTriggerType,runNumber);
     
     purityMB=purityREF=1.0;
     purityMBerror=purityREFerror=0.0;
@@ -1641,7 +1645,7 @@ void AliAnalysisMuMuFnorm::ScalerFnorm(Double_t& value, Double_t& error,
                                        Double_t L0bMB, Double_t purityMB, Double_t purityMBerror,
                                        Double_t pileUpFactor, Double_t pileUpFactorError)
 {
-  /// Compute the MB to CMUL ratio and its associated error
+  /// Compute the MB to REF ratio and its associated error
   
   value = error = 0.0;
   
@@ -1774,7 +1778,7 @@ AliAnalysisMuMuFnorm::WeightedMeanGraphs(const char* patternOrList, const char* 
   
   for ( Int_t ipoint = 0; ipoint < npts; ++ipoint )
   {
-    Double_t x,xref,xerr;
+    Double_t x(0.0),xref(0.0),xerr(0.0);
     Double_t sum(0.0);
     Double_t sume2(0.0);
     

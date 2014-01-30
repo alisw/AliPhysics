@@ -19,7 +19,7 @@
 #include "AliFMDMCDensityCalculator.h"
 #include "AliFMDMCCorrector.h"
 #include "AliFMDHistCollector.h"
-#include "AliFMDEnergyFitter.h"
+// #include "AliFMDEnergyFitter.h"
 #include "AliFMDEventPlaneFinder.h"
 #include <AliESDFMD.h>
 class AliESDEvent;
@@ -60,30 +60,22 @@ public:
    */
   AliForwardMCMultiplicityTask();
   /** 
-   * Copy constructor 
-   * 
-   * @param o Object to copy from 
-   */
-  AliForwardMCMultiplicityTask(const AliForwardMCMultiplicityTask& o);
-  /** 
-   * Assignment operator 
-   * 
-   * @param o Object to assign from 
-   * 
-   * @return Reference to this object 
-   */
-  AliForwardMCMultiplicityTask& 
-  operator=(const AliForwardMCMultiplicityTask& o);
-  /** 
    * @{ 
    * @name Interface methods 
    */
   /** 
+   * Called before processing a single event - should not do anything
+   * but clear data, etc.
+   * 
+   * @return true on success
+   */
+  virtual Bool_t PreEvent();
+  /** 
    * Process each event 
    *
-   * @param option Not used
+   * @param esd ESD event
    */  
-  virtual void UserExec(Option_t* option);
+  virtual Bool_t Event(AliESDEvent& esd);
   /** 
    * @} 
    */
@@ -174,13 +166,28 @@ public:
    */
 protected: 
   /** 
+   * Copy constructor 
+   * 
+   * @param o Object to copy from 
+   */
+  AliForwardMCMultiplicityTask(const AliForwardMCMultiplicityTask& o);
+  /** 
+   * Assignment operator 
+   * 
+   * @param o Object to assign from 
+   * 
+   * @return Reference to this object 
+   */
+  AliForwardMCMultiplicityTask& 
+  operator=(const AliForwardMCMultiplicityTask& o);
+  /** 
    * Initialize members based on eta and vertex axis - only available
    * after first event - called from SetupForData.
    * 
    * @param pe @f$\eta@f$ axis
    * @param pv Interaction point Z-coordinate axis 
    */
-  virtual void InitMembers(const TAxis* pe, const TAxis* pv);
+  virtual void InitMembers(const TAxis& pe, const TAxis& pv);
   /**
    * Create output branches - called from UserCreateOutputObjects
    */

@@ -17,9 +17,7 @@
 #ifndef ALIFORWARDCREATERESPONSEMATRICES_H
 #define ALIFORWARDCREATERESPONSEMATRICES_H
   
-#include "AliAnalysisTaskSE.h"
-#include "AliBasedNdetaTask.h"
-#include <TList.h>
+#include "AliBaseAODTask.h"
 
 class TH2D;
 
@@ -31,7 +29,7 @@ class TH2D;
  * @ingroup pwglf_forward_multdist
  * @todo Should not inherit from AliBasedNdetaTask 
  */
-class AliForwardCreateResponseMatrices : public AliBasedNdetaTask
+class AliForwardCreateResponseMatrices : public AliBaseAODTask
 {
 public:
   /** 
@@ -45,16 +43,6 @@ public:
    *
    */
   AliForwardCreateResponseMatrices(const char* name);
-  /**
-   * Copy Constructor
-   *
-   */
-  AliForwardCreateResponseMatrices(const AliForwardCreateResponseMatrices& o) : AliBasedNdetaTask(o), fTrigger(),fBins(), fOutput() { }
-  /**
-   * Assignment operator
-   *
-   */
-  AliForwardCreateResponseMatrices& operator=(const AliForwardCreateResponseMatrices&){return *this;}
   /** 
    * 
    * Destructor
@@ -93,7 +81,7 @@ public:
     /**
      * Process a single eta bin
      */    
-    virtual void Process(TH1D* dndetaForward, TH1D* dndetaCentral, TH1D* normForward,   TH1D* normCentral, TH1D* dndetaMC, Double_t VtxZ, Bool_t selectedTrigger,  Bool_t isMCNSDm, Bool_t isESDNSD, AliAODEvent* aodevent);
+    virtual void Process(TH1D* dndetaForward, TH1D* dndetaCentral, TH1D* normForward,   TH1D* normCentral, TH1D* dndetaMC, Double_t VtxZ, Bool_t selectedTrigger,  Bool_t isMCNSDm, Bool_t isESDNSD, const AliAODEvent& aodevent);
     Double_t fEtaLow;                  // low eta limit 
     Double_t fEtaHigh;                 // high eta limit 
     TH1D*    fHist;                    // multiplicity histogram 
@@ -118,34 +106,40 @@ public:
   /**
    * Create Output Objects
    */
-  virtual void UserCreateOutputObjects();
+  Bool_t Book();
+  /**
+   * Create Output Objects
+   */
+  Bool_t PreEven() { fIsSelected = false; return true; }
   /**
    * User Exec
    */
-  void UserExec(Option_t *option);
+  Bool_t Event(AliAODEvent& aod);
   /**
    * Terminate
    */
-  void Terminate(Option_t *option);
-  /** 
-   * implementation of pure virtual function, always returning 0
-   */
-  virtual TH2D* GetHistogram(const AliAODEvent* aod, Bool_t mc);
-  /** 
-   * Get single event forward and central @f$d^2N/d\eta d\phi@f$
-   * histograms
-   * 
-   */  
-  virtual void GetHistograms(const AliAODEvent* aod, TH2D& forward, TH2D& central); 
+  Bool_t Finalize() { return true; }
   /** 
    * Add another eta bin to the task
    */
   void AddBin(Double_t etaLow, Double_t etaHigh){fBins.Add(new Bin(etaLow, etaHigh)); }
- protected:
-  TH1I* fTrigger;  //Trigger histogram
+protected:
+  /**
+   * Copy Constructor
+   *
+   */
+  AliForwardCreateResponseMatrices(const AliForwardCreateResponseMatrices& o);
+  /**
+   * Assignment operator
+   *
+   */
+  AliForwardCreateResponseMatrices& 
+  operator=(const AliForwardCreateResponseMatrices&);
+  Bool_t CheckEvent(const AliAODForwardMult& fwd);
+
   TList  fBins;    // List of eta bins
-  TList*  fOutput; // Output list
-  ClassDef(AliForwardCreateResponseMatrices, 2); 
+  Bool_t fIsSelected;  // Did event pass the (analysis) cuts
+  ClassDef(AliForwardCreateResponseMatrices, 4); 
 };
 
 #endif

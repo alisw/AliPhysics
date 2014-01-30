@@ -15,7 +15,7 @@ public:
   }
   void CreateTasks(AliAnalysisManager* mgr)
   {
-    if (!ParUtilities::MakeScriptPAR(fHelper->Mode() != Helper::kLocal, 
+    if (!ParUtilities::MakeScriptPAR(fHelper->Mode() == Helper::kLocal, 
 				     "MyAnalysis.C", 
 				     "STEERBase,ESD,AOD,ANALYSIS,"
 				     "OADB,ANALYSISalice", fHelper))

@@ -13,6 +13,10 @@ Int_t CheckLoadLibrary(const char* library) {
 
   if (strlen(gSystem->GetLibraries(Form("%s.so", library), "", kFALSE)) > 0)
     return 1;
+  // Make sure current directory is in the load path so we load the right 
+  // library in case the target library already exist on the system (ProofLite)
+  gSystem->SetDynamicPath(Form("%s:%s", gSystem->WorkingDirectory(), 
+  			       gSystem->GetDynamicPath()));
   
   return gSystem->Load(library);
 }

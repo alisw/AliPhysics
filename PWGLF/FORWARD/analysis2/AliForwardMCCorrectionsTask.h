@@ -13,37 +13,41 @@
  * 
  * @ingroup pwglf_forward_aod
  */
-#include <AliAnalysisTaskSE.h>
+#include "AliBaseMCCorrectionsTask.h"
 #include <AliESDFMD.h>
-#include "AliFMDMCEventInspector.h"
 #include "AliFMDMCTrackDensity.h"
+#include "AliForwardUtil.h"
 #include <TH1I.h>
 class AliESDEvent;
 class AliFMDCorrSecondaryMap;
-class TH2D;
-class TH1D;
 class TList;
 
 
 /** 
- * Calculate the corrections in the forward regions
+ * Calculate the simulation-based corrections in the forward regions
  * 
+ * @image html alice-int-2012-040-secondary_origin.png "Fraction of secondaries"
+ *
  * @par Inputs: 
- *   - AliESDEvent 
+ *   - AliESDEvent (for steering only)
+ *   - AliTrackReference
+ *   - Kinematics 
+ *   - Geometry 
  *
  * @par Outputs: 
- *   - AliAODForwardMult 
+ *   - AliFMDCorrSecondaryMap
  * 
  * @par Histograms 
  *   
  * @par Corrections used 
+ *   - None
  * 
  * @ingroup pwglf_forward_tasks
  * @ingroup pwglf_forward_mc
  * @ingroup pwglf_forward_aod
  * 
  */
-class AliForwardMCCorrectionsTask : public AliAnalysisTaskSE
+class AliForwardMCCorrectionsTask : public AliBaseMCCorrectionsTask
 {
 public:
   /** 
@@ -56,6 +60,38 @@ public:
    * Constructor
    */
   AliForwardMCCorrectionsTask();
+  /** 
+   * @{ 
+   * @name Interface methods 
+   */
+  /** 
+   * Called before the event processing 
+   * 
+   * @return true on success
+   */
+  virtual Bool_t PreEvent();
+  /** 
+   * @} 
+   */
+  /** 
+   * Print this object 
+   * 
+   * @param option   Not used
+   */
+  void Print(Option_t* option="") const;
+  /** 
+   * Get a reference to the track density calculator 
+   * 
+   * @return Reference to the track density calculator 
+   */
+  AliBaseMCTrackDensity& GetTrackDensity() { return fTrackDensity; }
+  /** 
+   * Get a reference to the track density calculator 
+   * 
+   * @return Reference to the track density calculator 
+   */
+  const AliBaseMCTrackDensity& GetTrackDensity() const { return fTrackDensity; }
+protected: 
   /** 
    * Copy constructor 
    * 
@@ -70,108 +106,11 @@ public:
    * @return Reference to this object 
    */
   AliForwardMCCorrectionsTask& operator=(const AliForwardMCCorrectionsTask& o);
-  /** 
-   * @{ 
-   * @name Interface methods 
-   */
-  /** 
-   * Initialize the task 
-   * 
-   */
-  virtual void Init();
-  /** 
-   * Create output objects 
-   * 
-   */
-  virtual void UserCreateOutputObjects();
-  /** 
-   * Process each event 
-   *
-   * @param option Not used
-   */  
-  virtual void UserExec(Option_t* option);
-  /** 
-   * End of job
-   * 
-   * @param option Not used 
-   */
-  virtual void Terminate(Option_t* option);
-  /** 
-   * @} 
-   */
-  /** 
-   * Print this object 
-   * 
-   * @param option   Not used
-   */
-  void         Print(Option_t* option="") const;
-
-  /** 
-   * Set the vertex axis to use
-   * 
-   * @param nBins Number of bins
-   * @param vzMin Least @f$z@f$ coordinate of interation point
-   * @param vzMax Largest @f$z@f$ coordinate of interation point
-   */
-  void SetVertexAxis(Int_t nBins, Double_t vzMin, Double_t vzMax=-1000000);
-  /** 
-   * Set the vertex axis to use
-   * 
-   * @param axis Axis
-   */
-  void SetVertexAxis(const TAxis& axis);
-  /** 
-   * Set the eta axis to use
-   * 
-   * @param nBins Number of bins
-   * @param etaMin Least @f$\eta@f$ 
-   * @param etaMax Largest @f$\eta@f$ 
-   */
-  void SetEtaAxis(Int_t nBins, Double_t etaMin, Double_t etaMax=-1000000);
-  /** 
-   * Set the eta axis to use
-   * 
-   * @param axis Axis
-   */
-  void SetEtaAxis(const TAxis& axis);
-  /** 
-   * Get a reference to the track density calculator 
-   * 
-   * @return Reference to the track density calculator 
-   */
-  AliFMDMCTrackDensity& GetTrackDensity() { return fTrackDensity; }
-  /** 
-   * Get a reference to the track density calculator 
-   * 
-   * @return Reference to the track density calculator 
-   */
-  const AliFMDMCTrackDensity& GetTrackDensity() const { return fTrackDensity; }
-  /** 
-   * Get a reference to the event inspector
-   * 
-   * @return Reference to the event inspector 
-   */
-  AliFMDMCEventInspector& GetEventInspector() { return fInspector; }
-  /** 
-   * Get a reference to the event inspector
-   * 
-   * @return Reference to the event inspector 
-   */
-  const AliFMDMCEventInspector& GetEventInspector() const { return fInspector;}
-// setter for the fUseESDVertexCoordinate flag 
-void SetUseESDVertexCoordinate(Bool_t use){ fUseESDVertexCoordinate=use;}
- // setter for the fCalculateafterESDeventcuts flag 
-void SetCalculateafterESDeventcuts(Bool_t use){ fCalculateafterESDeventcuts=use;}
-
-
-
-
-protected: 
   /**
    * A vertex bin 
    * 
    */
-  struct VtxBin : public TNamed
+  struct VtxBin : public AliBaseMCCorrectionsTask::VtxBin
   {
     /** 
      * Constructor 
@@ -200,20 +139,11 @@ protected:
      */
     VtxBin& operator=(const VtxBin& o);
     /** 
-     * Get bin name
-     * 
-     * @param low       Lower @f$v_z@f$ bound
-     * @param high      Upper @f$v_z@f$ bound
-     * 
-     * @return Bin name 
-     */
-    static const char* BinName(Double_t low, Double_t high);
-    /** 
      * Declare output in passed list 
      * 
      * @param list List to put output in 
      */
-    void CreateOutputObjects(TList* list);
+    TList* CreateOutputObjects(TList* list);
     /** 
      * Calculate the background correction
      * 
@@ -237,34 +167,52 @@ protected:
 		AliFMDCorrSecondaryMap* map);
 
     AliForwardUtil::Histos fHists;    // Cache of per-ring histograms
-    TH2D*                  fPrimary;  // Cache or primary 
-    TH1D*                  fCounts;   // Event count 
-
     ClassDef(VtxBin,2); // Vertex bin 
   };
   /** 
-   * Define our vertex bins 
+   * Create a vertex bin 
    * 
-   * @param list List to read or add binst from/to
+   * @param low     Low cut on @f$IP_{z}@f$ 
+   * @param high    High cut on @f$IP_{z}@f$ 
+   * 
+   * @return Newly created vertex bin
    */
-  void DefineBins(TList* list);
+  AliBaseMCCorrectionsTask::VtxBin* CreateVtxBin(Double_t low, Double_t high);
+  /** 
+   * Process an ESD event
+   * 
+   * @param esd   ESD event 
+   * @param mc    MC event
+   * @param bin   Vertex bin 
+   * @param vz    @f$IP_{z}@f$ 
+   * 
+   * @return true on success
+   */
+  Bool_t ProcessESD(const AliESDEvent& esd, const AliMCEvent& mc, 
+		    AliBaseMCCorrectionsTask::VtxBin& bin,
+		    Double_t vz);
+  /** 
+   * Create corrections objects and store them in passed list
+   * 
+   * @param results Output list 
+   */
+  virtual void CreateCorrections(TList* results);
+  /** 
+   * Do the final processing of a vertex bin 
+   * 
+   * @param bin       Vertex bin
+   * @param iVz       Vertex bin number 
+   * 
+   * @return true on successd
+   */
+  virtual Bool_t FinalizeVtxBin(AliBaseMCCorrectionsTask::VtxBin* bin, 
+				UShort_t     iVz);
 
-  AliFMDMCEventInspector fInspector; // Event inspector 
-  AliFMDMCTrackDensity   fTrackDensity; // Get the track density 
 
-  AliESDFMD  fESDFMD;       // Cache object
-  TObjArray* fVtxBins;      // Vertex bins 
-  Bool_t     fFirstEvent;   // First event flag 
-  TH1I*      fHEvents;      // All Events
-  TH1I*      fHEventsTr;    // Histogram of events w/trigger
-  TH1I*      fHEventsTrVtx; // Events w/trigger and vertex 
-  TAxis      fVtxAxis;      // Vertex axis 
-  TAxis      fEtaAxis;      // Eta axis 
-  TList*     fList;         // Output list
-  Bool_t     fUseESDVertexCoordinate; // if yes it will  used Z vertex from ESD in calculations
-  Bool_t     fCalculateafterESDeventcuts; //if yes corrections will be calculated for events passing esd cuts     		 
-
-  ClassDef(AliForwardMCCorrectionsTask,3) // Forward corrections class
+  AliFMDMCTrackDensity    fTrackDensity; // Get the track density 
+  AliESDFMD               fESDFMD;       // Cache object
+  AliFMDCorrSecondaryMap* fSecCorr;
+  ClassDef(AliForwardMCCorrectionsTask,4) // Forward corrections class
 };
 
 #endif

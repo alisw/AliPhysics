@@ -26,7 +26,8 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTPCKStar
    Float_t     nsigmaKa = 2.0,
    Bool_t      enableMonitor = kTRUE,
    Bool_t      IsMcTrueOnly = kFALSE,
-   Bool_t      is2011PbPb = kFALSE,
+   UInt_t      triggerMask = AliVEvent::kMB,
+   //Bool_t      is2011PbPb = kFALSE,
    Int_t       nmix = 0,
    Float_t     maxDiffVzMix = 1.0,
    Float_t     maxDiffMultMix = 10.0,
@@ -47,17 +48,17 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTPCKStar
    } 
 
    // create the task and configure 
-   TString taskName = Form("TPCKStar%s%s_%i%i", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"), (Int_t)cutPiCandidate,(Int_t)cutKaCandidate );
+   TString taskName = Form("TPCKStar%s%s_%i%i_%s", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"), (Int_t)cutPiCandidate,(Int_t)cutKaCandidate, outNameSuffix.Data() );
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
    if (!isMC && !isPP){
      Printf(Form("========== SETTING USE CENTRALITY PATCH AOD049 : %s", (aodN==49)? "yes" : "no"));
      task->SetUseCentralityPatch(aodN==49);
    }
 
-   if(is2011PbPb)
-     task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
-   else
-     task->SelectCollisionCandidates(AliVEvent::kMB);
+   //if(is2011PbPb)
+   //task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+   //else
+   task->SelectCollisionCandidates(triggerMask);
 
 
    if (isPP) 
@@ -126,15 +127,18 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTPCKStar
    
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
-   gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigTPCanalysisKStar.C");
-   if (isMC) {
-     if (((Int_t)cutPiCandidate<4) && ((Int_t)cutKaCandidate<4))
-       Printf("========================== MC analysis - no PID used for efficiency estimation");
-     else 
-       Printf("========================== MC analysis - PID cuts used");
-   } else 
-     Printf("========================== DATA analysis - PID cuts used");
-   if (!ConfigTPCanalysisKStar(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, aodN)) return 0x0;
+   if(!isMC){
+     gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigTPCanalysisKStar.C");
+     if (!ConfigTPCanalysisKStar(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, aodN)) return 0x0;
+   }
+   else {
+     gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigTPCanalysisKStarMC.C");
+     if (!ConfigTPCanalysisKStarMC(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, 313, aodN)) return 0x0; //K*
+     if (!ConfigTPCanalysisKStarMC(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, -313, aodN)) return 0x0; //anti-K* 
+   }
+   
+   
+   
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------

@@ -18,24 +18,16 @@
 // -----------------------------------------------------------------------
 //  Author: Misha Veldhoen (misha.veldhoen@cern.ch)
 
-#include <iostream>
-using namespace std;
-
-// AOD includes.
-#include "AliAODTrack.h"
-#include "AliAODEvent.h"
-#include "AliAODVertex.h"
-#include "AliAODMCParticle.h"
-
-// PID includes.
-#include "AliPID.h"
-#include "AliPIDResponse.h"
-#include "AliTPCPIDResponse.h"
-
-// Class header.
 #include "AliTrackDiHadronPID.h"
 
+#include "AliAODVertex.h"
+#include "AliPID.h"
+#include "AliTPCPIDResponse.h"
+
 ClassImp(AliTrackDiHadronPID);
+
+Double_t AliTrackDiHadronPID::fSigmaTOFStd = 80.;	// Should perhaps be replaced with a 
+Double_t AliTrackDiHadronPID::fSigmaTPCStd = 3.5;   // function later.
 
 // -----------------------------------------------------------------------
 AliTrackDiHadronPID::AliTrackDiHadronPID():
@@ -64,7 +56,7 @@ AliTrackDiHadronPID::AliTrackDiHadronPID():
 	fDCAz(-999.),
 	fDCAxy(-999.),
 	fTOFsignal(-999.),
-	fIsTOFmismatch(kFALSE),
+	fTOFMatchingStatus(-1),
 	fTPCsignal(-999.),
 	fTPCmomentum(-999.),
 	fITSClusterMap(0),
@@ -98,6 +90,10 @@ AliTrackDiHadronPID::AliTrackDiHadronPID():
 		fITSHits[iITSlayer] = kFALSE;
 	}
 
+	for (Int_t iN = 0; iN < 3; ++iN) {
+		fTOFLabel[iN] = -1;	// Same convention as in ESDs
+	}
+
 }
 
 // -----------------------------------------------------------------------
@@ -127,7 +123,7 @@ AliTrackDiHadronPID::AliTrackDiHadronPID(AliAODTrack* track, AliAODTrack* global
 	fDCAz(-999.),
 	fDCAxy(-999.),
 	fTOFsignal(-999.),
-	fIsTOFmismatch(kFALSE),
+	fTOFMatchingStatus(-1),
 	fTPCsignal(-999.),
 	fTPCmomentum(-999.),
 	fITSClusterMap(0),	
@@ -160,9 +156,13 @@ AliTrackDiHadronPID::AliTrackDiHadronPID(AliAODTrack* track, AliAODTrack* global
 		fITSHits[iITSlayer] = kFALSE;
 	}
 
+	for (Int_t iN = 0; iN < 3; ++iN) {
+		fTOFLabel[iN] = -1;	// Same convention as in ESDs
+	}
+
 	if (track) {
 		fAODTrack = track;
-		fAODEvent = track->GetAODEvent();
+		fAODEvent = const_cast<AliAODEvent*>(track->GetAODEvent());
 	}
 	if (globaltrack) fAODGlobalTrack = globaltrack;
 	if (mcparticle) fAODMCParticle = mcparticle;
@@ -251,14 +251,14 @@ Bool_t AliTrackDiHadronPID::CopyFlags() {
 
 	// Copy Flags
 	fFlags = fAODGlobalTrack->GetFlags();
-
+/*
 	// Is TOF mismatch?
 	if (AliAODTrack::kTOFmismatch&fFlags) {
-		fIsTOFmismatch = kTRUE;
+		fTOFMatchingStatus = kTRUE;
 		//cout<<"Found TOF mismatch!"<<endl;
 	}
-	else fIsTOFmismatch = kFALSE; 
-
+	else fTOFMatchingStatus = kFALSE; 
+*/
 	fFlagsAvailable = kTRUE;
 	return fFlagsAvailable;
 
@@ -319,22 +319,23 @@ Bool_t AliTrackDiHadronPID::CopyITSInfo() {
 Bool_t AliTrackDiHadronPID::CopyTPCInfo() {
 
 	//
-	// Copies TPC info. (needs global track and pid response)
+	// Copies TPC info. (needs global track and pid response).
+	// See https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PIDInAnalysis#Signal_Deltas
+	// for more info!
 	//
 
 	if (fDebug > 2) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}	
 
-    // Get TPC signal.
-    fTPCsignal = fAODGlobalTrack->GetTPCsignal();
+	// Get TPC signal and momentum.
+	fTPCsignal = fAODGlobalTrack->GetTPCsignal();
+	fTPCmomentum = fAODGlobalTrack->GetTPCmomentum();
 
-    // Compute expected TPC signal under pi/K/p mass assumption.
-    AliTPCPIDResponse& TPCPIDResponse = fPIDResponse->GetTPCResponse();
-    fTPCmomentum = fAODGlobalTrack->GetTPCmomentum();
+	// Obtaining (signal - expected).
+	fPIDResponse->GetSignalDelta(AliPIDResponse::kTPC, fAODGlobalTrack, AliPID::kPion, fTPCsignalMinusExpected[0], kFALSE);
+	fPIDResponse->GetSignalDelta(AliPIDResponse::kTPC, fAODGlobalTrack, AliPID::kKaon, fTPCsignalMinusExpected[1], kFALSE);
+	fPIDResponse->GetSignalDelta(AliPIDResponse::kTPC, fAODGlobalTrack, AliPID::kProton, fTPCsignalMinusExpected[2], kFALSE);
 
-	fTPCsignalMinusExpected[0] = fTPCsignal - TPCPIDResponse.GetExpectedSignal(fTPCmomentum,AliPID::kPion);
-	fTPCsignalMinusExpected[1] = fTPCsignal - TPCPIDResponse.GetExpectedSignal(fTPCmomentum,AliPID::kKaon);
-	fTPCsignalMinusExpected[2] = fTPCsignal - TPCPIDResponse.GetExpectedSignal(fTPCmomentum,AliPID::kProton);
-
+	// Obtaining nSigma.
 	fTPCNsigma[0] = fPIDResponse->NumberOfSigmasTPC(fAODGlobalTrack, AliPID::kPion);
 	fTPCNsigma[1] = fPIDResponse->NumberOfSigmasTPC(fAODGlobalTrack, AliPID::kKaon);
 	fTPCNsigma[2] = fPIDResponse->NumberOfSigmasTPC(fAODGlobalTrack, AliPID::kProton);
@@ -349,23 +350,49 @@ Bool_t AliTrackDiHadronPID::CopyTOFInfo() {
 
 	//
 	// Copies TOF info. (needs global track)
+	// See https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PIDInAnalysis#Signal_Deltas
+	// for more info!	
 	//
 
 	if (fDebug > 2) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
-    // Get TOF signal.
-    fTOFsignal = fAODGlobalTrack->GetTOFsignal();
+    // Get TOF signal minus the start time.
+	fTOFsignal = fAODGlobalTrack->GetTOFsignal();
 
-    // Compute expected TOF signal under pi/K/p mass assumption.
-    Double_t times[AliPID::kSPECIES];
-    fAODGlobalTrack->GetIntegratedTimes(times);
-    fTOFsignalMinusExpected[0] = fTOFsignal - times[AliPID::kPion];
-	fTOFsignalMinusExpected[1] = fTOFsignal - times[AliPID::kKaon];
-	fTOFsignalMinusExpected[2] = fTOFsignal - times[AliPID::kProton];
+	// Get the expected times.
+	Double_t expectedTimes[AliPID::kSPECIES];
+	fAODGlobalTrack->GetIntegratedTimes(expectedTimes);
+/*
+	// Get the exptected TOF resolution.
+	AliTOFHeader* tofH = (AliTOFHeader*)ev->GetTOFHeader();
+	Double_t TOFpidRes[AliPID::kSPECIES];
+	tr->GetDetPid()->GetTOFpidResolution(TOFpidRes);
+*/
+	// Obtaining (signal - expected).
+	fPIDResponse->GetSignalDelta(AliPIDResponse::kTOF, fAODGlobalTrack, AliPID::kPion, fTOFsignalMinusExpected[0], kFALSE);
+	fPIDResponse->GetSignalDelta(AliPIDResponse::kTOF, fAODGlobalTrack, AliPID::kKaon, fTOFsignalMinusExpected[1], kFALSE);
+	fPIDResponse->GetSignalDelta(AliPIDResponse::kTOF, fAODGlobalTrack, AliPID::kProton, fTOFsignalMinusExpected[2], kFALSE);
 
+	// Obtaining nSigma.
 	fTOFNsigma[0] = fPIDResponse->NumberOfSigmasTOF(fAODGlobalTrack, AliPID::kPion);
 	fTOFNsigma[1] = fPIDResponse->NumberOfSigmasTOF(fAODGlobalTrack, AliPID::kKaon);
 	fTOFNsigma[2] = fPIDResponse->NumberOfSigmasTOF(fAODGlobalTrack, AliPID::kProton);	
+
+	// Q: what do the different TOF labels mean?
+	// It seems that in AOD090 the TOF labels aren't copied properly.
+	//Int_t TOFlabeltmp[3] = {0};
+	fAODGlobalTrack->GetTOFLabel(fTOFLabel);
+	//for (Int_t iN = 0; iN < 3; ++iN) {fTOFLabel[iN] = TOFlabeltmp[iN];}
+	/*
+	if (fTOFLabel[1] == fLabel || fTOFLabel[2] == fLabel) {
+		cout<<"fLabel = " << fLabel << " fTOFLabel =  {" << fTOFLabel[0] << "," << fTOFLabel[1] << "," << fTOFLabel[2] <<"}"<<endl; 
+	}
+	*/
+	// The following will only work in an AOD production with the fTOFlabels set.
+	// If it wasn't set, then every track will be labeled as no match.
+	if (fTOFLabel[0] == -1) {fTOFMatchingStatus = 2;} 			// TPC Track was not matched to any TOF hit.
+	else if (fLabel == fTOFLabel[0]) {fTOFMatchingStatus = 0;}	// TPC Track was correctly matched to a TOF hit.
+	else {fTOFMatchingStatus = 1;}								// TPC Track was mismatched.
 
 	fTOFInfoAvailable = kTRUE;
 	return fTOFInfoAvailable;
@@ -434,5 +461,18 @@ Bool_t AliTrackDiHadronPID::CopyMCInfo() {
 
 	fMCInfoAvailable = kTRUE;
 	return fMCInfoAvailable;
+
+}
+
+// -----------------------------------------------------------------------
+Bool_t AliTrackDiHadronPID::UnknownSpecies(Int_t species) const {
+
+	if (fDebug > 2) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (species < 0 || species > 2) {
+		cout<<"ERROR: Unknown species"<<endl;
+		return kTRUE;
+	} else {
+		return kFALSE;
+	}
 
 }

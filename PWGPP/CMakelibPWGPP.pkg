@@ -27,21 +27,165 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-file ( GLOB SRCS1 "*.cxx" )
-file ( GLOB SRCS2 "global/*.cxx" )
-file ( GLOB SRCS3 "cosmic/*.cxx" )
-file ( GLOB SRCS4 "tender/*.cxx" )
-file ( GLOB SRCS5 "HMPID/*.cxx" )
-file ( GLOB SRCS6 "ITS/*.cxx" )
-file ( GLOB SRCS7 "TRD/*.cxx" )
-file ( GLOB SRCS8 "TPC/*.cxx" )
-file ( GLOB SRCS9 "TOF/*.cxx" )
-file ( GLOB SRCS10 "TRD/info/*.cxx" )
-file ( GLOB SRCS11 "background/*.cxx" )
-file ( GLOB SRCS12 "Centrality/*.cxx" )
-file ( GLOB SRCS13 "ZDC/*.cxx" )
-file ( GLOB SRCS14 "T0/*.cxx" )
-file ( GLOB SRCS15 "VZERO/*PbPb.cxx" )
+#file ( GLOB SRCS1 "*.cxx" )
+set ( SRCS1
+  AliAnaFwdDetsQA.cxx
+  AliAnalysisTaskFilteredTree.cxx
+  AliAnalysisTaskIPInfo.cxx
+  AliAnalysisTaskITSTPCalignment.cxx
+  AliAnalysisTaskQASym.cxx
+  AliAnalysisTaskV0QA.cxx
+  AliAnalysisTaskVtXY.cxx
+  AliAnaVZEROQA.cxx
+  AliFilteredTreeAcceptanceCuts.cxx
+  AliFilteredTreeEventCuts.cxx
+  AliIntSpotEstimator.cxx
+  AliRelAlignerKalmanArray.cxx
+  AliTaskCDBconnect.cxx
+  AliTrackComparison.cxx
+  AliTrackComparisonESD.cxx
+  )
+#file ( GLOB SRCS2 "global/*.cxx" )
+set ( SRCS2
+  global/AliAnalysisTaskGlobalQA.cxx
+  global/AliAnalysisTaskVertexESD.cxx
+  global/AliGlobalFBFqa.cxx
+  )
+#file ( GLOB SRCS3 "cosmic/*.cxx" )
+set ( SRCS3
+  cosmic/AliAnalysisTaskCosmic.cxx
+  )
+#file ( GLOB SRCS4 "tender/*.cxx" )
+set ( SRCS4
+  tender/AliTenderSupplyTRD.cxx
+  )
+#file ( GLOB SRCS5 "HMPID/*.cxx" )
+set ( SRCS5
+  HMPID/AliHMPIDTaskQA.cxx
+  )
+#file ( GLOB SRCS6 "ITS/*.cxx" )
+set ( SRCS6
+  ITS/AliAlignmentDataFilterITS.cxx
+  ITS/AliAnalysisTaskdEdxSSDQA.cxx
+  ITS/AliAnalysisTaskITSAlignQA.cxx
+  ITS/AliAnalysisTaskITSsaTracks.cxx
+  ITS/AliAnalysisTaskITSTrackingCheck.cxx
+  ITS/AliAnalysisTaskSDDRP.cxx
+  ITS/AliAnalysisTaskSEImpParRes.cxx
+  ITS/AliAnalysisTaskSPD.cxx
+  ITS/AliMeanVertexCalibTask.cxx
+  ITS/AliMeanVertexPreprocessorOffline.cxx
+  ITS/AliSPDUtils.cxx
+  ITS/AliTrackMatchingTPCITSCosmics.cxx
+  )
+#file ( GLOB SRCS7 "TRD/*.cxx" )
+set ( SRCS7
+  TRD/AliTRDalignmentTask.cxx
+  TRD/AliTRDcalibration.cxx
+  TRD/AliTRDcheckDET.cxx
+  TRD/AliTRDcheckESD.cxx
+  TRD/AliTRDcheckPID.cxx
+  TRD/AliTRDcheckTRK.cxx
+  TRD/AliTRDclusterResolution.cxx
+  TRD/AliTRDefficiency.cxx
+  TRD/AliTRDefficiencyMC.cxx
+  TRD/AliTRDinfoGen.cxx
+  TRD/AliTRDmultiplicity.cxx
+  TRD/AliTRDonlineTrackletFilter.cxx
+  TRD/AliTRDonlineTrackletQA.cxx
+  TRD/AliTRDpidRefMaker.cxx
+  TRD/AliTRDpidRefMakerLQ.cxx
+  TRD/AliTRDpidRefMakerNN.cxx
+  TRD/AliTRDpwgppHelper.cxx
+  TRD/AliTRDrecoTask.cxx
+  TRD/AliTRDresolution.cxx
+  TRD/AliTRDv0Monitor.cxx
+  )
+#file ( GLOB SRCS8 "TPC/*.cxx" )
+set ( SRCS8
+  TPC/AliAnalysisNoiseTPC.cxx
+  TPC/AliComparisonDraw.cxx
+  TPC/AliComparisonObject.cxx
+  TPC/AliESDRecInfo.cxx
+  TPC/AliESDRecKinkInfo.cxx
+  TPC/AliESDRecV0Info.cxx
+  TPC/AliESDresolMakerFast.cxx
+  TPC/AliESDresolParams.cxx
+  TPC/AliGenInfoMaker.cxx
+  TPC/AliGenInfoTask.cxx
+  TPC/AliGenKinkInfo.cxx
+  TPC/AliGenV0Info.cxx
+  TPC/AliMaterialBudget.cxx
+  TPC/AliMCInfoCuts.cxx
+  TPC/AliMCInfo.cxx
+  TPC/AliMCTrackingTestTask.cxx
+  TPC/AliPerfAnalyzeInvPt.cxx
+  TPC/AliPerformanceDCA.cxx
+  TPC/AliPerformanceDEdx.cxx
+  TPC/AliPerformanceEff.cxx
+  TPC/AliPerformanceMatch.cxx
+  TPC/AliPerformanceMC.cxx
+  TPC/AliPerformanceObject.cxx
+  TPC/AliPerformancePtCalib.cxx
+  TPC/AliPerformancePtCalibMC.cxx
+  TPC/AliPerformanceRes.cxx
+  TPC/AliPerformanceTask.cxx
+  TPC/AliPerformanceTPC.cxx
+  TPC/AliRecInfoCuts.cxx
+  TPC/AliRecInfoMaker.cxx
+  TPC/AliTaskConfigOCDB.cxx
+  TPC/AliTPCComparisonPID.cxx
+  TPC/AliTPCPerformanceSummary.cxx
+  TPC/AliTPCtaskPID.cxx
+  TPC/AliTPCtaskQA.cxx
+  TPC/AliTreeDraw.cxx
+  )
+#file ( GLOB SRCS9 "TOF/*.cxx" )
+set ( SRCS9
+  TOF/AliAnalysisTaskTOFqa.cxx
+  TOF/AliAnalysisTaskTOFqaID.cxx
+  )
+#file ( GLOB SRCS10 "TRD/info/*.cxx" )
+set ( SRCS10
+  TRD/info/AliTRDchmbInfo.cxx
+  TRD/info/AliTRDclusterInfo.cxx
+  TRD/info/AliTRDeventCuts.cxx
+  TRD/info/AliTRDeventInfo.cxx
+  TRD/info/AliTRDpidInfo.cxx
+  TRD/info/AliTRDtrackInfo.cxx
+  TRD/info/AliTRDtrendingManager.cxx
+  TRD/info/AliTRDtrendValue.cxx
+  TRD/info/AliTRDtriggerInfo.cxx
+  TRD/info/AliTRDv0Info.cxx
+  )
+#file ( GLOB SRCS11 "background/*.cxx" )
+set ( SRCS11
+  background/AliHistoListWrapper.cxx
+  )
+#file ( GLOB SRCS12 "Centrality/*.cxx" )
+set ( SRCS12
+  Centrality/AliAnalysisTaskHIMultCorr.cxx
+  Centrality/AliMultiplicityCorrelations.cxx
+  )
+#file ( GLOB SRCS13 "ZDC/*.cxx" )
+set ( SRCS13
+  ZDC/AliAnalysisTaskZDC.cxx
+  ZDC/AliAnalysisTaskZDCpA.cxx
+  )
+#file ( GLOB SRCS14 "T0/*.cxx" )
+set ( SRCS14
+  T0/AliT0AnalysisTaskQA.cxx
+  )
+#file ( GLOB SRCS15 "VZERO/*PbPb.cxx" )
+set (SRCS15
+  VZERO/AliAnaVZEROPbPb.cxx
+  )
+#file ( GLOB SRCS16 "EvTrkSelection/*.cxx" )
+set ( SRCS16
+  EvTrkSelection/AliAnalysisTrackingUncertainties.cxx
+  EvTrkSelection/AliCFSingleTrackEfficiencyTask.cxx
+  EvTrkSelection/AliSingleTrackEffCuts.cxx
+  )
 
 list ( APPEND SRCS 
   ${SRCS1} 
@@ -59,11 +203,14 @@ list ( APPEND SRCS
   ${SRCS13} 
   ${SRCS14}
   ${SRCS15}
+  ${SRCS16}
   )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  PWGPPLinkDef.h)
+
+set ( EXPORT ${HDRS})
 
 set ( EINCLUDE
   TPC 
@@ -89,6 +236,7 @@ set ( EINCLUDE
   PWGPP/TRD/info 
   PWGPP/background 
   PWGPP/Centrality 
+  PWGPP/EvTrkSelection
   HMPID 
   PWGPP/ZDC 
   PWGPP/T0 
@@ -124,7 +272,6 @@ install ( FILES ZDC/AddTaskZDCQA.C
 	  DESTINATION PWGPP/ZDC)
 install ( FILES PilotTrain/AddTaskMuonQA.C
   	  DESTINATION PWGPP/PilotTrain/ )
-
 
 #
 # EOF

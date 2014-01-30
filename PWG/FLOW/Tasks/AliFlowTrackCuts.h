@@ -5,6 +5,7 @@
 // AliFlowTrackESDCuts:
 // A cut class for ESD, AOD and MC particles for the flow framework
 // author: Mikolaj Krzewicki (mikolaj.krzewicki@cern.ch)
+// mods:   Redmer A. Bertens (rbertens@cern.ch)
 
 #ifndef ALIFLOWTRACKCUTS_H
 #define ALIFLOWTRACKCUTS_H
@@ -48,6 +49,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   static AliFlowTrackCuts* GetStandardGlobalTrackCuts2010();
   static AliFlowTrackCuts* GetStandardITSTPCTrackCuts2009(Bool_t selPrimaries=kTRUE);
   static AliFlowTrackCuts* GetStandardVZEROOnlyTrackCuts();
+  static AliFlowTrackCuts* GetStandardVZEROOnlyTrackCuts2010();
+  static AliFlowTrackCuts* GetStandardVZEROOnlyTrackCuts2011();
   static AliFlowTrackCuts* GetStandardMuonTrackCuts(Bool_t isMC=kFALSE, Int_t passN=2);  // XZhang 20120604
 
   Int_t Count(AliVEvent* event=NULL);
@@ -240,6 +243,24 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   void Browse(TBrowser* b);
   Long64_t Merge(TCollection* list);
+  
+  //gain equalization and recentering
+  void SetV0gainEqualisation(TH1* g) {fV0gainEqualization=g;}
+  void SetV0Apol(Int_t ring, Float_t f) {fV0Apol[ring]=f;}
+  void SetV0Cpol(Int_t ring, Float_t f) {fV0Cpol[ring]=f;}
+  // set the flag for recentering (which is done in AliFlowEvent)
+  void SetApplyRecentering(Bool_t r)    { fApplyRecentering = r; }
+  Bool_t GetApplyRecentering() const    { return fApplyRecentering;}
+  void SetV0gainEqualizationPerRing(Bool_t s)   {fV0gainEqualizationPerRing = s;}
+  Bool_t GetV0gainEqualizationPerRing() const {return fV0gainEqualizationPerRing;}
+  // exclude vzero rings: 0 through 7 can be excluded by calling this setter multiple times
+  // 0 corresponds to segment ID 0 through 7, etc
+  // disabled vzero rings get weight 0
+  void SetUseVZERORing(Int_t i, Bool_t u) {
+      fUseVZERORing[i] = u;
+      fV0gainEqualizationPerRing = kTRUE;       // must be true for this option
+  }
+  Bool_t GetUseVZERORing(Int_t i) const {return fUseVZERORing[i];}
 
  protected:
   AliFlowTrack* MakeFlowTrackSPDtracklet() const;
@@ -339,10 +360,17 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Float_t fProbBayes; // bayesian probability
   Float_t fCurrCentr; // current centrality used for set the priors
   // end part added by F. Noferini
- 
+  
+  //gain equalization and recentering for vzero
+  TH1* fV0gainEqualization;     //! equalization histo
+  Bool_t fApplyRecentering;     // apply recentering of q-sub vectors in AliFlowEvent ?
+  Bool_t fV0gainEqualizationPerRing;    // per ring vzero gain calibration
+  Float_t fV0Apol[4];           //! calibration info per ring
+  Float_t fV0Cpol[4];           //! calibration info per ring
+  Bool_t fUseVZERORing[8];      // kTRUE means the ring is included
   static const Int_t fgkNumberOfV0tracks=64; //number of V0 channels
 
-  ClassDef(AliFlowTrackCuts,12)
+  ClassDef(AliFlowTrackCuts,13)
 };
 
 #endif

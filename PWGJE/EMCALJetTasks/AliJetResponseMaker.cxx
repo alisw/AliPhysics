@@ -26,7 +26,7 @@ ClassImp(AliJetResponseMaker)
 
 //________________________________________________________________________
 AliJetResponseMaker::AliJetResponseMaker() : 
-  AliAnalysisTaskEmcalJetDev("AliJetResponseMaker", kTRUE),
+  AliAnalysisTaskEmcalJet("AliJetResponseMaker", kTRUE),
   fMatching(kNoMatching),
   fMatchingPar1(0),
   fMatchingPar2(0),
@@ -116,7 +116,7 @@ AliJetResponseMaker::AliJetResponseMaker() :
 
 //________________________________________________________________________
 AliJetResponseMaker::AliJetResponseMaker(const char *name) : 
-  AliAnalysisTaskEmcalJetDev(name, kTRUE),
+  AliAnalysisTaskEmcalJet(name, kTRUE),
   fMatching(kNoMatching),
   fMatchingPar1(0),
   fMatchingPar2(0),
@@ -227,7 +227,7 @@ void AliJetResponseMaker::AllocateTH2()
   fHistJets1PtArea->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistJets1PtArea);
  
-  if (!fIsJet1Rho) {
+  if (fIsJet1Rho) {
     fHistJets1CorrPtArea = new TH2F("fHistJets1CorrPtArea", "fHistJets1CorrPtArea", 
 				    fNbins/2, 0, 1.5, 2*fNbins, -fMaxBinPt, fMaxBinPt);
     fHistJets1CorrPtArea->GetXaxis()->SetTitle("area");
@@ -267,7 +267,7 @@ void AliJetResponseMaker::AllocateTH2()
   fHistJets2PtArea->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistJets2PtArea);
 
-  if (!fIsJet2Rho) {
+  if (fIsJet2Rho) {
     fHistJets2CorrPtArea = new TH2F("fHistJets2CorrPtArea", "fHistJets2CorrPtArea", 
 				    fNbins/2, 0, 1.5, 2*fNbins, -fMaxBinPt, fMaxBinPt);
     fHistJets2CorrPtArea->GetXaxis()->SetTitle("area");
@@ -288,7 +288,7 @@ void AliJetResponseMaker::AllocateTH2()
   fHistJets2PtAreaAcceptance->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistJets2PtAreaAcceptance);
 
-  if (!fIsJet2Rho) {
+  if (fIsJet2Rho) {
     fHistJets2CorrPtAreaAcceptance = new TH2F("fHistJets2CorrPtAreaAcceptance", "fHistJets2CorrPtAreaAcceptance", 
 					      fNbins/2, 0, 1.5, 2*fNbins, -fMaxBinPt, fMaxBinPt);
     fHistJets2CorrPtAreaAcceptance->GetXaxis()->SetTitle("area");
@@ -870,7 +870,7 @@ void AliJetResponseMaker::UserCreateOutputObjects()
 {
   // Create user objects.
 
-  AliAnalysisTaskEmcalJetDev::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   AliJetContainer *jets1 = static_cast<AliJetContainer*>(fJetCollArray.At(0));
   AliJetContainer *jets2 = static_cast<AliJetContainer*>(fJetCollArray.At(1));
@@ -1086,7 +1086,7 @@ void AliJetResponseMaker::ExecOnce()
 {
   // Execute once.
 
-  AliAnalysisTaskEmcalJetDev::ExecOnce();
+  AliAnalysisTaskEmcalJet::ExecOnce();
 
   AliJetContainer *jets1 = static_cast<AliJetContainer*>(fJetCollArray.At(0));
   AliJetContainer *jets2 = static_cast<AliJetContainer*>(fJetCollArray.At(1));
@@ -1650,7 +1650,6 @@ Bool_t AliJetResponseMaker::FillHistograms()
       FillJetHisto(jet2->Phi(), jet2->Eta(), jet2->Pt(), jet2->Area(), jet2->NEF(), jet2->MaxPartPt()/jet2->Pt(), 
 		   jet2->Pt() - jets2->GetRhoVal() * jet2->Area(), jet2->MCPt(), 2);
 
-    // Verify accept jet
     if (jets2->AcceptJet(jet2))
       FillJetHisto(jet2->Phi(), jet2->Eta(), jet2->Pt(), jet2->Area(), jet2->NEF(), jet2->MaxPartPt()/jet2->Pt(), 
 		   jet2->Pt() - jets2->GetRhoVal() * jet2->Area(), jet2->MCPt(), 3);
@@ -1693,6 +1692,5 @@ Bool_t AliJetResponseMaker::FillHistograms()
     FillJetHisto(jet1->Phi(), jet1->Eta(), jet1->Pt(), jet1->Area(), jet1->NEF(), jet1->MaxPartPt()/jet1->Pt(), 
 		 jet1->Pt() - jets1->GetRhoVal() * jet1->Area(), jet1->MCPt(), 1);
   }
-
   return kTRUE;
 }

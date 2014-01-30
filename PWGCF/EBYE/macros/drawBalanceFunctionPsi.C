@@ -1,5 +1,5 @@
-const Int_t numberOfCentralityBins = 12;
-TString centralityArray[numberOfCentralityBins] = {"0-100","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3"};
+const Int_t numberOfCentralityBins = 13;
+TString centralityArray[numberOfCentralityBins] = {"0-80","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3","92-8500"};
 
 void drawBalanceFunctionPsi(const char* filename = "AnalysisResultsPsi.root", 
 			    Int_t gCentrality = 1,
@@ -221,7 +221,7 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   SetPlotStyle();
   gStyle->SetPalette(1,0);
   
-  const Int_t gRebin = gDeltaEtaDeltaPhi; //rebin by 2 the Delta phi projection
+  const Int_t gRebin = 1.;//gDeltaEtaDeltaPhi; //rebin by 2 the Delta phi projection (old)
 
   //balance function
   AliTHn *hP = NULL;
@@ -569,7 +569,66 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
     Printf("RMS: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetRMS(),gHistBalanceFunctionSubtracted->GetRMSError());
     Printf("Skeweness: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetSkewness(1),gHistBalanceFunctionSubtracted->GetSkewness(11));
     Printf("Kurtosis: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetKurtosis(1),gHistBalanceFunctionSubtracted->GetKurtosis(11));
+
+    // store in txt files
+
+    Bool_t kProjectInEta = kFALSE;
+    if(gDeltaEtaDeltaPhi==1) //Delta eta
+      kProjectInEta = kTRUE;
+
+    TString meanFileName = "";
+    if(kProjectInEta) 
+      meanFileName= "deltaEtaProjection_Mean.txt";
+    else              
+      meanFileName = "deltaPhiProjection_Mean.txt";
+    ofstream fileMean(meanFileName.Data(),ios::app);
+    fileMean << " " << gHistBalanceFunctionSubtracted->GetMean() << " " <<gHistBalanceFunctionSubtracted->GetMeanError()<<endl;
+    fileMean.close();
+
+    TString rmsFileName = "";
+    if(kProjectInEta) 
+      rmsFileName = "deltaEtaProjection_Rms.txt";
+    else              
+      rmsFileName = "deltaPhiProjection_Rms.txt";
+    ofstream fileRms(rmsFileName.Data(),ios::app);
+    fileRms << " " << gHistBalanceFunctionSubtracted->GetRMS() << " " <<gHistBalanceFunctionSubtracted->GetRMSError()<<endl;
+    fileRms.close();
+
+    TString skewnessFileName = "";
+    if(kProjectInEta) 
+      skewnessFileName = "deltaEtaProjection_Skewness.txt";
+    else              
+      skewnessFileName = "deltaPhiProjection_Skewness.txt";
+    ofstream fileSkewness(skewnessFileName.Data(),ios::app);
+    fileSkewness << " " << gHistBalanceFunctionSubtracted->GetSkewness(1) << " " <<gHistBalanceFunctionSubtracted->GetSkewness(11)<<endl;
+    fileSkewness.close();
+
+    TString kurtosisFileName = "";
+    if(kProjectInEta) 
+      kurtosisFileName = "deltaEtaProjection_Kurtosis.txt";
+    else
+      kurtosisFileName = "deltaPhiProjection_Kurtosis.txt";              
+    ofstream fileKurtosis(kurtosisFileName.Data(),ios::app);
+    fileKurtosis << " " << gHistBalanceFunctionSubtracted->GetKurtosis(1) << " " <<gHistBalanceFunctionSubtracted->GetKurtosis(11)<<endl;
+    fileKurtosis.close();
+
+    // Weighted mean as calculated for 1D analysis
+    Double_t weightedMean, weightedMeanError;
+    GetWeightedMean1D(gHistBalanceFunctionSubtracted,kProjectInEta,1,-1,weightedMean,weightedMeanError);
+    Printf("Weighted Mean: %lf - Error: %lf",weightedMean, weightedMeanError);
+    
+    // store in txt files
+    TString weightedMeanFileName = "";
+    if(kProjectInEta) 
+      weightedMeanFileName = "deltaEtaProjection_WeightedMean.txt";
+    else              
+      weightedMeanFileName = "deltaPhiProjection_WeightedMean.txt";
+    ofstream fileWeightedMean(weightedMeanFileName.Data(),ios::app);
+    fileWeightedMean << " " << weightedMean << " " <<weightedMeanError<<endl;
+    fileWeightedMean.close();
+  
   }
+
   // calculate the moments by hand
   else{
 
@@ -1027,4 +1086,55 @@ void drawBFPsi(const char* lhcPeriod = "LHC10h",
   pngName += ".png";
 
   c2->SaveAs(pngName.Data());
+}
+
+//____________________________________________________________________//
+void GetWeightedMean1D(TH1D *gHistBalance, Bool_t kProjectInEta = kTRUE, Int_t fStartBin = 1, Int_t fStopBin = -1, Double_t &WM, Double_t &WME) {
+
+  //Prints the calculated width of the BF and its error
+  Double_t gSumXi = 0.0, gSumBi = 0.0, gSumBiXi = 0.0;
+  Double_t gSumBiXi2 = 0.0, gSumBi2Xi2 = 0.0;
+  Double_t gSumDeltaBi2 = 0.0, gSumXi2DeltaBi2 = 0.0;
+  Double_t deltaBalP2 = 0.0, integral = 0.0;
+  Double_t deltaErrorNew = 0.0;
+
+  //Retrieve this variables from Histogram
+  Int_t fNumberOfBins = gHistBalance->GetNbinsX();
+  if(fStopBin > -1)   fNumberOfBins = fStopBin;
+  Double_t fP2Step    = gHistBalance->GetBinWidth(1); // assume equal binning!
+  Double_t currentBinCenter = 0.;
+
+  for(Int_t i = fStartBin; i <= fNumberOfBins; i++) {
+
+    // in order to recover the |abs| in the 1D analysis
+    currentBinCenter = gHistBalance->GetBinCenter(i);
+    if(kProjectInEta){
+      if(currentBinCenter < 0) currentBinCenter = -currentBinCenter;
+    }
+    else{
+      if(currentBinCenter < 0) currentBinCenter = -currentBinCenter;
+      if(currentBinCenter > TMath::Pi()) currentBinCenter = 2 * TMath::Pi() - currentBinCenter;
+    }
+
+    gSumXi += currentBinCenter;
+    gSumBi += gHistBalance->GetBinContent(i);
+    gSumBiXi += gHistBalance->GetBinContent(i)*currentBinCenter;
+    gSumBiXi2 += gHistBalance->GetBinContent(i)*TMath::Power(currentBinCenter,2);
+    gSumBi2Xi2 += TMath::Power(gHistBalance->GetBinContent(i),2)*TMath::Power(currentBinCenter,2);
+    gSumDeltaBi2 +=  TMath::Power(gHistBalance->GetBinError(i),2);
+    gSumXi2DeltaBi2 += TMath::Power(currentBinCenter,2) * TMath::Power(gHistBalance->GetBinError(i),2);
+    
+    deltaBalP2 += fP2Step*TMath::Power(gHistBalance->GetBinError(i),2);
+    integral += fP2Step*gHistBalance->GetBinContent(i);
+  }
+  for(Int_t i = fStartBin; i < fNumberOfBins; i++)
+    deltaErrorNew += gHistBalance->GetBinError(i)*(currentBinCenter*gSumBi - gSumBiXi)/TMath::Power(gSumBi,2);
+  
+  Double_t integralError = TMath::Sqrt(deltaBalP2);
+  
+  Double_t delta = gSumBiXi / gSumBi;
+  Double_t deltaError = (gSumBiXi / gSumBi) * TMath::Sqrt(TMath::Power((TMath::Sqrt(gSumXi2DeltaBi2)/gSumBiXi),2) + TMath::Power((gSumDeltaBi2/gSumBi),2) );
+  
+  WM  = delta;
+  WME = deltaError;
 }

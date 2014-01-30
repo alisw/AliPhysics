@@ -48,31 +48,31 @@ ClassImp(AliAnaPi0EbE)
 
 //____________________________
 AliAnaPi0EbE::AliAnaPi0EbE() :
-AliAnaCaloTrackCorrBaseClass(),fAnaType(kIMCalo),            fCalorimeter(""),
-fMinDist(0.),fMinDist2(0.),    fMinDist3(0.),
-fNLMCutMin(-1),                fNLMCutMax(10),
-fTimeCutMin(-10000),           fTimeCutMax(10000),
+AliAnaCaloTrackCorrBaseClass(),     fAnaType(kIMCalo),                  fCalorimeter(""),
+fMinDist(0.),fMinDist2(0.),         fMinDist3(0.),
+fNLMCutMin(-1),                     fNLMCutMax(10),
+fTimeCutMin(-10000),                fTimeCutMax(10000),
 fRejectTrackMatch(kTRUE),
 fFillPileUpHistograms(0),
-fFillWeightHistograms(kFALSE), fFillTMHisto(0),
-fFillSelectClHisto(0),         fFillOnlySimpleSSHisto(1),    fFillEMCALBCHistograms(0),
+fFillWeightHistograms(kFALSE),      fFillTMHisto(0),
+fFillSelectClHisto(0),              fFillOnlySimpleSSHisto(1),          fFillEMCALBCHistograms(0),
 fInputAODGammaConvName(""),
 fCheckSplitDistToBad(0),
 // Histograms
-fhPt(0),                       fhE(0),
-fhEEta(0),                     fhEPhi(0),
-fhPtEta(0),                    fhPtPhi(0),                   fhEtaPhi(0),
-fhEtaPhiEMCALBC0(0),           fhEtaPhiEMCALBC1(0),          fhEtaPhiEMCALBCN(0),
+fhPt(0),                            fhE(0),
+fhEEta(0),                          fhEPhi(0),
+fhPtEta(0),                         fhPtPhi(0),                         fhEtaPhi(0),
+fhEtaPhiEMCALBC0(0),                fhEtaPhiEMCALBC1(0),                fhEtaPhiEMCALBCN(0),
 fhTimeTriggerEMCALBC0UMReMatchOpenTime(0),
 fhTimeTriggerEMCALBC0UMReMatchCheckNeigh(0),
 fhTimeTriggerEMCALBC0UMReMatchBoth(0),
-fhPtCentrality(),              fhPtEventPlane(0),
-fhPtReject(0),                 fhEReject(0),
-fhEEtaReject(0),               fhEPhiReject(0),              fhEtaPhiReject(0),
-fhMass(0),                     fhMassPt(0),                  fhMassSplitPt(0),
-fhSelectedMass(0),             fhSelectedMassPt(0),          fhSelectedMassSplitPt(0),
-fhMassNoOverlap(0),            fhMassPtNoOverlap(0),         fhMassSplitPtNoOverlap(0),
-fhSelectedMassNoOverlap(0),    fhSelectedMassPtNoOverlap(0), fhSelectedMassSplitPtNoOverlap(0),
+fhPtCentrality(),                   fhPtEventPlane(0),
+fhPtReject(0),                      fhEReject(0),
+fhEEtaReject(0),                    fhEPhiReject(0),                    fhEtaPhiReject(0),
+fhMass(0),                          fhMassPt(0),                        fhMassSplitPt(0),
+fhSelectedMass(0),                  fhSelectedMassPt(0),                fhSelectedMassSplitPt(0),
+fhMassNoOverlap(0),                 fhMassPtNoOverlap(0),               fhMassSplitPtNoOverlap(0),
+fhSelectedMassNoOverlap(0),         fhSelectedMassPtNoOverlap(0),       fhSelectedMassSplitPtNoOverlap(0),
 fhMCPi0PtRecoPtPrim(0),                       fhMCEtaPtRecoPtPrim(0),
 fhMCPi0PtRecoPtPrimNoOverlap(0),              fhMCEtaPtRecoPtPrimNoOverlap(0),
 fhMCPi0SplitPtRecoPtPrim(0),                  fhMCEtaSplitPtRecoPtPrim(0),
@@ -81,44 +81,44 @@ fhMCPi0SelectedPtRecoPtPrim(0),               fhMCEtaSelectedPtRecoPtPrim(0),
 fhMCPi0SelectedPtRecoPtPrimNoOverlap(0),      fhMCEtaSelectedPtRecoPtPrimNoOverlap(0),
 fhMCPi0SelectedSplitPtRecoPtPrim(0),          fhMCEtaSelectedSplitPtRecoPtPrim(0),
 fhMCPi0SelectedSplitPtRecoPtPrimNoOverlap(0), fhMCEtaSelectedSplitPtRecoPtPrimNoOverlap(0),
-fhAsymmetry(0),                fhSelectedAsymmetry(0),
-fhSplitE(0),                   fhSplitPt(0),
-fhSplitPtEta(0),               fhSplitPtPhi(0),
+fhAsymmetry(0),                     fhSelectedAsymmetry(0),
+fhSplitE(0),                        fhSplitPt(0),
+fhSplitPtEta(0),                    fhSplitPtPhi(0),
 fhNLocMaxSplitPt(0),
-fhPtDecay(0),                  fhEDecay(0),
+fhPtDecay(0),                       fhEDecay(0),
 // Shower shape histos
-fhEDispersion(0),              fhELambda0(0),                fhELambda1(0),
-fhELambda0NoTRD(0),            fhELambda0FracMaxCellCut(0),
-fhEFracMaxCell(0),             fhEFracMaxCellNoTRD(0),
-fhENCells(0),                  fhETime(0),                   fhEPairDiffTime(0),
-fhDispEtaE(0),                 fhDispPhiE(0),
-fhSumEtaE(0),                  fhSumPhiE(0),                 fhSumEtaPhiE(0),
-fhDispEtaPhiDiffE(0),          fhSphericityE(0),
+fhEDispersion(0),                   fhELambda0(0),                      fhELambda1(0),
+fhELambda0NoTRD(0),                 fhELambda0FracMaxCellCut(0),
+fhEFracMaxCell(0),                  fhEFracMaxCellNoTRD(0),
+fhENCells(0),                       fhETime(0),                         fhEPairDiffTime(0),
+fhDispEtaE(0),                      fhDispPhiE(0),
+fhSumEtaE(0),                       fhSumPhiE(0),                       fhSumEtaPhiE(0),
+fhDispEtaPhiDiffE(0),               fhSphericityE(0),
 
 // MC histos
-fhMCE(),                       fhMCPt(),
-fhMCPhi(),                     fhMCEta(),
-fhMCEReject(),                 fhMCPtReject(),
+fhMCE(),                            fhMCPt(),
+fhMCPhi(),                          fhMCEta(),
+fhMCEReject(),                      fhMCPtReject(),
 fhMCPtCentrality(),
-fhMCPi0PtGenRecoFraction(0),   fhMCEtaPtGenRecoFraction(0),
-fhMCPi0DecayPt(0),             fhMCPi0DecayPtFraction(0),
-fhMCEtaDecayPt(0),             fhMCEtaDecayPtFraction(0),
+fhMCPi0PtGenRecoFraction(0),        fhMCEtaPtGenRecoFraction(0),
+fhMCPi0DecayPt(0),                  fhMCPi0DecayPtFraction(0),
+fhMCEtaDecayPt(0),                  fhMCEtaDecayPtFraction(0),
 fhMCOtherDecayPt(0),
-fhMassPairMCPi0(0),            fhMassPairMCEta(0),
-fhAnglePairMCPi0(0),           fhAnglePairMCEta(0),
+fhMassPairMCPi0(0),                 fhMassPairMCEta(0),
+fhAnglePairMCPi0(0),                fhAnglePairMCEta(0),
 // Weight studies
-fhECellClusterRatio(0),        fhECellClusterLogRatio(0),
-fhEMaxCellClusterRatio(0),     fhEMaxCellClusterLogRatio(0),
-fhTrackMatchedDEta(0),         fhTrackMatchedDPhi(0),        fhTrackMatchedDEtaDPhi(0),
-fhTrackMatchedDEtaPos(0),      fhTrackMatchedDPhiPos(0),     fhTrackMatchedDEtaDPhiPos(0),
-fhTrackMatchedDEtaNeg(0),      fhTrackMatchedDPhiNeg(0),     fhTrackMatchedDEtaDPhiNeg(0),
+fhECellClusterRatio(0),             fhECellClusterLogRatio(0),
+fhEMaxCellClusterRatio(0),          fhEMaxCellClusterLogRatio(0),
+fhTrackMatchedDEta(0),              fhTrackMatchedDPhi(0),              fhTrackMatchedDEtaDPhi(0),
+fhTrackMatchedDEtaPos(0),           fhTrackMatchedDPhiPos(0),           fhTrackMatchedDEtaDPhiPos(0),
+fhTrackMatchedDEtaNeg(0),           fhTrackMatchedDPhiNeg(0),           fhTrackMatchedDEtaDPhiNeg(0),
 fhTrackMatchedMCParticleE(0),
-fhTrackMatchedMCParticleDEta(0), fhTrackMatchedMCParticleDPhi(0),
-fhdEdx(0),                     fhEOverP(0),                 fhEOverPNoTRD(0),
+fhTrackMatchedMCParticleDEta(0),    fhTrackMatchedMCParticleDPhi(0),
+fhdEdx(0),                          fhEOverP(0),                        fhEOverPNoTRD(0),
 // Number of local maxima in cluster
-fhNLocMaxE(0),                 fhNLocMaxPt(0),
+fhNLocMaxE(0),                      fhNLocMaxPt(0),                     fhNLocMaxPtReject(0),
 // PileUp
-fhTimePtNoCut(0),                    fhTimePtSPD(0),           fhTimePtSPDMulti(0),
+fhTimePtNoCut(0),                   fhTimePtSPD(0),                     fhTimePtSPDMulti(0),
 fhTimeNPileUpVertSPD(0),            fhTimeNPileUpVertTrack(0),
 fhTimeNPileUpVertContributors(0),
 fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0),
@@ -132,7 +132,6 @@ fhPtNPileUpSPDVtxTimeCut2(0),       fhPtNPileUpTrkVtxTimeCut2(0)
   {
     fhMCE              [i] = 0;
     fhMCPt             [i] = 0;
-    fhMCNLocMaxPt      [i] = 0;
     fhMCPhi            [i] = 0;
     fhMCEta            [i] = 0;
     fhMCPtCentrality   [i] = 0;
@@ -141,7 +140,10 @@ fhPtNPileUpSPDVtxTimeCut2(0),       fhPtNPileUpTrkVtxTimeCut2(0)
     fhMCSplitPt        [i] = 0;
     fhMCSplitPtPhi     [i] = 0;
     fhMCSplitPtEta     [i] = 0;
+    
+    fhMCNLocMaxPt      [i] = 0;
     fhMCNLocMaxSplitPt [i] = 0;
+    fhMCNLocMaxPtReject[i] = 0;
     
     fhEMCLambda0       [i] = 0;
     fhEMCLambda0NoTRD  [i] = 0;
@@ -226,8 +228,8 @@ fhPtNPileUpSPDVtxTimeCut2(0),       fhPtNPileUpTrkVtxTimeCut2(0)
   
 }
 
-//_______________________________________________________________________________________________
-void AliAnaPi0EbE::FillPileUpHistograms(const Float_t pt, const Float_t time, AliVCluster * calo)
+//___________________________________________________________________________________
+void AliAnaPi0EbE::FillPileUpHistograms(Float_t pt, Float_t time, AliVCluster * calo)
 {
   // Fill some histograms to understand pile-up
   if(!fFillPileUpHistograms) return;
@@ -400,8 +402,8 @@ void AliAnaPi0EbE::FillPileUpHistograms(const Float_t pt, const Float_t time, Al
 }
 
 
-//___________________________________________________________________________________________
-void AliAnaPi0EbE::FillRejectedClusterHistograms(const TLorentzVector mom, const Int_t mctag)
+//______________________________________________________________________________________________
+void AliAnaPi0EbE::FillRejectedClusterHistograms(TLorentzVector mom, Int_t mctag, Int_t nMaxima)
 {
   // Fill histograms that do not pass the identification (SS case only)
   
@@ -418,19 +420,20 @@ void AliAnaPi0EbE::FillRejectedClusterHistograms(const TLorentzVector mom, const
   fhEPhiReject   ->Fill(ener,phi);
   fhEtaPhiReject ->Fill(eta,phi);
   
+  fhNLocMaxPtReject->Fill(pt,nMaxima);
+
   if(IsDataMC())
   {
     Int_t mcIndex = GetMCIndex(mctag);
     fhMCEReject  [mcIndex] ->Fill(ener);
     fhMCPtReject [mcIndex] ->Fill(pt);
+    fhMCNLocMaxPtReject[mcIndex]->Fill(pt,nMaxima);
   }
 }
 
-//_____________________________________________________________________________________
-void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster,
-                                                 const Int_t nMaxima,
-                                                 const Int_t tag,
-                                                 const Float_t asy)
+//___________________________________________________________________________________
+void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, Int_t nMaxima,
+                                                 Int_t tag, Float_t asy)
 {
   // Fill shower shape, timing and other histograms for selected clusters from decay
   
@@ -1165,11 +1168,17 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     
     if(fAnaType == kSSCalo)
     {
-      fhNLocMaxPt = new TH2F("hNLocMaxPt","Number of local maxima in cluster",
+      fhNLocMaxPt = new TH2F("hNLocMaxPt","Number of local maxima in cluster, selected clusters",
                              nptbins,ptmin,ptmax,10,0,10);
       fhNLocMaxPt ->SetYTitle("N maxima");
       fhNLocMaxPt ->SetXTitle("p_{T} (GeV/c)");
       outputContainer->Add(fhNLocMaxPt) ;
+
+      fhNLocMaxPtReject = new TH2F("hNLocMaxPtReject","Number of local maxima in cluster, rejected clusters",
+                             nptbins,ptmin,ptmax,10,0,10);
+      fhNLocMaxPtReject ->SetYTitle("N maxima");
+      fhNLocMaxPtReject ->SetXTitle("p_{T} (GeV/c)");
+      outputContainer->Add(fhNLocMaxPtReject) ;
     }
     
     for (Int_t i = 0; i < 3; i++)
@@ -1586,14 +1595,21 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
         
         if(fAnaType == kSSCalo)
         {
-          
           fhMCNLocMaxPt[i] = new TH2F
           (Form("hNLocMaxPt_MC%s",pname[i].Data()),
-           Form("cluster from %s, pT of cluster, for NLM",ptype[i].Data()),
+           Form("cluster from %s, pT of cluster vs NLM, accepted",ptype[i].Data()),
            nptbins,ptmin,ptmax,10,0,10);
           fhMCNLocMaxPt[i] ->SetYTitle("N maxima");
           fhMCNLocMaxPt[i] ->SetXTitle("p_{T} (GeV/c)");
           outputContainer->Add(fhMCNLocMaxPt[i]) ;
+ 
+          fhMCNLocMaxPtReject[i] = new TH2F
+          (Form("hNLocMaxPtReject_MC%s",pname[i].Data()),
+           Form("cluster from %s, pT of cluster vs NLM, rejected",ptype[i].Data()),
+           nptbins,ptmin,ptmax,10,0,10);
+          fhMCNLocMaxPtReject[i] ->SetYTitle("N maxima");
+          fhMCNLocMaxPtReject[i] ->SetXTitle("p_{T} (GeV/c)");
+          outputContainer->Add(fhMCNLocMaxPtReject[i]) ;
           
           fhMCEReject[i]  = new TH1F
           (Form("hEReject_MC%s",pname[i].Data()),
@@ -2816,26 +2832,6 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     if(GetDebug() > 1)
       printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - FillAOD: Min pt cut and fiducial cut passed: pt %3.2f, phi %2.2f, eta %1.2f\n",mom.Pt(),mom.Phi(),mom.Eta());
     
-    //Check Distance to Bad channel, set bit.
-    Double_t distBad=calo->GetDistanceToBadChannel() ; //Distance to bad channel
-    if(distBad < 0.) distBad=9999. ; //workout strange convension dist = -1. ;
-    if(distBad < fMinDist) //In bad channel (PHOS cristal size 2.2x2.2 cm)
-      continue ;
-    
-    if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - FillAOD: Bad channel cut passed %4.2f\n",distBad);
-    
-    //If too low number of cells, skip it
-    if ( calo->GetNCells() < GetCaloPID()->GetClusterSplittingMinNCells()) continue ;
-    
-    if(GetDebug() > 1)
-      printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - FillAOD: N cells cut passed %d > %d\n",
-             calo->GetNCells(), GetCaloPID()->GetClusterSplittingMinNCells());
-    
-    //.......................................
-    // TOF cut, BE CAREFUL WITH THIS CUT
-    Double_t tof = calo->GetTOF()*1e9;
-    if(tof < fTimeCutMin || tof > fTimeCutMax) continue ;
-    
     //Play with the MC stack if available
     //Check origin of the candidates
     Int_t tag	= 0 ;
@@ -2845,17 +2841,47 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       //GetMCAnalysisUtils()->CheckMultipleOrigin(calo->GetLabels(),calo->GetNLabels(), GetReader(), aodpi0.GetInputFileIndex(), tag);
       if(GetDebug() > 0) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Origin of candidate %d\n",tag);
     }
-            
+    
+    //Int_t nMaxima = GetCaloUtils()->GetNumberOfLocalMaxima(calo, cells); // NLM
+    
+    //Check Distance to Bad channel, set bit.
+    Double_t distBad=calo->GetDistanceToBadChannel() ; //Distance to bad channel
+    if(distBad < 0.) distBad=9999. ; //workout strange convension dist = -1. ;
+    if(distBad < fMinDist){ //In bad channel (PHOS cristal size 2.2x2.2 cm)
+      //FillRejectedClusterHistograms(mom,tag,nMaxima);
+      continue ;
+    }
+    if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - FillAOD: Bad channel cut passed %4.2f\n",distBad);
+    
+    //If too low number of cells, skip it
+    if ( calo->GetNCells() < GetCaloPID()->GetClusterSplittingMinNCells())
+    {
+      //FillRejectedClusterHistograms(mom,tag,nMaxima);
+      continue ;
+    }
+    
+    if(GetDebug() > 1)
+      printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - FillAOD: N cells cut passed %d > %d\n",
+             calo->GetNCells(), GetCaloPID()->GetClusterSplittingMinNCells());
+    
+    //.......................................
+    // TOF cut, BE CAREFUL WITH THIS CUT
+    Double_t tof = calo->GetTOF()*1e9;
+    if(tof < fTimeCutMin || tof > fTimeCutMax)
+    {
+      //FillRejectedClusterHistograms(mom,tag,nMaxima);
+      continue ;
+    }
 
     //Check PID
     //PID selection or bit setting
-    Int_t    nMaxima = 0 ;
-    Double_t mass    = 0 , angle = 0;
+    Int_t    nMaxima  = 0;
+    Double_t mass     = 0, angle    = 0;
+    Int_t    absId1   =-1, absId2   =-1;
+    Float_t  distbad1 =-1, distbad2 =-1;
+    Bool_t   fidcut1  = 0, fidcut2  = 0;
     TLorentzVector    l1, l2;
-    Int_t    absId1   =-1; Int_t   absId2   =-1;
-    Float_t  distbad1 =-1; Float_t distbad2 =-1;
-    Bool_t   fidcut1  = 0; Bool_t  fidcut2  = 0;
-    
+
     Int_t idPartType = GetCaloPID()->GetIdentifiedParticleTypeFromClusterSplitting(calo,cells,GetCaloUtils(),
                                                                                    GetVertex(evtIndex),nMaxima,
                                                                                    mass,angle,l1,l2,absId1,absId2,
@@ -2870,22 +2896,19 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
        (!fidcut2 || !fidcut1 || distbad1 < fMinDist || distbad2 < fMinDist))
     {
       if(GetDebug() > 1)
-        printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Dist to bad channel cl %f, cl1 %f, cl2 %f; fid cl1 %d, cl2 %d \n",
+        Info("MakeShowerShapeIdentification", "Dist to bad channel cl %f, cl1 %f, cl2 %f; fid cl1 %d, cl2 %d \n",
                calo->GetDistanceToBadChannel(),distbad1,distbad2, fidcut1,fidcut2);
       
+      //FillRejectedClusterHistograms(mom,tag,nMaxima);
       continue ;
     }
     
     //Skip events with too few or too many  NLM
     if(nMaxima < fNLMCutMin || nMaxima > fNLMCutMax)
     {
-      FillRejectedClusterHistograms(mom,tag);
+      //FillRejectedClusterHistograms(mom,tag,nMaxima);
       continue ;
     }
-    
-    if(nMaxima == 1 && fNLMECutMin[0] > mom.E()) continue;
-    if(nMaxima == 2 && fNLMECutMin[1] > mom.E()) continue;
-    if(nMaxima >  2 && fNLMECutMin[2] > mom.E()) continue;
     
     if(GetDebug() > 1)
       printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - NLM %d accepted \n",nMaxima);
@@ -2893,7 +2916,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     //Skip matched clusters with tracks
     if(fRejectTrackMatch && IsTrackMatched(calo, GetReader()->GetInputEvent()))
     {
-      FillRejectedClusterHistograms(mom,tag);
+      FillRejectedClusterHistograms(mom,tag,nMaxima);
       continue ;
     }
 
@@ -2984,7 +3007,6 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     if(e1+e2 > 0) asy = (e1-e2) / (e1+e2);
     fhAsymmetry->Fill(mom.E(),asy);
     
-    
     if(IsDataMC())
     {
       fhMCEAsymmetry[mcIndex]->Fill(mom.E(),asy);
@@ -2993,20 +3015,20 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     // If cluster does not pass pid, not pi0/eta, skip it.
     if     (GetOutputAODName().Contains("Pi0") && idPartType != AliCaloPID::kPi0)
     {
-      if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Cluster is not Pi0\n");
-      FillRejectedClusterHistograms(mom,tag);
+      if(GetDebug() > 1) Info("MakeShowerShapeIdentification","Cluster is not Pi0\n");
+      FillRejectedClusterHistograms(mom,tag,nMaxima);
       continue ;
     }
     
     else if(GetOutputAODName().Contains("Eta") && idPartType != AliCaloPID::kEta)
     {
-      if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Cluster is not Eta\n");
-      FillRejectedClusterHistograms(mom,tag);
+      if(GetDebug() > 1) Info("MakeShowerShapeIdentification","Cluster is not Eta\n");
+      FillRejectedClusterHistograms(mom,tag,nMaxima);
       continue ;
     }
     
     if(GetDebug() > 1)
-      printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Pi0/Eta selection cuts passed: pT %3.2f, pdg %d\n",
+      Info("MakeShowerShapeIdentification","Pi0/Eta selection cuts passed: pT %3.2f, pdg %d\n",
              mom.Pt(), idPartType);
     
     //Mass and asymmetry of selected pairs
@@ -3089,6 +3111,10 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     //-----------------------
     //Create AOD for analysis
     
+    if(nMaxima == 1 && fNLMECutMin[0] > mom.E()) continue;
+    if(nMaxima == 2 && fNLMECutMin[1] > mom.E()) continue;
+    if(nMaxima >  2 && fNLMECutMin[2] > mom.E()) continue;
+    
     AliAODPWG4Particle aodpi0 = AliAODPWG4Particle(mom);
     aodpi0.SetLabel(calo->GetLabel());
     
@@ -3157,7 +3183,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
          }
       }
       else if(TMath::Abs(bc) >= 6)
-        printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Trigger BC not expected = %d\n",bc);
+        Info("MakeShowerShapeIdentification","Trigger BC not expected = %d\n",bc);
     }
     
     //Add AOD with pi0 object to aod branch
@@ -3165,7 +3191,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     
   }//loop
   
-  if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - End fill AODs \n");
+  if(GetDebug() > 1) Info("MakeShowerShapeIdentification","End fill AODs \n");
   
 }
 //______________________________________________
@@ -3175,12 +3201,11 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
   
   if(!GetOutputAODBranch())
   {
-    printf("AliAnaPi0EbE::MakeAnalysisFillHistograms()  - No output pi0 in AOD branch with name < %s >,STOP \n",GetOutputAODName().Data());
-    abort();
+    AliFatal(Form("No output pi0 in AOD branch with name < %s >,STOP \n",GetOutputAODName().Data()));
   }
   //Loop on stored AOD pi0
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
-  if(GetDebug() > 0) printf("AliAnaPi0EbE::MakeAnalysisFillHistograms() - aod branch entries %d\n", naod);
+  if(GetDebug() > 0) Info("MakeAnalysisFillHistograms","aod branch entries %d\n", naod);
   
   Float_t cen = GetEventCentrality();
   Float_t ep  = GetEventPlaneAngle();

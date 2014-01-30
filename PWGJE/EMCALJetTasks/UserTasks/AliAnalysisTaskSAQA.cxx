@@ -35,7 +35,7 @@ ClassImp(AliAnalysisTaskSAQA)
 
 //________________________________________________________________________
 AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() : 
-  AliAnalysisTaskEmcalJetDev("AliAnalysisTaskSAQA", kTRUE),
+  AliAnalysisTaskEmcalJet("AliAnalysisTaskSAQA", kTRUE),
   fCellEnergyCut(0.1),
   fParticleLevel(kFALSE),
   fIsMC(kFALSE),
@@ -56,6 +56,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fHistNCellsEnergy(0),
   fHistFcrossEnergy(0),
   fHistClusTimeEnergy(0),
+  fHistClusEnergyMinusCellEnergy(0),
   fHistCellsAbsIdEnergy(0),
   fHistChVSneCells(0),
   fHistChVSneClus(0),
@@ -73,8 +74,9 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
     fHistTrPtNonProp[i] = 0;
     fHistDeltaEtaPt[i] = 0;
     fHistDeltaPhiPt[i] = 0;
-    fHistDeltaPtvsPtvsMass[i] = 0;
+    fHistDeltaPtvsPt[i] = 0;
     fHistClusPhiEtaEnergy[i] = 0;
+    fHistClusDeltaPhiEPEnergy[i] = 0;
     fHistClusMCEnergyFraction[i] = 0;
     fHistJetsPhiEta[i] = 0;
     fHistJetsPtArea[i] = 0;
@@ -85,7 +87,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
 
 //________________________________________________________________________
 AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) : 
-  AliAnalysisTaskEmcalJetDev(name, kTRUE),
+  AliAnalysisTaskEmcalJet(name, kTRUE),
   fCellEnergyCut(0.1),
   fParticleLevel(kFALSE),
   fIsMC(kFALSE),
@@ -106,6 +108,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fHistNCellsEnergy(0),
   fHistFcrossEnergy(0),
   fHistClusTimeEnergy(0),
+  fHistClusEnergyMinusCellEnergy(0),
   fHistCellsAbsIdEnergy(0),
   fHistChVSneCells(0),
   fHistChVSneClus(0),
@@ -123,8 +126,9 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
     fHistTrPtNonProp[i] = 0;
     fHistDeltaEtaPt[i] = 0;
     fHistDeltaPhiPt[i] = 0;
-    fHistDeltaPtvsPtvsMass[i] = 0;
+    fHistDeltaPtvsPt[i] = 0;
     fHistClusPhiEtaEnergy[i] = 0;
+    fHistClusDeltaPhiEPEnergy[i] = 0;
     fHistClusMCEnergyFraction[i] = 0;
     fHistJetsPhiEta[i] = 0;
     fHistJetsPtArea[i] = 0;
@@ -144,7 +148,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 {
   // Create histograms
 
-  AliAnalysisTaskEmcalJetDev::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   if (fParticleCollArray.GetEntriesFast()>0) {
     if (!fParticleLevel && fIsMC) {
@@ -227,12 +231,12 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 	fHistDeltaPhiPt[i]->GetYaxis()->SetTitle("#delta#phi");
 	fOutput->Add(fHistDeltaPhiPt[i]);
 	
-	histname = Form("fHistDeltaPtvsPtvsMass_%d",i);
-	fHistDeltaPtvsPtvsMass[i] = new TH3F(histname,histname, fNbins, fMinBinPt, fMaxBinPt, fNbins, -fMaxBinPt/2, fMaxBinPt/2, 30, 0, 3);
-	fHistDeltaPtvsPtvsMass[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-	fHistDeltaPtvsPtvsMass[i]->GetYaxis()->SetTitle("#deltap_{T} (GeV/c)");
-	fHistDeltaPtvsPtvsMass[i]->GetZaxis()->SetTitle("mass (GeV/c^{2})");
-	fOutput->Add(fHistDeltaPtvsPtvsMass[i]);
+	histname = Form("fHistDeltaPtvsPt_%d",i);
+	fHistDeltaPtvsPt[i] = new TH2F(histname,histname, fNbins, fMinBinPt, fMaxBinPt, fNbins, -fMaxBinPt/2, fMaxBinPt/2);
+	fHistDeltaPtvsPt[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+	fHistDeltaPtvsPt[i]->GetYaxis()->SetTitle("#deltap_{T} (GeV/c)");
+	fHistDeltaPtvsPt[i]->GetZaxis()->SetTitle("counts");
+	fOutput->Add(fHistDeltaPtvsPt[i]);
       }
     }
   }
@@ -248,6 +252,13 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
       fHistClusPhiEtaEnergy[i]->GetYaxis()->SetTitle("#phi");
       fHistClusPhiEtaEnergy[i]->GetZaxis()->SetTitle("E_{cluster} (GeV)");
       fOutput->Add(fHistClusPhiEtaEnergy[i]);
+
+      histname = "fHistClusDeltaPhiEPEnergy_";
+      histname += i;
+      fHistClusDeltaPhiEPEnergy[i] = new TH2F(histname, histname, fNbins, fMinBinPt, fMaxBinPt, 100, 0, TMath::Pi());
+      fHistClusDeltaPhiEPEnergy[i]->GetXaxis()->SetTitle("E_{cluster} (GeV)");
+      fHistClusDeltaPhiEPEnergy[i]->GetYaxis()->SetTitle("#phi_{cluster} - #psi_{RP}");
+      fOutput->Add(fHistClusDeltaPhiEPEnergy[i]);
 
       if (fIsEmbedded) {
 	histname = "fHistClusMCEnergyFraction_";
@@ -275,6 +286,12 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     fHistFcrossEnergy->GetXaxis()->SetTitle("E_{cluster} (GeV)");
     fHistFcrossEnergy->GetYaxis()->SetTitle("F_{cross}");
     fOutput->Add(fHistFcrossEnergy); 
+
+    fHistClusEnergyMinusCellEnergy = new TH2F("fHistClusEnergyMinusCellEnergy","fHistClusEnergyMinusCellEnergy", 
+					      fNbins, fMinBinPt, fMaxBinPt, fNbins, -fMaxBinPt/2, fMaxBinPt/2);
+    fHistClusEnergyMinusCellEnergy->GetXaxis()->SetTitle("E_{cluster} (GeV)");
+    fHistClusEnergyMinusCellEnergy->GetYaxis()->SetTitle("E_{cluster} - #Sigma_{i}E_{cell,i} (GeV)");
+    fOutput->Add(fHistClusEnergyMinusCellEnergy); 
      
     fHistCellsAbsIdEnergy = new TH2F("fHistCellsAbsIdEnergy","fHistCellsAbsIdEnergy", 11600,0,11599,(Int_t)(fNbins / 2), fMinBinPt, fMaxBinPt / 2);
     fHistCellsAbsIdEnergy->GetXaxis()->SetTitle("cell abs. Id");
@@ -329,7 +346,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   Double_t min[20] = {0};
   Double_t max[20] = {0};
   
-  if (fForceBeamType != AliAnalysisTaskEmcalDev::kpp) {
+  if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
     title[dim] = "Centrality %";
     nbins[dim] = 101;
     min[dim] = 0;
@@ -493,7 +510,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskSAQA::ExecOnce()
 {
-  AliAnalysisTaskEmcalJetDev::ExecOnce();
+  AliAnalysisTaskEmcalJet::ExecOnce();
   
   if (fDoV0QA) {
     fVZERO = InputEvent()->GetVZEROData();
@@ -508,7 +525,7 @@ Bool_t AliAnalysisTaskSAQA::RetrieveEventObjects()
 {
   // Retrieve event objects.
 
-  if (!AliAnalysisTaskEmcalJetDev::RetrieveEventObjects())
+  if (!AliAnalysisTaskEmcalJet::RetrieveEventObjects())
     return kFALSE;
 
   if (!fCentMethod2.IsNull() || !fCentMethod3.IsNull()) {
@@ -705,6 +722,15 @@ Int_t AliAnalysisTaskSAQA::DoCellLoop(Float_t &sum, Float_t &sum_cut)
 }
 
 //________________________________________________________________________
+Double_t AliAnalysisTaskSAQA::GetCellEnergySum(AliVCluster *cluster, AliVCaloCells *cells)
+{
+  Double_t sum = 0;
+  for (Int_t i = 0; i < cluster->GetNCells(); i++) 
+    sum += cells->GetCellAmplitude(cluster->GetCellAbsId(i));
+  return sum;
+}
+
+//________________________________________________________________________
 Double_t AliAnalysisTaskSAQA::GetFcross(AliVCluster *cluster, AliVCaloCells *cells)
 {
   Int_t    AbsIdseed  = -1;
@@ -799,12 +825,19 @@ Int_t AliAnalysisTaskSAQA::DoClusterLoop(Float_t &sum, AliVCluster* &leading)
     cluster->GetMomentum(nPart, fVertex);
 
     fHistClusPhiEtaEnergy[fCentBin]->Fill(nPart.Eta(), nPart.Phi(), cluster->E());
+
+    Double_t ep = nPart.Phi() - fEPV0;
+    while (ep < 0) ep += TMath::Pi();
+    while (ep >= TMath::Pi()) ep -= TMath::Pi();
+    fHistClusDeltaPhiEPEnergy[fCentBin]->Fill(cluster->E(), ep);
+
     fHistNCellsEnergy->Fill(cluster->E(), cluster->GetNCells());
 
     fHistClusTimeEnergy->Fill(cluster->E(), cluster->GetTOF());
 
-    if (cells)
-      fHistFcrossEnergy->Fill(cluster->E(), GetFcross(cluster, cells));
+    if (cells) fHistFcrossEnergy->Fill(cluster->E(), GetFcross(cluster, cells));
+
+    if (cells) fHistClusEnergyMinusCellEnergy->Fill(cluster->E(), cluster->E() - GetCellEnergySum(cluster,cells));
 
     if (fHistClusMCEnergyFraction[fCentBin])
       fHistClusMCEnergyFraction[fCentBin]->Fill(cluster->GetMCEnergyFraction());
@@ -896,8 +929,8 @@ Int_t AliAnalysisTaskSAQA::DoTrackLoop(Float_t &sum, AliVParticle* &leading)
       fHistDeltaEtaPt[fCentBin]->Fill(vtrack->Pt(), vtrack->Eta() - vtrack->GetTrackEtaOnEMCal());
     if (fHistDeltaPhiPt[fCentBin])
       fHistDeltaPhiPt[fCentBin]->Fill(vtrack->Pt(), vtrack->Phi() - vtrack->GetTrackPhiOnEMCal());
-    if (fHistDeltaPtvsPtvsMass[fCentBin])
-      fHistDeltaPtvsPtvsMass[fCentBin]->Fill(vtrack->Pt(), vtrack->Pt() - vtrack->GetTrackPtOnEMCal(), vtrack->M());
+    if (fHistDeltaPtvsPt[fCentBin])
+      fHistDeltaPtvsPt[fCentBin]->Fill(vtrack->Pt(), vtrack->Pt() - vtrack->GetTrackPtOnEMCal());
   }
 
   if (fHistTrNegativeLabels)

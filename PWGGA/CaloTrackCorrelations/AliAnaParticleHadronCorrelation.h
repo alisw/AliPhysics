@@ -106,23 +106,37 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   // Parameter setter and getter
   
   Float_t      GetMinimumTriggerPt()       const { return fMinTriggerPt          ; }
-  
+  void         SetMinimumTriggerPt(Float_t min)  { fMinTriggerPt = min           ; }
+
   Float_t      GetMaximumAssociatedPt()    const { return fMaxAssocPt            ; }
   Float_t      GetMinimumAssociatedPt()    const { return fMinAssocPt            ; }
-  
+  void         SetAssociatedPtRange(Float_t min, Float_t max)
+               { fMaxAssocPt   = max ;           fMinAssocPt  = min              ; }
+
   Double_t     GetDeltaPhiMaxCut()         const { return fDeltaPhiMaxCut        ; }
   Double_t     GetDeltaPhiMinCut()         const { return fDeltaPhiMinCut        ; }
+  void         SetDeltaPhiCutRange(Double_t phimin, Double_t phimax)
+               { fDeltaPhiMaxCut   = phimax ;    fDeltaPhiMinCut   = phimin      ; }
+  
+  // Leading Hadron
+  Double_t     GetLeadHadronPhiMaxCut()    const { return fMaxLeadHadPhi         ; }
+  Double_t     GetLeadHadronPhiMinCut()    const { return fMinLeadHadPhi         ; }
+  void         SetLeadHadronPhiCut(Float_t min, Float_t max)
+               { fMaxLeadHadPhi = max ;          fMinLeadHadPhi  = min           ; }
+
+  Double_t     GetLeadHadronPtMinCut()     const { return fMinLeadHadPt          ; }
+  Double_t     GetLeadHadronPtMaxCut()     const { return fMaxLeadHadPt          ; }
+  void         SetLeadHadronPtCut(Float_t min, Float_t max)
+               { fMaxLeadHadPt  = max ;           fMinLeadHadPt  = min           ; }
+  
+  Bool_t       IsLeadHadronCutOn()        const { return fSelectLeadingHadronAngle ; }
+  void         SwitchOnLeadHadronSelection()    { fSelectLeadingHadronAngle = kTRUE  ; }
+  void         SwitchOffLeadHadronSelection()   { fSelectLeadingHadronAngle = kFALSE ; }
+  
+  // UE
   
   Double_t     GetUeDeltaPhiMaxCut()       const { return fUeDeltaPhiMaxCut      ; }
   Double_t     GetUeDeltaPhiMinCut()       const { return fUeDeltaPhiMinCut      ; }
-  
-  void         SetMinimumTriggerPt(Float_t min)  { fMinTriggerPt = min           ; }
-  
-  void         SetAssociatedPtRange(Float_t min, Float_t max)
-                  { fMaxAssocPt   = max ;           fMinAssocPt  = min           ; }
-  
-  void         SetDeltaPhiCutRange(Double_t phimin, Double_t phimax)
-                  { fDeltaPhiMaxCut   = phimax ;    fDeltaPhiMinCut   = phimin   ; }
   
   void         SetUeDeltaPhiCutRange(Double_t uephimin, Double_t uephimax)
                   { fUeDeltaPhiMaxCut = uephimax ;  fUeDeltaPhiMinCut = uephimin ; }
@@ -219,6 +233,12 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   Float_t      fM02MinCut   ;                  // Study photon clusters with l0 larger than cut
   
   Bool_t       fFillPileUpHistograms;          // Fill pile-up related histograms
+
+  Bool_t       fSelectLeadingHadronAngle;      // Select events with leading particle within a range
+  Float_t      fMinLeadHadPhi;                 // Minimum angle between the trigger and leading hadron
+  Float_t      fMaxLeadHadPhi;                 // Maximum ange between the trigger and leading hadron
+  Float_t      fMinLeadHadPt;                  // Minimum pT of leading hadron
+  Float_t      fMaxLeadHadPt;                  // Maximum pT of leading hadron
 
   //Histograms
 
@@ -439,7 +459,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleHadronCorrelation(              const AliAnaParticleHadronCorrelation & ph) ; // cpy ctor
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ; // cpy assignment
 	
-  ClassDef(AliAnaParticleHadronCorrelation,29)
+  ClassDef(AliAnaParticleHadronCorrelation,30)
 } ;
  
 

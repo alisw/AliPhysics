@@ -11,11 +11,15 @@ AliAnalysisTaskJetMatching* AddTaskJetMatching(
         Float_t minFrReCon      = .3,
         Float_t minFrReConPt    = .5,
         const char *name        = "AliAnalysisTaskJetMatching",
-        Bool_t cut              = kFALSE,
-        UInt_t  sourceType      = AliAnalysisTaskEmcal::kTPC,
+        Bool_t cut              = kTRUE,
+        const char*  sourceType = "TPC",
         Float_t sourceRadius    = 0.3,
-        UInt_t targetType       = AliAnalysisTaskEmcal::kTPC,
-        Float_t targetRadius    = 0.3
+        Float_t sourceAreaCut   = .557,
+        Float_t sourcePtBias    = 10.,
+        const char* targetType  = "TPC",
+        Float_t targetRadius    = 0.3,
+        Float_t targetAreaCut   = .557,
+        Float_t targetPtBias    = 10.
   )
 { 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -34,12 +38,18 @@ AliAnalysisTaskJetMatching* AddTaskJetMatching(
   // if we want the jet package to cut on the source and target jets
   jetTask->SetUseEmcalBaseJetCuts(cut);
   if(cut) {
-      jetTask->SetJetsName(sourceJets);
-      jetTask->SetAnaType(sourceType, 0);
-      jetTask->SetJetRadius(sourceRadius, 0);
-      jetTask->SetJetsName(targetJets);
-      jetTask->SetAnaType(targetType, 1);
-      jetTask->SetJetRadius(targetRadius, 1);
+      AliJetContainer* sourceContainer = jetTask->AddJetContainer(sourceJets, sourceType, sourceRadius);
+      if(sourceContainer) {
+          sourceContainer->SetName("sourceJetContainer");
+          sourceContainer->SetPercAreaCut(sourceAreaCut);
+          sourceContainer->SetPtBiasJetTrack(sourcePtBias);
+      }
+      AliJetContainer* targetContainer = jetTask->AddJetContainer(targetJets, targetType, targetRadius);
+      if(targetContainer) {
+          targetContainer->SetName("targetJetContainer");
+          targetContainer->SetPercAreaCut(targetAreaCut);
+          targetContainer->SetPtBiasJetTrack(targetPtBias);
+      }
   }
   
   mgr->AddTask(jetTask);

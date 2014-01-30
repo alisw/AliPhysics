@@ -43,6 +43,7 @@
 
 #include "AliRsnMiniPair.h"
 #include "AliRsnMiniEvent.h"
+#include "AliRsnMiniParticle.h"
 
 #include "AliRsnMiniValue.h"
 
@@ -111,10 +112,10 @@ const char *AliRsnMiniValue::TypeName(EType type)
       case kDipAngle:     return "DipAngle";
       case kCosThetaStar: return "CosThetaStar";
       case kAngleLeading: return "AngleToLeading";
-      case kFirstDaughterPt: return "FirstDaughterPt";  
-      case kSecondDaughterPt: return "SecondDaughterPt";  
-      case kFirstDaughterP: return "FirstDaughterP";  
-      case kSecondDaughterP: return "SecondDaughterP";  
+      case kFirstDaughterPt: return "FirstDaughterPt";
+      case kSecondDaughterPt: return "SecondDaughterPt";
+      case kFirstDaughterP: return "FirstDaughterP";
+      case kSecondDaughterP: return "SecondDaughterP";
       default:            return "Undefined";
    }
 }
@@ -138,8 +139,9 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
    // the computation is not doable due to any problem
    // (not initialized support object, wrong values, risk of floating point errors)
    // the method returng kFALSE and sets the computed value to a meaningless number
-   Double_t p3[3]={0.,0.,0.};
- 
+   Double_t p3[3]= {0.,0.,0.};
+   AliRsnMiniParticle *l;
+   TLorentzVector v;
    switch (fType) {
          // ---- event values -------------------------------------------------------------------------
       case kVz:
@@ -149,6 +151,11 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
       case kPlaneAngle:
          return event->Angle();
       case kLeadingPt:
+         l = event->LeadingParticle();
+         if (l) {
+            l->Set4Vector(v,-1.0,fUseMCInfo);
+            return v.Pt();
+         }
          return 0.0;
       case kPt:
          return pair->Pt(fUseMCInfo);
@@ -171,17 +178,27 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
       case kCosThetaStar:
          return pair->CosThetaStar(fUseMCInfo);
       case kAngleLeading:
-         AliWarning("This method is not yet implemented");
-	 return 1E20;
+         l = event->LeadingParticle();
+         if (l) {
+            l->Set4Vector(v,-1.0,fUseMCInfo);
+            Double_t angle = v.Phi() - pair->Sum(fUseMCInfo).Phi();
+
+            //return angle w.r.t. leading particle in the range -pi/2, 3/2pi
+            while (angle >= 1.5 * TMath::Pi()) angle -= 2 * TMath::Pi();
+            while (angle < -0.5 * TMath::Pi()) angle += 2 * TMath::Pi();
+            return angle;
+         }
+//         AliWarning("This method is not yet implemented");
+         return 1E20;
       case kFirstDaughterPt:
          return pair->DaughterPt(0,fUseMCInfo);
       case kSecondDaughterPt:
          return pair->DaughterPt(1,fUseMCInfo);
       case kFirstDaughterP:
-    	 pair->DaughterPxPyPz(0,fUseMCInfo, p3);
+         pair->DaughterPxPyPz(0,fUseMCInfo, p3);
          return TMath::Sqrt(p3[0]*p3[0]+p3[1]*p3[1]+p3[2]*p3[2]);
       case kSecondDaughterP:
-	 pair->DaughterPxPyPz(1,fUseMCInfo, p3);
+         pair->DaughterPxPyPz(1,fUseMCInfo, p3);
          return TMath::Sqrt(p3[0]*p3[0]+p3[1]*p3[1]+p3[2]*p3[2]);
       default:
          AliError("Invalid value type");

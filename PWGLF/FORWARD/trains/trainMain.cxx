@@ -114,6 +114,7 @@ void ProgramUsage(const char* progname, std::ostream& o)
   PrintFakeOption(o, "class=CLASS",       "Train class");
   PrintFakeOption(o, "name=NAME",         "Name of train");
   PrintFakeOption(o, "include=DIRECTORY", "Append dir to macro/header path");
+  PrintFakeOption(o, "define=DEFINE",     "Set a preprocessor macro");
   PrintFakeOption(o, "batch",             "Batch mode");
   PrintFakeOption(o, "spawn",             "Spawn interactive ROOT shell");
 }
@@ -141,6 +142,8 @@ int
 main(int argc, char** argv)
 {
   TList optList;
+  TList paths;
+  TList defines;
   TString name;
   TString cls;
   TString where;
@@ -161,7 +164,8 @@ main(int argc, char** argv)
       if (eq != kNPOS) val = arg(eq+1, arg.Length()-eq-1);
       if      (arg.BeginsWith("--class"))   cls  = val;
       else if (arg.BeginsWith("--name"))    name = val;
-      else if (arg.BeginsWith("--include")) AppendPath(val);
+      else if (arg.BeginsWith("--include")) paths.Add(new TObjString(val)); 
+      else if (arg.BeginsWith("--define"))  defines.Add(new TObjString(val));
       else if (arg.BeginsWith("--batch"))   batch  = true;
       else if (arg.BeginsWith("--help"))    help   = true;
       else if (arg.BeginsWith("--where"))   where  = val;
@@ -175,6 +179,20 @@ main(int argc, char** argv)
       }
     }
   }
+  // --- Set batch mode early ----------------------------------------
+  // Info("main", "Batch mode is set to %d", batch);
+  gROOT->SetBatch(batch);
+
+  // --- Add to load paths -------------------------------------------
+  // Info("main", "Adding load paths");
+  TIter nextP(&paths);
+  TObject* path = 0;
+  while ((path = nextP())) AppendPath(path->GetName());
+  TIter nextD(&defines);
+  TObject* def = 0;
+  while ((def = nextD())) 
+    gSystem->AddIncludePath(Form("-D%s", def->GetName()));
+
   // --- Initial check or URI/WHERE ----------------------------------
   if (!where.IsNull()) {
     if (urlSeen) {
@@ -210,7 +228,7 @@ main(int argc, char** argv)
 
   // --- Setup script path -------------------------------------------
   const char* aliPath  = gSystem->ExpandPathName("$ALICE_ROOT");
-  const char* fwdPath  = gSystem->ExpandPathName("$ALICE_ROOT/PWGLF/FORWARD/");
+  const char* fwdPath  = gSystem->ExpandPathName("$ALICE_ROOT/PWGLF/FORWARD");
   AppendPath(aliPath);
   AppendPath(Form("%s/include",          aliPath));
   AppendPath(Form("%s/trains",           fwdPath));
@@ -219,7 +237,6 @@ main(int argc, char** argv)
 
   // --- Set-up Application ------------------------------------------
   TApplication* app = 0;
-  gROOT->SetBatch(batch);
   if (spawn) {
     // Info("main", "Creating interpreter application");
     TRint* rint = new TRint("runTrain", 0, 0, 0, 0, true);
@@ -231,7 +248,7 @@ main(int argc, char** argv)
     app = new TGApplication("runTrain", 0, 0);
   }
   if (app && !batch) app->InitializeGraphics();
-  
+
   // --- run, possibly in a timer ------------------------------------
   Bool_t ret = true;
   if (!app) 

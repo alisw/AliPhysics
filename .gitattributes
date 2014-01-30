@@ -1,0 +1,9 @@
+# Set default behaviour, in case users don't have core.autocrlf set.
+* text=auto
+#unset the crlf for data files
+*.dat -text
+*.data -text
+*.root -text
+
+*.cxx filter=rcs-keywords
+*.h filter=rcs-keywords

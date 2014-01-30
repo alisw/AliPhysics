@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskHFECalPbPbSys(Bool_t MassConst, Bool_t MassWidthCut, Bool_t MassCal, Double_t asspTCut, Double_t angleCut, Double_t MassCut, Double_t NsigCut,TString ID="phoSys0")
+AliAnalysisTask *AddTaskHFECalPbPbSys(Bool_t MassConst, Bool_t MassWidthCut, Bool_t MassCal, Bool_t MassNonlinear ,Double_t asspTCut, Double_t angleCut, Double_t MassCut, Double_t NsigCut,TString ID="phoSys0")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -25,7 +25,7 @@ AliAnalysisTask *AddTaskHFECalPbPbSys(Bool_t MassConst, Bool_t MassWidthCut, Boo
   
   //analysis task 
   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFECal.C");
-  AliAnalysisTaskHFECal *hfetask = ConfigHFECal(MCthere,MassConst,MassWidthCut,MassCal,asspTCut,angleCut,MassCut,NsigCut);
+  AliAnalysisTaskHFECal *hfetask = ConfigHFECal(MCthere,MassConst,MassWidthCut,MassCal,MassNonlinear,asspTCut,angleCut,MassCut,NsigCut,0);
   mgr->AddTask(hfetask);
   // semi-central
   hfetask->SelectCollisionCandidates(AliVEvent::kSemiCentral);
@@ -38,7 +38,7 @@ AliAnalysisTask *AddTaskHFECalPbPbSys(Bool_t MassConst, Bool_t MassWidthCut, Boo
   mgr->ConnectOutput(hfetask, 1, coutput1);
  
   //trigger
-  AliAnalysisTaskHFECal *hfetaskTrig = ConfigHFECal(MCthere,MassConst,MassWidthCut,MassCal,asspTCut,angleCut,MassCut,NsigCut);
+  AliAnalysisTaskHFECal *hfetaskTrig = ConfigHFECal(MCthere,MassConst,MassWidthCut,MassCal,MassNonlinear,asspTCut,angleCut,MassCut,NsigCut,0);
   mgr->AddTask(hfetaskTrig);
   hfetaskTrig->SelectCollisionCandidates(AliVEvent::kEMCEGA);
   TString containerName2 = mgr->GetCommonFileName();
@@ -51,7 +51,7 @@ AliAnalysisTask *AddTaskHFECalPbPbSys(Bool_t MassConst, Bool_t MassWidthCut, Boo
  
 
   //MB trigger
-  AliAnalysisTaskHFECal *hfetaskMB = ConfigHFECal(MCthere,MassConst,MassWidthCut,MassCal,asspTCut,angleCut,MassCut,NsigCut);
+  AliAnalysisTaskHFECal *hfetaskMB = ConfigHFECal(MCthere,MassConst,MassWidthCut,MassCal,MassNonlinear,asspTCut,angleCut,MassCut,NsigCut,0);
   mgr->AddTask(hfetaskMB);
   hfetaskMB->SelectCollisionCandidates(AliVEvent::kMB);
   TString containerName4 = mgr->GetCommonFileName();

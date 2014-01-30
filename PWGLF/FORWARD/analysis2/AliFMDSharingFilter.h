@@ -34,6 +34,8 @@ class AliFMDFloatMap;
  * that impinges on the detector in such a way that it deposite energy 
  * into two or more strips. 
  *
+ * @image html alice-int-2012-040-share_fraction.png "Energy loss sharing"
+ *
  * @par Input: 
  *    - AliESDFMD object  - from reconstruction
  *
@@ -84,34 +86,23 @@ public:
    * @param title Title of object  - not significant 
    */
   AliFMDSharingFilter(const char* title);
-  /** 
-   * Copy constructor 
-   * 
-   * @param o Object to copy from 
-   */
-  AliFMDSharingFilter(const AliFMDSharingFilter& o);
-  /** 
-   * Assignment operator 
-   * 
-   * @param o Object to assign from 
-   * 
-   * @return Reference to this 
-   */
-  AliFMDSharingFilter& operator=(const AliFMDSharingFilter& o);
 
   /** 
-   * Initialize 
-   * 
-   * @param axis Default eta axis from parent task 
+   * @{ 
+   * @name Parameters etc.
    */
-  void SetupForData(const TAxis& axis);
+  /** 
+   * If called with a true argument, then merging is wholy disabled 
+   * 
+   * @param disable If true, disable merging altogether 
+   */
+  virtual void SetMergingDisabled(Bool_t disable) {fMergingDisabled = disable; }
   /** 
    * Set the debug level.  The higher the value the more output 
    * 
    * @param dbg Debug level 
    */
   virtual void SetDebug(Int_t dbg=1) { fDebug = dbg; }
-
   /** 
    * Enable use of angle corrected signals in the algorithm 
    * 
@@ -141,8 +132,7 @@ public:
    * @param use allow three strips
    * 
    */
-  void SetAllow3Strips(Bool_t use) { fThreeStripSharing = use; }
-  
+  void SetAllow3Strips(Bool_t use) { fThreeStripSharing = use; }  
   /** 
    * In case of a displaced vertices recalculate eta and angle correction
    * 
@@ -157,7 +147,18 @@ public:
    * @param flag If true, count invalids as empty
    */
   void SetInvalidIsEmpty(Bool_t flag) { fInvalidIsEmpty = flag; }
-  
+  /* @} */
+
+  /** 
+   * @{ 
+   * @name Processing 
+   */
+  /** 
+   * Initialize 
+   * 
+   * @param axis Default eta axis from parent task 
+   */
+  void SetupForData(const TAxis& axis);
   /** 
    * Filter the input AliESDFMD object
    * 
@@ -179,8 +180,7 @@ public:
    * @param output  Output list
    * @param nEvents Number of events 
    */
-  virtual void Terminate(const TList* dir, TList* output, Int_t nEvents);
-  
+  virtual void Terminate(const TList* dir, TList* output, Int_t nEvents);  
   /** 
    * Define the output histograms.  These are put in a sub list of the
    * passed list.   The histograms are merged before the parent task calls 
@@ -189,6 +189,7 @@ public:
    * @param dir Directory to add to 
    */
   virtual void CreateOutputObjects(TList* dir);
+  /* @} */
   /** 
    * Print information
    * 
@@ -196,6 +197,10 @@ public:
    */
   virtual void Print(Option_t* option="") const;
 
+  /** 
+   * @{ 
+   * @name Cuts
+   */
   /** 
    * Get the low cuts 
    * 
@@ -232,6 +237,11 @@ public:
    * @param c Cuts object
    */  
   void SetHCuts(const AliFMDMultCuts& c) { fHCuts = c; }
+  /* @} */
+  /** 
+   * @{ 
+   * @name Dead strip handling 
+   */
   /** 
    * Add a dead strip
    * 
@@ -269,7 +279,18 @@ public:
    * @param script The script to read dead strips from. 
    */
   void AddDead(const Char_t* script);
+  /* @} */
 protected:
+  /** 
+   * Copy constructor - not implemented
+   */
+  AliFMDSharingFilter(const AliFMDSharingFilter& o);
+  /** 
+   * Assignment operator  - not implemented
+   * 
+   * @return Reference to this 
+   */
+  AliFMDSharingFilter& operator=(const AliFMDSharingFilter& o);
   /** 
    * Internal data structure to keep track of the histograms
    */
@@ -331,21 +352,19 @@ protected:
      * @param dir     Where the output is 
      */
     void Terminate(const TList* dir, Int_t nEvents);
-    TH1D*     fBefore;       // Distribution of signals before filter
-    TH1D*     fAfter;        // Distribution of signals after filter
-    TH1D*     fSingle;       // Distribution of 1 signal after filter
-    TH1D*     fDouble;       // Distribution of 2 signals after filter
-    TH1D*     fTriple;       // Distribution of 3 signals after filter
-    TH2D*     fSinglePerStrip;       // Distribution of 1 signal per strip
-    // TH1D*     fDistanceBefore; //Distance between signals before sharing
-    // TH1D*     fDistanceAfter; //Distance between signals after sharing    
-    TH2D*     fBeforeAfter;  // Correlation of before and after 
+    TH1D*     fBefore;          // Distribution of signals before filter
+    TH1D*     fAfter;           // Distribution of signals after filter
+    TH1D*     fSingle;          // Distribution of 1 signal after filter
+    TH1D*     fDouble;          // Distribution of 2 signals after filter
+    TH1D*     fTriple;          // Distribution of 3 signals after filter
+    TH2D*     fSinglePerStrip;  // Distribution of 1 signal per strip
+    TH2D*     fBeforeAfter;     // Correlation of before and after 
     TH2D*     fNeighborsBefore; // Correlation of neighbors 
-    TH2D*     fNeighborsAfter; // Correlation of neighbors 
-    TH2D*     fSum;          // Summed signal 
-    // TH1D*     fHits;         // Distribution of hit strips. 
-    // Int_t     fNHits;        // Number of hit strips per event
-    ClassDef(RingHistos,3);
+    TH2D*     fNeighborsAfter;  // Correlation of neighbors 
+    TH2D*     fSumESD;          // Summed ESD signal 
+    TH2D*     fSum;             // Summed cluster signal 
+    TH1D*     fNConsecutive;    // # consecutive strips with signal > low cut
+    ClassDef(RingHistos,4);
   };
   /** 
    * Get the ring histogram container 
@@ -417,27 +436,32 @@ protected:
    * @return 
    */
   virtual Double_t GetLowCut(UShort_t d, Char_t r, Double_t eta) const;
-
+  /** 
+   * Check if a strip is marked as dead 
+   * 
+   * @param d   Detector 
+   * @param r   Ring
+   * @param s   Sector 
+   * @param t   Strip 
+   * 
+   * @return true if dead 
+   */
   virtual Bool_t IsDead(UShort_t d, Char_t r, UShort_t s, UShort_t t) const;
-  TList    fRingHistos;    // List of histogram containers
-  // Double_t fLowCut;        // Low cut on sharing
-  Bool_t   fCorrectAngles; // Whether to work on angle corrected signals
-  // TH2*     fSummed;        // Operations histogram 
-  TH2*     fHighCuts;      // High cuts used
-  TH2*     fLowCuts;       // High cuts used
-  // AliFMDFloatMap* fOper;   // Operation done per strip 
-  Int_t    fDebug;         // Debug level 
-  Bool_t   fZeroSharedHitsBelowThreshold; //Whether to zero shared strip below cut
-  AliFMDMultCuts fLCuts;    //Cuts object for low cuts
-  AliFMDMultCuts fHCuts;    //Cuts object for high cuts
-  Bool_t   fUseSimpleMerging; //enable simple sharing by HHD
+  TList    fRingHistos;      // List of histogram containers
+  Bool_t   fCorrectAngles;   // Whether to work on angle corrected signals
+  TH2*     fHighCuts;        // High cuts used
+  TH2*     fLowCuts;         // High cuts used
+  Int_t    fDebug;           // Debug level 
+  Bool_t   fZeroSharedHitsBelowThreshold; // Zero shared strip below cut?
+  AliFMDMultCuts fLCuts;     // Cuts object for low cuts
+  AliFMDMultCuts fHCuts;     // Cuts object for high cuts
+  Bool_t   fUseSimpleMerging;// enable simple sharing by HHD
   Bool_t   fThreeStripSharing; //In case of simple sharing allow 3 strips
-  Bool_t   fRecalculateEta; //Whether to recalculate eta and angle correction (disp vtx)
-  // TArrayI  fExtraDead;      // List of extra dead channels
+  Bool_t   fRecalculateEta;  // Whether to recalc eta and angle cor (disp vtx)
   TBits    fXtraDead;
   Bool_t   fInvalidIsEmpty;  // Consider kInvalidMult as zero 
-
-  ClassDef(AliFMDSharingFilter,8); //
+  Bool_t   fMergingDisabled; // If true, do not merge 
+  ClassDef(AliFMDSharingFilter,9); //
 };
 
 #endif

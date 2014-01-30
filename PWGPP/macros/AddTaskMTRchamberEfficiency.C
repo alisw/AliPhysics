@@ -12,7 +12,7 @@
 #include "AliAnalysisTaskTrigChEff.h"
 #endif
 
-AliAnalysisTaskTrigChEff* AddTaskMTRchamberEfficiency(Bool_t useGhosts = kFALSE, Bool_t isMC = kFALSE)
+AliAnalysisTaskTrigChEff* AddTaskMTRchamberEfficiency(Bool_t isMC = kFALSE)
 {
   //
   // Task for the determination of the MUON trigger chamber efficiency
@@ -36,10 +36,10 @@ AliAnalysisTaskTrigChEff* AddTaskMTRchamberEfficiency(Bool_t useGhosts = kFALSE,
   AliMuonTrackCuts* muonTrackCuts = new AliMuonTrackCuts("StdMuonTrackCuts", "StdMuonTrackCuts");
   muonTrackCuts->SetIsMC(isMC);
   muonTrackCuts->ApplySharpPtCutInMatching(kTRUE);
+  muonTrackCuts->SetAllowDefaultParams(kTRUE);
 
   // Create task
   AliAnalysisTaskTrigChEff* taskTrigChEff = new AliAnalysisTaskTrigChEff("TriggerChamberEfficiency", *muonTrackCuts);
-  taskTrigChEff->SetUseGhostTracks(useGhosts);
   if ( isMC ) taskTrigChEff->SetTrigClassPatterns("ANY");
   else {
     TString trigClassPatterns = taskTrigChEff->GetDefaultTrigClassPatterns();
@@ -48,7 +48,6 @@ AliAnalysisTaskTrigChEff* AddTaskMTRchamberEfficiency(Bool_t useGhosts = kFALSE,
     taskTrigChEff->SetTrigClassPatterns(trigClassPatterns);
   }
   taskTrigChEff->GetMuonEventCuts()->SetFilterMask(AliMuonEventCuts::kSelectedTrig);
-  taskTrigChEff->GetMuonTrackCuts()->SetAllowDefaultParams();
   mgr->AddTask(taskTrigChEff);
 
   // Create container

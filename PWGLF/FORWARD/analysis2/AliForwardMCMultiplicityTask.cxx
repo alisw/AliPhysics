@@ -71,59 +71,13 @@ AliForwardMCMultiplicityTask::AliForwardMCMultiplicityTask(const char* name)
   // Parameters:
   //    name Name of task 
   //
-}
-
-//____________________________________________________________________
-AliForwardMCMultiplicityTask::AliForwardMCMultiplicityTask(const AliForwardMCMultiplicityTask& o)
-  : AliForwardMultiplicityBase(o),
-    fESDFMD(o.fESDFMD),
-    fMCESDFMD(o.fMCESDFMD),
-    fMCHistos(o.fMCHistos),
-    fMCAODFMD(o.fMCAODFMD),
-    fMCRingSums(o.fMCRingSums),
-    fPrimary(o.fPrimary),
-    fEventInspector(o.fEventInspector),
-    fSharingFilter(o.fSharingFilter),
-    fDensityCalculator(o.fDensityCalculator),
-    fCorrections(o.fCorrections),
-    fHistCollector(o.fHistCollector),
-    fEventPlaneFinder(o.fEventPlaneFinder)
-{
-  // 
-  // Copy constructor 
-  // 
-  // Parameters:
-  //    o Object to copy from 
-  //
-}
-
-//____________________________________________________________________
-AliForwardMCMultiplicityTask&
-AliForwardMCMultiplicityTask::operator=(const AliForwardMCMultiplicityTask& o)
-{
-  // 
-  // Assignment operator 
-  // 
-  // Parameters:
-  //    o Object to assign from 
-  // 
-  // Return:
-  //    Reference to this object 
-  //
-  if (&o == this) return *this;
-  AliForwardMultiplicityBase::operator=(o);
-
-  fEventInspector    = o.fEventInspector;
-  fSharingFilter     = o.fSharingFilter;
-  fDensityCalculator = o.fDensityCalculator;
-  fCorrections       = o.fCorrections;
-  fHistCollector     = o.fHistCollector;
-  fEventPlaneFinder  = o.fEventPlaneFinder;
-  fMCHistos          = o.fMCHistos;
-  fMCAODFMD          = o.fMCAODFMD;
-  fMCRingSums        = o.fMCRingSums;
-  fPrimary           = o.fPrimary;
-  return *this;
+  fPrimary = new TH2D("primary", "MC Primaries", 1,0,1,20,0,TMath::TwoPi());
+  fPrimary->SetXTitle("#eta");
+  fPrimary->SetYTitle("#varphi [radians]");
+  fPrimary->SetZTitle("d^{2}N_{ch}/d#etad#phi");
+  fPrimary->Sumw2();
+  fPrimary->SetStats(0);
+  fPrimary->SetDirectory(0);
 }
 
 //____________________________________________________________________
@@ -145,35 +99,34 @@ AliForwardMCMultiplicityTask::CreateBranches(AliAODHandler* ah)
   AliForwardMultiplicityBase::CreateBranches(ah);
 
   TObject* mcobj = &fMCAODFMD;
-  ah->AddBranch("AliAODForwardMult", &mcobj);
-
-  fPrimary = new TH2D("primary", "MC Primaries", 1,0,1,20,0,TMath::TwoPi());
-  fPrimary->SetXTitle("#eta");
-  fPrimary->SetYTitle("#varphi [radians]");
-  fPrimary->SetZTitle("d^{2}N_{ch}/d#etad#phi");
-  fPrimary->Sumw2();
-  fPrimary->SetStats(0);
-  fPrimary->SetDirectory(0);
-    
+  ah->AddBranch("AliAODForwardMult", &mcobj);    
   ah->AddBranch("TH2D", &fPrimary);
 }
 
 
 //____________________________________________________________________
 void
-AliForwardMCMultiplicityTask::InitMembers(const TAxis* pe, const TAxis* pv)
+AliForwardMCMultiplicityTask::InitMembers(const TAxis& eta, const TAxis& vertex)
 {
   // 
   // Initialise the sub objects and stuff.  Called on first event 
   // 
   //
-  AliForwardMultiplicityBase::InitMembers(pe, pv);
+  AliForwardMultiplicityBase::InitMembers(eta, vertex);
 
-  fMCHistos.Init(*pe);
-  fMCAODFMD.Init(*pe);
-  fMCRingSums.Init(*pe);
+  fMCHistos.Init(eta);
+  fMCAODFMD.Init(eta);
+  fMCRingSums.Init(eta);
 
-  AliForwardUtil::Histos::RebinEta(fPrimary, *pe);
+  AliForwardUtil::Histos::RebinEta(fPrimary, eta);
+  DMSG(fDebug,0,"Primary histogram rebinned to %d,%f,%f eta axis %d,%f,%f", 
+       fPrimary->GetXaxis()->GetNbins(), 
+       fPrimary->GetXaxis()->GetXmin(),
+       fPrimary->GetXaxis()->GetXmax(),
+       eta.GetNbins(), 
+       eta.GetXmin(),
+       eta.GetXmax());
+
 
   TList* mcRings = new TList;
   mcRings->SetName("mcRingSums");
@@ -193,25 +146,11 @@ AliForwardMCMultiplicityTask::InitMembers(const TAxis* pe, const TAxis* pv)
 }
 
 //____________________________________________________________________
-void
-AliForwardMCMultiplicityTask::UserExec(Option_t*)
+Bool_t
+AliForwardMCMultiplicityTask::PreEvent()
 {
-  // 
-  // Process each event 
-  // 
-  // Parameters:
-  //    option Not used
-  //  
-
-  // Read production details 
-  if (fFirstEvent) 
+ if (fFirstEvent) 
     fEventInspector.ReadProductionDetails(MCEvent());
-    
-  // Get the input data 
-  AliESDEvent* esd     = GetESDEvent();
-  AliMCEvent*  mcEvent = MCEvent();
-  if (!esd || !mcEvent) return;
-
   // Clear stuff 
   fHistos.Clear();
   fESDFMD.Clear();
@@ -221,6 +160,24 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   fMCESDFMD.Clear();
   fMCAODFMD.Clear();
   fPrimary->Reset();
+  return true;
+}
+//____________________________________________________________________
+Bool_t
+AliForwardMCMultiplicityTask::Event(AliESDEvent& esd)
+{
+  // 
+  // Process each event 
+  // 
+  // Parameters:
+  //    option Not used
+  //  
+
+  // Read production details 
+    
+  // Get the input data 
+  AliMCEvent*  mcEvent = MCEvent();
+  if (!mcEvent) return false;
 
   Bool_t   lowFlux   = kFALSE;
   UInt_t   triggers  = 0;
@@ -228,7 +185,7 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   TVector3 ip(1024, 1024, 0);
   Double_t cent      = -1;
   UShort_t nClusters = 0;
-  UInt_t   found     = fEventInspector.Process(esd, triggers, lowFlux, 
+  UInt_t   found     = fEventInspector.Process(&esd, triggers, lowFlux, 
 					       ivz, ip, cent, nClusters);
   UShort_t ivzMC    = 0;
   Double_t vzMC     = 0;
@@ -264,9 +221,6 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   fMCAODFMD.SetCentrality(cent);
   fMCAODFMD.SetNClusters(nClusters);
   
-  //All events should be stored - HHD
-  //if (isAccepted) MarkEventForStore();
-
   // Disable this check on SPD - will bias data 
   // if (found & AliFMDEventInspector::kNoSPD)  isAccepted = false; // return;
   if (found & AliFMDEventInspector::kNoFMD)     isAccepted = false; // return;
@@ -284,16 +238,16 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   
 
   // Get FMD data 
-  AliESDFMD*  esdFMD  = esd->GetFMDData();
+  AliESDFMD*  esdFMD  = esd.GetFMDData();
 
   // Apply the sharing filter (or hit merging or clustering if you like)
-  if (isAccepted && !fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD,ip.Z())) { 
+  if (isAccepted && !fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD,ip.Z())){
     AliWarning("Sharing filter failed!");
-    return;
+    return false;
   }
-  if (!fSharingFilter.FilterMC(*esdFMD, *mcEvent, ip.Z(),fMCESDFMD,fPrimary)) { 
+  if (!fSharingFilter.FilterMC(*esdFMD, *mcEvent, ip.Z(),fMCESDFMD,fPrimary)){
     AliWarning("MC Sharing filter failed!");
-    return;
+    return false;
   }
 
   // Store some MC parameters in corners of histogram :-)
@@ -302,8 +256,10 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   fPrimary->SetBinContent(fPrimary->GetNbinsX()+1,fPrimary->GetNbinsY(),cMC);
   
 
-  if (!isAccepted) return; // Exit on MC event w/o trigger, vertex, data
-  // HHD if (!isAccepted) return; // Exit on MC event w/o trigger, vertex, data
+  if (!isAccepted) 
+    // Exit on MC event w/o trigger, vertex, data - since there's no more 
+    // to be done for MC 
+    return false; 
   
   //MarkEventForStore();
   fSharingFilter.CompareResults(fESDFMD, fMCESDFMD);
@@ -311,28 +267,28 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   // Calculate the inclusive charged particle density 
   if (!fDensityCalculator.Calculate(fESDFMD, fHistos, lowFlux, cent, ip)) { 
     AliWarning("Density calculator failed!");
-    return;
+    return false;
   }
   if (!fDensityCalculator.CalculateMC(fMCESDFMD, fMCHistos)) { 
     AliWarning("MC Density calculator failed!");
-    return;
+    return false;
   }
   fDensityCalculator.CompareResults(fHistos, fMCHistos);
   
   if (fEventInspector.GetCollisionSystem() == AliFMDEventInspector::kPbPb) {
-    if (!fEventPlaneFinder.FindEventplane(esd, fAODEP, 
-					  &(fAODFMD.GetHistogram()) , &fHistos))
+    if (!fEventPlaneFinder.FindEventplane(&esd, fAODEP, 
+					  &(fAODFMD.GetHistogram()), &fHistos))
       AliWarning("Eventplane finder failed!");
   }
 
   // Do the secondary and other corrections. 
   if (!fCorrections.Correct(fHistos, ivz)) { 
     AliWarning("Corrections failed");
-    return;
+    return false;
   }
   if (!fCorrections.CorrectMC(fMCHistos, ivz)) { 
     AliWarning("MC Corrections failed");
-    return;
+    return false;
   }
   fCorrections.CompareResults(fHistos, fMCHistos);
     
@@ -340,13 +296,14 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
 			      ivz, fAODFMD.GetHistogram(),
 			      fAODFMD.GetCentrality())) {
     AliWarning("Histogram collector failed");
-    return;
+    return false;
   }
   if (!fHistCollector.Collect(fMCHistos, fMCRingSums, 
-			      ivz, fMCAODFMD.GetHistogram())) {
+			      ivz, fMCAODFMD.GetHistogram(), -1, true)) {
     AliWarning("MC Histogram collector failed");
-    return;
+    return false;
   }
+#if 0
   // Copy underflow bins to overflow bins - always full phi coverage 
   TH2&  hMC  = fMCAODFMD.GetHistogram();
   Int_t nEta = hMC.GetNbinsX();
@@ -354,11 +311,12 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   for (Int_t iEta = 1; iEta <= nEta; iEta++) {
     hMC.SetBinContent(iEta, nY+1, hMC.GetBinContent(iEta, 0));
   }
+#endif
 
   if (fAODFMD.IsTriggerBits(AliAODForwardMult::kInel))
     fHData->Add(&(fAODFMD.GetHistogram()));
 
-  PostData(1, fList);
+  return true;
 }
 
 //____________________________________________________________________

@@ -311,10 +311,13 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
 						  ,fHistSecondariesVsNcl(0)
 						  ,fHistSecondariesEffCorrVsNch(0)
 						  ,fHistSecondariesEffCorrVsNcl(0)
+						  ,fHistSecondariesOutOfAccEffCorrVsNch(0)
+						  ,fHistSecondariesDetectorCoverEffCorrVsNch(0)
 						  ,fHistCentVsNchVsNcl(0)
-						  ,fHistSecondaryPositionInDetector(0)
+						//,fHistSecondaryPositionInDetector(0)
 						  ,fClusterPositionWeird(0)
-						  ,fHistSecondaryPositionInDetectorMultiple(0)
+						//,fHistSecondaryPositionInDetectorMultiple(0)
+						  ,fSecondaryClusterEnergy(0)
 {
 }
 
@@ -481,10 +484,13 @@ AliAnalysisEtMonteCarlo::~AliAnalysisEtMonteCarlo()
     delete fHistSecondariesVsNcl;
     delete fHistSecondariesEffCorrVsNch;
     delete fHistSecondariesEffCorrVsNcl;
+    delete fHistSecondariesOutOfAccEffCorrVsNch;
+    delete fHistSecondariesDetectorCoverEffCorrVsNch;
     delete fHistCentVsNchVsNcl;
-    delete fHistSecondaryPositionInDetector;
+    //delete fHistSecondaryPositionInDetector;
     delete fClusterPositionWeird;
-    delete fHistSecondaryPositionInDetectorMultiple;
+    //delete fHistSecondaryPositionInDetectorMultiple;
+    delete fSecondaryClusterEnergy;
 }
 
 Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
@@ -768,6 +774,8 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
     Float_t etAntiNeutronDeposited = 0.0;
     Float_t etSecondaries = 0.0;
     Float_t etSecondariesEffCorr = 0.0;
+    Float_t etSecondariesOutOfAccEffCorr = 0.0;
+    Float_t etSecondariesDetectorCoverEffCorr = 0.0;
     Float_t multiplicity = fEsdtrackCutsTPC->GetReferenceMultiplicity(realEvent,kTRUE);
     // loop the clusters
     for (int iCluster = 0; iCluster < nCluster; iCluster++ )
@@ -898,16 +906,17 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
         fDepositedVx = part->Vx();
         fDepositedVy = part->Vy();
         fDepositedVz = part->Vz();
+	fReconstructedE = caloCluster->E();
+	fReconstructedEt = caloCluster->E()*TMath::Sin(cp.Theta());
 
 	//fSecondary = fSelector->FromSecondaryInteraction(*primPart, *stack);
 	fSecondary =fSelector->FromSecondaryInteraction(*part, *stack);
+	//if(fSecondary && fReconstructedEt<0.3) fSecondary = kFALSE;//patch to do quick cross check THIS SHOULD NOT GET COMMITTED!!!  IF IT DID YELL AT CHRISTINE ASAP
 // 	if(fSecondary) 
 // 	{
 // 	  //std::cout << "Have secondary!" << std::endl;
 // 	  //PrintFamilyTree(iPart, stack);
 // 	}
-	fReconstructedE = caloCluster->E();
-	fReconstructedEt = caloCluster->E()*TMath::Sin(cp.Theta());
 	
 	pdg = primPart->GetPDG(0);
 	//Int_t code = primPart->GetPdgCode();
@@ -927,15 +936,47 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 
 	if(fSecondary){//all particles from secondary interactions 
 	  written = kTRUE;
-	  if(!fSelector->CutGeometricalAcceptance(*part)){
-	    fClusterPositionWeird->Fill(cp.Phi(), cp.PseudoRapidity());
-	  }
 	  if(nottrackmatched){//secondaries not removed
 // 	    Float_t vtx = TMath::Sqrt( TMath::Power(part->Vx(),2) + TMath::Power(part->Vy(),2) + TMath::Power(part->Vz(),2) );
-	    fHistSecondaryPositionInDetector->Fill(part->Vx(),part->Vy(),part->Vz());
-	    if(caloCluster->GetNLabels()>1){
-	      fHistSecondaryPositionInDetectorMultiple->Fill(part->Vx(),part->Vy(),part->Vz());
+
+
+
+	    if(!fSelector->CutGeometricalAcceptance(*part)){
+	      if(TMath::Sqrt(part->Vx() * part->Vx() + part->Vy() * part->Vy() + part->Vz()* part->Vz())>100){
+		// 	      fClusterPositionWeird->Fill(cp.Phi(), cp.PseudoRapidity());
+		// 	      //Principal arc tangent of x, in the interval [-pi/2,+pi/2] radians
+		// 	      float phiVertex = TMath::ATan(part->Vy()/part->Vx());
+		// 	      //PHOS acceptance is -0.222 pi to -0.555 pi
+		// 	      //but tan(phi) = tan(phi+pi)
+		// 	      if(part->Vx()<0) phiVertex + TMath::Pi();
+		// 	      //maximum angular distance from PHOS
+		// 	      float dphi1 = phiVertex +40.0/180.0*TMath::Pi();
+		// 	      float dphi2 = phiVertex +100.0/180.0*TMath::Pi();
+		// 	      float dphi = dphi1;
+		// 	      if(TMath::Abs(dphi1)>TMath::Abs(dphi2)) dphi= dphi2;
+		// 	      cout<<"DPhi:  "<<dphi<<" phi "<<phiVertex<<" dphi1 "<<dphi1<<" dphi2 "<<dphi2<<endl;
+		// 	      //cout<<"dphi "<<dphi1/TMath::Pi()<<"pi "<<dphi2/TMath::Pi()<<"pi phi "<<phiVertex/TMath::Pi()<<endl;
+		// 	      PrintFamilyTree(iPart, stack);
+		//out of acceptance clusters
+
+		etSecondariesOutOfAccEffCorr += clEt;
+	      }
 	    }
+	    else{
+	      if(TMath::Sqrt(part->Vx() * part->Vx() + part->Vy() * part->Vy() + part->Vz()* part->Vz())>430){
+		//clusters which are in the cover of the PHOS/EMCal
+		etSecondariesDetectorCoverEffCorr += clEt;
+	      }
+	    }
+
+
+	    fSecondaryClusterEnergy->Fill(fReconstructedEt);
+	    //if(fReconstructedEt>0.3){//patch to do quick cross check THIS SHOULD NOT GET COMMITTED!!!  IF IT DID YELL AT CHRISTINE ASAP
+// 	      fHistSecondaryPositionInDetector->Fill(part->Vx(),part->Vy(),part->Vz());
+// 	      if(caloCluster->GetNLabels()>1){
+// 		fHistSecondaryPositionInDetectorMultiple->Fill(part->Vx(),part->Vy(),part->Vz());
+// 	      }
+	      //}
 // 	    if(vtx>300){
 // 	      //cout<<"Vtx "<<vtx<<endl;
 // 	      if(fPrimaryCode==fgProtonCode ||  fPrimaryCode==fgAntiProtonCode || fPrimaryCode==fgPiPlusCode || fPrimaryCode==fgPiMinusCode || fPrimaryCode==fgKPlusCode || fPrimaryCode==fgKMinusCode){
@@ -1166,6 +1207,8 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
     fHistSecondariesVsNcl->Fill(etSecondaries,fNClusters);
     fHistSecondariesEffCorrVsNch->Fill(etSecondariesEffCorr,multiplicity);
     fHistSecondariesEffCorrVsNcl->Fill(etSecondariesEffCorr,fNClusters);
+    fHistSecondariesOutOfAccEffCorrVsNch->Fill(etSecondariesOutOfAccEffCorr,multiplicity);
+    fHistSecondariesDetectorCoverEffCorrVsNch->Fill(etSecondariesDetectorCoverEffCorr,multiplicity);
     fHistCentVsNchVsNcl->Fill(fCentClass,multiplicity, fNClusters);
 
     fHistNeutronsNumVsCent->Fill(nNeutrons,fCentClass);
@@ -1740,18 +1783,23 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
     fHistSecondariesVsNcl = new TH2F("fHistSecondariesVsNcl","secondaries deposited in calorimeter vs number of clusters",nbinsEt,minEtRange,maxEtRangeShort,nbinsCl,minCl,maxCl);
     fHistSecondariesEffCorrVsNch = new TH2F("fHistSecondariesEffCorrVsNch","efficiency corrected secondaries deposited in calorimeter vs multiplicity",nbinsEt,minEtRange,maxEtRangeShort,nbinsMult,minMult,maxMult);
     fHistSecondariesEffCorrVsNcl = new TH2F("fHistSecondariesEffCorrVsNcl","efficiency corrected secondaries deposited in calorimeter vs number of clusters",nbinsEt,minEtRange,maxEtRangeShort,nbinsCl,minCl,maxCl);
+
+    fHistSecondariesOutOfAccEffCorrVsNch = new TH2F("fHistSecondariesOutOfAccEffCorrVsNch","efficiency corrected secondaries deposited in calorimeter vs number of clusters for secondary particles out of detector acceptance",nbinsEt,minEtRange,maxEtRangeShort/10.0,nbinsMult,minMult,maxMult);
+    fHistSecondariesDetectorCoverEffCorrVsNch = new TH2F("fHistSecondariesDetectorCoverEffCorrVsNch","efficiency corrected secondaries deposited in calorimeter vs number of clusters for secondaries from the detector cover",nbinsEt,minEtRange,maxEtRangeShort/10.0,nbinsMult,minMult,maxMult);
     fHistCentVsNchVsNcl = new TH3F("fHistCentVsNchVsNcl","Cent bin vs Nch Vs NCl",20,-0.5,19.5,nbinsMult,minMult,maxMult,nbinsCl,minCl,maxCl);
-    float maxpos = 500;
-    int nbinspos = 200;
-    fHistSecondaryPositionInDetector = new TH3F("fHistSecondaryPositionInDetector","Position of secondaries",nbinspos,-maxpos,maxpos,nbinspos,-maxpos,maxpos,nbinspos,-maxpos,maxpos);
-    fHistSecondaryPositionInDetector->GetXaxis()->SetTitle("X");
-    fHistSecondaryPositionInDetector->GetYaxis()->SetTitle("Y");
-    fHistSecondaryPositionInDetector->GetZaxis()->SetTitle("Z");
-    fHistSecondaryPositionInDetectorMultiple = new TH3F("fHistSecondaryPositionInDetectorMultiple","Position of secondaries",nbinspos,-maxpos,maxpos,nbinspos,-maxpos,maxpos,nbinspos,-maxpos,maxpos);
-    fHistSecondaryPositionInDetectorMultiple->GetXaxis()->SetTitle("X");
-    fHistSecondaryPositionInDetectorMultiple->GetYaxis()->SetTitle("Y");
-    fHistSecondaryPositionInDetectorMultiple->GetZaxis()->SetTitle("Z");
+    //float maxpos = 500;
+    // int nbinspos = 200;
+//     fHistSecondaryPositionInDetector = new TH3F("fHistSecondaryPositionInDetector","Position of secondaries",nbinspos,-maxpos,maxpos,nbinspos,-maxpos,maxpos,nbinspos,-maxpos,maxpos);
+//     fHistSecondaryPositionInDetector->GetXaxis()->SetTitle("X");
+//     fHistSecondaryPositionInDetector->GetYaxis()->SetTitle("Y");
+//     fHistSecondaryPositionInDetector->GetZaxis()->SetTitle("Z");
+//     fHistSecondaryPositionInDetectorMultiple = new TH3F("fHistSecondaryPositionInDetectorMultiple","Position of secondaries",nbinspos,-maxpos,maxpos,nbinspos,-maxpos,maxpos,nbinspos,-maxpos,maxpos);
+//     fHistSecondaryPositionInDetectorMultiple->GetXaxis()->SetTitle("X");
+//     fHistSecondaryPositionInDetectorMultiple->GetYaxis()->SetTitle("Y");
+//     fHistSecondaryPositionInDetectorMultiple->GetZaxis()->SetTitle("Z");
     fClusterPositionWeird =  new TH2F("fClusterPositionWeird", "Position of weird secondary clusters",300, -TMath::Pi(),TMath::Pi(), 100, -0.7 , 0.7);
+
+   fSecondaryClusterEnergy = new TH1F("fSecondaryClusterEnergy","fSecondaryClusterEnergy", 100, 0, 5);
 }
 
 void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
@@ -1932,10 +1980,13 @@ void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
     list->Add(fHistSecondariesVsNcl);
     list->Add(fHistSecondariesEffCorrVsNch);
     list->Add(fHistSecondariesEffCorrVsNcl);
+    list->Add(fHistSecondariesOutOfAccEffCorrVsNch);
+    list->Add(fHistSecondariesDetectorCoverEffCorrVsNch);
     list->Add(fHistCentVsNchVsNcl);
-    list->Add(fHistSecondaryPositionInDetector);
+    //list->Add(fHistSecondaryPositionInDetector);
     list->Add(fClusterPositionWeird);
-    list->Add(fHistSecondaryPositionInDetectorMultiple);
+    //list->Add(fHistSecondaryPositionInDetectorMultiple);
+    list->Add(fSecondaryClusterEnergy);
 
 
 }

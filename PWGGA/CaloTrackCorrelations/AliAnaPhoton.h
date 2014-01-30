@@ -55,8 +55,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   void         FillAcceptanceHistograms();
 
-  void         FillEMCALTriggerClusterBCHistograms(const Int_t idcalo,       const Float_t ecluster,   const Float_t tofcluster,
-                                                   const Float_t etacluster, const Float_t phicluster);
+  void         FillEMCALTriggerClusterBCHistograms(Int_t idcalo,       Float_t ecluster,   Float_t tofcluster,
+                                                   Float_t etacluster, Float_t phicluster);
   
   void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t mcTag) ;
   
@@ -71,10 +71,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnTMHistoFill()                  { fFillTMHisto           = kTRUE  ; }
   void         SwitchOffTMHistoFill()                 { fFillTMHisto           = kFALSE ; }
 
-  void         FillClusterPileUpHistograms(AliVCluster * calo,       const Bool_t matched,
-                                           const Float_t ptcluster,
-                                           const Float_t etacluster, const Float_t phicluster,
-                                           const Float_t l0cluster);
+  void         FillClusterPileUpHistograms(AliVCluster * calo, Bool_t matched,
+                                           Float_t ptcluster,  Float_t etacluster,
+                                           Float_t phicluster, Float_t l0cluster);
   
   void         FillPileUpHistograms(Float_t energy, Float_t pt, Float_t time) ;
   void         FillPileUpHistogramsPerEvent() ;

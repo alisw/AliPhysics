@@ -18,6 +18,10 @@
 #include <TNamed.h>
 #endif
 
+#ifndef ROOT_TArrayD
+#include <TArrayD.h>
+#endif
+
 class AliESDtrackCuts;
 class AliHFEpid;
 class AliHFEpidQAmanager;
@@ -70,6 +74,7 @@ class AliHFENonPhotonicElectron : public TNamed {
 //  void  SetMaxOpeningPhi	(Double_t MaxOpeningPhi)	{ fMaxOpeningPhi	= MaxOpeningPhi; };
   void  SetAlgorithmMA		(Bool_t algorithmMA)	 	{ fAlgorithmMA		= algorithmMA; };
   void  SetMassConstraint	(Bool_t MassConstraint)		{ fSetMassConstraint	= MassConstraint; };
+  void  SetITSMeanShift(Double_t meanshift) { fITSmeanShift = meanshift; }
 
   void SelectCategory1Tracks(Bool_t doSelect = kTRUE) { fSelectCategory1tracks = doSelect; }
   void SelectCategory2Tracks(Bool_t doSelect = kTRUE) { fSelectCategory2tracks = doSelect; }
@@ -90,6 +95,11 @@ class AliHFENonPhotonicElectron : public TNamed {
 
   Int_t    FindMother		(Int_t tr, Int_t &indexmother) const;
 
+  void SetPtBinning(const TArrayD &binning) { fPtBinning = binning; }
+  void SetPtBinning(Int_t nbins, const Double_t *const binning) { fPtBinning.Set(nbins+1, binning); }
+  void SetEtaBinning(const TArrayD &binning) { fEtaBinning = binning; }
+  void SetEtaBinning(Int_t nbins, const Double_t *const binning) { fEtaBinning.Set(nbins+1, binning); }
+
 
  private:
   Int_t    GetMotherPDG(Int_t tr, Int_t &motherIndex) const;
@@ -104,41 +114,44 @@ class AliHFENonPhotonicElectron : public TNamed {
   Bool_t FilterCategory1Track(const AliVTrack * const track, Bool_t isAOD, Int_t binct);
   Bool_t FilterCategory2Track(const AliVTrack * const track, Bool_t isAOD);
 
-  Bool_t		 fIsAOD;			// Is AOD
-  AliMCEvent		*fMCEvent;			//! MC event ESD
-  TClonesArray		*fAODArrayMCInfo;		//! MC info particle AOD
-  AliHFEcuts		*fHFEBackgroundCuts;		// HFE background cuts
-  AliHFEpid		*fPIDBackground;		// PID background cuts
-  AliHFEpidQAmanager	*fPIDBackgroundQA;		// QA Manager Background
-  const AliPIDResponse	*fkPIDRespons;			// PID response
-  Bool_t		 fAlgorithmMA;			// algorithm MA
-  Double_t		 fChi2OverNDFCut;		// Limit chi2
-  Double_t		 fMaxDCA;			// Limit dca
-//  Double_t		 fMaxOpeningTheta;		// Limit opening angle in theta
-//  Double_t		 fMaxOpeningPhi;		// Limit opening angle in phi
-  Double_t		 fMaxOpening3D;			// Limit opening 3D
-  Double_t		 fMaxInvMass;			// Limit invariant mass
-  Bool_t		 fSetMassConstraint;		// Set mass constraint
-  Bool_t     fSelectCategory1tracks;    // Category 1 tracks: Standard track cuts
-  Bool_t     fSelectCategory2tracks;    // Category 2 tracks: tracks below 300 MeV/c
-  TArrayI		*fArraytrack;			//! list of associated tracks
-  Int_t			 fCounterPoolBackground;	// number of associated electrons
-  Int_t			 fnumberfound;			// number of inclusive  electrons
-  TList			*fListOutput;			// List of histos
-  THnSparseF		*fAssElectron;			//! centrality, pt, Source MC, P, TPCsignal
-  THnSparseF		*fIncElectron;			//! centrality, pt, Source MC, P, TPCsignal
-  THnSparseF		*fUSign;			//! delta phi, c, pt, inv, source
-  THnSparseF		*fLSign;			//! delta phi, c, pt, inv, source
-  THnSparseF    *fUSmatches;  //! number of matched tracks with oposite sign per inclusive track after inv mass cut
-  THnSparseF    *fLSmatches;  //! number of matched tracks with same sign per inclusive track after inv mass cut
-  TH2F* fHnsigmaITS;  //! Control histogram for ITS pid of category 2 tracks
-//  THnSparseF		*fUSignAngle;			//! angle, c, source
-//  THnSparseF		*fLSignAngle;			//! angle, c, source
+  Bool_t                    fIsAOD;                         // Is AOD
+  AliMCEvent                *fMCEvent;                      //! MC event ESD
+  TClonesArray              *fAODArrayMCInfo;               //! MC info particle AOD
+  AliHFEcuts                *fHFEBackgroundCuts;            // HFE background cuts
+  AliHFEpid	                *fPIDBackground;                // PID background cuts
+  AliHFEpidQAmanager        *fPIDBackgroundQA;              // QA Manager Background
+  const AliPIDResponse      *fkPIDRespons;                  // PID response
+  TArrayD                   fPtBinning;                     // pt binning
+  TArrayD                   fEtaBinning;                    // eta binning
+  Bool_t                    fAlgorithmMA;                   // algorithm MA
+  Double_t                  fChi2OverNDFCut;                // Limit chi2
+  Double_t                  fMaxDCA;                        // Limit dca
+//  Double_t                fMaxOpeningTheta;               // Limit opening angle in theta
+//  Double_t                fMaxOpeningPhi;                 // Limit opening angle in phi
+  Double_t                  fMaxOpening3D;                  // Limit opening 3D
+  Double_t                  fMaxInvMass;                    // Limit invariant mass
+  Bool_t                    fSetMassConstraint;             // Set mass constraint
+  Bool_t                    fSelectCategory1tracks;         // Category 1 tracks: Standard track cuts
+  Bool_t                    fSelectCategory2tracks;         // Category 2 tracks: tracks below 300 MeV/c
+  Double_t                  fITSmeanShift;                  // Shift of the mean in the ITS
+  TArrayI                   *fArraytrack;                   //! list of associated tracks
+  Int_t                     fCounterPoolBackground;         // number of associated electrons
+  Int_t                     fnumberfound;                   // number of inclusive  electrons
+  TList                     *fListOutput;                   // List of histos
+  THnSparseF                *fAssElectron;                  //! centrality, pt, Source MC, P, TPCsignal
+  THnSparseF                *fIncElectron;                  //! centrality, pt, Source MC, P, TPCsignal
+  THnSparseF                *fUSign;                        //! delta phi, c, pt, inv, source
+  THnSparseF                *fLSign;                        //! delta phi, c, pt, inv, source
+  THnSparseF                *fUSmatches;                    //! number of matched tracks with oposite sign per inclusive track after inv mass cut
+  THnSparseF                *fLSmatches;                    //! number of matched tracks with same sign per inclusive track after inv mass cut
+  TH2F*                     fHnsigmaITS;                    //! Control histogram for ITS pid of category 2 tracks
+//  THnSparseF              *fUSignAngle;                   //! angle, c, source
+//  THnSparseF              *fLSignAngle;                   //! angle, c, source
 
 
   AliHFENonPhotonicElectron(const AliHFENonPhotonicElectron &ref); 
 
-  ClassDef(AliHFENonPhotonicElectron, 1); //!example of analysis
+  ClassDef(AliHFENonPhotonicElectron, 2); //!example of analysis
 };
 
 #endif

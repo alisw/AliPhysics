@@ -138,8 +138,8 @@ Double_t AliPerfAnalyzeInvPt::InvGaussRejP(Double_t *x, const Double_t *par)
 
 
 //_____________________________________________________________________________________________________________________________________________
-AliPerfAnalyzeInvPt::AliPerfAnalyzeInvPt():
-   TNamed("AliPerfAnalyzeInvPt","AliPerfAnalyzeInvPt"),
+AliPerfAnalyzeInvPt::AliPerfAnalyzeInvPt(const Char_t* name, const Char_t* title):
+   TNamed(name,title),
    fThetaBins(),
    fPhiBins(),
    fNThetaBins(0), 
@@ -179,46 +179,6 @@ AliPerfAnalyzeInvPt::AliPerfAnalyzeInvPt():
  
    
 }
-//_____________________________________________________________________________________________________________________________________________
-AliPerfAnalyzeInvPt::AliPerfAnalyzeInvPt(const Char_t* name="AliAnalyzeInvPt",const Char_t* title="AliAnalyzeInvPt"):
-   TNamed(name, title),
-   fThetaBins(),
-   fPhiBins(),
-   fNThetaBins(0), 
-   fNPhiBins(0),
-   fRange(0),
-   fExclRange(0),
-   fFitGaus(0) ,
-   fDoRebin(0),
-   fRebin(0),
-   fHistFitTheta(),
-   fHistFitPhi(),
-   //histograms,graphs and functions
-   fHistH2InvPtTheta(0),
-   fHistH2InvPtPhi(0), 
-   fGrMinPosTheta(0),
-   fGrMinPosPhi(0),
-   fFitMinPos(0),
-   fFitMinPosRejP(0),
-   fFitInvGauss(0),
-   fFitInvGaussRejP(0)
-{
-   fFitGaus = kFALSE;// flag for gaussian fit
-   fNThetaBins = 0; // theta bins for projections
-   fNPhiBins = 0; //phi bins for projections
-   fRange = 0; //fit range
-   fExclRange = 0; //fit exclusion range
-   fDoRebin = kFALSE; // flag for rebin
-   fRebin = 0; // bins for rebin
-   
-   for(Int_t i=0;i<100;i++){
-    
-      fHistFitTheta[i] = NULL;
-      fHistFitPhi[i] = NULL;
-   }
-  
-}
-
 
 //______________________________________________________________________________________________________________________________________
 void AliPerfAnalyzeInvPt::InitGraphs(Double_t *binsXTheta,Double_t *fitParamTheta,Double_t *errFitParamTheta,Double_t *binsXPhi,Double_t *fitParamPhi,Double_t *errFitParamPhi){

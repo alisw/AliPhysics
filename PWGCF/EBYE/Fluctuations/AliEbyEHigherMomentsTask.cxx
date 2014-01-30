@@ -19,9 +19,8 @@
 //           Analysis Task for Net-Charge Higher Moment Analysis           //
 //              Author: Satyajit Jena || Nirbhay K. Behera                 //
 //                      sjena@cern.ch || nbehera@cern.ch                   //
-//                                                                         //
+//           Last Modified: 30/01/2014: only for net-charge part           //
 //=========================================================================//
-
 #include "TChain.h"
 #include "TList.h"
 #include "TFile.h"
@@ -34,18 +33,12 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
-
-#include "AliESDVertex.h"
-#include "AliESDEvent.h"
-#include "AliESDInputHandler.h"
 #include "AliAODEvent.h"
+#include "AliVTrack.h"
 #include "AliAODTrack.h"
 #include "AliAODInputHandler.h"
-#include "AliESD.h"
-#include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliStack.h"
-#include "AliESDtrackCuts.h"
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
 #include "AliMCEventHandler.h"
@@ -58,6 +51,7 @@
 #include "AliPIDResponse.h"
 #include "AliAODpidUtil.h"        
 #include "AliPIDCombined.h"
+#include "AliHelperPID.h"
 
 #include "AliEbyEHigherMomentsTask.h"
 
@@ -71,126 +65,100 @@ ClassImp(AliEbyEHigherMomentsTask)
 AliEbyEHigherMomentsTask::AliEbyEHigherMomentsTask( const char *name )
 : AliAnalysisTaskSE( name ),
   fListOfHistos(0),
-  fAOD(0),
   fArrayMC(0),
-  fPIDResponse(0),
-  fParticleSpecies(AliPID::kProton),
   fAnalysisType(0),
   fCentralityEstimator("V0M"),
   fCentrality(0),
   fVxMax(3.),
   fVyMax(3.),
   fVzMax(10.),
-  fDCAxy(2.4),
-  fDCAz(3.),
   fPtLowerLimit(0.3),
   fPtHigherLimit(1.5),
+  fNptBins(0),
+  fBin(0),
   fEtaLowerLimit(-0.8),
   fEtaHigherLimit(0.8),
-  fRapidityCut(0.5),
-  fNSigmaCut(3.),
-  fTPCNClus(80),
-  fChi2perNDF(4.),
   fAODtrackCutBit(128),
-  fUsePid(kFALSE),
   fEventCounter(0),
-  fHistDCA(0),
-  fTPCSig(0),
-  fTPCSigA(0),
+  fHistVxVy(0),
   fTHnCentNplusNminusCh(0),
   fTHnCentNplusNminusChTruth(0),
-  fTHnCentNplusNminus(0)
+  fPtBinNplusNminusCh(0),
+  fPtBinNplusNminusChTruth(0)
 { 
   
-  for ( Int_t i = 0; i < 13; i++) { 
+  for ( Int_t i = 0; i < 4; i++) { 
     fHistQA[i] = NULL;
   }
-  
-  for ( Int_t i = 0; i < 5; i++ ){
-    fTHnCentNplusNminusPid[i] = NULL;
-    fTHnCentNplusNminusPidTruth[i] = NULL;
-  }
-  
+ 
   DefineOutput(1, TList::Class()); // Outpput....
   //DefineOutput(2, TList::Class()); 
 }
 
 AliEbyEHigherMomentsTask::~AliEbyEHigherMomentsTask() {
-  //if(fListOfHistosQA) delete fListOfHistosQA;
+
   if(fListOfHistos) delete fListOfHistos;
- 
 }
 
 //---------------------------------------------------------------------------------
 void AliEbyEHigherMomentsTask::UserCreateOutputObjects() {
   
-  // fListOfHistosQA = new TList();
-  //fListOfHistosQA->SetOwner(kTRUE);
   fListOfHistos = new TList();
   fListOfHistos->SetOwner(kTRUE);
   
   fEventCounter = new TH1D("fEventCounter","EventCounter", 10, 0.5,10.5);
   fEventCounter->GetXaxis()->SetBinLabel(1,"Event Accesed");
-  fEventCounter->GetXaxis()->SetBinLabel(2,"Within 0-90% centrality");
+  fEventCounter->GetXaxis()->SetBinLabel(2,"Within 0-80% centrality");
   fEventCounter->GetXaxis()->SetBinLabel(5,"Have a vertex");
   fEventCounter->GetXaxis()->SetBinLabel(6,"After vertex Cut");
   fEventCounter->GetXaxis()->SetBinLabel(7,"Event Analyzed");
-  fEventCounter->GetXaxis()->SetBinLabel(8,"Event Analysis finished");
   fListOfHistos->Add(fEventCounter);
   
   //For QA-Histograms
-  fHistQA[0] = new TH1D("fHistQAvx", "Histo Vx After Cut", 400, -4., 4.);
-  fHistQA[1] = new TH1D("fHistQAvy", "Histo Vy After Cut", 400, -4., 4.);
-  fHistQA[2] = new TH1D("fHistQAvz", "Histo Vz After Cut", 500, -25., 25.);  
-  fHistQA[3] = new TH1D("fHistQAvxA", "Histo Vx All", 500, -5., 5.);
-  fHistQA[4] = new TH1D("fHistQAvyA", "Histo Vy All", 500, -5., 5.);
-  fHistQA[5] = new TH1D("fHistQAvzA", "Histo Vz All", 500, -25., 25.);
-  fHistQA[6] = new TH1D("fHistQADcaXyC", "Histo DCAxy after cut", 500, -5., 5.);
-  fHistQA[7] = new TH1D("fHistQADcaZC", "Histo DCAz after cut", 500, -5., 5.);   
-  fHistQA[8] = new TH1D("fHistQAPt","p_{T} distribution",600,0,6);
-  fHistQA[9] = new TH1D("fHistQAEta","#eta distribution",240,-1.2,1.2);
-  fHistQA[10] = new TH1D("fHistQAPhi","#phi distribution",340,0,6.8);
-  fHistQA[11] = new TH1D("fHistQANCls","Number of TPC cluster",200,0,200);
-  fHistQA[12] = new TH1D("fHistQAChi2","Chi2 per NDF",100,0,10);
-  for(Int_t i = 0; i < 13; i++)
+  fHistQA[0] = new TH1D("fHistQAvz", "Histo Vz After Cut", 500, -25., 25.);  
+  fHistQA[1] = new TH1D("fHistQAPt","p_{T} distribution",600,0,6);
+  fHistQA[2] = new TH1D("fHistQAEta","#eta distribution",240,-1.2,1.2);
+  fHistQA[3] = new TH1D("fHistQAPhi","#phi distribution",340,0,6.8);
+ 
+  for(Int_t i = 0; i < 4; i++)
     {
       fListOfHistos->Add(fHistQA[i]);
     }
   
-  fHistDCA = new TH2D("fHistDCA","DCAxy Vs DCAz", 500, -5., 5., 500, -5., 5.);
-  fTPCSig = new TH2D("fTPCSig","TPC signal",200, 0.0, 10. ,1000,0.,1000);
-  fTPCSig->SetMarkerColor(kRed);
-  fTPCSigA = new TH2D("fTPCSigA","TPC signal all ",200, 0.0, 10. ,1000,0.,1000);
-  fListOfHistos->Add(fHistDCA);
-  fListOfHistos->Add(fTPCSig);
-  fListOfHistos->Add(fTPCSigA);
+  fHistVxVy = new TH2D("fHistVxVy","Vertex-x Vs Vertex-y", 200, -1., 1., 200, -1., 1.);
+  fListOfHistos->Add(fHistVxVy);
+ 
  
   const Int_t nDim = 3;
-  const Int_t nPid = 5;
-  TString Species[nPid] = {"Electron","Muon","Pion","Kaon","Proton"};
-  
-  Int_t fBins[nPid][nDim];
-  Double_t fMin[nPid][nDim];
-  Double_t fMax[nPid][nDim];
-  
-  for( Int_t i = 0; i < nPid; i++ ){
-    for( Int_t j = 0; j < nDim; j++ ){
-      fBins[i][j] = 0;
-      fMin[i][j] = 0.;
-      fMax[i][j] = 0.;
-    }
-  }  
-  
   
   Int_t fBinsCh[nDim] = {100, 1500, 1500};
   Double_t fMinCh[nDim] = { -0.5, -0.5, -0.5 };
   Double_t fMaxCh[nDim] = { 99.5, 1499.5, 1499.5};
+  
+  const Int_t dim = fNptBins*2 + 1;
+  //const Int_t dim = ;
+  Int_t bin[dim];
+  Double_t min[dim];
+  Double_t max[dim];
+  bin[0] = 100; min[0] = -0.5; max[0] = 99.5;
+
+  for(Int_t i = 1; i < dim; i++){
+    
+    bin[i] = 900;
+    min[i] = -0.5;
+    max[i] = 899.5;
+ 
+  } 
   
   fTHnCentNplusNminusCh = new THnSparseD("fTHnCentNplusNminusCh","Cent-NplusChrg-NminusChrg", nDim, fBinsCh, fMinCh, fMaxCh); 
   fTHnCentNplusNminusCh->GetAxis(0)->SetTitle("Centrality");
   fTHnCentNplusNminusCh->GetAxis(1)->SetTitle("Nplus");
   fTHnCentNplusNminusCh->GetAxis(2)->SetTitle("Nminus");
   fListOfHistos->Add(fTHnCentNplusNminusCh);
+
+  fPtBinNplusNminusCh = new THnSparseI("fPtBinNplusNminusCh","cent-nplus-nminus", dim, bin, min, max);
+  
+  fListOfHistos->Add(fPtBinNplusNminusCh);
   
   if( fAnalysisType == "MCAOD" ){   
     
@@ -200,71 +168,12 @@ void AliEbyEHigherMomentsTask::UserCreateOutputObjects() {
     fTHnCentNplusNminusChTruth->GetAxis(2)->SetTitle("Nminus");
     fListOfHistos->Add(fTHnCentNplusNminusChTruth);
     
-   
+    fPtBinNplusNminusChTruth = new THnSparseI("fPtBinNplusNminusChTruth","cent-nplus-nminus", dim, bin, min, max);
+    fListOfHistos->Add(fPtBinNplusNminusChTruth);
+    
   }//MCAOD---
   
-  TString hname1, hname11;
-  TString htitle1, axisTitle1, axisTitle2; 
-  
-  
-  if( fUsePid ){
-    
-    Int_t gPid = (Int_t)fParticleSpecies;
-    
-    if( gPid > 1 && gPid < 5 ){ 
-      //Pion----
-      fBins[2][0] = 100; fBins[2][1] = 1000; fBins[2][2] = 1000;
-      fMin[2][0] = -0.5; fMin[2][1] = -0.5; fMin[2][2] = -0.5;
-      fMax[2][0] = 99.5; fMax[2][1] = 999.5; fMax[2][2] = 999.5;
-      //Kaon------
-      fBins[3][0] = 100; fBins[3][1] = 600; fBins[3][2] = 600;
-      fMin[3][0] = -0.5; fMin[3][1] = -0.5; fMin[3][2] = -0.5;
-      fMax[3][0] = 99.5; fMax[3][1] = 599.5; fMax[3][2] = 599.5;
-      //Proton-----
-      fBins[4][0] = 100; fBins[4][1] = 400; fBins[4][2] = 400;
-      fMin[4][0] = -0.5; fMin[4][1] = -0.5; fMin[4][2] = -0.5;
-      fMax[4][0] = 99.5; fMax[4][1] = 399.5; fMax[4][2] = 399.5;
-      
-      hname1 = "fCentNplusNminusPid"; hname1 +=gPid;
-      htitle1 = Species[gPid]; htitle1 +=" And Neg-"; htitle1 +=Species[gPid];
-      axisTitle1 ="Pos-"; axisTitle1 += Species[gPid];
-      axisTitle2 ="Neg-"; axisTitle2 += Species[gPid];
-      
-      fTHnCentNplusNminusPid[gPid] = new THnSparseD(hname1.Data(),htitle1.Data(), nDim, fBins[gPid], fMin[gPid],fMax[gPid]);
-       
-      fTHnCentNplusNminusPid[gPid]->GetAxis(0)->SetTitle("Centrality");
-      fTHnCentNplusNminusPid[gPid]->GetAxis(1)->SetTitle(axisTitle1.Data());
-      fTHnCentNplusNminusPid[gPid]->GetAxis(2)->SetTitle(axisTitle2.Data());
-      
-      fListOfHistos->Add(fTHnCentNplusNminusPid[gPid]);
-      
-      if( fAnalysisType == "MCAOD" ){
-	
-	hname11 = "fCentNplusNminusPidTruth"; hname11 +=gPid;
-	fTHnCentNplusNminusPidTruth[gPid] = new THnSparseD(hname11.Data(),htitle1.Data(), nDim, fBins[gPid], fMin[gPid],fMax[gPid]);
-	
-	fTHnCentNplusNminusPidTruth[gPid]->GetAxis(0)->SetTitle("Centrality");
-	fTHnCentNplusNminusPidTruth[gPid]->GetAxis(1)->SetTitle(axisTitle1.Data());
-	fTHnCentNplusNminusPidTruth[gPid]->GetAxis(2)->SetTitle(axisTitle2.Data());
-	fListOfHistos->Add(fTHnCentNplusNminusPidTruth[gPid]);
-	
-      }//MCAOD-----
-    }//Pion, Koan and Proton-------
-    else{
-      
-      Int_t fBinsX[nDim] = {100, 1500, 1500};
-      Double_t fMinX[nDim] = { -0.5, -0.5, -0.5 };
-      Double_t fMaxX[nDim] = { 99.5, 1499.5, 1499.5};
-      
-      fTHnCentNplusNminus = new THnSparseD("fTHnCentNplusNminus","Cent-NplusChrg-NminusChrg", nDim, fBinsX, fMinX, fMaxX); 
-      fTHnCentNplusNminus->GetAxis(0)->SetTitle("Centrality");
-      fTHnCentNplusNminus->GetAxis(1)->SetTitle("UnwantedPlus");
-      fTHnCentNplusNminus->GetAxis(2)->SetTitle("UnwantedMinus");
-      fListOfHistos->Add(fTHnCentNplusNminus);
-      
-    }//Unwanted particle -(other than pi, K or proton)
-    
-  }//fUsePid-------
+ 
   
   //PostData(1, fListOfHistosQA);
   PostData(1, fListOfHistos);   
@@ -291,8 +200,7 @@ void AliEbyEHigherMomentsTask::UserExec( Option_t * ){
   }
   
   else return;
-  
-  fEventCounter->Fill(8);
+ 
   
   
 }
@@ -302,10 +210,14 @@ void AliEbyEHigherMomentsTask::doAODEvent(){
   
   Double_t positiveSum = 0.;
   Double_t negativeSum = 0.;
-  Double_t posPidSum = 0.;
-  Double_t negPidSum = 0.;
-  Int_t gPid = 0;
-  
+  const Int_t dim = fNptBins*2;
+  Double_t PtCh[dim];
+
+  for(Int_t idx = 0; idx < dim; idx++){
+    PtCh[idx] = 0.;
+  }
+
+
   AliAnalysisManager* manager = AliAnalysisManager::GetAnalysisManager();
   if (!manager) {
     cout<<"ERROR: Analysis manager not found."<<endl;
@@ -318,36 +230,25 @@ void AliEbyEHigherMomentsTask::doAODEvent(){
     return;
   }
   
-  fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+  AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+
   if (!fAOD)
     {
-      cout<< "ERROR 01: AOD not found " <<endl;
+      cout<< "ERROR: AOD not found " <<endl;
       return;
     }
   
-  fPIDResponse =inputHandler->GetPIDResponse();
-  
-  
-  if (!fPIDResponse){
-    AliFatal("This Task needs the PID response attached to the inputHandler");
-    return;
-  }  
+  if(!ProperVertex(fAOD)) return;   
   
   AliAODHeader *aodHeader = fAOD->GetHeader();
   
   fCentrality = (Int_t)aodHeader->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
   
-  if(fCentrality < 0 || fCentrality >= 91) return;
-  
-  
+  if(fCentrality < 0 || fCentrality >= 81) return;
   
   fEventCounter->Fill(2);
   
-  if(!ProperVertex()) return;   
-  
   Int_t nTracks = fAOD->GetNumberOfTracks();
-  
-  TExMap *trackMap = new TExMap();//Mapping matrix----
   
   for(Int_t i = 0; i < nTracks; i++) {
     
@@ -358,120 +259,42 @@ void AliEbyEHigherMomentsTask::doAODEvent(){
       continue;
     }
     
-    Double_t tpcSignalAll = aodTrack->GetTPCsignal();
-    fTPCSigA->Fill(aodTrack->GetTPCmomentum(),tpcSignalAll);
-    
-    Int_t gID = aodTrack->GetID();
-    
-    if (aodTrack->TestFilterBit(1)) trackMap->Add(gID, i);//Global tracks-----
-  }//1st track loop----
-  
-  AliAODTrack* newAodTrack; 
-  
-  for( Int_t j = 0; j < nTracks; j++ )
-    {
-      
-      AliAODTrack* aodTrack1 = dynamic_cast<AliAODTrack *>(fAOD->GetTrack(j));
-      
-      if(!aodTrack1) {
-	AliError(Form("ERROR: Could not retrieve AODtrack %d",j));
-	continue;
-      }
-      
-      
-      if(!aodTrack1->TestFilterBit(fAODtrackCutBit)) continue;
-      
-      Int_t gID = aodTrack1->GetID();
-      
-      //if( aodTrack->GetID() != (-aodTrack1->GetID() -1) ) continue;
-      newAodTrack = gID >= 0 ? aodTrack1 : fAOD->GetTrack(trackMap->GetValue(-1-gID)); //Take those global track who corresponds to TPC only track
-      
-    
-      Double_t pt = aodTrack1->Pt();
-      Double_t eta = aodTrack1->Eta();
-      Double_t nclus = aodTrack1->GetTPCClusterInfo(2,1);
-      Double_t chi2ndf = aodTrack1->Chi2perNDF();
+    if(!AcceptTrack(aodTrack) ) continue;
 
-      if( pt < fPtLowerLimit || pt > fPtHigherLimit ) continue;
-      if( eta < fEtaLowerLimit || eta > fEtaHigherLimit ) continue;
-      if( nclus < fTPCNClus ) continue;
-      if( chi2ndf > fChi2perNDF ) continue;
-
-      if( fAODtrackCutBit == 128 ){
-	//TPC only tracks----
-	Float_t dxy = 0., dz = 0.;
-	dxy = aodTrack1->DCA();
-	dz  = aodTrack1->ZAtDCA();      
-	
-	if( fabs(dxy) > fDCAxy ) continue; 
-	if( fabs(dz) > fDCAz ) continue;
-	//Extra cut on DCA---( Similar to BF Task.. )	      
-	if( fDCAxy !=0 && fDCAz !=0 ){
-	  if( TMath::Sqrt((dxy*dxy)/(fDCAxy*fDCAxy)+(dz*dz)/(fDCAz*fDCAz)) > 1. ) continue;
-	}
-	
-	fHistQA[6]->Fill(dxy);
-	fHistQA[7]->Fill(dz);
-	fHistDCA->Fill(dxy,dz);
-	
-      }
-      
-      fHistQA[8]->Fill(pt);
-      fHistQA[9]->Fill(eta);
-      fHistQA[10]->Fill(aodTrack1->Phi());
-      fHistQA[11]->Fill(nclus);
-      fHistQA[12]->Fill(chi2ndf);
-      
-      Short_t gCharge = aodTrack1->Charge();
-      
-      if(gCharge > 0) positiveSum += 1.;
-      if(gCharge < 0) negativeSum += 1.;
-      
-      if( fUsePid ) {
-	
-	gPid = (Int_t)fParticleSpecies;
-	
-	Double_t rap =  newAodTrack->Y(AliPID::ParticleMass(fParticleSpecies));
-	Double_t tpcSignal = newAodTrack->GetTPCsignal();
-	//Double_t rap =  aodTrack1->Y(AliPID::ParticleMass(fParticleSpecies));
-	//Double_t tpcSignal = aodTrack1->GetTPCsignal();
-	
-	if( fabs(rap ) > fRapidityCut ) continue;//Rapidity cut
-	
-	fTPCSig->Fill(newAodTrack->GetTPCmomentum(),tpcSignal);
-	
-	Float_t nsigmaTPCPID = -999.;
-	Float_t nsigmaTOFPID = -999.;
-	//Float_t nsigmaTPCTOFPID = -999.;
-	
-	nsigmaTPCPID = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,fParticleSpecies));
-	nsigmaTOFPID = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(newAodTrack,fParticleSpecies));
-	
-	if ( nsigmaTPCPID < fNSigmaCut  ){
-	  
-	  if (gCharge > 0) posPidSum +=1.;
-	  if( gCharge < 0 ) negPidSum +=1.;
-	  
-	}
-      }//fUsepid-----
-      
-    }//--------- Track Loop to select with filterbit
+    
+    fBin = GetPtBin(aodTrack->Pt());
+    
+    Short_t gCharge = aodTrack->Charge();
+    if(gCharge > 0){
+      positiveSum += 1.;
+      PtCh[fBin] += 1;
+    }
+    if(gCharge < 0){
+      negativeSum += 1.;
+      PtCh[fNptBins+fBin] += 1;
+    }
+   
+   
+  }//--------- Track Loop to select with filterbit
   
-  
-  //cout << fCentrality <<" "<< nPlusCharge << " " << nMinusCharge << endl;
-  //cout << fCentrality <<" "<< nParticle << " " << nAntiParticle << endl;
-
   Double_t fContainerCh[3] = { fCentrality, positiveSum, negativeSum};
   
-  
-  
   fTHnCentNplusNminusCh->Fill(fContainerCh);
+
+  //cout << fCentrality << " " << positiveSum <<" " << negativeSum << endl;
   
-  if( fUsePid ){
-    gPid = (Int_t)fParticleSpecies; 
-    Double_t fContainerPid[3] = { fCentrality, posPidSum, negPidSum};
-    fTHnCentNplusNminusPid[gPid]->Fill(fContainerPid);  
+  Double_t ptContainer[dim+1];
+
+  ptContainer[0] = fCentrality;
+
+  for(Int_t i = 1; i <= dim; i++){
+    ptContainer[i] = PtCh[i-1];
+    //cout << PtCh[i-1] <<" ,";
   }
+  //cout << endl;
+
+  fPtBinNplusNminusCh->Fill(ptContainer);
+  
   
   fEventCounter->Fill(7);
   PostData(1, fListOfHistos);
@@ -486,16 +309,17 @@ void AliEbyEHigherMomentsTask::doMCAODEvent(){
   //---------
   Double_t positiveSumMCRec = 0.;
   Double_t negativeSumMCRec = 0.;
-  Double_t posPidSumMCRec = 0.;
-  Double_t negPidSumMCRec = 0.;
-
+ 
   Double_t positiveSumMCTruth = 0.;
   Double_t negativeSumMCTruth = 0.;
-  Double_t posPidSumMCTruth = 0.;
-  Double_t negPidSumMCTruth = 0.;
-  
-  Int_t gPid = 0;
-  Int_t gPdgCode = AliPID::ParticleCode(fParticleSpecies);
+ 
+  const Int_t dim = fNptBins*2;
+  Double_t PtCh[dim];
+  Double_t ptChMC[dim];
+  for(Int_t idx = 0; idx < dim; idx++){
+    PtCh[idx] = 0;
+    ptChMC[idx] = 0;
+  }
   
   //Connect to Anlaysis manager------
   AliAnalysisManager* manager = AliAnalysisManager::GetAnalysisManager();
@@ -511,21 +335,14 @@ void AliEbyEHigherMomentsTask::doMCAODEvent(){
   }
   
   //AOD event------
-  fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+  AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+  
   if (!fAOD)
     {
-      cout<< "ERROR 01: AOD not found " <<endl;
+      cout<< "ERROR: AOD not found " <<endl;
       return;
     }
-  
-  fPIDResponse =inputHandler->GetPIDResponse();
-  
-  
-  if (!fPIDResponse){
-    AliFatal("This Task needs the PID response attached to the inputHandler");
-    return;
-  }  
-  
+
   // -- Get MC header
   // ------------------------------------------------------------------
   
@@ -542,21 +359,17 @@ void AliEbyEHigherMomentsTask::doMCAODEvent(){
     return;
   }
   
+  if(!ProperVertex(fAOD)) return;
+
   AliAODHeader *aodHeader = fAOD->GetHeader();
   
   fCentrality = (Int_t)aodHeader->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
-  
-  
-  
-  if( fCentrality < 0 || fCentrality >= 91) return;
+
+  if( fCentrality < 0 || fCentrality >= 81) return;
   
   fEventCounter->Fill(2);
-  
-  if(!ProperVertex()) return;   
-  
+ 
   Int_t nTracks = fAOD->GetNumberOfTracks();
-  
-  TExMap *trackMap = new TExMap();//Mapping matrix----
   
   for(Int_t i = 0; i < nTracks; i++) {
     
@@ -567,123 +380,28 @@ void AliEbyEHigherMomentsTask::doMCAODEvent(){
       continue;
     }
     
-    Double_t tpcSignalAll = aodTrack->GetTPCsignal();
-    fTPCSigA->Fill(aodTrack->GetTPCmomentum(),tpcSignalAll);
-    
-    Int_t gID = aodTrack->GetID();
-    
-    if (aodTrack->TestFilterBit(1)) trackMap->Add(gID, i);//Global(primary) tracks-----
-    
-  }//1st track loop----
-  
-  AliAODTrack* newAodTrack; 
-  
-  for( Int_t j = 0; j < nTracks; j++ ){
-    
-    AliAODTrack* aodTrack1 = dynamic_cast<AliAODTrack *>(fAOD->GetTrack(j));
-    
-    if(!aodTrack1) {
-      AliError(Form("ERROR: Could not retrieve AODtrack %d",j));
-      continue;
-    }
-    
-    
-    if(!aodTrack1->TestFilterBit(fAODtrackCutBit)) continue;
-    
-    Int_t gID = aodTrack1->GetID();
-    
-    //if( aodTrack->GetID() != (-aodTrack1->GetID() -1) ) continue;
-    
-    newAodTrack = gID >= 0 ? aodTrack1 : fAOD->GetTrack(trackMap->GetValue(-1-gID)); //Take those global track who corresponds to TPC only track
-    
-    
-    //cout << dxy << endl;
-    Double_t pt = aodTrack1->Pt();
-    Double_t eta = aodTrack1->Eta();
-    Double_t nclus = aodTrack1->GetTPCClusterInfo(2,1);
-    Double_t chi2ndf = aodTrack1->Chi2perNDF();
-    
-    if( pt < fPtLowerLimit || pt > fPtHigherLimit ) continue;
-    if( eta < fEtaLowerLimit || eta > fEtaHigherLimit ) continue;
-    if( nclus < fTPCNClus ) continue;
-    if( chi2ndf > fChi2perNDF ) continue;
-    
-    if( fAODtrackCutBit == 128 ){
-      Float_t dxy = 0., dz = 0.;
-      dxy = aodTrack1->DCA();
-      dz  = aodTrack1->ZAtDCA();      
-      
-      if( fabs(dxy) > fDCAxy ) continue; 
-      if( fabs(dz) > fDCAz ) continue;
-      //Extra cut on DCA---( Similar to BF Task.. )	      
-      if( fDCAxy !=0 && fDCAz !=0 ){
-	if( TMath::Sqrt((dxy*dxy)/(fDCAxy*fDCAxy)+(dz*dz)/(fDCAz*fDCAz)) > 1. ) continue;
-      }
-      
-      fHistQA[6]->Fill(dxy);
-      fHistQA[7]->Fill(dz);
-      fHistDCA->Fill(dxy,dz);
-      
-    }
-    
-    
-    
-    fHistQA[8]->Fill(pt);
-    fHistQA[9]->Fill(eta);
-    fHistQA[10]->Fill(aodTrack1->Phi());
-    fHistQA[11]->Fill(nclus);
-    fHistQA[12]->Fill(chi2ndf);
-    
-    
-    Short_t gCharge = aodTrack1->Charge();
-    
-    if( gCharge == 0 ) continue;
-     
-    if(gCharge > 0) positiveSumMCRec += 1.;
-    if(gCharge < 0) negativeSumMCRec += 1.;    
-    
-    if( fUsePid ) {
-      
-      gPid = (Int_t)fParticleSpecies;
-      Double_t rap =  newAodTrack->Y(AliPID::ParticleMass(fParticleSpecies));
-      Double_t tpcSignal = newAodTrack->GetTPCsignal();
-      
-      if( fabs(rap ) > fRapidityCut ) continue;//Rapidity cut
-      
-      fTPCSig->Fill(newAodTrack->GetTPCmomentum(),tpcSignal);
-      
-      Float_t nsigmaTPCPID = -999.;
-      Float_t nsigmaTOFPID = -999.;
-      //Float_t nsigmaTPCTOFPID = -999.;
-      
-      nsigmaTPCPID = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,fParticleSpecies));
-      nsigmaTOFPID = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(newAodTrack,fParticleSpecies));
-      
-      if( nsigmaTPCPID < fNSigmaCut  ){
+    if(!AcceptTrack(aodTrack) ) continue;
 
-	if (gCharge > 0) posPidSumMCRec +=1;
-	if( gCharge < 0 ) negPidSumMCRec +=1.;
-      }//nSigmaCut-----
-    }//fUsepid-----
     
+    fBin = GetPtBin(aodTrack->Pt());
+    
+    //cout << "Pt Bin " << fBin << endl;
+
+    Short_t gCharge = aodTrack->Charge();
+    if(gCharge > 0){
+      positiveSumMCRec += 1.;
+     PtCh[fBin] += 1;
+    }
+    if(gCharge < 0){
+      negativeSumMCRec += 1.;    
+      PtCh[fNptBins+fBin] += 1;
+    }
+   
   }//--------- Track Loop to select with filterbit
   
-  
-  Double_t fContainerCh[3] = { fCentrality, positiveSumMCRec, negativeSumMCRec};//Reco. values ch. hadrons
-  fTHnCentNplusNminusCh->Fill(fContainerCh);//Fill the rec. ch. particles---
-
-  if( fUsePid ){
-    gPid = (Int_t)fParticleSpecies;
-    Double_t fContainerPid[3] = { fCentrality, posPidSumMCRec, negPidSumMCRec};//Reco. values pid.
-    fTHnCentNplusNminusPid[gPid]->Fill(fContainerPid);//Fill the rec. pid tracks
-  }
-  
-
-  //cout << fCentrality << " "<< nPlusCharge << " "<< nMinusCharge << endl;
-  //cout << nParticle <<" And " << nAntiParticle << endl;
-  //===========================================
-  //--------MC Truth---------------------------
-  //===========================================
+  //===============================================================================
+  //---------------------MC Truth--------------------------------------------------
+  //===============================================================================
   
   Int_t nMCTrack = fArrayMC->GetEntriesFast();
   
@@ -703,33 +421,49 @@ void AliEbyEHigherMomentsTask::doMCAODEvent(){
     if (partMC->Pt() < fPtLowerLimit ||  partMC->Pt() > fPtHigherLimit) continue;
     
     Short_t gCharge = partMC->Charge();
+    Int_t mcbin = GetPtBin(partMC->Pt());
     
-    if(gCharge > 0) positiveSumMCTruth += 1.;
-    if(gCharge < 0) negativeSumMCTruth += 1.;
-    
-    if(fUsePid){
-      
-      Double_t rap =  partMC->Y();
-      if( fabs(rap ) > fRapidityCut ) continue;//Rapidity cut
-      if(TMath::Abs(partMC->GetPdgCode()) != gPdgCode) continue;
-      
-      if(gCharge > 0) posPidSumMCTruth += 1.;
-      if(gCharge < 0) negPidSumMCTruth += 1.;
-      
-    }//if(fUsePid) ----
-    
+    if(gCharge > 0){
+      positiveSumMCTruth += 1.;
+      ptChMC[mcbin] += 1.;
+    }
+    if(gCharge < 0){
+      negativeSumMCTruth += 1.;
+      ptChMC[fNptBins+mcbin] += 1.;
+    }
+   
    
   }//MC-Truth Track loop--
-  
-  Double_t fContainerChTruth[3] = { fCentrality, positiveSumMCTruth, negativeSumMCTruth }; 
+
+  Double_t fContainerCh[3] = { fCentrality, positiveSumMCRec, negativeSumMCRec};//Reco. values ch. hadrons
+  Double_t fContainerChTruth[3] = { fCentrality, positiveSumMCTruth, negativeSumMCTruth};  
+ 
+  fTHnCentNplusNminusCh->Fill(fContainerCh);//Fill the rec. ch. particles---
   fTHnCentNplusNminusChTruth->Fill(fContainerChTruth);//MC -Truth ch. particles
   
-  if( fUsePid ){
-    gPid = (Int_t)fParticleSpecies;
-    Double_t fContainerPidTruth[3] = { fCentrality, posPidSumMCTruth, negPidSumMCTruth};
-    fTHnCentNplusNminusPidTruth[gPid]->Fill(fContainerPidTruth);//MC-Truth pid
-  }
+  //cout << fCentrality << " " << positiveSumMCRec << " " << negativeSumMCRec <<endl;
+  cout <<fCentrality<<"   " << positiveSumMCTruth << " " << negativeSumMCTruth << endl;
+  //cout <<"   " << posPidSumMCRec << " " << negPidSumMCRec << endl;
+  //cout <<"   " << posPidSumMCTruth << " " << negPidSumMCTruth << endl;
+  //cout <<"---------------------------------" << endl;
   
+  Double_t ptContainer[dim+1];
+  Double_t ptContainerMC[dim+1];
+  ptContainer[0] = fCentrality;
+  ptContainerMC[0] = fCentrality;
+
+  for(Int_t i = 1; i <= dim; i++){
+    ptContainer[i] = PtCh[i-1];
+    ptContainerMC[i] = ptChMC[i-1];
+    //cout <<" "<< PtCh[i-1]<<endl;
+    cout<< " MC=" << ptChMC[i-1];
+  }
+
+  cout << endl;
+
+  fPtBinNplusNminusCh->Fill(ptContainer);
+  fPtBinNplusNminusChTruth->Fill(ptContainerMC);
+
   fEventCounter->Fill(7);
   PostData(1, fListOfHistos);
   return;
@@ -737,7 +471,7 @@ void AliEbyEHigherMomentsTask::doMCAODEvent(){
 }
 
 //---------------------------------------------------------------------------------------
-Bool_t AliEbyEHigherMomentsTask::ProperVertex(){
+Bool_t AliEbyEHigherMomentsTask::ProperVertex(AliAODEvent *fAOD) const{
   
   Bool_t IsVtx = kFALSE;
   
@@ -754,16 +488,14 @@ Bool_t AliEbyEHigherMomentsTask::ProperVertex(){
 	Double_t lvz = vertex->GetZ();
 	
 	fEventCounter->Fill(5);
-	
-	fHistQA[3]->Fill(lvx);fHistQA[4]->Fill(lvy);fHistQA[5]->Fill(lvz);
-	
+      
 	if(TMath::Abs(lvx) < fVxMax) {
 	  if(TMath::Abs(lvy) < fVyMax) {
 	    if(TMath::Abs(lvz) < fVzMax) {
 	      
 	      fEventCounter->Fill(6);
-	      fHistQA[0]->Fill(lvx);fHistQA[1]->Fill(lvy);fHistQA[2]->Fill(lvz);
-	      
+	      fHistQA[0]->Fill(lvz);
+	      fHistVxVy->Fill(lvx,lvy);
 	      IsVtx = kTRUE; 
 	      
 	    }//Z-Vertex cut---
@@ -772,11 +504,58 @@ Bool_t AliEbyEHigherMomentsTask::ProperVertex(){
       }//Covariance------
     }//Contributors check---
   }//If vertex-----------
+
+  AliCentrality *centrality = fAOD->GetCentrality();
+  if (centrality->GetQuality() != 0) IsVtx = kFALSE;
   
   return IsVtx;
 }
 //---------------------------------------------------------------------------------------
 
+//---------------------------------------------------------------------------------------
+Bool_t AliEbyEHigherMomentsTask::AcceptTrack(AliAODTrack* track) const{
+  
+  if(!track) return kFALSE;
+  if( track->Charge() == 0 ) return kFALSE;
+
+  Double_t pt = track->Pt();
+  Double_t eta = track->Eta();
+  if(!track->TestFilterBit(fAODtrackCutBit)) return kFALSE;
+  if( pt < fPtLowerLimit || pt > fPtHigherLimit ) return kFALSE;
+  if( eta < fEtaLowerLimit || eta > fEtaHigherLimit ) return kFALSE;
+  
+  fHistQA[1]->Fill(pt);
+  fHistQA[2]->Fill(eta);
+  fHistQA[3]->Fill(track->Phi());
+ 
+  return kTRUE;
+}
+//------------------------------------------------------------------------
+
+//------------------------------------------------------------------------
+Int_t AliEbyEHigherMomentsTask::GetPtBin(Double_t pt){
+  
+  Int_t bin = 0;
+
+  Double_t BinSize = (fPtHigherLimit - fPtLowerLimit)/fNptBins;
+  
+  for(Int_t iBin = 0; iBin < fNptBins; iBin++){
+    
+    Double_t xLow = fPtLowerLimit + iBin*BinSize;
+    Double_t xHigh = fPtLowerLimit + (iBin+1)*BinSize;
+    
+    if( pt >= xLow && pt < xHigh){
+      bin = iBin;
+      //cout << "Pt Bin #" << bin <<"pt=" << pt << endl;
+      break;
+    }
+    
+  }//for 
+  
+  
+  return bin;
+}
+//------------------------------------------------------------------------
 //------------------------------------------------------------------------
 void AliEbyEHigherMomentsTask::Terminate( Option_t * ){
   

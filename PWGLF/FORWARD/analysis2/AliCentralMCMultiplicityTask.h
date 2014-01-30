@@ -57,36 +57,42 @@ public:
    */
   AliCentralMCMultiplicityTask();
   /** 
-   * Copy constructor 
-   * 
-   * @param o Object to copy from 
-   */
-  AliCentralMCMultiplicityTask(const AliCentralMCMultiplicityTask& o);
-  /** 
-   * Assignment operator 
-   * 
-   * @param o Object to assign from 
-   * 
-   * @return Reference to this object 
-   */
-  AliCentralMCMultiplicityTask& operator=(const AliCentralMCMultiplicityTask&o);
-  /** 
    * Create output objects 
    * 
+   * 
+   * @return true on success
    */
-  virtual void UserCreateOutputObjects();
+  virtual Bool_t Book();
   /** 
-   * Process each event 
-   *
-   * @param option Not used
-   */  
-  virtual void UserExec(Option_t* option);
+   * Creatre ouput objects
+   * 
+   * @param ah AOD output handler 
+   */
+  virtual void CreateBranches(AliAODHandler* ah);
+  /** 
+   * Set-up for data, called before first event 
+   * 
+   * @param v Vertex axis
+   * @param e @f$\eta@f$ axis 
+   * 
+   * @return true on success
+   */
+  virtual Bool_t PreData(const TAxis& v, const TAxis& e);
   /** 
    * End of job
    * 
-   * @param option Not used 
+   * 
+   * @return true on success
    */
-  virtual void Terminate(Option_t* option);
+  virtual Bool_t PreEvent();
+  /** 
+   * Process each event 
+   *
+   * @param esd ESD event
+   *
+   * @return true on success
+   */  
+  virtual Bool_t Event(AliESDEvent& esd);
   /** 
    * Print information 
    * 
@@ -108,13 +114,20 @@ public:
 
 protected: 
   /** 
-   * Find our eta limits
+   * Copy constructor 
    * 
+   * @param o Object to copy from 
    */
-  virtual void FindEtaLimits();
-
-  AliSPDMCTrackDensity   fTrackDensity;     // Calculate N_ch,incl
-					    // from MC
+  AliCentralMCMultiplicityTask(const AliCentralMCMultiplicityTask& o);
+  /** 
+   * Assignment operator 
+   * 
+   * @param o Object to assign from 
+   * 
+   * @return Reference to this object 
+   */
+  AliCentralMCMultiplicityTask& operator=(const AliCentralMCMultiplicityTask&o);
+  AliSPDMCTrackDensity   fTrackDensity;     // Calculate N_ch,incl from MC
   AliAODCentralMult      fAODMCCentral;     // Output object
   ClassDef(AliCentralMCMultiplicityTask,2)  // Forward multiplicity class
 };

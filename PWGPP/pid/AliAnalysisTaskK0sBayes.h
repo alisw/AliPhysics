@@ -55,6 +55,8 @@ class AliAnalysisTaskK0sBayes : public AliAnalysisTaskSE {
 
   void SetPIDuserCut(AliPIDperfCut *usercut){fPIDuserCut = usercut;};
 
+  void SetRefSpecies(Int_t species) {fSpeciesRef = species;}
+
  private:
   AliAnalysisTaskK0sBayes(const AliAnalysisTaskK0sBayes &old); 
   AliAnalysisTaskK0sBayes& operator=(const AliAnalysisTaskK0sBayes &source); 
@@ -150,7 +152,8 @@ class AliAnalysisTaskK0sBayes : public AliAnalysisTaskSE {
 
   Bool_t fToEP;        // correlate to TPC EP
 
-  ClassDef(AliAnalysisTaskK0sBayes, 4);    //Analysis task for bayesian (K0s)
+  Int_t fSpeciesRef;    // reference species (default = 2, pion)
+  ClassDef(AliAnalysisTaskK0sBayes, 5);    //Analysis task for bayesian (K0s)
 };
 
 #endif

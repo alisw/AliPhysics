@@ -197,7 +197,8 @@ Float_t AliAnalysisTaskEmcalJetHadCorQA:: RelativePhi(Double_t mphi,Double_t vph
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEmcalJetHadCorQA::ExecOnce(){
+void AliAnalysisTaskEmcalJetHadCorQA::ExecOnce()
+{
   AliAnalysisTaskEmcalJet::ExecOnce();
 
 //   AliAnalysisManger *am = AliAnalysisManager::GetAnalysisManger();

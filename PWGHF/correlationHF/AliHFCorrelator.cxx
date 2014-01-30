@@ -26,7 +26,7 @@
 //
 //-----------------------------------------------------------------------
 
-/* $Id$ */
+/* $Id: AliHFCorrelator.cxx 64115 2013-09-05 12:34:55Z arossi $ */
 
 #include <TParticle.h>
 #include <TVector3.h>
@@ -53,6 +53,7 @@ fPoolMgr(0x0),
 fPool(0x0),
 fhadcuts(0x0),
 fAODEvent(0x0),
+fDMesonCutObject(0x0),
 fAssociatedTracks(0x0),
 fmcArray(0x0),
 fReducedPart(0x0),
@@ -62,7 +63,7 @@ fDCharge(0),
 
 fmixing(kFALSE),
 fmontecarlo(kFALSE),
-fsystem(kFALSE),
+fUseCentrality(kFALSE),
 fUseReco(kTRUE),
 fselect(kUndefined),
 
@@ -74,6 +75,8 @@ fPoolContent(0),
 
 fPhiMin(0),
 fPhiMax(0),
+
+fMultCentr(-1),
 
 fPtTrigger(0),
 fPhiTrigger(0),
@@ -91,12 +94,13 @@ fk0InvMass(0)
 
 
 //_____________________________________________________
-AliHFCorrelator::AliHFCorrelator(const Char_t* name, AliHFAssociatedTrackCuts *cuts, Bool_t ppOrPbPb) :
+AliHFCorrelator::AliHFCorrelator(const Char_t* name, AliHFAssociatedTrackCuts *cuts, Bool_t useCentrality) :
 TNamed(name,"title"),
 fPoolMgr(0x0),         
 fPool(0x0),
 fhadcuts(0x0),
 fAODEvent(0x0),
+fDMesonCutObject(0x0),
 fAssociatedTracks(0x0),
 fmcArray(0x0),
 fReducedPart(0x0),
@@ -106,7 +110,7 @@ fDCharge(0),
 
 fmixing(kFALSE),
 fmontecarlo(kFALSE),
-fsystem(ppOrPbPb),
+fUseCentrality(useCentrality),
 fUseReco(kTRUE),
 fselect(kUndefined),
 fUseImpactParameter(0),
@@ -118,6 +122,8 @@ fPoolContent(0),
 fPhiMin(0),
 fPhiMax(0),
 
+fMultCentr(-1),
+
 fPtTrigger(0),
 fPhiTrigger(0),
 fEtaTrigger(0),
@@ -127,8 +133,57 @@ fDeltaPhi(0),
 fDeltaEta(0),
 fk0InvMass(0)
 {
-	fhadcuts = cuts; 
+	fhadcuts = cuts;
+     if(!fDMesonCutObject) AliInfo("D meson cut object not loaded - if using centrality the estimator will be V0M!");
 }
+
+//_______________________________________________________________________________________
+AliHFCorrelator::AliHFCorrelator(const Char_t* name, AliHFAssociatedTrackCuts *cuts, Bool_t useCentrality, AliRDHFCuts * cutObject) :
+TNamed(name,"title"),
+fPoolMgr(0x0),
+fPool(0x0),
+fhadcuts(0x0),
+fAODEvent(0x0),
+fDMesonCutObject(0x0),
+fAssociatedTracks(0x0),
+fmcArray(0x0),
+fReducedPart(0x0),
+fD0cand(0x0),
+fhypD0(0),
+fDCharge(0),
+
+fmixing(kFALSE),
+fmontecarlo(kFALSE),
+fUseCentrality(useCentrality),
+fUseReco(kTRUE),
+fselect(kUndefined),
+fUseImpactParameter(0),
+fPIDmode(0),
+
+fNofTracks(0),
+fPoolContent(0),
+
+fPhiMin(0),
+fPhiMax(0),
+
+fMultCentr(-1),
+
+fPtTrigger(0),
+fPhiTrigger(0),
+fEtaTrigger(0),
+
+
+fDeltaPhi(0),
+fDeltaEta(0),
+fk0InvMass(0)
+{
+	fhadcuts = cuts;
+    fDMesonCutObject = cutObject;
+    
+    if(!fDMesonCutObject) AliInfo("D meson cut object not implemented properly! Check your centrality estimators");
+}
+
+
 
 //_____________________________________________________
 AliHFCorrelator::~AliHFCorrelator() 
@@ -141,6 +196,7 @@ AliHFCorrelator::~AliHFCorrelator()
 	if(fPool) {delete fPool; fPool=0;}
 	if(fhadcuts) {delete fhadcuts; fhadcuts=0;}
 	if(fAODEvent) {delete fAODEvent; fAODEvent=0;}
+    if(fDMesonCutObject) {delete fDMesonCutObject; fDMesonCutObject=0;}
 	if(fAssociatedTracks) {delete fAssociatedTracks; fAssociatedTracks=0;}
 	if(fmcArray) {delete fmcArray; fmcArray=0;}
 	if(fReducedPart) {delete fReducedPart; fReducedPart=0;}
@@ -192,19 +248,23 @@ Bool_t AliHFCorrelator::Initialize(){
 	
 	AliCentrality *centralityObj = 0;
 	//Int_t multiplicity = -1;
-	Double_t MultipOrCent = -1;
+	//Double_t MultipOrCent = -1;
 	
 	// initialize the pool for event mixing
-	if(!fsystem){ // pp
+	if(!fUseCentrality){ // pp, pA
 	//multiplicity = fAODEvent->GetNTracks();
-        MultipOrCent = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(fAODEvent,-1.,1.);
+        //MultipOrCent = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(fAODEvent,-1.,1.);
+        fMultCentr = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(fAODEvent,-1.,1.);
 	//	MultipOrCent = multiplicity; // convert from Int_t to Double_t
      //   AliInfo(Form("Multiplicity is %f", MultipOrCent));
 	}
-	if(fsystem){ // PbPb
-		
+	if(fUseCentrality){ // PbPb
+		if(!fDMesonCutObject){
+           
 		centralityObj = fAODEvent->GetHeader()->GetCentralityP();
-		MultipOrCent = centralityObj->GetCentralityPercentileUnchecked("V0M");
+		fMultCentr = centralityObj->GetCentralityPercentileUnchecked("V0M");
+        }
+        else fMultCentr = fDMesonCutObject->GetCentrality(fAODEvent);
 //		AliInfo(Form("Centrality is %f", MultipOrCent));
 	}
 	
@@ -215,17 +275,17 @@ Bool_t AliHFCorrelator::Initialize(){
 	Double_t poolmax=CentBins[fhadcuts->GetNCentPoolBins()];
 
 	
-		if(TMath::Abs(zvertex)>=10 || MultipOrCent>poolmax || MultipOrCent < poolmin) {
-		if(!fsystem)AliInfo(Form("pp or pA Event with Zvertex = %.2f cm and multiplicity = %.0f out of pool bounds, SKIPPING",zvertex,MultipOrCent));
-		if(fsystem) AliInfo(Form("PbPb Event with Zvertex = %.2f cm and centrality = %.1f  out of pool bounds, SKIPPING",zvertex,MultipOrCent));
+		if(TMath::Abs(zvertex)>=10 || fMultCentr>poolmax || fMultCentr < poolmin) {
+		if(!fUseCentrality)AliInfo(Form("Event with Zvertex = %.2f cm and multiplicity = %.0f out of pool bounds, SKIPPING",zvertex,fMultCentr));
+		if(fUseCentrality) AliInfo(Form("Event with Zvertex = %.2f cm and centrality = %.1f  out of pool bounds, SKIPPING",zvertex,fMultCentr));
 
 			return kFALSE;
 		}
 	
-	fPool = fPoolMgr->GetEventPool(MultipOrCent, zvertex);
+	fPool = fPoolMgr->GetEventPool(fMultCentr, zvertex);
 	
 	if (!fPool){
-		AliInfo(Form("No pool found for multiplicity = %f, zVtx = %f cm", MultipOrCent, zvertex));
+		AliInfo(Form("No pool found for multiplicity = %f, zVtx = %f cm", fMultCentr, zvertex));
 	    return kFALSE;
 	}
 	//fPool->PrintInfo();

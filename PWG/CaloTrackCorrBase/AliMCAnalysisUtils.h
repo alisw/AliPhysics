@@ -49,44 +49,45 @@ class AliMCAnalysisUtils : public TObject {
   // Methods to check origin of clusters
   //--------------------------------------
   
-  Int_t   CheckCommonAncestor(const Int_t index1, const Int_t index2, const AliCaloTrackReader* reader, 
+  Int_t   CheckCommonAncestor(Int_t index1, Int_t index2, const AliCaloTrackReader* reader, 
 			      Int_t & ancPDG, Int_t & ancStatus, TLorentzVector & momentum, TVector3 & v) ;
   
-  Int_t   CheckOrigin(const Int_t label, const AliCaloTrackReader * reader) ;
+  Int_t   CheckOrigin(Int_t label, const AliCaloTrackReader * reader) ;
   
   //Check the label of the most significant particle but do checks on the rest of the contributing labels
-  Int_t   CheckOrigin       (const Int_t *label,  const Int_t nlabels, const AliCaloTrackReader * reader) ;
-  Int_t   CheckOriginInStack(const Int_t *labels, const Int_t nlabels, AliStack * stack)                ; // ESD
-  Int_t   CheckOriginInAOD  (const Int_t *labels, const Int_t nlabels, const TClonesArray* mcparticles) ; // AOD
+  Int_t   CheckOrigin       (const Int_t *label,  Int_t nlabels, const AliCaloTrackReader * reader) ;
+  Int_t   CheckOriginInStack(const Int_t *labels, Int_t nlabels, AliStack * stack)                ; // ESD
+  Int_t   CheckOriginInAOD  (const Int_t *labels, Int_t nlabels, const TClonesArray* mcparticles) ; // AOD
   
-  void    CheckOverlapped2GammaDecay(const Int_t *labels, const Int_t nlabels, const Int_t mesonIndex, AliStack * stack, Int_t & tag); // ESD
-  void    CheckOverlapped2GammaDecay(const Int_t *labels, const Int_t nlabels, const Int_t mesonIndex, const TClonesArray* mcparticles, Int_t & tag); // AOD
+  void    CheckOverlapped2GammaDecay(const Int_t *labels, Int_t nlabels, Int_t mesonIndex, AliStack * stack, Int_t & tag); // ESD
+  void    CheckOverlapped2GammaDecay(const Int_t *labels, Int_t nlabels, Int_t mesonIndex, const TClonesArray* mcparticles, Int_t & tag); // AOD
   
-  TLorentzVector GetMother     (const Int_t label,const AliCaloTrackReader* reader, Bool_t & ok);
-  TLorentzVector GetMother     (const Int_t label,const AliCaloTrackReader* reader, Int_t & pdg, Int_t & status, Bool_t & ok);
-  TLorentzVector GetMother     (const Int_t label,const AliCaloTrackReader* reader, Int_t & pdg, Int_t & status, Bool_t & ok, Int_t & momLabel);
-  TLorentzVector GetGrandMother(const Int_t label,const AliCaloTrackReader* reader,
+  TLorentzVector GetMother     (Int_t label,const AliCaloTrackReader* reader, Bool_t & ok);
+  TLorentzVector GetMother     (Int_t label,const AliCaloTrackReader* reader, Int_t & pdg, Int_t & status, Bool_t & ok);
+  TLorentzVector GetMother     (Int_t label,const AliCaloTrackReader* reader, Int_t & pdg, Int_t & status, Bool_t & ok, Int_t & momLabel);
+  TLorentzVector GetGrandMother(Int_t label,const AliCaloTrackReader* reader,
                                 Int_t & pdg, Int_t & status, Bool_t & ok, Int_t & grandMomLabel, Int_t & greatMomLabel);
 
-  TLorentzVector GetMotherWithPDG(const Int_t label, const Int_t pdg,const AliCaloTrackReader* reader, Bool_t & ok, Int_t & momLabel);
+  TLorentzVector GetMotherWithPDG(Int_t label, Int_t pdg,const AliCaloTrackReader* reader, Bool_t & ok, Int_t & momLabel);
   
-  Float_t        GetMCDecayAsymmetryForPDG(const Int_t label, const Int_t pdg,const AliCaloTrackReader* reader, Bool_t & ok);
+  void GetMCDecayAsymmetryAngleForPDG(Int_t label, Int_t pdg,const AliCaloTrackReader* reader,
+                                      Float_t & asy, Float_t & angle, Bool_t & ok);
 
-  Int_t          GetNDaughters(const Int_t label,const AliCaloTrackReader* reader, Bool_t & ok);
-  TLorentzVector GetDaughter  (const Int_t daughter, const Int_t label,const AliCaloTrackReader* reader,
+  Int_t          GetNDaughters(Int_t label,const AliCaloTrackReader* reader, Bool_t & ok);
+  TLorentzVector GetDaughter  (Int_t daughter, Int_t label,const AliCaloTrackReader* reader,
                                Int_t & pdg, Int_t & status, Bool_t & ok, Int_t & daugLabel);
 
-  Int_t          GetNOverlaps(const Int_t * label, const UInt_t nlabels,
-                              const Int_t mctag, const Int_t mesonLabel,
+  Int_t          GetNOverlaps(const Int_t * label, UInt_t nlabels,
+                              Int_t mctag, Int_t mesonLabel,
                               AliCaloTrackReader * reader,Int_t *overpdg);
   
   //Check or set the bits produced in the above methods
-  void    SetTagBit(Int_t &tag, const UInt_t set) const {
+  void    SetTagBit(Int_t &tag, UInt_t set) const {
     // Set bit of type set (mcTypes) in tag
     tag |= (1<<set) ; 
   } 
   
-  Bool_t  CheckTagBit(const Int_t tag, const UInt_t test) const {
+  Bool_t  CheckTagBit(Int_t tag, UInt_t test) const {
     // Check if in tag the bit test (mcTypes) is set.
     if (tag & (1<<test) ) return  kTRUE ;    
     else return kFALSE ;
@@ -106,7 +107,7 @@ class AliMCAnalysisUtils : public TObject {
   TString GetMCGenerator()        const { return fMCGenerator  ; }	
   
   void    Print(const Option_t * opt) const;
-  void    PrintMCTag(const Int_t tag) const;
+  void    PrintMCTag(Int_t tag) const;
 
  private:
   Int_t   fCurrentEvent;        // Current Event

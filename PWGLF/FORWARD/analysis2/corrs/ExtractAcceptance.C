@@ -2,10 +2,11 @@
 /** 
  * 
  * 
- * @param d 
- * @param r 
- * @param vz 
- * @param nDead 
+ * @param d      Detector
+ * @param r      Ring 
+ * @param vz     Z--coordinate of interaction point
+ * @param nDead  On returm the number of dead strips
+ * @param deadScript  Output stream for dead strips 
  * 
  * @return 
  *
@@ -112,13 +113,10 @@ TH2D* MakeOneRing(UShort_t      d,
 /** 
  * 
  * 
- * @param runNo 
- * @param system 
- * @param energy 
- * @param field 
- * @param nVtxBins 
- * @param vtxLow 
- * @param vtxHigh 
+ * @param runNo     Run number
+ * @param nVtxBins  Number of @f$IP_{z}@f$ bins
+ * @param vtxLow    Least @f$IP_{z}@f$
+ * @param vtxHigh   Largest @f$IP_{z}@f$
  *
  * @ingroup pwglf_forward_scripts_corr
  */

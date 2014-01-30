@@ -48,7 +48,7 @@ class AliJetFillCalTrkEvent
   virtual AliJetCalTrkEvent* GetCalTrkEvent() const {return fCalTrkEvent;}
 
   // Other
-  virtual void          Exec(Option_t* const /*option*/) {;}
+  virtual void          Exec(Option_t const * /*option*/) {;}
   virtual Float_t       EtaToTheta(Float_t arg);
 
  protected:

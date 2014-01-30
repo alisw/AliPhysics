@@ -1,6 +1,6 @@
 
 
-AliAnalysisTaskJetCore* AddTaskJetCore(const char* bRec1,const char* bRec2, UInt_t filterMask = 272 , Float_t ptTrackMin = 0.15, Int_t kTriggerMask=0, Int_t eventClassMin = 0, Int_t eventClassMax = 4,Int_t kHardest=1,Float_t kTTminr=11,Float_t kTTmaxr=13,Float_t kTTmins=15,Float_t kTTmaxs=19){
+AliAnalysisTaskJetCore* AddTaskJetCore(const char* bRec1,const char* bRec2, UInt_t filterMask = 272 , Float_t ptTrackMin = 0.15, Int_t kTriggerMask=0, Int_t eventClassMin = 0, Int_t eventClassMax = 4,Int_t kHardest=1,Float_t kTTminr=11,Float_t kTTmaxr=13,Float_t kTTmins=15,Float_t kTTmaxs=19,Int_t kPhiBkg=0){
 
    Printf("adding task jet response\n");
 
@@ -20,7 +20,7 @@ AliAnalysisTaskJetCore* AddTaskJetCore(const char* bRec1,const char* bRec2, UInt
   TString typeRec(bRec1);
   TString typeGen(bRec2);
       
-  AliAnalysisTaskJetCore *task = new AliAnalysisTaskJetCore(Form("JetCore_%s_%s_%d_%d_%f%f%f%f",bRec1,bRec2,kTriggerMask,kHardest,kTTminr,kTTmaxr,kTTmins,kTTmaxs));
+  AliAnalysisTaskJetCore *task = new AliAnalysisTaskJetCore(Form("JetCore_%s_%s_%d_%d_%f%f%f%f_%f",bRec1,bRec2,kTriggerMask,kHardest,kTTminr,kTTmaxr,kTTmins,kTTmaxs,kPhiBkg));
    
 
 
@@ -36,7 +36,7 @@ AliAnalysisTaskJetCore* AddTaskJetCore(const char* bRec1,const char* bRec2, UInt
    task->SetTTUpRef(kTTmaxr);
    task->SetTTLowSig(kTTmins);
    task->SetTTUpSig(kTTmaxs);
-   
+   task->SetFlagPhiBkg(kPhiBkg);   
    task->SetJetPtMin(0.);   
    //task->SetAngStructCloseTracks(1);
 
@@ -45,7 +45,7 @@ AliAnalysisTaskJetCore* AddTaskJetCore(const char* bRec1,const char* bRec2, UInt
    mgr->AddTask(task);
 
 
-   AliAnalysisDataContainer *coutputJetCore = mgr->CreateContainer(Form("pwgjejetcore_%s_%s_%d_%d_%f%f%f%f",bRec1,bRec2,kTriggerMask,kHardest,kTTminr,kTTmaxr,kTTmins,kTTmaxs), TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWGJE_jetcore_%s_%s_%d_%d_%f%f%f%f",AliAnalysisManager::GetCommonFileName(),bRec1,bRec2,kTriggerMask,kHardest,kTTminr,kTTmaxr,kTTmins,kTTmaxs));
+   AliAnalysisDataContainer *coutputJetCore = mgr->CreateContainer(Form("pwgjejetcore_%s_%s_%d_%d_%f%f%f%f_%f",bRec1,bRec2,kTriggerMask,kHardest,kTTminr,kTTmaxr,kTTmins,kTTmaxs,kPhiBkg), TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWGJE_jetcore_%s_%s_%d_%d_%f%f%f%f_%f",AliAnalysisManager::GetCommonFileName(),bRec1,bRec2,kTriggerMask,kHardest,kTTminr,kTTmaxr,kTTmins,kTTmaxs,kPhiBkg));
 
 
 

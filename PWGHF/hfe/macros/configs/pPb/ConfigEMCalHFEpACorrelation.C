@@ -11,7 +11,7 @@
 //configIndex = 8 ---> Op Angle < 0.1
 //configIndex = 9 ---> TPC PID: -0.5 to 3.0
 //configIndex = 10 ---> V0A -> other
-//configIndex = 11 ---> 
+//configIndex = 11 ---> Associated hadron with SPD::kAny cut
 ///*******************************************************
 
 AliAnalysisTaskEMCalHFEpA* ConfigEMCalHFEpACorrelation(
@@ -65,7 +65,7 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	hfecuts->SetCheckITSLayerStatus(kFALSE); 
 	
 	//Additional Cuts
-	hfecuts->SetPtRange(2, 1e6);								                    //Transversal momentum range in GeV/c
+	hfecuts->SetPtRange(0.5, 1e6);								                    //Transversal momentum range in GeV/c
 	//hfecuts->SetMaxImpactParam(1,2); 							                    //DCA to vertex
 	
 	//Event Selection
@@ -82,6 +82,10 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	task->SetCorrelationAnalysis();
 	task->SetAODanalysis(isAOD);
 	task->SetEventMixing(kTRUE);
+	
+	task->SetAssHadronPtRange(0.5,2.0);
+	
+	if(configIndex==11) task->SetSPDCutForHadrons()
 	
 	if(configIndex==10) task->SetCentralityEstimator(1);
 	else task->SetCentralityEstimator(0);
@@ -105,6 +109,8 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	if(centralityIndex==0) task->SetCentrality(0,20);
 	if(centralityIndex==1) task->SetCentrality(20,60);
 	if(centralityIndex==2) task->SetCentrality(60,100);
+	if(centralityIndex==3) task->SetCentrality(0,10);
+	if(centralityIndex==4) task->SetCentrality(10,20);
 ///_______________________________________________________________________________________________________________
 
 ///_______________________________________________________________________________________________________________
@@ -123,7 +129,8 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 //______________________________________________________
 //Configure PID
 	//_________________________
-	//TPC PID
+	//TPC+TOF PID
+	pid->AddDetector("TOF", 0);				//Add TOF PID
 	pid->AddDetector("TPC", 1);				//Add TPC PID
 	
 	//_________________________
@@ -136,8 +143,8 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	char *cutmodel;
 	cutmodel = "pol0";
 	
-	if(configIndex==9) params[0] = -0.5;
-	else params[0] = -1;
+	if(configIndex==9) params[0] = 0.0;
+	else params[0] = -0.5;
 	
 	pid->ConfigureTPCdefaultCut(cutmodel,params,3.0); 
 //_______________________________________________________

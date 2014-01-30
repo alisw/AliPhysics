@@ -42,6 +42,6 @@ class AliAnalysisTaskEmcalTriggerInfoQA : public AliAnalysisTaskEmcal
     AliAnalysisTaskEmcalTriggerInfoQA(const AliAnalysisTaskEmcalTriggerInfoQA&); // not implemented
     AliAnalysisTaskEmcalTriggerInfoQA& operator=(const AliAnalysisTaskEmcalTriggerInfoQA&); // not implemented
     
-    ClassDef(AliAnalysisTaskEmcalTriggerInfoQA, 1); // example of analysis
+    ClassDef(AliAnalysisTaskEmcalTriggerInfoQA, 2); // example of analysis
 };
 #endif

@@ -85,8 +85,6 @@ public:
   virtual void  UserCreateOutputObjects();
 
   void SetAODAnalysis(Bool_t aodAnalysis)   { fAODAnalysis = aodAnalysis; };
-  void SetUseFilterAOD(Bool_t useFilterAOD) { fUseFilterAOD = useFilterAOD; }
-  void SetApplyCut(Bool_t applyCut)         { fApplyCut = applyCut; }
   void SetFilter(ULong_t filter)            { fFilter = filter; }
   
   AliHFEpid *GetPID() const { return fPID; }
@@ -100,7 +98,6 @@ public:
   void SetContamination(TF1 * const function,Int_t k) { fContamination[k] = function; };
   void SetV2Contamination(TF1 * const function,Int_t k) { fv2contamination[k] = function; };
   void SetHFECuts(AliHFEcuts * const cuts) { fHFECuts = cuts; };
-  void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
   void SetHFEBackgroundSubtraction(AliHFENonPhotonicElectron * const backgroundSubtraction) { fBackgroundSubtraction = backgroundSubtraction; };
   void SetHFEBackgroundCuts(AliESDtrackCuts * const cuts) { fHFEBackgroundCuts = cuts; };
   void SetSubEtaGapTPC(Bool_t  subEtaGapTPC) { fSubEtaGapTPC = subEtaGapTPC; };
@@ -126,7 +123,6 @@ public:
   void SetMCPID(Bool_t mcPID) { fMCPID = mcPID;};
   void SetNoPID(Bool_t noPID) { fNoPID = noPID;};
 
-  void SetDebugLevel(Int_t debugLevel) { fDebugLevel = debugLevel;};
   void SetMonitorEventPlane(Bool_t monitorEventPlane) { fMonitorEventPlane = monitorEventPlane;};
   void SetMonitorContamination(Bool_t monitorContamination) { fMonitorContamination = monitorContamination;};
   void SetMonitorPhotonic(Bool_t monitorPhotonic) { fMonitorPhotonic = monitorPhotonic;};
@@ -153,8 +149,6 @@ public:
 private:
   TList     *fListHist;         //! TH list
   Bool_t    fAODAnalysis;       // AOD analysis
-  Bool_t    fUseFilterAOD;     // Use the preselected AOD track
-  Bool_t    fApplyCut;       // Apply the analysis cut for AOD tracks
   ULong_t   fFilter;             // reconstruction AOD status flags 
   AliAODMCHeader *fAODMCHeader;         // ! MC info AOD
   TClonesArray *fAODArrayMCInfo;        // ! MC info particle AOD
@@ -196,7 +190,6 @@ private:
   Bool_t    fSetMassConstraint; // Set mass constraint
   
 
-  Int_t     fDebugLevel; // Debug Level  
   Bool_t    fMonitorEventPlane; // Monitor event plane
   Bool_t    fMonitorContamination; // Monitor contamination
   Bool_t    fMonitorPhotonic;// Monitor photonic
@@ -210,7 +203,6 @@ private:
   
   // Cuts for HFE
   AliHFEcuts *fHFECuts;           // HFE cuts
-  Bool_t fRejectKinkMother;       // Reject Kink Mother 
   AliHFEpid  *fPID;               // PID cuts 
   AliHFEpid  *fPIDTOFOnly;        // PID cuts TOF only
   AliHFEpidQAmanager *fPIDqa;     // QA Manager
@@ -307,7 +299,7 @@ private:
 
   TTreeSRedirector  *fDebugStreamer;               //!Debug streamer
 
- Int_t FindMother(Int_t tr, AliMCEvent *mcEvent, Int_t &indexmother);
+  Int_t FindMother(Int_t tr, AliMCEvent *mcEvent, Int_t &indexmother);
   Int_t CheckPdg(Int_t tr, AliMCEvent* mcEvent);
   Int_t IsMotherGamma(Int_t tr, AliMCEvent* mcEvent);
   Int_t IsMotherPi0(Int_t tr, AliMCEvent* mcEvent);

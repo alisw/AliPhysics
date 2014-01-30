@@ -23,7 +23,6 @@ ClassImp(AliAnalysisTaskEmcalBadCells)
 AliAnalysisTaskEmcalBadCells::AliAnalysisTaskEmcalBadCells() : 
   AliAnalysisTaskEmcal("AliAnalysisTaskEmcalBadCells"),
   fh2AmplitudeCellNumber(0x0)
-
 {
   // Default constructor.
 

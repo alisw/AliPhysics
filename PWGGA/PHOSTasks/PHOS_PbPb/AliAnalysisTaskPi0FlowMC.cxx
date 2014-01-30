@@ -63,6 +63,7 @@
 #include "AliOADBContainer.h"
 
 
+#include "AliAnalysisTaskPi0Flow.h"
 #include "AliAnalysisTaskPi0FlowMC.h"
 
 ClassImp(AliAnalysisTaskPi0FlowMC);
@@ -72,6 +73,8 @@ ClassImp(AliAnalysisTaskPi0FlowMC);
 //TODO: Geometry IHEP?
 //TODO: PHOS matrix?
 //TODO: Centrality.?
+
+const Double_t AliAnalysisTaskPi0FlowMC::kRCut = 1.;
 
 AliAnalysisTaskPi0FlowMC::AliAnalysisTaskPi0FlowMC(const char* name, AliAnalysisTaskPi0Flow::Period period)
 : AliAnalysisTaskPi0Flow(name, period),
@@ -115,6 +118,13 @@ void AliAnalysisTaskPi0FlowMC::UserCreateOutputObjects()
     fOutputContainer->Add(new TH1F(key,"Rapidity eta",250,0.,25.)) ;
     snprintf(key,55,"hMC_unitEta_eta_cen%d",cent) ;
     fOutputContainer->Add(new TH1F(key,"Rapidity eta",250,0.,25.)) ;
+
+    snprintf(key,55,"hMC_all_K0S_cen%d",cent) ;
+    fOutputContainer->Add(new TH1F(key,"Rapidity photon",250,0.,25.)) ;
+
+    snprintf(key,55,"hMC_unitEta_K0S_cen%d",cent) ;
+    fOutputContainer->Add(new TH1F(key,"Rapidity eta",250,0.,25.)) ;
+
   }
   fOutputContainer->Add(new TH2F("hMC_gamma_vertex","Creation vertex",25,0.,25.,1000,0.,500.)) ;
   fOutputContainer->Add(new TH2F("hMC_pi0_vertex","Creation vertex",25,0.,25.,1000,0.,500.)) ;
@@ -255,6 +265,17 @@ void AliAnalysisTaskPi0FlowMC::SelectPhotonClusters()
     photon->SetPrimary(primary);
     photon->SetWeight(PrimaryWeight(primary)) ;
   }
+
+  for (Int_t i1=0; i1<fCaloPhotonsPHOS->GetEntriesFast(); i1++) {
+    AliCaloPhoton * photon = (AliCaloPhoton*)fCaloPhotonsPHOS->At(i1);
+    Int_t primary = photon->GetPrimary();
+    TParticle* p = fStack->Particle(primary);
+    if(p->R() >kRCut) {
+      if(p->GetPdgCode()==11 || p->GetPdgCode()==-11) continue;
+      else { fCaloPhotonsPHOS->Remove(photon); fCaloPhotonsPHOS->Compress(); }
+    }
+  }
+    
 }
 
 void AliAnalysisTaskPi0FlowMC::FillSelectedClusterHistograms()
@@ -405,7 +426,7 @@ void AliAnalysisTaskPi0FlowMC::ConsiderPi0s()
       const Double_t w2 = ph2->GetWeight();
       Double_t w = TMath::Sqrt(w1*w2);
       
-      FillHistogram("hPHOSphi",fCentralityV0M,p12.Pt(),p12.Phi(), w) ;
+      FillHistogram("hPHOSphi",fCentrality,p12.Pt(),p12.Phi(), w) ;
       Double_t dphiA=p12.Phi()-fRPV0A ;
       while(dphiA<0)dphiA+=TMath::Pi() ;
       while(dphiA>TMath::Pi())dphiA-=TMath::Pi() ;
@@ -931,7 +952,10 @@ void AliAnalysisTaskPi0FlowMC::FillMCHist(){
         if(particle->GetPdgCode() == kGamma)
            snprintf(partName,10,"gamma") ;
 	else
-           continue ;
+	  if(particle->GetPdgCode() == 310)
+	    snprintf(partName,10,"K0S") ;
+	  else
+	    continue ;
 
     //Primary particle
     Double_t r=particle->R() ;
@@ -942,23 +966,29 @@ void AliAnalysisTaskPi0FlowMC::FillMCHist(){
     if(r >kRCut)
       continue ;
 
-    //Total number of pi0 with creation radius <1 cm
-    Double_t weight = PrimaryParticleWeight(particle) ;  
-    snprintf(hkey,55,"hMC_all_%s_cen%d",partName,fCentBin) ;
-    FillHistogram(hkey,pt,weight) ;
-    if(TMath::Abs(particle->Y())<1.){
-      snprintf(hkey,55,"hMC_unitEta_%s_cen%d",partName,fCentBin) ;
-      FillHistogram(hkey,pt,weight) ;
-    }
-
-    snprintf(hkey,55,"hMC_rap_%s_cen%d",partName,fCentBin) ;
-    FillHistogram(hkey,particle->Y(),weight) ;
-    
     Double_t phi=particle->Phi() ;
     while(phi<0.)phi+=TMath::TwoPi() ;
     while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
-    snprintf(hkey,55,"hMC_phi_%s_cen%d",partName,fCentBin) ;
-    FillHistogram(hkey,phi,weight) ;
+
+    Double_t phig = 180./TMath::Pi()*phi; // phi in deg
+    
+    //Total number of pi0 with creation radius <1 cm
+    Double_t weight = PrimaryParticleWeight(particle) ;  
+    snprintf(hkey,55,"hMC_all_%s_cen%d",partName,fCentBin) ;
+ 
+    FillHistogram(hkey,pt,weight) ;
+    
+    if(TMath::Abs(particle->Y())<0.135 && phig>260. && phig<320.){
+      snprintf(hkey,55,"hMC_unitEta_%s_cen%d",partName,fCentBin) ;
+      FillHistogram(hkey,pt,weight) ;
+      
+      snprintf(hkey,55,"hMC_rap_%s_cen%d",partName,fCentBin) ;
+      FillHistogram(hkey,particle->Y(),weight) ;
+    
+      snprintf(hkey,55,"hMC_phi_%s_cen%d",partName,fCentBin) ;
+      FillHistogram(hkey,phi,weight) ;
+    }
+
   }
 }
 

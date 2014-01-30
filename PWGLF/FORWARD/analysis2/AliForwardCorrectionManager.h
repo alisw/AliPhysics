@@ -153,12 +153,14 @@ public:
   /** 
    * Read in corrections based on the parameters given 
    * 
+   * @param runNumber       Run number
    * @param collisionSystem Collision system
    * @param cmsNN           Center of mass energy per nuclean pair [GeV]
    * @param field           Magnetic field setting [kG]
    * @param mc              Monte-carlo switch
    * @param what            What to read in. 
    * @param force           Force (re-)reading of specified things
+   * @param satelliteCollisions For satellite collisions
    * 
    * @return 
    */
@@ -173,12 +175,14 @@ public:
   /** 
    * Read in correction based on passed parameters
    * 
+   * @param runNumber       Run number
    * @param collisionSystem Collision system string 
    * @param cmsNN           Center of mass energy per nucleon pair [GeV]
    * @param field           Magnetic field [kG]
    * @param mc              Monte-carlo switch
    * @param what            What to read in 
    * @param force           Force (re-)reading of specified things
+   * @param satelliteCollisions For satellite collisions
    * 
    * @return true on success
    */
@@ -221,7 +225,7 @@ public:
    * 
    * @return Get the energy loss fits corrections object or null pointer
    */
-  const AliFMDCorrELossFit* GetELossFits() const { return GetELossFits(); }
+  const AliFMDCorrELossFit* GetELossFits() const { return GetELossFit(); }
   /** 
    * Get the secondary correction map
    * 

@@ -153,6 +153,7 @@ class AliHFEcuts : public TNamed{
     void SetTOFsignaldxz(Double_t tofsignaldx, Double_t tofsignaldz){fTOFsignaldx = tofsignaldx; fTOFsignaldz = tofsignaldz;};
     void SetAODFilterBit(Int_t bit) { fAODFilterBit = bit; };
     inline void SetProductionVertex(Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax);
+    void SetProductionVertexZ(Double_t zmin, Double_t zmax) { fProdVtxZ[0] = zmin; fProdVtxZ[1] = zmax; }
     inline void SetSigmaToVertex(Double_t sig);
     inline void SetSigmaToVertexXY(Double_t sig);
     inline void SetSigmaToVertexZ(Double_t sig);
@@ -162,9 +163,11 @@ class AliHFEcuts : public TNamed{
     }
     void SetEtaRange(Double_t etaRange){fEtaRange[0] = -etaRange; fEtaRange[1] = etaRange;};
     void SetEtaRange(Double_t etamin, Double_t etamax){fEtaRange[0] = etamin; fEtaRange[1] = etamax;};
+    void SetPhiRange(Double_t phimin, Double_t phimax){fPhiRange[0] = phimin; fPhiRange[1] = phimax;};
     void SetVertexRange(Double_t zrange){fVertexRangeZ = zrange;};
     void SetTOFPIDStep(Bool_t tofPidStep) {fTOFPIDStep = tofPidStep;};
     void SetTOFMISMATCHStep(Bool_t tofMismatchStep) {fTOFMISMATCHStep = tofMismatchStep;};
+    void SetMatchTOFLabel(Bool_t match) { fMatchTOFLabel = match; }
     void SetTPCPIDCleanUpStep(Bool_t tpcPIDCleanUpStep) {fTPCPIDCLEANUPStep = tpcPIDCleanUpStep;};
     void SetITSpatternCut() { fITSpatternCut = kTRUE; }
     inline void SetUseMixedVertex(Bool_t useMixedVertex);    
@@ -188,6 +191,10 @@ class AliHFEcuts : public TNamed{
     void SetRequireSigmaToVertex() { SETBIT(fRequirements, kSigmaToVertex); CLRBIT(fRequirements, kDCAToVertex); };
     void UnsetVertexRequirement() { CLRBIT(fRequirements, kDCAToVertex); CLRBIT(fRequirements, kSigmaToVertex); }
     void SetRequireKineMCCuts() { SETBIT(fRequirements, kKineMCCuts); };
+    void SetRejectKinkDaughters() { fRejectKinkDaughters = kTRUE; }
+    void SetAcceptKinkDaughters() { fRejectKinkDaughters = kFALSE; }
+    void SetRejectKinkMothers() { fRejectKinkMothers = kTRUE; }
+    void SetAcceptKinkMothers() { fRejectKinkMothers = kFALSE; }
 
     void SetDebugLevel(Int_t level) { fDebugLevel = level; };
     Int_t GetDebugLevel() const { return fDebugLevel; };
@@ -225,53 +232,58 @@ class AliHFEcuts : public TNamed{
     static const Char_t* fgkEventCutName[kNcutStepsEvent];    // Cut step names for Event cuts
     static const Char_t* fgkUndefined;                        // Name for undefined (overflow)
   
-    ULong64_t fRequirements;  	  // Bitmap for requirements
-    UChar_t   fTPCclusterDef;       // TPC cluster definition
-    UChar_t   fTPCratioDef;             // TPC cluster ratio Definition
-    Double_t fEtaRange[2];               // Eta range
-    Double_t fDCAtoVtx[2];	      // DCA to Vertex
-    Double_t fProdVtx[4];	        // Production Vertex
-    Double_t fPtRange[2];	        // pt range
-    UChar_t fMinClustersTPC;	    // Min.Number of TPC clusters
-    UChar_t fMinClustersTPCPID;	  // Min.Number of TPC clusters
-    UChar_t fMinClustersITS;	    // Min.Number of TPC clusters
-    UChar_t fMinTrackletsTRD;	    // Min. Number of TRD tracklets
-    Float_t fMaxChi2TRD;                // Max. Chi2 per TRD tracklet
-    UChar_t fCutITSPixel;	        // Cut on ITS pixel
-    Bool_t  fCheckITSLayerStatus;       // Check ITS layer status
-    UChar_t fCutITSDrift;	        // Cut on ITS drift
-    Double_t fMaxChi2clusterITS;	// Max Chi2 per ITS cluster
-    Double_t fMaxChi2clusterTPC;	// Max Chi2 per TPC cluster
-    Double_t fMinClusterRatioTPC;	// Min. Ratio findable / found TPC clusters
-    Double_t fSigmaToVtx[3];	    // Sigma To Vertex
-    Double_t fVertexRangeZ;             // Vertex Range reconstructed
-    Bool_t   fTRDtrackletsExact;        // Require exact number of tracklets
-    Bool_t   fTOFPIDStep;               // TOF matching step efficiency
-    Bool_t   fTOFMISMATCHStep;        // TOF mismatch step
-    Bool_t   fTPCPIDCLEANUPStep;      // TPC PIC cleanup step
-    Bool_t   fITSpatternCut;          // Cut on ITS pattern
-    Bool_t   fUseMixedVertex;         // Use primary vertex from track if there otherwise SPD vertex
-    Bool_t   fUseSPDVertex;           // Use primary SPD vertex 
-    Bool_t   fUseCorrelationVertex;   // Use the correlation of the vertex in z
-    Bool_t   fSPDVtxResolution;       // Check resolution of the SPD vertex
-    Bool_t   fPApileupCut;            // Apply pA pileup cut
-    Float_t  fIPCutParams[4];         // Parameters of impact parameter cut parametrization
-    Bool_t   fIsIPSigmacut;           // if IP cut or IP sigma cut 
-    Bool_t   fIsIPcharge;             // if cut on IP * charge (cut using only positive side of distribution, to eliminate conversions)
-    Bool_t   fIsIPOpp;                // if IP*charge cut on side of the photon peak
-    Double_t fFractionOfSharedTPCClusters; // Fraction of shared TPC clusters
-    Bool_t   fMaxImpactParameterRpar;      // Max impact parameter
-    Long_t   fAdditionalStatusRequirement; // Additional status bit requirement 
-    Double_t fTOFsignaldx;                 // TOF signal Dx
-    Double_t fTOFsignaldz;                 // TOF signal Dz
-    Int_t    fAODFilterBit;                // AOD Filter Bit Number
+    ULong64_t fRequirements;  	              // Bitmap for requirements
+    UChar_t   fTPCclusterDef;                 // TPC cluster definition
+    UChar_t   fTPCratioDef;                   // TPC cluster ratio Definition
+    Double_t fEtaRange[2];                    // Eta range
+    Double_t fPhiRange[2];                    // Phi range
+    Double_t fDCAtoVtx[2];	                  // DCA to Vertex
+    Double_t fProdVtx[4];	                    // Production Vertex
+    Double_t fProdVtxZ[2];	                  // Production Vertex in Z direction
+    Double_t fPtRange[2];	                    // pt range
+    UChar_t fMinClustersTPC;	                // Min.Number of TPC clusters
+    UChar_t fMinClustersTPCPID;	              // Min.Number of TPC clusters
+    UChar_t fMinClustersITS;	                // Min.Number of TPC clusters
+    UChar_t fMinTrackletsTRD;	                // Min. Number of TRD tracklets
+    Float_t fMaxChi2TRD;                      // Max. Chi2 per TRD tracklet
+    UChar_t fCutITSPixel;	                    // Cut on ITS pixel
+    Bool_t  fCheckITSLayerStatus;             // Check ITS layer status
+    UChar_t fCutITSDrift;	                    // Cut on ITS drift
+    Double_t fMaxChi2clusterITS;	            // Max Chi2 per ITS cluster
+    Double_t fMaxChi2clusterTPC;	            // Max Chi2 per TPC cluster
+    Double_t fMinClusterRatioTPC;	            // Min. Ratio findable / found TPC clusters
+    Double_t fSigmaToVtx[3];	                // Sigma To Vertex
+    Double_t fVertexRangeZ;                   // Vertex Range reconstructed
+    Bool_t   fTRDtrackletsExact;              // Require exact number of tracklets
+    Bool_t   fTOFPIDStep;                     // TOF matching step efficiency
+    Bool_t   fMatchTOFLabel;                  // Check whether Track or TOF label are the same
+    Bool_t   fTOFMISMATCHStep;                // TOF mismatch step
+    Bool_t   fTPCPIDCLEANUPStep;              // TPC PIC cleanup step
+    Bool_t   fITSpatternCut;                  // Cut on ITS pattern
+    Bool_t   fUseMixedVertex;                 // Use primary vertex from track if there otherwise SPD vertex
+    Bool_t   fUseSPDVertex;                   // Use primary SPD vertex 
+    Bool_t   fUseCorrelationVertex;           // Use the correlation of the vertex in z
+    Bool_t   fSPDVtxResolution;               // Check resolution of the SPD vertex
+    Bool_t   fPApileupCut;                    // Apply pA pileup cut
+    Float_t  fIPCutParams[4];                 // Parameters of impact parameter cut parametrization
+    Bool_t   fIsIPSigmacut;                   // if IP cut or IP sigma cut 
+    Bool_t   fIsIPcharge;                     // if cut on IP * charge (cut using only positive side of distribution, to eliminate conversions)
+    Bool_t   fIsIPOpp;                        // if IP*charge cut on side of the photon peak
+    Double_t fFractionOfSharedTPCClusters;    // Fraction of shared TPC clusters
+    Bool_t   fMaxImpactParameterRpar;         // Max impact parameter
+    Long_t   fAdditionalStatusRequirement;    // Additional status bit requirement 
+    Double_t fTOFsignaldx;                    // TOF signal Dx
+    Double_t fTOFsignaldz;                    // TOF signal Dz
+    Int_t    fAODFilterBit;                   // AOD Filter Bit Number
+    Bool_t   fRejectKinkDaughters;            // Reject Kink Daughters
+    Bool_t   fRejectKinkMothers;              // Reject Kink Daughters
     
-    TList *fHistQA;		            //! QA Histograms
-    TObjArray *fCutList;	        //! List of cut objects(Correction Framework Manager)
+    TList *fHistQA;		                        //! QA Histograms
+    TObjArray *fCutList;	                    //! List of cut objects(Correction Framework Manager)
 
-    Int_t fDebugLevel;            // Debug Level
+    Int_t fDebugLevel;                        // Debug Level
     
-  ClassDef(AliHFEcuts, 5)         // Container for HFE cuts
+  ClassDef(AliHFEcuts, 6)                     // Container for HFE cuts
 };
 
 //__________________________________________________________________
@@ -359,6 +371,8 @@ void AliHFEcuts::CreateStandardCuts(){
   fProdVtx[1] = 3;
   fProdVtx[2] = 0;
   fProdVtx[3] = 3;
+  fProdVtxZ[0] = -15;
+  fProdVtxZ[1] = 15;
   //SetRequireDCAToVertex();
   //fDCAtoVtx[0] = 0.5;
   //fDCAtoVtx[1] = 1.5;
@@ -372,6 +386,8 @@ void AliHFEcuts::CreateStandardCuts(){
   fMinClusterRatioTPC = 0.6;
   fPtRange[0] = 0.1;
   fPtRange[1] = 100.;
+  fRejectKinkDaughters = kTRUE;
+  fRejectKinkMothers = kTRUE;
   SetRequireKineMCCuts();
 }
 #endif

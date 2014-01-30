@@ -8,7 +8,8 @@ void RsnTrainSettingsExtra(Double_t primaryVertex,
                            Double_t useMixDiffVz,
                            Double_t useMixDiffAngle,
                            Int_t printRefresh=-1,
-                           Int_t useMixLike=0) {
+                           Int_t useMixLike=0,
+                           Int_t useQA=0) {
 
    AliRsnTrainManager::SetGlobalDbl("RsnEventCutPrimaryVertex",primaryVertex);
    AliRsnTrainManager::SetGlobalInt("RsnCommonQualityCut",useCommonQualityCut);
@@ -24,6 +25,9 @@ void RsnTrainSettingsExtra(Double_t primaryVertex,
 
    AliRsnTrainManager::SetGlobalInt("RsnMixPrintRefresh",printRefresh);
    AliRsnTrainManager::SetGlobalInt("RsnMixLike",useMixLike);
+   AliRsnTrainManager::SetGlobalInt("RsnQA",useQA);
+   if (useQA) AliRsnTrainManager::SetGlobalStr("RsnLegoTrainCommonCutOption","");
+
 
    return;
 }

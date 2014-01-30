@@ -6,6 +6,9 @@
 // to allow an event mixing.
 //
 
+#include <TDatabasePDG.h>
+#include <TParticlePDG.h>
+
 #include "AliRsnDaughter.h"
 #include "AliRsnMiniParticle.h"
 
@@ -49,4 +52,28 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
       fMother = daughter->GetMother();
       fMotherPDG = daughter->GetMotherPDG();
    }
+}
+
+
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniParticle::Mass()
+{
+   //
+   // return mass of particle
+   //
+
+   TDatabasePDG *db   = TDatabasePDG::Instance();
+   TParticlePDG *part = db->GetParticle(PDG());
+   return part->Mass();
+}
+
+//__________________________________________________________________________________________________
+void AliRsnMiniParticle::Set4Vector(TLorentzVector &v, Float_t mass, Bool_t mc)
+{
+   //
+   // return 4 vector of particle
+   //
+
+   if (mass<0.0) mass = Mass();
+   v.SetXYZM(Px(mc), Py(mc), Pz(mc),mass);
 }

@@ -1,7 +1,7 @@
 #ifndef AliAnalysisTaskEmcalJetSpectraMECpA_h
 #define AliAnalysisTaskEmcalJetSpectraMECpA_h
 
-// $Id: AliAnalysisTaskEmcalJetSpectraMECpA.h 3010 2012-06-10 05:40:56Z loizides $
+// $Id$
 
 
 class TH1F;
@@ -50,6 +50,6 @@ class AliAnalysisTaskEmcalJetSpectraMECpA : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetSpectraMECpA(const AliAnalysisTaskEmcalJetSpectraMECpA&); // not implemented
   AliAnalysisTaskEmcalJetSpectraMECpA& operator=(const AliAnalysisTaskEmcalJetSpectraMECpA&); // not implemented
   
-  ClassDef(AliAnalysisTaskEmcalJetSpectraMECpA, 4); // Emcal jet spectra task
+  ClassDef(AliAnalysisTaskEmcalJetSpectraMECpA, 5); // Emcal jet spectra task
 };
 #endif

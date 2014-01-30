@@ -14,19 +14,17 @@
  * 
  * @ingroup pwglf_forward_aod
  */
-#include <AliAnalysisTaskSE.h>
+#include "AliBaseESDTask.h"
 #include "AliForwardUtil.h"
 #include "AliAODForwardMult.h"
 #include "AliAODForwardEP.h"
-class AliFMDEventInspector;
-class AliFMDEnergyFitter;
+// class AliFMDEnergyFitter;
 class AliFMDSharingFilter;
 class AliFMDDensityCalculator;
 class AliFMDCorrector;
 class AliFMDHistCollector;
-class AliAODHandler;
-class AliForwardCorrectionManager;
 class AliFMDEventPlaneFinder;
+class AliAODHandler;
 class AliESDEvent;
 class TH2D;
 class TList;
@@ -79,7 +77,7 @@ class TProfile;
  * @ingroup pwglf_forward_aod
  * 
  */
-class AliForwardMultiplicityBase : public AliAnalysisTaskSE
+class AliForwardMultiplicityBase : public AliBaseESDTask
 {
 public:
   enum { 
@@ -96,38 +94,29 @@ public:
    * @name Interface methods 
    */
   /** 
-   * Initialize the task 
-   * 
-   */
-  virtual void Init() { fFirstEvent = true; }
-  /** 
    * Create output objects 
-   * 
-   */
-  virtual void UserCreateOutputObjects();
-  /** 
-   * Process each event 
    *
-   * @param option Not used
-   */  
-  virtual void UserExec(Option_t* option) = 0;
+   * @return true on success
+   */
+  virtual Bool_t Book();
+  /** 
+   * Initialise the sub objects and stuff.  Called on first event
+   *
+   * @param vertex Vertex axis to use 
+   * @param eta    Eta axis to use 
+   *
+   * @return false on errors 
+   */
+  virtual Bool_t PreData(const TAxis& vertex, const TAxis& eta);
   /** 
    * End of job
    * 
-   * @param option Not used 
+   * @return true on success
    */
-  virtual void Terminate(Option_t* option);
+  virtual Bool_t Finalize();
   /** 
    * @} 
    */
-  /** 
-   * Configure this task via a macro 
-   * 
-   * @param macro Macro to configure va 
-   * 
-   * @return true on success, false otherwise
-   */
-  virtual Bool_t Configure(const char* macro="ForwardAODConfig.C");
   /** 
    * Print information 
    * 
@@ -150,12 +139,6 @@ public:
    * @{ 
    * @name Access to sub-algorithms 
    */
-  /**
-   * Get reference to the EventInspector algorithm 
-   * 
-   * @return Reference to AliFMDEventInspector object 
-   */
-  virtual AliFMDEventInspector& GetEventInspector() = 0;
   /**
    * Get reference to the SharingFilter algorithm 
    * 
@@ -180,12 +163,6 @@ public:
    * @return Reference to AliFMDHistCollector object 
    */
   virtual AliFMDHistCollector& GetHistCollector() = 0;
-  /**
-   * Get reference to the EventInspector algorithm 
-   * 
-   * @return Reference to AliFMDEventInspector object 
-   */
-  virtual const AliFMDEventInspector& GetEventInspector() const = 0;
   /**
    * Get reference to the SharingFilter algorithm 
    * 
@@ -231,17 +208,6 @@ public:
    */
   virtual void SetDebug(Int_t dbg);
   /** 
-   * Overload super class method for setting debug level to call our
-   * SetDebug member function.
-   * 
-   * @param dbg Debug level (0: no output, 1: essentials, 3: a whole lot)
-   */
-  virtual void SetDebugLevel(Int_t dbg) 
-  { 
-    AliAnalysisTaskSE::SetDebugLevel(dbg); 
-    SetDebug(dbg);
-  }
-  /** 
    * Set whether to make separate branches for each ring.  If enabled
    * there will be 5 additional branches on the AOD tree - each
    * holding a TH2D object of the charged particle multiplicity in
@@ -261,43 +227,23 @@ protected:
    * Constructor
    */
   AliForwardMultiplicityBase() 
-  : AliAnalysisTaskSE(), 
-    fEnableLowFlux(true), 
-    fFirstEvent(true),
-    fStorePerRing(false),
-    fList(0),
-    fHData(0),
-    fHistos(),
-    fAODFMD(),
-    fAODEP(),
-    fRingSums(),
-    fDoTiming(false), 
-    fHTiming(0),
-    fCorrManager(0)
+    : AliBaseESDTask(), 
+      fEnableLowFlux(true), 
+      fStorePerRing(false),
+      fHData(0),
+      fHistos(),
+      fAODFMD(),
+      fAODEP(),
+      fRingSums(),
+      fDoTiming(false), 
+      fHTiming(0)
   {}
   /** 
    * Copy constructor 
    * 
    * @param o Object to copy from 
    */
-  AliForwardMultiplicityBase(const AliForwardMultiplicityBase& o)
-    : AliAnalysisTaskSE(o),
-      fEnableLowFlux(o.fEnableLowFlux), 
-      fFirstEvent(o.fFirstEvent),
-      fStorePerRing(o.fStorePerRing),
-      fList(o.fList),
-      fHData(o.fHData),
-      fHistos(o.fHistos),
-      fAODFMD(o.fAODFMD),
-      fAODEP(o.fAODEP),
-      fRingSums(o.fRingSums),
-      fDoTiming(o.fDoTiming), 
-      fHTiming(o.fHTiming),
-      fCorrManager(o.fCorrManager)
-  {
-    DefineOutput(1, TList::Class());
-    DefineOutput(2, TList::Class());
-  }
+  AliForwardMultiplicityBase(const AliForwardMultiplicityBase& o);
   /** 
    * Assignment operator 
    * 
@@ -307,57 +253,17 @@ protected:
    */
   AliForwardMultiplicityBase& operator=(const AliForwardMultiplicityBase& o);
   /** 
-   * Check if all needed corrections are there and accounted for.  If not,
-   * do a Fatal exit 
-   * 
-   * @param what Which corrections is needed
-   * 
-   * @return true if all present, false otherwise
-   */  
-  Bool_t CheckCorrections(UInt_t what) const;
-  /** 
-   * Read corrections
-   * 
-   * 
-   * @param pe  On return, the eta axis
-   * @param pv  On return ,the vertex axis 
-   * @param mc  True assume MC input
-   * 
-   * @return true ons succcss
-   */
-  virtual Bool_t ReadCorrections(const TAxis*& pe, 
-				 const TAxis*& pv,
-				 Bool_t mc=false,
-				 Bool_t sat=false);
-  /**
-   * Get the ESD event. IF this is the first event, initialise
-   *
-   * @return Pointer to ESD event structore 
-   */
-  virtual AliESDEvent* GetESDEvent();
-  /** 
-   * Initialise the sub objects and stuff.  Called on first event
-   *
-   * @return false on errors 
-   */
-  virtual Bool_t SetupForData();
-  /** 
    * Initialize members based on eta and vertex axis - only available
    * after first event - called from SetupForData.
    * 
    * @param pe @f$\eta@f$ axis
    * @param pv Interaction point Z-coordinate axis 
    */
-  virtual void InitMembers(const TAxis* pe, const TAxis* pv);
+  virtual void InitMembers(const TAxis& pe, const TAxis& pv);
   /**
    * Create output branches - called from UserCreateOutputObjects
    */
   virtual void CreateBranches(AliAODHandler* ah);
-  /**
-   * Mark this event as one to store in the AOD 
-   * 
-   */
-  virtual void MarkEventForStore() const;
   /** 
    * Do estimates of @f$dN/d\eta@f$  - called at Terminate
    * 
@@ -395,10 +301,10 @@ protected:
 			      TList*       output,
 			      const char*  outName,
 			      Int_t        style=20) const;
+  TAxis* DefaultEtaAxis() const { return new TAxis(200,-4,6); }
+  TAxis* DefaultVertexAxis() const { return new TAxis(10,-10,10); }
   Bool_t                 fEnableLowFlux;// Whether to use low-flux specific code
-  Bool_t                 fFirstEvent;   // Whether the event is the first seen 
   Bool_t                 fStorePerRing; // Store each ring on separate branch
-  TList*                 fList;         // Output list
   TH2D*                  fHData;        // Summed 1/Nd^2N_{ch}/dphideta
   AliForwardUtil::Histos fHistos;       // Cache histograms 
   AliAODForwardMult      fAODFMD;       // Output object
@@ -406,17 +312,8 @@ protected:
   AliForwardUtil::Histos fRingSums;     // Cache histograms 
   Bool_t                 fDoTiming;     // Whether to do timing or not
   TProfile*              fHTiming;
-private:
-  /**
-   * A pointer to the corrections manager.  This is here to make the
-   * corrections manager persistent - that is, when we write the
-   * analysis train to a file (as done in PROOF) we should also write
-   * down the corrections mananger.   This pointer ensures that. 
-   * 
-   */
-  AliForwardCorrectionManager* fCorrManager; // Pointer to corrections manager
 
-  ClassDef(AliForwardMultiplicityBase,4) // Forward multiplicity class
+  ClassDef(AliForwardMultiplicityBase,5) // Forward multiplicity class
 };
 
 #endif

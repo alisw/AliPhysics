@@ -35,6 +35,8 @@ ClassImp(AliLRCProcess)
 
 //const bool useSparse = false;//false;
 //const bool useAccumulatingHist = true;//false;
+using std::endl;
+using std::cout;
 
 AliLRCProcess::AliLRCProcess():fIsEventOpend(kFALSE), fIsOnline(kFALSE), fDisplayInitOnDemandWarning(kTRUE)
   ,fUseSparse(false)
@@ -66,14 +68,27 @@ AliLRCProcess::AliLRCProcess():fIsEventOpend(kFALSE), fIsOnline(kFALSE), fDispla
   ,fNchBwPlus(0)
   ,fNchFwMinus(0)
   ,fNchBwMinus(0)
-  ,fOutList(0), fShortDef(0),fOutputSlot(0), fHistPt(0),fHistEta(0),fHistClouds(0),fHistNN(0),fHistPtN(0),fHistPtPt(0),fProfNberr(0),fProfNberrPtPt(0),fProfdPtB(0),fProfTestLRC(0),fHistSparseDimensionLabeling(0),fHistSparsePIDblocksLabeling(0),fHistPtForward(0),fHistEtaForward(0),fHistNchForward(0),fHistNchForwardPtPt(0)
+  ,fOutList(0), fShortDef(0),fOutputSlot(0), fHistPt(0),fHistEta(0),fHistClouds(0),fHistNN(0),fHistPtN(0),fHistPtPt(0),fProfNberr(0),fProfNberrPtPt(0),fProfdPtB(0),fProfTestLRC(0),fHistSparseDimensionLabeling(0),fHistSparsePIDblocksLabeling(0)
+
+  ,fHistPtForward(0)
+  ,fHistEtaForward(0)
+  ,fHistNchForward(0)
+  ,fHistNchForwardPtPt(0)
   ,fHistPhiForward(0)
   ,fHistTracksChargeForward(0)
+  ,fHistPtPlusForward(0)
+  ,fHistPtMinusForward(0)
+  ,fHistNetChargeVsPtForward(0)
+
   ,fHistPtBackward(0)
   ,fHistEtaBackward(0)
   ,fHistNchBackward(0)
   ,fHistPhiBackward(0)
   ,fHistTracksChargeBackward(0)
+  ,fHistPtPlusBackward(0)
+  ,fHistPtMinusBackward(0)
+  ,fHistNetChargeVsPtBackward(0)
+
   ,fArrAccumulatedValues(0)
   //  ,fHistArrayLabeling(0)
   ,fEventCentrality(0)
@@ -118,14 +133,27 @@ AliLRCProcess::AliLRCProcess(Double_t _StartForwardETA,Double_t _EndForwardETA,D
   ,fNchBwPlus(0)
   ,fNchFwMinus(0)
   ,fNchBwMinus(0)
-  ,fOutList(0), fShortDef(0),fOutputSlot(0), fHistPt(0),fHistEta(0),fHistClouds(0),fHistNN(0),fHistPtN(0),fHistPtPt(0),fProfNberr(0),fProfNberrPtPt(0),fProfdPtB(0),fProfTestLRC(0),fHistSparseDimensionLabeling(0),fHistSparsePIDblocksLabeling(0),fHistPtForward(0),fHistEtaForward(0),fHistNchForward(0),fHistNchForwardPtPt(0)
+  ,fOutList(0), fShortDef(0),fOutputSlot(0), fHistPt(0),fHistEta(0),fHistClouds(0),fHistNN(0),fHistPtN(0),fHistPtPt(0),fProfNberr(0),fProfNberrPtPt(0),fProfdPtB(0),fProfTestLRC(0),fHistSparseDimensionLabeling(0),fHistSparsePIDblocksLabeling(0)
+
+  ,fHistPtForward(0)
+  ,fHistEtaForward(0)
+  ,fHistNchForward(0)
+  ,fHistNchForwardPtPt(0)
   ,fHistPhiForward(0)
   ,fHistTracksChargeForward(0)
+  ,fHistPtPlusForward(0)
+  ,fHistPtMinusForward(0)
+  ,fHistNetChargeVsPtForward(0)
+
   ,fHistPtBackward(0)
   ,fHistEtaBackward(0)
   ,fHistNchBackward(0)
   ,fHistPhiBackward(0)
   ,fHistTracksChargeBackward(0)
+  ,fHistPtPlusBackward(0)
+  ,fHistPtMinusBackward(0)
+  ,fHistNetChargeVsPtBackward(0)
+
   ,fArrAccumulatedValues(0)
   //  ,fHistArrayLabeling(0)
   ,fEventCentrality(0)
@@ -225,7 +253,7 @@ Bool_t AliLRCProcess::InitDataMembers()
     
     // Window statistics histograms
 
-    // Forward
+    // ########## Forward
 
     fHistPtForward = new TH1D("fHistPtForward", "P_{T} distribution in Forward window", 100, 0.0, 5);
     fHistPtForward->GetXaxis()->SetTitle("P_{T} (GeV/c)");
@@ -262,7 +290,24 @@ Bool_t AliLRCProcess::InitDataMembers()
     //15/12/2012: charge hist
     fHistTracksChargeForward = new TH1D("fHistTracksChargeForward","Accepted tracks charge;charge;Entries",3,-1.5,1.5);
 
-    // Backward
+
+    // ### net charge vs pt study (July 2013)
+    const int kPtNetChargePtBins = 200;
+    const double kPtNetChargePtMin = 0.1;
+    const double kPtNetChargePtMax = 2.1;
+
+    //pt plus
+    fHistPtPlusForward = new TH1D("fHistPtPlusForward","p_{T} +;p_{T};dN/dpT", kPtNetChargePtBins,  kPtNetChargePtMin, kPtNetChargePtMax                                  );
+    fOutList->Add(fHistPtPlusForward);
+    //pt minus
+    fHistPtMinusForward = new TH1D("fHistPtMinusForward","p_{T} -;p_{T};dN/dpT", kPtNetChargePtBins,  kPtNetChargePtMin, kPtNetChargePtMax                                  );
+    fOutList->Add(fHistPtMinusForward);
+    //net charge vs pT
+    fHistNetChargeVsPtForward = new TH1D("fHistNetChargeVsPtForward","charge vs p_{T};p_{T};Q", kPtNetChargePtBins,  kPtNetChargePtMin, kPtNetChargePtMax                                  );
+    fOutList->Add(fHistNetChargeVsPtForward);
+
+
+    // ########## Backward
 
     fHistPtBackward = new TH1D("fHistPtBakward", "P_{T} distribution in Backward window", 100, 0.0, 5);
     fHistPtBackward->GetXaxis()->SetTitle("P_{T} (GeV/c)");
@@ -294,6 +339,16 @@ Bool_t AliLRCProcess::InitDataMembers()
     //15/12/2012: charge hist
     fHistTracksChargeBackward = new TH1D("fHistTracksChargeBackward","Accepted tracks charge;charge;Entries",3,-1.5,1.5);
 
+    // ### net charge vs pt study (July 2013)
+    //pt plus
+    fHistPtPlusBackward = new TH1D("fHistPtPlusBackward","p_{T} +;p_{T};dN/dpT", kPtNetChargePtBins,  kPtNetChargePtMin, kPtNetChargePtMax                                  );
+    fOutList->Add(fHistPtPlusBackward);
+    //pt minus
+    fHistPtMinusBackward = new TH1D("fHistPtMinusBackward","p_{T} -;p_{T};dN/dpT", kPtNetChargePtBins,  kPtNetChargePtMin, kPtNetChargePtMax                                  );
+    fOutList->Add(fHistPtMinusBackward);
+    //net charge vs pT
+    fHistNetChargeVsPtBackward = new TH1D("fHistNetChargeVsPtBackward","charge vs p_{T};p_{T};Q", kPtNetChargePtBins,  kPtNetChargePtMin, kPtNetChargePtMax                                  );
+    fOutList->Add(fHistNetChargeVsPtBackward);
 
 
 
@@ -811,7 +866,7 @@ void AliLRCProcess::StartEvent()
     if(fIsEventOpend)                     // Check if trying to open event more than once !
     {
         Printf("Event is already opened! Auto finishing ! \n");
-        cout<<fShortDef<<": event count = "<<fEventCount<<" ";
+//        cout<<fShortDef<<": event count = "<<fEventCount<<" ";
         Printf("NchF = %i,NchB = %i \n",fNchFw,fNchBw);
 
         FinishEvent();
@@ -834,7 +889,7 @@ void AliLRCProcess::StartEvent()
     fNchBwMinus = 0;
     
     ZeroPidArrays();
-    
+        
     //fNchFwPtPt = 0;
 
     fIsEventOpend=kTRUE;
@@ -902,6 +957,14 @@ void AliLRCProcess::AddTrackForward(Double_t Pt, Double_t Eta ,Double_t Phi, Sho
             }
         }
     }
+
+    //netcharge part (July 2013)
+    fHistNetChargeVsPtForward->Fill( Pt, Charge );
+    if ( Charge > 0 )
+        fHistPtPlusForward->Fill( Pt );
+    else if ( Charge < 0 )
+        fHistPtMinusForward->Fill( Pt );
+
 
 }
 void AliLRCProcess::AddTrackBackward(Double_t Pt, Double_t Eta ,Double_t Phi, Short_t Charge, Int_t particleType  )
@@ -971,6 +1034,13 @@ void AliLRCProcess::AddTrackBackward(Double_t Pt, Double_t Eta ,Double_t Phi, Sh
             
         }
     }
+
+    //netcharge part (July 2013)
+    fHistNetChargeVsPtBackward->Fill( Pt, Charge );
+    if ( Charge > 0 )
+        fHistPtPlusBackward->Fill( Pt );
+    else if ( Charge < 0 )
+        fHistPtMinusBackward->Fill( Pt );
 
 }
 

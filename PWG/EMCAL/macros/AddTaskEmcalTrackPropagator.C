@@ -1,9 +1,10 @@
 // $Id$
 
 AliEmcalTrackPropagatorTask* AddTaskEmcalTrackPropagator(
-  const char *name         = "Tracks",
-  const Double_t d         = -1,
-  const Double_t pt        = -1
+  const char *nameIn       = 0,
+  const char *nameOut      = 0,
+  const Bool_t onlyifnot   = kTRUE,
+  const Double_t d         = 440,
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -21,19 +22,18 @@ AliEmcalTrackPropagatorTask* AddTaskEmcalTrackPropagator(
     ::Error("AddTaskEmcalTrackPropagator", "This task requires an input event handler");
     return NULL;
   }
-  
-  if (!evhand->InheritsFrom("AliESDInputHandler")) {
-    ::Info("AddTaskEmcalTrackPropagator", "This task is only needed for ESD analysis. No task added.");
-    return NULL;
-  }
 
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
   AliEmcalTrackPropagatorTask* propagator = new AliEmcalTrackPropagatorTask();
-  propagator->SetTracksName(name);
-  if (d > -1) propagator->SetDist(d);
-  if (pt > -1) propagator->SetMinPt(pt);
+  if (nameIn)
+    propagator->SetTracksInName(nameIn);
+  if (nameOut)
+    propagator->SetTracksOutName(nameOut);
+  if (d>0) 
+    propagator->SetDist(d);
+  propagator->SetOnlyIfNotSet(onlyifnot);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

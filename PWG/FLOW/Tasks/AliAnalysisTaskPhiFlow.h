@@ -19,6 +19,7 @@ class AliFlowEvent;
 class AliFlowCandidateTrack;
 class AliFlowBayesianPID;
 class AliEventPoolManager;
+class AliPIDCombined;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -67,8 +68,8 @@ public:
    AliEventPoolManager*                 InitializeEventMixing();
    void                                 SetPtBins(Float_t bin[19], Int_t n) { for(Int_t i = 0; i < n+1; i++) fPtBins[i] = bin[i]; fNPtBins = n; }
    template <typename T> Double_t       InvariantMass(const T* track1, const T* track2) const;
-   template <typename T> Double_t       DeltaDipAngle(const T* track1, const T* track2) const;
-   template <typename T> Bool_t         CheckDeltaDipAngle(const T* track1, const T* track2) const;
+//   template <typename T> Double_t       DeltaDipAngle(const T* track1, const T* track2) const;
+//   template <typename T> Bool_t         CheckDeltaDipAngle(const T* track1, const T* track2) const;
    template <typename T> Bool_t         CheckCandidateEtaPtCut(const T* track1, const T* track2) const;
    void                                 SetCentralityParameters(Double_t min, Double_t max, const char* a, const char* b, Bool_t c, Bool_t d) { 
                                                                                           fCentralityMin = min; 
@@ -77,16 +78,17 @@ public:
                                                                                           fkCentralityMethodB = b;
                                                                                           fCentralityCut2010 = c; 
                                                                                           fCentralityCut2011 = d;}
+   void                                 SetCurrentCentralityBin(Double_t c) {fCentrality = c; }
    Double_t                             GetCenMin() const {return fCentralityMin; }
    Double_t                             GetCenMax() const {return fCentralityMax; }
    const char*                          GetCentralityMethod() const {return fkCentralityMethodA; }
    void                                 SetVertexZ(Float_t z) { fVertexRange = z; }
    Float_t                              GetVertexZ() const { return fVertexRange; }
-   void                                 SetMaxDeltaDipAngleAndPt(Float_t a, Float_t pt) { fDeltaDipAngle = a;
-                                                                                          fDeltaDipPt = pt;
-                                                                                          fApplyDeltaDipCut = kTRUE; };
-   Float_t                              GetDeltaDipAngle() const {return fDeltaDipAngle; }
-   Float_t                              GetDeltaDipPt() const {return fDeltaDipPt; }
+//   void                                 SetMaxDeltaDipAngleAndPt(Float_t a, Float_t pt) { fDeltaDipAngle = a;
+//                                                                                          fDeltaDipPt = pt;
+//                                                                                          fApplyDeltaDipCut = kTRUE; };
+//   Float_t                              GetDeltaDipAngle() const {return fDeltaDipAngle; }
+//   Float_t                              GetDeltaDipPt() const {return fDeltaDipPt; }
    template <typename T> Bool_t         EventCut(T* event);
    template <typename T> void           PlotMultiplcities(const T* event) const;
    template <typename T> Bool_t         CheckVertex(const T* event);
@@ -102,12 +104,13 @@ public:
    void                                 PrepareFlowEvent(Int_t iMulti);
    void                                 VZEROSubEventAnalysis();
    virtual void                         UserExec(Option_t *option);
+   virtual void                         Exec(Option_t *);
    void                                 ReconstructionWithEventMixing(TObjArray* MixingCandidates) const;
    virtual void                         Terminate(Option_t *);
    void                                 SetPOICuts(AliFlowTrackCuts *cutsPOI) { fPOICuts = cutsPOI; }
    void                                 SetRPCuts(AliFlowTrackCuts *cutsRP) { fCutsRP = cutsRP; }
-   void                                 SetRequireTPCStandAloneKaons() { fRequireTPCStandAlone = kTRUE; }
-   void                                 SetOlderThanPbPbPass2() { fOldTrackParam = kTRUE; }
+   AliFlowTrackCuts*                    GetPOICuts() const {return fPOICuts;}
+   AliFlowTrackCuts*                    GetRPCuts() const {return fCutsRP;}
    void                                 SetPIDConfiguration(Double_t prob[7]) { for(Int_t i = 0; i < 7; i++) fPIDConfig[i] = prob[i]; }
    void                                 GetPIDConfiguration(Double_t prob[7]) const {for(Int_t i = 0; i < 7; i++) prob[i] = fPIDConfig[i]; }
    void                                 SetPOIDCAXYZ(Double_t dca[5]) { for(Int_t i = 0; i < 5; i++) fDCAConfig[i] = dca[i]; }
@@ -130,6 +133,11 @@ public:
                                                                                                                         fMaxMass= maxMass; }
    void                                 IsMC();
    Bool_t                               SetQA(Bool_t qa) {fQA = qa; return fQA;}
+   void                                 SetSkipEventSelection(Bool_t s) {
+       fSkipEventSelection = s;
+       fUsePidResponse = kTRUE; // bayesian pid object will require some event info
+       fCentrality = 5.;}        // should be set by user, skipping event selection will also forego centrality selection
+   void                                 SetUsePidResponse(Bool_t s)     {fUsePidResponse = s;}
 
 private:
 
@@ -139,7 +147,6 @@ private:
    Bool_t               fTypeMixing; // select type: kTRUE for unlike sign background, kFALSE for like sign background
    Bool_t               fQA; // make qa plots
    Bool_t               fV0; // use three subevents including vzero
-   Bool_t               fAODAnalysis; // set aod analysis
    Int_t                fMassBins; // mass bins
    Double_t             fMinMass; // mass range
    Double_t             fMaxMass; // mass range
@@ -149,8 +156,6 @@ private:
    AliFlowEvent         *fFlowEvent; //! flow events (one for each inv mass band)
    AliFlowBayesianPID   *fBayesianResponse; //!PID response object
    TObjArray            *fCandidates; // candidate array
-   Bool_t               fOldTrackParam; // set to true if data is older than pbpb pass 2 production
-   Bool_t               fRequireTPCStandAlone; // set TPC standalone cut for kaon selection
    Bool_t               fCandidateEtaPtCut; // set eta and pt cut for candidate tracks and combinatorial background
    Double_t             fCandidateMinEta; // minimum eta for candidates
    Double_t             fCandidateMaxEta; // maximum eta for candidates
@@ -165,7 +170,6 @@ private:
    Int_t                fNPtBins; // no of pt bins + 1
    Double_t             fCentrality; // event centrality
    Double_t             fVertex; // event vertex z 
-   AliESDEvent          *fESD;    //! ESD object
    AliAODEvent          *fAOD;    //! AOD oject
    AliEventPoolManager  *fPoolManager; //! event pool manager
    TList                *fOutputList; // ! Output list
@@ -200,9 +204,9 @@ private:
    TH1F                 *fVZEROA; //! QA plot vzeroa multiplicity (all tracks in event)
    TH1F                 *fVZEROC; //! QA plot vzeroc multiplicity (all tracks in event)
    TH1F                 *fTPCM; //! QA plot TPC multiplicity (tracks used for event plane estimation)
-   Float_t              fDeltaDipAngle; // absolute value of delta dip angle to be excluded
-   Float_t              fDeltaDipPt; // upper value of pt range in which delta dip angle must be applied
-   Bool_t               fApplyDeltaDipCut; // enforce delta dip cut
+//   Float_t              fDeltaDipAngle; // absolute value of delta dip angle to be excluded
+//   Float_t              fDeltaDipPt; // upper value of pt range in which delta dip angle must be applied
+//   Bool_t               fApplyDeltaDipCut; // enforce delta dip cut
    TH2F                 *fDCAAll;//! qa dca of all charged particles
    TH1F                 *fDCAXYQA; //! qa plot of dca xz
    TH1F                 *fDCAZQA; //!qa plot of dca z
@@ -211,12 +215,14 @@ private:
    TH2F                 *fDCAMaterial; //!dca material (mc) all (data)
    TProfile             *fSubEventDPhiv2; //! subevent resolution info for v2
    TProfile             *fV0Data[18][2]; //! profiles for vzero vn(minv)
-
+   Bool_t               fSkipEventSelection;// skip event selection and set bayesian pid object to MC mode
+   Bool_t               fUsePidResponse;//use pid response instead of aliflowbayesianpid object for pid
+   AliPIDCombined*      fPIDCombined;   // pid combined
    AliAnalysisTaskPhiFlow(const AliAnalysisTaskPhiFlow&); // Not implemented
    AliAnalysisTaskPhiFlow& operator=(const AliAnalysisTaskPhiFlow&); // Not implemented
    void                 MakeTrack(Double_t, Double_t, Double_t, Double_t, Int_t , Int_t[]) const;
 
-   ClassDef(AliAnalysisTaskPhiFlow, 6);
+   ClassDef(AliAnalysisTaskPhiFlow, 7);
 };
 
 #endif

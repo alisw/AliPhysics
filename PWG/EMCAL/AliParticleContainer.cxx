@@ -1,5 +1,6 @@
+// $Id$
 //
-// Particle Container
+// Container with name, TClonesArray and cuts for particles
 //
 // Author: M. Verweij
 
@@ -76,8 +77,8 @@ AliVParticle* AliParticleContainer::GetLeadingParticle(const char* opt)
 }
 
 //________________________________________________________________________
-AliVParticle* AliParticleContainer::GetParticle(Int_t i) const {
-
+AliVParticle* AliParticleContainer::GetParticle(Int_t i) const 
+{
   //Get i^th jet in array
 
   if(i<0 || i>fClArray->GetEntriesFast()) return 0;
@@ -102,8 +103,8 @@ AliVParticle* AliParticleContainer::GetAcceptParticle(Int_t i) const {
 }
 
 //________________________________________________________________________
-AliVParticle* AliParticleContainer::GetParticleWithLabel(Int_t lab) const {
-
+AliVParticle* AliParticleContainer::GetParticleWithLabel(Int_t lab) const 
+{
   //Get particle with label lab in array
   
   Int_t i = GetIndexFromLabel(lab);
@@ -111,8 +112,8 @@ AliVParticle* AliParticleContainer::GetParticleWithLabel(Int_t lab) const {
 }
 
 //________________________________________________________________________
-AliVParticle* AliParticleContainer::GetAcceptParticleWithLabel(Int_t lab) const {
-
+AliVParticle* AliParticleContainer::GetAcceptParticleWithLabel(Int_t lab) const 
+{
   //Get particle with label lab in array
   
   Int_t i = GetIndexFromLabel(lab);
@@ -120,8 +121,8 @@ AliVParticle* AliParticleContainer::GetAcceptParticleWithLabel(Int_t lab) const 
 }
 
 //________________________________________________________________________
-AliVParticle* AliParticleContainer::GetNextAcceptParticle(Int_t i) {
-
+AliVParticle* AliParticleContainer::GetNextAcceptParticle(Int_t i) 
+{
   //Get next accepted particle; if i >= 0 (re)start counter from i; return 0 if no accepted particle could be found
 
   if (i>=0) fCurrentID = i;
@@ -137,8 +138,8 @@ AliVParticle* AliParticleContainer::GetNextAcceptParticle(Int_t i) {
 }
 
 //________________________________________________________________________
-AliVParticle* AliParticleContainer::GetNextParticle(Int_t i) {
-
+AliVParticle* AliParticleContainer::GetNextParticle(Int_t i) 
+{
   //Get next particle; if i >= 0 (re)start counter from i; return 0 if no particle could be found
 
   if (i>=0) fCurrentID = i;
@@ -191,6 +192,21 @@ Bool_t AliParticleContainer::AcceptParticle(AliVParticle *vp) const
     return kFALSE;
   
   return kTRUE;
+}
+
+//________________________________________________________________________
+Int_t AliParticleContainer::GetNAcceptedParticles()
+{
+  // Get number of accepted particles
+
+  Int_t nPart = 0;
+
+  AliVParticle *vp = GetNextAcceptParticle(0);
+  if(vp) nPart = 1;
+  while (GetNextAcceptParticle())
+    nPart++;
+
+  return nPart;
 }
 
 //________________________________________________________________________

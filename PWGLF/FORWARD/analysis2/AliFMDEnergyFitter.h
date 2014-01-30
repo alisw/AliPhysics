@@ -14,13 +14,15 @@
  * @ingroup pwglf_forward_eloss
  */
 #include <TNamed.h>
-#include <TH1D.h>
+// #include <TH1D.h>
 #include <TAxis.h>
 #include <TList.h>
 #include <TObjArray.h>
 #include <TClonesArray.h>
 #include "AliFMDCorrELossFit.h"
 #include "AliForwardUtil.h"
+class TH1;
+class TH2;
 class AliESDFMD;
 class TFitResult;
 class TF1;
@@ -39,7 +41,8 @@ class TArrayD;
  * @par Corrections used: 
  *    - None
  *
- *
+ * @image html alice-int-2012-040-eloss_fits.png "Summary of fits"
+ * 
  * @ingroup pwglf_forward_algo
  * @ingroup pwglf_forward_eloss
  */
@@ -118,29 +121,12 @@ public:
    * @param title Title of object  - not significant 
    */
   AliFMDEnergyFitter(const char* title);
-  /** 
-   * Copy constructor 
-   * 
-   * @param o Object to copy from 
-   */
-  AliFMDEnergyFitter(const AliFMDEnergyFitter& o);
-  /** 
-   * Assignment operator 
-   * 
-   * @param o Object to assign from 
-   * 
-   * @return Reference to this 
-   */
-  AliFMDEnergyFitter& operator=(const AliFMDEnergyFitter& o);
 
+  // -----------------------------------------------------------------
   /** 
-   * Initialise the task
-   * 
-   * @param etaAxis The eta axis to use.  Note, that if the eta axis
-   * has already been set (using SetEtaAxis), then this parameter will be 
-   * ignored
+   * @{ 
+   * @name Setters of options and parameters 
    */
- void SetupForData(const TAxis& etaAxis);
   /** 
    * Set the eta axis to use.  This will force the code to use this
    * eta axis definition - irrespective of whatever axis is passed to
@@ -208,7 +194,7 @@ public:
    * 
    * @param n Max number of particle to try to fit 
    */
-  void SetNParticles(UShort_t n) { fNParticles = (n < 1 ? 1 : (n > 5 ? 5 : n)); }
+  void SetNParticles(UShort_t n) { fNParticles = (n<1 ? 1 : (n>5 ? 5 : n)); }
   /** 
    * Set the minimum number of entries each histogram must have 
    * before we try to fit our response function to it
@@ -299,6 +285,36 @@ public:
   {
     fRegularizationCut = cut;
   }
+  void SetSkips(UShort_t skip) { fSkips = skip; }
+  /** 
+   * Set the debug level.  The higher the value the more output 
+   * 
+   * @param dbg Debug level 
+   */
+  void SetDebug(Int_t dbg=1);
+  /* @} */
+  // -----------------------------------------------------------------
+  /** 
+   * @{ 
+   * @name Processing 
+   */
+  void Init();
+  /** 
+   * Define the output histograms.  These are put in a sub list of the
+   * passed list.   The histograms are merged before the parent task calls 
+   * AliAnalysisTaskSE::Terminate 
+   * 
+   * @param dir Directory to add to 
+   */
+  virtual void CreateOutputObjects(TList* dir);
+  /** 
+   * Initialise the task
+   * 
+   * @param etaAxis The eta axis to use.  Note, that if the eta axis
+   * has already been set (using SetEtaAxis), then this parameter will be 
+   * ignored
+   */
+ virtual void SetupForData(const TAxis& etaAxis);
   /** 
    * Fitter the input AliESDFMD object
    * 
@@ -308,36 +324,22 @@ public:
    * 
    * @return True on success, false otherwise 
    */
-  Bool_t Accumulate(const AliESDFMD& input, 
-		    Double_t         cent,
-		    Bool_t           empty);
+  virtual Bool_t Accumulate(const AliESDFMD& input, 
+			    Double_t         cent,
+			    Bool_t           empty);
   /** 
    * Scale the histograms to the total number of events 
    * 
    * @param dir Where the histograms are  
    */
-  void Fit(const TList* dir);
+  virtual void Fit(const TList* dir);
   /** 
    * Generate the corrections object 
    * 
    * @param dir List to analyse 
    */
   void MakeCorrectionsObject(TList* dir);
-  
-  /** 
-   * Define the output histograms.  These are put in a sub list of the
-   * passed list.   The histograms are merged before the parent task calls 
-   * AliAnalysisTaskSE::Terminate 
-   * 
-   * @param dir Directory to add to 
-   */
-  void CreateOutputObjects(TList* dir);
-  /** 
-   * Set the debug level.  The higher the value the more output 
-   * 
-   * @param dbg Debug level 
-   */
-  void SetDebug(Int_t dbg=1);
+  /** @} */
   /** 
    * Print information
    * 
@@ -352,8 +354,22 @@ public:
    * @return true if the parameter where read 
    */
   Bool_t ReadParameters(const TCollection* list);
-  void SetSkips(UShort_t skip) { fSkips = skip; }
 protected:
+  /** 
+   * Copy constructor 
+   * 
+   * @param o Object to copy from 
+   */
+  AliFMDEnergyFitter(const AliFMDEnergyFitter& o);
+  /** 
+   * Assignment operator 
+   * 
+   * @param o Object to assign from 
+   * 
+   * @return Reference to this 
+   */
+  AliFMDEnergyFitter& operator=(const AliFMDEnergyFitter& o);
+
   /** 
    * Internal data structure to keep track of the histograms
    */
@@ -372,13 +388,13 @@ protected:
      */
     RingHistos(UShort_t d, Char_t r);
     /** 
-     * Copy constructor 
+     * Copy constructor - not defined
      * 
      * @param o Object to copy from 
      */
     RingHistos(const RingHistos& o);
     /** 
-     * Assignment operator 
+     * Assignment operator  - not defined
      * 
      * @param o Object to assign from 
      * 
@@ -390,11 +406,39 @@ protected:
      */
     ~RingHistos();
     /** 
+     * Make an axis with increasing bins 
+     * 
+     * @param n    Number of bins 
+     * @param min  Minimum 
+     * @param max  Maximum
+     * 
+     * @return An axis with quadratically increasing bin size 
+     */
+    virtual TArrayD MakeIncreasingAxis(Int_t    n, 
+				       Double_t min, 
+				       Double_t max) const;
+    /** 
+     * Make E/E_mip histogram 
+     * 
+     * @param name    Name of histogram
+     * @param title   Title of histogram
+     * @param eAxis   @f$\eta@f$ axis
+     * @param deMax   Maximum energy loss 
+     * @param nDeBins Number energy loss bins 
+     * @param incr    Whether to make bins of increasing size
+     */
+    TH2* Make(const char*  name, 
+	      const char*  title, 
+	      const TAxis& eAxis, 
+	      Double_t     deMax=12, 
+	      Int_t        nDeBins=300, 
+	      Bool_t       incr=true);
+    /** 
      * Define outputs
      * 
      * @param dir 
      */
-    void CreateOutputObjects(TList* dir);
+    virtual void CreateOutputObjects(TList* dir);
     /** 
      * Initialise object 
      * 
@@ -404,25 +448,26 @@ protected:
      * @param nDEbins    Number of bins 
      * @param useIncrBin Whether to use an increasing bin size 
      */
-    void SetupForData(const TAxis& eAxis, 
-	      const TAxis& cAxis,
-	      Double_t     maxDE=10, 
-	      Int_t        nDEbins=300, 
-	      Bool_t       useIncrBin=true);
+    virtual void SetupForData(const TAxis& eAxis, 
+			      const TAxis& cAxis,
+			      Double_t     maxDE=10, 
+			      Int_t        nDEbins=300, 
+			      Bool_t       useIncrBin=true);
     /** 
      * Fill histogram 
      * 
      * @param empty  True if event is empty
-     * @param ieta   Eta bin (0 based)
+     * @param eta    @f$ Eta@f$
      * @param icent  Centrality bin (1 based)
      * @param mult   Signal 
      */
-    void Fill(Bool_t empty, Int_t ieta, Int_t icent, Double_t mult);
+    virtual void Fill(Bool_t empty, Double_t eta, Int_t icent, Double_t mult);
     /** 
-     * Fit each histogram to up to @a nParticles particle responses.
+     * Get the the 2D histogram eloss name from our sub-list of @a dir
+     * and call the Fit function described below (with &fBest) as last
+     * argument.
      * 
      * @param dir         Output list 
-     * @param eta         Eta axis 
      * @param lowCut      Lower cut 
      * @param nParticles  Max number of convolved landaus to fit
      * @param minEntries  Minimum number of entries 
@@ -433,22 +478,74 @@ protected:
      *                    is loosend by a factor of 2 
      * @param chi2nuCut   Cut on @f$ \chi^2/\nu@f$ - 
      *                    the reduced @f$\chi^2@f$ 
+     * @param minWeight   Least weight ot consider
      * @param regCut      Regularization cut-off
      * @param residuals   Mode for residual plots
      *
-     * @return List of fits 
+     * @return List of fit parameters 
      */
-    TObjArray* Fit(TList*          dir, 
-		   const TAxis&    eta,
-		   Double_t        lowCut, 
-		   UShort_t        nParticles,
-		   UShort_t        minEntries,
-		   UShort_t        minusBins,
-		   Double_t        relErrorCut, 
-		   Double_t        chi2nuCut,
-		   Double_t        minWeight,
-		   Double_t        regCut,
-		   EResidualMethod residuals) const;
+    virtual TObjArray* Fit(TList*          dir, 
+			   Double_t        lowCut, 
+			   UShort_t        nParticles,
+			   UShort_t        minEntries,
+			   UShort_t        minusBins,
+			   Double_t        relErrorCut, 
+			   Double_t        chi2nuCut,
+			   Double_t        minWeight,
+			   Double_t        regCut,
+			   EResidualMethod residuals) const;
+    /** 
+     * Get the the 2D histogram @a name from our sub-list of @a
+     * dir. Then for each eta slice, try to fit the energu loss
+     * distribution up to @a nParticles particle responses.
+     *
+     * The fitted distributions (along with the functions fitted) are
+     * stored in a newly created sublist (<i>name</i>Dists).
+     *
+     * The fit parameters are also recorded in the newly created sub-list 
+     * <i>name</i>Results.  
+     *
+     * If @a residuals is not equal to kNoResiduals, then the
+     * residuals of the fits will be stored in the newly created
+     * sub-list <i>name</i>Residuals.
+     *
+     * A histogram named <i>name</i>Status is also generated and
+     * stored in the output list.
+     * 
+     * @param dir         Output list 
+     * @param name        Name of 2D base histogram in list
+     * @param lowCut      Lower cut 
+     * @param nParticles  Max number of convolved landaus to fit
+     * @param minEntries  Minimum number of entries 
+     * @param minusBins   Number of bins from peak to subtract to 
+     *                    get the fit range 
+     * @param relErrorCut Cut applied to relative error of parameter. 
+     *                    Note, for multi-particle weights, the cut 
+     *                    is loosend by a factor of 2 
+     * @param chi2nuCut   Cut on @f$ \chi^2/\nu@f$ - 
+     *                    the reduced @f$\chi^2@f$ 
+     * @param minWeight   Least weight ot consider
+     * @param regCut      Regularization cut-off
+     * @param residuals   Mode for residual plots
+     * @param scaleToPeak If true, scale distribution to peak value
+     * @param best        Optional array to store fits in
+     *
+     * @return List of fit parameters 
+     */
+    virtual TObjArray* FitSlices(TList*          dir, 
+				 const char*     name,
+				 Double_t        lowCut, 
+				 UShort_t        nParticles,
+				 UShort_t        minEntries,
+				 UShort_t        minusBins,
+				 Double_t        relErrorCut, 
+				 Double_t        chi2nuCut,
+				 Double_t        minWeight,
+				 Double_t        regCut,
+				 EResidualMethod residuals,
+				 Bool_t          scaleToPeak=true,
+				 TObjArray*      best=0) const;
+     
     /** 
      * Fit a signal histogram.  First, the bin @f$ b_{min}@f$ with
      * maximum bin content in the range @f$ [E_{min},\infty]@f$ is
@@ -461,6 +558,7 @@ protected:
      * 
      * @param dist        Histogram to fit 
      * @param lowCut      Lower cut @f$ E_{min}@f$ on signal 
+     * @param minEntries  Least number of entries required
      * @param nParticles  Max number @f$ N@f$ of convolved landaus to fit
      * @param minusBins   Number of bins @f$ \Delta b@f$ from peak to 
      *                    subtract to get the fit range 
@@ -469,52 +567,25 @@ protected:
      *                    is loosend by a factor of 2 
      * @param chi2nuCut   Cut on @f$ \chi^2/\nu@f$ - 
      *                    the reduced @f$\chi^2@f$ 
+     * @param minWeight   Least weight ot consider
      * @param regCut      Regularization cut-off
+     * @param scaleToPeak If true, scale distribution to peak value
+     * @param status      On return, contain the status code (0: OK, 1:
+     *                    empty, 2: low statistics, 3: fit failed)
      * 
      * @return The best fit function 
      */
-    ELossFit_t* FitHist(TH1*     dist,
-			UShort_t bin, 
-			Double_t lowCut, 
-			UShort_t nParticles,
-			UShort_t minusBins,
-			Double_t relErrorCut, 
-			Double_t chi2nuCut,
-			Double_t minWeight,
-			Double_t regCut) const;
-    /** 
-     * Calculate residuals of the fit 
-     * 
-     * @param mode   How to calculate 
-     * @param lowCut Lower cut 
-     * @param dist   Distribution 
-     * @param fit    Function fitted to distribution
-     * @param out    Output list to store residual histogram in
-     */
-    void CalculateResiduals(EResidualMethod   mode,
-			    Double_t         lowCut,
-			    TH1*             dist, 
-			    ELossFit_t*      fit, 
-			    TCollection*     out) const;
-    /** 
-     * Find the best fits 
-     * 
-     * @param d              Parent list
-     * @param obj            Object to add fits to
-     * @param eta            Eta axis 
-     * @param relErrorCut    Cut applied to relative error of parameter. 
-     *                       Note, for multi-particle weights, the cut 
-     *                       is loosend by a factor of 2 
-     * @param chi2nuCut      Cut on @f$ \chi^2/\nu@f$ - 
-     *                       the reduced @f$\chi^2@f$ 
-     * @param minWeightCut   Least valid @f$ a_i@f$ 
-     */
-    void FindBestFits(const TList*        d, 
-		      AliFMDCorrELossFit& obj,
-		      const TAxis&        eta,     
-		      Double_t            relErrorCut, 
-		      Double_t            chi2nuCut,
-		      Double_t            minWeightCut);
+    virtual ELossFit_t* FitHist(TH1*      dist,
+				Double_t  lowCut, 
+				UShort_t  nParticles,
+				UShort_t  minEntries,
+				UShort_t  minusBins,
+				Double_t  relErrorCut, 
+				Double_t  chi2nuCut,
+				Double_t  minWeight,
+				Double_t  regCut,
+				Bool_t    scaleToPeak,
+				UShort_t& status) const;
     /** 
      * Find the best fit 
      * 
@@ -528,55 +599,39 @@ protected:
      * 
      * @return Best fit 
      */
-    ELossFit_t* FindBestFit(UShort_t b, 
-			    const TH1* dist,
-			    Double_t relErrorCut, 
-			    Double_t chi2nuCut,
-			    Double_t minWeightCut) const;
-#if 0
+    virtual ELossFit_t* FindBestFit(const TH1* dist,
+				    Double_t   relErrorCut, 
+				    Double_t   chi2nuCut,
+				    Double_t   minWeightCut) const;
     /** 
-     * Check the result of the fit. Returns true if 
-     * - @f$ \chi^2/\nu < \max{\chi^2/\nu}@f$
-     * - @f$ \Delta p_i/p_i < \delta_e@f$ for all parameters.  Note, 
-     *   for multi-particle fits, this requirement is relaxed by a 
-     *   factor of 2
-     * - @f$ a_{n} > 10^{-7}@f$ when fitting to an @f$ n@f$ 
-     *   particle response 
+     * Calculate residuals of the fit 
      * 
-     * @param r           Result to check
-     * @param relErrorCut Cut @f$ \delta_e@f$ applied to relative error 
-     *                    of parameter.  
-     * @param chi2nuCut   Cut @f$ \max{\chi^2/\nu}@f$ 
-     * 
-     * @return true if fit is good. 
+     * @param mode   How to calculate 
+     * @param lowCut Lower cut 
+     * @param dist   Distribution 
+     * @param fit    Function fitted to distribution
+     * @param out    Output list to store residual histogram in
      */
-    Bool_t CheckResult(TFitResult* r,
-		       Double_t    relErrorCut, 
-		       Double_t    chi2nuCut,
-		       Double_t    minWeight) const;
-#endif
+    virtual void CalculateResiduals(EResidualMethod  mode,
+				    Double_t         lowCut,
+				    TH1*             dist, 
+				    ELossFit_t*      fit, 
+				    TCollection*     out) const;
     /** 
-     * Make an axis with increasing bins 
+     * Find the best fits.  This assumes that the array fBest has been
+     * filled with the best possible fits for each eta bin, and that
+     * the fits are placed according to the bin number of the eta bin.
+     *
+     * This is called by the parent class when generating the corretion 
+     * object. 
      * 
-     * @param n    Number of bins 
-     * @param min  Minimum 
-     * @param max  Maximum
-     * 
-     * @return An axis with quadratically increasing bin size 
+     * @param d    Parent list
+     * @param obj  Object to add fits to
+     * @param eta  Eta axis 
      */
-    TArrayD MakeIncreasingAxis(Int_t n, Double_t min, Double_t max) const;
-    /** 
-     * Make E/E_mip histogram 
-     * 
-     * @param ieta    Eta bin
-     * @param eMin    Least signal
-     * @param eMax    Largest signal 
-     * @param deMax   Maximum energy loss 
-     * @param nDeBins Number energy loss bins 
-     * @param incr    Whether to make bins of increasing size
-     */
-    void Make(Int_t ieta, Double_t eMin, Double_t eMax, 
-	      Double_t deMax=12, Int_t nDeBins=300, Bool_t incr=true);
+    virtual void FindBestFits(const TList*        d, 
+			      AliFMDCorrELossFit& obj,
+			      const TAxis&        eta);
     /** 
      * Make a parameter histogram
      * 
@@ -586,9 +641,10 @@ protected:
      * 
      * @return 
      */
-    TH1D* MakePar(const char* name, const char* title, const TAxis& eta) const;
+    TH1* MakePar(const char* name, const char* title, const TAxis& eta) const;
     /** 
-     * Make a histogram that contains the results of the fit over the full ring 
+     * Make a histogram that contains the results of the fit over the
+     * full ring
      * 
      * @param name  Name 
      * @param title Title
@@ -600,22 +656,24 @@ protected:
      * 
      * @return The newly allocated histogram 
      */
-    TH1D* MakeTotal(const char* name, 
-		    const char* title, 
+    TH1* MakeTotal(const char*  name, 
+		    const char*  title, 
 		    const TAxis& eta, 
-		    Int_t low, 
-		    Int_t high, 
-		    Double_t val, 
-		    Double_t err) const;
-    TH1D*        fEDist;        // Ring energy distribution 
-    TH1D*        fEmpty;        // Ring energy distribution for empty events
-    TList*       fEtaEDists;    // Energy distributions per eta bin. 
-    TList*       fList;
+		    Int_t        low, 
+		    Int_t        high, 
+		    Double_t     val, 
+		    Double_t     err) const;
+    TH1*                 fEDist;     // Ring energy distribution 
+    TH1*                 fEmpty;     // Ring energy dist for empty events
+    TH2*                 fHist;      // Two dimension Delta distribution
+    // TList*               fEtaEDists; // Energy distributions per eta bin. 
+    TList*               fList;
     mutable TObjArray    fBest;
     mutable TClonesArray fFits;
-    Int_t        fDebug;
-    ClassDef(RingHistos,3);
+    Int_t                fDebug;
+    ClassDef(RingHistos,4);
   };
+  virtual RingHistos* CreateRingHistos(UShort_t d, Char_t r) const;
   /** 
    * Get the ring histogram container 
    * 
@@ -649,27 +707,27 @@ protected:
    */
   static Bool_t CheckSkip(UShort_t d, Char_t r, UShort_t skips);
 
-  TList    fRingHistos;    // List of histogram containers
-  Double_t fLowCut;        // Low cut on energy
-  UShort_t fNParticles;    // Number of landaus to try to fit 
-  UShort_t fMinEntries;    // Minimum number of entries
-  UShort_t fFitRangeBinWidth;// Number of bins to subtract from found max
-  Bool_t   fDoFits;        // Whether to actually do the fits 
-  Bool_t   fDoMakeObject;  // Whether to make corrections object
-  TAxis    fEtaAxis;       // Eta axis 
-  TAxis    fCentralityAxis;// Centrality axis 
-  Double_t fMaxE;          // Maximum energy loss to consider 
-  Int_t    fNEbins;        // Number of energy loss bins 
-  Bool_t   fUseIncreasingBins; // Wheter to use increasing bin sizes 
-  Double_t fMaxRelParError;// Relative error cut
-  Double_t fMaxChi2PerNDF; // chi^2/nu cit
-  Double_t fMinWeight;     // Minimum weight value 
-  Int_t    fDebug;         // Debug level 
-  EResidualMethod fResidualMethod;// Whether to store residuals (debugging)
-  UShort_t        fSkips;         // Rings to skip when fitting 
+  TList           fRingHistos;        // List of histogram containers
+  Double_t        fLowCut;            // Low cut on energy
+  UShort_t        fNParticles;        // Number of landaus to try to fit 
+  UShort_t        fMinEntries;        // Minimum number of entries
+  UShort_t        fFitRangeBinWidth;  // N-bins to subtract from found max
+  Bool_t          fDoFits;            // Whether to actually do the fits 
+  Bool_t          fDoMakeObject;      // Whether to make corrections object
+  TAxis           fEtaAxis;           // Eta axis 
+  TAxis           fCentralityAxis;    // Centrality axis 
+  Double_t        fMaxE;              // Maximum energy loss to consider 
+  Int_t           fNEbins;            // Number of energy loss bins 
+  Bool_t          fUseIncreasingBins; // Wheter to use increasing bin sizes 
+  Double_t        fMaxRelParError;    // Relative error cut
+  Double_t        fMaxChi2PerNDF;     // chi^2/nu cit
+  Double_t        fMinWeight;         // Minimum weight value 
+  Int_t           fDebug;             // Debug level 
+  EResidualMethod fResidualMethod;    // Whether to store residuals (debugging)
+  UShort_t        fSkips;             // Rings to skip when fitting 
   Double_t        fRegularizationCut; // When to regularize the chi^2
 
-  ClassDef(AliFMDEnergyFitter,5); //
+  ClassDef(AliFMDEnergyFitter,6); //
 };
 
 #endif

@@ -52,7 +52,7 @@ protected:
    * 
    * @return 
    */
-  TH2D* GetHistogram(const AliAODEvent* aod, Bool_t mc=false);
+  TH2D* GetHistogram(const AliAODEvent& aod, Bool_t mc=false);
   /** 
    * Get the colour to use for markers (only pp - in PbPb we use a rainbow)
    * 

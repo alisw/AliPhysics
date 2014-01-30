@@ -60,7 +60,7 @@ class AliNeutralMesonSelection : public TObject {
   void     SwitchOnAngleSelection()                     { fUseAngleCut = kTRUE           ; }
   void     SwitchOffAngleSelection()                    { fUseAngleCut = kFALSE          ; }
 
-  Bool_t   IsAngleInWindow(const Float_t angle, const Float_t e) const ;
+  Bool_t   IsAngleInWindow(Float_t angle, Float_t e) const ;
   
   //Invariant mass selection
   

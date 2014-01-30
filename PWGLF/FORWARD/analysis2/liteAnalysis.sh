@@ -95,6 +95,7 @@ mc_pat=
 mc_idx=
 my_real_dir=
 my_mc_dir=
+par=0
 
 # === Various functions ==============================================
 
@@ -272,8 +273,8 @@ index()
 	echo "No input specified for index for $t data" > /dev/stderr 
 	return;
     fi
-    if test ! -d $d || test ! -f $d ;then 
-	echo "Specified input for $t data is not a directory or file " \
+    if test ! -d $d && test ! -f $d ;then 
+	echo "Specified input ($d) for $t data is not a directory or file " \
 	    > /dev/stderr 
 	return;
     fi
@@ -295,13 +296,13 @@ print_setup()
     cat <<-EOF
 	Run:			${run}
 	Real data:
-		Directory:	${real_dir}
-		Pattern:	${real_pat}
-		Output:		${my_real_dir}
+	  Directory:	        ${real_dir}
+	  Pattern:	        ${real_pat}
+	  Output:		${my_real_dir}
 	MC data:
-		Directory:	${mc_dir}
-		Pattern:	${mc_pat}
-		Output:		${my_mc_dir}
+	  Directory:		${mc_dir}
+	  Pattern:		${mc_pat}
+	  Output:		${my_mc_dir}
 	Use PAR files:		${par}
 	Number of workers:      ${nwrks}/${ncpu}
 	EOF
@@ -339,7 +340,7 @@ url_opts()
 	uopt="${uopt}&mc"
     fi
     if test $par -gt 0 ; then 
-	uopt="${uopt}&par"
+	uopt="${uopt}&par=tasks"
     fi
     if test x$uuopts != x ; then 
 	uopt="${uopt}&${uuopts}"

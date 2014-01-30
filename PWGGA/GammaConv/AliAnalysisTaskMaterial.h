@@ -22,6 +22,7 @@ class AliAnalysisTaskMaterial : public AliAnalysisTaskSE{
 
  public:
 
+   AliAnalysisTaskMaterial();
    AliAnalysisTaskMaterial(const char *name);
    virtual ~AliAnalysisTaskMaterial();
 
@@ -29,6 +30,7 @@ class AliAnalysisTaskMaterial : public AliAnalysisTaskSE{
    virtual void   UserExec(Option_t *option);
    virtual void   Terminate(Option_t *);
 
+   void SetIsMC(Bool_t isMC){fIsMC=isMC;}
    void SetV0Reader(AliV0ReaderV1 *v0Reader){fV0Reader=v0Reader;}
    void SetConversionCuts(AliConversionCuts* conversionCuts,Bool_t IsHeavyIon ){
       fConversionCuts=conversionCuts;
@@ -46,10 +48,36 @@ class AliAnalysisTaskMaterial : public AliAnalysisTaskSE{
    AliV0ReaderV1 *fV0Reader;
    TClonesArray *fConversionGammas; //Reconstructed Photons;
    AliConversionCuts *fConversionCuts; // Cuts used by the V0Reader
-   TTreeSRedirector *fStreamMaterial;
-   TTreeSRedirector *fStreamResolution;
+   TList *fOutputList; 
+   TList *fEventList;
+   TList *fRecGammaList;
+   TList *fAllMCGammaList;
+   TList *fAllMCConvGammaList;
+   TTree* fTreeEvent;
+   TTree* fTreeMaterialRec;
+   TTree* fTreeMaterialAllGamma;
+   TTree* fTreeMaterialConvGamma;
+   Float_t fPrimVtxZ;
+   Int_t fNContrVtx;
+   Int_t fNESDtracksEta09;
+   Int_t fNESDtracksEta0914;
+   Int_t fNESDtracksEta14;
+   Float_t fGammaMCPt;
+   Float_t fGammaMCTheta;
+   Float_t fGammaMCConvPt;
+   Float_t fGammaMCConvTheta;
+   TVectorF fMCConvCords;
+   TVectorF fMCConvDaughterProp;
+   Float_t fGammaPt;
+   Float_t fGammaTheta;
+   Float_t fGammaChi2NDF;
+   TVectorF fRecCords;
+   TVectorF fDaughterProp;
+   UChar_t fKind;
+  
+   
    Bool_t fIsHeavyIon;
-   TList *fOutputList;
+   Bool_t fIsMC;
    AliESDEvent *fESDEvent;
    AliMCEvent *fMCEvent;
 
@@ -57,7 +85,7 @@ class AliAnalysisTaskMaterial : public AliAnalysisTaskSE{
    AliAnalysisTaskMaterial& operator=(const AliAnalysisTaskMaterial&); // not implemented
 
 
-   ClassDef(AliAnalysisTaskMaterial, 0);
+   ClassDef(AliAnalysisTaskMaterial, 1);
 };
 
 #endif

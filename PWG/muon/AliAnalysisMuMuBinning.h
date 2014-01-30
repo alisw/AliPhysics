@@ -30,28 +30,34 @@ public:
   
   void AddBin(const AliAnalysisMuMuBinning::Range& bin);
 
-  void AddBin(const char* particle, const char* type,
+  void AddBin(const char* what, const char* quantity,
               Double_t xmin=TMath::Limits<Double_t>::Max(),
               Double_t xmax=TMath::Limits<Double_t>::Max(),
-              Double_t ymin=TMath::Limits<Double_t>::Max(),
-              Double_t ymax=TMath::Limits<Double_t>::Max(),
+              const char* flavour="")
+  { AddBin(what,quantity,xmin,xmax,TMath::Limits<Double_t>::Max(),TMath::Limits<Double_t>::Max(),flavour); }
+
+  void AddBin(const char* what, const char* quantity,
+              Double_t xmin,
+              Double_t xmax,
+              Double_t ymin,
+              Double_t ymax,
               const char* flavour="");
 
-  TObjArray* CreateParticleArray() const;
+  TObjArray* CreateWhatArray() const;
 
-  TObjArray* CreateTypeArray() const;
+  TObjArray* CreateQuantityArray() const;
   
   Double_t* CreateBinArray() const;
 
   TObjArray* CreateBinObjArray() const;
-  TObjArray* CreateBinObjArray(const char* particle) const;
-  TObjArray* CreateBinObjArray(const char* particle, const char* type, const char* flavour) const;
+  TObjArray* CreateBinObjArray(const char* what) const;
+  TObjArray* CreateBinObjArray(const char* what, const char* quantity, const char* flavour) const;
   
-  AliAnalysisMuMuBinning* Project(const char* particle, const char* type, const char* flavour="") const;
+  AliAnalysisMuMuBinning* Project(const char* what, const char* quantity, const char* flavour="") const;
   
   virtual void Print(Option_t* opt="") const;
   
-  void CreateMesh(const char* particle, const char* type1, const char* type2, const char* flavour="", Bool_t remove12=kFALSE);
+  void CreateMesh(const char* what, const char* quantity1, const char* quantity2, const char* flavour="", Bool_t remove12=kFALSE);
 
   Long64_t Merge(TCollection* list);
 
@@ -61,7 +67,7 @@ public:
     
   public:
     
-    Range(const char* particle="",const char* type="",
+    Range(const char* what="",const char* quantity="",
           Double_t xmin=TMath::Limits<Double_t>::Max(),
           Double_t xmax=TMath::Limits<Double_t>::Max(),
           Double_t ymin=TMath::Limits<Double_t>::Max(),
@@ -78,10 +84,10 @@ public:
 
     bool operator!=(const Range& other) const { return !(*this==other); }
 
-    Bool_t IsNullObject() const;
-    
-    TString Type() const { return fType; }
-    TString Particle() const { return fParticle; }
+    Bool_t IsIntegrated() const;
+
+    TString Quantity() const { return fQuantity; }
+    TString What() const { return fWhat; }
     Double_t Xmin() const { return fXmin; }
     Double_t Xmax() const { return fXmax; }
     Double_t Ymin() const { return fYmin; }
@@ -93,7 +99,7 @@ public:
     
     Bool_t Is2D() const { return fYmax > fYmin; }
     
-    const char* GetName() const { return Type().Data(); }
+    const char* GetName() const { return What().Data(); }
     
     TString AsString() const;
     
@@ -104,23 +110,23 @@ public:
     TString Flavour() const { return fFlavour; }
     
   private:
-    TString fParticle; // particle
-    TString fType; // binning type (e.g. pt, y, phi)
+    TString fWhat; // what this range is about (e.g. J/psi particle, event, etc...)
+    TString fQuantity; // binning type (e.g. pt, y, phi)
     Double_t fXmin; // x-min of the range
     Double_t fXmax; // x-max of the range
     Double_t fYmin; // x-min of the range
     Double_t fYmax; // x-max of the range
     TString fFlavour; // flavour (if any) this range, e.g. coarse, fine, etc...
     
-    ClassDef(AliAnalysisMuMuBinning::Range,2)
+    ClassDef(AliAnalysisMuMuBinning::Range,3)
   };
   
 
  private:
 
-  TMap* fBins; // list of bins (particle -> list of bins) = (TObjString -> TObjArray)
+  TMap* fBins; // list of bins (what -> list of bins) = (TObjString -> TObjArray)
   
-  ClassDef(AliAnalysisMuMuBinning,1) // custom binning for MuMu analysis
+  ClassDef(AliAnalysisMuMuBinning,2) // custom binning for MuMu analysis
 };
 
 #endif

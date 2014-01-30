@@ -40,7 +40,9 @@ class AliCentralityGlauberFit : public TObject {
   void     UseChi2(Bool_t f)  { fUseChi2=f; }
   void     SetSaturation(Bool_t saturation) {fApplySaturation = saturation;}
   void     SetSaturationParams(Int_t ngray=15, Int_t nblack=28) {fnGraySaturation=ngray; fnBlackSaturation=nblack;}
-
+  void     SetIsZN() {fIsZN=kTRUE;}
+  void     SetIsZP() {fIsZN=kFALSE;}
+  
  private:
   Int_t   fNk;            // k points
   Double_t fKlow;         // k low
@@ -73,6 +75,7 @@ class AliCentralityGlauberFit : public TObject {
   Bool_t fApplySaturation;// 
   Int_t fnGraySaturation; //
   Int_t fnBlackSaturation;//
+  Bool_t fIsZN;
 
   TString fInrootfilename;          // input root file
   TString fInntuplename;            // input Gauber ntuple
@@ -86,6 +89,7 @@ class AliCentralityGlauberFit : public TObject {
   void      SaveHisto(TH1F *hist1,TH1F *hist2, TFile *outrootfile);
   void      MakeSlowNucleons(Int_t fNcoll, Double_t alpha, Double_t k, Double_t &nbn, Double_t &ngn);
   void      MakeSlowNucleons2(Int_t fNcoll, Double_t alpha, Double_t k, Double_t bog, Double_t CP, Double_t &nbn, Double_t &ngn,Double_t &nbp, Double_t &ngp);
+  void      MakeSlowNucleons2s(Int_t fNcoll, Double_t alpha, Double_t k, Double_t bog, Double_t CP, Double_t &nbn, Double_t &ngn,Double_t &nbp, Double_t &ngp);
   //void      MakeSlowNucleons2(Int_t fNcoll, Double_t alpha, Double_t k, Double_t bog, Double_t CP, Double_t &nbn, Double_t &ngn);
   Double_t ConvertToEnergy(Double_t T);
   Double_t Maxwell(Double_t m, Double_t p, Double_t T);
@@ -93,6 +97,6 @@ class AliCentralityGlauberFit : public TObject {
   AliCentralityGlauberFit(const AliCentralityGlauberFit&);
   AliCentralityGlauberFit &operator=(const AliCentralityGlauberFit&);
 
-  ClassDef(AliCentralityGlauberFit, 1)  
+  ClassDef(AliCentralityGlauberFit, 2)  
 };
 #endif

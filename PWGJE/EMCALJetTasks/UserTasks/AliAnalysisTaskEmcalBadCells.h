@@ -27,6 +27,6 @@ class AliAnalysisTaskEmcalBadCells : public AliAnalysisTaskEmcal {
   AliAnalysisTaskEmcalBadCells(const AliAnalysisTaskEmcalBadCells&);            // not implemented
   AliAnalysisTaskEmcalBadCells &operator=(const AliAnalysisTaskEmcalBadCells&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalBadCells, 1) // jet sample analysis task
+  ClassDef(AliAnalysisTaskEmcalBadCells, 2) // jet sample analysis task
 };
 #endif

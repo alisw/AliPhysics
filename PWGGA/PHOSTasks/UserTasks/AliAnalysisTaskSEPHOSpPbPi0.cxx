@@ -59,34 +59,26 @@ ClassImp(AliAnalysisTaskSEPHOSpPbPi0)
 
 Bool_t   AliAnalysisTaskSEPHOSpPbPi0::fgRemovePileup    = kFALSE;
 Bool_t   AliAnalysisTaskSEPHOSpPbPi0::fgUseFiducialCut  = kFALSE;
-Double_t AliAnalysisTaskSEPHOSpPbPi0::fgDecaliWidth     = 0.055;
-Double_t AliAnalysisTaskSEPHOSpPbPi0::fgCuts[5]         = { 0.3, 2., 0.2, 2.5, 7e-8 };
+Bool_t   AliAnalysisTaskSEPHOSpPbPi0::fgUseTOFCut       = kFALSE;
+Double_t AliAnalysisTaskSEPHOSpPbPi0::fgCuts[5]         = { 0.3, 2., 0.2, 2.5, 1e-7 };
 
 //________________________________________________________________________
 AliAnalysisTaskSEPHOSpPbPi0::AliAnalysisTaskSEPHOSpPbPi0():
   AliAnalysisTaskSE(), fIsMC(kFALSE), fCentralityBin(10), fBufferSize(10), fRunNumber(-1),
-  fPHOSGeo(0), fPHOSCalibData(0), fListQA(0), fListRD(0), fListMC(0), fHeader(0), fCaloClArr(0)
+  fPHOSGeo(0), fOutputListQA(0), fOutputListRD(0), fOutputListMC(0), fHeader(0), fCaloClArr(0)
 {
   //
   // Default constructor
   //
   for (Int_t i=0; i<10; i++) { for (Int_t j=0; j<10; j++) fEventList[i][j] = 0; }
-
-  // Init bad channel map
-  for (Int_t i=0; i<5; i++)
-    fPHOSBadMap[i] = new TH2I(Form("PHOS_BadMap_mod%d", i), Form("PHOS_BadMap_mod%d", i), 64, 0., 64., 56, 0., 56.);
 }
 //________________________________________________________________________
 AliAnalysisTaskSEPHOSpPbPi0::AliAnalysisTaskSEPHOSpPbPi0(const char *name):
   AliAnalysisTaskSE(name), fIsMC(kFALSE), fCentralityBin(10), fBufferSize(10), fRunNumber(-1),
-  fPHOSGeo(0), fPHOSCalibData(0), fListQA(0), fListRD(0), fListMC(0), fHeader(0), fCaloClArr(0)
+  fPHOSGeo(0), fOutputListQA(0), fOutputListRD(0), fOutputListMC(0), fHeader(0), fCaloClArr(0)
 {
   // Constructor
   for (Int_t i=0; i<10; i++) { for (Int_t j=0; j<10; j++) fEventList[i][j] = 0; }
-
-  // Init bad channel map
-  for (Int_t i=0; i<5; i++)
-    fPHOSBadMap[i] = new TH2I(Form("PHOS_BadMap_mod%d", i), Form("PHOS_BadMap_mod%d", i), 64, 0., 64., 56, 0., 56.);
 
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
@@ -99,12 +91,11 @@ AliAnalysisTaskSEPHOSpPbPi0::~AliAnalysisTaskSEPHOSpPbPi0()
   //
   // Default destructor
   //
-  if (fListQA)      { delete fListQA;      fListQA     = NULL; }
-  if (fListRD)      { delete fListRD;      fListRD     = NULL; }
-  if (fListMC)      { delete fListMC;      fListMC     = NULL; }
-  if (fHeader)      { delete fHeader;      fHeader     = NULL; }
-  if (fCaloClArr)   { delete fCaloClArr;   fCaloClArr  = NULL; }
-
+  if (fOutputListQA)  { delete fOutputListQA;  fOutputListQA = NULL; }
+  if (fOutputListRD)  { delete fOutputListRD;  fOutputListRD = NULL; }
+  if (fOutputListMC)  { delete fOutputListMC;  fOutputListMC = NULL; }
+  if (fHeader)        { delete fHeader;        fHeader       = NULL; }
+  if (fCaloClArr)     { delete fCaloClArr;     fCaloClArr    = NULL; }
 }
 //________________________________________________________________________
 void AliAnalysisTaskSEPHOSpPbPi0::UserCreateOutputObjects()
@@ -114,19 +105,19 @@ void AliAnalysisTaskSEPHOSpPbPi0::UserCreateOutputObjects()
   AliPHOSpPbPi0Header::SetIsMC(fIsMC);
   AliPHOSpPbPi0Header::SetUseFiducialCut(fgUseFiducialCut);
 
-  if (!fHeader)     fHeader     = new AliPHOSpPbPi0Header();
-  if (!fCaloClArr)  fCaloClArr  = new TClonesArray("AliCaloClusterInfo", 0);
-  if (!fListQA)     fListQA     = new TList();
-  if (!fListRD)     fListRD     = new TList();
-  if (!fListMC)     fListMC     = new TList();
+  if (!fHeader)       fHeader       = new AliPHOSpPbPi0Header();
+  if (!fCaloClArr)    fCaloClArr    = new TClonesArray("AliCaloClusterInfo", 0);
+  if (!fOutputListQA) fOutputListQA = new TList();   fOutputListQA->SetOwner(kTRUE);
+  if (!fOutputListRD) fOutputListRD = new TList();   fOutputListRD->SetOwner(kTRUE);
+  if (!fOutputListMC) fOutputListMC = new TList();   fOutputListMC->SetOwner(kTRUE);
 
   fHeader->SetNCent(fCentralityBin.GetSize()-1);
-  fHeader->CreateHistograms(fListQA, fListRD, fListMC);
+  fHeader->CreateHistograms(fOutputListQA, fOutputListRD, fOutputListMC);
 
   // Post output data.
-  PostData(1, fListQA);
-  PostData(2, fListRD);
-  if (fIsMC) PostData(3, fListMC);
+  PostData(1, fOutputListQA);
+  PostData(2, fOutputListRD);
+  if (fIsMC) PostData(3, fOutputListMC);
 
   return;
 }
@@ -159,24 +150,23 @@ void AliAnalysisTaskSEPHOSpPbPi0::UserExec(Option_t *)
 
   // Fill Event info
   fHeader->SetEventInfo(fInputHandler);
-  fHeader->FillHistosEvent(fListQA);
+  fHeader->FillHistosEvent(fOutputListQA);
 
   // PHOS Geometry and Misalignment initialization at the first time it runs
   if(fRunNumber != fInputEvent->GetRunNumber()) {
     fRunNumber = fInputEvent->GetRunNumber();
-    fHeader->SetIspARun(fRunNumber>195344 && fRunNumber<197388);  // flag for pA collisions
     PHOSInitialize(esd);
   }
 
   // Event Selection
   if (!fHeader->IsSelected())                     return;
-  if (fgRemovePileup && fHeader->IsPileupSPD())   return;
+  if (fgRemovePileup && fHeader->IsPileup())      return;
 
   // Fill PHOS cells QA histograms
-  fHeader->FillHistosCaloCellsQA(fListQA, fInputEvent->GetPHOSCells(), fPHOSGeo);
+  fHeader->FillHistosCaloCellsQA(fOutputListQA, fInputEvent->GetPHOSCells(), fPHOSGeo);
 
   // Fill PHOS cluster Clones Array
-  FillCaloClusterInfo(aod, esd);
+  FillCaloClusterInfo(/*aod, esd*/);
   aod = 0x0;
 
   if (!fCaloClArr->GetEntriesFast()) return;
@@ -188,25 +178,22 @@ void AliAnalysisTaskSEPHOSpPbPi0::UserExec(Option_t *)
   TList *eventList = fEventList[zvtx][cent];
 
   // Fill cluster histograms
-  fHeader->FillHistosCaloCluster(fListQA, fCaloClArr, cent);
+  fHeader->FillHistosCaloCluster(fOutputListQA, fCaloClArr, cent);
 
   // Fill pi0 histograms
-  fHeader->FillHistosPi0(fListRD, fCaloClArr, cent);
+  fHeader->FillHistosPi0(fOutputListRD, fCaloClArr, cent);
 
   // Fill mixed pi0 histograms
-  fHeader->FillHistosMixPi0(fListRD, fCaloClArr, eventList, cent);
+  fHeader->FillHistosMixPi0(fOutputListRD, fCaloClArr, eventList, cent);
 
-  // Fill MC info
+  // Fill MC info JUST FOR ESD
   AliStack *stack = 0x0;
   if (fIsMC) {
-    if (esd) {
-      if (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()) {
-        if (static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent())
-          stack = static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent()->Stack();
-      }
-      fHeader->FillHistosMC(fListMC, stack, fPHOSGeo, cent);
-    } else
-      fHeader->FillHistosMC(fListMC, MCEvent(), fPHOSGeo, cent);
+    if (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()) {
+      if (static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent())
+        stack = static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent()->Stack();
+    }
+    fHeader->FillHistosMC(fOutputListMC, stack, fCaloClArr, fPHOSGeo, cent);
   }
   esd = 0x0;
 
@@ -237,7 +224,6 @@ void AliAnalysisTaskSEPHOSpPbPi0::Terminate(Option_t *)
 void AliAnalysisTaskSEPHOSpPbPi0::PHOSInitialize(AliESDEvent* const esd)
 {
   // Initialize PHOS Geometry ,misalignment and calibration 
-//TGeoManager::Import("$ALICE_ROOT/test/QA/geometry.root");
 
   fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP");
   AliOADBContainer geomContainer("phosGeo");
@@ -256,21 +242,10 @@ void AliAnalysisTaskSEPHOSpPbPi0::PHOSInitialize(AliESDEvent* const esd)
       else fPHOSGeo->SetMisalMatrix(modMatrix, mod);
     }
   }
-
-  TRandom random;   random.SetSeed(0); // the seed is set to the current  machine clock
-  fPHOSCalibData = new AliPHOSCalibData();   fPHOSCalibData->SetName("PHOSCalibData");
-  for(Int_t iMod=1; iMod<6; iMod++) {
-    for(Int_t iCol=1; iCol<57; iCol++) {
-      for(Int_t iRow=1; iRow<65; iRow++) {
-        Float_t value = fIsMC ? random.Gaus(1., fgDecaliWidth) : 0.;  // ADC channel Emc
-        fPHOSCalibData->SetADCchannelEmc(iMod, iCol, iRow, value);
-      }
-    }
-  }
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSEPHOSpPbPi0::FillCaloClusterInfo(AliAODEvent* const aod, AliESDEvent* const esd)
+void AliAnalysisTaskSEPHOSpPbPi0::FillCaloClusterInfo(/*AliAODEvent* const aod, AliESDEvent* const esd*/)
 {
   // Fill calo cluster info
   if (fCaloClArr) fCaloClArr->Clear();
@@ -281,8 +256,6 @@ void AliAnalysisTaskSEPHOSpPbPi0::FillCaloClusterInfo(AliAODEvent* const aod, Al
   Int_t    relID[4]     = {0,0,0,0 }; // module = relID[0]; cellX = relID[2]; cellZ = relID[3];
   Float_t  position[3]  = {0.,0.,0.};
   Double_t vtx[3]       = {0,0,0};   fHeader->GetXYZ(vtx);   TVector3 vtxVector(vtx); 
-  Double_t magfield     = fInputEvent->GetMagneticField();
-  TF1 *nonLinCorr = new TF1("Non-linear", "0.0241+1.0504*x+0.000249*x*x", 0., 50.); // GCB's non-linear correction function
 
   TClonesArray &caloRef = *fCaloClArr;
   TLorentzVector momentum;
@@ -293,52 +266,20 @@ void AliAnalysisTaskSEPHOSpPbPi0::FillCaloClusterInfo(AliAODEvent* const aod, Al
     if (!(clust && clust->IsPHOS() && clust->E()>fgCuts[0]))                 { clust=0; continue; }
     if (!(clust->GetNCells()>(Int_t)fgCuts[1] && clust->GetM02()>fgCuts[2])) { clust=0; continue; } // To remove exotic clusters
     if (!(clust->GetDistanceToBadChannel()>fgCuts[3]))                       { clust=0; continue; }
-//  if (!(TMath::Abs(clust->GetTOF()<fgCuts[4])))                            { clust=0; continue; } // remove clusters from pileup or same benches
+    if (fgUseTOFCut && !(TMath::Abs(clust->GetTOF())<fgCuts[4]))             { clust=0; continue; } // remove clusters from pileup or same benches
     clust->GetPosition(position); TVector3 global(position); fPHOSGeo->GlobalPos2RelId(global,relID);
     if (relID[0] == 2)                                                       { clust=0; continue; } // !remove module 2
-    if (!IsGoodCaloCluster(relID[0], relID[2], relID[3]))                    { clust=0; continue; } // calo cluster selection 
 
-    caloCluster = new AliCaloClusterInfo(clust, esd, relID, magfield);
-    if (fgUseFiducialCut && !caloCluster->IsInFiducialRegion(relID[2], relID[3])) { delete caloCluster; caloCluster=0; clust=0; continue; } // Fiducial cut 
+    caloCluster = new AliCaloClusterInfo(clust, relID);
+//  if (fgUseFiducialCut && !caloCluster->IsInFiducialRegion(relID[2], relID[3])) { delete caloCluster; caloCluster=0; clust=0; continue; } // Fiducial cut 
 
-    if (aod) { // TODO recalibration for AOD
-      if (fIsMC) {
-        AliPHOSAodCluster aodClust(*(AliAODCaloCluster*) (clust));
-        aodClust.Recalibrate(fPHOSCalibData, aod->GetPHOSCells());
-        aodClust.EvalAll(kLogWeight, vtxVector);        // recalculate all cluster parameters
-        aodClust.SetE(nonLinCorr->Eval(aodClust.E()));  // non-linear correction
-        aodClust.GetMomentum(momentum, vtx);
-      } else clust->GetMomentum(momentum, vtx);
-      caloCluster->SetLorentzVector(momentum);
-    } else { // for ESD
-      AliPHOSEsdCluster esdClust(*(AliESDCaloCluster*) (clust));
-      esdClust.Recalibrate(fPHOSCalibData, esd->GetPHOSCells());
-      esdClust.EvalAll(kLogWeight, vtxVector);       // recalculate all cluster parameters
-      esdClust.SetE(nonLinCorr->Eval(esdClust.E()));  // non-linear correction
-      esdClust.GetMomentum(momentum, vtx);
-      caloCluster->SetLorentzVector(momentum);
-    }
-
-    if (fIsMC && !(momentum.E()>fgCuts[0])) { delete caloCluster; caloCluster=0; clust=0; continue; } // check for MC
-
-    Double_t disp = caloCluster->TestDisp();
-    if (disp < 2.5*2.5) caloCluster->SetPIDBit(BIT(1)); // set Disp1 bit
-    if (disp < 1.5*1.5) caloCluster->SetPIDBit(BIT(3)); // set Disp2 bit
+    clust->GetMomentum(momentum, vtx);
+    caloCluster->SetLorentzVector(momentum);
+    if (fIsMC) caloCluster->SetLabels(clust->GetNLabels(), clust->GetLabels());
 
     clust = 0;
 
     new(caloRef[countN++]) AliCaloClusterInfo(*caloCluster);
     delete caloCluster; caloCluster=0;
   }  // end loop of all clusters
-}
-
-//________________________________________________________________________
-Bool_t AliAnalysisTaskSEPHOSpPbPi0::IsGoodCaloCluster(Int_t iMod, Int_t cellX, Int_t cellZ)
-{
-  // !Check whether this cluster is not in bad channel
-
-  if (!(iMod>0 && iMod<5 && fPHOSBadMap[iMod]))          return kTRUE;   //No bad maps for this Module
-  if (fPHOSBadMap[iMod]->GetBinContent(cellX,cellZ)>0)   return kFALSE;
-
-  return kTRUE;
 }

@@ -10,22 +10,10 @@ const Double_t cosPAV0max = +1.05;
 const Float_t onFlymin = -0.5;
 const Float_t onFlymax =  1.5;
 const Float_t centmin =   0.;
-//const Float_t centmin_0_10   =   0.;
-//const Float_t centmax_0_10   =  10.;
-//const Float_t centmin_10_60  =  10.;
-//const Float_t centmax_10_60  =  60.;
-//const Float_t centmin_60_100 =  60.;
-//const Float_t centmax_60_100 = 100.;
 const Float_t centmax = 100.;
 const Float_t fakemin = -0.5;
 const Float_t fakemax =  2.5;
 const Float_t multmin =   0.;
-//const Float_t multmin_0_20   =   0;
-//const Float_t multmax_0_20   =  20;
-//const Float_t multmin_20_50  =  20;
-//const Float_t multmax_20_50  =  50;
-//const Float_t multmin_50_102 =  50;
-//const Float_t multmax_50_102 = 102;
 const Float_t multmax = 102.;
 
 const Double_t ptBachmin  =  0.0;
@@ -42,10 +30,6 @@ const Double_t cTmin      = 0.0; // micron
 const Double_t cTmax      = 300; // micron
 const Float_t cosPAmin    =-1.05;
 const Float_t cosPAmax    = 1.05;
-
-//const Double_t zmin = -15.;
-//const Double_t zmax =  15.;
-
 
 //----------------------------------------------------
 
@@ -112,24 +96,15 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   const Double_t phimin = 0.0;
   const Double_t phimax = 2.*TMath::Pi();
 
-  const Int_t nbinpt           =  11; //bins in pt from 0,1,2,3,4,5,6,8,12,17,25,35 GeV
-  const Int_t nbiny            =  24; //bins in y
-  const Int_t nbininvMassV0    =  60; //bins in invMassV0
-  const Int_t nbinpointingV0   =  42; //bins in cosPointingAngleV0
-  const Int_t nbinonFly        =   2; //bins in onFlyStatus x V0
+  const Int_t nbinpt          =  11; //bins in pt from 0,1,2,3,4,5,6,8,12,17,25,35 GeV
+  const Int_t nbiny           =  24; //bins in y
+  const Int_t nbininvMassV0   =  60; //bins in invMassV0
+  const Int_t nbinpointingV0  =  42; //bins in cosPointingAngleV0
+  const Int_t nbinonFly       =   2; //bins in onFlyStatus x V0
 
-  const Int_t nbincent          = 18; //bins in centrality (total number)
-  //const Int_t nbincent_0_10   =  4; //bins in centrality between 0 and 10
-  //const Int_t nbincent_10_60  = 10; //bins in centrality between 10 and 60
-  //const Int_t nbincent_60_100 =  4; //bins in centrality between 60 and 100
-
-  const Int_t nbinfake          =  3; //bins in fake
-
-  const Int_t nbinmult          = 48; //bins in multiplicity (total number)
-  //const Int_t nbinmult_0_20   = 20; //bins in multiplicity between 0 and 20
-  //const Int_t nbinmult_20_50  = 15; //bins in multiplicity between 20 and 50
-  //const Int_t nbinmult_50_102 = 13; //bins in multiplicity between 50 and 102
-
+  const Int_t nbincent        = 18; //bins in centrality (total number)
+  const Int_t nbinfake        =  3; //bins in fake
+  const Int_t nbinmult        = 48; //bins in multiplicity (total number)
 
   const Int_t nbinptBach      = 300; //bins in pt from 0 to 30 GeV
   const Int_t nbinptV0pos     = 300; //bins in pt from 0 to 30 GeV
@@ -148,9 +123,9 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   const UInt_t iphi       = 2;
   const UInt_t icosPAxV0  = 3;
   const UInt_t ionFly     = 4;
-  const UInt_t imult      = 5;
+  const UInt_t icent      = 5;
   const UInt_t ifake      = 6;
-  const UInt_t icent      = 7;
+  const UInt_t imult      = 7;
 
   const UInt_t ipTbach   =  8;
   const UInt_t ipTposV0  =  9;
@@ -178,9 +153,9 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   iBin[iphi]=nbinphi;
   iBin[icosPAxV0]=nbinpointingV0;
   iBin[ionFly]=nbinonFly;
-  iBin[imult]=nbinmult;
-  iBin[ifake]=nbinfake;
   iBin[icent]=nbincent;
+  iBin[ifake]=nbinfake;
+  iBin[imult]=nbinmult;
 
   iBin[ipTbach]=nbinptBach;
   iBin[ipTposV0]=nbinptV0pos;
@@ -224,22 +199,6 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   // centrality
   Double_t *binLimcent=new Double_t[iBin[5]+1];
   for(Int_t i=0; i<=iBin[5]; i++) binLimcent[i]=(Double_t)centmin + (centmax-centmin)/iBin[5]*(Double_t)i ; 
-  /*
-  Double_t *binLimcent_0_10=new Double_t[iBin[icent]+1];
-  for(Int_t i=0; i<=nbincent_0_10; i++) binLimcent[i]=(Double_t)centmin_0_10 + (centmax_0_10-centmin_0_10)/nbincent_0_10*(Double_t)i ; 
-  if (binLimcent[nbincent_0_10] != centmin_10_60)  {
-    Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for cent - 1st range - differs from expected!\n");
-  }
-
-  Double_t *binLimcent_10_60=new Double_t[iBin[icent]+1];
-  for(Int_t i=0; i<=nbincent_10_60; i++) binLimcent[i+nbincent_0_10]=(Double_t)centmin_10_60 + (centmax_10_60-centmin_10_60)/nbincent_10_60*(Double_t)i ;
-  if (binLimcent[nbincent_0_10+nbincent_10_60] != centmin_60_100)  {
-    Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for cent - 2st range - differs from expected!\n");
-  }
-
-  Double_t *binLimcent_60_100=new Double_t[iBin[icent]+1];
-  for(Int_t i=0; i<=nbincent_60_100; i++) binLimcent[i+nbincent_10_60]=(Double_t)centmin_60_100 + (centmax_60_100-centmin_60_100)/nbincent_60_100*(Double_t)i ;
-  */
         
   // fake
   Double_t *binLimfake=new Double_t[iBin[6]+1];
@@ -248,18 +207,6 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   // multiplicity
   Double_t *binLimmult=new Double_t[iBin[7]+1];
   for(Int_t i=0; i<=iBin[7]; i++) binLimmult[i]=(Double_t)multmin + (multmax-multmin)/iBin[7]*(Double_t)i ; 
-  /*
-  for(Int_t i=0; i<=nbinmult_0_20; i++) binLimmult[i]=(Double_t)multmin_0_20 + (multmax_0_20-multmin_0_20)/nbinmult_0_20*(Double_t)i ; 
-  if (binLimmult[nbinmult_0_20] != multmin_20_50)  {
-    Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for mult - 1st range - differs from expected!\n");
-  }
-  for(Int_t i=0; i<=nbinmult_20_50; i++) binLimmult[i+nbinmult_0_20]=(Double_t)multmin_20_50 + (multmax_20_50-multmin_20_50)/nbinmult_20_50*(Double_t)i ; 
-  if (binLimmult[nbinmult_0_20+nbinmult_20_50] != multmin_50_102)  {
-    Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for mult - 2nd range - differs from expected!\n");
-  }
-  for(Int_t i=0; i<=nbinmult_50_102; i++) binLimmult[i+nbinmult_0_20+nbinmult_20_50]=(Double_t)multmin_50_102 + (multmax_50_102-multmin_50_102)/nbinmult_50_102*(Double_t)i ; 
-  */
-
 
   // ptBach
   Double_t *binLimpTbach=new Double_t[iBin[8]+1];
@@ -292,119 +239,6 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   // cosPointingAngle
   Double_t *binLimcosPA=new Double_t[iBin[15]+1];
   for(Int_t i=0; i<=iBin[15]; i++) binLimcosPA[i]=(Double_t)cosPAmin + (cosPAmax-cosPAmin)/iBin[15]*(Double_t)i ;
-
-
-
-  // z Primary Vertex
-  //for(Int_t i=0; i<=nbinzvtx; i++) binLimzvtx[i]=(Double_t)zmin  + (zmax-zmin)  /nbinzvtx*(Double_t)i ;
-
-
-  //OPTION 2: ...or from the cuts file
-  /*
-  const Int_t nbinpt = cutsLctoV0->GetNPtBins(); // bins in pT
-  iBin[ipT]=nbinpt;
-  iBin[ipTpi]=nbinpt;
-  iBin[ipTk]=nbinpt;
-  Double_t *binLimpT=new Double_t[iBin[ipT]+1];
-  Double_t *binLimpTpi=new Double_t[iBin[ipTpi]+1];
-  Double_t *binLimpTk=new Double_t[iBin[ipTk]+1];
-  // values for bin lower bounds
-  Float_t* floatbinLimpT = cutsLctoV0->GetPtBinLimits();
-  for (Int_t ibin0 = 0 ; ibin0<iBin[ipT]+1; ibin0++){
-    binLimpT[ibin0] = (Double_t)floatbinLimpT[ibin0];
-    binLimpTpi[ibin0] = (Double_t)floatbinLimpT[ibin0];
-    binLimpTk[ibin0] = (Double_t)floatbinLimpT[ibin0];
-  }
-  for(Int_t i=0; i<=nbinpt; i++) printf("binLimpT[%d]=%f\n",i,binLimpT[i]);  
-
-  printf("pT: nbin (from cuts file) = %d\n",nbinpt);
-
-  // defining now the binning for the other variables:
-
-  iBin[iy]=nbiny;
-  iBin[icosThetaStar]=nbincosThetaStar;
-  iBin[icT]=nbincT;
-  iBin[idca]=nbindca;
-  iBin[id0xd0]=nbind0xd0;
-  iBin[ipointing]=nbinpointing;
-  iBin[iphi]=nbinphi;
-  iBin[izvtx]=nbinzvtx;
-  iBin[icent]=nbincent;
-  iBin[ifake]=nbinfake;
-  iBin[ipointingXY]=nbinpointingXY;
-  iBin[inormDecayLXY]=nbinnormDecayLXY;
-  iBin[imult]=nbinmult;
-
-  //arrays for lower bounds :
-  Double_t *binLimy=new Double_t[iBin[iy]+1];
-  Double_t *binLimcosThetaStar=new Double_t[iBin[icosThetaStar]+1];
-  Double_t *binLimcT=new Double_t[iBin[icT]+1];
-  Double_t *binLimdca=new Double_t[iBin[idca]+1];
-  Double_t *binLimd0xd0=new Double_t[iBin[id0xd0]+1];
-  Double_t *binLimpointing=new Double_t[iBin[ipointing]+1];
-  Double_t *binLimphi=new Double_t[iBin[iphi]+1];
-  Double_t *binLimzvtx=new Double_t[iBin[izvtx]+1];
-  Double_t *binLimcent=new Double_t[iBin[icent]+1];
-  Double_t *binLimfake=new Double_t[iBin[ifake]+1];
-  Double_t *binLimpointingXY=new Double_t[iBin[ipointingXY]+1];
-  Double_t *binLimnormDecayLXY=new Double_t[iBin[inormDecayLXY]+1];
-  Double_t *binLimmult=new Double_t[iBin[imult]+1];
-
-  // y
-  for(Int_t i=0; i<=nbiny; i++) binLimy[i]=(Double_t)ymin  + (ymax-ymin)  /nbiny*(Double_t)i ;
-
-  // cosThetaStar
-  for(Int_t i=0; i<=nbincosThetaStar; i++) binLimcosThetaStar[i]=(Double_t)cosminTS  + (cosmaxTS-cosminTS)  /nbincosThetaStar*(Double_t)i ;
-	
-  // cT
-  for(Int_t i=0; i<=nbincT; i++) binLimcT[i]=(Double_t)cTmin  + (cTmax-cTmin)  /nbincT*(Double_t)i ;
-
-  // dca
-  for(Int_t i=0; i<=nbindca; i++) binLimdca[i]=(Double_t)dcamin  + (dcamax-dcamin)  /nbindca*(Double_t)i ;
-
-  // d0xd0
-  for(Int_t i=0; i<=nbind0xd0; i++) binLimd0xd0[i]=(Double_t)d0xd0min  + (d0xd0max-d0xd0min)  /nbind0xd0*(Double_t)i ;
-
-  // cosPointingAngle
-  for(Int_t i=0; i<=nbinpointing; i++) binLimpointing[i]=(Double_t)cosmin  + (cosmax-cosmin)  /nbinpointing*(Double_t)i ;
-
-  // Phi
-  for(Int_t i=0; i<=nbinphi; i++) binLimphi[i]=(Double_t)phimin  + (phimax-phimin)  /nbinphi*(Double_t)i ;
-
-  // z Primary Vertex
-  for(Int_t i=0; i<=nbinzvtx; i++) {
-    binLimzvtx[i]=(Double_t)zmin  + (zmax-zmin)  /nbinzvtx*(Double_t)i ;
-  }
-
-  // centrality
-  for(Int_t i=0; i<=nbincent_0_10; i++) binLimcent[i]=(Double_t)centmin_0_10 + (centmax_0_10-centmin_0_10)/nbincent_0_10*(Double_t)i ; 
-  if (binLimcent[nbincent_0_10] != centmin_10_60)  {
-    Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for cent - 1st range - differs from expected!\n");
-  }
-  for(Int_t i=0; i<=nbincent_10_60; i++) binLimcent[i+nbincent_0_10]=(Double_t)centmin_10_60 + (centmax_10_60-centmin_10_60)/nbincent_10_60*(Double_t)i ;
-  if (binLimcent[nbincent_0_10+nbincent_10_60] != centmin_60_100)  {
-    Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for cent - 2st range - differs from expected!\n");
-  }
-  for(Int_t i=0; i<=nbincent_60_100; i++) binLimcent[i+nbincent_10_60]=(Double_t)centmin_60_100 + (centmax_60_100-centmin_60_100)/nbincent_60_100*(Double_t)i ;
-        
-  // fake
-  for(Int_t i=0; i<=nbinfake; i++) {
-    binLimfake[i]=(Double_t)fakemin  + (fakemax-fakemin)/nbinfake * (Double_t)i;
-  }
-
-  // multiplicity
-  for(Int_t i=0; i<=nbinmult_0_20; i++) binLimmult[i]=(Double_t)multmin_0_20 + (multmax_0_20-multmin_0_20)/nbinmult_0_20*(Double_t)i ; 
-  if (binLimmult[nbinmult_0_20] != multmin_20_50)  {
-    Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for mult - 1st range - differs from expected!\n");
-  }
-  for(Int_t i=0; i<=nbinmult_20_50; i++) binLimmult[i+nbinmult_0_20]=(Double_t)multmin_20_50 + (multmax_20_50-multmin_20_50)/nbinmult_20_50*(Double_t)i ; 
-  if (binLimmult[nbinmult_0_20+nbinmult_20_50] != multmin_50_102)  {
-    Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for mult - 2nd range - differs from expected!\n");
-  }
-  for(Int_t i=0; i<=nbinmult_50_102; i++) binLimmult[i+nbinmult_0_20+nbinmult_20_50]=(Double_t)multmin_50_102 + (multmax_50_102-multmin_50_102)/nbinmult_50_102*(Double_t)i ; 
-  */
-
-
 
   //one "container" for MC
   TString nameContainer="";

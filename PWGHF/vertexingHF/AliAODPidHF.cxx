@@ -39,10 +39,12 @@ ClassImp(AliAODPidHF)
 
 //------------------------------
 AliAODPidHF::AliAODPidHF():
-  AliAODPid(),
+  TObject(),
   fnNSigma(5),
   fnSigma(0),
   fTOFSigma(160.),
+  fCutTOFmismatch(0.01),
+  fMinNClustersTPCPID(0),
   fnPriors(5),
   fPriors(0),
   fnPLimit(2),
@@ -71,28 +73,36 @@ AliAODPidHF::AliAODPidHF():
   fTPCResponse(new AliTPCPIDResponse()),
   fPriorsH(),
   fCombDetectors(kTPCTOF),
-  fUseCombined(kFALSE)
+  fUseCombined(kFALSE),
+  fDefaultPriors(kTRUE)
 {
- //
- // Default constructor
- //
- fPLimit=new Double_t[fnPLimit];
- fnSigma=new Double_t[fnNSigma];
- fPriors=new Double_t[fnPriors];
- fnSigmaCompat=new Double_t[fnNSigmaCompat];
-
- for(Int_t i=0;i<fnNSigma;i++){
-  fnSigma[i]=0.;
- }
- for(Int_t i=0;i<fnPriors;i++){
-  fPriors[i]=0.;
- }
- for(Int_t i=0;i<fnPLimit;i++){
-  fPLimit[i]=0.;
- }
- for(Int_t i=0;i<fnNSigmaCompat;i++){
-  fnSigmaCompat[i]=3.;
- }
+  //
+  // Default constructor
+  //
+  fPLimit=new Double_t[fnPLimit];
+  fnSigma=new Double_t[fnNSigma];
+  fPriors=new Double_t[fnPriors];
+  fnSigmaCompat=new Double_t[fnNSigmaCompat];
+  
+  for(Int_t i=0;i<fnNSigma;i++){
+    fnSigma[i]=0.;
+  }
+  for(Int_t i=0;i<fnPriors;i++){
+    fPriors[i]=0.;
+  }
+  for(Int_t i=0;i<fnPLimit;i++){
+    fPLimit[i]=0.;
+  }
+  for(Int_t i=0;i<fnNSigmaCompat;i++){
+    fnSigmaCompat[i]=3.;
+  }
+  for(Int_t i=0; i<3; i++){ // pi, K, proton
+    fMaxnSigmaCombined[i]=3.;
+    fMinnSigmaTPC[i]=-3;
+    fMaxnSigmaTPC[i]=3;
+    fMinnSigmaTOF[i]=-3;
+    fMaxnSigmaTOF[i]=3;
+  }
 
 }
 //----------------------
@@ -112,10 +122,12 @@ AliAODPidHF::~AliAODPidHF()
 }
 //------------------------
 AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
-  AliAODPid(pid),
+  TObject(),
   fnNSigma(pid.fnNSigma),
   fnSigma(0),
   fTOFSigma(pid.fTOFSigma),
+  fCutTOFmismatch(pid.fCutTOFmismatch),
+  fMinNClustersTPCPID(pid.fMinNClustersTPCPID),
   fnPriors(pid.fnPriors),
   fPriors(0),
   fnPLimit(pid.fnPLimit),
@@ -143,7 +155,8 @@ AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
   fPidCombined(0x0),
   fTPCResponse(0x0),
   fCombDetectors(pid.fCombDetectors),
-  fUseCombined(pid.fUseCombined)
+  fUseCombined(pid.fUseCombined),
+  fDefaultPriors(pid.fDefaultPriors)  
 {
   
   fnSigmaCompat=new Double_t[fnNSigmaCompat];
@@ -169,6 +182,13 @@ AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
   for(Int_t i=0;i<AliPID::kSPECIES;i++){
     fPriorsH[i]=pid.fPriorsH[i];
   }
+  for(Int_t i=0; i<3; i++){ // pi, K, proton
+    fMaxnSigmaCombined[i]=pid.fMaxnSigmaCombined[i];
+    fMinnSigmaTPC[i]=pid.fMinnSigmaTPC[i];
+    fMaxnSigmaTPC[i]=pid.fMaxnSigmaTPC[i];
+    fMinnSigmaTOF[i]=pid.fMinnSigmaTOF[i];
+    fMaxnSigmaTOF[i]=pid.fMaxnSigmaTOF[i];
+  }
 
   //  if(pid.fTPCResponse) fTPCResponse = new AliTPCPIDResponse(*(pid.fTPCResponse));
   fTPCResponse = new AliTPCPIDResponse();
@@ -176,75 +196,75 @@ AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
   fPidCombined = new AliPIDCombined();
   //fPidResponse = new AliPIDResponse(*(pid.fPidResponse));
   //fPidCombined = new AliPIDCombined(*(pid.fPidCombined));  
-    
+
 }
 //----------------------
 Int_t AliAODPidHF::RawSignalPID(AliAODTrack *track, TString detector) const{
-// raw PID for single detectors, returns the particle type with smaller sigma
-   Int_t specie=-1;
-   if(detector.Contains("ITS")) return ApplyPidITSRaw(track,specie);
-   if(detector.Contains("TPC")) return ApplyPidTPCRaw(track,specie);
-   if(detector.Contains("TOF")) return ApplyPidTOFRaw(track,specie);
-
+  // raw PID for single detectors, returns the particle type with smaller sigma
+  Int_t specie=-1;
+  if(detector.Contains("ITS")) return ApplyPidITSRaw(track,specie);
+  if(detector.Contains("TPC")) return ApplyPidTPCRaw(track,specie);
+  if(detector.Contains("TOF")) return ApplyPidTOFRaw(track,specie);
+  
   return specie;
 
 }
 //---------------------------
 Bool_t AliAODPidHF::IsKaonRaw(AliAODTrack *track, TString detector) const{
-// checks if the track can be a kaon, raw PID applied for single detectors
- Int_t specie=0;
+  // checks if the track can be a kaon, raw PID applied for single detectors
+  Int_t specie=0;
 
- if(detector.Contains("ITS")) specie=ApplyPidITSRaw(track,3);
- if(detector.Contains("TPC")) specie=ApplyPidTPCRaw(track,3);
- if(detector.Contains("TOF")) specie=ApplyPidTOFRaw(track,3);
-
- if(specie==3) return kTRUE;
- return kFALSE;
+  if(detector.Contains("ITS")) specie=ApplyPidITSRaw(track,3);
+  if(detector.Contains("TPC")) specie=ApplyPidTPCRaw(track,3);
+  if(detector.Contains("TOF")) specie=ApplyPidTOFRaw(track,3);
+  
+  if(specie==3) return kTRUE;
+  return kFALSE;
 }
 //---------------------------
 Bool_t AliAODPidHF::IsPionRaw (AliAODTrack *track, TString detector) const{
-// checks if the track can be a pion, raw PID applied for single detectors
+  // checks if the track can be a pion, raw PID applied for single detectors
 
- Int_t specie=0;
-
- if(detector.Contains("ITS")) specie=ApplyPidITSRaw(track,2);
- if(detector.Contains("TPC")) specie=ApplyPidTPCRaw(track,2);
- if(detector.Contains("TOF")) specie=ApplyPidTOFRaw(track,2);
-
- if(specie==2) return kTRUE;
- return kFALSE;
+  Int_t specie=0;
+  
+  if(detector.Contains("ITS")) specie=ApplyPidITSRaw(track,2);
+  if(detector.Contains("TPC")) specie=ApplyPidTPCRaw(track,2);
+  if(detector.Contains("TOF")) specie=ApplyPidTOFRaw(track,2);
+  
+  if(specie==2) return kTRUE;
+  return kFALSE;
 }
 //---------------------------
 Bool_t AliAODPidHF::IsProtonRaw (AliAODTrack *track, TString detector) const{
-// checks if the track can be a proton raw PID applied for single detectors
-
- Int_t specie=0;
- if(detector.Contains("ITS")) specie=ApplyPidITSRaw(track,4);
- if(detector.Contains("TPC")) specie=ApplyPidTPCRaw(track,4); 
- if(detector.Contains("TOF")) specie=ApplyPidTOFRaw(track,4);
-
- if(specie==4) return kTRUE;
-
- return kFALSE;
+  // checks if the track can be a proton raw PID applied for single detectors
+  
+  Int_t specie=0;
+  if(detector.Contains("ITS")) specie=ApplyPidITSRaw(track,4);
+  if(detector.Contains("TPC")) specie=ApplyPidTPCRaw(track,4); 
+  if(detector.Contains("TOF")) specie=ApplyPidTOFRaw(track,4);
+  
+  if(specie==4) return kTRUE;
+  
+  return kFALSE;
 }
 //--------------------------
 Bool_t AliAODPidHF::IsElectronRaw(AliAODTrack *track, TString detector) const{
-// checks if the track can be an electron raw PID applied for single detectors
+  // checks if the track can be an electron raw PID applied for single detectors
 
- Int_t specie=-1;
- if(detector.Contains("ITS")) specie=ApplyPidITSRaw(track,0);
- if(detector.Contains("TPC")) specie=ApplyPidTPCRaw(track,0);
- if(detector.Contains("TOF")) specie=ApplyPidTOFRaw(track,0);
-
- if(specie==0) return kTRUE;
-
- return kFALSE;
+  Int_t specie=-1;
+  if(detector.Contains("ITS")) specie=ApplyPidITSRaw(track,0);
+  if(detector.Contains("TPC")) specie=ApplyPidTPCRaw(track,0);
+  if(detector.Contains("TOF")) specie=ApplyPidTOFRaw(track,0);
+  
+  if(specie==0) return kTRUE;
+  
+  return kFALSE;
 }
 //--------------------------
 Int_t AliAODPidHF::ApplyPidTPCRaw(AliAODTrack *track,Int_t specie) const{
 // n-sigma cut, TPC PID
 
-  Double_t nsigma;
+  Double_t nsigma=-999.;
   Int_t pid=-1;
 
   if(specie<0){  // from RawSignalPID : should return the particle specie to wich the de/dx is closer to the bethe-block curve -> performance to be checked
@@ -271,74 +291,36 @@ Int_t AliAODPidHF::ApplyPidTPCRaw(AliAODTrack *track,Int_t specie) const{
 //----------------------------
 Int_t AliAODPidHF::ApplyPidITSRaw(AliAODTrack *track,Int_t specie) const{
 // truncated mean, ITS PID
-
-  if(!CheckITSPIDStatus(track)) return 0;
+  
+  Double_t nsigma=-999.;
   Int_t pid=-1;
-
-  if(fOldPid){
-  Double_t mom=track->P();
-  AliAODPid *pidObj = track->GetDetPid();
-
-  Double_t dedx=pidObj->GetITSsignal();
-  UChar_t clumap=track->GetITSClusterMap();
-  Int_t nPointsForPid=0;
-  for(Int_t i=2; i<6; i++){
-   if(clumap&(1<<i)) ++nPointsForPid;
-  }
-
-  Bool_t isSA=kTRUE;
-  if(track->GetStatus() & AliESDtrack::kTPCin) isSA = kFALSE;
-
-  AliITSPIDResponse itsResponse;
+  
   if(specie<0){  // from RawSignalPID : should return the particle specie to wich the de/dx is closer to the bethe-block curve -> performance to be checked
-   Double_t nsigmaMax=fnSigma[4];
-   for(Int_t ipart=0;ipart<5;ipart++){
-    AliPID::EParticleType type=AliPID::EParticleType(ipart);
-    Double_t nsigma = TMath::Abs(itsResponse.GetNumberOfSigmas(mom,dedx,type,nPointsForPid,isSA));
-    if((nsigma<nsigmaMax) && (nsigma<fnSigma[4])) {
-     pid=ipart;
-     nsigmaMax=nsigma;
+    Double_t nsigmaMin=999.;
+    for(Int_t ipart=0;ipart<5;ipart++){
+      if(GetnSigmaITS(track,ipart,nsigma)==1){
+	nsigma=TMath::Abs(nsigma);
+	if((nsigma<nsigmaMin) && (nsigma<fnSigma[4])) {
+	  pid=ipart;
+	  nsigmaMin=nsigma;
+	}
+      }
     }
-   }
   }else{ // asks only for one particle specie
-   AliPID::EParticleType type=AliPID::EParticleType(specie);
-    Double_t nsigma = TMath::Abs(itsResponse.GetNumberOfSigmas(mom,dedx,type));
-   if (nsigma>fnSigma[4]) {
-    pid=-1; 
-   }else{
-    pid=specie;
-   }
-  }
- }else{ // old pid
-
-  if(specie<0){  // from RawSignalPID : should return the particle specie to wich the de/dx is closer to the bethe-block curve -> performance to be checked
-   Double_t nsigmaMax=fnSigma[4];
-   for(Int_t ipart=0;ipart<5;ipart++){
-    AliPID::EParticleType type=AliPID::EParticleType(ipart);
-    Double_t nsigma = TMath::Abs(fPidResponse->NumberOfSigmasITS(track,type));
-    if((nsigma<nsigmaMax) && (nsigma<fnSigma[4])) {
-     pid=ipart;
-     nsigmaMax=nsigma;
+    if(GetnSigmaITS(track,specie,nsigma)==1){
+      nsigma=TMath::Abs(nsigma);
+      if (nsigma>fnSigma[4]) pid=-1; 
+      else pid=specie;
     }
-   }
-  }else{ // asks only for one particle specie
-   AliPID::EParticleType type=AliPID::EParticleType(specie);
-    Double_t nsigma = TMath::Abs(fPidResponse->NumberOfSigmasITS(track,type));
-   if (nsigma>fnSigma[4]) {
-    pid=-1;
-   }else{
-    pid=specie;
-   }
   }
- } //new pid
-
- return pid; 
+  
+  return pid;
 }
 //----------------------------
 Int_t AliAODPidHF::ApplyPidTOFRaw(AliAODTrack *track,Int_t specie) const{
 // n-sigma cut, TOF PID
 
-  Double_t nsigma;
+  Double_t nsigma=-999.;
   Int_t pid=-1;
 
   if(specie<0){  
@@ -431,79 +413,53 @@ void AliAODPidHF::CombinedProbability(AliAODTrack *track,Bool_t *type) const{
 }
 //--------------------------------
 Bool_t AliAODPidHF::CheckITSPIDStatus(AliAODTrack *track) const{
-  // ITS PID quality cuts
-  if ((track->GetStatus()&AliESDtrack::kITSin)==0) return kFALSE;
-  UChar_t clumap=track->GetITSClusterMap();
-  Int_t nPointsForPid=0;
-  for(Int_t i=2; i<6; i++){
-    if(clumap&(1<<i)) ++nPointsForPid;
-  }
-  if(nPointsForPid<3) return kFALSE;
+  // Check if the track is good for ITS PID
+  AliPIDResponse::EDetPidStatus status = fPidResponse->CheckPIDStatus(AliPIDResponse::kITS,track);
+  if (status != AliPIDResponse::kDetPidOk) return kFALSE;
   return kTRUE;
 }
 //--------------------------------
 Bool_t AliAODPidHF::CheckTPCPIDStatus(AliAODTrack *track) const{
-  // TPC PID quality cuts
-  if ((track->GetStatus()&AliESDtrack::kTPCin )==0) return kFALSE;
-  UShort_t nTPCClus=track->GetTPCClusterMap().CountBits();
-  if (nTPCClus<70) return kFALSE;
+  // Check if the track is good for TPC PID
+  AliPIDResponse::EDetPidStatus status = fPidResponse->CheckPIDStatus(AliPIDResponse::kTPC,track);
+  if (status != AliPIDResponse::kDetPidOk) return kFALSE;
+  UInt_t nclsTPCPID = track->GetTPCsignalN();
+  if(nclsTPCPID<fMinNClustersTPCPID) return kFALSE;
   return kTRUE;
 }
 //--------------------------------
 Bool_t AliAODPidHF::CheckTOFPIDStatus(AliAODTrack *track) const{
-  // TOF PID quality cuts
-  if ((track->GetStatus()&AliESDtrack::kTOFout )==0)    return kFALSE;
-  if ((track->GetStatus()&AliESDtrack::kTIME )==0)     return kFALSE;
-  if ((track->GetStatus()&AliESDtrack::kTOFpid )==0)   return kFALSE;
-  if (!(track->GetStatus()&AliESDtrack::kTOFmismatch)==0)    return kFALSE;
+  // Check if the track is good for TOF PID
+  AliPIDResponse::EDetPidStatus status = fPidResponse->CheckPIDStatus(AliPIDResponse::kTOF,track);
+  if (status != AliPIDResponse::kDetPidOk) return kFALSE; 
+  Float_t probMis = fPidResponse->GetTOFMismatchProbability(track);
+  if (probMis > fCutTOFmismatch) return kFALSE;
+  if ((track->GetStatus()&AliESDtrack::kTOFpid )==0 &&
+      track->GetStatus()&AliESDtrack::kITSrefit )   return kFALSE;
   return kTRUE;
 }
 //--------------------------------
 Bool_t AliAODPidHF::CheckTRDPIDStatus(AliAODTrack *track) const{
-  // TRD PID quality cuts
-  if ((track->GetStatus()&AliESDtrack::kTRDout )==0)   return kFALSE;
+  // Check if the track is good for TRD PID
+  AliPIDResponse::EDetPidStatus status = fPidResponse->CheckPIDStatus(AliPIDResponse::kTRD,track);
+  if (status != AliPIDResponse::kDetPidOk) return kFALSE;
   return kTRUE;
 }
 //--------------------------------
 Bool_t AliAODPidHF::CheckStatus(AliAODTrack *track,TString detectors) const{
-
-// Quality cuts on the tracks, detector by detector
-
- if(detectors.Contains("ITS")){
-  if ((track->GetStatus()&AliESDtrack::kITSin)==0) return kFALSE;
-  UChar_t clumap=track->GetITSClusterMap();
-  Int_t nPointsForPid=0;
-  for(Int_t i=2; i<6; i++){
-   if(clumap&(1<<i)) ++nPointsForPid;
+  // Quality cuts on the tracks, detector by detector
+  if(detectors.Contains("ITS")) return CheckITSPIDStatus(track);
+  else if(detectors.Contains("TPC")) return CheckTPCPIDStatus(track);
+  else if(detectors.Contains("TOF")) return CheckTOFPIDStatus(track);
+  else if(detectors.Contains("TRD")) return CheckTRDPIDStatus(track);
+  else{
+    AliError("Wrong detector name");
+    return kFALSE;
   }
-  if(nPointsForPid<3) return kFALSE;
- }
-
- if(detectors.Contains("TPC")){
-   if ((track->GetStatus()&AliESDtrack::kTPCin )==0) return kFALSE;
-   UShort_t nTPCClus=track->GetTPCClusterMap().CountBits();
-   if (nTPCClus<70) return kFALSE;
- }
-
- if(detectors.Contains("TOF")){
-   if ((track->GetStatus()&AliESDtrack::kTOFout )==0)    return kFALSE;
-   if ((track->GetStatus()&AliESDtrack::kTIME )==0)     return kFALSE;
-   if ((track->GetStatus()&AliESDtrack::kTOFpid )==0)   return kFALSE;
-   if (!(track->GetStatus()&AliESDtrack::kTOFmismatch)==0)    return kFALSE;
- }
-
-
- if(detectors.Contains("TRD")){
-  if ((track->GetStatus()&AliESDtrack::kTRDout )==0)   return kFALSE;
-  //UChar_t ntracklets = track->GetTRDntrackletsPID();
-  //if(ntracklets<4) return kFALSE;
- }
-
- return kTRUE;
 }
 //--------------------------------------------
 Bool_t AliAODPidHF::TPCRawAsym(AliAODTrack* track,Int_t specie) const{
-// TPC nsigma cut PID, different sigmas in different p bins
+  // TPC nsigma cut PID, different sigmas in different p bins
 
   AliAODPid *pidObj = track->GetDetPid();
   Double_t mom = pidObj->GetTPCmomentum();
@@ -528,8 +484,8 @@ Int_t AliAODPidHF::MatchTPCTOF(AliAODTrack *track, Int_t specie){
   if(ptrack>fMaxTrackMomForCombinedPID) return 1;
 
   Bool_t okTPC=CheckTPCPIDStatus(track);
-  Bool_t okTOF=CheckTOFPIDStatus(track);
   if(ptrack>fPtThresholdTPC) okTPC=kFALSE;
+  Bool_t okTOF=CheckTOFPIDStatus(track);
 
   if(fMatch==1){
     //TOF || TPC (a la' Andrea R.)
@@ -650,12 +606,43 @@ Int_t AliAODPidHF::MatchTPCTOF(AliAODTrack *track, Int_t specie){
     }
   }
 
+  if(fMatch==4 || fMatch==5){
+
+    // fMatch == 4 ---> "circular cut" in nSigmaTPC, nSimgaTOF plane
+    //             ---> nsigmaTPC^2+nsigmaTOF^2 < cut^2
+    // fMatch == 5 ---> "rectangular cut" in nSigmaTPC, nsigmaTOF plane 
+    //             ---> ns1<nSigmaTPC<NS1  && ns2<nSigmaTOF<NS2
+ 
+    Double_t nSigmaTPC=0.;
+    if(okTPC) {
+      nSigmaTPC=fPidResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)specie);
+      if(nSigmaTPC<-990.) nSigmaTPC=0.;
+    }
+    Double_t nSigmaTOF=0.;
+    if(okTOF) {
+      nSigmaTOF=fPidResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)specie);
+    }
+    Int_t iPart=specie-2; //species is 2 for pions,3 for kaons and 4 for protons
+    if(iPart<0 || iPart>2) return -1;
+    if(fMatch==4){
+      Double_t nSigma2=nSigmaTPC*nSigmaTPC+nSigmaTOF*nSigmaTOF;
+      if(nSigma2<fMaxnSigmaCombined[iPart]*fMaxnSigmaCombined[iPart]) return 1;
+      else return -1;
+    }
+    else if(fMatch==5){
+      if((nSigmaTPC>fMinnSigmaTPC[iPart] && nSigmaTPC<fMaxnSigmaTPC[iPart]) &&
+	 (nSigmaTOF>fMinnSigmaTOF[iPart] && nSigmaTOF<fMaxnSigmaTOF[iPart])) return 1;
+      else return -1;
+    }
+  }
+
+
   return -1;
 
 }
 //----------------------------------   
 Int_t AliAODPidHF::MakeRawPid(AliAODTrack *track, Int_t specie){
-// general method to compute PID
+  // general method to compute PID
   if(fMatch>0){
     return MatchTPCTOF(track,specie); 
   }else{
@@ -687,81 +674,81 @@ Int_t AliAODPidHF::MakeRawPid(AliAODTrack *track, Int_t specie){
 //--------------------------------------------
 void AliAODPidHF::GetTPCBetheBlochParams(Double_t alephParameters[5]) const {
   // TPC bethe bloch parameters
- if(fMC) {  // MC
+  if(fMC) {  // MC
 
-   if(fPbPb) { // PbPb MC
-
-     alephParameters[0] = 1.44405/50.;
-     alephParameters[1] = 2.35409e+01;
-     alephParameters[2] = TMath::Exp(-2.90330e+01);
-     alephParameters[3] = 2.10681e+00;
-     alephParameters[4] = 4.62254e+00;
-
-   } else {  // pp MC
-     if(fMCLowEn2011){
-       alephParameters[0]=0.0207667;
-       alephParameters[1]=29.9936;
-       alephParameters[2]=3.87866e-11;
-       alephParameters[3]=2.17291;
-       alephParameters[4]=7.1623;
-     }else if(fOnePad){
-       alephParameters[0]=0.029021;
-       alephParameters[1]=25.4181;
-       alephParameters[2]=4.66596e-08;
-       alephParameters[3]=1.90008;
-       alephParameters[4]=4.63783;
-     }else{
-       alephParameters[0] = 2.15898/50.;
-       alephParameters[1] = 1.75295e+01;
-       alephParameters[2] = 3.40030e-09;
-       alephParameters[3] = 1.96178e+00;
-       alephParameters[4] = 3.91720e+00;
-     }
-   }
-
- } else { // Real Data
-
-   if(fOnePad) { // pp 1-pad (since LHC10d)
-
-     alephParameters[0] =1.34490e+00/50.; 
-     alephParameters[1] = 2.69455e+01; 
-     alephParameters[2] = TMath::Exp(-2.97552e+01); 
-     alephParameters[3] = 2.35339e+00; 
-     alephParameters[4] = 5.98079e+00;
-     
-   } else if(fPbPb) { // PbPb 
-     
-     // alephParameters[0] = 1.25202/50.; 
-     // alephParameters[1] = 2.74992e+01; 
-     // alephParameters[2] = TMath::Exp(-3.31517e+01); 
-     // alephParameters[3] = 2.46246; 
-     // alephParameters[4] = 6.78938;
-     
-     alephParameters[0] = 5.10207e+00/50.; 
-     alephParameters[1] = 7.94982e+00; 
-     alephParameters[2] = TMath::Exp(-9.07942e+00); 
-     alephParameters[3] = 2.38808e+00; 
-     alephParameters[4] = 1.68165e+00;
-     
-   } else if(fppLowEn2011){ // pp low energy
-
-     alephParameters[0]=0.031642;
-     alephParameters[1]=22.353;
-     alephParameters[2]=4.16239e-12;
-     alephParameters[3]=2.61952;
-     alephParameters[4]=5.76086;    
-
-   } else {  // pp no 1-pad (LHC10bc)
-
-     alephParameters[0] = 0.0283086/0.97;
-     alephParameters[1] = 2.63394e+01;
-     alephParameters[2] = 5.04114e-11;
-     alephParameters[3] = 2.12543e+00;
-     alephParameters[4] = 4.88663e+00;
-     
-   }
-  
- }
+    if(fPbPb) { // PbPb MC
+      
+      alephParameters[0] = 1.44405/50.;
+      alephParameters[1] = 2.35409e+01;
+      alephParameters[2] = TMath::Exp(-2.90330e+01);
+      alephParameters[3] = 2.10681e+00;
+      alephParameters[4] = 4.62254e+00;
+      
+    } else {  // pp MC
+      if(fMCLowEn2011){
+	alephParameters[0]=0.0207667;
+	alephParameters[1]=29.9936;
+	alephParameters[2]=3.87866e-11;
+	alephParameters[3]=2.17291;
+	alephParameters[4]=7.1623;
+      }else if(fOnePad){
+	alephParameters[0]=0.029021;
+	alephParameters[1]=25.4181;
+	alephParameters[2]=4.66596e-08;
+	alephParameters[3]=1.90008;
+	alephParameters[4]=4.63783;
+      }else{
+	alephParameters[0] = 2.15898/50.;
+	alephParameters[1] = 1.75295e+01;
+	alephParameters[2] = 3.40030e-09;
+	alephParameters[3] = 1.96178e+00;
+	alephParameters[4] = 3.91720e+00;
+      }
+    }
+    
+  } else { // Real Data
+    
+    if(fOnePad) { // pp 1-pad (since LHC10d)
+      
+      alephParameters[0] =1.34490e+00/50.; 
+      alephParameters[1] = 2.69455e+01; 
+      alephParameters[2] = TMath::Exp(-2.97552e+01); 
+      alephParameters[3] = 2.35339e+00; 
+      alephParameters[4] = 5.98079e+00;
+      
+    } else if(fPbPb) { // PbPb 
+      
+      // alephParameters[0] = 1.25202/50.; 
+      // alephParameters[1] = 2.74992e+01; 
+      // alephParameters[2] = TMath::Exp(-3.31517e+01); 
+      // alephParameters[3] = 2.46246; 
+      // alephParameters[4] = 6.78938;
+      
+      alephParameters[0] = 5.10207e+00/50.; 
+      alephParameters[1] = 7.94982e+00; 
+      alephParameters[2] = TMath::Exp(-9.07942e+00); 
+      alephParameters[3] = 2.38808e+00; 
+      alephParameters[4] = 1.68165e+00;
+      
+    } else if(fppLowEn2011){ // pp low energy
+      
+      alephParameters[0]=0.031642;
+      alephParameters[1]=22.353;
+      alephParameters[2]=4.16239e-12;
+      alephParameters[3]=2.61952;
+      alephParameters[4]=5.76086;    
+      
+    } else {  // pp no 1-pad (LHC10bc)
+      
+      alephParameters[0] = 0.0283086/0.97;
+      alephParameters[1] = 2.63394e+01;
+      alephParameters[2] = 5.04114e-11;
+      alephParameters[3] = 2.12543e+00;
+      alephParameters[4] = 4.88663e+00;
+      
+    }
+    
+  }
 
 }
 
@@ -775,62 +762,39 @@ void AliAODPidHF::SetBetheBloch() {
 
  return;
 }
-//-----------------------
-Bool_t AliAODPidHF::IsTOFPiKexcluded(AliAODTrack *track,Double_t nsigmaK){
-  // TOF proton compatibility
 
-  if(!CheckTOFPIDStatus(track)) return 0;
 
-  Double_t nsigma;
-  if(GetnSigmaTOF(track,3,nsigma)==1){
-    if(nsigma>nsigmaK) return kTRUE;
-  } 
-  return kFALSE;
-  /*  Double_t time[AliPID::kSPECIESN];
-  Double_t sigmaTOFPid[AliPID::kSPECIES];
-  AliAODPid *pidObj = track->GetDetPid();
-  pidObj->GetIntegratedTimes(time);
-  Double_t sigTOF=pidObj->GetTOFsignal();
-
- AliAODEvent *event=(AliAODEvent*)track->GetAODEvent();
- if (event) {
-   AliTOFHeader* tofH=(AliTOFHeader*)event->GetTOFHeader();
-   if (tofH && fPidResponse) { 
-     AliTOFPIDResponse TOFres = (AliTOFPIDResponse)fPidResponse->GetTOFResponse();
-     sigTOF -= TOFres.GetStartTime(track->P());
-     sigmaTOFPid[3]=TOFres.GetExpectedSigma(track->P(),time[3],AliPID::ParticleMass(3));
-   }
-   else  pidObj->GetTOFpidResolution(sigmaTOFPid);
- } else  pidObj->GetTOFpidResolution(sigmaTOFPid);
-  Double_t sigmaTOFtrack;
-  if (sigmaTOFPid[3]>0) sigmaTOFtrack=sigmaTOFPid[3];
-  else sigmaTOFtrack=fTOFSigma;  // backward compatibility for old AODs
-  
-  if((sigTOF-time[3])>nsigmaK*sigmaTOFtrack)return kTRUE;// K, Pi excluded (->LIKELY A PROTON)
-  
-  return kFALSE;
-  */
-}
 //--------------------------------------------------------------------------
-void AliAODPidHF::SetPriorDistribution(AliPID::EParticleType type,TH1F *prior){
+Int_t AliAODPidHF::GetnSigmaITS(AliAODTrack *track,Int_t species, Double_t &nsigma) const{
+  // get n sigma for ITS
 
-	//
-	// method setting the prior distributions to the AliPIDCombined object of the AliAODPidHF data member
-	// all the checks are done directly in the AliPIDCombined object
-	//
 
-	GetPidCombined()->SetPriorDistribution(type,prior);
+  if (!CheckITSPIDStatus(track)) return -1;
+
+  Double_t nsigmaITS=-999;
+
+  if (fOldPid) {
+    Double_t mom=track->P();
+    AliAODPid *pidObj = track->GetDetPid();
+    Double_t dedx=pidObj->GetITSsignal();
+
+    AliITSPIDResponse itsResponse;
+    AliPID::EParticleType type=AliPID::EParticleType(species);
+    nsigmaITS = itsResponse.GetNumberOfSigmas(mom,dedx,type);
+
+  } // old pid
+  else { // new pid
+
+    AliPID::EParticleType type=AliPID::EParticleType(species);
+    nsigmaITS = fPidResponse->NumberOfSigmasITS(track,type);
+
+  } //new pid
+
+  nsigma = nsigmaITS;
+
+  return 1;
+
 }
-//--------------------------------------------------------------------------
-void AliAODPidHF::DrawPrior(AliPID::EParticleType type){
-
-	//
-	// Drawing prior distribution for type "type"
-
-	new TCanvas();
-	GetPidCombined()->GetPriorDistribution(type)->Draw();
-}
-
 //--------------------------------------------------------------------------
 Int_t AliAODPidHF::GetnSigmaTPC(AliAODTrack *track, Int_t species, Double_t &nsigma) const{
   // get n sigma for TPC 
@@ -900,7 +864,6 @@ Bool_t AliAODPidHF::IsExcluded(AliAODTrack *track, Int_t labelTrack, Double_t ns
 
   } else if (detectors.Contains("TOF")) {
 
-    if (!(CheckTOFPIDStatus(track))) return kFALSE;
     Double_t nsigma=0.;
     if (GetnSigmaTOF(track,labelTrack,nsigma)==1){
       if(nsigma>nsigmaCut) return kTRUE;
@@ -911,6 +874,63 @@ Bool_t AliAODPidHF::IsExcluded(AliAODTrack *track, Int_t labelTrack, Double_t ns
   return kFALSE;
 
 }
+//-----------------------
+Bool_t AliAODPidHF::IsTOFPiKexcluded(AliAODTrack *track,Double_t nsigmaK){
+  // TOF proton compatibility
+
+  if(!CheckTOFPIDStatus(track)) return 0;
+
+  Double_t nsigma;
+  if(GetnSigmaTOF(track,3,nsigma)==1){
+    if(nsigma>nsigmaK) return kTRUE;
+  } 
+  return kFALSE;
+  /*  Double_t time[AliPID::kSPECIESN];
+  Double_t sigmaTOFPid[AliPID::kSPECIES];
+  AliAODPid *pidObj = track->GetDetPid();
+  pidObj->GetIntegratedTimes(time);
+  Double_t sigTOF=pidObj->GetTOFsignal();
+
+ AliAODEvent *event=(AliAODEvent*)track->GetAODEvent();
+ if (event) {
+   AliTOFHeader* tofH=(AliTOFHeader*)event->GetTOFHeader();
+   if (tofH && fPidResponse) { 
+     AliTOFPIDResponse TOFres = (AliTOFPIDResponse)fPidResponse->GetTOFResponse();
+     sigTOF -= TOFres.GetStartTime(track->P());
+     sigmaTOFPid[3]=TOFres.GetExpectedSigma(track->P(),time[3],AliPID::ParticleMass(3));
+   }
+   else  pidObj->GetTOFpidResolution(sigmaTOFPid);
+ } else  pidObj->GetTOFpidResolution(sigmaTOFPid);
+  Double_t sigmaTOFtrack;
+  if (sigmaTOFPid[3]>0) sigmaTOFtrack=sigmaTOFPid[3];
+  else sigmaTOFtrack=fTOFSigma;  // backward compatibility for old AODs
+  
+  if((sigTOF-time[3])>nsigmaK*sigmaTOFtrack)return kTRUE;// K, Pi excluded (->LIKELY A PROTON)
+  
+  return kFALSE;
+  */
+}
+
+//--------------------------------------------------------------------------
+void AliAODPidHF::SetPriorDistribution(AliPID::EParticleType type,TH1F *prior){
+
+	//
+	// method setting the prior distributions to the AliPIDCombined object of the AliAODPidHF data member
+	// all the checks are done directly in the AliPIDCombined object
+	//
+
+	GetPidCombined()->SetPriorDistribution(type,prior);
+}
+//--------------------------------------------------------------------------
+void AliAODPidHF::DrawPrior(AliPID::EParticleType type){
+
+	//
+	// Drawing prior distribution for type "type"
+
+	new TCanvas();
+	GetPidCombined()->GetPriorDistribution(type)->Draw();
+}
+
 //-----------------------------
 void AliAODPidHF::SetPriorsHistos(TString priorFileName){
   // Set histograms with priors
@@ -944,61 +964,31 @@ void AliAODPidHF::SetPriorsHistos(TString priorFileName){
 void AliAODPidHF::SetUpCombinedPID(){
   // Configuration of combined Bayesian PID
 
- fPidCombined->SetSelectedSpecies(AliPID::kSPECIES);
-  for (Int_t ispecies=0;ispecies<AliPID::kSPECIES;++ispecies) {
-    fPidCombined->SetPriorDistribution(static_cast<AliPID::EParticleType>(ispecies),fPriorsH[ispecies]);
+  fPidCombined->SetSelectedSpecies(AliPID::kSPECIES);
+  if(!fDefaultPriors){
+  	for (Int_t ispecies=0;ispecies<AliPID::kSPECIES;++ispecies) {
+    	fPidCombined->SetPriorDistribution(static_cast<AliPID::EParticleType>(ispecies),fPriorsH[ispecies]);
+  	}
+  }else{
+  	fPidCombined->SetDefaultTPCPriors(); 
   }
- switch (fCombDetectors){
+  switch (fCombDetectors){
   case kTPCTOF:
-   fPidCombined->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
-  break;
+    fPidCombined->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
+    break;
   case kTPCAndTOF:
     fPidCombined->SetDetectorMask(AliPIDResponse::kDetTPC & AliPIDResponse::kDetTOF);
     break;
   case kTPCITS:
-   fPidCombined->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetITS);
-  break;
+    fPidCombined->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetITS);
+    break;
   case kTPC:
-   fPidCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
-  break;
+    fPidCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
+    break;
   case kTOF:
-   fPidCombined->SetDetectorMask(AliPIDResponse::kDetTOF);
-  break;
- }
+    fPidCombined->SetDetectorMask(AliPIDResponse::kDetTOF);
+    break;
+  }
 }
-//-----------------------------
 
-Int_t AliAODPidHF::GetnSigmaITS(AliAODTrack *track,Int_t species, Double_t &nsigma) const{
-  // get n sigma for ITS
-
-  Double_t nsigmaITS=-999;
-
-  if (!CheckITSPIDStatus(track)) return -1;
-
-  if (fOldPid) {
-    Double_t mom=track->P();
-    AliAODPid *pidObj = track->GetDetPid();
-    Double_t dedx=pidObj->GetITSsignal();
-
-    AliITSPIDResponse itsResponse;
-    AliPID::EParticleType type=AliPID::EParticleType(species);
-    nsigmaITS = itsResponse.GetNumberOfSigmas(mom,dedx,type);
-
-  } // old pid
-  else { // new pid
-
-    AliPID::EParticleType type=AliPID::EParticleType(species);
-    nsigmaITS = fPidResponse->NumberOfSigmasITS(track,type);
-
-  } //new pid
-
-  nsigma = nsigmaITS;
-
-  return 1;
-
-
-
-
-
-}
 

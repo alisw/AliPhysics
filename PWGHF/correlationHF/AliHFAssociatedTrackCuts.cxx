@@ -230,7 +230,7 @@ Bool_t AliHFAssociatedTrackCuts::IsInAcceptance()
 	return kFALSE;
 }
 //--------------------------------------------------------------------------
-Bool_t AliHFAssociatedTrackCuts::IsHadronSelected(AliAODTrack * track,const AliESDVertex *primary,const Double_t magfield)
+Bool_t AliHFAssociatedTrackCuts::IsHadronSelected(AliAODTrack * track,const AliESDVertex *primary, Double_t magfield)
 {
   
   AliESDtrack esdtrack(track);

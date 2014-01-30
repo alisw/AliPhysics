@@ -18,6 +18,7 @@
 /* $Id$ */ 
 
 #include <TH2F.h>
+#include <TH3F.h>
 #include <THnSparse.h>
 
 #include "AliAnalysisTaskSE.h"
@@ -66,6 +67,8 @@ class AliAnalysisTaskSEDStarSpectra : public AliAnalysisTaskSE
 
   Float_t GetTrueImpactParameterD0(const AliAODMCHeader *mcHeader, TClonesArray* arrayMC, const AliAODMCParticle *partDp) const;
 
+  void SetDoDStarVsY(Bool_t theDStarVsY) {fDoDStarVsY = theDStarVsY;}
+
  private:
   
   AliAnalysisTaskSEDStarSpectra(const AliAnalysisTaskSEDStarSpectra &source);
@@ -91,6 +94,7 @@ class AliAnalysisTaskSEDStarSpectra : public AliAnalysisTaskSE
   Int_t  fNImpParBins;   // nunber of bins in impact parameter histos
   Float_t fLowerImpPar;  // lower limit in impact parameter (um)
   Float_t fHigherImpPar; // higher limit in impact parameter (um)
+  Bool_t  fDoDStarVsY;   // flag to enable D* vs y 
 
   THnSparseF *fHistMassPtImpParTCDs[5];//! histograms for impact paramter studies
 

@@ -82,7 +82,6 @@ set (SRCS
     hfe/AliHFEdebugTreeTask.cxx
     hfe/AliHFEVZEROEventPlane.cxx
     hfe/AliAnalysisTaskFlowTPCTOFEPSP.cxx
-    hfe/AliAnalysisTaskFlowTPCTOFQCSP.cxx
     hfe/AliSelectNonHFE.cxx
     hfe/AliHFENonPhotonicElectron.cxx
     hfe/AliHFEdebugTreeTaskAOD.cxx
@@ -98,10 +97,12 @@ set (SRCS
     hfe/AliHFEreducedEvent.cxx
     hfe/AliHFEreducedTrack.cxx
     hfe/AliHFEreducedMCParticle.cxx
+    hfe/AliAnalysisTaskHFEQA.cxx
+    hfe/AliAnalysisTaskFlowITSTPCTOFQCSP.cxx
     )
 
 string (REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 set ( DHDR  PWGHFhfeLinkDef.h)
 
-set ( EINCLUDE PWG/muon PWGHF/hfe TPC CORRFW STEER/STEERBase PWG/FLOW/Base PWG/FLOW/Tasks)
+set ( EINCLUDE PWG/muon PWGHF/hfe TPC CORRFW STEER/STEERBase PWG/FLOW/Base PWG/FLOW/Tasks ANALYSIS)

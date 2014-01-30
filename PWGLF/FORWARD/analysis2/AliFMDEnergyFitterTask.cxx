@@ -17,45 +17,38 @@
 #include "AliFMDEnergyFitterTask.h"
 #include "AliLog.h"
 #include "AliESDEvent.h"
+#include "AliESDFMD.h"
+#include "AliMCEvent.h"
 #include "AliAODForwardMult.h"
 #include "AliAnalysisManager.h"
-#include "AliAnalysisDataSlot.h"
-#include "AliAnalysisDataContainer.h"
+#include "AliForwardCorrectionManager.h"
 #include <TH1.h>
 #include <TDirectory.h>
 #include <TTree.h>
 #include <TFile.h>
 #include <TROOT.h>
-#include "AliMCEvent.h"
-#include "AliGenHijingEventHeader.h"
-#include "AliHeader.h"
 #include <iostream>
 
 //====================================================================
 AliFMDEnergyFitterTask::AliFMDEnergyFitterTask()
-  : AliAnalysisTaskSE(),
-    fFirstEvent(true),
+  : AliBaseESDTask(),
     fEventInspector(),
     fEnergyFitter(),
-    fList(0),
-    fbLow(0),
-    fbHigh(100)
+    fOnlyMB(false)
 {
   // 
   // Constructor
   //
   DGUARD(fDebug, 3,"Default CTOR of AliFMDEnergyFitterTask");
+  fCloneList = true;
 }
 
 //____________________________________________________________________
 AliFMDEnergyFitterTask::AliFMDEnergyFitterTask(const char* name)
-  : AliAnalysisTaskSE(name), 
-    fFirstEvent(true),
+  : AliBaseESDTask(name, "", &(AliForwardCorrectionManager::Instance())), 
     fEventInspector("event"),
     fEnergyFitter("energy"),
-    fList(0),
-    fbLow(0),
-    fbHigh(100)
+    fOnlyMB(false)
 {
   // 
   // Constructor 
@@ -64,61 +57,9 @@ AliFMDEnergyFitterTask::AliFMDEnergyFitterTask(const char* name)
   //    name Name of task 
   //
   DGUARD(fDebug, 3,"Named CTOR of AliFMDEnergyFitterTask: %s", name);
-  DefineOutput(1, TList::Class());
-  DefineOutput(2, TList::Class());
-  fBranchNames = 
-    "ESD:AliESDRun.,AliESDHeader.,AliMultiplicity.,"
-    "AliESDFMD.,SPDVertex.,PrimaryVertex.";
+  fCloneList = true;
 }
 
-//____________________________________________________________________
-AliFMDEnergyFitterTask::AliFMDEnergyFitterTask(const AliFMDEnergyFitterTask& o)
-  : AliAnalysisTaskSE(o),
-    fFirstEvent(o.fFirstEvent),
-    fEventInspector(o.fEventInspector),
-    fEnergyFitter(o.fEnergyFitter),
-    fList(o.fList),
-    fbLow(o.fbLow),
-    fbHigh(o.fbHigh)
-{
-  // 
-  // Copy constructor 
-  // 
-  // Parameters:
-  //    o Object to copy from 
-  //
-  DGUARD(fDebug, 3,"COPY CTOR of AliFMDEnergyFitterTask");
-  DefineOutput(1, TList::Class());
-  DefineOutput(2, TList::Class());
-}
-
-//____________________________________________________________________
-AliFMDEnergyFitterTask&
-AliFMDEnergyFitterTask::operator=(const AliFMDEnergyFitterTask& o)
-{
-  // 
-  // Assignment operator 
-  // 
-  // Parameters:
-  //    o Object to assign from 
-  // 
-  // Return:
-  //    Reference to this object 
-  //
-  fDebug = o.fDebug;
-  DGUARD(fDebug,3,"Assignment of AliFMDEnergyFitterTask");
-  if (&o == this) return *this; 
-  AliAnalysisTaskSE::operator=(o);
-
-  fFirstEvent        = o.fFirstEvent;
-  fEventInspector    = o.fEventInspector;
-  fEnergyFitter      = o.fEnergyFitter;
-  fList              = o.fList;
-  fbLow              = o.fbLow;
-  fbHigh             = o.fbHigh;
-
-  return *this;
-}
 
 //____________________________________________________________________
 void
@@ -130,59 +71,69 @@ AliFMDEnergyFitterTask::SetDebug(Int_t dbg)
   // Parameters:
   //    dbg Debug level
   //
-  fDebug = dbg;
-  fEventInspector.SetDebug(dbg);
+  AliBaseESDTask::SetDebug(dbg);
   fEnergyFitter.SetDebug(dbg);
 }
-
 //____________________________________________________________________
-void
-AliFMDEnergyFitterTask::Init()
+TAxis*
+AliFMDEnergyFitterTask::DefaultEtaAxis() const
 {
-  // 
-  // Initialize the task 
-  // 
-  //
-  DGUARD(fDebug,1,"Initialize of AliFMDEnergyFitterTask");
-  fFirstEvent = true;
+  static TAxis* a = new TAxis(0, 0, 0);
+  return a;
+}
+//____________________________________________________________________
+TAxis*
+AliFMDEnergyFitterTask::DefaultVertexAxis() const
+{
+  static TAxis* a = new TAxis(10, -10, 10);
+  return a;
 }
 
 //____________________________________________________________________
-void
-AliFMDEnergyFitterTask::SetupForData()
+Bool_t
+AliFMDEnergyFitterTask::Setup()
 {
-  // 
-  // Initialise the sub objects and stuff.  Called on first event 
-  // 
-  //
-  DGUARD(fDebug,1,"Initialize subs of AliFMDEnergyFitterTask");
-  TAxis eAxis(0,0,0); // Default only 
-  TAxis vAxis(10,-10,10); // Default only 
-  fEnergyFitter.SetupForData(eAxis);
-  fEventInspector.SetupForData(vAxis);
-  Print();
+  fEnergyFitter.Init();
+  return true;
 }
 
 //____________________________________________________________________
-void
-AliFMDEnergyFitterTask::UserCreateOutputObjects()
+Bool_t
+AliFMDEnergyFitterTask::Book()
 {
   // 
   // Create output objects 
   // 
   //
   DGUARD(fDebug,1,"Create output objects of AliFMDEnergyFitterTask");
-  fList = new TList;
-  fList->SetOwner();
 
-  fEventInspector.CreateOutputObjects(fList);
+  // We don't need any corrections for this task 
+  fNeededCorrections = 0;
+  fExtraCorrections  = 0;
+
   fEnergyFitter.CreateOutputObjects(fList);
 
-  PostData(1, fList);
+  fList->Add(AliForwardUtil::MakeParameter("onlyMB", fOnlyMB));
+  return true;
 }
 //____________________________________________________________________
-void
-AliFMDEnergyFitterTask::UserExec(Option_t*)
+Bool_t
+AliFMDEnergyFitterTask::PreData(const TAxis& /*vertex*/, const TAxis& eta)
+{
+  // 
+  // Initialise the sub objects and stuff.  Called on first event 
+  // 
+  //
+  DGUARD(fDebug,1,"Initialize subs of AliFMDEnergyFitterTask");
+
+  fEnergyFitter.SetupForData(eta);
+
+  return true;
+}
+
+//____________________________________________________________________
+Bool_t
+AliFMDEnergyFitterTask::Event(AliESDEvent& esd)
 {
   // 
   // Process each event 
@@ -195,66 +146,35 @@ AliFMDEnergyFitterTask::UserExec(Option_t*)
   // cnt++;
   // Get the input data 
   DGUARD(fDebug,3,"Analyse event of AliFMDEnergyFitterTask");
-    
-  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
-  // AliInfo(Form("Event # %6d (esd=%p)", cnt, esd));
-  if (!esd) { 
-    AliWarning("No ESD event found for input event");
-    return;
-  }
-
   // --- Read in the data --------------------------------------------
   LoadBranches();
 
-  // On the first event, initialize the parameters 
-  if (fFirstEvent && esd->GetESDRun()) { 
-    fEventInspector.SetMC(MCEvent());
-    fEventInspector.ReadRunDetails(esd);
-    
-    AliInfo(Form("Initializing with parameters from the ESD:\n"
-		 "         AliESDEvent::GetBeamEnergy()   ->%f\n"
-		 "         AliESDEvent::GetBeamType()     ->%s\n"
-		 "         AliESDEvent::GetCurrentL3()    ->%f\n"
-		 "         AliESDEvent::GetMagneticField()->%f\n"
-		 "         AliESDEvent::GetRunNumber()    ->%d\n",
-		 esd->GetBeamEnergy(), 
-		 esd->GetBeamType(),
-		 esd->GetCurrentL3(), 
-		 esd->GetMagneticField(),
-		 esd->GetRunNumber()));
-
-	      
-
-    // AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
-    // pars->SetParametersFromESD(esd);
-    // pars->PrintStatus();
-    fFirstEvent = false;
-
-    SetupForData();
-  }
   Bool_t   lowFlux   = kFALSE;
   UInt_t   triggers  = 0;
   UShort_t ivz       = 0;
   TVector3 ip;
   Double_t cent      = 0;
   UShort_t nClusters = 0;
-  UInt_t   found     = fEventInspector.Process(esd, triggers, lowFlux, 
+  UInt_t   found     = fEventInspector.Process(&esd, triggers, lowFlux, 
 					       ivz, ip, cent, nClusters);
-  if (found & AliFMDEventInspector::kNoEvent)    return;
-  if (found & AliFMDEventInspector::kNoTriggers) return;
-  if (found & AliFMDEventInspector::kNoSPD)     return;
-  if (found & AliFMDEventInspector::kNoFMD)     return;
-  if (found & AliFMDEventInspector::kNoVertex)  return;
-  if (found & AliFMDEventInspector::kBadVertex) return;
+  if (found & AliFMDEventInspector::kNoEvent)    return false;
+  if (found & AliFMDEventInspector::kNoTriggers) return false;
+  if (found & AliFMDEventInspector::kNoSPD)      return false;
+  if (found & AliFMDEventInspector::kNoFMD)      return false;
+  if (found & AliFMDEventInspector::kNoVertex)   return false;
+  if (found & AliFMDEventInspector::kBadVertex)  return false;
 
   // do not process pile-up, A, C, and E events 
-  if (triggers & AliAODForwardMult::kPileUp) return;
-  if (triggers & AliAODForwardMult::kA)      return;
-  if (triggers & AliAODForwardMult::kC)      return;
-  if (triggers & AliAODForwardMult::kE)      return;
+  if (triggers & AliAODForwardMult::kPileUp)     return false;
+  if (triggers & AliAODForwardMult::kA)          return false;
+  if (triggers & AliAODForwardMult::kC)          return false;
+  if (triggers & AliAODForwardMult::kE)          return false;
   
   // We want only the events found by off-line 
-  if (!(triggers & AliAODForwardMult::kOffline)) return;
+  if (!(triggers & AliAODForwardMult::kOffline)) return false;
+
+  // Perhaps we should also insist on MB only 
+  if (fOnlyMB && (!(triggers & AliAODForwardMult::kInel))) return false;
 
   //  if(cent > 0) {
   //  if( cent < 40 || cent >50 ) return;
@@ -262,34 +182,20 @@ AliFMDEnergyFitterTask::UserExec(Option_t*)
   // }
   
   // Get FMD data 
-  AliESDFMD* esdFMD = esd->GetFMDData();
+  AliESDFMD* esdFMD = esd.GetFMDData();
   // Do the energy stuff 
   if (!fEnergyFitter.Accumulate(*esdFMD, cent, 
 				triggers & AliAODForwardMult::kEmpty)){
     AliWarning("Energy fitter failed");
-    return;
+    return false;
   }
-  PostData(1, fList);
+
+  return true;
 }
 
 //____________________________________________________________________
-void
-AliFMDEnergyFitterTask::FinishTaskOutput()
-{
-  if (!fList) { 
-    Warning("FinishTaskOutput", "No list defined");
-  }
-  // else {
-  //   fList->ls();
-  // }
-  // if (fDebug)
-  // gDebug = 1;
-  AliAnalysisTaskSE::FinishTaskOutput();
-}
-
-//____________________________________________________________________
-void
-AliFMDEnergyFitterTask::Terminate(Option_t*)
+Bool_t
+AliFMDEnergyFitterTask::Finalize()
 {
   // 
   // End of job
@@ -299,23 +205,17 @@ AliFMDEnergyFitterTask::Terminate(Option_t*)
   //
   DGUARD(fDebug,1,"Processing merged output of AliFMDEnergyFitterTask");
 
-  TList* list = dynamic_cast<TList*>(GetOutputData(1));
-  if (!list) {
-    AliError(Form("No output list defined (%p)", GetOutputData(1)));
-    if (GetOutputData(1)) GetOutputData(1)->Print();
-    return;
-  }
-  
   AliInfo("Fitting energy loss spectra");
-  fEnergyFitter.Fit(list);
+  fEnergyFitter.Fit(fResults);
 
-  // Make a deep copy and post that as output 2 
-  TList* list2 = static_cast<TList*>(list->Clone(Form("%sResults", 
-						      list->GetName())));
-  list2->SetOwner();
-  PostData(2, list2);
+  return true;
 }
 
+#define PFB(N,FLAG)				\
+  do {									\
+    AliForwardUtil::PrintName(N);					\
+    std::cout << std::boolalpha << (FLAG) << std::noboolalpha << std::endl; \
+  } while(false)
 //____________________________________________________________________
 void
 AliFMDEnergyFitterTask::Print(Option_t* option) const
@@ -326,12 +226,10 @@ AliFMDEnergyFitterTask::Print(Option_t* option) const
   // Parameters:
   //    option Not used
   //
-  std::cout << ClassName() << ": " << GetName() << std::endl; 
+  AliBaseESDTask::Print(option);
   gROOT->IncreaseDirLevel();
-
-  fEventInspector.Print(option);
+  PFB("Only MB", fOnlyMB);
   fEnergyFitter.Print(option);
-
   gROOT->DecreaseDirLevel();
 }
 

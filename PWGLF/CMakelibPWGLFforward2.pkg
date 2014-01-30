@@ -1,6 +1,6 @@
 # -*- mode: CMake -*-
 #------------------------------------------------------------------------#
-# Package File for PWGLFforward2                                          #
+# Package File for PWGLFforward2                                         #
 # Author : Christian Holm Christensen (cholm@nbi.dk)                     #
 # Variables Defined :                                                    #
 #                                                                        #
@@ -28,9 +28,13 @@
 
 if((DEFINED ALIROOT_SVN_REVISION)) 
   add_definitions(-DALIROOT_SVN_REVISION=${ALIROOT_SVN_REVISION})
+elseif((DEFINED ALIROOT_REVISION)) 
+  add_definitions(-DALIROOT_REVISION=\"${ALIROOT_REVISION}\")
 endif((DEFINED ALIROOT_SVN_REVISION)) 
 if((DEFINED ALIROOT_SVN_BRANCH)) 
   add_definitions(-DALIROOT_SVN_BRANCH=\"${ALIROOT_SVN_BRANCH}\")
+elseif((DEFINED ALIROOT_BRANCH)) 
+  add_definitions(-DALIROOT_BRANCH=\"${ALIROOT_BRANCH}\")
 endif((DEFINED ALIROOT_SVN_BRANCH))
 
 set ( SRCS   
@@ -90,6 +94,9 @@ set ( SRCS
   FORWARD/analysis2/AliFMDMCSharingFilter.cxx
   FORWARD/analysis2/AliFMDMCTrackDensity.cxx
   # Forward tasks 
+  FORWARD/analysis2/AliBaseESDTask.cxx
+  FORWARD/analysis2/AliBaseAODTask.cxx
+  FORWARD/analysis2/AliBaseMCCorrectionsTask.cxx
   FORWARD/analysis2/AliFMDEnergyFitterTask.cxx 
   FORWARD/analysis2/AliFMDEventPlaneTask.cxx
   FORWARD/analysis2/AliForwarddNdetaTask.cxx
@@ -127,10 +134,16 @@ set ( EXPORT FORWARD/analysis2/AliAODForwardMult.h
 	     FORWARD/analysis2/AliFMDEventInspector.h
 	     FORWARD/analysis2/AliFMDMCEventInspector.h
 	     FORWARD/analysis2/AliForwardCorrectionManager.h
+	     FORWARD/analysis2/AliCentralCorrectionManager.h
 	     FORWARD/analysis2/AliCorrectionManagerBase.h
 	     FORWARD/analysis2/AliFMDCorrAcceptance.h
 	     FORWARD/analysis2/AliFMDCorrSecondaryMap.h
 	     FORWARD/analysis2/AliFMDCorrELossFit.h
+	     FORWARD/analysis2/AliBaseESDTask.h
+	     FORWARD/analysis2/AliBaseAODTask.h
+	     FORWARD/analysis2/AliFMDEnergyFitter.h
+	     FORWARD/analysis2/AliMCAuxHandler.h
+	     FORWARD/analysis2/AliDisplacedVertexSelection.h
 	     FORWARD/GEO/AliAnalysisTaskZDCPbPb.h
 	     FORWARD/GEO/AliAnalysisTaskZDCpAcalib.h
 	     FORWARD/GEO/AliAnalysisTaskZDCTreeMaker.h)
@@ -146,6 +159,7 @@ set ( DHDR  PWGLFforward2LinkDef.h)
 
 add_executable(runTrain
   FORWARD/trains/trainMain.cxx)
+set(CMAKE_EXE_LINKER_FLAGS "${LDFLAGS}")
 target_link_libraries(runTrain 
   ${BINLIBDIRS} ${ARLIBS} ${SHLIBS} ${PBLIBS} ${EXEFLAGS} ${ROOTCLIBS} 
   -lSTEERBase -lESD -lAOD -lOADB -lANALYSIS -lANALYSISalice)
@@ -167,7 +181,7 @@ add_custom_command( OUTPUT FORWARD/doc/alice-int-2012-040.pdf
 
 add_custom_command( OUTPUT FORWARD/doc/html/index.html 
 		    COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc
-                    COMMAND sed -e 's,../analysis2,${CMAKE_CURRENT_SOURCE_DIR}/FORWARD/analysis2,' -e 's,OUTPUT_DIRECTORY *=.*,OUTPUT_DIRECTORY = FORWARD/doc/,' < ${CMAKE_CURRENT_SOURCE_DIR}/FORWARD/doc/Doxyfile > ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc/Doxyfile
+                    COMMAND sed -e 's,\\.\\./,${CMAKE_CURRENT_SOURCE_DIR}/FORWARD/,' -e 's,OUTPUT_DIRECTORY *=.*,OUTPUT_DIRECTORY = FORWARD/doc/,' < ${CMAKE_CURRENT_SOURCE_DIR}/FORWARD/doc/Doxyfile > ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc/Doxyfile
 		    COMMAND doxygen ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc/Doxyfile
 		    DEPENDS ${SRCS} ${HDRS})
 
@@ -240,7 +254,7 @@ install ( FILES FORWARD/analysis2/AddTaskCentraldNdeta.C
                 FORWARD/analysis2/AddTaskCopyHeader.C
 		FORWARD/analysis2/AddTaskFMDELoss.C
 		FORWARD/analysis2/AddTaskFMDEventPlane.C
-		FORWARD/analysis2/AddTaskForwardFlow.C
+		FORWARD/analysis2/AddTaskForwardFlowQC.C
   		FORWARD/analysis2/AddTaskForwardMCCorr.C
                 FORWARD/analysis2/AddTaskForwardMult.C
                 FORWARD/analysis2/AddTaskForwardMultDists.C
@@ -265,29 +279,22 @@ install ( FILES FORWARD/analysis2/AddTaskCentraldNdeta.C
                 FORWARD/analysis2/MakeForwardQA.C
 		FORWARD/analysis2/MakeMCCorr.C		
                 FORWARD/analysis2/OtherData.C
-                FORWARD/analysis2/AliFMDCorrAcceptance.h
-                FORWARD/analysis2/AliFMDCorrDoubleHit.h
-                FORWARD/analysis2/AliFMDCorrector.h
-                FORWARD/analysis2/AliFMDCorrELossFit.h
-                FORWARD/analysis2/AliFMDCorrMergingEfficiency.h
-                FORWARD/analysis2/AliFMDCorrSecondaryMap.h
-                FORWARD/analysis2/AliFMDCorrVertexBias.h
-                FORWARD/analysis2/AliForwardUtil.h
-		FORWARD/analysis2/AliForwardCorrectionManager.h
-		FORWARD/analysis2/AliCorrectionManagerBase.h
            DESTINATION PWGLF/FORWARD/analysis2 )
 
+         # FORWARD/analysis2/AliFMDCorrAcceptance.h
+         # FORWARD/analysis2/AliFMDCorrDoubleHit.h
+         # FORWARD/analysis2/AliFMDCorrector.h
+         # FORWARD/analysis2/AliFMDCorrELossFit.h
+         # FORWARD/analysis2/AliFMDCorrMergingEfficiency.h
+         # FORWARD/analysis2/AliFMDCorrSecondaryMap.h
+         # FORWARD/analysis2/AliFMDCorrVertexBias.h
+         # FORWARD/analysis2/AliForwardUtil.h
+	 # FORWARD/analysis2/AliForwardCorrectionManager.h
+	 # FORWARD/analysis2/AliCorrectionManagerBase.h
+
 # Install corrections 
-install ( DIRECTORY FORWARD/corrections/DoubleHit
-	            FORWARD/corrections/ELossFits
-		    FORWARD/corrections/Empirical
-		    FORWARD/corrections/MergingEfficiency
-		    FORWARD/corrections/SecondaryMap
-		    FORWARD/corrections/VertexBias
-		    FORWARD/corrections/Acceptance
+install ( DIRECTORY FORWARD/corrections/Empirical
 		    FORWARD/corrections/Normalization
-		    FORWARD/corrections/CentralAcceptance
-		    FORWARD/corrections/CentralSecMap
           DESTINATION PWGLF/FORWARD/corrections 
 	  PATTERN "*~"   EXCLUDE
 	  PATTERN ".svn" EXCLUDE)

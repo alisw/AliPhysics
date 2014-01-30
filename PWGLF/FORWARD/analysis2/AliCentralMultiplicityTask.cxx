@@ -34,44 +34,36 @@
 
 //====================================================================
 AliCentralMultiplicityTask::AliCentralMultiplicityTask(const char* name) 
-  : AliAnalysisTaskSE(name),
-    fInspector("centralEventInspector"),
-    fList(0),
+  : AliBaseESDTask(name, "AliCentralMultiplicityTask", 
+		   &(AliCentralCorrectionManager::Instance())),
+    fInspector("event"),
     fAODCentral(kFALSE),
     fUseSecondary(true),
     fUseAcceptance(true),
-    fFirstEventSeen(false), 
   fIvz(0),
   fNClusterTracklet(0),
-    fClusterPerTracklet(0),
-    fNCluster(0),
+  fClusterPerTracklet(0),
+  fNCluster(0),
   fNTracklet(0),
     fVtxList(0),
     fStore(false),
-    fHData(0),
-    fCorrManager(0)
+    fHData(0)
 {
   // 
   // Constructor 
   //   
   DGUARD(fDebug, 3,"Named CTOR of AliCentralMultiplicityTask: %s", name);
-  DefineOutput(1, TList::Class());
-  DefineOutput(2, TList::Class());
-
-  fCorrManager = &(AliCentralCorrectionManager::Instance());
   fBranchNames = 
     "ESD:AliESDRun.,AliESDHeader.,AliMultiplicity.,"
     "SPDVertex.,PrimaryVertex.";
 }
 //____________________________________________________________________
 AliCentralMultiplicityTask::AliCentralMultiplicityTask() 
-  : AliAnalysisTaskSE(),
+  : AliBaseESDTask(),
     fInspector(),
-    fList(0),
     fAODCentral(),
     fUseSecondary(true),
     fUseAcceptance(true),
-    fFirstEventSeen(false), 
   fIvz(0),
     fNClusterTracklet(0),
     fClusterPerTracklet(0),
@@ -79,94 +71,17 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask()
     fNTracklet(0),
     fVtxList(0),
     fStore(false),
-    fHData(0),
-    fCorrManager(0)
+    fHData(0)
 {
   // 
   // Constructor 
   // 
   DGUARD(fDebug, 3,"Default CTOR of AliCentralMultiplicityTask");
 }
-//____________________________________________________________________
-AliCentralMultiplicityTask::AliCentralMultiplicityTask(const AliCentralMultiplicityTask& o)
-  : AliAnalysisTaskSE(o),
-    fInspector(o.fInspector),
-    fList(o.fList),
-    fAODCentral(o.fAODCentral),
-    fUseSecondary(o.fUseSecondary),
-    fUseAcceptance(o.fUseAcceptance),
-    fFirstEventSeen(o.fFirstEventSeen), 
-  fIvz(o.fIvz),
-    fNClusterTracklet(o.fNClusterTracklet),
-    fClusterPerTracklet(o.fClusterPerTracklet),
-    fNCluster(o.fNCluster),
-    fNTracklet(o.fNTracklet),
-    fVtxList(o.fVtxList),
-    fStore(o.fStore),
-    fHData(o.fHData),
-    fCorrManager(o.fCorrManager)
-{
-  //
-  // Copy constructor 
-  // 
-  DGUARD(fDebug, 3,"COPY CTOR of AliCentralMultiplicityTask");
-
-}
-//____________________________________________________________________
-AliCentralMultiplicityTask&
-AliCentralMultiplicityTask::operator=(const AliCentralMultiplicityTask& o)
-{
-  // 
-  // Assignment operator 
-  //
-  DGUARD(fDebug,3,"Assignment of AliCentralMultiplicityTask");
-  if (&o == this) return *this; 
-  fInspector         = o.fInspector;
-  fList              = o.fList;
-  fAODCentral        = o.fAODCentral;
-  fUseSecondary      = o.fUseSecondary;
-  fUseAcceptance     = o.fUseAcceptance;
-  fFirstEventSeen    = o.fFirstEventSeen;
-  fIvz               = o.fIvz;
-  fNClusterTracklet  = o.fNClusterTracklet;
-  fClusterPerTracklet= o.fClusterPerTracklet;
-  fNCluster          = o.fNCluster;
-  fNTracklet         = o.fNTracklet;
-  fVtxList           = o.fVtxList;
-  fCorrManager       = o.fCorrManager;
-  fStore             = o.fStore;
-  fHData             = o.fHData;
-  return *this;
-}
-//____________________________________________________________________
-Bool_t 
-AliCentralMultiplicityTask::Configure(const char* macro)
-{
-  // --- Configure the task ------------------------------------------
-  TString macroPath(gROOT->GetMacroPath());
-  if (!macroPath.Contains("$(ALICE_ROOT)/PWGLF/FORWARD/analysis2")) { 
-    macroPath.Append(":$(ALICE_ROOT)/PWGLF/FORWARD/analysis2");
-    gROOT->SetMacroPath(macroPath);
-  }
-  TString mac(macro);
-  if (mac.EqualTo("-default-")) 
-    mac = "$(ALICE_ROOT)/PWGLF/FORWARD/analysis2/CentralAODConfig.C";
-  
-  const char* config = gSystem->Which(gROOT->GetMacroPath(),mac.Data());
-  if (!config) {
-    AliWarningF("%s not found in %s", macro, gROOT->GetMacroPath());
-    return false;
-  }
-
-  AliInfoF("Loading configuration of '%s' from %s", ClassName(), config);
-  gROOT->Macro(Form("%s((AliCentralMultiplicityTask*)%p)", config, this));
-  delete config;
-  
-  return true;
-}
 
 //____________________________________________________________________
-void AliCentralMultiplicityTask::UserCreateOutputObjects() 
+void
+AliCentralMultiplicityTask::CreateBranches(AliAODHandler* ah) 
 {
   // 
   // Create output objects 
@@ -174,89 +89,64 @@ void AliCentralMultiplicityTask::UserCreateOutputObjects()
   //
   DGUARD(fDebug,1,"Create user output in AliCentralMultiplicityTask");
 
-  AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
-  AliAODHandler*      ah = 
-    dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler());
-  if (ah) {
+  if (!ah) 
     //AliFatal("No AOD output handler set in analysis manager");
-    TObject* obj = &fAODCentral;
-    ah->AddBranch("AliAODCentralMult", &obj);
-  } 
-    
-  fList = new TList();
-  fList->SetOwner();
+    return;
 
-  fInspector.CreateOutputObjects(fList);
-
-  PostData(1,fList);  
+  TObject* obj = &fAODCentral;
+  ah->AddBranch("AliAODCentralMult", &obj);
+}
+//____________________________________________________________________
+Bool_t
+AliCentralMultiplicityTask::Book()
+{
+  fNeededCorrections = (AliCentralCorrectionManager::kSecondaryMap|
+			AliCentralCorrectionManager::kAcceptance);
+  return true;
 }
 
 //____________________________________________________________________
-AliESDEvent*
-AliCentralMultiplicityTask::GetESDEvent()
+Bool_t
+AliCentralMultiplicityTask::PreData(const TAxis& vertex, const TAxis& eta)
 {
-  //
-  // Get the ESD event. IF this is the first event, initialise
-  //
-  DGUARD(fDebug,1,"Get ESD event in AliCentralMultiplicityTask");
-  if (IsZombie()) return 0;
-  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
-  if (!esd) {
-    AliWarning("No ESD event found for input event");
-    return 0;
-  }
-
-  // Load in the data needed
-  LoadBranches();
-
-  // IF we've read the first event already, just return the event 
-  if (fFirstEventSeen) return esd;
+  // FindEtaLimits();
+  // unsigned short s = 1;
+  TH2D* hCoverage = new TH2D("coverage", "#eta coverage per v_{z}", 
+			     eta.GetNbins(), eta.GetXmin(), eta.GetXmax(),
+			     vertex.GetNbins(),vertex.GetXmin(),
+			     vertex.GetXmax());
+  hCoverage->SetDirectory(0);
+  hCoverage->SetXTitle("#eta");
+  hCoverage->SetYTitle("v_{z} [cm]");
+  hCoverage->SetZTitle("n_{bins}");
   
-  // Read the details of the rung 
-  fInspector.ReadRunDetails(esd);
-
-  // If we weren't initialised before (i.e., in the setup), do so now. 
-  AliCentralCorrectionManager& ccm = 
-    AliCentralCorrectionManager::Instance();
-
-  if (!ccm.Init(fInspector.GetRunNumber(),
-		fInspector.GetCollisionSystem(),
-		fInspector.GetEnergy(),
-		fInspector.GetField())) {
-    AliWarning("Failed  to intialize correction mananger");
+  fAODCentral.Init(eta);
+  
+  UShort_t nVz = vertex.GetNbins();
+  fVtxList     = new TObjArray(nVz, 1);
+  fVtxList->SetName("centMultVtxBins");
+  fVtxList->SetOwner();
+  
+  // Bool_t store = false;
+  for (Int_t v = 1; v <= nVz; v++) { 
+    VtxBin* bin = new VtxBin(v, vertex.GetBinLowEdge(v), 
+			     vertex.GetBinUpEdge(v));
+    bin->SetupForData(fList, hCoverage, fStore);
+    fVtxList->AddAt(bin, v);
   }
-  //AliInfo("Manager of corrections in AliCentralMultiplicityTask init");
-  Bool_t ok = true;
-  if (/*fUseSecondary &&*/ !ccm.GetSecondaryMap()) {
-    ok = false;
-    AliError("No secondary correction defined!");
-  }
-  if (/*fUseAcceptance &&*/ !ccm.GetAcceptance()) {
-    ok = false;
-    AliError("No acceptance correction defined!");
-  }
-  // If the corrections are not seen, make this a zombie, and prevent
-  // further execution of this task.
-  if (!ok) { 
-    AliError("Missing corrections, make this a zombie");
-    SetZombie(true);
-    esd = 0;
-    fFirstEventSeen = true;
-    return esd;
-  }
+  fList->Add(hCoverage);
 
-  // Check for existence and get secondary map 
-  const AliCentralCorrSecondaryMap* secMap = ccm.GetSecondaryMap(); 
-  const TAxis& vaxis = secMap->GetVertexAxis();
-
-  FindEtaLimits();
-
+  // Bins are 
+  TArrayD bins;
+  // N-bins, loweset order, higest order, return array
+  AliForwardUtil::MakeLogScale(300, 0, 5, bins);
   fNClusterTracklet = new TH2D("nClusterVsnTracklet", 
 			       "Total number of cluster vs number of tracklets",
-			       100, 0, 10000, 100, 0, 10000);
+			       bins.GetSize()-1, bins.GetArray(),
+			       bins.GetSize()-1, bins.GetArray());
   fNClusterTracklet->SetDirectory(0);
-  fNClusterTracklet->SetXTitle("# of free clusters");
-  fNClusterTracklet->SetYTitle("# of tracklets");
+  fNClusterTracklet->SetXTitle("N_{free cluster}");
+  fNClusterTracklet->SetYTitle("N_{tracklet}");
   fNClusterTracklet->SetStats(0);
   fList->Add(fNClusterTracklet);
 
@@ -289,73 +179,23 @@ AliCentralMultiplicityTask::GetESDEvent()
   fList->Add(fHData);
 
   // Initialize the inspecto 
-  fInspector.SetupForData(vaxis);
-  fFirstEventSeen = kTRUE;
+  // fInspector.SetupForData(vertex);
 
   fAODCentral.SetBit(AliAODCentralMult::kSecondary,  fUseSecondary);
   fAODCentral.SetBit(AliAODCentralMult::kAcceptance, fUseAcceptance);
-  
-  // Print some information 
-  Print("R");
 
-  return esd;
+  return true;
 }
 //____________________________________________________________________
-void
-AliCentralMultiplicityTask::MarkEventForStore() const
+Bool_t 
+AliCentralMultiplicityTask::PreEvent()
 {
-  // Make sure the AOD tree is filled 
-  DGUARD(fDebug,1,"Mark AOD event for store in AliCentralMultiplicityTask");
-  AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
-  AliAODHandler*      ah = 
-    dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler());
-  if (ah) {  
-    //AliFatal("No AOD output handler set in analysis manager");
-    ah->SetFillAOD(kTRUE);
-  }
+  fAODCentral.Clear("");
+  return true;
 }
-
 //____________________________________________________________________
-void AliCentralMultiplicityTask::FindEtaLimits()
-{
-  // Find our pseudo-rapidity limits 
-  // 
-  // Uses the secondary map to do so.
-  DGUARD(fDebug,1,"Find eta limits in AliCentralMultiplicityTask");
-  AliCentralCorrectionManager& ccm = 
-    AliCentralCorrectionManager::Instance();
-  const AliCentralCorrSecondaryMap* secMap = ccm.GetSecondaryMap();
-  const TAxis&                      vaxis  = secMap->GetVertexAxis();
-
-  unsigned short s = 1;
-  TH2D* hCoverage = new TH2D("coverage", "#eta coverage per v_{z}", 
-			     secMap->GetCorrection(s)->GetXaxis()->GetNbins(),
-			     secMap->GetCorrection(s)->GetXaxis()->GetXmin(),
-			     secMap->GetCorrection(s)->GetXaxis()->GetXmax(),
-			     vaxis.GetNbins(),vaxis.GetXmin(),vaxis.GetXmax());
-  hCoverage->SetDirectory(0);
-  hCoverage->SetXTitle("#eta");
-  hCoverage->SetYTitle("v_{z} [cm]");
-  hCoverage->SetZTitle("n_{bins}");
-  
-  fAODCentral.Init(*(secMap->GetCorrection(s)->GetXaxis()));
-  
-  UShort_t nVz = vaxis.GetNbins();
-  fVtxList     = new TObjArray(nVz, 1);
-  fVtxList->SetName("centMultVtxBins");
-  fVtxList->SetOwner();
-  
-  // Bool_t store = false;
-  for (Int_t v = 1; v <= nVz; v++) { 
-    VtxBin* bin = new VtxBin(v, vaxis.GetBinLowEdge(v), vaxis.GetBinUpEdge(v));
-    bin->SetupForData(fList, hCoverage, fStore);
-    fVtxList->AddAt(bin, v);
-  }
-  fList->Add(hCoverage);
-}
-
-//____________________________________________________________________
-void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/) 
+Bool_t 
+AliCentralMultiplicityTask::Event(AliESDEvent& esd)
 {
   // 
   // Process each event 
@@ -364,11 +204,6 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/)
   //    option Not used
   //  
   DGUARD(fDebug,1,"Process event in AliCentralMultiplicityTask");
-  fAODCentral.Clear("");
-
-  AliESDEvent* esd = GetESDEvent();
-  if (!esd) return;
-
   fIvz               = 0;
   Bool_t   lowFlux   = kFALSE;
   UInt_t   triggers  = 0;
@@ -376,28 +211,28 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/)
   TVector3 ip;
   Double_t cent      = -1;
   UShort_t nClusters = 0;
-  UInt_t   found     = fInspector.Process(esd, triggers, lowFlux, 
+  UInt_t   found     = fInspector.Process(&esd, triggers, lowFlux, 
 					  ivz, ip, cent, nClusters);
 
   // No event or no trigger 
-  if (found & AliFMDEventInspector::kNoEvent)    return;
-  if (found & AliFMDEventInspector::kNoTriggers) return;
+  if (found & AliFMDEventInspector::kNoEvent)    return false;
+  if (found & AliFMDEventInspector::kNoTriggers) return false;
   
   // Make sure AOD is filled
   MarkEventForStore();
 
-  if (found == AliFMDEventInspector::kNoSPD)      return;
-  if (found == AliFMDEventInspector::kNoVertex)   return;
-  if (triggers & AliAODForwardMult::kPileUp)      return;
-  if (found == AliFMDEventInspector::kBadVertex)  return; // Out of range
+  if (found    & AliFMDEventInspector::kNoSPD)      return false;
+  if (found    & AliFMDEventInspector::kNoVertex)   return false;
+  if (triggers & AliAODForwardMult::kPileUp)        return false;
+  if (found    & AliFMDEventInspector::kBadVertex)  return false; 
   
   //Doing analysis
-  const AliMultiplicity* spdmult = esd->GetMultiplicity();
+  const AliMultiplicity* spdmult = esd.GetMultiplicity();
 
   TH2D& aodHist = fAODCentral.GetHistogram();
 
   VtxBin* bin = static_cast<VtxBin*>(fVtxList->At(ivz));
-  if (!bin) return;
+  if (!bin) return false;
 
   ProcessESD(aodHist, spdmult);
   bin->Correct(aodHist, fUseSecondary, fUseAcceptance);
@@ -405,7 +240,7 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/)
   if (triggers & AliAODForwardMult::kInel) 
     fHData->Add(&(fAODCentral.GetHistogram()));
 
-  PostData(1,fList);
+  return true;
 }
 //____________________________________________________________________
 void 
@@ -440,7 +275,8 @@ AliCentralMultiplicityTask::ProcessESD(TH2D& aodHist,
 }
 
 //____________________________________________________________________
-void AliCentralMultiplicityTask::Terminate(Option_t* /*option*/) 
+Bool_t 
+AliCentralMultiplicityTask::Finalize()
 {
   // 
   // End of job
@@ -450,25 +286,14 @@ void AliCentralMultiplicityTask::Terminate(Option_t* /*option*/)
   //
   DGUARD(fDebug,1,"Process merged output in AliCentralMultiplicityTask");
 
-  TList* list = dynamic_cast<TList*>(GetOutputData(1));
-  if (!list) {
-    AliError(Form("No output list defined (%p)", GetOutputData(1)));
-    if (GetOutputData(1)) GetOutputData(1)->Print();
-    return;
-  }
-  TList* output = new TList;
-  output->SetName(Form("%sResults", GetName()));
-  output->SetOwner();
-
   Double_t nTr = 0, nTrVtx = 0, nAcc = 0;
-  MakeSimpledNdeta(list, output, nTr, nTrVtx, nAcc);
+  MakeSimpledNdeta(fList, fResults, nTr, nTrVtx, nAcc);
   AliInfoF("\n"
 	   "\t# events w/trigger:                 %f\n"
 	   "\t# events w/trigger+vertex:          %f\n"
 	   "\t# events accepted y cuts:           %f", 
 	   nTr, nTrVtx, nAcc);
-
-  PostData(2, output);
+  return true;
 }
 
 //____________________________________________________________________
@@ -560,6 +385,18 @@ AliCentralMultiplicityTask::MakeSimpledNdeta(const TList* input,
   return true;
 }
 
+#define PF(N,V,...)					\
+  AliForwardUtil::PrintField(N,V, ## __VA_ARGS__)
+#define PFB(N,FLAG)				\
+  do {									\
+    AliForwardUtil::PrintName(N);					\
+    std::cout << std::boolalpha << (FLAG) << std::noboolalpha << std::endl; \
+  } while(false)
+#define PFV(N,VALUE)					\
+  do {							\
+    AliForwardUtil::PrintName(N);			\
+    std::cout << (VALUE) << std::endl; } while(false)
+
 //____________________________________________________________________
 void
 AliCentralMultiplicityTask::Print(Option_t* option) const
@@ -570,16 +407,9 @@ AliCentralMultiplicityTask::Print(Option_t* option) const
   // Parameters:
   //    option Not used
   //
-
-  std::cout << ClassName() << ": " << GetName() << "\n" 
-	    << std::boolalpha
-	    << "  Use secondary correction:  " << fUseSecondary << '\n'
-	    << "  Use acceptance correction: " << fUseAcceptance << '\n' 
-	    << "  Off-line trigger mask:  0x" 
-	    << std::hex     << std::setfill('0') 
-	    << std::setw (8) << fOfflineTriggerMask 
-	    << std::dec     << std::setfill (' ') 
-	    << std::noboolalpha << std::endl;
+  AliBaseESDTask::Print(option);
+  PFB("Use secondary correction", fUseSecondary);
+  PFB("Use acceptance correction", fUseAcceptance);
   
   AliCentralCorrectionManager& ccm = 
     AliCentralCorrectionManager::Instance();
@@ -587,7 +417,7 @@ AliCentralMultiplicityTask::Print(Option_t* option) const
     const AliCentralCorrSecondaryMap* secMap = ccm.GetSecondaryMap();
     if (secMap) {
       const TAxis& vaxis = secMap->GetVertexAxis();
-      fVtxList->ls();
+      // fVtxList->ls();
       std::cout << "  Eta ranges:\n"
 		<< "     Vertex        | Eta bins\n"
 		<< "   bin     range   | \n"
@@ -602,7 +432,7 @@ AliCentralMultiplicityTask::Print(Option_t* option) const
 
   gROOT->IncreaseDirLevel();
   ccm.Print(option);
-  fInspector.Print(option);
+  // fInspector.Print(option);
   gROOT->DecreaseDirLevel();
   
 }

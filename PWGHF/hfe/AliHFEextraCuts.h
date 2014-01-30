@@ -25,6 +25,10 @@
 #include "AliCFCutBase.h"
 // #endif
 
+#ifndef ROOT_TArrayI
+#include <TArrayI.h>
+#endif
+
 class TList;
 
 class AliVEvent;
@@ -84,6 +88,7 @@ class AliHFEextraCuts: public AliCFCutBase{
     void SetMinNClustersTPCPID(Int_t minclusters) { SETBIT(fRequirements, kMinNClustersTPCPID); fMinNClustersTPCPID = minclusters; }
     void SetTOFPID(Bool_t tofPid) { tofPid ? SETBIT(fRequirements, kTOFPID) : CLRBIT(fRequirements, kTOFPID); }
     void SetTOFMISMATCH(Bool_t tofMismatch) { tofMismatch ? SETBIT(fRequirements, kTOFmismatch) : CLRBIT(fRequirements, kTOFmismatch); }
+    void SetMatchTOFLabel(Bool_t match) {match ? SETBIT(fRequirements, kTOFlabel) : CLRBIT(fRequirements, kTOFlabel); }
     void SetTPCPIDCleanUp(Bool_t tpcPIDCleanUp) { tpcPIDCleanUp ? SETBIT(fRequirements, kTPCPIDCleanUp) : CLRBIT(fRequirements, kTPCPIDCleanUp); }
     void SetMaxImpactParameterRpar(Bool_t maxImpactParameterRpar) { maxImpactParameterRpar ? SETBIT(fRequirements, kMaxImpactParameterRpar) : CLRBIT(fRequirements, kMaxImpactParameterRpar); }
     void SetFractionOfTPCSharedClusters(Double_t fractionShared) { fFractionTPCShared= fractionShared; SETBIT(fRequirements, kTPCfractionShared); }
@@ -134,6 +139,7 @@ class AliHFEextraCuts: public AliCFCutBase{
     Float_t GetTPCsharedClustersRatio(AliVTrack *track);
     Float_t GetTRDchi(AliVTrack *track);
     Int_t GetITSNbOfcls(AliVTrack *track);
+    Bool_t MatchTOFlabel(const AliVTrack * const track) const;
 
   private:
     typedef enum{
@@ -163,7 +169,8 @@ class AliHFEextraCuts: public AliCFCutBase{
       kITSpattern = 23,
       kMinHFEImpactParamRcharge = 24,
       kAODFilterBit=25,
-      kNcuts = 26
+      kTOFlabel=26,
+      kNcuts = 27
     } Cut_t;
     enum{
       //
@@ -195,6 +202,8 @@ class AliHFEextraCuts: public AliCFCutBase{
     Double_t fTOFsignalDz;            // TOF signal dz
     Double_t fMagField;               // Magnetic field
     Int_t    fAODFilterBit;           // Require AOD filter bit
+    TArrayI  fListKinkMothers;        // List of Kink Mothers (AOD analysis)
+    Int_t    fNumberKinkMothers;      // Number of Kink mothers
 
     Bool_t  fCheck;                     // check
     TList *fQAlist;			//! Directory for QA histograms

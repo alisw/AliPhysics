@@ -9,12 +9,10 @@
  * 
  * @brief  
  * 
- * 
  * @ingroup pwglf_forward_flow
  */
 #include "AliForwardFlowTaskQC.h"
 #include "AliForwardFlowWeights.h"
-#include <TH2D.h>
 class TGraph;
 
 /**
@@ -24,7 +22,7 @@ class TGraph;
  *   - AliAODEvent
  *
  * Outputs:
- *   - AnalysisResults.root
+ *   - forward_flow.root
  *
  * @ingroup pwglf_forward_tasks_flow
  * @ingroup pwglf_forward_flow
@@ -48,32 +46,19 @@ public:
    */
   virtual ~AliForwardMCFlowTaskQC() {}
   /**
-   * Check trigger from AODForwardMult object
-   * returns true if B trigger is present
-   *
-   * @param aodfm AliAODForwardMultObject
-   * 
-   * @return Bool_t 
-   */
-  virtual Bool_t CheckTrigger(const AliAODForwardMult* aodfm) const;
-  /**
-   * Check for centrality in AliAODForwardMult object, 
-   * if present return true - also sets fCent value
-   * can be used to get centrality from impact parameter
-   *
-   * @param aodfm AliAODForwardMultObject
-   * 
-   * @return Bool_t 
-   */
-  virtual Bool_t GetCentrality(const AliAODForwardMult* aodfm);
-  /**
    * Set use parametrization from impact parameter for centrality
    *
    * @param use Use impact par
    */
-  void SetUseImpactParameter(Bool_t use) { fUseImpactPar = use; }
+  void SetUseImpactParameter(Bool_t use = kTRUE) { fUseImpactPar = use; }
   /**
-   * Set string to add flow to MC truth particles
+   * Set to get vertex from MC header
+   *
+   * @param use Get from MC header
+   */
+  void SetUseMCHeaderVertex(Bool_t use = kTRUE) { fUseMCVertex = use; }
+  /**
+   * Set string to add flow to MC particles particles
    *
    * @param type String
    */
@@ -125,43 +110,62 @@ protected:
    */
   void Finalize();
   /**
-   * Find FMD coverage for this vtx, to make MC histogram match
+   * Check trigger from AODForwardMult object
+   * returns true if B trigger is present
+   *
+   * @param aodfm AliAODForwardMultObject
+   * 
+   * @return Bool_t 
    */
-  void GetFMDLimits();
+  virtual Bool_t CheckTrigger(const AliAODForwardMult* aodfm) const;
+  /**
+   * Check for centrality in AliAODForwardMult object, 
+   * if present return true - also sets fCent value
+   * can be used to get centrality from impact parameter
+   *
+   * @param aodfm AliAODForwardMultObject
+   * 
+   * @return Bool_t 
+   */
+  virtual Bool_t GetCentrality(const AliAODForwardMult* aodfm);
+  /**
+   * Check for vertex in MCHeader
+   * returns true if in range of fVtxAXis, also sets fVtx value
+   *
+   * @param aodfm Not used
+   * 
+   * @return Bool_t 
+   */
+  virtual Bool_t GetVertex(const AliAODForwardMult* aodfm);
   /**
    * Loop over AliAODMCParticle branch object and fill d^2N/detadphi histograms
    * add flow if arguments are set
    * 
    * @return true on success
    */
-  Bool_t LoopAODMC();
+  Bool_t FillMCHist();
   /**
    * Get centrality form MC impact parameter
    *
    * @return Centrality
    */
   Double_t GetCentFromB() const;
-  /**
-   * Print the setup of the task
-   *
-   * @return void
-   */
-  virtual void PrintFlowSetup() const;
   
-  TList         fBinsFMDTR;         //  List with FMDTR VertexBin objects
-  TList         fBinsSPDTR;         //  List with SPDTR VertexBin objects
-  TList         fBinsMC;            //  List with MC VertexBin objects
-  TH2D          fdNdedpMC;          //  d^2N/detadphi MC truth histogram
-  AliForwardFlowWeights fWeights;   //  Flow after burner 
-  TGraph*       fImpactParToCent;   //  Parametrization of b to centrality
-  Bool_t        fUseImpactPar;      //  Flag to use impact parameter for cent
-  Double_t      fFMDMinEta;         //  FMD min. eta coverage for this vtx
-  Double_t      fFMDMaxEta;         //  FMD max. eta coverage for this vtx
-  TString       fAddFlow;           //  Add flow string
-  Int_t         fAddType;           //  Add flow type #
-  Int_t         fAddOrder;          //  Add flow order
+  TList                 fBinsForwardTR;   //  List with FMDTR VertexBin objects
+  TList                 fBinsCentralTR;   //  List with SPDTR VertexBin objects
+  TList                 fBinsMC;          //  List with MC VertexBin objects
+  TH2D                  fHistdNdedpMC;    //  d^2N/detadphi MC particles histogram
+  TH2D*                 fHistFMDMCCorr;   //  Diagnostics for mult. corr. between FMD and MC
+  TH2D*                 fHistSPDMCCorr;   //  Diagnostics for mult. corr. between SPD and MC
+  AliForwardFlowWeights fWeights;         //  Flow after burner 
+  TGraph*               fImpactParToCent; //  Parametrization of b to centrality
+  Bool_t                fUseImpactPar;    //  Flag to use impact parameter for cent
+  Bool_t                fUseMCVertex;     //  Get vertex from MC header
+  TString               fAddFlow;         //  Add flow string
+  Int_t                 fAddType;         //  Add flow type #
+  Int_t                 fAddOrder;        //  Add flow order
 
-  ClassDef(AliForwardMCFlowTaskQC, 3); // FMD MC analysis task 
+  ClassDef(AliForwardMCFlowTaskQC, 4); // FMD MC analysis task 
 };
  
 #endif
