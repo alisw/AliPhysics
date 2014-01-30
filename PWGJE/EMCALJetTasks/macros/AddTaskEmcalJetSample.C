@@ -52,11 +52,11 @@ AliAnalysisTaskEmcalJetSample* AddTaskEmcalJetSample(
 
   AliAnalysisTaskEmcalJetSample* jetTask = new AliAnalysisTaskEmcalJetSample(name);
 
-  AliParticleContainer *trackCont  = task->AddParticleContainer(ntracks);
-  AliClusterContainer *clusterCont = task->AddClusterContainer(nclusters);
+  AliParticleContainer *trackCont  = jetTask->AddParticleContainer(ntracks);
+  AliClusterContainer *clusterCont = jetTask->AddClusterContainer(nclusters);
 
   TString strType(type);
-  AliJetContainer *jetCont = jetTask->AddJetContainer(njets,strType,R);
+  AliJetContainer *jetCont = jetTask->AddJetContainer(njets,strType,jetradius);
   if(jetCont) {
     jetCont->SetRhoName(nrho);
     jetCont->ConnectParticleContainer(trackCont);
