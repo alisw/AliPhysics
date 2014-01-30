@@ -41,8 +41,8 @@
 #include "AliPID.h"
 #include "AliVEvent.h"
 #include "AliPIDResponse.h"
-#include "AliSpectraAODTrackCuts.h"
-#include "AliSpectraAODEventCuts.h"
+#include "PWGLF/SPECTRA/PiKaPr/TestAOD/AliSpectraAODTrackCuts.h"
+#include "PWGLF/SPECTRA/PiKaPr/TestAOD/AliSpectraAODEventCuts.h"
 #include "AliStack.h"
 #include <TMCProcess.h>
 #include "AliAnalyseLeadingTrackUE.h"

@@ -24,7 +24,6 @@
 #pragma link C++ class AliEmcalSetupTask+;
 #pragma link C++ class AliEmcalTenderTask+;
 #pragma link C++ class AliEmcalTrackPropagatorTask+;
-#pragma link C++ class AliEmcalTrackPropagatorTaskAOD+;
 #pragma link C++ class AliEmcalTriggerMaker+;
 #pragma link C++ class AliEmcalTriggerPatchInfo+;
 #pragma link C++ class AliEmcalTriggerSetupInfo+;

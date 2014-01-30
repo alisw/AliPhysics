@@ -181,9 +181,16 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   Bool_t IsInAcceptedEtaRange(Double_t etaAbs) const { return (etaAbs >= fEtaAbsCutLow && etaAbs <= fEtaAbsCutUp); };
   
-  Double_t GetSystematicScalingSplines() const { return fSystematicScalingSplines; };
-  void SetSystematicScalingSplines(Double_t scaleFactor) 
-    { fSystematicScalingSplines = scaleFactor; CheckDoAnyStematicStudiesOnTheExpectedSignal(); };
+  Double_t GetSystematicScalingSplinesThreshold() const { return fSystematicScalingSplinesThreshold; };
+  void SetSystematicScalingSplinesThreshold(Double_t threshold) { fSystematicScalingSplinesThreshold = threshold; };
+  
+  Double_t GetSystematicScalingSplinesBelowThreshold() const { return fSystematicScalingSplinesBelowThreshold; };
+  void SetSystematicScalingSplinesBelowThreshold(Double_t scaleFactor) 
+    { fSystematicScalingSplinesBelowThreshold = scaleFactor; CheckDoAnyStematicStudiesOnTheExpectedSignal(); };
+    
+  Double_t GetSystematicScalingSplinesAboveThreshold() const { return fSystematicScalingSplinesAboveThreshold; };
+  void SetSystematicScalingSplinesAboveThreshold(Double_t scaleFactor) 
+    { fSystematicScalingSplinesAboveThreshold = scaleFactor; CheckDoAnyStematicStudiesOnTheExpectedSignal(); };
   
   Double_t GetSystematicScalingEtaCorrectionMomentumThr() const { return fSystematicScalingEtaCorrectionMomentumThr; };
   void SetSystematicScalingEtaCorrectionMomentumThr(Double_t threshold) { fSystematicScalingEtaCorrectionMomentumThr = threshold; };
@@ -280,7 +287,9 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   // For systematic studies
   Bool_t   fDoAnySystematicStudiesOnTheExpectedSignal; // Internal flag indicating whether any systematic studies are going to be performed
-  Double_t fSystematicScalingSplines;        // Systematic scale factor for the splines (1. = no systematics) 
+  Double_t fSystematicScalingSplinesThreshold;         // beta-gamma threshold for the systematic spline scale factor
+  Double_t fSystematicScalingSplinesBelowThreshold;        // Systematic scale factor for the splines (1. = no systematics) below threshold
+  Double_t fSystematicScalingSplinesAboveThreshold;        // Systematic scale factor for the splines (1. = no systematics) above threshold
   Double_t fSystematicScalingEtaCorrectionMomentumThr;  // Momentum threshold for the systematic scale factor for the eta correction (separates low-p from high-p
   Double_t fSystematicScalingEtaCorrectionLowMomenta;   // Systematic scale factor for the eta correction (1. = no systematics) at low momenta
   Double_t fSystematicScalingEtaCorrectionHighMomenta;  // Systematic scale factor for the eta correction (1. = no systematics) at high momenta
@@ -369,7 +378,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   AliAnalysisTaskPID(const AliAnalysisTaskPID&); // not implemented
   AliAnalysisTaskPID& operator=(const AliAnalysisTaskPID&); // not implemented
   
-  ClassDef(AliAnalysisTaskPID, 15);
+  ClassDef(AliAnalysisTaskPID, 16);
 };
 
 
