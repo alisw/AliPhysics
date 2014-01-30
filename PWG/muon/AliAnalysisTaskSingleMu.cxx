@@ -204,6 +204,8 @@ void AliAnalysisTaskSingleMu::MyUserCreateOutputObjects()
   AddObjectToCollection(histoDimu, kNobjectTypes+2);
   
   fMuonTrackCuts->Print("mask");
+  
+  AliInfo(Form("Apply cut on dimuon (60<M_mumu<120 GeV/c^2) to reject Z contribution: %i", fCutOnDimu));
 }
 
 //________________________________________________________________________
@@ -265,11 +267,11 @@ void AliAnalysisTaskSingleMu::ProcessEvent(TString physSel, const TObjArray& sel
           TLorentzVector dimuPair = AliAnalysisMuonUtility::GetTrackPair(track,auxTrack);
           Double_t ptMin = TMath::Min(track->Pt(),auxTrack->Pt());
           Double_t invMass = dimuPair.M();
+          if ( invMass > 60. && invMass < 120. ) {
+            rejectTrack[itrack] = 1;
+            rejectTrack[jtrack] = 1;
+          }
           if ( istep == kStepReconstructed ) {
-            if ( invMass > 60. && invMass < 120. ) {
-              rejectTrack[itrack] = 1;
-              rejectTrack[jtrack] = 1;
-            }
             for ( Int_t itrig=0; itrig<selectTrigClasses.GetEntries(); ++itrig ) {
               TString trigClassName = ((TObjString*)selectTrigClasses.At(itrig))->GetString();
               if ( ! fMuonTrackCuts->TrackPtCutMatchTrigClass(track, fMuonEventCuts->GetTrigClassPtCutLevel(trigClassName)) || ! fMuonTrackCuts->TrackPtCutMatchTrigClass(auxTrack, fMuonEventCuts->GetTrigClassPtCutLevel(trigClassName)) ) continue;
