@@ -360,8 +360,33 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   furtherOpt.ToUpper();
   Bool_t plotChargeAsymmetry = furtherOpt.Contains("ASYM");
   
-  AliCFContainer* cfContainer = static_cast<AliCFContainer*> ( GetSum(physSel,trigClassName,centralityRange,"SingleMuContainer") );
-  if ( ! cfContainer ) return;
+  AliCFContainer* inContainer = static_cast<AliCFContainer*> ( GetSum(physSel,trigClassName,centralityRange,"SingleMuContainer") );
+  if ( ! inContainer ) return;
+  
+  AliCFContainer* cfContainer = inContainer;
+  
+  if ( ! furtherOpt.Contains("GENINTRIGCLASS") && trigClassName != "ANY" ) {
+    // The output container contains both the reconstructed and (in MC)
+    // the generated muons in a specific trigger class.
+    // Since the trigger pt level of the track is matched to the trigger class,
+    // analyzing the MUHigh trigger (for example) is equivalent of analyzing
+    // Hpt tracks.
+    // However, in this way, the generated muons distribution depend
+    // on a condition on the reconstructed track.
+    // If we calculate the Acc.xEff. as the ratio of reconstructed and
+    // generated muons IN A TRIGGER CLASS, we are biasing the final result.
+    // The correct value of Acc.xEff. is hence obtained as the distribution
+    // of reconstructed tracks in a muon trigger class, divided by the
+    // total number of generated class (which is in the "class" ANY).
+    // The following code sets the generated muons as the one in the class ANY.
+    // The feature is the default. If you want the generated muons in the same
+    // trigger class as the generated tracks, use option "GENINTRIGCLASS"
+    AliCFContainer* fullMCcontainer = static_cast<AliCFContainer*> ( GetSum(physSel,"ANY",centralityRange,"SingleMuContainer") );
+    if ( fullMCcontainer ) {
+      cfContainer = static_cast<AliCFContainer*>(cfContainer->Clone("SingleMuContainerCombo"));
+      cfContainer->SetGrid(kStepGeneratedMC,fullMCcontainer->GetGrid(kStepGeneratedMC));
+    }
+  }
   
   AliCFEffGrid* effSparse = new AliCFEffGrid(Form("eff%s", cfContainer->GetName()),Form("Efficiency %s", cfContainer->GetTitle()),*cfContainer);
   effSparse->CalculateEfficiency(kStepReconstructed, kStepGeneratedMC);
