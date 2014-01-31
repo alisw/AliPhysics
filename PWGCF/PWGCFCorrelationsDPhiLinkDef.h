@@ -39,5 +39,6 @@
 #pragma link C++ class AliTwoParticlePIDCorr+;
 #pragma link C++ class LRCParticlePID+;
 #pragma link C++ class AliAnalysisTaskPidPidCorrelations+;
+#pragma link C++ class AliPidPidCorrelationReducedTrack+;
 #pragma link C++ class AliAnalysisTaskPhiEffMc+;
 #endif
