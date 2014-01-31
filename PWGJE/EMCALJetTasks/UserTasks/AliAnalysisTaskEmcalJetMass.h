@@ -42,11 +42,12 @@ class AliAnalysisTaskEmcalJetMass : public AliAnalysisTaskEmcalJet {
   TProfile        **fpPtVsMassJet1Tagged;         //!pT vs avg mass of tagged jets
   TH2F            **fh2MassVsAreaJet1All;         //!mass vs area of all jets
   TH2F            **fh2MassVsAreaJet1Tagged;      //!mass vs area of tagged jets
+  TH2F            **fh2EtMassOverEtRSq;           //!Et vs (M/Et*R)^2
 
   AliAnalysisTaskEmcalJetMass(const AliAnalysisTaskEmcalJetMass&);            // not implemented
   AliAnalysisTaskEmcalJetMass &operator=(const AliAnalysisTaskEmcalJetMass&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetMass, 1)
+  ClassDef(AliAnalysisTaskEmcalJetMass, 2)
 };
 #endif
 

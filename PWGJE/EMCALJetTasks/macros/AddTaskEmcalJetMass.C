@@ -137,7 +137,7 @@ AliAnalysisTaskEmcalJetMass* AddTaskEmcalJetMass(const char * njetsBase,
     jetContBase->ConnectParticleContainer(trackCont);
     jetContBase->ConnectClusterContainer(clusterCont);
     jetContBase->SetZLeadingCut(0.98,0.98);
-    task->SetPercAreaCut(0.6, 0);
+    jetContBase->SetPercAreaCut(0.6);
   }
 
   task->SetCaloTriggerPatchInfoName(kEmcalTriggers.Data());
