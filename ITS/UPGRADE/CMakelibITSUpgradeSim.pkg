@@ -41,6 +41,7 @@ AliITSUSimulationPix.cxx
 AliITSUDigitPix.cxx
 AliITSUDigitizer.cxx
 AliITSUHit.cxx
+AliITSUSuze02.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

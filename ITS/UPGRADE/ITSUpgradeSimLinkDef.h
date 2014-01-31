@@ -29,6 +29,7 @@
 #pragma link C++ class  AliITSUDigitPix+;
 #pragma link C++ class  AliITSUDigitizer+;
 #pragma link C++ class  AliITSUHit+;
+#pragma link C++ class  AliITSUSuze02+;
 
 
 #endif
