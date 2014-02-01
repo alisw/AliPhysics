@@ -390,6 +390,15 @@ Int_t AliFJWrapper::Run()
                                       0,    //search of stable cones - zero = until no more
                                       1.0); // this should be seed effectively for proto jets
       fJetDef = new fastjet::JetDefinition(fPlugin);
+    } else if (fPluginAlgor == 1) {
+      // CDF cone
+      // NOTE: hardcoded split parameter
+      Double_t overlap_threshold = 0.75; // NOTE: this actually splits a lot: thr/min(pt1,pt2)
+      fPlugin = new fj::CDFMidPointPlugin(fR, 
+                                      overlap_threshold,
+                                      1.0,    //search of stable cones - zero = until no more
+                                      1.0); // this should be seed effectively for proto jets
+      fJetDef = new fastjet::JetDefinition(fPlugin);
     } else {
       AliError("[e] Unrecognized plugin number!");
     }
