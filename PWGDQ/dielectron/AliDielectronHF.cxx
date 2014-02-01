@@ -557,7 +557,7 @@ void AliDielectronHF::Init()
   Int_t istep=0;
   if(fPairType != kMConly) {
     for(istep=0; istep<AliDielectron::kEv1PMRot+1; istep++) {
-      //    for(Int_t i=steps; i<steps+AliDielectron::kEv1PMRot+1; i++) {
+
       if(IsPairTypeSelected(istep)) {
 	// add a deep copy of the array
 	fArrPairType[istep]=(TObjArray*)histArr->Clone(AliDielectron::PairClassName(istep));
@@ -568,12 +568,6 @@ void AliDielectronHF::Init()
 	((TObjArray*)fArrPairType[istep])->SetOwner();
 	((TObjArray*)fArrPairType[istep])->SetName(AliDielectron::PairClassName(istep));
       }
-      // fArrPairType[istep]=(TObjArray*)histArr->Clone(AliDielectron::PairClassName(istep));
-      // ((TObjArray*)fArrPairType[istep])->SetOwner();
-      // if(!IsPairTypeSelected(istep)) {
-      // 	((TObjArray*)fArrPairType[istep])->Delete();
-      // 	((TObjArray*)fArrPairType[istep])->Expand(0);
-      // }
     } //end: loop over pair types
   }
 
@@ -615,8 +609,8 @@ Bool_t AliDielectronHF::IsPairTypeSelected(Int_t itype)
 {
   //
   // check whether a pair type was selected
-  //
-  
+  // TODO: cross check or replace by mixinghandlers processsing
+
   Bool_t selected = kFALSE;
 
   // fill all
@@ -635,6 +629,8 @@ Bool_t AliDielectronHF::IsPairTypeSelected(Int_t itype)
     if(fPairType==kMeAll || fPairType==kSeMeAll)   selected = kTRUE;
     break;
   case AliDielectron::kEv1PEv2M:
+    if(fPairType==kMeAll || fPairType==kSeMeAll) selected = kTRUE;
+    break;
   case AliDielectron::kEv1MEv2P:
     if(fPairType==kMeAll || fPairType==kSeMeAll || fPairType==kMeOnlyOS || fPairType==kSeMeOnlyOS)   selected = kTRUE;
     break;
