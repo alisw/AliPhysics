@@ -17,7 +17,6 @@
 
 #pragma link C++ class AliAODEvent+;
 #pragma link C++ class AliAODHeader+;
-#pragma link C++ class AliAODTrack+;
 
 #pragma read                                              \
     sourceClass="AliAODPid"                               \
@@ -28,6 +27,14 @@
     code="{newObj->SetTPCsignalN((UChar_t)onfile.fTPCsignalN); newObj->SetTPCmomentum(onfile.fTPCmomentum); for (Int_t i=0;i<6;++i) newObj->SetTRDmomentum(i,onfile.fTRDmomentum[i]);}" 
 
 #pragma link C++ class AliAODPid+;
+
+
+#pragma read sourceClass="AliAODTrack" targetClass="AliAODTrack" source="Double32_t fPID[10]"  version="[-23]" \
+ target="fPID" targetType="Double32_t*" \
+   code="{fPID = new Double32_t[10];for(Int_t isp=10;isp--;) fPID[isp]=onfile.fPID[isp];}"
+
+#pragma link C++ class AliAODTrack+;
+
 #pragma link C++ class AliAODVertex+;
 #pragma link C++ class AliAODCluster+;
 #pragma link C++ class AliAODCaloCluster+;
