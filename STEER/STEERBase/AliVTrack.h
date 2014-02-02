@@ -99,6 +99,8 @@ public:
   virtual Int_t GetPHOScluster()      const {return -1;}
   virtual void SetPHOScluster(Int_t)        {;}
   virtual Bool_t IsPHOS()             const {return kFALSE;}
+  virtual void   SetPIDForTracking(Int_t ) {}
+  virtual Int_t  GetPIDForTracking() const {return -999;}
   
   //pid info
   virtual void     SetStatus(ULong_t /*flags*/) {;}
