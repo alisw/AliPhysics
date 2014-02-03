@@ -244,8 +244,14 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
       fpPtVsMassJet1Tagged[fCentBin]->Fill(ptJet1,jet1->M());
       fh2MassVsAreaJet1Tagged[fCentBin]->Fill(jet1->M(),jet1->Area());
       
-      Double_t massOverEtR = jet1->M()/(ptJet1*jetCont->GetJetRadius());
-      fh2EtMassOverEtRSq[fCentBin]->Fill(ptJet1,massOverEtR*massOverEtR);
+      //      Double_t massOverEtR = jet1->M()/(ptJet1*jetCont->GetJetRadius());
+      //      fh2EtMassOverEtRSq[fCentBin]->Fill(ptJet1,massOverEtR*massOverEtR);
+      Double_t Et2 = jet1->M()*jet1->M() + jet1->Pt()*jet1->Pt();
+      Double_t Et = 0.;    Double_t massOverEtR = 0.;
+      if(Et2>0.) Et = TMath::Sqrt(Et2);
+      if((Et*jetCont->GetJetRadius())>0.) 
+	massOverEtR = jet1->M()/(Et*jetCont->GetJetRadius());
+      fh2EtMassOverEtRSq[fCentBin]->Fill(Et,massOverEtR*massOverEtR);
     }
   }
 
