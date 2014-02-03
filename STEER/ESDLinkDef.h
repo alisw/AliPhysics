@@ -29,7 +29,9 @@
 // see http://root.cern.ch/svn/root/trunk/io/doc/DataModelEvolution.txt
 
 #pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Int_t fTOFLabel[3]"  version="[-68]" target="fTOFLabel" targetType="Int_t*" code="{fTOFLabel = new Int_t[3];for(Int_t i=0;i < 3;i++) fTOFLabel[i]=onfile.fTOFLabel[i];}"
-#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTrackTime[5]"  version="[-68]" target="fTrackTime" targetType="Double32_t*" include="AliPID.h" code="{fTrackTime = new Double32_t[AliPID::kSPECIESC];for(Int_t isp=0;isp < 5;isp++) fTrackTime[isp]=onfile.fTrackTime[isp];}"
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTrackTime[5]"  version="[-68]" \
+target="fTrackTime" targetType="Double32_t*" include="AliPID.h" \
+code="{fTrackTime = new Double32_t[AliPID::kSPECIESC];for(Int_t isp=AliPID::kSPECIESC;isp--;) fTrackTime[isp]=isp<AliPID::kSPECIES ? onfile.fTrackTime[isp]:0;}"
 #pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTrackLength"  version="[-68]" target="fTrackLength" targetType="Double32_t" code="{fTrackLength=onfile.fTrackLength;}"
 
 
