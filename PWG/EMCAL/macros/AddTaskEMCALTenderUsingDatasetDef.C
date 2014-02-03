@@ -23,16 +23,37 @@ AliAnalysisTaskSE *AddTaskEMCALTenderUsingDatasetDef(
   UInt_t clusterizer    = AliEMCALRecParam::kClusterizerv2;
   Bool_t trackMatch     = kTRUE;   //track matching
   Bool_t updateCellOnly = kFALSE;  //only change if you run your own clusterizer task
-  Float_t timeMin       = 100e-9;  //minimum time of physical signal in a cell/digit (s)
-  Float_t timeMax       = 900e-9;  //maximum time of physical signal in a cell/digit (s)
-  Float_t timeCut       = 900e-9;  //maximum time difference between the digits inside EMC cluster (s)
+  Float_t timeMin       = -50e6;   //minimum time of physical signal in a cell/digit (s)
+  Float_t timeMax       =  50e6;   //maximum time of physical signal in a cell/digit (s)
+  Float_t timeCut       =   1e6;   //maximum time difference between the digits inside EMC cluster (s)
+
+  Bool_t isMC = kFALSE;
 
   TString period(perstr);
   period.ToLower();
-  if (period == "lhc12a15e")
+
+  if (period == "lhc11h") {
+    trackMatch = kFALSE;
+    timeMin = 100e-9;
+    timeMax = 900e-9;
+    timeCut = 900e-9;
+  }
+  else if (period == "lhc12a15e" || period == "lhc12a15e_fix") {
     nonLinFunct = AliEMCALRecoUtils::kPi0MCv3;
-  else if (period == "lhc12a15a")
+    isMC = kTRUE;
+  }
+  else if (period == "lhc12a15a") {
     nonLinFunct = AliEMCALRecoUtils::kPi0MCv2;
+    isMC = kTRUE;
+  }
+  else if(period == "lhc12a" || period == "lhc12b" || period == "lhc12c" || period == "lhc12d" || period == "lhc12e" || period == "lhc12f" || period == "lhc12g" || period == "lhc12h" || period == "lhc12i") {
+    reclusterize = kTRUE;
+    seedthresh = 0.3;
+    cellthresh = 0.05;
+    timeMin = 485e-9; //no timing calib available
+    timeMax = 685e-9;
+    timeCut =  1e6;
+  }
   else if(period == "lhc13b" || period == "lhc13c" || period == "lhc13d" || period == "lhc13e" || period == "lhc13f" || period == "lhc13g" || 
 	  period == "lhc13b4" || period == "lhc13b4_fix" || period == "lhc13b4_plus") {
     reclusterize = kTRUE;
@@ -44,10 +65,15 @@ AliAnalysisTaskSE *AddTaskEMCALTenderUsingDatasetDef(
       timeCut =  1e6;
     }
     else if(period == "lhc13b4" || period == "lhc13b4_fix" || period == "lhc13b4_plus") {
-      timeMin = -1;
-      timeMax =  1e6;
-      timeCut =  1e6;
+      nonLinFunct = AliEMCALRecoUtils::kMCPi0v3;
+      isMC = kTRUE;
     }
+  }
+
+  if(isMC) { //no timing cuts when running on MC
+    timeMin = -1;
+    timeMax =  1e6;
+    timeCut =  1e6;
   }
 
   AliAnalysisTaskSE *task = AddTaskEMCALTender(
