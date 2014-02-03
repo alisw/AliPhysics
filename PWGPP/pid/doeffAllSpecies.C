@@ -42,9 +42,20 @@ performAllPi(){
   isMC = kFALSE;
   selectTrue = kTRUE;
   keepTrue = kFALSE;
-  
+  kPid2Sigma = kFALSE;
+  kPid3Sigma = kFALSE;
+ 
   if(! LoadLib()) return;
-  
+
+  kPid2Sigma = kTRUE;
+  doeffPi(1,0.,etamin,etamax);
+  doeffPi(0,0.,etamin,etamax);
+  kPid2Sigma = kFALSE;
+  kPid3Sigma = kTRUE;
+  doeffPi(1,0.,etamin,etamax);
+  doeffPi(0,0.,etamin,etamax);
+  kPid3Sigma = kFALSE;
+
   // matching and PID eff.
   doeffPi(1,0.1,etamin,etamax);
   doeffPi(0,0.1,etamin,etamax);
@@ -139,8 +150,19 @@ performAllPr(){
   isMC = kFALSE;
   selectTrue = kTRUE;
   keepTrue = kFALSE;
-  
+  kPid2Sigma = kFALSE;
+  kPid3Sigma = kFALSE;
+ 
   if(! LoadLib()) return;
+
+  kPid2Sigma = kTRUE;
+  doeffPr(1,0.,etamin,etamax);
+  doeffPr(0,0.,etamin,etamax);
+  kPid2Sigma = kFALSE;
+  kPid3Sigma = kTRUE;
+  doeffPr(1,0.,etamin,etamax);
+  doeffPr(0,0.,etamin,etamax);
+  kPid3Sigma = kFALSE;
   
   // matching and PID eff.
   doeffPr(1,0.1,etamin,etamax);
@@ -236,15 +258,26 @@ performAllKa(){
   isMC = kFALSE;
   selectTrue = kTRUE;
   keepTrue = kFALSE;
-
+  kPid2Sigma = kFALSE;
+  kPid3Sigma = kFALSE;
+ 
   if(! LoadLib()) return;
+
+  kPid2Sigma = kTRUE;
+  doeffKa(1,0.,etamin,etamax);
+  doeffKa(0,0.,etamin,etamax);
+  kPid2Sigma = kFALSE;
+  kPid3Sigma = kTRUE;
+  doeffKa(1,0.,etamin,etamax);
+  doeffKa(0,0.,etamin,etamax);
+  kPid3Sigma = kFALSE;
 
   // matching and PID eff.
   doeffKa(1,0.1,etamin,etamax);
   doeffKa(0,0.1,etamin,etamax);
   doeffKa(1,0.2,etamin,etamax);
   doeffKa(1,0.4,etamin,etamax);
- doeffKa(1,0.6,etamin,etamax);
+  doeffKa(1,0.6,etamin,etamax);
   doeffKa(1,0.8,etamin,etamax);
   doeffKa(0,0.2,etamin,etamax);
   doeffKa(0,0.4,etamin,etamax);

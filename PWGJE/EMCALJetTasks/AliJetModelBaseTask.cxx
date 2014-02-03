@@ -181,14 +181,12 @@ void AliJetModelBaseTask::UserExec(Option_t *)
   if (vert)
     vert->GetXYZ(fVertex);
 
-  if (fCopyArray) {
-    if (fOutTracks)
-      fOutTracks->Delete();
-    if (fOutClusters)
-      fOutClusters->Delete();
-    if (fOutMCParticles)
-      fOutMCParticles->Delete();
-  }
+  if (fOutTracks)
+    fOutTracks->Delete();
+  if (fOutClusters)
+    fOutClusters->Delete();
+  if (fOutMCParticles)
+    fOutMCParticles->Delete();
 
   if (fDensitySpectrum) {
     fNTracks = TMath::Nint(fDensitySpectrum->GetRandom());

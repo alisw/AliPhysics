@@ -1963,7 +1963,7 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
 	fMixed = bMixed->GetCorrelationFunctionChargeIndependent(binPsiLowEdge,binPsiUpEdge,binVertexLowEdge,binVertexUpEdge,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
       }
 
-      if(fMixed && normToTrig){
+      if(fMixed && normToTrig && fMixed->Integral()>0){
 	
 	// normalization of Event mixing to 1 at (0,0) --> Jan Fietes method
 	// do it only on away-side (due to two-track cuts)

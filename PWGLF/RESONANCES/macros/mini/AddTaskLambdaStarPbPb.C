@@ -26,8 +26,8 @@ AliRsnMiniAnalysisTask * AddTaskLambdaStarPbPb
 
    AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidKstarPP2010,
 
-   Float_t     nsigmaPr = 3.0,
-   Float_t     nsigmaKa = 3.0,
+   Float_t     nsigmaPr = 2.0,
+   Float_t     nsigmaKa = 2.0,
    Bool_t      enableMonitor = kTRUE,
    Bool_t      IsMcTrueOnly = kFALSE,
    Int_t       nmix = 5,

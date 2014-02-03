@@ -35,7 +35,7 @@ AliFlowCandidateTrack::AliFlowCandidateTrack():
 }
 
 void AliFlowCandidateTrack::ClearMe(void) {
-  AliFlowTrackSimple::Clear();
+  AliFlowTrack::Clear();
   fNDaughters = 0;
   for(int i=0; i!=5; ++i) {
     fDaughter[i] = -1;

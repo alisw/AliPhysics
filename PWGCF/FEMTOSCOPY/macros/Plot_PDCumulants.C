@@ -25,6 +25,7 @@
 #include "TCanvas.h"
 #include "TLatex.h"
 #include "TPaveStats.h"
+#include "TASImage.h"
 
 #define BohrR 1963.6885 // Bohr Radius for pions
 #define FmToGeV 0.19733 // conversion to fm
@@ -33,12 +34,13 @@
 
 using namespace std;
 
-int FileSetting=0;// 0(standard), 1(r3 Lambda), 2(TTC), 3(PID), 4(Pos B), 5(Neg B), 6(GaussR8to5), 7(GaussR11to6), 8(4 kt bins old TTC cuts), 9 (FB5and7overlap)
+int FileSetting=0;// 0(standard), 1(r3 Lambda), 2(TTC), 3(PID), 4(Pos B), 5(Neg B), 6(GaussR8to5), 7(GaussR11to6), 8(4 kt bins old TTC cuts), 9 (FB5and7overlap), 10 (muon Variation: -0.5<NsigmaPion<2.0)
 bool MCcase_def=kFALSE;// MC data?
 int CHARGE_def=-1;// -1 or +1: + or - pions for same-charge case, --+ or ++- for mixed-charge case
-bool SameCharge_def=kTRUE;// 3-pion same-charge?
+bool SameCharge_def=1;// 3-pion same-charge?
 int EDbin_def=0;// 0 or 1: Kt3 bin
 //
+bool MuonCorrection=1;// correct for Muons?
 bool IncludeG_def=kFALSE;// Include coherence?
 bool IncludeEW_def=kTRUE;// Include EdgeWorth coefficients?
 bool IncludeEWfromTherm_def=kFALSE;// Include EdgeWorth coefficients from Therminator?
@@ -106,12 +108,10 @@ TH1D *CoulCorr2SS;
 TH1D *CoulCorr2OS;
 TF1 *StrongSC;// same-charge pion strong FSI
 
-//static double Lednicky_qinv[74];
-//static double Lednicky_CoulStrong[74];
 
 void ReadCoulCorrections(int, int, int);
 void ReadCoulCorrections_Omega0();
-//void ReadLednickyFile(int);
+void ReadMuonCorrections(int);
 void ReadMomResFile(int, double);
 double CoulCorr2(int, double);
 double CoulCorrOmega0(bool, double, double, double);
@@ -126,6 +126,7 @@ double C2osFitFunction(Double_t *x, Double_t *par);
 double cubicInterpolate(double[4], double);
 double bicubicInterpolate(double[4][4], double, double);
 double tricubicInterpolate(double[4][4][4], double, double, double);
+void DrawALICELogo(Bool_t, Float_t, Float_t, Float_t, Float_t);
 //
 void fcnC2_Global(int&, double*, double&, double[], int);
 void fcnOSL(int&, double*, double&, double[], int);
@@ -194,6 +195,12 @@ double r3_3d_arr_e[20][20][20];
 double AvgQinvSS[30];
 double AvgQinvOS[30];
 //
+TH1D *C2muonCorrection_SC;
+TH1D *C2muonCorrection_MC;
+TH1D *WeightmuonCorrection;
+TH1D *C3muonCorrection;
+
+
 
 
 void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool IncludeEWfromTherm=IncludeEWfromTherm_def, bool SameCharge=SameCharge_def, bool IncludeG=IncludeG_def, bool IncludeEW=IncludeEW_def, bool GRS=GRS_def, int EDbin=EDbin_def, int CHARGE=CHARGE_def, int Mbin=Mbin_def, int Ktbin=Ktbin_def){
@@ -288,7 +295,7 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
   
   // Core-Halo modeling of single-particle and triple-particle core fraction 
   //float AvgN[10]={472.56, 390.824, 319.597, 265.933, 218.308, 178.865, 141.2, 115.88, 87.5556, 69.3235};// 10h (avg total pion mult)/2. 2.0sigma
-  float AvgN[10]={571.2, 472.7, 400.2, 325.2, 268.721, 220.3, 178.9, 143.4, 113.412, 88.0};// 11h (avg total pion mult)/2.  2.0sigma
+  //float AvgN[10]={571.2, 472.7, 400.2, 325.2, 268.721, 220.3, 178.9, 143.4, 113.412, 88.0};// 11h (avg total pion mult)/2.  2.0sigma
  
   //
   // avg Qinv within the 5 MeV bins (0-5, 5-10,...) for true bin mean values.  From unsmeared HIJING 0-5% with input signal
@@ -330,7 +337,8 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
       if(Mbin<=1){
 	//myfile = new TFile("Results/PDC_HIJING_12a17ad_fix_genSignal_Rinv11.root","READ");
 	//myfile = new TFile("Results/PDC_HIJING_12a17ad_fix_genSignal_Rinv11_Smeared.root","READ");
-	myfile = new TFile("Results/PDC_HIJING_12a17ad_fix_KtgenSignal_Rinv11.root","READ");
+	//myfile = new TFile("Results/PDC_HIJING_12a17ad_fix_KtgenSignal_Rinv11.root","READ");
+	myfile = new TFile("Results/PDC_pureHIJING_12a17a_fix_KtgenSignal_Rinv11.root","READ");
 	//myfile = new TFile("Results/PDC_HIJING_10h8.root","READ");
       }else{
 	myfile = new TFile("Results/PDC_HIJING_12a17b_myRun_L0p68R11_C2plots.root","READ");
@@ -351,7 +359,8 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
       if(FileSetting==6) myfile = new TFile("Results/PDC_11h_GaussR8to5.root","READ");// Gaussian
       if(FileSetting==7) myfile = new TFile("Results/PDC_11h_GaussR11to6.root","READ");// Gaussian
       if(FileSetting==8) myfile = new TFile("Results/PDC_11h_4ktbins.root","READ");// 4 kt bins (0.035TTC)
-      if(FileSetting==9) myfile = new TFile("Results/PDC_11h_FB5and7overlap.root","READ");// FB5and7overlap
+      if(FileSetting==9) myfile = new TFile("Results/PDC_11h_FB5and7overlap_l0p8.root","READ");// FB5and7overlap
+      if(FileSetting==10) myfile = new TFile("Results/PDC_11h_muonVar.root","READ");
     }
   }else{// pp
     cout<<"pp not currently supported"<<endl;
@@ -362,9 +371,10 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
   //ReadLednickyFile(RValue);
   ReadMomResFile(RValueMomRes, TwoFracMomRes);
   ReadCoulCorrections_Omega0();
+  ReadMuonCorrections(Mbin);
   //
   /////////////////////////////////////////////////////////
-
+  
 
   double NormQcutLow;
   double NormQcutHigh;
@@ -910,14 +920,14 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
     for(int i=0; i<BINRANGE_C2global; i++){
       
       C2ssFitting[i] = (temp_mm->GetBinContent(i+1) + temp_pp->GetBinContent(i+1))/2.;
-      if(!GeneratedSignal && !MCcase) C2ssFitting[i] *= MomRes_C2_pp[i];
+      if(!GeneratedSignal && !MCcase) C2ssFitting[i] *= (MomRes_C2_pp[i]-1)*MRCShift+1;
       C2ssFitting_e[i] = pow(MomRes_C2_pp[i]*sqrt(pow(temp_mm->GetBinError(i+1),2) + pow(temp_pp->GetBinError(i+1),2))/sqrt(2.),2);
       C2ssRaw->SetBinContent(i+1, (temp_mm->GetBinContent(i+1) + temp_pp->GetBinContent(i+1))/2.);
       C2ssRaw->SetBinError(i+1, pow(sqrt(pow(temp_mm->GetBinError(i+1),2) + pow(temp_pp->GetBinError(i+1),2))/sqrt(2.),2));
       C2ssFitting_e[i] += pow((MomRes_C2_pp[i]-1)*0.1 * (temp_mm->GetBinContent(i+1) + temp_pp->GetBinContent(i+1))/2.,2);
       C2ssFitting_e[i] = sqrt(C2ssFitting_e[i]);
       C2osFitting[i] = temp_mp->GetBinContent(i+1);
-      if(!GeneratedSignal && !MCcase) C2osFitting[i] *= MomRes_C2_mp[i];
+      if(!GeneratedSignal && !MCcase) C2osFitting[i] *= (MomRes_C2_mp[i]-1)*MRCShift+1;
       C2osFitting_e[i] = pow(MomRes_C2_mp[i]*temp_mp->GetBinError(i+1),2);
       C2osRaw->SetBinContent(i+1, temp_mp->GetBinContent(i+1));
       C2osRaw->SetBinError(i+1, temp_mp->GetBinError(i+1));
@@ -1084,7 +1094,7 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
     
   }// iteration loop
   
-
+ 
   TH1D *C2_ss=(TH1D*)Two_ex_clone_mm->Clone();
   TH1D *C2_os=(TH1D*)Two_ex_clone_mp->Clone();
   TH1D *C2_ss_Momsys=(TH1D*)Two_ex_clone_mm->Clone();
@@ -1093,7 +1103,7 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
   TH1D *C2_os_Ksys=(TH1D*)Two_ex_clone_mp->Clone();
   TH1D *K2_ss = (TH1D*)Two_ex_clone_mm->Clone();
   TH1D *K2_os = (TH1D*)Two_ex_clone_mp->Clone();
-  
+
   for(int i=0; i<BINRANGE_C2global; i++){ 
     C2_ss->SetBinContent(i+1, C2ssFitting[i]);
     C2_os->SetBinContent(i+1, C2osFitting[i]);
@@ -1113,7 +1123,7 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
     K2_ss->SetBinContent(i+1, K2SS[i]); K2_ss->SetBinError(i+1, 0);
     K2_os->SetBinContent(i+1, K2OS[i]); K2_os->SetBinError(i+1, 0);
   }
-  
+
   C2_ss_Momsys->SetMarkerSize(0);
   C2_ss_Momsys->SetFillStyle(1000);
   C2_ss_Momsys->SetFillColor(kRed-10);
@@ -1148,9 +1158,9 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
   C2_os->SetMarkerSize(1.5);
   C2_os->SetMarkerStyle(25);
   C2_os->SetMarkerColor(4);
-  
-  TF1 *fitC2ss = new TF1("fitC2ss",C2ssFitFunction, 0.005,0.2, npar);
-  TF1 *fitC2os = new TF1("fitC2os",C2osFitFunction, 0.005,0.2, npar);
+ 
+  TF1 *fitC2ss = new TF1("fitC2ss",C2ssFitFunction, 0.001,0.2, npar);
+  TF1 *fitC2os = new TF1("fitC2os",C2osFitFunction, 0.001,0.2, npar);
   for(int i=0; i<npar; i++) {
     fitC2ss->FixParameter(i,OutputPar[i]);
     fitC2ss->SetParError(i,OutputPar_e[i]);
@@ -1163,6 +1173,7 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
   TH1D *fitC2os_h=new TH1D("fitC2os_h","",C2_os->GetNbinsX(),0,C2_os->GetXaxis()->GetBinUpEdge(C2_os->GetNbinsX()));
   fitC2ss_h->SetLineWidth(2); fitC2os_h->SetLineWidth(2);
   fitC2ss_h->SetLineColor(2); fitC2os_h->SetLineColor(4);
+
   for(int bin=1; bin<=fitC2ss_h->GetNbinsX(); bin++){
     double qinv=(bin-0.5)*0.005;
     fitC2ss_h->SetBinContent(bin, fitC2ss->Eval(qinv));
@@ -1511,7 +1522,7 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
   TH1D *Coul_Omega0 = new TH1D("Coul_Omega0","",Q3BINS,0,0.2);
   TH1D *c3_hist = new TH1D("c3_hist","",Q3BINS,0,0.2);
   TH1D *c3_hist_STAR = new TH1D("c3_hist_STAR","",Q3BINS,0,0.2);
-  TProfile *MomRes_2d = new TProfile("MomRes_2d","",Q3BINS,0,0.2, 0,20.,"");
+  //TProfile *MomRes_2d = new TProfile("MomRes_2d","",Q3BINS,0,0.2, 0,20.,"");
   TProfile *MomRes_3d_term1 = new TProfile("MomRes_3d_term1","",Q3BINS,0,0.2, 0,20.,"");
   TProfile *MomRes_3d_term2 = new TProfile("MomRes_3d_term2","",Q3BINS,0,0.2, 0,20.,"");
   TProfile *MomRes_3d_term5 = new TProfile("MomRes_3d_term5","",Q3BINS,0,0.2, 0,20.,"");
@@ -1550,8 +1561,7 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
     else {CB1=0; CB2=1; CB3=1; CP12=-1, CP13=-1, CP23=+1;}
   }
   
-
-
+  cout<<"here"<<endl;
   // SC = species combination.  Always 0 meaning pi-pi-pi.
   int SCBin=0;
   //
@@ -1608,7 +1618,8 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
 	}
 	if(MCcase && !GeneratedSignal) { K2_12=1.; K2_13=1.; K2_23=1.; K3=1.;}
 	if(K3==0) continue;
-	
+	if(GeneratedSignal) K3 = K2_12*K2_13*K2_23;// no interpolation for Generated signal
+
 	double TERM1=Three_3d[CB1][CB2][CB3][SCBin][0]->GetBinContent(i,j,k);// N3 (3-pion yield per q12,q13,q23 cell). 3-pions from same-event
 	double TERM2=Three_3d[CB1][CB2][CB3][SCBin][1]->GetBinContent(i,j,k);// N2*N1. 1 and 2 from same-event
 	double TERM3=Three_3d[CB1][CB2][CB3][SCBin][2]->GetBinContent(i,j,k);// N2*N1. 1 and 3 from same-event
@@ -1617,6 +1628,31 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
 	if(TERM1==0 && TERM2==0 && TERM3==0 && TERM4==0 && TERM5==0) continue;
 	if(TERM1==0 || TERM2==0 || TERM3==0 || TERM4==0 || TERM5==0) continue;
 	
+	double muonCorr_C3=1.0, muonCorr_C2_12=1.0, muonCorr_C2_13=1.0, muonCorr_C2_23=1.0;
+	double muonCorr_W12=1.0, muonCorr_W13=1.0, muonCorr_W23=1.0;
+	if(MuonCorrection){
+	  if(SameCharge){
+	    muonCorr_C3 = C3muonCorrection->GetBinContent(Q3bin);
+	    muonCorr_C2_12 = C2muonCorrection_SC->GetBinContent(Q12bin);
+	    muonCorr_C2_13 = C2muonCorrection_SC->GetBinContent(Q13bin);
+	    muonCorr_C2_23 = C2muonCorrection_SC->GetBinContent(Q23bin);
+	    muonCorr_W12 = WeightmuonCorrection->GetBinContent(Q12bin);
+	    muonCorr_W13 = WeightmuonCorrection->GetBinContent(Q13bin);
+	    muonCorr_W23 = WeightmuonCorrection->GetBinContent(Q23bin);
+	  }else{
+	    muonCorr_C3 = C3muonCorrection->GetBinContent(Q3bin);
+	    if(CHARGE==-1){// pi-pi-pi+
+	      muonCorr_C2_12 = C2muonCorrection_SC->GetBinContent(Q12bin);
+	      muonCorr_C2_13 = C2muonCorrection_MC->GetBinContent(Q13bin);
+	      muonCorr_C2_23 = C2muonCorrection_MC->GetBinContent(Q23bin);
+	    }else{// pi-pi+pi+
+	      muonCorr_C2_12 = C2muonCorrection_MC->GetBinContent(Q12bin);
+	      muonCorr_C2_13 = C2muonCorrection_MC->GetBinContent(Q13bin);
+	      muonCorr_C2_23 = C2muonCorrection_SC->GetBinContent(Q23bin);
+	    }
+	  }
+	}	
+
 	if(Q3>0.08 && Q3<0.09){// just for testing
 	  if(Q12>0.08 || Q13>0.08 || Q23>0.08) OutTriplets++;
 	  else InTriplets++;
@@ -1631,13 +1667,6 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
 	    TERM3 *= (MomRes3d[0][2]->GetBinContent(Q12bin, Q13bin, Q23bin)-1)*MRCShift+1;
 	    TERM4 *= (MomRes3d[0][3]->GetBinContent(Q12bin, Q13bin, Q23bin)-1)*MRCShift+1;
 	    TERM5 *= (MomRes3d[0][4]->GetBinContent(Q12bin, Q13bin, Q23bin)-1)*MRCShift+1;
-	    // Triple produce of 1-d momentum resolution corrections (less accurate).
-	    /*TERM1 *= MomRes_term1_pp[i-1]*MomRes_term1_pp[j-1]*MomRes_term1_pp[k-1];
-	    TERM2 *= MomRes_term1_pp[i-1]*MomRes_term2_pp[j-1]*MomRes_term2_pp[k-1];
-	    TERM3 *= MomRes_term2_pp[i-1]*MomRes_term1_pp[j-1]*MomRes_term2_pp[k-1];
-	    TERM4 *= MomRes_term2_pp[i-1]*MomRes_term2_pp[j-1]*MomRes_term1_pp[k-1];
-	    TERM5 *= MomRes_term2_pp[i-1]*MomRes_term2_pp[j-1]*MomRes_term2_pp[k-1];*/
-	    //MomRes_2d->Fill(Q3, MomRes_term1_pp[i-1]*MomRes_term1_pp[j-1]*MomRes_term1_pp[k-1]);
 	    MomRes_3d_term1->Fill(Q3, MomRes3d[0][0]->GetBinContent(Q12bin, Q13bin, Q23bin),TERM1);
 	    MomRes_3d_term2->Fill(Q3, MomRes3d[0][1]->GetBinContent(Q12bin, Q13bin, Q23bin),TERM2);
 	    MomRes_3d_term5->Fill(Q3, MomRes3d[0][4]->GetBinContent(Q12bin, Q13bin, Q23bin),TERM5);
@@ -1648,25 +1677,13 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
 	      TERM3 *= (MomRes3d[1][2]->GetBinContent(Q12bin, Q13bin, Q23bin)-1)*MRCShift+1;
 	      TERM4 *= (MomRes3d[1][3]->GetBinContent(Q12bin, Q13bin, Q23bin)-1)*MRCShift+1;
 	      TERM5 *= (MomRes3d[1][4]->GetBinContent(Q12bin, Q13bin, Q23bin)-1)*MRCShift+1;
-	      //TERM1 *= MomRes_term1_pp[i-1]*MomRes_term1_mp[j-1]*MomRes_term1_mp[k-1];
-	      //TERM2 *= MomRes_term1_pp[i-1]*MomRes_term2_mp[j-1]*MomRes_term2_mp[k-1];
-	      //TERM3 *= MomRes_term2_pp[i-1]*MomRes_term1_mp[j-1]*MomRes_term2_mp[k-1];
-	      //TERM4 *= MomRes_term2_pp[i-1]*MomRes_term2_mp[j-1]*MomRes_term1_mp[k-1];
-	      //TERM5 *= MomRes_term2_pp[i-1]*MomRes_term2_mp[j-1]*MomRes_term2_mp[k-1];
-	      
 	    }else {// pi-pi+pi+
 	      TERM1 *= (MomRes3d[1][0]->GetBinContent(Q23bin, Q13bin, Q12bin)-1)*MRCShift+1;
 	      TERM2 *= (MomRes3d[1][3]->GetBinContent(Q23bin, Q13bin, Q12bin)-1)*MRCShift+1;
 	      TERM3 *= (MomRes3d[1][2]->GetBinContent(Q23bin, Q13bin, Q12bin)-1)*MRCShift+1;
 	      TERM4 *= (MomRes3d[1][1]->GetBinContent(Q23bin, Q13bin, Q12bin)-1)*MRCShift+1;
 	      TERM5 *= (MomRes3d[1][4]->GetBinContent(Q23bin, Q13bin, Q12bin)-1)*MRCShift+1;
-	      //TERM1 *= MomRes_term1_mp[i-1]*MomRes_term1_mp[j-1]*MomRes_term1_pp[k-1];
-	      //TERM2 *= MomRes_term1_mp[i-1]*MomRes_term2_mp[j-1]*MomRes_term2_pp[k-1];
-	      //TERM3 *= MomRes_term2_mp[i-1]*MomRes_term1_mp[j-1]*MomRes_term2_pp[k-1];
-	      //TERM4 *= MomRes_term2_mp[i-1]*MomRes_term2_mp[j-1]*MomRes_term1_pp[k-1];
-	      //TERM5 *= MomRes_term2_mp[i-1]*MomRes_term2_mp[j-1]*MomRes_term2_pp[k-1];
 	    }
-	    //MomRes_2d->Fill(Q3, MomRes_term1_pp[i-1]*MomRes_term1_mp[j-1]*MomRes_term1_mp[k-1]);// always treats 12 as ss pair
 	    MomRes_3d_term1->Fill(Q3, MomRes3d[1][0]->GetBinContent(Q12bin, Q13bin, Q23bin), TERM1);
 	    MomRes_3d_term2->Fill(Q3, MomRes3d[1][1]->GetBinContent(Q12bin, Q13bin, Q23bin),TERM2);
 	    MomRes_3d_term5->Fill(Q3, MomRes3d[1][4]->GetBinContent(Q12bin, Q13bin, Q23bin),TERM5);
@@ -1677,9 +1694,9 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
 	for(int LamType=0; LamType<2; LamType++){
 	  
 	  if(LamType==1) TwoFrac=TwoFracr3;// r3
-	  else TwoFrac = OutputPar[1];// c3
+	  else TwoFrac = 0.7;//OutputPar[1];// c3 (newly fixed to 0.7)
 	  
-	  if(LamType==0 && FileSetting==9) TwoFrac=0.8;// for FB5and7overlap choose a fixed higher lambda
+	  if(FileSetting==9) TwoFrac=0.8;// for FB5and7overlap choose a fixed higher lambda
 
 	  OneFrac=pow(TwoFrac,0.5); // 0.495 to bring baseline up
 	  ThreeFrac=pow(TwoFrac,1.5);
@@ -1695,16 +1712,18 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
 	  N3_QS[LamType] -= (1-OneFrac)*(TERM2 + TERM3 + TERM4 - 3*(1-TwoFrac)*TERM5);
 	  N3_QS[LamType] /= ThreeFrac;
 	  N3_QS[LamType] /= K3;
+	  N3_QS[LamType] *= muonCorr_C3;
 	  
 	  if(LamType==0) num_QS->Fill(Q3, N3_QS[LamType]);
 	  
 	  // Isolate 3-pion cumulant
 	  value_num[LamType] = N3_QS[LamType];
-	  value_num[LamType] -= (TERM2 - (1-TwoFrac)*TERM5)/K2_12/TwoFrac;
-	  value_num[LamType] -= (TERM3 - (1-TwoFrac)*TERM5)/K2_13/TwoFrac;
-	  value_num[LamType] -= (TERM4 - (1-TwoFrac)*TERM5)/K2_23/TwoFrac;
+	  value_num[LamType] -= (TERM2 - (1-TwoFrac)*TERM5)/K2_12/TwoFrac * muonCorr_C2_12;
+	  value_num[LamType] -= (TERM3 - (1-TwoFrac)*TERM5)/K2_13/TwoFrac * muonCorr_C2_13;
+	  value_num[LamType] -= (TERM4 - (1-TwoFrac)*TERM5)/K2_23/TwoFrac * muonCorr_C2_23;
 	  value_num[LamType] += 2*TERM5;
 	  
+	  //value_num[LamType] += 0.004*TERM5;
 	  	  
 	  // r3 denominator
 	  if(LamType==1 && SameCharge) {
@@ -1747,11 +1766,14 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
 	      double den_ratioKShift = sqrt(fabs(denMRC1))/sqrt(fabs(denKshiftBack));
 	      value_den[LamType] *= den_ratioKShift;
 	      //
+	      value_den[LamType] *= sqrt(muonCorr_W12*muonCorr_W13*muonCorr_W23);// muon correction
+	      //
 	      //value_den[LamType] -= TPNRejects->GetBinContent(i,j,k);// Testing for 0-5% only to estimate the effect when C2^QS < 1.0
 	      value_den[LamType] *= (MomRes3d[0][4]->GetBinContent(Q12bin, Q13bin, Q23bin)-1)*MRCShift+1;// momentum resolution correction to combinatorics
-	    }
+	    }// !MCcase
 	  }
-	  
+	 
+
 	  // errors
 	  N3_QS_e[LamType] = fabs(TERM1);
 	  N3_QS_e[LamType] += pow(( pow(1-OneFrac,3) +3*OneFrac*pow(1-OneFrac,2) )*sqrt(fabs(TERM5)),2);
@@ -1973,7 +1995,7 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
   c3_hist->SetLineColor(2);
   c3_hist->SetMaximum(3);
   c3_hist->SetMinimum(.9);
-  if(!MCcase) c3_hist->Draw("same");
+  if(!MCcase && !GeneratedSignal) c3_hist->Draw("same");
   //legend2->AddEntry(c3_hist,"#font[12]{c}_{3} (cumulant correlation)","p");
   
   if(SameCharge){
@@ -2009,7 +2031,7 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
   //MomRes_3d_term5->Draw("same");
   //legend2->AddEntry(MomRes_3d,"3D","p");
   
-  legend2->Draw("same");
+  //legend2->Draw("same");
   
   //cout<<c3_hist->Integral(8,10)/3.<<endl;
   
@@ -2284,10 +2306,14 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
   TF1 *QuarticFit = new TF1("QuarticFit","[0]*(1-[1]*pow(x,4))",0,.1);
   QuarticFit->SetParameter(0,2); QuarticFit->SetParameter(1,0);
   QuarticFit->SetLineColor(4);
-  QuarticFit->SetParName(0,"I(Q^{4})"); QuarticFit->SetParName(1,"a(Q^{4})"); 
+  QuarticFit->SetParName(0,"I^{Quartic}"); QuarticFit->SetParName(1,"a^{Quartic}"); 
   TF1 *QuadraticFit = new TF1("QuadraticFit","[0]*(1-[1]*pow(x,2))",0,.1);
   QuadraticFit->SetParameter(0,2); QuadraticFit->SetParameter(1,0);
-  QuadraticFit->SetParName(0,"I(Q^{2})"); QuadraticFit->SetParName(1,"a(Q^{2})"); 
+  QuadraticFit->SetParName(0,"I^{Quadratic}"); QuadraticFit->SetParName(1,"a^{Quadratic}"); 
+  TLegend *legend3 = new TLegend(.2,.85,.5,.95,NULL,"brNDC");
+  legend3->SetBorderSize(1);
+  legend3->SetTextSize(.04);// small .03; large .06
+  legend3->SetFillColor(0);
 
 
   if(SameCharge){
@@ -2295,29 +2321,164 @@ void Plot_PDCumulants(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bo
     r3_num_Q3->SetMinimum(0); r3_num_Q3->SetMaximum(2.5);// 0 to 2.5
     r3_num_Q3->GetXaxis()->SetRangeUser(0.0,0.1);
     r3_num_Q3->Draw();
+
+
+    // HIJING standalone
+    // Kt3 1
+    /*double Gen_r3_m_M0[10]={0, 1.97963, 2.10248, 2.04465, 1.96697, 2.02295, 1.92281, 2.10031, 2.22338, 2.49729};
+    double Gen_r3_m_M0_e[10]={0, 0.132726, 0.0668652, 0.0451347, 0.042838, 0.0546967, 0.0754362, 0.133624, 0.286307, 0.628381};
+    double Gen_r3_p_M0[10]={0, 1.91771, 1.9653, 2.00742, 2.02393, 1.90624, 1.93554, 1.66, 1.79584, 0.301761};
+    double Gen_r3_p_M0_e[10]={0, 0.133654, 0.0667213, 0.0451512, 0.0428925, 0.0547591, 0.0754764, 0.13365, 0.28638, 0.628441};*/
+    // Kt3 2
+    /*double Gen_r3_m_M0[10]={0, 1.12993, 2.09715, 1.91886, 2.08493, 2.10931, 2.00286, 1.99898, 1.78549, 1.91861};
+    double Gen_r3_m_M0_e[10]={0, 0.237903, 0.115454, 0.0725178, 0.0630867, 0.0730326, 0.0886163, 0.12885, 0.213654, 0.379273};
+    double Gen_r3_p_M0[10]={0, 2.05766, 1.97408, 2.05182, 2.02431, 2.11783, 1.93294, 1.97525, 2.21833, 2.31318};
+    double Gen_r3_p_M0_e[10]={0, 0.24238, 0.11515, 0.0725077, 0.0629938, 0.0729842, 0.0886386, 0.12884, 0.213737, 0.379196};*/
     
+    
+    // HIJING + ALICE
+    // Kt3 1
+    /*double Gen_r3_m_M0[10]={0, 2.03468, 2.05783, 1.97757, 2.03809, 1.95703, 2.02915, 1.80055, 1.97664, 1.49573};
+    double Gen_r3_m_M0_e[10]={0, 0.284164, 0.0923288, 0.0543837, 0.045952, 0.0565222, 0.0748221, 0.128994, 0.271954, 0.599077};
+    double Gen_r3_p_M0[10]={0, 1.74611, 1.92369, 2.11024, 2.02823, 2.06235, 2.00127, 1.91551, 1.90576, 2.521};
+    double Gen_r3_p_M0_e[10]={0, 0.279962, 0.0928866, 0.0548168, 0.0462253, 0.0569129, 0.0752683, 0.129803, 0.2736, 0.602535};
+    double Gen_r3_m_M1[10]={0, 1.71341, 1.8735, 1.9352, 1.96466, 1.93852, 1.69509, 1.51402, 1.6014, -0.802941};
+    double Gen_r3_m_M1_e[10]={0, 0.334562, 0.108368, 0.0640739, 0.0540579, 0.0663174, 0.0876532, 0.149302, 0.307982, 0.640548};
+    double Gen_r3_p_M1[10]={0, 1.50861, 2.09508, 2.05338, 1.96178, 1.97999, 2.07162, 1.8607, 1.91805, 1.10468};
+    double Gen_r3_p_M1_e[10]={0, 0.3399, 0.109449, 0.0646241, 0.0544419, 0.0667711, 0.0882695, 0.150195, 0.309844, 0.643923};*/
+    // Kt3 2
+    /*double Gen_r3_m_M0[10]={0, 1.04272, 2.05961, 1.93025, 2.08203, 2.07565, 2.29192, 1.93009, 2.68715, 1.71175};
+    double Gen_r3_m_M0_e[10]={0, 3.09343, 0.30016, 0.117634, 0.0757208, 0.0794904, 0.090823, 0.128235, 0.21308, 0.40023};
+    double Gen_r3_p_M0[10]={0, 1.83276, 1.88969, 2.03778, 2.0907, 2.11919, 2.04992, 2.02593, 1.95209, 1.68264};
+    double Gen_r3_p_M0_e[10]={0, 3.59, 0.298056, 0.118354, 0.0762849, 0.079909, 0.0912179, 0.128866, 0.213999, 0.402173};
+    double Gen_r3_m_M1[10]={0, 5.40628, 1.52822, 1.93258, 2.13338, 2.05811, 2.02963, 2.1204, 2.04906, 1.9021};
+    double Gen_r3_m_M1_e[10]={0, 4.3025, 0.350163, 0.13871, 0.0897272, 0.0938973, 0.107045, 0.151557, 0.25029, 0.446325};
+    double Gen_r3_p_M1[10]={0, 3.15883, 1.86772, 2.24914, 2.12118, 2.09175, 2.01447, 2.36802, 2.57239, 2.68729};
+    double Gen_r3_p_M1_e[10]={0, 4.6622, 0.348237, 0.140294, 0.0903003, 0.09446, 0.107692, 0.152575, 0.251939, 0.448919};*/
+    
+    //double r3Sys_M1[10]={0, 0.097, 0.056, 0.063, 0.097, 0.17, 0.32, 0.66, 1.4, 3.4};
+    // muon variation
+    /*double r3_muonVar_M1[10]={0, 1.73244, 1.80921, 1.77852, 1.7192, 1.62059, 1.50122, 1.37656, 1.01344, 0.755781};
+    double r3_muonVar_M1_e[10]={0, 0.160786, 0.051075, 0.031982, 0.0293467, 0.0390241, 0.0514494, 0.0760959, 0.112944, 0.154592};
+    TH1D *r3_muonVar=(TH1D*)r3_num_Q3->Clone();
+    for(int i=0; i<10; i++){ 
+      r3_muonVar->SetBinContent(i+1,r3_muonVar_M1[i]); 
+      r3_muonVar->SetBinError(i+1,sqrt(pow(r3_muonVar_M1_e[i],2)+pow(r3Sys_M1[i],2)));
+    }
+    r3_muonVar->SetMarkerStyle(21);
+    r3_muonVar->SetMarkerColor(2); r3_muonVar->SetLineColor(2);
+    r3_muonVar->SetFillStyle(1000); r3_muonVar->SetFillColor(kRed-10);
+    r3_muonVar->Draw("E2 same");
+    r3_num_Q3->Draw("same");
+    legend3->AddEntry(r3_num_Q3,"-2.0<N#sigma_{Pion}<2.0 (default)","p");
+    legend3->AddEntry(r3_muonVar,"-0.5<N#sigma_{Pion}<2.0","p");
+    legend3->Draw("same");*/
+    
+    // muon correction 
+    /*double r3_muonCorr_M1[10]={0, 1.8462, 1.84371, 1.79934, 1.77217, 1.76725, 1.79545, 1.7986, 2.11717, 2.86177};
+    double r3_muonCorr_M1_e[10]={0, 0.0838277, 0.0266269, 0.0168108, 0.0156166, 0.0211333, 0.0286836, 0.0450595, 0.075618, 0.141419};
+    TH1D *r3_muonCorr=(TH1D*)r3_num_Q3->Clone();
+    for(int i=0; i<10; i++){ 
+      r3_muonCorr->SetBinContent(i+1,r3_muonCorr_M1[i]); 
+      r3_muonCorr->SetBinError(i+1,sqrt(pow(r3_muonCorr_M1_e[i],2) + pow(r3Sys_M1[i],2)));
+    }
+    r3_muonCorr->SetMarkerStyle(21);
+    r3_muonCorr->SetMarkerColor(2); r3_muonCorr->SetLineColor(2);
+    r3_muonCorr->SetFillStyle(1000); r3_muonCorr->SetFillColor(kRed-10);
+    r3_muonCorr->Draw("E2 same");
+    r3_num_Q3->Draw("same");
+    legend3->AddEntry(r3_num_Q3,"No Muon Correction","p");
+    legend3->AddEntry(r3_muonCorr,"Correction Applied","p");
+    legend3->Draw("same");*/
+    
+    // muon correction for muon variation data
+    /*double r3_muonCorr_M1[10]={0, 1.71115, 1.8128, 1.79761, 1.76112, 1.70699, 1.63908, 1.63417, 1.49861, 1.75565};
+    double r3_muonCorr_M1_e[10]={0, 0.155228, 0.0491558, 0.0308125, 0.0283357, 0.0378035, 0.0501422, 0.0756057, 0.119169, 0.202093};
+    TH1D *r3_muonCorr=(TH1D*)r3_num_Q3->Clone();
+    for(int i=0; i<10; i++){ 
+      r3_muonCorr->SetBinContent(i+1,r3_muonCorr_M1[i]); 
+      r3_muonCorr->SetBinError(i+1,sqrt(pow(r3_muonCorr_M1_e[i],2) + pow(r3Sys_M1[i],2)));
+    }
+    r3_muonCorr->SetMarkerStyle(21);
+    r3_muonCorr->SetMarkerColor(2); r3_muonCorr->SetLineColor(2);
+    r3_muonCorr->SetFillStyle(1000); r3_muonCorr->SetFillColor(kRed-10);
+    r3_muonCorr->Draw("E2 same");
+    r3_num_Q3->Draw("same");
+    legend3->AddEntry(r3_num_Q3,"Muon Corrected.  Default PID","p");
+    legend3->AddEntry(r3_muonCorr,"Muon Corrected.  Varied PID","p");
+    legend3->Draw("same");*/
+
+    /*for(int i=1; i<=10; i++){
+      cout<<r3_num_Q3->GetBinContent(i)<<", ";
+    }
+    cout<<endl;
+    for(int i=1; i<=10; i++){
+      cout<<r3_num_Q3->GetBinError(i)<<", ";
+      }*/
+
     /*
-    r3_num_Q3->Fit(QuarticFit,"IME","",0,0.1);
-    gPad->Update();
-    TPaveStats *Quartic_stats=(TPaveStats*)r3_num_Q3->FindObject("stats");
-    Quartic_stats->SetX1NDC(0.2);
-    Quartic_stats->SetX2NDC(0.5);
-    Quartic_stats->SetY1NDC(.8);
-    Quartic_stats->SetY2NDC(.9);
+    TH1D *Merged_SanityCheck=(TH1D*)r3_num_Q3->Clone();
+    for(int i=1; i<=10; i++){
+      double value = (Gen_r3_m_M0[i-1]+Gen_r3_p_M0[i-1])/2.;
+      double value_e = sqrt(pow(Gen_r3_m_M0_e[i-1],2)+pow(Gen_r3_p_M0_e[i-1],2))/2.;
+      //double value = (Gen_r3_m_M0[i-1]+Gen_r3_p_M0[i-1]+Gen_r3_m_M1[i-1]+Gen_r3_p_M1[i-1])/4.;
+      //double value_e = sqrt(pow(Gen_r3_m_M0_e[i-1],2)+pow(Gen_r3_p_M0_e[i-1],2)+pow(Gen_r3_m_M1_e[i-1],2)+pow(Gen_r3_p_M1_e[i-1],2))/4.;
+      Merged_SanityCheck->SetBinContent(i,value);
+      Merged_SanityCheck->SetBinError(i,value_e);
+    }
+    gPad->SetTopMargin(0.02); gPad->SetLeftMargin(0.1);
+    gPad->SetGridx(0); gPad->SetGridy(0);
+    Merged_SanityCheck->GetXaxis()->SetTitleOffset(1.2);
+    Merged_SanityCheck->GetYaxis()->SetTitleOffset(1.3);
+    Merged_SanityCheck->SetMinimum(0.3); Merged_SanityCheck->SetMaximum(2.68);
+    Merged_SanityCheck->Draw();
     
-    TH1D *r3_clone=(TH1D*)r3_num_Q3->Clone();
+    
+    //r3_num_Q3->Fit(QuarticFit,"IME","",0,0.1);
+    Merged_SanityCheck->Fit(QuarticFit,"IME","",0,0.1);
+    gPad->Update();
+    //TPaveStats *Quartic_stats=(TPaveStats*)r3_num_Q3->FindObject("stats");
+    TPaveStats *Quartic_stats=(TPaveStats*)Merged_SanityCheck->FindObject("stats");
+    Quartic_stats->SetX1NDC(0.15);
+    Quartic_stats->SetX2NDC(0.52);
+    Quartic_stats->SetY1NDC(.2);
+    Quartic_stats->SetY2NDC(.3);
+    
+    //TH1D *r3_clone=(TH1D*)r3_num_Q3->Clone();
+    TH1D *r3_clone=(TH1D*)Merged_SanityCheck->Clone();
     r3_clone->Fit(QuadraticFit,"IME","",0,0.1);
     gPad->Update();
     TPaveStats *Quadratic_stats=(TPaveStats*)r3_clone->FindObject("stats");
-    Quadratic_stats->SetX1NDC(0.55);
-    Quadratic_stats->SetX2NDC(0.85);
-    Quadratic_stats->SetY1NDC(.8);
-    Quadratic_stats->SetY2NDC(.9);
+    Quadratic_stats->SetX1NDC(0.54);
+    Quadratic_stats->SetX2NDC(0.91);
+    Quadratic_stats->SetY1NDC(.2);
+    Quadratic_stats->SetY2NDC(.3);
     
     QuarticFit->Draw("same");
     QuadraticFit->Draw("same");
     Quartic_stats->Draw("same");
     Quadratic_stats->Draw("same");
+    
+    TF1 *ChaoticLimit = new TF1("ChaoticLimit","2.0",0,1);
+    ChaoticLimit->SetLineStyle(3);
+    ChaoticLimit->Draw("same");
+    
+    TLatex *Specif_SanityCheck=new TLatex(0.2,0.35,"HIJING With Simulated QS+FSI Weights");
+    Specif_SanityCheck->SetNDC();
+    Specif_SanityCheck->SetTextFont(42);
+    Specif_SanityCheck->SetTextSize(0.04);
+    Specif_SanityCheck->Draw();
+    //TLatex *Specif_Kt3=new TLatex(0.2,0.45,"0.16<K_{t,3}<0.3 GeV/c");
+    TLatex *Specif_Kt3=new TLatex(0.2,0.45,"0.3<K_{t,3}<1.0 GeV/c");
+    Specif_Kt3->SetNDC();
+    Specif_Kt3->SetTextFont(42);
+    Specif_Kt3->SetTextSize(0.04);
+    Specif_Kt3->Draw();
+    
+    legend3->AddEntry(QuarticFit,"Quartic fit","l");
+    legend3->AddEntry(QuadraticFit,"Quadratic fit","l");
+    legend3->Draw("same");
+    //DrawALICELogo(kFALSE, .72, .4, .87, .55);
     */
     /*
     ////////// 
@@ -2792,12 +2953,14 @@ void fcnC2_Global(int& npar, double* deriv, double& f, double par[], int flag){
     //else CSS -= Dp1/(1+Dp1) * Dp2/(1+Dp2);
 
     CSS *= par[1]*K2SS[i];
+    if(MuonCorrection) CSS /= C2muonCorrection_SC->GetBinContent(i+1);
     CSS += 1-par[1];
     CSS *= par[0];
     //
     COS = 1;
     if(ChargeConstraint && GofP) COS += 1/5.* Dp1/(1+Dp1) * Dp2/(1+Dp2);
     COS *= par[1]*K2OS[i];
+    if(MuonCorrection) COS /= C2muonCorrection_MC->GetBinContent(i+1);
     COS += 1-par[1];
     COS *= par[9];// different Norm
     //
@@ -2858,6 +3021,7 @@ double C2ssFitFunction(Double_t *x, Double_t *par)
   else CSS -= pow(Gaus_coh*Dp,2)/((1+Dp1)*(1+Dp2));
   //else CSS -= Dp1/(1+Dp1) * Dp2/(1+Dp2);
   CSS *= par[1]*K2SS[qbin];
+  if(MuonCorrection) CSS /= C2muonCorrection_SC->GetBinContent(qbin+1);
   CSS += 1-par[1];
   CSS *= par[0];
 
@@ -2887,6 +3051,7 @@ double C2osFitFunction(Double_t *x, Double_t *par)
   double COS = 1;
   if(ChargeConstraint && GofP) COS += 1/5.* Dp1/(1+Dp1) * Dp2/(1+Dp2);
   COS *= par[1]*K2OS[qbin];
+  if(MuonCorrection) COS /= C2muonCorrection_MC->GetBinContent(qbin+1);
   COS += 1-par[1];
   COS *= par[9];
   return COS;
@@ -3543,4 +3708,45 @@ double tricubicInterpolate (double p[4][4][4], double x, double y, double z) {
 }
 float fact(float n){
   return (n < 1.00001) ? 1 : fact(n - 1) * n;
+}
+void DrawALICELogo(Bool_t prel, Float_t x1, Float_t y1, Float_t x2, Float_t y2)
+{
+  // revision on July 24th or 25th 2012
+  // correct for aspect ratio of figure plus aspect ratio of pad (coordinates are NDC!)
+  x2 = x1 + (y2 - y1) * (466. / 523) * gPad->GetWh() * gPad->GetHNDC() / (gPad->GetWNDC() * gPad->GetWw());
+  // Printf("%f %f %f %f", x1, x2, y1, y2);
+  
+  TPad *myPadLogo = new TPad("myPadLogo", "Pad for ALICE Logo", x1, y1, x2, y2);
+  myPadLogo->SetLeftMargin(0);
+  myPadLogo->SetTopMargin(0);
+  myPadLogo->SetRightMargin(0);
+  myPadLogo->SetBottomMargin(0);
+  myPadLogo->Draw();
+  myPadLogo->cd();
+  TASImage *myAliceLogo = new TASImage((prel) ? "~/Pictures/2011-Nov-24-ALICE_PRELIMARY_logo_BLACK_small_usage_design.eps" : "~/Pictures/2011-Nov-24-ALICE_PERFORMANCE_logo_BLACK_small_usage_design.eps");
+  myAliceLogo->Draw();
+}
+//________________________________________________________________________________________
+void ReadMuonCorrections(int mbin){
+  TString *name = new TString("MuonCorrection_");
+  if(mbin<=1) *name += 0;
+  else if(mbin<=3) *name += 1;
+  else if(mbin<=5) *name += 2;
+  else if(mbin<=7) *name += 3;
+  else if(mbin<=9) *name += 3;
+  else *name += 4;
+  name->Append(".root");
+  TFile *muonfile=new TFile(name->Data(),"READ");
+  C2muonCorrection_SC = (TH1D*)muonfile->Get("C2muonCorrection_SC");
+  C2muonCorrection_MC = (TH1D*)muonfile->Get("C2muonCorrection_MC");
+  WeightmuonCorrection = (TH1D*)muonfile->Get("WeightmuonCorrection");
+  if(SameCharge_def) C3muonCorrection = (TH1D*)muonfile->Get("C3muonCorrection_SC");
+  else C3muonCorrection = (TH1D*)muonfile->Get("C3muonCorrection_MC");
+  //
+  C2muonCorrection_SC->SetDirectory(0);
+  C2muonCorrection_MC->SetDirectory(0);
+  WeightmuonCorrection->SetDirectory(0);
+  C3muonCorrection->SetDirectory(0);
+  //
+  muonfile->Close();
 }

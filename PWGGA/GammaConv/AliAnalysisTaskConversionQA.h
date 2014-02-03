@@ -95,6 +95,7 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
    TH2F* hElectronITSdEdxP;
    TH2F* hElectronTOFP;
    TH2F* hElectronNSigmadEdxP;
+   TH2F* hElectronNSigmadEdxEta;
    TH2F* hElectronNSigmaPiondEdxP;
    TH2F* hElectronNSigmaITSP;
    TH2F* hElectronNSigmaTOFP;
@@ -102,6 +103,7 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
    TH2F* hPositronITSdEdxP;
    TH2F* hPositronTOFP;
    TH2F* hPositronNSigmadEdxP;
+   TH2F* hPositronNSigmadEdxEta;
    TH2F* hPositronNSigmaPiondEdxP;
    TH2F* hPositronNSigmaITSP;
    TH2F* hPositronNSigmaTOFP;

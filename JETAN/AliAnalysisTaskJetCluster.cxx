@@ -1929,6 +1929,12 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
 	else if(fFilterType == 2)bGood = trackAOD->IsHybridGlobalConstrainedGlobal();
 	if((fFilterMask>0)&&((!trackAOD->TestFilterBit(fFilterMask)||(!bGood))))continue;
         if(fRequireITSRefit){if((trackAOD->GetStatus()&AliESDtrack::kITSrefit)==0)continue;}
+         if (fApplySharedClusterCut) {
+           Double_t frac = Double_t(trackAOD->GetTPCnclsS()) /Double_t(trackAOD->GetTPCncls());
+           if (frac > 0.4) continue;
+	 }
+
+
 	if(TMath::Abs(trackAOD->Eta())>fTrackEtaWindow) continue;
 	if(trackAOD->Pt()<fTrackPtCut) continue;
 	if(fDebug) printf("pt extra track %.2f \n", trackAOD->Pt());

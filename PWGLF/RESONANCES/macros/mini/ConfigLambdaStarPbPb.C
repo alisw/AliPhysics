@@ -38,7 +38,7 @@ Bool_t ConfigLambdaStarPbPb
 
   cutSetQ  = new AliRsnCutSetDaughterParticle("cutQuality", AliRsnCutSetDaughterParticle::kQualityStd2011, AliPID::kKaon, -1.0, aodFilterBit);
   cutSetPr = new AliRsnCutSetDaughterParticle(Form("cutProtonTPCPbPb2011_%2.1fsigma",nsigmaPr), cutPrCandidate, AliPID::kProton, nsigmaPr, aodFilterBit);
-  cutSetK  = new AliRsnCutSetDaughterParticle(Form("cutKaonTPPbPb2011_%2.1f2sigma",nsigmaKa), cutKaCandidate, AliPID::kKaon, nsigmaKa, aodFilterBit);
+  cutSetK  = new AliRsnCutSetDaughterParticle(Form("cutKaonTPCPbPb2011_%2.1f2sigma",nsigmaKa), cutKaCandidate, AliPID::kKaon, nsigmaKa, aodFilterBit);
 
   Int_t iCutQ = task->AddTrackCuts(cutSetQ);
   Int_t iCutPr = task->AddTrackCuts(cutSetPr);
