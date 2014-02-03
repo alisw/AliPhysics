@@ -298,15 +298,19 @@ public:
   void             SetTriggerPatchTimeWindow(Int_t min, Int_t max) { fTriggerPatchTimeWindow[0] = min ;
                                                                      fTriggerPatchTimeWindow[1] = max ; }
   
+  Bool_t           AreBadTriggerEventsRemoved()      const { return fRemoveBadTriggerEvents     ; }
   void             SwitchOffBadTriggerEventsRemoval()      { fRemoveBadTriggerEvents   = kFALSE ; }
   void             SwitchOnBadTriggerEventsRemoval()       { fRemoveBadTriggerEvents   = kTRUE  ; }
 
+  Bool_t           AreUnMatchedTriggerEventsRemoved()const { return fRemoveUnMatchedTriggers    ; }
   void             SwitchOffUnMatchedTriggerEventsRemoval(){ fRemoveUnMatchedTriggers  = kFALSE ; }
   void             SwitchOnUnMatchedTriggerEventsRemoval() { fRemoveUnMatchedTriggers  = kTRUE  ; }
   
+  Bool_t           IsTriggerPatchMatchedToCluster()  const { return fTriggerPatchClusterMatch   ; }
   void             SwitchOffTriggerPatchMatching()         { fTriggerPatchClusterMatch = kFALSE ; }
   void             SwitchOnTriggerPatchMatching()          { fTriggerPatchClusterMatch = kTRUE  ; }
-
+  
+  Bool_t           IsTriggerClusterTimeRecal()       const { return fTriggerClusterTimeRecal    ; }
   void             SwitchOnTriggerClusterTimeRecal ()      { fTriggerClusterTimeRecal  = kTRUE  ; }
   void             SwitchOffTriggerClusterTimeRecal()      { fTriggerClusterTimeRecal  = kFALSE ; }
   
