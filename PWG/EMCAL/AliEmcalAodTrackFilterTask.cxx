@@ -25,6 +25,8 @@ AliEmcalAodTrackFilterTask::AliEmcalAodTrackFilterTask() :
   fUseNegativeLabels(kTRUE),
   fIsMC(kFALSE),
   fDoPropagation(kFALSE),
+  fAttemptProp(kFALSE),
+  fAttemptPropMatch(kFALSE),
   fDist(440),
   fTracksIn(0),
   fTracksOut(0)
@@ -45,6 +47,8 @@ AliEmcalAodTrackFilterTask::AliEmcalAodTrackFilterTask(const char *name) :
   fUseNegativeLabels(kTRUE),
   fIsMC(kFALSE),
   fDoPropagation(kFALSE),
+  fAttemptProp(kFALSE),
+  fAttemptPropMatch(kFALSE),
   fDist(440),
   fTracksIn(0),
   fTracksOut(0)
@@ -141,8 +145,18 @@ void AliEmcalAodTrackFilterTask::UserExec(Option_t *)
     }
 
     AliAODTrack *newt = new ((*fTracksOut)[nacc]) AliAODTrack(*track);
+    Bool_t propthistrack = kFALSE;
     if (fDoPropagation)
+      propthistrack = kTRUE;
+    else if (!newt->IsExtrapolatedToEMCAL()) {
+      if (fAttemptProp)
+	propthistrack = kTRUE;
+      else if (fAttemptPropMatch && !newt->IsEMCAL())
+	propthistrack = kTRUE;
+    }
+    if (propthistrack)
       AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(newt,fDist);
+
     Int_t label = 0;
     if (fIsMC) {
       if (fUseNegativeLabels)

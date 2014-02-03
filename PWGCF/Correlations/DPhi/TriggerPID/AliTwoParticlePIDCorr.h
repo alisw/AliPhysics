@@ -91,9 +91,13 @@ class AliTwoParticlePIDCorr : public AliAnalysisTaskSE {
     virtual void    doAODevent();
     virtual void    doMCAODevent();
     virtual void     Terminate(Option_t *);
+  void		 SetSharedClusterCut(Double_t value) { fSharedClusterCut = value; }
+
+    void SetVertextype(Int_t Vertextype){fVertextype=Vertextype;}
+    void SetZvtxcut(Double_t zvtxcut) {fzvtxcut=zvtxcut;}
     void SetCustomBinning(TString receivedCustomBinning) { fCustomBinning = receivedCustomBinning; }
     void SetAsymmetricBin(THnSparse *h,Int_t axisno,Double_t *arraybin,Int_t arraybinsize,TString axisTitle); 
-
+    void SetMaxNofMixingTracks(Int_t MaxNofMixingTracks) {fMaxNofMixingTracks=MaxNofMixingTracks;}
   void SetCentralityEstimator(TString CentralityMethod) { fCentralityMethod = CentralityMethod;}
   void SetSampleType(TString SampleType) {fSampleType=SampleType;}
   void SetAnalysisType(TString AnalysisType){fAnalysisType=AnalysisType;}
@@ -103,6 +107,7 @@ class AliTwoParticlePIDCorr : public AliAnalysisTaskSE {
   void SetfilltrigIDassoUNID(Bool_t filltrigIDassoUNID){ffilltrigIDassoUNID=filltrigIDassoUNID;}
   void SetfilltrigIDassoID(Bool_t filltrigIDassoID){ ffilltrigIDassoID=filltrigIDassoID;}
   void SetfilltrigIDassoIDMCTRUTH(Bool_t filltrigIDassoIDMCTRUTH){ffilltrigIDassoIDMCTRUTH=filltrigIDassoIDMCTRUTH;}
+  void SetSelectHighestPtTrig(Bool_t SelectHighestPtTrig){fSelectHighestPtTrig=SelectHighestPtTrig;}
   void SetTriggerSpeciesSelection(Bool_t TriggerSpeciesSelection,Int_t TriggerSpecies,Bool_t containPIDtrig){
     fTriggerSpeciesSelection=TriggerSpeciesSelection;//if it is KTRUE then Set containPIDtrig=kFALSE
     fTriggerSpecies=TriggerSpecies;
@@ -196,12 +201,15 @@ fPtTOFPIDmax=PtTOFPIDmax;
     AliAODVertex* trkVtx;//!
     Float_t zvtx;
     Int_t    fFilterBit;         // track selection cuts
+    Double_t       fSharedClusterCut;  // cut on shared clusters (only for AOD)
+    Int_t fVertextype;
     Double_t fzvtxcut;
     Bool_t ffilltrigassoUNID;
     Bool_t ffilltrigUNIDassoID;
     Bool_t ffilltrigIDassoUNID;
     Bool_t ffilltrigIDassoID;
     Bool_t ffilltrigIDassoIDMCTRUTH;
+    Int_t fMaxNofMixingTracks;
     Bool_t fPtOrderMCTruth;
     Bool_t fTriggerSpeciesSelection;
     Bool_t fAssociatedSpeciesSelection;
@@ -209,6 +217,7 @@ fPtTOFPIDmax=PtTOFPIDmax;
     Int_t fAssociatedSpecies;
     TString fCustomBinning;//for setting customized binning
     TString fBinningString;//final binning string
+    Bool_t fSelectHighestPtTrig;
     Bool_t fcontainPIDtrig;
     Bool_t fcontainPIDasso;
     // Bool_t frejectPileUp;
@@ -296,7 +305,7 @@ fPtTOFPIDmax=PtTOFPIDmax;
   Double_t* GetBinning(const char* configuration, const char* tag, Int_t& nBins);
 
 
-  void Fillcorrelation(TObjArray *trackstrig,TObjArray *tracksasso,Double_t cent,Float_t vtx,Float_t bSign,Bool_t fPtOrder,Bool_t twoTrackEfficiencyCut,Bool_t mixcase,TString fillup);//mixcase=kTRUE in case of mixing; 
+  void Fillcorrelation(TObjArray *trackstrig,TObjArray *tracksasso,Double_t cent,Float_t vtx,Float_t weight,Float_t bSign,Bool_t fPtOrder,Bool_t twoTrackEfficiencyCut,Bool_t mixcase,TString fillup);//mixcase=kTRUE in case of mixing; 
  Float_t GetTrackbyTrackeffvalue(AliAODTrack* track,Double_t cent,Float_t evzvtx, Int_t parpid);
 
 //Mixing functions

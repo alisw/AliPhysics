@@ -14,11 +14,14 @@
 **************************************************************************/
 
 #include "AliFlowVector.h"
+#include "AliFlowTrackSimple.h"
+#include "TMath.h"
 
 //********************************************************************
 // AliFlowVector:                                                    *
 // Class to hold the flow vector and multiplicity for flow analysis. *
 // Author: A. Bilandzic (anteb@nikhef.nl)                            *
+// extended: M.Krzewicki (mikolaj.krzewicki@cern.ch)                 *
 //********************************************************************
 
 ClassImp(AliFlowVector)
@@ -26,7 +29,11 @@ ClassImp(AliFlowVector)
 //________________________________________________________________________
 
 AliFlowVector::AliFlowVector():
- TVector2(0.0,0.0),fMult(0.0)
+  TVector2(0.0,0.0),
+  fMult(0.0),
+  fHarmonic(2),
+  fPOItype(0),
+  fSubeventNumber(-1)
 {
   // default constructor
 }
@@ -35,34 +42,46 @@ AliFlowVector::AliFlowVector():
 
 AliFlowVector::AliFlowVector(const AliFlowVector& aVector):
   TVector2(aVector),
-  fMult(aVector.fMult)
+  fMult(aVector.fMult),
+  fHarmonic(aVector.fHarmonic),
+  fPOItype(aVector.fPOItype),
+  fSubeventNumber(aVector.fSubeventNumber)
 {
   // copy constructor
 }
 
 //________________________________________________________________________
 
-AliFlowVector::AliFlowVector(Double_t *y, Double_t m):
+AliFlowVector::AliFlowVector(Double_t *y, Double_t m, Int_t h, Int_t t, Int_t s):
   TVector2(y),
-  fMult(m)
+  fMult(m),
+  fHarmonic(h),
+  fPOItype(t),
+  fSubeventNumber(s)
 {
   // Analogue of TVector2 constructor. Sets (x,y) and multiplicity 1.
 }
 
  //________________________________________________________________________
 
-AliFlowVector::AliFlowVector(const TVector2 &v, Double_t m):
+AliFlowVector::AliFlowVector(const TVector2 &v, Double_t m, Int_t h, Int_t t, Int_t s):
   TVector2(v),
-  fMult(m)
+  fMult(m),
+  fHarmonic(h),
+  fPOItype(t),
+  fSubeventNumber(s)
 {
   // custom constructor, Sets vector and multiplicity
 }
 
  //________________________________________________________________________
 
-AliFlowVector::AliFlowVector(Double_t x, Double_t y, Double_t m):
+AliFlowVector::AliFlowVector(Double_t x, Double_t y, Double_t m, Int_t h, Int_t t, Int_t s):
   TVector2(x,y),
-  fMult(m)
+  fMult(m),
+  fHarmonic(h),
+  fPOItype(t),
+  fSubeventNumber(s)
 {
   // custom constructor analogue of TVector2 constructor
 }
@@ -74,7 +93,7 @@ AliFlowVector::~AliFlowVector()
   // default destructor 
 }
 
-void AliFlowVector::SetMagPhi(double size, double angle, double mult)
+void AliFlowVector::SetMagPhi(Double_t size, Double_t angle, Double_t mult)
 {
    // Analogue to SetMagPhi for a TVector2 but here including a sum of weights
    TVector2::SetMagPhi(size,angle);
@@ -113,11 +132,64 @@ AliFlowVector& AliFlowVector::operator-=(const AliFlowVector& aVector)
   return *this;
 }
 
-AliFlowVector& AliFlowVector::operator*=(double w)
+AliFlowVector& AliFlowVector::operator*=(Double_t w)
 {
    // multiply by a weight operator
    fX*=w;
    fY*=w;
    fMult*=w;
    return *this;
+}
+
+//________________________________________________________________________
+void AliFlowVector::Clear(Option_t* /*option*/)
+{
+  //clear
+  fX=0.;
+  fY=0.;
+  fMult=0;
+  fHarmonic=2;
+  fPOItype=AliFlowTrackSimple::kRP;
+  fSubeventNumber=-1;
+}
+
+//________________________________________________________________________
+Int_t AliFlowVector::SubtractTrackWithDaughters( const AliFlowTrackSimple* track, 
+                                                Double_t extraWeight 
+                                              )
+{
+  //subtract a track and all its daughters, only if tagged with flowTag and in specified
+  //subevent (-1 for no subevent selection)
+  //to only subtract if it was actually used in the construction of the vector)
+  //TODO: maybe make recursive if it ever becomes needed
+  //for complicated decay topologies
+  Bool_t inSubEvent=kTRUE;
+  if (fSubeventNumber>=0) 
+  {
+    inSubEvent = track->InSubevent(fSubeventNumber);
+  }
+  if (track->IsPOItype(fPOItype) && inSubEvent )
+  {
+    fX -= extraWeight * track->Weight() * TMath::Cos(fHarmonic*track->Phi());
+    fY -= extraWeight * track->Weight() * TMath::Sin(fHarmonic*track->Phi());
+  }
+  
+  Int_t numberOfsubtractedDaughters=0;
+  for (Int_t i=0; i<track->GetNDaughters(); i++)
+  {
+    AliFlowTrackSimple* daughter = track->GetDaughter(i);
+    if (!daughter) continue;
+    inSubEvent=kTRUE;
+    if (fSubeventNumber>=0) 
+    {
+      inSubEvent = daughter->InSubevent(fSubeventNumber);
+    }
+    if (daughter->IsPOItype(fPOItype) && inSubEvent )
+    {
+      fX -= extraWeight * daughter->Weight() * TMath::Cos(fHarmonic*daughter->Phi());
+      fY -= extraWeight * daughter->Weight() * TMath::Sin(fHarmonic*daughter->Phi());
+      numberOfsubtractedDaughters++;
+    }
+  }
+  return numberOfsubtractedDaughters;
 }

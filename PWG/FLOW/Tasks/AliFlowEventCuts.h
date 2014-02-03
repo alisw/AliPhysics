@@ -20,11 +20,12 @@ class TBrowser;
 #include "TH1.h"
 #include "AliTriggerAnalysis.h"
 #include "AliFlowTrackCuts.h"
+#include "AliFlowEventSimpleCuts.h"
 
-class AliFlowEventCuts : public TNamed {
+class AliFlowEventCuts : public AliFlowEventSimpleCuts {
 
  public:
-  enum refMultMethod { kTPConly, kSPDtracklets, kV0, kSPD1clusters };
+  enum refMultMethod { kTPConly, kSPDtracklets, kVZERO, kV0=kVZERO, kSPD1clusters };
 
   AliFlowEventCuts();
   AliFlowEventCuts(const char* name, const char* title = "AliFlowEventCuts");
@@ -82,12 +83,12 @@ class AliFlowEventCuts : public TNamed {
   //Int_t GetRefMult() {return fRefMult;}
   Int_t GetReferenceMultiplicity(AliVEvent* event, AliMCEvent *mcEvent) {return RefMult(event,mcEvent);}
   const char* CentrMethName(refMultMethod method) const;
-  void SetCentralityPercentileRange(Float_t min, Float_t max){ fCentralityPercentileMin=min;
-                                                               fCentralityPercentileMax=max;
-                                                               fCutCentralityPercentile=kTRUE; }
   void SetCentralityPercentileMethod( refMultMethod m) {fCentralityPercentileMethod=m;}
   void SetUseCentralityUnchecked(Bool_t b=kTRUE) {fUseCentralityUnchecked=b;}
+
+  Float_t GetCentrality(AliVEvent* event, AliMCEvent* mcEvent);
   void SetUsedDataset(Bool_t b=kTRUE) {fData2011=b;}
+
   void Browse(TBrowser* b);
   Long64_t Merge(TCollection* list);  
   TH2F *GetCorrelationTPCvsGlobalMultiplicity() {return fhistTPCvsGlobalMult;}  
@@ -126,11 +127,8 @@ class AliFlowEventCuts : public TNamed {
   Bool_t fCutSPDvertexerAnomaly; //cut on the spd vertexer anomaly
   Bool_t fCutSPDTRKVtxZ; //require compatibility between SPDvertexz TRKvertexz
   Bool_t fCutTPCmultiplicityOutliers; //cut TPC multiplicity outliers
-  Bool_t fCutCentralityPercentile; //cut on centrality perc. from AliESDCentrality
   Bool_t fUseCentralityUnchecked; //use the unchecked method
   refMultMethod fCentralityPercentileMethod; //where to get the percentile from
-  Float_t fCentralityPercentileMax; // max centr. perc
-  Float_t fCentralityPercentileMin; // min centr. perc
   Bool_t fCutZDCtiming;   //cut on ZDC timing
   AliTriggerAnalysis fTrigAna; //trigger analysis object
   Bool_t fCutImpactParameter; //cut on impact parameter (MC header)

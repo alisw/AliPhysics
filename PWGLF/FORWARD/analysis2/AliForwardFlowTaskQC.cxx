@@ -50,7 +50,7 @@ AliForwardFlowTaskQC::AliForwardFlowTaskQC()
     fFMDCut(-1),         // FMD sigma cut
     fSPDCut(-1),         // SPD sigma cut
     fFlowFlags(0),       // Flow flags
-    fEtaGap(-1),         // Eta gap value
+    fEtaGap(0.),         // Eta gap value
     fBinsForward(),      // List with forward flow hists
     fBinsCentral(),      // List with central flow hists
     fSumList(0),	 // Event sum list
@@ -78,8 +78,8 @@ AliForwardFlowTaskQC::AliForwardFlowTaskQC(const char* name)
     fCentAxis(),        // Axis to control centrality/multiplicity binning
     fFMDCut(-1),        // FMD sigma cut
     fSPDCut(-1),        // SPD sigma cut
-    fFlowFlags(0x0),       // Flow flags
-    fEtaGap(2.),        // Eta gap value
+    fFlowFlags(0x0),    // Flow flags
+    fEtaGap(0.),        // Eta gap value
     fBinsForward(),     // List with forward flow hists
     fBinsCentral(),     // List with central flow hists
     fSumList(0),        // Event sum list           
@@ -601,7 +601,7 @@ void AliForwardFlowTaskQC::Terminate(Option_t */*option*/)
   fOutputList->SetName("Results");
   fOutputList->SetOwner();
 
-  if ((fFlowFlags & kEtaGap)) {
+  if ((fFlowFlags & kEtaGap) || (fFlowFlags & kTPC)) {
     TParameter<Double_t>* etaGap = new TParameter<Double_t>("EtaGap", fEtaGap);
     fOutputList->Add(etaGap);
   }
@@ -1327,7 +1327,7 @@ Bool_t AliForwardFlowTaskQC::VertexBin::FillTracks(TObjArray* trList, UShort_t m
     }
     // Track accepted
     Double_t eta = tr->Eta();
-//    if ((fFlags & kSPD) && TMath::Abs(eta) < 0.4) continue;
+    if ((fFlags & kSPD) && TMath::Abs(eta) < fEtaGap) continue;
     Double_t phi = tr->Phi();
     if ((mode & kFillRef)) {
       fCumuRef->Fill(eta, 0.);// mult goes in underflowbin - no visual, but not needed?
@@ -2809,7 +2809,7 @@ void AliForwardFlowTaskQC::PrintFlowSetup() const
   Printf("Satellite vertex flag             :\t%s", ((fFlowFlags & kSatVtx) ? "true" : "false"));
   Printf("FMD sigma cut:                    :\t%f", fFMDCut);
   Printf("SPD sigma cut:                    :\t%f", fSPDCut);
-  if ((fFlowFlags & kEtaGap)) 
+  if ((fFlowFlags & kEtaGap) || (fFlowFlags & kTPC)) 
     Printf("Eta gap:                          :\t%f", fEtaGap);
   Printf("=======================================================");
 }

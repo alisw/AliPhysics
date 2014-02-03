@@ -25,7 +25,7 @@
  *  NOTE: running only on AODs, in PbPb
  * 
  * 
- *  Last modified: Tue Jan 28 17:19:07 CET 2014
+ *  Last modified: Wed Jan 29 15:08:56 CET 2014
  * 
  * 
 */
@@ -646,7 +646,7 @@ void AliAnalysisTaskPidPidCorrelations::Analyse()
     //Double_t bSignAux	= fMyAODHeader -> GetMagneticField() ; // for dca cut  
 
     //____ Get AOD RECO tracks
-    fMyprimRecoTracksPID = AcceptTracks(centBin,0x0,kFALSE,kTRUE); // !FIXME onlyprimaries part
+    fMyprimRecoTracksPID = AcceptTracks(centBin,0x0,/*kFALSE,*/kTRUE); // !FIXME onlyprimaries part
     //Printf("Accepted %d fMyprimRecoTracksPID", tracks->GetEntries());
     if(fMyprimRecoTracksPID==0x0) { AliInfo(" ==== fMyprimRecoTracksPID: Zero track pointer"); return; }
     //AliDebug(1, Form("Single Event analysis : nTracks = %4d", fMyprimRecoTracksPID -> GetEntries()));
@@ -672,11 +672,11 @@ void AliAnalysisTaskPidPidCorrelations::Analyse()
       weight = -1.;
   
     //____ step 0
-    //FillCorrelations(fMyprimRecoTracksPID, 0x0, fCentrality, zVtx, 0.0, kFALSE, 0.02, kFALSE, 0, weight);
+    //FillCorrelations(fMyprimRecoTracksPID, 0x0, fCentrality, zVtx, 0.0, kFALSE, 0.02, kFALSE, /*0,*/ weight);
    
     //____ step 1
     if (fTwoTrackEfficiencyCut > 0)
-      FillCorrelations(fMyprimRecoTracksPID, 0x0, fCentrality, zVtx, bSign, kTRUE, twoTrackEfficiencyCutValue, 1, weight);
+      FillCorrelations(fMyprimRecoTracksPID, 0x0, fCentrality, zVtx, bSign, kTRUE, twoTrackEfficiencyCutValue, /*1,*/ weight);
 
     if (fFillMixed)
     {
@@ -727,7 +727,7 @@ void AliAnalysisTaskPidPidCorrelations::Analyse()
 	    if (!bgTracks) continue;
 	  
 	    if (fTwoTrackEfficiencyCut > 0)
-	      FillCorrelations(fMyprimRecoTracksPID, bgTracks, fCentrality, zVtx, bSign, kTRUE, twoTrackEfficiencyCutValue, 2, 1./nMix);
+	      FillCorrelations(fMyprimRecoTracksPID, bgTracks, fCentrality, zVtx, bSign, kTRUE, twoTrackEfficiencyCutValue, /*2,*/ 1./nMix);
 	  }
 	}
 	pool->UpdatePool(fMyprimRecoTracksPID);
@@ -742,16 +742,16 @@ void AliAnalysisTaskPidPidCorrelations::Analyse()
     //______ check MC
     Bool_t isMCok = kFALSE;
     isMCok = CheckMcDistributions(fMyMcArray,fMyMcHeader);
-    //if( isMCok == kFALSE) return;
+    if (isMCok == kFALSE) return;
 
     //____ Get MC primaries
     fMyprimMCParticlesPID = AcceptMcTracks(centBin,kTRUE,kTRUE);
-    if(fMyprimMCParticlesPID==0x0) { AliInfo(" ==== fMyprimMCParticlesPID: Zero track pointer"); return; }
+    if (fMyprimMCParticlesPID==0x0) { AliInfo(" ==== fMyprimMCParticlesPID: Zero track pointer"); return; }
     //CleanUp(primMCParticles, fMyMcArray, skipParticlesAbove);
 //     delete fMyprimMCParticlesPID; fMyprimMCParticlesPID=0x0;
     //____ Get MC RECO-matched
-    fMyprimRecoTracksMatchedPID = AcceptTracks(centBin,fMyMcArray,kTRUE,kTRUE);
-    if(fMyprimRecoTracksMatchedPID==0x0) { AliInfo(" ==== Zero track pointer"); return; }
+    fMyprimRecoTracksMatchedPID = AcceptTracks(centBin,fMyMcArray,/*kTRUE,*/kTRUE);
+    if (fMyprimRecoTracksMatchedPID==0x0) { AliInfo(" ==== Zero track pointer"); return; }
     //TObjArray* fMyprimRecoTracksMatchedPID	= AcceptMcRecoMachedTracks(centBin,kTRUE,kTRUE);
     //CleanUp(fMyprimRecoTracksMatchedPID, fMyMcArray, skipParticlesAbove);
 //     delete fMyprimRecoTracksMatchedPID; fMyprimRecoTracksMatchedPID=0x0;
@@ -771,7 +771,7 @@ void AliAnalysisTaskPidPidCorrelations::Analyse()
 
 
 //________________________________________________________________________
-void AliAnalysisTaskPidPidCorrelations::FillCorrelations(TObjArray* particles, TObjArray* particlesMixed, Double_t centrality, Double_t zVtx, Double_t bSign, Bool_t twoTrackEfficiencyCut, Double_t fTwoTrackEfficiencyCutValue, Int_t step, Double_t weight)
+void AliAnalysisTaskPidPidCorrelations::FillCorrelations(TObjArray* particles, TObjArray* particlesMixed, Double_t centrality, Double_t zVtx, Double_t bSign, Bool_t twoTrackEfficiencyCut, Double_t fTwoTrackEfficiencyCutValue, /*Int_t step,*/ Double_t weight)
 {
   if (!particles){ AliInfo(" ==============  particles TObjArray is NULL pointer, return"); return; }
 
@@ -1433,7 +1433,7 @@ void AliAnalysisTaskPidPidCorrelations::CleanUp(TObjArray* tracks, TObject* mcOb
 
 //________________________________________________________________________
  //________________________________________________________________________
-TObjArray* AliAnalysisTaskPidPidCorrelations::AcceptTracks(Int_t centBin, TObject* arrayMC, Bool_t onlyprimaries, Bool_t useCuts)
+TObjArray* AliAnalysisTaskPidPidCorrelations::AcceptTracks(Int_t centBin, TObject* arrayMC, /*Bool_t onlyprimaries,*/ Bool_t useCuts)
 {
   //_____ number of RECO AOD tracks
   Int_t nTracks = fMyAODEvent->GetNTracks();
@@ -1698,8 +1698,8 @@ void AliAnalysisTaskPidPidCorrelations::UserCreateOutputObjects()
   
   AddSettingsTree();
 
-//   const Char_t* kPIDTypeName[] = {"ITS","TPC","TOF","HMPID"} ;
-//   const Char_t* kParticleSpeciesName[] = { "Electrons","Muons","Pions","Kaons","Protons","Undefined" } ;
+  const Char_t* kMyPIDTypeName[] = {"ITS","TPC","TOF","HMPID"} ;
+  const Char_t* kMyParticleSpeciesName[] = { "Electrons","Muons","Pions","Kaons","Protons","Undefined" } ;
 
 
   fHistNev = new TH1I("fHistNev","Nev.",1,0,1); fHistNev -> Sumw2();
@@ -1812,7 +1812,7 @@ void AliAnalysisTaskPidPidCorrelations::UserCreateOutputObjects()
     for (Int_t i=0;i<6;i++)
     {
       fHistRefTracksCent[iCent][i] = new TH2F(Form("fHistRefTracksCent_%02d_%d",iCent,i),
-					      Form("Nr of tracksNr of Ref tracks/event in ref track estimator %s for CentBin %d-%d;centrality [%];Nr of Ref tracks/event",
+					      Form("Nr of tracksNr of Ref tracks/event in ref track estimator %s for CentBin %d-%d;centrality [%%];Nr of Ref tracks/event",
 						   gRefTrackName[i-1].Data(),
 						   Int_t(fCentAxis->GetBinLowEdge(iCent+1)),
 						   Int_t(fCentAxis->GetBinUpEdge(iCent+1))),10.*(fCentralityPercentileMax-fCentralityPercentileMin),fCentralityPercentileMin,fCentralityPercentileMax,20,0,20000);
@@ -1929,17 +1929,17 @@ void AliAnalysisTaskPidPidCorrelations::UserCreateOutputObjects()
     //_____ nsigma plot
     for(Int_t ipart=0;ipart < AliPID::kSPECIES;ipart++)
     {
-      for(Int_t ipid=0;ipid < kNSigmaPIDType;ipid++)
+      for(Int_t ipid=0;ipid < kMyNSigmaPIDType;ipid++)
       {
 	Double_t miny = -10.;
 	Double_t maxy =  10.;
 	
-        //if (ipid == kNSigmaTPCTOF) { miny=0; maxy=50; }
+        //if (ipid == kMyNSigmaTPCTOF) { miny=0; maxy=50; }
         fHistoNSigma[iCent] = new TH2F(Form("NSigma_Cent%02d_%d_%d",iCent,ipart,ipid),
-				       Form("n#sigma %d-%d %% %s %s",Int_t(fCentAxis->GetBinLowEdge(iCent+1)),Int_t(fCentAxis->GetBinUpEdge(iCent+1)),kParticleSpeciesName[ipart],kPIDTypeName[ipid]),
+				       Form("n#sigma %d-%d %% %s %s",Int_t(fCentAxis->GetBinLowEdge(iCent+1)),Int_t(fCentAxis->GetBinUpEdge(iCent+1)),kMyParticleSpeciesName[ipart],kMyPIDTypeName[ipid]),
 				       10.*(ptmax[ipid]-ptmin[ipid]),ptmin[ipid],ptmax[ipid],2000,miny,maxy);
         fHistoNSigma[iCent] -> GetXaxis() -> SetTitle("p_{T} (GeV / c)");
-        fHistoNSigma[iCent] -> GetYaxis() -> SetTitle(Form("n#sigma %s %s",kParticleSpeciesName[ipart],kPIDTypeName[ipid]));
+        fHistoNSigma[iCent] -> GetYaxis() -> SetTitle(Form("n#sigma %s %s",kMyParticleSpeciesName[ipart],kMyPIDTypeName[ipid]));
         fList -> Add(fHistoNSigma[iCent]);
       }
     }
@@ -1949,16 +1949,16 @@ void AliAnalysisTaskPidPidCorrelations::UserCreateOutputObjects()
       //_____ nsigmaRec plot
       for(Int_t ipart=0;ipart < AliPID::kSPECIES;ipart++)
       {
-	for(Int_t ipid=0;ipid < kNSigmaPIDType;ipid++)
+	for(Int_t ipid=0;ipid < kMyNSigmaPIDType;ipid++)
 	{
 	  Double_t miny	=-10.;
           Double_t maxy	= 10.;
-          //if(ipid == kNSigmaTPCTOF) { miny=0; maxy=20; }
+          //if(ipid == kMyNSigmaTPCTOF) { miny=0; maxy=20; }
         fHistoNSigma[iCent] = new TH2F(Form("NSigmaRec_Cent%02d_%d_%d",iCent,ipart,ipid),
-				       Form("n#sigma reconstructed %d-%d %% %s %s",Int_t(fCentAxis->GetBinLowEdge(iCent+1)),Int_t(fCentAxis->GetBinUpEdge(iCent+1)),kParticleSpeciesName[ipart],kPIDTypeName[ipid]),
+				       Form("n#sigma reconstructed %d-%d %% %s %s",Int_t(fCentAxis->GetBinLowEdge(iCent+1)),Int_t(fCentAxis->GetBinUpEdge(iCent+1)),kMyParticleSpeciesName[ipart],kMyPIDTypeName[ipid]),
 				       10.*(ptmax[ipid]-ptmin[ipid]),ptmin[ipid],ptmax[ipid],2000,miny,maxy);
         fHistoNSigma[iCent] -> GetXaxis() -> SetTitle("p_{T} (GeV / c)");
-        fHistoNSigma[iCent] -> GetYaxis() -> SetTitle(Form("n#sigma %s %s",kParticleSpeciesName[ipart],kPIDTypeName[ipid]));
+        fHistoNSigma[iCent] -> GetYaxis() -> SetTitle(Form("n#sigma %s %s",kMyParticleSpeciesName[ipart],kMyPIDTypeName[ipid]));
         fList -> Add(fHistoNSigma[iCent]);
 	}
       }
@@ -1966,16 +1966,16 @@ void AliAnalysisTaskPidPidCorrelations::UserCreateOutputObjects()
       //_____ nsigmaMC plot
       for(Int_t ipart=0;ipart<fPartNSpeciesQA;ipart++)
       {
-	for(Int_t ipid=0;ipid < kNSigmaPIDType;ipid++)
+	for(Int_t ipid=0;ipid < kMyNSigmaPIDType;ipid++)
 	{
 	  Double_t miny	= -10.;
 	  Double_t maxy	=  10.;
-	  //if(ipid == kNSigmaTPCTOF) { miny=0; maxy=50; }
+	  //if(ipid == kMyNSigmaTPCTOF) { miny=0; maxy=50; }
         fHistoNSigma[iCent] = new TH2F(Form("NSigmaMC_Cent%02d_%d_%d",iCent,ipart,ipid),
-				       Form("n#sigma %d-%d %% %s %s",Int_t(fCentAxis->GetBinLowEdge(iCent+1)),Int_t(fCentAxis->GetBinUpEdge(iCent+1)),kParticleSpeciesName[ipart],kPIDTypeName[ipid]),
+				       Form("n#sigma %d-%d %% %s %s",Int_t(fCentAxis->GetBinLowEdge(iCent+1)),Int_t(fCentAxis->GetBinUpEdge(iCent+1)),kMyParticleSpeciesName[ipart],kMyPIDTypeName[ipid]),
 				       10.*(ptmax[ipid]-ptmin[ipid]),ptmin[ipid],ptmax[ipid],2000,miny,maxy);
         fHistoNSigma[iCent] -> GetXaxis() -> SetTitle("p_{T} (GeV / c)");
-        fHistoNSigma[iCent] -> GetYaxis() -> SetTitle(Form("n#sigma %s %s",kParticleSpeciesName[ipart],kPIDTypeName[ipid]));
+        fHistoNSigma[iCent] -> GetYaxis() -> SetTitle(Form("n#sigma %s %s",kMyParticleSpeciesName[ipart],kMyPIDTypeName[ipid]));
         fList -> Add(fHistoNSigma[iCent]);
 	}
       }    
@@ -1997,7 +1997,7 @@ void AliAnalysisTaskPidPidCorrelations::UserCreateOutputObjects()
 
 	//_______ FillCorrelation _______
 
-  Int_t anaSteps = 3;       // analysis steps
+//   Int_t anaSteps = 3;       // analysis steps
 
 	// single particle histograms
 //   Int_t iBinSingle[kTrackVariablesSingle];        // binning for track variables
@@ -2109,8 +2109,8 @@ void AliAnalysisTaskPidPidCorrelations::UserCreateOutputObjects()
   Int_t ptMax 	= fPtAxis->GetXmax();
   Int_t zvtxMin	= fZvtxAxis->GetXmin();
   Int_t zvtxMax	= fZvtxAxis->GetXmax();
-  Int_t centMin	= fCentAxis->GetXmin();
-  Int_t centMax	= fCentAxis->GetXmax();
+//   Int_t centMin	= fCentAxis->GetXmin();
+//   Int_t centMax	= fCentAxis->GetXmax();
 
   //_____ single histo
 /*
@@ -2527,7 +2527,7 @@ void AliAnalysisTaskPidPidCorrelations::CalculateNSigmas(AliAODTrack* track, Int
       }
   
       //__________ fill nsigma vs pT for all the detectors
-      for (int iPid=0; iPid < kNSigmaPIDType; iPid++)
+      for (int iPid=0; iPid < kMyNSigmaPIDType; iPid++)
       {
 	if (fUseMC)
 	  h[centBin] = GetHisto2D(Form("NSigmaRec_Cent%02d_%d_%d",centBin,iSpecies,iPid));
@@ -2653,27 +2653,27 @@ Int_t AliAnalysisTaskPidPidCorrelations::GetParticleIDMC(AliVTrack* trk, Int_t c
     switch(pdgCode)
     {
       case 2212:
-	if (fillQA) {for(Int_t ipid=0;ipid<kNSigmaPIDType;ipid++){TH2F* h = GetHisto2D(Form("NSigmaMC_Cent%02d_%d_%d",centbin,fPartProtonQA,ipid));h -> Fill(trk->Pt(),fnsigmas[fPartProtonQA][ipid]);}}
+	if (fillQA) {for(Int_t ipid=0;ipid<kMyNSigmaPIDType;ipid++){TH2F* h = GetHisto2D(Form("NSigmaMC_Cent%02d_%d_%d",centbin,fPartProtonQA,ipid));h -> Fill(trk->Pt(),fnsigmas[fPartProtonQA][ipid]);}}
 	  return fPartProtonPlus;
       break;
       case -2212:
-	if (fillQA) {for(Int_t ipid=0;ipid<kNSigmaPIDType;ipid++){TH2F* h = GetHisto2D(Form("NSigmaMC_Cent%02d_%d_%d",centbin,fPartProtonQA,ipid));h -> Fill(trk->Pt(),fnsigmas[fPartProtonQA][ipid]);}}
+	if (fillQA) {for(Int_t ipid=0;ipid<kMyNSigmaPIDType;ipid++){TH2F* h = GetHisto2D(Form("NSigmaMC_Cent%02d_%d_%d",centbin,fPartProtonQA,ipid));h -> Fill(trk->Pt(),fnsigmas[fPartProtonQA][ipid]);}}
 	  return fPartProtonPlus;
       break;
       case 321:
-	if (fillQA) {for(Int_t ipid=0;ipid<kNSigmaPIDType;ipid++){TH2F* h = GetHisto2D(Form("NSigmaMC_Cent%02d_%d_%d",centbin,fPartKaonQA,ipid));h -> Fill(trk->Pt(),fnsigmas[fPartKaonQA][ipid]);}}
+	if (fillQA) {for(Int_t ipid=0;ipid<kMyNSigmaPIDType;ipid++){TH2F* h = GetHisto2D(Form("NSigmaMC_Cent%02d_%d_%d",centbin,fPartKaonQA,ipid));h -> Fill(trk->Pt(),fnsigmas[fPartKaonQA][ipid]);}}
 	  return fPartKaonPlus;
       break;
       case -321:
-	if (fillQA) {for(Int_t ipid=0;ipid<kNSigmaPIDType;ipid++){TH2F* h = GetHisto2D(Form("NSigmaMC_Cent%02d_%d_%d",centbin,fPartKaonQA,ipid));h -> Fill(trk->Pt(),fnsigmas[fPartKaonQA][ipid]);}}
+	if (fillQA) {for(Int_t ipid=0;ipid<kMyNSigmaPIDType;ipid++){TH2F* h = GetHisto2D(Form("NSigmaMC_Cent%02d_%d_%d",centbin,fPartKaonQA,ipid));h -> Fill(trk->Pt(),fnsigmas[fPartKaonQA][ipid]);}}
 	  return fPartKaonMinus;
       break;
       case 211:
-	if (fillQA) {for(Int_t ipid=0;ipid<kNSigmaPIDType;ipid++){TH2F* h = GetHisto2D(Form("NSigmaMC_Cent%02d_%d_%d",centbin,fPartPionQA,ipid));h -> Fill(trk->Pt(),fnsigmas[fPartPionQA][ipid]);}}
+	if (fillQA) {for(Int_t ipid=0;ipid<kMyNSigmaPIDType;ipid++){TH2F* h = GetHisto2D(Form("NSigmaMC_Cent%02d_%d_%d",centbin,fPartPionQA,ipid));h -> Fill(trk->Pt(),fnsigmas[fPartPionQA][ipid]);}}
 	  return fPartPionPlus;
       break;
       case -211:
-	if (fillQA) {for(Int_t ipid=0;ipid<kNSigmaPIDType;ipid++){TH2F* h = GetHisto2D(Form("NSigmaMC_Cent%02d_%d_%d",centbin,fPartPionQA,ipid));h -> Fill(trk->Pt(),fnsigmas[fPartPionQA][ipid]);}}
+	if (fillQA) {for(Int_t ipid=0;ipid<kMyNSigmaPIDType;ipid++){TH2F* h = GetHisto2D(Form("NSigmaMC_Cent%02d_%d_%d",centbin,fPartPionQA,ipid));h -> Fill(trk->Pt(),fnsigmas[fPartPionQA][ipid]);}}
 	  return fPartPionMinus;
       break;
       default:

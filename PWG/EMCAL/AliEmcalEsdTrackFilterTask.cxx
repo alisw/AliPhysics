@@ -174,9 +174,7 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
       AliESDtrack *etrack = fEsdEv->GetTrack(i);
       if (!etrack) 
 	continue;
-
       if (fEsdTrackCuts->AcceptTrack(etrack)) {
-
         AliESDtrack *newTrack = new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
 	if (fDoPropagation) 
 	  AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(newTrack,fDist);
@@ -184,26 +182,27 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
         newTrack->SetBit(BIT(23),0);
         ++ntrnew;
       } else if (fHybridTrackCuts->AcceptTrack(etrack)) {
-
+	if (!etrack->GetConstrainedParam())
+	  continue;
 	UInt_t status = etrack->GetStatus();
-        if (etrack->GetConstrainedParam() && (((status&AliESDtrack::kITSrefit)!=0) || fIncludeNoITS)) {
-          AliESDtrack *newTrack = new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
-          const AliExternalTrackParam* constrainParam = etrack->GetConstrainedParam();
-          newTrack->Set(constrainParam->GetX(),
-                        constrainParam->GetAlpha(),
-                        constrainParam->GetParameter(),
-                        constrainParam->GetCovariance());
-	  if ((status&AliESDtrack::kITSrefit)==0) {
-            newTrack->SetBit(BIT(22),0); //type 2
-            newTrack->SetBit(BIT(23),1);
-          } else {
-            newTrack->SetBit(BIT(22),1); //type 1
-            newTrack->SetBit(BIT(23),0);
-          }
-	  if (fDoPropagation) 	
-	    AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(newTrack,fDist);
-          ++ntrnew;
+	if (!fIncludeNoITS && ((status&AliESDtrack::kITSrefit)==0))
+	  continue;
+	AliESDtrack *newTrack = new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
+	if (fDoPropagation) 	
+	  AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(newTrack,fDist);
+	const AliExternalTrackParam* constrainParam = etrack->GetConstrainedParam();
+	newTrack->Set(constrainParam->GetX(),
+		      constrainParam->GetAlpha(),
+		      constrainParam->GetParameter(),
+		      constrainParam->GetCovariance());
+	if ((status&AliESDtrack::kITSrefit)==0) {
+	  newTrack->SetBit(BIT(22),0); //type 2
+	  newTrack->SetBit(BIT(23),1);
+	} else {
+	  newTrack->SetBit(BIT(22),1); //type 1
+	  newTrack->SetBit(BIT(23),0);
 	}
+	++ntrnew;
       }
     }
   }

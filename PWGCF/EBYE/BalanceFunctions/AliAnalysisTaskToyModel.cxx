@@ -61,6 +61,17 @@ AliAnalysisTaskToyModel::AliAnalysisTaskToyModel()
   fNumberOfDeadSectors(0),
   fEfficiencyDropNearEtaEdges(kFALSE),
   fEfficiencyMatrix(0),
+  fSimulateDetectorEffectsCorrection(kFALSE),
+  fCentralityArrayBinsForCorrections(101),
+  fPtMinForCorrections(0.3),
+  fPtMaxForCorrections(1.5),
+  fPtBinForCorrections(36), 
+  fEtaMinForCorrections(-0.8),
+  fEtaMaxForCorrections(0.8),
+  fEtaBinForCorrections(16),
+  fPhiMinForCorrections(0.),
+  fPhiMaxForCorrections(360.),
+  fPhiBinForCorrections(100),
   fUseAllCharges(kFALSE), fParticleMass(0.0),
   fPtSpectraAllCharges(0), fTemperatureAllCharges(100.),
   fReactionPlane(0.0),
@@ -83,8 +94,17 @@ AliAnalysisTaskToyModel::AliAnalysisTaskToyModel()
   fEllipticFlowProtons(0.0), fTriangularFlowProtons(0.0),
   fQuandrangularFlowProtons(0.0), fPentangularFlowProtons(0.0),
   fUseDynamicalCorrelations(kFALSE), fDynamicalCorrelationsPercentage(0.1),
-  fUseJets(kFALSE), fPtAssoc(0) {
+  fUseJets(kFALSE), fPtAssoc(0),
+  fUseLCC(kFALSE) {
   // Constructor
+
+  //======================================================correction
+  for (Int_t i=0; i<101; i++){
+    fHistCorrectionPlus[i] = NULL; 
+    fHistCorrectionMinus[i] = NULL; 
+    fCentralityArrayForCorrections[i] = -1.;
+  }
+  //=====================================================correction
 }
 
 //________________________________________________________________________
@@ -272,6 +292,69 @@ void AliAnalysisTaskToyModel::SetupEfficiencyMatrix() {
       }
     }
   }
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskToyModel::SimulateDetectorEffectsCorrection(TString filename, 
+								Int_t nCentralityBins, 
+								Double_t *centralityArrayForCorrections) {
+  //Setup the efficiency matrix from the correction of data
+  fSimulateDetectorEffectsCorrection = kTRUE;
+
+  //Open files that will be used for correction
+  fCentralityArrayBinsForCorrections = nCentralityBins;
+  for (Int_t i=0; i<nCentralityBins; i++)
+    fCentralityArrayForCorrections[i] = centralityArrayForCorrections[i];
+
+  // No file specified -> run without corrections
+  if(!filename.Contains(".root")) {
+    AliInfo(Form("No correction file specified (= %s) --> run without corrections",filename.Data()));
+    return;
+  }
+
+  //Open the input file
+  TFile *f = TFile::Open(filename);
+  if(!f->IsOpen()) {
+    AliInfo(Form("File %s not found --> run without corrections",filename.Data()));
+    return;
+  }
+    
+  //TString listEffName = "";
+  for (Int_t iCent = 0; iCent < fCentralityArrayBinsForCorrections-1; iCent++) {    
+    //Printf("iCent %d:",iCent);    
+    TString histoName = "fHistCorrectionPlus";
+    histoName += Form("%d-%d",(Int_t)(fCentralityArrayForCorrections[iCent]),(Int_t)(fCentralityArrayForCorrections[iCent+1]));
+    fHistCorrectionPlus[iCent]= dynamic_cast<TH3F *>(f->Get(histoName.Data()));
+    if(!fHistCorrectionPlus[iCent]) {
+      AliError(Form("fHist %s not found!!!",histoName.Data()));
+      return;
+    }
+    
+    histoName = "fHistCorrectionMinus";
+    histoName += Form("%d-%d",(Int_t)(fCentralityArrayForCorrections[iCent]),(Int_t)(fCentralityArrayForCorrections[iCent+1]));
+    fHistCorrectionMinus[iCent] = dynamic_cast<TH3F *>(f->Get(histoName.Data())); 
+    if(!fHistCorrectionMinus[iCent]) {
+      AliError(Form("fHist %s not found!!!",histoName.Data()));
+      return; 
+    }
+  }//loop over centralities: ONLY the PbPb case is covered
+
+  if(fHistCorrectionPlus[0]){
+    fEtaMinForCorrections = fHistCorrectionPlus[0]->GetXaxis()->GetXmin();
+    fEtaMaxForCorrections = fHistCorrectionPlus[0]->GetXaxis()->GetXmax();
+    fEtaBinForCorrections = fHistCorrectionPlus[0]->GetNbinsX();
+    
+    fPtMinForCorrections = fHistCorrectionPlus[0]->GetYaxis()->GetXmin();
+    fPtMaxForCorrections = fHistCorrectionPlus[0]->GetYaxis()->GetXmax();
+    fPtBinForCorrections = fHistCorrectionPlus[0]->GetNbinsY();
+    
+    fPhiMinForCorrections = fHistCorrectionPlus[0]->GetZaxis()->GetXmin();
+    fPhiMaxForCorrections = fHistCorrectionPlus[0]->GetZaxis()->GetXmax();
+    fPhiBinForCorrections = fHistCorrectionPlus[0]->GetNbinsZ();
+  }
+
+
+
 }
 
 //________________________________________________________________________
@@ -633,6 +716,9 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	vPt = fPtSpectraAllCharges->GetRandom();
 	vPhi = fAzimuthalAngleAllCharges->GetRandom();
       }
+
+      if(fUseDebug) 
+	Printf("Generated: Charge = %d, eta = %.2f, phi = %.2f, pt = %.2f",vCharge,vEta,vPhi,vPt);
       
       vP[0] = vPt*TMath::Cos(vPhi);
       vP[1] = vPt*TMath::Sin(vPhi);
@@ -659,6 +745,15 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
       if(fSimulateDetectorEffects) {
 	Double_t randomNumber = gRandom->Rndm();
 	if(randomNumber > fEfficiencyMatrix->GetBinContent(fEfficiencyMatrix->FindBin(vEta,vPt,vPhi)))
+	  continue;
+      }
+
+      //Detector effects as for correction of data
+      if(fSimulateDetectorEffectsCorrection) {
+	Double_t gCentrality = 1.; //simulate most central events here (gCentrality = 1.)
+	Double_t efficiency = 1./GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);   
+	Double_t randomNumber = gRandom->Rndm(); 
+	if(randomNumber > efficiency)
 	  continue;
       }
 
@@ -703,6 +798,93 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
       tracksMain->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, 1.0));  
       if(fRunMixing) 
 	tracksMixing->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, 1.0));  
+    
+
+      // Local Charge Conservation usage (Still not perfect since only for accepted particles so far and then realistic efficiencies!!!)
+      // only for charged so far
+      if(fUseLCC && fUseAllCharges) {
+		
+	// Decide the charge
+	Int_t vCharge_LCC = -vCharge;
+	
+	// Get Kinematics
+	Double_t vPt_LCC  = gRandom->Gaus(vPt,0.1);
+	Double_t vEta_LCC = gRandom->Gaus(vEta,0.5);
+	Double_t vPhi_LCC = gRandom->Gaus(vPhi,0.5);
+
+	if(fUseDebug) 
+	  Printf("Generated LCC: Charge = %d, eta = %.2f, phi = %.2f, pt = %.2f",vCharge_LCC,vEta_LCC,vPhi_LCC,vPt_LCC);
+
+	//Acceptance
+	if((vEta_LCC < fEtaMin) || (vEta_LCC > fEtaMax)) continue;
+	      
+	vP[0] = vPt_LCC*TMath::Cos(vPhi_LCC);
+	vP[1] = vPt_LCC*TMath::Sin(vPhi_LCC);
+	vP[2] = vPt_LCC*TMath::SinH(vEta_LCC);
+	vE = TMath::Sqrt(TMath::Power(fParticleMass,2) +
+			 TMath::Power(vP[0],2) +
+			 TMath::Power(vP[1],2) +
+			 TMath::Power(vP[2],2));
+	
+	vY = 0.5*TMath::Log((vE + vP[2])/(vE - vP[2]));
+	
+	//pt coverage
+	if((vPt_LCC < fPtMin) || (vPt_LCC > fPtMax)) continue;
+	
+	//acceptance filter
+	if(fUseAcceptanceParameterization) {
+	  Double_t gRandomNumberForAcceptance = gRandom->Rndm();
+	  if(gRandomNumberForAcceptance > fAcceptanceParameterization->Eval(vPt_LCC)) 
+	    continue;
+	}
+
+	//Detector effects
+	if(fSimulateDetectorEffects) {
+	  Double_t randomNumber = gRandom->Rndm();
+	  if(randomNumber > fEfficiencyMatrix->GetBinContent(fEfficiencyMatrix->FindBin(vEta_LCC,vPt_LCC,vPhi_LCC)))
+	    continue;
+	}
+
+	//Detector effects as for correction of data
+	if(fSimulateDetectorEffectsCorrection) {
+	  Double_t gCentrality = 1.; //simulate most central events here (gCentrality = 1.)
+	  Double_t efficiency = 1./GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);   
+	  Double_t randomNumber = gRandom->Rndm(); 
+	  if(randomNumber > efficiency)
+	    continue;
+	}
+	
+	//Fill QA histograms (acceptance);
+	if(vCharge_LCC > 0) {
+	  gNumberOfAcceptedPositiveParticles += 1;
+	  if(vPhi_LCC > 3.*TMath::Pi()/2.)
+	    fHistEtaPhiPos->Fill(vEta_LCC,vPhi_LCC-2.*TMath::Pi());
+	  else
+	    fHistEtaPhiPos->Fill(vEta_LCC,vPhi_LCC);
+	}
+	else {
+	  gNumberOfAcceptedNegativeParticles += 1;
+	  if(vPhi_LCC > 3.*TMath::Pi()/2.)
+	    fHistEtaPhiNeg->Fill(vEta_LCC,vPhi_LCC-2.*TMath::Pi());
+	  else
+	    fHistEtaPhiNeg->Fill(vEta_LCC,vPhi_LCC);
+	}
+	
+	fHistEta->Fill(vEta_LCC);
+	fHistRapidity->Fill(vY);
+	fHistPhi->Fill(vPhi_LCC);
+	fHistPt->Fill(vPt_LCC);
+
+	iParticleCount += 1;
+	gNumberOfAcceptedParticles += 1;
+	
+	// add the track to the TObjArray
+	tracksMain->Add(new AliBFBasicParticle(vEta_LCC, vPhi_LCC, vPt_LCC, vCharge_LCC, 1.0));  
+	if(fRunMixing) 
+	  tracksMixing->Add(new AliBFBasicParticle(vEta_LCC, vPhi_LCC, vPt_LCC, vCharge_LCC, 1.0));  
+	
+      }//Local charge conservation usage
+
     }//generated positive particle loop
 
     //Jets
@@ -745,6 +927,15 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
       if(fSimulateDetectorEffects) {
 	Double_t randomNumber = gRandom->Rndm();
 	if(randomNumber > fEfficiencyMatrix->GetBinContent(fEfficiencyMatrix->FindBin(gEtaTrig1,gPtTrig1,gPhiTrig1)))
+	  continue;
+      }
+
+      //Detector effects as for correction of data
+      if(fSimulateDetectorEffectsCorrection) {
+	Double_t gCentrality = 1.; //simulate most central events here (gCentrality = 1.)
+	Double_t efficiency = 1./GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);   
+	Double_t randomNumber = gRandom->Rndm(); 
+	if(randomNumber > efficiency)
 	  continue;
       }
 
@@ -792,6 +983,15 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	      continue;
 	  }
 
+	  //Detector effects as for correction of data
+	  if(fSimulateDetectorEffectsCorrection) {
+	    Double_t gCentrality = 1.; //simulate most central events here (gCentrality = 1.)
+	    Double_t efficiency = 1./GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);   
+	    Double_t randomNumber = gRandom->Rndm(); 
+	    if(randomNumber > efficiency)
+	      continue;
+	  }
+
 	  gNumberOfAcceptedParticles += 1;
 
 	  // add the track to the TObjArray
@@ -827,11 +1027,20 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	if(gRandomNumberForAcceptance > fAcceptanceParameterization->Eval(gPtTrig2)) 
 	  continue;
       }
-
+    
       //Detector effects
       if(fSimulateDetectorEffects) {
 	Double_t randomNumber = gRandom->Rndm();
 	if(randomNumber > fEfficiencyMatrix->GetBinContent(fEfficiencyMatrix->FindBin(gEtaTrig2,gPtTrig2,gPhiTrig2)))
+	  continue;
+      }
+
+      //Detector effects as for correction of data
+      if(fSimulateDetectorEffectsCorrection) {
+	Double_t gCentrality = 1.; //simulate most central events here (gCentrality = 1.)
+	Double_t efficiency = 1./GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);   
+	Double_t randomNumber = gRandom->Rndm(); 
+	if(randomNumber > efficiency)
 	  continue;
       }
 
@@ -879,6 +1088,15 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	      continue;
 	  }
 
+	  //Detector effects as for correction of data
+	  if(fSimulateDetectorEffectsCorrection) {
+	    Double_t gCentrality = 1.; //simulate most central events here (gCentrality = 1.)
+	    Double_t efficiency = 1./GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);   
+	    Double_t randomNumber = gRandom->Rndm(); 
+	    if(randomNumber > efficiency)
+	      continue;
+	  }
+
 	  gNumberOfAcceptedParticles += 1;
 
 	  // add the track to the TObjArray
@@ -888,15 +1106,8 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	}//pt,assoc < pt,trig
       }//associated
     }//Jet usage
-
-
-
-
-
-
-
-
     
+
     //Dynamical correlations
     Int_t nGeneratedPositiveDynamicalCorrelations = 0;
     Int_t nGeneratedNegativeDynamicalCorrelations = 0;
@@ -1120,6 +1331,75 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 
   }//event loop
 }      
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskToyModel::GetTrackbyTrackCorrectionMatrix( Double_t vEta, 
+								   Double_t vPhi, 
+								   Double_t vPt, 
+								   Short_t vCharge, 
+								   Double_t gCentrality) {
+  // -- Get efficiency correction of particle dependent on (eta, phi, pt, charge, centrality) 
+
+  Double_t correction = 1.;
+  Int_t binEta = 0, binPt = 0, binPhi = 0;
+
+  //Printf("EtaMAx: %lf - EtaMin: %lf - EtaBin: %lf", fEtaMaxForCorrections,fEtaMinForCorrections,fEtaBinForCorrections);
+  if(fEtaBinForCorrections != 0) {
+    Double_t widthEta = (fEtaMaxForCorrections - fEtaMinForCorrections)/fEtaBinForCorrections;
+    if(fEtaMaxForCorrections != fEtaMinForCorrections) 
+      binEta = (Int_t)((vEta-fEtaMinForCorrections)/widthEta)+1;
+  }
+
+  if(fPtBinForCorrections != 0) {
+    Double_t widthPt = (fPtMaxForCorrections - fPtMinForCorrections)/fPtBinForCorrections;
+    if(fPtMaxForCorrections != fPtMinForCorrections) 
+      binPt = (Int_t)((vPt-fPtMinForCorrections)/widthPt) + 1;
+  }
+ 
+  if(fPhiBinForCorrections != 0) {
+    Double_t widthPhi = (fPhiMaxForCorrections - fPhiMinForCorrections)/fPhiBinForCorrections;
+    if(fPhiMaxForCorrections != fPhiMinForCorrections) 
+      binPhi = (Int_t)((vPhi-fPhiMinForCorrections)/widthPhi)+ 1;
+  }
+
+  Int_t gCentralityInt = -1;
+  for (Int_t i=0; i<fCentralityArrayBinsForCorrections-1; i++){
+    if((fCentralityArrayForCorrections[i] <= gCentrality)&&(gCentrality <= fCentralityArrayForCorrections[i+1])){
+      gCentralityInt = i;
+      break;
+    }
+  }  
+
+  // centrality not in array --> no correction
+  if(gCentralityInt < 0){
+    correction = 1.;
+  }
+  else{
+    
+    //Printf("//=============CENTRALITY=============// %d:",gCentralityInt);
+    
+    if(fHistCorrectionPlus[gCentralityInt]){
+      if (vCharge > 0) {
+	correction = fHistCorrectionPlus[gCentralityInt]->GetBinContent(fHistCorrectionPlus[gCentralityInt]->GetBin(binEta, binPt, binPhi));
+	//Printf("CORRECTIONplus: %.2f | Centrality %d",correction,gCentralityInt);  
+      }
+      if (vCharge < 0) {
+	correction = fHistCorrectionMinus[gCentralityInt]->GetBinContent(fHistCorrectionMinus[gCentralityInt]->GetBin(binEta, binPt, binPhi));
+	//Printf("CORRECTIONminus: %.2f | Centrality %d",correction,gCentralityInt);
+      }
+    }
+    else {
+      correction = 1.;
+    }
+  }//centrality in array
+  
+  if (correction == 0.) { 
+    AliError(Form("Should not happen : bin content = 0. >> eta: %.2f | phi : %.2f | pt : %.2f | cent %d",vEta, vPhi, vPt, gCentralityInt)); 
+    correction = 1.; 
+  } 
+  
+  return correction;
+}
 
 //________________________________________________________________________
 void  AliAnalysisTaskToyModel::FinishOutput() {

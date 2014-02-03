@@ -41,6 +41,9 @@ class AliVCluster;
 class AliEMCALRecoUtils;
 class AliCalorimeterUtils;
 
+//jets
+class AliAODJetEventBackground;
+
 class AliCaloTrackReader : public TObject {
 
 public: 
@@ -585,11 +588,20 @@ public:
   void         SwitchOnNonStandardJets()                     { fFillInputNonStandardJetBranch = kTRUE  ; }
   void         SwitchOffNonStandardJets()                    { fFillInputNonStandardJetBranch = kFALSE ; }
   
+  Bool_t       IsBackgroundJetsSwitchedOn()           const { return fFillInputBackgroundJetBranch   ; }
+  void         SwitchOnBackgroundJets()                     { fFillInputBackgroundJetBranch = kTRUE  ; }
+  void         SwitchOffBackgroundJets()                    { fFillInputBackgroundJetBranch = kFALSE ; }
+
   virtual void FillInputNonStandardJets() ;
   virtual TClonesArray* GetNonStandardJets()            const { return fNonStandardJets                 ; }
   virtual void SetInputNonStandardJetBranchName(TString name) { fInputNonStandardJetBranchName   = name ; }
   virtual TString GetInputNonStandardJetBranchName()          { return fInputNonStandardJetBranchName   ; }
   
+  virtual void FillInputBackgroundJets() ;
+  virtual AliAODJetEventBackground* GetBackgroundJets() const { return fBackgroundJets                 ; }
+  virtual void SetInputBackgroundJetBranchName(TString name) { fInputBackgroundJetBranchName   = name ; }
+  virtual TString GetInputBackgroundJetBranchName()          { return fInputBackgroundJetBranchName   ; }
+
  protected:
   Int_t	           fEventNumber;               // Event number
   Int_t            fDataType ;                 // Select MC:Kinematics, Data:ESD/AOD, MCData:Both
@@ -765,14 +777,17 @@ public:
   Bool_t           fFillInputNonStandardJetBranch;  // Flag to use data from non standard jets
   TClonesArray *   fNonStandardJets;                //! temporal array with jets
   TString          fInputNonStandardJetBranchName;  // Name of non standard jet branch
-  
+  Bool_t           fFillInputBackgroundJetBranch;   // Flag to use data from background jets
+  AliAODJetEventBackground * fBackgroundJets;       //! background jets
+  TString          fInputBackgroundJetBranchName;   // Name of background jet branch
+
   TArrayI          fAcceptEventsWithBit;           // Accept events if trigger bit is on
   TArrayI          fRejectEventsWithBit;           // Reject events if trigger bit is on
 
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,64)
+  ClassDef(AliCaloTrackReader,65)
   
 } ;
 

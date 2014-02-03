@@ -183,7 +183,7 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fHistTrackStatus->GetXaxis()->SetBinLabel(6,"Pion OK");
   fHistTrackStatus->GetXaxis()->SetBinLabel(7,"Kaon||Pion, Not OK");
   fHistTrackStatus->GetXaxis()->SetBinLabel(8,"Kaon||Pion OK");
-  fHistTrackStatus->SetNdivisions(1,kFALSE);
+  fHistTrackStatus->GetXaxis()->SetNdivisions(1,kFALSE);
   fHistTrackStatus->Sumw2();
   fHistTrackStatus->SetMinimum(0);
   fOutput->Add(fHistTrackStatus);

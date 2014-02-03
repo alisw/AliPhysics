@@ -22,34 +22,26 @@ AliRsnCutPhiRAA::AliRsnCutPhiRAA
 (const char *name) :
    AliRsnCut(name, AliRsnTarget::kDaughter),
    fMode(k2011_1),
-   fCutQuality(Form("%s_quality", name))
+   fCutQuality(Form("%s_quality", name)),
+   cut1(AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE, 1)),
+   cut2(AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE, 0)),
+   cut3(AliESDtrackCuts::GetStandardITSTPCTrackCuts2010())
 {
 //
 // Constructor
 // Initialize the contained cuts and sets defaults
 //
-  cut1 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE, 1);
+
+//  cut1
   cut1->SetEtaRange(-0.8, 0.8);
   cut1->SetPtRange(0.30,1e10);
-  cut2 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE, 0);
+//  cut2
   cut2->SetEtaRange(-0.8, 0.8);
   cut2->SetPtRange(0.30,1e10);
-  cut3 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+//  cut3
   cut3->SetEtaRange(-0.8, 0.8);
   cut3->SetPtRange(0.30,1e10);
 
-  cut4 = new AliESDtrackCuts("AliESDtrackCuts", "Loose");
-  //TPC only
-  cut4->SetMinNClustersTPC(70);//70
-  cut4->SetMaxChi2PerClusterTPC(4); //4
-  cut4->SetAcceptKinkDaughters(kFALSE);
-  cut4->SetRequireTPCRefit(kTRUE);
-  cut4->SetMaxDCAToVertexXY(2.4);
-  cut4->SetMaxDCAToVertexZ(3.2);
-  cut4->SetDCAToVertex2D(kFALSE);
-  cut4->SetRequireSigmaToVertex(kFALSE);
-  cut4->SetPtRange(0.3,30);
-  cut4->SetEtaRange(-0.8,0.8); // normally, |eta|<0.8
   //V end
 
 }
@@ -58,7 +50,11 @@ AliRsnCutPhiRAA::AliRsnCutPhiRAA
 AliRsnCutPhiRAA::AliRsnCutPhiRAA(const AliRsnCutPhiRAA &copy) :
    AliRsnCut(copy),
    fMode(copy.fMode),
-   fCutQuality(copy.fCutQuality)
+   fCutQuality(copy.fCutQuality),
+   cut1(copy.cut1),
+   cut2(copy.cut2),
+   cut3(copy.cut3)
+
 {
 //
 // Copy constructor
@@ -110,10 +106,6 @@ Bool_t AliRsnCutPhiRAA::IsSelected(TObject *obj)
      break;
      case k2011_0:
  	   fCutQuality.SetESDtrackCuts(cut2);
-       if (fCutQuality.IsSelected(obj)) accept = kTRUE;
-     break;
-     case kTPC:
- 	   fCutQuality.SetESDtrackCuts(cut4);
        if (fCutQuality.IsSelected(obj)) accept = kTRUE;
      break;
      case k2011_1:

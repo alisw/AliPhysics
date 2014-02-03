@@ -19,6 +19,7 @@
 #pragma link C++ class AliFlowEventStar+;
 
 #pragma link C++ class AliFlowTrackSimpleCuts+;
+#pragma link C++ class AliFlowEventSimpleCuts+;
 
 #pragma link C++ class AliFlowEventSimpleMakerOnTheFly+;
 
@@ -30,6 +31,7 @@
 
 #pragma link C++ class AliFlowLYZEventPlane+;
 
+#pragma link C++ class AliFlowAnalysis+;
 #pragma link C++ class AliFlowAnalysisWithMCEventPlane+;
 #pragma link C++ class AliFlowAnalysisWithScalarProduct+;
 #pragma link C++ class AliFlowAnalysisWithMSP+;

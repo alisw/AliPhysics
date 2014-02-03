@@ -231,11 +231,11 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
   // Define arrays for muons
   Double_t pos[3];
   Double_t p[3];
-  Double_t pid[10];
+  //  Double_t pid[10];
   
   // has to be changed once the muon pid is provided by the ESD
-  for (Int_t i = 0; i < 10; pid[i++] = 0.) {}
-  pid[AliAODTrack::kMuon]=1.;
+  //  for (Int_t i = 0; i < 10; pid[i++] = 0.) {}
+  //  pid[AliAODTrack::kMuon]=1.;
   
   AliAODHeader* header = AODEvent()->GetHeader();
   AliAODTrack *aodTrack = 0x0;
@@ -305,13 +305,14 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
                                                   0x0, // covariance matrix
                                                   esdMuTrack->Charge(), // charge
                                                   itsClusMap, // ITSClusterMap
-                                                  pid, // pid
+                                                  //pid, // pid
                                                   primary, // primary vertex
                                                   kFALSE, // used for vertex fit?
                                                   kFALSE, // used for primary vertex fit?
                                                   AliAODTrack::kPrimary,// track type
                                                   selectInfo); 
     
+    aodTrack->SetPIDForTracking(AliPID::kMuon);
     aodTrack->SetXYAtDCA(esdMuTrack->GetNonBendingCoorAtDCA(), esdMuTrack->GetBendingCoorAtDCA());
     aodTrack->SetPxPyPzAtDCA(esdMuTrack->PxAtDCA(), esdMuTrack->PyAtDCA(), esdMuTrack->PzAtDCA());
     aodTrack->SetRAtAbsorberEnd(esdMuTrack->GetRAtAbsorberEnd());

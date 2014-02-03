@@ -49,13 +49,17 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   if ((dType == "ESD") && (clusterColName == "caloClusters"))
     clusterColName = "CaloClusters";
 
-  if (makePicoTracks && (dType == "ESD" || dType == "AOD") )
-  {
+  if (0) {
+    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalTrackPropagator.C");
+    AliEmcalTrackPropagatorTask *proptask = AddTaskEmcalTrackPropagator();
+    proptask->SelectCollisionCandidates(pSel);
+  }
+
+  if (makePicoTracks && (dType == "ESD" || dType == "AOD")) {
     // Filter tracks
     TString inputTracks = "AODFilterTracks";
     const Double_t edist = 440;
-    if (dType == "ESD")
-    {
+    if (dType == "ESD") {
       inputTracks = "ESDFilterTracks";
       TString trackCuts(Form("Hybrid_%s", period.Data()));
       gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalEsdTrackFilter.C");
@@ -108,8 +112,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   }
 
   // Produce MC particles
-  if(particleColName != "")
-  {
+  if(particleColName != "") {
     gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskMCTrackSelector.C");
     AliEmcalMCTrackSelector *mcPartTask = AddTaskMCTrackSelector(particleColName.Data(), kFALSE, kFALSE);
     mcPartTask->SelectCollisionCandidates(pSel);
