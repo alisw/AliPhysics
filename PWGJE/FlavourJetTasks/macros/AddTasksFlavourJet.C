@@ -82,10 +82,10 @@ void AddTasksFlavourJet(const Int_t iCandType = 1 /*0 = D0, 1=Dstar...*/,
    // Jet preparation
    //gROOT->LoadMacro("/data/Work/jets/testEMCalJetFramework/code/v4/AddTaskJetPreparation.C");
    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskJetPreparation.C");
-   AddTaskJetPreparation(type,sRunPeriod,"PicoTracks",bIsMC ? "MCParticlesSelected" : "",/*next 7 emcal default settings*/"","",2.,0.,0.03,0.015,0.15,uTriggerMask, kFALSE /*track cluster*/,kFALSE /*do histos*/,kTRUE /*make pico tracks*/,kFALSE /*make emcal trigger*/,kFALSE /*is emcal train*/);
+   AddTaskJetPreparation(sRunPeriod,"PicoTracks",bIsMC ? "MCParticlesSelected" : "",/*next 7 emcal default settings*/"","",2.,0.,0.03,0.015,0.15,uTriggerMask, kFALSE /*track cluster*/,kFALSE /*do histos*/,kTRUE /*make pico tracks*/,kFALSE /*make emcal trigger*/,kFALSE /*is emcal train*/);
    
    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPicoTrackMaker.C");
-   AliEmcalPicoTrackMaker *taskPicoTrack = AddTaskEmcalPicoTrackMaker(sUsedTrks.Data(),sInputTrk.Data(),sRunPeriod.Data());
+   AliEmcalPicoTrackMaker *taskPicoTrack = AddTaskEmcalPicoTrackMaker(sUsedTrks.Data(),sInputTrk.Data());
    taskPicoTrack->SelectCollisionCandidates(uTriggerMask);
    
    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
