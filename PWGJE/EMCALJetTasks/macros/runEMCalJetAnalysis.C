@@ -292,6 +292,7 @@ void LoadLibs()
   gSystem->Load("libfastjet");
     //For FastJet 3.x use siscon*,fastjetplugins for 2.x use SISConePlugin
   gSystem->Load("libSISConePlugin");
+  gSystem->Load("libCDFConesPlugin");
   //  gSystem->Load("libsiscone");
   //  gSystem->Load("libsiscone_spherical");
   //  gSystem->Load("libfastjetplugins");
