@@ -166,6 +166,8 @@ void AliAnalysisTrackingUncertainties::UserCreateOutputObjects()
   fListHist->Add(hBestMatchBg);
   fListHist->Add(hAllMatchBg);
   fListHist->Add(hAllMatchGloBg);
+  //add default track cuts in the output list
+  fListHist->Add(fESDtrackCuts);
   //
   // post data
   //
@@ -387,7 +389,7 @@ void AliAnalysisTrackingUncertainties::ProcessTrackCutVariation() {
     //
     // relevant variables
     //
-    Double_t pid        = Double_t(GetPid(track));
+    //Double_t pid        = Double_t(GetPid(track));
     //
     Int_t nclsTPC       = track->GetTPCncls();
     Float_t pT          = track->Pt();
@@ -422,7 +424,6 @@ void AliAnalysisTrackingUncertainties::ProcessTrackCutVariation() {
     }else {
       chi2ITS = 999.;
     }
-
     //
     track->GetImpactParameters(dca, cov);
     //
@@ -531,35 +532,43 @@ void AliAnalysisTrackingUncertainties::ProcessTrackCutVariation() {
     // remove all ITS requirements
     //
     // Leonardo and Emilia: 
-    //  -> beautify this (save the previous cut)
-    //  -> check if really all cuts related to the matching are removed
-    //  -> histogram with default cuts
-    //  -> if MC is available: fill it only for true primaries
+    //  -> if MC is available: fill it only for true primaries, 
+    //        --to be done for every cut?
     //  -> Postprocessing: plot histogram with 1 divided by histogram with 0 as a function of pT/eta/phi
-    // 
-    //
+    //  -> Do we want to remove the DCA cut?
+    Bool_t refit=fESDtrackCuts->GetRequireITSRefit();
+    Float_t chi2tpc= fESDtrackCuts->GetMaxChi2TPCConstrainedGlobal();
+    Float_t chi2its= fESDtrackCuts->GetMaxChi2PerClusterITS();
+    //TString str = fESDtrackCuts->GetMaxDCAToVertexXYPtDep();
+    
     fESDtrackCuts->SetRequireITSRefit(kFALSE);
-    fESDtrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
     fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(99999.);
     fESDtrackCuts->SetMaxChi2PerClusterITS(999999.);
-    //
-    TString str = fESDtrackCuts->GetMaxDCAToVertexXYPtDep();
-    fESDtrackCuts->SetMaxDCAToVertexXYPtDep();
+	//TString str = fESDtrackCuts->GetMaxDCAToVertexXYPtDep();
+    //fESDtrackCuts->SetMaxDCAToVertexXYPtDep();
+    fESDtrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
+    
     if (fESDtrackCuts->AcceptTrack(track)) {
-      UInt_t status = track->GetStatus();
-      isMatched  = status&AliESDtrack::kITSrefit; // this will be obsolete
+      for(Int_t iPid = 0; iPid < 6; iPid++) {
+	Double_t vecHistTpcItsMatch[kNumberOfAxes] = {isMatched, pT, eta, phi, iPid};
+	if (IsConsistentWithPid(iPid, track)) histTpcItsMatch->Fill(vecHistTpcItsMatch); // fill with 1 here
+      }
+    }
+    //apply back the cuts
+    fESDtrackCuts->SetRequireITSRefit(refit);
+    fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(chi2tpc);
+    fESDtrackCuts->SetMaxChi2PerClusterITS(chi2its);
+    //fESDtrackCuts->SetMaxDCAToVertexXYPtDep(str.Data());
+    fESDtrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    //set is matched
+    isMatched=kTRUE;
+    if (fESDtrackCuts->AcceptTrack(track)) {
       for(Int_t iPid = 0; iPid < 6; iPid++) {
 	Double_t vecHistTpcItsMatch[kNumberOfAxes] = {isMatched, pT, eta, phi, iPid};
 	if (IsConsistentWithPid(iPid, track)) histTpcItsMatch->Fill(vecHistTpcItsMatch); // fill with 0 here
       }
     }
-    fESDtrackCuts->SetRequireITSRefit(kTRUE);
-    fESDtrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
-    fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
-    fESDtrackCuts->SetMaxDCAToVertexXYPtDep(str.Data());
-    fESDtrackCuts->SetMaxChi2PerClusterITS(36);
-    // fill with 1 here
-
+    
   } // end of track loop
 
 
