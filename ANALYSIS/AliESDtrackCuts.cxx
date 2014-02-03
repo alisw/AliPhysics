@@ -1102,9 +1102,9 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
   //Pt dependent NClusters Cut
   if(f1CutMinNClustersTPCPtDep) {
     if(esdTrack->Pt()<fCutMaxPtDepNClustersTPC)
-      fCutMinNClusterTPC = f1CutMinNClustersTPCPtDep->Eval(esdTrack->Pt());
+      fCutMinNClusterTPC = (Int_t)(f1CutMinNClustersTPCPtDep->Eval(esdTrack->Pt()));
     else
-      fCutMinNClusterTPC = f1CutMinNClustersTPCPtDep->Eval(fCutMaxPtDepNClustersTPC);
+      fCutMinNClusterTPC = (Int_t)(f1CutMinNClustersTPCPtDep->Eval(fCutMaxPtDepNClustersTPC));
   }
 
   Float_t nCrossedRowsTPC = esdTrack->GetTPCCrossedRows();
