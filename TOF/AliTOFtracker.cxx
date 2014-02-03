@@ -99,6 +99,10 @@ AliTOFtracker::AliTOFtracker():
   // Getting the geometry
   fGeom = new AliTOFGeometry();
 
+  for(Int_t i=0; i< 20000;i++){
+    fClusterESD[i] = NULL;
+  }
+
   InitCheckHists();
 
 }

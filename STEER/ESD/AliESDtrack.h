@@ -37,12 +37,12 @@
 
 class TParticle;
 class AliESDVertex;
-class AliESDEvent;
 class AliKalmanTrack;
 class AliTrackPointArray;
 class TPolyMarker3D;
 class AliDetectorPID;
 class TTreeSRedirector;
+class AliESDEvent;
 
 class AliESDtrack : public AliExternalTrackParam {
 public:
@@ -91,8 +91,9 @@ public:
   Int_t    GetPID(Bool_t tpcOnly=kFALSE)  const;
   Int_t    GetTOFBunchCrossing(Double_t b=0, Bool_t pidTPConly=kTRUE) const;
   Double_t GetMass(Bool_t tpcOnly=kFALSE) const {return AliPID::ParticleMass(GetPID(tpcOnly));}
-  Double_t GetMassForTracking() const {return fMassForTracking;}
-  void     SetMassForTracking(Double_t m) {fMassForTracking = m;}
+  Double_t GetMassForTracking() const;
+  void     SetPIDForTracking(Int_t pid) {fPIDForTracking = pid;}
+  Int_t    GetPIDForTracking() const    {return fPIDForTracking;}
   Double_t M() const;
   Double_t E() const;
   Double_t Y() const;
@@ -418,6 +419,7 @@ public:
   }
   virtual void Print(Option_t * opt) const ;
   const AliESDEvent* GetESDEvent() const {return fESDEvent;}
+  const AliTOFHeader* GetTOFHeader() const;
   void         SetESDEvent(const AliESDEvent* evt) {fESDEvent = evt;}
 
   // Trasient PID object, is owned by the track
@@ -472,13 +474,12 @@ protected:
   Int_t     fKinkIndexes[3]; // array of indexes of posible kink candidates 
   Int_t     fV0Indexes[3];   // array of indexes of posible kink candidates 
 
-  Double32_t   fR[AliPID::kSPECIES]; //! [0.,0.,8] combined "detector response probability"
-  Double32_t   fITSr[AliPID::kSPECIES]; //! [0.,0.,8] "detector response probabilities" (for the PID)
-  Double32_t   fTPCr[AliPID::kSPECIES]; //! [0.,0.,8] "detector response probabilities" (for the PID)
-  Double32_t   fTRDr[AliPID::kSPECIES]; //! [0.,0.,8] "detector response probabilities" (for the PID)  
-  Double32_t   fTOFr[AliPID::kSPECIES]; //! [0.,0.,8] "detector response probabilities" (for the PID)
-  Double32_t   fHMPIDr[AliPID::kSPECIES];//! [0.,0.,8] "detector response probabilities" (for the PID)
-  Double32_t   fMassForTracking;         // mass used for tracking
+  Double32_t   *fR; //! [0.,0.,8] combined "detector response probability"
+  Double32_t   *fITSr; //! [0.,0.,8] "detector response probabilities" (for the PID)
+  Double32_t   *fTPCr; //! [0.,0.,8] "detector response probabilities" (for the PID)
+  Double32_t   *fTRDr; //! [0.,0.,8] "detector response probabilities" (for the PID)  
+  Double32_t   *fTOFr; //! [0.,0.,8] "detector response probabilities" (for the PID)
+  Double32_t   *fHMPIDr; //! [0.,0.,8] "detector response probabilities" (for the PID)
 
   Double32_t fHMPIDtrkTheta;//[-2*pi,2*pi,16] theta of the track extrapolated to the HMPID, LORS
   // how much of this is needed?
@@ -560,6 +561,8 @@ protected:
 
   Char_t  fTRDTimBin[kTRDnPlanes];   // Time bin of Max cluster from all six planes
   Char_t  fVertexID; // ID of the primary vertex this track belongs to
+  Char_t  fPIDForTracking;           // mass used for tracking
+
   mutable const AliESDEvent*   fESDEvent; //!Pointer back to event to which the track belongs
   
   mutable Float_t fCacheNCrossedRows; //! Cache for the number of crossed rows
@@ -582,7 +585,7 @@ protected:
   static bool fgkOnlineMode; //! indicate the online mode to skip some of the functionality
 
   AliESDtrack & operator=(const AliESDtrack & );
-  ClassDef(AliESDtrack,70)  //ESDtrack 
+  ClassDef(AliESDtrack,71)  //ESDtrack 
 };
 
 

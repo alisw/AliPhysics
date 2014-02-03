@@ -42,7 +42,7 @@ AliESDpid& operator=(const AliESDpid& a){if (this==&a) return *this; AliPIDRespo
   void MakeTRDPID(AliESDtrack *track) const;
   void CombinePID(AliESDtrack *track) const;
 
-  void SetMassForTracking(AliESDtrack *track) const;
+  void SetPIDForTracking(AliESDtrack *track) const;
 
 //   Float_t NumberOfSigmasTOF(const AliVParticle *track, AliPID::EParticleType type) const {return AliPIDResponse::NumberOfSigmasTOF(track,type);}
 //   Float_t GetNumberOfSigmasTOF(const AliVParticle *track, AliPID::EParticleType type, const Float_t timeZeroTOF) const;

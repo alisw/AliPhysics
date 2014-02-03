@@ -41,6 +41,29 @@
 #pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Short_t fTOFdeltaBC"  version="[-68]" target="fTOFdeltaBC" targetType="Short_t" code="{fTOFdeltaBC=onfile.fTOFdeltaBC;}"
 #pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Short_t fTOFl0l1"  version="[-68]" target="fTOFl0l1" targetType="Short_t" code="{fTOFl0l1=onfile.fTOFl0l1;}"
 
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fR[5]"  version="[-71]" \
+ target="fR" targetType="Double32_t*" include="AliPID.h" \
+   code="{fR = new Double32_t[AliPID::kSPECIES];for(Int_t isp=5;isp--;) fR[isp]=onfile.fR[isp];}"
+
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTPCr[5]"  version="[-71]" \
+   target="fTPCr" targetType="Double32_t*" include="AliPID.h" \
+   code="{fTPCr = new Double32_t[AliPID::kSPECIES];for(Int_t isp=5;isp--;) fTPCr[isp]=onfile.fTPCr[isp];}"
+
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fITSr[5]"  version="[-71]" \
+   target="fITSr" targetType="Double32_t*" include="AliPID.h" \
+   code="{fITSr = new Double32_t[AliPID::kSPECIES];for(Int_t isp=5;isp--;) fITSr[isp]=onfile.fITSr[isp];}"
+
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTRDr[5]"  version="[-71]" \
+   target="fTRDr" targetType="Double32_t*" include="AliPID.h" \
+   code="{fTRDr = new Double32_t[AliPID::kSPECIES];for(Int_t isp=5;isp--;) fTRDr[isp]=onfile.fTRDr[isp];}"
+
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTOFr[5]"  version="[-71]" \
+   target="fTOFr" targetType="Double32_t*" include="AliPID.h" \
+   code="{fTOFr = new Double32_t[AliPID::kSPECIES];for(Int_t isp=5;isp--;) fTOFr[isp]=onfile.fTOFr[isp];}"
+
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fHMPIDr[5]"  version="[-71]" \
+   target="fHMPIDr" targetType="Double32_t*" include="AliPID.h" \
+   code="{fHMPIDr = new Double32_t[AliPID::kSPECIES];for(Int_t isp=5;isp--;) fHMPIDr[isp]=onfile.fHMPIDr[isp];}"
 
 #pragma link C++ class  AliESDtrack+;
 #pragma read sourceClass="AliESDfriendTrack" targetClass="AliESDfriendTrack" source="Int_t fITSindex" version="[-3]" \

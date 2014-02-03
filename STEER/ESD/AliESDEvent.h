@@ -74,7 +74,6 @@ class AliESDCosmicTrack;
 class TList;
 class TString;
 
-
 class AliESDEvent : public AliVEvent {
 public:
 

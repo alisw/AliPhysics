@@ -56,7 +56,6 @@
 
 using std::ifstream;
 using std::ios_base;
-
 extern "C"{
   Gas gaspar_;
 };
@@ -81,7 +80,6 @@ AliTPCv2::AliTPCv2(const char *name, const char *title) :
   gaspar_.fpot=fTPCParam->GetFpot();
   gaspar_.eend=fTPCParam->GetEend();
   gaspar_.eexpo=fTPCParam->GetExp();
-
 
 
 }
@@ -2146,8 +2144,9 @@ void AliTPCv2::StepManager()
   //const Float_t kprim = 14.35; // number of primary collisions per 1 cm
   //const Float_t kpoti = 20.77e-9; // first ionization potential for Ne/CO2
   //const Float_t kwIon = 35.97e-9; // energy for the ion-electron pair creation 
+  const Float_t kScalewIonG4 = 0.85; // scale factor to tune kwIon for Geant4 
+  const Float_t kFanoFactorG4 = 0.7; // parameter for smearing the number of ionizations (nel) using Geant4
   const Int_t   kMaxDistRef =15;     // maximal difference between 2 stored references 
-
   Float_t prim = fTPCParam->GetNprim();
   Float_t poti = fTPCParam->GetFpot();
   Float_t wIon = fTPCParam->GetWmean();
@@ -2277,6 +2276,8 @@ void AliTPCv2::StepManager()
       nel = (Int_t)(((gMC->Edep())-poti)/wIon) + 1;
     }
     else {
+      
+      /*
       static Double_t deForNextStep = 0.;
       // Geant4 (the meaning of Edep as in Geant3) - wrong
       //nel = (Int_t)(((gMC->Edep())-poti)/wIon) + 1;
@@ -2285,6 +2286,11 @@ void AliTPCv2::StepManager()
       Double_t eAvailable = gMC->Edep() + deForNextStep;
       nel = (Int_t)(eAvailable/wIon);
       deForNextStep = eAvailable - nel*wIon;
+      */
+
+      //new Geant4-approach
+      Double_t meanIon = gMC->Edep()/(wIon*kScalewIonG4);
+      nel = (Int_t) ( kFanoFactorG4*AliMathBase::Gamma(meanIon/kFanoFactorG4)); // smear nel using gamma distr w mean = meanIon and variance = meanIon/kFanoFactorG4
     }
     nel=TMath::Min(nel,300); // 300 electrons corresponds to 10 keV
     //

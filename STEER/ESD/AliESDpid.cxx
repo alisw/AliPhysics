@@ -469,7 +469,7 @@ Float_t AliESDpid::GetNumberOfSigmasTOFold(const AliVParticle *track, AliPID::EP
 }
 
 //_________________________________________________________________________
-void AliESDpid::SetMassForTracking(AliESDtrack *esdtr) const
+void AliESDpid::SetPIDForTracking(AliESDtrack *esdtr) const
 {
   // assign mass for tracking
   //
@@ -484,7 +484,7 @@ void AliESDpid::SetMassForTracking(AliESDtrack *esdtr) const
   EDetPidStatus pidStatus=ComputePIDProbability(kTPC, esdtr, AliPID::kSPECIESC, prob);
   // check if a valid signal was found, otherwise return pion mass
   if (pidStatus!=kDetPidOk) {
-    esdtr->SetMassForTracking(AliPID::kPion);
+    esdtr->SetPIDForTracking(AliPID::kPion);
     return;
   }
 
@@ -501,7 +501,7 @@ void AliESDpid::SetMassForTracking(AliESDtrack *esdtr) const
   //
   if (pid<AliPID::kPion || pid>AliPID::kSPECIESC-1) pid = AliPID::kPion;
   //
-  esdtr->SetMassForTracking( AliPID::ParticleCharge(pid)==1 ? AliPID::ParticleMass(pid) : -AliPID::ParticleMass(pid));
+  esdtr->SetPIDForTracking( pid );
   //
 }
 
@@ -513,7 +513,7 @@ void AliESDpid::MakePIDForTracking(AliESDEvent *event) const
   Int_t nTrk=event->GetNumberOfTracks();
   for (Int_t iTrk=nTrk; iTrk--;) {  
     AliESDtrack *track = event->GetTrack(iTrk);
-    SetMassForTracking(track);
+    SetPIDForTracking(track);
   }
 
 }

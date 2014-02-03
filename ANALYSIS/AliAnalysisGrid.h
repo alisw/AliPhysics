@@ -43,7 +43,8 @@ enum EPluginBits {
    kProofConnectGrid = BIT(5),
    kOneStageMerging = BIT(6),
    kUseMCchain = BIT(7),
-   kLocalTest  = BIT(8)
+   kLocalTest  = BIT(8),
+   kMergeAOD   = BIT(9)
 };
 
    AliAnalysisGrid() : TNamed(), fSpecialBits(0) {}
@@ -127,6 +128,8 @@ enum EPluginBits {
    void                SetUseMCchain(Bool_t flag=kTRUE) {SetSpecialBit(kUseMCchain,flag);}
    Bool_t              IsLocalTest() const {return TestSpecialBit(kLocalTest);}
    void                SetLocalTest(Bool_t flag=kTRUE) {SetSpecialBit(kLocalTest,flag);}
+   Bool_t              IsMergeAOD() const {return TestSpecialBit(kMergeAOD);}
+   virtual void        SetMergeAOD(Bool_t flag=kTRUE) {SetSpecialBit(kMergeAOD,flag);}
 
 // PROOF mode
    virtual void        SetProofCluster(const char *cluster)              = 0;

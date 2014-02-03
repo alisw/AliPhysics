@@ -28,12 +28,12 @@
 set ( SRCS  	
 #v0/AliITSupgrade.cxx 
 #v0/AliITSupgradeDigitizer.cxx 
-#AliITSUv11.cxx 
-#AliITSUv11Layer.cxx 
 #
 AliITSU.cxx 
 AliITSUv0.cxx 
 AliITSUv0Layer.cxx 
+AliITSUv1.cxx 
+AliITSUv1Layer.cxx 
 AliITSUModule.cxx
 AliITSUSimuParam.cxx
 AliITSUSimulation.cxx
@@ -41,6 +41,7 @@ AliITSUSimulationPix.cxx
 AliITSUDigitPix.cxx
 AliITSUDigitizer.cxx
 AliITSUHit.cxx
+AliITSUSuze02.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
