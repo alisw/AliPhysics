@@ -156,7 +156,6 @@ AliEmcalJetTask* AddTaskEmcalJet(
   const char *tag            = "Jet"
 )
 {  
-  
   UInt_t jetType = 0;
 
   if (algo == 0) 
@@ -179,11 +178,11 @@ AliEmcalJetTask* AddTaskEmcalJet(
     jetType |= AliEmcalJetTask::kR040Jet;
   else
     jetType |= AliEmcalJetTask::kRX1Jet;
-if (ghostArea==0.0)
-    {
-        ::Error("AddTaskEmcalJet","Ghost area set to 0, check your settings (try 0.005)");
-        return NULL;
-    }
+
+  if (ghostArea<=0) {
+    ::Error("AddTaskEmcalJet","Ghost area set to 0, check your settings (try 0.005)");
+    return NULL;
+  }
 
   return AddTaskEmcalJet(jetType, nTracks, nClusters, minTrPt, minClPt, ghostArea, radius, recombScheme, tag);
 }
