@@ -28,9 +28,10 @@ AliAnalysisTaskHFECal* ConfigHFECal(Bool_t useMC,Bool_t MassConst,Bool_t MassWid
   hfecuts->SetPtRange(2, 50);
   hfecuts->SetMaxImpactParam(3.,3.);
   
+ 
   AliAnalysisTaskHFECal *task = new AliAnalysisTaskHFECal("HFEanalysisEMCal");
   printf("task ------------------------ %p\n ", task);
-  task->SetHFECuts(hfecuts);
+  //task->SetHFECuts(hfecuts);
   task->SetMassConstraint(MassConst);
   task->SetMassWidthCut(MassWidthCut);
   task->SetMassNonlinear(MassNonlinear);

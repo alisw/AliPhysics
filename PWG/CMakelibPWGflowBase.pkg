@@ -35,6 +35,7 @@ set ( SRCS
       FLOW/Base/AliFlowEventStar.cxx 
       FLOW/Base/AliStarEventReader.cxx 
       FLOW/Base/AliFlowTrackSimpleCuts.cxx 
+      FLOW/Base/AliFlowEventSimpleCuts.cxx
       FLOW/Base/AliFlowVector.cxx 
       FLOW/Base/AliFlowCommonConstants.cxx 
       FLOW/Base/AliFlowLYZConstants.cxx 
@@ -44,6 +45,7 @@ set ( SRCS
       FLOW/Base/AliFlowLYZHist1.cxx 
       FLOW/Base/AliFlowLYZHist2.cxx 
       FLOW/Base/AliFlowLYZEventPlane.cxx 
+      FLOW/Base/AliFlowAnalysis.cxx 
       FLOW/Base/AliFlowAnalysisWithScalarProduct.cxx 
       FLOW/Base/AliFlowAnalysisWithMCEventPlane.cxx 
       FLOW/Base/AliFlowAnalysisWithLYZEventPlane.cxx 

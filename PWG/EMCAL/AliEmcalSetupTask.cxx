@@ -135,13 +135,10 @@ void AliEmcalSetupTask::Setup(Int_t runno)
 {
   // Setup everything
 
-  if (runno<=0)
-    return;
-
   // Setup AliEMCALGeometry corresponding to year
   TString geoname("EMCAL_COMPLETE12SMV1");
   Int_t year = 2013;
-  if (runno<=139517) {
+  if (runno>0 && runno<=139517) {
     year = 2010;
     geoname = "EMCAL_FIRSTYEARV1";
   } else if ((runno>139517) && (runno<=170593)) {
@@ -155,6 +152,9 @@ void AliEmcalSetupTask::Setup(Int_t runno)
     AliFatal(Form("Can not create geometry: %s",geoname.Data()));
     return;
   }
+
+  if (runno<=0)
+    return;
 
   // Setup CDB manager
   AliCDBManager *man = 0;

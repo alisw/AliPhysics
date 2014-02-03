@@ -18,6 +18,14 @@ AliAnalysisTask *AddTaskJPSIFilter(Bool_t storeLS = kFALSE, Bool_t hasMC_aod = k
   //Do we run on AOD?
   Bool_t isAOD=mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
 
+  //Allow merging of the filtered aods on grid trains
+  if(mgr->GetGridHandler()) {
+    printf(" SET MERGE FILTERED AODs \n");
+    mgr->GetGridHandler()->SetMergeAOD(kTRUE);
+  }
+
+
+
   //gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macros/ConfigBJpsi_ff_PbPbFilter.C");
   //  gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigBJpsi_ff_PbPbFilter.C");
   gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_nano_PbPb.C");
@@ -90,6 +98,7 @@ AliAnalysisTask *AddTaskJPSIFilter(Bool_t storeLS = kFALSE, Bool_t hasMC_aod = k
   
   
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task, 0, mgr->GetCommonOutputContainer());
   mgr->ConnectOutput(task, 1, cOutputHist1);
   mgr->ConnectOutput(task, 2, cOutputHist2);
   

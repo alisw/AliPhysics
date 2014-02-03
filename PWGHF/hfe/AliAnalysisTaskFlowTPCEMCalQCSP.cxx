@@ -626,7 +626,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
                 AliFlowTrack *sTrackCont = new AliFlowTrack();
                 sTrackCont->Set(track);
                 sTrackCont->SetID(track->GetID());
-                sTrackCont->SetForRPSelection(kFALSE);
+                sTrackCont->SetForRPSelection(kTRUE);
                 sTrackCont->SetForPOISelection(kTRUE);
                 sTrackCont->SetMass(2637);
                 for(int iRPs=0; iRPs!=fFlowEventCont->NumberOfTracks(); ++iRPs)
@@ -640,10 +640,12 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
                         if(fDebug) printf(" was in RP set");
                         //       cout << sTrack->GetID() <<"   ==  " << iRP->GetID() << " was in RP set" <<endl;
                         iRPCont->SetForRPSelection(kFALSE);
-                        fFlowEventCont->SetNumberOfRPs(fFlowEventCont->GetNumberOfRPs() - 1);
+                      //  fFlowEventCont->SetNumberOfRPs(fFlowEventCont->GetNumberOfRPs() - 1);
                     }
                 } //end of for loop on RPs
                 fFlowEventCont->InsertTrack(((AliFlowTrack*) sTrackCont));
+                fFlowEventCont->SetNumberOfPOIs(fFlowEventCont->GetNumberOfPOIs()+1);
+
             }
         }
         //==========================================================================================================
@@ -673,7 +675,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
         AliFlowTrack *sTrack = new AliFlowTrack();
         sTrack->Set(track);
         sTrack->SetID(track->GetID());
-        sTrack->SetForRPSelection(kFALSE);
+        sTrack->SetForRPSelection(kTRUE);
         sTrack->SetForPOISelection(kTRUE);
         sTrack->SetMass(263732);
         for(int iRPs=0; iRPs!=fFlowEvent->NumberOfTracks(); ++iRPs)
@@ -687,11 +689,11 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
                 if(fDebug) printf(" was in RP set");
                 //       cout << sTrack->GetID() <<"   ==  " << iRP->GetID() << " was in RP set" <<endl;
                 iRP->SetForRPSelection(kFALSE);
-                fFlowEvent->SetNumberOfRPs(fFlowEvent->GetNumberOfRPs() - 1);
+               // fFlowEvent->SetNumberOfRPs(fFlowEvent->GetNumberOfRPs() - 1);
             }
         } //end of for loop on RPs
         fFlowEvent->InsertTrack(((AliFlowTrack*) sTrack));
-        
+        fFlowEvent->SetNumberOfPOIs(fFlowEvent->GetNumberOfPOIs()+1);
         
         
         if(fDCA){

@@ -21,17 +21,19 @@ class AliFlowCandidateTrack : public AliFlowTrack {
     ~AliFlowCandidateTrack();
 
     void ClearMe(void);
+    virtual void Clear(Option_t* /*o=""*/) {ClearMe();}
+
     Int_t GetNDaughters(void)        const { return fNDaughters; }
     void  AddDaughter(Int_t value)  { if(fNDaughters<3) fDaughter[fNDaughters++]=value; }
     Int_t GetIDDaughter(Int_t value) const { return fDaughter[value]; }
 
-    void SetDaughter(Int_t value, AliFlowTrack *track) { fTrack[value]=track; }
-    AliFlowTrack *GetDaughter(Int_t value) const { return fTrack[value]; }
+    void SetDaughter(Int_t value, AliFlowTrackSimple *track) { fTrack[value]=track; }
+    AliFlowTrackSimple *GetDaughter(Int_t value) const { return fTrack[value]; }
 
   protected:
     Int_t fNDaughters;        // number of daughters (5 max)
     Int_t fDaughter[5];       // fID of daughter, points back to ESD track
-    AliFlowTrack *fTrack[5];  //! pointer to daughter in FlowEvent
+    AliFlowTrackSimple *fTrack[5];  //! pointer to daughter in FlowEvent
 
     ClassDef(AliFlowCandidateTrack, 2);
 };

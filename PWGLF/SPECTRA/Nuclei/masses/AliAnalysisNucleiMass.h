@@ -51,7 +51,7 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   void SetisSignalCheck(Int_t IsSignalCheck=2) {kSignalCheck=IsSignalCheck;}
   void SetMtofMethod(Int_t iMtofMethod=1) {iMtof=iMtofMethod;}
   void SetPvtxNucleiCorrection(Int_t kMomVtxCorr=1) {kPvtxCorr=kMomVtxCorr;}
-
+  
  private:
   AliAnalysisNucleiMass(const AliAnalysisNucleiMass &old); 
   AliAnalysisNucleiMass& operator=(const AliAnalysisNucleiMass &source);
@@ -72,9 +72,9 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   Int_t iTrdCut;                                   // iTrdCut==0-> No TRD cut; iTrdCut==1-> Yes TRD cut: yes TRD; iTrdCut==2->Yes TRD cut: no TRD; 
   Int_t kSignalCheck;                              // kSignalCheck==1->Fill all plots ; kSignalCheck==0->Fill only TH1 ; kSignalCheck==2-> Fill TH1 and some TH2 usefull in analysis
   Int_t iMtof;                                     // iMtof==1->m~pVtx ; iMtof==2->m~pExp ; iMtof==4->m~<p> (same correction for particle and antiparticle) ; iMtof==8->m~<p> (different correction for particle and antiparticle) 
-  //Use only iMtof<=2; In the next commit also iMtof>2 will work well... 
+  //To use only iMtof<=4; In the next commit also iMtof>4 will work well... 
   Int_t kPvtxCorr;                                 // kPvtxCorr==1->Momentum at the primary vertex for (anti)nuclei is rescaled ; kPvtxCorr==0->no correction
-
+  
   //other:
   Int_t iBconf;                                   //! If Magnetic Field configuration is down or up
   Bool_t kTOF;                                    //! kTOFout and kTIME required
@@ -128,7 +128,7 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   TF2 *fPvtxTrueVsReco[2];                        //! TF1 pVtx_True vs pVtx_Reco calculated with MC for d, He3
   TProfile *prPvtxTrueVsReco[nBconf][2];          //! TProfile pVtx_True vs pVtx_Reco calculated with MC for d, He3 (as Check)
 
-  TF1 *fPmeanVsBGcorr[10];                        //! <p>/p as a function of beta*gamma for pi,K,p,d,He3
+  TF1 *fPmeanVsBGcorr[nBconf][10];                        //! <p>/p as a function of beta*gamma for pi,K,p,d,He3
   TProfile *prPmeanVsBGcorr[nBconf][10];          //! <p>/p vs beta*gamma for pi,K,p,d,He3 as calculated from the parameterization (as Check)
  
   //------------------------------Methods----------------------------------------
@@ -144,8 +144,9 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
 
   void GetMassFromMeanMom(Double_t beta, Double_t *IntTimes, Double_t *pVtx, Double_t charge, Double_t *Mass2, Int_t FlagPid, Int_t FlagPidTof, Double_t DCAxy);
   
- 
-  ClassDef(AliAnalysisNucleiMass, 1);
+  void SetPmeanCorrections();
+
+  ClassDef(AliAnalysisNucleiMass, 2);
 };
 
 #endif

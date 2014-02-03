@@ -28,9 +28,9 @@ ClassImp(AliAnalysisNucleiMass)
 //_____________________________________________________________________________
 AliAnalysisNucleiMass::AliAnalysisNucleiMass():
   AliAnalysisTaskSE(),
-//Centrality(NULL),                         
+  Centrality(),                         
   FilterBit(16),                                
-//  EtaLimit(NULL),                           
+  EtaLimit(),                           
   DCAxyCut(0.1),                               
   DCAzCut(1000.),                                
   NsigmaTpcCut(2.0),                           
@@ -46,6 +46,12 @@ AliAnalysisNucleiMass::AliAnalysisNucleiMass():
   fEvent(NULL),
   fPIDResponse(NULL)
 {
+  Centrality[0]=0.0;
+  Centrality[1]=100.0;
+
+  EtaLimit[0]=-99.0;
+  EtaLimit[1]=99.0;
+
   fList[0]=new TList();
   fList[0]->SetName("results");
   
@@ -55,9 +61,9 @@ AliAnalysisNucleiMass::AliAnalysisNucleiMass():
 //______________________________________________________________________________
 AliAnalysisNucleiMass::AliAnalysisNucleiMass(const char *name):
   AliAnalysisTaskSE(name),
-  //Centrality(NULL),                         
+  Centrality(),                         
   FilterBit(16),                                
-  //EtaLimit(NULL),                           
+  EtaLimit(),                           
   DCAxyCut(0.1),                               
   DCAzCut(1000.),                                
   NsigmaTpcCut(2.0),                           
@@ -73,6 +79,13 @@ AliAnalysisNucleiMass::AliAnalysisNucleiMass(const char *name):
   fEvent(NULL),
   fPIDResponse(NULL)
 {
+
+  Centrality[0]=0.0;
+  Centrality[1]=100.0;
+
+  EtaLimit[0]=-99.0;
+  EtaLimit[1]=99.0;
+
   fList[0]=new TList();
   DefineOutput(1, TList::Class());
   fList[0]->SetName("results");
@@ -141,14 +154,14 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
     hZvertex[iB][0] = new TH1F("hZvertex_Selected","Vertex distribution of selected events;z vertex (cm)",240,-30,30);
     hZvertex[iB][1] = new TH1F("hZvertex_Analyzed","Vertex distribution of analyzed events;z vertex (cm)",240,-30,30);
     
-    hEta[iB] = new TH1F("hEta_Analyzed","|#eta| distribution after the track cuts;|#eta|",100,0.0,1.0);
+    hEta[iB] = new TH1F("hEta_Analyzed","|#eta| distribution after the track cuts;|#eta|",200,-1.0,1.0);
     
     hPhi[iB] = new TH1F("hPhi_Analyzed","#phi distribution after the track cuts;#phi (rad.)",90,0,6.3);//Each TRD supermodule is divided for 5 (DeltaPhi(TRD)=0.35 theoretical)
     
     Int_t hbins[2];
-    if(kSignalCheck!=0) {hbins[0]=100; hbins[1]=90;}
+    if(kSignalCheck!=0) {hbins[0]=1; hbins[1]=1;}//{hbins[0]=100; hbins[1]=90;} to reduce RAM consuming (toram)
     else {hbins[0]=1; hbins[1]=1;}
-    fEtaPhi[iB] = new TH2F("fEtaPhi_Analyzed","|#eta| vs. #phi after the track cuts;|#eta|;#phi (rad.)",hbins[0],0.0,1.0,hbins[1],0,6.3);
+    fEtaPhi[iB] = new TH2F("fEtaPhi_Analyzed","#eta vs. #phi after the track cuts;|#eta|;#phi (rad.)",hbins[0],-1.0,1.0,hbins[1],0,6.3);
 
     hNTpcCluster[iB] = new TH1F("hNTpcCluster","Number of the TPC clusters after the track cuts;n_{cl}^{TPC}",300,0,300);
 
@@ -156,7 +169,7 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
 
     if(kSignalCheck==1) {hbins[0]=500; hbins[1]=2000;}
     else if(kSignalCheck==0) {hbins[0]=1; hbins[1]=1;}
-    else if(kSignalCheck==2) {hbins[0]=100; hbins[1]=500;}
+    else if(kSignalCheck==2) {hbins[0]=1; hbins[1]=1;}//{hbins[0]=100; hbins[1]=500;} toram
     fdEdxVSp[iB][0] = new TH2F("fdEdxVSp_pos","dE/dx vs p (positive charge); p/|z| (GeV/c); dE/dx_{TPC} (a.u.)",hbins[0],0,5,hbins[1],0,1000);
     fdEdxVSp[iB][1] = new TH2F("fdEdxVSp_neg","dE/dx vs p (negative charge); p/|z| (GeV/c); dE/dx_{TPC} (a.u.)",hbins[0],0,5,hbins[1],0,1000);
 
@@ -165,12 +178,12 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
     for(Int_t i=0;i<nPart;i++) {
       snprintf(name_hDeDxExp[i],200,"hDeDxExp_%s",namePart[i]);
       snprintf(title_hDeDxExp[i],200,"Expected dE/dx of %s in the TPC;p/|z| (GeV/c);dE/dx_{TPC} (a.u.)",namePart[i]);
-      hDeDxExp[iB][i] = new TProfile(name_hDeDxExp[i],title_hDeDxExp[i],500,0,5,0,1000,"");
+      hDeDxExp[iB][i] = new TProfile(name_hDeDxExp[i],title_hDeDxExp[i],1,0,5,0,1,"");//,500,0,5,0,1000,""); toram
     }
 
     Char_t name_fNsigmaTpc[nPart][200];
     Char_t title_fNsigmaTpc[nPart][200];
-    if(kSignalCheck==1) {hbins[0]=100; hbins[1]=100;}
+    if(kSignalCheck==1) {hbins[0]=1; hbins[1]=1;}//{hbins[0]=100; hbins[1]=100;} toram
     else {hbins[0]=1; hbins[1]=1;}
     for(Int_t i=0;i<nPart;i++) {
       snprintf(name_fNsigmaTpc[i],200,"NsigmaTpc_%s",namePart[i]);
@@ -178,7 +191,7 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
       fNsigmaTpc[iB][i] = new TH2F(name_fNsigmaTpc[i],title_fNsigmaTpc[i],hbins[0],0,5,hbins[1],-5,5);
     }
     
-    if(kSignalCheck>1) {hbins[0]=100; hbins[1]=100;}
+    if(kSignalCheck>0) {hbins[0]=1; hbins[1]=1;}//{hbins[0]=100; hbins[1]=100;} toram
     else if(kSignalCheck==0) {hbins[0]=1; hbins[1]=1;}
     Char_t name_fNsigmaTpc_kTOF[nSpec][200];
     Char_t title_fNsigmaTpc_kTOF[nSpec][200];
@@ -190,7 +203,7 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
 
     if(kSignalCheck==1) {hbins[0]=1000; hbins[1]=1300;}
     else if(kSignalCheck==0) {hbins[0]=1; hbins[1]=1;}
-    else if(kSignalCheck==2) {hbins[0]=100; hbins[1]=260;}
+    else if(kSignalCheck==2) {hbins[0]=1; hbins[1]=1;}//{hbins[0]=100; hbins[1]=260;}
     fBetaTofVSp[iB][0] = new TH2F("fBetaTofVSp_pos","#beta_{TOF} vs p/|z| (positive charge);p(GeV/c);#beta_{TOF}",hbins[0],0,5,hbins[1],0.4,1.05);
     fBetaTofVSp[iB][1] = new TH2F("fBetaTofVSp_neg","#beta_{TOF} vs p/|z| (negative charge);p(GeV/c);#beta_{TOF}",hbins[0],0,5,hbins[1],0.4,1.05);
     
@@ -199,7 +212,7 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
     for(Int_t i=0;i<nPart;i++) {
       snprintf(name_hBetaExp[i],200,"hBetaTofVsP_Exp_%s",namePart[i]);
       snprintf(title_hBetaExp[i],200,"Expected #beta_{TOF} vs p/|z| of %s;p/|z| (GeV/c); #beta_{TOF}",namePart[i]);
-      hBetaExp[iB][i] = new TProfile(name_hBetaExp[i],title_hBetaExp[i],400,0,5,0.4,1.05,"");
+      hBetaExp[iB][i] = new TProfile(name_hBetaExp[i],title_hBetaExp[i],1,0,5,0.4,1.05,"");//,400,0,5,0.4,1.05,""); toram
     }
     
     Char_t name_fNsigmaTof[nPart][200];
@@ -229,7 +242,7 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
 
     if(kSignalCheck==1) {hbins[0]=8000; hbins[1]=100;}
     else if(kSignalCheck==0) {hbins[0]=1; hbins[1]=1;}
-    else if(kSignalCheck==2) {hbins[0]=1000; hbins[1]=100;}
+    else if(kSignalCheck==2) {hbins[0]=1; hbins[1]=1;}// {hbins[0]=1000; hbins[1]=100;} toram
     fM2vsP_NoTpcCut[iB][1][0] = new TH2F("fM2vsP_NoTpcCut_DCAxyCut_pos","m^{2}/z^{2}_{TOF} vs p/|z| (positive charge) with DCAxy cut;m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4});p/|z| (GeV/c)",hbins[0],0,10,hbins[1],0,5);
     fM2vsP_NoTpcCut[iB][1][1] = new TH2F("fM2vsP_NoTpcCut_DCAxyCut_neg","m^{2}/z^{2}_{TOF} vs p/|z| (negative charge) with DCAxy cut;m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4});p/|z| (GeV/c)",hbins[0],0,10,hbins[1],0,5);
 
@@ -249,7 +262,7 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
       
       if(kSignalCheck==1) {hbins[0]=8000; hbins[1]=100;}
       else if(kSignalCheck==0) {hbins[0]=1; hbins[1]=1;}
-      else if(kSignalCheck==2) {hbins[0]=1000; hbins[1]=100;}
+      else if(kSignalCheck==2) {hbins[0]=1; hbins[1]=1;}//{hbins[0]=1000; hbins[1]=100;} toram
       fM2vsP[iB][1][i] = new TH2F(name_fM2vsP[1][i],title_fM2vsP[1][i],hbins[0],0,10,hbins[1],0,5);
     }
     
@@ -368,82 +381,16 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
     snprintf(nameTemp[8],200,"#bar{d}");
     snprintf(nameTemp[9],200,"#bar{He3}");
     
-    Double_t pars_fPmeanVsBGcorr[10][3];
-    //particle
-    for(Int_t i=0;i<5;i++) {
-      if(i==0) {//pi
-	pars_fPmeanVsBGcorr[i][0]=4.89956e-02;
-	pars_fPmeanVsBGcorr[i][1]=-6.46308e-01;
-	pars_fPmeanVsBGcorr[i][2]=1.00462e+00;
-      }
-      else if(i==1) {//K
-	pars_fPmeanVsBGcorr[i][0]=3.06216e-02;
-	pars_fPmeanVsBGcorr[i][1]=-2.10247e+00;
-	pars_fPmeanVsBGcorr[i][2]=9.97142e-01;
-      }
-      else if(i==2) {//p
-	pars_fPmeanVsBGcorr[i][0]=1.58652e-02;
-	pars_fPmeanVsBGcorr[i][1]=-2.64898e+00;
-	pars_fPmeanVsBGcorr[i][2]=9.97176e-01;
-      }
-      else if(i==3) {//d
-	pars_fPmeanVsBGcorr[i][0]=0.011233;
-	pars_fPmeanVsBGcorr[i][1]=-2.389911;
-	pars_fPmeanVsBGcorr[i][2]=0.997176;
-      }
-      else if(i==4) {//He3
-	pars_fPmeanVsBGcorr[i][0]=0.030884;
-	pars_fPmeanVsBGcorr[i][1]=-2.124273;
-	pars_fPmeanVsBGcorr[i][2]=0.997176;
-      }
-    }
-    //antiparticle
-    if(iMtof==8) {
-      for(Int_t i=5;i<10;i++) {
-	if(i==0+5) {//pi-
-	  pars_fPmeanVsBGcorr[i][0]=6.86083e-02;
-	  pars_fPmeanVsBGcorr[i][1]=-8.37051e-01;
-	  pars_fPmeanVsBGcorr[i][2]=1.00589e+00;
-	}
-	else if(i==1+5) {//K-
-	  pars_fPmeanVsBGcorr[i][0]=3.26139e-02;
-	  pars_fPmeanVsBGcorr[i][1]=-2.08158e+00;
-	  pars_fPmeanVsBGcorr[i][2]=9.99782e-01;
-	}
-	else if(i==2+5) {//pbar
-	  pars_fPmeanVsBGcorr[i][0]=1.58118e-02;
-	  pars_fPmeanVsBGcorr[i][1]=-2.66903e+00;
-	  pars_fPmeanVsBGcorr[i][2]=9.99201e-01;
-	}
-	else if(i==3+5) {//dbar
-	  pars_fPmeanVsBGcorr[i][0]=0.011195;
-	  pars_fPmeanVsBGcorr[i][1]=-2.407999;
-	  pars_fPmeanVsBGcorr[i][2]=0.999201;
-	}
-	else if(i==4+5) {//He3bar
-	  pars_fPmeanVsBGcorr[i][0]=0.030780;
-	  pars_fPmeanVsBGcorr[i][1]=-2.140350;
-	  pars_fPmeanVsBGcorr[i][2]=0.999201;
-	}
-      }
-    }
-    else {//else if(iMtof!=8)
-      for(Int_t i=5;i<10;i++) {
-	pars_fPmeanVsBGcorr[i][0]=pars_fPmeanVsBGcorr[i-5][0];
-	pars_fPmeanVsBGcorr[i][1]=pars_fPmeanVsBGcorr[i-5][1];
-	pars_fPmeanVsBGcorr[i][2]=pars_fPmeanVsBGcorr[i-5][2];
-      }
-    }
-    
     Char_t name_fPmeanVsBGcorr[10][200];
-    
     for(Int_t i=0;i<10;i++) {
       snprintf(name_fPmeanVsBGcorr[i],200,"fPmeanVsBGcorr_%s",nameTemp[i]);
-      fPmeanVsBGcorr[i]=new TF1(name_fPmeanVsBGcorr[i],"[2]-[0]*TMath::Power(x,[1]);p_{vtx}/m;<p>/p",0.0001,100);
-      fPmeanVsBGcorr[i]->SetParameters(pars_fPmeanVsBGcorr[i]);
-      fPmeanVsBGcorr[i]->SetNpx(fPmeanVsBGcorr[i]->GetNpx()*10);
+      fPmeanVsBGcorr[0][i]=new TF1(name_fPmeanVsBGcorr[i],"[2]-[0]*TMath::Power(x,[1]);p_{vtx}/m;<p>/p",0.0001,100);
+      fPmeanVsBGcorr[1][i]=new TF1(name_fPmeanVsBGcorr[i],"[2]-[0]*TMath::Power(x,[1]);p_{vtx}/m;<p>/p",0.0001,100);
+      //fPmeanVsBGcorr[i]->SetParameters(pars_fPmeanVsBGcorr[i]);
+      //fPmeanVsBGcorr[i]->SetNpx(fPmeanVsBGcorr[i]->GetNpx()*10);
     }
-
+    SetPmeanCorrections();
+       
     Char_t name_prPmeanVsBGcorr[10][200];
     Char_t title_prPmeanVsBGcorr[10][200];
    
@@ -590,7 +537,7 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
       }
       
      //For the geometrical cuts
-      Double_t etaAbs = TMath::Abs(track->Eta());
+      Double_t eta = track->Eta();
       
       Bool_t trkFlag = 0;
       trkFlag = ((AliAODTrack *) track)->TestFilterBit(FilterBit);
@@ -604,7 +551,7 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
       if(nTpcCluster>NminTpcCluster) isMinTpcCluster=kTRUE;
 
       //-------------------------------------start TRACK CUTS----------------------------------
-      if ((track->Pt() < 0.2) || (etaAbs<EtaLimit[0]) || (etaAbs>EtaLimit[1]) || !trkFlag || !isMinTpcCluster)
+      if ((track->Pt() < 0.2) || (eta<EtaLimit[0]) || (eta>EtaLimit[1]) || !trkFlag || !isMinTpcCluster)
 	continue;
       
       //Vertex determination
@@ -636,9 +583,9 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
       //-------------------------------------Track info--------------------------------------
       Double_t phi= track->Phi();
       
-      hEta[iBconf]->Fill(etaAbs);
+      hEta[iBconf]->Fill(eta);
       hPhi[iBconf]->Fill(phi);
-      fEtaPhi[iBconf]->Fill(etaAbs,phi);
+      fEtaPhi[iBconf]->Fill(eta,phi);
       hNTpcCluster[iBconf]->Fill(nTpcCluster);
       hNTrdSlices[iBconf]->Fill(nTrdSlices);
 	
@@ -670,7 +617,7 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
       //Correction of the momentum to the vertex for (anti)nuclei
       Double_t pC[9];
       for(Int_t iS=0;iS<9;iS++)	pC[iS]=p;
-      this->MomVertexCorrection(p,pC,etaAbs,FlagPid);
+      this->MomVertexCorrection(p,pC,eta,FlagPid);
 
       //More TPC info:
       for(Int_t iS=0;iS<9;iS++){
@@ -740,7 +687,7 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 	this->GetZTpc(dedx,pTPC,M2,Z2);
 	
 	Double_t Mass2[9];
-	//-----------------------------M2 as a function of the momentum to the primary vertex if iMtof==1---------------------------------
+	//-----------------------------M2 as a function of momentum to the primary vertex if iMtof==1---------------------------------
 	if(iMtof==1) this->GetMassFromPvertexCorrected(beta,pC,Mass2);
 
 	if(iMtof>1) this->GetPmeanVsBetaGamma(exptimes,pC,FlagPid,FlagPidTof,charge,DCAxy);
@@ -1018,12 +965,12 @@ void AliAnalysisNucleiMass::GetMassFromMeanMom(Double_t beta, Double_t *IntTimes
   for(Int_t iS=0;iS<9;iS++) {
     if(iS==2 || iS==3 || iS==4 || iS==5 || iS==7) {
       if(charge>0) {
-	if(iS!=7) p2Exp[iS]=pVtx[iS]*fPmeanVsBGcorr[iS-2]->Eval(pVtx[iS]/massOverZ[iS]);
-	else p2Exp[iS]=pVtx[iS]*fPmeanVsBGcorr[iS-3]->Eval(pVtx[iS]/massOverZ[iS]);
+	if(iS!=7) p2Exp[iS]=pVtx[iS]*fPmeanVsBGcorr[iBconf][iS-2]->Eval(pVtx[iS]/massOverZ[iS]);
+	else p2Exp[iS]=pVtx[iS]*fPmeanVsBGcorr[iBconf][iS-3]->Eval(pVtx[iS]/massOverZ[iS]);
       }
       else if(charge<0) {
-	if(iS!=7) p2Exp[iS]=pVtx[iS]*fPmeanVsBGcorr[iS+3]->Eval(pVtx[iS]/massOverZ[iS]);
-	else p2Exp[iS]=pVtx[iS]*fPmeanVsBGcorr[iS+2]->Eval(pVtx[iS]/massOverZ[iS]);
+	if(iS!=7) p2Exp[iS]=pVtx[iS]*fPmeanVsBGcorr[iBconf][iS+3]->Eval(pVtx[iS]/massOverZ[iS]);
+	else p2Exp[iS]=pVtx[iS]*fPmeanVsBGcorr[iBconf][iS+2]->Eval(pVtx[iS]/massOverZ[iS]);
       }
       p2Exp[iS]*=p2Exp[iS];
     }
@@ -1063,6 +1010,277 @@ void AliAnalysisNucleiMass::GetMassFromMeanMom(Double_t beta, Double_t *IntTimes
 
   }//end loop on the particle species
   
+  return;
+  
+}
+//________________________________________________________________________________________
+void AliAnalysisNucleiMass::SetPmeanCorrections(){
+  
+  //iMtof==8 -> different particle and antiparticle parameterization 
+  
+  Double_t pars_fPmeanVsBGcorr[nBconf][10][3];
+  //particle
+
+  Double_t etaMin=0.0;
+  Double_t etaMax=0.8;
+
+  if(EtaLimit[0]<0.0 || EtaLimit[1]<0.0) {
+    etaMin=TMath::Abs(EtaLimit[1]);
+    etaMax=TMath::Abs(EtaLimit[0]);
+  }
+  else {
+    etaMin=TMath::Abs(EtaLimit[0]);
+    etaMax=TMath::Abs(EtaLimit[1]);
+  }
+
+  if(etaMin>-0.00001 && etaMax<0.10001) {
+    //printf("EtaLimit[0]== %f and EtaLimit[1]== %fAAA\n",EtaLimit[0],EtaLimit[1]);
+    for(Int_t i=0;i<5;i++) {
+      if(i==0) {//pi
+	pars_fPmeanVsBGcorr[0][i][0]=4.16853e-02; pars_fPmeanVsBGcorr[0][i][1]=-7.67091e-01; pars_fPmeanVsBGcorr[0][i][2]=9.98035e-01;//B--
+	pars_fPmeanVsBGcorr[1][i][0]=5.51380e-02; pars_fPmeanVsBGcorr[1][i][1]=-7.58112e-01; pars_fPmeanVsBGcorr[1][i][2]=1.00360e+00;//B++
+      }
+      else if(i==1) {//K
+	pars_fPmeanVsBGcorr[0][i][0]=2.73697e-02; pars_fPmeanVsBGcorr[0][i][1]=-2.43042e+00; pars_fPmeanVsBGcorr[0][i][2]=9.93148e-01;
+	pars_fPmeanVsBGcorr[1][i][0]=3.19397e-02; pars_fPmeanVsBGcorr[1][i][1]=-2.08037e+00; pars_fPmeanVsBGcorr[1][i][2]=9.98016e-01;
+      }
+      else if(i==2) {//p
+	pars_fPmeanVsBGcorr[0][i][0]=1.35721e-02; pars_fPmeanVsBGcorr[0][i][1]=-2.80958e+00; pars_fPmeanVsBGcorr[0][i][2]=9.93925e-01;
+	pars_fPmeanVsBGcorr[1][i][0]=1.63564e-02; pars_fPmeanVsBGcorr[1][i][1]=-2.55914e+00; pars_fPmeanVsBGcorr[1][i][2]=9.98106e-01;
+      }
+      else if(i==3) {//d
+	pars_fPmeanVsBGcorr[0][i][0]=0.009609; pars_fPmeanVsBGcorr[0][i][1]=-2.534810; pars_fPmeanVsBGcorr[0][i][2]=0.993507;
+	pars_fPmeanVsBGcorr[1][i][0]=0.011580; pars_fPmeanVsBGcorr[1][i][1]=-2.308857; pars_fPmeanVsBGcorr[1][i][2]=0.998126;
+      }
+      else if(i==4) {//He3
+	pars_fPmeanVsBGcorr[0][i][0]=0.026420; pars_fPmeanVsBGcorr[0][i][1]=-2.253066; pars_fPmeanVsBGcorr[0][i][2]=0.993507;
+	pars_fPmeanVsBGcorr[1][i][0]=0.031840; pars_fPmeanVsBGcorr[1][i][1]=-2.052228; pars_fPmeanVsBGcorr[1][i][2]=0.998126;
+      }
+    }
+  }
+  else if(etaMin>0.09999 && etaMax<0.20001) {
+    //printf("EtaLimit[0]== %f and EtaLimit[1]== %fBBB\n",EtaLimit[0],EtaLimit[1]);
+    for(Int_t i=0;i<5;i++) {
+      if(i==0) {//pi
+	pars_fPmeanVsBGcorr[0][i][0]=4.98872e-02; pars_fPmeanVsBGcorr[0][i][1]=-3.56884e-01; pars_fPmeanVsBGcorr[0][i][2]=1.01356e+00;
+	pars_fPmeanVsBGcorr[1][i][0]=6.11287e-02; pars_fPmeanVsBGcorr[1][i][1]=-3.65072e-01; pars_fPmeanVsBGcorr[1][i][2]=1.02074e+00;
+      }
+      else if(i==1) {//K
+	pars_fPmeanVsBGcorr[0][i][0]=2.85027e-02; pars_fPmeanVsBGcorr[0][i][1]=-2.04376e+00; pars_fPmeanVsBGcorr[0][i][2]=9.94804e-01;
+	pars_fPmeanVsBGcorr[1][i][0]=3.30937e-02; pars_fPmeanVsBGcorr[1][i][1]=-1.72959e+00; pars_fPmeanVsBGcorr[1][i][2]=9.99966e-01;
+      }
+      else if(i==2) {//p
+	pars_fPmeanVsBGcorr[0][i][0]=1.38640e-02; pars_fPmeanVsBGcorr[0][i][1]=-2.71621e+00; pars_fPmeanVsBGcorr[0][i][2]=9.94151e-01;
+	pars_fPmeanVsBGcorr[1][i][0]=1.74869e-02; pars_fPmeanVsBGcorr[1][i][1]=-2.38269e+00; pars_fPmeanVsBGcorr[1][i][2]=9.98776e-01;
+      }
+      else if(i==3) {//d
+	pars_fPmeanVsBGcorr[0][i][0]=0.009816; pars_fPmeanVsBGcorr[0][i][1]=-2.450567; pars_fPmeanVsBGcorr[0][i][2]=0.994465;
+	pars_fPmeanVsBGcorr[1][i][0]=0.012381; pars_fPmeanVsBGcorr[1][i][1]=-2.149671; pars_fPmeanVsBGcorr[1][i][2]=0.999302;
+      }
+      else if(i==4) {//He3
+	pars_fPmeanVsBGcorr[0][i][0]=0.026988; pars_fPmeanVsBGcorr[0][i][1]=-2.178186; pars_fPmeanVsBGcorr[0][i][2]=0.994465;
+	pars_fPmeanVsBGcorr[1][i][0]=0.034041; pars_fPmeanVsBGcorr[1][i][1]=-1.910736; pars_fPmeanVsBGcorr[1][i][2]=0.999302;
+      }
+    }
+  }
+  else if(etaMin>0.19999 && etaMax<0.30001) {
+    //printf("EtaLimit[0]== %f and EtaLimit[1]== %fCCC\n",EtaLimit[0],EtaLimit[1]);
+    for(Int_t i=0;i<5;i++) {
+      if(i==0) {//pi
+	pars_fPmeanVsBGcorr[0][i][0]=4.71844e-02; pars_fPmeanVsBGcorr[0][i][1]=-6.24048e-01; pars_fPmeanVsBGcorr[0][i][2]=1.00525e+00;
+	pars_fPmeanVsBGcorr[1][i][0]=5.45281e-02; pars_fPmeanVsBGcorr[1][i][1]=-5.87331e-01; pars_fPmeanVsBGcorr[1][i][2]=1.01029e+00;
+      }
+      else if(i==1) {//K
+	pars_fPmeanVsBGcorr[0][i][0]=2.92060e-02; pars_fPmeanVsBGcorr[0][i][1]=-2.15537e+00; pars_fPmeanVsBGcorr[0][i][2]=9.97130e-01;
+	pars_fPmeanVsBGcorr[1][i][0]=3.24550e-02; pars_fPmeanVsBGcorr[1][i][1]=-1.97289e+00; pars_fPmeanVsBGcorr[1][i][2]=1.00059e+00;
+      }
+      else if(i==2) {//p
+	pars_fPmeanVsBGcorr[0][i][0]=1.33594e-02; pars_fPmeanVsBGcorr[0][i][1]=-2.86707e+00; pars_fPmeanVsBGcorr[0][i][2]=9.96053e-01;
+	pars_fPmeanVsBGcorr[1][i][0]=1.57187e-02; pars_fPmeanVsBGcorr[1][i][1]=-2.62957e+00; pars_fPmeanVsBGcorr[1][i][2]=9.99431e-01;
+      }
+      else if(i==3) {//d
+	pars_fPmeanVsBGcorr[0][i][0]=0.009458; pars_fPmeanVsBGcorr[0][i][1]=-2.586677; pars_fPmeanVsBGcorr[0][i][2]=0.996592;
+	pars_fPmeanVsBGcorr[1][i][0]=0.011129; pars_fPmeanVsBGcorr[1][i][1]=-2.372404; pars_fPmeanVsBGcorr[1][i][2]=1.000024;
+      }
+      else if(i==4) {//He3
+	pars_fPmeanVsBGcorr[0][i][0]=0.026006; pars_fPmeanVsBGcorr[0][i][1]=-2.299168; pars_fPmeanVsBGcorr[0][i][2]=0.996592;
+	pars_fPmeanVsBGcorr[1][i][0]=0.030599; pars_fPmeanVsBGcorr[1][i][1]=-2.108711; pars_fPmeanVsBGcorr[1][i][2]=1.000024;
+      }
+    }
+  }
+  else if(etaMin>0.29999 && etaMax<0.40001) {
+    //printf("EtaLimit[0]== %f and EtaLimit[1]== %fDDD\n",EtaLimit[0],EtaLimit[1]);
+    for(Int_t i=0;i<5;i++) {
+      if(i==0) {//pi
+	pars_fPmeanVsBGcorr[0][i][0]=5.25262e-02; pars_fPmeanVsBGcorr[0][i][1]=-3.04325e-01; pars_fPmeanVsBGcorr[0][i][2]=1.02056e+00;
+	pars_fPmeanVsBGcorr[1][i][0]=5.70585e-02; pars_fPmeanVsBGcorr[1][i][1]=-5.95375e-01; pars_fPmeanVsBGcorr[1][i][2]=1.01130e+00;
+      }
+      else if(i==1) {//K
+	pars_fPmeanVsBGcorr[0][i][0]=2.96035e-02; pars_fPmeanVsBGcorr[0][i][1]=-2.17931e+00; pars_fPmeanVsBGcorr[0][i][2]=9.97539e-01;
+	pars_fPmeanVsBGcorr[1][i][0]=3.35067e-02; pars_fPmeanVsBGcorr[1][i][1]=-1.99656e+00; pars_fPmeanVsBGcorr[1][i][2]=1.00128e+00;
+      }
+      else if(i==2) {//p
+	pars_fPmeanVsBGcorr[0][i][0]=1.44529e-02; pars_fPmeanVsBGcorr[0][i][1]=-2.77844e+00; pars_fPmeanVsBGcorr[0][i][2]=9.97130e-01;
+	pars_fPmeanVsBGcorr[1][i][0]=1.68180e-02; pars_fPmeanVsBGcorr[1][i][1]=-2.56489e+00; pars_fPmeanVsBGcorr[1][i][2]=1.00070e+00;
+      }
+      else if(i==3) {//d
+	pars_fPmeanVsBGcorr[0][i][0]=0.010233; pars_fPmeanVsBGcorr[0][i][1]=-2.506714; pars_fPmeanVsBGcorr[0][i][2]=0.997341;
+	pars_fPmeanVsBGcorr[1][i][0]=0.011907; pars_fPmeanVsBGcorr[1][i][1]=-2.314052; pars_fPmeanVsBGcorr[1][i][2]=1.001048;
+      }
+      else if(i==4) {//He3
+	pars_fPmeanVsBGcorr[0][i][0]=0.028135; pars_fPmeanVsBGcorr[0][i][1]=-2.228093; pars_fPmeanVsBGcorr[0][i][2]=0.997341;
+	pars_fPmeanVsBGcorr[1][i][0]=0.032739; pars_fPmeanVsBGcorr[1][i][1]=-2.056845; pars_fPmeanVsBGcorr[1][i][2]=1.001048;
+      }
+    }
+  }
+  else if(etaMin>0.39999 && etaMax<0.50001) {
+    //printf("EtaLimit[0]== %f and EtaLimit[1]== %fEEE\n",EtaLimit[0],EtaLimit[1]);
+    for(Int_t i=0;i<5;i++) {
+      if(i==0) {//pi
+	pars_fPmeanVsBGcorr[0][i][0]=5.72833e-02; pars_fPmeanVsBGcorr[0][i][1]=-2.51868e-01; pars_fPmeanVsBGcorr[0][i][2]=1.02665e+00;
+	pars_fPmeanVsBGcorr[1][i][0]=6.59446e-02; pars_fPmeanVsBGcorr[1][i][1]=-9.09587e-01; pars_fPmeanVsBGcorr[1][i][2]=1.00472e+00;
+      }
+      else if(i==1) {//K
+	pars_fPmeanVsBGcorr[0][i][0]=3.00754e-02; pars_fPmeanVsBGcorr[0][i][1]=-2.18175e+00; pars_fPmeanVsBGcorr[0][i][2]=9.97758e-01;
+	pars_fPmeanVsBGcorr[1][i][0]=3.36764e-02; pars_fPmeanVsBGcorr[1][i][1]=-2.08206e+00; pars_fPmeanVsBGcorr[1][i][2]=1.00094e+00;
+      }
+      else if(i==2) {//p
+	pars_fPmeanVsBGcorr[0][i][0]=1.54832e-02; pars_fPmeanVsBGcorr[0][i][1]=-2.70549e+00; pars_fPmeanVsBGcorr[0][i][2]=9.97921e-01;
+	pars_fPmeanVsBGcorr[1][i][0]=1.75353e-02; pars_fPmeanVsBGcorr[1][i][1]=-2.52898e+00; pars_fPmeanVsBGcorr[1][i][2]=1.00121e+00;
+      }
+      else if(i==3) {//d
+	pars_fPmeanVsBGcorr[0][i][0]=0.010962; pars_fPmeanVsBGcorr[0][i][1]=-2.440895; pars_fPmeanVsBGcorr[0][i][2]=0.997846;
+	pars_fPmeanVsBGcorr[1][i][0]=0.012415; pars_fPmeanVsBGcorr[1][i][1]=-2.281648; pars_fPmeanVsBGcorr[1][i][2]=1.001189;
+      }
+      else if(i==4) {//He3
+	pars_fPmeanVsBGcorr[0][i][0]=0.030140; pars_fPmeanVsBGcorr[0][i][1]=-2.169590; pars_fPmeanVsBGcorr[0][i][2]=0.997846;
+	pars_fPmeanVsBGcorr[1][i][0]=0.034135; pars_fPmeanVsBGcorr[1][i][1]=-2.028043; pars_fPmeanVsBGcorr[1][i][2]=1.001189;
+      }
+    }
+  }
+  else if(etaMin>0.49999 && etaMax<0.60001) {
+    //printf("EtaLimit[0]== %f and EtaLimit[1]== %fFFF\n",EtaLimit[0],EtaLimit[1]);
+    for(Int_t i=0;i<5;i++) {
+      if(i==0) {//pi
+	pars_fPmeanVsBGcorr[0][i][0]=5.29436e-02; pars_fPmeanVsBGcorr[0][i][1]=-5.04070e-01; pars_fPmeanVsBGcorr[0][i][2]=1.00951e+00;
+	pars_fPmeanVsBGcorr[1][i][0]=1.04356e-01; pars_fPmeanVsBGcorr[1][i][1]=-1.19297e+00; pars_fPmeanVsBGcorr[1][i][2]=1.00197e+00;
+      }
+      else if(i==1) {//K
+	pars_fPmeanVsBGcorr[0][i][0]=3.36237e-02; pars_fPmeanVsBGcorr[0][i][1]=-1.89739e+00; pars_fPmeanVsBGcorr[0][i][2]=9.97921e-01;
+	pars_fPmeanVsBGcorr[1][i][0]=3.76386e-02; pars_fPmeanVsBGcorr[1][i][1]=-1.89484e+00; pars_fPmeanVsBGcorr[1][i][2]=1.00097e+00;
+      }
+      else if(i==2) {//p
+	pars_fPmeanVsBGcorr[0][i][0]=1.93889e-02; pars_fPmeanVsBGcorr[0][i][1]=-2.38744e+00; pars_fPmeanVsBGcorr[0][i][2]=9.98551e-01;
+	pars_fPmeanVsBGcorr[1][i][0]=2.12666e-02; pars_fPmeanVsBGcorr[1][i][1]=-2.29606e+00; pars_fPmeanVsBGcorr[1][i][2]=1.00174e+00;
+      }
+      else if(i==3) {//d
+	pars_fPmeanVsBGcorr[0][i][0]=0.013727; pars_fPmeanVsBGcorr[0][i][1]=-2.153951; pars_fPmeanVsBGcorr[0][i][2]=0.998275;
+	pars_fPmeanVsBGcorr[1][i][0]=0.015057; pars_fPmeanVsBGcorr[1][i][1]=-2.071511; pars_fPmeanVsBGcorr[1][i][2]=1.001396;
+      }
+      else if(i==4) {//He3
+	pars_fPmeanVsBGcorr[0][i][0]=0.037743; pars_fPmeanVsBGcorr[0][i][1]=-1.914539; pars_fPmeanVsBGcorr[0][i][2]=0.998275;
+	pars_fPmeanVsBGcorr[1][i][0]=0.041398; pars_fPmeanVsBGcorr[1][i][1]=-1.841262; pars_fPmeanVsBGcorr[1][i][2]=1.001396;
+      }
+    }
+  }
+  else if(etaMin>0.59999 && etaMax<0.70001) {
+    //printf("EtaLimit[0]== %f and EtaLimit[1]== %fGGG\n",EtaLimit[0],EtaLimit[1]);
+    for(Int_t i=0;i<5;i++) {
+      if(i==0) {//pi
+	pars_fPmeanVsBGcorr[0][i][0]=7.18462e-02; pars_fPmeanVsBGcorr[0][i][1]=-1.15676e+00; pars_fPmeanVsBGcorr[0][i][2]=9.99111e-01;
+	pars_fPmeanVsBGcorr[1][i][0]=8.52428e-02; pars_fPmeanVsBGcorr[1][i][1]=-9.11048e-01; pars_fPmeanVsBGcorr[1][i][2]=1.00777e+00;
+      }
+      else if(i==1) {//K
+	pars_fPmeanVsBGcorr[0][i][0]=3.32328e-02; pars_fPmeanVsBGcorr[0][i][1]=-2.30015e+00; pars_fPmeanVsBGcorr[0][i][2]=9.97683e-01;
+	pars_fPmeanVsBGcorr[1][i][0]=3.88555e-02; pars_fPmeanVsBGcorr[1][i][1]=-2.18109e+00; pars_fPmeanVsBGcorr[1][i][2]=1.00130e+00;
+      }
+      else if(i==2) {//p
+	pars_fPmeanVsBGcorr[0][i][0]=1.71488e-02; pars_fPmeanVsBGcorr[0][i][1]=-2.73349e+00; pars_fPmeanVsBGcorr[0][i][2]=9.98517e-01;
+	pars_fPmeanVsBGcorr[1][i][0]=1.89105e-02; pars_fPmeanVsBGcorr[1][i][1]=-2.65564e+00; pars_fPmeanVsBGcorr[1][i][2]=1.00159e+00;
+      }
+      else if(i==3) {//d
+	pars_fPmeanVsBGcorr[0][i][0]=0.012141; pars_fPmeanVsBGcorr[0][i][1]=-2.466162; pars_fPmeanVsBGcorr[0][i][2]=0.998125;
+	pars_fPmeanVsBGcorr[1][i][0]=0.013389; pars_fPmeanVsBGcorr[1][i][1]=-2.395927; pars_fPmeanVsBGcorr[1][i][2]=1.001633;
+      }
+      else if(i==4) {//He3
+	pars_fPmeanVsBGcorr[0][i][0]=0.033383; pars_fPmeanVsBGcorr[0][i][1]=-2.192048; pars_fPmeanVsBGcorr[0][i][2]=0.998125;
+	pars_fPmeanVsBGcorr[1][i][0]=0.036812; pars_fPmeanVsBGcorr[1][i][1]=-2.129620; pars_fPmeanVsBGcorr[1][i][2]=1.001633;
+      }
+    }
+  }
+  else if(etaMin>0.69999 && etaMax<0.80001) {
+    //printf("EtaLimit[0]== %f and EtaLimit[1]== %fHHH\n",EtaLimit[0],EtaLimit[1]);
+    for(Int_t i=0;i<5;i++) {
+      if(i==0) {//pi
+	pars_fPmeanVsBGcorr[0][i][0]=9.56419e-02; pars_fPmeanVsBGcorr[0][i][1]=-1.31941e+00; pars_fPmeanVsBGcorr[0][i][2]=9.98375e-01;
+	pars_fPmeanVsBGcorr[1][i][0]=8.30340e-02; pars_fPmeanVsBGcorr[1][i][1]=-4.46775e-01; pars_fPmeanVsBGcorr[1][i][2]=1.02721e+00;
+      }
+      else if(i==1) {//K
+	pars_fPmeanVsBGcorr[0][i][0]=3.55532e-02; pars_fPmeanVsBGcorr[0][i][1]=-2.25782e+00; pars_fPmeanVsBGcorr[0][i][2]=9.97746e-01;
+	pars_fPmeanVsBGcorr[1][i][0]=4.26998e-02; pars_fPmeanVsBGcorr[1][i][1]=-2.10431e+00; pars_fPmeanVsBGcorr[1][i][2]=1.00185e+00;
+      }
+      else if(i==2) {//p
+	pars_fPmeanVsBGcorr[0][i][0]=1.87103e-02; pars_fPmeanVsBGcorr[0][i][1]=-2.65814e+00; pars_fPmeanVsBGcorr[0][i][2]=9.98847e-01;
+	pars_fPmeanVsBGcorr[1][i][0]=2.07010e-02; pars_fPmeanVsBGcorr[1][i][1]=-2.60124e+00; pars_fPmeanVsBGcorr[1][i][2]=1.00210e+00;
+      }
+      else if(i==3) {//d
+	pars_fPmeanVsBGcorr[0][i][0]=0.013247; pars_fPmeanVsBGcorr[0][i][1]=-2.398177; pars_fPmeanVsBGcorr[0][i][2]=0.998269;
+	pars_fPmeanVsBGcorr[1][i][0]=0.014656; pars_fPmeanVsBGcorr[1][i][1]=-2.346847; pars_fPmeanVsBGcorr[1][i][2]=1.002033;
+      }
+      else if(i==4) {//He3
+	pars_fPmeanVsBGcorr[0][i][0]=0.036422; pars_fPmeanVsBGcorr[0][i][1]=-2.131620; pars_fPmeanVsBGcorr[0][i][2]=0.998269;
+	pars_fPmeanVsBGcorr[1][i][0]=0.040298; pars_fPmeanVsBGcorr[1][i][1]=-2.085995; pars_fPmeanVsBGcorr[1][i][2]=1.002033;
+      }
+    }
+  }
+  else {//for all eta
+    //printf("EtaLimit[0]== %f and EtaLimit[1]== %fIII\n",EtaLimit[0],EtaLimit[1]);
+    for(Int_t i=0;i<5;i++) {
+      if(i==0) {//pi
+	pars_fPmeanVsBGcorr[0][i][0]=4.89956e-02; pars_fPmeanVsBGcorr[0][i][1]=-6.46308e-01; pars_fPmeanVsBGcorr[0][i][2]=1.00462e+00;
+	pars_fPmeanVsBGcorr[1][i][0]=6.36672e-02; pars_fPmeanVsBGcorr[1][i][1]=-6.10966e-01; pars_fPmeanVsBGcorr[1][i][2]=1.01188e+00;
+      }
+      else if(i==1) {//K
+	pars_fPmeanVsBGcorr[0][i][0]=3.06216e-02; pars_fPmeanVsBGcorr[0][i][1]=-2.10247e+00; pars_fPmeanVsBGcorr[0][i][2]=9.97142e-01;
+	pars_fPmeanVsBGcorr[1][i][0]=3.48865e-02; pars_fPmeanVsBGcorr[1][i][1]=-1.89213e+00; pars_fPmeanVsBGcorr[1][i][2]=1.00123e+00;
+      }
+      else if(i==2) {//p
+	pars_fPmeanVsBGcorr[0][i][0]=1.58652e-02; pars_fPmeanVsBGcorr[0][i][1]=-2.64898e+00; pars_fPmeanVsBGcorr[0][i][2]=9.97176e-01;
+	pars_fPmeanVsBGcorr[1][i][0]=1.83264e-02; pars_fPmeanVsBGcorr[1][i][1]=-2.45858e+00; pars_fPmeanVsBGcorr[1][i][2]=1.00079e+00;
+      }
+      else if(i==3) {//d
+	pars_fPmeanVsBGcorr[0][i][0]=0.011233; pars_fPmeanVsBGcorr[0][i][1]=-2.389911; pars_fPmeanVsBGcorr[0][i][2]=0.997176;//0.997210
+	pars_fPmeanVsBGcorr[1][i][0]=0.012975; pars_fPmeanVsBGcorr[1][i][1]=-2.218137; pars_fPmeanVsBGcorr[1][i][2]=1.001091;
+      }
+      else if(i==4) {//He3
+	pars_fPmeanVsBGcorr[0][i][0]=0.030884; pars_fPmeanVsBGcorr[0][i][1]=-2.124273; pars_fPmeanVsBGcorr[0][i][2]=0.997176;//0.997210
+	pars_fPmeanVsBGcorr[1][i][0]=0.035675; pars_fPmeanVsBGcorr[1][i][1]=-1.971591; pars_fPmeanVsBGcorr[1][i][2]=1.001091;
+      }
+    }
+  }
+
+  /*
+  for(Int_t iB=0;iB<nBconf;iB++) {
+    for(Int_t i=0;i<5;i++) {
+      pars_fPmeanVsBGcorr[iB][i][0]=0.02; pars_fPmeanVsBGcorr[iB][i][1]=-2.0; pars_fPmeanVsBGcorr[iB][i][2]=1.0;
+    }
+    }*/
+
+  for(Int_t iB=0;iB<nBconf;iB++) {
+    for(Int_t i=5;i<10;i++) {
+      pars_fPmeanVsBGcorr[iB][i][0]=pars_fPmeanVsBGcorr[iB][i-5][0];
+      pars_fPmeanVsBGcorr[iB][i][1]=pars_fPmeanVsBGcorr[iB][i-5][1];
+      pars_fPmeanVsBGcorr[iB][i][2]=pars_fPmeanVsBGcorr[iB][i-5][2];
+    }
+  }
+
+  for(Int_t iB=0;iB<nBconf;iB++) {
+    for(Int_t i=0;i<10;i++) {
+      fPmeanVsBGcorr[iB][i]->SetParameters(pars_fPmeanVsBGcorr[iB][i]);
+      fPmeanVsBGcorr[iB][i]->SetNpx(fPmeanVsBGcorr[iB][i]->GetNpx()*10);
+    }
+  }
+    
   return;
   
 }

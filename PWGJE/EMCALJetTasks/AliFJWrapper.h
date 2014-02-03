@@ -131,7 +131,7 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
   , fScheme            (fj::BIpt_scheme)
   , fAreaType          (fj::active_area)
   , fNGhostRepeats     (1)
-  , fGhostArea         (0.01)
+  , fGhostArea         (0.005)
   , fMaxRap            (1.)
   , fR                 (0.4)
   , fGridScatter       (1.0)
@@ -388,6 +388,15 @@ Int_t AliFJWrapper::Run()
       fPlugin = new fj::SISConePlugin(fR, 
                                       overlap_threshold,
                                       0,    //search of stable cones - zero = until no more
+                                      1.0); // this should be seed effectively for proto jets
+      fJetDef = new fastjet::JetDefinition(fPlugin);
+    } else if (fPluginAlgor == 1) {
+      // CDF cone
+      // NOTE: hardcoded split parameter
+      Double_t overlap_threshold = 0.75; // NOTE: this actually splits a lot: thr/min(pt1,pt2)
+      fPlugin = new fj::CDFMidPointPlugin(fR, 
+                                      overlap_threshold,
+                                      1.0,    //search of stable cones - zero = until no more
                                       1.0); // this should be seed effectively for proto jets
       fJetDef = new fastjet::JetDefinition(fPlugin);
     } else {

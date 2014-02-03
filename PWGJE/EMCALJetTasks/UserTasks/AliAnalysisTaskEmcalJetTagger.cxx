@@ -344,8 +344,10 @@ void AliAnalysisTaskEmcalJetTagger::MatchJetsGeo(Int_t c1, Int_t c2,
 	dist = dR;
       }
     }//j jet loop
-    if(faMatchIndex2[i]>=0) iFlag[i*nJets2+faMatchIndex2[i]]+=1;//j closest to i
-    if(iDebug>10) Printf("Full Distance (%d)--(%d) %3.3f flag[%d] = %d",i,faMatchIndex2[i],dist,i*nJets2+faMatchIndex2[i],iFlag[i*nJets2+faMatchIndex2[i]]);
+    if(faMatchIndex2[i]>=0) {
+      iFlag[i*nJets2+faMatchIndex2[i]]+=1;//j closest to i
+      if(iDebug>10) Printf("Full Distance (%d)--(%d) %3.3f flag[%d] = %d",i,faMatchIndex2[i],dist,i*nJets2+faMatchIndex2[i],iFlag[i*nJets2+faMatchIndex2[i]]);
+    }
   
   }//i jet loop
 
@@ -382,8 +384,10 @@ void AliAnalysisTaskEmcalJetTagger::MatchJetsGeo(Int_t c1, Int_t c2,
         dist = dR;
       }   
     }
-    if(faMatchIndex1[j]>=0) iFlag[faMatchIndex1[j]*nJets2+j]+=2;//i closest to j
-    if(iDebug>10) Printf("Other way Distance (%d)--(%d) %3.3f flag[%d] = %d",faMatchIndex1[j],j,dist,faMatchIndex1[j]*nJets2+j,iFlag[faMatchIndex1[j]*nJets2+j]);
+    if(faMatchIndex1[j]>=0) {
+      iFlag[faMatchIndex1[j]*nJets2+j]+=2;//i closest to j
+      if(iDebug>10) Printf("Other way Distance (%d)--(%d) %3.3f flag[%d] = %d",faMatchIndex1[j],j,dist,faMatchIndex1[j]*nJets2+j,iFlag[faMatchIndex1[j]*nJets2+j]);
+    }
 
   }
     
@@ -392,7 +396,7 @@ void AliAnalysisTaskEmcalJetTagger::MatchJetsGeo(Int_t c1, Int_t c2,
     AliEmcalJet *jet1 = static_cast<AliEmcalJet*>(GetJetFromArray(i, c1));
     for(int j = 0;j<nJets2;j++){
       AliEmcalJet *jet2 = static_cast<AliEmcalJet*>(GetJetFromArray(j, c2));
-      if(iDebug>10) AliInfo(Form("%s: Flag[%d][%d] %d ",GetName(),i,j,iFlag[i*nJets2+j]));
+      AliDebug(11,Form("%s: Flag[%d][%d] %d ",GetName(),i,j,iFlag[i*nJets2+j]));
       
       // we have a uniqe correlation
       if(iFlag[i*nJets2+j]==3){

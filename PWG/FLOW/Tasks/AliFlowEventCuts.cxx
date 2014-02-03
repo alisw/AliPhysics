@@ -48,7 +48,7 @@ ClassImp(AliFlowEventCuts)
 
 //-----------------------------------------------------------------------
 AliFlowEventCuts::AliFlowEventCuts():
-  TNamed(),
+  AliFlowEventSimpleCuts(),
   fQA(NULL),
   fCutNumberOfTracks(kFALSE),
   fNumberOfTracksMax(INT_MAX),
@@ -81,11 +81,8 @@ AliFlowEventCuts::AliFlowEventCuts():
   fCutSPDvertexerAnomaly(kFALSE),
   fCutSPDTRKVtxZ(kFALSE),
   fCutTPCmultiplicityOutliers(kFALSE),
-  fCutCentralityPercentile(kFALSE),
   fUseCentralityUnchecked(kFALSE),
   fCentralityPercentileMethod(kTPConly),
-  fCentralityPercentileMax(100.),
-  fCentralityPercentileMin(0.),
   fCutZDCtiming(kFALSE),
   fTrigAna(),
   fCutImpactParameter(kFALSE),
@@ -99,7 +96,7 @@ AliFlowEventCuts::AliFlowEventCuts():
 
 //-----------------------------------------------------------------------
 AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
-  TNamed(name, title),
+  AliFlowEventSimpleCuts(name, title),
   fQA(NULL),
   fCutNumberOfTracks(kFALSE),
   fNumberOfTracksMax(INT_MAX),
@@ -132,11 +129,8 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
   fCutSPDvertexerAnomaly(kFALSE),
   fCutSPDTRKVtxZ(kFALSE),
   fCutTPCmultiplicityOutliers(kFALSE),
-  fCutCentralityPercentile(kFALSE),
   fUseCentralityUnchecked(kFALSE),
   fCentralityPercentileMethod(kTPConly),
-  fCentralityPercentileMax(100.),
-  fCentralityPercentileMin(0.),
   fCutZDCtiming(kFALSE),
   fTrigAna(),
   fCutImpactParameter(kFALSE),
@@ -150,7 +144,7 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
 
 ////-----------------------------------------------------------------------
 AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
-  TNamed(that),
+  AliFlowEventSimpleCuts(that),
   fQA(NULL),
   fCutNumberOfTracks(that.fCutNumberOfTracks),
   fNumberOfTracksMax(that.fNumberOfTracksMax),
@@ -183,11 +177,8 @@ AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
   fCutSPDvertexerAnomaly(that.fCutSPDvertexerAnomaly),
   fCutSPDTRKVtxZ(that.fCutSPDTRKVtxZ),
   fCutTPCmultiplicityOutliers(that.fCutTPCmultiplicityOutliers),
-  fCutCentralityPercentile(that.fCutCentralityPercentile),
   fUseCentralityUnchecked(that.fUseCentralityUnchecked),
   fCentralityPercentileMethod(that.fCentralityPercentileMethod),
-  fCentralityPercentileMax(that.fCentralityPercentileMax),
-  fCentralityPercentileMin(that.fCentralityPercentileMin),
   fCutZDCtiming(that.fCutZDCtiming),
   fTrigAna(),
   fCutImpactParameter(that.fCutImpactParameter),
@@ -270,11 +261,8 @@ AliFlowEventCuts& AliFlowEventCuts::operator=(const AliFlowEventCuts& that)
   fCutSPDvertexerAnomaly=that.fCutSPDvertexerAnomaly;
   fCutSPDTRKVtxZ=that.fCutSPDTRKVtxZ;
   fCutTPCmultiplicityOutliers=that.fCutTPCmultiplicityOutliers;
-  fCutCentralityPercentile=that.fCutCentralityPercentile;
   fUseCentralityUnchecked=that.fUseCentralityUnchecked;
   fCentralityPercentileMethod=that.fCentralityPercentileMethod;
-  fCentralityPercentileMax=that.fCentralityPercentileMax;
-  fCentralityPercentileMin=that.fCentralityPercentileMin;
   fCutZDCtiming=that.fCutZDCtiming;
   fhistTPCvsGlobalMult=that.fhistTPCvsGlobalMult;
   fData2011=that.fData2011;
@@ -474,6 +462,31 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
 }
 
 //----------------------------------------------------------------------- 
+Float_t AliFlowEventCuts::GetCentrality(AliVEvent* event, AliMCEvent* /*mcEvent*/)
+{
+  //get the centrality percentile of the event
+  AliESDEvent* esdEvent = dynamic_cast<AliESDEvent*>(event);
+  AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(event);
+
+  Float_t centrality=-1.;
+
+  AliCentrality* centr = NULL;
+  if (esdEvent)
+    centr = esdEvent->GetCentrality();
+  if (aodEvent) 
+    centr = aodEvent->GetHeader()->GetCentralityP();
+  
+  if (!centr) return -1.;
+
+  if (fUseCentralityUnchecked) 
+    centrality=centr->GetCentralityPercentileUnchecked(CentrMethName(fCentralityPercentileMethod));
+  else 
+    centrality=centr->GetCentralityPercentile(CentrMethName(fCentralityPercentileMethod));
+
+  return centrality;
+}
+
+//----------------------------------------------------------------------- 
 const char* AliFlowEventCuts::CentrMethName(refMultMethod method) const
 {
   //get the string for refmultmethod, for use with AliCentrality in
@@ -486,7 +499,7 @@ const char* AliFlowEventCuts::CentrMethName(refMultMethod method) const
       return "CL1";
     case kTPConly:
       return "TRK";
-    case kV0:
+    case kVZERO:
       return "V0M";
     default:
       return "";
@@ -525,7 +538,7 @@ Int_t AliFlowEventCuts::RefMult(AliVEvent* event, AliMCEvent *mcEvent)
     fRefMultCuts->SetParamType(AliFlowTrackCuts::kSPDtracklet);
     fRefMultCuts->SetEtaRange(-0.8,0.8);
   }
-  else if (fRefMultMethod==kV0)
+  else if (fRefMultMethod==kVZERO)
   {
     if (!esdevent) return 0;
     vzero=esdevent->GetVZEROData();

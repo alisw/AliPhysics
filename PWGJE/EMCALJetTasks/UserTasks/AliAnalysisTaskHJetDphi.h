@@ -101,7 +101,7 @@ protected:
   Int_t                             GetPtHardBin(Double_t ptHard);
 
  private:
-  Int_t                             fVerbosity;                  //! Control output
+  Int_t                             fVerbosity;                  //  Control output
   Bool_t                            fIsEmbedding;                //  Flag of embedding trains
   Int_t                             fAnaType;                    //  0-EMCal jet framework; 1-charged jet framework
   TString                           fPeriod;                     //  Run period

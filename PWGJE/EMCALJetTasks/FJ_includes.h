@@ -14,6 +14,7 @@
 #include <fastjet/ClusterSequenceArea.hh>
 #include <fastjet/AreaDefinition.hh>
 #include <fastjet/SISConePlugin.hh>
+#include <fastjet/CDFMidPointPlugin.hh>
 #ifdef FASTJET_VERSION
 #include <fastjet/tools/JetMedianBackgroundEstimator.hh>
 #endif

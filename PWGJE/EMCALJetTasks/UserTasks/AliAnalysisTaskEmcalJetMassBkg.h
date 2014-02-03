@@ -60,13 +60,19 @@ class AliAnalysisTaskEmcalJetMassBkg : public AliAnalysisTaskEmcalJet {
 
  private:
   TH2F            **fh2PtVsMassRC;                //!pT vs mass of RC
-  TProfile        **fpPtVsMassRC;                 //!pT vs Avg mass of RC
-  TH3F            **fh2PtVsMassRCExLJDPhi;        //!pT vs mass of RC
-  TProfile        **fpPtVsMassRCExLJ;             //!pT vs Avg mass of RC excluding area around leading jet
+  TH3F            **fh2PtVsMassRCExLJDPhi;        //!pT vs mass of RC excluding area around leading jet
   TH2F            **fh2PtVsMassPerpConeLJ;        //!pT vs mass of cone perpendicular to leading jet
-  TProfile        **fpPtVsMassPerpConeLJ;         //!pT vs Avg mass of cone perpendicular to leading jet
   TH2F            **fh2PtVsMassPerpConeTJ;        //!pT vs mass of cone perpendicular to all tagged jets
+
+  TProfile        **fpPtVsMassRC;                 //!pT vs Avg mass of RC
+  TProfile        **fpPtVsMassRCExLJ;             //!pT vs Avg mass of RC excluding area around leading jet
+  TProfile        **fpPtVsMassPerpConeLJ;         //!pT vs Avg mass of cone perpendicular to leading jet
   TProfile        **fpPtVsMassPerpConeTJ;         //!pT vs Avg mass of cone perpendicular to all tagged jets
+
+  TH2F            **fh2EtaVsMassRC;               //!eta vs mass of RC
+  TH2F            **fh2EtaVsMassRCExLJ;           //!eta vs mass of RC excluding area around leading jet
+  TH2F            **fh2EtaVsMassPerpConeLJ;       //!eta vs mass of cone perpendicular to leading jet
+  TH2F            **fh2EtaVsMassPerpConeTJ;       //!eta vs mass of cone perpendicular to all tagged jets
 
   TH2F             *fh2CentVsMassRC;              //!cent vs mass of RC
   TH2F             *fh2CentVsMassRCExLJ;          //!cent vs mass of RC excluding area around leading jet
@@ -99,7 +105,7 @@ class AliAnalysisTaskEmcalJetMassBkg : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetMassBkg(const AliAnalysisTaskEmcalJetMassBkg&);            // not implemented
   AliAnalysisTaskEmcalJetMassBkg &operator=(const AliAnalysisTaskEmcalJetMassBkg&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetMassBkg, 2)
+  ClassDef(AliAnalysisTaskEmcalJetMassBkg, 3)
 };
 #endif
 

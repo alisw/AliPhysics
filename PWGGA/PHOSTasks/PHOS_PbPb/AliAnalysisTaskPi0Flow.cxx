@@ -60,6 +60,7 @@
 // Authors : Dmitri Peressounko
 // Date    : 28.05.2011
 // Modified: 03.08.2012 Henrik Qvigstad
+/* $Id: AliAnalysisTaskPi0Flow.cxx 64584 2013-10-17 15:37:28Z kharlov $ */
 
 ClassImp(AliAnalysisTaskPi0Flow);
 
@@ -79,9 +80,7 @@ Double_t rnlin(Double_t *x, Double_t * /*par*/)
   //a = par[0], b = par[1].
   //1+a*exp(-e/b)
 
-// return 0.0241+1.0504*x[0]+0.000249*x[0]*x[0] ;
- return 1.015*(0.0241+1.0504*x[0]+0.000249*x[0]*x[0]) ;
-
+  return 0.0241+1.0504*x[0]+0.000249*x[0]*x[0] ;
 }
 
 //________________________________________________________________________

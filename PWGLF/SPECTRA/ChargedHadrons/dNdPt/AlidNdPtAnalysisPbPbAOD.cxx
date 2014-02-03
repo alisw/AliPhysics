@@ -22,12 +22,11 @@
 
 #include "AlidNdPtAnalysisPbPbAOD.h"
 
+#include "AliAnalysisTaskSE.h"
 
 using namespace std;
 
 ClassImp(AlidNdPtAnalysisPbPbAOD)
-
-
 
 AlidNdPtAnalysisPbPbAOD::AlidNdPtAnalysisPbPbAOD(const char *name) : AliAnalysisTaskSE(name),
 fOutputList(0),
@@ -66,6 +65,7 @@ fCrossCheckRowsLength(0),
 fCrossCheckClusterLength(0),
 fCrossCheckRowsLengthAcc(0),
 fCrossCheckClusterLengthAcc(0),
+fCutSettings(0),
 //global
 fIsMonteCarlo(0),
 // event cut variables
@@ -149,14 +149,21 @@ fBinsPhi(0)
 
 // destructor
 AlidNdPtAnalysisPbPbAOD::~AlidNdPtAnalysisPbPbAOD()
-{
-  
+{  
   if(fZvPtEtaCent) delete fZvPtEtaCent; fZvPtEtaCent = 0;
+  if(fPhiPtEtaCent) delete fPhiPtEtaCent; fPhiPtEtaCent = 0;
+  if(fPtResptCent) delete fPtResptCent; fPtResptCent = 0;
   if(fPt) delete fPt; fPt = 0;
+  if(fMCPt) delete fMCPt; fMCPt = 0;
+  
   if(fMCRecPrimZvPtEtaCent) delete fMCRecPrimZvPtEtaCent; fMCRecPrimZvPtEtaCent = 0;
   if(fMCGenZvPtEtaCent) delete fMCGenZvPtEtaCent; fMCGenZvPtEtaCent = 0;
   if(fMCRecSecZvPtEtaCent) delete fMCRecSecZvPtEtaCent; fMCRecSecZvPtEtaCent = 0;
-  if(fMCPt) delete fMCPt; fMCPt = 0;
+  
+  if(fMCRecPrimPhiPtEtaCent) delete fMCRecPrimPhiPtEtaCent; fMCRecPrimPhiPtEtaCent = 0;
+  if(fMCGenPhiPtEtaCent) delete fMCGenPhiPtEtaCent; fMCGenPhiPtEtaCent = 0;
+  if(fMCRecSecPhiPtEtaCent) delete fMCRecSecPhiPtEtaCent; fMCRecSecPhiPtEtaCent = 0;
+  
   if(fEventStatistics) delete fEventStatistics; fEventStatistics = 0;
   if(fEventStatisticsCentrality) delete fEventStatisticsCentrality; fEventStatisticsCentrality = 0;
   if(fMCEventStatisticsCentrality) delete fMCEventStatisticsCentrality; fMCEventStatisticsCentrality = 0;
@@ -174,8 +181,6 @@ AlidNdPtAnalysisPbPbAOD::~AlidNdPtAnalysisPbPbAOD()
   if(fDCAPtAccepted) delete fDCAPtAccepted; fDCAPtAccepted = 0;
   if(fMCDCAPtSecondary) delete fMCDCAPtSecondary; fMCDCAPtSecondary = 0;
   if(fMCDCAPtPrimary) delete fMCDCAPtPrimary; fMCDCAPtPrimary = 0;
-  if(fMCDCAPtSecondary) delete fMCDCAPtSecondary; fMCDCAPtSecondary = 0;
-  if(fMCDCAPtPrimary) delete fMCDCAPtPrimary; fMCDCAPtPrimary = 0;
   
   for(Int_t i = 0; i < cqMax; i++)
   {
@@ -183,6 +188,20 @@ AlidNdPtAnalysisPbPbAOD::~AlidNdPtAnalysisPbPbAOD()
     if(fCrossCheckAcc[i]) delete fCrossCheckAcc[i]; fCrossCheckAcc[i] = 0;
   }
   
+  if(fCutPercClusters) delete fCutPercClusters; fCutPercClusters = 0;
+  if(fCutPercCrossed) delete fCutPercCrossed; fCutPercCrossed = 0;
+  if(fCrossCheckRowsLength) delete fCrossCheckRowsLength; fCrossCheckRowsLength = 0;
+  if(fCrossCheckClusterLength) delete fCrossCheckClusterLength; fCrossCheckClusterLength = 0;
+  if(fCrossCheckRowsLengthAcc) delete fCrossCheckRowsLengthAcc; fCrossCheckRowsLengthAcc = 0;
+  if(fCrossCheckClusterLengthAcc) delete fCrossCheckClusterLengthAcc; fCrossCheckClusterLengthAcc = 0;
+  if(fCutSettings) delete fCutSettings; fCutSettings = 0;
+  
+  if(fOutputList)
+  {
+    fOutputList->Clear();
+    delete fOutputList;
+  }
+  fOutputList = 0;
 }
 
 void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
@@ -242,7 +261,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fPhiPtEtaCent->SetBinEdges(1,fBinsPt);
   fPhiPtEtaCent->SetBinEdges(2,fBinsEta);
   fPhiPtEtaCent->SetBinEdges(3,fBinsCentrality);
-  fPhiPtEtaCent->GetAxis(0)->SetTitle("Phi (cm)");
+  fPhiPtEtaCent->GetAxis(0)->SetTitle("Phi");
   fPhiPtEtaCent->GetAxis(1)->SetTitle("Pt (GeV/c)");
   fPhiPtEtaCent->GetAxis(2)->SetTitle("Eta");
   fPhiPtEtaCent->GetAxis(3)->SetTitle("Centrality");
@@ -294,7 +313,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fMCRecPrimPhiPtEtaCent->SetBinEdges(1,fBinsPt);
   fMCRecPrimPhiPtEtaCent->SetBinEdges(2,fBinsEta);
   fMCRecPrimPhiPtEtaCent->SetBinEdges(3,fBinsCentrality);
-  fMCRecPrimPhiPtEtaCent->GetAxis(0)->SetTitle("MC Phi (cm)");
+  fMCRecPrimPhiPtEtaCent->GetAxis(0)->SetTitle("MC Phi");
   fMCRecPrimPhiPtEtaCent->GetAxis(1)->SetTitle("MC Pt (GeV/c)");
   fMCRecPrimPhiPtEtaCent->GetAxis(2)->SetTitle("MC Eta");
   fMCRecPrimPhiPtEtaCent->GetAxis(3)->SetTitle("Centrality");
@@ -305,7 +324,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fMCGenPhiPtEtaCent->SetBinEdges(1,fBinsPt);
   fMCGenPhiPtEtaCent->SetBinEdges(2,fBinsEta);
   fMCGenPhiPtEtaCent->SetBinEdges(3,fBinsCentrality);
-  fMCGenPhiPtEtaCent->GetAxis(0)->SetTitle("MC Phi (cm)");
+  fMCGenPhiPtEtaCent->GetAxis(0)->SetTitle("MC Phi");
   fMCGenPhiPtEtaCent->GetAxis(1)->SetTitle("MC Pt (GeV/c)");
   fMCGenPhiPtEtaCent->GetAxis(2)->SetTitle("MC Eta");
   fMCGenPhiPtEtaCent->GetAxis(3)->SetTitle("Centrality");
@@ -316,7 +335,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fMCRecSecPhiPtEtaCent->SetBinEdges(1,fBinsPt);
   fMCRecSecPhiPtEtaCent->SetBinEdges(2,fBinsEta);
   fMCRecSecPhiPtEtaCent->SetBinEdges(3,fBinsCentrality);
-  fMCRecSecPhiPtEtaCent->GetAxis(0)->SetTitle("MC Sec Phi (cm)");
+  fMCRecSecPhiPtEtaCent->GetAxis(0)->SetTitle("MC Sec Phi");
   fMCRecSecPhiPtEtaCent->GetAxis(1)->SetTitle("MC Sec Pt (GeV/c)");
   fMCRecSecPhiPtEtaCent->GetAxis(2)->SetTitle("MC Sec Eta");
   fMCRecSecPhiPtEtaCent->GetAxis(3)->SetTitle("Centrality");
@@ -385,7 +404,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   
   
   
-  Int_t binsDCAxyDCAzPtEtaPhi[6] = { 200,200, fPtCheckNbins-1, fEtaCheckNbins-1, 18, fCentralityNbins-1};
+  Int_t binsDCAxyDCAzPtEtaPhi[6] = { 10,10, fPtCheckNbins-1, fEtaCheckNbins-1, 18, fCentralityNbins-1};
   Double_t minDCAxyDCAzPtEtaPhi[6] = { -5, -5, 0, -1.5, 0., 0, };
   Double_t maxDCAxyDCAzPtEtaPhi[6] = { 5., 5., 100, 1.5, 2.*TMath::Pi(), 100};
   
@@ -539,6 +558,9 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fCrossCheckClusterLengthAcc = new TH2F("fCrossCheckClusterLengthAcc","fCrossCheckClusterLengthAcc;Length in TPC;NClusters",170,0,170,170,0,170);
   fCrossCheckClusterLengthAcc->Sumw2();
   
+  fCutSettings = new TH1F("fCutSettings","fCutSettings",100,0,10);
+  fCutSettings->GetYaxis()->SetTitle("cut value");
+  fCutSettings->SetBit(TH1::kCanRebin);
   
   // Add Histos, Profiles etc to List
   fOutputList->Add(fZvPtEtaCent);
@@ -580,6 +602,9 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(fCrossCheckClusterLength);
   fOutputList->Add(fCrossCheckRowsLengthAcc);
   fOutputList->Add(fCrossCheckClusterLengthAcc);
+  fOutputList->Add(fCutSettings);
+  
+  StoreCutSettingsToHistogram();
   
   PostData(1, fOutputList);
 }
@@ -915,6 +940,8 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   
   PostData(1, fOutputList);
   
+  // delete pointers:
+  
 }
 
 Bool_t AlidNdPtAnalysisPbPbAOD::SetRelativeCuts(AliAODEvent *event)
@@ -1014,19 +1041,19 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr, Double_t dCentr
   
   //   if(xyz[0]*xyz[0]+xyz[1]*xyz[1] > 3.*3.) { return kFALSE; }
   
-  AliExternalTrackParam * par = new AliExternalTrackParam(xyz, pxpypz, cv, sign);
-  if(!par) { return kFALSE; }
+  AliExternalTrackParam par(xyz, pxpypz, cv, sign);
+//   AliExternalTrackParam *par = new AliExternalTrackParam(xyz, pxpypz, cv, sign); // high mem consumption!!!!
   AliESDtrack dummy;
   //   Double_t dLength = dummy.GetLengthInActiveZone(par,3,236, -5 ,0,0);
   //   Double_t dLengthInTPC = GetLengthInTPC(tr, 1.8, 220, bMagZ);
   
-  Double_t dLengthInTPC = dummy.GetLengthInActiveZone(par,3,236, bMagZ ,0,0);
+  Double_t dLengthInTPC = dummy.GetLengthInActiveZone(&par,3,236, bMagZ ,0,0);
   Double_t dNClustersTPC = tr->GetTPCNcls();
   Double_t dCrossedRowsTPC = tr->GetTPCClusterInfo(2,1);
   Double_t dFindableClustersTPC = tr->GetTPCNclsF();
   Double_t dChi2PerClusterTPC = (dNClustersTPC>0)?tr->Chi2perNDF()*(dNClustersTPC-5)/dNClustersTPC:-1.; // see AliDielectronVarManager.h
   Double_t dOneOverPt = tr->OneOverPt();
-  Double_t dSigmaOneOverPt = TMath::Sqrt(par->GetSigma1Pt2());
+  Double_t dSigmaOneOverPt = TMath::Sqrt(par.GetSigma1Pt2());
   
   //   hAllCrossedRowsTPC->Fill(dCrossedRowsTPC);
   
@@ -1080,7 +1107,9 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr, Double_t dCentr
 	
 	// fill debug histogram for all accepted tracks
 	FillDebugHisto(dCheck, dKine, dCentrality, kTRUE);
-
+	
+	// delete pointers
+        
 	return kTRUE;
 }
 
@@ -1111,6 +1140,50 @@ Bool_t AlidNdPtAnalysisPbPbAOD::FillDebugHisto(Double_t *dCrossCheckVar, Double_
   
   return kTRUE;
   
+}
+
+void AlidNdPtAnalysisPbPbAOD::StoreCutSettingsToHistogram()
+{
+    //
+    // this function stores all cut settings to a histograms
+    //
+    
+    fCutSettings->Fill("IsMonteCarlo",fIsMonteCarlo);
+    
+    fCutSettings->Fill("fCutMaxZVertex", fCutMaxZVertex);
+    
+    // kinematic cuts
+    fCutSettings->Fill("fCutPtMin", fCutPtMin);
+    fCutSettings->Fill("fCutPtMax", fCutPtMax);
+    fCutSettings->Fill("fCutEtaMin", fCutEtaMin);
+    fCutSettings->Fill("fCutEtaMax", fCutEtaMax);
+    
+    // track quality cut variables
+    fCutSettings->Fill("fFilterBit", fFilterBit);
+    if(fUseRelativeCuts) fCutSettings->Fill("fUseRelativeCuts", 1);
+    if(fCutRequireTPCRefit) fCutSettings->Fill("fCutRequireTPCRefit", 1);
+    if(fCutRequireITSRefit) fCutSettings->Fill("fCutRequireITSRefit", 1);
+    
+    fCutSettings->Fill("fCutMinNumberOfClusters", fCutMinNumberOfClusters);
+    fCutSettings->Fill("fCutPercMinNumberOfClusters", fCutPercMinNumberOfClusters);
+    fCutSettings->Fill("fCutMinNumberOfCrossedRows", fCutMinNumberOfCrossedRows);
+    fCutSettings->Fill("fCutPercMinNumberOfCrossedRows", fCutPercMinNumberOfCrossedRows);
+    
+    fCutSettings->Fill("fCutMinRatioCrossedRowsOverFindableClustersTPC", fCutMinRatioCrossedRowsOverFindableClustersTPC);
+    fCutSettings->Fill("fCutMaxFractionSharedTPCClusters", fCutMaxFractionSharedTPCClusters);
+    fCutSettings->Fill("fCutMaxDCAToVertexXY", fCutMaxDCAToVertexXY);
+    fCutSettings->Fill("fCutMaxChi2PerClusterITS", fCutMaxChi2PerClusterITS);
+    
+    if(fCutDCAToVertex2D) fCutSettings->Fill("fCutDCAToVertex2D", 1);
+    if(fCutRequireSigmaToVertex) fCutSettings->Fill("fCutRequireSigmaToVertex",1);
+    fCutSettings->Fill("fCutMaxDCAToVertexXYPtDepPar0", fCutMaxDCAToVertexXYPtDepPar0);
+    fCutSettings->Fill("fCutMaxDCAToVertexXYPtDepPar1", fCutMaxDCAToVertexXYPtDepPar1);
+    fCutSettings->Fill("fCutMaxDCAToVertexXYPtDepPar2", fCutMaxDCAToVertexXYPtDepPar2);
+    
+    if(fCutAcceptKinkDaughters) fCutSettings->Fill("fCutAcceptKinkDaughters", 1);
+    fCutSettings->Fill("fCutMaxChi2TPCConstrainedGlobal", fCutMaxChi2TPCConstrainedGlobal);
+    if(fCutLengthInTPCPtDependent) fCutSettings->Fill("fCutLengthInTPCPtDependent", 1);
+    fCutSettings->Fill("fPrefactorLengthInTPCPtDependent", fPrefactorLengthInTPCPtDependent);
 }
 
 Bool_t AlidNdPtAnalysisPbPbAOD::GetDCA(const AliAODTrack *track, AliAODEvent *evt, Double_t d0z0[2])

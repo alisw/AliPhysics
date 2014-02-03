@@ -98,7 +98,7 @@ private:
     AliHFEpidQAmanager   *fPIDqa;               //! PID QA manager
     AliFlowTrackCuts     *fCutsRP; // track cuts for reference particles
     AliFlowTrackCuts     *fNullCuts; // dummy cuts for flow event tracks
-    AliFlowEvent         *fFlowEvent; //! flow events Inclusive e
+    AliFlowEvent         *fFlowEvent; // flow events Inclusive e
     const char           *fkCentralityMethod; // method used to determine centrality (V0 by default)
     Double_t             fCentrality; // event centrality for QA
     Double_t             fCentralityMin; // lower bound of cenrality bin
@@ -111,20 +111,20 @@ private:
     TH1F                 *fVZEROA; //! QA plot vzeroa multiplicity (all tracks in event)
     TH1F                 *fVZEROC; //! QA plot vzeroc multiplicity (all tracks in event)
     TH1F                 *fTPCM; //! QA plot TPC multiplicity (tracks used for event plane estimation)
-    TH1F                 *fNoEvents;            //no of events
-    TH2F                 *fTrkEovPBef;          //track E/p before HFE pid
+    TH1F                 *fNoEvents;            //!no of events
+    TH2F                 *fTrkEovPBef;          //!track E/p before HFE pid
     //   TH2F                           *fdEdxBef;         //track dEdx vs p before HFE pid
-    TH1F                 *fInclusiveElecPt; // Inclusive elec pt
-    TH2F                 *fTPCnsigma;               //TPC n sigma vs p
-    TH2F                 *fTPCnsigmaAft;                //TPC n sigma vs p after HFE pid
+    TH1F                 *fInclusiveElecPt; //! Inclusive elec pt
+    TH2F                 *fTPCnsigma;               //!TPC n sigma vs p
+    TH2F                 *fTPCnsigmaAft;                //!TPC n sigma vs p after HFE pid
     TH1F                 *fCentralityPass; // ! QA histogram of events that pass centrality cut
     TH1F                 *fCentralityNoPass; //! QA histogram of events that do not pass centrality cut
-    TH1F                 *fInvmassLS1; //LS Invmass for all rec par
-    TH1F                 *fInvmassULS1;//ULS Invmass for all rec par
-    TH1F                 *fPhotoElecPt;             //photonic elec pt
-    TH1F                 *fSemiInclElecPt;  //Semi inclusive ele pt
-    TH1F                 *fULSElecPt; //ULS elec Pt
-    TH1F                 *fLSElecPt;// LS elec pt
+    TH1F                 *fInvmassLS1; //!LS Invmass for all rec par
+    TH1F                 *fInvmassULS1;//!ULS Invmass for all rec par
+    TH1F                 *fPhotoElecPt;             //!photonic elec pt
+    TH1F                 *fSemiInclElecPt;  //!Semi inclusive ele pt
+    TH1F                 *fULSElecPt; //!ULS elec Pt
+    TH1F                 *fLSElecPt;//! LS elec pt
     Double_t             fminTPC;  //ID cuts tpc
     Double_t             fmaxTPC;  //ID cuts tpc
     Double_t             fminEovP;  //ID cuts eovp
@@ -136,21 +136,21 @@ private:
     Double_t             fDispersion;//ID cuts SS
     TH2F                 *fMultCorAfterCuts; //! QA profile global and tpc multiplicity after outlier cut
     TH2F                 *fMultvsCentr; //! QA profile of centralty vs multiplicity
-    TProfile             *fSubEventDPhiv2;
-    TH1D                 *EPVzA;//v0aep
-    TH1D                 *EPVzC;//v0cep
-    TH1D                 *EPTPC;//tpcep
+    TProfile             *fSubEventDPhiv2;//!lll
+    TH1D                 *EPVzA;//!v0aep
+    TH1D                 *EPVzC;//!v0cep
+    TH1D                 *EPTPC;//!tpcep
     THnSparseF           *fV2Phi;//! v2 analysis of EP-V0
     THnSparseD           *fSparseElectronHadron;//! Trk matching sparse for v1 clusterizer
-    TH1D                 *fvertex;//huge ThNsparse
+    TH1D                 *fvertex;//!huge ThNsparse
     TH2F                 *fMultCorBeforeCuts; //! QA profile global and tpc multiplicity after outlier cut
     Bool_t               fSideBandsFlow;//flow from side bands for contamination
     Bool_t               fPhiminusPsi;//flow from phi minus psi method
-    AliFlowEvent         *fFlowEventCont; //! flow events for elect Contamination
+    AliFlowEvent         *fFlowEventCont; // flow events for elect Contamination
     Bool_t               fpurity; //for purity evaluation
     THnSparseD           *fSparseElectronpurity;//! Trk matching sparse for v1 clusterizer
-    TH1F                 *fOpeningAngleLS;  //opening angle for LS pairs
-    TH1F                 *fOpeningAngleULS; //opening angle for ULS pairs
+    TH1F                 *fOpeningAngleLS;  //!opening angle for LS pairs
+    TH1F                 *fOpeningAngleULS; //!opening angle for ULS pairs
     AliSelectNonHFE      *fNonHFE;//new elienos stuff
     Bool_t               fDCA;//selection PHelectron
     Double_t             fOpeningAngleCut; //openingAngle cut value
@@ -164,15 +164,15 @@ private:
     TH1F                 *fCentralityAfterVZTRK;//!cent chneck2
     TH1F                 *fCentralityAfterCorrCut;//!cent chneck2
     TH2F                 *fMultCorAfterCorrCut;//!after cent comp
-    TH1D                 *EPVz;//v0cep
-    TH1D                 *EPTPCp;//tpcep
+    TH1D                 *EPVz;//!v0cep
+    TH1D                 *EPTPCp;//!tpcep
     TH1D                 *EPTPCn;//!tpcep
     TProfile             *fSubEventDPhiv2new;
     THnSparseF           *fV2Phivzerotot;//! v2 analysis of EP-V0
-    TH1F                 *fHistCentrDistr;// isto for Centr Flat
+    TH1F                 *fHistCentrDistr;//-> isto for Centr Flat
     TH1F                 *fCentralityNoPassForFlattening; //! QA histogram of events that do not pass centrality cut for flattening
-    TH1F                 *fInvmassLS1highpt; //LS Invmass for all rec par high pt
-    TH1F                 *fInvmassULS1highpt;//ULS Invmass for all rec par high pt
+    TH1F                 *fInvmassLS1highpt; //!LS Invmass for all rec par high pt
+    TH1F                 *fInvmassULS1highpt;//!ULS Invmass for all rec par high pt
     
     
     

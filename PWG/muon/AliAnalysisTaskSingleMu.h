@@ -28,6 +28,7 @@ class AliAnalysisTaskSingleMu : public AliVAnalysisMuon {
   void MyUserCreateOutputObjects();
   void ProcessEvent(TString physSel, const TObjArray& selectTrigClasses, TString centrality);
   
+  /// Apply cut on dimuon invariant mass (to reject Z contribution)
   void SetCutDimu ( Bool_t cutOnDimu = kTRUE ) { fCutOnDimu = cutOnDimu; }
   
   enum {

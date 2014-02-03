@@ -10,16 +10,12 @@
 // last modified: 08.10.2013
 //------------------------------------------------------------------------------
 
+
+
 class iostream;
 
-class TObject;
-class TFile;
-class TCint;
-class THnSparse;
-
 #include "AliAnalysisTaskSE.h"
-
-
+#include "TObject.h"
 #include "TList.h"
 #include "TFile.h"
 #include "TH1.h"
@@ -142,11 +138,14 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     // fill function for cross check histos
     Bool_t FillDebugHisto(Double_t *dCrossCheckVar, Double_t *dKineVar, Double_t dCentrality, Bool_t bIsAccepted);
     
+    // fill function for cut settings
+    void StoreCutSettingsToHistogram();
+    
     // getter for DCA
     Bool_t GetDCA(const AliAODTrack *track, AliAODEvent *evt, Double_t d0z0[2]);
     
-    THnSparseF *GetHistZvPtEtaCent() const { return fZvPtEtaCent; }
-    TH1F *GetHistEventStatistics() const { return fEventStatistics; }
+    THnSparseF * GetHistZvPtEtaCent() const { return fZvPtEtaCent; }
+    TH1F * GetHistEventStatistics() const { return fEventStatistics; }
     
     const char * GetParticleName(Int_t pdg);
     
@@ -182,7 +181,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     THnSparseF 	*fMCGenPhiPtEtaCent; //-> MC Phi:Pt:Eta:Cent
     THnSparseF 	*fMCRecSecPhiPtEtaCent; //-> MC Phi:Pt:Eta:Cent, only secondaries
     TH1F	*fEventStatistics; // contains statistics of number of events after each cut
-    TH1F	*fEventStatisticsCentrality; // contains number of events vs centrality, events need to have a track in kinematic range
+    TH1F        *fEventStatisticsCentrality; // contains number of events vs centrality, events need to have a track in kinematic range
     TH1F	*fMCEventStatisticsCentrality; // contains MC number of events vs centrality, events need to have a track in kinematic range
     TH1F	*fAllEventStatisticsCentrality; // contains number of events vs centrality, events need to be triggered
     TH2F	*fEventStatisticsCentralityTrigger; // contains number of events vs centrality in 1% bins vs trigger
@@ -206,6 +205,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     TH2F	*fCrossCheckClusterLength; // control histo: number of clusters vs length in TPC
     TH2F	*fCrossCheckRowsLengthAcc; // control histo: number of crossed rows vs length in TPC for all accepted tracks
     TH2F	*fCrossCheckClusterLengthAcc; // control histo: number of clusters vs length in TPC for all accepted tracks
+    TH1F        *fCutSettings; // control histo: cut settings
     
     
     // global variables
@@ -235,7 +235,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     Double_t 	fCutMaxDCAToVertexZ;
     Double_t 	fCutMaxDCAToVertexXY;
     Double_t 	fCutMaxChi2PerClusterITS;
-    Bool_t 	fCutDCAToVertex2D;
+    Bool_t  	fCutDCAToVertex2D;
     Bool_t 	fCutRequireSigmaToVertex;
     Double_t 	fCutMaxDCAToVertexXYPtDepPar0;
     Double_t 	fCutMaxDCAToVertexXYPtDepPar1;
@@ -246,15 +246,15 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     Double_t	fPrefactorLengthInTPCPtDependent;
     
     //binning for THNsparse
-    Int_t fMultNbins;
-    Int_t fPtNbins;
-    Int_t fPtCorrNbins;
-    Int_t fPtCheckNbins;
-    Int_t fEtaNbins;
-    Int_t fEtaCheckNbins;
-    Int_t fZvNbins;
-    Int_t fCentralityNbins;
-    Int_t fPhiNbins;
+    Int_t   fMultNbins;
+    Int_t   fPtNbins;
+    Int_t   fPtCorrNbins;
+    Int_t   fPtCheckNbins;
+    Int_t   fEtaNbins;
+    Int_t   fEtaCheckNbins;
+    Int_t   fZvNbins;
+    Int_t   fCentralityNbins;
+    Int_t   fPhiNbins;
     Double_t* fBinsMult; //[fMultNbins]
     Double_t* fBinsPt; //[fPtNbins]
     Double_t* fBinsPtCorr; //[fPtCorrNbins]
@@ -268,7 +268,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     AlidNdPtAnalysisPbPbAOD(const AlidNdPtAnalysisPbPbAOD&); // not implemented
     AlidNdPtAnalysisPbPbAOD& operator=(const AlidNdPtAnalysisPbPbAOD&); // not implemented  
     
-    ClassDef(AlidNdPtAnalysisPbPbAOD,4); // has to be at least 1, otherwise not streamable...
+    ClassDef(AlidNdPtAnalysisPbPbAOD,5); // has to be at least 1, otherwise not streamable...
 };
 
 #endif

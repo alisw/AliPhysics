@@ -75,16 +75,19 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr() // All data members should be ini
   fOutput(0),
   fCentralityMethod("V0A"),
   fSampleType("pPb"),
-fnTracksVertex(1),  // QA tracks pointing to principal vertex (= 3 default)
+  fnTracksVertex(1),  // QA tracks pointing to principal vertex (= 3 default)
   trkVtx(0),
   zvtx(0),
   fFilterBit(768),
+  fSharedClusterCut(-1),
+  fVertextype(1),
   fzvtxcut(10.0),
   ffilltrigassoUNID(kFALSE),
   ffilltrigUNIDassoID(kFALSE),
   ffilltrigIDassoUNID(kTRUE),
   ffilltrigIDassoID(kFALSE),
   ffilltrigIDassoIDMCTRUTH(kFALSE),
+  fMaxNofMixingTracks(50000),
   fPtOrderMCTruth(kFALSE),
   fTriggerSpeciesSelection(kFALSE),
   fAssociatedSpeciesSelection(kFALSE),
@@ -92,6 +95,7 @@ fnTracksVertex(1),  // QA tracks pointing to principal vertex (= 3 default)
   fAssociatedSpecies(SpPion),
   fCustomBinning(""),
   fBinningString(""),
+  fSelectHighestPtTrig(kFALSE),
   fcontainPIDtrig(kTRUE),
   fcontainPIDasso(kFALSE),
 //frejectPileUp(kFALSE),
@@ -225,12 +229,15 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr(const char *name) // All data membe
   trkVtx(0),
   zvtx(0),
   fFilterBit(768),
+  fSharedClusterCut(-1),
+  fVertextype(1),
   fzvtxcut(10.0),
   ffilltrigassoUNID(kFALSE),
   ffilltrigUNIDassoID(kFALSE),
   ffilltrigIDassoUNID(kTRUE),
   ffilltrigIDassoID(kFALSE),
   ffilltrigIDassoIDMCTRUTH(kFALSE),
+  fMaxNofMixingTracks(50000),
   fPtOrderMCTruth(kFALSE),
   fTriggerSpeciesSelection(kFALSE),
   fAssociatedSpeciesSelection(kFALSE),
@@ -238,6 +245,7 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr(const char *name) // All data membe
   fAssociatedSpecies(SpPion),
   fCustomBinning(""),
   fBinningString(""),
+  fSelectHighestPtTrig(kFALSE),
   fcontainPIDtrig(kTRUE),
   fcontainPIDasso(kFALSE),
    // frejectPileUp(kFALSE),
@@ -991,7 +999,7 @@ skipParticlesAbove = eventHeader->NProduced();
   }
 
  //vertex selection(is it fine for PP?)
-  if ( fSampleType=="pPb"){
+  if ( fVertextype==1){
   trkVtx = aod->GetPrimaryVertex();
   if (!trkVtx || trkVtx->GetNContributors()<=0) return;
   TString vtxTtl = trkVtx->GetTitle();
@@ -1006,7 +1014,7 @@ skipParticlesAbove = eventHeader->NProduced();
   if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) return;
    if (TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return;
   }
-  else if(fSampleType=="PbPb" || fSampleType=="pp") {//for pp and pb-pb case
+  else if(fVertextype==2) {//for pp and pb-pb case
 	Int_t nVertex = aod->GetNumberOfVertices();
   	if( nVertex > 0 ) { 
     trkVtx = aod->GetPrimaryVertex();
@@ -1174,7 +1182,7 @@ if (TMath::Abs(pdgtruth)==2212 || TMath::Abs(pdgtruth)==321) fTHngenprimPidTruth
   }
    
  Float_t effmatrixtruth=1.0;//In Truth MC, no case of efficiency correction so it should be always 1.0
-if(partMC->Pt()>=fminPtAsso || partMC->Pt()<=fmaxPtTrig)//to reduce memory consumption in pool
+if((partMC->Pt()>=fminPtAsso && partMC->Pt()<=fmaxPtAsso) || (partMC->Pt()>=fminPtTrig && partMC->Pt()<=fmaxPtTrig))//to reduce memory consumption in pool
   {
 LRCParticlePID* copy6 = new LRCParticlePID(particletypeTruth,partMC->Charge(),partMC->Pt(),partMC->Eta(), partMC->Phi(),effmatrixtruth);
 //copy6->SetUniqueID(eventno * 100000 + TMath::Abs(partMC->GetLabel()));
@@ -1184,6 +1192,7 @@ LRCParticlePID* copy6 = new LRCParticlePID(particletypeTruth,partMC->Charge(),pa
   }//MC truth track loop ends
 
 //*********************still in event loop
+ Float_t weghtval=1.0;
 
  if (fSampleType=="pp") cent_v0_truth=nooftrackstruth;
  else cent_v0_truth=cent_v0;//the notation cent_v0 is reserved for reco/data case
@@ -1194,7 +1203,7 @@ if(nooftrackstruth>0.0 && ffilltrigIDassoIDMCTRUTH)
   {
  //Fill Correlations for MC truth particles(same event)
 if(tracksMCtruth && tracksMCtruth->GetEntriesFast()>0)//hadron triggered correlation
- Fillcorrelation(tracksMCtruth,0,cent_v0_truth,zVtxmc,bSign,fPtOrderMCTruth,kFALSE,kFALSE,"trigIDassoIDMCTRUTH");//mixcase=kFALSE for same event case
+  Fillcorrelation(tracksMCtruth,0,cent_v0_truth,zVtxmc,weghtval,bSign,fPtOrderMCTruth,kFALSE,kFALSE,"trigIDassoIDMCTRUTH");//mixcase=kFALSE for same event case
 
 //start mixing
 AliEventPool* pool2 = fPoolMgr->GetEventPool(cent_v0_truth, zVtxmc+200);
@@ -1202,11 +1211,12 @@ if (pool2 && pool2->IsReady())
   {//start mixing only when pool->IsReady
 if(tracksMCtruth && tracksMCtruth->GetEntriesFast()>0)
   {//proceed only when no. of trigger particles >0 in current event
+    Float_t nmix=(Float_t)pool2->GetCurrentNEvents();  
 for (Int_t jMix=0; jMix<pool2->GetCurrentNEvents(); jMix++) 
   { //pool event loop start
  TObjArray* bgTracks6 = pool2->GetEvent(jMix);
   if(!bgTracks6) continue;
-  Fillcorrelation(tracksMCtruth,bgTracks6,cent_v0_truth,zVtxmc,bSign,fPtOrderMCTruth,kFALSE,kTRUE,"trigIDassoIDMCTRUTH");//mixcase=kTRUE for mixing case
+  Fillcorrelation(tracksMCtruth,bgTracks6,cent_v0_truth,zVtxmc,nmix,bSign,fPtOrderMCTruth,kFALSE,kTRUE,"trigIDassoIDMCTRUTH");//mixcase=kTRUE for mixing case
   
    }// pool event loop ends mixing case
  }//if(trackstrig && trackstrig->GetEntriesFast()>0) condition ends mixing case
@@ -1318,7 +1328,7 @@ isduplicate2=kTRUE;
  //NOTE:: this will be used for fillinfg THnSparse of efficiency & also to get the the track by track eff. factor on the fly(only in case of pp)
 
  //Clone & Reduce track list(TObjArray) for unidentified particles
-if(track->Pt()>=fminPtAsso || track->Pt()<=fmaxPtTrig)//to reduce memory consumption in pool
+if((track->Pt()>=fminPtAsso && track->Pt()<=fmaxPtAsso) || (track->Pt()>=fminPtTrig && track->Pt()<=fmaxPtTrig))//to reduce memory consumption in pool
   {
  if (fapplyTrigefficiency || fapplyAssoefficiency)//get the trackingefficiency x contamination factor for unidentified particles
    effmatrix=GetTrackbyTrackeffvalue(track,cent_v0,zvtx,particletypeMC);
@@ -1416,7 +1426,7 @@ if(TMath::Abs(pdgCode)==321 ||  TMath::Abs(pdgCode)==2212)   fTHnrecomatchedallP
   if(particletypeMC==SpProton && TMath::Abs(pdgCode)==2212) fTHnrecomatchedallPid[2]->Fill(allrecomatchedpid);//for protons
    }
 
-if(track->Pt()>=fminPtAsso || track->Pt()<=fmaxPtTrig)//to reduce memory consumption in pool
+if((track->Pt()>=fminPtAsso && track->Pt()<=fmaxPtAsso) || (track->Pt()>=fminPtTrig && track->Pt()<=fmaxPtTrig))//to reduce memory consumption in pool
   {
 if (fapplyTrigefficiency || fapplyAssoefficiency)
     effmatrix=GetTrackbyTrackeffvalue(track,cent_v0,zvtx,particletypeMC);//get the tracking eff x TOF matching eff x PID eff x contamination factor for identified particles 
@@ -1446,14 +1456,14 @@ if(trackscount>0.0)
  //same event delte-eta, delta-phi plot
 if(tracksUNID && tracksUNID->GetEntriesFast()>0)//hadron triggered correlation
   {//same event calculation starts
-    if(ffilltrigassoUNID) Fillcorrelation(tracksUNID,0,cent_v0,zvtx,bSign,kTRUE,kTRUE,kFALSE,"trigassoUNID");//mixcase=kFALSE (hadron-hadron correlation)
-    if(tracksID && tracksID->GetEntriesFast()>0 && ffilltrigUNIDassoID)  Fillcorrelation(tracksUNID,tracksID,cent_v0,zvtx,bSign,kFALSE,kTRUE,kFALSE,"trigUNIDassoID");//mixcase=kFALSE (hadron-ID correlation)
+    if(ffilltrigassoUNID) Fillcorrelation(tracksUNID,0,cent_v0,zvtx,weghtval,bSign,kTRUE,kTRUE,kFALSE,"trigassoUNID");//mixcase=kFALSE (hadron-hadron correlation)
+    if(tracksID && tracksID->GetEntriesFast()>0 && ffilltrigUNIDassoID)  Fillcorrelation(tracksUNID,tracksID,cent_v0,zvtx,weghtval,bSign,kFALSE,kTRUE,kFALSE,"trigUNIDassoID");//mixcase=kFALSE (hadron-ID correlation)
   }
 
 if(tracksID && tracksID->GetEntriesFast()>0)//ID triggered correlation
   {//same event calculation starts
-    if(tracksUNID && tracksUNID->GetEntriesFast()>0 && ffilltrigIDassoUNID)  Fillcorrelation(tracksID,tracksUNID,cent_v0,zvtx,bSign,kFALSE,kTRUE,kFALSE,"trigIDassoUNID");//mixcase=kFALSE (ID-hadron correlation)
-    if(ffilltrigIDassoID)   Fillcorrelation(tracksID,0,cent_v0,zvtx,bSign,kFALSE,kTRUE,kFALSE,"trigIDassoID");//mixcase=kFALSE (ID-ID correlation)
+    if(tracksUNID && tracksUNID->GetEntriesFast()>0 && ffilltrigIDassoUNID)  Fillcorrelation(tracksID,tracksUNID,cent_v0,zvtx,weghtval,bSign,kFALSE,kTRUE,kFALSE,"trigIDassoUNID");//mixcase=kFALSE (ID-hadron correlation)
+    if(ffilltrigIDassoID)   Fillcorrelation(tracksID,0,cent_v0,zvtx,weghtval,bSign,kFALSE,kTRUE,kFALSE,"trigIDassoID");//mixcase=kFALSE (ID-ID correlation)
   }
 
 //still in  main event loop
@@ -1462,14 +1472,15 @@ if(tracksID && tracksID->GetEntriesFast()>0)//ID triggered correlation
 AliEventPool* pool = fPoolMgr->GetEventPool(cent_v0, zvtx);//In the pool there is tracksUNID(i.e associateds are unidentified)
 if (pool && pool->IsReady())
   {//start mixing only when pool->IsReady
+    Float_t nmix1=(Float_t)pool->GetCurrentNEvents();  
  for (Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) 
   { //pool event loop start
  TObjArray* bgTracks = pool->GetEvent(jMix);
   if(!bgTracks) continue;
   if(ffilltrigassoUNID && tracksUNID && tracksUNID->GetEntriesFast()>0)//*******************************hadron trggered mixing
-  Fillcorrelation(tracksUNID,bgTracks,cent_v0,zvtx,bSign,kTRUE,kTRUE,kTRUE,"trigassoUNID");//mixcase=kTRUE
+    Fillcorrelation(tracksUNID,bgTracks,cent_v0,zvtx,nmix1,bSign,kTRUE,kTRUE,kTRUE,"trigassoUNID");//mixcase=kTRUE
  if(ffilltrigIDassoUNID && tracksID && tracksID->GetEntriesFast()>0)//***********************************ID trggered mixing
-  Fillcorrelation(tracksID,bgTracks,cent_v0,zvtx,bSign,kFALSE,kTRUE,kTRUE,"trigIDassoUNID");//mixcase=kTRUE 
+   Fillcorrelation(tracksID,bgTracks,cent_v0,zvtx,nmix1,bSign,kFALSE,kTRUE,kTRUE,"trigIDassoUNID");//mixcase=kTRUE 
    }// pool event loop ends mixing case
 
 } //if pool->IsReady() condition ends mixing case
@@ -1483,14 +1494,15 @@ if(pool)
 AliEventPool* pool1 = fPoolMgr->GetEventPool(cent_v0, zvtx+100);//In the pool1 there is tracksID(i.e associateds are identified)
 if (pool1 && pool1->IsReady())
   {//start mixing only when pool->IsReady
+  Float_t nmix2=(Float_t)pool1->GetCurrentNEvents();  
 for (Int_t jMix=0; jMix<pool1->GetCurrentNEvents(); jMix++) 
   { //pool event loop start
  TObjArray* bgTracks2 = pool1->GetEvent(jMix);
   if(!bgTracks2) continue;
 if(ffilltrigUNIDassoID && tracksUNID && tracksUNID->GetEntriesFast()>0)
-  Fillcorrelation(tracksUNID,bgTracks2,cent_v0,zvtx,bSign,kFALSE,kTRUE,kTRUE,"trigUNIDassoID");//mixcase=kTRUE  
+  Fillcorrelation(tracksUNID,bgTracks2,cent_v0,zvtx,nmix2,bSign,kFALSE,kTRUE,kTRUE,"trigUNIDassoID");//mixcase=kTRUE  
 if(ffilltrigIDassoID && tracksID && tracksID->GetEntriesFast()>0)
-  Fillcorrelation(tracksID,bgTracks2,cent_v0,zvtx,bSign,kFALSE,kTRUE,kTRUE,"trigIDassoID");//mixcase=kTRUE
+  Fillcorrelation(tracksID,bgTracks2,cent_v0,zvtx,nmix2,bSign,kFALSE,kTRUE,kTRUE,"trigIDassoID");//mixcase=kTRUE
 
    }// pool event loop ends mixing case
 } //if pool1->IsReady() condition ends mixing case
@@ -1561,7 +1573,7 @@ void AliTwoParticlePIDCorr::doAODevent()
  if (!fPID) return;//this should be available with each event even if we don't do PID selection
   
   //vertex selection(is it fine for PP?)
-  if ( fSampleType=="pPb"){
+ if ( fVertextype==1){//for pPb basically if(!fAnalysisUtils->IsVertexSelected2013pA(aod)) return; 
   trkVtx = aod->GetPrimaryVertex();
   if (!trkVtx || trkVtx->GetNContributors()<=0) return;
   TString vtxTtl = trkVtx->GetTitle();
@@ -1576,7 +1588,7 @@ void AliTwoParticlePIDCorr::doAODevent()
   if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) return;
    if (TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return;
   }
-  else if(fSampleType=="PbPb" || fSampleType=="pp") {//for pp and pb-pb case
+  else if(fVertextype==2) {//for pp and pb-pb case , taken from Jan's code
 	Int_t nVertex = aod->GetNumberOfVertices();
   	if( nVertex > 0 ) { 
      trkVtx = aod->GetPrimaryVertex();
@@ -1661,7 +1673,7 @@ if(fSampleType=="pPb" || fSampleType=="PbPb") if (cent_v0 < 0)  return;//for pp 
 
 
  //to reduce memory consumption in pool
-  if(track->Pt()>=fminPtAsso || track->Pt()<=fmaxPtTrig) 
+  if((track->Pt()>=fminPtAsso && track->Pt()<=fmaxPtAsso) || (track->Pt()>=fminPtTrig && track->Pt()<=fmaxPtTrig)) 
   {
  //Clone & Reduce track list(TObjArray) for unidentified particles
  if (fapplyTrigefficiency || fapplyAssoefficiency)//get the trackingefficiency x contamination factor for unidentified particles
@@ -1723,7 +1735,7 @@ if (particletype==SpProton)
   }
     }
  
-if(track->Pt()>=fminPtAsso || track->Pt()<=fmaxPtTrig) 
+ if((track->Pt()>=fminPtAsso && track->Pt()<=fmaxPtAsso) || (track->Pt()>=fminPtTrig && track->Pt()<=fmaxPtTrig)) 
   {
 if (fapplyTrigefficiency || fapplyAssoefficiency)
   effmatrix=GetTrackbyTrackeffvalue(track,cent_v0,zvtx,particletype);//get the tracking eff x TOF matching eff x PID eff x contamination factor for identified particles; Bool_t mesoneffrequired=kFALSE
@@ -1738,6 +1750,9 @@ if(trackscount<1.0){
   if(tracksID) delete tracksID;
   return;
  }
+
+ Float_t weightval=1.0;
+
 
 // cout<<fminPtAsso<<"***"<<fmaxPtAsso<<"*********************"<<fminPtTrig<<"***"<<fmaxPtTrig<<"*****************"<<kTrackVariablesPair<<endl;
 if(fSampleType=="pp")  cent_v0=trackscount;//multiplicity
@@ -1754,14 +1769,14 @@ if(fSampleType=="pPb" || fSampleType=="PbPb") fCentralityCorrelation->Fill(cent_
 
 if(tracksUNID && tracksUNID->GetEntriesFast()>0)//hadron triggered correlation
   {//same event calculation starts
-    if(ffilltrigassoUNID) Fillcorrelation(tracksUNID,0,cent_v0,zvtx,bSign,kTRUE,kTRUE,kFALSE,"trigassoUNID");//mixcase=kFALSE (hadron-hadron correlation)
-    if(tracksID && tracksID->GetEntriesFast()>0 && ffilltrigUNIDassoID)  Fillcorrelation(tracksUNID,tracksID,cent_v0,zvtx,bSign,kFALSE,kTRUE,kFALSE,"trigUNIDassoID");//mixcase=kFALSE (hadron-ID correlation)
+    if(ffilltrigassoUNID) Fillcorrelation(tracksUNID,0,cent_v0,zvtx,weightval,bSign,kTRUE,kTRUE,kFALSE,"trigassoUNID");//mixcase=kFALSE (hadron-hadron correlation)
+    if(tracksID && tracksID->GetEntriesFast()>0 && ffilltrigUNIDassoID)  Fillcorrelation(tracksUNID,tracksID,cent_v0,zvtx,weightval,bSign,kFALSE,kTRUE,kFALSE,"trigUNIDassoID");//mixcase=kFALSE (hadron-ID correlation)
   }
 
 if(tracksID && tracksID->GetEntriesFast()>0)//ID triggered correlation
   {//same event calculation starts
-    if(tracksUNID && tracksUNID->GetEntriesFast()>0 && ffilltrigIDassoUNID)  Fillcorrelation(tracksID,tracksUNID,cent_v0,zvtx,bSign,kFALSE,kTRUE,kFALSE,"trigIDassoUNID");//mixcase=kFALSE (ID-hadron correlation)
-    if(ffilltrigIDassoID)   Fillcorrelation(tracksID,0,cent_v0,zvtx,bSign,kFALSE,kTRUE,kFALSE,"trigIDassoID");//mixcase=kFALSE (ID-ID correlation)
+    if(tracksUNID && tracksUNID->GetEntriesFast()>0 && ffilltrigIDassoUNID)  Fillcorrelation(tracksID,tracksUNID,cent_v0,zvtx,weightval,bSign,kFALSE,kTRUE,kFALSE,"trigIDassoUNID");//mixcase=kFALSE (ID-hadron correlation)
+    if(ffilltrigIDassoID)   Fillcorrelation(tracksID,0,cent_v0,zvtx,weightval,bSign,kFALSE,kTRUE,kFALSE,"trigIDassoID");//mixcase=kFALSE (ID-ID correlation)
   }
 
 //still in  main event loop
@@ -1772,14 +1787,15 @@ if(tracksID && tracksID->GetEntriesFast()>0)//ID triggered correlation
 AliEventPool* pool = fPoolMgr->GetEventPool(cent_v0, zvtx);//In the pool there is tracksUNID(i.e associateds are unidentified)
 if (pool && pool->IsReady())
   {//start mixing only when pool->IsReady
+  Float_t nmix1=(Float_t)pool->GetCurrentNEvents();  
  for (Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) 
   { //pool event loop start
  TObjArray* bgTracks = pool->GetEvent(jMix);
   if(!bgTracks) continue;
   if(ffilltrigassoUNID && tracksUNID && tracksUNID->GetEntriesFast()>0)//*******************************hadron trggered mixing
-  Fillcorrelation(tracksUNID,bgTracks,cent_v0,zvtx,bSign,kTRUE,kTRUE,kTRUE,"trigassoUNID");//mixcase=kTRUE
+    Fillcorrelation(tracksUNID,bgTracks,cent_v0,zvtx,nmix1,bSign,kTRUE,kTRUE,kTRUE,"trigassoUNID");//mixcase=kTRUE
  if(ffilltrigIDassoUNID && tracksID && tracksID->GetEntriesFast()>0)//***********************************ID trggered mixing
-  Fillcorrelation(tracksID,bgTracks,cent_v0,zvtx,bSign,kFALSE,kTRUE,kTRUE,"trigIDassoUNID");//mixcase=kTRUE 
+   Fillcorrelation(tracksID,bgTracks,cent_v0,zvtx,nmix1,bSign,kFALSE,kTRUE,kTRUE,"trigIDassoUNID");//mixcase=kTRUE 
    }// pool event loop ends mixing case
 
 } //if pool->IsReady() condition ends mixing case
@@ -1794,14 +1810,15 @@ if(pool)
 AliEventPool* pool1 = fPoolMgr->GetEventPool(cent_v0, zvtx+100);//In the pool1 there is tracksID(i.e associateds are identified)
 if (pool1 && pool1->IsReady())
   {//start mixing only when pool->IsReady
+  Float_t nmix2=(Float_t)pool1->GetCurrentNEvents();  
 for (Int_t jMix=0; jMix<pool1->GetCurrentNEvents(); jMix++) 
   { //pool event loop start
  TObjArray* bgTracks2 = pool1->GetEvent(jMix);
   if(!bgTracks2) continue;
 if(ffilltrigUNIDassoID && tracksUNID && tracksUNID->GetEntriesFast()>0)
-  Fillcorrelation(tracksUNID,bgTracks2,cent_v0,zvtx,bSign,kFALSE,kTRUE,kTRUE,"trigUNIDassoID");//mixcase=kTRUE  
+  Fillcorrelation(tracksUNID,bgTracks2,cent_v0,zvtx,nmix2,bSign,kFALSE,kTRUE,kTRUE,"trigUNIDassoID");//mixcase=kTRUE  
 if(ffilltrigIDassoID && tracksID && tracksID->GetEntriesFast()>0)
-  Fillcorrelation(tracksID,bgTracks2,cent_v0,zvtx,bSign,kFALSE,kTRUE,kTRUE,"trigIDassoID");//mixcase=kTRUE
+  Fillcorrelation(tracksID,bgTracks2,cent_v0,zvtx,nmix2,bSign,kFALSE,kTRUE,kTRUE,"trigIDassoID");//mixcase=kTRUE
 
    }// pool event loop ends mixing case
 } //if pool1->IsReady() condition ends mixing case
@@ -1846,7 +1863,7 @@ TObjArray* AliTwoParticlePIDCorr::CloneAndReduceTrackList(TObjArray* tracks)
 }
 
 //--------------------------------------------------------------------------------
-void AliTwoParticlePIDCorr::Fillcorrelation(TObjArray *trackstrig,TObjArray *tracksasso,Double_t cent,Float_t vtx,Float_t bSign,Bool_t fPtOrder,Bool_t twoTrackEfficiencyCut,Bool_t mixcase,TString fillup)
+void AliTwoParticlePIDCorr::Fillcorrelation(TObjArray *trackstrig,TObjArray *tracksasso,Double_t cent,Float_t vtx,Float_t weight,Float_t bSign,Bool_t fPtOrder,Bool_t twoTrackEfficiencyCut,Bool_t mixcase,TString fillup)
 {
 
   //before calling this function check that either trackstrig & tracksasso are available 
@@ -1914,8 +1931,56 @@ if (TMath::Abs(mass - resonanceMass*resonanceMass) < interval*5)
       }
     }
 
-    //two particle correlation filling
+      //Select the highest Pt trigger particle in an event (within a given Pt trigger range)
 
+    Float_t TriggerPtMin=fminPtTrig;
+    Float_t TriggerPtMax=fmaxPtTrig;
+    Int_t HighestPtTriggerIndx=-99999;
+
+    if(fSelectHighestPtTrig)//**************add this data member to the constructor
+      {
+for(Int_t i=0;i<trackstrig->GetEntriesFast();i++)
+    {  //trigger loop starts(highest Pt trigger selection)
+      LRCParticlePID *trig=(LRCParticlePID*)(trackstrig->UncheckedAt(i));
+      if(!trig) continue;
+      Float_t trigpt=trig->Pt();
+    //to avoid overflow qnd underflow
+      if(trigpt<fminPtTrig || trigpt>fmaxPtTrig) continue;
+      Int_t particlepidtrig=trig->getparticle();
+      if(fTriggerSpeciesSelection){ if (particlepidtrig!=fTriggerSpecies) continue;}
+
+      Float_t trigeta=trig->Eta();
+
+      // some optimization
+ if (fTriggerRestrictEta > 0 && TMath::Abs(trigeta) > fTriggerRestrictEta)
+	continue;
+
+if (fOnlyOneEtaSide != 0)
+      {
+	if (fOnlyOneEtaSide * trigeta < 0)
+	  continue;
+      }
+  if (fTriggerSelectCharge != 0)
+	if (trig->Charge() * fTriggerSelectCharge < 0)
+	  continue;
+	
+      if (fRejectResonanceDaughters > 0)
+	if (trig->TestBit(kResonanceDaughterFlag)) continue;
+
+ if(trigpt>TriggerPtMin && trigpt<=TriggerPtMax)
+          {
+	    //TriggerPt=trigpt;//*********think about it
+         
+	    HighestPtTriggerIndx=(Int_t)trig->GetUniqueID();
+          TriggerPtMin=trigpt;
+          }
+
+    }//trigger loop ends(highest Pt trigger selection)
+
+      }//******************SelectHighestPtTrig condition ends
+
+
+ //two particle correlation filling
 for(Int_t i=0;i<trackstrig->GetEntriesFast();i++)
     {  //trigger loop starts
       LRCParticlePID *trig=(LRCParticlePID*)(trackstrig->UncheckedAt(i));
@@ -1943,6 +2008,10 @@ if (fOnlyOneEtaSide != 0)
 	
       if (fRejectResonanceDaughters > 0)
 	if (trig->TestBit(kResonanceDaughterFlag)) continue;
+
+      if(fSelectHighestPtTrig && HighestPtTriggerIndx!=-99999) {
+	if(trig->GetUniqueID()!=(UInt_t)HighestPtTriggerIndx) continue;
+      }
 
       Float_t trigphi=trig->Phi();
       Float_t trackefftrig=1.0;
@@ -2158,6 +2227,7 @@ if (dphistarminabs < twoTrackEfficiencyCutValue && TMath::Abs(deta) < twoTrackEf
 	  }
 	}
 
+	Float_t weightperevent=weight;
         Float_t trackeffasso=1.0;
         if(fapplyAssoefficiency) trackeffasso=asso->geteffcorrectionval();
 	//cout<<"*******************trackeffasso="<<trackeffasso<<endl;
@@ -2165,8 +2235,8 @@ if (dphistarminabs < twoTrackEfficiencyCutValue && TMath::Abs(deta) < twoTrackEf
 	Float_t delphi=PhiRange(trigphi-asso->Phi()); 
 
  //here get the two particle efficiency correction factor
-	Float_t effweight=trackefftrig*trackeffasso;
-	//cout<<"*******************effweight="<<effweight<<endl;
+	Float_t effweight=trackefftrig*trackeffasso*weightperevent;
+	// if(mixcase==kFALSE)	cout<<"*******************effweight="<<effweight<<endl;
 	Double_t* vars;
         vars= new Double_t[kTrackVariablesPair];
 	vars[0]=cent;
@@ -2335,6 +2405,12 @@ Int_t AliTwoParticlePIDCorr::ClassifyTrack(AliAODTrack* track,AliAODVertex* vert
 	    return 0;
 	}
 
+	if (fSharedClusterCut >= 0)
+	{
+	  Double_t frac = Double_t(((AliAODTrack*)track)->GetTPCnclsS()) / Double_t(((AliAODTrack*)track)->GetTPCncls());
+	  if (frac > fSharedClusterCut)
+	    return 0;
+	}
      fHistQA[8]->Fill(pt);
      fHistQA[9]->Fill(track->Eta());
      fHistQA[10]->Fill(track->Phi());
@@ -2649,25 +2725,24 @@ Float_t  AliTwoParticlePIDCorr::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t c
 //_________________________________________________________________________
 void AliTwoParticlePIDCorr ::DefineEventPool()
 {
-const Int_t MaxNofEvents=1000;
-const Int_t MaxNofTracks=50000;
+Int_t MaxNofEvents=1000;
 const Int_t NofVrtxBins=10+(1+10)*2;
 Double_t ZvrtxBins[NofVrtxBins+1]={ -10,   -8,  -6,  -4,  -2,   0,   2,   4,   6,   8,  10, 
 				       90,  92,  94,  96,  98, 100, 102, 104, 106, 108, 110, 
 				      190, 192, 194, 196, 198, 200, 202, 204, 206, 208, 210 
 				      };
  if (fSampleType=="pp"){
-const Int_t  NofCentBins=5;
-Double_t CentralityBins[NofCentBins+1]={0.,10., 20., 40.,80.,200.1};
-fPoolMgr = new AliEventPoolManager(MaxNofEvents,MaxNofTracks,NofCentBins,CentralityBins,NofVrtxBins,ZvrtxBins);
+const Int_t  NofCentBins=4;
+ Double_t CentralityBins[NofCentBins+1]={0.,20., 40.,60.,200.1};//Is This binning is fine for pp, or we don't require them....
+fPoolMgr = new AliEventPoolManager(MaxNofEvents,fMaxNofMixingTracks,NofCentBins,CentralityBins,NofVrtxBins,ZvrtxBins);
  }
 if (fSampleType=="pPb" || fSampleType=="PbPb")
   {
 const Int_t  NofCentBins=15;
 Double_t CentralityBins[NofCentBins+1]={0., 1., 2., 3., 4., 5., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.1 };
-fPoolMgr = new AliEventPoolManager(MaxNofEvents,MaxNofTracks,NofCentBins,CentralityBins,NofVrtxBins,ZvrtxBins);
+fPoolMgr = new AliEventPoolManager(MaxNofEvents,fMaxNofMixingTracks,NofCentBins,CentralityBins,NofVrtxBins,ZvrtxBins);
   }
-fPoolMgr->SetTargetValues(MaxNofTracks, 0.1, 5);
+fPoolMgr->SetTargetValues(fMaxNofMixingTracks, 0.1, 5);
 
 //if(!fPoolMgr) return kFALSE;
 //return kTRUE;

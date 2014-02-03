@@ -77,6 +77,7 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA() : AliAnalysisTaskSE()
    hElectronITSdEdxP(NULL),
    hElectronTOFP(NULL),
    hElectronNSigmadEdxP(NULL),
+   hElectronNSigmadEdxEta(NULL),
    hElectronNSigmaPiondEdxP(NULL),
    hElectronNSigmaITSP(NULL),
    hElectronNSigmaTOFP(NULL),
@@ -84,6 +85,7 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA() : AliAnalysisTaskSE()
    hPositronITSdEdxP(NULL),
    hPositronTOFP(NULL),
    hPositronNSigmadEdxP(NULL),
+   hPositronNSigmadEdxEta(NULL),
    hPositronNSigmaPiondEdxP(NULL),
    hPositronNSigmaITSP(NULL),
    hPositronNSigmaTOFP(NULL),
@@ -162,6 +164,7 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA(const char *name) : Ali
    hElectronITSdEdxP(NULL),
    hElectronTOFP(NULL),
    hElectronNSigmadEdxP(NULL),
+   hElectronNSigmadEdxEta(NULL),
    hElectronNSigmaPiondEdxP(NULL),
    hElectronNSigmaITSP(NULL),
    hElectronNSigmaTOFP(NULL),
@@ -169,6 +172,7 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA(const char *name) : Ali
    hPositronITSdEdxP(NULL),
    hPositronTOFP(NULL),
    hPositronNSigmadEdxP(NULL),
+   hPositronNSigmadEdxEta(NULL),
    hPositronNSigmaPiondEdxP(NULL),
    hPositronNSigmaITSP(NULL),
    hPositronNSigmaTOFP(NULL),
@@ -294,9 +298,13 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
       hElectronNSigmadEdxP =  new TH2F("Electron_NSigmadEdx_P","Electron_NSigmadEdx_P",100, 0.05, 20, 200, -10, 10);  
       SetLogBinningXTH2(hElectronNSigmadEdxP);
       fESDList->Add(hElectronNSigmadEdxP);
+	  hElectronNSigmadEdxEta =  new TH2F("Electron_NSigmadEdx_Eta","Electron_NSigmadEdx_Eta",140, -1.4, 1.4, 200, -10, 10);  
+	  fESDList->Add(hElectronNSigmadEdxEta);
       hPositronNSigmadEdxP =  new TH2F("Positron_NSigmadEdx_P","Positron_NSigmadEdx_P",100, 0.05, 20, 200, -10, 10);
       SetLogBinningXTH2(hPositronNSigmadEdxP);
       fESDList->Add(hPositronNSigmadEdxP);
+	  hPositronNSigmadEdxEta =  new TH2F("Positron_NSigmadEdx_Eta","Positron_NSigmadEdx_Eta",140, -1.4, 1.4, 200, -10, 10);  
+	  fESDList->Add(hPositronNSigmadEdxEta);
       hElectronNSigmaPiondEdxP =  new TH2F("Electron_NSigmaPiondEdx_P","Electron_NSigmaPiondEdx_P",100, 0.05, 20, 200, -10, 10);  
       SetLogBinningXTH2(hElectronNSigmaPiondEdxP);
       fESDList->Add(hElectronNSigmaPiondEdxP);
@@ -613,7 +621,7 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
    // TOF 
    if((posTrack->GetStatus() & AliESDtrack::kTOFpid) && !(posTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
       Double_t t0pos = pidResonse->GetTOFResponse().GetStartTime(posTrack->P());
-      Double_t timesPos[5];
+      Double_t timesPos[9];
       posTrack->GetIntegratedTimes(timesPos);
       Double_t TOFsignalPos =	posTrack->GetTOFsignal();
       Double_t dTpos = TOFsignalPos - t0pos - timesPos[0];
@@ -625,7 +633,7 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
    }
    if((negTrack->GetStatus() & AliESDtrack::kTOFpid) && !(negTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
       Double_t t0neg = pidResonse->GetTOFResponse().GetStartTime(negTrack->P());
-      Double_t timesNeg[5];
+      Double_t timesNeg[9];
       negTrack->GetIntegratedTimes(timesNeg);
       Double_t TOFsignalNeg =	negTrack->GetTOFsignal();
       Double_t dTneg = TOFsignalNeg - t0neg - timesNeg[0];
@@ -680,15 +688,17 @@ void AliAnalysisTaskConversionQA::ProcessQA(AliAODConversionPhoton *gamma){
    //TPC dEdx
    hElectrondEdxP->Fill(negTrack->P() ,negTrack->GetTPCsignal());
    hElectronNSigmadEdxP->Fill(negTrack->P() ,pidResonse->NumberOfSigmasTPC(negTrack, AliPID::kElectron));
+   hElectronNSigmadEdxEta->Fill(negTrack->Eta() ,pidResonse->NumberOfSigmasTPC(negTrack, AliPID::kElectron));
    hElectronNSigmaPiondEdxP->Fill(negTrack->P() ,pidResonse->NumberOfSigmasTPC(negTrack, AliPID::kPion));
    hPositrondEdxP->Fill(posTrack->P() ,posTrack->GetTPCsignal());
    hPositronNSigmadEdxP->Fill(posTrack->P() ,pidResonse->NumberOfSigmasTPC(posTrack, AliPID::kElectron));
+   hPositronNSigmadEdxEta->Fill(posTrack->Eta() ,pidResonse->NumberOfSigmasTPC(posTrack, AliPID::kElectron));
    hPositronNSigmaPiondEdxP->Fill(posTrack->P() ,pidResonse->NumberOfSigmasTPC(posTrack, AliPID::kPion));
    
    //TOF signal
    if((negTrack->GetStatus() & AliESDtrack::kTOFpid) && !(negTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
       Double_t t0neg = pidResonse->GetTOFResponse().GetStartTime(negTrack->P());
-      Double_t timesNeg[5];
+      Double_t timesNeg[9];
       negTrack->GetIntegratedTimes(timesNeg);
       Double_t TOFsignalNeg = negTrack->GetTOFsignal();
       Double_t dTneg = TOFsignalNeg - t0neg - timesNeg[0];
@@ -697,7 +707,7 @@ void AliAnalysisTaskConversionQA::ProcessQA(AliAODConversionPhoton *gamma){
    }
    if((posTrack->GetStatus() & AliESDtrack::kTOFpid) && !(posTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
       Double_t t0pos = pidResonse->GetTOFResponse().GetStartTime(posTrack->P());
-      Double_t timesPos[5];
+      Double_t timesPos[9];
       posTrack->GetIntegratedTimes(timesPos);
       Double_t TOFsignalPos = posTrack->GetTOFsignal();
       Double_t dTpos = TOFsignalPos - t0pos - timesPos[0];
