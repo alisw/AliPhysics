@@ -87,7 +87,8 @@ void AliJetEmbeddingFromGenTask::Run()
 {
   // Embed particles.
 
-  fOutTracks->Delete();
+  if(fOutTracks)
+   fOutTracks->Delete();
 
   if (fCopyArray) 
     CopyTracks();
