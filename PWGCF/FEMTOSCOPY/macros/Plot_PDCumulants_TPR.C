@@ -31,8 +31,8 @@
 #define FmToGeV 0.19733 // conversion to fm
 #define PI 3.1415926
 #define masspiC 0.1395702 // pi+ mass (GeV/c^2)
-#define kappa3 0.16
-#define kappa4 0.40
+#define kappa3 0.16 // 0.16 (default), 0.05 or 0.3 as variations
+#define kappa4 0.4 // 0.4 (default), 
 
 using namespace std;
 
@@ -42,12 +42,14 @@ int CHARGE_def=-1;// -1 or +1: + or - pions for same-charge case, --+ or ++- for
 bool SameCharge_def=kTRUE;// 3-pion same-charge?
 bool AddCC=kTRUE;
 //
+bool MuonCorrection=1;// apply Muon correction?
 bool IncludeEW=kTRUE;// Include EdgeWorth coefficients?
 bool FixEWavg=kTRUE;
-int Mbin_def=2;// 0-19 (0=1050-2000 pions, 19=0-5 pions)
+int Mbin_def=12;// 0-19 (0=1050-2000 pions, 19=0-5 pions)
 int EDbin_def=0;// 0-2: Kt3 bin
-int Ktbin_def=2;// 1-6, 10=full range
+int Ktbin_def=10;// 1-6, 10=full range
 double MRCShift=1.0;// 1.0=full Momentum Resolution Correction. 1.1 for 10% systematic increase
+bool FitRangeShift=kFALSE;// 30% reduction in Fit Range
 //
 //
 bool SaveToFile_def=kFALSE;// Save outputs to file?
@@ -90,6 +92,7 @@ TH1D *CoulCorr2OS_2;// for interpolation in transition from Therminator to Gauss
 
 void ReadCoulCorrections(int);
 void ReadMomResFile(int);
+void ReadMuonCorrections(int,int);
 double CoulCorr2(int, double);
 double CoulCorrGRS(bool, double, double, double);
 double Dfitfunction_c3(Double_t *x, Double_t *par);
@@ -155,7 +158,9 @@ int MRC2index;// index for C2 MRC
 
 double AvgP[6][20];// kt bin, qinv bin
 
-
+TH1D *C2muonCorrection_SC;
+TH1D *C2muonCorrection_MC;
+TH1D *C3muonCorrection;
 
 TF1 *StrongSC;// same-charge pion strong FSI
 TF1 *MixedChargeSysFit;// mixed-charge 3-pion cumulant residue obtained from Plot_plotsTPR.C
@@ -174,7 +179,10 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
   SameCharge_def=SameCharge;// 3-pion same-charge
   Mbin_def=Mbin;
   //
- 
+
+  double MainFitParams[8]={0};
+  //
+  double RefMainFitParams[8]={8.82821,  8.53081,  0.372113,  0.712252,  10.3545,  10.4871,  0.693955,  1.62568};
 
   /*
   // Old way
@@ -222,7 +230,7 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
 
   Ktlowbin=(Ktbin)*2+3;// kt bins are 0.5 GeV/c wide (0-0.5, 0.5-1.0 ...)
   Kthighbin=(Ktbin)*2+4;
-  //if(Ktbin==2) {cout<<"Kthighbin incremented"<<endl; Kthighbin++;}// to make <KT3> comparible to <kT> 
+  if(Ktbin==2) {cout<<"Kthighbin increased"<<endl; Kthighbin = 20;}// to make <KT3> comparible to <kT> 
   
   // Pythia pol2 fits
   PythiaFit=new TF1("PythiaFit","pol1",0,1.4);
@@ -264,10 +272,9 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
     }
     BinWidthQ2 = 0.01;
   }
-  //Q3Limit = 0.2;
+  if(FitRangeShift) Q3Limit -= 0.3*Q3Limit;
   Q2Limit = Q3Limit/sqrt(2.);
-  //Q2Limit -= 0.02;// Systematic variations
-  //Q3Limit -= 0.2*Q3Limit;// Systematic variations
+  
 
   // extend BinCenters for high q
   for(int index=40; index<400; index++){
@@ -316,6 +323,7 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
       //_file0 = new TFile("Results/PDC_10h_noPID.root","READ");
       //_file0 = new TFile("Results/PDC_10h_1percentCentral.root","READ");
       _file0 = new TFile("Results/PDC_10h_11h_2Kt3bins.root","READ");// standard
+      //_file0 = new TFile("Results/PDC_10h_dEta0p025dPhi0p055.root","READ");
       //_file0 = new TFile("Results/PDC_11h_3Kt3bins_FB5and7overlap.root","READ");
       //_file0 = new TFile("Results/PDC_10h_11h_V0binning.root","READ");
     }
@@ -326,9 +334,17 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
       //_file0 = new TFile("Results/PDC_13bc_3Ktbins.root","READ");
       //_file0 = new TFile("Results/PDC_13bc_kAnyINT_kINT7.root","READ");
       //_file0 = new TFile("Results/PDC_13bc_2Kt3bins.root","READ");
-      _file0 = new TFile("Results/PDC_13bc_kINT7_kHighMult.root","READ");// standard
+      //_file0 = new TFile("Results/PDC_13bc_kINT7.root","READ");// paper v1
+      //_file0 = new TFile("Results/PDC_13c_posEta.root","READ");// eta sub-range
+      //_file0 = new TFile("Results/PDC_13c_negEta.root","READ");// eta sub-range
+      //_file0 = new TFile("Results/PDC_13c_0p4to0p8eta.root","READ");// eta sub-range
+      //_file0 = new TFile("Results/PDC_13c_neg0p4toneg0p8eta.root","READ");// eta sub-range
+      //_file0 = new TFile("Results/PDC_13bc_dEta0p025dPhi0p055_kINT7_kHighMult.root","READ");
       //_file0 = new TFile("Results/PDC_13bc_FB5and7overlap_V0binning.root","READ");
       //_file0 = new TFile("Results/PDC_13bc_kAnyINT_V0binning.root","READ");
+      //_file0 = new TFile("Results/PDC_13bcd_kHighMult.root","READ");
+      //_file0 = new TFile("Results/PDC_13bcd_kINT7.root","READ");
+      _file0 = new TFile("Results/PDC_13bcd_kINT7_plus_kHighMult.root","READ");// standard
     }else{
       _file0 = new TFile("Results/PDC_13b2_efix_p1234_R2_2Ktbins.root","READ");
     }
@@ -340,8 +356,9 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
       //_file0 = new TFile("Results/PDC_10e_kAnyINT.root","READ");
       //_file0 = new TFile("Results/PDC_10cde_kAnyINT.root","READ");
       //_file0 = new TFile("Results/PDC_10cde_kAnyINT_Plus_kHighMult.root","READ");
-      //_file0 = new TFile("Results/K0sRange_10cde.root","READ");
+      //_file0 = new TFile("Results/K0sRange_10cde.root","READ");// for K0s peak removal
       //_file0 = new TFile("Results/PDC_10cde_2Kt3bins.root","READ");
+      //_file0 = new TFile("Results/PDC_10e_kHighMult.root","READ");
       //_file0 = new TFile("Results/PDC_10cde_kMB.root","READ");
       _file0 = new TFile("Results/PDC_10cde_kMB_plus_kHighMult_2Kt3bins.root","READ");// standard
       //_file0 = new TFile("Results/PDC_10cde_FB5and7overlap.root","READ");
@@ -352,6 +369,7 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
   
   ReadCoulCorrections(FSIindex);
   ReadMomResFile(Mbin);
+  ReadMuonCorrections(CollisionType,Mbin);
   //
   /////////////////////////////////////////////////////////
 
@@ -385,8 +403,11 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
       MyList=(TList*)_file0->Get("MyList");
     }
   }else {
-    if(!MCcase) MyList=(TList*)tdir->Get("ThreePionRadiiOutput_1");
-    else MyList=(TList*)_file0->Get("MyList");
+    if(!MCcase) {
+      //MyList=(TList*)_file0->Get("MyList");
+      if(CollisionType==2 && Mbin<15) MyList=(TList*)tdir->Get("ThreePionRadiiOutput_2");
+      else MyList=(TList*)tdir->Get("ThreePionRadiiOutput_1");
+    }else MyList=(TList*)_file0->Get("MyList");
   }
   _file0->Close();
   
@@ -932,7 +953,8 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
 	fitC2ss_EW->SetParError(i,OutputPar_e[i]);
       }
     }
-
+    if(ft==0) {MainFitParams[0]=OutputPar[3]; MainFitParams[2]=OutputPar[1];}
+    else {MainFitParams[4]=OutputPar[3]; MainFitParams[6]=OutputPar[1];}
   }// ft
   
 
@@ -1041,8 +1063,6 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
     legend1->Draw("same");
   }
   
-  
-
   
  
   cout<<"============================================"<<endl;
@@ -1199,8 +1219,27 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
 	if(TERM1==0 && TERM2==0 && TERM3==0 && TERM4==0 && TERM5==0) continue;
 	if(TERM1==0 || TERM2==0 || TERM3==0 || TERM4==0 || TERM5==0) continue;
 	
+	double muonCorr_C3=1.0, muonCorr_C2_12=1.0, muonCorr_C2_13=1.0, muonCorr_C2_23=1.0;
+	if(MuonCorrection){
+	  if(SameCharge){
+	    muonCorr_C3 = C3muonCorrection->GetBinContent(C3muonCorrection->GetXaxis()->FindBin(Q3));
+	    muonCorr_C2_12 = C2muonCorrection_SC->GetBinContent(C2muonCorrection_SC->GetXaxis()->FindBin(Q12));
+	    muonCorr_C2_13 = C2muonCorrection_SC->GetBinContent(C2muonCorrection_SC->GetXaxis()->FindBin(Q13));
+	    muonCorr_C2_23 = C2muonCorrection_SC->GetBinContent(C2muonCorrection_SC->GetXaxis()->FindBin(Q23));
+	  }else{
+	    muonCorr_C3 = C3muonCorrection->GetBinContent(C3muonCorrection->GetXaxis()->FindBin(Q3));
+	    if(CHARGE==-1){// pi-pi-pi+
+	      muonCorr_C2_12 = C2muonCorrection_SC->GetBinContent(C2muonCorrection_SC->GetXaxis()->FindBin(Q12));
+	      muonCorr_C2_13 = C2muonCorrection_MC->GetBinContent(C2muonCorrection_MC->GetXaxis()->FindBin(Q13));
+	      muonCorr_C2_23 = C2muonCorrection_MC->GetBinContent(C2muonCorrection_MC->GetXaxis()->FindBin(Q23));
+	    }else{// pi-pi+pi+
+	      muonCorr_C2_12 = C2muonCorrection_MC->GetBinContent(C2muonCorrection_MC->GetXaxis()->FindBin(Q12));
+	      muonCorr_C2_13 = C2muonCorrection_MC->GetBinContent(C2muonCorrection_MC->GetXaxis()->FindBin(Q13));
+	      muonCorr_C2_23 = C2muonCorrection_SC->GetBinContent(C2muonCorrection_SC->GetXaxis()->FindBin(Q23));
+	    }
+	  }
+	}
 
-	
 	// apply momentum resolution correction
 	if(!MCcase && !GeneratedSignal){
 	  int MRC_Q3bin = int(Q3/0.01) + 1;
@@ -1234,14 +1273,15 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
 	N3_QS -= (1-OneFrac)*(TERM2 + TERM3 + TERM4 - 3*(1-TwoFrac)*TERM5);
 	N3_QS /= ThreeFrac;
 	N3_QS /= K3;
-	
+	N3_QS *=  muonCorr_C3;
+
 	num_QS->Fill(Q3, N3_QS);
 	
 	// Isolate 3-pion cumulant
 	value_num = N3_QS;
-	value_num -= (TERM2 - (1-TwoFrac)*TERM5)/K2_12/TwoFrac;
-	value_num -= (TERM3 - (1-TwoFrac)*TERM5)/K2_13/TwoFrac;
-	value_num -= (TERM4 - (1-TwoFrac)*TERM5)/K2_23/TwoFrac;
+	value_num -= (TERM2 - (1-TwoFrac)*TERM5)/K2_12/TwoFrac * muonCorr_C2_12;
+	value_num -= (TERM3 - (1-TwoFrac)*TERM5)/K2_13/TwoFrac * muonCorr_C2_13;
+	value_num -= (TERM4 - (1-TwoFrac)*TERM5)/K2_23/TwoFrac * muonCorr_C2_23;
 	value_num += 2*TERM5;
 	
 	
@@ -1446,8 +1486,8 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
   legend2->AddEntry(c3_hist,"#font[12]{#bf{c}}_{3} (cumulant correlation)","p");
   c3_hist->Draw();
   
-  //for(int i=1; i<=15; i++) cout<<c3_hist->GetBinContent(i)<<", ";
-  //cout<<endl;
+  for(int i=1; i<=15; i++) cout<<c3_hist->GetBinContent(i)<<", ";
+  cout<<endl;
   //for(int i=1; i<=15; i++) cout<<c3_hist->GetBinError(i)<<", ";
   //cout<<endl;
 
@@ -1466,8 +1506,8 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
   arglist_c3 = 5000;
   MyMinuit_c3.mnexcm("MIGRAD", &arglist_c3 ,1,ierflg_c3);
   
-  TF1 *c3Fit1D_Gauss=new TF1("c3Fit1D_Gauss","[0]*(1+[1]*exp(-pow([2]*x/0.19733,2)/2.))",0,1);;
-  TF1 *c3Fit1D_EW=new TF1("c3Fit1D_EW","[0]*(1+[1]*exp(-pow([2]*x/0.19733,2)/2.) * pow(1 + ([3]/(6.*pow(2,1.5))*(8.*pow([2]*x/sqrt(3.)/0.19733,3) - 12.*pow([2]*x/sqrt(3.)/0.19733,1))) + ([4]/(24.*pow(2,2))*(16.*pow([2]*x/sqrt(3.)/0.19733,4) -48.*pow([2]*x/sqrt(3.)/0.19733,2) + 12)),3))",0,1);;
+  TF1 *c3Fit1D_Gauss=new TF1("c3Fit1D_Gauss","[0]*(1+[1]*exp(-pow([2]*x/0.19733,2)/2.))",0,1);
+  TF1 *c3Fit1D_EW=new TF1("c3Fit1D_EW","[0]*(1+[1]*exp(-pow([2]*x/0.19733,2)/2.) * pow(1 + ([3]/(6.*pow(2,1.5))*(8.*pow([2]*x/sqrt(3.)/0.19733,3) - 12.*pow([2]*x/sqrt(3.)/0.19733,1))) + ([4]/(24.*pow(2,2))*(16.*pow([2]*x/sqrt(3.)/0.19733,4) -48.*pow([2]*x/sqrt(3.)/0.19733,2) + 12)),3))",0,1);
 
   double OutputPar_c3[npar_c3]={0};
   double OutputPar_c3_e[npar_c3]={0};
@@ -1485,7 +1525,7 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
       minVal_c3[0] = 0.95; minVal_c3[1] = 0.2; minVal_c3[2] = 0.5; minVal_c3[3] = -1; minVal_c3[4] = -1;
       maxVal_c3[0] = 1.1; maxVal_c3[1] = 2.5; maxVal_c3[2] = 15.; maxVal_c3[3] = +1; maxVal_c3[4] = +1;
       parName_c3[0] = "N"; parName_c3[1] = "#lambda_{3}"; parName_c3[2] = "R_{inv}"; parName_c3[3] = "#kappa_{3}"; parName_c3[4] = "#kappa_{4}";
-      
+      c3Fit1D_Gauss->SetParName(0,"N"); c3Fit1D_Gauss->SetParName(1,"#lambda_{3}"); c3Fit1D_Gauss->SetParName(2,"R_{inv}");
       
       for (int i=0; i<npar_c3; i++){
 	MyMinuit_c3.DefineParameter(i, parName_c3[i].c_str(), par_c3[i], stepSize_c3[i], minVal_c3[i], maxVal_c3[i]);
@@ -1526,21 +1566,35 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
 	c3Fit1D_Gauss->SetParameter(0,OutputPar_c3[0]); c3Fit1D_Gauss->SetParError(0,OutputPar_c3_e[0]);
 	c3Fit1D_Gauss->SetParameter(1,OutputPar_c3[1]); c3Fit1D_Gauss->SetParError(1,OutputPar_c3_e[1]);
 	c3Fit1D_Gauss->SetParameter(2,OutputPar_c3[2]); c3Fit1D_Gauss->SetParError(2,OutputPar_c3_e[2]);
-	c3Fit1D_Gauss->Draw("same");
+	c3Fit1D_Gauss->SetLineStyle(2);
+	//c3Fit1D_Gauss->Draw("same");
       }else{
 	c3Fit1D_EW->SetParameter(0,OutputPar_c3[0]); c3Fit1D_EW->SetParError(0,OutputPar_c3_e[0]);
 	c3Fit1D_EW->SetParameter(1,OutputPar_c3[1]); c3Fit1D_EW->SetParError(1,OutputPar_c3_e[1]);
 	c3Fit1D_EW->SetParameter(2,OutputPar_c3[2]); c3Fit1D_EW->SetParError(2,OutputPar_c3_e[2]);
 	c3Fit1D_EW->SetParameter(3,OutputPar_c3[3]); c3Fit1D_EW->SetParError(3,OutputPar_c3_e[3]);
 	c3Fit1D_EW->SetParameter(4,OutputPar_c3[4]); c3Fit1D_EW->SetParError(4,OutputPar_c3_e[4]);
-	c3Fit1D_EW->SetLineStyle(2);
+	c3Fit1D_EW->SetLineStyle(1);
 	c3Fit1D_EW->Draw("same");
       }
-      
+      if(ft==0) {MainFitParams[1]=OutputPar_c3[2]; MainFitParams[3]=OutputPar_c3[1];}
+      else {MainFitParams[5]=OutputPar_c3[2]; MainFitParams[7]=OutputPar_c3[1];}
     }// fit type
   }// SC and !MC
-
-    /*
+ 
+ 
+  // uncomment to display fit box
+  //c3_hist->GetListOfFunctions()->Add(c3Fit1D_Gauss);
+  
+  // Fit Range Systematics
+  //for(int i=0; i<8; i++){cout<<MainFitParams[i]<<",  ";}
+  //cout<<endl;
+  //for(int i=0; i<4; i++){cout<<int(100*(MainFitParams[i]-RefMainFitParams[i])/MainFitParams[i])<<"$\\%$ & ";}// Gaussian
+  //cout<<endl;
+  //for(int i=4; i<8; i++){cout<<int(100*(MainFitParams[i]-RefMainFitParams[i])/MainFitParams[i])<<"$\\%$ & ";}// Edgeworth
+  //cout<<endl;
+  
+  /*
     TF3 *fitcopy_c3 = new TF3("fitcopy_c3",Dfitfunction_c3, 0,0.4, 0,0.4, 0,0.4, npar_c3);
     for(int i=0; i<npar_c3; i++) {fitcopy_c3->FixParameter(i,OutputPar_c3[i]);}
     for(int i=0; i<BINLIMIT_3; i++){
@@ -1573,17 +1627,20 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
     dentimesFit_c3->SetLineWidth(2);
     //dentimesFit_c3->DrawCopy("C same");// for visualization of fit but with less well defined bin centers
     */
-
-  /*TLatex *fitBox1=new TLatex(0.5,0.7,"#lambda_{3}=0.92 #pm 0.07");
+  /*TString *lamName=new TString("#lambda_{3}=");
+  TString *RName=new TString("#R_{inv,3}=");
+  *lamName += int(100*c3Fit1D_Gauss->GetParameter(1))/100.; lamName->Append(" #pm "); *lamName += int(100*c3Fit1D_Gauss->GetParError(1))/100.;
+  *RName += round(100*c3Fit1D_Gauss->GetParameter(2))/100; RName->Append(" #pm "); *RName += int(100*c3Fit1D_Gauss->GetParError(2))/100.; RName->Append(" fm");
+  TLatex *fitBox1=new TLatex(0.5,0.9,lamName->Data());
   fitBox1->SetNDC(kTRUE);
   fitBox1->Draw();
-  TLatex *fitBox2=new TLatex(0.5,0.6,"R_{inv,3}=3.8 #pm 0.1 fm");
+  TLatex *fitBox2=new TLatex(0.5,0.8,RName->Data());
   fitBox2->SetNDC(kTRUE);
-  fitBox2->Draw();
-  TLatex *fitBox3=new TLatex(0.5,0.5,"<N_{rec,pions}>=103");
-  fitBox3->SetNDC(kTRUE);
-  fitBox3->Draw();
-  */
+  fitBox2->Draw();*/
+  //TLatex *fitBox3=new TLatex(0.5,0.5,"<N_{rec,pions}>=103");
+  //fitBox3->SetNDC(kTRUE);
+  //fitBox3->Draw();
+  
     //TPaveStats *c3Stats=(TPaveStats*)c3Fit1D_Gauss->FindObject("stats");
     //c3Stats->SetX1NDC(0.15);
     //c3Stats->SetX2NDC(0.52);
@@ -1592,7 +1649,7 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
     //c3Stats->Draw("same");
     
 
-    // The below fit has less well defined bin centers
+    // The below 1D fit method has less well defined bin centers
     //TF1 *c3Fit1D=new TF1("c3Fit1D","[0]*(1+[1]*exp(-pow([2]*x/0.19733,2)/2.))",0,1);
     //TF1 *c3Fit1D=new TF1("c3Fit1D","[0]*(1+[1]*exp(-pow([2]*x/0.19733,2)/2.) * (1 + (-0.12/(6.*pow(2,1.5))*(8.*pow([2]*x/0.19733,3) - 12.*pow([2]*x/0.19733,1))) + (0.43/(24.*pow(2,2))*(16.*pow([2]*x/0.19733,4) -48.*pow([2]*x/0.19733,2) + 12))))",0,1);
     //TF1 *c3Fit1D=new TF1("c3Fit1D","[0]*(1+[1]*exp(-pow([2]*x/0.19733,2)/2.) * (1 + ([3]/(6.*pow(2,1.5))*(8.*pow([2]*x/0.19733,3) - 12.*pow([2]*x/0.19733,1))) + ([4]/(24.*pow(2,2))*(16.*pow([2]*x/0.19733,4) -48.*pow([2]*x/0.19733,2) + 12))))",0,1);
@@ -1652,7 +1709,7 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
   Cterm1->Draw("same");
   legend2->Draw("same");
   
-  /*if(SameCharge==kTRUE){
+  /*if(SameCharge==kTRUE && MCcase==kFALSE){
     TString *savename=new TString("C3c3_SC_");
     if(CollisionType==0) savename->Append("PbPb_K");
     if(CollisionType==1) savename->Append("pPb_K");
@@ -1746,7 +1803,30 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
   K0sProjection->GetXaxis()->SetTitleOffset(1.2); K0sProjection->GetYaxis()->SetTitleOffset(1.3);
   
   K0sProjection->Draw();
+  // Sys errors
+  TH1D *Sys_K0sProjection=(TH1D*)K0sProjection->Clone();
+  TH1D *Sys_K0sProjection_term1=(TH1D*)K0sProjection_term1->Clone();
+  Sys_K0sProjection->SetMarkerSize(0); Sys_K0sProjection_term1->SetMarkerSize(0);
+  Sys_K0sProjection->SetFillColor(kBlue-10); Sys_K0sProjection_term1->SetFillColor(kBlue-10);
+  Sys_K0sProjection->SetFillStyle(1000); Sys_K0sProjection_term1->SetFillStyle(1000);
+  for(int i=0; i<Sys_K0sProjection->GetNbinsX(); i++) { 
+    Sys_K0sProjection->SetBinError(i+1, 0.01 * Sys_K0sProjection->GetBinContent(i+1));
+    Sys_K0sProjection_term1->SetBinError(i+1, 0.01 * Sys_K0sProjection_term1->GetBinContent(i+1));
+  }
+  for(int i=0; i<Sys_K0sProjection->GetNbinsX(); i++) cout<<K0sProjection->GetBinContent(i+1)<<", ";
+  cout<<endl;
+  for(int i=0; i<Sys_K0sProjection->GetNbinsX(); i++) cout<<K0sProjection->GetBinError(i+1)<<", ";
+  cout<<endl;
+  for(int i=0; i<Sys_K0sProjection->GetNbinsX(); i++) cout<<K0sProjection_term1->GetBinContent(i+1)<<", ";
+  cout<<endl;
+  for(int i=0; i<Sys_K0sProjection->GetNbinsX(); i++) cout<<K0sProjection_term1->GetBinError(i+1)<<", ";
+  cout<<endl;
+
+  Sys_K0sProjection->Draw("E2 same");
+  Sys_K0sProjection_term1->Draw("E2 same");
+  K0sProjection->Draw("same");
   K0sProjection_term1->Draw("same");
+
   legend4->AddEntry(K0sProjection,"#font[12]{C_{3}^{#pm#pm#mp}} projection","p");
   legend4->AddEntry(K0sProjection_term1,"#font[12]{#bf{c}_{3}^{#pm#pm#mp}} projection","p");
   legend4->Draw("same");
@@ -1756,7 +1836,7 @@ void Plot_PDCumulants_TPR(bool SaveToFile=SaveToFile_def, int CollisionType=Coll
   Specif_qRange->SetTextFont(42);
   Specif_qRange->SetTextSize(0.04);
   Specif_qRange->Draw("same");
-  TLatex *Specif_System = new TLatex(0.3,0.7,"N_{ch} = 8.8 #pm 0.4, pp #sqrt{#font[12]{s}}=7 TeV");
+  TLatex *Specif_System = new TLatex(0.3,0.7,"N_{ch} = 9.0 #pm 0.5, pp #sqrt{#font[12]{s}}=7 TeV");
   Specif_System->SetNDC();
   Specif_System->SetTextFont(42);
   Specif_System->SetTextSize(0.04);
@@ -2547,6 +2627,30 @@ double tricubicInterpolate (double p[4][4][4], double x, double y, double z) {
 	arr[2] = bicubicInterpolate(p[2], y, z);
 	arr[3] = bicubicInterpolate(p[3], y, z);
 	return cubicInterpolate(arr, x);
+}
+//____________________________________________________________________________________________________
+void ReadMuonCorrections(int ct, int mbin){
+  TString *name = new TString("MuonCorrection_");
+  if(ct==0){// PbPb
+    if(mbin<=1) *name += 0;
+    else if(mbin<=3) *name += 1;
+    else if(mbin<=5) *name += 2;
+    else if(mbin<=7) *name += 3;
+    else if(mbin<10) *name += 4;
+    else *name += 5;
+  }else *name += 6;
+  name->Append(".root");
+  TFile *muonfile=new TFile(name->Data(),"READ");
+  C2muonCorrection_SC = (TH1D*)muonfile->Get("C2muonCorrection_SC");
+  C2muonCorrection_MC = (TH1D*)muonfile->Get("C2muonCorrection_MC");
+  if(SameCharge_def) C3muonCorrection = (TH1D*)muonfile->Get("C3muonCorrection_SC");
+  else C3muonCorrection = (TH1D*)muonfile->Get("C3muonCorrection_MC");
+  //
+  C2muonCorrection_SC->SetDirectory(0);
+  C2muonCorrection_MC->SetDirectory(0);
+  C3muonCorrection->SetDirectory(0);
+  //
+  muonfile->Close();
 }
 //____________________________________________________________________________________________________
 void DrawALICELogo(Bool_t prel, Float_t x1, Float_t y1, Float_t x2, Float_t y2)
