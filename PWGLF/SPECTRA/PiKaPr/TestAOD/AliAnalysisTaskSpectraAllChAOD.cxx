@@ -135,16 +135,18 @@ void AliAnalysisTaskSpectraAllChAOD::UserCreateOutputObjects()
   fOutput->Add(NSparseHistSt);
   
   //dimensions of THnSparse for the normalization
-  const Int_t nvarev=2;
-  //                                             cent             Q vec   
-  Int_t    binsHistRealEv[nvarev] = {    fnCentBins,      fnQvecBins};
-  Double_t xminHistRealEv[nvarev] = {           0.,               0.};
-  Double_t xmaxHistRealEv[nvarev] = {       100.,               8.};
+  const Int_t nvarev=3;
+  //                                             cent             Q vec          Nch
+  Int_t    binsHistRealEv[nvarev] = {    fnCentBins,      fnQvecBins,           360.};
+  Double_t xminHistRealEv[nvarev] = {           0.,               0.,             0.};
+  Double_t xmaxHistRealEv[nvarev] = {       100.,               8.,            1800.};
   THnSparseF* NSparseHistEv = new THnSparseF("NSparseHistEv","NSparseHistEv",nvarev,binsHistRealEv,xminHistRealEv,xmaxHistRealEv);
   NSparseHistEv->GetAxis(0)->SetTitle(Form("%s cent",fEventCuts->GetCentralityMethod().Data()));
   NSparseHistEv->GetAxis(0)->SetName(Form("%s_cent",fEventCuts->GetCentralityMethod().Data()));
   NSparseHistEv->GetAxis(1)->SetTitle("Q vec");
   NSparseHistEv->GetAxis(1)->SetName("Q_vec");
+  NSparseHistEv->GetAxis(2)->SetTitle("N charged");
+  NSparseHistEv->GetAxis(2)->SetName("N_ch");
   fOutput->Add(NSparseHistEv);
   
   PostData(1, fOutput  );
@@ -215,6 +217,9 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
     }
   
   //main loop on tracks
+  
+  Int_t Nch = 0.;
+  
   for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
     AliAODTrack* track = fAOD->GetTrack(iTracks);
     if(fCharge != 0 && track->Charge() != fCharge) continue;//if fCharge != 0 only select fCharge 
@@ -263,15 +268,17 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
     //fill all charged (3)
     varTrk[3]=3.;
     varTrk[4]=3.;
+    Nch++;
     ((THnSparseF*)fOutput->FindObject("NSparseHistTrk"))->Fill(varTrk);//track loop
     
     //Printf("a track");
     
   } // end loop on tracks
   
-  Double_t varEv[2];
+  Double_t varEv[3];
   varEv[0]=Cent;
   varEv[1]=Qvec;
+  varEv[2]=Nch;
   ((THnSparseF*)fOutput->FindObject("NSparseHistEv"))->Fill(varEv);//event loop
   
   PostData(1, fOutput  );
