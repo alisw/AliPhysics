@@ -9,7 +9,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: September 12th, 2013.														  //
+	//		version: January 13, 2014.								      //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -58,6 +58,7 @@ public:
 	virtual void   Terminate(Option_t *);
 	
 		//Setters
+	void SetAssHadronPtRange(Double_t AssHadronPtMin, Double_t AssHadronPtMax) {fAssHadronPtMin = AssHadronPtMin; fAssHadronPtMax = AssHadronPtMax; };
 	void SetHFECuts(AliHFEcuts * const cuts) {fCuts = cuts;};
 	void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) {fRejectKinkMother = rejectKinkMother;};
 	void SetCorrelationAnalysis(Bool_t CorrelationFlag=kTRUE) {fCorrelationFlag = CorrelationFlag;};
@@ -209,7 +210,10 @@ private:
 	
 	TH1F				**fECluster;
 	TH2F				**fEtaPhi;
+	TH2F				*fEtaPhi_num;
+	TH2F				*fEtaPhi_den;
 	TH1F				**fVtxZ;
+	TH1F				**fEtad;
 	TH1F				**fNTracks;
 	TH1F				**fNClusters;
 	TH2F				**fTPCNcls_EoverP;
@@ -288,6 +292,10 @@ private:
 	Bool_t				fAngleCutFlag;
 	Bool_t				fChi2CutFlag;
 	Bool_t				fDCAcutFlag;
+	
+	//Correlation Function
+	Double_t			fAssHadronPtMin;
+	Double_t			fAssHadronPtMax;
 	
 		//Non-HFE reconstruction efficiency
 	TH1F				*fPtBackgroundBeforeReco;
