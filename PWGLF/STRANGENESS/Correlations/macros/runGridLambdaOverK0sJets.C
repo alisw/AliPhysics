@@ -1,4 +1,4 @@
-
+ 
 // "ESDs/pass2/AOD086/*/AliAOD.root"
 // "/alice/data/2010/LHC10h"
 
@@ -7,16 +7,15 @@ class AliAnalysisAlien;
 void runGridLambdaOverK0sJets(TString  runMode    = "full", 
 			      TString  alirootVer = "v5-05-38-AN",
 			      TString  rootVer    = "v5-34-11",
-			      TString  dataPath   = "ESDs/pass2/AOD115/*/AliAOD.root",
-			      TString  dataDir    = "/alice/data/2011/LHC11h_2",		      
+			      TString  dataPath   = "AOD124/*/AliAOD.root"/*"ESDs/pass2/AOD115/* /AliAOD.root"*/,
+			      TString  dataDir    = "/alice/sim/2012/LHC12a17d_fix"/*"/alice/data/2011/LHC11h_2"*/,		      
 			      TString  workDir    = "test",
 			      TString  name       = "LambdaOverK0sRatio", 
 			      TString  data       = "PbPb2011",
 			      Float_t  minCen     = 0.,
 			      Float_t  maxCen     = 40.,
-			      Float_t  dcaDaug    = 0.5,
-			      Bool_t   sepInjec   = kTRUE,
-			      Bool_t   isMC       = kFALSE,
+			      Bool_t   sepInjec   = kFALSE,
+			      Bool_t   isMC       = kTRUE,
 			      Bool_t   usePID     = kFALSE,
 			      Bool_t   doQA       = kTRUE,
 			      Int_t    run        = 169838/*137530*//*138624*/){
@@ -54,7 +53,7 @@ void runGridLambdaOverK0sJets(TString  runMode    = "full",
   gROOT->LoadMacro("AliAnalysisTaskLambdaOverK0sJets.cxx++g"); 
   //gSystem->Load("libPWGLFSTRANGENESS");
   gROOT->LoadMacro("AddTaskLambdaOverK0sJets.C");
-  AliAnalysisTaskLambdaOverK0sJets *task = AddTaskLambdaOverK0sJets(name,data,minCen,maxCen,dcaDaug,sepInjec,isMC,usePID,doQA);
+  AliAnalysisTaskLambdaOverK0sJets *task = AddTaskLambdaOverK0sJets(name,data,minCen,maxCen,sepInjec,isMC,doQA);
    // _____________________________________________________ //
  
    if (!mgr->InitAnalysis()) return;
@@ -142,13 +141,13 @@ AliAnalysisAlien* CreateAlienHandler(TString runMode,TString alirootVer,
   plugin->SetAnalysisMacro("AnalysisProduction.C");
   //plugin->SetAnalysisMacro("mytask.C");
   // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
-  plugin->SetSplitMaxInputFileNumber(50);
+  plugin->SetSplitMaxInputFileNumber(5);
   // Optionally set number of failed jobs that will trigger killing waiting sub-jobs.
   plugin->SetMaxInitFailed(12);
   // Optionally resubmit threshold.
   plugin->SetMasterResubmitThreshold(90);
   // Optionally set time to live (default 30000 sec)
-  plugin->SetTTL(30000);
+  plugin->SetTTL(450000);
   // Optionally set input format (default xml-single)
   plugin->SetInputFormat("xml-single");
   // Optionally modify the name of the generated JDL (default analysis.jdl)
