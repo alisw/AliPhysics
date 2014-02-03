@@ -4617,7 +4617,10 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "// Set temporary compilation directory to current one" << endl;
       out << "   gSystem->SetBuildDir(gSystem->pwd(), kTRUE);" << endl << endl;   
       out << "   TString outputDir = dir;" << endl;  
-      out << "   TString outputFiles = \"" << GetListOfFiles("out") << "\";" << endl;
+      if (IsMergeAOD())
+         out << "   TString outputFiles = \"" << GetListOfFiles("outaod") << "\";" << endl;
+      else   
+         out << "   TString outputFiles = \"" << GetListOfFiles("out") << "\";" << endl;
       out << "   TString mergeExcludes = \"" << fMergeExcludes << " " << fRegisterExcludes << "\";" << endl;
       out << "   TObjArray *list = outputFiles.Tokenize(\",\");" << endl;
       out << "   TIter *iter = new TIter(list);" << endl;

@@ -1537,49 +1537,5 @@ void AliHLTTPCTransform::Global2HLT(Float_t *xyz,Int_t slice,Int_t slicerow)
 
 void AliHLTTPCTransform::PrintCompileOptions()
 {
-  //print compile options
-#if defined(__GNUC__)
-  cout << "Compiler (g++) version used: " << __GNUC__ << endl;
-#endif
-
-#ifdef no_root
-  cout << "STANDALONE version: -Dno_root was given." << endl;
-#else
-  const Char_t *roottest="$ROOTSYS/bin/root -n -b -q  | grep Version | cut -b 17-25 | cut -d\" \" -f1";
-#ifdef use_aliroot
-#ifdef use_cvs
-  const Char_t *aliroottest="if test -n \"`cd $ALICE_ROOT/STEER/ && cvs stat AliRun.cxx | grep \"Sticky Tag\" | grep none`\"; then echo HEAD; else cd $ALICE_ROOT/STEER/ && cvs stat AliRun.cxx | grep \"Sticky Tag\" | cut -b 18- | cut -d\" \" -f1; fi";
-#else
-  const Char_t *aliroottest="Unknown";
-#endif
-  cout << "ALIROOT version: -Duse_aliroot and -Duse_root was given." << endl;
-  cout << "Root Version: " << ROOTVERSION << " found " << flush;
-  gSystem->Exec(roottest);
-
-  cout << "AliRoot Version: " << ALIROOTVERSION << " found " << flush;
-  gSystem->Exec(aliroottest);
-#else
-  cout << "ROOT version: -Duse_root was given." << endl;
-  cout << "Root Version: " << ROOTVERSION << " found " << flush;
-  gSystem->Exec(roottest);
-#endif
-#endif
-
-#ifdef do_mc
-  cout << "Using Monte Carlo Info: -Ddo_mc was given." << endl;
-#else
-  cout << "NOT using Monte Carlo Info: -Ddo_mc was not given." << endl;
-#endif
-
-#ifdef INCLUDE_TPC_HOUGH
-  cout << "Including support for TPC Hough transformations." << endl;
-#ifdef ROWHOUGHPARAMS
-  cout << "Using extended AliHLTTPCTrackSegmentData: -DROWHOUGHPARAMS was given." << endl;
-#else
-  cout << "NOT using extended AliHLTTPCTrackSegmentData: -DROWHOUGHPARAMS was not given." << endl;
-#endif
-#else
-  cout << "NOT including any support for TPC Hough transformations." << endl;
-#endif // INCLUDE_TPC_HOUGH
-
+//deprecated; to be removed
 }

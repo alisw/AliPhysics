@@ -166,7 +166,7 @@ AliESDEvent::AliESDEvent():
   fDAQDetectorPattern(0xFFFF),
   fDAQAttributes(0xFFFF),
   fNTOFclusters(0),
-  fTOFcluster(new TObjArray(1))
+  fTOFcluster(0)
 {
 }
 //______________________________________________________________________________
@@ -1439,6 +1439,7 @@ void AliESDEvent::GetStdContent()
   fESDAD = (AliESDAD*)fESDObjects->FindObject(fgkESDListName[kESDAD]);
   fTOFHeader = (AliTOFHeader*)fESDObjects->FindObject(fgkESDListName[kTOFHeader]);
   fCosmicTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kCosmicTracks]);
+  fTOFcluster = new TObjArray(1);
 }
 
 void AliESDEvent::SetStdNames(){

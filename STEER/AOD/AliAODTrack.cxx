@@ -28,6 +28,7 @@
 #include "AliDetectorPID.h"
 #include "AliAODEvent.h"
 #include "AliAODHMPIDrings.h"
+#include "AliTOFHeader.h"
 
 #include "AliAODTrack.h"
 
@@ -39,6 +40,7 @@ AliAODTrack::AliAODTrack() :
   fRAtAbsorberEnd(0.),
   fChi2perNDF(-999.),
   fChi2MatchTrigger(0.),
+  fPID(0),
   fFlags(0),
   fLabel(-999),
   fTOFLabel(),
@@ -55,6 +57,7 @@ AliAODTrack::AliAODTrack() :
   fID(-999),
   fCharge(-99),
   fType(kUndef),
+  fPIDForTracking(AliPID::kPion),
   fCaloIndex(kEMCALNoMatch),
   fCovMatrix(NULL),
   fDetPid(NULL),
@@ -73,7 +76,6 @@ AliAODTrack::AliAODTrack() :
   SetPosition((Float_t*)NULL);
   SetXYAtDCA(-999., -999.);
   SetPxPyPzAtDCA(-999., -999., -999.);
-  SetPID((Float_t*)NULL);
   for (Int_t i = 0; i < 3; i++) {fTOFLabel[i] = -1;}
 }
 
@@ -87,7 +89,6 @@ AliAODTrack::AliAODTrack(Short_t id,
 			 Double_t covMatrix[21],
 			 Short_t charge,
 			 UChar_t itsClusMap,
-			 Double_t pid[10],
 			 AliAODVertex *prodVertex,
 			 Bool_t usedForVtxFit,
 			 Bool_t usedForPrimVtxFit,
@@ -98,6 +99,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   fRAtAbsorberEnd(0.),
   fChi2perNDF(chi2perNDF),
   fChi2MatchTrigger(0.),
+  fPID(0),
   fFlags(0),
   fLabel(label),
   fTOFLabel(),
@@ -114,6 +116,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   fID(id),
   fCharge(charge),
   fType(ttype),
+  fPIDForTracking(AliPID::kPion),
   fCaloIndex(kEMCALNoMatch),
   fCovMatrix(NULL),
   fDetPid(NULL),
@@ -135,7 +138,6 @@ AliAODTrack::AliAODTrack(Short_t id,
   SetUsedForVtxFit(usedForVtxFit);
   SetUsedForPrimVtxFit(usedForPrimVtxFit);
   if(covMatrix) SetCovMatrix(covMatrix);
-  SetPID(pid);
   SetITSClusterMap(itsClusMap);
   for (Int_t i=0;i<3;i++) {fTOFLabel[i]=-1;}
 }
@@ -150,17 +152,17 @@ AliAODTrack::AliAODTrack(Short_t id,
 			 Float_t covMatrix[21],
 			 Short_t charge,
 			 UChar_t itsClusMap,
-			 Float_t pid[10],
 			 AliAODVertex *prodVertex,
 			 Bool_t usedForVtxFit,
 			 Bool_t usedForPrimVtxFit,
 			 AODTrk_t ttype,
 			 UInt_t selectInfo,
-			 Float_t chi2perNDF) :
+			 Float_t chi2perNDF ) :
   AliVTrack(),
   fRAtAbsorberEnd(0.),
   fChi2perNDF(chi2perNDF),
   fChi2MatchTrigger(0.),
+  fPID(0),
   fFlags(0),
   fLabel(label),
   fTOFLabel(),
@@ -177,6 +179,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   fID(id),
   fCharge(charge),
   fType(ttype),
+  fPIDForTracking(AliPID::kPion),
   fCaloIndex(kEMCALNoMatch),
   fCovMatrix(NULL),
   fDetPid(NULL),
@@ -198,7 +201,6 @@ AliAODTrack::AliAODTrack(Short_t id,
   SetUsedForVtxFit(usedForVtxFit);
   SetUsedForPrimVtxFit(usedForPrimVtxFit);
   if(covMatrix) SetCovMatrix(covMatrix);
-  SetPID(pid);
   SetITSClusterMap(itsClusMap);
   for (Int_t i=0;i<3;i++) {fTOFLabel[i]=-1;}
 }
@@ -210,6 +212,7 @@ AliAODTrack::~AliAODTrack()
   delete fCovMatrix;
   delete fDetPid;
   delete fDetectorPID;
+  delete[] fPID;
 }
 
 
@@ -219,6 +222,7 @@ AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
   fRAtAbsorberEnd(trk.fRAtAbsorberEnd),
   fChi2perNDF(trk.fChi2perNDF),
   fChi2MatchTrigger(trk.fChi2MatchTrigger),
+  fPID(0),
   fFlags(trk.fFlags),
   fLabel(trk.fLabel),
   fTOFLabel(),
@@ -235,6 +239,7 @@ AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
   fID(trk.fID),
   fCharge(trk.fCharge),
   fType(trk.fType),
+  fPIDForTracking(trk.fPIDForTracking),
   fCaloIndex(trk.fCaloIndex),
   fCovMatrix(NULL),
   fDetPid(NULL),
@@ -277,7 +282,7 @@ AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
     fRAtAbsorberEnd    = trk.fRAtAbsorberEnd;
     fChi2perNDF        = trk.fChi2perNDF;
     fChi2MatchTrigger  = trk.fChi2MatchTrigger;
-    trk.GetPID(fPID);
+    SetPID( trk.fPID );
     fFlags             = trk.fFlags;
     fLabel             = trk.fLabel;    
     fTrackLength       = trk.fTrackLength;
@@ -293,6 +298,7 @@ AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
     fID                = trk.fID;
     fCharge            = trk.fCharge;
     fType              = trk.fType;
+    fPIDForTracking    = trk.fPIDForTracking;
     fCaloIndex         = trk.fCaloIndex;
     fTrackPhiOnEMCal   = trk.fTrackPhiOnEMCal;
     fTrackEtaOnEMCal   = trk.fTrackEtaOnEMCal;
@@ -444,21 +450,22 @@ AliAODTrack::AODTrkPID_t AliAODTrack::GetMostProbablePID() const
   
   Int_t nPID = 10;
   AODTrkPID_t loc = kUnknown;
-  Double_t max = 0.;
   Bool_t allTheSame = kTRUE;
-  
-  for (Int_t iPID = 0; iPID < nPID; iPID++) {
-    if (fPID[iPID] >= max) {
-      if (fPID[iPID] > max) {
-	allTheSame = kFALSE;
-	max = fPID[iPID];
-	loc = (AODTrkPID_t)iPID;
-      } else {
-	allTheSame = kTRUE;
+  if (fPID) {
+    Double_t max = 0.;
+    for (Int_t iPID = 0; iPID < nPID; iPID++) {
+      if (fPID[iPID] >= max) {
+	if (fPID[iPID] > max) {
+	  allTheSame = kFALSE;
+	  max = fPID[iPID];
+	  loc = (AODTrkPID_t)iPID;
+	} else {
+	  allTheSame = kTRUE;
+	}
       }
     }
   }
-  return allTheSame ? kUnknown : loc;
+  return allTheSame ? AODTrkPID_t(GetPIDForTracking()) : loc;
 }
 
 //______________________________________________________________________________
@@ -467,13 +474,13 @@ void AliAODTrack::ConvertAliPIDtoAODPID()
   // Converts AliPID array.
   // The numbering scheme is the same for electrons, muons, pions, kaons, and protons.
   // Everything else has to be set to zero.
-
-  fPID[kDeuteron] = 0.;
-  fPID[kTriton]   = 0.;
-  fPID[kHelium3]  = 0.;
-  fPID[kAlpha]    = 0.;
-  fPID[kUnknown]  = 0.;
-  
+  if (fPID) {
+    fPID[kDeuteron] = 0.;
+    fPID[kTriton]   = 0.;
+    fPID[kHelium3]  = 0.;
+    fPID[kAlpha]    = 0.;
+    fPID[kUnknown]  = 0.;
+  }
   return;
 }
 
@@ -1108,4 +1115,15 @@ void  AliAODTrack::GetITSdEdxSamples(Double_t s[4]) const
   // get ITS dedx samples
   if (!fDetPid) for (int i=4;i--;) s[i]=0;
   else          for (int i=4;i--;) s[i] = fDetPid->GetITSdEdxSample(i);
+}
+
+//_____________________________________________
+Double_t AliAODTrack::GetMassForTracking() const
+{
+  double m = AliPID::ParticleMass(fPIDForTracking);
+  return (fPIDForTracking==AliPID::kHe3 || fPIDForTracking==AliPID::kAlpha) ? -m : m;
+}
+//_______________________________________________________
+const AliTOFHeader* AliAODTrack::GetTOFHeader() const {
+  return fAODEvent->GetTOFHeader();
 }

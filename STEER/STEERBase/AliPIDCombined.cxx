@@ -39,6 +39,7 @@
 
 // initialize static members
 TH2F* AliPIDCombined::fDefaultPriorsTPC[]={0x0};
+Float_t AliPIDCombined::fTOFmismProb = 0;
 
 ClassImp(AliPIDCombined);
 
@@ -109,9 +110,12 @@ UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPID
 
   // (1) Get raw probabilities of selected detectors and combine
   UInt_t usedMask=0;             // detectors actually used for track
+  fTOFmismProb = 0; // reset TOF mismatch weights
+
   AliPIDResponse::EDetPidStatus status=AliPIDResponse::kDetNoSignal;
   Double_t p[fSelectedSpecies];  // combined probabilities of selected detectors
-  for (Int_t i=0;i<fSelectedSpecies;i++) p[i]=1.; // no decision
+  Double_t pMismTOF[fSelectedSpecies];  // combined TOF mismatch probabilities using selected detectors
+  for (Int_t i=0;i<fSelectedSpecies;i++){ p[i]=1.;pMismTOF[i]=1.;} // no decision
   for (Int_t ibit = 0; ibit < 7 ; ibit++) {
     AliPIDResponse::EDetCode detBit = (AliPIDResponse::EDetCode)(1<<ibit);
     if (fDetectorMask & detBit) {  	    // getting probabilities for requested detectors only
@@ -120,7 +124,8 @@ UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPID
       if (status == AliPIDResponse::kDetPidOk) {
 	if (fRejectMismatchMask & detBit) {         // mismatch check (currently just for TOF)
 	  if (detBit == AliPIDResponse::kDetTOF) {
-	    Float_t probMis = response->GetTOFMismatchProbability(track);
+	    fTOFmismProb = response->GetTOFMismatchProbability(); // mismatch weights computed with TOF probs (no arguments)
+	    Float_t probMis = response->GetTOFMismatchProbability(track); // mismatch compatibility TPC-TOF cut
 	    SetCombinedStatus(status,&usedMask,detBit,detProb,probMis);
 	  } else {
 	    SetCombinedStatus(status,&usedMask,detBit);
@@ -128,7 +133,11 @@ UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPID
 	} else {
 	  SetCombinedStatus(status,&usedMask,detBit);
 	}
-	for (Int_t i=0;i<fSelectedSpecies;i++) p[i] *= detProb[i];
+	for (Int_t i=0;i<fSelectedSpecies;i++){
+	  p[i] *= detProb[i];
+	  if(detBit == AliPIDResponse::kDetTOF) pMismTOF[i] *= fTOFmismProb;
+	  else pMismTOF[i] *= detProb[i];
+	}
       }
     }
   }
@@ -251,6 +260,11 @@ UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPID
 
   // (3) Compute Bayes probabilities
   ComputeBayesProbabilities(bayesProbabilities,p,priors);
+
+  // compute TOF probability contribution from mismatch
+  fTOFmismProb = 0; 
+  for (Int_t i=0;i<fSelectedSpecies;i++) fTOFmismProb += pMismTOF[i];
+
   return usedMask;
 }
 
@@ -350,7 +364,7 @@ void AliPIDCombined::GetPriors(const AliVTrack *track,Double_t* p,const AliPIDRe
 	return;
 }
 //-------------------------------------------------------------------------------------------------	
-void AliPIDCombined::ComputeBayesProbabilities(Double_t* probabilities, const Double_t* probDensity, const Double_t* prior) const {
+void AliPIDCombined::ComputeBayesProbabilities(Double_t* probabilities, const Double_t* probDensity, const Double_t* prior, Double_t* probDensityMism) const {
 
 
   //
@@ -368,6 +382,7 @@ void AliPIDCombined::ComputeBayesProbabilities(Double_t* probabilities, const Do
   }
   for (Int_t i = 0; i < fSelectedSpecies; i++) {
     probabilities[i] = probDensity[i] * prior[i] / sum;
+    if(probDensityMism) probDensityMism[i] *= prior[i] / sum;
   }
 
 
