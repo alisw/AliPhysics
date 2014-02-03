@@ -37,12 +37,12 @@
 
 class TParticle;
 class AliESDVertex;
-class AliESDEvent;
 class AliKalmanTrack;
 class AliTrackPointArray;
 class TPolyMarker3D;
 class AliDetectorPID;
 class TTreeSRedirector;
+class AliESDEvent;
 
 class AliESDtrack : public AliExternalTrackParam {
 public:
@@ -419,6 +419,7 @@ public:
   }
   virtual void Print(Option_t * opt) const ;
   const AliESDEvent* GetESDEvent() const {return fESDEvent;}
+  const AliTOFHeader* GetTOFHeader() const;
   void         SetESDEvent(const AliESDEvent* evt) {fESDEvent = evt;}
 
   // Trasient PID object, is owned by the track

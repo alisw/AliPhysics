@@ -3192,3 +3192,7 @@ void AliESDtrack::SortTOFcluster(){
     }
   }
 }
+
+const AliTOFHeader* AliESDtrack::GetTOFHeader() const {
+  return fESDEvent->GetTOFHeader();
+}

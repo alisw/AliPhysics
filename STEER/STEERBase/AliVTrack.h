@@ -17,6 +17,7 @@ class AliVVertex;
 class AliExternalTrackParam;
 class AliTPCdEdxInfo;
 class AliDetectorPID;
+class AliTOFHeader;
  
 class AliVTrack: public AliVParticle {
 
@@ -144,6 +145,7 @@ public:
   virtual Bool_t   GetPxPyPz(Double_t */*p*/) const { return kFALSE; }
   virtual void     SetID(Short_t /*id*/) {;}
   virtual Int_t    GetTOFBunchCrossing(Double_t = 0, Bool_t = kFALSE) const { return kTOFBCNA;}
+  virtual const AliTOFHeader *GetTOFHeader() const {return NULL;};
 
   ClassDef(AliVTrack,1)  // base class for tracks
 };

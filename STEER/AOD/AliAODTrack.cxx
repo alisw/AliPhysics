@@ -28,6 +28,7 @@
 #include "AliDetectorPID.h"
 #include "AliAODEvent.h"
 #include "AliAODHMPIDrings.h"
+#include "AliTOFHeader.h"
 
 #include "AliAODTrack.h"
 
@@ -1121,4 +1122,8 @@ Double_t AliAODTrack::GetMassForTracking() const
 {
   double m = AliPID::ParticleMass(fPIDForTracking);
   return (fPIDForTracking==AliPID::kHe3 || fPIDForTracking==AliPID::kAlpha) ? -m : m;
+}
+//_______________________________________________________
+const AliTOFHeader* AliAODTrack::GetTOFHeader() const {
+  return fAODEvent->GetTOFHeader();
 }

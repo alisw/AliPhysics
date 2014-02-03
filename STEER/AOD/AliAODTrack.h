@@ -23,6 +23,7 @@ class AliVVertex;
 class AliDetectorPID;
 class AliTPCdEdxInfo;
 class AliAODEvent;
+class AliTOFHeader;
 
 class AliAODTrack : public AliVTrack {
 
@@ -333,6 +334,7 @@ class AliAODTrack : public AliVTrack {
 
   const AliAODEvent* GetAODEvent() const {return fAODEvent;}
   void SetAODEvent(const AliAODEvent* ptr){fAODEvent = ptr;}
+  const AliTOFHeader* GetTOFHeader() const;
 
   AliAODPid    *GetDetPid() const { return fDetPid; }
   AliAODVertex *GetProdVertex() const { return (AliAODVertex*)fProdVertex.GetObject(); }
