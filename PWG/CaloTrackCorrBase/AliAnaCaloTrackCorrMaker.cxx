@@ -339,6 +339,7 @@ void AliAnaCaloTrackCorrMaker::FillTriggerControlHistograms()
   Bool_t triggerMatch= fReader->IsTriggerMatched();
   Bool_t triggerBCOK = kTRUE;
   Int_t  triggerId   = fReader->GetTriggerClusterId() ;
+  
   Bool_t reMatchOpenTime = fReader->IsTriggerMatchedOpenCuts(0);
   Bool_t reMatchNeigbour = fReader->IsTriggerMatchedOpenCuts(1);
   Bool_t reMatchBoth     = fReader->IsTriggerMatchedOpenCuts(2);
@@ -924,7 +925,21 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(Int_t iEntry, const char * currentFi
   //Tell the reader to fill the data in the 3 detector lists
   Bool_t ok = fReader->FillInputEvent(iEntry, currentFileName);
   
-  FillTriggerControlHistograms();
+  //Access pointers, and trigger mask check needed in mixing case
+  AliAnalysisManager   *manager      = AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler *inputHandler = dynamic_cast<AliInputEventHandler*>(manager->GetInputEventHandler());
+  
+  UInt_t isMBTrigger = kFALSE;
+  UInt_t isTrigger   = kFALSE;
+  if(inputHandler)
+  {
+    isMBTrigger = inputHandler->IsEventSelected() & fReader->GetMixEventTriggerMask();
+    isTrigger   = inputHandler->IsEventSelected() & fReader->GetEventTriggerMask();
+  }
+  
+  //Fill trigger control histograms, make sure it is only for triggered events and
+  // not the MB events used for mixing
+  if(fReader->IsEventTriggerAtSEOn() || isTrigger) FillTriggerControlHistograms();
   
   if(!ok)
   {
@@ -938,18 +953,6 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(Int_t iEntry, const char * currentFi
   
   //printf(">>>>>>>>>> BEFORE >>>>>>>>>>>\n");
   //gObjectTable->Print();
-  
-  //Access pointers, and trigger mask check needed in mixing case
-  AliAnalysisManager   *manager      = AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler *inputHandler = dynamic_cast<AliInputEventHandler*>(manager->GetInputEventHandler());
-  
-  UInt_t isMBTrigger = kFALSE;
-  UInt_t isTrigger   = kFALSE;
-  if(inputHandler)
-  {
-    isMBTrigger = inputHandler->IsEventSelected() & fReader->GetMixEventTriggerMask();
-    isTrigger   = inputHandler->IsEventSelected() & fReader->GetEventTriggerMask();
-  }
   
   // Init mag field for tracks in case of ESDs, not really necessary
   if (!TGeoGlobalMagField::Instance()->GetField() && ((AliESDEvent*) fReader->GetInputEvent()))
