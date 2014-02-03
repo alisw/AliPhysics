@@ -65,7 +65,7 @@ AliAnalysisTaskSE *AddTaskEMCALTenderUsingDatasetDef(
       timeCut =  1e6;
     }
     else if(period == "lhc13b4" || period == "lhc13b4_fix" || period == "lhc13b4_plus") {
-      nonLinFunct = AliEMCALRecoUtils::kMCPi0v3;
+      nonLinFunct = AliEMCALRecoUtils::kPi0MCv3;
       isMC = kTRUE;
     }
   }
