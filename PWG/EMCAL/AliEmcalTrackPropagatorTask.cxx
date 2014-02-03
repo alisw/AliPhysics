@@ -1,28 +1,27 @@
-// $Id$
+// $Id: AliEmcalTrackPropagatorTask.cxx | Mon Dec 9 12:59:28 2013 +0100 | Constantin Loizides  $
 //
 // Task to propagate tracks to EMCAL surface.
 //
 // Author: C.Loizides
 
+#include "AliEmcalTrackPropagatorTask.h"
 #include <TClonesArray.h>
+#include "AliAODEvent.h"
 #include "AliAnalysisManager.h"
 #include "AliEMCALRecoUtils.h"
 #include "AliESDEvent.h"
-#include "AliEmcalTrackPropagatorTask.h"
 
 ClassImp(AliEmcalTrackPropagatorTask)
 
 //________________________________________________________________________
 AliEmcalTrackPropagatorTask::AliEmcalTrackPropagatorTask() : 
   AliAnalysisTaskSE("AliEmcalTrackPropagatorTask"),
-  fRecoUtils(0),
-  fTracksName(),
+  fTracksInName(),
+  fTracksOutName(),
   fDist(440),
-  fMinPtCut(0.35),
-  fEsdEv(0),
-  fTracks(0),
-  fUseGlobalTrackParam(kFALSE),
-  fUseOuterTrackParam(kFALSE)
+  fOnlyIfNotSet(kTRUE),
+  fTracksIn(0),
+  fTracksOut(0)
 {
   // Constructor.
 }
@@ -30,14 +29,12 @@ AliEmcalTrackPropagatorTask::AliEmcalTrackPropagatorTask() :
 //________________________________________________________________________
 AliEmcalTrackPropagatorTask::AliEmcalTrackPropagatorTask(const char *name) : 
   AliAnalysisTaskSE("AliEmcalTrackPropagatorTask"),
-  fRecoUtils(0),
-  fTracksName("TpcSpdVertexConstrainedTracks"),
+  fTracksInName(),
+  fTracksOutName(),
   fDist(440),
-  fMinPtCut(0.35),
-  fEsdEv(0),
-  fTracks(0),
-  fUseGlobalTrackParam(kFALSE),
-  fUseOuterTrackParam(kFALSE)
+  fOnlyIfNotSet(kTRUE),
+  fTracksIn(0),
+  fTracksOut(0)
 {
   // Constructor.
 
@@ -53,20 +50,12 @@ AliEmcalTrackPropagatorTask::AliEmcalTrackPropagatorTask(const char *name) :
 AliEmcalTrackPropagatorTask::~AliEmcalTrackPropagatorTask()
 {
   // Destructor.
-
-  delete fRecoUtils;
 }
 
 //________________________________________________________________________
 void AliEmcalTrackPropagatorTask::UserCreateOutputObjects()
 {
-  // Create histograms.
-
-  if (!fRecoUtils) {
-    fRecoUtils = new AliEMCALRecoUtils;
-    fRecoUtils->SetStep(20);
-    AliInfo("No reco utils given, creating default utils");
-  }
+  // User create output objects.
 }
 
 //________________________________________________________________________
@@ -74,10 +63,22 @@ void AliEmcalTrackPropagatorTask::UserExec(Option_t *)
 {
   // Main loop, called for each event.
 
-  fEsdEv = dynamic_cast<AliESDEvent*>(InputEvent());
-  if (!fEsdEv) {
-    AliError("Task works only on ESD events, returning");
-    return;
+  AliESDEvent *esdev = dynamic_cast<AliESDEvent*>(InputEvent());
+  AliAODEvent *aodev = 0;
+  if (!esdev) {
+    aodev = dynamic_cast<AliAODEvent*>(InputEvent());
+    if (!aodev) {
+      AliError("Task needs AOD or ESD event, returning");
+      return;
+    }
+  }
+
+  if (fTracksInName.Length()==0) {
+    if (esdev) {
+      fTracksInName = "Tracks";
+    } else {
+      fTracksInName = "tracks";
+    }
   }
 
   AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
@@ -85,57 +86,46 @@ void AliEmcalTrackPropagatorTask::UserExec(Option_t *)
     AliError("Manager zero, returning");
     return;
   }
-
-  // get tracks from event if not yet there
-  if (fTracksName == "Tracks")
+  if (fTracksInName == "Tracks")
     am->LoadBranch("Tracks");
-  fTracks = dynamic_cast<TClonesArray*>((InputEvent()->FindListObject(fTracksName)));
-  if (!fTracks) {
-    AliError(Form("Could not get tracks %s, returning", fTracksName.Data()));
-    return;
+  else if (fTracksInName == "tracks")
+    am->LoadBranch("tracks");
+
+  if (!fTracksIn) {
+    fTracksIn = dynamic_cast<TClonesArray*>((InputEvent()->FindListObject(fTracksInName)));
+    if (!fTracksIn) {
+      AliError(Form("Could not get tracks %s, returning", fTracksInName.Data()));
+      return;
+    }
   }
 
-  // Loop over all tracks
-  const Int_t ntr = fTracks->GetEntries();
-  for (Int_t i=0; i<ntr; ++i) {
-    AliESDtrack *eTrack = static_cast<AliESDtrack*>(fTracks->At(i));
-    if (!eTrack)
-      continue;
-    eTrack->ResetStatus(AliVTrack::kEMCALmatch);
-    if(eTrack->Pt()<fMinPtCut) 
-      continue;
-    Double_t phi = eTrack->Phi()*TMath::RadToDeg();
-    if (TMath::Abs(eTrack->Eta())>0.9 || phi <= 10 || phi >= 250) 
-      continue;
-    AliExternalTrackParam *trackParam;
-    if(fUseGlobalTrackParam) 
-      trackParam = dynamic_cast<AliExternalTrackParam*>(eTrack);
-    else if(fUseOuterTrackParam) 
-      trackParam =  const_cast<AliExternalTrackParam*>(eTrack->GetOuterParam());
-    else
-      trackParam =  const_cast<AliExternalTrackParam*>(eTrack->GetInnerParam());
-    if(!trackParam) {
-      Printf("trackParam not available");
-      continue;
+  if ((fTracksOutName.Length()>0) && !fTracksOut) {
+    if ((InputEvent()->FindListObject(fTracksOutName))) {
+      AliError(Form("Could not add tracks %s to event, returning", fTracksOutName.Data()));
+      return;
     }
+    if (esdev)
+      fTracksOut = new TClonesArray("AliESDTrack");
+    else 
+      fTracksOut = new TClonesArray("AliESDTrack");
+    fTracksOut->SetName(fTracksOutName);
+    InputEvent()->AddObject(fTracksOut);
+  }
 
-    // Extrapolate the track to EMCal surface
-    AliExternalTrackParam emcalParam(*trackParam);
-
-    Float_t etaout=-999, phiout=-999, ptout=-999;
-    Bool_t ret = fRecoUtils->ExtrapolateTrackToEMCalSurface(&emcalParam, 
-                                                            fDist, 
-                                                            eTrack->GetMass(), 
-                                                            fRecoUtils->GetStepSurface(), 
-                                                            etaout, 
-                                                            phiout,
-							    ptout);
-    if (!ret)
+  const Int_t ntr = fTracksIn->GetEntries();
+  for (Int_t i=0; i<ntr; ++i) {
+    AliVTrack *inTrack = dynamic_cast<AliVTrack*>(fTracksIn->At(i));
+    if (!inTrack)
       continue;
-    if (TMath::Abs(etaout)>0.75 || (phiout<70*TMath::DegToRad()) || (phiout>190*TMath::DegToRad()))
+    if (inTrack->IsExtrapolatedToEMCAL() && fOnlyIfNotSet)
       continue;
-    eTrack->SetOuterParam(&emcalParam,AliExternalTrackParam::kMultSec);
-    eTrack->SetTrackPhiEtaPtOnEMCal(phiout, etaout, ptout);
-    eTrack->SetStatus(AliVTrack::kEMCALmatch);
+    AliVTrack *outTrack = inTrack;
+    if (fTracksOut) {
+      if (esdev)
+	outTrack = new ((*fTracksOut)[i]) AliESDtrack(*((AliESDtrack*)inTrack));
+      else
+	outTrack = new ((*fTracksOut)[i]) AliAODTrack(*((AliAODTrack*)inTrack));
+    }
+    AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(outTrack,fDist);
   }
 }

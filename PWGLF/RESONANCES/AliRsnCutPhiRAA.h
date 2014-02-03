@@ -21,7 +21,6 @@ public:
       k2010 = 0,
       k2011_0,
       k2011_1,
-      kTPC,
       k2011_1_05,
       k2011_1_075
    };
@@ -44,7 +43,6 @@ private:
    AliESDtrackCuts *cut1;
    AliESDtrackCuts *cut2;
    AliESDtrackCuts *cut3;
-   AliESDtrackCuts *cut4;
 
 
    ClassDef(AliRsnCutPhiRAA,1)

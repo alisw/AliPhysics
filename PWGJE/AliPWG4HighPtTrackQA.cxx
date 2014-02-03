@@ -18,7 +18,7 @@
 // of tracks and track selection criteria
 // Output: Histograms for different set of cuts
 //-----------------------------------------------------------------------
-// Author : Marta Verweij - UU
+// Author : M. Verweij - UU
 //-----------------------------------------------------------------------
 
 #ifndef ALIPWG4HIGHPTTRACKQA_CXX
@@ -52,7 +52,6 @@
 #include "AliCentrality.h"
 #include "AliAODVertex.h"
 #include "AliAODEvent.h"
-//#include "AliAnalysisHelperJetTasks.h"
 
 using namespace std; //required for resolving the 'cout' symbol
 
@@ -74,7 +73,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fPtMax(100.),
   fIsPbPb(0),
   fCentClass(10),
-  fNVariables(25),
+  fNVariables(26),
   fVariables(0x0),
   fITSClusterMap(0),
   fAvgTrials(1),
@@ -113,7 +112,6 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fPtRelUncertainty1PtChi2(0x0),
   fPtRelUncertainty1PtChi2Iter1(0x0),
   fPtRelUncertainty1PtPhi(0x0),
-  fPtUncertainty1Pt(0x0),
   fPtChi2PerClusterTPC(0x0),
   fPtChi2PerClusterTPCIter1(0x0),
   fPtNCrossedRows(0x0),
@@ -134,6 +132,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fPtChi2GoldPhi(0x0),
   fPtChi2GGCPhi(0x0),
   fChi2GoldChi2GGC(0x0),
+  fPtChi2ITSPhi(0x0),
   fPtSigmaY2(0x0),
   fPtSigmaZ2(0x0),
   fPtSigmaSnp2(0x0),
@@ -178,7 +177,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fPtMax(100.),
   fIsPbPb(0),
   fCentClass(10),
-  fNVariables(25),
+  fNVariables(26),
   fVariables(0x0),
   fITSClusterMap(0),
   fAvgTrials(1),
@@ -217,7 +216,6 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fPtRelUncertainty1PtChi2(0x0),
   fPtRelUncertainty1PtChi2Iter1(0x0),
   fPtRelUncertainty1PtPhi(0x0),
-  fPtUncertainty1Pt(0x0),
   fPtChi2PerClusterTPC(0x0),
   fPtChi2PerClusterTPCIter1(0x0),
   fPtNCrossedRows(0x0),
@@ -238,6 +236,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fPtChi2GoldPhi(0x0),
   fPtChi2GGCPhi(0x0),
   fChi2GoldChi2GGC(0x0),
+  fPtChi2ITSPhi(0x0),
   fPtSigmaY2(0x0),
   fPtSigmaZ2(0x0),
   fPtSigmaSnp2(0x0),
@@ -600,9 +599,6 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   fPtRelUncertainty1PtPhi = new TH3F("fPtRelUncertainty1PtPhi","fPtRelUncertainty1PtPhi",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNPhiBins,binsPhi);
   fHistList->Add(fPtRelUncertainty1PtPhi);
 
-  fPtUncertainty1Pt = new TH2F("fPtUncertainty1Pt","fPtUncertainty1Pt",fgkNPtBins,binsPt,fgkNUncertainty1PtBins,binsUncertainty1Pt);
-  fHistList->Add(fPtUncertainty1Pt);
- 
   fPtChi2PerClusterTPC = new TH2F("fPtChi2PerClusterTPC","fPtChi2PerClusterTPC",fgkNPtBins,binsPt,fgkNChi2PerClusBins,binsChi2PerClus);
   fHistList->Add(fPtChi2PerClusterTPC);
  
@@ -663,6 +659,8 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   fChi2GoldChi2GGC = new TH2F("fChi2GoldChi2GGC","fChi2GoldChi2GGC;#chi^{2}_{gold};#chi^{2}_{ggc}",fgkNChi2CBins,binsChi2C,fgkNChi2CBins,binsChi2C);
   fHistList->Add(fChi2GoldChi2GGC);
 
+  fPtChi2ITSPhi = new TH3F("fPtChi2ITSPhi","fPtChi2ITSPhi;p_{T};#chi^{2}_{ITS};#varphi",fgkNPtBins,binsPt,fgkNChi2CBins,binsChi2C,fgkNPhiBins,binsPhi);
+  fHistList->Add(fPtChi2ITSPhi);
 
   fPtSigmaY2 = new TH2F("fPtSigmaY2","fPtSigmaY2",fgkN1PtBins,bins1Pt,fgkNSigmaY2Bins,binsSigmaY2);
   fHistList->Add(fPtSigmaY2);
@@ -1009,6 +1007,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
     22: Chi2 between global and global constrained
     23: #crossed rows from fit map
     24: (#crossed rows)/(#findable clusters) from fit map
+    25: chi2ITS
   */
 
   for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
@@ -1209,6 +1208,8 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
     if(track->GetTPCNclsF()>0.) crossedRowsTPCNClsFFit = fVariables->At(23)/track->GetTPCNclsF();
     fVariables->SetAt(crossedRowsTPCNClsFFit,24);
 
+    fVariables->SetAt(track->GetITSchi2(),25);
+
     TBits fitmap = track->GetTPCFitMap();
     fPtNClustersNClustersFitMap->Fill(track->Pt(),track->GetTPCNcls(),(float)fitmap.CountBits());
     
@@ -1309,6 +1310,8 @@ void AliPWG4HighPtTrackQA::DoAnalysisAOD() {
     if(aodtrack->GetTPCNclsF()>0.) crossedRowsTPCNClsFFit = fVariables->At(23)/aodtrack->GetTPCNclsF();
     fVariables->SetAt(crossedRowsTPCNClsFFit,24); //(#crossed rows)/(#findable clusters) from fit map
 
+    fVariables->SetAt(0.,25);
+
     fPtAll->Fill(fVariables->At(0));
 
     FillHistograms();
@@ -1356,7 +1359,6 @@ void AliPWG4HighPtTrackQA::FillHistograms() {
     fPtRelUncertainty1PtChi2Iter1->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(19)/fVariables->At(18));
   fPtRelUncertainty1PtPhi->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(1));
   
-  fPtUncertainty1Pt->Fill(fVariables->At(0),TMath::Sqrt(fVariables->At(17)));
   fPtSigmaY2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(13)));
   fPtSigmaZ2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(14)));
   fPtSigmaSnp2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(15)));
@@ -1396,6 +1398,9 @@ void AliPWG4HighPtTrackQA::FillHistograms() {
   fPtRelUncertainty1PtNCrossedRows->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(11));
   fPtRelUncertainty1PtNCrossedRowsFit->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(23));
 
+  if(fVariables->At(6)>0.)
+    fPtChi2ITSPhi->Fill(fVariables->At(0),fVariables->At(25)/fVariables->At(6),fVariables->At(1));
+
 }
 
 //________________________________________________________________________
@@ -1419,8 +1424,6 @@ Bool_t AliPWG4HighPtTrackQA::PythiaInfoFromFile(const char* currFile,Float_t &fX
     // not an archive take the basename....
     file.ReplaceAll(gSystem->BaseName(file.Data()),"");
   }
-  //  Printf("%s",file.Data());
-   
 
   TFile *fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")); // problem that we cannot really test the existance of a file in a archive so we have to lvie with open error message from root
   if(!fxsec){

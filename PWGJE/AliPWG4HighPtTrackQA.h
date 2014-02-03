@@ -198,7 +198,7 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   TH3F *fPtRelUncertainty1PtChi2;              //! Pt vs relUncertainty1Pt vs Chi2TPC/NClus
   TH3F *fPtRelUncertainty1PtChi2Iter1;         //! Pt vs relUncertainty1Pt vs Chi2TPC/NClusIter1
   TH3F *fPtRelUncertainty1PtPhi;               //! Pt vs relUncertainty1PtPhi
-  TH2F *fPtUncertainty1Pt;                     //! Pt vs Uncertainty1Pt
+
   TH2F *fPtChi2PerClusterTPC;                  //! Pt vs Chi2PerClusterTPC
   TH2F *fPtChi2PerClusterTPCIter1;             //! Pt vs Chi2PerClusterTPCIter1
   TH2F *fPtNCrossedRows;                       //! Pt vs NCrossedRows
@@ -221,6 +221,8 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   TH3F *fPtChi2GGCPhi;                         //! Pt vs Chi2 between global and global constrained track vs phi
   TH2F *fChi2GoldChi2GGC;                      //! Correlations between gold chi2 and GGC chi2
 
+  TH3F *fPtChi2ITSPhi;                         //! Pt vs ITS chi2 vs phi
+
   //histos for covariance matrix elements
   TH2F *fPtSigmaY2;                            //! 1/Pt vs sigma(y) extCov[0]
   TH2F *fPtSigmaZ2;                            //! 1/Pt vs sigma(z) extCov[2]
@@ -240,6 +242,6 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
 
   TList *fHistList; //! List of Histograms
  
-  ClassDef(AliPWG4HighPtTrackQA,5) 
+  ClassDef(AliPWG4HighPtTrackQA,6) 
 };
 #endif

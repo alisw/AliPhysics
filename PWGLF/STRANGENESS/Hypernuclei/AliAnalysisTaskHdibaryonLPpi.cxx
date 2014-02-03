@@ -780,6 +780,12 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
   
   fESD = dynamic_cast<AliESDEvent *>(fInputEvent);
 
+    if (!fESD) {
+      //Printf("ERROR: fESD not available");
+      return;
+    }
+
+
   const AliESDVertex *vertex = fESD->GetPrimaryVertexTracks();
   if (vertex->GetNContributors()<1) 
     {
@@ -1100,6 +1106,7 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
     
     decayLength=sqrt(dd[0]*dd[0]+dd[1]*dd[1]+dd[2]*dd[2]);
 
+      if (decayVertex == NULL) cout << "Lambda decay vtx pointer NULL" << endl;
     if (decayVertex) delete decayVertex;
 
     TLorentzVector negPio1;
@@ -1300,6 +1307,7 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
 	      //	    Double_t xpp(0.0);
 	      //	    Double_t dca = trackN->GetDCA(trackP,bz,xthiss,xpp);
 
+	      if (decayVertex1 == NULL) cout << "Secondary decay vtx pointer NULL" << endl;
 	    if (decayVertex1) delete decayVertex1;
 	    h1.SetXYZ(-dd1[0],-dd1[1],-dd1[2]);
 
@@ -1401,7 +1409,7 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
 	      //fHistNdim = new THnSparseF("fHistNdim","THnS;InvMass, InvMassLambda, pointingAngle, armPoAlpha, armPoQt, pTL, pTH, d0p, d0n, dcaHd, dca, decayL, cosPA, centr, multi, mcinf;InvMassH", 16,binsD01,xminD01,xmaxD01);
 
 	    	    Double_t vec[16]={hDibaryon.M(), lInvMassLambda, pointingAngleH, alfa, qt, lPtLambda, hDibaryon.Pt(), posPionKF.GetDistanceFromVertex(primVtx), protonKF.GetDistanceFromVertex(primVtx), dca, protonKF.GetDistanceFromVertex(posPionKF), TMath::Cos(pointingAngleH), centrPerc, refMultTpc, mcStatus};
-		      //	    	    fHistNdim->Fill(vec);
+		      fHistNdim->Fill(vec);
 
 	  }
 	}
@@ -1558,6 +1566,8 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
   // Post output data.
   PostData(1,fHistList);
   //PostData(0,fHistList);
+
+    if (listCrossV0 == NULL) return;
 
   if (listCrossV0) delete listCrossV0;
   if (esdVer1) delete esdVer1;

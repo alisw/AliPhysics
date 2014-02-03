@@ -101,7 +101,8 @@ void AddTaskForwardFlowQC(Int_t    maxMom        = 5,
   task->SetFlowFlags(flags);
   
   // --- Set eta gap value -----------------------------------------
-  task->SetEtaGapValue(etaGap);
+  if (useEtaGap) task->SetEtaGapValue(etaGap);
+  else if (useTPCForRef && fwdDet.Contains("FMD")) task->SetEtaGapValue(0.1);
 
   // --- Check which harmonics to calculate --------------------------
   task->SetMaxFlowMoment(maxMom);
@@ -117,9 +118,8 @@ void AddTaskForwardFlowQC(Int_t    maxMom        = 5,
   task->SetVertexAxis(a);
 
   // --- Set non-default axis for centrality -------------------------
-  Double_t cent[] = {0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 100 };
-  //Double_t cent[] = {0, 2.5, 15, 25, 50, 100 };
-  //Double_t cent[] = {0, 100};
+//  Double_t cent[] = {0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 100 };
+  Double_t cent[] = {0, 2.5, 5, 7.5, 10, 12.5, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 95, 100 };
   Int_t nBins = sizeof(cent)/sizeof(Double_t) -1;
   TAxis* centAxis = new TAxis(nBins, cent);
   task->SetCentralityAxis(centAxis);

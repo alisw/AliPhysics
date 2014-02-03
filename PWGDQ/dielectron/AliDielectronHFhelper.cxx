@@ -118,7 +118,7 @@ void AliDielectronHFhelper::SetHFArray(const char* filename, const char* contain
 	if( objname.Contains(Form("%s_HF",container)) && obj->IsA()==TObjArray::Class()) {
 	  fMainArr = new TObjArray( *(dynamic_cast<TObjArray*>(obj)) );
 	  fMainArr->SetOwner();
-	  //fMainArr->Print();
+	  //	  fMainArr->Print();
 	  return;
 	}
       }
@@ -240,6 +240,7 @@ TObjArray* AliDielectronHFhelper::CollectProfiles(TString option,
   if(varx < AliDielectronVarManager::kNMaxValues) dim++;
   if(vary < AliDielectronVarManager::kNMaxValues) dim++;
   if(varz < AliDielectronVarManager::kNMaxValues) dim++;
+  if(vart < AliDielectronVarManager::kNMaxValues) dim++;
   Bool_t bPairClass=0;
   if( varx < AliDielectronVarManager::kPairMax ||
       vary < AliDielectronVarManager::kPairMax ||

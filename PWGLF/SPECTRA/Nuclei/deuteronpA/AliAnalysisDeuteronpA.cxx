@@ -176,6 +176,19 @@ void AliAnalysisDeuteronpA::UserCreateOutputObjects()
   const Int_t kPtBins = 28;
   const Int_t kMultBins = 11;
   const Int_t kDcaBins = 38;
+
+
+  //different binning for YCMS in pA to cover detector acceptance
+  Double_t kYlowBorder = -0.6;
+  Double_t kYhighBorder = 0.6;
+  Double_t kYBins = 12;
+
+  if (fRapCMSpA){
+    kYlowBorder = -0.1;
+    kYhighBorder = 1.1;
+    kYBins = 12;
+  }
+
   //
   // sort pT-bins ..
   //
@@ -203,10 +216,10 @@ void AliAnalysisDeuteronpA::UserCreateOutputObjects()
   // (8..) dca_xy
   // (9.) CODE -- only MC 0-generated, 1-true rec. primaries, 2-misident prim, 3-second weak, 4-second material, 5-misident sec
   //
-  //                              0,           1,           2,  3,      4,    5,    6,    7,       8
-  Int_t    binsHistReal[9] = {   3,   kMultBins,     kPtBins,  2,      12,   50,    2,  100, kDcaBins};
-  Double_t xminHistReal[9] = {-0.5,        -0.5,           0, -2,    -0.6,   -5,- 0.5, -2.5,       -3};
-  Double_t xmaxHistReal[9] = { 2.5,        10.5,           3,  2,     0.6,    5,  1.5,  2.5,        3};
+  //                              0,           1,           2,  3,      4,              5,    6,    7,       8
+  Int_t    binsHistReal[9] = {   3,   kMultBins,     kPtBins,  2,      kYBins      ,   50,    2,  100, kDcaBins};
+  Double_t xminHistReal[9] = {-0.5,        -0.5,           0, -2,      kYlowBorder ,   -5,- 0.5, -2.5,       -3};
+  Double_t xmaxHistReal[9] = { 2.5,        10.5,           3,  2,      kYhighBorder,    5,  1.5,  2.5,        3};
   fHistRealTracks = new THnSparseF("fHistRealTracks","real tracks",9,binsHistReal,xminHistReal,xmaxHistReal);
   //
   fHistRealTracks->GetAxis(2)->Set(kPtBins, binsPt);
@@ -220,10 +233,10 @@ void AliAnalysisDeuteronpA::UserCreateOutputObjects()
   //
   fHistTofQA = new TH2F("fHistTofQA","TOF-QA",200,-4.,4.,400,0,1.1);
   fListHist->Add(fHistTofQA);
-  //                            0,            1,           2,  3,      4,   5,    6,    7,        8,    9
-  Int_t    binsHistMC[10] = {   3,    kMultBins,     kPtBins,  2,     12,  50,    2,  100, kDcaBins,    6};
-  Double_t xminHistMC[10] = {-0.5,         -0.5,           0, -2,   -0.6,  -5,- 0.5, -2.5,       -3, -0.5};
-  Double_t xmaxHistMC[10] = { 2.5,         10.5,           3,  2,    0.6,   5,  1.5,  2.5,        3,  5.5};
+  //                            0,            1,           2,  3,      4,            5,    6,    7,        8,    9
+  Int_t    binsHistMC[10] = {   3,    kMultBins,     kPtBins,  2,    kYBins      ,  50,    2,  100, kDcaBins,    6};
+  Double_t xminHistMC[10] = {-0.5,         -0.5,           0, -2,    kYlowBorder ,  -5,- 0.5, -2.5,       -3, -0.5};
+  Double_t xmaxHistMC[10] = { 2.5,         10.5,           3,  2,    kYhighBorder,   5,  1.5,  2.5,        3,  5.5};
   //
   // different binning for CODE axis, if we want to save motherPDG
   //
@@ -421,7 +434,7 @@ void AliAnalysisDeuteronpA::UserExec(Option_t *)
       //
       Double_t xv = trackMC->Vx();
       Double_t yv = trackMC->Vy();
-      Double_t zv = trackMC->Vz();
+      //Double_t zv = trackMC->Vz();
       Double_t dxy = 0;
       dxy = TMath::Sqrt(xv*xv + yv*yv); // so stupid to avoid warnings
       //Double_t dz = 0;

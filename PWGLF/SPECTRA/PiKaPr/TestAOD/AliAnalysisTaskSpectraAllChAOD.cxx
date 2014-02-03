@@ -139,7 +139,7 @@ void AliAnalysisTaskSpectraAllChAOD::UserCreateOutputObjects()
   //                                             cent             Q vec   
   Int_t    binsHistRealEv[nvarev] = {    fnCentBins,      fnQvecBins};
   Double_t xminHistRealEv[nvarev] = {           0.,               0.};
-  Double_t xmaxHistRealEv[nvarev] = {       100.,              10.};
+  Double_t xmaxHistRealEv[nvarev] = {       100.,               8.};
   THnSparseF* NSparseHistEv = new THnSparseF("NSparseHistEv","NSparseHistEv",nvarev,binsHistRealEv,xminHistRealEv,xmaxHistRealEv);
   NSparseHistEv->GetAxis(0)->SetTitle(Form("%s cent",fEventCuts->GetCentralityMethod().Data()));
   NSparseHistEv->GetAxis(0)->SetName(Form("%s_cent",fEventCuts->GetCentralityMethod().Data()));

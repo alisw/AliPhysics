@@ -47,7 +47,6 @@ set ( SRCS
  EMCAL/AliEmcalSetupTask.cxx
  EMCAL/AliEmcalTenderTask.cxx
  EMCAL/AliEmcalTrackPropagatorTask.cxx
- EMCAL/AliEmcalTrackPropagatorTaskAOD.cxx
  EMCAL/AliEmcalTriggerMaker.cxx
  EMCAL/AliEmcalTriggerPatchInfo.cxx
  EMCAL/AliEmcalTriggerSetupInfo.cxx
