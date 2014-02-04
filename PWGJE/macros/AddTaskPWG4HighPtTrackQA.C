@@ -241,7 +241,7 @@ void AddTaskPWG4HighPtTrackQAAllReduced2011(char *prodType = "LHC10h",Bool_t isP
 
 }
 
-void AddTaskPWG4HighPtTrackQAAOD(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 1, Int_t filterBit = 272) 
+void AddTaskPWG4HighPtTrackQAAOD(char *prodType = "LHC11h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 1, Int_t filterBit = 768) 
 {  
   UInt_t iPhysicsSelectionFlagMB = AliVEvent::kMB; 
   UInt_t iPhysicsSelectionFlagCentral = AliVEvent::kCentral;
@@ -251,51 +251,113 @@ void AddTaskPWG4HighPtTrackQAAOD(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, 
 
   Int_t cent = 10;
 
+  Int_t filterBit1 = 256; //standard global tracks
+  Int_t filterBit2 = 512; //complementary tracks
+
+  Bool_t bIncludeNoITS = kFALSE;
+
   TString strRunPeriod = TString(prodType);
+  strRunPeriod.ToLower();
+
+  if (strRunPeriod == "lhc10h" ||strRunPeriod == "lhc11h" || strRunPeriod == "lhc13b" || strRunPeriod == "lhc13c" || strRunPeriod == "lhc13d" || strRunPeriod == "lhc13e" || strRunPeriod == "lhc13f" || strRunPeriod == "lhc13g" || strRunPeriod == "lhc12g" || strRunPeriod == "lhc12a15e" || strRunPeriod == "lhc13b4" || strRunPeriod == "lhc13b4_fix" || strRunPeriod == "lhc13b4_plus" || strRunPeriod == "lhc12a15f") {
+    filterBit  = 768;
+    filterBit1 = 256;
+    filterBit2 = 512;
+    bIncludeNoITS = kFALSE;
+  }
+  else if (strRunPeriod == "lhc11a" || strRunPeriod == "lhc10hold" || runPeriod.Contains("lhc12a15a") || runPeriod.Contains("lhc11a2")) {
+    filterBit  = 272; 
+    filterBit1 = 16;
+    filterBit2 = 256;
+    bIncludeNoITS = kTRUE;
+  }
 
   if(isPbPb) {
     for(cent=0; cent<4; cent++) {
       AliPWG4HighPtTrackQA *taskTrackQAMB = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlagMB);
       taskTrackQAMB->SetFilterMask(filterBit);
+      taskTrackQAMB->SetIncludeNoITS(bIncludeNoITS);
+
+      AliPWG4HighPtTrackQA *taskTrackQAMB1 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,5,iPhysicsSelectionFlagMB);
+      taskTrackQAMB1->SetFilterMask(filterBit1);
+      taskTrackQAMB1->SetIncludeNoITS(bIncludeNoITS);
+      
+      AliPWG4HighPtTrackQA *taskTrackQAMB2 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,5,iPhysicsSelectionFlagMB);
+      taskTrackQAMB2->SetFilterMask(filterBit2);
+      taskTrackQAMB2->SetIncludeNoITS(bIncludeNoITS);
     }
 
     cent = 10;
 
-    if(strRunPeriod.Contains("LHC11h")) {
+    if(strRunPeriod.Contains("lhc11h")) {
       AliPWG4HighPtTrackQA *taskTrackQAC = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlagCentral);
       taskTrackQAC->SetFilterMask(filterBit);
-    
+      taskTrackQAC->SetIncludeNoITS(bIncludeNoITS);
+
+      AliPWG4HighPtTrackQA *taskTrackQAC1 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,5,iPhysicsSelectionFlagCentral);
+      taskTrackQAC1->SetFilterMask(filterBit1);
+      taskTrackQAC1->SetIncludeNoITS(bIncludeNoITS);
+
+      AliPWG4HighPtTrackQA *taskTrackQAC2 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,5,iPhysicsSelectionFlagCentral);
+      taskTrackQAC2->SetFilterMask(filterBit2);
+      taskTrackQAC2->SetIncludeNoITS(bIncludeNoITS);
+
       AliPWG4HighPtTrackQA *taskTrackQASC = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlagSemiCentral);
       taskTrackQASC->SetFilterMask(filterBit);
+      taskTrackQASC->SetIncludeNoITS(bIncludeNoITS);
+
+      AliPWG4HighPtTrackQA *taskTrackQASC1 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,5,iPhysicsSelectionFlagSemiCentral);
+      taskTrackQASC1->SetFilterMask(filterBit1);
+      taskTrackQASC1->SetIncludeNoITS(bIncludeNoITS);
+
+      AliPWG4HighPtTrackQA *taskTrackQASC2 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,5,iPhysicsSelectionFlagSemiCentral);
+      taskTrackQASC2->SetFilterMask(filterBit2);
+      taskTrackQASC2->SetIncludeNoITS(bIncludeNoITS);
     }
   }
   else {
     cent = 10;
 
-    if(strRunPeriod.Contains("LHC13")) {
+    if(strRunPeriod.Contains("lhc13")) {
       AliPWG4HighPtTrackQA *taskTrackQAMB = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlagINT7);
-      taskTrackQAMB->SetFilterMask(768);
+      taskTrackQAMB->SetFilterMask(filterBit);
+      taskTrackQAMB->SetIncludeNoITS(bIncludeNoITS);
 
       AliPWG4HighPtTrackQA *taskTrackQAMB1 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,5,iPhysicsSelectionFlagINT7);
-      taskTrackQAMB1->SetFilterMask(256);
+      taskTrackQAMB1->SetFilterMask(filterBit1);
+      taskTrackQAMB1->SetIncludeNoITS(bIncludeNoITS);
 
       AliPWG4HighPtTrackQA *taskTrackQAMB2 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,5,iPhysicsSelectionFlagINT7);
-      taskTrackQAMB2->SetFilterMask(512);
+      taskTrackQAMB2->SetFilterMask(filterBit2);
+      taskTrackQAMB2->SetIncludeNoITS(bIncludeNoITS);
 
-      if(strRunPeriod.EqualTo("LHC13d") || strRunPeriod.EqualTo("LHC13e") || strRunPeriod.EqualTo("LHC13f")) {
+      if(strRunPeriod.EqualTo("LHC13d") || strRunPeriod.EqualTo("LHC13e") || strRunPeriod.EqualTo("LHC13f") || strRunPeriod.EqualTo("LHC13g")) {
 	AliPWG4HighPtTrackQA *taskTrackQAEMCEJE = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlagEMCEJE);
-	taskTrackQAEMCEJE->SetFilterMask(768);
-	
+	taskTrackQAEMCEJE->SetFilterMask(filterBit);
+	taskTrackQAEMCEJE->SetIncludeNoITS(bIncludeNoITS);
+
 	AliPWG4HighPtTrackQA *taskTrackQAEMCEJE1 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,5,iPhysicsSelectionFlagEMCEJE);
-	taskTrackQAEMCEJE1->SetFilterMask(256);
-	
+	taskTrackQAEMCEJE1->SetFilterMask(filterBit1);
+	taskTrackQAEMCEJE1->SetIncludeNoITS(bIncludeNoITS);
+
 	AliPWG4HighPtTrackQA *taskTrackQAEMCEJE2 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,5,iPhysicsSelectionFlagEMCEJE);
-	taskTrackQAEMCEJE2->SetFilterMask(512);
+	taskTrackQAEMCEJE2->SetFilterMask(filterBit2);
+	taskTrackQAEMCEJE2->SetIncludeNoITS(bIncludeNoITS);
       }
     }
     else {
       AliPWG4HighPtTrackQA *taskTrackQAMB = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlagMB);
       taskTrackQAMB->SetFilterMask(filterBit);
+      taskTrackQAMB->SetIncludeNoITS(bIncludeNoITS);
+
+      AliPWG4HighPtTrackQA *taskTrackQAMB1 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,5,iPhysicsSelectionFlagMB);
+      taskTrackQAMB1->SetFilterMask(filterBit1);
+      taskTrackQAMB1->SetIncludeNoITS(bIncludeNoITS);
+      
+
+      AliPWG4HighPtTrackQA *taskTrackQAMB2 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,5,iPhysicsSelectionFlagMB);
+      taskTrackQAMB2->SetFilterMask(filterBit2);
+      taskTrackQAMB2->SetIncludeNoITS(bIncludeNoITS);
     }
   }
 }
@@ -360,8 +422,12 @@ AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14"
     trackCuts = CreateTrackCutsPWGJE(10001006);
   }
   if(trackType==0 && cuts==5) {
-    //Cuts global tracks with ITSrefit requirement and SPDrequirement for jet analysis + NCrossedRowsCut>120 recommended in 2011
+    //Cuts global tracks with ITSrefit requirement and SPDrequirement for jet analysis + NCrossedRowsCut>70 recommended in 2011
     trackCuts = CreateTrackCutsPWGJE(10001008);
+  }
+  if(trackType==0 && cuts==6) {
+    //Cuts global tracks with ITSrefit requirement and no SPDrequirement for jet analysis + NCrossedRowsCut>70 recommended in 2011
+    trackCuts = CreateTrackCutsPWGJE(10051008);
   }
   
   if(trackType==0 && cuts==2) {
@@ -387,7 +453,7 @@ AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14"
     trackCuts = CreateTrackCutsPWGJE(10011006);
   }
   if(trackType==7 && cuts==5) {
-    // tight global tracks  + NCrossedRowsCut>120 recommended in 2011
+    // tight global tracks  + NCrossedRowsCut>70 recommended in 2011
     trackCuts = CreateTrackCutsPWGJE(10011008);
   }
   if(trackType==7 && cuts==2) {
@@ -459,6 +525,10 @@ AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14"
     trigName += "kINT7";
   else if(iPhysicsSelectionFlag == AliVEvent::kMB)
     trigName += "kMB";
+  else if(iPhysicsSelectionFlag == AliVEvent::kCentral)
+    trigName += "kCentral";
+  else if(iPhysicsSelectionFlag == AliVEvent::kSemiCentral)
+    trigName += "kSemiCentral";
   else if(iPhysicsSelectionFlag == AliVEvent::kEMC7)
     trigName += "kEMC7";
   else if(iPhysicsSelectionFlag == AliVEvent::kEMCEJE)

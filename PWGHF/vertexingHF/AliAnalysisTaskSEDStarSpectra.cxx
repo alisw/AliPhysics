@@ -87,7 +87,8 @@ AliAnalysisTaskSEDStarSpectra::AliAnalysisTaskSEDStarSpectra():
   fDoImpParDstar(kFALSE),
   fNImpParBins(400),
   fLowerImpPar(-2000.),
-  fHigherImpPar(2000.)
+  fHigherImpPar(2000.),
+  fDoDStarVsY(kFALSE)
 {
   //
   // Default ctor
@@ -115,7 +116,8 @@ AliAnalysisTaskSEDStarSpectra::AliAnalysisTaskSEDStarSpectra(const Char_t* name,
   fDoImpParDstar(kFALSE),
   fNImpParBins(400),
   fLowerImpPar(-2000.),
-  fHigherImpPar(2000.)
+  fHigherImpPar(2000.),
+  fDoDStarVsY(kFALSE)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -422,6 +424,11 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
       }
     }
     
+    if (fDoDStarVsY && isSelected){
+      ((TH3F*) (fOutputPID->FindObject("deltamassVsyVsPt")))->Fill(dstarD0pi->DeltaInvMass(),dstarD0pi->YDstar(),dstarD0pi->Pt() );  
+    }
+
+    
     // fill PID
     FillSpectrum(dstarD0pi,isDStar,fCuts,isSelected,fOutputPID);
     SideBandBackground(dstarD0pi,fCuts,isSelected, fOutputPID);
@@ -433,7 +440,7 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
     fCuts->SetUsePID(kTRUE);
 
     FillSpectrum(dstarD0pi,isDStar,fCuts,isSelectedNoPID,fOutputAll);
-    SideBandBackground(dstarD0pi,fCuts,isSelectedNoPID, fOutputAll);
+    //    SideBandBackground(dstarD0pi,fCuts,isSelectedNoPID, fOutputAll);
 
     // rare D search ------ 
     if(fDoSearch){
@@ -534,11 +541,11 @@ void AliAnalysisTaskSEDStarSpectra::UserCreateOutputObjects() {
   // define histograms
   DefineHistograms();
 
- //Counter for Normalization
- fCounter = new AliNormalizationCounter(Form("%s",GetOutputSlot(5)->GetContainer()->GetName()));
- fCounter->Init();
+  //Counter for Normalization
+  fCounter = new AliNormalizationCounter(Form("%s",GetOutputSlot(5)->GetContainer()->GetName()));
+  fCounter->Init();
 
- if(fDoImpParDstar) CreateImpactParameterHistos();
+  if(fDoImpParDstar) CreateImpactParameterHistos();
 
   PostData(1,fOutput);
   PostData(2,fOutputAll);
@@ -847,7 +854,11 @@ void  AliAnalysisTaskSEDStarSpectra::DefineHistograms(){
   fOutputPID->Add(etapidMass);
   fOutputPID->Add(etapidSgn);
   fOutputPID->Add(etapidBkg);
-  
+
+  if (fDoDStarVsY){  
+    TH3F* deltamassVsyVsPtPID = new TH3F("deltamassVsyVsPt", "delta mass Vs y Vs pT;  #DeltaM [GeV/c^{2}]; y; p_{T} [GeV/c]", 700,0.13,0.2, 40, -1, 1, 36, 0., 36.);
+    fOutputPID->Add(deltamassVsyVsPtPID);
+  }
   return;
 }
 //________________________________________________________________________

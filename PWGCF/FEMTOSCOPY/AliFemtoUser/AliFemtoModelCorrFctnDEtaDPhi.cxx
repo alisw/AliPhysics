@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-// AliFemtoModelCorrFctnDEtaDPhi - A correlation function that analyzes            //
+// AliFemtoModelCorrFctnDEtaDPhi - A correlation function that analyzes       //
 // two particle correlations with respect to the azimuthal angle (phi)        //
 // and pseudorapidity (eta) difference                                        //
 //                                                                            //

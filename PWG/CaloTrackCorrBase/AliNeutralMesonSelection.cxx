@@ -192,9 +192,8 @@ void AliNeutralMesonSelection::InitParameters()
 
 }
 
-//_____________________________________________________________________
-Bool_t AliNeutralMesonSelection::IsAngleInWindow(const Float_t angle,
-                                                 const Float_t e) const 
+//______________________________________________________________________________
+Bool_t AliNeutralMesonSelection::IsAngleInWindow(Float_t angle, Float_t e) const
 {
  
   // Check if the opening angle of the candidate pairs is inside 

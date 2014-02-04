@@ -24,6 +24,7 @@
 #include <AliITSPIDResponse.h>
 #include <AliTPCPIDResponse.h>
 #include <TPDGCode.h>
+#include <AliAODMCParticle.h>
 #include "AliLnID.h"
 
 ClassImp(AliLnID)
@@ -179,9 +180,25 @@ Int_t AliLnID::GetPID(const TParticle* p) const
 //
 // Montecarlo PID
 //
+	return this->GetPID(p->GetPdgCode());
+}
+
+Int_t AliLnID::GetPID(const AliAODMCParticle* p) const
+{
+//
+// Montecarlo PID
+//
+	return this->GetPID(p->GetPdgCode());
+}
+
+Int_t AliLnID::GetPID(Int_t pdgCode) const
+{
+//
+// Montecarlo PID
+//
 	enum { kDeuteron=1000010020, kTriton=1000010030, kHelium3=1000020030, kAlpha=1000020040 };
 	
-	switch(TMath::Abs(p->GetPdgCode()))
+	switch(TMath::Abs(pdgCode))
 	{
 		case kElectron:  return AliPID::kElectron;
 		case kMuonMinus: return AliPID::kMuon;
@@ -210,6 +227,10 @@ Int_t AliLnID::GetPID(Int_t pidCode, Double_t pITS, Double_t dEdxITS, Int_t nPoi
 	{
 		return this->GetMaxLikelihoodPID(pITS, dEdxITS, nPointsITS, pTPC, dEdxTPC, nPointsTPC, pTOF, beta);
 	}
+	else if(fPidProcedure == kITS)
+	{
+		return this->GetITSpid(pidCode, pITS, dEdxITS, nPointsITS, nSigITS);
+	}
 	else if(fPidProcedure == kTPC)
 	{
 		return this->GetTPCpid(pidCode, pTPC, dEdxTPC, nPointsTPC, nSigTPC);
@@ -222,6 +243,17 @@ Int_t AliLnID::GetPID(Int_t pidCode, Double_t pITS, Double_t dEdxITS, Int_t nPoi
 	{
 		return this->GetTPCTOFpid(pidCode, pTPC, dEdxTPC, nPointsTPC, nSigTPC, pTOF, beta, nSigTOF);
 	}
+	
+	return -1;
+}
+
+Int_t AliLnID::GetITSpid(Int_t pidCode, Double_t pITS, Double_t dEdxITS, Double_t nPointsITS, Double_t nSigmaITS) const
+{
+//
+// Check if particle with the given pid code is within
+// +/- nSigma around the expected dEdx in the ITS
+//
+	if( this->GetITSmatch(pidCode, pITS, dEdxITS, static_cast<Int_t>(nPointsITS), nSigmaITS)) return pidCode;
 	
 	return -1;
 }

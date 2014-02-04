@@ -45,6 +45,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    AliAnalysisTaskSE(),
    fUseMC(kFALSE),
    fEvNum(0),
+   fTriggerMask(0),
    fUseCentrality(kFALSE),
    fCentralityType("QUALITY"),
    fUseAOD049CentralityPatch(kFALSE),
@@ -81,6 +82,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC) :
    AliAnalysisTaskSE(name),
    fUseMC(useMC),
    fEvNum(0),
+   fTriggerMask(AliVEvent::kMB),
    fUseCentrality(kFALSE),
    fCentralityType("QUALITY"),
    fUseAOD049CentralityPatch(kFALSE),
@@ -122,6 +124,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    AliAnalysisTaskSE(copy),
    fUseMC(copy.fUseMC),
    fEvNum(0),
+   fTriggerMask(copy.fTriggerMask),
    fUseCentrality(copy.fUseCentrality),
    fCentralityType(copy.fCentralityType),
    fUseAOD049CentralityPatch(copy.fUseAOD049CentralityPatch),
@@ -168,6 +171,8 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    if (this == &copy)
       return *this;
    fUseMC = copy.fUseMC;
+   fEvNum = copy.fEvNum;
+   fTriggerMask = copy.fTriggerMask;
    fUseCentrality = copy.fUseCentrality;
    fCentralityType = copy.fCentralityType;
    fUseAOD049CentralityPatch = copy.fUseAOD049CentralityPatch;
@@ -602,7 +607,8 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
       output = 'E';
       // ESD specific check: Physics Selection
       // --> if this is failed, the event is rejected
-      isSelected = (((AliInputEventHandler *)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+      isSelected = (((AliInputEventHandler *)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fTriggerMask);
+
       if (!isSelected) {
          AliDebugClass(2, "Event does not pass physics selections");
          fRsnEvent.SetRef(0x0);
@@ -1126,4 +1132,68 @@ void AliRsnMiniAnalysisTask::SetEventQAHist(TString type,TH2F *histo)
    else AliWarning(Form("event QA histogram slot %s undefined",type.Data()));
 
    return;
+}
+
+//----------------------------------------------------------------------------------
+Int_t AliRsnMiniAnalysisTask::CreateValue(AliRsnMiniValue::EType type, Bool_t useMC)
+{
+//
+// Create a new value in the task,
+// and returns its ID, which is needed for setting up histograms.
+// If that value was already initialized, returns its ID and does not recreate it.
+//
+
+   Int_t valID = ValueID(type, useMC);
+   if (valID >= 0 && valID < fValues.GetEntries()) {
+      AliInfo(Form("Value '%s' is already created in slot #%d", AliRsnMiniValue::ValueName(type, useMC), valID));
+   } else {
+      valID = fValues.GetEntries();
+      AliInfo(Form("Creating value '%s' in slot #%d", AliRsnMiniValue::ValueName(type, useMC), valID));
+      new (fValues[valID]) AliRsnMiniValue(type, useMC);
+   }
+
+   return valID;
+}
+
+//----------------------------------------------------------------------------------
+Int_t AliRsnMiniAnalysisTask::ValueID(AliRsnMiniValue::EType type, Bool_t useMC)
+{
+//
+// Searches if a value computation is initialized
+//
+
+   const char *name = AliRsnMiniValue::ValueName(type, useMC);
+   TObject *obj = fValues.FindObject(name);
+   if (obj)
+      return fValues.IndexOf(obj);
+   else
+      return -1;
+}
+
+//----------------------------------------------------------------------------------
+AliRsnMiniOutput *AliRsnMiniAnalysisTask::CreateOutput(const char *name, AliRsnMiniOutput::EOutputType type, AliRsnMiniOutput::EComputation src)
+{
+//
+// Create a new histogram definition in the task,
+// which is then returned to the user for its configuration
+//
+
+   Int_t n = fHistograms.GetEntries();
+   AliRsnMiniOutput *newDef = new (fHistograms[n]) AliRsnMiniOutput(name, type, src);
+
+   return newDef;
+}
+
+//----------------------------------------------------------------------------------
+AliRsnMiniOutput *AliRsnMiniAnalysisTask::CreateOutput(const char *name, const char *outType, const char *compType)
+{
+//
+// Create a new histogram definition in the task,
+// which is then returned to the user for its configuration
+//
+
+   Int_t n = fHistograms.GetEntries();
+   AliRsnMiniOutput *newDef = new (fHistograms[n]) AliRsnMiniOutput(name, outType, compType);
+
+   return newDef;
 }

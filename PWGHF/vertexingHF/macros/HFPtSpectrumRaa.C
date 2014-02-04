@@ -50,13 +50,15 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-enum centrality{ kpp, k07half, kpPb0100, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k80100 };
+enum centrality{ kpp, k07half, kpPb0100, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100 };
 enum energy{ k276, k5dot023, k55 };
 enum BFDSubtrMethod { kfc, kNb };
 enum RaavsEP {kPhiIntegrated, kInPlane, kOutOfPlane};
 
 Bool_t printout = false;
+Double_t ptprintout = 1.5;
 Double_t NormPPUnc = 0.035;
+Double_t NormABUnc = 0.037;
 Bool_t elossFDQuadSum = true;
 
 //____________________________________________________________
@@ -100,6 +102,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 		     Int_t fdMethod = kNb, Int_t cc=kpp, Int_t Energy=k276,
 		     Double_t MinHypo=1./3., Double_t MaxHypo=3.0, Double_t MaxRb=6.0,
 		     Bool_t isRbHypo=false, Double_t CentralHypo = 1.0,
+		     Bool_t isUseTaaForRaa=true, const char *shadRbcFile="", Int_t nSigmaShad=3.0,
 		     Int_t isRaavsEP=kPhiIntegrated, Bool_t isScaledAndExtrapRef=kFALSE)
 {
 
@@ -108,7 +111,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   //
   // Defining the TAB values for the given centrality class
   //
-  Double_t Tab = 1., TabSyst = 0.;
+  Double_t Tab = 1., TabSyst = 0., A=207.2, B=207.2;
   if ( Energy!=k276 && Energy!=k5dot023) {
     printf("\n The Tab values for this cms energy have not yet been implemented, please do it ! \n");
     return;
@@ -144,6 +147,8 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     Tab = 1.32884; TabSyst = 0.0929536;
   } else if ( cc == k6080 ) {
     Tab = 0.419; TabSyst = 0.033;
+  } else if ( cc == k5080 ) {
+    Tab = 0.719; TabSyst = 0.054;
   } else if ( cc == k80100 ){
     Tab = 0.0690; TabSyst = 0.0062;
   }
@@ -152,14 +157,15 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   // https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PACentStudies#Glauber_Calculations_with_sigma
   else if( cc == kpPb0100 ){
     Tab = 0.098334; TabSyst = 0.0070679;
+    A=207.2; B=1.;
   }
 
   //
   // Reading the pp file 
   //
   TFile * ppf = new TFile(ppfile,"read");
-  TH1D * hSigmaPP;// = (TH1D*)ppf->Get("fhScaledData");
-  TGraphAsymmErrors * gSigmaPPSyst;// = (TGraphAsymmErrors*)ppf->Get("gScaledData");
+  TH1D * hSigmaPP;
+  TGraphAsymmErrors * gSigmaPPSyst;
   TGraphAsymmErrors * gSigmaPPSystData = (TGraphAsymmErrors*)ppf->Get("gScaledDataSystData");
   TGraphAsymmErrors * gSigmaPPSystTheory = (TGraphAsymmErrors*)ppf->Get("gScaledDataSystExtrap");
   TGraphAsymmErrors * gSigmaPPSystFeedDown = (TGraphAsymmErrors*)ppf->Get("gScaledDataSystFeedDown");
@@ -225,7 +231,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     systematicsAB->SetIsPbPb2010EnergyScan(true);
   }
   else if ( cc == k4060 || cc == k4050 || cc == k5060 ) systematicsAB->SetCentrality("4060");
-  else if ( cc == k6080 ) systematicsAB->SetCentrality("6080");
+  else if ( cc == k6080 || cc == k5080 ) systematicsAB->SetCentrality("6080");
   else if ( cc == k4080 ) systematicsAB->SetCentrality("4080");
   else if ( cc == k3050 ) {
     if (isRaavsEP == kPhiIntegrated) systematicsAB->SetCentrality("4080");
@@ -234,8 +240,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   }
   //
   else if ( cc == kpPb0100 ){ 
-    systematicsAB->SetCollisionType(0); 
-    cout <<endl<<" Beware pPb systematics not yet implemented, using pp at 7 TeV !! "<<endl<<endl; 
+    systematicsAB->SetCollisionType(2); 
   }
   else { 
     cout << " Systematics not yet implemented " << endl;
@@ -272,6 +277,45 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     binwidths[i-1] = binwidth;
   }
   limits[nbins] = xlow + binwidth;
+
+
+  //
+  // Read the shadowing file if given as input
+  //
+  Double_t centralRbcShad[nbins+1], minRbcShad[nbins+1], maxRbcShad[nbins+1];
+  for(Int_t i=0; i<=nbins; i++) { centralRbcShad[i]=1.0; minRbcShad[i]=6.0; maxRbcShad[i]=0.0; }
+  Bool_t isShadHypothesis = false;
+  if( strcmp(shadRbcFile,"")!=0 ) {
+    isShadHypothesis = true;
+    cout<<endl<<">>  Beware, using the shadowing prediction file with an "<<nSigmaShad<<"*sigma <<"<<endl<<endl;
+    TFile *fshad = new TFile(shadRbcFile,"read");
+    if(!fshad){ cout <<" >> Shadowing file not properly opened!!!"<<endl<<endl; return;}
+    // TH1D *hRbcShadCentral = (TH1D*)fshad->Get("hDfromBoverPromptD_Shadowing_central");
+    // TH1D *hRbcShadMin = (TH1D*)fshad->Get("hDfromBoverPromptD_Shadowing_upper");
+    // TH1D *hRbcShadMax = (TH1D*)fshad->Get("hDfromBoverPromptD_Shadowing_lower");
+    TH1D *hRbcShadCentral = (TH1D*)fshad->Get("hDfromBoverDfromc_L0");
+    TH1D *hRbcShadMin = (TH1D*)fshad->Get("hDfromBoverDfromc_L0");
+    TH1D *hRbcShadMax = (TH1D*)fshad->Get("hDfromBoverDfromc_L1");
+    //       nSigmaShad
+    //    nSigmaShad
+    for(Int_t i=1; i<=nbins; i++) {
+      Double_t xpt = hSigmaAB->GetBinCenter(i);
+      if(xpt>24) xpt = 20;
+      centralRbcShad[i] = hRbcShadCentral->GetBinContent( hRbcShadCentral->FindBin(xpt) );
+      Double_t minValue0 = hRbcShadMin->GetBinContent( hRbcShadMin->FindBin(xpt) );
+      Double_t maxValue0 = hRbcShadMax->GetBinContent( hRbcShadMax->FindBin(xpt) );
+      Double_t arrayEl[3] = {minValue0,maxValue0, centralRbcShad[i]};
+      Double_t minValue = TMath::MinElement(3,arrayEl);
+      Double_t maxValue = TMath::MaxElement(3,arrayEl);
+      cout<<">> Shadowing pt="<<xpt<<"  central="<<centralRbcShad[i]<<"  min="<<minValue<<"  max="<<maxValue<<endl;
+      if(minValue>centralRbcShad[i]){ minValue = centralRbcShad[i]; }
+      if(maxValue<centralRbcShad[i]){ maxValue = centralRbcShad[i]; }
+      minRbcShad[i] = centralRbcShad[i] - nSigmaShad*(centralRbcShad[i] - minValue);
+      maxRbcShad[i] = centralRbcShad[i] + nSigmaShad*(maxValue - centralRbcShad[i]);
+      cout<<">> Shadowing hypothesis pt="<<xpt<<"  central="<<centralRbcShad[i]<<"  min="<<minRbcShad[i]<<"  max="<<maxRbcShad[i]<<endl;
+    }
+  }
+
   //
   // define the bins correspondence bw histos/files/graphs
   //
@@ -302,9 +346,9 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   //
   TNtuple *ntupleRAB=0x0 ;
   if (fdMethod==kNb) {
-    ntupleRAB = new TNtuple("ntupleRAB","ntupleRAB (Nb)","pt:TAB:sigmaPP:sigmaAB:invyieldAB:invyieldABFDHigh:invyieldABFDLow:RABCharm:RABCharmFDHigh:RABCharmFDLow:RABBeauty:fc");
+    ntupleRAB = new TNtuple("ntupleRAB","ntupleRAB (Nb)","pt:TAB:sigmaPP:sigmaAB:invyieldAB:invyieldABFDHigh:invyieldABFDLow:RABCharm:RABCharmFDHigh:RABCharmFDLow:RABBeauty:fc",100000);
   } else if (fdMethod==kfc) {
-    ntupleRAB = new TNtuple("ntupleRAB","ntupleRAB (fc)","pt:TAB:sigmaPP:sigmaAB:invyieldAB:invyieldABFDHigh:invyieldABFDLow:Rcb:RABCharm:RABCharmFDHigh:RABCharmFDLow:RABBeauty:RABBeautyFDHigh:RABBeautyFDLow:fc");
+    ntupleRAB = new TNtuple("ntupleRAB","ntupleRAB (fc)","pt:TAB:sigmaPP:sigmaAB:invyieldAB:invyieldABFDHigh:invyieldABFDLow:Rcb:RABCharm:RABCharmFDHigh:RABCharmFDLow:RABBeauty:RABBeautyFDHigh:RABBeautyFDLow:fc",100000);
   }
   if(!ntupleRAB) printf("ERROR: Wrong method option");
 
@@ -328,15 +372,16 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   TGraphAsymmErrors *gRAB_GlobalSystematics = new TGraphAsymmErrors(nbins+1);
   gRAB_GlobalSystematics->SetNameTitle("gRAB_GlobalSystematics","RAB Measurement global (data, FD, Eloss) systematics");
   Double_t ElossMax[nbins+1], ElossMin[nbins+1];
-  for(Int_t i=0; i<=nbins; i++) { ElossMax[i]=0.; ElossMin[i]=1.; }
+  for(Int_t i=0; i<=nbins; i++) { ElossMax[i]=0.; ElossMin[i]=6.; }
   Double_t fcElossMax[nbins+1], fcElossMin[nbins+1];
-  for(Int_t i=0; i<=nbins; i++) { fcElossMax[i]=0.; fcElossMin[i]=1.; }
+  for(Int_t i=0; i<=nbins; i++) { fcElossMax[i]=0.; fcElossMin[i]=6.; }
   Double_t FDElossMax[nbins+1], FDElossMin[nbins+1];
-  for(Int_t i=0; i<=nbins; i++) { FDElossMax[i]=0.; FDElossMin[i]=1.; }
+  for(Int_t i=0; i<=nbins; i++) { FDElossMax[i]=0.; FDElossMin[i]=6.; }
 
   TGraphAsymmErrors *gRAB_Norm = new TGraphAsymmErrors(1);
   gRAB_Norm->SetNameTitle("gRAB_Norm","RAB Normalization systematics (pp norm + Tab)");
   Double_t normUnc = TMath::Sqrt ( NormPPUnc*NormPPUnc + (TabSyst/Tab)*(TabSyst/Tab) );
+  if(!isUseTaaForRaa) normUnc = TMath::Sqrt ( NormPPUnc*NormPPUnc + NormABUnc*NormABUnc );
   gRAB_Norm->SetPoint(1,0.5,1.);
   gRAB_Norm->SetPointError(1,0.25,0.25,normUnc,normUnc);
 
@@ -362,14 +407,21 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     nSigmaAB->GetEntry(ientry);
     //    cout << " pt="<< pt<<" sigma-AB="<<sigmaAB<<endl;
     if ( !(sigmaAB>0.) ) continue;
+    //if(decay==2 && pt<2.) continue;
 
     // Compute RAB and the statistical uncertainty
     Int_t hppbin = hSigmaPP->FindBin( pt );
+    Int_t hABbin = hSigmaAB->FindBin( pt );
     Double_t sigmapp = hSigmaPP->GetBinContent( hppbin );
     //    cout << " pt="<< pt<<", sigma-pp="<< sigmapp<<endl;
     if (isRaavsEP>0.) sigmapp = 0.5*sigmapp;
     if ( !(sigmapp>0.) ) continue;
+
     RaaCharm =  ( sigmaAB / sigmaABCINT1B ) / ((Tab*1e3) * sigmapp *1e-12 ) ;
+    if(!isUseTaaForRaa) { 
+      RaaCharm =  ( sigmaAB ) / ( (A*B) * sigmapp ) ;
+    }
+
     if (fdMethod==kNb) {
       RaaBeauty = Rb ; 
     }
@@ -381,12 +433,15 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     if (fdMethod==kfc) { ElossHypo = 1. / Rcb; }
     else  { ElossHypo = 1. / (RaaCharm / RaaBeauty) ; }
     if(isRbHypo) ElossHypo = RaaBeauty;
+
+    // If using shadowing hypothesis, change the central hypothesis too
+    if(isShadHypothesis) CentralHypo = centralRbcShad[hABbin];
+
     //    cout <<" pt "<< pt << " Raa charm " << RaaCharm << " Raa beauty " << RaaBeauty << " eloss hypo "<< ElossHypo<<endl; 
     //
     // Find the bin for the central Eloss hypo
     //
     if( TMath::Abs( ElossHypo - CentralHypo ) < 0.075 ){
-      Int_t hABbin = hSigmaAB->FindBin( pt );
       Double_t DeltaIni = TMath::Abs( ElossCentral[ hABbin ] - CentralHypo );
       Double_t DeltaV = TMath::Abs( ElossHypo - CentralHypo );
       //      cout << " pt " << pt << " ECentral " << ElossCentral[ hABbin ] << " Ehypo "<< ElossHypo ;
@@ -409,7 +464,11 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     Double_t sigmapp = hSigmaPP->GetBinContent( hppbin );
     if (isRaavsEP>0.) sigmapp = 0.5*sigmapp;
     if ( !(sigmapp>0.) ) continue;
+
     RaaCharm =  ( sigmaAB / sigmaABCINT1B ) / ((Tab*1e3) * sigmapp *1e-12 );
+    if(!isUseTaaForRaa) {
+      RaaCharm =  ( sigmaAB ) / ( (A*B) * sigmapp ) ;
+    }
 
     // Flag to know if it is an scaled or extrapolated point of the pp reference
     Bool_t isExtrapolatedBin = kFALSE;
@@ -445,7 +504,11 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 
     RaaCharmFDhigh = ( sigmaABMax / sigmaABCINT1B ) / ((Tab*1e3) * (sigmapp+yPPh) *1e-12 ) ;
     RaaCharmFDlow =  ( sigmaABMin / sigmaABCINT1B ) / ((Tab*1e3) * (sigmapp-yPPl) *1e-12 ) ;
-    if(printout) cout << endl<<" pt "<< pt << " Raa " << RaaCharm <<" high "<< RaaCharmFDhigh << " low "<< RaaCharmFDlow<<endl;
+    if(printout && TMath::Abs(ptprintout-pt)<0.1 ) cout << endl<<" pt "<< pt << " Raa " << RaaCharm <<" high "<< RaaCharmFDhigh << " low "<< RaaCharmFDlow<<endl;
+    if(!isUseTaaForRaa) {
+      RaaCharmFDhigh = ( sigmaABMax ) / ( (A*B)* (sigmapp+yPPh) ) ;
+      RaaCharmFDlow =  ( sigmaABMin ) / ( (A*B)* (sigmapp-yPPl) ) ;
+    }
 
 
     if (fdMethod==kNb) {
@@ -468,7 +531,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     hRABvsRb->Fill( pt, RaaCharm, RaaBeauty );
     hRABvsRbFDlow->Fill( pt, RaaCharmFDlow, RaaBeautyFDlow );
     hRABvsRbFDhigh->Fill( pt, RaaCharmFDhigh, RaaBeautyFDhigh );
-    if(printout) cout << " pt "<< pt << " Rb " << RaaBeauty <<" high "<< RaaBeautyFDhigh << " low "<< RaaBeautyFDlow <<endl;
+    if(printout && TMath::Abs(ptprintout-pt)<0.1) cout << " pt "<< pt << " Rb " << RaaBeauty <<" high "<< RaaBeautyFDhigh << " low "<< RaaBeautyFDlow <<endl;
 
     hRABCharmVsRBeautyVsPt->Fill( pt, RaaBeauty, RaaCharm );
     Int_t ptbin = hRABvsPt->FindBin( pt );
@@ -502,16 +565,18 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 
 
     Int_t hABbin = hMassAB->FindBin( pt );
-    if(printout)
-    if ( fdMethod==kNb && TMath::Abs(Rb -1.0)< 0.05) {
+    if(isShadHypothesis) CentralHypo = centralRbcShad[hABbin];
+
+    if(printout && TMath::Abs(ptprintout-pt)<0.1)
+    if ( fdMethod==kNb && TMath::Abs(Rb -CentralHypo)< 0.05) {
       cout << " pt "<< pt <<", at bin "<<hABbin<<endl;
       cout<<" entries "<<entries<<", i="<<ientry<<", pt="<<pt<<", Rb="<<Rb<<", Tab="<<Tab<<", sigmaAB="<<sigmaAB<<", sigmapp="<<sigmapp<<", Raacharm="<<RaaCharm<<", RaaBeauty="<<RaaBeauty<<endl;
       cout << "  AB  basis: mass "<< hMassAB->GetBinContent(hABbin)<<", eff "<< hDirectEffptAB->GetBinContent(hABbin)<<endl;
       cout<<"   FD low,  err low AB "<< (sigmaAB-sigmaABMin)<<"  err low PP "<< yPPl<<" Raacharm="<<RaaCharmFDlow<<", RaaBeauty="<<RaaBeautyFDlow<<endl;
       cout<<"   FD high, err high AB "<< (sigmaABMax-sigmaAB)<<"  err high PP "<< yPPh<<" Raacharm="<<RaaCharmFDhigh<<", RaaBeauty="<<RaaBeautyFDhigh<<endl;
     }
-    if(printout)
-    if ( fdMethod==kfc) if(TMath::Abs(Rcb -1.0)< 0.05 ){
+    if(printout && TMath::Abs(ptprintout-pt)<0.1)
+    if ( fdMethod==kfc) if(TMath::Abs(Rcb -CentralHypo)< 0.05 ){
       cout << " pt "<< pt <<", at bin "<<hABbin<<endl;
       cout<<" entries "<<entries<<", i="<<ientry<<", pt="<<pt<<", Rcb="<<Rcb<<", Tab="<<Tab<<", sigmaAB="<<sigmaAB<<", sigmapp="<<sigmapp<<", Raacharm="<<RaaCharm<<", RaaBeauty="<<RaaBeauty<<endl;
       cout << "  AB  basis: mass "<< hMassAB->GetBinContent(hABbin)<<", eff "<< hDirectEffptAB->GetBinContent(hABbin)<<", fc "<<histofcAB->GetBinContent(hABbin)<< endl;       
@@ -529,12 +594,22 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     if(isRbHypo) ElossHypo = RaaBeauty;
     hRCharmVsElossHypo[ptbin]->Fill( ElossHypo, RaaCharm );
 
-    //    cout <<" pt "<< pt << " Raa charm " << RaaCharm << " Raa beauty " << RaaBeauty << " eloss hypo "<< ElossHypo<<endl; 
+   // If using shadowing hypothesis, change the limit hypothesis too
+    if(isShadHypothesis) {
+      MinHypo = minRbcShad[ hABbin ];
+      MaxHypo = maxRbcShad[ hABbin ];
+    }
+
+    //    cout <<" pt "<< pt << " Raa charm " << RaaCharm << " Raa beauty " << RaaBeauty << " eloss hypo "<< ElossHypo
+    if(ientry==0) cout<<" pt"<< pt<< " ElossCentral "<< ElossCentral[hABbin] << " min-hypo "<<MinHypo << " max-hypo "<<MaxHypo<<endl;
+
     //
     // Fill in histos charm (null Eloss hypothesis)
     //
     Double_t minFdSyst = 0., maxFdSyst = 0.;
     if ( ElossHypo == ElossCentral[ hABbin ] ) {
+
+      cout <<endl<<">>>>>>>>>>> tete >>>>>>>>>>>>>>"<<endl<<endl;
 
       //
       // Data stat uncertainty
@@ -551,9 +626,12 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 	hYieldABvsPt->SetBinContent( hRABbin, sigmaAB/sigmaABCINT1B );
 	hYieldABvsPt->SetBinError( hRABbin, statUncSigmaAB/sigmaABCINT1B );
 	
-	if(printout) 
+	cout << "pt="<< pt<< " Raa " << RaaCharm << " stat unc. "<<
+	  " sigma-pp "<< sigmapp <<" sigma-AB "<< sigmaAB<<endl;
+	if(printout && TMath::Abs(ptprintout-pt)<0.1) {
 	  cout << " Raa " << RaaCharm << " stat unc. "<< stat << " is "<< stat/RaaCharm * 100. <<
 	    "%, stat-pp "<< sigmappStat/sigmapp*100. <<"% stat-AB "<< statUncSigmaAB/sigmaAB*100.<<"%"<<endl;
+	}
 
 	Double_t errstatEff = fhStatUncEffcSigmaAB->GetBinError( hRABbin );
 	fhStatUncEffcSigmaAB_Raa->SetBinError( hRABbin, errstatEff*RaaCharm );
@@ -602,7 +680,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
       }
 
 
-      if(printout) {
+      if(printout && TMath::Abs(ptprintout-pt)<0.1) {
 	cout << " pt : "<< pt<<" Syst-pp-data "<< dataPPUp/sigmapp << "%, ";
 	if(!isExtrapolatedBin){
 	  if (isRaavsEP>0.) cout <<" extr unc + "<< 0.5*gSigmaPPSystTheory->GetErrorYhigh(istartPPextr)/sigmapp <<" - "<< 0.5*gSigmaPPSystTheory->GetErrorYlow(istartPPextr)/sigmapp <<" %";
@@ -659,7 +737,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 	FDL = RaaCharmFDhigh; FDH = RaaCharmFDlow;
       } 
       
-      if(printout) cout<<" Raa "<<RaaCharm<<", Raa-fd-low "<<RaaCharmFDlow <<", Raa-fd-high "<<RaaCharmFDhigh <<endl;
+      if(printout && TMath::Abs(ptprintout-pt)<0.1) cout<<" Raa "<<RaaCharm<<", Raa-fd-low "<<RaaCharmFDlow <<", Raa-fd-high "<<RaaCharmFDhigh <<endl;
       maxFdSyst = TMath::Abs(FDH - RaaCharm);
       minFdSyst = TMath::Abs(RaaCharm - FDL);
       if ( RaaCharm>0 ) {
@@ -693,11 +771,13 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     // Filling Eloss scenarii information
     //
     if( RaaCharm>0 && ElossHypo >= MinHypo && ElossHypo <=MaxHypo && RaaBeauty<=MaxRb ) {
+
+      cout <<endl<<">>>>>>>>>>> tetuu >>>>>>>>>>>>>>"<<endl<<endl;
       Double_t Ehigh =  ElossMax[ hABbin ] ;
       Double_t Elow =  ElossMin[ hABbin ] ;
       if ( RaaCharm > Ehigh ) ElossMax[ hABbin ] = RaaCharm ;
       if ( RaaCharm < Elow ) ElossMin[ hABbin ] = RaaCharm ;
-      if(printout) {
+      if(printout && TMath::Abs(ptprintout-pt)<0.1) {
 	cout<<" Hypothesis " << ElossHypo << " sigma-AB "<< sigmaAB <<", Raa "<< RaaCharm <<", Raa Eloss max "<< ElossMax[hABbin] <<" Raa Eloss min "<< ElossMin[hABbin] << " Rb="<< RaaBeauty <<endl;
 	cout<<"  Rb="<< RaaBeauty <<" max "<< RaaBeautyFDhigh <<" min "<< RaaBeautyFDlow <<endl;
       }
@@ -711,7 +791,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
       Double_t RFDlow = RaaCharmFDlow<RaaCharmFDhigh ? RaaCharmFDlow : RaaCharmFDhigh;
       if ( RFDhigh > FDEhigh ) FDElossMax[ hABbin ] = RFDhigh ;
       if ( RFDlow < FDEmin ) FDElossMin[ hABbin ] = RFDlow ;
-      if(printout) 
+      if(printout && TMath::Abs(ptprintout-pt)<0.1) 
 	cout<<" Hypothesis " << ElossHypo << " sigma-AB "<< sigmaAB <<", Raa FD-max Eloss max "<< FDElossMax[hABbin] <<" Raa FD-min Eloss min "<< FDElossMin[hABbin] <<endl;
     }
 
@@ -915,7 +995,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   RaaPlot->SetBottomMargin(0.1);
   RaaPlot->SetTickx();
   RaaPlot->SetTicky();
-  TH2D *hRaaCanvas = new TH2D("hRaaCanvas"," R_{AB}(c) vs p_{T} (no Eloss hypothesis); p_{t} [GeV/c] ; R_{AA} prompt D",40,0.,40.,100,0.,2.0);
+  TH2D *hRaaCanvas = new TH2D("hRaaCanvas"," R_{AB}(c) vs p_{T} (no Eloss hypothesis); p_{t} [GeV/c] ; R_{AA} prompt D",40,0.,40.,100,0.,3.0);
   hRaaCanvas->GetXaxis()->SetTitleSize(0.05);
   hRaaCanvas->GetXaxis()->SetTitleOffset(0.9);
   hRaaCanvas->GetYaxis()->SetTitleSize(0.05);
@@ -964,11 +1044,13 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   legrcb->AddEntry(gRAB_FeedDownSystematics,"Syst. from B feed-down","f");
   legrcb->Draw();
   TLatex* tc;
-  if(decay==1) tc =new TLatex(0.18,0.82,"D^{0},  Pb-Pb    #sqrt{s_{NN}}=2.76 TeV");
-  else if(decay==2) tc =new TLatex(0.18,0.82,"D^{+},  Pb-Pb    #sqrt{s_{NN}}=2.76 TeV");
-  else if(decay==3) tc =new TLatex(0.18,0.82,"D^{*+},  Pb-Pb    #sqrt{s_{NN}}=2.76 TeV");
-  else if(decay==4) tc =new TLatex(0.18,0.82,"D_{s}^{+},  Pb-Pb    #sqrt{s_{NN}}=2.76 TeV");
-  else  tc =new TLatex(0.18,0.82,"any (?) D meson,  Pb-Pb    #sqrt{s_{NN}}=2.76 TeV");
+  TString system = "Pb-Pb   #sqrt{s_{NN}}=2.76 TeV";
+  if(cc==kpPb0100) system = "p-Pb   #sqrt{s_{NN}}=5.023 TeV";
+  if(decay==1) tc =new TLatex(0.18,0.82,Form("D^{0},  %s ",system.Data()));
+  else if(decay==2) tc =new TLatex(0.18,0.82,Form("D^{+},  %s ",system.Data()));
+  else if(decay==3) tc =new TLatex(0.18,0.82,Form("D^{*+},  %s ",system.Data()));
+  else if(decay==4) tc =new TLatex(0.18,0.82,Form("D_{s}^{+},  %s ",system.Data()));
+  else  tc =new TLatex(0.18,0.82,Form("any (?) D meson,  %s ",system.Data()));
   tc->SetNDC();
   tc->SetTextSize(0.038);
   tc->SetTextFont(42);
@@ -1128,32 +1210,28 @@ Bool_t PbPbDataSyst(AliHFSystErr *syst, Double_t pt, Int_t cc, Double_t &dataSys
   Double_t pidunc=0.;
 
   err = syst->GetTotalSystErr(pt)*syst->GetTotalSystErr(pt);
+  errUp = err ;
   errDown = err ;
 
-  if( cc==k07half || cc==k020 || cc==k010 || cc==k1020 || cc==k2040 ) {
-    if(pt<6) pidunc = 0.15;
-    else pidunc = 0.05;
-    errUp = err + pidunc*pidunc - syst->GetPIDEffErr(pt)*syst->GetPIDEffErr(pt);
-    isOk = true;
+  // Apply an asymetric PID uncertainty for 2010 PbPb data only
+  if( syst->GetRunNumber()==10 && syst->GetCollisionType()==1 ) {
+    if( cc==k07half || cc==k020 || cc==k010 || cc==k1020 || cc==k2040 ) {
+      if(pt<6) pidunc = 0.15;
+      else pidunc = 0.05;
+      errUp = err + pidunc*pidunc - syst->GetPIDEffErr(pt)*syst->GetPIDEffErr(pt);
+      isOk = true;
+    }
+    else if ( cc==k3050 || cc==k4080 || cc==k4060 || cc==k6080 ){
+      if(pt<3.1) pidunc = 0.10;
+      else pidunc = 0.05;
+      errUp = err + pidunc*pidunc - syst->GetPIDEffErr(pt)*syst->GetPIDEffErr(pt);
+      isOk = true;
+    }
   }
-  else if ( cc==k3050 || cc==k4080 || cc==k4060 || cc==k6080 ){
-    if(pt<3.1) pidunc = 0.10;
-    else pidunc = 0.05;
-    errUp = err + pidunc*pidunc - syst->GetPIDEffErr(pt)*syst->GetPIDEffErr(pt);
-    isOk = true;
-  }
+  else { isOk = true; }
 
   dataSystUp = TMath::Sqrt(errUp);
   dataSystDown = TMath::Sqrt(errDown);
-
-  /// << ------------------------- PATCH FOR 2011 LHC11h data ------------------------------
-  dataSystUp = dataSystDown;
-
-  if ( cc==kpPb0100 ){
-    dataSystUp = TMath::Sqrt(err);
-    dataSystDown = TMath::Sqrt(err);
-    isOk = true;
-  }
 
   return isOk;
 }

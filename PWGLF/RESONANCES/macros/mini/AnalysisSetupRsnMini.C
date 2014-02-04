@@ -68,8 +68,10 @@ TString Setup
       useTender = kFALSE;
    }
    
-   // load development RSN library
-   if (!AliAnalysisAlien::SetupPar("PWG2resonances.par")) return "";
+   gSystem->Load("libPWGLFresonances.so");
+
+//   // load development RSN library
+//   if (!AliAnalysisAlien::SetupPar("PWG2resonances.par")) return "";
 
    //
    // === CREATE ANALYSIS MANAGER ==================================================================
@@ -99,14 +101,27 @@ TString Setup
       AliAODInputHandler *aodHandler = new AliAODInputHandler();
       mgr->SetInputEventHandler(aodHandler);
    }
+
+   //
+   // === PID RESPONSE =============================================================================
+   //
+
+   gROOT->LoadMacro("$(ALICE_ROOT)/ANALYSIS/macros/AddTaskPIDResponse.C");
+   AddTaskPIDResponse(isMC);
    
+   gROOT->LoadMacro("$(ALICE_ROOT)/ANALYSIS/macros/AddTaskPIDqa.C ");
+   AddTaskPIDqa();
+
+
    //
    // === TENDER TASK (ESD only -- optional) =======================================================
    //
 
    if (isESD && useTender) {
       ::Info("AnalysisSetup", "Adding tender (and then accepting V0 info)", options);
-      gROOT->LoadMacro(Form("%s/AddTaskTender.C", macroPath));
+//      gROOT->LoadMacro(Form("%s/AddTaskTender.C", macroPath)); //for developers usage
+//      gROOT->LoadMacro(Form("$(ALICE_ROOT)/PWGLF/RESONANCES/macros/mini/AddTaskTender.C")); //deprecated
+      gROOT->LoadMacro(Form("$(ALICE_ROOT)/ANALYSIS/TenderSupplies/AddTaskTender.C"));
       AddTaskTender();
       noV0 = kFALSE;
    }
@@ -139,23 +154,23 @@ TString Setup
       }
       AddTaskEventplane();
    }
-   //
-   // === PID RESPONSE =============================================================================
-   //
-   
-   gROOT->LoadMacro("$(ALICE_ROOT)/ANALYSIS/macros/AddTaskPIDResponse.C");
-   AddTaskPIDResponse(isMC);
-   
-   //gROOT->LoadMacro("$(ALICE_ROOT)/ANALYSIS/macros/AddTaskPIDqa.C ");
-   //AddTaskPIDqa();
+//   //
+//   // === PID RESPONSE =============================================================================
+//   //
+//
+//   gROOT->LoadMacro("$(ALICE_ROOT)/ANALYSIS/macros/AddTaskPIDResponse.C");
+//   AddTaskPIDResponse(isMC);
+//
+//   //gROOT->LoadMacro("$(ALICE_ROOT)/ANALYSIS/macros/AddTaskPIDqa.C ");
+//   //AddTaskPIDqa();
    
    //
    // === OTHER TASKS ==============================================================================
    //
    
    // add RSN task
-   gROOT->LoadMacro(Form("%s/AddAnalysisTaskRsnMiniTest.C", macroPath));
-   if (!AddAnalysisTaskRsnMiniTest(isMC, isPP, macroPath, nmix)) return "";
+   gROOT->LoadMacro(Form("%s/AddAnalysisTaskRsnMini.C", macroPath));
+   if (!AddAnalysisTaskRsnMini(isMC, isPP, macroPath, nmix)) return "";
    
    ::Info("AnalysisSetup", "Setup successful");
    return out;

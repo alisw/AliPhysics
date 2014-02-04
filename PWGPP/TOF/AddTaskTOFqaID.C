@@ -1,14 +1,18 @@
 /*  created by fbellini@cern.ch on 29/04/2013 */
 /*  last modified by fbellini   on 29/04/2013 */
 
-UInt_t kTriggerInt = AliVEvent::kAnyINT;
 // UInt_t kTriggerMuonAll = AliVEvent::kMUL7 | AliVEvent::kMUSH7 | AliVEvent::kMUU7 | AliVEvent::kMUS7;
 // UInt_t kTriggerMuonBarell = AliVEvent::kMUU7;
 // UInt_t kTriggerEMC   = AliVEvent::kEMC7;
 // UInt_t kTriggerHM   = AliVEvent::kHighMult;
+UInt_t kTriggerInt = AliVEvent::kAnyINT;
 UInt_t kTriggerMask = kTriggerInt;
 
-AliAnalysisTaskSE * AddTaskTOFqaID(UInt_t triggerMask = kTriggerMask, Bool_t flagEnableAdvancedCheck=kFALSE, Bool_t isMC = kFALSE, Short_t absPdgCode = 0) 
+AliAnalysisTaskSE * AddTaskTOFqaID(UInt_t triggerMask = kTriggerMask, 
+				   Bool_t flagEnableAdvancedCheck=kFALSE, 
+				   Bool_t useStdCuts2011 = kTRUE, 
+				   Bool_t isMC = kFALSE, 
+				   Short_t absPdgCode = 0) 
 {
   // Task for checking TOF QA
  
@@ -34,8 +38,7 @@ AliAnalysisTaskSE * AddTaskTOFqaID(UInt_t triggerMask = kTriggerMask, Bool_t fla
   task->EnableAdvancedCheck(flagEnableAdvancedCheck);
   task->SetSelectMCspecies(isMC, absPdgCode);
   task->SelectCollisionCandidates(triggerMask);
-
-  //AliLog::SetClassDebugLevel("AliAnalysisTaskTOFqa",1);
+  //AliLog::SetClassDebugLevel("AliAnalysisTaskTOFqaID",4);
   mgr->AddTask(task);
 
   /* cuts used for QA in 2010 p-p */
@@ -51,28 +54,38 @@ AliAnalysisTaskSE * AddTaskTOFqaID(UInt_t triggerMask = kTriggerMask, Bool_t fla
   esdTrackCutsLoose2010->SetAcceptKinkDaughters(kFALSE); 
   esdTrackCutsLoose2010->SetMaxNsigmaToVertex(4.0);
   */
+
   /* standard cuts ITS-TPC 2010 */
   AliESDtrackCuts* esdTrackCutsStd2010 = new AliESDtrackCuts("AliESDtrackCuts", "Standard2010");
+  esdTrackCutsStd2010->GetStandardITSTPCTrackCuts2010(kTRUE,0);
   // TPC  
-  esdTrackCutsStd2010->SetMinNClustersTPC(70); 
-  esdTrackCutsStd2010->SetMaxChi2PerClusterTPC(4);
-  esdTrackCutsStd2010->SetAcceptKinkDaughters(kFALSE); 
-  esdTrackCutsStd2010->SetRequireTPCRefit(kTRUE);
-  // ITS
-  esdTrackCutsStd2010->SetRequireITSRefit(kTRUE);
-  esdTrackCutsStd2010->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-						AliESDtrackCuts::kAny);
-  esdTrackCutsStd2010->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");//selects primaries
-  esdTrackCutsStd2010->SetMaxDCAToVertexZ(2);
-  esdTrackCutsStd2010->SetDCAToVertex2D(kFALSE);
-  esdTrackCutsStd2010->SetRequireSigmaToVertex(kFALSE);
+  // esdTrackCutsStd2010->SetMinNClustersTPC(70); 
+  // esdTrackCutsStd2010->SetMaxChi2PerClusterTPC(4);
+  // esdTrackCutsStd2010->SetAcceptKinkDaughters(kFALSE); 
+  // esdTrackCutsStd2010->SetRequireTPCRefit(kTRUE);
+  // // ITS
+  // esdTrackCutsStd2010->SetRequireITSRefit(kTRUE);
+  // esdTrackCutsStd2010->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+  // 						AliESDtrackCuts::kAny);
+  // esdTrackCutsStd2010->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");//selects primaries
+  // esdTrackCutsStd2010->SetMaxDCAToVertexZ(2);
+  // esdTrackCutsStd2010->SetDCAToVertex2D(kFALSE);
+  // esdTrackCutsStd2010->SetRequireSigmaToVertex(kFALSE);
 
+ 
+  /* standard cuts ITS-TPC 2011 */
+  AliESDtrackCuts* esdTrackCutsStd2011 = new AliESDtrackCuts("AliESDtrackCuts", "Standard2011");
+  esdTrackCutsStd2011->GetStandardITSTPCTrackCuts2011(kTRUE,0);
+  
   AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
-  trackFilter->AddCuts(esdTrackCutsStd2010);
+  if (useStdCuts2011) 
+    trackFilter->AddCuts(esdTrackCutsStd2011);
+  else
+    trackFilter->AddCuts(esdTrackCutsStd2010);
   task->SetTrackFilter(trackFilter);
-   
+  
   TString partName(task->GetSpeciesName(absPdgCode));
-
+  
   // Create containers for input/output
   AliAnalysisDataContainer *cInputTOFqa = mgr->CreateContainer("cInputTOFqa",TChain::Class(),AliAnalysisManager::kInputContainer);
   AliAnalysisDataContainer *cGeneralTOFqa = mgr->CreateContainer(Form("base_%s",partName.Data()),TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:TOF_Performance",mgr->GetCommonFileName(), partName.Data()));

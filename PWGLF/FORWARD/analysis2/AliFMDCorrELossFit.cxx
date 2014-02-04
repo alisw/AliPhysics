@@ -5,6 +5,7 @@
 #include "AliFMDCorrELossFit.h"
 #include "AliForwardUtil.h"
 #include <TF1.h>
+#include <TGraph.h>
 #include <TBrowser.h>
 #include <TVirtualPad.h>
 #include <THStack.h>
@@ -16,6 +17,9 @@
 #include <TList.h>
 #include <iostream>
 #include <iomanip>
+namespace { 
+  Int_t fDebug = 1;
+}
 
 Double_t AliFMDCorrELossFit::ELossFit::fgMaxRelError = .25;
 Double_t AliFMDCorrELossFit::ELossFit::fgLeastWeight = 1e-7;
@@ -420,6 +424,62 @@ AliFMDCorrELossFit::ELossFit::Print(Option_t* option) const
     std::cout << OUTPAR(Form("a%d", i+2), fA[i], fEA[i]);
   std::cout << std::flush;
 }
+//____________________________________________________________________
+TF1*
+AliFMDCorrELossFit::ELossFit::GetF1(Int_t i, Double_t max) const
+{
+  const Double_t lowX = 0.001;
+  const Double_t upX  = (max < 0 ? 10 : max);
+  Int_t          maxW = FindMaxWeight();
+  TF1*           ret  = 0;
+  
+  if (i <= 0)
+    ret = AliForwardUtil::MakeNLandauGaus(fC * 1, fDelta, fXi, 
+					  fSigma, fSigmaN, maxW/*fN*/,
+					  fA,  lowX, upX);
+  else if (i <= maxW) 
+    ret = AliForwardUtil::MakeILandauGaus(fC*(i == 1 ? 1 : fA[i-2]), 
+					  fDelta, fXi, 
+					  fSigma, fSigmaN, i, lowX, upX);
+
+  return ret;
+}
+//____________________________________________________________________
+Double_t
+AliFMDCorrELossFit::ELossFit::FindProbabilityCut(Double_t low) const
+{
+  Double_t ret = 1000;
+  TF1*     f   = 0;
+  TGraph*  g   = 0;
+  try {
+    if (!(f = GetF1())) 
+      throw TString("Didn't TF1 object");
+    if (!(g = new TGraph(f, "i")))
+      throw TString("Failed to integrate function");
+
+    Int_t    n     = g->GetN();
+    Double_t total = g->GetY()[n-1];
+    if (total <= 0) 
+      throw TString::Format("Invalid integral: %lf", total);
+
+    for (Int_t i = 0; i < n; i++) { 
+      Double_t prob = g->GetY()[i] / total;
+      if (prob > low) {
+	ret = g->GetX()[i];
+	break;
+      }
+    }
+    if (ret >= 1000) 
+      throw TString::Format("Couldn't find x value for cut %lf", low);
+  }
+  catch (const TString& str) {
+    AliWarningF("%s: %s", GetName(), str.Data());
+  }
+  if (f) delete f;
+  if (g) delete g;
+  return ret;
+}
+  
 
 //____________________________________________________________________
 const Char_t*
@@ -639,7 +699,7 @@ AliFMDCorrELossFit::ELossFit::CalculateQuality(Double_t maxChi2nu,
     Double_t red = fChi2 / fNu;
     if (red < maxChi2nu) qual += 4;
     else {
-      Int_t q = (maxChi2nu+decline - red) / decline * 4;
+      Int_t q = Int_t((maxChi2nu+decline - red) / decline * 4);
       if (q > 0) qual += q;
     }
   }
@@ -1009,6 +1069,7 @@ AliFMDCorrELossFit::FindFit(UShort_t  d, Char_t r, Int_t etabin,
     AliError(Form("Failed to make ring array for FMD%d%c", d, r));
     return 0;
   }
+  DMSG(fDebug, 10, "Got ringArray %s for FMD%d%c", ringArray->GetName(), d, r);
   if (fCache.GetSize() <= 0) CacheBins(minQ);
   Int_t idx = (d == 1 ? 0 : 
 	       (d - 2) * 2 + 1 + (r=='I' || r=='i' ? 0 : 1));
@@ -1055,7 +1116,7 @@ AliFMDCorrELossFit::GetRingArray(UShort_t d, Char_t r) const
   switch (d) { 
   case 1:   idx = 0; break;
   case 2:   idx = (r == 'i' || r == 'I') ? 1 : 2; break;
-  case 3:   idx = (r == 'o' || r == 'I') ? 3 : 4; break;
+  case 3:   idx = (r == 'i' || r == 'I') ? 3 : 4; break;
   }
   if (idx < 0 || idx >= fRings.GetEntriesFast()) return 0;
   return static_cast<TObjArray*>(fRings.At(idx));
@@ -1108,6 +1169,27 @@ AliFMDCorrELossFit::GetLowerBound(UShort_t  d, Char_t r, Double_t eta,
   Int_t bin = FindEtaBin(eta);
   if (bin <= 0) return -1024;
   return GetLowerBound(d, r, Int_t(bin), f);
+}
+//____________________________________________________________________
+Double_t
+AliFMDCorrELossFit::GetLowerBound(UShort_t  d, Char_t r, Int_t etabin,
+				  Double_t p, Bool_t) const
+{
+  DGUARD(fDebug, 10, "Get probability cut for FMD%d%c etabin=%d", d, r, etabin);
+  ELossFit* fit = FindFit(d, r, etabin, 20);
+  if (!fit) return -1024;
+  return fit->FindProbabilityCut(p);
+}
+//____________________________________________________________________
+Double_t
+AliFMDCorrELossFit::GetLowerBound(UShort_t  d, Char_t r, Double_t eta,
+				  Double_t p, Bool_t dummy) const
+{
+  DGUARD(fDebug, 10, "Get probability cut for FMD%d%c eta=%8.4f", d, r, eta);
+  Int_t bin = FindEtaBin(eta);
+  DMSG(fDebug, 10, "bin=%4d", bin);
+  if (bin <= 0) return -1024;
+  return GetLowerBound(d, r, Int_t(bin), p, dummy);
 }
 //____________________________________________________________________
 Double_t

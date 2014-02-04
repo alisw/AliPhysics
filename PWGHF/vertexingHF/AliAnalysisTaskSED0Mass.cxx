@@ -2424,13 +2424,7 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
 
       if(fLsNormalization>1e-6) {
 
-	TString nameDistr="hptB_";
-	nameDistr+=ipt;
-	((TH1F*)fDistr->FindObject(nameDistr))->Scale((1/fLsNormalization)*((TH1F*)fDistr->FindObject(nameDistr))->GetEntries());
-	nameDistr="hdcaB_";
-	nameDistr+=ipt;
-	((TH1F*)fDistr->FindObject(nameDistr))->Scale((1/fLsNormalization)*((TH1F*)fDistr->FindObject(nameDistr))->GetEntries());
-	nameDistr="hcosthetastarB_";
+	TString nameDistr="hdcaB_";
 	nameDistr+=ipt;
 	((TH1F*)fDistr->FindObject(nameDistr))->Scale((1/fLsNormalization)*((TH1F*)fDistr->FindObject(nameDistr))->GetEntries());
 	nameDistr="hd0B_";
@@ -2443,6 +2437,12 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
 	nameDistr+=ipt;
 	((TH1F*)fDistr->FindObject(nameDistr))->Scale((1/fLsNormalization)*((TH1F*)fDistr->FindObject(nameDistr))->GetEntries());
 	if(fSys==0){
+	  nameDistr="hptB_";
+	  nameDistr+=ipt;
+	  ((TH1F*)fDistr->FindObject(nameDistr))->Scale((1/fLsNormalization)*((TH1F*)fDistr->FindObject(nameDistr))->GetEntries());
+	  nameDistr="hcosthetastarB_";
+	  nameDistr+=ipt;
+	  ((TH1F*)fDistr->FindObject(nameDistr))->Scale((1/fLsNormalization)*((TH1F*)fDistr->FindObject(nameDistr))->GetEntries());
 	  nameDistr="hcosthpointd0d0B_";
 	  nameDistr+=ipt;
 	  ((TH2F*)fDistr->FindObject(nameDistr))->Scale((1/fLsNormalization)*((TH2F*)fDistr->FindObject(nameDistr))->GetEntries());

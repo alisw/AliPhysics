@@ -26,11 +26,10 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS 
+ EMCALJetTasks/AliFJWrapper.cxx
  EMCALJetTasks/AliAnalysisTaskDeltaPt.cxx
  EMCALJetTasks/AliAnalysisTaskEmcalJet.cxx
- EMCALJetTasks/AliAnalysisTaskEmcalJetDev.cxx
  EMCALJetTasks/AliAnalysisTaskEmcalJetSample.cxx
- EMCALJetTasks/AliAnalysisTaskEmcalJetSampleDev.cxx
  EMCALJetTasks/AliAnalysisTaskRho.cxx
  EMCALJetTasks/AliAnalysisTaskRhoAverage.cxx
  EMCALJetTasks/AliAnalysisTaskRhoBase.cxx
@@ -40,7 +39,6 @@ set ( SRCS
  EMCALJetTasks/AliAnalysisTaskScale.cxx
  EMCALJetTasks/AliEmcalJet.cxx
  EMCALJetTasks/AliEmcalJetTask.cxx
- EMCALJetTasks/AliHadCorrTask.cxx
  EMCALJetTasks/AliJetConstituentTagCopier.cxx
  EMCALJetTasks/AliJetContainer.cxx
  EMCALJetTasks/AliJetEmbeddingFromAODTask.cxx
@@ -62,13 +60,17 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalDiJetResponse.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHMEC.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHadCorQA.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetMass.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetMassBkg.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetSpectra.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetSpectraMECpA.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetTagger.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetTriggerQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalTriggerInfoQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskFullpAJets.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskFullppJet.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskHJetEmbed.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskHJetDphi.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskRhoVnModulation.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskJetMatching.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSAJF.cxx
@@ -89,9 +91,10 @@ set ( HDRS ${HDRS}  EMCALJetTasks/FJ_includes.h )
 set ( FASTJET_ROOT $ENV{FASTJET_ROOT} )
 
 if(FASTJET_ROOT)
-  set ( EDEFINE -isystem${FASTJET_ROOT}/include )
+  set (FASTJET_INC ${FASTJET_ROOT}/include)
 else()
-  set ( EDEFINE -isystem${ALICE_ROOT}/JETAN/fastjet )
+  set (FASTJET_INC ${ALICE_ROOT}/JETAN/fastjet)
 endif(FASTJET_ROOT)
 
-set ( EINCLUDE JETAN/fastjet PWGJE/EMCALJetTasks PWG/EMCAL EMCAL OADB STEER/ESD STEER/STEERBase )
+set ( EDEFINE -isystem${FASTJET_INC})
+set ( EINCLUDE ${FASTJET_INC} PWGJE/EMCALJetTasks PWG/EMCAL EMCAL OADB STEER/ESD STEER/STEERBase ANALYSIS)

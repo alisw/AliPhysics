@@ -99,7 +99,7 @@ public:
   void    SetMaskCellColumn(Int_t ipos, Int_t icol) { if(ipos < fNMaskCellColumns) fMaskCellColumns[ipos] = icol            ;
                                                       else printf("Not set, position larger than allocated set size first") ; }
   
-  Bool_t  MaskFrameCluster(const Int_t iSM, const Int_t ieta) const;
+  Bool_t  MaskFrameCluster(Int_t iSM, Int_t ieta) const;
   
 private:
 

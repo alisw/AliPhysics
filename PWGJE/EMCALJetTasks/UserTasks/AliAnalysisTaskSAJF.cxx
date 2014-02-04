@@ -23,7 +23,7 @@ ClassImp(AliAnalysisTaskSAJF)
 
 //________________________________________________________________________
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() : 
-  AliAnalysisTaskEmcalJetDev("AliAnalysisTaskSAJF", kTRUE),
+  AliAnalysisTaskEmcalJet("AliAnalysisTaskSAJF", kTRUE),
   fHistoType(1),
   fHistJetObservables(0)
 
@@ -58,7 +58,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
 
 //________________________________________________________________________
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) : 
-  AliAnalysisTaskEmcalJetDev(name, kTRUE),
+  AliAnalysisTaskEmcalJet(name, kTRUE),
   fHistoType(1),
   fHistJetObservables(0)
 {
@@ -322,7 +322,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 {
   // Create user output.
 
-  AliAnalysisTaskEmcalJetDev::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   if (fHistoType == 0)
     AllocateTHX();

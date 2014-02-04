@@ -28,6 +28,9 @@ class AliAnalysisTaskSingleMu : public AliVAnalysisMuon {
   void MyUserCreateOutputObjects();
   void ProcessEvent(TString physSel, const TObjArray& selectTrigClasses, TString centrality);
   
+  /// Apply cut on dimuon invariant mass (to reject Z contribution)
+  void SetCutDimu ( Bool_t cutOnDimu = kTRUE ) { fCutOnDimu = cutOnDimu; }
+  
   enum {
     kIPVz,           ///< Interaction point vertex distribution
     kTrackContainer, ///< CF container for tracks
@@ -63,8 +66,9 @@ class AliAnalysisTaskSingleMu : public AliVAnalysisMuon {
   AliAnalysisTaskSingleMu& operator=(const AliAnalysisTaskSingleMu&);
 
   TObjArray* fThetaAbsKeys;    ///< Name of theta at absorber end
+  Bool_t fCutOnDimu;           ///< Cut on dimuons
 
-  ClassDef(AliAnalysisTaskSingleMu, 3); // Single muon analysis
+  ClassDef(AliAnalysisTaskSingleMu, 4); // Single muon analysis
 };
 
 #endif

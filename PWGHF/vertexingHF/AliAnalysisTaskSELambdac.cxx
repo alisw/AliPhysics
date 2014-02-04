@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id: AliAnalysisTaskSELambdac.cxx 63644 2013-07-23 09:04:11Z zconesa $ */
 
 /////////////////////////////////////////////////////////////
 //
@@ -1165,6 +1165,11 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
     //  return;
   }
 
+  // fix for temporary bug in ESDfilter
+  // the AODs with null vertex pointer didn't pass the PhysSel
+  AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
+  if(!vtx1 || TMath::Abs(aod->GetMagneticField())<0.001) return;
+
   fNentries->Fill(0);
   fCounter->StoreEvent(aod,fRDCutsProduction,fReadMC);
   TString trigclass=aod->GetFiredTriggerClasses();
@@ -1177,10 +1182,6 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
       fNentries->Fill(13);
     return;
   }
-
-  // AOD primary vertex
-  AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
-  if(!vtx1) return;
 
   Bool_t isThereA3prongWithGoodTracks = kFALSE;
   Bool_t isThereA3ProngLcKine = kFALSE;

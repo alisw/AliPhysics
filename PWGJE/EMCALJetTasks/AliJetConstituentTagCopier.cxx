@@ -1,4 +1,4 @@
-// $Id: AliJetConstituentTagCopier.cxx  $
+// $Id$
 //
 // Copy tags from particle level constituent to detector level
 //
@@ -21,7 +21,7 @@ ClassImp(AliJetConstituentTagCopier)
 
 //________________________________________________________________________
 AliJetConstituentTagCopier::AliJetConstituentTagCopier() : 
-  AliAnalysisTaskEmcalDev("AliJetConstituentTagCopier", kFALSE),
+  AliAnalysisTaskEmcal("AliJetConstituentTagCopier", kFALSE),
   fCleanBeforeCopy(kFALSE),
   fMCLabelShift(0),
   fMCParticleContainer(0)
@@ -31,7 +31,7 @@ AliJetConstituentTagCopier::AliJetConstituentTagCopier() :
 
 //________________________________________________________________________
 AliJetConstituentTagCopier::AliJetConstituentTagCopier(const char *name) : 
-  AliAnalysisTaskEmcalDev(name, kFALSE),
+  AliAnalysisTaskEmcal(name, kFALSE),
   fCleanBeforeCopy(kFALSE),
   fMCLabelShift(0),
   fMCParticleContainer(0)

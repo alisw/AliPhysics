@@ -21,15 +21,18 @@ class AliEmcalJetFinder : public TNamed
     
     Bool_t                        FindJets();
     void                          AddInputVector(Double_t px, Double_t py, Double_t pz);
+    void                          AddInputVector(Double_t px, Double_t py, Double_t pz, Double_t E);
     void                          FillPtHistogram(TH1* histogram);
     void                          FillEtaHistogram(TH1* histogram);
     void                          FillPhiHistogram(TH1* histogram);
 
     Int_t                         GetJets(AliEmcalJet*& jets)     {jets = fJetArray[0]; return fJetCount;}
     AliEmcalJet*                  GetJet(Int_t index)             {return fJetArray[index];}
+    Int_t                         GetNumberOfJets()               {return fJetCount;}
     void                          SetGhostArea(Double_t val)      {fGhostArea = val;}
     void                          SetRadius(Double_t val)         {fRadius = val;}
     void                          SetJetAlgorithm(Int_t val)      {fJetAlgorithm = val;}
+    void                          SetRecombSheme(Int_t val)       {fRecombScheme = val;}
     void                          SetTrackMaxEta(Double_t val)    {fTrackMaxEta = val;}
     void                          SetJetMaxEta(Double_t val)      {fJetMaxEta = val;}
     void                          SetJetMinPt(Double_t val)       {fJetMinPt = val;}
@@ -46,6 +49,7 @@ class AliEmcalJetFinder : public TNamed
     Double_t                      fGhostArea;                     // setting for ghost area in FJ
     Double_t                      fRadius;                        // Radius parameter
     Int_t                         fJetAlgorithm;                  // var for algorithm (0=antikt, 1=kt)
+    Int_t                         fRecombScheme;                  // Recombination scheme for Fastjet
     Double_t                      fTrackMaxEta;                   // cut for |track-eta| < fTrackMaxEta
     // Jet cuts
     Double_t                      fJetMaxEta;                     // cut for |jet-eta| < fJetMaxEta

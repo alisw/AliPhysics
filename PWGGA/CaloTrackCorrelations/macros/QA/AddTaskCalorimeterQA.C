@@ -72,7 +72,6 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(Bool_t kSimulation = k
   
   reader->SetDeltaAODFileName(""); //Do not create deltaAOD file, this analysis do not create branches.
   reader->SwitchOffWriteDeltaAOD()  ;
-  reader->SetImportGeometryFromFile(kFALSE);
   
   if(kPrintSettings) reader->Print("");
   

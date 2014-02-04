@@ -200,6 +200,20 @@ public:
    */
   void SetMinQuality(UShort_t cut=10) { fMinQuality = cut; }
   /** 
+   * Set the maximum ratio of outlier bins to the total number of bins
+   * with data.  
+   * 
+   * @param ratio Maximum ratio (number between 0 and 1) 
+   */
+  void SetMaxOutliers(Double_t ratio=0.10) { fMaxOutliers = ratio; }
+  /** 
+   * Set the maximum relative diviation between @f$N_{ch}^{Poisson}@f$
+   * and @f$N_{ch}^{\Delta}@f$
+   * 
+   * @param cut Relative cut (number between 0 and 1) 
+   */
+  void SetOutlierCut(Double_t cut=0.50) { fOutlierCut = cut; }
+  /** 
    * Get the multiplicity cut.  If the user has set fMultCut (via
    * SetMultCut) then that value is used.  If not, then the lower
    * value of the fit range for the enery loss fits is returned.
@@ -230,7 +244,7 @@ public:
   /** 
    * Set the minimum quality of the energy loss fits 
    * 
-   * @param cut Cut value 
+   * @return Cut value 
    */
   UShort_t GetMinQuality() const { return fMinQuality; }
   /** 
@@ -265,6 +279,19 @@ protected:
    */
   Int_t FindMaxWeight(const AliFMDCorrELossFit* cor,
 		      UShort_t d, Char_t r, Int_t iEta) const;
+
+  /** 
+   * Find the max weight to use for FMD<i>dr</i> in eta @a eta
+   * 
+   * @param cor   Correction
+   * @param d     Detector 
+   * @param r     Ring 
+   * @param eta   Eta
+   *
+   * @return The maximum weight 
+   */
+  Int_t FindMaxWeight(const AliFMDCorrELossFit* cor,
+		      UShort_t d, Char_t r, Double_t iEta) const;
 
   /** 
    * Find the max weights and cache them 
@@ -346,6 +373,23 @@ protected:
    */
   virtual TH1D*   GenerateAcceptanceCorrection(Char_t r) const;
   /** 
+   * Check if, for a given region, whether this is an outlier 
+   * 
+   * The condition for an outlier event are 
+   * @f[
+   * |N_{ch}^{Poisson} - N_{ch}^{\Delta}| / N_{ch}^{\Delta} > c
+   * @f]
+   *
+   * @param eloss    @f$ N_{ch}^{\Delta}@f$ - number of charged particles
+   * @param poisson  @f$ N_{ch}^{Poisson}@f$ - number of charged particles
+   * @param cut      @f$ c@f$ - the cut 
+   * 
+   * @return true if the region reflects an outlier event 
+   */
+  virtual Bool_t CheckOutlier(Double_t eloss, 
+			      Double_t poisson,
+			      Double_t cut=0.5) const;
+  /** 
    * Internal data structure to keep track of the histograms
    */
   struct RingHistos : public AliForwardUtil::RingHistos
@@ -407,6 +451,9 @@ protected:
     TH2D*     fDensity;        // Distribution inclusive Nch
     TH2D*     fELossVsPoisson; // Correlation of energy loss vs Poisson N_ch
     TH1D*     fDiffELossPoisson;// Relative difference to Poisson
+    TH2D*     fELossVsPoissonOut; // Correlation of energy loss vs Poisson N_ch
+    TH1D*     fDiffELossPoissonOut;// Relative difference to Poisson
+    TH1D*     fOutliers;       // Fraction of outliers per event 
     AliPoissonCalculator fPoisson; // Calculate density using Poisson method
     TH1D*     fELoss;          // Energy loss as seen by this 
     TH1D*     fELossUsed;      // Energy loss in strips with signal 
@@ -416,7 +463,7 @@ protected:
     TH2D*     fPhiAcc;         // Phi acceptance vs IpZ
     TH1D*     fPhiBefore;      // Phi before re-calce 
     TH1D*     fPhiAfter;       // Phi after re-calc
-    ClassDef(RingHistos,9);
+    ClassDef(RingHistos,10);
   };
   /** 
    * Get the ring histogram container 
@@ -453,8 +500,10 @@ protected:
   AliForwardUtil::Histos fCache;
   Bool_t                 fDoTiming;
   TProfile*              fHTiming;
+  Double_t               fMaxOutliers; // Maximum ratio of outlier bins 
+  Double_t               fOutlierCut;  // Maximum relative diviation 
 
-  ClassDef(AliFMDDensityCalculator,13); // Calculate Nch density 
+  ClassDef(AliFMDDensityCalculator,14); // Calculate Nch density 
 };
 
 #endif

@@ -12,7 +12,6 @@ AliAnalysisTaskSpectraAOD* AddTaskSpectraAOD(Bool_t mc=kFALSE,
 					     Double_t ptTofMatch=.6,
 					     UInt_t trkbit=1,
 					     UInt_t trkbitQVector=1,
-					     Bool_t UseCentPatchAOD049=kFALSE,
 					     Double_t DCA=100000,
 					     UInt_t minNclsTPC=70,
 					     Int_t nrebin=0,
@@ -92,13 +91,14 @@ AliAnalysisTaskSpectraAOD* AddTaskSpectraAOD(Bool_t mc=kFALSE,
   AliAnalysisDataContainer *coutputpt2 = mgr->CreateContainer("cvcutpt", AliSpectraAODEventCuts::Class(),    AliAnalysisManager::kOutputContainer,outputFileName);
   AliAnalysisDataContainer *coutputpt3 = mgr->CreateContainer("ctcutpt", AliSpectraAODTrackCuts::Class(),     AliAnalysisManager::kOutputContainer, outputFileName);
   AliAnalysisDataContainer *coutputpt4 = mgr->CreateContainer("cpidpt",  AliSpectraAODPID::Class(),     AliAnalysisManager::kOutputContainer,outputFileName);
+
+  mgr->AddTask(task);
   
   mgr->ConnectInput(task, 0, cinput);
   mgr->ConnectOutput(task, 1, coutputpt1);
   mgr->ConnectOutput(task, 2, coutputpt2);
   mgr->ConnectOutput(task, 3, coutputpt3);
   mgr->ConnectOutput(task, 4, coutputpt4);
-  
-  mgr->AddTask(task);
+
   return task;
 }

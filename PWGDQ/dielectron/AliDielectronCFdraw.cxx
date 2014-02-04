@@ -231,7 +231,7 @@ void AliDielectronCFdraw::SetRangeUser(AliDielectronVarManager::ValueTypes type,
   // Steps may be separated by one the the characteres ,;:
   //
   SetRangeUser(Form("%s%s",(leg?"Leg1_":""),AliDielectronVarManager::GetValueName(type)), min, max, slices);
-  SetRangeUser(Form("%s%s",(leg?"Leg2_":""),AliDielectronVarManager::GetValueName(type)), min, max, slices);
+  if(leg) SetRangeUser(Form("%s%s","Leg2_",AliDielectronVarManager::GetValueName(type)), min, max, slices);
 
 }
 

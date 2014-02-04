@@ -1278,7 +1278,7 @@ void AliAnalysisMuMu::TwikiOutputFnorm(const char* series) const
     graphs.Add(g);
   }
   
-  std::cout << endl;
+  std::cout << std::endl;
   
   TGraphErrors* g0 = static_cast<TGraphErrors*>(graphs.First());
   if (!g0) return;
@@ -1574,7 +1574,7 @@ AliAnalysisMuMu::FitParticle(const char* particle,
     
     if (!hminv)
     {
-      if (!fBinning && bin->IsNullObject() )
+      if (!fBinning && bin->IsIntegrated() )
       {
         // old file, we only had MinvUSPt
         hminv = fMergeableCollection->Histo(Form("/%s/%s/%s/%s",eventType,trigger,centrality,pairCut),"MinvUSPt:py");
@@ -1665,11 +1665,11 @@ AliAnalysisMuMu::GetMCCB2Tails(const AliAnalysisMuMuBinning::Range& bin) const
   }
 
 
-  AliAnalysisMuMuSpectra* s = static_cast<AliAnalysisMuMuSpectra*>(SIM()->GetSpectra(bin.Type().Data(),bin.Flavour().Data()));
+  AliAnalysisMuMuSpectra* s = static_cast<AliAnalysisMuMuSpectra*>(SIM()->GetSpectra(bin.Quantity().Data(),bin.Flavour().Data()));
   
   if (!s)
   {
-    AliError(Form("Could not find spectra %s,%s for associated simulation",bin.Type().Data(),bin.Flavour().Data()));
+    AliError(Form("Could not find spectra %s,%s for associated simulation",bin.Quantity().Data(),bin.Flavour().Data()));
     fAssociatedSimulation->MC()->Print("*:Ali*");
     return par;
   }
@@ -2946,7 +2946,7 @@ void AliAnalysisMuMu::TriggerCountCoverage(const char* triggerList,
       }
       else
       {
-        messages.insert(std::make_pair<ULong64_t,std::string>(nmax,msg.Data()));
+        messages.insert(std::make_pair(nmax,static_cast<std::string>(msg.Data())));
       }
     }
   }
@@ -2960,7 +2960,11 @@ void AliAnalysisMuMu::TriggerCountCoverage(const char* triggerList,
   {
     ++n;
     current += it->first;
-    Double_t percent = ( total > 0.0 ? current*100.0/total : 0.0);
+    Double_t percent = 0.0;
+    if ( total > 0.0 )
+    {
+      percent = current*100.0/total;
+    }
     std::cout << Form("%10lld",it->first) << " " << it->second << " percentage of total = " << Form("%7.2f %% %3d",percent,n ) << std::endl;
   }
 
@@ -3274,7 +3278,7 @@ AliAnalysisMuMuSpectra* AliAnalysisMuMu::RABy(const char* realFile, const char* 
     Double_t ylowcms, yhighcms;
     Double_t ylownorm, yhighnorm;
     
-    if ( bin->IsNullObject() )
+    if ( bin->IsIntegrated() )
     {
       ylowlab = -4;
       yhighlab = -2.5;
@@ -3330,7 +3334,7 @@ AliAnalysisMuMuSpectra* AliAnalysisMuMu::RABy(const char* realFile, const char* 
     r->Set("NofInputJpsi",rsim->GetValue("NofInputJpsi",accEffSubResultName),rsim->GetErrorStat("NofInputJpsi",accEffSubResultName));
     r->Set("AccEffJpsi",rsim->GetValue("AccEffJpsi",accEffSubResultName),rsim->GetErrorStat("AccEffJpsi",accEffSubResultName));
     
-    AliAnalysisMuMuBinning::Range* bincm = new AliAnalysisMuMuBinning::Range(bin->Particle(),bin->Type(),ylowcms,yhighcms);
+    AliAnalysisMuMuBinning::Range* bincm = new AliAnalysisMuMuBinning::Range(bin->What(),bin->Quantity(),ylowcms,yhighcms);
     
     r->SetBin(*bincm);
         

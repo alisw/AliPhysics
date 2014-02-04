@@ -9,9 +9,9 @@ class TH3;
 class THnSparse;
 class AliVVZERO;
 
-#include "AliAnalysisTaskEmcalJetDev.h"
+#include "AliAnalysisTaskEmcalJet.h"
 
-class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJetDev {
+class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
  public:
   AliAnalysisTaskSAQA();
   AliAnalysisTaskSAQA(const char *name);
@@ -43,6 +43,7 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJetDev {
   Int_t                       DoClusterLoop(Float_t &sum, AliVCluster* &leading)            ;
   Int_t                       DoJetLoop(AliEmcalJet* &leading)                              ;
   Double_t                    GetFcross(AliVCluster *cluster, AliVCaloCells *cells)         ;
+  Double_t                    GetCellEnergySum(AliVCluster *cluster, AliVCaloCells *cells)  ;
 
   Float_t                     fCellEnergyCut;            // Energy cell cut
   Bool_t                      fParticleLevel;            // Set particle level analysis
@@ -74,18 +75,16 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJetDev {
   TH1                        *fHistTrPtNonProp[4];       //!Pt distribution of non emcal propagated tracks
   TH2                        *fHistDeltaEtaPt[4];        //!Eta-EtaProp vs. Pt
   TH2                        *fHistDeltaPhiPt[4];        //!Phi-PhiProp vs. Pt
-  TH3                        *fHistDeltaPtvsPtvsMass[4]; //!Pt-PtProp vs. Pt vs. mass
+  TH2                        *fHistDeltaPtvsPt[4];       //!Pt-PtProp vs. Pt
 
   // Clusters
   TH3                        *fHistClusPhiEtaEnergy[4];  //!Phi-Eta-Energy distribution of clusters
+  TH2                        *fHistClusDeltaPhiEPEnergy[4];//!DeltaPhi EP vs Energy of clusters
   TH2                        *fHistNCellsEnergy;         //!Number of cells vs. energy of cluster
   TH2                        *fHistFcrossEnergy;         //!Fcross vs. energy of cluster
   TH2                        *fHistClusTimeEnergy;       //!Time vs. energy of cluster
   TH1                        *fHistClusMCEnergyFraction[4];//!MC energy fraction (embedding)
-
-  // Jets
-  TH2                        *fHistJetsPhiEta[4];        //!Phi-Eta distribution of jets
-  TH2                        *fHistJetsPtArea[4];        //!Pt vs. area of jets
+  TH2                        *fHistClusEnergyMinusCellEnergy;//!Cluster energy - sum(cell_energy) vs cluster energy
 
   // EMCAL Cells
   TH2                        *fHistCellsAbsIdEnergy;    //!Energy spectrum of cells
@@ -94,6 +93,10 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJetDev {
   TH2                        *fHistChVSneCells;          //!Charged vs. neutral (cells) energy
   TH2                        *fHistChVSneClus;           //!Charged vs. neutral (clusters) energy
   TH2                        *fHistChVSneCorrCells;      //!Charged vs. neutral (corrected cells) energy
+
+  // Jets
+  TH2                        *fHistJetsPhiEta[4];        //!Phi-Eta distribution of jets
+  TH2                        *fHistJetsPtArea[4];        //!Pt vs. area of jets
 
  private:
   AliAnalysisTaskSAQA(const AliAnalysisTaskSAQA&);            // not implemented

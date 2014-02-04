@@ -60,6 +60,10 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskSE
   void   SetMC(Bool_t theMCon) { fUseMCInfo = theMCon; }
   Bool_t GetMC() const { return fUseMCInfo; }
   
+  // set usage of generated or reconstucted quantities (relevant for MC)
+  void SetUseReco(Bool_t useReco=kTRUE) { fUseReco= useReco;}
+  Bool_t GetUseReco() const {return fUseReco;}
+ 
   void SetMassLimits(Double_t range, Int_t pdg);
   void SetMassLimits(Double_t lowlimit, Double_t uplimit);
 
@@ -72,6 +76,7 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskSE
   AliAnalysisTaskSEDmesonsFilterCJ& operator=(const AliAnalysisTaskSEDmesonsFilterCJ& source); 
 
   Bool_t fUseMCInfo;               //  Use MC info
+  Bool_t fUseReco;                 // use reconstructed tracks when running on MC
 
   UInt_t  fCandidateType;          //  Dstar or D0
   TString fCandidateName;          //  Dstar or D0
@@ -83,16 +88,15 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskSE
 
   TString fBranchName;             //  AOD branch name
   TList  *fOutput;                 //! user output
-//TList *fOutputCandidates;        //! output of array of candidates (kExchange)
 
   AliRDHFCuts *fCuts;              // Cuts 
   Double_t fMinMass;               //  mass lower limit histogram
   Double_t fMaxMass;               //  mass upper limit histogram
 
   TClonesArray *fCandidateArray;   //! contains candidates selected by AliRDHFCuts
-//TClonesArray *fIsSelectedArray;  //! contains result of IsSelected for candidates which pass the cuts (needed for D0)
+  TClonesArray *fSideBandArray;    //! contains candidates selected by AliRDHFCuts::IsSelected(kTracks), to be used for side bands (DStar case only!!)
 
-  ClassDef(AliAnalysisTaskSEDmesonsFilterCJ,1); // class for charm-jet correlations
+  ClassDef(AliAnalysisTaskSEDmesonsFilterCJ,2); // class for charm-jet correlations
 };
 
 #endif

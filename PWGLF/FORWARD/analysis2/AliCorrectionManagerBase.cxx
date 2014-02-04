@@ -96,41 +96,45 @@ AliCorrectionManagerBase::~AliCorrectionManagerBase()
   // fCorrections.Delete();
 }
 
+#define PF(N,V,...)					\
+  AliForwardUtil::PrintField(N,V, ## __VA_ARGS__)
+#define PFB(N,FLAG)				\
+  do {									\
+    AliForwardUtil::PrintName(N);					\
+    std::cout << std::boolalpha << (FLAG) << std::noboolalpha << std::endl; \
+  } while(false)
+#define PFV(N,VALUE)					\
+  do {							\
+    AliForwardUtil::PrintName(N);			\
+    std::cout << (VALUE) << std::endl; } while(false)
+
 //____________________________________________________________________
 void
 AliCorrectionManagerBase::Print(Option_t* option) const
 {
-  char ind[gROOT->GetDirLevel()+1];
-  for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
-  ind[gROOT->GetDirLevel()] = '\0';
-
-  std::cout << ind << GetName() << ":\n"
-	    << ind << "  Initialised:      " 
-	    << (fIsInit ? "yes" : "no") << std::endl;
-  if (fIsInit) 
-    std::cout << ind << "  Run number:       " << fRun << "\n"
-	      << ind << "  Collision system: " 
-	      << AliForwardUtil::CollisionSystemString(fSys) << "\n"
-	      << ind << "  Sqrt(s_NN):       "
-	      << AliForwardUtil::CenterOfMassEnergyString(fSNN) << "\n"
-	      << ind << "  Magnetic field:   " 
-	      << AliForwardUtil::MagneticFieldString(fField) << "\n"
-	      << ind << "  For simulations:  " << (fMC ? "yes" : "no") << "\n"
-	      << ind << "  For satellites:   " 
-	      << (fSatellite ? "yes" : "no") << std::endl;
-
+  AliForwardUtil::PrintTask(*this);
+  gROOT->IncreaseDirLevel();
+  PFB("Initialized", fIsInit);
+  if (fIsInit) {
+    PFV("Run number", fRun);
+    PFV("Collision system", AliForwardUtil::CollisionSystemString(fSys));
+    PFV("Sqrt(s_NN)",AliForwardUtil::CenterOfMassEnergyString(fSNN));
+    PFV("Magnetic field", AliForwardUtil::MagneticFieldString(fField));
+    PFB("For simulations", fMC);
+    PFB("For satellites", fSatellite);
+  }
   TString opt(option);
   opt.ToUpper();
-  if (!opt.Contains("R")) return;
-  
-  gROOT->IncreaseDirLevel();
-  Int_t n = fCorrections.GetEntriesFast();
-  for (Int_t id = 0; id < n; id++) { 
-    const Correction* c = GetCorrection(id);
-    c->Print(option);
+  if (opt.Contains("R")) {
+    // gROOT->IncreaseDirLevel();
+    Int_t n = fCorrections.GetEntriesFast();
+    for (Int_t id = 0; id < n; id++) { 
+      const Correction* c = GetCorrection(id);
+      c->Print(option);
+    }
+    // gROOT->DecreaseDirLevel();  
   }
   gROOT->DecreaseDirLevel();  
-  
 }
 
 //____________________________________________________________________
@@ -205,6 +209,41 @@ AliCorrectionManagerBase::Append(const TString& addition,
   return true;
 }
   
+//____________________________________________________________________
+void
+AliCorrectionManagerBase::EnableCorrections(UInt_t what)
+{
+  for (Int_t i = 0; i < 32; i++) {
+    if (!GetCorrection(i)) continue;
+    EnableCorrection(i, (1 << i) & what);
+  }
+}
+//____________________________________________________________________
+Bool_t
+AliCorrectionManagerBase::CheckCorrections(UInt_t what, Bool_t verbose) const
+{
+  Bool_t ret = true;
+  for (Int_t i = 0; i < 32; i++) {
+    Bool_t enabled = (1 << i) & what;
+    if (!enabled) continue;
+    const Correction* c = GetCorrection(i);
+    if (!c) {
+      ret = false;
+      if (verbose) 
+	AliWarningF("No correction registered for bit %d", i);
+      continue;
+    }
+    const TObject* o = c->Get();
+    if (!o) { 
+      ret = false;
+      if (verbose) 
+	AliWarningF("Correction %s (bit %d) not initialized!", c->GetName(), i);
+      continue;
+    }
+  }
+  return ret;
+}
+
 //____________________________________________________________________
 void
 AliCorrectionManagerBase::RegisterCorrection(Int_t id, Correction* corr)
@@ -680,13 +719,13 @@ AliCorrectionManagerBase::Correction::TheClass() const
 void
 AliCorrectionManagerBase::Correction::Print(Option_t* option) const
 {
-  char ind[gROOT->GetDirLevel()+1];
-  for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
-  ind[gROOT->GetDirLevel()] = '\0';
-
-  std::cout << ind << GetName() << ":  " << (fEnabled ? "en" : "dis") 
-	    << "abled" << std::endl;
-  if (!fEnabled) return;
+  AliForwardUtil::PrintTask(*this);
+  gROOT->IncreaseDirLevel();
+  PFB("Enabled", fEnabled);
+  if (!fEnabled) {
+    gROOT->DecreaseDirLevel();
+    return;
+  }
 
   TString flds;
   if (fQueryFields & kRun)       flds.Append("run");
@@ -699,19 +738,19 @@ AliCorrectionManagerBase::Correction::Print(Option_t* option) const
 
   const TClass* cl = TheClass();
 
-  std::cout << "   Path:            " << GetTitle() << "\n"
-	    << "   Data class:      " << cl->GetName() << "\n"
-	    << "   Query fields:    " << flds << std::endl;
+  PFV("Path",GetTitle());
+  PFV("Data class", cl->GetName());
+  PFV("Query fields", flds);
   
-  if (fObject && !fLastEntry.IsNull()) 
-    std::cout << "   Entry:           " << fLastEntry << std::endl;
+  if (fObject && !fLastEntry.IsNull())  PF("Entry", fLastEntry);
   
   TString opt(option);
   opt.ToUpper();
-  if (!opt.Contains("D") || !fObject) return;
-
-  gROOT->IncreaseDirLevel();
-  fObject->Print();
+  if (opt.Contains("D") && fObject) {
+    gROOT->IncreaseDirLevel();
+    fObject->Print();
+    gROOT->DecreaseDirLevel();
+  }
   gROOT->DecreaseDirLevel();
 }
 

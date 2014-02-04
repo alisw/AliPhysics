@@ -5,7 +5,9 @@
 // Authors: (this code is mostly copied from AliRsnTrackQuality) adapted by Svein Lindal 	*
 
 class TH2F;
+class AliESDtrackCuts;
 class TList;
+class AliVEvent;
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
 #include "AliAnalysisCuts.h"
@@ -17,125 +19,87 @@ class AliConversionTrackCuts : public AliAnalysisCuts {
 public:
   
   enum CTCuts_t {
-	kPreCut = -1,
-	kCutNcls,
-	kCutNclsFrac,
-	kCutNDF,
-	kCutKinc,
-	kCutDCAZ,
-	kCutDCAXY,
-	kCutTPCRefit,
-	kNCuts
+    kPreCut = 0,
+    kCutNcls,
+    kCutNclsFrac,
+    kCutNDF,
+    kCutKinc,
+    kCutDCAZ,
+    kCutDCAXY,
+    kCutTPCRefit,
+    kNCuts
   };
 
-//  enum trackVal {
-//	kPt = 0, 
-//	kPhi,
-//	kEta,
-//	kNVar
-//  };
+  //  enum trackVal {
+  //	kPt = 0, 
+  //	kPhi,
+  //	kEta,
+  //	kNVar
+  //  };
   static const char * fgkCutNames[kNCuts];
 
-  Bool_t IsSelected(TObject * object ) { return AcceptTrack(dynamic_cast<AliAODTrack*>(object)); }
+  Bool_t IsSelected(TObject * object ); 
   Bool_t IsSelected(TList * /*list*/) { return kFALSE; }
   Bool_t AcceptTrack(AliAODTrack * track);
+  Bool_t AcceptTrack(AliESDtrack * track);
+  Bool_t GetDCA(const AliAODTrack * track, Double_t dca[2]);
+  Bool_t GetDCA(const AliESDtrack * track, Double_t dca[2]);
 
+
+  void DeleteTracks() { fOwnedTracks.Delete(); }
+  void FillDCAHist(Float_t dcaz, Float_t dcaxy, AliVTrack * track);
   AliConversionTrackCuts();
   AliConversionTrackCuts(TString name, TString title);
   ~AliConversionTrackCuts();
+  
+  void      SetEsdTrackCuts(AliESDtrackCuts * trackcuts) { fEsdTrackCuts = trackcuts; }
+  void      SetDCAZmax(Double_t value)  { fDCAZmax = value*value; }
+  void      SetDCAXYmax(Double_t value) { fDCAXYmax = value*value; }
+  void      SetFilterBit(Int_t value)   { fFilterBit = value; }
+  void      SetEvent(AliVEvent * event)  { fEvent = event; }
 
-  void      AddStatusFlag(ULong_t f, Bool_t on)       {if (on) fFlagsOn = fFlagsOn | f; else fFlagsOff = fFlagsOff | f;}
-  void      SetStatusFlags(ULong_t f, Bool_t on)      {if (on) fFlagsOn = f; else fFlagsOff = f;}
-  void      SetPtRange(Double_t a, Double_t b)        {fPt[0] = TMath::Min(a, b); fPt[1] = TMath::Max(a, b);}
-  void      SetEtaRange(Double_t a, Double_t b)       {fEta[0] = TMath::Min(a, b); fEta[1] = TMath::Max(a, b);}
-  
-  void      SetDCARPtFormula(const char *formula)     {fDCARptFormula = formula; fDCARfixed = kFALSE;}
-  void      SetDCARmax(Double_t value)                {fDCARmax = value; fDCARptFormula = ""; fDCARfixed = kTRUE;}
-  void      SetDCAZPtFormula(const char *formula)     {fDCAZptFormula = formula; fDCAZfixed = kFALSE;}
-  void      SetDCAZmax(Double_t value)                {fDCAZmax = value; fDCAZptFormula = ""; fDCAZfixed = kTRUE;}
-  void      SetDCAXYmax(Double_t value)                {fDCAXYmax = value*value;}
-  
-  void      SetSPDminNClusters(Int_t value)           {fSPDminNClusters = value;}
-  void      SetITSminNClusters(Int_t value)           {fITSminNClusters = value;}
-  void      SetITSmaxChi2(Double_t value)             {fITSmaxChi2 = value;}
-  
-  void      SetTPCminNClusters(Int_t value)           {fTPCminNClusters = value;}
-  void      SetTPCCFoundClusters(Double_t value)           {fTPCClusOverFindable = value;}
-  void      SetTPCmaxChi2(Double_t value)             {fTPCmaxChi2 = value;}
-  
-  void      SetRejectKinkDaughters(Bool_t yn = kTRUE) {fRejectKinkDaughters = yn;}  
-  void      SetAODTestFilterBit(Int_t value)          {fAODTestFilterBit = value;}
-
-  void      SetRequireTPCRefit(Bool_t require)        { fRequireTPCRefit = require; }
-  void      SetDefaults2010();
-  
   TList * CreateHistograms();
-  void FillHistograms(Int_t cutIndex, AliVTrack * track, Bool_t passed);
+  void FillHistograms(Int_t cutIndex, AliVTrack * track);
   virtual void   Print(const Option_t *option = "") const;
 
 protected :
 
-   ULong_t    fFlagsOn;                // status flags which must be ON (used AliESDtrack ones, connected with '|')
-   ULong_t    fFlagsOff;               // status flags which must be OFF (used AliESDtrack ones, connected with '|')
-   Double_t   fPt[2];                  // pt range
-   Double_t   fEta[2];                 // eta range
-   Bool_t     fRejectKinkDaughters;    // switch to kTRUE if daughters of kinks must be rejected
+  void DefineESDCuts();
 
-   Bool_t     fDCARfixed;              // flag to switch between fixed and pt-dependent DCA cut
-   TString    fDCARptFormula;          // expression to compute transverse DCA sigma w.r. to pt
-   Double_t   fDCARmax;                // maximum value for transverse DCA
 
-   Bool_t     fDCAZfixed;              // flag to switch between fixed and pt-dependent DCA cut
-   TString    fDCAZptFormula;          // expression to compute longitudinal DCA sigma w.r. to pt
-   Double_t   fDCAZmax;                // maximum value for longitudinal DCA
+  AliESDtrackCuts * fEsdTrackCuts; //main cut
+  AliESDtrackCuts * fEsdTrackCutsExtra1; //global tracks cut
+  AliESDtrackCuts * fEsdTrackCutsExtra2; //others
+  
+  AliVEvent * fEvent;
 
+
+
+  Int_t fFilterBit;
+  
+  Double_t fDCAZmax;                // maximum value for longitudinal DCA
   Double_t fDCAXYmax;                  // maximum xy value for dca
+  
+  TObjArray fOwnedTracks;
 
-   Int_t      fSPDminNClusters;        // minimum number of required clusters in SPD
-   Int_t      fITSminNClusters;        // minimum number of required clusters in ITS
-   Double_t   fITSmaxChi2;             // maximum chi2 / number of clusters in ITS
-
-   Int_t      fTPCminNClusters;        // minimum number of required clusters in TPC
-   Double_t   fTPCClusOverFindable;        // minimum number of required clusters in TPC
-   Double_t   fTPCmaxChi2;             // maximum chi2 / number of clusters in TPC
-   Int_t      fAODTestFilterBit;       // test filter bit for AOD tracks
-  Bool_t      fRequireTPCRefit;        // Require TPC refit
+  Bool_t fInitialized;
 
   TH2F * fhPhi;
-  TH2F * fhPt;
-  TH2F * fhPhiPt;
+  //TH2F * fhPt;
+  //TH2F * fhPhiPt;
   TH2F * fhdcaxyPt;
   TH2F * fhdcazPt;
+  TH2F * fhdca;
   TH2F * fhnclpt;
   TH2F * fhnclsfpt;
+  TH2F * fhEtaPhi;
   
- // TAxis fCutAxis;
- // TAxisArr fCutVarAxes[kNCuts];
- // TAxisArr fVarAxes[kNVar];
-
   TList * fHistograms;
 
   AliConversionTrackCuts(const AliConversionTrackCuts&); // not implemented
   AliConversionTrackCuts& operator=(const AliConversionTrackCuts&); // not implemented
 
-  ClassDef(AliConversionTrackCuts,1)
-
-
+  ClassDef(AliConversionTrackCuts,4)
 };
-
-
-//__________________________________________________________________________________________________
-inline void AliConversionTrackCuts::SetDefaults2010()
-{
-//
-// Default settings for cuts used in 2010
-//
-
-   SetDCAZmax(3.0);
-   SetDCAXYmax(2.5);
-   SetTPCminNClusters(70);
-   SetTPCmaxChi2(12.0);
-   SetRejectKinkDaughters();
-}
 
 #endif

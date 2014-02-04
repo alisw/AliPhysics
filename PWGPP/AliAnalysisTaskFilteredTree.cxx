@@ -61,6 +61,7 @@
 #include "AliAnalysisTaskFilteredTree.h"
 #include "AliKFParticle.h"
 #include "AliESDv0.h"
+#include "TVectorD.h"
 
 using namespace std;
 
@@ -603,7 +604,12 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
     	return;
   }
 
+  AliESDVertex* vtxTPC = (AliESDVertex*)esdEvent->GetPrimaryVertexTPC();
+  AliESDVertex* vtxSPD = (AliESDVertex*)esdEvent->GetPrimaryVertexSPD();
+
   if(!vtxESD) return;
+  if(!vtxTPC) return;
+  if(!vtxSPD) return;
 
   Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD); 
   //printf("isEventOK %d, isEventTriggered %d, status %d, vz %f \n",isEventOK, isEventTriggered, vtxESD->GetStatus(), vtxESD->GetZv());
@@ -633,6 +639,9 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
     vert[1] = vtxESD->GetYv();
     vert[2] = vtxESD->GetZv();
     Int_t mult = vtxESD->GetNContributors();
+    Int_t multSPD = vtxSPD->GetNContributors();
+    Int_t multTPC = vtxTPC->GetNContributors();
+
     Float_t bz = esdEvent->GetMagneticField();
     Int_t runNumber = esdEvent->GetRunNumber();
     Int_t evtTimeStamp = esdEvent->GetTimeStamp();
@@ -703,6 +712,8 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
 	"IRtot="<<ir1<<                      // interaction record history info
 	"IRint2="<<ir2<<
         "mult="<<mult<<                      // multiplicity of tracks pointing to the primary vertex
+        "multSPD="<<multSPD<<                // multiplicity of tracks pointing to the SPD primary vertex
+        "multTPC="<<multTPC<<                // multiplicity of tracks pointing to the TPC primary vertex
         "esdTrack.="<<track<<
         "centralityF="<<centralityF<<       
         "\n";
@@ -909,6 +920,26 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
   if(!vtxESD) return;
 
   Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD); 
+  
+  //
+  // Vertex info comparison and track multiplicity
+  //
+  AliESDVertex *vertexSPD =  (AliESDVertex *)esdEvent->GetPrimaryVertexSPD();
+  AliESDVertex *vertexTPC =  (AliESDVertex *)esdEvent->GetPrimaryVertexTPC(); 
+  Int_t contSPD = vertexSPD->GetNContributors();
+  Int_t contTPC = vertexTPC->GetNContributors();        
+  TVectorD vertexPosTPC(3), vertexPosSPD(3);
+  vertexSPD->GetXYZ(vertexPosSPD.GetMatrixArray());
+  vertexTPC->GetXYZ(vertexPosTPC.GetMatrixArray());
+  Int_t ntracksTPC=0;
+  Int_t ntracksITS=0;
+  for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++){
+    AliESDtrack *track = esdEvent->GetTrack(iTrack);    
+    if(!track) continue;
+    if (track->IsOn(AliVTrack::kTPCrefit)) ntracksTPC++;
+    if (track->IsOn(AliVTrack::kITSrefit)) ntracksITS++;
+  }
+  
   //printf("isEventOK %d, isEventTriggered %d \n",isEventOK, isEventTriggered);
   //printf("GetAnalysisMode() %d \n",GetAnalysisMode());
 
@@ -1137,11 +1168,10 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 
       Bool_t isOKtrackInnerC3 = kFALSE;
       AliExternalTrackParam *trackInnerC3 = new AliExternalTrackParam(*(track->GetInnerParam()));
-
       if(mcEvent) 
       {
         if(!stack) return;
-
+	multMCTrueTracks = GetMCTrueTrackMult(mcEvent,evtCuts,accCuts);
         //
         // global track
 	//
@@ -1385,6 +1415,14 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	  "IRint2="<<ir2<<                        // interaction record (trigger) coutners - counter 2
 	  "mult="<<mult<<                         // multiplicity of tracks pointing to the primary vertex
 	  "ntracks="<<ntracks<<                   // number of the esd tracks (to take into account the pileup in the TPC)
+	  //                                           important variables for the pile-up studies
+	  "contTPC="<< contTPC<<                    // number of contributors to the TPC primary vertex candidate
+	  "contSPD="<< contSPD<<                    // number of contributors to the SPD primary vertex candidate
+	  "vertexPosTPC.="<<&vertexPosTPC<<          // TPC vertex position
+	  "vertexPosSPD.="<<&vertexPosSPD<<          // SPD vertex position
+	  "ntracksTPC="<<ntracksTPC<<               // total number of the TPC tracks which were refitted
+	  "ntracksITS="<<ntracksITS<<               // total number of the ITS tracks which were refitted
+	  //
 	  "esdTrack.="<<ptrack<<                  // esdTrack as used in the physical analysis
 	  "extTPCInnerC.="<<ptpcInnerC<<          // ??? 
 	  "extInnerParamC.="<<ptrackInnerC<<      // ???
@@ -1404,6 +1442,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	  if (!refEMCAL) refEMCAL = &refDummy;
 	  if (!refPHOS) refPHOS = &refDummy;
           (*fTreeSRedirector)<<"highPt"<<	
+	    "multMCTrueTracks="<<multMCTrueTracks<<   // mC track multiplicities
 	    "nrefITS="<<nrefITS<<              // number of track references in the ITS
 	    "nrefTPC="<<nrefTPC<<              // number of track references in the TPC
 	    "nrefTRD="<<nrefTRD<<              // number of track references in the TRD
@@ -1605,7 +1644,25 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
     return;
   }
 
-  if(!vtxESD) return;
+  if(!vtxESD) return;   
+  //
+  // Vertex info comparison and track multiplicity
+  //
+  AliESDVertex *vertexSPD =  (AliESDVertex *)esdEvent->GetPrimaryVertexSPD();
+  AliESDVertex *vertexTPC =  (AliESDVertex *)esdEvent->GetPrimaryVertexTPC(); 
+  Int_t contSPD = vertexSPD->GetNContributors();
+  Int_t contTPC = vertexTPC->GetNContributors();        
+  TVectorD vertexPosTPC(3), vertexPosSPD(3);
+  vertexSPD->GetXYZ(vertexPosSPD.GetMatrixArray());
+  vertexTPC->GetXYZ(vertexPosTPC.GetMatrixArray());
+  Int_t ntracksTPC=0;
+  Int_t ntracksITS=0;
+  for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++){
+    AliESDtrack *track = esdEvent->GetTrack(iTrack);    
+    if(!track) continue;
+    if (track->IsOn(AliVTrack::kTPCrefit)) ntracksTPC++;
+    if (track->IsOn(AliVTrack::kITSrefit)) ntracksITS++;
+  }
 
   Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD); 
   //printf("isEventOK %d, isEventTriggered %d \n",isEventOK, isEventTriggered);
@@ -1663,9 +1720,12 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
 
       // check if particle reconstructed
       Bool_t isRec = kFALSE;
-      Int_t  trackIndex = -1;  
+      Int_t trackIndex = -1;  
+      Int_t trackLoopIndex = -1;  
       Int_t isESDtrackCut= 0;
       Int_t isAccCuts    = 0;
+      Int_t nRec = 0;    // how many times reconstructed 
+      Int_t nFakes = 0;  // how many times reconstructed as a fake track
       AliESDtrack *recTrack = NULL; 
 
       for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
@@ -1681,18 +1741,25 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
 	  if (isAcc) isESDtrackCut=1;
 	  if (accCuts->AcceptTrack(track)) isAccCuts=1;
 	  isRec = kTRUE;
+          trackIndex = iTrack;
+
 	  if (recTrack){
 	    if (track->GetTPCncls()<recTrack->GetTPCncls()) continue; // in case looper tracks use longer track
 	    if (!isAcc) continue;
-	    trackIndex = iTrack;
+	    trackLoopIndex = iTrack;
 	  }
 	  recTrack = esdEvent->GetTrack(trackIndex); 
+          nRec++;
+          if(track->GetLabel()<0) nFakes++;
+
 	  continue;
 	}        
       }
       
       // Store information in the output tree
-      if(trackIndex>-1)  { 
+      if (trackLoopIndex>-1)  { 
+        recTrack = esdEvent->GetTrack(trackLoopIndex); 
+      } else if (trackIndex >-1) {
         recTrack = esdEvent->GetTrack(trackIndex); 
       } else {
         recTrack = new AliESDtrack(); 
@@ -1720,17 +1787,28 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
           "evtNumberInFile="<<evtNumberInFile<<     // 
           "Bz="<<bz<<                               // magnetic field
           "vtxESD.="<<vtxESD<<                      // vertex info
+	  //
           "mult="<<mult<<                           // primary vertex 9whatewe found) multiplicity
 	  "multMCTrueTracks="<<multMCTrueTracks<<   // mC track multiplicities
+	  //                                           important variables for the pile-up studies
+	  "contTPC="<< contTPC<<                    // number of contributors to the TPC primary vertex candidate
+	  "contSPD="<< contSPD<<                    // number of contributors to the SPD primary vertex candidate
+	  "vertexPosTPC.="<<&vertexPosTPC<<          // TPC vertex position
+	  "vertexPosSPD.="<<&vertexPosSPD<<          // SPD vertex position
+	  "ntracksTPC="<<ntracksTPC<<               // total number of the TPC tracks which were refitted
+	  "ntracksITS="<<ntracksITS<<               // total number of the ITS tracks which were refitted
+	  //
 	  //
 	  "isAcc0="<<isESDtrackCut<<                // track accepted by ESD track cuts
 	  "isAcc1="<<isAccCuts<<                    // track accepted by acceptance cuts flag
-          "esdTrack.="<<recTrack<<
-          "isRec="<<isRec<<
+          "esdTrack.="<<recTrack<<                  // reconstructed track (only the longest from the loopers)
+          "isRec="<<isRec<<                         // track was reconstructed
           "tpcTrackLength="<<tpcTrackLength<<       // track length in the TPC r projection
           "particle.="<<particle<<                  // particle properties
-          "particleMother.="<<particleMother<<
-          "mech="<<mech<<
+          "particleMother.="<<particleMother<<      // particle mother
+          "mech="<<mech<<                           // production mechanizm
+          "nRec="<<nRec<<                           // how many times reconstruted
+          "nFakes="<<nFakes<<                       // how many times reconstructed as a fake track
           "\n";
       }
 

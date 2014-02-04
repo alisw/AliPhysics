@@ -50,6 +50,7 @@
 #include <TH2D.h>
 #include <TList.h>
 #include <TProfile.h>
+#include <TFile.h>
 
 #include "AliLnID.h"
 #include "AliLnHistoMap.h"
@@ -98,7 +99,7 @@ AliAnalysisTaskB2::AliAnalysisTaskB2()
 , fESDevent(0)
 , fOutputContainer(0)
 , fHistoMap(0)
-, fESDtrackCuts(0)
+, fTrackCuts(0)
 , fLnID(0)
 , fMaxNSigmaITS(3)
 , fMaxNSigmaTPC(3)
@@ -163,7 +164,7 @@ AliAnalysisTaskB2::AliAnalysisTaskB2(const char* name)
 , fESDevent(0)
 , fOutputContainer(0)
 , fHistoMap(0)
-, fESDtrackCuts(0)
+, fTrackCuts(0)
 , fLnID(0)
 , fMaxNSigmaITS(3)
 , fMaxNSigmaTPC(3)
@@ -238,14 +239,14 @@ void AliAnalysisTaskB2::CreateOutputObjects()
 //
 // Create output objects
 //
-	if(fHistoMap == 0) exit(1); // should be created somewhere else
+	if(fHistoMap == 0) AliFatal("no histogram map"); // should be created somewhere else
 	
 	fOutputContainer = new TList();
 	fOutputContainer->SetOwner(kTRUE);
 	
 	TObjString* key;
 	TIter iter(fHistoMap->GetMap());
-	while((key = (TObjString*)iter.Next())) fOutputContainer->Add((TH1*)fHistoMap->Get(key));
+	while((key = dynamic_cast<TObjString*>(iter.Next()))) fOutputContainer->Add((TH1*)fHistoMap->Get(key));
 	
 	PostData(1, fOutputContainer);
 }
@@ -257,7 +258,7 @@ AliAnalysisTaskB2::~AliAnalysisTaskB2()
 //
 	delete fHistoMap;
 	delete fOutputContainer;
-	delete fESDtrackCuts;
+	delete fTrackCuts;
 	delete fLnID;
 	
 	delete fTrigAna;
@@ -287,17 +288,9 @@ void AliAnalysisTaskB2::Exec(Option_t* )
 		return;
 	}
 	
-	if(fESDtrackCuts == 0)
-	{
-		this->Error("Exec", "ESD track cuts not set");
-		return;
-	}
+	if(fTrackCuts == 0) AliFatal("track cuts not set");
 	
-	if(fLnID == 0)
-	{
-		this->Error("Exec", "PID not set");
-		return;
-	}
+	if(fLnID == 0) AliFatal("PID not set");
 	
 	if(fSimulation)
 	{
@@ -310,7 +303,7 @@ void AliAnalysisTaskB2::Exec(Option_t* )
 		if(fMCevent == 0) return;
 	}
 	
-	// --------- multiplicity and centrality ------------------
+	// multiplicity and centrality
 	
 	fNtrk = AliESDtrackCuts::GetReferenceMultiplicity(fESDevent, AliESDtrackCuts::kTrackletsITSTPC, fMaxEta);
 	if(fSimulation) fNch = this->GetChargedMultiplicity(fMaxEta);
@@ -337,7 +330,7 @@ void AliAnalysisTaskB2::Exec(Option_t* )
 		((TH1D*)fHistoMap->Get(fSpecies + "_V0_Scaled_Mult"))->Fill(v0ScaMult);
 	}
 	
-	// ----------------- trigger --------------------
+	// trigger
 	
 	AliInputEventHandler* eventH = dynamic_cast<AliInputEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 	if(eventH == 0)
@@ -360,7 +353,7 @@ void AliAnalysisTaskB2::Exec(Option_t* )
 		if(fNtrkMultTrigger) fTriggerFired = ( fTriggerFired && fMultTriggerFired );
 	}
 	
-	// --------------------- vertex --------------
+	// vertex
 	
 	fGoodVertex  = kFALSE;
 	
@@ -385,11 +378,11 @@ void AliAnalysisTaskB2::Exec(Option_t* )
 	if( (vtx->GetY() <= fMinVy) || (vtx->GetY() >= fMaxVy) ) fGoodVertex=kFALSE;
 	if( (vtx->GetZ() <= fMinVz) || (vtx->GetZ() >= fMaxVz) ) fGoodVertex=kFALSE;
 	
-	// -------------------- pile up ------------------
+	// pile up
 	
 	fPileUpEvent = fESDevent->IsPileupFromSPDInMultBins();
 	
-	// ---------------- event stats ----------------
+	// event stats
 	
 	((TH1D*)fHistoMap->Get(fSpecies + "_Stats"))->Fill(0); // number of events
 	
@@ -424,13 +417,9 @@ void AliAnalysisTaskB2::Exec(Option_t* )
 		}
 	}
 	
-	// ------------- Particles and tracks for this event ---------------
+	// Particles and tracks for this event
 	
-	Int_t nParticles = 0;
-	if(fSimulation)
-	{
-		nParticles = this->GetParticles();
-	}
+	if(fSimulation) this->GetParticles();
 	
 	this->GetTracks();
 	
@@ -462,7 +451,7 @@ Int_t AliAnalysisTaskB2::GetParticles()
 		
 		if(pid != fPartCode) continue;
 		
-		// ------- physical primaries ------------
+		// physical primaries
 		
 		if(!stack->IsPhysicalPrimary(i)) continue;
 		
@@ -475,7 +464,7 @@ Int_t AliAnalysisTaskB2::GetParticles()
 		Double_t genPhi = iParticle->Phi();
 		Double_t genEta = iParticle->Eta();
 		
-		// ------- multiplicity and centrality -------------
+		// multiplicity and centrality
 		
 		if( fHeavyIons && !fCentTriggerFired) continue;
 		if( fNtrkMultTrigger && !fMultTriggerFired) continue;
@@ -488,14 +477,14 @@ Int_t AliAnalysisTaskB2::GetParticles()
 		((TH2D*)fHistoMap->Get(particle + "_Gen_Prim_PtY"))->Fill(genY, genPt);
 		((TH2D*)fHistoMap->Get(particle + "_Gen_Prim_EtaY"))->Fill(genY, genEta);
 		
-		// ------ is within phase space? ----------
+		// is within phase space?
 		
 		if(TMath::Abs(genY) >= fMaxY) continue;
 		
 		((TH1D*)fHistoMap->Get(particle + "_Gen_PhS_Prim_P"))->Fill(genP);
 		((TH1D*)fHistoMap->Get(particle + "_Gen_PhS_Prim_Pt"))->Fill(genPt);
 		
-		// ------- is from a triggering event? (same as rec.) --------
+		// is from a triggering event? (same as rec.)
 		
 		if(!fTriggerFired)
 		{
@@ -505,7 +494,7 @@ Int_t AliAnalysisTaskB2::GetParticles()
 		
 		((TH1D*)fHistoMap->Get(particle + "_Gen_Trig_Prim_Pt"))->Fill(genPt);
 		
-		// ------- is from a triggering event with good vertex? -------------
+		// is from a triggering event with good vertex?
 		
 		if(!fESDevent->GetPrimaryVertex()->GetStatus())
 		{
@@ -518,7 +507,7 @@ Int_t AliAnalysisTaskB2::GetParticles()
 		((TH1D*)fHistoMap->Get(particle + "_Gen_Nch"))->Fill(fNch);
 		((TH1D*)fHistoMap->Get(particle + "_Gen_Vtx_Prim_Pt"))->Fill(genPt);
 		
-		// ------ is within the geometrical acceptance? ------------
+		// is within the geometrical acceptance?
 		
 		if(TMath::Abs(genEta) >= fMaxEta) continue;
 		
@@ -541,13 +530,13 @@ Int_t AliAnalysisTaskB2::GetTracks()
 	
 	Int_t nTracks = 0;
 	
-	// --------- trigger, vertex and pile-up -----------
+	// trigger, vertex and pile-up
 	
 	if(!fTriggerFired) return 0;
 	if(!fGoodVertex)   return 0;
 	if(fPileUpEvent)   return 0;
 	
-	// ------------ this is a 'good' event -------------
+	// this is a 'good' event
 	
 	((TH1D*)fHistoMap->Get(fSpecies + "_Stats"))->Fill(2); // analyzed events
 	
@@ -574,7 +563,7 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		((TH1D*)fHistoMap->Get(fSpecies + "_Ana_V0_Scaled_Mult"))->Fill(v0ScaMult);
 	}
 	
-	// ------- track loop --------
+	// track loop
 	
 	for(Int_t i = 0; i < fESDevent->GetNumberOfTracks(); ++i)
 	{
@@ -582,77 +571,41 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		
 		if(!iTrack) continue;
 		
-		Float_t sign = 1;
 		TString particle = fSpecies;
-		if(iTrack->GetSign()<0 )
+		if(iTrack->GetSign() < 0) particle.Prepend("Anti");
+		
+		// impact parameters
+		Float_t dcaxy, dcaz;
+		iTrack->GetImpactParameters(dcaxy, dcaz);
+		
+		if(iTrack->GetSign() < 0) // in case of asymmetry
 		{
-			particle.Prepend("Anti");
-			sign = -1;
+			dcaxy = -dcaxy;
+			dcaz  = -dcaz;
 		}
 		
-		// -------- track cuts ------------------------
+		Double_t nSigmaVtx = fTrackCuts->GetSigmaToVertex(iTrack);
+		
+		// momentum at DCA
+		Double_t p  = iTrack->GetP();
+		Double_t pt = iTrack->Pt();
+		Double_t pz = iTrack->Pz();
+		
+		// track cuts
 		
 		Double_t eta = iTrack->Eta();
 		Double_t phi = this->GetPhi(iTrack);
 		
 		((TH2D*)fHistoMap->Get(particle + "_Before_Phi_Eta"))->Fill(eta,phi);
 		
-		if(!fESDtrackCuts->AcceptTrack(iTrack)) continue;  // with next track
+		if(!fTrackCuts->AcceptTrack(iTrack)) continue;  // with next track
 		if(fTOFmatch && !this->AcceptTOFtrack(iTrack)) continue; // with next track
 		
-		// --------------------- end track cuts -----------------------
-		
-		((TH2D*)fHistoMap->Get(particle + "_After_Phi_Eta"))->Fill(eta, phi);
+		// end track cuts
 		
 		++nTracks;
 		
-		// charge
-		
-		Double_t z = 1;
-		if(fPartCode>AliPID::kTriton)  z = 2;
-		
-		// impact parameters
-		
-		Float_t dcaxy, dcaz;
-		iTrack->GetImpactParameters(dcaxy, dcaz);
-		
-		dcaxy *= sign;
-		dcaz  *= sign;
-		
-		Double_t nSigmaVtx = fESDtrackCuts->GetSigmaToVertex(iTrack);
-		
-		// momentum
-		
-		Double_t p       = iTrack->GetP()*z; // p at DCA
-		Double_t pt      = iTrack->Pt()*z; // pt at DCA
-		Double_t y       = this->GetRapidity(iTrack, fPartCode);
-		Double_t pITS    = this->GetITSmomentum(iTrack);
-		Double_t pTPC    = iTrack->GetTPCmomentum();
-		Double_t pTOF    = this->GetTOFmomentum(iTrack);
-		Double_t dEdxITS = iTrack->GetITSsignal();
-		Double_t dEdxTPC = iTrack->GetTPCsignal();
-		Int_t nPointsITS = this->GetITSnPointsPID(iTrack);
-		Int_t nPointsTPC = iTrack->GetTPCsignalN();
-		
-		if(fMomentumCorrection)
-		{
-			pt += this->GetMomentumCorrection(pt);
-			p   = TMath::Sqrt(pt*pt + iTrack->Pz()*iTrack->Pz());
-			y   = this->GetRapidity(p, iTrack->Pz(), fPartCode);
-		}
-		
-		Double_t beta = 0;
-		Double_t mass = 0;
-		Double_t m2   = 0;
-		Double_t dm2  = -100;
-		Double_t t    = 0;
-		Double_t dt   = -1000;
-		
-		Double_t simPt  = 0;
-		Double_t simPhi = 0;
-		Double_t simY   = 0;
-		
-		// --------- track cuts ------------
+		((TH2D*)fHistoMap->Get(particle + "_After_Phi_Eta"))->Fill(eta, phi);
 		
 		((TH1D*)fHistoMap->Get(particle + "_TrackCuts_DCAxy"))->Fill(dcaxy);
 		((TH1D*)fHistoMap->Get(particle + "_TrackCuts_DCAz"))->Fill(dcaz);
@@ -666,27 +619,69 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		((TH1D*)fHistoMap->Get(particle + "_TrackCuts_TPCchi2PerCls"))->Fill(iTrack->GetTPCchi2()/iTrack->GetTPCNcls());
 		((TH1D*)fHistoMap->Get(particle + "_TrackCuts_TPCchi2Global"))->Fill(iTrack->GetChi2TPCConstrainedVsGlobal(fESDevent->GetPrimaryVertex()));
 		
-		// -------------
+		// detector signals
+		
+		Double_t pITS    = this->GetITSmomentum(iTrack);
+		Double_t pTPC    = iTrack->GetTPCmomentum();
+		Double_t pTOF    = this->GetTOFmomentum(iTrack);
+		Double_t dEdxITS = iTrack->GetITSsignal();
+		Double_t dEdxTPC = iTrack->GetTPCsignal();
+		Int_t nPointsITS = this->GetITSnPointsPID(iTrack);
+		Int_t nPointsTPC = iTrack->GetTPCsignalN();
+		Double_t beta    = 0;
+		Double_t mass    = 0;
+		Double_t m2      = 0;
 		
 		((TH2D*)fHistoMap->Get(particle + "_ITS_dEdx_P"))->Fill(pITS, dEdxITS);
 		((TH2D*)fHistoMap->Get(particle + "_TPC_dEdx_P"))->Fill(pTPC, dEdxTPC);
 		
-		if(this->TOFmatch(iTrack))
+		if(fTOFmatch)
 		{
 			beta = this->GetBeta(iTrack);
-			m2   = this->GetMassSquared(iTrack);
+			m2   = this->GetMassSquared(p, beta);
 			mass = TMath::Sqrt(TMath::Abs(m2));
-			dm2  = this->GetM2Difference(beta, pTOF, AliPID::ParticleMass(fPartCode));
-			t    = this->GetTimeOfFlight(iTrack)*1.e-3; // ns
-			dt   = t - 1.e-3*this->GetExpectedTime(iTrack, AliPID::ParticleMass(fPartCode));
 			
 			((TH2D*)fHistoMap->Get(particle + "_TOF_Beta_P"))->Fill(pTOF, beta);
 			((TH2D*)fHistoMap->Get(particle + "_TOF_Mass_P"))->Fill(pTOF, mass);
 		}
 		
-		// -----------------------------------------------
-		//  for pid and efficiency
-		// -----------------------------------------------
+		// get the pid
+		Int_t pid = fLnID->GetPID( fPartCode, pITS, dEdxITS, nPointsITS, pTPC, dEdxTPC, nPointsTPC, pTOF, beta, fMaxNSigmaITS, fMaxNSigmaTPC, fMaxNSigmaTOF);
+		
+		Int_t offset = AliPID::kDeuteron - 5;
+		
+		// for bayes iteration
+		if(pid != -1)
+		{
+			Int_t iBin = (pid > AliPID::kProton) ? pid - offset : pid;
+			((TH1D*)fHistoMap->Get(fSpecies + "_Stats_PID"))->Fill(iBin);
+		}
+		
+		// fix momentum
+		if(fPartCode > AliPID::kTriton)
+		{
+			p  *= 2.;
+			pt *= 2.;
+			pz *= 2.;
+		}
+		
+		if(fMomentumCorrection)
+		{
+			pt += this->GetMomentumCorrection(pt);
+			p   = TMath::Sqrt(pt*pt + pz*pz);
+			
+			if(fTOFmatch)
+			{
+				m2   = this->GetMassSquared(p, beta);
+				mass = TMath::Sqrt(TMath::Abs(m2));
+			}
+		}
+		
+		// for pid and efficiency
+		
+		Double_t simPt  = 0;
+		Double_t simPhi = 0;
+		Double_t simY   = 0;
 		
 		Int_t simpid = -1;
 		TParticle* iParticle = 0;
@@ -710,7 +705,7 @@ Int_t AliAnalysisTaskB2::GetTracks()
 				
 				((TH2D*)fHistoMap->Get(simparticle + "_Sim_PtY"))->Fill(simY, simPt);
 				
-				if(TMath::Abs(y) < fMaxY)
+				if(TMath::Abs(simY) < fMaxY)
 				{
 					((TH2D*)fHistoMap->Get(simparticle + "_Response_Matrix"))->Fill(pt, simPt);
 					
@@ -737,7 +732,7 @@ Int_t AliAnalysisTaskB2::GetTracks()
 							
 							((TH2D*)fHistoMap->Get(simparticle + "_Prim_DiffPt_RecPt"))->Fill(pt,simPt-pt);
 							
-							if( this->TOFmatch(iTrack) )
+							if(fTOFmatch)
 							{
 								((TH2D*)fHistoMap->Get(simparticle + "_Sim_Prim_M2_P"))->Fill(pTOF, m2);
 								((TH2D*)fHistoMap->Get(simparticle + "_Sim_Prim_M2_Pt"))->Fill(pt, m2);
@@ -749,7 +744,7 @@ Int_t AliAnalysisTaskB2::GetTracks()
 							
 							((TH2D*)fHistoMap->Get(simparticle + "_Sim_Fdwn_DCAxy_Pt"))->Fill(simPt,dcaxy);
 						}
-						else // if(this->IsFromMaterial(iParticle)
+						else
 						{
 							((TH1D*)fHistoMap->Get(simparticle + "_Sim_Mat_Pt"))->Fill(simPt);
 							
@@ -774,19 +769,11 @@ Int_t AliAnalysisTaskB2::GetTracks()
 					}
 				}
 			}
-		}
-		
-		// get the pid
-		Int_t pid = fLnID->GetPID( fPartCode, pITS, dEdxITS, nPointsITS, pTPC, dEdxTPC, nPointsTPC, pTOF, beta, fMaxNSigmaITS, fMaxNSigmaTPC, fMaxNSigmaTOF);
-		
-		// pid table for prior probabilities (only Bayes)
-		
-		Int_t offset = AliPID::kDeuteron - 5;
-		
-		if( fSimulation )
-		{
-			Int_t sim = simpid > AliPID::kProton ? simpid - offset : simpid;
-			Int_t rec = pid > AliPID::kProton ? pid - offset : pid;
+			
+			// pid table for prior probabilities (only Bayes)
+			
+			Int_t sim = (simpid > AliPID::kProton) ? simpid - offset : simpid;
+			Int_t rec = (pid > AliPID::kProton) ? pid - offset : pid;
 			
 			if((sim > -1) && (rec > -1)) // pid performance
 			{
@@ -799,12 +786,7 @@ Int_t AliAnalysisTaskB2::GetTracks()
 			}
 		}
 		
-		// for bayes iteration
-		if(pid != -1)
-		{
-			Int_t iBin = pid > AliPID::kProton ? pid - offset : pid;
-			((TH1D*)fHistoMap->Get(fSpecies + "_Stats_PID"))->Fill(iBin);
-		}
+		// candidate tracks
 		
 		if(pid != fPartCode) continue;
 		
@@ -822,7 +804,7 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		((TH2D*)fHistoMap->Get(particle + "_PID_ITSdEdx_P"))->Fill(pITS, dEdxITS);
 		((TH2D*)fHistoMap->Get(particle + "_PID_TPCdEdx_P"))->Fill(pTPC, dEdxTPC);
 		
-		if(this->TOFmatch(iTrack))
+		if(fTOFmatch)
 		{
 			((TH2D*)fHistoMap->Get(particle + "_PID_Beta_P"))->Fill(pTOF, beta);
 			((TH2D*)fHistoMap->Get(particle + "_PID_Mass_P"))->Fill(pTOF, mass);
@@ -832,12 +814,12 @@ Int_t AliAnalysisTaskB2::GetTracks()
 			}
 		}
 		
-		// ---------------------------------
-		//  results in |y| < fMaxY
-		// ---------------------------------
+		Double_t y = this->GetRapidity(p, pz, AliPID::ParticleMass(fPartCode));
 		
 		((TH1D*)fHistoMap->Get(particle + "_PID_Y"))->Fill(y);
 		((TH2D*)fHistoMap->Get(particle + "_PID_Pt_Y"))->Fill(y, pt);
+		
+		//  results in |y| < fMaxY
 		
 		if(TMath::Abs(y) >= fMaxY) continue;
 		
@@ -859,8 +841,12 @@ Int_t AliAnalysisTaskB2::GetTracks()
 			if(iTrack->IsOn(AliESDtrack::kTOFout)) ((TH1D*)fHistoMap->Get(particle + "_PID_TOFin_TOFout_Pt"))->Fill(pt);
 		}
 		
-		if( this->TOFmatch(iTrack) )
+		if(fTOFmatch)
 		{
+			Double_t dm2 = this->GetM2Difference(beta, pTOF, AliPID::ParticleMass(fPartCode));
+			Double_t t   = this->GetTimeOfFlight(iTrack)*1.e-3; // ns
+			Double_t dt  = t - this->GetExpectedTime(iTrack, AliPID::ParticleMass(fPartCode))*1.e-3;
+			
 			((TH2D*)fHistoMap->Get(particle + "_PID_M2_Pt"))->Fill(pt, m2);
 			((TH2D*)fHistoMap->Get(particle + "_PID_DM2_Pt"))->Fill(pt, dm2);
 			((TH2D*)fHistoMap->Get(particle + "_PID_Time_Pt"))->Fill(pt, t);
@@ -874,14 +860,7 @@ Int_t AliAnalysisTaskB2::GetTracks()
 		
 		if( fTOFmatch && (fLnID->GetPidProcedure() > AliLnID::kMaxLikelihood))
 		{
-			if( pt < 1.8 )
-			{
-				if ((m2 < fMinM2) || (m2 >= fMaxM2)) m2match = kFALSE;
-			}
-			else
-			{
-				if((dt < -0.6) || (dt >= 1)) m2match = kFALSE;
-			}
+			if ((m2 < fMinM2) || (m2 >= fMaxM2)) m2match = kFALSE;
 		}
 		
 		if(m2match)
@@ -898,7 +877,7 @@ Int_t AliAnalysisTaskB2::GetTracks()
 			{
 				((TH1D*)fHistoMap->Get(particle + "_Sim_PID_Pt"))->Fill(simPt);
 				
-				if( this->TOFmatch(iTrack) )
+				if(fTOFmatch)
 				{
 					((TH2D*)fHistoMap->Get(particle + "_Sim_PID_M2_Pt"))->Fill(pt, m2);
 				}
@@ -989,20 +968,12 @@ Bool_t AliAnalysisTaskB2::IsMB(UInt_t triggerBits) const
 	return ( (triggerBits&AliVEvent::kMB) == AliVEvent::kMB );
 }
 
-Bool_t AliAnalysisTaskB2::TOFmatch(const AliESDtrack* trk) const
-{
-//
-// Check for TOF match signal
-//
-	return ( trk->IsOn(AliESDtrack::kTOFout) && trk->IsOn(AliESDtrack::kTIME) );
-}
-
 Bool_t AliAnalysisTaskB2::AcceptTOFtrack(const AliESDtrack* trk) const
 {
 //
 // Additional checks for TOF match signal
 //
-	if( !this->TOFmatch(trk) ) return kFALSE;
+	if( !fTOFmatch ) return kFALSE;
 	if( trk->GetIntegratedLength() < 350) return kFALSE;
 	if( trk->GetTOFsignal() < 1e-6) return kFALSE;
 	
@@ -1098,22 +1069,6 @@ Double_t AliAnalysisTaskB2::GetTheta(const AliESDtrack* trk) const
 	return (pz == 0) ? TMath::PiOver2() : TMath::ACos(pz/p);
 }
 
-Double_t AliAnalysisTaskB2::GetRapidity(const AliESDtrack* trk, Int_t pid) const
-{
-//
-// Rapidity assuming the given particle hypothesis
-// and using the momentum at the DCA
-//
-	Double_t m  = AliPID::ParticleMass(pid);
-	Double_t p  = (pid>AliPID::kTriton) ? 2.*trk->GetP() : trk->GetP();
-	Double_t e  = TMath::Sqrt(p*p + m*m);
-	Double_t pz = (pid>AliPID::kTriton) ? 2.*trk->Pz() : trk->Pz();
-	
-	if(e <= pz) return 1.e+16;
-	
-	return 0.5*TMath::Log( (e+pz)/(e-pz) );
-}
-
 Double_t AliAnalysisTaskB2::GetITSmomentum(const AliESDtrack* trk) const
 {
 //
@@ -1163,23 +1118,19 @@ Double_t AliAnalysisTaskB2::GetExpectedTime(const AliESDtrack* trk, Double_t m) 
 	return l/beta/2.99792458e-2;
 }
 
-Double_t AliAnalysisTaskB2::GetMassSquared(const AliESDtrack* trk) const
+Double_t AliAnalysisTaskB2::GetMassSquared(Double_t p, Double_t beta) const
 {
 //
 // Mass squared
 //
-	Double_t p = (fPartCode>AliPID::kTriton) ? 2.*this->GetTOFmomentum(trk) : this->GetTOFmomentum(trk);
-	Double_t beta = this->GetBeta(trk);
-	
 	return p*p*(1./(beta*beta) - 1.);
 }
 
-Double_t AliAnalysisTaskB2::GetM2Difference(Double_t beta, Double_t momentum, Double_t m) const
+Double_t AliAnalysisTaskB2::GetM2Difference(Double_t beta, Double_t p, Double_t m) const
 {
 //
 // Mass squared difference
 //
-	Double_t p = (fPartCode>AliPID::kTriton) ? 2.*momentum : momentum;
 	Double_t expBeta2 = p*p/(p*p+m*m);
 	
 	return p*p*(1./(beta*beta)-1./expBeta2);
@@ -1312,12 +1263,11 @@ Double_t AliAnalysisTaskB2::GetMomentumCorrection(Double_t ptrec) const
 	return fMoCpfx->Interpolate(ptrec);
 }
 
-Double_t AliAnalysisTaskB2::GetRapidity(Double_t p, Double_t pz, Int_t pid) const
+Double_t AliAnalysisTaskB2::GetRapidity(Double_t p, Double_t pz, Double_t m) const
 {
 //
-// Rapidity (for momentum correction)
+// Rapidity
 //
-	Double_t m  = AliPID::ParticleMass(pid);
 	Double_t e  = TMath::Sqrt(p*p + m*m);
 	
 	if(e <= pz) return 1.e+16;

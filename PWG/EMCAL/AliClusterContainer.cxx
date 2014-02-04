@@ -1,5 +1,6 @@
+// $Id$
 //
-// Cluster Container
+// Container with name, TClonesArray and cuts for particles
 //
 // Author: M. Verweij
 
@@ -16,6 +17,7 @@ ClassImp(AliClusterContainer)
 AliClusterContainer::AliClusterContainer():
   AliEmcalContainer("AliClusterContainer"),
   fClusPtCut(0.15),
+  fClusECut(0.15),
   fClusTimeCutLow(-10),
   fClusTimeCutUp(10),
   fClusterBitMap(0),
@@ -31,6 +33,7 @@ AliClusterContainer::AliClusterContainer():
 AliClusterContainer::AliClusterContainer(const char *name):
   AliEmcalContainer(name),
   fClusPtCut(0.15),
+  fClusECut(0.15),
   fClusTimeCutLow(-10),
   fClusTimeCutUp(10),
   fClusterBitMap(0),
@@ -80,8 +83,8 @@ AliVCluster* AliClusterContainer::GetLeadingCluster(const char* opt)
 }
 
 //________________________________________________________________________
-AliVCluster* AliClusterContainer::GetCluster(Int_t i) const {
-
+AliVCluster* AliClusterContainer::GetCluster(Int_t i) const 
+{
   //Get i^th cluster in array
 
   if(i<0 || i>fClArray->GetEntriesFast()) return 0;
@@ -91,8 +94,9 @@ AliVCluster* AliClusterContainer::GetCluster(Int_t i) const {
 }
 
 //________________________________________________________________________
-AliVCluster* AliClusterContainer::GetAcceptCluster(Int_t i) const {
-  //return pointer to cluster if cluster is accepted
+AliVCluster* AliClusterContainer::GetAcceptCluster(Int_t i) const 
+{
+  //Return pointer to cluster if cluster is accepted
 
   AliVCluster *vc = GetCluster(i);
   if(!vc) return 0;
@@ -106,8 +110,8 @@ AliVCluster* AliClusterContainer::GetAcceptCluster(Int_t i) const {
 }
 
 //________________________________________________________________________
-AliVCluster* AliClusterContainer::GetClusterWithLabel(Int_t lab) const {
-
+AliVCluster* AliClusterContainer::GetClusterWithLabel(Int_t lab) const 
+{
   //Get particle with label lab in array
   
   Int_t i = GetIndexFromLabel(lab);
@@ -115,8 +119,8 @@ AliVCluster* AliClusterContainer::GetClusterWithLabel(Int_t lab) const {
 }
 
 //________________________________________________________________________
-AliVCluster* AliClusterContainer::GetAcceptClusterWithLabel(Int_t lab) const {
-
+AliVCluster* AliClusterContainer::GetAcceptClusterWithLabel(Int_t lab) const 
+{
   //Get particle with label lab in array
   
   Int_t i = GetIndexFromLabel(lab);
@@ -124,8 +128,8 @@ AliVCluster* AliClusterContainer::GetAcceptClusterWithLabel(Int_t lab) const {
 }
 
 //________________________________________________________________________
-AliVCluster* AliClusterContainer::GetNextAcceptCluster(Int_t i) {
-
+AliVCluster* AliClusterContainer::GetNextAcceptCluster(Int_t i) 
+{
   //Get next accepted cluster; if i >= 0 (re)start counter from i; return 0 if no accepted cluster could be found
 
   if (i>=0) fCurrentID = i;
@@ -141,8 +145,8 @@ AliVCluster* AliClusterContainer::GetNextAcceptCluster(Int_t i) {
 }
 
 //________________________________________________________________________
-AliVCluster* AliClusterContainer::GetNextCluster(Int_t i) {
-
+AliVCluster* AliClusterContainer::GetNextCluster(Int_t i) 
+{
   //Get next cluster; if i >= 0 (re)start counter from i; return 0 if no cluster could be found
 
   if (i>=0) fCurrentID = i;
@@ -193,6 +197,9 @@ Bool_t AliClusterContainer::AcceptCluster(AliVCluster *clus) const
   if (clus->GetTOF() > fClusTimeCutUp || clus->GetTOF() < fClusTimeCutLow)
     return kFALSE;
 
+  if (clus->E()<fClusECut)
+    return kFALSE;
+
   TLorentzVector nPart;
   clus->GetMomentum(nPart, const_cast<Double_t*>(fVertex));
 
@@ -200,7 +207,6 @@ Bool_t AliClusterContainer::AcceptCluster(AliVCluster *clus) const
     return kFALSE;
   
   return kTRUE;
-
 }
 
 //________________________________________________________________________

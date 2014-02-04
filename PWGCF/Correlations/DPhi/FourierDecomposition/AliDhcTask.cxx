@@ -38,11 +38,11 @@ AliDhcTask::AliDhcTask()
   fTrackDepth(1000), fPoolSize(200), fTracksName(), fDoWeights(kFALSE), fFillMuons(kFALSE),
   fPtTACrit(kTRUE), fAllTAHists(kFALSE), fMixInEtaT(kFALSE),
   fEtaTLo(-1.0), fEtaTHi(1.0), fEtaALo(-1.0), fEtaAHi(1.0), fOmitFirstEv(kTRUE),
-  fDoFillSame(kFALSE), fDoMassCut(kFALSE), fClassName(),
+  fDoFillSame(kFALSE), fDoMassCut(kFALSE), fCheckVertex(kTRUE), fClassName(),
   fCentMethod("V0M"), fNBdeta(20), fNBdphi(36), fTriggerMatch(kTRUE),
   fBPtT(0x0), fBPtA(0x0), fBCent(0x0), fBZvtx(0x0),
   fMixBCent(0x0), fMixBZvtx(0x0), fHEffT(0x0), fHEffA(0x0),
-  fESD(0x0), fAOD(0x0), fOutputList(0x0), fHEvt(0x0), fHTrk(0x0),
+  fESD(0x0), fAOD(0x0), fOutputList(0x0), fHEvt(0x0), fHTrk(0x0), fHPoolReady(0x0),
   fHPtAss(0x0), fHPtTrg(0x0), fHPtTrgEvt(0x0),
   fHPtTrgNorm1S(0x0), fHPtTrgNorm1M(0x0), fHPtTrgNorm2S(0x0), fHPtTrgNorm2M(0x0),
   fHCent(0x0), fHZvtx(0x0), fNbins(0), fHSs(0x0), fHMs(0x0), fHPts(0x0), fHSMass(0x0), fHMMass(0x0),
@@ -61,11 +61,11 @@ AliDhcTask::AliDhcTask(const char *name, Bool_t def)
   fTrackDepth(1000), fPoolSize(200), fTracksName(), fDoWeights(kFALSE), fFillMuons(kFALSE),
   fPtTACrit(kTRUE), fAllTAHists(kFALSE), fMixInEtaT(kFALSE),
   fEtaTLo(-1.0), fEtaTHi(1.0), fEtaALo(-1.0), fEtaAHi(1.0), fOmitFirstEv(kTRUE),
-  fDoFillSame(kFALSE), fDoMassCut(kFALSE), fClassName(),
+  fDoFillSame(kFALSE), fDoMassCut(kFALSE), fCheckVertex(kTRUE), fClassName(),
   fCentMethod("V0M"), fNBdeta(20), fNBdphi(36), fTriggerMatch(kTRUE),
   fBPtT(0x0), fBPtA(0x0), fBCent(0x0), fBZvtx(0x0),
   fMixBCent(0x0), fMixBZvtx(0x0), fHEffT(0x0), fHEffA(0x0),
-  fESD(0x0), fAOD(0x0), fOutputList(0x0), fHEvt(0x0), fHTrk(0x0),
+  fESD(0x0), fAOD(0x0), fOutputList(0x0), fHEvt(0x0), fHTrk(0x0), fHPoolReady(0x0),
   fHPtAss(0x0), fHPtTrg(0x0), fHPtTrgEvt(0x0),
   fHPtTrgNorm1S(0x0), fHPtTrgNorm1M(0x0), fHPtTrgNorm2S(0x0), fHPtTrgNorm2M(0x0),
   fHCent(0x0), fHZvtx(0x0), fNbins(0), fHSs(0x0), fHMs(0x0), fHPts(0x0), fHSMass(0x0), fHMMass(0x0),
@@ -143,6 +143,7 @@ void AliDhcTask::PrintDhcSettings()
   AliInfo(Form(" fill same event in any case? %d", fDoFillSame));
   AliInfo(Form(" do invariant mass cut? %d", fDoMassCut));
   AliInfo(Form(" omit first event? %d\n", fOmitFirstEv));
+  AliInfo(Form(" check the vertex? %d\n", fCheckVertex));
 }
 
 //________________________________________________________________________
@@ -191,6 +192,23 @@ void AliDhcTask::BookHistos()
   fHTrk = new TH2F("fHTrk", "Track-level variables",
                    100, 0, TMath::TwoPi(), 100, -fEtaMax, +fEtaMax);
   fOutputList->Add(fHTrk);
+  
+  // Centrality mixing axis
+  Int_t nCentBins=fMixBCent->GetNbins();
+  Double_t centBins[nCentBins+1];
+  centBins[0] = fMixBCent->GetBinLowEdge(1);
+  for (Int_t i=1; i<=nCentBins; i++) {
+    centBins[i] = fMixBCent->GetBinUpEdge(i);
+  }
+  // Z-vertex mixing axis
+  Int_t nZvtxBins=fMixBZvtx->GetNbins();
+  Double_t zvtxbin[nZvtxBins+1];
+  zvtxbin[0] = fMixBZvtx->GetBinLowEdge(1);
+  for (Int_t i=1; i<=nZvtxBins; i++) {
+    zvtxbin[i] = fMixBZvtx->GetBinUpEdge(i);
+  }
+  fHPoolReady = new TH2F("fHPoolReady","mixing started", nZvtxBins, zvtxbin, nCentBins, centBins);
+  fOutputList->Add(fHPoolReady);
   
   fHPtAss = new TH1F("fHPtAss","PtAssoc;P_{T} (GeV/c) [GeV/c]",nPtAssc,pta);
   fOutputList->Add(fHPtAss);
@@ -434,7 +452,7 @@ void AliDhcTask::UserExec(Option_t *)
     if (dType == kESD) {
       const AliESDVertex* vertex = fESD->GetPrimaryVertex();
       fZVertex = vertex->GetZ();
-      if (!VertexOk()) {
+      if (fCheckVertex && !VertexOk()) {
         if (fVerbosity > 1)
           AliInfo(Form("Event REJECTED (ESD vertex not OK). z = %.1f", fZVertex));
         return;
@@ -446,7 +464,7 @@ void AliDhcTask::UserExec(Option_t *)
     } else if (dType == kAOD) {
       const AliAODVertex* vertex = fAOD->GetPrimaryVertex();
       fZVertex = vertex->GetZ();
-      if (!VertexOk()) {
+      if (fCheckVertex && !VertexOk()) {
         if (fVerbosity > 1)
           Info("Exec()", "Event REJECTED (AOD vertex not OK). z = %.1f", fZVertex);
         return;
@@ -493,23 +511,27 @@ void AliDhcTask::UserExec(Option_t *)
     if (fDoFillSame) { // fill same event right away if requested
       Correlate(*sTracks, *sTracks, kSameEvt);  
     }
+    PostData(1, fOutputList);
     return;
   }
 
   if (pool->IsFirstReady()) {
+    fHPoolReady->Fill(fZVertex,fCentrality);
     // recover events missed before the pool is ready
     Int_t nEvs = pool->GetCurrentNEvents();
     if (nEvs>1) {
       for (Int_t i=0; i<nEvs; ++i) {
-	MiniEvent* evI = pool->GetEvent(i);
-	for (Int_t j=0; j<nEvs; ++j) {
-	  MiniEvent* evJ = pool->GetEvent(j);
-	  if ((i==j) && !fDoFillSame) {
-            Correlate(*evI, *evJ, kSameEvt);
-	  } else {
-	    Correlate(*evI, *evJ, kDiffEvt);
-	  }
-	}
+        MiniEvent* evI = pool->GetEvent(i);
+        for (Int_t j=0; j<nEvs; ++j) {
+          MiniEvent* evJ = pool->GetEvent(j);
+          if (i==j) {
+            if (!fDoFillSame) { // do not fill the same events twice
+              Correlate(*evI, *evJ, kSameEvt);
+            }
+          } else {
+            Correlate(*evI, *evJ, kDiffEvt);
+          }
+        }
       }
     }
   } else { /* standard case: same event, then mix*/

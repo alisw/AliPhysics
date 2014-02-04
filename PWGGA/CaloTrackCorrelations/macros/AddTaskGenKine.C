@@ -115,9 +115,7 @@ AliCaloTrackReader * ConfigureReader()
 
   reader->SwitchOffEventSelection();         // remove pileup by default
   reader->SwitchOffV0ANDSelection() ;        // and besides v0 AND
-      
-  reader->SetImportGeometryFromFile(kFALSE);
-  
+        
   if(kPrint)reader->Print("");
   
   return reader;

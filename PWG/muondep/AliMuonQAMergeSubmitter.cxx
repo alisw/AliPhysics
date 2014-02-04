@@ -191,7 +191,7 @@ UInt_t AliMuonQAMergeSubmitter::MakeXMLCollectionForRun(Int_t runNumber, Int_t s
     
     size += TString(res->GetKey(i,"size")).Atoll();
     
-    out << Form("    <event name=\"%d\">",count) << endl;
+    out << Form("    <event name=\"%d\">",count) << std::endl;
     out << Form("      <file name=\"%s\" aclId=\"%s\" broken=\"%s\" ctime=\"%s\" "
                 "dir=\"%s\" entryId=\"%s\" expiretime=\"%s\" gowner=\"%s\" "
                 "guid=\"%s\" guidtime=\"%s\" lfn=\"%s\" md5=\"%s\" owner=\"%s\" "
@@ -213,15 +213,15 @@ UInt_t AliMuonQAMergeSubmitter::MakeXMLCollectionForRun(Int_t runNumber, Int_t s
                 res->GetKey(i,"replicated"),
                 res->GetKey(i,"size"),
                 res->GetKey(i,"turl"),
-                res->GetKey(i,"type")) << endl;
-    out <<      "    </event>" << endl;
+                res->GetKey(i,"type")) << std::endl;
+    out <<      "    </event>" << std::endl;
   }
   
   TString summary(Form("numberoffiles=\"%d\" size=\"%7.2f GB\" ",count,size/byte2GB));
   
-  out << Form("  <summary %s />",summary.Data()) << endl;
-  out << "  </collection>" << endl;
-  out << "</alien>" << endl;
+  out << Form("  <summary %s />",summary.Data()) << std::endl;
+  out << "  </collection>" << std::endl;
+  out << "</alien>" << std::endl;
   
   out.close();
   

@@ -31,26 +31,16 @@ AddTaskForwardMCCorr()
   }
 
   // --- Add our task ------------------------------------------------
-  AliForwardMCCorrectionsTask* task = new AliForwardMCCorrectionsTask("fmd");
-  mgr->AddTask(task);
+  AliForwardMCCorrectionsTask* task = 
+    new AliForwardMCCorrectionsTask("ForwardCorr");
   task->GetTrackDensity().SetDebug(false);
-  task->GetTrackDensity().SetMaxConsequtiveStrips(3);
-//  task->SetVertexAxis(40, -20., 20.);
+  AliFMDMCTrackDensity& dn = 
+    static_cast<AliFMDMCTrackDensity&>(task->GetTrackDensity());
+  dn.SetMaxConsequtiveStrips(3);
+  //  task->SetVertexAxis(40, -20., 20.);
   
-  // --- create containers for input/output --------------------------
-  AliAnalysisDataContainer *sums = 
-    mgr->CreateContainer("ForwardCorrSums", TList::Class(), 
-			 AliAnalysisManager::kOutputContainer, 
-			 AliAnalysisManager::GetCommonFileName());
-  AliAnalysisDataContainer *output = 
-    mgr->CreateContainer("ForwardCorrResults", TList::Class(), 
-			 AliAnalysisManager::kParamContainer, 
-			 AliAnalysisManager::GetCommonFileName());
-
   // --- connect input/output ----------------------------------------
-  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, sums);
-  mgr->ConnectOutput(task, 2, output);
+  task->Connect(0, 0);
 
   return task;
 }

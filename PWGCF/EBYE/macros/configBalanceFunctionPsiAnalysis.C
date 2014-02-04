@@ -44,8 +44,8 @@ AliBalancePsi *GetBalanceFunctionObject(const char* analysisLevel = "MCAOD",   /
   //Phi
   //gBalance->SetInterval(AliBalance::kPhi,0.,360.,90,-180.,180.0,15);
 
-  //Init the histograms
-  gBalance->InitHistograms();
+  // Init the histograms (not done here, for customization from analysis task)
+  // gBalance->InitHistograms();
   
   return gBalance;
 }

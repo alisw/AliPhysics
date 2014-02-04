@@ -12,7 +12,8 @@
 /**
  * This is the macro to include the Central multiplicity in a train.  
  * 
- * @param mc       If true, assume MC input 
+ * @param mc       If true, assume MC input
+ * @param runNo    Pre-set run number
  * @param sys      Pre-set collision system
  * @param sNN      Pre-set collition energy
  * @param field    Pre-set magnetic field
@@ -47,7 +48,6 @@ AddTaskCentralMult(Bool_t      mc=false,
   if (!mc) task = new AliCentralMultiplicityTask("Central");
   else     task = new AliCentralMCMultiplicityTask("Central");
   task->Configure(config);
-  mgr->AddTask(task);
 
   // --- Set optional corrections path -------------------------------
   AliCentralCorrectionManager& cm = 
@@ -64,18 +64,7 @@ AddTaskCentralMult(Bool_t      mc=false,
   }
 
   // --- Make the output container and connect it --------------------
-  AliAnalysisDataContainer* histOut = 
-    mgr->CreateContainer("Central", TList::Class(), 
-			 AliAnalysisManager::kOutputContainer,
-			 AliAnalysisManager::GetCommonFileName());
-  AliAnalysisDataContainer *output = 
-    mgr->CreateContainer("CentralResults", TList::Class(), 
-			 AliAnalysisManager::kParamContainer, 
-			 AliAnalysisManager::GetCommonFileName());
-  
-  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, histOut);
-  mgr->ConnectOutput(task, 2, output);
+  task->Connect(0,0);
   
   return task;
 }

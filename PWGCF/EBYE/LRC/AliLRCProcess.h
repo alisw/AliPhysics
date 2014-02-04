@@ -273,12 +273,29 @@ private:
     TH1D* fHistPhiForward;  //! Phi spectrum in Forward windows
     TH1D *fHistTracksChargeForward;   //! Charge of accepted tracks in Forward windows
 
+    //net charge in Fwd window
+    TH1D *fHistPtPlusForward;   //! pt distr for + in Fwd window
+    TH1D *fHistPtMinusForward;   //! pt distr for - in Fwd window
+    TH1D *fHistNetChargeVsPtForward;   //! Net charge vs pt of accepted tracks in Fwd window
+
+
     //Backward
     TH1D* fHistPtBackward;   //! Pt spectrum in Backward windows
     TH1D* fHistEtaBackward;  //! Eta spectrum in Backward windows
     TH1D* fHistNchBackward;  //! Nch spectrum in Backward windows
     TH1D* fHistPhiBackward;  //! Phi spectrum in Backward windows
     TH1D *fHistTracksChargeBackward;   //! Charge of accepted tracks in Backward windows
+
+    //net charge in Bckwd window
+    TH1D *fHistPtPlusBackward;   //! pt distr for + in Bckwd window
+    TH1D *fHistPtMinusBackward;   //! pt distr for - in Bckwd window
+    TH1D *fHistNetChargeVsPtBackward;   //! Net charge vs pt of accepted tracks in Bckwd window
+
+//    TH1D *fHistChargePlusVsPtTmp;    //! Net charge vs pt of accepted tracks +
+//    TH1D *fHistChargeMinusVsPtTmp;   //! Net charge vs pt of accepted tracks -
+//    TH2D *fHist2DNetChargeVsPt;      //! Net charge vs pt of accepted tracks 2D
+//    TH2D *fHist2DNetChargeVsPtCorrectedOnEventMean;              //! Net charge vs pt of accepted tracks 2D shifted by mean
+//    TH2D *fHist2DNetChargeVsPtCorrectedOnEventMeanNormOnNch;     //! Net charge vs pt of accepted tracks 2D norm on nCh
 
     /*TClonesArray */
     TH1D *fArrAccumulatedValues;   //! accumulated values for observables

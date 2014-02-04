@@ -58,7 +58,10 @@
 #pragma link C++ class  AliHFEefficiency+;
 
 #pragma link C++ class  AliHFEOADBThresholdsTRD+;
+#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
+// Private sub-class
 #pragma link C++ class  AliHFEOADBThresholdsTRD::AliHFEthresholdParamsTRD+;
+#endif
 #pragma link C++ class  AliHFEbayesPIDqa+;
 #pragma link C++ class  AliHFEpidBayes+;
 
@@ -74,7 +77,6 @@
 
 #pragma link C++ class  AliHFEVZEROEventPlane+;
 #pragma link C++ class  AliAnalysisTaskFlowTPCTOFEPSP+;
-#pragma link C++ class  AliAnalysisTaskFlowTPCTOFQCSP+;
 
 #pragma link C++ class  AliSelectNonHFE+;
 #pragma link C++ class  AliHFENonPhotonicElectron+;
@@ -93,5 +95,7 @@
 #pragma link C++ class  AliHFEreducedEvent+;
 #pragma link C++ class  AliHFEreducedTrack+;
 #pragma link C++ class  AliHFEreducedMCParticle+;
+#pragma link C++ class  AliAnalysisTaskHFEQA+;
+#pragma link C++ class  AliAnalysisTaskFlowITSTPCTOFQCSP+;
 
 #endif

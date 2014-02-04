@@ -8,7 +8,7 @@
  * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
  * @date   Wed Mar 23 13:58:00 2011
  * 
- * @brief  
+ * @brief  Per-event @f$ N_{ch}@f$ per @f$(\eta,\varphi)@f$ bin 
  * 
  * @ingroup pwglf_forward_aod
  * 
@@ -425,6 +425,8 @@ public:
    * @param cMin         Minimum centrality (in percent)
    * @param cMax         Maximum centrality (in percent)
    * @param hist         Histogram to fill 
+   * @param status       Histogram to fill 
+   * 
    * 
    * @return @c true if the event meets the requirements 
    */

@@ -70,6 +70,17 @@ class AliHFSystErr : public TNamed
     AliInfo(" Settings for the PbPb 2010 energy scan");
   }
 
+  // Settings of rapidity ranges for pPb 0-100% CC
+  void SetRapidity(TString rapidity) {
+    fRapidityRange = rapidity;
+    AliInfo(Form(" Settings for rapidity interval %s",fRapidityRange.Data()));
+  }
+  void SetIspPb2011RapidityScan(Bool_t flag){
+    fIsRapidityScan = flag; 
+    AliInfo("Settings for the pPb vs y measurement");
+  }
+
+
   // Function to initialize the variables/histograms
   void Init(Int_t decay);
 
@@ -114,6 +125,24 @@ class AliHFSystErr : public TNamed
   void InitDstartoD0pi2011PbPb3040CentScan();
   void InitDstartoD0pi2011PbPb4050CentScan();
   void InitDstartoD0pi2010PbPb5080CentScan();
+
+  void InitD0toKpi2013pPb0100RapScan0804();
+  void InitD0toKpi2013pPb0100RapScan0401();
+  void InitD0toKpi2013pPb0100RapScan0101();
+  void InitD0toKpi2013pPb0100RapScan0104();
+  void InitD0toKpi2013pPb0100RapScan0408();
+
+  void InitDplustoKpipi2013pPb0100RapScan0804();
+  void InitDplustoKpipi2013pPb0100RapScan0401();
+  void InitDplustoKpipi2013pPb0100RapScan0101();
+  void InitDplustoKpipi2013pPb0100RapScan0104();
+  void InitDplustoKpipi2013pPb0100RapScan0408();
+
+  void InitDstartoD0pi2013pPb0100RapScan0804();
+  void InitDstartoD0pi2013pPb0100RapScan0401();
+  void InitDstartoD0pi2013pPb0100RapScan0101();
+  void InitDstartoD0pi2013pPb0100RapScan0104();
+  void InitDstartoD0pi2013pPb0100RapScan0408();
 
  private:
 
@@ -165,10 +194,13 @@ class AliHFSystErr : public TNamed
   Int_t fCollisionType;    // Collision type: pp=0, PbPb=1
   TString fCentralityClass;  // Centrality class
                            // MB:0100, 0-10:010, 0-20:020 ...40-80:4080...
+  TString fRapidityRange;  // Rapidity range fot y measurements 
+
   Bool_t fIsLowEnergy;     // flag for the low energy (2.76TeV) run
   Bool_t fIsCentScan;      // flag fot the PbPb centrality scan
-
-  ClassDef(AliHFSystErr,4);  // class for systematic errors of charm hadrons
+  Bool_t fIsRapidityScan;  // flag for the pPb vs y measurement  
+ 
+  ClassDef(AliHFSystErr,5);  // class for systematic errors of charm hadrons
 };
 
 #endif

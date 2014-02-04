@@ -254,5 +254,112 @@ Int_t AddGoodRuns(AliAnalysisAlien* plugin,TString lhcPeriod,TString mcprod="") 
       plugin->SetNrunsPerMaster(ngoodruns);
    }
 
+
+   //
+   // 2012 pp runs selected by Annelies
+   //
+   if(lhcPeriod=="LHC12a") { 
+    nruns=21;
+    Int_t runlist[21]={177182, 177173, 177167, 177160, 177157, 177011, 176929, 176927, 176926, 176924, 176859, 176854, 176849, 176753, 176752, 176749, 176730, 176715, 176704, 176701, 176661};
+   
+    for(Int_t k=0;k<nruns;k++){
+      if(runlist[k]<firstrun || runlist[k]>lastrun) continue;
+      plugin->AddRunNumber(runlist[k]);
+      ngoodruns++;
+    }
+    plugin->SetNrunsPerMaster(ngoodruns);
+  }
+  if(lhcPeriod=="LHC12b") { 
+    nruns=18;
+    Int_t runlist[18]={178163, 177942, 177938, 177869, 177861, 177860, 177858, 177804, 177799, 177798, 177671,177624, 177620, 177612, 177601, 177597, 177592, 177580};
+   
+    for(Int_t k=0;k<nruns;k++){
+      if(runlist[k]<firstrun || runlist[k]>lastrun) continue;
+      plugin->AddRunNumber(runlist[k]);
+      ngoodruns++;
+    }
+    plugin->SetNrunsPerMaster(ngoodruns);
+  }
+  if(lhcPeriod=="LHC12bMulti") { 
+    nruns=2;
+    Int_t runlist[2]={178031, 178030};
+   
+    for(Int_t k=0;k<nruns;k++){
+      if(runlist[k]<firstrun || runlist[k]>lastrun) continue;
+      plugin->AddRunNumber(runlist[k]);
+      ngoodruns++;
+    }
+    plugin->SetNrunsPerMaster(ngoodruns);
+  }
+ if(lhcPeriod=="LHC12c") { 
+   nruns=78; // with commented part 78 TPC problems from 182325 till 180510 without it 48 runs
+   Int_t runlist[78]={182744, 182741, 182740, 182730, 182729, 182728, 182725,  182724, 182692, 182691, 182687, 182684, 182635, 182624, 182325, 182324, 182323, 182322, 182302, 182300, 182299, 182297, 182295, 182289, 182207, 182111, 182110, 182106, 182023, 182022, 182018, 182017, 180720, 180719, 180717, 180716, 180569, 180567, 180564, 180562, 180561, 180517, 180515, 180510, 180501, 180500, 180230, 180201, 180200, 180199, 180195, 180133, 180132, 180131, 180130, 180129, 180127, 180044, 180042, 180000, 179920, 179919, 179918, 179917, 179916, 179859, 179858, 179803, 179802, 179796, 179639, 179621, 179618, 179591, 179585, 179584, 179571, 179569};
+   
+    for(Int_t k=0;k<nruns;k++){
+      if(runlist[k]<firstrun || runlist[k]>lastrun) continue;
+      plugin->AddRunNumber(runlist[k]);
+      ngoodruns++;
+    }
+    plugin->SetNrunsPerMaster(ngoodruns);
+  }
+  if(lhcPeriod=="LHC12d") { 
+    nruns=107;
+    Int_t runlist[107]={186320, 186319, 186318, 186229, 186208, 186205, 186200,  186167, 186165, 186164, 186163, 186162, 185912, 185909, 185784, 185778, 185776, 185775, 185768, 185765, 185764, 185757, 185756, 185738, 185735, 185734, 185701, 185699, 185698, 185697, 185695, 185687, 185680, 185589, 185588, 185583, 185582, 185581, 185580, 185578, 185575, 185574, 185565, 185563, 185474, 185465, 185461, 185457, 185375, 185371, 185363, 185362, 185361, 185360, 185359, 185356, 185351, 185350, 185349, 185303, 185302, 185300, 185299, 185296, 185293, 185292, 185291, 185289, 185288, 185284, 185282, 185221, 185217, 185208, 185206, 185203, 185198, 185196, 185189, 185164, 185160, 185157, 185134, 185132, 185127, 185126, 185116, 185031, 185029, 184786, 184784, 184687, 184682, 184678, 184673, 184371, 184215, 184209, 184208, 184188, 184138, 184137, 184135, 184132, 184127, 183916, 183913 };
+   
+    for(Int_t k=0;k<nruns;k++){
+      if(runlist[k]<firstrun || runlist[k]>lastrun) continue;
+      plugin->AddRunNumber(runlist[k]);
+      ngoodruns++;
+    }
+    plugin->SetNrunsPerMaster(ngoodruns);
+  }
+if(lhcPeriod=="LHC12dMulti") { 
+    nruns=9;
+    Int_t runlist[9]={184990, 184988, 184987, 184968, 184967, 184964, 184938, 184933, 184928};
+   
+    for(Int_t k=0;k<nruns;k++){
+      if(runlist[k]<firstrun || runlist[k]>lastrun) continue;
+      plugin->AddRunNumber(runlist[k]);
+      ngoodruns++;
+    }
+    plugin->SetNrunsPerMaster(ngoodruns);
+  }
+ if(lhcPeriod=="LHC12e") { 
+    nruns=18;
+    Int_t runlist[18]={186602, 186601, 186598, 186514, 186511, 186508, 186507,  186460, 186459, 186453, 186429, 186428, 186389, 186388, 186387, 186386, 186385, 186365};
+   
+    for(Int_t k=0;k<nruns;k++){
+      if(runlist[k]<firstrun || runlist[k]>lastrun) continue;
+      plugin->AddRunNumber(runlist[k]);
+      ngoodruns++;
+    }
+    plugin->SetNrunsPerMaster(ngoodruns);
+  }
+  if(lhcPeriod=="LHC12f") { 
+    nruns=66;
+    Int_t runlist[66]={188101, 188093, 187849, 187796, 187791, 187785, 187753,  187749, 187739, 187698, 187697, 187695, 187656, 187633, 187627, 187624, 187623, 187561, 187560, 187537, 187536, 187510, 187508, 187489, 187488, 187487, 187486, 187485, 187484, 187343, 187341, 187340, 187339, 187203, 187202, 187201, 187152, 187151, 187150, 187149, 187143, 187136, 187084, 187047, 186992, 186990, 186989, 186987, 186969, 186967, 186966, 186965, 186938, 186937, 186857, 186853, 186851, 186845, 186844, 186838, 186815, 186809, 186807, 186692, 186690, 186668};
+   
+    for(Int_t k=0;k<nruns;k++){
+      if(runlist[k]<firstrun || runlist[k]>lastrun) continue;
+      plugin->AddRunNumber(runlist[k]);
+      ngoodruns++;
+    }
+    plugin->SetNrunsPerMaster(ngoodruns);
+  }
+
+  if(lhcPeriod=="LHC12g") { 
+    nruns=14;
+    Int_t runlist[14]={188503, 188500, 188499, 188490, 188455, 188454, 188449,  188448, 188447, 188446, 188444, 188443, 188442, 188440};
+   
+    for(Int_t k=0;k<nruns;k++){
+      if(runlist[k]<firstrun || runlist[k]>lastrun) continue;
+      plugin->AddRunNumber(runlist[k]);
+      ngoodruns++;
+    }
+    plugin->SetNrunsPerMaster(ngoodruns);
+  }
+
+
+
   return ngoodruns;
 }

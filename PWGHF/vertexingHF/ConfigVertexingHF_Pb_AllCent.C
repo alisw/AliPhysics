@@ -23,7 +23,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //     displaced tracks 
   AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
-  esdTrackCuts->SetMinNClustersTPC(70);
+  esdTrackCuts->SetMinNClustersTPC(50);
   esdTrackCuts->SetRequireITSRefit(kTRUE);
   //esdTrackCuts->SetMinNClustersITS(4);
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
@@ -41,7 +41,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //     displaced tracks for 20% mot central events 2 prongs
   AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
-  esdTrackCuts->SetMinNClustersTPC(70);
+  esdTrackCuts->SetMinNClustersTPC(50);
   esdTrackCuts->SetRequireITSRefit(kTRUE);
   //esdTrackCuts->SetMinNClustersITS(4);
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
@@ -59,7 +59,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //     displaced tracks for 20% mot central events 3 prongs
   AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
-  esdTrackCuts->SetMinNClustersTPC(70);
+  esdTrackCuts->SetMinNClustersTPC(50);
   esdTrackCuts->SetRequireITSRefit(kTRUE);
   //esdTrackCuts->SetMinNClustersITS(4);
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
@@ -208,6 +208,17 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   Float_t cutsArrayLctoV0[17]={1.0,1.0,0.05,0.05,0.0,0.0,0.0,1000.,1000.,0.99,3.,1000.,0.,0.,0.,0.,0.0};
   cutsLctoV0->SetCuts(17,cutsArrayLctoV0);
   cutsLctoV0->AddTrackCuts(esdTrackCuts);
+
+  AliESDtrackCuts *esdV0daughterTrackCuts = new AliESDtrackCuts("AliESDtrackCutsForV0D","default cuts for V0 daughters");
+  esdV0daughterTrackCuts->SetRequireTPCRefit(kTRUE);
+  esdV0daughterTrackCuts->SetMinNClustersTPC(30);
+  esdV0daughterTrackCuts->SetRequireITSRefit(kFALSE);
+  esdV0daughterTrackCuts->SetMinDCAToVertexXY(0.);
+  esdV0daughterTrackCuts->SetPtRange(0.05,1.e10);
+  esdV0daughterTrackCuts->SetEtaRange(-1.1,+1.1);
+  esdV0daughterTrackCuts->SetAcceptKinkDaughters(kTRUE);
+  esdV0daughterTrackCuts->SetRequireSigmaToVertex(kFALSE);
+  cutsLctoV0->AddTrackCutsV0daughters(esdV0daughterTrackCuts);
   vHF->SetCutsLctoV0(cutsLctoV0);
   // 
   //--- set this if you want to reconstruct primary vertex candidate by

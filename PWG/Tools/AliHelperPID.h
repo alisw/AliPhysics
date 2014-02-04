@@ -11,6 +11,7 @@ class AliVParticle;
 class AliStack;
 class TParticle;
 class AliPIDResponse;  
+class AliPIDCombined;  
 
 #include "TNamed.h"
 
@@ -21,13 +22,15 @@ namespace AliHelperPIDNameSpace {
     kNSigmaTPC = 0,
     kNSigmaTOF,
     kNSigmaTPCTOF,  // squared sum
-    kNSigmaPIDType=kNSigmaTPCTOF
+    kBayes
   };
   
+  const Int_t kNSigmaPIDType=kNSigmaTPCTOF;//number of Nsigma PID types
   
   enum AliHelperDetectorType_t
   {
-    kTPC = 0,
+    kITS = 0,
+    kTPC,
     kTOF,
     kNDetectors
   };
@@ -80,6 +83,13 @@ class AliHelperPID : public TNamed
   //lower pt fot TOF PID
   Double_t SetPtTOFPID(){return   fPtTOFPID;}
   void SetfPtTOFPID(Double_t pttof){fPtTOFPID=pttof;}
+  //set PID Combined
+  void SetPIDCombined(AliPIDCombined *obj){fPIDCombined=obj;}
+  AliPIDCombined *GetPIDCombined(){return fPIDCombined;}
+  //set cut on beyesian probability
+  void SetBayesCut(Double_t cut){fBayesCut=cut;}
+  Double_t GetBayesCut(){return fBayesCut;}
+  
   //getters of the other data members
   TList * GetOutputList() {return fOutputList;}//get the TList with histos
   Double_t* GetNSigmas(AliHelperParticleSpecies_t species) {return fnsigmas[species];}//get nsigma[ipart][idet], calculated in CalculateNSigmas(trk)
@@ -88,12 +98,20 @@ class AliHelperPID : public TNamed
   TH2F* GetHistogram2D(const char * name);//return histogram "name" from fOutputList
   
   //PID functions
-  Int_t GetParticleSpecies(AliVTrack * trk, Bool_t FIllQAHistos);//calculate the PID according to the minimum sigma
+  // User should call ONLY the function GetParticleSpecies and set the PID strategy in the steering macro!
+  Int_t GetParticleSpecies(AliVTrack * trk, Bool_t FIllQAHistos);//calculate the PID according to the slected method.
+  Int_t GetParticleSpecies(AliVParticle * part);
+
+  Int_t GetIDBayes(AliVTrack * trk, Bool_t FIllQAHistos);//calculate the PID according to bayesian PID
+  UInt_t CalcPIDCombined(const AliVTrack *track,const AliPIDResponse *PIDResponse, Int_t detMask, Double_t* prob) const;
   void CalculateNSigmas(AliVTrack * trk, Bool_t FIllQAHistos);//Calcuate nsigma[ipart][idet], fill NSigma histos
   Int_t FindMinNSigma(AliVTrack * trk, Bool_t FIllQAHistos);//retun the minimum Nsigma
-  Bool_t* GetDoubleCounting(AliVTrack * trk, Bool_t FIllQAHistos);//if a particle has double counting set fHasDoubleCounting[ipart]=kTRUE
+  Bool_t* GetDoubleCounting(AliVTrack * trk, Bool_t FIllQAHistos);//if a particle has double counting set fHasDoubleCounting[ipart]=kTRUE (only for the second or third identity)
+  Bool_t* GetAllCompatibleIdentitiesNSigma(AliVTrack * trk, Bool_t FIllQAHistos);//All the identities are true
   Int_t GetMCParticleSpecie(AliVEvent* event, AliVTrack * trk, Bool_t FIllQAHistos);//calculate the PID according to MC truth
   void CheckTOF(AliVTrack * trk);//check the TOF matching and set fHasTOFPID
+  Double_t TOFBetaCalc(AliVTrack *track) const;
+  Double_t GetMass(AliHelperParticleSpecies_t id) const;
   Long64_t Merge(TCollection* list);
   
  private:
@@ -101,7 +119,9 @@ class AliHelperPID : public TNamed
   Bool_t fisMC;
   PIDType_t fPIDType; // PID type
   Double_t fNSigmaPID; // number of sigma for PID cut
+  Double_t fBayesCut; // Cut on Bayesian probability
   AliPIDResponse   *fPIDResponse;     // ! PID response object
+  AliPIDCombined   *fPIDCombined;     // PIDCombined
   TList     *fOutputList;  // List Histo's
   Double_t fnsigmas[kNSpecies][kNSigmaPIDType+1]; //nsigma values
   Bool_t fHasDoubleCounting[kNSpecies];//array with compatible identities
@@ -111,11 +131,10 @@ class AliHelperPID : public TNamed
   Double_t fPtTOFPID; //lower pt bound for the TOF pid
   Bool_t fHasTOFPID;
   
-  
   AliHelperPID(const AliHelperPID&);
   AliHelperPID& operator=(const AliHelperPID&);
   
-  ClassDef(AliHelperPID, 3);
+  ClassDef(AliHelperPID, 4);
   
 };
 #endif

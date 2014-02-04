@@ -1,7 +1,7 @@
 #ifndef ALIAODMUONREPLICATOR_H
 #define ALIAODMUONREPLICATOR_H
 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 1998-2013, ALICE Experiment at CERN, All rights reserved. *
 * See cxx source for full Copyright notice                               */
 
 // $Id$
@@ -25,6 +25,9 @@ class TClonesArray;
 class AliAODMCHeader;
 class AliAODVZERO;
 class AliAODTZERO;
+class AliAODHeader;
+class AliAODTracklets;
+class AliAODZDC;
 
 class AliAODMuonReplicator : public AliAODBranchReplicator
 {
@@ -34,7 +37,9 @@ public:
                        const char* title="Branch Replicator for muon related branches",
                        AliAnalysisCuts* trackCut=0x0,
                        AliAnalysisCuts* vertexCut=0x0,
-                       Int_t mcMode=0);
+                       Int_t mcMode=0,
+                       Bool_t replicateHeader=kFALSE,
+                       Bool_t replicateTracklets=kFALSE);
   virtual ~AliAODMuonReplicator();
   
   virtual TList* GetList() const;
@@ -56,6 +61,9 @@ private:
   mutable TClonesArray* fDimuons; //! internal array of dimuons
   mutable AliAODVZERO* fVZERO; //! internal vzero object
   mutable AliAODTZERO* fTZERO; //! internal tzero object
+  mutable AliAODHeader* fHeader; //! internal header object
+  mutable AliAODTracklets* fTracklets; //! internal tracklets object
+  mutable AliAODZDC* fZDC; //! internal zdc object
   mutable TList* fList; //! internal list of managed objects (fVertices and fTracks)
   
   mutable TClonesArray* fMCParticles; //! internal array of MC particles
@@ -63,12 +71,14 @@ private:
   Int_t fMCMode; // MC filtering switch (0=none=no mc information,1=normal=simple copy,>=2=aggressive=filter out)
   TExMap fLabelMap; //! for MC label remapping (in case of aggressive filtering)
   TExMap fParticleSelected; //! List of selected MC particles
-
+  Bool_t fReplicateHeader; //! whether or not the replicate the AOD Header
+  Bool_t fReplicateTracklets; //! whether or not the replicate the AOD Tracklets
+  
 private:
   AliAODMuonReplicator(const AliAODMuonReplicator&);
   AliAODMuonReplicator& operator=(const AliAODMuonReplicator&);
   
-  ClassDef(AliAODMuonReplicator,5) // Branch replicator for ESD to muon AOD.
+  ClassDef(AliAODMuonReplicator,7) // Branch replicator for ESD to muon AOD.
 };
 
 #endif

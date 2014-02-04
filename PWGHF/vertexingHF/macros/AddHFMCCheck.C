@@ -1,4 +1,4 @@
-AliAnalysisTaskCheckHFMCProd *AddHFMCCheck(Bool_t isPbPb=kTRUE, Bool_t readMC=kTRUE){
+AliAnalysisTaskCheckHFMCProd *AddHFMCCheck(Int_t system=0, Bool_t readMC=kTRUE){
 
   // Creates, configures and attaches to the train the task for QA of ITS standalone tracks
   // Get the pointer to the existing analysis manager via the static access method.
@@ -33,7 +33,8 @@ AliAnalysisTaskCheckHFMCProd *AddHFMCCheck(Bool_t isPbPb=kTRUE, Bool_t readMC=kT
   }
   // Create and configure the task
   AliAnalysisTaskCheckHFMCProd *task = new AliAnalysisTaskCheckHFMCProd();
-  if(isPbPb) task->SetPbPb();
+  if(system==1) task->SetPbPb();
+  if(system==2) task->SetpPb();
   task->SetReadMC(readMC);
   mgr->AddTask(task);
   

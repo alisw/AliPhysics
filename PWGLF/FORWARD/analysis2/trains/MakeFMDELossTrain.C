@@ -29,6 +29,7 @@ public:
     : TrainSetup(name)
   {
     fOptions.Add("cent", "Use centrality");
+    fOptions.Add("only-mb", "Only collect statistics from MB events");
     fOptions.Add("residuals", "MODE", "Optional calculation of residuals", "");
     fOptions.Set("type", "ESD");
   }
@@ -66,15 +67,16 @@ protected:
 			     gROOT->GetMacroPath()));
 
     // --- Check if this is MC ---------------------------------------
-    Bool_t   mc   = mgr->GetMCtruthEventHandler() != 0;
-    Bool_t   cent = fOptions.Has("cent");
-    Int_t    verb = fOptions.AsInt("verbose");
-    TString  resi = "";
+    Bool_t   mc     = HasMCHandler();
+    Bool_t   cent   = fOptions.Has("cent");
+    Bool_t   onlyMB = fOptions.AsBool("only-mb");
+    Int_t    verb   = fOptions.AsInt("verbose");
+    TString  resi   = "";
     if (fOptions.Has("residuals")) resi = fOptions.Get("residuals"); 
 
     // --- Add the task ----------------------------------------------
-    gROOT->Macro(Form("AddTaskFMDELoss.C(%d,%d,%d,\"%s\")", 
-		      mc, cent, verb, resi.Data()));
+    AddTask("AddTaskFMDELoss.C", Form("%d,%d,%d,%d,\"%s\"", 
+				      mc, cent, onlyMB, verb, resi.Data()));
   }
   /** 
    * Create entrality selection if enabled 
@@ -155,10 +157,11 @@ protected:
   }
   void PostShellCode(std::ostream& f)
   {
+    Bool_t   mc   = HasMCHandler();
     f << "  echo \"=== Extracting Corrections ...\"\n"
       << "  aliroot -l -b -q ${prefix}Extract.C\n"
       << "  echo \"=== Summarizing results ...\"\n"
-      << "  aliroot -l -b -q ${prefix}Summarize.C\n"
+      << "  aliroot -l -b -q ${prefix}Summarize.C\\(" << mc << "\\)\n"
       << "  if test x$dest = x ; then return ; fi\n"
       << "  echo \"=== Uploading to ${dest} ...\"\n"
       << "  aliroot -l -b -q Upload.C\\(\\\"${dest}\\\"\\);\n"

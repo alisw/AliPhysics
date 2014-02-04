@@ -16,7 +16,8 @@ AliAnalysisTask *AddTask_Asako_LMEEPbPb2011AODPeri(Bool_t runAll=kFALSE,Bool_t s
   TString configBasePath("$TRAIN_ROOT/cbaumann_dielectron/");
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
 
-    if (trainRoot.IsNull()) configBasePath= "$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/";
+        if (trainRoot.IsNull()) configBasePath= "$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/";
+		//  if (trainRoot.IsNull()) configBasePath= "/home/tsuji/nfs/AliceAna/pol2/Cent/";
  
 
   if (getFromAlien &&
@@ -130,6 +131,3 @@ AliAnalysisTask *AddTask_Asako_LMEEPbPb2011AODPeri(Bool_t runAll=kFALSE,Bool_t s
 
   return task;
 }
-
-
-

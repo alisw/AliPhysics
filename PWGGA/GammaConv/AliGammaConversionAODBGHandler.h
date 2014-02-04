@@ -35,6 +35,7 @@ public:
       Double_t fX;
       Double_t fY;
       Double_t fZ;
+      Double_t fEP;
    };
    typedef struct GammaConversionVertex GammaConversionVertex; //!
 
@@ -55,7 +56,7 @@ public:
 
    Int_t GetMultiplicityBinIndex(Int_t mult) const;
 
-   void AddEvent(TList* const eventGammas, Double_t xvalue,Double_t yvalue,Double_t zvalue, Int_t multiplicity);
+   void AddEvent(TList* const eventGammas, Double_t xvalue,Double_t yvalue,Double_t zvalue, Int_t multiplicity, Double_t epvalue = -100);
    void AddElectronEvent(TClonesArray* const eventENeg, Double_t zvalue, Int_t multiplicity);
 
    Int_t GetNBGEvents()const {return fNEvents;}
@@ -81,6 +82,6 @@ private:
    Double_t *fBinLimitsArrayMultiplicity;//! bin limit multiplicity array
    AliGammaConversionBGVector fBGEvents; //background events
    AliGammaConversionBGVector fBGEventsENeg; //background electron events
-   ClassDef(AliGammaConversionAODBGHandler,2)
+   ClassDef(AliGammaConversionAODBGHandler,3)
 };
 #endif

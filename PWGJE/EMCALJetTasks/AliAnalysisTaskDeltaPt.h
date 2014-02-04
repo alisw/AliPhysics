@@ -12,9 +12,9 @@ class AliJetContainer;
 class AliParticleContainer;
 class AliClusterContainer;
 
-#include "AliAnalysisTaskEmcalJetDev.h"
+#include "AliAnalysisTaskEmcalJet.h"
 
-class AliAnalysisTaskDeltaPt : public AliAnalysisTaskEmcalJetDev {
+class AliAnalysisTaskDeltaPt : public AliAnalysisTaskEmcalJet {
  public:
 
   AliAnalysisTaskDeltaPt();

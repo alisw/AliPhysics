@@ -151,8 +151,8 @@ Bool_t AliAnalysisMuMuSpectra::Correct(const AliAnalysisMuMuSpectra& accEff, con
     return kFALSE;
   }
   
-  TObjArray* particles = fBinning->CreateParticleArray();
-  TObjArray* types = fBinning->CreateTypeArray();
+  TObjArray* particles = fBinning->CreateWhatArray();
+  TObjArray* types = fBinning->CreateQuantityArray();
   
   if (particles->GetEntries()!=1 || types->GetEntries()!=1 )
   {

@@ -21,7 +21,7 @@ ClassImp(AliJetTriggerSelectionTask)
 
 //________________________________________________________________________
 AliJetTriggerSelectionTask::AliJetTriggerSelectionTask() : 
-  AliAnalysisTaskEmcalJetDev("AliJetTriggerSelectionTask", kFALSE),
+  AliAnalysisTaskEmcalJet("AliJetTriggerSelectionTask", kFALSE),
   fEnergyThreshold(0),
   fMaxDistance2(0.0225),
   fTriggerBits(AliVEvent::kEMCEJE),
@@ -41,7 +41,7 @@ AliJetTriggerSelectionTask::AliJetTriggerSelectionTask() :
 
 //________________________________________________________________________
 AliJetTriggerSelectionTask::AliJetTriggerSelectionTask(const char *name) : 
-  AliAnalysisTaskEmcalJetDev(name, kFALSE),
+  AliAnalysisTaskEmcalJet(name, kFALSE),
   fEnergyThreshold(0),
   fMaxDistance2(0.0225),
   fTriggerBits(AliVEvent::kEMCEJE),
@@ -64,7 +64,7 @@ void AliJetTriggerSelectionTask::ExecOnce()
 {
   // Initialize the task.
 
-  AliAnalysisTaskEmcalJetDev::ExecOnce();
+  AliAnalysisTaskEmcalJet::ExecOnce();
 
   fTaskSettingsOk = kTRUE;
 
@@ -95,7 +95,7 @@ Bool_t AliJetTriggerSelectionTask::RetrieveEventObjects()
 {
   // Retrieve event objects.
 
-  if (!AliAnalysisTaskEmcalJetDev::RetrieveEventObjects())
+  if (!AliAnalysisTaskEmcalJet::RetrieveEventObjects())
     return kFALSE;
 
   if (fVZERO) {

@@ -33,7 +33,6 @@ performAllPi(){
   rebinsize = 1; // don't change this, not choice here!!!
   kGoodMatch=kFALSE;
   kSigma2vs3 = kFALSE;
-  kSigma2vs3TPC = kFALSE;
   require5sigma = kFALSE;
   bayesVsigma = kFALSE;
   kTOFmatch = kFALSE;
@@ -43,9 +42,20 @@ performAllPi(){
   isMC = kFALSE;
   selectTrue = kTRUE;
   keepTrue = kFALSE;
-  
+  kPid2Sigma = kFALSE;
+  kPid3Sigma = kFALSE;
+ 
   if(! LoadLib()) return;
-  
+
+  kPid2Sigma = kTRUE;
+  doeffPi(1,0.,etamin,etamax);
+  doeffPi(0,0.,etamin,etamax);
+  kPid2Sigma = kFALSE;
+  kPid3Sigma = kTRUE;
+  doeffPi(1,0.,etamin,etamax);
+  doeffPi(0,0.,etamin,etamax);
+  kPid3Sigma = kFALSE;
+
   // matching and PID eff.
   doeffPi(1,0.1,etamin,etamax);
   doeffPi(0,0.1,etamin,etamax);
@@ -69,12 +79,6 @@ performAllPi(){
   doeffPi(1,0.1,etamin,etamax);
   doeffPi(0,0.1,etamin,etamax);
   kSigma2vs3=kFALSE;
-
-  // eff 2 sigma / eff 3 sigma TPC
-  kSigma2vs3TPC=kTRUE;
-  doeffPi(1,0.1,etamin,etamax);
-  doeffPi(0,0.1,etamin,etamax);
-  kSigma2vs3TPC=kFALSE;
   
   kOverAll=kTRUE;
   // TPC|TOF overall eff
@@ -137,7 +141,6 @@ performAllPr(){
   rebinsize = 1; // don't change this, not choice here!!!
   kGoodMatch=kFALSE;
   kSigma2vs3 = kFALSE;
-  kSigma2vs3TPC = kFALSE;
   require5sigma = kFALSE;
   bayesVsigma = kFALSE;
   kTOFmatch = kFALSE;
@@ -147,8 +150,19 @@ performAllPr(){
   isMC = kFALSE;
   selectTrue = kTRUE;
   keepTrue = kFALSE;
-  
+  kPid2Sigma = kFALSE;
+  kPid3Sigma = kFALSE;
+ 
   if(! LoadLib()) return;
+
+  kPid2Sigma = kTRUE;
+  doeffPr(1,0.,etamin,etamax);
+  doeffPr(0,0.,etamin,etamax);
+  kPid2Sigma = kFALSE;
+  kPid3Sigma = kTRUE;
+  doeffPr(1,0.,etamin,etamax);
+  doeffPr(0,0.,etamin,etamax);
+  kPid3Sigma = kFALSE;
   
   // matching and PID eff.
   doeffPr(1,0.1,etamin,etamax);
@@ -173,12 +187,6 @@ performAllPr(){
   doeffPr(1,0.1,etamin,etamax);
   doeffPr(0,0.1,etamin,etamax);
   kSigma2vs3=kFALSE;
-
-  // eff 2 sigma / eff 3 sigma TPC
-  kSigma2vs3TPC=kTRUE;
-  doeffPr(1,0.1,etamin,etamax);
-  doeffPr(0,0.1,etamin,etamax);
-  kSigma2vs3TPC=kFALSE;
 
   kOverAll=kTRUE;
   // TPC|TOF overall eff
@@ -232,7 +240,7 @@ performAllKa(){
   gROOT->LoadMacro("$ALICE_ROOT/PWGPP/pid/doeffKa.C++");
 
   // tune these parameters
-  cmin = 1; // centrality min 1
+  cmin = 4; // centrality min 1
   cmax = 10;// centrality max 10
   Float_t etamin = -0.8;
   Float_t etamax = 0.8;
@@ -241,7 +249,6 @@ performAllKa(){
   rebinsize = 1; // don't change this, not choice here!!!
   kGoodMatch=kFALSE;
   kSigma2vs3 = kFALSE;
-  kSigma2vs3TPC = kFALSE;
   require5sigma = kFALSE;
   bayesVsigma = kFALSE;
   kTOFmatch = kFALSE;
@@ -251,8 +258,19 @@ performAllKa(){
   isMC = kFALSE;
   selectTrue = kTRUE;
   keepTrue = kFALSE;
-
+  kPid2Sigma = kFALSE;
+  kPid3Sigma = kFALSE;
+ 
   if(! LoadLib()) return;
+
+  kPid2Sigma = kTRUE;
+  doeffKa(1,0.,etamin,etamax);
+  doeffKa(0,0.,etamin,etamax);
+  kPid2Sigma = kFALSE;
+  kPid3Sigma = kTRUE;
+  doeffKa(1,0.,etamin,etamax);
+  doeffKa(0,0.,etamin,etamax);
+  kPid3Sigma = kFALSE;
 
   // matching and PID eff.
   doeffKa(1,0.1,etamin,etamax);
@@ -277,12 +295,6 @@ performAllKa(){
   doeffKa(1,0.1,etamin,etamax);
   doeffKa(0,0.1,etamin,etamax);
   kSigma2vs3=kFALSE;
-
-  // eff 2 sigma / eff 3 sigma TPC
-  kSigma2vs3TPC=kTRUE;
-  doeffKa(1,0.1,etamin,etamax);
-  doeffKa(0,0.1,etamin,etamax);
-  kSigma2vs3TPC=kFALSE;
 
   kOverAll=kTRUE;
   // TPC|TOF overall eff

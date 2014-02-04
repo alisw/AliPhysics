@@ -46,7 +46,7 @@ AddTaskMCTruthdNdeta(const char* trig      = "INEL",
   // --- Make our object ---------------------------------------------
   AliMCTruthdNdetaTask* task = new AliMCTruthdNdetaTask("MCTruth");
   // Set the vertex range to use 
-  task->SetVertexRange(vzMin, vzMax);
+  task->SetIpZRange(vzMin, vzMax);
   // Set the trigger mask to use (INEL,INEL>0,NSD)
   task->SetTriggerMask(trig);
   // Set the trigger efficiency 
@@ -86,22 +86,7 @@ AddTaskMCTruthdNdeta(const char* trig      = "INEL",
     Short_t bins[] = { 0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };
     task->SetCentralityAxis(11, bins);
   }
-  mgr->AddTask(task);
-
-  // --- create containers for input/output --------------------------
-  AliAnalysisDataContainer *sums = 
-    mgr->CreateContainer("MCTruthSums", TList::Class(), 
-			 AliAnalysisManager::kOutputContainer, 
-			 AliAnalysisManager::GetCommonFileName());
-  AliAnalysisDataContainer *output = 
-    mgr->CreateContainer("MCTruthResults", TList::Class(), 
-			 AliAnalysisManager::kParamContainer, 
-			 AliAnalysisManager::GetCommonFileName());
-  
-  // --- connect input/output ----------------------------------------
-  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, sums);
-  mgr->ConnectOutput(task, 2, output);
+  task->Connect(0,0);
 
   return task;
 }

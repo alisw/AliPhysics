@@ -128,6 +128,7 @@ AliHFEcuts::AliHFEcuts():
   fVertexRangeZ(20.),
   fTRDtrackletsExact(kFALSE),
   fTOFPIDStep(kFALSE),
+  fMatchTOFLabel(kFALSE),
   fTOFMISMATCHStep(kFALSE),
   fTPCPIDCLEANUPStep(kFALSE),
   fITSpatternCut(kFALSE),
@@ -145,6 +146,8 @@ AliHFEcuts::AliHFEcuts():
   fTOFsignaldx(-1.0),
   fTOFsignaldz(-1.0),
   fAODFilterBit(-1),
+  fRejectKinkDaughters(kTRUE),
+  fRejectKinkMothers(kTRUE),
   fHistQA(0x0),
   fCutList(0x0),
   fDebugLevel(0)
@@ -153,11 +156,13 @@ AliHFEcuts::AliHFEcuts():
   // Dummy Constructor
   //
   memset(fProdVtx, 0, sizeof(Double_t) * 4);
+  memset(fProdVtxZ, 0, sizeof(Double_t) * 2);
   memset(fDCAtoVtx, 0, sizeof(Double_t) * 2);
   memset(fPtRange, 0, sizeof(Double_t) * 2);
   memset(fIPCutParams, 0, sizeof(Float_t) * 4);
   memset(fSigmaToVtx, 0, sizeof(Double_t) * 3);
   fEtaRange[0] = -0.8; fEtaRange[1] = 0.8;
+  fPhiRange[0] = -1.; fPhiRange[1] = -1.;
 }
 
 //__________________________________________________________________
@@ -180,6 +185,7 @@ AliHFEcuts::AliHFEcuts(const Char_t *name, const Char_t *title):
   fVertexRangeZ(20.),
   fTRDtrackletsExact(kFALSE),
   fTOFPIDStep(kFALSE),
+  fMatchTOFLabel(kFALSE),
   fTOFMISMATCHStep(kFALSE),
   fTPCPIDCLEANUPStep(kFALSE),
   fITSpatternCut(kFALSE),
@@ -197,6 +203,8 @@ AliHFEcuts::AliHFEcuts(const Char_t *name, const Char_t *title):
   fTOFsignaldx(-1.0),
   fTOFsignaldz(-1.0),
   fAODFilterBit(-1),
+  fRejectKinkDaughters(kTRUE),
+  fRejectKinkMothers(kTRUE),
   fHistQA(0x0),
   fCutList(0x0),
   fDebugLevel(0)
@@ -205,11 +213,13 @@ AliHFEcuts::AliHFEcuts(const Char_t *name, const Char_t *title):
   // Default Constructor
   //
   memset(fProdVtx, 0, sizeof(Double_t) * 4);
+  memset(fProdVtxZ, 0, sizeof(Double_t) * 2);
   memset(fDCAtoVtx, 0, sizeof(Double_t) * 2);
   memset(fPtRange, 0, sizeof(Double_t) * 2);
   memset(fIPCutParams, 0, sizeof(Float_t) * 4);
   memset(fSigmaToVtx, 0, sizeof(Double_t) * 3);
   fEtaRange[0] = -0.8; fEtaRange[1] = 0.8;
+  fPhiRange[0] = -1.; fPhiRange[1] = -1.;
 }
 
 //__________________________________________________________________
@@ -232,6 +242,7 @@ AliHFEcuts::AliHFEcuts(const AliHFEcuts &c):
   fVertexRangeZ(20.),
   fTRDtrackletsExact(kFALSE),
   fTOFPIDStep(kFALSE),
+  fMatchTOFLabel(kFALSE),
   fTOFMISMATCHStep(kFALSE),
   fTPCPIDCLEANUPStep(kFALSE),
   fITSpatternCut(c.fITSpatternCut),
@@ -249,6 +260,8 @@ AliHFEcuts::AliHFEcuts(const AliHFEcuts &c):
   fTOFsignaldx(-1.0),
   fTOFsignaldz(-1.0),
   fAODFilterBit(-1),
+  fRejectKinkDaughters(c.fRejectKinkDaughters),
+  fRejectKinkMothers(c.fRejectKinkMothers),
   fHistQA(0x0),
   fCutList(0x0),
   fDebugLevel(0)
@@ -292,6 +305,7 @@ void AliHFEcuts::Copy(TObject &c) const {
   target.fVertexRangeZ = fVertexRangeZ;
   target.fTRDtrackletsExact = fTRDtrackletsExact;
   target.fTOFPIDStep = fTOFPIDStep;
+  target.fMatchTOFLabel = fMatchTOFLabel;
   target.fTOFMISMATCHStep = fTOFMISMATCHStep;
   target.fTPCPIDCLEANUPStep = fTPCPIDCLEANUPStep;
   target.fUseMixedVertex = fUseMixedVertex;
@@ -308,14 +322,18 @@ void AliHFEcuts::Copy(TObject &c) const {
   target.fTOFsignaldx = fTOFsignaldx;
   target.fTOFsignaldz = fTOFsignaldz;
   target.fAODFilterBit = fAODFilterBit;
+  target.fRejectKinkDaughters = fRejectKinkDaughters;
+  target.fRejectKinkMothers = fRejectKinkMothers;
   target.fDebugLevel = 0;
 
   memcpy(target.fProdVtx, fProdVtx, sizeof(Double_t) * 4);
+  memcpy(target.fProdVtxZ, fProdVtxZ, sizeof(Double_t) * 2);
   memcpy(target.fDCAtoVtx, fDCAtoVtx, sizeof(Double_t) * 2);
   memcpy(target.fPtRange, fPtRange, sizeof(Double_t) *2);
   memcpy(target.fIPCutParams, fIPCutParams, sizeof(Float_t) * 4);
   memcpy(target.fSigmaToVtx, fSigmaToVtx, sizeof(Double_t) * 3);
   memcpy(target.fEtaRange, fEtaRange, sizeof(Double_t) * 2);
+  memcpy(target.fPhiRange, fPhiRange, sizeof(Double_t) * 2);
 
   // Copy cut List
   if(target.fCutList){
@@ -539,10 +557,11 @@ void AliHFEcuts::SetParticleGenCutList(){
     genCuts->SetRequireIsPrimary();
   }
   if(IsRequireProdVertex()){
-    AliDebug(3, Form("Vertex Range: fProdVtx[0] %f, fProdVtx[1] %f, fProdVtx[2] %f, fProdVtx[3] %f", fProdVtx[0], fProdVtx[1], fProdVtx[2], fProdVtx[3]));
+    AliDebug(3, Form("Vertex Range: fProdVtx[0] %f, fProdVtx[1] %f, fProdVtx[2] %f, fProdVtx[3] %f, fProdVtxZ[0] %f, fProdVtx[1] %f", fProdVtx[0], fProdVtx[1], fProdVtx[2], fProdVtx[3], fProdVtxZ[0], fProdVtxZ[1]));
     //if(!IsAOD()) {
     genCuts->SetProdVtxRangeX(fProdVtx[0], fProdVtx[1]);
     genCuts->SetProdVtxRangeY(fProdVtx[2], fProdVtx[3]);
+    genCuts->SetProdVtxRangeZ(fProdVtxZ[0], fProdVtxZ[1]);
     genCuts->SetProdVtxRange2D(kTRUE);  // Use ellipse
     //}
     //else {
@@ -563,6 +582,7 @@ void AliHFEcuts::SetParticleGenCutList(){
     kineMCcuts->SetPtRange(fPtRange[0], fPtRange[1]);
     //kineMCcuts->SetEtaRange(-0.8, 0.8);
     kineMCcuts->SetEtaRange(fEtaRange[0],fEtaRange[1]);
+    if(fPhiRange[0] >= 0. && fPhiRange[1] >= 0.) kineMCcuts->SetPhiRange(fPhiRange[0], fPhiRange[1]);
     if(IsQAOn()) kineMCcuts->SetQAOn(fHistQA);
     mcCuts->AddLast(kineMCcuts);
   }
@@ -641,9 +661,11 @@ void AliHFEcuts::SetRecKineITSTPCCutList(){
   if(fAODFilterBit > -1) hfecuts->SetAODFilterBit(fAODFilterBit);
   
   AliCFTrackKineCuts *kineCuts = new AliCFTrackKineCuts((Char_t *)"fCutsKineRec", (Char_t *)"REC Kine Cuts");
+  //printf("Setting max. pt to %f\n", fPtRange[1]);
   kineCuts->SetPtRange(fPtRange[0], fPtRange[1]);
   //kineCuts->SetEtaRange(-0.8, 0.8);
   kineCuts->SetEtaRange(fEtaRange[0],fEtaRange[1]);
+  if(fPhiRange[0] >= 0. && fPhiRange[1] >= 0.) kineCuts->SetPhiRange(fPhiRange[0], fPhiRange[1]);
   
   if(IsQAOn()){
     trackQuality->SetQAOn(fHistQA);
@@ -686,8 +708,8 @@ void AliHFEcuts::SetRecPrimaryCutList(){
   
   AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsPrimaryCutsextra","Extra cuts from the HFE group");
   hfecuts->SetMaxImpactParameterRpar(fMaxImpactParameterRpar);
-  hfecuts->SetRejectKinkDaughter();
-  //hfecuts->SetRejectKinkMother();
+  if(fRejectKinkDaughters) hfecuts->SetRejectKinkDaughter();
+  if(fRejectKinkMothers) hfecuts->SetRejectKinkMother();
   if(IsRequireDCAToVertex()){
     hfecuts->SetMaxImpactParamR(fDCAtoVtx[0]);
     hfecuts->SetMaxImpactParamZ(fDCAtoVtx[1]);
@@ -736,6 +758,7 @@ void AliHFEcuts::SetHFElectronTOFCuts(){
   AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsHFElectronGroupTOF","Extra cuts from the HFE group on TOF PID");
   if(fTOFPIDStep) hfecuts->SetTOFPID(kTRUE);
   if(fTOFMISMATCHStep) hfecuts->SetTOFMISMATCH(kTRUE);
+  if(fMatchTOFLabel) hfecuts->SetMatchTOFLabel(kTRUE);
   if((fTOFsignaldx > 0.0) && (fTOFsignaldz > 0.0)) hfecuts->SetTOFsignalDxz(fTOFsignaldx,fTOFsignaldz);
   if(IsQAOn()) hfecuts->SetQAOn(fHistQA);
   hfecuts->SetDebugLevel(fDebugLevel);

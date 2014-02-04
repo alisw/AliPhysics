@@ -60,6 +60,7 @@ AliUEHist::AliUEHist(const char* reqHist, const char* binning) :
   fCombineMinMax(0),
   fTrackEtaCut(0),
   fWeightPerEvent(0),
+  fSkipScaleMixedEvent(kFALSE),
   fCache(0),
   fGetMultCacheOn(kFALSE),
   fGetMultCache(0),
@@ -346,6 +347,7 @@ AliUEHist::AliUEHist(const AliUEHist &c) :
   fCombineMinMax(0),
   fTrackEtaCut(0),
   fWeightPerEvent(0),
+  fSkipScaleMixedEvent(kFALSE),
   fCache(0),
   fGetMultCacheOn(kFALSE),
   fGetMultCache(0),
@@ -453,6 +455,7 @@ void AliUEHist::Copy(TObject& c) const
   target.fCombineMinMax = fCombineMinMax;
   target.fTrackEtaCut = fTrackEtaCut;
   target.fWeightPerEvent = fWeightPerEvent;
+  target.fSkipScaleMixedEvent = fSkipScaleMixedEvent;
   target.fHistogramType = fHistogramType;
 }
 
@@ -883,14 +886,26 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
   
   THnBase* trackSameAll = 0;
   THnBase* trackMixedAll = 0;
+  THnBase* trackMixedAllStep6 = 0;
   TH2* eventSameAll = 0;
   TH2* eventMixedAll = 0;
+  TH2* eventMixedAllStep6 = 0;
   
-  Int_t totalEvents = 0;
+  Long64_t totalEvents = 0;
   Int_t nCorrelationFunctions = 0;
   
   GetHistsZVtxMult(step, region, ptLeadMin, ptLeadMax, &trackSameAll, &eventSameAll);
   mixed->GetHistsZVtxMult(step, region, ptLeadMin, ptLeadMax, &trackMixedAll, &eventMixedAll);
+  
+  // If we ask for histograms from step8 (TTR cut applied) there is a hole at 0,0; so this cannot be used for the
+  // mixed-event normalization. If step6 is available, the normalization factor is read out from that one.
+  // If step6 is not available we fallback to taking the normalization along all delta phi (WARNING requires a
+  // flat delta phi distribution)
+  if (step == kCFStepBiasStudy && mixed->fEventHist->GetGrid(kCFStepReconstructed)->GetEntries() > 0 && !fSkipScaleMixedEvent)
+  {
+    Printf("Using mixed-event normalization factors from step %d", kCFStepReconstructed);
+    mixed->GetHistsZVtxMult(kCFStepReconstructed, region, ptLeadMin, ptLeadMax, &trackMixedAllStep6, &eventMixedAllStep6);
+  }
   
 //   Printf("%f %f %f %f", trackSameAll->GetEntries(), eventSameAll->GetEntries(), trackMixedAll->GetEntries(), eventMixedAll->GetEntries());
   
@@ -910,70 +925,104 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
   {
     trackSameAll->GetAxis(3)->SetRange(multBin, multBin);
     trackMixedAll->GetAxis(3)->SetRange(multBin, multBin);
+    if (trackMixedAllStep6)
+      trackMixedAllStep6->GetAxis(3)->SetRange(multBin, multBin);
 
-    // get mixed normalization correction factor: is independent of vertex bin if scaled with number of triggers
-    trackMixedAll->GetAxis(2)->SetRange(0, -1);
-    TH2* tracksMixed = trackMixedAll->Projection(1, 0, "E");
-//     Printf("%f", tracksMixed->Integral());
-    Float_t binWidthEta = tracksMixed->GetYaxis()->GetBinWidth(1);
-    
-    // get mixed event normalization by assuming full acceptance at deta at 0 (integrate over dphi), excluding (0, 0)
+    Double_t mixedNorm = 1;
     Double_t mixedNormError = 0;
-    Double_t mixedNorm = tracksMixed->IntegralAndError(1, tracksMixed->GetYaxis()->FindBin(-0.01)-1, tracksMixed->GetYaxis()->FindBin(-0.01), tracksMixed->GetYaxis()->FindBin(0.01), mixedNormError);
-    Double_t mixedNormError2 = 0;
-    Double_t mixedNorm2 = tracksMixed->IntegralAndError(tracksMixed->GetYaxis()->FindBin(0.01)+1, tracksMixed->GetNbinsX(), tracksMixed->GetYaxis()->FindBin(-0.01), tracksMixed->GetYaxis()->FindBin(0.01), mixedNormError2);
-    
-    if (mixedNormError == 0 || mixedNormError2 == 0)
+
+    if (!fSkipScaleMixedEvent)
     {
-      Printf("ERROR: Skipping multiplicity %d because mixed event is empty %f %f %f %f", multBin, mixedNorm, mixedNormError, mixedNorm2, mixedNormError2);
-      continue;
-    }
+      // get mixed normalization correction factor: is independent of vertex bin if scaled with number of triggers
+      TH2* tracksMixed = 0;
+      if (trackMixedAllStep6)
+      {
+	trackMixedAllStep6->GetAxis(2)->SetRange(0, -1);
+	tracksMixed = trackMixedAllStep6->Projection(1, 0, "E");
+      }
+      else
+      {
+	trackMixedAll->GetAxis(2)->SetRange(0, -1);
+	tracksMixed = trackMixedAll->Projection(1, 0, "E");
+      }
+  //     Printf("%f", tracksMixed->Integral());
+      Float_t binWidthEta = tracksMixed->GetYaxis()->GetBinWidth(1);
     
-    Int_t nBinsMixedNorm = (tracksMixed->GetYaxis()->FindBin(-0.01) - 1 - 1 + 1) * (tracksMixed->GetYaxis()->FindBin(0.01) - tracksMixed->GetYaxis()->FindBin(-0.01) + 1);
-    mixedNorm /= nBinsMixedNorm;
-    mixedNormError /= nBinsMixedNorm;
+      if (step == kCFStepBiasStudy && !trackMixedAllStep6)
+      {
+	// get mixed event normalization by assuming full acceptance at deta at 0 (integrate over dphi), excluding (0, 0)
+	Float_t phiExclude = 0.41;
+	mixedNorm = tracksMixed->IntegralAndError(1, tracksMixed->GetXaxis()->FindBin(-phiExclude)-1, tracksMixed->GetYaxis()->FindBin(-0.01), tracksMixed->GetYaxis()->FindBin(0.01), mixedNormError);
+	Double_t mixedNormError2 = 0;
+	Double_t mixedNorm2 = tracksMixed->IntegralAndError(tracksMixed->GetXaxis()->FindBin(phiExclude)+1, tracksMixed->GetNbinsX(), tracksMixed->GetYaxis()->FindBin(-0.01), tracksMixed->GetYaxis()->FindBin(0.01), mixedNormError2);
+      
+	if (mixedNormError == 0 || mixedNormError2 == 0)
+	{
+	  Printf("ERROR: Skipping multiplicity %d because mixed event is empty %f %f %f %f", multBin, mixedNorm, mixedNormError, mixedNorm2, mixedNormError2);
+	  continue;
+	}
+	
+	Int_t nBinsMixedNorm = (tracksMixed->GetXaxis()->FindBin(-phiExclude) - 1 - 1 + 1) * (tracksMixed->GetYaxis()->FindBin(0.01) - tracksMixed->GetYaxis()->FindBin(-0.01) + 1);
+	mixedNorm /= nBinsMixedNorm;
+	mixedNormError /= nBinsMixedNorm;
 
-    Int_t nBinsMixedNorm2 = (tracksMixed->GetNbinsX() - tracksMixed->GetYaxis()->FindBin(0.01) - 1 + 1) * (tracksMixed->GetYaxis()->FindBin(0.01) - tracksMixed->GetYaxis()->FindBin(-0.01) + 1);
-    mixedNorm2 /= nBinsMixedNorm2;
-    mixedNormError2 /= nBinsMixedNorm2;
+	Int_t nBinsMixedNorm2 = (tracksMixed->GetNbinsX() - tracksMixed->GetXaxis()->FindBin(phiExclude) - 1 + 1) * (tracksMixed->GetYaxis()->FindBin(0.01) - tracksMixed->GetYaxis()->FindBin(-0.01) + 1);
+	mixedNorm2 /= nBinsMixedNorm2;
+	mixedNormError2 /= nBinsMixedNorm2;
 
-    mixedNorm = mixedNorm / mixedNormError / mixedNormError + mixedNorm2 / mixedNormError2 / mixedNormError2;
-    mixedNormError = TMath::Sqrt(1.0 / (1.0 / mixedNormError / mixedNormError + 1.0 / mixedNormError2 / mixedNormError2));
-    mixedNorm *= mixedNormError * mixedNormError;
-    
-/*    Double_t mixedNorm = tracksMixed->IntegralAndError(tracksMixed->GetXaxis()->FindBin(-0.01), tracksMixed->GetXaxis()->FindBin(0.01), tracksMixed->GetYaxis()->FindBin(-0.01), tracksMixed->GetYaxis()->FindBin(0.01), mixedNormError);
-    Int_t nBinsMixedNorm = (tracksMixed->GetXaxis()->FindBin(0.01) - tracksMixed->GetXaxis()->FindBin(-0.01) + 1) * (tracksMixed->GetYaxis()->FindBin(0.01) - tracksMixed->GetYaxis()->FindBin(-0.01) + 1);*/
+	mixedNorm = mixedNorm / mixedNormError / mixedNormError + mixedNorm2 / mixedNormError2 / mixedNormError2;
+	mixedNormError = TMath::Sqrt(1.0 / (1.0 / mixedNormError / mixedNormError + 1.0 / mixedNormError2 / mixedNormError2));
+	mixedNorm *= mixedNormError * mixedNormError;
+      }
+      else
+      {
+	// get mixed event normalization at (0,0)
+      
+	mixedNorm = tracksMixed->IntegralAndError(tracksMixed->GetXaxis()->FindBin(-0.01), tracksMixed->GetXaxis()->FindBin(0.01), tracksMixed->GetYaxis()->FindBin(-0.01), tracksMixed->GetYaxis()->FindBin(0.01), mixedNormError);
+	Int_t nBinsMixedNorm = (tracksMixed->GetXaxis()->FindBin(0.01) - tracksMixed->GetXaxis()->FindBin(-0.01) + 1) * (tracksMixed->GetYaxis()->FindBin(0.01) - tracksMixed->GetYaxis()->FindBin(-0.01) + 1);
+	mixedNorm /= nBinsMixedNorm;
+	mixedNormError /= nBinsMixedNorm;
 
-    delete tracksMixed;
-    
-    Float_t triggers = eventMixedAll->Integral(1, eventMixedAll->GetNbinsX(), multBin, multBin);
+	if (mixedNormError == 0)
+	{
+	  Printf("ERROR: Skipping multiplicity %d because mixed event is empty %f %f", multBin, mixedNorm, mixedNormError);
+	  continue;
+	}
+      }
+
+      // finite bin correction
+      if (fTrackEtaCut > 0)
+      {
+	Double_t finiteBinCorrection = -1.0 / (2*fTrackEtaCut) * binWidthEta / 2 + 1;
+	Printf("Finite bin correction: %f", finiteBinCorrection);
+	mixedNorm /= finiteBinCorrection;
+	mixedNormError /= finiteBinCorrection;
+      }
+      else
+      {
+	Printf("ERROR: fTrackEtaCut not set. Finite bin correction cannot be applied. Continuing anyway...");
+      }
+
+      Float_t triggers = eventMixedAll->Integral(1, eventMixedAll->GetNbinsX(), multBin, multBin);
 //     Printf("%f +- %f | %f | %f", mixedNorm, mixedNormError, triggers, mixedNorm / triggers);
-    if (triggers <= 0)
-    {
-      Printf("ERROR: Skipping multiplicity %d because mixed event is empty", multBin);
-      continue;
+      if (triggers <= 0)
+      {
+	Printf("ERROR: Skipping multiplicity %d because mixed event is empty", multBin);
+	continue;
+      }
+      
+      mixedNorm /= triggers;
+      mixedNormError /= triggers;      
+      
+      delete tracksMixed;
     }
-    
-    mixedNorm /= triggers;
-    mixedNormError /= triggers;
-    
+    else
+      Printf("WARNING: Skipping mixed-event scaling! fSkipScaleMixedEvent IS set!");
+
     if (mixedNorm <= 0)
     {
       Printf("ERROR: Skipping multiplicity %d because mixed event is empty at (0,0)", multBin);
       continue;
-    }
-    
-    // finite bin correction
-    if (fTrackEtaCut > 0)
-    {
-      Double_t finiteBinCorrection = -1.0 / (2*fTrackEtaCut) * binWidthEta / 2 + 1;
-      Printf("Finite bin correction: %f", finiteBinCorrection);
-      mixedNorm /= finiteBinCorrection;
-      mixedNormError /= finiteBinCorrection;
-    }
-    else
-    {
-      Printf("ERROR: fTrackEtaCut not set. Finite bin correction cannot be applied. Continuing anyway...");
     }
     
 //     Printf("Norm: %f +- %f", mixedNorm, mixedNormError);
@@ -981,14 +1030,22 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
 //     normParameters->Fill(mixedNorm);
       
     TAxis* vertexAxis = trackSameAll->GetAxis(2);
-    for (Int_t vertexBin = 1; vertexBin <= vertexAxis->GetNbins(); vertexBin++)
-//     for (Int_t vertexBin = 5; vertexBin <= 6; vertexBin++)
+    Int_t vertexBinBegin = 1;
+    Int_t vertexBinEnd = vertexAxis->GetNbins();
+    
+    if (fZVtxMax > fZVtxMin)
+    {
+      vertexBinBegin = vertexAxis->FindBin(fZVtxMin);
+      vertexBinEnd = vertexAxis->FindBin(fZVtxMax);
+    }
+    
+    for (Int_t vertexBin = vertexBinBegin; vertexBin <= vertexBinEnd; vertexBin++)
     {
       trackSameAll->GetAxis(2)->SetRange(vertexBin, vertexBin);
       trackMixedAll->GetAxis(2)->SetRange(vertexBin, vertexBin);
 
       TH2* tracksSame = trackSameAll->Projection(1, 0, "E");
-      tracksMixed = trackMixedAll->Projection(1, 0, "E");
+      TH2* tracksMixed = trackMixedAll->Projection(1, 0, "E");
       
       // asssume flat in dphi, gain in statistics
       //     TH1* histMixedproj = mixedTwoD->ProjectionY();
@@ -1007,7 +1064,10 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
       }
       else
       {
-	tracksMixed->Scale(1.0 / triggers2 / mixedNorm);
+	if (!fSkipScaleMixedEvent)
+	  tracksMixed->Scale(1.0 / triggers2 / mixedNorm);
+	else if (tracksMixed->Integral() > 0)
+	  tracksMixed->Scale(1.0 / tracksMixed->Integral());
 	// tracksSame->Scale(tracksMixed->Integral() / tracksSame->Integral());
 	  
 // 	new TCanvas; tracksSame->DrawClone("SURF1");
@@ -1080,7 +1140,7 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
     
     if (normalizePerTrigger)
     {
-      Printf("Dividing %f tracks by %d events (%d correlation function(s)) (error %f)", totalTracks->Integral(), totalEvents, nCorrelationFunctions, errors[0]);
+      Printf("Dividing %f tracks by %lld events (%d correlation function(s)) (error %f)", totalTracks->Integral(), totalEvents, nCorrelationFunctions, errors[0]);
       if (totalEvents > 0)
 	totalTracks->Scale(1.0 / totalEvents);
     }
@@ -1092,8 +1152,10 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
   
   delete trackSameAll;
   delete trackMixedAll;
+  delete trackMixedAllStep6;
   delete eventSameAll;
   delete eventMixedAll;
+  delete eventMixedAllStep6;
   
 //   new TCanvas; normParameters->Draw();
   
@@ -1112,6 +1174,12 @@ TH1* AliUEHist::GetTriggersAsFunctionOfMultiplicity(AliUEHist::CFStep step, Floa
   Int_t lastBin = fEventHist->GetGrid(step)->GetGrid()->GetAxis(0)->FindBin(ptLeadMax);
   Printf("Using pT range %d --> %d", firstBin, lastBin);
   fEventHist->GetGrid(step)->GetGrid()->GetAxis(0)->SetRange(firstBin, lastBin);
+
+  if (fZVtxMax > fZVtxMin)
+  {
+    fEventHist->GetGrid(step)->GetGrid()->GetAxis(2)->SetRangeUser(fZVtxMin, fZVtxMax);
+    Printf("Restricting z-vtx: %f-%f", fZVtxMin, fZVtxMax);
+  }
   
   TH1* eventHist = fEventHist->GetGrid(step)->Project(1);
 

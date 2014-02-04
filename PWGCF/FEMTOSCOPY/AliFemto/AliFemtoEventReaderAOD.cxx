@@ -11,6 +11,7 @@
 
 #include "TFile.h"
 #include "TTree.h"
+#include "TRandom3.h"
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
 #include "AliAODVertex.h"
@@ -62,7 +63,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fMagFieldSign(1),
   fisEPVZ(kTRUE),
   fpA2013(kFALSE),
-  fDCAglobalTrack(kFALSE)
+  fDCAglobalTrack(kFALSE),
+  fFlatCent(kFALSE)
 {
   // default constructor
   fAllTrue.ResetAllBits(kTRUE);
@@ -93,7 +95,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fMagFieldSign(1),
   fisEPVZ(kTRUE),
   fpA2013(kFALSE),
-  fDCAglobalTrack(kFALSE)
+  fDCAglobalTrack(kFALSE),
+  fFlatCent(kFALSE)
 {
   // copy constructor
   fReadMC = aReader.fReadMC;
@@ -159,6 +162,7 @@ AliFemtoEventReaderAOD& AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fEstEventMult = aReader.fEstEventMult;
   fpA2013 = aReader.fpA2013;
   fDCAglobalTrack = aReader.fDCAglobalTrack;
+  fFlatCent= aReader.fFlatCent;
 
   return *this;
 }
@@ -358,6 +362,14 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
     }
   }
 
+  float percent = cent->GetCentralityPercentile("V0M");
+//flatten centrality dist.
+  if(percent < 9){
+    if(fFlatCent){
+      if(RejectEventCentFlat(fEvent->GetMagneticField(),percent)) return;
+    }
+  }
+
   int realnofTracks=0;   // number of track which we use in a analysis
   int tracksPrim=0;
 
@@ -533,7 +545,8 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
     if(fEstEventMult==kGlobalCount){
       double impact[2];
       double covimpact[3];
-      if (aodtrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
+      AliAODTrack* trk_clone = (AliAODTrack*)aodtrack->Clone("trk_clone");
+      if (trk_clone->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
         if(impact[0]<0.2 && TMath::Abs(impact[1]+fV1[2])<2.0)
           //if (aodtrack->IsPrimaryCandidate()) //? instead of kinks?
           if (aodtrack->Chi2perNDF() < 4.0)
@@ -542,6 +555,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
                 if (aodtrack->Eta() < 0.8)
                   tNormMult++;
       }
+      delete trk_clone;
     }
 
     CopyAODtoFemtoTrack(aodtrack, trackCopy);
@@ -662,7 +676,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
         // if (tPart->IsPhysicalPrimary()){
         //   tInfo->SetPartOrigin(0);
         //   // trackCopy->SetImpactDprim(impact[0]);
-        //   // cout << "Read prim" << endl;
+        //   //cout << "Read prim" << endl;
         // }
         // else if (tPart->IsSecondaryFromWeakDecay()) {
         //   tInfo->SetPartOrigin(1);
@@ -695,7 +709,6 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
       continue;
     }
     //    }
-
 
     tEvent->TrackCollection()->push_back(trackCopy);//adding track to analysis
     realnofTracks++;//real number of tracks
@@ -820,6 +833,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack,
 
   double pxyz[3];
   tAodTrack->PxPyPz(pxyz);//reading noconstrained momentum
+
   AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
   tFemtoTrack->SetP(v);//setting momentum
   tFemtoTrack->SetPt(sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]));
@@ -842,7 +856,10 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack,
     double impact[2];
     double covimpact[3];
 
-    if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
+    AliAODTrack* trk_clone = (AliAODTrack*)tAodTrack->Clone("trk_clone");
+    // if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
+    // if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
+    if (!trk_clone->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
       //cout << "sth went wrong with dca propagation" << endl;
       tFemtoTrack->SetImpactD(-1000.0);
       tFemtoTrack->SetImpactZ(-1000.0);
@@ -852,6 +869,8 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack,
       tFemtoTrack->SetImpactD(impact[0]);
       tFemtoTrack->SetImpactZ(impact[1]);
     }
+    delete trk_clone;
+
   }
 
   //   if (TMath::Abs(tAodTrack->Xv()) > 0.00000000001)
@@ -911,6 +930,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack,
 
   float globalPositionsAtRadii[9][3];
   float bfield = 5*fMagFieldSign;
+
   GetGlobalPositionAtGlobalRadiiThroughTPC(tAodTrack,bfield,globalPositionsAtRadii);
   double tpcEntrance[3]={globalPositionsAtRadii[0][0],globalPositionsAtRadii[0][1],globalPositionsAtRadii[0][2]};
   double **tpcPositions;
@@ -1073,16 +1093,16 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0, AliFemtoV0 *tFem
     double tpcExitNeg[3]={globalPositionsAtRadiiNeg[8][0],globalPositionsAtRadiiNeg[8][1],globalPositionsAtRadiiNeg[8][2]};
 
     AliFemtoThreeVector tmpVec;
-    tmpVec.SetX(tpcEntrancePos[0]); tmpVec.SetX(tpcEntrancePos[1]); tmpVec.SetX(tpcEntrancePos[2]);
+    tmpVec.SetX(tpcEntrancePos[0]); tmpVec.SetY(tpcEntrancePos[1]); tmpVec.SetZ(tpcEntrancePos[2]);
     tFemtoV0->SetNominalTpcEntrancePointPos(tmpVec);
 
-    tmpVec.SetX(tpcExitPos[0]); tmpVec.SetX(tpcExitPos[1]); tmpVec.SetX(tpcExitPos[2]);
+    tmpVec.SetX(tpcExitPos[0]); tmpVec.SetY(tpcExitPos[1]); tmpVec.SetZ(tpcExitPos[2]);
     tFemtoV0->SetNominalTpcExitPointPos(tmpVec);
 
-    tmpVec.SetX(tpcEntranceNeg[0]); tmpVec.SetX(tpcEntranceNeg[1]); tmpVec.SetX(tpcEntranceNeg[2]);
+    tmpVec.SetX(tpcEntranceNeg[0]); tmpVec.SetY(tpcEntranceNeg[1]); tmpVec.SetZ(tpcEntranceNeg[2]);
     tFemtoV0->SetNominalTpcEntrancePointNeg(tmpVec);
 
-    tmpVec.SetX(tpcExitNeg[0]); tmpVec.SetX(tpcExitNeg[1]); tmpVec.SetX(tpcExitNeg[2]);
+    tmpVec.SetX(tpcExitNeg[0]); tmpVec.SetY(tpcExitNeg[1]); tmpVec.SetZ(tpcExitNeg[2]);
     tFemtoV0->SetNominalTpcExitPointNeg(tmpVec);
 
     AliFemtoThreeVector vecTpcPos[9];
@@ -1220,7 +1240,12 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
     double impact[2];
     double covimpact[3];
 
-    if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
+    AliAODTrack* trk_clone = (AliAODTrack*)tAodTrack->Clone("trk_clone");
+    // if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
+    // if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
+    if (!trk_clone->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
+
+    // if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
       //cout << "sth went wrong with dca propagation" << endl;
       tFemtoTrack->SetImpactD(-1000.0);
       tFemtoTrack->SetImpactZ(-1000.0);
@@ -1230,6 +1255,7 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
       tFemtoTrack->SetImpactD(impact[0]);
       tFemtoTrack->SetImpactZ(impact[1]);
     }
+    delete trk_clone;
   }
 
   double aodpid[10];
@@ -1441,3 +1467,25 @@ void AliFemtoEventReaderAOD::SetDCAglobalTrack(Bool_t dcagt)
   fDCAglobalTrack = dcagt;
 }
 
+
+bool AliFemtoEventReaderAOD::RejectEventCentFlat(float MagField, float CentPercent)
+{ // to flatten centrality distribution
+  bool RejectEvent = kFALSE;
+  int weightBinSign;
+  TRandom3* fRandomNumber = new TRandom3();  //for 3D, random sign switching
+  fRandomNumber->SetSeed(0);
+
+  if(MagField > 0) weightBinSign = 0;
+  else weightBinSign = 1;
+  float kCentWeight[2][9] = {{.878,.876,.860,.859,.859,.88,.873,.879,.894},
+                             {.828,.793,.776,.772,.775,.796,.788,.804,.839}};
+  int weightBinCent = (int) CentPercent;
+  if(fRandomNumber->Rndm() > kCentWeight[weightBinSign][weightBinCent]) RejectEvent = kTRUE;
+
+  return RejectEvent;
+}
+
+void AliFemtoEventReaderAOD::SetCentralityFlattening(Bool_t dcagt)
+{
+  fFlatCent = dcagt;
+}

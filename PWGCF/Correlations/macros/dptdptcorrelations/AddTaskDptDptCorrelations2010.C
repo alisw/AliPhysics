@@ -17,7 +17,8 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
 								 int    trackFilterBit         = 128,
 								 int    nClusterMin            = 80, 
 								 double etaMin                 = -0.9,
-                                                                 double etaMax                 = 0.9)
+                                                                 double etaMax                 = 0.9,
+								 int nCentrality               = 10)
                                                                  
 {
   // Set Default Configuration of this analysis
@@ -28,7 +29,7 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
   int    sameFilter             = 1;
 
   
-  int    nCentrality;
+  //int    nCentrality;
   double minCentrality[10];
   double maxCentrality[10];
 
@@ -38,7 +39,7 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations2010(int    system  
       {
 
 	
-	nCentrality = 10;
+	//nCentrality = 10;
 	minCentrality[0] = 0.0; maxCentrality[0] = 5.0;
 	minCentrality[1] = 5.0; maxCentrality[1] = 10.;
 	minCentrality[2] = 10.; maxCentrality[2] = 20.;

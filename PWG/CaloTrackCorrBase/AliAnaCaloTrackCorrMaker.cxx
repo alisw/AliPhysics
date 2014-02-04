@@ -25,10 +25,11 @@
 #include <cstdlib>
 
 // --- ROOT system ---
-#include "TClonesArray.h"
-#include "TList.h"
-#include "TH1F.h"
+#include <TClonesArray.h>
+#include <TList.h>
+#include <TH1F.h>
 //#include <TObjectTable.h>
+#include <TGeoGlobalMagField.h>
 
 //---- AliRoot system ----
 #include "AliAnalysisManager.h"
@@ -338,6 +339,7 @@ void AliAnaCaloTrackCorrMaker::FillTriggerControlHistograms()
   Bool_t triggerMatch= fReader->IsTriggerMatched();
   Bool_t triggerBCOK = kTRUE;
   Int_t  triggerId   = fReader->GetTriggerClusterId() ;
+  
   Bool_t reMatchOpenTime = fReader->IsTriggerMatchedOpenCuts(0);
   Bool_t reMatchNeigbour = fReader->IsTriggerMatchedOpenCuts(1);
   Bool_t reMatchBoth     = fReader->IsTriggerMatchedOpenCuts(2);
@@ -884,9 +886,8 @@ void AliAnaCaloTrackCorrMaker::Print(const Option_t * opt) const
   
 }
 
-//_______________________________________________________________________
-void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
-                                            const char * currentFileName)
+//_____________________________________________________________________________________
+void AliAnaCaloTrackCorrMaker::ProcessEvent(Int_t iEntry, const char * currentFileName)
 {
   //Process analysis for this event
   
@@ -924,7 +925,21 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
   //Tell the reader to fill the data in the 3 detector lists
   Bool_t ok = fReader->FillInputEvent(iEntry, currentFileName);
   
-  FillTriggerControlHistograms();
+  //Access pointers, and trigger mask check needed in mixing case
+  AliAnalysisManager   *manager      = AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler *inputHandler = dynamic_cast<AliInputEventHandler*>(manager->GetInputEventHandler());
+  
+  UInt_t isMBTrigger = kFALSE;
+  UInt_t isTrigger   = kFALSE;
+  if(inputHandler)
+  {
+    isMBTrigger = inputHandler->IsEventSelected() & fReader->GetMixEventTriggerMask();
+    isTrigger   = inputHandler->IsEventSelected() & fReader->GetEventTriggerMask();
+  }
+  
+  //Fill trigger control histograms, make sure it is only for triggered events and
+  // not the MB events used for mixing
+  if(fReader->IsEventTriggerAtSEOn() || isTrigger) FillTriggerControlHistograms();
   
   if(!ok)
   {
@@ -939,17 +954,9 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
   //printf(">>>>>>>>>> BEFORE >>>>>>>>>>>\n");
   //gObjectTable->Print();
   
-  //Access pointers, and trigger mask check needed in mixing case
-  AliAnalysisManager   *manager      = AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler *inputHandler = dynamic_cast<AliInputEventHandler*>(manager->GetInputEventHandler());
-  
-  UInt_t isMBTrigger = kFALSE;
-  UInt_t isTrigger   = kFALSE;
-  if(inputHandler)
-  {
-    isMBTrigger = inputHandler->IsEventSelected() & fReader->GetMixEventTriggerMask();
-    isTrigger   = inputHandler->IsEventSelected() & fReader->GetEventTriggerMask();
-  }
+  // Init mag field for tracks in case of ESDs, not really necessary
+  if (!TGeoGlobalMagField::Instance()->GetField() && ((AliESDEvent*) fReader->GetInputEvent()))
+    ((AliESDEvent*)fReader->GetInputEvent())->InitMagneticField();
   
   //Loop on analysis algorithms
   

@@ -25,8 +25,6 @@ public:
   UShort_t fMinQuality;
   /** 
    * Constructor 
-   * 
-   * @param out Output file name 
    */
   CorrDrawer() 
   {
@@ -45,21 +43,22 @@ public:
    * 
    * @param out    Output file name on return 
    * @param prefix Prefix of the file name 
+   */
+  static void MakeFileName(TString&        out,
+			   const TString&  prefix)
+  /*
    * @param runNo  Run Number
    * @param sys    Collision system 
    * @param sNN    Center of mass energy 
    * @param field  L3 Field 
    * @param mc     Simulations or not
    * @param sat    Satellite interactions or not 
-   */
-  static void MakeFileName(TString&    out,
-			   const TString&  prefix,
 			   ULong_t         runNo, 
 			   UShort_t        sys, 
 			   UShort_t        sNN, 
 			   Short_t         field,
 			   Bool_t          mc=false, 
-			   Bool_t          sat=false)
+			   Bool_t          sat=false) */
   {
     out = TString::Format("forward_%s.pdf", prefix.Data());
 #if 0
@@ -77,8 +76,6 @@ public:
    * Draw corrections using the correction manager to get them 
    *  
    * @param what    What to draw 
-   * @param out     Output file name on return 
-   * @param prefix  Prefix of the file name 
    * @param runNo   Run Number
    * @param sys     Collision system 
    * @param sNN     Center of mass energy 
@@ -120,15 +117,12 @@ public:
    * Draw corrections using the correction manager to get them 
    *  
    * @param what    What to draw 
-   * @param out     Output file name on return 
-   * @param prefix  Prefix of the file name 
    * @param runNo   Run Number
    * @param sys     Collision system 
    * @param sNN     Center of mass energy 
    * @param field   L3 Field 
    * @param mc      Simulations or not
    * @param sat     Satellite interactions or not 
-   * @param options Options
    * @param local   Local database file 
    */
   void Run(UShort_t    what, 
@@ -138,7 +132,7 @@ public:
 	   UShort_t    field,
 	   Bool_t      mc=false, 
 	   Bool_t      sat=false,
-	   Option_t*   options="",
+	   Option_t*   /*options*/="",
 	   const char* local="")
   {
     AliForwardCorrectionManager& mgr = AliForwardCorrectionManager::Instance();
@@ -176,7 +170,7 @@ public:
     }
 
     TString out;
-    MakeFileName(out, name, runNo, sys, sNN, field, mc, sat);
+    MakeFileName(out, name); // , runNo, sys, sNN, field, mc, sat);
     CreateCanvas(out);
 
     fBody->cd();
@@ -184,7 +178,7 @@ public:
     DrawParameter(y, "Run #", Form("%lu", runNo));
     DrawParameter(y, "System", AliForwardUtil::CollisionSystemString(sys));
     DrawParameter(y, "#sqrt{s_{NN}}", 
-		  AliForwardUtil::CenterOfMassEnergyString(sys));
+		  AliForwardUtil::CenterOfMassEnergyString(sNN));
     DrawParameter(y, "L3 field", AliForwardUtil::MagneticFieldString(field));
     DrawParameter(y, "Simulation", Form("%s", mc ? "yes" : "no"));
     DrawParameter(y, "Satellite", Form("%s", sat ? "yes" : "no"));
@@ -239,7 +233,7 @@ public:
   /** 
    * Draw a single plot summarizing the energy loss fits
    * 
-   * @param sec Energy loss fits
+   * @param fits Energy loss fits
    */
   virtual void Draw(const AliFMDCorrELossFit* fits) { Summarize(fits, false); }
   /** 
@@ -279,7 +273,6 @@ public:
    * @param field   L3 magnetic field
    * @param mc      Simulation flag
    * @param sat     Satellite interaction flag
-   * @param options Options 
    * @param local   Local storage
    */
   virtual void Summarize(UShort_t    what, 
@@ -289,7 +282,7 @@ public:
 			 Short_t     field,
 			 Bool_t      mc=false, 
 			 Bool_t      sat=false,
-			 Option_t*   options="",
+			 Option_t*   /*options*/="",
 			 const char* local="")
   {
     AliForwardCorrectionManager& mgr = AliForwardCorrectionManager::Instance();
@@ -331,7 +324,7 @@ public:
     else 
       prefix = "unknown";
     TString out;
-    MakeFileName(out, prefix, runNo, sys, sNN, field, mc, sat);
+    MakeFileName(out, prefix); // , runNo, sys, sNN, field, mc, sat);
     CreateCanvas(out);
 
     fBody->cd();
@@ -377,8 +370,8 @@ public:
   virtual void Summarize(const TObject* o, Bool_t pdf=true) 
   {
     if (!o) return;
-    Warning("CorrDrawer", "Don't know how to draw a %s object", 
-	    o->ClassName());
+    Warning("CorrDrawer", "Don't know how to draw a %s object (PDF: %s)", 
+	    o->ClassName(), pdf ? "yes" : "no");
   }
   /** 
    * Draw a single summary plot or multiple plots of the acceptance
@@ -400,9 +393,9 @@ public:
    * @param sec Secondary correction
    * @param pdf If true, do multiple plots. Otherwise a single summary plot
    */
-  virtual void Summarize(const AliFMDCorrSecondaryMap* sec, Bool_t pdf) 
+  virtual void Summarize(const AliFMDCorrSecondaryMap* sec, Bool_t pdf=true) 
   { 
-    CreateCanvas("scondarymap.pdf", false, pdf);
+    CreateCanvas("secondarymap.pdf", false, pdf);
     DrawIt(sec, pdf); 
     if (pdf) CloseCanvas();
   }
@@ -410,10 +403,10 @@ public:
    * Draw a single summary plot multiple plots of the energy loss
    * fits.  A new canvas is created for this.
    * 
-   * @param sec Energy loss fits
-   * @param pdf If true, do multiple plots. Otherwise a single summary plot
+   * @param fits Energy loss fits
+   * @param pdf  If true, do multiple plots. Otherwise a single summary plot
    */
-  virtual void Summarize(const AliFMDCorrELossFit* fits, Bool_t pdf) 
+  virtual void Summarize(const AliFMDCorrELossFit* fits, Bool_t pdf=true) 
   { 
     CreateCanvas("elossfits.pdf", false, pdf);
     DrawIt(fits, pdf); 
@@ -441,7 +434,7 @@ public:
 	      output.Data());
       return;
     }
-    TCollection* forward = GetCollection(fout, "Forward");
+    TCollection* forward = GetCollection(fout, "ForwardELossSums");
     if (!forward) return;
     
     TCollection* eventInsp = GetCollection(forward, "fmdEventInspector");
@@ -449,7 +442,7 @@ public:
 
     UShort_t sys   = 0, sNN = 0;
     Int_t    field = 0;
-    Int_t    runNo; 
+    ULong_t  runNo = 0; 
     Bool_t satellite;
     if (!GetParameter(eventInsp, "sys",       sys))       return;
     if (!GetParameter(eventInsp, "sNN",       sNN))       return;
@@ -698,10 +691,12 @@ protected:
       TDirectory* savDir = gDirectory;
       if (!gSystem->AccessPathName(fELossExtra.Data())) {
 	hists = TFile::Open(fELossExtra, "READ");
-	// Info("", "Opened forward_eloss.root -> %p", hists);
+	Info("", "Opened forward_eloss.root -> %p", hists);
       }
+      else 
+	Warning("", "Couldn't open %s", fELossExtra.Data());
       if (hists) {
-	TList* fr = static_cast<TList*>(hists->Get("ForwardResults"));
+	TList* fr = static_cast<TList*>(hists->Get("ForwardELossResults"));
 	// Info("", "Got forward results -> %p", fr);
 	if (fr) { 
 	  fitter = static_cast<TList*>(fr->FindObject("fmdEnergyFitter"));
@@ -778,9 +773,10 @@ protected:
 	  // Info("", "Got detector list -> %p", dl);
 	  if (dl) { 
 	    // Info("", "Detector list: %s", dl->GetName());
-	    dists = static_cast<TList*>(dl->FindObject("EDists"));
+	    dists = static_cast<TList*>(dl->FindObject("elossDists"));
 	    // Info("", "Got distributions -> %p", dists);
-	    resis = static_cast<TList*>(dl->FindObject("residuals"));
+	    resis = static_cast<TList*>(dl->FindObject("elossResiduals"));
+	    // Info("", "Got residuals -> %p", resis);
 	  }
 	}
 	
@@ -796,9 +792,11 @@ protected:
    * CINT does too much when optimizing on a loop, so we take this out
    * to force CINT to not optimize the third nested loop.
    * 
-   * @param d 
-   * @param r 
-   * @param ra 
+   * @param d     Detector
+   * @param r     Ring 
+   * @param ra    Ring array 
+   * @param dists Distributions (optional)
+   * @param resis Residuals (optional)   
    */
   void DrawELossFits(UShort_t d, Char_t r, TObjArray* ra, 
 		     TList* dists, TList* resis)
@@ -839,7 +837,7 @@ protected:
 	    }
 	  }
 	  drawPad->Divide(1,2,0,0);
-	  DrawInPad(drawPad, 2, resi, "HIST", 0x100);
+	  DrawInPad(drawPad, 2, resi, "HIST", kGridx);
 	  subPad = 1;
 	  Double_t red = fit->GetNu() > 0 ? fit->GetChi2() / fit->GetNu() : 0;
 	  if (red > 0) {
@@ -861,14 +859,16 @@ protected:
 	}
 	if (dist) { 
 	  // Info("", "Histogram: %s", dist->GetName());
-	  DrawInPad(drawPad, subPad, dist, "HIST E", (subPad * 0x100) + 0x2);
+	  dist->SetFillStyle(3001);
+	  dist->SetMarkerStyle(0);
+	  DrawInPad(drawPad, subPad, dist, "HIST E", (subPad * kGridx) + kLogy);
 	  same = true;	  
 	}
       }
       // if (same)
       DrawInPad(drawPad, subPad, fit, 
 		Form("comp good values legend %s", (same ? "same" : "")),
-		0x2);
+		kLogy);
       if (fit->GetQuality() < fMinQuality) { 
 	TLatex* ltx = new TLatex(.2, .2, "NOT USED");
 	ltx->SetNDC();
@@ -881,7 +881,7 @@ protected:
       }
 
       // else 
-      // DrawInPad(fBody, j+1, fit, "comp good values legend", 0x2);
+      // DrawInPad(fBody, j+1, fit, "comp good values legend", kLogy);
       printf(".");
       
       if (last) 

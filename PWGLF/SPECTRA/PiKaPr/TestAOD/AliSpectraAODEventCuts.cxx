@@ -25,6 +25,7 @@
 #include "TH1I.h"
 #include "TH2F.h"
 #include "TCanvas.h"
+#include "TProfile.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliAODTrack.h"
@@ -33,44 +34,101 @@
 #include "AliAODInputHandler.h"
 #include "AliAnalysisTaskESDfilter.h"
 #include "AliAnalysisDataContainer.h"
+#include "AliESDVZERO.h"
+#include "AliAODVZERO.h"
 #include "AliSpectraAODEventCuts.h"
 #include "AliSpectraAODTrackCuts.h"
-//#include "AliSpectraAODHistoManager.h"
 #include <iostream>
 
 using namespace std;
 
 ClassImp(AliSpectraAODEventCuts)
 
-AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) : TNamed(name, "AOD Event Cuts"), fAOD(0), fTrackBits(0),fIsMC(0),fCentFromV0(0), fUseCentPatchAOD049(0),fTrackCuts(0), fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0), fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0), fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0)
-,fHistoEP(0)
+AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) : 
+  TNamed(name, "AOD Event Cuts"),
+  fAOD(0),
+  fSelectBit(AliVEvent::kMB),
+  fCentralityMethod("V0M"),
+  fTrackBits(1),
+  fIsMC(0),
+  fIsLHC10h(1),
+  fTrackCuts(0),
+  fIsSelected(0),
+  fCentralityCutMin(0.),
+  fCentralityCutMax(999),
+  fQVectorCutMin(-999.),
+  fQVectorCutMax(999.),
+  fVertexCutMin(-10.),
+  fVertexCutMax(10.),
+  fMultiplicityCutMin(-999.),
+  fMultiplicityCutMax(99999.),
+  fqV0C(-999.),
+  fqV0A(-999.),
+  fqV0Cx(-999.),
+  fqV0Ax(-999.),
+  fqV0Cy(-999.),
+  fqV0Ay(-999.),
+  fPsiV0C(-999.),
+  fPsiV0A(-999.),
+  fCent(-999.),
+  fOutput(0),
+  fCalib(0),
+  fRun(-1),
+  fMultV0(0),
+  fV0Cpol1(-1),
+  fV0Cpol2(-1),
+  fV0Cpol3(-1),
+  fV0Cpol4(-1),
+  fV0Apol1(-1),
+  fV0Apol2(-1),
+  fV0Apol3(-1),
+  fV0Apol4(-1)
 {
   // Constructor
-  fHistoCuts = new TH1I("fEventCuts", "Event Cuts", kNVtxCuts, -0.5, kNVtxCuts - 0.5);
-  fHistoVtxBefSel = new TH1F("fHistoVtxBefSel", "Vtx distr before event selection",500,-15,15);
-  fHistoVtxAftSel = new TH1F("fHistoVtxAftSel", "Vtx distr after event selection",500,-15,15);
-  fHistoEtaBefSel = new TH1F("fHistoEtaBefSel", "Eta distr before event selection",500,-2,2);
-  fHistoEtaAftSel = new TH1F("fHistoEtaAftSel", "Eta distr after event selection",500,-2,2);
-  fHistoNChAftSel = new TH1F("fHistoNChAftSel", "NCh distr after event selection",2000,-0.5,1999.5);
-  //fHistoQVectorPos = new TH1F("fHistoQVectorPos", "QVectorPos distribution",100,0,10);
-  //fHistoQVectorNeg = new TH1F("fHistoQVectorNeg", "QVectorNeg distribution",100,0,10);
-  fHistoQVector = new TH1F("fHistoQVector", "QVector with VZERO distribution",100,0,10);
-  fHistoEP = new TH1F("fHistoEP", "EP with VZERO distribution",100,-10,10);
-  fCentralityCutMin = 0.0;      // default value of centrality cut minimum, 0 ~ no cut
-  fCentralityCutMax = 10000.0;  // default value of centrality cut maximum,  ~ no cut
-  // fQVectorPosCutMin=0.0;
-  // fQVectorPosCutMax=10000.0;
-  // fQVectorNegCutMin=0.0;
-  // fQVectorNegCutMax=10000.0;
-  fQVectorCutMin=0.0;
-  fQVectorCutMax=10000.0;
-  fVertexCutMin=-10.0;
-  fVertexCutMax=10.0;
-  fMultiplicityCutMin=0.0;
-  fMultiplicityCutMax=10000.0;
-  fTrackBits=1;
-  fCentFromV0=kFALSE;
-  fUseCentPatchAOD049=kFALSE;
+  fOutput=new TList();
+  fOutput->SetOwner();
+  fOutput->SetName("fOutput");
+  
+  fCalib=new TList();
+  fCalib->SetOwner();
+  fCalib->SetName("fCalib");
+  
+  TH1I *fHistoCuts = new TH1I("fHistoCuts", "Event Cuts", kNVtxCuts, -0.5, kNVtxCuts - 0.5);
+  TH1F *fHistoVtxBefSel = new TH1F("fHistoVtxBefSel", "Vtx distr before event selection;z (cm)",500,-15,15);
+  TH1F *fHistoVtxAftSel = new TH1F("fHistoVtxAftSel", "Vtx distr after event selection;z (cm)",500,-15,15);
+  TH1F *fHistoEtaBefSel = new TH1F("fHistoEtaBefSel", "Eta distr before event selection;eta",500,-2,2);
+  TH1F *fHistoEtaAftSel = new TH1F("fHistoEtaAftSel", "Eta distr after event selection;eta",500,-2,2);
+  TH1F *fHistoNChAftSel = new TH1F("fHistoNChAftSel", "NCh distr after event selection;Nch",2000,-0.5,1999.5);
+  TH2F *fHistoQVector = new TH2F("fHistoQVector", "QVector with VZERO distribution;centrality;Q vector from EP task",20,0,100,100,0,10);
+  TH2F *fHistoEP = new TH2F("fHistoEP", "EP with VZERO distribution;centrality;Psi_{EP} from EP task",20,0,100,100,-2,2);
+  TH2F *fPsiACor = new TH2F("fPsiACor", "EP with VZERO A distribution;centrality;Psi_{EP} VZERO-A",20,0,100,100,-2,2);
+  TH2F *fPsiCCor = new TH2F("fPsiCCor", "EP with VZERO C distribution;centrality;Psi_{EP} VZERO-C",20,0,100,100,-2,2);
+  TH2F *fQVecACor = new TH2F("fQVecACor", "QVec VZERO A;centrality;Qvector VZERO-A",20,0,100,100,0,10);
+  TH2F *fQVecCCor = new TH2F("fQVecCCor", "QVec VZERO C;centrality;Qvector VZERO-C",20,0,100,100,0,10);
+  TH2F *fV0M = new TH2F("fV0M", "V0 Multiplicity, before correction;V0 sector",64,-.5,63.5,500,0,1000);
+  TH2F *fV0MCor = new TH2F("fV0MCor", "V0 Multiplicity, after correction;V0 sector",64,-.5,63.5,500,0,1000);
+  
+  fOutput->Add(fHistoCuts);
+  fOutput->Add(fHistoVtxBefSel);
+  fOutput->Add(fHistoVtxAftSel);
+  fOutput->Add(fHistoEtaBefSel);
+  fOutput->Add(fHistoEtaAftSel);
+  fOutput->Add(fHistoNChAftSel);
+  fOutput->Add(fHistoQVector);
+  fOutput->Add(fHistoEP);
+  fOutput->Add(fPsiACor);
+  fOutput->Add(fPsiCCor);
+  fOutput->Add(fQVecACor);
+  fOutput->Add(fQVecCCor);
+  fOutput->Add(fV0M);
+  fOutput->Add(fV0MCor);
+  
+  for (Int_t i = 0; i<10; i++){
+    fMeanQxa2[i] = -1;
+    fMeanQya2[i] = -1;
+    fMeanQxc2[i] = -1;
+    fMeanQyc2[i] = -1;   
+  }
 }
 
 //______________________________________________________
@@ -79,33 +137,32 @@ Bool_t AliSpectraAODEventCuts::IsSelected(AliAODEvent * aod,AliSpectraAODTrackCu
   // Returns true if Event Cuts are selected and applied
   fAOD = aod;
   fTrackCuts = trackcuts;
-  fHistoCuts->Fill(kProcessedEvents);
-  Bool_t IsPhysSel = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);//FIXME we can add the trigger mask here
+  ((TH1I*)fOutput->FindObject("fHistoCuts"))->Fill(kProcessedEvents);
+  Bool_t IsPhysSel = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fSelectBit);
   if(!IsPhysSel)return IsPhysSel;
-  fHistoCuts->Fill(kPhysSelEvents);
+  ((TH1I*)fOutput->FindObject("fHistoCuts"))->Fill(kPhysSelEvents);
   //loop on tracks, before event selection, filling QA histos
   AliAODVertex * vertex = fAOD->GetPrimaryVertex();//FIXME vertex is recreated
-  if(vertex)fHistoVtxBefSel->Fill(vertex->GetZ());
+  if(vertex)((TH1F*)fOutput->FindObject("fHistoVtxBefSel"))->Fill(vertex->GetZ());
   fIsSelected =kFALSE;
   if(CheckVtxRange() && CheckCentralityCut() && CheckMultiplicityCut()){ //selection on vertex and Centrality
     fIsSelected=CheckQVectorCut(); // QVector is calculated only if the centrality and vertex are correct (performance)
   }
   if(fIsSelected){
-    fHistoCuts->Fill(kAcceptedEvents);
-    if(vertex)fHistoVtxAftSel->Fill(vertex->GetZ());
+    ((TH1I*)fOutput->FindObject("fHistoCuts"))->Fill(kAcceptedEvents);
+    if(vertex)((TH1F*)fOutput->FindObject("fHistoVtxAftSel"))->Fill(vertex->GetZ());
   }
   Int_t Nch=0;
   for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
     AliAODTrack* track = fAOD->GetTrack(iTracks);
     if (!fTrackCuts->IsSelected(track,kFALSE)) continue;
-    fHistoEtaBefSel->Fill(track->Eta());
+    ((TH1F*)fOutput->FindObject("fHistoEtaBefSel"))->Fill(track->Eta());
     if(fIsSelected){
-      fHistoEtaAftSel->Fill(track->Eta());
+      ((TH1F*)fOutput->FindObject("fHistoEtaAftSel"))->Fill(track->Eta());
       Nch++;
     }
   }
-  //Printf("NCHARGED_EvSel : %d",Nch);
-  if(fIsSelected)fHistoNChAftSel->Fill(Nch);
+  if(fIsSelected)((TH1F*)fOutput->FindObject("fHistoNChAftSel"))->Fill(Nch);
   return fIsSelected;
 }
 
@@ -118,14 +175,14 @@ Bool_t AliSpectraAODEventCuts::CheckVtxRange()
   //The point is that for events with |z|>20 the vertexer tracks is not working (only 2011!). One has to put a safety cut using SPD vertex large e.g. 15cm
   if (!vertex)
     {
-      fHistoCuts->Fill(kVtxNoEvent);
+      ((TH1I*)fOutput->FindObject("fHistoCuts"))->Fill(kVtxNoEvent);
       return kFALSE;
     }
   if (vertex->GetZ() > fVertexCutMin && vertex->GetZ() < fVertexCutMax)
     {
       return kTRUE;
     }
-  fHistoCuts->Fill(kVtxRange);
+  ((TH1I*)fOutput->FindObject("fHistoCuts"))->Fill(kVtxRange);
   return kFALSE;
 }
 
@@ -133,14 +190,10 @@ Bool_t AliSpectraAODEventCuts::CheckVtxRange()
 Bool_t AliSpectraAODEventCuts::CheckCentralityCut()
 {
   // Check centrality cut
-  Double_t cent=0;
-  TString CentEstimator="TRK";
-  if(fCentFromV0)CentEstimator="V0M";
-  if(!fUseCentPatchAOD049)cent=fAOD->GetCentrality()->GetCentralityPercentile(CentEstimator.Data());
-  else cent=ApplyCentralityPatchAOD049();
-  
-  if ( (cent <= fCentralityCutMax)  &&  (cent >= fCentralityCutMin) )  return kTRUE;   
-  fHistoCuts->Fill(kVtxCentral);
+  fCent=-999.;
+  fCent=fAOD->GetCentrality()->GetCentralityPercentile(fCentralityMethod.Data());
+  if ( (fCent <= fCentralityCutMax)  &&  (fCent >= fCentralityCutMin) )  return kTRUE;   
+  ((TH1I*)fOutput->FindObject("fHistoCuts"))->Fill(kVtxCentral);
   return kFALSE;
 }
 
@@ -154,7 +207,6 @@ Bool_t AliSpectraAODEventCuts::CheckMultiplicityCut()
     if (!fTrackCuts->IsSelected(track,kFALSE)) continue;
     Ncharged++;
   }
-  //Printf("NCHARGED_cut : %d",Ncharged);
   if(Ncharged>fMultiplicityCutMin && Ncharged<fMultiplicityCutMax)return kTRUE;
   
   return kFALSE;
@@ -162,48 +214,188 @@ Bool_t AliSpectraAODEventCuts::CheckMultiplicityCut()
 
 //______________________________________________________
 Bool_t AliSpectraAODEventCuts::CheckQVectorCut()
-{
-  // Check qvector cut
-  /// FIXME: Q vector
-  // //Selection on QVector, before ANY other selection on the event
-  // //Spectra MUST be normalized wrt events AFTER the selection on Qvector
-  // Double_t Qx2EtaPos = 0, Qy2EtaPos = 0;
-  // Double_t Qx2EtaNeg = 0, Qy2EtaNeg = 0;
- 
-  // Int_t multPos = 0;
-  // Int_t multNeg = 0;
-  // for(Int_t iT = 0; iT < fAOD->GetNumberOfTracks(); iT++) {
-  //   AliAODTrack* aodTrack = fAOD->GetTrack(iT);
-  //   if (!aodTrack->TestFilterBit(fTrackBits)) continue;
-  //   if (aodTrack->Eta() >= 0){
-  //     multPos++;
-  //     Qx2EtaPos += TMath::Cos(2*aodTrack->Phi()); 
-  //     Qy2EtaPos += TMath::Sin(2*aodTrack->Phi());
-  //   } else {
-  //     multNeg++;
-  //     Qx2EtaNeg += TMath::Cos(2*aodTrack->Phi()); 
-  //     Qy2EtaNeg += TMath::Sin(2*aodTrack->Phi());
-  //   }
-  // } 
-  // Double_t qPos=-999;
-  // if(multPos!=0)qPos= TMath::Sqrt((Qx2EtaPos*Qx2EtaPos + Qy2EtaPos*Qy2EtaPos)/multPos);
-  // Double_t qNeg=-999;
-  // if(multNeg!=0)qNeg= TMath::Sqrt((Qx2EtaNeg*Qx2EtaNeg + Qy2EtaNeg*Qy2EtaNeg)/multNeg);
-  //if(qPos<fQVectorPosCutMin || qPos>fQVectorPosCutMax || qNeg<fQVectorNegCutMin || qNeg>fQVectorNegCutMax)return kFALSE;
+{ 
+  Double_t qxEPVZERO = -999., qyEPVZERO = -999.;
+  Double_t qVZERO = -999.;
+  Double_t psi=-999.;
   
-  Double_t qxEPVZERO = 0, qyEPVZERO = 0;
-  Double_t qVZERO = -999;
-  Double_t psi=fAOD->GetEventplane()->CalculateVZEROEventPlane(fAOD,10,2,qxEPVZERO,qyEPVZERO);
+  if(fIsLHC10h){
+    qVZERO=CalculateQVectorLHC10h();
+    psi=fPsiV0A;
+  }else{
+    psi=fAOD->GetEventplane()->CalculateVZEROEventPlane(fAOD,10,2,qxEPVZERO,qyEPVZERO);//FIXME we can a flag for 2010 and 2011
+    qVZERO= TMath::Sqrt(qxEPVZERO*qxEPVZERO + qyEPVZERO*qyEPVZERO);
+  }
   
-  qVZERO= TMath::Sqrt(qxEPVZERO*qxEPVZERO + qyEPVZERO*qyEPVZERO);
+  //cut on q vector
   if(qVZERO<fQVectorCutMin || qVZERO>fQVectorCutMax)return kFALSE;
-  fHistoQVector->Fill(qVZERO);
-  fHistoEP->Fill(psi);
+  Double_t cent=fAOD->GetCentrality()->GetCentralityPercentile(fCentralityMethod.Data());
+  ((TH2F*)fOutput->FindObject("fHistoQVector"))->Fill(cent,qVZERO);
+  ((TH2F*)fOutput->FindObject("fHistoEP"))->Fill(cent,psi);
+  ((TH1I*)fOutput->FindObject("fHistoCuts"))->Fill(kQVector);
   
-  fHistoCuts->Fill(kQVector);
-  // fHistoQVectorPos->Fill(qPos);
-  // fHistoQVectorNeg->Fill(qNeg);
+
   return kTRUE;
+}
+
+//______________________________________________________
+Double_t AliSpectraAODEventCuts::CalculateQVectorLHC10h(){
+  
+  Int_t run = fAOD->GetRunNumber();
+  if(run != fRun){
+    // Load the calibrations run dependent
+    if(OpenInfoCalbration(run))fRun=run;
+    else{
+      fqV0C=-999.;
+      fqV0A=-999.;
+      return -999.;
+    }
+  }
+  
+  //V0 info    
+  Double_t Qxa2 = 0, Qya2 = 0;
+  Double_t Qxc2 = 0, Qyc2 = 0;
+  Double_t sumMc = 0, sumMa = 0;
+  
+  AliAODVZERO* aodV0 = fAOD->GetVZEROData();
+  
+  for (Int_t iv0 = 0; iv0 < 64; iv0++) {
+    
+    Double_t phiV0 = TMath::PiOver4()*(0.5 + iv0 % 8);
+    
+    Float_t multv0 = aodV0->GetMultiplicity(iv0);
+    ((TH2F*)fOutput->FindObject("fV0M"))->Fill(iv0,multv0);
+    
+    if (iv0 < 32){
+      
+      Double_t multCorC = -10;
+      
+      if (iv0 < 8)
+	multCorC = multv0*fV0Cpol1/fMultV0->GetBinContent(iv0+1);
+      else if (iv0 >= 8 && iv0 < 16)
+	multCorC = multv0*fV0Cpol2/fMultV0->GetBinContent(iv0+1);
+      else if (iv0 >= 16 && iv0 < 24)
+	multCorC = multv0*fV0Cpol3/fMultV0->GetBinContent(iv0+1);
+      else if (iv0 >= 24 && iv0 < 32)
+	multCorC = multv0*fV0Cpol4/fMultV0->GetBinContent(iv0+1);
+      
+      if (multCorC < 0){
+	cout<<"Problem with multiplicity in V0C"<<endl;
+	fqV0C=-999.;
+	fqV0A=-999.;
+	return -999.;
+      }
+      
+      Qxc2 += TMath::Cos(2*phiV0) * multCorC;
+      Qyc2 += TMath::Sin(2*phiV0) * multCorC;
+      
+      sumMc += multCorC;
+      ((TH2F*)fOutput->FindObject("fV0MCor"))->Fill(iv0,multCorC);
+      
+    } else {
+      
+      Double_t multCorA = -10;
+      
+      if (iv0 >= 32 && iv0 < 40)
+	multCorA = multv0*fV0Apol1/fMultV0->GetBinContent(iv0+1);
+      else if (iv0 >= 40 && iv0 < 48)
+	multCorA = multv0*fV0Apol2/fMultV0->GetBinContent(iv0+1);
+      else if (iv0 >= 48 && iv0 < 56)
+	multCorA = multv0*fV0Apol3/fMultV0->GetBinContent(iv0+1);
+      else if (iv0 >= 56 && iv0 < 64)
+	multCorA = multv0*fV0Apol4/fMultV0->GetBinContent(iv0+1);
+      
+      if (multCorA < 0){
+	cout<<"Problem with multiplicity in V0A"<<endl;
+	fqV0C=-999.;
+	fqV0A=-999.;
+	return -999.;
+      }
+      
+      Qxa2 += TMath::Cos(2*phiV0) * multCorA;
+      Qya2 += TMath::Sin(2*phiV0) * multCorA;
+      
+      sumMa += multCorA;
+      ((TH2F*)fOutput->FindObject("fV0MCor"))->Fill(iv0,multCorA);
+    }
+  }
+  
+  Short_t centrV0  = GetCentrCode(fAOD);
+  
+  Double_t Qxamean2 = 0.;
+  Double_t Qyamean2 = 0.;
+  Double_t Qxcmean2 = 0.;
+  Double_t Qycmean2 = 0.;
+  
+  if(centrV0!=-1){
+    Qxamean2 = fMeanQxa2[centrV0];
+    Qyamean2 = fMeanQya2[centrV0];
+    Qxcmean2 = fMeanQxc2[centrV0];
+    Qycmean2 = fMeanQyc2[centrV0];
+  }
+  
+  Double_t QxaCor2 = Qxa2 - Qxamean2*sumMa;
+  Double_t QyaCor2 = Qya2 - Qyamean2*sumMa;
+  Double_t QxcCor2 = Qxc2 - Qxcmean2*sumMc;
+  Double_t QycCor2 = Qyc2 - Qycmean2*sumMc;
+  
+  fPsiV0A = TMath::ATan2(QyaCor2, QxaCor2)/2.;
+  fPsiV0C = TMath::ATan2(QycCor2, QxcCor2)/2.;
+  
+  ((TH2F*)fOutput->FindObject("fPsiACor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), fPsiV0A);
+  ((TH2F*)fOutput->FindObject("fPsiCCor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), fPsiV0C);
+  
+  fqV0A = TMath::Sqrt((QxaCor2*QxaCor2 + QyaCor2*QyaCor2)/sumMa);
+  fqV0C = TMath::Sqrt((QxcCor2*QxcCor2 + QycCor2*QycCor2)/sumMc);
+  fqV0Ax = QxaCor2*TMath::Sqrt(1./sumMa);
+  fqV0Cx = QxcCor2*TMath::Sqrt(1./sumMc);
+  fqV0Ay = QyaCor2*TMath::Sqrt(1./sumMa);
+  fqV0Cy = QycCor2*TMath::Sqrt(1./sumMc);
+  
+  ((TH2F*)fOutput->FindObject("fQVecACor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), fqV0A);
+  ((TH2F*)fOutput->FindObject("fQVecCCor"))->Fill((Float_t)fAOD->GetCentrality()->GetCentralityPercentile("V0M"), fqV0C);
+  
+  return fqV0A; //FIXME we have to combine VZERO-A and C
+}
+
+//______________________________________________________
+Short_t AliSpectraAODEventCuts::GetCentrCode(AliVEvent* ev)
+{
+  
+  Short_t centrCode = -1;
+  
+  AliCentrality* centrality = 0;
+  AliAODEvent* aod = (AliAODEvent*)ev;  
+  centrality = aod->GetHeader()->GetCentralityP();
+  
+  Float_t centV0 = centrality->GetCentralityPercentile("V0M");
+  Float_t centTrk = centrality->GetCentralityPercentile("TRK"); 
+  
+  
+  if (TMath::Abs(centV0 - centTrk) < 5.0 && centV0 <= 80 && centV0 > 0){  
+    
+     if ((centV0 > 0) && (centV0 <= 5.0))
+       centrCode = 0; 
+     else if ((centV0 > 5.0) && (centV0 <= 10.0))
+       centrCode = 1;
+     else if ((centV0 > 10.0) && (centV0 <= 20.0))
+       centrCode = 2;
+     else if ((centV0 > 20.0) && (centV0 <= 30.0))
+       centrCode = 3;   
+     else if ((centV0 > 30.0) && (centV0 <= 40.0))
+       centrCode = 4; 
+     else if ((centV0 > 40.0) && (centV0 <= 50.0))
+       centrCode = 5;  
+     else if ((centV0 > 50.0) && (centV0 <= 60.0))
+       centrCode = 6;
+     else if ((centV0 > 60.0) && (centV0 <= 70.0))
+       centrCode = 7;         			       
+     else if ((centV0 > 70.0) && (centV0 <= 80.0))
+       centrCode = 8;  
+  }
+  
+  return centrCode;
+  
 }
 
 //______________________________________________________
@@ -211,92 +403,141 @@ void AliSpectraAODEventCuts::PrintCuts()
 {
   // print info about event cuts
   cout << "Event Stats" << endl;
-  cout << " > Number of accepted events: " << fHistoCuts->GetBinContent(kAcceptedEvents + 1) << endl;
-  cout << " > Number of processed events: " << fHistoCuts->GetBinContent(kProcessedEvents + 1) << endl;
-  cout << " > Number of PhysSel events: " << fHistoCuts->GetBinContent(kPhysSelEvents + 1) << endl;
-  cout << " > Vertex out of range: " << fHistoCuts->GetBinContent(kVtxRange + 1) << endl;
-  cout << " > Events cut by centrality: " << fHistoCuts->GetBinContent(kVtxCentral + 1) << endl;
-  cout << " > Events without vertex: " << fHistoCuts->GetBinContent(kVtxNoEvent + 1) << endl;
-  cout << " > QVector cut: " << fHistoCuts->GetBinContent(kQVector + 1) << endl;
+  cout << " > Trigger Selection: " << fSelectBit << endl;
+  cout << " > Centrality estimator: " << fCentralityMethod << endl;
+  cout << " > Number of accepted events: " << NumberOfEvents() << endl;
+  cout << " > Number of processed events: " << NumberOfProcessedEvents() << endl;
+  cout << " > Number of PhysSel events: " <<  NumberOfPhysSelEvents()  << endl;
+  cout << " > Vertex out of range: " << ((TH1I*)fOutput->FindObject("fHistoCuts"))->GetBinContent(kVtxRange + 1) << endl;
+  cout << " > Events cut by centrality: " << ((TH1I*)fOutput->FindObject("fHistoCuts"))->GetBinContent(kVtxCentral + 1) << endl;
+  cout << " > Events without vertex: " << ((TH1I*)fOutput->FindObject("fHistoCuts"))->GetBinContent(kVtxNoEvent + 1) << endl;
+  cout << " > QVector cut: " << ((TH1I*)fOutput->FindObject("fHistoCuts"))->GetBinContent(kQVector + 1) << endl;
   cout << " > Track type used for the QVector calculation: " << fTrackBits << endl;
-  // cout << " > QPosRange: [" << fQVectorPosCutMin <<"," <<fQVectorPosCutMax<<"]"<< endl;
-  // cout << " > QNegRange: [" << fQVectorNegCutMin <<"," <<fQVectorNegCutMax<<"]"<< endl;
   cout << " > QRange: [" << fQVectorCutMin <<"," <<fQVectorCutMax<<"]"<< endl;
   cout << " > Vertex: [" << fVertexCutMin <<"," <<fVertexCutMax<<"]"<< endl;
   cout << " > Multiplicity: [" << fMultiplicityCutMin <<"," <<fMultiplicityCutMax<<"]"<< endl;
   cout << " > Centrality: [" << fCentralityCutMin <<"," <<fCentralityCutMax<<"]"<< endl;
 }
-//______________________________________________________
 
-Double_t AliSpectraAODEventCuts::ApplyCentralityPatchAOD049()
+//_____________________________________________________________________________
+Bool_t AliSpectraAODEventCuts::OpenInfoCalbration(Int_t run)
 {
-   //
-   //Apply centrality patch for AOD049 outliers
-   //
-  // if (fCentralityType!="V0M") {
-  //   AliWarning("Requested patch forAOD049 for wrong value (not centrality from V0).");
-  //   return -999.0;
-  // }
-  AliCentrality *centrality = fAOD->GetCentrality();
-   if (!centrality) {
-     AliWarning("Cannot get centrality from AOD event.");
-     return -999.0;
-   }
-   
-   Float_t cent = (Float_t)(centrality->GetCentralityPercentile("V0M"));
-   /*
-     Bool_t isSelRun = kFALSE;
-     Int_t selRun[5] = {138364, 138826, 138828, 138836, 138871};
-     if(cent<0){
-     Int_t quality = centrality->GetQuality();
-     if(quality<=1){
-     cent=(Float_t)centrality->GetCentralityPercentileUnchecked("V0M");
-     } else {
-     Int_t runnum=aodEvent->GetRunNumber();
-     for(Int_t ir=0;ir<5;ir++){
-     if(runnum==selRun[ir]){
-     isSelRun=kTRUE;
-     break;
-     }
-     }
-     if((quality==8||quality==9)&&isSelRun) cent=(Float_t)centrality->GetCentralityPercentileUnchecked("V0M");
-     }
-     }
-   */
-   if(cent>=0.0) {
-     Float_t v0 = 0.0;
-     AliAODEvent *aodEvent = (AliAODEvent *)fAOD;
-     AliAODVZERO *aodV0 = (AliAODVZERO *) aodEvent->GetVZEROData();
-     v0+=aodV0->GetMTotV0A();
-     v0+=aodV0->GetMTotV0C();
-     if ( (cent==0) && (v0<19500) ) {
-       AliDebug(3, Form("Filtering issue in centrality -> cent = %5.2f",cent));
-       return -999.0;
-     }
-     Float_t tkl = (Float_t)(aodEvent->GetTracklets()->GetNumberOfTracklets());
-     Float_t val = 1.30552 +  0.147931 * v0;
-     
-     Float_t tklSigma[101] = {176.644, 156.401, 153.789, 153.015, 142.476, 137.951, 136.127, 129.852, 127.436, 124.86,
-			      120.788, 115.611, 113.172, 110.496, 109.127, 104.421, 102.479, 99.9766, 97.5152, 94.0654,
-			      92.4602, 89.3364, 87.1342, 83.3497, 82.6216, 81.1084, 78.0793, 76.1234, 72.9434, 72.1334,
-			      68.0056, 68.2755, 66.0376, 62.9666, 62.4274, 59.65, 58.3776, 56.6361, 54.5184, 53.4224,
-			      51.932, 50.8922, 48.2848, 47.912, 46.5717, 43.4114, 43.2083, 41.3065, 40.1863, 38.5255,
-			      37.2851, 37.5396, 34.4949, 33.8366, 31.8043, 31.7412, 30.8392, 30.0274, 28.8793, 27.6398,
-			      26.6488, 25.0183, 25.1489, 24.4185, 22.9107, 21.2002, 21.6977, 20.1242, 20.4963, 19.0235,
-			      19.298, 17.4103, 16.868, 15.2939, 15.2939, 16.0295, 14.186, 14.186, 15.2173, 12.9504, 12.9504,
-			      12.9504, 15.264, 12.3674, 12.3674, 12.3674, 12.3674, 12.3674, 18.3811, 13.7544, 13.7544,
-			      13.7544, 13.7544, 13.7544, 13.7544, 13.7544, 13.7544, 13.7544, 13.7544, 13.7544, 13.7544
-     };
-     
-     if ( TMath::Abs(tkl-val) > 6.*tklSigma[(Int_t)cent] )  {
-       AliDebug(3, Form("Outlier event in centrality -> cent = %5.2f",cent));
-       return -999.0;
-     }
-   } else {
-     //force it to be -999. whatever the negative value was
-     cent = -999.;
-   }
-   return cent;
+  
+  AliOADBContainer* cont = (AliOADBContainer*) fCalib->FindObject("hMultV0BefCorr");
+  if(!cont){
+    printf("OADB object hMultV0BefCorr is not available in the file\n");
+    return 0;	
+  }
+  
+  if(!(cont->GetObject(run))){
+    printf("OADB object hMultV0BefCorr is not available for run %i\n",run);
+    return 0;	
+  }
+  fMultV0 = ((TH2F*) cont->GetObject(run))->ProfileX();
+  
+  TF1* fpolc1 = new TF1("fpolc1","pol0", 0, 7); 
+  fMultV0->Fit(fpolc1, "RN");
+  fV0Cpol1 = fpolc1->GetParameter(0);
+  
+  TF1* fpolc2 = new TF1("fpolc2","pol0", 8, 15); 
+  fMultV0->Fit(fpolc2, "RN");
+  fV0Cpol2 = fpolc2->GetParameter(0);
+  
+  TF1* fpolc3 = new TF1("fpolc3","pol0", 16, 23); 
+  fMultV0->Fit(fpolc3, "RN");
+  fV0Cpol3 = fpolc3->GetParameter(0);
+  
+  TF1* fpolc4 = new TF1("fpolc4","pol0", 24, 31); 
+  fMultV0->Fit(fpolc4, "RN");
+  fV0Cpol4 = fpolc4->GetParameter(0);
+  
+  TF1* fpola1 = new TF1("fpola1","pol0", 32, 39);
+  fMultV0->Fit(fpola1, "RN");
+  fV0Apol1 = fpola1->GetParameter(0);
+
+  TF1* fpola2 = new TF1("fpola2","pol0", 40, 47);
+  fMultV0->Fit(fpola2, "RN");
+  fV0Apol2 = fpola2->GetParameter(0);
+  
+  TF1* fpola3 = new TF1("fpola3","pol0", 48, 55);
+  fMultV0->Fit(fpola3, "RN");
+  fV0Apol3 = fpola3->GetParameter(0);
+  
+  TF1* fpola4 = new TF1("fpola4","pol0", 56, 63);
+  fMultV0->Fit(fpola4, "RN");
+  fV0Apol4 = fpola4->GetParameter(0);
+
+  for(Int_t i=0; i < 10; i++){
+
+    char nameQxa2[100];
+    snprintf(nameQxa2,100, "hQxa2m_%i", i);
+
+    char nameQya2[100];
+    snprintf(nameQya2,100, "hQya2m_%i", i);
+
+    char nameQxc2[100];
+    snprintf(nameQxc2,100, "hQxc2m_%i", i);
+
+    char nameQyc2[100];
+    snprintf(nameQyc2,100, "hQyc2m_%i", i);
+	
+    AliOADBContainer* contQxa2 = (AliOADBContainer*) fCalib->FindObject(nameQxa2);
+    if(!contQxa2){
+      printf("OADB object %s is not available in the file\n", nameQxa2);
+      return 0;	
+    }
+	
+    if(!(contQxa2->GetObject(run))){
+      printf("OADB object %s is not available for run %i\n", nameQxa2, run);
+      return 0;	
+    }
+
+    fMeanQxa2[i] = ((TH1F*) contQxa2->GetObject(run))->GetMean();
+
+ 
+    AliOADBContainer* contQya2 = (AliOADBContainer*) fCalib->FindObject(nameQya2);
+    if(!contQya2){
+      printf("OADB object %s is not available in the file\n", nameQya2);
+      return 0;	
+    }
+	
+    if(!(contQya2->GetObject(run))){
+      printf("OADB object %s is not available for run %i\n", nameQya2, run);
+      return 0;	
+    }
+
+    fMeanQya2[i] = ((TH1F*) contQya2->GetObject(run))->GetMean();
+
+
+    AliOADBContainer* contQxc2 = (AliOADBContainer*) fCalib->FindObject(nameQxc2);
+    if(!contQxc2){
+      printf("OADB object %s is not available in the file\n", nameQxc2);
+      return 0;	
+    }
+	
+    if(!(contQxc2->GetObject(run))){
+      printf("OADB object %s is not available for run %i\n", nameQxc2, run);
+      return 0;	
+    }
+
+    fMeanQxc2[i] = ((TH1F*) contQxc2->GetObject(run))->GetMean();
+ 
+
+    AliOADBContainer* contQyc2 = (AliOADBContainer*) fCalib->FindObject(nameQyc2);
+    if(!contQyc2){
+      printf("OADB object %s is not available in the file\n", nameQyc2);
+      return 0;	
+    }
+	
+    if(!(contQyc2->GetObject(run))){
+      printf("OADB object %s is not available for run %i\n", nameQyc2, run);
+      return 0;	
+    }
+
+    fMeanQyc2[i] = ((TH1F*) contQyc2->GetObject(run))->GetMean();
+
+  }
+  return 1;
 }
 
 //______________________________________________________
@@ -306,30 +547,21 @@ Long64_t AliSpectraAODEventCuts::Merge(TCollection* list)
 {
   // Merge a list of AliSpectraAODEventCuts objects with this.
   // Returns the number of merged objects (including this).
-
-  //  AliInfo("Merging");
-
+  
+  AliInfo("Merging");
+  
   if (!list)
     return 0;
 
   if (list->IsEmpty())
     return 1;
-
+  
   TIterator* iter = list->MakeIterator();
   TObject* obj;
-
+  
   // collections of all histograms
-  TList collections;//FIXME we should use only 1 collection
-  TList collections_histoVtxBefSel;
-  TList collections_histoVtxAftSel;
-  TList collections_histoEtaBefSel;
-  TList collections_histoEtaAftSel;
-  TList collections_histoNChAftSel;
-  // TList collections_histoQVectorPos;
-  // TList collections_histoQVectorNeg;
-  TList collections_histoQVector;
-  TList collections_histoEP;
-
+  TList collections;
+  
   Int_t count = 0;
 
   while ((obj = iter->Next())) {
@@ -337,41 +569,13 @@ Long64_t AliSpectraAODEventCuts::Merge(TCollection* list)
     if (entry == 0) 
       continue;
 
-    TH1I * histo = entry->GetHistoCuts();      
-    collections.Add(histo);
-    TH1F * histo_histoVtxBefSel = entry->GetHistoVtxBefSel();      
-    collections_histoVtxBefSel.Add(histo_histoVtxBefSel);
-    TH1F * histo_histoVtxAftSel = entry->GetHistoVtxAftSel();      
-    collections_histoVtxAftSel.Add(histo_histoVtxAftSel);
-    TH1F * histo_histoEtaBefSel = entry->GetHistoEtaBefSel();      
-    collections_histoEtaBefSel.Add(histo_histoEtaBefSel);
-    TH1F * histo_histoEtaAftSel = entry->GetHistoEtaAftSel();      
-    collections_histoEtaAftSel.Add(histo_histoEtaAftSel);
-    TH1F * histo_histoNChAftSel = entry->GetHistoNChAftSel();      
-    collections_histoNChAftSel.Add(histo_histoNChAftSel);
-    // TH1F * histo_histoQVectorPos = entry->GetHistoQVectorPos();      
-    // collections_histoQVectorPos.Add(histo_histoQVectorPos);
-    // TH1F * histo_histoQVectorNeg = entry->GetHistoQVectorNeg();      
-    // collections_histoQVectorNeg.Add(histo_histoQVectorNeg);
-    TH1F * histo_histoQVector = entry->GetHistoQVector();      
-    collections_histoQVector.Add(histo_histoQVector);
-    TH1F * histo_histoEP = entry->GetHistoEP();      
-    collections_histoEP.Add(histo_histoEP);
+    TList * l = entry->GetOutputList();      
+    collections.Add(l);
     count++;
   }
   
-  fHistoCuts->Merge(&collections);
-  fHistoVtxBefSel->Merge(&collections_histoVtxBefSel);
-  fHistoVtxAftSel->Merge(&collections_histoVtxAftSel);
-  fHistoEtaBefSel->Merge(&collections_histoEtaBefSel);
-  fHistoEtaAftSel->Merge(&collections_histoEtaAftSel);
-  fHistoNChAftSel->Merge(&collections_histoNChAftSel);
-  // fHistoQVectorPos->Merge(&collections_histoQVectorPos);
-  // fHistoQVectorNeg->Merge(&collections_histoQVectorNeg);
-  fHistoQVector->Merge(&collections_histoQVector);
-  fHistoEP->Merge(&collections_histoEP);
+  fOutput->Merge(&collections);
   
-
   delete iter;
 
   return count+1;

@@ -8,7 +8,9 @@ AliEmcalJetTask* AddTaskEmcalJet(
   const Double_t minClPt     = 0.30,
   const Double_t ghostArea   = 0.005,
   const Double_t radius      = 0.4,
+  const Int_t recombScheme   = 1,
   const char *tag            = "Jet"
+
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -77,16 +79,38 @@ AliEmcalJetTask* AddTaskEmcalJet(
   else if (minClPt>=1.0)
     sprintf(ETString,"ET%4.0f",minClPt*1000.0);  
 
+  char recombSchemeString[200];
+  if(recombScheme==0)
+    sprintf(recombSchemeString,"%s","E_scheme");
+  else if(recombScheme==1)
+    sprintf(recombSchemeString,"%s","pt_scheme");
+  else if(recombScheme==2)
+    sprintf(recombSchemeString,"%s","pt2_scheme");
+  else if(recombScheme==3)
+    sprintf(recombSchemeString,"%s","Et_scheme");
+  else if(recombScheme==4)
+    sprintf(recombSchemeString,"%s","Et2_scheme");
+  else if(recombScheme==5)
+    sprintf(recombSchemeString,"%s","BIpt_scheme");
+  else if(recombScheme==6)
+    sprintf(recombSchemeString,"%s","BIpt2_scheme");
+  else if(recombScheme==99)
+    sprintf(recombSchemeString,"%s","ext_scheme");
+  else {
+    ::Error("AddTaskAliEmcalJet", "Recombination scheme not recognized.");
+    return NULL;
+  }
+
   TString name;
   if (*nTracks && *nClusters)
-    name = TString(Form("%s_%s%s%s_%s_%s_%s_%s",
-                        tag,algoString,typeString,radiusString,nTracks,pTString,nClusters,ETString));
+    name = TString(Form("%s_%s%s%s_%s_%s_%s_%s_%s",
+                        tag,algoString,typeString,radiusString,nTracks,pTString,nClusters,ETString,recombSchemeString));
   else if (!*nClusters)
-    name = TString(Form("%s_%s%s%s_%s_%s",
-                        tag,algoString,typeString,radiusString,nTracks,pTString));
+    name = TString(Form("%s_%s%s%s_%s_%s_%s",
+                        tag,algoString,typeString,radiusString,nTracks,pTString,recombSchemeString));
   else if (!*nTracks)
-    name = TString(Form("%s_%s%s%s_%s_%s",
-                        tag,algoString,typeString,radiusString,nClusters,ETString));
+    name = TString(Form("%s_%s%s%s_%s_%s_%s",
+                        tag,algoString,typeString,radiusString,nClusters,ETString,recombSchemeString));
  
   AliEmcalJetTask* mgrTask = mgr->GetTask(name.Data());
   if (mgrTask)
@@ -103,6 +127,7 @@ AliEmcalJetTask* AddTaskEmcalJet(
   if ((type & (AliEmcalJetTask::kRX1Jet|AliEmcalJetTask::kRX2Jet|AliEmcalJetTask::kRX3Jet)) != 0)
     jetTask->SetRadius(radius);
   jetTask->SetGhostArea(ghostArea);
+  jetTask->SetRecombScheme(recombScheme);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
@@ -126,11 +151,11 @@ AliEmcalJetTask* AddTaskEmcalJet(
   const Int_t type           = 0,
   const Double_t minTrPt     = 0.15,
   const Double_t minClPt     = 0.30,
-  const Double_t ghostArea   = 0.01  ,
+  const Double_t ghostArea   = 0.01,
+  const Int_t recombScheme   = 1,
   const char *tag            = "Jet"
 )
 {  
-  
   UInt_t jetType = 0;
 
   if (algo == 0) 
@@ -154,5 +179,10 @@ AliEmcalJetTask* AddTaskEmcalJet(
   else
     jetType |= AliEmcalJetTask::kRX1Jet;
 
-  return AddTaskEmcalJet(jetType, nTracks, nClusters, minTrPt, minClPt, ghostArea, radius, tag);
+  if (ghostArea<=0) {
+    ::Error("AddTaskEmcalJet","Ghost area set to 0, check your settings (try 0.005)");
+    return NULL;
+  }
+
+  return AddTaskEmcalJet(jetType, nTracks, nClusters, minTrPt, minClPt, ghostArea, radius, recombScheme, tag);
 }

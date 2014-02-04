@@ -15,6 +15,7 @@
 #include <TObjArray.h>
 class AliOADBForward;
 class TBrowser;
+class TAxis;
 
 /**
  * Base class for correction managers. 
@@ -177,6 +178,60 @@ public:
    * @param debug if true, do verbose queries 
    */
   virtual void SetDebug(Bool_t debug) { fDebug = debug; }
+  /** 
+   * Convinience function to enable corrections on-mass.  User class
+   * should overload this to properly enable corrections based on the
+   * bit identifiers.
+   *
+   * @param what Bit mask of correction identifiers. 
+   */
+  virtual void EnableCorrections(UInt_t what);
+  /** 
+   * Check if the specified corrrections have been initialized
+   * 
+   * @param what     Corrections to check 
+   * @param verbose  If true, be verbose 
+   * 
+   * @return true if all specified the corrections have been 
+   */
+  virtual Bool_t CheckCorrections(UInt_t what, Bool_t verbose=true) const;
+  /** 
+   * Read in all corrections 
+   * 
+   * @param run    Run number 
+   * @param sys    System 
+   * @param sNN    Center of mass energy 
+   * @param fld    L3 magnetic field
+   * @param mc     For simulations 
+   * @param sat    For satellite interactions 
+   * @param force  Force-reread 
+   * 
+   * @return true on success 
+   */
+  Bool_t InitCorrections(ULong_t    run, 
+			 UShort_t   sys, 
+			 UShort_t   sNN, 
+			 Short_t    fld, 
+			 Bool_t     mc, 
+			 Bool_t     sat,
+			 Bool_t     force=false);
+  /** 
+   * @{ 
+   * @name Get axis objects. 
+   */
+  /** 
+   * Get the vertex axis 
+   * 
+   * @return The vertex axis or null
+   */
+  virtual const TAxis* GetVertexAxis() const { return 0; }
+  /** 
+   * Get the @f$\eta@f$ axis
+   * 
+   * @return The @f$\eta@f$ axis or null
+   */
+  virtual const TAxis* GetEtaAxis() const { return 0; }
+  /* @} */
 protected:
   /** 
    * Correction registration
@@ -190,10 +245,11 @@ protected:
     /** 
      * Constructor 
      * 
-     * @param tableName  Table name
-     * @param fileName   File name 
-     * @param cls        Class
-     * @param fields     Enabled fields
+     * @param tableName   Table name
+     * @param fileName    File name 
+     * @param cls         Class
+     * @param queryFields Enabled fields
+     * @param enabled     Enabled or not 
      */
     Correction(const TString& tableName, 
 	       const TString& fileName, 
@@ -229,6 +285,7 @@ protected:
      * @param mc   If true, for simulated data, else real
      * @param sat  If true, for satellite interactions
      * @param vrb  If true, do verbose query
+     * @param fbk  Force read
      *
      * @return true on success
      */
@@ -431,25 +488,6 @@ protected:
    * @return Object of correction, or null if correction not found or in-active
    */
   const TObject* Get(Int_t id) const;
-  /** 
-   * Read in all corrections 
-   * 
-   * @param run    Run number 
-   * @param sys    System 
-   * @param sNN    Center of mass energy 
-   * @param fld    L3 magnetic field
-   * @param mc     For simulations 
-   * @param sat    For satellite interactions 
-   * 
-   * @return true on success 
-   */
-  Bool_t InitCorrections(ULong_t    run, 
-			 UShort_t   sys, 
-			 UShort_t   sNN, 
-			 Short_t    fld, 
-			 Bool_t     mc, 
-			 Bool_t     sat,
-			 Bool_t     force=false);
   /** 
    * Read in all corrections 
    * 

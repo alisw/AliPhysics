@@ -5,7 +5,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
                                                        const Bool_t  bFillAOD   = kFALSE,                                                
                                                        const Int_t   bMC        = kFALSE,
                                                        const Bool_t  exotic     = kTRUE,
-                                                       const TString name       = "V1Unfold", 
+                                                       const TString name       = "V1Unfold", // V1, V2, NxN, V1Unfold
                                                        const TString trigger    = "", 
                                                        const Bool_t  tm         = kTRUE, 
                                                        const Int_t   minEcell   = 50,
@@ -22,7 +22,8 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
                                                        const Int_t   maxCen     = -1,
                                                        const Float_t clusterEnergyCutEvent = -1,
                                                        const Int_t   nRowDiff   = 1,
-                                                       const Int_t   nColDiff   = 1
+                                                       const Int_t   nColDiff   = 1,
+                                                       const Bool_t  skipOrReject = kFALSE
                                                        )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -153,6 +154,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   {
     clusterize->SwitchOnCellEnergySelection();
     clusterize->SetCellCuts(minEUnf/1000.,minFrac/10000.);
+    clusterize->SetRejectBelowThreshold(skipOrReject);
     printf("AliAnalysisTaskEMCALClusterize - Cuts: min E %f, frac %f\n",minEUnf/1000.,minFrac/10000.);
     //clusterize->SwitchOffCellEnergySelection(); 
     

@@ -48,8 +48,29 @@ public:
      */
     kNewer = 5
   };
+  /** 
+   * Return the mode as a string 
+   * 
+   * @param mode Mode 
+   * 
+   * @return Stringified mode 
+   */
   static const char* Mode2String(ERunSelectMode mode);
+  /** 
+   * Parse a string to get the mode 
+   * 
+   * @param str Input string 
+   * 
+   * @return Mode 
+   */
   static ERunSelectMode String2Mode(const TString& str);
+  /** 
+   * Return mode as an integer 
+   * 
+   * @param mode Mode 
+   * 
+   * @return Mode identifier 
+   */
   static ERunSelectMode Int2Mode(Int_t mode);
   /**
    * Various flags
@@ -80,6 +101,7 @@ public:
      * @param sNN     Center of mass energy (GeV)
      * @param field   L3 magnetic field (kG)
      * @param mc      True if for MC only
+     * @param sat     For satellite events
      * @param o       Correction object
      */
     Entry(ULong_t  runNo  = 0, 
@@ -147,6 +169,7 @@ public:
      * 
      * @param tree   Tree 
      * @param isNew  Whether to make the branch 
+     * @param mode   How to select on the run number 
      * 
      * @return 
      */    
@@ -223,7 +246,8 @@ public:
     /** 
      * Query the tree 
      * 
-     * @param run    Run number 
+     * @param runNo  Run number 
+     * @param mode   Run selection mode 
      * @param sys    Collision system (1: pp, 2: PbPb, 3: pPb)
      * @param sNN    Center of mass energy (GeV)
      * @param fld    L3 magnetic field (kG)
@@ -261,7 +285,9 @@ public:
      * @param sNN       Center of mass energy (GeV)
      * @param field     L3 magnetic field (kG)
      * @param mc        If true, only for MC 
+     * @param sat       For satellite interactions 
      * @param aliRev    AliROOT revision
+     * @param author    Creater of this correction
      * 
      * @return true on success 
      */
@@ -293,10 +319,12 @@ public:
      * collision system, energy, and field setting.
      *
      * @param run    Run number 
+     * @param mode   Run selection mode 
      * @param sys    Collision system (1: pp, 2: PbPb, 3: pPb)
      * @param sNN    Center of mass energy (GeV)
      * @param fld    L3 magnetic field (kG)
      * @param mc     For MC only 
+     * @param sat    For satellite interactions 
      * 
      * @return Found entry, or null
      */
@@ -320,10 +348,12 @@ public:
      * collision system, energy, and field setting.
      *
      * @param run    Run number 
+     * @param mode   Run selection mode 
      * @param sys    Collision system (1: pp, 2: PbPb, 3: pPb)
      * @param sNN    Center of mass energy (GeV)
      * @param fld    L3 magnetic field (kG)
      * @param mc     For MC only 
+     * @param sat    For satellite interactions 
      * 
      * @return Found data, or null
      */
@@ -365,8 +395,6 @@ public:
   // === Interface ===================================================
   /** 
    * Constructor 
-   * 
-   * @param file File that stores the DB
    */
   AliOADBForward();
   /**
@@ -390,6 +418,7 @@ public:
    * @param rw        if true, open read+write, otherwise read-only
    * @param tables    Tables to open 
    * @param verb      Verbosity flag 
+   * @param fallback  If true allow for fall-backs
    * 
    * @return true on success 
    */
@@ -409,6 +438,7 @@ public:
    * @param rw      if true, open read+write, otherwise read-only
    * @param tables  Tables to open 
    * @param verb    Verbosity flag 
+   * @param fallback  If true allow for fall-backs
    * 
    * @return true on success 
    */
@@ -448,11 +478,14 @@ public:
    * This allow us to specify default objects for a period, and for
    * collision system, energy, and field setting.
    *
+   * @param table  Table name 
    * @param run    Run number 
+   * @param mode   Run selection mode 
    * @param sys    Collision system (1: pp, 2: PbPb, 3: pPb)
    * @param sNN    Center of mass energy (GeV)
    * @param fld    L3 magnetic field (kG)
-   * @param mc     For MC only 
+   * @param mc     For MC only
+   * @param sat    For satellite interactions 
    * 
    * @return Found entry, or null
    */
@@ -476,11 +509,14 @@ public:
    * This allow us to specify default objects for a period, and for
    * collision system, energy, and field setting.
    *
+   * @param table  Table name 
    * @param run    Run number 
+   * @param mode   Run selection mode 
    * @param sys    Collision system (1: pp, 2: PbPb, 3: pPb)
    * @param sNN    Center of mass energy (GeV)
    * @param fld    L3 magnetic field (kG)
    * @param mc     For MC only 
+   * @param sat    For satellite interactions 
    * 
    * @return Found data, or null
    */
@@ -496,13 +532,16 @@ public:
   /** 
    * Insert a new entry into the table 
    * 
+   * @param table     Table name 
    * @param o         Object to write 
    * @param runNo     Run number 
    * @param sys       Collision system (1: pp, 2:PbPb, 3:pPb)
    * @param sNN       Center of mass energy (GeV)
    * @param field     L3 magnetic field (kG)
    * @param mc        If true, only for MC 
+   * @param sat    For satellite interactions 
    * @param aliRev    AliROOT revision
+   * @param author    Creater of this correction
    * 
    * @return true on success 
    */
@@ -516,6 +555,34 @@ public:
 		Bool_t         sat=false,
 		ULong_t        aliRev=0,
 		const TString& author="");
+  /** 
+   * Copy one entry to another entry 
+   * 
+   * @param table      Table name 
+   * @param oldRunNo   Old run number 
+   * @param oldSys     Old collision system
+   * @param oldSNN     Old center of mass energy 
+   * @param oldField   Old L3 magnetic field strength
+   * @param newRunNo   New run number 		     
+   * @param newSys     New collision system	     
+   * @param newSNN     New center of mass energy     
+   * @param newField   New L3 magnetic field strength
+   * @param mc         True for MC only queries
+   * @param sat        True for including satellite queries
+   * 
+   * @return true on success 
+   */
+  Bool_t CopyEntry(const TString& table, 
+		   ULong_t        oldRunNo, 
+		   UShort_t       oldSys,
+		   UShort_t       oldSNN, 
+		   Short_t        oldField, 
+		   ULong_t        newRunNo,
+		   UShort_t       newSys,
+		   UShort_t       newSNN, 
+		   Short_t        newField, 
+		   Bool_t         mc, 
+		   Bool_t         sat);
   /* @} */
   /** 
    * Print the content of all tables

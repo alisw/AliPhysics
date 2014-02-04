@@ -1,7 +1,7 @@
 #ifndef ALIJETEMBEDDINGFROMAODTASK_H
 #define ALIJETEMBEDDINGFROMAODTASK_H
 
-// $Id: AliJetEmbeddingFromAODTask.h  $
+// $Id$
 
 class TFile;
 class TObjArray;
@@ -117,6 +117,7 @@ class AliJetEmbeddingFromAODTask : public AliJetModelBaseTask {
   TH1           *fHistNotEmbedded     ;//! File ID not embedded
   TH1           *fHistEmbeddingQA     ;//! Embedding QA
   TH1           *fHistRejectedEvents  ;//! Rejected events
+  Int_t          fEmbeddingCount      ;//! Number of embedded events from the current file
 
  private:
   AliJetEmbeddingFromAODTask(const AliJetEmbeddingFromAODTask&);            // not implemented

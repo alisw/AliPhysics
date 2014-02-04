@@ -112,9 +112,8 @@ void AliAnaCaloTrackCorrBaseClass::AddAODParticle(AliAODPWG4Particle pc)
   
 }	
 
-//_______________________________________________________________________________
-Int_t AliAnaCaloTrackCorrBaseClass::CheckMixedEventVertex(const Int_t caloLabel, 
-                                                          const Int_t trackLabel)
+//__________________________________________________________________________________________
+Int_t AliAnaCaloTrackCorrBaseClass::CheckMixedEventVertex(Int_t caloLabel, Int_t trackLabel)
 {
   // Check vertex in mixed events
   
@@ -204,9 +203,9 @@ void AliAnaCaloTrackCorrBaseClass::ConnectInputOutputAODBranches()
   }
 }
 
-//__________________________________________________________________________________________
-AliVCluster * AliAnaCaloTrackCorrBaseClass::FindCluster(TObjArray* clusters, const Int_t id, 
-                                                        Int_t & iclus, const Int_t first) 
+//_____________________________________________________________________________________
+AliVCluster * AliAnaCaloTrackCorrBaseClass::FindCluster(TObjArray* clusters, Int_t id,
+                                                        Int_t & iclus, Int_t first)
 {
   // Given the cluster ID stored in AliAODPWG4Particle, get the originator cluster and its index in the array
   
@@ -405,8 +404,8 @@ AliGenEventHeader *  AliAnaCaloTrackCorrBaseClass::GetMCGenEventHeader() const
 }
 
 
-//___________________________________________________________
-Int_t AliAnaCaloTrackCorrBaseClass::GetEventCentralityBin()
+//________________________________________________________________
+Int_t AliAnaCaloTrackCorrBaseClass::GetEventCentralityBin() const
 {
   // Define the centrality bin for mixing
   // In pp collisions analysis hardcoded track multiplicities
@@ -443,7 +442,12 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetEventCentralityBin()
     
     if((minCent< 0 && maxCent< 0) || minCent>=maxCent)
     {
-      curCentrBin = GetEventCentrality() * GetNCentrBin() / GetReader()->GetCentralityOpt(); 
+      curCentrBin = GetEventCentrality() * GetNCentrBin() / GetReader()->GetCentralityOpt();
+      if(curCentrBin==GetNCentrBin())
+      {
+        curCentrBin = GetNCentrBin()-1;
+        printf("AliAnaCaloTrackCorrBaseClass::GetEventCentralityBin() - Centrality = %d, put it in last bin \n",GetEventCentrality());
+      }
     }
     else
     {
@@ -460,8 +464,8 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetEventCentralityBin()
   
 }
 
-//_________________________________________________
-Int_t AliAnaCaloTrackCorrBaseClass::GetEventRPBin()
+//_______________________________________________________
+Int_t AliAnaCaloTrackCorrBaseClass::GetEventRPBin() const
 {
   //Reaction plane bin
   
@@ -489,8 +493,8 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetEventRPBin()
   
 }
 
-//_________________________________________________
-Int_t AliAnaCaloTrackCorrBaseClass::GetEventVzBin()
+//_______________________________________________________
+Int_t AliAnaCaloTrackCorrBaseClass::GetEventVzBin() const
 {
   // Return Vz bin, divide vertex in GetNZvertBin() bins, 
   // depending on the vertex cut
@@ -507,8 +511,8 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetEventVzBin()
   return curZvertBin;
 }
 
-//____________________________________________________________________________________________________
-Int_t AliAnaCaloTrackCorrBaseClass::GetEventMixBin(const Int_t iCen, const Int_t iVz, const Int_t iRP)
+//________________________________________________________________________________________
+Int_t AliAnaCaloTrackCorrBaseClass::GetEventMixBin(Int_t iCen, Int_t iVz, Int_t iRP) const
 {
   // Event mixing bin, combination of vz, centrality and reaction plane bins
   
@@ -518,8 +522,8 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetEventMixBin(const Int_t iCen, const Int_t
     return iCen*GetNZvertBin()*GetNRPBin()+iVz*GetNRPBin()+iRP;
 }
 
-//__________________________________________________
-Int_t AliAnaCaloTrackCorrBaseClass::GetEventMixBin()
+//________________________________________________________
+Int_t AliAnaCaloTrackCorrBaseClass::GetEventMixBin() const
 {
   // Event mixing bin, combination of vz, centrality and reaction plane bins
   

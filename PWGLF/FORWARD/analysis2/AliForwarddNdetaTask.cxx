@@ -32,7 +32,7 @@ AliForwarddNdetaTask::AliForwarddNdetaTask(const char* /* name */)
   // 
   // Paramters
   //   name    Name of task 
-  SetTitle("FMD");
+  // SetTitle("FMD");
   DGUARD(fDebug, 3, "Named CTOR of AliForwarddNdetaTask");
 }
 
@@ -48,7 +48,7 @@ AliForwarddNdetaTask::AliForwarddNdetaTask(const AliForwarddNdetaTask& o)
 
 //____________________________________________________________________
 AliBasedNdetaTask::CentralityBin*
-AliForwarddNdetaTask::MakeCentralityBin(const char* name, Short_t l, Short_t h) 
+AliForwarddNdetaTask::MakeCentralityBin(const char* name, Short_t l,Short_t h) 
   const 
 {
   // 
@@ -62,7 +62,8 @@ AliForwarddNdetaTask::MakeCentralityBin(const char* name, Short_t l, Short_t h)
   // Return:
   //    Newly allocated object (of our type)
   //
-  DGUARD(fDebug, 3,"Make a centrality bin for AliForwarddNdetaTask: %s [%d,%d]",
+  DGUARD(fDebug, 3,
+	 "Make a centrality bin for AliForwarddNdetaTask: %s [%d,%d]",
 	 name, l, h);
   return new AliForwarddNdetaTask::CentralityBin(name, l, h);
 }
@@ -70,7 +71,7 @@ AliForwarddNdetaTask::MakeCentralityBin(const char* name, Short_t l, Short_t h)
 
 //____________________________________________________________________
 TH2D*
-AliForwarddNdetaTask::GetHistogram(const AliAODEvent* aod, Bool_t mc)
+AliForwarddNdetaTask::GetHistogram(const AliAODEvent& aod, Bool_t mc)
 {
   // 
   // Retrieve the histogram 
@@ -82,16 +83,9 @@ AliForwarddNdetaTask::GetHistogram(const AliAODEvent* aod, Bool_t mc)
   // Return:
   //    Retrieved histogram or null
   //
-  TObject* obj = 0;
-  if (mc) obj = aod->FindListObject("ForwardMC");
-  else    obj = aod->FindListObject("Forward");
-
   // We should have a forward object at least 
-  if (!obj) {
-    if (!mc) AliWarning("No Forward object found AOD");
-    return 0;
-  }
-  AliAODForwardMult* forward = static_cast<AliAODForwardMult*>(obj);
+  AliAODForwardMult* forward = GetForward(aod, mc, !mc);
+  if (!forward) return 0;
   return &(forward->GetHistogram());
 }
 //____________________________________________________________________
@@ -201,7 +195,7 @@ AliForwarddNdetaTask::CentralityBin::End(TList*      sums,
 					 TList*      mclist,
 					 TList*      truthlist )
 {
-  DGUARD(fDebug, 1, "In End of %s with corrEmpty=%d, cutEdges=%d, rootProj=%d", 
+  DGUARD(fDebug, 1,"In End of %s with corrEmpty=%d, cutEdges=%d, rootProj=%d", 
 	 GetName(), corrEmpty, cutEdges, rootProj);
   AliBasedNdetaTask::CentralityBin::End(sums, results, scheme, 
 					shapeCorr, trigEff, trigEff0,
@@ -214,7 +208,7 @@ AliForwarddNdetaTask::CentralityBin::End(TList*      sums,
   TFile* file = TFile::Open("forward.root", "READ");
   if (!file) return;
   
-  TList* forward = static_cast<TList*>(file->Get("Forward"));
+  TList* forward = static_cast<TList*>(file->Get("ForwardSums"));
   if (!forward) { 
     AliError("List Forward not found in forward.root");
     return;

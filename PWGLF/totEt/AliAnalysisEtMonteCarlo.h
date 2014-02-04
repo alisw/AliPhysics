@@ -377,10 +377,13 @@ protected:
     TH2F *fHistSecondariesVsNcl;
     TH2F *fHistSecondariesEffCorrVsNch;
     TH2F *fHistSecondariesEffCorrVsNcl;
+    TH2F *fHistSecondariesOutOfAccEffCorrVsNch;
+    TH2F *fHistSecondariesDetectorCoverEffCorrVsNch;
     TH3F *fHistCentVsNchVsNcl;
-    TH3F *fHistSecondaryPositionInDetector;
+    //TH3F *fHistSecondaryPositionInDetector;
     TH2F *fClusterPositionWeird;
-    TH3F *fHistSecondaryPositionInDetectorMultiple;
+    //TH3F *fHistSecondaryPositionInDetectorMultiple;
+    TH1F *fSecondaryClusterEnergy; // Distribution of cluster energies
 
 
 private:

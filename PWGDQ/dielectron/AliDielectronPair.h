@@ -120,8 +120,9 @@ public:
   Double_t DeviationDaughters()   const { return fD1.GetDeviationFromParticle(fD2);             }
   Double_t DeviationDaughtersXY() const { return fD1.GetDeviationFromParticleXY(fD2);           }
   Double_t DeltaEta()             const { return TMath::Abs(fD1.GetEta()-fD2.GetEta());         }
-  Double_t DeltaPhi()             const { Double_t dphi=TMath::Abs(fD1.GetPhi()-fD2.GetPhi());
-                                          return (dphi>TMath::Pi())?dphi-TMath::Pi():dphi;      }
+//   Double_t DeltaPhi()             const { Double_t dphi=TMath::Abs(fD1.GetPhi()-fD2.GetPhi());
+//                                           return (dphi>TMath::Pi())?dphi-TMath::Pi():dphi;      }
+  Double_t DeltaPhi()             const { return fD1.GetAngleXY(fD2);     }
 
   // calculate cos(theta*) and phi* in HE and CS pictures
   void GetThetaPhiCM(Double_t &thetaHE, Double_t &phiHE, Double_t &thetaCS, Double_t &phiCS) const;
@@ -129,21 +130,22 @@ public:
 
   Double_t ThetaPhiCM(Bool_t isHE, Bool_t isTheta) const;
   static Double_t ThetaPhiCM(const AliVParticle* d1, const AliVParticle* d2, 
-			                       const Bool_t isHE, const Bool_t isTheta);
+			                       Bool_t isHE, Bool_t isTheta);
 
   Double_t PsiPair(Double_t MagField)const; //Angle cut w.r.t. to magnetic field
   Double_t PhivPair(Double_t MagField)const; //Angle of ee plane w.r.t. to magnetic field
-  //  Double_t PairPlanev0rpH2Angle(Double_t kv0CrpH2)const;
-  // Double_t PairPlaneMagAngle(Double_t kv0CrpH2)const;
-  Double_t PairPlaneAngle(Double_t kv0CrpH2)const;
+
+  //Calculate the angle between ee decay plane and variables
+  Double_t GetPairPlaneAngle(Double_t kv0CrpH2, Int_t VariNum) const;
 
   Double_t GetCosPointingAngle(const AliVVertex *primVtx) const;
   Double_t GetArmAlpha() const;
   Double_t GetArmPt()    const;
+  void GetDCA(const AliVVertex *primVtx, Double_t d0z0[2]) const;
 
-  // calculate rotation of p1 p2
-  void GetRotPair(Double_t &RotPairx, Double_t &RotPairy, Double_t &RotPairz) const;
-  
+  // Calculate inner product of strong magnetic field and ee plane
+  Double_t PairPlaneMagInnerProduct(Double_t ZDCrpH1) const;
+
 
   // internal KF particle
   const AliKFParticle& GetKFParticle()       const { return fPair; }

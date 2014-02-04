@@ -97,6 +97,7 @@ AliHFEpid::AliHFEpid(const Char_t *name):
   fDetectorPID[kBAYESpid] = new AliHFEpidBayes("BAYESPID");
   fDetectorPID[kTPCpid] = new AliHFEpidTPC("TPCPID");
   fDetectorPID[kTRDpid] = new AliHFEpidTRD("TRDPID");
+  fDetectorPID[kITSpid] = new AliHFEpidITS("ITSPID");
   fDetectorPID[kTOFpid] = new AliHFEpidTOF("TOFPID");
   fDetectorPID[kEMCALpid] = new AliHFEpidEMCAL("EMCALPID");
 
@@ -212,6 +213,7 @@ void AliHFEpid::AddDetector(TString detector, UInt_t position){
   else if(!detector.CompareTo("TPC")) detectorID = kTPCpid;
   else if(!detector.CompareTo("TRD")) detectorID = kTRDpid;
   else if(!detector.CompareTo("TOF")) detectorID = kTOFpid;
+  else if(!detector.CompareTo("ITS")) detectorID = kITSpid;
   else if(!detector.CompareTo("EMCAL")) detectorID = kEMCALpid;
   else AliError("Detector not available");
 

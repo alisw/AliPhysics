@@ -20,10 +20,8 @@ public:
     kTrackDensity      = 0x002,
     kVertexBins        = 0x004,
     kResults           = 0x008, 
-    kPause             = 0x080,
-    kLandscape         = 0x100, 
-    kCentral           = 0x200,
-    kNormal            = 0x20F
+    kCentral           = 0x010,
+    kNormal            = 0x01F
   };
   SummaryMCCorrDrawer() 
     : SummaryDrawer(),
@@ -67,7 +65,7 @@ public:
       MakeChapter("Forward");
     
     // --- Set pause flag --------------------------------------------
-    fPause = what & 0x80;
+    fPause = what & kPause;
 
     // --- Do each sub-algorithm -------------------------------------
     if (what & kEventInspector) DrawEventInspector(fSums);
@@ -107,14 +105,14 @@ protected:
   //____________________________________________________________________
   void DrawTitlePage(TFile* file)
   {
-    TCollection* c   = GetCollection(file, "ForwardCorrResults");
+    TCollection* c   = GetCollection(file, "ForwardCorrSums");
 
     fBody->cd();
     
     Double_t y = .9;
     TLatex* ltx = new TLatex(.5, y, "ESD+MC #rightarrow Corrections");
     ltx->SetTextSize(0.07);
-    ltx->SetTextFont(42);
+    ltx->SetTextFont(62);
     ltx->SetTextAlign(22);
     ltx->SetNDC();
     ltx->Draw();
@@ -122,25 +120,19 @@ protected:
 
     TCollection* ei = GetCollection(c, "fmdEventInspector");
     if (ei) { 
-      Int_t sys=0, sNN=0, field=0, runNo=0;
+      UShort_t sys=0;
+      UShort_t sNN=0;
+      Int_t field=0;
+      ULong_t runNo=0;
+      GetParameter(ei, "sys", sys);
+      GetParameter(ei, "sNN", sNN);
+      GetParameter(ei, "field", field);
+      GetParameter(ei, "runNo", runNo);
 
-      if (GetParameter(ei, "sys", sys))
-	DrawParameter(y, "System", (sys == 1 ? "pp" : sys == 2 ? "PbPb" : 
-				    sys == 3 ? "pPb" : "unknown"));
-      if (GetParameter(ei, "sNN", sNN)) {
-	TString tsNN = TString::Format("%dGeV", sNN);
-	if (sNN >= 10000) 
-	  tsNN = TString::Format("%5.2f", float(sNN)/1000);
-	else if (sNN >= 1000) 
-	  tsNN = TString::Format("%4.2f", float(sNN)/1000);
-	DrawParameter(y, "#sqrt{s_{NN}}", tsNN);
-      }
-
-      if (GetParameter(ei, "field", field))
-	DrawParameter(y, "L3 B field", Form("%+2dkG", field));
-
-      if (GetParameter(ei, "runNo", runNo))
-	DrawParameter(y, "Run #", Form("%6d", runNo));
+      TString tS; SysString(sys, tS); DrawParameter(y, "System", tS);
+      TString tE; SNNString(sNN, tE); DrawParameter(y, "#sqrt{s_{NN}}", tE);
+      DrawParameter(y, "L3 B field", Form("%+2dkG", field));
+      DrawParameter(y, "Run #", Form("%6lu", runNo));
     }
 
     PrintCanvas("MC Corrections");

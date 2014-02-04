@@ -1,6 +1,7 @@
 #include "AliSPDMCTrackDensity.h"
 #include "AliMCEvent.h"
 #include "AliTrackReference.h"
+#include "AliForwardUtil.h"
 #include <TMath.h>
 #include <AliLog.h>
 #include <TROOT.h>
@@ -150,20 +151,22 @@ AliSPDMCTrackDensity::Calculate(const AliMCEvent& event,
 
   return ProcessTracks(event, vz, primary);
 }
+#define PF(N,V,...)					\
+  AliForwardUtil::PrintField(N,V, ## __VA_ARGS__)
 
+#define PFV(N,VALUE)					\
+  do {							\
+    AliForwardUtil::PrintName(N);			\
+    std::cout << (VALUE) << std::endl; } while(false)
 //____________________________________________________________________
 void
 AliSPDMCTrackDensity::Print(Option_t* option) const 
 {
   AliBaseMCTrackDensity::Print(option);
-  char ind[gROOT->GetDirLevel()+1];
-  for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
-  ind[gROOT->GetDirLevel()] = '\0';
-  std::cout << ind << " R range:                [" << fMinR << ',' << fMaxR
-	    << "]\n"
-	    << ind << " Z range:                [" << fMinZ << ',' << fMaxZ
-	    << "]" << std::endl;
-  
+  gROOT->IncreaseDirLevel();
+  PF("R range", "[%f,%f]", fMinR, fMaxR);
+  PF("Z range", "[%f,%f]", fMinZ, fMaxZ);
+  gROOT->DecreaseDirLevel();
 }
 
 //____________________________________________________________________

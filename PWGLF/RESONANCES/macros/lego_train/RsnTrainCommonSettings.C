@@ -39,6 +39,7 @@ void RsnTrainCommonSettings(TString type,TString rsnPart,TString extraMacro="",T
       Printf("Running Extra Macro %s(%s)",extraMacro.Data(),extraMacroArgs.Data());
       gROOT->ProcessLine(TString::Format("%s(%s)",extraMacro.Data(),extraMacroArgs.Data()).Data());
    }
+   AliRsnTrainManager::SetGlobalInt("RsnQA",0,kFALSE);
    AliRsnTrainManager::SetGlobalInt("RsnNumMix",5,kFALSE);
    AliRsnTrainManager::SetGlobalDbl("RsnEventCutPrimaryVertex",10.0,kFALSE);
    AliRsnTrainManager::SetGlobalStr("RsnLegoTrainCommonCutOption","mon",kFALSE);
@@ -53,7 +54,6 @@ void RsnTrainCommonSettings(TString type,TString rsnPart,TString extraMacro="",T
    AliRsnTrainManager::SetGlobalDbl("RsnMixDiffMult",10.0,kFALSE);
    AliRsnTrainManager::SetGlobalDbl("RsnMixDiffVz",1.0,kFALSE);
    AliRsnTrainManager::SetGlobalDbl("RsnMixDiffAngle",-1.0,kFALSE);
-
 
    // expert options (don't change)
    AliRsnTrainManager::SetGlobalInt("RsnMixPrintRefresh",-1,kFALSE);

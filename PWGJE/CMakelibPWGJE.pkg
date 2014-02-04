@@ -1,4 +1,4 @@
-# -*- mode: CMake -*-
+# -*- mode: Makefile -*-
 #--------------------------------------------------------------------------------#
 # Package File for PWGJE                                                  #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -51,6 +51,11 @@ set ( SRCS
     UserTasks/AliAnalysisTaskJetShape.cxx
     UserTasks/AliAnalysisTaskJetsTriggerTRD.cxx
     UserTasks/AliAnalysisTaskJetProtonCorr.cxx
+    UserTasks/AliAnalysisTaskPIDV0base.cxx
+    UserTasks/AliAnalysisTaskPID.cxx
+    UserTasks/AliAnalysisTaskIDFragmentationFunction.cxx
+    UserTasks/AliAnalysisTaskIDFFTCF.cxx
+    UserTasks/AliIDFFUtils.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -59,7 +64,19 @@ set ( DHDR  PWGJELinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE ANALYSIS JETAN JETAN/fastjet CORRFW PWGJE PWG/Tools PWGCF/Correlations/Base STEER/AOD STEER/ESD STEER/STEERBase)
+set ( HDRS ${HDRS}  EMCALJetTasks/FJ_includes.h  )
+
+set(FASTJET_ROOT $ENV{FASTJET_ROOT})
+
+if(FASTJET_ROOT)
+  set (FASTJET_INC ${FASTJET_ROOT}/include)
+else()
+  set (FASTJET_INC JETAN/fastjet)
+endif(FASTJET_ROOT)
+
+#set ( EDEFINE -isystem${FASTJET_INC})
+set ( EINCLUDE ${FASTJET_INC} ANALYSIS JETAN CORRFW PWGJE PWG/Tools PWGCF/Correlations/Base STEER/AOD STEER/ESD STEER/STEERBase)
+#set ( EINCLUDE ANALYSIS JETAN CORRFW PWGJE PWG/Tools PWGCF/Correlations/Base STEER/AOD STEER/ESD STEER/STEERBase)
 
 install (DIRECTORY macros
 	 DESTINATION PWGJE

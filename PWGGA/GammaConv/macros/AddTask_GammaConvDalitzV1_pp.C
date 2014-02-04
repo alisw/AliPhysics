@@ -41,7 +41,7 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
    //=========  Set Cutnumber for V0Reader ================================
    
 		        
-   TString cutnumber = "0000000000084001001500000"; 
+   TString cutnumber = "00000000000840010015000000"; 
    AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
    
    //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
@@ -143,16 +143,16 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
 
    if(trainConfig == 1){
      //TOF PID
-     ConvCutarray[0] = "0000011002093663027800000"; MesonCutarray[0] = "01631031009";ElecCutarray[0] = "904784032531026210";  //TOF[-3,5] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0
-     ConvCutarray[1] = "0000011002093663027800000"; MesonCutarray[1] = "01631031009";ElecCutarray[1] = "904784042531026210";  //TOF[-2,3] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0     
+     ConvCutarray[0] = "00000110020936630278000000"; MesonCutarray[0] = "01631031009";ElecCutarray[0] = "904784032531026210";  //TOF[-3,5] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0
+     ConvCutarray[1] = "00000110020936630278000000"; MesonCutarray[1] = "01631031009";ElecCutarray[1] = "904784042531026210";  //TOF[-2,3] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0     
     } else if (trainConfig == 2) {
      //TOF PID
-     ConvCutarray[0] = "0000011002093663027800000"; MesonCutarray[0] = "01631031009";ElecCutarray[0] = "904784032531026210";  //TOF[-3,5] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0
-     ConvCutarray[1] = "0000011002093663027800000"; MesonCutarray[1] = "01631031009";ElecCutarray[1] = "904784042531026210";  //TOF[-2,3] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0     
+     ConvCutarray[0] = "00000110020936630278000000"; MesonCutarray[0] = "01631031009";ElecCutarray[0] = "904784032531026210";  //TOF[-3,5] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0
+     ConvCutarray[1] = "00000110020936630278000000"; MesonCutarray[1] = "01631031009";ElecCutarray[1] = "904784042531026210";  //TOF[-2,3] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0     
     } else if (trainConfig == 3) {
      //TOF PID
-     ConvCutarray[0] = "0000011002093663027800000"; MesonCutarray[0] = "01631031009";ElecCutarray[0] = "904784032531026210";  //TOF[-3,5] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0
-     ConvCutarray[1] = "0000011002093663027800000"; MesonCutarray[1] = "01631031009";ElecCutarray[1] = "904784042531026210";  //TOF[-2,3] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0     
+     ConvCutarray[0] = "00000110020936630278000000"; MesonCutarray[0] = "01631031009";ElecCutarray[0] = "904784032531026210";  //TOF[-3,5] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0
+     ConvCutarray[1] = "00000110020936630278000000"; MesonCutarray[1] = "01631031009";ElecCutarray[1] = "904784042531026210";  //TOF[-2,3] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0     
     } else {
       Error(Form("GammaConvDalitzV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;

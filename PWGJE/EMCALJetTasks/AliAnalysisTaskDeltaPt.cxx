@@ -28,7 +28,7 @@ ClassImp(AliAnalysisTaskDeltaPt)
 
 //________________________________________________________________________
 AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt() : 
-  AliAnalysisTaskEmcalJetDev("AliAnalysisTaskDeltaPt", kTRUE),
+  AliAnalysisTaskEmcalJet("AliAnalysisTaskDeltaPt", kTRUE),
   fMCJetPtThreshold(1),
   fMinRC2LJ(-1),
   fRCperEvent(-1),
@@ -119,7 +119,7 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt() :
 
 //________________________________________________________________________
 AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt(const char *name) : 
-  AliAnalysisTaskEmcalJetDev(name, kTRUE),
+  AliAnalysisTaskEmcalJet(name, kTRUE),
   fMCJetPtThreshold(1),
   fMinRC2LJ(-1),
   fRCperEvent(-1),
@@ -213,7 +213,7 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
 {
   // Create user output.
 
-  AliAnalysisTaskEmcalJetDev::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   fJetsCont = GetJetContainer("Jets");
   fTracksCont = GetParticleContainer("Tracks");
@@ -684,7 +684,7 @@ void AliAnalysisTaskDeltaPt::ExecOnce()
 {
   // Initialize the analysis.
 
-  AliAnalysisTaskEmcalJetDev::ExecOnce();
+  AliAnalysisTaskEmcalJet::ExecOnce();
 
   if (fTracksCont && fTracksCont->GetArray() == 0) fTracksCont = 0;
   if (fCaloClustersCont && fCaloClustersCont->GetArray() == 0) fCaloClustersCont = 0;

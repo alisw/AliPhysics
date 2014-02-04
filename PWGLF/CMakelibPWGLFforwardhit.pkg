@@ -1,0 +1,67 @@
+# -*- mode: CMake -*-
+#------------------------------------------------------------------------#
+# Package File for PWGLFforward2                                         #
+# Author : Christian Holm Christensen (cholm@nbi.dk)                     #
+# Variables Defined :                                                    #
+#                                                                        #
+# SRCS - C++ source files                                                #
+# HDRS - C++ header files                                                #
+# DHDR - ROOT Dictionary Linkdef header file                             #
+# CSRCS - C source files                                                 #
+# CHDRS - C header files                                                 #
+# EINCLUDE - Include directories                                         #
+# EDEFINE - Compiler definitions                                         #
+# ELIBS - Extra libraries to link                                        #
+# ELIBSDIR - Extra library directories                                   #
+# PACKFFLAGS - Fortran compiler flags for package                        #
+# PACKCXXFLAGS - C++ compiler flags for package                          #
+# PACKCFLAGS - C compiler flags for package                              #
+# PACKSOFLAGS - Shared library linking flags                             #
+# PACKLDFLAGS - Module linker flags                                      #
+# PACKBLIBS - Libraries to link (Executables only)                       #
+# EXPORT - Header files to be exported                                   #
+# CINTHDRS - Dictionary header files                                     #
+# CINTAUTOLINK - Set automatic dictionary generation                     #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)  #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)   #
+#------------------------------------------------------------------------#
+
+set ( SRCS   
+  FORWARD/analysis2/AliFMDMCHitEnergyFitter.cxx
+  FORWARD/analysis2/AliFMDMCHitEnergyFitterTask.cxx)
+
+string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
+set ( HDRS ${HDRS} FORWARD/analysis2/AliFMDEncodedEdx.h )
+
+set ( EINCLUDE  
+  ANALYSIS 
+  PWGLF/FORWARD/analysis2  
+  PWGLF/FORWARD/GEO 
+  FORWARD/analysis2  
+  FORWARD/GEO 
+  PWG0 
+  STEER/ESD 
+  STEER/STEERBase
+  STEER/STEER
+  FMD)
+
+set ( DHDR  PWGLFforwardhitLinkDef.h)
+
+# --------------------------------------------------------------------
+# Extra installation targets 
+#
+# Install other scripts
+install ( FILES FORWARD/analysis2/AddTaskFMDMCHit.C
+           DESTINATION PWGLF/FORWARD/analysis2 )
+
+add_custom_target( install-PWGLFforwardhit.par 
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/${PACKAGE}.par ${CMAKE_INSTALL_PREFIX}
+  COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --green --bold "${PACKAGE}.par installed in ${CMAKE_INSTALL_PREFIX}"
+  DEPENDS ${CMAKE_BINARY_DIR}/${PACKAGE}.par
+  DEPENDS test-${PACKAGE}.par)
+
+
+# --------------------------------------------------------------------
+#
+# EOF
+# 

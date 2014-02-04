@@ -672,10 +672,10 @@ AliMixInputEventHandler *AliAnalysisTaskEventMixingBF::SetupEventsForMixing() {
   if (inEvHMain) {
 
       AliMixInputEventHandler *mixEH = dynamic_cast<AliMixInputEventHandler *>(inEvHMain->GetFirstMultiInputHandler());
-      if (!mixEH) return kFALSE;
+      if (!mixEH) return nullptr;
       if (mixEH->CurrentBinIndex() < 0) {
          AliDebug(AliLog::kDebug + 1, "Current event mixEH->CurrentEntry() == -1");
-         return kFALSE ;
+         return nullptr;
       }
       AliDebug(AliLog::kDebug, Form("Mixing %lld %d [%lld,%lld] %d", mixEH->CurrentEntry(), mixEH->CurrentBinIndex(), mixEH->CurrentEntryMain(), mixEH->CurrentEntryMix(), mixEH->NumberMixed()));
 

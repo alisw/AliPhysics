@@ -345,7 +345,7 @@ Double_t AliDielectronBtoJPSItoEleCDFfitFCNfitter::CDFResolutionFunction(const D
 //   resParam[i] = par[i];
 //  }
  fFCN->SetResolutionConstants(par,(Int_t)par[9]);
- return par[10]*fFCN->ResolutionFunc(x[0],(Int_t)(par[9]));
+ return par[10]*fFCN->ResolutionFunc(x[0],-1.,(Int_t)(par[9]));
 }
 //__________________________________________________________________________________________
 Double_t AliDielectronBtoJPSItoEleCDFfitFCNfitter::PsProperBackFitFunc(const Double_t* x, const Double_t* par)

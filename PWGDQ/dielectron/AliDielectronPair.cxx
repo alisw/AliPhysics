@@ -252,45 +252,6 @@ void AliDielectronPair::GetThetaPhiCM(Double_t &thetaHE, Double_t &phiHE, Double
   }
 }
 
-//______________________________________________
-void AliDielectronPair::GetRotPair(Double_t &RotPairx, Double_t &RotPairy, Double_t &RotPairz) const
-{
-  // calculation of rotation p1 p2
-  Double_t px1=-9999.,py1=-9999.,pz1=-9999.;
-  Double_t px2=-9999.,py2=-9999.,pz2=-9999.;
-
-  px1 = fD1.GetPx();
-  py1 = fD1.GetPy();
-  pz1 = fD1.GetPz();
-
-  px2 = fD2.GetPx();
-  py2 = fD2.GetPy();
-  pz2 = fD2.GetPz();
-
-  // normal vector of ee plane
-  Double_t pnorx = py1*pz2 - pz1*py2;
-  Double_t pnory = pz1*px2 - px1*pz2;
-  Double_t pnorz = px1*py2 - py1*px2;
-  Double_t pnor  = TMath::Sqrt( pnorx*pnorx + pnory*pnory + pnorz*pnorz );
-
-  //unit vector
-  Double_t upnx = -9999.;
-  Double_t upny = -9999.;
-  Double_t upnz = -9999.;
-  if (pnor !=0) 
-  {
-	upnx= pnorx/pnor;
-	upny= pnory/pnor;
-	upnz= pnorz/pnor;
-  }
-
-
-  RotPairx = upnx;
-  RotPairy = upny;
-  RotPairz = upnz;
-
-}
-
 
 //______________________________________________
 Double_t AliDielectronPair::PsiPair(Double_t MagField) const
@@ -355,7 +316,7 @@ Double_t AliDielectronPair::PsiPair(Double_t MagField) const
 
 //______________________________________________
 Double_t AliDielectronPair::ThetaPhiCM(const AliVParticle* d1, const AliVParticle* d2, 
-                                       const Bool_t isHE, const Bool_t isTheta)
+                                       Bool_t isHE, Bool_t isTheta)
 {
   // The function calculates theta and phi in the mother rest frame with
   // respect to the helicity coordinate system and Collins-Soper coordinate system
@@ -412,7 +373,7 @@ Double_t AliDielectronPair::ThetaPhiCM(const AliVParticle* d1, const AliVParticl
 }
 
 //______________________________________________
-Double_t AliDielectronPair::ThetaPhiCM(const Bool_t isHE, const Bool_t isTheta) const {
+Double_t AliDielectronPair::ThetaPhiCM(Bool_t isHE, Bool_t isTheta) const {
   // The function calculates theta and phi in the mother rest frame with 
   // respect to the helicity coordinate system and Collins-Soper coordinate system
   // TO DO: generalize for different decays (only J/Psi->e+e- now)
@@ -482,10 +443,10 @@ Double_t AliDielectronPair::GetCosPointingAngle(const AliVVertex *primVtx) const
   deltaPos[1] = fPair.GetY() - primVtx->GetY();
   deltaPos[2] = fPair.GetZ() - primVtx->GetZ();
 
-  Double_t momV02    = fPair.GetPx()*fPair.GetPx() + fPair.GetPy()*fPair.GetPy() + fPair.GetPz()*fPair.GetPz();
+  Double_t momV02    = Px()*Px() + Py()*Py() + Pz()*Pz();
   Double_t deltaPos2 = deltaPos[0]*deltaPos[0] + deltaPos[1]*deltaPos[1] + deltaPos[2]*deltaPos[2];
 
-  Double_t cosinePointingAngle = (deltaPos[0]*fPair.GetPx() + deltaPos[1]*fPair.GetPy() + deltaPos[2]*fPair.GetPz()) / TMath::Sqrt(momV02 * deltaPos2);
+  Double_t cosinePointingAngle = (deltaPos[0]*Px() + deltaPos[1]*Py() + deltaPos[2]*Pz()) / TMath::Sqrt(momV02 * deltaPos2);
   
   return TMath::Abs(cosinePointingAngle);
 
@@ -527,6 +488,22 @@ Double_t AliDielectronPair::GetArmPt() const
   TVector3 momTot(Px(),Py(),Pz());
 
   return (momNeg.Perp(momTot));
+}
+
+//______________________________________________
+void AliDielectronPair::GetDCA(const AliVVertex *primVtx, Double_t d0z0[2]) const
+{
+  //
+  // Calculate the dca of the mother with respect to the primary vertex
+  //
+  if(!primVtx) return;
+
+  d0z0[0] = TMath::Sqrt(TMath::Power(Xv()-primVtx->GetX(),2) +
+			TMath::Power(Yv()-primVtx->GetY(),2) );
+
+  d0z0[1] = Zv() - primVtx->GetZ();
+  return;
+
 }
 
 // //______________________________________________
@@ -653,11 +630,11 @@ Double_t AliDielectronPair::PhivPair(Double_t MagField) const
 }
 
 //______________________________________________
-Double_t AliDielectronPair::PairPlaneAngle(Double_t kv0CrpH2) const
+Double_t AliDielectronPair::GetPairPlaneAngle(Double_t v0rpH2, Int_t VariNum)const
 {
 
-  // Calculate the angle between electron pair plane and VZERO-C reaction plane for 2nd harmonic
-  // kv0CrpH2 is reaction plane angle
+  // Calculate the angle between electron pair plane and variables
+  // kv0rpH2 is reaction plane angle using V0-A,C,AC,Random
 
   Double_t px1=-9999.,py1=-9999.,pz1=-9999.;
   Double_t px2=-9999.,py2=-9999.,pz2=-9999.;
@@ -681,51 +658,130 @@ Double_t AliDielectronPair::PairPlaneAngle(Double_t kv0CrpH2) const
   Double_t pnorz = px1*py2 - py1*px2;
   Double_t pnor  = TMath::Sqrt( pnorx*pnorx + pnory*pnory + pnorz*pnorz );
 
-  //unit vector  
+  //unit vector
   Double_t upnx = -9999.;
   Double_t upny = -9999.;
   Double_t upnz = -9999.;
 
-  if (pnor !=0) 
-  {
-	upnx= pnorx/pnor;
-	upny= pnory/pnor;
-	upnz= pnorz/pnor;
-  } 
-  //  Double_t upnz = pnorz/pnor;
+  if (pnor !=0)
+    {
+      upnx= pnorx/pnor;
+      upny= pnory/pnor;
+      upnz= pnorz/pnor;
+    }
 
-  // normal vector of strong magnetic field plane
-  //rotation coordinates (x,y,z)->(x',y',z')
-  //x'=(cos(v0CrpH2),sin(v0CrpH2),0);y'=(-sin(v0CrpH2),cos(v0CrpH2),0);z'=(0,0,1)=z
-  //(p1+p2)x'z
-  Double_t rotpx = px*TMath::Cos(kv0CrpH2)+py*TMath::Sin(kv0CrpH2);
-  //Double_t rotpy =;
-  // Double_t rotpz = pz;
 
-  Double_t ax = py*pz;
-  Double_t ay = pz*rotpx-pz*px;
-  Double_t az = -rotpx*py;
-  
-  Double_t denomHelper = ax*ax + ay*ay +az*az;
-  Double_t uax = -9999.;
-  Double_t uay = -9999.;
-  Double_t uaz = -9999.;
-  if (denomHelper !=0)  {
-	 uax = ax/TMath::Sqrt(denomHelper);
-	 uay = ay/TMath::Sqrt(denomHelper);
-	 uaz = az/TMath::Sqrt(denomHelper);
-  }
-  //PM is the angle between Pair plane and Magnetic field plane
-  Double_t cosPM = upnx*uax + upny*uay + upnz*uaz;
-  Double_t PM = TMath::ACos(cosPM);
+  Double_t ax = -9999.;
+  Double_t ay = -9999.;
+  Double_t az = -9999.;
 
-  //keep interval [0,pi/2]
-  if(PM > TMath::Pi()/2){
-    PM -= TMath::Pi();
-    PM *= -1.0;
+  //variable 1
+  //seeing the angle between ee decay plane and reaction plane by using V0-A,C,AC,Random
+	  if(VariNum == 1){
+		ax = TMath::Sin(v0rpH2);
+		ay = -TMath::Cos(v0rpH2);
+		az = 0.0;
+	  }
 
-  }
-  return PM;
+
+	//variable 2
+	//seeing the angle between ee decay plane and (p1+p2) rot ez
+	  else if (VariNum == 2 ){
+		ax = py;
+		ay = -px;
+		az = 0.0;
+	  }
+
+	//variable 3
+	//seeing the angle between ee decay plane and (p1+p2) rot (p1+p2)x'z
+	  else if (VariNum == 3 ){
+		Double_t rotpx = px*TMath::Cos(v0rpH2)+py*TMath::Sin(v0rpH2);
+		//Double_t rotpy = 0.0;
+		// Double_t rotpz = pz;
+
+		ax = py*pz;
+		ay = pz*rotpx-pz*px;
+		az = -rotpx*py;
+	  }
+
+	//variable 4
+	//seeing the angle between ee decay plane and (p1+p2) rot ey'
+	  else if (VariNum == 4){
+		ax = 0.0;
+		ay = 0.0;
+		az = pz;
+	  }
+
+	Double_t denomHelper = ax*ax + ay*ay +az*az;
+	Double_t uax = -9999.;
+	Double_t uay = -9999.;
+	Double_t uaz = -9999.;
+
+	if (denomHelper !=0) {
+	  uax = ax/TMath::Sqrt(denomHelper);
+	  uay = ay/TMath::Sqrt(denomHelper);
+	  uaz = az/TMath::Sqrt(denomHelper);
+	}
+
+	//PM is the angle between Pair plane and a plane decided by using variable 1-4
+
+	Double_t cosPM = upnx*uax + upny*uay + upnz*uaz;
+	Double_t PM = TMath::ACos(cosPM);
+	
+	//keep interval [0,pi/2]
+	if(PM > TMath::Pi()/2){
+	  PM -= TMath::Pi();
+	  PM *= -1.0;
+	  
+	}
+	return PM;
+}
+
+
+//_______________________________________________
+Double_t AliDielectronPair::PairPlaneMagInnerProduct(Double_t ZDCrpH1) const
+{
+
+  // Calculate inner product of the strong magnetic field and electron pair plane
+
+  if(ZDCrpH1 == 0.) return -9999.;
+
+  Double_t px1=-9999.,py1=-9999.,pz1=-9999.;
+  Double_t px2=-9999.,py2=-9999.,pz2=-9999.;
+
+  px1 = fD1.GetPx();
+  py1 = fD1.GetPy();
+  pz1 = fD1.GetPz();
+
+
+  px2 = fD2.GetPx();
+  py2 = fD2.GetPy();
+  pz2 = fD2.GetPz();
+
+  // normal vector of ee plane
+  Double_t pnorx = py2*pz1 - pz2*py1;
+  Double_t pnory = pz2*px1 - px2*pz1;
+  Double_t pnorz = px2*py1 - py2*px1;
+  Double_t pnor  = TMath::Sqrt( pnorx*pnorx + pnory*pnory + pnorz*pnorz );
+
+  //unit vector
+  Double_t upnx = -9999.;
+  Double_t upny = -9999.;
+  //Double_t upnz = -9999.;
+
+  if (pnor == 0) return -9999.;
+  upnx= pnorx/pnor;
+  upny= pnory/pnor;
+  //upnz= pnorz/pnor;
+
+  //direction of strong magnetic field
+  Double_t magx = TMath::Cos(ZDCrpH1+(TMath::Pi()/2));
+  Double_t magy = TMath::Sin(ZDCrpH1+(TMath::Pi()/2));
+
+  //inner product of strong magnetic field and  ee plane
+  Double_t upnmag = upnx*magx + upny*magy;
+
+  return upnmag;
 }
 
 

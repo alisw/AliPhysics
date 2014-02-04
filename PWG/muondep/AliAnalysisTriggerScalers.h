@@ -122,7 +122,7 @@ public:
   
   static void ReadIntegers(const char* filename, std::vector<int>& integers, Bool_t resetVector=kTRUE);
   
-  static void PrintIntegers(const std::vector<int>& integers, const char sep = '\n',
+  static void PrintIntegers(const std::vector<int>& integers, char sep = '\n',
                             std::ostream& out = std::cout);
   
   

@@ -44,6 +44,7 @@
 #include "AliDielectronSignalMC.h"
 #include "AliDielectronMC.h"
 
+
 ClassImp(AliDielectronMC)
 
 AliDielectronMC* AliDielectronMC::fgInstance=0x0;
@@ -152,20 +153,21 @@ Int_t AliDielectronMC::GetNPrimaryFromStack()
 }
 
 //____________________________________________________________
-AliVParticle* AliDielectronMC::GetMCTrackFromMCEvent(Int_t itrk) const
+AliVParticle* AliDielectronMC::GetMCTrackFromMCEvent(Int_t label) const
 {
   //
   // return MC track directly from MC event
+  // used not only for tracks but for mothers as well, therefore do not use abs(label)
   //
-  if (itrk<0) return NULL;
+  if (label<0) return NULL;
   AliVParticle * track=0x0;
   if(fAnaType == kESD){
     if (!fMCEvent){ AliError("No fMCEvent"); return NULL;}
-    track = fMCEvent->GetTrack(itrk); //  tracks from MC event (ESD)
+    track = fMCEvent->GetTrack(label); //  tracks from MC event (ESD)
   } else if(fAnaType == kAOD) {
     if (!fMcArray){ AliError("No fMcArray"); return NULL;}
-    if (itrk>fMcArray->GetEntriesFast()) { AliWarning(Form("track %d out of array size %d",itrk,fMcArray->GetEntriesFast())); return NULL;}
-    track = (AliVParticle*)fMcArray->At(itrk); //  tracks from MC event (AOD)
+    if (label>fMcArray->GetEntriesFast()) { AliDebug(10,Form("track %d out of array size %d",label,fMcArray->GetEntriesFast())); return NULL;}
+    track = (AliVParticle*)fMcArray->At(label); //  tracks from MC event (AOD)
   }
   return track;
 }
@@ -227,11 +229,9 @@ AliMCParticle* AliDielectronMC::GetMCTrack( const AliESDtrack* _track)
   // return MC track
   //
   if (!fMCEvent){ AliError("No fMCEvent"); return NULL;}
-
   Int_t nStack = fMCEvent->GetNumberOfTracks();
-  Int_t label = TMath::Abs(_track->GetLabel());
+  Int_t label  = TMath::Abs(_track->GetLabel()); // negative label indicate poor matching quality
   if(label>nStack)return NULL;
-  if(label<0) return NULL;
   AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(label));
   return mctrack;
 }
@@ -244,8 +244,9 @@ AliAODMCParticle* AliDielectronMC::GetMCTrack( const AliAODTrack* _track)
   // return MC track
   //
  if(!fMcArray) { AliError("No fMcArray"); return NULL;}
- Int_t label = _track->GetLabel();
- if(label < 0 || label > fMcArray->GetEntriesFast()) return NULL;
+ Int_t nStack = fMcArray->GetEntriesFast();
+ Int_t label  = TMath::Abs(_track->GetLabel()); // negative label indicate poor matching quality
+ if(label > nStack) return NULL;
  AliAODMCParticle *mctrack = (AliAODMCParticle*)fMcArray->At(label);
  return mctrack; 
 }
@@ -378,6 +379,28 @@ Int_t AliDielectronMC::GetMotherPDG( const AliAODTrack* _track)
   return mcmother->PdgCode();
 }
 
+//________________________________________________________
+Int_t AliDielectronMC::GetMotherPDG( const AliMCParticle* _track)
+{
+  //
+  // return PDG code of the mother track from the MC truth info
+  //
+  AliMCParticle* mcmother = GetMCTrackMother(_track);
+  if (!mcmother) return -999;
+  return mcmother->PdgCode();
+}
+
+//________________________________________________________
+Int_t AliDielectronMC::GetMotherPDG( const AliAODMCParticle* _track)
+{
+  //
+  // return PDG code of the mother track from the MC truth info
+  //
+  AliAODMCParticle* mcmother = GetMCTrackMother(_track);
+  if (!mcmother) return -999;
+  return mcmother->PdgCode();
+}
+
 //____________________________________________________________
 Int_t AliDielectronMC::GetMotherPDGFromStack(const AliESDtrack* _track)
 {
@@ -419,7 +442,7 @@ Int_t AliDielectronMC::NumberOfDaughters(const AliESDtrack* track)
   //
   AliMCParticle *mcmother=GetMCTrackMother(track);
   if(!mcmother||!mcmother->Particle()) return -999;
-//   return mcmother->GetFirstDaughter()>0?mcmother->GetLastDaughter()-mcmother->GetFirstDaughter()+1:0;
+  //   return mcmother->GetFirstDaughter()>0?mcmother->GetLastDaughter()-mcmother->GetFirstDaughter()+1:0;
   return mcmother->Particle()->GetNDaughters();
 }
 
@@ -590,16 +613,18 @@ Int_t AliDielectronMC::GetLabelMotherWithPdgESD(const AliVParticle *particle1, c
   // ESD case
   //TODO: check how you can get rid of the hardcoded numbers. One should make use of the PdgCodes set in AliDielectron!!!
   //
-  
-  AliMCParticle *mcPart1=static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(particle1->GetLabel()));
-  AliMCParticle *mcPart2=static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(particle2->GetLabel()));
+  // negative label indicate poor matching quality
+  Int_t lblPart1 = TMath::Abs(particle1->GetLabel());
+  Int_t lblPart2 = TMath::Abs(particle2->GetLabel());
+  AliMCParticle *mcPart1=static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(lblPart1));
+  AliMCParticle *mcPart2=static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(lblPart2));
   
   if (!mcPart1||!mcPart2) return -1;
   
   Int_t lblMother1=mcPart1->GetMother();
   Int_t lblMother2=mcPart2->GetMother();
-  
   AliMCParticle *mcMother1=static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(lblMother1));
+
   if (!mcMother1) return -1;
   if (lblMother1!=lblMother2) return -1;
   if (TMath::Abs(mcPart1->PdgCode())!=11) return -1;
@@ -618,14 +643,16 @@ Int_t AliDielectronMC::GetLabelMotherWithPdgAOD(const AliVParticle *particle1, c
   // AOD case
   //TODO: check how you can get rid of the hardcoded numbers. One should make use of the PdgCodes set in AliDielectron!!!
   //
-  AliAODMCParticle *mcPart1=static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(particle1->GetLabel()));
-  AliAODMCParticle *mcPart2=static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(particle2->GetLabel()));
+  // negative label indicate poor matching quality
+  Int_t lblPart1 = TMath::Abs(particle1->GetLabel());
+  Int_t lblPart2 = TMath::Abs(particle2->GetLabel());
+  AliAODMCParticle *mcPart1=static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(lblPart1));
+  AliAODMCParticle *mcPart2=static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(lblPart2));
   
   if (!mcPart1||!mcPart2) return -1;
   
   Int_t lblMother1=mcPart1->GetMother();
   Int_t lblMother2=mcPart2->GetMother();
-  
   AliAODMCParticle *mcMother1=static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(lblMother1));
   
   if (!mcMother1) return -1;
@@ -669,6 +696,7 @@ void AliDielectronMC::GetDaughters(const TObject *mother, AliVParticle* &d1, Ali
 Int_t AliDielectronMC::GetMothersLabel(Int_t daughterLabel) const {
   //
   //  Get the label of the mother for particle with label daughterLabel
+  //  NOTE: for tracks, the absolute label should be passed
   //
   if(daughterLabel<0) return -1;
   if (fAnaType==kAOD) {
@@ -688,6 +716,7 @@ Int_t AliDielectronMC::GetMothersLabel(Int_t daughterLabel) const {
 Int_t AliDielectronMC::GetPdgFromLabel(Int_t label) const {
   //
   //  Get particle code using the label from stack
+  //  NOTE: for tracks, the absolute label should be passed
   //
   if(label<0) return 0;
   if(fAnaType==kAOD) {
@@ -869,6 +898,23 @@ Bool_t AliDielectronMC::ComparePDG(Int_t particlePDG, Int_t requiredPDG, Bool_t 
       if(requiredPDG<0) result = particlePDG>=-5499 && particlePDG<=-5000;
     }
     break;
+  case 902:      // // open charm,beauty  mesons and baryons together
+    if(checkBothCharges)
+      result = (TMath::Abs(particlePDG)>=400 && TMath::Abs(particlePDG)<=439) ||
+	(TMath::Abs(particlePDG)>=4000 && TMath::Abs(particlePDG)<=4399) ||
+	(TMath::Abs(particlePDG)>=500 && TMath::Abs(particlePDG)<=549) ||
+	(TMath::Abs(particlePDG)>=5000 && TMath::Abs(particlePDG)<=5499);
+    else {
+      if(requiredPDG>0) result = (particlePDG>=400 && particlePDG<=439) ||
+			  (particlePDG>=4000 && particlePDG<=4399)      ||
+			  (particlePDG>=500 && particlePDG<=549)        ||
+			  (particlePDG>=5000 && particlePDG<=5499);
+      if(requiredPDG<0) result = (particlePDG>=-439 && particlePDG<=-400) ||
+			  (particlePDG>=-4399 && particlePDG<=-4000)      ||
+			  (particlePDG>=-549 && particlePDG<=-500)        ||
+			  (particlePDG>=-5499 && particlePDG<=-5000);
+    }
+    break;
   default:          // all specific cases
     if(checkBothCharges)
       result = (absRequiredPDG==TMath::Abs(particlePDG));
@@ -879,7 +925,6 @@ Bool_t AliDielectronMC::ComparePDG(Int_t particlePDG, Int_t requiredPDG, Bool_t 
   if(absRequiredPDG!=0 && pdgExclusion) result = !result;
   return result;
 }
-
 
 //________________________________________________________________________________
 Bool_t AliDielectronMC::IsPhysicalPrimary(Int_t label) const {
@@ -910,6 +955,7 @@ Bool_t AliDielectronMC::IsPhysicalPrimary(Int_t label) const {
 Bool_t AliDielectronMC::CheckParticleSource(Int_t label, AliDielectronSignalMC::ESource source) const {
   //
   //  Check the source for the particle 
+  //  NOTE: for tracks the absolute label should be passed
   //
 
   switch (source) {
@@ -1035,7 +1081,7 @@ Bool_t AliDielectronMC::IsMCTruth(Int_t label, AliDielectronSignalMC* signalMC, 
       mcMother = GetMCTrackFromMCEvent(mLabel);
     }
     if(!mcMother && !signalMC->GetMotherPDGexclude(branch)) return kFALSE;
-
+    
     if(!ComparePDG((mcMother ? mcMother->PdgCode() : 0),signalMC->GetMotherPDG(branch),signalMC->GetMotherPDGexclude(branch),signalMC->GetCheckBothChargesMothers(branch))) return kFALSE;
     if(!CheckParticleSource(mLabel, signalMC->GetMotherSource(branch))) return kFALSE;
 
@@ -1071,14 +1117,10 @@ Bool_t AliDielectronMC::IsMCTruth(const AliDielectronPair* pair, const AliDielec
   // legs (daughters)
   const AliVParticle * mcD1 = pair->GetFirstDaughter();
   const AliVParticle * mcD2 = pair->GetSecondDaughter();
-  Int_t labelD1 = (mcD1 ? mcD1->GetLabel() : -1);
-  Int_t labelD2 = (mcD2 ? mcD2->GetLabel() : -1);
-  if(labelD1<0) labelD1 *= -1;
-  if(labelD2<0) labelD2 *= -1;
-  Int_t d1Pdg = 0;
-  Int_t d2Pdg = 0;
-  d1Pdg=GetPdgFromLabel(labelD1);
-  d2Pdg=GetPdgFromLabel(labelD2);
+  Int_t labelD1 = (mcD1 ? TMath::Abs(mcD1->GetLabel()) : -1);
+  Int_t labelD2 = (mcD2 ? TMath::Abs(mcD2->GetLabel()) : -1);
+  Int_t d1Pdg = GetPdgFromLabel(labelD1);
+  Int_t d2Pdg = GetPdgFromLabel(labelD2);
   
   // mothers
   AliVParticle* mcM1=0x0;

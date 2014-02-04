@@ -48,6 +48,8 @@
 
 #include "TH1D.h"
 #include "TH2D.h"
+#include "TNtuple.h"
+
 #include "AliFemtoCorrFctn.h"
 
 #include "AliAODInputHandler.h"
@@ -69,6 +71,7 @@ public:
   virtual void Finish();
 
   void CalculateDetaDphis(Bool_t, Double_t);
+  void CalculatePairKinematics(Bool_t);
 
   TH1D* Numerator();
   TH1D* Denominator();
@@ -82,10 +85,15 @@ private:
   TH1D* fDenominator;        // denominator - mixed pairs
   TH1D* fRatio;              // ratio - correlation function
   TH1D* fkTMonitor;          // Monitor the kT of pairs in the function
+
   Bool_t fDetaDphiscal;
+  Bool_t fPairKinematics;
+
   Double_t fRaddedps;
   TH2D* fNumDEtaDPhiS;
   TH2D* fDenDEtaDPhiS;
+
+  TNtuple* PairReader; //PairReader for CorrFit
 
 #ifdef __ROOT__
   ClassDef(AliFemtoQinvCorrFctn, 1)

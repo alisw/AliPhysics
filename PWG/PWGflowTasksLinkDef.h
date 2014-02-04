@@ -30,8 +30,6 @@
 #pragma link C++ class AliFlowBayesianPID+;
 #pragma link C++ class AliAnalysisTaskPhiFlow+;
 #pragma link C++ class AliPhiMesonHelperTrack+;
-#pragma link C++ class AliAnalysisTwoParticleResonanceFlowTask+;
-#pragma link C++ class AliResonanceFlowHelperTrack+;
 #pragma link C++ class AliAnalysisTaskFilterFE+;
 #pragma link C++ class AliAnalysisTaskVnV0+;
 #pragma link C++ class AliFlowVZEROResults+;
@@ -39,6 +37,7 @@
 #pragma link C++ class AliAnalysisTaskFlowEPCascade+;
 #pragma link C++ class AliAnalysisTaskJetFlow+;
 #pragma link C++ class AliAnalysisTaskJetFlowMC+;
+#pragma link C++ class AliAnalysisTaskMultiparticleCorrelations+;
 
 #endif
 

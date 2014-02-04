@@ -52,6 +52,11 @@ public:
 	void SetMakeTOFTPCCorrelationsKa(Bool_t makeTOFTPC) {fMakeTOFTPCcorrelationsKa = makeTOFTPC;}
 	void SetMakeTOFTPCCorrelationsPr(Bool_t makeTOFTPC) {fMakeTOFTPCcorrelationsPr = makeTOFTPC;}		
 	void SetTOFIntervalFactorTOFTPC(Double_t factor = 1.) {fTOFIntervalFactorTOFTPC = factor;}
+	void SetExtendPtAxis(Bool_t extendptaxis) {fExtendPtAxis = extendptaxis;}
+
+	// Overrides methods from AliAnalyisTaskSE.
+	void SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB);
+	void SetDebugLevel(Int_t level);
 
 	// Getters.
 	Int_t GetNDEtaBins() const {return fNDEtaBins;}
@@ -68,6 +73,7 @@ public:
 	Bool_t GetMakeTOFTPCCorrelationsKa() const {return fMakeTOFTPCcorrelationsKa;}
 	Bool_t GetMakeTOFTPCCorrelationsPr() const {return fMakeTOFTPCcorrelationsPr;}		
 	Double_t GetTOFIntervalFactorTOFTPC() const {return fTOFIntervalFactorTOFTPC;}
+	Bool_t GetExtendPtAxis() const {return fExtendPtAxis;}
 
 private:
 	//void FillGlobalTracksArray();
@@ -108,7 +114,8 @@ private:
 	
 	TH1F*							fPtSpectrumTOFTPCbins;		//! Pt Spectrum.
 	TH3F*							fCorrelationsTOFTPCbins;	//! Correlations Histogram.
-	TH3F*							fMixedEventsTOFTPCbins;		//! Mixed Events Histogram.	
+	TH3F*							fMixedEventsTOFTPCbins;		//! Mixed Events Histogram.
+	TObjArray*						fMixedEventsTOFTPCbinsPID;	//! Mixed Events Histograms, with PID.
 
 	TObjArray*						fTOFhistos;					//! Array holding all correlation functions with TOF information.
 	TObjArray*						fTOFmismatch;				//! Array holding mismatches, using fTOFPtAxis.
@@ -138,6 +145,7 @@ private:
 	Bool_t							fMakeTOFTPCcorrelationsKa;	//
 	Bool_t							fMakeTOFTPCcorrelationsPr;	//
 	Double_t						fTOFIntervalFactorTOFTPC;	// Makes the TOF interval longer while keeping the resolution constant.
+	Bool_t							fExtendPtAxis;				// Extends pT 
 
 	ClassDef(AliAnalysisTaskDiHadronPID, 3);
 

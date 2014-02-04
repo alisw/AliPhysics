@@ -19,11 +19,13 @@ class TList;
 class TNtuple;
 class TH1F;
 class TH2F;
+class TH3F;
 class TTree;
 class TString;
 class AliESDEvent;
 class AliESDfriend;
 class AliStack;
+class AliESDtrackCuts;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -97,11 +99,20 @@ class AliAnalysisTaskCheckHFMCProd : public AliAnalysisTaskSE {
   TH1F* fHistDSpecies;          //! histo of D hadron species
   TH1F* fHistBSpecies;          //! histo of B hadron species
   TH2F* fHistNcollHFtype;      //! histo of B hadron species
+  TH3F* fHistEtaPhiPtGenEle;   //! histo of generated electrons
+  TH3F* fHistEtaPhiPtGenPi;   //! histo of generated pions
+  TH3F* fHistEtaPhiPtGenK;   //! histo of generated kaons
+  TH3F* fHistEtaPhiPtGenPro;   //! histo of generated protons
+  TH3F* fHistEtaPhiPtRecEle;   //! histo of generated electrons
+  TH3F* fHistEtaPhiPtRecPi;   //! histo of generated pions
+  TH3F* fHistEtaPhiPtRecK;   //! histo of generated kaons
+  TH3F* fHistEtaPhiPtRecPro;   //! histo of generated protons
   Bool_t fSearchUpToQuark; // c/b separation using quarks
   Int_t fSystem;         // 0=pp, 1=PbPb, 2=pPb
+  AliESDtrackCuts *fESDtrackCuts; // track selection
   Bool_t fReadMC;
 
-  ClassDef(AliAnalysisTaskCheckHFMCProd,5);
+  ClassDef(AliAnalysisTaskCheckHFMCProd,6);
 };
 
 

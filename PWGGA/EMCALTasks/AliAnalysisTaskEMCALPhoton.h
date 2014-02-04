@@ -15,6 +15,7 @@ class AliESDCaloCells;
 class AliAODEvent;
 class AliAODCaloCells;
 class AliEMCALGeometry;
+class AliOADBContainer;
 class AliVCluster;
 class AliVCaloCells;
 class AliAnalysisTaskEMCALClusterizeFast;
@@ -77,7 +78,8 @@ class AliAnalysisTaskEMCALPhoton : public AliAnalysisTaskSE {
   TClonesArray                          *fMyTracks;              //!array of AliPhotonTrackObj
   TClonesArray                          *fMyMcParts;             //!array of AliPhotonMcPartObj
   AliPhotonHeaderObj                    *fHeader;                //!
-  TClonesArray                             *fCaloClusters;          //!pointer to EMCal clusters
+  AliOADBContainer                      *fOADBContainer;         //!OADB container used to load misalignment matrices
+  TClonesArray                          *fCaloClusters;          //!pointer to EMCal clusters
   TClonesArray                          *fCaloClustersNew;       //!pointer to EMCal clusters v2
   TClonesArray                          *fAODMCParticles;        //!MC particles array for AOD analysis
   AliVCaloCells                         *fVCells;                //!pointer to EMCal cells      
@@ -133,10 +135,11 @@ class AliAnalysisTaskEMCALPhoton : public AliAnalysisTaskSE {
 class AliPhotonHeaderObj : public TObject
 {
   public: AliPhotonHeaderObj() :
-  TObject(), fInputFileName(""), fTrClassMask(0), fTrCluster(0), fV0Cent(0), fV0(0), fCl1Cent(0), 
+  TObject(), fInputFileName(""),fRunNumber(0), fTrClassMask(0), fTrCluster(0), fV0Cent(0), fV0(0), fCl1Cent(0), 
     fCl1(0), fTrCent(0), fTr(0), fNClus(0), fNCells(0), fTrackMult(0), fNMcParts(0)  {;}
   public:
   TString       fInputFileName;  // used for normalization purposes in MC productions
+  Int_t         fRunNumber;      // event run number
   ULong64_t     fTrClassMask;    //         trigger class mask
   UChar_t       fTrCluster;      //         trigger cluster mask
   Double32_t    fV0Cent;         //[0,0,16] v0 cent
@@ -150,7 +153,7 @@ class AliPhotonHeaderObj : public TObject
   Int_t         fTrackMult;
   Int_t         fNMcParts;
 
-  ClassDef(AliPhotonHeaderObj,5)
+  ClassDef(AliPhotonHeaderObj,6)
 };
 
 class AliPhotonConvObj : public TObject

@@ -62,6 +62,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   void                   SetJetPhiRange(Double_t pmi, Double_t pma) {fJetPhiMin = pmi; fJetPhiMax = pma; }
   void                   SetGhostArea(Double_t gharea)    { fGhostArea      = gharea;  }
   void                   SetMinMCLabel(Int_t s)           { fMinMCLabel     = s     ;  }
+  void                   SetRecombScheme(Int_t scheme)    { fRecombScheme   = scheme;  }
   void                   SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB)
   {
     if(!fIsPSelSet)
@@ -75,8 +76,11 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
       fOfflineTriggerMask = fOfflineTriggerMask | offlineTriggerMask;
     }
   }
+  void                   SetLegacyMode(Bool_t mode)       { fLegacyMode ^= mode; }
+  void                   SetCodeDebug(Bool_t val)         { fCodeDebug = val; }
 
   UInt_t                 GetJetType()                     { return fJetType; }
+  Bool_t                 GetLegacyMode()                  { return fLegacyMode; }
 
  protected:
   void                   FindJets();
@@ -105,11 +109,14 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   Double_t               fJetEtaMax;              // maximum eta to keep jet in output
   Double_t               fGhostArea;              // ghost area
   Int_t                  fMinMCLabel;             // minimum MC label value for the tracks/clusters being considered MC particles
+  Int_t                  fRecombScheme;           // recombination scheme used by fastjet
   Double_t               fTrackEfficiency;        // artificial tracking inefficiency (0...1)
   Bool_t                 fIsInit;                 //!=true if already initialized
   Bool_t                 fIsPSelSet;              //!=true if physics selection was set
   Bool_t                 fIsMcPart;               //!=true if MC particles are given as input
   Bool_t                 fIsEmcPart;              //!=true if emcal particles are given as input (for clusters)
+  Bool_t                 fLegacyMode;             //! if true, enable FJ 2.x behavior
+  Bool_t                 fCodeDebug;              // use nontested code changes 
   TClonesArray          *fJets;                   //!jet collection
   AliVEvent             *fEvent;                  //!current event
   TClonesArray          *fTracks;                 //!tracks collection

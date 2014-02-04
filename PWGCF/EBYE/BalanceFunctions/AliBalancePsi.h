@@ -59,6 +59,7 @@ class AliBalancePsi : public TObject {
   void SetEventClass(TString receivedEventClass){ fEventClass = receivedEventClass; } 
   void SetDeltaEtaMax(Double_t receivedDeltaEtaMax){ fDeltaEtaMax = receivedDeltaEtaMax; }
   void SetVertexZBinning(Bool_t receivedVertexBinning=kTRUE){ fVertexBinning = receivedVertexBinning; }
+  void SetCustomBinning(TString receivedCustomBinning) { fCustomBinning = receivedCustomBinning; }
 
   void InitHistograms(void);
 
@@ -80,7 +81,8 @@ class AliBalancePsi : public TObject {
 				 Double_t ptTriggerMax=-1.,
 				 Double_t ptAssociatedMin=-1.,
 				 Double_t ptAssociatedMax=-1,
-				 AliBalancePsi *bMixed=NULL);
+				 AliBalancePsi *bMixed=NULL,
+				 Bool_t normToTrig = kFALSE);
   TH2D   *GetCorrelationFunctionPN(Double_t psiMin, Double_t psiMax,
 				   Double_t vertexZMin=-1,
 				   Double_t vertexZMax=-1,
@@ -211,8 +213,13 @@ class AliBalancePsi : public TObject {
   void UseMomentumDifferenceCut(Double_t gDeltaPtCutMin) {
     fQCut = kTRUE; fDeltaPtMin = gDeltaPtCutMin;}
 
+  // related to customized binning of output AliTHn
+  Bool_t    IsUseVertexBinning() { return fVertexBinning; }
+  TString   GetBinningString()   { return fBinningString; }
+  Double_t* GetBinning(const char* configuration, const char* tag, Int_t& nBins);
+
  private:
-  Float_t GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign); 
+  Float_t   GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign); 
 
   Bool_t fShuffle; //shuffled balance function object
   TString fAnalysisLevel; //ESD, AOD or MC
@@ -254,6 +261,8 @@ class AliBalancePsi : public TObject {
   Bool_t fQCut;//cut on momentum difference to suppress femtoscopic effect correlations
   Double_t fDeltaPtMin;//delta pt cut: minimum value
   Bool_t fVertexBinning;//use vertex z binning in AliTHn
+  TString fCustomBinning;//for setting customized binning
+  TString fBinningString;//final binning string
 
   TString fEventClass;
 

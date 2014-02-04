@@ -35,6 +35,8 @@ class AliCFUnfolding : public TNamed {
     fMaxNumIterations = n;
   }
 
+  void SetNRandomIterations(Int_t n = 100) {fNRandomIterations = n;};
+
   void UseSmoothing(TF1* fcn=0x0, Option_t* opt="iremn") { // if fcn=0x0 then smooth using neighbouring bins 
     fUseSmoothing=kTRUE;                                   // this function must NOT be used if fNVariables > 3
     fSmoothFunction=fcn;                                   // the option "opt" is used if "fcn" is specified

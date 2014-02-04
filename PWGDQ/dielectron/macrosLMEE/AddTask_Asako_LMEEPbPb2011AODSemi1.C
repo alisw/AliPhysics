@@ -16,8 +16,8 @@ AliAnalysisTask *AddTask_Asako_LMEEPbPb2011AODSemi1(Bool_t runAll=kFALSE,Bool_t 
   TString configBasePath("$TRAIN_ROOT/cbaumann_dielectron/");
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
 
-  if (trainRoot.IsNull()) configBasePath= "$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/";
-
+      if (trainRoot.IsNull()) configBasePath= "$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/";
+	  // if (trainRoot.IsNull()) configBasePath= "/home/tsuji/nfs/AliceAna/pol2/Semi1/";
 
   if (getFromAlien &&
       (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cbaumann/PWGDQ/dielectron/macrosLMEE/ConfigAsakoLMEEPbPb2011AOD.C .")) &&
@@ -126,6 +126,3 @@ AliAnalysisTask *AddTask_Asako_LMEEPbPb2011AODSemi1(Bool_t runAll=kFALSE,Bool_t 
 
   return task;
 }
-
-
-

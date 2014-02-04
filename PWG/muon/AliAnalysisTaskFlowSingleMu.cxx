@@ -293,7 +293,7 @@ void AliAnalysisTaskFlowSingleMu::ProcessEvent(TString physSel, const TObjArray&
       Bool_t isSelected = ( istep == kStepReconstructed ) ? fMuonTrackCuts->IsSelected(track) : ( TMath::Abs(track->PdgCode()) == 13 );
       if ( ! isSelected ) continue;
       
-      Int_t trackSrc = ( istep == kStepReconstructed ) ? GetParticleType(track) : RecoTrackMother(track);
+      Int_t trackSrc = GetParticleType(track);
  
 
       containerInput[kHvarPt]         = track->Pt();

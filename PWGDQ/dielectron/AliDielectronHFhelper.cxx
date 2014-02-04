@@ -117,7 +117,8 @@ void AliDielectronHFhelper::SetHFArray(const char* filename, const char* contain
 
 	if( objname.Contains(Form("%s_HF",container)) && obj->IsA()==TObjArray::Class()) {
 	  fMainArr = new TObjArray( *(dynamic_cast<TObjArray*>(obj)) );
-	  //fMainArr->Print();
+	  fMainArr->SetOwner();
+	  //	  fMainArr->Print();
 	  return;
 	}
       }
@@ -239,17 +240,20 @@ TObjArray* AliDielectronHFhelper::CollectProfiles(TString option,
   if(varx < AliDielectronVarManager::kNMaxValues) dim++;
   if(vary < AliDielectronVarManager::kNMaxValues) dim++;
   if(varz < AliDielectronVarManager::kNMaxValues) dim++;
+  if(vart < AliDielectronVarManager::kNMaxValues) dim++;
   Bool_t bPairClass=0;
   if( varx < AliDielectronVarManager::kPairMax ||
       vary < AliDielectronVarManager::kPairMax ||
       varz < AliDielectronVarManager::kPairMax ||
       vart < AliDielectronVarManager::kPairMax  ) bPairClass=kTRUE;
-  Bool_t bprf = !(option.Contains("hist",TString::kIgnoreCase));
+  Bool_t bwght= (option.Contains("weight",TString::kIgnoreCase));   // weighted histogram
+  Bool_t bprf = !(option.Contains("hist",TString::kIgnoreCase));     // tprofile
   Bool_t bStdOpt=kTRUE;
   if(option.Contains("S",TString::kIgnoreCase) || option.Contains("rms",TString::kIgnoreCase)) bStdOpt=kFALSE;
 
   TString key = "";
-  if(bprf) dim--;
+  if(bwght) dim--;
+  if(bprf)  dim--;
   switch(dim) {
   case 3:
     key+=Form("%s_",AliDielectronVarManager::GetValueName(varx));
@@ -272,9 +276,21 @@ TObjArray* AliDielectronHFhelper::CollectProfiles(TString option,
   // prepend HF
   key.Prepend("HF_");
 
-  //TODO:  printf("--------> KEY: %s \n",key.Data());
-  // get the requested object from the arrays
+  // add the weighted part to the key
+  if(bwght) {
+    if(bprf) dim++;
+    switch(dim) {
+    case 3:   key+=Form("-wght%s",AliDielectronVarManager::GetValueName(vart)); break;
+    case 2:   key+=Form("-wght%s",AliDielectronVarManager::GetValueName(varz)); break;
+    case 1:   key+=Form("-wght%s",AliDielectronVarManager::GetValueName(vary)); break;
+    case 4:   AliError(Form(" NO weighted 3D profiles supported by the framework"));
+    }
+  }
+
+  //printf("--------> KEY: %s \n",key.Data());
+  // init array of histograms of interest
   TObjArray *collection = new TObjArray(fMainArr->GetEntriesFast());
+  collection->SetOwner(kTRUE);
 
   TObjArray *cloneArr = (TObjArray*) fMainArr->Clone("tmpArr");
   if(!cloneArr) return 0x0;
@@ -284,14 +300,17 @@ TObjArray* AliDielectronHFhelper::CollectProfiles(TString option,
   for(Int_t i=0; i<cloneArr->GetEntriesFast(); i++) {
     if(!cloneArr->At(i))                             continue;
     if(!((TObjArray*)cloneArr->At(i))->GetEntries()) continue;
-    TString stepName = cloneArr->At(i)->GetName();
 
-    // find histogram of interest from array of objects
+    // Get signal/source array with its histograms of interest
     TObjArray *arr = (TObjArray*) GetObject(cloneArr->At(i)->GetName(),cloneArr);
     if(arr) {
+
+      // find requested histogram
       collection->AddAt(arr->FindObject(key.Data()), i);
-      if(!collection->At(i)) AliError(Form("Object %s does not exist",key.Data()));
-      // modify the key name
+      if(!collection->At(i)) { AliError(Form("Object %s does not exist",key.Data())); return 0x0; }
+
+      // modify the signal/source name if needed (MConly)
+      TString stepName = cloneArr->At(i)->GetName();
       stepName.ReplaceAll("(","");
       stepName.ReplaceAll(")","");
       stepName.ReplaceAll(": ","");
@@ -303,10 +322,8 @@ TObjArray* AliDielectronHFhelper::CollectProfiles(TString option,
   }
 
   // clean up the clone
-  if(cloneArr) {
     delete cloneArr;
     cloneArr=0;
-  }
 
   return collection;
 }
@@ -314,15 +331,17 @@ TObjArray* AliDielectronHFhelper::CollectProfiles(TString option,
 //________________________________________________________________
 TObject* AliDielectronHFhelper::GetObject(const char *step, TObjArray *histArr)
 {
+  // rename into GetSignalArray, return value is a tobjarray
   //
-  // main function to recieve a pair type or MC signal array
+  // main function to receive a pair type or MC signal array
+  // with all its merged histograms valid for the cuts
   //
 
   AliDebug(1,Form(" Step %s selected",step));
   // TODO: check memory
 
   TObjArray *stepArr = 0x0; // this is the requested step
-  TObject *hist      = 0x0;
+  TObject *hist      = 0x0; // this is the returned object
   if(!histArr) {
     stepArr = (TObjArray*) fMainArr->FindObject(step)->Clone("tmpArr");
   }
@@ -330,6 +349,7 @@ TObject* AliDielectronHFhelper::GetObject(const char *step, TObjArray *histArr)
     stepArr = (TObjArray*) histArr->FindObject(step);
   }
 
+  // apply cuts and get merged objects
   if(stepArr) hist   = FindObjects(stepArr);
   return hist;
 
@@ -338,8 +358,8 @@ TObject* AliDielectronHFhelper::GetObject(const char *step, TObjArray *histArr)
 //________________________________________________________________
 TObject* AliDielectronHFhelper::FindObjects(TObjArray *stepArr)
 {
-  //
-  // apply cuts and exclude objects from the array
+  // rename DoCuts, return values is a tobjarray
+  // apply cuts and exclude objects from the array for merging (CUT selection)
   //
 
   // debug
@@ -359,7 +379,7 @@ TObject* AliDielectronHFhelper::FindObjects(TObjArray *stepArr)
     Double_t max        = fCutUpLimits(icut);            // upper limit
     AliDebug(5,Form(" Cut %d: %s [%.2f,%.2f]",icut,cutvar,min,max));
 
-    // loop over the full grid of given step
+    // loop over the full grid of the signalArray (pair,source)
     for(Int_t i=0; i<stepArr->GetEntriesFast(); i++) {
 
       // continue if already empty
@@ -380,10 +400,11 @@ TObject* AliDielectronHFhelper::FindObjects(TObjArray *stepArr)
 	if(binvar.Contains(cutvar)) {
 	  // bin limits
 	  TObjArray *limits = binvar.Tokenize("#");
+	  if(!limits) continue;
 	  Double_t binmin = atof(limits->At(1)->GetName()); // lower bin limit
 	  Double_t binmax = atof(limits->At(2)->GetName()); // upper bin limit
 	  AliDebug(10,Form(" bin %s var %s [%.2f,%.2f]",binvar.Data(),limits->At(0)->GetName(),binmin,binmax));
-	  if(limits) delete limits;
+	  delete limits;
 
 	  // cut and remove objects from the array
 	  if(binmin < min || binmax < min || binmin > max || binmax > max ) {
@@ -405,9 +426,9 @@ TObject* AliDielectronHFhelper::FindObjects(TObjArray *stepArr)
       // clean up
       if(vars)   delete vars;
 
-    }
+    } //end loop: pair step
 
-  }
+  } //end: loop cuts
 
   // compress the array by removing all empty entries
   stepArr->Compress();
@@ -422,14 +443,15 @@ TObject* AliDielectronHFhelper::FindObjects(TObjArray *stepArr)
 //________________________________________________________________
 TObject* AliDielectronHFhelper::Merge(TObjArray *arr)
 {
-  //
-  // merge left objects to a single one
+  // returned object is tobjarray
+  // merge left objects into a single one (LAST step)
   //
 
   if(arr->GetEntriesFast()<1) { AliError(" No more objects left!"); return 0x0; }
 
-  TObject *final=arr->At(0)->Clone();
+  TObjArray *final=(TObjArray*) arr->At(0)->Clone();
   if(!final) return 0x0;
+  final->SetOwner();
 
   TList listH;
   TString listHargs;
@@ -446,6 +468,7 @@ TObject* AliDielectronHFhelper::Merge(TObjArray *arr)
   //  arr->Clear();
 
   final->Execute("Merge", listHargs.Data(), &error);
+  // returns a tobjarray of histograms/profiles
   return final;
 }
 
@@ -463,6 +486,8 @@ void AliDielectronHFhelper::CheckCuts(TObjArray *arr)
   TObjArray* binvarsL  = titleLAST.Tokenize(":#");
   Double_t binmin[kMaxCuts]= {0.0};
   Double_t binmax[kMaxCuts]= {0.0};
+  if(!binvarsF) { delete binvarsL; return; }
+  if(!binvarsL) { delete binvarsF; return; }
   for(Int_t ivar=0; ivar<binvarsF->GetEntriesFast(); ivar++) {
 
     TString elementF=binvarsF->At(ivar)->GetName();
@@ -503,8 +528,8 @@ void AliDielectronHFhelper::CheckCuts(TObjArray *arr)
   }
 
   // clean up
-  if(binvarsF) delete binvarsF;
-  if(binvarsL) delete binvarsL;
+  delete binvarsF;
+  delete binvarsL;
 }
 
 //________________________________________________________________
@@ -534,6 +559,17 @@ void AliDielectronHFhelper::Print(const Option_t* /*option*/) const
   AliInfo(Form(" Number of variables:     %d",binvars->GetEntriesFast()));
   delete binvars;
 
+  /* REACTIVATE
+  // check for missing cuts
+  CheckCuts(((TObjArray*)fMainArr->At(stepLast)));
+  // loop over all cuts
+  for(Int_t icut=0; icut<fCutLowLimits.GetNrows(); icut++) {
+    const char *cutvar  = fCutVars->At(icut)->GetName(); // cut variable
+    Double_t min        = fCutLowLimits(icut);           // lower limit
+    Double_t max        = fCutUpLimits(icut);            // upper limit
+    AliInfo(Form(" variable %d: %s [%.2f,%.2f]",icut,cutvar,min,max));
+  }
+  */
   TObjArray* binvars2  = title.Tokenize(":#");
   for(Int_t ivar=0; ivar<binvars2->GetEntriesFast(); ivar++) {
     if(ivar%3) continue;

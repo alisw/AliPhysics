@@ -774,8 +774,8 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms()
           continue;
         }
         
-        Float_t eprim   = 0;
-        Float_t ptprim  = 0;
+        //Float_t eprim   = 0;
+        //Float_t ptprim  = 0;
         if(GetReader()->ReadStack()){
           
           if(label >=  stack->GetNtrack()) {
@@ -788,8 +788,8 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms()
             printf("AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms() *** no primary ***:  label %d \n", label);
             continue;
           }
-          eprim   = primary->Energy();
-          ptprim  = primary->Pt();		
+          //eprim   = primary->Energy();
+          //ptprim  = primary->Pt();
           
         }
         else if(GetReader()->ReadAODMCParticles()){
@@ -811,8 +811,8 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms()
             continue;
           }
           
-          eprim   = aodprimary->E();
-          ptprim  = aodprimary->Pt();
+          //eprim   = aodprimary->E();
+          //ptprim  = aodprimary->Pt();
           
         }
         

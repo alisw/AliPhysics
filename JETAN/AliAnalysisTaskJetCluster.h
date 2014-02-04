@@ -63,6 +63,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void SetAODMCInput(Bool_t b){fUseAODMCInput = b;}
     virtual void SetEventSelection(Bool_t b){fEventSelection = b;}
     virtual void SetRequireITSRefit(Int_t i){fRequireITSRefit=i;}
+    virtual void SetSharedClusterCut(Int_t docut){fApplySharedClusterCut=docut;}
     virtual void SetRecEtaWindow(Float_t f){fRecEtaWindow = f;}
     virtual void SetTrackEtaWindow(Float_t f){fTrackEtaWindow = f;}
     virtual void SetTrackTypeGen(Int_t i){fTrackTypeGen = i;}
@@ -181,6 +182,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     Float_t       fExternalWeight;        // external weight
     Float_t       fTrackEtaWindow;        // eta window used for corraltion plots between rec and gen 
     Int_t         fRequireITSRefit;       // to select hybrids with ITS refit only
+    Int_t         fApplySharedClusterCut; // flag to apply shared cluster cut (needed for some AODs where this cut was not applied in the filtering)
     Float_t       fRecEtaWindow;          // eta window used for corraltion plots between rec and gen 
     Float_t       fTrackPtCut;            // minimum track pt to be accepted
     Float_t       fJetOutputMinPt;        // minimum p_t for jets to be written out
@@ -344,7 +346,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TList *fHistList; //!leading tracks to be skipped in the randomized event Output list
    
 
-    ClassDef(AliAnalysisTaskJetCluster, 25) 
+    ClassDef(AliAnalysisTaskJetCluster, 26) 
 };
  
 #endif

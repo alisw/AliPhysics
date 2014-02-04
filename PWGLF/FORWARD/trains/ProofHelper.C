@@ -109,6 +109,9 @@ struct ProofHelper : public Helper
     fOptions.Add("wrapper",  "CMD", "Wrapper command", "");
     fOptions.Add("clear",    "PKGS", "Clear packages ','-separated", "");
     fOptions.Add("reset",    "soft|hard", "Reset cluster", "hard");
+    fOptions.Add("feedback", "Enable feedback mechanism");
+    fOptions.Add("env",      "SCRIPT", "Script to set-up environment","-none-");
+    fOptions.Add("offset",   "EVENTS", "Skip this number of events", 0);
     if (!fUrl.GetUser() || fUrl.GetUser()[0] == '\0') 
       fUrl.SetUser(gSystem->GetUserInfo()->fUser);
     fAuxFiles.SetOwner();
@@ -156,11 +159,9 @@ struct ProofHelper : public Helper
 	  name.EqualTo("AOD")            || 
 	  name.EqualTo("ANALYSIS")       || 
 	  name.EqualTo("OADB")           || 
-	  name.EqualTo("ANALYSISalice")  ||
-	  name.EqualTo("PWGLFforward2"))
+	  name.EqualTo("ANALYSISalice")) 
 	isBase = true;
     }
-	  
     if (!fUsePars || isBase) {
       Int_t ret = gSystem->Load(MakeLibraryName(name));
       if (ret < 0) return false;
@@ -307,24 +308,48 @@ struct ProofHelper : public Helper
     b.close();
     gSystem->Exec(Form("chmod a+x %s/PROOF-INF/BUILD.sh",parName.Data()));
 
+    TString envScript = fOptions.Get("env");
+    if (envScript.EqualTo("-none-", TString::kIgnoreCase)) 
+      envScript = "";
+    if (!envScript.IsNull()) { 
+      // If an environment script was specified, copy that to the par
+      if (gSystem->AccessPathName(envScript.Data()) == 0) { 
+	// Copy script 
+	if (gSystem->Exec(Form("cp %s %s/PROOF-INF/", envScript.Data(), 
+			       parName.Data())) != 0) {
+	  Error("ProofHelper", "Failed to copy %s", envScript.Data());
+	  return false;
+	}
+      }
+      else {
+	Warning("CreateALIROOTPar", "Couldn't read %s", envScript.Data());
+	envScript = "";
+      }
+    }
     std::ofstream s(Form("%s/PROOF-INF/SETUP.C", parName.Data()));
     if (!s) { 
       Error("ProofHelper::CreateAliROOTPar", 
 	    "Failed to make SETUP.C ROOT script");
       return false;
     }
-    s << "void SETUP(TList* opts) {\n"
-      << "  gSystem->Setenv(\"ALICE\",\"" 
+    s << "void SETUP(TList* opts) {\n";
+    if (envScript.IsNull()) {
+      s << "  gSystem->Setenv(\"ALICE\",\"" 
       << gSystem->Getenv("ALICE") << "\");\n"
       << "  gSystem->Setenv(\"ALICE_ROOT\",\"" 
       << gSystem->Getenv("ALICE_ROOT") << "\");\n"
       << "  gSystem->Setenv(\"ALICE_TARGET\",\"" 
-      << gSystem->Getenv("ALICE_TARGET") << "\");\n"
-      << "  gSystem->AddDynamicPath("
-      << "\"$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)\");\n";
+	<< gSystem->Getenv("ALICE_TARGET") << "\");\n";
     if (gSystem->Getenv("OADB_PATH")) 
       s << "  gSystem->Setenv(\"OADB_PATH\",\"" 
 	<< gSystem->Getenv("OADB_PATH") << "\");\n";
+    }
+    else { 
+      s << "  gROOT->Macro(\"PROOF-INF/" << gSystem->BaseName(envScript.Data())
+	<< "\");\n";
+    }
+    s  	<< "  gSystem->AddDynamicPath("
+	<< "\"$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)\");\n";
     s << "  \n"
       << "  // Info(\"SETUP\",\"Loading ROOT libraries\");\n"
       << "  gSystem->Load(\"libTree\");\n"
@@ -363,7 +388,7 @@ struct ProofHelper : public Helper
       << "  \n";
     s << "  par = opts->FindObject(\"ALIROOT_EXTRA_LIBS\");\n"
       << "  if (par) {\n"
-      << "    Info(\"SETUP\",\"Libaries to load: %s\n\",par->GetTitle());\n"
+      << "    Info(\"SETUP\",\"Libaries to load: %s\\n\",par->GetTitle());\n"
       << "    TString tit(par->GetTitle());\n"
       << "    TObjArray* tokens = tit.Tokenize(\":\");\n"
       << "    TObject*   lib    = 0;\n"
@@ -372,7 +397,7 @@ struct ProofHelper : public Helper
       << "      TString libName(lib->GetName());\n"
       << "      if (!libName.BeginsWith(\"lib\")) libName.Prepend(\"lib\");\n"
       << "      // Info(\"SETUP\",\"Loading %s ...\",libName.Data());\n"
-      << "      gSystem->Load(Form(\"lib%s\",lib->GetName()));\n"
+      << "      gSystem->Load(libName.Data());\n"
       << "    }\n"
       << "  }\n"
       << "}\n"
@@ -525,6 +550,10 @@ struct ProofHelper : public Helper
     if (fOptions.Has("storage"))
       OutputUtilities::RegisterStorage(fOptions.Get("storage"));
 
+    // --- Check for feedback mechanism ------------------------------
+    if (!fOptions.Has("feedback"))
+      gProof->ClearFeedback();
+
     // --- If we are not using PARs for Base, enable special PAR -----
     if (!fBasePars) {
       TString tmp(fExtraLibs.Strip(TString::kBoth,':'));
@@ -604,12 +633,76 @@ struct ProofHelper : public Helper
     TString dsName(fUrl.GetFile());
     // if (fUrl.GetAnchor() && fUrl.GetAnchor()[0] != '\0') 
     //   dsName.Append(Form("#%s", fUrl.GetAnchor()));
-    Long64_t ret = mgr->StartAnalysis(fUrl.GetProtocol(), dsName, nEvents);
+    // Info("Run", "Output objects registered with PROOF:");
+    // gProof->GetOutputList()->ls();
+    Long64_t off = fOptions.AsLong("offset", 0);
+    if (nEvents > 0 && nEvents < off) {
+      Warning("Run", "Number of events %lld < offset (%lld), stopping", 
+	      nEvents, off);
+      return 0;
+    }
+    Long64_t ret = mgr->StartAnalysis(fUrl.GetProtocol(), dsName, nEvents, off);
     
     if (fVerbose > 10) 
       TProof::Mgr(fUrl.GetUrl())->GetSessionLogs()->Save("*","proof.log");
     return ret;
   }
+#if 0
+  Bool_t AddMonitor(const TString& path)
+  {
+    if (path.IsNull()) return true;
+
+    TObjArray* tokens  = path.Tokenize("/");
+    Int_t      nTokens = tokens->GetEntries();
+    if (nTokens < 2) { 
+      Error("AddMonitor", "Monitors must be of the form:\n"
+	    "  <task>[:<slot>]/<name>\n"
+	    "  <task>[:<slot>]/<path>/<name>");
+      return false;
+    }
+    // --- Get the manager 
+    AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
+
+    // --- Extract task and possibly slot number 
+    TString& sTask  = static_cast<TObjString*>(tokens->At(0))->String();
+    Int_t    slotNo = 0;
+    Ssiz_t   colon  = sTask.Index(":");
+    if (colon != kNPOS) { 
+      TString sSlot = sTask(colon+1, sTask.Length()-colon-1);
+      if (!sSlot.IsNull()) slotNo = sSlot.Atoi();
+      sTask.Remove(colon, sTask.Length()-colon);
+    }
+    
+    AliAnalysisTask* task = mgr->GetTask(sTask);
+    if (!task) { 
+      Error("AddMonitor", "Task \"%s\" not registered with manager", 
+	    sTask.Data());
+      return false;
+    }
+    AliAnalysisDataSlot* slot = task->GetOutputSlot(slotNo);
+    if (!slot) { 
+      Error("AddMonitor", "Task \"%s\" does not have an output slot at %d",
+	    task->GetName(), slotNo);
+      return false;
+    }
+    AliAnalysisDataContainer* cont = slot->GetContainer();
+    if (!cont) {
+      Error("AddMonitor", "Output slot %d of task \"%s\" has no container",
+	    slotNo, task->GetName());
+      return false;
+    }
+    Int_t    idx   = 1;
+    TString& first = static_cast<TObjString*>(tokens->At(idx))->String(); 
+    if (first.EqualTo(cont->GetName())) {
+      idx++;
+    }
+    TObject* data = cont->GetData();
+    TObject* obj  = data; 
+    for (; idx < nTokens; idx++) {
+    }
+    return true;
+  }
+#endif
   /** 
    * Print information to standard output
    * 

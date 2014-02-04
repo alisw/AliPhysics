@@ -151,8 +151,8 @@ private:
     static const Int_t knbinsGammaMult=3;
   
     static const Int_t kGCnYBinsSpectra = 80;
-    static const Double_t kGCfirstYBinSpectra = 0.;
-    static const Double_t kGClastYBinSpectra = 8.;
+    static const Double_t kGCfirstYBinSpectra;
+    static const Double_t kGClastYBinSpectra;
 
     // Class variables and pointer
 

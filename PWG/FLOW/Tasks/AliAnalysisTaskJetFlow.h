@@ -56,6 +56,11 @@ class AliAnalysisTaskJetFlow : public AliAnalysisTaskSE
         void                    SetPtBins(TArrayD* pt)                  {fPtBins = pt; }
         void                    SetDoMultWeight(Bool_t m)               {fDoMultWeight = m; }
         void                    SetDoPtWeight(Bool_t p)                 {fDoPtWeight = p; }
+
+        AliFlowTrackCuts*       GetRPCuts() const                       {return fCutsRP_VZERO;}
+        AliAnalysisTaskRhoVnModulation* GetMaster() const               {return fRhoVn;}
+ 
+
         // cuts
         Bool_t                  PassesCuts();
         // analysis details

@@ -181,14 +181,12 @@ void AliJetModelBaseTask::UserExec(Option_t *)
   if (vert)
     vert->GetXYZ(fVertex);
 
-  if (fCopyArray) {
-    if (fOutTracks)
-      fOutTracks->Delete();
-    if (fOutClusters)
-      fOutClusters->Delete();
-    if (fOutMCParticles)
-      fOutMCParticles->Delete();
-  }
+  if (fOutTracks)
+    fOutTracks->Delete();
+  if (fOutClusters)
+    fOutClusters->Delete();
+  if (fOutMCParticles)
+    fOutMCParticles->Delete();
 
   if (fDensitySpectrum) {
     fNTracks = TMath::Nint(fDensitySpectrum->GetRandom());
@@ -667,7 +665,7 @@ AliVCluster* AliJetModelBaseTask::AddCluster(Double_t e, Int_t absId, Int_t labe
 }
 
 //________________________________________________________________________
-AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t phi, Byte_t type, Double_t etaemc, Double_t phiemc, Double_t ptemc, Bool_t ise, Int_t label, Short_t charge)
+AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t phi, Byte_t type, Double_t etaemc, Double_t phiemc, Double_t ptemc, Bool_t ise, Int_t label, Short_t charge, Double_t mass)
 {
   // Add a track to the event.
   
@@ -699,7 +697,8 @@ AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t 
 								  etaemc, 
 								  phiemc,
 								  ptemc,
-								  ise);
+								  ise,
+								  mass);
 
   return track;
 }

@@ -9,9 +9,9 @@ class THnSparse;
 class AliNamedArrayI;
 
 #include "AliEmcalJet.h"
-#include "AliAnalysisTaskEmcalJetDev.h"
+#include "AliAnalysisTaskEmcalJet.h"
 
-class AliJetResponseMaker : public AliAnalysisTaskEmcalJetDev {
+class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
  public:
   AliJetResponseMaker();
   AliJetResponseMaker(const char *name);

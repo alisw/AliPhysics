@@ -35,4 +35,4 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  PWGUDFPLinkDef.h)
 
-set ( EINCLUDE  PWGUD/FirstPhysics STEER/STEERBase)
+set ( EINCLUDE  PWGUD/FirstPhysics STEER/STEERBase ANALYSIS)

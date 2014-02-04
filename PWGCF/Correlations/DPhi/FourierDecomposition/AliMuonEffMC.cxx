@@ -36,36 +36,26 @@ ClassImp(AliMuonEffMC)
 
 //________________________________________________________________________
 AliMuonEffMC::AliMuonEffMC() :
-  AliAnalysisTaskSE(), fESD(0), fAOD(0), fMC(0), fStack(0), fCentrality(99), fZVertex(99), fOutputList(0x0),      
-  fHEventStat(0), fHXsec(0), fHTrials(0), fHEvt(0x0), fIsMc(kTRUE), fIsPythia(kFALSE), fMDProcess(kFALSE), fFeynmanX(kFALSE), fScatFX(kFALSE), fZvProcess(kTRUE), 
-  fIsCutStudy(kFALSE), fIsFPM(kTRUE), fZvClass(kFALSE), fCentralityEstimator("V0M"), fNEtaBins(15), fNpTBins(50), fNCentBins(1), fNZvtxBins(1), fNPhiBins(12), fNPBins(150), fChiSquareNormCut(5.0),
-  fHMuonParGen(0x0), fHMuonParGenFPM(0x0), fHMuonParGenP(0x0), fHMuonDetGenP(0x0), fHMuonDetRecP(0x0), 
-  fHMuonSpecies(0), fHFXu(0), fHFXantiu(0), fHFXd(0), fHFXantid(0), fHFXg(0), fHFXetc(0), 
-  fHaFx(0), fHbFx(0), fHabFxRatio(0), fHabDeltaFx(0), fHabRelDeltaFx(0)
+  AliAnalysisTaskSE(), fESD(0), fAOD(0), fMC(0), fStack(0), fCentrality(99), fZVertex(99), 
+  fOutputList(0x0),fHEventStat(0), fHXsec(0), fHTrials(0), fHEvt(0x0), fIsMc(kTRUE), fIsPythia(kFALSE), fMDProcess(kFALSE), fPlotMode(0),
+  fCentralityEstimator("V0M"), fNEtaBins(100), fNpTBins(50), fNCentBins(1), fNZvtxBins(1), fNPhiBins(12), 
+  fHFPM(0x0), fHPP(0)
 {
   // Constructor
   //DefineInput(0, TChain::Class());
   //DefineOutput(1, TList::Class());
-  for(Int_t i=0; i<5; i++)
+  for(Int_t i=0; i<2; i++)
   {
-    fHMuonDetGen[i] = NULL;
-    fHMuonDetRec[i] = NULL;
-    fHHadDetRec[i] = NULL;
-    fHSecDetRec[i] = NULL;
+    fHDetRecMu[i] = NULL;
+    fHDetRecMuFPM[i] = NULL;
+    fHDetRecMuPP[i] = NULL;
+    fHMuFPM[i] = NULL;
+    fHMuPP[i] = NULL;
   }
-  for(Int_t i=0; i<4; i++)
-  {
-    fHMuonParGenV[i] = NULL;
-    fHMuonDetRecV[i] = NULL;
-    fHMuZv[i] = NULL;
-    fHMuRelZv[i] = NULL;
-  }
-
-  for(Int_t i=0; i<5; i++)
+  for(Int_t i=0; i<2; i++)
   {
     for(Int_t j=0; j<3; j++)
     {
-      fHMuFrag[i][j] = NULL;
       fHMuMotherRecPt[i][j] = NULL;
       fHMuMotherRecPhi[i][j] = NULL;
       fHMuMotherRecEta[i][j] = NULL;
@@ -77,20 +67,8 @@ AliMuonEffMC::AliMuonEffMC() :
       }
     }
   }
-  for(Int_t i=0; i<2; i++)
-  {
-    for(Int_t j=0; j<3; j++)
-    {
-      fHFXmuonP[i][j] = NULL;
-      fHFXmuonM[i][j] = NULL;
-    }
-  }
   for(Int_t i=0; i<3; i++)
   {
-    fHabFxMu[i] = NULL;
-    fHabFxRatioMu[i] = NULL;
-    fHabDeltaFxMu[i] = NULL;
-    fHabRelDeltaFxMu[i] = NULL;
     fHZvRv[i] = NULL;
     fHXvYv[i] = NULL;
   }
@@ -98,34 +76,24 @@ AliMuonEffMC::AliMuonEffMC() :
 
 //________________________________________________________________________
 AliMuonEffMC::AliMuonEffMC(const char *name) :
-  AliAnalysisTaskSE(name), fESD(0), fAOD(0), fMC(0), fStack(0), fCentrality(99), fZVertex(99), fOutputList(0x0),      
-  fHEventStat(0), fHXsec(0), fHTrials(0), fHEvt(0x0),  fIsMc(kTRUE), fIsPythia(kFALSE), fMDProcess(kFALSE), fFeynmanX(kFALSE), fScatFX(kFALSE), fZvProcess(kTRUE), 
-  fIsCutStudy(kFALSE), fIsFPM(kTRUE), fZvClass(kFALSE), fCentralityEstimator("V0M"), fNEtaBins(15), fNpTBins(50), fNCentBins(1), fNZvtxBins(1), fNPhiBins(12), fNPBins(150), fChiSquareNormCut(5.0),
-  fHMuonParGen(0x0), fHMuonParGenFPM(0x0), fHMuonParGenP(0x0), fHMuonDetGenP(0x0), fHMuonDetRecP(0x0), 
-  fHMuonSpecies(0), fHFXu(0), fHFXantiu(0), fHFXd(0),  fHFXantid(0), fHFXg(0), fHFXetc(0),
-  fHaFx(0), fHbFx(0), fHabFxRatio(0), fHabDeltaFx(0), fHabRelDeltaFx(0)
+  AliAnalysisTaskSE(name), fESD(0), fAOD(0), fMC(0), fStack(0), fCentrality(99), fZVertex(99), 
+  fOutputList(0x0),fHEventStat(0), fHXsec(0), fHTrials(0), fHEvt(0x0), fIsMc(kTRUE), fIsPythia(kFALSE), fMDProcess(kFALSE), fPlotMode(0),
+  fCentralityEstimator("V0M"), fNEtaBins(100), fNpTBins(50), fNCentBins(1), fNZvtxBins(1), fNPhiBins(12), 
+  fHFPM(0x0), fHPP(0)
 {
   // Constructor
-  for(Int_t i=0; i<5; i++)
+  for(Int_t i=0; i<2; i++)
   {
-    fHMuonDetGen[i] = NULL;
-    fHMuonDetRec[i] = NULL;
-    fHHadDetRec[i] = NULL;
-    fHSecDetRec[i] = NULL;
+    fHDetRecMu[i] = NULL;
+    fHDetRecMuFPM[i] = NULL;
+    fHDetRecMuPP[i] = NULL;
+    fHMuFPM[i] = NULL;
+    fHMuPP[i] = NULL;
   }
-  for(Int_t i=0; i<4; i++)
-  {
-    fHMuonParGenV[i] = NULL;
-    fHMuonDetRecV[i] = NULL;
-    fHMuZv[i] = NULL;
-    fHMuRelZv[i] = NULL;
-  }
-
-  for(Int_t i=0; i<5; i++)
+  for(Int_t i=0; i<2; i++)
   {
     for(Int_t j=0; j<3; j++)
     {
-      fHMuFrag[i][j] = NULL;
       fHMuMotherRecPt[i][j] = NULL;
       fHMuMotherRecPhi[i][j] = NULL;
       fHMuMotherRecEta[i][j] = NULL;
@@ -137,20 +105,8 @@ AliMuonEffMC::AliMuonEffMC(const char *name) :
       }
     }
   }
-  for(Int_t i=0; i<2; i++)
-  {
-    for(Int_t j=0; j<3; j++)
-    {
-      fHFXmuonP[i][j] = NULL;
-      fHFXmuonM[i][j] = NULL;
-    }
-  }
   for(Int_t i=0; i<3; i++)
   {
-    fHabFxMu[i] = NULL;
-    fHabFxRatioMu[i] = NULL;
-    fHabDeltaFxMu[i] = NULL;
-    fHabRelDeltaFxMu[i] = NULL;
     fHZvRv[i] = NULL;
     fHXvYv[i] = NULL;
   }
@@ -208,189 +164,264 @@ void AliMuonEffMC::UserCreateOutputObjects()
   fHEvt = new TH2F("fHEvt", "Event-level variables; Zvtx; Cent", 30, -15, 15, 103, -2, 101);
   fOutputList->Add(fHEvt);
 
-  Int_t iTrackBin[6];
-  Double_t* trackBins[6];
-  const char* trackAxisTitle[6];
+  // Define THn's
+  Int_t iTrackBinFPM[7];
+  Double_t* trackBinsFPM[7];
+  const char* trackAxisTitleFPM[7];
 
-  Int_t iTrackBinP[6];
-  Double_t* trackBinsP[6];
-  const char* trackAxisTitleP[6];
+  Int_t iTrackBinPP[7];
+  Double_t* trackBinsPP[7];
+  const char* trackAxisTitlePP[7];
+
+  Int_t iTrackBinMu[7];
+  Double_t* trackBinsMu[7];
+  const char* trackAxisTitleMu[7];
+
+  Int_t iTrackBinMuFPM[6];
+  Double_t* trackBinsMuFPM[6];
+  const char* trackAxisTitleMuFPM[6];
+
+  Int_t iTrackBinMuPP[6];
+  Double_t* trackBinsMuPP[6];
+  const char* trackAxisTitleMuPP[6];
 
   // eta
   Double_t etaBins[fNEtaBins+1];
-  for(Int_t i=0; i<=fNEtaBins; i++) { etaBins[i] = (Double_t)(-4.0 + 1.5/fNEtaBins*i); }
-  iTrackBin[0] = fNEtaBins;
-  iTrackBinP[0] = fNEtaBins;
-  trackBins[0] = etaBins;
-  trackBinsP[0] = etaBins;
-  trackAxisTitle[0] = "#eta";
-  trackAxisTitleP[0] = "#eta";
+  for(Int_t i=0; i<=fNEtaBins; i++) { etaBins[i] = (Double_t)(-5.0 + 10.0/fNEtaBins*i); }
+  iTrackBinFPM[0] = fNEtaBins;
+  trackBinsFPM[0] = etaBins;
+  trackAxisTitleFPM[0] = "#eta";
+
+  iTrackBinPP[0] = fNEtaBins;
+  trackBinsPP[0] = etaBins;
+  trackAxisTitlePP[0] = "#eta";
+
+  iTrackBinMu[0] = fNEtaBins;
+  trackBinsMu[0] = etaBins;
+  trackAxisTitleMu[0] = "#eta";
+
+  iTrackBinMuFPM[0] = fNEtaBins;
+  trackBinsMuFPM[0] = etaBins;
+  trackAxisTitleMuFPM[0] = "#eta";
+
+  iTrackBinMuPP[0] = fNEtaBins;
+  trackBinsMuPP[0] = etaBins;
+  trackAxisTitleMuPP[0] = "#eta";
 
   // p_T
   Double_t pTBins[fNpTBins+1];
   for(Int_t i=0; i<=fNpTBins; i++) { pTBins[i] = (Double_t)(5.0/fNpTBins * i); }
-  iTrackBin[1] = fNpTBins;
-  trackBins[1] = pTBins;
-  trackAxisTitle[1] = "p_{T} (GeV/c)";
+  iTrackBinFPM[1] = fNpTBins;
+  trackBinsFPM[1] = pTBins;
+  trackAxisTitleFPM[1] = "p_{T} (GeV/c)";
 
-  // P
-  Double_t PBins[fNPBins+1];
-  for(Int_t i=0; i<=fNPBins; i++) { PBins[i] = (Double_t)(150.0/fNPBins * i); }
-  iTrackBinP[1] = fNPBins;
-  trackBinsP[1] = PBins;
-  trackAxisTitleP[1] = "P (GeV/c)";
+  iTrackBinPP[1] = fNpTBins;
+  trackBinsPP[1] = pTBins;
+  trackAxisTitlePP[1] = "p_{T} (GeV/c)";
+
+  iTrackBinMu[1] = fNpTBins;
+  trackBinsMu[1] = pTBins;
+  trackAxisTitleMu[1] = "p_{T} (GeV/c)";
+
+  iTrackBinMuFPM[1] = fNpTBins;
+  trackBinsMuFPM[1] = pTBins;
+  trackAxisTitleMuFPM[1] = "p_{T} (GeV/c)";
+
+  iTrackBinMuPP[1] = fNpTBins;
+  trackBinsMuPP[1] = pTBins;
+  trackAxisTitleMuPP[1] = "p_{T} (GeV/c)";
 
   // centrality
   Double_t CentBins[fNCentBins+1];
   for (Int_t i=0; i<=fNCentBins; i++) { CentBins[i] = (Double_t)(100.0/fNCentBins * i); }
-  iTrackBin[2] = fNCentBins;
-  iTrackBinP[2] = fNCentBins;
-  trackBins[2] = CentBins;
-  trackBinsP[2] = CentBins;
-  trackAxisTitle[2] = "Cent";
-  trackAxisTitleP[2] = "Cent";
+  iTrackBinFPM[2] = fNCentBins;
+  trackBinsFPM[2] = CentBins;
+  trackAxisTitleFPM[2] = "Cent";
+
+  iTrackBinPP[2] = fNCentBins;
+  trackBinsPP[2] = CentBins;
+  trackAxisTitlePP[2] = "Cent";
+
+  iTrackBinMu[2] = fNCentBins;
+  trackBinsMu[2] = CentBins;
+  trackAxisTitleMu[2] = "Cent";
 
   // Z-vertex
   Double_t ZvtxBins[fNZvtxBins+1];
   for(Int_t i=0; i<=fNZvtxBins; i++) { ZvtxBins[i] = (Double_t)(-10.0 + 20.0/fNZvtxBins * i); }
-  iTrackBin[3] = fNZvtxBins;
-  iTrackBinP[3] = fNZvtxBins;
-  trackBins[3] = ZvtxBins;
-  trackBinsP[3] = ZvtxBins;
-  trackAxisTitle[3] = "Zvtx";
-  trackAxisTitleP[3] = "Zvtx";
+  iTrackBinFPM[3] = fNZvtxBins;
+  trackBinsFPM[3] = ZvtxBins;
+  trackAxisTitleFPM[3] = "Zvtx";
+
+  iTrackBinPP[3] = fNZvtxBins;
+  trackBinsPP[3] = ZvtxBins;
+  trackAxisTitlePP[3] = "Zvtx";
+
+  iTrackBinMu[3] = fNZvtxBins;
+  trackBinsMu[3] = ZvtxBins;
+  trackAxisTitleMu[3] = "Zvtx";
 
   // phi
   Double_t phiBins[fNPhiBins+1];
   for(Int_t i=0; i<=fNPhiBins; i++) { phiBins[i] = (Double_t)(TMath::TwoPi()/fNPhiBins * i); }
-  iTrackBin[4] = fNPhiBins;
-  iTrackBinP[4] = fNPhiBins;
-  trackBins[4] = phiBins;
-  trackBinsP[4] = phiBins;
-  trackAxisTitle[4] = "#phi";
-  trackAxisTitleP[4] = "#phi";
+  iTrackBinFPM[4] = fNPhiBins;
+  trackBinsFPM[4] = phiBins;
+  trackAxisTitleFPM[4] = "#phi";
+
+  iTrackBinPP[4] = fNPhiBins;
+  trackBinsPP[4] = phiBins;
+  trackAxisTitlePP[4] = "#phi";
+
+  iTrackBinMu[4] = fNPhiBins;
+  trackBinsMu[4] = phiBins;
+  trackAxisTitleMu[4] = "#phi";
+
+  iTrackBinMuFPM[2] = fNPhiBins;
+  trackBinsMuFPM[2] = phiBins;
+  trackAxisTitleMuFPM[2] = "#phi";
+
+  iTrackBinMuPP[2] = fNPhiBins;
+  trackBinsMuPP[2] = phiBins;
+  trackAxisTitleMuPP[2] = "#phi";
 
   // charge
-  Double_t chargeBins[3] = {-10.0, 0, 10.0};
-  iTrackBin[5] = 2;
-  iTrackBinP[5] = 2;
-  trackBins[5] = chargeBins;
-  trackBinsP[5] = chargeBins;
-  trackAxisTitle[5] = "charge";
-  trackAxisTitleP[5] = "charge";
+  Double_t chargeBins[4] = {-10.0, -0.5, 0.5, 10.0};
+  iTrackBinFPM[5] = 3;
+  trackBinsFPM[5] = chargeBins;
+  trackAxisTitleFPM[5] = "charge";
 
-  const char *cutlabel[5] = {"Muon", "Trg", "Abs", "TrgAbs", "No"};
+  iTrackBinPP[5] = 3;
+  trackBinsPP[5] = chargeBins;
+  trackAxisTitlePP[5] = "charge";
+
+  iTrackBinMu[5] = 3;
+  trackBinsMu[5] = chargeBins;
+  trackAxisTitleMu[5] = "charge";
+
+  iTrackBinMuFPM[3] = 3;
+  trackBinsMuFPM[3] = chargeBins;
+  trackAxisTitleMuFPM[3] = "charge";
+
+  iTrackBinMuPP[3] = 3;
+  trackBinsMuPP[3] = chargeBins;
+  trackAxisTitleMuPP[3] = "charge";
+
+  // Muon type
+  Double_t MuSpeciesBins[4] = {0.0, 1.0, 2.0, 3.0};
+  iTrackBinMu[6] = 3;
+  trackBinsMu[6] = MuSpeciesBins;
+  trackAxisTitleMu[6] = "MUON type";
+
+  iTrackBinMuFPM[4] = 3;
+  trackBinsMuFPM[4] = MuSpeciesBins;
+  trackAxisTitleMuFPM[4] = "MUON type";
+
+  iTrackBinMuPP[4] = 3;
+  trackBinsMuPP[4] = MuSpeciesBins;
+  trackAxisTitleMuPP[4] = "MUON type";
+
+  // FPM species
+  Double_t FPMSpecies[8] = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0};
+  iTrackBinFPM[6] = 7;
+  trackBinsFPM[6] = FPMSpecies;
+  trackAxisTitleFPM[6] = "FPM species";
+
+  iTrackBinMuFPM[5] = 7;
+  trackBinsMuFPM[5] = FPMSpecies;
+  trackAxisTitleMuFPM[5] = "FPM species";
+
+  // First Physical Primary  species
+  Double_t PPMSpecies[8] = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0};
+  iTrackBinPP[6] = 7;
+  trackBinsPP[6] = PPMSpecies;
+  trackAxisTitlePP[6] = "PPM species";
+
+  iTrackBinMuPP[5] = 7;
+  trackBinsMuPP[5] = PPMSpecies;
+  trackAxisTitleMuPP[5] = "PPM species";
+ 
+  const char* MuonType[3] = {"Prim","Sec","Had"};
+  const char *MuPt[3] = {"0005","0520","2040"};
+  const char *cutlabel[2] = {"cut1", "cut2"};
+
   if(fIsMc)
   {
     // THn for tracking efficiency
-    fHMuonParGen = new THnF("fHMuonParGen", "", 6, iTrackBin, 0, 0);
-    for (Int_t i=0; i<6; i++)
+    if(fPlotMode==0)
     {
-      fHMuonParGen->SetBinEdges(i, trackBins[i]);
-      fHMuonParGen->GetAxis(i)->SetTitle(trackAxisTitle[i]);
-    }
-    fHMuonParGen->Sumw2();
-    fOutputList->Add(fHMuonParGen);
-  
-    if(fIsFPM)
-    {
-      fHMuonParGenFPM = (THnF*) fHMuonParGen->Clone("fHMuonParGenFPM");
-      fHMuonParGenFPM->Sumw2();
-      fOutputList->Add(fHMuonParGenFPM);
+      fHFPM = new THnF("fHFPM", "", 7, iTrackBinFPM, 0, 0);
+      for (Int_t i=0; i<7; i++)
+      {
+	fHFPM->SetBinEdges(i, trackBinsFPM[i]);
+	fHFPM->GetAxis(i)->SetTitle(trackAxisTitleFPM[i]);
+      }
+      fOutputList->Add(fHFPM); 
+      
+      fHPP = new THnF("fHPP", "", 7, iTrackBinPP, 0, 0);
+      for (Int_t i=0; i<7; i++)
+      {
+	fHPP->SetBinEdges(i, trackBinsPP[i]);
+	fHPP->GetAxis(i)->SetTitle(trackAxisTitlePP[i]);
+      }
+      fOutputList->Add(fHPP); 
     }
 
-    if(fIsCutStudy)
+    for(Int_t j=0; j<2; j++)
     {
-      for(Int_t i=0; i<5; i++)
+      if(fPlotMode==1)
       {
-	fHMuonDetGen[i] = (THnF*)fHMuonParGen->Clone(Form("fHMuonDetGen_%s",cutlabel[i]));
-	fHMuonDetGen[i]->Sumw2();
-	fOutputList->Add(fHMuonDetGen[i]);
-	
-	fHMuonDetRec[i] = (THnF*) fHMuonParGen->Clone(Form("fHMuonDetRec_%s",cutlabel[i]));
-	fHMuonDetRec[i]->Sumw2();
-	fOutputList->Add(fHMuonDetRec[i]);
-	
-	fHHadDetRec[i] = (THnF*) fHMuonParGen->Clone(Form("fHHadDetRec_%s",cutlabel[i]));
-	fHHadDetRec[i]->Sumw2();
-	fOutputList->Add(fHHadDetRec[i]);
-	
-	fHSecDetRec[i] = (THnF*) fHMuonParGen->Clone(Form("fHSecDetRec_%s",cutlabel[i]));
-	fHSecDetRec[i]->Sumw2();
-	fOutputList->Add(fHSecDetRec[i]);
+	fHDetRecMu[j] = new THnF(Form("fHDetRecMu_%s",cutlabel[j]),"", 7, iTrackBinMu, 0, 0);
+	for (Int_t i=0; i<7; i++)
+	{
+	  fHDetRecMu[j]->SetBinEdges(i, trackBinsMu[i]);
+	  fHDetRecMu[j]->GetAxis(i)->SetTitle(trackAxisTitleMu[i]);
+	}
+	fOutputList->Add(fHDetRecMu[j]); 
       }
-    }
-    else
-    {
-      fHMuonDetGen[0] = (THnF*)fHMuonParGen->Clone(Form("fHMuonDetGen"));
-      fHMuonDetGen[0]->Sumw2();
-      fOutputList->Add(fHMuonDetGen[0]);
-      
-      fHMuonDetRec[0] = (THnF*) fHMuonParGen->Clone(Form("fHMuonDetRec"));
-      fHMuonDetRec[0]->Sumw2();
-      fOutputList->Add(fHMuonDetRec[0]);
-      
-      fHHadDetRec[0] = (THnF*) fHMuonParGen->Clone(Form("fHHadDetRec"));
-      fHHadDetRec[0]->Sumw2();
-      fOutputList->Add(fHHadDetRec[0]);
-      
-      fHSecDetRec[0] = (THnF*) fHMuonParGen->Clone(Form("fHSecDetRec"));
-      fHSecDetRec[0]->Sumw2();
-      fOutputList->Add(fHSecDetRec[0]);
+      if(fPlotMode==2)
+      {	
+	fHDetRecMuFPM[j] = new THnF(Form("fHDetRecMuFPM_%s",cutlabel[j]),"", 6, iTrackBinMuFPM, 0, 0);
+	for (Int_t i=0; i<6; i++)
+	{
+	  fHDetRecMuFPM[j]->SetBinEdges(i, trackBinsMuFPM[i]);
+	  fHDetRecMuFPM[j]->GetAxis(i)->SetTitle(trackAxisTitleMuFPM[i]);
+	}
+	fOutputList->Add(fHDetRecMuFPM[j]); 
+
+	fHDetRecMuPP[j] = new THnF(Form("fHDetRecMuPP_%s",cutlabel[j]),"", 6, iTrackBinMuPP, 0, 0);
+	for (Int_t i=0; i<6; i++)
+	{
+	  fHDetRecMuPP[j]->SetBinEdges(i, trackBinsMuPP[i]);
+	  fHDetRecMuPP[j]->GetAxis(i)->SetTitle(trackAxisTitleMuPP[i]);
+	}
+	fOutputList->Add(fHDetRecMuPP[j]); 
+      }
+      if(fPlotMode==3)
+      {
+	fHMuFPM[j] = new THnF(Form("fHMuFPM_%s",cutlabel[j]),"", 6, iTrackBinMuFPM, 0, 0);
+	for (Int_t i=0; i<6; i++)
+	{
+	  fHMuFPM[j]->SetBinEdges(i, trackBinsMuFPM[i]);
+	  fHMuFPM[j]->GetAxis(i)->SetTitle(trackAxisTitleMuFPM[i]);
+	}
+	fOutputList->Add(fHMuFPM[j]); 
+
+	fHMuPP[j] = new THnF(Form("fHMuPP_%s",cutlabel[j]),"", 6, iTrackBinMuPP, 0, 0);
+	for (Int_t i=0; i<6; i++)
+	{
+	  fHMuPP[j]->SetBinEdges(i, trackBinsMuPP[i]);
+	  fHMuPP[j]->GetAxis(i)->SetTitle(trackAxisTitleMuPP[i]);
+	}
+	fOutputList->Add(fHMuPP[j]); 
+      }
     }
 
-    if(fZvClass)
-    {
-      const char *vertexlabel[4] = {"0_10", "10_90", "90_503", "503"};
-      for(Int_t i=0; i<4; i++)
-      {
-	fHMuonParGenV[i] = (THnF*)fHMuonParGen->Clone(Form("fHMuonParGenV_%s",vertexlabel[i]));
-	fHMuonParGenV[i]->Sumw2();
-	fOutputList->Add(fHMuonParGenV[i]);
-	
-	fHMuonDetRecV[i] = (THnF*)fHMuonParGen->Clone(Form("fHMuonDetRecV_%s",vertexlabel[i]));
-	fHMuonDetRecV[i]->Sumw2();
-	fOutputList->Add(fHMuonDetRecV[i]);
-      }
-    }
-    fHMuonParGenP = new THnF("fHMuonParGenP", "", 6, iTrackBinP, 0, 0);
-    for (Int_t i=0; i<6; i++)
-    {
-      fHMuonParGenP->SetBinEdges(i, trackBinsP[i]);
-      fHMuonParGenP->GetAxis(i)->SetTitle(trackAxisTitleP[i]);
-    }
-    fHMuonParGenP->Sumw2();
-    fOutputList->Add(fHMuonParGenP);
-    
-    fHMuonDetGenP = (THnF*) fHMuonParGenP->Clone("fHMuonDetGenP");
-    fHMuonDetGenP->Sumw2();
-    fOutputList->Add(fHMuonDetGenP);
-    
-    fHMuonDetRecP = (THnF*) fHMuonParGenP->Clone("fHMuonDetRecP");
-    fHMuonDetRecP->Sumw2();
-    fOutputList->Add(fHMuonDetRecP);
-    
-    const char* MotherSpecies[4] = {"Pion","Kaon","D", "Etc"};
-    const char* MuonType[3] = {"Prim","Sec","Had"};
-    const char *MuPt[3] = {"0005","0520","2040"};
-    if(fZvProcess)
-    {
-      for(Int_t i=0; i<4; i++)
-      {
-	fHMuZv[i] = new TH1F(Form("fHMuZv_%s",MotherSpecies[i]), ";Z_{V}(cm)", 600, -500, 100);
-	fOutputList->Add(fHMuZv[i]);
-	fHMuRelZv[i] = new TH1F(Form("fHMuRelZv_%s",MotherSpecies[i]), ";|Z_{V,muon}-Zvtx|(cm)", 500, 0, 500);
-	fOutputList->Add(fHMuRelZv[i]);
-      }
-    }
     if(fMDProcess)
     {
-      for(Int_t i=0; i<5; i++)
+      for(Int_t i=0; i<2; i++)
       {
 	for(Int_t j=0; j<3; j++)
 	{
-	  fHMuFrag[i][j] = new TH2F(Form("fHMuFrag_%s_%s",cutlabel[i], MuonType[j]),";p_{T,muon}^{rec} (GeV/c);x_{frag};",200, 0, 20, 800, 0, 800);
-	  fOutputList->Add(fHMuFrag[i][j]);
 	  fHMuMotherRecPt[i][j] = new TH2F(Form("fHMuMotherRecPt_%s_%s",cutlabel[i], MuonType[j]),";p_{T,muon}^{rec} (GeV/c);p_{T,mother}^{Truth} (GeV/c);",500, 0, 50, 500, 0, 50);
 	  fOutputList->Add(fHMuMotherRecPt[i][j]);
 	  fHMuMotherRecPhi[i][j] = new TH2F(Form("fHMuMotherRecPhi_%s_%s",cutlabel[i], MuonType[j]),";#phi_{rec};mother #phi;",100, 0, TMath::TwoPi(), 100, 0, TMath::TwoPi());
@@ -419,102 +450,19 @@ void AliMuonEffMC::UserCreateOutputObjects()
 	fOutputList->Add(fHXvYv[i]);
       }	
     }
-
-    fHMuonSpecies = new TH1F("fHMuonSpecies","",6, 0.0, 6.0);
-    fOutputList->Add(fHMuonSpecies);
-
-    if(fFeynmanX) 
-    {
-      fHFXu = new TH1F("fHFXu",";x_{F}",1000, 0.0, 1.0);
-      fOutputList->Add(fHFXu);
-      
-      fHFXantiu = new TH1F("fHFXantiu",";x_{F}",1000, 0.0, 1.0);
-      fOutputList->Add(fHFXantiu);
-      
-      fHFXd = new TH1F("fHFXd",";x_{F}",1000, 0.0, 1.0);
-      fOutputList->Add(fHFXd);
-      
-      fHFXantid = new TH1F("fHFXantid",";x_{F}",1000, 0.0, 1.0);
-      fOutputList->Add(fHFXantid);
-      
-      fHFXg = new TH1F("fHFXg",";x_{F}",1000, 0.0, 1.0);
-      fOutputList->Add(fHFXg);
-      
-      fHFXetc = new TH1F("fHFXetc",";x_{F}",1000, 0.0, 1.0);
-      fOutputList->Add(fHFXetc);
-      
-      const char* muonptbin[2] = {"02","2"};
-      const char *muonetabin[3] = {"4035","3530","3025"};
-      for(Int_t i=0; i<2; i++)
-      {
-	for(Int_t j=0; j<3; j++)
-	{
-	  fHFXmuonP[i][j] = new TH1F(Form("fHFXmuonP_%s_%s",muonptbin[i], muonetabin[j]),";x_{F}",1000, 0.0, 1.0);
-	  fOutputList->Add(fHFXmuonP[i][j]);
-	  fHFXmuonM[i][j] = new TH1F(Form("fHFXmuonM_%s_%s",muonptbin[i], muonetabin[j]),";x_{F}",1000, 0.0, 1.0);
-	  fOutputList->Add(fHFXmuonM[i][j]);
-	}
-      }
-    }
-    if(fScatFX)
-    {
-      fHaFx = new TH1F("fHaFx",";x_{F}",1000, 0.0, 1.0);
-      fOutputList->Add(fHaFx);
-      fHbFx = new TH1F("fHbFx",";x_{F}",1000, 0.0, 1.0);
-      fOutputList->Add(fHbFx);
-      fHabFxRatio = new TH1F("fHabFxRatio",";x_{F,a}/x_{F,b}",1000, 0.0, 5.0);
-      fOutputList->Add(fHabFxRatio);
-      fHabDeltaFx = new TH1F("fHabDeltaFx",";#Deltax_{F}",1000, -2.0, 2.0);
-      fOutputList->Add(fHabDeltaFx);
-      fHabRelDeltaFx = new TH1F("fHabRelDeltaFx",";(x_{a}-x_{b})/(x_{a}+x{b})",1000, -1.0, 1.0);
-      fOutputList->Add(fHabRelDeltaFx);
-      
-      const char* MuonPt[3] = {"Mu01","Mu12", "Mu2"};
-      for(Int_t i=0; i<3; i++)
-      {
-	Int_t NabBin = 22;
-	Double_t abBins[22+1] = { 0.0, 0.000001, 0.000002, 0.000004, 0.00001, 0.00002, 0.00004, 0.0001, 0.0002, 0.0004, 0.001, 0.002, 0.004, 0.01, 0.02, 0.04, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 1};
-	
-	fHabFxMu[i] = new TH2F(Form("fHabFxMu_%s",MuonPt[i]),";x_{F,a};x_{F,b}",NabBin, abBins, NabBin, abBins);
-	fOutputList->Add(fHabFxMu[i]);
-	
-	fHabFxRatioMu[i] = new TH1F(Form("fHabFxRatioMu_%s",MuonPt[i]),";x_{F,a}/x_{F,b}",1000, 0.0, 5.0);
-	fOutputList->Add(fHabFxRatioMu[i]);
-	
- 	fHabDeltaFxMu[i] = new TH1F(Form("fHabDeltaFxMu_%s",MuonPt[i]),";#Deltax_{F}",1000, -2.0, 2.0);
-	fOutputList->Add(fHabDeltaFxMu[i]);
-	
-	fHabRelDeltaFxMu[i] = new TH1F(Form("fHabRelDeltaFxMu_%s",MuonPt[i]),";(x_{a}-x_{b})/(x_{a}+x{b})",1000, -1.0, 1.0);
-	fOutputList->Add(fHabRelDeltaFxMu[i]);
-      }
-    }
   }
   else
   {
-    fHMuonDetRec[0] = new THnF(Form("fHMuonDetRec_%s", cutlabel[0]), "", 6, iTrackBin, 0, 0);
-    for (Int_t i=0; i<6; i++)
+    for(Int_t j=0; j<2; j++)
     {
-      fHMuonDetRec[0]->SetBinEdges(i, trackBins[i]);
-      fHMuonDetRec[0]->GetAxis(i)->SetTitle(trackAxisTitle[i]);
+      fHDetRecMu[j] = new THnF(Form("fHDetRecMu_%s",cutlabel[j]),"", 7, iTrackBinMu, 0, 0);
+      for (Int_t i=0; i<7; i++)
+      {
+	fHDetRecMu[j]->SetBinEdges(i, trackBinsMu[i]);
+	fHDetRecMu[j]->GetAxis(i)->SetTitle(trackAxisTitleMu[i]);
+      }
+      fOutputList->Add(fHDetRecMu[j]); 
     }
-    fHMuonDetRec[0]->Sumw2();
-    fOutputList->Add(fHMuonDetRec[0]);
-
-    for(Int_t i=1; i<5; i++)
-    {
-      fHMuonDetRec[i] = (THnF*) fHMuonDetRec[0]->Clone(Form("fHMuonDetRec_%s",cutlabel[i]));
-      fHMuonDetRec[i]->Sumw2();
-      fOutputList->Add(fHMuonDetRec[i]);
-    }
-
-   fHMuonDetRecP = new THnF("fHMuonDetRecP", "", 6, iTrackBinP, 0, 0);
-    for (Int_t i=0; i<5; i++)
-    {
-      fHMuonDetRecP->SetBinEdges(i, trackBinsP[i]);
-      fHMuonDetRecP->GetAxis(i)->SetTitle(trackAxisTitleP[i]);
-    }
-    fHMuonDetRecP->Sumw2();
-    fOutputList->Add(fHMuonDetRecP);
   }
   PostData(1, fOutputList);
 }
@@ -621,111 +569,149 @@ void AliMuonEffMC::UserExec(Option_t *)
   if (trigword & 0x2000) fHEventStat->Fill(15.5);
   if (trigword & 0x4000) fHEventStat->Fill(16.5);
 
-  if(fIsMc)
+  if(fIsMc && fPlotMode==0)
   {
+    Double_t PPEta = 0.0;
+    Double_t PPPt = 0.0;
+    Double_t PPPhi = 0.0;
+    Double_t PPCharge = 0.0;
+    Double_t PPSpecies = 0.0;
+    
+    Double_t FPMEta = 0.0;
+    Double_t FPMPt = 0.0;
+    Double_t FPMPhi = 0.0;
+    Double_t FPMCharge = 0.0;
+    Double_t FPMSpecies = 0.0;
+
     // generated level loop
     for (Int_t ipart=0; ipart<fMC->GetNumberOfTracks(); ipart++)
     {
-      Double_t TruthEta = 0.0;
-      Double_t TruthPt = 0.0;
-      Double_t TruthPhi = 0.0;
-      Double_t TruthCharge = 0.0;
-      Double_t TruthP = 0.0;
+      if(fESD)
+      {
+	AliMCParticle *McParticle  = (AliMCParticle*)fMC->GetTrack(ipart);
+	if(!fMC->IsPhysicalPrimary(ipart) || McParticle->Charge()==0) continue;
 
+	PPEta = McParticle->Eta();
+	PPPt = McParticle->Pt();
+	PPPhi = McParticle->Phi();
+	PPCharge = McParticle->Charge();
+	PPSpecies = GetSpecies(McParticle->PdgCode());
+
+	AliMCParticle *FPMParticle  = (AliMCParticle*)fMC->GetTrack(GetFirstPrimaryMother(ipart));
+	if(PPSpecies==1.5 || PPSpecies==2.5 || PPSpecies==4.5)
+	{
+	  if(ipart < fStack->GetNprimary())
+	  {
+	    FPMEta = PPEta;
+	    FPMPt = PPPt;
+	    FPMPhi = PPPhi;
+	    FPMCharge = PPCharge;
+	    FPMSpecies = PPSpecies;
+	  }
+	  else
+	  {
+	    FPMEta = FPMParticle->Eta();
+	    FPMPt = FPMParticle->Pt();
+	    FPMPhi = FPMParticle->Phi();
+	    FPMCharge = FPMParticle->Charge();
+	    FPMSpecies = GetSpecies(FPMParticle->PdgCode());
+	  }
+	}
+	else
+	{
+	  FPMEta = FPMParticle->Eta();
+	  FPMPt = FPMParticle->Pt();
+	  FPMPhi = FPMParticle->Phi();
+	  FPMCharge = FPMParticle->Charge();
+	  FPMSpecies = GetSpecies(FPMParticle->PdgCode());
+	}
+      }
       if(fAOD)
       {
 	AliAODMCParticle *AodMcParticle  = (AliAODMCParticle*)fMC->GetTrack(ipart);
-	if(AodMcParticle->Charge() == 0 || TMath::Abs(AodMcParticle->PdgCode()) == 11) continue;
-	if(AodMcParticle->Eta() < -4.0 || AodMcParticle->Eta() > -2.5) continue;
-	if(!fMC->IsPhysicalPrimary(ipart)) continue;
+	if(!fMC->IsPhysicalPrimary(ipart) || AodMcParticle->Charge()==0) continue;
 
-	TruthEta = AodMcParticle->Eta();
-	TruthPt = AodMcParticle->Pt();
-	TruthPhi = AodMcParticle->Phi();
-	TruthP = AodMcParticle->P();
-	TruthCharge = (Double_t)AodMcParticle->Charge();
+	PPEta = AodMcParticle->Eta();
+	PPPt = AodMcParticle->Pt();
+	PPPhi = AodMcParticle->Phi();
+	PPCharge = AodMcParticle->Charge();
+	PPSpecies = GetSpecies(AodMcParticle->PdgCode());
+
+	AliAODMCParticle *AODFPMParticle  = (AliAODMCParticle*)fMC->GetTrack(GetFirstPrimaryMother(ipart));
+	if(PPSpecies==1.5 || PPSpecies==2.5)
+	{
+	  if(ipart < fStack->GetNprimary())
+	  {
+	    FPMEta = PPEta;
+	    FPMPt = PPPt;
+	    FPMPhi = PPPhi;
+	    FPMCharge = PPCharge;
+	    FPMSpecies = PPSpecies;
+	  }
+	  else
+	  {
+	    FPMEta = AODFPMParticle->Eta();
+	    FPMPt = AODFPMParticle->Pt();
+	    FPMPhi = AODFPMParticle->Phi();
+	    FPMCharge = AODFPMParticle->Charge();
+	    FPMSpecies = GetSpecies(AODFPMParticle->PdgCode());
+	  }
+	}
+	else
+	{
+	  FPMEta = AODFPMParticle->Eta();
+	  FPMPt = AODFPMParticle->Pt();
+	  FPMPhi = AODFPMParticle->Phi();
+	  FPMCharge = AODFPMParticle->Charge();
+	  FPMSpecies = GetSpecies(AODFPMParticle->PdgCode());
+	}
       }
-      else if(fESD)
-      {
-	AliMCParticle *McParticle  = (AliMCParticle*)fMC->GetTrack(ipart);
-	if(McParticle->Charge() == 0 || TMath::Abs(McParticle->PdgCode()) == 11) continue;
-	if(McParticle->Eta() < -4.0 || McParticle->Eta() > -2.5) continue;
-	if(!fMC->IsPhysicalPrimary(ipart)) continue;
-
-	TruthEta = McParticle->Eta();
-	TruthPt = McParticle->Pt();
-	TruthPhi = McParticle->Phi();
-	TruthP = McParticle->P();
-	TruthCharge = (Double_t)McParticle->Charge();
-      }
-
-      Double_t fillArrayParGen[6] = { TruthEta, TruthPt, fCentrality, fZVertex, TruthPhi, TruthCharge };
-      Double_t fillArrayParGenP[6] = { TruthEta, TruthP, fCentrality, fZVertex, TruthPhi, TruthCharge };
-      fHMuonParGen->Fill(fillArrayParGen);
-      fHMuonParGenP->Fill(fillArrayParGenP);
-    }
+      Double_t fillArrayPP[7] = { PPEta, PPPt, fCentrality, fZVertex, PPPhi, PPCharge, PPSpecies };
+      fHPP->Fill(fillArrayPP);
+      Double_t fillArrayFPM[7] = { FPMEta, FPMPt, fCentrality, fZVertex, FPMPhi, FPMCharge, FPMSpecies };
+      fHFPM->Fill(fillArrayFPM);
+    } // end of generated level loop
   }
   
   // reconstructed level loop
   for (Int_t iTrack = 0; iTrack<ntrks; iTrack++)
   {
     Int_t label = 0;
-    // reconstructed track variables
-    Double_t trackpt = 0;
-    Double_t tracketa = 0;
-    Double_t trackphi = 0;
-    Double_t trackcharge = 0;
-    Double_t trackp = 0;
-    Int_t cutNum = 0;   
-    Int_t isprimary = 0; // primary = 0, secondary = 1, punch-through hadron = 2
-    // reconstructed track's matched truth particle variables
-    Double_t mcpt = 0;
-    Double_t mceta = 0;
-    Double_t mcphi = 0;
-    Double_t mcp = 0;
-    Double_t mccharge = 0;
-    Double_t mcZv = 0;
-    // first primary mother variables
-    Int_t motherlabel =0;
-    Int_t motherpdg = 0;
-    Double_t motherpt = 0;
-    Double_t mothereta = 0;
-    Double_t motherphi = 0;
-    Double_t motherXv = 0;
-    Double_t motherYv = 0;
-    Double_t motherZv = 0;
-    Double_t motherY = 0;
+    Int_t CutType = 0;
+    Double_t MuonType = 0.0;
+    Double_t FPMSpecies = 0.0;
+    Double_t PPSpecies = 0.0;
 
-    if(fAOD)
-    {
-      AliAODTrack* muonTrack = (AliAODTrack*)fAOD->GetTrack(iTrack);
-      if(muonTrack)
-      {
-        if(!(muonTrack->IsMuonTrack())) continue;
-	cutNum = IsGoodMUONtrack(*muonTrack);
-        trackpt = muonTrack->Pt();
-        tracketa = muonTrack->Eta();
-        trackphi = muonTrack->Phi();
-	trackcharge = muonTrack->Charge();
-	trackp = muonTrack->P();
-        label =  TMath::Abs(muonTrack->GetLabel());
-        if (label>=fMC->GetNumberOfTracks()) {
-          AliError(Form("Label %d larger than number of particles on stack %d\n",label,fMC->GetNumberOfTracks()));
-          continue;
-        }
-      }
-    }
-    else if(fESD)
+    Double_t RecEta = 0.0;
+    Double_t RecPt = 0.0;
+    Double_t RecPhi = 0.0;
+    Double_t RecCharge = 0.0;
+
+    Double_t MuFPMEta = 0.0;
+    Double_t MuFPMPt = 0.0;
+    Double_t MuFPMPhi = 0.0;
+    Double_t MuFPMCharge = 0.0;
+
+    Double_t MuPPEta = 0.0;
+    Double_t MuPPPt = 0.0;
+    Double_t MuPPPhi = 0.0;
+    Double_t MuPPCharge = 0.0;
+
+    Double_t motherXv = 0.0;
+    Double_t motherYv = 0.0;
+    Double_t motherZv = 0.0;
+    
+    if(fESD)
     {
       AliESDMuonTrack* muonTrack = fESD->GetMuonTrack(iTrack);
       if(muonTrack)
       {
-	cutNum = IsGoodMUONtrack(*muonTrack);
-        trackpt = muonTrack->Pt();
-        tracketa = muonTrack->Eta();
-        trackphi = muonTrack->Phi();
-	trackcharge = muonTrack->Charge();
-	trackp = muonTrack->P();
+	CutType = GetMUONCutType(*muonTrack);
+	if(CutType > 1) continue;
+	RecEta = muonTrack->Eta();
+        RecPt = muonTrack->Pt();
+	RecPhi = muonTrack->Phi();
+	RecCharge = muonTrack->Charge();
         label =  TMath::Abs(muonTrack->GetLabel());
 	if (label>=fMC->GetNumberOfTracks()) {
           AliError(Form("Label %d larger than number of particles on stack %d\n",label,fMC->GetNumberOfTracks()));
@@ -733,135 +719,92 @@ void AliMuonEffMC::UserExec(Option_t *)
 	}
       }
     }
-    Double_t fillArrayDetRec[6] = { tracketa, trackpt, fCentrality, fZVertex, trackphi, trackcharge }; 
-    Double_t fillArrayDetRecP[6] = { tracketa, trackp, fCentrality, fZVertex, trackphi, trackcharge };
-    if(fIsCutStudy) fHMuonDetRec[cutNum]->Fill(fillArrayDetRec);
-    else { if(cutNum==2 || cutNum==3) fHMuonDetRec[0]->Fill(fillArrayDetRec); }
-    if(cutNum==2 || cutNum==3) fHMuonDetRecP->Fill(fillArrayDetRecP);
-
+    else if(fAOD)
+    {
+      AliAODTrack* muonTrack = (AliAODTrack*)fAOD->GetTrack(iTrack);
+      if(muonTrack)
+      {
+        if(!(muonTrack->IsMuonTrack())) continue;
+	CutType =  GetMUONCutType(*muonTrack);
+	if(CutType > 1) continue;
+	RecEta = muonTrack->Eta();
+        RecPt = muonTrack->Pt();
+	RecPhi = muonTrack->Phi();
+	RecCharge = muonTrack->Charge();
+        label =  TMath::Abs(muonTrack->GetLabel());
+        if (label>=fMC->GetNumberOfTracks()) {
+          AliError(Form("Label %d larger than number of particles on stack %d\n",label,fMC->GetNumberOfTracks()));
+          continue;
+        }
+      }
+    }
+    
     if(fIsMc)
     {
-      if(fAOD)
+      AliMCParticle *McParticle  = (AliMCParticle*)fMC->GetTrack(label);
+      MuonType = GetMuonTrackType(*McParticle);
+      
+      if(GetFirstPrimaryMother(label) < 0) continue;
+      AliMCParticle *MuFPMParticle  = (AliMCParticle*)fMC->GetTrack(GetFirstPrimaryMother(label));
+      MuFPMEta = MuFPMParticle->Eta();
+      MuFPMPt = MuFPMParticle->Pt();
+      MuFPMPhi = MuFPMParticle->Phi();
+      MuFPMCharge = MuFPMParticle->Charge();
+      FPMSpecies = GetSpecies(MuFPMParticle->PdgCode());
+      
+      if(GetFirstPPMother(label) < 0) continue;
+      AliMCParticle *MuPPParticle  = (AliMCParticle*)fMC->GetTrack(GetFirstPPMother(label));
+      MuPPEta = MuPPParticle->Eta();
+      MuPPPt = MuPPParticle->Pt();
+      MuPPPhi = MuPPParticle->Phi();
+      MuPPCharge = MuPPParticle->Charge();
+      PPSpecies = GetSpecies(MuPPParticle->PdgCode());
+      
+      if(MuFPMParticle->GetFirstDaughter() > 0)
       {
-	AliAODMCParticle *aodMcParticle  = (AliAODMCParticle*)fMC->GetTrack(label);
-	if(cutNum==2 || cutNum==3)
-	{
-	  if(TMath::Abs(aodMcParticle->PdgCode())==13) fHMuonSpecies->Fill(0.5);
-	  else if(TMath::Abs(aodMcParticle->PdgCode())==211) fHMuonSpecies->Fill(1.5);
-	  else if(TMath::Abs(aodMcParticle->PdgCode())==321) fHMuonSpecies->Fill(2.5);
-	  else if(TMath::Abs(aodMcParticle->PdgCode())==2212) fHMuonSpecies->Fill(3.5);
-	  else if(TMath::Abs(aodMcParticle->PdgCode())==11) fHMuonSpecies->Fill(4.5);
-	  else fHMuonSpecies->Fill(5.5);
-	}
-
-	isprimary = (aodMcParticle->IsPrimary()) ? 0 : 1; 
-	if(TMath::Abs(aodMcParticle->PdgCode()) != 13) 
-	{ 
-	  isprimary = 2;
-	  if(fIsCutStudy){ fHHadDetRec[cutNum]->Fill(fillArrayDetRec); }
-	  else { if(cutNum==2 || cutNum==3) fHHadDetRec[0]->Fill(fillArrayDetRec); }
-	}
-	if(isprimary == 1) 
-	{ 
-	  if(fIsCutStudy){ fHSecDetRec[cutNum]->Fill(fillArrayDetRec); }
-	  else { if(cutNum==2 || cutNum==3) fHSecDetRec[0]->Fill(fillArrayDetRec); }
-	}
-	mcpt = aodMcParticle->Pt();
-	mceta = aodMcParticle->Eta();
-	mcphi = aodMcParticle->Phi();
-	mccharge = aodMcParticle->Charge();
-	mcp = aodMcParticle->P();
-	mcZv = aodMcParticle->Zv();
-	motherlabel = aodMcParticle->GetMother();
+	AliMCParticle *DaughtParticle  = (AliMCParticle*)fMC->GetTrack(MuFPMParticle->GetFirstDaughter());
+	motherXv = DaughtParticle->Xv();
+	motherYv = DaughtParticle->Yv();
+	motherZv = DaughtParticle->Zv();
       }
-      else if(fESD)
+  
+      if(fPlotMode==1)
       {
-	AliMCParticle *McParticle  = (AliMCParticle*)fMC->GetTrack(label);
-	if(cutNum==2 || cutNum==3)
-	{
-	  if(TMath::Abs(McParticle->PdgCode())==13) fHMuonSpecies->Fill(0.5);
-	  else if(TMath::Abs(McParticle->PdgCode())==211) fHMuonSpecies->Fill(1.5);
-	  else if(TMath::Abs(McParticle->PdgCode())==321) fHMuonSpecies->Fill(2.5);
-	  else if(TMath::Abs(McParticle->PdgCode())==2212) fHMuonSpecies->Fill(3.5);
-	  else if(TMath::Abs(McParticle->PdgCode())==11) fHMuonSpecies->Fill(4.5);
-	  else fHMuonSpecies->Fill(5.5);
-	}
-
-	isprimary = (McParticle->GetMother()<fStack->GetNprimary()) ? 0 : 1; 
-	if(TMath::Abs(McParticle->PdgCode())!=13) 
-	{ 
-	  isprimary = 2;
-	  if(fIsCutStudy) { fHHadDetRec[cutNum]->Fill(fillArrayDetRec); }
-	  else{ if(cutNum==2 || cutNum==3) fHHadDetRec[0]->Fill(fillArrayDetRec); }
-	}
-	if(isprimary == 1) 
-	{ 
-	  if(fIsCutStudy) { fHSecDetRec[cutNum]->Fill(fillArrayDetRec); }
-	  else{ if(cutNum==2 || cutNum==3)  fHSecDetRec[0]->Fill(fillArrayDetRec); }
-	}
-	mcpt = McParticle->Pt();
-	mceta = McParticle->Eta();
-	mcphi = McParticle->Phi();
-	mccharge = McParticle->Charge();
-	mcp = McParticle->P();
-	mcZv = McParticle->Zv();
-
-	motherlabel = GetFirstPrimaryMother(label);
-	Double_t primzvtx = GetFirstPrimaryVertex(label);
-	Int_t reczvtxbin = GetZVertexBin(primzvtx);
-	if((cutNum==2 || cutNum==3) && fZvClass) fHMuonDetRecV[reczvtxbin]->Fill(fillArrayDetRec);
-
-	if(motherlabel > -1)
-	{
-	  AliMCParticle *FPrimaryMother  = (AliMCParticle*)fMC->GetTrack(motherlabel);
-	  motherpdg = TMath::Abs(FPrimaryMother->PdgCode());
-	  motherpt = FPrimaryMother->Pt();
-	  mothereta = FPrimaryMother->Eta();
-	  motherphi = FPrimaryMother->Phi();
-	  motherY = FPrimaryMother->Y();
-	  AliMCParticle *DaughtParticle  = (AliMCParticle*)fMC->GetTrack(FPrimaryMother->GetFirstDaughter());
-	  motherXv = DaughtParticle->Xv();
-	  motherYv = DaughtParticle->Yv();
-	  motherZv = DaughtParticle->Zv();
-	}
+	Double_t fillArrayDetRecMu[7] = { RecEta, RecPt, fCentrality, fZVertex, RecPhi, RecCharge, MuonType };
+	fHDetRecMu[CutType]->Fill(fillArrayDetRecMu);
       }
-      Double_t fillArrayDetGen[6] = { mceta, mcpt, fCentrality, fZVertex, mcphi, mccharge };
-      Double_t fillArrayDetGenP[6] = { mceta, mcp, fCentrality, fZVertex, mcphi, mccharge }; 
-      if(cutNum==2 || cutNum==3)
-      {
-	fHMuonDetGenP->Fill(fillArrayDetGenP);
-	if(fIsCutStudy) fHMuonDetGen[cutNum]->Fill(fillArrayDetGen); 
-	else fHMuonDetGen[0]->Fill(fillArrayDetGen); 
+      if(fPlotMode==2)
+      {	
+	Double_t fillArrayDetRecMuFPM[6] = { RecEta, RecPt, RecPhi, RecCharge, MuonType, FPMSpecies };
+	fHDetRecMuFPM[CutType]->Fill(fillArrayDetRecMuFPM);
+      
+	Double_t fillArrayDetRecMuPP[6] = { RecEta, RecPt, RecPhi, RecCharge, MuonType, PPSpecies };
+	fHDetRecMuPP[CutType]->Fill(fillArrayDetRecMuPP);
       }
-     
-      Int_t motherbin = GetMotherBin(motherpdg);
-      // muon Z-Vertex process
-      if(fZvProcess && (cutNum==2 || cutNum==3))
+      if(fPlotMode==3)
       {
-	fHMuZv[motherbin]->Fill(mcZv);
-	fHMuRelZv[motherbin]->Fill(TMath::Abs(mcZv-fZVertex));
+	Double_t fillArrayMuFPM[6] = { MuFPMEta, MuFPMPt, MuFPMPhi, MuFPMCharge, MuonType, FPMSpecies };
+	fHMuFPM[CutType]->Fill(fillArrayMuFPM);
+	
+	Double_t fillArrayMuPP[6] = { MuPPEta, MuPPPt, MuPPPhi, MuPPCharge, MuonType, PPSpecies };
+	fHMuPP[CutType]->Fill(fillArrayMuPP);
       }
 
       // mother-daughter kinematic relation
-      if(fMDProcess && motherlabel>0)
+      if(fMDProcess)
       {
-	fHMuFrag[cutNum][isprimary]->Fill(trackpt, motherpt*TMath::Exp(-1*motherY));
-	if(cutNum > 1)
+	if(MuFPMParticle->GetFirstDaughter() > 0)
 	{
-	  fHZvRv[isprimary]->Fill(motherZv, TMath::Sqrt(motherXv*motherXv + motherYv*motherYv));
-	  fHXvYv[isprimary]->Fill(motherXv, motherYv);
+	  if(CutType==0 || CutType==1)
+	  {
+	    fHZvRv[(Int_t)(MuonType - 0.5)]->Fill(motherZv, TMath::Sqrt(motherXv*motherXv + motherYv*motherYv));
+	    fHXvYv[(Int_t)(MuonType - 0.5)]->Fill(motherXv, motherYv);
+	  }
 	}
-	MDProcess(isprimary, cutNum, trackpt, trackphi, tracketa, motherpt, motherphi, mothereta);
+	MDProcess((Int_t)(MuonType - 0.5), (Int_t)(CutType - 0.5), RecPt, RecPhi, RecEta, MuFPMPt, MuFPMPhi, MuFPMEta);
       }
-    }
-  }
-  
-  if(fIsMc)
-  {
-    if(fFeynmanX) FeynmanX();
-    if(fScatFX) ScatFX();
-  }
-  
+    }// end of MC process
+  }// end of reconstructed loop
   PostData(1, fOutputList);
   return;
 }
@@ -913,35 +856,53 @@ Bool_t AliMuonEffMC::VertexOk(TObject* obj) const
 }
 
 //________________________________________________________________________
-Int_t AliMuonEffMC::IsGoodMUONtrack(AliESDMuonTrack &track)
+Int_t AliMuonEffMC::GetMUONCutType(AliESDMuonTrack &track)
 {
-  // Applying track cuts for MUON tracks
   Int_t cutNum = 4;
   Double_t thetaTrackAbsEnd = TMath::ATan(track.GetRAtAbsorberEnd()/505.) * TMath::RadToDeg();
   Double_t eta = track.Eta();
 
-  if(eta > -4. && -2.5 > eta && track.ContainTrackerData()) cutNum = 0;
-  if(eta > -4. && -2.5 > eta && track.ContainTrackerData() && track.GetMatchTrigger() > 0) cutNum = 1;
-  if(thetaTrackAbsEnd > 2. &&  10. > thetaTrackAbsEnd && eta > -4. && -2.5 > eta && track.ContainTrackerData()) cutNum = 2;
-  if(thetaTrackAbsEnd > 2. &&  10. > thetaTrackAbsEnd && eta > -4. && -2.5 > eta && track.ContainTrackerData() && track.GetMatchTrigger() > 0) cutNum = 3;
-  
+  if(track.ContainTrackerData()) cutNum = 3;
+  if(track.ContainTrackerData() && eta > -4. && -2.5 > eta) cutNum = 2;
+  if(track.ContainTrackerData() && eta > -4. && -2.5 > eta && thetaTrackAbsEnd > 2. &&  10. > thetaTrackAbsEnd) cutNum =1;
+  if(track.ContainTrackerData() && eta > -4. && -2.5 > eta && thetaTrackAbsEnd > 2. &&  10. > thetaTrackAbsEnd && track.GetMatchTrigger() > 0) cutNum = 0;
   return cutNum;
 }
 
 //________________________________________________________________________
-Int_t AliMuonEffMC::IsGoodMUONtrack(AliAODTrack &track)
+Int_t AliMuonEffMC::GetMUONCutType(AliAODTrack &track)
 {
   Int_t cutNum = 4;
   Double_t thetaTrackAbsEnd = TMath::ATan(track.GetRAtAbsorberEnd()/505.) * TMath::RadToDeg();
   Double_t eta = track.Eta();
 
-  if(eta > -4. && -2.5 > eta && track.IsMuonTrack()) cutNum = 0;
-  if(eta > -4. && -2.5 > eta && track.IsMuonTrack() && track.GetMatchTrigger() > 0) cutNum = 1;
-  if(thetaTrackAbsEnd > 2. &&  10. > thetaTrackAbsEnd && eta > -4. && -2.5 > eta && track.IsMuonTrack()) cutNum = 2;
-  if(thetaTrackAbsEnd > 2. &&  10. > thetaTrackAbsEnd && eta > -4. && -2.5 > eta && track.IsMuonTrack() && track.GetMatchTrigger() > 0) cutNum = 3;
+  if(track.IsMuonTrack()) cutNum = 3;
+  if(track.IsMuonTrack() && eta > -4. && -2.5 > eta) cutNum = 2;
+  if(track.IsMuonTrack() && eta > -4. && -2.5 > eta && thetaTrackAbsEnd > 2. &&  10. > thetaTrackAbsEnd) cutNum = 1;
+  if(track.IsMuonTrack() && eta > -4. && -2.5 > eta && thetaTrackAbsEnd > 2. &&  10. > thetaTrackAbsEnd && track.GetMatchTrigger() > 0) cutNum = 0;
    
   return cutNum;
+}
 
+//________________________________________________________________________
+Double_t AliMuonEffMC::GetMuonTrackType(AliMCParticle &track)
+{
+  if(track.GetMother() < fStack->GetNprimary() && track.PdgCode() == 13) return 0.5; 
+  else if(track.GetMother() >= fStack->GetNprimary() && track.PdgCode() == 13) return 1.5;
+  else return 2.5;
+}
+
+//________________________________________________________________________
+Double_t AliMuonEffMC::GetSpecies(Int_t PdgCode)
+{
+  Int_t code = TMath::Abs(PdgCode);
+  if(code==13) return 0.5;
+  else if(code==211) return 1.5;
+  else if(code==321) return 2.5;
+  else if(code==411 || code==413 || code==421 || code==423 || code==431 || code==433 || code==10413 || code==10411 || code==10423 || code==10421 || code==10433 || code==10431 || code==20413 || code==415 || code==20423 || code==425 || code==20433 || code==435) return 3.5;
+  else if(code==2212) return 4.5;
+  else if(code==11) return 5.5;
+  else return 6.5;
 }
 
 //________________________________________________________________________
@@ -971,163 +932,6 @@ Double_t AliMuonEffMC::deltaphi(Double_t phi)
 }
 
 //________________________________________________________________________
-Int_t AliMuonEffMC::GetMotherBin(Int_t motherpdg)
-{
-  Int_t motherbin = -1;
-
-  if(motherpdg==211) motherbin = 0;
-  else if(motherpdg==321) motherbin = 1;
-  else if(motherpdg==411 || motherpdg==413 || motherpdg==421 || motherpdg==423 || motherpdg==431 || motherpdg==433 || motherpdg==10413 || motherpdg==10411 || motherpdg==10423 || motherpdg==10421 || motherpdg==10433 || motherpdg==10431 || motherpdg==20413 || motherpdg==415 || motherpdg==20423 || motherpdg==425 || motherpdg==20433 || motherpdg==435) motherbin = 2;
-  else motherbin = 3;
-
-  return motherbin;
-}
-
-//________________________________________________________________________
-void AliMuonEffMC::FeynmanX()
-{  
-  for (Int_t ipart=0; ipart<fMC->GetNumberOfTracks(); ipart++)
-  {
-    TParticle *particle = fStack->Particle(ipart);
-    if(particle->GetFirstMother()==0 || particle->GetFirstMother()==1)
-    {
-      Int_t pdgcode = particle->GetPdgCode();
-      if(pdgcode==2) fHFXu->Fill(TMath::Abs(particle->Pz())/1380.0);
-      else if(pdgcode==-2) fHFXantiu->Fill(TMath::Abs(particle->Pz())/1380.0);
-      else if(pdgcode==1) fHFXd->Fill(TMath::Abs(particle->Pz())/1380.0);
-      else if(pdgcode==-1) fHFXantid->Fill(TMath::Abs(particle->Pz())/1380.0);
-      else if(TMath::Abs(pdgcode==21)) fHFXg->Fill(TMath::Abs(particle->Pz())/1380.0);
-      else fHFXetc->Fill(TMath::Abs(particle->Pz())/1380.0);
-    }
-  }
-
-  if(fESD)
-  {
-    for (Int_t iTrack = 0; iTrack<fESD->GetNumberOfMuonTracks(); iTrack++)
-    {
-      AliESDMuonTrack* muonTrack = fESD->GetMuonTrack(iTrack);
-      if(muonTrack)
-      {
-        if(!IsGoodMUONtrack(*muonTrack)) continue;
-	Int_t label = muonTrack->GetLabel();
-        if(TMath::Abs(label) > fMC->GetNumberOfTracks()) continue;
-       
-        TParticle *particle = fStack->Particle(TMath::Abs(label));
-        Int_t motherlabel = particle->GetFirstMother();
-        if(!(motherlabel==-1) && !(motherlabel==0) && !(motherlabel==1))
-        {
-          while(1)
-          {
-            particle = fStack->Particle(motherlabel);
-            motherlabel = particle->GetFirstMother();
-            if(motherlabel==-1 || motherlabel==0 || motherlabel==1) break;
-          }
-        }
-        if(motherlabel==-1) continue;
-
-	Int_t ptbin = -1;
-	Int_t etabin = -1;
-
-	if(muonTrack->Pt() < 2.0) ptbin=0;
-	else ptbin=1;
-
-	if(muonTrack->Eta() <= -3.5) etabin=0;
-	else if(-3.5<muonTrack->Eta() && muonTrack->Eta()<=-3.0) etabin=1;
-	else etabin=2;
-
-        if(motherlabel==0) fHFXmuonP[ptbin][etabin]->Fill(TMath::Abs(particle->Pz())/1380.0);
-        else if(motherlabel==1) fHFXmuonM[ptbin][etabin]->Fill(TMath::Abs(particle->Pz())/1380.0);
-      }
-    }
-  }
-  else if(fAOD)
-  {
-    for (Int_t iTrack = 0; iTrack<fAOD->GetNTracks(); iTrack++)
-    {
-      AliAODTrack* muonTrack = (AliAODTrack*)fAOD->GetTrack(iTrack);
-      if(muonTrack)
-      {
-        if(!(IsGoodMUONtrack(*muonTrack)) || !(muonTrack->IsMuonTrack())) continue;
-        Int_t label = muonTrack->GetLabel();
-        if(TMath::Abs(label) > fMC->GetNumberOfTracks()) continue;
-       
-        TParticle *particle = fStack->Particle(TMath::Abs(label));
-        Int_t motherlabel = particle->GetFirstMother();
-        if(!(motherlabel==-1) && !(motherlabel==0) && !(motherlabel==1))
-        {
-          while(1)
-          {
-            particle = fStack->Particle(motherlabel);
-            motherlabel = particle->GetFirstMother();
-            if(motherlabel==-1 || motherlabel==0 || motherlabel==1) break;
-          }
-        }
-        if(motherlabel==-1) continue;
-
-	Int_t ptbin = -1;
-	Int_t etabin = -1;
-	if(muonTrack->Pt() < 2.0) ptbin=0;
-	else ptbin=1;
-
-	if(muonTrack->Eta() <= -3.5) etabin=0;
-	else if(-3.5<muonTrack->Eta() && muonTrack->Eta()<=-3.0) etabin=1;
-	else etabin=2;
-
-	if(motherlabel==0) fHFXmuonP[ptbin][etabin]->Fill(TMath::Abs(particle->Pz())/1380.0);
-        else if(motherlabel==1) fHFXmuonM[ptbin][etabin]->Fill(TMath::Abs(particle->Pz())/1380.0);
-      }
-    }
-  }
-}
-
-//________________________________________________________________________
-void AliMuonEffMC::ScatFX()
-{
-  TParticle *parta = fStack->Particle(6);
-  TParticle *partb = fStack->Particle(7);
-  if(parta->GetFirstMother()!=-1 || parta->GetFirstMother()!=-1) return;
-    
-  Double_t xa = TMath::Abs(0.5*(parta->Energy() + partb->Energy() + parta->Pz() + partb->Pz())/1380.0);
-  Double_t xb = TMath::Abs(0.5*(parta->Energy() + partb->Energy() - parta->Pz() - partb->Pz())/1380.0);
-
-  fHaFx->Fill(xa);
-  fHbFx->Fill(xb);
-  fHabFxRatio->Fill(xa/xb);
-  fHabDeltaFx->Fill(xa-xb);
-  fHabRelDeltaFx->Fill((xa-xb)/(xa+xb));
-
-  if(fESD)
-  {
-    for (Int_t iTrack = 0; iTrack<fESD->GetNumberOfMuonTracks(); iTrack++)
-    {
-      Int_t MuonPtBin = 0;
-      AliESDMuonTrack* muonTrack = fESD->GetMuonTrack(iTrack);
-      if(muonTrack)
-      {
-	if(!IsGoodMUONtrack(*muonTrack)) continue;
-
-	if(muonTrack->Pt() < 1) MuonPtBin = 0;
-	else if(muonTrack->Pt() < 2) MuonPtBin = 1;
-	else MuonPtBin = 2;
-
-	fHabFxMu[MuonPtBin]->Fill(xa, xb);
-	fHabFxRatioMu[MuonPtBin]->Fill(xa/xb);
-	fHabDeltaFxMu[MuonPtBin]->Fill(xa-xb);
-	fHabRelDeltaFxMu[MuonPtBin]->Fill((xa-xb)/(xa+xb));
-      }
-    }
-  }
-}
-//________________________________________________________________________
-Int_t AliMuonEffMC::GetZVertexBin(Double_t zvertex)
-{
-  if(TMath::Abs(zvertex) < 10.0) { return 0; }
-  else if(TMath::Abs(zvertex) < 90.0) { return 1; }
-  else if(TMath::Abs(zvertex) < 503.0) { return 2; }
-  else { return 3; }
-}
-
-//________________________________________________________________________
 Int_t AliMuonEffMC::GetFirstPrimaryMother(Int_t muonlabel)
 {
   if(fAOD) return 1;
@@ -1152,24 +956,23 @@ Int_t AliMuonEffMC::GetFirstPrimaryMother(Int_t muonlabel)
 }
 
 //________________________________________________________________________
-Double_t AliMuonEffMC::GetFirstPrimaryVertex(Int_t muonlabel)
+Int_t AliMuonEffMC::GetFirstPPMother(Int_t muonlabel)
 {
-  if(fAOD) return 1.0;
+  if(fAOD) return 1;
   else if(fESD)
   {
     AliMCParticle *McParticle  = (AliMCParticle*)fMC->GetTrack(muonlabel);
-    if(McParticle->GetMother()<fStack->GetNprimary()) return McParticle->Zv();
+    if(fMC->IsPhysicalPrimary(muonlabel)) return muonlabel;
     else
     {
-     Int_t motherlabel = McParticle->GetMother();
+      Int_t motherlabel = McParticle->GetMother();
       while(motherlabel > -1)
-     {
-       AliMCParticle *MotherParticle  = (AliMCParticle*)fMC->GetTrack(motherlabel);
-       if(MotherParticle->GetMother()<fStack->GetNprimary()) break;
-       else motherlabel = MotherParticle->GetMother();
-     }
-     AliMCParticle *FirtSecondaryMotherParticle  = (AliMCParticle*)fMC->GetTrack(motherlabel);
-     return FirtSecondaryMotherParticle->Zv();
+      {
+	AliMCParticle *MotherParticle  = (AliMCParticle*)fMC->GetTrack(motherlabel);
+	if(fMC->IsPhysicalPrimary(motherlabel)) break;
+	else motherlabel = MotherParticle->GetMother();
+      }
+      return motherlabel;
     }
   }
   else return -1;

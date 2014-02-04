@@ -34,9 +34,13 @@ Int_t LHC10bcde(  const TString& species    = "Deuteron"
                 , const TString& trkselTag  = "-tpc3-nsd-moc"
                 , const TString& multTag    = ""
                 , const TString& multCorTag = ""
-                , Double_t       ymax       = 0.5
+                , Double_t ymax             = 0.5
                 , Bool_t inel               = 0  // for mult
                 , Bool_t drawOutput         = 1  // for batch
+                , Double_t ptmin            = 0.8
+                , Double_t ptmax            = 3.2
+                , Double_t ptjoint          = 1.0
+                , Double_t ptpid            = 1.4
                 , Int_t option              = 2)
 {
 //
@@ -46,17 +50,12 @@ Int_t LHC10bcde(  const TString& species    = "Deuteron"
 	const TString kPeriod[kNper]    = { "lhc10b", "lhc10c", "lhc10d", "lhc10e" };
 	const TString kOutputTag[kNper] = { "lhc10b", "lhc10c", "lhc10d", "lhc10e" };
 	
-	Double_t ptmin   = (species=="Proton") ? 0.4 : 0.7;
-	Double_t ptjoint = (species=="Proton") ? 1.0 : 1.0;
-	Double_t ptmax   = (species=="Proton") ? 2.0 : 3.0;
-	Double_t ptpid   = (species=="Proton") ? 3.5 : 1.6;
-	
 	using namespace std;
 	
-	if( (option<0) || (option>2) || ((species != "Proton") && (species != "Deuteron")))
+	if( (option<0) || (option>2))
 	{
-		cerr << "unknown species/option: " << species << "/" << option << endl;
-		cerr << "species: Proton or Deuteron, options: 0 (TPC), 1 (TOF), 2 (TPCTOF)" << endl;
+		cerr << "unknown option: " << option << endl;
+		cerr << "valid options : 0 (TPC), 1 (TOF), 2 (TPCTOF)" << endl;
 		exit(1);
 	}
 	
@@ -78,11 +77,11 @@ Int_t LHC10bcde(  const TString& species    = "Deuteron"
 		{
 			case 0:
 				cout << "Config_" << species << "_TPC_LHC10x.C" << endl << endl;
-				gROOT->ProcessLine(Form(".x Config_%s_TPC_LHC10x.C+g(\"%s\", %f, %d, 0)", species.Data(), arg.Data(), ymax, inel));
+				gROOT->ProcessLine(Form(".x Config_%s_TPC_LHC10x.C+g(\"%s\", %f, %d, 0, %f, %f,1,1,1,1,1)", species.Data(), arg.Data(), ymax, inel, ptmin, ptmax));
 				break;
 			case 1:
 				cout << "Config_" << species << "_LHC10x.C" << endl << endl;
-				gROOT->ProcessLine(Form(".x Config_%s_TOF_LHC10x.C+g(\"%s\", %f, %d, 0)", species.Data(), arg.Data(), ymax, inel));
+				gROOT->ProcessLine(Form(".x Config_%s_TOF_LHC10x.C+g(\"%s\", %f, %d, 0, %f, %f, %f,1,1,1,1,1)", species.Data(), arg.Data(), ymax, inel, ptmin, ptmax, ptpid));
 				break;
 			case 2:
 				cout << "Config_TPCTOF_LHC10x.C" << endl << endl;

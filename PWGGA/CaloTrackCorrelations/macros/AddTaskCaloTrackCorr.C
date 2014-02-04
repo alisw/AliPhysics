@@ -501,10 +501,6 @@ AliCaloTrackReader * ConfigureReader()
     reader->SetEventPlaneMethod("V0");
   }
   
-  if     (kYears==2010) reader->SetImportGeometryFromFile(kTRUE,"$ALICE_ROOT/OADB/EMCAL/geometry_2010.root");
-  else if(kYears==2011) reader->SetImportGeometryFromFile(kTRUE,"$ALICE_ROOT/OADB/EMCAL/geometry_2011.root");
-  else                  reader->SetImportGeometryFromFile(kTRUE,"$ALICE_ROOT/OADB/EMCAL/geometry_2012.root");
-  
   if(kPrint) reader->Print("");
   
   return reader;

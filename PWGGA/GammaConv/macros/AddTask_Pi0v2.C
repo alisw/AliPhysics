@@ -25,45 +25,46 @@ TString mesoncutarray[numberOfCuts];
 
 
 // Standard Cuts
-cutarray[0] = "1080000042092970023220000"; mesoncutarray[0] = "01522045000";  //standard cut Pi0 PbPb 00-100
+                                                                  01525065009000
+cutarray[0] = "1080000042092970023220000000"; mesoncutarray[0] = "01522045000000";  //standard cut Pi0 PbPb 00-100
 
 // TPC PID
-cutarray[1] = "1080001042093970023220000"; mesoncutarray[1] = "01522045000";
-cutarray[2] = "1080001042096970023220000"; mesoncutarray[2] = "01522045000";
-cutarray[3] = "1080001042092470023220000"; mesoncutarray[3] = "01522045000";
-cutarray[4] = "1080001042092770023220000"; mesoncutarray[4] = "01522045000";
-cutarray[5] = "1080001042092950023220000"; mesoncutarray[5] = "01522045000";
+cutarray[1] = "1080001042093970023220000000"; mesoncutarray[1] = "01522045000000";
+cutarray[2] = "1080001042096970023220000000"; mesoncutarray[2] = "01522045000000";
+cutarray[3] = "1080001042092470023220000000"; mesoncutarray[3] = "01522045000000";
+cutarray[4] = "1080001042092770023220000000"; mesoncutarray[4] = "01522045000000";
+cutarray[5] = "1080001042092950023220000000"; mesoncutarray[5] = "01522045000000";
 
 // TOF PID
-cutarray[6] = "1080001042092970033220000"; mesoncutarray[6] = "01522045000";
-cutarray[7] = "1080001042092970043220000"; mesoncutarray[7] = "01522045000";
+cutarray[6] = "1080001042092970033220000000"; mesoncutarray[6] = "01522045000000";
+cutarray[7] = "1080001042092970043220000000"; mesoncutarray[7] = "01522045000000";
 
 // Qt max
-cutarray[8] = "1080001042092970024220000"; mesoncutarray[8] = "01522045000";
-cutarray[9] = "1080001042092970022220000"; mesoncutarray[9] = "01522045000";
+cutarray[8] = "1080001042092970024220000000"; mesoncutarray[8] = "01522045000000";
+cutarray[9] = "1080001042092970022220000000"; mesoncutarray[9] = "01522045000000";
 
 //  Chi2 Gamma
-cutarray[10] = "1080001042092970023120000"; mesoncutarray[10] = "01522045000";
-cutarray[11] = "1080001042092970023820000"; mesoncutarray[11] = "01522045000";
+cutarray[10] = "1080001042092970023120000000"; mesoncutarray[10] = "01522045000000";
+cutarray[11] = "1080001042092970023820000000"; mesoncutarray[11] = "01522045000000";
                                         // Psi Pair
-cutarray[12] = "1080001042092970023210000"; mesoncutarray[12] = "01522045000";
-cutarray[13] = "1080001042092970023230000"; mesoncutarray[13] = "01522045000";
+cutarray[12] = "1080001042092970023210000000"; mesoncutarray[12] = "01522045000000";
+cutarray[13] = "1080001042092970023230000000"; mesoncutarray[13] = "01522045000000";
 
 //  R Cut
-cutarray[14] = "1080001044092970023220000"; mesoncutarray[14] = "01522045000";   //5-70
-cutarray[15] = "1080001045092970023220000"; mesoncutarray[15] = "01522045000";   //10-180
-cutarray[16] = "1080001046092970023220000"; mesoncutarray[16] = "01522045000";   //20
-cutarray[17] = "1080001047092970023220000"; mesoncutarray[17] = "01522045000";   //26
-cutarray[18] = "1080001048092970023220000"; mesoncutarray[18] = "01522045000";   //35
-cutarray[19] = "1080001045092970023220000"; mesoncutarray[19] = "01522045000";  //60
+cutarray[14] = "1080001044092970023220000000"; mesoncutarray[14] = "01522045000000";   //5-70
+cutarray[15] = "1080001045092970023220000000"; mesoncutarray[15] = "01522045000000";   //10-180
+cutarray[16] = "1080001046092970023220000000"; mesoncutarray[16] = "01522045000000";   //20
+cutarray[17] = "1080001047092970023220000000"; mesoncutarray[17] = "01522045000000";   //26
+cutarray[18] = "1080001048092970023220000000"; mesoncutarray[18] = "01522045000000";   //35
+cutarray[19] = "1080001045092970023220000000"; mesoncutarray[19] = "01522045000000";  //60
 
 // Single Pt
-cutarray[20] = "1080001042492970023220000"; mesoncutarray[20] = "01522045000";
-cutarray[21] = "1080001042192970023220000"; mesoncutarray[21] = "01522045000";
+cutarray[20] = "1080001042492970023220000000"; mesoncutarray[20] = "01522045000000";
+cutarray[21] = "1080001042192970023220000000"; mesoncutarray[21] = "01522045000000";
 
 // Alpha
-cutarray[22] = "1080001042092970023220000"; mesoncutarray[22] = "01022085000";
-cutarray[23] = "1080001042092970023220000"; mesoncutarray[23] = "01022005000";
+cutarray[22] = "1080001042092970023220000000"; mesoncutarray[22] = "01022085000000";
+cutarray[23] = "1080001042092970023220000000"; mesoncutarray[23] = "01022005000000";
 
 AliAnalysisTask *AddTask_Pi0v2(Int_t harmonic=2,Bool_t IsHeavyIon=kTRUE,Bool_t doSys=kTRUE){
 
@@ -97,10 +98,10 @@ AliAnalysisTask *AddTask_Pi0v2(Int_t harmonic=2,Bool_t IsHeavyIon=kTRUE,Bool_t d
     TString fV0ReaderCut="";
 
     if(IsHeavyIon){
-	fV0ReaderCut = "1080000002084001001500000";
+	fV0ReaderCut = "1080000002084001001500000000";
     }
     else{
-	fV0ReaderCut = "0000000002084001001500000";
+	fV0ReaderCut = "0000000002084001001500000000";
     }
     fV0Reader=new AliV0ReaderV1(Form("PhotonPi0v%d",harmonic));
     mgr->AddTask(fV0Reader);

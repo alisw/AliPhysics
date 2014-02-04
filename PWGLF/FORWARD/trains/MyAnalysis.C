@@ -3,22 +3,25 @@
 # include <AliAnalysisManager.h>
 # include <AliESDEvent.h>
 # include <AliMultiplicity.h>
+# include <AliVEventHandler.h>
 # include <AliESDVertex.h>
+# include <AliProdInfo.h>
 # include <TH1D.h>
 # include <TH2D.h>
 #else 
 class TH1D;
 class TH2D;
+class AliProdInfo;
 #endif 
 #include <AliAnalysisTaskSE.h>
 class MyAnalysis : public AliAnalysisTaskSE
 {
 public:
   MyAnalysis() 
-    : AliAnalysisTaskSE(), fList(0), fMult(0), fVz(0)
+    : AliAnalysisTaskSE(), fList(0), fMult(0), fVz(0), fProd(0)
   {}
   MyAnalysis(const char* name) 
-  : AliAnalysisTaskSE(name), fList(0), fMult(0), fVz(0)
+    : AliAnalysisTaskSE(name), fList(0), fMult(0), fVz(0), fProd(0)
   {
     DefineOutput(1, TList::Class());
     DefineOutput(2, TList::Class()); // For output from Terminate
@@ -53,6 +56,23 @@ public:
   }
   virtual void UserExec(Option_t* )
   {
+    if (!fProd) { 
+      AliAnalysisManager *mgr=AliAnalysisManager::GetAnalysisManager();
+      AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
+      if (inputHandler) {
+        Info("", "Got input handler");
+        TList *uiList = inputHandler->GetUserInfo();
+        if (uiList) {
+          Info("", "Got user list:");
+          uiList->ls();
+        
+          fProd = new AliProdInfo(uiList);
+          Info("", "Lising production information");
+          fProd->List();
+        }
+      }
+    }
+
     AliESDEvent* event = dynamic_cast<AliESDEvent*>(InputEvent());
     if (!event) return;
     if (event->IsPileupFromSPD(3,0.8))   return;
@@ -124,6 +144,7 @@ protected:
   TList*  fList;
   TH2D*   fMult;
   TH1D*   fVz;
+  AliProdInfo* fProd;
   ClassDef(MyAnalysis, 1);  
 };
 //

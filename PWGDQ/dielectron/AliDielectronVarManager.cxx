@@ -31,6 +31,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"Py",                     "#it{p}_{y}",                                         "(GeV/#it{c})"},
   {"Pz",                     "#it{p}_{z}",                                         "(GeV/#it{c})"},
   {"Pt",                     "#it{p}_{T}",                                         "(GeV/#it{c})"},
+  {"PtSq",                   "#it{p}_{T}^{2}",                                     "((GeV/#it{c})^{2})"},
   {"P",                      "#it{p}",                                             "(GeV/#it{c})"},
   {"Xv",                     "x_{vtx}",                                            "(cm)"},
   {"Yv",                     "y_{vtx}",                                            "(cm)"},
@@ -70,7 +71,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"TRDpidProb2D_Electrons", "P(2dim. PID_{e}^{TRD})",                             ""},
   {"TRDpidProb2D_Pions",     "P(2dim. PID_{#pi}^{TRD})",                           ""},
   {"TRDphi",                 "#phi^{TRD}",                                         ""},
-  {"TRDpidEffLeg",           "#epsilon^{TRD legs}(PID)",                           ""},
+  {"TRDpidEffLeg",           "#varepsilon^{TRD legs}(PID)",                           ""},
   {"TRD_signal",             "TRD d#it{E}/d#it{x} + TR",                           "(a.u.)"},
 
   {"ImpactParXY",            "#it{dca}_{xy}",                                      "(cm)"},
@@ -133,7 +134,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"EMCAL_M20",              "M20 EMCAL showershape param.",                       ""},
   {"EMCAL_Dispersion",       "EMCAL dispersion param.",                            ""},
 
-  {"EffLeg",                 "A#times#epsilon",                                    ""},
+  {"EffLeg",                 "A#times#varepsilon",                                    ""},
+  {"OneOverEffLeg",          "(A#times#varepsilon)^{-1}",                             ""},
   {"V0Index0",               "V0Index0",                                           ""},
   {"KinkIndex0",             "KinkIndex0",                                         ""},
   //
@@ -154,10 +156,27 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"ThetaSqCS",              "cos^{2}(#theta_{CS})",                               ""},
   {"PsiPair",                "#Psi^{pair}",                                        "(rad.)"},
   {"PhivPair",               "#Phi_{v}^{pair}",                                    "(rad.)"},
-  {"PairPlaneAngle",         "PairPlaneAngle",                                     "(rad.)"},
-  {"kRotPairx",         	 "kRotPairx",                                          "(rad.)"},
-  {"kRotPairy",         	 "kRotPairy",                                          "(rad.)"},
-  {"kRotPairz",         	 "kRotPairz",                                          "(rad.)"},
+  {"PairPlaneAngle1A",       "#Phi_{1A}",                                          "(rad.)"},
+  {"PairPlaneAngle2A",       "#Phi_{2A}",                                          "(rad.)"},
+  {"PairPlaneAngle3A",       "#Phi_{3A}",                                          "(rad.)"},
+  {"PairPlaneAngle4A",       "#Phi_{4A}",                                          "(rad.)"},
+  {"PairPlaneAngle1C",       "#Phi_{1C}",                                          "(rad.)"},
+  {"PairPlaneAngle2C",       "#Phi_{2C}",                                          "(rad.)"},
+  {"PairPlaneAngle3C",       "#Phi_{3C}",                                          "(rad.)"},
+  {"PairPlaneAngle4C",       "#Phi_{4C}",                                          "(rad.)"},
+  {"PairPlaneAngle1AC",      "#Phi_{1AC}",                                         "(rad.)"},
+  {"PairPlaneAngle2AC",      "#Phi_{2AC}",                                         "(rad.)"},
+  {"PairPlaneAngle3AC",      "#Phi_{3AC}",                                         "(rad.)"},
+  {"PairPlaneAngle4AC",      "#Phi_{4AC}",                                         "(rad.)"},
+  {"PairPlaneAngle1Ran",     "#Phi_{1Ran}",                                        "(rad.)"},
+  {"PairPlaneAngle2Ran",     "#Phi_{2Ran}",                                        "(rad.)"},
+  {"PairPlaneAngle3Ran",     "#Phi_{3Ran}",                                        "(rad.)"},
+  {"PairPlaneAngle4Ran",     "#Phi_{4Ran}",                                        "(rad.)"},
+  {"RandomRP",               "#Phi_{RanRP}",                                       "(rad.)"},
+  {"DeltaPhiRandomRP",       "#Delta #Phi_{RanRP}",                                ""},
+
+  {"PairPlaneMagInPro",      "cos(#Phi)"                                           ""},
+
   {"Cos2PhiCS",              "cos(2#phi_{CS})",                                    ""},
   {"CosTilPhiCS",            "cos(#phi_{CS})",                                     ""},
   {"CosPhiH2",               "cos(2#phi)",                                         ""},
@@ -188,10 +207,13 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"PseudoProperTimeErr",    "#tau error",                                         "(#mus)"},
   {"PseudoProperTimeResolution", "(#tau-#tau^{MC truth})",                         "(#mus)"},
   {"PseudoProperTimePull",   "#frac{(#tau-#tau^{MC truth})}{#tau error}",          ""},
-  {"TRDpidEffPair",          "#epsilon^{TRD pair}(PID)",                           ""},
+  {"TRDpidEffPair",          "#varepsilon^{TRD pair}(PID)",                           ""},
   {"MomAsymDau1",            "#it{p}^{leg1}/#it{p}^{pair}",                        ""},
   {"MomAsymDau2",            "#it{p}^{leg2}/#it{p}^{pair}",                        ""},
-  {"EffPair",                "A#times#epsilon",                                    ""},
+  {"EffPair",                "A#times#varepsilon",                                    ""},
+  {"OneOverEffPair",         "(A#times#varepsilon)^{-1}",                             ""},
+  {"RndmPair",               "P",                                                  ""},
+  {"Pairs",                  "pairs/event",                                        ""},
   //
   {"X",                      "x_{prim.vtx}",                                       "(cm)"},
   {"Y",                      "y_{prim.vtx}",                                       "(cm)"},
@@ -231,10 +253,12 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"MultV0A",                "multiplicity V0A",                                   ""},
   {"MultV0C",                "multiplicity V0C",                                   ""},
   {"MultV0",                 "multiplicity V0",                                    ""},
-  {"AdcV0A",                   "AdcV0A",                                   ""},
-  {"AdcV0C",                   "AdcV0C",                                   ""},
-  {"AdcV0",    "AdcV0",                                     ""},
-  {"VZERO_ch0",   "VZERO_ch0",                                    ""},
+  {"EqMultV0A",              "equalized multiplicity V0A",                         ""},
+  {"EqMultV0C",              "equalized multiplicity V0C",                         ""},
+  {"AdcV0A",                 "AdcV0A",                                             ""},
+  {"AdcV0C",                 "AdcV0C",                                             ""},
+  {"AdcV0",                  "AdcV0",                                              ""},
+  {"VZERO_ch0",   "VZERO_ch0", ""},
   {"VZERO_ch1",   "VZERO_ch1", ""},
   {"VZERO_ch2",   "VZERO_ch2", ""},
   {"VZERO_ch3",   "VZERO_ch3", ""},
@@ -347,8 +371,14 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"TPCsub2rpH2uc",          "#Psi^{TPCsub2} (uncorr.)",                           ""},
   {"TPCsub12DiffH2uc",       "cos(2(#Psi^{TPCsub1}-#Psi^{TPCsub2})) (uncorr.)",    ""},
 
+  {"ZDCArpH1",               "#Psi^{ZDCA}"                                         ""},
+  {"ZDCCrpH1",               "#Psi^{ZDCA}"                                         ""},
+  {"ZDCACrpH1",              "#Psi^{ZDCA}"                                         ""},
+  {"kZDCrpResH1",            ""                                                    ""},
+  {"kv0ZDCrpRes",            ""                                                    ""},
+
   {"NTrk",                   "N_{trk}",                                            ""},
-  {"Tracks",                 "tracks",                                             ""},
+  {"Tracks",                 "tracks/per event",                                             ""},
   {"NVtxContrib",            "N_{vtx. contrib.}",                                  ""},
   {"NVtxContribTPC",         "N_{vtx. contrib.}^{TPC}",                            ""},
   {"Nacc",                   "N_{acc} #cbar_{#||{#eta}<0.9}",                      ""},
@@ -382,6 +412,9 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"Nch10",                  "N_{ch} #cbar_{#||{#eta}<1.0}",                       ""},
   {"Centrality",             "centrality",                                         "(%)"},
   {"CentralitySPD",          "centrality_{SPD}",                                   "(%)"},
+  {"TriggerInclONL",         "online trigger bit (inclusive)",                     ""},
+  {"TriggerInclOFF",         "offline trigger bit (inclusive)",                    ""},
+  {"TriggerExclOFF",         "offline trigger bit (exclusive)",                    ""},
   {"Nevents",                "N_{evt}",                                            ""},
   {"RunNumber",              "run",                                                ""},
   {"MixingBin",              "mixing bin",                                         ""}
@@ -393,12 +426,15 @@ AliEventplane*  AliDielectronVarManager::fgTPCEventPlane    = 0x0;
 AliKFVertex*    AliDielectronVarManager::fgKFVertex         = 0x0;
 TProfile*       AliDielectronVarManager::fgMultEstimatorAvg[4][9] = {{0x0}};
 TH3D*           AliDielectronVarManager::fgTRDpidEff[10][4] = {{0x0}};
-THnBase*        AliDielectronVarManager::fgEffMap           = 0x0;
+THnBase*        AliDielectronVarManager::fgLegEffMap           = 0x0;
+THnBase*        AliDielectronVarManager::fgPairEffMap          = 0x0;
 Double_t        AliDielectronVarManager::fgTRDpidEffCentRanges[10][4] = {{0.0}};
 TString         AliDielectronVarManager::fgVZEROCalibrationFile = "";
 TString         AliDielectronVarManager::fgVZERORecenteringFile = "";
+TString         AliDielectronVarManager::fgZDCRecenteringFile = "";
 TProfile2D*     AliDielectronVarManager::fgVZEROCalib[64] = {0x0};
 TProfile2D*     AliDielectronVarManager::fgVZERORecentering[2][2] = {{0x0,0x0},{0x0,0x0}};
+TProfile3D*     AliDielectronVarManager::fgZDCRecentering[3][2] = {{0x0,0x0},{0x0,0x0},{0x0,0x0}};
 Int_t           AliDielectronVarManager::fgCurrentRun = -1;
 Double_t        AliDielectronVarManager::fgData[AliDielectronVarManager::kNMaxValues] = {0.};
 //________________________________________________________________
@@ -418,6 +454,10 @@ AliDielectronVarManager::AliDielectronVarManager() :
   for(Int_t i=0; i<2; ++i) {
     for(Int_t j=0; j<2; ++j) fgVZERORecentering[i][j] = 0x0;
   }
+  for(Int_t i=0; i<3; ++i)
+    for(Int_t j=0; j<2; ++j) fgZDCRecentering[i][j] = 0x0;
+
+  gRandom->SetSeed();
 }
 
 //________________________________________________________________
@@ -437,6 +477,11 @@ AliDielectronVarManager::AliDielectronVarManager(const char* name, const char* t
   for(Int_t i=0; i<2; ++i)
     for(Int_t j=0; j<2; ++j) 
       fgVZERORecentering[i][j] = 0x0;
+  for(Int_t i=0; i<3; ++i)
+    for(Int_t j=0; j<2; ++j) fgZDCRecentering[i][j] = 0x0;
+
+
+  gRandom->SetSeed();
 }
 
 //________________________________________________________________
@@ -456,6 +501,10 @@ AliDielectronVarManager::~AliDielectronVarManager()
   for(Int_t i=0; i<2; ++i)
     for(Int_t j=0; j<2; ++j) 
       if(fgVZERORecentering[i][j]) delete fgVZERORecentering[i][j]; 
+  for(Int_t i=0; i<3; ++i)
+    for(Int_t j=0; j<2; ++j)
+      if(fgZDCRecentering[i][j]) delete fgZDCRecentering[i][j];
+
 }
 
 //________________________________________________________________

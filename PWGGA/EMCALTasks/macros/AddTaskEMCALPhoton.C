@@ -2,7 +2,8 @@
 
 AliAnalysisTaskEMCALPhoton *AddTaskEMCALPhoton(
   Double_t clusTh=2, 
-  TString period="LHC11d" 
+  TString period="LHC11d", 
+  TString geoname="EMCAL_COMPLETEV1"
 )
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -48,12 +49,7 @@ AliAnalysisTaskEMCALPhoton *AddTaskEMCALPhoton(
   cutsp->SetEtaRange(-1.0,1.0);
   ana->SetPrimTrackCuts(cutsp);
   ana->SetPeriod(period.Data());
-  if(period.Contains("11"))
-    ana->SetGeoName("EMCAL_COMPLETEV1");
-  else
-    ana->SetGeoName("EMCAL_FIRSTYEARV1");
-
-  
+  ana->SetGeoName(geoname.Data());
   mgr->AddTask(ana);
   
   // Create ONLY the output containers for the data produced by the task.

@@ -48,13 +48,15 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
 
   Int_t IsSelectedSingleCut(TObject* obj, Int_t selectionLevel, Int_t cutIndex);
 
-  Int_t CombinePIDCuts (Int_t returnvalue, Int_t returnvaluePID) const;
+  Int_t CombineCuts (Int_t returnvalueTrack, Int_t returnvalue, Int_t returnvaluePID) const;
 
   Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(0,iPtBin)] : 1.e6);}
   Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(7,iPtBin)] : 1.e6);}
 
   void SetPidSelectionFlag(Int_t a) {fPidSelectionFlag=a;}
   Int_t GetPidSelectionFlag() {return fPidSelectionFlag;}
+
+  Bool_t AreLctoV0DaughtersSelected(AliAODRecoDecayHF *rd) const;
 
   Int_t GetV0Type();
 
@@ -76,9 +78,8 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   AliAODPidHF * GetPidV0pos() { return fPidHFV0pos; }
   AliAODPidHF * GetPidV0neg() { return fPidHFV0neg; }
 
-  void AddTrackCutsV0daughters(AliESDtrackCuts* v0daug) {
-    fV0daughtersCuts = new AliESDtrackCuts(*v0daug);
-  }
+  void AddTrackCutsV0daughters(AliESDtrackCuts* v0daug)
+  { delete fV0daughtersCuts; fV0daughtersCuts = new AliESDtrackCuts(*v0daug); }
   virtual AliESDtrackCuts *GetTrackCutsV0daughters() const {return fV0daughtersCuts;}
 
   virtual void PrintAll() const;

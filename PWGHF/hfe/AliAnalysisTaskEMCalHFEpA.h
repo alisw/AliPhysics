@@ -9,7 +9,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: September 12th, 2013.														  //
+	//		version: January 13, 2014.								      //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -58,6 +58,7 @@ public:
 	virtual void   Terminate(Option_t *);
 	
 		//Setters
+	void SetAssHadronPtRange(Double_t AssHadronPtMin, Double_t AssHadronPtMax) {fAssHadronPtMin = AssHadronPtMin; fAssHadronPtMax = AssHadronPtMax; };
 	void SetHFECuts(AliHFEcuts * const cuts) {fCuts = cuts;};
 	void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) {fRejectKinkMother = rejectKinkMother;};
 	void SetCorrelationAnalysis(Bool_t CorrelationFlag=kTRUE) {fCorrelationFlag = CorrelationFlag;};
@@ -86,6 +87,7 @@ public:
 	void SetEMCalTriggerEG2() { fEMCEG2=kTRUE; };
 	void SetCentralityEstimator(Int_t Estimator) { fEstimator=Estimator; }; //0 = V0A, 1 = Other
 	void SetAdditionalCuts(Double_t PtMinAsso, Int_t TpcNclsAsso) {fPtMinAsso = PtMinAsso; fTpcNclsAsso = TpcNclsAsso;};
+	void SetSPDCutForHadrons() {fAssocWithSPD = kTRUE;};
 	
 		//Getters
 	AliHFEpid *GetPID() const {return fPID;};
@@ -113,6 +115,7 @@ private:
 	Bool_t				fUseEMCal;
 	Bool_t				fUseShowerShapeCut;
 	Bool_t				fFillBackground;
+	Bool_t				fAssocWithSPD;
 	
 	
 	Bool_t				fEMCEG1;
@@ -173,7 +176,17 @@ private:
 	TH1F				*fPtElec_ULS2;
 	TH1F				*fPtElec_LS2;
 	
+	TH1F				*fPtElec_ULS_weight;
+	TH1F				*fPtElec_LS_weight;
+	TH1F				*fPtElec_ULS2_weight;
+	TH1F				*fPtElec_LS2_weight;
+	
 		//PID Histograms
+	
+	TH2F				*fTOF01;
+	TH2F				*fTOF02;
+	TH2F				*fTOF03;
+
 	TH1F				*fpid;		
 	
 	TH2F				**fEoverP_pt;
@@ -197,10 +210,14 @@ private:
 	
 	TH1F				**fECluster;
 	TH2F				**fEtaPhi;
+	TH2F				*fEtaPhi_num;
+	TH2F				*fEtaPhi_den;
 	TH1F				**fVtxZ;
+	TH1F				**fEtad;
 	TH1F				**fNTracks;
 	TH1F				**fNClusters;
 	TH2F				**fTPCNcls_EoverP;
+	TH2F				**fTPCNcls_pid;
 	
 	TH1F				**fEta;
 	TH1F				**fPhi;
@@ -276,9 +293,19 @@ private:
 	Bool_t				fChi2CutFlag;
 	Bool_t				fDCAcutFlag;
 	
+	//Correlation Function
+	Double_t			fAssHadronPtMin;
+	Double_t			fAssHadronPtMax;
+	
 		//Non-HFE reconstruction efficiency
 	TH1F				*fPtBackgroundBeforeReco;
 	TH1F				*fPtBackgroundBeforeReco2;
+	TH1F				*fPtBackgroundBeforeReco_weight;
+	TH1F				*fPtBackgroundBeforeReco2_weight;
+	
+	TH2F				*fpT_m_electron;
+	TH2F				*fpT_gm_electron;
+	
 	TH1F				*fPtBackgroundAfterReco;
 	
 	Double_t			fPtMinAsso;
@@ -288,6 +315,7 @@ private:
 	TH1F				*fPtMCparticleAll;
 	TH1F				*fPtMCparticleAll_nonPrimary;
 	TH1F				*fPtMCparticleAlle_nonPrimary;
+	TH1F				*fPtMCparticleAlle_Primary;
 
 	TH1F				*fPtMCparticleReco;
 	TH1F				*fPtMCparticleReco_nonPrimary;
@@ -297,6 +325,7 @@ private:
 	TH1F				*fPtMCparticleRecoHfe2;
 	TH1F				*fPtMCelectronAfterAll;
 	TH1F				*fPtMCelectronAfterAll_nonPrimary;
+	TH1F				*fPtMCelectronAfterAll_Primary;
 	
 	TH1F				*fPtMCpi0;
 	TH1F				*fPtMCeta;

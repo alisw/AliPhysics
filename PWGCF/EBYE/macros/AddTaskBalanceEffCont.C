@@ -1,6 +1,6 @@
 AliAnalysisTaskEffContBF *AddTaskBalanceEffCont( TString  centralityEstimator="V0M",
 						 Double_t centrMin=0.,
-						 Double_t centrMax=90.,
+						 Double_t centrMax=80.,
 						 Double_t vertexZ=10.,
 						 Int_t AODfilterBit = 128,
 						 TString fileNameBase="AnalysisResults"
@@ -10,7 +10,7 @@ AliAnalysisTaskEffContBF *AddTaskBalanceEffCont( TString  centralityEstimator="V
   // Get the pointer to the existing analysis manager via the static access method.
   TString centralityName("");
 
-  centralityName+=Form("%s_%.0f-%.0f_%.0f",centralityEstimator.Data(),centrMin,centrMax,vertexZ);
+  centralityName+=Form("%.0f-%.0f_%.0f",centrMin,centrMax,vertexZ);
   TString outputFileName(fileNameBase);
   outputFileName.Append(".root");
   
@@ -37,12 +37,12 @@ AliAnalysisTaskEffContBF *AddTaskBalanceEffCont( TString  centralityEstimator="V
 
   AliAnalysisTaskEffContBF *taskEffContBF = new AliAnalysisTaskEffContBF("TaskEffContBF");
 
-  // analysis mode
-  taskEffContBF->SetAnalysisMode("TPC");
-
   // centrality
-  taskEffContBF->SetCentralityEstimator(centralityEstimator);
-  taskEffContBF->SetCentralityPercentileRange(centrMin,centrMax);
+  if(centralityEstimator) {
+    taskEffContBF->UseCentrality();
+    taskEffContBF->SetCentralityEstimator(centralityEstimator);
+    taskEffContBF->SetCentralityPercentileRange(centrMin,centrMax);
+  }
   taskEffContBF->SelectCollisionCandidates(AliVEvent::kMB);
 
   // vertex
@@ -55,7 +55,6 @@ AliAnalysisTaskEffContBF *AddTaskBalanceEffCont( TString  centralityEstimator="V
   //taskEffContBF->SetPtRange(0.1, 20.0, 100);  //acceptance cuts //5.0,49
   taskEffContBF->SetEtaRange(-0.8,0.8,100,0.0,1.6, 64); //acceptance cuts
   taskEffContBF->SetPtRange(0.0, 20.0, 100);  //acceptance cuts //5.0,49
-  taskEffContBF->SetPhiRange(0.0,360.,100, 180., 90);  //acceptance cuts
 
   //AODs  
   taskEffContBF->SetAODtrackCutBit(AODfilterBit);

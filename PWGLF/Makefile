@@ -19,6 +19,9 @@ endif
 ifeq ($(PACKAGE),PWGLFforward2)
   ALICEINC      += -IFORWARD/analysis2
 endif
+ifeq ($(PACKAGE),PWGLFforwardhit)
+  ALICEINC      += -IFORWARD/analysis2
+endif
 
 ### define include dir for local case and par case
 ifneq ($(STEERBase_INCLUDE),)
@@ -64,7 +67,8 @@ ifeq ($(ALICEINC),-I.)
   endif
 endif
 
-ifneq ($(EINCLUDE),)
+EINCLUDE := 
+ifneq ($(ALICE_ROOT),)
   ALICEINC += $(EINCLUDE:%=-I$(ALICE_ROOT)/%)
 endif
 
@@ -141,7 +145,8 @@ $(PACKAGE)/Makefile: Makefile #.$(PACKAGE)
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
 	@sed 's/include \$$(ROOTSYS)\/test\/Makefile.arch/include Makefile.arch/' < $^ > $@
 
-$(PACKAGE)/Makefile.arch: $(ROOTSYS)/test/Makefile.arch
+ROOT_MAKEFILE := $(shell root-config --etcdir)/Makefile.arch
+$(PACKAGE)/Makefile.arch: $(ROOT_MAKEFILE)
 	@echo Copying $< to $@
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
 	@cp -a $^ $@

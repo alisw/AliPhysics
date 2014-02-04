@@ -29,6 +29,7 @@
 #include <AliESDEvent.h>
 #include <AliESDtrack.h>
 #include <AliAODEvent.h>
+#include <AliAODVZERO.h>
 #include <AliVParticle.h>
 #include <AliTriggerAnalysis.h>
 #include <TH1F.h>
@@ -184,8 +185,13 @@ void AliNormalizationCounter::StoreEvent(AliVEvent *event,AliRDHFCuts *rdCut,Boo
 
   //Find V0AND
   AliTriggerAnalysis trAn; /// Trigger Analysis
-  v0B = trAn.IsOfflineTriggerFired(eventESD , AliTriggerAnalysis::kV0C);
-  v0A = trAn.IsOfflineTriggerFired(eventESD , AliTriggerAnalysis::kV0A);
+  AliAODVZERO* aodV0 = (AliAODVZERO*)event->GetVZEROData();
+  Bool_t isPP2012 = kFALSE;
+  if(runNumber>=176326 && runNumber<=193766) isPP2012=kTRUE;
+  if(aodV0 && !isPP2012){
+    v0B = trAn.IsOfflineTriggerFired(eventESD , AliTriggerAnalysis::kV0C);
+    v0A = trAn.IsOfflineTriggerFired(eventESD , AliTriggerAnalysis::kV0A);
+  }
   if(v0A&&v0B){
     if(fMultiplicity) 
       fCounters.Count(Form("Event:V0AND/Run:%d/Multiplicity:%d",runNumber,multiplicity));

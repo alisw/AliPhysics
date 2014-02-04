@@ -83,6 +83,8 @@
 #pragma link C++ class AliFilteredTreeEventCuts+;
 #pragma link C++ class AliFilteredTreeAcceptanceCuts+;
 
+#pragma link C++ class AliTaskConfigOCDB+;
+
 
 // TRD performance classes
 #pragma link C++ class  AliTenderSupplyTRD+;
@@ -124,7 +126,7 @@
 #pragma link C++ class  AliTRDpidRefMakerNN+;
 // TOF QA
 #pragma link C++ class  AliAnalysisTaskTOFqa+;
-#pragma link C++ class  AliAnalysisTaskTOFqaID+;
+#pragma link C++ class  AliAnalysisTaskTOFqaID+;
 // HMPID QA
 #pragma link C++ class  AliHMPIDTaskQA+;
 // Cosmics QA
@@ -146,5 +148,10 @@
 #pragma link C++ class  AliTrackComparisonESD+;
 #pragma link C++ class  AliAnalysisTaskGlobalQA+;
 #pragma link C++ class  AliGlobalFBFqa+;
+
+//EVENT AND TRACK SELECTION
+#pragma link C++ class  AliAnalysisTrackingUncertainties+;
+#pragma link C++ class  AliCFSingleTrackEfficiencyTask+;
+#pragma link C++ class  AliSingleTrackEffCuts+;
 
 #endif

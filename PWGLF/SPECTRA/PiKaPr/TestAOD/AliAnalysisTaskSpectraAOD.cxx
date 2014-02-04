@@ -135,6 +135,7 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 	}
     }
   
+  Double_t mass[3]={1.39570000000000000e-01,4.93676999999999977e-01,9.38271999999999995e-01};//FIXME masses to be taken from AliHelperPID
   //main loop on tracks
   for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
     AliAODTrack* track = fAOD->GetTrack(iTracks);
@@ -160,8 +161,9 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
     Int_t charge = track->Charge() > 0 ? kChPos : kChNeg;
     
     // Fill histograms, only if inside y and nsigma acceptance
-    if(idRec != kSpUndefined && fTrackCuts->CheckYCut ((AODParticleSpecies_t)idRec))fHistMan->GetHistogram2D(kHistPtRecSigma,idRec,charge)->Fill(track->Pt(),dca);
-    //can't put a continue because we still have to fill allcharged primaries, done later
+    if(idRec != kSpUndefined){
+      if(fTrackCuts->CheckYCut (mass[idRec]))fHistMan->GetHistogram2D(kHistPtRecSigma,idRec,charge)->Fill(track->Pt(),dca);
+    }//can't put a continue because we still have to fill allcharged primaries, done later
     
     /* MC Part */
     if (arrayMC) {
@@ -196,7 +198,7 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
       if(idRec == kSpUndefined) continue;
       
       // rapidity cut (reconstructed pt and identity)
-      if(!fTrackCuts->CheckYCut ((AODParticleSpecies_t)idRec)) continue;
+      if(!fTrackCuts->CheckYCut (mass[idRec])) continue;
       
       // Get true ID
       Int_t idGen     = fPID->GetParticleSpecie(partMC);

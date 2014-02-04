@@ -236,8 +236,8 @@ void AliAnalysisTaskCDskimESD::UserExec(Option_t */*opt*/)
 	//}
 
 	AliESDEvent *esdin = dynamic_cast<AliESDEvent*>(InputEvent());
-	if (!esdin || !fInputTree || !fInputTreeCopy || !fOutputTree || !fTEinput
-	    || !fTE) {
+	if (!esdin || !fInputTree || !fInputTreeCopy || !fOutputTree ||
+	    (fDoMC && (!fTEinput || !fTE))) {
 		// check whether everything is ready
 		PostData(1, fOutputTree);
 		PostData(2, fStatsFlow);

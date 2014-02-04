@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskHFEFlowTPCTOFEPSP(UInt_t trigger=131073,Int_t aodfilter=16,Bool_t scalarProduct=kFALSE,Bool_t cutPileup=kFALSE,Int_t tpcCls=110, Double_t tpcClsr=60, Int_t tpcClspid=80, Int_t itsCls=4, Int_t pixellayer=2, Double_t dcaxy=100,Double_t dcaz=200, Double_t tofsig=30., Double_t tpceff=50., Int_t vzero=1,Int_t debuglevel=0,Double_t etarange=80,Double_t ITSclustersback=0,Double_t minTPCback=-2.0,Double_t maxTPCback=5.0){
+AliAnalysisTask *AddTaskHFEFlowTPCTOFEPSP(UInt_t trigger=131073,Int_t aodfilter=16,Bool_t scalarProduct=kFALSE,Bool_t cutPileup=kFALSE,Int_t tpcCls=110, Double_t tpcClsr=60, Int_t tpcClspid=80, Int_t itsCls=4, Int_t pixellayer=2, Double_t dcaxy=100,Double_t dcaz=200, Double_t tofsig=30., Double_t tpceff=50., Int_t vzero=1,Int_t debuglevel=2,Double_t etarange=80,Double_t ITSclustersback=0,Double_t minTPCback=-2.0,Double_t maxTPCback=5.0){
 
   //
   // Define TPC cut for 2011 data
@@ -68,7 +68,7 @@ AliAnalysisTask *AddTaskHFEFlowTPCTOFEPSP(UInt_t trigger=131073,Int_t aodfilter=
 
   //set config file name
   TString configFile("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFE_FLOW_TOFTPC.C");
-  //TString configFile("/d/alice12/bailhache/AliRootInstallations/29_11_2012/AliRoot/PWGHF/hfe/macros/configs/PbPb/ConfigHFE_FLOW_TOFTPC.C");
+  //TString configFile("/hera/alice/bailhach/AliRootInstallations/30_09_2013/AliRoot/PWGHF/hfe/macros/configs/PbPb/ConfigHFE_FLOW_TOFTPC.C");
   TString checkconfig="ConfigHFE_FLOW_TOFTPC";
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(checkconfig.Data()))
     gROOT->LoadMacro(configFile.Data());
@@ -87,6 +87,52 @@ AliAnalysisTask *AddTaskHFEFlowTPCTOFEPSP(UInt_t trigger=131073,Int_t aodfilter=
   task->SetBinCentralityLess(4,50.0);
   //task->SetBinCentralityLess(5,60.0);
   //task->SetBinCentralityLess(7,80.0);
+
+  if(debuglevel==3) {
+    
+    //***************************************//
+    //    test   Configure NPE plugin        //
+    //***************************************//
+    
+    AliHFENonPhotonicElectron *backe = new AliHFENonPhotonicElectron(Form("HFEBackGroundSubtractionPID2%s",appendixx.Data()),"Background subtraction");  //appendix
+    //Setting the Cuts for the Associated electron-pool
+    AliHFEcuts *hfeBackgroundCuts = new AliHFEcuts(Form("HFEBackSub%s",appendixx.Data()),"Background sub Cuts");
+    //hfeBackgroundCuts->SetEtaRange(assETA);
+    hfeBackgroundCuts->SetEtaRange(-0.8,0.8);
+    hfeBackgroundCuts->SetPtRange(0.1,1e10);
+    hfeBackgroundCuts->SetMaxChi2perClusterTPC(4);
+    hfeBackgroundCuts->SetMinNClustersITS(ITSclustersback);
+    hfeBackgroundCuts->SetMinNClustersTPC(100);
+    hfeBackgroundCuts->SetMinNClustersTPCPID(80);
+    hfeBackgroundCuts->SetMaxImpactParam(1.,2.);
+    hfeBackgroundCuts->SetAODFilterBit(4);
+    //hfeBackgroundCuts->SetQAOn();			        // QA break
+    
+    AliHFEpid *pidbackground = backe->GetPIDBackground();
+    pidbackground->AddDetector("TPC", 0);
+    pidbackground->ConfigureTPCasymmetric(0.0,9999.,minTPCback,maxTPCback);
+    backe->GetPIDBackgroundQAManager()->SetHighResolutionHistos();
+    backe->SetHFEBackgroundCuts(hfeBackgroundCuts);
+    
+    // Selection of associated tracks for the pool
+    backe->SelectCategory1Tracks(kTRUE);
+    /*
+      if(useCat2Tracks){
+      backe->SelectCategory2Tracks(kTRUE);
+      backe-> SetITSMeanShift(-0.5);
+      }
+    */
+    
+    // apply opening angle cut to reduce file size
+    backe->SetMaxInvMass(0.3);
+    
+    task->SetHFEBackgroundSubtraction(backe);
+    //AliLog::SetClassDebugLevel("AliAnalysisTaskHFEFlowTPCTOFEPSP",3);
+    /////////////////////////////////////////////
+    /////////////////////////////////////////////
+    
+  }  
+
 
   task->SetHFEVZEROEventPlane(0x0);
   //AliLog::SetClassDebugLevel("AliAnalysisTaskHFEFlow",3);

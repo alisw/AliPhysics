@@ -34,9 +34,14 @@ class TParticle;
 
 #include "AliESDtrackCuts.h"
 #include "AliAnalysisTaskSE.h"
+#ifndef __CINT__
 #include "fastjet/JetDefinition.hh"
 #include "fastjet/PseudoJet.hh"
-
+#else
+namespace fastjet {
+  class PseudoJet;
+}
+#endif
 class AliAnalysisTaskFullppJet : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskFullppJet();

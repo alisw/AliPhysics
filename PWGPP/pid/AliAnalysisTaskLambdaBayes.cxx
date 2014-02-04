@@ -78,7 +78,8 @@ AliAnalysisTaskLambdaBayes::AliAnalysisTaskLambdaBayes():
   fHchannelTOFdistr(0),
   fTypeCol(2),
   fPIDuserCut(NULL),
-  fToEP(kFALSE)
+  fToEP(kFALSE),
+  fSpeciesRef(4)
 {
   // Default constructor (should not be used)
   fList->SetName("contLambdaBayes1");
@@ -163,7 +164,8 @@ AliAnalysisTaskLambdaBayes::AliAnalysisTaskLambdaBayes(const char *name):
   fHchannelTOFdistr(0),
   fTypeCol(2),
   fPIDuserCut(NULL),
-  fToEP(kFALSE)
+  fToEP(kFALSE),
+  fSpeciesRef(4)
 {
 
   DefineOutput(1, TList::Class());
@@ -567,7 +569,7 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
   Double_t probP[10] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
   Double_t probN[10] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
   Double_t nSigmaTPC,nSigmaTOF=6,nSigmaTPC2,nSigmaTOF2=6,nSigmaComb,nSigmaComb2;
-
+  Double_t nSigmaTPCRef,nSigmaTOFRef=6,nSigmaCombRef;
   
   AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(aodEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
   TClonesArray *mcArray = NULL;
@@ -655,7 +657,9 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
     Bool_t isLambda = (KpTrack->Charge() > 0);
 
     nSigmaComb=5;
+    nSigmaCombRef=5;
     nSigmaTOF=5;
+    nSigmaTOFRef=5;
     fPtKp=KpTrack->Pt(),fPhiKp=KpTrack->Phi(),fEtaKp=KpTrack->Eta();
     fPidKp=0;
 
@@ -666,6 +670,7 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
 
     
     nSigmaTPC = PIDResponse->NumberOfSigmasTPC(KpTrack,AliPID::kProton);
+    nSigmaTPCRef = PIDResponse->NumberOfSigmasTPC(KpTrack,(AliPID::EParticleType) fSpeciesRef);
 
     if(! (TMath::Abs(nSigmaTPC) < 5)) continue;
 
@@ -704,6 +709,7 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
 	  if(TMath::Abs(nSigmaTOF)<1) fKaTPC[icentr]->Fill(fPtKp,PIDResponse->NumberOfSigmasTPC(KpTrack,AliPID::kKaon));
 	}
 	nSigmaTOF = PIDResponse->NumberOfSigmasTOF(KpTrack,AliPID::kProton);
+	nSigmaTOFRef = PIDResponse->NumberOfSigmasTOF(KpTrack,(AliPID::EParticleType) fSpeciesRef);
 	if(isLambda){
 	  if(TMath::Abs(PIDResponse->NumberOfSigmasTPC(KpTrack,AliPID::kProton))<1) fPrTOF[icentr]->Fill(fPtKp,nSigmaTOF);
 	  if(TMath::Abs(nSigmaTOF)<1) fPrTPC[icentr]->Fill(fPtKp,PIDResponse->NumberOfSigmasTPC(KpTrack,AliPID::kProton));
@@ -723,7 +729,8 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
 	    Float_t timeRandom = fHmismTOF->GetRandom() + distIP*3.35655419905265973e+01;
 	    Double_t times[10];
 	    KpTrack->GetIntegratedTimes(times);
-	    nSigmaTOF = TMath::Abs(timeRandom - times[4])/PIDResponse->GetTOFResponse().GetExpectedSigma(KpTrack->P(), times[3], AliPID::kProton);
+	    nSigmaTOF = TMath::Abs(timeRandom - times[4])/PIDResponse->GetTOFResponse().GetExpectedSigma(KpTrack->P(), times[4], AliPID::kProton);
+	    nSigmaTOFRef = TMath::Abs(timeRandom - times[fSpeciesRef])/PIDResponse->GetTOFResponse().GetExpectedSigma(KpTrack->P(), times[fSpeciesRef], (AliPID::EParticleType) fSpeciesRef);
 	  }
 	}
 
@@ -737,20 +744,30 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
     
     if(tofMatch1){
       nSigmaComb = TMath::Sqrt(nSigmaTOF*nSigmaTOF + nSigmaTPC*nSigmaTPC);
+      nSigmaCombRef = TMath::Sqrt(nSigmaTOFRef*nSigmaTOFRef + nSigmaTPCRef*nSigmaTPCRef);
       if(nSigmaTOF < 5 && fCentrality < 20 && KpTrack->Pt() < 1.3 && KpTrack->Pt() > 1.2){
 	fCombsignal->Fill(nSigmaComb);
       }
     } else {
       nSigmaComb = TMath::Abs(nSigmaTPC);
+      nSigmaCombRef = TMath::Abs(nSigmaTPCRef);
     }
 
     // use sigmaTOF instead of sigmaComb
-    if(tofMatch1) nSigmaComb = nSigmaTOF;
+    if(tofMatch1){
+      nSigmaComb = nSigmaTOF;
+      nSigmaCombRef = nSigmaTOFRef;
+    }
 
     if(nSigmaComb < 2) nSigmaComb = 2;
     else if(nSigmaComb < 3) nSigmaComb = 3;
     else if(nSigmaComb < 5) nSigmaComb = 4.99;
     else nSigmaComb = 6;
+
+    if(nSigmaCombRef < 2) nSigmaCombRef = 2;
+    else if(nSigmaCombRef < 3) nSigmaCombRef = 3;
+    else if(nSigmaCombRef < 5) nSigmaCombRef = 4.99;
+    else nSigmaCombRef = 6;
 
     Int_t iks=-1;
     for(Int_t k=0;k < fNLambda;k++){ // find the Lambda which contains the positive track
@@ -781,7 +798,7 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
       fPIDCombined->GetPriors(KnTrack, oldpN, PIDResponse, detUsedN);
 
       nSigmaTPC2 = PIDResponse->NumberOfSigmasTPC(KnTrack,AliPID::kPion);
-      
+   
       if(! (TMath::Abs(nSigmaTPC2) < 5)) continue;
       
       Int_t tofMatch2 = (KnTrack->GetStatus() & AliVTrack::kTOFout) && (KnTrack->GetStatus() & AliVTrack::kTIME);
@@ -799,6 +816,26 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
 	if(probN[2] > probN[3] && probN[2] > probN[4] && probN[2] > probN[0]) fPidKn += 128; // max prob
 
 	nSigmaTOF2 = PIDResponse->NumberOfSigmasTOF(KnTrack,AliPID::kPion);
+
+	if(fIsMC){
+	  Float_t mismAdd = addMismatchForMC;
+	  if(KnTrack->Pt() < 1) mismAdd = addMismatchForMC/KnTrack->Pt();
+	  
+	  if(gRandom->Rndm() < mismAdd){
+	    Float_t etaAbs = TMath::Abs(KnTrack->Eta());
+	    Int_t channel = Int_t(4334.09 - 4758.36 * etaAbs -1989.71 * etaAbs*etaAbs + 1957.62*etaAbs*etaAbs*etaAbs);
+	    channel = channel % 8736;
+	    Float_t distIP = fHchannelTOFdistr->GetBinContent(channel);
+	    
+	    // generate random time
+	    Float_t timeRandom = fHmismTOF->GetRandom() + distIP*3.35655419905265973e+01;
+	    Double_t times[10];
+	    KnTrack->GetIntegratedTimes(times);
+	    nSigmaTOF2 = TMath::Abs(timeRandom - times[4])/PIDResponse->GetTOFResponse().GetExpectedSigma(KnTrack->P(), times[4], AliPID::kProton);
+	  }
+	}
+
+
 
 	nSigmaTOF2 = TMath::Abs(nSigmaTOF2);
 
@@ -884,6 +921,15 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
       if(ipt < 0) ipt = 0; // just to be sure
 
       if(TMath::Abs(fEtaLambda) < 0.8 && fPtKp > 0.3 && fPtKn > 0.3){
+	if(fSpeciesRef != 4){
+	  xTOfill[4] = probP[fSpeciesRef];
+	  xTOfill2[5] = probP[fSpeciesRef];
+
+	  xTOfill[9] = nSigmaCombRef;
+	  xTOfill2[10] = nSigmaCombRef;
+
+	}
+
 	if(isLambda) fContPid->Fill(0,fMassV0,fCentrality,xTOfill);
 	else fContPid2->Fill(0,fMassV0,fCentrality,xTOfill2);
 

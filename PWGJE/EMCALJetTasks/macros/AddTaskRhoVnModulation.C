@@ -15,7 +15,7 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   Double_t   jetradius          = 0.2,
   Double_t   jetptcut           = 1,
   Double_t   jetareacut         = 0.557,
-  UInt_t     type               = AliAnalysisTaskEmcal::kTPC,
+  const char* type              = "TPC",
   Int_t      leadhadtype        = 0,
   const char *taskname           = "AliAnalysisTaskRhoVnModulation",
   UInt_t     runMode            = AliAnalysisTaskRhoVnModulation::kGrid,
@@ -23,7 +23,8 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   TString    fitOpts            = "WLQI",
   UInt_t     fitType            = AliAnalysisTaskRhoVnModulation::kFourierSeries,
   TArrayI    *centralities      = 0x0,
-  TRandom3   *randomizer        = 0x0
+  TRandom3   *randomizer        = 0x0,
+  Double_t   trackptcut         = .15
   )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -56,24 +57,27 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
     name += "_";
     name += nrho;
   }
-  if (type == AliAnalysisTaskEmcal::kTPC) 
+  if (!strcmp(type, "TPC"))
     name += "_TPC";
-  else if (type == AliAnalysisTaskEmcal::kEMCAL) 
+  else if (!strcmp(type, "EMCAL"))
     name += "_EMCAL";
-  else if (type == AliAnalysisTaskEmcal::kUser) 
+  else if (!strcmp(type, "USER")) 
     name += "_USER";
 
   AliAnalysisTaskRhoVnModulation* jetTask = new AliAnalysisTaskRhoVnModulation(name, runMode);
   // inherited setters
-  jetTask->SetJetsName(njets);
-  jetTask->SetAnaType(type);
-  jetTask->SetTracksName(ntracks);
-  jetTask->SetClusName(nclusters);
-  jetTask->SetRhoName(nrho);
-  jetTask->SetJetRadius(jetradius);
-  jetTask->SetJetPtCut(jetptcut);
-  jetTask->SetPercAreaCut(jetareacut);
-  jetTask->SetLeadingHadronType(leadhadtype);
+  AliParticleContainer* partCont = jetTask->AddParticleContainer(ntracks);
+  if(partCont) {
+      partCont->SetName("Tracks");
+      partCont->SetParticlePtCut(trackptcut);
+  }
+  AliJetContainer* jetCont = jetTask->AddJetContainer(njets, type, jetradius);
+  if(jetCont) {
+      jetCont->SetName("Jets");
+      jetCont->SetPercAreaCut(jetareacut);
+      jetCont->SetRhoName(nrho);
+      jetCont->ConnectParticleContainer(partCont);
+  }
   // task specific setters
   jetTask->SetFillQAHistograms(fillQA);
   jetTask->SetDebugMode(-1);

@@ -66,57 +66,21 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask(const char* name)
   DGUARD(fDebug, 3,"named CTOR of AliForwardMultiplicityTask: %s", name);
 }
 
-//____________________________________________________________________
-AliForwardMultiplicityTask::AliForwardMultiplicityTask(const AliForwardMultiplicityTask& o)
-  : AliForwardMultiplicityBase(o),
-    fESDFMD(o.fESDFMD),
-    fEventInspector(o.fEventInspector),
-    fSharingFilter(o.fSharingFilter),
-    fDensityCalculator(o.fDensityCalculator),
-    fCorrections(o.fCorrections),
-    fHistCollector(o.fHistCollector),
-    fEventPlaneFinder(o.fEventPlaneFinder)
 
+//____________________________________________________________________
+Bool_t
+AliForwardMultiplicityTask::PreEvent()
 {
-  // 
-  // Copy constructor 
-  // 
-  // Parameters:
-  //    o Object to copy from 
-  //
-  DGUARD(fDebug, 3,"Copy CTOR of AliForwardMultiplicityTask");
+  // Clear stuff 
+  fHistos.Clear();
+  fESDFMD.Clear();
+  fAODFMD.Clear();
+  fAODEP.Clear();
+  return true;
 }
-
 //____________________________________________________________________
-AliForwardMultiplicityTask&
-AliForwardMultiplicityTask::operator=(const AliForwardMultiplicityTask& o)
-{
-  // 
-  // Assignment operator 
-  // 
-  // Parameters:
-  //    o Object to assign from 
-  // 
-  // Return:
-  //    Reference to this object 
-  //
-  DGUARD(fDebug,3,"Assignment to AliForwardMultiplicityTask");
-  if (&o == this) return *this;
-  AliForwardMultiplicityBase::operator=(o);
-
-  fEventInspector    = o.fEventInspector;
-  fSharingFilter     = o.fSharingFilter;
-  fDensityCalculator = o.fDensityCalculator;
-  fCorrections       = o.fCorrections;
-  fHistCollector     = o.fHistCollector;
-  fEventPlaneFinder  = o.fEventPlaneFinder;
-
-  return *this;
-}
-
-//____________________________________________________________________
-void
-AliForwardMultiplicityTask::UserExec(Option_t*)
+Bool_t
+AliForwardMultiplicityTask::Event(AliESDEvent& esd)
 {
   // 
   // Process each event 
@@ -129,17 +93,6 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   if (fDoTiming) total.Start(true);
   
   DGUARD(fDebug,1,"Process the input event");
-  // static Int_t cnt = 0;
-  // cnt++;
-  // Get the input data 
-  AliESDEvent* esd = GetESDEvent();
-  if (!esd) return;
-
-  // Clear stuff 
-  fHistos.Clear();
-  fESDFMD.Clear();
-  fAODFMD.Clear();
-  fAODEP.Clear();
 
   // Inspect the event
   if (fDoTiming) individual.Start(true);
@@ -149,12 +102,12 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   TVector3 ip;
   Double_t cent      = -1;
   UShort_t nClusters = 0;
-  UInt_t   found     = fEventInspector.Process(esd, triggers, lowFlux, 
+  UInt_t   found     = fEventInspector.Process(&esd, triggers, lowFlux, 
 					       ivz, ip, cent, nClusters);
   if (fDoTiming) fHTiming->Fill(kTimingEventInspector, individual.CpuTime());
   
-  if (found & AliFMDEventInspector::kNoEvent)    return;
-  if (found & AliFMDEventInspector::kNoTriggers) return;
+  if (found & AliFMDEventInspector::kNoEvent)    return false;
+  if (found & AliFMDEventInspector::kNoTriggers) return false;
 
   // Set trigger bits, and mark this event for storage 
   fAODFMD.SetTriggerBits(triggers);
@@ -164,27 +117,25 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   fAODFMD.SetNClusters(nClusters);
   MarkEventForStore();
  
-  if (found & AliFMDEventInspector::kNoSPD)      return;
-  if (found & AliFMDEventInspector::kNoFMD)      return;
-  if (found & AliFMDEventInspector::kNoVertex)   return;
-  
-  if (triggers & AliAODForwardMult::kPileUp) return;
-  
+  // Do not check if SPD data is there - potential bias 
+  // if (found & AliFMDEventInspector::kNoSPD)      return false;
+  if (found    & AliFMDEventInspector::kNoFMD)      return false;
+  if (found    & AliFMDEventInspector::kNoVertex)   return false;
+  if (triggers & AliAODForwardMult::kPileUp)        return false;
   fAODFMD.SetIpZ(ip.Z());
-
-  if (found & AliFMDEventInspector::kBadVertex) return;
+  if (found & AliFMDEventInspector::kBadVertex)     return false;
 
   // We we do not want to use low flux specific code, we disable it here. 
   if (!fEnableLowFlux) lowFlux = false;
 
   // Get FMD data 
-  AliESDFMD* esdFMD = esd->GetFMDData();  
+  AliESDFMD* esdFMD = esd.GetFMDData();  
 
   // Apply the sharing filter (or hit merging or clustering if you like)
   if (fDoTiming) individual.Start(true);
   if (!fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD, ip.Z())) { 
     AliWarning("Sharing filter failed!");
-    return;
+    return false;
   }
   if (fDoTiming) fHTiming->Fill(kTimingSharingFilter, individual.CpuTime());
   
@@ -193,24 +144,36 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   if (!fDensityCalculator.Calculate(fESDFMD, fHistos, lowFlux, cent, ip)) { 
     // if (!fDensityCalculator.Calculate(*esdFMD, fHistos, ivz, lowFlux)) { 
     AliWarning("Density calculator failed!");
-    return;
+    return false;
   }
   if (fDoTiming) fHTiming->Fill(kTimingDensityCalculator,individual.CpuTime());
 
   // Check if we should do the event plane finder
   if (fEventInspector.GetCollisionSystem() == AliFMDEventInspector::kPbPb) {
     if (fDoTiming) individual.Start(true);
-    if (!fEventPlaneFinder.FindEventplane(esd, fAODEP, 
+    if (!fEventPlaneFinder.FindEventplane(&esd, fAODEP, 
 					  &(fAODFMD.GetHistogram()), &fHistos))
       AliWarning("Eventplane finder failed!");
     if (fDoTiming) fHTiming->Fill(kTimingEventPlaneFinder,individual.CpuTime());
   }
   
+  // Check how many rings have been marked for skipping 
+  Int_t nSkip = 0;
+  for (UShort_t d=1; d<=3; d++) { 
+    for (UShort_t q=0; q<=(d/2); q++) { 
+      TH2D* h = fHistos.Get(d,q == 0 ? 'I' : 'O');
+      if (h && h->TestBit(AliForwardUtil::kSkipRing)) nSkip++;
+    }
+  }
+  if (nSkip > 0) 
+    // Skip the rest if we have too many outliers 
+    return false;
+  
   // Do the secondary and other corrections. 
   if (fDoTiming) individual.Start(true);
   if (!fCorrections.Correct(fHistos, ivz)) { 
     AliWarning("Corrections failed");
-    return;
+    return false;
   }
   if (fDoTiming) fHTiming->Fill(kTimingCorrections, individual.CpuTime());
 
@@ -220,29 +183,16 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
 			      ivz, fAODFMD.GetHistogram(),
 			      fAODFMD.GetCentrality())) {
     AliWarning("Histogram collector failed");
-    return;
+    return false;
   }
   if (fDoTiming) fHTiming->Fill(kTimingHistCollector, individual.CpuTime());
 
-  if (fAODFMD.IsTriggerBits(AliAODForwardMult::kInel))
+  if (fAODFMD.IsTriggerBits(AliAODForwardMult::kInel) && nSkip < 1) 
     fHData->Add(&(fAODFMD.GetHistogram()));
 
-  PostData(1, fList);
-
   if (fDoTiming) fHTiming->Fill(kTimingTotal, total.CpuTime());
-}
-
-//____________________________________________________________________
-void
-AliForwardMultiplicityTask::FinishTaskOutput()
-{
-  if (!fList) 
-    Warning("FinishTaskOutput", "No list defined");
-  else {
-    if (fDebug) 
-      fList->ls();
-  }
-  AliAnalysisTaskSE::FinishTaskOutput();
+  
+  return true;
 }
 
 

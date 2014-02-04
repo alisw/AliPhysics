@@ -57,16 +57,16 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const char *aName, int 
   // Normal constructor
   char name[200];
   snprintf(name, 200, "EvMult%s", aName);
-  fEvMult = new TH1D(name, "Event Multiplicity", nBins+1, -0.5, 5000.5); 
+  fEvMult = new TH1D(name, "Event Multiplicity", nBins+1, -0.5, 5000.5);
 
   snprintf(name, 200, "NormEvMult%s", aName);
-  fNormEvMult = new TH1D(name, "Normalized Event Multiplicity", nBins+1, -0.5, 5000.5); 
+  fNormEvMult = new TH1D(name, "Normalized Event Multiplicity", nBins+1, -0.5, 5000.5);
 
 
 
   if(!freadMC) {
     snprintf(name, 200, "SPDEvMult%s", aName);
-    fSPDMult = new TH1D(name, "SPD Tracklet Multiplicity", nBins+1, -0.5,  5000.5); 
+    fSPDMult = new TH1D(name, "SPD Tracklet Multiplicity", nBins+1, -0.5,  5000.5);
   }
 
   snprintf(name, 200, "EvMultTotPt%s", aName);
@@ -135,8 +135,8 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const AliFemtoCutMonito
   if (fNormEvMult) delete fNormEvMult;
   fNormEvMult = new TH1D(*aCut.fNormEvMult);
 
-  
-  
+
+
   if(!freadMC){
     if (fSPDMult) delete fSPDMult;
     fSPDMult = new TH1D(*aCut.fSPDMult);
@@ -203,7 +203,7 @@ AliFemtoCutMonitorEventMult::~AliFemtoCutMonitorEventMult()
       delete fEst1Norm;
       delete fEst2Norm;
       delete fEst3Norm;
-    }   
+    }
 
   delete fPsiVZERO;
 
@@ -212,24 +212,24 @@ AliFemtoCutMonitorEventMult::~AliFemtoCutMonitorEventMult()
 AliFemtoCutMonitorEventMult& AliFemtoCutMonitorEventMult::operator=(const AliFemtoCutMonitorEventMult& aCut)
 {
   // assignment operator
-  if (this == &aCut) 
+  if (this == &aCut)
     return *this;
 
   if (fEvMult) delete fEvMult;
   fEvMult = new TH1D(*aCut.fEvMult);
-  
+
   if (fNormEvMult) delete fNormEvMult;
   fNormEvMult = new TH1D(*aCut.fNormEvMult);
-  
-  
+
+
   if (fPsiVZERO) delete fPsiVZERO;
   fPsiVZERO = new TH1D(*aCut.fPsiVZERO);
-  
+
   if(!freadMC){
     if (fSPDMult) delete fSPDMult;
     fSPDMult = new TH1D(*aCut.fSPDMult);
   }
-  
+
   if (fMultSumPt) delete fMultSumPt;
   fMultSumPt = new TH2D(*aCut.fMultSumPt);
 
@@ -267,11 +267,11 @@ AliFemtoCutMonitorEventMult& AliFemtoCutMonitorEventMult::operator=(const AliFem
   return *this;
 }
 
-AliFemtoString AliFemtoCutMonitorEventMult::Report(){ 
+AliFemtoString AliFemtoCutMonitorEventMult::Report(){
   // Prepare report from the execution
-  string stemp = "*** AliFemtoCutMonitorEventMult report"; 
+  string stemp = "*** AliFemtoCutMonitorEventMult report";
   AliFemtoString returnThis = stemp;
-  return returnThis; 
+  return returnThis;
 }
 
 void AliFemtoCutMonitorEventMult::Fill(const AliFemtoEvent* aEvent)
@@ -335,7 +335,7 @@ void AliFemtoCutMonitorEventMult::Write()
 TList *AliFemtoCutMonitorEventMult::GetOutputList()
 {
   TList *tOutputList = new TList();
-  // tOutputList->Add(fEvMult);
+  tOutputList->Add(fEvMult);
   tOutputList->Add(fNormEvMult);
   tOutputList->Add(fPsiVZERO);
   // tOutputList->Add(fSPDMult);

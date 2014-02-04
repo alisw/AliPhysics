@@ -72,13 +72,13 @@ Bool_t AliJetEmbeddingFromGenTask::ExecOnce()
   fGen->SetStack(stack);
   fGen->Init();
 
-  if (InputEvent()->FindListObject(fTracksName) == 0) {
+  if (!(InputEvent()->FindListObject(fTracksName))) {
     fOutTracks = new TClonesArray("AliPicoTrack", 1000);
     fOutTracks->SetName(fTracksName);
     InputEvent()->AddObject(fOutTracks);
     fNTracks = 0;
   }
-
+  
   return kTRUE;
 }
 
@@ -86,6 +86,9 @@ Bool_t AliJetEmbeddingFromGenTask::ExecOnce()
 void AliJetEmbeddingFromGenTask::Run() 
 {
   // Embed particles.
+
+  if(fOutTracks)
+   fOutTracks->Delete();
 
   if (fCopyArray) 
     CopyTracks();
@@ -119,6 +122,6 @@ void AliJetEmbeddingFromGenTask::Run()
       continue;
     if (pt>fPtMax)
       continue;
-    AddTrack(pt, eta, phi);
+    AddTrack(pt, eta, phi,0,0,0,0,0,0,part->GetMass());
   }
 }

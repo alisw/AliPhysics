@@ -1,7 +1,7 @@
 #ifndef ALIANALYSISTASKCLQA_H
 #define ALIANALYSISTASKCLQA_H
 
-// $Id: AliAnalysisTaskCLQA.h 58847 2012-09-30 18:11:49Z loizides $
+// $Id $
 
 class TClonesArray;
 class TString;
@@ -30,6 +30,8 @@ class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcal {
   void                        SetDoCumulants(Bool_t b)          { fDoCumulants     = b; }
   void                        SetDoMuonTracking(Bool_t b)       { fDoMuonTracking  = b; }
   void                        SetDoTracking(Bool_t b)           { fDoTracking      = b; }
+  void                        SetDo2013VertexCut(Bool_t b)      { fDo2013VertexCut = b; }
+
   void                        UserCreateOutputObjects();
 
  protected:
@@ -38,14 +40,17 @@ class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcal {
   Bool_t                      Run();
   void                        RunCumulants(Double_t Mmin, Double_t ptmin, Double_t ptmax, Double_t etamin, Double_t etamax);
 
+  Bool_t                      fDo2013VertexCut;  // if true then use 2013 pA vertex check (only if 2013 pPb run)
   Bool_t                      fDoTracking;       // if true run tracking analysis
   Bool_t                      fDoMuonTracking;   // if true run muon tracking analysis
   Bool_t                      fDoCumulants;      // if true run cumulant analysis
+  Bool_t                      fDoCumNtuple;      // if true then save cumulant ntuple
   Double_t                    fCumPtMin;         // minimum pt for cumulants
   Double_t                    fCumPtMax;         // maximum pt for cumulants
   Double_t                    fCumEtaMin;        // minimum eta for cumulants
   Double_t                    fCumEtaMax;        // maximum eta for cumulants
   Double_t                    fCumMmin;          // minimum number of tracks for cumulants 
+  Int_t                       fCumMbins;         // number of bins for M
   TH1                        *fCentCL1In;        // input for MC based CL1 centrality
   TH1                        *fCentV0AIn;        // input for MC based V0A centrality
   TTree                      *fNtupCum;          //!ntuple for cumulant analysis
@@ -57,7 +62,7 @@ class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcal {
   AliAnalysisTaskCLQA(const AliAnalysisTaskCLQA&);            // not implemented
   AliAnalysisTaskCLQA &operator=(const AliAnalysisTaskCLQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskCLQA, 3) // Constantin's Task
+  ClassDef(AliAnalysisTaskCLQA, 6) // Constantin's Task
 };
 
 class AliNtupCumInfo {
@@ -119,5 +124,4 @@ class AliNtupZdcInfo {
 
   ClassDef(AliNtupZdcInfo,1) // ZDC storage class
 };
-
 #endif

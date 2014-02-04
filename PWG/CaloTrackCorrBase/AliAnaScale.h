@@ -29,7 +29,7 @@ public:
   
   virtual void Exec(Option_t * opt = "") ;
   
-  void         Set(const Double_t val)    { fScale = val   ; }
+  void         Set(Double_t val)          { fScale = val   ; }
   
   void         SetDebugLevel(Int_t level) { fDebug = level ; }
 

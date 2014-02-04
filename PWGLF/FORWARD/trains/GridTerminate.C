@@ -56,21 +56,60 @@ Bool_t LoadPar(const char* parName)
   Info("GridTerminate","Loaded package %s",parName);
   return true;
 }
+
 /** 
- * Submit the terminate job 
+ * Load the analysis handler if needed 
  * 
- * @param name Name of the job
- * @param libs Libraries to load (space separated string)
- * @param pars PARs to load (space separated string)
- * @param srcs Sources to load (space separated string)
+ * @param name 
+ * 
+ * @return 
+ */
+Bool_t LoadHandler(const TString& name)
+{
+  // Load plugin
+  TFile* file = TFile::Open(Form("%s_plugin.root",name.Data()),"READ");
+  // TFile* plug = TFile::Open("plugin.root","READ");
+  if (!file) {
+    // Error("GridTerminate","Failed to open %s_plugin.root",name.Data());
+    Error("GridTerminate","Failed to open %s_plugin.root",
+	  name.Data());
+    return false;
+  }
+  AliAnalysisAlien* handler = 
+    static_cast<AliAnalysisAlien*>(file->Get("plugin"));
+  if (!handler) {
+    Error("GridTerminate","Failed to load plugin");
+    return false;
+  }
+  Info("GridTerminate","Setting grid handler");
+  handler->SetRunMode("terminate");
+  handler->SetMergeViaJDL(true);
+  AliAnalysisManager::GetAnalysisManager()->SetGridHandler(handler);
+
+  return true;
+}
+
+/** 
+ * Setup our manager et al 
+ * 
+ * @param name            Name of the job
+ * @param libs            Libraries to load (space separated string)
+ * @param pars            PARs to load (space separated string)
+ * @param srcs            Sources to load (space separated string)
+ * @param local           If true, run local terminate job on already 
+ *                        merged and downloaded files.
+ * @param localLibsNotPar if @a local is true and this is true, then
+ *                        we load the corresponding locally compiled 
+ *                        library for each specified PAR file.
  * 
  * @return true on success 
  */
-Bool_t GridTerminate(const TString& name, 
-		     const TString& libs, 
-		     const TString& pars, 
-		     const TString& srcs,
-		     Bool_t         local=false)
+Bool_t Setup(const TString& name, 
+	     const TString& libs, 
+	     const TString& pars, 
+	     const TString& srcs,
+	     Bool_t         local=false,
+	     Bool_t         localLibsNotPar=true)
 {
   // Load basic ROOT libraries
   gSystem->AddDynamicPath("/usr/lib");
@@ -121,7 +160,12 @@ Bool_t GridTerminate(const TString& name,
 	  parName.Contains("ANALYSIS")  ||
 	  parName.Contains("OADB")      ||
 	  parName.Contains("ANALYSISalice")) continue;
-      if (!LoadPar(parName.Data())) return false;
+      Bool_t ret = true;
+      if (local && localLibsNotPar) 
+	ret = LoadLib(Form("lib%s.so", parName.Data()));
+      else 
+	ret = LoadPar(parName.Data());
+      if (!ret) return false;
     }
   }
 
@@ -168,41 +212,68 @@ Bool_t GridTerminate(const TString& name,
   }
   Info("GridTerminate","Loaded analysis manager");
 
-  // Load plugin
-  TFile* plug = TFile::Open(Form("%s_plugin.root",name.Data()),"READ");
-  // TFile* plug = TFile::Open("plugin.root","READ");
-  if (!plug) {
-    // Error("GridTerminate","Failed to open %s_plugin.root",name.Data());
-    Error("GridTerminate","Failed to open plugin.root");
-    return false;
-  }
-  AliAnalysisAlien* handler = 
-    static_cast<AliAnalysisAlien*>(plug->Get("plugin"));
-  if (!handler) {
-    Error("GridTerminate","Failed to load plugin");
-    return false;
-  }
-  Info("GridTerminate","Setting grid handler");
-  handler->SetRunMode("terminate");
-  if (local) handler->SetMergeViaJDL(false);
-  mgr->SetGridHandler(handler);
+  // If we do a local merge, do not do any else 
+  if (local) return true;
+
+  return LoadHandler(name);
+}
+
+/** 
+ * Submit the terminate job 
+ * 
+ * @param name            Name of the job
+ * @param libs            Libraries to load (space separated string)
+ * @param pars            PARs to load (space separated string)
+ * @param srcs            Sources to load (space separated string)
+ * @param local           If true, run local terminate job on already 
+ *                        merged and downloaded files.
+ * @param localLibsNotPar if @a local is true and this is true, then
+ *                        we load the corresponding locally compiled 
+ *                        library for each specified PAR file.
+ * 
+ * @return true on success 
+ */
+Bool_t GridTerminate(const TString& name, 
+		     const TString& libs, 
+		     const TString& pars, 
+		     const TString& srcs,
+		     Bool_t         local=false,
+		     Bool_t         localLibsNotPar=true)
+{
+  if (!Setup(name, libs, pars, srcs, local, localLibsNotPar)) return false; 
 
   // Run the terminate job
-  Info("GridTerminate","Starting terminate job");
-  if (mgr->StartAnalysis("grid") < 0) return false;
+  Info("GridTerminate","Starting terminate job - %s", local ? "locally" : "on the grid");
 
-#if 1
-  std::ofstream outJobs(Form("%s_merge.jobid", mgr->GetName()));
-  outJobs << handler->GetGridJobIDs() << std::endl;
-  outJobs.close();
+  AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!local) {
+
+    AliAnalysisAlien* handler = static_cast<AliAnalysisAlien*>(mgr->GetGridHandler());
+    if (!handler) { 
+      Error("GridTerminate", "Manager does now have an AliEn handler");
+      return false;
+    }
+    if (mgr->StartAnalysis("grid") < 0) return false;
+
+    std::ofstream outJobs(Form("%s_merge.jobid", mgr->GetName()));
+    outJobs << handler->GetGridJobIDs() << std::endl;
+    outJobs.close();
+    
+    std::ofstream outStages(Form("%s_merge.stage", mgr->GetName()));
+    outStages << handler->GetGridStages() << std::endl;
+    outStages.close();
+
+    return true;
+  }
   
-  std::ofstream outStages(Form("%s_merge.stage", mgr->GetName()));
-  outStages << handler->GetGridStages() << std::endl;
-  outStages.close();
-#endif
-
+  // mgr->SetDebugLevel(2);
+  mgr->SetSkipTerminate(false);
+  TTree* dummy = 0;
+  if (mgr->StartAnalysis("gridterminate", dummy, -1, 0) < 0) return false;
+  
   return true;
 }
+
 // 
 // EOF
 //

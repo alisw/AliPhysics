@@ -505,7 +505,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
   if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex())fHistNEvents->Fill(3);
   if(fAnalysisCuts->IsEventRejectedDueToVertexContributors())fHistNEvents->Fill(4);
   if(fAnalysisCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion())fHistNEvents->Fill(5);
-  if(fAnalysisCuts->IsEventRejectedDueToPileupSPD())fHistNEvents->Fill(6);
+  if(fAnalysisCuts->IsEventRejectedDueToPileup())fHistNEvents->Fill(6);
   if(fAnalysisCuts->IsEventRejectedDueToCentrality()){
     fHistNEvents->Fill(7); 
     fHistCentrality[2]->Fill(evCentr);

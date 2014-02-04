@@ -3,6 +3,9 @@ void SETUP() {
   TString dypath = gSystem->GetDynamicPath();
   dypath.Prepend("./PWGflowBase/:");
   gSystem->SetDynamicPath(dypath);
+  gSystem->Load("libPhysics");
+  gSystem->Load("libHist");
+  gSystem->Load("libVMC");
   gSystem->Load("libPWGflowBase");
 
   // Set the include paths

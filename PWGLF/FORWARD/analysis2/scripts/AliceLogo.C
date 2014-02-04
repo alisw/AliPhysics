@@ -155,7 +155,7 @@ struct AliceLogo
    * @param y      Starting Y position
    * @param h      Relative height 
    * @param tag    Tag 
-   * @param colors Color options
+   * @param color  Color options
    */
   void Draw(TVirtualPad* p, Double_t x, Double_t y, Double_t h,
 	    UShort_t tag, UInt_t color)
@@ -219,9 +219,10 @@ struct AliceLogo
     fPad->SetLeftMargin(0);
     fPad->SetRightMargin(0);
     fPad->Draw();
-    Printf("(x,y)=(%f,%f) (tx,ty)=(%f,%f) (x1,y1)=(%f,%f) (x2,y2)=(%f,%f)", 
-	   x, y, topX, topY, GetX1(), GetY1(), GetX2(), GetY2());
-
+    if (fDebug)
+      Printf("(x,y)=(%f,%f) (tx,ty)=(%f,%f) (x1,y1)=(%f,%f) (x2,y2)=(%f,%f)", 
+	     x, y, topX, topY, GetX1(), GetY1(), GetX2(), GetY2());
+    
     if (fDebug) {
       Int_t    ppH  = fPad->YtoPixel(0);
       Int_t    ppW  = fPad->XtoPixel(1);
@@ -359,6 +360,7 @@ struct AliceLogo
    * Draw a spoke in the L3 outline. 
    * 
    * @param ang Rotation angle in degrees. 
+   * @param w   Width
    * @param len Length of spoke 
    * @param fg  Foreground colour 
    */
@@ -520,7 +522,6 @@ struct AliceLogo
    * @param w    Line width 
    * @param a    Aspect ratio of pad 
    * @param fg   Foreground colour
-   * @param bg   Background colour
    */
   void DrawL(Double_t x, Double_t y, Double_t w, Double_t a, Int_t fg)
   {
@@ -537,7 +538,6 @@ struct AliceLogo
    * @param w    Line width 
    * @param a    Aspect ratio of pad 
    * @param fg   Foreground colour
-   * @param bg   Background colour
    */
   void DrawI(Double_t x, Double_t y, Double_t w, Double_t a, Int_t fg)
   {    
@@ -552,7 +552,6 @@ struct AliceLogo
    * 
    * @param x    Base X coordinate 
    * @param y    Base Y coordinate 
-   * @param w    Line width - not used 
    * @param a    Aspect ratio of pad 
    * @param fg   Foreground colour
    * @param bg   Background colour
@@ -660,6 +659,7 @@ struct AliceLogo
    * 
    * @param fg Foreground colour 
    * @param bg Background colour 
+   * @param preliminary If true, draw preliminary, otherwise performance
    */
   void DrawLabel(Int_t fg, Int_t bg, bool preliminary=true)
   {

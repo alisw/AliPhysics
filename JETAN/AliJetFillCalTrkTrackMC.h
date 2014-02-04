@@ -35,7 +35,7 @@ class AliJetFillCalTrkTrackMC : public AliJetFillCalTrkEvent
   Int_t   GetHadCorrection() const                            {return fApplyMIPCorrection;}
 
   // Other
-  void    Exec(Option_t* const option);
+  void    Exec(Option_t const * option);
   Bool_t  FillKine();
   // Fast Simulation
   Float_t SmearMomentum(Int_t ind, Float_t p);

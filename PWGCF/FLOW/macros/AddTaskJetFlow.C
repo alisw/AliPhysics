@@ -61,17 +61,18 @@ AliAnalysisTaskRhoVnModulation* AddTaskJetFlow(
             QC4,
             FlowPackageSP,
             FlowPackageQC);
+        (debug) ? task->SetDebugMode(1) : task->SetDebugMode(-1);
+        if(!task) {
+             if(debug) printf(" --> Unexpected error occurred: NO TASK WAS CREATED! (could be a library problem!)\n ");
+             return 0x0;
+        }
+        task->SelectCollisionCandidates(rhoTask->GetCollisionCandidates()); 
         task->SetCCMinPt(CCMinPt);
         task->SetCCMaxPt(CCMaxPt);
         task->SetCCBinsInPt(CCBinsInPt);
         task->SetPtBins(ptArray);       // if passed as NULL default a sane default is provided
         task->SetLocalRhoName(LocalRhoName);
         task->SetJetRadius(rhoTask->GetJetRadius());
-        (debug) ? task->SetDebugMode(1) : task->SetDebugMode(-1);
-        if(!task) {
-             if(debug) printf(" --> Unexpected error occurred: NO TASK WAS CREATED! (could be a library problem!)\n ");
-             return 0x0;
-        }
         // pass specific objects and settigns to the task
         task->SetMinMaxCentrality(cent->At(i), cent->At(1+i));
         mgr->AddTask(task);

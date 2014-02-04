@@ -543,6 +543,16 @@ AliFMDEventPlaneFinder::GetPhiDist()
   return;
 }
 
+#define PFV(N,VALUE)					\
+  do {							\
+    AliForwardUtil::PrintName(N);			\
+    std::cout << (VALUE) << std::endl; } while(false)
+#define PFB(N,FLAG)				\
+  do {									\
+    AliForwardUtil::PrintName(N);					\
+    std::cout << std::boolalpha << (FLAG) << std::noboolalpha << std::endl; \
+  } while(false)
+
 //____________________________________________________________________
 void
 AliFMDEventPlaneFinder::Print(Option_t* /*option*/) const
@@ -553,17 +563,12 @@ AliFMDEventPlaneFinder::Print(Option_t* /*option*/) const
   // Parameters:
   //    option Not used
   //
-  char ind[gROOT->GetDirLevel()+3];
-  for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
-  ind[gROOT->GetDirLevel()] = '\0';
-  std::cout << ind << ClassName() << ": " << GetName() << '\n'
-	    << std::boolalpha 
-	    << ind << "Eventplane finder active!" << '\n'
-	    << ind << "Loading OADB object for run number: " 
-	    << fRunNumber << '\n'
-	    << ind << "Using phi weights: " << fUsePhiWeights  << '\n'
-	    << std::noboolalpha
-	    << std::endl;
+  AliForwardUtil::PrintTask(*this);
+  gROOT->IncreaseDirLevel();
+  PFB("Is active", true);
+  PFV("Run number for OADB query", fRunNumber);
+  PFB("Use phi weights", fUsePhiWeights);
+  gROOT->DecreaseDirLevel();
 }
 //____________________________________________________________________
 //

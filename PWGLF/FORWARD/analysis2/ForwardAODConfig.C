@@ -72,7 +72,9 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   task->GetEventInspector().SetCentralityMethod("V0M");
 
   // --- Sharing filter ----------------------------------------------
-  // Set the low cut used for sharing - overrides settings in eloss fits
+  // If the following is uncommented, then the merging of shared
+  // signals is disabled completely
+  // task->GetSharingFilter().SetDisableMerging(true);
   // Enable use of angle corrected signals in the algorithm 
   task->GetSharingFilter().SetUseAngleCorrectedSignals(true);
   // Disable use of angle corrected signals in the algorithm 
@@ -145,6 +147,11 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   task->GetDensityCalculator().SetRecalculatePhi(true);
   // Least acceptable quality of ELoss fits
   task->GetDensityCalculator().SetMinQuality(8);
+  // Set the maximum ratio of outlier bins to the total number of bins
+  // task->GetDensityCalculator().SetMaxOutliers(.10);
+  task->GetDensityCalculator().SetMaxOutliers(1.0);//Disable filter
+  // Set the maximum relative diviation between N_ch from Eloss and Poisson
+  task->GetDensityCalculator().SetOutlierCut(0.5);
   // Set whether or not to use the phi acceptance
   //   AliFMDDensityCalculator::kPhiNoCorrect
   //   AliFMDDensityCalculator::kPhiCorrectNch
@@ -184,7 +191,14 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   //   kDistance Only bins that are more than half the size of it neighbors
   task->GetHistCollector().SetFiducialMethod(AliFMDHistCollector::kByCut);
   // Additional diagnostics output - off by default
+  // 
+  // If this option is enabled, then the summed per-vertex, per-ring
+  // d2N/detadphi histograms will be stored in the output, as well as
+  // copies of the secondary maps
   // task->GetHistCollector().SetMakeBGHitMaps(true);
+  //
+  // If this option is enabled, then a 3D histogram will be made for
+  // each ring, summing dN/deta for each centrality bin.
   // task->GetHistCollector().SetMakeCentralitySums(true);
 
   // --- Eventplane Finder -------------------------------------------

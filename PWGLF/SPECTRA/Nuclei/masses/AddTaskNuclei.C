@@ -1,4 +1,4 @@
-AliAnalysisTaskSE *AddTaskNuclei(Bool_t kAOD=kFALSE,Bool_t kMC=kFALSE,Float_t fCentralityMin=0.0,Float_t fCentralityMax=100.0,Int_t filterBit=16,Int_t nTPCminCluster=0,Float_t DCAzCut=100.0,Float_t DCAxyCut=0.1,Bool_t bTPCcut=kTRUE,Float_t fNsigmaTpcCut=2.0,Bool_t bSignalCheck=kTRUE, Int_t nAnaMomType=1, Double_t AbsEtaMin=0.0, Double_t AbsEtaMax=0.8, Bool_t kTRDana=kFALSE, Int_t iTRD=1){
+AliAnalysisTaskSE *AddTaskNuclei(Bool_t kAOD=kTRUE, Double_t CentralityMin=0.0, Double_t CentralityMax=100.0, Int_t filterBit=16, Double_t AbsEtaMin=0.0, Double_t AbsEtaMax=0.8, Double_t DCAxyCut=0.1, Double_t DCAzCut=1000.0, Double_t fNsigmaTpcCut=2.0, Int_t NminTpcCluster=0, Int_t iTRDslices=0, Int_t kSignalCheck=1, Int_t iMtof=1, Int_t kPvtxCorr=1){
 
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -17,53 +17,39 @@ AliAnalysisTaskSE *AddTaskNuclei(Bool_t kAOD=kFALSE,Bool_t kMC=kFALSE,Float_t fC
   }
 
   //========= Add tender to the ANALYSIS manager and set default storage =====
-  char mytaskName[100];
   
+  char mytaskName[100];
   snprintf(mytaskName,100,"AliAnalysisNucleiMass");
 
   AliAnalysisNucleiMass *task = new AliAnalysisNucleiMass(mytaskName);
-
-  Float_t *kCentrality = new Float_t[2];
-  kCentrality[0]=fCentralityMin;
-  kCentrality[1]=fCentralityMax;  
-
-  Double_t *fEtaLimits = new Double_t[2];
-  fEtaLimits[0]=AbsEtaMin;
-  fEtaLimits[1]=AbsEtaMax;
-
-  task->SetCentrality(kCentrality);
+  task->SetCentrality(CentralityMin,CentralityMax);
   task->SetFilterBit(filterBit);
-  task->SetNTPCcluster(nTPCminCluster);
-  task->SetDCAzCut(DCAzCut);
-  task->SetDCAxyCut(DCAxyCut);
-  task->SetkTPCcut(bTPCcut);
+  task->SetAbsEtaLimit(AbsEtaMin,AbsEtaMax);
+  task->SetDCACut(DCAxyCut,DCAzCut);
   task->SetNsigmaTPCCut(fNsigmaTpcCut);
-  task->SetisSignalCheck(bSignalCheck);
-  task->SetMomBin(nAnaMomType);
-  task->SetAbsEtaLimit(fEtaLimits);
-  task->SetTRDanalysis(kTRDana,iTRD);
+  task->SetNminTPCcluster(NminTpcCluster);
+  task->SetTrdCut(iTRDslices);
+  task->SetisSignalCheck(kSignalCheck);
+  task->SetMtofMethod(iMtof);
+  task->SetPvtxNucleiCorrection(kPvtxCorr);
 
   mgr->AddTask(task);
 
   //Attach input to my tasks
-  char name[400];
-  
-  //sprintf(name,"cchain1%02i%02i",kCentrality[0],kCentrality[1]);
+  char name[1000];
 
-  sprintf(name,"cchain1%02i%02i_FilterBit=%02i_NminTPCclusters=%03i_DCAzCUT=%.1f_DCAxyCUT=%.2f_kTPCcut=%i_NsigTPCcut=%1.0f_bSignCheck=%i_iMomType=%01i_EtaMin=%.1f_EtaMax=%.1f_kTRDana=%i_iTRD=%01i",kCentrality[0],kCentrality[1],filterBit,nTPCminCluster,DCAzCut,DCAxyCut,bTPCcut,fNsigmaTpcCut,bSignalCheck,nAnaMomType,fEtaLimits[0],fEtaLimits[1],kTRDana,iTRD);
-  
+  snprintf(name,1000,"cchain1%.0f_%.0f_FilterBit=%02i_EtaMin=%.1f_EtaMax=%.1f_DCAxyCUT=%.2f_DCAzCUT=%.1f_NsigTPCcut=%1.0f_NminTpcClusters=%03i_iTrdCut=%i_kSignCheck=%i_iMtof=%i_kPvtxCorr=%i",CentralityMin,CentralityMax,filterBit,AbsEtaMin,AbsEtaMax,DCAxyCut,DCAzCut,fNsigmaTpcCut,NminTpcCluster,iTRDslices,kSignalCheck,iMtof,kPvtxCorr);
+
   AliAnalysisDataContainer *cinput = mgr->CreateContainer(name,TChain::Class(),AliAnalysisManager::kInputContainer);
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
 
   // Attach output to my tasks
   
-  //sprintf(name,"Results_CC%02i%02i",kCentrality[0],kCentrality[1]);
-  
-  sprintf(name,"ResultsBmm_CC%02i%02i_FilterBit=%02i_NminTPCclusters=%03i_DCAzCUT=%.1f_DCAxyCUT=%.2f_kTPCcut=%i_NsigTPCcut=%1.0f_bSignCheck=%i_iMomType=%01i_EtaMin=%.1f_EtaMax=%.1f_kTRDana=%i_iTRD=%01i",kCentrality[0],kCentrality[1],filterBit,nTPCminCluster,DCAzCut,DCAxyCut,bTPCcut,fNsigmaTpcCut,bSignalCheck,nAnaMomType,fEtaLimits[0],fEtaLimits[1],kTRDana,iTRD);
+  snprintf(name,1000,"ResultsBmm_CC%.0f_%.0f_FilterBit=%02i_EtaMin=%.1f_EtaMax=%.1f_DCAxyCUT=%.2f_DCAzCUT=%.1f_NsigTPCcut=%1.0f_NminTpcClusters=%03i_iTrdCut=%i_kSignCheck=%i_iMtof=%i_kPvtxCorr=%i",CentralityMin,CentralityMax,filterBit,AbsEtaMin,AbsEtaMax,DCAxyCut,DCAzCut,fNsigmaTpcCut,NminTpcCluster,iTRDslices,kSignalCheck,iMtof,kPvtxCorr);
   AliAnalysisDataContainer *cOutputL= mgr->CreateContainer(name,TList::Class(), AliAnalysisManager::kOutputContainer, AliAnalysisManager::GetCommonFileName());
   mgr->ConnectOutput(task, 1, cOutputL);
 
-  sprintf(name,"ResultsBpp_%02i%02i_FilterBit=%02i_NminTPCclusters=%03i_DCAzCUT=%.1f_DCAxyCUT=%.2f_kTPCcut=%i_NsigTPCcut=%1.0f_bSignCheck=%i_iMomType=%01i_EtaMin=%.1f_EtaMax=%.1f_kTRDana=%i_iTRD=%01i",kCentrality[0],kCentrality[1],filterBit,nTPCminCluster,DCAzCut,DCAxyCut,bTPCcut,fNsigmaTpcCut,bSignalCheck,nAnaMomType,fEtaLimits[0],fEtaLimits[1],kTRDana,iTRD);
+  snprintf(name,1000,"ResultsBpp_CC%.0f_%.0f_FilterBit=%02i_EtaMin=%.1f_EtaMax=%.1f_DCAxyCUT=%.2f_DCAzCUT=%.1f_NsigTPCcut=%1.0f_NminTpcClusters=%03i_iTrdCut=%i_kSignCheck=%i_iMtof=%i_kPvtxCorr=%i",CentralityMin,CentralityMax,filterBit,AbsEtaMin,AbsEtaMax,DCAxyCut,DCAzCut,fNsigmaTpcCut,NminTpcCluster,iTRDslices,kSignalCheck,iMtof,kPvtxCorr);
   AliAnalysisDataContainer *cOutputL2= mgr->CreateContainer(name,TList::Class(), AliAnalysisManager::kOutputContainer, AliAnalysisManager::GetCommonFileName());
   mgr->ConnectOutput(task, 2, cOutputL2);
 

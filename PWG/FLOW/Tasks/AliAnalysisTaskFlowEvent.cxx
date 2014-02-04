@@ -336,6 +336,7 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
 
     //    if (myESD)
     fFlowEvent->SetReferenceMultiplicity(fCutsEvent->GetReferenceMultiplicity(InputEvent(),mcEvent));
+    fFlowEvent->SetCentrality(fCutsEvent->GetCentrality(InputEvent(),mcEvent));
     if (mcEvent && mcEvent->GenEventHeader()) fFlowEvent->SetMCReactionPlaneAngle(mcEvent);
   }
 
@@ -562,6 +563,9 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
 
   //do we want to serve shullfed tracks to everybody?
   fFlowEvent->SetShuffleTracks(fShuffleTracks);
+
+  // associate the mother particles to their daughters in the flow event (if any)
+  fFlowEvent->FindDaughters();
 
   //fListHistos->Print();
   //fOutputFile->WriteObject(fFlowEvent,"myFlowEventSimple");

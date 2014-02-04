@@ -1,4 +1,4 @@
-AliAnalysisTaskHFECal* ConfigHFECal(Bool_t useMC,Bool_t MassConst,Bool_t MassWidthCut,Bool_t MassCal,Double_t asspTCut,Double_t angleCut,Double_t MassCut, Double_t NsigCut){
+AliAnalysisTaskHFECal* ConfigHFECal(Bool_t useMC,Bool_t MassConst,Bool_t MassWidthCut,Bool_t MassCal,Bool_t MassNonlinear,Double_t asspTCut,Double_t angleCut,Double_t MassCut, Double_t NsigCut, Int_t fqa){
   //
   // HFE standard task configuration
   //
@@ -11,6 +11,7 @@ AliAnalysisTaskHFECal* ConfigHFECal(Bool_t useMC,Bool_t MassConst,Bool_t MassWid
   printf("angleCut = %d/n",angleCut); 
   printf("MassCut = %d/n",MassCut); 
   printf("NsigCut = %d/n", NsigCut); 
+  printf("qa = %d/n", fqa); 
 
   Bool_t kAnalyseTaggedTracks = kTRUE;
   
@@ -27,11 +28,13 @@ AliAnalysisTaskHFECal* ConfigHFECal(Bool_t useMC,Bool_t MassConst,Bool_t MassWid
   hfecuts->SetPtRange(2, 50);
   hfecuts->SetMaxImpactParam(3.,3.);
   
+ 
   AliAnalysisTaskHFECal *task = new AliAnalysisTaskHFECal("HFEanalysisEMCal");
   printf("task ------------------------ %p\n ", task);
-  task->SetHFECuts(hfecuts);
+  //task->SetHFECuts(hfecuts);
   task->SetMassConstraint(MassConst);
   task->SetMassWidthCut(MassWidthCut);
+  task->SetMassNonlinear(MassNonlinear);
   //Double_t masscut = 0.05;
   //if(!MassConst)masscut = 0.1;
   Double_t masscut = MassCut;
@@ -40,12 +43,13 @@ AliAnalysisTaskHFECal* ConfigHFECal(Bool_t useMC,Bool_t MassConst,Bool_t MassWid
   task->SetMimpTassCut(asspTCut);
   task->SetMimNsigassCut(NsigCut); 
   task->SetMassCalMethod(MassCal);
+  task->SetQAHist(fqa);
 
   // Define PID
   AliHFEpid *pid = task->GetPID();
   if(useMC) pid->SetHasMCData(kTRUE);
   pid->AddDetector("TPC", 0);
-  pid->AddDetector("EMCAL", 1);
+  //pid->AddDetector("EMCAL", 1);
 
   Double_t params[4];
   char *cutmodel;

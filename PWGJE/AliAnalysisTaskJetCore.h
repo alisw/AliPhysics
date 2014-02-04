@@ -79,6 +79,7 @@ public:
    virtual void     SetNInputTracksMin(Int_t nTr) { fNInputTracksMin = nTr; }
    virtual void     SetNInputTracksMax(Int_t nTr) { fNInputTracksMax = nTr; }
    virtual void     SetRequireITSRefit(Int_t nref) {fRequireITSRefit=nref;}
+   virtual void     SetSharedClusterCut(Int_t docut){fApplySharedClusterCut=docut;}
    virtual void     SetAngStructCloseTracks(Int_t yesno){fAngStructCloseTracks=yesno;}
    virtual void     SetCheckMethods(Int_t yesno){fCheckMethods=yesno;}
    virtual void     SetEventMixing(Int_t yesno){fDoEventMixing=yesno;}
@@ -144,6 +145,7 @@ private:
    Int_t   fNInputTracksMin;  // lower bound of nb. of input tracks
    Int_t   fNInputTracksMax;  // upper bound of nb. of input tracks
    Int_t   fRequireITSRefit;
+   Int_t   fApplySharedClusterCut; // flag to apply shared cluster cut (needed for some AODs where this cut was not applied in the filtering)
    Int_t   fAngStructCloseTracks;//only constituents or all tracks with R<0.8 for the angular structure
    Int_t   fCheckMethods;     //to look into more detail into the core
    Int_t   fDoEventMixing;

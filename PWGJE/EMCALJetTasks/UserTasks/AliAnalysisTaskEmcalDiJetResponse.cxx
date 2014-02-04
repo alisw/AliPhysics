@@ -21,7 +21,6 @@
 #include "AliEmcalJet.h"
 #include "AliRhoParameter.h"
 #include "AliLog.h"
-#include "AliAnalysisUtils.h"
 #include "AliEmcalParticle.h"
 #include "AliMCEvent.h"
 #include "AliGenPythiaEventHeader.h"
@@ -95,8 +94,6 @@ AliAnalysisTaskEmcalDiJetResponse::~AliAnalysisTaskEmcalDiJetResponse()
 void AliAnalysisTaskEmcalDiJetResponse::UserCreateOutputObjects()
 {
   // Create user output.
-
-  InitOnce();
 
   AliAnalysisTaskEmcalDiJetBase::UserCreateOutputObjects();
 
@@ -197,16 +194,6 @@ void AliAnalysisTaskEmcalDiJetResponse::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskEmcalDiJetResponse::FillHistograms()
-{
-  // Fill histograms.
-
-
-
-  return kTRUE;
-}
-
-//________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalDiJetResponse::Run()
 {
   // Run analysis code here, if needed. It will be executed before FillHistograms().
@@ -214,8 +201,6 @@ Bool_t AliAnalysisTaskEmcalDiJetResponse::Run()
   //Check if event is selected (vertex & pile-up)
   if(!SelectEvent())
     return kFALSE;
-
-  fHistTrialsSelEvents->Fill(fPtHardBin, fNTrials);
 
   if(fRhoType==0) {
     fRhoFullVal = 0.;
@@ -268,26 +253,22 @@ void AliAnalysisTaskEmcalDiJetResponse::CorrelateAllJets(const Int_t type) {
   //
 
   Int_t typet = 0;
-  Int_t typea = 0;
   Int_t typetMC = 0;
   Int_t typeaMC = 0;
   if(type==0) { //full-full
     typetMC = fContainerFullMC;
     typeaMC = fContainerFullMC;
     typet = fContainerFull;
-    typea = fContainerFull;
   }
   else if(type==1) { //charged-charged
     typetMC = fContainerChargedMC;
     typeaMC = fContainerChargedMC;
     typet = fContainerCharged;
-    typea = fContainerCharged;
   }
   else if(type==2) { //full-charged
     typetMC = fContainerFullMC;
     typeaMC = fContainerChargedMC;
     typet = fContainerFull;
-    typea = fContainerCharged;
   }
   else {
     AliWarning(Form("%s: type %d of dijet correlation not defined!",GetName(),type));
@@ -401,20 +382,15 @@ void AliAnalysisTaskEmcalDiJetResponse::CorrelateTwoJets(const Int_t type) {
   }
 
   Int_t nJetsTrig  = 0;
-  Int_t nJetsAssoc = 0;
   if(type==0) {
     nJetsTrig  = GetNJets(fContainerFullMC);
-    nJetsAssoc = nJetsTrig;
   }
   else if(type==1) {
     nJetsTrig  = GetNJets(fContainerChargedMC);
-    nJetsAssoc = nJetsTrig;
   }
   else if(type==2) {
     nJetsTrig  = GetNJets(fContainerFullMC);
-    nJetsAssoc = GetNJets(fContainerChargedMC);
   }
-
 
   for(Int_t ijt=0; ijt<nJetsTrig; ijt++) {
 

@@ -524,8 +524,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
       fMcPtInConeBG->Fill(alliso-Et-allisoue, mcptsum);
       fMcPtInConeBGnoUE->Fill(alliso-Et, mcptsum);
     }
-    Double_t r = TMath::Sqrt(c->GetTrackDx()*c->GetTrackDx()+c->GetTrackDz()*c->GetTrackDz());
-    if(c->GetM02()>0.1 && c->GetM02()<0.3 && r>0.03){
+    if(c->GetM02()>0.1 && c->GetM02()<0.3 && dr>0.03){
       fMcPtInConeSBG->Fill(alliso-Et-allisoue, mcptsum);
       fMcPtInConeSBGnoUE->Fill(alliso-Et, mcptsum);
       if(fMcIdFamily.Contains((Form("%d",c->GetLabel())))){
@@ -540,9 +539,9 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     outputValues[1] = c->GetM02();
     outputValues[2] = ceiso-Et/*cecore*/-ceisoue;
     outputValues[3] = triso-trisoue;
-    outputValues[4] = alliso-Et/*cecore*/-allisoue;
+    outputValues[4] = alliso-Et/*cecore*/-allisoue - trcore;
     outputValues[5] = ceiso-Et;
-    outputValues[6] = alliso-Et;
+    outputValues[6] = alliso-Et - trcore;
     outputValues[7] = c->GetTrackDx();
     outputValues[8] = c->GetTrackDz();
     outputValues[9] = clsVec.Eta();

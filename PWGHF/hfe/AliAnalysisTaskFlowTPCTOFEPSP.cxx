@@ -82,14 +82,13 @@
 #include "TClonesArray.h"
 #include "AliHFENonPhotonicElectron.h"
 
+ClassImp(AliAnalysisTaskFlowTPCTOFEPSP)
 
 //____________________________________________________________________
 AliAnalysisTaskFlowTPCTOFEPSP::AliAnalysisTaskFlowTPCTOFEPSP() :
   AliAnalysisTaskSE(),
   fListHist(0x0), 
   fAODAnalysis(kFALSE),
-  fUseFilterAOD(kFALSE),
-  fApplyCut(kTRUE),
   fFilter(1<<4),
   fAODMCHeader(NULL),
   fAODArrayMCInfo(NULL),
@@ -123,7 +122,6 @@ AliAnalysisTaskFlowTPCTOFEPSP::AliAnalysisTaskFlowTPCTOFEPSP() :
   fMaxopening3D(0.1),
   fMaxInvmass(0.1),
   fSetMassConstraint(kFALSE),
-  fDebugLevel(0),
   fMonitorEventPlane(kFALSE),
   fMonitorContamination(kFALSE),
   fMonitorPhotonic(kFALSE),
@@ -133,7 +131,6 @@ AliAnalysisTaskFlowTPCTOFEPSP::AliAnalysisTaskFlowTPCTOFEPSP() :
   fcutsRP(0),
   fcutsPOI(0),
   fHFECuts(0),
-  fRejectKinkMother(kFALSE),
   fPID(0),
   fPIDTOFOnly(0),
   fPIDqa(0),
@@ -202,8 +199,6 @@ AliAnalysisTaskFlowTPCTOFEPSP:: AliAnalysisTaskFlowTPCTOFEPSP(const char *name) 
   AliAnalysisTaskSE(name),
   fListHist(0x0),
   fAODAnalysis(kFALSE),
-  fUseFilterAOD(kFALSE),
-  fApplyCut(kTRUE),
   fFilter(1<<4), 
   fAODMCHeader(NULL),
   fAODArrayMCInfo(NULL),
@@ -237,7 +232,6 @@ AliAnalysisTaskFlowTPCTOFEPSP:: AliAnalysisTaskFlowTPCTOFEPSP(const char *name) 
   fMaxopening3D(0.1),
   fMaxInvmass(0.1),
   fSetMassConstraint(kFALSE),
-  fDebugLevel(0),
   fMonitorEventPlane(kFALSE),
   fMonitorContamination(kFALSE),
   fMonitorPhotonic(kFALSE),
@@ -247,7 +241,6 @@ AliAnalysisTaskFlowTPCTOFEPSP:: AliAnalysisTaskFlowTPCTOFEPSP(const char *name) 
   fcutsRP(0),
   fcutsPOI(0),
   fHFECuts(0),
-  fRejectKinkMother(kFALSE),
   fPID(0),
   fPIDTOFOnly(0),
   fPIDqa(0),
@@ -338,8 +331,6 @@ AliAnalysisTaskFlowTPCTOFEPSP::AliAnalysisTaskFlowTPCTOFEPSP(const AliAnalysisTa
   AliAnalysisTaskSE(ref),
   fListHist(NULL),
   fAODAnalysis(ref.fAODAnalysis), 
-  fUseFilterAOD(ref.fUseFilterAOD),
-  fApplyCut(ref.fApplyCut),
   fFilter(ref.fFilter),
   fAODMCHeader(ref.fAODMCHeader),
   fAODArrayMCInfo(ref.fAODArrayMCInfo),
@@ -373,7 +364,6 @@ AliAnalysisTaskFlowTPCTOFEPSP::AliAnalysisTaskFlowTPCTOFEPSP(const AliAnalysisTa
   fMaxopening3D(ref.fMaxopening3D),
   fMaxInvmass(ref.fMaxInvmass),
   fSetMassConstraint(ref.fSetMassConstraint),
-  fDebugLevel(ref.fDebugLevel),
   fMonitorEventPlane(ref.fMonitorEventPlane),
   fMonitorContamination(ref.fMonitorContamination),
   fMonitorPhotonic(ref.fMonitorPhotonic),
@@ -383,7 +373,6 @@ AliAnalysisTaskFlowTPCTOFEPSP::AliAnalysisTaskFlowTPCTOFEPSP(const AliAnalysisTa
   fcutsRP(NULL),
   fcutsPOI(NULL),
   fHFECuts(NULL),
-  fRejectKinkMother(ref.fRejectKinkMother),
   fPID(NULL),
   fPIDTOFOnly(NULL),
   fPIDqa(NULL),
@@ -470,8 +459,6 @@ void AliAnalysisTaskFlowTPCTOFEPSP::Copy(TObject &o) const {
   AliAnalysisTaskFlowTPCTOFEPSP &target = dynamic_cast<AliAnalysisTaskFlowTPCTOFEPSP &>(o);
   target.fListHist = fListHist;
   target.fAODAnalysis = fAODAnalysis;
-  target.fUseFilterAOD = fUseFilterAOD;
-  target.fApplyCut = fApplyCut;
   target.fFilter = fFilter;
   target.fAODMCHeader = fAODMCHeader;
   target.fAODArrayMCInfo = fAODArrayMCInfo;
@@ -505,7 +492,6 @@ void AliAnalysisTaskFlowTPCTOFEPSP::Copy(TObject &o) const {
   target.fMaxopening3D = fMaxopening3D;
   target.fMaxInvmass = fMaxInvmass;
   target.fSetMassConstraint =  fSetMassConstraint;
-  target.fDebugLevel = fDebugLevel;
   target.fMonitorEventPlane = fMonitorEventPlane;
   target.fMonitorContamination = fMonitorContamination;
   target.fMonitorPhotonic = fMonitorPhotonic;
@@ -515,7 +501,6 @@ void AliAnalysisTaskFlowTPCTOFEPSP::Copy(TObject &o) const {
   target.fcutsRP = fcutsRP;
   target.fcutsPOI = fcutsPOI;
   target.fHFECuts = fHFECuts;
-  target.fRejectKinkMother = fRejectKinkMother;
   target.fPID = fPID;
   target.fPIDTOFOnly = fPIDTOFOnly;
   target.fPIDqa = fPIDqa;
@@ -579,6 +564,8 @@ AliAnalysisTaskFlowTPCTOFEPSP::~AliAnalysisTaskFlowTPCTOFEPSP(){
   //
   // Destructor
   //
+  
+
   if(fArraytrack) delete fArraytrack;
   if(fListHist) delete fListHist;
   if(fcutsRP) delete fcutsRP;
@@ -590,10 +577,11 @@ AliAnalysisTaskFlowTPCTOFEPSP::~AliAnalysisTaskFlowTPCTOFEPSP(){
   if(fflowEvent) delete fflowEvent;
   if(fHFEBackgroundCuts) delete fHFEBackgroundCuts;
   if(fPIDBackground) delete fPIDBackground;
-  if(fBackgroundSubtraction) delete fBackgroundSubtraction;
+  //if(fBackgroundSubtraction) delete fBackgroundSubtraction;
   //if(fPIDBackgroundqa) delete fPIDBackgroundqa;
   //if(fHFEVZEROEventPlane) delete fHFEVZEROEventPlane;
   if ( fDebugStreamer ) delete fDebugStreamer;
+  
 
 }
 //________________________________________________________________________
@@ -618,10 +606,9 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserCreateOutputObjects()
   //AliFlowTrackCuts::trackParameterMix rpmix = AliFlowTrackCuts::kPure;
   //AliFlowTrackCuts::trackParameterMix poimix = AliFlowTrackCuts::kPure;
 
-  AliDebug(2,"test");
-
   AliDebug(2,"AliAnalysisTaskFlowTPCTOFEPSP: User create output objects");
- 
+
+
   // AOD or ESD
   AliVEventHandler *inputHandler = dynamic_cast<AliVEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if(!TString(inputHandler->IsA()->GetName()).CompareTo("AliAODInputHandler")){
@@ -677,7 +664,6 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserCreateOutputObjects()
 
   AliDebug(2,"AliAnalysisTaskFlowTPCTOFEPSP: common constants");
 
-  
   // HFE cuts
 
   if(!fHFECuts){
@@ -700,15 +686,15 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserCreateOutputObjects()
   if(!fPID->GetNumberOfPIDdetectors()) fPID->AddDetector("TPC", 0);
   AliDebug(2,Form("AliAnalysisTaskFlowTPCTOFEPSP: GetNumber of PID detectors %d",fPID->GetNumberOfPIDdetectors()));
   fPID->InitializePID();
-  AliDebug(2,"Init ");
   fPIDqa->Initialize(fPID);
-  AliDebug(2,"Init qa");
   fPID->SortDetectors();
-  AliDebug(2,"Sort detectors");
-
+  
   AliDebug(2,"AliAnalysisTaskFlowTPCTOFEPSP: pid and pidqa");
 
-  if(!fPIDTOFOnly->GetNumberOfPIDdetectors()) fPIDTOFOnly->AddDetector("TPC", 0);
+  if(!fPIDTOFOnly->GetNumberOfPIDdetectors()) {
+    fPIDTOFOnly->AddDetector("TOF", 0);
+    fPIDTOFOnly->ConfigureTOF(3.);
+  }
   fPIDTOFOnly->InitializePID();
   fPIDTOFOnly->SortDetectors();
 
@@ -741,6 +727,7 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserCreateOutputObjects()
 
   if (fMonitorPhotonic) {
     if(!fBackgroundSubtraction) fBackgroundSubtraction = new AliHFENonPhotonicElectron();
+    if(fAODAnalysis) fBackgroundSubtraction->SetAOD(kTRUE);  
     fBackgroundSubtraction->Init();
   }
   
@@ -760,11 +747,9 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserCreateOutputObjects()
   for(Int_t i=0; i<=nBinsPt; i++) binLimPt[i]=(Double_t)TMath::Power(10,binLimLogPt[i]);
   */
 
-  Int_t nBinsPt = 24;
-  Double_t binLimPt[25] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2,
-			   1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 3., 3.5, 4., 5.,
-			   6.};
-
+  Int_t nBinsPt = 20;
+  Double_t binLimPt[21] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2,
+			   1.3, 1.4, 1.5, 2., 2.5, 3., 4., 6.};
 
   Int_t nBinsPtPlus = fNbBinsPtQCumulant;
   Double_t minPtPlus = fMinPtQCumulant;
@@ -778,9 +763,9 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserCreateOutputObjects()
   Double_t binLimEta[nBinsEta+1];
   for(Int_t i=0; i<=nBinsEta; i++) binLimEta[i]=(Double_t)minEta + (maxEta-minEta)/nBinsEta*(Double_t)i ;
 
-  Int_t nBinsStep = 7;
+  Int_t nBinsStep = 6;
   Double_t minStep = 0.;
-  Double_t maxStep = 7.;
+  Double_t maxStep = 6.;
   Double_t binLimStep[nBinsStep+1];
   for(Int_t i=0; i<=nBinsStep; i++) binLimStep[i]=(Double_t)minStep + (maxStep-minStep)/nBinsStep*(Double_t)i ;
 
@@ -1173,31 +1158,6 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserCreateOutputObjects()
     fDeltaPhiMapsTaggedPhotonicLS->Sumw2();  
     AliDebug(2,"AliAnalysisTaskFlowTPCTOFEPSP: deltaphimapstaggedphotonicls");    
 
-    /*
-    const Int_t nDimhbp=3;
-    Int_t nBinhbp[nDimhbp] = {nBinsCos,nBinsC,nBinsPt};
-    
-    fCosPhiMapsTaggedPhotonic = new THnSparseF("CosPhiMapsTaggedPhotonic","CosPhiMapsTaggedPhotonic",nDimhbp,nBinhbp);
-    fCosPhiMapsTaggedPhotonic->SetBinEdges(0,binLimCos);
-    fCosPhiMapsTaggedPhotonic->SetBinEdges(1,binLimC);
-    fCosPhiMapsTaggedPhotonic->SetBinEdges(2,binLimPt);
-    fCosPhiMapsTaggedPhotonic->Sumw2();
-    AliDebug(2,"AliAnalysisTaskFlowTPCTOFEPSP: cosphimapstaggedphotonic");
-    
-    fCosPhiMapsTaggedNonPhotonic = new THnSparseF("CosPhiMapsTaggedNonPhotonic","CosPhiMapsTaggedNonPhotonic",nDimhbp,nBinhbp);
-    fCosPhiMapsTaggedNonPhotonic->SetBinEdges(0,binLimCos);
-    fCosPhiMapsTaggedNonPhotonic->SetBinEdges(1,binLimC);
-    fCosPhiMapsTaggedNonPhotonic->SetBinEdges(2,binLimPt);
-    fCosPhiMapsTaggedNonPhotonic->Sumw2();
-    AliDebug(2,"AliAnalysisTaskFlowTPCTOFEPSP: cosphimapstaggednonphotonic");
-    
-    fCosPhiMapsTaggedPhotonicLS = new THnSparseF("CosPhiMapsTaggedPhotonicLS","CosPhiMapsTaggedPhotonicLS",nDimhbp,nBinhbp);
-    fCosPhiMapsTaggedPhotonicLS->SetBinEdges(0,binLimCos);
-    fCosPhiMapsTaggedPhotonicLS->SetBinEdges(1,binLimC);
-    fCosPhiMapsTaggedPhotonicLS->SetBinEdges(2,binLimPt);
-    fCosPhiMapsTaggedPhotonicLS->Sumw2();
-    AliDebug(2,"AliAnalysisTaskFlowTPCTOFEPSP: cosphimapstaggedphotonicls");
-    */
     const Int_t nDimMCSource=3;
     Int_t nBinMCSource[nDimMCSource] = {nBinsC,nBinsPt,nBinsSource};
     fMCSourceDeltaPhiMaps = new THnSparseF("MCSourceDeltaPhiMaps","MCSourceDeltaPhiMaps",nDimMCSource,nBinMCSource);
@@ -1306,11 +1266,8 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserCreateOutputObjects()
   if(fMonitorPhotonic) {
   fListHist->Add(fPIDBackgroundqa->MakeList("HFEpidBackgroundQA"));
   fListHist->Add(fDeltaPhiMapsTaggedPhotonic);
-  //fListHist->Add(fCosPhiMapsTaggedPhotonic);
   fListHist->Add(fDeltaPhiMapsTaggedNonPhotonic);
-  //fListHist->Add(fCosPhiMapsTaggedNonPhotonic);
   fListHist->Add(fDeltaPhiMapsTaggedPhotonicLS);
-  //fListHist->Add(fCosPhiMapsTaggedPhotonicLS);
   fListHist->Add(fMCSourceDeltaPhiMaps);
   fListHist->Add(fOppSignDeltaPhiMaps);
   fListHist->Add(fSameSignDeltaPhiMaps);
@@ -1324,6 +1281,8 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserCreateOutputObjects()
   if(fHFEVZEROEventPlane && fMonitorEventPlane) fListHist->Add(fHFEVZEROEventPlane->GetOutputList());
   
   AliDebug(2,"AliAnalysisTaskFlowTPCTOFEPSP: add event plane");
+
+  fListHist->Print();
 
   PostData(1, fListHist);
   //for(Int_t bincless = 0; bincless < fNbBinsCentralityQCumulant; bincless++) {
@@ -1342,6 +1301,7 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
   // Loop over event
   //
    
+ 
   Double_t massElectron = 0.000511;
   Double_t mcReactionPlane = 0.0;
 
@@ -1400,7 +1360,7 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
     }
   }
 
-    
+   
   /////////////////
   // centrality
   /////////////////
@@ -1561,7 +1521,7 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
       AliDebug(2,"Does not pass the centrality correlation cut");
       return;
     }
-    if(multTPC < (-40.7+1.49*multGlob) || multTPC > (55.0+1.79*multGlob)){
+    if(multTPC < (-36.81+1.48*multGlob) && multTPC > (63.03+1.78*multGlob)){
       AliDebug(2,"Does not pass the multiplicity correlation cut");
       return;
     }
@@ -1641,7 +1601,7 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
     
   }
   else {
-    
+
     Double_t qVx, qVy;  //TR: info
     eventPlaneV0 = TVector2::Phi_0_2pi(vEPa->CalculateVZEROEventPlane(fInputEvent,10,2,qVx,qVy));
     if(eventPlaneV0 > TMath::Pi()) eventPlaneV0 = eventPlaneV0 - TMath::Pi();
@@ -1652,10 +1612,11 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
     eventPlaneV0C = TVector2::Phi_0_2pi(vEPa->CalculateVZEROEventPlane(fInputEvent,9,2,qVx,qVy));
     if(eventPlaneV0C > TMath::Pi()) eventPlaneV0C = eventPlaneV0C - TMath::Pi();
     qV0C.Set(qVx,qVy);
- 
+
     if(eventPlaneV0<-900) return;
     if(eventPlaneV0A<-900) return;
     if(eventPlaneV0C<-900) return;
+
 
     eventPlaneV0=TVector2::Phi_0_2pi(eventPlaneV0);
     eventPlaneV0A=TVector2::Phi_0_2pi(eventPlaneV0A);
@@ -1846,7 +1807,6 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
     valuensparsea[1] = eventPlanesub1a;
     valuensparsea[2] = eventPlanesub2a;
   } 
-  //printf("%f %f %f\n",valuensparsea[0],valuensparsea[1],valuensparsea[2]);
   fEventPlane->Fill(&valuensparsea[0]);
 
   // Fill
@@ -1949,40 +1909,10 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
     }
   }
 
-
-  ///////////////////////////////////
-  // Loop for kink mother AOD
-  //////////////////////////////////
-  // Look at kink mother in case of AOD
-  Int_t numberofvertices = 1;
-  AliAODEvent *aodevent = NULL;
-  Int_t numberofmotherkink = 0;  
-  if(fAODAnalysis) {
-    aodevent = dynamic_cast<AliAODEvent *>(fInputEvent);
-    if(aodevent) {
-      numberofvertices = aodevent->GetNumberOfVertices();
-    }
-  }
-  Double_t listofmotherkink[numberofvertices];
-  if(fAODAnalysis && aodevent) {
-    for(Int_t ivertex=0; ivertex < numberofvertices; ivertex++) {
-      AliAODVertex *aodvertex = aodevent->GetVertex(ivertex);
-      if(!aodvertex) continue;
-      if(aodvertex->GetType()==AliAODVertex::kKink) {
-	AliAODTrack *mother = (AliAODTrack *) aodvertex->GetParent();
-	if(!mother) continue;
-	Int_t idmother = mother->GetID();
-	listofmotherkink[numberofmotherkink] = idmother;
-	AliDebug(2,Form("ID %d",idmother));
-	numberofmotherkink++;
-      }
-    }
-  }
   
   //////////////////////////
   // Loop over track
   //////////////////////////
-  
   for(Int_t k = 0; k < nbtracks; k++){
       
     AliVTrack *track = (AliVTrack *) fInputEvent->GetTrack(k);
@@ -1995,68 +1925,42 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
 	continue;
       }  
       AliDebug(2,"Find AOD track on");
-      if(fUseFilterAOD){
-	if(!(aodtrack->TestFilterBit(fFilter))) continue;  // Only process AOD tracks where the HFE is set
-      }
+      if(!(aodtrack->TestFilterBit(fFilter))) continue;  // Only process AOD tracks where the HFE is set
     }
 
-    if(fApplyCut) {
-
-      valuetrackingcuts[0] = track->Pt(); 
-      valuetrackingcuts[1] = 0;
- 
-      // RecKine: ITSTPC cuts  
-      if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepRecKineITSTPC + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
-      if(fMonitorTrackCuts) fTrackingCuts->Fill(&valuetrackingcuts[0]);
-
-      // Reject kink mother
-      if(fRejectKinkMother) {
-	if(fAODAnalysis) {
-	  Bool_t kinkmotherpass = kTRUE;
-	  for(Int_t kinkmother = 0; kinkmother < numberofmotherkink; kinkmother++) {
-	    if(track->GetID() == listofmotherkink[kinkmother]) {
-	      kinkmotherpass = kFALSE;
-	      continue;
-	    }
-	  }
-	  if(!kinkmotherpass) continue;
-	}
-	else {
-	  AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
-	  if(esdtrack){  
-	    if(esdtrack->GetKinkIndex(0) != 0) continue; 
-	  } // Quick and dirty fix to reject both kink mothers and daughters
-	}
-      }      
-
-      valuetrackingcuts[1] = 1; 
-      if(fMonitorTrackCuts) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
-      // RecPrim
-      if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepRecPrim + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
-      valuetrackingcuts[1] = 2; 
-      if(fMonitorTrackCuts) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
+    
+    valuetrackingcuts[0] = track->Pt(); 
+    valuetrackingcuts[1] = 0;
+    
+    // RecKine: ITSTPC cuts  
+    if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepRecKineITSTPC + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
+    if(fMonitorTrackCuts) fTrackingCuts->Fill(&valuetrackingcuts[0]);
+    
+    // RecPrim
+    if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepRecPrim + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
+    valuetrackingcuts[1] = 1; 
+    if(fMonitorTrackCuts) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
+    
+    // HFEcuts: ITS layers cuts
+    if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepHFEcutsITS + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
+    valuetrackingcuts[1] = 2; 
+    if(fMonitorTrackCuts) fTrackingCuts->Fill(&valuetrackingcuts[0]);     
+    
+    // HFE cuts: TOF and mismatch flag
+    if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepHFEcutsTOF + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
+    valuetrackingcuts[1] = 3; 
+    if(fMonitorTrackCuts) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
+    
+    // HFE cuts: TPC PID cleanup
+    if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepHFEcutsTPC + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
+    valuetrackingcuts[1] = 4; 
+    if(fMonitorTrackCuts) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
+    
+    // HFEcuts: Nb of tracklets TRD0
+    if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepHFEcutsTRD + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
+    valuetrackingcuts[1] = 5; 
+    if(fMonitorTrackCuts) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
       
-      // HFEcuts: ITS layers cuts
-      if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepHFEcutsITS + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
-       valuetrackingcuts[1] = 3; 
-       if(fMonitorTrackCuts) fTrackingCuts->Fill(&valuetrackingcuts[0]);     
-
-      // HFE cuts: TOF PID and mismatch flag
-      if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepHFEcutsTOF + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
-      valuetrackingcuts[1] = 4; 
-      if(fMonitorTrackCuts) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
-      
-      // HFE cuts: TPC PID cleanup
-      if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepHFEcutsTPC + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
-      valuetrackingcuts[1] = 5; 
-      if(fMonitorTrackCuts) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
-      
-      // HFEcuts: Nb of tracklets TRD0
-      if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepHFEcutsTRD + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
-      valuetrackingcuts[1] = 6; 
-      if(fMonitorTrackCuts) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
-      
-    }
     AliDebug(2,"Survived");
 
     /////////////////////////////////////////////////////////
@@ -2287,7 +2191,7 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
 	fProfileCosPhiMaps->Fill(valuensparsehprofile[1],valuensparsehprofile[2],valuensparseh[0]);  //TR: info
       }
     }
-    
+
     if(fMonitorPhotonic) {
       Int_t indexmother = -1;
       Int_t source = 1;
@@ -2346,8 +2250,11 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
       fArraytrack = NULL;
     }
   }
-  
+
+  if(fMonitorPhotonic) fBackgroundSubtraction->CountPoolAssociated(fInputEvent,binct);
+
   PostData(1, fListHist);
+ 
 
  
 }

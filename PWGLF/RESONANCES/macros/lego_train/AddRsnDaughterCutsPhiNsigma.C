@@ -37,18 +37,17 @@ Int_t AddRsnDaughterCutsPhiNsigma(AliPID::EParticleType type1,AliPID::EParticleT
 
   Bool_t useTPC_K=kFALSE;
   Bool_t useTOF_K=kFALSE;
+  Bool_t rejectUnmatchedTOF_K=kTRUE;
   Bool_t useTrackPtCut=kFALSE;
 
   if (opt.Contains("qualityonly")) {
     useTPC_K=kFALSE;
     useTOF_K=kFALSE;
-  } else if (!opt.Contains("nsig")) {
-    useTPC_K=kTRUE;
-    useTOF_K=kTRUE;
   }
 
   if (opt.Contains("KTPCnsig"))  useTPC_K=kTRUE;
   if (opt.Contains("KTOFnsig"))  useTOF_K=kTRUE;
+  if (opt.Contanns("KTOFacceptUnmatched")) rejectUnmatchedTOF_K=kFALSE;
 
   if (opt.Contains("KTPCnsig05")) nSigmaTPC = 0.5;
   if (opt.Contains("KTPCnsig08")) nSigmaTPC = 0.8;
@@ -66,6 +65,8 @@ Int_t AddRsnDaughterCutsPhiNsigma(AliPID::EParticleType type1,AliPID::EParticleT
   if (opt.Contains("KTOFnsig20")) nSigmaTOF = 2.0;
   if (opt.Contains("KTOFnsig25")) nSigmaTOF = 2.5;
   if (opt.Contains("KTOFnsig30")) nSigmaTOF = 3.0;
+  if (opt.Contains("KTOFnsig40")) nSigmaTOF = 4.0;
+  if (opt.Contains("KTOFnsig50")) nSigmaTOF = 5.0;
   if (opt.Contains("KTOFnsig1000")) nSigmaTOF = 100.0;
 
   if (opt.Contains("trackPt")) {
@@ -160,9 +161,16 @@ Int_t AddRsnDaughterCutsPhiNsigma(AliPID::EParticleType type1,AliPID::EParticleT
   if (useTOF_K) {
     AliRsnCutPIDNSigma *cutKTOF = new AliRsnCutPIDNSigma("cutPIDNSigmaTOFK",AliPID::kKaon,AliRsnCutPIDNSigma::kTOF);
     cutKTOF->SinglePIDRange(nSigmaTOF);
-    cuts->AddCut(cutKTOF);
-    if (!scheme.IsNull()) scheme += "&";
-    scheme += cutKTOF->GetName();
+    if(rejectUnmatchedTOF_K){
+      cuts->AddCut(cutKTOF);
+      if (!scheme.IsNull()) scheme += "&";
+      scheme += cutKTOF->GetName();
+    }else{
+      AliRsnCutTOFMatch *cutTOFMatch = new AliRsnCutTOFMatch("cutTOFMatch");
+      cuts->AddCut(cutTOFMatch);
+      if (!scheme.IsNull()) scheme += "&";
+      scheme += Form("(%s|(!%s))",cutKTOF->GetName(),cutTOFMatch->GetName());
+    }
   }
 
   if (useEta) {

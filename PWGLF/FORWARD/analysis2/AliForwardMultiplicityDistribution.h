@@ -10,9 +10,7 @@
  */
 #ifndef ALIFORWARDMULTIPLICITYDISTRIBUTION_H
 #define ALIFORWARDMULTIPLICITYDISTRIBUTION_H
-#include "AliAnalysisTaskSE.h"
-#include "AliBasedNdetaTask.h"
-#include <TList.h>
+#include "AliBaseAODTask.h"
 
 class TH2D;
 
@@ -23,7 +21,7 @@ class TH2D;
  * @ingroup pwglf_forward_multdist
  * @todo Should not inherit from AliBasedNdetaTask 
  */
-class AliForwardMultiplicityDistribution : public AliBasedNdetaTask
+class AliForwardMultiplicityDistribution : public AliBaseAODTask
 {
 public:
   /**
@@ -34,14 +32,6 @@ public:
    * Constructor
    */
   AliForwardMultiplicityDistribution(const char* name);
-  /**
-   * Copy Constructor
-   */ 
-  AliForwardMultiplicityDistribution(const AliForwardMultiplicityDistribution& o) : AliBasedNdetaTask(o), fTrigger(o.fTrigger),fBins(), fOutput(o.fOutput), fLowCent(o.fLowCent), fHighCent(o.fHighCent),fNBins(o.fNBins), fCent(o.fCent){ }
-  /**
-   * Assignment Operator
-   */
-  AliForwardMultiplicityDistribution& operator=(const AliForwardMultiplicityDistribution&){return *this;}
   /**
    * Destructor
    */
@@ -66,7 +56,7 @@ public:
     /**
      * Assignment operator
      */
-    Bin&operator=(const Bin&){return*this;}
+    Bin& operator=(const Bin&){return*this;}
     /**
      * Destructor
      */    
@@ -82,48 +72,40 @@ public:
     Double_t fEtaLow;           // low eta limit 
     Double_t fEtaHigh;          // high eta limit 
     TH1D*    fHist;             // multiplicity distribution hist 
-    TH1D*    fHistPlus05;       // multiplicity distribution hist scaled up with 5%
-    TH1D*    fHistPlus075;      // multiplicity distribution hist scaled up with 7.5%
-    TH1D*    fHistPlus10;       // multiplicity distribution hist scaled up with 10%
-    TH1D*    fHistMinus05;      // multiplicity distribution hist scaled down with 5%
-    TH1D*    fHistMinus075;     // multiplicity distribution hist scaled down with 7.5%
-    TH1D*    fHistMinus10;      // multiplicity distribution hist scaled down with 10%
-    TH1D*    fHistPlusSys;      // multiplicity distribution hist scaled up with the event uncertainty
-    TH1D*    fHistMinusSys;     // multiplicity distribution hist scaled down with the event uncertainty
+    TH1D*    fHistPlus05;       // mult. dist. hist scaled up with 5%
+    TH1D*    fHistPlus075;      // mult. dist. hist scaled up with 7.5%
+    TH1D*    fHistPlus10;       // mult. dist. hist scaled up with 10%
+    TH1D*    fHistMinus05;      // mult. dist. hist scaled down with 5%
+    TH1D*    fHistMinus075;     // mult. dist. hist scaled down with 7.5%
+    TH1D*    fHistMinus10;      // mult. dist. hist scaled down with 10%
+    TH1D*    fHistPlusSys;      // mult. dist. hist scaled up with the event uncertainty
+    TH1D*    fHistMinusSys;     // mult. dist, hist scaled down with the event uncertainty
     TH2D*    fAcceptance;       // histogram showing the 'holes' in acceptance. 
                                 // BinContent of 1 shows a hole, and BinContent of 10 shows data coverage
     TH2D*    fVtxZvsNdataBins;  // VtxZ vs. number of data acceptance bins (normalised to the eta range) 
     
-    ClassDef(Bin,2);  // Manager of data 
+    ClassDef(Bin,3);  // Manager of data 
   };
   /**
    * Create Output Objects
    */
-  virtual void UserCreateOutputObjects();
+  virtual Bool_t Book();
   /**
    * User Exec
    */
-  void UserExec(Option_t *option);
+  Bool_t Event(AliAODEvent& aod);
   /**
    * Terminate
    */
-  void Terminate(Option_t *option);
+  Bool_t Finalize() { return true; }
   /**
    * Set Centrality
    */
-  void SetCentrality(Int_t lowCent, Int_t highCent){fLowCent= lowCent; fHighCent= highCent;}
+  void SetCentrality(Int_t low, Int_t high) { SetCentralityAxis(low, high); }
   /**
    * Set fNBins, multiplicity histos run from 0 to fNBins
    */
   void SetNBins(Int_t n){fNBins= n;}
-  /** 
-   * implementation of pure virtual function, always returning 0
-   */
-  virtual TH2D* GetHistogram(const AliAODEvent* aod, Bool_t mc);
-  /**
-   * Get single event forward and central dN²/dEta dPhi histograms 
-   */
-  virtual void GetHistograms(const AliAODEvent* aod, TH2D& forward, TH2D& central , Bool_t mc=false);
   /** 
    * Add another eta bin to the task
    */
@@ -133,14 +115,19 @@ public:
    */
   static const Char_t* FormBinName(Double_t etaLow, Double_t etaHigh);
 protected:
-  TH1I*  fTrigger;   // trigger histogram
+  /**
+   * Copy Constructor
+   */ 
+  AliForwardMultiplicityDistribution(const AliForwardMultiplicityDistribution&);
+  /**
+   * Assignment Operator
+   */
+  AliForwardMultiplicityDistribution& 
+  operator=(const AliForwardMultiplicityDistribution&);
+
   TList  fBins;      // eta bin list
-  TList* fOutput;    // output list
-  Int_t  fLowCent;   // lower centrality limit
-  Int_t  fHighCent;  // upper centrality limit
   Int_t  fNBins;     // multiplicity axis' runs from 0 to fNbins
-  TH1D*  fCent;      // centrality
-  ClassDef(AliForwardMultiplicityDistribution, 2); 
+  ClassDef(AliForwardMultiplicityDistribution, 3); 
 };
 
 #endif

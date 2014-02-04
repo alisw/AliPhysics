@@ -69,6 +69,9 @@ class AliAnalysisTaskToyModel : public TObject {
     fNumberOfDeadSectors = numberOfDeadSectors;}
   void EnableEfficiencyDropNearEtaEdges() {
     fEfficiencyDropNearEtaEdges = kTRUE;}
+  void SimulateDetectorEffectsCorrection(TString filename, 
+					 Int_t nCentralityBins, 
+					 Double_t *centralityArrayForCorrections);
 
   //All charges
   void SetSpectraTemperatureForAllCharges(Double_t temperature) {
@@ -146,10 +149,20 @@ class AliAnalysisTaskToyModel : public TObject {
 
   //Jet-like structures
   void SetUseJets() {fUseJets = kTRUE;}
+
+  // Local charge conservation (LCC)
+  void SetUseLCC() {fUseLCC = kTRUE;}
+
   //============Toy model: List of setters============//
 
  private:
-  void SetupEfficiencyMatrix();
+  void SetupEfficiencyMatrix();//setup the efficiency matrix
+
+  Double_t GetTrackbyTrackCorrectionMatrix(Double_t vEta, 
+					      Double_t vPhi, 
+					      Double_t vPt, 
+					      Short_t vCharge, 
+					      Double_t gCentrality);//efficiency factor for the track
 
   Bool_t fUseDebug; //Debug flag
 
@@ -205,6 +218,21 @@ class AliAnalysisTaskToyModel : public TObject {
   Int_t fNumberOfDeadSectors;//number of dead sectors
   Bool_t fEfficiencyDropNearEtaEdges;//efficiency drop in eta edges
   TH3F *fEfficiencyMatrix; //efficiency matrix in eta-pt-phi
+  
+  Bool_t fSimulateDetectorEffectsCorrection;//simulate detector effects as used for correction of data
+  TH3F *fHistCorrectionPlus[101]; //correction matrix Plus
+  TH3F *fHistCorrectionMinus[101]; //correction matrix minus
+  Double_t fCentralityArrayForCorrections[101];//centrality array for correction
+  Int_t fCentralityArrayBinsForCorrections;//number of centralitry bins
+  Double_t fPtMinForCorrections;//only used for AODs
+  Double_t fPtMaxForCorrections;//only used for AODs
+  Double_t fPtBinForCorrections; //=================================correction
+  Double_t fEtaMinForCorrections;//only used for AODs
+  Double_t fEtaMaxForCorrections;//only used for AODs
+  Double_t fEtaBinForCorrections; //=================================correction
+  Double_t fPhiMinForCorrections;//only used for AODs
+  Double_t fPhiMaxForCorrections;//only used for AODs
+  Double_t fPhiBinForCorrections; //=================================correction
 
   //Kinematics
   Bool_t   fUseAllCharges; //use all charges
@@ -257,6 +285,8 @@ class AliAnalysisTaskToyModel : public TObject {
 
   Bool_t fUseJets;//Usage of jet-like structures
   TF1 *fPtAssoc;//pt of associated
+
+  Bool_t fUseLCC;//Usage of Local Charge Conservation
 
   AliAnalysisTaskToyModel(const AliAnalysisTaskToyModel&); // not implemented
   AliAnalysisTaskToyModel& operator=(const AliAnalysisTaskToyModel&); // not implemented

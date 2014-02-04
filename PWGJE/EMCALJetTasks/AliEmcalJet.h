@@ -15,6 +15,12 @@
 class AliEmcalJet : public AliVParticle
 {
  public:
+     enum EFlavourTag{
+       kDStar = 1<<0,
+       kD0 = 1<<1
+       //.....
+    }; 
+ 
   AliEmcalJet();
   AliEmcalJet(Double_t px, Double_t py, Double_t pz);
   AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m);
@@ -35,7 +41,7 @@ class AliEmcalJet : public AliVParticle
   Double_t          Phi()                        const { return fPhi;    }
   Double_t          Theta()                      const { return 2*TMath::ATan(TMath::Exp(-fEta));         }
   Double_t          E()                          const { Double_t p=P(); return TMath::Sqrt(M()*M()+p*p); }
-  Double_t          M()                          const { return 0.13957; }
+  Double_t          M()                          const { return fM; }
   Double_t          Eta()                        const { return fEta;    }
   Double_t          Y()                          const { return 0.5*TMath::Log((E()+Pz())/(E()-Pz()));    }
   Short_t           Charge()                     const { return 0;       }
@@ -81,8 +87,10 @@ class AliEmcalJet : public AliVParticle
   Short_t           TrackAt(Int_t idx)           const { return fTrackIDs.At(idx);         }
   AliVParticle     *TrackAt(Int_t idx, TClonesArray *ta)   const { if (!ta) return 0; return dynamic_cast<AliVParticle*>(ta->At(TrackAt(idx))); } 
   AliVParticle     *GetLeadingTrack(TClonesArray *tracks) const;
-
+  Int_t             GetFlavour()                 const { return fFlavourTagging;           } 
+  
   void              AddClusterAt(Int_t clus, Int_t idx){ fClusterIDs.AddAt(clus, idx);     }
+  void              AddFlavourTag(Int_t tag)           { fFlavourTagging |= tag; }
   void              AddTrackAt(Int_t track, Int_t idx) { fTrackIDs.AddAt(track, idx);      }
   void              Clear(Option_t */*option*/="")     { fClusterIDs.Set(0); fTrackIDs.Set(0); fClosestJets[0] = 0; fClosestJets[1] = 0; 
                                                          fClosestJetsDist[0] = 0; fClosestJetsDist[1] = 0; fMatched = 0; fPtSub = 0; }
@@ -91,6 +99,7 @@ class AliEmcalJet : public AliVParticle
   void              SetAreaPhi(Double_t a)             { fAreaPhi = a;                     }
   void              SetAreaEmc(Double_t a)             { fAreaEmc = a;                     }
   void              SetAxisInEmcal(Bool_t b)           { fAxisInEmcal = b;                 }
+  void              SetFlavour(Int_t flavour)          { fFlavourTagging = flavour;        }
   void              SetMaxNeutralPt(Double32_t t)      { fMaxNPt  = t;                     }
   void              SetMaxChargedPt(Double32_t t)      { fMaxCPt  = t;                     }
   void              SetNEF(Double_t nef)               { fNEF     = nef;                   }
@@ -100,10 +109,11 @@ class AliEmcalJet : public AliVParticle
   void              SetNumberOfNeutrals(Int_t n)       { fNn = n;                          }
   void              SetMCPt(Double_t p)                { fMCPt = p;                        }
   void              SortConstituents();
-  void              SetNEmc(Int_t n)                                { fNEmc           = n;      }
-  void              SetPtEmc(Double_t pt)                           { fPtEmc          = pt;     }
-  void              SetPtSub(Double_t ps)                           { fPtSub          = ps;     } 
-  void              SetPtSubVect(Double_t ps)                       { fPtVectSub      = ps;     }
+  void              SetNEmc(Int_t n)                   { fNEmc           = n;              }
+  void              SetPtEmc(Double_t pt)              { fPtEmc          = pt;             }
+  void              SetPtSub(Double_t ps)              { fPtSub          = ps;             } 
+  void              SetPtSubVect(Double_t ps)          { fPtVectSub      = ps;             }
+  Bool_t            TestFlavourTag(Int_t tag)          { return (Bool_t)((tag & fFlavourTagging) !=0); }
 
   // Trigger
   Bool_t            IsTriggerJet(UInt_t trigger=AliVEvent::kEMCEJE) const   { return (Bool_t)((fTriggers & trigger) != 0); }
@@ -123,6 +133,11 @@ class AliEmcalJet : public AliVParticle
   AliEmcalJet*      MatchedJet()                              const { return fMatched < 2 ? fClosestJets[fMatched] : 0; }
   UShort_t          GetMatchingType()                         const { return fMatchingType                            ; }
 
+  void              SetTaggedJet(AliEmcalJet *j)                    { fTaggedJet = j                                  ; }
+  void              SetTagStatus(Int_t i)                           { fTagStatus = i                                  ; }
+  AliEmcalJet*      GetTaggedJet()                            const { return fTaggedJet                               ; }
+  Int_t             GetTagStatus()                            const { return fTagStatus                               ; }
+
  protected:
   Double32_t        fPt;                  //[0,0,12]   pt 
   Double32_t        fEta;                 //[-1,1,12]  eta
@@ -134,6 +149,7 @@ class AliEmcalJet : public AliVParticle
   Double32_t        fAreaPhi;             //[0,0,12]   area phi
   Double32_t        fAreaEmc;             //[0,0,12]   area on EMCAL surface (determined from ghosts)
   Bool_t            fAxisInEmcal;         //           =true if jet axis inside EMCAL acceptance
+  Int_t             fFlavourTagging;      // tag jet with a falvour, bit 0 = no tag; bit 1= Dstar; bit 2 = D0
   Double32_t        fMaxCPt;              //[0,0,12]   pt of maximum charged constituent
   Double32_t        fMaxNPt;              //[0,0,12]   pt of maximum neutral constituent
   Double32_t        fMCPt;                //           pt from MC particles contributing to the jet
@@ -141,16 +157,18 @@ class AliEmcalJet : public AliVParticle
   Int_t             fNch;                 //           number of charged constituents
   Double32_t        fPtEmc;               //[0,0,12]   pt in EMCAL acceptance
   Int_t             fNEmc;                //           number of constituents in EMCAL acceptance
-  TArrayS           fClusterIDs;          //           array of cluster constituents  
-  TArrayS           fTrackIDs;            //           array of track constituents   
+  TArrayI           fClusterIDs;          //           array of cluster constituents  
+  TArrayI           fTrackIDs;            //           array of track constituents   
   AliEmcalJet      *fClosestJets[2];      //!          if this is MC it contains the two closest detector level jets in order of distance and viceversa
   Double32_t        fClosestJetsDist[2];  //!          distance to closest jets (see above)
   UShort_t          fMatched;             //!          0,1 if it is matched with one of the closest jets; 2 if it is not matched
   UShort_t          fMatchingType;        //!          matching type
+  AliEmcalJet      *fTaggedJet;           //!          jet tagged to this jet
+  Int_t             fTagStatus;           //!          status of tagging -1: NA 0: not tagged 1: tagged
   Double_t          fPtSub;               //!          background subtracted pt (not stored set from outside) 
   Double_t          fPtVectSub;           //!          background vector subtracted pt (not stored set from outside) 
   UInt_t            fTriggers;            //!          triggers that the jet might have fired (AliVEvent::EOfflineTriggerTypes)
 
-  ClassDef(AliEmcalJet,9) // Emcal jet class in cylindrical coordinates
+  ClassDef(AliEmcalJet,12) // Emcal jet class in cylindrical coordinates
 };
 #endif

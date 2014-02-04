@@ -66,11 +66,11 @@ fFracIsThresh(1)
   
 }
 
-//__________________________________________________________________________________________________________________________________________
-void AliIsolationCut::CalculateUEBandClusterNormalization(      AliCaloTrackReader * /*reader*/,const Float_t   etaC, const Float_t /*phiC*/,
-                                                          const Float_t   phiUEptsumCluster,    const Float_t   etaUEptsumCluster,
-                                                                Float_t & phiUEptsumClusterNorm,      Float_t & etaUEptsumClusterNorm,
-                                                                Float_t & excessFracEta,              Float_t & excessFracPhi              ) const
+//_________________________________________________________________________________________________________________________________
+void AliIsolationCut::CalculateUEBandClusterNormalization(AliCaloTrackReader * /*reader*/, Float_t   etaC, Float_t /*phiC*/,
+                                                           Float_t   phiUEptsumCluster,     Float_t   etaUEptsumCluster,
+                                                           Float_t & phiUEptsumClusterNorm, Float_t & etaUEptsumClusterNorm,
+                                                           Float_t & excessFracEta,         Float_t & excessFracPhi         ) const
 {
   // Normalize cluster background band
   
@@ -107,11 +107,11 @@ void AliIsolationCut::CalculateUEBandClusterNormalization(      AliCaloTrackRead
   
 }
 
-//________________________________________________________________________________________________________________________________________
-void AliIsolationCut::CalculateUEBandTrackNormalization  (      AliCaloTrackReader * reader,    const Float_t   etaC, const Float_t /*phiC*/,
-                                                          const Float_t   phiUEptsumTrack,      const Float_t   etaUEptsumTrack,
-                                                                Float_t & phiUEptsumTrackNorm,        Float_t & etaUEptsumTrackNorm,
-                                                                Float_t & excessFracEta,              Float_t & excessFracPhi              ) const
+//________________________________________________________________________________________________________________________________
+void AliIsolationCut::CalculateUEBandTrackNormalization  (AliCaloTrackReader * reader,    Float_t   etaC, Float_t /*phiC*/,
+                                                          Float_t   phiUEptsumTrack,      Float_t   etaUEptsumTrack,
+                                                          Float_t & phiUEptsumTrackNorm,  Float_t & etaUEptsumTrackNorm,
+                                                          Float_t & excessFracEta,        Float_t & excessFracPhi          ) const
 {
   // Normalize track background band
   
@@ -151,8 +151,8 @@ void AliIsolationCut::CalculateUEBandTrackNormalization  (      AliCaloTrackRead
   
 }
 
-//______________________________________________________________________________
-Float_t AliIsolationCut::CalculateExcessAreaFraction(const Float_t excess) const 
+//________________________________________________________________________
+Float_t AliIsolationCut::CalculateExcessAreaFraction(Float_t excess) const
 {
   // Area of a circunference segment segment 1/2 R^2 (angle-sin(angle)), angle = 2*ACos((R-excess)/R)
   
@@ -401,9 +401,9 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
                                         TObjArray * plNe, 
                                         AliCaloTrackReader * reader, 
                                         AliCaloPID * pid,
-                                        const Bool_t bFillAOD, 
+                                        Bool_t bFillAOD,
                                         AliAODPWG4ParticleCorrelation  *pCandidate, 
-                                        const TString & aodArrayRefName,
+                                        TString aodArrayRefName,
                                         Int_t   & n, 
                                         Int_t   & nfrac, 
                                         Float_t & coneptsum,  
@@ -810,8 +810,8 @@ void AliIsolationCut::Print(const Option_t * opt) const
 } 
 
 //___________________________________________________________________________
-Float_t AliIsolationCut::Radius(const Float_t etaC, const Float_t phiC, 
-                                const Float_t eta , const Float_t phi) const
+Float_t AliIsolationCut::Radius(Float_t etaC, Float_t phiC,
+                                Float_t eta , Float_t phi) const
 {
   // Calculate the distance to trigger from any particle
 

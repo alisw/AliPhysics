@@ -30,7 +30,7 @@ class AliESDpid;
 class AliFemtoK0Analysis : public AliAnalysisTaskSE {
  public:
   AliFemtoK0Analysis();
-  AliFemtoK0Analysis(const char *name, bool FieldPositive = kTRUE, bool OnlineCase = kTRUE, bool MeritCase = kTRUE, float MinDL = 0.0);
+  AliFemtoK0Analysis(const char *name, bool SignDep = kFALSE, bool FieldPositive = kTRUE, bool OnlineCase = kTRUE, bool MeritCase = kTRUE, bool Case3D = kFALSE, float MinDL = 0.0, int MeritCutChoice = 2, float MinSep = 5.0, bool FlatCent = kFALSE, bool PsiBinning = kFALSE, int NPsiBins = 18);
   virtual ~AliFemtoK0Analysis();
   AliFemtoK0Analysis(const AliFemtoK0Analysis&);
   AliFemtoK0Analysis& operator=(const AliFemtoK0Analysis&);
@@ -43,7 +43,8 @@ class AliFemtoK0Analysis : public AliAnalysisTaskSE {
 
   void MyInit();
   void GetGlobalPositionAtGlobalRadiiThroughTPC(const AliAODTrack *track, const Float_t bfield, Float_t globalPositionsAtRadii[9][3], double PrimaryVertex[3]);
-  void GetGlobalPositionAtGlobalRadiiThroughTPCTEST(const AliAODTrack *track, const Float_t bfield, double PrimaryVertex[3]);
+  bool CheckMeritCutWinner(int cutChoice, double oldPars[3], double newPars[3]);
+  bool RejectEventCentFlat(float MagField, float CentPercent);
   
   enum 
   {
@@ -56,13 +57,21 @@ class AliFemtoK0Analysis : public AliAnalysisTaskSE {
     nphibins    = 72
   };
 
+  bool fSignDep;
   bool fFieldPos;
   bool fOnlineCase;
   bool fMeritCase;
-  double fMinDecayLength;
+  bool fCase3D;
+  float fMinDecayLength;
+  int fMeritCutChoice;
+  float fMinSep;
+  bool fFlatCent;
+  bool fPsiBinning;
+  int fNPsiBins;
+
   int fEventCount;
 
-  AliFemtoK0EventCollection ***fEC; //!
+  AliFemtoK0EventCollection ****fEC; //!
   AliFemtoK0Event *fEvt; //!
 
   TRandom3* fRandomNumber; //!

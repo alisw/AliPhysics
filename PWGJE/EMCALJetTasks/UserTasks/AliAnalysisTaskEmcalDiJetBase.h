@@ -8,15 +8,12 @@ class TH3F;
 class THnSparse;
 class TClonesArray;
 class TArrayI;
-class AliAnalysisUtils;
 class AliAnalysisManager;
-class AliGenPythiaEventHeader;
+class AliJetContainer;
 
-#include "AliJetContainer.h"
+#include "AliAnalysisTaskEmcalJet.h"
 
-#include "AliAnalysisTaskEmcalJetDev.h"
-
-class AliAnalysisTaskEmcalDiJetBase : public AliAnalysisTaskEmcalJetDev {
+class AliAnalysisTaskEmcalDiJetBase : public AliAnalysisTaskEmcalJet {
  public:
   enum JetFullChargedMatchingType {
     kFraction   = 0,     // match full and charged jets with largest shared charged pt fraction
@@ -36,10 +33,6 @@ class AliAnalysisTaskEmcalDiJetBase : public AliAnalysisTaskEmcalJetDev {
 
   void                        UserCreateOutputObjects();
   void                        Terminate(Option_t *option);
-  Bool_t                      UserNotify();
-
-
-  void                        InitOnce();
 
   Bool_t                      SelectEvent();              //decides if event is used for analysis
 
@@ -63,9 +56,9 @@ class AliAnalysisTaskEmcalDiJetBase : public AliAnalysisTaskEmcalJetDev {
   void SetDoFullCharged(Bool_t b)           { fDoFullCharged    = b;}
   void SetDoFullFull(Bool_t b)              { fDoFullFull       = b;}
 
-  void SetMinSharedFraction(Double_t f)     { fMinFractionShared = f;}
+  void SetPtMinTriggerJet(Double_t ptmin)  {fPtMinTriggerJet = ptmin;}
 
-  void SetIsPythiaPtHard(Bool_t b)          { fIsPythiaPtHard = b; }
+  void SetMinSharedFraction(Double_t f)     { fMinFractionShared = f;}
 
   void ResetMatchFlag()                     { fMatchingDone = kFALSE; }
 
@@ -75,21 +68,20 @@ class AliAnalysisTaskEmcalDiJetBase : public AliAnalysisTaskEmcalJetDev {
   Double_t GetDeltaR(const AliEmcalJet* jet1, const AliEmcalJet* jet2) const;
 
   Double_t GetZ(const AliVParticle *trk, const AliEmcalJet *jet)       const;
-  Double_t GetZ(const Double_t trkPx, const Double_t trkPy, const Double_t trkPz, const Double_t jetPx, const Double_t jetPy, const Double_t jetPz) const;
+  Double_t GetZ(Double_t trkPx, Double_t trkPy, Double_t trkPz, Double_t jetPx, Double_t jetPy, Double_t jetPz) const;
 
-  AliEmcalJet* GetLeadingJetOppositeHemisphere(const Int_t type, const Int_t typea, const AliEmcalJet *jetTrig);
+  AliEmcalJet* GetLeadingJetOppositeHemisphere(Int_t type, Int_t typea, const AliEmcalJet *jetTrig);
+  AliEmcalJet* GetSecondLeadingJetOppositeHemisphere(Int_t type, Int_t typea, const AliEmcalJet *jetTrig);
 
  protected:
   virtual Bool_t                      RetrieveEventObjects();
 
-  Bool_t                      IsSameJet(const Int_t jt, const Int_t ja, const Int_t type, const Bool_t isMC = kFALSE);
-  Double_t                    GetJetPt(const AliEmcalJet *jet, const Int_t type);
+  Bool_t                      IsSameJet(Int_t jt, Int_t ja, Int_t type, Bool_t isMC = kFALSE);
+  Double_t                    GetJetPt(const AliEmcalJet *jet, Int_t type);
 
   void                        MatchJetsGeo(Int_t cFull, Int_t cCharged,
 					   Int_t iDebug = 0, Float_t maxDist = 0.3, Int_t type = 0);
   Double_t                    GetFractionSharedPt(const AliEmcalJet *jetFull, const AliEmcalJet *jetCharged) const;
-
-  Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &xsec, Float_t &trials, Int_t &pthard);
 
   void                        SetChargedFractionIndex();
   void                        SetChargedFractionIndexMC();
@@ -112,9 +104,6 @@ class AliAnalysisTaskEmcalDiJetBase : public AliAnalysisTaskEmcalJetDev {
   Bool_t            fDoFullCharged;             //  do full-charged ana
   Bool_t            fDoFullFull;                //  do full-full ana
 
-  Bool_t            fUseAnaUtils;               //  used for LHC13* data
-  AliAnalysisUtils *fAnalysisUtils;             //! vertex selection
-
   Double_t          fPtMinTriggerJet;           //  minimum pT of trigger jet
   Double_t          fMinFractionShared;         //  minimum fraction charged pT
 
@@ -122,24 +111,13 @@ class AliAnalysisTaskEmcalDiJetBase : public AliAnalysisTaskEmcalJetDev {
   TArrayI           faFullFracIndex;            // index of charged jet with largest shared charged fraction - detector level
   TArrayI           faFullFracIndexMC;          // index of charged jet with largest shared charged fraction - particle level
 
-  Bool_t                      fIsPythiaPtHard;                //pythia in pt hard bins
-  AliGenPythiaEventHeader    *fPythiaHeader;                  //!event Pythia header
-  Double_t                    fPtHard;                        //!event pt hard
-  Int_t                       fPtHardBin;                     //!event pt hard bin
-  Int_t                       fNTrials;                       //!event trials
-
-
-  TH1F             *fhNEvents;                            //! Histo number of events
-  TH1              *fHistTrials;                  //!trials from pyxsec.root
-  TH1              *fHistTrialsSelEvents;         //!trials from pyxsec.root only for selected events
-  TProfile         *fHistXsection;                //!x section from pyxsec.root
-  TH1              *fHistEvents;                  //!total number of events per pt hard bin
-
+  TH1F             *fhNEvents;                  //! Histo number of events
+  TH1              *fHistTrialsSelEvents;       //!trials from pyxsec.root only for selected events
 
  private:
   AliAnalysisTaskEmcalDiJetBase(const AliAnalysisTaskEmcalDiJetBase&);            // not implemented
   AliAnalysisTaskEmcalDiJetBase &operator=(const AliAnalysisTaskEmcalDiJetBase&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalDiJetBase, 4) // dijet base task
+  ClassDef(AliAnalysisTaskEmcalDiJetBase, 5) // dijet base task
 };
 #endif

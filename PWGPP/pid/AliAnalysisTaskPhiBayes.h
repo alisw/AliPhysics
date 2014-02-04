@@ -54,6 +54,7 @@ class AliAnalysisTaskPhiBayes : public AliAnalysisTaskSE {
   Int_t GetTypeCollisions() const {return fTypeCol;}; 
 
   void SetPIDuserCut(AliPIDperfCut *usercut){fPIDuserCut = usercut;};
+  void SetRefSpecies(Int_t species) {fSpeciesRef = species;}
 
  private:
   AliAnalysisTaskPhiBayes(const AliAnalysisTaskPhiBayes &old); 
@@ -134,8 +135,9 @@ class AliAnalysisTaskPhiBayes : public AliAnalysisTaskSE {
   AliPIDperfCut *fPIDuserCut;  // pid user cut to be cheked
 
   Bool_t fToEP;        // correlate to TPC EP
+  Int_t fSpeciesRef;    // reference species (default = 3, kaon)
 
-  ClassDef(AliAnalysisTaskPhiBayes, 4);    //Analysis task for bayesian (K0s)
+  ClassDef(AliAnalysisTaskPhiBayes, 5);    //Analysis task for bayesian (K0s)
 };
 
 #endif

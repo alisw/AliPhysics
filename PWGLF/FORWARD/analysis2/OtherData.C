@@ -1749,6 +1749,111 @@ struct RefData
   }
 
   //____________________________________________________________________
+  static TGraphAsymmErrors* AlicePbPb2760(UShort_t centLow, UShort_t centHigh)
+  {
+    const Int_t  n    = 42;
+    // --- /HepData/8430/d1x1y1 --------------------------------------
+    const double x[]  = { -4.875, -4.625, -4.375, -4.125, -3.875, 
+			  -3.625, -3.375, -3.125, -2.875, -2.625, 
+			  -2.375, -2.125, -1.875, -1.625, -1.375, 
+			  -1.125, -0.875, -0.625, -0.375, -0.125, 
+			   +0.125, +0.375, +0.625, +0.875, +1.125,
+			  +1.375, +1.625, +1.875, +2.125, +2.375, 
+			  +2.625, +2.875, +3.125, +3.375, +3.625,  
+			  +3.875, +4.125, +4.375, +4.625, +4.875, 
+			  +5.125, +5.375 };
+    const double xe[] = { 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 
+			  0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 
+			  0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 
+			  0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 
+			  0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 
+			  0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 
+			  0.125, 0.125, 0.125, 0.125, 0.125, 0.125 };
+    const double y00_05[]  = { 888.0,  974.0, 1046.0,  1128.0, 1209.0, 1304.0, 
+			       1388.0, 1449.0, 1504.0, 1578.0, 1627.0, 1674.0, 
+			       1709.0, 1736.0, 1739.0, 1699.0, 1674.0, 1658.0,
+			       1627.0, 1615.0, 1615.0, 1627.0, 1658.0, 1674.0,
+			       1699.0, 1739.0, 1736.0, 1709.0, 1674.0, 1627.0, 
+			       1578.0, 1504.0, 1449.0, 1388.0, 1304.0, 1209.0, 
+			       1128.0, 1046.0, 974.0,   888.0,  770.0,  667.0};
+    const double ye00_05[] = { 39.0, 41.0, 44.0, 46.0, 50.0, 54.0, 57.0, 
+			       59.0, 58.0, 61.0, 62.0, 62.0, 66.0, 64.0, 
+			       65.0, 68.0, 46.0, 40.0, 39.0, 39.0, 39.0, 
+			       39.0, 40.0, 46.0, 68.0, 65.0, 64.0, 66.0, 
+			       62.0, 62.0, 61.0, 58.0, 59.0, 57.0, 54.0, 
+				50.0, 46.0, 44.0, 41.0, 39.0, 42.0, 39.0 };
+    // --- /HepData/8430/d1x1y2 --------------------------------------
+    const double y05_10[] = { 744.0, 807.0, 861.0, 929.0, 1001.0, 1072.0,
+			      1144.0, 1196.0, 1243.0, 1298.0, 1333.0, 1361.0,
+			      1393.0, 1422.0, 1418.0, 1380.0, 1362.0, 1338.0,
+			      1330.0, 1318.0, 1318.0, 1330.0, 1338.0, 1362.0,
+			      1380.0, 1418.0, 1422.0, 1393.0, 1361.0, 1333.0,
+			      1298.0, 1243.0, 1196.0, 1144.0, 1072.0, 1001.0, 
+			      929.0, 861.0, 807.0,    744.0, 651.0, 577.0 };
+    const double ye05_10[]  = { 34.0, 35.0, 37.0, 39.0, 43.0, 46.0, 49.0,
+				51.0, 51.0, 52.0, 54.0, 54.0, 58.0, 56.0,
+				56.0, 58.0, 37.0, 32.0, 32.0, 32.0, 32.0,
+				32.0, 32.0, 37.0, 58.0, 56.0, 56.0, 58.0,
+				54.0, 54.0, 52.0, 51.0, 51.0, 49.0, 46.0,
+				43.0, 39.0, 37.0, 35.0, 34.0, 39.0, 35.0 };
+    
+    // --- /HepData/8430/d1x1y3 --------------------------------------
+    const double y10_20[] = { 559.0, 615.0, 656.0, 705.0, 754.0, 812.0,
+			      862.0, 899.0, 928.0, 969.0, 998.0, 1022.0,
+			      1048.0, 1062.0, 1064.0, 1026.0, 1014.0, 1006.0,
+			      991.0, 982.0, 982.0, 991.0, 1006.0, 1014.0,
+			      1026.0, 1064.0, 1062.0, 1048.0, 1022.0, 998.0,
+			      969.0, 928.0, 899.0, 862.0, 812.0, 754.0,
+			      705.0, 656.0, 615.0, 559.0, 491.0, 451.0 };
+    const double ye10_20[]  = { 29.0, 31.0, 32.0, 33.0, 36.0, 39.0, 42.0,
+				43.0, 44.0, 45.0, 45.0, 44.0, 46.0, 47.0,
+				47.0, 46.0, 28.0, 24.0, 24.0, 24.0, 24.0,
+				24.0, 24.0, 28.0, 46.0, 47.0, 47.0, 46.0,
+				44.0, 45.0, 45.0, 44.0, 43.0, 42.0, 39.0,
+				36.0, 33.0, 32.0, 31.0, 29.0, 37.0, 29.0 };
+
+    // --- /HepData/8430/d1x1y4 --------------------------------------
+    const double y20_30[] = { 389.0, 429.0, 459.0, 491.0, 526.0, 563.0,
+			      596.0, 619.0, 641.0, 669.0, 683.0, 700.0,
+			      716.0, 725.0, 724.0, 701.0, 692.0, 682.0,
+			      673.0, 666.0, 666.0, 673.0, 682.0, 692.0,
+			      701.0, 724.0, 725.0, 716.0, 700.0, 683.0,
+			      669.0, 641.0, 619.0, 596.0, 563.0, 526.0,
+			      491.0, 459.0, 429.0, 389.0, 343.0, 313.0 };
+    const double ye20_30[]  = { 21.0, 22.0, 24.0, 25.0, 27.0, 30.0, 31.0,
+				32.0, 34.0, 35.0, 33.0, 34.0, 35.0, 36.0,
+				37.0, 34.0, 19.0, 16.0, 16.0, 16.0, 16.0,
+				16.0, 16.0, 19.0, 34.0, 37.0, 36.0, 35.0,
+				34.0, 33.0, 35.0, 34.0, 32.0, 31.0, 30.0,
+				27.0, 25.0, 24.0, 22.0, 21.0, 26.0, 22.0 };
+
+    // --- Select ----------------------------------------------------
+    const double* yp  = 0;
+    const double* ype = 0;
+    if      (TMath::Abs(centLow- 0) < 1 && TMath::Abs(centHigh- 5) < 1) {
+      yp  = y00_05;
+      ype = ye00_05;
+    }
+    else if (TMath::Abs(centLow- 5) < 1 && TMath::Abs(centHigh-10) < 1) {
+      yp  = y05_10;
+      ype = ye05_10;
+    }
+    else if (TMath::Abs(centLow-10) < 1 && TMath::Abs(centHigh-20) < 1) {
+      yp  = y10_20;
+      ype = ye10_20;
+    }
+    else if (TMath::Abs(centLow-20) < 1 && TMath::Abs(centHigh-30) < 1) {
+      yp  = y20_30;
+      ype = ye20_30;
+    }
+    if (!yp || !ype) return 0;
+    TGraphAsymmErrors* g = new TGraphAsymmErrors(n,x,yp,xe,xe,ype,ype);
+    SetGraphAttributes(g, INEL, ALICE, false, "alice_pbpb2760", 
+		       "#it{Phys.Lett.} #bf{B726}:610-622,2013");
+    
+    return g;
+  }
+  //____________________________________________________________________
   /** 
    * Get a single data graph 
    * 
@@ -1766,7 +1871,8 @@ struct RefData
 				      UShort_t energy, 
 				      UShort_t type=0x1, 
 				      UShort_t centLow=0,
-				      UShort_t centHigh=0) 
+				      UShort_t centHigh=0,
+				      Bool_t   verbose=false) 
   {
     TGraphAsymmErrors* ret = 0;
     if (sys == 1) { 
@@ -1881,6 +1987,19 @@ struct RefData
 	  break;
 	}
       }
+    } // pp 
+    else if (sys == 2) { // PbPb 
+      if (TMath::Abs(energy - 2760) < 10) {
+	switch (which) { 
+	case ALICE: ret = AlicePbPb2760(centLow, centHigh);
+	}
+      }
+      if (ret) {
+	Int_t col = CentralityColor(centLow, centHigh);
+	ret->SetMarkerColor(col);
+	ret->SetLineColor(col);
+	ret->SetFillColor(col);
+      }
     }
     else if (sys == 3) { // pPb 
       if (TMath::Abs(energy - 5023) < 10 || 
@@ -1889,7 +2008,7 @@ struct RefData
 	case ALICE: ret = AliceCentralpPb5023(); break;
 	}
       }
-    }
+    } // pPb
     if (!ret) {
       TString w;
       switch (which) { 
@@ -1908,17 +2027,22 @@ struct RefData
       default: sy = Form("unknown(%d)", sys);
       }
       TString tr;
-      switch (type) { 
-      case 1:        tr = "INEL"; break;
-      case 2:        tr = "INEL>0"; break;
-      case 4:      tr = "NSD"; break;
-      default:       tr = Form("unknown(%d)", sys);
+      if (sys == 1 || sys == 3) {
+	switch (type) { 
+	case 1:        tr = "INEL"; break;
+	case 2:        tr = "INEL>0"; break;
+	case 4:        tr = "NSD"; break;
+	default:       tr = Form("unknown(%d)", sys);
+	}
       }
-    
-      Warning("GetSingle", "Nothing to get for "
-	      "which=%s, sys=%s, energy=%dGeV, type=%s, "
-	      "centLow=%d, centHigh=%d",
-	      w.Data(), sy.Data(), energy, tr.Data(), centLow, centHigh);
+      else 
+	tr.Form("%2d--%2d%%", centLow, centHigh);
+
+      if (verbose) 
+	Warning("GetSingle", "Nothing to get for "
+		"which=%s, sys=%s, energy=%dGeV, type=%s, "
+		"centLow=%d, centHigh=%d",
+		w.Data(), sy.Data(), energy, tr.Data(), centLow, centHigh);
     }
 #if 0
     if (ret) {
@@ -1951,6 +2075,111 @@ struct RefData
     return s;
   }
 
+  static void FormatEnergy(TString& en, UShort_t sys, UShort_t energy)
+  {
+    en.Append(Form("#sqrt{s%s}=", sys == 1 ? "" : "_{NN}"));
+    if (energy < 1000) 
+      en.Append(Form("%dGeV", energy));
+    else {
+      if (energy % 1000 == 0) 
+	en.Append(Form("%dTeV", energy/1000));
+      else 
+	en.Append(Form("%4.2fTeV", float(energy)/1000));
+    }
+  }
+  static void FormatSystem(TString& sn, UShort_t sys)
+  {
+    switch (sys) { 
+    case 1:  sn = "pp";      break;
+    case 2:  sn = "PbPb";    break;
+    case 3:  sn = "pPb";     break;
+    default: sn = "unknown"; break;
+    }
+  }
+  static void FormatCentrality(TString& cn, UShort_t sys, UShort_t l,UShort_t u)
+  {
+    if (sys == 2) cn.Form("%d%% - %d%% central", l, u);
+  }
+  static void FormatType(TString& tn, UShort_t sys, UShort_t type)
+  {
+    if (sys == 2) { 
+      tn = "";
+      return;
+    }
+    if (type == 0x2000) type = 0x4;
+    if (type & 0x1) AppendItem(tn, '|', "INEL");
+    if (type & 0x2) AppendItem(tn, '|', "INEL>0");
+    if (type & 0x4) AppendItem(tn, '|', "NSD");
+  }
+  static void FormatTitle(TString& title,
+			  UShort_t sys, 
+			  UShort_t energy,
+			  UShort_t type, 
+			  UShort_t centLow, 
+			  UShort_t centHigh,
+			  Bool_t   seenUA5)
+  {
+    TString sn; FormatSystem(sn, sys);
+    TString en; FormatEnergy(en, sys, energy);
+    TString tn; FormatType(tn, sys, type);
+    TString cn; FormatCentrality(cn, sys, centLow, centHigh);
+    if (seenUA5) sn.Append("(p#bar{p})");
+    if (!en.IsNull()) en.Prepend(", ");
+    if (!tn.IsNull()) tn.Prepend(", ");
+    if (!cn.IsNull()) cn.Prepend(", ");
+    title.Form("%s%s%s%s", sn.Data(), en.Data(), tn.Data(), cn.Data());
+  }
+  //__________________________________________________________________
+  /** 
+   * Get the color for a centrality bin
+   * 
+   * @param bin Centrality bin 
+   * 
+   * @return Color 
+   */
+  static Int_t CentralityColor(UShort_t centLow, 
+			       UShort_t centHigh,
+			       UShort_t /*nBins*/=0)
+  {
+#if 0
+    if (nBins > 0 && nBins < 6) { 
+      switch (bin) { 
+      case 1: return kRed+2;
+      case 2: return kGreen+2;
+      case 3: return kBlue+1;
+      case 4: return kCyan+1;
+      case 5: return kMagenta+1;
+      case 6: return kYellow+2;
+      }
+    }
+#endif
+    Float_t  fc       = (centLow+double(centHigh-centLow)/2) / 100;
+    Int_t    nCol     = gStyle->GetNumberOfColors();
+    Int_t    icol     = TMath::Min(nCol-1,int(fc * nCol + .5));
+    Int_t    col      = gStyle->GetColorPalette(icol);
+    //Info("GetCentralityColor","%3d: %3d-%3d -> %3d",bin,centLow,centHigh,col);
+    return col;
+  }
+  static Bool_t GetPbPb(TMultiGraph* mp, 
+			Bool_t cms, Bool_t alice, Bool_t pythia, 
+			Bool_t work, UShort_t energy, UShort_t centLow, 
+			UShort_t centHigh)
+  {
+    // Nothing for PbPb so far 
+    TGraphAsymmErrors* gCMS =(cms   ?GetSingle(CMS,   2,energy,0,
+					       centLow, centHigh):0);
+    TGraphAsymmErrors* gALI =(alice ?GetSingle(ALICE, 2,energy,0,
+					       centLow, centHigh):0);
+    TGraphAsymmErrors* gPYT =(pythia?GetSingle(PYTHIA,2,energy,0,
+					       centLow, centHigh):0);
+    TGraphAsymmErrors* gWRK =(work  ?GetSingle(WIP,   2,energy,0,
+						 centLow, centHigh):0);
+    if (gCMS) mp->Add(gCMS);
+    if (gALI) mp->Add(gALI);
+    if (gPYT) mp->Add(gPYT);
+    if (gWRK) mp->Add(gWRK);
+    return (gCMS || gALI || gPYT || gWRK);
+  }
   //____________________________________________________________________
   /** 
    * Get a multi graph of data for a given energy and trigger type 
@@ -1978,24 +2207,12 @@ struct RefData
   {
     TMultiGraph* mp = new TMultiGraph(Form("dndeta_%dGeV_%d_%03d_%03d", 
 					   energy, type, centLow, centHigh),"");
-    TString tn;
-    TString en;
-    TString sn;
-    TString cn;
     bool    ua5       = (which & (1 << UA5));       // 0x1
     bool    cms       = (which & (1 << CMS));       // 0x2
     bool    alice     = (which & (1 << ALICE));     // 0x4
     bool    work      = (which & (1 << WIP)); // 0x8
     bool    pythia    = (which & (1 << PYTHIA));    // 0x10
-    en.Append(Form(", #sqrt{s%s}=", sys == 1 ? "" : "_{NN}"));
-    if (energy < 1000) 
-      en.Append(Form("%dGeV", energy));
-    else {
-      if (energy % 1000 == 0) 
-	en.Append(Form("%dTeV", energy/1000));
-      else 
-	en.Append(Form("%4.2fTeV", float(energy)/1000));
-    }
+    Bool_t  seenUA5   = false;
 
     if (sys == 1) { 
       if (!(type & 0x7)) 
@@ -2013,16 +2230,9 @@ struct RefData
 		sys, energy);
 	return 0;
       }
-    
-      sn = "pp";
 
       // Substitute NSD for V0-AND
-      if (type == 0x2000) type = 0x4;
-      if (type & 0x1) AppendItem(tn, '|', "INEL");
-      if (type & 0x2) AppendItem(tn, '|', "INEL>0");
-      if (type & 0x4) AppendItem(tn, '|', "NSD");
 
-      Bool_t seenUA5 = false;
       for (Int_t i = 0; i < 3; i++) { 
 	UShort_t mask = (1 << i);
 	if ((type & mask) == 0) continue;
@@ -2040,13 +2250,10 @@ struct RefData
 	if (gWRK) mp->Add(gWRK);
 	if (gUAp || gUAn) seenUA5 = true;
       }
-      if (seenUA5) sn.Append("(p#bar{p})");
     }
     else if (sys == 2) { 
-      // Nothing for PbPb so far 
-      cn = Form(", %d%%-%d%% central", centLow, centHigh);
-      sn = "PbPb";
       // Warning("GetData", "No other data for PbPb yet");
+      GetPbPb(mp,cms,alice,pythia,work,energy,centLow,centHigh);
     }
     else if (sys == 3) {
       if (!(TMath::Abs(energy-5023) < 10 ||
@@ -2057,7 +2264,6 @@ struct RefData
       }
     
       // Info("GetData", "Getting ALICE pPb data");
-      sn = "pPb";
       TGraphAsymmErrors* gALI =(alice ?GetSingle(ALICE, sys,energy, 0):0);
       if (gALI) mp->Add(gALI);
       // Info("GetData", "Got %p", gALI);
@@ -2069,9 +2275,9 @@ struct RefData
       mp = 0;
       return 0;
     }
-    TString tit(Form("%s%s, %s%s", 
-		     sn.Data(), en.Data(), tn.Data(), cn.Data()));
-    mp->SetTitle(tit.Data());
+    TString title;
+    FormatTitle(title, sys, energy, type, centLow, centHigh, seenUA5);
+    mp->SetTitle(title.Data());
     return mp;
   }
 };
@@ -2102,7 +2308,28 @@ OtherData(UShort_t sys=1,
 {
   TMultiGraph* mp = 
     RefData::GetData(sys, energy, type, centLow, centHigh, which);
-  if (!mp) return;
+  if (!mp) {
+    if (sys != 2) return;
+
+    UShort_t  cents[] = { 0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 100, 0 };
+    UShort_t* lC      = &(cents[0]);
+    UShort_t* uC      = &(cents[1]);
+    TString   title;
+    RefData::FormatTitle(title, sys, energy, type, centLow, centHigh, false);
+    mp   = new TMultiGraph(Form("pbpb_%04dGeV_%03d_%03d", 
+				energy, centLow, centHigh), title.Data());
+    Bool_t filled = false;
+    while (*lC < centLow) { lC++; uC++; }
+    while (*uC > 0 && *uC <= centHigh) {
+      TMultiGraph* mg = RefData::GetData(sys, energy, type, *lC, *uC, which);
+      if (!mg) continue;
+      filled = true;
+      mp->Add(mg);
+      uC++;
+      lC++;
+    }
+    if (!filled) return;
+  }
 
   gStyle->SetTitleX(0.1);
   gStyle->SetTitleY(1.0);
