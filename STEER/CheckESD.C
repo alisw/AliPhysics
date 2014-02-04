@@ -22,6 +22,7 @@
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliPID.h"
+#include "AliESDpid.h"
 #endif
 
 TH1F* CreateHisto(const char* name, const char* title, 
@@ -166,6 +167,10 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
   }
   esd->ReadFromTree(tree);
 
+  // PID
+
+  AliESDpid * pid = new AliESDpid(kTRUE);
+
   // efficiency and resolution histograms
   Int_t nBinsPt = 15;
   Float_t minPt = 0.1;
@@ -307,6 +312,9 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
       return kFALSE;
     }
 
+    // PID for MC
+    pid->MakePID(esd,kTRUE);
+
     // loop over tracks
     for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
       AliESDtrack* track = esd->GetTrack(iTrack);
@@ -351,7 +359,7 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
       if (iGen == iRec) nIdentified++;
 
       // dE/dx and TOF
-      Double_t time[AliPID::kSPECIES];
+      Double_t time[AliPID::kSPECIESC];
       track->GetIntegratedTimes(time);
       if (iGen == iRec) {
 	hDEdxRight->Fill(particle->P(), track->GetTPCsignal());
@@ -686,6 +694,7 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
   runLoader->UnloadHeader();
   runLoader->UnloadKinematics();
   delete runLoader;
+  delete pid;
 
   // result of check
   Info("CheckESD", "check of ESD was successfull");
