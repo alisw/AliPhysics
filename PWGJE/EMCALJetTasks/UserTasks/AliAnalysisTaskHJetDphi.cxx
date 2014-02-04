@@ -66,7 +66,7 @@ AliAnalysisTaskHJetDphi::AliAnalysisTaskHJetDphi() :
   fIsMC(kFALSE), fAnalyzeMCTruth(kFALSE), fMC(0), 
   fEvent(0x0), fESD(0x0), fAODIn(0x0), fAODOut(0x0), fAODExtension(0x0),
   fOfflineTrgMask(AliVEvent::kAny), fTriggerType(-1), fCentrality(-1), fMaxVtxZ(10),
-  fEsdTrkCut(0x0), fEsdHybCut(0x0), fFilterMask(0), fRequireITSRefit(kTRUE),
+  fEsdTrkCut(0x0), fEsdHybCut(0x0), fFilterMask(0), fRequireITSRefit(kTRUE), fRequireSharedClsCut(kTRUE),
   fIsInit(kFALSE), fNonStdFile(""), fMcParticleArrName(""), fMcParticleArray(0x0),  fMcParticlelMap(0x0), 
   fEmbTrkArrName(""), fEmbTrkArray(0x0), fTrackArrName(""), fTrackArray(0x0), 
   fTriggerTrkIndex(-1), fTriggerTrkPt(-1), fSwitchOnAvoidTpcHole(kFALSE), fAvoidTpcHole(kFALSE), fCutTPCBoundary(kFALSE), fDistToTPCBoundary(0.), 
@@ -125,7 +125,7 @@ AliAnalysisTaskHJetDphi::AliAnalysisTaskHJetDphi(const char *name) :
   fIsMC(kFALSE), fAnalyzeMCTruth(kFALSE), fMC(0), 
   fEvent(0x0), fESD(0x0), fAODIn(0x0), fAODOut(0x0), fAODExtension(0x0),
   fOfflineTrgMask(AliVEvent::kAny), fTriggerType(-1), fCentrality(-1), fMaxVtxZ(10),
-  fEsdTrkCut(0x0), fEsdHybCut(0x0), fFilterMask(0), fRequireITSRefit(kTRUE),
+  fEsdTrkCut(0x0), fEsdHybCut(0x0), fFilterMask(0), fRequireITSRefit(kTRUE), fRequireSharedClsCut(kTRUE),
   fIsInit(kFALSE), fNonStdFile(""), fMcParticleArrName(""), fMcParticleArray(0x0),  fMcParticlelMap(0x0), 
   fEmbTrkArrName(""), fEmbTrkArray(0x0), fTrackArrName(""), fTrackArray(0x0), 
   fTriggerTrkIndex(-1), fTriggerTrkPt(-1), fSwitchOnAvoidTpcHole(kFALSE), fAvoidTpcHole(kFALSE), fCutTPCBoundary(kFALSE), fDistToTPCBoundary(0.), 
@@ -541,7 +541,9 @@ void AliAnalysisTaskHJetDphi::UserExec(Option_t *)
 
   if(fVerbosity>1)
     {
-      TList *list = fEvent->GetList();
+      TList *list = 0x0;
+      if(fAnaType==0) list = fEvent->GetList();
+      else            list = fAODOut->GetList();
       for(Int_t i=0; i<list->GetEntries(); i++)
 	{
 	  TObject *obj = (TObject*)list->At(i);
@@ -1266,6 +1268,11 @@ Bool_t AliAnalysisTaskHJetDphi::IsGoodAODtrack(AliVParticle *track)
       if(!aodtrack->IsHybridGlobalConstrainedGlobal()) return kFALSE;
     }
   if( fRequireITSRefit && (aodtrack->GetStatus()&AliESDtrack::kITSrefit)==0 ) return kFALSE;
+  if (fRequireSharedClsCut)
+    {
+      Double_t frac = Double_t(aodtrack->GetTPCnclsS())/Double_t(aodtrack->GetTPCncls());
+      if (frac > 0.4) return kFALSE;
+    }
   return kTRUE;
 }
 
@@ -1333,6 +1340,7 @@ void AliAnalysisTaskHJetDphi::PrintConfig()
   printf("Is embedding? %s\n",decision[fIsEmbedding]);
   printf("Track filter mask: %d\n",fFilterMask);
   printf("Require track to have ITS refit? %s\n",decision[fRequireITSRefit]);
+  printf("Require to cut on fraction of shared TPC clusters? %s\n",decision[fRequireSharedClsCut]);
   printf("Track pt range: %2.2f < pt < %2.2f\n",fMinTrkPt, fMaxTrkPt);
   printf("Track eta range: %2.1f < eta < %2.1f\n",fMinTrkEta, fMaxTrkEta);
   printf("Track phi range: %2.0f < phi < %2.0f\n",fMinTrkPhi*TMath::RadToDeg(),fMaxTrkPhi*TMath::RadToDeg());

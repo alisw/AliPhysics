@@ -49,6 +49,7 @@ class AliAnalysisTaskHJetDphi : public AliAnalysisTaskSE {
   void SetMaxVtxZ(Double_t z)                                  { fMaxVtxZ = z;                   }
   void SetFilterMask(UInt_t filter)                            { fFilterMask = filter;           }
   void SetRequireITSRefit(Bool_t r)                            { fRequireITSRefit = r;           }
+  void SetRequireSharedClsCut(Bool_t r)                        { fRequireSharedClsCut = r;       }
   void SetNonStdFile(char* s)                                  { fNonStdFile = s;                }
   void SetMcParticleArrName(char *s)                           { fMcParticleArrName = s;         }
   void SetEmbTrkArrName(char *s)                               { fEmbTrkArrName = s;             }
@@ -122,6 +123,7 @@ protected:
   AliESDtrackCuts                   *fEsdHybCut;                 //! Track cuts for complementary tracks in ESD
   UInt_t                            fFilterMask;                 //  Filter mask to select AOD tracks
   Bool_t                            fRequireITSRefit;            //  Flag to require ITS refit for AOD tracks
+  Bool_t                            fRequireSharedClsCut;        //  Flag to require cut on fraction of shared TPC clusters
   Bool_t                            fIsInit;                     //! Flag if all the arraies are successfully retrieved
   TString                           fNonStdFile;                 //  Name of delta aod file to catch the extension
   TString                           fMcParticleArrName;          //  Name of the input mc particles
@@ -208,7 +210,7 @@ protected:
   AliAnalysisTaskHJetDphi(const AliAnalysisTaskHJetDphi&);            // not implemented
   AliAnalysisTaskHJetDphi &operator=(const AliAnalysisTaskHJetDphi&); // not implemented
 
-  ClassDef(AliAnalysisTaskHJetDphi, 1);
+  ClassDef(AliAnalysisTaskHJetDphi, 2);
 };
 
 #endif
