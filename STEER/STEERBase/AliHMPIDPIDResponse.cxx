@@ -255,7 +255,7 @@ Double_t AliHMPIDPIDResponse::ExpectedSigma(const AliVTrack *vTrk, Double_t nmea
       TVector2 pos; pos = TracePhot(xRa,yRa,thRa,phRa,thetaCerTh,phi);
       if(!IsInside(pos.X(),pos.Y())) continue;
       if(IsInDead(pos.X(),pos.Y()))  continue;
-      Double_t sigma2 = Sigma2(thRa,thRa,thetaCerTh,phi); //photon candidate sigma^2
+      Double_t sigma2 = Sigma2(thRa,phRa,thetaCerTh,phi); //photon candidate sigma^2
       
       if(sigma2!=0) {
         invSigma += 1./sigma2;

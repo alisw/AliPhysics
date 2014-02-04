@@ -174,6 +174,8 @@ const Int_t AliPID::fgkParticleCode[AliPID::kSPECIESCN+1] = {
   */
 };
 
+Char_t AliPID::fgkParticleCharge[AliPID::kSPECIESCN+1] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
+
 Double_t AliPID::fgPrior[kSPECIESCN] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 
@@ -269,15 +271,21 @@ AliPID& AliPID::operator = (const AliPID& pid)
 void AliPID::Init() 
 {
   //
-  // Initialise the masses
+  // Initialise the masses, charges
   //
   // Initialise only once... 
   if(!fgkParticleMass[0]) {
     AliPDG::AddParticlesToPdgDataBase();
     for (Int_t i = 0; i < kSPECIESC; i++) {
       fgkParticleMass[i] = M(i);
-      if (i == kHe3 || i == kAlpha) fgkParticleMassZ[i] = M(i)/2.;
-      else fgkParticleMassZ[i]=M(i);
+      if (i == kHe3 || i == kAlpha) {
+	fgkParticleMassZ[i] = M(i)/2.;
+	fgkParticleCharge[i] = 2;
+      }
+      else {
+	fgkParticleMassZ[i]=M(i);
+	fgkParticleCharge[i]=1;
+      }
     }
   }
 }

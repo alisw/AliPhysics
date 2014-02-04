@@ -65,8 +65,8 @@ AliITStrackV2::AliITStrackV2(AliESDtrack& t,Bool_t c):
   }
   Set(par->GetX(),par->GetAlpha(),par->GetParameter(),par->GetCovariance());
 
-  SetLabel(t.GetLabel());
-  SetMass(t.GetMass());
+  SetLabel(t.GetITSLabel());
+  SetMass(t.GetMassForTracking());
   SetNumberOfClusters(t.GetITSclusters(fIndex));
 
   if (t.GetStatus()&AliESDtrack::kTIME) {
@@ -94,6 +94,19 @@ void AliITStrackV2::ResetClusters() {
 void AliITStrackV2::UpdateESDtrack(ULong_t flags) const {
   // Update track params
   fESDtrack->UpdateTrackParams(this,flags);
+  //
+  // set correctly the global label
+  if (fESDtrack->IsOn(AliESDtrack::kTPCin)) { 
+    // for global track the GetLabel should be negative if
+    // 1) GetTPCLabel<0
+    // 2) this->GetLabel()<0
+    // 3) GetTPCLabel() != this->GetLabel()
+    int label = fESDtrack->GetTPCLabel();
+    int itsLabel = GetLabel();
+    if (label<0 || itsLabel<0 || itsLabel!=label) label = -TMath::Abs(label);
+    fESDtrack->SetLabel(label);
+  }
+  //
   // copy the module indices
   Int_t i;
   for(i=0;i<2*AliITSgeomTGeo::kNLayers;i++) {
@@ -443,6 +456,7 @@ Bool_t AliITStrackV2::Improve(Double_t x0,Double_t xyz[3],Double_t ers[3]) {
   Double_t dx = x - xv, dy = par[0] - yv, dz = par[1] - zv;
   Double_t r2=dx*dx + dy*dy;
   Double_t p2=(1.+ GetTgl()*GetTgl())/(GetSigned1Pt()*GetSigned1Pt());
+  if (GetMass()<0) p2 *= 4; // q=2
   Double_t beta2=p2/(p2 + GetMass()*GetMass());
   x0*=TMath::Sqrt((1.+ GetTgl()*GetTgl())/(1.- GetSnp()*GetSnp()));
   Double_t theta2=14.1*14.1/(beta2*p2*1e6)*x0;
@@ -677,6 +691,7 @@ Bool_t AliITStrackV2::ImproveKalman(Double_t xyz[3],Double_t ers[3], const Doubl
   double ms44t = p34*p34;
   //
   double p2=(1.+ par[3]*par[3])/(par[4]*par[4]);
+  if (GetMass()<0) p2 *= 4; // q=2
   double beta2 = p2/(p2+GetMass()*GetMass());
   double theta2t = 14.1*14.1/(beta2*p2*1e6) * (1. + par[3]*par[3]);
   //

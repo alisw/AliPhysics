@@ -66,7 +66,7 @@ extern "C" struct AliHLTMUONMansoTrackStruct;
  * <h2>Output size:</h2>
  * A few kBytes.
  *
- * @ingroup alihlt_dimuon_component
+ * @ingroup alihlt_muon_components
  */
 class AliHLTMUONRootifierComponent : public AliHLTMUONProcessor
 {

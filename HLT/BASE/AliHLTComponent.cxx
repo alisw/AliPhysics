@@ -469,7 +469,7 @@ int AliHLTComponent::ConfigureFromArgumentString(int argc, const char** argv)
     // the argument is a single argument, just having whitespaces at the end.
     argument.Remove(0, argument.First(' '));
     if (argument.IsWhitespace()) {
-      ptrarray.push_back(argv[i]);
+      stringarray.push_back(argv[i]);
       continue;
     }
 
@@ -493,7 +493,6 @@ int AliHLTComponent::ConfigureFromArgumentString(int argc, const char** argv)
 	    // every second entry is enclosed by quotes and thus
 	    // one single argument
 	    stringarray.push_back(argument.Data());
-	    ptrarray.push_back(stringarray.back().c_str());
 	  } else {
     TObjArray* pTokens=argument.Tokenize(" ");
     if (pTokens) {
@@ -502,7 +501,6 @@ int AliHLTComponent::ConfigureFromArgumentString(int argc, const char** argv)
 	  TString data=pTokens->At(n)->GetName();
 	  if (!data.IsNull() && !data.IsWhitespace()) {
 	    stringarray.push_back(data.Data());
-	    ptrarray.push_back(stringarray.back().c_str());
 	  }
 	}
       }
@@ -513,6 +511,13 @@ int AliHLTComponent::ConfigureFromArgumentString(int argc, const char** argv)
       }
       delete pTokensQuote;
     }
+  }
+
+  // fill ptrarray; should be safe at this point
+  // since stringarray isn't modified any further
+  unsigned int idx;
+  for(idx=0; idx<stringarray.size(); ++idx) {
+    ptrarray.push_back(stringarray.at(idx).c_str());
   }
 
   for (i=0; (unsigned)i<ptrarray.size() && iResult>=0;) {

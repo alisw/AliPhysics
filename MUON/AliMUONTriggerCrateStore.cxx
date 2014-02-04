@@ -256,9 +256,7 @@ AliMUONTriggerCrateStore::ReadFromFile(AliMUONCalibrationData* calibData)
       board->SetLUT(lut);
 
       
-	if (localBoardMapping->IsNotified()) {
-	  fLocalBoards->Add(localBoardId, board);
-	}
+    fLocalBoards->Add(localBoardId, board);
       
 	crate->AddBoard(board, slot);
       

@@ -130,6 +130,7 @@
 #include "AliTPCdEdxInfo.h"
 #include "AliDetectorPID.h"
 #include "TTreeStream.h"
+#include "TObjArray.h"
 
 ClassImp(AliESDtrack)
 
@@ -178,14 +179,22 @@ AliESDtrack::AliESDtrack() :
   fITSLabel(0),
   fTPCLabel(0),
   fTRDLabel(0),
+  fTOFLabel(NULL),
   fTOFCalChannel(-1),
   fTOFindex(-1),
   fHMPIDqn(0),
   fHMPIDcluIdx(-1),
   fCaloIndex(kEMCALNoMatch),
+  fR(0),
+  fITSr(0),
+  fTPCr(0),
+  fTRDr(0),
+  fTOFr(0),
+  fHMPIDr(0),
   fHMPIDtrkTheta(0),
   fHMPIDtrkPhi(0),
   fHMPIDsignal(0),
+  fTrackTime(0),
   fTrackLength(0),
   fdTPC(0),fzTPC(0),
   fCddTPC(0),fCdzTPC(0),fCzzTPC(0),
@@ -238,6 +247,7 @@ AliESDtrack::AliESDtrack() :
   fTRDnSlices(0),
   fTRDslices(0x0),
   fVertexID(-2),// -2 means an orphan track 
+  fPIDForTracking(AliPID::kPion),
   fESDEvent(0),
   fCacheNCrossedRows(-10),
   fCacheChi2TPCConstrainedVsGlobal(-10),
@@ -245,7 +255,9 @@ AliESDtrack::AliESDtrack() :
   fDetectorPID(0x0),
   fTrackPhiOnEMCal(-999),
   fTrackEtaOnEMCal(-999),
-  fTrackPtOnEMCal(-999)
+  fTrackPtOnEMCal(-999),
+  fNtofClusters(0),
+  fTOFcluster(NULL)
 {
   //
   // The default ESD constructor 
@@ -254,15 +266,6 @@ AliESDtrack::AliESDtrack() :
 
   Int_t i;
   for (i=kNITSchi2Std;i--;) fITSchi2Std[i] = 0;
-  for (i=0; i<AliPID::kSPECIES; i++) {
-    fTrackTime[i]=0.;
-    fR[i]=0.;
-    fITSr[i]=0.;
-    fTPCr[i]=0.;
-    fTRDr[i]=0.;
-    fTOFr[i]=0.;
-    fHMPIDr[i]=0.;
-  }
   
   for (i=0; i<3; i++)   { fKinkIndexes[i]=0;}
   for (i=0; i<3; i++)   { fV0Indexes[i]=0;}
@@ -271,7 +274,6 @@ AliESDtrack::AliESDtrack() :
   }
   for (i=0;i<4;i++) {fITSdEdxSamples[i]=0.;}
   for (i=0;i<4;i++) {fTPCPoints[i]=0;}
-  for (i=0;i<3;i++) {fTOFLabel[i]=-1;}
   for (i=0;i<10;i++) {fTOFInfo[i]=0;}
   for (i=0;i<12;i++) {fITSModule[i]=-1;}
 }
@@ -296,14 +298,22 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fITSLabel(track.fITSLabel),
   fTPCLabel(track.fTPCLabel),
   fTRDLabel(track.fTRDLabel),
+  fTOFLabel(NULL),
   fTOFCalChannel(track.fTOFCalChannel),
   fTOFindex(track.fTOFindex),
   fHMPIDqn(track.fHMPIDqn),
   fHMPIDcluIdx(track.fHMPIDcluIdx),
   fCaloIndex(track.fCaloIndex),
+  fR(0),
+  fITSr(0),
+  fTPCr(0),
+  fTRDr(0),
+  fTOFr(0),
+  fHMPIDr(0),
   fHMPIDtrkTheta(track.fHMPIDtrkTheta),
   fHMPIDtrkPhi(track.fHMPIDtrkPhi),
   fHMPIDsignal(track.fHMPIDsignal),
+  fTrackTime(NULL),
   fTrackLength(track.fTrackLength),
   fdTPC(track.fdTPC),fzTPC(track.fzTPC),
   fCddTPC(track.fCddTPC),fCdzTPC(track.fCdzTPC),fCzzTPC(track.fCzzTPC),
@@ -356,6 +366,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fTRDnSlices(track.fTRDnSlices),
   fTRDslices(0x0),
   fVertexID(track.fVertexID),
+  fPIDForTracking(AliPID::kPion),
   fESDEvent(track.fESDEvent),
   fCacheNCrossedRows(track.fCacheNCrossedRows),
   fCacheChi2TPCConstrainedVsGlobal(track.fCacheChi2TPCConstrainedVsGlobal),
@@ -363,18 +374,34 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fDetectorPID(0x0),
   fTrackPhiOnEMCal(track.fTrackPhiOnEMCal),
   fTrackEtaOnEMCal(track.fTrackEtaOnEMCal),
-  fTrackPtOnEMCal(track.fTrackPtOnEMCal)
+  fTrackPtOnEMCal(track.fTrackPtOnEMCal),
+  fNtofClusters(track.fNtofClusters),
+  fTOFcluster(NULL)
 {
   //
   //copy constructor
   //
   for (Int_t i=kNITSchi2Std;i--;) fITSchi2Std[i] = track.fITSchi2Std[i];
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fTrackTime[i]=track.fTrackTime[i];
-  for (Int_t i=0;i<AliPID::kSPECIES;i++)  fR[i]=track.fR[i];
+
+  if(track.fTrackTime){
+    fTrackTime = new Double32_t[AliPID::kSPECIESC];
+    for (Int_t i=0;i<AliPID::kSPECIESC;i++) fTrackTime[i]=track.fTrackTime[i];
+  }
+
+  if (track.fR) {
+    fR = new Double32_t[AliPID::kSPECIES]; 
+    for (Int_t i=AliPID::kSPECIES;i--;)  fR[i]=track.fR[i];
+  }
+  if (track.fITSr) {
+    fITSr = new Double32_t[AliPID::kSPECIES]; 
+    for (Int_t i=AliPID::kSPECIES;i--;)  fITSr[i]=track.fITSr[i]; 
+  }
   //
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fITSr[i]=track.fITSr[i]; 
-  //
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fTPCr[i]=track.fTPCr[i]; 
+  if (track.fTPCr) {
+    fTPCr = new Double32_t[AliPID::kSPECIES]; 
+    for (Int_t i=AliPID::kSPECIES;i--;) fTPCr[i]=track.fTPCr[i]; 
+  }
+
   for (Int_t i=0;i<4;i++) {fITSdEdxSamples[i]=track.fITSdEdxSamples[i];}
   for (Int_t i=0;i<4;i++) {fTPCPoints[i]=track.fTPCPoints[i];}
   for (Int_t i=0; i<3;i++)   { fKinkIndexes[i]=track.fKinkIndexes[i];}
@@ -391,12 +418,28 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
 
   if (track.fDetectorPID) fDetectorPID = new AliDetectorPID(*track.fDetectorPID);
 
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fTRDr[i]=track.fTRDr[i]; 
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fTOFr[i]=track.fTOFr[i];
-  for (Int_t i=0;i<3;i++) fTOFLabel[i]=track.fTOFLabel[i];
+  if (track.fTRDr) {
+    fTRDr  = new Double32_t[AliPID::kSPECIES];
+    for (Int_t i=AliPID::kSPECIES;i--;) fTRDr[i]=track.fTRDr[i]; 
+  }
+
+  if (track.fTOFr) {
+    fTOFr = new Double32_t[AliPID::kSPECIES];
+    for (Int_t i=AliPID::kSPECIES;i--;) fTOFr[i]=track.fTOFr[i];
+  }
+
+  if(track.fTOFLabel){
+    if(!fTOFLabel) fTOFLabel = new Int_t[3];
+    for (Int_t i=0;i<3;i++) fTOFLabel[i]=track.fTOFLabel[i];
+  }
+
   for (Int_t i=0;i<10;i++) fTOFInfo[i]=track.fTOFInfo[i];
   for (Int_t i=0;i<12;i++) fITSModule[i]=track.fITSModule[i];
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fHMPIDr[i]=track.fHMPIDr[i];
+  
+  if (track.fHMPIDr) {
+    fHMPIDr = new Double32_t[AliPID::kSPECIES];
+    for (Int_t i=AliPID::kSPECIES;i--;) fHMPIDr[i]=track.fHMPIDr[i];
+  }
 
   if (track.fCp) fCp=new AliExternalTrackParam(*track.fCp);
   if (track.fIp) fIp=new AliExternalTrackParam(*track.fIp);
@@ -407,6 +450,11 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
 
   
   if (track.fFriendTrack) fFriendTrack=new AliESDfriendTrack(*(track.fFriendTrack));
+
+  if(fNtofClusters > 0){
+    fTOFcluster = new Int_t[fNtofClusters];
+        for(Int_t i=0;i < fNtofClusters;i++) fTOFcluster[i] = track.fTOFcluster[i];
+  }
 }
 
 //_______________________________________________________________________
@@ -427,14 +475,22 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fITSLabel(0),
   fTPCLabel(0),
   fTRDLabel(0),
+  fTOFLabel(NULL),
   fTOFCalChannel(-1),
   fTOFindex(-1),
   fHMPIDqn(0),
   fHMPIDcluIdx(-1),
   fCaloIndex(kEMCALNoMatch),
+  fR(0),
+  fITSr(0),
+  fTPCr(0),
+  fTRDr(0),
+  fTOFr(0),
+  fHMPIDr(0),
   fHMPIDtrkTheta(0),
   fHMPIDtrkPhi(0),
   fHMPIDsignal(0),
+  fTrackTime(NULL),
   fTrackLength(0),
   fdTPC(0),fzTPC(0),
   fCddTPC(0),fCdzTPC(0),fCzzTPC(0),
@@ -487,6 +543,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fTRDnSlices(0),
   fTRDslices(0x0),
   fVertexID(-2),  // -2 means an orphan track
+  fPIDForTracking(track->GetPIDForTracking()),
   fESDEvent(0),
   fCacheNCrossedRows(-10),
   fCacheChi2TPCConstrainedVsGlobal(-10),
@@ -494,7 +551,9 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fDetectorPID(0x0),
   fTrackPhiOnEMCal(-999),
   fTrackEtaOnEMCal(-999),
-  fTrackPtOnEMCal(-999)
+  fTrackPtOnEMCal(-999),
+  fNtofClusters(0),
+  fTOFcluster(NULL)
 {
   //
   // ESD track from AliVTrack.
@@ -511,15 +570,6 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   // Reset all the arrays
   Int_t i;
   for (i=kNITSchi2Std;i--;) fITSchi2Std[i] = 0;
-  for (i=0; i<AliPID::kSPECIES; i++) {
-    fTrackTime[i]=0.;
-    fR[i]=0.;
-    fITSr[i]=0.;
-    fTPCr[i]=0.;
-    fTRDr[i]=0.;
-    fTOFr[i]=0.;
-    fHMPIDr[i]=0.;
-  }
   
   for (i=0; i<3; i++)   { fKinkIndexes[i]=0;}
   for (i=0; i<3; i++)   { fV0Indexes[i]=-1;}
@@ -528,7 +578,6 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   }
   for (i=0;i<4;i++) {fITSdEdxSamples[i]=0.;}
   for (i=0;i<4;i++) {fTPCPoints[i]=0;}
-  for (i=0;i<3;i++) {fTOFLabel[i]=-1;}
   for (i=0;i<10;i++) {fTOFInfo[i]=0;}
   for (i=0;i<12;i++) {fITSModule[i]=-1;}
 
@@ -557,7 +606,10 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   //
   // Set the combined PID
   const Double_t *pid = track->PID();
-  if(pid) for (i=0; i<AliPID::kSPECIES; i++) fR[i]=pid[i];
+  if(pid) {
+    fR = new Double32_t[AliPID::kSPECIES];
+    for (i=AliPID::kSPECIES; i--;) fR[i]=pid[i];
+  }
   //
   // calo matched cluster id
   SetEMCALcluster(track->GetEMCALcluster());
@@ -589,7 +641,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fTRDchi2 = track->GetTRDchi2();
   //
   SetTOFsignal(track->GetTOFsignal());
-  Double_t expt[AliPID::kSPECIES];
+  Double_t expt[AliPID::kSPECIESC];
   track->GetIntegratedTimes(expt);
   SetIntegratedTimes(expt);
   //
@@ -618,14 +670,22 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fITSLabel(0),
   fTPCLabel(0),
   fTRDLabel(0),
+  fTOFLabel(NULL),
   fTOFCalChannel(-1),
   fTOFindex(-1),
   fHMPIDqn(0),
   fHMPIDcluIdx(-1),
   fCaloIndex(kEMCALNoMatch),
+  fR(0),
+  fITSr(0),
+  fTPCr(0),
+  fTRDr(0),
+  fTOFr(0),
+  fHMPIDr(0),
   fHMPIDtrkTheta(0),
   fHMPIDtrkPhi(0),
   fHMPIDsignal(0),
+  fTrackTime(NULL),
   fTrackLength(0),
   fdTPC(0),fzTPC(0),
   fCddTPC(0),fCdzTPC(0),fCzzTPC(0),
@@ -678,6 +738,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fTRDnSlices(0),
   fTRDslices(0x0),
   fVertexID(-2),  // -2 means an orphan track
+  fPIDForTracking(AliPID::kPion),
   fESDEvent(0),
   fCacheNCrossedRows(-10),
   fCacheChi2TPCConstrainedVsGlobal(-10),
@@ -685,7 +746,9 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fDetectorPID(0x0),
   fTrackPhiOnEMCal(-999),
   fTrackEtaOnEMCal(-999),
-  fTrackPtOnEMCal(-999)
+  fTrackPtOnEMCal(-999),
+  fNtofClusters(0),
+  fTOFcluster(NULL)
 {
   //
   // ESD track from TParticle
@@ -694,15 +757,6 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   // Reset all the arrays
   Int_t i;
   for (i=kNITSchi2Std;i--;) fITSchi2Std[i] = 0;
-  for (i=0; i<AliPID::kSPECIES; i++) {
-    fTrackTime[i]=0.;
-    fR[i]=0.;
-    fITSr[i]=0.;
-    fTPCr[i]=0.;
-    fTRDr[i]=0.;
-    fTOFr[i]=0.;
-    fHMPIDr[i]=0.;
-  }
   
   for (i=0; i<3; i++)   { fKinkIndexes[i]=0;}
   for (i=0; i<3; i++)   { fV0Indexes[i]=-1;}
@@ -711,7 +765,6 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   }
   for (i=0;i<4;i++) {fITSdEdxSamples[i]=0.;}
   for (i=0;i<4;i++) {fTPCPoints[i]=0;}
-  for (i=0;i<3;i++) {fTOFLabel[i]=-1;}
   for (i=0;i<10;i++) {fTOFInfo[i]=0;}
   for (i=0;i<12;i++) {fITSModule[i]=-1;}
 
@@ -762,43 +815,11 @@ AliESDtrack::AliESDtrack(TParticle * part) :
 
   // Set the PID
   Int_t indexPID = 99;
+  if (pdgCode<0) pdgCode = -pdgCode;
+  for (i=0;i<AliPID::kSPECIESC;i++) if (pdgCode==AliPID::ParticleCode(i)) {indexPID = i; break;}
 
-  switch (TMath::Abs(pdgCode)) {
+  if (indexPID < AliPID::kSPECIES) fPIDForTracking = indexPID;
 
-  case  11: // electron
-    indexPID = 0;
-    break;
-
-  case 13: // muon
-    indexPID = 1;
-    break;
-
-  case 211: // pion
-    indexPID = 2;
-    break;
-
-  case 321: // kaon
-    indexPID = 3;
-    break;
-
-  case 2212: // proton
-    indexPID = 4;
-    break;
-
-  default:
-    break;
-  }
-
-  // If the particle is not e,mu,pi,K or p the PID probabilities are set to 0
-  if (indexPID < AliPID::kSPECIES) {
-    fR[indexPID]=1.;
-    fITSr[indexPID]=1.;
-    fTPCr[indexPID]=1.;
-    fTRDr[indexPID]=1.;
-    fTOFr[indexPID]=1.;
-    fHMPIDr[indexPID]=1.;
-
-  }
   // AliESD track label
   SetLabel(part->GetUniqueID());
 
@@ -825,11 +846,28 @@ AliESDtrack::~AliESDtrack(){
   fCacheChi2TPCConstrainedVsGlobal = -10.;
   if(fCacheChi2TPCConstrainedVsGlobalVertex) fCacheChi2TPCConstrainedVsGlobalVertex = 0;
 
+  if(fTOFcluster)
+    delete[] fTOFcluster;
+  fTOFcluster = NULL;
+  fNtofClusters=0;
+
   delete fDetectorPID;
+
+  delete[] fR;
+  delete[] fITSr;
+  delete[] fTPCr;
+  delete[] fTRDr;
+  delete[] fTOFr;
+  delete[] fHMPIDr;
+  //
+  if(fTrackTime) delete[] fTrackTime; 
+  if(fTOFLabel) delete[] fTOFLabel;
 }
 
-AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
-  
+//_______________________________________________________________________
+AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source)
+{
+  // == operator
 
   if(&source == this) return *this;
   AliExternalTrackParam::operator=(source);
@@ -921,8 +959,11 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
   }
   fTPCLabel = source.fTPCLabel; 
   fTRDLabel = source.fTRDLabel;
-  for(int i = 0; i< 3;++i){
-    fTOFLabel[i] = source.fTOFLabel[i];    
+  if(source.fTOFLabel){
+    if(!fTOFLabel) fTOFLabel = new Int_t[3];
+    for(int i = 0; i< 3;++i){
+      fTOFLabel[i] = source.fTOFLabel[i];    
+    }
   }
   fTOFCalChannel = source.fTOFCalChannel;
   fTOFindex      = source.fTOFindex;
@@ -935,21 +976,58 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
     fV0Indexes[i]   = source.fV0Indexes[i]; 
   }
 
-  for(int i = 0; i< AliPID::kSPECIES;++i){
-    fR[i]     = source.fR[i];
-    fITSr[i]  = source.fITSr[i];
-    fTPCr[i]  = source.fTPCr[i];
-    fTRDr[i]  = source.fTRDr[i];
-    fTOFr[i]  = source.fTOFr[i];
-    fHMPIDr[i] = source.fHMPIDr[i];
-    fTrackTime[i] = source.fTrackTime[i];  
+  if (source.fR) {
+    if (!fR) fR = new Double32_t[AliPID::kSPECIES]; 
+    for (Int_t i=AliPID::kSPECIES;i--;)  fR[i]=source.fR[i];
   }
+  else {delete[] fR; fR = 0;}
+
+  if (source.fITSr) {
+    if (!fITSr) fITSr = new Double32_t[AliPID::kSPECIES]; 
+    for (Int_t i=AliPID::kSPECIES;i--;)  fITSr[i]=source.fITSr[i]; 
+  }
+  else {delete[] fITSr; fITSr = 0;}
+  //
+  if (source.fTPCr) {
+    if (!fTPCr) fTPCr = new Double32_t[AliPID::kSPECIES]; 
+    for (Int_t i=AliPID::kSPECIES;i--;) fTPCr[i]=source.fTPCr[i]; 
+  }
+  else {delete[] fTPCr; fTPCr = 0;}
+
+  if (source.fTRDr) {
+    if (!fTRDr) fTRDr  = new Double32_t[AliPID::kSPECIES];
+    for (Int_t i=AliPID::kSPECIES;i--;) fTRDr[i]=source.fTRDr[i]; 
+  }
+  else {delete[] fTRDr; fTRDr = 0;}
+
+  if (source.fTOFr) {
+    if (!fTOFr) fTOFr = new Double32_t[AliPID::kSPECIES];
+    for (Int_t i=AliPID::kSPECIES;i--;) fTOFr[i]=source.fTOFr[i];
+  }
+  else {delete[] fTOFr; fTOFr = 0;}
+
+  if (source.fHMPIDr) {
+    if (!fHMPIDr) fHMPIDr = new Double32_t[AliPID::kSPECIES];
+    for (Int_t i=AliPID::kSPECIES;i--;) fHMPIDr[i]=source.fHMPIDr[i];
+  }
+  else {delete[] fHMPIDr; fHMPIDr = 0;}
+  
+  fPIDForTracking = source.fPIDForTracking;
 
   fHMPIDtrkTheta = source.fHMPIDtrkTheta;
   fHMPIDtrkPhi   = source.fHMPIDtrkPhi;
   fHMPIDsignal   = source.fHMPIDsignal; 
 
   
+  if(fTrackTime){
+    delete[] fTrackTime;
+  }
+  if(source.fTrackTime){
+    fTrackTime = new Double32_t[AliPID::kSPECIESC];
+    for(Int_t i=0;i < AliPID::kSPECIESC;i++)
+      fTrackTime[i] = source.fTrackTime[i];  
+  }
+
   fTrackLength   = source. fTrackLength;
   fdTPC  = source.fdTPC; 
   fzTPC  = source.fzTPC; 
@@ -1032,6 +1110,7 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
   fTRDncls0  = source.fTRDncls0;      
   fTRDntracklets  = source.fTRDntracklets; 
   fVertexID = source.fVertexID;
+  fPIDForTracking = source.fPIDForTracking;
 
   fCacheNCrossedRows = source.fCacheNCrossedRows;
   fCacheChi2TPCConstrainedVsGlobal = source.fCacheChi2TPCConstrainedVsGlobal;
@@ -1044,6 +1123,15 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
   fTrackPhiOnEMCal= source.fTrackPhiOnEMCal;
   fTrackEtaOnEMCal= source.fTrackEtaOnEMCal;
   fTrackPtOnEMCal= source.fTrackPtOnEMCal;
+
+  if(fTOFcluster){
+    delete[] fTOFcluster;
+  }
+  fNtofClusters = source.fNtofClusters;
+  if(fNtofClusters > 0){
+    fTOFcluster = new Int_t[fNtofClusters];
+        for(Int_t i=0;i < fNtofClusters;i++) fTOFcluster[i] = source.fTOFcluster[i];
+  }
 
   return *this;
 }
@@ -1144,11 +1232,16 @@ Bool_t AliESDtrack::FillTPCOnlyTrack(AliESDtrack &track){
   track.fTPCnclsFIter1   = fTPCnclsFIter1;     
 
   // PID 
-  for(int i=0;i<AliPID::kSPECIES;++i){
-    track.fTPCr[i] = fTPCr[i];
-    // combined PID is TPC only!
-    track.fR[i] = fTPCr[i];
+  if (fTPCr) {
+    if (!track.fTPCr) track.fTPCr = new Double32_t[AliPID::kSPECIES];
+    for(int i=AliPID::kSPECIES;i--;) track.fTPCr[i] = fTPCr[i];
   }
+  //
+  if (fR) {
+    if (!track.fR) track.fR = new Double32_t[AliPID::kSPECIES];
+    for(int i=AliPID::kSPECIES;i--;) track.fR[i] = fR[i];
+  }
+    
   track.fTPCFitMap = fTPCFitMap;
   track.fTPCClusterMap = fTPCClusterMap;
   track.fTPCSharedMap = fTPCSharedMap;
@@ -1178,7 +1271,8 @@ void AliESDtrack::MakeMiniESDtrack(){
   
   fTrackLength = 0;
 
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fTrackTime[i] = 0;
+  if(fTrackTime)
+    for (Int_t i=0;i<AliPID::kSPECIESC;i++) fTrackTime[i] = 0;
 
   // Reset track parameters constrained to the primary vertex
   delete fCp;fCp = 0;
@@ -1199,7 +1293,7 @@ void AliESDtrack::MakeMiniESDtrack(){
   fITSSharedMap=0;
   fITSsignal = 0;     
   for (Int_t i=0;i<4;i++) fITSdEdxSamples[i] = 0.;
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fITSr[i]=0; 
+  if (fITSr) for (Int_t i=0;i<AliPID::kSPECIES;i++) fITSr[i]=0; 
   fITSLabel = 0;       
 
   // Reset TPC related track information
@@ -1216,7 +1310,7 @@ void AliESDtrack::MakeMiniESDtrack(){
   fTPCsignalTuned= 0;
   fTPCsignalS= 0;      
   fTPCsignalN= 0;      
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fTPCr[i]=0; 
+  if (fTPCr) for (Int_t i=0;i<AliPID::kSPECIES;i++) fTPCr[i] = 0; 
   fTPCLabel=0;       
   for (Int_t i=0;i<4;i++) fTPCPoints[i] = 0;
   for (Int_t i=0; i<3;i++)   fKinkIndexes[i] = 0;
@@ -1233,7 +1327,7 @@ void AliESDtrack::MakeMiniESDtrack(){
   for (Int_t i=0;i<kTRDnPlanes;i++) {
     fTRDTimBin[i]  = 0;
   }
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fTRDr[i] = 0; 
+  if (fTRDr) for (Int_t i=0;i<AliPID::kSPECIES;i++) fTRDr[i] = 0; 
   fTRDLabel = 0;       
   fTRDQuality  = 0;
   fTRDntracklets = 0;
@@ -1254,8 +1348,7 @@ void AliESDtrack::MakeMiniESDtrack(){
   fTOFsignalDx = 999;
   fTOFdeltaBC = 999;
   fTOFl0l1 = 999;
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fTOFr[i] = 0;
-  for (Int_t i=0;i<3;i++) fTOFLabel[i] = -1;
+  if (fTOFr) for (Int_t i=0;i<AliPID::kSPECIES;i++) fTOFr[i] = 0;
   for (Int_t i=0;i<10;i++) fTOFInfo[i] = 0;
 
   // Reset HMPID related track information
@@ -1263,7 +1356,7 @@ void AliESDtrack::MakeMiniESDtrack(){
   fHMPIDqn = 0;     
   fHMPIDcluIdx = -1;     
   fHMPIDsignal = 0;     
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fHMPIDr[i] = 0;
+  if (fHMPIDr) for (Int_t i=0;i<AliPID::kSPECIES;i++) fHMPIDr[i] = 0;
   fHMPIDtrkTheta = 0;     
   fHMPIDtrkPhi = 0;      
   fHMPIDtrkX = 0;     
@@ -1276,25 +1369,29 @@ void AliESDtrack::MakeMiniESDtrack(){
   fGlobalChi2 = 0;
 
   fVertexID = -2; // an orphan track
-
+  fPIDForTracking = AliPID::kPion;
+  //
   delete fFriendTrack; fFriendTrack = 0;
 } 
 
 //_______________________________________________________________________
 Int_t AliESDtrack::GetPID(Bool_t tpcOnly) const 
 {
-  // Returns the particle most probable id
+  // Returns the particle most probable id. For backward compatibility first the prob. arrays
+  // will be checked, but normally the GetPIDForTracking will be returned
   Int_t i;
   const Double32_t *prob = 0;
   if (tpcOnly) { // check if TPCpid is valid
+    if (!fTPCr) return GetPIDForTracking();
     prob = fTPCr;
     for (i=0; i<AliPID::kSPECIES-1; i++) if (prob[i] != prob[i+1]) break;
     if (i == AliPID::kSPECIES-1) prob = 0; // not valid, try with combined pid
   }
   if (!prob) { // either requested TPCpid is not valid or comb.pid is requested 
+    if (!fR) return GetPIDForTracking();
     prob = fR;
     for (i=0; i<AliPID::kSPECIES-1; i++) if (prob[i] != prob[i+1]) break;
-    if (i == AliPID::kSPECIES-1) return AliPID::kPion;  // If all the probabilities are equal, return the pion mass
+    if (i == AliPID::kSPECIES-1) return GetPIDForTracking();  // If all the probabilities are equal, return the pion mass
   }
   //
   Float_t max=0.;
@@ -1302,19 +1399,21 @@ Int_t AliESDtrack::GetPID(Bool_t tpcOnly) const
   for (i=0; i<AliPID::kSPECIES; i++) if (prob[i]>max) {k=i; max=prob[i];}
   //
   if (k==0) { // dE/dx "crossing points" in the TPC
+    /*
     Double_t p=GetP();
     if ((p>0.38)&&(p<0.48))
       if (prob[0]<prob[3]*10.) return AliPID::kKaon;
     if ((p>0.75)&&(p<0.85))
       if (prob[0]<prob[4]*10.) return AliPID::kProton;
+    */
     return AliPID::kElectron;
   }
   if (k==1) return AliPID::kMuon; 
   if (k==2||k==-1) return AliPID::kPion;
   if (k==3) return AliPID::kKaon;
   if (k==4) return AliPID::kProton;
-  AliWarning("Undefined PID !");
-  return AliPID::kPion;
+  //  AliWarning("Undefined PID !");
+  return GetPIDForTracking();
 }
 
 //_______________________________________________________________________
@@ -1327,9 +1426,12 @@ Int_t AliESDtrack::GetTOFBunchCrossing(Double_t b, Bool_t pidTPConly) const
   if (!IsOn(kTOFout) || !IsOn(kESDpid)) return bcid; // no info
   //
   double tdif = fTOFsignal;
+  Double_t times[AliPID::kSPECIESC];
+  GetIntegratedTimes(times);
   if (IsOn(kTIME)) { // integrated time info is there
     int pid = GetPID(pidTPConly);
-    tdif -= fTrackTime[pid];
+
+    tdif -= times[pid];
   }
   else { // assume integrated time info from TOF radius and momentum
     const double kRTOF = 385.;
@@ -1398,7 +1500,7 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
 
   if (t->IsStartedTimeIntegral()) {
     SetStatus(kTIME);
-    Double_t times[10];t->GetIntegratedTimes(times); SetIntegratedTimes(times);
+    Double_t times[AliPID::kSPECIESC];t->GetIntegratedTimes(times); SetIntegratedTimes(times);
     SetIntegratedLength(t->GetIntegratedLength());
   }
 
@@ -1736,19 +1838,60 @@ Int_t AliESDtrack::GetClusters(Int_t idet, Int_t *idx) const
 
 //_______________________________________________________________________
 void AliESDtrack::GetIntegratedTimes(Double_t *times) const {
+  Int_t index = -1;
+
+  if(fNtofClusters>0 && GetESDEvent()){
+    TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
+    AliESDTOFcluster *tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[0]);
+
+    for(Int_t i=0;i < tofcl->GetNMatchableTracks();i++){
+      if(tofcl->GetTrackIndex(i) == GetID()) index = i;
+    }
+    if(fNtofClusters>0 && index > -1){
+      for (Int_t i=0; i<AliPID::kSPECIESC; i++) times[i]=tofcl->GetIntegratedTime(i,index);
+      return;
+    }
+  }
+  else if(fNtofClusters>0) 
+    AliInfo("No AliESDEvent available here!\n");
+
   // Returns the array with integrated times for each particle hypothesis
-  for (Int_t i=0; i<AliPID::kSPECIES; i++) times[i]=fTrackTime[i];
+  if(fTrackTime)
+    for (Int_t i=0; i<AliPID::kSPECIESC; i++) times[i]=fTrackTime[i];
+  else
+    for (Int_t i=0; i<AliPID::kSPECIESC; i++) times[i]=0.0;
+}
+//_______________________________________________________________________
+Double_t AliESDtrack::GetIntegratedLength() const{
+  Int_t index = -1;
+  if(fNtofClusters>0 && GetESDEvent()){
+    TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
+    AliESDTOFcluster *tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[0]);
+
+    for(Int_t i=0;i < tofcl->GetNMatchableTracks();i++){
+      if(tofcl->GetTrackIndex(i) == GetID()) index = i;
+    }
+    
+    if(fNtofClusters>0 && index > -1)
+      return tofcl->GetLength(index);
+  }
+  else if(fNtofClusters>0) AliInfo("No AliESDEvent available here!\n");
+
+  return fTrackLength;
 }
 
 //_______________________________________________________________________
 void AliESDtrack::SetIntegratedTimes(const Double_t *times) {
   // Sets the array with integrated times for each particle hypotesis
-  for (Int_t i=0; i<AliPID::kSPECIES; i++) fTrackTime[i]=times[i];
+  if(!fTrackTime)
+    fTrackTime = new Double32_t[AliPID::kSPECIESC];
+  for (Int_t i=0; i<AliPID::kSPECIESC; i++) fTrackTime[i]=times[i];
 }
 
 //_______________________________________________________________________
 void AliESDtrack::SetITSpid(const Double_t *p) {
   // Sets values for the probability of each particle type (in ITS)
+  if (!fITSr) fITSr = new Double32_t[AliPID::kSPECIESC];
   SetPIDValues(fITSr,p,AliPID::kSPECIES);
   SetStatus(AliESDtrack::kITSpid);
 }
@@ -1756,7 +1899,7 @@ void AliESDtrack::SetITSpid(const Double_t *p) {
 //_______________________________________________________________________
 void AliESDtrack::GetITSpid(Double_t *p) const {
   // Gets the probability of each particle type (in ITS)
-  for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i]=fITSr[i];
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i] = fITSr ? fITSr[i] : 0;
 }
 
 //_______________________________________________________________________
@@ -2003,6 +2146,7 @@ Double_t AliESDtrack::GetTPCdensity(Int_t row0, Int_t row1) const{
 //_______________________________________________________________________
 void AliESDtrack::SetTPCpid(const Double_t *p) {  
   // Sets values for the probability of each particle type (in TPC)
+  if (!fTPCr) fTPCr = new Double32_t[AliPID::kSPECIES];
   SetPIDValues(fTPCr,p,AliPID::kSPECIES);
   SetStatus(AliESDtrack::kTPCpid);
 }
@@ -2010,7 +2154,7 @@ void AliESDtrack::SetTPCpid(const Double_t *p) {
 //_______________________________________________________________________
 void AliESDtrack::GetTPCpid(Double_t *p) const {
   // Gets the probability of each particle type (in TPC)
-  for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i]=fTPCr[i];
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i] = fTPCr ? fTPCr[i] : 0;
 }
 
 //_______________________________________________________________________
@@ -2060,6 +2204,7 @@ UChar_t AliESDtrack::GetTRDtracklets(Int_t *idx) const {
 //_______________________________________________________________________
 void AliESDtrack::SetTRDpid(const Double_t *p) {  
   // Sets values for the probability of each particle type (in TRD)
+  if (!fTRDr) fTRDr = new Double32_t[AliPID::kSPECIES];
   SetPIDValues(fTRDr,p,AliPID::kSPECIES);
   SetStatus(AliESDtrack::kTRDpid);
 }
@@ -2067,20 +2212,24 @@ void AliESDtrack::SetTRDpid(const Double_t *p) {
 //_______________________________________________________________________
 void AliESDtrack::GetTRDpid(Double_t *p) const {
   // Gets the probability of each particle type (in TRD)
-  for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i]=fTRDr[i];
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i] = fTRDr ? fTRDr[i]:0;
 }
 
 //_______________________________________________________________________
 void    AliESDtrack::SetTRDpid(Int_t iSpecies, Float_t p)
 {
   // Sets the probability of particle type iSpecies to p (in TRD)
+  if (!fTRDr) {
+    fTRDr = new Double32_t[AliPID::kSPECIES];
+    for (Int_t i=AliPID::kSPECIES; i--;) fTRDr[i] = 0;
+  }
   fTRDr[iSpecies] = p;
 }
 
 Double_t AliESDtrack::GetTRDpid(Int_t iSpecies) const
 {
   // Returns the probability of particle type iSpecies (in TRD)
-  return fTRDr[iSpecies];
+  return fTRDr ? fTRDr[iSpecies] : 0;
 }
 
 //____________________________________________________
@@ -2198,6 +2347,7 @@ void AliESDtrack::SetTRDmomentum(Double_t p, Int_t plane, Double_t *sp)
 //_______________________________________________________________________
 void AliESDtrack::SetTOFpid(const Double_t *p) {  
   // Sets the probability of each particle type (in TOF)
+  if (!fTOFr) fTOFr = new Double32_t[AliPID::kSPECIES];
   SetPIDValues(fTOFr,p,AliPID::kSPECIES);
   SetStatus(AliESDtrack::kTOFpid);
 }
@@ -2205,19 +2355,29 @@ void AliESDtrack::SetTOFpid(const Double_t *p) {
 //_______________________________________________________________________
 void AliESDtrack::SetTOFLabel(const Int_t *p) {  
   // Sets  (in TOF)
+  if(!fTOFLabel) fTOFLabel = new Int_t[3]; 
   for (Int_t i=0; i<3; i++) fTOFLabel[i]=p[i];
 }
 
 //_______________________________________________________________________
 void AliESDtrack::GetTOFpid(Double_t *p) const {
   // Gets probabilities of each particle type (in TOF)
-  for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i]=fTOFr[i];
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i] = fTOFr ? fTOFr[i]:0;
 }
 
 //_______________________________________________________________________
 void AliESDtrack::GetTOFLabel(Int_t *p) const {
   // Gets (in TOF)
-  for (Int_t i=0; i<3; i++) p[i]=fTOFLabel[i];
+  if(fNtofClusters>0){
+    TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
+    AliESDTOFcluster *tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[0]);
+
+    for (Int_t i=0; i<3; i++) p[i]=tofcl->GetLabel(i);
+  }
+  else{
+    if(fTOFLabel)
+      for (Int_t i=0; i<3; i++) p[i]=fTOFLabel[i];
+  }
 }
 
 //_______________________________________________________________________
@@ -2237,6 +2397,7 @@ void AliESDtrack::SetTOFInfo(Float_t*info) {
 //_______________________________________________________________________
 void AliESDtrack::SetHMPIDpid(const Double_t *p) {  
   // Sets the probability of each particle type (in HMPID)
+  if (!fHMPIDr) fHMPIDr = new Double32_t[AliPID::kSPECIES];
   SetPIDValues(fHMPIDr,p,AliPID::kSPECIES);
   SetStatus(AliESDtrack::kHMPIDpid);
 }
@@ -2250,7 +2411,7 @@ void  AliESDtrack::SetTPCdEdxInfo(AliTPCdEdxInfo * dEdxInfo){
 //_______________________________________________________________________
 void AliESDtrack::GetHMPIDpid(Double_t *p) const {
   // Gets probabilities of each particle type (in HMPID)
-  for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i]=fHMPIDr[i];
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i] = fHMPIDr ? fHMPIDr[i]:0;
 }
 
 
@@ -2258,6 +2419,7 @@ void AliESDtrack::GetHMPIDpid(Double_t *p) const {
 //_______________________________________________________________________
 void AliESDtrack::SetESDpid(const Double_t *p) {  
   // Sets the probability of each particle type for the ESD track
+  if (!fR) fR = new Double32_t[AliPID::kSPECIES];
   SetPIDValues(fR,p,AliPID::kSPECIES);
   SetStatus(AliESDtrack::kESDpid);
 }
@@ -2265,7 +2427,7 @@ void AliESDtrack::SetESDpid(const Double_t *p) {
 //_______________________________________________________________________
 void AliESDtrack::GetESDpid(Double_t *p) const {
   // Gets probability of each particle type for the ESD track
-  for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i]=fR[i];
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i] = fR ? fR[i]:0;
 }
 
 //_______________________________________________________________________
@@ -2790,4 +2952,247 @@ Double_t AliESDtrack::GetLengthInActiveZone(const AliExternalTrackParam  *paramT
     }
   }
   return length;
+}
+
+Double_t AliESDtrack::GetMassForTracking() const
+{
+  double m = AliPID::ParticleMass(fPIDForTracking);
+  return (fPIDForTracking==AliPID::kHe3 || fPIDForTracking==AliPID::kAlpha) ? -m : m;
+}
+
+void    AliESDtrack::SetTOFclusterArray(Int_t ncluster,Int_t *TOFcluster){
+  AliInfo("Method has to be implemented!");
+//   fNtofClusters=ncluster;
+//   if(TOFcluster == fTOFcluster) return;
+//   if(fTOFcluster){ // reset previous content    
+//     delete[] fTOFcluster;
+//     fTOFcluster = NULL;
+//     fNtofClusters=0;
+//   }
+
+//   if(ncluster){ // set new content
+//     fTOFcluster = new Int_t[fNtofClusters];
+//     for(Int_t i=0;i < fNtofClusters;i++) fTOFcluster[i] = TOFcluster[i];
+//   }
+//   else
+//     fTOFcluster = 0;
+}
+
+void    AliESDtrack::AddTOFcluster(Int_t icl){
+  fNtofClusters++;
+  
+  Int_t *old = fTOFcluster;
+  fTOFcluster = new Int_t[fNtofClusters];
+
+  for(Int_t i=0;i < fNtofClusters-1;i++) fTOFcluster[i] = old[i];
+  fTOFcluster[fNtofClusters-1] = icl;
+
+  if(fNtofClusters-1){ // delete previous content    
+    delete old;
+    old = NULL;
+  }
+ 
+}
+
+Double_t AliESDtrack::GetTOFsignal() const {
+  if(fNtofClusters>0 && GetESDEvent()){
+    TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
+    AliESDTOFcluster *tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[0]);
+
+    return tofcl->GetTime();
+  }
+  else if(fNtofClusters>0) AliInfo("No AliESDEvent available here!\n");
+
+  return fTOFsignal;
+}
+
+Double_t AliESDtrack::GetTOFsignalToT() const 
+{
+  if(fNtofClusters>0 && GetESDEvent()){
+    TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
+    AliESDTOFcluster *tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[0]);
+
+    return tofcl->GetTOT();
+  }
+  else if(fNtofClusters>0) AliInfo("No AliESDEvent available here!\n");
+
+  return fTOFsignalToT;
+}
+
+Double_t AliESDtrack::GetTOFsignalRaw() const 
+{
+  if(fNtofClusters>0 && GetESDEvent()){
+    TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
+    AliESDTOFcluster *tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[0]);
+
+    return tofcl->GetTimeRaw();
+  }
+  else if(fNtofClusters>0) AliInfo("No AliESDEvent available here!\n");
+
+  return fTOFsignalRaw;
+}
+
+Double_t AliESDtrack::GetTOFsignalDz() const 
+{
+
+  AliESDTOFcluster *tofcl;
+
+  Int_t index = -1;
+  if(fNtofClusters>0 && GetESDEvent()){
+    TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
+    tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[0]);
+
+    for(Int_t i=0;i < tofcl->GetNMatchableTracks();i++){
+      if(tofcl->GetTrackIndex(i) == GetID()) index = i;
+    }
+  }
+  else if(fNtofClusters>0) AliInfo("No AliESDEvent available here!\n");
+
+  if(fNtofClusters>0 && index > -1){
+    return tofcl->GetDz(index);
+  }
+  return fTOFsignalDz;
+}
+
+Double_t AliESDtrack::GetTOFsignalDx() const 
+{
+  AliESDTOFcluster *tofcl;
+
+  Int_t index = -1;
+  if(fNtofClusters>0 && GetESDEvent()){
+    TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
+    tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[0]);
+    for(Int_t i=0;i < tofcl->GetNMatchableTracks();i++){
+      if(tofcl->GetTrackIndex(i) == GetID()) index = i;
+    }
+  }
+  else if(fNtofClusters>0) AliInfo("No AliESDEvent available here!\n");
+  if(fNtofClusters>0 && index > -1){
+    return tofcl->GetDx(index);
+  }
+  return fTOFsignalDx;
+}
+
+Short_t  AliESDtrack::GetTOFDeltaBC() const 
+{
+  if(fNtofClusters>0 && GetESDEvent()){
+    TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
+    AliESDTOFcluster *tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[0]);
+    return tofcl->GetDeltaBC();
+  }
+  else if(fNtofClusters>0) AliInfo("No AliESDEvent available here!\n");
+
+  return fTOFdeltaBC;
+}
+
+Short_t  AliESDtrack::GetTOFL0L1() const 
+{
+  if(fNtofClusters>0 && GetESDEvent()){
+    TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
+    AliESDTOFcluster *tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[0]);
+
+    return tofcl->GetL0L1Latency();
+  }
+  else if(fNtofClusters>0) AliInfo("No AliESDEvent available here!\n");
+
+  return fTOFl0l1;
+}
+
+Int_t   AliESDtrack::GetTOFCalChannel() const 
+{
+  if(fNtofClusters>0 && GetESDEvent()){
+    TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
+    AliESDTOFcluster *tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[0]);
+
+    tofcl->GetTOFchannel();
+  }
+  else if(fNtofClusters>0) AliInfo("No AliESDEvent available here!\n");
+
+  return fTOFCalChannel;
+}
+
+Int_t   AliESDtrack::GetTOFcluster() const 
+{
+  if(fNtofClusters>0 && GetESDEvent()){
+    TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
+    AliESDTOFcluster *tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[0]);
+
+    tofcl->GetClusterIndex();
+  }
+  else if(fNtofClusters>0) AliInfo("No AliESDEvent available here!\n");
+
+  return fTOFindex;
+}
+
+Int_t   AliESDtrack::GetTOFclusterN() const
+{
+  return fNtofClusters;
+}
+
+Bool_t  AliESDtrack::IsTOFHitAlreadyMatched() const{
+  if(fNtofClusters>0 && GetESDEvent()){
+    TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
+    AliESDTOFcluster *tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[0]);
+
+    if (tofcl->GetNMatchableTracks() > 1)
+      return kTRUE;
+  }
+  else if(fNtofClusters>0) AliInfo("No AliESDEvent available here!\n");
+
+  return kFALSE;
+}
+
+void AliESDtrack::ReMapTOFcluster(Int_t ncl,Int_t *mapping){
+  for(Int_t i=0;i<fNtofClusters;i++){
+    if(fTOFcluster[i]<ncl && fTOFcluster[i]>-1)
+      fTOFcluster[i] = mapping[fTOFcluster[i]];
+    else
+      AliInfo(Form("TOF cluster re-mapping in AliESDtrack: out of range (%i > %i)\n",fTOFcluster[i],ncl));
+  }
+}
+
+void AliESDtrack::SortTOFcluster(){
+  TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
+
+  for(Int_t i=0;i<fNtofClusters-1;i++){
+    for(Int_t j=i+1;j<fNtofClusters;j++){
+      AliESDTOFcluster *tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[i]);
+      Int_t index1 = -1;
+      for(Int_t it=0;it < tofcl->GetNMatchableTracks();it++){
+         if(tofcl->GetTrackIndex(it) == GetID()) index1 = it;
+      }
+      Double_t timedist1 = 10000;
+      for(Int_t isp=0; isp< AliPID::kSPECIESC;isp++){
+	Double_t timec = TMath::Abs(tofcl->GetTime() - tofcl->GetIntegratedTime(isp));
+	if(timec < timedist1) timedist1 = timec;
+      }
+      timedist1 *= 0.03; // in cm
+      Double_t radius1 = tofcl->GetDx(index1)*tofcl->GetDx(index1) + tofcl->GetDz(index1)*tofcl->GetDz(index1) + timedist1*timedist1;
+
+      AliESDTOFcluster *tofcl2 = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[j]);
+      Int_t index2 = -1;
+      for(Int_t it=0;it < tofcl2->GetNMatchableTracks();it++){
+         if(tofcl2->GetTrackIndex(it) == GetID()) index2 = it;
+      }
+      if(index1 == -1 || index2 == -1){
+      }
+      Double_t timedist2 = 10000;
+      for(Int_t isp=0; isp< AliPID::kSPECIESC;isp++){
+	Double_t timec = TMath::Abs(tofcl2->GetTime() - tofcl2->GetIntegratedTime(isp));
+	if(timec < timedist2) timedist2 = timec;
+      }
+      timedist2 *= 0.03; // in cm
+      Double_t radius2 = tofcl2->GetDx(index2)*tofcl2->GetDx(index2) + tofcl2->GetDz(index2)*tofcl2->GetDz(index2) + timedist2*timedist2;
+
+      if(radius2 < radius1){
+        Int_t change = fTOFcluster[i];
+        fTOFcluster[i] = fTOFcluster[j];
+        fTOFcluster[j] = change;
+      }
+    }
+  }
+}
+
+const AliTOFHeader* AliESDtrack::GetTOFHeader() const {
+  return fESDEvent->GetTOFHeader();
 }

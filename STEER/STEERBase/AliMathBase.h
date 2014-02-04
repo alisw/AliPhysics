@@ -53,7 +53,13 @@ class AliMathBase : public TObject
                                   Double_t kp4=1.8631,
                                   Double_t kp5=1.9479
 				  );
-    
+
+  //
+  // Distributions
+  //
+
+  static Double_t Gamma(Double_t k=0);
+
  ClassDef(AliMathBase,0) // Various mathematical tools for physics analysis - which are not included in ROOT TMath
  
 };

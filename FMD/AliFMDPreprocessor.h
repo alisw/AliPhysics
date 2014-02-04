@@ -1,5 +1,5 @@
-#ifndef ALI_FMD_PREPROCESSOR_H
-#define ALI_FMD_PREPRECESSOR_H
+#ifndef ALIFMD_PREPROCESSOR_H
+#define ALIFMD_PREPROCESSOR_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights
  * reserved. 
  *

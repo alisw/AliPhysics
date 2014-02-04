@@ -45,10 +45,10 @@ class TRefArray;
 class AliHLTCaloClusterReader;
 class TObjArray;
 /**
- * @class AliHLTPHOSHistogramProducerComponent
+ * @class AliHLTCaloHistoComponent
  *
  * 
- * @ingroup alihlt_phos
+ * @ingroup alihlt_global
  */
 
 class AliHLTCaloHistoComponent : public AliHLTProcessor {

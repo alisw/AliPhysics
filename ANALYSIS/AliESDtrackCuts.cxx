@@ -1162,9 +1162,12 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
   Double_t p[3];
   esdTrack->GetPxPyPz(p);
 
-  Float_t momentum = TMath::Sqrt(TMath::Power(p[0],2) + TMath::Power(p[1],2) + TMath::Power(p[2],2));
-  Float_t pt       = TMath::Sqrt(TMath::Power(p[0],2) + TMath::Power(p[1],2));
-  Float_t energy   = TMath::Sqrt(TMath::Power(esdTrack->GetMass(),2) + TMath::Power(momentum,2));
+  // Changed from float to double to prevent rounding errors leading to negative 
+  // log arguments (M.G.)
+  Double_t momentum = TMath::Sqrt(p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
+  Double_t pt       = TMath::Sqrt(p[0]*p[0] + p[1]*p[1]);
+  Double_t mass     = esdTrack->GetMass();
+  Double_t energy   = TMath::Sqrt(mass*mass + momentum*momentum);
 
   //y-eta related calculations
   Float_t eta = -100.;
@@ -1397,7 +1400,7 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
     Float_t lengthInActiveZoneTPC = -1;
     if (fCutMinLengthActiveVolumeTPC > 1.) { // do the calculation only if needed to save cpu-time
       if (esdTrack->GetESDEvent()) {
-	lengthInActiveZoneTPC = esdTrack->GetLengthInActiveZone(1, 1.8, 220, esdTrack->GetESDEvent()->GetMagneticField()); 
+	if (esdTrack->GetInnerParam()) lengthInActiveZoneTPC = esdTrack->GetLengthInActiveZone(1, 1.8, 220, esdTrack->GetESDEvent()->GetMagneticField()); 
 	//
 	if (lengthInActiveZoneTPC < fCutMinLengthActiveVolumeTPC ) {
 	  cuts[42] = kTRUE;
@@ -2248,7 +2251,7 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
   for(Int_t itracks=0; itracks < nESDTracks; itracks++) {
     esd->GetTrack(itracks)->ResetBit(kSecBit|kRejBit); //reset bits used for flagging secondaries and rejected tracks in case they were changed before this analysis
   }
-  const Int_t maxid = nESDTracks+1; // used to define bool array for check multiple associations of tracklets to one track. array starts at 0.
+  const Int_t maxid = nESDTracks; // used to define bool array for check multiple associations of tracklets to one track. array starts at 0.
   
   // bit mask for esd tracks, to check if multiple tracklets are associated to it
   TBits globalBits(maxid), pureITSBits(maxid);
@@ -2310,7 +2313,7 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
           tracksITSSA++;
           pureITSBits.SetBitNumber(itracks);
         }
-        else track->SetBit(kRejBit);
+        else track->SetBit(kSecBit);
       }
       else track->SetBit(kRejBit);
     }
@@ -2323,42 +2326,50 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
     if (TMath::Abs(spdmult->GetEta(i)) > etaRange) continue; // eta selection for tracklets
     
     // if counting tracks+tracklets, check if clusters were already used in tracks
-    Int_t id1,id2,id3,id4;
-    spdmult->GetTrackletTrackIDs(i,0,id1,id2); // references for eventual Global/ITS_SA tracks
-    AliESDtrack* tr1 = id1>=0 ? esd->GetTrack(id1) : 0;
-    spdmult->GetTrackletTrackIDs(i,1,id3,id4); // references for eventual ITS_SA_pure tracks
-    AliESDtrack* tr3 = id3>=0 ? esd->GetTrack(id3) : 0;
-
+    Int_t id1, id2, id3, id4;
+    spdmult->GetTrackletTrackIDs ( i, 0, id1, id2 ); // references for eventual Global/ITS_SA tracks
+    spdmult->GetTrackletTrackIDs ( i, 1, id3, id4 ); // references for eventual ITS_SA_pure tracks
+    
     // are both clusters from the same tracks? If not, skip the tracklet (shouldn't change things much)
-    if ((id1!=id2 && id1>=0 && id2>=0) || (id3!=id4 && id3>=0 && id4>=0)) continue;
-
-    Bool_t bUsedInGlobal = (id1 != -1) ? globalBits.TestBitNumber(id1) : 0;// has associated global track been associated to a previous tracklet?
-    Bool_t bUsedInPureITS = (id3 != -1) ? pureITSBits.TestBitNumber(id3) : 0;// has associated pure ITS track been associated to a previous tracklet?
+    if ( ( id1 != id2 && id1 >= 0 && id2 >= 0 ) || ( id3 != id4 && id3 >= 0 && id4 >= 0 ) ) continue;
+    
+    //referenced track
+    //at this point we either have id1 = id2 (id3 = id4) or only one of the ids pair is -1
+    // id1>=0, id2>=0, id1=id2	: tracklet has associated track
+    // id1>=0, id2 = -1		: 1st layer cluster has associated track
+    // id1=-1, id2>=0		: 2nd layer cluster has associated track
+    // id1=-1, id2=-1		: tracklet has no associated track
+    //
+    Int_t bUsedInGlobal(-1);
+    if ( id1 != -1 ) bUsedInGlobal = globalBits.TestBitNumber(id1) ? id1 : -1;
+    else if ( id2 != -1) bUsedInGlobal = globalBits.TestBitNumber(id2) ? id2 : -1;
+    Int_t bUsedInPureITS(-1);
+    if ( id3 != -1 ) bUsedInPureITS = pureITSBits.TestBitNumber(id3) ? id3 : -1;
+    else if ( id4 != -1) bUsedInPureITS = pureITSBits.TestBitNumber(id4) ? id4 : -1;
+    //
+    AliESDtrack* tr_global = bUsedInGlobal >= 0 ? esd->GetTrack ( bUsedInGlobal ) : 0;
+    AliESDtrack* tr_itssa = bUsedInPureITS >= 0 ? esd->GetTrack ( bUsedInPureITS ) : 0;
+    //
+    // has associated pure ITS track been associated to a previous tracklet?
     //*******************************************************************************************************
     if (trackType == kTrackletsITSTPC) {
-      // count tracklets towards global+complementary tracks
-      if (  (tr1 && !tr1->TestBit(kSecBit)) &&   // reject as secondary
-        (tr1 &&  tr1->TestBit(kRejBit)) ) {  // count tracklet as bad quality track
-          if(!bUsedInGlobal){
-            ++trackletsITSTPC_complementary;
-            if(id1>0) globalBits.SetBitNumber(id1); // mark global track linked to this tracklet as "associated"
-          }
-      }
-      else if(id1<0) {
-        ++trackletsITSTPC_complementary; // if no associated track, count the tracklet
-      }
+	    //*******************************************************************************************************
+	    // count tracklets towards global+complimentary tracks
+	    if ( ( tr_global && !tr_global->TestBit ( kSecBit ) ) && ( tr_global &&  tr_global->TestBit ( kRejBit ) ) ) {  // count tracklet as bad quality track
+		    globalBits.SetBitNumber( bUsedInGlobal ); // mark global track linked to this tracklet as used
+		    ++trackletsITSTPC_complementary;
+	    } 
+	    
+	    if ( bUsedInGlobal < 0 ) ++trackletsITSTPC_complementary; //no associated track, just count the tracklet
     } else {
-      // count tracklets towards ITS_SA_pure tracks
-      if (  (tr3 && !tr3->TestBit(kSecBit)) &&   // reject as secondary
-        (tr3 &&  tr3->TestBit(kRejBit)) ) { // count tracklet as bad quality track
-        if(!bUsedInPureITS) {
-          ++trackletsITSSA_complementary;
-          if(id3>0) pureITSBits.SetBitNumber(id3); // mark global track linked to this tracklet as "associated"
-        }
-      }
-      else if(id3<0) {
-        ++trackletsITSSA_complementary; // if no associated track, count the tracklet
-      }
+	    //*******************************************************************************************************
+	    // count tracklets towards ITS_SA_pure tracks
+	    if ( ( tr_itssa && !tr_itssa->TestBit ( kSecBit ) ) && ( tr_itssa &&  tr_itssa->TestBit ( kRejBit ) ) ) {  // count tracklet as bad quality track
+		    pureITSBits.SetBitNumber( bUsedInPureITS ); // mark ITS pure SA track linked to this tracklet as used
+		    ++trackletsITSSA_complementary;
+	    } 
+	    
+	    if ( bUsedInPureITS < 0 ) ++trackletsITSSA_complementary; //no associated track, just count the tracklet
     }
   }
   

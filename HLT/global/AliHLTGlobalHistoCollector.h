@@ -48,7 +48,7 @@ class TH2;
  * the form "_Slice_%.2d%.2d_Partition_%.2d%.2d, minSlice, maxSlice, minPartition, maxPartition".
  * It keeps the first part of the hist name and uses it to name the summed histogram.
  *
- * @ingroup alihlt_tpc
+ * @ingroup alihlt_global
  */
 class AliHLTGlobalHistoCollector : public AliHLTProcessor {
     

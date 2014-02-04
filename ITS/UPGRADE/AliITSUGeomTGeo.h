@@ -111,7 +111,10 @@ class AliITSUGeomTGeo : public TObject {
   const AliITSsegmentation* GetSegmentation(Int_t lr)                        const;
   TObjArray*          GetSegmentations()                                     const {return (TObjArray*)fSegm;}
   virtual void Print(Option_t *opt="")  const;
-
+  //
+  static      UInt_t GetUIDShift()                                      {return fgUIDShift;}
+  static      void   SetUIDShift(UInt_t s=16)                           {fgUIDShift = s<16 ? s:16;}
+  //
   static const char* GetITSVolPattern()                                 {return fgkITSVolName;}
   static const char* GetITSLayerPattern()                               {return fgkITSLrName;}
   static const char* GetITSWrapVolPattern()                             {return fgkITSWrapVolName;}
@@ -129,8 +132,8 @@ class AliITSUGeomTGeo : public TObject {
   static const char *ComposeSymNameModule(Int_t lr, Int_t lad, int det);
   //
   // hack to avoid using AliGeomManager
-  Int_t              LayerToVolUID(Int_t lay,int detInLay)        const {return GetModuleIndex(lay,detInLay);}
-  static Int_t       ModuleVolUID(Int_t mod)                            {return mod;}
+  Int_t              LayerToVolUID(Int_t lay,int detInLay)        const {return ModuleVolUID(GetModuleIndex(lay,detInLay));}
+  static Int_t       ModuleVolUID(Int_t mod)                            {return (mod&0xffff)<<fgUIDShift;}
   //
  protected:
   void         FetchMatrices();
@@ -161,6 +164,7 @@ class AliITSUGeomTGeo : public TObject {
   TObjArray* fMatT2L;          // Tracking to Local matrices pointers in the geometry
   TObjArray* fSegm;            // segmentations
   //
+  static       UInt_t fgUIDShift;                // bit shift to go from mod.id to modUUID for TGeo
   static const char*  fgkITSVolName;             // ITS mother volume name
   static const char*  fgkITSLrName;              // ITS Layer name
   static const char*  fgkITSLadName;             // ITS Ladder name 
@@ -171,7 +175,7 @@ class AliITSUGeomTGeo : public TObject {
   //
   static TString      fgITSsegmFileName;         // file name for segmentations
   //
-  ClassDef(AliITSUGeomTGeo, 1) // ITS geometry based on TGeo
+  ClassDef(AliITSUGeomTGeo, 2) // ITS geometry based on TGeo
 };
 
 //_____________________________________________________________________________________________

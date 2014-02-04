@@ -21,7 +21,7 @@
 #include "AliTracker.h"
 
 #include "TObject.h"
-
+#include "AliESDTOFcluster.h"
 
 class TClonesArray;
 class TObjArray;
@@ -116,7 +116,7 @@ private:
  AliTOFtracker& operator=(const AliTOFtracker &source); // ass. op.
 
  Int_t FindClusterIndex(Double_t z) const; // Returns cluster index 
- void  MatchTracks(Bool_t mLastStep); // Matching Algorithm 
+ void  MatchTracks(Int_t mLastStep); // Matching Algorithm 
  void  CollectESD(); // Select starting Set for Matching 
  Float_t CorrectTimeWalk(Float_t dist,Float_t tof) const; // Time Walk correction
 
@@ -158,7 +158,10 @@ private:
  Float_t fExpTimeKa; // exp time, Kaons
  Float_t fExpTimePr; // exp time, Protons
 
- ClassDef(AliTOFtracker, 6) // TOF tracker 
+ Int_t fNTOFmatched;                   // number of matched TOF cluster
+ AliESDTOFcluster *fClusterESD[20000]; // pointers to the TOF clusters for ESD
+
+ ClassDef(AliTOFtracker, 7) // TOF tracker 
 };
 
 #endif

@@ -49,6 +49,7 @@
 #define VC_COMMON_LOGARITHM_H
 
 #include "macros.h"
+namespace AliRoot {
 namespace Vc
 {
 namespace Common
@@ -56,6 +57,10 @@ namespace Common
 #ifdef VC__USE_NAMESPACE
 using Vc::VC__USE_NAMESPACE::Const;
 using Vc::VC__USE_NAMESPACE::Vector;
+namespace Internal
+{
+    using namespace Vc::VC__USE_NAMESPACE::Internal;
+} // namespace Internal
 #endif
 enum LogarithmBase {
     BaseE, Base10, Base2
@@ -64,7 +69,7 @@ enum LogarithmBase {
 template<LogarithmBase Base>
 struct LogImpl
 {
-    template<typename T> static inline ALWAYS_INLINE void log_series(Vector<T> &VC_RESTRICT x, typename Vector<T>::AsArg exponent) {
+    template<typename T> static Vc_ALWAYS_INLINE void log_series(Vector<T> &VC_RESTRICT x, typename Vector<T>::AsArg exponent) {
         typedef Vector<T> V;
         typedef Const<T> C;
         // Taylor series around x = 2^exponent
@@ -166,7 +171,7 @@ struct LogImpl
         }
     }
 
-    static inline ALWAYS_INLINE void log_series(Vector<double> &VC_RESTRICT x, Vector<double>::AsArg exponent) {
+    static Vc_ALWAYS_INLINE void log_series(Vector<double> &VC_RESTRICT x, Vector<double>::AsArg exponent) {
         typedef Vector<double> V;
         typedef Const<double> C;
         const V x2 = x * x;
@@ -208,17 +213,19 @@ struct LogImpl
         }
     }
 
-    template<typename T> static inline Vector<T> calc(Vector<T> x) {
+    template<typename T> static inline Vector<T> calc(VC_ALIGNED_PARAMETER(Vector<T>) _x) {
         typedef Vector<T> V;
         typedef typename V::Mask M;
         typedef Const<T> C;
+
+        V x(_x);
 
         const M invalidMask = x < V::Zero();
         const M infinityMask = x == V::Zero();
         const M denormal = x <= C::min();
 
         x(denormal) *= V(Vc_buildDouble(1, 0, 54)); // 2²⁵
-        V exponent = x.exponent(); // = ⎣log₂(x)⎦
+        V exponent = Internal::exponent(x.data()); // = ⎣log₂(x)⎦
         exponent(denormal) -= 54;
 
         x.setZero(C::exponentMask()); // keep only the fractional part ⇒ x ∈ [1, 2[
@@ -244,17 +251,17 @@ struct LogImpl
     }
 };
 
-template<typename T> static inline Vector<T> log(Vector<T> x) {
+template<typename T> static Vc_ALWAYS_INLINE Vc_CONST Vector<T> log(VC_ALIGNED_PARAMETER(Vector<T>) x) {
     typedef typename Vector<T>::Mask M;
     typedef Const<T> C;
     return LogImpl<BaseE>::calc(x);
 }
-template<typename T> static inline Vector<T> log10(Vector<T> x) {
+template<typename T> static Vc_ALWAYS_INLINE Vc_CONST Vector<T> log10(VC_ALIGNED_PARAMETER(Vector<T>) x) {
     typedef typename Vector<T>::Mask M;
     typedef Const<T> C;
     return LogImpl<Base10>::calc(x);
 }
-template<typename T> static inline Vector<T> log2(Vector<T> x) {
+template<typename T> static Vc_ALWAYS_INLINE Vc_CONST Vector<T> log2(VC_ALIGNED_PARAMETER(Vector<T>) x) {
     typedef typename Vector<T>::Mask M;
     typedef Const<T> C;
     return LogImpl<Base2>::calc(x);
@@ -270,6 +277,7 @@ namespace VC__USE_NAMESPACE
 #undef VC__USE_NAMESPACE
 #endif
 } // namespace Vc
+} // namespace AliRoot
 #include "undomacros.h"
 
 #endif // VC_COMMON_LOGARITHM_H

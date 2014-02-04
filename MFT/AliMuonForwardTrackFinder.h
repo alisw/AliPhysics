@@ -63,6 +63,8 @@ class AliMuonForwardTrackFinder : public TObject {
   
 public:
 
+  enum {kConverged, kDiverged};
+
   enum matchingOption {kRealMatching, kIdealMatching};
 
   AliMuonForwardTrackFinder();

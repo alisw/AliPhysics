@@ -42,12 +42,7 @@
 
 ClassImp(AliReconstructor)
 
-const AliDetectorRecoParam* AliReconstructor::fgRecoParam[AliReconstruction::kNDetectors] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL
-// #ifdef MFT_UPGRADE
-// 											     ,NULL
-// #endif	
-											     ,NULL    // AU
-};
+const AliDetectorRecoParam* AliReconstructor::fgRecoParam[AliReconstruction::kNDetectors] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
 
 //_____________________________________________________________________________
 void AliReconstructor::ConvertDigits(AliRawReader* /*rawReader*/, 

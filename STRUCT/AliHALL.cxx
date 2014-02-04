@@ -305,6 +305,10 @@ void AliHALL::CreateMaterials()
   AliMixture(10, "STAINLESS STEEL1", asteel, zsteel, 7.88, 4, wsteel);
   AliMixture(30, "STAINLESS STEEL2", asteel, zsteel, 7.88, 4, wsteel);
   AliMixture(50, "STAINLESS STEEL3", asteel, zsteel, 7.88, 4, wsteel);
+  // Iron
+  //
+  AliMaterial(52, "IRON", 55.85, 26., 7.87, 1.76, 17.1);
+  
   
   // **************** 
   //     Defines tracking media parameters. 
@@ -333,6 +337,9 @@ void AliHALL::CreateMaterials()
   AliMedium(17, "CC_C0            ", 17, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(37, "CC_C1            ", 37, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(57, "CC_C2            ", 57, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+
+  // Iron
+  AliMedium(52, "FE_C2            ", 52, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
 }
 
 //_____________________________________________________________________________

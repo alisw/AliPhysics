@@ -58,6 +58,7 @@ class AliAODHeader : public AliVHeader {
   virtual ~AliAODHeader();
   AliAODHeader(const AliAODHeader& evt); 
   AliAODHeader& operator=(const AliAODHeader& evt);
+  Bool_t    InitMagneticField() const;
 
   Int_t     GetRunNumber()          const { return fRunNumber;}
   Int_t     GetEventNumberESDFile() const { return fEventNumberESDFile;}

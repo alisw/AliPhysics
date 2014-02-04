@@ -1,4 +1,4 @@
-#ifndef ALITOFTDCPACHEDHIT_H
+#ifndef ALITOFTDCPACKEDHIT_H
 #define ALITOFTDCPACKEDHIT_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *

@@ -408,7 +408,12 @@ void AliGenHIJINGpara::Generate()
     header->SetPrimaryVertex(eventVertex);
     header->SetInteractionTime(eventTime);
     header->SetNProduced(fNpartProd);
-    gAlice->SetGenEventHeader(header); 
+    if (fContainer) {
+      header->SetName(fName);
+      fContainer->AddHeader(header);
+    } else {
+      gAlice->SetGenEventHeader(header);	
+    }
 }
 
 void AliGenHIJINGpara::SetPtRange(Float_t ptmin, Float_t ptmax) {

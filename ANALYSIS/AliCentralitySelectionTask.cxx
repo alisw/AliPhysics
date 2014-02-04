@@ -131,6 +131,7 @@ AliAnalysisTaskSE(),
   fCSEMIbit(0),
   fCentV0M(0),
   fCentV0A(0),
+  fCentV0A123(0),
   fCentV0C(0),
   fCentV0MEq(0),
   fCentV0AEq(0),
@@ -167,6 +168,7 @@ AliAnalysisTaskSE(),
   fCentZPCtrue(0),
   fHtempV0M(0),
   fHtempV0A(0),
+  fHtempV0A123(0),
   fHtempV0C(0),
   fHtempV0MEq(0),
   fHtempV0AEq(0),
@@ -204,6 +206,7 @@ AliAnalysisTaskSE(),
   fOutputList(0),
   fHOutCentV0M(0),
   fHOutCentV0A(0),
+  fHOutCentV0A123(0),
   fHOutCentV0C(0),
   fHOutCentV0MEq(0),
   fHOutCentV0AEq(0),
@@ -269,6 +272,7 @@ AliAnalysisTaskSE(),
   fHOutMultV0AC(0),
   fHOutMultV0M(0),
   fHOutMultV0A(0),
+  fHOutMultV0A123(0),
   fHOutMultV0C(0),
   fHOutMultV0MEq(0),
   fHOutMultV0AEq(0),
@@ -381,6 +385,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fCSEMIbit(0),
   fCentV0M(0),
   fCentV0A(0),
+  fCentV0A123(0),
   fCentV0C(0),
   fCentV0MEq(0),
   fCentV0AEq(0),
@@ -417,6 +422,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fCentZPCtrue(0),
   fHtempV0M(0),
   fHtempV0A(0),
+  fHtempV0A123(0),
   fHtempV0C(0),
   fHtempV0MEq(0),
   fHtempV0AEq(0),
@@ -454,6 +460,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fOutputList(0),
   fHOutCentV0M(0),
   fHOutCentV0A(0),
+  fHOutCentV0A123(0),
   fHOutCentV0C(0),
   fHOutCentV0MEq(0),
   fHOutCentV0AEq(0),
@@ -519,6 +526,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fHOutMultV0AC(0),
   fHOutMultV0M(0),
   fHOutMultV0A(0),
+  fHOutMultV0A123(0),
   fHOutMultV0C(0),
   fHOutMultV0MEq(0),
   fHOutMultV0AEq(0),
@@ -641,6 +649,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fCSEMIbit(ana.fCSEMIbit),
   fCentV0M(ana.fCentV0M),
   fCentV0A(ana.fCentV0A),
+  fCentV0A123(ana.fCentV0A123),
   fCentV0C(ana.fCentV0C),
   fCentV0MEq(ana.fCentV0MEq),
   fCentV0AEq(ana.fCentV0AEq),
@@ -677,6 +686,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fCentZPCtrue(ana.fCentZPCtrue),
   fHtempV0M(ana.fHtempV0M),
   fHtempV0A(ana.fHtempV0A),
+  fHtempV0A123(ana.fHtempV0A123),
   fHtempV0C(ana.fHtempV0C),
   fHtempV0MEq(ana.fHtempV0MEq),
   fHtempV0AEq(ana.fHtempV0AEq),
@@ -714,6 +724,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fOutputList(ana.fOutputList),
   fHOutCentV0M(ana.fHOutCentV0M),
   fHOutCentV0A(ana.fHOutCentV0A),
+  fHOutCentV0A123(ana.fHOutCentV0A123),
   fHOutCentV0C(ana.fHOutCentV0C),
   fHOutCentV0MEq(ana.fHOutCentV0MEq),
   fHOutCentV0AEq(ana.fHOutCentV0AEq),
@@ -779,6 +790,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fHOutMultV0AC(ana.fHOutMultV0AC),
   fHOutMultV0M(ana.fHOutMultV0M),
   fHOutMultV0A(ana.fHOutMultV0A),
+  fHOutMultV0A123(ana.fHOutMultV0A123),
   fHOutMultV0C(ana.fHOutMultV0C),
   fHOutMultV0MEq(ana.fHOutMultV0MEq),
   fHOutMultV0AEq(ana.fHOutMultV0AEq),
@@ -855,6 +867,7 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
     fOutputList->SetOwner();
     fHOutCentV0M     = new TH1F("fHOutCentV0M","fHOutCentV0M; Centrality V0",505,0,101);
     fHOutCentV0A    = new TH1F("fHOutCentV0A","fHOutCentV0A; Centrality V0A",505,0,101);
+    fHOutCentV0A123 = new TH1F("fHOutCentV0A123","fHOutCentV0A123; Centrality V0A-123",505,0,101);
     fHOutCentV0C    = new TH1F("fHOutCentV0C","fHOutCentV0C; Centrality V0C",505,0,101);
     fHOutCentV0MEq     = new TH1F("fHOutCentV0MEq","fHOutCentV0MEq; Centrality V0 equalized",505,0,101);
     fHOutCentV0AEq    = new TH1F("fHOutCentV0AEq","fHOutCentV0AEq; Centrality V0A equalized",505,0,101);
@@ -921,6 +934,7 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
     fHOutMultV0AC = new TH2F("fHOutMultV0AC","fHOutMultV0AC; Multiplicity V0A; Multiplicity V0C",1000,0,1000,1000,0,1000);
     fHOutMultV0M  = new TH1F("fHOutMultV0M","fHOutMultV0M; Multiplicity V0",25000,0,25000);
     fHOutMultV0A  = new TH1F("fHOutMultV0A","fHOutMultV0A; Multiplicity V0",25000,0,25000);
+    fHOutMultV0A123  = new TH1F("fHOutMultV0A123","fHOutMultV0A123; Multiplicity V0A-123",25000,0,25000);
     fHOutMultV0C  = new TH1F("fHOutMultV0C","fHOutMultV0C; Multiplicity V0",25000,0,25000);
     fHOutMultV0MEq  = new TH1F("fHOutMultV0MEq","fHOutMultV0MEq; Multiplicity V0",25000,0,25000);
     fHOutMultV0AEq  = new TH1F("fHOutMultV0AEq","fHOutMultV0AEq; Multiplicity V0",25000,0,25000);
@@ -979,6 +993,7 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
   
     fOutputList->Add(fHOutCentV0M);
     fOutputList->Add(fHOutCentV0A);
+    fOutputList->Add(fHOutCentV0A123);
     fOutputList->Add(fHOutCentV0C);
     fOutputList->Add(fHOutCentV0MEq);
     fOutputList->Add(fHOutCentV0AEq);
@@ -1045,6 +1060,7 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
     fOutputList->Add(fHOutMultV0AC); 
     fOutputList->Add(fHOutMultV0M); 
     fOutputList->Add(fHOutMultV0A); 
+    fOutputList->Add(fHOutMultV0A123); 
     fOutputList->Add(fHOutMultV0C); 
     fOutputList->Add(fHOutMultV0MEq); 
     fOutputList->Add(fHOutMultV0AEq); 
@@ -1139,6 +1155,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   Float_t  spdCorr =0;              //  corrected spd2 multiplicity
   Int_t    multCND = 0;             //  no. tracks (candle condition)
 
+  Float_t  multV0A123 = 0;          //  multiplicity from V0 reco side A (ring 1-2-3)
   Float_t  multV0A  = 0;            //  multiplicity from V0 reco side A
   Float_t  multV0C  = 0;            //  multiplicity from V0 reco side C
   Float_t  multV0AEq  = 0;          //  multiplicity from V0 reco side A
@@ -1216,6 +1233,10 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 
   multV0A=esdV0->GetMTotV0A();
   multV0C=esdV0->GetMTotV0C();
+
+  // excluding innermost V0A ring
+  for (int i=40; i<64; i++)
+    multV0A123 += esdV0->GetMultiplicity(i);
 
   multV0ACorr = AliESDUtils::GetCorrV0A(multV0A,zvtx);    
   multV0CCorr = AliESDUtils::GetCorrV0C(multV0C,zvtx);    
@@ -1531,6 +1552,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   // ***** Centrality Selection
   if(fHtempV0M) fCentV0M = fHtempV0M->GetBinContent(fHtempV0M->FindBin((v0Corr)));
   if(fHtempV0A) fCentV0A = fHtempV0A->GetBinContent(fHtempV0A->FindBin((multV0ACorr)));
+  if(fHtempV0A123) fCentV0A123 = fHtempV0A123->GetBinContent(fHtempV0A123->FindBin((multV0A123)));
   if(fHtempV0C) fCentV0C = fHtempV0C->GetBinContent(fHtempV0C->FindBin((multV0CCorr)));
   if(fHtempV0MEq) fCentV0MEq = fHtempV0MEq->GetBinContent(fHtempV0MEq->FindBin((multV0AEq+multV0CEq)));
   if(fHtempV0AEq) fCentV0AEq = fHtempV0AEq->GetBinContent(fHtempV0AEq->FindBin((multV0AEq)));
@@ -1618,6 +1640,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     esdCent->SetQuality(fQuality);
     esdCent->SetCentralityV0M(fCentV0M);
     esdCent->SetCentralityV0A(fCentV0A);
+    esdCent->SetCentralityV0A123(fCentV0A123);
     esdCent->SetCentralityV0C(fCentV0C);
     esdCent->SetCentralityV0MEq(fCentV0MEq);
     esdCent->SetCentralityV0AEq(fCentV0AEq);
@@ -1636,6 +1659,24 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     esdCent->SetCentralityV0MvsFMD(fCentV0MvsFMD);
     esdCent->SetCentralityTKLvsV0M(fCentTKLvsV0M);
     esdCent->SetCentralityZEMvsZDC(fCentZEMvsZDC);
+
+    esdCent->SetCentralityV0Mtrue(fCentV0Mtrue);
+    esdCent->SetCentralityV0Atrue(fCentV0Atrue);
+    esdCent->SetCentralityV0Ctrue(fCentV0Ctrue);
+    // no setters in AliCentrality for
+    // fCentV0MEqtrue
+    // fCentV0AEqtrue
+    // fCentV0CEqtrue
+    esdCent->SetCentralityFMDtrue(fCentFMDtrue);
+    esdCent->SetCentralityTRKtrue(fCentTRKtrue);
+    esdCent->SetCentralityTKLtrue(fCentTKLtrue);
+    esdCent->SetCentralityCL0true(fCentCL0true);
+    esdCent->SetCentralityCL1true(fCentCL1true);
+    esdCent->SetCentralityCNDtrue(fCentCNDtrue);
+    esdCent->SetCentralityZNAtrue(fCentZNAtrue);
+    esdCent->SetCentralityZNCtrue(fCentZNCtrue);
+    esdCent->SetCentralityZPAtrue(fCentZPAtrue);
+    esdCent->SetCentralityZPCtrue(fCentZPCtrue);
   }
 
   // filling QA histograms
@@ -1685,6 +1726,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
       if (fQuality==0) {  
 	fHOutCentV0M->Fill(fCentV0M);
 	fHOutCentV0A->Fill(fCentV0A);
+	fHOutCentV0A123->Fill(fCentV0A123);
 	fHOutCentV0C->Fill(fCentV0C);
 	fHOutCentV0MEq->Fill(fCentV0MEq);
 	fHOutCentV0AEq->Fill(fCentV0AEq);
@@ -1742,6 +1784,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 	fHOutMultV0AC->Fill(multV0A,multV0C);
 	fHOutMultV0M->Fill(multV0ACorr+multV0CCorr);
 	fHOutMultV0A->Fill(multV0ACorr);
+	fHOutMultV0A123->Fill(multV0A123);
 	fHOutMultV0C->Fill(multV0CCorr);
 	fHOutMultV0MEq->Fill(multV0AEq+multV0CEq);
 	fHOutMultV0AEq->Fill(multV0AEq);
@@ -1851,6 +1894,7 @@ Int_t AliCentralitySelectionTask::SetupRun(const AliVEvent* const esd)
   // centrality histos
   fHtempV0M       = centOADB->V0hist(); 
   fHtempV0A       = centOADB->V0Ahist(); 
+  fHtempV0A123    = centOADB->V0A123hist(); 
   fHtempV0C       = centOADB->V0Chist(); 
   fHtempV0MEq     = centOADB->V0Eqhist(); 
   fHtempV0AEq     = centOADB->V0AEqhist(); 

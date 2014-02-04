@@ -126,6 +126,9 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   void SetPar5(Int_t i, Double_t param )       {fPar5[i]=param;}
   void SetPar6(Int_t i, Double_t param )       {fPar6[i]=param;}
 
+  Bool_t  GetRejectBelowThreshold()           const { return fRejectBelowThreshold;    }
+  void    SetRejectBelowThreshold(Bool_t reject)    { fRejectBelowThreshold = reject;  }
+
   virtual void Print(Option_t * option="") const;
   
   static AliEMCALRecParam* GetDefaultParameters();
@@ -184,13 +187,14 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   Bool_t   fFitLEDEvents;          // fit LED events or not
 	
   //Shower shape parameters (Adam)
+  Bool_t   fRejectBelowThreshold;  // split (false-default) or reject (true) cell energy below threshold after UF 
   Double_t fSSPars[8]; // Unfolding shower shape parameters
   Double_t fPar5[3];   // UF SSPar nr 5
   Double_t fPar6[3];   // UF SSPar nr 6
 
   static TObjArray* fgkMaps;       // ALTRO mappings for RCU0..RCUX
   
-  ClassDef(AliEMCALRecParam,16)     // Reconstruction parameters
+  ClassDef(AliEMCALRecParam,17)     // Reconstruction parameters
 };
 
 #endif //  ALIEMCALRECPARAM_H

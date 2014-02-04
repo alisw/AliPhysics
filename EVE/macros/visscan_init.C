@@ -193,13 +193,14 @@ void visscan_init(const TString& cdburi = "",
   slot->StopEmbedding("Selections");
 
   // QA viewer
+/*
   slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
   slot->StartEmbedding();
   new AliQAHistViewer(gClient->GetRoot(), 600, 400, kTRUE);
   slot->StopEmbedding("QA histograms");
 
   browser->GetTabRight()->SetTab(1);
-
+*/
   browser->StartEmbedding(TRootBrowser::kBottom);
   new AliEveEventManagerWindow(AliEveEventManager::GetMaster());
   browser->StopEmbedding("EventCtrl");

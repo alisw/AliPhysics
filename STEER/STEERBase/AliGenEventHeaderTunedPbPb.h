@@ -12,7 +12,7 @@
 // Author: andreas.morsch@cern.ch
 //---------------------------------------------------------------------
 
-#include <AliGenEventHeader.h>
+#include "AliGenEventHeader.h"
 
 class AliGenEventHeaderTunedPbPb : public AliGenEventHeader
 {

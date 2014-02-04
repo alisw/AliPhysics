@@ -113,7 +113,7 @@ class AliHLTMUONFullTracker : public AliHLTLogging
     Int_t fCharge;       /// charge
   }; 
 
-  static const Float_t fgkTrackDetCoordinate[3]; /// set the constant value for third station position and size
+  static const Double_t fgkTrackDetCoordinate[3]; /// set the constant value for third station position and size
   
   static const Double_t fgkAbsoedge[4] ;     /// edge of the absorber
   static const Double_t fgkRadLen[3] ;       /// radiation length of the main three matirials of the front absorber

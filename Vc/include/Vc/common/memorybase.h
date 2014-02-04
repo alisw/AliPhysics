@@ -23,11 +23,14 @@
 #include <assert.h>
 #include "macros.h"
 
+namespace AliRoot {
 namespace Vc
 {
 
 #if __cplusplus >= 201103 || defined(VC_MSVC)
 #define VC_DECLTYPE(T1, op, T2) decltype(T1() op T2())
+#elif defined(VC_OPEN64) || (defined(VC_GCC) && VC_GCC < 0x40300)
+#define VC_DECLTYPE(T1, op, T2) T1
 #else
 namespace
 {
@@ -47,14 +50,23 @@ namespace
     template<typename T1, typename T2, size_t ToSelect> struct Decltype { typedef T1 Value; };
     template<typename T1, typename T2> struct Decltype<T1, T2, sizeof(one)> { typedef T1 Value; };
     template<typename T1, typename T2> struct Decltype<T1, T2, sizeof(two)> { typedef T2 Value; };
+#ifdef VC_CLANG
+    // this special case is only necessary to silence a warning (which is rather a note that clang
+    // did the expected optimization):
+    // warning: variable 'SOME_PTR' is not needed and will not be emitted [-Wunneeded-internal-declaration]
+    // Then again, I don't remember why the SOME_PTR hack was necessary in the first place - some
+    // strange compiler quirk...
+#define VC_DECLTYPE(T1, op, T2) typename Decltype<T1, T2, sizeof(DecltypeHelper<T1, T2>::test(T1() op T2()))>::Value
+#else
     static const void *SOME_PTR;
-} // anonymous namespace
 #define VC_DECLTYPE(T1, op, T2) typename Decltype<T1, T2, sizeof(DecltypeHelper<T1, T2>::test(*static_cast<const T1*>(SOME_PTR) op *static_cast<const T2*>(SOME_PTR)))>::Value
+#endif
+} // anonymous namespace
 #endif
 
 #define VC_MEM_OPERATOR_EQ(op) \
         template<typename T> \
-        inline VectorPointerHelper<V, A> &operator op##=(const T &x) { \
+        Vc_ALWAYS_INLINE VectorPointerHelper<V, A> &operator op##=(const T &x) { \
             const V result = V(m_ptr, Internal::FlagObject<A>::the()) op x; \
             result.store(m_ptr, Internal::FlagObject<A>::the()); \
             return *this; \
@@ -82,7 +94,7 @@ template<typename V, typename A> class VectorPointerHelperConst
          *
          * This function allows to assign this object to any object of type \p V.
          */
-        inline operator const V() const { return V(m_ptr, Internal::FlagObject<A>::the()); }
+        Vc_ALWAYS_INLINE Vc_PURE operator const V() const { return V(m_ptr, Internal::FlagObject<A>::the()); }
 };
 
 /**
@@ -107,10 +119,10 @@ template<typename V, typename A> class VectorPointerHelper
          *
          * This function allows to assign this object to any object of type \p V.
          */
-        inline operator const V() const { return V(m_ptr, Internal::FlagObject<A>::the()); }
+        Vc_ALWAYS_INLINE Vc_PURE operator const V() const { return V(m_ptr, Internal::FlagObject<A>::the()); }
 
         template<typename T>
-        inline VectorPointerHelper &operator=(const T &x) {
+        Vc_ALWAYS_INLINE VectorPointerHelper &operator=(const T &x) {
             V v;
             v = x;
             v.store(m_ptr, Internal::FlagObject<A>::the());
@@ -147,24 +159,24 @@ template<typename V, typename Parent, typename RowMemory> class MemoryDimensionB
         /**
          * Returns a pointer to the start of the allocated memory.
          */
-        inline       EntryType *entries()       { return &p()->m_mem[0]; }
+        Vc_ALWAYS_INLINE Vc_PURE       EntryType *entries()       { return &p()->m_mem[0]; }
         /// Const overload of the above function.
-        inline const EntryType *entries() const { return &p()->m_mem[0]; }
+        Vc_ALWAYS_INLINE Vc_PURE const EntryType *entries() const { return &p()->m_mem[0]; }
 
         /**
          * Returns the \p i-th scalar value in the memory.
          */
-        inline EntryType &scalar(size_t i) { return entries()[i]; }
+        Vc_ALWAYS_INLINE Vc_PURE EntryType &scalar(size_t i) { return entries()[i]; }
         /// Const overload of the above function.
-        inline const EntryType scalar(size_t i) const { return entries()[i]; }
+        Vc_ALWAYS_INLINE Vc_PURE const EntryType scalar(size_t i) const { return entries()[i]; }
 
         /**
          * Cast operator to the scalar type. This allows to use the object very much like a standard
          * C array.
          */
-        inline operator       EntryType*()       { return entries(); }
+        Vc_ALWAYS_INLINE Vc_PURE operator       EntryType*()       { return entries(); }
         /// Const overload of the above function.
-        inline operator const EntryType*() const { return entries(); }
+        Vc_ALWAYS_INLINE Vc_PURE operator const EntryType*() const { return entries(); }
 
         // omit operator[] because the EntryType* cast operator suffices, for dox it makes sense to
         // show it, though because it helps API discoverability.
@@ -188,7 +200,7 @@ template<typename V, typename Parent, typename RowMemory> class MemoryDimensionB
          * \warning  The API of this function might change in future versions of Vc to additionally
          *           support scatters.
          */
-        template<typename IndexT> inline V operator[](Vector<IndexT> i) const
+        template<typename IndexT> Vc_ALWAYS_INLINE Vc_PURE V operator[](Vector<IndexT> i) const
         {
             return V(entries(), i);
         }
@@ -204,31 +216,31 @@ template<typename V, typename Parent, typename RowMemory> class MemoryDimensionB
          */
         typedef typename V::EntryType EntryType;
 
-        inline size_t rowCount() const { return Parent::RowCount; }
+        static _VC_CONSTEXPR size_t rowCount() { return Parent::RowCount; }
 
         /**
          * Returns a pointer to the start of the allocated memory.
          */
-        inline       EntryType *entries(size_t x = 0)       { return &p()->m_mem[x][0]; }
+        Vc_ALWAYS_INLINE Vc_PURE       EntryType *entries(size_t x = 0)       { return &p()->m_mem[x][0]; }
         /// Const overload of the above function.
-        inline const EntryType *entries(size_t x = 0) const { return &p()->m_mem[x][0]; }
+        Vc_ALWAYS_INLINE Vc_PURE const EntryType *entries(size_t x = 0) const { return &p()->m_mem[x][0]; }
 
         /**
          * Returns the \p i,j-th scalar value in the memory.
          */
-        inline EntryType &scalar(size_t i, size_t j) { return entries(i)[j]; }
+        Vc_ALWAYS_INLINE Vc_PURE EntryType &scalar(size_t i, size_t j) { return entries(i)[j]; }
         /// Const overload of the above function.
-        inline const EntryType scalar(size_t i, size_t j) const { return entries(i)[j]; }
+        Vc_ALWAYS_INLINE Vc_PURE const EntryType scalar(size_t i, size_t j) const { return entries(i)[j]; }
 
         /**
          * Returns the \p i-th row in the memory.
          */
-        inline RowMemory &operator[](size_t i) {
-            return *new(entries(i)) RowMemory;
+        Vc_ALWAYS_INLINE Vc_PURE RowMemory &operator[](size_t i) {
+            return RowMemory::fromRawData(entries(i));
         }
         /// Const overload of the above function.
-        inline const RowMemory &operator[](size_t i) const {
-            return *new(const_cast<EntryType *>(entries(i))) RowMemory;
+        Vc_ALWAYS_INLINE Vc_PURE const RowMemory &operator[](size_t i) const {
+            return RowMemory::fromRawData(const_cast<EntryType *>(entries(i)));
         }
 
         /**
@@ -236,7 +248,7 @@ template<typename V, typename Parent, typename RowMemory> class MemoryDimensionB
          *
          * \note This function can be eliminated by an optimizing compiler.
          */
-        inline size_t rowsCount() const { return p()->rowsCount(); }
+        Vc_ALWAYS_INLINE Vc_PURE size_t rowsCount() const { return p()->rowsCount(); }
 };
 
 //{{{1
@@ -265,12 +277,12 @@ template<typename V, typename Parent, int Dimension, typename RowMemory> class M
          * \return the number of scalar entries in the array. This function is optimized away
          * if a constant size array is used.
          */
-        inline size_t entriesCount() const { return p()->entriesCount(); }
+        Vc_ALWAYS_INLINE Vc_PURE size_t entriesCount() const { return p()->entriesCount(); }
         /**
          * \return the number of vector entries that span the array. This function is optimized away
          * if a constant size array is used.
          */
-        inline size_t vectorsCount() const { return p()->vectorsCount(); }
+        Vc_ALWAYS_INLINE Vc_PURE size_t vectorsCount() const { return p()->vectorsCount(); }
 
         using MemoryDimensionBase<V, Parent, Dimension, RowMemory>::entries;
         using MemoryDimensionBase<V, Parent, Dimension, RowMemory>::scalar;
@@ -295,7 +307,7 @@ template<typename V, typename Parent, int Dimension, typename RowMemory> class M
          * access memory at fixed strides. If access to known offsets from the aligned vectors is
          * needed the vector(size_t, int) function can be used.
          */
-        inline VectorPointerHelper<V, AlignedFlag> vector(size_t i) {
+        Vc_ALWAYS_INLINE Vc_PURE VectorPointerHelper<V, AlignedFlag> vector(size_t i) {
             return VectorPointerHelper<V, AlignedFlag>(&entries()[i * V::Size]);
         }
         /** \brief Const overload of the above function
@@ -304,7 +316,7 @@ template<typename V, typename Parent, int Dimension, typename RowMemory> class M
          *
          * \return a smart object to wrap the \p i-th vector in the memory.
          */
-        inline const VectorPointerHelperConst<V, AlignedFlag> vector(size_t i) const {
+        Vc_ALWAYS_INLINE Vc_PURE const VectorPointerHelperConst<V, AlignedFlag> vector(size_t i) const {
             return VectorPointerHelperConst<V, AlignedFlag>(&entries()[i * V::Size]);
         }
 
@@ -343,18 +355,18 @@ template<typename V, typename Parent, int Dimension, typename RowMemory> class M
         template<typename A> inline const VectorPointerHelperConst<V, A> vectorAt(size_t i, A align = Vc::Aligned) const;
 #else
         template<typename A>
-        inline VectorPointerHelper<V, A> vectorAt(size_t i, A) {
+        Vc_ALWAYS_INLINE Vc_PURE VectorPointerHelper<V, A> vectorAt(size_t i, A) {
             return VectorPointerHelper<V, A>(&entries()[i]);
         }
         template<typename A>
-        inline const VectorPointerHelperConst<V, A> vectorAt(size_t i, A) const {
+        Vc_ALWAYS_INLINE Vc_PURE const VectorPointerHelperConst<V, A> vectorAt(size_t i, A) const {
             return VectorPointerHelperConst<V, A>(&entries()[i]);
         }
 
-        inline VectorPointerHelper<V, AlignedFlag> vectorAt(size_t i) {
+        Vc_ALWAYS_INLINE Vc_PURE VectorPointerHelper<V, AlignedFlag> vectorAt(size_t i) {
             return VectorPointerHelper<V, AlignedFlag>(&entries()[i]);
         }
-        inline const VectorPointerHelperConst<V, AlignedFlag> vectorAt(size_t i) const {
+        Vc_ALWAYS_INLINE Vc_PURE const VectorPointerHelperConst<V, AlignedFlag> vectorAt(size_t i) const {
             return VectorPointerHelperConst<V, AlignedFlag>(&entries()[i]);
         }
 #endif
@@ -386,11 +398,11 @@ template<typename V, typename Parent, int Dimension, typename RowMemory> class M
          * mem.vector(0, i) += 1;
          * \endcode
          */
-        inline VectorPointerHelper<V, UnalignedFlag> vector(size_t i, int shift) {
+        Vc_ALWAYS_INLINE Vc_PURE VectorPointerHelper<V, UnalignedFlag> vector(size_t i, int shift) {
             return VectorPointerHelper<V, UnalignedFlag>(&entries()[i * V::Size + shift]);
         }
         /// Const overload of the above function.
-        inline const VectorPointerHelperConst<V, UnalignedFlag> vector(size_t i, int shift) const {
+        Vc_ALWAYS_INLINE Vc_PURE const VectorPointerHelperConst<V, UnalignedFlag> vector(size_t i, int shift) const {
             return VectorPointerHelperConst<V, UnalignedFlag>(&entries()[i * V::Size + shift]);
         }
 
@@ -399,11 +411,11 @@ template<typename V, typename Parent, int Dimension, typename RowMemory> class M
          *
          * This function is simply a shorthand for vector(0).
          */
-        inline VectorPointerHelper<V, AlignedFlag> firstVector() {
+        Vc_ALWAYS_INLINE Vc_PURE VectorPointerHelper<V, AlignedFlag> firstVector() {
             return VectorPointerHelper<V, AlignedFlag>(entries());
         }
         /// Const overload of the above function.
-        inline const VectorPointerHelperConst<V, AlignedFlag> firstVector() const {
+        Vc_ALWAYS_INLINE Vc_PURE const VectorPointerHelperConst<V, AlignedFlag> firstVector() const {
             return VectorPointerHelperConst<V, AlignedFlag>(entries());
         }
 
@@ -412,20 +424,20 @@ template<typename V, typename Parent, int Dimension, typename RowMemory> class M
          *
          * This function is simply a shorthand for vector(vectorsCount() - 1).
          */
-        inline VectorPointerHelper<V, AlignedFlag> lastVector() {
+        Vc_ALWAYS_INLINE Vc_PURE VectorPointerHelper<V, AlignedFlag> lastVector() {
             return VectorPointerHelper<V, AlignedFlag>(&entries()[vectorsCount() * V::Size - V::Size]);
         }
         /// Const overload of the above function.
-        inline const VectorPointerHelperConst<V, AlignedFlag> lastVector() const {
+        Vc_ALWAYS_INLINE Vc_PURE const VectorPointerHelperConst<V, AlignedFlag> lastVector() const {
             return VectorPointerHelperConst<V, AlignedFlag>(&entries()[vectorsCount() * V::Size - V::Size]);
         }
 
-        inline V gather(const unsigned char  *indexes) const { return V(entries(), indexes); }
-        inline V gather(const unsigned short *indexes) const { return V(entries(), indexes); }
-        inline V gather(const unsigned int   *indexes) const { return V(entries(), indexes); }
-        inline V gather(const unsigned long  *indexes) const { return V(entries(), indexes); }
+        Vc_ALWAYS_INLINE Vc_PURE V gather(const unsigned char  *indexes) const { return V(entries(), indexes); }
+        Vc_ALWAYS_INLINE Vc_PURE V gather(const unsigned short *indexes) const { return V(entries(), indexes); }
+        Vc_ALWAYS_INLINE Vc_PURE V gather(const unsigned int   *indexes) const { return V(entries(), indexes); }
+        Vc_ALWAYS_INLINE Vc_PURE V gather(const unsigned long  *indexes) const { return V(entries(), indexes); }
 
-        inline void setZero() {
+        Vc_ALWAYS_INLINE void setZero() {
             V zero(Vc::Zero);
             for (size_t i = 0; i < vectorsCount(); ++i) {
                 vector(i) = zero;
@@ -555,6 +567,7 @@ template<typename V, typename Parent, int Dimension, typename RowMemory> class M
 };
 
 } // namespace Vc
+} // namespace AliRoot
 
 #include "undomacros.h"
 

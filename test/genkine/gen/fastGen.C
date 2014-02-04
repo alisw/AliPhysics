@@ -26,7 +26,7 @@
 Float_t EtaToTheta(Float_t arg);
 void GetFinalDecayProducts(Int_t ind, AliStack & stack , TArrayI & ar);
 
-void fastGen(Int_t nev = 1, char* filename = "galice.root")
+void fastGen(Int_t nev = 1, const char* filename = "galice.root")
 {
   AliPDG::AddParticlesToPdgDataBase();
   TDatabasePDG::Instance();

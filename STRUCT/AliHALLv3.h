@@ -23,11 +23,13 @@ public:
    virtual void  Init();
    virtual void  SetNewShield24() {fNewShield24 = 1;}
    virtual void  SetScoring()     {fScoring     = 1;}
+   virtual void  SetRackShield()  {fRackShield  = 1;}
 private:
    Bool_t fNewShield24;   // Option for new shielding in PX24 and RB24
    Int_t  fRefVolumeId;   // Volume ID of scoring plane
    Bool_t fScoring;       // Scoring Option
-   ClassDef(AliHALLv3,1)  //Class for ALICE experimental hall
+   Bool_t fRackShield;    // Additional rack shielding
+   ClassDef(AliHALLv3,2)  //Class for ALICE experimental hall
 };
 
 #endif

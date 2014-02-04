@@ -1,9 +1,9 @@
 AliAnalysisTask *AddTaskPIDResponse(Bool_t isMC=kFALSE, Bool_t autoMCesd=kTRUE,
                                     Bool_t tuneOnData=kFALSE, Int_t recoPass=2,
                                     Bool_t cachePID=kFALSE, TString detResponse="",
-                                    Bool_t useTPCEtaCorrection = kTRUE,
-                                    Bool_t useTPCMultiplicityCorrection = kFALSE,
-				    Int_t  recoDataPass = -1)
+                                    Bool_t useTPCEtaCorrection = kTRUE,/*Please use default value! Otherwise splines can be off*/
+                                    Bool_t useTPCMultiplicityCorrection = kTRUE,/*Please use default value! Otherwise splines can be off*/
+                                    Int_t  recoDataPass = -1)
 {
 // Macro to connect a centrality selection task to an existing analysis manager.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

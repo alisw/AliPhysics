@@ -16,9 +16,9 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// TOF tender: - load updated calibrations (for TOF and T0)
-//             - set tofHeader if missing in ESDs (2010 data)
-//             - re-apply PID 
+// TOF tender: for a description of what this tender does see
+//             https://twiki.cern.ch/twiki/bin/viewauth/ALICE/TOF
+//             It has to be used on LHC2010 data (and old MC productions)
 //             
 // Contacts: Pietro.Antonioli@bo.infn.it                                     //
 //           Francesco.Noferini@bo.infn.it                                   //
@@ -48,6 +48,8 @@
 
 #include <AliT0CalibSeasonTimeShift.h>
 
+#include <AliMultiplicity.h>
+
 #include "AliTOFTenderSupply.h"
 
 ClassImp(AliTOFTenderSupply)
@@ -69,6 +71,7 @@ AliTOFTenderSupply::AliTOFTenderSupply() :
   fRecoPass(0),
   fUserRecoPass(0),
   fForceCorrectTRDBug(kFALSE),
+  fT0Simulate(kFALSE),
   fTOFPIDParams(0x0),
   fTOFCalib(0x0),
   fTOFT0maker(0x0),
@@ -111,6 +114,7 @@ AliTOFTenderSupply::AliTOFTenderSupply(const char *name, const AliTender *tender
   fRecoPass(0),
   fUserRecoPass(0),
   fForceCorrectTRDBug(kFALSE),
+  fT0Simulate(kFALSE),
   fTOFPIDParams(0x0),
   fTOFCalib(0x0),
   fTOFT0maker(0x0),
@@ -166,30 +170,60 @@ void AliTOFTenderSupply::Init()
       fTenderNoAction = kTRUE;
     }
     else if (run>=114737&&run<=117223) {      //period="LHC10B";
-      if (fRecoPass == 2) {fCorrectExpTimes=kTRUE; fCorrectTRDBug=kFALSE;}
-      else if (fRecoPass == 3) {fCorrectExpTimes=kFALSE; fCorrectTRDBug=kTRUE;}
-      fLHC10dPatch=kFALSE;
-      fT0IntercalibrationShift = 0;
-      fT0DetectorAdjust=kFALSE;   // it was kTRUE
+      if (!fIsMC) {
+	if (fRecoPass == 2) {
+	  fCorrectExpTimes=kTRUE; 
+	  fCorrectTRDBug=kFALSE;}
+	else if (fRecoPass == 3) {
+	  fCorrectExpTimes=kFALSE;
+	  fCorrectTRDBug=kTRUE;
+	}
+	fLHC10dPatch=kFALSE;
+	fT0IntercalibrationShift = 0;
+	fT0DetectorAdjust=kFALSE;  // previously was true (we acted as a T0 tender)
+      } else if (fIsMC) {
+	fT0DetectorAdjust=kFALSE;
+	fT0Simulate=kTRUE;
+	fCorrectExpTimes=kTRUE;
+      }
     }
     else if (run>=118503&&run<=121040) { //period="LHC10C";
-      if (fRecoPass == 2) {fCorrectExpTimes=kTRUE; fCorrectTRDBug=kFALSE;}
-      else if (fRecoPass == 3) {fCorrectExpTimes=kFALSE; fCorrectTRDBug=kTRUE;}
-      fLHC10dPatch=kFALSE;
-      fT0IntercalibrationShift = 0;
-      fT0DetectorAdjust=kFALSE;
+      if (!fIsMC) {
+	if (fRecoPass == 2) {fCorrectExpTimes=kTRUE; fCorrectTRDBug=kFALSE;}
+	else if (fRecoPass == 3) {fCorrectExpTimes=kFALSE; fCorrectTRDBug=kTRUE;}
+	fLHC10dPatch=kFALSE;
+	fT0IntercalibrationShift = 0;
+	fT0DetectorAdjust=kFALSE;  // previously was true (we acted as a T0 tender)
+      } else if (fIsMC) {
+	fT0DetectorAdjust=kFALSE;
+	fT0Simulate=kTRUE;       
+	fCorrectExpTimes=kTRUE;
+      }
     }
     else if (run>=122195&&run<=126437) { //period="LHC10D";
-      fCorrectExpTimes=kFALSE;
-      fLHC10dPatch=kTRUE;
-      fT0IntercalibrationShift = 0;
-      fT0DetectorAdjust=kFALSE;     // it was kTRUE
+      if (!fIsMC) {
+        fCorrectExpTimes=kFALSE;
+        fLHC10dPatch=kTRUE;
+	fT0DetectorAdjust=kFALSE;  // previously was true (we acted as a T0 tender)
+	fT0IntercalibrationShift = 0;
+      } else if (fIsMC) {
+        fCorrectExpTimes=kTRUE;    // for old MC the expected times bug was there
+        fLHC10dPatch=kFALSE;       // but not the fake geometry
+	fT0DetectorAdjust=kFALSE;
+	fT0Simulate=kTRUE;
+      }
     }
     else if (run>=127719&&run<=130850) { //period="LHC10E";
-      fCorrectExpTimes=kFALSE;
-      fLHC10dPatch=kFALSE;
-      fT0IntercalibrationShift = 30.;
-      fT0DetectorAdjust=kFALSE;      // it was kTRUE
+      if (!fIsMC) {
+	fCorrectExpTimes=kFALSE;
+	fLHC10dPatch=kFALSE;
+	fT0DetectorAdjust=kFALSE;            // previously was true (we acted as a T0 tender)
+	fT0IntercalibrationShift = 0.;       // this was 30 before, but it is now handled via TOFPIDResponse inside OADB
+      } else if (fIsMC) {
+	fCorrectExpTimes=kTRUE;    // this is not fully correct for newer productions like LHC11b2 but we live with this
+	fT0DetectorAdjust=kFALSE;
+	fT0Simulate=kTRUE;
+      }
     }
     else if (run>=133004&&run<=135029) { //period="LHC10F";
       fTenderNoAction=kTRUE;
@@ -201,7 +235,7 @@ void AliTOFTenderSupply::Init()
       fCorrectExpTimes=kFALSE;
       fLHC10dPatch=kFALSE;                
       fT0IntercalibrationShift = 0.;
-      fT0DetectorAdjust=kFALSE;      // it was kTRUE
+      fT0DetectorAdjust=kFALSE;          // it was kTRUE
     }
     else if (run>=139699) {              //period="LHC11A";
       fTenderNoAction=kTRUE;
@@ -253,9 +287,10 @@ void AliTOFTenderSupply::Init()
   AliInfo(Form("|    Correct TRD Bug                :  %d               |",fCorrectTRDBug));
   AliInfo(Form("|    LHC10d patch                   :  %d               |",fLHC10dPatch));
   AliInfo(Form("|    TOF resolution for TOFT0 maker :  %5.2f (ps)     |",fTOFPIDParams->GetTOFresolution()));
-  AliInfo(Form("|    MC flag                        :  %d               |",fIsMC));
-  //  AliInfo(Form("|    T0 detector offsets applied    :  %d               |",fT0DetectorAdjust));
-  //  AliInfo(Form("|    TOF/T0 intercalibration shift   :  %5.2f (ps)     |",fT0IntercalibrationShift));
+  AliInfo(Form("|    MC flag (start time added)     :  %d               |",fIsMC));
+  AliInfo(Form("|    T0 detector offsets applied    :  %d               |",fT0DetectorAdjust));
+  AliInfo(Form("|    T0 signal re-sampled           :  %d               |",fT0Simulate));
+  AliInfo(Form("|    TOF/T0 intercalibration shift   :  %5.2f (ps)     |",fT0IntercalibrationShift));
   AliInfo("|******************************************************|");
 
 
@@ -279,6 +314,7 @@ void AliTOFTenderSupply::ProcessEvent()
   if (fTender->RunChanged()){ 
 
     Init();
+
     if (fTenderNoAction) return;            
     Int_t versionNumber = GetOCDBVersion(fTender->GetRun());
     fTOFCalib->SetRunParamsSpecificVersion(versionNumber);
@@ -330,13 +366,14 @@ void AliTOFTenderSupply::ProcessEvent()
     if (event->GetT0TOF(1) == 0) event->SetT0TOF(1, 99999.);
     if (event->GetT0TOF(2) == 0) event->SetT0TOF(2, 99999.);
 
-    if (fT0DetectorAdjust) {
-      if(!fIsMC){   // data: apply shifts to align around Zero
+    if ( (fT0DetectorAdjust) && !(fIsMC) ) {  // DATA: apply shifts to align around T0: this is like a T0 tender!!
 	event->SetT0TOF(0,event->GetT0TOF(0) - fT0shift[0]);
 	event->SetT0TOF(1,event->GetT0TOF(1) - fT0shift[1]);
 	event->SetT0TOF(2,event->GetT0TOF(2) - fT0shift[2]);
-      } else {
-      // MC: add smearing for realistic T0A and T0C resolution
+    }
+    if (fIsMC) {
+      if (fT0DetectorAdjust)  { // MC case 1: add an additional contribution to resolution
+	// MC: add smearing for realistic T0A and T0C resolution
 	Double_t defResolutionT0A = 33.;   // in future we will get this from ESDrun data structure or via OCDB
 	Double_t defResolutionT0C = 30.;   // for the moment we don't trust them
 	if ( (fgT0Aresolution > defResolutionT0A) && (event->GetT0TOF(1)<90000.) ) { // add smearing only if signal is there
@@ -354,12 +391,32 @@ void AliTOFTenderSupply::ProcessEvent()
 	  event->SetT0TOF(0,smearedT0AC); 
 	}
 	if (fDebugLevel > 1) Printf(" TofTender: T0 time (postSmear) %f %f %f",event->GetT0TOF(0),event->GetT0TOF(1),event->GetT0TOF(2));
-	// add finally the timeZero offset also to the T0 detector information
-	event->SetT0TOF(0,event->GetT0TOF(0) + startTime);
-	event->SetT0TOF(1,event->GetT0TOF(1) + startTime);
-	event->SetT0TOF(2,event->GetT0TOF(2) + startTime);  
-	if (fDebugLevel > 1) Printf(" TofTender: T0 time (postStart) %f %f %f",event->GetT0TOF(0),event->GetT0TOF(1),event->GetT0TOF(2));
+      } 
+      else if (fT0Simulate) {  // MC case 2: we completely simulate signal in T0 based on multiplicity in ITS and vtx position
+	event->SetT0TOF(0, 9999999.); // we wipe-out whatever is there
+	event->SetT0TOF(1, 99999.);
+        event->SetT0TOF(2, 99999.);
+	if (fDebugLevel > 1) Printf(" TofTender: T0 time (after wipe-out) %f %f %f",event->GetT0TOF(0),event->GetT0TOF(1),event->GetT0TOF(2));
+	AliESDVertex *fvtx = (AliESDVertex*)event->GetPrimaryVertex();
+	Double_t zvtx = fvtx->GetZ();
+	Double_t tracklets[2] = {0.,0.};
+	GetTrackletsForT0(event,&tracklets[0],&tracklets[1]);
+	if (fDebugLevel > 1) Printf(" TofTender: T0 simul (z vtx tracklets A/C) %f %f %f",zvtx,tracklets[0],tracklets[1]);
+	for (Int_t side = 0; side < 2; side ++) {    // side 0 = T0A - side 1 = T0C
+	  Double_t signal = SampleT0Signal(side,zvtx,tracklets[side]);  // if not fired we return 99999.
+	  event->SetT0TOF(side+1,signal);            // but for the T0 structure we need to add 1...
+	}
+	if ( (event->GetT0TOF(1) < 1000.) && (event->GetT0TOF(2) < 1000.) ) { // both signals are there
+	  Double_t meanT0AC=(event->GetT0TOF(1)+event->GetT0TOF(2))/2.;
+	  event->SetT0TOF(0,meanT0AC); 
+	}
+	if (fDebugLevel > 1) Printf(" TofTender: T0 simul (AC A C) %f %f %f",event->GetT0TOF(0),event->GetT0TOF(1),event->GetT0TOF(2));
       }
+      // add the startTime offset also to the T0 detector information
+      event->SetT0TOF(0,event->GetT0TOF(0) + startTime);
+      event->SetT0TOF(1,event->GetT0TOF(1) + startTime);
+      event->SetT0TOF(2,event->GetT0TOF(2) + startTime);  
+      if (fDebugLevel > 1) Printf(" TofTender: T0 time (postStart AC A C) %f %f %f",event->GetT0TOF(0),event->GetT0TOF(1),event->GetT0TOF(2));
     }
     // after shifts adjust (data) or smearing+offset (MC) we 'clean' to default if signals not there 
     if(event->GetT0TOF(0) > 900000) event->SetT0TOF(0, 999999.);
@@ -419,7 +476,7 @@ void AliTOFTenderSupply::RecomputeTExp(AliESDtrack *track) const
        WHERE A WRONG GEOMETRY (FULL TRD) WAS INSERTED
   ***/
 
-  Double_t texp[AliPID::kSPECIES];
+  Double_t texp[AliPID::kSPECIESC];
   if (!track || !(track->GetStatus() & AliESDtrack::kTOFout)) return;
 
 
@@ -436,6 +493,10 @@ void AliTOFTenderSupply::RecomputeTExp(AliESDtrack *track) const
     texp[ipart] = GetExpTimeTh(AliPID::ParticleMass(ipart), p, l) - 37.; 
   // 37 is a final semiempirical offset to further adjust (calibrations were
   // done with "standard" integratedTimes)
+
+  // in old ESDs like this horridous LHC10d pass2 light nuclei were not supported...
+  for (Int_t ipart = AliPID::kProton+1; ipart < AliPID::kSPECIESC; ipart++) texp[ipart]=0.;
+
   /* set integrated times */
   track->SetIntegratedTimes(texp);
 
@@ -553,15 +614,18 @@ void AliTOFTenderSupply::FixTRDBug(AliESDtrack *track)
     fOutTRD=kFALSE;
 
     //    Printf("Track reached TOF %f",track->P());
-    Double_t correctionTimes[5] = {0.,0.,0.,0.,0.}; // to be added to the expected times
+    Double_t correctionTimes[AliPID::kSPECIES] = {0.,0.,0.,0.,0.}; // to be added to the expected times
     FindTRDFix(track, correctionTimes);
-    Double_t expectedTimes[5] = {0.,0.,0.,0.,0.}; track->GetIntegratedTimes(expectedTimes);
+    Double_t expectedTimes[AliPID::kSPECIESC] = {0.,0.,0.,0.,0.,0.,0.,0.,0.}; 
+    track->GetIntegratedTimes(expectedTimes);
     //    Printf("Exp. times: %f %f %f %f %f",
     //	   expectedTimes[0],expectedTimes[1],expectedTimes[2],expectedTimes[3],expectedTimes[4]);
     //    Printf("Corr. times: %f %f %f %f %f",
     //	   correctionTimes[0],correctionTimes[1],correctionTimes[2],correctionTimes[3],correctionTimes[4]);
 
-    for (Int_t jj=0; jj<5; jj++) expectedTimes[jj]+=correctionTimes[jj];
+    for (Int_t jj=0; jj<AliPID::kSPECIES; jj++) expectedTimes[jj]+=correctionTimes[jj];
+    // we only correct up to protons, for this horridous LHC10d pass2 light nuclei were not supported
+    // so expected times will remain zero
     track->SetIntegratedTimes(expectedTimes);
   
 }
@@ -1209,3 +1273,63 @@ void AliTOFTenderSupply::LoadTOFPIDParams(Int_t runNumber)
     fTOFPIDParams->SetStartTimeMethod(AliESDpid::kTOF_T0);
   }  
 }
+
+
+//__________________________________________________________________________
+Double_t AliTOFTenderSupply::SampleT0Signal(Int_t side, Double_t zvertex, Double_t tracklets) const
+{
+  Double_t p = 0.;
+  Double_t signal = 99999.;
+  if (TMath::Abs(zvertex) > 10.) return signal;
+  Double_t resolution[2] = {75.,65.};
+  if (side == 0) {
+    if (zvertex >= 5. && zvertex <= 10.) {
+//      p = 0.84 - exp(-1.03 - 0.31*tracklets);
+        p = 0.88 - exp(-1.1 - 0.32*tracklets);
+    }
+    else if (zvertex >=-10. && zvertex <5.) {
+//      p = 0.82 - exp(-0.81 - 0.25*tracklets);
+        p = 0.77 - exp(-0.88 - 0.25*tracklets);    
+   }
+  } else if (side == 1) {
+    if (zvertex >= -10. && zvertex < -5.) {
+      p = 0.99 - exp(-0.74 - 0.34*tracklets);
+    }
+    else if (zvertex >=-5. && zvertex <10.) {
+      p = 0.96 - exp(-0.51 - 0.27*tracklets);
+    }
+  } else {
+    return signal;
+  }
+  Double_t pu = gRandom->Rndm();
+  if (fDebugLevel > 1) {
+    printf(" TofTender: T0 simul [side %d zvt %f track %f] %f [pu: %f]",side,zvertex,tracklets,p,pu);
+    if (pu<p) printf(" --> signal will be generated: ");
+    else printf(" --> signal wil not be generated: ");
+  }
+  if (pu < p) signal = gRandom->Gaus(0.,resolution[side]);
+  if (fDebugLevel >1) Printf(" %f ",signal);
+  return signal;
+}
+
+void AliTOFTenderSupply::GetTrackletsForT0(AliESDEvent* event, Double_t *trkA, Double_t *trkC) const
+{
+  Double_t minetaA = 0.7;
+  Double_t maxetaA = 1.4;
+  Double_t minetaC = -1.4;
+  Double_t maxetaC = -0.7; 
+  AliMultiplicity *alimult = (AliMultiplicity *)event->GetMultiplicity(); 
+  Int_t nTr=alimult->GetNumberOfTracklets();
+  if (fDebugLevel > 1) Printf(" TofTender: T0 simul number of tracklets %d",nTr);
+  Int_t nTrackletsA=0, nTrackletsC=0;
+  for(Int_t iTr=0; iTr<nTr; iTr++){
+    Double_t eta=alimult->GetEta(iTr);
+    if(eta>minetaA && eta<maxetaA) nTrackletsA++;
+    if(eta>minetaC && eta<maxetaC) nTrackletsC++;
+    if (fDebugLevel > 1) Printf(" TofTender: T0 simul [tracklet # %d] ETA: %f %d %d",nTr,eta,nTrackletsA,nTrackletsC);
+  }
+  *trkA=(Double_t)nTrackletsA;
+  *trkC=(Double_t)nTrackletsC;
+}
+
+

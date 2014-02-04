@@ -18,7 +18,7 @@
 #define ALIHLTCALOHISTOINVMASS_H
 
 /** 
- * @file   AliHLTCaloHistoInvMass
+ * @file   AliHLTCaloHistoInvMass.h
  * @author Albin Gaignette and Svein Lindal slindal@fys.uio.no
  * @date 
  * @brief  Produces Invariant mass histograms of PHOS clusters
@@ -49,7 +49,7 @@ class TH1F;
  * Histograms (1D):
  *  * - Invariant mass of two clusters
  * 
- * @ingroup alihlt_phos
+ * @ingroup alihlt_global
  */
 
 using std::vector;

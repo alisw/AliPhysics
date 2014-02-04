@@ -15,8 +15,8 @@
 
 
 #include <TNamed.h>
-#include <AliPID.h>
-#include <AliPIDResponse.h>
+#include "AliPID.h"
+#include "AliPIDResponse.h"
 #include <TH1F.h>
 #include <TH2F.h>
 
@@ -47,9 +47,11 @@ public:
   void SetSelectedSpecies(Int_t selectedSpecies) {fSelectedSpecies = selectedSpecies;}
   Int_t GetSelectedSpecies() const {return fSelectedSpecies;}
 
+  static Float_t GetTOFmismatchProb() {return fTOFmismProb;}
+
 protected:
   void GetPriors(const AliVTrack *track,Double_t* priors,Float_t centrality=-1) const;
-  void ComputeBayesProbabilities(Double_t* bayesProbabilities,const Double_t* probDensity, const Double_t* priors) const;
+  void ComputeBayesProbabilities(Double_t* bayesProbabilities,const Double_t* probDensity, const Double_t* priors, Double_t* probDensityMism=NULL) const;
   void SetCombinedStatus(const AliPIDResponse::EDetPidStatus status,UInt_t *mask, const AliPIDResponse::EDetCode bit) const;
   void SetCombinedStatus(const AliPIDResponse::EDetPidStatus status,UInt_t *mask, const AliPIDResponse::EDetCode bit, Double_t* p,const Float_t probMis) const;
 
@@ -64,6 +66,7 @@ private:
   TH1F *fPriorsDistributions[AliPID::kSPECIESC]; // priors
   Bool_t fUseDefaultTPCPriors; // switch to use Defaul TPC Priors
   static TH2F *fDefaultPriorsTPC[AliPID::kSPECIES]; // Default priors for TPC tracks
+  static Float_t fTOFmismProb; //TOF mismatch probability
 
   ClassDef(AliPIDCombined, 3);   // Combined PID using priors
 };

@@ -4,6 +4,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AliAnalysisTaskPi0CalibSelection;
+// Automatic schema evolution needed because of multi-dimension array
+#pragma link C++ class AliAnalysisTaskPi0CalibSelection+;
 
 #endif

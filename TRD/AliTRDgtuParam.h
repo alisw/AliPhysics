@@ -82,6 +82,9 @@ class AliTRDgtuParam : public TObject {
   static void SetLimitNoTracklets(Bool_t b) { fgLimitNoTracklets = b; }
   static Bool_t GetLimitNoTracklets() { return fgLimitNoTracklets; }
 
+  static void SetMaxNoTracklets(Int_t max) { fgMaxNoTracklets = max; }
+  static Int_t GetMaxNoTracklets() { return fgMaxNoTracklets; }
+
   // z-channel map
   Int_t GenerateZChannelMap(); // could have different modes (for beam-beam, cosmics, ...)
   Bool_t DisplayZChannelMap(Int_t zchannel = -1, Int_t subch = 0) const;
@@ -124,6 +127,7 @@ class AliTRDgtuParam : public TObject {
 					       // instead of geometry derived quantities
   static       Bool_t fgUseGTUmerge;    // use merge algorithm exactly as in hardware
   static       Bool_t fgLimitNoTracklets; // limit the number of tracklets per layer
+  static       Int_t  fgMaxNoTracklets;   // max number of tracklets per layer if limited
   static const Bool_t fgZChannelMap[5][16][6][16]; // z-channel tables as in GTU
   static const Float_t fgkRadius[6];    // layer radius as used in the GTU code
   static const Float_t fgkThickness;    // drift length as used in the GTU code

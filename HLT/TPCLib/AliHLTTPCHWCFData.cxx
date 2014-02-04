@@ -272,6 +272,11 @@ void AliHLTTPCHWCFData::Print(const char* option)
   }
 }
 
+void AliHLTTPCHWCFData::ErrorMsg( const char *str ) const
+{
+  ALIHLTERRORGUARD(1, str);
+}
+
 int AliHLTTPCHWCFData::Open(const char* filename)
 {
   // open block from file and add to collection

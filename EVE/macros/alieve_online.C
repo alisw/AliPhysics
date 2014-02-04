@@ -16,7 +16,8 @@ Bool_t gCenterProjectionsAtPrimaryVertex = kFALSE;
 
 void alieve_online_init()
 {
-  
+    printf("alieve_online_init() ...\n");
+    
   if (gSystem->Getenv("ALICE_ROOT") != 0)
   {
     gInterpreter->AddIncludePath(Form("%s/MUON", gSystem->Getenv("ALICE_ROOT")));

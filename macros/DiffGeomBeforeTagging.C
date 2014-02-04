@@ -77,9 +77,9 @@ Bool_t DiffGeomBeforeTagging(const char* recipient, const char* cdbUri="local://
 
 		// Get root and AliRoot versions
 		const char* rootv = gROOT->GetVersion();
-		TString av(ALIROOT_SVN_BRANCH);
-		Int_t revnum = ALIROOT_SVN_REVISION;
-		Printf("root version: %s.  AliRoot %s, revision number %d",rootv,av.Data(),revnum);
+		TString av(ALIROOT_BRANCH);
+		TString revnum(ALIROOT_REVISION);
+		Printf("root version: %s.  AliRoot %s, revision number %s",rootv,av.Data(),revnum);
 
 		// create and send mail
 		TString subject(Form("AliRoot revision %d is about to be tagged and the geometry changed!",revnum));

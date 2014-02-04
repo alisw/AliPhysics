@@ -15,7 +15,7 @@
  **************************************************************************/
 
 /** 
- * @file   AliHLTPHOSMatchedclustershistoProducer
+ * @file   AliHLTCaloHistoMatchedTracks.cxx
  * @author Albin Gaignette
  * @date 
  * @brief  Base Class for the Calo Matched track histograms

@@ -72,9 +72,10 @@ class AliHLTTPCHWCFData : public AliHLTLogging {
   bool CheckAssumption(int format, const AliHLTUInt8_t* pData, int size) const;
 
   // check if index is within bounds
+
   bool CheckBounds(int i) const {
     if (fVersion<0) {
-      ALIHLTERRORGUARD(1, "");
+      ErrorMsg("");
       return false;
     }
     int elementsize=GetElementSize(fVersion);
@@ -88,7 +89,7 @@ class AliHLTTPCHWCFData : public AliHLTLogging {
     case 0: return sizeof(AliHLTTPCHWClusterV0);
     case 1: return sizeof(AliHLTTPCHWClusterV1);
     default:
-      ALIHLTERRORGUARD(1, "invalid format version %d", fVersion);
+      ErrorMsg(Form("invalid format version %d", fVersion));
     }
     return -1;
   }
@@ -105,6 +106,9 @@ class AliHLTTPCHWCFData : public AliHLTLogging {
 
   // print info
   void Print(const char* option);
+
+  // print error message
+  void ErrorMsg( const char *str ) const;
 
   // open a file and init
   int Open(const char* filename);

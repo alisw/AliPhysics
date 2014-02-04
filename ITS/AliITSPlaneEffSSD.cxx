@@ -99,7 +99,7 @@ fHisClusErrZ(0)
       s.fHisClusterSize[i]->Copy(*fHisClusterSize[i]);
       s.fHisTrackErrX[i]->Copy(*fHisTrackErrX[i]);
       s.fHisTrackErrZ[i]->Copy(*fHisTrackErrZ[i]);
-      s.fHisClusErrX[i]->Copy(*fHisTrackErrZ[i]);
+      s.fHisClusErrX[i]->Copy(*fHisClusErrX[i]);
       s.fHisClusErrZ[i]->Copy(*fHisClusErrZ[i]);
    }
  }
@@ -125,7 +125,7 @@ AliITSPlaneEffSSD& AliITSPlaneEffSSD::operator+=(const AliITSPlaneEffSSD &add){
         fHisClusterSize[i]->Add(add.fHisClusterSize[i]);
         fHisTrackErrX[i]->Add(add.fHisTrackErrX[i]);
         fHisTrackErrZ[i]->Add(add.fHisTrackErrZ[i]);
-        fHisClusErrX[i]->Add(add.fHisTrackErrZ[i]);
+        fHisClusErrX[i]->Add(add.fHisClusErrX[i]);
         fHisClusErrZ[i]->Add(add.fHisClusErrZ[i]);
       }
     }

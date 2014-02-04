@@ -154,7 +154,7 @@ TGraph* AliMUONTrackerHV::Combine(TObjArray& graphs)
       pair.push_back(g->GetX()[i]);
       pair.push_back(g->GetY()[i]);
       
-      values.insert( std::make_pair<int, std::vector<double> >(g->GetX()[i],pair));
+      values.insert( std::make_pair(g->GetX()[i],pair));
     }
   }
   
@@ -398,7 +398,7 @@ void AliMUONTrackerHV::HVoff(const char* logfile, const char* outputBaseName)
         
         if ( run > 0 )
         {
-          results.insert(std::make_pair<int,std::string>(run,message));
+          results.insert(std::make_pair(run,message));
           
         }
         message = "";
@@ -412,7 +412,7 @@ void AliMUONTrackerHV::HVoff(const char* logfile, const char* outputBaseName)
     }
   }
   
-  results.insert(std::make_pair<int,std::string>(run,message));
+  results.insert(std::make_pair(run,message));
   
   TH2* hvoff = new TH2I(outputBaseName,outputBaseName,1,0,1,1,0,1);
   

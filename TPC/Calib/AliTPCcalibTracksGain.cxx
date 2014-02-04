@@ -178,7 +178,6 @@
 #include "AliTPCParamSR.h"
 #include "AliTPCClusterParam.h"
 #include "AliTrackPointArray.h"
-#include "TCint.h"
 #include <TH1.h>
 #include <TH3F.h>
 #include <TLinearFitter.h>

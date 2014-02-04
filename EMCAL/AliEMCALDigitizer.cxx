@@ -892,7 +892,7 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
       
       if (AliDebugLevel()) printf("Number of TRG digits: %d\n",digitsTMP->GetEntriesFast());
 		
-      Int_t    nSamples = 32;
+      Int_t     nSamples = 32;
       Int_t *timeSamples = new Int_t[nSamples];
       
       NextDigit = TIter(digitsTMP);
@@ -909,20 +909,18 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
           if (AliDebugLevel()) printf("Deposited Energy: %f\n", depositedEnergy);
           
           // FIXME: Check digit time!
-          if (depositedEnergy)
-          {
-			depositedEnergy += gRandom->Gaus(0., .08);
-			  
+          if (depositedEnergy) {
+            depositedEnergy += gRandom->Gaus(0., .08);
             DigitalFastOR(time, depositedEnergy, timeSamples, nSamples);
             
-            for (Int_t j=0;j<nSamples;j++) 
-            {
-              timeSamples[j] = ((j << 12) & 0xFF000) | (timeSamples[j] & 0xFFF);
+            for (Int_t j=0;j<nSamples;j++) {
+              if (AliDebugLevel()) printf("timeSamples[%d]: %d\n",j,timeSamples[j]);
+              timeSamples[j] = ((j << 16) | (timeSamples[j] & 0xFFFF));
             }
             
             new((*digitsTRG)[digitsTRG->GetEntriesFast()]) AliEMCALRawDigit(id, timeSamples, nSamples);
-			  
-			if (AliDebugLevel()) ((AliEMCALRawDigit*)digitsTRG->At(digitsTRG->GetEntriesFast() - 1))->Print("");
+
+            if (AliDebugLevel()) ((AliEMCALRawDigit*)digitsTRG->At(digitsTRG->GetEntriesFast() - 1))->Print("");
           }
         }
       }
@@ -937,8 +935,8 @@ void AliEMCALDigitizer::DigitalFastOR( Double_t time, Double_t dE, Int_t timeSam
 {
 	// parameters:	
 	// id: 0..95
-	const Int_t    reso = 11;      // 11-bit resolution ADC
-	const Double_t vFSR = 1;       // Full scale input voltage range
+	const Int_t    reso = 12;      // 11-bit resolution ADC
+	const Double_t vFSR = 2.;      // Full scale input voltage range 2V (p-p)
 // 	const Double_t dNe  = 125;     // signal of the APD per MeV of energy deposit in a tower: 125 photo-e-/MeV @ M=30
 	const Double_t dNe  = 125/1.3; // F-ALTRO max V. FEE: factor 4 
 	const Double_t vA   = .136e-6; // CSP output range: 0.136uV/e-
@@ -957,8 +955,14 @@ void AliEMCALDigitizer::DigitalFastOR( Double_t time, Double_t dE, Int_t timeSam
 	{
 		// FIXME: add noise (probably not simply Gaussian) according to DA measurements
 		// probably plan an access to OCDB
-		
-		timeSamples[iTime] = int((TMath::Power(2, reso) / vFSR) * signalF.Eval(iTime * kTimeBinWidth) + 0.5);
+    Double_t sig = signalF.Eval(iTime * kTimeBinWidth);
+    if (TMath::Abs(sig) > vFSR/2.) {
+      AliError("Signal overflow!");
+      timeSamples[iTime] = (1 << reso) - 1;
+    } else {
+      AliDebug(999,Form("iTime: %d sig: %f\n",iTime,sig));
+      timeSamples[iTime] = ((1 << reso) / vFSR) * sig + 0.5;
+    }
 	}
 }
 

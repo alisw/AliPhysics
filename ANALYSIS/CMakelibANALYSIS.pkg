@@ -35,6 +35,7 @@ set ( SRCS
     AliAnalysisGrid.cxx 
     AliAnalysisStatistics.cxx 
     AliAnalysisTaskCfg.cxx
+    AliXMLParser.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

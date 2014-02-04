@@ -43,10 +43,10 @@ ClassImp(AliMUONTriggerStoreV1)
 
 //_____________________________________________________________________________
 AliMUONTriggerStoreV1::AliMUONTriggerStoreV1() : AliMUONVTriggerStore(),
-fLocal(new TClonesArray("AliMUONLocalTrigger",234)),
+fLocal(new TClonesArray("AliMUONLocalTrigger",242)),
 fRegional(new TClonesArray("AliMUONRegionalTrigger",16)),
 fGlobal(new TClonesArray("AliMUONGlobalTrigger",1)),
-fEmptyLocal(new TClonesArray("AliMUONLocalTrigger",234))
+fEmptyLocal(new TClonesArray("AliMUONLocalTrigger",242))
 {
   /// ctor
   fLocal->SetOwner(kTRUE);
@@ -176,7 +176,7 @@ AliMUONTriggerStoreV1::FindLocal(Int_t boardNumber) const
     }
   }
   
-  if ( boardNumber>=1 && boardNumber<=234 ) 
+  if ( boardNumber>=1 && boardNumber<=242 )
   {
     AliMUONLocalTrigger empty;
     empty.SetLoCircuit(boardNumber);

@@ -119,6 +119,7 @@
 #include "AliFMDRawReader.h"	// ALIFMDRAWREADER_H
 #include "AliTrackReference.h" 
 #include "AliFMDStripIndex.h"
+#include "AliFMDEncodedEdx.h"
 #include "AliFMDParameters.h"
 #include "AliFMDReconstructor.h"
 
@@ -739,10 +740,11 @@ AliFMD::AddHitByFields(Int_t    track,
   AliTrackReference* trackRef = 
     AddTrackReference(mcApplication->GetCurrentTrackNumber(), 
 		      AliTrackReference::kFMD); 
-  UInt_t stripId = AliFMDStripIndex::Pack(detector,ring,sector,strip);
-  trackRef->SetUserId(stripId);
+  UInt_t stripId = AliFMDStripIndex::Pack(detector,ring,sector,strip);  
+  UInt_t dedx    = AliFMDEncodedEdx::Encode(edep, l);
   
-  
+  trackRef->SetUserId((dedx << 19) | stripId);
+
   
   return hit;
 }

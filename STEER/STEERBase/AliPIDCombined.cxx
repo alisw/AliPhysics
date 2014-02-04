@@ -39,6 +39,7 @@
 
 // initialize static members
 TH2F* AliPIDCombined::fDefaultPriorsTPC[]={0x0};
+Float_t AliPIDCombined::fTOFmismProb = 0;
 
 ClassImp(AliPIDCombined);
 
@@ -109,9 +110,12 @@ UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPID
 
   // (1) Get raw probabilities of selected detectors and combine
   UInt_t usedMask=0;             // detectors actually used for track
+  fTOFmismProb = 0; // reset TOF mismatch weights
+
   AliPIDResponse::EDetPidStatus status=AliPIDResponse::kDetNoSignal;
   Double_t p[fSelectedSpecies];  // combined probabilities of selected detectors
-  for (Int_t i=0;i<fSelectedSpecies;i++) p[i]=1.; // no decision
+  Double_t pMismTOF[fSelectedSpecies];  // combined TOF mismatch probabilities using selected detectors
+  for (Int_t i=0;i<fSelectedSpecies;i++){ p[i]=1.;pMismTOF[i]=1.;} // no decision
   for (Int_t ibit = 0; ibit < 7 ; ibit++) {
     AliPIDResponse::EDetCode detBit = (AliPIDResponse::EDetCode)(1<<ibit);
     if (fDetectorMask & detBit) {  	    // getting probabilities for requested detectors only
@@ -120,7 +124,8 @@ UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPID
       if (status == AliPIDResponse::kDetPidOk) {
 	if (fRejectMismatchMask & detBit) {         // mismatch check (currently just for TOF)
 	  if (detBit == AliPIDResponse::kDetTOF) {
-	    Float_t probMis = response->GetTOFMismatchProbability(track);
+	    fTOFmismProb = response->GetTOFMismatchProbability(); // mismatch weights computed with TOF probs (no arguments)
+	    Float_t probMis = response->GetTOFMismatchProbability(track); // mismatch compatibility TPC-TOF cut
 	    SetCombinedStatus(status,&usedMask,detBit,detProb,probMis);
 	  } else {
 	    SetCombinedStatus(status,&usedMask,detBit);
@@ -128,7 +133,11 @@ UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPID
 	} else {
 	  SetCombinedStatus(status,&usedMask,detBit);
 	}
-	for (Int_t i=0;i<fSelectedSpecies;i++) p[i] *= detProb[i];
+	for (Int_t i=0;i<fSelectedSpecies;i++){
+	  p[i] *= detProb[i];
+	  if(detBit == AliPIDResponse::kDetTOF) pMismTOF[i] *= fTOFmismProb;
+	  else pMismTOF[i] *= detProb[i];
+	}
       }
     }
   }
@@ -140,14 +149,20 @@ UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPID
   memset(priors,0,fSelectedSpecies*sizeof(Double_t));
   if (fEnablePriors){
     GetPriors(track,priors,response->GetCurrentCentrality());
-    
-    // for the moment we have three cases
+
+    // We apply the propagation factors of the more external detector
+    // 
+    // TPC+HMPID    --> apply HMPID propagation factors (TRD and TOF may be present)
     // TPC+EMCAL    --> apply EMCAL propagation factors (TRD and TOF may be present)
-    // TPC+TOF      --> apply TOF propagation factors (TRD may be present)
-    // TPC+TRD      --> apply TRD propagation factors
+    // TPC+TOF      --> apply TOF propagation factors (TRD may be present, HMPID and EMCAL not (if requested))
+    // TPC+TRD      --> apply TRD propagation factors (TOF, HMPID and EMCAL not present (if requested) )
+    // 
     if(fUseDefaultTPCPriors) {
+
       Double_t pt=TMath::Abs(track->Pt());
-      if ( (usedMask & AliPIDResponse::kDetEMCAL)==AliPIDResponse::kDetEMCAL ) { // EMCAL is the outer having prop. factors for the moment
+      if ( ( (usedMask & AliPIDResponse::kDetEMCAL)==AliPIDResponse::kDetEMCAL) || ( (usedMask & AliPIDResponse::kDetHMPID)==AliPIDResponse::kDetHMPID) ) {
+      // we assume EMCAL and HMPID cannot be simultaneously present
+      if ( (usedMask & AliPIDResponse::kDetEMCAL)==AliPIDResponse::kDetEMCAL ) {
 	// EMCal case (for the moment only in combination with TPC)
 	// propagation factors determined from LHC11d MC (LHC12a15f)
 	// v2 clusterizer, dEta < 0.015, dPhi < 0.03, NonLinearityFunction = 6
@@ -178,6 +193,30 @@ UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPID
 	priors[3] *= kaonEMCALfactor;
 	priors[4] *= protonEMCALfactor;	      
       } // end of EMCAL case
+
+      else if ( (usedMask & AliPIDResponse::kDetHMPID)==AliPIDResponse::kDetHMPID ) {  // HMPID case
+
+	Float_t kaonHMPIDfactor   = 0.;
+	Float_t protonHMPIDfactor = 0.;                     
+        if(pt>1. && pt<6.)  kaonHMPIDfactor   = (-0.0729337 + pt*0.0999531 - pt*pt*0.0371803 + pt*pt*pt*0.00706436 - pt*pt*pt*pt*0.000643619 + pt*pt*pt*pt*pt*2.21853e-05)/(-0.00896231+ pt*0.0330702 - pt*pt*0.0109562+ pt*pt*pt*0.00232895 - pt*pt*pt*pt*0.000246143 + pt*pt*pt*pt*pt*9.59812e-06); 
+        if(pt>1.4 && pt<6.) protonHMPIDfactor = (-0.0444188 + pt*0.0681506 - pt*pt*0.0231819 + pt*pt*pt*0.00400771 - pt*pt*pt*pt*0.000339315 + pt*pt*pt*pt*pt*1.12616e-05)/(-0.00896231+ pt*0.0330702 - pt*pt*0.0109562+ pt*pt*pt*0.00232895 - pt*pt*pt*pt*0.000246143 + pt*pt*pt*pt*pt*9.59812e-06);        
+        if(pt>6. && pt<8.)  kaonHMPIDfactor   = (-0.0729337 + pt*0.0999531 - pt*pt*0.0371803 + pt*pt*pt*0.00706436 - pt*pt*pt*pt*0.000643619 + pt*pt*pt*pt*pt*2.21853e-05)/0.0530456;        
+        if(pt>8.)           kaonHMPIDfactor   = 0.0550432/0.0530456; 
+        if(pt>6. && pt<8.5) protonHMPIDfactor = (-0.0444188 + pt*0.0681506 - pt*pt*0.0231819 + pt*pt*pt*0.00400771 - pt*pt*pt*pt*0.000339315 + pt*pt*pt*pt*pt*1.12616e-05)/0.0530456;      
+        if(pt>8.5)          protonHMPIDfactor = 0.0530071/0.0530456;       
+                                 
+        if(track->Charge() < 0){ 
+         if(pt>0.4 && pt<6.) protonHMPIDfactor = (-0.0351485 + pt*0.0473821 - pt*pt*0.0147947 + pt*pt*pt*0.00254811- pt*pt*pt*pt*0.000224724 + pt*pt*pt*pt*pt*7.9303e-06)/(-0.00896231+ pt*0.0330702 - pt*pt*0.0109562+ pt*pt*pt*0.00232895 - pt*pt*pt*pt*0.000246143 + pt*pt*pt*pt*pt*9.59812e-06);
+         if(pt>6. && pt<8.5) protonHMPIDfactor = (-0.0351485 + pt*0.0473821 - pt*pt*0.0147947 + pt*pt*pt*0.00254811- pt*pt*pt*pt*0.000224724 + pt*pt*pt*pt*pt*7.9303e-06)/0.0530456; 
+         if(pt>8.5)          protonHMPIDfactor = 0.0457756/0.0530456; 
+	} 
+      
+        priors[3] *= kaonHMPIDfactor;
+        priors[4] *= protonHMPIDfactor;
+               
+      }
+
+    } // end of outer cases: EMCAL/HMPID
       else if ( (usedMask & AliPIDResponse::kDetTOF) == AliPIDResponse::kDetTOF ){
 	Float_t kaonTOFfactor = 0.1;
 	if(pt > 0.35) kaonTOFfactor = 1 - TMath::Exp(-TMath::Power(pt,4.19618E-07)/5.68017E-01)*TMath::Power(pt,-1.50705);
@@ -221,6 +260,11 @@ UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPID
 
   // (3) Compute Bayes probabilities
   ComputeBayesProbabilities(bayesProbabilities,p,priors);
+
+  // compute TOF probability contribution from mismatch
+  fTOFmismProb = 0; 
+  for (Int_t i=0;i<fSelectedSpecies;i++) fTOFmismProb += pMismTOF[i];
+
   return usedMask;
 }
 
@@ -320,7 +364,7 @@ void AliPIDCombined::GetPriors(const AliVTrack *track,Double_t* p,const AliPIDRe
 	return;
 }
 //-------------------------------------------------------------------------------------------------	
-void AliPIDCombined::ComputeBayesProbabilities(Double_t* probabilities, const Double_t* probDensity, const Double_t* prior) const {
+void AliPIDCombined::ComputeBayesProbabilities(Double_t* probabilities, const Double_t* probDensity, const Double_t* prior, Double_t* probDensityMism) const {
 
 
   //
@@ -338,6 +382,7 @@ void AliPIDCombined::ComputeBayesProbabilities(Double_t* probabilities, const Do
   }
   for (Int_t i = 0; i < fSelectedSpecies; i++) {
     probabilities[i] = probDensity[i] * prior[i] / sum;
+    if(probDensityMism) probDensityMism[i] *= prior[i] / sum;
   }
 
 

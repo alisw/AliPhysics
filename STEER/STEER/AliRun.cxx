@@ -40,7 +40,6 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <TCint.h> 
 #include <TROOT.h>
 #include <TRandom3.h>
 #include <TSystem.h>

@@ -150,7 +150,7 @@ class AliHLTMUONTriggerReconstructor;
  * This will depend linearly on the number of tracks found. But for nominal multiplicities
  * this should be less than 16 kBytes.
  *
- * @ingroup alihlt_dimuon_component
+ * @ingroup alihlt_muon_components
  */
 class AliHLTMUONTriggerReconstructorComponent : public AliHLTMUONProcessor
 {

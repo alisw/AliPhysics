@@ -23,6 +23,8 @@
 #include "AliAODHeader.h"
 #include "AliCentrality.h"
 #include "AliEventplane.h"
+#include "AliMagF.h"
+#include <TGeoGlobalMagField.h>
 #include <TGeoMatrix.h>
 #include <TObjString.h>
 
@@ -624,4 +626,44 @@ Int_t AliAODHeader::GetIRInt2LastInteractionMap() const
 
   Int_t last = lastPositive > TMath::Abs(lastNegative) ? lastPositive : TMath::Abs(lastNegative);
   return last;
+}
+
+//__________________________________________________________________________
+Bool_t AliAODHeader::InitMagneticField() const
+{
+  // Create mag field from stored information
+  //
+  const double def5kg = 5.00667905807495117e+00;
+  const double def2kg = 2.04487347602844238e+00;
+  //
+  AliMagF* fld = (AliMagF*) TGeoGlobalMagField::Instance()->GetField();
+  if (fld) {
+    if (TGeoGlobalMagField::Instance()->IsLocked()) {
+      if (fld->TestBit(AliMagF::kOverrideGRP)) {
+	AliInfo("ExpertMode!!! Information on magnet currents will be ignored !");
+	AliInfo("ExpertMode!!! Running with the externally locked B field !");
+	return kTRUE;
+      }
+    }
+    AliInfo("Destroying existing B field instance!");
+    delete TGeoGlobalMagField::Instance();
+  }
+  //
+  double fc5 = fMagneticField/def5kg;
+  double fc2 = fMagneticField/def2kg;
+  Bool_t use5 = TMath::Abs(TMath::Abs(fc5)-1.) < TMath::Abs(TMath::Abs(fc2)-1.);
+  //
+  fld = new AliMagF("mag","mag",use5 ? fc5 : fc2, fMuonMagFieldScale, use5 ? AliMagF::k5kG : AliMagF::k2kG);
+  //
+  if (fld) {
+    TGeoGlobalMagField::Instance()->SetField( fld );
+    TGeoGlobalMagField::Instance()->Lock();
+    AliInfo("Running with the B field constructed out of the AOD Header !");
+    return kTRUE;
+  }
+  else {
+    AliError("Failed to create a B field map !");
+    return kFALSE;
+  }
+  //
 }

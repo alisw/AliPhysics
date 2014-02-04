@@ -611,7 +611,7 @@ Bool_t AliTRDTenderSupply::GetTRDchamberID(AliESDtrack * const track, Int_t *det
     Double_t secAlpha = 2 * TMath::Pi() / 18.;
    
     Int_t sector = static_cast<Int_t>(trackAlpha/secAlpha);
-
+/*
     if(fDebugMode){
       // Compare to simple propagation without magnetic field
       AliExternalTrackParam workparam1(*trueparam); // Do calculation on working Copy
@@ -629,7 +629,7 @@ Bool_t AliTRDTenderSupply::GetTRDchamberID(AliESDtrack * const track, Int_t *det
       AliDebug(2, Form("Alpha: Old %f, New %f, diff %f", trackAlpha, trackAlpha1, trackAlpha-trackAlpha1));
       AliDebug(2, Form("Sector: Old %d, New %d", sector, sector1));
     }
-
+*/
     Double_t etaTrack = track->Eta();
     Int_t stack = -1;
     for(Int_t istack = 0; istack < 5; istack++){

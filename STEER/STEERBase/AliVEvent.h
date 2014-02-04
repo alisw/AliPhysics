@@ -102,6 +102,9 @@ public:
 
   // Header
   virtual AliVHeader* GetHeader() const = 0;
+  //
+  // field initialization
+  virtual Bool_t InitMagneticField() const {return kFALSE;}
 
   // Delegated methods for fESDRun or AODHeader
   

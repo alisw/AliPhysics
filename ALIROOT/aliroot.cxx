@@ -81,7 +81,7 @@ int main(int argc, char **argv)
     
     if (argument=="--version")
     {      
-      cout << "aliroot " << ALIROOT_SVN_REVISION << " " << ALIROOT_SVN_BRANCH << endl;
+      cout << "aliroot " << ALIROOT_REVISION << " " << ALIROOT_BRANCH << endl;
       return 0;
     }    
   }

@@ -183,28 +183,39 @@ foreach(detector ${ONLINEDETECTORS} )
 	  endif(DANAME)
 	add_dependencies(${BASIC_TARGET} ${DATARGETNAME})  
 	add_dependencies(${BASIC_RPM} ${DATARGETNAME}-rpm) 
-	 set(DATARGETDIR "${DAINSTALL}/${DAMODULE}/tgt_$ENV{ALICE_TARGET}")
-	  file(MAKE_DIRECTORY ${DATARGETDIR})
-	  set(DAOBJ "${DATARGETDIR}/${DAMODULE}${SUBDAMODULE}${DANAME}da.o")
-	  set(DASRC "${DAMODULE}/${DAMODULE}${SUBDAMODULE}${DANAME}da.cxx")
-	  set(DALIB "${DAMODULE}${SUBDAMODULE}${DANAME}DA")
-	  set(DAEXE "${DAMODULE}${SUBDAMODULE}${DANAME}da.exe")
-	  set(DADEP "${DATARGETDIR}/${DAMODULE}${SUBDAMODULE}${DANAME}da.d") 
+	set(DATARGETDIR "${DAINSTALL}/${DAMODULE}/tgt_$ENV{ALICE_TARGET}")
+	file(MAKE_DIRECTORY ${DATARGETDIR})
+	set(DAOBJ "${DATARGETDIR}/${DAMODULE}${SUBDAMODULE}${DANAME}da.o")
+	set(DASRC "${DAMODULE}/${DAMODULE}${SUBDAMODULE}${DANAME}da.cxx")
+	set(DALIB "${DAMODULE}${SUBDAMODULE}${DANAME}DA")
+	set(DAEXE "${DAMODULE}${SUBDAMODULE}${DANAME}da.exe")
+	set(DADEP "${DATARGETDIR}/${DAMODULE}${SUBDAMODULE}${DANAME}da.d") 
 
 	# DAVERSION
-      execute_process(COMMAND svn info ${CMAKE_SOURCE_DIR}/${DASRC} OUTPUT_VARIABLE _daversion OUTPUT_STRIP_TRAILING_WHITESPACE)
-	  string(REGEX REPLACE ".*Last Changed Rev: ([^\n]+)\n.*" "\\1" DAVERSION ${_daversion})
+	# execute_process(COMMAND svn info ${CMAKE_SOURCE_DIR}/${DASRC} OUTPUT_VARIABLE _daversion OUTPUT_STRIP_TRAILING_WHITESPACE)
+	# string(REGEX REPLACE ".*Last Changed Rev: ([^\n]+)\n.*" "\\1" DAVERSION ${_daversion}e)
+	execute_process(COMMAND git log -1 --format=%h 
+	  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/${DASRC} 
+	  OUTPUT_VARIABLE DAVERSION)
 
 	#DAREVISION
-	  execute_process(COMMAND svn info ${CMAKE_SOURCE_DIR} OUTPUT_VARIABLE _darevision OUTPUT_STRIP_TRAILING_WHITESPACE)
-          string(REGEX REPLACE ".*Revision: ([^\n]+)\n.*" "\\1" DAREVISION ${_darevision})
+	# execute_process(COMMAND svn info ${CMAKE_SOURCE_DIR} OUTPUT_VARIABLE _darevision OUTPUT_STRIP_TRAILING_WHITESPACE)
+        # string(REGEX REPLACE ".*Revision: ([^\n]+)\n.*" "\\1" DAREVISION ${_darevision})
+	execute_process(COMMAND git log -1 --format=%h 
+	  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/${DASRC} 
+	  OUTPUT_VARIABLE DAVERSION)
+
 	# DAROOTRELEASE 
 	  execute_process(COMMAND root-config --version OUTPUT_VARIABLE _darootrelease OUTPUT_STRIP_TRAILING_WHITESPACE)
 	  string(REGEX REPLACE "/" "." DAROOTRELEASE ${_darootrelease})
 	
 	# DAALIROOTRELEASE
-	  string(REGEX REPLACE ".*URL: .*/(.+)/${DASRC}.*$" "\\1" DAALIROOTRELEASE ${_daversion})
-          string (REPLACE "-" "." DAALIROOTRELEASE "${DAALIROOTRELEASE}")
+	# string(REGEX REPLACE ".*URL: .*/(.+)/${DASRC}.*$" "\\1" DAALIROOTRELEASE ${_daversion})
+        # string (REPLACE "-" "." DAALIROOTRELEASE "${DAALIROOTRELEASE}")
+	execute_process(COMMAND git branch
+	  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/${DASRC} 
+	  OUTPUT_VARIABLE DAVERSION)
+        string (REPLACE "* " "" DAALIROOTRELEASE "${DAALIROOTRELEASE}")
 	
 	  set(DAARCNAME "${DATARGETNAME}")
 	  #string(REPLACE "-" "" DAARCNAME "${DAARCNAME}")
@@ -290,7 +301,7 @@ COMMAND @echo '\# Makefile for Detector Algorithm' >> ${DAMAKEFILE}
 COMMAND @echo '\#' >> ${DAMAKEFILE}
 COMMAND @echo '\# It is necessary to setup build environment before' >> ${DAMAKEFILE}
 COMMAND @echo '\# using make:' >> ${DAMAKEFILE}
-COMMAND @echo '\# - define path to daqDAlib (env. DAQDALIB_PATH)' >> ${DAMAKEFILE}
+COMMAND @echo '\# - define path to daqDAlib \(env. DAQDALIB_PATH\)' >> ${DAMAKEFILE}
 COMMAND @echo '\#' >> ${DAMAKEFILE}
 COMMAND @echo '\#*****************************************************' >> ${DAMAKEFILE}
 COMMAND @echo "" >> ${DAMAKEFILE}
@@ -300,7 +311,7 @@ COMMAND @echo "" >> ${DAMAKEFILE}
 COMMAND @echo "CXXFLAGS=${CXXFLAGS}" >> ${DAMAKEFILE}
 COMMAND @echo "LDFLAGS=${LDFLAGS}" >> ${DAMAKEFILE}
 COMMAND @echo "" >> ${DAMAKEFILE}
-COMMAND @echo 'ifeq ($$(DAQDALIB_PATH),)' >> ${DAMAKEFILE}
+COMMAND @echo 'ifeq \($$\(DAQDALIB_PATH\),\)' >> ${DAMAKEFILE}
 COMMAND @echo "DAQDADIR=${ALICE}/daqDAlib" >> ${DAMAKEFILE}
 COMMAND @echo "else" >> ${DAMAKEFILE}
 COMMAND @echo 'DAQDADIR=$$(DAQDALIB_PATH)' >> ${DAMAKEFILE}
@@ -430,7 +441,7 @@ COMMAND @echo "%pre" >> ${DASPECFILE}
 COMMAND @echo "" >> ${DASPECFILE}
 COMMAND @echo '\# list of files to be installed' >> ${DASPECFILE}
 COMMAND @echo "%files" >> ${DASPECFILE}
-COMMAND @echo '%defattr (-,root,root)' >> ${DASPECFILE}
+COMMAND @echo '%defattr \(-,root,root\)' >> ${DASPECFILE}
 COMMAND @echo "%{destdir}" >> ${DASPECFILE}
 COMMAND @echo "" >> ${DASPECFILE}
 COMMAND @echo '\# post-install script' >> ${DASPECFILE}

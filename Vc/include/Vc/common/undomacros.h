@@ -21,19 +21,25 @@
 #define VC_COMMON_UNDOMACROS_H
 #undef VC_COMMON_MACROS_H
 
-#undef INTRINSIC
-#undef INTRINSIC_L
-#undef INTRINSIC_R
-#undef CONST
-#undef CONST_L
-#undef CONST_R
-#undef PURE
-#undef PURE_L
-#undef PURE_R
-#undef MAY_ALIAS
-#undef ALWAYS_INLINE
-#undef ALWAYS_INLINE_L
-#undef ALWAYS_INLINE_R
+#undef Vc_ALIGNOF
+
+#undef Vc_INTRINSIC
+#undef Vc_INTRINSIC_L
+#undef Vc_INTRINSIC_R
+#undef Vc_CONST
+#undef Vc_CONST_L
+#undef Vc_CONST_R
+#undef Vc_PURE
+#undef Vc_PURE_L
+#undef Vc_PURE_R
+#undef Vc_MAY_ALIAS
+#undef Vc_ALWAYS_INLINE
+#undef Vc_ALWAYS_INLINE_L
+#undef Vc_ALWAYS_INLINE_R
+#undef VC_IS_UNLIKELY
+#undef VC_IS_LIKELY
+#undef VC_RESTRICT
+#undef VC_DEPRECATED
 #undef _VC_CONSTEXPR
 #undef _VC_CONSTEXPR_L
 #undef _VC_CONSTEXPR_R
@@ -51,6 +57,12 @@
 
 #undef VC_WARN_INLINE
 #undef VC_WARN
+
+#ifdef VC_EXTERNAL_ASSERT
+#undef VC_EXTERNAL_ASSERT
+#else
+#undef VC_ASSERT
+#endif
 
 #undef VC_HAS_BUILTIN
 
@@ -87,5 +99,11 @@
 #undef VC_ALL_VECTOR_TYPES
 
 #undef VC_EXACT_TYPE
+#undef VC_ALIGNED_PARAMETER
+#undef VC_OFFSETOF
+
+#if VC_GCC && !__OPTIMIZE__
+#pragma GCC diagnostic pop
+#endif
 
 #endif // VC_COMMON_UNDOMACROS_H

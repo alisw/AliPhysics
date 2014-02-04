@@ -1527,7 +1527,7 @@ const TGeoHMatrix * AliEMCALGeometry::GetMatrixForSuperModule(Int_t smod) const
       printf("\t Either import TGeoManager from geometry.root or \n");
       printf("\t read stored matrixes from AliESD Header:  \n") ;   
       printf("\t AliEMCALGeometry::SetMisalMatrixes(header->GetEMCALMisalMatrix()) \n") ;
-      abort() ;
+      AliFatal("") ;
     }  
   }//external matrices
   

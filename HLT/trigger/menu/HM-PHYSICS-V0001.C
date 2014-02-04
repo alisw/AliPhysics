@@ -1,6 +1,6 @@
 // $Id$
 /**
- * @ingroup trigger_manus
+ * @ingroup trigger_menus
  * @file HM_PHYSICS_V0001.C
  * @brief Macro for generating the trigger menu CDB entry for the HLT global trigger.
  *

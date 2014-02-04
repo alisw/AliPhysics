@@ -14,7 +14,7 @@
 
 #include <TObject.h>
 #include <TString.h>
-#include <AliDAQ.h>
+#include "AliDAQ.h"
 
 class AliDetectorTag;
 

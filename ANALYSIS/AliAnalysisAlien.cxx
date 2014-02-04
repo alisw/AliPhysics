@@ -29,6 +29,7 @@
 #include "TError.h"
 #include "TROOT.h"
 #include "TSystem.h"
+#include "TInterpreter.h"
 #include "TFile.h"
 #include "TFileCollection.h"
 #include "TChain.h"
@@ -94,6 +95,8 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fNproofWorkers(0),
                   fNproofWorkersPerSlave(0),
                   fProofReset(0),
+                  fNMCevents(0),
+                  fNMCjobs(0),
                   fRunNumbers(),
                   fExecutable(),
                   fExecutableCommand(),
@@ -104,6 +107,7 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fValidationScript(),
                   fAdditionalRootLibs(),
                   fAdditionalLibs(),
+                  fGeneratorLibs(),
                   fSplitMode(),
                   fAPIVersion(),
                   fROOTVersion(),
@@ -139,6 +143,7 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fModules(0),
                   fProofParam(),
                   fDropToShell(true),
+                  fMCLoop(false),
                   fGridJobIDs(""),
                   fGridStages(""),
                   fFriendLibs(""),
@@ -172,6 +177,8 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fNproofWorkers(0),
                   fNproofWorkersPerSlave(0),
                   fProofReset(0),
+                  fNMCevents(0),
+                  fNMCjobs(0),
                   fRunNumbers(),
                   fExecutable(),
                   fExecutableCommand(),
@@ -182,6 +189,7 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fValidationScript(),
                   fAdditionalRootLibs(),
                   fAdditionalLibs(),
+                  fGeneratorLibs(),
                   fSplitMode(),
                   fAPIVersion(),
                   fROOTVersion(),
@@ -217,6 +225,7 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fModules(0),
                   fProofParam(),
                   fDropToShell(true),
+                  fMCLoop(false),
                   fGridJobIDs(""),
                   fGridStages(""),
                   fFriendLibs(""),
@@ -250,6 +259,8 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fNproofWorkers(other.fNproofWorkers),
                   fNproofWorkersPerSlave(other.fNproofWorkersPerSlave),
                   fProofReset(other.fProofReset),
+                  fNMCevents(other.fNMCevents),
+                  fNMCjobs(other.fNMCjobs),
                   fRunNumbers(other.fRunNumbers),
                   fExecutable(other.fExecutable),
                   fExecutableCommand(other.fExecutableCommand),
@@ -260,6 +271,7 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fValidationScript(other.fValidationScript),
                   fAdditionalRootLibs(other.fAdditionalRootLibs),
                   fAdditionalLibs(other.fAdditionalLibs),
+                  fGeneratorLibs(other.fGeneratorLibs),
                   fSplitMode(other.fSplitMode),
                   fAPIVersion(other.fAPIVersion),
                   fROOTVersion(other.fROOTVersion),
@@ -295,6 +307,7 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fModules(0),
                   fProofParam(),
                   fDropToShell(other.fDropToShell),
+                  fMCLoop(other.fMCLoop),
                   fGridJobIDs(other.fGridJobIDs),
                   fGridStages(other.fGridStages),
                   fFriendLibs(other.fFriendLibs),
@@ -370,6 +383,8 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fNproofWorkers           = other.fNproofWorkers;
       fNproofWorkersPerSlave   = other.fNproofWorkersPerSlave;
       fProofReset              = other.fProofReset;
+      fNMCevents               = other.fNMCevents;
+      fNMCjobs                 = other.fNMCjobs;
       fRunNumbers              = other.fRunNumbers;
       fExecutable              = other.fExecutable;
       fExecutableCommand       = other.fExecutableCommand;
@@ -380,6 +395,7 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fValidationScript        = other.fValidationScript;
       fAdditionalRootLibs      = other.fAdditionalRootLibs;
       fAdditionalLibs          = other.fAdditionalLibs;
+      fGeneratorLibs           = other.fGeneratorLibs;
       fSplitMode               = other.fSplitMode;
       fAPIVersion              = other.fAPIVersion;
       fROOTVersion             = other.fROOTVersion;
@@ -411,6 +427,7 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fProofProcessOpt         = other.fProofProcessOpt;
       fMergeDirName            = other.fMergeDirName;
       fDropToShell             = other.fDropToShell;
+      fMCLoop                  = other.fMCLoop;
       fGridJobIDs              = other.fGridJobIDs;
       fGridStages              = other.fGridStages;
       fFriendLibs              = other.fFriendLibs;
@@ -536,9 +553,13 @@ AliAnalysisManager *AliAnalysisAlien::CreateAnalysisManager(const char *name, co
 {
 // Create the analysis manager and optionally execute the macro in filename.
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-   if (mgr) return mgr;
+   if (mgr) {
+      mgr->SetMCLoop(fMCLoop);
+      return mgr;
+   }   
    mgr = new AliAnalysisManager(name);
    mgr->SetGridHandler((AliAnalysisGrid*)this);
+   mgr->SetMCLoop(fMCLoop);
    if (strlen(filename)) {
       TString line = gSystem->ExpandPathName(filename);
       line.Prepend(".x ");
@@ -1316,7 +1337,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
       while ((os=(TObjString*)next())) {
          nstart = 0;
          stage = 0;
-         path = Form("%s/%s/", fGridDataDir.Data(), os->GetString().Data());
+         path = Form("%s/%s", fGridDataDir.Data(), os->GetString().Data());
          if (!DirectoryExists(path)) continue;
 //         CdWork();
          if (TestBit(AliAnalysisGrid::kTest)) file = "wn.xml";
@@ -1445,7 +1466,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
    } else {
       // Process a full run range.
       for (Int_t irun=fRunRange[0]; irun<=fRunRange[1]; irun++) {
-         format = Form("%%s/%s/", fRunPrefix.Data());
+         format = Form("%%s/%s", fRunPrefix.Data());
          nstart = 0;
          stage = 0;
          path = Form(format.Data(), fGridDataDir.Data(), irun);
@@ -1619,7 +1640,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
    workdir += fGridWorkingDir;
    if (generate) {
       TObjString *os;
-      if (!fInputFiles) {
+      if (!fInputFiles && !fMCLoop) {
          Error("CreateJDL()", "Define some input files for your analysis.");
          error = kTRUE;
       }
@@ -1655,13 +1676,16 @@ Bool_t AliAnalysisAlien::CreateJDL()
       if (!fUser.IsNull()) {
          fGridJDL->SetValue("User", Form("\"%s\"", fUser.Data()));
          fMergingJDL->SetValue("User", Form("\"%s\"", fUser.Data()));
-      }   
-      fGridJDL->SetExecutable(fExecutable, "This is the startup script");
-      TString mergeExec = fExecutable;
+      }
+      TString executable = fExecutable;
+      if (!executable.BeginsWith("/")) 
+         executable.Prepend(Form("%s/", workdir.Data()));
+      fGridJDL->SetExecutable(executable, "This is the startup script");
+      TString mergeExec = executable;
       mergeExec.ReplaceAll(".sh", "_merge.sh");
       fMergingJDL->SetExecutable(mergeExec, "This is the startup script");
       mergeExec.ReplaceAll(".sh", ".C");
-      fMergingJDL->AddToInputSandbox(Form("LF:%s/%s", workdir.Data(),mergeExec.Data()), "List of input files to be uploaded to workers");
+      fMergingJDL->AddToInputSandbox(Form("LF:%s", mergeExec.Data()), "List of input files to be uploaded to workers");
       if (!fArguments.IsNull())
          fGridJDL->SetArguments(fArguments, "Arguments for the executable command");
       if (IsOneStageMerging()) fMergingJDL->SetArguments(fGridOutputDir);
@@ -1679,7 +1703,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
          fGridJDL->SetValue("MaxInitFailed", Form("\"%d\"",fMaxInitFailed));
          fGridJDL->SetDescription("MaxInitFailed", "Maximum number of first failing jobs to abort the master job");
       }   
-      if (fSplitMaxInputFileNumber > 0) {
+      if (fSplitMaxInputFileNumber > 0 && !fMCLoop) {
          fGridJDL->SetValue("SplitMaxInputFileNumber", Form("\"%d\"", fSplitMaxInputFileNumber));
          fGridJDL->SetDescription("SplitMaxInputFileNumber", "Maximum number of input files to be processed per subjob");
       }
@@ -1718,8 +1742,10 @@ Bool_t AliAnalysisAlien::CreateJDL()
          }   
          delete arr;   
       }   
-      fGridJDL->SetInputDataListFormat(fInputFormat, "Format of input data");
-      fGridJDL->SetInputDataList("wn.xml", "Collection name to be processed on each worker node");
+      if (!fMCLoop) {
+         fGridJDL->SetInputDataListFormat(fInputFormat, "Format of input data");
+         fGridJDL->SetInputDataList("wn.xml", "Collection name to be processed on each worker node");
+      }   
       fMergingJDL->SetInputDataListFormat(fInputFormat, "Format of input data");
       fMergingJDL->SetInputDataList("wn.xml", "Collection name to be processed on each worker node");
       fGridJDL->AddToInputSandbox(Form("LF:%s/%s", workdir.Data(), fAnalysisMacro.Data()), "List of input files to be uploaded to workers");
@@ -1926,7 +1952,7 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
 // Writes one or more JDL's corresponding to findex. If findex is negative,
 // all run numbers are considered in one go (jdl). For non-negative indices
 // they correspond to the indices in the array fInputFiles.
-   if (!fInputFiles) return kFALSE;
+   if (!fInputFiles && !fMCLoop) return kFALSE;
    TObject *os;
    TString workdir;
    if (!fProductionMode && !fGridWorkingDir.BeginsWith("/alice")) workdir = gGrid->GetHomeDirectory();
@@ -2438,7 +2464,39 @@ Bool_t AliAnalysisAlien::IsSingleOutput() const
 // Check if single-ouput option is on.
    return (!fOutputSingle.IsNull());
 }
-   
+
+//______________________________________________________________________________
+Long64_t AliAnalysisAlien::RunMacroAndExtractLibs(const char* macro, const char *args, TString &libs)
+{
+// Tries to run the specified macro and return the libraries that it loads.
+   TString expname;
+   if (strlen(macro)) expname = gSystem->ExpandPathName(macro);
+   if (expname.IsNull() || gSystem->AccessPathName(expname)) {
+      ::Error("RunMacroAndExtractLibs","Cannot find macro %s in current directory", macro);
+      return -1;
+   }   
+   TString oldlibs = gSystem->GetLibraries();
+   TMacro m(expname);
+   Int_t error = 0;
+   Long64_t retval = m.Exec(args, &error);
+   if (error != TInterpreter::kNoError)
+   {
+      ::Error("RunMacroAndExtractLibs", "Macro interpretation %s failed", macro);
+      return -1;
+   }
+   libs = gSystem->GetLibraries();
+   libs.ReplaceAll(oldlibs, "");
+   libs.Strip(TString::kLeading);
+   TObjArray *libTokens = libs.Tokenize(" ");
+   libs = "";
+   for (Int_t i=0; i<libTokens->GetEntries(); i++) {
+     if (!libs.IsNull()) libs += " ";
+     libs += gSystem->BaseName(libTokens->At(i)->GetName());
+   }
+   delete libTokens;
+   return retval;
+}   
+      
 //______________________________________________________________________________
 void AliAnalysisAlien::Print(Option_t *) const
 {
@@ -3640,9 +3698,11 @@ const char *AliAnalysisAlien::GetListOfFiles(const char *type)
       return files.Data();
    }
    if (mgr->GetOutputEventHandler()) {
-      aodfiles = mgr->GetOutputEventHandler()->GetOutputFileName();
+      aodfiles = "";
+      if (mgr->GetOutputEventHandler()->GetFillAOD())
+         aodfiles = mgr->GetOutputEventHandler()->GetOutputFileName();
       TString extraaod = mgr->GetOutputEventHandler()->GetExtraOutputs();
-      if (!extraaod.IsNull()) {
+      if (!extraaod.IsNull() && mgr->GetOutputEventHandler()->GetFillExtension()) {
          aodfiles += ",";
          aodfiles += extraaod;
       }
@@ -3960,16 +4020,21 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       TString func = fAnalysisMacro;
       TString type = "ESD";
       TString comment = "// Analysis using ";
-      if (IsUseMCchain()) {
-         type = "MC";
-         comment += "MC";
-      } else {   
-         if (TObject::TestBit(AliAnalysisGrid::kUseESD)) comment += "ESD";
-         if (TObject::TestBit(AliAnalysisGrid::kUseAOD)) {
-            type = "AOD";
-            comment += "AOD";
-         }   
-      }
+      if (fMCLoop) {
+         type = "MCGEN";
+         comment += "MCGEN";
+      } else {
+         if (IsUseMCchain()) {
+            type = "MC";
+            comment += "MC";
+         } else {   
+            if (TObject::TestBit(AliAnalysisGrid::kUseESD)) comment += "ESD";
+            if (TObject::TestBit(AliAnalysisGrid::kUseAOD)) {
+               type = "AOD";
+               comment += "AOD";
+            }   
+         }
+      }   
       if (type!="AOD" && fFriendChainName!="") {
          Error("WriteAnalysisMacro", "Friend chain can be attached only to AOD");
          return;
@@ -4100,6 +4165,16 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       if (fIncludePath.Length()) out << "   gSystem->AddIncludePath(\"" << fIncludePath.Data() << "\");" << endl;
       out << "   gROOT->ProcessLine(\".include $ALICE_ROOT/include\");" << endl;
       out << "   printf(\"Include path: %s\\n\", gSystem->GetIncludePath());" << endl << endl;
+      if (fMCLoop && !fGeneratorLibs.IsNull()) {
+         out << "// MC generator libraries" << endl;
+         TObjArray *list = fGeneratorLibs.Tokenize(" ");
+         TIter next(list);
+         TObjString *str;
+         while((str=(TObjString*)next())) {
+            out << "   gSystem->Load(\"" << str->GetName() << "\");" << endl;
+         }
+         delete list;
+      }
       if (fAdditionalLibs.Length()) {
          out << "// Add aditional AliRoot libraries" << endl;
          TString additionalLibs = fAdditionalLibs;
@@ -4116,7 +4191,7 @@ void AliAnalysisAlien::WriteAnalysisMacro()
             if (str->GetString().Contains(".par"))
                out << "   if (!" << setupPar << "(\"" << str->GetString() << "\")) return;" << endl;
          }
-         if (list) delete list;
+         delete list;
       }
       out << endl;
       out << "// analysis source to be compiled at runtime (if any)" << endl;
@@ -4161,6 +4236,8 @@ void AliAnalysisAlien::WriteAnalysisMacro()
             out << "   plugin->SetFriendChainName(\"" << fFriendChainName << "\",\"" << fFriendLibs << "\");" << endl;
          if (IsUseMCchain())
             out << "   plugin->SetUseMCchain();" << endl;
+         if (fMCLoop)
+            out << "   plugin->SetMCLoop(kTRUE);" << endl;  
          out << "   mgr->SetGridHandler(plugin);" << endl;
          if (AliAnalysisManager::GetAnalysisManager()) {
             out << "   mgr->SetDebugLevel(" << AliAnalysisManager::GetAnalysisManager()->GetDebugLevel() << ");" << endl;
@@ -4182,15 +4259,25 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          }
       }   
       if (!IsLocalTest()) {
-         out << "   TChain *chain = CreateChain(\"wn.xml\", anatype);" << endl << endl;   
-         out << "   mgr->StartAnalysis(\"localfile\", chain);" << endl;
+         if (fMCLoop) {
+            out << "   mgr->SetCacheSize(0);" << endl;
+            out << "   mgr->EventLoop(" << fNMCevents << ");" << endl;
+         } else {   
+            out << "   TChain *chain = CreateChain(\"wn.xml\", anatype);" << endl << endl;   
+            out << "   mgr->StartAnalysis(\"localfile\", chain);" << endl;
+         }   
       } else {
-         out << "   mgr->StartAnalysis(\"localfile\");" << endl;
+         if (fMCLoop) {
+            out << "   mgr->SetCacheSize(0);" << endl;
+            out << "   mgr->EventLoop(" << fNMCevents << ");" << endl;         
+         } else {
+            out << "   mgr->StartAnalysis(\"localfile\");" << endl;
+         }   
       }   
       out << "   timer.Stop();" << endl;
       out << "   timer.Print();" << endl;
       out << "}" << endl << endl;
-      if (!IsLocalTest()) {
+      if (!IsLocalTest() && !fMCLoop) {
          out <<"//________________________________________________________________________________" << endl;
          out << "TChain* CreateChain(const char *xmlfile, const char *type=\"ESD\")" << endl;
          out << "{" << endl;
@@ -4473,6 +4560,16 @@ void AliAnalysisAlien::WriteMergingMacro()
       if (fIncludePath.Length()) out << "   gSystem->AddIncludePath(\"" << fIncludePath.Data() << "\");" << endl;
       out << "   gROOT->ProcessLine(\".include $ALICE_ROOT/include\");" << endl;
       out << "   printf(\"Include path: %s\\n\", gSystem->GetIncludePath());" << endl << endl;
+      if (fMCLoop && !fGeneratorLibs.IsNull()) {
+         out << "// MC generator libraries" << endl;
+         TObjArray *list = fGeneratorLibs.Tokenize(" ");
+         TIter next(list);
+         TObjString *str;
+         while((str=(TObjString*)next())) {
+            out << "   gSystem->Load(\"" << str->GetName() << "\");" << endl;
+         }
+         delete list;
+      }
       if (fAdditionalLibs.Length()) {
          out << "// Add aditional AliRoot libraries" << endl;
          TString additionalLibs = fAdditionalLibs;
@@ -4520,7 +4617,10 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "// Set temporary compilation directory to current one" << endl;
       out << "   gSystem->SetBuildDir(gSystem->pwd(), kTRUE);" << endl << endl;   
       out << "   TString outputDir = dir;" << endl;  
-      out << "   TString outputFiles = \"" << GetListOfFiles("out") << "\";" << endl;
+      if (IsMergeAOD())
+         out << "   TString outputFiles = \"" << GetListOfFiles("outaod") << "\";" << endl;
+      else   
+         out << "   TString outputFiles = \"" << GetListOfFiles("out") << "\";" << endl;
       out << "   TString mergeExcludes = \"" << fMergeExcludes << " " << fRegisterExcludes << "\";" << endl;
       out << "   TObjArray *list = outputFiles.Tokenize(\",\");" << endl;
       out << "   TIter *iter = new TIter(list);" << endl;
@@ -4748,13 +4848,10 @@ void AliAnalysisAlien::WriteExecutable()
    if (copy) {
       CdWork();
       TString workdir = gGrid->GetHomeDirectory();
-      TString bindir = Form("%s/bin", workdir.Data());
-      if (!DirectoryExists(bindir)) gGrid->Mkdir(bindir,"-p");
       workdir += fGridWorkingDir;
-      TString executable = Form("%s/bin/%s", gGrid->GetHomeDirectory(), fExecutable.Data());
+      TString executable = TString::Format("%s/%s", workdir.Data(), fExecutable.Data());
       if (FileExists(executable)) gGrid->Rm(executable);
       Info("WriteExecutable", "\n#####   Copying executable file <%s> to your AliEn bin directory", fExecutable.Data());
-//      TFile::Cp(Form("file:%s",fExecutable.Data()), Form("alien://%s", executable.Data()));
       if (!copyLocal2Alien("WriteExecutable",fExecutable.Data(), 
           executable.Data())) Fatal("","Terminating");
    } 
@@ -4825,15 +4922,12 @@ void AliAnalysisAlien::WriteMergeExecutable()
    if (copy) {
       CdWork();
       TString workdir = gGrid->GetHomeDirectory();
-      TString bindir = Form("%s/bin", workdir.Data());
-      if (!DirectoryExists(bindir)) gGrid->Mkdir(bindir,"-p");
       workdir += fGridWorkingDir;
-      TString executable = Form("%s/bin/%s", gGrid->GetHomeDirectory(), mergeExec.Data());
+      TString executable = TString::Format("%s/%s", workdir.Data(), mergeExec.Data());
       if (FileExists(executable)) gGrid->Rm(executable);
       Info("WriteMergeExecutable", "\n#####   Copying executable file <%s> to your AliEn bin directory", mergeExec.Data());
-//      TFile::Cp(Form("file:%s",mergeExec.Data()), Form("alien://%s", executable.Data()));
-      if (!copyLocal2Alien("WriteMergeExecutable",
-          mergeExec.Data(), executable.Data())) Fatal("","Terminating");
+      if (!copyLocal2Alien("WriteMergeExecutable",mergeExec.Data(), 
+          executable.Data())) Fatal("","Terminating");
    } 
 }
 

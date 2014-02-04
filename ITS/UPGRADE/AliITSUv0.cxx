@@ -273,8 +273,8 @@ void AliITSUv0::CreateGeometry() {
 
   new TGeoVolumeAssembly(AliITSUGeomTGeo::GetITSVolPattern());
   TGeoVolume *vITSV = geoManager->GetVolume(AliITSUGeomTGeo::GetITSVolPattern());
+  vITSV->SetUniqueID(AliITSUGeomTGeo::GetUIDShift()); // store modID -> midUUID bitshift
   vALIC->AddNode(vITSV, 2, 0);  // Copy number is 2 to cheat AliGeoManager::CheckSymNamesLUT
-
   //
   const Int_t kLength=100;
   Char_t vstrng[kLength] = "xxxRS"; //?

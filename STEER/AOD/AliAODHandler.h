@@ -83,6 +83,7 @@ class AliAODHandler : public AliVEventHandler {
 //    AliAODExtension*     FindExtensionContainingBranch(const char* bname) const;
     Bool_t               IsStandard()                         const {return fIsStandard;}
     Bool_t               GetFillAOD()                         const {return fFillAOD;} 
+    Bool_t               GetFillExtension()                   const {return fFillExtension;} 
     Bool_t               NeedsHeaderReplication()             const {return  fNeedsHeaderReplication;}
     Bool_t               NeedsTOFHeaderReplication()          const {return  fNeedsTOFHeaderReplication;}
     Bool_t               NeedsVZEROReplication()              const {return  fNeedsVZEROReplication;}

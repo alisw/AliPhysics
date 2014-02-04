@@ -22,6 +22,7 @@
 
 #include "types.h"
 
+namespace AliRoot {
 namespace Vc
 {
 namespace AVX
@@ -29,10 +30,16 @@ namespace AVX
 template<typename T> struct SortHelper
 {
     typedef typename VectorTypeHelper<T>::Type VectorType;
-    static VectorType sort(VectorType);
+#ifdef VC_PASSING_VECTOR_BY_VALUE_IS_BROKEN
+    typedef const VectorType & VTArg;
+#else
+    typedef const VectorType VTArg;
+#endif
+    static VectorType sort(VTArg);
     static void sort(VectorType &, VectorType &);
 };
 } // namespace AVX
 } // namespace Vc
+} // namespace AliRoot
 
 #endif // VC_AVX_SORTHELPER_H

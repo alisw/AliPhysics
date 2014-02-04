@@ -87,21 +87,26 @@ typedef struct {
   Char_t  mcCl[7];
   Char_t  rcCl[7];
   Char_t  fcCl[7];
-  Float_t qCl[7];
   Char_t  charge;
+  Float_t zV;
   Float_t ptMC;
   Float_t etaMC;
   Float_t pt;
   Float_t eta;
+  Float_t ptTPC;
+  Float_t etaTPC;
   Float_t dcaR;
   Float_t dcaZ;
   Float_t dcaRE;
   Float_t dcaZE;
   Float_t ptE;
+  Float_t ptTPCE;
   Float_t phi;
   Int_t   pdg;
   Int_t   lbl;
+  Int_t   lblTPC;
   Int_t   spl;
+  Int_t   evID;
 } trInfo_t;
 
 trInfo_t trackInfo;
@@ -222,21 +227,26 @@ void AliTaskITSUPerf::UserCreateOutputObjects()
   fTree->Branch("mcCl",&trackInfo.mcCl,"mcCl[7]/b");
   fTree->Branch("rcCl",&trackInfo.rcCl,"rcCl[7]/b");
   fTree->Branch("fcCl",&trackInfo.fcCl,"fcCl[7]/b");
-  fTree->Branch("qCl" ,&trackInfo.qCl,  "qCl[7]/F");
   fTree->Branch("charge",&trackInfo.charge,"charge/B");
+  fTree->Branch("zV",    &trackInfo.zV,"zV/F");
   fTree->Branch("ptMC",  &trackInfo.ptMC,"ptMC/F");
   fTree->Branch("etaMC", &trackInfo.etaMC,"etaMC/F");
   fTree->Branch("pt",  &trackInfo.pt,"pt/F");
   fTree->Branch("eta", &trackInfo.eta,"eta/F");
+  fTree->Branch("ptTPC",  &trackInfo.ptTPC,"ptTPC/F");
+  fTree->Branch("etaTPC", &trackInfo.etaTPC,"etaTPC/F");
   fTree->Branch("dcaR", &trackInfo.dcaR,"dcaR/F");
   fTree->Branch("dcaZ", &trackInfo.dcaZ,"dcaZ/F");
   fTree->Branch("dcaRE", &trackInfo.dcaRE,"dcaRE/F");
   fTree->Branch("dcaZE", &trackInfo.dcaZE,"dcaZE/F");
   fTree->Branch("ptE",  &trackInfo.ptE,"ptE/F");
+  fTree->Branch("ptTPCE",  &trackInfo.ptTPCE,"ptTPCE/F");
   fTree->Branch("phi",  &trackInfo.phi,"phi/F");
-  fTree->Branch("pdf",  &trackInfo.pdg,"pdg/I");
+  fTree->Branch("pdg",  &trackInfo.pdg,"pdg/I");
   fTree->Branch("lbl",  &trackInfo.lbl,"lbl/I");
+  fTree->Branch("lblTPC",  &trackInfo.lblTPC,"lblTPC/I");
   fTree->Branch("spl",  &trackInfo.spl,"spl/I");
+  fTree->Branch("evID",  &trackInfo.evID,"evID/I");
   fOutput->Add(fTree);
   //
   fTPCCut = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
@@ -263,13 +273,13 @@ void AliTaskITSUPerf::UserExec(Option_t *)
   AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
   fRPTree = 0;
   AliESDInputHandlerRP *handRP = (AliESDInputHandlerRP*)anMan->GetInputEventHandler();
-  if (!handRP) { AliFatal("No Input handler"); return; }
+  if (!handRP) { AliFatal("No RP handler"); return; }
   //
   fESDEvent  = handRP->GetEvent();
   if (!fESDEvent) { AliFatal("No AliESDEvent"); return; }
   //
   fRPTree = handRP->GetTreeR("ITS");
-  if (!fRPTree) { AliWarning("No ITS cluster tree"); /*return;*/ }
+  if (!fRPTree) { AliWarning("Invalid ITS cluster tree"); }
   //
   AliMCEventHandler* eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
   if (!eventHandler) { AliFatal("Could not retrieve MC event handler"); return; }
@@ -430,6 +440,9 @@ void AliTaskITSUPerf::CheckTracks()
   // build mc truth info for tracks 
   Bool_t dump = kFALSE;
   Bool_t dump1 = kFALSE;
+  static int evid = 0;
+  trackInfo.evID = evid++;
+  trackInfo.zV   = fESDEvent->GetPrimaryVertex()->GetZ();
   //
   int ntr = fESDEvent->GetNumberOfTracks();
   int ntrMC = fStack->GetNtrack();
@@ -482,6 +495,7 @@ void AliTaskITSUPerf::CheckTracks()
     //
     if (fTree) {
       trackInfo.lbl = labMC;
+      trackInfo.lblTPC = labMCTPC;
       trackInfo.prim = (mcStatus&BIT(kMCPrimBit)) != 0;
       trackInfo.rcbl = !reject;
       trackInfo.nClITS = trc->GetNcls(0);
@@ -491,6 +505,9 @@ void AliTaskITSUPerf::CheckTracks()
       trackInfo.charge = trc->Charge();
       trackInfo.pt = trc->Pt();
       trackInfo.eta = trc->Eta();
+      //
+      
+      //
       trackInfo.spl = trc->GetITSModuleIndex(10);
       trackInfo.phi = part->Phi();    
       trackInfo.pdg = part->PdgCode();
@@ -498,32 +515,27 @@ void AliTaskITSUPerf::CheckTracks()
       trackInfo.dcaZ = dcaRZ[1];
       trackInfo.dcaRE = TMath::Sqrt(trc->GetSigmaY2());
       trackInfo.dcaZE = TMath::Sqrt(trc->GetSigmaZ2());
-      trackInfo.ptE   = TMath::Sqrt(trc->GetSigma1Pt2())*trackInfo.pt*trackInfo.pt;
+      trackInfo.ptE   = TMath::Sqrt(trc->GetSigma1Pt2());
+
+      const AliExternalTrackParam* ttpc = trc->GetTPCInnerParam();
+      if (ttpc) {
+	trackInfo.ptTPC = ttpc->Pt();
+	trackInfo.etaTPC = ttpc->Eta();
+	trackInfo.ptTPCE = TMath::Sqrt(ttpc->GetSigma1Pt2());//*ttpc->Pt()*ttpc->Pt();
+      }
+      else {
+	trackInfo.ptTPC = -1;
+	trackInfo.etaTPC = 0;
+	trackInfo.ptTPCE = -1;
+      }
       //
       trackInfo.nClITSMC = 0;
       for (int il=0;il<7;il++) {
 	trackInfo.mcCl[il] = (mcStatus & (0x1<<(il+kITSHitBits))) != 0;
 	if (trackInfo.mcCl[il]) trackInfo.nClITSMC++;
-	trackInfo.rcCl[il] = (fRPTree) ? 0 : trc->HasPointOnITSLayer(il); // when clusters are available, fill in the cl. loop
-	trackInfo.qCl[il]  = 0;
+	trackInfo.rcCl[il] = trc->HasPointOnITSLayer(il);
 	trackInfo.fcCl[il] = trc->HasSharedPointOnITSLayer(il);
       }
-      int htc = 0,clID,lrID;
-      Int_t lrclID = 0;
-      // here we access clusters really attached to the track
-      if (fRPTree) {
-	while ( (lrclID=trc->GetITSModuleIndex(htc++))>=0 ) { // in principle, one can have >1 attached cluster/layer
-	  clID = AliITSUAux::UnpackCluster(lrclID,lrID);
-	  AliITSUClusterPix* cl = (AliITSUClusterPix*)fITS->GetLayerActive(lrID)->GetCluster(clID);
-	  //	printf("cl%d on Lr%d id=%d: pack=%d Cl=%p Q=%d\n",htc,lrID,clID,lrclID,cl,cl ? cl->GetQ():0);
-	  if (cl) {
-	  trackInfo.rcCl[lrID]++;
-	  trackInfo.qCl[lrID] += (Float_t)cl->GetQ();
-	  }
-	  else printf("Failed to fetch cluster: cl%d on Lr%d id=%d: pack=%d\n",htc,lrID,clID,lrclID);
-	}
-      }
-      //
       fTree->Fill();
     }
     if (reject) {

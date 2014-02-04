@@ -53,21 +53,10 @@ $Id$
 
 ClassImp(AliITSInitGeometry)
 
-const Bool_t AliITSInitGeometry::fgkOldSPDbarrel = kFALSE;
-const Bool_t AliITSInitGeometry::fgkOldSDDbarrel = kFALSE;
-const Bool_t AliITSInitGeometry::fgkOldSSDbarrel = kFALSE;
-const Bool_t AliITSInitGeometry::fgkOldSDDcone   = kFALSE;
-const Bool_t AliITSInitGeometry::fgkOldSSDcone   = kFALSE;
-const Bool_t AliITSInitGeometry::fgkOldSPDshield = kFALSE;
-const Bool_t AliITSInitGeometry::fgkOldSDDshield = kTRUE;
-const Bool_t AliITSInitGeometry::fgkOldSSDshield = kTRUE;
-const Bool_t AliITSInitGeometry::fgkOldServices  = kFALSE;
-const Bool_t AliITSInitGeometry::fgkOldSupports  = kFALSE;
 //______________________________________________________________________
 AliITSInitGeometry::AliITSInitGeometry():
 TObject(),                   // Base Class
 fName(0),                    // Geometry name
-fMinorVersion(-1),           // Minor version number/type
 fMajorVersion(kvDefault),    // Major versin number
 fTiming(kFALSE),             // Flag to start inilization timing
 fSegGeom(kFALSE),            // Flag to switch between the old use of
@@ -86,12 +75,10 @@ fDebug(0){                   // Debug flag
     fName = "Undefined";
 }
 //______________________________________________________________________
-AliITSInitGeometry::AliITSInitGeometry(AliITSVersion_t version,
-                                       Int_t minorversion):
+AliITSInitGeometry::AliITSInitGeometry(AliITSVersion_t version):
 TObject(),                   // Base Class
 fName(0),                    // Geometry name
-fMinorVersion(minorversion), // Minor version number/type
-fMajorVersion(version),      // Major versin number
+fMajorVersion(version),      // Major version number
 fTiming(kFALSE),             // Flag to start inilization timing
 fSegGeom(kFALSE),            // Flag to switch between the old use of
                              // AliITSgeomS?D class, or AliITSsegmentation
@@ -112,8 +99,7 @@ fDebug(0){                   // Debug flag
 	break;
     case kvDefault:
     default:
-        AliFatal(Form("Undefined geometry: fMajorVersion=%d, "
-                      "fMinorVersion= %d",(Int_t)fMajorVersion,fMinorVersion));
+        AliFatal(Form("Undefined geometry: fMajorVersion=%d, ",(Int_t)fMajorVersion));
         fName = "Undefined";
 	break;
     } // switch
@@ -142,25 +128,24 @@ AliITSgeom* AliITSInitGeometry::CreateAliITSgeom(){
     return 0;
   }// end if
   const Char_t *title = itsV->GetTitle();
-  if(!ReadVersionString(title,(Int_t)strlen(title),version,minor,
-			datetime))
+  if(!ReadVersionString(title,version))
     Warning("UpdateInternalGeometry","Can't read title=%s\n",title);
   SetTiming(kFALSE);
   SetSegGeom(kFALSE);
   SetDecoding(kFALSE);
-  AliITSgeom *geom = CreateAliITSgeom(version,minor);
+  AliITSgeom *geom = CreateAliITSgeom(version);
   AliDebug(1,"AliITSgeom object has been initialized from TGeo\n");
   return geom;
 }
 //______________________________________________________________________
-AliITSgeom* AliITSInitGeometry::CreateAliITSgeom(Int_t major,Int_t minor){
+AliITSgeom* AliITSInitGeometry::CreateAliITSgeom(Int_t major){
     // Creates and Initilizes the geometry transformation class AliITSgeom
     // to values appropreate to this specific geometry. Now that
     // the segmentation is part of AliITSgeom, the detector
     // segmentations are also defined here.
     // Inputs:
     //   Int_t major   major version, see AliITSVersion_t
-    //   Int_t minor   minor version
+    //   
     // Outputs:
     //   none.
     // Return:
@@ -170,12 +155,12 @@ AliITSgeom* AliITSInitGeometry::CreateAliITSgeom(Int_t major,Int_t minor){
     switch(major){
     case kv11:
         SetGeometryName("AliITSv11");
-        SetVersion(kv11,minor);
+        SetVersion(kv11);
         break;
     case kvDefault:
     default:
         SetGeometryName("Undefined");
-        SetVersion(kvDefault,minor);
+        SetVersion(kvDefault);
         break;
     } // end switch
     AliITSgeom *geom = new AliITSgeom();
@@ -851,137 +836,47 @@ void AliITSInitGeometry::DecodeDetectorLayersv11(Int_t mod,Int_t &lay,
 }
 
 //______________________________________________________________________
-Bool_t AliITSInitGeometry::WriteVersionString(Char_t *str,Int_t length,
-                        AliITSVersion_t maj,Int_t min,
-                        const Char_t *cvsDate,const Char_t *cvsRevision)const{
-    // fills the string str with the major and minor version number
+Bool_t AliITSInitGeometry::WriteVersionString(Char_t *str,Int_t length,AliITSVersion_t maj)const{
+    // fills the string str with the major version number
     // Inputs:
-    //   Char_t *str          The character string to hold the major 
-    //                        and minor version numbers in
+    //   Char_t *str          The character string to hold the major version number
     //   Int_t  length        The maximum number of characters which 
-    //                        can be accomidated by this string. 
-    //                        str[length-1] must exist and will be set to zero
+    //                        can be accommodated by this string. 
+    //                        str[length-1] must exist
     //   AliITSVersion_t maj  The major number
-    //   Int_t           min  The minor number
-    //   Char_t *cvsDate      The date string from cvs
-    //   Char_t *cvsRevision  The Revision string from cvs
-    // Outputs:
-    //   Char_t *str          The character string holding the major and minor
-    //                        version numbers. str[length-1] must exist
-    //                        and will be set to zero
-    // Return:
-    //   kTRUE if no errors
-    Char_t cvslikedate[30];
-    Int_t i,n,cvsDateLength,cvsRevisionLength;
 
-    cvsDateLength = (Int_t)strlen(cvsDate);
-    if(cvsDateLength>30){ // svn string, make a cvs like string
-        i=0;n=0;
-        do{
-            cvslikedate[i] = cvsDate[i];
-            if(cvsDate[i]=='+' || cvsDate[i++]=='-'){
-                n++; // count number of -
-                cvslikedate[i-1] = '/'; // replace -'s by /'s.
-            } // end if
-        } while(n<3&&i<30); // once additonal - of time zone reach exit
-        cvslikedate[i-1] = '$'; // put $ at end then zero.
-        for(;i<30;i++) cvslikedate[i]=0;// i starts wher do loop left off.
-    }else{
-        for(i=0;i<cvsDateLength&&i<30;i++) cvslikedate[i]=cvsDate[i];
-    }// end if
-    cvsDateLength = (Int_t)strlen(cvslikedate);
-    cvsRevisionLength = (Int_t)strlen(cvsRevision);
-    i = (Int_t)maj;
-    n = 50+(Int_t)(TMath::Log10(TMath::Abs((Double_t)i)))+1+
-        (Int_t)(TMath::Log10(TMath::Abs((Double_t)min)))+1
-        +cvsDateLength-6+cvsRevisionLength-10;
-    if(GetDebug()>1) printf("AliITSInitGeometry::WriteVersionString:"
-                        "length=%d major=%d minor=%d cvsDate=%s[%d] "
-                        "cvsRevision=%s[%d] n=%d\n",length,i,min,cvslikedate,
-                        cvsDateLength,cvsRevision,cvsRevisionLength,n);
-    if(i<0) n++;
-    if(min<0) n++;
-    if(length<n){// not enough space to write in output string.
-        Warning("WriteVersionString","Output string not long enough "
-                "lenght=%d must be at least %d long\n",length,n);
-        return kFALSE;
-    } // end if length<n
-    char *cvsrevision = new char[cvsRevisionLength-10];
-    char *cvsdate = new char[cvsDateLength-6];
-    for(i=0;i<cvsRevisionLength-10;i++)
-        if(10+i<cvsRevisionLength-1)
-            cvsrevision[i] = cvsRevision[10+i]; else cvsrevision[i] = 0;
-    for(i=0;i<cvsDateLength-6;i++) if(6+i<cvsDateLength-1)
-        cvsdate[i] = cvslikedate[6+i]; else cvsdate[i] = 0;
-    for(i=0;i<length;i++) str[i] = 0; // zero it out for now.
-    i = (Int_t)maj;
-    snprintf(str,length-1,"Major Version= %d Minor Version= %d Revision: %s Date: %s",i,min,cvsrevision,cvsdate);
-    /* this gives compilation warnings on some compilers: descriptor zu
-    if(GetDebug()>1)printf("AliITSInitGeometry::WriteVersionString: "
-                       "n=%d str=%s revision[%zu] date[%zu]\n",
-                       n,str,strlen(cvsrevision),strlen(cvsdate));
-    */
-    delete[] cvsrevision;
-    delete[] cvsdate;
+
+    Int_t i = (Int_t)maj;
+ 
+    snprintf(str,length-1,"Major Version= %d",i);
     return kTRUE;
 }
 //______________________________________________________________________
-Bool_t AliITSInitGeometry::ReadVersionString(const Char_t *str,Int_t length,
-                                             AliITSVersion_t &maj,Int_t &min,
-                                             TDatime &dt)const{
+Bool_t AliITSInitGeometry::ReadVersionString(const Char_t *str,AliITSVersion_t &maj)const{
     // fills the string str with the major and minor version number
     // Inputs:
-    //   Char_t *str   The character string to holding the major and minor
-    //                 version numbers in
+    //   Char_t *str   The character string to holding the major version number
     //   Int_t  length The maximum number of characters which can be
-    //                 accomidated by this string. str[length-1] must exist
+    //                 accommodated by this string. str[length-1] must exist
     // Outputs:
-    //   Char_t *str   The character string holding the major and minor
-    //                 version numbers unchanged. str[length-1] must exist.
     //   AliITSVersion_t maj  The major number
-    //   Int_t           min  The minor number
-    //   TDatime         dt   The date and time of the cvs commit
+
     // Return:
     //   kTRUE if no errors
-    Bool_t ok;
-    Char_t cvsRevision[10],cvsDate[11],cvsTime[9];
-    Int_t i,m,n=strlen(str),year,month,day,hours,minuits,seconds;
-    memset(cvsRevision,0,10*sizeof(Char_t));
-    memset(cvsDate,0,11*sizeof(Char_t));    
-    memset(cvsTime,0,9*sizeof(Char_t));
 
-    if(GetDebug()>1)printf("AliITSInitGeometry::ReadVersionString:"
-                       "str=%s length=%d\n",
-                       str,length);
-    if(n<35) return kFALSE; // not enough space for numbers
-    m = sscanf(str,"Major Version= %d  Minor Version= %d Revision: %9s "
-               "Date: %10s %8s",&i,&min,cvsRevision,cvsDate,cvsTime);
-
-    // v11Hybrid geometry is treated as a v11 geometry
-    if(i == 110)i=11;
-
-    ok = m==5;
-    if(!ok) return !ok;
-    m = sscanf(cvsDate,"%d/%d/%d",&year,&month,&day);
-    ok = m==3;
-    if(!ok) return !ok;
-    m = sscanf(cvsTime,"%d:%d:%d",&hours,&minuits,&seconds);
-    ok = m==3;
-    if(!ok) return !ok;
-    dt.Set(year,month,day,hours,minuits,seconds);
-    if(GetDebug()>1)printf("AliITSInitGeometry::ReadVersionString: i=%d "
-                     "min=%d cvsRevision=%s cvsDate=%s cvsTime=%s m=%d\n",
-                       i,min,cvsRevision,cvsDate,cvsTime,m);
-    if(GetDebug()>1)printf("AliITSInitGeometry::ReadVersionString: year=%d"
-                       " month=%d day=%d hours=%d minuits=%d seconds=%d\n",
-                       year,month,day,hours,minuits,seconds);
-    switch (i){
-    case kv11:{
-        maj = kv11;
-    } break;
-    default:{
-        maj = kvDefault;
-    } break;
-    } // end switch
-    return ok;
+  Bool_t retcode=kFALSE;
+  Int_t n=strlen(str);
+  if(n<15) return retcode; // not enough space for numbers
+  Int_t m,i;
+  m = sscanf(str,"Major Version= %d",&i);
+  maj = kvDefault;
+  if(m>0){
+    retcode = kTRUE;
+    if(i==11){
+      maj = kv11;
+    }
+  }
+  return retcode;
 }
+
+

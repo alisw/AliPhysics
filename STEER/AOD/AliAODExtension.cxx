@@ -372,7 +372,24 @@ void AliAODExtension::AddAODtoTreeUserInfo()
       aodEvent->AddObject(o);
     }    
   }
-  
+
+  TList *l = aodEvent->GetList();
+  if (l) {
+    for(int i = 0;i < l->GetEntries(); ++i){
+      TObject *pObject = l->At(i);
+      if(pObject->InheritsFrom(TClonesArray::Class())){
+       ((TClonesArray*)pObject)->Delete();
+      } else if(!pObject->InheritsFrom(TCollection::Class())){
+       TClass *pClass = TClass::GetClass(pObject->ClassName());
+       if (pClass && pClass->GetListOfMethods()->FindObject("Clear")) {
+         AliDebug(1, Form("Clear for object %s class %s", pObject->GetName(), pObject->ClassName()));
+         pObject->Clear();
+       }
+      } else {
+         AliWarning(Form("No method to clear for object %s class %s", pObject->GetName(), pObject->ClassName()));
+      }
+    }
+  }
   fTreeE->GetUserInfo()->Add(aodEvent);
 }
 

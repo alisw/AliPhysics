@@ -166,7 +166,7 @@ Int_t AliHLTGlobalPreprocessor::ProcessStreamerInfo() {
 	    		metaData->SetBeamPeriod(0);
 	    		metaData->SetResponsible("ALICE HLT alice-hlt-core@cern.ch");
 	    		metaData->SetComment("Streamer info for HLTOUT payload");
-	    		//metaData->SetAliRootVersion(ALIROOT_SVN_BRANCH);
+	    		//metaData->SetAliRootVersion(ALIROOT_BRANCH);
 	    	} else {
 	    		return -ENOMEM;
 	    	}

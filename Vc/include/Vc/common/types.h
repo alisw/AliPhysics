@@ -20,6 +20,12 @@
 #ifndef VC_COMMON_TYPES_H
 #define VC_COMMON_TYPES_H
 
+#ifdef VC_CHECK_ALIGNMENT
+#include <cstdlib>
+#include <cstdio>
+#endif
+
+namespace AliRoot {
 namespace Vc
 {
 
@@ -124,9 +130,19 @@ namespace
 #endif
         static  no test(...) { return  no(); }
         enum {
+#ifdef VC_MSVC
+            // I want to test whether implicit cast works. If it works MSVC thinks it should give a warning. Wrong. Shut up.
+#pragma warning(suppress : 4257 4267)
+#endif
             Value = !!(sizeof(test(*static_cast<From *>(0))) == sizeof(yes))
         };
     };
+#if defined(VC_GCC) && VC_GCC < 0x40300
+    // GCC 4.1 is very noisy because of the float->int and double->int type trait tests. We get
+    // around this noise with a little specialization.
+    template<> struct HasImplicitCast<float , int> { enum { Value = true }; };
+    template<> struct HasImplicitCast<double, int> { enum { Value = true }; };
+#endif
 
 #ifdef VC_MSVC
     // MSVC is such a broken compiler :'(
@@ -190,6 +206,20 @@ namespace
     template<typename T> struct IsLikeSignedInteger { enum { Value = IsLikeInteger<T>::Value && !IsUnsignedInteger<T>::Value }; };
 } // anonymous namespace
 
+#ifndef VC_CHECK_ALIGNMENT
+template<typename _T> static Vc_ALWAYS_INLINE void assertCorrectAlignment(const _T *){}
+#else
+template<typename _T> static Vc_ALWAYS_INLINE void assertCorrectAlignment(const _T *ptr)
+{
+    const size_t s = Vc_ALIGNOF(_T);
+    if((reinterpret_cast<size_t>(ptr) & ((s ^ (s & (s - 1))) - 1)) != 0) {
+        fprintf(stderr, "A vector with incorrect alignment has just been created. Look at the stacktrace to find the guilty object.\n");
+        abort();
+    }
+}
+#endif
+
 } // namespace Vc
+} // namespace AliRoot
 
 #endif // VC_COMMON_TYPES_H

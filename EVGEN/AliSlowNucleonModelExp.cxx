@@ -39,7 +39,8 @@ AliSlowNucleonModelExp::AliSlowNucleonModelExp():
     fApplySaturation(kTRUE),
     fnGraySaturation(15),
     fnBlackSaturation(28),
-    fLCPparam(0.585)
+    fLCPparam(0.585),
+    fSigmaSmear(0.25)
 {
   //
   // Default constructor
@@ -48,10 +49,11 @@ AliSlowNucleonModelExp::AliSlowNucleonModelExp():
   fSlownparam[0] = 60.;
   fSlownparam[1] = 469.2;
   fSlownparam[2] = 8.762;
-  printf("\n\n ******** Initializing slow nucleon model with parameters:\n");
+  /*printf("\n\n ******** Initializing slow nucleon model with parameters:\n");
   printf(" \t alpha_{gray} %1.2f  alpha_{black} %1.2f\n",fAlphaGray, fAlphaBlack);
   printf(" \t SATURATION %d w. %d (gray) %d (black) \n\n",fApplySaturation,fnGraySaturation,fnBlackSaturation);
-  printf(" \t LCP parameter %f   Slown parameters = {%f, %f, %f}\n\n",fLCPparam,fSlownparam[0],fSlownparam[1],fSlownparam[2]); 
+  printf(" \t LCP parameter %f   Slown parameters = {%f, %f,
+  %f}\n\n",fLCPparam,fSlownparam[0],fSlownparam[1],fSlownparam[2]); */
 }
 
 
@@ -111,7 +113,9 @@ void AliSlowNucleonModelExp::GetNumberOfSlowNucleons2(AliCollisionGeometry* geo,
 
    Float_t nu = (Float_t) (geo->NN() + geo->NwN() + geo->NNw()); 
    //
-   nu = nu+1.*gRandom->Rndm();
+   //nu = nu+1.*gRandom->Rndm();
+   nu = gRandom->Gaus(nu, 0.5);
+   if(nu<0.) nu=0.;
    //
    Float_t  poverpd = 0.843; 
    Float_t  zAu2zPb = 82./79.;
@@ -156,7 +160,7 @@ void AliSlowNucleonModelExp::GetNumberOfSlowNucleons2(AliCollisionGeometry* geo,
       // Sikler "pasturato" (qui non entra mai!!!!)
       nGrayNeutrons = 0.47 * fAlphaGray *  nu; 
       nBlackNeutrons = 0.88 * fAlphaBlack * nu;      
-      printf("nslowp=0 -> ncoll = %1.0f -> ngrayn = %1.0f  nblackn = %1.0f \n", nu, nGrayNeutrons, nBlackNeutrons);
+      //printf("nslowp=0 -> ncoll = %1.0f -> ngrayn = %1.0f  nblackn = %1.0f \n", nu, nGrayNeutrons, nBlackNeutrons);
     }
     
 //  gray neutrons
@@ -169,6 +173,78 @@ void AliSlowNucleonModelExp::GetNumberOfSlowNucleons2(AliCollisionGeometry* geo,
 //    nbn = gRandom->Binomial((Int_t) fN, p);
     nbn = gRandom->Gaus(nBlackNeutrons, TMath::Sqrt(fN*p*(1-p)));
     
+    
+}
+
+void AliSlowNucleonModelExp::GetNumberOfSlowNucleons2s(AliCollisionGeometry* geo, 
+						      Int_t& ngp, Int_t& ngn, Int_t & nbp, Int_t & nbn) const
+{
+//
+// Return the number of black and gray nucleons
+//
+// Number of collisions
+
+   // based on E910 model ================================================================
+
+   Float_t nu = (Float_t) (geo->NN() + geo->NwN() + geo->NNw()); 
+   //
+   Float_t  poverpd = 0.843; 
+   Float_t  zAu2zPb = 82./79.;
+   Float_t  grayp = (-0.27 + 0.63 * nu - 0.0008 *nu *nu)*poverpd*zAu2zPb;
+   Float_t  nGrayp = gRandom->Gaus(grayp, fSigmaSmear);
+   if(nGrayp<0.) nGrayp=0.;
+
+//  gray protons
+    Double_t p=0.;
+    p = nGrayp/fP;
+    ngp = gRandom->Binomial((Int_t) fP, p);
+    //ngp = gRandom->Gaus(nGrayp, TMath::Sqrt(fP*p*(1-p)));
+    if(nGrayp<0.) ngp=0;
+    
+    //Float_t blackovergray = 3./7.;// from spallation
+    Float_t blackovergray = 0.65; // from COSY
+    //Float_t blackp  = blackovergray*grayp; 
+    //Float_t nBlackp = gRandom->Gaus(nblackp, fSigmaSmear);
+    Float_t nBlackp = blackovergray*nGrayp;
+    if(nBlackp<0.) nBlackp=0.;
+
+//  black protons
+    p =  nBlackp/fP;
+    nbp = gRandom->Binomial((Int_t) fP, p);
+    //nbp = gRandom->Gaus(nBlackp, TMath::Sqrt(fP*p*(1-p)));
+    if(nBlackp<0.) nbp=0;
+    
+    Float_t nGrayNeutrons = 0.;
+    Float_t nBlackNeutrons = 0.;
+    Float_t cp = (nGrayp+nBlackp)/fLCPparam;
+    
+    if(cp>0.){
+      Float_t nSlow = fSlownparam[0]+fSlownparam[1]/(-fSlownparam[2]-cp);
+      
+      nGrayNeutrons = nSlow * 0.1; 
+      nBlackNeutrons = nSlow - nGrayNeutrons;
+    }
+    else{
+      // Sikler "pasturato" (qui non entra mai!!!!)
+      nGrayNeutrons = 0.47 * fAlphaGray *  nu; 
+      nBlackNeutrons = 0.88 * fAlphaBlack * nu;      
+      //printf("nslowp=0 -> ncoll = %1.0f -> ngrayn = %1.0f  nblackn = %1.0f \n", nu, nGrayNeutrons, nBlackNeutrons);
+    }
+    //
+    if(nGrayNeutrons<0.) nGrayNeutrons=0.;
+    if(nBlackNeutrons<0.) nBlackNeutrons=0.;
+    
+//  gray neutrons
+    p =  nGrayNeutrons/fN;
+//    ngn = gRandom->Binomial((Int_t) fN, p);
+    ngn = gRandom->Gaus(nGrayNeutrons, TMath::Sqrt(fN*p*(1-p)));
+    if(nGrayNeutrons<0.) ngn=0;
+
+//  black neutrons
+    p =  nBlackNeutrons/fN;
+//    nbn = gRandom->Binomial((Int_t) fN, p);
+    nbn = gRandom->Gaus(nBlackNeutrons, TMath::Sqrt(fN*p*(1-p)));
+    if(nBlackNeutrons<0.) nbn=0;
     
 }
 

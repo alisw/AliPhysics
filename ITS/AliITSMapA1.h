@@ -47,7 +47,7 @@ class AliITSMapA1 : public AliITSMap{
     // Flag a hit as used
     virtual  void  FlagHit(Int_t iz, Int_t ix);
     // Test hit status
-    virtual FlagType TestHit(Int_t iz, Int_t ix);
+    virtual FlagTypeITS TestHit(Int_t iz, Int_t ix);
     // Get signal from map
     virtual Double_t  GetSignal(Int_t iz, Int_t ix) const;
     // Get max index inmap

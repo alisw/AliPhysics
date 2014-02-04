@@ -20,6 +20,7 @@
 #ifndef VC_SCALAR_WRITEMASKEDVECTOR_H
 #define VC_SCALAR_WRITEMASKEDVECTOR_H
 
+namespace AliRoot {
 namespace Vc
 {
 namespace Scalar
@@ -32,46 +33,46 @@ template<typename T> class WriteMaskedVector
     typedef typename Vector<T>::EntryType EntryType;
     public:
         //prefix
-        inline Vector<T> &operator++() { if (mask) ++vec->m_data; return *vec; }
-        inline Vector<T> &operator--() { if (mask) --vec->m_data; return *vec; }
+        Vc_ALWAYS_INLINE Vector<T> &operator++() { if (mask) ++vec->m_data; return *vec; }
+        Vc_ALWAYS_INLINE Vector<T> &operator--() { if (mask) --vec->m_data; return *vec; }
         //postfix
-        inline Vector<T> operator++(int) { if (mask) vec->m_data++; return *vec; }
-        inline Vector<T> operator--(int) { if (mask) vec->m_data--; return *vec; }
+        Vc_ALWAYS_INLINE Vector<T> operator++(int) { if (mask) vec->m_data++; return *vec; }
+        Vc_ALWAYS_INLINE Vector<T> operator--(int) { if (mask) vec->m_data--; return *vec; }
 
-        inline Vector<T> &operator+=(Vector<T> x) { if (mask) vec->m_data += x.m_data; return *vec; }
-        inline Vector<T> &operator-=(Vector<T> x) { if (mask) vec->m_data -= x.m_data; return *vec; }
-        inline Vector<T> &operator*=(Vector<T> x) { if (mask) vec->m_data *= x.m_data; return *vec; }
-        inline Vector<T> &operator/=(Vector<T> x) { if (mask) vec->m_data /= x.m_data; return *vec; }
+        Vc_ALWAYS_INLINE Vector<T> &operator+=(Vector<T> x) { if (mask) vec->m_data += x.m_data; return *vec; }
+        Vc_ALWAYS_INLINE Vector<T> &operator-=(Vector<T> x) { if (mask) vec->m_data -= x.m_data; return *vec; }
+        Vc_ALWAYS_INLINE Vector<T> &operator*=(Vector<T> x) { if (mask) vec->m_data *= x.m_data; return *vec; }
+        Vc_ALWAYS_INLINE Vector<T> &operator/=(Vector<T> x) { if (mask) vec->m_data /= x.m_data; return *vec; }
 
-        inline Vector<T> &operator=(Vector<T> x) {
+        Vc_ALWAYS_INLINE Vector<T> &operator=(Vector<T> x) {
             vec->assign(x, mask);
             return *vec;
         }
 
-        inline Vector<T> &operator+=(EntryType x) { if (mask) vec->m_data += x; return *vec; }
-        inline Vector<T> &operator-=(EntryType x) { if (mask) vec->m_data -= x; return *vec; }
-        inline Vector<T> &operator*=(EntryType x) { if (mask) vec->m_data *= x; return *vec; }
-        inline Vector<T> &operator/=(EntryType x) { if (mask) vec->m_data /= x; return *vec; }
+        Vc_ALWAYS_INLINE Vector<T> &operator+=(EntryType x) { if (mask) vec->m_data += x; return *vec; }
+        Vc_ALWAYS_INLINE Vector<T> &operator-=(EntryType x) { if (mask) vec->m_data -= x; return *vec; }
+        Vc_ALWAYS_INLINE Vector<T> &operator*=(EntryType x) { if (mask) vec->m_data *= x; return *vec; }
+        Vc_ALWAYS_INLINE Vector<T> &operator/=(EntryType x) { if (mask) vec->m_data /= x; return *vec; }
 
-        inline Vector<T> &operator=(EntryType x) {
+        Vc_ALWAYS_INLINE Vector<T> &operator=(EntryType x) {
             vec->assign(Vector<T>(x), mask);
             return *vec;
         }
 
-        template<typename F> inline void call(const F &f) const {
+        template<typename F> Vc_ALWAYS_INLINE void call(const F &f) const {
             vec->call(f, mask);
         }
-        template<typename F> inline void call(F &f) const {
+        template<typename F> Vc_ALWAYS_INLINE void call(F &f) const {
             vec->call(f, mask);
         }
-        template<typename F> inline Vector<T> apply(const F &f) const {
+        template<typename F> Vc_ALWAYS_INLINE Vector<T> apply(const F &f) const {
             if (mask) {
                 return Vector<T>(f(vec->m_data));
             } else {
                 return *vec;
             }
         }
-        template<typename F> inline Vector<T> apply(F &f) const {
+        template<typename F> Vc_ALWAYS_INLINE Vector<T> apply(F &f) const {
             if (mask) {
                 return Vector<T>(f(vec->m_data));
             } else {
@@ -79,11 +80,12 @@ template<typename T> class WriteMaskedVector
             }
         }
     private:
-        WriteMaskedVector(Vector<T> *v, Mask k) : vec(v), mask(k) {}
+        Vc_ALWAYS_INLINE WriteMaskedVector(Vector<T> *v, Mask k) : vec(v), mask(k) {}
         Vector<T> *const vec;
         Mask mask;
 };
 
 } // namespace Scalar
 } // namespace Vc
+} // namespace AliRoot
 #endif // VC_SCALAR_WRITEMASKEDVECTOR_H

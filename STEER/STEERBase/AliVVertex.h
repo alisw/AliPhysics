@@ -13,7 +13,7 @@
 class AliVVertex: public TNamed {
 
 public:
-  AliVVertex() { }
+  AliVVertex() : TNamed() { }
   virtual ~AliVVertex() { }
   AliVVertex(const AliVVertex& vVert); 
   AliVVertex& operator=(const AliVVertex& vVert);

@@ -76,6 +76,7 @@ enum EAliAnalysisFlags {
    AliAnalysisManager& operator=(const AliAnalysisManager& other);
    
    // Event loop control
+   Bool_t              EventLoop(Long64_t nevents);
    virtual Int_t       GetEntry(Long64_t entry, Int_t getall = 0);
    virtual Bool_t      Init(TTree *tree);
    virtual Bool_t      Notify();
@@ -132,7 +133,8 @@ enum EAliAnalysisFlags {
    static Int_t        GetGlobalInt(const char *key, Bool_t &valid);
    static Double_t     GetGlobalDbl(const char *key, Bool_t &valid);
    TMap               *GetGlobals()               {return fGlobals;}
-   static Bool_t       IsMacroLoaded(const char filename);
+   static Bool_t       IsMacroLoaded(const char * filename);
+   Bool_t              IsMCLoop() const           {return fMCLoop;}
    static Bool_t       IsPipe(std::ostream &out);
    Bool_t              IsProofMode() const        {return (fMode==kProofAnalysis)?kTRUE:kFALSE;}
    Bool_t              IsRemote() const           {return fIsRemote;}
@@ -151,6 +153,7 @@ enum EAliAnalysisFlags {
    void                SetDisableBranches(Bool_t disable=kTRUE)   {Changed(); TObject::SetBit(kDisableBranches,disable);}
    void                SetAsyncReading(Bool_t flag=kTRUE)    {fAsyncReading = flag;}
    void                SetExternalLoop(Bool_t flag)               {Changed(); TObject::SetBit(kExternalLoop,flag);}
+   void                SetMCLoop(Bool_t flag=kTRUE)               {fMCLoop = flag;}
    void                SetEventPool(AliVEventPool* const epool)   {Changed(); fEventPool = epool;}
    void                SetFileInfoLog(const char *name) {TObject::SetBit(kCollectThroughput,kTRUE); fFileInfoLog = name;}
    void                SetGridHandler(AliAnalysisGrid * const handler) {Changed(); fGridHandler = handler;}
@@ -245,6 +248,7 @@ private:
    Bool_t                  fMustClean;           // Flag to let ROOT do cleanup
    Bool_t                  fIsRemote;            //! Flag is set for remote analysis
    Bool_t                  fLocked;              //! Lock for the manager and handlers
+   Bool_t                  fMCLoop;              // External MC generator loop
    UInt_t                  fDebug;               // Debug level
    TString                 fSpecialOutputLocation; // URL/path where the special outputs will be copied
    TObjArray              *fTasks;               // List of analysis tasks
@@ -284,6 +288,6 @@ private:
    static TString          fgCommonFileName;     //! Common output file name (not streamed)
    static TString          fgMacroNames;         //! Loaded macro names
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
-   ClassDef(AliAnalysisManager,18)  // Analysis manager class
+   ClassDef(AliAnalysisManager,19)  // Analysis manager class
 };   
 #endif

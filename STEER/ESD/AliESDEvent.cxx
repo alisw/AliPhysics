@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id: AliESDEvent.cxx 64008 2013-08-28 13:09:59Z hristov $ */
 
 //-----------------------------------------------------------------
 //           Implementation of the AliESDEvent class
@@ -69,15 +69,13 @@
 #include "AliRawDataErrorLog.h"
 #include "AliLog.h"
 #include "AliESDACORDE.h"
+#include "AliESDAD.h"
 #include "AliESDHLTDecision.h"
 #include "AliCentrality.h"
 #include "AliESDCosmicTrack.h"
 #include "AliTriggerConfiguration.h"
 #include "AliTriggerClass.h"
 #include "AliTriggerCluster.h"
-#ifdef MFT_UPGRADE
-#include "AliESDMFT.h"
-#endif
 #include "AliEventplane.h"
 
 
@@ -117,12 +115,9 @@ ClassImp(AliESDEvent)
 							"PHOSCells",
 							"AliRawDataErrorLogs",
 							"AliESDACORDE",
+							"AliESDAD",
 							"AliTOFHeader",
-                                                        "CosmicTracks"
-                              #ifdef MFT_UPGRADE
-//	                        , "AliESDMFT"
-							#endif
-  };
+                                                        "CosmicTracks"};
 
 //______________________________________________________________________________
 AliESDEvent::AliESDEvent():
@@ -141,6 +136,7 @@ AliESDEvent::AliESDEvent():
   fPHOSTrigger(0),
   fEMCALTrigger(0),
   fESDACORDE(0),
+  fESDAD(0),
   fTrdTrigger(0),
   fSPDPileupVertices(0),
   fTrkPileupVertices(0),
@@ -168,10 +164,9 @@ AliESDEvent::AliESDEvent():
   fEventplane(0),
   fDetectorStatus(0xFFFFFFFF),
   fDAQDetectorPattern(0xFFFF),
-  fDAQAttributes(0xFFFF)
-  #ifdef MFT_UPGRADE
-//  , fESDMFT(0)
-  #endif
+  fDAQAttributes(0xFFFF),
+  fNTOFclusters(0),
+  fTOFcluster(0)
 {
 }
 //______________________________________________________________________________
@@ -191,6 +186,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fPHOSTrigger(new AliESDCaloTrigger(*esd.fPHOSTrigger)),
   fEMCALTrigger(new AliESDCaloTrigger(*esd.fEMCALTrigger)),
   fESDACORDE(new AliESDACORDE(*esd.fESDACORDE)),
+  fESDAD(new AliESDAD(*esd.fESDAD)),
   fTrdTrigger(new AliESDTrdTrigger(*esd.fTrdTrigger)),
   fSPDPileupVertices(new TClonesArray(*esd.fSPDPileupVertices)),
   fTrkPileupVertices(new TClonesArray(*esd.fTrkPileupVertices)),
@@ -219,12 +215,10 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fEventplane(new AliEventplane(*esd.fEventplane)),
   fDetectorStatus(esd.fDetectorStatus),
   fDAQDetectorPattern(esd.fDAQDetectorPattern),
-  fDAQAttributes(esd.fDAQAttributes)
-  #ifdef MFT_UPGRADE
-//  , fESDMFT(new AliESDMFT(*esd.fESDMFT))
-  #endif
-
-
+  fDAQAttributes(esd.fDAQAttributes),
+  fNTOFclusters(esd.fNTOFclusters),
+  //  fTOFcluster(esd.fTOFcluster)
+  fTOFcluster(new TObjArray(*(esd.fTOFcluster)))
 {
   printf("copying ESD event...\n");   // AU
   // CKB init in the constructor list and only add here ...
@@ -257,21 +251,18 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   AddObject(fCosmicTracks);
   AddObject(fErrorLogs);
   AddObject(fESDACORDE);
+  AddObject(fESDAD);
   AddObject(fTOFHeader);
   AddObject(fMuonClusters);
   AddObject(fMuonPads);
-  #ifdef MFT_UPGRADE
-//  AddObject(fESDMFT);
-  #endif
   GetStdContent();
-
 }
 
 //______________________________________________________________________________
 AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
 
   // Assignment operator
-
+  printf("operator = ESD\n");
   if(&source == this) return *this;
   AliVEvent::operator=(source);
 
@@ -365,6 +356,10 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
   fDetectorStatus = source.fDetectorStatus;
   fDAQDetectorPattern = source.fDAQDetectorPattern;
   fDAQAttributes = source.fDAQAttributes;
+  fNTOFclusters = source.fNTOFclusters;
+
+  *fTOFcluster = *source.fTOFcluster;
+  //  fTOFcluster = new TObjArray(*(source.fTOFcluster));
 
   return *this;
 }
@@ -388,6 +383,11 @@ AliESDEvent::~AliESDEvent()
   if (fCentrality) delete fCentrality;
   if (fEventplane) delete fEventplane;
   
+
+  if(fTOFcluster){
+    fTOFcluster->Clear();
+    delete fTOFcluster;
+  }
 }
 
 void AliESDEvent::Copy(TObject &obj) const {
@@ -487,6 +487,13 @@ void AliESDEvent::ResetStdContent()
     fESDACORDE->~AliESDACORDE();
     new (fESDACORDE) AliESDACORDE();	
   } 
+
+  if(fESDAD){
+    fESDAD->~AliESDAD();
+    new (fESDAD) AliESDAD();	
+  } 
+
+
   if(fESDTZERO) fESDTZERO->Reset(); 
   // CKB no clear/reset implemented
   if(fTPCVertex){
@@ -517,12 +524,6 @@ void AliESDEvent::ResetStdContent()
     fTrdTrigger->~AliESDTrdTrigger();
     new (fTrdTrigger) AliESDTrdTrigger();
   }
-  #ifdef MFT_UPGRADE
-  //if(fESDMFT){
-//	fESDMFT->~AliESDMFT();
-//	new (fESDMFT) AliESDMFT();
- // }  
-  #endif
 	
   if(fPHOSTrigger)fPHOSTrigger->DeAllocate(); 
   if(fEMCALTrigger)fEMCALTrigger->DeAllocate(); 
@@ -625,10 +626,6 @@ void AliESDEvent::Print(Option_t *) const
   printf("                 muClusters %d\n", fMuonClusters ? fMuonClusters->GetEntriesFast() : 0);
   printf("                 muPad     %d\n", fMuonPads ? fMuonPads->GetEntriesFast() : 0);
   if (fCosmicTracks) printf("                 Cosmics   %d\n",  GetNumberOfCosmicTracks());
-  #ifdef MFT_UPGRADE
-  //printf("                 MFT     %s\n", (fESDMFT ? "yes" : "no"));
-  #endif
-	
 	
   TObject* pHLTDecision=GetHLTTriggerDecision();
   printf("HLT trigger decision: %s\n", pHLTDecision?pHLTDecision->GetOption():"not available");
@@ -1356,19 +1353,19 @@ void AliESDEvent::SetTZEROData(const AliESDTZERO * obj)
     *fESDTZERO = *obj;
 }
 
-#ifdef MFT_UPGRADE
-//void AliESDEvent::SetMFTData(AliESDMFT * obj)
-//{ 
-//  if(fESDMFT)
-//	*fESDMFT = *obj;
-//}
-#endif
 
 void AliESDEvent::SetACORDEData(AliESDACORDE * obj)
 {
   if(fESDACORDE)
     *fESDACORDE = *obj;
 }
+
+void AliESDEvent::SetADData(AliESDAD * obj)
+{
+  if(fESDAD)
+    *fESDAD = *obj;
+}
+
 
 
 void AliESDEvent::GetESDfriend(AliESDfriend *ev) const 
@@ -1439,11 +1436,10 @@ void AliESDEvent::GetStdContent()
   fPHOSCells = (AliESDCaloCells*)fESDObjects->FindObject(fgkESDListName[kPHOSCells]);
   fErrorLogs = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kErrorLogs]);
   fESDACORDE = (AliESDACORDE*)fESDObjects->FindObject(fgkESDListName[kESDACORDE]);
+  fESDAD = (AliESDAD*)fESDObjects->FindObject(fgkESDListName[kESDAD]);
   fTOFHeader = (AliTOFHeader*)fESDObjects->FindObject(fgkESDListName[kTOFHeader]);
   fCosmicTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kCosmicTracks]);
-  #ifdef MFT_UPGRADE
- // fESDMFT = (AliESDMFT*)fESDObjects->FindObject(fgkESDListName[kESDMFT]);
-  #endif
+  fTOFcluster = new TObjArray(1);
 }
 
 void AliESDEvent::SetStdNames(){
@@ -1506,11 +1502,9 @@ void AliESDEvent::CreateStdContent()
   AddObject(new AliESDCaloCells());
   AddObject(new TClonesArray("AliRawDataErrorLog",0));
   AddObject(new AliESDACORDE()); 
+  AddObject(new AliESDAD()); 
   AddObject(new AliTOFHeader());
   AddObject(new TClonesArray("AliESDCosmicTrack",0));
-  #ifdef MFT_UPGRADE
-  //AddObject(new AliESDMFT());
-  #endif
 	
   // check the order of the indices against enum...
 
@@ -1619,9 +1613,12 @@ void AliESDEvent::WriteToTree(TTree* tree) const {
       tree->Bronch(branchname, obj->ClassName(), fESDObjects->GetObjectRef(obj),kBufsize, splitLevel);
     }
   }
+
   tree->Branch("fDetectorStatus",(void*)&fDetectorStatus,"fDetectorStatus/l");
   tree->Branch("fDAQDetectorPattern",(void*)&fDAQDetectorPattern,"fDAQDetectorPattern/i");
   tree->Branch("fDAQAttributes",(void*)&fDAQAttributes,"fDAQAttributes/i");
+  tree->Branch("fNTOFclusters",(void *) &fNTOFclusters,"fNTOFclusters/i");
+  tree->Branch("fTOFcluster","TObjArray",(void *) &fTOFcluster);
 }
 
 
@@ -1724,6 +1721,8 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
       tree->SetBranchAddress("fDetectorStatus",&fDetectorStatus); //PH probably redundant
       tree->SetBranchAddress("fDAQDetectorPattern",&fDAQDetectorPattern);
       tree->SetBranchAddress("fDAQAttributes",&fDAQAttributes);
+      if(tree->GetBranch("fNTOFclusters")) tree->SetBranchAddress("fNTOFclusters",(UInt_t *) &fNTOFclusters);
+      if(tree->GetBranch("fTOFcluster")) tree->SetBranchAddress("fTOFcluster",&fTOFcluster);
       GetStdContent(); 
       fOldMuonStructure = fESDObjects->TestBit(BIT(23));
       fConnected = true;
@@ -1790,6 +1789,9 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
     tree->SetBranchAddress("fDetectorStatus",&fDetectorStatus);
     tree->SetBranchAddress("fDAQDetectorPattern",&fDAQDetectorPattern);
     tree->SetBranchAddress("fDAQAttributes",&fDAQAttributes);
+    if(tree->GetBranch("fNTOFclusters")) tree->SetBranchAddress("fNTOFclusters",(UInt_t *) &fNTOFclusters);
+    if(tree->GetBranch("fTOFcluster")) tree->SetBranchAddress("fTOFcluster",&fTOFcluster);
+
     GetStdContent();
     // when reading back we are not owner of the list 
     // must not delete it
@@ -1828,6 +1830,9 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
     tree->SetBranchAddress("fDetectorStatus",&fDetectorStatus);
     tree->SetBranchAddress("fDAQDetectorPattern",&fDAQDetectorPattern);
     tree->SetBranchAddress("fDAQAttributes",&fDAQAttributes);
+    if(tree->GetBranch("fNTOFclusters")) tree->SetBranchAddress("fNTOFclusters",(UInt_t *) &fNTOFclusters);
+    if(tree->GetBranch("fTOFcluster")) tree->SetBranchAddress("fTOFcluster",&fTOFcluster);
+
     GetStdContent();
     // when reading back we are not owner of the list 
     // must not delete it
@@ -1927,11 +1932,6 @@ void AliESDEvent::CopyFromOldESD()
       AddCaloCluster(fESDOld->GetCaloCluster(i));
     }
 	  
-	#ifdef MFT_UPGRADE  
-	// MFT
-//	if (fESDOld->GetMFTData()) SetMFTData(fESDOld->GetMFTData());
-    #endif
-
   }// if fesdold
 }
 
@@ -2150,4 +2150,47 @@ Float_t AliESDEvent::GetVZEROEqMultiplicity(Int_t i) const
   Float_t factor = fESDRun->GetVZEROEqFactors(i)*8./factorSum;
 
   return (fESDVZERO->GetMultiplicity(i)/factor);
+}
+
+void AliESDEvent::SetTOFcluster(Int_t ntofclusters,AliESDTOFcluster *cluster,Int_t *mapping){
+  fNTOFclusters = 0;
+
+  fTOFcluster->Clear();
+  fTOFcluster->Expand(1);      
+      
+  for(Int_t i=0;i < ntofclusters;i++){
+
+    if(cluster[i].GetNMatchableTracks() || !mapping){
+      fTOFcluster->Expand(fNTOFclusters+1);      
+      fTOFcluster->AddAt(&cluster[i],fNTOFclusters);
+      if(mapping)
+	mapping[i] = fNTOFclusters;
+      fNTOFclusters++;
+    }
+  }
+  if(mapping)
+    printf("TOF cluster before of matching = %i , after = %i\n",ntofclusters,fNTOFclusters);
+   
+
+}
+void AliESDEvent::SetTOFcluster(Int_t ntofclusters,AliESDTOFcluster *cluster[],Int_t *mapping){
+  fNTOFclusters = 0;
+
+  fTOFcluster->Clear();
+  fTOFcluster->Expand(1);      
+      
+  for(Int_t i=0;i < ntofclusters;i++){
+
+    if(cluster[i]->GetNMatchableTracks() || !mapping){
+      fTOFcluster->Expand(fNTOFclusters+1);      
+      fTOFcluster->AddAt(cluster[i],fNTOFclusters);
+      if(mapping)
+	mapping[i] = fNTOFclusters;
+      fNTOFclusters++;
+    }
+  }
+  if(mapping)
+    printf("TOF cluster before of matching = %i , after = %i\n",ntofclusters,fNTOFclusters);
+   
+
 }

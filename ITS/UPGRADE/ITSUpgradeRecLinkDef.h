@@ -25,6 +25,7 @@
 #pragma link C++ class AliITSUTrackCond+;
 #pragma link C++ class AliITSUTrackHyp+;
 #pragma link C++ class AliITSUMatLUT+;
+#pragma link C++ class AliITSUVertexer+;
 
 //
 

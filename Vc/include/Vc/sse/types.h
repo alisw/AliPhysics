@@ -22,7 +22,6 @@
 
 #include "intrinsics.h"
 #include "../common/storage.h"
-#include "macros.h"
 
 #define VC_DOUBLE_V_SIZE 2
 #define VC_FLOAT_V_SIZE 4
@@ -33,7 +32,9 @@
 #define VC_USHORT_V_SIZE 8
 
 #include "../common/types.h"
+#include "macros.h"
 
+namespace AliRoot {
 namespace Vc
 {
 namespace SSE
@@ -63,15 +64,28 @@ namespace SSE
 
     class M256 {
         public:
-            //inline M256() {}
-            //inline M256(_M128 a, _M128 b) { d[0] = a; d[1] = b; }
-            static inline M256 dup(_M128 a) { M256 r; r.d[0] = a; r.d[1] = a; return r; }
-            static inline M256 create(_M128 a, _M128 b) { M256 r; r.d[0] = a; r.d[1] = b; return r; }
-            inline _M128 &operator[](int i) { return d[i]; }
-            inline const _M128 &operator[](int i) const { return d[i]; }
+            //Vc_INTRINSIC M256() {}
+            //Vc_INTRINSIC M256(_M128 a, _M128 b) { d[0] = a; d[1] = b; }
+            static Vc_INTRINSIC Vc_CONST M256 dup(_M128 a) { M256 r; r.d[0] = a; r.d[1] = a; return r; }
+            static Vc_INTRINSIC Vc_CONST M256 create(_M128 a, _M128 b) { M256 r; r.d[0] = a; r.d[1] = b; return r; }
+            Vc_INTRINSIC _M128 &operator[](int i) { return d[i]; }
+            Vc_INTRINSIC const _M128 &operator[](int i) const { return d[i]; }
         private:
+#ifdef VC_COMPILE_BENCHMARKS
+        public:
+#endif
             _M128 d[2];
     };
+#ifdef VC_CHECK_ALIGNMENT
+static Vc_ALWAYS_INLINE void assertCorrectAlignment(const M256 *ptr)
+{
+    const size_t s = sizeof(__m128);
+    if((reinterpret_cast<size_t>(ptr) & ((s ^ (s & (s - 1))) - 1)) != 0) {
+        fprintf(stderr, "A vector with incorrect alignment has just been created. Look at the stacktrace to find the guilty object.\n");
+        abort();
+    }
+}
+#endif
 
     template<typename T> struct ParameterHelper {
         typedef T ByValue;
@@ -142,5 +156,8 @@ namespace SSE
 
 } // namespace SSE
 } // namespace Vc
+} // namespace AliRoot
+
+#include "undomacros.h"
 
 #endif // SSE_TYPES_H

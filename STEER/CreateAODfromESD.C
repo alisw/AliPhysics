@@ -1,4 +1,4 @@
-#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <cstring>
 #include <TChain.h>
 #include <TSystem.h>
 #include "AliAnalysisManager.h"
@@ -6,27 +6,15 @@
 #include "AliAODHandler.h"
 #include "AliAnalysisTaskESDfilter.h"
 #include "AliAnalysisDataContainer.h"
-#endif
+#include "AliTaskCDBconnect.h"
 
 void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 		      const char *outFileName = "AliAOD.root",
+		      const char *cdbLocation = "raw://",
+		      const char *grpSpecific = "",
 		      Bool_t bKineFilter = kTRUE) 
 {
   
-    gSystem->Load("libTree");
-    gSystem->Load("libGeom");
-    gSystem->Load("libPhysics");
-    gSystem->Load("libVMC");
-    gSystem->Load("libSTEERBase");
-    gSystem->Load("libESD");
-    gSystem->Load("libAOD");
-    
-    gSystem->Load("libANALYSIS");
-    gSystem->Load("libANALYSISalice");
-    gSystem->Load("libCORRFW");
-    gSystem->Load("libPWGHFbase");
-    gSystem->Load("libPWGmuon");
-
     TChain *chain = new TChain("esdTree");
     // Steering input chain
     chain->Add(inFileName);
@@ -36,6 +24,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     AliESDInputHandler* inpHandler = new AliESDInputHandler();
     inpHandler->SetReadFriends(kFALSE);
     inpHandler->SetReadTags();
+    inpHandler->NeedField();
     mgr->SetInputEventHandler  (inpHandler);
     // Output
     AliAODHandler* aodHandler   = new AliAODHandler();
@@ -55,6 +44,14 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     // to the AODHandler, this will not be needed when
     // AODHandler goes to ANALYSISalice
     
+    // Connect CDB: needed by AliEMCALRecoUtils
+    Int_t run=-1; // Do not use 0, it is the default MC run
+    AliTaskCDBconnect *task= new AliTaskCDBconnect("CDBconnect", cdbLocation, run);
+    if (strlen(grpSpecific)>0) task->SetSpecificStorage("GRP/GRP/Data",grpSpecific);
+    mgr->AddTask(task);
+    AliAnalysisDataContainer *cinput0 = mgr->GetCommonInputContainer();    
+    mgr->ConnectInput(task,  0, cinput0);
+
     // Barrel Tracks
     AliAnalysisTaskESDfilter *filter = new AliAnalysisTaskESDfilter("Filter");
     mgr->AddTask(filter);

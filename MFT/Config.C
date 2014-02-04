@@ -232,7 +232,7 @@ void Config() {
   }
   if (iPIPE) {
     //    AliPIPE *PIPE = new AliPIPEv3("PIPE", "Beam Pipe");
-    AliPIPE *PIPE = new AliPIPEv4("PIPE", "Beam Pipe", 1.98, 0.08);
+    AliPIPE *PIPE = new AliPIPEv4("PIPE", "Beam Pipe");
   }
   if (iZDC) {
     AliZDC *ZDC = new AliZDCv3("ZDC", "normal ZDC");
@@ -530,6 +530,20 @@ AliGenerator* Hijing2500Cocktail() {
   cocktail->SetTrackingFlag(1);
 
   return cocktail;
+
+}
+
+//====================================================================================================================================================
+
+AliGenerator* QEDGeneratorPbPb() {
+  
+  AliGenEpEmv1 *generQED = new AliGenEpEmv1();
+  generQED->SetEnergyCMS(energy);
+  generQED->SetProjectile("A", 208, 82);
+  generQED->SetTarget ("A", 208, 82);
+  generQED->SetYRange(-8.5, 0.);
+  generQED->SetPtRange(0.4e-3, 1.0); // Set pt limits (GeV) for e+-
+  generQED->SetDebug(0);            // Set debug level (0 = silent)
 
 }
 

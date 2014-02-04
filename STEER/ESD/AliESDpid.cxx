@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id: AliESDpid.cxx 64123 2013-09-05 15:09:53Z morsch $ */
 
 //-----------------------------------------------------------------
 //           Implementation of the combined PID class
@@ -40,7 +40,7 @@
 
 ClassImp(AliESDpid)
 
-Int_t AliESDpid::MakePID(AliESDEvent *event, Bool_t TPConly, Float_t timeZeroTOF) const {
+Int_t AliESDpid::MakePID(AliESDEvent *event, Bool_t TPConly, Float_t /*timeZeroTOF*/) const {
   //
   //  Calculate probabilities for all detectors, except if TPConly==kTRUE
   //  and combine PID
@@ -61,7 +61,7 @@ Int_t AliESDpid::MakePID(AliESDEvent *event, Bool_t TPConly, Float_t timeZeroTOF
     MakeTPCPID(track);
     if (!TPConly) {
       MakeITSPID(track);
-      MakeTOFPID(track, timeZeroTOF);
+      //MakeTOFPID(track, timeZeroTOF);
       //MakeHMPIDPID(track);
       //MakeTRDPID(track);
     }
@@ -277,7 +277,7 @@ void AliESDpid::MakeTOFPID(AliESDtrack *track, Float_t /*timeZeroTOF*/) const
   Int_t ibin = fTOFResponse.GetMomBin(track->GetP());
   Float_t timezero = fTOFResponse.GetT0bin(ibin);
 
-  Double_t time[AliPID::kSPECIES];
+  Double_t time[AliPID::kSPECIESC];
   track->GetIntegratedTimes(time);
 
   Double_t sigma[AliPID::kSPECIES];
@@ -397,7 +397,7 @@ Bool_t AliESDpid::CheckTOFMatching(AliESDtrack *track) const{
   //
     Bool_t status = kFALSE;
     
-    Double_t exptimes[5];
+    Double_t exptimes[AliPID::kSPECIESC];
     track->GetIntegratedTimes(exptimes);
     
     Float_t p = track->P();
@@ -466,4 +466,54 @@ Float_t AliESDpid::GetNumberOfSigmasTOFold(const AliVParticle *track, AliPID::EP
   
   Double_t expTime = fTOFResponse.GetExpectedSignal(vtrack,type);
   return (tofTime - fTOFResponse.GetStartTime(vtrack->P()) - expTime)/fTOFResponse.GetExpectedSigma(vtrack->P(),expTime,AliPID::ParticleMassZ(type));
+}
+
+//_________________________________________________________________________
+void AliESDpid::SetPIDForTracking(AliESDtrack *esdtr) const
+{
+  // assign mass for tracking
+  //
+
+  // in principle AliPIDCombined could be used to also set priors
+  //AliPIDCombined pidProb;
+  //pidProb.SetDetectorMask(kDetTPC);              // use only TPC information, couls also be changed
+  //pidProb.SetSelectedSpecies(AliPID::kSPECIESC); // number of species to use
+  //pidProb.SetDefaultTPCPriors();                 // load default priors
+
+  Double_t prob[AliPID::kSPECIESC]={0.};
+  EDetPidStatus pidStatus=ComputePIDProbability(kTPC, esdtr, AliPID::kSPECIESC, prob);
+  // check if a valid signal was found, otherwise return pion mass
+  if (pidStatus!=kDetPidOk) {
+    esdtr->SetPIDForTracking(AliPID::kPion);
+    return;
+  }
+
+  // or with AliPIDCombined
+  // pidProb.ComputeProbabilities(esdtr, this, p);
+
+  // find max probability
+  Float_t max=0.;
+  Int_t pid=-1;
+  for (Int_t i=0; i<AliPID::kSPECIESC; ++i) if (prob[i]>max) {pid=i; max=prob[i];}
+
+  //int pid = AliPID::kPion; // this should be substituted by real most probable TPC pid (e,mu -> pion) or poin if no PID possible
+
+  //
+  if (pid<AliPID::kPion || pid>AliPID::kSPECIESC-1) pid = AliPID::kPion;
+  //
+  esdtr->SetPIDForTracking( pid );
+  //
+}
+
+
+//_________________________________________________________________________
+void AliESDpid::MakePIDForTracking(AliESDEvent *event) const
+{
+  // assign masses using for tracking
+  Int_t nTrk=event->GetNumberOfTracks();
+  for (Int_t iTrk=nTrk; iTrk--;) {  
+    AliESDtrack *track = event->GetTrack(iTrk);
+    SetPIDForTracking(track);
+  }
+
 }

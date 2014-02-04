@@ -18,6 +18,11 @@ class AliAODMCHeader;
 class AliMCParticle;
 class TClonesArray;
 
+#include "AliESDtrack.h"
+#include "AliAODTrack.h"
+#include "AliAODPid.h"
+#include "AliESDpid.h"
+
 class AliAnalysisTaskMCParticleFilter : public AliAnalysisTaskSE
 {
  public:

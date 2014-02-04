@@ -39,6 +39,9 @@ class AliGenTunedOnPbPb : public AliGenerator
 
   void SetCentralityDependence(Bool_t flag=kTRUE){fChangeWithCentrality=flag;};
   void SetYmax(Float_t value){fYMaxValue=value;};
+  void SetYmaxFlatness(Float_t value=2.0){fYlimitForFlatness=value;};
+  void SetDecreaseSp(Float_t value=0.2){fYdecreaseSp=value;};
+  void SetDecreaseV2(Float_t value=0.2){fYdecreaseV2=value;};
 
  private:
   AliGenTunedOnPbPb(const AliGenTunedOnPbPb &para);
@@ -64,8 +67,10 @@ class AliGenTunedOnPbPb : public AliGenerator
 
   Bool_t fChangeWithCentrality;  // flag to apply a centrality dependence to pt-distr and v2
   Float_t fYMaxValue;            // max value for rapidity (abs)
+  Float_t fYlimitForFlatness;    // starting from this value y-profile starts to decrease both for spectra and v2
+  Float_t fYdecreaseSp;          // angular coefficient for the decrease above fYlimitForFlatness (spectra)
+  Float_t fYdecreaseV2;          // angular coefficient for the decrease above fYlimitForFlatness (v2)
 
-
-  ClassDef(AliGenTunedOnPbPb,1) // Hijing parametrisation generator
+  ClassDef(AliGenTunedOnPbPb,2) // Hijing parametrisation generator
 };
 #endif

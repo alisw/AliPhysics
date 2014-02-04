@@ -28,6 +28,7 @@
 #include "AliDetectorPID.h"
 #include "AliAODEvent.h"
 #include "AliAODHMPIDrings.h"
+#include "AliTOFHeader.h"
 
 #include "AliAODTrack.h"
 
@@ -39,6 +40,7 @@ AliAODTrack::AliAODTrack() :
   fRAtAbsorberEnd(0.),
   fChi2perNDF(-999.),
   fChi2MatchTrigger(0.),
+  fPID(0),
   fFlags(0),
   fLabel(-999),
   fTOFLabel(),
@@ -55,6 +57,7 @@ AliAODTrack::AliAODTrack() :
   fID(-999),
   fCharge(-99),
   fType(kUndef),
+  fPIDForTracking(AliPID::kPion),
   fCaloIndex(kEMCALNoMatch),
   fCovMatrix(NULL),
   fDetPid(NULL),
@@ -73,7 +76,6 @@ AliAODTrack::AliAODTrack() :
   SetPosition((Float_t*)NULL);
   SetXYAtDCA(-999., -999.);
   SetPxPyPzAtDCA(-999., -999., -999.);
-  SetPID((Float_t*)NULL);
   for (Int_t i = 0; i < 3; i++) {fTOFLabel[i] = -1;}
 }
 
@@ -87,7 +89,6 @@ AliAODTrack::AliAODTrack(Short_t id,
 			 Double_t covMatrix[21],
 			 Short_t charge,
 			 UChar_t itsClusMap,
-			 Double_t pid[10],
 			 AliAODVertex *prodVertex,
 			 Bool_t usedForVtxFit,
 			 Bool_t usedForPrimVtxFit,
@@ -98,6 +99,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   fRAtAbsorberEnd(0.),
   fChi2perNDF(chi2perNDF),
   fChi2MatchTrigger(0.),
+  fPID(0),
   fFlags(0),
   fLabel(label),
   fTOFLabel(),
@@ -114,6 +116,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   fID(id),
   fCharge(charge),
   fType(ttype),
+  fPIDForTracking(AliPID::kPion),
   fCaloIndex(kEMCALNoMatch),
   fCovMatrix(NULL),
   fDetPid(NULL),
@@ -135,7 +138,6 @@ AliAODTrack::AliAODTrack(Short_t id,
   SetUsedForVtxFit(usedForVtxFit);
   SetUsedForPrimVtxFit(usedForPrimVtxFit);
   if(covMatrix) SetCovMatrix(covMatrix);
-  SetPID(pid);
   SetITSClusterMap(itsClusMap);
   for (Int_t i=0;i<3;i++) {fTOFLabel[i]=-1;}
 }
@@ -150,17 +152,17 @@ AliAODTrack::AliAODTrack(Short_t id,
 			 Float_t covMatrix[21],
 			 Short_t charge,
 			 UChar_t itsClusMap,
-			 Float_t pid[10],
 			 AliAODVertex *prodVertex,
 			 Bool_t usedForVtxFit,
 			 Bool_t usedForPrimVtxFit,
 			 AODTrk_t ttype,
 			 UInt_t selectInfo,
-			 Float_t chi2perNDF) :
+			 Float_t chi2perNDF ) :
   AliVTrack(),
   fRAtAbsorberEnd(0.),
   fChi2perNDF(chi2perNDF),
   fChi2MatchTrigger(0.),
+  fPID(0),
   fFlags(0),
   fLabel(label),
   fTOFLabel(),
@@ -177,6 +179,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   fID(id),
   fCharge(charge),
   fType(ttype),
+  fPIDForTracking(AliPID::kPion),
   fCaloIndex(kEMCALNoMatch),
   fCovMatrix(NULL),
   fDetPid(NULL),
@@ -198,7 +201,6 @@ AliAODTrack::AliAODTrack(Short_t id,
   SetUsedForVtxFit(usedForVtxFit);
   SetUsedForPrimVtxFit(usedForPrimVtxFit);
   if(covMatrix) SetCovMatrix(covMatrix);
-  SetPID(pid);
   SetITSClusterMap(itsClusMap);
   for (Int_t i=0;i<3;i++) {fTOFLabel[i]=-1;}
 }
@@ -210,6 +212,7 @@ AliAODTrack::~AliAODTrack()
   delete fCovMatrix;
   delete fDetPid;
   delete fDetectorPID;
+  delete[] fPID;
 }
 
 
@@ -219,6 +222,7 @@ AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
   fRAtAbsorberEnd(trk.fRAtAbsorberEnd),
   fChi2perNDF(trk.fChi2perNDF),
   fChi2MatchTrigger(trk.fChi2MatchTrigger),
+  fPID(0),
   fFlags(trk.fFlags),
   fLabel(trk.fLabel),
   fTOFLabel(),
@@ -235,6 +239,7 @@ AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
   fID(trk.fID),
   fCharge(trk.fCharge),
   fType(trk.fType),
+  fPIDForTracking(trk.fPIDForTracking),
   fCaloIndex(trk.fCaloIndex),
   fCovMatrix(NULL),
   fDetPid(NULL),
@@ -277,7 +282,7 @@ AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
     fRAtAbsorberEnd    = trk.fRAtAbsorberEnd;
     fChi2perNDF        = trk.fChi2perNDF;
     fChi2MatchTrigger  = trk.fChi2MatchTrigger;
-    trk.GetPID(fPID);
+    SetPID( trk.fPID );
     fFlags             = trk.fFlags;
     fLabel             = trk.fLabel;    
     fTrackLength       = trk.fTrackLength;
@@ -293,6 +298,7 @@ AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
     fID                = trk.fID;
     fCharge            = trk.fCharge;
     fType              = trk.fType;
+    fPIDForTracking    = trk.fPIDForTracking;
     fCaloIndex         = trk.fCaloIndex;
     fTrackPhiOnEMCal   = trk.fTrackPhiOnEMCal;
     fTrackEtaOnEMCal   = trk.fTrackEtaOnEMCal;
@@ -444,21 +450,22 @@ AliAODTrack::AODTrkPID_t AliAODTrack::GetMostProbablePID() const
   
   Int_t nPID = 10;
   AODTrkPID_t loc = kUnknown;
-  Double_t max = 0.;
   Bool_t allTheSame = kTRUE;
-  
-  for (Int_t iPID = 0; iPID < nPID; iPID++) {
-    if (fPID[iPID] >= max) {
-      if (fPID[iPID] > max) {
-	allTheSame = kFALSE;
-	max = fPID[iPID];
-	loc = (AODTrkPID_t)iPID;
-      } else {
-	allTheSame = kTRUE;
+  if (fPID) {
+    Double_t max = 0.;
+    for (Int_t iPID = 0; iPID < nPID; iPID++) {
+      if (fPID[iPID] >= max) {
+	if (fPID[iPID] > max) {
+	  allTheSame = kFALSE;
+	  max = fPID[iPID];
+	  loc = (AODTrkPID_t)iPID;
+	} else {
+	  allTheSame = kTRUE;
+	}
       }
     }
   }
-  return allTheSame ? kUnknown : loc;
+  return allTheSame ? AODTrkPID_t(GetPIDForTracking()) : loc;
 }
 
 //______________________________________________________________________________
@@ -467,13 +474,13 @@ void AliAODTrack::ConvertAliPIDtoAODPID()
   // Converts AliPID array.
   // The numbering scheme is the same for electrons, muons, pions, kaons, and protons.
   // Everything else has to be set to zero.
-
-  fPID[kDeuteron] = 0.;
-  fPID[kTriton]   = 0.;
-  fPID[kHelium3]  = 0.;
-  fPID[kAlpha]    = 0.;
-  fPID[kUnknown]  = 0.;
-  
+  if (fPID) {
+    fPID[kDeuteron] = 0.;
+    fPID[kTriton]   = 0.;
+    fPID[kHelium3]  = 0.;
+    fPID[kAlpha]    = 0.;
+    fPID[kUnknown]  = 0.;
+  }
   return;
 }
 
@@ -628,15 +635,17 @@ Bool_t AliAODTrack::PropagateToDCA(const AliVVertex *vtx,
   // inside the beam pipe.
   // return kFALSE is something went wrong
 
-  // convert to AliExternalTrackParam
-  AliExternalTrackParam etp; etp.CopyFromVTrack(this);  
-
-  Float_t xstart = etp.GetX();
-  if(xstart>3.) {
+  // allowed only for tracks inside the beam pipe
+  Float_t xstart2 = fPosition[0]*fPosition[0]+fPosition[1]*fPosition[1];
+  if(xstart2 > 3.*3.) { // outside beampipe radius
     AliError("This method can be used only for propagation inside the beam pipe");
     return kFALSE; 
   }
 
+  // convert to AliExternalTrackParam
+  AliExternalTrackParam etp; etp.CopyFromVTrack(this);  
+
+  // propagate
   if(!etp.PropagateToDCA(vtx,b,maxd,dz,covar)) return kFALSE;
 
   // update track position and momentum
@@ -898,39 +907,21 @@ Bool_t AliAODTrack::GetXYZAt(Double_t x, Double_t b, Double_t *r) const
   //conversion of track parameter representation is
   //based on the implementation of AliExternalTrackParam::Set(...)
   //maybe some of this code can be moved to AliVTrack to avoid code duplication
-  const double kSafe = 1e-5;
   Double_t alpha=0.0;
   Double_t radPos2 = fPosition[0]*fPosition[0]+fPosition[1]*fPosition[1];  
   Double_t radMax  = 45.; // approximately ITS outer radius
   if (radPos2 < radMax*radMax) { // inside the ITS     
-     alpha = TMath::ATan2(fMomentum[1],fMomentum[0]);
+    alpha = fMomentum[1]; //TMath::ATan2(fMomentum[1],fMomentum[0]); // fMom is pt,phi,theta!
   } else { // outside the ITS
      Float_t phiPos = TMath::Pi()+TMath::ATan2(-fPosition[1], -fPosition[0]);
      alpha = 
      TMath::DegToRad()*(20*((((Int_t)(phiPos*TMath::RadToDeg()))/20))+10);
   }
   //
-  Double_t cs=TMath::Cos(alpha), sn=TMath::Sin(alpha);
-  // protection:  avoid alpha being too close to 0 or +-pi/2
-  if (TMath::Abs(sn)<kSafe) {
-    alpha = kSafe;
-    cs=TMath::Cos(alpha);
-    sn=TMath::Sin(alpha);
-  }
-  else if (cs<kSafe) {
-    alpha -= TMath::Sign(kSafe, alpha);
-    cs=TMath::Cos(alpha);
-    sn=TMath::Sin(alpha);    
-  }
-  
   // Get the vertex of origin and the momentum
   TVector3 ver(fPosition[0],fPosition[1],fPosition[2]);
-  TVector3 mom(fMomentum[0],fMomentum[1],fMomentum[2]);
+  TVector3 mom(Px(),Py(),Pz());
   //
-  // avoid momenta along axis
-  if (TMath::Abs(mom[0])<kSafe) mom[0] = TMath::Sign(kSafe*TMath::Abs(mom[1]), mom[0]);
-  if (TMath::Abs(mom[1])<kSafe) mom[1] = TMath::Sign(kSafe*TMath::Abs(mom[0]), mom[1]);
-
   // Rotate to the local coordinate system
   ver.RotateZ(-alpha);
   mom.RotateZ(-alpha);
@@ -956,10 +947,167 @@ Bool_t AliAODTrack::GetXYZAt(Double_t x, Double_t b, Double_t *r) const
   r[0] = x;
   r[1] = param0 + dx*(f1+f2)/(r1+r2);
   r[2] = param1 + dx*(r2 + f2*(f1+f2)/(r1+r2))*param3;//Thanks to Andrea & Peter
-
   return Local2GlobalPosition(r,alpha);
 }
 
+//_____________________________________________________________________________
+Bool_t AliAODTrack::GetXYZatR(Double_t xr,Double_t bz, Double_t *xyz, Double_t* alpSect) const
+{
+  // This method has 3 modes of behaviour
+  // 1) xyz[3] array is provided but alpSect pointer is 0: calculate the position of track intersection 
+  //    with circle of radius xr and fill it in xyz array
+  // 2) alpSect pointer is provided: find alpha of the sector where the track reaches local coordinate xr
+  //    Note that in this case xr is NOT the radius but the local coordinate.
+  //    If the xyz array is provided, it will be filled by track lab coordinates at local X in this sector
+  // 3) Neither alpSect nor xyz pointers are provided: just check if the track reaches radius xr
+  //
+  //
+  Double_t alpha=0.0;
+  Double_t radPos2 = fPosition[0]*fPosition[0]+fPosition[1]*fPosition[1];  
+  Double_t radMax  = 45.; // approximately ITS outer radius
+  if (radPos2 < radMax*radMax) { // inside the ITS     
+    alpha = fMomentum[1]; //TMath::ATan2(fMomentum[1],fMomentum[0]); // fMom is pt,phi,theta!
+  } else { // outside the ITS
+     Float_t phiPos = TMath::Pi()+TMath::ATan2(-fPosition[1], -fPosition[0]);
+     alpha = 
+     TMath::DegToRad()*(20*((((Int_t)(phiPos*TMath::RadToDeg()))/20))+10);
+  }
+  //  
+  // Get the vertex of origin and the momentum
+  TVector3 ver(fPosition[0],fPosition[1],fPosition[2]);
+  TVector3 mom(Px(),Py(),Pz());
+  //
+  // Rotate to the local coordinate system
+  ver.RotateZ(-alpha);
+  mom.RotateZ(-alpha);
+  //
+  Double_t fx = ver.X();
+  Double_t fy = ver.Y();
+  Double_t fz = ver.Z();
+  Double_t sn = TMath::Sin(mom.Phi());
+  Double_t tgl = mom.Pz()/mom.Pt();
+  Double_t crv = TMath::Sign(1/mom.Pt(),(Double_t)fCharge)*bz*kB2C;
+  //
+  if ( (TMath::Abs(bz))<kAlmost0Field ) crv=0.;
+  //
+  // general circle parameterization:
+  // x = (r0+tR)cos(phi0) - tR cos(t+phi0)
+  // y = (r0+tR)sin(phi0) - tR sin(t+phi0)
+  // where qb is the sign of the curvature, tR is the track's signed radius and r0 
+  // is the DCA of helix to origin
+  //
+  double tR = 1./crv;            // track radius signed
+  double cs = TMath::Sqrt((1-sn)*(1+sn));
+  double x0 = fx - sn*tR;        // helix center coordinates
+  double y0 = fy + cs*tR;
+  double phi0 = TMath::ATan2(y0,x0);  // angle of PCA wrt to the origin
+  if (tR<0) phi0 += TMath::Pi();
+  if      (phi0 > TMath::Pi()) phi0 -= 2.*TMath::Pi();
+  else if (phi0 <-TMath::Pi()) phi0 += 2.*TMath::Pi();
+  double cs0 = TMath::Cos(phi0);
+  double sn0 = TMath::Sin(phi0);
+  double r0 = x0*cs0 + y0*sn0 - tR; // DCA to origin
+  double r2R = 1.+r0/tR;
+  //
+  //
+  if (r2R<kAlmost0) return kFALSE;  // helix is centered at the origin, no specific intersection with other concetric circle
+  if (!xyz && !alpSect) return kTRUE;
+  double xr2R = xr/tR;
+  double r2Ri = 1./r2R;
+  // the intersection cos(t) = [1 + (r0/tR+1)^2 - (r0/tR)^2]/[2(1+r0/tR)]
+  double cosT = 0.5*(r2R + (1-xr2R*xr2R)*r2Ri);
+  if ( TMath::Abs(cosT)>kAlmost1 ) {
+    //    printf("Does not reach : %f %f\n",r0,tR);
+    return kFALSE; // track does not reach the radius xr
+  }
+  //
+  double t = TMath::ACos(cosT);
+  if (tR<0) t = -t;
+  // intersection point
+  double xyzi[3];
+  xyzi[0] = x0 - tR*TMath::Cos(t+phi0);
+  xyzi[1] = y0 - tR*TMath::Sin(t+phi0);
+  if (xyz) { // if postition is requested, then z is needed:
+    double t0 = TMath::ATan2(cs,-sn) - phi0;
+    double z0 = fz - t0*tR*tgl;    
+    xyzi[2] = z0 + tR*t*tgl;
+  }
+  else xyzi[2] = 0;
+  //
+  Local2GlobalPosition(xyzi,alpha);
+  //
+  if (xyz) {
+    xyz[0] = xyzi[0];
+    xyz[1] = xyzi[1];
+    xyz[2] = xyzi[2];
+  }
+  //
+  if (alpSect) {
+    double &alp = *alpSect;
+    // determine the sector of crossing
+    double phiPos = TMath::Pi()+TMath::ATan2(-xyzi[1],-xyzi[0]);
+    int sect = ((Int_t)(phiPos*TMath::RadToDeg()))/20;
+    alp = TMath::DegToRad()*(20*sect+10);
+    double x2r,f1,f2,r1,r2,dx,dy2dx,yloc=0, ylocMax = xr*TMath::Tan(TMath::Pi()/18); // min max Y within sector at given X
+    //
+    while(1) {
+      Double_t ca=TMath::Cos(alp-alpha), sa=TMath::Sin(alp-alpha);
+      if ((cs*ca+sn*sa)<0) {
+	AliDebug(1,Form("Rotation to target sector impossible: local cos(phi) would become %.2f",cs*ca+sn*sa));
+	return kFALSE;
+      }
+      //
+      f1 = sn*ca - cs*sa;
+      if (TMath::Abs(f1) >= kAlmost1) {
+	AliDebug(1,Form("Rotation to target sector impossible: local sin(phi) would become %.2f",f1));
+	return kFALSE;
+      }
+      //
+      double tmpX =  fx*ca + fy*sa;
+      double tmpY = -fx*sa + fy*ca;
+      //
+      // estimate Y at X=xr
+      dx=xr-tmpX;
+      x2r = crv*dx;
+      f2=f1 + x2r;
+      if (TMath::Abs(f2) >= kAlmost1) {
+	AliDebug(1,Form("Propagation in target sector failed ! %.10e",f2));
+	return kFALSE;
+      }
+      r1 = TMath::Sqrt((1.-f1)*(1.+f1));
+      r2 = TMath::Sqrt((1.-f2)*(1.+f2));
+      dy2dx = (f1+f2)/(r1+r2);
+      yloc = tmpY + dx*dy2dx;
+      if      (yloc>ylocMax)  {alp += 2*TMath::Pi()/18; sect++;}
+      else if (yloc<-ylocMax) {alp -= 2*TMath::Pi()/18; sect--;}
+      else break;
+      if      (alp >= TMath::Pi()) alp -= 2*TMath::Pi();
+      else if (alp < -TMath::Pi()) alp += 2*TMath::Pi();
+      //      if (sect>=18) sect = 0;
+      //      if (sect<=0) sect = 17;
+    }
+    //
+    // if alpha was requested, then recalculate the position at intersection in sector
+    if (xyz) {
+      xyz[0] = xr;
+      xyz[1] = yloc;
+      if (TMath::Abs(x2r)<0.05) xyz[2] = fz + dx*(r2 + f2*dy2dx)*tgl;
+      else {
+	// for small dx/R the linear apporximation of the arc by the segment is OK,
+	// but at large dx/R the error is very large and leads to incorrect Z propagation
+	// angle traversed delta = 2*asin(dist_start_end / R / 2), hence the arc is: R*deltaPhi
+	// The dist_start_end is obtained from sqrt(dx^2+dy^2) = x/(r1+r2)*sqrt(2+f1*f2+r1*r2)
+	// Similarly, the rotation angle in linear in dx only for dx<<R
+	double chord = dx*TMath::Sqrt(1+dy2dx*dy2dx);   // distance from old position to new one
+	double rot = 2*TMath::ASin(0.5*chord*crv); // angular difference seen from the circle center
+	xyz[2] = fz + rot/crv*tgl;
+      }
+      Local2GlobalPosition(xyz,alp);
+    }
+  }
+  return kTRUE;    
+  //
+}
 
 //_______________________________________________________
 void  AliAODTrack::GetITSdEdxSamples(Double_t s[4]) const
@@ -967,4 +1115,15 @@ void  AliAODTrack::GetITSdEdxSamples(Double_t s[4]) const
   // get ITS dedx samples
   if (!fDetPid) for (int i=4;i--;) s[i]=0;
   else          for (int i=4;i--;) s[i] = fDetPid->GetITSdEdxSample(i);
+}
+
+//_____________________________________________
+Double_t AliAODTrack::GetMassForTracking() const
+{
+  double m = AliPID::ParticleMass(fPIDForTracking);
+  return (fPIDForTracking==AliPID::kHe3 || fPIDForTracking==AliPID::kAlpha) ? -m : m;
+}
+//_______________________________________________________
+const AliTOFHeader* AliAODTrack::GetTOFHeader() const {
+  return fAODEvent->GetTOFHeader();
 }

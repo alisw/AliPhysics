@@ -440,14 +440,14 @@ public:
 		/// return X pattern array
 		void GetXPattern(TArrayS& array) const
 		{
-			Short_t vec[4] = {GetX1(), GetX2(), GetX3(), GetX4()};
+			Short_t vec[4] = {static_cast<Short_t>(GetX1()), static_cast<Short_t>(GetX2()), static_cast<Short_t>(GetX3()), static_cast<Short_t>(GetX4())};
 			array.Set(4, vec);
 		}
 	
 		/// return Y pattern array
 		void GetYPattern(TArrayS& array) const
 		{
-			Short_t vec[4] = {GetY1(), GetY2(), GetY3(), GetY4()};
+			Short_t vec[4] = {static_cast<Short_t>(GetY1()), static_cast<Short_t>(GetY2()), static_cast<Short_t>(GetY3()), static_cast<Short_t>(GetY4())};
 			array.Set(4, vec);
 		}
 	

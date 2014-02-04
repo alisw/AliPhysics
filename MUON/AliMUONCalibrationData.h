@@ -1,7 +1,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 * See cxx source for full Copyright notice                               */
 
-// $Id$
+// $Id: AliMUONCalibrationData.h 59457 2012-11-06 12:36:48Z laphecet $
 
 /// \ingroup calib
 /// \class AliMUONCalibrationData
@@ -143,7 +143,7 @@ public:
   static void Check(Int_t runNumber);
 
   static void BypassStores(AliMUONVStore* ped, AliMUONVStore* gain);
-  
+
 protected:
   /// Not implemented
   AliMUONCalibrationData(const AliMUONCalibrationData& other);
@@ -154,7 +154,15 @@ protected:
   
   static Bool_t CheckHVGroup(TObjArray& values, Int_t first, Int_t last, Double_t& value,
                              Int_t& slope, TString* msg);
-  
+
+  static void PatchSt1DCSAliases(TMap& hvMap);
+
+  static void AddToMap(const TMap& sourceMap,
+                       TMap& destMap,
+                       const TString& key,
+                       const char* source,
+                       const char* dest);
+
 private:
   mutable Bool_t fIsValid; ///<  Whether we were able to correctly initialize
   Int_t fRunNumber; ///<  The run number for which we hold calibrations
@@ -180,7 +188,9 @@ private:
   
   mutable AliMUONVStore* fConfig; //!< configuration of the tracker
   
-  ClassDef(AliMUONCalibrationData,13) // Storage for all MUON calibration data.
+  static UInt_t fgkDCSSt1Flag; //!< flag to indicate that the DCS alias naming is not messed up in St1
+  
+  ClassDef(AliMUONCalibrationData,14) // Storage for all MUON calibration data.
 };
 
 #endif

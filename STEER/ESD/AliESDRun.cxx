@@ -348,20 +348,21 @@ Bool_t AliESDRun::InitMagneticField() const
     return kFALSE;
   }
   //
-  if ( TGeoGlobalMagField::Instance()->IsLocked() ) {
-    if (TGeoGlobalMagField::Instance()->GetField()->TestBit(AliMagF::kOverrideGRP)) {
-      AliInfo("ExpertMode!!! Information on magnet currents will be ignored !");
-      AliInfo("ExpertMode!!! Running with the externally locked B field !");
-      return kTRUE;
+  AliMagF* fld = (AliMagF*) TGeoGlobalMagField::Instance()->GetField();
+  if (fld) {
+    if (TGeoGlobalMagField::Instance()->IsLocked()) {
+      if (fld->TestBit(AliMagF::kOverrideGRP)) {
+	AliInfo("ExpertMode!!! Information on magnet currents will be ignored !");
+	AliInfo("ExpertMode!!! Running with the externally locked B field !");
+	return kTRUE;
+      }
     }
-    else {
-      AliInfo("Destroying existing B field instance!");
-      delete TGeoGlobalMagField::Instance();
-    }
+    AliInfo("Destroying existing B field instance!");
+    delete TGeoGlobalMagField::Instance();
   }
   //
-  AliMagF* fld = AliMagF::CreateFieldMap(fCurrentL3,fCurrentDip,AliMagF::kConvLHC,
-					 TestBit(kUniformBMap), GetBeamEnergy(), GetBeamType());
+  fld = AliMagF::CreateFieldMap(fCurrentL3,fCurrentDip,AliMagF::kConvLHC,
+				TestBit(kUniformBMap), GetBeamEnergy(), GetBeamType());
   if (fld) {
     TGeoGlobalMagField::Instance()->SetField( fld );
     TGeoGlobalMagField::Instance()->Lock();

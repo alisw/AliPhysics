@@ -20,8 +20,8 @@
 #pragma link C++ class  AliITSU+;
 #pragma link C++ class  AliITSUv0+;
 #pragma link C++ class  AliITSUv0Layer+;
-#pragma link C++ class  AliITSUv11+;
-#pragma link C++ class  AliITSUv11Layer+;
+#pragma link C++ class  AliITSUv1+;
+#pragma link C++ class  AliITSUv1Layer+;
 #pragma link C++ class  AliITSUModule+;
 #pragma link C++ class  AliITSUSimuParam+;
 #pragma link C++ class  AliITSUSimulation+;
@@ -29,6 +29,7 @@
 #pragma link C++ class  AliITSUDigitPix+;
 #pragma link C++ class  AliITSUDigitizer+;
 #pragma link C++ class  AliITSUHit+;
+#pragma link C++ class  AliITSUSuze02+;
 
 
 #endif

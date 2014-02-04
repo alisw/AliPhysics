@@ -158,7 +158,7 @@ struct AliHLTMUONRecHitStruct;
  * Output size is about equivalent to the incoming reconstructed hit and trigger
  * record input data.
  *
- * @ingroup alihlt_dimuon_component
+ * @ingroup alihlt_muon_components
  */
 class AliHLTMUONMansoTrackerFSMComponent
 	: public AliHLTMUONProcessor, public AliHLTMUONMansoTrackerFSMCallback

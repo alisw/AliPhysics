@@ -1,4 +1,10 @@
 void monsim(Int_t nev=20){ 
+  // Geant3 and Pythia
+  gSystem->Load("liblhapdf");
+  gSystem->Load("libEGPythia6");
+  gSystem->Load("libpythia6");
+  gSystem->Load("libAliPythia6");
+  gSystem->Load("libgeant321");
   // MonaLisa monitoring
   gSystem->Load("libNet.so");
   gSystem->Load("libMonaLisa.so");

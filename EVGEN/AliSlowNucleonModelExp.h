@@ -24,6 +24,8 @@ class AliSlowNucleonModelExp : public AliSlowNucleonModel
 					 Int_t& ngp, Int_t& ngn, Int_t& nbp, Int_t& nbn) const;
     virtual void GetNumberOfSlowNucleons2(AliCollisionGeometry* geo,
 					 Int_t& ngp, Int_t& ngn, Int_t& nbp, Int_t& nbn) const;
+    virtual void GetNumberOfSlowNucleons2s(AliCollisionGeometry* geo,
+					 Int_t& ngp, Int_t& ngn, Int_t& nbp, Int_t& nbn) const;
     // 1st model
     virtual void SetParameters(Float_t alpha1, Float_t alpha2);
     virtual void SetSaturation(Bool_t saturation) {fApplySaturation = saturation;}
@@ -46,9 +48,12 @@ class AliSlowNucleonModelExp : public AliSlowNucleonModel
     // Adding parameters for 2nd model that can be tuned during config
     Float_t  fLCPparam;		// parameter to calculate LCP from <Nslow p>
     Float_t  fSlownparam[3];	// parameters to calculate <Nslow n> from LCP
+    //
+    // Adding parameter to smear the number of slow nucleons
+    Float_t  fSigmaSmear;
     
     
-  ClassDef(AliSlowNucleonModelExp,3) // Gray Particle Model (Experiment inspired)
+  ClassDef(AliSlowNucleonModelExp, 4) // Gray Particle Model (Experiment inspired)
 };
 #endif
 

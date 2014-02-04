@@ -26,6 +26,7 @@
 #include <iomanip>
 #endif
 
+namespace AliRoot {
 namespace Vc
 {
 namespace AVX
@@ -92,9 +93,10 @@ class DebugStream
 };
 #endif
 
-#define VC_DEBUG ::Vc::AVX::DebugStream(__PRETTY_FUNCTION__, __FILE__, __LINE__)
+#define VC_DEBUG ::AliRoot::Vc::AVX::DebugStream(__PRETTY_FUNCTION__, __FILE__, __LINE__)
 
 } // namespace AVX
 } // namespace Vc
+} // namespace AliRoot
 
 #endif // VC_AVX_DEBUG_H

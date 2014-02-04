@@ -68,21 +68,27 @@ public:
   Int_t GetOCDBVersion(Int_t runNumber);
   void LoadTOFPIDParams(Int_t runNumber);
 
+  /* to invent a T0 signal... */
+  Double_t SampleT0Signal(Int_t side, Double_t zvertex, Double_t tracklets) const;
+  void GetTrackletsForT0(AliESDEvent *event, Double_t *trkA, Double_t *trkC) const;
+
 private:
   AliESDpid          *fESDpid;         //! ESD pid object
 
   
   Bool_t fTenderNoAction;    // flag for periods when tender action is not requested/not supported
-  Bool_t fIsMC;              // flag for MC data
+  Bool_t fIsMC;              // flag for MC data: adds start Time
   Bool_t fCorrectExpTimes;   // flag to apply Expected Time correction 
   Bool_t fCorrectTRDBug;     // flag to fix wrong dE/dx inside TRD
   Bool_t fLHC10dPatch;       // flag to apply special patch for LHC10d (reconstructed with wrong geometry)
-  Bool_t fT0DetectorAdjust;  // flag to apply offsets to T0 data (works only on some periods)
+  Bool_t fT0DetectorAdjust;  // DATA: flag to apply offsets to T0 data (LHC10b, c, d, e)
+                             // MC: add smearing to simulated data (LHC10b,c,d,e)
   Int_t  fDebugLevel;        // debug purposes 0= no output, 1 Info, 2 lot of info....
   Bool_t fAutomaticSettings; // enable/disable automatic (per run) settings
   Int_t  fRecoPass;          // reconstruction pass: the tender applies different recipes depending on the pass
   Int_t  fUserRecoPass;      // when reco pass is selected by user
   Bool_t fForceCorrectTRDBug; // force TRD bug correction (for some bad MC production...)
+  Bool_t fT0Simulate;        // ignore existing T0 data (if any) and simulate them
 
 
   // variables for TOF calibrations and timeZero setup
@@ -111,7 +117,7 @@ private:
   AliTOFTenderSupply(const AliTOFTenderSupply&c);
   AliTOFTenderSupply& operator= (const AliTOFTenderSupply&c);
 
-  ClassDef(AliTOFTenderSupply, 11);
+  ClassDef(AliTOFTenderSupply, 12);
 };
 
 

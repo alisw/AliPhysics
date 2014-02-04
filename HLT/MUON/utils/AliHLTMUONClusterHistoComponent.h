@@ -25,7 +25,7 @@
  * Optional arguments: <br>
  * 
  *
- * @ingroup alihlt_dimuon_components
+ * @ingroup alihlt_muon_components
  */
 
 class AliHLTMUONClusterHistoComponent : public AliHLTMUONProcessor

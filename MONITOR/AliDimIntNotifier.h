@@ -10,12 +10,7 @@
 #ifndef AliDimIntNotifier_H
 #define AliDimIntNotifier_H
 
-#include <TObject.h>
 #include <TQObject.h>
-
-#include <TMutex.h>
-#include <TCondition.h>
-#include <TTimer.h>
 
 #ifdef ALI_DIM
 #include <dic.hxx>
@@ -35,8 +30,7 @@ public:
 // Short description of AliDimIntNotifier
 //
 
-class AliDimIntNotifier : public TObject,
-			  public TQObject,
+class AliDimIntNotifier :  public TQObject,
 			  public DimUpdatedInfo
 {
 public:
@@ -46,25 +40,13 @@ public:
   virtual ~AliDimIntNotifier() {}
 
   void infoHandler();
-  void infoHandlerTest(Int_t fake);
-
-  void DimMessage(Int_t=-1); // *SIGNAL*
-
-  static void SetMainThreadId();
+  void DimMessage(Int_t mess=-1); // *SIGNAL*
 
 private:
   AliDimIntNotifier(const AliDimIntNotifier&);            // Not implemented
   AliDimIntNotifier& operator=(const AliDimIntNotifier&); // Not implemented
 
-  void StartTimer();
-  void StopTimer();
-
-  TTimer fReThreader;
-  TMutex fNotifyLck;
-
   Int_t  fLastMessage;
-
-  static Long_t fgMainThreadId;
 
   ClassDef(AliDimIntNotifier, 0);
 };

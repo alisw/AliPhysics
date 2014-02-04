@@ -43,6 +43,7 @@ public:
   void SetOADBPath(const char* path) {fOADBPath=path;}
   const char* GetOADBPath() const { return fOADBPath.Data(); }
   void SetTuneOnData(Bool_t flag,Int_t recopass){fIsTunedOnData=flag;fRecoPassTuned=recopass;};
+  Bool_t GetTunedOnData() const { return fIsTunedOnData; };
   void SetTuneOnDataMask(Int_t mask){fTunedOnDataMask=mask;};
   
   void SetUseTPCEtaCorrection(Bool_t useTPCEtaCorrection) { fUseTPCEtaCorrection = useTPCEtaCorrection; };

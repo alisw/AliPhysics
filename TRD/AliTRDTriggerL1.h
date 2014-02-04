@@ -36,6 +36,10 @@ class AliTRDTriggerL1 : public AliTriggerDetector {
   Int_t   fNoThresholdJetB;     // number threshold for tracks above pt B (jets)
   Int_t   fNoThresholdElA;      // number threshold for tracks above pt A and PID A (electron)
   Int_t   fNoThresholdElB;      // number threshold for tracks above pt B and PID B (electron)
+  Int_t   fNoTrklThresholdElA;  // 
+  Int_t   fNoTrklThresholdElB;  // 
+  Int_t   fLayerMaskElA;        // 
+  Int_t   fLayerMaskElB;        // 
 
   ClassDef(AliTRDTriggerL1, 2);
 

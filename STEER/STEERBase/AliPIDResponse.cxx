@@ -52,6 +52,8 @@
 
 ClassImp(AliPIDResponse);
 
+Float_t AliPIDResponse::fgTOFmismatchProb = 0.0;
+
 AliPIDResponse::AliPIDResponse(Bool_t isMC/*=kFALSE*/) :
 TNamed("PIDResponse","PIDResponse"),
 fITSResponse(isMC),
@@ -92,7 +94,8 @@ fTOFPIDParams(NULL),
 fHMPIDPIDParams(NULL),
 fEMCALPIDParams(NULL),
 fCurrentEvent(NULL),
-fCurrCentrality(0.0)
+fCurrCentrality(0.0),
+fBeamTypeNum(kPP)
 {
   //
   // default ctor
@@ -155,7 +158,8 @@ fTOFPIDParams(NULL),
 fHMPIDPIDParams(NULL),
 fEMCALPIDParams(NULL),
 fCurrentEvent(NULL),
-fCurrCentrality(0.0)
+fCurrCentrality(0.0),
+fBeamTypeNum(kPP)
 {
   //
   // copy ctor
@@ -186,6 +190,7 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fIsMC=other.fIsMC;
     fCachePID=other.fCachePID;
     fBeamType="PP";
+    fBeamTypeNum=kPP;
     fLHCperiod="";
     fMCperiodTPC="";
     fMCperiodUser=other.fMCperiodUser;
@@ -553,16 +558,14 @@ void AliPIDResponse::InitialiseEvent(AliVEvent *event, Int_t pass, Int_t run)
   }
   
   // Set up TPC multiplicity for PbPb
-  //TODO Will NOT give the desired number for AODs -> Needs new variable/function in future.
-  // Fatal, if AOD event and correction enabled
-  //printf("DETECTED class: %s (%d)\n\n\n\n", event->IsA()->GetName(), fUseTPCMultiplicityCorrection);//TODO
-  if (fUseTPCMultiplicityCorrection && strcmp(event->IsA()->GetName(), "AliESDEvent") != 0) {
-    AliFatal("TPC multiplicity correction is enabled, but will NOT work for AOD events, only for ESD => Disabled multiplicity correction!");
-    fUseTPCMultiplicityCorrection = kFALSE;
+  if (fUseTPCMultiplicityCorrection) {
+    Int_t numESDtracks = event->GetNumberOfESDTracks();
+    if (numESDtracks < 0) {
+      AliError("Cannot obtain event multiplicity (number of ESD tracks < 0). If you are using AODs, this might be a too old production. Please disable the multiplicity correction to get a reliable PID result!");
+      numESDtracks = 0;
+    }
+    fTPCResponse.SetCurrentEventMultiplicity(numESDtracks);
   }
-  
-  if (fUseTPCMultiplicityCorrection)
-    fTPCResponse.SetCurrentEventMultiplicity(event->GetNumberOfTracks());
   else
     fTPCResponse.SetCurrentEventMultiplicity(0);
   
@@ -656,12 +659,13 @@ void AliPIDResponse::SetRecoInfo()
   fBeamType="";
     
   fBeamType="PP";
+  fBeamTypeNum=kPP;
 
   Bool_t hasProdInfo=(fCurrentFile.BeginsWith("LHC"));
   
   TPRegexp reg(".*(LHC1[1-3][a-z]+[0-9]+[a-z_]*)/.*");
   if (hasProdInfo) reg=TPRegexp("LHC1[1-2][a-z]+[0-9]+[a-z_]*");
-  TPRegexp reg12a17("LHC1[2-3][a-z]");
+  TPRegexp reg12a17("LHC1[2-4][a-z]");
 
   //find the period by run number (UGLY, but not stored in ESD and AOD... )
   if (fRun>=114737&&fRun<=117223)      { fLHCperiod="LHC10B"; fMCperiodTPC="LHC10D1";  }
@@ -677,6 +681,7 @@ void AliPIDResponse::SetRecoInfo()
     // exception for 13d2 and later
     if (fCurrentAliRootRev >= 62714) fMCperiodTPC="LHC13D2";
     fBeamType="PBPB";
+    fBeamTypeNum=kPBPB;
   }
   else if (fRun>=139847&&fRun<=146974) { fLHCperiod="LHC11A"; fMCperiodTPC="LHC10F6A"; }
   //TODO: periods 11B (146975-150721), 11C (150722-155837) are not yet treated assume 11d for the moment
@@ -690,25 +695,27 @@ void AliPIDResponse::SetRecoInfo()
     fLHCperiod="LHC11H";
     fMCperiodTPC="LHC11A10";
     fBeamType="PBPB";
+    fBeamTypeNum=kPBPB;
     if (reg12a17.MatchB(fCurrentFile)) fMCperiodTPC="LHC12A17";
   }
-  if (fRun>=170719 && fRun<=177311) { fLHCperiod="LHC12A"; fBeamType="PP"; /*fMCperiodTPC="";*/ }
-  // for the moment use LHC12b parameters up to LHC12e
-  if (fRun>=177312 /*&& fRun<=179356*/) { fLHCperiod="LHC12B"; fBeamType="PP"; /*fMCperiodTPC="";*/ }
-//   if (fRun>=179357 && fRun<=183173) { fLHCperiod="LHC12C"; fBeamType="PP"; /*fMCperiodTPC="";*/ }
-//   if (fRun>=183174 && fRun<=186345) { fLHCperiod="LHC12D"; fBeamType="PP"; /*fMCperiodTPC="";*/ }
-//   if (fRun>=186346 && fRun<=186635) { fLHCperiod="LHC12E"; fBeamType="PP"; /*fMCperiodTPC="";*/ }
+  if (fRun>=170719 && fRun<=177311) { fLHCperiod="LHC12A"; fBeamType="PP"; fBeamTypeNum=kPP;/*fMCperiodTPC="";*/ }
+  // for the moment use LHC12b parameters up to LHC12d
+  if (fRun>=177312 /*&& fRun<=179356*/) { fLHCperiod="LHC12B"; fBeamType="PP";fBeamTypeNum=kPP; /*fMCperiodTPC="";*/ }
+//   if (fRun>=179357 && fRun<=183173) { fLHCperiod="LHC12C"; fBeamType="PP"; fBeamTypeNum=kPP;/*fMCperiodTPC="";*/ }
+//   if (fRun>=183174 && fRun<=186345) { fLHCperiod="LHC12D"; fBeamType="PP"; fBeamTypeNum=kPP;/*fMCperiodTPC="";*/ }
+//   if (fRun>=186346 && fRun<=186635) { fLHCperiod="LHC12E"; fBeamType="PP"; fBeamTypeNum=kPP;/*fMCperiodTPC="";*/ }
 
-//   if (fRun>=186636 && fRun<=188166) { fLHCperiod="LHC12F"; fBeamType="PP"; /*fMCperiodTPC="";*/ }
-//   if (fRun >= 188167 && fRun <= 188355 ) { fLHCperiod="LHC12G"; fBeamType="PP"; /*fMCperiodTPC="";*/ }
-//   if (fRun >= 188356 && fRun <= 188503 ) { fLHCperiod="LHC12G"; fBeamType="PPB"; /*fMCperiodTPC="";*/ }
-// for the moment use 12g parametrisation for all full gain runs (LHC12f+)
-  if (fRun >= 186636 && fRun < 194480) { fLHCperiod="LHC12G"; fBeamType="PPB"; fMCperiodTPC="LHC12G"; }
+//   if (fRun>=186636 && fRun<=188166) { fLHCperiod="LHC12F"; fBeamType="PP"; fBeamTypeNum=kPP;/*fMCperiodTPC="";*/ }
+//   if (fRun >= 188167 && fRun <= 188355 ) { fLHCperiod="LHC12G"; fBeamType="PP"; fBeamTypeNum=kPP;/*fMCperiodTPC="";*/ }
+//   if (fRun >= 188356 && fRun <= 188503 ) { fLHCperiod="LHC12G"; fBeamType="PPB"; fBeamTypeNum=kPPB;/*fMCperiodTPC="";*/ }
+// for the moment use 12g parametrisation for all full gain runs (LHC12e+)
+  if (fRun >= 186346 && fRun < 194480) { fLHCperiod="LHC12G"; fBeamType="PPB";fBeamTypeNum=kPPB; fMCperiodTPC="LHC12G"; }
 
   // New parametrisation for 2013 pPb runs
   if (fRun >= 194480) { 
     fLHCperiod="LHC13B"; 
     fBeamType="PPB";
+    fBeamTypeNum=kPPB;
     fMCperiodTPC="LHC12G";
   
     if (fCurrentAliRootRev >= 61605)
@@ -723,7 +730,7 @@ void AliPIDResponse::SetRecoInfo()
   }
 
   //exception new pp MC productions from 2011 (11a periods have 10f6a splines!)
-  if (fBeamType=="PP" && reg.MatchB(fCurrentFile) && !fCurrentFile.Contains("LHC11a")) { fMCperiodTPC="LHC11B2"; fBeamType="PP"; }
+  if (fBeamType=="PP" && reg.MatchB(fCurrentFile) && !fCurrentFile.Contains("LHC11a")) { fMCperiodTPC="LHC11B2"; fBeamType="PP";fBeamTypeNum=kPP; }
   // exception for 11f1
   if (fCurrentFile.Contains("LHC11f1")) fMCperiodTPC="LHC11F1";
   // exception for 12f1a, 12f1b and 12i3
@@ -1301,13 +1308,33 @@ void AliPIDResponse::SetTPCParametrisation()
 
 
   //
-  // Setup multiplicity correction
+  // Setup multiplicity correction (only used for non-pp collisions)
   //
-  if (fUseTPCMultiplicityCorrection && !(fBeamType.CompareTo("PP") == 0)) {
+  
+  const Bool_t isPP = (fBeamType.CompareTo("PP") == 0);
+  
+  // 2013 pPb data taking at low luminosity
+  const Bool_t isPPb2013LowLuminosity = period.Contains("LHC13B") || period.Contains("LHC13C") || period.Contains("LHC13D");
+  // PbPb 2010, period 10h.pass2
+  //TODO Needs further development const Bool_t is10hpass2 = period.Contains("LHC10H") && recopass == 2;
+  
+  
+  // In case of MC without(!) tune on data activated for the TPC, don't use the multiplicity correction for the moment
+  Bool_t isMCandNotTPCtuneOnData = fIsMC && !(fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC));
+  
+  // If correction is available, but disabled (highly NOT recommended!), print warning
+  if (!fUseTPCMultiplicityCorrection && !isPP && !isMCandNotTPCtuneOnData) {
+    //TODO: Needs further development if (is10hpass2 || isPPb2013LowLuminosity) {
+    if (isPPb2013LowLuminosity) {
+      AliWarning("Mulitplicity correction disabled, but correction parameters for this period exist. It is highly recommended to use enable the correction. Otherwise the splines might be off!");
+    }
+  }
+  
+  if (fUseTPCMultiplicityCorrection && !isPP && !isMCandNotTPCtuneOnData) {
     AliInfo("Multiplicity correction enabled!");
     
     //TODO After testing, load parameters from outside       
-    /*TODO now correction for MC
+    /*TODO no correction for MC
     if (period.Contains("LHC11A10"))  {//LHC11A10A
       AliInfo("Using multiplicity correction parameters for 11a10!");
       fTPCResponse.SetParameterMultiplicityCorrection(0, 6.90133e-06);
@@ -1325,8 +1352,8 @@ void AliPIDResponse::SetTPCParametrisation()
       fTPCResponse.SetParameterMultiplicitySigmaCorrection(2, -6.36337e-01);
       fTPCResponse.SetParameterMultiplicitySigmaCorrection(3, 1.13479e-02);
     }
-    else*/ if (period.Contains("LHC13B") || period.Contains("LHC13C") || period.Contains("LHC13D"))  {// 2013 pPb data taking at low luminosity
-      AliInfo("Using multiplicity correction parameters for 13b.pass2!");
+    else*/ if (isPPb2013LowLuminosity)  {// 2013 pPb data taking at low luminosity
+      AliInfo("Using multiplicity correction parameters for 13b.pass2 (at least also valid for 13{c,d} and pass 3)!");
       
       fTPCResponse.SetParameterMultiplicityCorrection(0, -5.906e-06);
       fTPCResponse.SetParameterMultiplicityCorrection(1, -5.064e-04);
@@ -1360,7 +1387,8 @@ void AliPIDResponse::SetTPCParametrisation()
       fTPCResponse.SetParameterMultiplicitySigmaCorrection(3, 1.47931e-02);
       */
     }
-    else if (period.Contains("LHC10H") && recopass == 2) {    
+    /*TODO: Needs further development
+    else if (is10hpass2) {    
       AliInfo("Using multiplicity correction parameters for 10h.pass2!");
       fTPCResponse.SetParameterMultiplicityCorrection(0, 3.21636e-07);
       fTPCResponse.SetParameterMultiplicityCorrection(1, -6.65876e-04);
@@ -1377,6 +1405,7 @@ void AliPIDResponse::SetTPCParametrisation()
       fTPCResponse.SetParameterMultiplicitySigmaCorrection(2, -3.20788e-01);
       fTPCResponse.SetParameterMultiplicitySigmaCorrection(3, 1.07345e-02);
     }
+    */
     else {
       AliError(Form("Multiplicity correction is enabled, but no multiplicity correction parameters have been found for period %s.pass%d -> Mulitplicity correction DISABLED!", period.Data(), recopass));
       fUseTPCMultiplicityCorrection = kFALSE;
@@ -1391,27 +1420,32 @@ void AliPIDResponse::SetTPCParametrisation()
     // directly and use it for calculations - which should still give valid results, even if
     // the multiplicity correction is explicitely enabled in such expert calls.
     
+    TString reasonForDisabling = "requested by user";
+    if (fUseTPCMultiplicityCorrection) {
+      if (isPP)
+        reasonForDisabling = "pp collisions";
+      else
+        reasonForDisabling = "MC w/o tune on data";
+    }
+    
     AliInfo(Form("Multiplicity correction %sdisabled (%s)!", fUseTPCMultiplicityCorrection ? "automatically " : "",
-                 fUseTPCMultiplicityCorrection ? "pp collisions" : "requested by user"));
+                 reasonForDisabling.Data()));
     
     fUseTPCMultiplicityCorrection = kFALSE;
     fTPCResponse.ResetMultiplicityCorrectionFunctions();
   }
   
-  /*
-  //TODO NOW start
-  for (Int_t i = 0; i <= 4 + 1; i++) {
-    printf("parMultCorr: %d, %e\n", i, fTPCResponse.GetMultiplicityCorrectionFunction()->GetParameter(i));
+  if (fUseTPCMultiplicityCorrection) {
+    for (Int_t i = 0; i <= 4 + 1; i++) {
+      AliInfo(Form("parMultCorr: %d, %e", i, fTPCResponse.GetMultiplicityCorrectionFunction()->GetParameter(i)));
+    }
+    for (Int_t j = 0; j <= 2 + 1; j++) {
+      AliInfo(Form("parMultCorrTanTheta: %d, %e", j, fTPCResponse.GetMultiplicityCorrectionFunctionTanTheta()->GetParameter(j)));
+    }
+    for (Int_t j = 0; j <= 3 + 1; j++) {
+      AliInfo(Form("parMultSigmaCorr: %d, %e", j, fTPCResponse.GetMultiplicitySigmaCorrectionFunction()->GetParameter(j)));
+    }
   }
-  for (Int_t j = 0; j <= 2 + 1; j++) {
-    printf("parMultCorrTanTheta: %d, %e\n", j, fTPCResponse.GetMultiplicityCorrectionFunctionTanTheta()->GetParameter(j));
-  }
-  for (Int_t j = 0; j <= 3 + 1; j++) {
-    printf("parMultSigmaCorr: %d, %e\n", j, fTPCResponse.GetMultiplicitySigmaCorrectionFunction()->GetParameter(j));
-  }
-  
-  //TODO NOW end
-  */
   
   //
   // Setup old resolution parametrisation
@@ -1420,12 +1454,19 @@ void AliPIDResponse::SetTPCParametrisation()
   //default
   fTPCResponse.SetSigma(3.79301e-03, 2.21280e+04);
   
-  if (fRun>=122195){
+  if (fRun>=122195){ //LHC10d
     fTPCResponse.SetSigma(2.30176e-02, 5.60422e+02);
   }
-
-  if (fRun>=186636){
-//   if (fRun>=188356){
+  
+  if (fRun>=170719){ // LHC12a
+    fTPCResponse.SetSigma(2.95714e-03, 1.01953e+05);
+  }
+  
+  if (fRun>=177312){ // LHC12b
+    fTPCResponse.SetSigma(3.74633e-03, 7.11829e+04 );
+  }
+  
+  if (fRun>=186346){ // LHC12e
     fTPCResponse.SetSigma(8.62022e-04, 9.08156e+05);
   }
   
@@ -1739,7 +1780,10 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
     // T0-FILL and T0-TO offset (because of TOF misallignment
     Float_t starttimeoffset = 0;
     if(fTOFPIDParams && !(fIsMC)) starttimeoffset=fTOFPIDParams->GetTOFtimeOffset();
-
+    if(fTOFPIDParams){
+      fTOFtail = fTOFPIDParams->GetTOFtail();
+      GetTOFResponse().SetTOFtail(fTOFtail);
+    }
 
     // T0 from TOF algorithm
     Bool_t flagT0TOF=kFALSE;
@@ -2241,7 +2285,35 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTOFProbability  (const A
   //
   // Compute PID probabilities for TOF
   //
-  
+
+  fgTOFmismatchProb = 1E-8;
+
+  // centrality --> fCurrCentrality
+  // Beam type --> fBeamTypeNum
+  // N TOF cluster --> TOF header --> to get the TOF header we need to add a virtual method in AliVTrack extended to ESD and AOD tracks
+  // isMC --> fIsMC
+
+  Int_t nTOFcluster = 0;
+  if(track->GetTOFHeader() && track->GetTOFHeader()->GetTriggerMask()){ // N TOF clusters available
+    nTOFcluster = track->GetTOFHeader()->GetNumberOfTOFclusters();
+    if(fIsMC) nTOFcluster *= 1.5; // +50% in MC
+  }
+  else{
+    switch(fBeamTypeNum){
+    case kPP: // pp 7 TeV
+      nTOFcluster = 50;
+      break;
+    case kPPB: // pPb 5.05 ATeV
+      nTOFcluster = 50 + (100-fCurrCentrality)*50;
+      break;
+    case kPBPB: // PbPb 2.76 ATeV
+      nTOFcluster = 50 + (100-fCurrCentrality)*150;
+      break;
+    }
+  }
+
+  //fTOFResponse.GetMismatchProbability(track->GetTOFsignal(),track->Eta()) * 0.01; // for future implementation of mismatch (i.e. 1% mismatch that should be extended for PbPb, pPb)
+
   // set flat distribution (no decision)
   for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
   
@@ -2256,17 +2328,13 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTOFProbability  (const A
     
     const Double_t expTime = fTOFResponse.GetExpectedSignal(track,type);
     const Double_t sig     = fTOFResponse.GetExpectedSigma(track->P(),expTime,AliPID::ParticleMassZ(type));
-    if (TMath::Abs(nsigmas) > (fRange+2)) {
-      if(nsigmas < fTOFtail)
-        p[j] = TMath::Exp(-0.5*(fRange+2)*(fRange+2))/sig;
-      else
-        p[j] = TMath::Exp(-(fRange+2 - fTOFtail*0.5)*fTOFtail)/sig;
-    } else{
-      if(nsigmas < fTOFtail)
-        p[j] = TMath::Exp(-0.5*nsigmas*nsigmas)/sig;
-      else
-        p[j] = TMath::Exp(-(nsigmas - fTOFtail*0.5)*fTOFtail)/sig;
-    }    
+
+    if(nsigmas < fTOFtail)
+      p[j] = TMath::Exp(-0.5*nsigmas*nsigmas)/sig;
+    else
+      p[j] = TMath::Exp(-(nsigmas - fTOFtail*0.5)*fTOFtail)/sig;
+    
+    p[j] += fgTOFmismatchProb;
   }
   
   return kDetPidOk;
@@ -2427,6 +2495,8 @@ Float_t AliPIDResponse::GetTOFMismatchProbability(const AliVTrack *track) const
 {
   // compute mismatch probability cross-checking at 5 sigmas with TPC
   // currently just implemented as a 5 sigma compatibility cut
+
+  if(!track) return fgTOFmismatchProb;
 
   // check pid status
   const EDetPidStatus tofStatus=GetTOFPIDStatus(track);

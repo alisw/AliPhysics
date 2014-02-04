@@ -91,10 +91,10 @@ protected:
 private:
   Bool_t  fStartTimeIntegral;       // indicator wether integrate time
   // variables for time integration (S.Radomski@gsi.de)
-  Double32_t fIntegratedTime[AliPID::kSPECIES];       // integrated time
+  Double32_t fIntegratedTime[AliPID::kSPECIESC];       // integrated time
   Double32_t fIntegratedLength;        // integrated length
   
-  ClassDef(AliKalmanTrack,7)    // Reconstructed track
+  ClassDef(AliKalmanTrack,8)    // Reconstructed track
 };
 
 #endif

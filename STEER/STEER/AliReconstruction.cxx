@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id: AliReconstruction.cxx 63911 2013-08-19 16:46:41Z hristov $ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -211,13 +211,7 @@ using std::endl;
 
 //_____________________________________________________________________________
 const char* AliReconstruction::fgkStopEvFName = "_stopEvent_";
-const char* AliReconstruction::fgkDetectorName[AliReconstruction::kNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE"
-// #ifdef MFT_UPGRADE
-//                                                                                   , "MFT"
-// #endif 
-                                                                                  , "MFT"    // AU
-										  , "HLT"
-};
+const char* AliReconstruction::fgkDetectorName[AliReconstruction::kNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE","AD","MFT", "HLT"};
 
 //_____________________________________________________________________________
 AliReconstruction::AliReconstruction(const char* gAliceFilename) :
@@ -299,6 +293,8 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fInitQACalled(kFALSE), 
   fWriteQAExpertData(kTRUE), 
   fRunPlaneEff(kFALSE),
+
+  fESDpid(NULL),
 
   fesd(NULL),
   fhltesd(NULL),
@@ -430,6 +426,8 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fInitQACalled(rec.fInitQACalled),
   fWriteQAExpertData(rec.fWriteQAExpertData), 
   fRunPlaneEff(rec.fRunPlaneEff),
+
+  fESDpid(NULL),
 
   fesd(NULL),
   fhltesd(NULL),
@@ -610,6 +608,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fWriteQAExpertData           = rec.fWriteQAExpertData;
   fRunPlaneEff                 = rec.fRunPlaneEff;
   for (int i=2;i--;) for (int j=2;j--;) fBeamInt[i][j] = rec.fBeamInt[i][j];
+  fESDpid  = NULL;
   fesd     = NULL;
   fhltesd  = NULL;
   fesdf    = NULL;
@@ -1456,6 +1455,7 @@ Bool_t AliReconstruction::Run(const char* input)
         Abort("ProcessEvent",TSelector::kAbortFile);
         return kFALSE;
       }
+      CleanProcessedEvent();
       iEvent++;
     }
     if (!iEvent) AliWarning("No events passed trigger selection");
@@ -1548,7 +1548,7 @@ void AliReconstruction::Begin(TTree *)
   }
 
   // Import ideal TGeo geometry and apply misalignment
-  if (!gGeoManager) {
+  if (!AliGeomManager::GetGeometry()) {
     TString geom(gSystem->DirName(fGAliceFileName));
     geom += "/geometry.root";
     AliGeomManager::LoadGeometry(geom.Data());
@@ -1825,6 +1825,9 @@ void AliReconstruction::SlaveBegin(TTree*)
   gSystem->GetProcInfo(&procInfo);
   AliInfo(Form("Current memory usage %ld %ld", procInfo.fMemResident, procInfo.fMemVirtual));
   
+  // PID
+  fESDpid = new AliESDpid();
+
   //QA
   //Initialize the QA and start of cycle 
   if (fRunQA || fRunGlobalQA) 
@@ -1914,8 +1917,6 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 
   AliCodeTimerAuto("",0);
 
-  AliESDpid pid;
-
   AliSysInfo::AddStamp(Form("StartEv_%d",iEvent), 0,0,iEvent);
 
   if (iEvent >= fRunLoader->GetNumberOfEvents()) {
@@ -1960,7 +1961,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       if (reconstructor && fRecoParam.GetDetRecoParamArray(iDet)) {
         const AliDetectorRecoParam *par = fRecoParam.GetDetRecoParam(iDet);
         reconstructor->SetRecoParam(par);
-	reconstructor->GetPidSettings(&pid);
+	reconstructor->GetPidSettings(fESDpid);
 	reconstructor->SetEventInfo(&fEventInfo);
         if (fRunQA) {
           AliQAManager::QAManager()->SetEventInfo(&fEventInfo) ;
@@ -2121,7 +2122,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 
     // barrel tracking
     if (!fRunTracking.IsNull()) {
-      if (!RunTracking(fesd,pid)) {
+      if (!RunTracking(fesd,*fESDpid)) {
 	if (fStopOnError) {CleanUp(); return kFALSE;}
       }
     }
@@ -2165,7 +2166,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       ok = kFALSE;
       if (tpcTrack)
 	ok = AliTracker::
-	  PropagateTrackToBxByBz(tpcTrack,kRadius,track->GetMass(),kMaxStep,kFALSE);
+	  PropagateTrackToBxByBz(tpcTrack,kRadius,track->GetMassForTracking(),kMaxStep,kFALSE);
 
       if (ok) {
 	Int_t n=trkArray.GetEntriesFast();
@@ -2177,7 +2178,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       if (track->IsOn(AliESDtrack::kITSrefit)) continue;
 
       AliTracker::
-         PropagateTrackToBxByBz(track,kRadius,track->GetMass(),kMaxStep,kFALSE);
+         PropagateTrackToBxByBz(track,kRadius,track->GetMassForTracking(),kMaxStep,kFALSE);
       Double_t x[3]; track->GetXYZ(x);
       Double_t b[3]; AliTracker::GetBxByBz(x,b);
       track->RelateToVertexBxByBz(fesd->GetPrimaryVertexSPD(), b, kVeryBig);
@@ -2302,10 +2303,10 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 
     // AdC+FN
     if (fReconstructor[3])
-      GetReconstructor(3)->FillEventTimeWithTOF(fesd,&pid);
+      GetReconstructor(3)->FillEventTimeWithTOF(fesd,fESDpid);
 
     // combined PID
-    pid.MakePID(fesd);
+    //    fESDpid->MakePID(fesd);
 
     if (fFillTriggerESD) {
       if (!FillTriggerESD(fesd)) {
@@ -2411,9 +2412,12 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 		 nbf,fMemCountESDHLT,fhlttree->GetTotBytes(),fhlttree->GetZipBytes()));        
   }
     
+    
+  return kTRUE;
+}
 
-    // call AliEVE
-    if (fRunAliEVE) RunAliEVE();
+void AliReconstruction::CleanProcessedEvent()
+{
     //
     fesd->Reset();
     fhltesd->Reset();
@@ -2426,19 +2430,8 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       if (fReconstructor[iDet]) fReconstructor[iDet]->FinishEvent();
     }
  
-    gSystem->GetProcInfo(&procInfo);
-    Long_t dMres=(procInfo.fMemResident-oldMres)/1024;
-    Long_t dMvir=(procInfo.fMemVirtual-oldMvir)/1024;
-    Float_t dCPU=procInfo.fCpuUser+procInfo.fCpuSys-oldCPU;
-    aveDMres+=(dMres-aveDMres)/(iEvent-fFirstEvent+1);
-    aveDMvir+=(dMvir-aveDMvir)/(iEvent-fFirstEvent+1);
-    aveDCPU+=(dCPU-aveDCPU)/(iEvent-fFirstEvent+1);
-    AliInfo(Form("======================= End Event %d: Res %ld(%3ld <%3ld>) Vir %ld(%3ld <%3ld>) CPU %5.2f <%5.2f> ===================",
-		 iEvent, procInfo.fMemResident/1024, dMres, aveDMres, procInfo.fMemVirtual/1024, dMvir, aveDMvir, dCPU, aveDCPU));
-    oldMres=procInfo.fMemResident;
-    oldMvir=procInfo.fMemVirtual;
-    oldCPU=procInfo.fCpuUser+procInfo.fCpuSys;
-  
+    AliInfo("======================= End Event ===================");
+    
     fEventInfo.Reset();
     for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
       if (fReconstructor[iDet]) {
@@ -2454,7 +2447,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
   DeleteRecPoints(fDeleteRecPoints);
   DeleteDigits(fDeleteDigits);
   //
-  return kTRUE;
+
 }
 
 //_____________________________________________________________________________
@@ -2510,17 +2503,25 @@ void AliReconstruction::SlaveTerminate()
 
    // Add the AliRoot version that created this file
    TString sVersion("aliroot ");
-   sVersion += ALIROOT_SVN_BRANCH;
+   sVersion += ALIROOT_BRANCH;
    sVersion += ":";
-   sVersion += ALIROOT_SVN_REVISION;
+   sVersion += ALIROOT_REVISION;
    sVersion += "; root ";
 #ifdef ROOT_SVN_BRANCH
    sVersion += ROOT_SVN_BRANCH;
-#else
+#elif defined(ROOT_GIT_BRANCH)
    sVersion += ROOT_GIT_BRANCH;
+#else
+   sVersion += "?";
 #endif
    sVersion += ":";
+#ifdef ROOT_SVN_REVSION
    sVersion += ROOT_SVN_REVISION;
+#elif defined(ROOT_GIT_COMMIT)
+   sVersion += ROOT_GIT_COMMIT;
+#else 
+   sVersion += "?";
+#endif
    sVersion += "; metadata ";
    sVersion += getenv("PRODUCTION_METADATA");
 		    
@@ -2971,7 +2972,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd,AliESDpid &PID)
     // preliminary PID in TPC needed by the ITS tracker
     if (iDet == 1) {
       GetReconstructor(1)->FillESD((TTree*)NULL, (TTree*)NULL, esd);
-      PID.MakePID(esd,kTRUE);
+      PID.MakePIDForTracking(esd);
       AliSysInfo::AddStamp(Form("MakePID0%s_%d",fgkDetectorName[iDet],eventNr), iDet,4,eventNr);
     } 
   }
@@ -3026,7 +3027,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd,AliESDpid &PID)
     if (iDet == 1) {
       //GetReconstructor(1)->FillESD((TTree*)NULL, (TTree*)NULL, esd);
       //AliESDpid::MakePID(esd);
-      PID.MakePID(esd,kTRUE);
+      PID.MakePIDForTracking(esd);
       AliSysInfo::AddStamp(Form("MakePID1%s_%d",fgkDetectorName[iDet],eventNr), iDet,4,eventNr);
     }
 
@@ -3557,6 +3558,9 @@ void AliReconstruction::CleanUp()
   fRawReader = NULL;
   delete fParentRawReader;
   fParentRawReader=NULL;
+
+  delete fESDpid;
+  fESDpid = NULL;
 
   if (ffile) {
     ffile->Close();
@@ -4505,4 +4509,10 @@ Bool_t AliReconstruction::HasEnoughResources(int ev)
     fStopped = kTRUE;
   }
   return res;
+}
+
+Bool_t AliReconstruction::HasNextEventAfter(Int_t eventId)
+{
+	 return ( (eventId < fRunLoader->GetNumberOfEvents()) ||
+	   (fRawReader && fRawReader->NextEvent()) );
 }

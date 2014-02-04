@@ -34,7 +34,7 @@ class TH1;
 /**
  * @class AliHLTMultiplicityCorrelations
  *
- * @ingroup alihlt_physics
+ * @ingroup alihlt_global
  */
 
 class AliHLTMultiplicityCorrelations : public TNamed, public AliHLTLogging {

@@ -29,18 +29,22 @@ class AliHLTTPCDataCompressionIDMap: public AliHLTLogging{
   void FillHLTID( AliHLTUInt32_t hltID );
   void EndFilling();
 
+  Int_t GetNumberOfIDs(){
+    return fPatchFirstID[fkNPatchesTotal];
+  }
+
   Bool_t GetOfflineID( AliHLTUInt32_t hltID, Int_t &sector, Int_t &row, UInt_t &ind );
   Bool_t GetOfflineID( AliHLTUInt32_t hltID, AliHLTUInt32_t &offlineID);
 
   void SetIDMap( const AliHLTUInt8_t *data, AliHLTUInt32_t sizeBytes );
   int  WriteIDMap( AliHLTUInt8_t* output, AliHLTUInt32_t& sizeBytes );  
 
- private:
-
+  // Must be public for dictionary 
   struct AliIDMapEntry{
     AliHLTUInt32_t fHltID; // HLT ID of a cluster
     AliHLTUInt32_t fOfflineID; // offline ID of a cluster
   };
+ private:
   
   static Bool_t CompareIDs( const AliIDMapEntry &a, const AliIDMapEntry &b ){ return a.fHltID < b.fHltID; }
   

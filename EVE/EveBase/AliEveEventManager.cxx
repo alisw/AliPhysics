@@ -1,4 +1,4 @@
-// $Id$
+// $Id: AliEveEventManager.cxx 59994 2012-12-14 10:03:06Z quark $
 // Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
 
 /**************************************************************************
@@ -114,6 +114,28 @@ Bool_t   AliEveEventManager::fgUniformField = kFALSE;
 
 AliEveEventManager* AliEveEventManager::fgMaster  = 0;
 AliEveEventManager* AliEveEventManager::fgCurrent = 0;
+
+//zmq::context_t* AliEveEventManager::fgSubContext=0;
+//zmq::socket_t* AliEveEventManager::fgSubSock=0;
+
+bool AliEveEventManager::ConnectToServer()
+{
+/*
+	// make a zeromq socket
+    fgSubContext = new zmq::context_t(1);
+    fgSubSock = new zmq::socket_t(*fgSubContext, ZMQ_SUB);
+    fgSubSock->setsockopt(ZMQ_SUBSCRIBE, "", 0); //filter, strlen (filter));
+    fgSubSock->connect("tcp://*:5024");
+    return true;
+    */
+}
+
+/*
+zmq::socket_t* AliEveEventManager::AssertSubscriber()
+{
+	return fgCurrent->fgSubSock;
+}
+*/
 
 void AliEveEventManager::InitInternals()
 {
@@ -1227,7 +1249,7 @@ Bool_t AliEveEventManager::InitRecoParam()
     // the available reco-param objects from there.
 
     fgRecoParam = new AliRecoParam;
-    const Int_t  kNDetectors = 14;
+    const Int_t  kNDetectors = 15;
 
     static const TEveException kEH("AliEveEventManager::InitRecoParam");
 
@@ -1267,7 +1289,7 @@ Bool_t AliEveEventManager::InitRecoParam()
         }
     }
 
-    const char* fgkDetectorName[kNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE" };
+    const char* fgkDetectorName[kNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE", "AD" };
 
 
     for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {

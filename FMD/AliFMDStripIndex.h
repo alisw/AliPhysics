@@ -28,6 +28,14 @@
 class AliFMDStripIndex
 {
 public:
+  enum { 
+    // Mask of ID
+    kIdMask = 0x0007FFFF,
+    // Mask of energy 
+    kEMask  = 0xFFF80000,
+    // Offset of energy 
+    kEOffset = 19
+  };
   /** 
    * Constructor
    * 
@@ -55,7 +63,7 @@ public:
 		   ((sec & 0x03F) <<  9) | 
 		   ((irg & 0x001) << 16) | 
 		   ((det & 0x003) << 17));
-    return id;
+    return (id & kIdMask);
   }
   /** 
    * Unpack an identifier to detector coordinates
@@ -69,12 +77,12 @@ public:
   static void Unpack(UInt_t id, 
 		     UShort_t& det, Char_t& rng, UShort_t& sec, UShort_t& str)
   {
-    str = ((id >>  0) & 0x1FF);
-    sec = ((id >>  9) & 0x03F);
-    rng = ((id >> 16) & 0x001) ? 'O' : 'I';
-    det = ((id >> 17) & 0x003);
+    UInt_t tmp = (kIdMask & id);
+    str = ((tmp >>  0) & 0x1FF);
+    sec = ((tmp >>  9) & 0x03F);
+    rng = ((tmp >> 16) & 0x001) ? 'O' : 'I';
+    det = ((tmp >> 17) & 0x003);
   }
-
   ClassDef(AliFMDStripIndex,1)
 };
 #endif

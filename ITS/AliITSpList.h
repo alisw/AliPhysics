@@ -106,8 +106,8 @@ class AliITSpList: public AliITSMap {
     // returns "hit" AliITSpListItem as a TObject.
     TObject * GetHit(Int_t i,Int_t j) const {return (TObject*)GetpListItem(i,j);}
     // tests hit status.
-    virtual FlagType TestHit(Int_t i,Int_t j){if(GetpListItem(i,j)==0) return kEmpty;
-    else if(GetSignal(i,j)<=0) return kUnused; else return kUsed;}
+    virtual FlagTypeITS TestHit(Int_t i,Int_t j){if(GetpListItem(i,j)==0) return kEmptyITS;
+    else if(GetSignal(i,j)<=0) return kUnusedITS; else return kUsedITS;}
     // returns the pList Item stored in the TClonesArray
     AliITSpListItem* GetpListItem(Int_t index) { if((fa[index]).IsUsed())
       return &(fa[index]);

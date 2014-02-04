@@ -49,6 +49,7 @@ set ( SRCS
     ESD/AliMeanVertex.cxx 
     ESD/AliESDCaloCells.cxx 
     ESD/AliESDACORDE.cxx 
+    ESD/AliESDAD.cxx 
     ESD/AliESDVZEROfriend.cxx 
     ESD/AliESDHandler.cxx 
     ESD/AliTrackerBase.cxx  
@@ -68,6 +69,7 @@ set ( SRCS
     ESD/AliESDCosmicTrack.cxx
     ESD/AliV0vertexer.cxx 
     ESD/AliCascadeVertexer.cxx 
+    ESD/AliESDTOFcluster.cxx
     )
 
 string( REPLACE ".cxx" ".h" HDRS "${SRCS}")

@@ -5,7 +5,7 @@
  * See cxx source for full Copyright notice                               */
 
 
-/* $Id$ */
+/* $Id: AliESDEvent.h 64008 2013-08-28 13:09:59Z hristov $ */
 
 //-------------------------------------------------------------------------
 //                          Class AliESDEvent
@@ -19,6 +19,7 @@
 #include <TObject.h>
 #include <TTree.h>
 #include <TArrayF.h>
+#include <TObjArray.h>
 
 
 #include "AliVEvent.h"
@@ -29,6 +30,7 @@
 #include "AliESDTZERO.h"
 #include "AliESDZDC.h"
 #include "AliESDACORDE.h"
+#include "AliESDAD.h"
 
 // AliESDtrack has to be included so that the compiler 
 // knows its inheritance tree (= that it is a AliVParticle).
@@ -41,9 +43,8 @@
 
 #include "AliESDVZERO.h"
 #include "AliESDTrdTrack.h"
-#ifdef MFT_UPGRADE
-//#include "AliESDMFT.h"
-#endif
+#include "AliESDTOFcluster.h"
+
 
 class AliESDfriend;
 class AliESDHLTtrack;
@@ -66,12 +67,12 @@ class AliCentrality;
 class AliEventplane;
 class TRefArray;
 class AliESDACORDE;
+class AliESDAD;
 class AliESDHLTDecision;
 class AliESDCosmicTrack;
 
 class TList;
 class TString;
-
 
 class AliESDEvent : public AliVEvent {
 public:
@@ -107,12 +108,10 @@ public:
 		       kPHOSCells,
 		       kErrorLogs,
                        kESDACORDE,
+                       kESDAD,
 		       kTOFHeader,
                        kCosmicTracks,
 		       kESDListN
-	           #ifdef MFT_UPGRADE
-	//           , kESDMFT
-	           #endif
   };
 
   AliESDEvent();
@@ -170,7 +169,7 @@ public:
   Int_t       GetBeamParticleZ(Int_t ibeam)       const  {return fESDRun?fESDRun->GetBeamParticleZ(ibeam):0;}
   Bool_t      IsUniformBMap()                     const  {return fESDRun?fESDRun->TestBit(AliESDRun::kUniformBMap):kFALSE;}
   //
-  Bool_t      InitMagneticField()                 const  {return fESDRun?fESDRun->InitMagneticField():kFALSE;} 
+  virtual Bool_t  InitMagneticField()             const  {return fESDRun?fESDRun->InitMagneticField():kFALSE;} 
   void        SetT0spread(Float_t *t)             const  {if(fESDRun) fESDRun->SetT0spread(t);} 
   Float_t     GetT0spread(Int_t i)                const  {return fESDRun?fESDRun->GetT0spread(i):0;}
   virtual void      SetVZEROEqFactors(Float_t factors[64]) const {if(fESDRun) fESDRun->SetVZEROEqFactors(factors);}
@@ -255,15 +254,16 @@ public:
   AliESDVZERO *GetVZEROData() const { return fESDVZERO; }
   void SetVZEROData(const AliESDVZERO * obj);
 	
-  #ifdef MFT_UPGRADE
-  // MFT 
-//  AliESDMFT *GetMFTData() const { return fESDMFT; }
-//  void SetMFTData(AliESDMFT * obj);
-  #endif
-	
  // ACORDE
   AliESDACORDE *GetACORDEData() const { return fESDACORDE;}
   void SetACORDEData(AliESDACORDE * obj);
+
+ // AD
+  AliESDAD *GetADData() const { return fESDAD;}
+  void SetADData(AliESDAD * obj);
+
+
+
 
   void SetESDfriend(const AliESDfriend *f) const;
   void GetESDfriend(AliESDfriend *f) const;
@@ -292,7 +292,10 @@ public:
   AliTOFHeader *GetTOFHeader() const {return fTOFHeader;}
   Float_t GetEventTimeSpread() const {if (fTOFHeader) return fTOFHeader->GetT0spread(); else return 0.;}
   Float_t GetTOFTimeResolution() const {if (fTOFHeader) return fTOFHeader->GetTOFResolution(); else return 0.;}
-
+  TObjArray *GetTOFcluster() const {return fTOFcluster;}
+  void SetTOFcluster(Int_t ntofclusters,AliESDTOFcluster *cluster,Int_t *mapping=NULL);
+  void SetTOFcluster(Int_t ntofclusters,AliESDTOFcluster *cluster[],Int_t *mapping=NULL);
+  Int_t GetNTOFclusters() const {return fNTOFclusters;}
 
   void SetMultiplicity(const AliMultiplicity *mul);
 
@@ -530,6 +533,7 @@ protected:
   AliESDCaloTrigger* fPHOSTrigger;     //! PHOS Trigger information
   AliESDCaloTrigger* fEMCALTrigger;    //! PHOS Trigger information
   AliESDACORDE    *fESDACORDE;        //! ACORDE ESD object caontaining bit pattern
+  AliESDAD    *fESDAD;        //! AD ESD object caontaining bit pattern
   AliESDTrdTrigger *fTrdTrigger;      //! TRD trigger information
 
   TClonesArray *fSPDPileupVertices;//! Pileup primary vertices reconstructed by SPD 
@@ -570,7 +574,10 @@ protected:
   UInt_t fDAQDetectorPattern; // Detector pattern from DAQ: bit 0 is SPD, bit 4 is TPC, etc. See event.h
   UInt_t fDAQAttributes; // Third word of attributes from DAQ: bit 7 corresponds to HLT decision 
 
-  ClassDef(AliESDEvent,19)  //ESDEvent class 
+  Int_t fNTOFclusters;     //! N TOF clusters matchable
+  TObjArray *fTOFcluster; //! TOF clusters
+
+  ClassDef(AliESDEvent,20)  //ESDEvent class 
 };
 #endif 
 

@@ -42,7 +42,13 @@ AliHLTTPCCAStandaloneFramework &AliHLTTPCCAStandaloneFramework::Instance()
 }
 
 AliHLTTPCCAStandaloneFramework::AliHLTTPCCAStandaloneFramework()
-    : fMerger(), fOutputControl(), fTracker(), fStatNEvents( 0 ), fDebugLevel(0), fEventDisplay(0), fRunMerger(1)
+: fMerger(), fOutputControl(),
+#ifdef HLTCA_STANDALONE
+fTracker(1, getenv("HLTCA_GPUTRACKER_LIBRARY"))
+#else
+fTracker(1)
+#endif
+, fStatNEvents( 0 ), fDebugLevel(0), fEventDisplay(0), fRunMerger(1)
 {
   //* constructor
 
@@ -183,7 +189,7 @@ int AliHLTTPCCAStandaloneFramework::ProcessEvent(int forceSingleSlice)
 	  }
 
 #ifdef HLTCA_GPU_MERGER
-	  fMerger.SetGPUTracker(fTracker.GetGPUTracker());
+	  if (fTracker.GetGPUTracker()->GPUMergerAvailable()) fMerger.SetGPUTracker(fTracker.GetGPUTracker());
 #endif
 	  fMerger.Reconstruct();
   }

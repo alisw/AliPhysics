@@ -76,8 +76,8 @@ Bool_t AliEMCALRawDigit::GetTimeSample(const Int_t iSample, Int_t& timeBin, Int_
   
 	if (iSample > fNSamples || iSample < 0) return kFALSE;
 	
-	amp     =  fSamples[iSample] & 0xFFF;
-	timeBin = (fSamples[iSample] >> 12) & 0xFF;
+  amp     = (Short_t)(fSamples[iSample] & 0xFFFF);
+  timeBin = (Short_t)(fSamples[iSample] >> 16 );
 
 	return kTRUE;
 }

@@ -39,7 +39,7 @@ done
 # --- Header ---------------------------------------------------------
 cat <<EOF
 // Auto generated file - do not edit
-#ifndef __CINT__
+#if !defined(__CINT__) && !defined(__CLING__)
 # error Not for compilation
 #else 
 #pragma link off all globals;

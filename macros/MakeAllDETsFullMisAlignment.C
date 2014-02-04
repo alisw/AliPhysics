@@ -17,7 +17,7 @@ void MakeAllDETsFullMisAlignment(Char_t* CDBstorage = "local://$HOME/FullMisAlig
   }else{  
     gSystem->Setenv("TOCDB","kTRUE");
     gSystem->Setenv("STORAGE",strStorage.Data());
-    gSystem->Setenv("ARVERSION",ALIROOT_SVN_BRANCH);
+    gSystem->Setenv("ARVERSION",ALIROOT_BRANCH);
   }
   if(partialGeom){
     gSystem->Setenv("REALSETUP","kTRUE");

@@ -15,7 +15,7 @@
  **************************************************************************/
 
 /** 
- * @file   AliHLTCaloHistoProducer
+ * @file   AliHLTCaloHistoProducer.cxx
  * @author Svein Lindal <slindal@fys.uio.no>
  * @date 
  * @brief  Base class for Calo Physics histogram producers

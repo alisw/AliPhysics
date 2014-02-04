@@ -60,6 +60,12 @@ public:
     kDetPHOS = 0x40
   };
 
+  enum EBeamType {
+    kPP = 0,
+    kPPB,
+    kPBPB
+  };
+ 
   enum EStartTimeType_t {kFILL_T0,kTOF_T0, kT0_T0, kBest_T0};
 
   enum ITSPIDmethod { kITSTruncMean, kITSLikelihood };
@@ -91,7 +97,7 @@ public:
   virtual Float_t NumberOfSigmasTPC  (const AliVParticle *track, AliPID::EParticleType type, AliTPCPIDResponse::ETPCdEdxSource dedxSource) const;
   virtual Float_t NumberOfSigmasEMCAL(const AliVParticle *track, AliPID::EParticleType type, Double_t &eop, Double_t showershape[4]) const;
   virtual Float_t NumberOfSigmasTOF  (const AliVParticle *track, AliPID::EParticleType type) const;
-  virtual Float_t NumberOfSigmasTOF  (const AliVParticle *track, AliPID::EParticleType type, const Float_t /*timeZeroTOF*/) const { return NumberOfSigmasTOF(track,type); }
+  virtual Float_t NumberOfSigmasTOF  (const AliVParticle *track, AliPID::EParticleType type, Float_t /*timeZeroTOF*/) const { return NumberOfSigmasTOF(track,type); }
   virtual Float_t NumberOfSigmasHMPID(const AliVParticle *track, AliPID::EParticleType type) const;
   virtual Float_t NumberOfSigmasEMCAL(const AliVParticle *track, AliPID::EParticleType type) const;
 
@@ -119,8 +125,8 @@ public:
   EDetPidStatus CheckPIDStatus(EDetector detCode, const AliVTrack *track)  const;
 
   AliTOFPIDParams *GetTOFPIDParams() const {return fTOFPIDParams;}
-  Float_t GetTOFMismatchProbability(const AliVTrack *track) const;
-  
+  Float_t GetTOFMismatchProbability(const AliVTrack *track = NULL) const; // if empty argument return the value stored during TOF probability computation
+
   void SetITSPIDmethod(ITSPIDmethod pmeth) { fITSPIDmethod = pmeth; }
   
   void SetOADBPath(const char* path) {fOADBPath=path;}
@@ -198,6 +204,8 @@ protected:
 
 
 private:
+  static Float_t fgTOFmismatchProb;    // TOF mismatch probability (Bayesian)
+
   Bool_t fIsMC;                        //  If we run on MC data
   Bool_t fCachePID;
 
@@ -236,7 +244,8 @@ private:
   AliVEvent *fCurrentEvent;            //! event currently being processed
 
   Float_t fCurrCentrality;             //! current centrality
-  
+
+  EBeamType fBeamTypeNum;              //! beam type enum 
   
   void ExecNewRun();
   
@@ -317,7 +326,7 @@ private:
   EDetPidStatus GetPHOSPIDStatus(const AliVTrack *track) const;
   EDetPidStatus GetEMCALPIDStatus(const AliVTrack *track) const;
 
-  ClassDef(AliPIDResponse, 12);  //PID response handling
+  ClassDef(AliPIDResponse, 13);  //PID response handling
 };
 
 #endif

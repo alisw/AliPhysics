@@ -68,6 +68,7 @@ AliGenSlowNucleons::AliGenSlowNucleons()
      fBeamCrossingAngle(0.),
      fBeamDivergence(0.),
      fBeamDivEvent(0.),
+     fSmearMode(2),
      fSlowNucleonModel(0)
 {
 // Default constructor
@@ -99,6 +100,7 @@ AliGenSlowNucleons::AliGenSlowNucleons(Int_t npart)
      fBeamCrossingAngle(0.),
      fBeamDivergence(0.),
      fBeamDivEvent(0.),
+     fSmearMode(2),
      fSlowNucleonModel(new AliSlowNucleonModel())
 
 {
@@ -178,8 +180,13 @@ void AliGenSlowNucleons::Generate()
 	//      Int_t  nnw  = fCollisionGeometry->NNw();
 	//      Int_t  nwnw = fCollisionGeometry->NwNw();
 	
-	//fSlowNucleonModel->GetNumberOfSlowNucleons(fCollisionGeometry, fNgp, fNgn, fNbp, fNbn);
-	fSlowNucleonModel->GetNumberOfSlowNucleons2(fCollisionGeometry, fNgp, fNgn, fNbp, fNbn);
+	// (1) Sikler' model 
+	if(fSmearMode==0) fSlowNucleonModel->GetNumberOfSlowNucleons(fCollisionGeometry, fNgp, fNgn, fNbp, fNbn);
+	// (2) Model inspired on exp. data at lower energy (Gallio-Oppedisano)
+	// --- smearing the Ncoll fron generator used as input 
+	else if(fSmearMode==1) fSlowNucleonModel->GetNumberOfSlowNucleons2(fCollisionGeometry, fNgp, fNgn, fNbp, fNbn);
+	// --- smearing directly Nslow 
+	else if(fSmearMode==2) fSlowNucleonModel->GetNumberOfSlowNucleons2s(fCollisionGeometry, fNgp, fNgn, fNbp, fNbn);
 	if (fDebug) {
 	    //printf("Collision Geometry %f %d %d %d %d\n", b, nn, nwn, nnw, nwnw);
 	    printf("Slow nucleons: %d grayp  %d grayn  %d blackp  %d blackn \n", fNgp, fNgn, fNbp, fNbn);

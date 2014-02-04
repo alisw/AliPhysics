@@ -5,7 +5,7 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               */
 
-/// @file   AliHLCaloConstants.h
+/// @file   AliHLTCaloConstants.h
 /// @author Svein Lindal
 /// @date   
 /// @brief  Class containing constants for PHOS and EMCAL

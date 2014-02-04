@@ -90,8 +90,8 @@ void AliH2F::ClearSpectrum()
   for (Int_t i = 0 ;i<dimx;i++)
     for (Int_t j = 0 ;j<dimy;j++) 
       {
-	SetCellContent(i,j,0);
-	SetCellError(i,j,0);
+	SetBinContent(GetBin(i,j),0);
+	SetBinError(GetBin(i,j),0);
       }
 }
 
@@ -105,12 +105,12 @@ void AliH2F::AddNoise(Float_t sn)
     for (Int_t j = 0 ;j<dimy;j++) 
       {
         Float_t noise = gRandom->Gaus(0,sn);
-	Float_t oldv  =GetCellContent(i,j);
-	Float_t olds  =GetCellError(i,j);
+	Float_t oldv  =GetBinContent(GetBin(i,j));
+	Float_t olds  =GetBinError(GetBin(i,j));
 	if (noise >0)
 	  {
-	    SetCellContent(i,j,noise+oldv);
-	    SetCellError(i,j,TMath::Sqrt((noise*noise+olds*olds)));
+	    SetBinContent(GetBin(i,j),noise+oldv);
+	    SetBinError(GetBin(i,j),TMath::Sqrt((noise*noise+olds*olds)));
 	  }
       }
 }
@@ -136,8 +136,8 @@ void AliH2F::AddGauss(Float_t x, Float_t y,
 	Float_t dx2 = (x2-x)*(x2-x);
         Float_t dy2 = (y2-y)*(y2-y);
         Float_t amp =max*exp(-(dx2/(2*sx*sx)+dy2/(2*sy*sy)));
-	//Float_t oldv  =GetCellContent(i+1,j+1);
-	//	SetCellContent(i+1,j+1,amp+oldv);
+	//Float_t oldv  =GetBinContent(GetBin(i+1,j+1));
+	//	SetBinContent(GetBin(i+1,j+1),amp+oldv);
 	Fill(x2,y2,amp);
       }
 }
@@ -150,9 +150,9 @@ void AliH2F::ClearUnderTh(Int_t threshold)
   for (Int_t i = 0 ;i<=dimx;i++)
     for (Int_t j = 0 ;j<=dimy;j++) 
       {	
-	Float_t oldv  =GetCellContent(i,j);
+	Float_t oldv  =GetBinContent(GetBin(i,j));
         if (oldv <threshold)
-	  SetCellContent(i,j,0);
+	  SetBinContent(GetBin(i,j),0);
       }
 }
 
@@ -164,9 +164,9 @@ void AliH2F::Round()
   for (Int_t i = 0 ;i<=dimx;i++)
     for (Int_t j = 0 ;j<=dimy;j++) 
       {	
-	Float_t oldv  =GetCellContent(i,j);
+	Float_t oldv  =GetBinContent(GetBin(i,j));
         oldv=(Int_t)oldv;
-	SetCellContent(i,j,oldv);
+	SetBinContent(GetBin(i,j),oldv);
       }
 }
 
@@ -215,7 +215,7 @@ AliH2F *AliH2F::GetSubrange2d(Float_t xmin, Float_t xmax,
 	//        sub->SetBinContent(index2,val);
 	//        Float_t err = GetBinError(index1);
         //sub->SetBinError(index2,GetBinError(index1));
-        sub->SetCellContent(i,j,val);
+        sub->SetBinContent(GetBin(i,j),val);
       }  
    return sub;
 }

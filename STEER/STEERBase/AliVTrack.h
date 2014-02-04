@@ -17,6 +17,7 @@ class AliVVertex;
 class AliExternalTrackParam;
 class AliTPCdEdxInfo;
 class AliDetectorPID;
+class AliTOFHeader;
  
 class AliVTrack: public AliVParticle {
 
@@ -89,15 +90,18 @@ public:
   virtual void SetEMCALcluster(Int_t)       {;}
   virtual Bool_t IsEMCAL()            const {return kFALSE;}
 
-  virtual Double_t GetTrackPhiOnEMCal() const {return -999;}
-  virtual Double_t GetTrackEtaOnEMCal() const {return -999;}
-  virtual Double_t GetTrackPtOnEMCal() const {return -999;}
-  virtual Double_t GetTrackPOnEMCal() const {return -999;}
+  virtual Double_t GetTrackPhiOnEMCal()  const {return -999;}
+  virtual Double_t GetTrackEtaOnEMCal()  const {return -999;}
+  virtual Double_t GetTrackPtOnEMCal()   const {return -999;}
+  virtual Double_t GetTrackPOnEMCal()    const {return -999;}
+  virtual Bool_t IsExtrapolatedToEMCAL() const {return GetTrackPtOnEMCal()!=-999;} 
   virtual void SetTrackPhiEtaPtOnEMCal(Double_t,Double_t,Double_t=-999) {;}
 
   virtual Int_t GetPHOScluster()      const {return -1;}
   virtual void SetPHOScluster(Int_t)        {;}
   virtual Bool_t IsPHOS()             const {return kFALSE;}
+  virtual void   SetPIDForTracking(Int_t ) {}
+  virtual Int_t  GetPIDForTracking() const {return -999;}
   
   //pid info
   virtual void     SetStatus(ULong_t /*flags*/) {;}
@@ -141,6 +145,7 @@ public:
   virtual Bool_t   GetPxPyPz(Double_t */*p*/) const { return kFALSE; }
   virtual void     SetID(Short_t /*id*/) {;}
   virtual Int_t    GetTOFBunchCrossing(Double_t = 0, Bool_t = kFALSE) const { return kTOFBCNA;}
+  virtual const AliTOFHeader *GetTOFHeader() const {return NULL;};
 
   ClassDef(AliVTrack,1)  // base class for tracks
 };

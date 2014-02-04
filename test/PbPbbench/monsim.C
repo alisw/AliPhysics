@@ -1,4 +1,13 @@
 void monsim(Int_t nev=1){ 
+  gSystem->Load("liblhapdf");
+  gSystem->Load("libEGPythia6");
+  gSystem->Load("libpythia6");
+  gSystem->Load("libAliPythia6");
+  gSystem->Load("libgeant321");
+  
+  gSystem->Load("libhijing");
+  gSystem->Load("libTHijing");
+
   // MonaLisa monitoring
   gSystem->Load("libNet.so");
   gSystem->Load("libMonaLisa.so");

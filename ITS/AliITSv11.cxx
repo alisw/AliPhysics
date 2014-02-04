@@ -71,10 +71,8 @@ ClassImp(AliITSv11)
 //______________________________________________________________________
 AliITSv11::AliITSv11():
   fByThick(kTRUE),
-  fMajorVersion(IsVersion()),
-  fMinorVersion(-1),
   fIDMother(0),
-  fInitGeom((AliITSVersion_t)fMajorVersion,fMinorVersion),
+  fInitGeom(kv11),
   fSPDgeom(0),
   fSDDgeom(0),
   fSSDgeom(0),
@@ -93,10 +91,8 @@ AliITSv11::AliITSv11():
 AliITSv11::AliITSv11(const char *title) 
   : AliITS("ITS", title),
     fByThick(kTRUE),
-    fMajorVersion(IsVersion()),
-    fMinorVersion(1),
     fIDMother(0),
-    fInitGeom((AliITSVersion_t)fMajorVersion,fMinorVersion),
+    fInitGeom(kv11),
     fSPDgeom(0),
     fSDDgeom(0),
     fSSDgeom(0),
@@ -139,10 +135,8 @@ AliITSv11::AliITSv11(const char *title)
 AliITSv11::AliITSv11(const char *name, const char *title) 
   : AliITS("ITS", title),
     fByThick(kTRUE),
-    fMajorVersion(IsVersion()),
-    fMinorVersion(1),
     fIDMother(0),
-    fInitGeom((AliITSVersion_t)fMajorVersion,fMinorVersion),
+    fInitGeom(kv11),
     fSPDgeom(0),
     fSDDgeom(0),
     fSSDgeom(0),
@@ -613,12 +607,9 @@ void AliITSv11::CreateGeometry()
   vALIC->AddNode(vITSS, 1, 0);
 
   //
-  const Char_t *cvsDate="$Date$";
-  const Char_t *cvsRevision="$Revision$";
   const Int_t kLength=100;
   Char_t vstrng[kLength];
-  if(fInitGeom.WriteVersionString(vstrng,kLength,(AliITSVersion_t)IsVersion(),
-			     fMinorVersion,cvsDate,cvsRevision)) {
+  if(fInitGeom.WriteVersionString(vstrng,kLength,(AliITSVersion_t)IsVersion())){
     vITSV->SetTitle(vstrng);
     vITSS->SetTitle(vstrng);
   }
@@ -1566,8 +1557,6 @@ void AliITSv11::Init()
     // Return:
     //   none.
 
-    AliDebug(1,Form("Init: Major version %d Minor version %d",fMajorVersion,
-		 fMinorVersion));
     UpdateInternalGeometry();
     AliITS::Init();
 

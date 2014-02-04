@@ -35,7 +35,7 @@ TestTOFPID(const Char_t *filename, Bool_t calibrateESD = kTRUE, Bool_t correctTE
   }
 
   AliESDtrack *track;
-  Double_t p, time, timei[AliPID::kSPECIES], sigma[AliPID::kSPECIES];
+  Double_t p, time, timei[AliPID::kSPECIESC], sigma[AliPID::kSPECIES];
   /* loop over events */
   for (Int_t iev = 0; iev < treein->GetEntries(); iev++) {
     

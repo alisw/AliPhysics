@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id: AliTOFReconstructor.cxx 59948 2012-12-12 11:05:59Z fnoferin $ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -37,6 +37,7 @@
 #include "AliTOFtrackerMI.h"
 #include "AliTOFtracker.h"
 #include "AliTOFtrackerV1.h"
+#include "AliTOFtrackerV2.h"
 #include "AliTOFT0maker.h"
 #include "AliTOFReconstructor.h"
 #include "AliTOFTriggerMask.h"
@@ -298,6 +299,9 @@ AliTracker* AliTOFReconstructor::CreateTracker() const
   // use V1 tracker if selected
   else if (selectedTracker.Contains("TrackerV1")) {
     tracker =  new AliTOFtrackerV1();
+  }
+  else if (selectedTracker.Contains("TrackerV2")) {
+    tracker =  new AliTOFtrackerV2();
   }
   else {
     tracker = new AliTOFtracker();

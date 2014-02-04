@@ -30,9 +30,9 @@ class AliTPCSensorTempArray : public AliDCSSensorArray {
   AliTPCSensorTempArray();
   AliTPCSensorTempArray(Int_t run);
   AliTPCSensorTempArray(const char *fname,
-                        const TString& amandaString = kAmandaString);
+                        const TString& amandaString = kAmandaStringTPC);
   AliTPCSensorTempArray (UInt_t startTime, UInt_t endTime, TTree* confTree,
-                         const TString& amandaString = kAmandaString);
+                         const TString& amandaString = kAmandaStringTPC);
   AliTPCSensorTempArray(const AliTPCSensorTempArray &c);
   virtual ~AliTPCSensorTempArray();
   AliTPCSensorTempArray &operator=(const AliTPCSensorTempArray &c);

@@ -29,6 +29,7 @@
 #include <TParticle.h>
 #include <TROOT.h>
 #include <TVirtualMC.h>
+#include <TLorentzVector.h>
 
 #include "AliConst.h"
 #include "AliDecayer.h"
@@ -54,7 +55,10 @@ AliGenTunedOnPbPb::AliGenTunedOnPbPb()
    fCmin(0.),
    fCmax(100.),
    fChangeWithCentrality(kFALSE),
-   fYMaxValue(2.0)
+   fYMaxValue(2.0),
+   fYlimitForFlatness(2.0),
+   fYdecreaseSp(0.2),
+   fYdecreaseV2(0.2)
 {
     //
     // Default constructor
@@ -165,23 +169,31 @@ void AliGenTunedOnPbPb::Generate()
       Int_t pdg = fgPdgInput[isp];
       
       Double_t y = gRandom->Rndm()*2*fYMaxValue - fYMaxValue;
+      Double_t ytanh = TMath::TanH(y);
       Double_t pt = fgHSpectrum[isp]->GetRandom();
-      if(fgHv2[isp]) fgV2->SetParameter(0,fgHv2[isp]->Interpolate(pt) * scaleV2);
-      else fgV2->SetParameter(0,0.);
       Double_t mass = pdgD->GetParticle(pdg)->Mass();
       Double_t mt2 = pt*pt + mass*mass;
+      Double_t pz = ytanh*TMath::Sqrt(mt2)/TMath::Sqrt(1-ytanh*ytanh);
+      Double_t etot = TMath::Sqrt(mt2 + pz*pz);
+      TLorentzVector tempVect(pt,0,pz,etot);
+      Double_t eta = tempVect.PseudoRapidity(); 
+      Double_t scaleEtaV2 = 1; // set the eta dependence
+      if(TMath::Abs(y)> fYlimitForFlatness) scaleEtaV2 = 1 - fYdecreaseV2*(TMath::Abs(y) - fYlimitForFlatness);
+
+      if(fgHv2[isp]) fgV2->SetParameter(0,fgHv2[isp]->Interpolate(pt) * scaleV2 * scaleEtaV2); 
+      else fgV2->SetParameter(0,0.);
       Double_t phi = fgV2->GetRandom(-TMath::Pi(),TMath::Pi());
       Double_t px = pt*TMath::Cos(phi);
       Double_t py = pt*TMath::Sin(phi);
-      y = TMath::TanH(y);
-      Double_t pz = y*TMath::Sqrt(mt2)/TMath::Sqrt(1-y*y);
-//       Double_t etot = TMath::Sqrt(mt2 + pz*pz);
       Float_t p[3] = {px,py,pz};
       Float_t polar[3] = {0.,0.,0.};
       
-      PushTrack(1, -1, pdg, p, origin0, polar, time, statusPdg[isp], npart, 1., 1);
-      KeepTrack(npart);
-      npart++;
+      if(TMath::Abs(y)< fYlimitForFlatness || gRandom->Rndm() < 1 - fYdecreaseSp*(TMath::Abs(y) - fYlimitForFlatness)){// check on pseudorapidity distribution
+	//	printf("%f %f\n",eta,phi - psi); // for debugging
+        PushTrack(1, -1, pdg, p, origin0, polar, time, statusPdg[isp], npart, 1., 1);
+        KeepTrack(npart);
+        npart++;
+      }
     }   
   }
 
@@ -264,14 +276,14 @@ void AliGenTunedOnPbPb::SetParameters(Float_t centrality){
   }
 
   // parameters as a function of centrality
-  Float_t multCent[9*fgNspecies] = {680.,680.,680.,110.,110.,34.,34.,110.,28.,28.,11.5,3.1,3.1,0.5,0.5,
-				    560.,560.,560.,92.,92.,28.,28.,92.,24.,24.,9.,2.7,2.7,0.45,0.45,
-				    450.,450.,450.,70.,70.,21.,21.,70.,20.,20.,8.,2.4,2.4,0.4,0.4,
-				    302.,302.,302.,47.,47.,14.5,14.5,47.,14.,14.,5.5,1.5,1.5,0.2,0.2,
-				    200.,200.,200.,30.,30.,9.6,9.6,30.,9.,9.,3.5,0.9,0.9,0.08,0.08,
-				    120.,120.,120.,18.,18.,6.1,6.1,18.,5.1,5.1,2.2,0.6,0.6,0.055,0.055,
-				    70.,70.,70.,10.4,10.4,3.6,3.6,10.4,2.6,2.6,1.4,0.36,0.36,0.035,0.035,
-				    36.,36.,36.,5.25,5.25,2.,2.,5.25,1.5,1.5,0.5,0.02,0.02,0.015,0.015,
+  Float_t multCent[9*fgNspecies] = {733.,733.,733.,109.,109.,34.,34.,109.,28.,28.,11.5,3.1,3.1,0.5,0.5,
+				    606.,606.,606.,91.,91.,28.,28.,91.,24.,24.,9.,2.7,2.7,0.45,0.45,
+				    455.,455.,455.,68.,68.,21.,21.,68.,20.,20.,8.,2.4,2.4,0.4,0.4,
+				    307.,307.,307.,46.,46.,14.5,14.5,46.,14.,14.,5.5,1.5,1.5,0.2,0.2,
+				    201.,201.,201.,30.,30.,9.6,9.6,30.,9.,9.,3.5,0.9,0.9,0.08,0.08,
+				    124.,124.,124.,18.3,18.3,6.1,6.1,18.3,5.1,5.1,2.2,0.6,0.6,0.055,0.055,
+				    71.,71.,71.,10.2,10.2,3.6,3.6,10.2,2.6,2.6,1.4,0.36,0.36,0.035,0.035,
+				    37.,37.,37.,5.1,5.1,2.,2.,5.1,1.5,1.5,0.5,0.02,0.02,0.015,0.015,
 				    17.,17.,17.,2.3,2.3,0.9,0.9,2.3,0.6,0.6,0.16,0.006,0.006,0.005,0.005};
 
   Float_t v3Overv2Cent[9] = {1.2,0.82,0.625,0.5,0.45,0.4,0.37,0.3,0.3};

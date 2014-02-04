@@ -741,7 +741,7 @@ AliH2F * AliTPCPRF2D::GenerDrawHisto(Float_t x1, Float_t x2, Float_t y1, Float_t
     y=y1;
     for (Int_t j  = 0;j<=Ny;j++,y+=dy){
       z = GetPRF(x,y);
-      hPRFc->SetCellContent(i,j,z);
+      hPRFc->SetBinContent(hPRFc->GetBin(i,j),z);
     };
   }; 
   hPRFc->SetXTitle("pad direction (cm)");
@@ -785,7 +785,7 @@ AliH2F * AliTPCPRF2D::GenerDrawDistHisto(Float_t x1, Float_t x2, Float_t y1, Flo
 	    ddx = (x-(sumx/sum));
 	  }
 	else ddx=-1;
-	if (TMath::Abs(ddx)<10) 	hPRFDist->SetCellContent(i,j,ddx);
+	if (TMath::Abs(ddx)<10) 	hPRFDist->SetBinContent(hPRFDist->GetBin(i,j),ddx);
       }
   }
 

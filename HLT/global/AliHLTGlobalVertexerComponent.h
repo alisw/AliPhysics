@@ -1,5 +1,5 @@
 #ifndef ALIHLTGLOBALVERTEXERCOMPONENT_H
-#define ALIHLTGLOBALVERTEXEROMPONENT_H
+#define ALIHLTGLOBALVERTEXERCOMPONENT_H
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *

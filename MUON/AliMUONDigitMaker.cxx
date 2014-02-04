@@ -360,21 +360,16 @@ AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
         // if card exist
         if (localStruct) {
           
-   	  loCircuit = crate->GetLocalBoardId(localStruct->GetId());
-
-	  if ( !loCircuit ) continue; // empty slot
-
-	  AliMpLocalBoard* localBoard = AliMpDDLStore::Instance()->GetLocalBoard(loCircuit, kTRUE);
-
-	  // skip copy cards
-	  if( !localBoard->IsNotified()) 
-	     continue;
+          loCircuit = crate->GetLocalBoardId(localStruct->GetId());
+          
+          if ( !loCircuit ) continue; // empty slot
+          
           
           if (fTriggerStore)
           {
             // fill local trigger
             AliMUONLocalTrigger localTrigger;
-	    localTrigger.SetLocalStruct(loCircuit, *localStruct);
+            localTrigger.SetLocalStruct(loCircuit, *localStruct);
             fTriggerStore->Add(localTrigger);
           }
           
@@ -383,8 +378,8 @@ AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
             //FIXEME should find something better than a TArray
             TArrayS xyPattern[2];
             
-	    localStruct->GetXPattern(xyPattern[0]);
-	    localStruct->GetYPattern(xyPattern[1]);
+            localStruct->GetXPattern(xyPattern[0]);
+            localStruct->GetYPattern(xyPattern[1]);
             
             TriggerDigits(loCircuit, xyPattern, *fDigitStore);
           }
@@ -408,6 +403,13 @@ Int_t AliMUONDigitMaker::TriggerDigits(Int_t nBoard,
   Int_t detElemId;
 
   AliMpLocalBoard* localBoard = AliMpDDLStore::Instance()->GetLocalBoard(nBoard);
+  
+  if ( ! localBoard->IsNotified() ) {
+    // Copy board
+    // The mapping is not correct for copy boards
+    // Use the one of corresponding phyiscal board
+    nBoard = localBoard->GetInputXfrom();
+  }
 
   Int_t n,b;
 

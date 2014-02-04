@@ -251,7 +251,7 @@ void  AliMC::AddParticles()
 
 
   //Lambda-Neutron 
-  gMC->DefineParticle(1010000020, "LambdaNeutron", kPTNeutron, 2.054 , 0.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+  gMC->DefineParticle(1010000020, "LambdaNeutron", kPTNeutron, 2.054 , 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
 
   //Anti-Lambda-Neutron
   gMC->DefineParticle(-1010000020, "AntiLambdaNeutron", kPTNeutron, 2.054 , 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
@@ -261,6 +261,18 @@ void  AliMC::AddParticles()
   //Anti-H-Dibaryon
   gMC->DefineParticle(-1020000020, "AntiHdibaryon", kPTNeutron, 2.21  , 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
 
+  //Xi-Proton
+  gMC->DefineParticle(1030000020, "Xi0Proton", kPTHadron, 2.248 , 1.0, 1.333e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+
+  //Anti-Xi-Proton
+  gMC->DefineParticle(-1030000020, "AntiXi0Proton", kPTHadron, 2.248 , 1.0, 1.333e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+  
+  //Lambda-Neutron-Neutron
+  gMC->DefineParticle(1010000030, "LambdaNeutronNeutron", kPTNeutron, 2.982 , 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+  
+  //Anti-Lambda-Neutron-Neutron
+  gMC->DefineParticle(-1010000030, "AntiLambdaNeutronNeutron", kPTNeutron, 2.982 , 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+  
   
   // Define the 2- and 3-body phase space decay for the Hyper-Triton
   Int_t mode[6][3];                  
@@ -453,6 +465,70 @@ void  AliMC::AddParticles()
   amode2[0][2] = 211; // positive pion
 
   gMC->SetDecayMode(-1020000020,abratio2,amode2);
+
+  // Define the 2-body phase space decay for the Xi0P
+  Int_t mode5[6][3];
+  Float_t bratio5[6];
+  
+  for (Int_t kz = 0; kz < 6; kz++) {
+    bratio5[kz] = 0.;
+    mode5[kz][0] = 0;
+    mode5[kz][1] = 0;
+    mode5[kz][2] = 0;
+  }
+  bratio5[0] = 100.;
+  mode5[0][0] = 3122; // Lambda
+  mode5[0][1] = 2212; // proton
+  
+  gMC->SetDecayMode(1030000020,bratio5,mode5);
+  
+  // Define the 2-body phase space decay for the Anti-Xi0P
+  Int_t amode5[6][3];
+  Float_t abratio5[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+    abratio5[kz] = 0.;
+    amode5[kz][0] = 0;
+    amode5[kz][1] = 0;
+    amode5[kz][2] = 0;
+  }
+  abratio5[0] = 100.;
+  amode5[0][0] = -3122; // anti-Lambda
+  amode5[0][1] = -2212; // anti-proton
+  
+  gMC->SetDecayMode(-1030000020,abratio5,amode5);
+  
+  // Define the 2-body phase space decay for the Lambda-Neutron-Neutron
+  Int_t mode6[6][3];
+  Float_t bratio6[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+    bratio6[kz] = 0.;
+    mode6[kz][0] = 0;
+    mode6[kz][1] = 0;
+    mode6[kz][2] = 0;
+  }
+  bratio6[0] = 100.;
+  mode6[0][0] = 1000010030; // triton
+  mode6[0][1] = -211; // pion
+  
+  gMC->SetDecayMode(1010000030,bratio6,mode6);
+  
+  // Define the 2-body phase space decay for the Anti-Lambda-Neutron-Neutron
+  Int_t amode6[6][3];
+  Float_t abratio6[6];
+  
+  for (Int_t kz = 0; kz < 6; kz++) {
+    abratio6[kz] = 0.;
+    amode6[kz][0] = 0;
+    amode6[kz][1] = 0;
+    amode6[kz][2] = 0;
+  }
+  abratio6[0] = 100.;
+  amode6[0][0] = -1000010030; // anti-triton
+  amode6[0][1] = 211; // pion
+  
+  gMC->SetDecayMode(-1010000030,abratio6,amode6);
 
   // end of the example
   // --------------------------------------------------------------------

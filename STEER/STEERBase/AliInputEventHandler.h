@@ -19,13 +19,15 @@ class AliVCuts;
 class AliRunTag;
 class AliEventTag;
 class AliPIDResponse;
+class AliMCEvent;
 
 class AliInputEventHandler : public AliVEventHandler {
 
  public:
  enum EInputHandlerFlags {
     kUserCallSelectionMask = BIT(14), // Watch out for defining base class bits
-    kCheckStatistics       = BIT(15)
+    kCheckStatistics       = BIT(15),
+    kNeedField             = BIT(16)
  };
     AliInputEventHandler();
     AliInputEventHandler(const char* name, const char* title);
@@ -38,18 +40,19 @@ class AliInputEventHandler : public AliVEventHandler {
     virtual Bool_t       Init(TTree* tree, Option_t* opt) {if(fMixingHandler) fMixingHandler->Init(tree,opt);return kTRUE;}
     virtual Bool_t       GetEntry() {if(fMixingHandler) fMixingHandler->GetEntry(); return kTRUE;}
     virtual Bool_t       BeginEvent(Long64_t entry) {if(fMixingHandler) fMixingHandler->BeginEvent(entry);return kTRUE;}
-
+    virtual Bool_t       NeedField()     const {return TObject::TestBit(kNeedField);}
+    //
     virtual Bool_t       Notify()      { return AliVEventHandler::Notify();}
     virtual Bool_t       Notify(const char *path) {if(fMixingHandler) fMixingHandler->Notify(path);return kTRUE;}
     virtual Bool_t       FinishEvent() {if(fMixingHandler) fMixingHandler->FinishEvent();return kTRUE;}        
     virtual Bool_t       Terminate()   {if(fMixingHandler) fMixingHandler->Terminate();return kTRUE;}
     virtual Bool_t       TerminateIO() {if(fMixingHandler) fMixingHandler->TerminateIO();return kTRUE;}
-
     // Setters
     virtual void         SetInputTree(TTree* tree)                    {fTree = tree;}
     virtual void         SetEventSelection(AliVCuts* cuts)            {if (fEventCuts) Changed(); fEventCuts = cuts;}
     virtual void         SetUserCallSelectionMask(Bool_t flag=kTRUE)  {TObject::SetBit(kUserCallSelectionMask,flag);}
     virtual void         SetCheckStatistics(Bool_t flag=kTRUE)        {Changed(); TObject::SetBit(kCheckStatistics,flag);}
+    virtual void         SetNeedField(Bool_t flag=kTRUE)              {TObject::SetBit(kNeedField,flag);} 
     //
     void SetInactiveBranches(const char* branches) {Changed(); fBranches   = branches;}
     void SetActiveBranches  (const char* branches) {Changed(); fBranchesOn = branches;}
@@ -69,6 +72,7 @@ class AliInputEventHandler : public AliVEventHandler {
 	{Bool_t ne = fNewEvent; fNewEvent = kFALSE; return ne;}
     virtual UInt_t       IsEventSelected() 
         {return fIsSelectedResult;}
+    virtual AliMCEvent*  MCEvent() const			      {return 0;}
     TList       *GetUserInfo() const                         {return fUserInfo;}
     // Mixing
     void SetMixingHandler(AliInputEventHandler* mixing) {Changed(); fMixingHandler = mixing;}

@@ -71,6 +71,7 @@ public:
    virtual void        SetTTL(Int_t ttl=30000)                           {fTTL = ttl;}
    virtual void        SetGridWorkingDir(const char *name="workdir")     {fGridWorkingDir = name;}
    virtual void        SetGridDataDir(const char *name)                  {fGridDataDir = name;}
+   void                SetGeneratorLibs(const char *libs)                {fGeneratorLibs = libs;}
    virtual void        SetDataPattern(const char *pattern="*AliESDs.root") {fDataPattern = pattern;}
    virtual void        SetFriendChainName(const char *name="", const char *libnames="");
    virtual void        SetDefaultOutputs(Bool_t flag);
@@ -81,16 +82,17 @@ public:
    virtual void        SetInputFormat(const char *format="xml-single")   {fInputFormat = format;}
    virtual void        SetMaxInitFailed(Int_t nfail=5)                   {fMaxInitFailed = nfail;}
    virtual void        SetTerminateFiles(const char *list)               {fTerminateFiles = list;}
-   virtual void        SetMergeExcludes(const char *list)                {fMergeExcludes = list;};
+   virtual void        SetMergeExcludes(const char *list)                {fMergeExcludes = list; fMergeExcludes.ReplaceAll(",", " "); }
    virtual void        SetMergeViaJDL(Bool_t on=kTRUE)                   {fMergeViaJDL = on ? 1 : 0;}
    virtual void        SetMergeDirName(const char *name)                 {fMergeDirName = name;}
    virtual void        SetMasterResubmitThreshold(Int_t percentage)      {fMasterResubmitThreshold = percentage;}
+   void                SetMCLoop(Bool_t flag=kTRUE)                      {fMCLoop = flag;}
    virtual void        SetNtestFiles(Int_t nfiles)                       {fNtestFiles = nfiles;}
    virtual void        SetNumberOfReplicas(Int_t ncopies)                {fNreplicas = TMath::Min(ncopies,4);}
    virtual void        SetJDLName(const char *name="analysis.jdl")       {fJDLName = name;}
    virtual void        SetPreferedSE(const char *se);
    virtual void        SetProductionMode(Int_t mode=1)                   {fProductionMode = mode;}
-   virtual void        SetRegisterExcludes(const char *list)             {fRegisterExcludes = list;}
+   virtual void        SetRegisterExcludes(const char *list)             {fRegisterExcludes = list; fRegisterExcludes.ReplaceAll(",", " "); }
    virtual void        SetRunPrefix(const char *prefix);
    virtual void        SetOutputSingleFolder(const char *folder)         {fOutputSingle = folder; fSplitMode="file"; fSplitMaxInputFileNumber=1;}
    virtual void        SetFastReadOption(Bool_t on=kTRUE)                {fFastReadOption = on ? 1 : 0;}
@@ -101,6 +103,10 @@ public:
    TGridJDL           *GetGridJDL() const {return fGridJDL;}
    TGridJDL           *GetMergingJDL() const {return fMergingJDL;}
    const char         *GetGridOutputDir() const                          {return fGridOutputDir;}
+   Int_t               GetNMCevents() const                              {return fNMCevents;}
+   Int_t               GetNMCjobs() const                                {return fNMCjobs;}
+   void                SetNMCevents(Int_t nevents)                       {fNMCevents = nevents;}
+   void                SetNMCjobs(Int_t njobs)                           {fNMCjobs = njobs;}
 //Utilities
    void                AddModule(AliAnalysisTaskCfg *module);
    void                AddModules(TObjArray *list);
@@ -125,6 +131,7 @@ public:
    static Bool_t       MergeOutput(const char *output, const char *basedir, Int_t nmaxmerge, Int_t stage=0);
    virtual Bool_t      MergeOutputs();
    virtual void        Print(Option_t *option="") const;
+   static Long64_t     RunMacroAndExtractLibs(const char* macro, const char *args, TString &libs);
    virtual Bool_t      StartAnalysis(Long64_t nentries=123456789, Long64_t firstentry=0);
    static Bool_t       SetupPar(const char *package);
    virtual Bool_t      Submit();
@@ -166,6 +173,7 @@ protected:
    Bool_t              SubmitNext();
 
    Bool_t              IsCollection(const char *lfn) const;
+   Bool_t              IsMCLoop() const {return fMCLoop;}
    virtual Bool_t      IsSingleOutput() const;
    Bool_t              IsUsingTags() const {return TObject::TestBit(AliAnalysisGrid::kUseTags);}
    Bool_t              LoadModule(AliAnalysisTaskCfg *mod);
@@ -195,6 +203,8 @@ private:
    Int_t            fNproofWorkers;   // Number of workers in proof mode
    Int_t            fNproofWorkersPerSlave; // Max number of workers per slave in proof mode
    Int_t            fProofReset;      // Proof reset mode: 0=no reset, 1=soft, 2=hard
+   Int_t            fNMCevents;       // Number of MC events in MC loop mode
+   Int_t            fNMCjobs;         // Number of MC jobs in MC loop mode
    TString          fRunNumbers;      // List of runs to be processed
    TString          fExecutable;      // Executable script for AliEn job
    TString          fExecutableCommand;  // Command(s) to be executed in the executable script
@@ -205,6 +215,7 @@ private:
    TString          fValidationScript; // Name of the validation script
    TString          fAdditionalRootLibs;  // List (separated by blacs) of additional libraries needed for/before analysis libs/par file compilation
    TString          fAdditionalLibs;  // List (separated by blacs) of additional libraries needed for the analysis loaded AFTER all par files
+   TString          fGeneratorLibs;   // Extra libraries needed by the generator
    TString          fSplitMode;       // Job split mode
    TString          fAPIVersion;      // API version
    TString          fROOTVersion;     // ROOT version
@@ -240,11 +251,12 @@ private:
    TObjArray       *fModules;         // List of AliAnalysisTaskCfg modules
    TMap             fProofParam;      // Key-value pairs for proof mode
    Bool_t           fDropToShell;     // If true, execute aliensh on start
+   Bool_t           fMCLoop;          // MC loop flag
    TString          fGridJobIDs;      // List of last committed jobs
    TString          fGridStages;      // List of last committed jobs
    TString          fFriendLibs;      // List of libs (separated by blacs) needed for friends processing
    TString          fTreeName;        // Name of the tree to be analyzed
 
-   ClassDef(AliAnalysisAlien, 25)   // Class providing some AliEn utilities
+   ClassDef(AliAnalysisAlien, 26)   // Class providing some AliEn utilities
 };
 #endif

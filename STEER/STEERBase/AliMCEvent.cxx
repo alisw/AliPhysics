@@ -108,14 +108,34 @@ void AliMCEvent::ConnectTreeE (TTree* tree)
 
 void AliMCEvent::ConnectTreeK (TTree* tree)
 {
-    // Connect the kinematics tree to the stack
-    if (!fMCParticles) fMCParticles = new TClonesArray("AliMCParticle",1000);
-    //
+    // Connect Kinematics tree
     fStack = fHeader->Stack();
     fStack->ConnectTree(tree);
     //
     // Load the event
     fStack->GetEvent();
+    
+    UpdateEventInformation();
+}
+
+void AliMCEvent::ConnectHeaderAndStack(AliHeader* header)
+{
+  // fill MC event information from stack and header
+  
+  fHeader = header;
+  fStack = fHeader->Stack();
+
+  UpdateEventInformation();
+}
+ 
+void AliMCEvent::UpdateEventInformation()
+{
+    // bookkeeping for next event
+  
+    // Connect the kinematics tree to the stack
+    if (!fMCParticles) fMCParticles = new TClonesArray("AliMCParticle",1000);
+
+    // Initialize members
     fNparticles = fStack->GetNtrack();
     fNprimaries = fStack->GetNprimary();
 

@@ -93,18 +93,47 @@ AliTOFPIDResponse::AliTOFPIDResponse(Double_t *param):
   SetMomBoundary();
 }
 //_________________________________________________________________________
+void AliTOFPIDResponse::SetTOFtail(Float_t tail){
+  if(!fTOFtailResponse){
+    fTOFtailResponse = new TF1("fTOFtail","[0]*TMath::Exp(-(x-[1])*(x-[1])/2/[2]/[2])* (x < [1]+[3]*[2]) + (x > [1]+[3]*[2])*[0]*TMath::Exp(-(x-[1]-[3]*[2]*0.5)*[3]/[2] * 0.0111)*0.018",-1000,1000);
+    fTOFtailResponse->SetParameter(0,1);
+    fTOFtailResponse->SetParameter(1,-26);
+    fTOFtailResponse->SetParameter(2,1);
+    fTOFtailResponse->SetParameter(3,tail);
+    fTOFtailResponse->SetNpx(10000);
+  }
+  else{
+    fTOFtailResponse->SetParameter(3,tail);
+  }
+}
+//_________________________________________________________________________
 Double_t 
-AliTOFPIDResponse::GetMismatchProbability(Double_t p, Double_t mass) const {
-  //
-  // Returns the probability of mismatching 
-  // assuming 1/(p*beta)^2 scaling
-  //
-  const Double_t km=0.5;                   // "reference" momentum (GeV/c)
+AliTOFPIDResponse::GetMismatchProbability(Double_t time,Double_t eta) const {
+  if(!fHmismTOF){
+    TFile *fmism = new TFile("$ALICE_ROOT/TOF/data/TOFmismatchDistr.root");
+    if(fmism) fHmismTOF = (TH1F *) fmism->Get("TOFmismDistr");
+    if(!fHmismTOF){
+      printf("I cannot retrive TOF mismatch histos... skipped!");
+      return 1E-4;
+    }
+    fHmismTOF->Scale(TMath::Sqrt(2*TMath::Pi())/(fHmismTOF->Integral(1,fHmismTOF->GetNbinsX()) * fHmismTOF->GetBinWidth(1)));
 
-  Double_t ref2=km*km*km*km/(km*km + mass*mass);// "reference" (p*beta)^2
-  Double_t p2beta2=p*p*p*p/(p*p + mass*mass);
+    TFile *fchDist = new TFile("$ALICE_ROOT/TOF/data/TOFchannelDist.root");
+    if(fchDist) fHchannelTOFdistr = (TH1D *) fchDist->Get("hTOFchanDist"); 
+    if(!fHchannelTOFdistr){
+      printf("I cannot retrive TOF channel distance distribution... skipped!");
+      return 1E-4;
+    }
+  }
 
-  return fPmax*ref2/p2beta2;
+  Float_t etaAbs = TMath::Abs(eta);
+  Int_t channel = Int_t(4334.09 - 4758.36 * etaAbs -1989.71 * etaAbs*etaAbs + 1957.62*etaAbs*etaAbs*etaAbs);
+  if(channel < 1 || etaAbs > 1) channel = 1; 
+  Float_t distIP = fHchannelTOFdistr->GetBinContent(channel);
+	   
+  Double_t mismWeight = fHmismTOF->Interpolate(time - distIP*3.35655419905265973e+01);
+
+  return mismWeight;
 }
 //_________________________________________________________________________
 Double_t AliTOFPIDResponse::GetExpectedSigma(Float_t mom, Float_t time, Float_t mass) const {
@@ -153,13 +182,15 @@ Double_t AliTOFPIDResponse::GetExpectedSignal(const AliVTrack* track,AliPID::EPa
   // Return the expected signal of the PID signal for the particle type
   // If the operation is not possible, return a negative value.
   //
-  Double_t expt[5];
+  Double_t expt[AliPID::kSPECIESC];
   track->GetIntegratedTimes(expt);
   if (type<=AliPID::kProton) return expt[type];
   else {
-    Double_t p = track->P();
-    Double_t massZ = AliPID::ParticleMassZ(type);
-    return expt[0]/p*massZ*TMath::Sqrt(1.+p*p/massZ/massZ);
+    if (expt[type]<1.E-1) {
+      Double_t p = track->P();
+      Double_t massZ = AliPID::ParticleMassZ(type);
+      return expt[0]/p*massZ*TMath::Sqrt(1.+p*p/massZ/massZ);
+    } else return expt[type];
   }
 }
 //_________________________________________________________________________
@@ -251,6 +282,7 @@ Double_t AliTOFPIDResponse::GetMismatchRandomValue(Float_t eta) // generate a ra
       printf("I cannot retrive TOF mismatch histos... skipped!");
       return -10000.;
     }
+    fHmismTOF->Scale(TMath::Sqrt(2*TMath::Pi())/(fHmismTOF->Integral(1,fHmismTOF->GetNbinsX()) * fHmismTOF->GetBinWidth(1)));
 
     TFile *fchDist = new TFile("$ALICE_ROOT/TOF/data/TOFchannelDist.root");
     if(fchDist) fHchannelTOFdistr = (TH1D *) fchDist->Get("hTOFchanDist"); 

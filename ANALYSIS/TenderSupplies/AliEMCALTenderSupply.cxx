@@ -1236,10 +1236,12 @@ Int_t AliEMCALTenderSupply::InitTimeCalibration()
   }
   
   // Here, it looks for a specific pass
-  TObjArray *arrayBCpass=(TObjArray*)arrayBC->FindObject(fFilepass); 
+  TString pass = fFilepass;
+  if(fFilepass=="calo_spc") pass ="pass1";
+  TObjArray *arrayBCpass=(TObjArray*)arrayBC->FindObject(pass);
   if (!arrayBCpass)
   {
-    AliError(Form("No external time calibration set for: %d -%s", runBC,fFilepass.Data()));
+    AliError(Form("No external time calibration set for: %d -%s", runBC,pass.Data()));
     return 2; 
   }
 
@@ -1815,6 +1817,8 @@ void AliEMCALTenderSupply::GetPass()
   else if (fname.Contains("pass3")) fFilepass = TString("pass3");
   else if (fname.Contains("pass4")) fFilepass = TString("pass4");
   else if (fname.Contains("pass5")) fFilepass = TString("pass5");
+  else if (fname.Contains("LHC11c") &&
+           fname.Contains("spc_calo")) fFilepass = TString("spc_calo");
   else if (fname.Contains("calo") || fname.Contains("high_lumi"))
 
   {

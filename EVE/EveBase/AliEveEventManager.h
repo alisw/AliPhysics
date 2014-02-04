@@ -1,4 +1,4 @@
-// $Id$
+// $Id: AliEveEventManager.h 59763 2012-11-27 12:42:41Z hristov $
 // Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
 
 /**************************************************************************
@@ -15,6 +15,11 @@
 #include <TObjArray.h>
 
 #include <AliEventInfo.h>
+
+#include <AliESDEvent.h>
+
+//#include <zmq.hpp>
+
 
 class AliEveMacroExecutor;
 class AliEveEventSelector; 
@@ -96,6 +101,9 @@ public:
     TString       GetEventInfoHorizontal() const;
     TString       GetEventInfoVertical()   const;
     const AliEventInfo*	GetEventInfo();
+
+		static bool ConnectToServer(); // connect to the events server
+		//static zmq::socket_t* AssertSubscriber();
 
     static Int_t  CurrentEventId();
 
@@ -207,6 +215,8 @@ protected:
     static AliRecoParam* fgRecoParam;
     static Bool_t        fgUniformField;  // Track with uniform field.
 
+		//static zmq::context_t* fgSubContext;
+		//static zmq::socket_t* fgSubSock;
 private:
     AliEveEventManager(const AliEveEventManager&);            // Not implemented
     AliEveEventManager& operator=(const AliEveEventManager&); // Not implemented

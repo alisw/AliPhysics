@@ -81,6 +81,7 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
                     fMustClean(kFALSE),
                     fIsRemote(kFALSE),
                     fLocked(kFALSE),
+                    fMCLoop(kFALSE),
                     fDebug(0),
                     fSpecialOutputLocation(""), 
                     fTasks(0),
@@ -151,6 +152,7 @@ AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
                     fMustClean(other.fMustClean),
                     fIsRemote(other.fIsRemote),
                     fLocked(other.fLocked),
+                    fMCLoop(other.fMCLoop),
                     fDebug(other.fDebug),
                     fSpecialOutputLocation(""), 
                     fTasks(NULL),
@@ -216,6 +218,7 @@ AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& othe
       fInitOK     = other.fInitOK;
       fIsRemote   = other.fIsRemote;
       fLocked     = other.fLocked;
+      fMCLoop     = other.fMCLoop;
       fDebug      = other.fDebug;
       fTasks      = new TObjArray(*other.fTasks);
       fTopTasks   = new TObjArray(*other.fTopTasks);
@@ -304,6 +307,32 @@ void AliAnalysisManager::CreateReadCache()
    }
    return;
 }   
+
+//______________________________________________________________________________
+Bool_t AliAnalysisManager::EventLoop(Long64_t nevents)
+{
+// Initialize an event loop where the data producer is the input handler
+// The handler must implement MakeTree creating the tree of events (likely
+// memory resident) and generate the current event in the method BeginEvent.
+// If the tree is memory resident, the handler should never call TTree::Fill
+// method.
+   cout << "===== RUNNING IN EVENT LOOP MODE: " << GetName() << endl;
+   if (!fInputEventHandler) {
+     Error("EventLoop", "No input handler: exiting");
+     return kFALSE;
+   }
+   TTree *tree = new TTree("DummyTree", "Dummy tree for AliAnalysisManager::EventLoop");
+   SetExternalLoop(kTRUE);
+   if (!Init(tree)) return kFALSE;
+   SlaveBegin(tree);
+   for (Long64_t iev=0; iev<nevents; iev++)
+      ExecAnalysis();
+   TList dummyList;
+   PackOutput(&dummyList);
+   fIsRemote = kTRUE;
+   Terminate();
+   return kTRUE;
+}
       
 //______________________________________________________________________________
 Int_t AliAnalysisManager::GetEntry(Long64_t entry, Int_t getall)
@@ -417,7 +446,10 @@ Bool_t AliAnalysisManager::Init(TTree *tree)
    if (!fInitOK) return kFALSE;
    fTree = tree;
    if (fMode != kProofAnalysis) CreateReadCache();
-   fTable.Rehash(100);
+   else {
+     // cholm - here we should re-add to the table or branches 
+     fTable.Clear();
+   }
    AliAnalysisDataContainer *top = fCommonInput;
    if (!top) top = (AliAnalysisDataContainer*)fInputs->At(0);
    if (!top) {
@@ -426,6 +458,7 @@ Bool_t AliAnalysisManager::Init(TTree *tree)
    }
    top->SetData(tree);
    CheckBranches(kFALSE);
+   fTable.Rehash(100);
    if (fDebug > 1) {
       printf("<-AliAnalysisManager::Init(%s)\n", tree->GetName());
    }
@@ -551,7 +584,7 @@ Bool_t AliAnalysisManager::Notify()
       if (fCurrentDescriptor) fCurrentDescriptor->Done();
       fCurrentDescriptor = new AliAnalysisFileDescriptor(curfile);
       fFileDescriptors->Add(fCurrentDescriptor);
-   }   
+   } 
    
    if (fDebug > 1) printf("->AliAnalysisManager::Notify() file: %s\n", curfile->GetName());
    Int_t run = AliAnalysisManager::GetRunFromAlienPath(curfile->GetName());
@@ -1610,8 +1643,8 @@ void AliAnalysisManager::CheckBranches(Bool_t load)
             Error("CheckBranches", "Could not find branch %s",obj->GetName());
             continue;
          }
+         fTable.Add(br);
       }   
-      fTable.Add(br);
       if (load && br->GetReadEntry()!=GetCurrentEntry()) {
          br->GetEntry(GetCurrentEntry());
       }      
@@ -2817,7 +2850,7 @@ void AliAnalysisManager::ApplyDebugOptions()
 }
 
 //______________________________________________________________________________
-Bool_t AliAnalysisManager::IsMacroLoaded(const char filename)
+Bool_t AliAnalysisManager::IsMacroLoaded(const char * filename)
 {
 // Check if a macro was loaded.
    return fgMacroNames.Contains(filename);

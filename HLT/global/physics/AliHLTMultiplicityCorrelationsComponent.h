@@ -114,7 +114,7 @@ class AliHLTGlobalTriggerDecision;
  * <tt>macros/runMultiplicityCorrelationsTest.sh</tt>
  * \li - Run Test macro HLTMultiplicityCorrelationsTest.C
  *
- * @ingroup alihlt_physics
+ * @ingroup alihlt_global_components
  */
 class AliHLTMultiplicityCorrelationsComponent : public AliHLTProcessor {
 public:

@@ -29,7 +29,7 @@
 #pragma link C++ class  AliFMDESDRevertexer+;
 
 #else
-# error Not for compilation 
+// # error Not for compilation 
 #endif
 //
 // EOF

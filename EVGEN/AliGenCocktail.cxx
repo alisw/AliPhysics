@@ -259,10 +259,15 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp, TFormul
     
     next.Reset();
 
-// Event Vertex
+    // Event Vertex
     fHeader->SetPrimaryVertex(eventVertex);
     fHeader->CalcNProduced();
-    gAlice->SetGenEventHeader(fHeader); 
+    if (fContainer) {
+      fHeader->SetName(fName);
+      fContainer->AddHeader(fHeader);
+    } else {
+      gAlice->SetGenEventHeader(fHeader);	
+    }
 }
 
 void AliGenCocktail::SetVertexSmear(VertexSmear_t smear)

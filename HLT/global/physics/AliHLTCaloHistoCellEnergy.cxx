@@ -14,7 +14,7 @@
  **************************************************************************/
 
 /** 
- * @file   AliHLTCaloHistoCellEnergy
+ * @file   AliHLTCaloHistoCellEnergy.cxx
  * @author Svein Lindal
  * @date 
  * @brief  Produces histograms of cluster energy distributions 

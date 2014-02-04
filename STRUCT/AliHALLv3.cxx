@@ -49,7 +49,7 @@
 ClassImp(AliHALL)
  
 //_____________________________________________________________________________
-AliHALLv3::AliHALLv3() : fNewShield24(0), fRefVolumeId(-1), fScoring(0)
+AliHALLv3::AliHALLv3() : fNewShield24(0), fRefVolumeId(-1), fScoring(0), fRackShield(0)
 {
   //
   // Default constructor for the experimental Hall
@@ -58,7 +58,7 @@ AliHALLv3::AliHALLv3() : fNewShield24(0), fRefVolumeId(-1), fScoring(0)
  
 //_____________________________________________________________________________
 AliHALLv3::AliHALLv3(const char *name, const char *title)
-  : AliHALL(name,title), fNewShield24(0), fRefVolumeId(-1), fScoring(0)
+  : AliHALL(name,title), fNewShield24(0), fRefVolumeId(-1), fScoring(0), fRackShield(0)
 {
   //
   // Standard constructor for the experimental Hall
@@ -92,6 +92,7 @@ void AliHALLv3::CreateGeometry()
   TGeoMedium* kMedCC     = gGeoManager->GetMedium("HALL_CC_C2");
   TGeoMedium* kMedST     = gGeoManager->GetMedium("HALL_STST_C2");
   TGeoMedium* kMedAir    = gGeoManager->GetMedium("HALL_AIR_C2");
+  TGeoMedium* kMedFe     = gGeoManager->GetMedium("HALL_FE_C2");
   
   // Floor thickness 
   Float_t dyFloor  =  190.;
@@ -485,7 +486,13 @@ void AliHALLv3::CreateGeometry()
   TGeoVolume* voRB24Scoring = new TGeoVolume("RB24Scoring", new TGeoTube(4.3, 300., 1.), kMedAir);
   asHall->AddNode(voRB24Scoring, 1, new TGeoTranslation(0., 0., 735.));
   //
-
+  // Extra shielding in front of racks
+  //
+  if (fRackShield) {
+    TGeoVolume* voRackShield = new TGeoVolume("RackShield", new TGeoBBox(30., 125., 50.), kMedFe);
+    asHall->AddNode(voRackShield, 1, new TGeoTranslation(85., -495., 1726.));
+  }
+  //
   top->AddNode(asHall, 1, gGeoIdentity);
   
 }

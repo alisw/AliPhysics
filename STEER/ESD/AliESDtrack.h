@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
+/* $Id: AliESDtrack.h 64153 2013-09-09 09:33:47Z akalweit $ */
 
 //-------------------------------------------------------------------------
 //                          Class AliESDtrack
@@ -30,18 +30,19 @@
 #include <TBits.h>
 #include "AliExternalTrackParam.h"
 #include "AliVTrack.h"
+#include "AliESDTOFcluster.h"
 #include "AliPID.h"
 #include "AliESDfriendTrack.h"
 #include "AliTPCdEdxInfo.h"
 
 class TParticle;
 class AliESDVertex;
-class AliESDEvent;
 class AliKalmanTrack;
 class AliTrackPointArray;
 class TPolyMarker3D;
 class AliDetectorPID;
 class TTreeSRedirector;
+class AliESDEvent;
 
 class AliESDtrack : public AliExternalTrackParam {
 public:
@@ -83,11 +84,16 @@ public:
   void GetExternalParameters(Double_t &x, Double_t p[5]) const;
   void GetExternalCovariance(Double_t cov[15]) const;
 
-  Double_t GetIntegratedLength() const {return fTrackLength;}
+  Double_t GetIntegratedLength() const;
+  Double_t GetIntegratedLengthOld() const {return fTrackLength;}
   void GetIntegratedTimes(Double_t *times) const;
+  Double_t GetIntegratedTimesOld(Int_t i) const {if(fTrackTime) return fTrackTime[i]; else return 0;};
   Int_t    GetPID(Bool_t tpcOnly=kFALSE)  const;
   Int_t    GetTOFBunchCrossing(Double_t b=0, Bool_t pidTPConly=kTRUE) const;
   Double_t GetMass(Bool_t tpcOnly=kFALSE) const {return AliPID::ParticleMass(GetPID(tpcOnly));}
+  Double_t GetMassForTracking() const;
+  void     SetPIDForTracking(Int_t pid) {fPIDForTracking = pid;}
+  Int_t    GetPIDForTracking() const    {return fPIDForTracking;}
   Double_t M() const;
   Double_t E() const;
   Double_t Y() const;
@@ -303,31 +309,40 @@ public:
     return fFriendTrack!=NULL?fFriendTrack->GetTRDtrack():NULL;
   }
 
+  void    SetTOFclusterArray(Int_t ncluster,Int_t *TOFcluster);
+  Int_t   *GetTOFclusterArray() const {return fTOFcluster;}
+  Int_t   GetNTOFclusters() const {return fNtofClusters;}
+  void    AddTOFcluster(Int_t icl);
+  void    SortTOFcluster();
+  void    ReMapTOFcluster(Int_t ncl,Int_t *mapping);
+
   void    SetTOFsignal(Double_t tof) {fTOFsignal=tof;}
-  Double_t GetTOFsignal() const {return fTOFsignal;}
+  Double_t GetTOFsignal() const;
   void    SetTOFsignalToT(Double_t ToT) {fTOFsignalToT=ToT;}
-  Double_t GetTOFsignalToT() const {return fTOFsignalToT;}
+  Double_t GetTOFsignalToT() const;
   void    SetTOFsignalRaw(Double_t tof) {fTOFsignalRaw=tof;}
-  Double_t GetTOFsignalRaw() const {return fTOFsignalRaw;}
+  Double_t GetTOFsignalRaw() const;
   void    SetTOFsignalDz(Double_t dz) {fTOFsignalDz=dz;}
-  Double_t GetTOFsignalDz() const {return fTOFsignalDz;}
+  Double_t GetTOFsignalDz() const;
   void    SetTOFsignalDx(Double_t dx) {fTOFsignalDx=dx;}
-  Double_t GetTOFsignalDx() const {return fTOFsignalDx;}
+  Double_t GetTOFsignalDx() const;
   void     SetTOFDeltaBC(Short_t deltaBC) {fTOFdeltaBC=deltaBC;};
-  Short_t  GetTOFDeltaBC() const {return fTOFdeltaBC;}
+  Short_t  GetTOFDeltaBC() const;
   void     SetTOFL0L1(Short_t l0l1) {fTOFl0l1=l0l1;};
-  Short_t  GetTOFL0L1() const {return fTOFl0l1;}
-  Double_t GetTOFchi2() const {return fTOFchi2;}
+  Short_t  GetTOFL0L1() const;
+  Double_t GetTOFchi2() const {return fTOFchi2;};
   void    SetTOFpid(const Double_t *p);
   void    SetTOFLabel(const Int_t *p);
   void    GetTOFpid(Double_t *p) const;
   void    GetTOFLabel(Int_t *p) const;
   void    GetTOFInfo(Float_t *info) const;
   void    SetTOFInfo(Float_t *info);
-  Int_t   GetTOFCalChannel() const {return fTOFCalChannel;}
-  Int_t   GetTOFcluster() const {return fTOFindex;}
+  Int_t   GetTOFCalChannel() const;
+  Int_t   GetTOFcluster() const;
   void    SetTOFcluster(Int_t index) {fTOFindex=index;}
   void    SetTOFCalChannel(Int_t index) {fTOFCalChannel=index;}
+  Int_t   GetTOFclusterN() const;
+  Bool_t  IsTOFHitAlreadyMatched() const;
   void    SetTOFsignalTunedOnData(Double_t signal){fTOFsignalTuned=signal;}
   Double_t GetTOFsignalTunedOnData() const {return fTOFsignalTuned;}
 
@@ -404,6 +419,7 @@ public:
   }
   virtual void Print(Option_t * opt) const ;
   const AliESDEvent* GetESDEvent() const {return fESDEvent;}
+  const AliTOFHeader* GetTOFHeader() const;
   void         SetESDEvent(const AliESDEvent* evt) {fESDEvent = evt;}
 
   // Trasient PID object, is owned by the track
@@ -447,8 +463,8 @@ protected:
   Int_t     fITSModule[12];  // modules crossed by the track in the ITS 
   Int_t     fTPCLabel;       // label according TPC
   Int_t     fTRDLabel;       // label according TRD
-  Int_t     fTOFLabel[3];    // TOF label 
-  Int_t     fTOFCalChannel;  // Channel Index of the TOF Signal 
+  Int_t     *fTOFLabel;      //! TOF label 
+  Int_t     fTOFCalChannel;  //! Channel Index of the TOF Signal 
   Int_t     fTOFindex;       // index of the assigned TOF cluster
   Int_t     fHMPIDqn;         // 1000000*number of photon clusters + QDC
   Int_t     fHMPIDcluIdx;     // 1000000*chamber id + cluster idx of the assigned MIP cluster
@@ -458,20 +474,20 @@ protected:
   Int_t     fKinkIndexes[3]; // array of indexes of posible kink candidates 
   Int_t     fV0Indexes[3];   // array of indexes of posible kink candidates 
 
-  Double32_t   fR[AliPID::kSPECIES]; //[0.,0.,8] combined "detector response probability"
-  Double32_t   fITSr[AliPID::kSPECIES]; //[0.,0.,8] "detector response probabilities" (for the PID)
-  Double32_t   fTPCr[AliPID::kSPECIES]; //[0.,0.,8] "detector response probabilities" (for the PID)
-  Double32_t   fTRDr[AliPID::kSPECIES]; //[0.,0.,8] "detector response probabilities" (for the PID)  
-  Double32_t   fTOFr[AliPID::kSPECIES]; //[0.,0.,8] "detector response probabilities" (for the PID)
-  Double32_t   fHMPIDr[AliPID::kSPECIES];//[0.,0.,8] "detector response probabilities" (for the PID)
+  Double32_t   *fR; //! [0.,0.,8] combined "detector response probability"
+  Double32_t   *fITSr; //! [0.,0.,8] "detector response probabilities" (for the PID)
+  Double32_t   *fTPCr; //! [0.,0.,8] "detector response probabilities" (for the PID)
+  Double32_t   *fTRDr; //! [0.,0.,8] "detector response probabilities" (for the PID)  
+  Double32_t   *fTOFr; //! [0.,0.,8] "detector response probabilities" (for the PID)
+  Double32_t   *fHMPIDr; //! [0.,0.,8] "detector response probabilities" (for the PID)
 
   Double32_t fHMPIDtrkTheta;//[-2*pi,2*pi,16] theta of the track extrapolated to the HMPID, LORS
   // how much of this is needed?
   Double32_t fHMPIDtrkPhi;     //[-2*pi,2*pi,16] phi of the track extrapolated to the HMPID, LORS
   Double32_t fHMPIDsignal;  // HMPID PID signal (Theta ckov, rad)
 
-  Double32_t   fTrackTime[AliPID::kSPECIES]; // TOFs estimated by the tracking
-  Double32_t   fTrackLength;   // Track length
+  Double32_t   *fTrackTime; //! TOFs estimated by the tracking
+  Double32_t   fTrackLength;   //! Track length
 
   Double32_t   fdTPC;          // TPC-only impact parameter in XY plane
   Double32_t   fzTPC;          // TPC-only impact parameter in Z
@@ -506,15 +522,15 @@ protected:
   Double32_t fTRDQuality;     // trd quality factor for TOF
   Double32_t fTRDBudget;      // trd material budget
 
-  Double32_t fTOFsignal;      // detector's PID signal
+  Double32_t fTOFsignal;      //! detector's PID signal [ps]
   Double32_t fTOFsignalTuned; //! detector's PID signal tuned on data when using MC
-  Double32_t fTOFsignalToT;   // detector's ToT signal
-  Double32_t fTOFsignalRaw;   // detector's uncorrected time signal
-  Double32_t fTOFsignalDz;    // local z  of track's impact on the TOF pad 
-  Double32_t fTOFsignalDx;    // local x  of track's impact on the TOF pad 
+  Double32_t fTOFsignalToT;   //! detector's ToT signal [ns]
+  Double32_t fTOFsignalRaw;   //! detector's uncorrected time signal [ps]
+  Double32_t fTOFsignalDz;    //! local z  of track's impact on the TOF pad [cm]
+  Double32_t fTOFsignalDx;    //! local x  of track's impact on the TOF pad [cm]
   Double32_t fTOFInfo[10];    //! TOF informations
-  Short_t    fTOFdeltaBC;     // detector's Delta Bunch Crossing correction
-  Short_t    fTOFl0l1;        // detector's L0L1 latency correction
+  Short_t    fTOFdeltaBC;     //! detector's Delta Bunch Crossing correction
+  Short_t    fTOFl0l1;        //! detector's L0L1 latency correction
 
   Double32_t fCaloDx ;        // [0.,0.,8] distance to calorimeter cluster in calo plain (phi direction)
   Double32_t fCaloDz ;        // [0.,0.,8] distance to calorimeter cluster in calo plain (z direction)
@@ -545,6 +561,8 @@ protected:
 
   Char_t  fTRDTimBin[kTRDnPlanes];   // Time bin of Max cluster from all six planes
   Char_t  fVertexID; // ID of the primary vertex this track belongs to
+  Char_t  fPIDForTracking;           // mass used for tracking
+
   mutable const AliESDEvent*   fESDEvent; //!Pointer back to event to which the track belongs
   
   mutable Float_t fCacheNCrossedRows; //! Cache for the number of crossed rows
@@ -557,11 +575,17 @@ protected:
   Double_t      fTrackEtaOnEMCal;   // eta of track after being propagated to the EMCal surface (default r = 440 cm)
   Double_t      fTrackPtOnEMCal;    // pt of track after being propagated to the EMCal surface (default r = 440 cm)
   
+
+  // new TOF data structure
+  Int_t fNtofClusters;              // number of matchable TOF clusters 
+  Int_t *fTOFcluster;               //[fNtofClusters]
+                                    // TOF clusters matchable with the track
+
  private:
   static bool fgkOnlineMode; //! indicate the online mode to skip some of the functionality
 
   AliESDtrack & operator=(const AliESDtrack & );
-  ClassDef(AliESDtrack,68)  //ESDtrack 
+  ClassDef(AliESDtrack,71)  //ESDtrack 
 };
 
 

@@ -136,7 +136,7 @@ Bool_t AliTRDPIDResponse::GetResponse(Int_t n, const Double_t * const dedx, cons
 
 
     if(!fkPIDResponseObject){
-	AliWarning("Missing reference data. PID calculation not possible.");
+	AliDebug(3,"Missing reference data. PID calculation not possible.");
 	return kFALSE;
     }
 
@@ -202,7 +202,7 @@ Double_t AliTRDPIDResponse::GetProbabilitySingleLayer(Int_t species, Double_t pl
   case kLQ2D: // 2D LQ
       {
 	  if(species==0||species==2){ // references only for electrons and pions
-	      Double_t error;
+	      Double_t error = 0.;
 	      Double_t point[kNslicesLQ2D];
 	      for(Int_t idim=0;idim<kNslicesLQ2D;idim++){point[idim]=dEdx[idim];}
 
@@ -305,7 +305,7 @@ Bool_t AliTRDPIDResponse::IdentifiedAsElectron(Int_t nTracklets, const Double_t 
     // If the function fails when the params are not accessible, the function returns true
     //
   if(!fkPIDResponseObject){
-    AliError("No PID Param object available");
+    AliDebug(3,"No PID Param object available");
     return kTRUE;
   } 
   Double_t probEle = like[AliPID::kElectron]/(like[AliPID::kElectron] + like[AliPID::kPion]);

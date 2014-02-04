@@ -41,7 +41,7 @@ AliHMPIDtrack::AliHMPIDtrack(const AliESDtrack& t):AliKalmanTrack()
   //
   SetLabel(t.GetLabel());
   SetChi2(0.);
-  SetMass(t.GetMass());
+  SetMass(t.GetMassForTracking());
 
   Set(t.GetX(),t.GetAlpha(),t.GetParameter(),t.GetCovariance());
 

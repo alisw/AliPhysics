@@ -763,13 +763,13 @@ void AliTPCMonitor::FillHistsPadPlane()
   for(Int_t ch = 0; ch<fChannelIter; ch++)
   {
     hwadd=  fPad[ch][0];
-    fHistChannelTime->SetCellContent(ch,0,hwadd);
+    fHistChannelTime->SetBinContent(fHistChannelTime->GetBin(ch,0),hwadd);
     
     for(Int_t bin = 1; bin <GetTimeBins(); bin++)
     {
-      if( fHistChannelTime->GetCellContent(ch,bin)!=0)  cout << " cellcontent already set " << endl;
-      if(     GetPedestals()==1 ) fHistChannelTime->SetCellContent(ch,bin,(fPad[ch][bin]- fHistAddrBaseMean->GetBinContent(hwadd)));
-      else                        fHistChannelTime->SetCellContent(ch,bin,(fPad[ch][bin]));
+      if( fHistChannelTime->GetBinContent(fHistChannelTime->GetBin(ch,bin))!=0)  cout << " cellcontent already set " << endl;
+      if(     GetPedestals()==1 ) fHistChannelTime->SetBinContent(fHistChannelTime->GetBin(ch,bin),(fPad[ch][bin]- fHistAddrBaseMean->GetBinContent(hwadd)));
+      else                        fHistChannelTime->SetBinContent(fHistChannelTime->GetBin(ch,bin),(fPad[ch][bin]));
     }
     
     pad    = fMapHand->GetPad(   hwadd);
@@ -778,19 +778,19 @@ void AliTPCMonitor::FillHistsPadPlane()
     
     if(row<63)
     {
-      fHistIROC->SetCellContent(     row    +1 ,pad +55 -padmax/2 +1,fHistAddrMaxAdc->GetBinContent(  hwadd));
-      fHistIROCIndex->SetCellContent(row    +1 ,pad +55 -padmax/2 +1,ch);
-      fHistIROCRMS->SetCellContent(  row    +1 ,pad +55 -padmax/2 +1,fHistAddrBaseRms->GetBinContent( hwadd));
-      fHistIROCBASE->SetCellContent( row    +1 ,pad +55 -padmax/2 +1,fHistAddrBaseMean->GetBinContent(hwadd));
-      fHistIROCSUM->SetCellContent(  row    +1 ,pad +55 -padmax/2 +1,fHistAddrAdcSum->GetBinContent(  hwadd));
+      fHistIROC->SetBinContent(fHistIROC->GetBin(          row    +1 ,pad +55 -padmax/2 +1),fHistAddrMaxAdc->GetBinContent(  hwadd));
+      fHistIROCIndex->SetBinContent(fHistIROCIndex->GetBin(row    +1 ,pad +55 -padmax/2 +1),ch);
+      fHistIROCRMS->SetBinContent(fHistIROCRMS->GetBin(    row    +1 ,pad +55 -padmax/2 +1),fHistAddrBaseRms->GetBinContent( hwadd));
+      fHistIROCBASE->SetBinContent(fHistIROCBASE->GetBin(  row    +1 ,pad +55 -padmax/2 +1),fHistAddrBaseMean->GetBinContent(hwadd));
+      fHistIROCSUM->SetBinContent(fHistIROCSUM->GetBin(    row    +1 ,pad +55 -padmax/2 +1),fHistAddrAdcSum->GetBinContent(  hwadd));
     }
     else
     {
-      fHistOROC->SetCellContent(     row-63 +1 ,pad +70 -padmax/2 +1,fHistAddrMaxAdc->GetBinContent(  hwadd));
-      fHistOROCIndex->SetCellContent(row-63 +1 ,pad +70 -padmax/2 +1,ch);
-      fHistOROCRMS->SetCellContent(  row-63 +1 ,pad +70 -padmax/2 +1,fHistAddrBaseRms->GetBinContent( hwadd));
-      fHistOROCBASE->SetCellContent( row-63 +1 ,pad +70 -padmax/2 +1,fHistAddrBaseMean->GetBinContent(hwadd));
-      fHistOROCSUM->SetCellContent(  row-63 +1 ,pad +70 -padmax/2 +1,fHistAddrAdcSum->GetBinContent(  hwadd));
+      fHistOROC->SetBinContent(fHistOROC->GetBin(          row-63 +1 ,pad +70 -padmax/2 +1),fHistAddrMaxAdc->GetBinContent(  hwadd));
+      fHistOROCIndex->SetBinContent(fHistOROCIndex->GetBin(row-63 +1 ,pad +70 -padmax/2 +1),ch);
+      fHistOROCRMS->SetBinContent(fHistOROCRMS->GetBin(    row-63 +1 ,pad +70 -padmax/2 +1),fHistAddrBaseRms->GetBinContent( hwadd));
+      fHistOROCBASE->SetBinContent(fHistOROCBASE->GetBin(  row-63 +1 ,pad +70 -padmax/2 +1),fHistAddrBaseMean->GetBinContent(hwadd));
+      fHistOROCSUM->SetBinContent(fHistOROCSUM->GetBin(    row-63 +1 ,pad +70 -padmax/2 +1),fHistAddrAdcSum->GetBinContent(  hwadd));
     }
   }
   
@@ -808,14 +808,14 @@ void AliTPCMonitor::ResetArrays()
   {
     for(Int_t pad = 0 ; pad <  fkNPadsIroc ; pad++)
     {
-      fHistIROCIndex->SetCellContent(row+1,pad+1,-1);
+      fHistIROCIndex->SetBinContent(fHistIROCIndex->GetBin(row+1,pad+1),-1);
     }
   }
   for(Int_t row = 0 ; row < fkNRowsOroc; row++)
   {
     for(Int_t pad = 0 ; pad <  fkNPadsOroc ; pad++)
     {
-      fHistOROCIndex->SetCellContent(row+1,pad+1,-1);
+      fHistOROCIndex->SetBinContent(fHistOROCIndex->GetBin(row+1,pad+1),-1);
     }
   }
   
@@ -1406,7 +1406,7 @@ void AliTPCMonitor::ExecPad()
   if (!fHistIndex) return;
   Int_t testy = fHistIndex->GetYaxis()->FindBin(y);
   Int_t testx = fHistIndex->GetXaxis()->FindBin(x);
-  Int_t binchannel = (Int_t)fHistIndex->GetCellContent(testx,testy);
+  Int_t binchannel = (Int_t)fHistIndex->GetBinContent(fHistIndex->GetBin(testx,testy));
   if(binchannel>30000 || binchannel<0) return;
   
   TH1D *hp=(TH1D*)gROOT->Get(projhist);
@@ -1425,7 +1425,7 @@ void AliTPCMonitor::ExecPad()
   // Make title and Pave for channel Info
   Int_t npadRow , npad  , nhw , nmax , hwadd;
   
-  hwadd   = (Int_t)fHistChannelTime->GetCellContent(binchannel,0);
+  hwadd   = (Int_t)fHistChannelTime->GetBinContent(fHistChannelTime->GetBin(binchannel,0));
   fPadUsedHwAddr = hwadd;
   
   if(rocid==0)npadRow = fMapHand->GetPadRow(hwadd);
@@ -1625,13 +1625,13 @@ void AliTPCMonitor::ExecRow()
   // get channel for xy bin -> getRow -> getNrows -> getHw for each Pad in Row -> get channel for each hw -> make proj
   Int_t testy      = fHistIndex->GetYaxis()->FindBin(y);
   Int_t testx      = fHistIndex->GetXaxis()->FindBin(x);
-  Int_t binchannel = (Int_t)fHistIndex->GetCellContent(testx,testy);
+  Int_t binchannel = (Int_t)fHistIndex->GetBinContent(fHistIndex->GetBin(testx,testy));
   
   if(binchannel>30000)    return;
   if(binchannel<=0 ) { crowtime->Update() ;    crowmax->Update() ;    return ;  }
   
   // get hwaddress
-  Int_t hwadd     = (Int_t)fHistChannelTime->GetCellContent(binchannel,0);
+  Int_t hwadd     = (Int_t)fHistChannelTime->GetBinContent(fHistChannelTime->GetBin(binchannel,0));
   Int_t row       = fMapHand->GetPadRow(hwadd);
   Int_t pad       = fMapHand->GetPad(hwadd)   ;
   Int_t numofpads =  fMapHand->GetNumofPads(row);
@@ -1654,7 +1654,7 @@ void AliTPCMonitor::ExecRow()
     for(Int_t time = 0;time<GetTimeBins();time++) {
       
       Float_t val = hp->GetBinContent(time);
-      hrowtime->SetCellContent(padnr+1,time+1,val);
+      hrowtime->SetBinContent(hrowtime->GetBin(padnr+1,time+1),val);
     }
   }
   
@@ -1934,18 +1934,18 @@ void AliTPCMonitor::ShowSel(const Int_t* compval)
   {
     for(Int_t pad = 0; pad<fkNPadsIroc;  pad++)
     {
-      index = (Int_t)fHistIROCIndex->GetCellContent(row+1,pad+1);
+      index = (Int_t)fHistIROCIndex->GetBinContent(fHistIROCIndex->GetBin(row+1,pad+1));
       if(index==-1)continue;
-      else  fHistIROC->SetCellContent(row+1,pad+1,fHistIROCClone->GetCellContent(row+1,pad+1));
+      else  fHistIROC->SetBinContent(fHistIROC->GetBin(row+1,pad+1),fHistIROCClone->GetBinContent(fHistIROCClone->GetBin(row+1,pad+1)));
     }
   }
   for(Int_t row = 0; row<fkNRowsOroc;  row++)
   {
     for(Int_t pad = 0; pad<fkNPadsOroc;  pad++)
     {
-      index = (Int_t)fHistOROCIndex->GetCellContent(row+1,pad+1);
+      index = (Int_t)fHistOROCIndex->GetBinContent(fHistOROCIndex->GetBin(row+1,pad+1));
       if(index==-1)continue;
-      else    fHistOROC->SetCellContent(row+1,pad+1,fHistOROCClone->GetCellContent(row+1,pad+1));
+      else    fHistOROC->SetBinContent(fHistOROC->GetBin(row+1,pad+1),fHistOROCClone->GetBinContent(fHistOROCClone->GetBin(row+1,pad+1)));
     }
   }
   
@@ -1964,33 +1964,33 @@ void AliTPCMonitor::ShowSel(const Int_t* compval)
     
     for(Int_t pad = 0; pad<npads;  pad++)
     {
-      index    = (Int_t)fHistIndex->GetCellContent(row -subrows +1,pad+1);
+      index    = (Int_t)fHistIndex->GetBinContent(fHistIndex->GetBin(row -subrows +1,pad+1));
       if(index==-1)  continue ;
-      hwadd    = (Int_t)fHistChannelTime->GetCellContent(index,0);
+      hwadd    = (Int_t)fHistChannelTime->GetBinContent(fHistChannelTime->GetBin(index,0));
       
     // global fecnr
       fecnr     =  fMapHand->GetFECfromHw(hwadd);
-      if(compval[0]!=-1 && fecnr!=compval[0])      {	  fHist->SetCellContent(row-subrows+1,pad+1,0);	          continue;	}
+      if(compval[0]!=-1 && fecnr!=compval[0])      {	  fHist->SetBinContent(fHist->GetBin(row-subrows+1,pad+1),0);	          continue;	}
       
     // rcu
       rcuget      = (hwadd & fgkHwMaskRCU)>> 12;
-      if(compval[1]!=-1 && rcuget!=compval[1])     {	  fHist->SetCellContent(row-subrows+1,pad+1,0);	          continue;	}
+      if(compval[1]!=-1 && rcuget!=compval[1])     {	  fHist->SetBinContent(fHist->GetBin(row-subrows+1,pad+1),0);	          continue;	}
       
     // branch
       branch    =  fMapHand->U2fGetBranch(fecnr) ;
-      if(compval[2]!=-1 && branch!=compval[2])     {	  fHist->SetCellContent(row-subrows+1,pad+1,0);	          continue;	}
+      if(compval[2]!=-1 && branch!=compval[2])     {	  fHist->SetBinContent(fHist->GetBin(row-subrows+1,pad+1),0);	          continue;	}
       
     // local fec
       feclocbran=   fMapHand->U2fGetFECinBranch(fecnr) ;
-      if(compval[3]!=-1 && feclocbran!=compval[3]) { 	  fHist->SetCellContent(row-subrows+1,pad+1,0); 	  continue; 	}
+      if(compval[3]!=-1 && feclocbran!=compval[3]) { 	  fHist->SetBinContent(fHist->GetBin(row-subrows+1,pad+1),0); 	  continue; 	}
       
     // connector
       connector =  fMapHand->GetFECconnector(hwadd);
-      if(compval[4]!=-1 && connector!=compval[4])  { 	  fHist->SetCellContent(row-subrows+1,pad+1,0); 	  continue; 	}
+	if(compval[4]!=-1 && connector!=compval[4])  { 	  fHist->SetBinContent(fHist->GetBin(row-subrows+1,pad+1),0); 	  continue; 	}
       
     // Altro chip
       altrochip     =  fMapHand->GetAltro(hwadd);
-      if(compval[5]!=-1 && altrochip!=compval[5])      { 	  fHist->SetCellContent(row-subrows+1,pad+1,0); 	  continue; 	}
+	  if(compval[5]!=-1 && altrochip!=compval[5])      { 	  fHist->SetBinContent(fHist->GetBin(row-subrows+1,pad+1),0); 	  continue; 	}
       // emptyI =0;
     }
   }
@@ -2106,7 +2106,7 @@ Int_t AliTPCMonitor::ExecProcess()
   
   Int_t testy = ((TH2*)select)->GetYaxis()->FindBin(y);
   Int_t testx = ((TH2*)select)->GetXaxis()->FindBin(x);
-  if(((TH2*)select)->GetCellContent(testx,testy)==0) return -1 ;
+  if(((TH2*)select)->GetBinContent(((TH2*)select)->GetBin(testx,testy))==0) return -1 ;
   
   Float_t alpha = 0.0;
   if(x>0.0 && y > 0.0)    alpha = TMath::Abs(TMath::ATan(TMath::Abs(x/y)));

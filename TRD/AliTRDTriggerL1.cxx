@@ -18,9 +18,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 // TRD trigger L1 (GTU) simulation steering                                  //
-// currently the Trigger() method calls the GTU tracking simulation and      //
-// runs two example triggers, namely on a single high pt particle and        //
-// on a jet.                                                                 //
+// The Trigger() method calls the GTU tracking simulation and                //
+// runs the triggers for HCO, HJT, HSE, HQU, HEE                             //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -42,16 +41,20 @@
 AliTRDTriggerL1::AliTRDTriggerL1() :
   AliTriggerDetector(),
   fPtThresholdA(3.),
-  fPtThresholdB(5.),
-  fPidThresholdA(0),
-  fPidThresholdB(185),
+  fPtThresholdB(2.),
+  fPidThresholdA(144),
+  fPidThresholdB(164),
   fNoThreshold(1),
-  fNoThresholdA(3),
-  fNoThresholdB(200),
+  fNoThresholdA(1),
+  fNoThresholdB(1),
   fNoThresholdJetA(3),
-  fNoThresholdJetB(200),
+  fNoThresholdJetB(250),
   fNoThresholdElA(1),
-  fNoThresholdElB(1)
+  fNoThresholdElB(1),
+  fNoTrklThresholdElA(5),
+  fNoTrklThresholdElB(5),
+  fLayerMaskElA(0x1),
+  fLayerMaskElB(0x1)
 {
   // ctor
 
@@ -73,6 +76,8 @@ void AliTRDTriggerL1::CreateInputs()
   fInputs.AddLast(new AliTriggerInput("1HCO", "TRD", 1));
   fInputs.AddLast(new AliTriggerInput("1HJT", "TRD", 1));
   fInputs.AddLast(new AliTriggerInput("1HSE", "TRD", 1));
+  fInputs.AddLast(new AliTriggerInput("1HQU", "TRD", 1));
+  fInputs.AddLast(new AliTriggerInput("1HEE", "TRD", 1));
 }
 
 void AliTRDTriggerL1::Trigger()
@@ -102,6 +107,8 @@ void AliTRDTriggerL1::Trigger()
   Bool_t triggered1HCO    = kFALSE;
   Bool_t triggered1HJT    = kFALSE;
   Bool_t triggered1HSE    = kFALSE;
+  Bool_t triggered1HQU    = kFALSE;
+  Bool_t triggered1HEE    = kFALSE;
 
   if (branch) {
     AliTRDtrackGTU *trk = 0x0;
@@ -120,26 +127,33 @@ void AliTRDTriggerL1::Trigger()
 
       if (TMath::Abs(trk->GetPt()) > fPtThresholdA) {
         nTracksA[5*trk->GetSector() + trk->GetStack()]++;
-	if (trk->GetPID() > fPidThresholdA)
+	if ((trk->GetPID() > fPidThresholdA) &&
+	    ((trk->GetTrackletMask() & fLayerMaskElA) == fLayerMaskElA) &&
+	    (trk->GetNTracklets() >= fNoTrklThresholdElA))
 	  nTracksElA[5*trk->GetSector() + trk->GetStack()]++;
       }
 
       if (TMath::Abs(trk->GetPt()) > fPtThresholdB) {
         nTracksB[5*trk->GetSector() + trk->GetStack()]++;
-	if (trk->GetPID() > fPidThresholdB)
+	if ((trk->GetPID() > fPidThresholdB) &&
+	    ((trk->GetTrackletMask() & fLayerMaskElB) == fLayerMaskElB) &&
+	    (trk->GetNTracklets() >= fNoTrklThresholdElB))
 	  nTracksElB[5*trk->GetSector() + trk->GetStack()]++;
       }
     }
 
     for (Int_t iStack = 0; iStack < 90; iStack++) {
+      if (nTracks[iStack] >= fNoThreshold)
+	triggered1HCO = kTRUE;
+
       if ((nTracksA[iStack] >= fNoThresholdJetA) || (nTracksB[iStack] >= fNoThresholdJetB))
         triggered1HJT = kTRUE;
 
       if ((nTracksElA[iStack] >= fNoThresholdElA))
-        triggered1HCO = kTRUE;
+        triggered1HSE = kTRUE;
 
       if ((nTracksElB[iStack] >= fNoThresholdElB))
-        triggered1HSE = kTRUE;
+        triggered1HQU = kTRUE;
     }
   }
   else {
@@ -159,6 +173,16 @@ void AliTRDTriggerL1::Trigger()
   if (triggered1HSE) {
     AliDebug(1, "Fired single electron trigger");
     SetInput("1HSE");
+  }
+
+  if (triggered1HQU) {
+    AliDebug(1, "Fired single electron trigger");
+    SetInput("1HQU");
+  }
+
+  if (triggered1HEE) {
+    AliDebug(1, "Fired single electron trigger");
+    SetInput("1HEE");
   }
 
   // cleaning up

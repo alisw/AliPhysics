@@ -130,7 +130,7 @@ DetectorK::DetectorK(char *name, char *title)
     fAtLeastFake(1),       // if at least x fakes, track is considered fake ...
     fMaxSeedRadius(50000),
     fptScale(10.),
-    fdNdEtaCent(2300)
+    fdNdEtaCent(2200)
 {
   //
   // default constructor, that set the name and title
@@ -470,6 +470,9 @@ void DetectorK::AddTPC(Float_t phiResMean, Float_t zResMean, Int_t skip) {
   AddLayer((char*)"OFC",   254.0,0.01367); // Outer Field cage
 
   // % Radiation Lengths ... Average per TPC row  (i.e. total/159 )
+  Float_t radLBoubdary = 0.0165;
+  Float_t rBoundary = 70.0; // cm
+
   Float_t radLPerRow = 0.000036;
   
   Float_t tpcInnerRadialPitch  =    0.75 ;    // cm
@@ -486,6 +489,9 @@ void DetectorK::AddTPC(Float_t phiResMean, Float_t zResMean, Int_t skip) {
   Float_t row64Radius          =  135.1  ;    // cm
   Float_t row128Radius         =  199.2  ;    // cm                       
  
+  // add boundary between ITS and TPC
+  AddLayer("tpc_boundary",rBoundary,radLBoubdary); // dummy errors
+
   for ( Int_t k = 0 ; k < tpcRows ; k++ ) {
     
     Float_t rowRadius =0;
@@ -744,7 +750,7 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
   // ( see P. Billoir, Nucl. Instr. and Meth. 225 (1984), p. 352. )
   // ABOVE IS OBSOLETE -> NOW, its uses the Aliroot Kalman technique
   //
-
+  const float kTrackingMargin = 0.1;
 
   static AliExternalTrackParam probTr;   // track to propagate
   probTr.SetUseLogTermMS(kTRUE);
@@ -793,7 +799,7 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
   TMatrixD probLay(base,fNumberOfActiveITSLayers);
   TMatrixD probKomb(komb,nLayer);
   for (Int_t num=0; num<komb; num++) {
-    for (Int_t l=nLayer-1; l>=0; l--) {
+    for (Int_t l=nLayer; l--;) {
       Int_t pow = ((Int_t)TMath::Power(base,l+1));
       probKomb(num,nLayer-1-l)=(num%pow)/((Int_t)TMath::Power(base,l));
     }
@@ -855,17 +861,18 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
       //
       // put tiny errors to propagate to the outer radius
       trCov[kY2] = trCov[kZ2] = trCov[kSnp2] = trCov[kTgl2] = trCov[kPtI2] = 1e-9;
-      if (!PropagateToR(&probTr,last->radius,bGauss,1)) continue;
+      if (!PropagateToR(&probTr,last->radius+ kTrackingMargin,bGauss,1)) continue;
       //if (!probTr.PropagateTo(last->radius,bGauss)) continue;
       // reset cov.matrix
-      const double kLargeErr2Coord = 50*50;
-      const double kLargeErr2Dir = 0.6*0.6;
-      const double kLargeErr2PtI = 0.5*0.5;
+      const double kLargeErr2Coord = 5*5;
+      const double kLargeErr2Dir = 0.7*0.7;
+      const double kLargeErr2PtI = 30.5*30.5;
       for (int ic=15;ic--;) trCov[ic] = 0.;
       trCov[kY2]   = trCov[kZ2]   = kLargeErr2Coord; 
       trCov[kSnp2] = trCov[kTgl2] = kLargeErr2Dir;
       trCov[kPtI2] = kLargeErr2PtI*trPars[kPtI]*trPars[kPtI];
-       //
+      probTr.CheckCovariance();
+      //
       //      printf("%d - pt %lf r%lf | %lf %lf\n",massloop,fTransMomenta[i],(last->radius)/100,momentum, d);
 
       // Set Detector-Efficiency Storage area to unity
@@ -885,7 +892,7 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 	}
       }
       //      probTr.Print();
-      for (Int_t j=lastActiveLayer; j--;) {  // Layer loop
+      for (Int_t j=lastActiveLayer+1; j--;) {  // Layer loop
 
 	layer = (CylLayerK*)fLayers.At(j);
 
@@ -1069,9 +1076,11 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 	  probTr.ResetCovariance(10);
 	} else {
 	  // cannot do complete reset, set to very large errors
-	  trCov[kY2] = trCov[kZ2] = kLargeErr2Coord; 
+	  for (int ic=15;ic--;) trCov[ic] = 0.;
+	  trCov[kY2]   = trCov[kZ2]   = kLargeErr2Coord; 
 	  trCov[kSnp2] = trCov[kTgl2] = kLargeErr2Dir;
 	  trCov[kPtI2] = kLargeErr2PtI*trPars[kPtI]*trPars[kPtI];
+	  probTr.CheckCovariance();
 	  //	  cout<<pt<<": "<<kLargeErr2Coord<<" "<<kLargeErr2Dir<<" "<<kLargeErr2PtI*trPars[kPtI]*trPars[kPtI]<<endl;
 	}
 	// Clean up and storing of "forward estimates"
@@ -1310,7 +1319,7 @@ TGraph * DetectorK::GetGraphPointingResolution(Int_t axis, Int_t color, Int_t li
   }
   
   graph->SetMinimum(1) ;
-  graph->SetMaximum(300.1) ;
+  graph->SetMaximum(1000.1) ;
   graph->GetXaxis()->SetTitle("Transverse Momentum (GeV/c)") ;
   graph->GetXaxis()->CenterTitle();
   graph->GetXaxis()->SetNoExponent(1) ;
@@ -1885,7 +1894,7 @@ void DetectorK::MakeStandardPlots(Bool_t add, Int_t color, Int_t linewidth,Bool_
   //
   // Produces the standard performace plots
   //
- 
+  TGraph *eff,*momRes,*pointRes;
   if (!add) {
 
     TCanvas *c1 = new TCanvas("c1","c1");//,100,100,500,500);  
@@ -1893,40 +1902,67 @@ void DetectorK::MakeStandardPlots(Bool_t add, Int_t color, Int_t linewidth,Bool_
     
     c1->cd(1);  gPad->SetGridx();   gPad->SetGridy(); 
     gPad->SetLogx(); 
-    TGraph *eff = GetGraphRecoEfficiency(1,color,linewidth);
+    eff = GetGraphRecoEfficiency(1,color,linewidth);
+    eff->SetName(Form("grEff%d",1));
     eff->SetTitle("Efficiencies");
     eff->Draw("AL");
+    eff->SetMaximum(110);
     if (!onlyPionEff) {
-      GetGraphRecoEfficiency(2,color,linewidth)->Draw("L");
-      GetGraphRecoEfficiency(3,color,linewidth)->Draw("L");
+      eff = GetGraphRecoEfficiency(2,color,linewidth);
+      eff->SetName(Form("grEff%d",2));
+      eff->Draw("L");
+      eff = GetGraphRecoEfficiency(3,color,linewidth);
+      eff->SetName(Form("grEff%d",3));
+      eff->Draw("L");
     }
     c1->cd(2); gPad->SetGridx();   gPad->SetGridy(); 
     gPad->SetLogy();  gPad->SetLogx(); 
-    GetGraphMomentumResolution(color,linewidth)->Draw("AL");
+    momRes = GetGraphMomentumResolution(color,linewidth);
+    momRes->SetName(Form("grMomRes%d",1));
+    momRes->Draw("AL");
     
     c1->cd(3); gPad->SetGridx();   gPad->SetGridy(); 
     gPad->SetLogx(); 
-    GetGraphPointingResolution(0,color,linewidth)->Draw("AL");
-    
+    pointRes = GetGraphPointingResolution(0,color,linewidth);
+    pointRes->SetName(Form("pointRRes%d",0));
+    pointRes->Draw("AL");
+    //
     c1->cd(4); gPad->SetGridx();   gPad->SetGridy(); 
     gPad->SetLogx(); 
-    GetGraphPointingResolution(1,color,linewidth)->Draw("AL");
-
+    pointRes = GetGraphPointingResolution(1,color,linewidth);
+    pointRes->SetName(Form("pointZRes%d",0));    
+    pointRes->Draw("AL");
+    
   } else {
-
+    
     TVirtualPad *c1 = gPad->GetMother();
 
     c1->cd(1);
-    GetGraphRecoEfficiency(1,color,linewidth)->Draw("L");
+    eff = GetGraphRecoEfficiency(1,color,linewidth);
+    eff->SetName(Form("grEff%dadd",1));
+    eff->Draw("L");
     if (!onlyPionEff) {
-      GetGraphRecoEfficiency(2,color,linewidth)->Draw("L");
-      GetGraphRecoEfficiency(3,color,linewidth)->Draw("L");
+      eff = GetGraphRecoEfficiency(2,color,linewidth);
+      eff->SetName(Form("grEff%dadd",2));
+      eff->Draw("L");
+      eff = GetGraphRecoEfficiency(3,color,linewidth);
+      eff->SetName(Form("grEff%dadd",3));
+      eff->Draw("L");
     }
-    c1->cd(2); GetGraphMomentumResolution(color,linewidth)->Draw("L");
+    c1->cd(2); 
+    momRes = GetGraphMomentumResolution(color,linewidth);
+    momRes->SetName(Form("grMomRes%dadd",1));
+    momRes->Draw("L");
     
-    c1->cd(3); GetGraphPointingResolution(0,color,linewidth)->Draw("L");
+    c1->cd(3); 
+    pointRes = GetGraphPointingResolution(0,color,linewidth);
+    pointRes->SetName(Form("pointRRes%dadd",0));
+    pointRes->Draw("L");
     
-    c1->cd(4); GetGraphPointingResolution(1,color,linewidth)->Draw("L");
+    c1->cd(4); 
+    pointRes = GetGraphPointingResolution(1,color,linewidth);
+    pointRes->SetName(Form("pointZRes%dadd",0));
+    pointRes->Draw("L");
     
   }
 
@@ -2113,7 +2149,7 @@ Double_t* DetectorK::PrepareEffFakeKombinations(TMatrixD *probKomb, TMatrixD *pr
     }
 
   }
-  Double_t *probs = new Double_t(2);
+  Double_t *probs = new Double_t[2];
   probs[0] = probEff; probs[1] = probFake;
   return probs;
 
@@ -2146,3 +2182,4 @@ Bool_t DetectorK::PropagateToR(AliExternalTrackParam* trc, double r, double b, i
   } 
   return kTRUE;
 }
+

@@ -2337,6 +2337,22 @@ void AliTRDmcmSim::PrintTrackletsXml(ostream& os) const
 }
 
 
+void AliTRDmcmSim::PrintAdcDatTxt(ostream& os) const
+{
+  // print ADC data in text format (suitable as Modelsim stimuli)
+
+   os << "# MCM " << fMcmPos << " on ROB " << fRobPos <<
+      " in detector " << fDetector << std::endl;
+
+   for (Int_t iTimeBin = 0; iTimeBin < fNTimeBin; iTimeBin++) {
+      for (Int_t iChannel = 0; iChannel < AliTRDfeeParam::GetNadcMcm(); ++iChannel) {
+	 os << std::setw(5) << (fADCR[iChannel][iTimeBin] >> fgkAddDigits);
+      }
+      os << std::endl;
+   }
+}
+
+
 void AliTRDmcmSim::PrintAdcDatHuman(ostream& os) const
 {
   // print ADC data in human-readable format

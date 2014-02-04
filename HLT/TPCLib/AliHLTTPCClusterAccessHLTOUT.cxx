@@ -238,6 +238,9 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
   decoder.Clear();
   decoder.SetVerbosity(fVerbosity);
 
+  bool bHavePartitionRawData=false;
+  bool bHavePartitionCompressedData=false;
+
   bool bNextBlock=false;
   // add cluster id and mc information data blocks
   for (bNextBlock=(pHLTOUT->SelectFirstDataBlock()>=0);
@@ -257,6 +260,14 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
       if ((iResult=decoder.AddCompressionDescriptor(&desc))<0) {
 	return iResult;
       }
+      bHavePartitionCompressedData = kTRUE;
+    }
+    if (desc.fDataType==AliHLTTPCDefinitions::RawClustersDescriptorDataType()) {
+      // header      
+      if ((iResult=decoder.AddRawClustersDescriptor(&desc))<0) {
+	return iResult;
+      }
+      bHavePartitionRawData = kTRUE;
     }
     if (desc.fDataType==AliHLTTPCDefinitions::AliHLTDataTypeClusterMCInfo()) {
       // add mc information
@@ -273,8 +284,6 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
     }
   }
 
-  bool bHavePartitionRawData=false;
-  bool bHavePartitionCompressedData=false;
   vector<bool> bHavePartitionData(216, false);
 
   // read data

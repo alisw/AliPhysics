@@ -75,7 +75,7 @@
  * <h2>Output size:</h2>
  * The maximum is the same size as the input data size.
  *
- * @ingroup alihlt_dimuon_component
+ * @ingroup alihlt_muon_components
  */
 class AliHLTMUONEmptyEventFilterComponent : public AliHLTMUONProcessor
 {

@@ -436,4 +436,6 @@ void AliTRDReconstructor::ResetContainers() const
     AliDebug(1, Form("Removing %3d online tracks @ %p", fgTracks->GetEntriesFast(), (void*)fgTracks));
     fgTracks->Clear();
   }
+  for (Int_t iSector = 0; iSector < 18; iSector++)
+    fgTriggerFlags.SetFlags(iSector, 0);
 }

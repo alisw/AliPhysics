@@ -1087,11 +1087,15 @@ Bool_t AliStack::IsSecondaryFromWeakDecay(Int_t index) {
   Int_t indexMoth = particle->GetFirstMother();
   if(indexMoth < 0) return kFALSE; // if index mother < 0 and not a physical primary, is a non-stable product or one of the beams
   TParticle* moth = Particle(indexMoth);
-  Float_t codemoth = TMath::Abs(moth->GetPdgCode());
+  Float_t codemoth = (Float_t)TMath::Abs(moth->GetPdgCode());
   // mass of the flavour
   mfl = Int_t (codemoth / TMath::Power(10, Int_t(TMath::Log10(codemoth))));
   
   if(mfl == 3 && uniqueID == kPDecay) return kTRUE;// The first mother is strange and it's a decay
+  if(codemoth == 211 && uniqueID == kPDecay) return kTRUE;// pion+- decay products
+  if(codemoth == 13 && uniqueID == kPDecay) return kTRUE;// muon decay products
+
+  
 
   return kFALSE;
   

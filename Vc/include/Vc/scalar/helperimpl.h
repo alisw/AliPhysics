@@ -22,6 +22,7 @@
 
 #include "macros.h"
 
+namespace AliRoot {
 namespace Vc
 {
 namespace Internal
@@ -30,25 +31,26 @@ namespace Internal
 template<> struct HelperImpl<Vc::ScalarImpl>
 {
     template<typename V, typename M, typename A>
-    static inline void ALWAYS_INLINE deinterleave(V &a, V &b, const M *mem, A)
+    static Vc_ALWAYS_INLINE void deinterleave(V &a, V &b, const M *mem, A)
     {
         a = mem[0];
         b = mem[1];
     }
 
-    static inline void prefetchForOneRead(const void *) {}
-    static inline void prefetchForModify(const void *) {}
-    static inline void prefetchClose(const void *) {}
-    static inline void prefetchMid(const void *) {}
-    static inline void prefetchFar(const void *) {}
+    static Vc_ALWAYS_INLINE void prefetchForOneRead(const void *) {}
+    static Vc_ALWAYS_INLINE void prefetchForModify(const void *) {}
+    static Vc_ALWAYS_INLINE void prefetchClose(const void *) {}
+    static Vc_ALWAYS_INLINE void prefetchMid(const void *) {}
+    static Vc_ALWAYS_INLINE void prefetchFar(const void *) {}
 
     template<Vc::MallocAlignment A>
-    static inline ALWAYS_INLINE_L void *malloc(size_t n) ALWAYS_INLINE_R;
-    static inline ALWAYS_INLINE_L void free(void *p) ALWAYS_INLINE_R;
+    static Vc_ALWAYS_INLINE_L void *malloc(size_t n) Vc_ALWAYS_INLINE_R;
+    static Vc_ALWAYS_INLINE_L void free(void *p) Vc_ALWAYS_INLINE_R;
 };
 
 } // namespace Scalar
 } // namespace Vc
+} // namespace AliRoot
 
 #include "helperimpl.tcc"
 #include "undomacros.h"

@@ -18,3 +18,4 @@
 #pragma link C++ class AliT0TenderSupply+;
 #pragma link C++ class AliTrackFixTenderSupply+;
 
+#endif

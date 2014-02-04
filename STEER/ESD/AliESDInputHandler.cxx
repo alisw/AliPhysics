@@ -126,6 +126,12 @@ Bool_t AliESDInputHandler::BeginEvent(Long64_t entry)
   
   fNewEvent = kTRUE;
   //
+  static Int_t prevRunNumber = -1;
+  if (prevRunNumber != fEvent->GetRunNumber() && NeedField()) {
+    fEvent->InitMagneticField();
+    prevRunNumber = fEvent->GetRunNumber();
+  } 
+  //
   // Event selection
   // 
   fIsSelectedResult = 0;

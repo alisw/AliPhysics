@@ -2,7 +2,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
+/* $Id: ESDLinkDef.h 54829 2012-02-25 20:47:28Z morsch $ */
 
 #pragma link off all globals;
 #pragma link off all classes;
@@ -25,8 +25,49 @@
   target="fNEntries, fColumn, fRow, fTriggerBits" targetType="Int, Int_t*, Int_t*, Int_t*" code="{fTriggerBits = new Int_t[fNEntries]; for (Int_t i=0; i<fNEntries; ++i) fTriggerBits[i]=onfile.fTriggerBits[fColumn[i]][fRow[i]];}"
 
 #pragma link C++ class  AliESDfriend+;                                                                                                           
-#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="UChar_t fTRDpidQuality"  version="[-49]" target="fTRDntracklets" targetType="UChar_t" code="{fTRDntracklets = onfile.fTRDpidQuality;}"
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="unsigned char fTRDpidQuality"  version="[-49]" target="fTRDntracklets" targetType="unsigned char" code="{newObj->SetTRDntracklets(onfile.fTRDpidQuality);}"
 // see http://root.cern.ch/svn/root/trunk/io/doc/DataModelEvolution.txt
+
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Int_t fTOFLabel[3]"  version="[-68]" target="fTOFLabel" targetType="Int_t*" code="{fTOFLabel = new Int_t[3];for(Int_t i=0;i < 3;i++) fTOFLabel[i]=onfile.fTOFLabel[i];}"
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTrackTime[5]"  version="[-68]" \
+target="fTrackTime" targetType="Double32_t*" include="AliPID.h" \
+code="{fTrackTime = new Double32_t[AliPID::kSPECIESC];for(Int_t isp=AliPID::kSPECIESC;isp--;) fTrackTime[isp]=isp<AliPID::kSPECIES ? onfile.fTrackTime[isp]:0;}"
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTrackLength"  version="[-68]" target="fTrackLength" targetType="Double32_t" code="{fTrackLength=onfile.fTrackLength;}"
+
+
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTOFsignal"  version="[-68]" target="fTOFsignal" targetType="Double32_t" code="{fTOFsignal=onfile.fTOFsignal;}"
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTOFsignalToT"  version="[-68]" target="fTOFsignalToT" targetType="Double32_t" code="{fTOFsignalToT=onfile.fTOFsignalToT;}"
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTOFsignalRaw"  version="[-68]" target="fTOFsignalRaw" targetType="Double32_t" code="{fTOFsignalRaw=onfile.fTOFsignalRaw;}"
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTOFsignalDx"  version="[-68]" target="fTOFsignalDx" targetType="Double32_t" code="{fTOFsignalDx=onfile.fTOFsignalDx;}"
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTOFsignalDz"  version="[-68]" target="fTOFsignalDz" targetType="Double32_t" code="{fTOFsignalDz=onfile.fTOFsignalDz;}"
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Short_t fTOFdeltaBC"  version="[-68]" target="fTOFdeltaBC" targetType="Short_t" code="{fTOFdeltaBC=onfile.fTOFdeltaBC;}"
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Short_t fTOFl0l1"  version="[-68]" target="fTOFl0l1" targetType="Short_t" code="{fTOFl0l1=onfile.fTOFl0l1;}"
+
+
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fR[5]"  version="[-70]" \
+ target="fR" targetType="Double32_t*" include="AliPID.h" \
+   code="{fR = new Double32_t[AliPID::kSPECIES];for(Int_t isp=5;isp--;) fR[isp]=onfile.fR[isp];}"
+
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTPCr[5]"  version="[-70]" \
+   target="fTPCr" targetType="Double32_t*" include="AliPID.h" \
+   code="{fTPCr = new Double32_t[AliPID::kSPECIES];for(Int_t isp=5;isp--;) fTPCr[isp]=onfile.fTPCr[isp];}"
+
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fITSr[5]"  version="[-70]" \
+   target="fITSr" targetType="Double32_t*" include="AliPID.h" \
+   code="{fITSr = new Double32_t[AliPID::kSPECIES];for(Int_t isp=5;isp--;) fITSr[isp]=onfile.fITSr[isp];}"
+
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTRDr[5]"  version="[-70]" \
+   target="fTRDr" targetType="Double32_t*" include="AliPID.h" \
+   code="{fTRDr = new Double32_t[AliPID::kSPECIES];for(Int_t isp=5;isp--;) fTRDr[isp]=onfile.fTRDr[isp];}"
+
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTOFr[5]"  version="[-70]" \
+   target="fTOFr" targetType="Double32_t*" include="AliPID.h" \
+   code="{fTOFr = new Double32_t[AliPID::kSPECIES];for(Int_t isp=5;isp--;) fTOFr[isp]=onfile.fTOFr[isp];}"
+
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fHMPIDr[5]"  version="[-70]" \
+   target="fHMPIDr" targetType="Double32_t*" include="AliPID.h" \
+   code="{fHMPIDr = new Double32_t[AliPID::kSPECIES];for(Int_t isp=5;isp--;) fHMPIDr[isp]=onfile.fHMPIDr[isp];}"
+
 #pragma link C++ class  AliESDtrack+;
 #pragma read sourceClass="AliESDfriendTrack" targetClass="AliESDfriendTrack" source="Int_t fITSindex" version="[-3]" \
         target="fnMaxITScluster, fITSindex" targetType="Int_t, Int_t*" code="{fnMaxITScluster = 12; fITSindex= new Int_t[fnMaxITScluster]; memcpy(fITSindex, &(onfile.fITSindex), fnMaxITScluster*sizeof(Int_t));}"
@@ -73,9 +114,7 @@
 #pragma link C++ class  AliESDVZERO+;
 #pragma link C++ class  AliESDTZERO+;
 #pragma link C++ class  AliESDACORDE+;
-#ifdef MFT_UPGRADE
-//#pragma link C++ class  AliESDMFT+;
-#endif
+#pragma link C++ class  AliESDAD+;
 
 #pragma link C++ class  AliESDMultITS+;
 #pragma link C++ class  AliMultiplicity+;
@@ -112,6 +151,8 @@
 
 #pragma link C++ class  AliV0vertexer+;
 #pragma link C++ class  AliCascadeVertexer+;
+
+#pragma link C++ class  AliESDTOFcluster+;
 
 #pragma link C++ function AliESDUtils::GetCorrV0(const AliESDEvent*,Float_t &);
 #pragma link C++ function AliESDUtils::GetCorrSPD2(Float_t,Float_t);

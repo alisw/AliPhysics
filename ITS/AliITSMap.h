@@ -9,7 +9,7 @@
 
 #include <TObject.h>
 #include <TArrayI.h>
-typedef enum {kEmpty, kUsed, kUnused} FlagType;
+typedef enum {kEmptyITS, kUsedITS, kUnusedITS} FlagTypeITS;
 
 //___________________________________________________________________________
 
@@ -36,7 +36,7 @@ class AliITSMap : public TObject {
     // Get pointer to digit
     virtual TObject * GetHit(Int_t iz, Int_t ix) const             =0;
     // Test hit status
-    virtual FlagType TestHit(Int_t iz, Int_t ix)                   =0;
+    virtual FlagTypeITS TestHit(Int_t iz, Int_t ix)                =0;
     // Get signal from map
     virtual Double_t  GetSignal(Int_t iz, Int_t ix) const          =0;
 

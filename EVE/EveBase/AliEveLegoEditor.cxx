@@ -63,7 +63,7 @@ AliEveLegoEditor::AliEveLegoEditor(const TGWindow *p, Int_t width, Int_t height,
   fThresholdAE(0),
   fMaxPtAE(0),
   fEventControl(0),
-  fIsMC(kFALSE),
+  fIsMC(0),
   fCollisionCandidatesOnly(0)
 {
   // Constructor.

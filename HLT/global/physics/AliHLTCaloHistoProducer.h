@@ -18,7 +18,7 @@
 #define ALIHLTCALOHISTOPRODUCER_H
 
 /** 
- * @file   AliHLTCaloHistoProducer
+ * @file   AliHLTCaloHistoProducer.h
  * @author Svein Lindal slindal@fys.uio.no
  * @date 
  * @brief  Base class for calo physics histogram producers
@@ -46,7 +46,7 @@ class TObjArray;
  * Base class for calo physics histogram producers
  *
  *
- * @ingroup alihlt_phos
+ * @ingroup alihlt_global
  */
 
 using std::vector;

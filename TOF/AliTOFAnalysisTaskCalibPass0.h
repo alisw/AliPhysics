@@ -118,6 +118,7 @@ public AliAnalysisTaskSE
   TH2F *fHistoVertexTimestamp; // vertex-timestamp histo
   TH2F *fHistoDeltatTimestamp; // deltat-timestamp histo
   TH2F *fHistoDeltazEta; // deltaz-eta histo
+  TH2F *fHistoDeltatEta; // deltaTime-eta histo
   TH2F *fHistoDeltazCosTheta; // deltaz-costheta histo
   TH2F *fHistoAcceptedTracksEtaPt; // accepted tracks eta-pt histo
   TH2F *fHistoMatchedTracksEtaPt; // matched tracks eta-pt histo
@@ -130,7 +131,7 @@ public AliAnalysisTaskSE
   static Double_t fgMinDeltatIntegralSample; // min vertex integral sample
 
 
-  ClassDef(AliTOFAnalysisTaskCalibPass0, 1);
+  ClassDef(AliTOFAnalysisTaskCalibPass0, 2);
 };
 
 #endif /* ALIANALYSISTASKEVENTTIME_H */

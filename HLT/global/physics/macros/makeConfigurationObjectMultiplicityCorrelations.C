@@ -22,7 +22,7 @@
  *  - ""  <pre> aliroot -b -q makeConfigurationObjectMultiplicityCorrelations.C </pre>
  *
  * @author Jochen Thaeder <jochen@thaeder.de>
- * @ingroup alihlt_physics
+ * @ingroup alihlt_global
  */
 void makeConfigurationObjectMultiplicityCorrelations(const Char_t* param="-addTrigger CPBI1 -addTrigger CPBI2", const Char_t* cdbUri=NULL,
 						     Int_t runMin=0, Int_t runMax=AliCDBRunRange::Infinity(),

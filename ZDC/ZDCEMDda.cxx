@@ -24,6 +24,7 @@ Trigger Types Used: Standalone Trigger
 #define TOWCALIBDATA_FILE  "ZDCTowerCalib.dat"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <Riostream.h>
 #include <Riostream.h>
 

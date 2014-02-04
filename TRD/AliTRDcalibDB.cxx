@@ -1826,10 +1826,8 @@ AliTRDtrapConfig* AliTRDcalibDB::GetTrapConfig()
   else {
     if ((fTrapConfigName.Length() <= 0) || (fTrapConfigVersion.Length() <= 0)) {
       // query the configuration to be used
-      TString configName;
-      this->GetGlobalConfiguration(configName);
-      TString configVersion;
-      this->GetGlobalConfigurationVersion(configVersion);
+      this->GetGlobalConfiguration(fTrapConfigName);
+      this->GetGlobalConfigurationVersion(fTrapConfigVersion);
     }
 
     // try to load the requested configuration

@@ -22,6 +22,7 @@
 
 #include "macros.h"
 
+namespace AliRoot {
 namespace Vc
 {
 namespace Internal
@@ -56,47 +57,48 @@ template<> struct HelperImpl<Vc::AVXImpl>
     template<typename A> static void deinterleave(ushort_v &, ushort_v &, const unsigned short *, A);
 
     template<typename V, typename M, typename A>
-        static inline void deinterleave(V &VC_RESTRICT a, V &VC_RESTRICT b,
-                V &VC_RESTRICT c, const M *VC_RESTRICT memory, A align);
+        static Vc_ALWAYS_INLINE_L void deinterleave(V &VC_RESTRICT a, V &VC_RESTRICT b,
+                V &VC_RESTRICT c, const M *VC_RESTRICT memory, A align) Vc_ALWAYS_INLINE_R;
 
     template<typename V, typename M, typename A>
-        static inline void deinterleave(V &VC_RESTRICT a, V &VC_RESTRICT b,
+        static Vc_ALWAYS_INLINE_L void deinterleave(V &VC_RESTRICT a, V &VC_RESTRICT b,
                 V &VC_RESTRICT c, V &VC_RESTRICT d,
-                const M *VC_RESTRICT memory, A align);
+                const M *VC_RESTRICT memory, A align) Vc_ALWAYS_INLINE_R;
 
     template<typename V, typename M, typename A>
-        static inline void deinterleave(V &VC_RESTRICT a, V &VC_RESTRICT b,
+        static Vc_ALWAYS_INLINE_L void deinterleave(V &VC_RESTRICT a, V &VC_RESTRICT b,
                 V &VC_RESTRICT c, V &VC_RESTRICT d, V &VC_RESTRICT e,
-                const M *VC_RESTRICT memory, A align);
+                const M *VC_RESTRICT memory, A align) Vc_ALWAYS_INLINE_R;
 
     template<typename V, typename M, typename A>
-        static inline void deinterleave(V &VC_RESTRICT a, V &VC_RESTRICT b,
+        static Vc_ALWAYS_INLINE_L void deinterleave(V &VC_RESTRICT a, V &VC_RESTRICT b,
                 V &VC_RESTRICT c, V &VC_RESTRICT d, V &VC_RESTRICT e,
-                V &VC_RESTRICT f, const M *VC_RESTRICT memory, A align);
+                V &VC_RESTRICT f, const M *VC_RESTRICT memory, A align) Vc_ALWAYS_INLINE_R;
 
     template<typename V, typename M, typename A>
-        static inline void deinterleave(V &VC_RESTRICT a, V &VC_RESTRICT b,
+        static Vc_ALWAYS_INLINE_L void deinterleave(V &VC_RESTRICT a, V &VC_RESTRICT b,
                 V &VC_RESTRICT c, V &VC_RESTRICT d, V &VC_RESTRICT e,
                 V &VC_RESTRICT f, V &VC_RESTRICT g, V &VC_RESTRICT h,
-                const M *VC_RESTRICT memory, A align);
+                const M *VC_RESTRICT memory, A align) Vc_ALWAYS_INLINE_R;
 
-    static inline void ALWAYS_INLINE_L prefetchForOneRead(const void *addr) ALWAYS_INLINE_R;
-    static inline void ALWAYS_INLINE_L prefetchForModify(const void *addr) ALWAYS_INLINE_R;
-    static inline void ALWAYS_INLINE_L prefetchClose(const void *addr) ALWAYS_INLINE_R;
-    static inline void ALWAYS_INLINE_L prefetchMid(const void *addr) ALWAYS_INLINE_R;
-    static inline void ALWAYS_INLINE_L prefetchFar(const void *addr) ALWAYS_INLINE_R;
+    static Vc_ALWAYS_INLINE_L void prefetchForOneRead(const void *addr) Vc_ALWAYS_INLINE_R;
+    static Vc_ALWAYS_INLINE_L void prefetchForModify(const void *addr) Vc_ALWAYS_INLINE_R;
+    static Vc_ALWAYS_INLINE_L void prefetchClose(const void *addr) Vc_ALWAYS_INLINE_R;
+    static Vc_ALWAYS_INLINE_L void prefetchMid(const void *addr) Vc_ALWAYS_INLINE_R;
+    static Vc_ALWAYS_INLINE_L void prefetchFar(const void *addr) Vc_ALWAYS_INLINE_R;
 
     template<Vc::MallocAlignment A>
-    static inline ALWAYS_INLINE_L void *malloc(size_t n) ALWAYS_INLINE_R;
-    static inline ALWAYS_INLINE_L void free(void *p) ALWAYS_INLINE_R;
+    static Vc_ALWAYS_INLINE_L void *malloc(size_t n) Vc_ALWAYS_INLINE_R;
+    static Vc_ALWAYS_INLINE_L void free(void *p) Vc_ALWAYS_INLINE_R;
 };
 
 } // namespace Internal
 } // namespace Vc
+} // namespace AliRoot
 
-#include "undomacros.h"
 #include "deinterleave.tcc"
 #include "prefetches.tcc"
 #include "helperimpl.tcc"
+#include "undomacros.h"
 
 #endif // VC_AVX_HELPERIMPL_H

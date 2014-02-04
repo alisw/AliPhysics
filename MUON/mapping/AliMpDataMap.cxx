@@ -24,6 +24,7 @@
 //-----------------------------------------------------------------------------
 
 #include "AliMpDataMap.h"
+#include "Riostream.h"
 
 #include "AliLog.h"
 
@@ -71,7 +72,7 @@ TString  AliMpDataMap::Get(const TString& path, Bool_t warn) const
   if ( ! object )  {
     if ( warn ) {
       AliWarningStream()
-        << path << " not found in the map." << endl;
+      << path << " not found in the map." << std::endl;
     }    
     return "";
   }    

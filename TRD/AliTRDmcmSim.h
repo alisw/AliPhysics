@@ -129,6 +129,7 @@ class AliTRDmcmSim : public TObject {
 	  // I/O
 	  void PrintFitRegXml(ostream& os) const;
 	  void PrintTrackletsXml(ostream& os) const;
+	  void PrintAdcDatTxt(ostream& os) const;
 	  void PrintAdcDatHuman(ostream& os) const;
 	  void PrintAdcDatXml(ostream& os) const;
 	  void PrintAdcDatDatx(ostream& os, Bool_t broadcast=kFALSE, Int_t timeBinOffset = -1) const;

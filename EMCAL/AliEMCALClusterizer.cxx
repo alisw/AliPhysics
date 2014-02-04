@@ -72,7 +72,7 @@ AliEMCALClusterizer::AliEMCALClusterizer():
   fTimeMin(-1.),fTimeMax(1.),fTimeCut(1.),
   fDefaultInit(kFALSE),fToUnfold(kFALSE),
   fNumberOfECAClusters(0), fECAClusteringThreshold(0.),
-  fECALocMaxCut(0.),fECAW0(0.),fMinECut(0.),
+  fECALocMaxCut(0.),fECAW0(0.),fMinECut(0.),fRejectBelowThreshold(0),
   fClusterUnfolding(NULL)
 {
   // ctor
@@ -94,7 +94,7 @@ AliEMCALClusterizer::AliEMCALClusterizer(AliEMCALGeometry* geometry):
   fTimeMin(-1.),fTimeMax(1.),fTimeCut(1.),
   fDefaultInit(kFALSE),fToUnfold(kFALSE),
   fNumberOfECAClusters(0), fECAClusteringThreshold(0.),
-  fECALocMaxCut(0.),fECAW0(0.),fMinECut(0.),
+  fECALocMaxCut(0.),fECAW0(0.),fMinECut(0.),fRejectBelowThreshold(0),
   fClusterUnfolding(NULL)
 {
   // Ctor with the indication of the file where header Tree and digits Tree are stored.
@@ -133,7 +133,7 @@ AliEMCALClusterizer::AliEMCALClusterizer(AliEMCALGeometry *geometry,
   fTimeMin(-1.),fTimeMax(1.),fTimeCut(1.),
   fDefaultInit(kFALSE),fToUnfold(kFALSE),
   fNumberOfECAClusters(0), fECAClusteringThreshold(0.),
-  fECALocMaxCut(0.),fECAW0(0.),fMinECut(0.),
+  fECALocMaxCut(0.),fECAW0(0.),fMinECut(0.),fRejectBelowThreshold(0),
   fClusterUnfolding(NULL)
 {
   // ctor, geometry and calibration are initialized elsewhere.
@@ -371,6 +371,7 @@ void AliEMCALClusterizer::InitParameters(const AliEMCALRecParam* recParam)
   fECAClusteringThreshold = recParam->GetClusteringThreshold();
   fECAW0                  = recParam->GetW0();
   fMinECut                = recParam->GetMinECut();    
+  fRejectBelowThreshold   = recParam->GetRejectBelowThreshold();
   fToUnfold               = recParam->GetUnfold();
   fECALocMaxCut           = recParam->GetLocMaxCut();
   fTimeCut                = recParam->GetTimeCut();
@@ -382,8 +383,9 @@ void AliEMCALClusterizer::InitParameters(const AliEMCALRecParam* recParam)
   SetNColDiff(recParam->GetNColDiff());
   
   AliDebug(1,Form("Reconstruction parameters: fECAClusteringThreshold=%.3f GeV, fECAW=%.3f, fMinECut=%.3f GeV, "
-                  "fToUnfold=%d, fECALocMaxCut=%.3f GeV, fTimeCut=%e s,fTimeMin=%e s,fTimeMax=%e s",
-                  fECAClusteringThreshold,fECAW0,fMinECut,fToUnfold,fECALocMaxCut,fTimeCut, fTimeMin, fTimeMax));
+                  "fToUnfold=%d, fECALocMaxCut=%.3f GeV, fTimeCut=%e s,fTimeMin=%e s,fTimeMax=%e s,fRejectBelowThreshold=%d",
+                  fECAClusteringThreshold,fECAW0,fMinECut,fToUnfold,fECALocMaxCut,fTimeCut, fTimeMin, fTimeMax, 
+		  fRejectBelowThreshold));
 
   if (fToUnfold) {
     Int_t i=0;

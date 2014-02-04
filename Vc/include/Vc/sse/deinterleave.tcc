@@ -17,6 +17,7 @@
 
 */
 
+namespace AliRoot {
 namespace Vc
 {
 namespace SSE
@@ -233,3 +234,4 @@ template<typename A> inline void HelperImpl<Vc::SSE2Impl>::deinterleave(
 
 } // namespace Internal
 } // namespace Vc
+} // namespace AliRoot

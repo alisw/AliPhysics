@@ -30,7 +30,7 @@ class AliTRDgtuSim : public TObject {
   Bool_t LoadTracklets(AliLoader * const loader);
   Bool_t LoadTracklets(const AliESDEvent * const esd, Int_t label = -1);
 
-  Bool_t RunGTU(AliLoader *loader, AliESDEvent *esd = 0x0, Int_t label = -1);
+  Bool_t RunGTU(AliLoader *loader, AliESDEvent *esd = 0x0, Int_t label = -1, Int_t outLabel = -1);
   Bool_t RunGTUFromTrackletFile(TString filename, Int_t event, Int_t noev = 1);
 
   Bool_t WriteTracksToDataFile(TList *listOfTracks, Int_t event);

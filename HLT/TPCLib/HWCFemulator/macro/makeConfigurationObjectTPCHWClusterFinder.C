@@ -20,7 +20,7 @@
  *  - ""  <pre> aliroot -b -q makeConfigurationObjectTPCHWClusterFinder.C </pre>
  *
  * @author Sergey Gorbunov <sergey.gorbunov@fias.uni-frankfurt.de>
- * @ingroup alihlt_physics
+ * @ingroup alihlt_tpc
  */
 void makeConfigurationObjectTPCHWClusterFinder(const Char_t* param="", const Char_t* cdbUri=NULL,
 				      Int_t runMin=0, Int_t runMax=AliCDBRunRange::Infinity()) {

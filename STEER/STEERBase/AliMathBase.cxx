@@ -794,3 +794,41 @@ Double_t AliMathBase::BetheBlochAleph(Double_t bg,
 
   return AliExternalTrackParam::BetheBlochAleph(bg,kp1,kp2,kp3,kp4,kp5);
 }
+
+Double_t AliMathBase::Gamma(Double_t k)
+{
+  // from
+  // Hisashi Tanizaki
+  // http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.158.3866&rep=rep1&type=pdf
+  // A. Morsch 14/01/2014
+  static Double_t n=0;
+  static Double_t c1=0;
+  static Double_t c2=0;
+  static Double_t b1=0;
+  static Double_t b2=0;
+  if (k > 0) {
+    if (k < 0.4) 
+      n = 1./k;
+    else if (k >= 0.4 && k < 4) 
+      n = 1./k + (k - 0.4)/k/3.6;
+    else if (k >= 4.) 
+      n = 1./TMath::Sqrt(k);
+    b1 = k - 1./n;
+    b2 = k + 1./n;
+    c1 = (k < 0.4)? 0 : b1 * (TMath::Log(b1) - 1.)/2.;
+    c2 = b2 * (TMath::Log(b2) - 1.)/2.;
+  }
+  Double_t x;
+  Double_t y = -1.;
+  while (1) {
+    Double_t nu1 = gRandom->Rndm();
+    Double_t nu2 = gRandom->Rndm();
+    Double_t w1 = c1 + TMath::Log(nu1);
+    Double_t w2 = c2 + TMath::Log(nu2);
+    y = n * (b1 * w2 - b2 * w1);
+    if (y < 0) continue;
+    x = n * (w2 - w1);
+    if (TMath::Log(y) >= x) break;
+  }
+  return TMath::Exp(x);
+}

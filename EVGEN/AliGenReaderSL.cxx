@@ -25,6 +25,7 @@
 #include <TDatabasePDG.h>
 #include <TParticle.h>
 
+#include "AliLog.h"
 #include "AliGenReaderSL.h"
 #include "AliRun.h"
 #include "AliStack.h"
@@ -92,17 +93,21 @@ Int_t AliGenReaderSL::NextEvent()
     Int_t nb;
     // Event line 
     nb = fscanf(fFile,"%6s %d %d %d ",linelabel, &i1, &ntrk, &i2);
-    if (nb == 0) return (0);
+    if (nb <= 0) return (0);
+    if (nb != 4) AliFatal("malformed EVENT line");
     fNParticles = ntrk;
     //printf("Event line: %s i1 = %5d ntrk = %5d i2 = %5d \n", linelabel, i1, ntrk, i2);
 
     // Gamma line
     if (fFormat == 1) {
-	nb = fscanf(fFile, "%14s %f  ",linelabel, &eGamma1); 
+	nb = fscanf(fFile, "%14s %f  ",linelabel, &eGamma1);
+	if (nb <= 0) return (0);
+	if (nb != 2) AliFatal("malformed GAMMA1 line");
     } else if (fFormat == 2) {
 	nb = fscanf(fFile, "%14s %f %f ",linelabel, &eGamma1, &eGamma2); 
+	if (nb <= 0) return (0);
+	if (nb != 3) AliFatal("malformed GAMMA1,GAMMA2 line");
     }
-    if (nb == 0) return (0);
 //    printf("Gamma line: %s Egamma1 = %13.3f Egamma2 = %13.3f \n", linelabel, eGamma1, eGamma2); 
 
     // Vertex line 
@@ -110,7 +115,8 @@ Int_t AliGenReaderSL::NextEvent()
 	   linelabel, &x1, &x2, &x3, &x4, &i1, &i2, &i3, &nvtx);
 //    printf("Vertex line: %s (x = %13.3f, y =  %13.3f, z =  %13.3f, t =  %13.3f) i1 = %5d i2 = %5d i3 = %5d nvtx = %5d \n", 
 //	   linelabel, x1, x2, x3, x4, i1, i2, i3, nvtx);
-    if (nb == 0) return (0);
+    if (nb <= 0) return (0);
+    if (nb != 9) AliFatal("malformed VERTEX line");
     if(ntrk != nvtx) printf("ERROR: ntrk = %5d  nvtx = %5d \n", ntrk, nvtx);
     
     return (fNParticles);
@@ -129,6 +135,8 @@ TParticle* AliGenReaderSL::NextParticle()
 	Int_t ievent;
 	Int_t ipart;
 	nb = fscanf(fFile, "%d %d %d %f %f %f ", &ievent, &ipart, &pdg, &px, &py, &pz); 
+	if (nb <= 0) return NULL;
+	if (nb != 6) AliFatal("malformed TRACK line");
 //	printf("%5d %5d %5d %13.3f %13.3f %13.3f \n", ievent, ipart, pdg, px, py, pz);
 	
 	if (pdg == 8) pdg =  211;
@@ -142,12 +150,13 @@ TParticle* AliGenReaderSL::NextParticle()
 	int i4 = 0;
 	nb = fscanf(fFile,"%6s %d %f %f %f %d %d %d %d",
 	       tracklabel, &i1, &px, &py, &pz, &i2, &i3, &i4, &pdg);
+	if (nb <= 0) return NULL;
+	if (nb != 9) AliFatal("malformed TRACK line");
 //	printf("Particle %5d %13.3f %13.3f %13.3f \n",  pdg, px, py, pz);
     }
-    if (nb == 0) return (0x0);
 
-    Double_t mass = TDatabasePDG::Instance()->GetParticle(pdg)->Mass();
-    Float_t e = TMath::Sqrt(px * px + py * py + pz * pz + mass * mass);
+    const Double_t mass = TDatabasePDG::Instance()->GetParticle(pdg)->Mass();
+    const Float_t e = TMath::Sqrt(px * px + py * py + pz * pz + mass * mass);
     particle.SetMomentum(px, py, pz, e);
     particle.SetPdgCode(pdg);
     particle.SetFirstMother(-1);
@@ -158,5 +167,6 @@ TParticle* AliGenReaderSL::NextParticle()
 
 void AliGenReaderSL::RewindEvent()
 {
+  AliFatal("AliGenReaderSL::RewindEvent() is not implemented");
 //    fFile->Rewind();
 }

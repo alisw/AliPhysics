@@ -48,13 +48,17 @@ public:
   virtual const TCollection* GetCollection() const;
 
 private:
-#if ROOT_SVN_REVISION >= 29598
-    Bool_t Next(Long64_t& index, TObject*& object);
+#if (defined(ROOT_VERSION_CODE) && ROOT_VERSION_CODE >= 334082) || \
+  (defined(ROOT_SVN_REVISION) && ROOT_SVN_REVISION >= 29598) 
+  // ROOT_VERSION_CODE = 334082 corresponds to Root version 5.25/02
+  // ROOT_SVN_REVISION is not defined in Root versions after moving in git
+  typedef Long64_t Index_t;
 #else    
-    Bool_t Next(Long_t& index, TObject*& object);
+  typedef Long_t Index_t;
 #endif    
+  Bool_t Next(Index_t& index, TObject*& object);
   
-    TExMapIter* fIterator; ///< iterator we are wrapping
+  TExMapIter* fIterator; ///< iterator we are wrapping
 
   ClassDef(AliMpExMapIterator,0) // TIterator for AliMpExMap
 };

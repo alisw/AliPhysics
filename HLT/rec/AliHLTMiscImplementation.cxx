@@ -246,7 +246,33 @@ AliHLTUInt32_t AliHLTMiscImplementation::GetEventType(AliRawReader* rawReader) c
   if (!rawReader) return 0;
   const AliRawEventHeaderBase* eventHeader = rawReader->GetEventHeader();
   if (!eventHeader) return 0;
-  return eventHeader->Get("Type");
+  UInt_t daqType = eventHeader->Get("Type");
+  switch(daqType){
+  case AliRawEventHeaderBase::kStartOfRun:
+  case AliRawEventHeaderBase::kStartOfData:
+    return gkAliEventTypeStartOfRun;
+
+  case AliRawEventHeaderBase::kEndOfRun:
+  case AliRawEventHeaderBase::kEndOfData:
+    return gkAliEventTypeEndOfRun;
+
+  case AliRawEventHeaderBase::kPhysicsEvent:
+    return gkAliEventTypeData;
+
+  case AliRawEventHeaderBase::kCalibrationEvent:
+    return gkAliEventTypeCalibration;
+
+  case AliRawEventHeaderBase::kFormatError:
+    return gkAliEventTypeCorruptID;
+
+  case AliRawEventHeaderBase::kSystemSoftwareTriggerEvent:
+  case AliRawEventHeaderBase::kDetectorSoftwareTriggerEvent:
+    return gkAliEventTypeSoftware;
+
+    // TODO: Sync Event Type not implemented!
+    //case AliRawEventHeaderBase::kSyncEvent:
+  }
+  return gkAliEventTypeUnknown;
 }
 
 const char* AliHLTMiscImplementation::GetBeamTypeFromGRP() const

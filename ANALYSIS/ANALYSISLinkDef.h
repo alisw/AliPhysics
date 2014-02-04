@@ -14,5 +14,6 @@
 #pragma link C++ class  AliAnalysisStatistics+;
 #pragma link C++ class  AliAnalysisTaskCfg+;
 #pragma link C++ class  AliAnalysisFileDescriptor+;
+#pragma link C++ class  AliXMLParser+;
 
 #endif
