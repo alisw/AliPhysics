@@ -1164,10 +1164,98 @@ Bool_t AliTPCPreprocessorOffline::AnalyzePadRegionGain(){
 
 }
 
+Bool_t AliTPCPreprocessorOffline::AnalyzeGainInclinationAngle(Int_t padRegion) {
+  //
+  // Analyze gain as a function of the inclination angle phi (1/pt) and produce calibration graphs
+  // padRegion -- 0: short, 1: medium, 2: long, 3: absolute calibration of full track
+  //
+  if (!fGainMult) return kFALSE;
+  if (!(fGainMult->GetHistTopolRelMax())) return kFALSE;
+  if (!(fGainMult->GetHistTopolRelTot())) return kFALSE;
+  if (!(fGainMult->GetHistTopolAbsMax())) return kFALSE;
+  if (!(fGainMult->GetHistTopolAbsTot())) return kFALSE;
+  //
+  TObjArray arrMax;
+  TObjArray arrTot;
+  arrMax.SetOwner(kTRUE);
+  arrTot.SetOwner(kTRUE);
+  //
+  TH2D * histQmax = 0x0;
+  TH2D * histQtot = 0x0;
+  if (padRegion < 3) {
+    //   (0.) dEdx{i}/mean(wi*dEdx{i}),(1.)tgl   (2.) 1/pt   (3.) pad   
+    fGainMult->GetHistTopolRelMax()->GetAxis(3)->SetRangeUser(padRegion,padRegion); // short,medium,long
+    fGainMult->GetHistTopolRelTot()->GetAxis(3)->SetRangeUser(padRegion,padRegion); // short,medium,long
+    //
+    histQmax = (TH2D*) fGainMult->GetHistTopolRelMax()->Projection(0,2);
+    histQmax->SetNameTitle(Form("histQmaxInclAngleRel_%i", padRegion), 
+			   Form("histQmaxInclAngleRel_%i", padRegion));
+    //
+    histQtot = (TH2D*) fGainMult->GetHistTopolRelTot()->Projection(0,2);
+    histQtot->SetNameTitle(Form("histQtotInclAngleRel_%i", padRegion), 
+			   Form("histQtotInclAngleRel_%i", padRegion));
+  } else {
+    histQmax = (TH2D*) fGainMult->GetHistTopolAbsMax()->Projection(0,2);
+    histQmax->SetNameTitle(Form("histQmaxInclAngleAbs_%i", padRegion), 
+			   Form("histQmaxInclAngleAbs_%i", padRegion));
+    //
+    histQtot = (TH2D*) fGainMult->GetHistTopolAbsTot()->Projection(0,2);
+    histQtot->SetNameTitle(Form("histQtotInclAngleAbs_%i", padRegion), 
+			   Form("histQtotInclAngleAbs_%i", padRegion));
+    
+  }
+  //
+  histQmax->FitSlicesY(0,0,-1,0,"QNR",&arrMax);
+  TH1D * corrMax = (TH1D*)arrMax.At(1);
+  corrMax->SetNameTitle(Form("corrMaxInclAngle_%i", padRegion),
+			Form("corrMaxInclAngle_%i", padRegion));
+  //
+  histQtot->FitSlicesY(0,0,-1,0,"QNR",&arrTot);
+  TH1D * corrTot = (TH1D*)arrTot.At(1);
+  corrTot->SetNameTitle(Form("corrMaxInclAngle_%i", padRegion),
+			Form("corrMaxInclAngle_%i", padRegion));
+  //
+  corrMax->Scale(1./histQmax->GetMean(2)); // to be changed similar to what Marian did
+  corrTot->Scale(1./histQtot->GetMean(2));
+  //
+  const char* names[4]={"SHORT","MEDIUM","LONG","ABSOLUTE"};
+  //
+  TGraphErrors * graphMax = new TGraphErrors(corrMax);
+  TGraphErrors * graphTot = new TGraphErrors(corrTot);
+  Double_t meanMax = TMath::Mean(graphMax->GetN(), graphMax->GetY());
+  Double_t meanTot = TMath::Mean(graphTot->GetN(), graphTot->GetY());
+  //
+  for (Int_t ipoint=0; ipoint<graphMax->GetN(); ipoint++) {graphMax->GetY()[ipoint]/=meanMax;}
+  for (Int_t ipoint=0; ipoint<graphTot->GetN(); ipoint++) {graphTot->GetY()[ipoint]/=meanTot;}
+
+  //
+  graphMax->SetNameTitle(Form("TGRAPHERRORS_QMAX_INCLANGLE_%s_BEAM_ALL",names[padRegion]),
+			 Form("TGRAPHERRORS_QMAX_INCLANGLE_%s_BEAM_ALL",names[padRegion]));
+  graphTot->SetNameTitle(Form("TGRAPHERRORS_QTOT_INCLANGLE_%s_BEAM_ALL",names[padRegion]),
+			 Form("TGRAPHERRORS_QTOT_INCLANGLE_%s_BEAM_ALL",names[padRegion]));
+  //
+  fGainArray->AddLast(graphMax);
+  fGainArray->AddLast(graphTot);
+  //
+  TF1 * funMax= new TF1("funMax","1++abs(x)++abs(x*x)", 1.5, 4.); // which fit function to use?
+  TF1 * funTot= new TF1("funTot","1++abs(x)++abs(x*x)", 1.5, 4.);
+  graphMax->Fit(funMax,"wQNR","rob=0.9",-0.8,0.8);
+  graphTot->Fit(funTot,"wQNR","rob=0.9",-0.8,0.8);
+  funMax->SetNameTitle(Form("TF1_QMAX_INCLANGLE_%s_BEAM_ALL",names[padRegion]),
+		       Form("TF1_QMAX_INCLANGLE_%s_BEAM_ALL",names[padRegion]));
+  funTot->SetNameTitle(Form("TF1_QTOT_INCLANGLE_%s_BEAM_ALL",names[padRegion]),
+		       Form("TF1_QTOT_INCLANGLE_%s_BEAM_ALL",names[padRegion]));
+  fGainArray->AddLast(funMax);
+  fGainArray->AddLast(funTot);
+  //
+  return kTRUE;
+
+}
+
 
 Bool_t AliTPCPreprocessorOffline::AnalyzeGainDipAngle(Int_t padRegion)  {
   //
-  // Analyze gain as a function of multiplicity and produce calibration graphs
+  // Analyze gain as a function of the dip angle theta and produce calibration graphs
   // padRegion -- 0: short, 1: medium, 2: long, 3: absolute calibration of full track
   //
   if (!fGainMult) return kFALSE;
@@ -1176,6 +1264,8 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainDipAngle(Int_t padRegion)  {
   // "dEdxRatioMax","dEdxRatioTot","padType","mult","driftlength"
   TObjArray arrMax;
   TObjArray arrTot;
+  arrMax.SetOwner(kTRUE);
+  arrTot.SetOwner(kTRUE);
   //
   TH2D * histQmax = 0x0;
   TH2D * histQtot = 0x0;
