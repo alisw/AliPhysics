@@ -5,13 +5,17 @@
  * See cxx source for full Copyright notice                               */
 
 // Analysis Task for selecting PHOS clusters for other analysis
+// Makes some basic selections cuts, universal to all PHOS Analysis.
+// Additional selection cuts can be applied via AliPHOSClusterSelection.
+// 
 // Authors : Henrik Qvigstad
 // Date    : 16.01.2014
 /* $Id$ */
 
-class AliVCluster;
+class TBits;
+class TRefArray;
 
-#include "TArrayI.h"
+class AliVCluster;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -24,14 +28,22 @@ class AliPHOSClusterSelectionTask : AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   /* virtual void   Terminate(Option_t *); */
 
-  int GetNClusters() const; // Number of clusters in the current event
-  AliVCluster* GetCluster(int index) const; // get cluster of index
-  TArrayI GetIndexOfSelected(const AliPHOSClusterSelection* selection) const;
+  TRefArray* GetPHOSClusters() const;
+  virtual TBits* GetPHOSClustersSelected(const AliPHOSClusterSelection* selection);
+
+  static AliPHOSClusterSelectionTask* GetTask(const char* name = "AliPHOSClusterSelectionTask");
 
  protected:
   AliPHOSClusterSelectionTask(const AliPHOSClusterSelectionTask&); // not implemented
   AliPHOSClusterSelectionTask& operator=(const AliPHOSClusterSelectionTask&); // not implemented
 
+  TRefArray* fClusters;
+
+  // cluster cut variables:
+  static const Double_t kMinClusterEnergy;
+  static const Double_t kMinBCDistance;  //distance to nearest bad channel
+  static const Int_t    kMinNCells;
+  static const Double_t kMinM02;
   
   ClassDef(AliPHOSClusterSelectionTask, 1);
 };
