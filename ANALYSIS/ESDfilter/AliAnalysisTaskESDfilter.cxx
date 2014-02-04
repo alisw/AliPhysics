@@ -2194,7 +2194,9 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD()
   // loop over events and fill them
   // Multiplicity information needed by the header (to be revised!)
   Int_t nTracks    = esd->GetNumberOfTracks();
-  for (Int_t iTrack=0; iTrack<nTracks; ++iTrack) esd->GetTrack(iTrack)->SetESDEvent(esd);
+
+// The line below should not be needed anymore (tracks already connected)
+//  for (Int_t iTrack=0; iTrack<nTracks; ++iTrack) esd->GetTrack(iTrack)->SetESDEvent(esd);
 
   // Update the header
   Int_t nV0s      = esd->GetNumberOfV0s();
