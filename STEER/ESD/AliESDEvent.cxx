@@ -46,6 +46,7 @@
 #include "AliESDMuonTrack.h"
 #include "AliESDMuonCluster.h"
 #include "AliESDMuonPad.h"
+#include "AliESDMuonGlobalTrack.h"       // AU
 #include "AliESDPmdTrack.h"
 #include "AliESDTrdTrack.h"
 #include "AliESDVertex.h"
@@ -103,6 +104,7 @@ ClassImp(AliESDEvent)
 							"MuonTracks",
 							"MuonClusters",
 							"MuonPads",
+							"MuonGlobalTracks",      // AU
 							"PmdTracks",
 							"AliESDTrdTrigger",
 							"TrdTracks",
@@ -144,6 +146,7 @@ AliESDEvent::AliESDEvent():
   fMuonTracks(0),
   fMuonClusters(0),
   fMuonPads(0),
+  fMuonGlobalTracks(0),    // AU
   fPmdTracks(0),
   fTrdTracks(0),
   fTrdTracklets(0),
@@ -194,6 +197,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fMuonTracks(new TClonesArray(*esd.fMuonTracks)),
   fMuonClusters(new TClonesArray(*esd.fMuonClusters)),
   fMuonPads(new TClonesArray(*esd.fMuonPads)),
+  fMuonGlobalTracks(new TClonesArray(*esd.fMuonGlobalTracks)),     // AU
   fPmdTracks(new TClonesArray(*esd.fPmdTracks)),
   fTrdTracks(new TClonesArray(*esd.fTrdTracks)),
   fTrdTracklets(new TClonesArray(*esd.fTrdTracklets)),
@@ -239,6 +243,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   AddObject(fTrkPileupVertices);
   AddObject(fTracks);
   AddObject(fMuonTracks);
+  AddObject(fMuonGlobalTracks);    // AU
   AddObject(fPmdTracks);
   AddObject(fTrdTracks);
   AddObject(fTrdTracklets);
@@ -533,6 +538,7 @@ void AliESDEvent::ResetStdContent()
   if(fMuonTracks)fMuonTracks->Clear("C");
   if(fMuonClusters)fMuonClusters->Clear("C");
   if(fMuonPads)fMuonPads->Clear("C");
+  if(fMuonGlobalTracks)fMuonGlobalTracks->Clear("C");     // AU
   if(fPmdTracks)fPmdTracks->Delete();
   if(fTrdTracks)fTrdTracks->Delete();
   if(fTrdTracklets)fTrdTracklets->Delete();
@@ -610,6 +616,7 @@ void AliESDEvent::Print(Option_t *) const
   printf("Number of tracks: \n");
   printf("                 charged   %d\n", GetNumberOfTracks());
   printf("                 muon      %d\n", GetNumberOfMuonTracks());
+  printf("                 glob muon %d\n", GetNumberOfMuonGlobalTracks());    // AU
   printf("                 pmd       %d\n", GetNumberOfPmdTracks());
   printf("                 trd       %d\n", GetNumberOfTrdTracks());
   printf("                 trd trkl  %d\n", GetNumberOfTrdTracklets());
@@ -1084,6 +1091,16 @@ AliESDMuonTrack* AliESDEvent::GetMuonTrack(Int_t i)
 }
 
 //______________________________________________________________________________
+AliESDMuonGlobalTrack* AliESDEvent::GetMuonGlobalTrack(Int_t i)                      // AU
+{
+  // get the MUON+MFT track at the position i in the internal array of track
+  if (!fMuonGlobalTracks) return 0x0;
+  AliESDMuonGlobalTrack *track = (AliESDMuonGlobalTrack*) fMuonGlobalTracks->UncheckedAt(i);
+  track->SetESDEvent(this);
+  return track;
+}
+
+//______________________________________________________________________________
 void AliESDEvent::AddMuonTrack(const AliESDMuonTrack *t) 
 {
   // add a MUON track
@@ -1093,11 +1110,28 @@ void AliESDEvent::AddMuonTrack(const AliESDMuonTrack *t)
 }
 
 //______________________________________________________________________________
+void AliESDEvent::AddMuonGlobalTrack(const AliESDMuonGlobalTrack *t)                             // AU
+{
+  // add a MUON+MFT track
+  TClonesArray &fmu = *fMuonGlobalTracks;
+  new (fmu[fMuonGlobalTracks->GetEntriesFast()]) AliESDMuonGlobalTrack(*t);
+}
+
+//______________________________________________________________________________
+
 AliESDMuonTrack* AliESDEvent::NewMuonTrack() 
 {
   // create a new MUON track at the end of the internal array of track
   TClonesArray &fmu = *fMuonTracks;
   return new(fmu[fMuonTracks->GetEntriesFast()]) AliESDMuonTrack();
+}
+
+//______________________________________________________________________________
+AliESDMuonGlobalTrack* AliESDEvent::NewMuonGlobalTrack()                                         // AU
+{
+  // create a new MUON+MFT track at the end of the internal array of track
+  TClonesArray &fmu = *fMuonGlobalTracks;
+  return new(fmu[fMuonGlobalTracks->GetEntriesFast()]) AliESDMuonGlobalTrack();
 }
 
 //______________________________________________________________________________
@@ -1424,6 +1458,7 @@ void AliESDEvent::GetStdContent()
   fMuonTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kMuonTracks]);
   fMuonClusters = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kMuonClusters]);
   fMuonPads = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kMuonPads]);
+  fMuonGlobalTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kMuonGlobalTracks]);         // AU
   fPmdTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kPmdTracks]);
   fTrdTrigger = (AliESDTrdTrigger*)fESDObjects->FindObject(fgkESDListName[kTrdTrigger]);
   fTrdTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kTrdTracks]);
@@ -1490,6 +1525,7 @@ void AliESDEvent::CreateStdContent()
   AddObject(new TClonesArray("AliESDMuonTrack",0));
   AddObject(new TClonesArray("AliESDMuonCluster",0));
   AddObject(new TClonesArray("AliESDMuonPad",0));
+  AddObject(new TClonesArray("AliESDMuonGlobalTrack",0));   // AU
   AddObject(new TClonesArray("AliESDPmdTrack",0));
   AddObject(new AliESDTrdTrigger());
   AddObject(new TClonesArray("AliESDTrdTrack",0));

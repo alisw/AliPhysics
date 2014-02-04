@@ -61,6 +61,7 @@ class AliESDTrdTracklet;
 class AliESDMuonTrack;
 class AliESDMuonCluster;
 class AliESDMuonPad;
+class AliESDMuonGlobalTrack;    // AU
 class AliESD;
 class AliESDcascade;
 class AliCentrality;
@@ -73,6 +74,7 @@ class AliESDCosmicTrack;
 
 class TList;
 class TString;
+
 
 class AliESDEvent : public AliVEvent {
 public:
@@ -96,6 +98,7 @@ public:
 		       kMuonTracks,
 		       kMuonClusters,
 		       kMuonPads,
+		       kMuonGlobalTracks,   // AU
 		       kPmdTracks,
 		       kTrdTrigger,
 		       kTrdTracks,
@@ -372,6 +375,9 @@ public:
   AliESDMuonPad* FindMuonPad(UInt_t padId);
   AliESDMuonPad* NewMuonPad();
   
+  AliESDMuonGlobalTrack* GetMuonGlobalTrack(Int_t i);      // AU
+  AliESDMuonGlobalTrack* NewMuonGlobalTrack();             // AU
+  
   AliESDPmdTrack *GetPmdTrack(Int_t i) const {
     return (AliESDPmdTrack *)(fPmdTracks?fPmdTracks->At(i):0x0);
   }
@@ -461,6 +467,7 @@ public:
   Int_t GetNumberOfMuonTracks() const {return fMuonTracks?fMuonTracks->GetEntriesFast():0;}
   Int_t GetNumberOfMuonClusters();
   Int_t GetNumberOfMuonPads();
+  Int_t GetNumberOfMuonGlobalTracks() const {return fMuonGlobalTracks?fMuonGlobalTracks->GetEntriesFast():0;}    // AU
   Int_t GetNumberOfPmdTracks() const {return fPmdTracks?fPmdTracks->GetEntriesFast():0;}
   Int_t GetNumberOfTrdTracks() const {return fTrdTracks?fTrdTracks->GetEntriesFast():0;}
   Int_t GetNumberOfTrdTracklets() const {return fTrdTracklets?fTrdTracklets->GetEntriesFast():0;}
@@ -517,6 +524,7 @@ protected:
   static Bool_t ResetWithPlacementNew(TObject *pObject);
 
   void AddMuonTrack(const AliESDMuonTrack *t);
+  void AddMuonGlobalTrack(const AliESDMuonGlobalTrack *t);     // AU
   
   TList *fESDObjects;             // List of esd Objects
 
@@ -542,6 +550,7 @@ protected:
   TClonesArray *fMuonTracks;       //! MUON ESD tracks
   TClonesArray *fMuonClusters;     //! MUON ESD clusters
   TClonesArray *fMuonPads;         //! MUON ESD pads
+  TClonesArray *fMuonGlobalTracks; //! MUON+MFT ESD tracks      // AU
   TClonesArray *fPmdTracks;        //! PMD ESD tracks
   TClonesArray *fTrdTracks;        //! TRD ESD tracks (triggered)
   TClonesArray *fTrdTracklets;     //! TRD tracklets (for trigger)
@@ -577,7 +586,7 @@ protected:
   Int_t fNTOFclusters;     //! N TOF clusters matchable
   TObjArray *fTOFcluster; //! TOF clusters
 
-  ClassDef(AliESDEvent,20)  //ESDEvent class 
+  ClassDef(AliESDEvent,21)  //ESDEvent class 
 };
 #endif 
 
