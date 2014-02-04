@@ -48,6 +48,11 @@ public:
   THnSparseF *      GetHistGainMult() const {return fHistGainMult;};  
   THnF       *      GetHistTopology() const {return fHistTopology;};
   //
+  THnF       *      GetHistTopolRelMax() const { return fHistTopolRelMax;};
+  THnF       *      GetHistTopolRelTot() const { return fHistTopolRelTot;};
+  THnF       *      GetHistTopolAbsMax() const { return fHistTopolAbsMax;};
+  THnF       *      GetHistTopolAbsTot() const { return fHistTopolAbsTot;};
+  //
   THnSparseF * GetHistdEdxMap() const { return fHistdEdxMap;}      // 4D dedx histogram
   THnSparseF * GetHistdEdxMax() const { return fHistdEdxMax;}      // 4D dedx histogram
   THnSparseF * GetHistdEdxTot() const { return fHistdEdxTot;}      // 4D dedx histogram
@@ -121,6 +126,12 @@ private:
   THnSparseF * fHistPadEqual;     //  histogram for the equalization of the gain in the different pad regions -> pass0
   THnSparseF * fHistGainMult;     //  histogram which shows decrease of MIP signal as a function
   THnF       * fHistTopology;     //  histogram for topological corrections of signal - dip angle theta and curvature (1/pT)
+  //
+  THnF       * fHistTopolRelMax;  //  histogram for topological corrections  (theta,1/pT) of Qmax for each pad region relative to each other
+  THnF       * fHistTopolRelTot;  //  histogram for topological corrections  (theta,1/pT) of Qtot for each pad region relative to each other
+  THnF       * fHistTopolAbsMax;  //  histogram for topological corrections  (theta,1/pT) of Qmax for each pad region relative to each other
+  THnF       * fHistTopolAbsTot;  //  histogram for topological corrections  (theta,1/pT) of Qtot for each pad region relative to each other
+  //
   TMatrixD *fPIDMatrix;           //! custom PID matrix
   //
   THnSparseF * fHistdEdxMap;      // 4D dedx histogram - per sector/phi

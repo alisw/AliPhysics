@@ -94,6 +94,10 @@ AliTPCcalibGainMult::AliTPCcalibGainMult()
    fHistPadEqual(0),
    fHistGainMult(0),
    fHistTopology(0),
+   fHistTopolRelMax(0),
+   fHistTopolRelTot(0),
+   fHistTopolAbsMax(0),
+   fHistTopolAbsTot(0),
    fPIDMatrix(0),
    fHistdEdxMap(0),
    fHistdEdxMax(0),
@@ -129,6 +133,10 @@ AliTPCcalibGainMult::AliTPCcalibGainMult(const Text_t *name, const Text_t *title
    fHistPadEqual(0),
    fHistGainMult(0),
    fHistTopology(0),
+   fHistTopolRelMax(0),
+   fHistTopolRelTot(0),
+   fHistTopolAbsMax(0),
+   fHistTopolAbsTot(0),
    fPIDMatrix(0),
    fHistdEdxMap(0),
    fHistdEdxMax(0),
@@ -155,13 +163,24 @@ AliTPCcalibGainMult::AliTPCcalibGainMult(const Text_t *name, const Text_t *title
   fCutMaxDcaXY = 3.5;
   fCutMaxDcaZ  = 25.;
   // default values for MIP window selection
-  fMinMomentumMIP = 0.4;
+  fMinMomentumMIP = 0.25;
   fMaxMomentumMIP = 0.6;
-  fAlephParameters[0] = 0.07657; // the following parameters work for most of the periods and are therefore default
-  fAlephParameters[1] = 10.6654; // but they can be overwritten in the train setup of cpass0
-  fAlephParameters[2] = 2.51466e-14;
-  fAlephParameters[3] = 2.05379;
-  fAlephParameters[4] = 1.84288;
+  //
+  // expected BetheBloch for calibrations
+  //
+  TVectorD * paramBB =0;
+  AliTPCParam* param = AliTPCcalibDB::Instance()->GetParameters();
+  if (param) paramBB=param->GetBetheBlochParameters();
+  if (!paramBB) { 
+    fAlephParameters[0] = 0.07657; // the following parameters work for most of the periods and are therefore default
+    fAlephParameters[1] = 10.6654; // but they can be overwritten in the train setup of cpass0
+    fAlephParameters[2] = 2.51466e-14;
+    fAlephParameters[3] = 2.05379;
+    fAlephParameters[4] = 1.84288;
+  } else { 
+    // Take calibrated parameters from OCDB
+    for(Int_t iPar = 0; iPar < 5; iPar++) fAlephParameters[iPar] = (*paramBB)(iPar);
+  }
   //
   // basic QA histograms - mainly for debugging purposes
   //
@@ -186,7 +205,7 @@ AliTPCcalibGainMult::AliTPCcalibGainMult(const Text_t *name, const Text_t *title
   //
   // pad region equalization
   //
-  Int_t binsPadEqual[5]    = { 400, 400,    4,    5,   20};
+  Int_t binsPadEqual[5]    = { 400, 400,    4,    5,   20}; // OPTIMIZE MEMORY CONSUMPTION HERE WITH QMAX/QTOT SWITCH
   Double_t xminPadEqual[5] = { 0.0, 0.0, -0.5,    0,  -1.}; 
   Double_t xmaxPadEqual[5] = { 2.0, 2.0,  3.5, 13000,  +1};
   TString axisNamePadEqual[5]   = {"dEdxRatioMax","dEdxRatioTot","padType","mult","dipAngle"};
@@ -199,15 +218,15 @@ AliTPCcalibGainMult::AliTPCcalibGainMult(const Text_t *name, const Text_t *title
   }
   //
   // multiplicity dependence
-  //                    MIP Qmax, MIP Qtot,  z,  pad, vtx. contribut., ncl
-  Int_t binsGainMult[6]    = { 145,  145,   25,    4,  100,  80};
-  Double_t xminGainMult[6] = { 10.,  10.,    0, -0.5,    0, -0.5}; 
-  Double_t xmaxGainMult[6] = {300., 300.,  250,  3.5, 13000, 159.5};
-  TString axisNameMult[6]={"Qmax","Qtot","drift","padtype""multiplicity","ncl"};
-  TString axisTitleMult[6]={"Qmax (a.u)","Qtot (a.u.)","driftlenght l (cm)","Pad Type","multiplicity","ncl"};
+  //                    MIP Qmax, MIP Qtot,  z,  pad, vtx. contribut.,
+  Int_t binsGainMult[5]    = { 145,  145,   25,    4,  100}; // OPTIMIZE MEMORY CONSUMPTION HERE WITH QMAX/QTOT SWITCH
+  Double_t xminGainMult[5] = { 10.,  10.,    0, -0.5,    0}; 
+  Double_t xmaxGainMult[5] = {300., 300.,  250,  3.5, 13000};
+  TString axisNameMult[5]={"Qmax","Qtot","drift","padtype""multiplicity"};
+  TString axisTitleMult[5]={"Qmax (a.u)","Qtot (a.u.)","driftlenght l (cm)","Pad Type","multiplicity"};
   //
-  fHistGainMult = new THnSparseF("fHistGainMult","MIP Qmax, MIP Qtot, z, type, vtx. contribut.", 6, binsGainMult, xminGainMult, xmaxGainMult); 
-  for (Int_t iaxis=0; iaxis<6;iaxis++){
+  fHistGainMult = new THnSparseF("fHistGainMult","MIP Qmax, MIP Qtot, z, type, vtx. contribut.", 5, binsGainMult, xminGainMult, xmaxGainMult); 
+  for (Int_t iaxis=0; iaxis<5;iaxis++){
     fHistGainMult->GetAxis(iaxis)->SetName(axisNameMult[iaxis]);
     fHistGainMult->GetAxis(iaxis)->SetTitle(axisTitleMult[iaxis]);
   }
@@ -225,6 +244,44 @@ AliTPCcalibGainMult::AliTPCcalibGainMult(const Text_t *name, const Text_t *title
   for (Int_t iaxis=0; iaxis<4;iaxis++){
     fHistTopology->GetAxis(iaxis)->SetName(axisNameTopology[iaxis]);
     fHistTopology->GetAxis(iaxis)->SetTitle(axisTitleTopology[iaxis]);
+  }
+  //
+  // histograms for topology and multiplicity tgl and 1/pt -- relative calibration of pad regions to common mean
+  //
+  //       (0.) dEdx{i}/mean(wi*dEdx{i}),(1.)tgl   (2.) 1/pt   (3.) pad    
+  Int_t binsTopolRel[4]        = {   200,     20,       20,    4};
+  Double_t xminTopolRel[4]     = {     0,    -1.,      1.5, -0.5};
+  Double_t xmaxTopolRel[4]     = {    2.,    +1.,       4.,  3.5};
+  TString axisNameTopolRel[4]  = {"dEdx",  "tgl",   "1/pT","padType"};
+  TString axisTitleTopolRel[4] = {"dEdx{i}/mean(wi*dEdx{i})","tgl","1/pT","padType"};
+  //
+  fHistTopolRelMax = new THnF("fHistTopolRelMax", "dE/dxRel,tgl,1/pT,padType", 4, binsTopolRel, xminTopolRel, xmaxTopolRel);
+  fHistTopolRelTot = new THnF("fHistTopolRelTot", "dE/dxRel,tgl,1/pT,padType", 4, binsTopolRel, xminTopolRel, xmaxTopolRel);
+  //
+  for (Int_t iaxis=0; iaxis<4;iaxis++){
+   fHistTopolRelMax->GetAxis(iaxis)->SetName(axisNameTopolRel[iaxis]);
+   fHistTopolRelMax->GetAxis(iaxis)->SetTitle(axisTitleTopolRel[iaxis]);
+   fHistTopolRelTot->GetAxis(iaxis)->SetName(axisNameTopolRel[iaxis]);
+   fHistTopolRelTot->GetAxis(iaxis)->SetTitle(axisTitleTopolRel[iaxis]);
+  }
+  //
+  // histograms for topology and multiplicity tgl and 1/pt -- absolute calibration of common mean
+  //
+  //       (        0.)mean(wi*dEdx{i}),(1.)tgl   (2.) 1/pt   (3.) multiplicty
+  Int_t binsTopolAbs[4]        = {  145,     20,       20,    100};
+  Double_t xminTopolAbs[4]     = {   10,    -1.,      1.5,      0.};
+  Double_t xmaxTopolAbs[4]     = {  300.,    +1.,      4.,  13000.};
+  TString axisNameTopolAbs[4]  = {"dEdx",  "tgl",   "1/pT","padType"};
+  TString axisTitleTopolAbs[4] = {"dEdx{i}/mean(wi*dEdx{i})","tgl","1/pT","padType"};
+  //
+  fHistTopolAbsMax = new THnF("fHistTopolAbsMax", "dE/dxAbs,tgl,1/pT,padType", 4, binsTopolAbs, xminTopolAbs, xmaxTopolAbs);
+  fHistTopolAbsTot = new THnF("fHistTopolAbsTot", "dE/dxAbs,tgl,1/pT,padType", 4, binsTopolAbs, xminTopolAbs, xmaxTopolAbs);
+  //
+  for (Int_t iaxis=0; iaxis<4;iaxis++){
+   fHistTopolAbsMax->GetAxis(iaxis)->SetName(axisNameTopolAbs[iaxis]);
+   fHistTopolAbsMax->GetAxis(iaxis)->SetTitle(axisTitleTopolAbs[iaxis]);
+   fHistTopolAbsTot->GetAxis(iaxis)->SetName(axisNameTopolAbs[iaxis]);
+   fHistTopolAbsTot->GetAxis(iaxis)->SetTitle(axisTitleTopolAbs[iaxis]);
   }
   //
   // MI suggestion for all dEdx histograms we shpuld keep log scale - to have the same relative resolution
@@ -281,6 +338,11 @@ AliTPCcalibGainMult::~AliTPCcalibGainMult(){
   delete fHistPadEqual;     //  histogram for the equalization of the gain in the different pad regions -> pass0
   delete fHistGainMult;     //  histogram which shows decrease of MIP signal as a function
   delete fHistTopology;
+  //
+  delete fHistTopolAbsMax;
+  delete fHistTopolAbsTot;
+  delete fHistTopolRelMax;
+  delete fHistTopolRelTot;
   //
   delete fHistdEdxMap;
   delete fHistdEdxMax;
@@ -460,18 +522,25 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
       //
       for(Int_t ipad = 0; ipad < 4; ipad ++) {
 	// "dEdxRatioMax","dEdxRatioTot","padType","mult","driftlength"
-	Double_t vecPadEqual[5] = {signalArrayMax[ipad]/meanMax, signalArrayTot[ipad]/meanTot, ipad, nContributors, dipAngleTgl};
-	if (fMinMomentumMIP > meanP && meanP < fMaxMomentumMIP) fHistPadEqual->Fill(vecPadEqual);
+	Double_t vecPadEqual[5] = {signalArrayMax[ipad]/meanMax, signalArrayTot[ipad]/meanTot, ipad, nContributors, dipAngleTgl};	
+	if (fMinMomentumMIP > meanP && meanP < fMaxMomentumMIP) {
+	  fHistPadEqual->Fill(vecPadEqual);
+	  //
+	  //       (0.) dEdx{i}/mean(wi*dEdx{i}),(1.)tgl   (2.) 1/pt   (3.) pad    
+	  Double_t vecTopolRelMax[4] = {signalArrayMax[ipad]/meanMax, dipAngleTgl, TMath::Abs(track->GetSigned1Pt()), ipad};
+	  Double_t vecTopolRelTot[4] = {signalArrayMax[ipad]/meanMax, dipAngleTgl, TMath::Abs(track->GetSigned1Pt()), ipad};
+	  fHistTopolRelMax->Fill(vecTopolRelMax);
+	  fHistTopolRelTot->Fill(vecTopolRelTot);
+	}
       }
       //
       //
       if (meanP < fMaxMomentumMIP && meanP > fMinMomentumMIP) {
-	Double_t vecMult[6] = {seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,1,row0,row1)/corrFactorMip,
+	Double_t vecMult[5] = {seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,1,row0,row1)/corrFactorMip,
 			       seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,0,row0,row1)/corrFactorMip,
 			       meanDrift,
 			       3,
-			       nContributors,
-			       ncls};
+			       nContributors};
 	//
 	fHistGainMult->Fill(vecMult);
 	vecMult[0]=mipSignalShort/corrFactorMip; vecMult[1]=mipSignalShort/corrFactorMip; vecMult[3]=0;
@@ -483,10 +552,18 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
 	//
 	// topology histogram (absolute)
 	//                        (0.) weighted dE/dx, (1.) 0:Qtot - 1:Qmax, (2.) tgl, (3.) 1./pT
-	Double_t vecTopolTot[4] = {meanTot, 0, dipAngleTgl, TMath::Abs(track->GetSigned1Pt())};
-	Double_t vecTopolMax[4] = {meanMax, 1, dipAngleTgl, TMath::Abs(track->GetSigned1Pt())};
+	Double_t vecTopolTot[4] = {meanTot/corrFactorMip, 0, dipAngleTgl, TMath::Abs(track->GetSigned1Pt())};
+	Double_t vecTopolMax[4] = {meanMax/corrFactorMip, 1, dipAngleTgl, TMath::Abs(track->GetSigned1Pt())};
 	fHistTopology->Fill(vecTopolTot);
 	fHistTopology->Fill(vecTopolMax);
+	//
+	//
+	//                (0.)mean(wi*dEdx{i}), (1.)tgl   (2.) 1/pt   (3.) multiplicty
+	Double_t vecTopolAbsMax[4] = {meanMax/corrFactorMip, dipAngleTgl, TMath::Abs(track->GetSigned1Pt()), nContributors};
+	Double_t vecTopolAbsTot[4] = {meanTot/corrFactorMip, dipAngleTgl, TMath::Abs(track->GetSigned1Pt()), nContributors};
+	fHistTopolAbsMax->Fill(vecTopolAbsMax);
+	fHistTopolAbsTot->Fill(vecTopolAbsTot);
+	
       }
       //
       //
@@ -585,9 +662,12 @@ Long64_t AliTPCcalibGainMult::Merge(TCollection *li) {
     if (cal->GetHistGainMult()) {
        if (fHistGainMult->GetEntries()<kMaxEntriesSparse) fHistGainMult->Add(cal->GetHistGainMult());
     } 
-    if (cal->GetHistTopology()) {
-       fHistTopology->Add(cal->GetHistTopology());
-    } 
+    if (cal->GetHistTopology()) fHistTopology->Add(cal->GetHistTopology());
+    //
+    if (cal->GetHistTopolRelMax()) fHistTopolRelMax->Add(cal->GetHistTopolRelMax());
+    if (cal->GetHistTopolRelTot()) fHistTopolRelTot->Add(cal->GetHistTopolRelTot());
+    if (cal->GetHistTopolAbsMax()) fHistTopolAbsMax->Add(cal->GetHistTopolAbsMax());
+    if (cal->GetHistTopolAbsTot()) fHistTopolAbsTot->Add(cal->GetHistTopolAbsTot());
     //
     if (cal->fHistdEdxMap){
       if (fHistdEdxMap) fHistdEdxMap->Add(cal->fHistdEdxMap);
