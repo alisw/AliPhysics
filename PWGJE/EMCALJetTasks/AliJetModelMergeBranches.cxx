@@ -105,8 +105,7 @@ void AliJetModelMergeBranches::MergeTracks()
     if (!picotrack)
       continue;
     AliPicoTrack *track = new ((*fOutTracks)[nCopiedTracks]) AliPicoTrack(*picotrack);
-    if (!fIsMC && track->GetLabel() != 0) 
-      track->SetLabel(0);
+    track->SetBit(TObject::kBitMask,1);
     nCopiedTracks++;
   }
 }
