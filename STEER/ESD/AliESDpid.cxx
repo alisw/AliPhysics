@@ -228,7 +228,7 @@ void AliESDpid::MakeITSPID(AliESDtrack *track) const
       return;
     }
 
-    Double_t p[10];
+    Double_t p[AliPID::kSPECIES];
 
     Bool_t mismatch=kTRUE, heavy=kTRUE;
     for (Int_t j=0; j<AliPID::kSPECIES; j++) {
@@ -355,37 +355,36 @@ void AliESDpid::CombinePID(AliESDtrack *track) const
   // Combine the information of various detectors
   // to determine the Particle Identification
   //
-  Int_t ns=AliPID::kSPECIES;
-  Double_t p[10]={1.,1.,1.,1.,1.,1.,1.,1.,1.,1.};
+  Double_t p[AliPID::kSPECIES]={1.};
 
   if (track->IsOn(AliESDtrack::kITSpid)) {
-    Double_t d[10];
+    Double_t d[AliPID::kSPECIES];
     track->GetITSpid(d);
-    for (Int_t j=0; j<ns; j++) p[j]*=d[j];
+    for (Int_t j=0; j<AliPID::kSPECIES; j++) p[j]*=d[j];
   }
 
   if (track->IsOn(AliESDtrack::kTPCpid)) {
-    Double_t d[10];
+    Double_t d[AliPID::kSPECIES];
     track->GetTPCpid(d);
-    for (Int_t j=0; j<ns; j++) p[j]*=d[j];
+    for (Int_t j=0; j<AliPID::kSPECIES; j++) p[j]*=d[j];
   }
 
   if (track->IsOn(AliESDtrack::kTRDpid)) {
-    Double_t d[10];
+    Double_t d[AliPID::kSPECIES];
     track->GetTRDpid(d);
-    for (Int_t j=0; j<ns; j++) p[j]*=d[j];
+    for (Int_t j=0; j<AliPID::kSPECIES; j++) p[j]*=d[j];
   }
 
   if (track->IsOn(AliESDtrack::kTOFpid)) {
-    Double_t d[10];
+    Double_t d[AliPID::kSPECIES];
     track->GetTOFpid(d);
-    for (Int_t j=0; j<ns; j++) p[j]*=d[j];
+    for (Int_t j=0; j<AliPID::kSPECIES; j++) p[j]*=d[j];
   }
 
   if (track->IsOn(AliESDtrack::kHMPIDpid)) {
-    Double_t d[10];
+    Double_t d[AliPID::kSPECIES];
     track->GetHMPIDpid(d);
-    for (Int_t j=0; j<ns; j++) p[j]*=d[j];
+    for (Int_t j=0; j<AliPID::kSPECIES; j++) p[j]*=d[j];
   }
 
   track->SetESDpid(p);
@@ -409,7 +408,7 @@ Bool_t AliESDpid::CheckTOFMatching(AliESDtrack *track) const{
     track->GetInnerPxPyPz(ptpc);
     Float_t momtpc=TMath::Sqrt(ptpc[0]*ptpc[0] + ptpc[1]*ptpc[1] + ptpc[2]*ptpc[2]);
     
-    for(Int_t i=0;i < 5;i++){
+    for(Int_t i=0;i < AliPID::kSPECIES;i++){
 	AliPID::EParticleType type=AliPID::EParticleType(i);
 	
 	Float_t resolutionTOF = fTOFResponse.GetExpectedSigma(p, exptimes[i], AliPID::ParticleMass(i));
