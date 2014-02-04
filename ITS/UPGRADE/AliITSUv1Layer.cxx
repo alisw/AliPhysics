@@ -2243,7 +2243,7 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB0(const Double_t xlen,
   
   TGeoCombiTrans *ctSideR = CreateCombiTrans("", distCenterSideDown, 0,alpha*TMath::RadToDeg());
   //AddTranslationToCombiTrans(ctSideR, 0, -dYTranslation-dy, 0);
-  AddTranslationToCombiTrans(ctSideR, 0, ladderHeight/2-2.85/*2.765250/*triangleHeight*/, 0);
+  AddTranslationToCombiTrans(ctSideR, 0, ladderHeight/2-2.85/*2.765250*//*triangleHeight*/, 0);
   TGeoCombiTrans *ctSideL = CreateCombiTrans("", distCenterSideDown,0,-alpha*TMath::RadToDeg());
   //AddTranslationToCombiTrans(ctSideL, 0, -dYTranslation-dy, 0);
   AddTranslationToCombiTrans(ctSideL, 0, ladderHeight/2-2.85/*triangleHeight*/, 0);

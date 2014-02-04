@@ -16,6 +16,8 @@
 class AliITSUSuze02{
   public:
   AliITSUSuze02(Int_t Nrows, Int_t Ncols);
+  AliITSUSuze02(const AliITSUSuze02& suze);
+  AliITSUSuze02 &operator=(const AliITSUSuze02& suze);
   virtual ~AliITSUSuze02();
   
   void SetEncodingWindowSize(Int_t Wrows, Int_t Wcols);

@@ -333,6 +333,7 @@ class AliAODTrack : public AliVTrack {
   void      GetHMPIDpid(Double_t */*p*/) const { return; } // TODO: To be implemented properly with the new HMPID object
 
   const AliAODEvent* GetAODEvent() const {return fAODEvent;}
+  virtual const AliVEvent* GetEvent() const {return (AliVEvent*)fAODEvent;}
   void SetAODEvent(const AliAODEvent* ptr){fAODEvent = ptr;}
   const AliTOFHeader* GetTOFHeader() const;
 
@@ -471,7 +472,7 @@ class AliAODTrack : public AliVTrack {
   Double_t      fTPCsignalTuned;    //! TPC signal tuned on data when using MC
   Double_t      fTOFsignalTuned;    //! TOF signal tuned on data when using MC
 
-  const AliAODEvent* fAODEvent;     //! 
+  const AliAODEvent* fAODEvent;     //! pointer back to the event the track belongs to
 
   ClassDef(AliAODTrack, 23);
 };

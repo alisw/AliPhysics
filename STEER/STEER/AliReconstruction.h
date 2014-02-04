@@ -229,6 +229,7 @@ private:
   Bool_t         RunLocalEventReconstruction(const TString& detectors);
   Bool_t         RunVertexFinder(AliESDEvent*& esd);
   Bool_t         RunMuonTracking(AliESDEvent*& esd);
+  Bool_t         RunMFTTrackingMU(AliESDEvent*& esd);      // AU
   Bool_t         RunSPDTrackleting(AliESDEvent*& esd);
   Bool_t         RunMultFinder(AliESDEvent*& esd);
   Bool_t         RunTracking(AliESDEvent*& esd, AliESDpid &PID);
@@ -273,6 +274,7 @@ private:
   Bool_t         fRunVertexFinder;    // run the vertex finder
   Bool_t         fRunVertexFinderTracks;    // run the vertex finder with tracks
   Bool_t         fRunMuonTracking;    // run the MUON tracking
+  Bool_t         fRunMFTTrackingMU;   // run the MFT+MUON tracking      // AU
   Bool_t         fRunV0Finder;        // run the ESD V0 finder
   Bool_t         fRunCascadeFinder;   // run the ESD cascade finder
   Bool_t         fRunMultFinder;      // run the trackleter for ITS clusters
@@ -404,7 +406,7 @@ private:
   Int_t                fMaxVMEM;        //  max VMEM memory, MB
   static const char*   fgkStopEvFName;  //  filename for stop.event stamp
   //
-  ClassDef(AliReconstruction, 47)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 48)      // class for running the reconstruction
 };
 
 #endif

@@ -146,7 +146,10 @@ Bool_t AliAODInputHandler::BeginEvent(Long64_t entry)
       fIsSelectedResult = fEvent->GetHeader()->GetOfflineTrigger();
 
     if (fMixingHandler) fMixingHandler->BeginEvent(entry);
-    
+
+    // set transient pointer to event inside tracks
+    fEvent->ConnectTracks();
+
     return kTRUE;
 }
 

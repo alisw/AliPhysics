@@ -9,6 +9,7 @@ set ( SRCS
     ESD/AliESDtrack.cxx 
     ESD/AliESDfriendTrack.cxx 
     ESD/AliESDMuonTrack.cxx 
+    ESD/AliESDMuonGlobalTrack.cxx 
     ESD/AliESDPmdTrack.cxx 
     ESD/AliESDTrdTrack.cxx 
     ESD/AliESDTrdTracklet.cxx 
