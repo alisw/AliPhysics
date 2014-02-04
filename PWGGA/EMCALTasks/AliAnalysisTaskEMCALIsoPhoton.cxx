@@ -53,6 +53,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fPrTrCuts(0),
   fGeom(0x0),
   fGeoName("EMCAL_COMPLETEV1"),
+  fOADBContainer(0),
   fPeriod("LHC11c"),
   fTrigBit("kEMC7"),
   fIsTrain(0),
@@ -113,6 +114,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fPrTrCuts(0),
   fGeom(0x0),
   fGeoName("EMCAL_COMPLETEV1"),
+  fOADBContainer(0),
   fPeriod("LHC11c"),
   fTrigBit("kEMC7"),
   fIsTrain(0),
@@ -180,7 +182,9 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fOutputList->SetOwner();// Container cleans up all histos (avoids leaks in merging) 
   
   fGeom = AliEMCALGeometry::GetInstance(fGeoName.Data());
-  
+  fOADBContainer = new AliOADBContainer("AliEMCALgeo");
+  fOADBContainer->InitFromFile(Form("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root"),"AliEMCALgeo");
+ 
   fEvtSel = new TH1F("hEvtSel","Event selection counter (0=all trg, 1=pvz cut) ;evt cut ;dN/dcut}",2,0,2);
   fOutputList->Add(fEvtSel);
   
@@ -378,10 +382,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
       fSelPrimTracks->Add(track);
   }
 
-  AliOADBContainer emcGeoMat("AliEMCALgeo");
-  emcGeoMat.InitFromFile(Form("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root"),"AliEMCALgeo");
-  TObjArray *matEMCAL=(TObjArray*)emcGeoMat.GetObject(runnumber,"EmcalMatrices");
-
+  TObjArray *matEMCAL=(TObjArray*)fOADBContainer->GetObject(runnumber,"EmcalMatrices");
   for(Int_t mod=0; mod < (fGeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
     if(fGeoName=="EMCAL_FIRSTYEARV1" && mod>3)
       break;
@@ -392,6 +393,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
     fGeomMatrix[mod] = (TGeoHMatrix*) matEMCAL->At(mod);
     fGeom->SetMisalMatrix(fGeomMatrix[mod] , mod);
   }
+
   if(fESD){
     AliESDtrackCuts *fTrackCuts = new AliESDtrackCuts();
     fTrackMult = fTrackCuts->GetReferenceMultiplicity(fESD);//kTrackletsITSTPC ,0.5); 
