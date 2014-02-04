@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_Remi_LMEEPbPb2011AODSemiCent1(Char_t* outputFileName="LMEEoutput.root", Bool_t runAll=kFALSE,Bool_t setMC=kFALSE,Bool_t getFromAlien=kFALSE, Bool_t PIDbaseline=kFALSE, Bool_t rejOnly=kTRUE) {
+AliAnalysisTask *AddTask_Remi_LMEEPbPb2011AOD_SemiCent1(Char_t* outputFileName="LMEEoutput.root", Bool_t runAll=kFALSE,Bool_t setMC=kFALSE,Bool_t getFromAlien=kFALSE, Bool_t PIDbaseline=kFALSE, Bool_t rejOnly=kTRUE) {
 
   Bool_t bESDANA=kFALSE; //Autodetect via InputHandler
   //get the current analysis manager
