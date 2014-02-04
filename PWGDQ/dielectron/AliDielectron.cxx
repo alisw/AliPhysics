@@ -46,6 +46,7 @@ The names are available via the function PairClassName(Int_t i)
 #include <TList.h>
 #include <TMath.h>
 #include <TObject.h>
+#include <TGrid.h>
 
 #include <AliKFParticle.h>
 
@@ -66,6 +67,7 @@ The names are available via the function PairClassName(Int_t i)
 #include "AliDielectronSignalMC.h"
 #include "AliDielectronMixingHandler.h"
 #include "AliDielectronV0Cuts.h"
+#include "AliDielectronPID.h"
 
 #include "AliDielectron.h"
 
@@ -97,6 +99,10 @@ AliDielectron::AliDielectron() :
   TNamed("AliDielectron","AliDielectron"),
   fCutQA(kFALSE),
   fQAmonitor(0x0),
+  fPostPIDCntrdCorr(0x0),
+  fPostPIDWdthCorr(0x0),
+  fLegEffMap(0x0),
+  fPairEffMap(0x0),
   fEventFilter("EventFilter"),
   fTrackFilter("TrackFilter"),
   fPairPreFilter("PairPreFilter"),
@@ -109,6 +115,7 @@ AliDielectron::AliDielectron() :
   fPdgLeg2(11),
   fSignalsMC(0x0),
   fNoPairing(kFALSE),
+  fProcessLS(kTRUE),
   fUseKF(kTRUE),
   fHistoArray(0x0),
   fHistos(0x0),
@@ -127,7 +134,9 @@ AliDielectron::AliDielectron() :
   fEstimatorFilename(""),
   fTRDpidCorrectionFilename(""),
   fVZEROCalibrationFilename(""),
-  fVZERORecenteringFilename("")
+  fVZERORecenteringFilename(""),
+  fZDCRecenteringFilename("")
+
 {
   //
   // Default constructor
@@ -140,6 +149,10 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   TNamed(name,title),
   fCutQA(kFALSE),
   fQAmonitor(0x0),
+  fPostPIDCntrdCorr(0x0),
+  fPostPIDWdthCorr(0x0),
+  fLegEffMap(0x0),
+  fPairEffMap(0x0),
   fEventFilter("EventFilter"),
   fTrackFilter("TrackFilter"),
   fPairPreFilter("PairPreFilter"),
@@ -152,6 +165,7 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fPdgLeg2(11),
   fSignalsMC(0x0),
   fNoPairing(kFALSE),
+  fProcessLS(kTRUE),
   fUseKF(kTRUE),
   fHistoArray(0x0),
   fHistos(0x0),
@@ -170,7 +184,8 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fEstimatorFilename(""),
   fTRDpidCorrectionFilename(""),
   fVZEROCalibrationFilename(""),
-  fVZERORecenteringFilename("")
+  fVZERORecenteringFilename(""),
+  fZDCRecenteringFilename("")
 {
   //
   // Named constructor
@@ -185,13 +200,17 @@ AliDielectron::~AliDielectron()
   // Default destructor
   //
   if (fQAmonitor) delete fQAmonitor;
-  if (fHistoArray) delete fHistoArray;
+  if (fPostPIDCntrdCorr) delete fPostPIDCntrdCorr;
+  if (fPostPIDWdthCorr) delete fPostPIDWdthCorr;
+  if (fLegEffMap) delete fLegEffMap;
+  if (fPairEffMap) delete fPairEffMap;
   if (fHistos) delete fHistos;
   if (fPairCandidates) delete fPairCandidates;
   if (fDebugTree) delete fDebugTree;
   if (fMixing) delete fMixing;
   if (fSignalsMC) delete fSignalsMC;
   if (fCfManagerPair) delete fCfManagerPair;
+  if (fHistoArray) delete fHistoArray;
 }
 
 //________________________________________________________________
@@ -214,16 +233,25 @@ void AliDielectron::Init()
     fTrackRotator->SetPdgLegs(fPdgLeg1,fPdgLeg2);
   }
   if (fDebugTree) fDebugTree->SetDielectron(this);
-  if(fEstimatorFilename.Contains(".root")) AliDielectronVarManager::InitEstimatorAvg(fEstimatorFilename.Data());
+
+  if(fEstimatorFilename.Contains(".root"))        AliDielectronVarManager::InitEstimatorAvg(fEstimatorFilename.Data());
   if(fTRDpidCorrectionFilename.Contains(".root")) AliDielectronVarManager::InitTRDpidEffHistograms(fTRDpidCorrectionFilename.Data());
   if(fVZEROCalibrationFilename.Contains(".root")) AliDielectronVarManager::SetVZEROCalibrationFile(fVZEROCalibrationFilename.Data());
   if(fVZERORecenteringFilename.Contains(".root")) AliDielectronVarManager::SetVZERORecenteringFile(fVZERORecenteringFilename.Data());
-  
+  if(fZDCRecenteringFilename.Contains(".root")) AliDielectronVarManager::SetZDCRecenteringFile(fZDCRecenteringFilename.Data());
+
+  if(fLegEffMap)  AliDielectronVarManager::SetLegEffMap(fLegEffMap);
+  if(fPairEffMap) AliDielectronVarManager::SetPairEffMap(fPairEffMap);
+
+
   if (fMixing) fMixing->Init(this);
   if (fHistoArray) {
     fHistoArray->SetSignalsMC(fSignalsMC);
     fHistoArray->Init();
   }
+
+  if(fPostPIDCntrdCorr) AliDielectronPID::SetCentroidCorrFunction(fPostPIDCntrdCorr);
+  if(fPostPIDWdthCorr)  AliDielectronPID::SetWidthCorrFunction(fPostPIDWdthCorr);
 
   if (fCutQA) {
     fQAmonitor = new AliDielectronCutQA(Form("QAcuts_%s",GetName()),"QAcuts");
@@ -307,7 +335,8 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
     // create pairs and fill pair candidate arrays
     for (Int_t itrackArr1=0; itrackArr1<4; ++itrackArr1){
       for (Int_t itrackArr2=itrackArr1; itrackArr2<4; ++itrackArr2){
-        FillPairArrays(itrackArr1, itrackArr2);
+	if(!fProcessLS && GetPairIndex(itrackArr1,itrackArr2)!=kEv1PM) continue;
+	FillPairArrays(itrackArr1, itrackArr2);
       }
     }
 
@@ -326,6 +355,12 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
     fMixing->Fill(ev1,this);
     //     FillHistograms(0x0,kTRUE);
   }
+
+  // fill candidate variables
+  Double_t ntracks = fTracks[0].GetEntriesFast() + fTracks[1].GetEntriesFast();
+  Double_t npairs  = PairArray(AliDielectron::kEv1PM)->GetEntriesFast();
+  AliDielectronVarManager::SetValue(AliDielectronVarManager::kTracks, ntracks);
+  AliDielectronVarManager::SetValue(AliDielectronVarManager::kPairs,  npairs);
 
   //in case there is a histogram manager, fill the QA histograms
   if (fHistos && fSignalsMC) FillMCHistograms(ev1);
@@ -357,23 +392,29 @@ void AliDielectron::ProcessMC(AliVEvent *ev1)
 
   if (fHistos) FillHistogramsMC(dieMC->GetMCEvent(), ev1);
 
-  if(!fSignalsMC) return;
-  //loop over all MC data and Fill the HF, CF containers and histograms if they exist
-  if(fCfManagerPair) fCfManagerPair->SetPdgMother(fPdgMother);
+  // mc tracks
+  if(!dieMC->GetNMCTracks()) return;
 
   // signals to be studied
+  if(!fSignalsMC) return;
   Int_t nSignals = fSignalsMC->GetEntries();
+  if(!nSignals) return;
+
+  //loop over all MC data and Fill the HF, CF containers and histograms if they exist
+  if(fCfManagerPair) fCfManagerPair->SetPdgMother(fPdgMother);
 
   Bool_t bFillCF   = (fCfManagerPair ? fCfManagerPair->GetStepForMCtruth()  : kFALSE);
   Bool_t bFillHF   = (fHistoArray    ? fHistoArray->GetStepForMCGenerated() : kFALSE);
   Bool_t bFillHist = kFALSE;
-  for(Int_t isig=0;isig<nSignals;isig++) {
-    TString sigName = fSignalsMC->At(isig)->GetName();
+  if(fHistos) {
     const THashList *histlist =  fHistos->GetHistogramList();
-    bFillHist |= histlist->FindObject(Form("Pair_%s_MCtruth",sigName.Data()))!=0x0;
-    bFillHist |= histlist->FindObject(Form("Track_Leg_%s_MCtruth",sigName.Data()))!=0x0;
-    bFillHist |= histlist->FindObject(Form("Track_%s_%s_MCtruth",fgkPairClassNames[1],sigName.Data()))!=0x0;
-    if(bFillHist) break;
+    for(Int_t isig=0;isig<nSignals;isig++) {
+      TString sigName = fSignalsMC->At(isig)->GetName();
+      bFillHist |= histlist->FindObject(Form("Pair_%s_MCtruth",sigName.Data()))!=0x0;
+      bFillHist |= histlist->FindObject(Form("Track_Leg_%s_MCtruth",sigName.Data()))!=0x0;
+      bFillHist |= histlist->FindObject(Form("Track_%s_%s_MCtruth",fgkPairClassNames[1],sigName.Data()))!=0x0;
+      if(bFillHist) break;
+    }
   }
   // check if there is anything to fill
   if(!bFillCF && !bFillHF && !bFillHist) return;
@@ -680,12 +721,6 @@ void AliDielectron::EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTra
     // track mapping
     TMap mapRemovedTracks;
 
-    // eta gap ?
-    Bool_t etagap = kFALSE;
-    for (Int_t iCut=0; iCut<fEventPlanePreFilter.GetCuts()->GetEntries();++iCut) {
-      TString cutName=fEventPlanePreFilter.GetCuts()->At(iCut)->GetName();
-      if(cutName.Contains("eta") || cutName.Contains("Eta"))  etagap=kTRUE;
-    }
 
     Double_t cQX=0., cQY=0.;
     // apply cuts to the tracks, e.g. etagap
@@ -1056,7 +1091,7 @@ void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1,
       UInt_t cutMask=fPairPreFilterLegs.IsSelected(arrTracks1.UncheckedAt(itrack));
       
       //apply cut
-      if (cutMask!=selectedMask) arrTracks1.AddAt(0x0,itrack);;
+      if (cutMask!=selectedMask) arrTracks1.AddAt(0x0,itrack);
     }
     arrTracks1.Compress();
     
@@ -1112,11 +1147,12 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
     for (Int_t itrack2=0; itrack2<end; ++itrack2){
       //create the pair
       candidate->SetTracks(static_cast<AliVTrack*>(arrTracks1.UncheckedAt(itrack1)), fPdgLeg1,
-                             static_cast<AliVTrack*>(arrTracks2.UncheckedAt(itrack2)), fPdgLeg2);
+			   static_cast<AliVTrack*>(arrTracks2.UncheckedAt(itrack2)), fPdgLeg2);
       candidate->SetType(pairIndex);
       Int_t label=AliDielectronMC::Instance()->GetLabelMotherWithPdg(candidate,fPdgMother);
       candidate->SetLabel(label);
       if (label>-1) candidate->SetPdgCode(fPdgMother);
+      else candidate->SetPdgCode(0);
 
       // check for gamma kf particle
       label=AliDielectronMC::Instance()->GetLabelMotherWithPdg(candidate,22);
@@ -1128,11 +1164,10 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
 
       //pair cuts
       UInt_t cutMask=fPairFilter.IsSelected(candidate);
-      
+
       //CF manager for the pair
       if (fCfManagerPair) fCfManagerPair->Fill(cutMask,candidate);
-      //histogram array for the pair
-      if (fHistoArray) fHistoArray->Fill(pairIndex,candidate);
+
       // cut qa
       if(pairIndex==kEv1PM && fCutQA) {
 	fQAmonitor->FillAll(candidate);
@@ -1141,6 +1176,9 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
 
       //apply cut
       if (cutMask!=selectedMask) continue;
+
+      //histogram array for the pair
+      if (fHistoArray) fHistoArray->Fill(pairIndex,candidate);
 
       //add the candidate to the candidate array 
       PairArray(pairIndex)->Add(candidate);
@@ -1173,14 +1211,16 @@ void AliDielectron::FillPairArrayTR()
     
     //CF manager for the pair
     if (fCfManagerPair) fCfManagerPair->Fill(cutMask,&candidate);
-    //histogram array for the pair
-    if (fHistoArray) fHistoArray->Fill((Int_t)kEv1PMRot,&candidate);
     
     //apply cut
     if (cutMask==selectedMask) {
-     if(fHistos) FillHistogramsPair(&candidate);
-     if(fStoreRotatedPairs) PairArray(kEv1PMRot)->Add(new AliDielectronPair(candidate));
-    } 
+
+      //histogram array for the pair
+      if (fHistoArray) fHistoArray->Fill((Int_t)kEv1PMRot,&candidate);
+
+      if(fHistos) FillHistogramsPair(&candidate);
+      if(fStoreRotatedPairs) PairArray(kEv1PMRot)->Add(new AliDielectronPair(candidate));
+    }
   }
 }
 
@@ -1345,4 +1385,37 @@ void AliDielectron::FillMCHistograms(const AliVEvent *ev) {
 
   } //loop: MCsignals
 
+}
+
+//______________________________________________
+void AliDielectron::SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary, UInt_t varz)
+{
+  fun->GetHistogram()->GetXaxis()->SetUniqueID(varx);
+  fun->GetHistogram()->GetYaxis()->SetUniqueID(vary);
+  fun->GetHistogram()->GetZaxis()->SetUniqueID(varz);
+  fPostPIDCntrdCorr=fun;
+}
+//______________________________________________
+void AliDielectron::SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary, UInt_t varz)
+{
+  fun->GetHistogram()->GetXaxis()->SetUniqueID(varx);
+  fun->GetHistogram()->GetYaxis()->SetUniqueID(vary);
+  fun->GetHistogram()->GetZaxis()->SetUniqueID(varz);
+  fPostPIDWdthCorr=fun;
+}
+//______________________________________________
+THnBase* AliDielectron::InitEffMap(TString filename)
+{
+  // init an efficiency object for on-the-fly correction calculations
+  if(filename.Contains("alien://") && !gGrid) TGrid::Connect("alien://",0,0,"t");
+
+  TFile* file=TFile::Open(filename.Data());
+  if(!file) return 0x0;
+  THnBase *hGen = (THnBase*) file->Get("hGenerated");
+  THnBase *hFnd = (THnBase*) file->Get("hFound");
+  if(!hFnd || !hGen) return 0x0;
+
+  hFnd->Divide(hGen);
+  printf("[I] AliDielectron::InitLegEffMap efficiency maps %s loaded! \n",filename.Data());
+  return ((THnBase*) hFnd->Clone("effMap"));
 }

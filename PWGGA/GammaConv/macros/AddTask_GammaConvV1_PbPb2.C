@@ -1,7 +1,7 @@
 void AddTask_GammaConvV1_PbPb2(  Int_t trainConfig = 1,  //change different set of cuts
                               Bool_t isMC   = kFALSE, //run MC 
-                              Bool_t enableQAMesonTask = kFALSE, //enable QA in AliAnalysisTaskGammaConvV1
-                              Bool_t enableQAPhotonTask = kFALSE, // enable additional QA task
+                              Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvV1
+                              Int_t enableQAPhotonTask = 0, // enable additional QA task
                               TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
                               Bool_t doWeighting = kFALSE,  //enable Weighting
                               TString cutnumberAODBranch = "1000000060084000001500000" 
@@ -43,7 +43,7 @@ void AddTask_GammaConvV1_PbPb2(  Int_t trainConfig = 1,  //change different set 
    }
    
    //=========  Set Cutnumber for V0Reader ================================
-   TString cutnumber = "100000000008400100150000000"; 
+   TString cutnumber = "1000000000084001001500000000"; 
    AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
    //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
    if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
@@ -97,35 +97,69 @@ void AddTask_GammaConvV1_PbPb2(  Int_t trainConfig = 1,  //change different set 
    TString *mesonCutArray = new TString[numberOfCuts];
 
    if (trainConfig == 1){ 
-      cutarray[ 0] = "601000104209297002322000000"; mesonCutArray[ 0] = "01522045009000"; 
+      cutarray[ 0] = "6010001042092970023220000000"; mesonCutArray[ 0] = "01522045009000"; 
    } else if (trainConfig == 2) { 
-      cutarray[ 0] = "612000104209297002322000000"; mesonCutArray[ 0] = "01522045009000"; 
+      cutarray[ 0] = "6120001042092970023220000000"; mesonCutArray[ 0] = "01522045009000"; 
    } else if (trainConfig == 3) { 
-      cutarray[ 0] = "501000104209297002322000000"; mesonCutArray[ 0] = "01522045009000"; 
+      cutarray[ 0] = "5010001042092970023220000000"; mesonCutArray[ 0] = "01522045009000"; 
    } else if (trainConfig == 4) { 
-      cutarray[ 0] = "502000104209297002322000000"; mesonCutArray[ 0] = "01522045009000";    
+      cutarray[ 0] = "5020001042092970023220000000"; mesonCutArray[ 0] = "01522045009000";    
    } else if (trainConfig == 5) { 
-      cutarray[ 0] = "512000104209297002322000000"; mesonCutArray[ 0] = "01522045009000";    
+      cutarray[ 0] = "5120001042092970023220000000"; mesonCutArray[ 0] = "01522045009000";    
    } else if (trainConfig == 6) { 
-      cutarray[ 0] = "524000104209297002322000000"; mesonCutArray[ 0] = "01522045009000";       
+      cutarray[ 0] = "5240001042092970023220000000"; mesonCutArray[ 0] = "01522045009000";       
    } else if (trainConfig == 7) {    
-      cutarray[ 0] = "546000104209297002322000000"; mesonCutArray[ 0] = "01522065009000"; 
+      cutarray[ 0] = "5460001042092970023220000000"; mesonCutArray[ 0] = "01522065009000"; 
    } else if (trainConfig == 8) {    
-      cutarray[ 0] = "548000104209297002322000000"; mesonCutArray[ 0] = "01522065009000";    
+      cutarray[ 0] = "5480001042092970023220000000"; mesonCutArray[ 0] = "01522065009000";    
    } else if (trainConfig == 9) {    
-      cutarray[ 0] = "545000104209297002322000000"; mesonCutArray[ 0] = "01522065009000"; 
+      cutarray[ 0] = "5450001042092970023220000000"; mesonCutArray[ 0] = "01522065009000"; 
    } else if (trainConfig == 10) { 
-      cutarray[ 0] = "556000104209297002322000000"; mesonCutArray[ 0] = "01522065009000";
+      cutarray[ 0] = "5560001042092970023220000000"; mesonCutArray[ 0] = "01522065009000";
    } else if (trainConfig == 11) { 
-      cutarray[ 0] = "568000104209297002322000000"; mesonCutArray[ 0] = "01522065009000";    
+      cutarray[ 0] = "5680001042092970023220000000"; mesonCutArray[ 0] = "01522065009000";    
    } else if (trainConfig == 12) { 
-      cutarray[ 0] = "567000104209297002322000000"; mesonCutArray[ 0] = "01522065009000"; 
+      cutarray[ 0] = "5670001042092970023220000000"; mesonCutArray[ 0] = "01522065009000"; 
    } else if (trainConfig == 13) { 
-      cutarray[ 0] = "578000104209297002322000000"; mesonCutArray[ 0] = "01522065009000"; 
+      cutarray[ 0] = "5780001042092970023220000000"; mesonCutArray[ 0] = "01522065009000"; 
    } else if (trainConfig == 14) { 
-      cutarray[ 0] = "469000104209297002322000000"; mesonCutArray[ 0] = "01522065009000";
+      cutarray[ 0] = "4690001042092970023220000000"; mesonCutArray[ 0] = "01522065009000";
    } else if (trainConfig == 15) { 
-      cutarray[ 0] = "589000104209297002322000000"; mesonCutArray[ 0] = "01522065009000";    
+      cutarray[ 0] = "5890001042092970023220000000"; mesonCutArray[ 0] = "01522065009000";    
+   } else  if (trainConfig == 16){ 
+      cutarray[ 0] = "6010002032092970023220000000"; mesonCutArray[ 0] = "01523045009000"; 
+   } else if (trainConfig == 17) { 
+      cutarray[ 0] = "6120001032092970023220000000"; mesonCutArray[ 0] = "01523045009000"; 
+   } else if (trainConfig == 18) { 
+      cutarray[ 0] = "5010001032092970023220000000"; mesonCutArray[ 0] = "01523045009000"; 
+   } else if (trainConfig == 19) { 
+      cutarray[ 0] = "5020001032092970023220000000"; mesonCutArray[ 0] = "01523045009000";    
+   } else if (trainConfig == 20) { 
+      cutarray[ 0] = "5120001032092970023220000000"; mesonCutArray[ 0] = "01523045009000";    
+   } else if (trainConfig == 21) { 
+      cutarray[ 0] = "5240001032092970023220000000"; mesonCutArray[ 0] = "01523045009000";       
+   } else if (trainConfig == 22) {    
+      cutarray[ 0] = "5460001032092970023220000000"; mesonCutArray[ 0] = "01523065009000"; 
+   } else if (trainConfig == 23) {    
+      cutarray[ 0] = "5480001032092970023220000000"; mesonCutArray[ 0] = "01523065009000";    
+   } else if (trainConfig == 24) {    
+      cutarray[ 0] = "5450001032092970023220000000"; mesonCutArray[ 0] = "01523065009000"; 
+   } else if (trainConfig == 25) { 
+      cutarray[ 0] = "5560001032092970023220000000"; mesonCutArray[ 0] = "01523065009000";
+   } else if (trainConfig == 26) { 
+      cutarray[ 0] = "5680001032092970023220000000"; mesonCutArray[ 0] = "01523065009000";    
+   } else if (trainConfig == 27) { 
+      cutarray[ 0] = "5670001032092970023220000000"; mesonCutArray[ 0] = "01523065009000"; 
+   } else if (trainConfig == 28) { 
+      cutarray[ 0] = "5780001032092970023220000000"; mesonCutArray[ 0] = "01523065009000"; 
+   } else if (trainConfig == 29) { 
+      cutarray[ 0] = "4690001032092970023220000000"; mesonCutArray[ 0] = "01523065009000";
+   } else if (trainConfig == 30) { 
+      cutarray[ 0] = "5890001032092970023220000000"; mesonCutArray[ 0] = "01523065009000";    
+   } else if (trainConfig == 31) { 
+      cutarray[ 0] = "5080001002092970023220000000"; mesonCutArray[ 0] = "01525065009000";    
+   } else if (trainConfig == 32) { 
+      cutarray[ 0] = "5080002002092970023220000000"; mesonCutArray[ 0] = "01525065009000";    
    } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
@@ -135,7 +169,7 @@ void AddTask_GammaConvV1_PbPb2(  Int_t trainConfig = 1,  //change different set 
    TList *MesonCutList = new TList();
 
    TList *HeaderList = new TList();
-   TObjString *Header1 = new TObjString("pi0_1");
+   TObjString *Header1 = new TObjString("BOX");
    HeaderList->Add(Header1);
 //    TObjString *Header3 = new TObjString("eta_2");
 //    HeaderList->Add(Header3);
@@ -162,8 +196,8 @@ void AddTask_GammaConvV1_PbPb2(  Int_t trainConfig = 1,  //change different set 
    task->SetMesonCutList(numberOfCuts,MesonCutList);
    task->SetMoveParticleAccordingToVertex(kTRUE);
    task->SetDoMesonAnalysis(kTRUE);
-   if (enableQAMesonTask) task->SetDoMesonQA(kTRUE); //Attention new switch for Pi0 QA
-   if (enableQAPhotonTask) task->SetDoPhotonQA(kTRUE);  //Attention new switch small for Photon QA
+   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
+   task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
 
    //connect containers
    AliAnalysisDataContainer *coutput =

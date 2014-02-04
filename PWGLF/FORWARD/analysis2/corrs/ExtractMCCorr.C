@@ -10,9 +10,11 @@
  * according to the settings 
  * 
  * @param fname  File to extract from 
+ * @param runNo  Run number 
  * @param sys    Collision system (pp, PbPb)
  * @param sNN    Center of mass energy (in GeV) per nucleon
- * @param field  L3 magnetic field (-5,0,5) in kGaus
+ * @param fld    L3 magnetic field (-5,0,5) in kGaus
+ * @param sat    For satellite interactions 
  * 
  * @ingroup pwglf_forward_scripts_corr
  */

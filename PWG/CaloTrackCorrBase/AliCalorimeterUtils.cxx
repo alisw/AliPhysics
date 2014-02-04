@@ -61,8 +61,8 @@ ClassImp(AliCalorimeterUtils)
     fRemoveBadChannels(kFALSE),       fPHOSBadChannelMap(0x0), 
     fNCellsFromPHOSBorder(0),
     fNMaskCellColumns(0),             fMaskCellColumns(0x0),
-    fRecalibration(kFALSE),           fRunDependentCorrection(kFALSE), fPHOSRecalibrationFactors(),
-    fEMCALRecoUtils(new AliEMCALRecoUtils),
+    fRecalibration(kFALSE),           fRunDependentCorrection(kFALSE),
+    fPHOSRecalibrationFactors(),      fEMCALRecoUtils(new AliEMCALRecoUtils),
     fRecalculatePosition(kFALSE),     fCorrectELinearity(kFALSE),
     fRecalculateMatching(kFALSE),
     fCutR(20),                        fCutZ(20),
@@ -70,7 +70,8 @@ ClassImp(AliCalorimeterUtils)
     fLocMaxCutE(0),                   fLocMaxCutEDiff(0),
     fPlotCluster(0),                  fOADBSet(kFALSE),
     fOADBForEMCAL(kFALSE),            fOADBForPHOS(kFALSE),
-    fOADBFilePathEMCAL(""),           fOADBFilePathPHOS("")
+    fOADBFilePathEMCAL(""),           fOADBFilePathPHOS(""),
+    fImportGeometryFromFile(0),       fImportGeometryFilePath("")
 {
   //Ctor
   
@@ -273,7 +274,9 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
       
       if(trecal)
       {
-        TObjArray *trecalpass=(TObjArray*)trecal->FindObject(pass);
+        TString passM = pass;
+        if(pass=="spc_calo") passM = "pass1";
+        TObjArray *trecalpass=(TObjArray*)trecal->FindObject(passM);
         
         if(trecalpass)
         {
@@ -491,9 +494,8 @@ void AliCalorimeterUtils::AccessGeometry(AliVEvent* inputEvent)
   
 }
 
-//______________________________________________________________________________________
-Bool_t AliCalorimeterUtils::AreNeighbours(const TString calo, 
-                                          const Int_t absId1, const Int_t absId2 ) const
+//________________________________________________________________________________________
+Bool_t AliCalorimeterUtils::AreNeighbours(TString calo, Int_t absId1, Int_t absId2 ) const
 {
   // Tells if (true) or not (false) two cells are neighbours
   // A neighbour is defined as being two cells which share a side or corner
@@ -681,8 +683,8 @@ Bool_t AliCalorimeterUtils::CheckCellFiducialRegion(AliVCluster* cluster,
 	
 }	
 
-//_________________________________________________________________________________________________________
-Bool_t AliCalorimeterUtils::ClusterContainsBadChannel(TString calorimeter,UShort_t* cellList, Int_t nCells)
+//__________________________________________________________________________________________________________
+Bool_t AliCalorimeterUtils::ClusterContainsBadChannel(TString calorimeter, UShort_t* cellList, Int_t nCells)
 {
 	// Check that in the cluster cells, there is no bad channel of those stored 
 	// in fEMCALBadChannelMap or fPHOSBadChannelMap
@@ -786,10 +788,9 @@ Int_t  AliCalorimeterUtils::GetMaxEnergyCell(AliVCaloCells* cells, const AliVClu
   
 }
 
-//__________________________________________________________________________
-AliVTrack * AliCalorimeterUtils::GetMatchedTrack(const AliVCluster* cluster, 
-                                                 const AliVEvent* event, 
-                                                 const Int_t index) const
+//___________________________________________________________________________________
+AliVTrack * AliCalorimeterUtils::GetMatchedTrack(AliVCluster* cluster,
+                                                 AliVEvent* event, Int_t index) const
 {
   // Get the matched track given its index, usually just the first match
   // Since it is different for ESDs and AODs here it is a wrap method to do it
@@ -940,7 +941,7 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliVCluster * cluster) const
 }
 
 //___________________________________________________________________________________________________
-Int_t AliCalorimeterUtils::GetModuleNumberCellIndexes(const Int_t absId, const TString calo, 
+Int_t AliCalorimeterUtils::GetModuleNumberCellIndexes(Int_t absId, TString calo,
                                                       Int_t & icol, Int_t & irow, Int_t & iRCU) const
 {
 	//Get the EMCAL/PHOS module, columns, row and RCU number that corresponds to this absId
@@ -1170,6 +1171,7 @@ TString AliCalorimeterUtils::GetPass()
   else if (pass.Contains("ass3")) return TString("pass3");
   else if (pass.Contains("ass4")) return TString("pass4");
   else if (pass.Contains("ass5")) return TString("pass5");
+  else if (pass.Contains("LHC11c") && pass.Contains("spc_calo") ) return TString("spc_calo");
   else if (pass.Contains("calo") || pass.Contains("high_lumi"))
   {
     printf("AliCalorimeterUtils::GetPass() - Path contains <calo> or <high-lumi>, set as <pass1>\n");
@@ -1213,6 +1215,9 @@ void AliCalorimeterUtils::InitParameters()
   
   fOADBFilePathEMCAL = "$ALICE_ROOT/OADB/EMCAL" ;          
   fOADBFilePathPHOS  = "$ALICE_ROOT/OADB/PHOS"  ;     
+  
+  fImportGeometryFromFile = kTRUE;
+  fImportGeometryFilePath = "";
   
 }
 
@@ -1282,6 +1287,24 @@ void AliCalorimeterUtils::InitEMCALGeometry(Int_t runnumber)
     
 		fEMCALGeo = AliEMCALGeometry::GetInstance(fEMCALGeoName);
     
+    // Init geometry, I do not like much to do it like this ...
+    if(fImportGeometryFromFile && !gGeoManager)
+    {
+      if(fImportGeometryFilePath=="") // If not specified, set location depending on run number
+      {
+        // "$ALICE_ROOT/EVE/alice-data/default_geo.root"
+        if     (runnumber <  140000 &&
+                runnumber >= 100000) fImportGeometryFilePath = "$ALICE_ROOT/OADB/EMCAL/geometry_2010.root";
+        if     (runnumber >= 140000 &&
+                runnumber <  171000) fImportGeometryFilePath = "$ALICE_ROOT/OADB/EMCAL/geometry_2011.root";
+        else                         fImportGeometryFilePath = "$ALICE_ROOT/OADB/EMCAL/geometry_2012.root"; // 2012-2013
+
+      }
+      printf("AliCalorimeterUtils::InitEMCALGeometry() - Import %s\n",fImportGeometryFilePath.Data());
+      TGeoManager::Import(fImportGeometryFilePath) ; // default need file "geometry.root" in local dir!!!!
+    }
+
+    
 		if(fDebug > 0)
     {
 			printf("AliCalorimeterUtils::InitEMCALGeometry(run=%d)",runnumber);
@@ -1311,9 +1334,8 @@ void AliCalorimeterUtils::InitPHOSGeometry(Int_t runnumber)
 	}	
 }
 
-//__________________________________________________________________
-Bool_t AliCalorimeterUtils::MaskFrameCluster(const Int_t iSM,  
-                                             const Int_t ieta) const 
+//_______________________________________________________________________
+Bool_t AliCalorimeterUtils::MaskFrameCluster(Int_t iSM, Int_t ieta) const
 {
   //Check if cell is in one of the regions where we have significant amount 
   //of material in front. Only EMCAL
@@ -1357,9 +1379,8 @@ void AliCalorimeterUtils::Print(const Option_t * opt) const
   printf("    \n") ;
 } 
 
-//__________________________________________________________________________________________
-void AliCalorimeterUtils::RecalibrateCellAmplitude(Float_t & amp,
-                                                   const TString calo, const Int_t id) const
+//_____________________________________________________________________________________________
+void AliCalorimeterUtils::RecalibrateCellAmplitude(Float_t & amp, TString calo, Int_t id) const
 {
   //Recaculate cell energy if recalibration factor
   
@@ -1379,10 +1400,8 @@ void AliCalorimeterUtils::RecalibrateCellAmplitude(Float_t & amp,
   }
 }
 
-//_________________________________________________________________________________
-void AliCalorimeterUtils::RecalibrateCellTime(Double_t & time, 
-                                              const TString calo, 
-                                              const Int_t id, const Int_t bc) const
+//____________________________________________________________________________________________________
+void AliCalorimeterUtils::RecalibrateCellTime(Double_t & time, TString calo, Int_t id, Int_t bc) const
 {
   // Recalculate time if time recalibration available for EMCAL
   // not ready for PHOS
@@ -1474,14 +1493,13 @@ void AliCalorimeterUtils::RecalculateClusterTrackMatching(AliVEvent * event,
 }
 
 //___________________________________________________________________________
-void AliCalorimeterUtils::SplitEnergy(const Int_t absId1, const Int_t absId2,
-                                      AliVCluster* cluster, 
+void AliCalorimeterUtils::SplitEnergy(Int_t absId1, Int_t absId2,
+                                      AliVCluster* cluster,
                                       AliVCaloCells* cells,
                                       //Float_t & e1, Float_t & e2,
                                       AliAODCaloCluster* cluster1,
                                       AliAODCaloCluster* cluster2,
-                                      const Int_t nMax,
-                                      const Int_t eventNumber)
+                                      Int_t nMax, Int_t eventNumber)
 {
   
   // Split energy of cluster between the 2 local maxima, sum energy on 3x3, and if the 2 
@@ -1535,11 +1553,14 @@ void AliCalorimeterUtils::SplitEnergy(const Int_t absId1, const Int_t absId2,
     {
       //printf("iDigit %d, absId %d, Ecell %f\n",iDigit,absIdList[iDigit], cells->GetCellAmplitude(absIdList[iDigit]));
       sm = GetModuleNumberCellIndexes(absIdList[iDigit], calorimeter, icol, irow, iRCU) ;
-      if(icol > maxCol) maxCol = icol;
-      if(icol < minCol) minCol = icol;
-      if(irow > maxRow) maxRow = irow;
-      if(irow < minRow) minRow = irow;
-      hClusterMap->Fill(icol,irow,ec);
+      if(sm > -1 && sm  < 12) // just to avoid compilation warning
+      {
+        if(icol > maxCol) maxCol = icol;
+        if(icol < minCol) minCol = icol;
+        if(irow > maxRow) maxRow = irow;
+        if(irow < minRow) minRow = irow;
+        hClusterMap->Fill(icol,irow,ec);
+      }
     }
     
   }

@@ -8,8 +8,8 @@
 #ifndef ALIANALYSISTASKPI0FLOWMCHIJING_H
 #define ALIANALYSISTASKPI0FLOWMCHIJING_H
 
-#include <AliAnalysisTaskPi0Flow.h>
-#include <AliAnalysisTaskPi0FlowMC.h>
+#include "AliAnalysisTaskPi0Flow.h"
+#include "AliAnalysisTaskPi0FlowMC.h"
 
 class AliAnalysisTaskPi0FlowMCHijing :  public AliAnalysisTaskPi0FlowMC
 {

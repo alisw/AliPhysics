@@ -18,10 +18,11 @@
  * @param useCent   Whether to use the centrality or not
  * @param scheme    Normalisation scheme
  * @param cutEdges  Whether to cut edges when rebinning 
- * @param mcanalysisfilename Take final MC corrections from this - if present
  * @param trigEff   Trigger efficiency 
  * @param trigEff0  Trigger efficiency for 0-bin
  * @param corrEmpty Correct for empty bins 
+ * @param satVtx    Set to true for satellite analysis
+ * @param mcanalysisfilename Take final MC corrections from this - if present
  * 
  * @return Newly created and configured task
  *
@@ -61,7 +62,7 @@ AddTaskForwarddNdeta(const char* trig     = "INEL",
   task->SetMCFinalCorrFilename(mcanalysisfilename);
   
   // Set the vertex range to use 
-  task->SetVertexRange(vzMin, vzMax);
+  task->SetIpZRange(vzMin, vzMax);
   // Set the trigger mask to use (INEL,INEL>0,NSD)
   task->SetTriggerMask(trig);
   // Set the trigger efficiency 
@@ -105,23 +106,7 @@ AddTaskForwarddNdeta(const char* trig     = "INEL",
   // Set satellite vertex flag
   task->SetSatelliteVertices(satVtx);
 
-  mgr->AddTask(task);
-
-  // --- create containers for input/output --------------------------
-  AliAnalysisDataContainer *sums = 
-    mgr->CreateContainer("ForwardSums", TList::Class(), 
-			 AliAnalysisManager::kOutputContainer, 
-			 AliAnalysisManager::GetCommonFileName());
-  AliAnalysisDataContainer *output = 
-    mgr->CreateContainer("ForwardResults", TList::Class(), 
-			 AliAnalysisManager::kParamContainer, 
-			 AliAnalysisManager::GetCommonFileName());
-  
-  // --- connect input/output ----------------------------------------
-  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, sums);
-  mgr->ConnectOutput(task, 2, output);
-
+  task->Connect(0,0);
   return task;
 }
 

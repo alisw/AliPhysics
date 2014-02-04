@@ -170,6 +170,8 @@ struct Extractor
    * @param dirName   Directory name 
    * @param corrName  Correction name 
    * @param methName  Run number mode to set as default  
+   * @param outFile   Output file 
+   * @param cm        Correction manager to use 
    */
   Extractor(const char* dirName, 
 	    const char* corrName,
@@ -183,9 +185,6 @@ struct Extractor
   virtual ~Extractor() {}
   /** 
    * Extract files 
-   * 
-   * @param db        Database manager 
-   * @param fileName  File to store in 
    * 
    * @return number of converted objects 
    */
@@ -214,7 +213,6 @@ struct Extractor
    * Extract from a file 
    * 
    * @param fn File name 
-   * @param db database manager 
    * 
    * @return true on success 
    */      
@@ -382,11 +380,24 @@ struct NormExtractor : public Extractor
       fFileName("")
   {
   }
+  /** 
+   * Extract 
+   * 
+   * 
+   * @return Number of converted oject
+   */
   virtual Int_t Extract()
   {
     Fatal("Extract", "Cannot use this");
     return -1;
   }
+  /** 
+   * Extract 
+   * 
+   * @param s Source 
+   *
+   * @return Number of converted oject
+   */
   virtual Bool_t ExtractFile(const TString& s)
   {
     Fatal("ExtractFile", "Cannot use this (%s)", s.Data());

@@ -80,7 +80,7 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   
   void    Print(const Option_t * opt) const;
   
-  void    ProcessEvent(const Int_t iEntry, const char * currentFileName) ;
+  void    ProcessEvent(Int_t iEntry, const char * currentFileName) ;
   
   void    Terminate(TList * outputList);
   

@@ -3,10 +3,16 @@
 #include <TKey.h>
 #include <TList.h>
 
+/**
+ * Class to draw summary of unfolding
+ * 
+ * @ingroup pwglf_forward_multdist
+ */
 struct SummaryUnfoldedDrawer : public SummaryDrawer
 {
 
   SummaryUnfoldedDrawer() : SummaryDrawer() {}
+  //____________________________________________________________________
   void Run(const char* fname)
   {
     TString filename(fname);
@@ -20,52 +26,10 @@ struct SummaryUnfoldedDrawer : public SummaryDrawer
     pdfName.ReplaceAll(".root", ".pdf");
     CreateCanvas(pdfName, 0); // what & kLandscape);
 
-    // Title page 
-    fBody->cd();
-
-    TLatex* ltx = new TLatex(.5, .7, "Raw P(#it{N}_{ch}) #rightarrow "
-			     "corrected P(#it{N}_{ch})");
-    ltx->SetNDC();
-    ltx->SetTextSize(0.07);
-    ltx->SetTextAlign(22);
-    ltx->Draw();
-
-    Double_t y = .6;
+    // --- Title page ------------------------------------------------
+    DrawTitlePage(file);
     
-    Double_t save = fParName->GetTextSize();
-    fParName->SetTextSize(0.03);
-    fParVal->SetTextSize(0.03);
-
-    TObject* method = file->Get("method");
-    TObject* sys    = file->Get("sys");
-    TObject* sNN    = file->Get("sNN");
-    TObject* trig   = file->Get("trigger");
-    Double_t regP;
-    Double_t minIpZ;
-    Double_t maxIpZ;
-    UShort_t maxN;
-    GetParameter(file, "regParam", regP);
-    GetParameter(file, "minIpZ", minIpZ);
-    GetParameter(file, "maxIpZ", maxIpZ);
-    GetParameter(file, "maxN", maxN);
-
-    DrawParameter(y, "System", sys->GetTitle());
-    DrawParameter(y, "#sqrt{s_{NN}}", sNN->GetTitle());
-    DrawParameter(y, "Trigger", trig->GetTitle());
-    DrawParameter(y, "Method", method->GetTitle());
-    DrawParameter(y, "Reg. param.", Form("%g", regP));
-    DrawParameter(y, "Max #it{N}_{ch}", Form("%d", maxN));
-    DrawParameter(y, "IP_{z} range", Form("%+5.2fcm - %+5.2fcm", 
-					  minIpZ, maxIpZ));
-
-
-    PrintCanvas("Title page");
-    fParName->SetTextSize(save);
-    fParVal->SetTextSize(save);
-
-    
-    
-    // Loop over all keys in the file 
+    // --- Loop over all keys in the file ----------------------------
     TIter next(file->GetListOfKeys());
     TKey* k  = 0;
     while ((k = static_cast<TKey*>(next()))) {
@@ -89,13 +53,60 @@ struct SummaryUnfoldedDrawer : public SummaryDrawer
     file->cd();
     CloseCanvas();
   }
+  //____________________________________________________________________
+  void DrawTitlePage(const TDirectory* file)
+  {
+    fBody->cd();
+
+    TLatex* ltx = new TLatex(.5, .7, "Raw P(#it{N}_{ch}) #rightarrow "
+			     "corrected P(#it{N}_{ch})");
+    ltx->SetNDC();
+    ltx->SetTextSize(0.07);
+    ltx->SetTextAlign(22);
+    ltx->Draw();
+
+    Double_t y = .6;
+    
+    Double_t save = fParName->GetTextSize();
+    fParName->SetTextSize(0.03);
+    fParVal->SetTextSize(0.03);
+
+    TObject* method = GetObject(file, "method");
+    TObject* sys    = GetObject(file, "sys");
+    TObject* sNN    = GetObject(file, "sNN");
+    TObject* trig   = GetObject(file, "trigger");
+    Double_t regP;
+    Double_t minIpZ;
+    Double_t maxIpZ;
+    Bool_t   self;
+    GetParameter(file, "regParam", regP);
+    GetParameter(file, "minIpZ", minIpZ);
+    GetParameter(file, "maxIpZ", maxIpZ);
+    GetParameter(file, "self", self);
+
+    DrawParameter(y, "Consistency check", self ? "yes" : "no");
+    DrawParameter(y, "System", sys->GetTitle());
+    DrawParameter(y, "#sqrt{s_{NN}}", sNN->GetTitle());
+    DrawParameter(y, "Trigger", trig->GetTitle());
+    DrawParameter(y, "Method", method->GetTitle());
+    DrawParameter(y, "Reg. param.", Form("%g", regP));
+    DrawParameter(y, "IP_{z} range", Form("%+5.2fcm - %+5.2fcm", 
+					  minIpZ, maxIpZ));
+
+
+    PrintCanvas("Title page");
+    fParName->SetTextSize(save);
+    fParVal->SetTextSize(save);
+  }
+  //____________________________________________________________________
   void ProcessType(TDirectory* d) 
   { 
     Printf(" ProcessType: %s", d->GetPath());
     // d->ls();
     MakeChapter(d->GetName()); 
     static TRegexp regex("[pm][0-9]d[0-9]*_[pm][0-9]d[0-9]*");
-    
+
+    // --- Loop over bins in this directory --------------------------
     TIter next(d->GetListOfKeys());
     TKey* k  = 0;
     while ((k = static_cast<TKey*>(next()))) {
@@ -123,9 +134,18 @@ struct SummaryUnfoldedDrawer : public SummaryDrawer
     d->cd();
     DrawResults(d);
   }
+  //____________________________________________________________________
   void DrawResults(TDirectory* d) 
   { 
-    DrawInPad(fBody, 0, GetStack(d, "corrected"), "nostack", kLogy);
+    THStack* c = GetStack(d, "corrected");
+    if (!c) {
+      Warning("DrawResults", "Stack of corrected results not found!");
+      return;
+    }
+    DrawInPad(fBody, 0, c, "nostack", kLogy);
+    c->GetXaxis()->SetTitle("#it{N}_{ch}");
+    c->GetYaxis()->SetTitle("P(#it{N}_{ch})");
+
     TObject* alice = d->Get("alice");
     TObject* cms   = d->Get("cms");
     if (cms)   cms->Draw();
@@ -153,7 +173,37 @@ struct SummaryUnfoldedDrawer : public SummaryDrawer
       l->Draw();
     }
     PrintCanvas(" Results");
+
+    THStack* s = GetStack(d, "ratios");
+    if (s) {
+      fBody->SetLogy(false);
+      DrawInPad(fBody, 0, s, "nostack", kGridy);
+      s->GetYaxis()->SetTitle("(this - other)/other");
+      s->GetXaxis()->SetTitle("#it{N}_{ch}");
+
+      TObject* dummy = 0;
+      TLegend* l = new TLegend(0.65, 0.12, .95, .3, "", "NDC");
+      TLegendEntry* e = 0;
+      l->SetFillColor(0);
+      l->SetFillStyle(0);
+      l->SetBorderSize(0);
+      if (alice) { 
+	e = l->AddEntry(dummy, "to ALICE", "F");
+	e->SetFillColor(kPink+1);
+	e->SetFillStyle(1001);
+      }
+      if (cms) { 
+	e = l->AddEntry(dummy, "to CMS", "F");
+	e->SetFillColor(kGreen+2);
+	e->SetFillStyle(1001);
+      }
+      l->Draw();
+      if (s->GetMinimum() > -1) s->SetMinimum(-1);
+      
+      PrintCanvas("  Ratios");
+    }
   }
+  //____________________________________________________________________
   void ProcessBin(TDirectory* d) 
   {
     Printf("  ProcessBin: %s", d->GetPath());
@@ -181,16 +231,23 @@ struct SummaryUnfoldedDrawer : public SummaryDrawer
     p = fBody->cd(4);
     p->SetBottomMargin(0.15);
     THStack* all = GetStack(d,"all");
+    if (!all) {
+      Warning("ProcessBin", "Argh! All stack not found!");
+      return;
+    }
     DrawInPad(fBody,1,all, "nostack", kLogy);
     DrawInPad(fBody,2,GetH1(d,"ratioCorrTruth"), "", 0);
     DrawInPad(fBody,3,GetH1(d,"ratioUnfAcc"), "", 0);
     DrawInPad(fBody,4,GetH1(d,"triggerVertex"), "", 0);
     DrawInPad(fBody,5,GetH2(d,"response"), "colz", kLogz);
+    all->GetXaxis()->SetTitle("#it{N}_{ch}");
+    all->GetYaxis()->SetTitle("P(#it{N}_{ch})");
 
     PrintCanvas(Form(" %+5.2f<eta<%+5.2f", eta1, eta2));
     
     DrawSteps(all, eta1, eta2);
   }
+  //____________________________________________________________________
   void DrawSteps(THStack* stack, Double_t e1, Double_t e2) 
   {
     fBody->Divide(2, 3, 0, 0);
@@ -200,6 +257,7 @@ struct SummaryUnfoldedDrawer : public SummaryDrawer
     // Make a background stack 
     THStack* bg = static_cast<THStack*>(stack->Clone("bg"));
     bg->SetTitle();
+    
     for (Int_t i = 0; i < nHist; i++) { 
       // Loop over histograms and set the saved color
       TH1* h        = static_cast<TH1*>(bg->GetHists()->At(i));
@@ -225,6 +283,8 @@ struct SummaryUnfoldedDrawer : public SummaryDrawer
       DrawInPad(fBody, i+1, hists->At(i), "same hist p e", kLogy);
       gPad->SetGridx();
       gPad->SetGridy();
+      bg->GetXaxis()->SetTitle("#it{N}_{ch}");
+      bg->GetYaxis()->SetTitle("P(#it{N}_{ch})");
 
       TLatex* l = new TLatex(.95, .95, Form("Step %d", i));
       l->SetNDC();

@@ -99,7 +99,8 @@ AliDielectronHistos::~AliDielectronHistos()
 void AliDielectronHistos::UserProfile(const char* histClass,const char *name, const char* title,
 				      UInt_t valTypeP,
 				      Int_t nbinsX, Double_t xmin, Double_t xmax,
-				      UInt_t valTypeX, Bool_t logBinX, TString option)
+				      UInt_t valTypeX, Bool_t logBinX, TString option,
+				      UInt_t valTypeW)
 {
   //
   // Default histogram creation 1D case
@@ -112,7 +113,7 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
   } else {
     binLimX=AliDielectronHelper::MakeLinBinning(nbinsX, xmin, xmax);
   }
-  UserProfile(histClass,name,title,valTypeP,binLimX,valTypeX,option);
+  UserProfile(histClass,name,title,valTypeP,binLimX,valTypeX,option,valTypeW);
 }
 
 //_____________________________________________________________________________
@@ -121,7 +122,8 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
 				      Int_t nbinsX, Double_t xmin, Double_t xmax,
 				      Int_t nbinsY, Double_t ymin, Double_t ymax,
 				      UInt_t valTypeX, UInt_t valTypeY,
-				      Bool_t logBinX, Bool_t logBinY, TString option)
+				      Bool_t logBinX, Bool_t logBinY, TString option,
+				      UInt_t valTypeW)
 {
   //
   // Default histogram creation 2D case
@@ -141,7 +143,7 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
   } else {
     binLimY=AliDielectronHelper::MakeLinBinning(nbinsY, ymin, ymax);
   }
-  UserProfile(histClass,name,title,valTypeP,binLimX,binLimY,valTypeX,valTypeY,option);
+  UserProfile(histClass,name,title,valTypeP,binLimX,binLimY,valTypeX,valTypeY,option,valTypeW);
 }
 
 
@@ -152,7 +154,8 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
 				      Int_t nbinsY, Double_t ymin, Double_t ymax,
 				      Int_t nbinsZ, Double_t zmin, Double_t zmax,
 				      UInt_t valTypeX, UInt_t valTypeY, UInt_t valTypeZ,
-				      Bool_t logBinX, Bool_t logBinY, Bool_t logBinZ, TString option)
+				      Bool_t logBinX, Bool_t logBinY, Bool_t logBinZ, TString option,
+				      UInt_t valTypeW)
 {
   //
   // Default histogram creation 3D case
@@ -181,28 +184,30 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
     binLimZ=AliDielectronHelper::MakeLinBinning(nbinsZ, zmin, zmax);
   }
 
-  UserProfile(histClass,name,title,valTypeP,binLimX,binLimY,binLimZ,valTypeX,valTypeY,valTypeZ,option);
+  UserProfile(histClass,name,title,valTypeP,binLimX,binLimY,binLimZ,valTypeX,valTypeY,valTypeZ,option,valTypeW);
 }
 
 //_____________________________________________________________________________
 void AliDielectronHistos::UserProfile(const char* histClass,const char *name, const char* title,
 				      UInt_t valTypeP,
 				      const char* binning,
-				      UInt_t valTypeX, TString option)
+				      UInt_t valTypeX, TString option,
+				      UInt_t valTypeW)
 {
   //
   // Histogram creation 1D case with arbitraty binning
   //
 
   TVectorD *binLimX=AliDielectronHelper::MakeArbitraryBinning(binning);
-  UserProfile(histClass,name,title,valTypeP,binLimX,valTypeX,option);
+  UserProfile(histClass,name,title,valTypeP,binLimX,valTypeX,option,valTypeW);
 }
 
 //_____________________________________________________________________________
 void AliDielectronHistos::UserProfile(const char* histClass,const char *name, const char* title,
 				      UInt_t valTypeP,
 				      const TVectorD * const binsX,
-				      UInt_t valTypeX/*=kNoAutoFill*/, TString option)
+				      UInt_t valTypeX/*=kNoAutoFill*/, TString option,
+				      UInt_t valTypeW)
 {
   //
   // Histogram creation 1D case with arbitraty binning X
@@ -215,7 +220,7 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
   TH1 *hist=0x0;
 
   if (isOk){
-    if(valTypeP==999)
+    if(valTypeP==kNoProfile)
       hist=new TH1F(name,title,binsX->GetNrows()-1,binsX->GetMatrixArray());
     else {
       TString opt=""; Double_t pmin=0., pmax=0.;
@@ -236,6 +241,7 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
     UInt_t valType[20] = {0};
     valType[0]=valTypeX;     valType[1]=valTypeP;
     StoreVariables(hist, valType);
+    hist->SetUniqueID(valTypeW); // store weighting variable
 
     // adapt the name and title of the histogram in case they are empty
     AdaptNameTitle(hist, histClass);
@@ -255,7 +261,8 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
 void AliDielectronHistos::UserProfile(const char* histClass,const char *name, const char* title,
 				      UInt_t valTypeP,
 				      const TVectorD * const binsX, const TVectorD * const binsY,
-				      UInt_t valTypeX/*=kNoAutoFill*/, UInt_t valTypeY/*=0*/, TString option)
+				      UInt_t valTypeX/*=kNoAutoFill*/, UInt_t valTypeY/*=0*/, TString option,
+				      UInt_t valTypeW)
 {
   //
   // Histogram creation 2D case with arbitraty binning X
@@ -269,7 +276,7 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
   TH1 *hist=0x0;
 
   if (isOk){
-    if(valTypeP==999) {
+    if(valTypeP==kNoProfile) {
       hist=new TH2F(name,title,
                     binsX->GetNrows()-1,binsX->GetMatrixArray(),
                     binsY->GetNrows()-1,binsY->GetMatrixArray()); 
@@ -295,6 +302,7 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
     UInt_t valType[20] = {0};
     valType[0]=valTypeX;     valType[1]=valTypeY;     valType[2]=valTypeP;
     StoreVariables(hist, valType);
+    hist->SetUniqueID(valTypeW); // store weighting variable
 
     // adapt the name and title of the histogram in case they are empty
     AdaptNameTitle(hist, histClass);
@@ -316,7 +324,8 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
 void AliDielectronHistos::UserProfile(const char* histClass,const char *name, const char* title,
 				      UInt_t valTypeP,
 				      const TVectorD * const binsX, const TVectorD * const binsY, const TVectorD * const binsZ,
-				      UInt_t valTypeX/*=kNoAutoFill*/, UInt_t valTypeY/*=0*/, UInt_t valTypeZ/*=0*/, TString option)
+				      UInt_t valTypeX/*=kNoAutoFill*/, UInt_t valTypeY/*=0*/, UInt_t valTypeZ/*=0*/, TString option,
+				      UInt_t valTypeW)
 {
   //
   // Histogram creation 3D case with arbitraty binning X
@@ -331,7 +340,7 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
   TH1 *hist=0x0;
 
   if (isOk) {
-    if(valTypeP==999) {
+    if(valTypeP==kNoProfile) {
       hist=new TH3F(name,title,
 		    binsX->GetNrows()-1,binsX->GetMatrixArray(),
 		    binsY->GetNrows()-1,binsY->GetMatrixArray(),
@@ -359,6 +368,7 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
     UInt_t valType[20] = {0};
     valType[0]=valTypeX;     valType[1]=valTypeY;     valType[2]=valTypeZ;     valType[3]=valTypeP;
     StoreVariables(hist, valType);
+    hist->SetUniqueID(valTypeW); // store weighting variable
 
     // adapt the name and title of the histogram in case they are empty
     AdaptNameTitle(hist, histClass);
@@ -377,7 +387,7 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
 }
 
 //_____________________________________________________________________________
-void AliDielectronHistos::UserHistogram(const char* histClass, Int_t ndim, Int_t *bins, Double_t *mins, Double_t *maxs, UInt_t *vars)
+void AliDielectronHistos::UserHistogram(const char* histClass, Int_t ndim, Int_t *bins, Double_t *mins, Double_t *maxs, UInt_t *vars, UInt_t valTypeW)
 {
   //
   // Histogram creation 4-n dimension only with linear binning
@@ -401,6 +411,7 @@ void AliDielectronHistos::UserHistogram(const char* histClass, Int_t ndim, Int_t
 
     // store variales in axes
     StoreVariables(hist, vars);
+    hist->SetUniqueID(valTypeW); // store weighting variable
 
     Bool_t isReserved=fReservedWords->Contains(histClass);
     if (isReserved)
@@ -412,7 +423,7 @@ void AliDielectronHistos::UserHistogram(const char* histClass, Int_t ndim, Int_t
 }
 
 //_____________________________________________________________________________
-void AliDielectronHistos::UserHistogram(const char* histClass, Int_t ndim, TObjArray *limits, UInt_t *vars)
+void AliDielectronHistos::UserHistogram(const char* histClass, Int_t ndim, TObjArray *limits, UInt_t *vars, UInt_t valTypeW)
 {
   //
   // Histogram creation n>3 dimension only with non-linear binning
@@ -451,6 +462,7 @@ void AliDielectronHistos::UserHistogram(const char* histClass, Int_t ndim, TObjA
 
     // store variales in axes
     StoreVariables(hist, vars);
+    hist->SetUniqueID(valTypeW); // store weighting variable
 
     Bool_t isReserved=fReservedWords->Contains(histClass);
     if (isReserved)
@@ -462,7 +474,8 @@ void AliDielectronHistos::UserHistogram(const char* histClass, Int_t ndim, TObjA
 }
 
 //_____________________________________________________________________________
-void AliDielectronHistos::UserSparse(const char* histClass, Int_t ndim, Int_t *bins, Double_t *mins, Double_t *maxs, UInt_t *vars)
+void AliDielectronHistos::UserSparse(const char* histClass, Int_t ndim, Int_t *bins, Double_t *mins, Double_t *maxs, UInt_t *vars,
+				     UInt_t valTypeW)
 {
   //
   // THnSparse creation with linear binning
@@ -484,6 +497,7 @@ void AliDielectronHistos::UserSparse(const char* histClass, Int_t ndim, Int_t *b
 
     // store variales in axes
     StoreVariables(hist, vars);
+    hist->SetUniqueID(valTypeW); // store weighting variable
 
     Bool_t isReserved=fReservedWords->Contains(histClass);
     if (isReserved)
@@ -495,7 +509,7 @@ void AliDielectronHistos::UserSparse(const char* histClass, Int_t ndim, Int_t *b
 }
 
 //_____________________________________________________________________________
-void AliDielectronHistos::UserSparse(const char* histClass, Int_t ndim, TObjArray *limits, UInt_t *vars)
+void AliDielectronHistos::UserSparse(const char* histClass, Int_t ndim, TObjArray *limits, UInt_t *vars, UInt_t valTypeW)
 {
   //
   // THnSparse creation with non-linear binning
@@ -532,6 +546,7 @@ void AliDielectronHistos::UserSparse(const char* histClass, Int_t ndim, TObjArra
 
     // store variales in axes
     StoreVariables(hist, vars);
+    hist->SetUniqueID(valTypeW); // store weighting variable
 
     Bool_t isReserved=fReservedWords->Contains(histClass);
     if (isReserved)
@@ -572,8 +587,9 @@ void AliDielectronHistos::UserHistogram(const char* histClass, TObject* hist, UI
   else {
     // extract variables from axis
     FillVarArray(hist, valType);
+    StoreVariables(hist, valType);
+    hist->SetUniqueID(valType[19]); // store weighting variable
   }
-  StoreVariables(hist, valType);
 
   classTable->Add(hist);
 }
@@ -1146,6 +1162,7 @@ void AliDielectronHistos::FillValues(TH1 *obj, const Double_t *values)
 
   UInt_t valueTypes=obj->GetUniqueID();
   if (valueTypes==(UInt_t)AliDielectronHistos::kNoAutoFill) return;
+  Bool_t weight = (valueTypes!=kNoWeights);
 
   if(obj->IsA() == TProfile::Class() || obj->IsA() == TProfile2D::Class() || obj->IsA() == TProfile3D::Class())
     bprf=kTRUE;
@@ -1155,21 +1172,68 @@ void AliDielectronHistos::FillValues(TH1 *obj, const Double_t *values)
   UInt_t value3=obj->GetZaxis()->GetUniqueID();
   UInt_t value4=obj->GetUniqueID();            // get profile var stored in the unique ID
 
-  switch ( dim ) {
-  case 1:
-    if(!bprf) obj->Fill(values[value1]);                    // histograms
-    else ((TProfile*)obj)->Fill(values[value1],values[value2]);   // profiles
-    break;
-  case 2:
-    if(!bprf) ((TH2*)obj)->Fill(values[value1],values[value2]);
-    else ((TProfile2D*)obj)->Fill(values[value1],values[value2],values[value3]);
-    break;
-  case 3:
-    if(!bprf) ((TH3*)obj)->Fill(values[value1],values[value2],values[value3]);
-    else ((TProfile3D*)obj)->Fill(values[value1],values[value2],values[value3],values[value4]);
-    break;
+  // ask for inclusive trigger map variables
+  if(value1!=AliDielectronVarManager::kTriggerInclONL && value1!=AliDielectronVarManager::kTriggerInclOFF &&
+     value2!=AliDielectronVarManager::kTriggerInclONL && value2!=AliDielectronVarManager::kTriggerInclOFF &&
+     value3!=AliDielectronVarManager::kTriggerInclONL && value3!=AliDielectronVarManager::kTriggerInclOFF &&
+     value4!=AliDielectronVarManager::kTriggerInclONL && value4!=AliDielectronVarManager::kTriggerInclOFF ) {
+    // no trigger map variable selected
+    switch ( dim ) {
+    case 1:
+      if(!bprf && !weight)     obj->Fill(values[value1]);                 // histograms
+      else if(!bprf && weight) obj->Fill(values[value1], values[value4]); // weighted histograms
+      else if(bprf && !weight) ((TProfile*)obj)->Fill(values[value1],values[value2]);   // profiles
+      else                     ((TProfile*)obj)->Fill(values[value1],values[value2], values[value4]); // weighted profiles
+      break;
+    case 2:
+      if(!bprf && !weight)     obj->Fill(values[value1], values[value2]);                 // histograms
+      else if(!bprf && weight) ((TH2*)obj)->Fill(values[value1], values[value2], values[value4]); // weighted histograms
+      else if(bprf && !weight) ((TProfile2D*)obj)->Fill(values[value1], values[value2], values[value3]); // profiles
+      else                     ((TProfile2D*)obj)->Fill(values[value1], values[value2], values[value3], values[value4]); // weighted profiles
+      break;
+    case 3:
+      if(!bprf && !weight)     ((TH3*)obj)->Fill(values[value1], values[value2], values[value3]);                 // histograms
+      else if(!bprf && weight) ((TH3*)obj)->Fill(values[value1], values[value2], values[value3], values[value4]); // weighted histograms
+      else if(bprf && !weight) ((TProfile3D*)obj)->Fill(values[value1], values[value2], values[value3], values[value4]); // profiles
+      else                     printf(" WARNING: weighting NOT possible yet for TProfile3Ds ! \n");
+      break;
+    }
   }
-  
+  else {
+    // fill inclusive trigger map variables
+    if(weight) return;
+    switch ( dim ) {
+    case 1:
+      for(Int_t i=0; i<30; i++) { if(TESTBIT((UInt_t)values[value1],i)) obj->Fill(i); }
+      break;
+    case 2:
+      if((value1==AliDielectronVarManager::kTriggerInclOFF && value2==AliDielectronVarManager::kTriggerInclONL) ||
+	 (value1==AliDielectronVarManager::kTriggerInclONL && value2==AliDielectronVarManager::kTriggerInclOFF) ) {
+	for(Int_t i=0; i<30; i++) {
+	  if((UInt_t)values[value1]==BIT(i)) {
+	    for(Int_t i2=0; i2<30; i2++) {
+	      if((UInt_t)values[value2]==BIT(i2)) {
+		obj->Fill(i, i2);
+	      } // bit fired
+	    } //loop 2
+	  }//bit fired
+	} // loop 1
+      }
+      else if(value1==AliDielectronVarManager::kTriggerInclONL || value1==AliDielectronVarManager::kTriggerInclOFF) {
+	for(Int_t i=0; i<30; i++) { if(TESTBIT((UInt_t)values[value1],i)) obj->Fill(i, values[value2]); }
+      }
+      else if(value2==AliDielectronVarManager::kTriggerInclONL || value2==AliDielectronVarManager::kTriggerInclOFF) {
+	for(Int_t i=0; i<30; i++) { if(TESTBIT((UInt_t)values[value2],i)) obj->Fill(values[value1], i); }
+      }
+      else //makes no sense
+	return;
+      break;
+    default: return;
+    }
+
+  } //end: trigger filling
+
+
   return;
 }
 
@@ -1184,10 +1248,15 @@ void AliDielectronHistos::FillValues(THnBase *obj, const Double_t *values)
 
   UInt_t valueTypes=obj->GetUniqueID();
   if (valueTypes==(UInt_t)AliDielectronHistos::kNoAutoFill) return;
+  Bool_t weight = (valueTypes!=kNoWeights);
+
+  UInt_t value4=obj->GetUniqueID();            // weight variable
 
   Double_t fill[dim];
   for(Int_t it=0; it<dim; it++)   fill[it] = values[obj->GetAxis(it)->GetUniqueID()];
-  obj->Fill(fill);
+  if(!weight) obj->Fill(fill);
+  else obj->Fill(fill, values[value4]);
+
 
   return;
 }
@@ -1213,6 +1282,7 @@ void AliDielectronHistos::FillVarArray(TObject *obj, UInt_t *valType)
     for(Int_t it=0; it<((THn*)obj)->GetNdimensions(); it++)
       valType[it]=((THn*)obj)->GetAxis(it)->GetUniqueID();
   }
+  valType[19]=obj->GetUniqueID(); //weights
   return;
 }
 
@@ -1264,6 +1334,7 @@ void AliDielectronHistos::AdaptNameTitle(TH1 *hist, const char* histClass) {
   UInt_t vary = hist->GetYaxis()->GetUniqueID();
   UInt_t varz = hist->GetZaxis()->GetUniqueID();
   UInt_t varp = hist->GetUniqueID();
+  Bool_t weight = (varp!=kNoWeights);
 
   // store titles in the axis
   if(btitle) {
@@ -1316,6 +1387,11 @@ void AliDielectronHistos::AdaptNameTitle(TH1 *hist, const char* histClass) {
 					calcrange.Data(),
 					AliDielectronVarManager::GetValueUnit(varz))
 				   );
+      if(weight) hist->GetZaxis()->SetTitle(Form("%s weighted %s",
+						 AliDielectronVarManager::GetValueLabel(varp),
+						 hist->GetZaxis()->GetTitle() )
+					    );
+
       break;
     case 1:
       hist->GetXaxis()->SetNameTitle(AliDielectronVarManager::GetValueName(varx),
@@ -1333,6 +1409,11 @@ void AliDielectronHistos::AdaptNameTitle(TH1 *hist, const char* histClass) {
 					calcrange.Data(),
 					AliDielectronVarManager::GetValueUnit(vary))
 				   );
+      if(weight) hist->GetYaxis()->SetTitle(Form("%s weighted %s",
+						 AliDielectronVarManager::GetValueLabel(varp),
+						 hist->GetYaxis()->GetTitle() )
+					    );
+
       break;
     }
 
@@ -1343,16 +1424,19 @@ void AliDielectronHistos::AdaptNameTitle(TH1 *hist, const char* histClass) {
 	currentName+=Form("%s_",AliDielectronVarManager::GetValueName(varx));
 	currentName+=Form("%s_",AliDielectronVarManager::GetValueName(vary));
 	currentName+=Form("%s",AliDielectronVarManager::GetValueName(varz));
-	if(bprf) currentName+=Form("-%s%s",AliDielectronVarManager::GetValueName(varp),(bStdOpt ? "avg" : "rms"));
+	if(bprf)   currentName+=Form("-%s%s",AliDielectronVarManager::GetValueName(varp),(bStdOpt ? "avg" : "rms"));
+	if(weight) currentName+=Form("-wght%s",AliDielectronVarManager::GetValueName(varp));
 	break;
       case 2:
 	currentName+=Form("%s_",AliDielectronVarManager::GetValueName(varx));
 	currentName+=Form("%s",AliDielectronVarManager::GetValueName(vary));
-	if(bprf) currentName+=Form("-%s%s",AliDielectronVarManager::GetValueName(varz),(bStdOpt ? "avg" : "rms"));
+	if(bprf)   currentName+=Form("-%s%s",AliDielectronVarManager::GetValueName(varz),(bStdOpt ? "avg" : "rms"));
+	if(weight) currentName+=Form("-wght%s",AliDielectronVarManager::GetValueName(varp));
 	break;
       case 1:
 	currentName+=Form("%s",AliDielectronVarManager::GetValueName(varx));
-	if(bprf) currentName+=Form("-%s%s",AliDielectronVarManager::GetValueName(vary),(bStdOpt ? "avg" : "rms"));
+	if(bprf)   currentName+=Form("-%s%s",AliDielectronVarManager::GetValueName(vary),(bStdOpt ? "avg" : "rms"));
+	if(weight) currentName+=Form("-wght%s",AliDielectronVarManager::GetValueName(varp));
 	break;
       }
     // to differentiate btw. leg and pair histos

@@ -154,23 +154,9 @@ public:
    */
   AliFMDEventInspector(const char* name);
   /** 
-   * Copy constructor 
-   * 
-   * @param o Object to copy from 
-   */
-  AliFMDEventInspector(const AliFMDEventInspector& o);
-  /** 
    * Destructor 
    */
   virtual ~AliFMDEventInspector();
-  /** 
-   * Assignement operator
-   * 
-   * @param o Object to assign from 
-   * 
-   * @return Reference to this object
-   */
-  AliFMDEventInspector& operator=(const AliFMDEventInspector&);
 
   /** 
    * Initialize the object 
@@ -282,7 +268,7 @@ public:
    *
    * @deprecated We should accept all events in the AOD pass
    * 
-   * @param mincent Upper cut on centrality
+   * @param maxcent Upper cut on centrality
    */
   void SetMaxCentrality(Double_t maxcent=-1.0);
   /** 
@@ -377,6 +363,39 @@ public:
    */
   ULong_t GetRunNumber() const { return fRunNumber; }
   /** 
+   * Get the production year.
+   * 
+   * - For real data, this is the year of the data taking 
+   * - For MC this is the year the production is anchored to.
+   * 
+   * @return A two-digit year (post millennium), or -1
+   */
+  Short_t GetProductionYear() const { return fProdYear; }
+  /** 
+   * Get the production period. 
+   * 
+   * - For real data, this is the period identifier of the data taking 
+   * - For MC data, this is the period identifier the production was
+   *   anchored to
+   * 
+   * @return Period identifier or null
+   */
+  Char_t  GetProductionPeriod() const { return fProdLetter; } 
+  /** 
+   * Get the AliROOT revision used for this production
+   * 
+   * @return SVN revision number or -1
+   */
+  Short_t GetProductionRevision() const { return fProdSVN; } 
+  /** 
+   * Check if the production was an MC production anchored in some
+   * real data.
+   * 
+   * @return true if this (MC) production was anchored 
+   */
+  Bool_t  IsProductionMC() const { return fProdMC; }
+  
+  /** 
    * Print information
    * 
    * @param option Not used 
@@ -401,6 +420,11 @@ public:
    */
   virtual void StoreInformation();
   /** 
+   * Store - if possible - production information in a sub-list 
+   * 
+   */
+  virtual void StoreProduction();
+  /** 
    * Return a string representing the return code 
    * 
    * @param mask Code 
@@ -409,6 +433,20 @@ public:
    */
   static const char* CodeString(UInt_t mask);
 protected:
+  /** 
+   * Copy constructor - not implemented
+   * 
+   * @param o Object to copy from 
+   */
+  AliFMDEventInspector(const AliFMDEventInspector& o);
+  /** 
+   * Assignement operator - not implemented
+   * 
+   * @param o Object to assign from 
+   * 
+   * @return Reference to this object
+   */
+  AliFMDEventInspector& operator=(const AliFMDEventInspector& o);
   /** 
    * Cache the configure trigger classes from the physis selection.  
    * 
@@ -481,10 +519,12 @@ protected:
    * Check for multi-vertex pile-up 
    * 
    * @param esd ESD event 
+   * @param checkOtherBC Also check other BC's 
    * 
    * @return true if multiple vertices found 
    */
-  virtual Bool_t CheckMultiVertex(const AliESDEvent& esd) const;
+  virtual Bool_t CheckMultiVertex(const AliESDEvent& esd, 
+				  Bool_t checkOtherBC=false) const;
   /** 
    * Check if we have a cosmic trigger.  These should be filtered out. 
    * 
@@ -575,45 +615,49 @@ protected:
   virtual Bool_t ReadCentrality(const AliESDEvent& esd, Double_t& cent,
 				UShort_t& qual) const;
 
-  TH1I*    fHEventsTr;    //! Histogram of events w/trigger
-  TH1I*    fHEventsTrVtx; //! Events w/trigger and vertex 
-  TH1I*    fHEventsAccepted; //! Events w/trigger and vertex in range 
-  TH2D*    fHEventsAcceptedXY; //! XY vtx with trigger and Z vertex in range 
-  TH1I*    fHTriggers;    //! Triggers
-  TH2I*    fHTriggerCorr; //! Correlation of triggers
-  TH1I*    fHType;        //! Type (low/high flux) of event
-  TH1I*    fHWords;       //! Trigger words 
-  TH1F*    fHCent;        //! Centrality 
-  TH2F*    fHCentVsQual;  //! Centrality vs quality 
-  TH1I*    fHStatus;      //! Event processing status 
-  TH1I*    fHVtxStatus;   //! Vertex processing status 
-  TH1I*    fHTrgStatus;   //! Trigger processing status 
-  Int_t    fLowFluxCut;   //  Low flux cut
-  Double_t fMaxVzErr;     //  Maximum error on v_z
-  TList*   fList;         //! Histogram container 
-  UShort_t fEnergy;       // CMS energy (per nucleon pair) [GeV]
-  Short_t  fField;        // L3 magnetic field [kG]
-  UShort_t fCollisionSystem; //  Collision system
-  Int_t    fDebug;        //  Debug level 
-  TAxis*   fCentAxis;     // Centrality axis used in histograms
-  TAxis    fVtxAxis;      //Vtx Axis 
-  Bool_t   fUseFirstPhysicsVertex; //Use the vtx code from p+p first physics
-  Bool_t   fUseV0AND;     //Use the vtx code from p+p first physics
-  UShort_t fMinPileupContrib; // Minimum number of contributors to 2nd
-			      // pile-up vertex
-  Double_t fMinPileupDistance; // Minimum distance of 2nd pile-up
-			       // vertex 
-  Bool_t   fUseDisplacedVertices; //Analyze displaced vertices?
+  TH1I*    fHEventsTr;            //! Histogram of events w/trigger
+  TH1I*    fHEventsTrVtx;         //! Events w/trigger and vertex 
+  TH1I*    fHEventsAccepted;      //! Events w/trigger and vertex in range 
+  TH2D*    fHEventsAcceptedXY;    //! XY vtx with trigger and Z vertex in range 
+  TH1I*    fHTriggers;            //! Triggers
+  TH2I*    fHTriggerCorr;         //! Correlation of triggers
+  TH1I*    fHType;                //! Type (low/high flux) of event
+  TH1I*    fHWords;               //! Trigger words 
+  TH1F*    fHCent;                //! Centrality 
+  TH2F*    fHCentVsQual;          //! Centrality vs quality 
+  TH1I*    fHStatus;              //! Event processing status 
+  TH1I*    fHVtxStatus;           //! Vertex processing status 
+  TH1I*    fHTrgStatus;           //! Trigger processing status 
+  Int_t    fLowFluxCut;           //  Low flux cut
+  Double_t fMaxVzErr;             //  Maximum error on v_z
+  TList*   fList;                 //! Histogram container 
+  UShort_t fEnergy;               // CMS energy (per nucleon pair) [GeV]
+  Short_t  fField;                // L3 magnetic field [kG]
+  UShort_t fCollisionSystem;      //  Collision system
+  Int_t    fDebug;                //  Debug level 
+  TAxis*   fCentAxis;             // Centrality axis used in histograms
+  TAxis    fVtxAxis;              // IP_z Axis 
+  Bool_t   fUseFirstPhysicsVertex;//Use the vtx code from p+p first physics
+  Bool_t   fUseV0AND;             // Use the vtx code from p+p first physics
+  UShort_t fMinPileupContrib;     // Min contributors to 2nd pile-up IP
+  Double_t fMinPileupDistance;    // Min distance of 2nd pile-up IP
+  Bool_t   fUseDisplacedVertices; // Analyze displaced vertices?
   AliDisplacedVertexSelection fDisplacedVertex; //Displaced vertex selector
-  TList    fCollWords;     //! Configured collision words 
-  TList    fBgWords;       //! Configured background words 
-  TString  fCentMethod;
-  Double_t fMinCent;  //min centrality
-  Double_t fMaxCent;  //max centrailty
-  Bool_t   fUsepA2012Vertex;// flag to use pA2012 Veretx selection
-  ULong_t  fRunNumber; // Current run number 
-  Bool_t   fMC;        // Is this MC input
-  ClassDef(AliFMDEventInspector,11); // Inspect the event 
+  TList    fCollWords;            //! Configured collision words 
+  TList    fBgWords;              //! Configured background words 
+  TString  fCentMethod;           // Centrality method
+  Double_t fMinCent;              // min centrality
+  Double_t fMaxCent;              // max centrailty
+  Bool_t   fUsepA2012Vertex;      // flag to use pA2012 Veretx selection
+  ULong_t  fRunNumber;            // Current run number 
+  Bool_t   fMC;                   // Is this MC input
+  Short_t  fProdYear;             // Production year 
+  Char_t   fProdLetter;           // Production letter 
+  Short_t  fProdPass;             // Pass number 
+  Int_t    fProdSVN;              // AliROOT revision used in production
+  Bool_t   fProdMC;               // True if anchor production
+
+  ClassDef(AliFMDEventInspector,12); // Inspect the event 
 };
 
 #endif

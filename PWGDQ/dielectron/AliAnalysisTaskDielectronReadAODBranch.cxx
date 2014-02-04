@@ -22,6 +22,7 @@
 
 #include "TChain.h"
 #include "TNtuple.h"
+#include "TList.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TDatabasePDG.h"
@@ -34,6 +35,7 @@
 #include "AliAODMCParticle.h"
 #include "AliAnalysisTaskDielectronReadAODBranch.h"
 #include "AliDielectronPair.h"
+#include "AliDielectronMC.h"
 
 ClassImp(AliAnalysisTaskDielectronReadAODBranch)
 	//________________________________________________________________________
@@ -73,7 +75,8 @@ ClassImp(AliAnalysisTaskDielectronReadAODBranch)
                 fPairType(1),
                 fPtJpsi(1.3),
                 fInvMassSignalLimits(0),
-                fInvMassSideBandsLimits(0)
+                fInvMassSideBandsLimits(0),
+		fSecondary(0)
 {
 	// Default constructor
 }
@@ -115,7 +118,8 @@ AliAnalysisTaskDielectronReadAODBranch::AliAnalysisTaskDielectronReadAODBranch(c
         fPairType(1),
         fPtJpsi(1.3),
         fInvMassSignalLimits(0),
-        fInvMassSideBandsLimits(0) 
+        fInvMassSideBandsLimits(0), 
+	fSecondary(0)
 {
 	// Default constructor
 	DefineInput(0,TChain::Class());
@@ -158,7 +162,7 @@ void AliAnalysisTaskDielectronReadAODBranch::UserCreateOutputObjects()
         fInvMass = new TH1F("fInvMass","fInvMass",300,2.0,2.0+300*.04); // step 40MeV
         fInvMassNoCuts = new TH1F("fInvMass_no_cuts","fInvMass_no_cuts",125,0,125*0.04); //step 40MeV
         fNentries = new TH1F("numberOfevent","numbOfEvent",1,-0.5,0.5);
-	
+
         //pseudoproper 
 	fpsproperSignal = new TH1F("psproper_decay_length",Form("psproper_decay_length_distrib(AODcuts+#clustTPC>%d, pT(leg)>%fGeV, pT(J/#psi)>%fGeV/c, %f < M < %f);X [#mu m];Entries/40#mu m",fClsTPC,fPtCut,fPtJpsi,fInvMassSignalLimits[0],fInvMassSignalLimits[1]),150,-3000.,3000.);
 	fpsproperSidebands = new TH1F("psproper_decay_length_sidebands",Form("psproper_decay_length_distrib_sidebands(AODcuts+#clustTPC>%d, pT(e+e-)>%f GeV,pT(J/#psi)>%f GeV/c,M> %f && M < %f );  X [#mu m]; Entries/40#mu m",fClsTPC,fPtCut,fPtJpsi,fInvMassSideBandsLimits[1],fInvMassSideBandsLimits[0]),150,-3000.,3000.);
@@ -223,7 +227,7 @@ void AliAnalysisTaskDielectronReadAODBranch::UserExec(Option_t */*option*/)
 	// Execute analysis for current event:
 	AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
 	if (!aod) return;
-	
+
 	Double_t vtxPrim[3] = {0.,0.,0.};
 
 	AliAODVertex* primvtx = aod->GetPrimaryVertex();
@@ -241,8 +245,6 @@ void AliAnalysisTaskDielectronReadAODBranch::UserExec(Option_t */*option*/)
 
 	fNentries->Fill(0);
 	aodTree->GetEvent(Entry());
-	Int_t dgLabels[2] = {0,0};
-	Int_t pdgDgJPSItoEE[2] = {11,11};
 
 	// loop over candidates
 	if(fobj) {
@@ -266,12 +268,10 @@ void AliAnalysisTaskDielectronReadAODBranch::UserExec(Option_t */*option*/)
 			AliAODTrack *trk = (AliAODTrack*)pairObj->GetFirstDaughter();
 			AliAODTrack *trk1 = (AliAODTrack*)pairObj->GetSecondDaughter();
 			if(!trk || !trk1) {printf("ERROR: daughter tracks not available\n"); continue;}
-			dgLabels[0] = trk->GetLabel(); 
-			dgLabels[1] = trk1->GetLabel(); 
 
 			//check in case of MC analysis if candidate is a true J/psi->ee
-			if(fHasMC && !MatchToMC(443,fobjMC,dgLabels,2,2,pdgDgJPSItoEE)) continue;
-                           AliAODPid *pid  = trk->GetDetPid();
+                          if(fHasMC && ((AliDielectronMC::Instance()->IsJpsiPrimary(pairObj))!=fSecondary)) continue;
+			   AliAODPid *pid  = trk->GetDetPid();
                                 AliAODPid *pid1 = trk1->GetDetPid();
                                 if(!pid || !pid1){
                                         if(fDebug>1) printf("No AliAODPid found\n");
@@ -337,122 +337,3 @@ void AliAnalysisTaskDielectronReadAODBranch::Terminate(Option_t */*option*/)
 	return;
 }
 
-//___________________________________________________________________
-Bool_t AliAnalysisTaskDielectronReadAODBranch::MatchToMC(Int_t pdgabs,const TObjArray *mcArray,
-		const Int_t *dgLabels,Int_t ndg,
-		Int_t ndgCk, const Int_t *pdgDg) const
-{
-	//
-	// jpsi candidates association to MC truth
-        // Check if this candidate is matched to a MC signal
-	// If no, return kFALSE
-	// If yes, return kTRUE
-	//
-	if (!mcArray) return kFALSE;
-	
-	Int_t labMom[2]={0,0};
-	Int_t i,j,lab,labMother,pdgMother,pdgPart,labJPSIMother,pdgJPSIMother;
-	AliAODMCParticle *part=0;
-	AliAODMCParticle *mother=0;
-	AliAODMCParticle *jPSImother=0;
-	Double_t pxSumDgs=0.,pySumDgs=0.,pzSumDgs=0.;
-	Bool_t pdgUsed[2]={kFALSE,kFALSE};
-
-	// loop on daughter labels
-	for(i=0; i<ndg; i++) {
-		labMom[i]=-1;
-		lab = dgLabels[i];
-		if(lab<0) {
-			printf("daughter with negative label %d\n",lab);
-			return kFALSE;
-		}
-		part = (AliAODMCParticle*)mcArray->At(lab);
-		if(!part) {
-			printf("no MC particle\n");
-			return kFALSE;
-		}
-
-		// check the PDG of the daughter, if requested
-		if(ndgCk>0) {
-			pdgPart=TMath::Abs(part->GetPdgCode());
-			printf("pdg code of daughter %d == %d\n",i,pdgPart);
-			for(j=0; j<ndg; j++) {
-				if(!pdgUsed[j] && pdgPart==pdgDg[j]) {
-					pdgUsed[j]=kTRUE;
-					break;
-				}
-			}
-		}
-
-		// for the J/psi, check that the daughters are electrons
-		if(pdgabs==443) {
-			if(TMath::Abs(part->GetPdgCode())!=11) return kFALSE;
-		}
-
-		mother = part;
-		while(mother->GetMother()>=0) {
-			labMother=mother->GetMother();
-			mother = (AliAODMCParticle*)mcArray->At(labMother);//get particle mother
-			if(!mother) {
-				printf("no MC mother particle\n");
-				break;
-			}
-			pdgMother = TMath::Abs(mother->GetPdgCode());//get particle mother pdg code
-			printf("pdg code of mother track == %d\n",pdgMother);
-			if(pdgMother==pdgabs) {
-				labJPSIMother=mother->GetMother();
-				jPSImother = (AliAODMCParticle*)mcArray->At(labJPSIMother);//get J/psi mother
-				if(jPSImother) {
-					pdgJPSIMother = TMath::Abs(jPSImother->GetPdgCode()); //get J/psi mother pdg code
-					if( pdgJPSIMother==511   || pdgJPSIMother==521   ||
-							pdgJPSIMother==10511 || pdgJPSIMother==10521 ||
-							pdgJPSIMother==513   || pdgJPSIMother==523   ||
-							pdgJPSIMother==10513 || pdgJPSIMother==10523 ||
-							pdgJPSIMother==20513 || pdgJPSIMother==20523 ||
-							pdgJPSIMother==515   || pdgJPSIMother==525   ||
-							pdgJPSIMother==531   || pdgJPSIMother==10531 ||
-							pdgJPSIMother==533   || pdgJPSIMother==10533 ||
-							pdgJPSIMother==20533 || pdgJPSIMother==535   ||
-							pdgJPSIMother==541   || pdgJPSIMother==10541 ||
-							pdgJPSIMother==543   || pdgJPSIMother==10543 ||
-							pdgJPSIMother==20543 || pdgJPSIMother==545) return kFALSE;} //check if J/psi comes from B hadron
-
-					labMom[i]=labMother;
-					// keep sum of daughters' momenta, to check for mom conservation
-					pxSumDgs += part->Px();
-					pySumDgs += part->Py();
-					pzSumDgs += part->Pz();
-					break;
-			} else if(pdgMother>pdgabs || pdgMother<10) {
-				break;
-			}
-		}
-		if(labMom[i]==-1) {printf("mother PDG not ok for this daughter\n"); return kFALSE;} // mother PDG not ok for this daughter
-	} // end loop on daughters
-
-	// check if the candidate is signal
-	labMother=labMom[0];
-	// all labels have to be the same and !=-1
-	for(i=0; i<ndg; i++) {
-		if(labMom[i]==-1)        return kFALSE;
-		if(labMom[i]!=labMother) return kFALSE;
-	}
-
-	// check that all daughter PDGs are matched
-	if(ndgCk>0) {
-		for(i=0; i<ndg; i++) {
-			if(pdgUsed[i]==kFALSE) return kFALSE;
-		}
-	}
-
-	mother = (AliAODMCParticle*)mcArray->At(labMother);
-	Double_t pxMother = mother->Px();
-	Double_t pyMother = mother->Py();
-	Double_t pzMother = mother->Pz();
-	// within 0.1%
-	if((TMath::Abs(pxMother-pxSumDgs)/(TMath::Abs(pxMother)+1.e-13)) > 0.00001 &&
-			(TMath::Abs(pyMother-pySumDgs)/(TMath::Abs(pyMother)+1.e-13)) > 0.00001 &&
-			(TMath::Abs(pzMother-pzSumDgs)/(TMath::Abs(pzMother)+1.e-13)) > 0.00001) return kFALSE;
-
-	return kTRUE;
-}

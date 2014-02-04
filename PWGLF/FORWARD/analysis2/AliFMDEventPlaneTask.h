@@ -13,7 +13,7 @@
  * 
  * @ingroup pwglf_forward_flow
  */
-#include "AliAnalysisTaskSE.h"
+#include "AliBaseAODTask.h"
 #include "AliFMDEventPlaneFinder.h"
 class AliAODForwardMult;
 class TH1D;
@@ -33,7 +33,7 @@ class TH2D;
  *
  *
  */
-class AliFMDEventPlaneTask : public AliAnalysisTaskSE
+class AliFMDEventPlaneTask : public AliBaseAODTask
 {
 public:
   /** 
@@ -56,33 +56,24 @@ public:
    */
   /** 
    * Create output objects 
+   * 
+   * @return true on success
    */
-  virtual void UserCreateOutputObjects();
-  /**
-   * Initialize the task
-   */
-  virtual void Init() {} 
+  virtual Bool_t Book();
   /** 
    * Process each event 
    *
-   * @param option Not used
+   * @param aod AOD Event
+   * 
+   * @return true on success
    */  
-  virtual void UserExec(Option_t *option);
+  virtual Bool_t Event(AliAODEvent& aod);
   /** 
    * End of job
    * 
-   * @param option Not used 
+   * @return true on success
    */
-  virtual void Terminate(Option_t *option);
-  /**
-  * Check AODForwardMult object for trigger, vertex and centrality
-  * returns true if event is OK
-  * 
-  * @param aodfm Output object
-  * 
-  * @return Bool_t 
-  */
-  Bool_t AODCheck(const AliAODForwardMult* aodfm);
+  virtual Bool_t Finalize();
  /**
    * Get reference to the EventPlaneFinder algorithm 
    * 
@@ -95,13 +86,6 @@ public:
    * @return Reference to AliFMDEventPlaneFinder object 
    */
   const AliFMDEventPlaneFinder& GetEventPlaneFinder() const { return fEventPlaneFinder; }
-  /*
-   * Set MC input flag - currently does nothing special
-   *
-   * @ param mc MC input flag
-   */
-  void SetMCInput(Bool_t mc = true) { fMC = mc; }
-
 protected:
   /** 
    * Copy constructor 
@@ -116,18 +100,10 @@ protected:
    */
   AliFMDEventPlaneTask& operator=(const AliFMDEventPlaneTask&);
 
-  TList*                  fSumList;          //  Sum list
-  TList*                  fOutputList;       //  Output list
-  AliAODEvent*            fAOD;              //  AOD event
-  Bool_t                  fMC;               //  MC input?
   AliFMDEventPlaneFinder  fEventPlaneFinder; //  Eventplane finder for the FMD
-  Float_t                 fZvertex;	     //  Z vertex
-  Double_t                fCent;             //  Centrality
-  TH1D*                   fHistCent;         //  Diagnostics histogram
   TH1D*                   fHistVertexSel;    //  Diagnostics histogram
-  TH1D*                   fHistVertexAll;    //  Diagnostics histogram
 
-  ClassDef(AliFMDEventPlaneTask, 2); // Analysis task for FMD analysis
+  ClassDef(AliFMDEventPlaneTask, 3); // Analysis task for FMD analysis
 };
  
 #endif

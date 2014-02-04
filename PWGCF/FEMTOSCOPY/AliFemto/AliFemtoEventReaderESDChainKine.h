@@ -29,7 +29,7 @@
 
 class AliFemtoEvent;
 
-class AliFemtoEventReaderESDChainKine : public AliFemtoEventReader 
+class AliFemtoEventReaderESDChainKine : public AliFemtoEventReader
 {
  public:
   enum TrackType {kGlobal=0, kTPCOnly=1, kITSOnly=2, kSPDTracklet=3};
@@ -68,6 +68,7 @@ class AliFemtoEventReaderESDChainKine : public AliFemtoEventReader
   void CopyESDtoFemtoV0(AliESDv0 *tESDv0, AliFemtoV0 *tFemtoV0, AliESDEvent *tESDevent);
   void GetGlobalPositionAtGlobalRadiiThroughTPC(AliESDtrack *track, Float_t bfield, Float_t globalPositionsAtRadii[9][3]);
   void SetMagneticFieldSign(int s);
+  void SetKaonAnalysis(Bool_t);
 
  protected:
 
@@ -94,14 +95,11 @@ class AliFemtoEventReaderESDChainKine : public AliFemtoEventReader
 
   int            fMagFieldSign;     // Magnetic field sign
   bool           fReadV0;
-
+  Bool_t isKaonAnalysis; // switch for Kaon analysis
 #ifdef __ROOT__
   ClassDef(AliFemtoEventReaderESDChainKine, 1)
 #endif
 
     };
-  
+
 #endif
-
-
-

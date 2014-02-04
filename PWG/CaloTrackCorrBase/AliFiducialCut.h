@@ -28,11 +28,11 @@ public:
   
   void      InitParameters();
     
-  Bool_t    CheckFiducialRegion(const TLorentzVector lv, 
+  Bool_t    CheckFiducialRegion(TLorentzVector lv,
                                 const TArrayF* minphi, const TArrayF* maxphi, 
                                 const TArrayF* mineta, const TArrayF* maxeta) const ;
   
-  Bool_t    IsInFiducialCut    (const TLorentzVector lv, const TString det) const ;
+  Bool_t    IsInFiducialCut    (TLorentzVector lv, TString det) const ;
   
   void      DoCTSFiducialCut  (Bool_t b)     { fCTSFiducialCut   = b    ; }
   void      DoEMCALFiducialCut(Bool_t b)     { fEMCALFiducialCut = b    ; }
@@ -42,9 +42,9 @@ public:
   Bool_t    GetEMCALFiducialCut()      const { return fEMCALFiducialCut ; }
   Bool_t    GetPHOSFiducialCutStatus() const { return fPHOSFiducialCut  ; }
   
-  void      SetSimpleCTSFiducialCut  (const Float_t abseta, const Float_t phimin, const Float_t phimax) ;
-  void      SetSimpleEMCALFiducialCut(const Float_t abseta, const Float_t phimin, const Float_t phimax) ;
-  void      SetSimplePHOSFiducialCut (const Float_t abseta, const Float_t phimin, const Float_t phimax) ;
+  void      SetSimpleCTSFiducialCut  (Float_t abseta, Float_t phimin, Float_t phimax) ;
+  void      SetSimpleEMCALFiducialCut(Float_t abseta, Float_t phimin, Float_t phimax) ;
+  void      SetSimplePHOSFiducialCut (Float_t abseta, Float_t phimin, Float_t phimax) ;
   
   void      Print(const Option_t * opt)const;
   

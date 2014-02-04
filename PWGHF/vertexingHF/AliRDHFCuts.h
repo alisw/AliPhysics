@@ -29,11 +29,11 @@ class AliRDHFCuts : public AliAnalysisCuts
 {
  public:
 
-   enum ECentrality {kCentOff,kCentV0M,kCentTRK,kCentTKL,kCentCL1,kCentZNA,kCentZPA,kCentV0A,kCentInvalid};
+  enum ECentrality {kCentOff,kCentV0M,kCentTRK,kCentTKL,kCentCL1,kCentZNA,kCentZPA,kCentV0A,kCentInvalid};
   enum ESelLevel {kAll,kTracks,kPID,kCandidate};
-  enum EPileup {kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex};
+  enum EPileup {kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex,kRejectMVPileupEvent};
   enum ESele {kD0toKpiCuts,kD0toKpiPID,kD0fromDstarCuts,kD0fromDstarPID,kDplusCuts,kDplusPID,kDsCuts,kDsPID,kLcCuts,kLcPID,kDstarCuts,kDstarPID};
-  enum ERejBits {kNotSelTrigger,kNoVertex,kTooFewVtxContrib,kZVtxOutFid,kPileupSPD,kOutsideCentrality,kPhysicsSelection,kBadSPDVertex,kZVtxSPDOutFid,kCentralityFlattening,kBadTrackV0Correl};
+  enum ERejBits {kNotSelTrigger,kNoVertex,kTooFewVtxContrib,kZVtxOutFid,kPileup,kOutsideCentrality,kPhysicsSelection,kBadSPDVertex,kZVtxSPDOutFid,kCentralityFlattening,kBadTrackV0Correl};
   enum EV0sel  {kAllV0s = 0, kOnlyOfflineV0s = 1, kOnlyOnTheFlyV0s = 2};
 
   AliRDHFCuts(const Char_t* name="RDHFCuts", const Char_t* title="");
@@ -61,7 +61,11 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetMinSPDMultiplicity(Int_t mult=0) {fMinSPDMultiplicity=mult;}  
 
   void SetTriggerMask(ULong64_t mask=0) {fTriggerMask=mask;}
-  void SetUseAnyTrigger(){fTriggerMask=AliVEvent::kAny;}
+  void SetUseOnlyOneTrigger(Bool_t onlyOne) {fUseOnlyOneTrigger=onlyOne;}
+  ULong64_t GetTriggerMask() {return fTriggerMask;}
+  Bool_t GetUseOnlyOneTrigger() {return fUseOnlyOneTrigger;}
+
+  void SetUseAnyTrigger() {fTriggerMask=AliVEvent::kAny;}
   void EnableMBTrigger(){
     fTriggerMask|=AliVEvent::kMB;
     fUseOnlyOneTrigger=kFALSE;
@@ -109,6 +113,73 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetUseEMCALTriggerExclusively(){
     fTriggerMask=(AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);
     fUseOnlyOneTrigger=kTRUE;
+  }
+  //
+  //  Setters (helpers) for pp 2012 data
+  void SetUseInt1TriggerPP2012(){
+    fTriggerMask=AliVEvent::kMB;
+    fTriggerClass[0]="CINT1";
+    fUseOnlyOneTrigger=kFALSE;
+  }
+  void SetUseInt7TriggerPP2012(){
+    fTriggerMask=AliVEvent::kINT7;
+    fTriggerClass[0]="CINT7";
+    fUseOnlyOneTrigger=kFALSE;
+  }
+  void SetUseInt8TriggerPP2012(){
+    fTriggerMask=AliVEvent::kINT8;
+    fTriggerClass[0]="CINT8";
+    fUseOnlyOneTrigger=kFALSE;
+  }
+  void SetUseEMCAL7TriggerPP2012(){
+    fTriggerMask=AliVEvent::kEMC7;
+    fTriggerClass[0]="CEMC7";
+    fUseOnlyOneTrigger=kFALSE;
+  }
+  void SetUseEMCAL8TriggerPP2012(){
+    fTriggerMask=AliVEvent::kEMC8;
+    fTriggerClass[0]="CEMC8";
+    fUseOnlyOneTrigger=kFALSE;
+  }
+  void SetUseEMCALJET7TriggerPP2012(){
+    fTriggerMask=AliVEvent::kEMCEJE;
+    fTriggerClass[0]="CEMC7EJE";
+    fUseOnlyOneTrigger=kFALSE;
+  }
+  void SetUseEMCALJET8TriggerPP2012(){
+    fTriggerMask=AliVEvent::kEMCEJE;
+    fTriggerClass[0]="CEMC8EJE";
+    fUseOnlyOneTrigger=kFALSE;
+  }
+  void SetUseEMCALGA7TriggerPP2012(){
+    fTriggerMask=AliVEvent::kEMCEGA;
+    fTriggerClass[0]="CEMC7EGA";
+    fUseOnlyOneTrigger=kFALSE;
+  }
+  void SetUseEMCALGA8TriggerPP2012(){
+    fTriggerMask=AliVEvent::kEMCEGA;
+    fTriggerClass[0]="CEMC8EGA";
+    fUseOnlyOneTrigger=kFALSE;
+  }
+  void SetUseSPI7TriggerPP2012(){
+    fTriggerMask=AliVEvent::kSPI7;
+    fTriggerClass[0]="CSPI7";
+    fUseOnlyOneTrigger=kFALSE;
+  }
+  void SetUseSPI8TriggerPP2012(){
+    fTriggerMask=AliVEvent::kSPI;
+    fTriggerClass[0]="CSPI8";
+    fUseOnlyOneTrigger=kFALSE;
+  }
+  void SetUseHighMult7TriggerPP2012(){
+    fTriggerMask=AliVEvent::kHighMult;
+    fTriggerClass[0]="CSHM7";
+    fUseOnlyOneTrigger=kFALSE;
+  }
+  void SetUseHighMult8TriggerPP2012(){
+    fTriggerMask=AliVEvent::kHighMult;
+    fTriggerClass[0]="CSHM8";
+    fUseOnlyOneTrigger=kFALSE;
   }
 
   void SetMaxDifferenceTRKV0Centraltity(Double_t maxd=5.) {fMaxDiffTRKV0Centr=maxd;}
@@ -233,8 +304,8 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t IsEventRejectedDueToZVertexOutsideFiducialRegion() const {
     return fEvRejectionBits&(1<<kZVtxOutFid);
   }
-  Bool_t IsEventRejectedDueToPileupSPD() const {
-    return fEvRejectionBits&(1<<kPileupSPD);
+  Bool_t IsEventRejectedDueToPileup() const {
+    return fEvRejectionBits&(1<<kPileup);
   }
   Bool_t IsEventRejectedDueToCentrality() const {
     return fEvRejectionBits&(1<<kOutsideCentrality);
@@ -356,7 +427,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   TFormula *f1CutMinNCrossedRowsTPCPtDep; // pT-dep cut in TPC minimum n crossed rows
  
 
-  ClassDef(AliRDHFCuts,33);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,34);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif

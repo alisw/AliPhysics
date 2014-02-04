@@ -343,9 +343,9 @@ AliOADBForward::Table::Query(ULong_t        runNo,
   ULong_t  oldDist = 0xFFFFFFFF;
   Int_t    entry  = -1;
   for (Int_t row = 0; row < nRows; row++) {
-    Int_t    ent  = fTree->GetV1()[row];
-    ULong_t  run  = fTree->GetV2()[row];
-    ULong_t  tim  = fTree->GetV3()[row];
+    Int_t    ent  = Int_t(fTree->GetV1()[row]);
+    ULong_t  run  = ULong_t(fTree->GetV2()[row]);
+    ULong_t  tim  = ULong_t(fTree->GetV3()[row]);
     ULong_t  dist = (run > runNo ? run - runNo : runNo - run);
 	
     if (fVerbose) {
@@ -819,6 +819,30 @@ AliOADBForward::Insert(const TString& table,
 
   return t->Insert(o, runNo, sys, sNN, field, mc, sat, aliRev, author);
 }	    
+//____________________________________________________________________
+Bool_t
+AliOADBForward::CopyEntry(const TString& table, 
+			  ULong_t        oldRunNo, 
+			  UShort_t       oldSys, 
+			  UShort_t       oldSNN, 
+			  Short_t        oldField, 
+			  ULong_t        newRunNo, 
+			  UShort_t       newSys, 
+			  UShort_t       newSNN, 
+			  Short_t        newField, 
+			  Bool_t         mc, 
+			  Bool_t         sat)
+{
+  Table* t = FindTable(table);
+  if (!t) return false;
+
+  Entry* e = t->Get(oldRunNo, t->fMode, oldSys, oldSNN, oldField, mc, sat);
+  if (!e) return false;
+
+  return t->Insert(e->fData, newRunNo, newSys, newSNN, newField, mc, sat, 
+		e->fAliROOTRevision, e->fAuthor);
+}
+
 //____________________________________________________________________
 void
 AliOADBForward::Print(const Option_t* option) const

@@ -5,9 +5,9 @@
 
 class AliEmcalJet;
 
-#include "AliAnalysisTaskEmcalJetDev.h"
+#include "AliAnalysisTaskEmcalJet.h"
 
-class AliJetTriggerSelectionTask : public AliAnalysisTaskEmcalJetDev {
+class AliJetTriggerSelectionTask : public AliAnalysisTaskEmcalJet {
  public:
 
   AliJetTriggerSelectionTask();

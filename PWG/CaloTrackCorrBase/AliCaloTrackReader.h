@@ -41,6 +41,9 @@ class AliVCluster;
 class AliEMCALRecoUtils;
 class AliCalorimeterUtils;
 
+//jets
+class AliAODJetEventBackground;
+
 class AliCaloTrackReader : public TObject {
 
 public: 
@@ -76,8 +79,8 @@ public:
   // Input/output event setters and getters
   //---------------------------------------
   
-  virtual void    SetInputEvent(AliVEvent* const input) ;
-  virtual void    SetOutputEvent(AliAODEvent* const aod)   { fOutputEvent = aod            ; }
+  virtual void    SetInputEvent(AliVEvent* input) ;
+  virtual void    SetOutputEvent(AliAODEvent*  aod)        { fOutputEvent = aod            ; }
   virtual void    SetMC(AliMCEvent* const mc)              { fMC          = mc             ; }
   virtual void    SetInputOutputMCEvent(AliVEvent* /*esd*/, AliAODEvent* /*aod*/, AliMCEvent* /*mc*/) { ; }
   
@@ -123,7 +126,7 @@ public:
   
   // Track DCA cut
   
-  Bool_t           AcceptDCA(const Float_t pt, const Float_t dca);
+  Bool_t           AcceptDCA(Float_t pt, Float_t dca);
   Double_t         GetTrackDCACut(Int_t i)           const { if(i >= 0 && i < 3 ) return fTrackDCACut[i] ;
                                                              else return -999              ; }
   
@@ -148,7 +151,7 @@ public:
   Double_t         GetEMCALTimeCutMin()              const { return fEMCALTimeCutMin       ; }
   Double_t         GetEMCALTimeCutMax()              const { return fEMCALTimeCutMax       ; }	
 
-  Bool_t           IsInTimeWindow(const Double_t tof, const Float_t energy)  const ;
+  Bool_t           IsInTimeWindow(Double_t tof, Float_t energy)  const ;
   
   void             SetEMCALTimeCut(Double_t a, Double_t b) { fEMCALTimeCutMin = a ; 
                                                              fEMCALTimeCutMax = b          ; } // ns
@@ -167,7 +170,7 @@ public:
   virtual AliFiducialCut * GetFiducialCut()                { 
                     if(!fFiducialCut) fFiducialCut = new AliFiducialCut(); 
                     return  fFiducialCut                                                   ; }
-  virtual void     SetFiducialCut(AliFiducialCut * const fc) { fFiducialCut = fc           ; }
+  virtual void     SetFiducialCut(AliFiducialCut * fc)     { fFiducialCut = fc           ; }
   virtual Bool_t   IsFiducialCutOn()                 const { return fCheckFidCut           ; }
   virtual void     SwitchOnFiducialCut()                   { fCheckFidCut = kTRUE          ; 
                                                              fFiducialCut = new AliFiducialCut() ; }
@@ -218,10 +221,10 @@ public:
   
   // Filling/ filtering / detector information access methods
   
-  virtual Bool_t   FillInputEvent(const Int_t iEntry, const char *currentFileName)  ;
+  virtual Bool_t   FillInputEvent(Int_t iEntry, const char *currentFileName)  ;
   virtual void     FillInputCTS() ;
   virtual void     FillInputEMCAL() ;
-  virtual void     FillInputEMCALAlgorithm(AliVCluster * clus, const Int_t iclus) ;
+  virtual void     FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus) ;
   virtual void     FillInputPHOS() ;
   virtual void     FillInputEMCALCells() ;
   virtual void     FillInputPHOSCells() ;
@@ -295,15 +298,19 @@ public:
   void             SetTriggerPatchTimeWindow(Int_t min, Int_t max) { fTriggerPatchTimeWindow[0] = min ;
                                                                      fTriggerPatchTimeWindow[1] = max ; }
   
+  Bool_t           AreBadTriggerEventsRemoved()      const { return fRemoveBadTriggerEvents     ; }
   void             SwitchOffBadTriggerEventsRemoval()      { fRemoveBadTriggerEvents   = kFALSE ; }
   void             SwitchOnBadTriggerEventsRemoval()       { fRemoveBadTriggerEvents   = kTRUE  ; }
 
+  Bool_t           AreUnMatchedTriggerEventsRemoved()const { return fRemoveUnMatchedTriggers    ; }
   void             SwitchOffUnMatchedTriggerEventsRemoval(){ fRemoveUnMatchedTriggers  = kFALSE ; }
   void             SwitchOnUnMatchedTriggerEventsRemoval() { fRemoveUnMatchedTriggers  = kTRUE  ; }
   
+  Bool_t           IsTriggerPatchMatchedToCluster()  const { return fTriggerPatchClusterMatch   ; }
   void             SwitchOffTriggerPatchMatching()         { fTriggerPatchClusterMatch = kFALSE ; }
   void             SwitchOnTriggerPatchMatching()          { fTriggerPatchClusterMatch = kTRUE  ; }
-
+  
+  Bool_t           IsTriggerClusterTimeRecal()       const { return fTriggerClusterTimeRecal    ; }
   void             SwitchOnTriggerClusterTimeRecal ()      { fTriggerClusterTimeRecal  = kTRUE  ; }
   void             SwitchOffTriggerClusterTimeRecal()      { fTriggerClusterTimeRecal  = kFALSE ; }
   
@@ -399,8 +406,11 @@ public:
   ULong_t          GetTrackStatus()                  const { return fTrackStatus          ; }
   void             SetTrackStatus(ULong_t bit)             { fTrackStatus = bit           ; }		
 
-  ULong_t          GetTrackFilterMask()              const {return fTrackFilterMask       ; }
-  void             SetTrackFilterMask(ULong_t bit)         { fTrackFilterMask = bit       ; }		
+  ULong_t          GetTrackFilterMask()              const { return fTrackFilterMask       ; }
+  void             SetTrackFilterMask(ULong_t bit)         { fTrackFilterMask = bit       ; }
+  
+  ULong_t          GetTrackFilterMaskComplementary() const { return fTrackFilterMaskComplementary       ; }
+  void             SetTrackFilterMaskComplementary(ULong_t bit) {   fTrackFilterMaskComplementary = bit ; }
   
   AliESDtrackCuts* GetTrackCuts()                    const { return fESDtrackCuts         ; }
   void             SetTrackCuts(AliESDtrackCuts * cuts)    ;
@@ -414,9 +424,18 @@ public:
   
   void             SwitchOnAODHybridTrackSelection()       { fSelectHybridTracks = kTRUE  ; } 
   void             SwitchOffAODHybridTrackSelection()      { fSelectHybridTracks = kFALSE ; }      
+
+  void             SwitchOnAODPrimaryTrackSelection()      { fSelectPrimaryTracks = kTRUE  ; }
+  void             SwitchOffAODPrimaryTrackSelection()     { fSelectPrimaryTracks = kFALSE ; }
   
   void             SwitchOnTrackHitSPDSelection()          { fSelectSPDHitTracks = kTRUE  ; }
   void             SwitchOffTrackHitSPDSelection()         { fSelectSPDHitTracks = kFALSE ; }
+
+  void             SwitchOnAODTrackSharedClusterSelection() { fSelectFractionTPCSharedClusters = kTRUE  ; }
+  void             SwitchOffAODTrackSharedClusterSelection(){ fSelectFractionTPCSharedClusters = kFALSE ; }
+
+  void             SetTPCSharedClusterFraction(Float_t fr) { fCutTPCSharedClustersFraction = fr   ; }
+  Float_t          GetTPCSharedClusterFraction() const     { return fCutTPCSharedClustersFraction ; }
   
   Int_t            GetTrackMultiplicity()            const { return fTrackMult            ; }
   Float_t          GetTrackMultiplicityEtaCut()      const { return fTrackMultEtaCut      ; }
@@ -431,7 +450,7 @@ public:
   //-------------------------------
 
   virtual void      GetVertex(Double_t v[3])         const ;
-  virtual Double_t* GetVertex(const Int_t evtIndex)  const { return fVertex[evtIndex]            ; }
+  virtual Double_t* GetVertex(Int_t evtIndex)        const { return fVertex[evtIndex]            ; }
   virtual void      GetVertex(Double_t vertex[3],    const Int_t evtIndex) const ;
   virtual void      FillVertexArray();
   virtual Bool_t    CheckForPrimaryVertex();
@@ -497,11 +516,6 @@ public:
   
   virtual Double_t GetBField()                       const { return fInputEvent->GetMagneticField()  ; } 
   
-  void    SetImportGeometryFromFile(Bool_t import, 
-                                    TString path = "")     { 
-                                                             fImportGeometryFromFile = import    ; 
-                                                             fImportGeometryFilePath = path      ; }
-  
   //------------------------------------------------
   // MC analysis specific methods
   //-------------------------------------------------
@@ -547,7 +561,7 @@ public:
   virtual Float_t  GetPtHardAndClusterFactor()               const { return  fPtHardAndClusterPtFactor    ; }
   virtual void     SetPtHardAndClusterPtFactor(Float_t factor)     { fPtHardAndClusterPtFactor = factor   ; }		
   
-  virtual Bool_t   IsHIJINGLabel(const Int_t label);
+  virtual Bool_t   IsHIJINGLabel(Int_t label);
   void             SetGeneratorMinMaxParticles();
   void             SwitchOnAcceptOnlyHIJINGLabels()          { fAcceptOnlyHIJINGLabels = kTRUE  ; }
   void             SwitchOffAcceptOnlyHIJINGLabels()         { fAcceptOnlyHIJINGLabels = kFALSE ; }
@@ -578,11 +592,20 @@ public:
   void         SwitchOnNonStandardJets()                     { fFillInputNonStandardJetBranch = kTRUE  ; }
   void         SwitchOffNonStandardJets()                    { fFillInputNonStandardJetBranch = kFALSE ; }
   
+  Bool_t       IsBackgroundJetsSwitchedOn()           const { return fFillInputBackgroundJetBranch   ; }
+  void         SwitchOnBackgroundJets()                     { fFillInputBackgroundJetBranch = kTRUE  ; }
+  void         SwitchOffBackgroundJets()                    { fFillInputBackgroundJetBranch = kFALSE ; }
+
   virtual void FillInputNonStandardJets() ;
   virtual TClonesArray* GetNonStandardJets()            const { return fNonStandardJets                 ; }
   virtual void SetInputNonStandardJetBranchName(TString name) { fInputNonStandardJetBranchName   = name ; }
   virtual TString GetInputNonStandardJetBranchName()          { return fInputNonStandardJetBranchName   ; }
   
+  virtual void FillInputBackgroundJets() ;
+  virtual AliAODJetEventBackground* GetBackgroundJets() const { return fBackgroundJets                 ; }
+  virtual void SetInputBackgroundJetBranchName(TString name) { fInputBackgroundJetBranchName   = name ; }
+  virtual TString GetInputBackgroundJetBranchName()          { return fInputBackgroundJetBranchName   ; }
+
  protected:
   Int_t	           fEventNumber;               // Event number
   Int_t            fDataType ;                 // Select MC:Kinematics, Data:ESD/AOD, MCData:Both
@@ -636,11 +659,15 @@ public:
   
   ULong_t          fTrackStatus        ;       // Track selection bit, select tracks refitted in TPC, ITS ...
   ULong_t          fTrackFilterMask    ;       // Track selection bit, for AODs (any difference with track status?)
+  ULong_t          fTrackFilterMaskComplementary;       // Complementary Track selection bit, for AODs in case hybrid option selected
   AliESDtrackCuts *fESDtrackCuts       ;       // Track cut
   AliESDtrackCuts *fESDtrackComplementaryCuts; // Track cut, complementary cuts for hybrids
   Bool_t           fConstrainTrack     ;       // Constrain Track to vertex
   Bool_t           fSelectHybridTracks ;       // Select CTS tracks of type hybrid (only for AODs)
+  Bool_t           fSelectPrimaryTracks ;      // Select CTS tracks of type hybrid (only for AODs)
   Bool_t           fSelectSPDHitTracks ;       // Ensure that track hits SPD layers
+  Bool_t           fSelectFractionTPCSharedClusters; // Accept only TPC tracks with over a given fraction of shared clusters
+  Float_t          fCutTPCSharedClustersFraction;    // Fraction of TPC shared clusters to be accepted.
   Int_t            fTrackMult          ;       // Track multiplicity
   Float_t          fTrackMultEtaCut    ;       // Track multiplicity eta cut
   Bool_t           fReadStack          ;       // Access kine information from stack
@@ -745,9 +772,6 @@ public:
   Int_t            fCentralityOpt;              // Option for the returned value of the centrality, possible options 5, 10, 100
   Int_t            fCentralityBin[2];           // Minimum and maximum value of the centrality for the analysis
   TString          fEventPlaneMethod;           // Name of event plane method, by default "Q"
-  
-  Bool_t           fImportGeometryFromFile;     // Import geometry settings in geometry.root file
-  TString          fImportGeometryFilePath;     // path fo geometry.root file
 
   Bool_t           fAcceptOnlyHIJINGLabels;     // Select clusters or tracks that where generated by HIJING, reject other generators in case of cocktail
   Int_t            fNMCProducedMin;             // In case of cocktail, select particles in the list with label from this value
@@ -757,14 +781,17 @@ public:
   Bool_t           fFillInputNonStandardJetBranch;  // Flag to use data from non standard jets
   TClonesArray *   fNonStandardJets;                //! temporal array with jets
   TString          fInputNonStandardJetBranchName;  // Name of non standard jet branch
-  
+  Bool_t           fFillInputBackgroundJetBranch;   // Flag to use data from background jets
+  AliAODJetEventBackground * fBackgroundJets;       //! background jets
+  TString          fInputBackgroundJetBranchName;   // Name of background jet branch
+
   TArrayI          fAcceptEventsWithBit;           // Accept events if trigger bit is on
   TArrayI          fRejectEventsWithBit;           // Reject events if trigger bit is on
 
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,61)
+  ClassDef(AliCaloTrackReader,65)
   
 } ;
 

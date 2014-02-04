@@ -36,6 +36,7 @@ public:
    virtual ~AliRsnMiniAnalysisTask();
 
    void                UseMC(Bool_t yn = kTRUE)           {fUseMC = yn;}
+   void                UseESDTriggerMask(UInt_t trgMask)     {fTriggerMask = trgMask;}
    void                UseCentrality(const char *type)    {fUseCentrality = kTRUE; fCentralityType = type; fCentralityType.ToUpper();}
    void                SetUseCentralityPatch(Bool_t isAOD049) {fUseAOD049CentralityPatch = isAOD049;}
    void                UseMultiplicity(const char *type)  {fUseCentrality = kFALSE; fCentralityType = type; fCentralityType.ToUpper();}
@@ -51,6 +52,7 @@ public:
    TClonesArray       *Outputs()                          {return &fHistograms;}
    TClonesArray       *Values()                           {return &fValues;}
    void                SetEventQAHist(TString type,TH2F *histo);
+   void                UseBigOutput(Bool_t b=kTRUE) { fBigOutput = b; }
 
    virtual void        UserCreateOutputObjects();
    virtual void        UserExec(Option_t *);
@@ -77,6 +79,7 @@ private:
 
    Bool_t               fUseMC;           //  use or not MC info
    Int_t                fEvNum;           //! absolute event counter
+   UInt_t               fTriggerMask;   //trigger mask
    Bool_t               fUseCentrality;   //  if true, use centrality for event, otherwise use multiplicity
    TString              fCentralityType;  //  definition used to choose what centrality or multiplicity to use
    Bool_t               fUseAOD049CentralityPatch; //flag to enable AOD049 centrality patch
@@ -106,68 +109,8 @@ private:
    Bool_t               fBigOutput;       // flag if open file for output list
    Int_t                fMixPrintRefresh; // how often info in mixing part is printed
 
-   ClassDef(AliRsnMiniAnalysisTask, 5);   // AliRsnMiniAnalysisTask
+   ClassDef(AliRsnMiniAnalysisTask, 6);   // AliRsnMiniAnalysisTask
 };
 
-inline Int_t AliRsnMiniAnalysisTask::CreateValue(AliRsnMiniValue::EType type, Bool_t useMC)
-{
-//
-// Create a new value in the task,
-// and returns its ID, which is needed for setting up histograms.
-// If that value was already initialized, returns its ID and does not recreate it.
-//
 
-   Int_t valID = ValueID(type, useMC);
-   if (valID >= 0 && valID < fValues.GetEntries()) {
-      AliInfo(Form("Value '%s' is already created in slot #%d", AliRsnMiniValue::ValueName(type, useMC), valID));
-   } else {
-      valID = fValues.GetEntries();
-      AliInfo(Form("Creating value '%s' in slot #%d", AliRsnMiniValue::ValueName(type, useMC), valID));
-      new (fValues[valID]) AliRsnMiniValue(type, useMC);
-   }
-
-   return valID;
-}
-
-inline Int_t AliRsnMiniAnalysisTask::ValueID(AliRsnMiniValue::EType type, Bool_t useMC)
-{
-//
-// Searches if a value computation is initialized
-//
-
-   const char *name = AliRsnMiniValue::ValueName(type, useMC);
-   TObject *obj = fValues.FindObject(name);
-   if (obj)
-      return fValues.IndexOf(obj);
-   else
-      return -1;
-}
-
-inline AliRsnMiniOutput *AliRsnMiniAnalysisTask::CreateOutput
-(const char *name, AliRsnMiniOutput::EOutputType type, AliRsnMiniOutput::EComputation src)
-{
-//
-// Create a new histogram definition in the task,
-// which is then returned to the user for its configuration
-//
-
-   Int_t n = fHistograms.GetEntries();
-   AliRsnMiniOutput *newDef = new (fHistograms[n]) AliRsnMiniOutput(name, type, src);
-
-   return newDef;
-}
-
-inline AliRsnMiniOutput *AliRsnMiniAnalysisTask::CreateOutput
-(const char *name, const char *outType, const char *compType)
-{
-//
-// Create a new histogram definition in the task,
-// which is then returned to the user for its configuration
-//
-
-   Int_t n = fHistograms.GetEntries();
-   AliRsnMiniOutput *newDef = new (fHistograms[n]) AliRsnMiniOutput(name, outType, compType);
-
-   return newDef;
-}
 #endif

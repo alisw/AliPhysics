@@ -141,22 +141,29 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
     lab2Prong = the2Prong->MatchToMC(pdgabs2prong,mcArray,2,pdgDg2prong);
   } else {
     AliAODv0 *theV0 = dynamic_cast<AliAODv0*>(Getv0());
-    lab2Prong = theV0->MatchToMC(pdgabs2prong,mcArray,2,pdgDg2prong);
+    lab2Prong = theV0->MatchToMC(pdgabs2prong,mcArray,2,pdgDg2prong); // the V0
   }
 
   if(lab2Prong<0) return -1;
 
   Int_t dgLabels[10]={0,0,0,0,0,0,0,0,0,0};
 
-  // loop on daughters and write labels
-  for(Int_t i=0; i<ndg; i++) {
-    AliVTrack *trk = dynamic_cast<AliVTrack*>(GetDaughter(i));
-    if(!trk) continue;
-    Int_t lab = trk->GetLabel();
-    if(lab==-1) { // this daughter is the 2prong
-      lab=lab2Prong;
-    } else if(lab<-1) continue;
-    dgLabels[i] = lab;
+  if (!isV0) {
+    // loop on daughters and write labels
+    for(Int_t i=0; i<ndg; i++) {
+      AliVTrack *trk = dynamic_cast<AliVTrack*>(GetDaughter(i));
+      if(!trk) continue;
+      Int_t lab = trk->GetLabel();
+      if(lab==-1) { // this daughter is the 2prong
+	lab=lab2Prong;
+      } else if(lab<-1) continue;
+      dgLabels[i] = lab;
+    }
+  } else {
+    AliVTrack *trk = dynamic_cast<AliVTrack*>(GetBachelor()); // the bachelor
+    if (!trk) return -1;
+    dgLabels[0] = trk->GetLabel();//TMath::Abs(trk->GetLabel());
+    dgLabels[1] = lab2Prong;
   }
 
   Int_t finalLabel = AliAODRecoDecay::MatchToMC(pdgabs,mcArray,dgLabels,2,2,pdgDg);

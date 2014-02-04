@@ -100,6 +100,9 @@ void runGridAODPbPb()
    gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/AddTaskHFEreducedEvent.C");
    AddTaskHFEreducedEvent();
 
+   //===== ADD TASK::
+   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/AddTaskHFEnpePbPb.C");
+   AddTaskHFEnpePbPb();
 
 
    // Enable debug printouts

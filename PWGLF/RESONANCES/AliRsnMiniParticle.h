@@ -31,6 +31,7 @@ public:
    Float_t       &Pz(Bool_t mc)              {return (mc ? fPsim[2] : fPrec[2]);}
    Short_t       &PDG()                      {return fPDG;}
    Short_t        PDGAbs()                   {return TMath::Abs(fPDG);}
+   Double_t       Mass();
    Int_t         &Mother()                   {return fMother;}
    Short_t       &MotherPDG()                {return fMotherPDG;}
    UShort_t      &CutBits()                  {return fCutBits;}
@@ -38,7 +39,7 @@ public:
    void           SetCutBit(Int_t i)         {UShort_t bit = 1 << i; fCutBits |=   bit;}
    void           ClearCutBit(Int_t i)       {UShort_t bit = 1 << i; fCutBits &= (~bit);}
 
-   void           Set4Vector(TLorentzVector &v, Float_t mass, Bool_t mc) {v.SetXYZM(Px(mc), Py(mc), Pz(mc), mass);}
+   void           Set4Vector(TLorentzVector &v, Float_t mass=-1.0, Bool_t mc=kFALSE);
    void           CopyDaughter(AliRsnDaughter *daughter);
 
 private:

@@ -13,16 +13,10 @@
  * 
  * @ingroup pwglf_central_aod
  */
-#include <AliAnalysisTaskSE.h>
-#include "AliFMDMCEventInspector.h"
+#include "AliBaseMCCorrectionsTask.h"
 #include "AliSPDMCTrackDensity.h"
 class AliCentralCorrSecondaryMap;
 class AliCentralCorrAcceptance;
-class AliESDEvent;
-class TH2D;
-class TH1D;
-class TH1I;
-class TList;
 
 
 /** 
@@ -43,7 +37,7 @@ class TList;
  * @ingroup pwglf_central_aod
  * 
  */
-class AliCentralMCCorrectionsTask : public AliAnalysisTaskSE
+class AliCentralMCCorrectionsTask : public AliBaseMCCorrectionsTask
 {
 public:
   /** 
@@ -57,47 +51,8 @@ public:
    */
   AliCentralMCCorrectionsTask();
   /** 
-   * Copy constructor 
-   * 
-   * @param o Object to copy from 
-   */
-  AliCentralMCCorrectionsTask(const AliCentralMCCorrectionsTask& o);
-  /** 
-   * Assignment operator 
-   * 
-   * @param o Object to assign from 
-   * 
-   * @return Reference to this object 
-   */
-  AliCentralMCCorrectionsTask& operator=(const AliCentralMCCorrectionsTask& o);
-  /** 
    * @{ 
    * @name Interface methods 
-   */
-  /** 
-   * Initialize the task 
-   * 
-   */
-  virtual void Init();
-  /** 
-   * Create output objects 
-   * 
-   */
-  virtual void UserCreateOutputObjects();
-  /** 
-   * Process each event 
-   *
-   * @param option Not used
-   */  
-  virtual void UserExec(Option_t* option);
-  /** 
-   * End of job
-   * 
-   * @param option Not used 
-   */
-  virtual void Terminate(Option_t* option);
-  /** 
-   * @} 
    */
   /** 
    * Print this object 
@@ -106,34 +61,6 @@ public:
    */
   void Print(Option_t* option="") const;
 
-  /** 
-   * Set the vertex axis to use
-   * 
-   * @param nBins Number of bins
-   * @param vzMin Least @f$z@f$ coordinate of interation point
-   * @param vzMax Largest @f$z@f$ coordinate of interation point
-   */
-  void SetVertexAxis(Int_t nBins, Double_t vzMin, Double_t vzMax=-1000000);
-  /** 
-   * Set the vertex axis to use
-   * 
-   * @param axis Axis
-   */
-  void SetVertexAxis(const TAxis& axis);
-  /** 
-   * Set the eta axis to use
-   * 
-   * @param nBins Number of bins
-   * @param etaMin Least @f$\eta@f$ 
-   * @param etaMax Largest @f$\eta@f$ 
-   */
-  void SetEtaAxis(Int_t nBins, Double_t etaMin, Double_t etaMax=-1000000);
-  /** 
-   * Set the eta axis to use
-   * 
-   * @param axis Axis
-   */
-  void SetEtaAxis(const TAxis& axis);
   /** 
    * Set the number of phi bins to use 
    * 
@@ -173,24 +100,26 @@ public:
    * @return Reference to the track density calculator 
    */
   const AliSPDMCTrackDensity& GetTrackDensity() const { return fTrackDensity; }
-  /** 
-   * Get a reference to the event inspector
-   * 
-   * @return Reference to the event inspector 
-   */
-  AliFMDMCEventInspector& GetEventInspector() { return fInspector; }
-  /** 
-   * Get a reference to the event inspector
-   * 
-   * @return Reference to the event inspector 
-   */
-  const AliFMDMCEventInspector& GetEventInspector() const { return fInspector;}
 protected: 
+  /** 
+   * Copy constructor 
+   * 
+   * @param o Object to copy from 
+   */
+  AliCentralMCCorrectionsTask(const AliCentralMCCorrectionsTask& o);
+  /** 
+   * Assignment operator 
+   * 
+   * @param o Object to assign from 
+   * 
+   * @return Reference to this object 
+   */
+  AliCentralMCCorrectionsTask& operator=(const AliCentralMCCorrectionsTask& o);
   /**
    * A vertex bin 
    * 
    */
-  struct VtxBin : public TNamed
+  struct VtxBin : public AliBaseMCCorrectionsTask::VtxBin
   {
     /** 
      * Constructor 
@@ -220,20 +149,11 @@ protected:
      */
     VtxBin& operator=(const VtxBin& o);
     /** 
-     * Get bin name
-     * 
-     * @param low       Lower @f$v_z@f$ bound
-     * @param high      Upper @f$v_z@f$ bound
-     * 
-     * @return Bin name 
-     */
-    static const char* BinName(Double_t low, Double_t high);
-    /** 
      * Declare output in passed list 
      * 
      * @param list List to put output in 
      */
-    void CreateOutputObjects(TList* list);
+    TList* CreateOutputObjects(TList* list);
     /** 
      * End of job process 
      * 
@@ -257,8 +177,6 @@ protected:
     
     TH2D* fHits;     // Cache of MC-truth hits
     TH2D* fClusters; // Cache of reconstructed hits
-    TH2D* fPrimary;  // Cache or primary 
-    TH1D* fCounts;   // Event count 
 
     ClassDef(VtxBin,3); // Vertex bin 
   };
@@ -268,18 +186,50 @@ protected:
    * @param list List to read or add binst from/to
    */
   void DefineBins(TList* list);
+  /** 
+   * Create a vertex bin 
+   * 
+   * @param low     Low cut on @f$IP_{z}@f$ 
+   * @param high    High cut on @f$IP_{z}@f$ 
+   * 
+   * @return Newly created vertex bin
+   */
+  AliBaseMCCorrectionsTask::VtxBin* CreateVtxBin(Double_t low, Double_t high);
+  /** 
+   * Process an ESD event
+   * 
+   * @param esd   ESD event 
+   * @param mc    MC event
+   * @param bin   Vertex bin 
+   * @param vz    @f$IP_{z}@f$ 
+   * 
+   * @return true on success
+   */
+  Bool_t ProcessESD(const AliESDEvent& esd, const AliMCEvent& mc, 
+		    AliBaseMCCorrectionsTask::VtxBin& bin,
+		    Double_t vz);
+  /** 
+   * Create corrections objects and store them in passed list
+   * 
+   * @param results Output list 
+   */
+  virtual void CreateCorrections(TList* results);
+  /** 
+   * Do the final processing of a vertex bin 
+   * 
+   * @param bin       Vertex bin
+   * @param iVz       Vertex bin number 
+   * 
+   * @return true on successd
+   */
+  virtual Bool_t FinalizeVtxBin(AliBaseMCCorrectionsTask::VtxBin*      bin, 
+				UShort_t     iVz);
 
-  AliFMDMCEventInspector fInspector; // Event inspector 
-  AliSPDMCTrackDensity   fTrackDensity; // Get the track density 
 
-  TObjArray* fVtxBins;       // Vertex bins 
-  Bool_t     fFirstEvent;    // First event flag 
-  TH1I*      fHEvents;       // All Events
-  TH1I*      fHEventsTr;     // Histogram of events w/trigger
-  TH1I*      fHEventsTrVtx;  // Events w/trigger and vertex 
-  TAxis      fVtxAxis;       // Vertex axis 
-  TAxis      fEtaAxis;       // Eta axis 
-  TList*     fList;          // Output list 
+  AliSPDMCTrackDensity        fTrackDensity; // Get the track density 
+  AliCentralCorrSecondaryMap* fSecCorr;
+  AliCentralCorrAcceptance*   fAccCorr;
+
   UShort_t   fNPhiBins;      // Nunber of phi bins
   Bool_t     fEffectiveCorr; // Whether to make effective corrections
   Double_t   fEtaCut;        // Maximum Eta

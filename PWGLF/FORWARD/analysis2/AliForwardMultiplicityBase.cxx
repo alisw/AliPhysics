@@ -37,51 +37,21 @@
 
 //====================================================================
 AliForwardMultiplicityBase::AliForwardMultiplicityBase(const char* name) 
-  : AliAnalysisTaskSE(name), 
+  : AliBaseESDTask(name, "AliForwardMultiplicityBase", 
+		   &(AliForwardCorrectionManager::Instance())),
     fEnableLowFlux(false), 
-    fFirstEvent(true),
     fStorePerRing(false),
-    fList(0),
     fHData(0),
     fHistos(),
     fAODFMD(false),
     fAODEP(false),
     fRingSums(),
     fDoTiming(false),
-    fHTiming(0),
-    fCorrManager(0)
+    fHTiming(0)
 {
   DGUARD(fDebug, 3,"Named CTOR of AliForwardMultiplicityBase %s",name);
-  // Set our persistent pointer 
-  fCorrManager = &AliForwardCorrectionManager::Instance();
-  fBranchNames = 
-    "ESD:AliESDRun.,AliESDHeader.,AliMultiplicity.,"
-    "AliESDFMD.,SPDVertex.,PrimaryVertex.";
-
-  DefineOutput(1, TList::Class());
-  DefineOutput(2, TList::Class());
 }
 
-//____________________________________________________________________
-AliForwardMultiplicityBase& 
-AliForwardMultiplicityBase::operator=(const AliForwardMultiplicityBase& o)
-{
-  DGUARD(fDebug,2,"Assignment to AliForwardMultiplicityBase");
-  if (&o == this) return *this;
-  fEnableLowFlux = o.fEnableLowFlux;
-  fFirstEvent    = o.fFirstEvent;
-  fCorrManager   = o.fCorrManager;
-  fHData             = o.fHData;
-  fHistos            = o.fHistos;
-  fAODFMD            = o.fAODFMD;
-  fAODEP             = o.fAODEP;
-  fRingSums          = o.fRingSums;
-  fList              = o.fList;
-  fStorePerRing      = o.fStorePerRing;
-  fDoTiming          = o.fDoTiming;
-  fHTiming           = o.fHTiming;
-  return *this;
-}
 
 //____________________________________________________________________
 void
@@ -93,63 +63,42 @@ AliForwardMultiplicityBase::SetDebug(Int_t dbg)
   // Parameters:
   //    dbg debug level
   //
-  GetEventInspector()	.SetDebug(dbg);
+  AliBaseESDTask::        SetDebug(dbg);
   GetSharingFilter()	.SetDebug(dbg);
   GetDensityCalculator().SetDebug(dbg);
   GetCorrections()	.SetDebug(dbg);
   GetHistCollector()	.SetDebug(dbg);
   GetEventPlaneFinder()	.SetDebug(dbg);
 }
-//____________________________________________________________________
-Bool_t 
-AliForwardMultiplicityBase::Configure(const char* macro)
-{
-  // --- Configure the task ------------------------------------------
-  TString macroPath(gROOT->GetMacroPath());
-  if (!macroPath.Contains("$(ALICE_ROOT)/PWGLF/FORWARD/analysis2")) { 
-    macroPath.Append(":$(ALICE_ROOT)/PWGLF/FORWARD/analysis2");
-    gROOT->SetMacroPath(macroPath);
-  }
-  TString mac(macro);
-  if (mac.EqualTo("-default-")) 
-    mac = "$(ALICE_ROOT)/PWGLF/FORWARD/analysis2/ForwardAODConfig.C";
-  const char* config = gSystem->Which(gROOT->GetMacroPath(), mac.Data());
-  if (!config) {
-    AliWarningF("%s not found in %s", macro, gROOT->GetMacroPath());
-    return false;
-  }
-
-  AliInfoF("Loading configuration of '%s' from %s",  ClassName(), config);
-  gROOT->Macro(Form("%s((AliForwardMultiplicityBase*)%p)", config, this));
-  delete config;
- 
- return true;
-}
 
 //____________________________________________________________________
-void
-AliForwardMultiplicityBase::UserCreateOutputObjects()
+Bool_t
+AliForwardMultiplicityBase::Book()
 {
   // 
   // Create output objects 
   // 
   //
   DGUARD(fDebug,1,"Create user ouput");
-  fList = new TList;
-  fList->SetOwner();
-  
-  AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
-  AliAODHandler*      ah = 
-    dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler());
-  //if (!ah) AliFatal("No AOD output handler set in analysis manager");
-  if (ah)  CreateBranches(ah);
-   
-  GetEventInspector()	.CreateOutputObjects(fList);
+  UInt_t what = AliForwardCorrectionManager::kAll;
+  if (!fEnableLowFlux)
+    what ^= AliForwardCorrectionManager::kDoubleHit;
+  if (!GetCorrections().IsUseVertexBias())
+    what ^= AliForwardCorrectionManager::kVertexBias;
+  if (!GetCorrections().IsUseAcceptance())
+    what ^= AliForwardCorrectionManager::kAcceptance;
+  if (!GetCorrections().IsUseMergingEfficiency())
+    what ^= AliForwardCorrectionManager::kMergingEfficiency;
+  fNeededCorrections = what;
+
   GetSharingFilter()	.CreateOutputObjects(fList);
   GetDensityCalculator().CreateOutputObjects(fList);
   GetCorrections()	.CreateOutputObjects(fList);
   GetHistCollector()	.CreateOutputObjects(fList);
   GetEventPlaneFinder()	.CreateOutputObjects(fList);
+
+  TAxis tmp(1, 0, 1);
+  fHistos.Init(tmp);
 
   if (fDebug > 1) fDoTiming = true;
   if (fDoTiming) { 
@@ -180,19 +129,14 @@ AliForwardMultiplicityBase::UserCreateOutputObjects()
     xaxis->SetBinLabel(kTimingTotal, "Total");
     fList->Add(fHTiming);
   }
-  PostData(1, fList);
+  return true;
 }
 //____________________________________________________________________
 void
 AliForwardMultiplicityBase::CreateBranches(AliAODHandler* ah)
 {
-  TObject* obj = &fAODFMD;
-  ah->AddBranch("AliAODForwardMult", &obj);
-  TObject* epobj = &fAODEP;
-  ah->AddBranch("AliAODForwardEP", &epobj);
-
-  TAxis tmp(1, 0, 1);
-  fHistos.Init(tmp);
+  TObject* obj   = &fAODFMD; ah->AddBranch("AliAODForwardMult", &obj);
+  TObject* epobj = &fAODEP;  ah->AddBranch("AliAODForwardEP", &epobj);
 
   if (!fStorePerRing) return;
   
@@ -212,28 +156,64 @@ AliForwardMultiplicityBase::CreateBranches(AliAODHandler* ah)
 
 //____________________________________________________________________
 Bool_t
-AliForwardMultiplicityBase::SetupForData()
+AliForwardMultiplicityBase::PreData(const TAxis& vertex, const TAxis& eta)
 {
   // 
   // Initialise the sub objects and stuff.  Called on first event 
   // 
   //
   DGUARD(fDebug,1,"Initialize sub-algorithms");
-  const TAxis* pe = 0;
-  const TAxis* pv = 0;
 
-  Bool_t  mc  = this->IsA()->InheritsFrom("AliForwardMCMultiplicityTask");
-  Bool_t  sat = false; // GetEventInspector().IsUseDisplacedVertices(); 
-  if (!ReadCorrections(pe,pv,mc,sat)) return false;
+  // Force this here so we select the proper quality 
+  AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
+
+  UInt_t what = fNeededCorrections;
+  // Check that we have the energy loss fits, needed by 
+  //   AliFMDSharingFilter 
+  //   AliFMDDensityCalculator 
+  if (what & AliForwardCorrectionManager::kELossFits && !fcm.GetELossFit()) 
+    AliFatal(Form("No energy loss fits"));
   
-  InitMembers(pe,pv);
+  // Check that we have the double hit correction - (optionally) used by 
+  //  AliFMDDensityCalculator 
+  if (what & AliForwardCorrectionManager::kDoubleHit && !fcm.GetDoubleHit()) 
+    AliFatal("No double hit corrections"); 
 
-  GetEventInspector()	.SetupForData(*pv);
-  GetSharingFilter()	.SetupForData(*pe);
-  GetDensityCalculator().SetupForData(*pe);
-  GetCorrections()	.SetupForData(*pe);
-  GetHistCollector()	.SetupForData(*pv,*pe);
-  GetEventPlaneFinder()	.SetupForData(*pe);
+  // Check that we have the secondary maps, needed by 
+  //   AliFMDCorrector 
+  //   AliFMDHistCollector
+  if (what & AliForwardCorrectionManager::kSecondaryMap && 
+      !fcm.GetSecondaryMap()) 
+    AliFatal("No secondary corrections");
+
+  // Check that we have the vertex bias correction, needed by 
+  //   AliFMDCorrector 
+  if (what & AliForwardCorrectionManager::kVertexBias && !fcm.GetVertexBias())
+    AliFatal("No event vertex bias corrections");
+
+  // Check that we have the merging efficiencies, optionally used by 
+  //   AliFMDCorrector 
+  if (what & AliForwardCorrectionManager::kMergingEfficiency && 
+      !fcm.GetMergingEfficiency()) 
+    AliFatal("No merging efficiencies");
+
+  // Check that we have the acceptance correction, needed by 
+  //   AliFMDCorrector 
+  if (what & AliForwardCorrectionManager::kAcceptance && !fcm.GetAcceptance())
+    AliFatal("No acceptance corrections");
+
+  // const AliFMDCorrELossFit* fits = fcm.GetELossFit();
+  // fits->CacheBins(GetDensityCalculator().GetMinQuality());
+
+  InitMembers(eta,vertex);
+  
+  GetDensityCalculator().SetupForData(eta);
+  GetSharingFilter()	.SetupForData(eta);
+  GetCorrections()	.SetupForData(eta);
+  GetHistCollector()	.SetupForData(vertex,eta);
+
+  GetEventPlaneFinder() .SetRunNumber(GetEventInspector().GetRunNumber());
+  GetEventPlaneFinder()	.SetupForData(eta);
   
   fAODFMD.SetBit(AliAODForwardMult::kSecondary, 
 		 GetCorrections().IsUseSecondaryMap());
@@ -246,19 +226,17 @@ AliForwardMultiplicityBase::SetupForData()
   fAODFMD.SetBit(AliAODForwardMult::kSum, 
 		 GetHistCollector().GetMergeMethod() == 
 		 AliFMDHistCollector::kSum);
-  
-  this->Print("R");
   return true;
 }
 
 //____________________________________________________________________
 void
-AliForwardMultiplicityBase::InitMembers(const TAxis* pe, const TAxis* /*pv*/)
+AliForwardMultiplicityBase::InitMembers(const TAxis& eta, const TAxis& /*pv*/)
 {
-  fHistos.ReInit(*pe);
-  fAODFMD.Init(*pe);
-  fAODEP.Init(*pe);
-  fRingSums.Init(*pe);
+  fHistos.ReInit(eta);
+  fAODFMD.Init(eta);
+  fAODEP.Init(eta);
+  fRingSums.Init(eta);
 
   fHData = static_cast<TH2D*>(fAODFMD.GetHistogram().Clone("d2Ndetadphi"));
   fHData->SetStats(0);
@@ -281,191 +259,9 @@ AliForwardMultiplicityBase::InitMembers(const TAxis* pe, const TAxis* /*pv*/)
   fRingSums.Get(3, 'I')->SetMarkerColor(AliForwardUtil::RingColor(3, 'I'));
   fRingSums.Get(3, 'O')->SetMarkerColor(AliForwardUtil::RingColor(3, 'O'));
 }
-
-//____________________________________________________________________
-Bool_t 
-AliForwardMultiplicityBase::CheckCorrections(UInt_t what) const
-{
-  // 
-  // Check if all needed corrections are there and accounted for.  If not,
-  // do a Fatal exit 
-  // 
-  // Parameters:
-  //    what Which corrections is needed
-  // 
-  // Return:
-  //    true if all present, false otherwise
-  //  
-  DGUARD(fDebug,1,"Checking corrections 0x%x", what);
-
-  AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
-  // Check that we have the energy loss fits, needed by 
-  //   AliFMDSharingFilter 
-  //   AliFMDDensityCalculator 
-  if (what & AliForwardCorrectionManager::kELossFits) {
-    if (!fcm.GetELossFit()) { 
-      AliFatal(Form("No energy loss fits"));
-      return false;      
-    }
-    // Force this here so we select the proper quality 
-    const AliFMDCorrELossFit* fits = fcm.GetELossFit();
-    fits->CacheBins(GetDensityCalculator().GetMinQuality());
-  }
-  
-  // Check that we have the double hit correction - (optionally) used by 
-  //  AliFMDDensityCalculator 
-  if (what & AliForwardCorrectionManager::kDoubleHit && !fcm.GetDoubleHit()) {
-    AliFatal("No double hit corrections"); 
-    return false;
-  }
-  // Check that we have the secondary maps, needed by 
-  //   AliFMDCorrector 
-  //   AliFMDHistCollector
-  if (what & AliForwardCorrectionManager::kSecondaryMap && 
-      !fcm.GetSecondaryMap()) {
-    AliFatal("No secondary corrections");
-    return false;
-  }
-  // Check that we have the vertex bias correction, needed by 
-  //   AliFMDCorrector 
-  if (what & AliForwardCorrectionManager::kVertexBias && 
-      !fcm.GetVertexBias()) { 
-    AliFatal("No event vertex bias corrections");
-    return false;
-  }
-  // Check that we have the merging efficiencies, optionally used by 
-  //   AliFMDCorrector 
-  if (what & AliForwardCorrectionManager::kMergingEfficiency && 
-      !fcm.GetMergingEfficiency()) {
-    AliFatal("No merging efficiencies");
-    return false;
-  }
-  // Check that we have the acceptance correction, needed by 
-  //   AliFMDCorrector 
-  if (what & AliForwardCorrectionManager::kAcceptance && 
-      !fcm.GetAcceptance()) { 
-    AliFatal("No acceptance corrections");
-    return false;
-  }
-  return true;
-}
 //____________________________________________________________________
 Bool_t
-AliForwardMultiplicityBase::ReadCorrections(const TAxis*& pe, 
-					    const TAxis*& pv, 
-					    Bool_t        mc,
-					    Bool_t        sat)
-{
-  //
-  // Read corrections
-  //
-  //
-
-  UInt_t what = AliForwardCorrectionManager::kAll;
-  if (!fEnableLowFlux)
-    what ^= AliForwardCorrectionManager::kDoubleHit;
-  if (!GetCorrections().IsUseVertexBias())
-    what ^= AliForwardCorrectionManager::kVertexBias;
-  if (!GetCorrections().IsUseAcceptance())
-    what ^= AliForwardCorrectionManager::kAcceptance;
-  if (!GetCorrections().IsUseMergingEfficiency())
-    what ^= AliForwardCorrectionManager::kMergingEfficiency;
-  DGUARD(fDebug,1,"Read corrections 0x%x", what);
-
-  AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
-  if (!fcm.Init(GetEventInspector().GetRunNumber(),
-		GetEventInspector().GetCollisionSystem(),
-		GetEventInspector().GetEnergy(),
-		GetEventInspector().GetField(),
-		mc,
-		sat,
-		what,
-		false)) { 
-    AliWarning("Failed to read in some corrections, making task zombie");
-    return false;
-  }
-  if (!CheckCorrections(what)) return false;
-
-  // Sett our persistency pointer 
-  // fCorrManager = &fcm;
-
-  // Get the eta axis from the secondary maps - if read in
-  if (!pe) {
-    pe = fcm.GetEtaAxis();
-    if (!pe) AliFatal("No eta axis defined");
-  }
-  // Get the vertex axis from the secondary maps - if read in
-  if (!pv) {
-    pv = fcm.GetVertexAxis();
-    if (!pv) AliFatal("No vertex axis defined");
-  }
-
-  return true;
-}
-//____________________________________________________________________
-AliESDEvent*
-AliForwardMultiplicityBase::GetESDEvent()
-{
-  //
-  // Get the ESD event. IF this is the first event, initialise
-  //
-  DGUARD(fDebug,1,"Get the ESD event");
-  if (IsZombie()) return 0;
-  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
-  if (!esd) {
-    AliWarning("No ESD event found for input event");
-    return 0;
-  }
-
-  // --- Load the data -----------------------------------------------
-  LoadBranches();
-
-  // On the first event, initialize the parameters
-  if (fFirstEvent && esd->GetESDRun()) {
-    GetEventInspector().ReadRunDetails(esd);
-    
-    AliInfo(Form("Initializing with parameters from the ESD:\n"
-		 "         AliESDEvent::GetBeamEnergy()   ->%f\n"
-		 "         AliESDEvent::GetBeamType()     ->%s\n"
-		 "         AliESDEvent::GetCurrentL3()    ->%f\n"
-		 "         AliESDEvent::GetMagneticField()->%f\n"
-		 "         AliESDEvent::GetRunNumber()    ->%d",
-		 esd->GetBeamEnergy(),
-		 esd->GetBeamType(),
-		 esd->GetCurrentL3(),
-		 esd->GetMagneticField(),
-		 esd->GetRunNumber()));
-    
-    fFirstEvent = false;
-    
-    GetEventPlaneFinder().SetRunNumber(esd->GetRunNumber());
-    if (!SetupForData()) { 
-      AliError("Failed to initialize sub-algorithms, making this a zombie");
-      esd = 0; // Make sure we do nothing on this event
-      Info("GetESDEvent", "ESD event pointer %p", esd);
-      SetZombie(true);
-      // return 0;
-    }
-  }
-  return esd;
-}
-//____________________________________________________________________
-void
-AliForwardMultiplicityBase::MarkEventForStore() const
-{
-  // Make sure the AOD tree is filled 
-  DGUARD(fDebug,3,"Mark AOD event for storage");
-  AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
-  AliAODHandler*      ah = 
-    dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler());
-  if (ah)    	
-	ah->SetFillAOD(kTRUE);
-
-}
-
-//____________________________________________________________________
-void
-AliForwardMultiplicityBase::Terminate(Option_t*)
+AliForwardMultiplicityBase::Finalize()
 {
   // 
   // End of job
@@ -475,17 +271,8 @@ AliForwardMultiplicityBase::Terminate(Option_t*)
   //
   DGUARD(fDebug,1,"Processing the merged results");
 
-  TList* list = dynamic_cast<TList*>(GetOutputData(1));
-  if (!list) {
-    AliError(Form("No output list defined (%p)", GetOutputData(1)));
-    if (GetOutputData(1)) GetOutputData(1)->Print();
-    return;
-  }
-
-  TList* output = new TList;
-  output->SetName(Form("%sResults", GetName()));
-  output->SetOwner();
-
+  TList* list   = fList;
+  TList* output = fResults;
   Double_t nTr = 0, nTrVtx = 0, nAcc = 0;
   MakeSimpledNdeta(list, output, nTr, nTrVtx, nAcc);
 
@@ -504,7 +291,7 @@ AliForwardMultiplicityBase::Terminate(Option_t*)
     p->SetTitle("Relative timing of task");
     output->Add(p);
   }
-  PostData(2, output);
+  return true;
 }
 
 //____________________________________________________________________
@@ -714,6 +501,11 @@ AliForwardMultiplicityBase::MakeRingdNdeta(const TList* input,
   }
   out->Add(dndetaRings);
 }
+#define PFB(N,FLAG)				\
+  do {									\
+    AliForwardUtil::PrintName(N);					\
+    std::cout << std::boolalpha << (FLAG) << std::noboolalpha << std::endl; \
+  } while(false)
 //____________________________________________________________________
 void
 AliForwardMultiplicityBase::Print(Option_t* option) const
@@ -724,28 +516,18 @@ AliForwardMultiplicityBase::Print(Option_t* option) const
   // Parameters:
   //    option Not used
   //
-  
-  std::cout << ClassName() << ": " << GetName() << "\n" 
-	    << "  Enable low flux code:   " << (fEnableLowFlux ? "yes" : "no") 
-	    << "\n"
-	    << "  Store per-ring hists:   " << (fStorePerRing ? "yes" : "no")
-	    << "\n"
-	    << "  Off-line trigger mask:  0x" 
-	    << std::hex     << std::setfill('0') 
-	    << std::setw (8) << fOfflineTriggerMask 
-	    << std::dec     << std::setfill (' ') << "\n"
-	    << "  Make timing histogram:  " << std::boolalpha 
-	    << fDoTiming << std::noboolalpha << std::endl;
+  AliBaseESDTask::Print(option);
   gROOT->IncreaseDirLevel();
-  if (fCorrManager) fCorrManager->Print(option);
-  else  
-    std::cout << "  Correction manager not set yet" << std::endl;
-  GetEventInspector()   .Print(option);
+  PFB("Enable low flux code", fEnableLowFlux);
+  PFB("Store per-ring hists", fStorePerRing);
+  PFB("Make timing histogram", fDoTiming);
+  // gROOT->IncreaseDirLevel();
   GetSharingFilter()    .Print(option);
   GetDensityCalculator().Print(option);
   GetCorrections()      .Print(option);
   GetHistCollector()    .Print(option);
   GetEventPlaneFinder() .Print(option);
+  // gROOT->DecreaseDirLevel();
   gROOT->DecreaseDirLevel();
 }
 

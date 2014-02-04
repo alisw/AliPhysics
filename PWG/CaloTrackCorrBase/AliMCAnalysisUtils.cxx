@@ -63,7 +63,7 @@ AliMCAnalysisUtils::~AliMCAnalysisUtils()
 }
 
 //_____________________________________________________________________________________________
-Int_t AliMCAnalysisUtils::CheckCommonAncestor(const Int_t index1, const Int_t index2, 
+Int_t AliMCAnalysisUtils::CheckCommonAncestor(Int_t index1, Int_t index2, 
                                               const AliCaloTrackReader* reader, 
                                               Int_t & ancPDG, Int_t & ancStatus, 
                                               TLorentzVector & momentum, TVector3 & prodVertex) 
@@ -212,9 +212,8 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(const Int_t index1, const Int_t in
   return ancLabel;
 }
 
-//_____________________________________________________________________
-Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t * label, 
-                                      const Int_t nlabels, 
+//_______________________________________________________________________
+Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t * label, Int_t nlabels,
                                       const AliCaloTrackReader* reader)
 {
   //Play with the montecarlo particles if available
@@ -236,9 +235,8 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t * label,
   return tag ;
 }
 
-//_____________________________________________________________________
-Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t label, 
-                                      const AliCaloTrackReader* reader)
+//__________________________________________________________________________________
+Int_t AliMCAnalysisUtils::CheckOrigin(Int_t label, const AliCaloTrackReader* reader)
 {
   //Play with the montecarlo particles if available
   Int_t tag = 0;
@@ -261,10 +259,8 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t label,
   return tag ;
 }	
 
-//_________________________________________________________________
-Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t *labels, 
-                                             const Int_t nlabels, 
-                                             AliStack* stack) 
+//_______________________________________________________________________________________________
+Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t *labels, Int_t nlabels, AliStack* stack)
 {
   // Play with the MC stack if available. Tag particles depending on their origin.
   // Do same things as in CheckOriginInAOD but different input.
@@ -561,9 +557,8 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t *labels,
 }
 
 
-//_________________________________________________________________________
-Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, 
-                                           const Int_t nlabels, 
+//____________________________________________________________________________
+Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, Int_t nlabels,
                                            const TClonesArray *mcparticles) 
 {
   // Play with the MCParticles in AOD if available. Tag particles depending on their origin.
@@ -822,11 +817,9 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels,
   
 }
 
-//_________________________________________________________________________
-void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, 
-                                                    const Int_t nlabels, 
-                                                    const Int_t mesonIndex, 
-                                                    AliStack *stack, 
+//_________________________________________________________________________________________
+void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels,    Int_t nlabels,
+                                                    Int_t mesonIndex, AliStack *stack,
                                                     Int_t &tag)
 {
   //Check if cluster is formed from the contribution of 2 decay photons from pi0 or eta. Input in stack
@@ -952,12 +945,9 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels,
   
 }	
 
-//__________________________________________________________________________________
-void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels,
-                                                    const Int_t nlabels, 
-                                                    const Int_t mesonIndex, 
-                                                    const TClonesArray *mcparticles, 
-                                                    Int_t & tag )
+//________________________________________________________________________________________________________
+void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, Int_t nlabels, Int_t mesonIndex,
+                                                    const TClonesArray *mcparticles, Int_t & tag   )
 {
   //Check if cluster is formed from the contribution of 2 decay photons from pi0 or eta. Input in AODMCParticles
   
@@ -1101,7 +1091,7 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels,
   
 }
 
-//_________________________________________________________________________
+//_____________________________________________________________________
 TList * AliMCAnalysisUtils::GetJets(const AliCaloTrackReader * reader)
 {
   //Return list of jets (TParticles) and index of most likely parton that originated it.
@@ -1251,8 +1241,8 @@ TList * AliMCAnalysisUtils::GetJets(const AliCaloTrackReader * reader)
 }
 
 
-//________________________________________________________________________________________________________
-TLorentzVector AliMCAnalysisUtils::GetDaughter(const Int_t idaugh, const Int_t label,
+//__________________________________________________________________________________________________________
+TLorentzVector AliMCAnalysisUtils::GetDaughter(Int_t idaugh, Int_t label,
                                                const AliCaloTrackReader* reader,
                                                Int_t & pdg, Int_t & status, Bool_t & ok, Int_t & daughlabel)
 {
@@ -1321,9 +1311,8 @@ TLorentzVector AliMCAnalysisUtils::GetDaughter(const Int_t idaugh, const Int_t l
   return daughter;
 }
 
-//_______________________________________________________________________________________________
-TLorentzVector AliMCAnalysisUtils::GetMother(const Int_t label, const AliCaloTrackReader* reader,
-                                             Bool_t & ok) 
+//______________________________________________________________________________________________________
+TLorentzVector AliMCAnalysisUtils::GetMother(Int_t label, const AliCaloTrackReader* reader, Bool_t & ok)
 {
   //Return the kinematics of the particle that generated the signal
   
@@ -1331,8 +1320,8 @@ TLorentzVector AliMCAnalysisUtils::GetMother(const Int_t label, const AliCaloTra
   return GetMother(label,reader,pdg,status, ok,momlabel);
 }
 
-//_______________________________________________________________________________________________
-TLorentzVector AliMCAnalysisUtils::GetMother(const Int_t label, const AliCaloTrackReader* reader,
+//_________________________________________________________________________________________
+TLorentzVector AliMCAnalysisUtils::GetMother(Int_t label, const AliCaloTrackReader* reader,
                                              Int_t & pdg, Int_t & status, Bool_t & ok)
 {
   //Return the kinematics of the particle that generated the signal
@@ -1341,8 +1330,8 @@ TLorentzVector AliMCAnalysisUtils::GetMother(const Int_t label, const AliCaloTra
   return GetMother(label,reader,pdg,status, ok,momlabel);
 }
 
-//_______________________________________________________________________________________________
-TLorentzVector AliMCAnalysisUtils::GetMother(const Int_t label, const AliCaloTrackReader* reader, 
+//______________________________________________________________________________________________________
+TLorentzVector AliMCAnalysisUtils::GetMother(Int_t label, const AliCaloTrackReader* reader, 
                                              Int_t & pdg, Int_t & status, Bool_t & ok, Int_t & momlabel)
 {
   //Return the kinematics of the particle that generated the signal, its pdg and its status and its label mother
@@ -1406,8 +1395,9 @@ TLorentzVector AliMCAnalysisUtils::GetMother(const Int_t label, const AliCaloTra
   return mom;
 }
 
-//_____________________________________________________________________________________
-TLorentzVector AliMCAnalysisUtils::GetMotherWithPDG(const Int_t label, const Int_t pdg, const AliCaloTrackReader* reader,
+//___________________________________________________________________________________
+TLorentzVector AliMCAnalysisUtils::GetMotherWithPDG(Int_t label, Int_t pdg,
+                                                    const AliCaloTrackReader* reader,
                                                     Bool_t & ok, Int_t & momlabel)
 {
   //Return the kinematics of the particle that generated the signal
@@ -1497,8 +1487,8 @@ TLorentzVector AliMCAnalysisUtils::GetMotherWithPDG(const Int_t label, const Int
   return grandmom;
 }
 
-//____________________________________________________________________________________________________
-TLorentzVector AliMCAnalysisUtils::GetGrandMother(const Int_t label, const AliCaloTrackReader* reader,
+//______________________________________________________________________________________________
+TLorentzVector AliMCAnalysisUtils::GetGrandMother(Int_t label, const AliCaloTrackReader* reader,
                                                   Int_t & pdg, Int_t & status, Bool_t & ok,
                                                   Int_t & grandMomLabel, Int_t & greatMomLabel)
 {
@@ -1576,12 +1566,12 @@ TLorentzVector AliMCAnalysisUtils::GetGrandMother(const Int_t label, const AliCa
   return grandmom;
 }
 
-//_____________________________________________________________________________________
-Float_t AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG(const Int_t label, const Int_t pdg, const AliCaloTrackReader* reader, Bool_t & ok) 
+//_______________________________________________________________________________________________________________
+void AliMCAnalysisUtils::GetMCDecayAsymmetryAngleForPDG(Int_t label, Int_t pdg, const AliCaloTrackReader* reader,
+                                                        Float_t & asym, Float_t & angle, Bool_t & ok)
 {
   //In case of an eta or pi0 decay into 2 photons, get the asymmetry  in the energy of the photons
   
-  Float_t asym = -2;
   
   if(reader->ReadStack())
   {
@@ -1591,7 +1581,6 @@ Float_t AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG(const Int_t label, const I
         printf("AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG() - Stack is not available, check analysis settings in configuration file, STOP!!\n");
       
       ok = kFALSE;
-      return asym;
     }
     if(label >= 0 && label < reader->GetStack()->GetNtrack())
     {
@@ -1618,6 +1607,10 @@ Float_t AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG(const Int_t label, const I
         if(d1->GetPdgCode() == 22 && d1->GetPdgCode() == 22)
         {
           asym = (d1->Energy()-d2->Energy())/grandmomP->Energy();
+          TLorentzVector lvd1, lvd2;
+          d1->Momentum(lvd1);
+          d2->Momentum(lvd2);
+          angle = lvd1.Angle(lvd2.Vect());
         }
       }
       else 
@@ -1637,7 +1630,7 @@ Float_t AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG(const Int_t label, const I
         printf("AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG() - AODMCParticles is not available, check analysis settings in configuration file!!\n");
       
       ok=kFALSE;
-      return asym;
+      return;
     }
     
     Int_t nprimaries = mcparticles->GetEntriesFast();
@@ -1666,6 +1659,10 @@ Float_t AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG(const Int_t label, const I
         if(d1->GetPdgCode() == 22 && d1->GetPdgCode() == 22)
         {
           asym = (d1->E()-d2->E())/grandmomP->E();
+          TLorentzVector lvd1, lvd2;
+          lvd1.SetPxPyPzE(d1->Px(),d1->Py(),d1->Pz(),d1->E());
+          lvd2.SetPxPyPzE(d2->Px(),d2->Py(),d2->Pz(),d2->E());
+          angle = lvd1.Angle(lvd2.Vect());
         }
       }
       else 
@@ -1679,12 +1676,11 @@ Float_t AliMCAnalysisUtils::GetMCDecayAsymmetryForPDG(const Int_t label, const I
   
   ok = kTRUE;
   
-  return asym;
 }
 
 
-//_______________________________________________________________________________________________________
-Int_t AliMCAnalysisUtils::GetNDaughters(const Int_t label, const AliCaloTrackReader* reader, Bool_t & ok)
+//_________________________________________________________________________________________________
+Int_t AliMCAnalysisUtils::GetNDaughters(Int_t label, const AliCaloTrackReader* reader, Bool_t & ok)
 {
   // Return the the number of daughters of a given MC particle
   
@@ -1742,9 +1738,9 @@ Int_t AliMCAnalysisUtils::GetNDaughters(const Int_t label, const AliCaloTrackRea
   return -1;
 }
 
-//_______________________________________________________________________________
-Int_t AliMCAnalysisUtils::GetNOverlaps(const Int_t * label, const UInt_t nlabels,
-                                       const Int_t mctag, const Int_t mesonLabel,
+//_________________________________________________________________________________
+Int_t AliMCAnalysisUtils::GetNOverlaps(const Int_t * label, UInt_t nlabels,
+                                       Int_t mctag, Int_t mesonLabel,
                                        AliCaloTrackReader * reader, Int_t *overpdg)
 {
   // Compare the primary depositing more energy with the rest,
@@ -1836,8 +1832,8 @@ void AliMCAnalysisUtils::Print(const Option_t * opt) const
   
 } 
 
-//________________________________________________________
-void AliMCAnalysisUtils::PrintMCTag(const Int_t tag) const
+//__________________________________________________
+void AliMCAnalysisUtils::PrintMCTag(Int_t tag) const
 {
   // print the assigned origins to this particle
   
@@ -1865,7 +1861,6 @@ void AliMCAnalysisUtils::PrintMCTag(const Int_t tag) const
          CheckTagBit(tag,kMCUnknown),
          CheckTagBit(tag,kMCBadLabel)
          );
-  
 } 
 
 

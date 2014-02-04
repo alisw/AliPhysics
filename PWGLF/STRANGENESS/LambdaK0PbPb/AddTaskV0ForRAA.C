@@ -65,44 +65,87 @@ AliAnalysisTaskV0ForRAA *AddTaskV0ForRAA(Bool_t anaPP=kFALSE, Int_t cent=0,Int_t
    
    AliAnalysisTaskV0ForRAA *task = new AliAnalysisTaskV0ForRAA(taskname);
 
-   Double_t minPt=0.0;//15;
+   Double_t minPt=0.0;
    
    //--- esd track cuts V0 daughters ---//
-  
+   // esd track cuts for pions high pt
    AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts(cutsname);
-   //    esdTrackCuts->SetMinNClustersTPC(70);
    esdTrackCuts->SetMaxChi2PerClusterTPC(4);
    esdTrackCuts->SetMinNCrossedRowsTPC(70);
-   esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-   
    esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
    esdTrackCuts->SetRequireTPCRefit(kTRUE);
    esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-   
-   //esdTrackCuts->SetEtaRange(-0.9,+0.9);
-   task->SetESDTrackCuts(esdTrackCuts);
 
+   // esd track cuts for protons high pt
+   TString cutsnameCh = cutsname;
+   cutsnameCh +="_charged";
+   AliESDtrackCuts* esdTrackCutsCharged = new AliESDtrackCuts(cutsnameCh);
+   esdTrackCutsCharged->SetMaxChi2PerClusterTPC(4);
+   esdTrackCutsCharged->SetMinNCrossedRowsTPC(70);
+   esdTrackCutsCharged->SetAcceptKinkDaughters(kFALSE);
+   esdTrackCutsCharged->SetRequireTPCRefit(kTRUE);
+   esdTrackCutsCharged->SetRequireSigmaToVertex(kFALSE);
+
+   // esd track cuts for all low pt
+   TString cutsnameLowPt  = cutsname;
+   cutsnameLowPt +="_lowpt";
+   AliESDtrackCuts* esdTrackCutsLowPt = new AliESDtrackCuts(cutsnameLowPt);
+   esdTrackCutsLowPt->SetMaxChi2PerClusterTPC(4);
+   esdTrackCutsLowPt->SetMinNCrossedRowsTPC(70);
+   esdTrackCutsLowPt->SetAcceptKinkDaughters(kFALSE);
+   esdTrackCutsLowPt->SetRequireTPCRefit(kTRUE);
+   esdTrackCutsLowPt->SetRequireSigmaToVertex(kFALSE);
+
+   //Add cuts to task
+   task->SetESDTrackCutsCharged(esdTrackCutsCharged);
+   task->SetESDTrackCuts(esdTrackCuts);
+   task->SetESDTrackCutsLowPt(esdTrackCutsLowPt);
 
    //--- analysis modes ---//
    task->SetAnapp(anaPP);
    task->SetMCMode(mcMode);
    task->SetMCTruthMode(mcTruthMode);
-   
-   //--- general cuts ---//
+
+   //---------- cuts -------------//
+   //general cuts
    task->SetUseOnthefly(onFly);
-   task->SetUsePID(usePID,4.0,2100.0);
+   task->SetUsePID(usePID,3.0,100.0);
    task->SetPrimVertexZCut(10.0,kTRUE);
-   task->SetCosOfPointingAngleK(0.99,1000.0);
-   task->SetCosOfPointingAngleL(0.99,1000.0);
+ 
+   //rapidity
    task->SetRapidityCutMother(kTRUE,0.5);
    task->SetDoEtaOfMCDaughtersCut(mcEtaCut,etaCut);
    
-   //--- centrality ---//
-   task->SetUseCentrality(centDet);     // 0=off, 1=VZERO, 2=SPD
-   task->SetUseCentralityBin(cent);     // Bin to be used 0,5,10,20,30,40,50,60,70,80,90,(100=SPDonly)
-   task->SetUseCentralityRange(centRange);
+   //TPC cuts
+   task->SetCutMoreNclsThanRows(kTRUE);
+   task->SetCutMoreNclsThanFindable(kTRUE);
+   task->SetLowPtTPCCutAliESDTrackCut(-1.0);
+   task->SetRatioFoundOverFindable(0.5);
+
+   //V0 specific cuts
+   task->SetCosOfPointingAngleK(0.99,1000.0);
+   task->SetCosOfPointingAngleL(0.998,1000.0);
+
+   task->SetCtauCut(5.0,6.0,0.3,2.0);
+
+   task->SetArmenterosCutQt(-1.0,100.0,kTRUE,kFALSE);
    
-   task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral );
+   task->SetDCAV0ToVertexK0(0.4);
+   task->SetDCAV0ToVertexL(1.2);
+
+   task->SetDCADaughtersK0(0.23);
+   task->SetDCADaughtersL(0.35);
+   task->SetDCADaughtersAL(0.35);
+   
+   task->SetDecayRadiusXYMinMax(5.0,1000.0);
+
+   
+   //--- centrality ---//
+   task->SetUseCentrality(centDet);        // 0=off, 1=VZERO, 2=SPD
+   task->SetUseCentralityBin(cent);        // bin to be used 0,5,10,20,30,40,50,60,70,80,90,(100=SPDonly)
+   task->SetUseCentralityRange(centRange); // add centrality bin for increasing original bin range. For cent 60-80%: cent = 60 and centRange = 10
+   
+   task->SelectCollisionCandidates(AliVEvent::kMB);// | AliVEvent::kCentral | AliVEvent::kSemiCentral );
    
    mgr->AddTask(task);
  

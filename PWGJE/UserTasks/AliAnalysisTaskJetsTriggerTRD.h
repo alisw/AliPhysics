@@ -30,16 +30,20 @@ public:
   void    SetJetPtBinMax(Float_t ptmax) { fJetPtBinMax = ptmax; }
   Float_t GetJetPtBinMax() const { return fJetPtBinMax; }
 
-  void SetJetBranchName(const char* const branchName) { strncpy(fJetBranchName, branchName, fgkStringLength-1); }
+  void SetJetBranchName(const char* branchName) { strncpy(fJetBranchName, branchName, fgkStringLength-1); }
   const char* GetJetBranchName() const { return fJetBranchName; }
 
   // histograms
   enum Hist_t {
       kHistStat = 0,
+      kHistJetPtMC,
       kHistNoJets,
       kHistTrackGTU,
-      kHistJetPt, kHistJetPtITS, kHistJetPt3x3,
-      kHistJetPtEMC, kHistJetPtHJT,
+      kHistNPtMin,
+      kHistLeadJetPt,
+      kHistJetPt,
+      kHistJetPtITS,
+      kHistJetPt3x3,
       kHistJetPtNoTracks3,
       kHistLast
   };
@@ -47,19 +51,29 @@ public:
   // statistics
   enum Stat_t {
       kStatSeen = 1,
+      kStatTrg,
       kStatUsed,
-      kStatMB,
+      kStatEvCuts,
       kStatLast
   };
 
   // trigger conditions
-  enum Trigger_t { 
-      kTrgMB = 0,
-      kTrgInt,
-      kTrgInt78,
-      kTrgHJT,
-      kTrgEMC,
-      kTrgLast
+  enum Trigger_t {
+    // untriggered
+    kTrgMinBias = 1, // CINT1
+    kTrgInt7,
+    kTrgInt8,
+    kTrgEMC7,
+    kTrgEMC8,
+    // TRD jet trigger (HJT)
+    kTrgInt7WUHJT,
+    kTrgInt8WUHJT,
+    kTrgEMC7WUHJT,
+    kTrgEMC8WUHJT,
+    kTrgEMCEJE,
+    kTrgEMCEGA,
+    //
+    kTrgLast
   };	   
 
 protected:
@@ -76,7 +90,7 @@ protected:
   TH1  *fHist[kHistLast];	//! pointers to histogram
   const char *fShortTaskId;	//! short identifier for the task
 
-  TH1*&  GetHistogram(Hist_t hist, const Int_t idx = 0) { return fHist[hist + idx]; }
+  TH1*&  GetHistogram(Hist_t hist, Int_t idx = 0) { return fHist[hist + idx]; }
 
   TH1*   AddHistogram(Hist_t hist, const char *hid, TString title,
                       Int_t xbins, Float_t xmin, Float_t xmax, Int_t binType = 1);
@@ -98,6 +112,11 @@ protected:
   // task configuration
   Int_t    fNoJetPtBins;                // number of bins for jet pt
   Float_t  fJetPtBinMax;                // max jet pt (GeV) in histograms
+
+  Float_t  fXsection;			// x-section from PYTHIA
+  Float_t  fAvgTrials;			// ratio of PYTHIA events
+					// over accepted events
+  Float_t  fPtHard;			// pt hard
 
   static const Int_t fgkStringLength = 100; // max length for the jet branch name
   char fJetBranchName[fgkStringLength];     // jet branch name

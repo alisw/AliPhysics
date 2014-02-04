@@ -79,6 +79,39 @@ TString GetCollSystem(const TString& period)
 	return "unknown";
 }
 
+void GetInelXSection(Double_t xsection[3], const TString& period)
+{
+//
+// inelastic cross section in mb and largest stat. and syst error
+// measured by ALICE for the given colliding system
+// http://arxiv.org/abs/1208.4968
+//
+	TString collsystem = GetCollSystem(period);
+	
+	if( collsystem == "pp0.9TeV" )
+	{
+		xsection[0] = 50.3;
+		xsection[1] = 0.4;
+		xsection[2] = 1.0;
+	}
+	else if( collsystem == "pp2.76TeV" )
+	{
+		xsection[0] = 62.8;
+		xsection[1] = 4.0;
+		xsection[2] = 4.6;
+	}
+	else if( collsystem == "pp7TeV" )
+	{
+		xsection[0] = 73.2;
+		xsection[1] = 1.2;
+		xsection[2] = 2.6;
+	}
+	else
+	{
+		std::cerr << "Warning: unknown colliding system " << collsystem << " for period " << period << std::endl;
+	}
+}
+
 void GetTriggerEfficiency(Double_t trigeff[3], const TString& trigname, const TString& period)
 {
 //

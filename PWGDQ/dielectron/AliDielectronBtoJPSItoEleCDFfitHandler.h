@@ -24,7 +24,7 @@ class AliDielectronBtoJPSItoEleCDFfitHandler : public TNamed {
 		AliDielectronBtoJPSItoEleCDFfitHandler();
 		AliDielectronBtoJPSItoEleCDFfitHandler& operator= (const  AliDielectronBtoJPSItoEleCDFfitHandler& c);
 		AliDielectronBtoJPSItoEleCDFfitHandler(const AliDielectronBtoJPSItoEleCDFfitHandler& c);
-		AliDielectronBtoJPSItoEleCDFfitHandler(Double_t* decaytime, Double_t* invariantmass, Int_t *type, Int_t ncand);
+		AliDielectronBtoJPSItoEleCDFfitHandler(Double_t* decaytime, Double_t* invariantmass, Double_t *pt, Int_t *type, Int_t ncand);
 		~AliDielectronBtoJPSItoEleCDFfitHandler(); 
 		Double_t Up() const { return fUp; }
 		void SetErrorDef(Double_t up) {fUp = up;}
@@ -38,10 +38,11 @@ class AliDielectronBtoJPSItoEleCDFfitHandler : public TNamed {
                 Double_t GetParameterError(Int_t numPar) const {return fitter->GetParError(numPar);}   
 
                 void FixParam(UInt_t param, Bool_t value) { fIsParamFixed.SetBitNumber(param,value); }
-		void FixAllParam(Bool_t value) { for(UInt_t par=0;par<45;par++) fIsParamFixed.SetBitNumber(par,value); }
+		void FixAllParam(Bool_t value) { for(UInt_t par=0;par<49;par++) fIsParamFixed.SetBitNumber(par,value); }
 		Bool_t IsParamFixed(UInt_t param) { return fIsParamFixed.TestBitNumber(param); }
 		void SetResolutionConstants(Double_t* resolutionConst, Int_t type);
 		void SetCrystalBallFunction(Bool_t okCB);
+		void SetExponentialFunction(Bool_t okEpx);
 		void SetMassWndHigh(Double_t limit);
 		void SetMassWndLow(Double_t limit);
 
@@ -50,6 +51,7 @@ class AliDielectronBtoJPSItoEleCDFfitHandler : public TNamed {
 
 		Double_t* Decaytime() const         { return fX; }
 		Double_t* InvariantMass() const     { return fM; }
+		Double_t* TransverseMom() const     { return fPt; }
                 Int_t*    TypeCand() const          { return fType;}
  		AliDielectronBtoJPSItoEleCDFfitFCN* LikelihoodPointer() const { return fLikely; }
 		Int_t DoMinimization(Int_t step = 0);
@@ -59,10 +61,11 @@ class AliDielectronBtoJPSItoEleCDFfitHandler : public TNamed {
 		//
 		TBits fIsParamFixed;                               //array of bits: 0 = param free; 1 = param fixed;
 		Bool_t fPrintStatus;                               //flag to enable the prit out of the algorithm at each step
-		Double_t fParamStartValues[45];                    //array of parameters input value
+		Double_t fParamStartValues[49];                    //array of parameters input value
 		Double_t fUp;                                      //error definition 
 		Double_t* fX; 	                     	           //pseudo-proper decay time X
 		Double_t* fM;                                      //invariant mass M
+		Double_t* fPt;                                     //invariant mass M
                 Int_t* fType;                                      //candidate type
 		AliDielectronBtoJPSItoEleCDFfitFCN* fLikely;       //Log likelihood function
 		Int_t fNcand;                                      //number of candidates

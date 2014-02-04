@@ -932,7 +932,8 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
 		     Bool_t k2pMethod = kTRUE,
 		     TString eventClass = "Centrality",
 		     Bool_t bRootMoments = kFALSE,
-		     Bool_t kUseZYAM = kFALSE) {
+		     Bool_t kUseZYAM = kFALSE,
+		     Bool_t bReduceRangeForMoments = kFALSE) {
   //Macro that draws the balance functions PROJECTIONS 
   //for each centrality bin for the different pT of trigger and 
   //associated particles
@@ -1093,6 +1094,24 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
   TString meanLatex, rmsLatex, skewnessLatex, kurtosisLatex;
 
   if(bRootMoments){
+
+    // need to restrict to near side in case of dphi
+    if(!kProjectInEta) gHistBalanceFunctionSubtracted->GetXaxis()->SetRangeUser(-TMath::Pi()/2,TMath::Pi()/2);
+
+    if(bReduceRangeForMoments){
+
+      // default (for 2<pT,assoc<3<pT,trig<4)
+      Double_t rangeReduced = 1.0;
+
+      //for 3<pT,assoc<8<pT,trig<15
+      if(ptTriggerMax>10){
+	rangeReduced = 0.4;
+      }
+
+      cout<<"Use reduced range = "<<rangeReduced<<endl;
+      gHistBalanceFunctionSubtracted->GetXaxis()->SetRangeUser(-rangeReduced,rangeReduced);
+    }
+
     meanLatex = "#mu = "; 
     meanLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetMean());
     meanLatex += " #pm "; 
@@ -1113,12 +1132,12 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
     kurtosisLatex += " #pm "; 
     kurtosisLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetKurtosis(11));
     
-    Printf("Mean: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetMean(),gHistBalanceFunctionSubtracted->GetMeanError());
-    Printf("RMS: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetRMS(),gHistBalanceFunctionSubtracted->GetRMSError());
-    Printf("Skeweness: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetSkewness(1),gHistBalanceFunctionSubtracted->GetSkewness(11));
-    Printf("Kurtosis: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetKurtosis(1),gHistBalanceFunctionSubtracted->GetKurtosis(11));
+    Printf("ROOT Mean: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetMean(),gHistBalanceFunctionSubtracted->GetMeanError());
+    Printf("ROOT RMS: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetRMS(),gHistBalanceFunctionSubtracted->GetRMSError());
+    Printf("ROOT Skeweness: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetSkewness(1),gHistBalanceFunctionSubtracted->GetSkewness(11));
+    Printf("ROOT Kurtosis: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetKurtosis(1),gHistBalanceFunctionSubtracted->GetKurtosis(11));
 
-
+  
     // store in txt files
     TString meanFileName = filename;
     if(kProjectInEta) 
@@ -1136,7 +1155,7 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
       rmsFileName = "deltaEtaProjection_Rms.txt";
       //rmsFileName.ReplaceAll(".root","_DeltaEtaProjection_Rms.txt");
     else              
-      rmsFileName = "deltaPhiProjection_Rms.txt");
+      rmsFileName = "deltaPhiProjection_Rms.txt";
       //rmsFileName.ReplaceAll(".root","_DeltaPhiProjection_Rms.txt");
     ofstream fileRms(rmsFileName.Data(),ios::app);
     fileRms << " " << gHistBalanceFunctionSubtracted->GetRMS() << " " <<gHistBalanceFunctionSubtracted->GetRMSError()<<endl;
@@ -1163,6 +1182,9 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
     ofstream fileKurtosis(kurtosisFileName.Data(),ios::app);
     fileKurtosis << " " << gHistBalanceFunctionSubtracted->GetKurtosis(1) << " " <<gHistBalanceFunctionSubtracted->GetKurtosis(11)<<endl;
     fileKurtosis.close();
+
+    if(!kProjectInEta) gHistBalanceFunctionSubtracted->GetXaxis()->SetRangeUser(-TMath::Pi()/2,3.*TMath::Pi()/2);
+    else               gHistBalanceFunctionSubtracted->GetXaxis()->SetRangeUser(-1.6,1.6);
   }
   // calculate the moments by hand
   else{
@@ -1250,7 +1272,12 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
 
   // Weighted mean as calculated for 1D analysis
   Double_t weightedMean, weightedMeanError;
-  GetWeightedMean1D(gHistBalanceFunctionSubtracted,kProjectInEta,1,-1,weightedMean,weightedMeanError);
+  if(bReduceRangeForMoments){
+    GetWeightedMean1D(gHistBalanceFunctionSubtracted,kProjectInEta,1,-1,weightedMean,weightedMeanError,rangeReduced);
+  }
+  else{
+    GetWeightedMean1D(gHistBalanceFunctionSubtracted,kProjectInEta,1,-1,weightedMean,weightedMeanError,-1.);
+  }
   Printf("Weighted Mean: %lf - Error: %lf",weightedMean, weightedMeanError);
  
   // store in txt files
@@ -1310,7 +1337,10 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
 					 Double_t ptTriggerMax = -1.,
 					 Double_t ptAssociatedMin = -1.,
 					 Double_t ptAssociatedMax = -1.,
-					 TString eventClass = "Multiplicity"
+					 TString eventClass = "Multiplicity",
+					 Bool_t bRootMoments = kFALSE,
+					 Bool_t bFullPhiForEtaProjection = kFALSE,
+					 Bool_t bReduceRangeForMoments = kFALSE
 ) {
   //Macro that draws the BF distributions for each centrality bin
   //for reaction plane dependent analysis
@@ -1435,16 +1465,36 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
 
   c0->SaveAs(pngName.Data());
 
+ // do the full range for the projection on eta (for cross checking with published results)
+ if(bFullPhiForEtaProjection){
+   
+   drawProjections(gHistBalanceFunction2D,
+		   kTRUE,
+		   1,72,
+		   gCentrality,
+		   psiMin,psiMax,
+		   ptTriggerMin,ptTriggerMax,
+		   ptAssociatedMin,ptAssociatedMax,
+		   kTRUE,
+		   eventClass.Data(),
+		   bRootMoments,
+		   kFALSE,
+		   bReduceRangeForMoments);
+ }
+ else{
   drawProjections(gHistBalanceFunction2D,
-		  kTRUE,
-		  1,36,
-		  gCentrality,
-		  psiMin,psiMax,
-		  ptTriggerMin,ptTriggerMax,
-		  ptAssociatedMin,ptAssociatedMax,
-		  kTRUE,
-		  eventClass,
-		  kFALSE);
+		   kTRUE,
+		   1,36,
+		   gCentrality,
+		   psiMin,psiMax,
+		   ptTriggerMin,ptTriggerMax,
+		   ptAssociatedMin,ptAssociatedMax,
+		   kTRUE,
+		   eventClass.Data(),
+		  bRootMoments,
+		  kFALSE,
+		  bReduceRangeForMoments);
+ }
 
   drawProjections(gHistBalanceFunction2D,
   		  kFALSE,
@@ -1455,7 +1505,9 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
   		  ptAssociatedMin,ptAssociatedMax,
   		  kTRUE,
   		  eventClass.Data(),
-  		  kFALSE);
+  		  bRootMoments,
+		  kFALSE,
+		  bReduceRangeForMoments);
 
   TString outFileName = filename;
   outFileName.ReplaceAll("correlationFunction","balanceFunction2D");
@@ -1466,8 +1518,195 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
   
 }
 
+
+//____________________________________________________________//
+void mergeBFPsi2D(TString momDirectory = "./",
+		  TString directory1 = "",
+		  TString directory2 = "",
+		  TString directory3 = "",
+		  TString directory4 = "",
+		  Int_t gCentrality = 1,
+		  Double_t psiMin = -0.5, Double_t psiMax = 3.5,
+		  TString  eventClass = "Centrality",
+		  Double_t ptTriggerMin = -1.,
+		  Double_t ptTriggerMax = -1.,
+		  Double_t ptAssociatedMin = -1.,
+		  Double_t ptAssociatedMax = -1.,
+		  Bool_t bReduceRangeForMoments = kFALSE
+) {
+  //Macro that draws the BF distributions for each centrality bin
+  //for reaction plane dependent analysis
+  //Author: Panos.Christakoglou@nikhef.nl
+  TGaxis::SetMaxDigits(3);
+  gStyle->SetPalette(55,0);
+
+  cout<<"REDUCE"<<bReduceRangeForMoments<<"  "<<endl;
+
+  const Int_t nMaxDirectories = 4; // maximum number of directories to merge (set to 4 for now)
+  TString sDirectory[nMaxDirectories];
+  Int_t nDirectories = nMaxDirectories;
+
+  TString sFileName[nMaxDirectories];
+  TFile *fBF[nMaxDirectories];
+  TH2D  *hBF[nMaxDirectories];
+  Double_t entries[nMaxDirectories];
+
+  TFile *fOut;
+  TH2D  *hBFOut;
+  Double_t entriesOut = 0.;
+
+  // find out how many directories we have to merge
+ if(directory1==""){
+    nDirectories=0;
+  }
+  else if(directory2==""){
+    nDirectories=1;
+    sDirectory[0]=directory1;
+  }
+  else if(directory3==""){
+    nDirectories=2;
+    sDirectory[0]=directory1;
+    sDirectory[1]=directory2;
+  }
+  else if(directory4==""){
+    nDirectories=3;
+    sDirectory[0]=directory1;
+    sDirectory[1]=directory2;
+    sDirectory[2]=directory3;
+  }
+  else{
+    nDirectories=nMaxDirectories;
+    sDirectory[0]=directory1;
+    sDirectory[1]=directory2;
+    sDirectory[2]=directory3;
+    sDirectory[3]=directory4;
+  }
+
+ for(Int_t iDir = 0; iDir < nDirectories; iDir++){
+
+   //Get the input file
+   sFileName[iDir] = sDirectory[iDir];
+   sFileName[iDir] += "/Centrality"; sFileName[iDir] += gCentrality;
+   sFileName[iDir] += "/"; 
+sFileName[iDir] += momDirectory;
+   sFileName[iDir] += "/balanceFunction2D.";
+   
+  if(eventClass == "Centrality"){
+    sFileName[iDir] += Form("Centrality%.1fTo%.1f",psiMin,psiMax);
+    sFileName[iDir] += ".PsiAll.PttFrom";
+  }
+  else if(eventClass == "Multiplicity"){
+    sFileName[iDir] += Form("Multiplicity%.0fTo%.0f",psiMin,psiMax);
+    sFileName[iDir] += ".PsiAll.PttFrom";
+  }
+  else{ // "EventPlane" (default)
+    sFileName[iDir] += "Centrality";
+    sFileName[iDir] += gCentrality; sFileName[iDir] += ".Psi";
+    if((psiMin == -0.5)&&(psiMax == 0.5)) sFileName[iDir] += "InPlane.Ptt";
+    else if((psiMin == 0.5)&&(psiMax == 1.5)) sFileName[iDir] += "Intermediate.Ptt";
+    else if((psiMin == 1.5)&&(psiMax == 2.5)) sFileName[iDir] += "OutOfPlane.Ptt";
+    else if((psiMin == 2.5)&&(psiMax == 3.5)) sFileName[iDir] += "Rest.PttFrom";
+    else sFileName[iDir] += "All.PttFrom";
+  } 
+  sFileName[iDir] += Form("%.1f",ptTriggerMin); sFileName[iDir] += "To"; 
+  sFileName[iDir] += Form("%.1f",ptTriggerMax); sFileName[iDir] += "PtaFrom";
+  sFileName[iDir] += Form("%.1f",ptAssociatedMin); sFileName[iDir] += "To"; 
+  sFileName[iDir] += Form("%.1f",ptAssociatedMax); 
+  sFileName[iDir] += "_";
+  sFileName[iDir] += Form("%.1f",psiMin);
+  sFileName[iDir] += "-";
+  sFileName[iDir] += Form("%.1f",psiMax);
+  sFileName[iDir] += ".root";  
+  
+  //Open the file
+  fBF[iDir] = TFile::Open(sFileName[iDir].Data());
+  if((!fBF[iDir])||(!fBF[iDir]->IsOpen())) {
+    Printf("The file %s is not found. Not used...",sFileName[iDir]);
+    continue;
+  }
+  //fBF[iDir]->ls();
+
+  hBF[iDir]     = (TH2D*)fBF[iDir]->Get("gHistBalanceFunctionSubtracted");
+  if(!hBF[iDir]) continue;
+  entries[iDir] = (Double_t) hBF[iDir]->GetEntries();
+  entriesOut += entries[iDir];
+  cout<<" BF histogram "<<iDir<<" has "<<entries[iDir] <<" entries."<<endl;
+
+  // scaling and adding (for average)
+  hBF[iDir]->Scale(entries[iDir]);
+  if(iDir==0) hBFOut = (TH2D*)hBF[iDir]->Clone("gHistBalanceFunctionSubtractedOut");
+  else hBFOut->Add(hBF[iDir]);
+  
+ }
+
+ // scaling with all entries
+ hBFOut->Scale(1./entriesOut);
+
+ drawProjections(hBFOut,
+  		  kTRUE,
+  		  1,36,
+  		  gCentrality,
+  		  psiMin,psiMax,
+  		  ptTriggerMin,ptTriggerMax,
+  		  ptAssociatedMin,ptAssociatedMax,
+  		  kTRUE,
+  		  eventClass,
+  		  kTRUE,
+		  kFALSE,
+		  bReduceRangeForMoments);
+
+  drawProjections(hBFOut,
+  		  kFALSE,
+  		  1,80,
+  		  gCentrality,
+  		  psiMin,psiMax,
+  		  ptTriggerMin,ptTriggerMax,
+  		  ptAssociatedMin,ptAssociatedMax,
+  		  kTRUE,
+  		  eventClass.Data(),
+  		  kTRUE,
+		  kFALSE,
+		  bReduceRangeForMoments);
+
+ // output
+ TString outFileName = "balanceFunction2D.";
+ 
+ if(eventClass == "Centrality"){
+   outFileName += Form("Centrality%.1fTo%.1f",psiMin,psiMax);
+   outFileName += ".PsiAll.PttFrom";
+ }
+ else if(eventClass == "Multiplicity"){
+   outFileName += Form("Multiplicity%.0fTo%.0f",psiMin,psiMax);
+   outFileName += ".PsiAll.PttFrom";
+  }
+ else{ // "EventPlane" (default)
+   outFileName += "Centrality";
+   outFileName += gCentrality; outFileName += ".Psi";
+   if((psiMin == -0.5)&&(psiMax == 0.5)) outFileName += "InPlane.Ptt";
+   else if((psiMin == 0.5)&&(psiMax == 1.5)) outFileName += "Intermediate.Ptt";
+   else if((psiMin == 1.5)&&(psiMax == 2.5)) outFileName += "OutOfPlane.Ptt";
+   else if((psiMin == 2.5)&&(psiMax == 3.5)) outFileName += "Rest.PttFrom";
+   else outFileName += "All.PttFrom";
+ } 
+ outFileName += Form("%.1f",ptTriggerMin); outFileName += "To"; 
+ outFileName += Form("%.1f",ptTriggerMax); outFileName += "PtaFrom";
+ outFileName += Form("%.1f",ptAssociatedMin); outFileName += "To"; 
+ outFileName += Form("%.1f",ptAssociatedMax); 
+ outFileName += "_";
+ outFileName += Form("%.1f",psiMin);
+ outFileName += "-";
+ outFileName += Form("%.1f",psiMax);
+ outFileName += ".root";  
+ 
+ hBFOut->SetName("gHistBalanceFunctionSubtracted");
+ fBFOut = TFile::Open(outFileName.Data(),"recreate");  
+ hBFOut->Write();
+ fBFOut->Close();
+ 
+}
+
 //____________________________________________________________________//
-void GetWeightedMean1D(TH1D *gHistBalance, Bool_t kProjectInEta = kTRUE, Int_t fStartBin = 1, Int_t fStopBin = -1, Double_t &WM, Double_t &WME) {
+void GetWeightedMean1D(TH1D *gHistBalance, Bool_t kProjectInEta = kTRUE, Int_t fStartBin = 1, Int_t fStopBin = -1, Double_t &WM, Double_t &WME,Double_t rangeReduced = -1.) {
 
   //Prints the calculated width of the BF and its error
   Double_t gSumXi = 0.0, gSumBi = 0.0, gSumBiXi = 0.0;
@@ -1493,6 +1732,9 @@ void GetWeightedMean1D(TH1D *gHistBalance, Bool_t kProjectInEta = kTRUE, Int_t f
       if(currentBinCenter < 0) currentBinCenter = -currentBinCenter;
       if(currentBinCenter > TMath::Pi()) currentBinCenter = 2 * TMath::Pi() - currentBinCenter;
     }
+
+    if(rangeReduced > 0 && currentBinCenter > rangeReduced )
+      continue;
 
     gSumXi += currentBinCenter;
     gSumBi += gHistBalance->GetBinContent(i);

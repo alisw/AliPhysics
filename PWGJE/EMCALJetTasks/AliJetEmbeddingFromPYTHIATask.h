@@ -1,7 +1,7 @@
 #ifndef ALIJETEMBEDDINGFROMPYTHIATASK_H
 #define ALIJETEMBEDDINGFROMPYTHIATASK_H
 
-// $Id: AliJetEmbeddingFromPYTHIATask.h  $
+// $Id$
 
 #include "AliJetEmbeddingFromAODTask.h"
 #include <TArrayD.h>
@@ -28,6 +28,7 @@ class AliJetEmbeddingFromPYTHIATask : public AliJetEmbeddingFromAODTask {
   void           SetLHC11hAnchorRuns(Bool_t a=kTRUE)               { fLHC11hAnchorRun                           = a ; }
   void           SetFileTable(THashTable *t)                       { fFileTable                                 = t ; }
   void           SetUseAsVetoTable(Bool_t v)                       { fUseAsVetoTable                            = v ; }
+  void           SetMinEntriesFromFile(Int_t r)                    { fMinEntriesFromFile                        = r ; }
 
  protected:
   Bool_t         ExecOnce()           ;// intialize task
@@ -41,6 +42,7 @@ class AliJetEmbeddingFromPYTHIATask : public AliJetEmbeddingFromAODTask {
   Int_t          fAnchorRun           ;// Anchor run
   THashTable    *fFileTable           ;// Table of allowed/vetoed files
   Bool_t         fUseAsVetoTable      ;// Use fFileTable as a veto table
+  Int_t          fMinEntriesFromFile  ;// Minimum number of embedded events before changing file
   Int_t          fCurrentPtHardBin    ;//!Pt hard bin of the current open file
   TParameter<int> *fPtHardBinParam    ;//!Pt hard bin param
 
@@ -50,6 +52,6 @@ class AliJetEmbeddingFromPYTHIATask : public AliJetEmbeddingFromAODTask {
   AliJetEmbeddingFromPYTHIATask(const AliJetEmbeddingFromPYTHIATask&);            // not implemented
   AliJetEmbeddingFromPYTHIATask &operator=(const AliJetEmbeddingFromPYTHIATask&); // not implemented
 
-  ClassDef(AliJetEmbeddingFromPYTHIATask, 2) // Jet embedding from PYTHIA task
+  ClassDef(AliJetEmbeddingFromPYTHIATask, 3) // Jet embedding from PYTHIA task
 };
 #endif

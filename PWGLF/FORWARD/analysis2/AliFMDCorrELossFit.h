@@ -286,6 +286,39 @@ public:
     Int_t FindMaxWeight(Double_t maxRelError=2*fgMaxRelError, 
 			Double_t leastWeight=fgLeastWeight, 
 			UShort_t maxN=999) const;
+    /** 
+     * Get a function that expresses this fit.
+     * 
+     * @f[ 
+     *  f_N(x;\Delta,\xi,\sigma') = 
+     *     \sum_{i=1}^{n} a_i f(x;\Delta_i,\xi_i,\sigma_i')
+     * @f] 
+     * (see AliForwardUtil::NLandauGaus) or, if @a i is 1 or larger 
+     * @f[ 
+     *  f_i(x;\Delta,\xi,\sigma') = a_i f(x;\Delta_i,\xi_i,\sigma_i')
+     * @f] 
+     * (see AliForwardUtil::ILandauGaus).
+     *
+     * @param i Component to get.  If @a i is 0 or less, then the full
+     * function is returned, otherwise the specified component (if
+     * valid).
+     * @param max Upper bound on function 
+     *
+     * @return Pointer to newly allocated function.  The caller owns
+     * this object, and must clean it up.
+     */
+    TF1* GetF1(Int_t i=0, Double_t max=20) const;
+    /** 
+     * Find the x value that corresponds to a (normalized) probability
+     * of @a low or less.  That is, we can use this to say: "Give me
+     * the x value under which it is unlikely that a particle gave a
+     * signal".
+     * 
+     * @param low Threshold (between 0 and 1)
+     * 
+     * @return Cut value, or 1000 in case of problems 
+     */
+    Double_t FindProbabilityCut(Double_t low) const;
     /* @} */
     /** 
      * @{
@@ -575,7 +608,7 @@ public:
    * @name Lower bounds on fits 
    */
   /** 
-   * Get the lower validity bound of the fit
+   * Get the lower validity bound of the fit. 
    * 
    * @param d            Detector
    * @param r            Ring
@@ -587,7 +620,7 @@ public:
   Double_t GetLowerBound(UShort_t d, Char_t r, Int_t etaBin, 
 			 Double_t f) const;
   /** 
-   * Get the lower validity bound of the fit
+   * Get the lower validity bound of the fit.
    * 
    * @param d            Detector
    * @param r            Ring
@@ -598,6 +631,32 @@ public:
    */
   Double_t GetLowerBound(UShort_t d, Char_t r, Double_t eta, 
 			 Double_t f) const;
+  /** 
+   * Get the lower validity bound of the fit. 
+   * 
+   * @param d            Detector
+   * @param r            Ring
+   * @param etaBin       Eta bin (1-based)
+   * @param p            Probability cut
+   * @param dummy        Not used
+   * 
+   * @return @f$ x@f$ for which @f$ P(x>p)@f$
+   */
+  Double_t GetLowerBound(UShort_t d, Char_t r, Int_t etaBin, 
+			 Double_t p, Bool_t dummy) const;
+  /** 
+   * Get the lower validity bound of the fit.
+   * 
+   * @param d            Detector
+   * @param r            Ring
+   * @param eta          Eta value
+   * @param p            Probability cut
+   * @param dummy        Not used
+   * 
+   * @return @f$ x@f$ for which @f$ P(x>p)@f$
+   */
+  Double_t GetLowerBound(UShort_t d, Char_t r, Double_t eta, 
+			 Double_t p, Bool_t dummy) const;
   /** 
    * Get the lower validity bound of the fit
    * 
@@ -628,7 +687,7 @@ public:
   Double_t GetLowerBound(UShort_t d, Char_t r, Double_t eta, 
 			 Double_t f, Bool_t showErrors,
 			 Bool_t includeSigma) const;
-
+  /* @} */
   
   /**						
    * @{ 

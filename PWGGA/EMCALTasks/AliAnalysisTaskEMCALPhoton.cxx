@@ -69,6 +69,7 @@ AliAnalysisTaskEMCALPhoton::AliAnalysisTaskEMCALPhoton() :
   fMyTracks(0),
   fMyMcParts(0),
   fHeader(0x0),
+  fOADBContainer(0),
   fCaloClusters(0),
   fCaloClustersNew(0),
   fAODMCParticles(0),
@@ -120,6 +121,7 @@ AliAnalysisTaskEMCALPhoton::AliAnalysisTaskEMCALPhoton(const char *name) :
   fMyTracks(0),
   fMyMcParts(0),
   fHeader(0),
+  fOADBContainer(0),
   fCaloClusters(0),
   fCaloClustersNew(0),
   fAODMCParticles(0),
@@ -247,6 +249,8 @@ void AliAnalysisTaskEMCALPhoton::UserCreateOutputObjects()
   }
   //if(fIsGrid)fOutputList->Add(fTree);
   fGeom = AliEMCALGeometry::GetInstance(fGeoName);
+  fOADBContainer = new AliOADBContainer("AliEMCALgeo");
+  fOADBContainer->InitFromFile(Form("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root"),"AliEMCALgeo");
   
   
   fNV0sBefAndAftRerun = new TH2F("hNV0sBefAndAftRerun","check if the number of v0s change with rerun;old v0 n;new v0 n",50,0.5,50.5,50,0.5,50.5);
@@ -281,7 +285,7 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
 {
   // User exec, called once per event.
 
-  Bool_t isSelected = 0;
+  Bool_t isSelected = kTRUE;
   if(fPeriod.Contains("11")){
     if(fPeriod.Contains("11a"))
       isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kEMC1);
@@ -380,6 +384,7 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
     
 
   fHeader->fInputFileName  = inpfile->GetName();
+  fHeader->fRunNumber =  runnumber;
   fHeader->fTrClassMask    = fVev->GetHeader()->GetTriggerMask();
   fHeader->fTrCluster      = fVev->GetHeader()->GetTriggerCluster();
   AliCentrality *cent = InputEvent()->GetCentrality();
@@ -387,9 +392,9 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
   fHeader->fCl1Cent   = cent->GetCentralityPercentileUnchecked("CL1");
   fHeader->fTrCent    = cent->GetCentralityPercentileUnchecked("TRK");
 
-  AliOADBContainer emcGeoMat("AliEMCALgeo");
-  emcGeoMat.InitFromFile(Form("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root"),"AliEMCALgeo");
-  TObjArray *matEMCAL=(TObjArray*)emcGeoMat.GetObject(runnumber,"EmcalMatrices");
+  if(fDebug)
+    printf("AliEMCALgeo file found\n");
+  TObjArray *matEMCAL=(TObjArray*)fOADBContainer->GetObject(runnumber,"EmcalMatrices");
   for(Int_t mod=0; mod < (fGeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
     if(fGeoName=="EMCAL_FIRSTYEARV1" && mod>3)
       break;
@@ -468,7 +473,7 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
   if(fIsMC)
     GetMcParts();
 
-  if(this->fDebug)
+  if(this->fDebug && fIsMC)
     printf("fMyMcParts nentries=%d",fMyMcParts->GetEntries());
   
   fTree->Fill();
@@ -663,6 +668,8 @@ void AliAnalysisTaskEMCALPhoton::FillMyClusters()
       continue;
     if(clus->E() < fClusThresh)
       continue;
+    if(fDebug)
+      printf("cluster %d survived\n", ic);
     Float_t pos[3];
     clus->GetPosition(pos);
     TVector3 cpos(pos);

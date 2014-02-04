@@ -146,7 +146,8 @@ void DivideGraphs(TGraphErrors* graph1, TGraphErrors* graph2)
     }
 
     Float_t value = graph1->GetY()[bin1] / graph2Extrapolated;
-    Float_t error = value * TMath::Sqrt(TMath::Power(graph1->GetEY()[bin1] / graph1->GetY()[bin1], 2) + TMath::Power(graph2->GetEY()[bin2] / graph2->GetY()[bin2], 2));
+//     Float_t error = value * TMath::Sqrt(TMath::Power(graph1->GetEY()[bin1] / graph1->GetY()[bin1], 2) + TMath::Power(graph2->GetEY()[bin2] / graph2->GetY()[bin2], 2));
+    Float_t error = value * TMath::Sqrt(TMath::Abs(TMath::Power(graph1->GetEY()[bin1] / graph1->GetY()[bin1], 2) - TMath::Power(graph2->GetEY()[bin2] / graph2->GetY()[bin2], 2)));
 
     graph1->GetY()[bin1] = value;
     graph1->GetEY()[bin1] = error;
@@ -2890,7 +2891,7 @@ void DrawAsFunctionOfPt(const char* graphFile1, Int_t graphID, Int_t centrID, In
   graph->Draw("AP");
 }
 
-TGraphErrors* DrawAsFunctionOfPt(const char* baseFile, Int_t n, const char** graphFiles, Int_t graphID, Int_t centrID, Int_t* maxpTIndex, const char** titles = 0)
+TGraphErrors* DrawAsFunctionOfPt(const char* baseFile, Int_t n, const char** graphFiles, Int_t graphID, Int_t centrID, Int_t* maxpTIndex, const char** titles = 0, Int_t* centrIndex = 0)
 {
   c = new TCanvas;
   if (n > 4)
@@ -2902,7 +2903,7 @@ TGraphErrors* DrawAsFunctionOfPt(const char* baseFile, Int_t n, const char** gra
   
   for (Int_t i=0; i<n; i++)
   {
-    graph = GetGraphAsFunctionOfPt(TString(baseFile) + graphFiles[i], graphID, centrID, maxpTIndex[i]);
+    graph = GetGraphAsFunctionOfPt(TString(baseFile) + graphFiles[i], graphID, (centrIndex) ? centrIndex[i] : centrID, maxpTIndex[i]);
     graph->SetLineColor((i%4)+1);
     graph->SetMarkerColor((i%4)+1);
     graph->SetMarkerStyle(20+i);
@@ -2919,6 +2920,7 @@ TGraphErrors* DrawAsFunctionOfPt(const char* baseFile, Int_t n, const char** gra
 //     graph->Print();
     
     c->cd();
+    
     if (1 || i < 4)
       graph->Draw((i == 0) ? "AP" : "PSAME");
     else
@@ -2935,12 +2937,14 @@ TGraphErrors* DrawAsFunctionOfPt(const char* baseFile, Int_t n, const char** gra
     
     if (i >= 4)
     {
-      graph = (TGraphErrors*) graph->Clone();
-//       SetYError(graph, 0);
-      DivideGraphs(graph, allGraphs[i%4]);
+      graphclone = (TGraphErrors*) graph->Clone();
+//       SetYError(graphclone, 0);
+      DivideGraphs(graphclone, allGraphs[i%4]);
       c2->cd();
-      graph->Draw((i == 4) ? "AP" : "PSAME");
-      graph->GetYaxis()->SetRangeUser(0.5, 1.5);
+      graphclone->Draw((i == 4) ? "AP" : "PSAME");
+      graphclone->GetYaxis()->SetRangeUser(0.5, 1.5);
+      
+      GraphShiftX(graph, 0.02);
     }
   }
   
@@ -2952,7 +2956,7 @@ TGraphErrors* DrawAsFunctionOfPt(const char* baseFile, Int_t n, const char** gra
 
 void DrawAsFunctionOfPt()
 {
-  const char* baseFile = "graphs_130513b"; Float_t maxY = 0.25;
+  const char* baseFile = "graphs_130606"; Float_t maxY = 0.25;
 //   const char* baseFile = "graphs_130503_nosub"; Float_t maxY = 0.4;
   const char* graphFiles[] = { ".root", "_pions.root", "_kaons.root", "_protons.root", 
   "_wingremoved.root", "_wingremoved_pions.root", "_wingremoved_kaons.root", "_wingremoved_protons.root",
@@ -2964,22 +2968,20 @@ void DrawAsFunctionOfPt()
       "h-h wingremoved", "h-#pi wingremoved", "h-K wingremoved", "h-p wingremoved", 
       "h", "#pi", "K", "p", 
       "h wingremoved", "#pi wingremoved", "K wingremoved", "p wingremoved" };
-  Int_t max[] = { NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, 7, 7, 7, 7 };
+  Int_t max[] = { NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs };
   
   Int_t graphID = 4;
-  Int_t centrID = 1;
+  Int_t centrID = 0;
   
   first = DrawAsFunctionOfPt(baseFile, 4, graphFiles, graphID, centrID, max, titles);
   first->GetYaxis()->SetRangeUser(0, maxY);
   
-//   first = DrawAsFunctionOfPt(baseFile, 4, graphFiles+4, graphID, centrID, max, titles+4);
-//   first->GetYaxis()->SetRangeUser(0, maxY);
+  first = DrawAsFunctionOfPt(baseFile, 4, graphFiles+4, graphID, centrID, max, titles+4);
+  first->GetYaxis()->SetRangeUser(0, maxY);
 
   first = DrawAsFunctionOfPt(baseFile, 4, graphFiles+8, graphID, centrID, max, titles+8);
   first->GetYaxis()->SetRangeUser(0, maxY);
   
-  return;
-
   first = DrawAsFunctionOfPt(baseFile, 4, graphFiles+12, graphID, centrID, max, titles+12);
   first->GetYaxis()->SetRangeUser(0, maxY);
 
@@ -3008,10 +3010,10 @@ void DrawAsFunctionOfPt2()
 void DrawAsFunctionOfPt3()
 {
 //   const char* baseFile = "graphs_130515"; Float_t maxY = 0.25;
-  const char* baseFile = "graphs_130515_nosub"; Float_t maxY = 0.4;
+  const char* baseFile = "graphs_130531_mc_nosub"; Float_t maxY = 0.4;
   const char* graphFiles[] = { ".root", "_pions.root", "_kaons.root", "_protons.root", "_unfolded.root", "_pions_unfolded.root", "_kaons_unfolded.root", "_protons_unfolded.root", "_allpt_unfolded.root", "_allpt_pions_unfolded.root", "_allpt_kaons_unfolded.root", "_allpt_protons_unfolded.root" };
   const char* titles[] = { "h-h", "h-#pi", "h-K", "h-p", "h", "#pi", "K", "p", "h allpt", "#pi allpt", "K allpt", "p allpt" };
-  Int_t max[] = { NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, 7, 7, 7, 7 };
+  Int_t max[] = { NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, 6, 6, 6, 6 };
   
   Int_t graphID = 4;
   
@@ -3024,7 +3026,7 @@ void DrawAsFunctionOfPt3()
   first = DrawAsFunctionOfPt(baseFile, 8, graphFiles, graphID, 0, max, titles);
   first->GetYaxis()->SetRangeUser(0, maxY);
   
-  return;
+//   return;
 
   first = DrawAsFunctionOfPt(baseFile, 4, graphFiles+8, graphID, 0, max+8, titles+8);
   first->GetYaxis()->SetRangeUser(0, maxY);
@@ -3036,10 +3038,10 @@ void DrawAsFunctionOfPt3()
 void DrawAsFunctionOfPt4()
 {
 //   const char* baseFile = "graphs_130503";
-  const char* baseFile = "graphs_130503_nosub";
-  const char* graphFiles[] = { "_allpt_unfolded.root", "_allpt_pions_unfolded.root", "_allpt_kaons_unfolded.root", "_allpt_protons_unfolded.root", "_allpt.root", "_allpt_pions.root", "_allpt_kaons.root", "_allpt_protons.root" };
+  const char* baseFile = "graphs_130618";
+  const char* graphFiles[] = { "_unfolded.root", "_pions_unfolded.root", "_kaons_unfolded.root", "_protons_unfolded.root", "_otherbaseline_unfolded.root", "_otherbaseline_pions_unfolded.root", "_otherbaseline_kaons_unfolded.root", "_otherbaseline_protons_unfolded.root" };
 
-  Int_t max[8] = { 8, 8, 8, 8, 8, 8, 8, 8 };
+  Int_t max[8] = { NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs };
   
   Int_t centrID = 0;
   
@@ -3059,6 +3061,29 @@ void DrawAsFunctionOfPt5()
   const char* graphFiles[] = { 
     "_HadronsNoSub.root", "_PionsNoSub.root", "_KaonsNoSub.root", "_ProtonsNoSub.root",
     "_HadronsNoSubAnalytical.root", "_PionsNoSubAnalytical.root", "_KaonsNoSubAnalytical.root", "_ProtonsNoSubAnalytical.root"
+  };
+  
+  Int_t max[] = { NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs };
+  
+  Int_t graphID = 4;
+  Int_t centrID = 0;
+  
+  first = DrawAsFunctionOfPt(baseFile, 4, graphFiles, graphID, centrID, max, 0);
+  first->GetYaxis()->SetRangeUser(0, maxY); 
+
+  first = DrawAsFunctionOfPt(baseFile, 4, graphFiles+4, graphID, centrID, max, 0);
+  first->GetYaxis()->SetRangeUser(0, maxY); 
+
+  first = DrawAsFunctionOfPt(baseFile, 8, graphFiles, graphID, centrID, max, 0);
+  first->GetYaxis()->SetRangeUser(0, maxY); 
+}
+
+void DrawAsFunctionOfPt7()
+{
+  const char* baseFile = "~/Dropbox/pid-ridge/pPb/graphs_LHC13bc_20130604"; Float_t maxY = 0.4;
+  const char* graphFiles[] = { 
+    "_Hadrons.root", "_Pions.root", "_Kaons.root", "_Protons.root",
+    "_Hadrons_NoEff.root", "_Pions_NoEff.root", "_Kaons_NoEff.root", "_Protons_NoEff.root"
   };
   
   Int_t max[] = { NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs };
@@ -3096,6 +3121,29 @@ void DrawAsFunctionOfPt6()
   first->GetYaxis()->SetRangeUser(0, maxY); 
 
   first = DrawAsFunctionOfPt(baseFile, 8, graphFiles, graphID, centrID, max, 0);
+  first->GetYaxis()->SetRangeUser(0, maxY); 
+}
+
+void CompareCentralities()
+{
+  const char* baseFile = "~/Dropbox/pid-ridge/pPb/graphs_LHC13bc_20130604"; Float_t maxY = 0.4;
+  const char* graphFiles[] = { 
+    "_Hadrons.root", "_Pions.root", "_Kaons.root", "_Protons.root",
+    "_Hadrons.root", "_Pions.root", "_Kaons.root", "_Protons.root"
+  };
+  
+  Int_t max[] = { NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs };
+  Int_t centrID[] = { 0, 0, 0, 0, 1, 1, 1, 1 };
+  
+  Int_t graphID = 4;
+  
+  first = DrawAsFunctionOfPt(baseFile, 4, graphFiles, graphID, 0, max, 0, centrID);
+  first->GetYaxis()->SetRangeUser(0, maxY); 
+
+  first = DrawAsFunctionOfPt(baseFile, 4, graphFiles+4, graphID, 0, max, 0, centrID+4);
+  first->GetYaxis()->SetRangeUser(0, maxY); 
+
+  first = DrawAsFunctionOfPt(baseFile, 8, graphFiles, graphID, 0, max, 0, centrID);
   first->GetYaxis()->SetRangeUser(0, maxY); 
 }
 
@@ -3150,6 +3198,24 @@ void DrawLikeUnlikeSign()
   first->GetYaxis()->SetRangeUser(0, maxY);
   
   first = DrawAsFunctionOfPt(baseFile, 8, graphFiles, graphID, centrID, max, titles);
+  first->GetYaxis()->SetRangeUser(0, maxY);
+}
+
+void Drawv1()
+{
+  Float_t maxY = 0.35;
+  const char* graphFiles[] = { 
+    "graphs_fwdA_130801.root", "graphs_fwdC_130801.root", "~/Dropbox/pid-ridge/pPb/graphs_LHC13bc_20130709_Hadrons.root"
+  };
+  
+   const char* titles[] = { 
+      "A", "C", "CB" };
+  Int_t max[] = { NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs, NGraphs };
+  
+  Int_t graphID = 12;
+  Int_t centrID = 0;
+  
+  first = DrawAsFunctionOfPt("", 3, graphFiles, graphID, centrID, max, titles);
   first->GetYaxis()->SetRangeUser(0, maxY);
 }
 
@@ -3221,7 +3287,7 @@ void DrawRelativeError(Int_t id = 0)
   graph->DrawClone("PSAME");
   legend->AddEntry(graph->DrawClone("PSAME"), "comb", "P");
   
-  line = new TLine(0, 0.1, 4.0, 0.1);
+  line = new TLine(0, 0.05, 4.0, 0.05);
   line->Draw();
   legend->AddEntry(line, "K0-Kch unc", "L");
   legend->SetHeader(label);  

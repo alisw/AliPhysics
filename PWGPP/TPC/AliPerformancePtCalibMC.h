@@ -39,8 +39,7 @@ class AliESDtrackCuts;
 
 class AliPerformancePtCalibMC : public AliPerformanceObject {
 public:
-   AliPerformancePtCalibMC();
-   AliPerformancePtCalibMC(const char *name, const char *title);
+  AliPerformancePtCalibMC(const char *name= "AliPerformancePtCalibMC", const char *title="AliPerformancePtCalibMC");
    virtual ~AliPerformancePtCalibMC() ;
 
    // Init data members

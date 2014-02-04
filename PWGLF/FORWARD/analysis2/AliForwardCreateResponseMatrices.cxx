@@ -26,10 +26,9 @@ ClassImp(AliForwardCreateResponseMatrices)
 #endif
 //_____________________________________________________________________
 AliForwardCreateResponseMatrices::AliForwardCreateResponseMatrices() 
-  : AliBasedNdetaTask(),
-    fTrigger(),
-    fBins(),
-    fOutput()
+  : AliBaseAODTask(),
+    fBins(), 
+    fIsSelected(false)
 {
   //
   // Default Constructor
@@ -38,121 +37,102 @@ AliForwardCreateResponseMatrices::AliForwardCreateResponseMatrices()
  
 //_____________________________________________________________________
 AliForwardCreateResponseMatrices::AliForwardCreateResponseMatrices(const char* name) 
-  : AliBasedNdetaTask(name),
-    fTrigger(),
-    fBins(),
-    fOutput()
+  : AliBaseAODTask(name),
+    fBins(), 
+    fIsSelected(false)
 {
   //
   // Constructor
   //
-  DefineOutput(1, TList::Class());
 }
 
 //_____________________________________________________________________
-void AliForwardCreateResponseMatrices::UserCreateOutputObjects()
+Bool_t 
+AliForwardCreateResponseMatrices::CheckEvent(const AliAODForwardMult& fwd)
+{
+  fIsSelected = AliBaseAODTask::CheckEvent(fwd);
+  // We always return true, so that we can process MC truth;
+  return true;
+}
+
+//_____________________________________________________________________
+Bool_t AliForwardCreateResponseMatrices::Book()
 {
   //
   // Create Output Objects
   //
-  fOutput = new TList;
-  fOutput->SetOwner();
-  fOutput->SetName(GetName());
-  
-  TH1D* dndetaSumForward = new TH1D("dndetaSumForward","dndetaSumForward", 200,-4,6);
-  TH1D* dndetaSumCentral = new TH1D("dndetaSumCentral","dndetaSumCentral", 200,-4,6);
+  TH1D* dndetaSumForward = new TH1D("dndetaSumForward","dndetaSumForward", 
+				    200,-4,6);
+  TH1D* dndetaSumCentral = new TH1D("dndetaSumCentral","dndetaSumCentral", 
+				    200,-4,6);
   TH1D* dndetaSumMC = new TH1D("dndetaSumMC","dndetaSumMC", 200,-4,6);
  
-  fOutput->Add(dndetaSumForward);
-  fOutput->Add(dndetaSumCentral);
-  fOutput->Add(dndetaSumMC);
+  fSums->Add(dndetaSumForward);
+  fSums->Add(dndetaSumCentral);
+  fSums->Add(dndetaSumMC);
 
   TH1D* dndetaEventForward = new TH1D();
   TH1D* dndetaEventCentral = new TH1D();
   TH1D* dndetaEventMC = new TH1D();
   
-  fOutput->Add(dndetaEventForward);
-  fOutput->Add(dndetaEventCentral);
-  fOutput->Add(dndetaEventMC);
-
-  // make trigger diagnostics histogram
-  fTrigger= new TH1I();
-  fTrigger= AliAODForwardMult::MakeTriggerHistogram("triggerHist");
-  fOutput->Add(fTrigger);
-  
+  fSums->Add(dndetaEventForward);
+  fSums->Add(dndetaEventCentral);
+  fSums->Add(dndetaEventMC);
 
   //Loop over all individual eta bins, and define their hisograms 
   TIter next(&fBins);
   Bin * bin = 0;
   while ((bin = static_cast<Bin*>(next()))) { 
-    bin->CreateOutputObjectss(fOutput, 400);
+    bin->CreateOutputObjectss(fSums, 400);
   }
  
-  PostData(1, fOutput);
+  return true;
   
 }
 
 
 //_____________________________________________________________________
-void AliForwardCreateResponseMatrices::UserExec(Option_t */*option*/)
+Bool_t AliForwardCreateResponseMatrices::Event(AliAODEvent& aod)
 {
   //
   // User Exec
   //
-  AliAODEvent* aod = dynamic_cast<AliAODEvent*>(InputEvent());
-  if (!aod) {
-    AliError("Cannot get the AOD event");
-    return;  } 
-  AliAODForwardMult* AODforward = static_cast<AliAODForwardMult*>(aod->FindListObject("Forward"));
-  if (!AODforward) {
-    AliError("Cannot get the AODforwardMult object");
-    return;  } 
-  
-  // Check the AOD event
-  Bool_t selectedTrigger = AODforward->CheckEvent(fTriggerMask, fVtxMin, fVtxMax,0,0,fTrigger);
-  
-  TH2D forward;
-  TH2D central;
-  
-  
-  // Get 2D eta-phi histograms for each event
-  GetHistograms(aod, forward, central);
+  // Here, we used to get ForwardMC!
+  AliAODForwardMult* AODforward = GetForward(aod);
+  if (!AODforward) return false;
+
+  // Here, we used to get CentralClusters!
+  AliAODCentralMult* AODcentral = GetCentral(aod);
+  if (!AODcentral) return false;
+
+  TH2D& forward = AODforward->GetHistogram();
+  TH2D& central = AODcentral->GetHistogram();
   
   //check if event is NSD according to either MC truth or analysis (ESD)
-  Bool_t isMCNSD=kFALSE;
-  Bool_t isESDNSD=kFALSE;
-  if(AODforward->IsTriggerBits(AliAODForwardMult::kMCNSD))
-    isMCNSD=kTRUE; 
-  if(AODforward->IsTriggerBits(AliAODForwardMult::kNSD))
-    isESDNSD=kTRUE;
+  Bool_t isMCNSD  = kFALSE;
+  Bool_t isESDNSD = kFALSE;
+  if(AODforward->IsTriggerBits(AliAODForwardMult::kMCNSD))   isMCNSD=kTRUE; 
+  if(AODforward->IsTriggerBits(AliAODForwardMult::kNSD))     isESDNSD=kTRUE;
   
   //primary dndeta dist
-  TH2D* primHist;
-  TObject* oPrimary   = aod->FindListObject("primary");
-  primHist   = static_cast<TH2D*>(oPrimary);
+  TH2D*    primHist   = GetPrimary(aod);
   
-  TH1D* dndetaSumForward    = (TH1D*)fOutput->FindObject("dndetaSumForward");
-  TH1D* dndetaSumCentral    = (TH1D*)fOutput->FindObject("dndetaSumCentral");
-  TH1D* dndetaSumMC         = (TH1D*)fOutput->FindObject("dndetaSumMC");
-  // TH1D* dndetaEventForward= (TH1D*)fOutput->FindObject("dndetaEventForward");
-  // TH1D* dndetaEventCentral= (TH1D*)fOutput->FindObject("dndetaEventCentral");
-  // TH1D* dndetaEventMC     = (TH1D*)fOutput->FindObject("dndetaEventMC");
-
-  TH1D* dndetaEventForward = forward.ProjectionX("dndetaForward",1,
-						 forward.GetNbinsY(),"");
-  TH1D* dndetaEventCentral = central.ProjectionX("dndetaCentral",1,
-						 central.GetNbinsY(),"");
-  TH1D* dndetaEventMC      = primHist->ProjectionX("dndetaMC",1,
-						   primHist->GetNbinsY(),"");
+  TH1D* dndetaSumForward    = (TH1D*)fSums->FindObject("dndetaSumForward");
+  TH1D* dndetaSumCentral    = (TH1D*)fSums->FindObject("dndetaSumCentral");
+  TH1D* dndetaSumMC         = (TH1D*)fSums->FindObject("dndetaSumMC");
+  TH1D* dndetaEventForward  = forward.ProjectionX("dndetaForward",1,
+						  forward.GetNbinsY(),"");
+  TH1D* dndetaEventCentral  = central.ProjectionX("dndetaCentral",1,
+						  central.GetNbinsY(),"");
+  TH1D* dndetaEventMC       = primHist->ProjectionX("dndetaMC",1,
+						    primHist->GetNbinsY(),"");
    
   // underflow eta bin of forward/central carry information on whether
   // there is acceptance. 1= acceptance, 0= no acceptance
-  TH1D* normEventForward    = 0;
-  TH1D* normEventCentral    = 0;
-  // TH1D* normEventMC         = 0;
-  normEventForward   = forward.ProjectionX("dndetaEventForwardNorm",0,0,"");
-  normEventCentral   = central.ProjectionX("dndetaEventCentralNorm",0,0,"");
-  // normEventMC        = primHist->ProjectionX("dndetaEventNormMC",0,0,"");
+  TH1D* normEventForward = 0;
+  TH1D* normEventCentral = 0;
+  normEventForward       = forward.ProjectionX("dndetaEventForwardNorm",0,0,"");
+  normEventCentral       = central.ProjectionX("dndetaEventCentralNorm",0,0,"");
 
   dndetaSumForward->Add(dndetaEventForward);
   dndetaSumCentral->Add(dndetaEventCentral);
@@ -168,57 +148,11 @@ void AliForwardCreateResponseMatrices::UserExec(Option_t */*option*/)
   while ((bin = static_cast<Bin*>(next()))) { 
     bin->Process(dndetaEventForward, dndetaEventCentral, 
 		 normEventForward,   normEventCentral, 
-		 dndetaEventMC, VtxZ, selectedTrigger,
+		 dndetaEventMC, VtxZ, fIsSelected,
 		 isMCNSD, isESDNSD,  aod);
   }
     
-  PostData(1, fOutput);
-  
-  
-}
-
-//_____________________________________________________________________
-void AliForwardCreateResponseMatrices::Terminate(Option_t */*option*/)
-{
-  //
-  // Terminate
-  //
-}
-
-//_________________________________________________________________-
-TH2D* AliForwardCreateResponseMatrices::GetHistogram(const AliAODEvent*, Bool_t )
-{
-  //
-  // implementation of pure virtual function, always returning 0
-  //
-  return 0;
-}
-
-void AliForwardCreateResponseMatrices::GetHistograms(const AliAODEvent* aod, TH2D& forward, TH2D& central)
-{
-  //
-  // Get single event forward and central d²N/dEta dPhi histograms 
-  //
-  TObject* forwardObj = 0;
-  TObject* centralObj = 0;
-  
-  forwardObj = aod->FindListObject("ForwardMC");
-  centralObj = aod->FindListObject("CentralClusters");
-   
-  if (!forwardObj) {
-    AliWarning("No MC forward object found in AOD");
-  }
-  if (!centralObj) {
-    AliWarning("No MC central object found in AOD");
-  }
-
-  AliAODForwardMult* AODforward = static_cast<AliAODForwardMult*>(forwardObj);
-  AliAODCentralMult* AODcentral = static_cast<AliAODCentralMult*>(centralObj);
-  
-  forward= AODforward->GetHistogram();
-  central= AODcentral->GetHistogram();
-  
-  
+  return true;  
 }
 
 
@@ -331,16 +265,17 @@ void AliForwardCreateResponseMatrices::Bin::CreateOutputObjectss(TList* cont,  I
  
 
 //_____________________________________________________________________
-void AliForwardCreateResponseMatrices::Bin::Process(TH1D* dndetaForward, 
-						    TH1D* dndetaCentral,
-						    TH1D* normForward,   
-						    TH1D* normCentral, 
-						    TH1D* mc, 
-						    Double_t VtxZ, 
-						    Bool_t selectedTrigger, 
-						    Bool_t isMCNSD, 
-						    Bool_t isESDNSD, 
-						    AliAODEvent* aodevent) 
+void 
+AliForwardCreateResponseMatrices::Bin::Process(TH1D* dndetaForward, 
+					       TH1D* dndetaCentral,
+					       TH1D* normForward,   
+					       TH1D* normCentral, 
+					       TH1D* mc, 
+					       Double_t VtxZ, 
+					       Bool_t selectedTrigger, 
+					       Bool_t isMCNSD, 
+					       Bool_t isESDNSD, 
+					       const AliAODEvent& aodevent) 
 {
   //
   // Process a single eta bin
@@ -405,13 +340,13 @@ void AliForwardCreateResponseMatrices::Bin::Process(TH1D* dndetaForward,
   }
   
   // retreive MC particles from event
-  TClonesArray* mcArray = (TClonesArray*)aodevent->FindListObject(AliAODMCParticle::StdBranchName());
+  TClonesArray* mcArray = (TClonesArray*)aodevent.FindListObject(AliAODMCParticle::StdBranchName());
   if(!mcArray){
     AliWarning("No MC array found in AOD. Try making it again.");
     return;
   }
   AliAODMCHeader* header = 
-    dynamic_cast<AliAODMCHeader*>(aodevent->
+    dynamic_cast<AliAODMCHeader*>(aodevent.
 				  FindListObject(AliAODMCHeader::StdBranchName()));
   if (!header) {
     AliWarning("No header file found.");

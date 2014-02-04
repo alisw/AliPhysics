@@ -5,7 +5,7 @@
 #ifndef ALIANALYSISTASKRHOVNMODULATION_H
 #define ALIANALYSISTASKRHOVNMODULATION_H
 
-#include <AliAnalysisTaskEmcalJetDev.h>
+#include <AliAnalysisTaskEmcalJet.h>
 #include <AliEmcalJet.h>
 #include <AliVEvent.h>
 #include <AliVTrack.h>
@@ -22,7 +22,7 @@ class THF2;
 class TProfile;
 class AliLocalRhoParameter;
 
-class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJetDev {
+class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
     public:
          // enumerators
         enum fitModulationType  { kNoFit, kV2, kV3, kCombined, kFourierSeries, kIntegratedFlow, kQC2, kQC4 }; // fit type
@@ -63,6 +63,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJetDev {
         // setters - analysis setup
         void                    SetDebugMode(Int_t d)                           {fDebug = d;}
         void                    SetAttachToEvent(Bool_t b)                      {fAttachToEvent = b;}
+        void                    SetSemiCentralInclusive(Bool_t b)               {fSemiCentralInclusive = b;}
         void                    SetFillHistograms(Bool_t b)                     {fFillHistograms = b;}
         void                    SetFillQAHistograms(Bool_t qa)                  {fFillQAHistograms = qa;}
         void                    SetReduceBinsXYByFactor(Float_t x, Float_t y)   {fReduceBinsXByFactor = x;
@@ -81,6 +82,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJetDev {
         void                    SetUseScaledRho(Bool_t s)                       {fUseScaledRho = s; }
         void                    SetRandomSeed(TRandom3* r)                      {if (fRandom) delete fRandom; fRandom = r; }
         void                    SetModulationFit(TF1* fit);
+        void                    SetUseControlFit(Bool_t c);
         void                    SetModulationFitMinMaxP(Float_t m, Float_t n)   {fMinPvalue = m; fMaxPvalue = n; }
         void                    SetModulationFitType(fitModulationType type)    {fFitModulationType = type; }
         void                    SetQCnRecoveryType(qcRecovery type)             {fQCRecovery = type; }
@@ -88,6 +90,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJetDev {
         void                    SetReferenceDetector(detectorType type)         {fDetectorType = type; }
         void                    SetCollisionType(collisionType type)            {fCollisionType = type; }
         void                    SetUsePtWeight(Bool_t w)                        {fUsePtWeight = w; }
+        void                    SetUsePtWeightErrorPropagation(Bool_t w)        {fUsePtWeightErrorPropagation = w; }
         void                    SetRunModeType(runModeType type)                {fRunModeType = type; }
         void                    SetAbsVertexZ(Float_t v)                        {fAbsVertexZ = v; }
         void                    SetMinDistanceRctoLJ(Float_t m)                 {fMinDisanceRCtoLJ = m; }
@@ -170,6 +173,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJetDev {
         Int_t                   fDebug;                 // debug level (0 none, 1 fcn calls, 2 verbose)
         Bool_t                  fLocalInit;             //! is the analysis initialized?
         Bool_t                  fAttachToEvent;         // attach local rho to the event
+        Bool_t                  fSemiCentralInclusive;  // semi central inclusive event selection
         Bool_t                  fFillHistograms;        // fill histograms
         Bool_t                  fFillQAHistograms;      // fill qa histograms
         Float_t                 fReduceBinsXByFactor;   // reduce the bins on x-axis of histo's by this much
@@ -182,6 +186,8 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJetDev {
         TH1F*                   fUserSuppliedV3;        // histo with integrated v3
         TH1F*                   fUserSuppliedR2;        // correct the extracted v2 with this r
         TH1F*                   fUserSuppliedR3;        // correct the extracted v3 with this r
+        AliParticleContainer*   fTracksCont;            //!tracks
+        AliJetContainer*        fJetsCont;              //!jets
         // members
         Bool_t                  fUseScaledRho;          // use scaled rho
         Int_t                   fNAcceptedTracks;       //! number of accepted tracks
@@ -189,6 +195,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJetDev {
         fitModulationType       fFitModulationType;     // fit modulation type
         qcRecovery              fQCRecovery;            // recovery type for e-by-e qc method
         Bool_t                  fUsePtWeight;           // use dptdphi instead of dndphi
+        Bool_t                  fUsePtWeightErrorPropagation;   // recalculate the bin errors in case of pt weighting 
         detectorType            fDetectorType;          // type of detector used for modulation fit
         TString                 fFitModulationOptions;  // fit options for modulation fit
         runModeType             fRunModeType;           // run mode type 
@@ -198,6 +205,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJetDev {
         Int_t                   fMappedRunNumber;       //! mapped runnumer (for QA)
         Int_t                   fInCentralitySelection; //! centrality bin
         TF1*                    fFitModulation;         //-> modulation fit for rho
+        TF1*                    fFitControl;            //-> control fit
         Float_t                 fMinPvalue;             // minimum value of p
         Float_t                 fMaxPvalue;             // maximum value of p
         const char*             fNameJetClones;         //! collection of tclones array with jets
@@ -219,6 +227,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJetDev {
         TH2F*                   fHistRunnumbersEta;     //! run numbers averaged eta
         TH1F*                   fHistPvaluePDF;         //! pdf value of chisquare p
         TH1F*                   fHistPvalueCDF;         //! cdf value of chisquare p
+        TH2F*                   fHistRhoStatusCent;     //! status of rho as function of centrality
         // general settings
         Float_t                 fMinDisanceRCtoLJ;      // min distance between rc and leading jet
         Float_t                 fRandomConeRadius;      // radius of random cone
@@ -264,6 +273,14 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJetDev {
         TH1F*                   fHistPsiVZEROC;          //! psi 2 from vzero c
         TH1F*                   fHistPsiVZERO;           //! psi 2 from combined vzero
         TH1F*                   fHistPsiTPC;             //! psi 2 from tpc
+        TH2F*                   fHistPsiVZEROAV0M;      //! psi 2 from vzero a
+        TH2F*                   fHistPsiVZEROCV0M;      //! psi 2 from vzero c
+        TH2F*                   fHistPsiVZEROVV0M;      //! psi 2 from combined vzero
+        TH2F*                   fHistPsiTPCiV0M;        //! psi 2 from tpc
+        TH2F*                   fHistPsiVZEROATRK;      //! psi 2 from vzero a
+        TH2F*                   fHistPsiVZEROCTRK;      //! psi 2 from vzero c
+        TH2F*                   fHistPsiVZEROTRK;       //! psi 2 from combined vzero
+        TH2F*                   fHistPsiTPCTRK;         //! psi 2 from tpc
         // background
         TH1F*                   fHistRhoPackage[10];     //! rho as estimated by emcal jet package
         TH1F*                   fHistRho[10];            //! background
@@ -301,7 +318,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJetDev {
         AliAnalysisTaskRhoVnModulation(const AliAnalysisTaskRhoVnModulation&);                  // not implemented
         AliAnalysisTaskRhoVnModulation& operator=(const AliAnalysisTaskRhoVnModulation&);       // not implemented
 
-        ClassDef(AliAnalysisTaskRhoVnModulation, 16);
+        ClassDef(AliAnalysisTaskRhoVnModulation, 19);
 };
 
 #endif

@@ -10,10 +10,22 @@
 
 #include  "AliAnalysisTaskSE.h"
 #include  "THnSparse.h" // cannot forward declare ThnSparseF
+#ifndef __CINT__
 #include "fastjet/ClusterSequenceArea.hh"
 #include "fastjet/AreaDefinition.hh"
 #include "fastjet/JetDefinition.hh"
 #include "fastjet/PseudoJet.hh"
+#else
+namespace fastjet {
+  class PseudoJet;
+  class GhostedAreaSpec;
+  class AreaType;
+  class JetDefinition;
+  class JetAlgorithm;
+  class Strategy;
+  class RecombinationScheme;
+}
+#endif
 #include "TH1F.h"
 #include "TH2D.h"
 

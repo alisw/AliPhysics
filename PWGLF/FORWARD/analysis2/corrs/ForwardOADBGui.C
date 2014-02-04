@@ -61,6 +61,60 @@ class TGNumberEntry;
 #endif
 #endif
 
+struct ForwardOADBDialog
+{
+  ForwardOADBDialog(TGMainFrame* p)
+    : fFrame(gClient->GetRoot(), p, 200, 40, kVerticalFrame),
+      fHints(kLHintsExpandX,30,30,30,30),
+      fLabel(&fFrame, ""), 
+      // fProgress(&fFrame, 100), 
+      fIsShown(false),
+      fIncrement(0,false)
+  {
+    fFrame.AddFrame(&fLabel, &fHints );
+    // fFrame.AddFrame(&fProgress, &fHints);
+    fFrame.SetWindowName("Please wait ...");
+    // fProgress.SetRange(0,1);
+    fIncrement.Connect("Timeout()","ForwardOADBDialog",this,"HandleIncr()");
+  }
+  void HandleIncr()
+  {
+    Float_t dp = 0.1;
+    // Float_t p  = fProgress.GetPosition();
+    // Info("HandleIncr", "Handing increment (%f)", p);
+    // if (p+dp >= 1) fProgress.SetPosition(0);
+    // fProgress.Increment(dp);
+    // fFrame.GetClient()->NeedRedraw(&fFrame);
+  }
+  void Show(const char* msg)
+  {
+    fLabel.SetText(msg);
+    // fProgress.SetPosition(0);
+    fFrame.MapSubwindows();
+    Int_t width  = fFrame.GetDefaultWidth();
+    Int_t height = fFrame.GetDefaultHeight();
+    fFrame.Resize(width, height);
+    fFrame.SetWMSize(width, height);
+    fFrame.SetWMSizeHints(width, height, width, height, 0, 0);
+    fFrame.MapRaised();
+    fIsShown = true;
+    // fIncrement.Start(0,false);
+    fFrame.GetClient()->WaitForUnmap(&fFrame);    
+  }
+  void Hide() 
+  {
+    if (!fIsShown) return;
+    // fIncrement.Stop();
+    fFrame.UnmapWindow();
+  }
+  TGTransientFrame fFrame;
+  TGLayoutHints    fHints;
+  TGLabel          fLabel;
+  //TGHProgressBar   fProgress;
+  Bool_t           fIsShown;
+  TTimer           fIncrement;
+};
+    
 struct ForwardOADBGUI
 {
   enum { 
@@ -115,6 +169,7 @@ struct ForwardOADBGUI
     fEntryHints(kLHintsExpandX|kLHintsExpandY, 2, 4, 0, 0),
     fButtonHints(kLHintsExpandX, 2, 2, 0, 0),
     fListHints(kLHintsExpandX|kLHintsExpandY, 2, 2, 4, 2),
+    fMsg(&fMain),
     fDB(0),
     fEntry(0)
   {
@@ -135,6 +190,8 @@ struct ForwardOADBGUI
 
     fTableLabel.SetWidth(kLabelWidth); fTableLabel.SetMinWidth(kLabelWidth);
     fTableSelect.SetHeight(22);
+    fTableSelect.Connect("Selected(Int_t)","ForwardOADBGUI",this,
+			 "HandleTable(Int_t)");
     fSelectFrame.AddFrame(&fTableFrame, &fFrameHints);
     fTableFrame.AddFrame(&fTableLabel, &fLabelHints);
     fTableFrame.AddFrame(&fTableSelect, &fEntryHints);
@@ -286,6 +343,7 @@ struct ForwardOADBGUI
   void HandleEnable()
   {
     Bool_t enabled = fDB ? true : false;
+    Bool_t hasTable = fTableSelect.GetSelected() != 0;
 
     fTableSelect.SetEnabled(enabled);
     fRunMode.SetEnabled(enabled);
@@ -293,11 +351,11 @@ struct ForwardOADBGUI
     fFldSelect.SetEnabled(enabled);
     fMCButton.SetEnabled(enabled);
     fSatButton.SetEnabled(enabled);
-    fQueryButton.SetEnabled(enabled);
-    fListButton.SetEnabled(enabled);
-    fPrintButton.SetEnabled(enabled);
-    fDrawButton.SetEnabled(enabled);
-    fPDFButton.SetEnabled(enabled);
+    fQueryButton.SetEnabled(enabled && hasTable);
+    fListButton.SetEnabled(enabled && hasTable);
+    fPrintButton.SetEnabled(enabled && hasTable);
+    fDrawButton.SetEnabled(enabled && hasTable);
+    fPDFButton.SetEnabled(enabled && hasTable);
     fOpenButton.SetEnabled(!enabled);
     fCloseButton.SetEnabled(enabled);
     HandleDBEntry(0);
@@ -306,7 +364,6 @@ struct ForwardOADBGUI
     if (!enabled) {
       fTableSelect.RemoveAll();
       fTableSelect.AddEntry("- select -", 0);
-      
     }
     else {
       const TMap& tables = fDB->GetTables();
@@ -428,6 +485,18 @@ struct ForwardOADBGUI
     }
     ret = e->GetTitle();
   }
+  void HandleTable(Int_t id)
+  {
+    Info("HandleTable", "Id=%d", id);
+    fListButton.SetEnabled(id != 0);
+    fQueryButton.SetEnabled(id != 0);
+    fListContainer.RemoveAll();
+    fList.AdjustHeaders();
+    fMain.Layout();
+    // fPrintButton.SetEnabled(enabled);
+    // fDrawButton.SetEnabled(enabled);
+    // fPDFButton.SetEnabled(enabled);
+  }
   void HandleItem(TGFrame* lve, Int_t btn)
   {
     Info("HandleItem", "frame=%p", lve);
@@ -518,23 +587,47 @@ struct ForwardOADBGUI
     // fEntry->fData->SaveAs(out, fOptionsText.GetText()); 
 
   }
+  void LoadCorrDraw()
+  {
+    const char* opt = "++g";
+    const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
+    gSystem->AddIncludePath(Form("-I$ALICE_ROOT/include -I%s -I%s/scripts",
+				 fwd, fwd));
+    Info("CorrDraw", "Loading SummaryDrawer.C%s", opt);
+    gROOT->LoadMacro(Form("%s/scripts/SummaryDrawer.C%s", fwd, opt));
+    // gROOT->ProcessLine(".Class SummaryDrawer");
+    Info("CorrDraw", "Loading CorrDrawer.C%s", opt);
+    gROOT->LoadMacro(Form("%s/corrs/CorrDrawer.C%s", fwd, opt));
+    // gROOT->ProcessLine(".Class SummaryDrawer");
+    // gROOT->ProcessLine(".Class CorrDrawer");
+    CloseMsg();
+  }    
   void CorrDraw(const TObject* o, Bool_t summarize)
   {
     if (!gROOT->GetClass("CorrDrawer")) { 
-      const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
-      gSystem->AddIncludePath(Form("-I$ALICE_ROOT/include -I%s -I%s/scripts",
-				   fwd, fwd));
-      gROOT->LoadMacro(Form("%s/scripts/SummaryDrawer.C", fwd));
-      // gROOT->ProcessLine(".Class SummaryDrawer");
-      gROOT->LoadMacro(Form("%s/corrs/CorrDrawer.C", fwd));
-      // gROOT->ProcessLine(".Class SummaryDrawer");
-      // gROOT->ProcessLine(".Class CorrDrawer");
+      TTimer* t = new TTimer(Form("((ForwardOADBGUI*)%p)->LoadCorrDraw()",this),
+			     0, kTRUE);
+      t->Start(100, true);
+      MakeMsg("Compiling drawer");
     }
     o->Print();
-    gROOT->ProcessLine(Form("CorrDrawer cd; cd.%s((const %s*)%p);",
-			    (summarize ? "Summarize" : "Draw"), 
-			    o->ClassName(), o));
+    if (summarize) {
+      TTimer* t = new TTimer(Form("((ForwardOADBGUI*)%p)"
+				  "->DoCorrDraw((TObject*)%p,1)",this, o), 
+			     0, kTRUE);
+      t->Start(100, true);
+      MakeMsg("Drawing to PDF");
+    }
+    else 
+      DoCorrDraw(o, false);
   }
+  void DoCorrDraw(const TObject* o, Bool_t summarize) 
+  {
+    TString cmd(Form("CorrDrawer cd; cd.Summarize((const %s*)%p,%d);",
+		     o->ClassName(), o, summarize));
+    gROOT->ProcessLine(cmd);
+    CloseMsg();
+  }  
   void MakeFileName(TString& out) const
   {
     if (!fEntry) return;
@@ -606,6 +699,15 @@ struct ForwardOADBGUI
     return e->fData;
   }
   TGMainFrame* GetMain() { return &fMain; }
+  void MakeMsg(const char* what) 
+  { 
+    fMsg.Show(what);
+  }
+  void CloseMsg()
+  {
+    Info("CloseMsg", "Closing message window");
+    fMsg.Hide();
+  }
   TGMainFrame       fMain;
   TGHorizontalFrame fOpenFrame;
   TGTextEntry       fFileText;
@@ -649,6 +751,7 @@ struct ForwardOADBGUI
   TGLayoutHints     fEntryHints; 
   TGLayoutHints     fButtonHints;
   TGLayoutHints     fListHints;
+  ForwardOADBDialog fMsg;
   AliOADBForward*   fDB;
   AliOADBForward::Entry* fEntry;
   // TCanvas*          fDataCanvas;

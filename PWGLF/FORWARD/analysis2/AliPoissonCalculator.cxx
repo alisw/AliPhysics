@@ -406,6 +406,13 @@ AliPoissonCalculator::Result(Bool_t correct)
       fBasic->SetBinError(ix,iy,poissonE);
     }
   }
+  return fBasic;
+}
+  
+//____________________________________________________________________
+void
+AliPoissonCalculator::FillDiagnostics()
+{
   for (Int_t ix = 1; ix <= fEmpty->GetNbinsX(); ix++) { 
     for (Int_t iy = 1; iy <= fEmpty->GetNbinsY(); iy++) { 
       Double_t empty    = fEmpty->GetBinContent(ix, iy);
@@ -419,9 +426,7 @@ AliPoissonCalculator::Result(Bool_t correct)
       fCorr->Fill(mean, corr);
     }
   }
-  return fBasic;
 }
-  
 //____________________________________________________________________
 void
 AliPoissonCalculator::Print(const Option_t*) const

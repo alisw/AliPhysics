@@ -366,8 +366,8 @@ void AliAnalysisTaskLambdaNAOD::UserCreateOutputObjects(){
   fTreeV0->Branch("fSignN",fSignN,"fSignN[fItrk]/D");
   fTreeV0->Branch("fSignP",fSignP,"fSignP[fItrk]/D");
 
-  fTreeV0->Branch("fSigmadEdxPionPos",fSigmadEdxPionPos,"fSigmadEdxPionPos[fItrk]/I");
-  fTreeV0->Branch("fSigmadEdxPionNeg",fSigmadEdxPionNeg,"fSigmadEdxPionNeg[fItrk]/I");
+  fTreeV0->Branch("fSigmadEdxPionPos",fSigmadEdxPionPos,"fSigmadEdxPionPos[fItrk]/D");
+  fTreeV0->Branch("fSigmadEdxPionNeg",fSigmadEdxPionNeg,"fSigmadEdxPionNeg[fItrk]/D");
 
   fTreeV0->Branch("fDCAv0",fDCAv0,"fDCAv0[fItrk]/F"); //Dca v0 Daughters
   fTreeV0->Branch("fCosinePAv0",fCosinePAv0,"fCosinePAv0[fItrk]/F"); //Cosine of Pionting Angle
@@ -1650,7 +1650,7 @@ Bool_t AliAnalysisTaskLambdaNAOD::DeuteronPID(AliVTrack *trackP, AliVTrack *trac
       
       if(runNumber > 166500) //LHC11h
 	{ 
-	  parDeuteron[0] = 1.11243; // ALEPH parameters for deuterons (pass2)
+	  parDeuteron[0] = 1.17; // ALEPH parameters for deuterons (pass2)
 	  parDeuteron[1] = 26.1144;
 	  parDeuteron[2] = 4.00313e-15;
 	  parDeuteron[3] = 2.72969 ;
@@ -1682,7 +1682,7 @@ Bool_t AliAnalysisTaskLambdaNAOD::DeuteronPID(AliVTrack *trackP, AliVTrack *trac
 	
 	if(trackP->GetTPCsignal() >= 100 && //needed to reduce the size of the tree -- below the deuterons merge with the other particle spezies; standard value 110, variation for systematics
 	   trackP->GetTPCsignal() < 1200 && //needed to reduce the size of the tree -- anyway above the TPC does not work properly (?)
-	   (TMath::Abs(trackP->GetTPCsignal() - expSignalDeuteronP)/expSignalDeuteronP) < 0.3 && //for systemactics -- normal value 0.2
+	   (TMath::Abs(trackP->GetTPCsignal() - expSignalDeuteronP)/expSignalDeuteronP) < 0.32 && //for systemactics -- normal value 0.24
 	   ptotP > 0.2 ){
 	  
 	  if(trackP->Charge() >0)	 	isDeuteron[0] = kTRUE; //pos deuteron
@@ -1691,7 +1691,7 @@ Bool_t AliAnalysisTaskLambdaNAOD::DeuteronPID(AliVTrack *trackP, AliVTrack *trac
 	
 	if(trackN->GetTPCsignal() >= 100 && //needed to reduce the size of the tree -- below the deuterons merge with the other particle spezies
 	   trackN->GetTPCsignal() < 1200 && //needed to reduce the size of the tree -- anyway above the TPC does not work properly (?)
-	   (TMath::Abs(trackN->GetTPCsignal() - expSignalDeuteronN)/expSignalDeuteronN) < 0.3 && //for systemactics -- normal value 0.2
+	   (TMath::Abs(trackN->GetTPCsignal() - expSignalDeuteronN)/expSignalDeuteronN) < 0.32 && //for systemactics -- normal value 0.24
 	   ptotN > 0.2){ 
 	  
 	  isDeuteron[2] = kTRUE;

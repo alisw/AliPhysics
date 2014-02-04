@@ -28,6 +28,7 @@
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliAODTrack.h"
+#include "AliPIDResponse.h"   
 #include "AliExternalTrackParam.h"
 #include "AliAODMCParticle.h"
 #include "AliAODEvent.h"
@@ -35,7 +36,6 @@
 #include "AliAnalysisTaskESDfilter.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliSpectraAODTrackCuts.h"
-//#include "AliSpectraAODHistoManager.h"
 #include <iostream>
 
 using namespace std;
@@ -58,16 +58,15 @@ ClassImp(AliSpectraAODTrackCuts)
 
 
 AliSpectraAODTrackCuts::AliSpectraAODTrackCuts(const char *name) : TNamed(name, "AOD Track Cuts"), fIsSelected(0), fTrackBits(0), fMinTPCcls(0), fEtaCutMin(0), fEtaCutMax(0), fDCACut(0), fPCut(0), fPtCut(0), fYCut(0),
-  fPtCutTOFMatching(0), fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fTrack(0)
-  
+  fPtCutTOFMatching(0), fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fTrack(0), fPIDResponse(0)
 {
   // Constructor
   fHistoCuts = new TH1I("fTrkCuts", "Track Cuts", kNTrkCuts, -0.5, kNTrkCuts - 0.5);
   for(Int_t ibin=1;ibin<=kNTrkCuts;ibin++)fHistoCuts->GetXaxis()->SetBinLabel(ibin,kBinLabel[ibin-1]);
   //standard histo
-  const Double_t templBins[] = {0.05,0.1,0.12,0.14,0.16,0.18,0.20,0.25,0.30,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0,3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0};
-  Int_t nbinsTempl=52;
-  
+  const Double_t templBins[] = {0.20,0.30,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.2,1.4,1.6,1.8,2.0,2.4,2.8,3.2,3.6,4.0,5.0,6.0,7.0,8.0,9.0,10.,12.,15.};
+  const Int_t nbinsTempl=26;
+
   fHistoNSelectedPos=new TH1F("fHistoNSelectedPos","fHistoNSelectedPos",nbinsTempl,templBins);
   fHistoNSelectedPos->GetXaxis()->SetTitle("P_{T} (GeV / c)");
   fHistoNSelectedNeg=new TH1F("fHistoNSelectedNeg","fHistoNSelectedNeg",nbinsTempl,templBins);
@@ -130,7 +129,6 @@ Bool_t AliSpectraAODTrackCuts::IsSelected(AliAODTrack * track,Bool_t FillHistSta
     return kFALSE;
   }
   if(FillHistStat)fHistoCuts->Fill(kAccepted);
-  //Printf("-------- %d,%d",kTOFMatching,kAccepted);
   return kTRUE;
 }
 //_________________________________________________________
@@ -154,64 +152,71 @@ Bool_t AliSpectraAODTrackCuts::CheckTrackCuts()
 //________________________________________________________
 Bool_t AliSpectraAODTrackCuts::CheckEtaCut()
 {
-   // Check eta cut
-   if (fTrack->Eta() < fEtaCutMax && fTrack->Eta() > fEtaCutMin) return kTRUE;
-    return kFALSE;
+  // Check eta cut
+  if (fTrack->Eta() < fEtaCutMax && fTrack->Eta() > fEtaCutMin) return kTRUE;
+  return kFALSE;
 }
 
-Bool_t AliSpectraAODTrackCuts::CheckYCut(AODParticleSpecies_t species) 
+Bool_t AliSpectraAODTrackCuts::CheckYCut(Double_t mass) 
 {
   // check if the rapidity is within the set range
   Double_t y=-1000;
-  if (species == kSpProton) { y = fTrack->Y(9.38271999999999995e-01); }
-  if ( species == kSpKaon ) { y = fTrack->Y(4.93676999999999977e-01); }
-  if ( species == kSpPion)  { y = fTrack->Y(1.39570000000000000e-01); }
+  if (mass > 0.) { y = fTrack->Y(mass); }//negative mass for unidentified particles
   if (TMath::Abs(y) > fYCut || y < -998.) return kFALSE;
   return kTRUE;
 }
 //_______________________________________________________
 Bool_t AliSpectraAODTrackCuts::CheckDCACut()
 {
-   // Check DCA cut
+  // Check DCA cut
   if (TMath::Abs(fTrack->DCA()) < fDCACut) return kTRUE; //FIXME for newest AOD fTrack->DCA() always gives -999
-   return kFALSE;
+  return kFALSE;
 }
 //________________________________________________________
 Bool_t AliSpectraAODTrackCuts::CheckPCut()
 {
-   // Check P cut
-   if (fTrack->P() < fPCut) return kTRUE;
-   return kFALSE;
+  // Check P cut
+  if (fTrack->P() < fPCut) return kTRUE;
+  return kFALSE;
 }
 //_______________________________________________________
 Bool_t AliSpectraAODTrackCuts::CheckPtCut()
 {
-    // check Pt cut
-//    if ((fTrack->Pt() < fPtCut) && (fTrack->Pt() > 0.3 )) return kTRUE;
-   if (fTrack->Pt() < fPtCut) return kTRUE;
-    return kFALSE;
+  // check Pt cut
+  if (fTrack->Pt() < fPtCut) return kTRUE;
+  return kFALSE;
 }
 
 //_______________________________________________________
 Bool_t AliSpectraAODTrackCuts::CheckTOFMatching(Bool_t FillHistStat)
 {
-  // check Pt cut
-  //    if ((fTrack->Pt() < fPtCut) && (fTrack->Pt() > 0.3 )) return kTRUE;
-  
   if (fTrack->Pt() < fPtCutTOFMatching) return kTRUE;
   else{
     if(FillHistStat)fHistoCuts->Fill(kTrkPtTOF);
     if(fTrack->Charge()>0)fHistoNSelectedPos->Fill(fTrack->Pt());
     else fHistoNSelectedNeg->Fill(fTrack->Pt());
+    
+    // Get PID response object, if needed
+    if(!fPIDResponse) {
+      AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+      AliInputEventHandler* inputHandler = (AliInputEventHandler*)(man->GetInputEventHandler());
+      fPIDResponse = inputHandler->GetPIDResponse();
+    }
+    if(!fPIDResponse) {
+      AliFatal("Cannot get pid response");
+      return 0;
+    }
+    
+    if(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,fTrack)==0)return kFALSE; 
+    
+    //check the bits of the selected particles
     UInt_t status; 
     status=fTrack->GetStatus();
     if((status&AliAODTrack::kTOFout)&&FillHistStat)fHistoCuts->Fill(kTrTOFout);
     if((status&AliAODTrack::kTIME)&&FillHistStat)fHistoCuts->Fill(kTrTIME);
     if((status&AliAODTrack::kTOFpid)&&FillHistStat)fHistoCuts->Fill(kTrTOFpid);
     
-    if((status&AliAODTrack::kTOFout)==0 || (status&AliAODTrack::kTIME)==0){//kTOFout and kTIME
-      return kFALSE; 
-    } 
+    
     if(FillHistStat)fHistoCuts->Fill(kTOFMatching);
     if(fTrack->Charge()>0)fHistoNMatchedPos->Fill(fTrack->Pt());
     else fHistoNMatchedNeg->Fill(fTrack->Pt());
@@ -231,19 +236,19 @@ Bool_t AliSpectraAODTrackCuts::CheckTOFMatching(Bool_t FillHistStat)
 void AliSpectraAODTrackCuts::PrintCuts() const
 {
   // Print cuts
-    cout << "Track Cuts" << endl;
-    cout << " > TrackBit\t" << fTrackBits << endl;
-    cout << " > Eta cut\t" << fEtaCutMin <<","<< fEtaCutMax << endl;
-    cout << " > DCA cut\t" << fDCACut << endl;
-    cout << " > P cut\t" << fPCut << endl;
-    cout << " > Pt cut \t" << fPtCut << endl;
-    cout << " > TPC cls \t" << fMinTPCcls << endl;
+  cout << "Track Cuts" << endl;
+  cout << " > TrackBit\t" << fTrackBits << endl;
+  cout << " > Eta cut\t" << fEtaCutMin <<","<< fEtaCutMax << endl;
+  cout << " > DCA cut\t" << fDCACut << endl;
+  cout << " > P cut\t" << fPCut << endl;
+  cout << " > Pt cut \t" << fPtCut << endl;
+  cout << " > TPC cls \t" << fMinTPCcls << endl;
 }
 //_______________________________________________________
 void AliSpectraAODTrackCuts::SetTrackType(UInt_t bit)
 {
-   // Set the type of track to be used. The argument should be the bit number. The mask is produced automatically.
-   fTrackBits = (0x1 << (bit - 1));
+  // Set the type of track to be used. The argument should be the bit number. The mask is produced automatically.
+  fTrackBits = (0x1 << (bit - 1));
 }
 //_______________________________________________________
 

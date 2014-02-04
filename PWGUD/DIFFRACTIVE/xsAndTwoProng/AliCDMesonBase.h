@@ -165,63 +165,63 @@ public:
 		kBitConfigurationVersion = (1<<28) // always set, last bit
 	};
 
-	static Int_t GetGapBin(const TString tag, const Int_t gapcg,
+	static Int_t GetGapBin(TString tag, Int_t gapcg,
 	                       Bool_t checkCentralActivity = kTRUE);
 
 	static THnSparseD* GetThnMother(TString name = "CDMeson_Mother");
-	static void FillThnMother(THnSparseD *thn, const Double_t vNch,
-	                          const Double_t vCombCh, const Double_t vCombPID,
-	                          const Double_t vV0, const Double_t vFMD,
-	                          const Double_t vSPD, const Double_t vTPC,
-	                          const Double_t vMass, const Double_t vPt,
-	                          const Double_t vOA, const Double_t vCTS,
-	                          const Double_t vDaughterPt,
-	                          const Double_t vTrackResiduals,
-	                          const Double_t vVertexZ,
-	                          const Double_t vProcessType,
-	                          const Double_t vVertexCoincidence,
-	                          const Double_t vTrkltResiduals);
-	static Int_t GetAxisMother(const TString name);
+	static void FillThnMother(THnSparseD *thn, Double_t vNch,
+	                          Double_t vCombCh, Double_t vCombPID,
+	                          Double_t vV0, Double_t vFMD,
+	                          Double_t vSPD, Double_t vTPC,
+	                          Double_t vMass, Double_t vPt,
+	                          Double_t vOA, Double_t vCTS,
+	                          Double_t vDaughterPt,
+	                          Double_t vTrackResiduals,
+	                          Double_t vVertexZ,
+	                          Double_t vProcessType,
+	                          Double_t vVertexCoincidence,
+	                          Double_t vTrkltResiduals);
+	static Int_t GetAxisMother(TString name);
 
 	static THnSparseD* GetThnEmptyEvents();
-	static void FillThnEmptyEvents(THnSparseD *thn, const Int_t eventType,
-	                               const Int_t multFMDA, const Int_t multFMDC,
-	                               const Int_t multSPDIA, const Int_t multSPDIC,
-	                               const Int_t multSPDOA, const Int_t multSPDOC,
-	                               const Int_t multSPDtrklA,
-	                               const Int_t multSPDtrklC, const Int_t fmdSum1I,
-	                               const Int_t fmdSum2I, const Int_t fmdSum20,
-	                               const Int_t fmdSum3I, const Int_t fmdSum3O/*,
-	                               const Int_t multTPC,
-	                               const Int_t multTPCdiffVertex */);
-	static Int_t GetAxisEmptyEvents(const TString name);
+	static void FillThnEmptyEvents(THnSparseD *thn, Int_t eventType,
+	                               Int_t multFMDA, Int_t multFMDC,
+	                               Int_t multSPDIA, Int_t multSPDIC,
+	                               Int_t multSPDOA, Int_t multSPDOC,
+	                               Int_t multSPDtrklA,
+	                               Int_t multSPDtrklC, Int_t fmdSum1I,
+	                               Int_t fmdSum2I, Int_t fmdSum20,
+	                               Int_t fmdSum3I, Int_t fmdSum3O/*,
+	                               Int_t multTPC,
+	                               Int_t multTPCdiffVertex */);
+	static Int_t GetAxisEmptyEvents(TString name);
 
 	static THnSparseD* GetThnMultiplicity();
-	static void FillThnMultiplicity(THnSparseD *thn, const Double_t vNch,
-	                                const Double_t vNsoft,
-	                                const Double_t vNcombined,
-	                                const Double_t vV0, const Double_t vFMD,
-	                                const Double_t vSPD, const Double_t vTPC,
-	                                const Double_t vNresidualTracks,
-	                                const Double_t vNresidualTracklets,
-	                                const Double_t vVertexZ,
-	                                const Double_t vVerticesDistance,
-	                                const Double_t vProcessType);
-	static Int_t GetAxisMultiplicity(const TString name);
+	static void FillThnMultiplicity(THnSparseD *thn, Double_t vNch,
+	                                Double_t vNsoft,
+	                                Double_t vNcombined,
+	                                Double_t vV0, Double_t vFMD,
+	                                Double_t vSPD, Double_t vTPC,
+	                                Double_t vNresidualTracks,
+	                                Double_t vNresidualTracklets,
+	                                Double_t vVertexZ,
+	                                Double_t vVerticesDistance,
+	                                Double_t vProcessType);
+	static Int_t GetAxisMultiplicity(TString name);
 
 	static TH1F* GetHistStatsFlow();
 	static TH2F* GetHistPIDStudies(TString name);
 	static TObjArray* GetHistVZEROStudies(TList* l);
 
 	static void GetGapTriggers(THnSparseI* gaprun, Int_t gapCondition,
-	                           const Int_t run, Double_t& triggers,
+	                           Int_t run, Double_t& triggers,
 	                           Double_t& total);
 
 	static void GetNoGapTriggers(THnSparseI* gaprun, Int_t gapCondition,
-	                             const Int_t run, Double_t& triggers,
+	                             Int_t run, Double_t& triggers,
 	                             Double_t& total);
 private:
-	static void CheckRange(Double_t &var, const Double_t min, const Double_t max);
+	static void CheckRange(Double_t &var, Double_t min, Double_t max);
 	static Int_t GetAxis(TString thntit, TString name);
 	static TString GetTitleMother();
 	static TString GetTitleEmptyEvents();

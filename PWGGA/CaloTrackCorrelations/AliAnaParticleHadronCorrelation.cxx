@@ -74,7 +74,11 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fListMixTrackEvents(),          fListMixCaloEvents(),
     fUseMixStoredInReader(0),       fFillNeutralEventMixPool(0),
     fM02MaxCut(0),                  fM02MinCut(0),  
-    fFillPileUpHistograms(0),       
+    fFillPileUpHistograms(0),
+    fSelectLeadingHadronAngle(0),
+    fMinLeadHadPhi(0),              fMaxLeadHadPhi(0),
+    fMinLeadHadPt(0),               fMaxLeadHadPt(0),
+
     //Histograms
     fhPtInput(0),                   fhPtFidCut(0),
     fhPtLeading(0),                 fhPtLeadingVtxBC0(0),
@@ -90,9 +94,9 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fhDeltaPhiCharged(0),           fhDeltaEtaCharged(0), 
     fhDeltaPhiChargedPt(0),         fhDeltaPhiUeChargedPt(0), 
     fhUePart(0),
-    fhXECharged(0),                 fhXECharged_Cone2(0),            fhXEUeCharged(0),
+    fhXECharged(0),                 fhXECharged_Cone2(0),      fhXEUeCharged(0),
     fhXEPosCharged(0),              fhXENegCharged(0),
-    fhPtHbpXECharged(0),            fhPtHbpXECharged_Cone2(0),             fhPtHbpXEUeCharged(0),
+    fhPtHbpXECharged(0),            fhPtHbpXECharged_Cone2(0), fhPtHbpXEUeCharged(0),
     fhZTCharged(0),                 fhZTUeCharged(0),
     fhZTPosCharged(0),              fhZTNegCharged(0),
     fhPtHbpZTCharged(0),            fhPtHbpZTUeCharged(0),
@@ -2621,11 +2625,17 @@ void AliAnaParticleHadronCorrelation::InitParameters()
   fAssocPtBinLimit[18]  = 50.0 ;
   fAssocPtBinLimit[19]  = 200.0 ;
   
-  
   fUseMixStoredInReader = kTRUE;
   
   fM02MinCut   = -1 ;
   fM02MaxCut   = -1 ;
+  
+  fSelectLeadingHadronAngle = kFALSE;
+  fMinLeadHadPhi = 150*TMath::DegToRad();
+  fMaxLeadHadPhi = 210*TMath::DegToRad();
+
+  fMinLeadHadPt  = 1;
+  fMaxLeadHadPt  = 100;
   
 }
 
@@ -2897,6 +2907,8 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
   Float_t eta      = -100. ;
   Float_t pout     = -100. ;
   Float_t deltaPhi = -100. ;
+  Float_t ptLeadHad  = -100 ;
+  Float_t phiLeadHad = -100 ;
   
   TVector3 p3;  
   TLorentzVector photonMom ;	
@@ -2927,9 +2939,38 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
   if(fPi0Trigger && bFillHisto) decayFound = GetDecayPhotonMomentum(aodParticle,decayMom1, decayMom2);
 
   //-----------------------------------------------------------------------
-  //Track loop, select tracks with good pt, phi and fill AODs or histograms
+  // Track loop, select tracks with good pt, phi and fill AODs or histograms
   //-----------------------------------------------------------------------
 
+  // select events where the leading particle in the opposite hemisphere to the trigger particle is
+  // is in a window centered at 180 from the trigger
+  // Find the leading hadron
+  if(fSelectLeadingHadronAngle)
+  {
+    for(Int_t ipr = 0;ipr < pl->GetEntriesFast() ; ipr ++ )
+    {
+      AliVTrack * track = (AliVTrack *) (pl->At(ipr)) ;
+      Double_t mom[3] = {track->Px(),track->Py(),track->Pz()};
+      p3.SetXYZ(mom[0],mom[1],mom[2]);
+      pt   = p3.Pt();
+      phi  = p3.Phi() ;
+
+      if(pt > ptLeadHad && TMath::Abs(phi-phiTrig) > TMath::PiOver2())
+      {
+        ptLeadHad = pt ;
+        phiLeadHad = phi;
+      }
+      
+    }// track loop
+    
+    if( ptLeadHad < fMinLeadHadPt ||
+        ptLeadHad > fMaxLeadHadPt ) return kFALSE;
+    
+    if( TMath::Abs(phiLeadHad-phiTrig) < fMinLeadHadPhi ||
+        TMath::Abs(phiLeadHad-phiTrig) > fMaxLeadHadPhi ) return kFALSE;
+    
+  }// select leading hadron
+  
   for(Int_t ipr = 0;ipr < pl->GetEntriesFast() ; ipr ++ )
   {
     AliVTrack * track = (AliVTrack *) (pl->At(ipr)) ;
@@ -2959,7 +3000,7 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
     {
       if(pt > ptTrig)  return kFALSE;
     }
-    
+        
     //Only for mixed event
     Int_t evtIndex2 = 0 ; 
     if (GetMixedEvent()) 

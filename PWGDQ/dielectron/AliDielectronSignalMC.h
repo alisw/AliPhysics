@@ -31,6 +31,7 @@
     501 - open beauty mesons                         500-549
     502 - open beauty mesons and baryons             500-549, 5000-5499
     503 - all beauty hadrons                         500-599, 5000-5999
+    902 - all open charm open beauty mesons+baryons  400-439, 500-549, 4000-4399, 5000-5499
    1000 - light unflavoured baryons in the code range 1000-1999
    2000 -        --"--                                2000-2999
    3000 - strange baryons in the code range           3000-3999

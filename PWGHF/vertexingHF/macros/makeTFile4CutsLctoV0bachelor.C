@@ -20,18 +20,6 @@
 
 void makeInputAliAnalysisTaskSELctoV0bachelor(){
 
-  AliRDHFCutsLctoV0* RDHFLctoV0Prod=new AliRDHFCutsLctoV0();
-  RDHFLctoV0Prod->SetName("LctoV0ProductionCuts");
-  RDHFLctoV0Prod->SetTitle("Production cuts for Lc analysis");
-  AliESDtrackCuts* esdTrackCutsProd=new AliESDtrackCuts();
-  RDHFLctoV0Prod->AddTrackCuts(esdTrackCutsProd);
-  RDHFLctoV0Prod->AddTrackCutsV0daughters(esdTrackCutsProd);
-  RDHFLctoV0Prod->SetUseTrackSelectionWithFilterBits(kFALSE);
-  RDHFLctoV0Prod->SetPidSelectionFlag(2); // 0 -> TOF AND TPC
-                                          // 1 -> if (TOF) TOF else TPC w veto
-                                          // 2 -> if (p<1) TPC@3s else if (1<=p<2.5) {if (TOF) TOF@3s AND TPC@3s} else (p>=2.5) {if (TOF) -2s<TOF<3s AND TPC@3s}
-                                          // 3 -> if (p<1) TPC@3s else if (1<=p<2.5) {if (TOF) TOF@3s AND TPC@3s} else if (2.5<=p<3) {if (TOF) -2s<TOF<3s AND TPC@3s} else (p>=3) {if (TOF) -2s<TOF<3s AND -3s<TPC<2s}
-
   AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts();
   esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
   //default
@@ -43,11 +31,9 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   //	 				   AliESDtrackCuts::kAny); 
   // default is kBoth, otherwise kAny
   esdTrackCuts->SetMinDCAToVertexXY(0.);
-  //esdTrackCuts->SetPtRange(0.3,1.e10);
   esdTrackCuts->SetPtRange(0.,1.e10);
   esdTrackCuts->SetEtaRange(-0.8,0.8);
   esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
-
 
 
   AliESDtrackCuts* esdTrackCutsV0daughters=new AliESDtrackCuts();
@@ -65,21 +51,19 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   esdTrackCutsV0daughters->SetEtaRange(-0.8,0.8);
   esdTrackCutsV0daughters->SetAcceptKinkDaughters(kFALSE);
 
-
-
   AliRDHFCutsLctoV0* RDHFLctoV0An=new AliRDHFCutsLctoV0();
   RDHFLctoV0An->SetName("LctoV0AnalysisCuts");
   RDHFLctoV0An->SetTitle("Analysis cuts for Lc analysis");
+  RDHFLctoV0An->SetKinkRejection(!esdTrackCuts->GetAcceptKinkDaughters());
   RDHFLctoV0An->AddTrackCuts(esdTrackCuts);
   RDHFLctoV0An->AddTrackCutsV0daughters(esdTrackCutsV0daughters);
-  RDHFLctoV0An->SetUseTrackSelectionWithFilterBits(kFALSE);
+  RDHFLctoV0An->SetUseTrackSelectionWithFilterBits(kTRUE);
   RDHFLctoV0An->SetPidSelectionFlag(2); // 0 -> TOF AND TPC
                                         // 1 -> if (TOF) TOF else TPC w veto
                                         // 2 -> if (p>1) TPC@3s else if (1<=p<2.5) {if (TOF) TOF@3s AND TPC@3s} else (p>=2.5) {if (TOF) -2s<TOF<3s AND TPC@3s}
                                         // 3 -> if (p>1) TPC@3s else if (1<=p<2.5) {if (TOF) TOF@3s AND TPC@3s} else if (2.5<=p<3) {if (TOF) -2s<TOF<3s AND TPC@3s} else (p>=3) {if (TOF) -2s<TOF<3s AND -3s<TPC<2s}
 
-  const Int_t nptbins=9;
-  RDHFLctoV0Prod->SetNPtBins(nptbins);
+  const Int_t nptbins=14;
   RDHFLctoV0An->SetNPtBins(nptbins);
 
   Float_t* ptbins;
@@ -91,39 +75,17 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   ptbins[4]= 4.;
   ptbins[5]= 5.;
   ptbins[6]= 6.;
-  ptbins[7]= 8.;
-  ptbins[8]=12.;
-  ptbins[9]=99999999.;
-  RDHFLctoV0Prod->SetPtBins(nptbins+1,ptbins);
+  ptbins[7]= 7.;
+  ptbins[8]= 8.;
+  ptbins[9]= 9.;
+  ptbins[10]=10.;
+  ptbins[11]=12.;
+  ptbins[12]=17.;
+  ptbins[13]=25.;
+  ptbins[14]=35.;
   RDHFLctoV0An->SetPtBins(nptbins+1,ptbins);
 
   const Int_t nvars=17;
-
-  Float_t** prodcutsval;
-  prodcutsval=new Float_t*[nvars];
-  for(Int_t ic=0;ic<nvars;ic++){prodcutsval[ic]=new Float_t[nptbins];}
-  for(Int_t ipt2=0;ipt2<nptbins;ipt2++){
-   prodcutsval[0][ipt2]=1.;    // inv. mass if K0S [GeV/c2]
-   prodcutsval[1][ipt2]=1.;    // inv. mass if Lambda [GeV/c2]
-   prodcutsval[2][ipt2]=0.05;  // inv. mass V0 if K0S [GeV/c2]
-   prodcutsval[3][ipt2]=0.05;  // inv. mass V0 if Lambda [GeV/c2]
-   prodcutsval[4][ipt2]=0.3;   // pT min bachelor track [GeV/c] // AOD by construction
-   prodcutsval[5][ipt2]=0.;    // pT min V0-positive track [GeV/c]
-   prodcutsval[6][ipt2]=0.;    // pT min V0-negative track [GeV/c]
-   prodcutsval[7][ipt2]=1000.; // dca cascade cut [cm]
-   prodcutsval[8][ipt2]=1000.; // dca V0 cut [nSigma] // it's 1.5 x offline V0s
-   prodcutsval[9][ipt2]=-1.;   // cosPA V0 cut // it's 0.90 x offline V0s at reconstruction level, 0.99 at filtering level
-   prodcutsval[10][ipt2]=3.;   // d0 max bachelor wrt PV [cm]
-   prodcutsval[11][ipt2]=1000.;// d0 max V0 wrt PV [cm]
-   prodcutsval[12][ipt2]=0.;   // mass K0S veto [GeV/c2]
-   prodcutsval[13][ipt2]=0.;   // mass Lambda/LambdaBar veto [GeV/c2]
-   prodcutsval[14][ipt2]=0.;   // mass Gamma veto [GeV/c2]
-   prodcutsval[15][ipt2]=0.;   // pT min V0 track [GeV/c]
-   prodcutsval[16][ipt2]=0.;   // V0 type cut
-  }
-
-
-  RDHFLctoV0Prod->SetCuts(nvars,nptbins,prodcutsval);
 
   Float_t** anacutsval;
   anacutsval=new Float_t*[nvars];
@@ -131,32 +93,94 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   for(Int_t ipt2=0;ipt2<nptbins;ipt2++){
    anacutsval[0][ipt2]=0.25;   // inv. mass if K0S [GeV/c2]
    anacutsval[1][ipt2]=0.25;   // inv. mass if Lambda [GeV/c2]
-   anacutsval[2][ipt2]=0.0075; // inv. mass V0 if K0S [GeV/c2]
-   anacutsval[3][ipt2]=0.0030; // inv. mass V0 if Lambda [GeV/c2]
-   anacutsval[4][ipt2]=0.4;    // pT min bachelor track [GeV/c] // AOD by construction
+   anacutsval[3][ipt2]=0.05;   // inv. mass V0 if Lambda [GeV/c2] ---> WE ARE SEARCHING Lc -> p+K0S, so cut on m(Lambda) has to be leave as it was at filtering level!!!
    anacutsval[5][ipt2]=0.2;    // pT min V0-positive track [GeV/c]
    anacutsval[6][ipt2]=0.2;    // pT min V0-negative track [GeV/c]
    anacutsval[7][ipt2]=1000.;  // dca cascade cut [cm]
    anacutsval[8][ipt2]=1.5;    // dca V0 cut [nSigma] // it's 1.5 x offline V0s
-   anacutsval[9][ipt2]=0.99;   // cosPA V0 cut // it's 0.90 x offline V0s at reconstruction level, 0.99 at filtering level
-   anacutsval[10][ipt2]=0.05;  // d0 max bachelor wrt PV [cm]
-   anacutsval[11][ipt2]=0.1;   // d0 max V0 wrt PV [cm]
+   anacutsval[11][ipt2]=0.09;  // d0 max V0 wrt PV [cm]
    anacutsval[12][ipt2]=0.;    // mass K0S veto [GeV/c2]
    anacutsval[13][ipt2]=0.005; // mass Lambda/LambdaBar veto [GeV/c2]
-   anacutsval[14][ipt2]=0.100; // mass Gamma veto [GeV/c2]
+   anacutsval[14][ipt2]=0.300; // mass Gamma veto [GeV/c2]
    anacutsval[16][ipt2]=0.;    // V0 type cut
   }
 
-  anacutsval[15][0]=0.0; // pT min V0 track [GeV/c]
+  anacutsval[2][0]=0.00346*2.; // inv. mass V0 if K0S [GeV/c2]
+  anacutsval[2][1]=0.00360*2.; // inv. mass V0 if K0S [GeV/c2]
+  anacutsval[2][2]=0.00385*2.; // inv. mass V0 if K0S [GeV/c2]
+  anacutsval[2][3]=0.00406*2.; // inv. mass V0 if K0S [GeV/c2]
+  anacutsval[2][4]=0.00429*2.; // inv. mass V0 if K0S [GeV/c2]
+  anacutsval[2][5]=0.00450*2.; // inv. mass V0 if K0S [GeV/c2]
+  anacutsval[2][6]=0.00450*2.; // inv. mass V0 if K0S [GeV/c2]
+  anacutsval[2][7]=0.00450*2.; // inv. mass V0 if K0S [GeV/c2]
+  anacutsval[2][8]=0.00520*2.; // inv. mass V0 if K0S [GeV/c2]
+  anacutsval[2][9]=0.00520*2.; // inv. mass V0 if K0S [GeV/c2]
+  anacutsval[2][10]=0.00520*2.;// inv. mass V0 if K0S [GeV/c2]
+  anacutsval[2][11]=0.00520*2.;// inv. mass V0 if K0S [GeV/c2]
+  anacutsval[2][12]=0.00520*2.;// inv. mass V0 if K0S [GeV/c2]
+  anacutsval[2][13]=0.00520*2.;// inv. mass V0 if K0S [GeV/c2]
+
+  anacutsval[4][0]=0.6;    // pT min bachelor track [GeV/c] // AOD by construction
+  anacutsval[4][1]=0.5;    // pT min bachelor track [GeV/c] // AOD by construction
+  anacutsval[4][2]=0.6;    // pT min bachelor track [GeV/c] // AOD by construction
+  anacutsval[4][3]=0.7;    // pT min bachelor track [GeV/c] // AOD by construction
+  anacutsval[4][4]=0.8;    // pT min bachelor track [GeV/c] // AOD by construction
+  anacutsval[4][5]=0.9;    // pT min bachelor track [GeV/c] // AOD by construction
+  anacutsval[4][6]=1.0;    // pT min bachelor track [GeV/c] // AOD by construction
+  anacutsval[4][7]=1.2;    // pT min bachelor track [GeV/c] // AOD by construction
+  anacutsval[4][8]=1.4;    // pT min bachelor track [GeV/c] // AOD by construction
+  anacutsval[4][9]=1.7;    // pT min bachelor track [GeV/c] // AOD by construction
+  anacutsval[4][10]=2.0;   // pT min bachelor track [GeV/c] // AOD by construction
+  anacutsval[4][11]=2.0;   // pT min bachelor track [GeV/c] // AOD by construction
+  anacutsval[4][12]=2.0;   // pT min bachelor track [GeV/c] // AOD by construction
+  anacutsval[4][13]=2.0;   // pT min bachelor track [GeV/c] // AOD by construction
+
+  anacutsval[9][0]=0.994;  // cosPA V0 cut // it's 0.90 x offline V0s at reconstruction level, 0.99 at filtering level
+  anacutsval[9][1]=0.994;  // cosPA V0 cut // it's 0.90 x offline V0s at reconstruction level, 0.99 at filtering level
+  anacutsval[9][2]=0.998;  // cosPA V0 cut // it's 0.90 x offline V0s at reconstruction level, 0.99 at filtering level
+  anacutsval[9][3]=0.999;  // cosPA V0 cut // it's 0.90 x offline V0s at reconstruction level, 0.99 at filtering level
+  anacutsval[9][4]=0.999;  // cosPA V0 cut // it's 0.90 x offline V0s at reconstruction level, 0.99 at filtering level
+  anacutsval[9][5]=0.999;  // cosPA V0 cut // it's 0.90 x offline V0s at reconstruction level, 0.99 at filtering level
+  anacutsval[9][6]=0.999;  // cosPA V0 cut // it's 0.90 x offline V0s at reconstruction level, 0.99 at filtering level
+  anacutsval[9][7]=0.999;  // cosPA V0 cut // it's 0.90 x offline V0s at reconstruction level, 0.99 at filtering level
+  anacutsval[9][8]=0.999;  // cosPA V0 cut // it's 0.90 x offline V0s at reconstruction level, 0.99 at filtering level
+  anacutsval[9][9]=0.999;  // cosPA V0 cut // it's 0.90 x offline V0s at reconstruction level, 0.99 at filtering level
+  anacutsval[9][10]=0.999; // cosPA V0 cut // it's 0.90 x offline V0s at reconstruction level, 0.99 at filtering level
+  anacutsval[9][11]=0.999; // cosPA V0 cut // it's 0.90 x offline V0s at reconstruction level, 0.99 at filtering level
+  anacutsval[9][12]=0.999; // cosPA V0 cut // it's 0.90 x offline V0s at reconstruction level, 0.99 at filtering level
+  anacutsval[9][13]=0.999; // cosPA V0 cut // it's 0.90 x offline V0s at reconstruction level, 0.99 at filtering level
+
+  anacutsval[10][0]=0.05;  // d0 max bachelor wrt PV [cm]
+  anacutsval[10][1]=0.04;  // d0 max bachelor wrt PV [cm]
+  anacutsval[10][2]=0.03;  // d0 max bachelor wrt PV [cm]
+  anacutsval[10][3]=0.05;  // d0 max bachelor wrt PV [cm]
+  anacutsval[10][4]=0.05;  // d0 max bachelor wrt PV [cm]
+  anacutsval[10][5]=0.02;  // d0 max bachelor wrt PV [cm]
+  anacutsval[10][6]=0.02;  // d0 max bachelor wrt PV [cm]
+  anacutsval[10][7]=0.02;  // d0 max bachelor wrt PV [cm]
+  anacutsval[10][8]=0.02;  // d0 max bachelor wrt PV [cm]
+  anacutsval[10][9]=0.02;  // d0 max bachelor wrt PV [cm]
+  anacutsval[10][10]=0.02; // d0 max bachelor wrt PV [cm]
+  anacutsval[10][11]=0.02; // d0 max bachelor wrt PV [cm]
+  anacutsval[10][12]=0.02; // d0 max bachelor wrt PV [cm]
+  anacutsval[10][13]=0.02; // d0 max bachelor wrt PV [cm]
+
+
+  anacutsval[15][0]=0.5; // pT min V0 track [GeV/c]
   anacutsval[15][1]=0.6; // pT min V0 track [GeV/c]
-  anacutsval[15][2]=0.8; // pT min V0 track [GeV/c]
-  anacutsval[15][3]=0.8; // pT min V0 track [GeV/c]
+  anacutsval[15][2]=0.7; // pT min V0 track [GeV/c]
+  anacutsval[15][3]=0.7; // pT min V0 track [GeV/c]
   anacutsval[15][4]=0.8; // pT min V0 track [GeV/c]
-  anacutsval[15][5]=1.0; // pT min V0 track [GeV/c]
+  anacutsval[15][5]=0.9; // pT min V0 track [GeV/c]
   anacutsval[15][6]=1.0; // pT min V0 track [GeV/c]
   anacutsval[15][7]=1.0; // pT min V0 track [GeV/c]
-  anacutsval[15][8]=0.0; // pT min V0 track [GeV/c]
-  anacutsval[15][9]=0.0; // pT min V0 track [GeV/c]
+  anacutsval[15][8]=1.2; // pT min V0 track [GeV/c]
+  anacutsval[15][9]=1.2; // pT min V0 track [GeV/c]
+  anacutsval[15][10]=1.2; // pT min V0 track [GeV/c]
+  anacutsval[15][11]=1.2; // pT min V0 track [GeV/c]
+  anacutsval[15][12]=1.2; // pT min V0 track [GeV/c]
+  anacutsval[15][13]=1.2; // pT min V0 track [GeV/c]
+
 
 
   RDHFLctoV0An->SetCuts(nvars,nptbins,anacutsval);
@@ -176,7 +200,6 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   pidObjBachelor->SetTOFdecide(kFALSE);
 
   RDHFLctoV0An->SetPidHF(pidObjBachelor);
-  RDHFLctoV0Prod->SetPidHF(pidObjBachelor);
 
   //2. V0pos
   AliAODPidHF* pidObjV0pos = new AliAODPidHF();
@@ -189,7 +212,6 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   pidObjV0pos->SetTOFdecide(kFALSE);
 
   RDHFLctoV0An->SetPidV0pos(pidObjV0pos);
-  RDHFLctoV0Prod->SetPidV0pos(pidObjV0pos);
 
   //2. V0neg
   AliAODPidHF* pidObjV0neg = new AliAODPidHF();
@@ -202,7 +224,6 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   pidObjV0neg->SetTOFdecide(kFALSE);
 
   RDHFLctoV0An->SetPidV0neg(pidObjV0neg);
-  RDHFLctoV0Prod->SetPidV0neg(pidObjV0neg);
 
 
   // uncomment these lines for Baysian PID:
@@ -221,17 +242,13 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
 
   Bool_t pidflag=kTRUE;
   RDHFLctoV0An->SetUsePID(pidflag);
-  RDHFLctoV0Prod->SetUsePID(kFALSE);
   if(pidflag) cout<<"PID is used"<<endl;
   else cout<<"PID is not used"<<endl;
 
-  cout<<"This is the object I'm going to save:"<<endl;
-  RDHFLctoV0Prod->PrintAll();
-  cout<<"This is the object I'm going to save:"<<endl;
+  cout<<"This is the (anal) object I'm going to save:"<<endl;
   RDHFLctoV0An->PrintAll();
   TFile* fout=new TFile("Lc2pK0SCuts.root","RECREATE"); 
   fout->cd();
-  RDHFLctoV0Prod->Write();
   RDHFLctoV0An->Write();
   fout->Close();
   delete fout;
@@ -239,8 +256,7 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   delete pidObjBachelor;
   delete pidObjV0neg;
   delete pidObjV0pos;
-  delete RDHFLctoV0Prod;
-  delete RDHFLctoV0An;
+  //delete RDHFLctoV0An;
 
 }
 
@@ -262,8 +278,8 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   esdTrackCuts->SetMinNClustersITS(0);
   //esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
   esdTrackCuts->SetMinDCAToVertexXY(0.);
-  //esdTrackCuts->SetEtaRange(-0.8,0.8);
-  esdTrackCuts->SetPtRange(0.3,1.e10);
+  esdTrackCuts->SetEtaRange(-0.8,0.8);
+  esdTrackCuts->SetPtRange(0.,1.e10);
   
   AliESDtrackCuts* esdTrackCutsV0daughters=new AliESDtrackCuts();
   esdTrackCutsV0daughters->SetRequireSigmaToVertex(kFALSE);

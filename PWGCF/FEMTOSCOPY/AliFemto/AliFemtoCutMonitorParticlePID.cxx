@@ -40,7 +40,8 @@ AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID(const char *aName, 
   // Normal constructor
   char name[200];
   snprintf(name, 200, "TPCdEdx%s", aName);
-    fTPCdEdx = new TH2D(name, "TPC dEdx vs. momentum", 100, 0.0, 6.0, 250, 0.0, 500.0);
+    // fTPCdEdx = new TH2D(name, "TPC dEdx vs. momentum", 100, 0.0, 6.0, 250, 0.0, 500.0);
+    fTPCdEdx = new TH2D(name, "TPC dEdx vs. momentum", 200, 0.1, 4.0, 250, 0.0, 500.0);
 
   snprintf(name, 200, "TOFTime%s", aName);
     fTOFTime = new TH2D(name, "TOF Time vs. momentum", 100, 0.1, 5.0, 400, -4000.0, 4000.0);

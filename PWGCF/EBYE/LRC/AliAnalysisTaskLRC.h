@@ -250,6 +250,16 @@ protected:
     TH1D *fHistRejectedTracksCharge;   //! Charge of rejected tracks
     TH1D *fHistTracksCharge;   //! Charge of accepted tracks (zero is filled only for MC truth)
 
+    //netcharge study
+    TH1D *fHistPtPlus;   //! pt distr for +
+    TH1D *fHistPtMinus;   //! pt distr for -
+    TH1D *fHistNetChargeVsPt;   //! Net charge vs pt of accepted tracks
+    TH1D *fHistChargePlusVsPtTmp;    //! Net charge vs pt of accepted tracks +
+    TH1D *fHistChargeMinusVsPtTmp;   //! Net charge vs pt of accepted tracks -
+    TH2D *fHist2DNetChargeVsPt;      //! Net charge vs pt of accepted tracks 2D
+    TH2D *fHist2DNetChargeVsPtCorrectedOnEventMean;              //! Net charge vs pt of accepted tracks 2D shifted by mean
+    TH2D *fHist2DNetChargeVsPtCorrectedOnEventMeanNormOnNch;     //! Net charge vs pt of accepted tracks 2D norm on nCh
+
     AliAnalysisTaskLRC(const AliAnalysisTaskLRC&); // not implemented
     AliAnalysisTaskLRC& operator=(const AliAnalysisTaskLRC&); // not implemented
 

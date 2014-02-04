@@ -117,7 +117,10 @@ public:
   virtual     void    SetDcaZMin(double v)            { _dcaZMin           = v; } 
   virtual     void    SetDcaZMax(double v)            { _dcaZMax           = v; } 
   virtual     void    SetDcaXYMin(double v)           { _dcaXYMin          = v; } 
-  virtual     void    SetDcaXYMax(double v)           { _dcaXYMax          = v; } 
+  virtual     void    SetDcaXYMax(double v)           { _dcaXYMax          = v; }
+  virtual     void    SetTPCNclus(int v)              { _tpcnclus          = v; }
+  virtual     void    SetChi2PerNDF(double v)         { _chi2ndf           = v; }
+ 
   virtual     void    SetDedxMin(double v)            { _dedxMin           = v; } 
   virtual     void    SetDedxMax(double v)            { _dedxMax           = v; } 
   virtual     void    SetNClusterMin(int v)           { _nClusterMin       = v; } 
@@ -134,7 +137,7 @@ protected:
   AliESDEvent*             fESDEvent;             //! ESD Event 
   AliInputEventHandler*    fInputHandler;    //! Generic InputEventHandler 
   
-  AliPIDResponse *fPIDResponse;
+  AliPIDResponse*          fPIDResponse;
 
   // Histogram settings
   //TList*              _inputHistoList;
@@ -171,6 +174,9 @@ protected:
   int      _trackFilterBit;
   Double_t fNSigmaCut;  
 
+  int _tpcnclus;
+  double _chi2ndf;
+
   //double _min_eta_1;
   //double _max_eta_1;
   //double _min_eta_2;
@@ -186,6 +192,7 @@ protected:
   double _mult2;
   double _mult3;
   double _mult4;
+  double _mult4a;
   double _mult5;
   double _mult6;
   

@@ -5407,7 +5407,7 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
     Printf("ERROR: aod not available");
     return;
   }
-  TClonesArray *arrayD0toKpi;
+  TClonesArray *arrayD0toKpi=NULL;
   if(!aod && AODEvent() && IsStandardAOD()) {
     // In case there is an AOD handler writing a standard AOD, use the AOD 
     // event in memory rather than the input (ESD) event.    

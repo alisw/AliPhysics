@@ -113,6 +113,9 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
 
   void         SwitchOnFillOriginHisto()        { fFillOriginHisto     = kTRUE  ; }
   void         SwitchOffFillOriginHisto()       { fFillOriginHisto     = kFALSE ; }
+
+  void         SwitchOnFillArmenterosThetaStarHisto()  { fFillArmenterosThetaStar = kTRUE  ; }
+  void         SwitchOffFillArmenterosThetaStarHisto() { fFillArmenterosThetaStar = kFALSE ; }
   
   //MC analysis related methods
     
@@ -123,11 +126,15 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOffMultipleCutAnalysisInSimulation() { fMultiCutAnaSim = kFALSE ; }
   
   void         FillAcceptanceHistograms();
-  void         FillMCVersusRecDataHistograms(const Int_t    index1,  const Int_t    index2,
-                                             const Float_t  pt1,     const Float_t  pt2, 
-                                             const Int_t    ncells1, const Int_t    ncells2, 
-                                             const Double_t mass,    const Double_t pt,  const Double_t asym,    
-                                             const Double_t deta,    const Double_t dphi);
+  void         FillMCVersusRecDataHistograms(Int_t    index1,  Int_t    index2,
+                                             Float_t  pt1,     Float_t  pt2,
+                                             Int_t    ncells1, Int_t    ncells2,
+                                             Double_t mass,    Double_t pt,     Double_t asym,
+                                             Double_t deta,    Double_t dphi);
+  
+  void         FillArmenterosThetaStar(Int_t pdg,             TLorentzVector meson,
+                                       TLorentzVector daugh1, TLorentzVector daugh2);
+
   
   private:
 
@@ -163,7 +170,8 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillAngleHisto;            // Fill histograms with pair opening angle
   Bool_t   fFillAsymmetryHisto;        // Fill histograms with asymmetry vs pt
   Bool_t   fFillOriginHisto;           // Fill histograms depending on their origin
-
+  Bool_t   fFillArmenterosThetaStar;   // Fill armenteros histograms
+  
   //Histograms
   
   //Event characterization
@@ -294,10 +302,15 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhReMCFromNotConversion ;   //! Invariant mass of 2 clusters not originated in conversions
   TH2F *   fhReMCFromMixConversion ;   //! Invariant mass of 2 clusters one from conversion and the other not
 
+  TH2F *    fhArmPrimPi0[4];           //! Armenteros plots for primary pi0 in 6 energy bins
+  TH2F *    fhArmPrimEta[4];           //! Armenteros plots for primary eta in 6 energy bins
+  TH2F *    fhCosThStarPrimPi0;        //! cos(theta*) plots vs E for primary pi0, same as asymmetry ...
+  TH2F *    fhCosThStarPrimEta;        //! cos(theta*) plots vs E for primary eta, same as asymmetry ...
+  
   AliAnaPi0(              const AliAnaPi0 & api0) ; // cpy ctor
   AliAnaPi0 & operator = (const AliAnaPi0 & api0) ; // cpy assignment
   
-  ClassDef(AliAnaPi0,24)
+  ClassDef(AliAnaPi0,26)
 } ;
 
 

@@ -4,8 +4,8 @@
  *                      sandun.pahula.hewage@cern.ch
  *****************************************************************************************/
 
-#ifndef ALILEADINGV0CORRELATIONH
-#define ALILEADINGV0CORRELATIONH
+#ifndef SANDUNQAH
+#define SANDUNQAH
 
 #include "AliAnalysisTask.h"
 #include "TString.h"
@@ -13,6 +13,7 @@
 #include "AliLog.h"
 #include "AliPID.h"
 #include "THnSparse.h"
+#include "TH1.h"
 
 class TList;
 class AliAODEvent;
@@ -55,11 +56,9 @@ public:
 	
 	void SetCollidingSystem(TString system){fcollidingSys = system;}
 	void SetPrimeryVertexCut(Double_t pvzcut){fpvzcut = pvzcut;}
-	void SetEatCut(Double_t  TrackEtaCut){fTrackEtaCut = TrackEtaCut;}
 	void SetFilterBit(UInt_t  filterBit){fFilterBit = filterBit;}
 	void SetMCAnalysis(Bool_t aAnalysisMC){fAnalysisMC=aAnalysisMC;}
 	void SetCase(Int_t aCase){fCase=aCase;}
-	void SetRemovePileUp(Bool_t aRemovePileUP){fRemovePileUP=aRemovePileUP;}
 	void SetRemoveAutoCorr(Bool_t aRemoveAutoCorr){fRemoveAutoCorr=aRemoveAutoCorr;}
 	void SetCutRap(Double_t aRapidityCut){fRapidityCut=aRapidityCut;}
 	void SetV0Radius(Double_t aV0radius){fV0radius=aV0radius;}
@@ -75,6 +74,8 @@ public:
 	void SetCTLa(Double_t aCutCTLa){fCutCTLa=aCutCTLa;}
 	void SetMassCutK0(Double_t aMassCutK0){fMassCutK0=aMassCutK0;}
 	void SetMassCutLa(Double_t aMassCutLambda){fMassCutLa=aMassCutLambda;}
+	void SetTrigLow(Double_t aTriglow){fTriglow=aTriglow;}
+	void SetTrigHigh(Double_t aTrighigh){fTrighigh=aTrighigh;}
 	
 private:
 	AliLeadingV0Correlation(const  AliLeadingV0Correlation &det);
@@ -125,13 +126,12 @@ private:
 	Int_t fNCentBins;                            // number of centrality bins
 	Double_t fCentBins[100];                     // [fNCentBinsDim]
 	
-	TString         fcollidingSys;               // "PP" or "PbPb2010,2011"
+	TString         fcollidingSys;               // "PP" or "PbPb"
 	Double_t        fpvzcut;                     // PVz cut of event
     Double_t      	fTrackEtaCut;                // Eta cut on particles
     UInt_t         	fFilterBit;                  // Select tracks from an specific track cut (default 0xFF all track selected)
 	Bool_t          fAnalysisMC;                 // MC or Not
 	Int_t           fCase;                       // Case number
-	Bool_t          fRemovePileUP;               // 1Remove or 0 Not Remove
 	Bool_t          fRemoveAutoCorr;             // 1Remove or 0 Not Remove
 	
 	Double_t        fRapidityCut;                // Rapidity cut V0
@@ -149,12 +149,27 @@ private:
 	
 	Double_t        fMassCutK0;                  // selection for systamatics
 	Double_t        fMassCutLa;                  // selection for systamatics
+	Double_t        fTriglow;                  // selection for systamatics
+	Double_t        fTrighigh;// selection for systamatics
 	
 	Bool_t          fUseChargeHadrons;           // Only pi,k,and proton
 	Double_t        fPtMin;                      // 0.15 
 	
 	
 	TList       * fOutputList;                   // Output list
+	
+	TH1F        *fHist_Mult_B4_Trg_Sel;						//! multiplicity distribution
+	TH1F        *fHist_Mult_Af_Trg_Sel;						//! multiplicity distribution
+	TH1F        *fHist_Mult_PVz_Cut;						//! multiplicity distribution
+	TH1F        *fHist_Mult_SPD_PVz;
+	TH1F        *fHist_Mult_SPD_PVz_Pileup;
+	
+	TH1F       *fHistPVx;									//! multiplicity distribution
+	TH1F       *fHistPVy;									//! multiplicity distribution
+	TH1F       *fHistPVz;									//! multiplicity distribution
+	TH1F       *fHistPVxAnalysis;
+	TH1F       *fHistPVyAnalysis;
+	TH1F       *fHistPVzAnalysis;
 	
 	THnSparse   *fHistEventViceGen;
 	THnSparse   *fHistEventViceReconst;
@@ -170,14 +185,8 @@ private:
 	
 	THnSparse   *fHistReconstSib;
 	THnSparse   *fHistReconstMix;
-	THnSparse   *fHistReconstSibMC;
-	THnSparse   *fHistReconstMixMC;
-	THnSparse   *fHistReconstSibMCAssoc;
-	THnSparse   *fHistReconstMixMCAssoc;
 	THnSparse   *fHistTriggerSib;
 	THnSparse   *fHistTriggerMix;
-	THnSparse   *fHistTriggerSibMC;
-	THnSparse   *fHistTriggerMixMC;
 
 	ClassDef(AliLeadingV0Correlation, 1); 
 };

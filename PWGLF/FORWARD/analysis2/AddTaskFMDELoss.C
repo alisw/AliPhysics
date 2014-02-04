@@ -19,16 +19,21 @@
 /**
  * This is the macro to include the FMD energy fitter in a train.  
  * 
- * @param mc      Assume MC input 
- * @param useCent Use centrality information 
- * @param debug   Debug level
+ * @param mc        Assume MC input 
+ * @param useCent   Use centrality information 
+ * @param onlyMB    Only collect statistics for MB (INEL) events
+ * @param debug     Debug level
+ * @param residuals If set, also do residuals 
  *
  * @return Newly created task 
  *
  * @ingroup pwglf_forward_eloss
  */
 AliAnalysisTask*
-AddTaskFMDELoss(Bool_t mc, Bool_t useCent, Int_t debug=0,
+AddTaskFMDELoss(Bool_t        mc, 
+		Bool_t        useCent,
+		Bool_t        onlyMB=false, 
+		Int_t         debug=0,
 		const Char_t* residuals="")
 {
   // --- Load libraries ----------------------------------------------
@@ -42,11 +47,7 @@ AddTaskFMDELoss(Bool_t mc, Bool_t useCent, Int_t debug=0,
   }   
   
   // --- Make the task and add it to the manager ---------------------
-  AliFMDEnergyFitterTask* task = new AliFMDEnergyFitterTask("fmdEnergyFitter");
-  // task->SetBLow(blow);
-  // task->SetBLow(bhigh);
-  mgr->AddTask(task);
-  
+  AliFMDEnergyFitterTask* task = new AliFMDEnergyFitterTask("ForwardELoss");
   // --- Set parameters on the algorithms ----------------------------
   // Set the number of SPD tracklets for which we consider the event a
   // low flux event
@@ -77,7 +78,10 @@ AddTaskFMDELoss(Bool_t mc, Bool_t useCent, Int_t debug=0,
   // Set the minimum number of entries in the distribution before
   // trying to fit to the data - 10K seems the absolute minimum
   task->GetEnergyFitter().SetMinEntries(10000);
-  // Debug 
+  // If set, only collect statistics for MB.  This is to prevent a
+  // bias when looping over data where the MB trigger is downscaled.
+  task->SetOnlyMB(onlyMB);
+  // Debug
   task->SetDebug(debug);
 
   TString resi(residuals);
@@ -91,7 +95,6 @@ AddTaskFMDELoss(Bool_t mc, Bool_t useCent, Int_t debug=0,
     else // Anything else gives plain difference and errors in errors
       rm = AliFMDEnergyFitter::kResidualDifference;
   }
-  Printf("Got residual: \"%s\" -> %d", resi.Data(), rm);
   task->GetEnergyFitter().SetStoreResiduals(rm);
 
   // --- Set limits on fits the energy -------------------------------
@@ -104,18 +107,11 @@ AddTaskFMDELoss(Bool_t mc, Bool_t useCent, Int_t debug=0,
   // AliFMDCorrELossFit::ELossFit::fgMaxChi2nu   = 20;
   
   // --- Make the output container and connect it --------------------
-  AliAnalysisDataContainer* histOut = 
-    mgr->CreateContainer("Forward", TList::Class(), 
-			 AliAnalysisManager::kOutputContainer,
-			 AliAnalysisManager::GetCommonFileName());
-  AliAnalysisDataContainer *output = 
-    mgr->CreateContainer("ForwardResults", TList::Class(), 
-			 AliAnalysisManager::kParamContainer, 
-			 AliAnalysisManager::GetCommonFileName());
-  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, histOut);
-  mgr->ConnectOutput(task, 2, output);
+  task->Connect(0,0);
 
-
+  Printf("Returning task %p", task);
   return task;
 }
+//
+// EOF
+//

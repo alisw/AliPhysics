@@ -26,7 +26,7 @@ using namespace std;
 
 //________________________________________________________________________
 AliEmcalTriggerMaker::AliEmcalTriggerMaker() : 
-  AliAnalysisTaskEmcalDev("AliEmcalTriggerMaker",kFALSE),
+  AliAnalysisTaskEmcal("AliEmcalTriggerMaker",kFALSE),
   fCaloTriggersOutName("EmcalTriggers"),
   fCaloTriggerSetupOutName("EmcalTriggersSetup"),
   fV0InName("AliAODVZERO"),
@@ -43,7 +43,7 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker() :
 
 //________________________________________________________________________
 AliEmcalTriggerMaker::AliEmcalTriggerMaker(const char *name) : 
-  AliAnalysisTaskEmcalDev(name,kFALSE),
+  AliAnalysisTaskEmcal(name,kFALSE),
   fCaloTriggersOutName("EmcalTriggers"),
   fCaloTriggerSetupOutName("EmcalTriggersSetup"),
   fV0InName("AliAODVZERO"),
@@ -69,7 +69,7 @@ void AliEmcalTriggerMaker::ExecOnce()
 {
   // Init the analysis.
 
-  AliAnalysisTaskEmcalDev::ExecOnce();
+  AliAnalysisTaskEmcal::ExecOnce();
 
   if (!fInitialized)
     return;
@@ -146,29 +146,26 @@ Bool_t AliEmcalTriggerMaker::Run()
     AliError(Form("V0 container %s not available.", fV0InName.Data()));
     return kTRUE;
   }
-  
-  // do not process, if sooner than 11h period
-  if( InputEvent()->GetRunNumber() < 167693 )
-    return kTRUE;
 
-  // do not process any MC, since no MC was generated with correct
-  // EMCal trigger L1 jet trigger simulation, yet
-  // productions will be enabled, once some correct once are produced
-  if( MCEvent() != 0 )
-    return kTRUE;
-  
   // must reset before usage, or the class will fail 
   fCaloTriggers->Reset();
-  
+  for (i=0; i<2; i++) {
+    fEGA[i] = 0;
+    fEJE[i] = 0;
+  }
   // first run over the patch array to compose a map of 2x2 patch energies
   // which is then needed to construct the full patch ADC energy
   // class is not empty
+  Int_t isMC = 0;
+  if (MCEvent()) isMC = 1;
+  Int_t offSet = (1 - isMC) * kTriggerTypeEnd;
+
   if( fCaloTriggers->GetEntries() > 0 ){
 		
-		// zero the array
-		for( i = 0; i < 48; i++ )
-			for( j = 0; j < 64; j++ )
-				patchADC[i][j] = 0;
+    // zero the array
+    for( i = 0; i < 48; i++ )
+      for( j = 0; j < 64; j++ )
+	patchADC[i][j] = 0;
 		
     // go throuth the trigger channels
     while( fCaloTriggers->Next() ){
@@ -181,8 +178,17 @@ Bool_t AliEmcalTriggerMaker::Run()
       fCaloTriggers->GetL1TimeSum( adcAmp );
 			if( adcAmp > -1 )
 				patchADC[globCol][globRow] = adcAmp;
-		} // patches
-	} // array not empty
+      
+      fCaloTriggers->GetTriggerBits( tBits );
+      
+      if (tBits) {
+        if ((tBits >> (offSet + kL1GammaHigh)) & 1 ) fEGA[0] = 1;
+        if ((tBits >> (offSet + kL1GammaLow )) & 1 ) fEGA[1] = 1;
+        if ((tBits >> (offSet + kL1JetHigh  )) & 1 ) fEJE[0] = 1;
+        if ((tBits >> (offSet + kL1JetLow   )) & 1 ) fEJE[1] = 1;
+      }
+    } // patches
+  } // array not empty
   
   // fill the array for offline trigger processing
   // using calibrated cell energies
@@ -256,17 +262,16 @@ Bool_t AliEmcalTriggerMaker::Run()
 
     // go throuth the trigger channels, real first, then offline
     while( NextTrigger( isOfflineSimple ) ){
-      
       // check if jet trigger low or high
       if( ! isOfflineSimple )
-      fCaloTriggers->GetTriggerBits( tBits );
+	fCaloTriggers->GetTriggerBits( tBits );
       else
         fSimpleOfflineTriggers->GetTriggerBits( tBits );
       
       jetTrigger = 0;
-      if(( tBits >> ( kTriggerTypeEnd + kL1JetLow )) & 1 )
+      if(( tBits >> ( offSet + kL1JetLow )) & 1 )
         jetTrigger = 1;
-      if(( tBits >> ( kTriggerTypeEnd + kL1JetHigh )) & 1)
+      if(( tBits >> ( offSet + kL1JetHigh )) & 1)
         jetTrigger = jetTrigger | 2;
       
       if( jetTrigger == 0 )
@@ -275,7 +280,7 @@ Bool_t AliEmcalTriggerMaker::Run()
       // get position in global 2x2 tower coordinates
       // A0 left bottom (0,0)
       if( ! isOfflineSimple )
-      fCaloTriggers->GetPosition( globCol, globRow );
+	fCaloTriggers->GetPosition( globCol, globRow );
       else
         fSimpleOfflineTriggers->GetPosition( globCol, globRow );
 
@@ -374,7 +379,8 @@ Bool_t AliEmcalTriggerMaker::Run()
       trigger->SetADCAmp( adcAmp );
       trigger->SetTriggerBits( tBits );
       trigger->SetEdgeCell( globCol*2, globRow*2 ); // from triggers to cells
-      
+      trigger->SetOffSet(offSet);
+
       // check if more energetic than others for main patch marking
       if( ! isOfflineSimple && eMain < amp ){
         eMain = amp;
@@ -384,16 +390,6 @@ Bool_t AliEmcalTriggerMaker::Run()
         eMainSimple = amp;
         iMainSimple = iTriggers - 1;
       }
-      
-//       cout << " pi:" << trigger->GetPhiMin() << " px:" << trigger->GetPhiMax();
-//       cout << " pg:" << trigger->GetPhiGeo() << " " << (trigger->GetPhiMin()+trigger->GetPhiMax()) / 2.;
-//       cout << " pc:" << trigger->GetPhiCM();
-//       cout << " ei:" << trigger->GetEtaMin() << " ex:" << trigger->GetEtaMax();
-//       cout << " eg:" << trigger->GetEtaGeo() << " " << (trigger->GetEtaMin()+trigger->GetEtaMax()) / 2.;
-//       cout << " ec:" << trigger->GetEtaCM();
-//       cout << " e:" << trigger->GetPatchE();
-//       cout << " jl:" << trigger->IsJetLow() << " jh:" << trigger->IsJetHigh() << endl;
-      
     } // triggers
     
     // mark the most energetic patch as main
@@ -426,6 +422,10 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
   Int_t i, j, k, l, tBits, tSum;
   TArrayI tBitsArray, rowArray, colArray;
   
+  Int_t isMC = 0;
+  if (MCEvent()) isMC = 1;
+  Int_t offSet = (1 - isMC) * kTriggerTypeEnd;
+
   // 0 thresholds = no processing
   if( fCaloTriggerSetupOut->GetThresholdJetLowSimple() == 0 &&
     fCaloTriggerSetupOut->GetThresholdJetHighSimple() == 0 )
@@ -445,9 +445,9 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
       
       // check thresholds
       if( tSum > fCaloTriggerSetupOut->GetThresholdJetLowSimple() )
-        tBits = tBits | ( 1 << ( kTriggerTypeEnd + kL1JetLow ));
+        tBits = tBits | ( 1 << ( offSet + kL1JetLow ));
       if( tSum > fCaloTriggerSetupOut->GetThresholdJetHighSimple() )
-        tBits = tBits | ( 1 << ( kTriggerTypeEnd + kL1JetHigh ));
+        tBits = tBits | ( 1 << ( offSet + kL1JetHigh ));
       
       // add trigger values
       if( tBits != 0 ){

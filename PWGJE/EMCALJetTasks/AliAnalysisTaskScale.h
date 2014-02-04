@@ -6,9 +6,9 @@
 class TH2F;
 class TF1;
 
-#include "AliAnalysisTaskEmcalDev.h"
+#include "AliAnalysisTaskEmcal.h"
 
-class AliAnalysisTaskScale : public AliAnalysisTaskEmcalDev {
+class AliAnalysisTaskScale : public AliAnalysisTaskEmcal {
  public:
   AliAnalysisTaskScale();
   AliAnalysisTaskScale(const char *name);

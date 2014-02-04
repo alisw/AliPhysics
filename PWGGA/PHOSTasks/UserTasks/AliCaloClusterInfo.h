@@ -13,8 +13,10 @@
 
 #include <TObject.h>
 #include <TString.h>
+#include <TArrayI.h>
 #include <TLorentzVector.h>
 
+class AliStack;
 class AliESDEvent;
 class AliVCluster;
 
@@ -22,35 +24,39 @@ class AliCaloClusterInfo : public TObject{
  public:
  
   AliCaloClusterInfo();
-  AliCaloClusterInfo(AliVCluster* const clust, AliESDEvent* const esd, Int_t relID[4], Double_t mf);
+  AliCaloClusterInfo(AliVCluster* const clust, Int_t relID[4]);
   AliCaloClusterInfo(const AliCaloClusterInfo &src);
   AliCaloClusterInfo& operator=(const AliCaloClusterInfo &src);
   virtual ~AliCaloClusterInfo();
 
   TLorentzVector LorentzVector() const { return fLorentzVector; }
 
-  Int_t    GetModule()         const { return fModule;          }
-  Int_t    GetTRUNumber()      const { return fTRUNumber;       }
-  Int_t    GetNCells()         const { return fNCells;          }
-  UInt_t   GetPIDBit()         const { return fPIDBit;          }
-  Double_t GetDistToBad()      const { return fDistToBad;       }
-  Double_t GetEmcCpvDistance() const { return fEmcCpvDistance;  }
-  Double_t GetM02()            const { return fM02;             }
-  Double_t GetM20()            const { return fM20;             }
-  Double_t GetTOF()            const { return fTOF;             }
+  Int_t    GetModule()          const { return fModule;          }
+  Int_t    GetTRUNumber()       const { return fTRUNumber;       }
+  Int_t    GetNCells()          const { return fNCells;          }
+  TArrayI* GetLabelsArray()     const { return fLabels;          }
+  Int_t    GetLabel()           const { if(fLabels && fLabels->GetSize() >0)        return fLabels->At(0); else return -1;   }
+  Int_t    GetLabelAt(UInt_t i) const { if(fLabels && i<(UInt_t)fLabels->GetSize()) return fLabels->At(i); else return -999; }
+
+  UInt_t   GetPIDBit()          const { return fPIDBit;          }
+  Double_t GetDistToBad()       const { return fDistToBad;       }
+  Double_t GetM02()             const { return fM02;             }
+  Double_t GetM20()             const { return fM20;             }
+  Double_t GetTOF()             const { return fTOF;             }
 
   void SetLorentzVector(TLorentzVector momentum) { fLorentzVector = momentum; }
-  void SetPIDBit(UInt_t bit)                     { fPIDBit       |= bit;      }
+  void SetLabels(UInt_t size, Int_t* labels)     { if(fLabels) delete fLabels; fLabels = new TArrayI(size, labels); }
 
-  Bool_t   IsInFiducialRegion(Int_t cellX, Int_t cellZ);
-  Double_t TestDisp();
+  Bool_t IsInFiducialRegion(Int_t cellX, Int_t cellZ);
+  Bool_t CheckIsClusterFromPi0(AliStack* const stack, Int_t &pi0Indx);
 
  private:
 
-  void FillCaloClusterInfo(AliVCluster* const clust, AliESDEvent* const esd, Int_t relID[4], Double_t mf);
+  void FillCaloClusterInfo(AliVCluster* const clust, Int_t relID[4]);
+  void SetPIDBit(UInt_t bit)   { fPIDBit |= bit; }
+  Double_t TestDisp();
 
-  Int_t    GetTRUNumber(Int_t cellX, Int_t cellZ);
-  Double_t TestCpv(Double_t trkPt, Short_t trkCharge, Double_t trkDz, Double_t trkDx, Double_t mf);
+  Int_t  GetTRUNumber(Int_t cellX, Int_t cellZ);
 
   TLorentzVector fLorentzVector;
 
@@ -58,13 +64,13 @@ class AliCaloClusterInfo : public TObject{
   Int_t    fTRUNumber;          // TRU Number
   Int_t    fNCells;             // Number of cells in cluster
   UInt_t   fPIDBit;             // PID Bit
-  Double_t fDistToBad ;         // Distance to nearest bad channel
-  Double_t fEmcCpvDistance;     // Distance from PHOS EMC rec.point to the closest CPV rec.point
+  TArrayI* fLabels;             // list of primaries that generated the cluster, ordered in deposited energy
+  Double_t fDistToBad;          // Distance to nearest bad channel
   Double_t fM02;                // lambda0
   Double_t fM20;                // lambda1
   Double_t fTOF;
 
-  ClassDef(AliCaloClusterInfo,1);
+  ClassDef(AliCaloClusterInfo, 2);
 };
 
 #endif // #ifdef ALICALOCLUSTERINFO_H

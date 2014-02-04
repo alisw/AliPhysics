@@ -51,7 +51,7 @@ struct ParUtilities
     if (gSystem->AccessPathName(parFile.Data())) { 
       // If not found
       TString src;
-      if (gSystem->AccessPathName(Form("../%s.par", parFile.Data())) == 0) 
+      if (gSystem->AccessPathName(Form("../%s", parFile.Data())) == 0) 
 	src.Form("../%s", parFile.Data());
       else {
 	// If not found 
@@ -68,6 +68,7 @@ struct ParUtilities
       }
       // Copy to current directory 
       // TFile::Copy(aliParFile, parFile);
+      Info("", "Found PAR %s at %s", what.Data(), src.Data());
       if (gSystem->Exec(Form("ln -s %s %s", src.Data(), parFile.Data())) != 0){
 	Error("ParUtilities::Find", "Failed to symlink %s to %s", 
 	      src.Data(), parFile.Data());
@@ -165,7 +166,10 @@ struct ParUtilities
 	return false;
       }
     }
-    
+
+    // We need to make sure the current directory is in the load path 
+    gSystem->SetDynamicPath(Form("%s:%s", gSystem->WorkingDirectory(), 
+				 gSystem->GetDynamicPath()));
     // Check for setup script
     if (!gSystem->AccessPathName("PROOF-INF/SETUP.C")) {
       // Info("ParUtilities::SetupPAR", "Setting up for PAR %s", what);
@@ -196,13 +200,14 @@ struct ParUtilities
    * #endif
    * @endcode
    * 
-   * @param script Script to upload and compile in the PAR
-   * @param deps   Dependency pars 
+   * @param script  Script to upload and compile in the PAR
+   * @param deps    Dependency pars 
    * @param isLocal Local build 
+   * @param helper  Helper 
    * 
    * @return true on success. 
    */
-  static Bool_t MakeScriptPAR(Bool_t isLocal, 
+  static Bool_t MakeScriptPAR(Bool_t         isLocal, 
 			      const TString& script, 
 			      const TString& deps, 
 			      Helper*        helper)
@@ -218,7 +223,7 @@ struct ParUtilities
 	helper->LoadLibrary(dep->GetName());
       
       // AcLic and load 
-      Info("", "Loading macro %s", script.Data());
+      Info("ParUtilities::MakeScriptPAR", "Loading macro %s", script.Data());
       if (gROOT->LoadMacro(Form("%s++g", script.Data())) < 0) {
 	Error("ParUtilities::MakeScriptPAR", 
 	      "Failed to build local library %s", script.Data());
@@ -350,6 +355,7 @@ struct ParUtilities
 	<< "  export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:"
 	<< "${ALICE_ROOT}/lib/tgt_${ALICE_TARGET}\n"
 	<< "fi\n"
+	<< "# printenv | sort -u\n"
 	<< "echo BUILD.sh@`hostname`: Building " << base << "\n"
 	<< "root.exe -l -out -q PROOF-INF/BUILD.C 2>&1 | tee " 
 	<< base << ".log\n"
@@ -397,6 +403,7 @@ struct ParUtilities
       }
     }
     out << "  // gDebug = 5;\n"
+	<< "  // gSystem->ListLibraries();\n"
 	<< "  int ret = gROOT->LoadMacro(\"" 
 	<< base << "." << ext << "++g\");\n"
 	<< "  if (ret != 0) Fatal(\"BUILD\",\"Failed to build\");\n"
@@ -441,20 +448,36 @@ struct ParUtilities
 	<< "  if (val.IsNull())\n"
 	<< "    Warning(\"Add\",\"%s_INCLUDE not defined\", env);\n"
 	<< "  else {\n"
-	<< "    gSystem->AddIncludePath(Form(\"-I../%s\",val.Data()));\n"
+	<< "    // gSystem->AddIncludePath(Form(\"-I../%s\",val.Data()));\n"
+	<< "    // Prepend to include path\n"
+	<< "    TString incPath(gSystem->GetIncludePath());\n"
+	<< "    incPath.Prepend(Form(\"-I../%s \",val.Data()));\n"
+	<< "    gSystem->SetIncludePath(incPath);\n"
+	<< "    // Printf(\"Include path: %s\",incPath.Data());\n"
 	<< "  }\n"
 	<< "}\n\n"
 	<< "void LoadDep(const char* name) {\n"
-	<< "  gSystem->AddDynamicPath(Form(\"../%s\",name));\n"
+	<< "  // Printf(\"Loading dependency \\\"%s\\\" ...\",name);\n"
+	<< "  // gSystem->AddDynamicPath(Form(\"../%s\",name));\n"
+	<< "  // Prepend to dynamic path\n"
+	<< "  TString dynPath(gSystem->GetDynamicPath());\n"
+	<< "  dynPath.Prepend(Form(\"../%s:\",name));\n"
+	<< "  gSystem->SetDynamicPath(dynPath);\n"
+	<< "  // Printf(\"Dynamic path: %s\",dynPath.Data());\n"
 	<< "  char* full = gSystem->DynamicPathName(name,true);\n"
 	<< "  if (!full) \n"
 	<< "   full = gSystem->DynamicPathName(Form(\"lib%s\",name),true);\n"
 	<< "  if (!full) \n"
 	<< "   full = gSystem->DynamicPathName(Form(\"lib%s.so\",name),true);\n"
+	<< "  if (!full) \n"
+	<< "   full = gSystem->DynamicPathName(Form(\"%s_C.so\",name),true);\n"
+	<< "  if (!full) \n"
+	<< "   full = gSystem->DynamicPathName(Form(\"%s_h.so\",name),true);\n"
 	<< "  if (!full) {\n"
 	<< "    Warning(\"LoadDep\",\"Module %s not found\", name);\n"
 	<< "    return;\n"
 	<< "  }\n"
+	<< "  Printf(\"Loading \\\"%s\\\" for \\\"%s\\\"\",full,name);\n"
 	<< "  gSystem->Load(full);\n"
 	<< "}\n"
 	<< std::endl;
@@ -485,6 +508,7 @@ struct ParUtilities
     }
     out << "void SETUP() {\n"
 	<< "  gROOT->LoadMacro(\"PROOF-INF/UTIL.C\");\n"
+	<< "  Printf(\"Loading \\\"" << base << "\\\" ...\");\n"
 	<< "  LoadROOTLibs();\n"
 	<< "  // Info(\"SETUP\",\"Loading libraries\");\n";
     if (deps) {

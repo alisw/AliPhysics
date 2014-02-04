@@ -167,7 +167,7 @@ void AliAnalysisTaskScalarProduct::UserExec(Option_t *)
 
   fEvent = dynamic_cast<AliFlowEventSimple*>(GetInputData(0));
   if (fEvent){
-    fSP->Make(fEvent);
+    fSP->ProcessEvent(fEvent);
   }
   else {
     cout << "Warning no input data for Scalar Product task!!!" << endl;

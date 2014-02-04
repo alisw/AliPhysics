@@ -18,7 +18,7 @@ AliAnalysisTaskSEDStarSpectra *AddTaskDStarSpectra(Int_t system=0/*0=pp,1=PbPb*/
 
 						   TString cutsfile="", TString usercomment = "username",
 
-						   Bool_t theMCon=kFALSE)
+						   Bool_t theMCon=kFALSE, Bool_t doDStarVsY=kFALSE)
 
 {
 
@@ -114,7 +114,7 @@ AliAnalysisTaskSEDStarSpectra *AddTaskDStarSpectra(Int_t system=0/*0=pp,1=PbPb*/
 
   task->SetDebugLevel(0);
 
-
+  task->SetDoDStarVsY(doDStarVsY);
 
   mgr->AddTask(task);
 

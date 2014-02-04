@@ -14,6 +14,7 @@
 
 Bool_t usePhi   = 1;
 Bool_t useKStar = 1;
+Bool_t usePhiRAA = 1;
 
  //set to kTRUE if using data AOD049 - needed to enable centrality patch
 Bool_t isAOD049 = 0;
@@ -108,6 +109,13 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskRsnMini
    // -- CONFIGS -----------------------------------------------------------------------------------
    //
    
+   if (usePhiRAA){
+	   if (!isMC) {
+	      gROOT->LoadMacro(Form("%s/ConfigPhiRAApp.C", path));
+	      if (!ConfigPhiRAApp(task, isMC, isPP, "", cutsPair)) return 0x0;
+	   }
+   }
+
    if (usePhi) {
       if (isPP) {
          gROOT->LoadMacro(Form("%s/ConfigPhi.C", path));

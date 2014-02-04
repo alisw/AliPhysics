@@ -34,6 +34,7 @@ class AliFJWrapper
   fastjet::PseudoJet                    GetJetAreaVector   (UInt_t idx) const;
   Double_t                              GetJetSubtractedPt (UInt_t idx) const;
   virtual std::vector<double>           GetSubtractedJetsPts(Double_t median_pt = -1, Bool_t sorted = kFALSE);
+  Bool_t                                GetLegacyMode()            { return fLegacyMode; }
 
   virtual Int_t Run();
 
@@ -54,36 +55,42 @@ class AliFJWrapper
   void SetupAreaTypefromOpt(const char *option);
   void SetupSchemefromOpt(const char *option);
   void SetupStrategyfromOpt(const char *option);
+  void SetLegacyMode (Bool_t mode)      { fLegacyMode ^= mode; }
+  void SetLegacyFJ();
 
  protected:
-  TString                         fName;             //!
-  TString                         fTitle;            //!
-  std::vector<fastjet::PseudoJet> fInputVectors;     //!
-  std::vector<fastjet::PseudoJet> fInclusiveJets;    //!
-  std::vector<double>             fSubtractedJetsPt; //!
-  fastjet::AreaDefinition        *fAreaDef;          //!
-  fastjet::VoronoiAreaSpec       *fVorAreaSpec;      //!
-  fastjet::GhostedAreaSpec       *fGhostedAreaSpec;  //!
-  fastjet::JetDefinition         *fJetDef;           //!
-  fastjet::JetDefinition::Plugin *fPlugin;           //!
-  fastjet::RangeDefinition       *fRange;            //!
-  fastjet::ClusterSequenceArea   *fClustSeq;         //!
-  fastjet::Strategy               fStrategy;         //!
-  fastjet::JetAlgorithm           fAlgor;            //!
-  fastjet::RecombinationScheme    fScheme;           //!
-  fastjet::AreaType               fAreaType;         //!
-  Int_t                           fNGhostRepeats;    //!
-  Double_t                        fGhostArea;	     //!
-  Double_t                        fMaxRap;	     //!
-  Double_t                        fR;                //!
+  TString                                fName;             //!
+  TString                                fTitle;            //!
+  std::vector<fastjet::PseudoJet>        fInputVectors;     //!
+  std::vector<fastjet::PseudoJet>        fInclusiveJets;    //!
+  std::vector<double>                    fSubtractedJetsPt; //!
+  fastjet::AreaDefinition               *fAreaDef;          //!
+  fastjet::VoronoiAreaSpec              *fVorAreaSpec;      //!
+  fastjet::GhostedAreaSpec              *fGhostedAreaSpec;  //!
+  fastjet::JetDefinition                *fJetDef;           //!
+  fastjet::JetDefinition::Plugin        *fPlugin;           //!
+  fastjet::RangeDefinition              *fRange;            //!
+  fastjet::ClusterSequenceArea          *fClustSeq;         //!
+  fastjet::Strategy                      fStrategy;         //!
+  fastjet::JetAlgorithm                  fAlgor;            //!
+  fastjet::RecombinationScheme           fScheme;           //!
+  fastjet::AreaType                      fAreaType;         //!
+  Int_t                                  fNGhostRepeats;    //!
+  Double_t                               fGhostArea;	    //!
+  Double_t                               fMaxRap;	    //!
+  Double_t                               fR;                //!
   // no setters for the moment - used default values in the constructor
-  Double_t                        fGridScatter;      //!
-  Double_t                        fKtScatter;	     //!
-  Double_t                        fMeanGhostKt;      //!
-  Int_t                           fPluginAlgor;      //!
+  Double_t                               fGridScatter;      //!
+  Double_t                               fKtScatter;	    //!
+  Double_t                               fMeanGhostKt;      //!
+  Int_t                                  fPluginAlgor;      //!
   // extra parameters
-  Double_t                        fMedUsedForBgSub;  //!
-  Bool_t                          fUseArea4Vector;   //!
+  Double_t                               fMedUsedForBgSub;  //!
+  Bool_t                                 fUseArea4Vector;   //!
+#ifdef FASTJET_VERSION
+  fastjet::JetMedianBackgroundEstimator *fBkrdEstimator;    //!
+#endif
+  Bool_t                                 fLegacyMode;       //!
 
   virtual void   SubtractBackground(const Double_t median_pt = -1);
 
@@ -124,7 +131,7 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
   , fScheme            (fj::BIpt_scheme)
   , fAreaType          (fj::active_area)
   , fNGhostRepeats     (1)
-  , fGhostArea         (0.01)
+  , fGhostArea         (0.005)
   , fMaxRap            (1.)
   , fR                 (0.4)
   , fGridScatter       (1.0)
@@ -133,6 +140,10 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
   , fPluginAlgor       (0)
   , fMedUsedForBgSub   (0)
   , fUseArea4Vector    (kFALSE)
+#ifdef FASTJET_VERSION
+  , fBkrdEstimator     (0)
+#endif
+  , fLegacyMode        (false)
 {
   // Constructor.
 }
@@ -148,7 +159,10 @@ AliFJWrapper::~AliFJWrapper()
   delete fJetDef;
   delete fPlugin;
   delete fRange;
-  delete fClustSeq;  
+  delete fClustSeq;
+#ifdef FASTJET_VERSION
+  if (fBkrdEstimator) delete fBkrdEstimator;
+#endif
 }
 
 //_________________________________________________________________________________________________
@@ -171,6 +185,7 @@ void AliFJWrapper::CopySettingsFrom(const AliFJWrapper& wrapper)
   fMeanGhostKt    = wrapper.fMeanGhostKt;
   fPluginAlgor    = wrapper.fPluginAlgor;
   fUseArea4Vector = wrapper.fUseArea4Vector;
+  fLegacyMode     = wrapper.fLegacyMode;
 }
 
 //_________________________________________________________________________________________________
@@ -191,6 +206,9 @@ void AliFJWrapper::Clear(const Option_t */*opt*/)
   delete fPlugin;          fPlugin          = 0;
   delete fRange;           fRange           = 0;
   delete fClustSeq;        fClustSeq        = 0;
+#ifdef FASTJET_VERSION
+  if (fBkrdEstimator) delete fBkrdEstimator; fBkrdEstimator = 0;
+#endif
 }
 
 //_________________________________________________________________________________________________
@@ -328,7 +346,7 @@ void AliFJWrapper::GetMedianAndSigma(Double_t &median, Double_t &sigma, Int_t re
     }  else {
       std::vector<fastjet::PseudoJet> input_jets = sorted_by_pt(fClustSeq->inclusive_jets());
       input_jets.erase(input_jets.begin(), input_jets.begin() + remove);
-      fClustSeq->get_median_rho_and_sigma(input_jets, *fRange, kFALSE, median, sigma, mean_area);
+      fClustSeq->get_median_rho_and_sigma(input_jets, *fRange, fUseArea4Vector, median, sigma, mean_area);
       input_jets.clear();
     }
   } catch (fj::Error) {
@@ -372,6 +390,15 @@ Int_t AliFJWrapper::Run()
                                       0,    //search of stable cones - zero = until no more
                                       1.0); // this should be seed effectively for proto jets
       fJetDef = new fastjet::JetDefinition(fPlugin);
+    } else if (fPluginAlgor == 1) {
+      // CDF cone
+      // NOTE: hardcoded split parameter
+      Double_t overlap_threshold = 0.75; // NOTE: this actually splits a lot: thr/min(pt1,pt2)
+      fPlugin = new fj::CDFMidPointPlugin(fR, 
+                                      overlap_threshold,
+                                      1.0,    //search of stable cones - zero = until no more
+                                      1.0); // this should be seed effectively for proto jets
+      fJetDef = new fastjet::JetDefinition(fPlugin);
     } else {
       AliError("[e] Unrecognized plugin number!");
     }
@@ -386,11 +413,32 @@ Int_t AliFJWrapper::Run()
     return -1;
   }
 
+  // FJ3 :: Define an JetMedianBackgroundEstimator just in case it will be used 
+#ifdef FASTJET_VERSION
+  //fBkrdEstimator = new fj::JetMedianBackgroundEstimator(*fRange, *fJetDef, *fAreaDef) ;
+#endif
+
+  if (fLegacyMode) { SetLegacyFJ(); } // for FJ 2.x even if fLegacyMode is set, SetLegacyFJ is dummy
+
   // inclusive jets:
   fInclusiveJets.clear();
   fInclusiveJets = fClustSeq->inclusive_jets(0.0); 
 
   return 0;
+}
+
+//_________________________________________________________________________________________________
+void AliFJWrapper::SetLegacyFJ()
+{
+  // This methods enable legacy behaviour (FastJet 2.x) when AliROOT is compiled with FastJet 3.x
+#ifdef FASTJET_VERSION
+    std::cout << "WARNING! Setting FastJet in legacy mode" << std::endl;
+    if (fGhostedAreaSpec) { fGhostedAreaSpec->set_fj2_placement(kTRUE); }
+    if (fBkrdEstimator) {
+      fBkrdEstimator->set_provide_fj2_sigma(kTRUE);
+      fBkrdEstimator->set_use_area_4vector(kFALSE);
+    } 
+#endif
 }
 
 //_________________________________________________________________________________________________
@@ -407,13 +455,13 @@ void AliFJWrapper::SubtractBackground(Double_t median_pt)
 
   // clear the subtracted jet pt's vector<double>
   fSubtractedJetsPt.clear();
-      
+
   // check what was specified (default is -1)
   if (median_pt < 0) {
     try {
-      fClustSeq->get_median_rho_and_sigma(*fRange, kFALSE, median, sigma, mean_area);
+      fClustSeq->get_median_rho_and_sigma(*fRange, fUseArea4Vector, median, sigma, mean_area);
     }
-      
+
     catch (fj::Error) {
       AliError(" [w] FJ Exception caught.");
       median = -9999.;
@@ -435,7 +483,7 @@ void AliFJWrapper::SubtractBackground(Double_t median_pt)
 
   // subtract:
   for (unsigned i = 0; i < fInclusiveJets.size(); i++) {
-    if (kTRUE == fUseArea4Vector) {
+    if ( fUseArea4Vector ) {
       // subtract the background using the area4vector
       fj::PseudoJet area4v = fClustSeq->area_4vector(fInclusiveJets[i]);
       fj::PseudoJet jet_sub = fInclusiveJets[i] - area4v * fMedUsedForBgSub;

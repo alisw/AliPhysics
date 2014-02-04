@@ -80,7 +80,7 @@ AliAnalysisTaskJetFlow::AliAnalysisTaskJetFlow(
         Bool_t FlowPackageSP,
         Bool_t FlowPackageQC  
         ) : AliAnalysisTaskSE(name),
-    fDebug(-1), fJetsName(0), fJetRadius(0.3), fTracksName(0), fLocalRhoName(0), fPois(0x0), fRPs(0x0), fLocalRho(0x0), fOutputList(0), fDataType(kESD), fVParticleAnalysis(VPart), fMinimizeDiffBins(kTRUE), fDoVZEROFlowAnalysis(VZEROEP), fDoGappedQC2Analysis(kTRUE), fDoQC2FlowAnalysis(QC2), fDoQC4FlowAnalysis(QC4), fDoQCFPAnalysis(FlowPackageQC), fDoSPFPAnalysis(FlowPackageSP), fDoMultWeight(kTRUE), fDoPtWeight(0), fInitialized(kFALSE), fUsePtWeight(kFALSE), fCCMinPt(1), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fPtBins(0), fCutsRP_VZERO(0x0), fCutsNull(0), fCutsEvent(0), fFlowEvent_TPC(0), fFlowEvent_VZERO(0), fRhoVn(rhoTask), fHistAnalysisSummary(0), fCentralitySelection(0), fVZEROAEP(0), fVZEROCEP(0), fv2VZEROA(0), fv2VZEROC(0), fRefCumulants(0), fDiffCumlantsV2(0), fDiffCumlantsV3(0), fQC2v2(0), fQC2v3(0), fTempA(0), fTempC(0)
+    fDebug(-1), fJetsName(0), fJetRadius(0.3), fTracksName(0), fLocalRhoName(0), fPois(0x0), fRPs(0x0), fLocalRho(0x0), fOutputList(0), fDataType(kESD), fVParticleAnalysis(VPart), fMinimizeDiffBins(kTRUE), fDoVZEROFlowAnalysis(VZEROEP), fDoGappedQC2Analysis(GQC2), fDoQC2FlowAnalysis(QC2), fDoQC4FlowAnalysis(QC4), fDoQCFPAnalysis(FlowPackageQC), fDoSPFPAnalysis(FlowPackageSP), fDoMultWeight(kTRUE), fDoPtWeight(0), fInitialized(kFALSE), fUsePtWeight(kFALSE), fCCMinPt(1), fCCMaxPt(150), fCCBinsInPt(50), fCentralityMin(-1), fCentralityMax(-1), fPtBins(0), fCutsRP_VZERO(0x0), fCutsNull(0), fCutsEvent(0), fFlowEvent_TPC(0), fFlowEvent_VZERO(0), fRhoVn(rhoTask), fHistAnalysisSummary(0), fCentralitySelection(0), fVZEROAEP(0), fVZEROCEP(0), fv2VZEROA(0), fv2VZEROC(0), fRefCumulants(0), fDiffCumlantsV2(0), fDiffCumlantsV3(0), fQC2v2(0), fQC2v3(0), fTempA(0), fTempC(0)
 {
     // constructor
     DefineInput(0, TChain::Class());
@@ -126,7 +126,7 @@ void AliAnalysisTaskJetFlow::UserCreateOutputObjects()
         if(fDoSPFPAnalysis) {
             (fVParticleAnalysis) ? fFlowEvent_VZERO = new AliFlowEvent(10000) : fFlowEvent_VZERO = new AliFlowEvent(100);
         }
-        fFlowEvent_TPC = new AliFlowEvent(10000);
+        if(fDoQCFPAnalysis) fFlowEvent_TPC = new AliFlowEvent(10000);
     }
     fOutputList = new TList();
     fOutputList->SetOwner(kTRUE);
@@ -343,7 +343,11 @@ void AliAnalysisTaskJetFlow::DoGappedQC2Analysis()
     (fVParticleAnalysis) ? fRhoVn->SetTrackEtaLimits(-0.7, 0.7) : fRhoVn->SetLocalJetMinMaxEta(fJetRadius+.2);       // avoid overlap in poi and rp region 
     QCnDifferentialFlowVectors(repn, impn, mp, reqn, imqn, mq, 2);
     // do the calculation
-    if(RHSmQ*LHSmQ < 1) return;
+    if(RHSmQ*LHSmQ < 1) {
+        fRhoVn->SetTrackEtaLimits(-0.9, 0.9);
+        fRhoVn->SetLocalJetMinMaxEta(fJetRadius);
+        return;
+    }
     fRefCumulants->Fill(0., (LHSreQn*RHSreQn+LHSimQn*RHSimQn)/(RHSmQ*LHSmQ), RHSmQ*LHSmQ);
     for(Int_t i(0); i < fPtBins->GetSize(); i++) {
         if(LHSmQ*mp[i] < 1. ) continue;        // avoid division by zero
@@ -484,8 +488,8 @@ Bool_t AliAnalysisTaskJetFlow::DoFlowPackageFlowAnalysis()
             }
         }
     }
-    if(fFlowEvent_TPC)      fFlowEvent_TPC->TagSubeventsInEta(-10, 0, 0, 10);
-    if(fFlowEvent_VZERO)    fFlowEvent_VZERO->TagSubeventsInEta(-10, 0, 0, 10);
+    if(fFlowEvent_TPC)      fFlowEvent_TPC->TagSubeventsInEta(-10, -1, 1, 10);
+    if(fFlowEvent_VZERO)    fFlowEvent_VZERO->TagSubeventsInEta(-10, -1, 1, 10);
     return (nAcceptedJets < 1) ? kFALSE : kTRUE;
 }
 //_____________________________________________________________________________

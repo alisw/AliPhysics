@@ -150,10 +150,10 @@ Bool_t AliCFVertexingHFLctoV0bachelor::SetRecoCandidateParam(AliAODRecoDecayHF *
     return bSignAssoc;
   }
 
-  if (trk0->GetLabel()<0 || trk1->GetLabel()<0) {
-    AliDebug(2,Form("At least one of V0daughters has label negative (%d %d)",trk0->GetLabel(),trk1->GetLabel()));
-    return bSignAssoc;
-  }
+  //if (trk0->GetLabel()<0 || trk1->GetLabel()<0) {
+  //AliDebug(2,Form("At least one of V0daughters has label negative (%d %d)",trk0->GetLabel(),trk1->GetLabel()));
+  //return bSignAssoc;
+  //}
 
  if (trk0->GetID()<0 || trk1->GetID()<0) {
     AliDebug(2,Form("At least one of V0 daughters has negative ID %d %d",trk0->GetID(),trk1->GetID()));
@@ -199,7 +199,7 @@ Bool_t AliCFVertexingHFLctoV0bachelor::SetRecoCandidateParam(AliAODRecoDecayHF *
     AliDebug(4,"No mcLabel found for current candidate");
     return bSignAssoc;
   }
-  AliDebug(1,Form("Found mcLabel (%d) for current candidate",mcLabel));
+  AliDebug(1,Form("Found mcLabel (%d) for current candidate (onTheFly=%1d)",mcLabel,v0part->GetOnFlyStatus()));
 
   if (fRecoCandidate->NumberOfFakeDaughters()>0){
     fFake = 0;    // fake candidate

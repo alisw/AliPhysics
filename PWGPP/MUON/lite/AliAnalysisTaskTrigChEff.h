@@ -32,8 +32,8 @@ class AliAnalysisTaskTrigChEff : public AliVAnalysisMuon {
 
   TList* GetEffHistoList(TString physSel, TString trigClassNames, TString centrality, TString trackSelection);
 
-  /// Use ghost tracks in calculations
-  void SetUseGhostTracks(Bool_t useGhosts = kTRUE) { fUseGhosts = useGhosts; }
+//  /// Use ghost tracks in calculations
+//  void SetUseGhostTracks(Bool_t useGhosts = kTRUE) { fUseGhosts = useGhosts; }
 
  private:
 
@@ -57,11 +57,17 @@ class AliAnalysisTaskTrigChEff : public AliVAnalysisMuon {
   };
 
   enum {
-    kNoSelCutApt,   ///< Track matching Apt not passing selection cuts
+    kNoMatch,       ///< No match with trigger
     kMatchApt,      ///< Match All Pt
     kMatchLpt,      ///< Match Low Pt
     kMatchHpt,      ///< Match High Pt
-    kNtrackSel      ///< Total number of selection types
+    kNtrigMatch     ///< Total number of matched types
+  };
+  
+  enum {
+    kSelectTrack,   ///< Selected track
+    kNoSelectTrack, ///< Non selected tracks (includes ghosts)
+    kNtrackSel      ///< Total number of track selection
   };
   
   enum {
@@ -70,19 +76,20 @@ class AliAnalysisTaskTrigChEff : public AliVAnalysisMuon {
     kNeffMethods    ///< Total number of efficiency methods
   };
 
-  TString GetHistoName(Int_t itype, Int_t icount, Int_t ichamber, Int_t imatch, Int_t imethod);
+  TString GetHistoName(Int_t itype, Int_t icount, Int_t ichamber, Int_t itrackSel, Int_t imatch, Int_t imethod);
   Bool_t FillEffHistoList(TString physSel, TString trigClassNames, TString centrality, TString trackSelection, TList* outList = 0x0);
   void InitLocalKeys();
  
-  TObjArray* fTrackSelKeys;  ///< Selection names
-  TObjArray* fCountTypeKeys; ///< Count type keys
-  TObjArray* fHistoTypeKeys; ///< Base histogram name
-  TObjArray* fEffMethodKeys; ///< Efficiency methods keys
+  TObjArray* fTrackSelKeys;   ///< Selection names
+  TObjArray* fCountTypeKeys;  ///< Count type keys
+  TObjArray* fHistoTypeKeys;  ///< Base histogram name
+  TObjArray* fEffMethodKeys;  ///< Efficiency methods keys
+  TObjArray* fMatchTrigKeys;  ///< Match trigger names
 
-  Bool_t fUseGhosts; ///< Flag to use also the trigger tracks not matching the tracker in eff. calculation
+//  Bool_t fUseGhosts; ///< Flag to use also the trigger tracks not matching the tracker in eff. calculation
   TList*  fList;     //!<TList output object
 
-  ClassDef(AliAnalysisTaskTrigChEff, 3); // Trigger chamber efficiencies
+  ClassDef(AliAnalysisTaskTrigChEff, 4); // Trigger chamber efficiencies
 };
 
 #endif

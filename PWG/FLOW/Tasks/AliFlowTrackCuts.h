@@ -5,6 +5,7 @@
 // AliFlowTrackESDCuts:
 // A cut class for ESD, AOD and MC particles for the flow framework
 // author: Mikolaj Krzewicki (mikolaj.krzewicki@cern.ch)
+// mods:   Redmer A. Bertens (rbertens@cern.ch)
 
 #ifndef ALIFLOWTRACKCUTS_H
 #define ALIFLOWTRACKCUTS_H
@@ -33,6 +34,9 @@ class AliAODTrack;
 class AliESDtrack;
 class AliESDPmdTrack;
 class AliFlowBayesianPID;
+class AliESDkink;
+class AliESDv0;
+class AliESDVZERO;
 
 class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
@@ -48,6 +52,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   static AliFlowTrackCuts* GetStandardGlobalTrackCuts2010();
   static AliFlowTrackCuts* GetStandardITSTPCTrackCuts2009(Bool_t selPrimaries=kTRUE);
   static AliFlowTrackCuts* GetStandardVZEROOnlyTrackCuts();
+  static AliFlowTrackCuts* GetStandardVZEROOnlyTrackCuts2010();
+  static AliFlowTrackCuts* GetStandardVZEROOnlyTrackCuts2011();
   static AliFlowTrackCuts* GetStandardMuonTrackCuts(Bool_t isMC=kFALSE, Int_t passN=2);  // XZhang 20120604
 
   Int_t Count(AliVEvent* event=NULL);
@@ -57,16 +63,18 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
                             kTPCstandalone, 
                             kSPDtracklet,
                             kPMD,
-                            kV0,
-                            kVZERO=kV0,
-                            kMUON  // XZhang 20120604
+                            kV0,    //neutral reconstructed v0 particle
+                            kVZERO, //forward VZERO detector
+                            kMUON,  // XZhang 20120604
+                            kKink
                           };
   enum trackParameterMix  { kPure, 
                             kTrackWithMCkine, 
                             kTrackWithMCPID, 
                             kTrackWithMCpt, 
                             kTrackWithPtFromFirstMother,
-                            kTrackWithTPCInnerParams
+                            kTrackWithTPCInnerParams,
+                            kTrackWithTPCstandalone
                           };
   enum PIDsource {
                    kTPCpid,      // default TPC pid (via GetTPCpid)
@@ -113,13 +121,31 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void SetPmdAdc(Float_t pmdAdc){fCutPmdAdc=kTRUE; fPmdAdc = pmdAdc; }
   void SetPmdNcell(Float_t pmdNcell) {fCutPmdNcell=kTRUE; fPmdNcell = pmdNcell; }						 
   void SetPriors(Float_t centr = 0); // set my favourite priors for Bayesian PID (requested if Bayesian PID is used)
-  void SetFlowTagType(AliFlowTrackSimple::tagType t) {fFlowTagType=t;}
 
   AliMuonTrackCuts *GetMuonTrackCuts() { InitMuonCuts(); return fMuonTrackCuts; }                           // XZhang 20121014
   void SetStandardMuonTrackCuts()      { InitMuonCuts(); fMuonTrackCuts->SetDefaultFilterMask(); return; }  // XZhang 20120604
   void SetIsMuonMC(Bool_t isMC)        { InitMuonCuts(); fMuonTrackCuts->SetIsMC(isMC);          return; }  // XZhang 20120604
   void SetMuonPassNumber(Int_t passN)  { InitMuonCuts(); fMuonTrackCuts->SetPassNumber(passN);   return; }  // XZhang 20121013
   void SetRunsMuon(const AliInputEventHandler* eventHandler) { if (fMuonTrackCuts) fMuonTrackCuts->SetRun(eventHandler); }  // XZhang 20120604
+
+  void SetForceTPCstandalone(Bool_t b) {fForceTPCstandalone=b;}
+
+  //Kinks
+  void SetMinKinkAngle(Double_t a) {fMinKinkAngle=a;}
+  void SetMinKinkRadius(Double_t r) {fMinKinkRadius=r;}
+  void SetMaxKinkRAdius(Double_t r) {fMaxKinkRadius=r;}
+  void SetMinKinkQt(Double_t m) {fMinKinkQt=m;}
+  void SetMaxKinkQt(Double_t m) {fMaxKinkQt=m;}
+  void SetMaxKinkInvMassKmu(Double_t m) {fMaxKinkInvMassKmu=m;}
+  void SetMinKinkInvMassKmu(Double_t m) {fMinKinkInvMassKmu=m;}
+
+  Double_t GetMinKinkAngle() const {return fMinKinkAngle;}
+  Double_t GetMinKinkRadius() const {return fMinKinkRadius;}
+  Double_t GetMaxKinkRadius() const {return fMaxKinkRadius;}
+  Double_t GetMinKinkQt() const {return fMinKinkQt;}
+  Double_t GetMaxKinkQt() const {return fMaxKinkQt;}
+  Double_t GetMaxKinkInvMassKmu() const {return fMaxKinkInvMassKmu;}
+  Double_t GetMinKinkInvMassKmu() const {return fMinKinkInvMassKmu;}
 
   Int_t GetMinNClustersTPC() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetMinNClusterTPC();}
   Int_t GetMinNClustersITS() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetMinNClustersITS();}
@@ -154,6 +180,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Float_t GetBayesianProb() const {return fProbBayes;};
   AliFlowBayesianPID* GetBayesianResponse() const {return  fBayesianResponse;}
 
+  Bool_t GetForceTPCstandalone() const {return fForceTPCstandalone;}
+
   void SetQA(Bool_t b=kTRUE) {if (b) DefineHistograms();}
   TList* GetQA() const {return fQA;}
   TH1* QAbefore(Int_t i) {return static_cast<TH1*>(static_cast<TList*>(fQA->At(0))->At(i));}
@@ -182,8 +210,10 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   virtual Bool_t IsSelectedMCtruth(TObject* obj, Int_t id=-666);
   AliVParticle* GetTrack() const {return fTrack;}
   AliMCParticle* GetMCparticle() const {return fMCparticle;}
-  AliFlowTrack* MakeFlowTrack() const;
+  //AliFlowTrack* MakeFlowTrack() const;
   Bool_t FillFlowTrack(AliFlowTrack* track) const;
+  //FillFlowTrackV0(TObjArray* trackCollection, Int_t trackIndex) const
+  AliFlowTrack* FillFlowTrack(TObjArray* trackCollection, Int_t trackIndex) const;
   Bool_t IsPhysicalPrimary() const; 
   static Bool_t IsPhysicalPrimary(AliMCEvent* p, Int_t label, Bool_t requiretransported=kTRUE); 
   
@@ -194,6 +224,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Int_t GetNumberOfInputObjects() const;
   TObject* GetInputObject(Int_t i);
   void Clear(Option_t* option="");
+  void ClearTrack(Option_t* option="");
 
   Double_t GetPmdEta(Float_t xPos, Float_t yPos, Float_t zPos);
   Double_t GetPmdPhi(Float_t xPos, Float_t yPos);  
@@ -219,10 +250,12 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t PassesESDcuts(AliESDtrack* track);
   Bool_t PassesAODcuts(const AliAODTrack* track, Bool_t passFid=kTRUE);
   Bool_t PassesPMDcuts(const AliESDPmdTrack* track);
-  Bool_t PassesV0cuts(Int_t id);
+  Bool_t PassesVZEROcuts(Int_t id);
   Bool_t PassesCuts(const AliFlowTrackSimple* track);
   Bool_t PassesCuts(const AliMultiplicity* track, Int_t id);
   Bool_t PassesCuts(const AliAODTracklets* track, Int_t id);  // XZhang 20120615
+  Bool_t PassesCuts(const AliESDkink* kink);
+  Bool_t PassesCuts(const AliESDv0* v0);
   Bool_t PassesMCcuts();
   Bool_t PassesMCcuts(AliMCEvent* mcevent, Int_t label);
   Bool_t PassesTPCdedxCut(const AliESDtrack* track);
@@ -240,14 +273,36 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   void Browse(TBrowser* b);
   Long64_t Merge(TCollection* list);
+  
+  //gain equalization and recentering
+  void SetVZEROgainEqualisation(TH1* g) {fVZEROgainEqualization=g;}
+  void SetVZEROApol(Int_t ring, Float_t f) {fVZEROApol[ring]=f;}
+  void SetVZEROCpol(Int_t ring, Float_t f) {fVZEROCpol[ring]=f;}
+  // set the flag for recentering (which is done in AliFlowEvent)
+  void SetApplyRecentering(Bool_t r)    { fApplyRecentering = r; }
+  Bool_t GetApplyRecentering() const    { return fApplyRecentering;}
+  void SetVZEROgainEqualizationPerRing(Bool_t s)   {fVZEROgainEqualizationPerRing = s;}
+  Bool_t GetVZEROgainEqualizationPerRing() const {return fVZEROgainEqualizationPerRing;}
+  // exclude vzero rings: 0 through 7 can be excluded by calling this setter multiple times
+  // 0 corresponds to segment ID 0 through 7, etc
+  // disabled vzero rings get weight 0
+  void SetUseVZERORing(Int_t i, Bool_t u) {
+      fUseVZERORing[i] = u;
+      fVZEROgainEqualizationPerRing = kTRUE;       // must be true for this option
+  }
+  Bool_t GetUseVZERORing(Int_t i) const {return fUseVZERORing[i];}
 
  protected:
-  AliFlowTrack* MakeFlowTrackSPDtracklet() const;
-  AliFlowTrack* MakeFlowTrackPMDtrack() const;
-  AliFlowTrack* MakeFlowTrackV0() const;
-  AliFlowTrack* MakeFlowTrackVParticle() const;
+  //AliFlowTrack* MakeFlowTrackSPDtracklet() const;
+  //AliFlowTrack* MakeFlowTrackPMDtrack() const;
+  //AliFlowTrack* MakeFlowTrackVZERO() const;
+  //AliFlowTrack* MakeFlowTrackVParticle() const;
   Bool_t FillFlowTrackVParticle(AliFlowTrack* t) const;
   Bool_t FillFlowTrackGeneric(AliFlowTrack* t) const;
+  AliFlowTrack* FillFlowTrackKink(TObjArray* trackCollection, Int_t trackIndex) const;
+  AliFlowTrack* FillFlowTrackVZERO(TObjArray* trackCollection, Int_t trackIndex) const;
+  AliFlowTrack* FillFlowTrackGeneric(TObjArray* trackCollection, Int_t trackIndex) const;
+  AliFlowTrack* FillFlowTrackVParticle(TObjArray* trackCollection, Int_t trackIndex) const;
   void HandleESDtrack(AliESDtrack* track);
   void HandleVParticle(AliVParticle* track);
   void DefineHistograms();
@@ -307,10 +362,25 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Float_t fPmdAdc;      //value of cluster ADC
   Bool_t  fCutPmdNcell; //cut on cluster ncell
   Float_t fPmdNcell;    //value of cluster ncell
+
+  Double_t fMinKinkAngle; //max kink angle
+  Double_t fMinKinkRadius; //min kink radius
+  Double_t fMaxKinkRadius; //max kink radius
+  Double_t fMinKinkQt; //min kink qt
+  Double_t fMaxKinkQt; //max kink qt
+  Double_t fMinKinkInvMassKmu; //max kink inv mass
+  Double_t fMaxKinkInvMassKmu; //max kink inv mass
+  Bool_t fForceTPCstandalone; //use TPC parameters when applying cuts on the kink mother
+  Bool_t fRequireKinkDaughters; //well, the name says it all
    
   trackParameterType fParamType;     //parameter type tu cut on
   trackParameterMix fParamMix;       //parameter mixing
+  
+  AliESDkink* fKink;                 //!placeholder for the current kink
+  AliESDv0* fV0;                     //!placeholder for the current V0
   AliVParticle* fTrack;              //!the track to apply cuts on
+  Double_t fTrackMass;               //!mass of the particle
+  Double_t fTrackPt;                 //!track pt
   Double_t fTrackPhi;                //!track phi
   Double_t fTrackEta;                //!track eta
   Double_t fTrackWeight;             //!track weight
@@ -319,7 +389,6 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   AliMCParticle* fMCparticle;        //!mc particle
   AliVEvent* fEvent;                 //!placeholder for current event
   AliESDtrack fTPCtrack;             //!placeholder for TPC only track to avoid new/delete on every track
-  AliFlowTrackSimple::tagType fFlowTagType; //what kind of tag, RP, POI, POIx, ...
 
   //PID
   AliESDpid fESDpid; //pid obj
@@ -339,10 +408,17 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Float_t fProbBayes; // bayesian probability
   Float_t fCurrCentr; // current centrality used for set the priors
   // end part added by F. Noferini
- 
-  static const Int_t fgkNumberOfV0tracks=64; //number of V0 channels
+  
+  //gain equalization and recentering for vzero
+  TH1* fVZEROgainEqualization;     //! equalization histo
+  Bool_t fApplyRecentering;     // apply recentering of q-sub vectors in AliFlowEvent ?
+  Bool_t fVZEROgainEqualizationPerRing;    // per ring vzero gain calibration
+  Float_t fVZEROApol[4];           //! calibration info per ring
+  Float_t fVZEROCpol[4];           //! calibration info per ring
+  Bool_t fUseVZERORing[8];      // kTRUE means the ring is included
+  static const Int_t fgkNumberOfVZEROtracks=64; //number of VZERO channels
 
-  ClassDef(AliFlowTrackCuts,12)
+  ClassDef(AliFlowTrackCuts,13)
 };
 
 #endif

@@ -58,6 +58,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
         kptCut,
         kDCACut,
         kmassCut,
+        kWeights,
 	kNCuts
   };
 
@@ -142,6 +143,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t SetBackgroundScheme(Int_t BackgroundScheme);
   Bool_t SetNumberOfRotations(Int_t NumberOfRotations);
   Bool_t SetMassCut(Int_t massCut);
+  Bool_t SetDoWeights(Int_t opc);
   
   // Request Flags
 
@@ -157,6 +159,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Double_t GetMassCutLowPt(){return fMassCutLowPt;}
   Double_t GetMassCutHighPt(){return fMassCutHighPt;}
   Double_t GetPtMinMassCut(){return fMassCutPtMin;}
+  Bool_t   DoWeights(){return fDoWeights;}
   
 
   
@@ -211,6 +214,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Double_t fMassCutLowPt;
   Double_t fMassCutHighPt;
   Double_t fMassCutPtMin;
+  Bool_t   fDoWeights;
 
 
   // Histograms

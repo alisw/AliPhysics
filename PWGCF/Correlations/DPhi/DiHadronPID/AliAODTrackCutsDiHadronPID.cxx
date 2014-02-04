@@ -18,7 +18,10 @@
 // -----------------------------------------------------------------------
 //  Author: Misha Veldhoen (misha.veldhoen@cern.ch)
 
+#include "AliAODTrackCutsDiHadronPID.h"
+
 #include <iostream>
+using namespace std;
 
 #include "TMath.h"
 #include "TH1F.h"
@@ -41,10 +44,7 @@
 
 #include "AliTrackDiHadronPID.h"
 #include "AliHistToolsDiHadronPID.h"
-
-#include "AliAODTrackCutsDiHadronPID.h"
-
-using namespace std;
+#include "AliFunctionsDiHadronPID.h"
 
 ClassImp(AliAODTrackCutsDiHadronPID);
 
@@ -62,6 +62,8 @@ AliAODTrackCutsDiHadronPID::AliAODTrackCutsDiHadronPID():
 	fPtDeptDCAxyCutFormula(0x0),
 	fDCAzCut(999.),
 	fIsMC(kFALSE),
+	fLowPtNSigmaTOFOnly(kFALSE),
+	fUseNSigmaOnPIDAxes(kFALSE),
 	fTestPt(kFALSE),
 	fTestFilterMask(kFALSE),
 	fTestMaxEta(kFALSE),
@@ -72,6 +74,9 @@ AliAODTrackCutsDiHadronPID::AliAODTrackCutsDiHadronPID():
 	fTestTOFmismatch(kFALSE),
 	fTestPtDeptDCAcut(kFALSE),
 	fDataTrackQAHistos(0x0),
+	fHistAcceptedFilterBits(0x0),
+	fRelevantBitsArray(0x0),
+	fTOFMatchingStat(0x0),
 	fPrimRecMCTrackQAHistos(0x0),
 	fPrimGenMCTrackQAHistos(0x0),
 	fSecRecMCTrackQAHistos(0x0),
@@ -105,6 +110,8 @@ AliAODTrackCutsDiHadronPID::AliAODTrackCutsDiHadronPID():
   			// Initialize PID histograms.
   			for (Int_t iSpecies = 0; iSpecies < 3; iSpecies++) {
   				for (Int_t iPtClass = 0; iPtClass < 5; iPtClass++) {
+  					fHistPrimRecPID[iHistoName][iSpecies][iPtClass] = 0x0;
+  					fHistPrimRecMismatch[iHistoName][iSpecies][iPtClass] = 0x0;
   					fHistDataPID[iHistoName][iSpecies][iPtClass] = 0x0;
    					fHistTOFMismatch[iHistoName][iSpecies][iPtClass] = 0x0; 				  					
   					fHistTPCTOFMismatch[iHistoName][iSpecies][iPtClass] = 0x0;
@@ -119,11 +126,16 @@ AliAODTrackCutsDiHadronPID::AliAODTrackCutsDiHadronPID():
 
  		// Initialize MC histograms.
  		fHistPrimGenMCPt[iHistoName] = 0x0;
+ 		fHistPrimRecPtGenPt[iHistoName] = 0x0;
+ 		fHistPrimGenMCPhiEtaPt[iHistoName] = 0x0;
  		fHistPrimRecMCPt[iHistoName] = 0x0;
+ 		fHistPrimRecMCPhiEtaPt[iHistoName] = 0x0;
  		fHistPrimRecNTracks[iHistoName] = 0x0;
 
  		fHistSecGenMCPt[iHistoName] = 0x0;
+ 		fHistSecGenMCPhiEtaPt[iHistoName] = 0x0;
  		fHistSecRecMCPt[iHistoName] = 0x0;
+ 		fHistSecRecMCPhiEtaPt[iHistoName] = 0x0;
 
  		// Initialze MC DCA histograms
  		fHistPrimRecMCDCA[iHistoName] = 0x0;
@@ -156,6 +168,8 @@ AliAODTrackCutsDiHadronPID::AliAODTrackCutsDiHadronPID(const char* name):
 	fPtDeptDCAxyCutFormula(0x0),
 	fDCAzCut(999.),
 	fIsMC(kFALSE),
+	fLowPtNSigmaTOFOnly(kFALSE),
+	fUseNSigmaOnPIDAxes(kFALSE),	
 	fTestPt(kFALSE),	
 	fTestFilterMask(kFALSE),
 	fTestMaxEta(kFALSE),
@@ -166,6 +180,9 @@ AliAODTrackCutsDiHadronPID::AliAODTrackCutsDiHadronPID(const char* name):
 	fTestTOFmismatch(kFALSE),
 	fTestPtDeptDCAcut(kFALSE),
 	fDataTrackQAHistos(0x0),
+	fHistAcceptedFilterBits(0x0),
+	fRelevantBitsArray(0x0),	
+	fTOFMatchingStat(0x0),	
 	fPrimRecMCTrackQAHistos(0x0),
 	fPrimGenMCTrackQAHistos(0x0),
 	fSecRecMCTrackQAHistos(0x0),
@@ -199,6 +216,8 @@ AliAODTrackCutsDiHadronPID::AliAODTrackCutsDiHadronPID(const char* name):
  			// Initialize PID histograms.
   			for (Int_t iSpecies = 0; iSpecies < 3; iSpecies++) {
   				for (Int_t iPtClass = 0; iPtClass < 5; iPtClass++) {
+  					fHistPrimRecPID[iHistoName][iSpecies][iPtClass] = 0x0;  
+  					fHistPrimRecMismatch[iHistoName][iSpecies][iPtClass] = 0x0;					
   					fHistDataPID[iHistoName][iSpecies][iPtClass] = 0x0;
    					fHistTOFMismatch[iHistoName][iSpecies][iPtClass] = 0x0; 				  					
    					fHistTPCTOFMismatch[iHistoName][iSpecies][iPtClass] = 0x0; 				  					
@@ -214,11 +233,16 @@ AliAODTrackCutsDiHadronPID::AliAODTrackCutsDiHadronPID(const char* name):
 
  		// Initialize MC histograms.
  		fHistPrimGenMCPt[iHistoName] = 0x0;
+  		fHistPrimRecPtGenPt[iHistoName] = 0x0;		
+ 		fHistPrimGenMCPhiEtaPt[iHistoName] = 0x0;
  		fHistPrimRecMCPt[iHistoName] = 0x0;
+ 		fHistPrimRecMCPhiEtaPt[iHistoName] = 0x0;
  		fHistPrimRecNTracks[iHistoName] = 0x0;
 
  		fHistSecGenMCPt[iHistoName] = 0x0;
+ 		fHistSecGenMCPhiEtaPt[iHistoName] = 0x0;
  		fHistSecRecMCPt[iHistoName] = 0x0;
+ 		fHistSecRecMCPhiEtaPt[iHistoName] = 0x0;
 
  		// Initialze MC DCA histograms
  		fHistPrimRecMCDCA[iHistoName] = 0x0;
@@ -248,12 +272,22 @@ void AliAODTrackCutsDiHadronPID::InitializeDefaultHistoNamesAndAxes() {
 	cout<<"AliAODTrackCutsDiHadronPID - Initializing Default Histogram Names and axes..."<<endl;
 	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
- 	// Setting the Pt axis for all histograms except the PID and Mismatch histograms.
+	// Setting the Pt axis for all histograms except the PID and Mismatch histograms -> Now the same for 
+	// PID histograms.
+ 	Double_t ptaxis[52] = {0.500,0.525,0.550,0.575,0.600,0.625,0.650,0.675,0.700,
+ 							0.75,0.80,0.85,0.90,0.95,1.00,
+ 							1.05,1.10,1.15,1.20,1.25,1.30,1.35,1.40,1.45,1.50,1.55,1.60,1.65,1.70,
+ 							1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0,
+ 							3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0};
+	for (Int_t iPtBins = 0; iPtBins < 52; iPtBins++) {fPtAxis[iPtBins] = ptaxis[iPtBins];}
+ 	fNPtBins = 51;
+/*
  	Double_t ptaxis[57] = {0.20,0.25,0.30,0.35,0.40,0.45,0.50,0.55,0.60,0.65,0.70,0.75,0.80,0.85,0.90,0.95,1.00,
 							1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0,
 							3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0,5.5,6.0,6.5,7.0,7.5,8.0,8.5,9.0,9.5,10.0};
 	for (Int_t iPtBins = 0; iPtBins < 57; iPtBins++) {fPtAxis[iPtBins] = ptaxis[iPtBins];}
  	fNPtBins = 56;
+*/
 
 	// Setting the pt range of the five PID histogram pt classes. 	
 	Double_t ptboundarypid[6] = {0.5,0.7,1.0,1.7,3.0,5.0};
@@ -264,25 +298,31 @@ void AliAODTrackCutsDiHadronPID::InitializeDefaultHistoNamesAndAxes() {
 	for (Int_t iPtBins = 0; iPtBins < 5; iPtBins++) {fNPtBinsPID[iPtBins] = nptbinspid[iPtBins];}
 
 	// Setting the TOF axes for the PID histograms.
+	//Double_t tofsigmaapprox = 80.;
 	Double_t toflowerbound[5][3] = {{-2000.,-6000.,-10000.},{-2000.,-4000.,-10000.},{-1000.,-2000.,-5000.},{-1000.,-1000.,-2500.},{-500.,-500.,-1000.}};
 	Double_t tofupperbound[5][3] = {{10000.,10000.,6000.},{10000.,8000.,6000.},{6000.,6000.,6000.},{6000.,6000.,6000.},{4000.,4000.,6000.}};
 	Int_t tofbins[5][3] = {{120,160,160},{120,120,160},{140,140,165},{140,140,170},{90,90,140}};
 	for (Int_t iPtClass = 0; iPtClass < 5; iPtClass++) {
 		for (Int_t iSpecies = 0; iSpecies < 3; iSpecies++) {
 			fTOFLowerBound[iPtClass][iSpecies] = toflowerbound[iPtClass][iSpecies];
+			//if (fUseNSigmaOnPIDAxes) {toflowerbound[iPtClass][iSpecies] /= tofsigmaapprox;}
 			fTOFUpperBound[iPtClass][iSpecies] = tofupperbound[iPtClass][iSpecies];
+			//if (fUseNSigmaOnPIDAxes) {tofupperbound[iPtClass][iSpecies] /= tofsigmaapprox;}
 			fTOFbins[iPtClass][iSpecies] = tofbins[iPtClass][iSpecies];
 		}
 	}
 
 	// Setting the TPC axes for the PID histograms.
+	//Double_t tpcsigmaaxpprox = 3.5;
 	Double_t tpclowerbound[5][3] = {{-20.,-50.,-100.},{-20.,-30.,-80.},{-25.,-25.,-45.},{-25.,-25.,-45.},{-25.,-20.,-20.}};
 	Double_t tpcupperbound[5][3] = {{60.,30.,20.},{60.,40.,20.},{50.,50.,25.},{45.,45.,25.},{25.,30.,30.}}; // Check highest pT bin boundaries for K,p
 	Int_t tpcbins[5][3] = {{80,80,120},{80,70,100},{75,75,70},{70,70,70},{50,50,50}};
 	for (Int_t iPtClass = 0; iPtClass < 5; iPtClass++) {
 		for (Int_t iSpecies = 0; iSpecies < 3; iSpecies++) {
 			fTPCLowerBound[iPtClass][iSpecies] = tpclowerbound[iPtClass][iSpecies];
+			//if (fUseNSigmaOnPIDAxes) {tpclowerbound[iPtClass][iSpecies] /= tpcsigmaaxpprox;}
 			fTPCUpperBound[iPtClass][iSpecies] = tpcupperbound[iPtClass][iSpecies];
+			//if (fUseNSigmaOnPIDAxes) {tpcupperbound[iPtClass][iSpecies] /= tpcsigmaaxpprox;}
 			fTPCbins[iPtClass][iSpecies] = tpcbins[iPtClass][iSpecies];
 		}
 	}
@@ -678,7 +718,7 @@ TObjArray* AliAODTrackCutsDiHadronPID::GetDataTPCTOFMismatch(Int_t charge, Int_t
 }
 
 // -----------------------------------------------------------------------
-Double_t AliAODTrackCutsDiHadronPID::GetPtMin(const Int_t bin) const {
+Double_t AliAODTrackCutsDiHadronPID::GetPtMin(Int_t bin) const {
 	
 	// Same as: TAxis::GetBinLowEdge()
 
@@ -694,7 +734,7 @@ Double_t AliAODTrackCutsDiHadronPID::GetPtMin(const Int_t bin) const {
 }
 
 // -----------------------------------------------------------------------
-Double_t AliAODTrackCutsDiHadronPID::GetPtMax(const Int_t bin) const {
+Double_t AliAODTrackCutsDiHadronPID::GetPtMax(Int_t bin) const {
 	
 	// Same as: TAxis::GetBinUpEdge()
 
@@ -710,7 +750,7 @@ Double_t AliAODTrackCutsDiHadronPID::GetPtMax(const Int_t bin) const {
 }
 
 // -----------------------------------------------------------------------
-Int_t AliAODTrackCutsDiHadronPID::GetNPtBinsPID(const Int_t ptclass) const {
+Int_t AliAODTrackCutsDiHadronPID::GetNPtBinsPID(Int_t ptclass) const {
 
 	// Returns the number of pt bins that are used in every "pt class",
 	// where a "pt class" is a range in pT which have the same range in
@@ -754,7 +794,7 @@ Double_t* AliAODTrackCutsDiHadronPID::GetPtAxisPID() const {
 }
 
 // -----------------------------------------------------------------------
-Double_t AliAODTrackCutsDiHadronPID::GetPtMinPID(const Int_t bin) const {
+Double_t AliAODTrackCutsDiHadronPID::GetPtMinPID(Int_t bin) const {
 
 	// Same as: TAxis::GetBinLowEdge()
 
@@ -775,7 +815,7 @@ Double_t AliAODTrackCutsDiHadronPID::GetPtMinPID(const Int_t bin) const {
 }
 
 // -----------------------------------------------------------------------
-Double_t AliAODTrackCutsDiHadronPID::GetPtMaxPID(const Int_t bin) const {
+Double_t AliAODTrackCutsDiHadronPID::GetPtMaxPID(Int_t bin) const {
 
 	// Same as: TAxis::GetBinUpEdge()
 
@@ -796,7 +836,7 @@ Double_t AliAODTrackCutsDiHadronPID::GetPtMaxPID(const Int_t bin) const {
 }
 
 // -----------------------------------------------------------------------
-Double_t AliAODTrackCutsDiHadronPID::GetPtClassMin(const Int_t ptclass) const {
+Double_t AliAODTrackCutsDiHadronPID::GetPtClassMin(Int_t ptclass) const {
 
 	// Returns the minimum p_T of a p_T class.
 
@@ -811,7 +851,7 @@ Double_t AliAODTrackCutsDiHadronPID::GetPtClassMin(const Int_t ptclass) const {
 }
 
 // -----------------------------------------------------------------------
-Double_t AliAODTrackCutsDiHadronPID::GetPtClassMax(const Int_t ptclass) const {
+Double_t AliAODTrackCutsDiHadronPID::GetPtClassMax(Int_t ptclass) const {
 
 	// Returns the maximum p_T of a p_T class.
 
@@ -826,7 +866,7 @@ Double_t AliAODTrackCutsDiHadronPID::GetPtClassMax(const Int_t ptclass) const {
 }
 
 // -----------------------------------------------------------------------
-Bool_t AliAODTrackCutsDiHadronPID::RequestQAHistos(const Int_t histoclass, const Bool_t Enable3DSpectra, const Bool_t EnablePIDHistos) {
+Bool_t AliAODTrackCutsDiHadronPID::RequestQAHistos(Int_t histoclass, Bool_t Enable3DSpectra, Bool_t EnablePIDHistos) {
 
 	// Request certain histograms to be filled.
 
@@ -841,6 +881,88 @@ Bool_t AliAODTrackCutsDiHadronPID::RequestQAHistos(const Int_t histoclass, const
 	} else { 
 		return kFALSE;
 	}
+}
+
+// -----------------------------------------------------------------------
+void AliAODTrackCutsDiHadronPID::SetPtRange(Double_t minpt, Double_t maxpt) {
+	
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}	
+
+	fMinPt = minpt;
+	fMaxPt = maxpt;
+	fTestPt = kTRUE;
+}
+
+// -----------------------------------------------------------------------
+void AliAODTrackCutsDiHadronPID::SetFilterMask(UInt_t filtermask) {
+	
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}	
+
+	fFilterMask = filtermask;
+	fTestFilterMask = kTRUE;
+}
+
+// -----------------------------------------------------------------------
+void AliAODTrackCutsDiHadronPID::SetMaxEta(Double_t maxeta) {
+	
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}	
+
+	fMaxEta = maxeta;
+	fTestMaxEta = kTRUE;
+}
+
+// -----------------------------------------------------------------------
+void AliAODTrackCutsDiHadronPID::SetMaxRapidity(Double_t maxrapidity) {
+	
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}	
+
+	fMaxRapidity = maxrapidity;
+	fTestMaxRapidity = kTRUE;
+}
+
+// -----------------------------------------------------------------------
+void AliAODTrackCutsDiHadronPID::SetDemandNoMismatch() {
+	
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}	
+
+	fTestTOFmismatch = kTRUE;
+}
+
+// -----------------------------------------------------------------------
+void AliAODTrackCutsDiHadronPID::SetDemandFlags(ULong_t demandedflags) {
+	
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}	
+
+	fDemandedFlags = demandedflags;
+	fTestFlags = kTRUE;
+}
+
+// -----------------------------------------------------------------------
+void AliAODTrackCutsDiHadronPID::SetMinimumNumberOfTPCClusters(Int_t minimumnumberoftpcclusters) {
+	
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}	
+
+	fMinimumNumberOfTPCClusters = minimumnumberoftpcclusters;
+	fTestNumberOfTPCClusters = kTRUE;
+}
+
+// -----------------------------------------------------------------------
+void AliAODTrackCutsDiHadronPID::SetDemandSPDCluster() {
+	
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}	
+
+	fTestSPDAny = kTRUE;
+}
+
+// -----------------------------------------------------------------------
+void AliAODTrackCutsDiHadronPID::SetPtDeptDCACut(TFormula* DCAxyCutFormula, Double_t DCAzCut, UInt_t MinSPDHits) {
+	
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}	
+
+	fPtDeptDCAxyCutFormula = DCAxyCutFormula;
+	fDCAzCut = DCAzCut;
+	fMinSPDHitsForPtDeptDCAcut = MinSPDHits;
+	fTestPtDeptDCAcut = kTRUE;
 }
 
 // -----------------------------------------------------------------------
@@ -898,6 +1020,11 @@ void AliAODTrackCutsDiHadronPID::CreateHistos() {
 
 	if (fIsMC) {
 	
+		fTOFMatchingStat = new TH1F("fTOFMatchingStat","fTOFMatchingStat",3,0,3);
+		(fTOFMatchingStat->GetXaxis())->SetBinLabel(1,"Match");
+		(fTOFMatchingStat->GetXaxis())->SetBinLabel(2,"Mismatch");
+		(fTOFMatchingStat->GetXaxis())->SetBinLabel(3,"No TOF hit");
+
 		if (!fPrimGenMCTrackQAHistos) {
 			cout<<"AliAODTrackCutsDiHadronPID - Creating Prim. Gen. MC Track QA TList..."<<endl;	
 			fPrimGenMCTrackQAHistos = new TList();
@@ -939,6 +1066,12 @@ void AliAODTrackCutsDiHadronPID::CreateHistos() {
 			fDataTrackQAHistos = new TList();
 			fDataTrackQAHistos->SetName("DataTrackQAHistos");
 			fDataTrackQAHistos->SetOwner(kTRUE);
+
+			// Add general histograms.
+			fHistAcceptedFilterBits = InitializeAcceptedFilterBits("fHistAcceptedFilterBits");
+			fDataTrackQAHistos->Add(fHistAcceptedFilterBits);
+
+			// Add histograms per class.
 			for (Int_t iHistoClass = 0; iHistoClass < 12; iHistoClass++) {
 				fHistDataDCAxyOneSigma[iHistoClass] = InitializeDCASpectrum("fHistDataDCAxyOneSigma",iHistoClass);
 				fDataTrackQAHistos->Add(fHistDataDCAxyOneSigma[iHistoClass]);
@@ -970,13 +1103,21 @@ Bool_t AliAODTrackCutsDiHadronPID::IsSelectedData(AliTrackDiHadronPID* track, Do
 	if (!CheckFilterMask(track->GetFilterMap())) return kFALSE;
 	if (!CheckFlags(track->GetFlags())) return kFALSE;
 	if (!CheckNclsTPC(track->GetNclsTPC())) return kFALSE;
-	if (!CheckTOFmismatch(track->IsTOFmismatch())) return kFALSE;
+	if (!CheckTOFmismatch(track->IsTOFMismatch())) return kFALSE;
 
 	Int_t NSPDhits = 0;
 	if (track->HasPointOnITSLayer(0)) NSPDhits++;
 	if (track->HasPointOnITSLayer(1)) NSPDhits++;
 	if (!CheckPtDeptDCACut(track->GetZAtDCA(),track->GetXYAtDCA(),track->Pt(),NSPDhits)) return kFALSE;
 	if (fTestSPDAny) {if (NSPDhits < 1) return kFALSE;}
+
+	// Fill the filterbit histogram.
+	for (Int_t iBin = (fRelevantBitsArray->GetSize() - 1); iBin >= 0; --iBin) {
+		if ( (((Int_t)track->GetFilterMap())&(1<<fRelevantBitsArray->At(iBin))) == (1<<fRelevantBitsArray->At(iBin))) {
+			fHistAcceptedFilterBits->Fill(iBin);
+			break;
+		}
+	}
 
 	// Track has passed the cuts, fill QA histograms.
 	for (Int_t iHistoClass = 0; iHistoClass < 3; iHistoClass++) {
@@ -1048,8 +1189,8 @@ Bool_t AliAODTrackCutsDiHadronPID::IsSelectedGeneratedMC(AliAODMCParticle* parti
 			//cout<<particle->IsPhysicalPrimary()<<" "<<particle->IsSecondaryFromWeakDecay()<<" "<<particle->IsSecondaryFromMaterial()<<endl;
 
 			// These two functions are not implemented...
-			if (particle->IsSecondaryFromWeakDecay()) cout<<"Secondary From Weak Decay!"<<endl;
-			if (particle->IsSecondaryFromMaterial()) cout<<"Secondary From Material!"<<endl;
+			//if (particle->IsSecondaryFromWeakDecay()) cout<<"Secondary From Weak Decay!"<<endl;
+			//if (particle->IsSecondaryFromMaterial()) cout<<"Secondary From Material!"<<endl;
 
 			FillGenMCHistos(iHistoClass, particle);	
 
@@ -1115,7 +1256,7 @@ Bool_t AliAODTrackCutsDiHadronPID::IsSelectedReconstructedMC(AliTrackDiHadronPID
 }
 
 // -----------------------------------------------------------------------
-Int_t AliAODTrackCutsDiHadronPID::GetPtClass(const Int_t ptbin) const {
+Int_t AliAODTrackCutsDiHadronPID::GetPtClass(Int_t ptbin) const {
 
 	// Returns a p_T class as a function of bin (PID histos)
 	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
@@ -1138,7 +1279,7 @@ Int_t AliAODTrackCutsDiHadronPID::GetPtClass(const Int_t ptbin) const {
 }
 
 // -----------------------------------------------------------------------
-Int_t AliAODTrackCutsDiHadronPID::GetBinInPtClass(const Int_t ptbin) const {
+Int_t AliAODTrackCutsDiHadronPID::GetBinInPtClass(Int_t ptbin) const {
 
 	// Returns the bin withing the p_T class (i.e., 1..Nbins)
 	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
@@ -1151,6 +1292,87 @@ Int_t AliAODTrackCutsDiHadronPID::GetBinInPtClass(const Int_t ptbin) const {
 
 	return ptbinout;
 
+}
+	
+// -----------------------------------------------------------------------
+Bool_t AliAODTrackCutsDiHadronPID::CheckPt(Double_t pt) const {
+
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	if (!fTestPt) return kTRUE;
+	if ((pt > fMinPt) && (pt < fMaxPt)) return kTRUE;
+	return kFALSE;
+	}
+
+// -----------------------------------------------------------------------
+Bool_t AliAODTrackCutsDiHadronPID::CheckMaxEta(Double_t eta) const {
+
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	if (!fTestMaxEta) return kTRUE;				// Accepted if there is no check on this parameter.
+	if (TMath::Abs(eta) < fMaxEta) return kTRUE;
+	return kFALSE;
+	}
+
+// -----------------------------------------------------------------------
+Bool_t AliAODTrackCutsDiHadronPID::CheckRapidity(Double_t rap) const {
+
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	if (!fTestMaxRapidity) return kTRUE;
+	if (TMath::Abs(rap) < fMaxRapidity) return kTRUE;
+	return kFALSE;
+	}
+
+// -----------------------------------------------------------------------
+Bool_t AliAODTrackCutsDiHadronPID::CheckFilterMask(UInt_t filtermap) const {
+
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	if (!fTestFilterMask) return kTRUE;
+	if (fFilterMask & filtermap) return kTRUE;
+	return kFALSE;
+	}
+
+// -----------------------------------------------------------------------
+Bool_t AliAODTrackCutsDiHadronPID::CheckFlags(ULong_t flags) const {
+
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	if (!fTestFlags) return kTRUE;
+	if ((flags & fDemandedFlags) == fDemandedFlags) return kTRUE;
+	return kFALSE;
+	}
+
+// -----------------------------------------------------------------------
+Bool_t AliAODTrackCutsDiHadronPID::CheckNclsTPC(Int_t ncls) const {
+
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	if (!fTestNumberOfTPCClusters) return kTRUE;
+	if (ncls > fMinimumNumberOfTPCClusters) return kTRUE;
+	return kFALSE;
+	}
+
+// -----------------------------------------------------------------------
+Bool_t AliAODTrackCutsDiHadronPID::CheckTOFmismatch(Bool_t ismismatch) const {
+
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	if (!fTestTOFmismatch) return kTRUE; // if we're not cutting on mismatch, then it's accepted.
+	if (!ismismatch) return kTRUE; 		// so if the track is not a mismatch, then it is accepted.
+	return kFALSE; 						// if it is a mismatch, then it's not accepted.
+	}
+
+// -----------------------------------------------------------------------
+Bool_t AliAODTrackCutsDiHadronPID::CheckPtDeptDCACut(Double_t dcaz, Double_t dcaxy, Double_t pt, UInt_t SPDhits) const {
+
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	if (!fTestPtDeptDCAcut) return kTRUE;
+	if (SPDhits < fMinSPDHitsForPtDeptDCAcut) return kTRUE; // If there are not enough SPD hits to do the cut.
+	if ((dcaz < fDCAzCut) && (dcaxy < fPtDeptDCAxyCutFormula->Eval(pt))) return kTRUE;
+	return kFALSE;
 }
 
 // -----------------------------------------------------------------------
@@ -1166,12 +1388,12 @@ Bool_t AliAODTrackCutsDiHadronPID::FillDataHistos(Int_t histoclass, AliTrackDiHa
 	fHistDataDCAxy[histoclass]->Fill(track->GetXYAtDCA());
 	fHistDataDCAz[histoclass]->Fill(track->GetZAtDCA());
 
-	// Fill DCA_{xy} one sigma histograms.
 	Int_t checkSum = 0;
 
 	/* Philip: 
 		Introduced a separate selection mechanism here as the TPC is off for low pt for 
-		in particular protons and kaons. Therefor use only the TOF for identifying under 1.8 GeV
+		in particular protons and kaons. Therefor use only the TOF for identifying under 1.8 GeV.
+		Setting this with fLowPtNSigmaTOFOnly flag.
 	*/
 	// histoclass = 0: all charges; histoclass = 1: positive; histoclass = 2: negative;
 	if (TMath::Sqrt(track->GetNumberOfSigmasTOF(0) * track->GetNumberOfSigmasTOF(0) + 
@@ -1180,20 +1402,10 @@ Bool_t AliAODTrackCutsDiHadronPID::FillDataHistos(Int_t histoclass, AliTrackDiHa
 		fHistDataDCAxyOneSigma[3 + histoclass]->Fill(track->Pt(),track->GetXYAtDCA());	// Pions.
 	//	checkSum++;	cout<<"Pion found: nSigTOF: "<<track->GetNumberOfSigmasTOF(0)<<"; nSigTPC: "<<track->GetNumberOfSigmasTPC(0)<<endl;
 	}
-	// if (TMath::Sqrt(track->GetNumberOfSigmasTOF(1) * track->GetNumberOfSigmasTOF(1) + 
-	// 				track->GetNumberOfSigmasTPC(1) * track->GetNumberOfSigmasTPC(1)) < 1.) {
-	// 	fHistDataDCAxyOneSigma[0 + histoclass]->Fill(track->Pt(),track->GetXYAtDCA());	// All species.
-	// 	fHistDataDCAxyOneSigma[6 + histoclass]->Fill(track->Pt(),track->GetXYAtDCA());	// Kaons.
-	// //	checkSum++;	cout<<"Kaon found: nSigTOF: "<<track->GetNumberOfSigmasTOF(1)<<"; nSigTPC: "<<track->GetNumberOfSigmasTPC(1)<<endl;
-	// }
-	// if (TMath::Sqrt(track->GetNumberOfSigmasTOF(2) * track->GetNumberOfSigmasTOF(2) + 
-	// 				track->GetNumberOfSigmasTPC(2) * track->GetNumberOfSigmasTPC(2)) < 1.) {		
-	// 	fHistDataDCAxyOneSigma[0 + histoclass]->Fill(track->Pt(),track->GetXYAtDCA());	// All species.
-	// 	fHistDataDCAxyOneSigma[9 + histoclass]->Fill(track->Pt(),track->GetXYAtDCA());	// Protons.
-	// //	checkSum++;	cout<<"Proton found: nSigTOF: "<<track->GetNumberOfSigmasTOF(2)<<"; nSigTPC: "<<track->GetNumberOfSigmasTPC(2)<<endl;
-	// }
-	// for protons and low pt:
-	if (TMath::Abs(track->Pt()) < 1.8 ) {
+
+	// for protons and low pt, only when fLowPtNSigmaTOFOnly set to kTRUE:
+	if ((TMath::Abs(track->Pt()) < 1.8) && fLowPtNSigmaTOFOnly) {
+
 		if (TMath::Abs(track->GetNumberOfSigmasTOF(1)) < 1.) {		
 			fHistDataDCAxyOneSigma[0 + histoclass]->Fill(track->Pt(),track->GetXYAtDCA());	// All species.
 			fHistDataDCAxyOneSigma[6 + histoclass]->Fill(track->Pt(),track->GetXYAtDCA());	// Kaons.
@@ -1218,7 +1430,6 @@ Bool_t AliAODTrackCutsDiHadronPID::FillDataHistos(Int_t histoclass, AliTrackDiHa
 		}
 	}
 
-
 	// check for double identification (or triple..)
 	if(checkSum > 1) {AliError("More than one particle identified for the same track!"); }
 
@@ -1229,7 +1440,9 @@ Bool_t AliAODTrackCutsDiHadronPID::FillDataHistos(Int_t histoclass, AliTrackDiHa
 		if (!CheckRapidity(track->Y(iSpecies))) continue;
 
 		for (Int_t iPtClass = 0; iPtClass < 5; iPtClass++) {
-			fHistDataPID[histoclass][iSpecies][iPtClass]->Fill(track->Pt(),track->GetTOFsignalMinusExpected(iSpecies),track->GetTPCsignalMinusExpected(iSpecies));		
+			fHistDataPID[histoclass][iSpecies][iPtClass]->Fill(track->Pt(),
+				(fUseNSigmaOnPIDAxes ? track->GetNumberOfSigmasTOF(iSpecies) : track->GetTOFsignalMinusExpected(iSpecies)),
+				(fUseNSigmaOnPIDAxes ? track->GetNumberOfSigmasTPC(iSpecies) : track->GetTPCsignalMinusExpected(iSpecies)));		
 		}
 	}
 
@@ -1247,10 +1460,36 @@ Bool_t AliAODTrackCutsDiHadronPID::FillTOFMismatchHistos(Int_t histoclass, AliTr
 
 		// Note that a possible Y cut is only done on the PID cuts!
 		if (!CheckRapidity(track->Y(iSpecies))) continue;
+/*
+		if (!track->GetNumberOfSigmasTOF(iSpecies)) {
+			cout<<"NSigma TOF: "<<track->GetNumberOfSigmasTOF(iSpecies)<<endl;
+			cout<<"TOFsignal exp: "<<track->GetTOFsignalExpected(iSpecies)<<endl;
+			cout<<"TOFsigma exp: "<<track->GetTOFsigmaExpected(iSpecies)<<endl;
+			cout<<endl;
+		}
+*/
+
+		Double_t TOFmismatchSigma = randomhittime - track->GetTOFsignalExpected(iSpecies);
+		if (fUseNSigmaOnPIDAxes) {
+			if (track->GetTOFsigmaExpected(iSpecies) < 10e-30) {
+				/*
+				cout << "ERROR: division through (almost) zero on the mismatch signal..."<<endl;
+				cout << "Random time: "<<randomhittime<<endl;
+				cout << "Exp TOF signal track for species "<<iSpecies<<" "<<track->GetTOFsignalExpected(iSpecies)<<endl;
+				cout << "Exp Mismatch signal assuming species "<< iSpecies<<": "<<TOFmismatchSigma<<endl;
+				cout << "Expected TOF sigma: "<<track->GetTOFsigmaExpected(iSpecies)<<endl;
+				ULong_t flags_kTOFout_kTIME = (UInt_t)(AliAODTrack::kTOFout)|(UInt_t)(AliAODTrack::kTIME);
+				cout << "Random track TOF status (kTOFout, kTIME): "<<(((track->GetFlags())&flags_kTOFout_kTIME)==flags_kTOFout_kTIME)<<endl;
+				*/
+			} else {
+				TOFmismatchSigma /= track->GetTOFsigmaExpected(iSpecies);
+			}
+		}
 
 		for (Int_t iPtClass = 0; iPtClass < 5; iPtClass++) {
-			fHistTOFMismatch[histoclass][iSpecies][iPtClass]->Fill(track->Pt(),randomhittime - track->GetTOFsignalExpected(iSpecies));		
-			fHistTPCTOFMismatch[histoclass][iSpecies][iPtClass]->Fill(track->Pt(),randomhittime - track->GetTOFsignalExpected(iSpecies),track->GetTPCsignalMinusExpected(iSpecies));			
+			fHistTOFMismatch[histoclass][iSpecies][iPtClass]->Fill(track->Pt(), TOFmismatchSigma);		
+			fHistTPCTOFMismatch[histoclass][iSpecies][iPtClass]->Fill(track->Pt(), TOFmismatchSigma,
+				(fUseNSigmaOnPIDAxes ? track->GetNumberOfSigmasTPC(iSpecies) : track->GetTPCsignalMinusExpected(iSpecies)));			
 		}
 	}
 
@@ -1263,11 +1502,21 @@ Bool_t AliAODTrackCutsDiHadronPID::FillGenMCHistos(Int_t histoclass, AliAODMCPar
 
 	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
+	//cout << "histoclass: "<<histoclass<<" particle: "<<particle<<endl;
+
 	// Fill the histograms.
 	if (particle->IsPhysicalPrimary()) {
+		//cout<<"Trying to fill: "<<fHistPrimGenMCPt[histoclass]->GetName()<<" of type: " <<fHistPrimGenMCPt[histoclass]->ClassName()<<" at: "<<fHistPrimGenMCPt[histoclass]<<endl;
 		fHistPrimGenMCPt[histoclass]->Fill(particle->Pt());
+		//cout<< "phi: "<<particle->Phi()<< " eta: "<<particle->Eta() << " pt: "<<particle->Pt()<<" ";
+		fHistPrimGenMCPhiEtaPt[histoclass]->Fill(particle->Phi(), particle->Eta(), particle->Pt());
+		//cout<<"OK!"<<endl;
 	} else {
+		//cout<<"Trying to fill: "<<fHistPrimGenMCPt[histoclass]->GetName()<<" of type: " <<fHistPrimGenMCPt[histoclass]->ClassName()<<" at: "<<fHistPrimGenMCPt[histoclass]<<endl;
 		fHistSecGenMCPt[histoclass]->Fill(particle->Pt());
+		//cout<< "phi: "<<particle->Phi()<< " eta: "<<particle->Eta() << " pt: "<<particle->Pt()<<" ";
+		fHistSecGenMCPhiEtaPt[histoclass]->Fill(particle->Phi(), particle->Eta(), particle->Pt());
+		//cout<<"OK!"<<endl;		
 	}
 
 	return kTRUE;
@@ -1279,11 +1528,14 @@ Bool_t AliAODTrackCutsDiHadronPID::FillRecMCHistos(Int_t histoclass, AliTrackDiH
 
 	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
-	// Fill the Pt histograms.
+	// Fill the Pt and acceptance histograms.
 	if (track->IsPhysicalPrimary()) {
-		fHistPrimRecMCPt[histoclass]->Fill(track->Pt());
+		fHistPrimRecMCPt[histoclass]->Fill(track->MCPt());
+		fHistPrimRecPtGenPt[histoclass]->Fill(track->MCPt(), track->Pt());
+		fHistPrimRecMCPhiEtaPt[histoclass]->Fill(track->MCPhi(), track->MCEta(), track->MCPt());
 	} else {
-		fHistSecRecMCPt[histoclass]->Fill(track->Pt());
+		fHistSecRecMCPt[histoclass]->Fill(track->MCPt());
+		fHistSecRecMCPhiEtaPt[histoclass]->Fill(track->MCPhi(), track->MCEta(), track->MCPt());
 	}
 
 	// Fill the DCA histograms.
@@ -1295,6 +1547,34 @@ Bool_t AliAODTrackCutsDiHadronPID::FillRecMCHistos(Int_t histoclass, AliTrackDiH
 	}
 	if (track->IsSecondaryFromWeakDecay()) {
 		fHistSecRecMCDCAWeak[histoclass]->Fill(track->Pt(), track->GetXYAtDCA());
+	}
+
+	// Fill PID histos.
+	if (histoclass < 3) {
+
+		// Note that the following histogram is only sensible if the fTOFlabel is set properly.
+		// If not, the histogram will be filled with "no match".
+		fTOFMatchingStat->Fill(((Double_t)track->GetTOFMatchingStatus())+0.5);
+
+		for (Int_t iSpecies = 0; iSpecies < 3; iSpecies++) {
+
+			// Note that a possible Y cut is only done on the PID cuts!
+			if (!CheckRapidity(track->MCY())) continue;
+
+			for (Int_t iPtClass = 0; iPtClass < 5; iPtClass++) {
+				//cout << "recpt: " << track->Pt() << " mcpt: "<<track->MCPt() << " DTOF: " << 
+				//(fUseNSigmaOnPIDAxes ? track->GetNumberOfSigmasTOF(iSpecies) : track->GetTOFsignalMinusExpected(iSpecies)) << " DTPC: " << 
+				//(fUseNSigmaOnPIDAxes ? track->GetNumberOfSigmasTPC(iSpecies) : track->GetTPCsignalMinusExpected(iSpecies)) << endl;
+
+				fHistPrimRecPID[histoclass][iSpecies][iPtClass]->Fill(track->MCPt(),
+					(fUseNSigmaOnPIDAxes ? track->GetNumberOfSigmasTOF(iSpecies) : track->GetTOFsignalMinusExpected(iSpecies)));		
+
+				if (track->IsTOFMismatch()) {
+					fHistPrimRecMismatch[histoclass][iSpecies][iPtClass]->Fill(track->MCPt(),
+						(fUseNSigmaOnPIDAxes ? track->GetNumberOfSigmasTOF(iSpecies) : track->GetTOFsignalMinusExpected(iSpecies)));		
+				}
+			}
+		}
 	}
 
 	return kTRUE;
@@ -1354,9 +1634,15 @@ Bool_t AliAODTrackCutsDiHadronPID::InitializeGenMCHistos(Int_t histoclass) {
 	fHistPrimGenMCPt[histoclass] = InitializePtSpectrum("fHistPrimGenMCPt",histoclass);
 	fPrimGenMCTrackQAHistos->Add(fHistPrimGenMCPt[histoclass]);	
 
+	fHistPrimGenMCPhiEtaPt[histoclass] = InitializePhiEtaPt("fHistPrimGenMCPhiEtaPt",histoclass);
+	fPrimGenMCTrackQAHistos->Add(fHistPrimGenMCPhiEtaPt[histoclass]);
+
 	// Secondary Particles.
 	fHistSecGenMCPt[histoclass] = InitializePtSpectrum("fHistSecGenMCPt",histoclass);
 	fSecGenMCTrackQAHistos->Add(fHistSecGenMCPt[histoclass]);	
+
+	fHistSecGenMCPhiEtaPt[histoclass] = InitializePhiEtaPt("fHistSecGenMCPhiEtaPt",histoclass);
+	fSecGenMCTrackQAHistos->Add(fHistSecGenMCPhiEtaPt[histoclass]);
 
 	return kTRUE;
 
@@ -1372,15 +1658,39 @@ Bool_t AliAODTrackCutsDiHadronPID::InitializeRecMCHistos(Int_t histoclass) {
 	fHistPrimRecMCPt[histoclass] = InitializePtSpectrum("fHistPrimRecMCPt",histoclass);
 	fPrimRecMCTrackQAHistos->Add(fHistPrimRecMCPt[histoclass]);
 
+	fHistPrimRecPtGenPt[histoclass] = InitializeRecPtGenPt("fHistPrimRecPtGenPt",histoclass);
+	fPrimRecMCTrackQAHistos->Add(fHistPrimRecPtGenPt[histoclass]);
+
+	fHistPrimRecMCPhiEtaPt[histoclass] = InitializePhiEtaPt("fHistPrimRecMCPhiEtaPt",histoclass);
+	fPrimRecMCTrackQAHistos->Add(fHistPrimRecMCPhiEtaPt[histoclass]);
+
 	fHistPrimRecNTracks[histoclass] = InitializeNTracksHisto("fHistPrimRecNTracks",histoclass);
 	fPrimRecMCTrackQAHistos->Add(fHistPrimRecNTracks[histoclass]);
 
 	fHistPrimRecMCDCA[histoclass] = InitializeDCASpectrum("fHistPrimRecDCA",histoclass);
 	fPrimRecMCTrackQAHistos->Add(fHistPrimRecMCDCA[histoclass]);
 
+	if (histoclass < 3) {
+		for (Int_t iSpecies = 0; iSpecies < 3; iSpecies++) {
+			for (Int_t iPtClass = 0; iPtClass < 5; iPtClass++) {
+				
+				fHistPrimRecPID[histoclass][iSpecies][iPtClass] = InitializeTOFHisto("fHistPrimRecPID",histoclass,iSpecies,iPtClass);
+				fPrimRecMCTrackQAHistos->Add(fHistPrimRecPID[histoclass][iSpecies][iPtClass]);
+
+				fHistPrimRecMismatch[histoclass][iSpecies][iPtClass] = InitializeTOFMismatchHisto("fHistPrimRecMismatch",histoclass,iSpecies,iPtClass);
+				fPrimRecMCTrackQAHistos->Add(fHistPrimRecMismatch[histoclass][iSpecies][iPtClass]);
+
+					
+			}
+		}
+	}
+
 	// Secondary Particles.
 	fHistSecRecMCPt[histoclass] = InitializePtSpectrum("fHistSecRecMCPt",histoclass);
 	fSecRecMCTrackQAHistos->Add(fHistSecRecMCPt[histoclass]);
+
+	fHistSecRecMCPhiEtaPt[histoclass] = InitializePhiEtaPt("fHistSecRecMCPhiEtaPt",histoclass);
+	fSecRecMCTrackQAHistos->Add(fHistSecRecMCPhiEtaPt[histoclass]);
 
 	fHistSecRecMCDCAMat[histoclass] = InitializeDCASpectrum("fHistSecRecDCAMat",histoclass);
 	fSecRecMCTrackQAHistos->Add(fHistSecRecMCDCAMat[histoclass]);
@@ -1393,12 +1703,122 @@ Bool_t AliAODTrackCutsDiHadronPID::InitializeRecMCHistos(Int_t histoclass) {
 }
 
 // -----------------------------------------------------------------------
+TH1F* AliAODTrackCutsDiHadronPID::InitializeAcceptedFilterBits(const char* name) {
+
+	// This histogram keeps track of the filtermask of all accepted tracks, projected
+	// onto the requested filtermask. For example, we requested mask 2 or 4, then this 
+	// histogram will have three bins, 2, 4 and 6. Suppose now a track is found which has
+	// mask 12, then since (12 & 2) = 0, (12 & 4) = 4, (12 & 6) = 4, the track will end up
+	// in bin 4.
+
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+	if (!fTestFilterMask || fFilterMask == 0) {cout << Form("%s -> ERROR: No filtermask requested.",__func__) << endl; return 0x0;}
+
+	// Determine the labels of the X axis.
+	SetXaxisAcceptedFilterBits();
+	
+	// Create histogram.
+	TH1F* hout = new TH1F(name,"Filtermask of accepted track;Mask;N",fRelevantBitsArray->GetSize(),-0.5,fRelevantBitsArray->GetSize()-0.5);
+	hout->SetDirectory(0);
+
+	// Set bin labels.
+	TAxis* axistmp = hout->GetXaxis();
+	for (Int_t iBin = 1; iBin <= axistmp->GetNbins(); ++iBin) {
+		axistmp->SetBinLabel(iBin, Form("%i",fRelevantBitsArray->At(iBin-1)));
+	}
+	return hout;
+	
+}
+
+// -----------------------------------------------------------------------
+void AliAODTrackCutsDiHadronPID::SetXaxisAcceptedFilterBits() {
+
+	// Creates the axis for the AcceptedFilterBits histogram.
+	// See exercise: "FindAllCombinations.C"
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	// Step 1: Find the largest bit, in the requested filtermask,
+	Int_t largestBit = 0;
+	Int_t baseArraySizeTmp = 0;
+	Int_t fullArraySizeTmp = 0;
+
+	while (((Int_t)fFilterMask) >= (1<<(largestBit)) ) {
+		if ((((Int_t)fFilterMask)&(1<<largestBit))==(1<<largestBit)) {
+			fullArraySizeTmp += AliFunctionsDiHadronPID::Power(2, baseArraySizeTmp);
+			baseArraySizeTmp++;
+		}
+		largestBit++;
+	}
+	largestBit--;
+
+	// Step 2: Create and fill base array.
+	const Int_t baseArraySize = baseArraySizeTmp;
+	Int_t* baseArray = new Int_t[baseArraySize];
+	for (Int_t ii = 0; ii < baseArraySize; ++ii) {baseArray[ii] = 0;}
+
+	Int_t iBaseArray = 0;
+	for (Int_t iBit = 0; iBit <= largestBit; ++iBit) {
+
+		if ((((Int_t)fFilterMask)&(1<<iBit))==(1<<iBit)) {		
+			baseArray[iBaseArray] = (1<<iBit);
+			iBaseArray++;
+		}
+
+	}
+
+	// Step 3: Create and fill full array.
+	const Int_t fullArraySize = fullArraySizeTmp;
+	Int_t* fullArray = new Int_t[fullArraySize];
+	fullArray[0] = baseArray[0];
+	Int_t iFullArray = 1;
+
+	for (Int_t ii = 1; ii < baseArraySize; ++ii) {
+		Int_t range = (iFullArray + AliFunctionsDiHadronPID::Power(2,ii));
+		for (Int_t jj = iFullArray; jj < range; ++jj) {
+			
+			fullArray[jj] = baseArray[ii];
+
+			// Add beginning part of the array:
+			if (jj!=iFullArray) {
+				fullArray[jj] += fullArray[jj - iFullArray - 1];
+			}
+
+		}
+		iFullArray += AliFunctionsDiHadronPID::Power(2,ii);
+
+	}
+
+	// Step 4: Convert to TArrayI object.
+	fRelevantBitsArray = new TArrayI(fullArraySize, fullArray);
+
+	// Delete the temporary arrays.
+	delete baseArray;
+	delete fullArray;
+
+}
+
+// -----------------------------------------------------------------------
 TH1F* AliAODTrackCutsDiHadronPID::InitializePtSpectrum(const char* name, Int_t histoclass) {
 
 	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
 	TH1F* hout = new TH1F(Form("%s%s",name,fHistoName[histoclass].Data()),
 		Form("p_{T} Spectrum (%s);p_{T} (GeV/c);Count",fHistoName[histoclass].Data()),fNPtBins,fPtAxis);
+
+	hout->SetDirectory(0);
+
+	return hout;
+
+}
+
+// -----------------------------------------------------------------------
+TH2F* AliAODTrackCutsDiHadronPID::InitializeRecPtGenPt(const char* name, Int_t histoclass) {
+
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	TH2F* hout = new TH2F(Form("%s%s",name,fHistoName[histoclass].Data()),
+		Form("p_{T} Rec vs Gen (%s);p_{T,gen} (GeV/c); p_{T,rec}",fHistoName[histoclass].Data()),
+		fNPtBins,fPtAxis,fNPtBins,fPtAxis);
 
 	hout->SetDirectory(0);
 
@@ -1445,7 +1865,7 @@ TH1F* AliAODTrackCutsDiHadronPID::InitializeNTracksHisto(const char* name, Int_t
 	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
 	TH1F* hout = new TH1F(Form("%s%s",name,fHistoName[histoclass].Data()),
-		Form("Number of Accepted Tracks (%s);N%s;Count",fHistoName[histoclass].Data(),fHistoLatex[histoclass].Data()),
+		Form("Number of Accepted Tracks (%s);N%s;N_{event}",fHistoName[histoclass].Data(),fHistoLatex[histoclass].Data()),
 		100,0,4000);
 
 	hout->SetDirectory(0);
@@ -1495,11 +1915,19 @@ TH3F* AliAODTrackCutsDiHadronPID::InitializePIDHisto(const char* name, Int_t his
 
 	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
+	TString PIDaxeslabel;
+	if (fUseNSigmaOnPIDAxes) {PIDaxeslabel = ";n#sigma_{TOF};n#sigma_{TPC}";} 
+	else {PIDaxeslabel = ";#Delta t (ps);dE/dx (a.u.)";}
+
 	TH3F* hout = new TH3F(Form("%s%s%s%s",name,fHistoName[histoclass].Data(),fParticleName[expspecies].Data(),fPtClassName[ptclass].Data()),
-		Form("PID %s (Exp: %s);p_{T} (GeV/c);#Delta t (ps);dE/dx (a.u.)",fHistoName[histoclass].Data(),fParticleName[expspecies].Data()),
+		Form("PID %s (Exp: %s);p_{T} (GeV/c)%s",fHistoName[histoclass].Data(),fParticleName[expspecies].Data(),PIDaxeslabel.Data()),
 		fNPtBinsPID[ptclass],fPtBoundaryPID[ptclass],fPtBoundaryPID[ptclass+1],
-		fTOFbins[ptclass][expspecies],fTOFLowerBound[ptclass][expspecies],fTOFUpperBound[ptclass][expspecies],
-		fTPCbins[ptclass][expspecies],fTPCLowerBound[ptclass][expspecies],fTPCUpperBound[ptclass][expspecies]);
+		fTOFbins[ptclass][expspecies],
+		(fUseNSigmaOnPIDAxes ? fTOFLowerBound[ptclass][expspecies] / AliTrackDiHadronPID::fSigmaTOFStd : fTOFLowerBound[ptclass][expspecies]),
+		(fUseNSigmaOnPIDAxes ? fTOFUpperBound[ptclass][expspecies] / AliTrackDiHadronPID::fSigmaTOFStd : fTOFUpperBound[ptclass][expspecies]),
+		fTPCbins[ptclass][expspecies],
+		(fUseNSigmaOnPIDAxes ? fTPCLowerBound[ptclass][expspecies] / AliTrackDiHadronPID::fSigmaTPCStd : fTPCLowerBound[ptclass][expspecies]),
+		(fUseNSigmaOnPIDAxes ? fTPCUpperBound[ptclass][expspecies] / AliTrackDiHadronPID::fSigmaTPCStd : fTPCUpperBound[ptclass][expspecies]));
 
 	hout->SetDirectory(0);
 
@@ -1510,12 +1938,19 @@ TH3F* AliAODTrackCutsDiHadronPID::InitializePIDHisto(const char* name, Int_t his
 // -----------------------------------------------------------------------
 TH2F* AliAODTrackCutsDiHadronPID::InitializeTOFMismatchHisto(const char* name, Int_t histoclass, Int_t expspecies, Int_t ptclass) {
 
+	// Is basically the same as InitializeTOFHisto -> CAN BE REMOVED!
 	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
 
+	TString PIDaxeslabel;
+	if (fUseNSigmaOnPIDAxes) {PIDaxeslabel = ";n#sigma_{TOF}";} 
+	else {PIDaxeslabel = ";#Delta t (ps)";}
+
 	TH2F* hout = new TH2F(Form("%s%s%s%s",name,fHistoName[histoclass].Data(),fParticleName[expspecies].Data(),fPtClassName[ptclass].Data()),
-		Form("TOF Mismatch %s (Exp: %s);p_{T} (GeV/c);#Delta t (ps)",fHistoName[histoclass].Data(),fParticleName[expspecies].Data()),
+		Form("TOF Mismatch %s (Exp: %s);p_{T} (GeV/c)%s",fHistoName[histoclass].Data(),fParticleName[expspecies].Data(),PIDaxeslabel.Data()),
 		fNPtBinsPID[ptclass],fPtBoundaryPID[ptclass],fPtBoundaryPID[ptclass+1],
-		fTOFbins[ptclass][expspecies],fTOFLowerBound[ptclass][expspecies],fTOFUpperBound[ptclass][expspecies]);
+		fTOFbins[ptclass][expspecies],
+		(fUseNSigmaOnPIDAxes ? fTOFLowerBound[ptclass][expspecies] / AliTrackDiHadronPID::fSigmaTOFStd : fTOFLowerBound[ptclass][expspecies]),
+		(fUseNSigmaOnPIDAxes ? fTOFUpperBound[ptclass][expspecies] / AliTrackDiHadronPID::fSigmaTOFStd : fTOFUpperBound[ptclass][expspecies]));
 
 	hout->SetDirectory(0);
 
@@ -1523,3 +1958,24 @@ TH2F* AliAODTrackCutsDiHadronPID::InitializeTOFMismatchHisto(const char* name, I
 
 }
 
+// -----------------------------------------------------------------------
+TH2F* AliAODTrackCutsDiHadronPID::InitializeTOFHisto(const char* name, Int_t histoclass, Int_t expspecies, Int_t ptclass) {
+
+	if (fDebug > 1) {cout << Form("File: %s, Line: %i, Function: %s",__FILE__,__LINE__,__func__) << endl;}
+
+	TString PIDaxeslabel;
+	if (fUseNSigmaOnPIDAxes) {PIDaxeslabel = ";n#sigma_{TOF}";} 
+	else {PIDaxeslabel = ";#Delta t (ps)";}
+
+	TH2F* hout = new TH2F(Form("%s%s%s%s",name,fHistoName[histoclass].Data(),fParticleName[expspecies].Data(),fPtClassName[ptclass].Data()),
+		Form("TOF %s (Exp: %s);p_{T} (GeV/c)%s",fHistoName[histoclass].Data(),fParticleName[expspecies].Data(),PIDaxeslabel.Data()),
+		fNPtBinsPID[ptclass],fPtBoundaryPID[ptclass],fPtBoundaryPID[ptclass+1],
+		fTOFbins[ptclass][expspecies],
+		(fUseNSigmaOnPIDAxes ? fTOFLowerBound[ptclass][expspecies] / AliTrackDiHadronPID::fSigmaTOFStd : fTOFLowerBound[ptclass][expspecies]),
+		(fUseNSigmaOnPIDAxes ? fTOFUpperBound[ptclass][expspecies] / AliTrackDiHadronPID::fSigmaTOFStd : fTOFUpperBound[ptclass][expspecies]));
+
+	hout->SetDirectory(0);
+
+	return hout;
+
+}

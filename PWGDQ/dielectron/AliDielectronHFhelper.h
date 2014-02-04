@@ -41,8 +41,15 @@ public:
 
   TObjArray* CollectHistos(AliDielectronVarManager::ValueTypes varx,
 			   AliDielectronVarManager::ValueTypes vary=AliDielectronVarManager::kNMaxValues,
-			   AliDielectronVarManager::ValueTypes varz=AliDielectronVarManager::kNMaxValues)
-  { return CollectProfiles("hist",varx,vary,varz); }
+			   AliDielectronVarManager::ValueTypes varz=AliDielectronVarManager::kNMaxValues,
+			   AliDielectronVarManager::ValueTypes varw=AliDielectronVarManager::kNMaxValues)
+  { return CollectProfiles("hist",varx,vary,varz,varw); }
+  TObjArray* CollectHistos(TString option,
+			   AliDielectronVarManager::ValueTypes varx,
+			   AliDielectronVarManager::ValueTypes vary=AliDielectronVarManager::kNMaxValues,
+			   AliDielectronVarManager::ValueTypes varz=AliDielectronVarManager::kNMaxValues,
+			   AliDielectronVarManager::ValueTypes varw=AliDielectronVarManager::kNMaxValues)
+  { return CollectProfiles(Form("%s:hist",option.Data()),varx,vary,varz,varw); }
   TObjArray* CollectProfiles(TString option,
 			     AliDielectronVarManager::ValueTypes varx,
 			     AliDielectronVarManager::ValueTypes vary=AliDielectronVarManager::kNMaxValues,

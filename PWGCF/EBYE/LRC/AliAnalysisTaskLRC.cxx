@@ -69,7 +69,8 @@
 
 #include "TStopwatch.h"
 
-
+using std::endl;
+using std::cout;
 
 ClassImp(AliAnalysisTaskLRC)
 
@@ -150,6 +151,14 @@ AliAnalysisTaskLRC::AliAnalysisTaskLRC( const char *name, Bool_t runKine)
     ,fHistMClabels(0)
     ,fHistRejectedTracksCharge(0)
     ,fHistTracksCharge(0)
+    ,fHistPtPlus(0)
+    ,fHistPtMinus(0)
+    ,fHistNetChargeVsPt(0)
+    ,fHistChargePlusVsPtTmp(0)
+    ,fHistChargeMinusVsPtTmp(0)
+    ,fHist2DNetChargeVsPt(0)
+    ,fHist2DNetChargeVsPtCorrectedOnEventMean(0)
+    ,fHist2DNetChargeVsPtCorrectedOnEventMeanNormOnNch(0)
     ,fHistProbabilitiesPID(0)
     ,fHistESDtrackMass(0)
     ,fHistProbabilityPion(0)
@@ -299,7 +308,7 @@ void AliAnalysisTaskLRC::UserCreateOutputObjects()
     
     // no light nuclei
     fPIDCombined->SetSelectedSpecies(AliPID::kSPECIES);
-    
+    //Int_t lNumberOfPidSpecies = (Int_t)AliPID::kSPECIES;
     for (Int_t ispec=0; ispec<AliPID::kSPECIES; ++ispec)
     {
         fProbTPCTOF[ispec]=new TH2D(Form("prob%s_mom_TPCTOF",AliPID::ParticleName(ispec)),
@@ -671,20 +680,22 @@ void AliAnalysisTaskLRC::UserCreateOutputObjects()
         fOutList->Add(fHist2DV0ACcells);
         
         //mult in rings
-        char strV0ringName[200];
-        char strV0ringTitle[200];
+        //        char strV0ringName[200];
+        //        char strV0ringTitle[200];
+        TString strV0ringName;
+        TString strV0ringTitle;
         for ( int i = 0; i < 4; i++ )
         {
-            sprintf( strV0ringName, "fHistV0AmultiplicityRing%d", i );
-            sprintf( strV0ringTitle, "V0-A Multiplicity Ring %d;Multiplicity;Entries", i );
+            strV0ringName =  Form( "fHistV0AmultiplicityRing%d", i );
+            strV0ringTitle = Form( strV0ringTitle, "V0-A Multiplicity Ring %d;Multiplicity;Entries", i );
             fHistV0AmultiplicityRing[i] = new TH1D( strV0ringName, strV0ringTitle,
                                                     fIsIonsAnalysis ? nBinsV0multForIons : nBinsV0multForNonIons, 0, fIsIonsAnalysis ? nMaxV0multForIons : nBinsV0multForNonIons);
-            sprintf( strV0ringName, "fHistV0CmultiplicityRing%d", i );
-            sprintf( strV0ringTitle, "V0-C Multiplicity Ring %d;Multiplicity;Entries", i );
+            strV0ringName =  Form(  "fHistV0CmultiplicityRing%d", i );
+            strV0ringTitle = Form( strV0ringTitle, "V0-C Multiplicity Ring %d;Multiplicity;Entries", i );
             fHistV0CmultiplicityRing[i] = new TH1D( strV0ringName, strV0ringTitle,
                                                     fIsIonsAnalysis ? nBinsV0multForIons : nBinsV0multForNonIons, 0, fIsIonsAnalysis ? nMaxV0multForIons : nBinsV0multForNonIons);
-            sprintf( strV0ringName, "fHist2DV0ACmultiplicityRing%d", i );
-            sprintf( strV0ringTitle, "V0-AC Multiplicity Ring %d;Multiplicity A;Multiplicity C;Entries", i );
+            strV0ringName =  Form( "fHist2DV0ACmultiplicityRing%d", i );
+            strV0ringTitle = Form(  "V0-AC Multiplicity Ring %d;Multiplicity A;Multiplicity C;Entries", i );
             fHist2DV0ACmultiplicityRing[i] = new TH2D( strV0ringName, strV0ringTitle
                                                        , 100, 0, fIsIonsAnalysis ? nMaxV0multForIons/2 : 100
                                                                                    , 100, 0, fIsIonsAnalysis ? nMaxV0multForIons/2 : 100 );
@@ -693,13 +704,13 @@ void AliAnalysisTaskLRC::UserCreateOutputObjects()
             fOutList->Add(fHist2DV0ACmultiplicityRing[i]);
             
             //mult in barrel vs V0 rings
-            sprintf( strV0ringName, "fHist2DTracksAcceptedVsV0AmultiplicityRing%d", i );
-            sprintf( strV0ringTitle, "Accepted tracks vs V0-A Multiplicity in Ring %d;N Accepted tracks;Multiplicity V0A;Entries", i );
+            strV0ringName =  Form( "fHist2DTracksAcceptedVsV0AmultiplicityRing%d", i );
+            strV0ringTitle = Form(  "Accepted tracks vs V0-A Multiplicity in Ring %d;N Accepted tracks;Multiplicity V0A;Entries", i );
             fHist2DTracksAcceptedVsV0AmultiplicityRing[i] = new TH2D( strV0ringName, strV0ringTitle
                                                                       , 100, 0, fIsIonsAnalysis ? nMaxV0multForIons/2 : 100
                                                                                                   , 100, 0, fIsIonsAnalysis ? nMaxV0multForIons/2 : 100 );
-            sprintf( strV0ringName, "fHist2DTracksAcceptedVsV0CmultiplicityRing%d", i );
-            sprintf( strV0ringTitle, "Accepted tracks vs V0-C Multiplicity in Ring %d;N Accepted tracks;Multiplicity V0C;Entries", i );
+            strV0ringName =  Form( "fHist2DTracksAcceptedVsV0CmultiplicityRing%d", i );
+            strV0ringTitle = Form(  "Accepted tracks vs V0-C Multiplicity in Ring %d;N Accepted tracks;Multiplicity V0C;Entries", i );
             fHist2DTracksAcceptedVsV0CmultiplicityRing[i] = new TH2D( strV0ringName, strV0ringTitle
                                                                       , 100, 0, fIsIonsAnalysis ? nMaxV0multForIons/2 : 100
                                                                                                   , 100, 0, fIsIonsAnalysis ? nMaxV0multForIons/2 : 100 );
@@ -725,7 +736,65 @@ void AliAnalysisTaskLRC::UserCreateOutputObjects()
     
     fHistTracksCharge = new TH1D("fHistTracksCharge","Accepted tracks charge;charge;Entries",3,-1.5,1.5);
     fOutList->Add(fHistTracksCharge);
-    
+
+    // ##### net charge vs pt study
+    const int kPtNetChargePtBins = 200;
+    const double kPtNetChargePtMin = 0.1;
+    const double kPtNetChargePtMax = 2.1;
+
+    //pt plus
+    fHistPtPlus = new TH1D("fHistPtPlus","p_{T} +;p_{T};dN/dpT"
+                                  , kPtNetChargePtBins,  kPtNetChargePtMin, kPtNetChargePtMax
+                                  );
+    fOutList->Add(fHistPtPlus);
+
+    //pt minus
+    fHistPtMinus = new TH1D("fHistPtMinus","p_{T} -;p_{T};dN/dpT"
+                                  , kPtNetChargePtBins,  kPtNetChargePtMin, kPtNetChargePtMax
+                                  );
+    fOutList->Add(fHistPtMinus);
+
+    //net charge vs pT
+    fHistNetChargeVsPt = new TH1D("fHistNetChargeVsPt","charge vs p_{T};p_{T};Q"
+                                  , kPtNetChargePtBins,  kPtNetChargePtMin, kPtNetChargePtMax
+                                  );
+    fOutList->Add(fHistNetChargeVsPt);
+
+    //plus
+    fHistChargePlusVsPtTmp = new TH1D( "fHistChargePlusVsPtTmp","charge plus vs p_{T};p_{T};q plus"
+                                       , kPtNetChargePtBins,  kPtNetChargePtMin, kPtNetChargePtMax
+                                       );
+    //    fOutList->Add(fHistChargePlusVsPtTmp);
+
+    //minus
+    fHistChargeMinusVsPtTmp = new TH1D( "fHistChargeMinusVsPtTmp","charge minus vs p_{T};p_{T};q minus"
+                                        , kPtNetChargePtBins,  kPtNetChargePtMin, kPtNetChargePtMax
+                                        );
+    //    fOutList->Add(fHistChargeMinusVsPtTmp);
+
+    //NetChargeVsPt
+    fHist2DNetChargeVsPt = new TH2D( "fHist2DNetChargeVsPt","Net charge vs p_{T};p_{T};Q"
+                                     , kPtNetChargePtBins,  kPtNetChargePtMin, kPtNetChargePtMax
+                                     , 40,  -20, 20
+                                     );
+    fOutList->Add(fHist2DNetChargeVsPt);
+
+    //NetChargeVsPt CorrectedOnEventMean
+    fHist2DNetChargeVsPtCorrectedOnEventMean = new TH2D( "fHist2DNetChargeVsPtCorrectedOnEventMean","Net charge corrected on mean e-by-e vs p_{T};p_{T};Q"
+                                                         , kPtNetChargePtBins,  kPtNetChargePtMin, kPtNetChargePtMax
+                                                         , 40,  -20, 20
+                                                         );
+    fOutList->Add(fHist2DNetChargeVsPtCorrectedOnEventMean);
+
+    //NetChargeVsPt CorrectedOnEventMean normalized on Nch
+    fHist2DNetChargeVsPtCorrectedOnEventMeanNormOnNch = new TH2D( "fHist2DNetChargeVsPtCorrectedOnEventMeanNormOnNch","Net charge vs p_{T} corrected on mean e-by-e normalized on nCh;p_{T};Q"
+                                                                  , kPtNetChargePtBins,  kPtNetChargePtMin, kPtNetChargePtMax
+                                                                  , 40,  -20, 20
+                                                                  );
+    fOutList->Add(fHist2DNetChargeVsPtCorrectedOnEventMeanNormOnNch);
+
+
+
     if ( fArtificialInefficiency >= 0 ) //i.e. have this kind of analysis
     {
         fHistNumberOfDroppedByHandTracks = new TH2D("fHistNumberOfDroppedByHandTracks","Accepted tracks vs Dropped artificially;N_{ch} accepted;N_{ch} dropped;Entries", 71, -0.5, 70.5,   71, -0.5, 70.5);
@@ -1154,10 +1223,10 @@ void AliAnalysisTaskLRC::UserExec(Option_t *)   //UserExecLoop( Double_t phiAddi
     {
         const AliESDVZERO* vzrData = lESD->GetVZEROData(); //aod the same
         
-//        const int lThresholdMultV0RingId = 3; //which ring is considered
-//        Double_t lThisEventV0MultSumRing3 = vzrData->GetMRingV0A(2) + vzrData->GetMRingV0C(2);
-//        Double_t lThisEventV0MultSumRing4 = vzrData->GetMRingV0A(3) + vzrData->GetMRingV0C(3);
-//        Double_t lThisEventV0MultSum = lThisEventV0MultSumRing3 + lThisEventV0MultSumRing4;
+        //        const int lThresholdMultV0RingId = 3; //which ring is considered
+        //        Double_t lThisEventV0MultSumRing3 = vzrData->GetMRingV0A(2) + vzrData->GetMRingV0C(2);
+        //        Double_t lThisEventV0MultSumRing4 = vzrData->GetMRingV0A(3) + vzrData->GetMRingV0C(3);
+        //        Double_t lThisEventV0MultSum = lThisEventV0MultSumRing3 + lThisEventV0MultSumRing4;
         double sumV0Amult = vzrData->GetMTotV0A();
         double sumV0Cmult = vzrData->GetMTotV0C();
 
@@ -1177,11 +1246,18 @@ void AliAnalysisTaskLRC::UserExec(Option_t *)   //UserExecLoop( Double_t phiAddi
     //    if ( fAnalysisLevel == "AOD" )
     //        return;
     
+
+    //reset tmp histos
+    fHistChargePlusVsPtTmp->Reset();
+    fHistChargeMinusVsPtTmp->Reset();
+
     //Track selection counters
     int lNaccept=0;
     int lNacceptEtaInRegion=0;
     int lNacceptAfterPtCuts=0;
     int lNacceptEtaInRegionAfterPtCuts=0;
+    //    int lNacceptPlusEtaInRegion=0;
+    //    int lNacceptMinusEtaInRegion=0;
     int lPtOver=0;
     int lPtUnder=0;
     int lNoCharge=0;
@@ -1346,6 +1422,7 @@ void AliAnalysisTaskLRC::UserExec(Option_t *)   //UserExecLoop( Double_t phiAddi
             }
             
             fHistTracksCharge->Fill(lCharge);
+
         }
         //        lEta = fRand->Uniform(-1,1); //!!!!!!!!!!!!!!!!!!!!!!! TEST!!!!!!
         // end of ESD or AOD track cuts
@@ -1367,6 +1444,8 @@ void AliAnalysisTaskLRC::UserExec(Option_t *)   //UserExecLoop( Double_t phiAddi
             //            else
             {
                 AliMCParticle* trackMC = dynamic_cast<AliMCParticle *>(eventMC->GetTrack(iTracks));
+                if(!trackMC)
+                    continue;
                 part = trackMC->Particle();
                 if( !part ) continue;
             }
@@ -1406,7 +1485,21 @@ void AliAnalysisTaskLRC::UserExec(Option_t *)   //UserExecLoop( Double_t phiAddi
         lNaccept++;
         
         if( fabs(lEta) < fEtaRegionForTests ) //look at eta region
+        {
             lNacceptEtaInRegion++;
+            //net charge fillings
+            fHistNetChargeVsPt->Fill( lPt, lCharge );
+            if ( lCharge > 0 )
+            {
+                fHistChargePlusVsPtTmp->Fill( lPt );
+                fHistPtPlus->Fill( lPt );
+            }
+            else if ( lCharge < 0 )
+            {
+                fHistChargeMinusVsPtTmp->Fill( lPt );
+                fHistPtMinus->Fill( lPt );
+            }
+        }
         
         if( lPt > fMaxPtLimit )
         {
@@ -1460,9 +1553,9 @@ void AliAnalysisTaskLRC::UserExec(Option_t *)   //UserExecLoop( Double_t phiAddi
             fHistProbabilityKaon->Fill( probTPCTOF[AliPID::kKaon] );
             fHistProbabilityProton->Fill( probTPCTOF[AliPID::kProton] );////probDensity[iParticle] );
             //cout << "chto-to s detId: " << detUsed << endl;
-            for ( Int_t ispec=0; ispec < (int)(AliPID::kSPECIES); ++ispec ) {
-                //cout << probTPCTOF[ispec] << "  " << endl;
-            }
+//            for ( Int_t ispec=0; ispec < (int)(AliPID::kSPECIES); ++ispec ) {
+//                //cout << probTPCTOF[ispec] << "  " << endl;
+//            }
             //cout << endl;
             if ( detUsed == (UInt_t)fPIDCombined->GetDetectorMask() )
             {
@@ -1548,12 +1641,45 @@ void AliAnalysisTaskLRC::UserExec(Option_t *)   //UserExecLoop( Double_t phiAddi
         
     } //end of track loop
     
+    //net charge vs pt
+//    if ( lNacceptEtaInRegion > 20 )
+//    {
+//        fHistChargePlusVsPtTmp->DrawClone();
+//        fHistChargeMinusVsPtTmp->SetLineColor( kBlue );
+//        fHistChargeMinusVsPtTmp->DrawClone("same");
+//    }
+
+
+    //final actions for net-charge
+    double integralPlus     = fHistChargePlusVsPtTmp->ComputeIntegral();
+    double integralMinus    = fHistChargeMinusVsPtTmp->ComputeIntegral();
+    double xAxisLowEdge     = fHistChargePlusVsPtTmp->GetBinLowEdge(1);
+    double xAxisHighEdge    = fHistChargePlusVsPtTmp->GetBinLowEdge(fHistChargePlusVsPtTmp->GetNbinsX()) + fHistChargePlusVsPtTmp->GetBinWidth(fHistChargePlusVsPtTmp->GetNbinsX());
+    double ptRange =  xAxisHighEdge - xAxisLowEdge;
+//    cout << "integralPlus=" << integralPlus << ", integralMinus=" << integralMinus << ", ptRange=" << ptRange << endl;
+
+    for ( int bin = 0; bin < fHistChargePlusVsPtTmp->GetNbinsX(); bin++)
+    {
+        double binCenter = fHistChargePlusVsPtTmp->GetBinCenter(bin+1);
+        double binContentPlus = fHistChargePlusVsPtTmp->GetBinContent(bin+1);
+        double binContentMinus = fHistChargeMinusVsPtTmp->GetBinContent(bin+1);
+
+
+
+        double lNetCharge = binContentPlus-binContentMinus;
+        fHist2DNetChargeVsPt->Fill( binCenter, lNetCharge );
+        if ( ptRange>0 )
+            fHist2DNetChargeVsPtCorrectedOnEventMean->Fill( binCenter, lNetCharge - (integralPlus-integralMinus)/ptRange );
+        //        fHist2DNetChargeVsPtCorrectedOnEventMeanNormOnNch->Fill( );
+
+    }
+
     //############ MC ESD QA
     if ( fRunKine && fAnalyseMCESD ) //run MC+ESD
     {
         Double_t lEta;
         Double_t lPt;
-        Double_t lY;
+//        Double_t lY;
         Int_t lMCtracksAcceptedEtaInRegionAfterPtCuts = 0;
         for (Int_t iMCtracks = 0; iMCtracks < eventMC->GetNumberOfPrimaries(); iMCtracks++)
         {
@@ -1571,7 +1697,7 @@ void AliAnalysisTaskLRC::UserExec(Option_t *)   //UserExecLoop( Double_t phiAddi
             
             lEta    = track->Eta();
             lPt     = track->Pt();
-            lY      = track->Y();
+//            lY      = track->Y();
             
             if( fabs(lEta) > fEtaRegionForTests ) //look at eta region
                 continue;
@@ -1655,7 +1781,7 @@ void AliAnalysisTaskLRC::UserExec(Option_t *)   //UserExecLoop( Double_t phiAddi
     if ( fFlagWatchV0 )
     {
         const AliESDVZERO* vzrData = lESD->GetVZEROData(); //aod the same
-                
+
         
         //V0 multiplicity
         float lV0mult[64];
@@ -1795,8 +1921,8 @@ void AliAnalysisTaskLRC::SetParticleTypeForTask( TString strF, TString strB ) //
     fStrPIDforFwd = strF;
     fStrPIDforBwd = strB;
 
-//    sprintf ( fStrPIDforFwd, "%s", strF );
-//    sprintf ( fStrPIDforBwd, "%s", strB );
+    //    sprintf ( fStrPIDforFwd, "%s", strF );
+    //    sprintf ( fStrPIDforBwd, "%s", strB );
     //cout << "we just set fwd win to " << fStrPIDforFwd << " and bwd win to " << fStrPIDforBwd << endl;
 }
 
@@ -1842,6 +1968,8 @@ Double_t AliAnalysisTaskLRC::GetEventPlane(AliVEvent *event)
 {
     // Get the event plane
     
+    if ( !event )
+        return -1;
     //TString gAnalysisLevel = fBalance->GetAnalysisLevel();
     
     Float_t lVZEROEventPlane    = -10.;
@@ -1883,7 +2011,7 @@ Double_t AliAnalysisTaskLRC::GetEventPlane(AliVEvent *event)
 void AliAnalysisTaskLRC::AddTrackCutForBits(AliESDtrackCuts*  const cuts, TString cutsName )
 {
     //TString *strPtrCutsName = new TString(cutsName.Data());
-    cout << "ADDING CUTS " << cutsName << endl;
+//    cout << "ADDING CUTS " << cutsName << endl;
     //    fArrTrackCuts[fNumberOfCutsToRemember] = cuts;
     int lNumberOfCutsToRemember = fArrTrackCuts.GetEntries();
     
@@ -1901,7 +2029,7 @@ void AliAnalysisTaskLRC::UseToyEvents()
         if ( toyEventId % 10000 == 0 )
             printf("Processing %d event...\n", toyEventId );
 
-//        cout << "toyEventId=" << toyEventId << endl;
+        //        cout << "toyEventId=" << toyEventId << endl;
         int nToyTracks =  0;
         const double kExpParam = 0.42;
         const double kEtaGausSigma = 0.3;

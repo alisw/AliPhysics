@@ -24,7 +24,7 @@
 #include <TString.h>
 #include <TFile.h>
 #include <TGraphErrors.h>
-#include "AliLnB2.h"
+#include "AliLnBA.h"
 #endif
 
 #include "B2.h"
@@ -63,9 +63,7 @@ Int_t B2Mult(  const TString& pSpectra     = "~/alice/output/Proton-lhc10d-Mult-
 	const Int_t kNMinPt = 0;
 	const Int_t kNMaxPt = 6;
 	
-	const TString kPrefix[] = { "", "Anti"};
-	const TString kSuffix[] = { "", "bar" };
-	Int_t kCharge[]         = {1, -1};
+	const TString kNucleus[kNpart] = { "Deuteron", "AntiDeuteron" };
 	
 	// B2 as a function of pt for each multiplicity class
 	
@@ -73,19 +71,20 @@ Int_t B2Mult(  const TString& pSpectra     = "~/alice/output/Proton-lhc10d-Mult-
 	{
 		TFileMerger m;
 		
+		const Int_t kZ[kNpart] = { 1, -1 };
+		const TString kB2File[kNpart] = {"B2.root", "AntiB2.root" };
+		
 		for(Int_t j=0; j<kNpart; ++j)
 		{
-			TString b2file = kPrefix[j] + "B2.root";
-			
 			cout << kMultTag[i] << endl;
 			
-			AliLnB2 b2(pSpectra, ptag + kMultTag[i], dSpectra, dtag + kMultTag[i], b2file, otag + kMultTag[i], 2, kCharge[j]);
+			AliLnBA b2(pSpectra, ptag + kMultTag[i], dSpectra, dtag + kMultTag[i], kB2File[j], otag + kMultTag[i], 2, kZ[j]);
 			
 			b2.SetCd(GetCd(kKNOmult[i]));
 			
 			b2.Run();
 			
-			m.AddFile(b2file.Data(),0);
+			m.AddFile(kB2File[j].Data(),0);
 		}
 		
 		// merge B2 and B2bar
@@ -95,7 +94,7 @@ Int_t B2Mult(  const TString& pSpectra     = "~/alice/output/Proton-lhc10d-Mult-
 		m.OutputFile(outputfile.Data());
 		m.Merge();
 		
-		gSystem->Exec("rm -f B2.root AntiB2.root");
+		gSystem->Exec(Form("rm -f %s %s",kB2File[0].Data(),kB2File[1].Data()));
 	}
 	
 	// merge multiplicity classes
@@ -132,11 +131,11 @@ Int_t B2Mult(  const TString& pSpectra     = "~/alice/output/Proton-lhc10d-Mult-
 	{
 		for(Int_t j=0; j<kNmult; ++j)
 		{
-			grB2pt[i][j] = FindObj<TGraphErrors>(finput, otag + kMultTag[j], Form("B2%s_Pt", kSuffix[i].Data()));
-			grR3pt[i][j] = FindObj<TGraphErrors>(finput, otag + kMultTag[j], Form("R3%s_Pt", kSuffix[i].Data()));
+			grB2pt[i][j] = FindObj<TGraphErrors>(finput, otag + kMultTag[j], kNucleus[i] + "_B2_Pt");
+			grR3pt[i][j] = FindObj<TGraphErrors>(finput, otag + kMultTag[j], kNucleus[i] + "_R3_Pt");
 			
-			grSysB2pt[i][j] = FindObj<TGraphErrors>(finput, otag + kMultTag[j], Form("SystErr_B2%s_Pt", kSuffix[i].Data()));
-			grSysR3pt[i][j] = FindObj<TGraphErrors>(finput, otag + kMultTag[j], Form("SystErr_R3%s_Pt", kSuffix[i].Data()));
+			grSysB2pt[i][j] = FindObj<TGraphErrors>(finput, otag + kMultTag[j], kNucleus[i] + "_SystErr_B2_Pt");
+			grSysR3pt[i][j] = FindObj<TGraphErrors>(finput, otag + kMultTag[j], kNucleus[i] + "_SystErr_R3_Pt");
 		}
 	}
 	
@@ -190,19 +189,19 @@ Int_t B2Mult(  const TString& pSpectra     = "~/alice/output/Proton-lhc10d-Mult-
 			}
 			
 			TGraphErrors* grB2Mult = new TGraphErrors(kNmult, kKNOmult, B2, kKNOmultErr, B2StatErr);
-			grB2Mult->SetName(Form("B2%s_Zmult", kSuffix[i].Data()));
+			grB2Mult->SetName(Form("%s_B2_Zmult", kNucleus[i].Data()));
 			
 			TGraphErrors* grR3Mult = new TGraphErrors(kNmult, kKNOmult, R3, kKNOmultErr, R3StatErr);
-			grR3Mult->SetName(Form("R3%s_Zmult", kSuffix[i].Data()));
+			grR3Mult->SetName(Form("%s_R3_Zmult", kNucleus[i].Data()));
 			
 			Double_t zMultSystErr[kNmult];
 			for(Int_t k=0; k<kNmult; ++k) zMultSystErr[k]=0.07;
 			
 			TGraphErrors* grSysB2Mult = new TGraphErrors(kNmult, kKNOmult, B2, zMultSystErr, B2SystErr);
-			grSysB2Mult->SetName(Form("SystErr_B2%s_Zmult", kSuffix[i].Data()));
+			grSysB2Mult->SetName(Form("%s_SystErr_B2_Zmult", kNucleus[i].Data()));
 			
 			TGraphErrors* grSysR3Mult = new TGraphErrors(kNmult, kKNOmult, R3, zMultSystErr, R3SystErr);
-			grSysR3Mult->SetName(Form("SystErr_R3%s_Zmult", kSuffix[i].Data()));
+			grSysR3Mult->SetName(Form("%s_SystErr_R3_Zmult", kNucleus[i].Data()));
 			
 			foutput->cd(ptLabel[j].Data());
 			
@@ -232,18 +231,18 @@ Int_t B2Mult(  const TString& pSpectra     = "~/alice/output/Proton-lhc10d-Mult-
 	
 	for(Int_t i=0; i<kNpart; ++i)
 	{
-		gROOT->ProcessLine(Form(".x DrawDir.C+g(\"%s\",\"B2%s_Pt\",\"\",0,2, 1.e-3, 7.e-2,\"p_{T}/A (GeV/c)\",\"B_{2} (GeV^{2}/c^{3})\", 0,\"c%d.B2pt\",\"B2%spt\")", outputMultPt.Data(), kSuffix[i].Data(), i, kSuffix[i].Data()));
+		gROOT->ProcessLine(Form(".x DrawDir.C+g(\"%s\",\"%s_B2_Pt\",\"\",0,2, 1.e-3, 7.e-2,\"p_{T}/A (GeV/c)\",\"B_{2} (GeV^{2}/c^{3})\", 0,\"c%d.B2pt\",\"%s_B2_Pt\")", outputMultPt.Data(), kNucleus[i].Data(), i, kNucleus[i].Data()));
 		
-		gROOT->ProcessLine(Form(".x DrawDir.C+g(\"%s\",\"R3%s_Pt\",\"\",0,2, 0, 1.7,\"p_{T}/A (GeV/c)\",\"R_{side}^{2} R_{long} (fm^{3})\", 0,\"c%d.R3pt\",\"R3%spt\")", outputMultPt.Data(), kSuffix[i].Data(), i, kSuffix[i].Data()));
+		gROOT->ProcessLine(Form(".x DrawDir.C+g(\"%s\",\"%s_R3_Pt\",\"\",0,2, 0, 1.7,\"p_{T}/A (GeV/c)\",\"R_{side}^{2} R_{long} (fm^{3})\", 0,\"c%d.R3pt\",\"%s_R3_Pt\")", outputMultPt.Data(), kNucleus[i].Data(), i, kNucleus[i].Data()));
 	}
 	
 	// draw B2 as a function of z
 	
 	for(Int_t i=0; i<kNpart; ++i)
 	{
-		gROOT->ProcessLine(Form(".x DrawDir.C+g(\"%s\",\"B2%s_Zmult\",\"\",0,5, 3.e-3, 6.e-2,\"z\",\"B_{2} (GeV^{2}/c^{3})\", 0,\"c%d.B2z\",\"B2%sZ\")", outputPtMult.Data(), kSuffix[i].Data(), i, kSuffix[i].Data()));
+		gROOT->ProcessLine(Form(".x DrawDir.C+g(\"%s\",\"%s_B2_Zmult\",\"\",0,5, 3.e-3, 6.e-2,\"z\",\"B_{2} (GeV^{2}/c^{3})\", 0,\"c%d.B2z\",\"%s_B2_Zmult\")", outputPtMult.Data(), kNucleus[i].Data(), i, kNucleus[i].Data()));
 		
-		gROOT->ProcessLine(Form(".x DrawDir.C+g(\"%s\",\"R3%s_Zmult\",\"\",0,5, 0, 4,\"z\",\"R_{side}^{2} R_{long} (fm^{3})\", 0,\"c%d.R3z\",\"R3%sZ\")", outputPtMult.Data(), kSuffix[i].Data(), i, kSuffix[i].Data()));
+		gROOT->ProcessLine(Form(".x DrawDir.C+g(\"%s\",\"%s_R3_Zmult\",\"\",0,5, 0, 4,\"z\",\"R_{side}^{2} R_{long} (fm^{3})\", 0,\"c%d.R3z\",\"%s_R3_Zmult\")", outputPtMult.Data(), kNucleus[i].Data(), i, kNucleus[i].Data()));
 	}
 	
 	return 0;

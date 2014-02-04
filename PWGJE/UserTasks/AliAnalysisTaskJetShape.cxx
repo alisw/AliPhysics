@@ -1380,8 +1380,8 @@ Bool_t AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM::AddEvent(AliAODEvent*
 
   AliAODVertex* primVtx = aodE->GetPrimaryVertex();
   Double_t bfield = aodE->GetMagneticField();
-  Double_t dca[2];
-  Double_t cov[3];
+  Double_t dca[2] = {0., 0.};
+  Double_t cov[3] = {0., 0., 0.};
 
   TVector3 vecJ(jet->Px(),jet->Py(),jet->Pz());
 

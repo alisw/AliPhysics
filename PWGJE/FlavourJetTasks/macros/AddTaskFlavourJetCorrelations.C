@@ -2,13 +2,15 @@ AliAnalysisTaskFlavourJetCorrelations *AddTaskFlavourJetCorrelations(
   AliAnalysisTaskFlavourJetCorrelations::ECandidateType cand = AliAnalysisTaskFlavourJetCorrelations::kDstartoKpipi,
   TString filename = "DStartoKpipiCuts.root",
   Bool_t theMCon = kFALSE,
+  Bool_t reco = kTRUE /*must be true if theMCon is false*/,
   TString jetArrname = "",
   TString suffix = "",
   Bool_t triggerOnLeadingJet = kFALSE,
+  Int_t leadingHadType = 0 /*0 = charged, 1 = neutral, 2 = both*/,
   Float_t R = 0.4,
   Float_t jptcut = 10.,
-  Int_t acceptance = 1 /*1= 0-2pi, 2=emcal cut*/,
-  Double_t areaCut = 0.)
+  const char *cutType = "TPC",
+  Double_t percjetareacut = 1.)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -50,34 +52,22 @@ AliAnalysisTaskFlavourJetCorrelations *AddTaskFlavourJetCorrelations(
   printf("CREATE TASK\n"); //CREATE THE TASK
 
   // create the task
-  AliAnalysisTaskFlavourJetCorrelations *task = new AliAnalysisTaskFlavourJetCorrelations("AnaTaskFlavourJetCorrelations", analysiscuts, cand, jetArrname);
-
-  //D meson settings
+  AliAnalysisTaskFlavourJetCorrelations *task = new AliAnalysisTaskFlavourJetCorrelations("AnaTaskFlavourJetCorrelations", 
+     analysiscuts, cand);
+  task->SetJetsName(jetArrname);
   task->SetMC(theMCon);
+  task->SetUseReco(reco);
   task->SetTriggerOnLeadingJet(triggerOnLeadingJet);
-
-  //jet settings
- 
-  task->SetJetRadius(R);
+  task->SetJetAcceptanceType(cutType);
   task->SetJetPtCut(jptcut);
-
-  Float_t etaCov=0.9;
-  if (acceptance==2) etaCov=0.7; //EMCal
-
-  Float_t minEta = -etaCov+R;
-  Float_t maxEta =  etaCov-R;
-  if (acceptance) task->SetJetEtaLimits(minEta, maxEta);
-
-  Float_t minPhi = 0.;
-  Float_t maxPhi = 2.*TMath::Pi();
- 
-  if (acceptance==2) { /*80-180 degree*/ }
-  if (acceptance) task->SetJetPhiLimits(minPhi, maxPhi);
-
-  //Float_t area=0.6*TMath::Pi()*R*R;
-  task->SetJetAreaCut(areaCut);
+  task->SetPercAreaCut(percjetareacut);
   
   mgr->AddTask(task);
+
+  if(theMCon) {
+     suffix+="MC";
+     if(reco) suffix+="rec";  
+  }
 
   // Create and connect containers for input/output
   TString outputfile = AliAnalysisManager::GetCommonFileName();

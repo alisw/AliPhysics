@@ -28,7 +28,8 @@ class AliFlowEventSimpleMakerOnTheFly{
   AliFlowEventSimpleMakerOnTheFly(UInt_t uiSeed = 0); // constructor
   virtual ~AliFlowEventSimpleMakerOnTheFly(); // destructor
   virtual void Init();   
-  Bool_t AcceptOrNot(AliFlowTrackSimple *pTrack);  
+  Bool_t AcceptPhi(AliFlowTrackSimple *pTrack);  
+  Bool_t AcceptPt(AliFlowTrackSimple *pTrack);  
   AliFlowEventSimple* CreateEventOnTheFly(AliFlowTrackSimpleCuts const *cutsRP, AliFlowTrackSimpleCuts const *cutsPOI); 
   // Setters and getters:
   void SetMinMult(Int_t iMinMult) {this->fMinMult = iMinMult;}
@@ -81,25 +82,18 @@ class AliFlowEventSimpleMakerOnTheFly{
   Double_t GetSecondSectorPhiMax() const {return this->fPhiMax2;}
   void SetSecondSectorProbability(Double_t dProbability2) {this->fProbability2 = dProbability2;}
   Double_t GetSecondSectorProbability() const {return this->fProbability2;}       
-
-  //Acceptance - simulate detector effects/inefficiencies
-  void SimulateDetectorEffects() {fSimulateDetectorEffects = kTRUE;}
-  void SetNumberOfInefficientSectorsInPhi(Int_t numberOfInefficientSectors) {
-    fNumberOfInefficientSectors = numberOfInefficientSectors;
-    fInefficiencyFactorInPhi = 0.5;}
-  void SetInefficiencyFactor(Double_t gInefficiencyFactorInPhi) {
-    fInefficiencyFactorInPhi = gInefficiencyFactorInPhi;}
-  void SetNumberOfDeadSectorsInPhi(Int_t numberOfDeadSectors) {
-    fNumberOfDeadSectors = numberOfDeadSectors;}
-  void EnableEfficiencyDropNearEtaEdges() {
-    fEfficiencyDropNearEtaEdges = kTRUE;}
+  void SetUniformEfficiency(Bool_t ue) {this->fUniformEfficiency = ue;}
+  Bool_t GetUniformEfficiency() const {return this->fUniformEfficiency;} 
+  void SetPtMin(Double_t ptMin) {this->fPtMin = ptMin;}
+  Double_t GetPtMin() const {return this->fPtMin;} 
+  void SetPtMax(Double_t ptMax) {this->fPtMax = ptMax;}
+  Double_t GetPtMax() const {return this->fPtMax;} 
+  void SetPtProbability(Double_t ptp) {this->fPtProbability = ptp;}
+  Double_t GetPtProbability() const {return this->fPtProbability;} 
 
  private:
   AliFlowEventSimpleMakerOnTheFly(const AliFlowEventSimpleMakerOnTheFly& anAnalysis); // copy constructor
   AliFlowEventSimpleMakerOnTheFly& operator=(const AliFlowEventSimpleMakerOnTheFly& anAnalysis); // assignment operator
-
-  void SetupEfficiencyMatrix();
-
   Int_t fCount; // count number of events 
   Int_t fMinMult; // uniformly sampled multiplicity is >= iMinMult
   Int_t fMaxMult; // uniformly sampled multiplicity is < iMaxMult
@@ -132,14 +126,10 @@ class AliFlowEventSimpleMakerOnTheFly{
   Double_t fPhiMax2; // second sector with non-uniform acceptance ends at azimuth fPhiMax2
   Double_t fProbability2; // particles emitted in fPhiMin2 < phi < fPhiMax2 are taken with probability fProbability2
   Double_t fPi; // pi
-
-  //Simulate detector effects
-  Bool_t fSimulateDetectorEffects;//simulate detector effects in pT
-  Int_t fNumberOfInefficientSectors;//inefficient secotrs in phi
-  Double_t fInefficiencyFactorInPhi;//efficiency factor < 1
-  Int_t fNumberOfDeadSectors;//number of dead sectors
-  Bool_t fEfficiencyDropNearEtaEdges;//efficiency drop in eta edges
-  TH3F *fEfficiencyMatrix; //efficiency matrix in eta-pt-phi
+  Bool_t fUniformEfficiency; // detector has uniform efficiency vs pT, or perhaps not...
+  Double_t fPtMin; // non-uniform efficiency vs pT starts at pT = fPtMin
+  Double_t fPtMax; // non-uniform efficiency vs pT ends at pT = fPtMax
+  Double_t fPtProbability; // particles emitted in fPtMin <= pT < fPtMax are taken with probability fPtProbability 
 
   ClassDef(AliFlowEventSimpleMakerOnTheFly,1) // macro for rootcint
 };

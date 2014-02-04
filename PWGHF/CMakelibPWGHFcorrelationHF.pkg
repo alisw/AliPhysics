@@ -43,6 +43,7 @@ set ( CLASS_HDRS
     AliAnalysisTaskDStarCorrelations.h
     AliAnalysisTaskSED0Correlations.h
     AliAnalysisTaskSEDplusCorrelations.h
+    AliAnalysisTaskSEmcCorr.h	
     )
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )
@@ -51,7 +52,7 @@ set ( MODULE_HDRS  	${CLASS_HDRS})
 
 set ( MODULE_DHDR )
 
-set ( EINCLUDE  PWGHF/vertexingHF PWGHF/hfe include)
+set ( EINCLUDE  PWGHF/vertexingHF PWGHF/hfe CORRFW ANALYSIS STEER/ESD STEER/AOD STEER/STEERBase)
 
 set ( ELIBS  
     PWGHFhfe

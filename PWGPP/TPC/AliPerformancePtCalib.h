@@ -40,8 +40,7 @@ class AliESDpid;
 
 class AliPerformancePtCalib : public AliPerformanceObject {
 public:
-   AliPerformancePtCalib(); 
-   AliPerformancePtCalib(Char_t* name, Char_t* title);//, Int_t analysisMode, Bool_t hptGenerator);
+  AliPerformancePtCalib(const Char_t * name="AliPerformancePtCalib",const Char_t* title ="AliPerformancePtCalib");
    virtual ~AliPerformancePtCalib();
 
    // Init data members

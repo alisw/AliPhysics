@@ -58,7 +58,7 @@ AddTaskCentraldNdeta(const char* trig      = "INEL",
   task->SetMCFinalCorrFilename(mcanalysisfilename);
   
   // Set the vertex range to use 
-  task->SetVertexRange(vzMin, vzMax);
+  task->SetIpZRange(vzMin, vzMax);
   // Set the trigger mask to use (INEL,INEL>0,NSD)
   task->SetTriggerMask(trig);
   task->SetTriggerEff(trigEff); // 0.997535);
@@ -95,23 +95,8 @@ AddTaskCentraldNdeta(const char* trig      = "INEL",
     Short_t bins[] = { 0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };
     task->SetCentralityAxis(11, bins);
   }
-  mgr->AddTask(task);
+  task->Connect(0,0);
 
-  // --- create containers for input/output --------------------------
-  AliAnalysisDataContainer *sums = 
-    mgr->CreateContainer("CentralSums", TList::Class(), 
-			 AliAnalysisManager::kOutputContainer, 
-			 AliAnalysisManager::GetCommonFileName());
-  AliAnalysisDataContainer *output = 
-    mgr->CreateContainer("CentralResults", TList::Class(), 
-			 AliAnalysisManager::kParamContainer, 
-			 AliAnalysisManager::GetCommonFileName());
-  
-  // --- connect input/output ----------------------------------------
-  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, sums);
-  mgr->ConnectOutput(task, 2, output);
-  
   return task;
 }
 

@@ -213,24 +213,29 @@ TGraphErrors *AliHFECorrectSpectrumBase::NormalizeTH1(TH1 *input) const {
 
   Double_t etarange = fEtaSelected ? fEtaRangeNorm[1] - fEtaRangeNorm[0] : 1.6;
   printf("Normalizing Eta Range %f\n", etarange);
+  printf("Number of events in Normalisation: %d\n", fNEvents);
+  AliDebug(3, Form("charge coefficient: %f\n", chargecoefficient));
   if(fNEvents > 0) {
 
     TGraphErrors *spectrumNormalized = new TGraphErrors(input->GetNbinsX());
     Double_t p = 0, dp = 0; Int_t point = 1;
     Double_t n = 0, dN = 0;
     Double_t nCorr = 0, dNcorr = 0;
-    Double_t errdN = 0, errdp = 0;
+    //Double_t errdN = 0, errdp = 0;
+    Double_t errdN = 0;
     for(Int_t ibin = input->GetXaxis()->GetFirst(); ibin <= input->GetXaxis()->GetLast(); ibin++){
       point = ibin - input->GetXaxis()->GetFirst();
       p = input->GetXaxis()->GetBinCenter(ibin);
-      dp = input->GetXaxis()->GetBinWidth(ibin)/2.;
+      //dp = input->GetXaxis()->GetBinWidth(ibin)/2.;
       n = input->GetBinContent(ibin);
+      AliDebug(6, Form("p: %f, n: %e\n", p, n));
       dN = input->GetBinError(ibin);
       // New point
       nCorr = chargecoefficient * 1./etarange * 1./(Double_t)(fNEvents) * 1./(2. * TMath::Pi() * p) * n;
       errdN = 1./(2. * TMath::Pi() * p);
-      errdp = 1./(2. * TMath::Pi() * p*p) * n;
-      dNcorr = chargecoefficient * 1./etarange * 1./(Double_t)(fNEvents) * TMath::Sqrt(errdN * errdN * dN *dN + errdp *errdp * dp *dp);
+      //errdp = 1./(2. * TMath::Pi() * p*p) * n;
+      //dNcorr = chargecoefficient * 1./etarange * 1./(Double_t)(fNEvents) * TMath::Sqrt(errdN * errdN * dN *dN + errdp *errdp * dp *dp);
+      dNcorr = chargecoefficient * 1./etarange * 1./(Double_t)(fNEvents) * TMath::Sqrt(errdN * errdN * dN *dN);
       
       spectrumNormalized->SetPoint(point, p, nCorr);
       spectrumNormalized->SetPointError(point, dp, dNcorr);
@@ -267,7 +272,7 @@ AliCFContainer *AliHFECorrectSpectrumBase::GetContainer(AliHFECorrectSpectrumBas
   return dynamic_cast<AliCFContainer *>(fCFContainers->At(type));
 }
 //____________________________________________________________
-AliCFContainer *AliHFECorrectSpectrumBase::GetSlicedContainer(AliCFContainer *container, Int_t nDim, Int_t *dimensions,Int_t source,Chargetype_t charge, Int_t centralitylow, Int_t centralityhigh) {
+AliCFContainer *AliHFECorrectSpectrumBase::GetSlicedContainer(AliCFContainer *container, Int_t nDim, Int_t *dimensions,Int_t source,Chargetype_t charge, Int_t centralitylow, Int_t centralityhigh, Bool_t doCentralityProjection) {
   //
   // Slice bin for a given source of electron
   // nDim is the number of dimension the corrections are done
@@ -276,6 +281,7 @@ AliCFContainer *AliHFECorrectSpectrumBase::GetSlicedContainer(AliCFContainer *co
   // positivenegative if we want to keep positive (1) or negative (0) or both (-1)
   // centrality (-1 means we do not cut on centrality)
   //
+  const double kVerySmall = 1e-5;
   
   Double_t *varMin = new Double_t[container->GetNVar()],
            *varMax = new Double_t[container->GetNVar()];
@@ -310,28 +316,47 @@ AliCFContainer *AliHFECorrectSpectrumBase::GetSlicedContainer(AliCFContainer *co
     if(fEtaSelected){
       fEtaRangeNorm[0] = container->GetAxis(1,0)->GetBinLowEdge(container->GetAxis(1,0)->FindBin(fEtaRange[0]));
       fEtaRangeNorm[1] = container->GetAxis(1,0)->GetBinUpEdge(container->GetAxis(1,0)->FindBin(fEtaRange[1]));
-      AliInfo(Form("Normalization done in eta range [%f,%f]\n", fEtaRangeNorm[0], fEtaRangeNorm[0]));
+      AliInfo(Form("Normalization done in eta range [%f,%f]\n", fEtaRangeNorm[0], fEtaRangeNorm[1]));
     }
     // centrality
     if(ivar == 5){
-	if((centralitylow>= 0) && (centralitylow<container->GetNBins(ivar)) && (centralityhigh>= 0) && (centralityhigh<container->GetNBins(ivar))) {
-	    varMin[ivar] = binLimits[centralitylow];
-	    varMax[ivar] = binLimits[centralityhigh];
+	    if((centralitylow>= 0) && (centralitylow<container->GetNBins(ivar)) && (centralityhigh>= 0) && (centralityhigh<container->GetNBins(ivar)) && doCentralityProjection) {
+	      varMin[ivar] = binLimits[centralitylow]+ kVerySmall;
+	      varMax[ivar] = binLimits[centralityhigh]+ kVerySmall;
 
-	    TAxis *axistest = container->GetAxis(5,0);
-	    AliDebug(1, Form("Number of bin in centrality direction %d\n",axistest->GetNbins()));
-	    AliDebug(1, Form("Project from %f to %f\n",binLimits[centralitylow],binLimits[centralityhigh]));
-	    Double_t lowcentrality = axistest->GetBinLowEdge(axistest->FindBin(binLimits[centralitylow]));
-	    Double_t highcentrality = axistest->GetBinUpEdge(axistest->FindBin(binLimits[centralityhigh]));
-	    AliDebug(1, Form("Low centrality %f and high centrality %f\n",lowcentrality,highcentrality));
-	
-	}
+	      TAxis *axistest = container->GetAxis(5,0);
+	      AliDebug(1, Form("Number of bin in centrality direction %d\n",axistest->GetNbins()));
+	      AliDebug(1, Form("Project from %f to %f\n",binLimits[centralitylow],binLimits[centralityhigh]));
+	      Double_t lowcentrality = axistest->GetBinLowEdge(axistest->FindBin(binLimits[centralitylow]));
+	      Double_t highcentrality = axistest->GetBinUpEdge(axistest->FindBin(binLimits[centralityhigh]));
+	      AliDebug(1, Form("Low centrality %f and high centrality %f\n",lowcentrality,highcentrality));
+	    }
     }
     
+    // Protect varmax against overflow 
+    if(TMath::Abs(varMax[ivar] - binLimits[container->GetNBins(ivar)]) < kVerySmall){
+      AliInfo("Protection against overflow bin");
+      varMax[ivar] -= kVerySmall;
+    }
+    if(varMax[ivar] > binLimits[container->GetNBins(ivar)]){
+      AliError("Upper limit exceeds allowed range");
+      varMax[ivar] = binLimits[container->GetNBins(ivar)] - kVerySmall;
+    }
+
+    // Protect varmin against overflow 
+    if(TMath::Abs(varMin[ivar] - binLimits[container->GetNBins(ivar)]) < kVerySmall){
+      AliInfo("Protection against overflow bin");
+      varMin[ivar] -= kVerySmall;
+    }
+    if(varMin[ivar] > binLimits[container->GetNBins(ivar)]){
+      AliError("Upper limit exceeds allowed range");
+      varMin[ivar] = binLimits[container->GetNBins(ivar)] - kVerySmall;
+    }
+    AliDebug(1, Form("variable %d: Settting limits to %f and %f\n", ivar, varMin[ivar], varMax[ivar]));
     delete[] binLimits;
-    
+   
   }
-  
+
   AliCFContainer *k = container->MakeSlice(nDim, dimensions, varMin, varMax);
   delete[] varMin; delete[] varMax;
 
@@ -340,7 +365,7 @@ AliCFContainer *AliHFECorrectSpectrumBase::GetSlicedContainer(AliCFContainer *co
 }
 
 //_________________________________________________________________________
-THnSparseF *AliHFECorrectSpectrumBase::GetSlicedCorrelation(THnSparseF *correlationmatrix, Int_t nDim, Int_t *dimensions,Chargetype_t charge,Int_t centralitylow, Int_t centralityhigh) const {
+THnSparseF *AliHFECorrectSpectrumBase::GetSlicedCorrelation(THnSparseF *correlationmatrix, Int_t nDim, Int_t *dimensions,Chargetype_t charge,Int_t centralitylow, Int_t centralityhigh, Bool_t doCentralityProjection) const {
   //
   // Slice correlation
   //
@@ -364,20 +389,20 @@ THnSparseF *AliHFECorrectSpectrumBase::GetSlicedCorrelation(THnSparseF *correlat
       
       AliDebug(1, Form("Number of centrality bins: %d and %d\n",bins0,bins1));
       if(bins0 != bins1) {
-	AliError("Problem in the dimensions");
-	return NULL;
+	      AliError("Problem in the dimensions");
+	      return NULL;
       }
       
-      if((centralitylow>= 0) && (centralitylow<bins0) && (centralityhigh>= 0) && (centralityhigh<bins0)) {
-	axiscentrality0->SetRangeUser(centralitylow,centralityhigh);
-	axiscentrality1->SetRangeUser(centralitylow,centralityhigh);
+      if((centralitylow>= 0) && (centralitylow<bins0) && (centralityhigh>= 0) && (centralityhigh<bins0) && doCentralityProjection) {
+	      axiscentrality0->SetRangeUser(centralitylow,centralityhigh);
+	      axiscentrality1->SetRangeUser(centralitylow,centralityhigh);
 	
-	Double_t lowcentrality0 = axiscentrality0->GetBinLowEdge(axiscentrality0->FindBin(centralitylow));
-	Double_t highcentrality0 = axiscentrality0->GetBinUpEdge(axiscentrality0->FindBin(centralityhigh));
-	Double_t lowcentrality1 = axiscentrality1->GetBinLowEdge(axiscentrality1->FindBin(centralitylow));
-	Double_t highcentrality1 = axiscentrality1->GetBinUpEdge(axiscentrality1->FindBin(centralityhigh));
-	AliDebug(1,Form("0 Low centrality %f and high centrality %f\n",lowcentrality0,highcentrality0));
-	AliDebug(1,Form("1 Low centrality %f and high centrality %f\n",lowcentrality1,highcentrality1));
+	      Double_t lowcentrality0 = axiscentrality0->GetBinLowEdge(axiscentrality0->FindBin(centralitylow));
+	      Double_t highcentrality0 = axiscentrality0->GetBinUpEdge(axiscentrality0->FindBin(centralityhigh));
+	      Double_t lowcentrality1 = axiscentrality1->GetBinLowEdge(axiscentrality1->FindBin(centralitylow));
+	      Double_t highcentrality1 = axiscentrality1->GetBinUpEdge(axiscentrality1->FindBin(centralityhigh));
+	      AliDebug(1,Form("0 Low centrality %f and high centrality %f\n",lowcentrality0,highcentrality0));
+	      AliDebug(1,Form("1 Low centrality %f and high centrality %f\n",lowcentrality1,highcentrality1));
 	
       }    
     }

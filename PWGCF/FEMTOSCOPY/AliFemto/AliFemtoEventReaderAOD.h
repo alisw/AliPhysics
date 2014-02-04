@@ -58,6 +58,9 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   void SetpA2013(Bool_t pa2013);
   void SetDCAglobalTrack(Bool_t dcagt);
 
+  bool RejectEventCentFlat(float MagField, float CentPercent);
+  void SetCentralityFlattening(Bool_t flat);
+
  protected:
   virtual void CopyAODtoFemtoEvent(AliFemtoEvent *tEvent);
   virtual void CopyAODtoFemtoTrack( AliAODTrack *tAodTrack,
@@ -98,6 +101,8 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   Bool_t fpA2013; // analysis on pA 2013 data
   Bool_t fDCAglobalTrack; // to get DCA from global tracks instead of TPC-only
 
+  bool fFlatCent;
+
 
 #ifdef __ROOT__
   ClassDef(AliFemtoEventReaderAOD, 11)
@@ -106,5 +111,3 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
 };
 
 #endif
-
-

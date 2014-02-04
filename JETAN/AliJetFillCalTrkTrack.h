@@ -31,7 +31,7 @@ class AliJetFillCalTrkTrack : public AliJetFillCalTrkEvent
   Int_t GetHadCorrection()  const {return fApplyMIPCorrection;}
 
   // Other
-  void  Exec(Option_t* const option);
+  void  Exec(Option_t const * option);
 
   // we have different cases
   // AOD reading -> MC from AOD

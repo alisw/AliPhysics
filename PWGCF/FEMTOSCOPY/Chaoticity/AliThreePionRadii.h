@@ -42,15 +42,15 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
   
 
   virtual void   UserCreateOutputObjects();
-  virtual void   Exec(Option_t *option);
+  virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
   enum {
     kPairLimit = 15000,//15000
-    kNormPairLimit = 45000,
+    kNormPairLimit = 45000,//45000
     kMultLimitPbPb = 2000,//2000
-    kMultLimitPP = 300,
-    kMCarrayLimit = 110000,
+    kMultLimitPP = 300,//300
+    kMCarrayLimit = 110000,//110000
     kQbins = 20,
     kQbinsWeights = 40,
     kQbinsPP = 40,
@@ -62,7 +62,7 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
     kSCLimit3 = 1// 1, 10
   };
 
-  static const Int_t fEDbins   = 1;
+  static const Int_t fEDbins   = 3;
   static const Int_t fCentBins = 20;// 0-100% PbPb, pPb, pp
   static const Int_t fRVALUES  = 10;// 
 
@@ -75,6 +75,8 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
   void SetMCdecision(Bool_t mc) {fMCcase = mc;}
   void SetPbPbCase(Bool_t pbpb) {fPbPbcase = pbpb;}
   void SetGenerateSignal(Bool_t gen) {fGenerateSignal = gen;}
+  void SetNumKt3Bins(Int_t kt3bins) {fKt3bins = kt3bins;}
+  void SetV0Mbinning(Bool_t V0Mbinning) {fV0Mbinning = V0Mbinning;}
   void SetCentBinRange(Int_t low, Int_t high) {fCentBinLowLimit = low; fCentBinHighLimit = high;}
   void SetLEGOCase(Bool_t lego) {fLEGO = lego;}
   void SetFilterBit(UInt_t filterbit) {fFilterBit = filterbit;}
@@ -85,6 +87,7 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
   void SetNsigmaTPC(Float_t nsig) {fSigmaCutTPC = nsig;}
   void SetNsigmaTOF(Float_t nsig) {fSigmaCutTOF = nsig;}
   void SetRMax(Int_t rbin) {fRMax = rbin;}
+  void SetTriggerType(Int_t tt) {fTriggerType = tt;}
   //
 
 
@@ -131,6 +134,7 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
     TH1D *fTermsQ3; //!
     TH1D *fIdeal; //!
     TH1D *fSmeared; //!
+    TH1D *fMeanKt; //!
   };
   struct St5 {
     TH2D *fExplicit2; //!
@@ -138,11 +142,12 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
     TProfile2D *fAvgP; //!
     TH2D *fIdeal; //!
     TH2D *fSmeared; //!
+    TH1D *fMeanKt; //!
     //
     TH1D *fMCqinv; //!
     TH1D *fMCqinvQW; //!
     TH2D *fPIDpurityDen; //!
-    TH2D *fPIDpurityNum; //!
+    TH3D *fPIDpurityNum; //!
   };
   struct St_EDB {// SC structure
     struct St5 TwoPT[2];
@@ -173,6 +178,7 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
   Bool_t fAODcase;
   Bool_t fPbPbcase;
   Bool_t fGenerateSignal;
+  Bool_t fGeneratorOnly;
   Bool_t fPdensityPairCut;
   Int_t fRMax;
   UInt_t fFilterBit;
@@ -183,9 +189,12 @@ class AliThreePionRadii : public AliAnalysisTaskSE {
   Int_t fFSIindex;
   Int_t fEDbin;
   Int_t fMbins;
-  Int_t fMultLimit;      
+  Int_t fMultLimit;  
+  Int_t fKt3bins;
+  Bool_t fV0Mbinning;
   Int_t fCentBinLowLimit;
   Int_t fCentBinHighLimit;
+  Int_t fTriggerType;
   Int_t fEventCounter;
   Int_t fEventsToMix;
   Int_t fZvertexBins;

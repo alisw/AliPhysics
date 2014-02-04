@@ -16,8 +16,8 @@ AliAnalysisTaskDiHadronPID* AddTaskDiHadronPID(
 	Double_t minTriggerPt = 5.,
 	Double_t maxTriggerPt = 10.,
 	Bool_t requestAllSingleTrackHistos = kFALSE,
-	Int_t FilterMaskTrigger = 7,
-	Int_t FilterMaskAssociated = 5,
+	UInt_t FilterMaskTrigger = 32,
+	UInt_t FilterMaskAssociated = 32,
 	Bool_t isPbPb = kTRUE,
 	Bool_t isMC = kFALSE,
 	Int_t DebugLevel = 0,
@@ -26,6 +26,7 @@ AliAnalysisTaskDiHadronPID* AddTaskDiHadronPID(
 	Bool_t MakeTOFTPCCorrelationsKa = kFALSE,
 	Bool_t MakeTOFTPCCorrelationsPr = kFALSE,		
 	Double_t TOFIntervalFactorTOFTPC = 1.,
+	Double_t fExtendPtAxis = kFALSE,
 	const char* outputFileName = 0,
 	const char* containerName = "DiHadronPID",
 	const char* folderName = "PWGCF_DiHadronPID")
@@ -69,7 +70,7 @@ AliAnalysisTaskDiHadronPID* AddTaskDiHadronPID(
 	// Configure and add track cuts for trigger.
 	AliAODTrackCutsDiHadronPID* triggercuts = new AliAODTrackCutsDiHadronPID("TrackCutsTrigger");
 	triggercuts->SetIsMC(isMC);
-	triggercuts->SetFilterMask(1<<FilterMaskTrigger);
+	triggercuts->SetFilterMask(FilterMaskTrigger);
 	triggercuts->SetPtRange(minTriggerPt,maxTriggerPt);
 	triggercuts->SetMaxEta(maxEta);
 	triggercuts->RequestQAHistos(AliAODTrackCutsDiHadronPID::kAllCharged);
@@ -92,7 +93,7 @@ AliAnalysisTaskDiHadronPID* AddTaskDiHadronPID(
 	// Configure and add track cuts for associateds.
 	AliAODTrackCutsDiHadronPID* associatedscuts = new AliAODTrackCutsDiHadronPID("TrackCutsAssociated");
 	associatedscuts->SetIsMC(isMC);
-	associatedscuts->SetFilterMask(1<<FilterMaskAssociated);
+	associatedscuts->SetFilterMask(FilterMaskAssociated);
 	associatedscuts->SetPtRange(minAssociatedPt,maxAssociatedPt);
 	associatedscuts->SetMaxEta(maxEta);
 	ULong_t associatedflags = (UInt_t)(AliAODTrack::kTOFout)|(UInt_t)(AliAODTrack::kTIME);	

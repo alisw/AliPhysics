@@ -268,7 +268,7 @@ void AliAnalysisTPCTOFpA::UserCreateOutputObjects()
 
   Int_t kDcaBinsTemp = 76;
   if (fEvenDCAbinning) kDcaBinsTemp = 150;
-  const Int_t kDcaBins = (const Int_t) kDcaBinsTemp;
+  const Int_t kDcaBins = (Int_t) kDcaBinsTemp;
 
   const Float_t kDcaBinsTPConlyFactor = 5; //need to change binning of DCA plot for tpconly
   // sort pT-bins ..
@@ -455,10 +455,16 @@ void AliAnalysisTPCTOFpA::UserExec(Option_t *)
     // SPD vertex
     vertex = fESD->GetPrimaryVertexSPD();
     /* quality checks on SPD-vertex */ 
-    TString vertexType = vertex->GetTitle();
-    if (vertexType.Contains("vertexer: Z") && (vertex->GetDispersion() > 0.04 || vertex->GetZRes() > 0.25))  isVertexOk = kFALSE; //vertex = 0x0; //
-    if (vertex->GetNContributors()<1)  isVertexOk = kFALSE; //vertex = 0x0; //
+    if (!vertex) {
+      isVertexOk = kFALSE;
+    }
+    else {
+      TString vertexType = vertex->GetTitle();
+      if (vertexType.Contains("vertexer: Z") && (vertex->GetDispersion() > 0.04 || vertex->GetZRes() > 0.25))  isVertexOk = kFALSE; //vertex = 0x0; //
+      if (vertex->GetNContributors()<1)  isVertexOk = kFALSE; //vertex = 0x0; //
+    }
   }  
+
   //
   // small track loop to determine trigger Pt, multiplicity or centrality
   //
@@ -524,9 +530,9 @@ void AliAnalysisTPCTOFpA::UserExec(Option_t *)
     */
   }
   //
-  Int_t rootS = fESD->GetBeamEnergy() < 1000 ? 0 : 1;
+  //Int_t rootS = fESD->GetBeamEnergy() < 1000 ? 0 : 1;
   if (fESD->GetEventSpecie() == 4) { // PbPb
-    rootS = 2;
+    //rootS = 2;
     AliCentrality *esdCentrality = fESD->GetCentrality();
     centrality = esdCentrality->GetCentralityClass10("V0M") + 1; // centrality percentile determined with V0
     if (TMath::Abs(centrality - 1) < 1e-5) {
@@ -561,8 +567,8 @@ void AliAnalysisTPCTOFpA::UserExec(Option_t *)
 
 
   
-  Int_t nContributors = 0;
-  if (fESD->GetPrimaryVertexTPC()) nContributors = fESD->GetPrimaryVertexTPC()->GetNContributors();
+  //Int_t nContributors = 0;
+  //if (fESD->GetPrimaryVertexTPC()) nContributors = fESD->GetPrimaryVertexTPC()->GetNContributors();
   //
   
   //  Int_t processtype = 0;
@@ -609,11 +615,11 @@ void AliAnalysisTPCTOFpA::UserExec(Option_t *)
       //
       Double_t xv = trackMC->Vx();
       Double_t yv = trackMC->Vy();
-      Double_t zv = trackMC->Vz();
+      //Double_t zv = trackMC->Vz();
       Double_t dxy = 0;
       dxy = TMath::Sqrt(xv*xv + yv*yv); // so stupid to avoid warnings
-      Double_t dz = 0;
-      dz = TMath::Abs(zv); // so stupid to avoid warnings
+      //Double_t dz = 0;
+      //dz = TMath::Abs(zv); // so stupid to avoid warnings
       //
       // vertex cut - selection of primaries
       //
@@ -836,6 +842,7 @@ void AliAnalysisTPCTOFpA::UserExec(Option_t *)
 //			 fESDpid->NumberOfSigmasTPC(track,AliPID::kKaon),
 //			 fESDpid->NumberOfSigmasTPC(track,AliPID::kProton)};
 
+/*
     Double_t tofQA[4] = {0.,0.,0.,0.}; 
     if (!fUseTPConlyTracks) {
       tofQA[0] = fESDpid->NumberOfSigmasTOF(track,AliPID::kElectron, time0);
@@ -849,7 +856,7 @@ void AliAnalysisTPCTOFpA::UserExec(Option_t *)
       tofQA[0] = fESDpid->NumberOfSigmasTOF(trackForTOF,AliPID::kKaon, time0);
       tofQA[0] = fESDpid->NumberOfSigmasTOF(trackForTOF,AliPID::kProton, time0);
     }
-
+*/
 
     //save information for every particle type  // loop over assumed particle type
     for(Int_t iPart = 0; iPart < 3; iPart++) {

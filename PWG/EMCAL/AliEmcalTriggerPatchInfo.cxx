@@ -17,7 +17,8 @@ AliEmcalTriggerPatchInfo::AliEmcalTriggerPatchInfo() :
   fEdge1(),
   fEdge2(),
   fADCAmp(0),
-  fTriggerBits(0)
+  fTriggerBits(0),
+  fOffSet(kTriggerTypeEnd)
 {
   // Default constructor.
   fEdgeCell[0] = -1;
@@ -33,7 +34,8 @@ AliEmcalTriggerPatchInfo::AliEmcalTriggerPatchInfo(const AliEmcalTriggerPatchInf
   fEdge1(p.fEdge1),
   fEdge2(p.fEdge2),
   fADCAmp(p.fADCAmp),
-  fTriggerBits(p.fTriggerBits)
+  fTriggerBits(p.fTriggerBits),
+  fOffSet(p.fOffSet)
 {
   // Copy constructor.
   fEdgeCell[0] = p.fEdgeCell[0];

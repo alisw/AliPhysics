@@ -97,7 +97,7 @@ fSplitWidthSigma(0),      fMassShiftHighECell(0)
 }
 
 //________________________________________
-AliCaloPID::AliCaloPID(const Int_t flux) : 
+AliCaloPID::AliCaloPID(Int_t flux) :
 TObject(),                fDebug(-1),                  fParticleFlux(flux),
 //Bayesian
 fEMCALPIDUtils(),         fUseBayesianWeights(kFALSE), fRecalculateBayesian(kFALSE),
@@ -123,6 +123,7 @@ fSplitM02MaxCut(0),       fSplitM02MinCut(0),          fSplitMinNCells(0),
 fMassEtaMin(0),           fMassEtaMax(0),
 fMassPi0Min(0),           fMassPi0Max(0),
 fMassPhoMin(0),           fMassPhoMax(0),
+fM02MaxParamShiftNLMN(0),
 fSplitWidthSigma(0),      fMassShiftHighECell(0)
 {
   //Ctor
@@ -160,6 +161,7 @@ fSplitM02MaxCut(0),       fSplitM02MinCut(0),          fSplitMinNCells(0),
 fMassEtaMin(0),           fMassEtaMax(0),
 fMassPi0Min(0),           fMassPi0Max(0),
 fMassPhoMin(0),           fMassPhoMax(0),
+fM02MaxParamShiftNLMN(0),
 fSplitWidthSigma(0),      fMassShiftHighECell(0)
 
 {
@@ -248,30 +250,30 @@ void AliCaloPID::InitParameters()
   fMassPi0Param[0][0] = 0     ; // Constant term on mass dependence
   fMassPi0Param[0][1] = 0     ; // slope term on mass dependence
   fMassPi0Param[0][2] = 0     ; // E function change
-  fMassPi0Param[0][3] = 0.063 ; // constant term on mass dependence
-  fMassPi0Param[0][4] = 0.004 ; // slope term on mass dependence
+  fMassPi0Param[0][3] = 0.044 ; // constant term on mass dependence
+  fMassPi0Param[0][4] = 0.0049; // slope term on mass dependence
   fMassPi0Param[0][5] = 0.070 ; // Absolute low mass cut
   
-  fMassPi0Param[1][0] = 0.131 ; // Constant term below 21 GeV
-  fMassPi0Param[1][1] = 0     ; // slope term below 21 GeV
+  fMassPi0Param[1][0] = 0.115 ; // Constant term below 21 GeV
+  fMassPi0Param[1][1] = 0.00096; // slope term below 21 GeV
   fMassPi0Param[1][2] = 21    ; // E function change
-  fMassPi0Param[1][3] = 0.095 ; // constant term on mass dependence
+  fMassPi0Param[1][3] = 0.10  ; // constant term on mass dependence
   fMassPi0Param[1][4] = 0.0017; // slope term on mass dependence
   fMassPi0Param[1][5] = 0.070 ; // Absolute low mass cut
   
-  fWidthPi0Param[0][0] = 0.023 ; // Constant term on width dependence
+  fWidthPi0Param[0][0] = 0.012 ; // Constant term on width dependence
   fWidthPi0Param[0][1] = 0.0   ; // Slope term on width dependence
-  fWidthPi0Param[0][2] = 20    ; // E function change
-  fWidthPi0Param[0][3] =-0.001 ; // Constant term on width dependence
-  fWidthPi0Param[0][4] = 0.0012; // Slope term on width dependence
+  fWidthPi0Param[0][2] = 19    ; // E function change
+  fWidthPi0Param[0][3] = 0.0012; // Constant term on width dependence
+  fWidthPi0Param[0][4] = 0.0006; // Slope term on width dependence
   fWidthPi0Param[0][5] = 0.0   ; // xx term
 
-  fWidthPi0Param[1][0] = 0.0075; // Constant term on width dependence
-  fWidthPi0Param[1][1] = 0.0006; // Slope term on width dependence
-  fWidthPi0Param[1][2] = 19    ; // E function change
-  fWidthPi0Param[1][3] = 0.04  ; // Constant term on width dependence
-  fWidthPi0Param[1][4] =-0.0019; // Slope term on width dependence
-  fWidthPi0Param[1][5] = 0.000041;// xx term
+  fWidthPi0Param[1][0] = 0.009 ; // Constant term on width dependence
+  fWidthPi0Param[1][1] = 0.000 ; // Slope term on width dependence
+  fWidthPi0Param[1][2] = 10    ; // E function change
+  fWidthPi0Param[1][3] = 0.0023 ; // Constant term on width dependence
+  fWidthPi0Param[1][4] = 0.00067; // Slope term on width dependence
+  fWidthPi0Param[1][5] = 0.000 ;// xx term
 
   fMassShiftHighECell = 0; // Shift of cuts in case of higher energy threshold in cells, 5 MeV when Ecell>150 MeV
   
@@ -321,13 +323,18 @@ void AliCaloPID::InitParameters()
   fSplitEFracMin[1]   = 0.0 ; // 0.96
   fSplitEFracMin[2]   = 0.0 ; // 0.7
 
+  fSubClusterEMin[0]  = 0.0; // 3 GeV
+  fSubClusterEMin[1]  = 0.0; // 1 GeV
+  fSubClusterEMin[2]  = 0.0; // 1 GeV
+  
+  
   fSplitWidthSigma = 3. ;
   
 }
 
 
-//_____________________________________________________________________________________________________
-Bool_t AliCaloPID::IsInPi0SplitAsymmetryRange(const Float_t energy, const Float_t asy, const Int_t nlm)
+//_________________________________________________________________________________________
+Bool_t AliCaloPID::IsInPi0SplitAsymmetryRange(Float_t energy, Float_t asy, Int_t nlm) const
 {
   // Select the appropriate mass range for pi0 selection in splitting method
   // No used yet in splitting ID decision
@@ -355,8 +362,8 @@ Bool_t AliCaloPID::IsInPi0SplitAsymmetryRange(const Float_t energy, const Float_
   
 }
 
-//_________________________________________________________________________________________________
-Bool_t AliCaloPID::IsInPi0SplitMassRange(const Float_t energy, const Float_t mass, const Int_t nlm)
+//______________________________________________________________________________________
+Bool_t AliCaloPID::IsInPi0SplitMassRange(Float_t energy, Float_t mass, Int_t nlm) const
 {
   // Select the appropriate mass range for pi0 selection in splitting method
   
@@ -373,7 +380,7 @@ Bool_t AliCaloPID::IsInPi0SplitMassRange(const Float_t energy, const Float_t mas
   Float_t meanMass = energy * fMassPi0Param[inlm][1] + fMassPi0Param[inlm][0];
   if(energy > fMassPi0Param[inlm][2]) meanMass = energy * fMassPi0Param[inlm][4] + fMassPi0Param[inlm][3];
   
-  // In case of higher energy cell cut than 50 MeV, smaller mean mass
+  // In case of higher energy cell cut than 50 MeV, smaller mean mass 0-5 MeV, not really necessary
   meanMass -= fMassShiftHighECell;
   
   // Get the parametrized width of the mass
@@ -399,7 +406,7 @@ Bool_t AliCaloPID::IsInPi0SplitMassRange(const Float_t energy, const Float_t mas
 }
 
 //________________________________________________
-Bool_t AliCaloPID::IsInM02Range(const Float_t m02)
+Bool_t AliCaloPID::IsInM02Range(Float_t m02) const
 {
   // Select the appropriate m02 range, fix cut, not E dependent 
     
@@ -411,8 +418,8 @@ Bool_t AliCaloPID::IsInM02Range(const Float_t m02)
   
 }
 
-//___________________________________________________________________________________________
-Bool_t AliCaloPID::IsInPi0M02Range(const Float_t energy, const Float_t m02,  const Int_t nlm)
+//_______________________________________________________________________________
+Bool_t AliCaloPID::IsInPi0M02Range(Float_t energy, Float_t m02,  Int_t nlm) const
 {
   // Select the appropriate m02 range in splitting method for pi0
   
@@ -455,8 +462,8 @@ Bool_t AliCaloPID::IsInPi0M02Range(const Float_t energy, const Float_t m02,  con
 }
 
 
-//_____________________________________________________________________________________________
-Bool_t AliCaloPID::IsInEtaM02Range(const Float_t energy, const Float_t m02,  const Int_t nlm)
+//______________________________________________________________________________
+Bool_t AliCaloPID::IsInEtaM02Range(Float_t energy, Float_t m02, Int_t nlm) const
 {
   // Select the appropriate m02 range in splitting method to select eta's
   // Use same parametrization as pi0, just shift the distributions (to be tuned)
@@ -507,8 +514,8 @@ Bool_t AliCaloPID::IsInEtaM02Range(const Float_t energy, const Float_t m02,  con
   
 }
 
-//_____________________________________________________________________________________________
-Bool_t AliCaloPID::IsInConM02Range(const Float_t energy, const Float_t m02,  const Int_t nlm)
+//______________________________________________________________________________
+Bool_t AliCaloPID::IsInConM02Range(Float_t energy, Float_t m02, Int_t nlm) const
 {
   // Select the appropriate m02 range in splitting method for converted photons
   // Just min limit for pi0s is max for conversion.
@@ -546,8 +553,8 @@ AliEMCALPIDUtils *AliCaloPID::GetEMCALPIDUtils()
 }
 
 
-//______________________________________________________________________
-Int_t AliCaloPID::GetIdentifiedParticleType(const AliVCluster * cluster) 
+//________________________________________________________________ 
+Int_t AliCaloPID::GetIdentifiedParticleType(AliVCluster * cluster)
 {
   // Returns a PDG number corresponding to the likely ID of the cluster
   
@@ -601,17 +608,15 @@ Int_t AliCaloPID::GetIdentifiedParticleType(const AliVCluster * cluster)
   
 }
 
-//_______________________________________________________________________________
-Int_t AliCaloPID::GetIdentifiedParticleTypeFromBayesWeights(const Bool_t isEMCAL, 
-                                                            const Double_t * pid, 
-                                                            const Float_t energy) 
+//_________________________________________________________________________________________________________
+Int_t AliCaloPID::GetIdentifiedParticleTypeFromBayesWeights(Bool_t isEMCAL, Double_t * pid, Float_t energy)
 {
   //Return most probable identity of the particle after bayesian weights calculated in reconstruction
   
   if(!pid)
   { 
-    printf("AliCaloPID::GetIdentifiedParticleType() - pid pointer not initialized!!!\n");
-    abort();
+    AliFatal("pid pointer not initialized!!!");
+    return kNeutralUnknown; // not needed, added to content coverity
   }
   
   Float_t wPh  =  fPHOSPhotonWeight ;
@@ -673,7 +678,7 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromBayesWeights(const Bool_t isEMCAL
   
 }
 
-//____________________________________________________________________________________________________
+//____________________________________________________________________________________________________________
 Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* cluster, 
                                                                 AliVCaloCells* cells,
                                                                 AliCalorimeterUtils * caloutils,
@@ -683,7 +688,7 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
                                                                 TLorentzVector & l1, TLorentzVector & l2,
                                                                 Int_t   & absId1,   Int_t   & absId2,
                                                                 Float_t & distbad1, Float_t & distbad2,
-                                                                Bool_t  & fidcut1,  Bool_t  & fidcut2  )
+                                                                Bool_t  & fidcut1,  Bool_t  & fidcut2  ) const
 {
   // Split the cluster in 2, do invariant mass, get the mass and decide 
   // if this is a photon, pi0, eta, ...
@@ -825,9 +830,21 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   if(nMax < 3)  splitFracCut = fSplitEFracMin[nMax-1];
   else          splitFracCut = fSplitEFracMin[2];
   if((e1+e2)/eClus < splitFracCut) return kNeutralUnknown ;
-  
+
   if(fDebug > 0) printf("\t pass Split E frac cut\n");
-    
+  
+  // Consider sub-clusters with minimum energy
+  Float_t minECut = fSubClusterEMin[2];
+  if     (nMax == 2)  minECut = fSubClusterEMin[1];
+  else if(nMax == 1)  minECut = fSubClusterEMin[0];
+  if(e1 < minECut || e2 < minECut)
+  {
+    //printf("Reject: e1 %2.1f, e2 %2.1f, cut %2.1f\n",e1,e2,minECut);
+    return kNeutralUnknown ;
+  }
+
+  if(fDebug > 0) printf("\t pass min sub-cluster E cut\n");
+  
   // Asymmetry of cluster
   Float_t asy =-10;
   if(e1+e2 > 0) asy = (e1-e2) / (e1+e2);
@@ -846,10 +863,13 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   else if(IsInEtaM02Range(eClus,m02,nMax))  etaOK = kTRUE;
   else if(IsInConM02Range(eClus,m02,nMax))  conOK = kTRUE;
   
+  Float_t energy = eClus;
+  if(nMax > 2) energy = e1+e2; // In case of NLM>2 use mass cut for NLM=2 but for the split sum not the cluster energy that is not the pi0 E.
+  
   // Check the mass, and set an ID to the splitted cluster
   if     ( conOK && mass < fMassPhoMax && mass > fMassPhoMin     ) { if(fDebug > 0) printf("\t Split Conv \n"); return kPhoton ; }
   else if( etaOK && mass < fMassEtaMax && mass > fMassEtaMin     ) { if(fDebug > 0) printf("\t Split Eta \n");  return kEta    ; }
-  else if( pi0OK && IsInPi0SplitMassRange(cluster->E(),mass,nMax)) { if(fDebug > 0) printf("\t Split Pi0 \n");  return kPi0    ; }
+  else if( pi0OK && IsInPi0SplitMassRange(energy,mass,nMax)) { if(fDebug > 0) printf("\t Split Pi0 \n");  return kPi0    ; }
   else                                                                                                          return kNeutralUnknown ;
   
 }

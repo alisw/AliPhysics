@@ -28,9 +28,9 @@ class AliMCInfoCuts;
 
 class AliPerformanceDEdx : public AliPerformanceObject {
 public :
-  AliPerformanceDEdx(); 
-  AliPerformanceDEdx(const Char_t* name, const Char_t* title, Int_t analysisMode, Bool_t hptGenerator);
-  ~AliPerformanceDEdx();
+  AliPerformanceDEdx(const Char_t* name="AliPerformanceDEdx", const Char_t* title="AliPerformanceDEdx",Int_t analysisMode=0, Bool_t hptGenerator=kFALSE);
+  
+  virtual ~AliPerformanceDEdx();
 
   // Init data members
   virtual void Init();

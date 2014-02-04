@@ -16,7 +16,10 @@ class TH2D;
 class TH1D;
 
 /**
- * Task to determine the 
+ * Task to determine the charged particle pseudo density from tracks
+ * and tracklets.
+ *
+ * This class determines 
  * @f[
  *   \left.\frac{d^2N_{ch}}{d\eta d\phi}\right|_{central}
  * @f] 

@@ -128,6 +128,7 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade()
    fTreeCascVarCascRadius(0),
    fTreeCascVarV0Mass(0),
    fTreeCascVarV0CosPointingAngle(0),
+   fTreeCascVarV0CosPointingAngleSpecial(0),
    fTreeCascVarV0Radius(0),
    fTreeCascVarLeastNbrClusters(0),
    fTreeCascVarMultiplicity(0),
@@ -236,6 +237,7 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade(const char *name)
    fTreeCascVarCascRadius(0),
    fTreeCascVarV0Mass(0),
    fTreeCascVarV0CosPointingAngle(0),
+   fTreeCascVarV0CosPointingAngleSpecial(0),
    fTreeCascVarV0Radius(0),
    fTreeCascVarLeastNbrClusters(0),
    fTreeCascVarMultiplicity(0),
@@ -403,6 +405,7 @@ void AliAnalysisTaskExtractCascade::UserCreateOutputObjects()
 /*17*/		fTreeCascade->Branch("fTreeCascVarCascRadius",&fTreeCascVarCascRadius,"fTreeCascVarCascRadius/F");
 /*18*/		fTreeCascade->Branch("fTreeCascVarV0Mass",&fTreeCascVarV0Mass,"fTreeCascVarV0Mass/F");
 /*19*/		fTreeCascade->Branch("fTreeCascVarV0CosPointingAngle",&fTreeCascVarV0CosPointingAngle,"fTreeCascVarV0CosPointingAngle/F");
+/*19*/		fTreeCascade->Branch("fTreeCascVarV0CosPointingAngleSpecial",&fTreeCascVarV0CosPointingAngleSpecial,"fTreeCascVarV0CosPointingAngleSpecial/F");
 /*20*/		fTreeCascade->Branch("fTreeCascVarV0Radius",&fTreeCascVarV0Radius,"fTreeCascVarV0Radius/F");
 /*21*/		fTreeCascade->Branch("fTreeCascVarLeastNbrClusters",&fTreeCascVarLeastNbrClusters,"fTreeCascVarLeastNbrClusters/I");
 //-----------MULTIPLICITY-INFO--------------------
@@ -990,6 +993,7 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
 	  Double_t lDcaPosToPrimVertexXi  = -1.;
 	  Double_t lDcaNegToPrimVertexXi  = -1.;
 	  Double_t lV0CosineOfPointingAngleXi = -1. ;
+	  Double_t lV0CosineOfPointingAngleXiSpecial = -1. ;
 	  Double_t lPosV0Xi[3] = { -1000. , -1000., -1000. }; // Position of VO coming from cascade
 	  Double_t lV0RadiusXi = -1000.0;
 	  Double_t lV0quality  = 0.;
@@ -1131,6 +1135,10 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
 	  lV0CosineOfPointingAngleXi 	= xi->GetV0CosineOfPointingAngle( lBestPrimaryVtxPos[0],
 									    lBestPrimaryVtxPos[1],
 									    lBestPrimaryVtxPos[2] );
+    //Modification: V0 CosPA wrt to Cascade decay vertex
+	  lV0CosineOfPointingAngleXiSpecial 	= xi->GetV0CosineOfPointingAngle( lPosXi[0],
+									    lPosXi[1],
+									    lPosXi[2] );
 
 	  lDcaV0ToPrimVertexXi 		= xi->GetD( lBestPrimaryVtxPos[0], 
 						      lBestPrimaryVtxPos[1], 
@@ -1237,6 +1245,7 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
 /*14*/		fTreeCascVarCascRadius = lXiRadius;
 /*15*/		fTreeCascVarV0Mass = lInvMassLambdaAsCascDghter;
 /*16*/		fTreeCascVarV0CosPointingAngle = lV0CosineOfPointingAngleXi;
+/*16*/		fTreeCascVarV0CosPointingAngleSpecial = lV0CosineOfPointingAngleXiSpecial;
 /*17*/		fTreeCascVarV0Radius = lV0RadiusXi;
 /*20*/		fTreeCascVarLeastNbrClusters = leastnumberofclusters;
 /*21*/		fTreeCascVarMultiplicity = lMultiplicity; //multiplicity, whatever that may be

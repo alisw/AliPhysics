@@ -1,14 +1,17 @@
 #ifndef __CINT__
 #endif
-Int_t AddRsnDaughterCutsLambdaNsigma(AliPID::EParticleType type1,AliPID::EParticleType type2,TString opt,Bool_t isRsnMini=kFALSE,AliRsnInputHandler *rsnIH=0,AliAnalysisTaskSE *task=0)
+Int_t AddRsnDaughterCutsLambdaNsigma(AliPID::EParticleType type1,AliPID::EParticleType type2,TString opt,AliRsnInputHandler *rsnIH=0,AliAnalysisTaskSE *task=0)
 {
 
    if (!rsnIH) return 0;
 
    Bool_t valid = kTRUE;
-   Int_t isRsnMini = AliRsnTrainManager::GetGlobalInt("IsRsnMini",valid);
+   //   Int_t collisionType = AliRsnTrainManager::GetGlobalInt("IsCollisionType",valid);
    Int_t useCommonQualityCut = AliRsnTrainManager::GetGlobalInt("RsnCommonQualityCut",valid);
-   Int_t collisionType = AliRsnTrainManager::GetGlobalInt("IsCollisionType",valid);
+   TString rsnQualityCut = AliRsnTrainManager::GetGlobalStr("RsnQualityCut",valid);
+   Int_t isMC = AliRsnTrainManager::GetGlobalInt("IsMC",valid);
+   Int_t isRsnMini = AliRsnTrainManager::GetGlobalInt("IsRsnMini",valid);
+   Int_t isMixing = AliRsnTrainManager::GetGlobalInt("IsMixing",valid);
 
    // === USER HAS TO SET CORRECT NUMBER OF CUTS SETS =====
    Int_t numberOfCuts = 2;

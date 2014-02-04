@@ -17,6 +17,7 @@
 #include <TObjArray.h>
 
 #include "AliDielectronVarManager.h"
+#include "AliDielectronHistos.h"
 
 class AliDielectronHF : public TNamed {
 public:
@@ -28,7 +29,12 @@ public:
     kSymBin
   };
   enum EPairType {
-    kOSonly=0,  kOSandLS, kOSandROT, kOSandMIX, kAll
+    //    kOSonly=0,  kOSandLS, kOSandROT, kOSandMIX, kAll, kMConly
+    kAll=0, kMConly,
+    kSeAll,   kSeOnlyOS,
+    kMeAll,   kMeOnlyOS,
+    kSeMeAll, kSeMeOnlyOS,
+    kSeReAll, kSeReOnlyOS,
   };
 
   AliDielectronHF();
@@ -39,32 +45,34 @@ public:
   void Init();
   void SetSignalsMC(TObjArray* array)    {fSignalsMC = array;}
   void SetStepForMCGenerated(Bool_t switcher=kTRUE)    {fStepGenerated = switcher;}
-  void SetPairTypes(EPairType ptype=kOSonly) { fPairType=ptype; }
+  void SetPairTypes(EPairType ptype) { fPairType=ptype; }
 
   // functions to add 1-dimensional objects
   void UserProfile(const char* histClass, UInt_t valTypeP,
-		   const TVectorD * const binsX, UInt_t valTypeX, TString option="");
+		   const TVectorD * const binsX, UInt_t valTypeX, TString option="",
+		   UInt_t valTypeW=AliDielectronHistos::kNoWeights);
   void UserHistogram(const char* histClass,
-		     const TVectorD * const binsX, UInt_t valTypeX)
-  { UserProfile(histClass,999,binsX,valTypeX); }
+		     const TVectorD * const binsX, UInt_t valTypeX, UInt_t valTypeW=AliDielectronHistos::kNoWeights)
+  { UserProfile(histClass,AliDielectronHistos::kNoProfile,binsX,valTypeX,"",valTypeW); }
 
   // functions to add 2-dimensional objects
   void UserProfile(const char* histClass, UInt_t valTypeP,
 		   const TVectorD * const binsX, const TVectorD * const binsY,
-		   UInt_t valTypeX, UInt_t valTypeY, TString option="");
+		   UInt_t valTypeX, UInt_t valTypeY, TString option="", UInt_t valTypeW=AliDielectronHistos::kNoWeights);
   void UserHistogram(const char* histClass,
                      const TVectorD * const binsX, const TVectorD * const binsY,
-		     UInt_t valTypeX, UInt_t valTypeY)
-  { UserProfile(histClass,999,binsX,binsY,valTypeX,valTypeY); }
+		     UInt_t valTypeX, UInt_t valTypeY, UInt_t valTypeW=AliDielectronHistos::kNoWeights)
+  { UserProfile(histClass,AliDielectronHistos::kNoProfile,binsX,binsY,valTypeX,valTypeY,"",valTypeW); }
 
   // functions to add 3-dimensional objects
   void UserProfile(const char* histClass, UInt_t valTypeP,
 		   const TVectorD * const binsX, const TVectorD * const binsY, const TVectorD * const binsZ,
-		   UInt_t valTypeX, UInt_t valTypeY, UInt_t valTypeZ, TString option="");
+		   UInt_t valTypeX, UInt_t valTypeY, UInt_t valTypeZ, TString option="",
+		   UInt_t valTypeW=AliDielectronHistos::kNoWeights);
   void UserHistogram(const char* histClass,
                      const TVectorD * const binsX, const TVectorD * const binsY, const TVectorD * const binsZ,
-                     UInt_t valTypeX, UInt_t valTypeY, UInt_t valTypeZ)
-  { UserProfile(histClass,999,binsX,binsY,binsZ,valTypeX,valTypeY,valTypeZ); }
+                     UInt_t valTypeX, UInt_t valTypeY, UInt_t valTypeZ, UInt_t valTypeW=AliDielectronHistos::kNoWeights)
+  { UserProfile(histClass,AliDielectronHistos::kNoProfile,binsX,binsY,binsZ,valTypeX,valTypeY,valTypeZ,"",valTypeW); }
 
 
   // functions to define the grid
@@ -95,7 +103,7 @@ private:
   TObjArray fAxes;                  // Axis descriptions of the cut binning
   UShort_t  fBinType[kMaxCuts];     // binning type of the axes
   
-  Bool_t    fHasMC;
+  Bool_t    fHasMC;                 // is mc array
   Bool_t    fStepGenerated;         // switcher for generated particles
 
   TObjArray fRefObj;               // reference object

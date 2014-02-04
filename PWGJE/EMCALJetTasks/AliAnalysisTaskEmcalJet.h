@@ -11,8 +11,8 @@ class AliRhoParameter;
 class AliLocalRhoParameter;
 class AliVCluster;
 class AliVParticle;
+class AliJetContainer;
 
-#include "AliVEvent.h"
 #include "AliAnalysisTaskEmcal.h"
 
 class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
@@ -21,58 +21,60 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   AliAnalysisTaskEmcalJet(const char *name, Bool_t histo=kFALSE); 
   virtual ~AliAnalysisTaskEmcalJet();
 
-  void                        SetJetEtaLimits(Float_t min, Float_t max)            { fJetMinEta = min, fJetMaxEta = max ; }
-  void                        SetJetPhiLimits(Float_t min, Float_t max)            { fJetMinPhi = min, fJetMaxPhi = max ; }
-  void                        SetJetAreaCut(Float_t cut)                           { fJetAreaCut     = cut              ; }
-  void                        SetPercAreaCut(Float_t p)                            { fPercAreaCut    = p                ; }
-  void                        SetAreaEmcCut(Double_t a = 0.99)                     { fAreaEmcCut     = a                ; }
-  void                        SetJetPtCut(Float_t cut)                             { fJetPtCut       = cut              ; }
-  void                        SetJetRadius(Float_t r)                              { fJetRadius      = r                ; } 
-  void                        SetJetsName(const char *n)                           { fJetsName       = n                ; }
-  virtual void                SetRhoName(const char *n)                            { fRhoName        = n                ; }
-  virtual void                SetLocalRhoName(const char *n)                       { fLocalRhoName   = n                ; }
-  void                        SetMaxClusterPt(Float_t b)                           { fMaxClusterPt   = b                ; }
-  void                        SetMaxTrackPt(Float_t b)                             { fMaxTrackPt     = b                ; }
-  void                        SetPtBiasJetClus(Float_t b)                          { fPtBiasJetClus  = b                ; }
-  void                        SetPtBiasJetTrack(Float_t b)                         { fPtBiasJetTrack = b                ; }
-  void                        SetLeadingHadronType(Int_t t)                        { fLeadingHadronType = t             ; }
-  void                        SetNLeadingJets(Int_t t)                             { fNLeadingJets   = t                ; }
-  void                        SetJetBitMap(UInt_t m)                               { fJetBitMap      = m                ; }
-  void                        SetJetTrigger(UInt_t t=AliVEvent::kEMCEJE)           { fJetTrigger     = t                ; }
- 
+  //these should all point to the jet container
+  void                        SetAnaType(UInt_t t, Int_t c = 0) { SetJetAcceptanceType(t,c); }
+  void                        SetJetAcceptanceType(UInt_t t, Int_t c = 0);
+  void                        SetJetAcceptanceType(TString cutType, Int_t c = 0);
+  void                        SetJetEtaLimits(Float_t min, Float_t max, Int_t c = 0);
+  void                        SetJetPhiLimits(Float_t min, Float_t max, Int_t c = 0);
+  void                        SetJetAreaCut(Float_t cut, Int_t c = 0);
+  void                        SetPercAreaCut(Float_t p, Int_t c = 0);
+  void                        SetZLeadingCut(Float_t zemc, Float_t zch, Int_t c = 0);
+  void                        SetNEFCut(Float_t min, Float_t max, Int_t c = 0);
+  void                        SetAreaEmcCut(Double_t a = 0.99, Int_t c = 0);
+  void                        SetJetPtCut(Float_t cut, Int_t c = 0);
+  void                        SetJetRadius(Float_t r, Int_t c = 0);
+  void                        SetMaxClusterPt(Float_t b, Int_t c = 0);
+  void                        SetMaxTrackPt(Float_t b, Int_t c = 0);
+  void                        SetPtBiasJetClus(Float_t b, Int_t c = 0);
+  void                        SetPtBiasJetTrack(Float_t b, Int_t c = 0);
+  void                        SetLeadingHadronType(Int_t t, Int_t c = 0);
+  void                        SetNLeadingJets(Int_t t, Int_t c = 0);
+  void                        SetJetBitMap(UInt_t m, Int_t c = 0);
+  void                        SetJetTrigger(UInt_t t, Int_t c = 0);
+  void                        SetIsParticleLevel(Bool_t b, Int_t c = 0);
+  void                        SetJetsName(const char *n)                   { AddJetContainer(n); }
+  virtual void                SetRhoName(const char *n, Int_t c = 0);
+  virtual void                SetLocalRhoName(const char *n)               { fLocalRhoName   = n; }
+  const TString&              GetRhoName(Int_t c = 0) const;
+  AliJetContainer            *AddJetContainer(const char *n, TString defaultCutType = "", Float_t jetRadius = 0.4);
+  void                        RemoveJetContainer(Int_t i)                        { fJetCollArray.RemoveAt(i);} 
+  AliJetContainer            *GetJetContainer(Int_t i=0)                                               const;
+  AliJetContainer            *GetJetContainer(const char* name)                                        const;
+
  protected:
   Float_t*                    GenerateFixedBinArray(Int_t n, Float_t min, Float_t max) const;
-  virtual Bool_t              AcceptJet(AliEmcalJet* jet)                                              const;
-  Bool_t                      AcceptBiasJet(AliEmcalJet* jet)                                          const;
-  Double_t                    GetLeadingHadronPt(AliEmcalJet* jet)                                     const;
+  virtual Bool_t              AcceptJet(AliEmcalJet* jet, Int_t c =0);
+  Bool_t                      AcceptBiasJet(AliEmcalJet* jet, Int_t c =0);
+  Double_t                    GetLeadingHadronPt(AliEmcalJet* jet, Int_t c =0);
   void                        ExecOnce()                                                                    ;
+
   AliRhoParameter            *GetRhoFromEvent(const char *name)                                             ;
   AliLocalRhoParameter       *GetLocalRhoFromEvent(const char *name)                                        ;
-  Int_t                       GetSortedArray(Int_t indexes[], TClonesArray *array, Double_t rho=0)     const;
   Bool_t                      IsJetTrack(AliEmcalJet* jet, Int_t itrack, Bool_t sorted = kFALSE)       const;
   Bool_t                      IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool_t sorted = kFALSE)      const;
   Bool_t                      RetrieveEventObjects()                                                        ;
+  Double_t                    GetJetRadius(Int_t i=0)                                                  const;
+  TClonesArray               *GetJetArray(Int_t i=0)                                                   const;
+  AliEmcalJet                *GetJetFromArray(Int_t j, Int_t c=0)                                      const;
+  AliEmcalJet                *GetAcceptJetFromArray(Int_t j, Int_t c=0)                                const;
+  Int_t                       GetNJets(Int_t i=0)                                                      const;
+  Double_t                    GetRhoVal(Int_t i=0)                                                     const;
 
-  Float_t                     fJetRadius;                  // jet radius
-  TString                     fJetsName;                   // name of jet collection
-  TString                     fRhoName;                    // Name of rho object
-  TString                     fLocalRhoName;               // Name of local rho object
-  Float_t                     fPtBiasJetTrack;             // select jets with a minimum pt track
-  Float_t                     fPtBiasJetClus;              // select jets with a minimum pt cluster
-  Float_t                     fJetPtCut;                   // cut on jet pt
-  Float_t                     fJetAreaCut;                 // cut on jet area
-  Float_t                     fPercAreaCut;                // cut on jet area as a percentage of average jet area
-  Float_t                     fAreaEmcCut;                 // minimum cut on jet emcal area
-  Float_t                     fJetMinEta;                  // minimum eta jet acceptance
-  Float_t                     fJetMaxEta;                  // maximum eta jet acceptance
-  Float_t                     fJetMinPhi;                  // minimum phi jet acceptance
-  Float_t                     fJetMaxPhi;                  // maximum phi jet acceptance  
-  Float_t                     fMaxClusterPt;               // maximum cluster constituent pt to accept the jet
-  Float_t                     fMaxTrackPt;                 // maximum track constituent pt to accept the jet
-  Int_t                       fLeadingHadronType;          // 0 = charged, 1 = neutral, 2 = both
-  Int_t                       fNLeadingJets;               // how many jets are to be considered the leading jet(s)
-  UInt_t                      fJetBitMap;                  // bit map of accepted jets
-  UInt_t                      fJetTrigger;                 // jet trigger
+  TString                     fRhoName;                    // rho name
+  TString                     fLocalRhoName;               // name for local rho
+  TObjArray                   fJetCollArray;               // jet collection array
+
   TClonesArray               *fJets;                       //!jets
   AliRhoParameter            *fRho;                        //!event rho
   AliLocalRhoParameter       *fLocalRho;                   //!local event rho
@@ -82,6 +84,6 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   AliAnalysisTaskEmcalJet(const AliAnalysisTaskEmcalJet&);            // not implemented
   AliAnalysisTaskEmcalJet &operator=(const AliAnalysisTaskEmcalJet&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJet, 10) // EMCAL Jet base analysis task
+  ClassDef(AliAnalysisTaskEmcalJet, 3) // EMCAL Jet base analysis task
 };
 #endif

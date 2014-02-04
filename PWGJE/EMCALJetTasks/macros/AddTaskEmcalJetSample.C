@@ -7,8 +7,8 @@ AliAnalysisTaskEmcalJetSample* AddTaskEmcalJetSample(
   const char *nrho               = "Rho",
   Double_t    jetradius          = 0.2,
   Double_t    jetptcut           = 1,
-  Double_t    jetareacut         = 0.557,
-  UInt_t      type               = AliAnalysisTaskEmcal::kEMCAL,
+  Double_t    jetareacut         = 0.6,
+  const char *type               = "EMCAL",
   Int_t       leadhadtype        = 0,
   const char *taskname           = "AliAnalysisTaskEmcalJetSample"
 )
@@ -43,23 +43,29 @@ AliAnalysisTaskEmcalJetSample* AddTaskEmcalJetSample(
     name += "_";
     name += nrho;
   }
-  if (type == AliAnalysisTaskEmcal::kTPC) 
-    name += "_TPC";
-  else if (type == AliAnalysisTaskEmcal::kEMCAL) 
-    name += "_EMCAL";
-  else if (type == AliAnalysisTaskEmcal::kUser) 
-    name += "_USER";
+  if (strcmp(type,"")) {
+    name += "_";
+    name += type;
+  }
+
+  Printf("name: %s",name.Data());
 
   AliAnalysisTaskEmcalJetSample* jetTask = new AliAnalysisTaskEmcalJetSample(name);
-  jetTask->SetAnaType(type);
-  jetTask->SetTracksName(ntracks);
-  jetTask->SetClusName(nclusters);
-  jetTask->SetJetsName(njets);
-  jetTask->SetRhoName(nrho);
-  jetTask->SetJetRadius(jetradius);
-  jetTask->SetJetPtCut(jetptcut);
-  jetTask->SetPercAreaCut(jetareacut);
-  jetTask->SetLeadingHadronType(leadhadtype);
+
+  AliParticleContainer *trackCont  = jetTask->AddParticleContainer(ntracks);
+  AliClusterContainer *clusterCont = jetTask->AddClusterContainer(nclusters);
+
+  TString strType(type);
+  AliJetContainer *jetCont = jetTask->AddJetContainer(njets,strType,jetradius);
+  if(jetCont) {
+    jetCont->SetRhoName(nrho);
+    jetCont->ConnectParticleContainer(trackCont);
+    jetCont->ConnectClusterContainer(clusterCont);
+    jetCont->SetZLeadingCut(0.98,0.98);
+    jetCont->SetPercAreaCut(0.6);
+    jetCont->SetJetPtCut(jetptcut);    
+    jetCont->SetLeadingHadronType(leadhadtype);
+  }
   
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

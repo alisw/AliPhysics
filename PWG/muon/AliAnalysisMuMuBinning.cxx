@@ -75,62 +75,62 @@ AliAnalysisMuMuBinning::~AliAnalysisMuMuBinning()
 void AliAnalysisMuMuBinning::AddBin(const AliAnalysisMuMuBinning::Range& bin)
 {
   /// add one bin
-  AddBin(bin.Particle().Data(),bin.Type().Data(),
+  AddBin(bin.What().Data(),bin.Quantity().Data(),
          bin.Xmin(),bin.Xmax(),
          bin.Ymin(),bin.Ymax(),bin.Flavour());
 }
 
 //______________________________________________________________________________
-void AliAnalysisMuMuBinning::AddBin(const char* particle, const char* type,
+void AliAnalysisMuMuBinning::AddBin(const char* what, const char* quantity,
                                     Double_t xmin, Double_t xmax,
                                     Double_t ymin, Double_t ymax,
                                     const char* flavour)
 {
   /// Add a bin
-  /// Note that particle and type are not case sensitive.
+  /// Note that what and Quantity are not case sensitive.
   if (!fBins)
   {
     fBins = new TMap;
     fBins->SetOwnerKeyValue(kTRUE,kTRUE);
   }
   
-  TString sparticle(particle);
-  sparticle.ToUpper();
+  TString swhat(what);
+  swhat.ToUpper();
   
-  TString stype(type);
-  stype.ToUpper();
+  TString sQuantity(quantity);
+  sQuantity.ToUpper();
   
-  TObjArray* b = static_cast<TObjArray*>(fBins->GetValue(sparticle.Data()));
+  TObjArray* b = static_cast<TObjArray*>(fBins->GetValue(swhat.Data()));
   if (!b)
   {
     b = new TObjArray;
     b->SetOwner(kTRUE);
-    fBins->Add(new TObjString(sparticle),b);
+    fBins->Add(new TObjString(swhat),b);
   }
 
-  Range* r = new Range(sparticle.Data(),stype.Data(),xmin,xmax,ymin,ymax,flavour);
+  Range* r = new Range(swhat.Data(),sQuantity.Data(),xmin,xmax,ymin,ymax,flavour);
   
   if ( b->FindObject(r) )
   {
-    AliDebug(1,"Trying to add an already existing bin. Not doing it.");
+    AliDebug(1,Form("Trying to add an already existing bin : %s. Not doing it.",r->AsString().Data()));
     delete r;
   }
   else
   {
     b->Add(r);
     
-    TString btype(Form("%s-%s",sparticle.Data(),stype.Data()));
+    TString bQuantity(Form("%s-%s",swhat.Data(),sQuantity.Data()));
     
     TString name(GetName());
     
-    if ( !name.Contains(btype) )
+    if ( !name.Contains(bQuantity) )
     {
       if (name.Length()>0)
       {
         name += " ";
       }
         
-      name += btype;
+      name += bQuantity;
       SetName(name);
     }
   }
@@ -174,12 +174,12 @@ TObjArray* AliAnalysisMuMuBinning::CreateBinObjArray() const
   TObjArray* a = new TObjArray;
   a->SetOwner(kTRUE);
 
-  TIter nextParticle(fBins);
-  TObjString* particle;
+  TIter nextwhat(fBins);
+  TObjString* what;
   
-  while ( ( particle = static_cast<TObjString*>(nextParticle()) ) )
+  while ( ( what = static_cast<TObjString*>(nextwhat()) ) )
   {
-    TObjArray* b = static_cast<TObjArray*>(fBins->GetValue(particle->String().Data()));
+    TObjArray* b = static_cast<TObjArray*>(fBins->GetValue(what->String().Data()));
     TIter next(b);
     Range* r;
   
@@ -198,9 +198,9 @@ TObjArray* AliAnalysisMuMuBinning::CreateBinObjArray() const
 }
 
 //______________________________________________________________________________
-TObjArray* AliAnalysisMuMuBinning::CreateBinObjArray(const char* particle) const
+TObjArray* AliAnalysisMuMuBinning::CreateBinObjArray(const char* what) const
 {
-  /// Get the list of bins for a given particle 
+  /// Get the list of bins for a given what 
   /// The returned array must be deleted by the user
   
   if (!fBins) return 0x0;
@@ -208,10 +208,10 @@ TObjArray* AliAnalysisMuMuBinning::CreateBinObjArray(const char* particle) const
   TObjArray* a = new TObjArray;
   a->SetOwner(kTRUE);
   
-  TString sparticle(particle);
-  sparticle.ToUpper();
+  TString swhat(what);
+  swhat.ToUpper();
   
-  TObjArray* b = static_cast<TObjArray*>(fBins->GetValue(sparticle.Data()));
+  TObjArray* b = static_cast<TObjArray*>(fBins->GetValue(swhat.Data()));
   if (!b) return 0x0;
   
   TIter next(b);
@@ -232,39 +232,39 @@ TObjArray* AliAnalysisMuMuBinning::CreateBinObjArray(const char* particle) const
 
 
 //______________________________________________________________________________
-TObjArray* AliAnalysisMuMuBinning::CreateBinObjArray(const char* particle, const char* type, const char* flavour) const
+TObjArray* AliAnalysisMuMuBinning::CreateBinObjArray(const char* what, const char* quantity, const char* flavour) const
 {
-  /// Get the list of bins for a given particle and given type
+  /// Get the list of bins for a given what and given Quantity
   /// The returned array must be deleted by the user
-  /// Type can be a single type or several types separated by comma
+  /// Quantity can be a single Quantity or several Quantitys separated by comma
   
   TObjArray* a = new TObjArray;
   a->SetOwner(kTRUE);
   
-  TString sparticle(particle);
-  sparticle.ToUpper();
+  TString swhat(what);
+  swhat.ToUpper();
 
-  TObjArray* b = static_cast<TObjArray*>(fBins->GetValue(sparticle.Data()));
+  TObjArray* b = static_cast<TObjArray*>(fBins->GetValue(swhat.Data()));
   if (!b) return 0x0;
   
   TIter next(b);
   Range* r;
 
-  TString stype(type);
-  stype.ToUpper();
+  TString sQuantity(quantity);
+  sQuantity.ToUpper();
 
   TString sflavour(flavour);
   
-  TObjArray* types = stype.Tokenize(",");
-  TObjString* onetype;
-  TIter nextType(types);
+  TObjArray* Quantitys = sQuantity.Tokenize(",");
+  TObjString* oneQuantity;
+  TIter nextQuantity(Quantitys);
   
   while ( ( r = static_cast<Range*>(next()) ) )
   {
-    nextType.Reset();
-    while ( ( onetype = static_cast<TObjString*>(nextType()) ) )
+    nextQuantity.Reset();
+    while ( ( oneQuantity = static_cast<TObjString*>(nextQuantity()) ) )
     {
-      if ( r->Type() == onetype->String() &&
+      if ( r->Quantity() == oneQuantity->String() &&
           ( ( sflavour.Length() > 0 && r->Flavour() == sflavour.Data() ) || sflavour.Length()==0 ) )
       {
         a->Add(r->Clone());
@@ -278,31 +278,31 @@ TObjArray* AliAnalysisMuMuBinning::CreateBinObjArray(const char* particle, const
     a = 0x0;
   }
   
-  delete types;
+  delete Quantitys;
   return a;
 }
 
 //______________________________________________________________________________
-void AliAnalysisMuMuBinning::CreateMesh(const char* particle,
-                                        const char* type1, const char* type2,
+void AliAnalysisMuMuBinning::CreateMesh(const char* what,
+                                        const char* quantity1, const char* quantity2,
                                         const char* flavour,
                                         Bool_t remove12)
 {
-  /// Create 2D bins from existing 1d ones of type1 and type2
-  TObjArray* a1 = CreateBinObjArray(particle,type1,flavour);
+  /// Create 2D bins from existing 1d ones of Quantity1 and Quantity2
+  TObjArray* a1 = CreateBinObjArray(what,quantity1,flavour);
   if (!a1)
   {
-    AliError(Form("No bin for type %s. Done nothing.",type1));
+    AliError(Form("No bin for Quantity %s. Done nothing.",quantity1));
     return;
   }
-  TObjArray* a2 = CreateBinObjArray(particle,type2,flavour);
+  TObjArray* a2 = CreateBinObjArray(what,quantity2,flavour);
   if (!a2)
   {
-    AliError(Form("No bin for type %s. Done nothing.",type2));
+    AliError(Form("No bin for Quantity %s. Done nothing.",quantity2));
     return;
   }
   
-  TString meshType(Form("%s VS %s - %s",type1,type2,flavour));
+  TString meshQuantity(Form("%s VS %s - %s",quantity1,quantity2,flavour));
   
   for ( Int_t i1 = 0; i1 <= a1->GetLast(); ++i1 )
   {
@@ -312,7 +312,7 @@ void AliAnalysisMuMuBinning::CreateMesh(const char* particle,
     {
       Range* r2 = static_cast<Range*>(a2->At(i2));
       
-      AddBin(particle,meshType,r2->Xmin(),r2->Xmax(),r1->Xmin(),r1->Xmax(),Form("%s VS %s",r1->Flavour().Data(),r2->Flavour().Data()));
+      AddBin(what,meshQuantity,r2->Xmin(),r2->Xmax(),r1->Xmin(),r1->Xmax(),Form("%s VS %s",r1->Flavour().Data(),r2->Flavour().Data()));
     }
   }
   
@@ -321,19 +321,19 @@ void AliAnalysisMuMuBinning::CreateMesh(const char* particle,
 
   if ( remove12 )
   {
-    TObjArray* b = static_cast<TObjArray*>(fBins->GetValue(particle));
+    TObjArray* b = static_cast<TObjArray*>(fBins->GetValue(what));
     TIter next(b);
     Range* r;
-    TString stype1(type1);
-    TString stype2(type2);
+    TString sQuantity1(quantity1);
+    TString sQuantity2(quantity2);
 
-    stype1.ToUpper();
-    stype2.ToUpper();
+    sQuantity1.ToUpper();
+    sQuantity2.ToUpper();
     
     while ( ( r = static_cast<Range*>(next())) )
     {
-      if ( r->Type() == type1 ||
-           r->Type() == type2 )
+      if ( r->Quantity() == quantity1 ||
+           r->Quantity() == quantity2 )
       {
         b->Remove(r);
       }
@@ -342,60 +342,60 @@ void AliAnalysisMuMuBinning::CreateMesh(const char* particle,
 }
 
 //______________________________________________________________________________
-TObjArray* AliAnalysisMuMuBinning::CreateParticleArray() const
+TObjArray* AliAnalysisMuMuBinning::CreateWhatArray() const
 {
-  /// Create a TObjString array with the names of the particle we're holding results for
+  /// Create a TObjString array with the names of the what we're holding results for
   /// Returned array must be delete by user
   
-  TObjArray* particleArray(0x0);
+  TObjArray* whatArray(0x0);
   
-  TIter nextParticle(fBins);
-  TObjString* particle;
+  TIter nextwhat(fBins);
+  TObjString* what;
 
-  while ( ( particle = static_cast<TObjString*>(nextParticle()) ) )
+  while ( ( what = static_cast<TObjString*>(nextwhat()) ) )
   {
-    if (!particleArray)
+    if (!whatArray)
     {
-      particleArray = new TObjArray;
-      particleArray->SetOwner(kTRUE);
+      whatArray = new TObjArray;
+      whatArray->SetOwner(kTRUE);
     }
-    particleArray->Add(new TObjString(*particle));
+    whatArray->Add(new TObjString(*what));
   }
-  return particleArray;
+  return whatArray;
 }
 
 //______________________________________________________________________________
-TObjArray* AliAnalysisMuMuBinning::CreateTypeArray() const
+TObjArray* AliAnalysisMuMuBinning::CreateQuantityArray() const
 {
-  /// Create a TObjString array with the names of the binning types
+  /// Create a TObjString array with the names of the binning Quantitys
   /// Returned array must be delete by user
 
-  TObjArray* typeArray(0x0);
+  TObjArray* QuantityArray(0x0);
   
-  TIter nextParticle(fBins);
-  TObjString* particle;
+  TIter nextwhat(fBins);
+  TObjString* what;
   
-  while ( ( particle = static_cast<TObjString*>(nextParticle()) ) )
+  while ( ( what = static_cast<TObjString*>(nextwhat()) ) )
   {
-    TObjArray* particles = static_cast<TObjArray*>(fBins->GetValue(particle->String()));
+    TObjArray* whats = static_cast<TObjArray*>(fBins->GetValue(what->String()));
     
-    TIter next(particles);
+    TIter next(whats);
     Range* r;
     
     while ( ( r = static_cast<Range*>(next())) )
     {
-      if (!typeArray)
+      if (!QuantityArray)
       {
-        typeArray = new TObjArray;
-        typeArray->SetOwner(kTRUE);
+        QuantityArray = new TObjArray;
+        QuantityArray->SetOwner(kTRUE);
       }
-      if ( !typeArray->FindObject(r->Type()) )
+      if ( !QuantityArray->FindObject(r->Quantity()) )
       {
-        typeArray->Add(new TObjString(r->Type()));
+        QuantityArray->Add(new TObjString(r->Quantity()));
       }
     }
   }
-  return typeArray;
+  return QuantityArray;
 }
 
 //______________________________________________________________________________
@@ -489,23 +489,27 @@ Long64_t AliAnalysisMuMuBinning::Merge(TCollection* list)
 
 //______________________________________________________________________________
 AliAnalysisMuMuBinning*
-AliAnalysisMuMuBinning::Project(const char* particle, const char* type, const char* flavour) const
+AliAnalysisMuMuBinning::Project(const char* what, const char* quantity, const char* flavour) const
 {
-  /// Create a sub-binning object with only the bins pertaining to (particle,type)
+  /// Create a sub-binning object with only the bins pertaining to (what,Quantity)
   
-  TObjArray* bins = CreateBinObjArray(particle,type,flavour);
+  TObjArray* bins = CreateBinObjArray(what,quantity,flavour);
   if (!bins) return 0x0;
   AliAnalysisMuMuBinning* p = new AliAnalysisMuMuBinning;
   TIter next(bins);
   AliAnalysisMuMuBinning::Range* bin;
-  TString stype(type);
-  stype.ToUpper();
+  TString sQuantity(quantity);
+  sQuantity.ToUpper();
   
   while ( ( bin = static_cast<AliAnalysisMuMuBinning::Range*>(next())) )
   {
-    assert  (bin->Type()==stype && bin->Flavour()==flavour);
+    if  (bin->Quantity()!=sQuantity || bin->Flavour()!=flavour)
     {
-      p->AddBin(particle,bin->Type(),bin->Xmin(),bin->Xmax(),bin->Ymin(),bin->Ymax(),bin->Flavour().Data());
+      AliDebug(1,Form("sQuantity=%s flavour=%s bin=%s => skip",sQuantity.Data(),flavour,bin->AsString().Data()));
+      continue;
+    }
+    {
+      p->AddBin(what,bin->Quantity(),bin->Xmin(),bin->Xmax(),bin->Ymin(),bin->Ymax(),bin->Flavour().Data());
     }
   }
   
@@ -525,12 +529,12 @@ void AliAnalysisMuMuBinning::Print(Option_t* /*opt*/) const
     return;
   }
   
-  TIter nextParticle(fBins);
+  TIter nextwhat(fBins);
   TObjString* str;
   
-  while ( ( str = static_cast<TObjString*>(nextParticle()) ) )
+  while ( ( str = static_cast<TObjString*>(nextwhat()) ) )
   {
-    std::cout << "Particle : " << str->String().Data() << std::endl;
+    std::cout << "what : " << str->String().Data() << std::endl;
     TObjArray* b = static_cast<TObjArray*>(fBins->GetValue(str->String()));
     TIter next(b);
     Range* r(0x0);
@@ -550,17 +554,17 @@ void AliAnalysisMuMuBinning::Print(Option_t* /*opt*/) const
 //______________________________________________________________________________
 
 //______________________________________________________________________________
-AliAnalysisMuMuBinning::Range::Range(const char* particle, const char* type,
+AliAnalysisMuMuBinning::Range::Range(const char* what, const char* quantity,
                                      Double_t xmin, Double_t xmax,
                                      Double_t ymin, Double_t ymax,
                                      const char* flavour)
-: TObject(), fParticle(particle), fType(type),
+: TObject(), fWhat(what), fQuantity(quantity),
   fXmin(xmin), fXmax(xmax), fYmin(ymin), fYmax(ymax),
   fFlavour(flavour)
 {
   /// ctor
-  fParticle.ToUpper();
-  fType.ToUpper();
+  fWhat.ToUpper();
+  fQuantity.ToUpper();
 }
 
 //______________________________________________________________________________
@@ -568,17 +572,17 @@ TString AliAnalysisMuMuBinning::Range::AsString() const
 {
   /// Return a string representation of this range
   
-  if ( IsNullObject()) return "";
+  if ( IsIntegrated()) return Quantity().Data();
   
   TString s;
   
   if ( fFlavour.Length() > 0 )
   {
-    s.Form("%s_%s_%05.2f_%05.2f",Type().Data(),Flavour().Data(),Xmin(),Xmax());
+    s.Form("%s_%s_%05.2f_%05.2f",Quantity().Data(),Flavour().Data(),Xmin(),Xmax());
   }
   else
   {
-    s.Form("%s_%05.2f_%05.2f",Type().Data(),Xmin(),Xmax());
+    s.Form("%s_%05.2f_%05.2f",Quantity().Data(),Xmin(),Xmax());
   }
   
   if (Is2D())
@@ -600,11 +604,11 @@ Int_t	AliAnalysisMuMuBinning::Range::Compare(const TObject* obj) const
   // than obj, 0 if objects are equal and 1 if this is larger than obj.
   const Range* other = static_cast<const Range*>(obj);
   
-  int s = strcmp(Particle().Data(),other->Particle().Data());
+  int s = strcmp(What().Data(),other->What().Data());
   
   if ( s ) return s;
   
-  s = strcmp(Type().Data(),other->Type().Data());
+  s = strcmp(Quantity().Data(),other->Quantity().Data());
   
   if (s) return s;
   
@@ -612,7 +616,7 @@ Int_t	AliAnalysisMuMuBinning::Range::Compare(const TObject* obj) const
   
   if (s) return s;
   
-  if ( IsNullObject() ) return 0;
+//  if ( IsIntegrated() && other->IsIntegrated() ) return 0;
   
   if ( Xmin() < other->Xmin() )
   {
@@ -651,7 +655,7 @@ Int_t	AliAnalysisMuMuBinning::Range::Compare(const TObject* obj) const
         {
           return 1;
         }
-      }        
+      }
     }
   }
   return 0;
@@ -663,7 +667,7 @@ Bool_t AliAnalysisMuMuBinning::Range::IsInRange(Double_t x, Double_t y) const
   /// If Range is 1D, returns true if x is in range
   /// If Range is 2D, returns true if (x,y) is in range
   
-  if ( IsNullObject() )
+  if ( IsIntegrated() )
   {
     return kTRUE;
   }
@@ -671,19 +675,19 @@ Bool_t AliAnalysisMuMuBinning::Range::IsInRange(Double_t x, Double_t y) const
   {
     if ( Is2D() )
     {
-      return ( x > Xmin() && x < Xmax() && y > Ymin() && y < Ymax());
+      return ( x >= Xmin() && x < Xmax() && y >= Ymin() && y < Ymax());
     }
     else
     {
-      return ( x > Xmin() && x < Xmax() );
+      return ( x >= Xmin() && x < Xmax() );
     }
   }
 }
 
 //______________________________________________________________________________
-Bool_t AliAnalysisMuMuBinning::Range::IsNullObject() const
+Bool_t AliAnalysisMuMuBinning::Range::IsIntegrated() const
 {
-  /// Whether we're a null object or not
+  /// Whether we're a null object (aka integrated) or not
   return
   Xmin() >= TMath::Limits<Double_t>::Max() &&
   Ymin() >= TMath::Limits<Double_t>::Max() &&
@@ -697,14 +701,14 @@ void AliAnalysisMuMuBinning::Range::Print(Option_t* /*opt*/) const
 {
   /// Output to stdout
   
-  if (IsNullObject())
+  if (IsIntegrated())
   {
-    std::cout << Form("%s : %s : NullObject",Particle().Data(),Type().Data()) << std::endl;
+    std::cout << Form("%s : %s : INTEGRATED",What().Data(),Quantity().Data()) << std::endl;
   
     return;
   }
   
-  std::cout << Form("%s : %s : %5.2f : %5.2f",Particle().Data(),Type().Data(),Xmin(),Xmax());
+  std::cout << Form("%s : %s : %5.2f : %5.2f",What().Data(),Quantity().Data(),Xmin(),Xmax());
   
   if (Is2D())
   {

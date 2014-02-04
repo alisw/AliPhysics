@@ -2,6 +2,7 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliESDEvent.h"
+#include "AliESDtrackCuts.h"
 #include "AliStack.h"
 #include "AliCentrality.h"
 #include "AliMCEventHandler.h"
@@ -17,6 +18,7 @@
 #include <TNtuple.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TH3F.h>
 #include <TChain.h>
 #include "AliESDInputHandlerRP.h"
 #include "AliAnalysisTaskCheckHFMCProd.h"
@@ -76,8 +78,17 @@ AliAnalysisTaskCheckHFMCProd::AliAnalysisTaskCheckHFMCProd() : AliAnalysisTaskSE
   fHistDSpecies(0),
   fHistBSpecies(0),
   fHistNcollHFtype(0),
+  fHistEtaPhiPtGenEle(0),
+  fHistEtaPhiPtGenPi(0),
+  fHistEtaPhiPtGenK(0),
+  fHistEtaPhiPtGenPro(0),
+  fHistEtaPhiPtRecEle(0),
+  fHistEtaPhiPtRecPi(0),
+  fHistEtaPhiPtRecK(0),
+  fHistEtaPhiPtRecPro(0),
   fSearchUpToQuark(kFALSE),
   fSystem(0),
+  fESDtrackCuts(0x0),
   fReadMC(kTRUE)
 {
   //
@@ -94,6 +105,8 @@ AliAnalysisTaskCheckHFMCProd::~AliAnalysisTaskCheckHFMCProd(){
     delete fOutput;
     fOutput = 0;
   }
+  delete fESDtrackCuts;
+
 }
    
 //___________________________________________________________________________
@@ -294,6 +307,39 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
 
   fHistNcollHFtype=new TH2F("hNcollHFtype","",5,-1.5,3.5,30,-0.5,29.5);
   fOutput->Add(fHistNcollHFtype);
+
+  Double_t binseta[11]={-1.0,-0.8,-0.6,-0.4,-0.2,0.,0.2,0.4,0.6,0.8,1.0};
+  const Int_t nBinsPhi=40;
+  Double_t binsphi[nBinsPhi+1];
+  for(Int_t ib=0; ib<=nBinsPhi; ib++) binsphi[ib]=ib*TMath::Pi()/20.;
+  const Int_t nBinsPt=24;  
+  Double_t binspt[nBinsPt+1]={0.,0.10,0.15,0.2,0.25,
+			      0.3,0.4,0.5,0.6,0.7,
+			      0.8,0.9,1.,1.25,1.5,
+			      1.75,2.,2.5,3.,4.,
+			      5.,7.5,10.,15.,20.};
+
+   fHistEtaPhiPtGenEle=new TH3F("hEtaPhiPtGenEle","",10,binseta,nBinsPhi,binsphi,nBinsPt,binspt);
+  fOutput->Add(fHistEtaPhiPtGenEle);
+  fHistEtaPhiPtGenPi=new TH3F("hEtaPhiPtGenPi","",10,binseta,nBinsPhi,binsphi,nBinsPt,binspt);
+  fOutput->Add(fHistEtaPhiPtGenPi);
+  fHistEtaPhiPtGenK=new TH3F("hEtaPhiPtGenK","",10,binseta,nBinsPhi,binsphi,nBinsPt,binspt);
+  fOutput->Add(fHistEtaPhiPtGenK);
+  fHistEtaPhiPtGenPro=new TH3F("hEtaPhiPtGenPro","",10,binseta,nBinsPhi,binsphi,nBinsPt,binspt);
+  fOutput->Add(fHistEtaPhiPtGenPro);
+
+
+  fHistEtaPhiPtRecEle=new TH3F("hEtaPhiPtRecEle","",10,binseta,nBinsPhi,binsphi,nBinsPt,binspt);
+  fOutput->Add(fHistEtaPhiPtRecEle);
+  fHistEtaPhiPtRecPi=new TH3F("hEtaPhiPtRecPi","",10,binseta,nBinsPhi,binsphi,nBinsPt,binspt);
+  fOutput->Add(fHistEtaPhiPtRecPi);
+  fHistEtaPhiPtRecK=new TH3F("hEtaPhiPtRecK","",10,binseta,nBinsPhi,binsphi,nBinsPt,binspt);
+  fOutput->Add(fHistEtaPhiPtRecK);
+  fHistEtaPhiPtRecPro=new TH3F("hEtaPhiPtRecPro","",10,binseta,nBinsPhi,binsphi,nBinsPt,binspt);
+  fOutput->Add(fHistEtaPhiPtRecPro);
+
+ 
+
   PostData(1,fOutput);
 
 }
@@ -311,6 +357,18 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
   } 
 
   fHistoNEvents->Fill(0);
+
+  if(!fESDtrackCuts){
+    Int_t year=2011;
+    if(esd->GetRunNumber()<=139517) year=2010;
+    if(year==2010) fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE);
+    else fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); 
+    fESDtrackCuts->SetMaxDCAToVertexXY(2.4);
+    fESDtrackCuts->SetMaxDCAToVertexZ(3.2);
+    fESDtrackCuts->SetDCAToVertex2D(kTRUE);
+    fESDtrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					    AliESDtrackCuts::kAny);
+  }
 
   Int_t nTracks=esd->GetNumberOfTracks();
   fHistoTracks->Fill(nTracks);
@@ -374,6 +432,8 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       Printf("ERROR: generated vertex not available");
       return;
     }
+    if(TMath::Abs(mcVert->GetZ())>10) return;
+
     //    const AliHeader* h=(AliHeader*)mcEvent->GetHeader();
     //    cout<<h<<endl;
     TString genname=mcEvent->GenEventHeader()->ClassName();
@@ -392,7 +452,6 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
  	else if(title.Contains("cele")) typeHF=2;
       }
       nColl=lgen->GetEntries();
-      printf("Ncoll=%d typeHF=%d\n",nColl,typeHF);
       fHistNcollHFtype->Fill(typeHF,nColl);
     }
     Int_t nParticles=stack->GetNtrack();
@@ -409,6 +468,11 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       if(stack->IsPhysicalPrimary(i)){
 	Double_t eta=part->Eta();
 	fHistoEtaPhysPrim->Fill(eta);
+	if(absPdg==11) fHistEtaPhiPtGenEle->Fill(eta,part->Phi(),part->Pt());
+	else if(absPdg==211) fHistEtaPhiPtGenPi->Fill(eta,part->Phi(),part->Pt());
+	else if(absPdg==321) fHistEtaPhiPtGenK->Fill(eta,part->Phi(),part->Pt());
+	else if(absPdg==2212) fHistEtaPhiPtGenPro->Fill(eta,part->Phi(),part->Pt());
+	
 	if(TMath::Abs(eta)<0.5){
 	  dNchdy+=0.6666;   // 2/3 for the ratio charged/all
 	  nPhysPrim++;
@@ -550,6 +614,21 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       else if(iFromB==1 && iPart>=0 && iPart<5) fHistYPtFeeddown[iPart]->Fill(part->Pt(),rapid);      
     }
 
+    for(Int_t i=0; i<nTracks; i++){
+      AliESDtrack* track=esd->GetTrack(i);
+      if(fESDtrackCuts->AcceptTrack(track)){
+	Int_t label=TMath::Abs(track->GetLabel());
+	if(stack->IsPhysicalPrimary(label)){
+	  TParticle* part = (TParticle*)stack->Particle(label);
+	  Int_t absPdg=TMath::Abs(part->GetPdgCode());
+	  Double_t eta=part->Eta();
+	  if(absPdg==11) fHistEtaPhiPtRecEle->Fill(eta,part->Phi(),part->Pt());
+	  else if(absPdg==211) fHistEtaPhiPtRecPi->Fill(eta,part->Phi(),part->Pt());
+	  else if(absPdg==321) fHistEtaPhiPtRecK->Fill(eta,part->Phi(),part->Pt());
+	  else if(absPdg==2212) fHistEtaPhiPtRecPro->Fill(eta,part->Phi(),part->Pt());      
+	}
+      }
+    }
     fHistoNcharmed->Fill(dNchdy,nCharmed);
     fHistoNbVsNc->Fill(nc,nb);
     fHistoPhysPrim->Fill(nPhysPrim);

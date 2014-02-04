@@ -40,6 +40,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   void         SetDEtaDPhiBins(Int_t nbe, Int_t nbp)  { fNBdeta=nbe; fNBdphi=nbp; }
   void         SetDoFillSame(Bool_t b)                { fDoFillSame = b;          }
   void         SetDoMassCut(Bool_t b)                 { fDoMassCut = b;           }
+  void         SetCheckVertex(Bool_t b)               { fCheckVertex = b;         }
   void         SetDoWeights(Bool_t b)                 { fDoWeights = b;           }
   void         SetEtaMax(Double_t eta)                { fEtaMax = eta;            }
   void         SetEtaTRange(Double_t eL, Double_t eH) { fEtaTLo=eL; fEtaTHi=eH;   }
@@ -107,6 +108,7 @@ class AliDhcTask : public AliAnalysisTaskSE {
   Bool_t             fOmitFirstEv;     //  if true skip first event in chunk
   Bool_t             fDoFillSame;      //  If true fill same event immediately (not waiting for pool)
   Bool_t             fDoMassCut;       //  If true cut on invariant mass
+  Bool_t             fCheckVertex;     //  switch to flase for MC generator-level analysis
   TString            fClassName;       //  If not null only process events with given class
   TString            fCentMethod;      //  centrality selection method
   Int_t              fNBdeta;          //  no. deta bins
@@ -125,7 +127,8 @@ class AliDhcTask : public AliAnalysisTaskSE {
   TList             *fOutputList;      //! Output list
   TH2               *fHEvt;            //! Cent vs vtx.
   TH2               *fHTrk;            //! Phi vs Eta
-  TH1               *fHPtAss;          //! Pt ass 
+  TH2               *fHPoolReady;      //! Check how many Jobs start mixing
+  TH1               *fHPtAss;          //! Pt ass
   TH1               *fHPtTrg;          //! Pt trg
   TH1               *fHPtTrgEvt;       //! Pt trg per event for weighting
   TH3               *fHPtTrgNorm1S;    //! Pt trg same events in cent. and zvtx bins, method 1

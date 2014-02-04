@@ -678,7 +678,7 @@ void AliAnalysisTaskCaloFilter::FillAODHeader()
   header->SetZDCP2Energy(fEvent->GetZDCP2Energy());
   header->SetZDCEMEnergy(fEvent->GetZDCEMEnergy(0),fEvent->GetZDCEMEnergy(1));
   
-  Float_t diamxy[2]={fEvent->GetDiamondX(),fEvent->GetDiamondY()};
+  Float_t diamxy[2]={(Float_t)fEvent->GetDiamondX(),(Float_t)fEvent->GetDiamondY()};
   Float_t diamcov[3];
   fEvent->GetDiamondCovXY(diamcov);
   header->SetDiamond(diamxy,diamcov);
@@ -712,7 +712,7 @@ void AliAnalysisTaskCaloFilter::FillAODTracks()
   
   Double_t pos[3]   = { 0. };      
   Double_t covTr[21]= { 0. };
-  Double_t pid[10]  = { 0. };  
+  //Double_t pid[10]  = { 0. };  
   Double_t p[3]     = { 0. };
     
   // Copy from AODs
@@ -739,7 +739,7 @@ void AliAnalysisTaskCaloFilter::FillAODTracks()
       track->GetPxPyPz(p);
       Bool_t isDCA  = track->GetPosition(pos);
       track->GetCovMatrix(covTr);
-      track->GetPID(pid);
+      //track->GetPID(pid);
       
       AliAODVertex* primVertex = (AliAODVertex*) AODEvent()->GetVertices()->At(0); // primary vertex, copied previously!!!
 
@@ -753,7 +753,7 @@ void AliAnalysisTaskCaloFilter::FillAODTracks()
                                                             covTr, 
                                                             track->Charge(),
                                                             track->GetITSClusterMap(), 
-                                                            pid,
+                                                            // pid,
                                                             primVertex,
                                                             track->GetUsedForVtxFit(),
                                                             track->GetUsedForPrimVtxFit(),
@@ -762,6 +762,7 @@ void AliAnalysisTaskCaloFilter::FillAODTracks()
                                                             track->Chi2perNDF());
       
       
+      aodTrack->SetPIDForTracking(track->GetPIDForTracking());
       aodTrack->SetIsHybridGlobalConstrainedGlobal(track->IsHybridGlobalConstrainedGlobal());   
       aodTrack->SetIsHybridTPCConstrainedGlobal   (track->IsHybridTPCConstrainedGlobal());    
       aodTrack->SetIsGlobalConstrained            (track->IsGlobalConstrained());  

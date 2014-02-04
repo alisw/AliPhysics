@@ -40,6 +40,9 @@ class AliPHOSGeoUtils;
 class AliCentrality;
 class AliEventplane;
 
+//jets
+class AliAODJetEventBackground;
+
 class AliAnaCaloTrackCorrBaseClass : public TObject {
 	
 public:   
@@ -123,7 +126,8 @@ public:
 
   //jets
   virtual TClonesArray*  GetNonStandardJets()              const { return fReader->GetNonStandardJets() ;}
-	
+  virtual AliAODJetEventBackground*  GetBackgroundJets()   const { return fReader->GetBackgroundJets() ;}
+
   // Common analysis switchs 
   
   virtual Bool_t         IsDataMC()                        const { return fDataMC                ; }
@@ -176,11 +180,11 @@ public:
   virtual Int_t          GetMaxMulti()                     const { return fMaxMulti  ; }  
   virtual Int_t          GetMinMulti()                     const { return fMinMulti  ; }  
     
-  virtual Int_t          GetEventCentralityBin();
-  virtual Int_t          GetEventRPBin();
-  virtual Int_t          GetEventVzBin();
-  virtual Int_t          GetEventMixBin();
-  virtual Int_t          GetEventMixBin(const Int_t iCen, const Int_t iVz, const Int_t iRP);
+  virtual Int_t          GetEventCentralityBin()          const;
+  virtual Int_t          GetEventRPBin()                  const;
+  virtual Int_t          GetEventVzBin()                  const;
+  virtual Int_t          GetEventMixBin()                 const;
+  virtual Int_t          GetEventMixBin(Int_t iCen, Int_t iVz, Int_t iRP) const;
   
   virtual void           SetMultiBin (Int_t n = 1 )              { fMultiBin  = n ; if(n < 1) fMultiBin  = 1 ; } // number of bins in Multiplicity  
   virtual void           SetNZvertBin(Int_t n = 1 )              { fNZvertBin = n ; if(n < 1) fNZvertBin = 1 ; } // number of bins for vertex position
@@ -195,18 +199,19 @@ public:
   virtual void           SwitchOnOwnMix()                        { fDoOwnMix         = kTRUE  ; }
   virtual void           SwitchOffOwnMix()                       { fDoOwnMix         = kFALSE ; }
   
-  virtual Bool_t         DoOwnMix()                              { return fDoOwnMix           ; }
-  virtual Bool_t         UseTrackMultBins()                      { return fUseTrackMultBins   ; }
+  virtual Bool_t         DoOwnMix()                        const { return fDoOwnMix           ; }
+  virtual Bool_t         UseTrackMultBins()                const { return fUseTrackMultBins   ; }
 
   //Mixed event  
-  virtual Int_t           CheckMixedEventVertex(const Int_t caloLabel, const Int_t trackLabel) ;
-  virtual AliMixedEvent * GetMixedEvent()                        { return GetReader()->GetMixedEvent()  ; } 
+  virtual Int_t           CheckMixedEventVertex(Int_t caloLabel, Int_t trackLabel) ;
+  virtual AliMixedEvent * GetMixedEvent()                  const { return GetReader()->GetMixedEvent()  ; }
   virtual Int_t           GetNMixedEvent()                 const { return GetReader()->GetNMixedEvent() ; } 
   
   //Vertex methods
   virtual void           GetVertex(Double_t vertex[3])     const { GetReader()->GetVertex(vertex)       ; } 
-  virtual Double_t*      GetVertex(const Int_t evtIndex)   const { return GetReader()->GetVertex(evtIndex) ; } 
-  virtual void           GetVertex(Double_t vertex[3], const Int_t evtIndex) const { GetReader()->GetVertex(vertex,evtIndex) ; } 
+  virtual Double_t*      GetVertex(Int_t evtIndex)         const { return GetReader()->GetVertex(evtIndex) ; }
+  virtual void           GetVertex(Double_t vertex[3],
+                                   Int_t evtIndex)         const { GetReader()->GetVertex(vertex,evtIndex) ; }
 
   
   //MULTIPLICITY
@@ -249,28 +254,28 @@ public:
   
   virtual AliPHOSGeoUtils          * GetPHOSGeometry()     const { return fCaloUtils->GetPHOSGeometry()  ; }
 
-  virtual void                       SetCaloPID(AliCaloPID * const pid)                             { delete fCaloPID; fCaloPID = pid     ; }
+  virtual void                       SetCaloPID(AliCaloPID * pid)                                   { delete fCaloPID; fCaloPID = pid     ; }
   
   virtual void                       SetCaloUtils(AliCalorimeterUtils * caloutils)                  { fCaloUtils = caloutils              ; }	
   
-  virtual void                       SetFiducialCut(AliFiducialCut * const fc)                      { delete fFidCut;  fFidCut  = fc      ; }
+  virtual void                       SetFiducialCut(AliFiducialCut * fc)                            { delete fFidCut;  fFidCut  = fc      ; }
   
-  virtual void                       SetHistogramRanges(AliHistogramRanges * const hr)              { delete fHisto;   fHisto   = hr      ; }
+  virtual void                       SetHistogramRanges(AliHistogramRanges * hr)                    { delete fHisto;   fHisto   = hr      ; }
   
-  virtual void                       SetIsolationCut(AliIsolationCut * const ic)                    { delete fIC;      fIC      = ic      ; }
+  virtual void                       SetIsolationCut(AliIsolationCut * ic)                          { delete fIC;      fIC      = ic      ; }
   
-  virtual void                       SetMCAnalysisUtils(AliMCAnalysisUtils * const mcutils)         { delete fMCUtils; fMCUtils = mcutils ; }	
+  virtual void                       SetMCAnalysisUtils(AliMCAnalysisUtils * mcutils)               { delete fMCUtils; fMCUtils = mcutils ; }
   
   virtual void                       SetNeutralMesonSelection(AliNeutralMesonSelection * const nms) { delete fNMS;     fNMS     = nms     ; }
   
-  virtual void                       SetReader(AliCaloTrackReader * const reader)                   { fReader = reader                    ; }
+  virtual void                       SetReader(AliCaloTrackReader * reader)                         { fReader = reader                    ; }
   
   //Calorimeter specific access methods and calculations
     
   virtual Bool_t         IsTrackMatched(AliVCluster * cluster, AliVEvent* event) {
    return GetCaloPID()->IsTrackMatched(cluster, fCaloUtils, event) ; } 
   
-  virtual Int_t          GetModuleNumberCellIndexes(const Int_t absId, const TString calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const {
+  virtual Int_t          GetModuleNumberCellIndexes(Int_t absId, TString calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const {
 	  return fCaloUtils->GetModuleNumberCellIndexes(absId, calo, icol, irow,iRCU) ; }
   
   virtual Int_t          GetModuleNumber(AliAODPWG4Particle * part) const {
@@ -325,7 +330,7 @@ private:
   AliAnaCaloTrackCorrBaseClass(              const AliAnaCaloTrackCorrBaseClass & bc) ; // cpy ctor
   AliAnaCaloTrackCorrBaseClass & operator = (const AliAnaCaloTrackCorrBaseClass & bc) ; // cpy assignment
   
-  ClassDef(AliAnaCaloTrackCorrBaseClass,21)
+  ClassDef(AliAnaCaloTrackCorrBaseClass,22)
 } ;
 
 

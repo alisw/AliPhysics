@@ -21,7 +21,6 @@ ClassImp(AliEmcalPicoTrackMaker)
 //________________________________________________________________________
 AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker() : 
   AliAnalysisTaskSE("AliEmcalPicoTrackMaker"),
-  fESDtrackCuts(0),
   fTracksOutName("PicoTracks"),
   fTracksInName("tracks"),
   fMinTrackPt(0),
@@ -31,10 +30,6 @@ AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker() :
   fMinTrackPhi(-10),
   fMaxTrackPhi(10),
   fTrackEfficiency(1),
-  fIncludeNoITS(kTRUE),
-  fUseNegativeLabels(kTRUE),
-  fIsMC(kFALSE),
-  fCutMaxFractionSharedTPCClusters(0.4),
   fTracksIn(0),
   fTracksOut(0)
 {
@@ -47,7 +42,6 @@ AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker() :
 //________________________________________________________________________
 AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker(const char *name) : 
   AliAnalysisTaskSE(name),
-  fESDtrackCuts(0),
   fTracksOutName("PicoTracks"),
   fTracksInName("tracks"),
   fMinTrackPt(0),
@@ -57,10 +51,6 @@ AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker(const char *name) :
   fMinTrackPhi(-10),
   fMaxTrackPhi(10),
   fTrackEfficiency(1),
-  fIncludeNoITS(kTRUE),
-  fUseNegativeLabels(kTRUE),
-  fIsMC(kFALSE),
-  fCutMaxFractionSharedTPCClusters(0.4),
   fTracksIn(0),
   fTracksOut(0)
 {
@@ -116,14 +106,6 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
     InputEvent()->AddObject(fTracksOut);
   }
 
-  // clear container (normally a null operation as the event should clean it already)
-  fTracksOut->Clear();
-
-  // test if we are in ESD or AOD mode
-  Bool_t esdMode = kTRUE;
-  if (dynamic_cast<AliAODEvent*>(InputEvent())!=0)
-    esdMode = kFALSE;
- 
   // loop over tracks
   const Int_t Ntracks = fTracksIn->GetEntriesFast();
   for (Int_t iTracks = 0, nacc = 0; iTracks < Ntracks; ++iTracks) {
@@ -140,78 +122,29 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
 	track->Phi() < fMinTrackPhi || track->Phi() > fMaxTrackPhi)
       continue;
 
-    Bool_t isEmc = kFALSE;
-    Int_t type = -1;
-    if (esdMode) {
-      AliESDtrack *esdtrack = static_cast<AliESDtrack*>(track);
-      if (fESDtrackCuts && !fESDtrackCuts->AcceptTrack(esdtrack))
-	continue;
-      type = esdtrack->GetTRDNchamberdEdx();
-      if (!fIncludeNoITS && (type==2))
-	continue;
-      isEmc = track->IsEMCAL();
-    } else {
-      AliAODTrack *aodtrack = static_cast<AliAODTrack*>(track);
-      if (fAODfilterBits[0] < 0) {
-	if (aodtrack->IsHybridGlobalConstrainedGlobal())
-	  type = 3;
-	else /*not a good track*/
-	  continue;
-      } else {
-	if (aodtrack->TestFilterBit(fAODfilterBits[0])) {
-	  type = 0;
-	} else if (aodtrack->TestFilterBit(fAODfilterBits[1])) {
-	  if ((aodtrack->GetStatus()&AliESDtrack::kITSrefit)==0) {
-	    if (fIncludeNoITS)
-	      type = 2;
-	    else
-	      continue;
-	  } else {
-	    type = 1;
-	  }
-	}
-	else {/*not a good track*/
-	  continue;
-	}
-      }
-      if (fCutMaxFractionSharedTPCClusters > 0) {
-	Double_t frac = Double_t(aodtrack->GetTPCnclsS()) / Double_t(aodtrack->GetTPCncls());
-	if (frac > fCutMaxFractionSharedTPCClusters) 
-	  continue;
-      }
-      if (TMath::Abs(track->GetTrackEtaOnEMCal()) < 0.75 && 
-	  track->GetTrackPhiOnEMCal() > 70 * TMath::DegToRad() &&
-	  track->GetTrackPhiOnEMCal() < 190 * TMath::DegToRad())
-	isEmc = kTRUE;
-    }
-
     if (fTrackEfficiency < 1) {
       Double_t r = gRandom->Rndm();
       if (fTrackEfficiency < r) 
 	continue;
     }
 
-    Int_t label = 0;
-    if (fIsMC) {
-      if (fUseNegativeLabels)
-	label = track->GetLabel();
-      else 
-	label = TMath::Abs(track->GetLabel());
+    Bool_t isEmc = kFALSE;
+    if (TMath::Abs(track->GetTrackEtaOnEMCal()) < 0.75 && 
+	track->GetTrackPhiOnEMCal() > 70 * TMath::DegToRad() &&
+	track->GetTrackPhiOnEMCal() < 190 * TMath::DegToRad())
+      isEmc = kTRUE;
 
-      if (label == 0) 
-	AliDebug(2,Form("Track %d with label==0", iTracks));
-    }
-
-    /*AliPicoTrack *picotrack =*/ new ((*fTracksOut)[nacc]) AliPicoTrack(track->Pt(), 
-									 track->Eta(), 
-									 track->Phi(), 
-									 track->Charge(), 
-									 label,
-									 type,
-									 track->GetTrackEtaOnEMCal(), 
-									 track->GetTrackPhiOnEMCal(), 
-									 track->GetTrackPtOnEMCal(), 
-									 isEmc);
+    AliPicoTrack *picotrack = new ((*fTracksOut)[nacc]) AliPicoTrack(track->Pt(), 
+								     track->Eta(), 
+								     track->Phi(), 
+								     track->Charge(), 
+								     track->GetLabel(),
+								     AliPicoTrack::GetTrackType(track),
+								     track->GetTrackEtaOnEMCal(), 
+								     track->GetTrackPhiOnEMCal(), 
+								     track->GetTrackPtOnEMCal(), 
+								     isEmc);
+    picotrack->SetTrack(track);
     ++nacc;
   }
 }

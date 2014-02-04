@@ -48,7 +48,7 @@ class AliCaloPID : public TObject {
  public: 
   
   AliCaloPID() ; // ctor
-  AliCaloPID(const Int_t particleFlux) ; // ctor, to be used when recalculating bayesian PID
+  AliCaloPID(Int_t particleFlux) ; // ctor, to be used when recalculating bayesian PID
   AliCaloPID(const TNamed * emcalpid) ; // ctor, to be used when recalculating bayesian PID and need different parameters
   virtual ~AliCaloPID() ;//virtual dtor
   	
@@ -73,17 +73,17 @@ class AliCaloPID : public TObject {
 
   void      InitParameters();
   
-  Bool_t    IsInPi0SplitAsymmetryRange(const Float_t energy, const Float_t asy,  const Int_t nlm);
+  Bool_t    IsInPi0SplitAsymmetryRange(Float_t energy, Float_t asy,  Int_t nlm) const;
 
-  Bool_t    IsInPi0SplitMassRange     (const Float_t energy, const Float_t mass, const Int_t nlm);
+  Bool_t    IsInPi0SplitMassRange     (Float_t energy, Float_t mass, Int_t nlm) const;
   
-  Bool_t    IsInM02Range              (const Float_t m02);
-  Bool_t    IsInPi0M02Range           (const Float_t energy, const Float_t m02,  const Int_t nlm);
-  Bool_t    IsInEtaM02Range           (const Float_t energy, const Float_t m02,  const Int_t nlm);
-  Bool_t    IsInConM02Range           (const Float_t energy, const Float_t m02,  const Int_t nlm);
+  Bool_t    IsInM02Range              (Float_t m02) const;
+  Bool_t    IsInPi0M02Range           (Float_t energy, Float_t m02,  Int_t nlm) const;
+  Bool_t    IsInEtaM02Range           (Float_t energy, Float_t m02,  Int_t nlm) const;
+  Bool_t    IsInConM02Range           (Float_t energy, Float_t m02,  Int_t nlm) const;
   
   
-  Int_t     GetIdentifiedParticleTypeFromBayesWeights(const Bool_t isEMCAL, const Double_t * pid, const Float_t energy) ;
+  Int_t     GetIdentifiedParticleTypeFromBayesWeights(Bool_t isEMCAL, Double_t * pid, Float_t energy) ;
 
   Int_t     GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster * cluster, AliVCaloCells* cells, 
                                                           AliCalorimeterUtils * caloutils,
@@ -92,9 +92,9 @@ class AliCaloPID : public TObject {
                                                           TLorentzVector & l1  , TLorentzVector & l2,
                                                           Int_t   & absId1,   Int_t   & absId2,
                                                           Float_t & distbad1, Float_t & distbad2,
-                                                          Bool_t  & fidcut1,  Bool_t  & fidcut2  ) ;
+                                                          Bool_t  & fidcut1,  Bool_t  & fidcut2  ) const;
   
-  Int_t     GetIdentifiedParticleType(const AliVCluster * cluster) ;
+  Int_t     GetIdentifiedParticleType(AliVCluster * cluster) ;
   
   TString   GetPIDParametersList();
   
@@ -109,11 +109,11 @@ class AliCaloPID : public TObject {
   
   //Check if cluster photon-like. Uses photon cluster parameterization in real pp data 
   //Returns distance in sigmas. Recommended cut 2.5
-  Float_t TestPHOSDispersion(const Double_t pt, const Double_t m20, const Double_t m02) const ; 
+  Float_t TestPHOSDispersion(Double_t pt, Double_t m20, Double_t m02) const ;
   //Checks distance to the closest track. Takes into account 
   //non-perpendicular incidence of tracks.
-  Float_t TestPHOSChargedVeto(const Double_t dx,  const Double_t dz, const Double_t ptTrack, 
-                              const Int_t chargeTrack, const Double_t mf) const ;
+  Float_t TestPHOSChargedVeto(Double_t dx, Double_t dz, Double_t ptTrack,
+                              Int_t chargeTrack, Double_t mf) const ;
   
   // Setters, getters
   
@@ -227,8 +227,11 @@ class AliCaloPID : public TObject {
   void    SetClusterSplittingMinNCells(Int_t c) { fSplitMinNCells = c         ; }
   Int_t   GetClusterSplittingMinNCells() const  { return fSplitMinNCells      ; }
   
-  void    SetSplitEnergyFractionMinimum(Int_t i, Float_t min){ if (i < 3 && i >=0 ) fSplitEFracMin[i]  = min   ; }
-  Float_t GetSplitEnergyFractionMinimum(Int_t i) const       { if( i < 3 && i >=0 ) return fSplitEFracMin[i]   ;  else return 0 ; }
+  void    SetSplitEnergyFractionMinimum(Int_t i, Float_t min){ if (i < 3 && i >=0 ) fSplitEFracMin[i]  = min ; }
+  Float_t GetSplitEnergyFractionMinimum(Int_t i) const       { if( i < 3 && i >=0 ) return fSplitEFracMin[i] ;  else return 0 ; }
+
+  void    SetSubClusterEnergyMinimum   (Int_t i, Float_t min){ if (i < 3 && i >=0 ) fSubClusterEMin[i] = min ; }
+  Float_t GetSubClusterEnergyMinimum   (Int_t i) const       { if( i < 3 && i >=0 ) return fSubClusterEMin[i];  else return 0 ; }
   
   Float_t GetPi0MinMass()                const { return fMassPi0Min           ; } // Simple cut case
   Float_t GetEtaMinMass()                const { return fMassEtaMin           ; } // Simple cut case
@@ -239,7 +242,7 @@ class AliCaloPID : public TObject {
   
   void    SetSplitWidthSigma(Float_t s)        { fSplitWidthSigma        = s  ; }
 
-  void    SetPi0MassShiftHighECell(Float_t s)  { s = fMassShiftHighECell      ; }
+  void    SetPi0MassShiftHighECell(Float_t s)  { fMassShiftHighECell     = s  ; }
   
   void    SetPi0MassSelectionParameters    (Int_t inlm, Int_t iparam, Float_t param)
   { if(iparam < 6 ) fMassPi0Param[inlm][iparam] = param ; }
@@ -323,13 +326,14 @@ private:
   Float_t   fAsyMinParam[2][4] ;                // 3 param for fit on asymmetry minimum, for 2 cases, NLM=1 and NLM>=2
   Float_t   fSplitEFracMin[3]  ;                // Do not use clusters with too large energy in cluster compared
                                                 // to energy in splitted clusters, depeding on NLM
+  Float_t   fSubClusterEMin[3]  ;               // Do not use sub-clusters with too low energy depeding on NLM
   Float_t   fSplitWidthSigma;                   // Cut on mass+-width*fSplitWidthSigma
   Float_t   fMassShiftHighECell;                // Shift cuts 5 MeV for Ecell > 150 MeV, default Ecell > 50 MeV
 
   AliCaloPID & operator = (const AliCaloPID & cpid) ; // cpy assignment
   AliCaloPID(              const AliCaloPID & cpid) ; // cpy ctor
   
-  ClassDef(AliCaloPID,20)
+  ClassDef(AliCaloPID,21)
   
 } ;
 

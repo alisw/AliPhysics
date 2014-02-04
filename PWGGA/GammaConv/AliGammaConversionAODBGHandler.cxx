@@ -195,40 +195,43 @@ AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(UInt_t collisionS
 
       else if(collisionSystem == 8 || collisionSystem == 9){ //pPb
 
-	fBinLimitsArrayMultiplicity[0] = 0.;
-	fBinLimitsArrayMultiplicity[1] = 7.5;
-	fBinLimitsArrayMultiplicity[2] = 16.5;
-	fBinLimitsArrayMultiplicity[3] = 29.5;
-	fBinLimitsArrayMultiplicity[4] = 500.;	
-	
-	if(centMin == 0 && centMax == 20){
-	  fBinLimitsArrayMultiplicity[0] = 0.;
-	  fBinLimitsArrayMultiplicity[1] = 31.5;
-	  fBinLimitsArrayMultiplicity[2] = 40.5;
-	  fBinLimitsArrayMultiplicity[3] = 50.5;
-	  fBinLimitsArrayMultiplicity[4] = 500.;
-         }	
-	else if(centMin == 20 && centMax == 40){
-	  fBinLimitsArrayMultiplicity[0] = 0.;
-	  fBinLimitsArrayMultiplicity[1] = 19.5;
-	  fBinLimitsArrayMultiplicity[2] = 25.5;
-	  fBinLimitsArrayMultiplicity[3] = 32.5;
-	  fBinLimitsArrayMultiplicity[4] = 500.;
-         }	
-	else if(centMin == 40 && centMax == 60){
-	  fBinLimitsArrayMultiplicity[0] = 0.;
-	  fBinLimitsArrayMultiplicity[1] = 12.5;
-	  fBinLimitsArrayMultiplicity[2] = 16.5;
-	  fBinLimitsArrayMultiplicity[3] = 22.5;
-	  fBinLimitsArrayMultiplicity[4] = 500.;
-         }	
-	else if(centMin == 60 && centMax == 80){
-	  fBinLimitsArrayMultiplicity[0] = 0.;
-	  fBinLimitsArrayMultiplicity[1] = 5.5;
-	  fBinLimitsArrayMultiplicity[2] = 9.5;
-	  fBinLimitsArrayMultiplicity[3] = 13.5;
-	  fBinLimitsArrayMultiplicity[4] = 500.;
-         }	
+         fBinLimitsArrayMultiplicity[0] = 0.;
+         fBinLimitsArrayMultiplicity[1] = 7.5;
+         fBinLimitsArrayMultiplicity[2] = 16.5;
+         fBinLimitsArrayMultiplicity[3] = 29.5;
+         fBinLimitsArrayMultiplicity[4] = 500.;	
+         
+         if(centMin == 0 && centMax == 20){
+            fBinLimitsArrayMultiplicity[0] = 0.;
+            fBinLimitsArrayMultiplicity[1] = 31.5;
+            fBinLimitsArrayMultiplicity[2] = 40.5;
+            fBinLimitsArrayMultiplicity[3] = 50.5;
+            fBinLimitsArrayMultiplicity[4] = 500.;
+         } else if(centMin == 20 && centMax == 40){
+            fBinLimitsArrayMultiplicity[0] = 0.;
+            fBinLimitsArrayMultiplicity[1] = 19.5;
+            fBinLimitsArrayMultiplicity[2] = 25.5;
+            fBinLimitsArrayMultiplicity[3] = 32.5;
+            fBinLimitsArrayMultiplicity[4] = 500.;
+         } else if(centMin == 40 && centMax == 60){
+            fBinLimitsArrayMultiplicity[0] = 0.;
+            fBinLimitsArrayMultiplicity[1] = 12.5;
+            fBinLimitsArrayMultiplicity[2] = 16.5;
+            fBinLimitsArrayMultiplicity[3] = 22.5;
+            fBinLimitsArrayMultiplicity[4] = 500.;
+         } else if(centMin == 60 && centMax == 80){ 
+            fBinLimitsArrayMultiplicity[0] = 0.;
+            fBinLimitsArrayMultiplicity[1] = 5.5;
+            fBinLimitsArrayMultiplicity[2] = 9.5;
+            fBinLimitsArrayMultiplicity[3] = 13.5;
+            fBinLimitsArrayMultiplicity[4] = 500.;
+          } else if(centMin == 60 && centMax == 100){
+            fBinLimitsArrayMultiplicity[0] = 0.;
+            fBinLimitsArrayMultiplicity[1] = 2.5;
+            fBinLimitsArrayMultiplicity[2] = 6.5;
+            fBinLimitsArrayMultiplicity[3] = 11.5;
+            fBinLimitsArrayMultiplicity[4] = 500.;
+          }  
       }
    }
    else{// pp or pPb V0 Mult
@@ -502,7 +505,8 @@ Int_t AliGammaConversionAODBGHandler::GetMultiplicityBinIndex(Int_t multiplicity
   return fNBinsMultiplicity-1;
 }
 
-void AliGammaConversionAODBGHandler::AddEvent(TList* const eventGammas,Double_t xvalue, Double_t yvalue, Double_t zvalue, Int_t multiplicity){
+void AliGammaConversionAODBGHandler::AddEvent(TList* const eventGammas,Double_t xvalue, Double_t yvalue, Double_t zvalue, Int_t multiplicity, Double_t epvalue){
+
   // see header file for documantation  
 
   //  cout<<"Entering the AddEvent function"<<endl;
@@ -523,6 +527,7 @@ void AliGammaConversionAODBGHandler::AddEvent(TList* const eventGammas,Double_t 
   fBGEventVertex[z][m][eventCounter].fX = xvalue;
   fBGEventVertex[z][m][eventCounter].fY = yvalue;
   fBGEventVertex[z][m][eventCounter].fZ = zvalue;
+  fBGEventVertex[z][m][eventCounter].fEP = epvalue;
 
   //first clear the vector
   // cout<<"Size of vector: "<<fBGEvents[z][m][eventCounter].size()<<endl;

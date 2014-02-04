@@ -66,10 +66,15 @@ class AliAnalysisMuonUtility : public TObject {
   static Double_t GetMCVertexZ ( const AliVEvent* event, const AliMCEvent* mcEvent );
   
   static Bool_t IsAODMCTrack ( const AliVParticle* mcParticle );
+  static Bool_t IsMCTrack ( const AliVParticle* mcParticle );
   static Int_t GetMotherIndex ( const AliVParticle* mcParticle );
   static Int_t GetDaughterIndex ( const AliVParticle* mcParticle, Int_t idaughter );
   static Bool_t IsPrimary ( const AliVParticle* mcParticle, const AliMCEvent* mcEvent );
+  static UInt_t GetMCProcess ( const AliVParticle* mcParticle );
+  static UInt_t GetStatusCode ( const AliVParticle* mcParticle );
   
+  static Bool_t EAGetTZEROFlags(const AliVEvent* event, Bool_t& backgroundFlag, Bool_t& pileupFlag, Bool_t& satelliteFlag);
+
   // A useful constant
   static Double_t MuonMass2();
   
@@ -83,7 +88,7 @@ class AliAnalysisMuonUtility : public TObject {
   static TString GetPassName ( const char* str );
   
   // Utilities for MC
-  static TString GetTrackHistory ( const AliVParticle* track, const AliMCEvent* mcEvent );
+  static TString GetTrackHistory ( const AliVParticle* track, const AliMCEvent* mcEvent, Bool_t verbose = kFALSE );
   
   ClassDef(AliAnalysisMuonUtility, 0);
 };

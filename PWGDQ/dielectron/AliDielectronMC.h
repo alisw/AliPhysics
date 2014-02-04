@@ -52,6 +52,8 @@ public:
   Int_t GetMCPIDFromStack(const AliESDtrack* _track);             // return MC PID
   Int_t GetMotherPDG(const AliESDtrack* _track);                  // return mother PID from the MC stack
   Int_t GetMotherPDG(const AliAODTrack* _track);                  // return mother PID from the MC stack
+  Int_t GetMotherPDG(const AliMCParticle* _track);                  // return mother PID from the MC stack
+  Int_t GetMotherPDG(const AliAODMCParticle* _track);                  // return mother PID from the MC stack
   Int_t GetMotherPDGFromStack(const AliESDtrack* _track);         // return mother PID from the MC stack
   Int_t GetMCProcess(const AliESDtrack* _track);                  // return process number
   Int_t GetMCProcessFromStack(const AliESDtrack* _track);         // return process number
@@ -65,7 +67,7 @@ public:
   Bool_t IsMotherPdg(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
   Bool_t IsMCMotherToEE(const AliVParticle *particle, Int_t pdgMother);
   Bool_t IsMCTruth(const AliDielectronPair* pair, const AliDielectronSignalMC* signalMC) const;
-  Bool_t IsMCTruth(Int_t ipart, AliDielectronSignalMC* signalMC, Int_t branch) const;
+  Bool_t IsMCTruth(Int_t label, AliDielectronSignalMC* signalMC, Int_t branch) const;
   Int_t GetMothersLabel(Int_t daughterLabel) const;
   Int_t GetPdgFromLabel(Int_t label) const;
 
@@ -77,7 +79,7 @@ public:
   Int_t GetLabelMotherWithPdg(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
   
 //   AliVParticle* GetMCTrackFromMCEvent(const AliVParticle *track);   // return MC track directly from MC event
-  AliVParticle* GetMCTrackFromMCEvent(Int_t itrk) const;           // return MC track directly from MC event
+  AliVParticle* GetMCTrackFromMCEvent(Int_t label) const;           // return MC track directly from MC event
   TParticle* GetMCTrackFromStack(const AliESDtrack* _track);        // return MC track from stack
   AliMCParticle* GetMCTrack(const AliESDtrack* _track);             // return MC track associated with reco track
   AliAODMCParticle* GetMCTrack( const AliAODTrack* _track);          // return MC track associated with reco AOD track

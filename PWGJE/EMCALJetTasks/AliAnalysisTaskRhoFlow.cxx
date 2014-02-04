@@ -61,7 +61,7 @@ void AliAnalysisTaskRhoFlow::UserCreateOutputObjects()
 {
   // User create output objects, called at the beginning of the analysis.
 
-  AliAnalysisTaskEmcalJetDev::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   fHistRhoNearVsCent = new TH2F("RhoNearVsCent", "RhoNearVsCent", 101, -1,  100, fNbins, fMinBinPt, fMaxBinPt*2);
   fOutput->Add(fHistRhoNearVsCent);

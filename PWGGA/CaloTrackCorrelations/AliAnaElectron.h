@@ -58,7 +58,7 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   
   Bool_t       ClusterSelected(AliVCluster* cl, TLorentzVector mom, Int_t nMaxima) ;
   
-  void         FillShowerShapeHistograms( AliVCluster* cluster, const Int_t mcTag , const Int_t pidTag) ;
+  void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t mcTag , Int_t pidTag) ;
   
   void         SwitchOnFillShowerShapeHistograms()    { fFillSSHistograms = kTRUE  ; }
   void         SwitchOffFillShowerShapeHistograms()   { fFillSSHistograms = kFALSE ; }  

@@ -224,6 +224,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
 {
   // 
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  if (!man)  AliFatal("Analysis manager needed");
   AliInputEventHandler *inputHandler=dynamic_cast<AliInputEventHandler*>(man->GetInputEventHandler());
   if (!inputHandler) AliFatal("Input handler needed");
 
@@ -1842,7 +1843,7 @@ Bool_t AliAnalysisTaskTOFqa::ComputeTimeZeroByTOF1GeV()
   fMyTimeZeroTOFsigma = 1000. * fTOFT0v1->GetResult(1);
   fMyTimeZeroTOFtracks = fTOFT0v1->GetResult(3);
   Bool_t hasTimeZeroTOF = kFALSE;
-  if (fTOFT0v1) delete fTOFT0v1;
+  //if (fTOFT0v1) delete fTOFT0v1;//removed for coverity
   /* check T0-TOF sigma */
   if (fMyTimeZeroTOFsigma < 250.)
     hasTimeZeroTOF = kTRUE;  

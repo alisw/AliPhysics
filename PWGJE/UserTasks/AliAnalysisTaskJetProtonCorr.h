@@ -45,6 +45,21 @@ public:
   Float_t GetPtMinAss() const { return fAssPartPtMin; }
   Float_t GetPtMaxAss() const { return fAssPartPtMax; }
 
+  void PrintTask(Option_t *option, Int_t indent) const;
+
+  static Double_t TOFsignal(Double_t *x, Double_t *par)
+  {
+    Double_t norm = par[0];
+    Double_t mean = par[1];
+    Double_t sigma = par[2];
+    Double_t tail = par[3];
+
+    if (x[0] <= (tail + mean))
+      return norm * TMath::Gaus(x[0], mean, sigma);
+    else
+      return norm * TMath::Gaus(tail + mean, mean, sigma) * TMath::Exp(-tail * (x[0] - tail - mean) / (sigma * sigma));
+  }
+
   // histograms
   enum Hist_t {
       kHistStat = 0,
@@ -52,10 +67,94 @@ public:
       kHistCentralityUsed,
       kHistCentralityCheck,
       kHistCentralityCheckUsed,
+      kHistSignalTPC,
+      kHistSignalTOF,
+      kHistBetaTOF,
+      kHistDeltaTPC,
+      kHistDeltaTPCSemi,
+      kHistDeltaTOF,
+      kHistDeltaTOFSemi,
+      kHistExpSigmaTOFe,
+      kHistExpSigmaTOFmu,
+      kHistExpSigmaTOFpi,
+      kHistExpSigmaTOFk,
+      kHistExpSigmaTOFp,
+      kHistExpSigmaTOFd,
+      kHistExpSigmaTOFeSemi,
+      kHistExpSigmaTOFmuSemi,
+      kHistExpSigmaTOFpiSemi,
+      kHistExpSigmaTOFkSemi,
+      kHistExpSigmaTOFpSemi,
+      kHistExpSigmaTOFdSemi,
+      kHistCmpSigmaTOFe,
+      kHistCmpSigmaTOFmu,
+      kHistCmpSigmaTOFpi,
+      kHistCmpSigmaTOFk,
+      kHistCmpSigmaTOFp,
+      kHistCmpSigmaTOFd,
+      kHistCmpSigmaTOFeSemi,
+      kHistCmpSigmaTOFmuSemi,
+      kHistCmpSigmaTOFpiSemi,
+      kHistCmpSigmaTOFkSemi,
+      kHistCmpSigmaTOFpSemi,
+      kHistCmpSigmaTOFdSemi,
+      kHistNsigmaTPCe,
+      kHistNsigmaTPCmu,
+      kHistNsigmaTPCpi,
+      kHistNsigmaTPCk,
+      kHistNsigmaTPCp,
+      kHistNsigmaTPCd,
+      kHistNsigmaTPCe_e,
+      kHistNsigmaTOFe,
+      kHistNsigmaTOFmu,
+      kHistNsigmaTOFpi,
+      kHistNsigmaTOFk,
+      kHistNsigmaTOFp,
+      kHistNsigmaTOFd,
+      kHistNsigmaTOFmismatch,
+      kHistNsigmaTOFmismatch2,
+      kHistDeltaTOFe,
+      kHistDeltaTOFmu,
+      kHistDeltaTOFpi,
+      kHistDeltaTOFk,
+      kHistDeltaTOFp,
+      kHistDeltaTOFd,
+      kHistNsigmaTPCeSemi,
+      kHistNsigmaTPCmuSemi,
+      kHistNsigmaTPCpiSemi,
+      kHistNsigmaTPCkSemi,
+      kHistNsigmaTPCpSemi,
+      kHistNsigmaTPCdSemi,
+      kHistNsigmaTPCe_eSemi,
+      kHistNsigmaTOFeSemi,
+      kHistNsigmaTOFmuSemi,
+      kHistNsigmaTOFpiSemi,
+      kHistNsigmaTOFkSemi,
+      kHistNsigmaTOFpSemi,
+      kHistNsigmaTOFdSemi,
+      kHistNsigmaTOFmismatchSemi,
+      kHistNsigmaTOFmismatch2Semi,
+      kHistDeltaTOFeSemi,
+      kHistDeltaTOFmuSemi,
+      kHistDeltaTOFpiSemi,
+      kHistDeltaTOFkSemi,
+      kHistDeltaTOFpSemi,
+      kHistDeltaTOFdSemi,
       kHistNsigmaTPCTOF,
+      kHistNsigmaTPCTOFPt,
+      kHistNsigmaTPCTOFUsed,
+      kHistNsigmaTPCTOFUsedCentral,
+      kHistNsigmaTPCTOFUsedSemiCentral,
+      kHistNsigmaTPCTOFUsedPt,
+      kHistNsigmaTPCTOFUsedPtCentral,
+      kHistNsigmaTPCTOFUsedPtSemiCentral,
       kHistEvPlane,
       kHistEvPlaneUsed,
-      kHistJetPt,
+      kHistEvPlaneCheck,
+      kHistEvPlaneCheckUsed,
+      kHistEvPlaneCorr,
+      kHistJetPtCentral,
+      kHistJetPtSemi,
       kHistEtaPhiTrgHad,
       kHistEtaPhiTrgJet,
       kHistEtaPhiAssHad,
@@ -67,20 +166,22 @@ public:
   enum Stat_t {
       kStatSeen = 1,
       kStatTrg,
-      kStatUsed,
       kStatCent,
       kStatEvPlane,
       kStatPID,
+      kStatUsed,
       kStatEvCuts,
+      kStatCentral,
+      kStatSemiCentral,
       kStatLast
   };
 
   // trigger conditions
-  enum Trigger_t { 
+  enum Trigger_t {
       kTriggerMB = 0,
       kTriggerInt,
       kTriggerLast
-  };	   
+  };
 
   // classification
   enum CorrType_t {
@@ -155,6 +256,7 @@ protected:
   Float_t fZvtx; //!
   AliPIDResponse *fPIDResponse; //!
   Float_t fEventPlane; //!
+  Float_t fEventPlaneCheck; //!
   TObjArray *fPrimTrackArray; //!
   TClonesArray *fJetArray; //!
 
@@ -180,10 +282,18 @@ protected:
   Bool_t IsCentral() { return ((fCentrality >= 0.) && (fCentrality <= 10.)); }
   Bool_t IsSemiCentral() { return ((fCentrality >= 30.) && (fCentrality <= 50.)); }
 
+  AliVTrack* GetLeadingTrack(AliAODJet *jet) const;
+
+  Float_t GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1,
+		      Float_t phi2, Float_t pt2, Float_t charge2,
+		      Float_t radius, Float_t bSign);
+
   Bool_t AcceptTrigger(AliVTrack *trg);
   Bool_t AcceptTrigger(AliAODJet *trg);
-  Bool_t AcceptAssoc(AliVTrack *ass);
+  Bool_t AcceptAssoc(AliVTrack *trk);
   Bool_t IsProton(AliVTrack *trk);
+  Bool_t AcceptAngleToEvPlane(Float_t phi, Float_t psi);
+  Bool_t AcceptTwoTracks(AliVParticle *trgPart, AliVParticle *assPart);
 
   TObjArray* CloneTracks(TObjArray *tracks) const;
 
@@ -227,14 +337,19 @@ protected:
   static const Int_t fgkStringLength = 100; // max length for the jet branch name
   char fJetBranchName[fgkStringLength];     // jet branch name
 
+  Bool_t fUseStandardCuts;
+
   AliESDtrackCuts *fCutsPrim;	// track cuts for primary particles
+  Float_t fCutsTwoTrackEff;
 
   Float_t fTrgPartPtMin;
   Float_t fTrgPartPtMax;
   Float_t fTrgJetPtMin;
   Float_t fTrgJetPtMax;
+  Float_t fTrgJetLeadTrkPtMin;
   Float_t fAssPartPtMin;
   Float_t fAssPartPtMax;
+  Float_t fTrgAngleToEvPlane;
 
   // not implemented
   AliAnalysisTaskJetProtonCorr(const AliAnalysisTaskJetProtonCorr &rhs);

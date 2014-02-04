@@ -59,6 +59,8 @@ class AliCascadeVertexer;
 #include "TString.h"
 #include <TDatime.h>
 #include <TRandom3.h>
+using std::endl;
+using std::cout;
 
 const Int_t AliAnalysisTaskHelium3PiMC::fgNrot = 15;
 
@@ -105,7 +107,9 @@ AliAnalysisTaskHelium3PiMC::AliAnalysisTaskHelium3PiMC()
   fhHeDCAZ(0),
   fhPiDCAXY(0),
   fhPiDCAZ(0),
-  hITSClusterMap(0)
+  hITSClusterMap(0),
+  fNtuple1(0),
+  fNtuple2(0)
 
 {
   // Dummy Constructor(0); 
@@ -151,8 +155,10 @@ AliAnalysisTaskHelium3PiMC::AliAnalysisTaskHelium3PiMC(const char *name)
     fhHeDCAZ(0),
     fhPiDCAXY(0),
     fhPiDCAZ(0),
-    hITSClusterMap(0)
-
+    hITSClusterMap(0),
+    fNtuple1(0),
+    fNtuple2(0)
+  
 
 {
   // Define input and output slots here
@@ -179,43 +185,25 @@ Double_t AliAnalysisTaskHelium3PiMC::BetheBloch(Double_t betaGamma,Double_t char
   
   if(isPbPb){
 
-    //pass2
+    //pass2 //to be checked
     kp1 = 5.2*charge*charge;
     kp2 = 8.98482806165147636e+00;
     kp3 = 1.54000000000000005e-05;
     kp4 = 2.30445734159456084e+00;
     kp5 = 2.25624744086878559e+00;
 
-//     //pass1
-//     kp1 = 1.25202*charge*charge;///50.; 
-//     kp2 = 2.74992e+01; 
-//     kp3 = TMath::Exp(-3.31517e+01); 
-//     kp4 = 2.46246; 
-//     kp5 = 6.78938;
 
   }
   
   else{
-
-    //pass2
+    
+    //pass2 // to be defined
     kp1 = 5.2*charge*charge;
     kp2 = 8.98482806165147636e+00;
     kp3 = 1.54000000000000005e-05;
     kp4 = 2.30445734159456084e+00;
     kp5 = 2.25624744086878559e+00;
 
-    //     //pass1
-    //     kp1 = 1.25202*charge*charge;///50.; 
-    //     kp2 = 2.74992e+01; 
-    //     kp3 = TMath::Exp(-3.31517e+01); 
-    //     kp4 = 2.46246; 
-    //     kp5 = 6.78938;
-    
-    //     kp1 = 4.23232575531564326e+00*charge*charge;  //50*0.76176e-1;
-    //     kp2 = 8.68482806165147636e+00;                //10.632; 
-    //     kp3 = 1.34000000000000005e-05;                //0.13279e-4;
-    //     kp4 = 2.30445734159456084e+00;                //1.8631;
-    //     kp5 = 2.25624744086878559e+00;                //1.9479;
   }
 
   Double_t beta = betaGamma / TMath::Sqrt(1.0 + betaGamma * betaGamma);
@@ -363,31 +351,31 @@ void AliAnalysisTaskHelium3PiMC::UserCreateOutputObjects()
   
   if(!hBBTPCnoCuts ){ 
     hBBTPCnoCuts=new TH2F("hBBTPCnoCuts","scatterPlot TPC no cuts",2000,-10,10,1000,0,3000);
-    hBBTPCnoCuts->GetXaxis()->SetTitle("p/Z (GeV/c)");
+    hBBTPCnoCuts->GetXaxis()->SetTitle("p/Z (GeV/#it{c})");
     hBBTPCnoCuts->GetYaxis()->SetTitle("TPC Signal (a.u)");
     fListHistCascade->Add(hBBTPCnoCuts); 
   }
   if(!fhBBTPC ){ 
     fhBBTPC=new TH2F("fhBBTPC","scatterPlot TPC",2000,-10,10,1000,0,3000);
-    fhBBTPC->GetXaxis()->SetTitle("p/Z (GeV/c)");
+    fhBBTPC->GetXaxis()->SetTitle("p/Z (GeV/#it{c})");
     fhBBTPC->GetYaxis()->SetTitle("TPC Signal (a.u)");
     fListHistCascade->Add(fhBBTPC); 
   }
   if(!fhBBTPCNegativePions ){ 
     fhBBTPCNegativePions=new TH2F("fhBBTPCNegativePions","scatterPlot Neg Pions",2000,-10,10,1000,0,3000);
-    fhBBTPCNegativePions->GetXaxis()->SetTitle("p/Z (GeV/c)");
+    fhBBTPCNegativePions->GetXaxis()->SetTitle("p/Z (GeV/#it{c})");
     fhBBTPCNegativePions->GetYaxis()->SetTitle("TPC Signal (a.u)");
     fListHistCascade->Add(fhBBTPCNegativePions); 
   }
   if(!fhBBTPCPositivePions ){ 
     fhBBTPCPositivePions=new TH2F("fhBBTPCPositivePions","scatterPlot Pos Pions",2000,-10,10,1000,0,3000);
-    fhBBTPCPositivePions->GetXaxis()->SetTitle("p/Z (GeV/c)");
+    fhBBTPCPositivePions->GetXaxis()->SetTitle("p/Z (GeV/#it{c})");
     fhBBTPCPositivePions->GetYaxis()->SetTitle("TPC Signal (a.u)");
     fListHistCascade->Add(fhBBTPCPositivePions); 
   }
   if(!fhBBTPCHe3 ){ 
     fhBBTPCHe3=new TH2F("fhBBTPCHe3","scatterPlot TPC -  He3",2000,-10,10,1000,0,3000);
-    fhBBTPCHe3->GetXaxis()->SetTitle("p/Z (GeV/c)");
+    fhBBTPCHe3->GetXaxis()->SetTitle("p/Z (GeV/#it{c})");
     fhBBTPCHe3->GetYaxis()->SetTitle("TPC Signal (a.u)");
     fListHistCascade->Add(fhBBTPCHe3); 
   }
@@ -430,7 +418,6 @@ void AliAnalysisTaskHelium3PiMC::UserCreateOutputObjects()
   if(! fNtuple1 ) {
     fNtuple1 = new TNtuple("fNtuple1","Ntuple1","runNumber:evNumber:TrackNumber:percentile:xPrimaryVertex:yPrimaryVertex:zPrimaryVertex:xSecondaryVertex:ySecondaryVertex:zSecondaryVertex:dcaTracks:CosPointingAngle:DCAV0toPrimaryVertex:HeSign:HepInTPC:HeTPCsignal:DcaHeToPrimVertex:HeEta:momHex:momHey:momHez:momHeAtSVx:momHeAtSVy:momHeAtSVz:HeTPCNcls:HeimpactXY:HeimpactZ:isTOFHe:HeBeta:HeITSClusterMap:IsHeITSRefit:PionSign:PionpInTPC:PionTPCsignal:DcaPionToPrimVertex:PionEta:momPionx:momPiony:momPionz:momNegPionAtSVx:momNegPionAtSVy:momNegPionAtSVz:PionTPCNcls:PionimpactXY:PionimpactZ:isTOFPion:PionBeta:PionITSClusterMap:IsPiITSRefit:PDGCodeNeg:PDCCodePos:motherPDGNeg:motherPDGPos:labelPi:labelHe:mumidNeg:mumidPos");
   
-    //    fNtuple1->SetDirectory(0);
     fListHistCascade->Add(fNtuple1);
   }
   
@@ -438,8 +425,6 @@ void AliAnalysisTaskHelium3PiMC::UserCreateOutputObjects()
     
     fNtuple2 = new TNtuple("fNtuple2","Ntuple2","run:event:iMC:Centrality:PVx:PVy:PVz:PDGcodeMum:MotherIndex:SVxD0:SVyD0:SVzD0:SVxD1:SVyD1:SVzD1:SV3d:EtaMum:YMum:ThetaMum:PhiMum:PxMum:PyMum:PzMum:PdgDaughter0:PdgDaughter1:PxD0:PyD0:PzD0:PxD1:PyD1:PzD1");
     
-    //fNtuple2 = new TNtuple("fNtuple2","Ntuple2","run:event:iMC:Centrality:PxHeMc:PyHeMc:PzHeMc:PxPionMc:PyPionMc:PzPionMc:fhInvMassMC");
-    //fNtuple2->SetDirectory(0);
     fListHistCascade->Add(fNtuple2);
   } 
     
@@ -455,9 +440,6 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
 {
   //_______________________________________________________________________
   
-  //  cout<<"Inside the event loop"<<endl;
-
-
   //!*********************!//
   //!  Define variables   !//
   //!*********************!//
@@ -467,12 +449,6 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
   Float_t vett2[40];
   for(Int_t i=0;i<40;i++) vett2[i]=0;
 
-  Float_t vett3[40];
-  for(Int_t i=0;i<40;i++) vett3[i]=0;
-
-  Float_t vett4[40];
-  for(Int_t i=0;i<40;i++) vett4[i]=0;
-  
   Double_t ITSsample[4];
   for(Int_t i=0;i<4;i++)ITSsample[i]=0;
 
@@ -485,12 +461,11 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
   Double_t  pinTPC=0.,poutTPC=0.,TPCSignal=0.;
   Double_t xPrimaryVertex=0.,yPrimaryVertex=0.,zPrimaryVertex=0.;
 
-  ULong_t  status;
-  ULong_t  statusT;
-  ULong_t  statusPi;
+  ULong_t  status=0;
+  ULong_t  statusT=0;
+  ULong_t  statusPi=0;
 
-  Bool_t   isTPC,isTOF,isTOFHe3,isTOFPi;
-  //  Bool_t   isTOFPos,isTOFNeg,isTOFPosPion;
+  Bool_t   isTPC=kFALSE,isTOF=kFALSE,isTOFHe3=kFALSE,isTOFPi=kFALSE;
 
   Double_t fPos[3]={0.,0.,0.};
   Double_t runNumber=0.;
@@ -518,12 +493,8 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
   
   Double_t fgChi2max=33.;     //! max chi2
   Double_t fgDNmin=0.05;      //! min imp parameter for the 1st daughter = 500um
-  //  Double_t fgDPmin=0.05;      //! min imp parameter for the 2nd daughter = 500um
-  //  Double_t fgDCAmax=1.5;  //! max DCA between the daughter tracks in cm
   Double_t fgDCAmax=1.;       //! max DCA between the daughter tracks in cm
   Double_t fgCPAmin=0.9;      //! min cosine of V0's pointing angle
-  //  Double_t fgCPAmin=-1.;      //! min cosine of V0's pointing angle
-  //  Double_t fgRmin=0.2;    //! min radius of the fiducial volume //original
   Double_t fgRmin=0.1;        //! min radius of the fiducial volume = 1 mm 
   Double_t fgRmax=200.;       //! max radius of the fiducial volume = 2 m
 
@@ -544,28 +515,30 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
   Info("AliAnalysisTaskHelium3PiMC","Starting UserExec");  
 
   SetDataType("SIM");
-  AliStack *stack;
+  AliStack *stack=0;
+  
   if(fDataType == "SIM") {
-  // Main loop
-  // Called for EACH event
-  AliMCEvent *mcEvent = MCEvent();
-  if (!mcEvent) { 
-    Printf("ERROR: Could not retrieve MC event"); 
-    return; 
+    
+    // Main loop
+    // Called for EACH event
+    AliMCEvent *mcEvent = MCEvent();
+    if (!mcEvent) { 
+      Printf("ERROR: Could not retrieve MC event"); 
+      return; 
+    }
+    
+    Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
+    
+    // set up a stack for use in check for primary/stable particles
+    stack = mcEvent->Stack();
+    if( !stack ) { Printf( "Stack not available"); return; }
   }
   
-  Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
-  
-  // set up a stack for use in check for primary/stable particles
-  stack = mcEvent->Stack();
-  if( !stack ) { Printf( "Stack not available"); return; }
-  }
- 
 
   AliESDEvent *lESDevent = 0x0;
 
   //********************************** Connect to the InputEvent ******//
-
+  
   //Int_t TrackNumber = 0;
   if(fAnalysisType == "ESD"){
     lESDevent = dynamic_cast<AliESDEvent*>(event);
@@ -573,7 +546,6 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
       Printf("ERROR: lESDevent not available \n");
       return;
     }
-    //TrackNumber = lESDevent->GetNumberOfTracks();
   }
 
   //*****************//  
@@ -621,37 +593,27 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
 
   //Mass Definition
 
-  Double_t        Helium3Mass = 2.80839; //!OK
-  Double_t        PionMass = 0.13957;     //!OK
+  Double_t        Helium3Mass = 2.80839; 
+  Double_t        PionMass = 0.13957;    
   
   TLorentzVector  vPionMC,vHeliumMC,vSumMC;
   TLorentzVector  vPionMum,vHeliumMum,vSumMum;
   TLorentzVector  vPionRec,vHeliumRec,vSumRec;
   Bool_t isTwoBody=kFALSE;
+
   for (Int_t iMC=0; iMC<stack->GetNtrack(); iMC++)
     {
       TParticle *p0 = stack->Particle(iMC);
-
+      
       if (!p0) {
 	//Printf("ERROR: particle with label %d not found in stack (mc loop)", iMc);
 	continue;
       }
       
-      
       lPdgcodeCurrentPart  = p0->GetPdgCode();	
      
       if(lPdgcodeCurrentPart == 1000020030 || lPdgcodeCurrentPart == -1000020030 ){
-
-      // if(lPdgcodeCurrentPart == 1000020030){
-
-// 	lPoscodePart == lPdgcodeCurrentPart;
-
-// 	Int_t lmumidPos = lPdgcodeCurrentPart->GetFirstMother();
-// 	if(lmumidPos>-1){
-// 	  TParticle *pmotherPos=(TParticle*)stack->Particle(lmumidPos);
-// 	  lmotherPDGPos = pmotherPos->GetPdgCode();
-// 	}
-
+	
 	MomHeMC[nHeMC++]=p0->P();
 	
         PxHeMC[nPxHeMC++]=p0->Px();
@@ -663,41 +625,27 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
 
       if(lPdgcodeCurrentPart == 211 || lPdgcodeCurrentPart == -211 ){
 
-      //      if(lPdgcodeCurrentPart == -211 ){
-
-// 	lNegcodePart = lPdgcodeCurrentPart;
-
-// 	Int_t lmumidNeg = lPdgcodeCurrentPart->GetFirstMother();
-// 	if(lmumidNeg>-1){
-// 	  TParticle *pmotherNeg=(TParticle*)stack->Particle(lmumidNeg);
-// 	  lmotherPDGNeg = pmotherNeg->GetPdgCode();
-// 	}
-
 	MomPionsMC[nPionsMC++]=p0->P();
-
+	
 	PxPionsMC[nPxPionsMC++]=p0->Px();
 	PyPionsMC[nPyPionsMC++]=p0->Py();
 	PzPionsMC[nPzPionsMC++]=p0->Pz();
-
+	
 	fhPioneMC->Fill(p0->P());
       }
-
+      
       if ( lPdgcodeCurrentPart == 1010010030 || lPdgcodeCurrentPart == -1010010030 ){
 
-      //   if (lPdgcodeCurrentPart == -1010010030){
-	
-	//	fhSimulatedMultiplicity->Fill(1);
 	lEtaCurrentPart   = p0->Eta();
 	lPtCurrentPart    = p0->Pt();
 	lThetaCurrentPart = p0->Theta();
 	lPhiCurrentPart   = p0->Phi();
 	iCurrentMother    = p0->GetFirstMother();
 	
-	fHistMCEta->Fill(lEtaCurrentPart);    //histo
-	fHistMCPt->Fill(lPtCurrentPart);      //histo
-	fHistMCTheta->Fill(lThetaCurrentPart);//histo
+	fHistMCEta->Fill(lEtaCurrentPart);    
+	fHistMCPt->Fill(lPtCurrentPart);      
+	fHistMCTheta->Fill(lThetaCurrentPart);
 	
-	//	  lPdgCurrentMother = stack->Particle(iCurrentMother)->GetPdgCode();
 	if (iCurrentMother == -1){lPdgCurrentMother=0; } else {lPdgCurrentMother = stack->Particle(iCurrentMother)->GetPdgCode();}
 	 
 	mcPosX = p0->Vx();
@@ -705,43 +653,35 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
 	mcPosZ = p0->Vz();
 	mcPosR = TMath::Sqrt(mcPosX*mcPosX+mcPosY*mcPosY);
 
-// 	cout<<"ndaughters: "<<p0->GetNDaughters()<<endl;
-// 	cout<<"First daughters: "<<p0->GetFirstDaughter()<<endl;
-// 	cout<<"Last daughters: "<<p0->GetLastDaughter()<<endl;
-
 	isTwoBody=kFALSE;
-
+	
 	for(Int_t i=p0->GetFirstDaughter(); i<= p0->GetLastDaughter(); i++){
 	  TParticle *pDaughter = stack->Particle(i);
 	  lPdgCurrentDaughter= pDaughter->GetPdgCode();
 	  cout<<lPdgCurrentDaughter<<endl;
 	  if(lPdgCurrentDaughter == 1000020030 || lPdgCurrentDaughter ==-1000020030 ){
-	    //  if(lPdgCurrentDaughter == 1000020030){
-	    //  cout<<"\nHelio 3!!!\n"<<endl;
 	    isTwoBody=kTRUE;
-	    //  cout<<"Is 2 body? inside "<<isTwoBody<<endl;
+	    
 	  }
 	}
 	
 	if(isTwoBody){
-
+	  
 	  for(Int_t i=p0->GetFirstDaughter(); i<= p0->GetLastDaughter(); i++){
 	  
 	    TParticle *pDaughter = stack->Particle(i);
 	  
 	    lPdgCurrentDaughter= pDaughter->GetPdgCode();
-	    //	  cout<<"i "<<i<<" "<<lPdgCurrentDaughter<<endl;
+	  
 	    if(lPdgCurrentDaughter == 211 || lPdgCurrentDaughter == -211 ){
-	      // if(lPdgCurrentDaughter == 211 ){
 	      id0 = i;
 	    }
 	    
 	    if(lPdgCurrentDaughter == 1000020030 || lPdgCurrentDaughter == -1000020030 ){
-	      //if(lPdgCurrentDaughter == -1000020030){
 	      id1 = i;
 	    }
 	  }
-
+	  
 	  TParticle *pDaughter0 = stack->Particle(id0);
 	  TParticle *pDaughter1 = stack->Particle(id1);
 	  lPdgCurrentDaughter0 = pDaughter0->GetPdgCode();
@@ -771,13 +711,12 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
 	    mcDecayPosZD1 = pDaughter0->Vz();
 	    
 	    mcDecayPosR = TMath::Sqrt(mcDecayPosXD0*mcDecayPosXD0+mcDecayPosYD0*mcDecayPosYD0);
-	    fHistMCDecayPosition->Fill(mcDecayPosR);  //histo
+	    fHistMCDecayPosition->Fill(mcDecayPosR);  
 	    
-	    //mcDecayPosZ = pDaughter0->Vz();
 	    mcDecayPosRho = TMath::Sqrt(mcDecayPosXD0*mcDecayPosXD0+mcDecayPosYD0*mcDecayPosYD0+mcDecayPosZD0*mcDecayPosZD0);
-	    fHistMCDecayRho->Fill(mcDecayPosRho);    //histo
+	    fHistMCDecayRho->Fill(mcDecayPosRho);  
 	    
-	    //---- Massa iniziale prova
+	    //---- Initial mass Test
 	    
 	    vHeliumMum.SetXYZM(PxD1,PyD1,PzD1,Helium3Mass); 
 	    vPionMum.SetXYZM(PxD0,PyD0,PzD0,PionMass);       
@@ -827,9 +766,7 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
     } // Kinetic Track loop ends here 
     
   // Loop phase - space
-
-  // NB ora e' solo He3+pi meno
-
+  
   Double_t HeMomMC =0;
   Double_t PionMomMC=0;
   Double_t PxHeMc=0, PyHeMc=0,PzHeMc=0;
@@ -861,14 +798,14 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
 
     }
     
-  } // fine loop phase space
+  } // end loop phase space
 
-  //-------------- Inizia la parte ricostruita -------------------
+  //-------------- RECONSTRUCTION -------------------
 
   fHistEventMultiplicity->Fill(0);
   
   Double_t lMagneticField=lESDevent->GetMagneticField();
-  //  cout<<"lMagneticField: "<<lMagneticField<<endl;
+
   Int_t TrackNumber = -1;
 
   // ANALISYS reconstructed tracks
@@ -938,10 +875,10 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
   Float_t impactXY=-999, impactZ=-999;
   Float_t impactXYpi=-999, impactZpi=-999;
   
-  Int_t PDGCodePos;
-  Int_t PDGCodeNeg;
-  Int_t motherPDGNeg;
-  Int_t motherPDGPos;
+  Int_t PDGCodePos=0;
+  Int_t PDGCodeNeg=0;
+  Int_t motherPDGNeg=0;
+  Int_t motherPDGPos=0;
 
   Int_t mumpdg=-100;
   
@@ -956,7 +893,6 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
   //! ITS
 
   AliESDtrackCuts* esdtrackCutsITS = new AliESDtrackCuts("esdtrackCutsITS");
-  //  esdtrackCutsITS->SetRequireITSRefit(kTRUE);
   esdtrackCutsITS->SetRequireITSStandAlone(kFALSE);
   esdtrackCutsITS->SetRequireITSPureStandAlone(kFALSE);
 
@@ -972,13 +908,9 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
   esdtrackCutsTPC->SetMaxChi2PerClusterTPC(maxchi2perTPCcl);
         
   //*************************************************************
- 
-
-  //--------------------------------------------
-  //cout<<"TrackNumber: "<<TrackNumber<<endl;
-
-  for (Int_t j=0; j<TrackNumber; j++) { //loop on tracks
   
+  for (Int_t j=0; j<TrackNumber; j++) { //loop on tracks
+    
     AliESDtrack *esdtrack=lESDevent->GetTrack(j);
    
     if(!esdtrack) { 
@@ -992,12 +924,12 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
     
     status  = (ULong_t)esdtrack->GetStatus();
     
-    isTPC   = ((status & AliESDtrack::kTPCin)  != 0);
-    isTOF   = (((status & AliESDtrack::kTOFout) != 0) && ((status & AliESDtrack::kTIME) != 0));
+    isTPC   = (((status) & (AliESDtrack::kTPCin))  != 0);
+    isTOF   = ((((status) & (AliESDtrack::kTOFout)) != 0) && (((status) & (AliESDtrack::kTIME)) != 0));
     
     Bool_t IsTrackAcceptedTPC =  esdtrackCutsTPC->AcceptTrack(esdtrack);
     Bool_t IsTrackAcceptedITS =  esdtrackCutsITS->AcceptTrack(esdtrack);
-
+    
     if (!(IsTrackAcceptedTPC && IsTrackAcceptedITS)) continue;
 
     //----------------------------------------------
@@ -1045,23 +977,14 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
     }
     
     TParticle * part = stack->Particle(label);
-    //if(part)
-    // 	part->Print();
-      
-    //      cout<<"PDG CODE: "<<part->GetPdgCode()<<endl;
-	
+    	
     Int_t PDGCode=part->GetPdgCode();
     Int_t mumid = part->GetFirstMother();
 
-    //      cout<<"Traccia ricostruita: \nID:"<<PDGCode<<" label "<<label<<" Theta Mum "<<thetaMumRec<<" mum id "<<mumid<<endl;      
     if(mumid>-1){
       TParticle *mother=(TParticle*)stack->Particle(mumid);
       mumpdg = mother->GetPdgCode();
     }
-
-    //     if (track->GetSign() < 0.){
-	
-    //    if(PDGCode==-211 || PDGCode==+211){
     
     if(PDGCode==-211)
       fhBBTPCNegativePions->Fill(esdtrack->GetSign()*esdtrack->P(),esdtrack->GetTPCsignal());
@@ -1073,8 +996,7 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
     //    if(PDGCode == 211){
  	  
     if(PDGCode==-211 || PDGCode==+211){
-      //if(esdtrack->GetSign()>0)continue;
-
+      
       PionsTPC[nPionsTPC++]=j;
     
       esdtrack->GetImpactParameters(impactXY, impactZ);
@@ -1091,10 +1013,6 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
      	
     if(PDGCode==1000020030 ||PDGCode==-1000020030 ){
 
-    //    if(PDGCode==-1000020030){
-	
-      //cout<<"He3"<<endl;
-      //  if(esdtrack->GetSign()<0)continue;
 
       HeTPC[nHeTPC++]=j;
 
@@ -1151,8 +1069,6 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
 
   //--------------- LOOP PAIRS ----------------------//
   
-  //    cout<<"nPosTrackHe3 "<<nHeTPC<<endl;
-  
   Double_t        DcaHeToPrimVertex=0;
   Double_t        DcaPionToPrimVertex=0;
   
@@ -1179,12 +1095,10 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
   
   Double_t momHeVettAt[3];
   for(Int_t i=0;i<3;i++)momHeVettAt[i]=0;
-  
-  //    Double_t fPos[3]={0.,0.,0.};
-  
+    
   Bool_t   IsHeITSRefit,IsPiITSRefit ;
   
-  //----------- Mio 2nd Vertex Finder
+  //----------- My 2nd Vertex Finder
     
   for (Int_t k=0; k < nPionsTPC; k++) {                           //! Pions Loop
     
@@ -1196,7 +1110,7 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
     PionTrack=lESDevent->GetTrack(PionIdx);
     
     statusPi = (ULong_t)PionTrack->GetStatus();
-    IsPiITSRefit = (statusPi & AliESDtrack::kITSrefit); 
+    IsPiITSRefit = ((statusPi) & (AliESDtrack::kITSrefit)); 
     
     Int_t labelPi = TMath::Abs(PionTrack->GetLabel());
     TParticle * partNeg = stack->Particle(labelPi);
@@ -1210,11 +1124,9 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
     
     if (PionTrack) 
       DcaPionToPrimVertex = TMath::Abs(PionTrack->GetD(xPrimaryVertex, yPrimaryVertex,lMagneticField)); //OK
-
- 
   
-    if(DcaPionToPrimVertex<0.1)continue; //qui
-    
+    if(DcaPionToPrimVertex<0.1)continue;     
+
     AliExternalTrackParam trackInPion(*PionTrack);  
     
     for (Int_t i=0; i<nHeTPC; i++){                               //! Helium Loop
@@ -1224,7 +1136,7 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
       HeTrack=lESDevent->GetTrack(HeIdx);
       
       statusT= (ULong_t)HeTrack->GetStatus();
-      IsHeITSRefit = (statusT & AliESDtrack::kITSrefit); 
+      IsHeITSRefit = ((statusT) & (AliESDtrack::kITSrefit)); 
       
       Int_t labelHe = TMath::Abs(HeTrack->GetLabel());
       TParticle * partPos = stack->Particle(labelHe);
@@ -1249,8 +1161,7 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
       vSumRec=vHeliumRec+vPionRec;
       
       fhInvMassRec1->Fill(vSumRec.M());
-      
-      //      if(DcaPionToPrimVertex<0.1)continue; 
+
       fhInvMassRec2->Fill(vSumRec.M());
       
       if ( DcaPionToPrimVertex < fgDNmin)                //OK
@@ -1261,7 +1172,7 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
       Double_t xn, xp;
       Double_t dca=0.;
       
-      dca= PionTrack->GetDCA(HeTrack,lMagneticField,xn,xp); //!distanza tra le due tracce (Neg to Pos)
+      dca= PionTrack->GetDCA(HeTrack,lMagneticField,xn,xp); //!distance between two tracks (Neg to Pos)
       fHistProvaDCA->Fill(xn-xp,dca);
       if (dca > fgDCAmax) continue;
 
@@ -1270,8 +1181,6 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
       if ((xn+xp) > 2*fgRmax) continue;
       if ((xn+xp) < 2*fgRmin) continue;
       fhInvMassRec5->Fill(vSumRec.M());
-
-     
       
       //CORREZIONE da AliV0Vertex
       
@@ -1292,7 +1201,7 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
       }
    
       //=============================================//
-      // Faccio un "V0" con le tracce che ho trovato //
+      // Make  a  "V0" with Tracks                   //
       //=============================================//
       
       trackInPion.PropagateTo(xn,lMagneticField); 

@@ -21,14 +21,9 @@ ClassImp(AliForwardMultiplicityDistribution)
 #endif
 //______________________________________________________________________
 AliForwardMultiplicityDistribution::AliForwardMultiplicityDistribution() 
-  : AliBasedNdetaTask(), 
-    fTrigger(0),   // trigger histogram
+  : AliBaseAODTask(), 
     fBins(),       // eta bin list
-    fOutput(0),    // output list
-    fLowCent(-1),  // lower centrality limit
-    fHighCent(-1), // upper centrality limit
-    fNBins(-1),    // multiplicity axis' runs from 0 to fNbins
-    fCent(0)       // centrality
+    fNBins(-1)     // multiplicity axis' runs from 0 to fNbins
 {
   //
   // Default Constructor
@@ -37,106 +32,72 @@ AliForwardMultiplicityDistribution::AliForwardMultiplicityDistribution()
  
 //_____________________________________________________________________
 AliForwardMultiplicityDistribution::AliForwardMultiplicityDistribution(const char* name) 
-  : AliBasedNdetaTask(name),
-    fTrigger(0),   // trigger histogram
+  : AliBaseAODTask(name),
     fBins(),       // eta bin list
-    fOutput(0),    // output list
-    fLowCent(-1),  // lower centrality limit
-    fHighCent(-1), // upper centrality limit
-    fNBins(-1),    // multiplicity axis' runs from 0 to fNbins
-    fCent(0)       // centrality
+    fNBins(-1)    // multiplicity axis' runs from 0 to fNbins
 {
   //
   // Constructor
   //
-  DefineOutput(1, TList::Class());
 }
-
 //_____________________________________________________________________
-void AliForwardMultiplicityDistribution::UserCreateOutputObjects()
+Bool_t AliForwardMultiplicityDistribution::Book()
 {
-  //
-  // Create Output Objects
-  //
-  fOutput = new TList;
-  fOutput->SetOwner();
-  fOutput->SetName(GetName());
+  TH1D* dndetaSumForward = new TH1D("dndetaSumForward","dndetaSumForward", 
+				    200,-4,6);
+  TH1D* dndetaSumCentral = new TH1D("dndetaSumCentral","dndetaSumCentral", 
+				    200,-4,6);
+  fSums->Add(dndetaSumForward);
+  fSums->Add(dndetaSumCentral);
   
-  TH1D* dndetaSumForward = new TH1D("dndetaSumForward","dndetaSumForward", 200,-4,6);
-  TH1D* dndetaSumCentral = new TH1D("dndetaSumCentral","dndetaSumCentral", 200,-4,6);
-  fOutput->Add(dndetaSumForward);
-  fOutput->Add(dndetaSumCentral);
-  
-  fCent = new TH1D("cent", "Centrality", 100, 0, 100);
-  fCent->SetDirectory(0);
-  fCent->SetXTitle(0);
-  fOutput->Add(fCent);
   
   TH1D* dndetaEventForward = new TH1D();
   TH1D* dndetaEventCentral = new TH1D();
-  fOutput->Add(dndetaEventForward);
-  fOutput->Add(dndetaEventCentral);
-  
-  //make trigger diagnostics histogram
-  fTrigger= new TH1I();
-  fTrigger= AliAODForwardMult::MakeTriggerHistogram("triggerHist");
-  fOutput->Add(fTrigger);
+  fSums->Add(dndetaEventForward);
+  fSums->Add(dndetaEventCentral);
   
   //Loop over all individual eta bins, and define their hisograms 
   TIter next(&fBins);
   Bin * bin = 0;
   while ((bin = static_cast<Bin*>(next()))) { 
-    bin->CreateOutputObjectss(fOutput, fNBins);
+    bin->CreateOutputObjectss(fSums, fNBins);
   }
-  //fOutput->ls();
-  PostData(1, fOutput);
+  return true;
 }
 
 
 //_____________________________________________________________________
-void AliForwardMultiplicityDistribution::UserExec(Option_t */*option*/)
+Bool_t AliForwardMultiplicityDistribution::Event(AliAODEvent& aod)
 {
   //
   // User Exec
   //
-  AliAODEvent* aod = dynamic_cast<AliAODEvent*>(InputEvent());
-  if (!aod) {
-    AliError("Cannot get the AOD event");
-    return;
-  } 
-  // Check AOD event
-  AliAODForwardMult* AODforward = static_cast<AliAODForwardMult*>(aod->FindListObject("Forward"));
-  if (!AODforward->CheckEvent(fTriggerMask, fVtxMin, fVtxMax, 0,0,fTrigger)){
-    AliError("Invalid Event");
-    return;
-  }
-  
-  // Fill centrality histogram, only useful for PbPb 
-  Float_t cent = AODforward->GetCentrality();
-  if(fLowCent<fHighCent){
-    if(cent<fLowCent||cent>fHighCent) return;
-  }
-  fCent->Fill(cent);
+  AliAODForwardMult* AODforward = GetForward(aod);
+  if (!AODforward) return false;
 
-  TH2D forward;
-  TH2D central;
+  AliAODCentralMult* AODcentral = GetCentral(aod);
+  if (!AODcentral) return false;
+
+  TH2D& forward = AODforward->GetHistogram();
+  TH2D& central = AODcentral->GetHistogram();
   
-  // Get 2D eta-phi histograms for each event
-  GetHistograms(aod, forward, central);
-  
-  TH1D* dndetaSumForward   = (TH1D*)fOutput->FindObject("dndetaSumForward");
-  TH1D* dndetaSumCentral   = (TH1D*)fOutput->FindObject("dndetaSumCentral");
-  TH1D* dndetaEventForward = 0;//(TH1D*)fOutput->FindObject("dndetaEventForward");
-  TH1D* dndetaEventCentral = 0;//(TH1D*)fOutput->FindObject("dndetaEventCentral");
+  TH1D* dndetaSumForward   = (TH1D*)fSums->FindObject("dndetaSumForward");
+  TH1D* dndetaSumCentral   = (TH1D*)fSums->FindObject("dndetaSumCentral");
+  TH1D* dndetaEventForward = 0;//(TH1D*)fList->FindObject("dndetaEventForward");
+  TH1D* dndetaEventCentral = 0;//(TH1D*)fList->FindObject("dndetaEventCentral");
   TH1D* normEventForward   = 0;
   TH1D* normEventCentral   = 0;
 
+  // ACHTUNG ACHTUNG ACHTUNG! Serious memory leak here!
   dndetaEventForward = forward.ProjectionX("dndetaForward",1,forward.GetNbinsY(),"");
   dndetaEventCentral = central.ProjectionX("dndetaCentral",1,central.GetNbinsY(),"");
   dndetaSumForward->Add(dndetaEventForward);
   dndetaSumCentral->Add(dndetaEventCentral);
   
-  // underflow eta bin of forward/central carry information on whether there is acceptance. 1= acceptance, 0= no acceptance
+  // underflow eta bin of forward/central carry information on whether
+  // there is acceptance. 1= acceptance, 0= no acceptance
+  // 
+  // ACHTUNG ACHTUNG ACHTUNG! Serious memory leak here!
   normEventForward   = forward.ProjectionX("dndetaEventForwardNorm",0,0,"");
   normEventCentral   = central.ProjectionX("dndetaEventCentralNorm",0,0,"");
   
@@ -151,44 +112,17 @@ void AliForwardMultiplicityDistribution::UserExec(Option_t */*option*/)
 		 normEventForward,   normEventCentral, VtxZ);
   }
   
-  PostData(1, fOutput);
+  // ACHTUNG ACHTUNG ACHTUNG! Serious memory leak here!
+  // We should do 
+  // 
+  // delete dndetaEventForward;
+  // delete dndetaEventCentral;
+  // delete normEventForward;
+  // delete normEventCentral;
+  // 
+  // and remove them from the output list - to prevent the memory leak
   
-}
-
-//_____________________________________________________________________
-void AliForwardMultiplicityDistribution::Terminate(Option_t */*option*/)
-{
-  //
-  // Terminate
-  //
-}
-
-//_________________________________________________________________-
-TH2D* AliForwardMultiplicityDistribution::GetHistogram(const AliAODEvent*, Bool_t)
-{
-  //
-  // implementation of pure virtual function, always returning 0
-  //
-  return 0;
-}
-
-void AliForwardMultiplicityDistribution::GetHistograms(const AliAODEvent* aod, TH2D& forward, TH2D& central, Bool_t /*mc*/)
-{
-  //
-  // Get single event forward and central dN²/dEta dPhi histograms 
-  //
-  TObject* forwardObj = 0;
-  TObject* centralObj = 0;
-
-    
-  forwardObj = aod->FindListObject("Forward");
-  centralObj = aod->FindListObject("CentralClusters");
-
-  AliAODForwardMult* AODforward = static_cast<AliAODForwardMult*>(forwardObj);
-  AliAODCentralMult* AODcentral = static_cast<AliAODCentralMult*>(centralObj);
-  
-  forward= AODforward->GetHistogram();
-  central= AODcentral->GetHistogram();
+  return true;
   
 }
 

@@ -118,10 +118,10 @@ void AliCaloTrackMCReader::InitParameters()
   
 }
 
-//_________________________________________________________________________________
-void  AliCaloTrackMCReader::CheckOverlap(const Float_t anglethres, const Int_t imom, 
-                                         Int_t & iPrimary, Int_t & index, TLorentzVector & mom, 
-                                         Int_t & pdg) 
+//__________________________________________________________________________
+void  AliCaloTrackMCReader::CheckOverlap(Float_t anglethres, Int_t imom,
+                                         Int_t & iPrimary, Int_t & index,
+                                         TLorentzVector & mom, Int_t & pdg)
 {
   //Check overlap of decay photons
   if( fIndex2ndPhoton==iPrimary )
@@ -160,7 +160,9 @@ void  AliCaloTrackMCReader::CheckOverlap(const Float_t anglethres, const Int_t i
       else
       {
         //Do not check overlapping for next decay photon from same meson
-        if(iPrimary == idaug1) {fIndex2ndPhoton = idaug1+1;
+        if(iPrimary == idaug1)
+        {
+          fIndex2ndPhoton = idaug1+1;
         }
         
       }
@@ -187,7 +189,7 @@ void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle,
     
     Char_t ttype= AliVCluster::kPHOSNeutral;	
     Int_t labels[] = {index};
-    Float_t x[] = {momentum.X(), momentum.Y(), momentum.Z()};
+    Double_t x[] = {momentum.X(), momentum.Y(), momentum.Z()};
     //Create object and write it to file
     AliAODCaloCluster *calo = new AliAODCaloCluster(index,1,labels,momentum.E(), x, NULL, ttype, 0);
     
@@ -212,7 +214,7 @@ void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle,
     
     Char_t ttype= AliVCluster::kEMCALClusterv1;
     Int_t labels[] = {index};
-    Float_t x[] = {momentum.X(), momentum.Y(), momentum.Z()};
+    Double_t x[] = {momentum.X(), momentum.Y(), momentum.Z()};
     //Create object and write it to file
     AliAODCaloCluster *calo = new AliAODCaloCluster(iParticle,1,labels,momentum.E(), x, NULL, ttype, 0);
     
@@ -225,7 +227,7 @@ void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle,
 }
 
 //___________________________________________________________________________
-Bool_t AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry, 
+Bool_t AliCaloTrackMCReader::FillInputEvent(Int_t iEntry,
                                             const char * /*currentFileName*/)
 {
   //Fill the event counter and input lists that are needed, called by the analysis maker.
@@ -285,7 +287,7 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry,
           p[0] = particle->Px(); p[1] = particle->Py(); p[2] = particle->Pz();
           //Create object and write it to file
           AliAODTrack *aodTrack = new AliAODTrack(0, iParticle, p, kTRUE, x, kFALSE,NULL, 0, 0, 
-                                                  NULL,
+                                                  // NULL,
                                                   0x0,//primary,
                                                   kFALSE, // No fit performed
                                                   kFALSE, // No fit performed
@@ -407,7 +409,7 @@ void AliCaloTrackMCReader::Print(const Option_t * opt) const
 }
 
 //________________________________________________________________
-void AliCaloTrackMCReader::MakePi0Decay(const TLorentzVector p0, 
+void AliCaloTrackMCReader::MakePi0Decay(TLorentzVector p0,
                                         TLorentzVector &p1, 
                                         TLorentzVector &p2) const 
 //, Double_t &angle)
@@ -461,7 +463,6 @@ void AliCaloTrackMCReader::SetInputOutputMCEvent(AliVEvent* /*esd*/,
   SetOutputEvent(aod);
 }
 
-
 //________________________________________________________________
 Bool_t AliCaloTrackMCReader::SkipNeutralParticles(Int_t pdg) const 
 {
@@ -475,9 +476,8 @@ Bool_t AliCaloTrackMCReader::SkipNeutralParticles(Int_t pdg) const
   
 }
 
-
 //_______________________________________________________________________
-void AliCaloTrackMCReader::SetTrackChargeAndPID(const Int_t pdgCode, 
+void AliCaloTrackMCReader::SetTrackChargeAndPID(Int_t pdgCode,
                                                 AliAODTrack *track) const 
 {
   //Give a PID weight for tracks equal to 1 depending on the particle type

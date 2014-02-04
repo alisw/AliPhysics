@@ -28,6 +28,7 @@
 
 set ( SRCS  
     Correlations/DPhi/AliAnalysisTaskDptDptCorrelations.cxx
+    Correlations/DPhi/AliDptDptInMC.cxx
     Correlations/DPhi/AliAnalysisTask3PCorrelations.cxx 
     Correlations/DPhi/AliAnalysisTaskPhiCorrelations.cxx 
     Correlations/DPhi/AliPhiCorrelationsQATask.cxx 
@@ -44,11 +45,17 @@ set ( SRCS
     Correlations/DPhi/FourierDecomposition/AliPool.cxx
     Correlations/DPhi/FourierDecomposition/AliDhcTask.cxx
     Correlations/DPhi/FourierDecomposition/AliMuonEffMC.cxx
+    Correlations/DPhi/FourierDecomposition/AliMCTruthTrackMaker.cxx
+    Correlations/DPhi/FourierDecomposition/AliMCTruthCent.cxx
     Correlations/DPhi/AliLeadingV0Correlation.cxx 
     Correlations/DPhi/AliAnalysisTaskLongRangeCorrelations.cxx 
     Correlations/DPhi/MuonHadron/AliAnalysisTaskMuonHadronCorrelations.cxx 
     Correlations/DPhi/MuonHadron/AliAnalysisTaskDiMuonCorrelations.cxx
     Correlations/DPhi/AliAnalysisTaskContMC.cxx
+    Correlations/DPhi/TriggerPID/AliAnalysisTaskPIDCORR.cxx
+    Correlations/DPhi/TriggerPID/AliTwoParticlePIDCorr.cxx
+    Correlations/DPhi/PidPid/AliAnalysisTaskPidPidCorrelations.cxx
+    Correlations/DPhi/PhiEffMC/AliAnalysisTaskPhiEffMc.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

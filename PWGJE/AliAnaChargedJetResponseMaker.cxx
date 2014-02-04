@@ -190,8 +190,6 @@ void AliAnaChargedJetResponseMaker::SetMeasuredSpectrum(TH1D *hPtMeasured)
   int bin[1] = {0};
   bin[0] = 0;
   for(int i = hPtMeasured->FindBin(fPtMin); i<hPtMeasured->FindBin(fPtMax); i++) {
-    double pT[1]; 
-    pT[0]= hPtMeasured->GetBinCenter(i);
     fPtMeasured->SetBinContent(bin,(Double_t)hPtMeasured->GetBinContent(i));
     fPtMeasured->SetBinError(bin,(Double_t)hPtMeasured->GetBinError(i));
     bin[0]++;
@@ -462,7 +460,7 @@ void AliAnaChargedJetResponseMaker::InitializeResponseMatrixFine() {
   Int_t nbinsFine[fDimensions*2];
   Double_t xminFine[fDimensions*2];
   Double_t xmaxFine[fDimensions*2];
-  Double_t pTarrayFine[fDimensions*2];
+  // Double_t pTarrayFine[fDimensions*2];
 
   nbinsFine[fDimRec] = fResponseMatrix->GetAxis(fDimRec)->GetNbins()*fFineFrac; 
   nbinsFine[fDimGen] = fResponseMatrix->GetAxis(fDimRec)->GetNbins()*fFineFrac; 
@@ -470,8 +468,8 @@ void AliAnaChargedJetResponseMaker::InitializeResponseMatrixFine() {
   xminFine[fDimGen] = TMath::Min(fPtMin,0.);
   xmaxFine[fDimRec] = fResponseMatrix->GetAxis(fDimGen)->GetXmax();//+40.;
   xmaxFine[fDimGen] = fResponseMatrix->GetAxis(fDimGen)->GetXmax();//+40.;
-  pTarrayFine[fDimRec] = 0.;
-  pTarrayFine[fDimGen] = 0.;
+  // pTarrayFine[fDimRec] = 0.;
+  // pTarrayFine[fDimGen] = 0.;
 
   Double_t binWidth[2];
   binWidth[fDimRec] = fResponseMatrix->GetAxis(fDimRec)->GetBinWidth(1);
@@ -582,16 +580,16 @@ void AliAnaChargedJetResponseMaker::FillResponseMatrixFineAndMerge() {
   TAxis *recAxis = fResponseMatrixFine->GetAxis(fDimRec);
 
   Int_t nbinsFine[fDimensions*2];
-  Double_t xminFine[fDimensions*2]; 
-  Double_t xmaxFine[fDimensions*2];
+  //Double_t xminFine[fDimensions*2]; 
+  //Double_t xmaxFine[fDimensions*2];
   Double_t pTarrayFine[fDimensions*2];
 
   nbinsFine[fDimGen] = genAxis->GetNbins();
   nbinsFine[fDimRec] = recAxis->GetNbins();
-  xminFine[fDimGen]  = genAxis->GetXmin();
-  xminFine[fDimRec]  = recAxis->GetXmin();
-  xmaxFine[fDimGen]  = genAxis->GetXmax();
-  xmaxFine[fDimRec]  = recAxis->GetXmax();
+  //  xminFine[fDimGen]  = genAxis->GetXmin();
+  //  xminFine[fDimRec]  = recAxis->GetXmin();
+  //  xmaxFine[fDimGen]  = genAxis->GetXmax();
+  //  xmaxFine[fDimRec]  = recAxis->GetXmax();
   pTarrayFine[fDimGen] = 0.;
   pTarrayFine[fDimRec] = 0.;
 

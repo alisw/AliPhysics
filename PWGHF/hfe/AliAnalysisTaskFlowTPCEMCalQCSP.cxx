@@ -186,6 +186,8 @@ AliAnalysisTaskFlowTPCEMCalQCSP::AliAnalysisTaskFlowTPCEMCalQCSP(const char *nam
 ,fMultCorAfterVZTRKComp(0)
 ,fCentralityBeforePileup(0)
 ,fCentralityAfterVZTRK(0)
+,fCentralityAfterCorrCut(0)
+,fMultCorAfterCorrCut(0)
 ,EPVz(0)
 ,EPTPCp(0)
 ,EPTPCn(0)
@@ -292,6 +294,8 @@ AliAnalysisTaskFlowTPCEMCalQCSP::AliAnalysisTaskFlowTPCEMCalQCSP()
 ,fMultCorAfterVZTRKComp(0)
 ,fCentralityBeforePileup(0)
 ,fCentralityAfterVZTRK(0)
+,fCentralityAfterCorrCut(0)
+,fMultCorAfterCorrCut(0)
 ,EPVz(0)
 ,EPTPCp(0)
 ,EPTPCn(0)
@@ -379,7 +383,10 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
     if(fTrigger==3){
         if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB) ) return;
     }
-    
+    if(fTrigger==4){
+        if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kCentral | AliVEvent::kSemiCentral))) return;
+    }
+
     
     //---------------CENTRALITY AND EVENT SELECTION-----------------------
     Int_t fNOtrks =  fAOD->GetNumberOfTracks();
@@ -619,7 +626,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
                 AliFlowTrack *sTrackCont = new AliFlowTrack();
                 sTrackCont->Set(track);
                 sTrackCont->SetID(track->GetID());
-                sTrackCont->SetForRPSelection(kFALSE);
+                sTrackCont->SetForRPSelection(kTRUE);
                 sTrackCont->SetForPOISelection(kTRUE);
                 sTrackCont->SetMass(2637);
                 for(int iRPs=0; iRPs!=fFlowEventCont->NumberOfTracks(); ++iRPs)
@@ -633,10 +640,12 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
                         if(fDebug) printf(" was in RP set");
                         //       cout << sTrack->GetID() <<"   ==  " << iRP->GetID() << " was in RP set" <<endl;
                         iRPCont->SetForRPSelection(kFALSE);
-                        fFlowEventCont->SetNumberOfRPs(fFlowEventCont->GetNumberOfRPs() - 1);
+                      //  fFlowEventCont->SetNumberOfRPs(fFlowEventCont->GetNumberOfRPs() - 1);
                     }
                 } //end of for loop on RPs
                 fFlowEventCont->InsertTrack(((AliFlowTrack*) sTrackCont));
+                fFlowEventCont->SetNumberOfPOIs(fFlowEventCont->GetNumberOfPOIs()+1);
+
             }
         }
         //==========================================================================================================
@@ -666,7 +675,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
         AliFlowTrack *sTrack = new AliFlowTrack();
         sTrack->Set(track);
         sTrack->SetID(track->GetID());
-        sTrack->SetForRPSelection(kFALSE);
+        sTrack->SetForRPSelection(kTRUE);
         sTrack->SetForPOISelection(kTRUE);
         sTrack->SetMass(263732);
         for(int iRPs=0; iRPs!=fFlowEvent->NumberOfTracks(); ++iRPs)
@@ -680,11 +689,11 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
                 if(fDebug) printf(" was in RP set");
                 //       cout << sTrack->GetID() <<"   ==  " << iRP->GetID() << " was in RP set" <<endl;
                 iRP->SetForRPSelection(kFALSE);
-                fFlowEvent->SetNumberOfRPs(fFlowEvent->GetNumberOfRPs() - 1);
+               // fFlowEvent->SetNumberOfRPs(fFlowEvent->GetNumberOfRPs() - 1);
             }
         } //end of for loop on RPs
         fFlowEvent->InsertTrack(((AliFlowTrack*) sTrack));
-        
+        fFlowEvent->SetNumberOfPOIs(fFlowEvent->GetNumberOfPOIs()+1);
         
         
         if(fDCA){
@@ -775,11 +784,11 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::SelectPhotonicElectron(Int_t itrack,const 
         Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
         Double_t openingAngle = -999.;
         Double_t ptcutonmasshighpt = track->Pt();
-
+        
         ptAsso = trackAsso->Pt();
         Short_t chargeAsso = trackAsso->Charge();
         Short_t charge = track->Charge();
-
+        
         nsigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(trackAsso, AliPID::kElectron) : 1000;
         
         //80
@@ -815,8 +824,8 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::SelectPhotonicElectron(Int_t itrack,const 
         if(fFlagULS) fInvmassULS1->Fill(mass);
         
         if(ptcutonmasshighpt >= 8.){
-        if(fFlagLS) fInvmassLS1highpt->Fill(mass);
-        if(fFlagULS) fInvmassULS1highpt->Fill(mass);
+            if(fFlagLS) fInvmassLS1highpt->Fill(mass);
+            if(fFlagULS) fInvmassULS1highpt->Fill(mass);
         }
         
         
@@ -928,7 +937,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
     
     fInvmassULS1 = new TH1F("fInvmassULS1", "Inv mass of ULS (e,e); mass(GeV/c^2); counts;", 1000,0,1.0);
     fOutputList->Add(fInvmassULS1);
-   
+    
     fInvmassLS1highpt = new TH1F("fInvmassLS1highpt", "Inv mass of LS (e,e); mass(GeV/c^2) highpt; counts;", 1000,0,1.0);
     fOutputList->Add(fInvmassLS1highpt);
     
@@ -949,6 +958,9 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
     
     fCentralityAfterVZTRK = new TH1F("fCentralityAfterVZTRK", "fCentralityAfterVZTRK Pass", 101, -1, 100);
     fOutputList->Add(fCentralityAfterVZTRK);
+
+    fCentralityAfterCorrCut = new TH1F("fCentralityAfterCorrCut", "fCentralityAfterCorrCut Pass", 101, -1, 100);
+    fOutputList->Add(fCentralityAfterCorrCut);
     
     fPhi = new TH1F("fPhi", "#phi distribution", 100, -.5, 7);
     fOutputList->Add(fPhi);
@@ -979,6 +991,9 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
     
     fMultCorAfterVZTRKComp = new TH2F("fMultCorAfterVZTRKComp", "TPC vs Global multiplicity (After V0-TRK); Global multiplicity; TPC multiplicity", 100, 0, 3000, 100, 0, 3000);
     fOutputList->Add(fMultCorAfterVZTRKComp);
+    
+    fMultCorAfterCorrCut = new TH2F("fMultCorAfterCorrCut", "TPC vs Global multiplicity (After CorrCut); Global multiplicity; TPC multiplicity", 100, 0, 3000, 100, 0, 3000);
+    fOutputList->Add(fMultCorAfterCorrCut);
     
     fMultvsCentr = new TH2F("fMultvsCentr", "Multiplicity vs centrality; centrality; Multiplicity", 100, 0., 100, 100, 0, 3000);
     fOutputList->Add(fMultvsCentr);
@@ -1056,7 +1071,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
     
     
     //----------------------------------------------------------------------------
-
+    
     if(fPhiminusPsi){
         Int_t binsvElectH[8]={ 600,  200, 200 ,100,  100,  100,   10,          10}; //pt, E/p,TPCnSigma,M20,M02,Disp Phi-psiV0A ,Phi-PsiV0C,eta (commented)
         Double_t xminvElectH[8]={0,    0, -10 ,  0,    0,    0,    0,           0};
@@ -1198,7 +1213,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::CheckCentrality(AliAODEvent* event, Bool_t
     }//...after centrality selectrion
     //============================================================================================================================
     if(fMultCut){
-        if(fTrigger==1){
+        if(fTrigger==1 || fTrigger==4){
             if(! (multTPC > (-36.73 + 1.48*multGlob) && multTPC < (62.87 + 1.78*multGlob))){
                 //   cout <<" Trigger ==" <<fTrigger<< endl;
                 centralitypass = kFALSE;
@@ -1213,9 +1228,13 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::CheckCentrality(AliAODEvent* event, Bool_t
             }//2011
         }//2011 Central
     }
+    if (centralitypass){
+        fMultCorAfterCorrCut->Fill(multGlob, multTPC);
+        fCentralityAfterCorrCut->Fill(fCentrality);
+    }//...after CORR CUT
     //=================================All cuts are passed==================++++==================================================
     //=================================Now Centrality flattening for central trigger==================++++==================================================
-    if(fTrigger==0){
+    if(fTrigger==0 || fTrigger==4){
         if(!IsEventSelectedForCentrFlattening(fCentrality)){
             centralitypass = kFALSE;
             fCentralityNoPassForFlattening->Fill(fCentrality);
@@ -1337,8 +1356,4 @@ Bool_t AliAnalysisTaskFlowTPCEMCalQCSP::IsEventSelectedForCentrFlattening(Float_
     
 }
 //---------------------------------------------------------------------------
-
-
-
-
 

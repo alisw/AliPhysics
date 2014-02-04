@@ -32,15 +32,7 @@ class AliAnalysisTaskHelium3PiMC : public AliAnalysisTaskSE {
   void SetCollidingSystems(Short_t collidingSystems = 0)     {fCollidingSystems = collidingSystems;}
   void SetAnalysisType    (const char* analysisType = "ESD") {fAnalysisType = analysisType;}
   void SetDataType    (const char* dataType = "SIM") {fDataType = dataType;}
-  void SetMinNSigma(Double_t ns=3.){
-    fMinNSigma=ns;
-  }
 
-  void SetMinSPDPoints(Int_t np=1){
-    fMinSPDPts=np;
-  }
-
-  //Double_t BetheBloch(Double_t bg,Double_t Charge,Bool_t optMC);
   Double_t BetheBloch(Double_t bg,Double_t Charge,Bool_t isPbPb);
 
   
@@ -93,13 +85,6 @@ class AliAnalysisTaskHelium3PiMC : public AliAnalysisTaskSE {
   TNtuple *fNtuple1;                  //! Ntupla Pairs Pi/Proton "standard"
   TNtuple *fNtuple2;                  //! Ntupla Pairs PiPos/Proton "background"
 
-  TTree *fhTreeESD;                  //! Tree di Tstring
-  TString nameESD ; 
-  Int_t nEv;
-
-  Int_t    fMinSPDPts;       // minimum number of SPD Points
-  Double_t fMinNSigma;       // minimum number of sigmas
-  
 
  static const Int_t fgNrot;
  

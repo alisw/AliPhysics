@@ -132,9 +132,10 @@ GetListOfFiles(const char* input=".")
 /** 
  * 
  * 
- * @param dir Input directory
- * @param prodYear Production year 
+ * @param dir        Input directory
+ * @param prodYear   Production year 
  * @param prodLetter Production letter
+ * @param useVar     Use variance for errors (rather than min/max)
  * 
  * @ingroup pwglf_forward_qa_scripts
  */

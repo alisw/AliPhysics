@@ -719,9 +719,9 @@ void AliAnaPhoton::FillAcceptanceHistograms()
   }	// read AOD MC
 }
 
-//__________________________________________________________________________________________________________________________
-void  AliAnaPhoton::FillEMCALTriggerClusterBCHistograms(const Int_t idcalo, const Float_t ecluster, const Float_t tofcluster,
-                                                        const Float_t etacluster, const Float_t phicluster)
+//________________________________________________________________________________________________________________
+void  AliAnaPhoton::FillEMCALTriggerClusterBCHistograms(Int_t idcalo,       Float_t ecluster,  Float_t tofcluster,
+                                                        Float_t etacluster, Float_t phicluster)
 
 {
   // Fill trigger related histograms
@@ -741,6 +741,9 @@ void  AliAnaPhoton::FillEMCALTriggerClusterBCHistograms(const Int_t idcalo, cons
   Int_t  id     = GetReader()->GetTriggerClusterId();
   Bool_t badMax = GetReader()->IsBadMaxCellTriggerEvent();
   
+  Int_t histoBC = bc+5;
+  if(GetReader()->AreBadTriggerEventsRemoved()) histoBC=0; // histograms created only for one BC since the others where rejected
+
   if(id==-2)
   {
     //printf("AliAnaPhoton::ClusterSelected() - No trigger found bc=%d\n",bc);
@@ -753,13 +756,13 @@ void  AliAnaPhoton::FillEMCALTriggerClusterBCHistograms(const Int_t idcalo, cons
     {
       if(GetReader()->IsTriggerMatched())
       {
-        if(ecluster > 2) fhEtaPhiTriggerEMCALBC[bc+5]->Fill(etacluster, phicluster);
-        fhTimeTriggerEMCALBC[bc+5]->Fill(ecluster, tofcluster);
-        if(GetReader()->IsPileUpFromSPD()) fhTimeTriggerEMCALBCPileUpSPD[bc+5]->Fill(ecluster, tofcluster);
+        if(ecluster > 2) fhEtaPhiTriggerEMCALBC[histoBC]->Fill(etacluster, phicluster);
+        fhTimeTriggerEMCALBC[histoBC]->Fill(ecluster, tofcluster);
+        if(GetReader()->IsPileUpFromSPD()) fhTimeTriggerEMCALBCPileUpSPD[histoBC]->Fill(ecluster, tofcluster);
         
         if(idcalo ==  GetReader()->GetTriggerClusterId())
         {
-          fhEtaPhiTriggerEMCALBCCluster[bc+5]->Fill(etacluster, phicluster);
+          fhEtaPhiTriggerEMCALBCCluster[histoBC]->Fill(etacluster, phicluster);
           fhTimeTriggerEMCALBCCluster        ->Fill(ecluster, tofcluster);
           
           if(bc==0)
@@ -776,8 +779,8 @@ void  AliAnaPhoton::FillEMCALTriggerClusterBCHistograms(const Int_t idcalo, cons
       }
       else
       {
-        if(ecluster > 2) fhEtaPhiTriggerEMCALBCUM[bc+5]->Fill(etacluster, phicluster);
-        fhTimeTriggerEMCALBCUM[bc+5]->Fill(ecluster, tofcluster);
+        if(ecluster > 2) fhEtaPhiTriggerEMCALBCUM[histoBC]->Fill(etacluster, phicluster);
+        fhTimeTriggerEMCALBCUM[histoBC]->Fill(ecluster, tofcluster);
         
         if(bc==0)
         {
@@ -788,7 +791,7 @@ void  AliAnaPhoton::FillEMCALTriggerClusterBCHistograms(const Int_t idcalo, cons
         
         if(idcalo ==  GetReader()->GetTriggerClusterId())
         {
-          fhEtaPhiTriggerEMCALBCUMCluster[bc+5]->Fill(etacluster, phicluster);
+          fhEtaPhiTriggerEMCALBCUMCluster[histoBC]->Fill(etacluster, phicluster);
           fhTimeTriggerEMCALBCUMCluster->Fill(ecluster, tofcluster);
           if(bc==0)
           {
@@ -870,11 +873,9 @@ void  AliAnaPhoton::FillEMCALTriggerClusterBCHistograms(const Int_t idcalo, cons
   
 }
 
-//______________________________________________________________________________________________
-void  AliAnaPhoton::FillClusterPileUpHistograms(AliVCluster * calo,       const Bool_t matched,
-                                                const Float_t ptcluster,
-                                                const Float_t etacluster, const Float_t phicluster,
-                                                const Float_t l0cluster)
+//_________________________________________________________________________________________________________
+void  AliAnaPhoton::FillClusterPileUpHistograms(AliVCluster * calo, Bool_t matched,     Float_t ptcluster,
+                                                Float_t etacluster, Float_t phicluster, Float_t l0cluster)
 {
   // Fill some histograms related to pile up before any cluster cut is applied
   
@@ -1481,15 +1482,18 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag)
       } // embedded
       
     }//photon   no conversion
+    else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton)     &&
+               GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) &&
+              !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)        &&
+              !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta))
+    {
+      mcIndex = kmcssConversion ;
+    }//conversion photon
+
     else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron))
     {
       mcIndex = kmcssElectron ;
     }//electron
-    else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) &&
-              GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) )
-    {
-      mcIndex = kmcssConversion ;
-    }//conversion photon
     else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)  )
     {
       mcIndex = kmcssPi0 ;
@@ -1770,6 +1774,14 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   
   Int_t bin[] = {0,2,4,6,10,15,20,100}; // energy bins for SS studies
   
+  Int_t nTrigBC  = 1;
+  Int_t iBCShift = 0;
+  if(!GetReader()->AreBadTriggerEventsRemoved())
+  {
+    nTrigBC = 11;
+    iBCShift = 5;
+  }
+  
   TString cut[] = {"Open","Reader","E","Time","NCells","NLM","Fidutial","Matching","Bad","PID"};
   for (Int_t i = 0; i < 10 ;  i++)
   {
@@ -1848,59 +1860,59 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhEtaPhiEMCALBCN->SetXTitle("#eta");
     outputContainer->Add(fhEtaPhiEMCALBCN) ;
     
-    for(Int_t i = 0; i < 11; i++)
+    for(Int_t i = 0; i < nTrigBC; i++)
     {
       fhEtaPhiTriggerEMCALBC[i] = new TH2F
-      (Form("hEtaPhiTriggerEMCALBC%d",i-5),
-       Form("cluster E > 2 GeV, #eta vs #phi, Trigger EMCAL-BC=%d",i-5),
+      (Form("hEtaPhiTriggerEMCALBC%d",i-iBCShift),
+       Form("cluster E > 2 GeV, #eta vs #phi, Trigger EMCAL-BC=%d",i-iBCShift),
        netabins,etamin,etamax,nphibins,phimin,phimax);
       fhEtaPhiTriggerEMCALBC[i]->SetYTitle("#phi (rad)");
       fhEtaPhiTriggerEMCALBC[i]->SetXTitle("#eta");
       outputContainer->Add(fhEtaPhiTriggerEMCALBC[i]) ;
       
       fhTimeTriggerEMCALBC[i] = new TH2F
-      (Form("hTimeTriggerEMCALBC%d",i-5),
-       Form("cluster time vs E of clusters, Trigger EMCAL-BC=%d",i-5),
+      (Form("hTimeTriggerEMCALBC%d",i-iBCShift),
+       Form("cluster time vs E of clusters, Trigger EMCAL-BC=%d",i-iBCShift),
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
       fhTimeTriggerEMCALBC[i]->SetXTitle("E (GeV)");
       fhTimeTriggerEMCALBC[i]->SetYTitle("time (ns)");
       outputContainer->Add(fhTimeTriggerEMCALBC[i]);
       
       fhTimeTriggerEMCALBCPileUpSPD[i] = new TH2F
-      (Form("hTimeTriggerEMCALBC%dPileUpSPD",i-5),
-       Form("cluster time vs E of clusters, Trigger EMCAL-BC=%d",i-5),
+      (Form("hTimeTriggerEMCALBC%dPileUpSPD",i-iBCShift),
+       Form("cluster time vs E of clusters, Trigger EMCAL-BC=%d",i-iBCShift),
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
       fhTimeTriggerEMCALBCPileUpSPD[i]->SetXTitle("E (GeV)");
       fhTimeTriggerEMCALBCPileUpSPD[i]->SetYTitle("time (ns)");
       outputContainer->Add(fhTimeTriggerEMCALBCPileUpSPD[i]);
       
       fhEtaPhiTriggerEMCALBCUM[i] = new TH2F
-      (Form("hEtaPhiTriggerEMCALBC%d_UnMatch",i-5),
-       Form("cluster E > 2 GeV, #eta vs #phi, unmatched trigger EMCAL-BC=%d",i-5),
+      (Form("hEtaPhiTriggerEMCALBC%d_UnMatch",i-iBCShift),
+       Form("cluster E > 2 GeV, #eta vs #phi, unmatched trigger EMCAL-BC=%d",i-iBCShift),
        netabins,etamin,etamax,nphibins,phimin,phimax);
       fhEtaPhiTriggerEMCALBCUM[i]->SetYTitle("#phi (rad)");
       fhEtaPhiTriggerEMCALBCUM[i]->SetXTitle("#eta");
       outputContainer->Add(fhEtaPhiTriggerEMCALBCUM[i]) ;
       
       fhTimeTriggerEMCALBCUM[i] = new TH2F
-      (Form("hTimeTriggerEMCALBC%d_UnMatch",i-5),
-       Form("cluster time vs E of clusters, unmatched trigger EMCAL-BC=%d",i-5),
+      (Form("hTimeTriggerEMCALBC%d_UnMatch",i-iBCShift),
+       Form("cluster time vs E of clusters, unmatched trigger EMCAL-BC=%d",i-iBCShift),
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
       fhTimeTriggerEMCALBCUM[i]->SetXTitle("E (GeV)");
       fhTimeTriggerEMCALBCUM[i]->SetYTitle("time (ns)");
       outputContainer->Add(fhTimeTriggerEMCALBCUM[i]);
       
       fhEtaPhiTriggerEMCALBCCluster[i] = new TH2F
-      (Form("hEtaPhiTriggerEMCALBC%d_OnlyTrigger",i-5),
-       Form("trigger cluster, #eta vs #phi, Trigger EMCAL-BC=%d",i-5),
+      (Form("hEtaPhiTriggerEMCALBC%d_OnlyTrigger",i-iBCShift),
+       Form("trigger cluster, #eta vs #phi, Trigger EMCAL-BC=%d",i-iBCShift),
        netabins,etamin,etamax,nphibins,phimin,phimax);
       fhEtaPhiTriggerEMCALBCCluster[i]->SetYTitle("#phi (rad)");
       fhEtaPhiTriggerEMCALBCCluster[i]->SetXTitle("#eta");
       outputContainer->Add(fhEtaPhiTriggerEMCALBCCluster[i]) ;
             
       fhEtaPhiTriggerEMCALBCUMCluster[i] = new TH2F
-      (Form("hEtaPhiTriggerEMCALBC%d_OnlyTrigger_UnMatch",i-5),
-       Form("trigger cluster, #eta vs #phi, unmatched trigger EMCAL-BC=%d",i-5),
+      (Form("hEtaPhiTriggerEMCALBC%d_OnlyTrigger_UnMatch",i-iBCShift),
+       Form("trigger cluster, #eta vs #phi, unmatched trigger EMCAL-BC=%d",i-iBCShift),
        netabins,etamin,etamax,nphibins,phimin,phimax);
       fhEtaPhiTriggerEMCALBCUMCluster[i]->SetYTitle("#phi (rad)");
       fhEtaPhiTriggerEMCALBCUMCluster[i]->SetXTitle("#eta");
@@ -1969,247 +1981,249 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhEtaPhiTriggerEMCALBCUMClusterBelowTh2->SetXTitle("#eta");
     outputContainer->Add(fhEtaPhiTriggerEMCALBCUMClusterBelowTh2) ;
     
-    fhEtaPhiTriggerEMCALBCExotic = new TH2F
-    ("hEtaPhiTriggerExotic",
-     "cluster E > 2 GeV, #eta vs #phi, Trigger Exotic",
-     netabins,etamin,etamax,nphibins,phimin,phimax);
-    fhEtaPhiTriggerEMCALBCExotic->SetYTitle("#phi (rad)");
-    fhEtaPhiTriggerEMCALBCExotic->SetXTitle("#eta");
-    outputContainer->Add(fhEtaPhiTriggerEMCALBCExotic) ;
-    
-    fhTimeTriggerEMCALBCExotic = new TH2F
-    ("hTimeTriggerExotic",
-     "cluster time vs E of clusters, Trigger Exotic ",
-     nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeTriggerEMCALBCExotic->SetXTitle("E (GeV)");
-    fhTimeTriggerEMCALBCExotic->SetYTitle("time (ns)");
-    outputContainer->Add(fhTimeTriggerEMCALBCExotic);
-    
-    fhEtaPhiTriggerEMCALBCUMExotic = new TH2F
-    ("hEtaPhiTriggerExotic_UnMatch",
-     "cluster E > 2 GeV, #eta vs #phi, unmatched trigger Exotic",
-     netabins,etamin,etamax,nphibins,phimin,phimax);
-    fhEtaPhiTriggerEMCALBCUMExotic->SetYTitle("#phi (rad)");
-    fhEtaPhiTriggerEMCALBCUMExotic->SetXTitle("#eta");
-    outputContainer->Add(fhEtaPhiTriggerEMCALBCUMExotic) ;
-    
-    fhTimeTriggerEMCALBCUMExotic = new TH2F
-    ("hTimeTriggerExotic_UnMatch",
-     "cluster time vs E of clusters, unmatched trigger Exotic",
-     nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeTriggerEMCALBCUMExotic->SetXTitle("E (GeV)");
-    fhTimeTriggerEMCALBCUMExotic->SetYTitle("time (ns)");
-    outputContainer->Add(fhTimeTriggerEMCALBCUMExotic);
-    
-    fhEtaPhiTriggerEMCALBCExoticCluster = new TH2F
-    ("hEtaPhiTriggerExotic_OnlyTrigger",
-     "trigger cluster E > 2 GeV, #eta vs #phi, Trigger Exotic",
-     netabins,etamin,etamax,nphibins,phimin,phimax);
-    fhEtaPhiTriggerEMCALBCExoticCluster->SetYTitle("#phi (rad)");
-    fhEtaPhiTriggerEMCALBCExoticCluster->SetXTitle("#eta");
-    outputContainer->Add(fhEtaPhiTriggerEMCALBCExoticCluster) ;
-    
-    fhTimeTriggerEMCALBCExoticCluster = new TH2F
-    ("hTimeTriggerExotic_OnlyTrigger",
-     "trigger cluster time vs E of clusters, Trigger Exotic",
-     nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeTriggerEMCALBCExoticCluster->SetXTitle("E (GeV)");
-    fhTimeTriggerEMCALBCExoticCluster->SetYTitle("time (ns)");
-    outputContainer->Add(fhTimeTriggerEMCALBCExoticCluster);
-    
-    fhEtaPhiTriggerEMCALBCUMExoticCluster = new TH2F
-    ("hEtaPhiTriggerExotic_OnlyTrigger_UnMatch",
-     "trigger cluster E > 2 GeV, #eta vs #phi, unmatched trigger Exotic",
-     netabins,etamin,etamax,nphibins,phimin,phimax);
-    fhEtaPhiTriggerEMCALBCUMExoticCluster->SetYTitle("#phi (rad)");
-    fhEtaPhiTriggerEMCALBCUMExoticCluster->SetXTitle("#eta");
-    outputContainer->Add(fhEtaPhiTriggerEMCALBCUMExoticCluster) ;
-    
-    fhTimeTriggerEMCALBCUMExoticCluster = new TH2F
-    ("hTimeTriggerExotic_OnlyTrigger_UnMatch",
-     "trigger cluster time vs E of clusters, unmatched trigger Exotic",
-     nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeTriggerEMCALBCUMExoticCluster->SetXTitle("E (GeV)");
-    fhTimeTriggerEMCALBCUMExoticCluster->SetYTitle("time (ns)");
-    outputContainer->Add(fhTimeTriggerEMCALBCUMExoticCluster);
-    
-    fhEtaPhiTriggerEMCALBCBad = new TH2F
-    ("hEtaPhiTriggerBad",
-     "cluster E > 2 GeV, #eta vs #phi, Trigger Bad",
-     netabins,etamin,etamax,nphibins,phimin,phimax);
-    fhEtaPhiTriggerEMCALBCBad->SetYTitle("#phi (rad)");
-    fhEtaPhiTriggerEMCALBCBad->SetXTitle("#eta");
-    outputContainer->Add(fhEtaPhiTriggerEMCALBCBad) ;
-    
-    fhTimeTriggerEMCALBCBad = new TH2F
-    ("hTimeTriggerBad",
-     "cluster time vs E of clusters, Trigger Bad ",
-     nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeTriggerEMCALBCBad->SetXTitle("E (GeV)");
-    fhTimeTriggerEMCALBCBad->SetYTitle("time (ns)");
-    outputContainer->Add(fhTimeTriggerEMCALBCBad);
-    
-    fhEtaPhiTriggerEMCALBCUMBad = new TH2F
-    ("hEtaPhiTriggerBad_UnMatch",
-     "cluster E > 2 GeV, #eta vs #phi, unmatched trigger Bad",
-     netabins,etamin,etamax,nphibins,phimin,phimax);
-    fhEtaPhiTriggerEMCALBCUMBad->SetYTitle("#phi (rad)");
-    fhEtaPhiTriggerEMCALBCUMBad->SetXTitle("#eta");
-    outputContainer->Add(fhEtaPhiTriggerEMCALBCUMBad) ;
-    
-    fhTimeTriggerEMCALBCUMBad = new TH2F
-    ("hTimeTriggerBad_UnMatch",
-     "cluster time vs E of clusters, unmatched trigger Bad",
-     nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeTriggerEMCALBCUMBad->SetXTitle("E (GeV)");
-    fhTimeTriggerEMCALBCUMBad->SetYTitle("time (ns)");
-    outputContainer->Add(fhTimeTriggerEMCALBCUMBad);
-    
-    fhEtaPhiTriggerEMCALBCBadCluster = new TH2F
-    ("hEtaPhiTriggerBad_OnlyTrigger",
-     "trigger cluster E > 2 GeV, #eta vs #phi, Trigger Bad",
-     netabins,etamin,etamax,nphibins,phimin,phimax);
-    fhEtaPhiTriggerEMCALBCBadCluster->SetYTitle("#phi (rad)");
-    fhEtaPhiTriggerEMCALBCBadCluster->SetXTitle("#eta");
-    outputContainer->Add(fhEtaPhiTriggerEMCALBCBadCluster) ;
-    
-    fhTimeTriggerEMCALBCBadCluster = new TH2F
-    ("hTimeTriggerBad_OnlyTrigger",
-     "trigger cluster time vs E of clusters, Trigger Bad",
-     nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeTriggerEMCALBCBadCluster->SetXTitle("E (GeV)");
-    fhTimeTriggerEMCALBCBadCluster->SetYTitle("time (ns)");
-    outputContainer->Add(fhTimeTriggerEMCALBCBadCluster);
-    
-    fhEtaPhiTriggerEMCALBCUMBadCluster = new TH2F
-    ("hEtaPhiTriggerBad_OnlyTrigger_UnMatch",
-     "trigger cluster E > 2 GeV, #eta vs #phi, unmatched trigger Bad",
-     netabins,etamin,etamax,nphibins,phimin,phimax);
-    fhEtaPhiTriggerEMCALBCUMBadCluster->SetYTitle("#phi (rad)");
-    fhEtaPhiTriggerEMCALBCUMBadCluster->SetXTitle("#eta");
-    outputContainer->Add(fhEtaPhiTriggerEMCALBCUMBadCluster) ;
-    
-    fhTimeTriggerEMCALBCUMBadCluster = new TH2F
-    ("hTimeTriggerBad_OnlyTrigger_UnMatch",
-     "trigger cluster time vs E of clusters, unmatched trigger Bad",
-     nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeTriggerEMCALBCUMBadCluster->SetXTitle("E (GeV)");
-    fhTimeTriggerEMCALBCUMBadCluster->SetYTitle("time (ns)");
-    outputContainer->Add(fhTimeTriggerEMCALBCUMBadCluster);
-    
-    fhEtaPhiTriggerEMCALBCBadExotic = new TH2F
-    ("hEtaPhiTriggerBadExotic",
-     "cluster E > 2 GeV, #eta vs #phi, Trigger Bad&Exotic",
-     netabins,etamin,etamax,nphibins,phimin,phimax);
-    fhEtaPhiTriggerEMCALBCBadExotic->SetYTitle("#phi (rad)");
-    fhEtaPhiTriggerEMCALBCBadExotic->SetXTitle("#eta");
-    outputContainer->Add(fhEtaPhiTriggerEMCALBCBadExotic) ;
-    
-    fhTimeTriggerEMCALBCBadExotic = new TH2F
-    ("hTimeTriggerBadExotic",
-     "cluster time vs E of clusters, Trigger Bad&Exotic ",
-     nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeTriggerEMCALBCBadExotic->SetXTitle("E (GeV)");
-    fhTimeTriggerEMCALBCBadExotic->SetYTitle("time (ns)");
-    outputContainer->Add(fhTimeTriggerEMCALBCBadExotic);
-    
-    fhEtaPhiTriggerEMCALBCUMBadExotic = new TH2F
-    ("hEtaPhiTriggerBadExotic_UnMatch",
-     "cluster E > 2 GeV, #eta vs #phi, unmatched trigger Bad&Exotic",
-     netabins,etamin,etamax,nphibins,phimin,phimax);
-    fhEtaPhiTriggerEMCALBCUMBadExotic->SetYTitle("#phi (rad)");
-    fhEtaPhiTriggerEMCALBCUMBadExotic->SetXTitle("#eta");
-    outputContainer->Add(fhEtaPhiTriggerEMCALBCUMBadExotic) ;
-    
-    fhTimeTriggerEMCALBCUMBadExotic = new TH2F
-    ("hTimeTriggerBadExotic_UnMatch",
-     "cluster time vs E of clusters, unmatched trigger Bad&Exotic",
-     nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeTriggerEMCALBCUMBadExotic->SetXTitle("E (GeV)");
-    fhTimeTriggerEMCALBCUMBadExotic->SetYTitle("time (ns)");
-    outputContainer->Add(fhTimeTriggerEMCALBCUMBadExotic);
-    
-    fhEtaPhiTriggerEMCALBCBadExoticCluster = new TH2F
-    ("hEtaPhiTriggerBadExotic_OnlyTrigger",
-     "trigger cluster E > 2 GeV, #eta vs #phi, Trigger Bad&Exotic",
-     netabins,etamin,etamax,nphibins,phimin,phimax);
-    fhEtaPhiTriggerEMCALBCBadExoticCluster->SetYTitle("#phi (rad)");
-    fhEtaPhiTriggerEMCALBCBadExoticCluster->SetXTitle("#eta");
-    outputContainer->Add(fhEtaPhiTriggerEMCALBCBadExoticCluster) ;
-    
-    fhTimeTriggerEMCALBCBadExoticCluster = new TH2F
-    ("hTimeTriggerBadExotic_OnlyTrigger",
-     "trigger cluster time vs E of clusters, Trigger Bad&Exotic",
-     nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeTriggerEMCALBCBadExoticCluster->SetXTitle("E (GeV)");
-    fhTimeTriggerEMCALBCBadExoticCluster->SetYTitle("time (ns)");
-    outputContainer->Add(fhTimeTriggerEMCALBCBadExoticCluster);
-    
-    fhEtaPhiTriggerEMCALBCUMBadExoticCluster = new TH2F
-    ("hEtaPhiTriggerBadExotic_OnlyTrigger_UnMatch",
-     "trigger cluster E > 2 GeV, #eta vs #phi, unmatched trigger Bad&Exotic",
-     netabins,etamin,etamax,nphibins,phimin,phimax);
-    fhEtaPhiTriggerEMCALBCUMBadExoticCluster->SetYTitle("#phi (rad)");
-    fhEtaPhiTriggerEMCALBCUMBadExoticCluster->SetXTitle("#eta");
-    outputContainer->Add(fhEtaPhiTriggerEMCALBCUMBadExoticCluster) ;
-    
-    fhTimeTriggerEMCALBCUMBadExoticCluster = new TH2F
-    ("hTimeTriggerBadExotic_OnlyTrigger_UnMatch",
-     "trigger cluster time vs E of clusters, unmatched trigger Bad&Exotic",
-     nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeTriggerEMCALBCUMBadExoticCluster->SetXTitle("E (GeV)");
-    fhTimeTriggerEMCALBCUMBadExoticCluster->SetYTitle("time (ns)");
-    outputContainer->Add(fhTimeTriggerEMCALBCUMBadExoticCluster);
-    
-    fhTimeTriggerEMCALBCBadMaxCell = new TH2F
-    ("hTimeTriggerBadMaxCell",
-     "cluster time vs E of clusters, Trigger BadMaxCell",
-     nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeTriggerEMCALBCBadMaxCell->SetXTitle("E (GeV)");
-    fhTimeTriggerEMCALBCBadMaxCell->SetYTitle("time (ns)");
-    outputContainer->Add(fhTimeTriggerEMCALBCBadMaxCell);
-    
-    fhTimeTriggerEMCALBCUMBadMaxCell = new TH2F
-    ("hTimeTriggerBadMaxCell_UnMatch",
-     "cluster time vs E of clusters, unmatched trigger BadMaxCell",
-     nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeTriggerEMCALBCUMBadMaxCell->SetXTitle("E (GeV)");
-    fhTimeTriggerEMCALBCUMBadMaxCell->SetYTitle("time (ns)");
-    outputContainer->Add(fhTimeTriggerEMCALBCUMBadMaxCell);
-    
-    
-    fhTimeTriggerEMCALBCBadMaxCellExotic = new TH2F
-    ("hTimeTriggerBadMaxCellExotic",
-     "cluster time vs E of clusters, Trigger BadMaxCell&Exotic",
-     nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeTriggerEMCALBCBadMaxCellExotic->SetXTitle("E (GeV)");
-    fhTimeTriggerEMCALBCBadMaxCellExotic->SetYTitle("time (ns)");
-    outputContainer->Add(fhTimeTriggerEMCALBCBadMaxCellExotic);
-    
-    fhTimeTriggerEMCALBCUMBadMaxCellExotic = new TH2F
-    ("hTimeTriggerBadMaxCellExotic_UnMatch",
-     "cluster time vs E of clusters, unmatched trigger BadMaxCell&Exotic",
-     nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeTriggerEMCALBCUMBadMaxCellExotic->SetXTitle("E (GeV)");
-    fhTimeTriggerEMCALBCUMBadMaxCellExotic->SetYTitle("time (ns)");
-    outputContainer->Add(fhTimeTriggerEMCALBCUMBadMaxCellExotic);
-    
-    fhTimeNoTrigger = new TH2F
-    ("hTimeNoTrigger",
-     "events with no foundable trigger, time vs e of clusters",
-     nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
-    fhTimeNoTrigger->SetXTitle("E (GeV)");
-    fhTimeNoTrigger->SetYTitle("time (ns)");
-    outputContainer->Add(fhTimeNoTrigger);
-    
-    fhEtaPhiNoTrigger = new TH2F
-    ("hEtaPhiNoTrigger",
-     "events with no foundable trigger, eta vs phi of clusters",
-     netabins,etamin,etamax,nphibins,phimin,phimax);
-    fhEtaPhiNoTrigger->SetYTitle("#phi (rad)");
-    fhEtaPhiNoTrigger->SetXTitle("#eta");
-    outputContainer->Add(fhEtaPhiNoTrigger) ;
-    
+    if(!GetReader()->AreBadTriggerEventsRemoved())
+    {
+      fhEtaPhiTriggerEMCALBCExotic = new TH2F
+      ("hEtaPhiTriggerExotic",
+       "cluster E > 2 GeV, #eta vs #phi, Trigger Exotic",
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhEtaPhiTriggerEMCALBCExotic->SetYTitle("#phi (rad)");
+      fhEtaPhiTriggerEMCALBCExotic->SetXTitle("#eta");
+      outputContainer->Add(fhEtaPhiTriggerEMCALBCExotic) ;
+      
+      fhTimeTriggerEMCALBCExotic = new TH2F
+      ("hTimeTriggerExotic",
+       "cluster time vs E of clusters, Trigger Exotic ",
+       nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+      fhTimeTriggerEMCALBCExotic->SetXTitle("E (GeV)");
+      fhTimeTriggerEMCALBCExotic->SetYTitle("time (ns)");
+      outputContainer->Add(fhTimeTriggerEMCALBCExotic);
+      
+      fhEtaPhiTriggerEMCALBCUMExotic = new TH2F
+      ("hEtaPhiTriggerExotic_UnMatch",
+       "cluster E > 2 GeV, #eta vs #phi, unmatched trigger Exotic",
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhEtaPhiTriggerEMCALBCUMExotic->SetYTitle("#phi (rad)");
+      fhEtaPhiTriggerEMCALBCUMExotic->SetXTitle("#eta");
+      outputContainer->Add(fhEtaPhiTriggerEMCALBCUMExotic) ;
+      
+      fhTimeTriggerEMCALBCUMExotic = new TH2F
+      ("hTimeTriggerExotic_UnMatch",
+       "cluster time vs E of clusters, unmatched trigger Exotic",
+       nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+      fhTimeTriggerEMCALBCUMExotic->SetXTitle("E (GeV)");
+      fhTimeTriggerEMCALBCUMExotic->SetYTitle("time (ns)");
+      outputContainer->Add(fhTimeTriggerEMCALBCUMExotic);
+      
+      fhEtaPhiTriggerEMCALBCExoticCluster = new TH2F
+      ("hEtaPhiTriggerExotic_OnlyTrigger",
+       "trigger cluster E > 2 GeV, #eta vs #phi, Trigger Exotic",
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhEtaPhiTriggerEMCALBCExoticCluster->SetYTitle("#phi (rad)");
+      fhEtaPhiTriggerEMCALBCExoticCluster->SetXTitle("#eta");
+      outputContainer->Add(fhEtaPhiTriggerEMCALBCExoticCluster) ;
+      
+      fhTimeTriggerEMCALBCExoticCluster = new TH2F
+      ("hTimeTriggerExotic_OnlyTrigger",
+       "trigger cluster time vs E of clusters, Trigger Exotic",
+       nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+      fhTimeTriggerEMCALBCExoticCluster->SetXTitle("E (GeV)");
+      fhTimeTriggerEMCALBCExoticCluster->SetYTitle("time (ns)");
+      outputContainer->Add(fhTimeTriggerEMCALBCExoticCluster);
+      
+      fhEtaPhiTriggerEMCALBCUMExoticCluster = new TH2F
+      ("hEtaPhiTriggerExotic_OnlyTrigger_UnMatch",
+       "trigger cluster E > 2 GeV, #eta vs #phi, unmatched trigger Exotic",
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhEtaPhiTriggerEMCALBCUMExoticCluster->SetYTitle("#phi (rad)");
+      fhEtaPhiTriggerEMCALBCUMExoticCluster->SetXTitle("#eta");
+      outputContainer->Add(fhEtaPhiTriggerEMCALBCUMExoticCluster) ;
+      
+      fhTimeTriggerEMCALBCUMExoticCluster = new TH2F
+      ("hTimeTriggerExotic_OnlyTrigger_UnMatch",
+       "trigger cluster time vs E of clusters, unmatched trigger Exotic",
+       nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+      fhTimeTriggerEMCALBCUMExoticCluster->SetXTitle("E (GeV)");
+      fhTimeTriggerEMCALBCUMExoticCluster->SetYTitle("time (ns)");
+      outputContainer->Add(fhTimeTriggerEMCALBCUMExoticCluster);
+      
+      fhEtaPhiTriggerEMCALBCBad = new TH2F
+      ("hEtaPhiTriggerBad",
+       "cluster E > 2 GeV, #eta vs #phi, Trigger Bad",
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhEtaPhiTriggerEMCALBCBad->SetYTitle("#phi (rad)");
+      fhEtaPhiTriggerEMCALBCBad->SetXTitle("#eta");
+      outputContainer->Add(fhEtaPhiTriggerEMCALBCBad) ;
+      
+      fhTimeTriggerEMCALBCBad = new TH2F
+      ("hTimeTriggerBad",
+       "cluster time vs E of clusters, Trigger Bad ",
+       nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+      fhTimeTriggerEMCALBCBad->SetXTitle("E (GeV)");
+      fhTimeTriggerEMCALBCBad->SetYTitle("time (ns)");
+      outputContainer->Add(fhTimeTriggerEMCALBCBad);
+      
+      fhEtaPhiTriggerEMCALBCUMBad = new TH2F
+      ("hEtaPhiTriggerBad_UnMatch",
+       "cluster E > 2 GeV, #eta vs #phi, unmatched trigger Bad",
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhEtaPhiTriggerEMCALBCUMBad->SetYTitle("#phi (rad)");
+      fhEtaPhiTriggerEMCALBCUMBad->SetXTitle("#eta");
+      outputContainer->Add(fhEtaPhiTriggerEMCALBCUMBad) ;
+      
+      fhTimeTriggerEMCALBCUMBad = new TH2F
+      ("hTimeTriggerBad_UnMatch",
+       "cluster time vs E of clusters, unmatched trigger Bad",
+       nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+      fhTimeTriggerEMCALBCUMBad->SetXTitle("E (GeV)");
+      fhTimeTriggerEMCALBCUMBad->SetYTitle("time (ns)");
+      outputContainer->Add(fhTimeTriggerEMCALBCUMBad);
+      
+      fhEtaPhiTriggerEMCALBCBadCluster = new TH2F
+      ("hEtaPhiTriggerBad_OnlyTrigger",
+       "trigger cluster E > 2 GeV, #eta vs #phi, Trigger Bad",
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhEtaPhiTriggerEMCALBCBadCluster->SetYTitle("#phi (rad)");
+      fhEtaPhiTriggerEMCALBCBadCluster->SetXTitle("#eta");
+      outputContainer->Add(fhEtaPhiTriggerEMCALBCBadCluster) ;
+      
+      fhTimeTriggerEMCALBCBadCluster = new TH2F
+      ("hTimeTriggerBad_OnlyTrigger",
+       "trigger cluster time vs E of clusters, Trigger Bad",
+       nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+      fhTimeTriggerEMCALBCBadCluster->SetXTitle("E (GeV)");
+      fhTimeTriggerEMCALBCBadCluster->SetYTitle("time (ns)");
+      outputContainer->Add(fhTimeTriggerEMCALBCBadCluster);
+      
+      fhEtaPhiTriggerEMCALBCUMBadCluster = new TH2F
+      ("hEtaPhiTriggerBad_OnlyTrigger_UnMatch",
+       "trigger cluster E > 2 GeV, #eta vs #phi, unmatched trigger Bad",
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhEtaPhiTriggerEMCALBCUMBadCluster->SetYTitle("#phi (rad)");
+      fhEtaPhiTriggerEMCALBCUMBadCluster->SetXTitle("#eta");
+      outputContainer->Add(fhEtaPhiTriggerEMCALBCUMBadCluster) ;
+      
+      fhTimeTriggerEMCALBCUMBadCluster = new TH2F
+      ("hTimeTriggerBad_OnlyTrigger_UnMatch",
+       "trigger cluster time vs E of clusters, unmatched trigger Bad",
+       nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+      fhTimeTriggerEMCALBCUMBadCluster->SetXTitle("E (GeV)");
+      fhTimeTriggerEMCALBCUMBadCluster->SetYTitle("time (ns)");
+      outputContainer->Add(fhTimeTriggerEMCALBCUMBadCluster);
+      
+      fhEtaPhiTriggerEMCALBCBadExotic = new TH2F
+      ("hEtaPhiTriggerBadExotic",
+       "cluster E > 2 GeV, #eta vs #phi, Trigger Bad&Exotic",
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhEtaPhiTriggerEMCALBCBadExotic->SetYTitle("#phi (rad)");
+      fhEtaPhiTriggerEMCALBCBadExotic->SetXTitle("#eta");
+      outputContainer->Add(fhEtaPhiTriggerEMCALBCBadExotic) ;
+      
+      fhTimeTriggerEMCALBCBadExotic = new TH2F
+      ("hTimeTriggerBadExotic",
+       "cluster time vs E of clusters, Trigger Bad&Exotic ",
+       nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+      fhTimeTriggerEMCALBCBadExotic->SetXTitle("E (GeV)");
+      fhTimeTriggerEMCALBCBadExotic->SetYTitle("time (ns)");
+      outputContainer->Add(fhTimeTriggerEMCALBCBadExotic);
+      
+      fhEtaPhiTriggerEMCALBCUMBadExotic = new TH2F
+      ("hEtaPhiTriggerBadExotic_UnMatch",
+       "cluster E > 2 GeV, #eta vs #phi, unmatched trigger Bad&Exotic",
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhEtaPhiTriggerEMCALBCUMBadExotic->SetYTitle("#phi (rad)");
+      fhEtaPhiTriggerEMCALBCUMBadExotic->SetXTitle("#eta");
+      outputContainer->Add(fhEtaPhiTriggerEMCALBCUMBadExotic) ;
+      
+      fhTimeTriggerEMCALBCUMBadExotic = new TH2F
+      ("hTimeTriggerBadExotic_UnMatch",
+       "cluster time vs E of clusters, unmatched trigger Bad&Exotic",
+       nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+      fhTimeTriggerEMCALBCUMBadExotic->SetXTitle("E (GeV)");
+      fhTimeTriggerEMCALBCUMBadExotic->SetYTitle("time (ns)");
+      outputContainer->Add(fhTimeTriggerEMCALBCUMBadExotic);
+      
+      fhEtaPhiTriggerEMCALBCBadExoticCluster = new TH2F
+      ("hEtaPhiTriggerBadExotic_OnlyTrigger",
+       "trigger cluster E > 2 GeV, #eta vs #phi, Trigger Bad&Exotic",
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhEtaPhiTriggerEMCALBCBadExoticCluster->SetYTitle("#phi (rad)");
+      fhEtaPhiTriggerEMCALBCBadExoticCluster->SetXTitle("#eta");
+      outputContainer->Add(fhEtaPhiTriggerEMCALBCBadExoticCluster) ;
+      
+      fhTimeTriggerEMCALBCBadExoticCluster = new TH2F
+      ("hTimeTriggerBadExotic_OnlyTrigger",
+       "trigger cluster time vs E of clusters, Trigger Bad&Exotic",
+       nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+      fhTimeTriggerEMCALBCBadExoticCluster->SetXTitle("E (GeV)");
+      fhTimeTriggerEMCALBCBadExoticCluster->SetYTitle("time (ns)");
+      outputContainer->Add(fhTimeTriggerEMCALBCBadExoticCluster);
+      
+      fhEtaPhiTriggerEMCALBCUMBadExoticCluster = new TH2F
+      ("hEtaPhiTriggerBadExotic_OnlyTrigger_UnMatch",
+       "trigger cluster E > 2 GeV, #eta vs #phi, unmatched trigger Bad&Exotic",
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhEtaPhiTriggerEMCALBCUMBadExoticCluster->SetYTitle("#phi (rad)");
+      fhEtaPhiTriggerEMCALBCUMBadExoticCluster->SetXTitle("#eta");
+      outputContainer->Add(fhEtaPhiTriggerEMCALBCUMBadExoticCluster) ;
+      
+      fhTimeTriggerEMCALBCUMBadExoticCluster = new TH2F
+      ("hTimeTriggerBadExotic_OnlyTrigger_UnMatch",
+       "trigger cluster time vs E of clusters, unmatched trigger Bad&Exotic",
+       nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+      fhTimeTriggerEMCALBCUMBadExoticCluster->SetXTitle("E (GeV)");
+      fhTimeTriggerEMCALBCUMBadExoticCluster->SetYTitle("time (ns)");
+      outputContainer->Add(fhTimeTriggerEMCALBCUMBadExoticCluster);
+      
+      fhTimeTriggerEMCALBCBadMaxCell = new TH2F
+      ("hTimeTriggerBadMaxCell",
+       "cluster time vs E of clusters, Trigger BadMaxCell",
+       nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+      fhTimeTriggerEMCALBCBadMaxCell->SetXTitle("E (GeV)");
+      fhTimeTriggerEMCALBCBadMaxCell->SetYTitle("time (ns)");
+      outputContainer->Add(fhTimeTriggerEMCALBCBadMaxCell);
+      
+      fhTimeTriggerEMCALBCUMBadMaxCell = new TH2F
+      ("hTimeTriggerBadMaxCell_UnMatch",
+       "cluster time vs E of clusters, unmatched trigger BadMaxCell",
+       nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+      fhTimeTriggerEMCALBCUMBadMaxCell->SetXTitle("E (GeV)");
+      fhTimeTriggerEMCALBCUMBadMaxCell->SetYTitle("time (ns)");
+      outputContainer->Add(fhTimeTriggerEMCALBCUMBadMaxCell);
+      
+      
+      fhTimeTriggerEMCALBCBadMaxCellExotic = new TH2F
+      ("hTimeTriggerBadMaxCellExotic",
+       "cluster time vs E of clusters, Trigger BadMaxCell&Exotic",
+       nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+      fhTimeTriggerEMCALBCBadMaxCellExotic->SetXTitle("E (GeV)");
+      fhTimeTriggerEMCALBCBadMaxCellExotic->SetYTitle("time (ns)");
+      outputContainer->Add(fhTimeTriggerEMCALBCBadMaxCellExotic);
+      
+      fhTimeTriggerEMCALBCUMBadMaxCellExotic = new TH2F
+      ("hTimeTriggerBadMaxCellExotic_UnMatch",
+       "cluster time vs E of clusters, unmatched trigger BadMaxCell&Exotic",
+       nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+      fhTimeTriggerEMCALBCUMBadMaxCellExotic->SetXTitle("E (GeV)");
+      fhTimeTriggerEMCALBCUMBadMaxCellExotic->SetYTitle("time (ns)");
+      outputContainer->Add(fhTimeTriggerEMCALBCUMBadMaxCellExotic);
+      
+      fhTimeNoTrigger = new TH2F
+      ("hTimeNoTrigger",
+       "events with no foundable trigger, time vs e of clusters",
+       nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+      fhTimeNoTrigger->SetXTitle("E (GeV)");
+      fhTimeNoTrigger->SetYTitle("time (ns)");
+      outputContainer->Add(fhTimeNoTrigger);
+      
+      fhEtaPhiNoTrigger = new TH2F
+      ("hEtaPhiNoTrigger",
+       "events with no foundable trigger, eta vs phi of clusters",
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhEtaPhiNoTrigger->SetYTitle("#phi (rad)");
+      fhEtaPhiNoTrigger->SetXTitle("#eta");
+      outputContainer->Add(fhEtaPhiNoTrigger) ;
+    }
     
     fhEtaPhiTriggerEMCALBCUMReMatchOpenTimeCluster = new TH2F("hEtaPhiTriggerEMCALBC0_OnlyTrigger_UnMatch_ReMatch_OpenTime",
                                                        "cluster E > 2 GeV, #eta vs #phi, Trigger EMCAL-BC=0, un match, rematch open time",
@@ -2324,43 +2338,43 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhEtaPhiPhotonEMCALBCN->SetXTitle("#eta");
     outputContainer->Add(fhEtaPhiPhotonEMCALBCN) ;
     
-    for(Int_t i = 0; i < 11; i++)
+    for(Int_t i = 0; i < nTrigBC; i++)
     {
       fhEtaPhiPhotonTriggerEMCALBC[i] = new TH2F
-      (Form("hEtaPhiPhotonTriggerEMCALBC%d",i-5),
-       Form("photon E > 2 GeV, #eta vs #phi, PhotonTrigger EMCAL-BC=%d",i-5),
+      (Form("hEtaPhiPhotonTriggerEMCALBC%d",i-iBCShift),
+       Form("photon E > 2 GeV, #eta vs #phi, PhotonTrigger EMCAL-BC=%d",i-iBCShift),
        netabins,etamin,etamax,nphibins,phimin,phimax);
       fhEtaPhiPhotonTriggerEMCALBC[i]->SetYTitle("#phi (rad)");
       fhEtaPhiPhotonTriggerEMCALBC[i]->SetXTitle("#eta");
       outputContainer->Add(fhEtaPhiPhotonTriggerEMCALBC[i]) ;
       
       fhTimePhotonTriggerEMCALBC[i] = new TH2F
-      (Form("hTimePhotonTriggerEMCALBC%d",i-5),
-       Form("photon time vs E of clusters, PhotonTrigger EMCAL-BC=%d",i-5),
+      (Form("hTimePhotonTriggerEMCALBC%d",i-iBCShift),
+       Form("photon time vs E of clusters, PhotonTrigger EMCAL-BC=%d",i-iBCShift),
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
       fhTimePhotonTriggerEMCALBC[i]->SetXTitle("E (GeV)");
       fhTimePhotonTriggerEMCALBC[i]->SetYTitle("time (ns)");
       outputContainer->Add(fhTimePhotonTriggerEMCALBC[i]);
       
       fhTimePhotonTriggerEMCALBCPileUpSPD[i] = new TH2F
-      (Form("hTimePhotonTriggerEMCALBC%dPileUpSPD",i-5),
-       Form("photon time vs E, PhotonTrigger EMCAL-BC=%d",i-5),
+      (Form("hTimePhotonTriggerEMCALBC%dPileUpSPD",i-iBCShift),
+       Form("photon time vs E, PhotonTrigger EMCAL-BC=%d",i-iBCShift),
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
       fhTimePhotonTriggerEMCALBCPileUpSPD[i]->SetXTitle("E (GeV)");
       fhTimePhotonTriggerEMCALBCPileUpSPD[i]->SetYTitle("time (ns)");
       outputContainer->Add(fhTimePhotonTriggerEMCALBCPileUpSPD[i]);
       
       fhEtaPhiPhotonTriggerEMCALBCUM[i] = new TH2F
-      (Form("hEtaPhiPhotonTriggerEMCALBC%d_UnMatch",i-5),
-       Form("photon E > 2 GeV, #eta vs #phi, unmatched trigger EMCAL-BC=%d",i-5),
+      (Form("hEtaPhiPhotonTriggerEMCALBC%d_UnMatch",i-iBCShift),
+       Form("photon E > 2 GeV, #eta vs #phi, unmatched trigger EMCAL-BC=%d",i-iBCShift),
        netabins,etamin,etamax,nphibins,phimin,phimax);
       fhEtaPhiPhotonTriggerEMCALBCUM[i]->SetYTitle("#phi (rad)");
       fhEtaPhiPhotonTriggerEMCALBCUM[i]->SetXTitle("#eta");
       outputContainer->Add(fhEtaPhiPhotonTriggerEMCALBCUM[i]) ;
       
       fhTimePhotonTriggerEMCALBCUM[i] = new TH2F
-      (Form("hTimePhotonTriggerEMCALBC%d_UnMatch",i-5),
-       Form("photon time vs E, unmatched trigger EMCAL-BC=%d",i-5),
+      (Form("hTimePhotonTriggerEMCALBC%d_UnMatch",i-iBCShift),
+       Form("photon time vs E, unmatched trigger EMCAL-BC=%d",i-iBCShift),
        nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
       fhTimePhotonTriggerEMCALBCUM[i]->SetXTitle("E (GeV)");
       fhTimePhotonTriggerEMCALBCUM[i]->SetYTitle("time (ns)");
@@ -3154,21 +3168,21 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       fhYPrimMC[i]  = new TH2F(Form("hYPrim_MC%s",ppname[i].Data()),
                                Form("primary photon %s : Rapidity ",pptype[i].Data()),
-                               nptbins,ptmin,ptmax,800,-8,8);
+                               nptbins,ptmin,ptmax,200,-2,2);
       fhYPrimMC[i]->SetYTitle("Rapidity");
       fhYPrimMC[i]->SetXTitle("E (GeV)");
       outputContainer->Add(fhYPrimMC[i]) ;
       
       fhEtaPrimMC[i]  = new TH2F(Form("hEtaPrim_MC%s",ppname[i].Data()),
                                Form("primary photon %s : #eta",pptype[i].Data()),
-                               nptbins,ptmin,ptmax,800,-8,8);
+                               nptbins,ptmin,ptmax,200,-2,2);
       fhEtaPrimMC[i]->SetYTitle("#eta");
       fhEtaPrimMC[i]->SetXTitle("E (GeV)");
       outputContainer->Add(fhEtaPrimMC[i]) ;
       
       fhPhiPrimMC[i]  = new TH2F(Form("hPhiPrim_MC%s",ppname[i].Data()),
                                  Form("primary photon %s : #phi ",pptype[i].Data()),
-                                 nptbins,ptmin,ptmax,nphibins,phimin,phimax);
+                                 nptbins,ptmin,ptmax,nphibins,0,TMath::TwoPi());
       fhPhiPrimMC[i]->SetYTitle("#phi (rad)");
       fhPhiPrimMC[i]->SetXTitle("E (GeV)");
       outputContainer->Add(fhPhiPrimMC[i]) ;
@@ -3570,7 +3584,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
   Bool_t bad    = GetReader()->IsBadCellTriggerEvent();
   
   if( fFillEMCALBCHistograms && fCalorimeter=="EMCAL" &&
-     ( bad || exotic )  && idTrig >= 0)
+     ( bad || exotic )  && idTrig >= 0 && !GetReader()->AreBadTriggerEventsRemoved())
   {
     //    printf("Index %d, Id %d,  bad %d, exo %d\n",
     //           GetReader()->GetTriggerClusterIndex(),
@@ -3794,18 +3808,20 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       }
       
       Int_t bc = GetReader()->GetTriggerClusterBC();
+      Int_t histoBC = bc-5;
+      if(GetReader()->AreBadTriggerEventsRemoved()) histoBC=0; // histograms created only for one BC since the others where rejected
       if(TMath::Abs(bc) < 6 && !GetReader()->IsBadCellTriggerEvent() && !GetReader()->IsExoticEvent())
       {
         if(GetReader()->IsTriggerMatched())
         {
-          if(calo->E() > 2) fhEtaPhiPhotonTriggerEMCALBC[bc+5]->Fill(aodph.Eta(), phicluster);
-          fhTimePhotonTriggerEMCALBC[bc+5]->Fill(calo->E(), calotof);
-          if(GetReader()->IsPileUpFromSPD()) fhTimePhotonTriggerEMCALBCPileUpSPD[bc+5]->Fill(calo->E(), calotof);
+          if(calo->E() > 2) fhEtaPhiPhotonTriggerEMCALBC[histoBC]->Fill(aodph.Eta(), phicluster);
+          fhTimePhotonTriggerEMCALBC[histoBC]->Fill(calo->E(), calotof);
+          if(GetReader()->IsPileUpFromSPD()) fhTimePhotonTriggerEMCALBCPileUpSPD[histoBC]->Fill(calo->E(), calotof);
         }
         else
         {
-          if(calo->E() > 2) fhEtaPhiPhotonTriggerEMCALBCUM[bc+5]->Fill(aodph.Eta(), phicluster);
-          fhTimePhotonTriggerEMCALBCUM[bc+5]->Fill(calo->E(), calotof);
+          if(calo->E() > 2) fhEtaPhiPhotonTriggerEMCALBCUM[histoBC]->Fill(aodph.Eta(), phicluster);
+          fhTimePhotonTriggerEMCALBCUM[histoBC]->Fill(calo->E(), calotof);
           
           if(bc==0)
           {

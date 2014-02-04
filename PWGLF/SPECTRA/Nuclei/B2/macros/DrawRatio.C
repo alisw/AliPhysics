@@ -49,11 +49,11 @@ void DrawRatio(const TString& inputFile="pt.root", const TString& tag="test", co
 	// antiparticle/particle ratio
 	
 	TString ytitle = "Negative/Positive";
-	if(species=="Proton")        ytitle = "#bar{p}/p";
-	else if(species=="Deuteron") ytitle = "#bar{d}/d";
-	else if(species=="Triton")   ytitle = "#bar{t}/t";
-	else if(species=="He3")      ytitle = "#bar{He3}/He3";
-	else if(species=="Alpha")    ytitle = "#bar{#alpha}/#alpha";
+	if(species=="Proton")        ytitle = "#bar{p} / p";
+	else if(species=="Deuteron") ytitle = "#bar{d} / d";
+	else if(species=="Triton")   ytitle = "#bar{t} / t";
+	else if(species=="He3")      ytitle = "{}^{3}#bar{He} / {}^{3}He";
+	else if(species=="Alpha")    ytitle = "#bar{#alpha} / #alpha";
 	
 	TH1D* hRatioPt = FindObj<TH1D>(finput, tag, Form("Anti%s%s_Ratio_Pt", species.Data(), species.Data()));
 	

@@ -50,7 +50,8 @@ AliFlowTrackSimpleCuts::AliFlowTrackSimpleCuts(const char* name):
   fCharge(0),
   fCutMass(kFALSE),
   fMassMax(FLT_MAX),
-  fMassMin(-FLT_MAX)
+  fMassMin(-FLT_MAX),
+  fPOItype(1)
 {
   //constructor 
 }

@@ -124,7 +124,12 @@ bool AliFemtoMCTrackCut::Pass(const AliFemtoTrack* track)
     return false;
     }
   else
-    tRapidity = 0.5*::log((tEnergy+track->P().z())/(tEnergy-track->P().z()));
+    {
+      if((tEnergy+track->P().z())/(tEnergy-track->P().z())>0)
+	tRapidity = 0.5*TMath::Log((tEnergy+track->P().z())/(tEnergy-track->P().z()));
+      else
+	tRapidity = 0;
+    }
   float tPt = ::sqrt((track->P().x())*(track->P().x())+(track->P().y())*(track->P().y()));
   float tEta = track->P().PseudoRapidity();
 

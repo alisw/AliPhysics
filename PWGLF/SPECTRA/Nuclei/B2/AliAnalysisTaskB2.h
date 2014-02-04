@@ -8,7 +8,6 @@
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
 #include <AliAnalysisTask.h>
-#include <AliPID.h>
 
 class AliESDtrack;
 class AliMCEvent;
@@ -61,7 +60,7 @@ class AliAnalysisTaskB2: public AliAnalysisTask
 	
 	void SetHistogramMap(AliLnHistoMap* map) { fHistoMap = map; }
 	
-	void SetESDtrackCuts(AliESDtrackCuts* esdTrackCuts) {fESDtrackCuts = esdTrackCuts; }
+	void SetESDtrackCuts(AliESDtrackCuts* esdTrackCuts) {fTrackCuts = esdTrackCuts; }
 	
 	void SetPID(AliLnID* lnID) { fLnID = lnID; }
 	void SetMaxNSigmaITS(Double_t max) { fMaxNSigmaITS = max; }
@@ -89,8 +88,6 @@ class AliAnalysisTaskB2: public AliAnalysisTask
 	Bool_t IsFastOnly(UInt_t triggerBits) const;
 	Bool_t IsMB(UInt_t triggerBits) const;
 	
-	Bool_t TOFmatch(const AliESDtrack* trk) const;
-	
 	TParticle* GetParticle(const AliESDtrack* trk) const;
 	
 	Int_t GetChargedMultiplicity(Double_t maxEta) const;
@@ -104,12 +101,11 @@ class AliAnalysisTaskB2: public AliAnalysisTask
 	
 	Double_t GetPhi(const AliESDtrack* trk) const;
 	Double_t GetTheta(const AliESDtrack* trk) const;
-	Double_t GetRapidity(const AliESDtrack* trk, Int_t pid) const;
-	Double_t GetRapidity(Double_t p, Double_t pz, Int_t pid) const;
+	Double_t GetRapidity(Double_t p, Double_t pz, Double_t m) const;
 	Double_t GetITSmomentum(const AliESDtrack* trk) const;
 	Double_t GetTOFmomentum(const AliESDtrack* trk) const;
 	Double_t GetBeta(const AliESDtrack* trk) const;
-	Double_t GetMassSquared(const AliESDtrack* trk) const;
+	Double_t GetMassSquared(Double_t p, Double_t beta) const;
 	Double_t GetTimeOfFlight(const AliESDtrack* trk) const;
 	Double_t GetITSchi2PerCluster(const AliESDtrack* trk) const;
 	Int_t    GetITSnClusters(const AliESDtrack* trk) const;
@@ -172,7 +168,7 @@ class AliAnalysisTaskB2: public AliAnalysisTask
 	
 	TList* fOutputContainer; // output container
 	AliLnHistoMap*  fHistoMap; // histogram map (defined somewhere else)
-	AliESDtrackCuts* fESDtrackCuts; // track cuts (defined somewhere else)
+	AliESDtrackCuts* fTrackCuts; // track cuts (defined somewhere else)
 	AliLnID* fLnID; // PID for light nuclei (defined somewhere else)
 	
 	Double_t fMaxNSigmaITS; // maximum number of sigmas to dEdx in the ITS

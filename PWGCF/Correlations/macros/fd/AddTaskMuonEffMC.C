@@ -3,20 +3,13 @@
 AliMuonEffMC* AddTaskMuonEffMC(Bool_t IsMc = kTRUE,
 			       Bool_t MDProcess = kFALSE,
 			       Bool_t IsPythia = kFALSE,
-			       Bool_t FeynmanXProcess = kFALSE,
-			       Bool_t ScatFXProcess = kFALSE,
-			       Bool_t ZvProcess = kFALSE,
-			       Bool_t IsCutStudy = kFALSE,
-			       Bool_t IsFPM = kFALSE,
-			       Bool_t ZvClass = kFALSE,
+			       Int_t PlotMode = 0, 
 			       TString centralityEstimator = "V0M",
-			       const Int_t NEtaBins = 15,
+			       const Int_t NEtaBins = 100,
 			       const Int_t NpTBins = 50,
 			       const Int_t NCentBins = 1,
 			       const Int_t NZvtxBins = 1,
 			       const Int_t NPhiBins = 12,
-			       const Int_t NPBins = 150,
-			       const Int_t ChiSquareNormCut = 5.0,
 			       const char* outputFileName = 0,
 			       const char* folderName = "Muon_TrkEff")
 {
@@ -45,22 +38,14 @@ AliMuonEffMC* AddTaskMuonEffMC(Bool_t IsMc = kTRUE,
 
   MuonEff->SetMcAna(IsMc);
   MuonEff->SetIsPYTHIA(IsPythia);
-  MuonEff->SetIsCutStudy(IsCutStudy);
   MuonEff->SetMDProcess(MDProcess);
-  MuonEff->SetFeynmanXProcess(FeynmanXProcess);
-  MuonEff->SetScatFX(ScatFXProcess);
-  MuonEff->SetZvProcess(ZvProcess);
-  MuonEff->SetIsFPM(IsFPM);
-  MuonEff->SetZvClass(ZvClass);
+  MuonEff->SetPlotMode(PlotMode);
   MuonEff->SetCentEstimator(centralityEstimator);
   MuonEff->SetNEtaBins(NEtaBins);
   MuonEff->SetNpTBins(NpTBins);
   MuonEff->SetNCentBins(NCentBins);
   MuonEff->SetNZvtxBins(NZvtxBins);
   MuonEff->SetNPhiBins(NPhiBins);
-  MuonEff->SetNPBins(NPBins);
-  MuonEff->SetChiSquareNormCut(ChiSquareNormCut);
-
   MuonEff->SelectCollisionCandidates(AliVEvent::kAnyINT);
 
   // Add task(s)
@@ -70,8 +55,9 @@ AliMuonEffMC* AddTaskMuonEffMC(Bool_t IsMc = kTRUE,
   if (!outputFileName) 
     outputFileName = AliAnalysisManager::GetCommonFileName();
 
+  const char* ModeTitle[4] = {"Gen", "Mu", "MuMother", "Mother"};
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutputpt = mgr->CreateContainer(Form("MuonEff_%s",centralityEstimator.Data()), 
+  AliAnalysisDataContainer *coutputpt = mgr->CreateContainer(Form("MuonEff_%s_%s",centralityEstimator.Data(), ModeTitle[PlotMode]), 
                                                              TList::Class(), 
                                                              AliAnalysisManager::kOutputContainer, 
                                                              Form("%s:%s", outputFileName, folderName));

@@ -79,8 +79,8 @@ public:
   static TGraph *GetCorrGraphdEdx()  { return fgdEdxRunCorr; }
 
   static void SetEtaCorrFunction(TF1 *fun) {fgFunEtaCorr=fun;}
-  static void SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
-  static void SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  static void SetCentroidCorrFunction(TF1 *fun) { fgFunCntrdCorr=fun; }
+  static void SetWidthCorrFunction(TF1 *fun) { fgFunWdthCorr=fun; }
   static TF1* GetEtaCorrFunction() { return fgFunEtaCorr; }
   static TF1* GetCentroidCorrFunction() { return fgFunCntrdCorr; }
   static TF1* GetWidthCorrFunction() { return fgFunWdthCorr; }
@@ -117,8 +117,8 @@ private:
   static Double_t fgCorrdEdx;     //!dEdx correction value for current run. Set if fgFitCorr is set and SetCorrVal(run)
                                   // was called
   static TF1    *fgFunEtaCorr;    //function for eta correction of electron sigma
-  static TF1    *fgFunCntrdCorr;  //!function for correction of electron sigma (centroid)
-  static TF1    *fgFunWdthCorr;   //!function for correction of electron sigma (width)
+  static TF1    *fgFunCntrdCorr;  //function for correction of electron sigma (centroid)
+  static TF1    *fgFunWdthCorr;   //function for correction of electron sigma (width)
   static TGraph *fgdEdxRunCorr;   //run by run correction for dEdx
 
   static Double_t GetPIDCorr(const AliVTrack *track, TF1 *fun);

@@ -360,9 +360,7 @@ AliCaloTrackReader * ConfigureReader()
     // Event plane (only used in AliAnaPi0 for the moment)
     reader->SetEventPlaneMethod("Q");
   }
-  
-  reader->SetImportGeometryFromFile(kTRUE);
-  
+    
   if(kPrint) reader->Print("");
   
   return reader;

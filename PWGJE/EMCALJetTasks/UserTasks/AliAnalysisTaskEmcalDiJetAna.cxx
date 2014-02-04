@@ -21,7 +21,6 @@
 #include "AliEmcalJet.h"
 #include "AliRhoParameter.h"
 #include "AliLog.h"
-#include "AliAnalysisUtils.h"
 #include "AliEmcalParticle.h"
 #include "AliMCEvent.h"
 #include "AliGenPythiaEventHeader.h"
@@ -39,6 +38,9 @@ ClassImp(AliAnalysisTaskEmcalDiJetAna)
 AliAnalysisTaskEmcalDiJetAna::AliAnalysisTaskEmcalDiJetAna() : 
   AliAnalysisTaskEmcalDiJetBase("AliAnalysisTaskEmcalDiJetAna"),
   fDoMatchFullCharged(kTRUE),
+  fNKtBins(30),
+  fNDiJetEtaBins(1),
+  fNAjBins(1),
   fh2CentRhoCh(0),
   fh2CentRhoScaled(0),
   fh3PtEtaPhiJetFull(0),
@@ -47,16 +49,21 @@ AliAnalysisTaskEmcalDiJetAna::AliAnalysisTaskEmcalDiJetAna() :
   fhnDiJetVarsCh(0),
   fhnDiJetVarsFullCharged(0),
   fhnMatchingFullCharged(0),
-  fh3JetPtFullFractionDR(0)
+  fh3PtTrigKt1Kt2Ch(0),
+  fh3PtTrigKt1Kt2FuCh(0),
+  fh3PtTrigDPhi1DPhi2Ch(0),
+  fh3PtTrigDPhi1DPhi2FuCh(0)
 {
   // Default constructor.
 
   for(Int_t i=0; i<4; i++) {
-    fh3DiJetKtNEFPtAssoc[i] = 0;
-    fCentCorrPtAssocCh[i]   = 0;
-    fCentCorrPtAssocFuCh[i] = 0;
-    fAjPtAssocCentCh[i]     = 0;
-    fAjPtAssocCentFuCh[i]   = 0;
+    fh3DiJetKtNEFPtAssoc[i]          = 0;
+    fCentCorrPtAssocCh[i]            = 0;
+    fCentCorrPtAssocFuCh[i]          = 0;
+    fAjPtAssocCentCh[i]              = 0;
+    fAjPtAssocCentFuCh[i]            = 0;
+    fh3PtAssoc1PtAssoc2DPhi23Ch[i]   = 0;
+    fh3PtAssoc1PtAssoc2DPhi23FuCh[i] = 0;
   }  
 
   SetMakeGeneralHistograms(kTRUE);
@@ -66,6 +73,9 @@ AliAnalysisTaskEmcalDiJetAna::AliAnalysisTaskEmcalDiJetAna() :
 AliAnalysisTaskEmcalDiJetAna::AliAnalysisTaskEmcalDiJetAna(const char *name) : 
   AliAnalysisTaskEmcalDiJetBase(name),
   fDoMatchFullCharged(kTRUE),
+  fNKtBins(30),
+  fNDiJetEtaBins(1),
+  fNAjBins(1),
   fh2CentRhoCh(0),
   fh2CentRhoScaled(0),
   fh3PtEtaPhiJetFull(0),
@@ -74,16 +84,21 @@ AliAnalysisTaskEmcalDiJetAna::AliAnalysisTaskEmcalDiJetAna(const char *name) :
   fhnDiJetVarsCh(0),
   fhnDiJetVarsFullCharged(0),
   fhnMatchingFullCharged(0),
-  fh3JetPtFullFractionDR(0)
+  fh3PtTrigKt1Kt2Ch(0),
+  fh3PtTrigKt1Kt2FuCh(0),
+  fh3PtTrigDPhi1DPhi2Ch(0),
+  fh3PtTrigDPhi1DPhi2FuCh(0)
 {
   // Standard constructor.
 
   for(Int_t i=0; i<4; i++) {
-    fh3DiJetKtNEFPtAssoc[i] = 0;
-    fCentCorrPtAssocCh[i] = 0;
-    fCentCorrPtAssocFuCh[i] = 0;
-    fAjPtAssocCentCh[i]     = 0;
-    fAjPtAssocCentFuCh[i]   = 0;
+    fh3DiJetKtNEFPtAssoc[i]      = 0;
+    fCentCorrPtAssocCh[i]        = 0;
+    fCentCorrPtAssocFuCh[i]      = 0;
+    fAjPtAssocCentCh[i]          = 0;
+    fAjPtAssocCentFuCh[i]        = 0;
+    fh3PtAssoc1PtAssoc2DPhi23Ch[i]   = 0;
+    fh3PtAssoc1PtAssoc2DPhi23FuCh[i] = 0;
   }
 
   SetMakeGeneralHistograms(kTRUE);
@@ -111,8 +126,6 @@ Bool_t AliAnalysisTaskEmcalDiJetAna::RetrieveEventObjects() {
 void AliAnalysisTaskEmcalDiJetAna::UserCreateOutputObjects()
 {
   // Create user output.
-
-  InitOnce();
 
   AliAnalysisTaskEmcalDiJetBase::UserCreateOutputObjects();
 
@@ -150,19 +163,21 @@ void AliAnalysisTaskEmcalDiJetAna::UserCreateOutputObjects()
   const Int_t nBinsSparse0 = 7;
   const Int_t nBinsPtW      = 30;
   const Int_t nBinsDPhi     = 72;
-  const Int_t nBinsKt       = 50;
-  const Int_t nBinsDiJetEta = 40;
-  const Int_t nBinsCentr    = 5;
-  const Int_t nBinsAj       = 50;
+  const Int_t nBinsKt       = fNKtBins;
+  const Int_t nBinsDiJetEta = fNDiJetEtaBins;//40;
+  const Int_t nBinsCentr    = fNcentBins;
+  const Int_t nBinsAj       = fNAjBins;//20
   const Int_t nBins0[nBinsSparse0] = {nBinsPtW,nBinsPtW,nBinsDPhi,nBinsKt,nBinsDiJetEta,nBinsCentr,nBinsAj};
   //pT1, pT2, deltaPhi, kT
   const Double_t xmin0[nBinsSparse0]  = {  minPt, minPt, -0.5*TMath::Pi(),   0.,-1.,0.  , 0.};
-  const Double_t xmax0[nBinsSparse0]  = {  maxPt, maxPt,  1.5*TMath::Pi(), 100., 1.,100., 1.};
+  const Double_t xmax0[nBinsSparse0]  = {  maxPt, maxPt,  1.5*TMath::Pi(), 120., 1.,100., 1.};
+  const Double_t centArrayBins[8] = {0.,2.,5.,10.,20.,40.,60.,100.};
 
   if(fDoChargedCharged) {
     fhnDiJetVarsCh = new THnSparseF("fhnDiJetVarsCh",
 				    "fhnDiJetVarsCh;#it{p}_{T,1} (GeV/#it{c});#it{p}_{T,2} (GeV/#it{c});#Delta#varphi;#it{k}_{T} = #it{p}_{T,1}sin(#Delta#varphi) (GeV/#it{c});(#eta_{1}+#eta_{2})/2);centrality;#it{A}_{j}",
 				    nBinsSparse0,nBins0,xmin0,xmax0);
+    if(fNcentBins==7) fhnDiJetVarsCh->SetBinEdges(5,centArrayBins);
     fOutput->Add(fhnDiJetVarsCh);
   }
 
@@ -170,6 +185,7 @@ void AliAnalysisTaskEmcalDiJetAna::UserCreateOutputObjects()
     fhnDiJetVarsFullCharged = new THnSparseF("fhnDiJetVarsFullCharged",
 				"fhnDiJetVarsFullCharged;#it{p}_{T,1} (GeV/#it{c});#it{p}_{T,2} (GeV/#it{c});#Delta#varphi;#it{k}_{T} = #it{p}_{T,1}sin(#Delta#varphi) (GeV/#it{c});(#eta_{1}+#eta_{2})/2);centrality;#it{A}_{j}",
 				nBinsSparse0,nBins0,xmin0,xmax0);
+    if(fNcentBins==7) fhnDiJetVarsFullCharged->SetBinEdges(5,centArrayBins);
     fOutput->Add(fhnDiJetVarsFullCharged);
   }
 
@@ -180,28 +196,47 @@ void AliAnalysisTaskEmcalDiJetAna::UserCreateOutputObjects()
     fOutput->Add(fhnDiJetVarsFull);
   }
 
+  fh3PtTrigKt1Kt2Ch = new TH3F("fh3PtTrigKt1Kt2Ch","fh3PtTrigKt1Kt2Ch;#it{p}_{T,1} (GeV/#it{c});#it{k}_{T,1};#it{k}_{T,2}",nBinsPt,minPt,maxPt,nBinsKt,0.,120.,nBinsKt,0.,120.);
+  fOutput->Add(fh3PtTrigKt1Kt2Ch);  
+
+  fh3PtTrigKt1Kt2FuCh = new TH3F("fh3PtTrigKt1Kt2FuCh","fh3PtTrigKt1Kt2FuCh;#it{p}_{T,1} (GeV/#it{c});#it{k}_{T,1};#it{k}_{T,2}",nBinsPt,minPt,maxPt,nBinsKt,0.,120.,nBinsKt,0.,120.);
+  fOutput->Add(fh3PtTrigKt1Kt2FuCh); 
+
+  fh3PtTrigDPhi1DPhi2Ch = new TH3F("fh3PtTrigDPhi1DPhi2Ch","fh3PtTrigDPhi1DPhi2Ch;#it{p}_{T,1} (GeV/#it{c});#it{k}_{T,1};#it{k}_{T,2}",nBinsPt,minPt,maxPt,36,-0.5*TMath::Pi(),1.5*TMath::Pi(),36,-0.5*TMath::Pi(),1.5*TMath::Pi());
+  fOutput->Add(fh3PtTrigDPhi1DPhi2Ch);  
+
+  fh3PtTrigDPhi1DPhi2FuCh = new TH3F("fh3PtTrigDPhi1DPhi2FuCh","fh3PtTrigDPhi1DPhi2FuCh;#it{p}_{T,1} (GeV/#it{c});#it{k}_{T,1};#it{k}_{T,2}",nBinsPt,minPt,maxPt,36,-0.5*TMath::Pi(),1.5*TMath::Pi(),36,-0.5*TMath::Pi(),1.5*TMath::Pi());
+  fOutput->Add(fh3PtTrigDPhi1DPhi2FuCh);  
+ 
+
   for(Int_t i=0; i<4; i++) {
     TString histoName = Form("fh3DiJetKtNEFPtAssoc_TrigBin%d",i);
-    fh3DiJetKtNEFPtAssoc[i] = new TH3F(histoName.Data(),histoName.Data(),nBinsKt,-100.,100.,100,0.,1.,nBinsPt,minPt,maxPt);
+    fh3DiJetKtNEFPtAssoc[i] = new TH3F(histoName.Data(),histoName.Data(),nBinsKt,0.,120.,50,0.,1.,nBinsPt,minPt,maxPt);
     fOutput->Add(fh3DiJetKtNEFPtAssoc[i]);
 
     histoName = Form("fCentCorrPtAssocCh_TrigBin%d",i);
-    fCentCorrPtAssocCh[i]  = new TH3F(histoName.Data(),histoName.Data(),100,0.,100.,100,0.,100.,nBinsPt,minPt,maxPt);
+    fCentCorrPtAssocCh[i]  = new TH3F(histoName.Data(),histoName.Data(),10,0.,100.,10,0.,100.,nBinsPt,minPt,maxPt);
     fOutput->Add(fCentCorrPtAssocCh[i]);
 
     histoName = Form("fCentCorrPtAssocFuCh_TrigBin%d",i);
-    fCentCorrPtAssocFuCh[i]  = new TH3F(histoName.Data(),histoName.Data(),100,0.,100.,100,0.,100.,nBinsPt,minPt,maxPt);
+    fCentCorrPtAssocFuCh[i]  = new TH3F(histoName.Data(),histoName.Data(),10,0.,100.,10,0.,100.,nBinsPt,minPt,maxPt);
     fOutput->Add(fCentCorrPtAssocFuCh[i]);
 
     histoName = Form("fAjPtAssocCentCh_TrigBin%d",i);
-    fAjPtAssocCentCh[i]  = new TH3F(histoName.Data(),histoName.Data(),100,0.,1.,nBinsPt,minPt,maxPt,100,0.,100.);
+    fAjPtAssocCentCh[i]  = new TH3F(histoName.Data(),histoName.Data(),50,0.,1.,nBinsPt,minPt,maxPt,20,0.,100.);
     fOutput->Add(fAjPtAssocCentCh[i]);
 
     histoName = Form("fAjPtAssocCentFuCh_TrigBin%d",i);
-    fAjPtAssocCentFuCh[i]  = new TH3F(histoName.Data(),histoName.Data(),100,0.,1.,nBinsPt,minPt,maxPt,100,0.,100.);
+    fAjPtAssocCentFuCh[i]  = new TH3F(histoName.Data(),histoName.Data(),50,0.,1.,nBinsPt,minPt,maxPt,20,0.,100.);
     fOutput->Add(fAjPtAssocCentFuCh[i]);
 
+    histoName = Form("fh3PtAssoc1PtAssoc2DPhi23Ch_TrigBin%d",i);
+    fh3PtAssoc1PtAssoc2DPhi23Ch[i] = new TH3F(histoName.Data(),histoName.Data(),nBinsPt,minPt,maxPt,nBinsPt,minPt,maxPt,nBinsDPhi,-0.5*TMath::Pi(),1.5*TMath::Pi());
+    fOutput->Add(fh3PtAssoc1PtAssoc2DPhi23Ch[i]);
 
+    histoName = Form("fh3PtAssoc1PtAssoc2DPhi23FuCh_TrigBin%d",i);
+    fh3PtAssoc1PtAssoc2DPhi23FuCh[i] = new TH3F(histoName.Data(),histoName.Data(),nBinsPt,minPt,maxPt,nBinsPt,minPt,maxPt,nBinsDPhi,-0.5*TMath::Pi(),1.5*TMath::Pi());
+    fOutput->Add(fh3PtAssoc1PtAssoc2DPhi23FuCh[i]);
   }
 
   const Int_t nBinsSparseMatch = 7;
@@ -212,14 +247,13 @@ void AliAnalysisTaskEmcalDiJetAna::UserCreateOutputObjects()
   const Int_t nBinsType = 3;
   const Int_t nBinsMatch[nBinsSparseMatch] = {nBinsPt,nBinsPt,nBinsDPhiMatch,nBinsDEtaMatch,nBinsDR,nBinsFraction,nBinsType};
   //pTfull, pTch, deltaPhi, deltaEta, deltaR, fraction, jet type (leading,subleading,other)
-  const Double_t xminMatch[nBinsSparseMatch]  = { minPt, minPt, -0.5,-0.5, 0.,0.  ,0};
+  const Double_t xminMatch[nBinsSparseMatch]  = { minPt, minPt, -0.5,-0.5, 0. ,0.  ,0};
   const Double_t xmaxMatch[nBinsSparseMatch]  = { maxPt, maxPt,  0.5, 0.5, 0.5,1.05,3};
-  fhnMatchingFullCharged = new THnSparseF("fhnMatchingFullCharged","fhnMatchingFullCharged;#it{p}_{T,full} (GeV/#it{c});#it{p}_{T,ch} (GeV/#it{c});#Delta#varphi;#Delta#eta;#Delta R;f_{ch};type",
+  if(fDoMatchFullCharged) {
+    fhnMatchingFullCharged = new THnSparseF("fhnMatchingFullCharged","fhnMatchingFullCharged;#it{p}_{T,full} (GeV/#it{c});#it{p}_{T,ch} (GeV/#it{c});#Delta#varphi;#Delta#eta;#Delta R;f_{ch};type",
 					  nBinsSparseMatch,nBinsMatch,xminMatch,xmaxMatch);
-  fOutput->Add(fhnMatchingFullCharged);
-
-  fh3JetPtFullFractionDR = new TH3F("fh3JetPtFullFractionDR","fh3JetPtFullFractionDR;#it{p}_{T,full} (GeV/#it{c}); #it{f}_{ch};#Delta R",nBinsPt,minPt,maxPt,nBinsFraction,0.,1.05,nBinsDR,0.,1.);
-  fOutput->Add(fh3JetPtFullFractionDR);
+    fOutput->Add(fhnMatchingFullCharged);
+  }
   
   // =========== Switch on Sumw2 for all histos ===========
   for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
@@ -248,7 +282,6 @@ Bool_t AliAnalysisTaskEmcalDiJetAna::FillHistograms()
   fh2CentRhoCh->Fill(fCent,fRhoChVal);
   fh2CentRhoScaled->Fill(fCent,fRhoFullVal);
 
-
   Int_t nJetsFull = GetNJets(fContainerFull);
   for(Int_t ij=0; ij<nJetsFull; ij++) {
     AliEmcalJet *jet = static_cast<AliEmcalJet*>(GetAcceptJetFromArray(ij, fContainerFull));
@@ -256,7 +289,6 @@ Bool_t AliAnalysisTaskEmcalDiJetAna::FillHistograms()
 
     Double_t jetPt = GetJetPt(jet,0);
     fh3PtEtaPhiJetFull->Fill(jetPt,jet->Eta(),jet->Phi());
-    
   }
 
   Int_t nJetsCh = GetNJets(fContainerCharged);
@@ -266,9 +298,7 @@ Bool_t AliAnalysisTaskEmcalDiJetAna::FillHistograms()
 
       Double_t jetPt = GetJetPt(jet,1);
       fh3PtEtaPhiJetCharged->Fill(jetPt,jet->Eta(),jet->Phi());
-    
   }
-  
 
   return kTRUE;
 }
@@ -281,8 +311,6 @@ Bool_t AliAnalysisTaskEmcalDiJetAna::Run()
   //Check if event is selected (vertex & pile-up)
   if(!SelectEvent())
     return kFALSE;
-
-  fHistTrialsSelEvents->Fill(fPtHardBin, fNTrials);
 
   if(fRhoType==0) {
     fRhoFullVal = 0.;
@@ -351,21 +379,7 @@ void AliAnalysisTaskEmcalDiJetAna::CorrelateTwoJets(const Int_t type) {
     return;
   }
 
-  Int_t nJetsTrig  = 0;
-  Int_t nJetsAssoc = 0;
-  if(type==0) {
-    nJetsTrig  = GetNJets(fContainerFull);
-    nJetsAssoc = nJetsTrig;
-  }
-  else if(type==1) {
-    nJetsTrig  = GetNJets(fContainerCharged);
-    nJetsAssoc = nJetsTrig;
-  }
-  else if(type==2) {
-    nJetsTrig  = GetNJets(fContainerFull);
-    nJetsAssoc = GetNJets(fContainerCharged);
-  }
-
+  Int_t nJetsTrig  = GetNJets(typet);
   for(Int_t ijt=0; ijt<nJetsTrig; ijt++) {
 
     AliEmcalJet *jetTrig = NULL; 
@@ -376,7 +390,6 @@ void AliAnalysisTaskEmcalDiJetAna::CorrelateTwoJets(const Int_t type) {
     }
     else
       jetTrig = static_cast<AliEmcalJet*>(GetAcceptJetFromArray(ijt, typet));
-
 
     if(!jetTrig)
       continue; //jet not selected
@@ -396,10 +409,13 @@ void AliAnalysisTaskEmcalDiJetAna::CorrelateTwoJets(const Int_t type) {
     }
 
     FillDiJetHistos(jetTrig,jetAssoc, type);
+
+    //Look for second jet on away side - 3-jet events
+    AliEmcalJet *jetAssoc2 = GetSecondLeadingAssociatedJet(typea,jetTrig);
+    if(jetAssoc2)
+      FillThreeJetHistos(jetTrig,jetAssoc,jetAssoc2,type);
     
-
   }
-
 }
 
 //________________________________________________________________________
@@ -419,7 +435,6 @@ AliEmcalJet* AliAnalysisTaskEmcalDiJetAna::GetLeadingJet(const Int_t type) {
   Double_t ptLead = -999;
   Int_t    iJetLead = -1;
   for(Int_t ij=0; ij<nJets; ij++) {
-
     AliEmcalJet *jet = NULL;
     if(type==0) {
       jet = static_cast<AliEmcalJet*>(GetJetFromArray(ij, cont));
@@ -438,13 +453,11 @@ AliEmcalJet* AliAnalysisTaskEmcalDiJetAna::GetLeadingJet(const Int_t type) {
       ptLead = jetPt;
       iJetLead = ij;
     }
-
   }
 
   AliEmcalJet *jetLead = static_cast<AliEmcalJet*>(GetJetFromArray(iJetLead, cont));
 
   return jetLead;
-
 }
 
 //________________________________________________________________________
@@ -463,7 +476,24 @@ AliEmcalJet* AliAnalysisTaskEmcalDiJetAna::GetLeadingAssociatedJet(const Int_t t
   AliEmcalJet *jetAssocLead = GetLeadingJetOppositeHemisphere(type, typea, jetTrig);
   
   return jetAssocLead;
+}
 
+//________________________________________________________________________
+AliEmcalJet* AliAnalysisTaskEmcalDiJetAna::GetSecondLeadingAssociatedJet(const Int_t type, AliEmcalJet *jetTrig) {
+
+  //Get associated jet which is the leading jet in the opposite hemisphere
+
+  Int_t typea = 0;
+  if(type==0)  //full-full
+    typea = fContainerFull;
+  else if(type==1)  //charged-charged
+    typea = fContainerCharged;
+  else if(type==2)  //full-charged
+    typea = fContainerCharged;
+
+  AliEmcalJet *jetAssocLead2 = GetSecondLeadingJetOppositeHemisphere(type, typea, jetTrig);
+  
+  return jetAssocLead2;
 }
 
 //________________________________________________________________________
@@ -491,23 +521,10 @@ void AliAnalysisTaskEmcalDiJetAna::CorrelateAllJets(const Int_t type) {
     return;
   }
 
-  Int_t nJetsTrig  = 0;
-  Int_t nJetsAssoc = 0;
-  if(type==0) {
-    nJetsTrig  = GetNJets(fContainerFull);
-    nJetsAssoc = nJetsTrig;
-  }
-  else if(type==1) {
-    nJetsTrig  = GetNJets(fContainerCharged);
-    nJetsAssoc = nJetsTrig;
-  }
-  else if(type==2) {
-    nJetsTrig  = GetNJets(fContainerFull);
-    nJetsAssoc = GetNJets(fContainerCharged);
-  }
+  Int_t nJetsTrig  = GetNJets(typet);
+  Int_t nJetsAssoc = GetNJets(typea);
 
   for(Int_t ijt=0; ijt<nJetsTrig; ijt++) {
-
     AliEmcalJet *jetTrig = NULL; 
     if(type==0) {
       jetTrig = static_cast<AliEmcalJet*>(GetJetFromArray(ijt, typet));
@@ -516,7 +533,6 @@ void AliAnalysisTaskEmcalDiJetAna::CorrelateAllJets(const Int_t type) {
     }
     else
       jetTrig = static_cast<AliEmcalJet*>(GetAcceptJetFromArray(ijt, typet));
-
 
     if(!jetTrig)
       continue; //jet not selected
@@ -576,7 +592,7 @@ void AliAnalysisTaskEmcalDiJetAna::CorrelateLeadingSubleadingJets(const Int_t ty
     return;
   }
 
-  AliEmcalJet *jetTrig = GetLeadingJet(type);
+  AliEmcalJet *jetTrig = GetLeadingJet(typet);
   if(!jetTrig)
     return;
 
@@ -589,10 +605,7 @@ void AliAnalysisTaskEmcalDiJetAna::CorrelateLeadingSubleadingJets(const Int_t ty
   if(!jetAssoc)
     return;
   
-
   FillDiJetHistos(jetTrig,jetAssoc, type);
-  
-
 }
 
 //________________________________________________________________________
@@ -606,17 +619,17 @@ void AliAnalysisTaskEmcalDiJetAna::FillDiJetHistos(const AliEmcalJet *jet1, cons
 
   Int_t typet = 0;
   Int_t typea = 0;
-  if(mode==0) {
-    typet = 0;
-    typea = 0;
+  if(mode==0) { //full-full
+    typet = fContainerFull;
+    typea = fContainerFull;
   }
-  else if(mode==1) {
-    typet = 1;
-    typea = 1;
+  else if(mode==1) { //charged-charged
+    typet = fContainerCharged;
+    typea = fContainerCharged;
   }
-  else if(mode==2) {
-    typet = 0;
-    typea = 1;
+  else if(mode==2) { //full-charged
+    typet = fContainerFull;
+    typea = fContainerCharged;
   }
   else {
     AliWarning(Form("%s: mode %d of dijet correlation not defined!",GetName(),mode));
@@ -627,13 +640,13 @@ void AliAnalysisTaskEmcalDiJetAna::FillDiJetHistos(const AliEmcalJet *jet1, cons
   Double_t jetAssocPt = GetJetPt(jet2,typea);
 
   Double_t deltaPhi = GetDeltaPhi(jet1->Phi(),jet2->Phi());
-  if(fDebug>10) Printf("deltaPhi:%.2f",deltaPhi);
 
   Double_t kT = TMath::Abs(jetTrigPt*TMath::Sin(deltaPhi));
 
   Double_t dijetEta = (jet1->Eta()+jet2->Eta())/2.;
 
-  Double_t aj = (jetTrigPt-jetAssocPt)/(jetTrigPt+jetAssocPt);
+  Double_t aj = 0.;
+  if((jetTrigPt+jetAssocPt)>0.) aj = (jetTrigPt-jetAssocPt)/(jetTrigPt+jetAssocPt);
 
   Double_t diJetVars[7] = {jetTrigPt,jetAssocPt,deltaPhi,kT,dijetEta,fCent,aj};
 
@@ -644,8 +657,8 @@ void AliAnalysisTaskEmcalDiJetAna::FillDiJetHistos(const AliEmcalJet *jet1, cons
   else if(mode==2)
     fhnDiJetVarsFullCharged->Fill(diJetVars);
 
-  Double_t dPhiMin = TMath::Pi()-0.9;
-  Double_t dPhiMax = TMath::Pi()+0.9;
+  Double_t dPhiMin = TMath::Pi() - 1./3.*TMath::Pi();
+  Double_t dPhiMax = TMath::Pi() + 1./3.*TMath::Pi();
   Int_t trigBin = GetPtTriggerBin(jetTrigPt);
   if(mode==2) {
     if(trigBin>-1 && trigBin<4) {
@@ -659,7 +672,6 @@ void AliAnalysisTaskEmcalDiJetAna::FillDiJetHistos(const AliEmcalJet *jet1, cons
   AliCentrality *aliCent = InputEvent()->GetCentrality();
   if (aliCent) {
     centZNA = aliCent->GetCentralityPercentile("ZNA");
-    
     if(trigBin>-1 && trigBin<4) {
       if(deltaPhi>dPhiMin && deltaPhi<dPhiMax) {
 	if(mode==1) {
@@ -675,6 +687,71 @@ void AliAnalysisTaskEmcalDiJetAna::FillDiJetHistos(const AliEmcalJet *jet1, cons
   }
 
 }
+
+//________________________________________________________________________
+void AliAnalysisTaskEmcalDiJetAna::FillThreeJetHistos(const AliEmcalJet *jet1, const AliEmcalJet *jet2, const AliEmcalJet *jet3, const Int_t mode) {
+  //
+  // Fill histos
+  // mode: full vs full        = 0
+  //       charged vs charged  = 1
+  //       full vs charged     = 2
+  //
+
+  Int_t typet = 0;
+  Int_t typea = 0;
+  if(mode==0) { //full-full
+    typet = fContainerFull;
+    typea = fContainerFull;
+  }
+  else if(mode==1) { //charged-charged
+    typet = fContainerCharged;
+    typea = fContainerCharged;
+  }
+  else if(mode==2) { //full-charged
+    typet = fContainerFull;
+    typea = fContainerCharged;
+  }
+  else {
+    AliWarning(Form("%s: mode %d of dijet correlation not defined!",GetName(),mode));
+    return;
+  }
+
+  Double_t jetTrigPt = GetJetPt(jet1,typet);
+  Double_t jetAssoc2Pt = GetJetPt(jet2,typea);
+  Double_t jetAssoc3Pt = GetJetPt(jet3,typea);
+
+  Double_t deltaPhi12 = GetDeltaPhi(jet1->Phi(),jet2->Phi());
+  Double_t deltaPhi13 = GetDeltaPhi(jet1->Phi(),jet3->Phi());
+  Double_t deltaPhi23 = GetDeltaPhi(jet2->Phi(),jet3->Phi());
+
+  Double_t kT12 = TMath::Abs(jetTrigPt*TMath::Sin(deltaPhi12));
+  Double_t kT13 = TMath::Abs(jetTrigPt*TMath::Sin(deltaPhi13));
+  
+  Double_t dPhiMin = TMath::Pi() - 1./3.*TMath::Pi();
+  Double_t dPhiMax = TMath::Pi() + 1./3.*TMath::Pi();
+
+  Int_t trigBin = GetPtTriggerBin(jetTrigPt);
+
+  if(jetAssoc2Pt>20. && jetAssoc3Pt>20.) {
+    if(mode==1) {
+      fh3PtTrigDPhi1DPhi2Ch->Fill(jetTrigPt,deltaPhi12,deltaPhi13);
+      fh3PtAssoc1PtAssoc2DPhi23Ch[trigBin]->Fill(jetAssoc2Pt,jetAssoc3Pt,deltaPhi23);    
+    }
+    else if(mode==1) {
+      fh3PtTrigDPhi1DPhi2FuCh->Fill(jetTrigPt,deltaPhi12,deltaPhi13);
+      fh3PtAssoc1PtAssoc2DPhi23FuCh[trigBin]->Fill(jetAssoc2Pt,jetAssoc3Pt,deltaPhi23);    
+    }
+
+    if(deltaPhi12>dPhiMin && deltaPhi12<dPhiMax) {
+      if(mode==1)
+	fh3PtTrigKt1Kt2Ch->Fill(jetTrigPt,kT12,kT13);
+      else if(mode==2)
+	fh3PtTrigKt1Kt2FuCh->Fill(jetTrigPt,kT12,kT13);
+    }
+  }
+
+}
+
 //________________________________________________________________________
 Int_t AliAnalysisTaskEmcalDiJetAna::GetPtTriggerBin(Double_t pt) {
 
@@ -689,7 +766,6 @@ Int_t AliAnalysisTaskEmcalDiJetAna::GetPtTriggerBin(Double_t pt) {
     binTrig = 3;
 
   return binTrig;
-
 }
 
 //________________________________________________________________________
@@ -700,7 +776,7 @@ void AliAnalysisTaskEmcalDiJetAna::FillMatchFullChargedHistos(Int_t cFull,Int_t 
 
   Int_t match = MatchFullAndChargedJets(cFull,cCharged);
   if(match==0) {
-    if(fDebug>1) AliWarning(Form("%s: matching failed",GetName()));
+    AliDebug(11,Form("%s: matching failed",GetName()));
     return;
   }
   
@@ -712,7 +788,6 @@ void AliAnalysisTaskEmcalDiJetAna::FillMatchFullChargedHistos(Int_t cFull,Int_t 
     if(!jetCh) continue;
 
     Double_t shFraction = GetFractionSharedPt(jetFull,jetCh);
-    if(fDebug>10) Printf("shared charged pT:%.2f",shFraction);
     Double_t matchVars[7] = {
       jetFull->Pt(),
       jetCh->Pt(),
@@ -735,12 +810,12 @@ Int_t AliAnalysisTaskEmcalDiJetAna::MatchFullAndChargedJets(Int_t cFull, Int_t c
   //
 
   if(GetNJets(cFull)<1) {
-    if(fDebug>1) AliInfo(Form("%s: no full jets: %d", GetName(),GetNJets(cFull)));
+    AliDebug(2,Form("%s: no full jets: %d", GetName(),GetNJets(cFull)));
     return 0;
   }
 
   if(GetNJets(cCharged)<1) {
-    if(fDebug>1) AliInfo(Form("%s: no charged jets: %d", GetName(),GetNJets(cCharged)));
+    AliDebug(2,Form("%s: no charged jets: %d", GetName(),GetNJets(cCharged)));
     return 0;
   }
 
@@ -748,21 +823,20 @@ Int_t AliAnalysisTaskEmcalDiJetAna::MatchFullAndChargedJets(Int_t cFull, Int_t c
   TClonesArray *cJetsCharged = GetJetArray(cCharged);
 
   if(!cJetsFull) {
-    if(fDebug>1) AliInfo(Form("%s: no full jet array",GetName()));
+    AliDebug(2,Form("%s: no full jet array",GetName()));
     return 0;
   }
 
   if(!cJetsCharged) {
-    if(fDebug>1)  AliInfo(Form("%s: no charged jet array",GetName()));
+    AliDebug(2,Form("%s: no charged jet array",GetName()));
     return 0;
   }
 
-
   if(!fMatchingDone) {
-      MatchJetsGeo(cFull, cCharged, fDebug);
+      MatchJetsGeo(cFull, cCharged, 0);
       return 1;  
   } else {
-    if(fDebug>1) AliInfo(Form("%s: Matching already done before",GetName()));
+    AliDebug(11,Form("%s: Matching already done before",GetName()));
     return 1;
   }
 

@@ -46,8 +46,8 @@ Bool_t AddAMRsnTrain(TString analysisSource = "proof", TString analysisMode = "t
    TString extraMacro = "";
    TString extraMacroArgs = "";
 //   extraMacro = "RsnTrainSettingsExtra.C";
-//   extraMacroArgs = "10.0,10,1,1,1,1,1,1,1";
-//   extraMacroArgs = "10, 5, 5, -1, 1, 0, 1, 1, 1";
+//   extraMacroArgs = "10.0,10,1,1,1,1,1,1,1,0";
+//   extraMacroArgs = "10, 5, 5, -1, 1, 0, 1, 1, 1, 0";
 
    input.ToLower();
    inputMC.ToLower();

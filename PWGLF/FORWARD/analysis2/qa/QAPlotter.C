@@ -52,8 +52,9 @@ struct QAPlotter : public QABase
     /** 
      * Constuctor
      * 
-     * @param d Detector 
-     * @param r Ring 
+     * @param d      Detector 
+     * @param r      Ring 
+     * @param useVar Use variance for errors (not min/max)
      */
     Ring(UShort_t d, Char_t r, Bool_t useVar=false)
       : QARing(d, r),

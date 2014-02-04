@@ -25,12 +25,14 @@ public:
   /** 
    * Constructor 
    * 
-   * @param name Name 
+   * @param name    Name 
+   * @param clsName Class name of hits 
+   * @param parent  Parent event handler 
    */
   AliFMDMCHitHandler(const char* name="FMD",
 		     const char* clsName="AliFMDHit",
 		     AliMCEventHandler* parent=0);
-
+  /** Destructor */
   virtual ~AliFMDMCHitHandler() {}
   /** 
    * @{
@@ -64,8 +66,6 @@ public:
   /** 
    * Called when the input file is changed 
    * 
-   * @param path New path 
-   *
    * @return true on success
    */
   virtual Bool_t Notify() { return AliMCEventHandler::Notify(); }
@@ -115,9 +115,21 @@ public:
    */
   virtual void  SetNumberOfEventsInContainer(Int_t nev) {
     this->fNEventsInContainer = nev;}
+  /** 
+   * Open a file 
+   * 
+   * @param ev event number 
+   * 
+   * @return true on success
+   */
   virtual Bool_t OpenFile(Int_t ev);
   /* @} */
 
+  /** 
+   * Get the parent handler 
+   * 
+   * @return Parent handler
+   */
   AliMCEventHandler* GetParent() { return fParent; }
   /** 
    * Get the tree 
@@ -125,19 +137,38 @@ public:
    * @return The connected hits tree
    */
   virtual TTree*  GetTree() const { return fTree;}  
+  /** 
+   * Get array of hits 
+   * 
+   * @return Array of hits
+   */
   TClonesArray*      GetArray() { return fArray; }
   /** 
    * Static member function to create and attach this handler 
    * 
    * @param name Name of the handler 
+   * @param what What to get 
    * 
    * @return Newly allocated handler or null
    */
   static AliFMDMCHitHandler* Create(const char* name="FMD",
 				    const char* what="Hits");
+  /** 
+   * Static member function to get the kinamtics array
+   * 
+   * @param handler   Unput handler
+   * @param particle  Particle number 
+   * 
+   * @return Array of hits 
+   */
   static TClonesArray* GetParticleArray(AliFMDMCHitHandler* handler, 
 					Int_t particle);
 protected:
+  /** 
+   * Copy constructor
+   * 
+   * @param o Object to copy from
+   */
   AliFMDMCHitHandler(const AliFMDMCHitHandler& o)
     : AliMCEventHandler(), 
       fParent(o.fParent),
@@ -153,6 +184,13 @@ protected:
       fTreeName(""),
       fFileBase("")
   {}
+  /** 
+   * Assignment operator
+   * 
+   * @param o Object to assign from 
+   * 
+   * @return reference to this object 
+   */
   AliFMDMCHitHandler& operator=(const AliFMDMCHitHandler& o)
   {
     if (&o == this) return *this;
@@ -162,6 +200,11 @@ protected:
     fTree   = o.fTree;
     return *this;
   }
+  /** 
+   * Get the parent path 
+   * 
+   * @return Parent path
+   */
   TString* GetParentPath() const;
   AliMCEventHandler* fParent; // Parent MC handler 
   TFile*             fFile;                //!

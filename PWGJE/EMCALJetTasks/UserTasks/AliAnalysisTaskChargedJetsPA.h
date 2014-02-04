@@ -18,7 +18,7 @@ class TRandom3;
 class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
  public:
   // ######### CONTRUCTORS/DESTRUCTORS AND STD FUNCTIONS
-  AliAnalysisTaskChargedJetsPA() : AliAnalysisTaskSE(), fOutputList(0), fAnalyzeJets(1), fAnalyzeQA(1), fAnalyzeBackground(1), fAnalyzeDeprecatedBackgrounds(1), fAnalyzePythia(0), fHasTracks(0), fHasJets(0), fHasBackgroundJets(0), fIsKinematics(0), fUseVertexCut(1), fUsePileUpCut(1), fSetCentralityToOne(0), fPartialAnalysisNParts(1), fPartialAnalysisIndex(0), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(0), fTrackArrayName(0), fBackgroundJetArrayName(0), fNumPtHardBins(11), fUsePtHardBin(-1), fRhoTaskName(), fNcoll(6.88348), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fTRBackgroundConeRadius(0.6), fNumberRandCones(8), fNumberExcludedJets(-1), fDijetMaxAngleDeviation(10.0), fPhysicalJetRadius(0.6), fSignalJetEtaWindow(0.5), fBackgroundJetEtaWindow(0.5), fTrackEtaWindow(0.9), fMinTrackPt(0.150), fMinJetPt(1.0), fMinJetArea(0.5), fMinBackgroundJetPt(0.0), fMinDijetLeadingPt(10.0), fNumberOfCentralityBins(20), fCentralityType("V0A"), fFirstLeadingJet(0), fSecondLeadingJet(0), fNumberSignalJets(0), fCrossSection(0.0), fTrials(0.0),  fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fHistList(0), fHistCount(0), fIsDEBUG(0), fEventCounter(0)
+  AliAnalysisTaskChargedJetsPA() : AliAnalysisTaskSE(), fOutputList(0), fAnalyzeJets(1), fAnalyzeJetProfile(1), fAnalyzeQA(1), fAnalyzeBackground(1), fAnalyzeDeprecatedBackgrounds(1), fAnalyzePythia(0), fAnalyzeMassCorrelation(0), fHasTracks(0), fHasJets(0), fHasBackgroundJets(0), fIsKinematics(0), fUseDefaultVertexCut(1), fUsePileUpCut(1), fSetCentralityToOne(0), fPartialAnalysisNParts(1), fPartialAnalysisIndex(0), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(0), fTrackArrayName(0), fBackgroundJetArrayName(0), fNumPtHardBins(11), fUsePtHardBin(-1), fRhoTaskName(), fNcoll(6.88348), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fTRBackgroundConeRadius(0.6), fNumberRandCones(8), fNumberExcludedJets(-1), fDijetMaxAngleDeviation(10.0), fPhysicalJetRadius(0.6), fSignalJetEtaWindow(0.5), fBackgroundJetEtaWindow(0.5), fTrackEtaWindow(0.9), fMinTrackPt(0.150), fMinJetPt(0.15), fMinJetArea(0.5), fMinBackgroundJetPt(0.0), fMinDijetLeadingPt(10.0), fNumberOfCentralityBins(20), fCentralityType("V0A"), fFirstLeadingJet(0), fSecondLeadingJet(0), fNumberSignalJets(0), fCrossSection(0.0), fTrials(0.0),  fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fHistList(0), fHistCount(0), fIsDEBUG(0), fEventCounter(0)
   {
     for(Int_t i=0;i<1024;i++)
       fSignalJets[i] = NULL;
@@ -33,12 +33,14 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
 
   // ######### SETTERS/GETTERS
   void        SetAnalyzeJets(Bool_t val) {fAnalyzeJets = val;}
+  void        SetAnalyzeJetProfile(Bool_t val) {fAnalyzeJetProfile = val;}
   void        SetAnalyzeQA(Bool_t val) {fAnalyzeQA = val;}
   void        SetAnalyzeBackground(Bool_t val) {fAnalyzeBackground = val;}
   void        SetAnalyzeDeprecatedBackgrounds(Bool_t val) {fAnalyzeDeprecatedBackgrounds = val;}
   void        SetAnalyzePythia(Bool_t val) {fAnalyzePythia = val;}
+  void        SetAnalyzeMassCorrelation(Bool_t val) {fAnalyzeMassCorrelation = val;}
   void        SetAnalyzePartialEvents(Int_t nParts, Int_t index) {fPartialAnalysisNParts = nParts; fPartialAnalysisIndex = index;}
-  void        SetUseVertexCut (Bool_t val) {fUseVertexCut = val;}
+  void        SetUseDefaultVertexCut (Bool_t val) {fUseDefaultVertexCut = val;}
   void        SetUsePileUpCut (Bool_t val) {fUsePileUpCut = val;}
   void        SetCentralityToOne (Bool_t val) {fSetCentralityToOne = val;}
   void        SetNumberOfCentralityBins(Int_t val) {fNumberOfCentralityBins = val;} 
@@ -73,6 +75,7 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
 
   void        GetTRBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoNoExclusion, Double_t& rhoConeExclusion02, Double_t& rhoConeExclusion04, Double_t& rhoConeExclusion06, Double_t& rhoConeExclusion08, Double_t& rhoExactExclusion);
   void        GetTRBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoMean, Double_t& area, AliEmcalJet* excludeJet1, AliEmcalJet* excludeJet2, Bool_t doSearchPerpendicular);
+  void        GetPPBackgroundDensity(Double_t& background, AliEmcalJet* jet);
   Double_t    GetConePt(Double_t eta, Double_t phi, Double_t radius);
   Double_t    GetPtHard();
   Double_t    GetPythiaTrials();
@@ -121,15 +124,17 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   TList*              fOutputList;            //! Output list
   // ########## USAGE TRIGGERS 
   Bool_t              fAnalyzeJets;           // trigger if jets should be processed
+  Bool_t              fAnalyzeJetProfile;     // trigger if jet profile should be analyzed
   Bool_t              fAnalyzeQA;             // trigger if QA should be done
   Bool_t              fAnalyzeBackground;     // trigger if background should be processed
   Bool_t              fAnalyzeDeprecatedBackgrounds; // trigger if old background estimates should be processed
   Bool_t              fAnalyzePythia;         // trigger if pythia properties should be processed
+  Bool_t              fAnalyzeMassCorrelation;// trigger if jet pt/constituent mass should be compared
   Bool_t              fHasTracks;             // trigger if tracks are actually valid
   Bool_t              fHasJets;               // trigger if jets are actually valid
   Bool_t              fHasBackgroundJets;     // trigger if background is actually valid
   Bool_t              fIsKinematics;          // trigger if data is kinematics only (for naming reasons)
-  Bool_t              fUseVertexCut;          // trigger if vertex cut should be done
+  Bool_t              fUseDefaultVertexCut;   // trigger if automatic vertex cut from helper class should be done
   Bool_t              fUsePileUpCut;          // trigger if pileup cut should be done
   Bool_t              fSetCentralityToOne;    // trigger if centrality val. should be set to one for every event (failsafe)
   Int_t               fPartialAnalysisNParts; // take only every Nth event

@@ -49,6 +49,7 @@
 #include "AliAODMCHeader.h"
 #include "AliGenCocktailEventHeader.h"
 #include "AliGenEventHeader.h"
+#include "AliCollisionGeometry.h"
 
 #include "AliEventPoolManager.h"
 
@@ -94,10 +95,12 @@ fFillMixed(kTRUE),
 fMixingTracks(50000),
 fTwoTrackEfficiencyStudy(kFALSE),
 fTwoTrackEfficiencyCut(0),
+fTwoTrackCutMinRadius(0.8),
 fUseVtxAxis(kFALSE),
 fCourseCentralityBinning(kFALSE),
 fSkipTrigger(kFALSE),
 fInjectedSignals(kFALSE),
+fRandomizeReactionPlane(kFALSE),
 fHelperPID(0x0),
 fAnalysisUtils(0x0),
 fMap(0x0),
@@ -107,6 +110,7 @@ fHistos(0x0),
 fHistosMixed(0),
 fEfficiencyCorrectionTriggers(0),
 fEfficiencyCorrectionAssociated(0),
+fCentralityWeights(0),
 // handlers and events
 fAOD(0x0),
 fESD(0x0),
@@ -127,6 +131,9 @@ fTrackEtaCutMin(-1.),
 fOnlyOneEtaSide(0),
 fPtMin(0.5),
 fDCAXYCut(0),
+fSharedClusterCut(-1),
+fCrossedRowsCut(-1),
+fFoundFractionCut(-1),
 fFilterBit(0xFF),
 fTrackStatus(0),
 fSelectBit(AliVEvent::kMB|AliVEvent::kUserDefined),
@@ -153,6 +160,7 @@ fWeightPerEvent(kFALSE),
 fCustomBinning(),
 fPtOrder(kTRUE),
 fTriggersFromDetector(0),
+fMCUseUncheckedCentrality(kFALSE),
 fFillpT(kFALSE)
 {
   // Default constructor
@@ -226,6 +234,9 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fAnalyseUE = new AliAnalyseLeadingTrackUE();
   fAnalyseUE->SetParticleSelectionCriteria(fFilterBit, fUseChargeHadrons, fTrackEtaCut, fTrackEtaCutMin, fPtMin);
   fAnalyseUE->SetDCAXYCut(fDCAXYCut);
+  fAnalyseUE->SetSharedClusterCut(fSharedClusterCut);
+  fAnalyseUE->SetCrossedRowsCut(fCrossedRowsCut);
+  fAnalyseUE->SetFoundFractionCut(fFoundFractionCut);
   fAnalyseUE->SetTrackStatus(fTrackStatus);
   fAnalyseUE->SetCheckMotherPDG(fCheckMotherPDG);
   fAnalyseUE->SetDebug(fDebug); 
@@ -289,6 +300,9 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fHistos->SetPtOrder(fPtOrder);
   fHistosMixed->SetPtOrder(fPtOrder);
   
+  fHistos->SetTwoTrackCutMinRadius(fTwoTrackCutMinRadius);
+  fHistosMixed->SetTwoTrackCutMinRadius(fTwoTrackCutMinRadius);
+  
   if (fEfficiencyCorrectionTriggers)
    {
     fHistos->SetEfficiencyCorrectionTriggers(fEfficiencyCorrectionTriggers);
@@ -313,7 +327,6 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fListOfHistos->Add(new TH2F("processIDs", ";#Delta#phi;process id", 100, -0.5 * TMath::Pi(), 1.5 * TMath::Pi(), kPNoProcess + 1, -0.5, kPNoProcess + 0.5));
   fListOfHistos->Add(new TH1F("eventStat", ";;events", 4, -0.5, 3.5));
   fListOfHistos->Add(new TH2F("mixedDist", ";centrality;tracks;events", 101, 0, 101, 200, 0, fMixingTracks * 1.5));
-  //fListOfHistos->Add(new TH1F("pids", ";pdg;tracks", 2001, -1000.5, 1000.5));
   fListOfHistos->Add(new TH2F("referenceMultiplicity", ";centrality;tracks;events", 101, 0, 101, 200, 0, 200));
   if (fCentralityMethod == "V0A_MANUAL")
   {
@@ -404,6 +417,9 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fOnlyOneEtaSide", &fOnlyOneEtaSide,"OnlyOneEtaSide/I");
   settingsTree->Branch("fPtMin", &fPtMin, "PtMin/D");
   settingsTree->Branch("fFilterBit", &fFilterBit,"FilterBit/I");
+  settingsTree->Branch("fSharedClusterCut", &fSharedClusterCut,"SharedClusterCut/D");
+  settingsTree->Branch("fCrossedRowsCut", &fCrossedRowsCut,"CrossedRowsCut/I");
+  settingsTree->Branch("fFoundFractionCut", &fFoundFractionCut,"FoundFractionCut/D");
   settingsTree->Branch("fTrackStatus", &fTrackStatus,"TrackStatus/I");
   settingsTree->Branch("fSelectBit", &fSelectBit,"EventSelectionBit/I");
   settingsTree->Branch("fUseChargeHadrons", &fUseChargeHadrons,"UseChHadrons/O");
@@ -421,7 +437,8 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fFillpT", &fFillpT,"FillpT/O");
   settingsTree->Branch("fMixingTracks", &fMixingTracks,"MixingTracks/I");
   settingsTree->Branch("fSkipTrigger", &fSkipTrigger,"SkipTrigger/O");
-  settingsTree->Branch("fInjectedSignals", &fInjectedSignals,"SkipTrigger/O");
+  settingsTree->Branch("fInjectedSignals", &fInjectedSignals,"InjectedSignals/O");
+  settingsTree->Branch("fRandomizeReactionPlane", &fRandomizeReactionPlane,"RandomizeReactionPlane/O");
   settingsTree->Branch("fRejectCentralityOutliers", &fRejectCentralityOutliers,"RejectCentralityOutliers/O");
   settingsTree->Branch("fRejectZeroTrackEvents", &fRejectZeroTrackEvents,"RejectZeroTrackEvents/O");
   settingsTree->Branch("fRemoveWeakDecays", &fRemoveWeakDecays,"RemoveWeakDecays/O");
@@ -430,6 +447,9 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fWeightPerEvent", &fWeightPerEvent,"WeightPerEvent/O");
   settingsTree->Branch("fPtOrder", &fPtOrder,"PtOrder/O");
   settingsTree->Branch("fTriggersFromDetector", &fTriggersFromDetector,"TriggersFromDetector/I");
+  settingsTree->Branch("fMCUseUncheckedCentrality", &fMCUseUncheckedCentrality,"MCUseUncheckedCentrality/O");
+  settingsTree->Branch("fTwoTrackEfficiencyCut", &fTwoTrackEfficiencyCut,"TwoTrackEfficiencyCut/D");
+  settingsTree->Branch("fTwoTrackCutMinRadius", &fTwoTrackCutMinRadius,"TwoTrackCutMinRadius/D");
   
   //fCustomBinning
   
@@ -449,22 +469,50 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   
   if (fCentralityMethod.Length() > 0)
   {
-    AliCentrality *centralityObj = 0;
-    if (fAOD)
-      centralityObj = fAOD->GetHeader()->GetCentralityP();
-    else if (fESD)
-      centralityObj = fESD->GetCentrality();
-    
-    if (centralityObj)
+    if (fCentralityMethod == "MC_b")
     {
-      centrality = centralityObj->GetCentralityPercentileUnchecked(fCentralityMethod);
-      AliInfo(Form("Centrality is %f", centrality));
+      AliGenEventHeader* eventHeader = GetFirstHeader();
+      if (!eventHeader)
+      {
+	// We avoid AliFatal here, because the AOD productions sometimes have events where the MC header is missing 
+	// (due to unreadable Kinematics) and we don't want to loose the whole job because of a few events
+	AliError("Event header not found. Skipping this event.");
+	fHistos->FillEvent(0, AliUEHist::kCFStepAnaTopology);
+	return;
+      }
+      
+      AliCollisionGeometry* collGeometry = dynamic_cast<AliCollisionGeometry*> (eventHeader);
+      if (!collGeometry)
+      {
+	eventHeader->Dump();
+	AliFatal("Asking for MC_b centrality, but event header has no collision geometry information");
+      }
+      
+      centrality = collGeometry->ImpactParameter();
     }
     else
     {
-      Printf("WARNING: Centrality object is 0");
-      centrality = -1;
-     }
+      AliCentrality *centralityObj = 0;
+      if (fAOD)
+	centralityObj = fAOD->GetHeader()->GetCentralityP();
+      else if (fESD)
+	centralityObj = fESD->GetCentrality();
+      
+      if (centralityObj)
+      {
+	if (fMCUseUncheckedCentrality)
+	  centrality = centralityObj->GetCentralityPercentileUnchecked(fCentralityMethod);
+	else
+	  centrality = centralityObj->GetCentralityPercentile(fCentralityMethod);
+      }
+      else
+      {
+	Printf("WARNING: Centrality object is 0");
+	centrality = -1;
+      }
+    }
+
+    AliInfo(Form("Centrality is %f", centrality));
   }
   
   // Support for ESD and AOD based analysis
@@ -530,6 +578,17 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
 
       headers = cocktailHeader->GetHeaders()->GetEntries();
       eventHeader = dynamic_cast<AliGenEventHeader*> (cocktailHeader->GetHeaders()->First());
+      
+      if (fDebug > 4)
+      {
+	for (Int_t i=0; i<cocktailHeader->GetHeaders()->GetEntries(); i++)
+	{
+	  AliGenEventHeader* headerTmp = dynamic_cast<AliGenEventHeader*> (cocktailHeader->GetHeaders()->At(i));
+	  if (headerTmp)
+	    Printf("%d particles in header:", headerTmp->NProduced());
+	  cocktailHeader->GetHeaders()->At(i)->Dump();
+	}
+      }
     }
     else
     {
@@ -552,7 +611,14 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
     }
     
     skipParticlesAbove = eventHeader->NProduced();
-    AliInfo(Form("Injected signals in this event (%d headers). Keeping events of %s. Will skip particles/tracks above %d.", headers, eventHeader->ClassName(), skipParticlesAbove));
+    AliInfo(Form("Injected signals in this event (%d headers). Keeping particles/tracks of %s. Will skip particles/tracks above %d.", headers, eventHeader->ClassName(), skipParticlesAbove));
+  }
+  
+  if (fCentralityWeights && !AcceptEventCentralityWeight(centrality))
+  {
+    AliInfo(Form("Rejecting event because of centrality weighting: %f", centrality));
+    fHistos->FillEvent(centrality, AliUEHist::kCFStepAnaTopology);
+    return;
   }
   
   // Get MC primaries
@@ -572,18 +638,15 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
     delete tmpList;
   }
   
-  /*
-  if (fAOD)
+  if (fRandomizeReactionPlane)
   {
-    for (Int_t i=0; i<fArrayMC->GetEntriesFast(); i++)
-      ((TH1F*) fListOfHistos->FindObject("pids"))->Fill(((AliAODMCParticle*) fArrayMC->At(i))->PdgCode());
+    Double_t centralityDigits = centrality*1000. - (Int_t)(centrality*1000.);
+    Double_t angle = TMath::TwoPi() * centralityDigits;
+    AliInfo(Form("Shifting phi of all tracks by %f (digits %f)", angle, centralityDigits));
+    ShiftTracks(tracksMC, angle);
+    if (tracksCorrelateMC != tracksMC)
+      ShiftTracks(tracksCorrelateMC, angle);
   }
-  else
-  {
-    for (Int_t i=0; i<fMcEvent->GetNumberOfTracks(); i++)
-      ((TH1F*) fListOfHistos->FindObject("pids"))->Fill(fMcEvent->GetTrack(i)->PdgCode());
-  }
-  */
   
   if (fFillOnlyStep0)
     zVtx = 0;
@@ -596,6 +659,8 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   if (fFillMixed)
   {
     AliEventPool* pool = fPoolMgr->GetEventPool(centrality, zVtx);
+    if (fFillOnlyStep0)
+      ((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool->NTracksInPool());
     if (pool->IsReady())
       for (Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) 
 	fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepAll, tracksMC, pool->GetEvent(jMix), 1.0 / pool->GetCurrentNEvents(), (jMix == 0));
@@ -781,6 +846,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       if (fFillMixed)
       {
 	AliEventPool* pool2 = fPoolMgr->GetEventPool(centrality, zVtx + 100);
+	((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool2->NTracksInPool());
 	if (pool2->IsReady())
 	{
 	  for (Int_t jMix=0; jMix<pool2->GetCurrentNEvents(); jMix++)
@@ -873,6 +939,35 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   if (tracksMC != tracksCorrelateMC)
     delete tracksCorrelateMC;
   delete tracksMC;
+}
+
+//____________________________________________________________________
+AliGenEventHeader* AliAnalysisTaskPhiCorrelations::GetFirstHeader()
+{
+  // get first MC header from either ESD/AOD (including cocktail header if available)
+  
+  if (fMcEvent)
+  {
+    // ESD
+    AliHeader* header = (AliHeader*) fMcEvent->Header();
+    if (!header)
+      return 0;
+      
+    AliGenCocktailEventHeader* cocktailHeader = dynamic_cast<AliGenCocktailEventHeader*> (header->GenEventHeader());
+    if (cocktailHeader)
+      return dynamic_cast<AliGenEventHeader*> (cocktailHeader->GetHeaders()->First());
+
+    return dynamic_cast<AliGenEventHeader*> (header->GenEventHeader());
+  }
+  else
+  {
+    // AOD
+    AliAODMCHeader* header = (AliAODMCHeader*) fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+    if (!header)
+      return 0;
+    
+    return header->GetCocktailHeader(0);
+  }
 }
 
 //____________________________________________________________________
@@ -1101,7 +1196,15 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     delete tracks;
     return;
   }
-
+  
+  if (fCentralityWeights && !AcceptEventCentralityWeight(centrality))
+  {
+    AliInfo(Form("Rejecting event because of centrality weighting: %f", centrality));
+    fHistos->FillEvent(centrality, AliUEHist::kCFStepAnaTopology);
+    delete tracks;
+    return;
+  }
+  
   // correlate particles with...
   TObjArray* tracksCorrelate = 0;
   if (fParticleSpeciesAssociated != fParticleSpeciesTrigger || fTriggersFromDetector > 0)
@@ -1234,7 +1337,7 @@ void  AliAnalysisTaskPhiCorrelations::Initialize()
   fInputHandler = (AliInputEventHandler*)
          ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
   // MC handler
-  fMcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  fMcHandler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
 }
 
 //____________________________________________________________________
@@ -1312,3 +1415,41 @@ void AliAnalysisTaskPhiCorrelations::SelectCharge(TObjArray* tracks)
   if (before > tracks->GetEntriesFast())
     AliInfo(Form("Reduced from %d to %d", before, tracks->GetEntriesFast())); 
 }
+
+//____________________________________________________________________
+Bool_t AliAnalysisTaskPhiCorrelations::AcceptEventCentralityWeight(Double_t centrality)
+{
+  // rejects "randomly" events such that the centrality gets flat
+  // uses fCentralityWeights histogram
+
+  // TODO code taken and adapted from AliRDHFCuts; waiting for general class AliCentralityFlattening
+  
+  Double_t weight = fCentralityWeights->GetBinContent(fCentralityWeights->FindBin(centrality));
+  Double_t centralityDigits = centrality*100. - (Int_t)(centrality*100.);
+  
+  Bool_t result = kFALSE;
+  if (centralityDigits < weight) 
+    result = kTRUE;
+  
+  AliInfo(Form("Centrality: %f; Digits: %f; Weight: %f; Result: %d", centrality, centralityDigits, weight, result));
+  
+  return result;
+}
+
+//____________________________________________________________________
+void AliAnalysisTaskPhiCorrelations::ShiftTracks(TObjArray* tracks, Double_t angle)
+{
+  // shifts the phi angle of all tracks by angle
+  // 0 <= angle <= 2pi
+  
+  for (Int_t i=0; i<tracks->GetEntriesFast(); ++i) 
+  {
+    AliDPhiBasicParticle* part = (AliDPhiBasicParticle*) tracks->At(i);
+    Double_t newAngle = part->Phi() + angle; 
+    if (newAngle >= TMath::TwoPi())
+      newAngle -= TMath::TwoPi();
+    
+    part->SetPhi(newAngle);
+  }
+}
+  

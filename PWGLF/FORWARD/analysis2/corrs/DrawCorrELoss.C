@@ -29,8 +29,14 @@ void Setup(Bool_t compile)
  * is broken (cannot be read by Acrobat Reader on Windows and MacOSX)
  * and one should pass it through a filter to correct these problems.
  * 
+ * @param runNo   Run number
+ * @param sys     Collision system 
+ * @param sNN     Collision energy in GeV
+ * @param field   L3 field strength
+ * @param mc      For simulation input 
+ * @param sat     For satellite interactions 
  * @param fname   File name 
- * @param option  Drawing options 
+ * @param details Drawing options 
  *
  * @ingroup pwglf_forward_scripts_corr
  */
@@ -48,6 +54,13 @@ DrawCorrELoss(ULong_t runNo, UShort_t sys, UShort_t sNN, Short_t field,
   d.Summarize(AliForwardCorrectionManager::kELossFits, runNo, sys, sNN, field, 
 	      mc, sat, "", fname);
 }
+/** 
+ * Draw the energy loss correction
+ * 
+ * @param mc    For MC 
+ * @param file  Input file with the full fits 
+ * @param local Local correction database 
+ */
 void
 DrawCorrELoss(Bool_t      mc, 
 	      const char* file="forward_eloss.root", 
@@ -58,7 +71,13 @@ DrawCorrELoss(Bool_t      mc,
   CorrDrawer::Summarize(AliForwardCorrectionManager::kELossFits, 
 			mc, file, local);
 }
-
+/** 
+ * Draw the energy loss correction
+ * 
+ * @param mc    For MC 
+ * @param dummy Not used
+ * @param file  Input file with the full fits 
+ */
 void 
 DrawCorrELoss(Bool_t mc, Bool_t dummy, 
 	      const char* file="forward_eloss_rerun.root")

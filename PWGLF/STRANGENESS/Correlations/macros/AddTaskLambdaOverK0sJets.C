@@ -1,16 +1,23 @@
 AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      = "LambdaOverK0sRatio", 
 							    TString  data      = "PbPb2010", 
 							    Float_t  minCen    = 0.,
-							    Float_t  maxCen    = 90.,
-							    Float_t  ptMinTrig = 8.,
-							    Float_t  ptMaxTrig = 20.,
-							    Float_t  etaMaxTrig = 0.75,
-							    Float_t  checkIDTrig= kFALSE,
-							    Float_t  rapMaxV0  = 0.75,
+							    Float_t  maxCen    = 40.,
 							    Bool_t   sepInjec  = kTRUE,
 							    Bool_t   isMC      = kFALSE,
-							    Bool_t   usePID    = kTRUE,
-							    Bool_t   doQA      = kFALSE){
+							    Bool_t   doQA      = kTRUE){
+
+
+
+
+  Float_t  ptMinTrig   = 5.;
+  Float_t  ptMaxTrig   = 10.;
+  Float_t  etaMaxTrig  = 0.7;
+  Float_t  checkIDTrig = kTRUE;
+  Float_t  rapMaxV0    = 0.7;
+  Bool_t   usePID      = kFALSE;
+  Float_t  nSigmaPID   = 3.0;
+  Float_t  dcaDaug     = 0.095;  // looser cut
+  Float_t  nclsDaug    = 50;     // looser cut
 
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -19,7 +26,7 @@ AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      =
     return NULL;
   }   
   
-  Float_t  nSigmaPID = 3.0;
+  
   
   // Create and configure the task
   AliAnalysisTaskLambdaOverK0sJets *task = new AliAnalysisTaskLambdaOverK0sJets(name.Data());
@@ -29,7 +36,9 @@ AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      =
   task->SetTriggerEta(etaMaxTrig);
   task->SetCheckIDTrig(checkIDTrig);
   task->SetMaxY(rapMaxV0);
+  task->SetMaxDCADaughter(dcaDaug); // Add to perform systematics
   task->SetNSigmaPID(nSigmaPID);
+  task->SetNClsTPC(nclsDaug);
   task->SetSeparateInjectedPart(sepInjec);
   task->SetMC(isMC);
   task->SetPID(usePID);

@@ -24,7 +24,7 @@ public:
   static  enum LMEEPairCutSet{
 	kPbPb2011RP,
 	kPbPb2011Mag,
-	//	kPbPb2011RPxy,
+	//kPbPb2011RPxy,
 	//kPbPb2011RPxz,
 
 	kPbPb2011MassLow,
@@ -141,11 +141,11 @@ public:
 	case kPbPb2011TPCorTOF  :
 	  /*
 		  mixingHandler = new AliDielectronMixingHandler;
-		    mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10,-5,0,5,10");
-			  mixingHandler->AddVariable(AliDielectronVarManager::kCentrality,"0,5,10,20,40,80");
-			    mixingHandler->SetDepth(25);
-				  mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
-				    break;
+		      mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10,-5,0,5,10");
+			    mixingHandler->AddVariable(AliDielectronVarManager::kCentrality,"0,5,10,20,40,80");
+				    mixingHandler->SetDepth(25);
+					  mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
+					      break;
 	  */
 	case kPbPb2011NoPID:
 	case kPbPb2011TPCandTOF :
@@ -156,8 +156,8 @@ public:
 	  mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10,-5,0,5,10");
 	  mixingHandler->AddVariable(AliDielectronVarManager::kCentrality,"0,5,10,20,40,80");
 	  mixingHandler->AddVariable(AliDielectronVarManager::kv0ACrpH2,"-6*(TMath::Pi()/6),-5*(TMath::Pi()/6),-4*(TMath::Pi()/6),-3*(TMath::Pi()/6),-2*(TMath::Pi()/6),-1*(TMath::Pi()/6),0,1*(TMath::Pi()/6),2*(TMath::Pi()/6),3*(TMath::Pi()/6),4*(TMath::Pi()/6),5*(TMath::Pi()/6),6*(TMath::Pi()/6)");
-	  //mixingHandler->SetDepth(50);
-	  mixingHandler->SetDepth(15);
+	  mixingHandler->SetDepth(50);
+	  //mixingHandler->SetDepth(15);
 	  mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
 	  break;
 	case kpp2010TPCandTOF :
@@ -181,8 +181,8 @@ public:
 	// + [2] added for Dec2010 Cut! 
 	TF1 *lowerCut = new TF1("lowerCut", "[0] * TMath::Exp([1]*x) + [2]", 0, 20);
 	/* until Nov2010
-	    lowerCut->SetParameter(0, -2.7);
-		 lowerCut->SetParameter(1, -0.4357);
+	       lowerCut->SetParameter(0, -2.7);
+		    lowerCut->SetParameter(1, -0.4357);
 	*/
 	/* 18.01.2011 ALiHFEpid.cxx */
 	lowerCut->SetParameter(0,-3.7);
@@ -272,7 +272,7 @@ public:
 	  cgSecondTrackFilterPIDTPC1->AddCut(pidTPCsignalWide);
 	  anaCuts = cgSecondTrackFilterPIDTPC1;
 	  break;
-	  
+	    
 	case kPbPb2011TPCandTOFwide :
 	  AliDielectronCutGroup* cgSecondTrackFilterPIDTPC1 = new AliDielectronCutGroup("cgPIDTPC1","cgPIDTPC1",AliDielectronCutGroup::kCompAND);
 	  cgSecondTrackFilterPIDTPC1->AddCut(pTPC);
@@ -448,10 +448,10 @@ public:
       AliDielectronVarCuts* pairCutsPhi5 =new AliDielectronVarCuts("Phi Cuts","-3*pi/4<Phi");
       pairCutsPhi5->AddCut(AliDielectronVarManager::kDeltaPhiv0CrpH2,(-3.0)*TMath::Pi()/4.,(-1.0)*TMath::Pi()/4.);
 
-	pairCutsPhiMag->AddCut(pairCutsPhi4);
-	pairCutsPhiMag->AddCut(pairCutsPhi5);
-	
-	pairCuts = pairCutsPhiMag;
+	  pairCutsPhiMag->AddCut(pairCutsPhi4);
+	  pairCutsPhiMag->AddCut(pairCutsPhi5);
+	  
+	  pairCuts = pairCutsPhiMag;
       //pairCuts =new AliDielectronVarCuts("OpeningAngle","Opening angle > .035rad");
       //pairCuts->AddCut(AliDielectronVarManager::kOpeningAngle, 0. , 0.035);
       break;
@@ -503,21 +503,21 @@ public:
 	case kpp2010TPCandTOF :
 	case kpp2010TPCorTOF  :
 	  // standard cuts with very loose DCA: Bit4 (Int: 16), AOD095&115
-	    
+	      
 	  esdTrackCutsH = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); 
 	  esdTrackCutsH->SetMaxDCAToVertexXY(2.4);
 	  esdTrackCutsH->SetMaxDCAToVertexZ(3.2);
 	  esdTrackCutsH->SetDCAToVertex2D(kTRUE);
 	  /* 
 
-	    esdTrackCutsH = new AliESDtrackCuts();
-		  esdTrackCutsH->SetAcceptKinkDaughters(kFALSE);
-		    //Not done so far via dielectron cuts:
-			*/
+	      esdTrackCutsH = new AliESDtrackCuts();
+		    esdTrackCutsH->SetAcceptKinkDaughters(kFALSE);
+			    //Not done so far via dielectron cuts:
+				*/
 	  /*
 		  esdTrackCuts->SetDCAToVertex2D(kFALSE);
-		    esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-			  esdTrackCuts->SetMaxChi2PerClusterITS(36);
+		      esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+			    esdTrackCuts->SetMaxChi2PerClusterITS(36);
 	  */
 
 	  break;
@@ -580,12 +580,12 @@ public:
 		trackCuts->SetMaxDCAToVertexZ(3.0);
 		trackCuts->SetMaxDCAToVertexXY(1.0);
 		  trackCuts->SetEtaRange( -0.84 , 0.84 );
-		    trackCuts->SetPtRange(  0.05 , 0.5);
-			  trackCuts->SetAcceptKinkDaughters(kFALSE);
-			    trackCuts->SetRequireITSRefit(kTRUE);
-				  trackCuts->SetRequireITSStandAlone(kTRUE);
-				    trackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
-					  trackCuts->SetMinNClustersITS(3); //PhotonGroup-Dalitz: 2?!
+		      trackCuts->SetPtRange(  0.05 , 0.5);
+			    trackCuts->SetAcceptKinkDaughters(kFALSE);
+				    trackCuts->SetRequireITSRefit(kTRUE);
+					  trackCuts->SetRequireITSStandAlone(kTRUE);
+					      trackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+						    trackCuts->SetMinNClustersITS(3); //PhotonGroup-Dalitz: 2?!
 	  */
 	  cout << "No Pre-Track Cut defined for AODs at the moment " << endl;
 	  break;
@@ -595,6 +595,5 @@ public:
   }
 
 };
-
 
 

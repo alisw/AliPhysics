@@ -6,9 +6,9 @@ main()
 {
   #run in proper mode depending on the selection
   runMode=$1
-  if [[ $# -gt 0 ]]; then
-    echo "# $0 $*"
-  fi
+  #if [[ $# -gt 0 ]]; then
+  #  echo "# $0 $*"
+  #fi
   umask 0002
   shift
   case $runMode in
@@ -17,18 +17,22 @@ main()
     "ConfOCDB") goConfigureOCDBforCPass1 "$@";;
     "MergeCPass0") goMergeCPass0 "$@";;
     "MergeCPass1") goMergeCPass1 "$@";;
-    "CreateQAplots") goCreateQAplots "$@";;
-    "WaitForOutput") goWaitForOutput "$@";;
+    "MakeFilteredTrees") goMakeFilteredTrees "$@";;
     "makeSummary") goMakeSummary "$@";;
-    "submit") goSubmit "$@";;
-    "submitQA") goSubmitQA "$@";;
+    "run") goSubmitMakeflow "$@";;
+    "submit") goSubmitBatch "$@";;
     "test") goTest "$@";;
     "generateMakeflow") goGenerateMakeflow "$@";;
-    "makeflow") goMakeflow "$@";;
+    "printValues") goPrintValues "$@";;
+    "CreateQAplots") goCreateQAplots "$@";;
+    "WaitForOutput") goWaitForOutput "$@";;
+    "merge") goMerge "$@";;
     #and the default: unless sourced print some info
     *) if [[ ! "$0" =~ "bash" ]]; then
-         echo " batch:    $0 \"submit\" inputList productionID [configFile=benchmark.config] [runNumber]"
-         echo " makeflow: $0 \"makeflow\" inputList productionID [configFile=benchmark.config] [runNumber]"
+         echo "uses makeflow:"
+         echo " $0 \"run\" inputList productionID [configFile=benchmark.config] [runNumber]"
+         echo "uses a batch system (SGE):"
+         echo " $0 \"submit\" inputList productionID [configFile=benchmark.config] [runNumber]"
        fi
     ;;
   esac
@@ -50,6 +54,12 @@ goCPass0()
   runNumber=$6
   jobindex=$7
 
+  #the contents of this is stored in the tree and used later (e.g. AliAnalysisTaskPIDResponse)!
+  #at the QA stage the pass number is guessed from the path stored here.
+  #The Format is:
+  #Packages= ;OutputDir= ;LPMPass= ;TriggerAlias= ;LPMRunNumber= ;LPMProductionType= ;LPMInteractionType= ;LPMProductionTag= ;LPMAnchorRun= ;LPMAnchorProduction= ;LPMAnchorYear= 
+  export PRODUCTION_METADATA="OutputDir=cpass0"
+
   #use the jobindex only if set and non-negative
   if [[ -z $jobindex || $jobindex -lt 0 ]]; then
     [[ -n "$LSB_JOBINDEX" ]] && jobindex=$LSB_JOBINDEX
@@ -64,7 +74,7 @@ goCPass0()
   fi
   
   chunkName=${infile##*/}
-  outputDir=${targetDirectory}/${jobindex}
+  outputDir=${targetDirectory}/${jobindex}_${chunkName}
   mkdir -p $outputDir
   [[ ! -d $outputDir ]] && echo "cannot make $outputDir" && exit 1
   
@@ -136,6 +146,8 @@ goCPass0()
   #run CPass0
   echo "$runpath/runCPass0.sh $infile $nEvents $runNumber $ocdbPath $recoTriggerOptions"
   if [[ -n $pretend ]]; then
+    touch AliESDs.root
+    touch AliESDfriends.root
     touch AliESDfriends_v1.root
     touch rec.log
     touch calib.log
@@ -151,16 +163,18 @@ goCPass0()
   echo rm -f ./$chunkName
   rm -f ./$chunkName
   echo "cp --recursive $runpath/* ${outputDir}"
-  cp --recursive $runpath/* $outputDir
+  cp -p --recursive $runpath/* $outputDir
   echo
   
   #validate CPass0
   cd ${outputDir}
   touch ${calibDoneFile}
   [[ -f AliESDfriends_v1.root ]] && echo "calibfile ${outputDir}/AliESDfriends_v1.root" > ${calibDoneFile}
+  [[ -f AliESDs.root ]] && echo "esd ${outputDir}/AliESDs.root" >> ${calibDoneFile}
+  echo "dir ${outputDir}" >> ${calibDoneFile}
   summarizeLogs >> ${calibDoneFile}
 
-  rm -rf ${runpath}
+  [[ "$runpath" != "$outputDir" ]] && rm -rf ${runpath}
 }
 
 goCPass1()
@@ -179,6 +193,12 @@ goCPass1()
   runNumber=$6
   jobindex=$7
 
+  #the contents of this is stored in the tree and used later (e.g. AliAnalysisTaskPIDResponse)!
+  #at the QA stage the pass number is guessed from the path stored here.
+  #The Format is:
+  #Packages= ;OutputDir= ;LPMPass= ;TriggerAlias= ;LPMRunNumber= ;LPMProductionType= ;LPMInteractionType= ;LPMProductionTag= ;LPMAnchorRun= ;LPMAnchorProduction= ;LPMAnchorYear= 
+  export PRODUCTION_METADATA="OutputDir=cpass1"
+
   #use the jobindex only if set and non-negative
   if [[ -z $jobindex || $jobindex -lt 0 ]]; then
     [[ -n "$LSB_JOBINDEX" ]] && jobindex=$LSB_JOBINDEX
@@ -193,7 +213,7 @@ goCPass1()
   fi
   
   chunkName=${infile##*/}
-  outputDir=${targetDirectory}/${jobindex}
+  outputDir=${targetDirectory}/${jobindex}_${chunkName}
   mkdir -p $outputDir
   [[ ! -d $outputDir ]] && echo "cannot make $outputDir" && exit 1
   
@@ -206,7 +226,6 @@ goCPass1()
   mkdir -p $runpath
   [[ ! -d ${runpath} ]] && echo "cannot make runpath ${runpath}" && exit 1
   cd $runpath
-
 
   calibDoneFile="${commonOutputPath}/cpass1.job${jobindex}.run${runNumber}.done"
 
@@ -246,6 +265,7 @@ goCPass1()
                "$commonOutputPath/localOCDBaccessConfig.C"
                "$commonOutputPath/cpass0.localOCDB.${runNumber}.tgz"
                "$commonOutputPath/OCDB.root"
+               "$trustedQAtrainMacro"
                "$ALICE_ROOT/PWGPP/CalibMacros/CPass1/runCPass1.sh"
                "$ALICE_ROOT/PWGPP/CalibMacros/CPass1/recCPass1.C" 
                "$ALICE_ROOT/PWGPP/CalibMacros/CPass1/recCPass1_OuterDet.C" 
@@ -271,47 +291,87 @@ goCPass1()
 
   #configure local OCDB storage from CPass0 (creates the localOCDBaccessConfig.C script)
   if [[ -f cpass0.localOCDB.${runNumber}.tgz ]]; then
-   echo goConfigureOCDBforCPass1 "cpass0.localOCDB.${runNumber}.tgz"
-   goConfigureOCDBforCPass1 "cpass0.localOCDB.${runNumber}.tgz"
- else
-   echo "WARNING: file cpass0.localOCDB.${runNumber}.tgz not found!"
- fi
+    echo goConfigureOCDBforCPass1 "cpass0.localOCDB.${runNumber}.tgz"
+    goConfigureOCDBforCPass1 "cpass0.localOCDB.${runNumber}.tgz"
+  else
+    echo "WARNING: file cpass0.localOCDB.${runNumber}.tgz not found!"
+  fi
+
+  if [[ ! $(find ./OCDB -name "*.root") ]]; then
+    echo "cpass0 produced no calibration! exiting..."
+    exit 1
+  fi
 
   #run CPass1
   chmod u+x runCPass1.sh
   echo "$runpath/runCPass1.sh $infile $nEvents $runNumber $ocdbPath $recoTriggerOptions"
   if [[ -n $pretend ]]; then
+    touch AliESDs_Barrel.root
+    touch AliESDfriends_Barrel.root
     touch AliESDfriends_v1.root
-    touch QAresults_Barrel.root
-    touch QAresults_Outer.root
+    touch QAresults_barrel.root
+    touch EventStat_temp_barrel.root
+    touch AODtpITS.root
+    touch AliESDs_Outer.root
+    touch AliESDfriends_Outer.root
+    touch QAresults_outer.root
+    touch EventStat_temp_outer.root
     touch rec.log
     touch calib.log
     touch qa.log
   else
     ./runCPass1.sh "$infile" "$nEvents" "$runNumber" "$ocdbPath" "$recoTriggerOptions"
   fi
-  
+
+  ##handle possible crashes in QA (happens often in trunk)
+  ##rerun QA with a trusted aliroot version
+  #if [[ $(validateLog qa_barrel.log) ]]; then
+  #  echo "qa_barrel.log not validated!"
+  #fi
+  #if [[ ! -f QAresults_barrel.root && -f ${setupTrustedAliROOTenvInCurrentShell} || $(validateLog qa_barrel.log) ]]; then
+  #  echo "WARNING: using trusted QA aliroot $ALICE_ROOT"
+  #  source ${setupTrustedAliROOTenvInCurrentShell}
+  #  cd Barrel
+  #  rm QAresults_barrel.root
+  #  rm EventStat_temp_barrel.root
+  #  rm AODtpITS.root
+  #  [[ ! -f AliESDs.root ]] && ln -s ../AliESDs_Barrel.root AliESDs.root
+  #  [[ ! -f AliESDfriends.root ]] && ln -s ../AliESDfriends_Barrel.root AliESDfriends.root
+  #  if [[ -n $trustedQAtrainMacro ]]; then
+  #    eval "cp $trustedQAtrainMacro QAtrain_duo_trusted.C"
+  #  fi
+  #  echo executing aliroot -b -q "QAtrain_duo_trusted.C(\"_barrel\",$runNumber,\"wn.xml\",0,\"$ocdbPath\")"
+  #  time aliroot -b -q "QAtrain_duo.C(\"_barrel\",$runNumber,\"wn.xml\",0,\"$ocdbPath\")" &> ../qa_barrel_trusted.log
+  #  cd ../
+  #fi
+  [[ ! -f AliESDs_Barrel.root && -f Barrel/AliESDs.root ]] && mv Barrel/AliESDs.root AliESDs_Barrel.root
+  [[ ! -f AliESDfriends_Barrel.root && -f Barrel/AliESDfriends.root ]] && mv Barrel/AliESDfriends.root AliESDfriends_Barrel.root
+  [[ ! -f AliESDfriends_v1.root && -f Barrel/AliESDfriends_v1.root ]] && mv Barrel/AliESDfriends_v1.root .
+  [[ ! -f QAresults_barrel.root && -f Barrel/QAresults_barrel.root ]] && mv Barrel/QAresults_barrel.root .
+  [[ ! -f AliESDs_Outer.root && -f OuterDet/AliESDs.root ]] && mv OuterDet/AliESDs.root AliESDs_Outer.root
+  [[ ! -f AliESDfriends_Outer.root && -f OuterDet/AliESDfriends.root ]] && mv OuterDet/AliESDfriends.root AliESDfriends_Outer.root
+  [[ ! -f QAresults_outer.root && -f OuterDet/QAresults_outer.root ]] && mv OuterDet/QAresults_outer.root .
+
   #move stuff to final destination
   echo "this directory ($PWD) contents:"
   ls
-  echo
-
   echo rm -f ./$chunkName
   rm -f ./$chunkName
   echo "cp --recursive ${runpath}/* ${outputDir}"
-  cp --recursive ${runpath}/* ${outputDir}
+  cp -p --recursive ${runpath}/* ${outputDir}
   echo
 
   #validate CPass1
   cd ${outputDir}
   touch ${calibDoneFile}
-  [[ -f AliESDfriends_v1.root ]] && echo "calibfile ${outputDir}/AliESDfriends_v1.root" > ${calibDoneFile}
+  [[ -f AliESDs_Barrel.root ]] && echo "esd ${outputDir}/AliESDs_Barrel.root" > ${calibDoneFile}
+  [[ -f AliESDfriends_v1.root ]] && echo "calibfile ${outputDir}/AliESDfriends_v1.root" >> ${calibDoneFile}
   [[ -f QAresults_Barrel.root ]] && echo "qafile ${outputDir}/QAresults_Barrel.root" >> ${calibDoneFile}
   [[ -f QAresults_Outer.root ]] && echo "qafile ${outputDir}/QAresults_Outer.root" >> ${calibDoneFile}
   echo "dir ${outputDir}" >> ${calibDoneFile}
   summarizeLogs >> ${calibDoneFile}
   
-  rm -rf ${runpath}
+  [[ "$runpath" != "$outputDir" ]] && rm -rf ${runpath}
 }
 
 
@@ -323,7 +383,7 @@ goMergeCPass0()
   #
 
   outputDir=$1
-  defaultOCDB=$2
+  ocdbStorage=$2
   configFile=$3
   runNumber=$4
   calibrationFilesToMergeExternal=$5
@@ -342,7 +402,7 @@ goMergeCPass0()
 
   logOutputDir=$runpath
   [[ -n $logToFinalDestination ]] && logOutputDir=$outputDir
-  [[ -z $dontRedirectStdOutToLog ]] && exec 2>&1 > $logOutputDir/mergeMakeOCDB.log
+  [[ -z $dontRedirectStdOutToLog ]] && exec &> $logOutputDir/mergeMakeOCDB.log
   echo "$0 $*"
 
   calibrationFilesToMerge=$calibrationFilesToMergeExternal
@@ -356,16 +416,19 @@ goMergeCPass0()
   echo goMergeCPass0 SETUP:
   echo runNumber=$runNumber
   echo outputDir=$outputDir
-  echo defaultOCDB=$defaultOCDB
+  echo ocdbStorage=$ocdbStorage
   echo calibrationFilesToMerge=$calibrationFilesToMerge
   echo calibrationOutputFileName=$calibrationOutputFileName
   echo mergingScript=$mergingScript
+  echo commonOutputPath=$commonOutputPath
+  echo runpath=$runpath
   
   # copy files in case they are not already there
   filesMergeCPass0=(
                     "$commonOutputPath/${calibrationFilesToMerge}"
                     "$commonOutputPath/OCDB.root"
                     "$commonOutputPath/localOCDBaccessConfig.C"
+                    "$commonOutputPath/cpass0.localOCDB.${runNumber}.tgz"
                     "$ALICE_ROOT/PWGPP/CalibMacros/CPass0/mergeMakeOCDB.byComponent.sh"
                     "$ALICE_ROOT/PWGPP/CalibMacros/CPass0/mergeByComponent.C"
                     "$ALICE_ROOT/PWGPP/CalibMacros/CPass0/makeOCDB.C"
@@ -379,7 +442,11 @@ goMergeCPass0()
   alirootInfo > ALICE_ROOT_svn.log
 
   #
+  echo "PWD"
   ls -lh
+  echo "PWD/.."
+  ls -lh ../
+
 
   #merge calibration
   chmod u+x $mergingScript  
@@ -389,7 +456,7 @@ goMergeCPass0()
     find $outputDir -name $calibrationOutputFileName > $calibrationFilesToMerge
   fi
   
-  echo "$mergingScript $calibrationFilesToMerge ${runNumber} local://./OCDB $defaultOCDB"
+  echo "$mergingScript $calibrationFilesToMerge ${runNumber} local://./OCDB $ocdbStorage"
   if [[ -n $pretend ]]; then
     touch CalibObjects.root
     touch ocdb.log
@@ -399,7 +466,7 @@ goMergeCPass0()
     touch ./OCDB/someDetector/someCalibObject_0-999999_cpass0.root
     touch ./OCDB/otherDetector/otherCalibObject_0-999999_cpass0.root
   else
-    ./$mergingScript $calibrationFilesToMerge ${runNumber} "local://./OCDB" $defaultOCDB
+    ./$mergingScript $calibrationFilesToMerge ${runNumber} "local://./OCDB" $ocdbStorage
   fi
 
   ### produce the output
@@ -409,7 +476,7 @@ goMergeCPass0()
   ls -ltrh
 
   #copy all to output dir
-  cp --recursive ${runpath}/* $outputDir
+  cp -p --recursive ${runpath}/* $outputDir
   
   #validate merging cpass0
   cd ${outputDir}
@@ -418,7 +485,7 @@ goMergeCPass0()
   [[ -f CalibObjects.root ]] && echo "calibfile $outputDir/CalibObjects.root" > ${calibDoneFile}
   summarizeLogs >> ${calibDoneFile}
 
-  rm -rf ${runpath}
+  [[ "$runpath" != "$outputDir" ]] && rm -rf ${runpath}
 }
 
 goMergeCPass1()
@@ -429,7 +496,7 @@ goMergeCPass1()
   #
 
   outputDir=$1
-  defaultOCDB=$2
+  ocdbStorage=$2
   configFile=$3
   runNumber=$4
   calibrationFilesToMergeExternal=$5
@@ -454,7 +521,7 @@ goMergeCPass1()
 
   logOutputDir=$runpath
   [[ -n $logToFinalDestination ]] && logOutputDir=$outputDir
-  [[ -z $dontRedirectStdOutToLog ]] && exec 2>&1 > $logOutputDir/mergeMakeOCDB.log
+  [[ -z $dontRedirectStdOutToLog ]] && exec &> $logOutputDir/mergeMakeOCDB.log
   echo "$0 $*"
 
   calibrationFilesToMerge=$calibrationFilesToMergeExternal
@@ -462,14 +529,16 @@ goMergeCPass1()
   calibrationOutputFileName="AliESDfriends_v1.root"
   mergingScript="mergeMakeOCDB.byComponent.sh"
   qaFilesToMerge=$qaFilesToMergeExternal
-  [[ -z $qaFilesToMerge ]] && qaFilesToMerge="qaFilesToMerge.list"
+  #important to have the string "Stage.txt" in the filename to trigger the merging
+  #it has to be a list of directories containing the files
+  [[ -z $qaFilesToMerge ]] && qaFilesToMerge="qaFilesForMergingStage.txt.list"
   qaOutputFileName="QAresults*.root"
   qaMergedOutputFileName="QAresults_merged.root"
 
   echo goMergeCPass1 SETUP:
   echo runNumber=$runNumber
   echo outputDir=$outputDir
-  echo defaultOCDB=$defaultOCDB
+  echo ocdbStorage=$ocdbStorage
   echo calibrationFilesToMerge=filesToMerge.list
   echo calibrationOutputFileName=$calibrationOutputFileName
   echo mergingScript=$mergingScript
@@ -480,15 +549,26 @@ goMergeCPass1()
                     "$commonOutputPath/${qaFilesToMerge}"
                     "$commonOutputPath/OCDB.root"
                     "$commonOutputPath/localOCDBaccessConfig.C"
+                    "$commonOutputPath/cpass0.localOCDB.${runNumber}.tgz"
+                    "$commonOutputPath/QAtrain_duo.C"
                     "$ALICE_ROOT/PWGPP/CalibMacros/CPass1/mergeMakeOCDB.byComponent.sh"
                     "$ALICE_ROOT/PWGPP/CalibMacros/CPass1/mergeByComponent.C"
                     "$ALICE_ROOT/PWGPP/CalibMacros/CPass1/makeOCDB.C"
                     "$ALICE_ROOT/PWGPP/CalibMacros/CPass1/merge.C"
                     "$ALICE_ROOT/PWGPP/CalibMacros/CPass1/mergeMakeOCDB.sh"
+                    "$ALICE_ROOT/ANALYSIS/macros/QAtrain_duo.C"
   )
   for file in ${filesMergeCPass1[*]}; do
     [[ ! -f ${file##*/} && -f ${file} ]] && echo "copying ${file}" && cp -f ${file} .
   done
+
+  #configure local OCDB storage from CPass0 (creates the localOCDBaccessConfig.C script)
+  if [[ -f cpass0.localOCDB.${runNumber}.tgz ]]; then
+    echo goConfigureOCDBforCPass1 "cpass0.localOCDB.${runNumber}.tgz"
+    goConfigureOCDBforCPass1 "cpass0.localOCDB.${runNumber}.tgz"
+  else
+    echo "WARNING: file cpass0.localOCDB.${runNumber}.tgz not found!"
+  fi
 
   alirootInfo > ALICE_ROOT_svn.log
 
@@ -503,13 +583,13 @@ goMergeCPass1()
     find $outputDir -name $calibrationOutputFileName > $calibrationFilesToMerge
   fi
   
-  echo "$mergingScript $calibrationFilesToMerge ${runNumber} local://./OCDB $defaultOCDB"
+  echo "$mergingScript $calibrationFilesToMerge ${runNumber} local://./OCDB $ocdbStorage"
   if [[ -n $pretend ]]; then
     touch CalibObjects.root
     touch ocdb.log
     touch merge.log
   else
-    ./$mergingScript $calibrationFilesToMerge ${runNumber} "local://./OCDB" $defaultOCDB
+    ./$mergingScript $calibrationFilesToMerge ${runNumber} "local://./OCDB" $ocdbStorage
   fi
 
   tar czf localCPass1_${runNumber}.tgz ./OCDB
@@ -519,22 +599,29 @@ goMergeCPass1()
   [[ -n ${AliAnalysisTaskFilteredTree_fLowPtV0DownscaligF} ]] && export AliAnalysisTaskFilteredTree_fLowPtV0DownscaligF
 
   if [[ -z $qaFilesToMergeExternal ]]; then
-    echo "find $outputDir -name $qaOutputFileName > $qaFilesToMerge"
-    find $outputDir -name $qaOutputFileName > $qaFilesToMerge
+    #find the files, but only store the directories (QAtrain_duo.C requires this)
+    echo "find $outputDir -name $qaOutputFileName | while read x; do echo ${x%/*}; done | sort | uniq > $qaFilesToMerge"
+    find $outputDir -name $qaOutputFileName | while read x; do echo ${x%/*}; done | sort | uniq > $qaFilesToMerge
   fi
   
-  echo aliroot -l -b -q "merge.C(\"$qaFilesToMerge\",\"\",kFALSE,\"$qaMergedOutputFileName\")"
+  #do the merge
+  #echo aliroot -l -b -q "merge.C(\"$qaFilesToMerge\",\"\",kFALSE,\"$qaMergedOutputFileName\")"
+  echo aliroot -b -q "QAtrain_duo.C(\"_barrel\",${runNumber},\"$qaFilesToMerge\",1,\"${ocdbStorage}\")"
   if [[ -n $pretend ]]; then
     touch $qaMergedOutputFileName
     touch merge.log
+    touch trending.root
   else
-    aliroot -l -b -q "merge.C(\"$qaFilesToMerge\",\"\",kFALSE,\"$qaMergedOutputFileName\")"
+    #aliroot -l -b -q "merge.C(\"$qaFilesToMerge\",\"\",kFALSE,\"$qaMergedOutputFileName\")"
+    aliroot -b -q "QAtrain_duo.C(\"_barrel\",${runNumber},\"$qaFilesToMerge\",1,\"${ocdbStorage}\")"
+    mv QAresults_barrel.root $qaMergedOutputFileName
+    mv trending_barrel.root trending.root
   fi
-
+  
   ls -ltrh
 
   #copy all to output dir
-  cp --recursive ${runpath}/* ${outputDir}
+  cp -p --recursive ${runpath}/* ${outputDir}
   
   #validate merge cpass1
   cd ${outputDir}
@@ -542,36 +629,80 @@ goMergeCPass1()
   touch ${calibDoneFile}
   [[ -f CalibObjects.root ]] && echo "calibfile $outputDir/CalibObjects.root" > ${calibDoneFile}
   [[ -f $qaMergedOutputFileName ]] && echo "qafile $outputDir/$qaMergedOutputFileName" >> ${calibDoneFile}
+  [[ -f trending.root ]] && echo "trendingfile $outputDir/trending.root" >> ${calibDoneFile}
   echo "dir ${outputDir}" >> ${calibDoneFile}
   summarizeLogs >>  ${calibDoneFile}
 
-  rm -rf ${runpath}
+  [[ "$runpath" != "$outputDir" ]] && rm -rf ${runpath}
+}
+
+goMerge()
+{
+  #generic root merge using CPass1 merge.C script
+  inputList=$1
+  outputFile=$2  
+  configFile=${3-"becnhmark.config"}
+  source $configFile
+  source $setupAliROOTenvInCurrentShell
+  aliroot -b -q "$ALICE_ROOT/PWGPP/CalibMacros/CPass0/merge.C(\"${inputList}\",\"\",kFALSE,\"${outputFile}\")" > merge_${inputList}.log
 }
 
 goMakeSummary()
 {
   configFile=$1
+  outputPath=$2
   source $configFile
   
   # log filtering, script needs to take the base dir as argument
   if [[ -x $logFilteringScript ]]; then
-    commonOutputPath=${baseOutputDirectory}/${productionID}
-    ${logFilteringScript} $commonOutputPath
+    cd ${outputPath}
+    ${logFilteringScript} $outputPath &>/dev/null
+    cd -
   fi
 
-  awk 'BEGIN {nFiles=0;} /^calibfile/ {nFiles++;} END {print     "cpass0 produced "nFiles" calib files";}' cpass0.job*done
-  awk 'BEGIN {nOK=0; nBAD=0;} /rec.*log OK/ {nOK++;} /rec.*log BAD/ {nBAD++;} END {print     "cpass0 reco:  OK: "nOK" BAD: "nBAD;}' cpass0.job*done
-  awk 'BEGIN {nOK=0; nBAD=0;} /calib.*log OK/ {nOK++;} /calib.*log BAD/ {nBAD++;} END {print "cpass0 calib: OK: "nOK" BAD: "nBAD;}' cpass0.job*done
+  awk 'BEGIN {nFiles=0;nCore=0;} 
+       /^calibfile/ {nFiles++;} 
+       /core / {nCore++i;}
+       END {print     "cpass0 produced "nFiles" calib files, "nCore" core files";}' cpass0.job*done
+  awk 'BEGIN {nOK=0; nBAD=0; } 
+       /rec.*log OK/ {nOK++;} 
+       /rec.*log BAD/ {nBAD++;} 
+       END {print     "cpass0 reco:  OK: "nOK" BAD: "nBAD;}' cpass0.job*done
+  awk 'BEGIN {nOK=0; nBAD=0; } 
+       /calib.*log OK/ {nOK++;} 
+       /calib.*log BAD/ {nBAD++;} 
+       END {print "cpass0 calib: OK: "nOK" BAD: "nBAD;}' cpass0.job*done
   
-  awk 'BEGIN {nOK=0; nBAD=0;} /merge.*log OK/ {nOK++;} /merge.*log BAD/ {nBAD++;} END {print "cpass0 merge: OK: "nOK" BAD: "nBAD;}' merge.cpass0*done
-  awk 'BEGIN {nOK=0; nBAD=0;} /ocdb.*log OK/ {nOK++;} /ocdb.*log BAD/ {nBAD++;} END {print   "cpass0 OCDB:  OK: "nOK" BAD: "nBAD;}' merge.cpass0*done
+  awk 'BEGIN {nOK=0; nBAD=0; } 
+       /merge.log OK/ {nOK++;} 
+       /merge.log BAD/ {nBAD++;} 
+       END {print "cpass0 merge: OK: "nOK" BAD: "nBAD;}' merge.cpass0*done
+  awk 'BEGIN {nOK=0; nBAD=0; } 
+       /ocdb.log OK/ {nOK++;} 
+       /ocdb.log BAD/ {nBAD++;} 
+       END {print   "cpass0 OCDB:  OK: "nOK" BAD: "nBAD;}' merge.cpass0*done
   
-  awk 'BEGIN {nFiles=0;} /^calibfile/ {nFiles++;} END {print     "cpass1 produced "nFiles" calib files";}' cpass1.job*done
-  awk 'BEGIN {nOK=0; nBAD=0;} /rec.*log OK/ {nOK++;} /rec.*log BAD/ {nBAD++;} END {print     "cpass1 reco:  OK: "nOK" BAD: "nBAD;}' cpass1.job*done
-  awk 'BEGIN {nOK=0; nBAD=0;} /calib.*log OK/ {nOK++;} /calib.*log BAD/ {nBAD++;} END {print "cpass1 calib: OK: "nOK" BAD: "nBAD;}' cpass1.job*done
+  awk 'BEGIN {nFiles=0;nCore=0;} 
+       /^calibfile/ {nFiles++;} 
+       /core / {nCore++;}
+       END {print     "cpass1 produced "nFiles" calib files, "nCore" core files";}' cpass1.job*done
+  awk 'BEGIN {nOK=0; nBAD=0; } 
+       /rec.*log OK/ {nOK++;} 
+       /rec.*log BAD/ {nBAD++;} 
+       END {print     "cpass1 reco:  OK: "nOK" BAD: "nBAD;}' cpass1.job*done
+  awk 'BEGIN {nOK=0; nBAD=0; } 
+       /calib.*log OK/ {nOK++;} 
+       /calib.*log BAD/ {nBAD++;} 
+       END {print "cpass1 calib: OK: "nOK" BAD: "nBAD;}' cpass1.job*done
 
-  awk 'BEGIN {nOK=0; nBAD=0;} /merge.*log OK/ {nOK++;} /merge.*log BAD/ {nBAD++;} END {print "cpass1 merge: OK: "nOK" BAD: "nBAD;}' merge.cpass1*done
-  awk 'BEGIN {nOK=0; nBAD=0;} /ocdb.*log OK/ {nOK++;} /ocdb.*log BAD/ {nBAD++;} END {print   "cpass1 OCDB:  OK: "nOK" BAD: "nBAD;}' merge.cpass1*done
+  awk 'BEGIN {nOK=0; nBAD=0; } 
+       /merge.log OK/ {nOK++;} 
+       /merge.log BAD/ {nBAD++;} 
+       END {print "cpass1 merge: OK: "nOK" BAD: "nBAD;}' merge.cpass1*done
+  awk 'BEGIN {nOK=0; nBAD=0; } 
+       /ocdb.log OK/ {nOK++;} 
+       /ocdb.log BAD/ {nBAD++;} 
+       END {print   "cpass1 OCDB:  OK: "nOK" BAD: "nBAD;}' merge.cpass1*done
   
   #if set email the summary
   [[ -n $mailSummaryTo ]] && cat $log | mail -s "benchmark $productionID done" $mailSummaryTo
@@ -579,9 +710,9 @@ goMakeSummary()
   return 0
 }
 
-goMakeflow()
+goSubmitMakeflow()
 {
-  #generate the makeflow file and run
+  #run
   inputFileList=$1
   productionID=$2
   configFile=$3
@@ -591,9 +722,33 @@ goMakeflow()
   [[ ! -f ${configFile} ]] && echo "no config file found (${configFile})" && return 1
   source $configFile
 
-  source $configFile
-  goGenerateMakeflow "$@" > benchmark.makeflow
-  makeflow ${makeflowOptions} benchmark.makeflow
+  if [[ ! $(which makeflow &>/dev/null) && -n $makeflowPath ]]; then
+    echo "setting the makflow path from the config: "
+    echo "  export PATH=${makeflowPath}:${PATH}"
+    export PATH=${makeflowPath}:${PATH}
+  fi
+
+  #submit - use makeflow if available, fall back to old stuff when makeflow not there
+  if which makeflow; then
+    mkdir -p $productionID
+    cp $0 $productionID
+    cp $configFile $productionID
+    cp $inputFileList $productionID
+    cd $productionID
+    goGenerateMakeflow "$@" > benchmark.makeflow
+
+    [[ -n $createWorkqueue ]] && createWorkqueue=0
+    if [[ $createWorkqueue -eq 1 ]]; then
+      echo "creating workqueue:"
+      echo "${createWorkqueueCommand}"
+      eval ${createWorkqueueCommand}
+    fi
+    
+    makeflow ${makeflowOptions} benchmark.makeflow
+    cd ../
+  else 
+    echo "no makeflow!"
+  fi
 }
 
 goGenerateMakeflow()
@@ -615,194 +770,170 @@ goGenerateMakeflow()
   inputFiles=(
               "OCDB.root"
               "localOCDBaccessConfig.C"
+              "QAtrain_duo.C"
+              "runCPass1.sh"
+              "recCPass1.C"
+              "recCPass1_OuterDet.C"
+              "runCalibTrain.C"
+              "runCPass0.sh"
+              "recCPass0.C"
   )
   for file in ${inputFiles[*]}; do
     [[ -f ${file} ]] && copyFiles+=("${file}")
   done
 
   #create the makeflow file
+  [[ -n ${batchFlags} ]] && echo "BATCH_OPTIONS = ${batchFlags}"
   declare -a arr_cpass1_final
-  declare -a arr_cpass1_QA_final
+  declare -a arr_cleanup
   listOfRuns=${runNumber}
   [[ -z ${runNumber} ]] && listOfRuns=($(while read x; do guessRunNumber $x; done < ${inputFileList} | sort | uniq))
   runindex=0
   for runNumber in ${listOfRuns[*]}; do
     [[ -z $runNumber ]] && continue
     [[ ! ${runNumber} =~ ^[0-9]*[0-9]$ ]] && continue
+
+    unset arr_cpass0_outputs_onerun
+    unset arr_cpass1_outputs_onerun
+    declare -a arr_cpass0_outputs_onerun
+    declare -a arr_cpass1_outputs_onerun
+
     jobindex=0
-
-    unset arr_cpass0_outputs
-    unset arr_cpass1_outputs
-    declare -a arr_cpass0_outputs
-    declare -a arr_cpass1_outputs
-    unset arr_cpass0_outputs
-
     while read inputFile; do
       currentDefaultOCDB=${defaultOCDB}
-      [[ ${autoOCDB} -ne 0 ]] && currentDefaultOCDB=$(setYear $inputFile $defaultOCDB)
+      [[ -z ${autoOCDB} ]] && autoOCDB=1
+      if [[ ${autoOCDB} -ne 0 ]]; then
+        currentDefaultOCDB=$(setYear $inputFile $defaultOCDB)
+      fi
 
       #CPass0
-      arr_cpass0_outputs[$jobindex]="cpass0.job${jobindex}.run${runNumber}.done"
-      echo "${arr_cpass0_outputs[$jobindex]}: benchmark.sh ${configFile} ${copyFiles[@]}"
+      arr_cpass0_outputs_onerun[$jobindex]="cpass0.job${jobindex}.run${runNumber}.done"
+      echo "${arr_cpass0_outputs_onerun[$jobindex]} : benchmark.sh ${configFile} ${copyFiles[@]}"
       echo " ${alirootEnv} ./benchmark.sh CPass0 ${commonOutputPath}/cpass0/000${runNumber} $inputFile $nEvents $currentDefaultOCDB $configFile $runNumber $jobindex"
       echo
 
       #CPass1
-      arr_cpass1_outputs[$jobindex]="cpass1.job${jobindex}.run${runNumber}.done"
-      echo "${arr_cpass1_outputs[$jobindex]} : benchmark.sh ${configFile} cpass0.localOCDB.${runNumber}.tgz ${copyFiles[@]}"
+      arr_cpass1_outputs_onerun[$jobindex]="cpass1.job${jobindex}.run${runNumber}.done"
+      echo "${arr_cpass1_outputs_onerun[$jobindex]} : benchmark.sh ${configFile} cpass0.localOCDB.${runNumber}.tgz ${copyFiles[@]}"
       echo " ${alirootEnv} ./benchmark.sh CPass1 ${commonOutputPath}/cpass1/000${runNumber} $inputFile $nEvents $currentDefaultOCDB $configFile $runNumber $jobindex"
       echo
       ((jobindex++))
 
     done< <(grep "/000$runNumber/" $inputFileList)
-
+    
     #CPass0 list of Calib files to merge
-    echo "cpass0.calib.run${runNumber}.list: ${arr_cpass0_outputs[*]}"
-    echo "  awk '/^calibfile / {print "'\$2'"}' ${arr_cpass0_outputs[*]} > cpass0.calib.run${runNumber}.list"
+    arr_cpass0_calib_list[$runindex]="cpass0.calib.run${runNumber}.list"
+    echo "cpass0.calib.run${runNumber}.list: benchmark.sh ${arr_cpass0_outputs_onerun[*]}"
+    echo "  ./benchmark.sh printValues calibfile cpass0.calib.run${runNumber}.list ${arr_cpass0_outputs_onerun[*]} "
     echo
 
     #CPass1 list of Calib/QA files to merge
-    # the trick is to have the string "Stage" in the file name of the list of directories with QA output to trigger
+    # the trick is to have the string "Stage.txt" in the file name of the list of directories with QA output to trigger
     # the production of the trending tree (only then the task->Finish() will be called in QAtrain_duo.C, on the grid
     # this corresponds to the last merging stage)
-    echo "cpass1.calib.run${runNumber}.list cpass1.QA.run${runNumber}.lastMergingStage.list: ${arr_cpass1_outputs[*]}"
-    echo "  awk '/^calibfile / {print "'\$'"2}' ${arr_cpass1_outputs[*]} > cpass1.calib.run${runNumber}.list;  awk '/^dir / {print "'\$'"2}' ${arr_cpass1_outputs[*]} > cpass1.QA.run${runNumber}.lastMergingStage.list"
+    arr_cpass1_calib_list[$runindex]="cpass1.calib.run${runNumber}.list"
+    echo "cpass1.calib.run${runNumber}.list : benchmark.sh ${arr_cpass1_outputs_onerun[*]}"
+    echo "  ./benchmark.sh printValues calibfile cpass1.calib.run${runNumber}.list ${arr_cpass1_outputs_onerun[*]};"
+    echo
+    arr_cpass1_QA_list[$runindex]="cpass1.QA.run${runNumber}.lastMergingStage.txt.list"
+    echo "cpass1.QA.run${runNumber}.lastMergingStage.txt.list: benchmark.sh ${arr_cpass1_outputs_onerun[*]}"
+    echo "  ./benchmark.sh printValues dir cpass1.QA.run${runNumber}.lastMergingStage.txt.list ${arr_cpass1_outputs_onerun[*]}"
     echo
 
     #CPass0 merging
     arr_cpass0_final[$runindex]="merge.cpass0.run${runNumber}.done"
     echo "cpass0.localOCDB.${runNumber}.tgz ${arr_cpass0_final[$runindex]}: cpass0.calib.run${runNumber}.list benchmark.sh ${configFile} ${copyFiles[@]}"
-    echo " ${alirootEnv} ./benchmark.sh MergeCPass0 ${commonOutputPath}/cpass0/000${runNumber} $currentDefaultOCDB ${configFile} $runNumber cpass0.run${runNumber}.list"
+    echo " ${alirootEnv} ./benchmark.sh MergeCPass0 ${commonOutputPath}/cpass0/000${runNumber} $currentDefaultOCDB ${configFile} $runNumber cpass0.calib.run${runNumber}.list"
     echo
 
     #CPass1 Calib/QA merging
     arr_cpass1_final[$runindex]="merge.cpass1.run${runNumber}.done"
-    echo "${arr_cpass1_final[$runindex]}: cpass1.calib.run${runNumber}.list cpass1.QA.run${runNumber}.lastMergingStage.list benchmark.sh ${configFile} ${copyFiles[@]}"
-    echo " ${alirootEnv} ./benchmark.sh MergeCPass1 ${commonOutputPath}/cpass1/000${runNumber} $currentDefaultOCDB ${configFile} $runNumber cpass1.calib.run${runNumber}.list cpass1.QA.run${runNumber}.lastMergingStage.list"
+    echo "${arr_cpass1_final[$runindex]}: cpass0.localOCDB.${runNumber}.tgz cpass1.calib.run${runNumber}.list cpass1.QA.run${runNumber}.lastMergingStage.txt.list benchmark.sh ${configFile} ${copyFiles[@]}"
+    echo " ${alirootEnv} ./benchmark.sh MergeCPass1 ${commonOutputPath}/cpass1/000${runNumber} $currentDefaultOCDB ${configFile} $runNumber cpass1.calib.run${runNumber}.list cpass1.QA.run${runNumber}.lastMergingStage.txt.list"
     echo
+    
+    if [[ -n $runESDfiltering ]]; then
+      #CPass1 list of final ESD files
+      arr_cpass1_ESD_list[$runindex]="cpass1.ESD.run${runNumber}.list"
+      echo "${arr_cpass1_ESD_list[$runindex]} : benchmark.sh ${arr_cpass1_outputs_onerun[*]}"
+      echo " ./benchmark.sh printValues esd ${arr_cpass1_ESD_list[$runindex]} ${arr_cpass1_outputs_onerun[*]}"
+      echo
+
+      #run the filtering
+      arr_cpass1_filtering[${runindex}]="filtering.cpass1.run${runNumber}.done"
+      echo "${arr_cpass1_filtering[${runindex}]} : benchmark.sh ${configFile} ${arr_cpass1_ESD_list[$runindex]} cpass0.localOCDB.${runNumber}.tgz"
+      echo " LOCAL ./benchmark.sh MakeFilteredTrees ${commonOutputPath}/cpass1/000${runNumber}/ ${runNumber} ${arr_cpass1_ESD_list[$runindex]} ${filteringFactorHighPt} ${filteringFactorV0s} ${currentDefaultOCDB}"
+      echo
+    fi
+
+    arr_cleanup[$runindex]="${arr_cpass0_outputs_onerun[*]} ${arr_cpass1_outputs_onerun[*]} cpass0.localOCDB.${runNumber}.tgz"
+
     ((runindex++))
   done
 
+  ## final output:
   #CPass1 list of final Calib/QA files
-  echo "cpass1.QA.list cpass1.calib.list: ${arr_cpass1_final[*]}"
-  echo " awk '/^calibfile / {print "'\$'"2}' ${arr_cpass1_final[*]} > cpass1.calib.list; awk '/^qafile / {print "'\$'"2}' ${arr_cpass1_final[*]} > cpass1.QA.list"
+  echo "calib.list : benchmark.sh ${arr_cpass1_final[*]}"
+  echo " ./benchmark.sh printValues calibfile calib.list ${arr_cpass1_final[*]};"
   echo
+  echo "qa.list : benchmark.sh ${arr_cpass1_final[*]}"
+  echo " ./benchmark.sh printValues qafile qa.list ${arr_cpass1_final[*]}"
+  echo
+  echo "trending.list : benchmark.sh ${arr_cpass1_final[*]}"
+  echo " ./benchmark.sh printValues trendingfile trending.list ${arr_cpass1_final[*]}"
+  echo 
+  if [[ -n $runESDfiltering ]]; then
+  #list of filtered files
+    echo "filtering.list : benchmark.sh ${arr_cpass1_filtering[*]}"
+    echo " ./benchmark.sh printValues filteredTree filtering.list ${arr_cpass1_filtering[*]}"
+    echo
+  fi
+
+  #merge trending
+  echo "trending_merged.root : benchmark.sh benchmark.config trending.list"
+  echo " ./benchmark.sh merge trending.list trending_merged.root ${configFile}"
+
+  #makeQAplots
+  if [[ $runMakeQAplots -eq 1 ]]; then
+    echo "QAplots/ : benchmark.sh benchmark.config qa.list"
+    echo " ./benchmark.sh CreateQAplots qa.list $productionID QAplots $configFile"
+  fi
 
   #Summary
-  echo "summary.log : ${arr_cpass0_outputs[*]} ${arr_cpass1_outputs[*]}  ${arr_cpass1_final[*]}  ${arr_cpass0_final[*]} benchmark.sh ${configFile}"
-  echo " LOCAL ./benchmark.sh makeSummary ${configFile} |tee summary.log"
+  echo "summary_${productionID}.log : ${arr_cpass0_outputs_onerun[*]} ${arr_cpass1_outputs_onerun[*]}  ${arr_cpass1_final[*]}  ${arr_cpass0_final[*]} benchmark.sh ${configFile}"
+  echo " LOCAL ./benchmark.sh makeSummary ${configFile} ${commonOutputPath} |tee summary_${productionID}.log"
+  echo
+
+}
+
+goPrintValues()
+{
+  #print the values given the key from any number of files (store in output file on second argument)
+  key=$1
+  outputFile=$2
+  shift 2 #remove 2 first arguments from arg list to only pass the input files to awk
+  awk -v key=${key} '$0 ~ "^"key" " {print $2}' "$@" | tee $outputFile
 }
 
 goCreateQAplots()
 {
   umask 0002
-  [[ $# -lt 5 ]] && echo "goCreateQAplots productionID pass outputDir qaFilesDirectory qaPlotScript" && exit 1
-  productionID=$1
-  pass=$2
+  mergedQAfileList=$1
+  productionID=$2
   outputDir=$3
-  qaFilesDirectory=$4
-  qaPlotsScript=$5
-  configFile=$6
+  configFile=$4
 
   source $configFile
   [[ -f ${setupAliROOTenvInCurrentShell} ]] && source $setupAliROOTenvInCurrentShell
 
-  runpath=${PWD}/rundir_cpass0_Merge_${runNumber}
-  [[ -z $commonOutputPath ]] && commonOutputPath=$PWD
-  [[ $reconstructInTemporaryDir -eq 1 && -n $TMPDIR ]] && runpath=$TMPDIR
-  [[ $reconstructInTemporaryDir -eq 1 && -z $TMPDIR ]] && runpath=$(mktemp -d)
-
-  mkdir -p $runpath
-  [[ ! -d $runpath ]] && echo "not able to make the runpath $runpath" && exit 1
-  cd $runpath
-
-  [[ -z $logOutputDir ]] && logOutputDir=$runpath
+  [[ -z $logOutputDir ]] && logOutputDir=$PWD
   [[ -z $dontRedirectStdOutToLog ]] && exec 2>&1 > $logOutputDir/makeQAplots.log
   echo "$0 $*"
 
   [[ -z "$qaPlotsScript" ]] && echo "qaPlotsScript not defined"&&exit 1
   
-  mergedQAfileList=$outputDir/mergedQAfiles.list
-  echo "MakeListOfQAresults $qaFilesDirectory QAresults.root | grep CPass1 > $mergedQAfileList"
-  MakeListOfQAresults $qaFilesDirectory QAresults_merged.root | grep CPass1 |tee $mergedQAfileList
   echo $qaPlotsScript "$productionID" "cpass1" $mergedQAfileList $outputDir
   $qaPlotsScript "$productionID" "cpass1" $mergedQAfileList $outputDir
-
-  mkdir -p $outputDir
-  [[ ! -d $outputDir ]] && echo "cannot make the output dir $outputDir" && exit 1
-  mv -f $runpath/* $outputDir
-  rm -rf $runpath
-}
-
-goWaitForOutput()
-{
-  umask 0002
-  [[ $# -lt 3 ]] && echo "goWaitForOutput() wrong number of arguments, exiting.." && exit 1
-  echo searchPath=$1
-  echo fileName=$2
-  echo numberOfFiles=$3
-  echo maxSecondsToWait=$4
-  searchPath=$1
-  fileName=$2
-  numberOfFiles=$3
-  maxSecondsToWait=$4
-  extraFindOptions=$5
-  echo "command to be executed: find $searchPath -name "$fileName" ${extraFindOptions}"
-  [[ -z "$maxSecondsToWait" ]] && maxSecondsToWait=$(( 3600*12 ))
-  while sleep 60; do
-    n=$(find $searchPath -name "$fileName" ${extraFindOptions}| wc -l)
-    [[ $n -gt 0 ]] && echo "found $n X $fileName"
-    [[ $n -ge $numberOfFiles ]] && break
-    [[ $SECONDS -gt $maxSecondsToWait ]] && break
-  done
-  echo "DONE! exiting..."
-}
-
-submit()
-{
-  umask 0002
-  [[ $# -ne 6 ]] && echo "6 args needed, you supplied $#" && exit 1
-  JobID=$1
-  startID=$2
-  endID=$3
-  waitForJOBID=$4
-  command=$5
-  commandArgs=$6
-
-  newFarm=$(which qsub|grep "^/usr/bin/qsub")
-  
-  batchSystem="SGE"
-
-  if [[ -z "$newFarm" ]]
-  then
-    #old LSF
-    # submit it (as job array)
-    nFiles=$(( $endID-$startID+1 ))
-    while [ $startID -le $nFiles  ] ; do
-      if [ `expr $nFiles - $startID` -gt 999 ] ; then 
-        endID=`expr $startID + 999`
-      else
-        endID=$nFiles
-      fi      
-      if [[ -z "$waitForJOBID" ]]; then
-        echo $batchCommand -J "$JobID[$startID-$endID]" -e "$targetDirectory/logs/job_%I.err" -o "$targetDirectory/logs/job_%I.out" "$command"     
-        $batchCommand -J "$JobID[$startID-$endID]" -e "$targetDirectory/logs/job_%I.err" -o "$targetDirectory/logs/job_%I.out" "$command"     
-      else
-        echo $batchCommand -J "$JobID[$startID-$endID]" -w "ended($waitForJOBID)" -e "$targetDirectory/logs/job_%I.err" -o "$targetDirectory/logs/job_%I.out" "$command"     
-        $batchCommand -J "$JobID[$startID-$endID]" -w "ended($waitForJOBID)" -e "$targetDirectory/logs/job_%I.err" -o "$targetDirectory/logs/job_%I.out" "$command"     
-      fi
-      startID=`expr $endID + 1`
-    done
-  else 
-    #new SGE farm
-    if [[ -z "$waitForJOBID" ]]; then
-      echo $batchCommand -wd ${targetDirectory} -b y -V -N "$JobID" -t "$startID-$endID" -e "$targetDirectory/logs/" -o "$targetDirectory/logs/" "$command" $commandArgs
-      $batchCommand -wd ${targetDirectory} -b y -V -N "$JobID" -t "$startID-$endID" -e "$targetDirectory/logs/" -o "$targetDirectory/logs/" "$command" $commandArgs
-    else
-      echo $batchCommand -wd ${targetDirectory} -b y -V -N "$JobID" -t "$startID-$endID" -hold_jid "$waitForJOBID" -e "$targetDirectory/logs/" -o "$targetDirectory/logs/" "$command" $commandArgs
-      $batchCommand -wd ${targetDirectory} -b y -V -N "$JobID" -t "$startID-$endID" -hold_jid "$waitForJOBID" -e "$targetDirectory/logs/" -o "$targetDirectory/logs/" "$command" $commandArgs
-    fi
-  fi
 }
 
 goTest()
@@ -832,26 +963,6 @@ alirootInfo()
   )
 }
 
-MakeListOfQAresults()
-{
-  (
-  umask 0002
-  if [[ $# -eq 0 ]]; then
-    echo "make an input file list for the qa script"
-    echo "Usage: $0 path filename"
-    return 0
-  fi
-
-  path=$1
-  fileName=$2
-  
-  while read entry; do
-    runNumber=$(guessRunNumber $entry)
-    echo "$runNumber 0 1 10 $entry"
-  done < <(find $path -name $fileName)
-  )
-}
-
 setYear()
 {
   #set the year
@@ -860,7 +971,7 @@ setYear()
   year1=$(guessYear $1)
   year2=$(guessYear $2)
   local path=$2
-  [[ $year1 -ne $year2 && -n $year2 ]] && path=${2/\/$year2\//\/$year1\/}
+  [[ $year1 -ne $year2 && -n $year2 && -n $year1 ]] && path=${2/\/$year2\//\/$year1\/}
   echo $path
 }
 
@@ -903,11 +1014,42 @@ guessRunNumber()
   echo $runNumber
 }
 
+validateLog()
+{
+  log=$1
+  errorConditions=(
+                    "There was a crash"
+                    "floating"
+                    "error while loading shared libraries"
+                    "std::bad_alloc"
+                    "s_err_syswatch_"
+                    "Thread [0-9]* (Thread"
+                    "AliFatal"
+                    "core dumped"
+  )
+  
+    local logstatus=0
+    local errorSummary=""
+    for ((i=0; i<${#errorConditions[@]};i++)); do
+      local tmp=$(grep -m1 -e "${errorConditions[$i]}" $log)
+      [[ -n $tmp ]] && tmp+=" : "
+      errorSummary+=$tmp
+    done
+    if [[ -n $errorSummary ]]; then 
+      logstatus=1
+      echo "$errorSummary"
+    fi
+  
+  return $logstatus
+}
+
 summarizeLogs()
 {
   #print a summary of logs
   logFiles=(
             "*.log"
+            "stdout"
+            "stderr"
   )
 
   errorConditions=(
@@ -917,17 +1059,17 @@ summarizeLogs()
                     "std::bad_alloc"
                     "s_err_syswatch_"
                     "Thread [0-9]* (Thread"
+                    "AliFatal"
+                    "core dumped"
   )
+  
+  [[ -z ${outputDir} ]] && outputDir=$PWD
+  #check logs
   logstatus=0
   for log in ${logFiles[*]}; do
     finallog=${outputDir%/}/${log}
     [[ ! -f $log ]] && continue
-    errorSummary=""
-    for ((i=0; i<${#errorConditions[@]};i++)); do
-      local tmp=$(grep -m1 -e "${errorConditions[$i]}" $log)
-      [[ -n $tmp ]] && tmp+=" : "
-      errorSummary+=$tmp
-    done
+    errorSummary=$(validateLog $log)
     if [[ -z $errorSummary ]]; then 
       #in pretend mode randomly report an error in rec.log some cases
       if [[ -n $pretend && "$log" == "rec.log" ]]; then
@@ -940,6 +1082,10 @@ summarizeLogs()
       echo "$finallog BAD $errorSummary"
     fi
   done
+  
+  #report core files
+  find ${PWD} -name core
+  
   return $logstatus
 }
 
@@ -966,13 +1112,13 @@ goConfigureOCDBforCPass1()
 
   if [[ -f $localOCDBpathCPass0 && $localOCDBpathCPass0 =~ \.tgz$ ]]; then
     tar xzf $localOCDBpathCPass0
-    local localOCDBpathCPass0="./OCDB"
+    local localOCDBpathCPass0="${PWD}/OCDB"
   fi
 
   echo
   echo creating the specific storage script
   echo   localOCDBaccessConfig.C
-  echo   based on OCDB: $fileName
+  echo   based on OCDB: $localOCDBaccessConfig
   echo
 
   local tempLocalOCDB=""
@@ -998,7 +1144,115 @@ goConfigureOCDBforCPass1()
   fi
 }
 
-goSubmit()
+goMakeFilteredTrees()
+{
+  outputDir=$1
+  runNumber=$2
+  #get path to input list
+  inputListfiles=$3
+  #get scale number for tracks
+  filterT=$4
+  #get scale number for V0s
+  filterV=$5
+  #get OCDB path (optional)
+  OCDBpath=${6}
+  #get max number of files 
+  maxFiles=${7-"1000000"}
+  #get offset of first file
+  offsetFile=${8-"0"}
+  #get max number of events
+  maxEvents=${9-"30000000"}
+  #get offset of first event
+  offsetEvent=${10-"0"}
+  configFile=${11-"benchmark.config"}
+  esdFileName=${12-"AliESDs_Barrel.root"}
+  source ${configFile}
+  [[ -n ${setupTrustedAliROOTenvInCurrentShell} ]] && source ${setupAliROOTenvInCurrentShell}
+
+  commonOutputPath=${PWD}
+  runpath=${commonOutputPath}/rundir_filtering_run${runNumber}
+
+  mkdir -p ${outputDir}
+  mkdir -p ${runpath}
+
+  cd ${runpath}
+  
+  cat > filtering.log << EOF
+  goMakeFilteredTrees config:
+  runpath=$runpath
+  outputDir=$outputDir
+  commonOutputPath=$commonOutputPath
+  ALICE_ROOT=$ALICE_ROOT
+  PATH=$PATH
+EOF
+
+  if [[ -z ${pretend} ]];then
+    aliroot -l -b -q "$filteringRunMacro(\"$inputListfiles\",$filterT,$filterV,\"$OCDBpath\",$maxFiles,$offsetFile,$maxEvents,$offsetEvent,\"$esdFileName\")" &>> filtering.log
+  else
+    touch filtering.log Filtered.root
+  fi
+  pwd
+  ls -ltrh
+  echo mv -f * ${outputDir}
+  mv -f * ${outputDir}
+  doneFile=${commonOutputPath}/filtering.cpass1.run${runNumber}.done
+  touch ${doneFile}
+  [[ -f ${outputDir}/Filtered.root ]] && echo "filteredTree ${outputDir}/Filtered.root" > ${doneFile}
+  [[ -f ${outputDir}/filtering.log ]] && echo "${outputDir}/filtering.log"
+  cd ${commonOutputPath}
+  [[ "$runpath" != "$outputDir" ]] && rm -rf ${runpath}
+}
+
+submit()
+{
+  umask 0002
+  [[ $# -ne 6 ]] && echo "6 args needed, you supplied $#" && exit 1
+  JobID=$1
+  startID=$2
+  endID=$3
+  waitForJOBID=$4
+  command=$5
+  commandArgs=$6
+
+  [[ -z $waitForJOBID ]] && waitForJOBID=0
+
+  newFarm=$(which qsub|grep "^/usr/bin/qsub")
+  
+  batchSystem="SGE"
+
+  if [[ -z "$newFarm" ]]
+  then
+    #old LSF
+    # submit it (as job array)
+    nFiles=$(( $endID-$startID+1 ))
+    while [ $startID -le $nFiles  ] ; do
+      if [ `expr $nFiles - $startID` -gt 999 ] ; then 
+        endID=`expr $startID + 999`
+      else
+        endID=$nFiles
+      fi      
+    if [[ ${waitForJOBID} -eq 0 ]]; then
+        echo $batchCommand $batchFlags -J "$JobID[$startID-$endID]" -e "$targetDirectory/logs/job_%I.err" -o "$targetDirectory/logs/job_%I.out" "$command"     
+        $batchCommand $batchFlags -J "$JobID[$startID-$endID]" -e "$targetDirectory/logs/job_%I.err" -o "$targetDirectory/logs/job_%I.out" "$command"     
+      else
+        echo $batchCommand $batchFlags -J "$JobID[$startID-$endID]" -w "ended($waitForJOBID)" -e "$targetDirectory/logs/job_%I.err" -o "$targetDirectory/logs/job_%I.out" "$command"     
+        $batchCommand $batchFlags -J "$JobID[$startID-$endID]" -w "ended($waitForJOBID)" -e "$targetDirectory/logs/job_%I.err" -o "$targetDirectory/logs/job_%I.out" "$command"     
+      fi
+      startID=`expr $endID + 1`
+    done
+  else 
+    #new SGE farm
+    if [[ ${waitForJOBID} =~ "000" ]]; then
+      echo $batchCommand $batchFlags -wd ${targetDirectory} -b y -V -N "$JobID" -t "$startID-$endID" -e "$targetDirectory/logs/" -o "$targetDirectory/logs/" "$command" $commandArgs
+      $batchCommand $batchFlags -wd ${targetDirectory} -b y -V -N "$JobID" -t "$startID-$endID" -e "$targetDirectory/logs/" -o "$targetDirectory/logs/" "$command" $commandArgs
+    else
+      echo $batchCommand $batchFlags -wd ${targetDirectory} -b y -V -N "$JobID" -t "$startID-$endID" -hold_jid "$waitForJOBID" -e "$targetDirectory/logs/" -o "$targetDirectory/logs/" "$command" $commandArgs
+      $batchCommand $batchFlags -wd ${targetDirectory} -b y -V -N "$JobID" -t "$startID-$endID" -hold_jid "$waitForJOBID" -e "$targetDirectory/logs/" -o "$targetDirectory/logs/" "$command" $commandArgs
+    fi
+  fi
+}
+
+goSubmitBatch()
 {
   inputList=$1
   productionID=$2
@@ -1022,8 +1276,6 @@ goSubmit()
     exit
   fi
 
-  date=`date +%Y-%m-%d_%H%M%S`
-
   # check if config file is there
   if [ ! -f $configFile ]; then
     echo "ERROR! Config File '$configFile' not found" >&2
@@ -1037,15 +1289,18 @@ goSubmit()
   source $configFile
   [[ -f ${setupAliROOTenvInCurrentShell} && -z ${alirootEnv} ]] && source $setupAliROOTenvInCurrentShell
 
+  #move the script, config and some other stuff to $commonOutputPath first, then use them from there
   self=$(readlink -f "$0")
-  configPath=`dirname $self`
-  #exporting makes it available in the environment on the nodes - makes the summary output go there
+  configPath=$(dirname $configFile)
   export commonOutputPath=${baseOutputDirectory}/${productionID}
-
-  #[[ -z ${ALIROOT_RELEASE} ]] && ALIROOT_RELEASE=${ALICE_ROOT//"/"/"_"}
-  #ALIROOT_RELEASE_mod=${ALIROOT_RELEASE//"/"/"_"}
-  #ALIROOT_BASEDIR_mod=${ALIROOT_BASEDIR//"/"/"_"}
-  #productionID=${ALIROOT_BASEDIR_mod}_${ALIROOT_RELEASE_mod}/${productionID}
+  mkdir -p ${commonOutputPath}
+  cp $self ${commonOutputPath}
+  cp $configFile ${commonOutputPath}
+  cp $inputList ${commonOutputPath}
+  self=${commonOutputPath}/${self##*/}
+  chmod u+x $self
+  configFile=${commonOutputPath}/${configFile##*/}
+  inputList=${commonOutputPath}/${inputList##*/}
 
   #convert to absolut pathnames
   inputList=$(readlink -f "$inputList")
@@ -1065,6 +1320,7 @@ goSubmit()
   echo ""
   echo "    productionID:    $productionID"
   echo "    batchCommand:    $batchCommand"
+  echo "    batchFlags:      $batchFlags"
   echo "    setupAliROOTenvInCurrentShell:      $setupAliROOTenvInCurrentShell"
   echo "    ALICE_ROOT:      $ALICE_ROOT"
   echo "    ALIROOT_RELEASE: $ALICE_RELEASE"
@@ -1110,29 +1366,39 @@ goSubmit()
   fi
 
   # define jobid (for dependent jobs)
-  JOBID1=p0_${productionID//"/"/_}_${date}
-  JOBID1wait=w0_${productionID//"/"/_}_${date}
-  JOBID2=m0_${productionID//"/"/_}_${date}
-  JOBID2wait=wm0_${productionID//"/"/_}_${date}
-  JOBID3=op0_${productionID//"/"/_}_${date}
-  JOBID3wait=wop0_${productionID//"/"/_}_${date}
-  JOBID4=p1_${productionID//"/"/_}_${date}
-  JOBID4wait=w1_${productionID//"/"/_}_${date}
-  JOBID5=m1_${productionID//"/"/_}_${date}
-  JOBID5wait=wm1_${productionID//"/"/_}_${date}
-  JOBID6=s1_${productionID//"/"/_}_${date}
-  JOBID6wait=ws1_${productionID//"/"/_}_${date}
-  JOBID7=QA_${productionID//"/"/_}_${date}
-  LASTJOB=""
-
+  date=$(date +%Y_%m_%d_%H%M%S)
   #for each run we submit one jobarray:
-  numberOfSubmittedCPass1MergingJobs=0
   for runNumber in ${listOfRuns[*]}; do
+    
     [[ -z $runNumber ]] && continue
     [[ ! ${runNumber} =~ ^[0-9]*[0-9]$ ]] && continue
+
+    JOBpostfix="${productionID//"/"/_}_${runNumber}_${date}"
+    JOBID1="p0_${JOBpostfix}"
+    JOBID1wait="w0_${JOBpostfix}"
+    JOBID2="m0_${JOBpostfix}"
+    JOBID2wait="wm0_${JOBpostfix}"
+    JOBID3="op0_${JOBpostfix}"
+    JOBID3wait="wop0_${JOBpostfix}"
+    JOBID4="p1_${JOBpostfix}"
+    JOBID4wait="w1_${JOBpostfix}"
+    JOBID5="m1_${JOBpostfix}"
+    JOBID5wait="wm1_${JOBpostfix}"
+    JOBID6="s1_${JOBpostfix}"
+    JOBID6wait="ws1_${JOBpostfix}"
+    JOBID7="QA_${JOBpostfix}"
+    JOBmakeESDlistCPass1="lp1_${JOBpostfix}"
+    JOBfilterESDcpass1="fp1_${JOBpostfix}"
+    LASTJOB="000"
+
     oneInputFile=$(egrep -m1 "$runNumber\/" ${inputList})
-    currentDefaultOCDB=$defaultOCDB
-    [[ $autoOCDB -ne 0 ]] && currentDefaultOCDB=$(setYear $oneInputFile $defaultOCDB)
+
+    currentDefaultOCDB=${defaultOCDB}
+    [[ -z ${autoOCDB} ]] && autoOCDB=1
+    if [[ ${autoOCDB} -ne 0 ]]; then
+      currentDefaultOCDB=$(setYear $oneInputFile $defaultOCDB)
+    fi
+
     echo "submitting run $runNumber with OCDB $currentDefaultOCDB"
 
     ################################################################################
@@ -1146,31 +1412,24 @@ goSubmit()
       echo
 
       # create directory and copy all files that are needed
-      targetDirectory="${commonOutputPath}/000${runNumber}/CPass0"
+      targetDirectory="${commonOutputPath}/000${runNumber}/cpass0"
       mkdir -p $targetDirectory
       mkdir -p $targetDirectory/logs
-      
-      localInputList=$targetDirectory/${inputList##*/}
-      theScript="$targetDirectory/${self##*/}"
-      cp -f $self $theScript
-      chmod u+x $theScript
+      filesCPass0=( 
+      "$configPath/runCPass0.sh"
+      "$configPath/recCPass0.C"
+      "$configPath/runCalibTrain.C"
+      "$configPath/localOCDBaccessConfig.C"
+      "$configPath/OCDB.root"
+      )
+      for file in ${filesCPass0[*]}; do
+        [[ -f ${file} ]] && echo "copying ${file}" && cp -f ${file} ${commonOutputPath}
+      done
 
+
+      localInputList=$targetDirectory/${inputList##*/}
       rm -f $localInputList
       egrep "\/000$runNumber\/" $inputList >> $localInputList
-      cp -f $configFile $targetDirectory
-      [[ -f $configPath/runCPass0.sh ]] && cp -f $configPath/runCPass0.sh $targetDirectory && echo "## using local runCPass0.sh"
-      [[ -f $configPath/recCPass0.C ]] && cp -f $configPath/recCPass0.C $targetDirectory && echo "## using local recCPass0.C"
-      [[ -f $configPath/runCalibTrain.C ]] && cp -f $configPath/runCalibTrain.C $targetDirectory && echo "## using local runCalibTrain.C"
-      [[ -f $configPath/localOCDBaccessConfig.C ]] && cp -f $configPath/localOCDBaccessConfig.C $targetDirectory && echo "## using local localOCDBaccessConfig.C"
-
-      [[ -f $configPath/CPass0/runCPass0.sh ]] && cp -f $configPath/CPass0/runCPass0.sh $targetDirectory && echo "## using local runCPass0.sh"
-      [[ -f $configPath/CPass0/recCPass0.C ]] && cp -f $configPath/CPass0/recCPass0.C $targetDirectory && echo "## using local recCPass0.C"
-      [[ -f $configPath/CPass0/runCalibTrain.C ]] && cp -f $configPath/CPass0/runCalibTrain.C $targetDirectory && echo "## using local runCalibTrain.C"
-      [[ -f $configPath/CPass0/localOCDBaccessConfig.C ]] && cp -f $configPath/CPass0/localOCDBaccessConfig.C $targetDirectory && echo "## using local localOCDBaccessConfig.C"
-
-      echo "... files copied."
-      echo
-
       # limit nFiles to nMaxChunks
       nFiles=`wc -l < $localInputList`
       [[ $nFiles -eq 0 ]] && echo "list contains ZERO files! exiting..." && exit 1
@@ -1188,10 +1447,10 @@ goSubmit()
       echo "requested success rate is $percentProcessedFilesToContinue%"
       echo "merging will start after $nFilesToWaitFor jobs are done"
 
-      submit $JOBID1 1 $nFiles "" "$theScript" "CPass0 $targetDirectory $localInputList $nEvents $currentDefaultOCDB $configFile $runNumber"
+      submit $JOBID1 1 $nFiles 000 "$self" "CPass0 $targetDirectory $localInputList $nEvents $currentDefaultOCDB $configFile $runNumber"
 
       ## submit a monitoring job that will run until a certain number of jobs are done with reconstruction
-      submit "$JOBID1wait" 1 1 "" "$theScript" "WaitForOutput ${commonOutputPath} 'cpass0.job*.run$runNumber.done' $nFilesToWaitFor $maxSecondsToWait '-maxdepth 1'"
+      submit "$JOBID1wait" 1 1 000 "$self" "WaitForOutput ${commonOutputPath} 'cpass0.job*.run$runNumber.done' $nFilesToWaitFor $maxSecondsToWait '-maxdepth 1'"
       LASTJOB=$JOBID1wait
 
     fi #end running CPass0
@@ -1207,25 +1466,28 @@ goSubmit()
       echo "submit CPass0 merging for run $runNumber"
       echo
 
-      targetDirectory="${commonOutputPath}/000${runNumber}/CPass0"
+      targetDirectory="${commonOutputPath}/000${runNumber}/cpass0"
       mkdir -p $targetDirectory
 
-      # copy the scripts
-      cp -f $self $targetDirectory
-      [[ -f $configPath/mergeMakeOCDB.sh ]] && cp -f $configPath/mergeMakeOCDB.sh $targetDirectory && echo "## using local mergeMakeOCDB.sh"
-      [[ -f $configPath/merge.C ]] && cp -f $configPath/merge.C $targetDirectory && echo "## using local merge.C"
-      [[ -f $configPath/mergeMakeOCDB.byComponent.sh ]] && cp -f $configPath/mergeMakeOCDB.byComponent.sh $targetDirectory && echo "## using local mergeMakeOCDB.byComponent.sh"
-      [[ -f $configPath/mergeByComponent.C ]] && cp -f $configPath/mergeByComponent.C $targetDirectory && echo "## using local mergeByComponent.C"
-      [[ -f $configPath/makeOCDB.C ]] && cp -f $configPath/makeOCDB.C $targetDirectory && echo "## using local makeOCDB.C"
+      #copy the scripts
+      filesMergeCPass0=(
+      "$configPath/OCDB.root"
+      "$configPath/mergeMakeOCDB.byComponent.sh"
+      "$configPath/mergeMakeOCDB.sh"
+      "$configPath/localOCDBaccessConfig.C"
+      "$configPath/mergeByComponent.C"
+      "$configPath/makeOCDB.C"
+      "$configPath/merge.C"
+      )
+      for file in ${filesMergeCPass0[*]}; do
+        [[ -f ${file} ]] && echo "copying ${file}" && cp -f ${file} ${commonOutputPath}
+      done
+  
 
-      theScript="$targetDirectory/${self##*/}"
-      chmod u+x $theScript
-
-      echo submit $JOBID2 1 1 "$LASTJOB" "$theScript" "MergeCPass0 $targetDirectory $currentDefaultOCDB $configFile $runNumber"
-      submit $JOBID2 1 1 "$LASTJOB" "$theScript" "MergeCPass0 $targetDirectory $currentDefaultOCDB $configFile $runNumber"
+      echo submit $JOBID2 1 1 "$LASTJOB" "$self" "MergeCPass0 $targetDirectory $currentDefaultOCDB $configFile $runNumber"
+      submit $JOBID2 1 1 "$LASTJOB" "$self" "MergeCPass0 $targetDirectory $currentDefaultOCDB $configFile $runNumber"
       LASTJOB=$JOBID2
 
-      cd $configPath
       echo
     fi
     # end of merging CPass0
@@ -1237,30 +1499,10 @@ goSubmit()
 
     if [ $runCPass1reco -eq 1 ]; then
 
-      targetDirectory="${commonOutputPath}/000${runNumber}/CPass1"
+      targetDirectory="${commonOutputPath}/000${runNumber}/cpass1"
 
       # safety feature: if we are re-running for any reason we want to delete the previous output first.
       [[ -d $targetDirectory ]] && rm -rf $targetDirectory/* && echo "removed old output at $targetDirectory/*"
-
-      ################################################################################
-      # for the CPass1, based on the OCDB entries produced, we need to create the script 
-      # to set the specific storages to the output of CPass0
-      # submit a job that will execute after merging/OCDB export that will do it.
-
-      mkdir -p $targetDirectory
-      mkdir -p $targetDirectory/logs
-      cp -f $self $targetDirectory
-      theScript="$targetDirectory/${self##*/}"
-
-      echo
-      echo submitting the OCDB specific storage config making script for run $runNumber
-      echo
-
-      [[ -f $configPath/localOCDBaccessConfig.C ]] && cp -f $configPath/localOCDBaccessConfig.C $targetDirectory && echo "## using local localOCDBaccessConfig.C"
-
-      submit $JOBID3 1 1 "$LASTJOB" "$theScript" "ConfOCDB ${commonOutputPath}/000${runNumber}/CPass0/OCDB ${targetDirectory} "
-      LASTJOB=$JOBID3
-      ################################################################################
 
       echo
       echo "starting CPass1... for run $runNumber"
@@ -1270,31 +1512,23 @@ goSubmit()
       mkdir -p $targetDirectory
       mkdir -p $targetDirectory/logs
       
-      localInputList=$targetDirectory/${inputList##*/}
-      theScript="$targetDirectory/${self##*/}"
-      cp -f $self $theScript
-      chmod u+x $theScript
+      cp -f $configFile $targetDirectory
+      filesCPass1=( 
+      "$configPath/runCPass1.sh"
+      "$configPath/recCPass1.C"
+      "$configPath/recCPass1_OuterDet.C"
+      "$configPath/runCalibTrain.C"
+      "$configPath/QAtrain_duo.C"
+      "$configPath/localOCDBaccessConfig.C"
+      "$configPath/OCDB.root"
+      )
+      for file in ${filesCPass1[*]}; do
+        [[ -f ${file} ]] && echo "copying ${file}" && cp -f ${file} ${commonOutputPath}
+      done
 
+      localInputList=$targetDirectory/${inputList##*/}
       rm -f $localInputList
       egrep "\/000$runNumber\/" $inputList >> $localInputList
-      cp -f $configFile $targetDirectory
-      [[ -f $configPath/runCPass1.sh ]] && cp -f $configPath/runCPass1.sh $targetDirectory && echo "## using local runCPass1.sh"
-      [[ -f $configPath/recCPass1.C ]] && cp -f $configPath/recCPass1.C $targetDirectory && echo "## using local recCPass1.C"
-      [[ -f $configPath/recCPass1_OuterDet.C ]] && cp -f $configPath/recCPass1_OuterDet.C $targetDirectory && echo "## using local recCPass1_OuterDet.C"
-      [[ -f $configPath/runCalibTrain.C ]] && cp -f $configPath/runCalibTrain.C $targetDirectory && echo "## using local runCalibTrain.C"
-      [[ -f $configPath/QAtrain.C ]] && cp -f $configPath/QAtrain.C $targetDirectory && echo "## using local QAtrain.C"
-      [[ -f $configPath/QAtrain_duo.C ]] && cp -f $configPath/QAtrain_duo.C $targetDirectory && echo "## using local QAtrain_duo.C"
-
-      [[ -f $configPath/CPass1/runCPass1.sh ]] && cp -f $configPath/CPass1/runCPass1.sh $targetDirectory && echo "## using local runCPass1.sh"
-      [[ -f $configPath/CPass1/recCPass1.C ]] && cp -f $configPath/CPass1/recCPass1.C $targetDirectory && echo "## using local recCPass1.C"
-      [[ -f $configPath/CPass1/recCPass1_OuterDet.C ]] && cp -f $configPath/CPass1/recCPass1_OuterDet.C $targetDirectory && echo "## using local recCPass1_OuterDet.C"
-      [[ -f $configPath/CPass1/runCalibTrain.C ]] && cp -f $configPath/CPass1/runCalibTrain.C $targetDirectory && echo "## using local runCalibTrain.C"
-      [[ -f $configPath/CPass1/QAtrain.C ]] && cp -f $configPath/CPass1/QAtrain.C $targetDirectory && echo "## using local QAtrain.C"
-      [[ -f $configPath/CPass1/QAtrain_duo.C ]] && cp -f $configPath/CPass1/QAtrain_duo.C $targetDirectory && echo "## using local QAtrain_duo.C"
-
-      echo "... files copied."
-      echo
-
       # limit nFiles to nMaxChunks
       nFiles=`wc -l < $localInputList`
       [[ $nFiles -eq 0 ]] && echo "list contains ZERO files! exiting..." && exit 1
@@ -1312,11 +1546,11 @@ goSubmit()
       echo "requested success rate is $percentProcessedFilesToContinue%"
       echo "merging will start after $nFilesToWaitFor jobs are done"
 
-      submit $JOBID4 1 $nFiles "$LASTJOB" "$theScript" "CPass1 $targetDirectory $localInputList $nEvents $currentDefaultOCDB $configFile $runNumber"
+      submit $JOBID4 1 $nFiles "$LASTJOB" "$self" "CPass1 $targetDirectory $localInputList $nEvents $currentDefaultOCDB $configFile $runNumber"
 
       ################################################################################
       ## submit a monitoring job that will run until a certain number of jobs are done with reconstruction
-      submit "$JOBID4wait" 1 1 "$LASTJOB" "$theScript" "WaitForOutput ${commonOutputPath} 'cpass1.job*.run${runNumber}.done' $nFilesToWaitFor $maxSecondsToWait '-maxdepth 1'"
+      submit "$JOBID4wait" 1 1 "$LASTJOB" "$self" "WaitForOutput ${commonOutputPath} 'cpass1.job*.run${runNumber}.done' $nFilesToWaitFor $maxSecondsToWait '-maxdepth 1'"
       LASTJOB=$JOBID4wait
       ################################################################################
 
@@ -1331,28 +1565,55 @@ goSubmit()
       echo "submit CPass1 merging for run $runNumber"
       echo
 
-      targetDirectory="${commonOutputPath}/000${runNumber}/CPass1"
+      targetDirectory="${commonOutputPath}/000${runNumber}/cpass1"
       mkdir -p $targetDirectory
 
-      # copy the scripts
-      cp -f $self $targetDirectory
-      [[ -f $configPath/mergeMakeOCDB.sh ]] && cp -f $configPath/mergeMakeOCDB.sh $targetDirectory && echo "## using local mergeMakeOCDB.sh"
-      [[ -f $configPath/merge.C ]] && cp -f $configPath/merge.C $targetDirectory && echo "## using local merge.C"
-      [[ -f $configPath/mergeMakeOCDB.byComponent.sh ]] && cp -f $configPath/mergeMakeOCDB.byComponent.sh $targetDirectory && echo "## using local mergeMakeOCDB.byComponent.sh"
-      [[ -f $configPath/mergeByComponent.C ]] && cp -f $configPath/mergeByComponent.C $targetDirectory && echo "## using local mergeByComponent.C"
-      [[ -f $configPath/makeOCDB.C ]] && cp -f $configPath/makeOCDB.C $targetDirectory && echo "## using local makeOCDB.C"
+      # copy files 
+      filesMergeCPass1=(
+      "$configPath/OCDB.root"
+      "$configPath/localOCDBaccessConfig.C"
+      "$configPath/mergeMakeOCDB.byComponent.sh"
+      "$configPath/mergeByComponent.C"
+      "$configPath/makeOCDB.C"
+      "$configPath/merge.C"
+      "$configPath/mergeMakeOCDB.sh"
+      "$configPath/QAtrain_duo.C"
+      )
+      for file in ${filesMergeCPass1[*]}; do
+        [[ -f ${file} ]] && echo "copying ${file}" && cp -f ${file} ${commonOutputPath}
+      done
 
-      theScript="$targetDirectory/${self##*/}"
-      chmod u+x $theScript
-
-      echo submit "$JOBID5" 1 1 "$LASTJOB" "$theScript" "MergeCPass1 $targetDirectory $currentDefaultOCDB $configFile $runNumber"
-      submit "$JOBID5" 1 1 "$LASTJOB" "$theScript" "MergeCPass1 $targetDirectory $currentDefaultOCDB $configFile $runNumber"
-      ((numberOfSubmittedCPass1MergingJobs++))
+      echo submit "$JOBID5" 1 1 "$LASTJOB" "$self" "MergeCPass1 $targetDirectory $currentDefaultOCDB $configFile $runNumber"
+      submit "$JOBID5" 1 1 "$LASTJOB" "$self" "MergeCPass1 $targetDirectory $currentDefaultOCDB $configFile $runNumber"
       LASTJOB=$JOBID5
       echo
     fi
 
+    ##############################
+    if [ $runESDfiltering -eq 1 ]; then
+      export targetDirectory=$commonOutputPath
+      echo submitting filtering
+      echo targetDirectory=$targetDirectory
+      submit "$JOBmakeESDlistCPass1" 1 1 "$LASTJOB" "$self" "printValues esd ${commonOutputPath}/cpass1.ESD.run${runNumber}.list ${commonOutputPath}/cpass1.job*.run${runNumber}.done "
+      submit "$JOBfilterESDcpass1" 1 1 "$JOBmakeESDlistCPass1" "$self" "MakeFilteredTrees ${commonOutputPath}/000${runNumber}/cpass1 ${runNumber} ${commonOutputPath}/cpass1.ESD.run${runNumber}.list ${filteringFactorHighPt} ${filteringFactorV0s} ${currentDefaultOCDB} 1000000 0 10000000 0 ${configFile}"
+    fi
+
   done
+
+  #########################################
+  #make lists with output files - QA, trending, filtering and calibration
+  export targetDirectory=$commonOutputPath
+  submit "flQA_${JOBpostfix}" 1 1 "$LASTJOB" "$self" "printValues qafile ${commonOutputPath}/qa.list ${commonOutputPath}/merge.cpass1.run*.done"
+  submit "flCal_${JOBpostfix}" 1 1 "$LASTJOB" "$self" "printValues calibfile ${commonOutputPath}/calib.list ${commonOutputPath}/merge.cpass1.run*.done"
+  submit "flTr_${JOBpostfix}" 1 1 "$LASTJOB" "$self" "printValues trendingfile ${commonOutputPath}/trending.list ${commonOutputPath}/merge.cpass1.run*.done"
+  if [[ -n $runESDfiltering ]]; then
+    submit "wFil_${JOBpostfix}" 1 1 "$LASTJOB" "$self" "WaitForOutput ${commonOutputPath} 'filtering.cpass1.run*.done' ${#listOfRuns[*]} $maxSecondsToWait '-maxdepth 1'"
+    submit "flFil_${JOBpostfix}" 1 1 "wFil_${JOBpostfix}" "$self" "printValues filteredTree ${commonOutputPath}/filtering.list ${commonOutputPath}/filtering.cpass1.run*.done"
+  fi
+
+  #merge trending
+  submit "mTr_${JOBpostfix}" 1 1 "flTr_${JOBpostfix}" "$self" "merge trending.list trending_merged.root ${configFile}"
+  
 
   ################################################################################
   ################################################################################
@@ -1362,12 +1623,11 @@ goSubmit()
     echo "submit make a summary"
     echo
 
-    targetDirectory="${commonOutputPath}"
+    export targetDirectory="${commonOutputPath}"
     mkdir -p $targetDirectory
     mkdir -p $targetDirectory/logs
     [[ ! -f $targetDirectory/${self##*/} ]] && cp -f $self $targetDirectory
-    theScript="$targetDirectory/${self##*/}"
-    submit "$JOBID6" 1 1 "$LASTJOB" "$theScript" "MakeSummary $targetDirectory $configFile"
+    submit "$JOBID6" 1 1 "$LASTJOB" "$self" "makeSummary $configFile $targetDirectory $commonOutputPath"
   fi
   ################################################################################
   
@@ -1378,30 +1638,43 @@ goSubmit()
     echo "submit make QA plots"
     echo
 
-    ## submit a monitoring job that will wait for a specified number of files to appear somewhere
+    mkdir -p ${commonOutputPath}/logs
     targetDirectory="${commonOutputPath}"
-    [[ ! -f $targetDirectory/${self##*/} ]] && cp -f $self $targetDirectory
-    theScript="$targetDirectory/${self##*/}"
-    echo submit "$JOBID5wait 1 1 $theScript WaitForOutput ${commonOutputPath} 'merge.cpass1.run*.done' $numberOfSubmittedCPass1MergingJobs $maxSecondsToWait '-maxdepth 1'"
-    submit "$JOBID5wait" 1 1 "" "$theScript" "WaitForOutput ${commonOutputPath} 'merge.cpass1.run*.done' $numberOfSubmittedCPass1MergingJobs $maxSecondsToWait '-maxdepth 1'"
-    LASTJOB=$JOBID5wait
-  
-    targetDirectory="${commonOutputPath}/QAplots/"
-    [[ -d $targetDirectory ]] && rm -rf $targetDirectory/*
-    mkdir -p $targetDirectory
-    mkdir -p $targetDirectory/logs
-    qaFilesDirectory="${commonOutputPath}"
-    [[ ! -f $targetDirectory/${self##*/} ]] && cp -f $self $targetDirectory
-    theScript="$targetDirectory/${self##*/}"
 
-    echo submit "$JOBID7" 1 1 "$LASTJOB" "$theScript" "CreateQAplots QAplots CPass1 $targetDirectory $qaFilesDirectory $qaPlotsScript $configFile"
-    submit "$JOBID7" 1 1 "$LASTJOB" "$theScript" "CreateQAplots QAplots CPass1 $targetDirectory $qaFilesDirectory $qaPlotsScript $configFile"
+    submit "$JOBID7" 1 1 "flQA_${JOBpostfix}" "$self" "CreateQAplots qa.list $productionID QAplots $configFile"
     LASTJOB=$JOBID7
   fi
+  ################################################################################
 
   #restore stdout
   exec 1>&7 7>&-
   echo "jobs submitted."
+}
+
+goWaitForOutput()
+{
+  umask 0002
+  [[ $# -lt 3 ]] && echo "goWaitForOutput() wrong number of arguments, exiting.." && exit 1
+  echo searchPath=$1
+  echo fileName=$2
+  echo numberOfFiles=$3
+  echo maxSecondsToWait=$4
+  searchPath=$1
+  fileName=$2
+  numberOfFiles=$3
+  maxSecondsToWait=$4
+  extraFindOptions=$5
+  echo "command to be executed: find $searchPath -name "$fileName" ${extraFindOptions}"
+  [[ -z "$maxSecondsToWait" ]] && maxSecondsToWait=$(( 3600*12 ))
+  while true; do
+    #n=$(find $searchPath ${extraFindOptions} -name "$fileName" | wc -l)
+    n=$(/bin/ls -1 ${searchPath}/${fileName} 2>/dev/null | wc -l)
+    [[ $n -gt 0 ]] && echo "found $n X $fileName"
+    [[ $n -ge $numberOfFiles ]] && break
+    [[ $SECONDS -gt $maxSecondsToWait ]] && break
+    sleep 60
+  done
+  echo "DONE! exiting..."
 }
 
 main "$@"

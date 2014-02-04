@@ -588,9 +588,10 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliAODPWG4ParticleCorrelation
 
 
 
-//___________________________________________________________________________________________________________________________________
-void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliAODPWG4ParticleCorrelation * pCandidate,
-								  Float_t coneptsumCluster,  Float_t coneptsumCell, Float_t coneptsumTrack, Float_t &etaBandptsumTrackNorm, Float_t &etaBandptsumClusterNorm)
+//_____________________________________________________________________________________________________________________________________
+void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliAODPWG4ParticleCorrelation * pCandidate, Float_t coneptsumCluster,
+                                                                  Float_t coneptsumCell,          Float_t coneptsumTrack,
+                                                                  Float_t &etaBandptsumTrackNorm, Float_t &etaBandptsumClusterNorm)
 {
   //normalize phi/eta band per area unit
 
@@ -906,7 +907,7 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
   fhConeSumPtCluster   ->Fill(ptTrig,     coneptsumCluster);
 }
 
-//__________________________________________________________________________________________________
+//______________________________________________________________________________________________________
 void AliAnaParticleIsolation::CalculateCaloCellSignalInCone(AliAODPWG4ParticleCorrelation * aodParticle,
                                                             Float_t & coneptsumCell)
 {
@@ -3205,6 +3206,11 @@ void AliAnaParticleIsolation::Init()
     GetIsolationCut()->SetPtFraction(100);
     GetIsolationCut()->SetConeSize(1);
   }
+  
+  if(!GetReader()->IsCTSSwitchedOn() && GetIsolationCut()->GetParticleTypeInCone()!=AliIsolationCut::kOnlyNeutral)
+    AliFatal("STOP!: You want to use CTS tracks in analysis but not read!! \n!!Check the configuration file!!\n");
+  
+
 }
 
 //____________________________________________
@@ -3246,16 +3252,11 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
   //Search for the isolated photon in fCalorimeter with pt > GetMinPt()
   
   if(!GetInputAODBranch())
-  {
-    printf("AliAnaParticleIsolation::MakeAnalysisFillAOD() - No input particles in AOD with name branch < %s >, STOP \n",GetInputAODName().Data());
-    abort();
-  }
+    AliFatal(Form("No input particles in AOD with name branch < %s >, STOP",GetInputAODName().Data()));
+  
   
   if(strcmp(GetInputAODBranch()->GetClass()->GetName(), "AliAODPWG4ParticleCorrelation"))
-  {
-    printf("AliAnaParticleIsolation::MakeAnalysisFillAOD() - Wrong type of AOD object, change AOD class name in input AOD: It should be <AliAODPWG4ParticleCorrelation> and not <%s> \n",GetInputAODBranch()->GetClass()->GetName());
-    abort();
-  }
+    AliFatal(Form("Wrong type of AOD object, change AOD class name in input AOD: It should be <AliAODPWG4ParticleCorrelation> and not <%s> \n",GetInputAODBranch()->GetClass()->GetName()));
   
   Int_t n = 0, nfrac = 0;
   Bool_t  isolated  = kFALSE ;

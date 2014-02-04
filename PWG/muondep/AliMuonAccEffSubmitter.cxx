@@ -82,10 +82,12 @@ AliMuonAccEffSubmitter::AliMuonAccEffSubmitter(const char* generator)
 fRatio(-1.0),
 fFixedNofEvents(10000),
 fMaxEventsPerChunk(5000),
+fOCDBPath(""),
 fSplitMaxInputFileNumber(20),
 fCompactMode(1),
 fExternalConfig(""),
 fUseOCDBSnapshots(kFALSE),
+fSnapshotDir(""),
 fUseAODMerging(kFALSE)
 {
   // ctor

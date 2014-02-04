@@ -694,10 +694,10 @@ void AliAnaChargedParticles::Init()
 {  
   //Init
   //Do some checks
-  if(!GetReader()->IsCTSSwitchedOn()){
-    printf("AliAnaChargedParticles::Init() - STOP!: You want to use CTS tracks in analysis but not read!! \n!!Check the configuration file!!\n");
-    abort();
-  }
+  
+  if(!GetReader()->IsCTSSwitchedOn())
+    AliFatal("STOP!: You want to use CTS tracks in analysis but not read!! \n!!Check the configuration file!!\n");
+  
   
 }
 

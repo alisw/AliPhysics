@@ -30,7 +30,6 @@
 #include "AliLnEfficiency.h"
 #include "AliLnRatio.h"
 #include "AliLnSpectra.h"
-#include "AliLnB2.h"
 #include "AliLnDriver.h"
 #include "B2.h"
 

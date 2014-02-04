@@ -365,6 +365,18 @@ AliFMDCorrector::CreateOutputObjects(TList* dir)
   }
 }
 
+#define PF(N,V,...)					\
+  AliForwardUtil::PrintField(N,V, ## __VA_ARGS__)
+#define PFB(N,FLAG)				\
+  do {									\
+    AliForwardUtil::PrintName(N);					\
+    std::cout << std::boolalpha << (FLAG) << std::noboolalpha << std::endl; \
+  } while(false)
+#define PFV(N,VALUE)					\
+  do {							\
+    AliForwardUtil::PrintName(N);			\
+    std::cout << (VALUE) << std::endl; } while(false)
+
 //____________________________________________________________________
 void
 AliFMDCorrector::Print(Option_t* /* option */) const
@@ -374,16 +386,13 @@ AliFMDCorrector::Print(Option_t* /* option */) const
   // Parameters:
   //    option Not used 
   //
-  char ind[gROOT->GetDirLevel()+1];
-  for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
-  ind[gROOT->GetDirLevel()] = '\0';
-  std::cout << ind << ClassName() << ": " << GetName() <<  "\n"
-            << std::boolalpha
-            << ind << " Use secondary maps:     " << fUseSecondaryMap << "\n"
-            << ind << " Use vertex bias:        " << fUseVertexBias << "\n"
-            << ind << " Use acceptance:         " << fUseAcceptance << "\n"
-            << ind << " Use merging efficiency: " << fUseMergingEfficiency
-            << std::noboolalpha << std::endl;
+  AliForwardUtil::PrintTask(*this);
+  gROOT->IncreaseDirLevel();
+  PFB("Use secondary maps",		fUseSecondaryMap );
+  PFB("Use vertex bias",		fUseVertexBias );
+  PFB("Use acceptance",			fUseAcceptance );
+  PFB("Use merging efficiency",		fUseMergingEfficiency);
+  gROOT->DecreaseDirLevel();  
 }
 
 //====================================================================

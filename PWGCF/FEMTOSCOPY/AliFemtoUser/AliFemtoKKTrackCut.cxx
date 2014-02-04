@@ -88,6 +88,15 @@ ClassImp(AliFemtoKKTrackCut)
     fLabel(0),
     fStatus(0),
     fPIDMethod(knSigma),
+//ml
+  fNsigmaTPCle250(3.),
+  fNsigmaTPC250_400(3.),
+  fNsigmaTPC400_450(3.),
+  fNsigmaTPC450_500(3.),
+  fNsigmaTPCge500(3.),
+  fNsigmaTOF500_800(3.),
+  fNsigmaTOF800_1000(3.),
+  fNsigmaTOFge1000(3.),
     fminTPCclsF(0),
     fminTPCncls(0),
     fminITScls(0),
@@ -129,6 +138,19 @@ ClassImp(AliFemtoKKTrackCut)
   fminTPCclsF=0;
   fminITScls=0;
   fPIDMethod=knSigma;
+
+  fNsigmaTPCle250=3.0;
+  fNsigmaTPC250_400=3.0;
+  fNsigmaTPC400_450=3.0;
+  fNsigmaTPC450_500=3.0;
+  fNsigmaTPCge500=3.0;
+
+  fNsigmaTOF500_800=3.0;
+  fNsigmaTOF800_1000=3.0;
+  fNsigmaTOFge1000=3.0;
+
+
+
 }
 //------------------------------
 AliFemtoKKTrackCut::~AliFemtoKKTrackCut(){
@@ -881,9 +903,9 @@ bool AliFemtoKKTrackCut::IsKaonTOFNSigma(float mom, float nsigmaK)
 bool AliFemtoKKTrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaTOFK)
 {
 
-  if(mom<0.5)
+  if(mom<0.25)
     {
-      if(TMath::Abs(nsigmaTPCK)<2.0)
+      if(TMath::Abs(nsigmaTPCK)<fNsigmaTPCle250)
 	{ 
 	  return true;
 	} 
@@ -892,11 +914,52 @@ bool AliFemtoKKTrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaT
 	  return false;
 	}
     }
-  
-  if(mom>=0.5)
+
+  if(mom>=0.25 && mom<0.4)
     {
-      if(TMath::Abs(nsigmaTOFK)<3.0 && TMath::Abs(nsigmaTPCK)<3.0) 
+      if(TMath::Abs(nsigmaTPCK)<fNsigmaTPC250_400)
+	{ 
+	  return true;
+	} 
+      else 
 	{
+	  return false;
+	}
+    }
+
+  if(mom>=0.4 && mom<0.45)
+    {
+      if(TMath::Abs(nsigmaTPCK)<fNsigmaTPC400_450)
+	{ 
+	  return true;
+	} 
+      else 
+	{
+	  return false;
+	}
+    }
+
+ if(mom>=0.45 && mom<0.5)
+    {
+      if(TMath::Abs(nsigmaTPCK)<fNsigmaTPC450_500)
+	{ 
+	  return true;
+	} 
+      else 
+	{
+	  return false;
+	}
+    }
+
+/////////////  
+  
+  
+  
+  if(mom>=0.5 && mom<0.8)
+    {
+      if(TMath::Abs(nsigmaTOFK)<fNsigmaTOF500_800 && TMath::Abs(nsigmaTPCK)<fNsigmaTPCge500) 
+	{
+	  //     cout<<"500-800 "<<fNsigmaTOF500_800<<" "<<nsigmaTOFK<<endl;
 	  return true;
 	}
       else
@@ -904,6 +967,34 @@ bool AliFemtoKKTrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaT
 	  return false;
 	}
     }
+
+  if(mom>=0.8 && mom<1.0)
+    {
+      if(TMath::Abs(nsigmaTOFK)<fNsigmaTOF800_1000 && TMath::Abs(nsigmaTPCK)<fNsigmaTPCge500) 
+	{
+	  //          cout<<"800-1000 "<<fNsigmaTOF800_1000<<" "<<nsigmaTOFK<<endl;
+	  return true;
+	}
+      else
+	{
+	  return false;
+	}
+    }
+
+ if(mom>=1.0)
+    {
+      if(TMath::Abs(nsigmaTOFK)<fNsigmaTOFge1000 && TMath::Abs(nsigmaTPCK)<fNsigmaTPCge500) 
+	{
+	  //      cout<<">1000 "<<fNsigmaTOFge1000<<" "<<nsigmaTOFK<<endl;
+	  return true;
+	}
+      else
+	{
+	  return false;
+	}
+    }
+    
+    
     
 //   if(mom>1.5 || mom<0.15)return false;
   return false;
@@ -1010,4 +1101,48 @@ Bool_t AliFemtoKKTrackCut::CheckITSClusterRequirement(AliESDtrackCuts::ITSCluste
   }
   
   return kFALSE;
+}
+
+
+void AliFemtoKKTrackCut::SetNsigmaTPCle250(Double_t nsigma)
+{
+  fNsigmaTPCle250 = nsigma;
+}
+
+void AliFemtoKKTrackCut::SetNsigmaTPC250_400(Double_t nsigma)
+{
+  fNsigmaTPC250_400 = nsigma;
+}
+
+void AliFemtoKKTrackCut::SetNsigmaTPC400_450(Double_t nsigma)
+{
+  fNsigmaTPC400_450 = nsigma;
+}
+
+void AliFemtoKKTrackCut::SetNsigmaTPC450_500(Double_t nsigma)
+{
+  fNsigmaTPC450_500 = nsigma;
+}
+
+void AliFemtoKKTrackCut::SetNsigmaTPCge500(Double_t nsigma)
+{
+  fNsigmaTPCge500 = nsigma;
+}
+
+
+
+void AliFemtoKKTrackCut::SetNsigmaTOF500_800(Double_t nsigma)
+{
+  fNsigmaTOF500_800 = nsigma;
+}
+
+
+void AliFemtoKKTrackCut::SetNsigmaTOF800_1000(Double_t nsigma)
+{
+  fNsigmaTOF800_1000 = nsigma;
+}
+
+void AliFemtoKKTrackCut::SetNsigmaTOFge1000(Double_t nsigma)
+{
+  fNsigmaTOFge1000 = nsigma;
 }

@@ -375,6 +375,7 @@ Double_t AliAnalysisMuMuResult::GetErrorStat(const char* name, const char* subRe
         return r->GetErrorStat(name);
       }
     }
+    return 0.0;
   }
   
   Double_t variance= (1.0/v1)*(1.0/(n-1))*d;

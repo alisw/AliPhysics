@@ -56,6 +56,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   void SetInvariantMassCut (Double_t invmass) {fInvmassCut = invmass;};
   void SetMassConstraint	(Bool_t MassConstraint)		{ fSetMassConstraint	= MassConstraint; };
   void SetMassWidthCut  	(Bool_t MassWidthCut)		{ fSetMassWidthCut	= MassWidthCut; };
+  void SetMassNonlinear  	(Bool_t MassNonlinear)		{ fSetMassNonlinear	= MassNonlinear; };
   void SetMassCalMethod  	(Bool_t KFpart)		{ fSetKFpart = KFpart; };
   void SetQAHist (int qahist) {fqahist = qahist;};
   AliHFEpid *GetPID() const { return fPID; }
@@ -97,6 +98,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   Double_t		fInvmassCut;		//invariant mass cut value
   Bool_t		 fSetMassConstraint;		// Set mass constraint
   Bool_t		 fSetMassWidthCut;		// Set mass constraint
+  Bool_t		 fSetMassNonlinear;		// Set mass constraint
   Bool_t		 fSetKFpart;		// Set mass constraint
  
   int ftriggers[48][60];//!
@@ -135,6 +137,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   TH2F			*fPhoElecPtM20;	        //! Pho inclusive ele pt
   TH2F			*fSameElecPt;	        //! Same inclusive ele pt
   TH2F			*fSameElecPtM20;	        //! Same inclusive ele pt
+  TH2F			*fSemiElecPtM20;	        //! Same inclusive ele pt
 
   TH1F			*fTrackPtBefTrkCuts;	//! Track pt before track cuts	
   TH1F			*fTrackPtAftTrkCuts;	//! Track pt after track cuts
@@ -181,6 +184,9 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
  THnSparseD 		*fIncpTMCpho_pi0e_TPC;	//! MC HFE pid electron vs centrality
  THnSparseD 		*fPhoElecPtMC_pi0e_TPC;	        //! Pho inclusive ele pt
  THnSparseD 		*fSameElecPtMC_pi0e_TPC;	        //! Same inclusive ele pt
+ THnSparseD 		*fIncpTMCpho_eta_TPC;	//! MC HFE pid electron vs centrality
+ THnSparseD 		*fPhoElecPtMC_eta_TPC;	        //! Pho inclusive ele pt
+ THnSparseD 		*fSameElecPtMC_eta_TPC;	        //! Same inclusive ele pt
  TH1D                   *CheckNclust;  
  TH1D                   *CheckNits;  
  THnSparseD             *Hpi0pTcheck; 

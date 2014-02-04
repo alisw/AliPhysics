@@ -20,9 +20,14 @@ AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(char* title, const int& nbins, const 
   fRatio(0),
   fkTMonitor(0),
   fDetaDphiscal(kFALSE),
+  fPairKinematics(kFALSE),
   fRaddedps(1.2),
   fNumDEtaDPhiS(0),
-  fDenDEtaDPhiS(0)
+  fDenDEtaDPhiS(0),
+  PairReader(0)// ,
+  // fTrack1(NULL),
+  // fTrack2(NULL)
+
 {
   // set up numerator
   //  title = "Num Qinv (MeV/c)";
@@ -52,6 +57,10 @@ AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(char* title, const int& nbins, const 
   strncat(tTitDenDeDp,title, 100);
   fDenDEtaDPhiS = new TH2D(tTitDenDeDp,title,500,-0.2*TMath::Pi(),0.2*TMath::Pi(),500,-0.5,0.5);
 
+  char tTitPair[101] = "Pair";
+  strncat(tTitPair,title, 100);
+  PairReader = new TNtuple(tTitPair,title,  "px1:py1:pz1:e1:px2:py2:pz2:e2");
+
 
   // this next bit is unfortunately needed so that we can have many histos of same "title"
   // it is neccessary if we typedef TH1D to TH1d (which we do)
@@ -78,9 +87,14 @@ AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(const AliFemtoQinvCorrFctn& aCorrFctn
   fRatio(0),
   fkTMonitor(0),
   fDetaDphiscal(kFALSE),
+  fPairKinematics(kFALSE),
   fRaddedps(1.2),
   fNumDEtaDPhiS(0),
-  fDenDEtaDPhiS(0)
+  fDenDEtaDPhiS(0),
+  PairReader(0)// ,
+  // fTrack1(NULL),
+  // fTrack2(NULL)
+
 {
   // copy constructor
   fNumerator = new TH1D(*aCorrFctn.fNumerator);
@@ -94,6 +108,11 @@ AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(const AliFemtoQinvCorrFctn& aCorrFctn
   fDetaDphiscal = aCorrFctn.fDetaDphiscal;
   fRaddedps = aCorrFctn.fRaddedps;
 
+  fPairKinematics = aCorrFctn.fPairKinematics;
+
+  if (aCorrFctn.PairReader)
+    PairReader = (TNtuple*)aCorrFctn.PairReader;
+
 }
 //____________________________
 AliFemtoQinvCorrFctn::~AliFemtoQinvCorrFctn(){
@@ -104,6 +123,7 @@ AliFemtoQinvCorrFctn::~AliFemtoQinvCorrFctn(){
   delete fkTMonitor;
   delete fNumDEtaDPhiS;
   delete fDenDEtaDPhiS;
+  delete PairReader;
 
 }
 //_________________________
@@ -129,6 +149,11 @@ AliFemtoQinvCorrFctn& AliFemtoQinvCorrFctn::operator=(const AliFemtoQinvCorrFctn
 
   fDetaDphiscal = aCorrFctn.fDetaDphiscal;
   fRaddedps = aCorrFctn.fRaddedps;
+
+  fPairKinematics = aCorrFctn.fPairKinematics;
+
+  if (aCorrFctn.PairReader)
+    PairReader = (TNtuple*)aCorrFctn.PairReader;
 
   return *this;
 }
@@ -192,7 +217,8 @@ void AliFemtoQinvCorrFctn::AddRealPair(AliFemtoPair* pair){
       //AliWarning("Could not get AODInputHandler");
     }
     else {
-      AliAODEvent *fAOD;
+      AliAODEvent *fAOD // = new AliAODEvent()
+        ;
       magsign = fAOD->GetMagneticField();
       fAOD = aodH->GetEvent();
     }
@@ -235,6 +261,22 @@ void AliFemtoQinvCorrFctn::AddMixedPair(AliFemtoPair* pair){
   double weight = 1.0;
   double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
   fDenominator->Fill(tQinv,weight);
+
+  if (fPairKinematics) {
+    AliFemtoParticle* fTrack1 = pair->Track1();
+    AliFemtoParticle* fTrack2 = pair->Track2();
+
+    double px1 = fTrack1->FourMomentum().vect().x();
+    double py1 = fTrack1->FourMomentum().vect().y();
+    double pz1 = fTrack1->FourMomentum().vect().z();
+    double e1 = fTrack1->FourMomentum().e();
+
+    double px2 = fTrack2->FourMomentum().vect().x();
+    double py2 = fTrack2->FourMomentum().vect().y();
+    double pz2 = fTrack2->FourMomentum().vect().z();
+    double e2 = fTrack2->FourMomentum().e();
+    PairReader->Fill(px1, py1, pz1, e1, px2, py2, pz2, e2);
+  }
 
 //_______________________________________
   if (fDetaDphiscal) {
@@ -294,6 +336,9 @@ void AliFemtoQinvCorrFctn::Write(){
     fNumDEtaDPhiS->Write();
     fDenDEtaDPhiS->Write();
   }
+  if (fPairKinematics) {
+    PairReader->Write();
+  }
 }
 //______________________________
 TList* AliFemtoQinvCorrFctn::GetOutputList()
@@ -308,10 +353,17 @@ TList* AliFemtoQinvCorrFctn::GetOutputList()
     tOutputList->Add(fNumDEtaDPhiS);
     tOutputList->Add(fDenDEtaDPhiS);
   }
+  if (fPairKinematics) {
+    tOutputList->Add(PairReader);
+  }
   return tOutputList;
 }
 
 void AliFemtoQinvCorrFctn::CalculateDetaDphis(Bool_t dedpsc, Double_t rad) {
   fDetaDphiscal = dedpsc;
   fRaddedps = rad;
+}
+
+void AliFemtoQinvCorrFctn::CalculatePairKinematics(Bool_t pk) {
+  fPairKinematics = pk;
 }

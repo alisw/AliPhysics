@@ -13,7 +13,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-// $Id: AliAnalysisTaskLongRangeCorrelations.cxx 313 2013-06-28 16:43:30Z cmayer $
+// $Id: AliAnalysisTaskLongRangeCorrelations.cxx 359 2013-10-29 15:39:09Z cmayer $
 
 #include <numeric>
 #include <functional>
@@ -36,6 +36,9 @@
 #include "AliLog.h"
 #include "AliTHn.h"
 
+#include "AliMCEventHandler.h"
+#include "AliMCEvent.h"
+#include "AliStack.h"
 #include "AliAnalysisTaskLongRangeCorrelations.h"
 
 
@@ -54,6 +57,10 @@ AliAnalysisTaskLongRangeCorrelations::AliAnalysisTaskLongRangeCorrelations(const
   , fPtMin(0.2), fPtMax(1e10)
   , fPhiMin(0.), fPhiMax(TMath::TwoPi())
   , fMaxAbsVertexZ(10.)
+  , fSelectPrimaryMCParticles(0)
+  , fSelectPrimaryMCDataParticles(0)
+  , fNMin(-1)
+  , fNMax(-1)
   , fnBinsCent( 220), fnBinsPt(400), fnBinsPhi(4),              fnBinsEta(120)
   , fxMinCent( -5.0), fxMinPt( 0.0), fxMinPhi( 0.0),            fxMinEta(-1.5)
   , fxMaxCent(105.0), fxMaxPt( 4.0), fxMaxPhi( TMath::TwoPi()), fxMaxEta( 1.5) {
@@ -213,7 +220,7 @@ void AliAnalysisTaskLongRangeCorrelations::UserExec(Option_t* ) {
   // event is accepted
   // ------------------
 
-  TObjArray* tracksMain(GetAcceptedTracks(pAOD, centrality));
+  TObjArray* tracksMain(GetAcceptedTracks(pAOD, arrayMC, centrality));
   Fill("histQAMultiplicityBeforeCuts", pAOD->GetNumberOfTracks());
   Fill("histQAMultiplicityAfterCuts", tracksMain->GetEntriesFast());
   
@@ -273,6 +280,18 @@ TString AliAnalysisTaskLongRangeCorrelations::GetOutputListName() const {
   listName += TString::Format("_cent%.0fT%.0f", fCentMin, fCentMax);
   listName += TString::Format("_ptMin%.0fMeV",  1e3*fPtMin);
   listName += TString::Format("_phi%.0fT%.0f",  TMath::RadToDeg()*fPhiMin, TMath::RadToDeg()*fPhiMax);
+  if ( 1 == fSelectPrimaryMCParticles)
+    listName += "_selPrimMC";
+  if (-1 == fSelectPrimaryMCParticles)
+    listName += "_selNonPrimMC";
+  if ( 1 == fSelectPrimaryMCDataParticles)
+    listName += "_selPrimMCData";
+  if (-1 == fSelectPrimaryMCDataParticles)
+    listName += "_selNonPrimMCData";
+  if (-1 != fNMin)
+    listName += TString::Format("_nMin%d", fNMin);
+  if (-1 != fNMax)
+    listName += TString::Format("_nMax%d", fNMax);
   return listName;
 }
 
@@ -326,8 +345,9 @@ AliTHn* AliAnalysisTaskLongRangeCorrelations::MakeHistPhiEtaPhiEta(const char* n
   return h;
 }
 
-TObjArray* AliAnalysisTaskLongRangeCorrelations::GetAcceptedTracks(AliAODEvent* pAOD,
-								   Double_t centrality) {
+TObjArray* AliAnalysisTaskLongRangeCorrelations::GetAcceptedTracks(AliAODEvent*  pAOD,
+								   TClonesArray* arrayMC,
+								   Double_t      centrality) {
   TObjArray* tracks= new TObjArray;
   tracks->SetOwner(kTRUE);
 
@@ -343,9 +363,37 @@ TObjArray* AliAnalysisTaskLongRangeCorrelations::GetAcceptedTracks(AliAODEvent* 
     // select only primary tracks
     if (pAODTrack->GetType() != AliAODTrack::kPrimary) continue;
 
+    if (NULL != arrayMC) {
+      const Int_t label(pAODTrack->GetLabel());
+      AliAODMCParticle* mcParticle((label >= 0) 
+				   ? static_cast<AliAODMCParticle*>(arrayMC->At(label))
+				   : NULL);
+      if (label >=0 && NULL == mcParticle)
+	AliFatal("MC particle not found");
+
+//       const Bool_t isPhysicalPrimary(mcParticle->IsPhysicalPrimary());
+//       Printf("mcParticle->IsPhysicalPrimary() %d", isPhysicalPrimary);
+
+      switch (fSelectPrimaryMCDataParticles) {
+      case -1:
+	if (label < 0) continue;
+	if (kTRUE  == mcParticle->IsPhysicalPrimary()) continue;
+	break;
+      case  0:
+	// NOP, take all tracks
+	break;
+      case  1:
+	if (label < 0) continue;
+	if (kFALSE == mcParticle->IsPhysicalPrimary()) continue;
+	break;
+      default:
+	AliFatal("fSelectPrimaryMCDataParticles != {-1,0,1}");
+      }            
+    }
+
     // select only charged tracks
     if (pAODTrack->Charge() == 0) continue;
-
+    
     Fill("histQACentPt", pAODTrack->Charge()>0, centrality,       pAODTrack->Pt());
     Fill("histQAPhiEta", pAODTrack->Charge()>0, pAODTrack->Phi(), pAODTrack->Eta());
     if (pAODTrack->Phi() < fPhiMin || pAODTrack->Phi() > fPhiMax) continue;
@@ -377,9 +425,22 @@ TObjArray* AliAnalysisTaskLongRangeCorrelations::GetAcceptedTracks(TClonesArray*
       continue;
     }
     labelSet.insert(pMCTrack->Label());    
+    
+//     Printf("isPrim = %d", pMCTrack->IsPhysicalPrimary());
 
-    // select only primary tracks
-    if (kFALSE == pMCTrack->IsPhysicalPrimary()) continue;
+    switch (fSelectPrimaryMCParticles) {
+    case -1:
+      if (kTRUE == pMCTrack->IsPhysicalPrimary()) continue;
+      break;
+    case  0:
+      // NOP, take all MC tracks
+      break;
+    case  1:
+      if (kFALSE == pMCTrack->IsPhysicalPrimary()) continue;
+      break;
+    default:
+      AliFatal("fSelectPrimaryMCParticles != {-1,0,1}");
+    }
 
     // select only charged tracks
     if (pMCTrack->Charge() == 0) continue;
@@ -423,6 +484,14 @@ void AliAnalysisTaskLongRangeCorrelations::CalculateMoments(TString prefix,
 							    TObjArray* tracks2,
 							    Double_t vertexZ,
 							    Double_t weight) {
+  const Long64_t nc1(tracks1->GetEntriesFast());
+  if (fNMin != -1 && nc1 < fNMin) return;
+  if (fNMax != -1 && nc1 > fNMax) return;
+
+  const Long64_t nc2(tracks1->GetEntriesFast());
+  if (fNMin != -1 && nc2 < fNMin) return;
+  if (fNMax != -1 && nc2 > fNMax) return;
+
   AliTHn* hN1(dynamic_cast<AliTHn*>(fOutputList->FindObject(prefix+"histMoment1PhiEta_1")));
   if (NULL == hN1) return;
 

@@ -55,13 +55,13 @@ void AddTaskFlow(Float_t centrMin=-1,
 
   // RUN SETTINGS
   // Flow analysis method can be:(set to kTRUE or kFALSE)
-  Bool_t MCEP     = kTRUE;  // correlation with Monte Carlo reaction plane
-  Bool_t SP       = kTRUE;  // scalar product method (similar to eventplane method)
-  Bool_t GFC      = kTRUE;  // cumulants based on generating function
+  Bool_t MCEP     = kFALSE;  // correlation with Monte Carlo reaction plane
+  Bool_t SP       = kFALSE;  // scalar product method (similar to eventplane method)
+  Bool_t GFC      = kFALSE;  // cumulants based on generating function
   Bool_t QC       = kTRUE;  // cumulants using Q vectors
-  Bool_t FQD      = kTRUE;  // fit of the distribution of the Q vector (only integrated v)
-  Bool_t LYZ1SUM  = kTRUE;  // Lee Yang Zeroes using sum generating function (integrated v)
-  Bool_t LYZ1PROD = kTRUE;  // Lee Yang Zeroes using product generating function (integrated v)
+  Bool_t FQD      = kFALSE;  // fit of the distribution of the Q vector (only integrated v)
+  Bool_t LYZ1SUM  = kFALSE;  // Lee Yang Zeroes using sum generating function (integrated v)
+  Bool_t LYZ1PROD = kFALSE;  // Lee Yang Zeroes using product generating function (integrated v)
   Bool_t LYZ2SUM  = kFALSE; // Lee Yang Zeroes using sum generating function (second pass differential v)
   Bool_t LYZ2PROD = kFALSE; // Lee Yang Zeroes using product generating function (second pass differential v)
   Bool_t LYZEP    = kFALSE; // Lee Yang Zeroes Event plane using sum generating function (gives eventplane + weight)
@@ -149,11 +149,11 @@ void AddTaskFlow(Float_t centrMin=-1,
   cutsPOI->SetParamType(poitype);
   cutsPOI->SetParamMix(poimix);
   cutsPOI->SetPtRange(0.0,10.);
-  cutsPOI->SetEtaRange(-1.2,1.2);
+  cutsPOI->SetEtaRange(-0.8,0.8);
   //cutsPOI->SetRequireCharge(kTRUE);
   //cutsPOI->SetCharge(chargeRP);
   //cutsPOI->SetPID(PdgRP);
-  cutsPOI->SetMinNClustersTPC(80);
+  cutsPOI->SetMinNClustersTPC(70);
   cutsPOI->SetMinChi2PerClusterTPC(0.1);
   cutsPOI->SetMaxChi2PerClusterTPC(4.0);
   //cutsPOI->SetRequireITSRefit(kTRUE);
@@ -399,9 +399,11 @@ void AddTaskFlow(Float_t centrMin=-1,
     taskQC->SetnBinsMult(10000);
     taskQC->SetMinMult(0.);
     taskQC->SetMaxMult(10000.);    
-    taskQC->SetCalculateCumulantsVsM(kTRUE);
-    taskQC->SetCalculateDiffFlow(kFALSE);
+    taskQC->SetCalculateCumulantsVsM(kFALSE);
+    taskQC->SetCalculateDiffFlow(kTRUE);
     taskQC->SetApplyCorrectionForNUA(kFALSE);
+    taskQC->SetBookOnlyBasicCCH(kTRUE);
+    taskQC->SetFillMultipleControlHistograms(kFALSE); 
     mgr->AddTask(taskQC);
   }
   if (FQD){

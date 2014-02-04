@@ -738,13 +738,21 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
   double py1 = fTrack1->FourMomentum().vect().y();
   double pz1 = fTrack1->FourMomentum().vect().z();
   double pE1  = fTrack1->FourMomentum().e();
-  double tParticle1Mass = ::sqrt(pE1*pE1 - px1*px1 - py1*py1 - pz1*pz1);
+  double tParticle1Mass;
+  if((pE1*pE1 - px1*px1 - py1*py1 - pz1*pz1)>0)
+    tParticle1Mass = ::sqrt(pE1*pE1 - px1*px1 - py1*py1 - pz1*pz1);
+  else
+    tParticle1Mass = 0;
 
   double px2 = fTrack2->FourMomentum().vect().x();
   double py2 = fTrack2->FourMomentum().vect().y();
   double pz2 = fTrack2->FourMomentum().vect().z();
   double pE2  = fTrack2->FourMomentum().e();
-  double tParticle2Mass = ::sqrt(pE2*pE2 - px2*px2 - py2*py2 - pz2*pz2);
+  double tParticle2Mass;
+  if((pE2*pE2 - px2*px2 - py2*py2 - pz2*pz2)>0)
+    tParticle2Mass = ::sqrt(pE2*pE2 - px2*px2 - py2*py2 - pz2*pz2);
+  else
+    tParticle2Mass = 0;
 
   double tPx = px1+px2;
   double tPy = py1+py2;

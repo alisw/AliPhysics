@@ -46,11 +46,13 @@ void CDFFunction(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t i
 
 //_________________________________________________________________________________________________
 AliDielectronBtoJPSItoEleCDFfitHandler::AliDielectronBtoJPSItoEleCDFfitHandler():
-	fIsParamFixed(45),
+	fIsParamFixed(49),
 	fPrintStatus(kFALSE),
+        fParamStartValues(),
 	fUp(0),
 	fX(0x0),
 	fM(0x0),
+	fPt(0x0),
 	fType(0x0),
         fLikely(0x0),
 	fNcand(0),
@@ -62,16 +64,17 @@ AliDielectronBtoJPSItoEleCDFfitHandler::AliDielectronBtoJPSItoEleCDFfitHandler()
 	//
 	// default constructor
 	//
-	for (Int_t i=0; i<45; ++i) fParamStartValues[i]=0;
 }
 //_________________________________________________________________________________________________
 AliDielectronBtoJPSItoEleCDFfitHandler::AliDielectronBtoJPSItoEleCDFfitHandler(Double_t* decaytime, 
-		Double_t* invariantmass, Int_t *type, Int_t ncand) :
-	fIsParamFixed(45),
+		Double_t* invariantmass, Double_t *pt,Int_t *type, Int_t ncand) :
+	fIsParamFixed(49),
 	fPrintStatus(kFALSE),
+        fParamStartValues(),
 	fUp(0),
 	fX(decaytime),
 	fM(invariantmass),
+	fPt(pt),
         fType(type),
 	fLikely(0x0),
 	fNcand(ncand),
@@ -83,7 +86,6 @@ AliDielectronBtoJPSItoEleCDFfitHandler::AliDielectronBtoJPSItoEleCDFfitHandler(D
 	//
 	// constructor
 	//
-        for (Int_t i=0; i<45; ++i) fParamStartValues[i]=0;
 	AliInfo("\n+++\n+++ Minimization object AliDielectronBtoJPSItoEleCDFfitHandler created\n+++\n");
 	fLikely = new AliDielectronBtoJPSItoEleCDFfitFCN();
 	AliInfo("\n+++\n+++ CDF fit function object AliDielectronBtoJPSItoEleCDFfitFCN created\n+++\n");
@@ -132,6 +134,10 @@ AliDielectronBtoJPSItoEleCDFfitHandler::AliDielectronBtoJPSItoEleCDFfitHandler(D
         AliInfo("Parameter 42 ----> fAlfaRes (SS)");
         AliInfo("Parameter 43 ----> fLambdaRes (SS)");
         AliInfo("Parameter 44 ----> fNormResExp (SS)");
+        AliInfo("Parameter 45 ----> fOneOvLamSym1 (additional parameter)");
+        AliInfo("Parameter 46 ----> fSym1 (additional parameter)");
+        AliInfo("Parameter 47 ----> fPolyn4 (additional parameter)");
+        AliInfo("Parameter 48 ----> fPolyn5 (additional parameter)");
 
 	AliInfo(Form("\n+++\n+++ Number of candidates ---> %d\n+++\n ", ncand));
 }
@@ -144,9 +150,11 @@ AliDielectronBtoJPSItoEleCDFfitHandler& AliDielectronBtoJPSItoEleCDFfitHandler::
 	if (this!=&c) {
 		fIsParamFixed = c.fIsParamFixed;
 		fPrintStatus  = c.fPrintStatus;
+                for (Int_t i=0; i<49; ++i) fParamStartValues[i]=c.fParamStartValues[i];
 		fUp           = c.fUp;
 		fX            = c.fX;
 		fM            = c.fM;
+		fPt           = c.fPt;
 		fType         = c.fType;
                 fLikely       = c.fLikely;
 		fNcand        = c.fNcand;
@@ -162,9 +170,11 @@ AliDielectronBtoJPSItoEleCDFfitHandler::AliDielectronBtoJPSItoEleCDFfitHandler(c
 	TNamed(c),
 	fIsParamFixed(c.fIsParamFixed),
 	fPrintStatus(c.fPrintStatus),
+        fParamStartValues(),
 	fUp(c.fUp),
 	fX(c.fX),
 	fM(c.fM),
+	fPt(c.fPt),
 	fType(c.fType),
         fLikely(c.fLikely),
 	fNcand(c.fNcand),
@@ -176,7 +186,7 @@ AliDielectronBtoJPSItoEleCDFfitHandler::AliDielectronBtoJPSItoEleCDFfitHandler(c
 	//
 	// Copy Constructor
 	//
-        for (Int_t i=0; i<45; ++i) fParamStartValues[i]=c.fParamStartValues[i];
+        for (Int_t i=0; i<49; ++i) fParamStartValues[i]=c.fParamStartValues[i];
 }
 //_______________________________________________________________________________________
 AliDielectronBtoJPSItoEleCDFfitHandler::~AliDielectronBtoJPSItoEleCDFfitHandler()
@@ -192,9 +202,8 @@ Int_t AliDielectronBtoJPSItoEleCDFfitHandler::DoMinimization(Int_t step)
 	//
 	// performs the minimization
 	//
-	if(step == 0){ 
-		//fitter = TVirtualFitter::Fitter(this,20);
-		fitter = (TFitter*)TVirtualFitter::Fitter(this,45);
+	if(step == 0 || !fitter){ 
+		fitter = (TFitter*)TVirtualFitter::Fitter(this,49);
 		fitter->SetFCN(CDFFunction);
 		fitter->SetParameter(0,"fWeightRes",fParamStartValues[0], 1.e-08, 0., 1.e+06);
 		fitter->SetParameter(1,"fPos",fParamStartValues[1], 1.e-08, 0.,1.e+06);
@@ -210,10 +219,10 @@ Int_t AliDielectronBtoJPSItoEleCDFfitHandler::DoMinimization(Int_t step)
 		fitter->SetParameter(11,"fSigma",fParamStartValues[11], 1.e-08, 0., 1.e+04);
 		fitter->SetParameter(12,"fAlpha",fParamStartValues[12], 1.e-08, 0., 1.e+04);
 		fitter->SetParameter(13,"fNorm",fParamStartValues[13], 1.e-08, 0., 1.e+04);
-		fitter->SetParameter(14,"fBkgNorm",fParamStartValues[14], 1.e-08, 0., 1.e+04);
-		fitter->SetParameter(15,"fBkgMean",fParamStartValues[15], 1.e-08, 0., 1.e+04);
-		fitter->SetParameter(16,"fBkgSlope",fParamStartValues[16], 1.e-08, 0., 1.e+04);
-		fitter->SetParameter(17,"fBkgConst",fParamStartValues[17], 1.e-08, 0., 1.e+04);
+		fitter->SetParameter(14,"fBkgNorm",fParamStartValues[14], 1.e-08, -1.e+04, 1.e+04);
+		fitter->SetParameter(15,"fBkgMean",fParamStartValues[15], 1.e-08, -1.e+04, 1.e+04);
+		fitter->SetParameter(16,"fBkgSlope",fParamStartValues[16], 1.e-08, -1.e+04, 1.e+04);
+		fitter->SetParameter(17,"fBkgConst",fParamStartValues[17], 1.e-08, -1.e+04, 1.e+04);
 		fitter->SetParameter(18,"fNormGaus1FF",fParamStartValues[18], 1.e-08, 0., 1.e+05);
 		fitter->SetParameter(19,"fNormGaus2FF",fParamStartValues[19], 1.e-08, 0., 1.e+05); 
 	        fitter->SetParameter(20,"fMean1ResFF",fParamStartValues[20], 1.e-08, 0., 1.e+05);
@@ -241,15 +250,21 @@ Int_t AliDielectronBtoJPSItoEleCDFfitHandler::DoMinimization(Int_t step)
                 fitter->SetParameter(42,"fAlfaResSS",fParamStartValues[42], 1.e-08, 0., 1.e+05);
                 fitter->SetParameter(43,"fLambdaResSS",fParamStartValues[43], 1.e-08, 0., 1.e+05);
                 fitter->SetParameter(44,"fResNormExpSS",fParamStartValues[44], 1.e-08, 0., 1.e+05);
+                fitter->SetParameter(45,"fOneOvLamSym1",fParamStartValues[45], 1.e-10, 0.0000001, 5.e+01);
+                fitter->SetParameter(46,"fSym1",fParamStartValues[46], 1.e-08, 0., 1.e+06);
+                fitter->SetParameter(47,"fBkgInvMassPol4",fParamStartValues[47], 1.e-08, 0.0000001, 5.e+01);
+                fitter->SetParameter(48,"fBkgInvMassPol5",fParamStartValues[48], 1.e-08, 0., 5.e+06);
+                //(TMinuit*)fitter->GetMinuit()->SetErrorDef(fUp); 
                 }
 
-	for(UInt_t indexparam = 0; indexparam < 45; indexparam++){
+	for(UInt_t indexparam = 0; indexparam < 49; indexparam++){
 		if(IsParamFixed(indexparam)) fitter->FixParameter((Int_t)indexparam); 
 		else fitter->ReleaseParameter((Int_t)indexparam);
 	}
-	Double_t arglist[2]={10000,0.1};
+	Double_t arglist[2]={10000,0.1}; Int_t iret = 0;
 	if(step == 2) {Int_t  iret1 = fitter->ExecuteCommand("MINOS", arglist ,1); return iret1;}
-	Int_t iret=fitter->ExecuteCommand("MIGRAD", arglist ,2);
+	if(step == 0) { fitter->SetParameter(8,"fFsig",fParamStartValues[8], 1.e-10, 0., 1.); 
+                         iret=fitter->ExecuteCommand("MIGRAD", arglist ,2); }
 	fitter->PrintResults(4,0);
 
 	if(step == 3) {
@@ -288,7 +303,8 @@ Int_t AliDielectronBtoJPSItoEleCDFfitHandler::DoMinimization(Int_t step)
                 fContPlot2->Draw("l");
                 fContPlot1->Draw("l");
 		
-                c2->Draw();	
+                c2->Draw();
+                c2->SaveAs("contourPlot.root");	
 	}
 
 	AliInfo("Minimization procedure finished\n");
@@ -308,7 +324,7 @@ void AliDielectronBtoJPSItoEleCDFfitHandler::CdfFCN(Int_t & /* npar */,
 	TStopwatch t;
 	t.Start();
 
-	f = fLikely->EvaluateLikelihood(fX,fM,fType,fNcand);
+	f = fLikely->EvaluateLikelihood(fX,fM,fPt, fType,fNcand);
 
 	t.Stop();
 	AliDebug(2,Form("Real time spent to calculate function == %f \n", t.RealTime()));
@@ -318,9 +334,9 @@ void AliDielectronBtoJPSItoEleCDFfitHandler::CdfFCN(Int_t & /* npar */,
 	return;
 }
 //_______________________________________________________________________________________
-void AliDielectronBtoJPSItoEleCDFfitHandler::SetParamStartValues(Double_t inputparamvalues[45])
+void AliDielectronBtoJPSItoEleCDFfitHandler::SetParamStartValues(Double_t inputparamvalues[49])
 {
-	for(Int_t index=0; index < 45; index++) fParamStartValues[index] = inputparamvalues[index];
+	for(Int_t index=0; index < 49; index++) fParamStartValues[index] = inputparamvalues[index];
 }
 //_______________________________________________________________________________________
 void AliDielectronBtoJPSItoEleCDFfitHandler::SetResolutionConstants(Double_t* resolutionConst, Int_t type)
@@ -340,6 +356,18 @@ void AliDielectronBtoJPSItoEleCDFfitHandler::SetCrystalBallFunction(Bool_t okCB)
 	//
 	fLikely->SetCrystalBallFunction(okCB);
 }
+
+//_______________________________________________________________________________________
+void AliDielectronBtoJPSItoEleCDFfitHandler::SetExponentialFunction(Bool_t okExp)
+{
+        //
+        // Sets the CB as the parametrization for the signal invariant mass spectrum 
+        // (otherwise Landau is chosen)
+        //
+        fLikely->SetExponentialFunction(okExp);
+}
+
+
 //_______________________________________________________________________________________
 void AliDielectronBtoJPSItoEleCDFfitHandler::SetMassWndHigh(Double_t limit) 
 { 

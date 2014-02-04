@@ -534,8 +534,8 @@ if(aod){
             if (!c1) continue;
             if (!c1->IsEMCAL()) continue;
             if (c1->GetNCells()<2) continue;
-            if (c1->E()<2) continue;
-            if(c1->GetM02()>0.5) continue;
+           //if (c1->E()<2) continue;
+           //if(c1->GetM02()>0.5) continue;
             if (c1->GetDistanceToBadChannel()<2) continue;
 
             TLorentzVector pii;
@@ -572,8 +572,8 @@ if(aod){
                 if (!c2) continue;
                 if (!c2->IsEMCAL()) continue;
                 if (c2->GetNCells()<2) continue;
-                if (c2->E()<2) continue;
-                if(c2->GetM02()>0.5) continue;
+                //if (c2->E()<2) continue;//for evaluation of cuts
+                //if(c2->GetM02()>0.5) continue;//for evaluation of cuts
                 if (c2->GetDistanceToBadChannel()<2) continue;
                // Float_t en2 = c2->E();
 

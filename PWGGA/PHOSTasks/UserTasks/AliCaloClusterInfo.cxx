@@ -22,7 +22,9 @@
 /////////////////////////////////////////////////////////////
 
 #include <iostream>
+#include <TParticle.h>
 
+#include "AliStack.h"
 #include "AliESDEvent.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
@@ -38,7 +40,7 @@ ClassImp(AliCaloClusterInfo)
 //-------------------------------------------------------------------------------------------
 AliCaloClusterInfo::AliCaloClusterInfo():
   TObject(), fLorentzVector(), fModule(0), fTRUNumber(0), fNCells(0), fPIDBit(0x0),
-  fDistToBad(0.), fEmcCpvDistance(0.), fM02(0.), fM20(0.), fTOF(0.)
+  fLabels(0), fDistToBad(0.), fM02(0.), fM20(0.), fTOF(0.)
 {
   //
   // Default constructor
@@ -46,20 +48,20 @@ AliCaloClusterInfo::AliCaloClusterInfo():
 } 
 
 //-------------------------------------------------------------------------------------------
-AliCaloClusterInfo::AliCaloClusterInfo(AliVCluster* const clust, AliESDEvent* const esd, Int_t relID[4], Double_t mf):
+AliCaloClusterInfo::AliCaloClusterInfo(AliVCluster* const clust, Int_t relID[4]):
   TObject(), fLorentzVector(), fModule(0), fTRUNumber(0), fNCells(0), fPIDBit(0x0),
-  fDistToBad(0.), fEmcCpvDistance(0.), fM02(0.), fM20(0.), fTOF(0.)
+  fLabels(0), fDistToBad(0.), fM02(0.), fM20(0.), fTOF(0.)
 {
   //
   // constructor
   //
-  this->FillCaloClusterInfo(clust, esd, relID, mf);
+  this->FillCaloClusterInfo(clust, relID);
 } 
 
 //-------------------------------------------------------------------------------------------
 AliCaloClusterInfo::AliCaloClusterInfo(const AliCaloClusterInfo &src):
   TObject(src), fLorentzVector(src.fLorentzVector), fModule(src.fModule), fTRUNumber(src.fTRUNumber),fNCells(src.fNCells), fPIDBit(src.fPIDBit),
-  fDistToBad(src.fDistToBad), fEmcCpvDistance(src.fEmcCpvDistance), fM02(src.fM02), fM20(src.fM20), fTOF(src.fTOF)
+  fLabels(src.fLabels), fDistToBad(src.fDistToBad), fM02(src.fM02), fM20(src.fM20), fTOF(src.fTOF)
 {
   //
   // copy constructor
@@ -79,8 +81,8 @@ AliCaloClusterInfo& AliCaloClusterInfo::operator=(const AliCaloClusterInfo &src)
   fTRUNumber       = src.fTRUNumber;
   fNCells          = src.fNCells;
   fPIDBit          = src.fPIDBit;
+  fLabels          = src.fLabels;
   fDistToBad       = src.fDistToBad;
-  fEmcCpvDistance  = src.fEmcCpvDistance;
   fM02             = src.fM02;
   fM20             = src.fM20;
   fTOF             = src.fTOF;
@@ -97,82 +99,64 @@ AliCaloClusterInfo::~AliCaloClusterInfo()
 }
 
 //-----------------------------------------------------------------------------
-void AliCaloClusterInfo::FillCaloClusterInfo(AliVCluster* const clust, AliESDEvent* const esd, Int_t relID[4], Double_t mf)
+void AliCaloClusterInfo::FillCaloClusterInfo(AliVCluster* const clust, Int_t relID[4])
 {
   // extract information of calo clusters
-
-  Short_t  trkCharge = 0;
-  Double_t trkDz = 0., trkDx = 0., trkPt = -1.;
-
-  if (!esd) { // for AOD
-    AliAODTrack *trkAOD = 0x0;
-    if (clust->GetNTracksMatched()>0) {
-      trkAOD = dynamic_cast <AliAODTrack*> (clust->GetTrackMatched(0));
-      if (trkAOD) {
-        trkPt     = trkAOD->Pt();
-        trkCharge = trkAOD->Charge();
-      }
-    }
-  } else { // for ESD
-    Int_t iESDtrack = clust->GetTrackMatchedIndex();
-    AliESDtrack *trkESD = 0x0;
-    if (iESDtrack>-1) { 
-      trkESD = esd->GetTrack(iESDtrack);
-      if (trkESD) {
-        trkPt     = trkESD->Pt();
-        trkCharge = trkESD->Charge();
-      }
-    }
-  }
-  trkDz = clust->GetTrackDz();
-  trkDx = clust->GetTrackDx();
 
   fModule         = relID[0];
   fTRUNumber      = GetTRUNumber(relID[2], relID[3]);
   fNCells         = clust->GetNCells();
   fDistToBad      = clust->GetDistanceToBadChannel();
-  fEmcCpvDistance = clust->GetEmcCpvDistance();
   fM02            = clust->GetM02();
   fM20            = clust->GetM20();
   fTOF            = clust->GetTOF();
 
-  Double_t cpv = TestCpv(trkPt, trkCharge, trkDz, trkDx, mf);
-  if (trkPt == -1. || cpv>2.) this->SetPIDBit(BIT(0));
-  if (trkPt == -1. || cpv>4.) this->SetPIDBit(BIT(2));
+  Double_t cpv  = clust->GetEmcCpvDistance(); // Distance in sigmas filled by tender
+  Double_t disp = TestDisp();                 // Dispersion in sigmas filled by tender
+  if (cpv  > 2.)      this->SetPIDBit(BIT(0));
+  if (cpv  > 4.)      this->SetPIDBit(BIT(2));
+  if (disp < 2.5*2.5) this->SetPIDBit(BIT(1));
+  if (disp < 1.5*1.5) this->SetPIDBit(BIT(3));
 
   return;
 }
 
 //-----------------------------------------------------------------------------
-Double_t AliCaloClusterInfo::TestCpv(Double_t trkPt, Short_t trkCharge, Double_t trkDz, Double_t trkDx, Double_t mf)
+Bool_t AliCaloClusterInfo::IsInFiducialRegion(Int_t cellX, Int_t cellZ)
 {
-  // Parameterization of LHC10h period
+  const Int_t edgeX = 2;
+  const Int_t edgeZ = 2;
+  if (cellX >edgeX && cellX<(65-edgeX) && cellZ>edgeZ && cellZ <(57-edgeZ)) return kTRUE;
 
-  Double_t meanX=0;
-  Double_t meanZ=0.;
-  Double_t sx = TMath::Min(5.4,2.59719e+02*TMath::Exp(-trkPt/1.02053e-01)+
-                           6.58365e-01*5.91917e-01*5.91917e-01/((trkPt-9.61306e-01)*(trkPt-9.61306e-01)+5.91917e-01*5.91917e-01)+1.59219);
-  Double_t sz = TMath::Min(2.75,4.90341e+02*1.91456e-02*1.91456e-02/(trkPt*trkPt+1.91456e-02*1.91456e-02)+1.60);
+  return kFALSE;
+}
 
-  if(mf<0.) { // Field --
-    meanZ = -0.468318;
-    if (trkCharge>0)
-      meanX = TMath::Min(7.3, 3.89994*1.20679*1.20679/(trkPt*trkPt+1.20679*1.20679)+0.249029+2.49088e+07*TMath::Exp(-trkPt*3.33650e+01));
-    else
-      meanX =-TMath::Min(7.7,3.86040*0.912499*0.912499/(trkPt*trkPt+0.912499*0.912499)+1.23114+4.48277e+05*TMath::Exp(-trkPt*2.57070e+01));
-  }
-  else {      // Field ++
-    meanZ = -0.468318;
-    if (trkCharge>0)
-      meanX =-TMath::Min(8.0,3.86040*1.31357*1.31357/(trkPt*trkPt+1.31357*1.31357)+0.880579+7.56199e+06*TMath::Exp(-trkPt*3.08451e+01));
-    else
-      meanX = TMath::Min(6.85, 3.89994*1.16240*1.16240/(trkPt*trkPt+1.16240*1.16240)-0.120787+2.20275e+05*TMath::Exp(-trkPt*2.40913e+01));
-  }
-
-  Double_t rx = (trkDx-meanX)/sx;
-  Double_t rz = (trkDz-meanZ)/sz;
-
-  return TMath::Sqrt(rx*rx+rz*rz);
+//-----------------------------------------------------------------------------
+Bool_t AliCaloClusterInfo::CheckIsClusterFromPi0(AliStack* const stack, Int_t &pi0Indx)
+{
+  if (GetLabel()>-1) {
+    TParticle* track = stack->Particle(GetLabel());
+    if (track->GetPdgCode() == 22) {
+      pi0Indx = track->GetFirstMother();
+      if (pi0Indx>-1 && ((TParticle*)stack->Particle(pi0Indx))->GetPdgCode() == 111)
+        return kTRUE;
+      else return kFALSE;
+    }
+    else if (TMath::Abs(track->GetPdgCode()) == 11)
+      if (track->GetFirstMother()>-1 && ((TParticle*)stack->Particle(track->GetFirstMother()))->GetPdgCode() == 22) {
+        TParticle *gamma = stack->Particle(track->GetFirstMother());
+        pi0Indx = gamma->GetFirstMother();
+        if (pi0Indx>-1 && ((TParticle*)stack->Particle(pi0Indx))->GetPdgCode() == 111) {
+          Int_t gamma1 = ((TParticle*)stack->Particle(pi0Indx))->GetFirstDaughter();
+          Int_t gamma2 = ((TParticle*)stack->Particle(pi0Indx))->GetLastDaughter();
+          if (GetLabel() == (((TParticle*)stack->Particle(gamma1))->Pt()>((TParticle*)stack->Particle(gamma2))->Pt() ? gamma1 : gamma2))
+            return kTRUE;
+          else return kFALSE;
+        }
+        else return kFALSE;
+      } else return kFALSE;
+    else return kFALSE;
+  } else return kFALSE;
 }
 
 //-----------------------------------------------------------------------------
@@ -192,16 +176,6 @@ Double_t AliCaloClusterInfo::TestDisp()
                      0.5*c*(l1-l1Mean)*(l0-l0Mean)/l1Sigma/l0Sigma;
 
   return R2;
-}
-
-//-----------------------------------------------------------------------------
-Bool_t AliCaloClusterInfo::IsInFiducialRegion(Int_t cellX, Int_t cellZ)
-{
-  const Int_t edgeX = 2;
-  const Int_t edgeZ = 2;
-  if (cellX >edgeX && cellX<(65-edgeX) && cellZ>edgeZ && cellZ <(57-edgeZ)) return kTRUE;
-
-  return kFALSE;
 }
 
 //-----------------------------------------------------------------------------

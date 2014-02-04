@@ -24,7 +24,7 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
     
-  Int_t   GetStripIndex(const Int_t * const in);
+  Int_t   GetStripIndex(const Int_t * in);
   void    SetTrackFilter(AliAnalysisFilter *filter) {fTrackFilter = filter;};
   void    EnableAdvancedCheck(Bool_t enable){fEnableAdvancedCheck=enable;};
   void    SetExpTimeHistoRange(Float_t min, Float_t max){fExpTimeRangeMin=min; fExpTimeRangeMax=max;return;};
@@ -66,7 +66,7 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   AliAnalysisFilter * fTrackFilter; //track filter object
   AliESDVertex *      fVertex; //pointer to the vertex object
   AliESDpid *         fESDpid; //pointer to the PID object
-  AliTOFT0v1 *        fTOFT0v1; // TOF-T0 v1
+  //AliTOFT0v1 *        fTOFT0v1; // TOF-T0 v1
   AliTOFHeader *      fTOFHeader; // TOF header needed for trigger info
   Int_t               fNTOFtracks[3]; //number of tracks matching with TOF
   //Int_t fNPrimaryTracks; //number of primary tracks

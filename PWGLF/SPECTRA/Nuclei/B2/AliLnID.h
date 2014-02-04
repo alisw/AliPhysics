@@ -11,6 +11,7 @@
 #include <AliPID.h>
 
 class TParticle;
+class AliAODMCParticle;
 class AliITSPIDResponse;
 class AliTPCPIDResponse;
 
@@ -24,8 +25,12 @@ class AliLnID: public TObject
 	virtual ~AliLnID();
 	
 	Int_t GetPID(const TParticle* p) const;
+	Int_t GetPID(const AliAODMCParticle* p) const;
+	Int_t GetPID(Int_t pdgCode) const;
 	
 	Int_t GetPID(Int_t partCode, Double_t pITS, Double_t dEdxITS, Int_t nPointsITS, Double_t pTPC, Double_t dEdxTPC, Int_t nPointsTPC, Double_t pTOF, Double_t beta, Double_t nSigITS=3, Double_t nSigTPC=3, Double_t nSigTOF=3) const;
+	
+	Int_t GetITSpid(Int_t partCode, Double_t pITS, Double_t dEdx, Double_t nPoints, Double_t nSigma=3) const;
 	
 	Int_t GetTPCpid(Int_t partCode, Double_t pTPC, Double_t dEdx, Double_t nPoints, Double_t nSigma=3) const;
 	
@@ -66,7 +71,7 @@ class AliLnID: public TObject
 	void SetTPCChargeCorrection(Double_t zexp) { fZexp = zexp; }
 	
 	enum { kSPECIES = 9 };
-	enum { kBayes=0, kMaxLikelihood, kTPC, kITSTPC, kTPCTOF };
+	enum { kBayes=0, kMaxLikelihood, kITS, kTPC, kITSTPC, kTPCTOF };
 	
   private:
  

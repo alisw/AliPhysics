@@ -31,12 +31,16 @@ AliAnalysisTaskRho* AddTaskRho(
     ::Error("AddTaskRho", "This task requires an input event handler");
     return NULL;
   }
-  
+
+
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
 
   TString name(Form("%s_%s_%s", taskname, nJets,cutType));
+  AliAnalysisTaskRho* mgrTask = mgr->GetTask(name.Data());
+  if (mgrTask) return mgrTask;
+
   AliAnalysisTaskRho *rhotask = new AliAnalysisTaskRho(name, histo);
   rhotask->SetExcludeLeadJets(exclJets);
   rhotask->SetScaleFunction(sfunc);

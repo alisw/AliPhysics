@@ -15,24 +15,17 @@ cmake_minimum_required(VERSION 2.8.4 FATAL_ERROR)
 project(AliRoot CXX C Fortran)
 
 # Environment variables
-set(ALICE_ROOT $ENV{ALICE_ROOT})
 set(ALICE $ENV{ALICE})
-set(ALICE_INSTALL $ENV{ALICE_INSTALL})
-if(${ALICE_INSTALL} MATCHES ${CMAKE_BINARY_DIR})
-  message(FATAL_ERROR "Install dir should be different from build dir")
-endif(${ALICE_INSTALL} MATCHES ${CMAKE_BINARY_DIR})
-# Environment for SHUTTLE
-set(DIMDIR $ENV{DIMDIR})
-set(ODIR $ENV{ODIR})
-
 if(NOT ALICE)
   message(WARNING "Environment variable ALICE is not set")
 endif(NOT ALICE)
 
+set(ALICE_ROOT $ENV{ALICE_ROOT})
 if(NOT ALICE_ROOT)
   message(FATAL_ERROR "Please set ALICE_ROOT to the AliRoot source directory")
 endif(NOT ALICE_ROOT)
 
+set(ALICE_INSTALL $ENV{ALICE_INSTALL})
 # Set AliRoot Installation directory 
 if(NOT ALICE_INSTALL)
   message(STATUS "AliRoot files will be installed in ${ALICE_ROOT}. You can specify a different location by setting ALICE_INSTALL environment variable")
@@ -40,7 +33,14 @@ if(NOT ALICE_INSTALL)
 else()
   message(STATUS "AliRoot files will be installed in ${ALICE_INSTALL}")
 endif(NOT ALICE_INSTALL)
+if(${ALICE_INSTALL} STREQUAL ${CMAKE_BINARY_DIR})
+  message(FATAL_ERROR "Install dir should be different from build dir")
+endif()
 set(CMAKE_INSTALL_PREFIX ${ALICE_INSTALL})
+
+# Environment for SHUTTLE
+set(DIMDIR $ENV{DIMDIR})
+set(ODIR $ENV{ODIR})
 
 get_filename_component(PROJECT_SOURCE_DIR "${PROJECT_SOURCE_DIR}" REALPATH)
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
@@ -87,6 +87,9 @@ find_package(AMORE)
 
 find_package(CPack)
 
+# ZeroMQ
+# ------------------------------
+find_package(ZeroMQ)
 
 #--------------------------------------------------------------------------------#
 # Environment/Compiler Configuration                                             #
@@ -126,7 +129,7 @@ set(BINLIBDIRS "-L${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 
 # Standard Modules
 # ------------------------------
-set(ALIROOTMODULES STEER PHOS TRD TPC ZDC MUON PMD FMD TOF ITS ACORDE HMPID T0 BCM STRUCT VZERO THijing THbtp EMCAL THerwig TEPEMGEN FASTSIM TPHIC RAW MONITOR ANALYSIS JETAN HLT STAT TTherminator CORRFW DPMJET TDPMjet PWGPP PWG PWGCF PWGGA PWGHF PWGDQ PWGJE PWGLF PWGUD TRIGGER PYTHIA8 TAmpt OADB MFT TEvtGen)
+set(ALIROOTMODULES STEER PHOS TRD TPC ZDC MUON PMD FMD TOF ITS AD ACORDE HMPID T0 BCM STRUCT VZERO THijing THbtp EMCAL THerwig TEPEMGEN FASTSIM TPHIC RAW MONITOR ANALYSIS JETAN HLT STAT TTherminator CORRFW DPMJET TDPMjet STARLIGHT PWGPP PWG PWGCF PWGGA PWGHF PWGDQ PWGJE PWGLF PWGUD TRIGGER PYTHIA8 TAmpt OADB MFT TEvtGen)
 
 if(THydjet)
   list(APPEND ALIROOTMODULES THydjet)
@@ -167,52 +170,43 @@ set(MODDIRS ${MODULES})
 
 # Libraries for Linking
 # ------------------------------
-set(ALILIBS MUON TPC PMD TRD FMD TOF ITS PHOS ACORDE HMPID VZERO ZDC STRUCT T0 EVGEN STEER TRIGGER MFT)
+set(ALILIBS MUON TPC PMD TRD FMD TOF ITS PHOS AD ACORDE HMPID VZERO ZDC STRUCT T0 EVGEN STEER TRIGGER MFT)
 set(LIBS ${ROOTCLIBS} ${ROOTPLIBS} ${SYSLIBS})
 
 # Configure ARVerion.h
 # ------------------------------
-if(Subversion_FOUND)
-  if(EXISTS ${PROJECT_SOURCE_DIR}/.svn/ )
-  Subversion_WC_INFO(${PROJECT_SOURCE_DIR} PROJECT)
-  set(ALIROOT_SVN_REVISION ${PROJECT_WC_REVISION})
-  set(ALIROOT_SVN_BRANCH ${PROJECT_WC_URL})
-  string(REGEX MATCH "[^/]+$" ALIROOT_SVN_BRANCH ${ALIROOT_SVN_BRANCH})
+#If the sources were taken from Git
+if(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
+ include(GetGitRevisionDescription)
+ 
+ find_package(Git)
+ 
+ if(GIT_FOUND)
+  get_git_head_revision(GIT_REFSPEC GIT_SHA1)
+  message(STATUS "Aliroot branch - ${GIT_REFSPEC} Revision - ${GIT_SHA1} ")
 
-  elseif(EXISTS ${PROJECT_SOURCE_DIR}/.git/ )
-    if(EXISTS ${PROJECT_SOURCE_DIR}/.git/svn/refs )
-    execute_process(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND git svn info OUTPUT_VARIABLE OUTPUTVAR)
-    string(REPLACE "\n" ";" OUTPUTVAR ${OUTPUTVAR})
-    foreach(f ${OUTPUTVAR})
-      if(${f} MATCHES URL)
-	string(REGEX MATCH "[^/]+$" ALIROOT_SVN_BRANCH ${f})
-      elseif(${f} MATCHES Revision)
-	string(REGEX MATCH "[^: ]+$" ALIROOT_SVN_REVISION ${f})
-      endif(${f} MATCHES URL)   
-    endforeach()
-    else()
-      execute_process(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND git log -1 OUTPUT_VARIABLE OUTPUTVAR)
-      string(REPLACE "\n" ";" OUTPUTVAR ${OUTPUTVAR})
-      foreach(f ${OUTPUTVAR})
-        if(${f} MATCHES "^[ ]*git-svn-id:")
-          string(REGEX REPLACE "^.*/(.*)[@].*$" "\\1" ALIROOT_SVN_BRANCH "${f}" )
-          string(REGEX REPLACE "^.*/.*[@](.*) .*$" "\\1" ALIROOT_SVN_REVISION "${f}" )
-        endif(${f} MATCHES "^[ ]*git-svn-id:")
-      endforeach()
-      if(${ALIROOT_SVN_BRANCH}x STREQUAL "x")
-        set(ALIROOT_SVN_BRANCH "git clone")
-        set(ALIROOT_SVN_REVISION "-1")
-      endif(${ALIROOT_SVN_BRANCH}x STREQUAL "x")
-    endif(EXISTS ${PROJECT_SOURCE_DIR}/.git/svn/refs )
-  endif(EXISTS ${PROJECT_SOURCE_DIR}/.svn/ )
+  STRING(REGEX REPLACE "^(.+/)(.+)/(.*)$" "\\2" BRANCH_TYPE "${GIT_REFSPEC}" )
+  
+  if(BRANCH_TYPE STREQUAL "heads")
+   set(ALIROOT_REVISION "ThisIsaBranchNoRevisionProvided")
+  else()
+   set(ALIROOT_REVISION ${GIT_SHA1})
+  endif()
 
-  message(STATUS "Aliroot Revision - ${ALIROOT_SVN_REVISION} Branch - ${ALIROOT_SVN_BRANCH}")
-  if(EXISTS ${CMAKE_INCLUDE_EXPORT_DIRECTORY}/ARVersion.h)
-    file(REMOVE ${CMAKE_INCLUDE_EXPORT_DIRECTORY}/ARVersion.h)
-  endif(EXISTS ${CMAKE_INCLUDE_EXPORT_DIRECTORY}/ARVersion.h)
-  configure_file(${PROJECT_SOURCE_DIR}/cmake/ARVersion.h.tmp ${CMAKE_INCLUDE_EXPORT_DIRECTORY}/ARVersion.h @ONLY)
-endif(Subversion_FOUND)
-string (REPLACE "-" "." ALIROOT_SVN_BRANCH_SPEC "${ALIROOT_SVN_BRANCH}")
+  STRING(REGEX REPLACE "^(.+/)(.+/)(.*)$" "\\3" SHORT_BRANCH "${GIT_REFSPEC}" )
+
+  set(ALIROOT_BRANCH ${SHORT_BRANCH})
+
+ else()
+  message("Git not installed. I can't tell you which revision you are using!")
+  endif(GIT_FOUND)
+else()
+ message("AliRoot sources not downloaded from a Version Control System. I can't tell which revision you are using!")
+endif(EXISTS ${PROJECT_SOURCE_DIR}/.git/)
+
+configure_file(${PROJECT_SOURCE_DIR}/cmake/ARVersion.h.tmp ${CMAKE_INCLUDE_EXPORT_DIRECTORY}/ARVersion.h @ONLY)
+
+string (REPLACE "-" "." ALIROOT_BRANCH_SPEC "${ALIROOT_BRANCH}")
 
 #--------------------------------------------------------------------------------#
 # Build Modules                                                                  #
@@ -246,8 +240,7 @@ add_custom_command(TARGET htmldoc
 		   COMMAND mkdir -p html
 		   COMMAND rm -rf html/roothtml
 		   COMMAND rm -f html/picts
-		   COMMAND cd html &&
-		   	    aliroot -q -b \"mkhtml.C(0,1)\"
+		   COMMAND cd html && aliroot -q -b mkhtml.C\\\(0,1\\\)
 		   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 # Include Vc, which provides the static libVc and the relevant CMake macros
@@ -393,8 +386,8 @@ COMMAND @echo '\# make alimdc-rpm' >> ${ALIMDCSPECFILE}
 COMMAND @echo "" >> ${ALIMDCSPECFILE}
 COMMAND @echo "Summary: AliMDC static libraries" >> ${ALIMDCSPECFILE}
 COMMAND @echo "Name: alimdc" >> ${ALIMDCSPECFILE}
-COMMAND @echo "Version:  ${ALIROOT_SVN_BRANCH_SPEC}" >> ${ALIMDCSPECFILE}
-COMMAND @echo "Release: ${ALIROOT_SVN_REVISION}" >> ${ALIMDCSPECFILE}
+COMMAND @echo "Version:  ${ALIROOT_BRANCH_SPEC}" >> ${ALIMDCSPECFILE}
+COMMAND @echo "Release: ${ALIROOT_REVISION}" >> ${ALIMDCSPECFILE}
 COMMAND @echo '\# Copyright: CERN Alice Off-line' >> ${ALIMDCSPECFILE}
 COMMAND @echo "License: CERN Alice Off-line" >> ${ALIMDCSPECFILE}
 COMMAND @echo "Vendor: ALICE Core Off-line Group" >> ${ALIMDCSPECFILE}
@@ -421,7 +414,7 @@ COMMAND @echo "the AliRoot one." >> ${ALIMDCSPECFILE}
 COMMAND @echo "" >> ${ALIMDCSPECFILE}
 COMMAND @echo '\# list of files to be installed' >> ${ALIMDCSPECFILE}
 COMMAND @echo "%files" >> ${ALIMDCSPECFILE}
-COMMAND @echo '%defattr (-,root,root)' >> ${ALIMDCSPECFILE}
+COMMAND @echo "%defattr (-,root,root)" >> ${ALIMDCSPECFILE}
 COMMAND @echo "%{prefix}/lib/libAliMDC.a" >> ${ALIMDCSPECFILE}
 COMMAND @echo "%{prefix}/lib/libRoot.a" >> ${ALIMDCSPECFILE}
 COMMAND @echo "%{prefix}/lib/libpcre.a" >> ${ALIMDCSPECFILE}
