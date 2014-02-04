@@ -81,6 +81,7 @@ class AliAODEvent : public AliVEvent {
   TList        *GetList()                const { return fAODObjects; }
   void          SetConnected(Bool_t conn=kTRUE) {fConnected=conn;}
   Bool_t        GetConnected() const {return fConnected;}
+  Bool_t        AreTracksConnected() const {return fTracksConnected;}
 
   // -- Header
   AliAODHeader *GetHeader()              const { return fHeader; }
@@ -139,11 +140,11 @@ class AliAODEvent : public AliVEvent {
 
   // -- Tracks
   TClonesArray *GetTracks()              const { return fTracks; }
+  void          ConnectTracks();
   Int_t         GetNTracks()             const { return fTracks? fTracks->GetEntriesFast() : 0; }
   Int_t         GetNumberOfTracks()      const { return GetNTracks(); }
-  AliAODTrack  *GetTrack(Int_t nTrack)   const { if(fTracks && fTracks->UncheckedAt(nTrack)) ((AliAODTrack*)fTracks->UncheckedAt(nTrack))->SetAODEvent(this);return fTracks ? (AliAODTrack*)fTracks->UncheckedAt(nTrack):0; }
-  Int_t         AddTrack(const AliAODTrack* trk)
-    {new((*fTracks)[fTracks->GetEntriesFast()]) AliAODTrack(*trk); return fTracks->GetEntriesFast()-1;}
+  AliAODTrack  *GetTrack(Int_t nTrack)   const { return fTracks ? (AliAODTrack*)fTracks->UncheckedAt(nTrack):0; }
+  Int_t         AddTrack(const AliAODTrack* trk);
   Int_t         GetMuonTracks(TRefArray *muonTracks) const;
   Int_t         GetNumberOfMuonTracks() const;
 
@@ -312,6 +313,7 @@ class AliAODEvent : public AliVEvent {
   TList   *fAODObjects; //  list of AODObjects
   TFolder *fAODFolder;  //  folder structure of branches
   Bool_t   fConnected;  //! flag if leaves are alreday connected 
+  Bool_t   fTracksConnected;      //! flag if tracks have already pointer to event set
   // standard content
   AliAODHeader    *fHeader;       //! event information
   TClonesArray    *fTracks;       //! charged tracks

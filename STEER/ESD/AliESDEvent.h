@@ -330,12 +330,10 @@ public:
   
   virtual Bool_t IsPileupFromSPDInMultBins() const;
 
-  AliESDtrack *GetTrack(Int_t i) const {
-    if (!fTracks) return 0;
-    AliESDtrack* track = (AliESDtrack*) fTracks->At(i);
-    if (track) track->SetESDEvent(this);
-    return track;
-  }
+  void ConnectTracks();
+  Bool_t        AreTracksConnected() const {return fTracksConnected;}
+
+  AliESDtrack *GetTrack(Int_t i) const {return (fTracks)?(AliESDtrack*)fTracks->At(i) : 0;}
   Int_t  AddTrack(const AliESDtrack *t);
 
   /// add new track at the end of tracks array and return instance
@@ -569,6 +567,7 @@ protected:
   AliESDfriend *fESDFriendOld;     //! Old friend esd Structure
   Bool_t    fConnected;            //! flag if leaves are alreday connected
   Bool_t    fUseOwnList;           //! Do not use the list from the esdTree but use the one created by this class 
+  Bool_t    fTracksConnected;      //! flag if tracks have already pointer to event set
 
   static const char* fgkESDListName[kESDListN]; //!
 

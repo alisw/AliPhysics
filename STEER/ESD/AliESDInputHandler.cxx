@@ -142,6 +142,9 @@ Bool_t AliESDInputHandler::BeginEvent(Long64_t entry)
   ((AliESDEvent*)fEvent)->SetESDfriend(fFriend);
   called = kTRUE;
 
+  // set transient pointer to event inside tracks
+  fEvent->ConnectTracks();
+
   if (fMixingHandler) fMixingHandler->BeginEvent(entry);
   if (fUseTags && fRunTag) {
     fEventTag = 0;
