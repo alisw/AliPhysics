@@ -86,8 +86,6 @@ public:
 
   static Bool_t         ApplyAlignObjsToGeom(const char* fileName,
 				      const char* clArrayName);
-  static Bool_t         ApplyAlignObjsToGeom(AliCDBParam* param,
-				      AliCDBId& Id);
   static Bool_t         ApplyAlignObjsToGeom(const char* uri, const char* path,
 				      Int_t runnum, Int_t version,
 				      Int_t sversion);

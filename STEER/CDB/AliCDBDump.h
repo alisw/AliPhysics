@@ -18,52 +18,52 @@ class TDirectory;
 class TFile;
 
 class AliCDBDump: public AliCDBStorage {
-	friend class AliCDBDumpFactory;
+  friend class AliCDBDumpFactory;
 
-public:
+  public:
 
-	virtual Bool_t IsReadOnly() const {return fReadOnly;};
-	virtual Bool_t HasSubVersion() const {return kFALSE;};
-	virtual Bool_t Contains(const char* path) const;
-	virtual Bool_t IdToFilename(const AliCDBId& id, TString& filename) const;
-	virtual void SetRetry(Int_t /* nretry */, Int_t /* initsec */);
+  virtual Bool_t IsReadOnly() const {return fReadOnly;};
+  virtual Bool_t HasSubVersion() const {return kFALSE;};
+  virtual Bool_t Contains(const char* path) const;
+  virtual Bool_t IdToFilename(const AliCDBId& id, TString& filename) const;
+  virtual void SetRetry(Int_t /* nretry */, Int_t /* initsec */);
 
-protected:
+  protected:
 
-	virtual AliCDBEntry* 	GetEntry(const AliCDBId& query);
-	virtual AliCDBId* 	GetEntryId(const AliCDBId& query);
-        virtual TList* 		GetEntries(const AliCDBId& query);
-        virtual Bool_t 		PutEntry(AliCDBEntry* entry, const char* mirrors="");
-	virtual TList* 		GetIdListFromFile(const char* fileName);
+  virtual AliCDBEntry* 	GetEntry(const AliCDBId& query);
+  virtual AliCDBId* 	GetEntryId(const AliCDBId& query);
+  virtual TList* 		GetEntries(const AliCDBId& query);
+  virtual Bool_t 		PutEntry(AliCDBEntry* entry, const char* mirrors="");
+  virtual TList* 		GetIdListFromFile(const char* fileName);
 
-private:
+  private:
 
-	AliCDBDump(const AliCDBDump & source);
-	AliCDBDump & operator=(const AliCDBDump & source);
-	AliCDBDump(const char* dbFile, Bool_t readOnly);
-	virtual ~AliCDBDump();	
+  AliCDBDump(const AliCDBDump & source);
+  AliCDBDump & operator=(const AliCDBDump & source);
+  AliCDBDump(const char* dbFile, Bool_t readOnly);
+  virtual ~AliCDBDump();	
 
-	Bool_t KeyNameToId(const char* keyname, AliCDBRunRange& runRange,
-			Int_t& version, Int_t& subVersion);
-	Bool_t IdToKeyName(const AliCDBRunRange& runRange, Int_t version,
-		        Int_t subVersion, TString& keyname); 	
+  Bool_t KeyNameToId(const char* keyname, AliCDBRunRange& runRange,
+      Int_t& version, Int_t& subVersion);
+  Bool_t IdToKeyName(const AliCDBRunRange& runRange, Int_t version,
+      Int_t subVersion, TString& keyname); 	
 
-	Bool_t MkDir(const TString& dir);
+  Bool_t MkDir(const TString& dir);
 
 
-	Bool_t PrepareId(AliCDBId& id);
-//	Bool_t GetId(const AliCDBId& query, AliCDBId& result);
-	AliCDBId* GetId(const AliCDBId& query);
+  Bool_t PrepareId(AliCDBId& id);
+  //	Bool_t GetId(const AliCDBId& query, AliCDBId& result);
+  AliCDBId* GetId(const AliCDBId& query);
 
-	virtual void QueryValidFiles();
+  virtual void QueryValidFiles();
 
-	void GetEntriesForLevel0(const AliCDBId& query, TList* result);
-	void GetEntriesForLevel1(const AliCDBId& query, TList* result);
+  void GetEntriesForLevel0(const AliCDBId& query, TList* result);
+  void GetEntriesForLevel1(const AliCDBId& query, TList* result);
 
-	TFile* fFile;		// Dump file
-	Bool_t fReadOnly;	// ReadOnly flag
+  TFile* fFile;		// Dump file
+  Bool_t fReadOnly;	// ReadOnly flag
 
-	ClassDef(AliCDBDump, 0);
+  ClassDef(AliCDBDump, 0);
 };
 
 /////////////////////////////////////////////////////////////////////
@@ -74,15 +74,15 @@ private:
 
 class AliCDBDumpFactory: public AliCDBStorageFactory {
 
-public:
+  public:
 
-        virtual Bool_t Validate(const char* dbString);
-        virtual AliCDBParam* CreateParameter(const char* dbString);
+    virtual Bool_t Validate(const char* dbString);
+    virtual AliCDBParam* CreateParameter(const char* dbString);
 
-protected:
-        virtual AliCDBStorage* Create(const AliCDBParam* param);
+  protected:
+    virtual AliCDBStorage* Create(const AliCDBParam* param);
 
-        ClassDef(AliCDBDumpFactory, 0);
+    ClassDef(AliCDBDumpFactory, 0);
 };
 
 /////////////////////////////////////////////////////////////////////
@@ -93,26 +93,26 @@ protected:
 
 class AliCDBDumpParam: public AliCDBParam {
 
-public:
-        AliCDBDumpParam();
-        AliCDBDumpParam(const char* dbPath, Bool_t readOnly = kFALSE);
-        
-        virtual ~AliCDBDumpParam();
+  public:
+    AliCDBDumpParam();
+    AliCDBDumpParam(const char* dbPath, Bool_t readOnly = kFALSE);
 
-        const TString& GetPath() const {return fDBPath;};
-	Bool_t IsReadOnly() const {return fReadOnly;};
+    virtual ~AliCDBDumpParam();
 
-	virtual AliCDBParam* CloneParam() const;
+    const TString& GetPath() const {return fDBPath;};
+    Bool_t IsReadOnly() const {return fReadOnly;};
 
-	virtual ULong_t Hash() const;
-	virtual Bool_t IsEqual(const TObject* obj) const;
-	
-private:
+    virtual AliCDBParam* CloneParam() const;
 
-        TString fDBPath;	// Dump file path name
-	Bool_t fReadOnly;	// ReadOnly flag
+    virtual ULong_t Hash() const;
+    virtual Bool_t IsEqual(const TObject* obj) const;
 
-	ClassDef(AliCDBDumpParam, 0);
+  private:
+
+    TString fDBPath;	// Dump file path name
+    Bool_t fReadOnly;	// ReadOnly flag
+
+    ClassDef(AliCDBDumpParam, 0);
 };
 
 #endif
