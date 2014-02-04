@@ -90,7 +90,7 @@ private:
     AliHFEpidQAmanager   *fPIDqa; //! PID QA manager
     AliFlowTrackCuts     *fCutsRP; // track cuts for reference particles
     AliFlowTrackCuts     *fNullCuts; // dummy cuts for flow event tracks
-    AliFlowEvent         *fFlowEvent; // flow events Inclusive e
+    AliFlowEvent         *fFlowEvent; //! flow events Inclusive e
     const char           *fkCentralityMethod; // method used to determine centrality (V0 by default)
     Double_t             fCentrality; // event centrality for QA
     Double_t             fCentralityMin; // lower bound of cenrality bin
