@@ -41,6 +41,8 @@
 #define CorrBinsX 24
 #define CorrBinsY 26
 
+using std::cout;
+using std::endl;
 
 Double_t PI =TMath::Pi();
 
