@@ -22,7 +22,6 @@
 
 class AliDielectronHFhelper : public TNamed {
 public:
-  enum ECollectType { kSE=0, kME, kMEOS, kROT, kAll };
   enum { kMaxCuts=20 };
 
   //AliDielectronHFhelper();
@@ -56,9 +55,8 @@ public:
 			     AliDielectronVarManager::ValueTypes varz=AliDielectronVarManager::kNMaxValues,
 			     AliDielectronVarManager::ValueTypes vart=AliDielectronVarManager::kNMaxValues);
 
-  TObject* GetObject(const char *step, TObjArray *histArr=0x0);
-  TObject* FindObjects(TObjArray *histos);
-  TObject* Merge(TObjArray *arr);
+  TObjArray* FindObjects(TObjArray *histos);
+  TObjArray* Merge(TObjArray *arr);
 
   void CheckCuts(TObjArray *arr);
   virtual void Print(const Option_t* option ="") const ;
