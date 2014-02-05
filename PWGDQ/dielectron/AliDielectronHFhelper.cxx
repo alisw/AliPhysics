@@ -292,7 +292,7 @@ TObjArray* AliDielectronHFhelper::CollectProfiles(TString option,
   TObjArray *collection = new TObjArray(fMainArr->GetEntriesFast());
   collection->SetOwner(kTRUE);
 
-  TObjArray *cloneArr = (TObjArray*) fMainArr->Clone("tmpArr");
+  TObjArray *cloneArr = new TObjArray( *(dynamic_cast<TObjArray*>(fMainArr)) );
   if(!cloneArr) return 0x0;
   cloneArr->SetOwner(kTRUE);
 
@@ -302,7 +302,8 @@ TObjArray* AliDielectronHFhelper::CollectProfiles(TString option,
     if(!((TObjArray*)cloneArr->At(i))->GetEntries()) continue;
 
     // Get signal/source array with its histograms of interest
-    TObjArray *arr = (TObjArray*) GetObject(cloneArr->At(i)->GetName(),cloneArr);
+    AliDebug(1,Form(" Looking into step %s selected",cloneArr->At(i)->GetName()));
+    TObjArray *arr = FindObjects((TObjArray*)cloneArr->At(i));
     if(arr) {
 
       // find requested histogram
@@ -318,45 +319,20 @@ TObjArray* AliDielectronHFhelper::CollectProfiles(TString option,
       stepName.ReplaceAll("Signal","");
       ((TH1*)collection->At(i))->SetName(Form("%s_%s",key.Data(),stepName.Data()));
     }
+    else
+      AliError(Form("Step %d not found",i));
 
   }
 
-  // clean up the clone
-    delete cloneArr;
-    cloneArr=0;
+  //clean up
+  //delete cloneArr;
+  //cloneArr=0;
 
   return collection;
 }
 
 //________________________________________________________________
-TObject* AliDielectronHFhelper::GetObject(const char *step, TObjArray *histArr)
-{
-  // rename into GetSignalArray, return value is a tobjarray
-  //
-  // main function to receive a pair type or MC signal array
-  // with all its merged histograms valid for the cuts
-  //
-
-  AliDebug(1,Form(" Step %s selected",step));
-  // TODO: check memory
-
-  TObjArray *stepArr = 0x0; // this is the requested step
-  TObject *hist      = 0x0; // this is the returned object
-  if(!histArr) {
-    stepArr = (TObjArray*) fMainArr->FindObject(step)->Clone("tmpArr");
-  }
-  else {
-    stepArr = (TObjArray*) histArr->FindObject(step);
-  }
-
-  // apply cuts and get merged objects
-  if(stepArr) hist   = FindObjects(stepArr);
-  return hist;
-
-}
-
-//________________________________________________________________
-TObject* AliDielectronHFhelper::FindObjects(TObjArray *stepArr)
+TObjArray* AliDielectronHFhelper::FindObjects(TObjArray *stepArr)
 {
   // rename DoCuts, return values is a tobjarray
   // apply cuts and exclude objects from the array for merging (CUT selection)
@@ -366,6 +342,7 @@ TObject* AliDielectronHFhelper::FindObjects(TObjArray *stepArr)
   // TString title    = stepArr->At(0)->GetTitle();
   // TObjArray* vars  = title.Tokenize(":");
   // AliDebug(1,Form(" number of cuts/vars: %d/%d",fCutLowLimits.GetNrows(),vars->GetEntriesFast()));
+  if(!stepArr) { AliError("step is empty"); return 0x0;}
 
   // check for missing cuts
   CheckCuts(stepArr);
@@ -432,18 +409,18 @@ TObject* AliDielectronHFhelper::FindObjects(TObjArray *stepArr)
 
   // compress the array by removing all empty entries
   stepArr->Compress();
-  AliDebug(1,Form(" Compression: %d objects left",stepArr->GetEntriesFast()));
+  AliDebug(1,Form(" Compression: %d arrays left",stepArr->GetEntriesFast()));
 
   // merge left objects
-  TObject* hist = Merge(stepArr);
-  //  if(hist) AliDebug(1,Form(" Merging: %e  entries",hist->GetEntries()));
+  TObjArray* hist = Merge(stepArr);
+  if(hist) AliDebug(1,Form(" final array has %d objects",hist->GetEntries()));
   return hist;
 }
 
 //________________________________________________________________
-TObject* AliDielectronHFhelper::Merge(TObjArray *arr)
+TObjArray* AliDielectronHFhelper::Merge(TObjArray *arr)
 {
-  // returned object is tobjarray
+  //
   // merge left objects into a single one (LAST step)
   //
 
