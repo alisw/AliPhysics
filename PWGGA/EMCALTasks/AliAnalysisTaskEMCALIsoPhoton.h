@@ -10,6 +10,7 @@ class THnSparse;
 class TList;
 class TObjArray;
 class AliEMCALGeometry;
+class AliOADBContainer;
 class AliESDCaloCells;
 class AliESDEvent;
 class AliESDtrack;
@@ -69,6 +70,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   AliESDtrackCuts       *fPrTrCuts;              //pointer to hold the prim track cuts
   AliEMCALGeometry      *fGeom;                  // geometry utils
   TString                fGeoName;               // geometry name (def = EMCAL_FIRSTYEARV1)
+  AliOADBContainer      *fOADBContainer;         //!OADB container used to load misalignment matrices
   TString                fPeriod;                // string to the LHC period
   TString                fTrigBit;               // string to the trigger bit name
   Bool_t                 fIsTrain;               // variable to set train mode
