@@ -136,6 +136,32 @@ AliAnalysisTaskQAHighPtDeDx::AliAnalysisTaskQAHighPtDeDx():
 
 {
   //default constructor
+  for(Int_t i=0;i<9;++i){
+    
+    hMIPVsNch[i]=0;//TH2D, MIP vs Nch for different eta intervals
+    pMIPVsNch[i]=0;//TProfile, MIP vs Nch for different eta intervals
+    hMIPVsPhi[i]=0;//TH2D, MIP vs phi for different eta intervals
+    pMIPVsPhi[i]=0;//TProfile, MIP vs phi for different eta intervals
+    hPlateauVsPhi[i]=0;//TH2D, dE/dx vs Phi, electrons 0.4<p<0.6 GeV/c
+    pPlateauVsPhi[i]=0;//TProfile, dE/dx vs Phi, electrons 0.4<p<0.6 GeV/c
+    histPiV0[i]=0;//TH2D, dE/dx vs p, pi id by V0s
+    histpPiV0[i]=0;//TH1D, pi id by V0s
+    histPV0[i]=0;// TH2D, dE/dx vs p, p id by V0s
+    histpPV0[i]=0;// TH1D, p id by V0s
+    histAllCh[i]=0;//TH2D, dE/dx vs p for all charged particles
+    histPiTof[i]=0;//TH2D, dE/dx vs p for a "clean" sample of pions, beta>1
+    histpPiTof[i]=0;//TH1D, for a "clean" sample of pions, beta>1
+    histEV0[i]=0;
+    
+    for(Int_t pid=0;pid<7;++pid){
+      hMcIn[pid][i]=0;
+      hMcOut[pid][i]=0;
+    }
+    
+  }
+  
+  
+
 }
 
 
