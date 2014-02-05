@@ -219,6 +219,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fRunVertexFinder(kTRUE),
   fRunVertexFinderTracks(kTRUE),
   fRunMuonTracking(kFALSE),
+  fRunMFTTrackingMU(kFALSE),
   fRunV0Finder(kTRUE),
   fRunCascadeFinder(kTRUE),
   fRunMultFinder(kTRUE),
@@ -352,6 +353,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fRunVertexFinder(rec.fRunVertexFinder),
   fRunVertexFinderTracks(rec.fRunVertexFinderTracks),
   fRunMuonTracking(rec.fRunMuonTracking),
+  fRunMFTTrackingMU(rec.fRunMFTTrackingMU),
   fRunV0Finder(rec.fRunV0Finder),
   fRunCascadeFinder(rec.fRunCascadeFinder),
   fRunMultFinder(rec.fRunMultFinder),
@@ -501,6 +503,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fRunVertexFinder       = rec.fRunVertexFinder;
   fRunVertexFinderTracks = rec.fRunVertexFinderTracks;
   fRunMuonTracking       = rec.fRunMuonTracking;
+  fRunMFTTrackingMU      = rec.fRunMFTTrackingMU;
   fRunV0Finder           = rec.fRunV0Finder;
   fRunCascadeFinder      = rec.fRunCascadeFinder;
   fRunMultFinder         = rec.fRunMultFinder;
@@ -2120,6 +2123,20 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       AliSysInfo::AddStamp(Form("TrackingMUON_%d",iEvent), 0,0,iEvent);      
     }
 
+    //---------------- AU From here...
+
+    // MFT tracking of MUON tracks
+    if (!fRunTracking.IsNull()) {
+      if (fRunMFTTrackingMU && fRunMuonTracking) {
+	if (!RunMFTTrackingMU(fesd)) {
+	  if (fStopOnError) {CleanUp(); return kFALSE;}
+	}
+      }
+      AliSysInfo::AddStamp(Form("TrackingMFT_MUON_%d",iEvent), 0,0,iEvent);      
+    }
+
+    //---------------- ...to here
+
     // barrel tracking
     if (!fRunTracking.IsNull()) {
       if (!RunTracking(fesd,*fESDpid)) {
@@ -2921,6 +2938,53 @@ Bool_t AliReconstruction::RunMuonTracking(AliESDEvent*& esd)
 
 
 //_____________________________________________________________________________
+Bool_t AliReconstruction::RunMFTTrackingMU(AliESDEvent*& esd) {
+
+  // AU
+
+  // run the global muon tracking: matching the MUON tracks with the MFT clusters
+
+  AliCodeTimerAuto("",0)
+
+  if (!fRunLoader) {
+    AliError("Missing runLoader!");
+    return kFALSE;
+  }
+  Int_t iDet = GetDetIndex("MFT"); // for MFT
+
+  // Get a pointer to the MFT reconstructor
+  AliReconstructor *reconstructor = GetReconstructor(iDet);
+  if (!reconstructor) return kFALSE;
+  
+  TString detName = fgkDetectorName[iDet];
+  AliDebug(1, Form("%s tracking for muon tracks", detName.Data()));
+  AliTracker *tracker = reconstructor->CreateTracker();
+  if (!tracker) {
+    AliWarning(Form("couldn't create a Muon tracker for %s", detName.Data()));
+    return kFALSE;
+  }
+     
+  // read RecPoints
+  fLoader[iDet]->LoadRecPoints("read");  
+
+  tracker->LoadClusters(fLoader[iDet]->TreeR());
+  
+  Int_t rv = tracker->Clusters2Tracks(esd);
+  
+  fLoader[iDet]->UnloadRecPoints();
+
+  tracker->UnloadClusters();
+  
+  if (rv) {
+    AliError(Form("%s Clusters2Tracks failed", fgkDetectorName[iDet]));
+    return kFALSE;
+  }
+  
+  return kTRUE;
+
+}
+
+//_____________________________________________________________________________
 Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd,AliESDpid &PID)
 {
 // run the barrel tracking
@@ -3519,6 +3583,10 @@ Bool_t AliReconstruction::CreateTrackers(const TString& detectors)
       fRunMuonTracking = kTRUE;
       continue;
     }
+    if (detName == "MFT") {           // AU    
+      fRunMFTTrackingMU = kTRUE;      // AU
+      continue;			      // AU
+    }                                 // AU
 
     fTracker[iDet] = reconstructor->CreateTracker();
     if (!fTracker[iDet] && (iDet < 7)) {

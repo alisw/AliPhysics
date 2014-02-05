@@ -46,6 +46,7 @@
 #include "AliESDMuonTrack.h"
 #include "AliESDMuonCluster.h"
 #include "AliESDMuonPad.h"
+#include "AliESDMuonGlobalTrack.h"       // AU
 #include "AliESDPmdTrack.h"
 #include "AliESDTrdTrack.h"
 #include "AliESDVertex.h"
@@ -103,6 +104,7 @@ ClassImp(AliESDEvent)
 							"MuonTracks",
 							"MuonClusters",
 							"MuonPads",
+							"MuonGlobalTracks",      // AU
 							"PmdTracks",
 							"AliESDTrdTrigger",
 							"TrdTracks",
@@ -144,6 +146,7 @@ AliESDEvent::AliESDEvent():
   fMuonTracks(0),
   fMuonClusters(0),
   fMuonPads(0),
+  fMuonGlobalTracks(0),    // AU
   fPmdTracks(0),
   fTrdTracks(0),
   fTrdTracklets(0),
@@ -159,6 +162,7 @@ AliESDEvent::AliESDEvent():
   fESDFriendOld(0),
   fConnected(kFALSE),
   fUseOwnList(kFALSE),
+  fTracksConnected(kFALSE),
   fTOFHeader(0),
   fCentrality(0),
   fEventplane(0),
@@ -194,6 +198,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fMuonTracks(new TClonesArray(*esd.fMuonTracks)),
   fMuonClusters(new TClonesArray(*esd.fMuonClusters)),
   fMuonPads(new TClonesArray(*esd.fMuonPads)),
+  fMuonGlobalTracks(new TClonesArray(*esd.fMuonGlobalTracks)),     // AU
   fPmdTracks(new TClonesArray(*esd.fPmdTracks)),
   fTrdTracks(new TClonesArray(*esd.fTrdTracks)),
   fTrdTracklets(new TClonesArray(*esd.fTrdTracklets)),
@@ -210,6 +215,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fESDFriendOld(esd.fESDFriendOld ? new AliESDfriend(*esd.fESDFriendOld) : 0),
   fConnected(esd.fConnected),
   fUseOwnList(esd.fUseOwnList),
+  fTracksConnected(kFALSE),
   fTOFHeader(new AliTOFHeader(*esd.fTOFHeader)),
   fCentrality(new AliCentrality(*esd.fCentrality)),
   fEventplane(new AliEventplane(*esd.fEventplane)),
@@ -239,6 +245,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   AddObject(fTrkPileupVertices);
   AddObject(fTracks);
   AddObject(fMuonTracks);
+  AddObject(fMuonGlobalTracks);    // AU
   AddObject(fPmdTracks);
   AddObject(fTrdTracks);
   AddObject(fTrdTracklets);
@@ -256,6 +263,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   AddObject(fMuonClusters);
   AddObject(fMuonPads);
   GetStdContent();
+  ConnectTracks();
 }
 
 //______________________________________________________________________________
@@ -352,7 +360,7 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
 
   fConnected  = source.fConnected;
   fUseOwnList = source.fUseOwnList;
-  
+
   fDetectorStatus = source.fDetectorStatus;
   fDAQDetectorPattern = source.fDAQDetectorPattern;
   fDAQAttributes = source.fDAQAttributes;
@@ -360,7 +368,8 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
 
   *fTOFcluster = *source.fTOFcluster;
   //  fTOFcluster = new TObjArray(*(source.fTOFcluster));
-
+  fTracksConnected = kFALSE;
+  ConnectTracks();
   return *this;
 }
 
@@ -452,6 +461,7 @@ void AliESDEvent::Reset()
 
 }
 
+//______________________________________________________________________________
 Bool_t AliESDEvent::ResetWithPlacementNew(TObject *pObject){
   //
   // funtion to reset using the already allocated space
@@ -467,6 +477,7 @@ Bool_t AliESDEvent::ResetWithPlacementNew(TObject *pObject){
   return kTRUE;
 }
 
+//______________________________________________________________________________
 void AliESDEvent::ResetStdContent()
 {
   // Reset the standard contents
@@ -529,10 +540,12 @@ void AliESDEvent::ResetStdContent()
   if(fEMCALTrigger)fEMCALTrigger->DeAllocate(); 
   if(fSPDPileupVertices)fSPDPileupVertices->Delete();
   if(fTrkPileupVertices)fTrkPileupVertices->Delete();
+  fTracksConnected = kFALSE;
   if(fTracks)fTracks->Delete();
   if(fMuonTracks)fMuonTracks->Clear("C");
   if(fMuonClusters)fMuonClusters->Clear("C");
   if(fMuonPads)fMuonPads->Clear("C");
+  if(fMuonGlobalTracks)fMuonGlobalTracks->Clear("C");     // AU
   if(fPmdTracks)fPmdTracks->Delete();
   if(fTrdTracks)fTrdTracks->Delete();
   if(fTrdTracklets)fTrdTracklets->Delete();
@@ -550,6 +563,7 @@ void AliESDEvent::ResetStdContent()
 }
 
 
+//______________________________________________________________________________
 Int_t AliESDEvent::AddV0(const AliESDv0 *v) {
   //
   // Add V0
@@ -610,6 +624,7 @@ void AliESDEvent::Print(Option_t *) const
   printf("Number of tracks: \n");
   printf("                 charged   %d\n", GetNumberOfTracks());
   printf("                 muon      %d\n", GetNumberOfMuonTracks());
+  printf("                 glob muon %d\n", GetNumberOfMuonGlobalTracks());    // AU
   printf("                 pmd       %d\n", GetNumberOfPmdTracks());
   printf("                 trd       %d\n", GetNumberOfTrdTracks());
   printf("                 trd trkl  %d\n", GetNumberOfTrdTracklets());
@@ -634,10 +649,12 @@ void AliESDEvent::Print(Option_t *) const
   return;
 }
 
-void AliESDEvent::SetESDfriend(const AliESDfriend *ev) const {
-  //
-  // Attaches the complementary info to the ESD
-  //
+//______________________________________________________________________________
+void AliESDEvent::SetESDfriend(const AliESDfriend *ev) const 
+{
+//
+// Attaches the complementary info to the ESD
+//
   if (!ev) return;
 
   // to be sure that we set the tracks also
@@ -653,23 +670,27 @@ void AliESDEvent::SetESDfriend(const AliESDfriend *ev) const {
   }
 }
 
-Bool_t  AliESDEvent::RemoveKink(Int_t rm) const {
-  // ---------------------------------------------------------
-  // Remove a kink candidate and references to it from ESD,
-  // if this candidate does not come from a reconstructed decay
-  // Not yet implemented...
-  // ---------------------------------------------------------
+//______________________________________________________________________________
+Bool_t  AliESDEvent::RemoveKink(Int_t rm) const 
+{
+// ---------------------------------------------------------
+// Remove a kink candidate and references to it from ESD,
+// if this candidate does not come from a reconstructed decay
+// Not yet implemented...
+// ---------------------------------------------------------
   Int_t last=GetNumberOfKinks()-1;
   if ((rm<0)||(rm>last)) return kFALSE;
 
   return kTRUE;
 }
 
-Bool_t  AliESDEvent::RemoveV0(Int_t rm) const {
-  // ---------------------------------------------------------
-  // Remove a V0 candidate and references to it from ESD,
-  // if this candidate does not come from a reconstructed decay
-  // ---------------------------------------------------------
+//______________________________________________________________________________
+Bool_t  AliESDEvent::RemoveV0(Int_t rm) const 
+{
+// ---------------------------------------------------------
+// Remove a V0 candidate and references to it from ESD,
+// if this candidate does not come from a reconstructed decay
+// ---------------------------------------------------------
   Int_t last=GetNumberOfV0s()-1;
   if ((rm<0)||(rm>last)) return kFALSE;
 
@@ -729,11 +750,13 @@ Bool_t  AliESDEvent::RemoveV0(Int_t rm) const {
   return kTRUE;
 }
 
-Bool_t  AliESDEvent::RemoveTrack(Int_t rm) const {
-  // ---------------------------------------------------------
-  // Remove a track and references to it from ESD,
-  // if this track does not come from a reconstructed decay
-  // ---------------------------------------------------------
+//______________________________________________________________________________
+Bool_t  AliESDEvent::RemoveTrack(Int_t rm) const 
+{
+// ---------------------------------------------------------
+// Remove a track and references to it from ESD,
+// if this track does not come from a reconstructed decay
+// ---------------------------------------------------------
   Int_t last=GetNumberOfTracks()-1;
   if ((rm<0)||(rm>last)) return kFALSE;
 
@@ -928,8 +951,9 @@ Bool_t  AliESDEvent::RemoveTrack(Int_t rm) const {
   return kTRUE;
 }
 
-
-Bool_t AliESDEvent::Clean(Float_t *cleanPars) {
+//______________________________________________________________________________
+Bool_t AliESDEvent::Clean(Float_t *cleanPars) 
+{
   //
   // Remove the data which are not needed for the physics analysis.
   //
@@ -993,6 +1017,7 @@ Bool_t AliESDEvent::Clean(Float_t *cleanPars) {
   return rc;
 }
 
+//______________________________________________________________________________
 Char_t  AliESDEvent::AddPileupVertexSPD(const AliESDVertex *vtx) 
 {
     // Add a pileup primary vertex reconstructed with SPD
@@ -1003,6 +1028,7 @@ Char_t  AliESDEvent::AddPileupVertexSPD(const AliESDVertex *vtx)
     return n;
 }
 
+//______________________________________________________________________________
 Char_t  AliESDEvent::AddPileupVertexTracks(const AliESDVertex *vtx) 
 {
     // Add a pileup primary vertex reconstructed with SPD
@@ -1013,21 +1039,25 @@ Char_t  AliESDEvent::AddPileupVertexTracks(const AliESDVertex *vtx)
     return n;
 }
 
+//______________________________________________________________________________
 Int_t  AliESDEvent::AddTrack(const AliESDtrack *t) 
 {
     // Add track
     TClonesArray &ftr = *fTracks;
     AliESDtrack * track = new(ftr[fTracks->GetEntriesFast()])AliESDtrack(*t);
     track->SetID(fTracks->GetEntriesFast()-1);
+    track->SetESDEvent(this);
     return  track->GetID();    
 }
 
+//______________________________________________________________________________
 AliESDtrack*  AliESDEvent::NewTrack() 
 {
     // Add a new track
     TClonesArray &ftr = *fTracks;
     AliESDtrack * track = new(ftr[fTracks->GetEntriesFast()])AliESDtrack();
     track->SetID(fTracks->GetEntriesFast()-1);
+    track->SetESDEvent(this);
     return  track;
 }
 
@@ -1084,6 +1114,16 @@ AliESDMuonTrack* AliESDEvent::GetMuonTrack(Int_t i)
 }
 
 //______________________________________________________________________________
+AliESDMuonGlobalTrack* AliESDEvent::GetMuonGlobalTrack(Int_t i)                      // AU
+{
+  // get the MUON+MFT track at the position i in the internal array of track
+  if (!fMuonGlobalTracks) return 0x0;
+  AliESDMuonGlobalTrack *track = (AliESDMuonGlobalTrack*) fMuonGlobalTracks->UncheckedAt(i);
+  track->SetESDEvent(this);
+  return track;
+}
+
+//______________________________________________________________________________
 void AliESDEvent::AddMuonTrack(const AliESDMuonTrack *t) 
 {
   // add a MUON track
@@ -1093,11 +1133,28 @@ void AliESDEvent::AddMuonTrack(const AliESDMuonTrack *t)
 }
 
 //______________________________________________________________________________
+void AliESDEvent::AddMuonGlobalTrack(const AliESDMuonGlobalTrack *t)                             // AU
+{
+  // add a MUON+MFT track
+  TClonesArray &fmu = *fMuonGlobalTracks;
+  new (fmu[fMuonGlobalTracks->GetEntriesFast()]) AliESDMuonGlobalTrack(*t);
+}
+
+//______________________________________________________________________________
+
 AliESDMuonTrack* AliESDEvent::NewMuonTrack() 
 {
   // create a new MUON track at the end of the internal array of track
   TClonesArray &fmu = *fMuonTracks;
   return new(fmu[fMuonTracks->GetEntriesFast()]) AliESDMuonTrack();
+}
+
+//______________________________________________________________________________
+AliESDMuonGlobalTrack* AliESDEvent::NewMuonGlobalTrack()                                         // AU
+{
+  // create a new MUON+MFT track at the end of the internal array of track
+  TClonesArray &fmu = *fMuonGlobalTracks;
+  return new(fmu[fMuonGlobalTracks->GetEntriesFast()]) AliESDMuonGlobalTrack();
 }
 
 //______________________________________________________________________________
@@ -1178,49 +1235,57 @@ AliESDMuonPad* AliESDEvent::NewMuonPad()
   return new(fmu[fMuonPads->GetEntriesFast()]) AliESDMuonPad();
 }
 
+//______________________________________________________________________________
 void AliESDEvent::AddPmdTrack(const AliESDPmdTrack *t) 
 {
   TClonesArray &fpmd = *fPmdTracks;
   new(fpmd[fPmdTracks->GetEntriesFast()]) AliESDPmdTrack(*t);
 }
 
+//______________________________________________________________________________
 void AliESDEvent::SetTrdTrigger(const AliESDTrdTrigger *t)
 {
   *fTrdTrigger = *t;
 }
 
+//______________________________________________________________________________
 void AliESDEvent::AddTrdTrack(const AliESDTrdTrack *t) 
 {
   TClonesArray &ftrd = *fTrdTracks;
   new(ftrd[fTrdTracks->GetEntriesFast()]) AliESDTrdTrack(*t);
 }
 
+//______________________________________________________________________________
 void AliESDEvent::AddTrdTracklet(const AliESDTrdTracklet *trkl)
 {
   new ((*fTrdTracklets)[fTrdTracklets->GetEntriesFast()]) AliESDTrdTracklet(*trkl);
 }
 
+//______________________________________________________________________________
 void AliESDEvent::AddTrdTracklet(UInt_t trackletWord, Short_t hcid, Int_t label)
 {
   new ((*fTrdTracklets)[fTrdTracklets->GetEntriesFast()]) AliESDTrdTracklet(trackletWord, hcid, label);
 }
 
+//______________________________________________________________________________
 Int_t AliESDEvent::AddKink(const AliESDkink *c) 
 {
-    // Add kink
-    TClonesArray &fk = *fKinks;
-    AliESDkink * kink = new(fk[fKinks->GetEntriesFast()]) AliESDkink(*c);
-    kink->SetID(fKinks->GetEntriesFast()); // CKB different from the other imps..
-    return fKinks->GetEntriesFast()-1;
+  // Add kink
+  TClonesArray &fk = *fKinks;
+  AliESDkink * kink = new(fk[fKinks->GetEntriesFast()]) AliESDkink(*c);
+  kink->SetID(fKinks->GetEntriesFast()); // CKB different from the other imps..
+  return fKinks->GetEntriesFast()-1;
 }
 
 
+//______________________________________________________________________________
 void AliESDEvent::AddCascade(const AliESDcascade *c) 
 {
   TClonesArray &fc = *fCascades;
   new(fc[fCascades->GetEntriesFast()]) AliESDcascade(*c);
 }
 
+//______________________________________________________________________________
 void AliESDEvent::AddCosmicTrack(const AliESDCosmicTrack *t) 
 {
   TClonesArray &ft = *fCosmicTracks;
@@ -1228,21 +1293,24 @@ void AliESDEvent::AddCosmicTrack(const AliESDCosmicTrack *t)
 } 
 
 
+//______________________________________________________________________________
 Int_t AliESDEvent::AddCaloCluster(const AliESDCaloCluster *c) 
 {
-    // Add calocluster
-    TClonesArray &fc = *fCaloClusters;
-    AliESDCaloCluster *clus = new(fc[fCaloClusters->GetEntriesFast()]) AliESDCaloCluster(*c);
-    clus->SetID(fCaloClusters->GetEntriesFast()-1);
-    return fCaloClusters->GetEntriesFast()-1;
-  }
+  // Add calocluster
+  TClonesArray &fc = *fCaloClusters;
+  AliESDCaloCluster *clus = new(fc[fCaloClusters->GetEntriesFast()]) AliESDCaloCluster(*c);
+  clus->SetID(fCaloClusters->GetEntriesFast()-1);
+  return fCaloClusters->GetEntriesFast()-1;
+}
 
 
+//______________________________________________________________________________
 void  AliESDEvent::AddRawDataErrorLog(const AliRawDataErrorLog *log) const {
   TClonesArray &errlogs = *fErrorLogs;
   new(errlogs[errlogs.GetEntriesFast()])  AliRawDataErrorLog(*log);
 }
 
+//______________________________________________________________________________
 void AliESDEvent::SetZDCData(const AliESDZDC * obj)
 { 
   // use already allocated space
@@ -1250,6 +1318,7 @@ void AliESDEvent::SetZDCData(const AliESDZDC * obj)
     *fESDZDC = *obj;
 }
 
+//______________________________________________________________________________
 void  AliESDEvent::SetPrimaryVertexTPC(const AliESDVertex *vertex) 
 {
   // Set the TPC vertex
@@ -1260,6 +1329,7 @@ void  AliESDEvent::SetPrimaryVertexTPC(const AliESDVertex *vertex)
   }
 }
 
+//______________________________________________________________________________
 void  AliESDEvent::SetPrimaryVertexSPD(const AliESDVertex *vertex) 
 {
   // Set the SPD vertex
@@ -1270,6 +1340,7 @@ void  AliESDEvent::SetPrimaryVertexSPD(const AliESDVertex *vertex)
   }
 }
 
+//______________________________________________________________________________
 void  AliESDEvent::SetPrimaryVertexTracks(const AliESDVertex *vertex) 
 {
   // Set the primary vertex reconstructed using he ESD tracks.
@@ -1280,6 +1351,7 @@ void  AliESDEvent::SetPrimaryVertexTracks(const AliESDVertex *vertex)
   }
 }
 
+//______________________________________________________________________________
 const AliESDVertex * AliESDEvent::GetPrimaryVertex() const 
 {
   //
@@ -1297,6 +1369,7 @@ const AliESDVertex * AliESDEvent::GetPrimaryVertex() const
   return fSPDVertex;
 }
 
+//______________________________________________________________________________
 AliESDVertex * AliESDEvent::PrimaryVertexTracksUnconstrained() const 
 {
   //
@@ -1322,6 +1395,7 @@ AliESDVertex * AliESDEvent::PrimaryVertexTracksUnconstrained() const
   return vertex;
 }
 
+//______________________________________________________________________________
 void AliESDEvent::SetMultiplicity(const AliMultiplicity *mul) 
 {
   // Set the SPD Multiplicity
@@ -1331,6 +1405,7 @@ void AliESDEvent::SetMultiplicity(const AliMultiplicity *mul)
 }
 
 
+//______________________________________________________________________________
 void AliESDEvent::SetFMDData(AliESDFMD * obj) 
 { 
   // use already allocated space
@@ -1339,6 +1414,7 @@ void AliESDEvent::SetFMDData(AliESDFMD * obj)
   }
 }
 
+//______________________________________________________________________________
 void AliESDEvent::SetVZEROData(const AliESDVZERO * obj)
 { 
   // use already allocated space
@@ -1346,6 +1422,7 @@ void AliESDEvent::SetVZEROData(const AliESDVZERO * obj)
     *fESDVZERO = *obj;
 }
 
+//______________________________________________________________________________
 void AliESDEvent::SetTZEROData(const AliESDTZERO * obj)
 { 
   // use already allocated space
@@ -1354,20 +1431,21 @@ void AliESDEvent::SetTZEROData(const AliESDTZERO * obj)
 }
 
 
+//______________________________________________________________________________
 void AliESDEvent::SetACORDEData(AliESDACORDE * obj)
 {
   if(fESDACORDE)
     *fESDACORDE = *obj;
 }
 
+//______________________________________________________________________________
 void AliESDEvent::SetADData(AliESDAD * obj)
 {
   if(fESDAD)
     *fESDAD = *obj;
 }
 
-
-
+//______________________________________________________________________________
 void AliESDEvent::GetESDfriend(AliESDfriend *ev) const 
 {
   //
@@ -1391,6 +1469,7 @@ void AliESDEvent::GetESDfriend(AliESDfriend *ev) const
   if (fr) ev->SetVZEROfriend(fr->GetVZEROfriend());
 }
 
+//______________________________________________________________________________
 void AliESDEvent::AddObject(TObject* obj) 
 {
   // Add an object to the list of object.
@@ -1400,7 +1479,7 @@ void AliESDEvent::AddObject(TObject* obj)
   fESDObjects->AddLast(obj);
 }
 
-
+//______________________________________________________________________________
 void AliESDEvent::GetStdContent() 
 {
   // set pointers for standard content
@@ -1424,6 +1503,7 @@ void AliESDEvent::GetStdContent()
   fMuonTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kMuonTracks]);
   fMuonClusters = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kMuonClusters]);
   fMuonPads = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kMuonPads]);
+  fMuonGlobalTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kMuonGlobalTracks]);         // AU
   fPmdTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kPmdTracks]);
   fTrdTrigger = (AliESDTrdTrigger*)fESDObjects->FindObject(fgkESDListName[kTrdTrigger]);
   fTrdTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kTrdTracks]);
@@ -1442,6 +1522,7 @@ void AliESDEvent::GetStdContent()
   fTOFcluster = new TObjArray(1);
 }
 
+//______________________________________________________________________________
 void AliESDEvent::SetStdNames(){
   // Set the names of the standard contents
   // 
@@ -1461,12 +1542,13 @@ void AliESDEvent::SetStdNames(){
   }
 } 
 
-
+//______________________________________________________________________________
 void AliESDEvent::CreateStdContent(Bool_t bUseThisList){
   fUseOwnList = bUseThisList;
   CreateStdContent();
 }
 
+//______________________________________________________________________________
 void AliESDEvent::CreateStdContent() 
 {
   // create the standard AOD content and set pointers
@@ -1490,6 +1572,7 @@ void AliESDEvent::CreateStdContent()
   AddObject(new TClonesArray("AliESDMuonTrack",0));
   AddObject(new TClonesArray("AliESDMuonCluster",0));
   AddObject(new TClonesArray("AliESDMuonPad",0));
+  AddObject(new TClonesArray("AliESDMuonGlobalTrack",0));   // AU
   AddObject(new TClonesArray("AliESDPmdTrack",0));
   AddObject(new AliESDTrdTrigger());
   AddObject(new TClonesArray("AliESDTrdTrack",0));
@@ -1514,6 +1597,7 @@ void AliESDEvent::CreateStdContent()
   GetStdContent();
 }
 
+//______________________________________________________________________________
 void AliESDEvent::CompleteStdContent() 
 {
   // Create missing standard objects and add them to the TList of objects
@@ -1540,6 +1624,7 @@ void AliESDEvent::CompleteStdContent()
   }
 }
 
+//______________________________________________________________________________
 TObject* AliESDEvent::FindListObject(const char *name) const {
 //
 // Find object with name "name" in the list of branches
@@ -1550,6 +1635,7 @@ TObject* AliESDEvent::FindListObject(const char *name) const {
   return 0;
 } 
 
+//______________________________________________________________________________
 Int_t AliESDEvent::GetPHOSClusters(TRefArray *clusters) const
 {
   // fills the provided TRefArray with all found phos clusters
@@ -1569,6 +1655,7 @@ Int_t AliESDEvent::GetPHOSClusters(TRefArray *clusters) const
   return clusters->GetEntriesFast();
 }
 
+//______________________________________________________________________________
 Int_t AliESDEvent::GetEMCALClusters(TRefArray *clusters) const
 {
   // fills the provided TRefArray with all found emcal clusters
@@ -1588,6 +1675,7 @@ Int_t AliESDEvent::GetEMCALClusters(TRefArray *clusters) const
   return clusters->GetEntriesFast();
 }
 
+//______________________________________________________________________________
 void AliESDEvent::WriteToTree(TTree* tree) const {
   // Book the branches as in TTree::Branch(TCollection*)
   // but add a "." at the end of top level branches which are
@@ -1621,7 +1709,7 @@ void AliESDEvent::WriteToTree(TTree* tree) const {
   tree->Branch("fTOFcluster","TObjArray",(void *) &fTOFcluster);
 }
 
-
+//______________________________________________________________________________
 void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
 //
 // Connect the ESDEvent to a tree
@@ -1840,7 +1928,7 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
   }
 }
 
-
+//______________________________________________________________________________
 void AliESDEvent::CopyFromOldESD()
 {
   // Method which copies over everthing from the old esd structure to the 
@@ -1935,6 +2023,7 @@ void AliESDEvent::CopyFromOldESD()
   }// if fesdold
 }
 
+//______________________________________________________________________________
 Bool_t AliESDEvent::IsEventSelected(const char *trigExpr) const
 {
   // Check if the event satisfies the trigger
@@ -1966,6 +2055,7 @@ Bool_t AliESDEvent::IsEventSelected(const char *trigExpr) const
 
 }
 
+//______________________________________________________________________________
 TObject*  AliESDEvent::GetHLTTriggerDecision() const
 {
   // get the HLT trigger decission object
@@ -1988,6 +2078,7 @@ TString   AliESDEvent::GetHLTTriggerDescription() const
   return description;
 }
 
+//______________________________________________________________________________
 Bool_t    AliESDEvent::IsHLTTriggerFired(const char* name) const
 {
   // get the HLT trigger decission description
@@ -2096,6 +2187,7 @@ void AliESDEvent::EstimateMultiplicity(Int_t &tracklets, Int_t &trITSTPC, Int_t 
   //
 }
 
+//______________________________________________________________________________
 Bool_t AliESDEvent::IsPileupFromSPDInMultBins() const {
     Int_t nTracklets=GetMultiplicity()->GetNumberOfTracklets();
     if(nTracklets<20) return IsPileupFromSPD(3,0.8);
@@ -2103,6 +2195,7 @@ Bool_t AliESDEvent::IsPileupFromSPDInMultBins() const {
     else return IsPileupFromSPD(5,0.8);
 }
 
+//______________________________________________________________________________
 void  AliESDEvent::SetTOFHeader(const AliTOFHeader *header)
 {
   //
@@ -2122,18 +2215,21 @@ void  AliESDEvent::SetTOFHeader(const AliTOFHeader *header)
 
 }
 
+//______________________________________________________________________________
 AliCentrality* AliESDEvent::GetCentrality()
 {
     if (!fCentrality) fCentrality = new AliCentrality();
     return  fCentrality;
 }
 
+//______________________________________________________________________________
 AliEventplane* AliESDEvent::GetEventplane()
 {
     if (!fEventplane) fEventplane = new AliEventplane();
     return  fEventplane;
 }
 
+//______________________________________________________________________________
 Float_t AliESDEvent::GetVZEROEqMultiplicity(Int_t i) const
 {
   // Get VZERO Multiplicity for channel i
@@ -2152,6 +2248,7 @@ Float_t AliESDEvent::GetVZEROEqMultiplicity(Int_t i) const
   return (fESDVZERO->GetMultiplicity(i)/factor);
 }
 
+//______________________________________________________________________________
 void AliESDEvent::SetTOFcluster(Int_t ntofclusters,AliESDTOFcluster *cluster,Int_t *mapping){
   fNTOFclusters = 0;
 
@@ -2173,6 +2270,8 @@ void AliESDEvent::SetTOFcluster(Int_t ntofclusters,AliESDTOFcluster *cluster,Int
    
 
 }
+
+//______________________________________________________________________________
 void AliESDEvent::SetTOFcluster(Int_t ntofclusters,AliESDTOFcluster *cluster[],Int_t *mapping){
   fNTOFclusters = 0;
 
@@ -2193,4 +2292,14 @@ void AliESDEvent::SetTOFcluster(Int_t ntofclusters,AliESDTOFcluster *cluster[],I
     printf("TOF cluster before of matching = %i , after = %i\n",ntofclusters,fNTOFclusters);
    
 
+}
+
+//______________________________________________________________________________
+void AliESDEvent::ConnectTracks() {
+// Connect tracks to this event
+  if (fTracksConnected || !fTracks || !fTracks->GetEntriesFast()) return;
+  AliESDtrack *track;
+  TIter next(fTracks);
+  while ((track=(AliESDtrack*)next())) track->SetESDEvent(this);
+  fTracksConnected = kTRUE;
 }

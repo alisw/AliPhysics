@@ -8,26 +8,77 @@
 //  
 //*******************************************************************
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliITSUSuze02)
 
-AliITSUSuze02::AliITSUSuze02(Int_t Nrows, Int_t Ncols) {
-  if(Ncols%(kNumberOfFSBB*kNumberOfHalfFSBB)==0){  
-    fNRowsModule=Nrows;
-    fNColsModule=Ncols;
-    fModule=new TMatrixF(fNRowsModule,fNColsModule); 
-    
-    fNWindowsPer32colsMax=0;
-    fNWindowsPerHalfFSBBMax=0;
-    fNWindowsPerFSBBMax=0;
-    
-    fTestColumnSize=2;
-    fTestRowSize=2;
-  }
-  else{
+AliITSUSuze02::AliITSUSuze02(Int_t Nrows, Int_t Ncols):
+  fNRowsModule(Nrows),
+  fNColsModule(Ncols),
+  fModule(new TMatrixF(Nrows,Ncols)), 
+  fTestColumnSize(2),
+  fTestRowSize(2),
+  fNWindowsPer32colsMax(0),
+  fNWindowsPerHalfFSBBMax(0),
+  fNWindowsPerFSBBMax(0),
+  fNDigitsEncoded(0), 
+  fNEncodedWindows(0),
+  fNDigitsLost(0),
+  fNLostWindows(0),
+  fDataSizePerModule(0),
+  fNWindowsPer32colsMin(0),
+  fNWindowsPerHalfFSBBMin(0),
+  fNWindowsPerFSBBMin(0)
+{
+  if (Ncols%(kNumberOfFSBB*kNumberOfHalfFSBB) != 0) {
     printf("Number of columns should be multiple of %d. SUZE matrix wasn't created\n",kNumberOfFSBB*kNumberOfHalfFSBB);
   }
 }  
   
+AliITSUSuze02::AliITSUSuze02(const AliITSUSuze02& suze): 
+  fNRowsModule(suze.fNRowsModule),
+  fNColsModule(suze.fNColsModule),
+  fModule(new TMatrixF(*suze.fModule)), 
+  fTestColumnSize(suze.fTestColumnSize),
+  fTestRowSize(suze.fTestRowSize),
+  fNWindowsPer32colsMax(suze.fNWindowsPer32colsMax),
+  fNWindowsPerHalfFSBBMax(suze.fNWindowsPerHalfFSBBMax),
+  fNWindowsPerFSBBMax(suze.fNWindowsPerFSBBMax),
+  fNDigitsEncoded(suze.fNDigitsEncoded), 
+  fNEncodedWindows(suze.fNEncodedWindows),
+  fNDigitsLost(suze.fNDigitsLost),
+  fNLostWindows(suze.fNLostWindows),
+  fDataSizePerModule(suze.fDataSizePerModule),
+  fNWindowsPer32colsMin(suze.fNWindowsPer32colsMin),
+  fNWindowsPerHalfFSBBMin(suze.fNWindowsPerHalfFSBBMin),
+  fNWindowsPerFSBBMin(suze.fNWindowsPerFSBBMin)
+{
+}
+
+AliITSUSuze02 &AliITSUSuze02::operator=(const AliITSUSuze02& suze) {
+  if (&suze == this) return *this;
+
+  fNRowsModule = suze.fNRowsModule;
+  fNColsModule = suze.fNColsModule;
+  fModule = new TMatrixF(*suze.fModule);  
+  fTestColumnSize = suze.fTestColumnSize;
+  fTestRowSize = suze.fTestRowSize;
+  fNWindowsPer32colsMax = suze.fNWindowsPer32colsMax;
+  fNWindowsPerHalfFSBBMax = suze.fNWindowsPerHalfFSBBMax;
+  fNWindowsPerFSBBMax = suze.fNWindowsPerFSBBMax;
+  fNDigitsEncoded = suze.fNDigitsEncoded;
+  fNEncodedWindows = suze.fNEncodedWindows;
+  fNDigitsLost = suze.fNDigitsLost;
+  fNLostWindows = suze.fNLostWindows;
+  fDataSizePerModule = suze.fDataSizePerModule;
+  fNWindowsPer32colsMin = suze.fNWindowsPer32colsMin;
+  fNWindowsPerHalfFSBBMin = suze.fNWindowsPerHalfFSBBMin;
+  fNWindowsPerFSBBMin = suze.fNWindowsPerFSBBMin;
+
+  return *this;
+}
+
 AliITSUSuze02::~AliITSUSuze02() {
   if(fModule) delete fModule;
 }

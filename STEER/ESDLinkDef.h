@@ -29,7 +29,9 @@
 // see http://root.cern.ch/svn/root/trunk/io/doc/DataModelEvolution.txt
 
 #pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Int_t fTOFLabel[3]"  version="[-68]" target="fTOFLabel" targetType="Int_t*" code="{fTOFLabel = new Int_t[3];for(Int_t i=0;i < 3;i++) fTOFLabel[i]=onfile.fTOFLabel[i];}"
-#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTrackTime[5]"  version="[-68]" target="fTrackTime" targetType="Double32_t*" include="AliPID.h" code="{fTrackTime = new Double32_t[AliPID::kSPECIESC];for(Int_t isp=0;isp < 5;isp++) fTrackTime[isp]=onfile.fTrackTime[isp];}"
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTrackTime[5]"  version="[-68]" \
+target="fTrackTime" targetType="Double32_t*" include="AliPID.h" \
+code="{fTrackTime = new Double32_t[AliPID::kSPECIESC];for(Int_t isp=AliPID::kSPECIESC;isp--;) fTrackTime[isp]=isp<AliPID::kSPECIES ? onfile.fTrackTime[isp]:0;}"
 #pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTrackLength"  version="[-68]" target="fTrackLength" targetType="Double32_t" code="{fTrackLength=onfile.fTrackLength;}"
 
 
@@ -40,28 +42,29 @@
 #pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTOFsignalDz"  version="[-68]" target="fTOFsignalDz" targetType="Double32_t" code="{fTOFsignalDz=onfile.fTOFsignalDz;}"
 #pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Short_t fTOFdeltaBC"  version="[-68]" target="fTOFdeltaBC" targetType="Short_t" code="{fTOFdeltaBC=onfile.fTOFdeltaBC;}"
 #pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Short_t fTOFl0l1"  version="[-68]" target="fTOFl0l1" targetType="Short_t" code="{fTOFl0l1=onfile.fTOFl0l1;}"
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Int_t fTOFCalChannel"  version="[-68]" target="fTOFCalChannel" targetType="Int_t" code="{fTOFCalChannel=onfile.fTOFCalChannel;}"
 
-#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fR[5]"  version="[-71]" \
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fR[5]"  version="[-70]" \
  target="fR" targetType="Double32_t*" include="AliPID.h" \
    code="{fR = new Double32_t[AliPID::kSPECIES];for(Int_t isp=5;isp--;) fR[isp]=onfile.fR[isp];}"
 
-#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTPCr[5]"  version="[-71]" \
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTPCr[5]"  version="[-70]" \
    target="fTPCr" targetType="Double32_t*" include="AliPID.h" \
    code="{fTPCr = new Double32_t[AliPID::kSPECIES];for(Int_t isp=5;isp--;) fTPCr[isp]=onfile.fTPCr[isp];}"
 
-#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fITSr[5]"  version="[-71]" \
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fITSr[5]"  version="[-70]" \
    target="fITSr" targetType="Double32_t*" include="AliPID.h" \
    code="{fITSr = new Double32_t[AliPID::kSPECIES];for(Int_t isp=5;isp--;) fITSr[isp]=onfile.fITSr[isp];}"
 
-#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTRDr[5]"  version="[-71]" \
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTRDr[5]"  version="[-70]" \
    target="fTRDr" targetType="Double32_t*" include="AliPID.h" \
    code="{fTRDr = new Double32_t[AliPID::kSPECIES];for(Int_t isp=5;isp--;) fTRDr[isp]=onfile.fTRDr[isp];}"
 
-#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTOFr[5]"  version="[-71]" \
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTOFr[5]"  version="[-70]" \
    target="fTOFr" targetType="Double32_t*" include="AliPID.h" \
    code="{fTOFr = new Double32_t[AliPID::kSPECIES];for(Int_t isp=5;isp--;) fTOFr[isp]=onfile.fTOFr[isp];}"
 
-#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fHMPIDr[5]"  version="[-71]" \
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fHMPIDr[5]"  version="[-70]" \
    target="fHMPIDr" targetType="Double32_t*" include="AliPID.h" \
    code="{fHMPIDr = new Double32_t[AliPID::kSPECIES];for(Int_t isp=5;isp--;) fHMPIDr[isp]=onfile.fHMPIDr[isp];}"
 
@@ -158,4 +161,5 @@
 #pragma link C++ function operator+(const AliFMDMap&,const AliFMDMap&);
 #pragma link C++ function operator-(const AliFMDMap&,const AliFMDMap&);
   
+#pragma link C++ class  AliESDMuonGlobalTrack+;  
 #endif

@@ -13,6 +13,7 @@
 
 #include "AliVParticle.h"
 
+class AliVEvent;
 class AliVVertex;
 class AliExternalTrackParam;
 class AliTPCdEdxInfo;
@@ -68,6 +69,7 @@ public:
   AliVTrack(const AliVTrack& vTrack); 
   AliVTrack& operator=(const AliVTrack& vTrack);
 
+  virtual const AliVEvent* GetEvent() const {return 0;}
   virtual Int_t    GetID() const = 0;
   virtual UChar_t  GetITSClusterMap() const = 0;
   virtual void     GetITSdEdxSamples(Double_t s[4]) const {for (int i=4;i--;) s[i]=0;};
