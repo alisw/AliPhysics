@@ -13,6 +13,8 @@
 #include <TAxis.h>
 #include <TH3I.h>
 #include <THnSparse.h>
+#include <THn.h>
+
 //#include <AliAnalysisFilter.h>
 #include <iostream>
 //#include <AliAnaConvCorrBase.h>
@@ -55,7 +57,8 @@ public:
   void AddV0Filter(TObject * filter, Bool_t high = kTRUE) { fV0Filters[high].AddLast(filter); }
   void AddMesonFilter(TObject * filter, Bool_t high = kTRUE) { fMesonFilters[high].AddLast(filter); }
   void AddTrackFilter(TObject * filter, Bool_t high = kTRUE) { fTrackFilters[high].AddLast(filter); }
-  
+  void SetCorrectionMap(THnF * map)  { fCorrectionMap = map; }
+
   void SetMesonFilter(AliConversionMesonCuts * filter) { fMesonFilter = filter; }
   void SetPhotonFilter(AliConversionCuts * filter) { fPhotonFilter = filter; }
   void SetV0Reader(AliV0ReaderV1 * reader) { fV0Reader = reader; }
@@ -71,6 +74,9 @@ private:
 
   //void CorrelateWithTracks(AliAODConversionParticle * particle, TObjArray tracks[], Int_t ntrackfilters, Bool_t ** lowtrackmap, Int_t nltf, Int_t const tIDs[4], Double_t dphiValues[]);
   //void FillCounters(TObjArray * particles, TObjArray tracks[], Int_t ntrackfilters, Float_t cent, Float_t vtxz);
+
+  Double_t GetTrackCorrection(Double_t vtxz, AliVTrack * track);
+
   
   ///Get the distance in phi between trigger particle and correlated particle
   Float_t GetDPhi(Float_t dPhi) { 
@@ -78,8 +84,6 @@ private:
     else return ( (dPhi>0)? dPhi - TMath::TwoPi() : dPhi + TMath::TwoPi() ); 
   }
 
-
-  
   THnSparseF * CreateSparse(TString nameString, TString titleString, TList * axesList);
   Int_t GetBin(TAxis &axis, Double_t value);
   THnSparseF * GetMEHistogram(Int_t binz, Int_t binc, TObjArray * array);
@@ -111,9 +115,9 @@ private:
 
   TH2I * hMEvents; //event histrogam
   TH2I * hTrackCent; //event histrogam
-  TH2F * hTrigPt; // trigger pt
+  TH3F * hTrigPt; // trigger pt
   TH2F * hTrackPt; // track pt
-
+  TH1F * hTrigPhi; // trigger phi
 
   //AliAnaConvCorrBase * fPhotonCorr; //photon
   //AliAnaConvCorrPion * fPionCorr; //poin
@@ -142,11 +146,13 @@ private:
   TList fMassAxesList; // Mass vs pt sparse
 
   Bool_t fDoPhoton; // do photon analysis?
+  THnF * fCorrectionMap;
+
   
   AliAnalysisTaskdPhi(const AliAnalysisTaskdPhi&); // not implemented
   AliAnalysisTaskdPhi& operator=(const AliAnalysisTaskdPhi&); // not implemented
   
-  ClassDef(AliAnalysisTaskdPhi, 9); 
+  ClassDef(AliAnalysisTaskdPhi, 10); 
 };
 
 inline THnSparseF * AliAnalysisTaskdPhi::GetMEHistogram(Int_t binz, Int_t binc, TObjArray * array) {

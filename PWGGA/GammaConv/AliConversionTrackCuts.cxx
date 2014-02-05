@@ -25,6 +25,7 @@
 #include <iostream>
 #include "TH2F.h"
 #include "AliESDtrackCuts.h"
+#include "THn.h"
 
 using namespace std;
 ClassImp(AliConversionTrackCuts)
@@ -64,6 +65,8 @@ AliConversionTrackCuts::AliConversionTrackCuts() :
   fhnclpt(NULL),
   fhnclsfpt(NULL),
   fhEtaPhi(NULL),
+  fhTrackEff(NULL),
+  fkCreateTrackEff(kFALSE),
   fHistograms(NULL) 
 {
   //Constructor
@@ -90,6 +93,8 @@ AliConversionTrackCuts::AliConversionTrackCuts(TString name, TString title = "ti
   fhnclpt(NULL),
   fhnclsfpt(NULL),
   fhEtaPhi(NULL),
+  fhTrackEff(NULL),
+  fkCreateTrackEff(kFALSE),
   fHistograms(NULL)
 {
   //Constructor
@@ -223,7 +228,6 @@ Bool_t AliConversionTrackCuts::AcceptTrack(AliESDtrack * track) {
       
       FillDCAHist(dca[1], dca[0], track);
       if(fhEtaPhi) fhEtaPhi->Fill(track->Eta(), track->Phi());
-      
       return kTRUE;
     } else {
       return kFALSE;
@@ -506,6 +510,23 @@ TList * AliConversionTrackCuts::CreateHistograms() {
 
   // fhnclsfpt = new TH2F("nclsfpt", "nclsfpt", 20, 0, 20, 60, 0, 1.2);
   // fHistograms->Add(fhnclsfpt);
+
+  
+
+  if (fkCreateTrackEff) {
+    const Double_t ptbins[23] = {0.5,  0.6, 0.7,  0.8, 0.9,  1.0, 1.2, 1.4,  1.6, 1.8, 
+			  2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0, 4.25, 
+			  4.5, 4.75, 5.0};
+    
+    const Int_t bins[4] = { 12,  22, 36, 32};
+    const Double_t min[4] = { -12, 0.5, -.9,  0};
+    const Double_t max[4] = {  12,   5,  .9,  2*TMath::Pi() };
+    
+    fhTrackEff = new THnF(Form("hTrackEff_%s", GetName()), "hTrackEff", 4, bins, min, max);
+    fhTrackEff->SetBinEdges(1, ptbins);
+    fHistograms->Add(fhTrackEff);
+  }
+
   
   return fHistograms;
 }
@@ -523,6 +544,16 @@ void AliConversionTrackCuts::FillDCAHist(Float_t dcaz, Float_t dcaxy, AliVTrack 
   if(fhdcaxyPt) fhdcaxyPt->Fill(track->Pt(), dcaxy);
   if(fhdcazPt) fhdcazPt->Fill(track->Pt(), dcaz);
   if(fhdca) fhdca->Fill(dcaz, dcaxy);
+  
+  if(fhTrackEff) {
+    Double_t val[4];
+    val[0] = fEvent->GetPrimaryVertex()->GetZ();
+    val[1] =  track->Pt();
+    val[2] =  track->Eta();
+    val[3] =  track->Phi();
+    
+    fhTrackEff->Fill(val);
+  }
 }
 
 
