@@ -41,8 +41,6 @@
 #define CorrBinsX 24
 #define CorrBinsY 26
 
-using std::cout;
-using std::endl;
 
 Double_t PI =TMath::Pi();
 
@@ -427,8 +425,6 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 			Double_t mcTrackPt  = mcTrack->Pt();
 			if ((mcTrackPt<fPtMin)||(mcTrackPt>6.0)) continue;
 			
-			//Double_t mcTrackEta = mcTrack->Eta();
-			//Double_t mcTrackPhi = mcTrack->Phi();
 			Bool_t TrIsPrime    = mcTrack->IsPhysicalPrimary();
 			Bool_t TrPtMin      = mcTrackPt>fPtMin;
 			Bool_t TrCharge     = (mcTrack->Charge())!=0;
@@ -583,7 +579,7 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 	selectedV0s->SetOwner(kTRUE);
 	
 	Int_t nV0s = fAODEvent->GetNumberOfV0s();
-	cout << nV0s <<endl;
+	
 	for (Int_t i = 0; i < nV0s; i++) 
 	{ // start of V0 slection loop
 		AliAODv0* aodV0 = dynamic_cast<AliAODv0 *>(fAODEvent->GetV0(i));
@@ -595,7 +591,7 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
    	    AliAODTrack *myTrackPos=(AliAODTrack *)(aodV0->GetDaughter(0));
         AliAODTrack *myTrackNeg=(AliAODTrack *)(aodV0->GetDaughter(1));
 		
-		if (!myTrackPos || !myTrackNeg) {Printf("ERROR: Could not retreive one of the daughter track");continue;}
+		if (!myTrackPos || !myTrackNeg) continue;
 		
         if (!IsAcseptedV0(aodV0,myTrackPos,myTrackNeg)) continue;
 		
