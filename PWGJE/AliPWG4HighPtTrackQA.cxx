@@ -150,7 +150,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   //
   // Constructor
   //
-  SetNVariables(25);
+  SetNVariables(26);
 
   fPtBinEdges[0][0] = 10.;
   fPtBinEdges[0][1] = 1.;
@@ -256,7 +256,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   //
   AliDebug(2,Form("AliPWG4HighPtTrackQA Calling Constructor"));
 
-  SetNVariables(25);
+  SetNVariables(26);
 
   fPtBinEdges[0][0] = 10.;
   fPtBinEdges[0][1] = 1.;
