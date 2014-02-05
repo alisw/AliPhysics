@@ -3117,7 +3117,7 @@ Int_t   AliESDtrack::GetTOFcluster() const
     TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
     AliESDTOFcluster *tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[0]);
 
-    tofcl->GetClusterIndex();
+    return tofcl->GetClusterIndex();
   }
   else if(fNtofClusters>0) AliInfo("No AliESDEvent available here!\n");
 
