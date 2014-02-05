@@ -13,7 +13,6 @@ class TF1;
 class TH1D;
 class TH2D;
 class TCanvas;
-class TLegend;
 class TString;
 class TArrayD;
 class TGraph;
@@ -29,6 +28,8 @@ class AliUnfolding;
 #include "TFile.h"
 #include "TProfile.h"
 #include "TVirtualPad.h"
+#include "TPaveText.h"
+#include "TLegend.h"
 //_____________________________________________________________________________
 class AliJetFlowTools {
     public: 
@@ -55,6 +56,8 @@ class AliJetFlowTools {
             kFoldedSpectrum,
             kMeasuredSpectrum,
             kBar,                       // default style for bar histogram
+            kRatio,                     // default style for ratio
+            kV2,                        // default style for v2
             kEmpty };                   // default style
         // setters, interface to the class
         void            SetSaveFull(Bool_t b)           {fSaveFull              = b;}
@@ -131,9 +134,20 @@ class AliJetFlowTools {
                 Float_t rangeUp = 80,
                 TString in = "UnfoldedSpectra.root", 
                 TString out = "ProcessedSpectra.root") const;
+        void            GetNominalValues(
+                TH1D*& ratio,
+                TGraphErrors*& v2,
+                TArrayI* in,
+                TArrayI* out,
+                TString inFile = "UnfoldedSpectra.root",
+                TString outFile = "Nominal.root") const;
         void            GetCorrelatedUncertainty(
+                TGraphAsymmErrors*& corrRatio,
+                TGraphAsymmErrors*& corrV2,
                 TArrayI* variationsIn,
                 TArrayI* variationsOut,
+                TArrayI* variantions2ndIn,
+                TArrayI* variantions2ndOut,
                 TString type = "",
                 Int_t columns = 4,
                 Float_t rangeLow = 20,
@@ -141,6 +155,8 @@ class AliJetFlowTools {
                 TString in = "UnfoldedSpectra.root", 
                 TString out = "CorrelatedUncertainty.root") const;
         void            GetShapeUncertainty(
+                TGraphAsymmErrors*& shapeRatio,
+                TGraphAsymmErrors*& shapeV2,
                 TArrayI* regularizationIn,
                 TArrayI* regularizationOut,
                 TArrayI* trueBinIn = 0x0,
@@ -169,6 +185,12 @@ class AliJetFlowTools {
         static TH1D*    NormalizeTH1D(TH1D* histo, Double_t scale = 1.);
         static TGraphErrors*    GetRatio(TH1 *h1 = 0x0, TH1* h2 = 0x0, TString name = "", Bool_t appendFit = kFALSE, Int_t xmax = -1);
         static TGraphErrors*    GetV2(TH1* h1 = 0x0, TH1* h2 = 0x0, Double_t r = .7, TString name = "");
+        TGraphAsymmErrors*      GetV2WithSystematicErrors(
+                TH1* h1, TH1* h2, Double_t r, TString name, 
+                TH1* relativeErrorInUp,
+                TH1* relativeErrorInLow,
+                TH1* relativeErrorOutUp,
+                TH1* relativeErrorOutLow) const;
         static void     WriteObject(TObject* object, TString suffix = "", Bool_t kill = kTRUE);
         static TH2D*    ConstructDPtResponseFromTH1D(TH1D* dpt, Bool_t AvoidRoundingError);
         static TH2D*    GetUnityResponse(TArrayD* binsTrue, TArrayD* binsRec, TString suffix = "");
@@ -183,7 +205,27 @@ class AliJetFlowTools {
         static void     Style(TLegend* l);
         static void     Style(TH1* h, EColor col = kBlue, histoType = kEmpty);
         static void     Style(TGraph* h, EColor col = kBlue, histoType = kEmpty);
-        static TLegend* AddLegend(TVirtualPad* p)       {return p->BuildLegend(.565, .663, .882, .883);}
+        static TLegend* AddLegend(TVirtualPad* p, Bool_t style = kFALSE) {
+            if(!style) return p->BuildLegend(.565, .663, .882, .883);
+            else {
+                TLegend* l = AddLegend(p, kFALSE);
+                Style(l);
+                return l;
+            }
+        }
+        static TPaveText*       AddTPaveText(TString text, Int_t r = 2) {
+            TPaveText* t(new TPaveText(.35, .27, .76, .33,"NDC"));
+//            t->SetFillStyle(0);
+            t->SetFillColor(0);            
+            t->SetBorderSize(0);
+            t->AddText(0.,0.,text.Data());
+            t->AddText(0., 0., Form("#it{R} = 0.%i #it{k}_{T} charged jets", r));
+            t->SetTextColor(kBlack);
+//            t->SetTextSize(0.03);
+            t->SetTextFont(42);
+            t->Draw("same");
+            return t;
+        } 
         static void     SavePadToPDF(TVirtualPad* pad)  {pad->SaveAs(Form("%s.pdf", pad->GetName()));}
         // interface to AliUnfolding, not necessary but nice to have all parameters in one place
         static void     SetMinuitStepSize(Float_t s)    {AliUnfolding::SetMinuitStepSize(s);}
@@ -239,6 +281,9 @@ class AliJetFlowTools {
                 TH1D*& relativeErrorOutLow,
                 TH1D*& relativeSystematicIn,
                 TH1D*& relativeSystematicOut,
+                TH1D*& nominal,
+                TH1D*& nominalIn,
+                TH1D*& nominalOut,
                 Int_t columns,
                 Float_t rangeLow,
                 Float_t rangeUp,

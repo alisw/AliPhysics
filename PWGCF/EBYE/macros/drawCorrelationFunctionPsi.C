@@ -57,36 +57,36 @@ void drawCorrelationFunctionPsi(const char* filename = "AnalysisResultsPsi_train
   TList *listMixed = NULL;
   if(kShowMixed) listMixed = GetListOfObjects(filename,gCentrality,gBit,gCentralityEstimator,2,bToy,listNameAdd);
 
-  // else  get the QA histograms (for convolution)
-  else{    
-    //Open the file again
-    TFile *f = TFile::Open(filename,"UPDATE");
-    if((!f)||(!f->IsOpen())) {
-      Printf("The file %s is not found.",filename);
-    }
-    
-    
-    TDirectoryFile *dir = dynamic_cast<TDirectoryFile *>(f->Get("PWGCFEbyE.outputBalanceFunctionPsiAnalysis"));
-    if(!dir) {   
-      Printf("The TDirectoryFile is not found.",filename);
-    }
+  //get the QA histograms (for convolution)
 
-    TString listQAName = "listQAPsi_";
-    
-    listQAName += centralityArray[gCentrality-1];
-    if(gBit > -1) {
-      listQAName += "_Bit"; listQAName += gBit; }
-    if(gCentralityEstimator) {
-      listQAName += "_"; listQAName += gCentralityEstimator;}
-    listQAName += listNameAdd;
-  
-
-    listQA = (TList*)dir->Get(Form("%s",listQAName.Data()));
-    if(!listQA) {
-      Printf("TList %s not found!!!",listQAName.Data());
-    }
+  //Open the file again
+  TFile *f = TFile::Open(filename,"UPDATE");
+  if((!f)||(!f->IsOpen())) {
+    Printf("The file %s is not found.",filename);
   }
-
+  
+  
+  TDirectoryFile *dir = dynamic_cast<TDirectoryFile *>(f->Get("PWGCFEbyE.outputBalanceFunctionPsiAnalysis"));
+  if(!dir) {   
+    Printf("The TDirectoryFile is not found.",filename);
+  }
+  
+  TString listQAName = "listQAPsi_";
+  
+  listQAName += centralityArray[gCentrality-1];
+  if(gBit > -1) {
+    listQAName += "_Bit"; listQAName += gBit; }
+  if(gCentralityEstimator) {
+    listQAName += "_"; listQAName += gCentralityEstimator;}
+  listQAName += listNameAdd;
+  
+  
+  listQA = (TList*)dir->Get(Form("%s",listQAName.Data()));
+  if(!listQA) {
+    Printf("TList %s not found!!!",listQAName.Data());
+  }
+  
+  
   if(!list) {
     Printf("The TList object was not created");
     return;
@@ -427,6 +427,20 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   TCanvas *cNN[4];
   TString histoTitle, pngName;
 
+  // need event statistics for per-trigger yield
+  TH2D* hVertexCentrality = NULL;
+  if( normToTrig && !listQA){
+    Printf("per-trigger yield option chosen, but QA list for event statistics not available");
+    return;
+  }
+  else{
+    hVertexCentrality = (TH2D*)listQA->FindObject("fHistVz");
+    if(!hVertexCentrality){
+      Printf("per-trigger yield option chosen, but QA histogram for event statistics not available");
+      return;
+    }
+  }
+
   // if no mixing then divide by convoluted histograms
   if(!listBFMixed && listQA){
 
@@ -582,7 +596,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     //cPN[2]->SaveAs(pngName.Data());
 
     //Correlation function (+-)
-    gHistPN[3] = b->GetCorrelationFunction("PN",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig);
+    gHistPN[3] = b->GetCorrelationFunction("PN",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig,hVertexCentrality);
     gHistPN[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
     if(normToTrig)
       gHistPN[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
@@ -796,7 +810,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     //cNP[2]->SaveAs(pngName.Data());
 
     //Correlation function (-+)
-    gHistNP[3] = b->GetCorrelationFunction("NP",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig);
+    gHistNP[3] = b->GetCorrelationFunction("NP",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig,hVertexCentrality);
     gHistNP[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
     if(normToTrig)
       gHistNP[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
@@ -1011,7 +1025,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     //cPP[2]->SaveAs(pngName.Data());
 
     //Correlation function (++)
-    gHistPP[3] = b->GetCorrelationFunction("PP",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig);
+    gHistPP[3] = b->GetCorrelationFunction("PP",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig,hVertexCentrality);
     gHistPP[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
     if(normToTrig)
       gHistPP[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
@@ -1224,7 +1238,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     //cNN[2]->SaveAs(pngName.Data());
 
     //Correlation function (--)
-    gHistNN[3] = b->GetCorrelationFunction("NN",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig);
+    gHistNN[3] = b->GetCorrelationFunction("NN",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig,hVertexCentrality);
     gHistNN[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
     if(normToTrig)
       gHistNN[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");

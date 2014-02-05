@@ -8,6 +8,7 @@ class TH2F;
 class AliESDtrackCuts;
 class TList;
 class AliVEvent;
+class THn;
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
 #include "AliAnalysisCuts.h"
@@ -57,6 +58,7 @@ public:
   void      SetDCAXYmax(Double_t value) { fDCAXYmax = value*value; }
   void      SetFilterBit(Int_t value)   { fFilterBit = value; }
   void      SetEvent(AliVEvent * event)  { fEvent = event; }
+  void      CreateTrackEff(Bool_t create = kTRUE) { fkCreateTrackEff = create; }
 
   TList * CreateHistograms();
   void FillHistograms(Int_t cutIndex, AliVTrack * track);
@@ -93,13 +95,15 @@ protected :
   TH2F * fhnclpt;
   TH2F * fhnclsfpt;
   TH2F * fhEtaPhi;
-  
+  THn  * fhTrackEff;
+  Bool_t fkCreateTrackEff;
+
   TList * fHistograms;
 
   AliConversionTrackCuts(const AliConversionTrackCuts&); // not implemented
   AliConversionTrackCuts& operator=(const AliConversionTrackCuts&); // not implemented
 
-  ClassDef(AliConversionTrackCuts,4)
+  ClassDef(AliConversionTrackCuts,5)
 };
 
 #endif
