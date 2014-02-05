@@ -42,7 +42,7 @@ code="{fTrackTime = new Double32_t[AliPID::kSPECIESC];for(Int_t isp=AliPID::kSPE
 #pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fTOFsignalDz"  version="[-68]" target="fTOFsignalDz" targetType="Double32_t" code="{fTOFsignalDz=onfile.fTOFsignalDz;}"
 #pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Short_t fTOFdeltaBC"  version="[-68]" target="fTOFdeltaBC" targetType="Short_t" code="{fTOFdeltaBC=onfile.fTOFdeltaBC;}"
 #pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Short_t fTOFl0l1"  version="[-68]" target="fTOFl0l1" targetType="Short_t" code="{fTOFl0l1=onfile.fTOFl0l1;}"
-
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Int_t fTOFCalChannel"  version="[-68]" target="fTOFCalChannel" targetType="Int_t" code="{fTOFCalChannel=onfile.fTOFCalChannel;}"
 
 #pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Double32_t fR[5]"  version="[-70]" \
  target="fR" targetType="Double32_t*" include="AliPID.h" \

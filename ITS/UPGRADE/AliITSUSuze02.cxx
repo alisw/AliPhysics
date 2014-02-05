@@ -8,6 +8,9 @@
 //  
 //*******************************************************************
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliITSUSuze02)
 
 AliITSUSuze02::AliITSUSuze02(Int_t Nrows, Int_t Ncols):
