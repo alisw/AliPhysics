@@ -146,6 +146,8 @@ class AliJetFlowTools {
                 TGraphAsymmErrors*& corrV2,
                 TArrayI* variationsIn,
                 TArrayI* variationsOut,
+                TArrayI* variantions2ndIn,
+                TArrayI* variantions2ndOut,
                 TString type = "",
                 Int_t columns = 4,
                 Float_t rangeLow = 20,
@@ -211,13 +213,13 @@ class AliJetFlowTools {
                 return l;
             }
         }
-        static TPaveText*       AddTPaveText(TString text) {
+        static TPaveText*       AddTPaveText(TString text, Int_t r = 2) {
             TPaveText* t(new TPaveText(.35, .27, .76, .33,"NDC"));
 //            t->SetFillStyle(0);
             t->SetFillColor(0);            
             t->SetBorderSize(0);
             t->AddText(0.,0.,text.Data());
-            t->AddText(0., 0., "#it{R} = 0.2 #it{k}_{T} charged jets");
+            t->AddText(0., 0., Form("#it{R} = 0.%i #it{k}_{T} charged jets", r));
             t->SetTextColor(kBlack);
 //            t->SetTextSize(0.03);
             t->SetTextFont(42);
