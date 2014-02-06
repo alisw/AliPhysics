@@ -308,15 +308,16 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
       if (multTPC > ( 23+1.216*multGlobal)) {pass=kFALSE;}
       if (multTPC < (-20+1.087*multGlobal)) {pass=kFALSE;}
     }
-   
     if(aodevent && fData2011){
         if (multTPC > ( 62.87+1.78*multGlobal)) {pass=kFALSE;}
         if (multTPC < (-36.73+1.48*multGlobal)) {pass=kFALSE;}
       }
+    /* commenting conflicting code
     if(aodevent && !fData2011){
         if (multTPC > ( 32.1+1.59*multGlobal)) {pass=kFALSE;}
         if (multTPC < (-40.3+1.22*multGlobal)) {pass=kFALSE;}
       }
+      */
   }
   if (fCutNContributors)
   {
