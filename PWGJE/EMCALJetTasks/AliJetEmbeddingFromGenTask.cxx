@@ -169,8 +169,7 @@ void AliJetEmbeddingFromGenTask::FillPythiaHistograms() {
   AliRunLoader *rl = AliRunLoader::Instance();
   AliGenPythiaEventHeader *genPH = dynamic_cast<AliGenPythiaEventHeader*>(rl->GetHeader()->GenEventHeader());
   if(genPH) {
-    Printf("found pythia event header. pThard: %f Trials: %d xsec: %f",genPH->GetPtHard(),genPH->Trials(),genPH->GetXsection());
-
+    // Printf("found pythia event header. pThard: %f Trials: %d xsec: %f",genPH->GetPtHard(),genPH->Trials(),genPH->GetXsection());
     Float_t xsec = genPH->GetXsection();
     Int_t trials = genPH->Trials();
     Float_t pthard = genPH->GetPtHard();
