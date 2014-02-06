@@ -59,7 +59,7 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(TString     kTracksName    
 
   AliEmcalJetTask* jetFinderTaskTag  = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTag, etminClus,0.005,recombScheme,tag.Data());
 
-  if(tag.IsEqual("JetPythia")) {
+  if(tag.EqualTo("JetPythia")) {
     jetFinderTaskBase->SelectConstituents(TObject::kBitMask, 0);
     jetFinderTaskTag->SelectConstituents(TObject::kBitMask, 0);
   }
@@ -72,7 +72,7 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(TString     kTracksName    
   TString rhoNameBase = "";
   TString rhoNameTag  = "";
   if(rhoType==1) {
-    rhoTaskBase = AttachRhoTaskTagger(kPeriod,kTracksName,kClusName,R,ptminTrack,etminClus,recombScheme);
+    rhoTaskBase = AttachRhoTaskTagger(kPeriod,kTracksName,kClusName,R,ptminTrack,etminClus,recombScheme,tag);
     if(rhoTaskBase) {
       rhoTaskBase->SetCentralityEstimator(CentEst);  
       rhoTaskBase->SelectCollisionCandidates(AliVEvent::kAny);
@@ -82,7 +82,7 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(TString     kTracksName    
 	rhoNameBase = rhoTaskBase->GetOutRhoScaledName();
     }
     if(rhoTaskTag) {
-      rhoTaskTag = AttachRhoTaskTagger(kPeriod,kTracksName,kClusName,R,ptminTag,0.);
+      rhoTaskTag = AttachRhoTaskTagger(kPeriod,kTracksName,kClusName,R,ptminTag,0.,recombScheme,tag);
       rhoTaskTag->SetCentralityEstimator(CentEst); 
       rhoTaskTag->SelectCollisionCandidates(AliVEvent::kAny);
       rhoNameTag  = rhoTaskTag->GetOutRhoName();
@@ -217,7 +217,7 @@ AliAnalysisTaskRhoBase *AttachRhoTaskTagger(TString     kPeriod             = "L
   jetFinderKt   = AddTaskEmcalJet(kTracksName, "", kKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,recombScheme,tag.Data());
   jetFinderAKt  = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,recombScheme,tag.Data());
 
-  if(tag.IsEqual("JetPythia")) {
+  if(tag.EqualTo("JetPythia")) {
     jetFinderKt->SelectConstituents(TObject::kBitMask, 0);
     jetFinderAKt->SelectConstituents(TObject::kBitMask, 0);
   }
@@ -258,7 +258,8 @@ AliAnalysisTaskRhoBase *AttachRhoTaskTagger(TString     kPeriod             = "L
     sfunc->SetParameter(2,1.76458);
     sfunc->SetParameter(1,-0.0111656);
     sfunc->SetParameter(0,0.000107296);
-    TString rhoname = Form("RhoR%03dptmin%3.0f%s",(int)(100*R),ptminTrack*1000.0,kTracksName.Data());
+    TString rhoname = Form("%sRhoR%03dptmin%3.0f%s",tag.Data(),(int)(100*R),ptminTrack*1000.0,kTracksName.Data());
+    Printf("rhoname: %s",rhoname.Data());
     AliAnalysisTaskRho *rhoTask = AddTaskRho(
 					     jetFinderKt->GetName(), 
 					     kTracksName, 
