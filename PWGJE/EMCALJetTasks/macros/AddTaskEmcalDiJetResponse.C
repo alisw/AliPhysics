@@ -38,10 +38,13 @@ AliAnalysisTaskEmcalDiJetResponse* AddTaskEmcalDiJetResponse(TString     kTracks
 
   AliEmcalJetTask* jetFinderTaskFull    = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kFULLJETS, ptminTrack, etminClus);
   AliEmcalJetTask* jetFinderTaskCharged = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus);
+  jetFinderTaskFull->SelectCollisionCandidates(AliVEvent::kAny);
+  jetFinderTaskCharged->SelectCollisionCandidates(AliVEvent::kAny);
 
   AliEmcalJetTask* jetFinderTaskFullMC = AddTaskEmcalJet(kMCTracksName ,"", kANTIKT, R, kFULLJETS, kPartLevPtCut, kPartLevPtCut);
   AliEmcalJetTask* jetFinderTaskChargedMC = AddTaskEmcalJet(kMCTracksName ,"", kANTIKT, R, kCHARGEDJETS, kPartLevPtCut, kPartLevPtCut);
-  
+  jetFinderTaskFullMC->SelectCollisionCandidates(AliVEvent::kAny);
+  jetFinderTaskChargedMC->SelectCollisionCandidates(AliVEvent::kAny);
 
   TString strJetsFull = jetFinderTaskFull->GetName();
   TString strJetsCh   = jetFinderTaskCharged->GetName();
