@@ -62,6 +62,9 @@ endif
 
 CXXFLAGS     += $(ALICEINC) -g
 
+ifeq ($(ARCH),macosx64)
+  SOFLAGS      += -undefined dynamic_lookup
+endif
 
 SRCS         += G__$(PACKAGE).cxx
 OBJS          = $(SRCS:.cxx=.o)

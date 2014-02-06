@@ -31,12 +31,15 @@ void AddPairOutputLambda(AliRsnLoopPair *pair)
 {
    Bool_t valid;
    Int_t isFullOutput = AliRsnTrainManager::GetGlobalInt("RsnOutputFull",valid);
+   Int_t useRapidity = AliRsnTrainManager::GetGlobalInt("RsnUseRapidity",valid);
 
    // axes
    AliRsnValuePair *axisIM = new AliRsnValuePair("IM", AliRsnValuePair::kInvMass);
    AliRsnValuePair *axisPt = new AliRsnValuePair("PT", AliRsnValuePair::kPt);
-   axisIM     ->SetBins(700, 1.3, 2.0);
+   AliRsnValuePair *axisRapidity = new AliRsnValuePair("Y", AliRsnValuePair::kY);
+   axisIM     ->SetBins(570, 1.43, 2.0);
    axisPt     ->SetBins(120, 0.0, 12.0);
+   axisRapidity->SetBins(1,-0.5,0.5);
 
    // output: 2D histogram of inv. mass vs. pt
    AliRsnListOutput *outPair = 0;
@@ -47,6 +50,7 @@ void AddPairOutputLambda(AliRsnLoopPair *pair)
       outPair = new AliRsnListOutput("pair", AliRsnListOutput::kHistoSparse);
       outPair->AddValue(axisIM);
       outPair->AddValue(axisPt);
+      if (useRapidity) outPair->AddValue(axisRapidity);
    }
    // add outputs to loop
    pair->AddOutput(outPair);
@@ -57,12 +61,14 @@ void AddPairOutputMiniLambda(AliAnalysisTaskSE *task,Bool_t isMC,Bool_t isMixing
    Bool_t valid;
    Int_t isFullOutput = AliRsnTrainManager::GetGlobalInt("RsnOutputFull",valid);
    Int_t useMixing = AliRsnTrainManager::GetGlobalInt("IsMixing",valid);
+   Int_t useRapidity = AliRsnTrainManager::GetGlobalInt("RsnUseRapidity",valid);
 
    AliRsnMiniAnalysisTask *taskRsnMini =  (AliRsnMiniAnalysisTask *)task;
    /* invariant mass   */ Int_t imID   = taskRsnMini->CreateValue(AliRsnMiniValue::kInvMass, kFALSE);
    /* IM resolution    */ Int_t resID  = taskRsnMini->CreateValue(AliRsnMiniValue::kInvMassRes, kTRUE);
    /* transv. momentum */ Int_t ptID   = taskRsnMini->CreateValue(AliRsnMiniValue::kPt, kFALSE);
    /* centrality       */ Int_t centID = taskRsnMini->CreateValue(AliRsnMiniValue::kMult, kFALSE);
+   /* rapidity         */ Int_t yID = taskRsnMini->CreateValue(AliRsnMiniValue::kY, kFALSE);
 
    //
    // -- Create all needed outputs -----------------------------------------------------------------
@@ -106,13 +112,14 @@ void AddPairOutputMiniLambda(AliAnalysisTaskSE *task,Bool_t isMC,Bool_t isMixing
       if (cutsPair) out->SetPairCuts(cutsPair);
       // axis X: invmass (or resolution)
       if (useIM[i])
-         out->AddAxis(imID, 700, 1.3, 2.0);
+         out->AddAxis(imID, 570, 1.43, 2.0);
       else
          out->AddAxis(resID, 200, -0.02, 0.02);
 
       if (isFullOutput) {
          // axis Y: transverse momentum
          out->AddAxis(ptID, 100, 0.0, 10.0);
+	 if (useRapidity) out->AddAxis(yID, 1, -0.5, 0.5);
          // axis Z: centrality
          out->AddAxis(centID, 100, 0.0, 100.0);
       }

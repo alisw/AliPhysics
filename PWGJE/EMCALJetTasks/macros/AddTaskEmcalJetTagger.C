@@ -27,7 +27,8 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(TString     kTracksName    
 						     TString     trigClass           = "",
 						     TString     kEmcalTriggers      = "",
 						     TString     kPeriod             = "LHC11h",
-						     Int_t       recombScheme        = 0
+						     Int_t       recombScheme        = 0,
+						     TString     tag                 = "Jet"
 						     ) {
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -52,11 +53,16 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(TString     kTracksName    
 
   AliEmcalJetTask* jetFinderTaskBase = 0x0;
   if (strcmp(type,"TPC")==0)
-    jetFinderTaskBase = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,recombScheme);
+    jetFinderTaskBase = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,recombScheme,tag.Data());
   else if (strcmp(type,"EMCAL")==0)
-    jetFinderTaskBase = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kFULLJETS, ptminTrack, etminClus,0.005,recombScheme);
+    jetFinderTaskBase = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kFULLJETS, ptminTrack, etminClus,0.005,recombScheme,tag.Data());
 
-  AliEmcalJetTask* jetFinderTaskTag  = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTag, etminClus,0.005,recombScheme);
+  AliEmcalJetTask* jetFinderTaskTag  = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTag, etminClus,0.005,recombScheme,tag.Data());
+
+  if(tag.EqualTo("JetPythia")) {
+    jetFinderTaskBase->SelectConstituents(TObject::kBitMask, 0);
+    jetFinderTaskTag->SelectConstituents(TObject::kBitMask, 0);
+  }
 
   TString strJetsBase = jetFinderTaskBase->GetName();
   TString strJetsTag  = jetFinderTaskTag->GetName();
@@ -66,7 +72,7 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(TString     kTracksName    
   TString rhoNameBase = "";
   TString rhoNameTag  = "";
   if(rhoType==1) {
-    rhoTaskBase = AttachRhoTaskTagger(kPeriod,kTracksName,kClusName,R,ptminTrack,etminClus,recombScheme);
+    rhoTaskBase = AttachRhoTaskTagger(kPeriod,kTracksName,kClusName,R,ptminTrack,etminClus,recombScheme,tag);
     if(rhoTaskBase) {
       rhoTaskBase->SetCentralityEstimator(CentEst);  
       rhoTaskBase->SelectCollisionCandidates(AliVEvent::kAny);
@@ -76,7 +82,7 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(TString     kTracksName    
 	rhoNameBase = rhoTaskBase->GetOutRhoScaledName();
     }
     if(rhoTaskTag) {
-      rhoTaskTag = AttachRhoTaskTagger(kPeriod,kTracksName,kClusName,R,ptminTag,0.);
+      rhoTaskTag = AttachRhoTaskTagger(kPeriod,kTracksName,kClusName,R,ptminTag,0.,recombScheme,tag);
       rhoTaskTag->SetCentralityEstimator(CentEst); 
       rhoTaskTag->SelectCollisionCandidates(AliVEvent::kAny);
       rhoNameTag  = rhoTaskTag->GetOutRhoName();
@@ -197,7 +203,8 @@ AliAnalysisTaskRhoBase *AttachRhoTaskTagger(TString     kPeriod             = "L
 					    Double_t    R                   = 0.4, 
 					    Double_t    ptminTrack          = 0.15, 
 					    Double_t    etminClus           = 0.3,
-					    Int_t       recombScheme        = 0
+					    Int_t       recombScheme        = 0,
+					    TString     tag                 = "Jet"
 					    ) {
   
   AliAnalysisTaskRhoBase *rhoTaskBase;
@@ -207,8 +214,13 @@ AliAnalysisTaskRhoBase *AttachRhoTaskTagger(TString     kPeriod             = "L
   // Add kt jet finder and rho task in case we want background subtraction
   AliEmcalJetTask *jetFinderKt;
   AliEmcalJetTask *jetFinderAKt;
-  jetFinderKt   = AddTaskEmcalJet(kTracksName, "", kKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,recombScheme);
-  jetFinderAKt  = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,recombScheme);
+  jetFinderKt   = AddTaskEmcalJet(kTracksName, "", kKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,recombScheme,tag.Data());
+  jetFinderAKt  = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,recombScheme,tag.Data());
+
+  if(tag.EqualTo("JetPythia")) {
+    jetFinderKt->SelectConstituents(TObject::kBitMask, 0);
+    jetFinderAKt->SelectConstituents(TObject::kBitMask, 0);
+  }
 
   if(kPeriod.EqualTo("lhc13b") || kPeriod.EqualTo("lhc13c") || kPeriod.EqualTo("lhc13d") || kPeriod.EqualTo("lhc13e") || kPeriod.EqualTo("lhc13f")) {
 
@@ -246,7 +258,8 @@ AliAnalysisTaskRhoBase *AttachRhoTaskTagger(TString     kPeriod             = "L
     sfunc->SetParameter(2,1.76458);
     sfunc->SetParameter(1,-0.0111656);
     sfunc->SetParameter(0,0.000107296);
-    TString rhoname = Form("RhoR%03dptmin%3.0f%s",(int)(100*R),ptminTrack*1000.0,kTracksName.Data());
+    TString rhoname = Form("%sRhoR%03dptmin%3.0f%s",tag.Data(),(int)(100*R),ptminTrack*1000.0,kTracksName.Data());
+    Printf("rhoname: %s",rhoname.Data());
     AliAnalysisTaskRho *rhoTask = AddTaskRho(
 					     jetFinderKt->GetName(), 
 					     kTracksName, 

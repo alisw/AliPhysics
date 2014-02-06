@@ -3807,8 +3807,8 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
 
       SetRejectExtraSignalsCut(0);
    }
-
 }
+
 //_________________________________________________________________________
 Int_t AliConversionCuts::IsParticleFromBGEvent(Int_t index, AliStack *MCStack, AliVEvent *InputEvent){
 
@@ -3849,6 +3849,7 @@ Int_t AliConversionCuts::IsParticleFromBGEvent(Int_t index, AliStack *MCStack, A
 
    return accepted;
 }
+
 //_________________________________________________________________________
 Int_t AliConversionCuts::IsEventAcceptedByConversionCut(AliConversionCuts *ReaderCuts, AliVEvent *InputEvent, AliMCEvent *MCEvent, Int_t isHeavyIon){
 
@@ -3882,6 +3883,7 @@ Int_t AliConversionCuts::IsEventAcceptedByConversionCut(AliConversionCuts *Reade
 
    return 0;
 }
+
 //_________________________________________________________________________
 Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliStack *MCStack, AliVEvent *InputEvent){
    if (!(period.CompareTo("LHC12f1a") == 0 || period.CompareTo("LHC12f1b") == 0  || period.CompareTo("LHC12i3") == 0 || period.CompareTo("LHC11a10a") == 0 || period.CompareTo("LHC11a10b") == 0 || period.CompareTo("LHC11a10b_bis") == 0 || period.CompareTo("LHC11a10a_bis") == 0 || period.CompareTo("LHC11a10b_plus") == 0 || period.Contains("LHC13d2") || 
