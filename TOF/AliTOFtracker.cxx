@@ -1131,8 +1131,8 @@ Int_t AliTOFtracker::LoadClusters(TTree *cTree) {
     ind[0]=isector;
     ind[1]=iplate;
     ind[2]=istrip;
-    ind[3]=ipadX;
-    ind[4]=ipadZ;
+    ind[3]=ipadZ;
+    ind[4]=ipadX;
 
     Int_t calindex = AliTOFGeometry::GetIndex(ind);
     Int_t tofLabels[3]={c->GetLabel(0),c->GetLabel(1),c->GetLabel(2)};
