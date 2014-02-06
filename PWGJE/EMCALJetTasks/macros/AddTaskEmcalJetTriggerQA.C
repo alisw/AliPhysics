@@ -50,9 +50,8 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
     jetFinderTask1 = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kFULLJETS, ptminTrack, etminClus);
     jetFinderTask2 = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus);
   }
-
-  // jetFinderTask1->SetRecombSheme(0);
-  // jetFinderTask2->SetRecombSheme(0);
+  jetFinderTask1->SelectCollisionCandidates(AliVEvent::kAny);
+  jetFinderTask2->SelectCollisionCandidates(AliVEvent::kAny);
 
   TString strJets1 = jetFinderTask1->GetName();
   TString strJets2 = jetFinderTask2->GetName();
@@ -98,7 +97,6 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
   task->SetCaloTriggerPatchInfoName(kEmcalTriggers.Data());
 
   task->SetCentralityEstimator(CentEst);
-
   task->SelectCollisionCandidates(pSel);
 
   task->SetUseAliAnaUtils(kTRUE);
@@ -113,18 +111,13 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
 
   //Connect output
   AliAnalysisDataContainer *coutput1 = 0x0;
-
   TString containerName1 = Form("%s",wagonName.Data());
-
   TString outputfile = Form("%s:%s",AliAnalysisManager::GetCommonFileName(),wagonName.Data());
-
   coutput1 = mgr->CreateContainer(containerName1, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
   mgr->ConnectOutput(task,1,coutput1);
 
   return task;  
-
 }
-
 
 AliAnalysisTaskRhoBase *AttachRhoTask(TString     kPeriod             = "LHC13b",
 				      TString     kTracksName         = "PicoTracks", 
@@ -145,8 +138,6 @@ AliAnalysisTaskRhoBase *AttachRhoTask(TString     kPeriod             = "LHC13b"
   jetFinderAKt  = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus);
 
   if(kPeriod.EqualTo("lhc13b") || kPeriod.EqualTo("lhc13c") || kPeriod.EqualTo("lhc13d") || kPeriod.EqualTo("lhc13e") || kPeriod.EqualTo("lhc13f")) {
-
-
     jetFinderKt->SetMinJetPt(0.);
 
     gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");  
@@ -169,11 +160,9 @@ AliAnalysisTaskRhoBase *AttachRhoTask(TString     kPeriod             = "LHC13b"
 			       kTRUE
 			       );
     rhoTaskSparse->SetUseAliAnaUtils(kTRUE);
-
     rhoTaskBase = dynamic_cast<AliAnalysisTaskRhoBase*>rhoTaskSparse;
   }
   else if(kPeriod.EqualTo("lhc10h") || kPeriod.EqualTo("lhc11h") ) {
-
     gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRho.C");
 
     TF1* sfunc = new TF1("sfunc","[0]*x*x+[1]*x+[2]",-1,100);
@@ -195,9 +184,7 @@ AliAnalysisTaskRhoBase *AttachRhoTask(TString     kPeriod             = "LHC13b"
     rhoTask->SetHistoBins(100,0,250);
 
     rhoTaskBase = dynamic_cast<AliAnalysisTaskRhoBase*>rhoTask;
-
   }
 
   return rhoTaskBase;
-
 }
