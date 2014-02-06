@@ -136,6 +136,8 @@ AliAnalysisTaskRhoBase *AttachRhoTask(TString     kPeriod             = "LHC13b"
   AliEmcalJetTask *jetFinderAKt;
   jetFinderKt   = AddTaskEmcalJet(kTracksName, kClusName, kKT, R, kCHARGEDJETS, ptminTrack, etminClus);
   jetFinderAKt  = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus);
+  jetFinderKt->SelectCollisionCandidates(AliVEvent::kAny);
+  jetFinderAKt->SelectCollisionCandidates(AliVEvent::kAny);
 
   if(kPeriod.EqualTo("lhc13b") || kPeriod.EqualTo("lhc13c") || kPeriod.EqualTo("lhc13d") || kPeriod.EqualTo("lhc13e") || kPeriod.EqualTo("lhc13f")) {
     jetFinderKt->SetMinJetPt(0.);
