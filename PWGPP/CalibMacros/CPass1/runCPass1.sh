@@ -140,8 +140,6 @@ if [ $exitcode -ne 0 ]; then
     exit $exitcode
 fi
 
-mv AliESDs.root ../AliESDs_Barrel.root
-mv AliESDfriends.root ../AliESDfriends_Barrel.root
 mv syswatch.log ../syswatch_rec_Barrel.log
 
 echo "* Running AliRoot to make calibration..."
@@ -155,7 +153,6 @@ if [ $exitcode -ne 0 ]; then
     exit $exitcode
 fi
 
-mv AliESDfriends_v1.root ../
 mv syswatch.log ../syswatch_calib.log
 
 if [ -f QAtrain_duo.C ]; then
@@ -176,7 +173,10 @@ if [ -f QAtrain_duo.C ]; then
     done
 fi
 
-for file in QAresults_barrel.root EventStat_temp_barrel.root AODtpITS.root; do
+mv AliESDs.root ../AliESDs_Barrel.root
+mv AliESDfriends.root ../AliESDfriends_Barrel.root
+
+for file in AliESDfriends_v1.root QAresults_barrel.root EventStat_temp_barrel.root AODtpITS.root; do
     if [ -f "$file" ]; then
         mv "$file" ../
     fi
