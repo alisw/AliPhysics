@@ -2303,10 +2303,11 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	if( nPart->IsPhysicalPrimary() ) lMCAssocNegDaug = 1;
 	if( pPart->IsPhysicalPrimary() ) lMCAssocPosDaug = 1;
 	
+	/*
 	if ( TMath::Abs(nPart->Eta()) > fMaxEtaDaughter ||
 	     TMath::Abs(pPart->Eta()) > fMaxEtaDaughter )
 	  goto noas;
-	
+	*/
 	/*
 	// Daughter momentum cut
 	if ( ( nPart->Pt() < fMinPtDaughter ) || 
@@ -3703,10 +3704,11 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
       AliAODMCParticle *pDaughter1 = (AliAODMCParticle *)stack->UncheckedAt(id1);
       if (!pDaughter0 || !pDaughter1) continue; 
    
+      /*
       if ( TMath::Abs(pDaughter0->Eta()) > fMaxEtaDaughter ||
 	   TMath::Abs(pDaughter1->Eta()) > fMaxEtaDaughter )
 	continue;	
-
+      */
       // Daughter momentum cut: ! FIX it in case of AOD !
       /*
       if ( ( pDaughter0->Pt() < fMinPtDaughter ) || 
