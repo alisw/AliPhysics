@@ -66,8 +66,8 @@ ClassImp(AliEMCALTracker)
 //
 //------------------------------------------------------------------------------
 //
-AliEMCALTracker::AliEMCALTracker() 
-: AliTracker(),
+AliEMCALTracker::AliEMCALTracker() : 
+  AliTracker(),
   fCutPt(0),
   fCutNITS(0),
   fCutNTPC(50),
@@ -93,21 +93,21 @@ AliEMCALTracker::AliEMCALTracker()
 //
 //------------------------------------------------------------------------------
 //
-AliEMCALTracker::AliEMCALTracker(const AliEMCALTracker& copy) 
-  : AliTracker(),
-    fCutPt(copy.fCutPt),
-    fCutNITS(copy.fCutNITS),
-    fCutNTPC(copy.fCutNTPC),
-    fStep(copy.fStep),
-    fTrackCorrMode(copy.fTrackCorrMode),
-    fEMCalSurfaceDistance(copy.fEMCalSurfaceDistance),
-    fClusterWindow(copy.fClusterWindow),
-    fCutEta(copy.fCutEta),
-    fCutPhi(copy.fCutPhi),
-    fITSTrackSA(copy.fITSTrackSA), 
-    fTracks((TObjArray*)copy.fTracks->Clone()),
-    fClusters((TObjArray*)copy.fClusters->Clone()),
-    fGeom(copy.fGeom)
+AliEMCALTracker::AliEMCALTracker(const AliEMCALTracker& copy) : 
+  AliTracker(),
+  fCutPt(copy.fCutPt),
+  fCutNITS(copy.fCutNITS),
+  fCutNTPC(copy.fCutNTPC),
+  fStep(copy.fStep),
+  fTrackCorrMode(copy.fTrackCorrMode),
+  fEMCalSurfaceDistance(copy.fEMCalSurfaceDistance),
+  fClusterWindow(copy.fClusterWindow),
+  fCutEta(copy.fCutEta),
+  fCutPhi(copy.fCutPhi),
+  fITSTrackSA(copy.fITSTrackSA), 
+  fTracks((TObjArray*)copy.fTracks->Clone()),
+  fClusters((TObjArray*)copy.fClusters->Clone()),
+  fGeom(copy.fGeom)
 {
   //
   // Copy constructor
@@ -136,11 +136,9 @@ void AliEMCALTracker::InitParameters()
   // Check if the instance of AliEMCALRecParam exists, 
   const AliEMCALRecParam* recParam = AliEMCALReconstructor::GetRecParam();
 
-  if(!recParam){
+  if (!recParam){
     AliFatal("Reconstruction parameters for EMCAL not set!");
-  }
-  else{
- 
+  } else {
     fCutEta  =  recParam->GetMthCutEta();
     fCutPhi  =  recParam->GetMthCutPhi();
     fStep    =  recParam->GetExtrapolateStep();
@@ -148,84 +146,82 @@ void AliEMCALTracker::InitParameters()
     fCutNITS =  recParam->GetTrkCutNITS();
     fCutNTPC =  recParam->GetTrkCutNTPC();
   }
-	
 }
-
 //
 //------------------------------------------------------------------------------
 //
 void AliEMCALTracker::Clear(Option_t* option)
 {
-	//
-	// Clearing method
-        // Deletes all objects in arrays and the arrays themselves
-	//
+  //
+  // Clearing method
+  // Deletes all objects in arrays and the arrays themselves
+  //
 
-	TString opt(option);
-	Bool_t clearTracks = opt.Contains("TRACKS");
-	Bool_t clearClusters = opt.Contains("CLUSTERS");
-	if (opt.Contains("ALL")) {
-		clearTracks = kTRUE;
-		clearClusters = kTRUE;
-	}
+  TString opt(option);
+  Bool_t clearTracks = opt.Contains("TRACKS");
+  Bool_t clearClusters = opt.Contains("CLUSTERS");
+  if (opt.Contains("ALL")) {
+    clearTracks = kTRUE;
+    clearClusters = kTRUE;
+  }
 	
-	//fTracks is a collection of esdTrack
-	//When clearing this array, the linked objects should not be deleted
-	if (fTracks != 0x0 && clearTracks) {
-	   fTracks->Clear();
-	   delete fTracks;
-           fTracks = 0;
-	}
-	if (fClusters != 0x0 && clearClusters) {
-	   fClusters->Delete();
-	   delete fClusters;
-	   fClusters = 0;
-	}
+  //fTracks is a collection of esdTrack
+  //When clearing this array, the linked objects should not be deleted
+  if (fTracks != 0x0 && clearTracks) {
+    fTracks->Clear();
+    delete fTracks;
+    fTracks = 0;
+  }
+  if (fClusters != 0x0 && clearClusters) {
+    fClusters->Delete();
+    delete fClusters;
+    fClusters = 0;
+  }
 }
 //
 //------------------------------------------------------------------------------
 //
 Int_t AliEMCALTracker::LoadClusters(TTree *cTree) 
 {
-	//
-	// Load EMCAL clusters in the form of AliEMCALRecPoint,
-	// from simulation temporary files.
-	// (When included in reconstruction chain, this method is used automatically)
-	//
+  //
+  // Load EMCAL clusters in the form of AliEMCALRecPoint,
+  // from simulation temporary files.
+  // (When included in reconstruction chain, this method is used automatically)
+  //
 	
-	Clear("CLUSTERS");
+  Clear("CLUSTERS");
+  
+  cTree->SetBranchStatus("*",0); //disable all branches
+  cTree->SetBranchStatus("EMCALECARP",1); //Enable only the branch we need
 
-	cTree->SetBranchStatus("*",0); //disable all branches
-	cTree->SetBranchStatus("EMCALECARP",1); //Enable only the branch we need
-
-	TBranch *branch = cTree->GetBranch("EMCALECARP");
-	if (!branch) {
-		AliError("Can't get the branch with the EMCAL clusters");
-		return 1;
-	}
+  TBranch *branch = cTree->GetBranch("EMCALECARP");
+  if (!branch) {
+    AliError("Can't get the branch with the EMCAL clusters");
+    return 1;
+  }
 	
-	TClonesArray *clusters = new TClonesArray("AliEMCALRecPoint", 1000);
-	branch->SetAddress(&clusters);
+  TClonesArray *clusters = new TClonesArray("AliEMCALRecPoint", 1000);
+  branch->SetAddress(&clusters);
 	
-	//cTree->GetEvent(0);
-	branch->GetEntry(0);
-	Int_t nClusters = (Int_t)clusters->GetEntries();
-	if(fClusters) fClusters->Delete();
-	else fClusters = new TObjArray(0);
-	for (Int_t i = 0; i < nClusters; i++) {
-		AliEMCALRecPoint *cluster = (AliEMCALRecPoint*)clusters->At(i);
-		if (!cluster) continue;
-		AliEMCALMatchCluster *matchCluster = new AliEMCALMatchCluster(i, cluster);
-		fClusters->AddLast(matchCluster);
-	}
+  //cTree->GetEvent(0);
+  branch->GetEntry(0);
+  Int_t nClusters = (Int_t)clusters->GetEntries();
+  if(fClusters) fClusters->Delete();
+  else fClusters = new TObjArray(0);
+  for (Int_t i = 0; i < nClusters; i++) {
+    AliEMCALRecPoint *cluster = (AliEMCALRecPoint*)clusters->At(i);
+    if (!cluster) continue;
+    AliEMCALMatchCluster *matchCluster = new AliEMCALMatchCluster(i, cluster);
+    fClusters->AddLast(matchCluster);
+  }
 
-	branch->SetAddress(0);
-        clusters->Delete();
-        delete clusters;
+  branch->SetAddress(0);
+  clusters->Delete();
+  delete clusters;
 
-	AliInfo(Form("Collected %d RecPoints from Tree", fClusters->GetEntries()));
-
-	return 0;
+  AliInfo(Form("Collected %d RecPoints from Tree", fClusters->GetEntries()));
+  
+  return 0;
 }
 //
 //------------------------------------------------------------------------------
@@ -242,13 +238,12 @@ Int_t AliEMCALTracker::LoadClusters(AliESDEvent *esd)
   fClusters = new TObjArray(0);
   
   Int_t nClusters = esd->GetNumberOfCaloClusters();       		
-  for (Int_t i=0; i<nClusters; i++) 
-    {
-      AliESDCaloCluster *cluster = esd->GetCaloCluster(i);
-      if (!cluster || !cluster->IsEMCAL()) continue ; 
-      AliEMCALMatchCluster *matchCluster = new AliEMCALMatchCluster(i, cluster);
-      fClusters->AddLast(matchCluster);
-    }
+  for (Int_t i=0; i<nClusters; i++) {
+    AliESDCaloCluster *cluster = esd->GetCaloCluster(i);
+    if (!cluster || !cluster->IsEMCAL()) continue ; 
+    AliEMCALMatchCluster *matchCluster = new AliEMCALMatchCluster(i, cluster);
+    fClusters->AddLast(matchCluster);
+  }
   
   AliInfo(Form("Collected %d clusters from ESD", fClusters->GetEntries()));
   return 0;
@@ -278,27 +273,24 @@ Int_t AliEMCALTracker::LoadTracks(AliESDEvent *esd)
 	
   Int_t nTracks = esd->GetNumberOfTracks();
   //Bool_t isKink=kFALSE;
-  for (Int_t i = 0; i < nTracks; i++) 
-    {
-      AliESDtrack *esdTrack = esd->GetTrack(i);
-      // set by default the value corresponding to "no match"
-      esdTrack->SetEMCALcluster(kUnmatched);
-      esdTrack->ResetStatus(AliESDtrack::kEMCALmatch);
-
-      //Select good quaulity tracks
-      if(esdTrack->Pt()<fCutPt) continue;
-      if(!fITSTrackSA)
-	if(esdTrack->GetNcls(1)<fCutNTPC)continue;
-
-      //Loose geometric cut
-      Double_t phi = esdTrack->Phi()*TMath::RadToDeg();
-      if(TMath::Abs(esdTrack->Eta())>0.8 || phi <= 20 || phi >= 240 ) continue;
-
-      fTracks->AddLast(esdTrack);
-    }
-
-      AliInfo(Form("Collected %d tracks", fTracks->GetEntries()));
-      return 0;
+  for (Int_t i = 0; i < nTracks; i++) {
+    AliESDtrack *esdTrack = esd->GetTrack(i);
+    // set by default the value corresponding to "no match"
+    esdTrack->SetEMCALcluster(kUnmatched);
+    esdTrack->ResetStatus(AliESDtrack::kEMCALmatch);
+    
+    //Select good quaulity tracks
+    if(esdTrack->Pt()<fCutPt) continue;
+    if(!fITSTrackSA)
+      if(esdTrack->GetNcls(1)<fCutNTPC) continue;
+    
+    //Loose geometric cut
+    Double_t phi = esdTrack->Phi()*TMath::RadToDeg();
+    if (TMath::Abs(esdTrack->Eta())>0.8 || phi <= 20 || phi >= 240) continue;
+    fTracks->AddLast(esdTrack);
+  }
+  AliInfo(Form("Collected %d tracks", fTracks->GetEntries()));
+  return 0;
 }
 //
 //------------------------------------------------------------------------------
@@ -314,66 +306,59 @@ void AliEMCALTracker::SetTrackCorrectionMode(Option_t *option)
   TString opt(option);
   opt.ToUpper();
   
-  if (!opt.CompareTo("NONE")) 
-    {
-      fTrackCorrMode = kTrackCorrNone;
-    }
-  else if (!opt.CompareTo("MMB")) 
-    {
-      fTrackCorrMode = kTrackCorrMMB;
-    }
-  else 
-    {
-      cerr << "E-AliEMCALTracker::SetTrackCorrectionMode '" << option << "': Unrecognized option" << endl;
-    }
+  if (!opt.CompareTo("NONE")) {
+    fTrackCorrMode = kTrackCorrNone;
+  } else if (!opt.CompareTo("MMB")) {
+    fTrackCorrMode = kTrackCorrMMB;
+  } else  {
+    cerr << "E-AliEMCALTracker::SetTrackCorrectionMode '" << option << "': Unrecognized option" << endl;
+  }
 }
 //
 //------------------------------------------------------------------------------
 //
 Int_t AliEMCALTracker::PropagateBack(AliESDEvent* esd)
 {
-	//
-	// Main operation method.
-	// Gets external AliESD containing tracks to be matched.
-	// After executing match finding, stores in the same ESD object all infos
-	// and releases the object for further reconstruction steps.
-	//
-        //
-        // Note: should always return 0=OK, because otherwise all tracking
-        // is aborted for this event
+  //
+  // Main operation method.
+  // Gets external AliESD containing tracks to be matched.
+  // After executing match finding, stores in the same ESD object all infos
+  // and releases the object for further reconstruction steps.
+  //
+  //
+  // Note: should always return 0=OK, because otherwise all tracking
+  // is aborted for this event
   
-	if (!esd) {
-		AliError("NULL ESD passed");
-		return 1;
-	}
+  if (!esd) {
+    AliError("NULL ESD passed");
+    return 1;
+  }
 	
-	// step 1: collect clusters
-	Int_t okLoadClusters, nClusters;
-	if (!fClusters || (fClusters && fClusters->IsEmpty())) {
-		okLoadClusters = LoadClusters(esd);
-	}
-	nClusters = fClusters->GetEntries();
+  // step 1: collect clusters
+  Int_t okLoadClusters, nClusters;
+  if (!fClusters || (fClusters && fClusters->IsEmpty())) {
+    okLoadClusters = LoadClusters(esd);
+  }
+  nClusters = fClusters->GetEntries();
 		
-	// step 2: collect ESD tracks
-	Int_t nTracks, okLoadTracks;
-	okLoadTracks = LoadTracks(esd);
-	nTracks = fTracks->GetEntries();
-	
-	// step 3: for each track, find the closest cluster as matched within residual cuts
-	Int_t index=-1;
-	for (Int_t it = 0; it < nTracks; it++) 
-	  {
-	    AliESDtrack *track = (AliESDtrack*)fTracks->At(it);
-	    index = FindMatchedCluster(track);
-	    if (index>-1) 
-	      {
-		AliEMCALMatchCluster *cluster = (AliEMCALMatchCluster*)fClusters->At(index);
-		track->SetEMCALcluster(cluster->Index());
-		track->SetStatus(AliESDtrack::kEMCALmatch);
-	      }
-	  }
+  // step 2: collect ESD tracks
+  Int_t nTracks, okLoadTracks;
+  okLoadTracks = LoadTracks(esd);
+  nTracks = fTracks->GetEntries();
+  
+  // step 3: for each track, find the closest cluster as matched within residual cuts
+  Int_t index=-1;
+  for (Int_t it = 0; it < nTracks; it++) {
+    AliESDtrack *track = (AliESDtrack*)fTracks->At(it);
+    index = FindMatchedCluster(track);
+    if (index>-1) {
+      AliEMCALMatchCluster *cluster = (AliEMCALMatchCluster*)fClusters->At(index);
+      track->SetEMCALcluster(cluster->Index());
+      track->SetStatus(AliESDtrack::kEMCALmatch);
+    }
+  }
 
-	return 0;
+  return 0;
 }
 
 //
@@ -451,52 +436,52 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
 //
 void AliEMCALTracker::UnloadClusters() 
 {
-	//
-	// Free memory from all arrays
-        // This method is called after the local tracking step
-        // so we can safely delete everything 
-	//
+  //
+  // Free memory from all arrays
+  // This method is called after the local tracking step
+  // so we can safely delete everything 
+  //
 	
-  	Clear();
+  Clear();
 }
 
 //
 //------------------------------------------------------------------------------
 //
-AliEMCALTracker::AliEMCALMatchCluster::AliEMCALMatchCluster(Int_t index, AliEMCALRecPoint *recPoint)
-  : fIndex(index),
-    fX(0.),
-    fY(0.),
-    fZ(0.)
+AliEMCALTracker::AliEMCALMatchCluster::AliEMCALMatchCluster(Int_t index, AliEMCALRecPoint *recPoint) : 
+  fIndex(index),
+  fX(0.),
+  fY(0.),
+  fZ(0.)
 {
-	//
-	// Translates an AliEMCALRecPoint object into the internal format.
-	// Index of passed cluster in its native array must be specified.
-	//
-	TVector3 clpos;
-	recPoint->GetGlobalPosition(clpos);
-	
-	fX = clpos.X();
-	fY = clpos.Y();
-	fZ = clpos.Z();
+  //
+  // Translates an AliEMCALRecPoint object into the internal format.
+  // Index of passed cluster in its native array must be specified.
+  //
+  TVector3 clpos;
+  recPoint->GetGlobalPosition(clpos);
+  
+  fX = clpos.X();
+  fY = clpos.Y();
+  fZ = clpos.Z();
 }
 //
 //------------------------------------------------------------------------------
 //
-AliEMCALTracker::AliEMCALMatchCluster::AliEMCALMatchCluster(Int_t index, AliESDCaloCluster *caloCluster)
-  : fIndex(index),
-    fX(0.),
-    fY(0.),
-    fZ(0.)
+AliEMCALTracker::AliEMCALMatchCluster::AliEMCALMatchCluster(Int_t index, AliESDCaloCluster *caloCluster) : 
+  fIndex(index),
+  fX(0.),
+  fY(0.),
+  fZ(0.)
 {
-	//
-	// Translates an AliESDCaloCluster object into the internal format.
-	// Index of passed cluster in its native array must be specified.
-	//
-	Float_t clpos[3]= {0., 0., 0.};
-	caloCluster->GetPosition(clpos);
+  //
+  // Translates an AliESDCaloCluster object into the internal format.
+  // Index of passed cluster in its native array must be specified.
+  //
+  Float_t clpos[3]= {0., 0., 0.};
+  caloCluster->GetPosition(clpos);
 	
-	fX = (Double_t)clpos[0];
-	fY = (Double_t)clpos[1];
-	fZ = (Double_t)clpos[2];
+  fX = (Double_t)clpos[0];
+  fY = (Double_t)clpos[1];
+  fZ = (Double_t)clpos[2];
 }
