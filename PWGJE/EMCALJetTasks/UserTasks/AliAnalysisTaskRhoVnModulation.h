@@ -12,6 +12,7 @@
 #include <AliVCluster.h>
 #include <TClonesArray.h>
 #include <TMath.h>
+#include <TArrayD.h>
 #include <TRandom3.h>
 #include <AliJetContainer.h>
 #include <AliParticleContainer.h>
@@ -69,7 +70,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         void                    SetReduceBinsXYByFactor(Float_t x, Float_t y)   {fReduceBinsXByFactor = x;
                                                                                  fReduceBinsYByFactor = y;}
         void                    SetNoEventWeightsForQC(Bool_t e)                {fNoEventWeightsForQC = e;}
-        void                    SetCentralityClasses(TArrayI* c)                {fCentralityClasses = c;}
+        void                    SetCentralityClasses(TArrayD* c)                {fCentralityClasses = c;}
         void                    SetPtBinsHybrids(TArrayD* p)                    {fPtBinsHybrids = p;}
         void                    SetPtBinsJets(TArrayD* p)                       {fPtBinsJets = p;}
         void                    SetIntegratedFlow(TH1F* i, TH1F* j)             {fUserSuppliedV2 = i;
@@ -108,7 +109,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         TString                 GetJetsName() const                             {return GetJetContainer()->GetArrayName(); }
         TString                 GetTracksName() const                           {return GetParticleContainer()->GetArrayName(); }
         TString                 GetLocalRhoName() const                         {return fLocalRhoName; }
-        TArrayI*                GetCentralityClasses() const                    {return fCentralityClasses;}
+        TArrayD*                GetCentralityClasses() const                    {return fCentralityClasses;}
         TArrayD*                GetPtBinsHybrids() const                        {return fPtBinsHybrids; }
         TArrayD*                GetPtBinsJets() const                           {return fPtBinsJets; }
         TProfile*               GetResolutionParameters(Int_t h, Int_t c) const {return (h==2) ? fProfV2Resolution[c] : fProfV3Resolution[c];}
@@ -179,7 +180,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         Float_t                 fReduceBinsXByFactor;   // reduce the bins on x-axis of histo's by this much
         Float_t                 fReduceBinsYByFactor;   // reduce the bins on y-axis of histo's by this much
         Bool_t                  fNoEventWeightsForQC;   // don't store event weights for qc analysis
-        TArrayI*                fCentralityClasses;     //-> centrality classes (maximum 10)
+        TArrayD*                fCentralityClasses;     //-> centrality classes (maximum 10)
         TArrayD*                fPtBinsHybrids;         //-> pt bins for hybrid track vn anaysis
         TArrayD*                fPtBinsJets;            //-> pt bins for jet vn analysis
         TH1F*                   fUserSuppliedV2;        // histo with integrated v2
@@ -318,7 +319,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         AliAnalysisTaskRhoVnModulation(const AliAnalysisTaskRhoVnModulation&);                  // not implemented
         AliAnalysisTaskRhoVnModulation& operator=(const AliAnalysisTaskRhoVnModulation&);       // not implemented
 
-        ClassDef(AliAnalysisTaskRhoVnModulation, 19);
+        ClassDef(AliAnalysisTaskRhoVnModulation, 20);
 };
 
 #endif
