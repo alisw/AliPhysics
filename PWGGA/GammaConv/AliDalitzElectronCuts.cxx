@@ -108,6 +108,7 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
     fPIDMinPProtonRejectionLowP(2.0),
     fPIDMinPPionRejectionLowP(0.5),
     fUseCorrectedTPCClsInfo(kFALSE),
+    fUseCrossedRows(kFALSE),
     fUseTOFpid(kFALSE),
     fRequireTOF(kFALSE),
     fUseTrackMultiplicityForBG(kFALSE),
@@ -660,7 +661,8 @@ Double_t AliDalitzElectronCuts::GetNFindableClustersTPC(AliESDtrack* lTrack){
   
   
   Double_t clsToF=0;
-
+  
+  if( fUseCrossedRows == kFALSE ) {
 
     if ( !fUseCorrectedTPCClsInfo ){
         if(lTrack->GetTPCNclsF()!=0){
@@ -673,6 +675,14 @@ Double_t AliDalitzElectronCuts::GetNFindableClustersTPC(AliESDtrack* lTrack){
               //clsToF = lTrack->GetTPCClusterInfo(2,0,GetFirstTPCRow(photon->GetConversionRadius()));
               clsToF = lTrack->GetTPCClusterInfo(2,0); //NOTE ask friederike
                 
+    }
+  } else  {
+   
+	 Float_t nCrossedRowsTPC = lTrack->GetTPCCrossedRows();
+	 clsToF = 1.0;
+	  if ( lTrack->GetTPCNclsF()>0 ) {
+	      clsToF = nCrossedRowsTPC / lTrack->GetTPCNclsF();
+	  }	
     }
   
   return clsToF;
@@ -725,10 +735,10 @@ Bool_t AliDalitzElectronCuts::UpdateCutString(cutIds cutID, Int_t value) {
 ///Update the cut string (if it has been created yet)
 
   if(fCutString && fCutString->GetString().Length() == kNCuts) {
-//         cout << "Updating cut id in spot number " << cutID << " to " << value << endl;
+         cout << "Updating cut id in spot number " << cutID << " to " << value << endl;
 	fCutString->SetString(GetCutNumber());
   } else {
-//         cout << "fCutString not yet initialized, will not be updated" << endl;
+         cout << "fCutString not yet initialized, will not be updated" << endl;
 	return kFALSE;
   }
  // cout << fCutString->GetString().Data() << endl;
@@ -1199,9 +1209,11 @@ Bool_t AliDalitzElectronCuts::SetTPCClusterCut(Int_t clsTPCCut)
 		fMinClsTPC= 80.;
 		fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
 		break;
-	case 3:  // 100
-		fMinClsTPC= 100.;
-		fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+	case 3:  // Changed 2014-02-04  before fMinClsTPC = 50.;
+		fMinClsTPCToF = 0.8;
+		fesdTrackCuts->SetMinNCrossedRowsTPC(70);
+		fesdTrackCuts->SetMinNClustersTPC(0);
+		fUseCrossedRows = kTRUE;
 		break;
 	case 4:  // 0% of findable clusters
 	        fMinClsTPC= 70.;  
@@ -1349,6 +1361,10 @@ Bool_t AliDalitzElectronCuts::SetDCACut(Int_t dcaCut)
 		fesdTrackCuts->SetMaxDCAToVertexXY(1);
 		fesdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
 		break; 
+		
+	case 3: fesdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+		fesdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+		break;
 		
 	default:
 		cout<<"Warning: dcaCut not defined "<<dcaCut<<endl;
@@ -1558,14 +1574,13 @@ Bool_t AliDalitzElectronCuts::SetPsiPairCut(Int_t psiCut) {
         fPsiPairCut = 0.52;
         fDeltaPhiCutMin = 0.0;
         fDeltaPhiCutMax = 0.12;
-        break;
   case 4:
         fDoPsiPairCut = kTRUE;
         fPsiPairCut = 0.30;
         fDeltaPhiCutMin = 0.0;
         fDeltaPhiCutMax = 0.12;
         break;
-      
+    
   default:
       cout<<"Warning: PsiPairCut not defined "<<fPsiPairCut<<endl;
       return kFALSE;

@@ -205,6 +205,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Double_t fPIDMinPPionRejectionLowP; // Momentum limit to apply proton rejection
 
   Bool_t   fUseCorrectedTPCClsInfo; // flag to use corrected tpc cl info
+  Bool_t   fUseCrossedRows;  //UseCrossedRows 2011
   Bool_t   fUseTOFpid; // flag to use tof pid
   Bool_t   fRequireTOF; //flg to analyze only tracks with TOF signal
   Bool_t   fUseTrackMultiplicityForBG; // use multiplicity

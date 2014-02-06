@@ -77,7 +77,9 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   , fSystematicScalingEtaCorrectionMomentumThr(0.35)
   , fSystematicScalingEtaCorrectionLowMomenta(1.0)
   , fSystematicScalingEtaCorrectionHighMomenta(1.0)
-  , fSystematicScalingEtaSigmaPara(1.0)
+  , fSystematicScalingEtaSigmaParaThreshold(250.)
+  , fSystematicScalingEtaSigmaParaBelowThreshold(1.0)
+  , fSystematicScalingEtaSigmaParaAboveThreshold(1.0)
   , fSystematicScalingMultCorrection(1.0)
   , fCentralityEstimator("V0M")
   , fhPIDdataAll(0x0)
@@ -204,7 +206,9 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   , fSystematicScalingEtaCorrectionMomentumThr(0.35)
   , fSystematicScalingEtaCorrectionLowMomenta(1.0)
   , fSystematicScalingEtaCorrectionHighMomenta(1.0)
-  , fSystematicScalingEtaSigmaPara(1.0)
+  , fSystematicScalingEtaSigmaParaThreshold(250.)
+  , fSystematicScalingEtaSigmaParaBelowThreshold(1.0)
+  , fSystematicScalingEtaSigmaParaAboveThreshold(1.0)
   , fSystematicScalingMultCorrection(1.0)
   , fCentralityEstimator("V0M")
   , fhPIDdataAll(0x0)
@@ -676,7 +680,7 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
     fOutputContainer->Add(fhGenPr);
     
     fhSkippedTracksForSignalGeneration = new TH2D("fhSkippedTracksForSignalGeneration",
-                                                  "Number of tracks skipped for the signal generation;P_{T}^{gen} (GeV/c);TPC signal N", 
+                                                  "Number of tracks skipped for the signal generation;p_{T}^{gen} (GeV/c);TPC signal N", 
                                                   nPtBins, binsPt, 161, -0.5, 160.5);
     fhSkippedTracksForSignalGeneration->Sumw2();
     fOutputContainer->Add(fhSkippedTracksForSignalGeneration);
@@ -762,14 +766,14 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
     }
     
     fContainerEff->SetVarTitle(kEffMCID,"MC ID");
-    fContainerEff->SetVarTitle(kEffTrackPt,"P_{T} (GeV/c)");
+    fContainerEff->SetVarTitle(kEffTrackPt,"p_{T} (GeV/c)");
     fContainerEff->SetVarTitle(kEffTrackEta,"#eta");
     fContainerEff->SetVarTitle(kEffTrackCharge,"Charge (e_{0})");
     fContainerEff->SetVarTitle(kEffCentrality, "Centrality Percentile");
     if (fStoreAdditionalJetInformation) {
-      fContainerEff->SetVarTitle(kEffJetPt, "P_{T}^{jet} (GeV/c)");
-      fContainerEff->SetVarTitle(kEffZ, "z = P_{T}^{track} / P_{T}^{jet}");
-      fContainerEff->SetVarTitle(kEffXi, "#xi = ln(P_{T}^{jet} / P_{T}^{track})");
+      fContainerEff->SetVarTitle(kEffJetPt, "p_{T}^{jet} (GeV/c)");
+      fContainerEff->SetVarTitle(kEffZ, "z = p_{T}^{track} / p_{T}^{jet}");
+      fContainerEff->SetVarTitle(kEffXi, "#xi = ln(p_{T}^{jet} / p_{T}^{track})");
     }
     
     // Define clean MC sample
@@ -792,11 +796,11 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   
   if (fDoPID || fDoEfficiency) {
     // Generated jets
-    fh2FFJetPtRec = new TH2D("fh2FFJetPtRec", "Number of reconstructed jets;Centrality Percentile;P_{T}^{jet} (GeV/c)",
+    fh2FFJetPtRec = new TH2D("fh2FFJetPtRec", "Number of reconstructed jets;Centrality Percentile;p_{T}^{jet} (GeV/c)",
                             nCentBins, binsCent, nJetPtBins, binsJetPt);
     fh2FFJetPtRec->Sumw2();
     fOutputContainer->Add(fh2FFJetPtRec);
-    fh2FFJetPtGen = new TH2D("fh2FFJetPtGen", "Number of generated jets;Centrality Percentile;P_{T}^{jet} (GeV/c)",
+    fh2FFJetPtGen = new TH2D("fh2FFJetPtGen", "Number of generated jets;Centrality Percentile;p_{T}^{jet} (GeV/c)",
                             nCentBins, binsCent, nJetPtBins, binsJetPt);
     fh2FFJetPtGen->Sumw2();
     fOutputContainer->Add(fh2FFJetPtGen);
@@ -1106,7 +1110,8 @@ void AliAnalysisTaskPID::CheckDoAnyStematicStudiesOnTheExpectedSignal()
     return;
   }
   
-  if (TMath::Abs(fSystematicScalingEtaSigmaPara - 1.0) > fgkEpsilon) {
+  if ((TMath::Abs(fSystematicScalingEtaSigmaParaBelowThreshold - 1.0) > fgkEpsilon) ||
+      (TMath::Abs(fSystematicScalingEtaSigmaParaAboveThreshold - 1.0) > fgkEpsilon)) {
     fDoAnySystematicStudiesOnTheExpectedSignal = kTRUE;
     return;
   }
@@ -2084,7 +2089,9 @@ void AliAnalysisTaskPID::PrintSystematicsSettings() const
   printf("EtaCorrMomThr:\t%f\n", GetSystematicScalingEtaCorrectionMomentumThr());
   printf("EtaCorrLowP:\t%f\n", GetSystematicScalingEtaCorrectionLowMomenta());
   printf("EtaCorrHighP:\t%f\n", GetSystematicScalingEtaCorrectionHighMomenta());
-  printf("SigmaPara:\t%f\n", GetSystematicScalingEtaSigmaPara());
+  printf("SigmaParaThr:\t%f\n", GetSystematicScalingEtaSigmaParaThreshold());
+  printf("SigmaParaBelowThr:\t%f\n", GetSystematicScalingEtaSigmaParaBelowThreshold());
+  printf("SigmaParaAboveThr:\t%f\n", GetSystematicScalingEtaSigmaParaAboveThreshold());
   printf("MultCorr:\t%f\n", GetSystematicScalingMultCorrection());
   printf("TOF mode: %d\n", GetTOFmode());
   
@@ -2238,7 +2245,7 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
       
       // Due to additional azimuthal effects, there is an additional eta dependence for low momenta which is not corrected successfully so far.
       // One can assign a different (higher) systematic scale factor for this low-p region and a threshold which separates low- and high-p.
-      // An ERF will be used to get (as a function of P_TPC) from one correction factor to the other within roughly 0.2 GeV/c
+      // An ERF will be used to get (as a function of p_TPC) from one correction factor to the other within roughly 0.2 GeV/c
       Double_t usedSystematicScalingEtaCorrection = fSystematicScalingEtaCorrectionHighMomenta;
       
       if (TMath::Abs(fSystematicScalingEtaCorrectionHighMomenta - fSystematicScalingEtaCorrectionLowMomenta) > fgkEpsilon) {
@@ -2299,27 +2306,76 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
     // This means there is no extra parameter for the multiplicitySigmaCorrFactor, but only for the sigma map itself.
     // This is valid, since it appears only as a product. One has to assume a larger systematic shift in case of additional
     // multiplicity dependence....
-    Double_t sigmaRelEl = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kElectron, AliTPCPIDResponse::kdEdxDefault, kTRUE, kFALSE)
-                          / fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kElectron, AliTPCPIDResponse::kdEdxDefault, kTRUE, kFALSE)
-                          * fSystematicScalingEtaSigmaPara * multiplicityCorrSigmaEl;
     
-    Double_t sigmaRelKa = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kKaon, AliTPCPIDResponse::kdEdxDefault, kTRUE, kFALSE)
-                          / fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kKaon, AliTPCPIDResponse::kdEdxDefault, kTRUE, kFALSE)
-                          * fSystematicScalingEtaSigmaPara * multiplicityCorrSigmaKa;
+    Bool_t doSigmaSystematics = (TMath::Abs(fSystematicScalingEtaSigmaParaBelowThreshold - 1.0) > fgkEpsilon) ||
+                                (TMath::Abs(fSystematicScalingEtaSigmaParaAboveThreshold - 1.0) > fgkEpsilon);
     
-    Double_t sigmaRelPi = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kPion, AliTPCPIDResponse::kdEdxDefault, kTRUE, kFALSE)
-                          / fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kPion, AliTPCPIDResponse::kdEdxDefault, kTRUE, kFALSE)
-                          * fSystematicScalingEtaSigmaPara * multiplicityCorrSigmaPi;
     
-    Double_t sigmaRelMu = fTakeIntoAccountMuons ? 
-                            fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kMuon, AliTPCPIDResponse::kdEdxDefault, kTRUE, kFALSE)
-                            / fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kMuon, AliTPCPIDResponse::kdEdxDefault, kTRUE, kFALSE)
-                            * fSystematicScalingEtaSigmaPara * multiplicityCorrSigmaMu
-                            : 999.;
+    Double_t dEdxElExpected = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kElectron, AliTPCPIDResponse::kdEdxDefault,
+                                                                               kTRUE, kFALSE);
+    Double_t systematicScalingEtaSigmaParaEl = 1.;
+    if (doSigmaSystematics) {
+      Double_t scaleFactor = 0.5 * (1. + TMath::Erf((dEdxElExpected - fSystematicScalingEtaSigmaParaThreshold) / 25.));
+      systematicScalingEtaSigmaParaEl = fSystematicScalingEtaSigmaParaBelowThreshold * (1 - scaleFactor)
+                                        + fSystematicScalingEtaSigmaParaAboveThreshold * scaleFactor;
+    }
+    Double_t sigmaRelEl = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kElectron, AliTPCPIDResponse::kdEdxDefault,
+                                                                          kTRUE, kFALSE)
+                          / dEdxElExpected * systematicScalingEtaSigmaParaEl * multiplicityCorrSigmaEl;
     
-    Double_t sigmaRelPr = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault, kTRUE, kFALSE)
-                          / fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault, kTRUE, kFALSE)
-                          * fSystematicScalingEtaSigmaPara * multiplicityCorrSigmaPr;
+    
+    Double_t dEdxKaExpected = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kKaon, AliTPCPIDResponse::kdEdxDefault, 
+                                                                               kTRUE, kFALSE);
+    Double_t systematicScalingEtaSigmaParaKa = 1.;
+    if (doSigmaSystematics) {
+      Double_t scaleFactor = 0.5 * (1. + TMath::Erf((dEdxKaExpected - fSystematicScalingEtaSigmaParaThreshold) / 25.));
+      systematicScalingEtaSigmaParaKa = fSystematicScalingEtaSigmaParaBelowThreshold * (1 - scaleFactor)
+                                        + fSystematicScalingEtaSigmaParaAboveThreshold * scaleFactor;
+    }
+    Double_t sigmaRelKa = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kKaon, AliTPCPIDResponse::kdEdxDefault,
+                                                                          kTRUE, kFALSE)
+                          / dEdxKaExpected * systematicScalingEtaSigmaParaKa * multiplicityCorrSigmaKa;
+    
+    
+    Double_t dEdxPiExpected = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kPion, AliTPCPIDResponse::kdEdxDefault,
+                                                                               kTRUE, kFALSE);
+    Double_t systematicScalingEtaSigmaParaPi = 1.;
+    if (doSigmaSystematics) {
+      Double_t scaleFactor = 0.5 * (1. + TMath::Erf((dEdxPiExpected - fSystematicScalingEtaSigmaParaThreshold) / 25.));
+      systematicScalingEtaSigmaParaPi = fSystematicScalingEtaSigmaParaBelowThreshold * (1 - scaleFactor)
+                                        + fSystematicScalingEtaSigmaParaAboveThreshold * scaleFactor;
+    }
+    Double_t sigmaRelPi = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kPion, AliTPCPIDResponse::kdEdxDefault,
+                                                                          kTRUE, kFALSE)
+                          / dEdxPiExpected * systematicScalingEtaSigmaParaPi * multiplicityCorrSigmaPi;
+    
+    
+    Double_t sigmaRelMu = 999.;
+    if (fTakeIntoAccountMuons) {
+      Double_t dEdxMuExpected = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kMuon, AliTPCPIDResponse::kdEdxDefault, 
+                                                                                 kTRUE, kFALSE);
+      Double_t systematicScalingEtaSigmaParaMu = 1.;
+      if (doSigmaSystematics) {
+        Double_t scaleFactor = 0.5 * (1. + TMath::Erf((dEdxMuExpected - fSystematicScalingEtaSigmaParaThreshold) / 25.));
+        systematicScalingEtaSigmaParaMu = fSystematicScalingEtaSigmaParaBelowThreshold * (1 - scaleFactor)
+                                          + fSystematicScalingEtaSigmaParaAboveThreshold * scaleFactor;
+      }
+      sigmaRelMu = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kMuon, AliTPCPIDResponse::kdEdxDefault, kTRUE, kFALSE)
+                   / dEdxMuExpected * systematicScalingEtaSigmaParaMu * multiplicityCorrSigmaMu;
+    }
+    
+    
+    Double_t dEdxPrExpected = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault,
+                                                                               kTRUE, kFALSE);
+    Double_t systematicScalingEtaSigmaParaPr = 1.;
+    if (doSigmaSystematics) {
+      Double_t scaleFactor = 0.5 * (1. + TMath::Erf((dEdxPrExpected - fSystematicScalingEtaSigmaParaThreshold) / 25.));
+      systematicScalingEtaSigmaParaPr = fSystematicScalingEtaSigmaParaBelowThreshold * (1 - scaleFactor)
+                                        + fSystematicScalingEtaSigmaParaAboveThreshold * scaleFactor;
+    }
+    Double_t sigmaRelPr = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault,
+                                                                          kTRUE, kFALSE)
+                          / dEdxPrExpected * systematicScalingEtaSigmaParaPr * multiplicityCorrSigmaPr;
     
     // Now scale the (possibly modified) spline values with the (possibly modified) correction factors
     dEdxEl *= etaCorrEl * multiplicityCorrEl;
@@ -3063,18 +3119,18 @@ void AliAnalysisTaskPID::SetUpGenHist(THnSparse* hist, Double_t* binsPt, Double_
   hist->GetAxis(kGenSelectSpecies)->SetBinLabel(3, "#pi");
   hist->GetAxis(kGenSelectSpecies)->SetBinLabel(4, "p");
   
-  hist->GetAxis(kGenPt)->SetTitle("P_{T} (GeV/c)");
+  hist->GetAxis(kGenPt)->SetTitle("p_{T} (GeV/c)");
   
   hist->GetAxis(kGenDeltaPrimeSpecies)->SetTitle("TPC #Delta'_{species} (arb. unit)");
   
   hist->GetAxis(kGenCentrality)->SetTitle(Form("Centrality Percentile (%s)", fCentralityEstimator.Data()));
   
   if (fStoreAdditionalJetInformation) {
-    hist->GetAxis(kGenJetPt)->SetTitle("P_{T}^{jet} (GeV/c)");
+    hist->GetAxis(kGenJetPt)->SetTitle("p_{T}^{jet} (GeV/c)");
     
-    hist->GetAxis(kGenZ)->SetTitle("z = P_{T}^{track} / P_{T}^{jet}");
+    hist->GetAxis(kGenZ)->SetTitle("z = p_{T}^{track} / p_{T}^{jet}");
     
-    hist->GetAxis(kGenXi)->SetTitle("#xi = ln(P_{T}^{jet} / P_{T}^{track})");
+    hist->GetAxis(kGenXi)->SetTitle("#xi = ln(p_{T}^{jet} / p_{T}^{track})");
   }
   
   hist->GetAxis(GetIndexOfChargeAxisGen())->SetTitle("Charge (e_{0})");
@@ -3104,15 +3160,15 @@ void AliAnalysisTaskPID::SetUpGenYieldHist(THnSparse* hist, Double_t* binsPt, Do
   
   // Set axes titles
   hist->GetAxis(kGenYieldMCID)->SetTitle("MC PID");
-  hist->GetAxis(kGenYieldPt)->SetTitle("P_{T}^{gen} (GeV/c)");
+  hist->GetAxis(kGenYieldPt)->SetTitle("p_{T}^{gen} (GeV/c)");
   hist->GetAxis(kGenYieldCentrality)->SetTitle(Form("Centrality Percentile (%s)", fCentralityEstimator.Data()));
   
   if (fStoreAdditionalJetInformation) {
-    hist->GetAxis(kGenYieldJetPt)->SetTitle("P_{T}^{jet, gen} (GeV/c)");
+    hist->GetAxis(kGenYieldJetPt)->SetTitle("p_{T}^{jet, gen} (GeV/c)");
     
-    hist->GetAxis(kGenYieldZ)->SetTitle("z = P_{T}^{track} / P_{T}^{jet}");
+    hist->GetAxis(kGenYieldZ)->SetTitle("z = p_{T}^{track} / p_{T}^{jet}");
     
-    hist->GetAxis(kGenYieldXi)->SetTitle("#xi = ln(P_{T}^{jet} / P_{T}^{track})");
+    hist->GetAxis(kGenYieldXi)->SetTitle("#xi = ln(p_{T}^{jet} / p_{T}^{track})");
   }
   
   hist->GetAxis(GetIndexOfChargeAxisGenYield())->SetTitle("Charge (e_{0})");
@@ -3145,18 +3201,18 @@ void AliAnalysisTaskPID::SetUpHist(THnSparse* hist, Double_t* binsPt, Double_t* 
   hist->GetAxis(kDataSelectSpecies)->SetBinLabel(3, "#pi");
   hist->GetAxis(kDataSelectSpecies)->SetBinLabel(4, "p");
   
-  hist->GetAxis(kDataPt)->SetTitle("P_{T} (GeV/c)");
+  hist->GetAxis(kDataPt)->SetTitle("p_{T} (GeV/c)");
     
   hist->GetAxis(kDataDeltaPrimeSpecies)->SetTitle("TPC #Delta'_{species} (arb. unit)");
   
   hist->GetAxis(kDataCentrality)->SetTitle(Form("Centrality Percentile (%s)", fCentralityEstimator.Data()));
   
   if (fStoreAdditionalJetInformation) {
-    hist->GetAxis(kDataJetPt)->SetTitle("P_{T}^{jet} (GeV/c)");
+    hist->GetAxis(kDataJetPt)->SetTitle("p_{T}^{jet} (GeV/c)");
   
-    hist->GetAxis(kDataZ)->SetTitle("z = P_{T}^{track} / P_{T}^{jet}");
+    hist->GetAxis(kDataZ)->SetTitle("z = p_{T}^{track} / p_{T}^{jet}");
   
-    hist->GetAxis(kDataXi)->SetTitle("#xi = ln(P_{T}^{jet} / P_{T}^{track})");
+    hist->GetAxis(kDataXi)->SetTitle("#xi = ln(p_{T}^{jet} / p_{T}^{track})");
   }
   
   hist->GetAxis(GetIndexOfChargeAxisData())->SetTitle("Charge (e_{0})");
@@ -3182,9 +3238,9 @@ void AliAnalysisTaskPID::SetUpPtResHist(THnSparse* hist, Double_t* binsPt, Doubl
   hist->SetBinEdges(kPtResCentrality, binsCent);
   
   // Set axes titles
-  hist->GetAxis(kPtResJetPt)->SetTitle("P_{T}^{jet, rec} (GeV/c)");
-  hist->GetAxis(kPtResGenPt)->SetTitle("P_{T}^{gen} (GeV/c)");
-  hist->GetAxis(kPtResRecPt)->SetTitle("P_{T}^{rec} (GeV/c)");  
+  hist->GetAxis(kPtResJetPt)->SetTitle("p_{T}^{jet, rec} (GeV/c)");
+  hist->GetAxis(kPtResGenPt)->SetTitle("p_{T}^{gen} (GeV/c)");
+  hist->GetAxis(kPtResRecPt)->SetTitle("p_{T}^{rec} (GeV/c)");  
   
   hist->GetAxis(kPtResCharge)->SetTitle("Charge (e_{0})");
   hist->GetAxis(kPtResCentrality)->SetTitle(Form("Centrality Percentile (%s)", fCentralityEstimator.Data()));

@@ -200,6 +200,7 @@ AliAnalysisTaskFlowITSTPCTOFQCSP::AliAnalysisTaskFlowITSTPCTOFQCSP(const char *n
 ,fV2Phivzerotot(0)
 ,fHistCentrDistr(0x0)
 ,fCentralityNoPassForFlattening(0)
+,fptminAsso(0)
 {
     //Named constructor
     
@@ -311,6 +312,7 @@ AliAnalysisTaskFlowITSTPCTOFQCSP::AliAnalysisTaskFlowITSTPCTOFQCSP()
 ,fV2Phivzerotot(0)
 ,fHistCentrDistr(0x0)
 ,fCentralityNoPassForFlattening(0)
+,fptminAsso(0)
 {
     //Default constructor
     fPID = new AliHFEpid("hfePid");
@@ -773,7 +775,7 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::SelectPhotonicElectron(Int_t itrack,const
         if(trackAsso->GetTPCNcls() < 80) continue;
         if(nsigma < -3 || nsigma > 3) continue;
         if(trackAsso->Eta()<-0.9 || trackAsso->Eta()>0.9) continue;
-        // if(ptAsso <0.3) continue;
+        if(ptAsso < fptminAsso) continue;
         
         Int_t fPDGe1 = 11; Int_t fPDGe2 = 11;
         if(charge>0) fPDGe1 = -11;
@@ -1272,7 +1274,7 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::SetpTCuttrack(Double_t ptmin, Double_t pt
     //Set pt cuts
     fpTCutmin = ptmin;
     fpTCutmax = ptmax;
-    }
+}
 //_____________________________________________________________________________
 //_____________________________________________________________________________
 void AliAnalysisTaskFlowITSTPCTOFQCSP::SetHistoForCentralityFlattening(TH1F *h,Double_t minCentr,Double_t maxCentr,Double_t centrRef,Int_t switchTRand){
