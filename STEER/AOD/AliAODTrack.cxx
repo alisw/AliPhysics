@@ -1120,6 +1120,8 @@ void  AliAODTrack::GetITSdEdxSamples(Double_t s[4]) const
 //_____________________________________________
 Double_t AliAODTrack::GetMassForTracking() const
 {
+  int pid = fPIDForTracking;
+  if (pid<AliPID::kPion) pid = AliPID::kPion;
   double m = AliPID::ParticleMass(fPIDForTracking);
   return (fPIDForTracking==AliPID::kHe3 || fPIDForTracking==AliPID::kAlpha) ? -m : m;
 }

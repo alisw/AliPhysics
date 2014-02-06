@@ -818,7 +818,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   if (pdgCode<0) pdgCode = -pdgCode;
   for (i=0;i<AliPID::kSPECIESC;i++) if (pdgCode==AliPID::ParticleCode(i)) {indexPID = i; break;}
 
-  if (indexPID < AliPID::kSPECIES) fPIDForTracking = indexPID;
+  if (indexPID < AliPID::kSPECIESC) fPIDForTracking = indexPID;
 
   // AliESD track label
   SetLabel(part->GetUniqueID());
@@ -2956,7 +2956,9 @@ Double_t AliESDtrack::GetLengthInActiveZone(const AliExternalTrackParam  *paramT
 
 Double_t AliESDtrack::GetMassForTracking() const
 {
-  double m = AliPID::ParticleMass(fPIDForTracking);
+  int pid = fPIDForTracking;
+  if (pid<AliPID::kPion) pid = AliPID::kPion;
+  double m = AliPID::ParticleMass(pid);
   return (fPIDForTracking==AliPID::kHe3 || fPIDForTracking==AliPID::kAlpha) ? -m : m;
 }
 

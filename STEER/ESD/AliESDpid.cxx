@@ -498,7 +498,7 @@ void AliESDpid::SetPIDForTracking(AliESDtrack *esdtr) const
   //int pid = AliPID::kPion; // this should be substituted by real most probable TPC pid (e,mu -> pion) or poin if no PID possible
 
   //
-  if (pid<AliPID::kPion || pid>AliPID::kSPECIESC-1) pid = AliPID::kPion;
+  if (pid>AliPID::kSPECIESC-1) pid = AliPID::kPion;
   //
   esdtr->SetPIDForTracking( pid );
   //
