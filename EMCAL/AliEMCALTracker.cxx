@@ -136,7 +136,7 @@ void AliEMCALTracker::InitParameters()
   // Check if the instance of AliEMCALRecParam exists, 
   const AliEMCALRecParam* recParam = AliEMCALReconstructor::GetRecParam();
 
-  if (!recParam){
+  if (!recParam) {
     AliFatal("Reconstruction parameters for EMCAL not set!");
   } else {
     fCutEta  =  recParam->GetMthCutEta();
@@ -206,7 +206,7 @@ Int_t AliEMCALTracker::LoadClusters(TTree *cTree)
   //cTree->GetEvent(0);
   branch->GetEntry(0);
   Int_t nClusters = (Int_t)clusters->GetEntries();
-  if(fClusters) fClusters->Delete();
+  if (fClusters) fClusters->Delete();
   else fClusters = new TObjArray(0);
   for (Int_t i = 0; i < nClusters; i++) {
     AliEMCALRecPoint *cluster = (AliEMCALRecPoint*)clusters->At(i);
@@ -280,13 +280,13 @@ Int_t AliEMCALTracker::LoadTracks(AliESDEvent *esd)
     esdTrack->ResetStatus(AliESDtrack::kEMCALmatch);
     
     //Select good quaulity tracks
-    if(esdTrack->Pt()<fCutPt) continue;
-    if(!fITSTrackSA)
-      if(esdTrack->GetNcls(1)<fCutNTPC) continue;
+    if (esdTrack->Pt()<fCutPt) continue;
+    if (!fITSTrackSA)
+      if (esdTrack->GetNcls(1)<fCutNTPC) continue;
     
     //Loose geometric cut
     Double_t phi = esdTrack->Phi()*TMath::RadToDeg();
-    if (TMath::Abs(esdTrack->Eta())>0.8 || phi <= 20 || phi >= 240) continue;
+    if (TMath::Abs(esdTrack->Eta())>0.9 || phi <= 10 || phi >= 250) continue;
     fTracks->AddLast(esdTrack);
   }
   AliInfo(Form("Collected %d tracks", fTracks->GetEntries()));
@@ -379,55 +379,53 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
   // Otherwise use the TPCInner point
   AliExternalTrackParam *trkParam = 0;
   
-  if(!fITSTrackSA){ 
+  if (!fITSTrackSA) { 
     const AliESDfriendTrack*  friendTrack = track->GetFriendTrack();
-    if(friendTrack && friendTrack->GetTPCOut())
+    if (friendTrack && friendTrack->GetTPCOut())
       trkParam = const_cast<AliExternalTrackParam*>(friendTrack->GetTPCOut());
-    else if(track->GetInnerParam())
+    else if (track->GetInnerParam())
       trkParam = const_cast<AliExternalTrackParam*>(track->GetInnerParam());
   }
   else
     trkParam = new AliExternalTrackParam(*track);
   
-  if(!trkParam) return index;
+  if (!trkParam) return index;
   
   AliExternalTrackParam trkParamTmp(*trkParam);
   Float_t eta, phi, pt;
-  if(!AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&trkParamTmp, fEMCalSurfaceDistance, track->GetMass(kTRUE), fStep, eta, phi, pt))  {
-	if(fITSTrackSA) delete trkParam;
-	return index;
+  if (!AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&trkParamTmp, fEMCalSurfaceDistance, track->GetMass(kTRUE), fStep, eta, phi, pt))  {
+    if (fITSTrackSA) delete trkParam;
+    return index;
   }
   track->SetTrackPhiEtaPtOnEMCal(phi,eta,pt);
-  if(TMath::Abs(eta)>0.75 || (phi) < 70*TMath::DegToRad() || (phi) > 190*TMath::DegToRad()){
-	 if(fITSTrackSA) delete trkParam;
-	return index;
+  if (TMath::Abs(eta)>0.75 || (phi) < 70*TMath::DegToRad() || (phi) > 190*TMath::DegToRad()) {
+    if (fITSTrackSA) delete trkParam;
+    return index;
   }
 
   //Perform extrapolation
   Double_t trkPos[3];
   trkParamTmp.GetXYZ(trkPos);
   Int_t nclusters = fClusters->GetEntries();
-  for(Int_t ic=0; ic<nclusters; ic++)
-    {
-      AliEMCALMatchCluster *cluster = (AliEMCALMatchCluster*)fClusters->At(ic);
-      Float_t clsPos[3] = {cluster->X(),cluster->Y(),cluster->Z()};
-      Double_t dR = TMath::Sqrt(TMath::Power(trkPos[0]-clsPos[0],2)+TMath::Power(trkPos[1]-clsPos[1],2)+TMath::Power(trkPos[2]-clsPos[2],2));
-//       printf("\n dR=%f,wind=%f\n",dR,fClusterWindow); //MARCEL
-      if(dR > fClusterWindow) continue;
+  for (Int_t ic=0; ic<nclusters; ic++) {
+    AliEMCALMatchCluster *cluster = (AliEMCALMatchCluster*)fClusters->At(ic);
+    Float_t clsPos[3] = {cluster->X(),cluster->Y(),cluster->Z()};
+    Double_t dR = TMath::Sqrt(TMath::Power(trkPos[0]-clsPos[0],2)+TMath::Power(trkPos[1]-clsPos[1],2)+TMath::Power(trkPos[2]-clsPos[2],2));
+    //printf("\n dR=%f,wind=%f\n",dR,fClusterWindow); //MARCEL
+    if (dR > fClusterWindow) continue;
       
-      AliExternalTrackParam trkParTmp(trkParamTmp);
+    AliExternalTrackParam trkParTmp(trkParamTmp);
 
-      Float_t tmpEta, tmpPhi;
-      if(!AliEMCALRecoUtils::ExtrapolateTrackToPosition(&trkParTmp, clsPos,track->GetMass(kTRUE), 5, tmpEta, tmpPhi)) continue;
-      if(TMath::Abs(tmpPhi)<TMath::Abs(maxPhi) && TMath::Abs(tmpEta)<TMath::Abs(maxEta))
-        {
-          maxPhi=tmpPhi;
-          maxEta=tmpEta;
-          index=ic;
-        }
-      }
+    Float_t tmpEta, tmpPhi;
+    if (!AliEMCALRecoUtils::ExtrapolateTrackToPosition(&trkParTmp, clsPos,track->GetMass(kTRUE), 5, tmpEta, tmpPhi)) continue;
+    if (TMath::Abs(tmpPhi)<TMath::Abs(maxPhi) && TMath::Abs(tmpEta)<TMath::Abs(maxEta)) {
+      maxPhi=tmpPhi;
+      maxEta=tmpEta;
+      index=ic;
+    }
+  }
 
-  if(fITSTrackSA) delete trkParam;
+  if (fITSTrackSA) delete trkParam;
   return index;
 }
 
