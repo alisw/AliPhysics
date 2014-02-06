@@ -17,10 +17,8 @@ Bool_t ConfigLambdaStarPbPb
     const char             *suffix,
     AliRsnCutSet           *cutsPair,
     Int_t                  aodFilterBit = 5,
-    
     AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPrCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidKstarPP2010,
     AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidKstarPP2010,
-   
     Float_t                nsigmaPr = 2.0,
     Float_t                nsigmaKa = 2.0,
     Bool_t                 enableMonitor = kTRUE,
@@ -37,8 +35,8 @@ Bool_t ConfigLambdaStarPbPb
   AliRsnCutSetDaughterParticle * cutSetK;
 
   cutSetQ  = new AliRsnCutSetDaughterParticle("cutQuality", AliRsnCutSetDaughterParticle::kQualityStd2011, AliPID::kKaon, -1.0, aodFilterBit);
-  cutSetPr = new AliRsnCutSetDaughterParticle(Form("cutProtonTPCPbPb2011_%2.1fsigma",nsigmaPr), cutPrCandidate, AliPID::kProton, nsigmaPr, aodFilterBit);
-  cutSetK  = new AliRsnCutSetDaughterParticle(Form("cutKaonTPCPbPb2011_%2.1f2sigma",nsigmaKa), cutKaCandidate, AliPID::kKaon, nsigmaKa, aodFilterBit);
+  cutSetPr = new AliRsnCutSetDaughterParticle(Form("cutProtonTPCPbPb_%2.1fsigma",nsigmaPr), cutPrCandidate, AliPID::kProton, nsigmaPr, aodFilterBit);
+  cutSetK  = new AliRsnCutSetDaughterParticle(Form("cutKaonTPCPbPb_%2.1f2sigma",nsigmaKa), cutKaCandidate, AliPID::kKaon, nsigmaKa, aodFilterBit);
 
   Int_t iCutQ = task->AddTrackCuts(cutSetQ);
   Int_t iCutPr = task->AddTrackCuts(cutSetPr);
@@ -46,8 +44,7 @@ Bool_t ConfigLambdaStarPbPb
   
   if(enableMonitor){
     Printf("======== Monitoring cut AliRsnCutSetDaughterParticle enabled");
-    
-    gROOT->LoadMacro("AddMonitorOutput.C");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
     AddMonitorOutput(isMC, cutSetQ->GetMonitorOutput());
     AddMonitorOutput(isMC, cutSetPr->GetMonitorOutput());
     AddMonitorOutput(isMC, cutSetK->GetMonitorOutput());
