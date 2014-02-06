@@ -73,3 +73,5 @@ void AliVTrack::GetBxByBz(Double_t b[3]) const
   return;
 }
 
+//________________________________________________________
+void AliVTrack::GetIntegratedTimes(Double_t */*times*/, Int_t /*nspec*/) const { return; }

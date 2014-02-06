@@ -11,6 +11,7 @@
 //-------------------------------------------------------------------------
 
 #include <TObject.h>
+#include "AliPID.h"
 
 class AliTPCdEdxInfo;
 
@@ -64,7 +65,7 @@ class AliAODPid : public TObject {
   UChar_t   GetTRDntrackletsPID() const {return fTRDntls;}
   Double_t  GetTOFsignal()       const {return  fTOFesdsignal;}
 
-  void      GetIntegratedTimes(Double_t timeint[5])  const; 
+  void      GetIntegratedTimes(Double_t *timeint, Int_t nspec=AliPID::kSPECIES)  const; 
   void      GetTOFpidResolution (Double_t tofRes[5]) const;
 
  private :

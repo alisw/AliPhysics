@@ -23,7 +23,6 @@
 #include "AliAODPid.h"
 #include "AliESDtrack.h"
 #include "AliLog.h"
-#include "AliPID.h"
 #include "AliTPCdEdxInfo.h"
 
 ClassImp(AliAODPid)
@@ -141,10 +140,14 @@ AliAODPid& AliAODPid::operator=(const AliAODPid& pid)
   return *this;
 }
 //_______________________________________________________________________________
-void AliAODPid::GetIntegratedTimes(Double_t timeint[AliPID::kSPECIES]) const
+void AliAODPid::GetIntegratedTimes(Double_t *timeint, Int_t nspec) const
 {
- // Returns the array with integrated times for each particle hypothesis
- for(Int_t i=0; i<AliPID::kSPECIES; i++) timeint[i]=fIntTime[i];
+  // Returns the array with integrated times for each particle hypothesis
+  //
+  for(Int_t i=0; i<AliPID::kSPECIES; i++) timeint[i]=fIntTime[i];
+  //Note: at the moment only kSPECIES entries are available
+  if (nspec>AliPID::kSPECIES) for (int i=AliPID::kSPECIES;i<AliPID::kSPECIESC;i++) timeint[i]=0;
+  //
 }
 //_______________________________________________________________________________
 void AliAODPid::SetIntegratedTimes(Double_t timeint[AliPID::kSPECIES])

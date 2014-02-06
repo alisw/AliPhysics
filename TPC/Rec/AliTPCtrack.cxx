@@ -202,7 +202,9 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t, TTreeSRedirector *pcstream) :
 
   if ((t.GetStatus()&AliESDtrack::kTIME) == 0) return;
   StartTimeIntegral();
-  Double_t times[10]; t.GetIntegratedTimes(times); SetIntegratedTimes(times);
+  Double_t times[AliPID::kSPECIESC]; 
+  t.GetIntegratedTimes(times,AliPID::kSPECIESC); 
+  SetIntegratedTimes(times);
   SetIntegratedLength(t.GetIntegratedLength());
 
   if (GetX()>oldX) {

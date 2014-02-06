@@ -321,7 +321,7 @@ class AliAODTrack : public AliVTrack {
   
   Bool_t GetOuterHmpPxPyPz(Double_t *p) const;
   
-  void      GetIntegratedTimes(Double_t *times) const {if (fDetPid) fDetPid->GetIntegratedTimes(times); }
+  void      GetIntegratedTimes(Double_t *times, Int_t nspec=AliPID::kSPECIESC) const {if (fDetPid) fDetPid->GetIntegratedTimes(times, nspec);}
   Double_t  GetTRDslice(Int_t plane, Int_t slice) const;
   Double_t  GetTRDsignal()                        const {return fDetPid ? fDetPid->GetTRDsignal() : 0;}
   Double_t  GetTRDmomentum(Int_t plane, Double_t */*sp*/=0x0) const;

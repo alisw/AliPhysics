@@ -29,6 +29,7 @@
 #include "AliITStrackV2.h"
 #include "AliTracker.h"
 #include "AliLog.h"
+#include "AliPID.h"
 
 const Int_t AliITStrackV2::fgkWARN = 5;
 
@@ -71,7 +72,9 @@ AliITStrackV2::AliITStrackV2(AliESDtrack& t,Bool_t c):
 
   if (t.GetStatus()&AliESDtrack::kTIME) {
     StartTimeIntegral();
-    Double_t times[10]; t.GetIntegratedTimes(times); SetIntegratedTimes(times);
+    Double_t times[AliPID::kSPECIESC]; 
+    t.GetIntegratedTimes(times,AliPID::kSPECIESC); 
+    SetIntegratedTimes(times);
     SetIntegratedLength(t.GetIntegratedLength());
   }
 

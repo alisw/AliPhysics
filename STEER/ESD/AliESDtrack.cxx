@@ -642,7 +642,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   //
   SetTOFsignal(track->GetTOFsignal());
   Double_t expt[AliPID::kSPECIESC];
-  track->GetIntegratedTimes(expt);
+  track->GetIntegratedTimes(expt,AliPID::kSPECIESC);
   SetIntegratedTimes(expt);
   //
   SetTrackPhiEtaPtOnEMCal(track->GetTrackPhiOnEMCal(),track->GetTrackEtaOnEMCal(),track->GetTrackPtOnEMCal());
@@ -818,7 +818,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   if (pdgCode<0) pdgCode = -pdgCode;
   for (i=0;i<AliPID::kSPECIESC;i++) if (pdgCode==AliPID::ParticleCode(i)) {indexPID = i; break;}
 
-  if (indexPID < AliPID::kSPECIES) fPIDForTracking = indexPID;
+  if (indexPID < AliPID::kSPECIESC) fPIDForTracking = indexPID;
 
   // AliESD track label
   SetLabel(part->GetUniqueID());
@@ -1426,11 +1426,11 @@ Int_t AliESDtrack::GetTOFBunchCrossing(Double_t b, Bool_t pidTPConly) const
   if (!IsOn(kTOFout) || !IsOn(kESDpid)) return bcid; // no info
   //
   double tdif = fTOFsignal;
-  Double_t times[AliPID::kSPECIESC];
-  GetIntegratedTimes(times);
   if (IsOn(kTIME)) { // integrated time info is there
     int pid = GetPID(pidTPConly);
-
+    Double_t times[AliPID::kSPECIESC];
+    // old esd has only AliPID::kSPECIES times
+    GetIntegratedTimes(times,pid>=AliPID::kSPECIES ? AliPID::kSPECIESC : AliPID::kSPECIES); 
     tdif -= times[pid];
   }
   else { // assume integrated time info from TOF radius and momentum
@@ -1500,7 +1500,9 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
 
   if (t->IsStartedTimeIntegral()) {
     SetStatus(kTIME);
-    Double_t times[AliPID::kSPECIESC];t->GetIntegratedTimes(times); SetIntegratedTimes(times);
+    Double_t times[AliPID::kSPECIESC];
+    t->GetIntegratedTimes(times); 
+    SetIntegratedTimes(times);
     SetIntegratedLength(t->GetIntegratedLength());
   }
 
@@ -1837,19 +1839,19 @@ Int_t AliESDtrack::GetClusters(Int_t idet, Int_t *idx) const
 }
 
 //_______________________________________________________________________
-void AliESDtrack::GetIntegratedTimes(Double_t *times) const {
-  Int_t index = -1;
-
+void AliESDtrack::GetIntegratedTimes(Double_t *times, Int_t nspec) const 
+{
+  // get integrated time for requested N species
+  if (nspec<1) return;
   if(fNtofClusters>0 && GetESDEvent()){
     TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
     AliESDTOFcluster *tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[0]);
-
-    for(Int_t i=0;i < tofcl->GetNMatchableTracks();i++){
-      if(tofcl->GetTrackIndex(i) == GetID()) index = i;
-    }
-    if(fNtofClusters>0 && index > -1){
-      for (Int_t i=0; i<AliPID::kSPECIESC; i++) times[i]=tofcl->GetIntegratedTime(i,index);
-      return;
+    //
+    for(int i=tofcl->GetNMatchableTracks();i--;){
+      if(tofcl->GetTrackIndex(i) == GetID()) {
+	for (int j=nspec; j--;) times[j]=tofcl->GetIntegratedTime(j,i);
+	return;
+      }
     }
   }
   else if(fNtofClusters>0) 
@@ -1857,9 +1859,10 @@ void AliESDtrack::GetIntegratedTimes(Double_t *times) const {
 
   // Returns the array with integrated times for each particle hypothesis
   if(fTrackTime)
-    for (Int_t i=0; i<AliPID::kSPECIESC; i++) times[i]=fTrackTime[i];
+    for (int i=nspec; i--;) times[i]=fTrackTime[i];
   else
-    for (Int_t i=0; i<AliPID::kSPECIESC; i++) times[i]=0.0;
+    for (int i=AliPID::kSPECIESC; i--;) times[i]=0.0;
+  //
 }
 //_______________________________________________________________________
 Double_t AliESDtrack::GetIntegratedLength() const{
@@ -1881,15 +1884,16 @@ Double_t AliESDtrack::GetIntegratedLength() const{
 }
 
 //_______________________________________________________________________
-void AliESDtrack::SetIntegratedTimes(const Double_t *times) {
+void AliESDtrack::SetIntegratedTimes(const Double_t *times) 
+{
   // Sets the array with integrated times for each particle hypotesis
-  if(!fTrackTime)
-    fTrackTime = new Double32_t[AliPID::kSPECIESC];
-  for (Int_t i=0; i<AliPID::kSPECIESC; i++) fTrackTime[i]=times[i];
+  if(!fTrackTime) fTrackTime = new Double32_t[AliPID::kSPECIESC];
+  for (int i=AliPID::kSPECIESC; i--;) fTrackTime[i]=times[i];
 }
 
 //_______________________________________________________________________
-void AliESDtrack::SetITSpid(const Double_t *p) {
+void AliESDtrack::SetITSpid(const Double_t *p) 
+{
   // Sets values for the probability of each particle type (in ITS)
   if (!fITSr) fITSr = new Double32_t[AliPID::kSPECIESC];
   SetPIDValues(fITSr,p,AliPID::kSPECIES);
@@ -2956,7 +2960,9 @@ Double_t AliESDtrack::GetLengthInActiveZone(const AliExternalTrackParam  *paramT
 
 Double_t AliESDtrack::GetMassForTracking() const
 {
-  double m = AliPID::ParticleMass(fPIDForTracking);
+  int pid = fPIDForTracking;
+  if (pid<AliPID::kPion) pid = AliPID::kPion;
+  double m = AliPID::ParticleMass(pid);
   return (fPIDForTracking==AliPID::kHe3 || fPIDForTracking==AliPID::kAlpha) ? -m : m;
 }
 

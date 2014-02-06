@@ -2398,7 +2398,7 @@ void AliAnalysisTaskESDfilter::SetDetectorRawSignals(AliAODPid *aodpid, AliESDtr
   aodpid->SetTRDChi2(track->GetTRDchi2());
 
   //TOF PID  
-  Double_t times[AliPID::kSPECIESC]; track->GetIntegratedTimes(times);
+  Double_t times[AliPID::kSPECIESC]; track->GetIntegratedTimes(times,AliPID::kSPECIESC);
   aodpid->SetIntegratedTimes(times);
 
   //  Float_t tzeroTrack = fESDpid->GetTOFResponse().GetStartTime(track->P());

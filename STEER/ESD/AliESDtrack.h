@@ -86,7 +86,7 @@ public:
 
   Double_t GetIntegratedLength() const;
   Double_t GetIntegratedLengthOld() const {return fTrackLength;}
-  void GetIntegratedTimes(Double_t *times) const;
+  void GetIntegratedTimes(Double_t *times, Int_t nspec=AliPID::kSPECIES) const;
   Double_t GetIntegratedTimesOld(Int_t i) const {if(fTrackTime) return fTrackTime[i]; else return 0;};
   Int_t    GetPID(Bool_t tpcOnly=kFALSE)  const;
   Int_t    GetTOFBunchCrossing(Double_t b=0, Bool_t pidTPConly=kTRUE) const;
