@@ -51,6 +51,7 @@ public:
     void                                 SelectPhotonicElectron(Int_t itrack,const AliAODTrack *track, Bool_t &fFlagPhotonicElec);
     void                                 SelectPhotonicElectronMethod(Bool_t dca){fDCA = dca;}
     void                                 SetInvariantMassCut(Double_t invmass) {fInvmassCut = invmass;};
+    void                                 SetPtMinAssoCut(Double_t ptminimumasso) {fptminAsso = ptminimumasso;};
     void                                 SetpTCuttrack(Double_t ptcutmin, Double_t ptcutmax);
     void                                 SetTrigger(Int_t trig) {fTrigger = trig;};
     void                                 SetTPCS(Int_t sig) {fTPCS = sig;};
@@ -153,7 +154,7 @@ private:
     Bool_t               fDCA;//selection PHelectron
     TH2F                 *fITSnsigma;//!TPC n sigma vs p
     TH2F                 *fTPCnsigmaAftITSTOF; //!TPC n sigma vs p
-    TH2F                 *fTPCnsigmaAftTOF; //TPC n sigma vs p
+    TH2F                 *fTPCnsigmaAftTOF; //!TPC n sigma vs p
     TH2F                 *fITSnsigmaAftTOF;//!jbd
     TH2F                 *fITSvsTOF;//!TPC n sigma vs p
     TH2F                 *fTPCvsITS;//!TPC n sigma vs p
@@ -169,11 +170,11 @@ private:
     TH1D                 *EPVz;//!v0cep
     TH1D                 *EPTPCp;//!tpcep
     TH1D                 *EPTPCn;//!tpcen
-    TProfile             *fSubEventDPhiv2new;
+    TProfile             *fSubEventDPhiv2new;//!evrr
     THnSparseF           *fV2Phivzerotot;//! v2 analysis of EP-V0
     TH1F                 *fHistCentrDistr;//-> isto for Centr Flat
     TH1F                 *fCentralityNoPassForFlattening; //!QA histogram of events that do not pass centrality cut for flattening
-  
+    Double_t              fptminAsso;//minassopt
     
     AliAnalysisTaskFlowITSTPCTOFQCSP(const AliAnalysisTaskFlowITSTPCTOFQCSP&); // not implemented
     AliAnalysisTaskFlowITSTPCTOFQCSP& operator=(const AliAnalysisTaskFlowITSTPCTOFQCSP&); // not implemented
