@@ -68,7 +68,8 @@ AliGenParam::AliGenParam()
 	fTrials(0),
 	fDeltaPt(0.01),
 	fSelectAll(kFALSE),
-	fDecayer(0)
+  fDecayer(0),
+  fForceConv(kFALSE)
 {
   // Default constructor
 }
@@ -91,7 +92,8 @@ AliGenParam::AliGenParam(Int_t npart, const AliGenLib * Library,  Int_t param, c
      fTrials(0),
      fDeltaPt(0.01),
      fSelectAll(kFALSE),
-     fDecayer(0)
+   fDecayer(0),
+   fForceConv(kFALSE)
 {
   // Constructor using number of particles parameterisation id and library
     fName = "Param";
@@ -118,7 +120,8 @@ AliGenParam::AliGenParam(Int_t npart, Int_t param, const char* tname, const char
     fTrials(0),
     fDeltaPt(0.01),
     fSelectAll(kFALSE),
-    fDecayer(0)
+  fDecayer(0),
+  fForceConv(kFALSE)
 {
   // Constructor using parameterisation id and number of particles
   //
@@ -166,7 +169,8 @@ AliGenParam::AliGenParam(Int_t npart, Int_t param,
      fTrials(0),
      fDeltaPt(0.01),
      fSelectAll(kFALSE),
-     fDecayer(0)
+  fDecayer(0),
+  fForceConv(kFALSE)
 {
   // Constructor
   // Gines Martinez 1/10/99 
@@ -192,6 +196,120 @@ AliGenParam::~AliGenParam()
     delete  fYPara;
   delete  fV2Para;
   delete  fdNdPhi;
+}
+
+//-------------------------------------------------------------------
+TVector3 AliGenParam::OrthogonalVector(TVector3 &inVec){
+  double abc[]={inVec.x(), inVec.y(), inVec.z()}; 
+  double xyz[]={1,1,1};
+  int solvDim=0;
+  double tmp=abc[0];
+  for(int i=0; i<3; i++)
+    if(abs(abc[i])>tmp){
+      solvDim=i;
+      tmp=abs(abc[i]);
+    }
+  xyz[solvDim]=(-abc[(1+solvDim)%3]-abc[(2+solvDim)%3])/abc[(0+solvDim)%3];
+  
+  TVector3 res(xyz[0],xyz[1],xyz[2]);
+  return res;
+}
+
+double AliGenParam::ScreenFunc1(double d){
+  if(d>1)
+    return 21.12-4.184*log(d+0.952);
+  else
+    return 20.867-3.242*d+0.652*d*d;
+}
+
+double AliGenParam::ScreenFunc2(double d){
+  if(d>1)
+    return 21.12-4.184*log(d+0.952);
+  else
+    return 20.209-1.93*d-0.086*d*d;
+}
+
+double AliGenParam::EnergyFraction(double Z, double E){
+  double e0=0.000511/E;
+  double aZ=Z/137.036;
+  double dmin=ScreenVar(Z,e0,0.5);
+  double fcZ=(aZ*aZ)*(1/(1+aZ*aZ)+0.20206-0.0368*aZ*aZ+0.0083*aZ*aZ*aZ);
+  double Fz=8*log(Z)/3;
+  if(E>0.05)
+    Fz+=8*fcZ;
+  double dmax=exp((42.24-Fz)/8.368)-0.952;
+  if(!(dmax>dmin))
+    return fRandom->Uniform(e0,0.5);
+
+  double e1=0.5-0.5*sqrt(1-dmin/dmax);
+  double emin=TMath::Max(e0,e1);
+  
+  double normval=1/(0.5*(ScreenFunc1(dmin)-0.5*Fz)+0.1666667*(ScreenFunc2(dmin)-0.5*Fz));
+  while(true){
+    double y=fRandom->Uniform(emin,1);
+    double eps=y*(0.38453+y*(0.10234+y*(0.026072+y*(0.014367-0.027313*y)))); //inverse to the enveloping cumulative probability distribution
+    double val=fRandom->Uniform(0,2.12*(eps*eps-eps)+1.53); //enveloping probability density
+    double d=ScreenVar(Z,e0,eps);
+    double bh=((eps*eps)+(1-eps)*(1-eps))*(ScreenFunc1(d)-0.5*Fz)+0.6666667*eps*(1-eps)*(ScreenFunc2(d)-0.5*Fz);
+    bh*=normval;
+    if(val<bh)
+      return eps;
+  }
+}
+
+double AliGenParam::PolarAngle(double E){
+  float rand[3];
+  AliRndm rndm;
+  rndm.Rndm(rand,3);
+  double u=-8*log(rand[1]*rand[2])/5;
+  if(!(rand[0]<9.0/36))
+    u/=3;
+  return u*0.000511/E;
+}
+
+Int_t AliGenParam::ForceGammaConversion(TClonesArray *particles, Int_t nPart)
+{
+  //based on: http://geant4.cern.ch/G4UsersDocuments/UsersGuides/PhysicsReferenceManual/html/node27.html
+  //     and: http://geant4.cern.ch/G4UsersDocuments/UsersGuides/PhysicsReferenceManual/html/node58.html
+  Int_t nPartNew=nPart;
+  for(int iPart=0; iPart<nPart; iPart++){      
+    TParticle *gamma = (TParticle *) particles->At(iPart);
+    if(gamma->GetPdgCode()!=22) continue;
+
+    TVector3 gammaV3(gamma->Px(),gamma->Py(),gamma->Pz());
+    Float_t az=fRandom->Uniform(TMath::Pi()*2);
+    double frac=EnergyFraction(1,gamma->Energy());
+    double Ee1=frac*gamma->Energy();
+    double Ee2=(1-frac)*gamma->Energy();
+    double Pe1=Ee1;//sqrt(Ee1*Ee1-0.000511*0.000511);
+    double Pe2=Ee2;//sqrt(Ee2*Ee2-0.000511*0.000511);
+    
+    TVector3 rotAxis(OrthogonalVector(gammaV3));
+    rotAxis.Rotate(az,gammaV3);
+    TVector3 e1V3(gammaV3);
+    e1V3.Rotate(PolarAngle(Ee1),rotAxis);
+    e1V3=e1V3.Unit();
+    e1V3*=Pe1;
+    TVector3 e2V3(gammaV3);
+    e2V3.Rotate(-PolarAngle(Ee2),rotAxis);
+    e2V3=e2V3.Unit();
+    e2V3*=Pe2;
+    // gamma = new TParticle(*gamma);
+    // particles->RemoveAt(iPart);
+    gamma->SetFirstDaughter(nPartNew+1);
+    gamma->SetLastDaughter(nPartNew+2);
+    // new((*particles)[iPart]) TParticle(*gamma);
+    // delete gamma;
+
+    TLorentzVector vtx;
+    gamma->ProductionVertex(vtx);
+    new((*particles)[nPartNew]) TParticle(11, gamma->GetStatusCode(), iPart+1, -1, 0, 0, TLorentzVector(e1V3,Ee1), vtx);
+    nPartNew++;
+    new((*particles)[nPartNew]) TParticle(-11, gamma->GetStatusCode(), iPart+1, -1, 0, 0, TLorentzVector(e2V3,Ee2), vtx);
+    nPartNew++;
+  }
+  // particles->Compress();
+  return particles->GetEntriesFast();
 }
 
 //____________________________________________________________
@@ -370,14 +488,14 @@ void AliGenParam::GenerateN(Int_t ntimes)
 	  }
       //
       // phi
-      // if(!ipa)
-      // 	phi=fEvPlane; //align first particle of each event with event plane
-      // else{
+	  //      if(!ipa)
+	  //phi=fEvPlane; //align first particle of each event with event plane
+	  //else{
 	double v2 = fV2Para->Eval(pt);
 	fdNdPhi->SetParameter(0,v2);
 	fdNdPhi->SetParameter(1,fEvPlane);
 	phi=fdNdPhi->GetRandom();
-      // }
+	//     }
 	  
 	  pl=xmt*ty/sqrt((1.-ty)*(1.+ty));
 	  theta=TMath::ATan2(pt,pl);
@@ -421,6 +539,14 @@ void AliGenParam::GenerateN(Int_t ntimes)
 	//
 	// select decay particles
 	      Int_t np=fDecayer->ImportParticles(particles);
+
+	if(fForceConv) np=ForceGammaConversion(particles,np);
+
+	// for(int iPart=0; iPart<np; iPart++){
+	//   TParticle *gamma = (TParticle *) particles->At(iPart);
+	//   printf("%i %i:", iPart, gamma->GetPdgCode());
+	//   printf("%i %i %i|",gamma->GetFirstMother(),gamma->GetFirstDaughter(),gamma->GetLastDaughter());
+	// }
 
 	      //  Selecting  GeometryAcceptance for particles fPdgCodeParticleforAcceptanceCut;
 	      if (fGeometryAcceptance) 
