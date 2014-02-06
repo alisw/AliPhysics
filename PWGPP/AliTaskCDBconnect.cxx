@@ -48,7 +48,6 @@ AliTaskCDBconnect::AliTaskCDBconnect(const char* name, const char *storage, Int_
 // Default constructor
   AliCDBManager *cdb = AliCDBManager::Instance();
   cdb->SetDefaultStorage(storage);
-  cdb->SetRun(run);
   DefineInput (0, TChain::Class());
   if (run>0) InitGRP();
 }
@@ -63,7 +62,10 @@ AliTaskCDBconnect::~AliTaskCDBconnect()
 //______________________________________________________________________________
 void AliTaskCDBconnect::InitGRP()
 {
-// Initialize geometry and mag. field
+  // Initialize geometry and mag. field
+  AliCDBManager *cdb = AliCDBManager::Instance();
+  if (!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("raw://");
+  cdb->SetRun(fRun);
   if (!fGRPManager) fGRPManager = new AliGRPManager();
   AliInfo("AliCDBconnect: #### Loading GRP to init B-field...");
   if(!fGRPManager->ReadGRPEntry()) AliFatal("Cannot get GRP entry"); 
@@ -111,8 +113,13 @@ void AliTaskCDBconnect::Exec(Option_t* /*option*/)
   // Intercept when the run number changed
   if (fRun != run) {
     fRun = run;
-    AliCDBManager *cdb = AliCDBManager::Instance();
-    cdb->SetRun(run);
     InitGRP();
   }
 }
+
+//______________________________________________________________________________
+void AliTaskCDBconnect::SetSpecificStorage(const char* calibType, const char* dbString)
+{
+    AliCDBManager *cdb = AliCDBManager::Instance();
+    cdb->SetSpecificStorage(calibType,dbString);
+ }
