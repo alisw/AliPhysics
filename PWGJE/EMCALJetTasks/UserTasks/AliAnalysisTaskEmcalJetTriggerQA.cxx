@@ -151,16 +151,23 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::SelectEvent() {
 
   if(!fTriggerClass.IsNull()) {
     //Check if requested trigger was fired
+    TString trigType1 = "J1";
+    TString trigType2 = "J2";
+    if(fTriggerClass.Contains("G")) {
+      trigType1 = "G1";
+      trigType1 = "G2";
+    }
+
     TString firedTrigClass = InputEvent()->GetFiredTriggerClasses();
 
-    if(fTriggerClass.Contains("J1") && fTriggerClass.Contains("J2")) { //if events with J1&&J2 are requested
-      if(!firedTrigClass.Contains("J1") || !firedTrigClass.Contains("J2") ) //check if both are fired
+    if(fTriggerClass.Contains(trigType1.Data()) && fTriggerClass.Contains(trigType2.Data())) { //if events with J1&&J2 are requested
+      if(!firedTrigClass.Contains(trigType1.Data()) || !firedTrigClass.Contains(trigType2.Data()) ) //check if both are fired
         return kFALSE;
     }
     else {
       if(!firedTrigClass.Contains(fTriggerClass))
 	return kFALSE;
-      else if(fTriggerClass.Contains("J1") && firedTrigClass.Contains("J2")) //if J2 is requested also add triggers which have J1&&J2. Reject if J1 is requested and J2 is fired
+      else if(fTriggerClass.Contains(trigType1.Data()) && firedTrigClass.Contains(trigType2.Data())) //if J2 is requested also add triggers which have J1&&J2. Reject if J1 is requested and J2 is fired
 	return kFALSE;
     }
   }
