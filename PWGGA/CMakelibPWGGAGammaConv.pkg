@@ -53,8 +53,10 @@ set ( SRCS
 	GammaConv/AliAnaConvCorrPion.cxx
 	GammaConv/AliAnaConvCorrPhoton.cxx
 	GammaConv/AliAnalysisTaskdPhi.cxx
-	GammaConv/AliAnalysisTaskCaloConv.cxx
 	GammaConv/AliAnalysisTaskGCPartToPWG4Part.cxx
+	GammaConv/AliPrimaryPionSelector.cxx
+	GammaConv/AliPrimaryPionCuts.cxx
+	GammaConv/AliAnalysisTaskEtaToPiPlPiMiGamma.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
