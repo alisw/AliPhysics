@@ -712,8 +712,8 @@ void AliAnalysisTaskK0sBayes::Analyze(AliAODEvent* aodEvent)
 	    
 	    // generate random time
 	    Float_t timeRandom = fHmismTOF->GetRandom() + distIP*3.35655419905265973e+01;
-	    Double_t times[10];
-	    KpTrack->GetIntegratedTimes(times);
+	    Double_t times[AliPID::kSPECIESC];
+	    KpTrack->GetIntegratedTimes(times,AliPID::kSPECIESC);
 	    nSigmaTOF = TMath::Abs(timeRandom - times[2])/PIDResponse->GetTOFResponse().GetExpectedSigma(KpTrack->P(), times[2], AliPID::kPion);
 	    nSigmaTOFRef = TMath::Abs(timeRandom - times[fSpeciesRef])/PIDResponse->GetTOFResponse().GetExpectedSigma(KpTrack->P(), times[fSpeciesRef], fSpeciesRef);
 	  }
@@ -829,8 +829,8 @@ void AliAnalysisTaskK0sBayes::Analyze(AliAODEvent* aodEvent)
 	      
 	      // generate random time
 	      Float_t timeRandom = fHmismTOF->GetRandom() + distIP*3.35655419905265973e+00;
-	      Double_t times[10];
-	      KnTrack->GetIntegratedTimes(times);
+	      Double_t times[AliPID::kSPECIESC];
+	      KnTrack->GetIntegratedTimes(times,AliPID::kSPECIESC);
 	      nSigmaTOF2 = TMath::Abs(timeRandom - times[2])/PIDResponse->GetTOFResponse().GetExpectedSigma(KnTrack->P(), times[2], AliPID::kPion);
 	      nSigmaTOF2Ref = TMath::Abs(timeRandom - times[fSpeciesRef])/PIDResponse->GetTOFResponse().GetExpectedSigma(KnTrack->P(), times[fSpeciesRef], fSpeciesRef);
 	    }
