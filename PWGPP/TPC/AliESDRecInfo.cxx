@@ -432,9 +432,9 @@ void AliESDRecInfo::UpdateTOF(AliMCInfo* info){
   if (((fESDtrack->GetStatus()&AliESDtrack::kTOFout)>0)){
     //
     // best tof match
-    Double_t times[5];
-    fESDtrack->GetIntegratedTimes(times);    
-    for (Int_t i=0;i<5;i++){
+    Double_t times[AliPID::kSPECIESC];
+    fESDtrack->GetIntegratedTimes(times,AliPID::kSPECIESC);
+    for (Int_t i=0;i<AliPID::kSPECIESC;i++){
       if ( TMath::Abs(fESDtrack->GetTOFsignal()-times[i]) <TMath::Abs(fBestTOFmatch) ){
 	fBestTOFmatch = fESDtrack->GetTOFsignal()-times[i];
       }

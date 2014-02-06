@@ -1501,6 +1501,8 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
         TGraphAsymmErrors*& corrV2,     // correlated uncertainty function pointer
         TArrayI* variationsIn,          // variantions in plnae
         TArrayI* variationsOut,         // variantions out of plane
+        TArrayI* variations2ndIn,      // second source of variations
+        TArrayI* variations2ndOut,     // second source of variations
         TString type,                   // type of uncertaitny
         Int_t columns,                  // divide the output canvasses in this many columns
         Float_t rangeLow,               // lower pt range
@@ -1525,6 +1527,10 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
     TH1D* relativeErrorVariationInUp(0x0);
     TH1D* relativeErrorVariationOutLow(0x0);
     TH1D* relativeErrorVariationOutUp(0x0);
+    TH1D* relativeError2ndVariationInLow(0x0);
+    TH1D* relativeError2ndVariationInUp(0x0);
+    TH1D* relativeError2ndVariationOutLow(0x0);
+    TH1D* relativeError2ndVariationOutUp(0x0);
     TH1D* relativeStatisticalErrorIn(0x0);
     TH1D* relativeStatisticalErrorOut(0x0);
     // histo for the nominal ratio in / out
@@ -1570,6 +1576,44 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
         }
 
     }
+    // call the functions for a second set of systematic sources
+    if(variations2ndIn && variations2ndOut) {
+        DoIntermediateSystematics(
+                variations2ndIn, 
+                variations2ndOut, 
+                relativeError2ndVariationInUp,        // pointer reference
+                relativeError2ndVariationInLow,       // pointer reference
+                relativeError2ndVariationOutUp,       // pointer reference
+                relativeError2ndVariationOutLow,      // pointer reference
+                relativeStatisticalErrorIn,           // pointer reference
+                relativeStatisticalErrorOut,          // pointer reference
+                nominal,
+                nominalIn,
+                nominalOut,
+                columns, 
+                rangeLow, 
+                rangeUp,
+                readMe,
+                type);
+        if(relativeError2ndVariationInUp) {
+            // canvas with the error from variation strength
+            TCanvas* relativeError2ndVariation(new TCanvas(Form("relativeError2nd_%s", type.Data()), Form("relativeError2nd_%s", type.Data())));
+            relativeError2ndVariation->Divide(2);
+            relativeError2ndVariation->cd(1);
+            Style(gPad, "GRID");
+            relativeError2ndVariationInUp->DrawCopy("b");
+            relativeError2ndVariationInLow->DrawCopy("same b");
+            Style(AddLegend(gPad));
+            relativeError2ndVariation->cd(2);
+            Style(gPad, "GRID");
+            relativeError2ndVariationOutUp->DrawCopy("b");
+            relativeError2ndVariationOutLow->DrawCopy("same b");
+            SavePadToPDF(relativeError2ndVariation);
+            Style(AddLegend(gPad));
+            relativeError2ndVariation->Write();
+        }
+
+    }
 
     // and the placeholder for the final systematic
     TH1D* relativeErrorInUp(new TH1D("max correlated uncertainty in plane", "max correlated uncertainty in plane", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
@@ -1591,6 +1635,8 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
         // for the upper bound
         if(relativeErrorVariationInUp) aInUp = relativeErrorVariationInUp->GetBinContent(b+1);
         if(relativeErrorVariationOutUp) aOutUp = relativeErrorVariationOutUp->GetBinContent(b+1);
+        if(relativeError2ndVariationInUp) bInUp = relativeError2ndVariationInUp->GetBinContent(b+1);
+        if(relativeError2ndVariationOutUp) bInLow = relativeError2ndVariationOutUp->GetBinContent(b+1);
         dInUp  = aInUp*aInUp + bInUp*bInUp + cInUp*cInUp;
         if(dInUp > 0) relativeErrorInUp->SetBinContent(b+1, TMath::Sqrt(dInUp));
         dOutUp = aOutUp*aOutUp + bOutUp*bOutUp + cOutUp*cOutUp;
@@ -1598,6 +1644,8 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
         // for the lower bound
         if(relativeErrorVariationInLow) aInLow = relativeErrorVariationInLow->GetBinContent(b+1);
         if(relativeErrorVariationOutLow) aOutLow = relativeErrorVariationOutLow->GetBinContent(b+1);
+        if(relativeError2ndVariationInLow) bInLow = relativeError2ndVariationInLow->GetBinContent(b+1);
+        if(relativeError2ndVariationOutLow) bOutLow = relativeError2ndVariationOutLow->GetBinContent(b+1);
         dInLow  = aInLow*aInLow + bInLow*bInLow + cInLow*cInLow;
         if(dInLow > 0) relativeErrorInLow->SetBinContent(b+1, -1.*TMath::Sqrt(dInLow));
         dOutLow = aOutLow*aOutLow + bOutLow*bOutLow + cOutLow*cOutLow;
