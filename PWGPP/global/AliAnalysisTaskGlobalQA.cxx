@@ -33,6 +33,7 @@
 #include "AliESDInputHandler.h"
 #include "AliESDVZERO.h"
 #include "AliMultiplicity.h" 
+#include "AliPID.h" 
 
 
 #include "AliAnalysisTaskGlobalQA.h"
@@ -304,10 +305,10 @@ void AliAnalysisTaskGlobalQA::UserExec(Option_t *)
          Float_t dz[2];
          track->GetDZ(xv,yv,zv,esd->GetMagneticField(),dz);
          if (dz[1]<3.) {
-            Double_t times[10];
-            track->GetIntegratedTimes(times);
-            Double_t tof=track->GetTOFsignal()/*-847055 -1771207*/;
-            GetESDsData(kPid2)->Fill(times[2]-tof);
+	   Double_t times[AliPID::kSPECIESC];
+	   track->GetIntegratedTimes(times,AliPID::kSPECIESC);
+	   Double_t tof=track->GetTOFsignal()/*-847055 -1771207*/;
+	   GetESDsData(kPid2)->Fill(times[2]-tof);
 	 }
       }
     }

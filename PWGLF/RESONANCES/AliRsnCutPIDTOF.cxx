@@ -108,7 +108,7 @@ Bool_t AliRsnCutPIDTOF::IsSelected(TObject *object)
 
    // retrieve real object type and
    // prepare some useful variables
-   Double_t     tof, sigma, times[5];
+   Double_t     tof, sigma, times[AliPID::kSPECIESC];
    Double_t    &ref = times[(Int_t)fRefType];
    AliESDtrack *esdTrack = fDaughter->Ref2ESDtrack();
    AliAODTrack *aodTrack = fDaughter->Ref2AODtrack();
@@ -126,7 +126,7 @@ Bool_t AliRsnCutPIDTOF::IsSelected(TObject *object)
       fESDpid->SetTOFResponse(esd, AliESDpid::kTOF_T0);
 
       // get time of flight, reference times and sigma
-      esdTrack->GetIntegratedTimes(times);
+      esdTrack->GetIntegratedTimes(times,AliPID::kSPECIESC);
       tof   = (Double_t)(esdTrack->GetTOFsignal() - fESDpid->GetTOFResponse().GetStartTime(esdTrack->P()));
       sigma = (Double_t)fESDpid->GetTOFResponse().GetExpectedSigma(esdTrack->P(), ref, fRefMass);
 
