@@ -245,7 +245,7 @@ Int_t AliTOFtrackerV1::PropagateBack(AliESDEvent * const event) {
 	  Double_t time[AliPID::kSPECIESC]; t->GetIntegratedTimes(time);
 	*/
 
-	Double_t time[AliPID::kSPECIESC]; seed->GetIntegratedTimes(time);
+	Double_t time[AliPID::kSPECIESC]; seed->GetIntegratedTimes(time,AliPID::kSPECIESC);
 	t->SetIntegratedTimes(time);
 
 	Double_t length =  seed->GetIntegratedLength();
@@ -536,7 +536,7 @@ void AliTOFtrackerV1::MatchTracks( ){
     }
 
     fnmatch++;
-    AliDebug(1,Form(" Matched TOF cluster %d for the track number %d: %d",idclus,iseed));
+    AliDebug(1,Form(" Matched TOF cluster %d for the track number %d",idclus,iseed));
 
     AliDebug(3, Form("%7i     %7i     %10i     %10i  %10i  %10i      %7i",
 		     iseed,

@@ -341,7 +341,7 @@ Int_t AliITSUTrackerGlo::PropagateBack(AliESDEvent *esdEv)
       dummyTr.AliExternalTrackParam::operator=(*fCurrESDtrack);
       dummyTr.StartTimeIntegral();
       dummyTr.AddTimeStep(dst);
-      dummyTr.GetIntegratedTimes(times); 
+      dummyTr.GetIntegratedTimes(times,AliPID::kSPECIESC); 
       fCurrESDtrack->SetIntegratedTimes(times);
       fCurrESDtrack->SetIntegratedLength(dummyTr.GetIntegratedLength());
       continue;

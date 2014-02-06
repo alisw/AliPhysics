@@ -58,6 +58,7 @@
 #include "AliITSV0Finder.h"
 #include "AliITStrackerMI.h"
 #include "AliMathBase.h"
+#include "AliPID.h"
 
 
 ClassImp(AliITStrackerMI)
@@ -737,7 +738,9 @@ Int_t AliITStrackerMI::PropagateBack(AliESDEvent *event) {
      //
      // transfer the time integral to ESD track
      esd->SetStatus(AliESDtrack::kTIME);
-     Double_t times[10];t.GetIntegratedTimes(times); esd->SetIntegratedTimes(times);
+     Double_t times[AliPID::kSPECIESC];
+     t.GetIntegratedTimes(times,AliPID::kSPECIESC); 
+     esd->SetIntegratedTimes(times);
      esd->SetIntegratedLength(t.GetIntegratedLength());
      //
      if ((esd->GetStatus()&AliESDtrack::kITSin)==0) continue;

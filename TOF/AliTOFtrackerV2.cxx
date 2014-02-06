@@ -1,45 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -293,7 +251,7 @@ Int_t AliTOFtrackerV2::PropagateBack(AliESDEvent * const event) {
 			covB[14],covA[14]
 			));
 	*/
-	Double_t time[AliPID::kSPECIESC]; t->GetIntegratedTimes(time);
+	Double_t time[AliPID::kSPECIESC]; t->GetIntegratedTimes(time,AliPID::kSPECIESC);
 	AliDebug(2,Form(" TOF params: %6d  %f %f %f %f %f %6d %3d %f",
 			i,
 			t->GetTOFsignalRaw(),t->GetTOFsignal(),t->GetTOFsignalToT(),
@@ -480,7 +438,7 @@ void AliTOFtrackerV2::MatchTracks() {
     AliESDtrack *t =(AliESDtrack*)fSeeds->At(track->GetSeedIndex());
     AliTOFtrack *trackTOFin = new AliTOFtrack(*track);
 
-    Double_t timesOr[AliPID::kSPECIESC]; t->GetIntegratedTimes(timesOr); // in ps
+    Double_t timesOr[AliPID::kSPECIESC]; t->GetIntegratedTimes(timesOr,AliPID::kSPECIESC); // in ps
 
     // Determine a window around the track
     Double_t x,par[5]; 

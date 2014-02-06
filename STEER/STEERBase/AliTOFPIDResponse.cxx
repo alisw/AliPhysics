@@ -183,7 +183,7 @@ Double_t AliTOFPIDResponse::GetExpectedSignal(const AliVTrack* track,AliPID::EPa
   // If the operation is not possible, return a negative value.
   //
   Double_t expt[AliPID::kSPECIESC];
-  track->GetIntegratedTimes(expt);
+  track->GetIntegratedTimes(expt,AliPID::kSPECIESC);
   if (type<=AliPID::kProton) return expt[type];
   else {
     if (expt[type]<1.E-1) {

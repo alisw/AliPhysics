@@ -617,7 +617,7 @@ void AliTOFTenderSupply::FixTRDBug(AliESDtrack *track)
     Double_t correctionTimes[AliPID::kSPECIES] = {0.,0.,0.,0.,0.}; // to be added to the expected times
     FindTRDFix(track, correctionTimes);
     Double_t expectedTimes[AliPID::kSPECIESC] = {0.,0.,0.,0.,0.,0.,0.,0.,0.}; 
-    track->GetIntegratedTimes(expectedTimes);
+    track->GetIntegratedTimes(expectedTimes,AliPID::kSPECIESC);
     //    Printf("Exp. times: %f %f %f %f %f",
     //	   expectedTimes[0],expectedTimes[1],expectedTimes[2],expectedTimes[3],expectedTimes[4]);
     //    Printf("Corr. times: %f %f %f %f %f",

@@ -159,8 +159,8 @@ AliTRDtrackV1::AliTRDtrackV1(const AliESDtrack &t) : AliKalmanTrack()
 
   if(t.GetStatus() & AliESDtrack::kTIME) {
     StartTimeIntegral();
-    Double_t times[10]; 
-    t.GetIntegratedTimes(times); 
+    Double_t times[AliPID::kSPECIESC]; 
+    t.GetIntegratedTimes(times,AliPID::kSPECIESC); 
     SetIntegratedTimes(times);
     SetIntegratedLength(t.GetIntegratedLength());
   }

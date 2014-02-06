@@ -16,6 +16,7 @@
 #include "AliESDtrack.h" 
 #include "AliTracker.h" 
 #include "AliHMPIDtrack.h" 
+#include "AliPID.h" 
 
 ClassImp(AliHMPIDtrack)
 
@@ -47,7 +48,8 @@ AliHMPIDtrack::AliHMPIDtrack(const AliESDtrack& t):AliKalmanTrack()
 
   if ((t.GetStatus()&AliESDtrack::kTIME) == 0) return;
   StartTimeIntegral();
-  Double_t times[10]; t.GetIntegratedTimes(times); SetIntegratedTimes(times);
+  Double_t times[AliPID::kSPECIESC]; 
+  t.GetIntegratedTimes(times,AliPID::kSPECIESC); SetIntegratedTimes(times);
   SetIntegratedLength(t.GetIntegratedLength());
 }              
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

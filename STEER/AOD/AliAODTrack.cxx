@@ -807,7 +807,7 @@ Int_t AliAODTrack::GetTOFBunchCrossing(Double_t b, Bool_t) const
   if (IsOn(kTIME)) { // integrated time info is there
     int pid = (int)GetMostProbablePID();
     double ttimes[10]; 
-    GetIntegratedTimes(ttimes);
+    GetIntegratedTimes(ttimes, pid>=AliPID::kSPECIES ? AliPID::kSPECIESC : AliPID::kSPECIES);
     tdif -= ttimes[pid];
   }
   else { // assume integrated time info from TOF radius and momentum

@@ -294,7 +294,7 @@ Int_t AliTOFtracker::PropagateBack(AliESDEvent * const event) {
 	  Double_t time[AliPID::kSPECIESC]; t->GetIntegratedTimes(time);
 	*/
 
-	Double_t time[AliPID::kSPECIESC]; seed->GetIntegratedTimes(time);
+	Double_t time[AliPID::kSPECIESC]; seed->GetIntegratedTimes(time,AliPID::kSPECIESC);
 	t->SetIntegratedTimes(time);
 
 	Double_t length =  seed->GetIntegratedLength();

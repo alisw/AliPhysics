@@ -86,7 +86,7 @@ AliITSUTrackHyp::AliITSUTrackHyp(const AliESDtrack &src)
     StartTimeIntegral();
     SetIntegratedLength(src.GetIntegratedLength());
     double times[AliPID::kSPECIESC];
-    src.GetIntegratedTimes(times);
+    src.GetIntegratedTimes(times,AliPID::kSPECIESC);
     SetIntegratedTimes(times);
   }
   //
@@ -135,7 +135,7 @@ AliITSUTrackHyp &AliITSUTrackHyp::operator=(const AliESDtrack &src)
     StartTimeIntegral();
     SetIntegratedLength(src.GetIntegratedLength());
     double times[AliPID::kSPECIESC];
-    src.GetIntegratedTimes(times);
+    src.GetIntegratedTimes(times,AliPID::kSPECIESC);
     SetIntegratedTimes(times);
   }
   //

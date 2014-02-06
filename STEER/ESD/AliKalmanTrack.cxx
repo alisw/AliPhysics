@@ -168,11 +168,11 @@ Double_t AliKalmanTrack::GetIntegratedTime(Int_t pdg) const
   return 0;
 }
 
-void AliKalmanTrack::GetIntegratedTimes(Double_t *times) const {
-  for (Int_t i=0; i<AliPID::kSPECIESC; i++) times[i]=fIntegratedTime[i];
+void AliKalmanTrack::GetIntegratedTimes(Double_t *times, Int_t nspec) const {
+  for (Int_t i=nspec; i--;) times[i]=fIntegratedTime[i];
 }
 
 void AliKalmanTrack::SetIntegratedTimes(const Double_t *times) {
-  for (Int_t i=0; i<AliPID::kSPECIESC; i++) fIntegratedTime[i]=times[i];
+  for (Int_t i=AliPID::kSPECIESC; i--;) fIntegratedTime[i]=times[i];
 }
 

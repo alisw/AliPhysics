@@ -387,7 +387,8 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	  Double_t time=t->GetTOFsignal();
 	  
 	  time*=1.E-3; // tof given in nanoseconds	   
-	  Double_t exptime[AliPID::kSPECIESC]; t->GetIntegratedTimes(exptime);
+	  Double_t exptime[AliPID::kSPECIESC]; 
+	  t->GetIntegratedTimes(exptime,AliPID::kSPECIESC);
 	  Double_t toflen=t->GetIntegratedLength();
 	  toflen=toflen/100.; // toflen given in m 
 	  
@@ -772,7 +773,7 @@ Bool_t AliTOFT0v1::CheckTPCMatching(AliESDtrack *track,Int_t imass) const{
     Bool_t status = kFALSE;
     
     Double_t exptimes[AliPID::kSPECIESC];
-    track->GetIntegratedTimes(exptimes);
+    track->GetIntegratedTimes(exptimes,AliPID::kSPECIESC);
     
     Float_t dedx = track->GetTPCsignal();
     
