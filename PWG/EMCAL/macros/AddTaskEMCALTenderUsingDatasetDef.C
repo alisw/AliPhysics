@@ -5,6 +5,19 @@ AliAnalysisTaskSE *AddTaskEMCALTenderUsingDatasetDef(
   const char *pass    = 0 /*should not be needed*/
 ) 
 {
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr)
+  {
+    Error("AddTaskEMCALTenderUsingDatasetDef","No analysis manager found.");
+    return 0;
+  }
+
+  AliVEventHandler *evhand = mgr->GetInputEventHandler();
+  if (!evhand) {
+    Error("AddTaskEMCALTenderUsingDatasetDef", "This task requires an input event handler");
+    return NULL;
+  }
+
   gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEMCALTender.C");
 
   Bool_t distBC         = kTRUE;   //distance to bad channel
@@ -75,6 +88,9 @@ AliAnalysisTaskSE *AddTaskEMCALTenderUsingDatasetDef(
     timeMax =  1e6;
     timeCut =  1e6;
   }
+
+  if (!evhand->InheritsFrom("AliESDInputHandler"))
+    trackMatch = kFALSE;
 
   AliAnalysisTaskSE *task = AddTaskEMCALTender(
     distBC, recalibClus, recalcClusPos, nonLinearCorr,
