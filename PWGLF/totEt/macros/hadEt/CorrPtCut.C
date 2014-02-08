@@ -1,6 +1,12 @@
+//Christine Nattrass, University of Tennessee at Knoxville
+//This macro is for calculating the correction for the pT cut-off and its systematic error
+//Uses the output of AliAnalysisTaskHadEt
+//This is not actually what gets used in the correction class AliAnalysisHadEtCorrections - that is done in the macro GetCorrections.C - but this is useful for making plots and playing around with different options
+
 float mean=0;
 float highbound=0;
 float lowbound=0;
+float syserr = 0;
 
 TH1D *GetHisto(float ptcut = 0.15, char *name, char *filename, float etacut){
   TFile *file = new TFile(filename);
@@ -54,7 +60,11 @@ TH1D *GetHisto(float ptcut = 0.15, char *name, char *filename, float etacut){
   cout<<"fpTcut = "<<mean<<","<<lowbound<<","<<highbound<<endl;
   cout<<"1/fpTcut = "<<1.0/mean<<","<<1.0/lowbound<<","<<1.0/highbound<<endl;
   //cout<<"fpTcut = "<<mean<<"-"<<mean-lowbound<<"+"<<highbound-mean<<endl;
-  cout<<Form("%2.5f_{+%2.5f}_{-%2.5f}",mean,highbound-mean,mean-lowbound)<<endl;
+  syserr = highbound-mean;
+  if(mean-lowbound>syserr) syserr = mean-lowbound;
+  cout<<Form("%2.4f^{+%2.4f}_{-%2.4f}",mean,highbound-mean,mean-lowbound)<<endl;
+  cout<<"latex here ";
+  cout<<Form("%2.4f \\pm %2.4f",mean,syserr)<<endl;
   cout<<"1/fpTcut = "<<1.0/mean<<"+"<<1.0/lowbound-1.0/mean<<"-"<<1.0/mean-1.0/highbound<<endl;
   numerator->SetYTitle("E_{T}^{had, p_{T}<cut-off}/E_{T}^{had, all p_{T}}");
   numerator->GetYaxis()->SetTitleOffset(1.);
@@ -69,11 +79,6 @@ TH1D *GetHisto(float ptcut = 0.15, char *name, char *filename, float etacut){
   return numerator;
 
 }
-//Christine Nattrass, University of Tennessee at Knoxville
-//This macro is for calculating the correction for the pT cut-off and its systematic error
-//Uses the output of AliAnalysisTaskHadEt
-//This is not actually what gets used in the correction class AliAnalysisHadEtCorrections - that is done in the macro GetCorrections.C - but this is useful for making plots and playing around with different options
-
 void CorrPtCut(char *prodname = "LHC10d4 PYTHIA D6T 7 TeV p+p", char *shortprodname = "LHC10d4", char *filename="Et.ESD.new.sim.LHC10d4.pp.merged.root"){
 
   gStyle->SetOptTitle(0);
@@ -91,22 +96,33 @@ void CorrPtCut(char *prodname = "LHC10d4 PYTHIA D6T 7 TeV p+p", char *shortprodn
   c->SetFrameFillColor(0);
   c->SetFrameBorderMode(0);
   float etacut = 0.7;
+  cout<<"Pt cut = 150 MeV/c"<<endl;
   TH1D *High = GetHisto(0.15-.001,"High",filename,etacut);
   float tpcHigh=highbound;
   float tpcLow=lowbound;
+  float tpcsyserr = syserr;
+  float tpcmean = mean;
   float x1 = High->GetXaxis()->GetBinLowEdge(1);
-  TBox *tpcBox = new TBox(-x1*.99,1.0-tpcLow,x1*.99,1.0-tpcHigh);
+  //TBox *tpcBox = new TBox(-x1*.99,1.0-tpcLow,x1*.99,1.0-tpcHigh);
+  TBox *tpcBox = new TBox(-x1*.99,1.0-(mean-syserr),x1*.99,1.0-(mean+syserr));
   tpcBox->SetFillColor(5);
   tpcBox->SetLineColor(0);
   tpcBox->SetFillStyle(1001);
+  cout<<"Pt cut = 100 MeV/c"<<endl;
   TH1D *Low = GetHisto(0.1-.001,"Low",filename,etacut);
   float itsHigh=highbound;
   float itsLow=lowbound;
+  float itssyserr = syserr;
+  float itsmean = mean;
+
+  cout<<Form("dataset & %2.4f \\pm %2.4f &  %2.4f \\pm %2.4f \\",itsmean,itssyserr,tpcmean,tpcsyserr)<<endl;
   float x = Low->GetXaxis()->GetBinLowEdge(1);
-  TBox *itsBox = new TBox(-x*.99,1.0-itsLow,x*.99,1.0-itsHigh);
+  //TBox *itsBox = new TBox(-x*.99,1.0-itsLow,x*.99,1.0-itsHigh);
+  TBox *itsBox = new TBox(-x1*.99,1.0-(mean-syserr),x1*.99,1.0-(mean+syserr));
   itsBox->SetFillColor(5);
   itsBox->SetLineColor(0);
   itsBox->SetFillStyle(1001);
+  cout<<"Pt cut = 50 MeV/c"<<endl;
   TH1D *Lowest = GetHisto(0.05-.001,"Lowest",filename,etacut);
   TF1 *funcLow = new TF1("funcLow","[0]",-.7,.7);
   funcLow->SetParameter(0,0.01);
@@ -114,7 +130,7 @@ void CorrPtCut(char *prodname = "LHC10d4 PYTHIA D6T 7 TeV p+p", char *shortprodn
   TF1 *funcHigh = new TF1("funcHigh","[0]",-.7,.7);
   funcHigh->SetParameter(0,0.02);
   High->Fit(funcLow);
-  High->SetMaximum(0.04);
+  High->SetMaximum(0.06);
   High->SetMinimum(0.0);
   High->SetMarkerColor(2);
   Low->SetMarkerColor(4);
@@ -131,7 +147,7 @@ void CorrPtCut(char *prodname = "LHC10d4 PYTHIA D6T 7 TeV p+p", char *shortprodn
   //return;
   Low->Draw("same");
   //Lowest->Draw("same");
-  TLatex *tex = new TLatex(-0.723444,0.0373593,prodname);
+  TLatex *tex = new TLatex(-0.723444,0.0373593+0.019,prodname);
   tex->SetTextSize(0.0537634);
   tex->Draw();
   TLegend *leg = new TLegend(0.217742,0.696237,0.477823,0.873656);
