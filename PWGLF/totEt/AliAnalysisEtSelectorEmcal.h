@@ -11,6 +11,7 @@
 
 #include "AliAnalysisEtSelector.h"
 
+class AliStack;
 
 class AliAnalysisEtSelectorEmcal : public AliAnalysisEtSelector
 {
@@ -35,6 +36,7 @@ public:
     
     virtual Bool_t IsDetectorCluster(const AliESDCaloCluster& cluster) const { return cluster.IsEMCAL(); }
 
+    virtual UInt_t GetLabel(const AliESDCaloCluster *cluster, AliStack *stack);
 private:
   
     

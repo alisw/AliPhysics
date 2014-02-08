@@ -83,7 +83,8 @@ Int_t AliAnalysisEtSelector::GetPrimary(const Int_t partIdx, AliStack& stack) co
   }
   return -1;
 }
-Bool_t AliAnalysisEtSelector::FromSecondaryInteraction(const TParticle& part, AliStack &stack) const
+//Bool_t AliAnalysisEtSelector::FromSecondaryInteraction(const TParticle& part, AliStack &stack) const
+Bool_t AliAnalysisEtSelector::FromSecondaryInteraction(Int_t partID, AliStack &stack) const
 {
 //   Bool_t partVtxSecondary = (
 // 			      TMath::Sqrt(part.Vx()*part.Vx() + part.Vy()*part.Vy()) > fCuts->GetPrimaryVertexCutXY() 
@@ -92,10 +93,13 @@ Bool_t AliAnalysisEtSelector::FromSecondaryInteraction(const TParticle& part, Al
 // 			    && TMath::Sqrt(part.Vx()*part.Vx()+part.Vy()*part.Vy() + part.Vz()*part.Vz())<(fCuts->GetGeometryPhosDetectorRadius()-10);
   
 
-//   Bool_t partVtxSecondary = (TMath::Sqrt(part.Vx()*part.Vx() + part.Vy()*part.Vy()) <300);
+  //Bool_t partVtxSecondary = (TMath::Sqrt(part.Vx()*part.Vx() + part.Vy()*part.Vy()) <420);
+  //if(partVtxSecondary) return kFalse;
 //   //Let's find suspect decay (typical for secondary interaction)...
 //   if(partVtxSecondary){
-    return SuspiciousDecayInChain(211, 111, part, stack);
+  // return SuspiciousDecayInChain(211, 111, part, stack);
+  //return stack.IsSecondaryFromMaterial(part.GetUniqueID());
+  return stack.IsSecondaryFromMaterial(partID);
 //   }
 //   else{
 //     return kFALSE;
@@ -106,6 +110,44 @@ Bool_t AliAnalysisEtSelector::FromSecondaryInteraction(const TParticle& part, Al
   
 }
 
+Int_t AliAnalysisEtSelector::GetMother(Int_t partID, AliStack& stack) const {
+  if(partID>0){
+    TParticle *particle = stack.Particle(partID);
+      if(particle){
+	
+	return particle->GetMother(0);
+      }
+  }
+  return -1;
+}
+Bool_t AliAnalysisEtSelector::IsFromDetectorCover(Int_t partID, AliStack& stack) const{
+  if(partID>0){
+    TParticle *particle = stack.Particle(partID);
+    if(particle){//particle exists
+      if(stack.IsSecondaryFromMaterial(partID)){//particle is from an interaction with the material
+	//say that it's from the detector cover if its vertex is larger than 400 cm because this is where the cover is
+	return (TMath::Sqrt(particle->Vx()*particle->Vx() + particle->Vy()*particle->Vy()) >400);
+	
+      }
+    }
+  }
+  return kFALSE;
+}
+
+Int_t AliAnalysisEtSelector::GetFirstMotherNotFromDetectorCover(Int_t partID, AliStack& stack) const{
+  Int_t targetParticle = partID;
+  Int_t testParticle = partID;
+  Int_t iteration  = 0;
+  while(IsFromDetectorCover(targetParticle,stack) && testParticle>0){//if the particle is from the detector cover
+    //cout<<"Particle "<<targetParticle<<" is from detector cover.  Getting mother ";
+    testParticle = GetMother(targetParticle,stack);
+    if(testParticle>0) targetParticle = testParticle;
+    //cout<<targetParticle<<" iteration "<<iteration<<endl;
+    iteration++;
+  }
+  //if(iteration>0) cout<<"iterations "<<iteration<<endl;
+  return targetParticle;
+}
 Bool_t AliAnalysisEtSelector::SuspiciousDecayInChain(const UInt_t suspectMotherPdg, const UInt_t suspectDaughterPdg, const TParticle &part, AliStack& stack) const
 {
   UInt_t partPdg = TMath::Abs(part.GetPdgCode());
