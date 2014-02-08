@@ -120,7 +120,7 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
 	plugin->AddRunNumber(137161);
       }
       if(production==1){
-       cout<<"I am here! Line 93 "<<endl;
+	//cout<<"I am here! Line 93 "<<endl;
 	//if(!isPHOS){
 	  outputDir = outputDir + "LHC11a10a_bis";
 	  plugin->SetGridDataDir("/alice/sim/LHC11a10a_bis");
@@ -149,6 +149,13 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
 	}
 	plugin->AddRunNumber(139470);
       }
+      if(production==4){
+	outputDir = outputDir + "LHC13d2";
+	plugin->SetGridDataDir(" /alice/sim/2013/LHC13d2");
+	plugin->AddRunNumber(139465);//probably our focus now
+      }
+
+
     }
    }
 
@@ -171,7 +178,7 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
   //plugin->SetAnalysisSource("AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.cxx AliAnalysisEtCommon.cxx AliAnalysisEtSelector.cxx AliAnalysisEtSelectorPhos.cxx AliAnalysisEt.cxx AliAnalysisEtMonteCarlo.cxx AliAnalysisEtMonteCarloPhos.cxx AliAnalysisEtMonteCarloEmcal.cxx AliAnalysisEtReconstructed.cxx AliAnalysisEtReconstructedPhos.cxx AliAnalysisEtReconstructedEmcal.cxx AliAnalysisTaskTransverseEnergy.cxx AliAnalysisTaskTotEt.cxx");
   // Declare all libraries (other than the default ones for the framework. These will be
   // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-  plugin->SetAdditionalLibs("libPHOSUtils.so libTENDER.so libTENDERSupplies.so AliAnalysisEtCuts.cxx AliAnalysisEtCuts.h AliAnalysisHadEtCorrections.cxx AliAnalysisHadEtCorrections.h AliAnalysisEtCommon.cxx AliAnalysisEtCommon.h AliAnalysisEtSelector.cxx AliAnalysisEtSelector.h AliAnalysisEtSelectorPhos.cxx AliAnalysisEtSelectorPhos.h AliAnalysisEtSelectorEmcal.cxx AliAnalysisEtSelectorEmcal.h AliAnalysisEtTrackMatchCorrections.cxx AliAnalysisEtTrackMatchCorrections.h AliAnalysisEtRecEffCorrection.cxx AliAnalysisEtRecEffCorrection.h AliAnalysisEt.cxx AliAnalysisEt.h AliAnalysisEtMonteCarlo.cxx AliAnalysisEtMonteCarlo.h AliAnalysisEtMonteCarloPhos.cxx AliAnalysisEtMonteCarloPhos.h AliAnalysisEtMonteCarloEmcal.cxx AliAnalysisEtMonteCarloEmcal.h AliAnalysisEtReconstructed.cxx AliAnalysisEtReconstructed.h AliAnalysisEtReconstructedPhos.cxx AliAnalysisEtReconstructedPhos.h AliAnalysisEtReconstructedEmcal.cxx AliAnalysisEtReconstructedEmcal.h AliAnalysisTaskTransverseEnergy.cxx AliAnalysisTaskTransverseEnergy.h AliAnalysisEmEtMonteCarlo.cxx AliAnalysisEmEtMonteCarlo.h AliAnalysisEmEtReconstructed.cxx AliAnalysisEmEtReconstructed.h AliAnalysisTaskTotEt.cxx AliAnalysisTaskTotEt.h badchannels.root corrections.root calocorrections.root ConfigEtMonteCarlo.C ConfigEtReconstructed.C");
+  plugin->SetAdditionalLibs("libPHOSUtils.so libTENDER.so libTENDERSupplies.so libPWGTools.so libPWGEMCAL.so AliAnalysisEtCuts.cxx AliAnalysisEtCuts.h AliAnalysisHadEtCorrections.cxx AliAnalysisHadEtCorrections.h AliAnalysisEtCommon.cxx AliAnalysisEtCommon.h AliAnalysisEtSelector.cxx AliAnalysisEtSelector.h AliAnalysisEtSelectorPhos.cxx AliAnalysisEtSelectorPhos.h AliAnalysisEtSelectorEmcal.cxx AliAnalysisEtSelectorEmcal.h AliAnalysisEtTrackMatchCorrections.cxx AliAnalysisEtTrackMatchCorrections.h AliAnalysisEtRecEffCorrection.cxx AliAnalysisEtRecEffCorrection.h AliAnalysisEt.cxx AliAnalysisEt.h AliAnalysisEtMonteCarlo.cxx AliAnalysisEtMonteCarlo.h AliAnalysisEtMonteCarloPhos.cxx AliAnalysisEtMonteCarloPhos.h AliAnalysisEtMonteCarloEmcal.cxx AliAnalysisEtMonteCarloEmcal.h AliAnalysisEtReconstructed.cxx AliAnalysisEtReconstructed.h AliAnalysisEtReconstructedPhos.cxx AliAnalysisEtReconstructedPhos.h AliAnalysisEtReconstructedEmcal.cxx AliAnalysisEtReconstructedEmcal.h AliAnalysisTaskTransverseEnergy.cxx AliAnalysisTaskTransverseEnergy.h AliAnalysisEmEtMonteCarlo.cxx AliAnalysisEmEtMonteCarlo.h AliAnalysisEmEtReconstructed.cxx AliAnalysisEmEtReconstructed.h AliAnalysisTaskTotEt.cxx AliAnalysisTaskTotEt.h badchannels.root corrections.root calocorrections.root ConfigEtMonteCarlo.C ConfigEtReconstructed.C");
   plugin->SetExecutableCommand("aliroot -b -q");
   // add extra include files/path
   plugin->AddIncludePath("-I. -I$ALICE_ROOT/EMCAL -I$ALICE_ROOT/ANALYSIS");
