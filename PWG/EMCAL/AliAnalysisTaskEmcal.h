@@ -46,73 +46,61 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal(const char *name, Bool_t histo=kFALSE); 
   virtual ~AliAnalysisTaskEmcal();
 
-  void                        UserExec(Option_t *option);
-  void                        UserCreateOutputObjects();
-  Bool_t                      UserNotify();
-
-  void                        SetNCentBins(Int_t n)                                 { fNcentBins         = n                              ; }  
+  AliParticleContainer       *AddParticleContainer(const char *n);
+  AliClusterContainer        *AddClusterContainer(const char *n);
+  AliParticleContainer       *GetParticleContainer(Int_t i=0)         const;
+  AliClusterContainer        *GetClusterContainer(Int_t i=0)          const;
+  AliParticleContainer       *GetParticleContainer(const char* name)  const;
+  AliClusterContainer        *GetClusterContainer(const char* name)   const;
+  void                        RemoveParticleContainer(Int_t i=0)                    { fParticleCollArray.RemoveAt(i)                      ; } 
+  void                        RemoveClusterContainer(Int_t i=0)                     { fClusterCollArray.RemoveAt(i)                       ; } 
+  void                        SetCaloCellsName(const char *n)                       { fCaloCellsName     = n                              ; }
+  void                        SetCaloTriggerPatchInfoName(const char *n)            { fCaloTriggerPatchInfoName = n                       ; }
+  void                        SetCaloTriggersName(const char *n)                    { fCaloTriggersName  = n                              ; }
   void                        SetCentRange(Double_t min, Double_t max)              { fMinCent           = min  ; fMaxCent = max          ; }
-  void                        SetHistoBins(Int_t nbins, Double_t min, Double_t max) { fNbins = nbins; fMinBinPt = min; fMaxBinPt = max    ; }
-  void                        SetOffTrigger(UInt_t t)                               { fOffTrigger        = t                              ; }
-  void                        SetTrigClass(const char *n)                           { fTrigClass         = n                              ; } 
-  void                        SetTriggerTypeSel(TriggerType t)                      { fTriggerTypeSel    = t                              ; } 
-  void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz   = max          ; }
-  void                        SetForceBeamType(BeamType f)                          { fForceBeamType     = f                              ; }
-  void                        SetMakeGeneralHistograms(Bool_t g)                    { fGeneralHistograms = g                              ; }
-  void                        SetMinPtTrackInEmcal(Double_t min)                    { fMinPtTrackInEmcal = min                            ; }
-  void                        SetEventPlaneVsEmcal(Double_t ep)                     { fEventPlaneVsEmcal = ep                             ; }
   void                        SetCentralityEstimator(const char *c)                 { fCentEst           = c                              ; }
-
-  void                        SetMinNTrack(Int_t min)                               { fMinNTrack         = min                            ; }
-  void                        SetUseAliAnaUtils(Bool_t b)                           { fUseAliAnaUtils    = b                              ; }
-
-  void                        SetMinMCLabel(Int_t s)                                { fMinMCLabel        = s                              ; }
+  void                        SetClusName(const char *n)                            { AddClusterContainer(n)                              ; }
+  void                        SetClusPtCut(Double_t cut, Int_t c=0);
+  void                        SetClusTimeCut(Double_t min, Double_t max, Int_t c=0);
+  void                        SetEventPlaneVsEmcal(Double_t ep)                     { fEventPlaneVsEmcal = ep                             ; }
+  void                        SetForceBeamType(BeamType f)                          { fForceBeamType     = f                              ; }
+  void                        SetHistoBins(Int_t nbins, Double_t min, Double_t max) { fNbins = nbins; fMinBinPt = min; fMaxBinPt = max    ; }
   void                        SetIsEmbedded(Bool_t i)                               { fIsEmbedded        = i                              ; }
   void                        SetIsPythia(Bool_t i)                                 { fIsPythia          = i                              ; }
   void                        SetMCLabelShift(Int_t s)                              { fMCLabelShift      = s                              ; }
-
-  void                        SetCaloCellsName(const char *n)                       { fCaloCellsName     = n                              ; }
-  void                        SetCaloTriggersName(const char *n)                    { fCaloTriggersName  = n                              ; }
-  void                        SetCaloTriggerPatchInfoName(const char *n)            { fCaloTriggerPatchInfoName = n                       ; }
-
-  void                        SetTracksName(const char *n)                          { AddParticleContainer(n)                             ; }
-  void                        SetClusName(const char *n)                            { AddClusterContainer(n)                              ; }
-
-  void                        SetClusPtCut(Double_t cut, Int_t c=0);
-  void                        SetClusTimeCut(Double_t min, Double_t max, Int_t c=0);
-  void                        SetTrackPtCut(Double_t cut, Int_t c=0);
+  void                        SetMakeGeneralHistograms(Bool_t g)                    { fGeneralHistograms = g                              ; }
+  void                        SetMinMCLabel(Int_t s)                                { fMinMCLabel        = s                              ; }
+  void                        SetMinNTrack(Int_t min)                               { fMinNTrack         = min                            ; }
+  void                        SetMinPtTrackInEmcal(Double_t min)                    { fMinPtTrackInEmcal = min                            ; }
+  void                        SetNCentBins(Int_t n)                                 { fNcentBins         = n                              ; }  
+  void                        SetOffTrigger(UInt_t t)                               { fOffTrigger        = t                              ; }
   void                        SetTrackEtaLimits(Double_t min, Double_t max, Int_t c=0);
   void                        SetTrackPhiLimits(Double_t min, Double_t max, Int_t c=0);
-
-  AliParticleContainer       *AddParticleContainer(const char *n);
-  AliClusterContainer        *AddClusterContainer(const char *n);
-  void                        RemoveParticleContainer(Int_t i=0)                      { fParticleCollArray.RemoveAt(i);} 
-  void                        RemoveClusterContainer(Int_t i=0)                       { fClusterCollArray.RemoveAt(i);} 
-
-  AliParticleContainer       *GetParticleContainer(Int_t i=0)   const;
-  AliClusterContainer        *GetClusterContainer(Int_t i=0)    const;
-  AliParticleContainer       *GetParticleContainer(const char* name)  const;
-  AliClusterContainer        *GetClusterContainer(const char* name)   const;
-
-  AliEmcalTriggerPatchInfo   *GetMainTriggerPatch();
+  void                        SetTrackPtCut(Double_t cut, Int_t c=0);
+  void                        SetTracksName(const char *n)                          { AddParticleContainer(n)                             ; }
+  void                        SetTrigClass(const char *n)                           { fTrigClass         = n                              ; } 
+  void                        SetTriggerTypeSel(TriggerType t)                      { fTriggerTypeSel    = t                              ; } 
+  void                        SetUseAliAnaUtils(Bool_t b)                           { fUseAliAnaUtils    = b                              ; }
+  void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz   = max          ; }
 
  protected:
-  BeamType                    GetBeamType();
-  TriggerType                 GetTriggerType();
-  TClonesArray               *GetArrayFromEvent(const char *name, const char *clname=0);
-  Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard);
-
-  TClonesArray               *GetParticleArray(Int_t i=0)                  const;
-  TClonesArray               *GetClusterArray(Int_t i=0)                   const;
-
-  AliVParticle               *GetAcceptParticleFromArray(Int_t p, Int_t c=0)     const;
-  AliVCluster                *GetAcceptClusterFromArray(Int_t cl, Int_t c=0)     const;
-
-  Int_t                       GetNParticles(Int_t i=0)                           const;
-  Int_t                       GetNClusters(Int_t i=0)                            const;
-
   Bool_t                      AcceptCluster(AliVCluster *clus, Int_t c = 0)      const;
   Bool_t                      AcceptTrack(AliVParticle *track, Int_t c = 0)      const;
+  void                        AddObjectToEvent(TObject *obj);
+  AliVParticle               *GetAcceptParticleFromArray(Int_t p, Int_t c=0)     const;
+  AliVCluster                *GetAcceptClusterFromArray(Int_t cl, Int_t c=0)     const;
+  TClonesArray               *GetArrayFromEvent(const char *name, const char *clname=0);
+  BeamType                    GetBeamType();
+  TClonesArray               *GetParticleArray(Int_t i=0)                        const;
+  TClonesArray               *GetClusterArray(Int_t i=0)                         const;
+  Int_t                       GetNParticles(Int_t i=0)                           const;
+  Int_t                       GetNClusters(Int_t i=0)                            const;
+  AliEmcalTriggerPatchInfo   *GetMainTriggerPatch();
+  TriggerType                 GetTriggerType();
+  Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard);
+  void                        UserCreateOutputObjects();
+  void                        UserExec(Option_t *option);
+  Bool_t                      UserNotify();
 
   // Virtual functions, to be overloaded in derived classes
   virtual void                ExecOnce();
@@ -121,7 +109,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   virtual Bool_t              RetrieveEventObjects();
   virtual Bool_t              FillHistograms()                                     { return kTRUE                 ; }
   virtual Bool_t              Run()                                                { return kTRUE                 ; }
-
 
   BeamType                    fForceBeamType;              // forced beam type
   Bool_t                      fGeneralHistograms;          // whether or not it should fill some general histograms
@@ -138,7 +125,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Int_t                       fMinNTrack;                  // minimum nr of tracks in event with pT>fTrackPtCut
   Bool_t                      fUseAliAnaUtils;             //  used for LHC13* data
   AliAnalysisUtils           *fAliAnalysisUtils;           //! vertex selection (optional)
-
   UInt_t                      fOffTrigger;                 // offline trigger for event selection
   TString                     fTrigClass;                  // trigger class name for event selection
   TriggerType                 fTriggerTypeSel;             // trigger type to select based on trigger patches
@@ -170,30 +156,21 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Double_t                    fVertex[3];                  //!event vertex
   Int_t                       fNVertCont;                  //!event vertex number of contributors
   BeamType                    fBeamType;                   //!event beam type
-
-  // PYTHIA
   AliGenPythiaEventHeader    *fPythiaHeader;               //!event Pythia header
   Double_t                    fPtHard;                     //!event pt hard
   Int_t                       fPtHardBin;                  //!event pt hard bin
   Int_t                       fNTrials;                    //!event trials
-
   TObjArray                   fParticleCollArray;          // particle/track collection array
   TObjArray                   fClusterCollArray;           // cluster collection array
   AliEmcalTriggerPatchInfo   *fMainTriggerPatch;           // main trigger patch, will be cached after calling GetMainTriggerPatch() first time
   TriggerType                 fTriggerType;                // trigger type J1 or J2
-
-  // Histograms
   TList                      *fOutput;                     //!output list
-
-  // PYTHIA
   TH1                        *fHistTrialsAfterSel;         //!total number of trials per pt hard bin after selection
   TH1                        *fHistEventsAfterSel;         //!total number of events per pt hard bin after selection
   TH1                        *fHistTrials;                 //!trials from pyxsec.root
   TProfile                   *fHistXsection;               //!x section from pyxsec.root
   TH1                        *fHistEvents;                 //!total number of events per pt hard bin
   TH1                        *fHistPtHard;                 //!pt hard distribution
-
-  // General histograms
   TH1                        *fHistCentrality;             //!event centrality distribution
   TH1                        *fHistZVertex;                //!z vertex position
   TH1                        *fHistEventPlane;             //!event plane distribution
@@ -203,6 +180,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal(const AliAnalysisTaskEmcal&);            // not implemented
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcal, 6) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 7) // EMCAL base analysis task
 };
 #endif
