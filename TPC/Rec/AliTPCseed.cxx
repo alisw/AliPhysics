@@ -1299,11 +1299,6 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
     
     Float_t              ty = TMath::Abs(point->GetAngleY());
     Float_t              tz = TMath::Abs(point->GetAngleZ()*TMath::Sqrt(1+ty*ty));
-    //
-    // cut on inclination angle on outer pads <-> to be put to recoParam
-    //
-    if (ty > 1.2 && ipad == 2) continue;
-    //
     Float_t yres0 = parcl->GetRMS0(0,ipad,0,0)/param->GetPadPitchWidth(cluster->GetDetector());
     Float_t zres0 = parcl->GetRMS0(1,ipad,0,0)/param->GetZWidth();
 
