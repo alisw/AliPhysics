@@ -89,6 +89,15 @@ public:
         *fRecoEff = recoEff;
     }
 
+    void SetNeutronCorrection(Int_t cb, Double_t val){fNeutronCorrection[cb] = val;}
+    void SetHadronCorrection(Int_t cb, Double_t val){fHadronCorrection[cb] = val;}
+    void SetKaonCorrection(Int_t cb, Double_t val){fKaonCorrection[cb] = val;}
+    void SetSecondaryCorrection(Int_t cb, Double_t val){fSecondaryCorrection[cb] = val;}
+
+    Double_t GetNeutronCorrection(Int_t cb){if(cb>=0 && cb <20){return fNeutronCorrection[cb];}else{return 0.0;}}
+    Double_t GetHadronCorrection(Int_t cb){if(cb>=0 && cb <20){return fHadronCorrection[cb];}else{return 0.0;}}
+    Double_t GetKaonCorrection(Int_t cb){if(cb>=0 && cb <20){return fKaonCorrection[cb];}else{return 0.0;}}
+    Double_t GetSecondaryCorrection(Int_t cb){if(cb>=0 && cb <20){return fSecondaryCorrection[cb];}else{return 0.0;}}
 
 private:
 
@@ -111,6 +120,11 @@ private:
     Double_t fMeanGamma;
     // Mean deposited energy from secondaries 
     Double_t fMeanSecondary;
+
+    Double_t fNeutronCorrection[20];//NeutronCorrection
+    Double_t fHadronCorrection[20];//NeutronCorrection
+    Double_t fKaonCorrection[20];//NeutronCorrection
+    Double_t fSecondaryCorrection[20];//NeutronCorrection
 
     // Prohibited
 //! Equality operator
