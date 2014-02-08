@@ -243,6 +243,9 @@ void AliAnalysisTaskTotEt::UserExec(Option_t *)
     }
   if(fMCAnalysis)
     {
+      //set the number of tracks matched and the total number of hadrons calculated from the number of tracks matched so we can use them for calculating corrections
+      fMCAnalysis->SetNumberOfChargedHadronsMatched(fRecAnalysis->GetNumberOfChargedHadronsMatched());
+      fMCAnalysis->SetTotalNumberOfChargedHadrons(fRecAnalysis->GetTotalNumberOfChargedHadrons());
       fHistEtRecvsEtMC->Fill(fRecAnalysis->GetTotNeutralEt(), fMCAnalysis->GetTotNeutralEt());
       if(fMCAnalysis->GetTotNeutralEt()) fHistEtRecOverEtMC->Fill(fRecAnalysis->GetTotNeutralEt()/fMCAnalysis->GetTotNeutralEt(), cent->GetCentralityClass10("V0M"));
       if(fMCAnalysis->GetTotNeutralEt()) fHistDiffEtRecEtMCOverEtMC->Fill(fMCAnalysis->GetTotNeutralEt(), (fRecAnalysis->GetTotNeutralEt()-fMCAnalysis->GetTotNeutralEt())/fMCAnalysis->GetTotNeutralEt());
