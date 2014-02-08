@@ -6,8 +6,10 @@
 //As written this requires an xml script tag.xml in the ~/et directory on the grid to submit jobs
 void runCaloEt(bool submit = false, // true or false 
 	       const char *dataType="simPbPb", // "sim" or "real" etc.
+	       //const char *dataType="realPbPb", // "sim" or "real" etc.
 	       const char *pluginRunMode="test", // "test" or "full" or "terminate"
-	       const char *det = "EMCal",int production = 1, Bool_t withtender = kTRUE, Int_t runnum = 0, Bool_t withNonlinearity = kTRUE, Bool_t withReclusterizing = kFALSE, Int_t trackmatchcuts==0) // "PHOS" or "EMCAL" or EMCalDetail
+	       const char *det = "EMCal",
+	       int production = 1, Bool_t withtender = kTRUE, Int_t runnum = 0, Bool_t withNonlinearity = kTRUE, Bool_t withReclusterizing = kFALSE, Int_t trackmatchcuts=0) // "PHOS" or "EMCAL" or EMCalDetail
 {
   TStopwatch timer;
   timer.Start();
@@ -142,18 +144,20 @@ void runCaloEt(bool submit = false, // true or false
       TString fileLocation = "/data/LHC10h8/137161/999/AliESDs.root";//"/home/dsilverm/data/E_T/" + dataStr + "/dir/AliESDs.root";
       cout << "fileLocation " << fileLocation.Data() << endl; 
 //       chain->Add(fileLocation.Data()); // link to local test file
+//      chain->Add("/data/tmp/3682/AliESDs.root");
+//      chain->Add("/data/tmp/2782/AliESDs.root");
 //       chain->Add("/data/LHC10h8/137161/999/AliESDs.root");//Hijing Pb+Pb
 //       chain->Add("/data/LHC10h8/137161/111/AliESDs.root");//Hijing Pb+Pb
 //       chain->Add("/data/LHC10h8/137161/222/AliESDs.root");//Hijing Pb+Pb
 chain->Add("/data/LHC11a10a_bis/139465/001/AliESDs.root");
-chain->Add("/data/LHC11a10a_bis/139465/002/AliESDs.root");
-// chain->Add("/data/LHC11a10a_bis/139465/003/AliESDs.root");
-// chain->Add("/data/LHC11a10a_bis/139465/004/AliESDs.root");
-// chain->Add("/data/LHC11a10a_bis/139465/006/AliESDs.root");
-// chain->Add("/data/LHC11a10a_bis/139465/007/AliESDs.root");
-// chain->Add("/data/LHC11a10a_bis/139465/008/AliESDs.root");
-// chain->Add("/data/LHC11a10a_bis/139465/009/AliESDs.root");
-// chain->Add("/data/LHC11a10a_bis/139465/010/AliESDs.root");
+  chain->Add("/data/LHC11a10a_bis/139465/002/AliESDs.root");
+  chain->Add("/data/LHC11a10a_bis/139465/003/AliESDs.root");
+ chain->Add("/data/LHC11a10a_bis/139465/004/AliESDs.root");
+ chain->Add("/data/LHC11a10a_bis/139465/006/AliESDs.root");
+ chain->Add("/data/LHC11a10a_bis/139465/007/AliESDs.root");
+ chain->Add("/data/LHC11a10a_bis/139465/008/AliESDs.root");
+ chain->Add("/data/LHC11a10a_bis/139465/009/AliESDs.root");
+ chain->Add("/data/LHC11a10a_bis/139465/010/AliESDs.root");
 // chain->Add("/data/LHC11a10a_bis/139465/011/AliESDs.root");
 // chain->Add("/data/LHC11a10a_bis/139465/012/AliESDs.root");
 // chain->Add("/data/LHC11a10a_bis/139465/013/AliESDs.root");
@@ -222,11 +226,14 @@ chain->Add("/data/LHC11a10a_bis/139465/002/AliESDs.root");
   else { // real data
     cout<<"Hello there!  I am data."<<endl;
     isMc = kFALSE;
-      chain->Add("/data/LHC10h/pass2_rev15/10000137366041.860/AliESDs.root");
-      chain->Add("/data/LHC10h/pass2_rev15/10000137366041.870/AliESDs.root");
-      chain->Add("/data/LHC10h/pass2_rev15/10000137366041.880/AliESDs.root");
-      chain->Add("/data/LHC10h/pass2_rev15/10000137366041.890/AliESDs.root");
-      chain->Add("/data/LHC10h/pass2_rev15/10000137366041.900/AliESDs.root");
+
+    //      chain->Add("/data/tmp/10000139465010.600/AliESDs.root");
+
+   chain->Add("/data/LHC10h/pass2_rev15/10000137366041.860/AliESDs.root");
+//       chain->Add("/data/LHC10h/pass2_rev15/10000137366041.870/AliESDs.root");
+//       chain->Add("/data/LHC10h/pass2_rev15/10000137366041.880/AliESDs.root");
+//       chain->Add("/data/LHC10h/pass2_rev15/10000137366041.890/AliESDs.root");
+//       chain->Add("/data/LHC10h/pass2_rev15/10000137366041.900/AliESDs.root");
 //     chain->Add("/data/LHC10dpass2/10000126403050.70/AliESDs.root");//data
     //chain->Add("/home/dsilverm/data/E_T/data/2010/LHC10b/000117222/ESDs/pass2/10000117222021.30/AliESDs.root"); // link to local test file
     cout << " not MC " << endl;
@@ -234,38 +241,78 @@ chain->Add("/data/LHC11a10a_bis/139465/002/AliESDs.root");
 
 
   //if(!isMc && detStr.Contains("EMC")){
-  if(detStr.Contains("EMC")){
+    if(detStr.Contains("EMC")){
+  //if(0){
     cout<<"You are running over EMCal data and using the tender supply"<<endl;
     gSystem->Load("libTENDER.so");
     gSystem->Load("libTENDERSupplies.so"); 
+    gSystem->Load("libPWGTools.so");
+    gSystem->Load("libPWGEMCAL.so");
     gROOT->ProcessLine(".include $ALICE_ROOT/Tender/"); 
     gSystem->AddIncludePath("-I$ALICE_ROOT/ANALYSIS "); 
     //this macro is downloaded from the EMCal tender supply twiki 
     //hopefully it will be replaced by something checked in to aliroot
     //I have added the function from GetOCDBRecParam.C in Jiri's example to this so that we don't add gobs of macros to the code
     //I set the defaults to the golden run for PbPb because we are focusing on the golden run, however, this should be thought through!!
-    gROOT->LoadMacro("AddTaskEMCALTenderForEtAnalysis.C");
-    cout<<"WARNING: YOU ARE USING CALIBRATION FACTORS FROM PbPb RUN 137161!!"<<endl;
-//  	// get reco params from grid OCDB
-//    gROOT->LoadMacro("./GetOCDBRecParam.C");
-//  	// run num, data type pp/PbPb, from grid
-//Gets calibration factors from grid if jobs are to be submitted to the grid
-//   	AliEMCALRecParam* pars = GetOCDBRecParam( 137161, "PbPb", submit);
+    //AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance(geoname);
 
-    AliTender *tender = AddTaskEMCALTender( "EMCAL_COMPLETEV1", 0,withNonlinearity,withReclusterizing,trackmatchcuts);
-    //this also likely needs modification
-//     tender->SelectCollisionCandidates( AliVEvent::kMB | AliVEvent::kEMCEGA | AliVEvent::kEMC1 | AliVEvent::kEMC7 );
-//     if(submit){tender->SetDefaultCDBStorage("raw://");} //uncomment if you work on grid
-//     else{tender->SetDefaultCDBStorage("local://$ALICE_ROOT/OCDB");} //uncomment if you work local
+    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalSetup.C");
+    AliEmcalSetupTask *setupTask = AddTaskEmcalSetup();
+    setupTask->SetGeoPath("$ALICE_ROOT/OADB/EMCAL");
+    setupTask->SetOcdbPath(""); 
 
-    if(submit){
-      cout<<"Setting tender to run on grid"<<endl;
-      tender->SetDefaultCDBStorage("raw://"); //uncomment if you work on grid
-    }
-    else{
-      cout<<"Setting tender to run locally"<<endl;
-      tender->SetDefaultCDBStorage("local://$ALICE_ROOT/OCDB"); //uncomment if you work local
-    }
+//     gROOT->LoadMacro("AddTaskEMCALTenderForEtAnalysis.C");
+//     //cout<<"WARNING: YOU ARE USING CALIBRATION FACTORS FROM PbPb RUN 137161!!"<<endl;
+// //  	// get reco params from grid OCDB
+// //    gROOT->LoadMacro("./GetOCDBRecParam.C");
+// //  	// run num, data type pp/PbPb, from grid
+// //Gets calibration factors from grid if jobs are to be submitted to the grid
+// //   	AliEMCALRecParam* pars = GetOCDBRecParam( 137161, "PbPb", submit);
+// //EMCAL_FIRSTYEARV1 F-
+//     //AliTender *tender = AddTaskEMCALTender( "EMCAL_COMPLETEV1", 0,withNonlinearity,withReclusterizing,trackmatchcuts);
+// AliTender *tender = AddTaskEMCALTender( "EMCAL_FIRSTYEARV1", 0,withNonlinearity,withReclusterizing,trackmatchcuts);
+//     //this also likely needs modification
+// //     tender->SelectCollisionCandidates( AliVEvent::kMB | AliVEvent::kEMCEGA | AliVEvent::kEMC1 | AliVEvent::kEMC7 );
+// //     if(submit){tender->SetDefaultCDBStorage("raw://");} //uncomment if you work on grid
+// //     else{tender->SetDefaultCDBStorage("local://$ALICE_ROOT/OCDB");} //uncomment if you work local
+
+//     if(submit){
+//       cout<<"Setting tender to run on grid"<<endl;
+//       tender->SetDefaultCDBStorage("raw://"); //uncomment if you work on grid
+//     }
+//     else{
+//       cout<<"Setting tender to run locally"<<endl;
+//       tender->SetDefaultCDBStorage("local://$ALICE_ROOT/OCDB"); //uncomment if you work local
+//     }
+
+
+    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEMCALTender.C");//tendertasks
+    TString runPeriod = "LHC10h";
+    Bool_t distBC         = kTRUE;   //distance to bad channel
+    Bool_t recalibClus    = kTRUE;   //recalibrate cluster energy
+    Bool_t recalcClusPos  = kTRUE;   //recalculate cluster position
+    Bool_t nonLinearCorr  = kTRUE;   //apply non-linearity
+    Bool_t remExotic      = kTRUE;   //remove exotic cells
+    Bool_t fidRegion      = kTRUE;  //apply fiducial cuts
+    Bool_t calibEnergy    = kTRUE;   //calibrate energy
+    Bool_t calibTime      = kTRUE;   //calibrate timing
+    Bool_t remBC          = kTRUE;   //remove bad channels
+    UInt_t nonLinFunct    = AliEMCALRecoUtils::kBeamTestCorrected;
+    Bool_t reclusterize   = kFALSE;   //reclusterize
+    Float_t seedthresh    = 0.3;     //seed threshold
+    Float_t cellthresh    = 0.05;    //cell threshold
+    UInt_t clusterizer    = AliEMCALRecParam::kClusterizerv2;
+    Bool_t trackMatch     = kTRUE;  //track matching
+    Bool_t updateCellOnly = kFALSE;  //only change if you run your own clusterizer task
+    Float_t timeMin       = 100e-9;  //minimum time of physical signal in a cell/digit (s)
+    Float_t timeMax       = 900e-9;  //maximum time of physical signal in a cell/digit (s)
+    Float_t timeCut       = 50e-9;   //maximum time difference between the digits inside EMC cluster (s)
+    AliAnalysisTaskSE *tender = AddTaskEMCALTender(runPeriod.Data(), distBC, recalibClus, recalcClusPos, nonLinearCorr, remExotic, 
+						   fidRegion, calibEnergy, calibTime, remBC, nonLinFunct, reclusterize, seedthresh, 
+						   cellthresh, clusterizer, trackMatch, updateCellOnly, timeMin, timeMax, timeCut);
+    
+
+
     // one can sellect what collision candidates to use
     // triggered sample only: L1 = AliVEvent::kEMCEGA, AliVEvent::kEMCEJE; L0 = AliVEvent::kEMC1, AliVEvent::kEMC7
     tender->SelectCollisionCandidates( AliVEvent::kAny );
@@ -300,8 +347,8 @@ chain->Add("/data/LHC11a10a_bis/139465/002/AliESDs.root");
 //                                     Bool_t cachePID=kFALSE, TString detResponse="",
 //                                     Bool_t useTPCEtaCorrection = kFALSE);
   AliAnalysisTaskPIDResponse *taskPID=AddTaskPIDResponse(isMc,kTRUE,kTRUE,2);
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");
-  AddTaskPIDqa();
+  //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");
+  //AddTaskPIDqa();
 
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
 
