@@ -413,7 +413,6 @@ Bool_t AliAnalysisTaskEmcal::AcceptCluster(AliVCluster *clus, Int_t c) const
   }
 
   return cont->AcceptCluster(clus);
-
 }
 
 //________________________________________________________________________
@@ -451,8 +450,7 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
     Ssiz_t pos = file.Index("#",1,pos1,TString::kExact);
     Ssiz_t pos2 = file.Index(".root",5,TString::kExact);
     file.Replace(pos+1,pos2-pos1,"");
-  }
-  else {
+  } else {
     // not an archive take the basename....
     file.ReplaceAll(gSystem->BaseName(file.Data()),"");
   }
@@ -479,8 +477,7 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
     if (!fxsec) {
 	// not a severe condition but inciate that we have no information
       return kFALSE;
-    }
-    else{
+    } else {
       // find the tlist we want to be independtent of the name so use the Tkey
       TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0); 
       if (!key) {
@@ -496,8 +493,7 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
       fTrials  = ((TH1F*)list->FindObject("h1Trials"))->GetBinContent(1);
       fxsec->Close();
     }
-  } // no tree pyxsec.root
-  else {
+  } else { // no tree pyxsec.root
     TTree *xtree = (TTree*)fxsec->Get("Xsection");
     if (!xtree) {
       fxsec->Close();
@@ -659,13 +655,10 @@ AliAnalysisTaskEmcal::BeamType AliAnalysisTaskEmcal::GetBeamType()
   } else {
     Int_t runNumber = InputEvent()->GetRunNumber();
     if ((runNumber >= 136851 && runNumber <= 139517) ||  // LHC10h
-	(runNumber >= 166529 && runNumber <= 170593))    // LHC11h
-    { 
+	(runNumber >= 166529 && runNumber <= 170593)) {  // LHC11h
       return kAA;
-    } 
-    else if ((runNumber>=188365 && runNumber <= 188366) || // LHC12g
-	     (runNumber >= 195344 && runNumber <= 196608))  // LHC13b-f
-    {
+    } else if ((runNumber>=188365 && runNumber <= 188366) ||   // LHC12g
+	       (runNumber >= 195344 && runNumber <= 196608)) { // LHC13b-f
       return kpA;
     } else {
       return kpp;
@@ -700,7 +693,6 @@ AliAnalysisTaskEmcal::TriggerType AliAnalysisTaskEmcal::GetTriggerType()
     return kJ2;
   else
     return kND;
- 
 }
 
 //________________________________________________________________________
@@ -773,7 +765,6 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
       return kFALSE;
     }
   }
-  
 
   if ((fMinCent != -999) && (fMaxCent != -999)) {
     if (fCent<fMinCent || fCent>fMaxCent) {
@@ -944,8 +935,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
 	  AliWarning(Form("%s: Negative centrality: %f. Assuming 99", GetName(), fCent));
 	  fCentBin = fNcentBins-1;
 	}
-      }
-      else {
+      } else {
 	Double_t centWidth = (fMaxCent-fMinCent)/(Double_t)fNcentBins;
 	fCentBin = TMath::FloorNint(fCent/centWidth);
 	if (fCentBin>=fNcentBins) {
