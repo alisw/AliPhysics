@@ -32,6 +32,7 @@
 #include <TCanvas.h>
 #include <TParticle.h>
 #include <TDatabasePDG.h>
+#include <TProfile.h>
 #include <TH1I.h>
 #include <TStyle.h>
 #include <TFile.h>
@@ -84,6 +85,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fCFManager(0x0),
   fHistEventsProcessed(0x0),
   fCorrelation(0x0),
+  fListProfiles(0),
   fCountMC(0),
   fCountAcc(0),
   fCountVertex(0),
@@ -125,11 +127,14 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fUseSelectionBit(kTRUE),
   fPDGcode(0),
   fMultiplicityEstimator(kNtrk10),
+  fRefMult(9.26),
+  fZvtxCorrectedNtrkEstimator(kFALSE),
   fIsPPData(kFALSE)
 {
   //
   //Default ctor
   //
+  for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
 }
 //___________________________________________________________________________
 AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts, TF1* func) :
@@ -137,6 +142,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fCFManager(0x0),
   fHistEventsProcessed(0x0),
   fCorrelation(0x0),
+  fListProfiles(0),
   fCountMC(0),
   fCountAcc(0),
   fCountVertex(0),
@@ -178,6 +184,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fUseSelectionBit(kTRUE),
   fPDGcode(0),
   fMultiplicityEstimator(kNtrk10),
+  fRefMult(9.26),
+  fZvtxCorrectedNtrkEstimator(kFALSE),
   fIsPPData(kFALSE)
 {
   //
@@ -191,6 +199,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   DefineOutput(2,AliCFContainer::Class());
   DefineOutput(3,THnSparseD::Class());
   DefineOutput(4,AliRDHFCuts::Class());
+  for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
+  DefineOutput(5,TList::Class()); // slot #5 keeps the zvtx Ntrakclets correction profiles
 	
   fCuts->PrintAll();
 }
@@ -209,6 +219,7 @@ AliCFTaskVertexingHF& AliCFTaskVertexingHF::operator=(const AliCFTaskVertexingHF
     fFuncWeight = c.fFuncWeight;
     fHistoMeasNch = c.fHistoMeasNch;
     fHistoMCNch = c.fHistoMCNch;
+    for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=c.fMultEstimatorAvg[i];
   }
   return *this;
 }
@@ -219,6 +230,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   fCFManager(c.fCFManager),
   fHistEventsProcessed(c.fHistEventsProcessed),
   fCorrelation(c.fCorrelation),
+  fListProfiles(c.fListProfiles),
   fCountMC(c.fCountMC),
   fCountAcc(c.fCountAcc),
   fCountVertex(c.fCountVertex),
@@ -260,11 +272,14 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   fUseSelectionBit(c.fUseSelectionBit),
   fPDGcode(c.fPDGcode),
   fMultiplicityEstimator(c.fMultiplicityEstimator),
+  fRefMult(c.fRefMult),
+  fZvtxCorrectedNtrkEstimator(c.fZvtxCorrectedNtrkEstimator),
   fIsPPData(c.fIsPPData)
 {
   //
   // Copy Constructor
   //
+  for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=c.fMultEstimatorAvg[i];
 }
 
 //___________________________________________________________________________
@@ -276,10 +291,12 @@ AliCFTaskVertexingHF::~AliCFTaskVertexingHF()
   if (fCFManager)           delete fCFManager ;
   if (fHistEventsProcessed) delete fHistEventsProcessed ;
   if (fCorrelation)	  delete fCorrelation ;
+  if (fListProfiles)        delete fListProfiles;
   if (fCuts)                delete fCuts;
   if (fFuncWeight)          delete fFuncWeight;
   if (fHistoMeasNch)        delete fHistoMeasNch;
   if (fHistoMCNch)          delete fHistoMCNch;
+  for(Int_t i=0; i<4; i++) { if(fMultEstimatorAvg[i]) delete fMultEstimatorAvg[i]; }
 }
 
 //_________________________________________________________________________-
@@ -291,7 +308,7 @@ void AliCFTaskVertexingHF::Init()
 	
   if (fDebug>1) printf("AliCFTaskVertexingHF::Init()");
   if(fUseWeight && fUseZWeight) { AliFatal("Can not use at the same time pt and z-vtx weights, please choose"); return; }
-  if(fUseWeight && fUseNchWeight) { AliFatal("Can not use at the same time pt and Nch weights, please choose"); return; }
+  if(fUseWeight && fUseNchWeight) { AliInfo("Beware, using at the same time pt and Nch weights, please check"); }
   if(fUseNchWeight && !fHistoMCNch) { AliFatal("Need to pass the MC Nch distribution to use Nch weights"); return; }
   if(fUseNchWeight) CreateMeasuredNchHisto();
 
@@ -421,7 +438,19 @@ void AliCFTaskVertexingHF::Init()
   }
   else{
     AliFatal("Failing initializing AliRDHFCuts object - Exiting...");
-  }	
+  }
+
+  fListProfiles = new TList();
+  fListProfiles->SetOwner();
+  TString period[4]={"LHC10b","LHC10c","LHC10d","LHC10e"};
+  for(Int_t i=0; i<4; i++){
+    if(fMultEstimatorAvg[i]){
+      TProfile* hprof=new TProfile(*fMultEstimatorAvg[i]);
+      hprof->SetName(Form("ProfileTrkVsZvtx%s\n",period[i].Data()));
+      fListProfiles->Add(hprof);
+    }
+  }
+  PostData(5,fListProfiles);
 	
   return;
 }
@@ -607,15 +636,35 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   Double_t zPrimVertex = aodVtx ->GetZ();
   Double_t zMCVertex = mcHeader->GetVtxZ();
   Int_t runnumber = aodEvent->GetRunNumber();
+
+  // Multiplicity definition with tracklets
+  Double_t nTracklets = 0;
+  Int_t nTrackletsEta10 = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.);
+  Int_t nTrackletsEta16 = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.6,1.6);
+  nTracklets = (Double_t)nTrackletsEta10;
+  if(fMultiplicityEstimator==kNtrk10to16) { nTracklets = (Double_t)(nTrackletsEta16 - nTrackletsEta10); }
+
+  // Apply the Ntracklets z-vtx data driven correction
+  if(fZvtxCorrectedNtrkEstimator) {
+    TProfile* estimatorAvg = GetEstimatorHistogram(aodEvent);
+    if(estimatorAvg) {
+      Int_t nTrackletsEta10Corr = AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nTrackletsEta10,zPrimVertex,fRefMult); 
+      Int_t nTrackletsEta16Corr = AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nTrackletsEta16,zPrimVertex,fRefMult); 
+      nTracklets = (Double_t)nTrackletsEta10Corr;
+      if(fMultiplicityEstimator==kNtrk10to16) { nTracklets = (Double_t)(nTrackletsEta16Corr - nTrackletsEta10Corr); }
+    }
+  }
+
+
   fWeight=1.;
   if(fUseZWeight) fWeight *= GetZWeight(zMCVertex,runnumber);
   if(fUseNchWeight){
     Int_t nChargedMCPhysicalPrimary=AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(mcArray,-1.0,1.0);
-    Int_t nTracklets = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.);
     if(!fUseTrackletsWeight) fWeight *= GetNchWeight(nChargedMCPhysicalPrimary);
     else fWeight *= GetNchWeight(nTracklets);
     AliDebug(2,Form("Using Nch weights, Mult=%d Weight=%f\n",nChargedMCPhysicalPrimary,fWeight));
   }
+  Double_t eventWeight=fWeight;
 
   if (TMath::Abs(zMCVertex) > fCuts->GetMaxVtxZ()){
     AliDebug(3,Form("z coordinate of MC vertex = %f, it was required to be within [-%f, +%f], skipping event", zMCVertex, fCuts->GetMaxVtxZ(), fCuts->GetMaxVtxZ()));
@@ -683,16 +732,12 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   if(!fIsPPData) centValue = fCuts->GetCentrality(aodEvent);
   cfVtxHF->SetCentralityValue(centValue);  
 	
-  // number of tracklets - multiplicity estimator
-  Double_t countTr10 = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.)); // casted to double because the CF is filled with doubles
-
-  Double_t countTr16 = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.6,1.6));
+  // multiplicity estimator with VZERO
   Double_t vzeroMult=0;
   AliAODVZERO *vzeroAOD = (AliAODVZERO*)aodEvent->GetVZEROData();
   if(vzeroAOD) vzeroMult = vzeroAOD->GetMTotV0A() +  vzeroAOD->GetMTotV0C();
 
-  Double_t multiplicity = countTr10;
-  if(fMultiplicityEstimator==kNtrk10to16) { multiplicity = countTr16 - countTr10; }
+  Double_t multiplicity = nTracklets; // set to the Ntracklet estimator
   if(fMultiplicityEstimator==kVZERO) { multiplicity = vzeroMult; }
 
 
@@ -739,11 +784,11 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
       if (fUseWeight){
 	if (fFuncWeight){ // using user-defined function
 	  AliDebug(2,"Using function");
-	  fWeight = fFuncWeight->Eval(containerInputMC[0]);				     
+	  fWeight = eventWeight*fFuncWeight->Eval(containerInputMC[0]);				     
 	}
 	else{ // using FONLL
 	  AliDebug(2,"Using FONLL");
-	  fWeight = GetWeight(containerInputMC[0]);
+	  fWeight = eventWeight*GetWeight(containerInputMC[0]);
 	}
 	AliDebug(2,Form("pt = %f, weight = %f",containerInputMC[0], fWeight));
       }
@@ -869,11 +914,11 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
       if (fUseWeight){
 	if (fFuncWeight){ // using user-defined function
 	  AliDebug(2, "Using function");
-	  fWeight = fFuncWeight->Eval(containerInput[0]);
+	  fWeight = eventWeight*fFuncWeight->Eval(containerInput[0]);
 	}
 	else{ // using FONLL
 	  AliDebug(2, "Using FONLL");
-	  fWeight = GetWeight(containerInput[0]);
+	  fWeight = eventWeight*GetWeight(containerInput[0]);
 	}
 	AliDebug(2, Form("pt = %f, weight = %f",containerInput[0], fWeight));
       }
@@ -1439,6 +1484,7 @@ Double_t AliCFTaskVertexingHF::GetNchWeight(Int_t nch){
   //  calculates the Nch weight using the measured and generateed Nch distributions
   //
   if(nch<=0) return 0.;
+  if(!fHistoMeasNch || !fHistoMCNch) { AliError("Input histos to evaluate Nch weights missing"); return 0.; }
   Double_t pMeas=fHistoMeasNch->GetBinContent(fHistoMeasNch->FindBin(nch));
   Double_t pMC=fHistoMCNch->GetBinContent(fHistoMCNch->FindBin(nch));
   Double_t weight = pMC>0 ? pMeas/pMC : 0.;
@@ -1528,4 +1574,22 @@ Bool_t AliCFTaskVertexingHF::ProcessLctoV0Bachelor(Int_t recoAnalysisCuts) const
     }
   }
   return keep;
+}
+
+//____________________________________________________________________________
+TProfile* AliCFTaskVertexingHF::GetEstimatorHistogram(const AliVEvent* event){
+  // Get Estimator Histogram from period event->GetRunNumber();
+  //
+  // If you select SPD tracklets in |eta|<1 you should use type == 1
+  //
+
+  Int_t runNo  = event->GetRunNumber();
+  Int_t period = -1;   // 0-LHC10b, 1-LHC10c, 2-LHC10d, 3-LHC10e
+  if(runNo>114930 && runNo<117223) period = 0;
+  if(runNo>119158 && runNo<120830) period = 1;
+  if(runNo>122373 && runNo<126438) period = 2;
+  if(runNo>127711 && runNo<130841) period = 3;
+  if(period<0 || period>3) return 0;
+
+  return fMultEstimatorAvg[period];
 }
