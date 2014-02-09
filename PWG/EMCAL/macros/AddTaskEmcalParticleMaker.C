@@ -40,16 +40,21 @@ AliEmcalParticleMaker* AddTaskEmcalParticleMaker(
   //-------------------------------------------------------
   TString toName(tracksOutName);
   if (!toName.EndsWith(tracksName)) {
-    toName += "_" + tracksName;
+    toName += "_";
+    toName +=tracksName;
   }
   TString coName(clustersOutName);
   if (!coName.EndsWith(clusName)) {
-    coName += "_" + clusName;
+    coName += "_";
+    coName += clusName;
   }
-  TString tname(taskName);
-  tname += "_" + tName + "_" + cName;
+  TString tName(taskName);
+  tName += "_";
+  tName += toName;
+  tName += "_";
+  tName += coName;
 
-  AliEmcalParticleMaker *eTask = new AliEmcalParticleMaker(tname);
+  AliEmcalParticleMaker *eTask = new AliEmcalParticleMaker(tName);
   eTask->SetTracksName(tracksName);
   eTask->SetClusName(clusName);
   eTask->SetTracksOutName(toName);
