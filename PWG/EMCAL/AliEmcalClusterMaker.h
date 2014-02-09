@@ -34,7 +34,7 @@ class AliEmcalClusterMaker : public AliAnalysisTaskEmcal {
   TH2F                  *fEnergyTimeHistBefore;      //!energy/time distribution before
   TH1F                  *fEnergyDistAfter;           //!energy distribution after
   TH2F                  *fEtaPhiDistAfter;           //!eta/phi distribution after
-  TH2F                  *fEnergyTimeHistAfter;      //!energy/time distribution after
+  TH2F                  *fEnergyTimeHistAfter;       //!energy/time distribution after
 
  private:
   AliEmcalClusterMaker(const AliEmcalClusterMaker&);            // not implemented
