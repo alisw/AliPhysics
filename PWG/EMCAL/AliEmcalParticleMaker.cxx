@@ -35,7 +35,6 @@ AliEmcalParticleMaker::AliEmcalParticleMaker(const char *name) :
   fCaloClustersOut(0)
 {
   // Constructor.
-
 }
 
 //________________________________________________________________________
@@ -78,7 +77,9 @@ Bool_t AliEmcalParticleMaker::Run()
     const Int_t Ntracks = fTracks->GetEntries();
     for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
       AliVTrack *track = static_cast<AliVTrack*>(fTracks->At(iTracks));
-      new ((*fTracksOut)[iTracks]) AliEmcalParticle(track, iTracks);
+      AliEmcalParticle *ep = new ((*fTracksOut)[iTracks]) AliEmcalParticle(track, iTracks);
+      if (0&&fCaloClusters)
+	ep->SetMatchedPtr(fCaloClusters);
     }
   }
 
@@ -91,7 +92,9 @@ Bool_t AliEmcalParticleMaker::Run()
       /* Commented because for simplicity prefer to keep indices aligned with clusters (CL)
         if (!cluster->IsEMCAL()) continue;
       */
-      new ((*fCaloClustersOut)[iN++]) AliEmcalParticle(cluster, iClusters, fVertex[0], fVertex[1], fVertex[2]);
+      AliEmcalParticle *ep = new ((*fCaloClustersOut)[iN++]) AliEmcalParticle(cluster, iClusters, fVertex[0], fVertex[1], fVertex[2]);
+      if (0&&fTracks)
+	ep->SetMatchedPtr(fTracks);
     }
   }
   return kTRUE;
