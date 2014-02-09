@@ -38,13 +38,22 @@ AliEmcalParticleMaker* AddTaskEmcalParticleMaker(
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
+  TString toName(tracksOutName);
+  if (!toName.EndsWith(tracksName)) {
+    toName += "_" + tracksName;
+  }
+  TString coName(clustersOutName);
+  if (!coName.EndsWith(clusName)) {
+    coName += "_" + clusName;
+  }
   TString tname(taskName);
-  tname += "_in_" + tracksName + "_" + clusName + "_out_" + tracksOutName + "_" + clustersOutName;
+  tname += "_" + tName + "_" + cName;
+
   AliEmcalParticleMaker *eTask = new AliEmcalParticleMaker(tname);
   eTask->SetTracksName(tracksName);
   eTask->SetClusName(clusName);
-  eTask->SetTracksOutName(tracksOutName);
-  eTask->SetClusOutName(clustersOutName);
+  eTask->SetTracksOutName(toName);
+  eTask->SetClusOutName(coName);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
