@@ -38,11 +38,13 @@ class AliAnalysisTrackingUncertainties : public AliAnalysisTaskSE {
   //
   void           ProcessTrackCutVariation();
   void           ProcessItsTpcMatching();
-  void           Match(const AliESDtrack* tr0, const AliESDtrack* tr1, Int_t & nmatch, Double_t rotate = 0);
+  void           Match(const AliESDtrack* tr0, const AliESDtrack* tr1, Int_t& nmatch, Bool_t excludeMom = kFALSE, Double_t rotate=0);
+
   //
   void           SetESDtrackCuts(AliESDtrackCuts * trackCuts){fESDtrackCuts = trackCuts;};
   void           InitializeTrackCutHistograms();
   //
+  void           ExcludeMomFromChi2ITSTPC(Bool_t ex = kTRUE) { fExcludeMomFromChi2ITSTPC = ex; }
 
 
  private:
@@ -80,6 +82,8 @@ class AliAnalysisTrackingUncertainties : public AliAnalysisTaskSE {
   //
   const AliESDtrack * fMatchTr[kMaxMatch];
   Double_t fMatchChi[kMaxMatch];
+  Bool_t fExcludeMomFromChi2ITSTPC; // ITS->TPC : exclude momentum from matching chi2 calculation  
+
   //
   //
   AliAnalysisTrackingUncertainties(const AliAnalysisTrackingUncertainties&); 
