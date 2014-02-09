@@ -84,8 +84,9 @@ void AliEmcalClusTrackMatcherTask::ExecOnce()
     cont->SetClassName("AliEmcalParticle");
     // make sure objects are not double matched
     TClonesArray *dummy = new TClonesArray("TObject",0);
-    dummy->SetName(Form("%s_matched", cont->GetName()));
+    dummy->SetName(Form("%s_matched", cont->GetArrayName().Data()));
     AddObjectToEvent(dummy);
+    // get pointer to original collections
     TString tmp(cont->GetName());
     TObjArray *arr = tmp.Tokenize("_");
     if (arr) {
