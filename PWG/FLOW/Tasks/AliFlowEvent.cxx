@@ -628,10 +628,11 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* esd,
         const AliESDVertex *vertexSPD = esd->GetPrimaryVertexSPD();
         const AliESDVertex *vertexTPC = esd->GetPrimaryVertexTPC();
 
+        AliExternalTrackParam copy(*tpcTrack);
         if(hybrid)
-          tpcTrack->PropagateToDCA(vertexSPD,esd->GetMagneticField(),100.,dca,cov);
+          copy.PropagateToDCA(vertexSPD,esd->GetMagneticField(),100.,dca,cov);
         else
-          tpcTrack->PropagateToDCA(vertexTPC,esd->GetMagneticField(),100.,dca,cov);
+          copy.PropagateToDCA(vertexTPC,esd->GetMagneticField(),100.,dca,cov);
 
 //        dca3D = TMath::Sqrt(TMath::Power(dca[0],2)+TMath::Power(dca[1],2));   FIXME unused variable
 
