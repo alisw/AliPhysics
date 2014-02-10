@@ -8,6 +8,29 @@ AliAnalysisTask* AddTaskQAHighPtDeDx(Bool_t AnalysisMC = kFALSE,
 			                         Bool_t ispileuprej = kFALSE
                                     )
 {
+
+  /////////////////////////////////////////
+  // Few notes to set the wagon in a train
+  // For pp collisions:
+  //       Bool_t AnalysisMC = kFALSE,
+  //       Int_t typerun =0,
+  //       TString  type ="AOD",
+  //       UInt_t kTriggerInt = AliVEvent::kMB,
+  //       Float_t minCent = 0.,//This does not affect pp
+  //       Float_t maxCent = 80.,//This does not affect pp
+  //       char *centralityEstimator = "V0A",//for pPb V0A for PbPb V0M. This does not affect pp
+  //       Bool_t ispileuprej = kFALSE
+  // For PbPb collisions:
+  //       Bool_t AnalysisMC = kFALSE,
+  //       Int_t typerun =1,
+  //       TString  type ="AOD",
+  //       UInt_t kTriggerInt = AliVEvent::kMB,
+  //       Float_t minCent = 0.,
+  //       Float_t maxCent = 80.,
+  //       char *centralityEstimator = "V0M",
+  //       Bool_t ispileuprej = kFALSE
+  /////////////////////////////////////////
+    
   // Creates a pid task and adds it to the analysis manager
   
   // Get the pointer to the existing analysis manager via the static
