@@ -36,80 +36,76 @@ class AliEMCALGeometry;
 
 class AliEMCALTracker : public AliTracker 
 {
-public:
+ public:
+  AliEMCALTracker();
+  AliEMCALTracker(const AliEMCALTracker &t);
+  AliEMCALTracker& operator=(const AliEMCALTracker &source);
+  virtual ~AliEMCALTracker() {Clear();}
+	
+  virtual void        Clear(Option_t *option="ALL");
+  virtual Int_t       Clusters2Tracks(AliESDEvent*) {return -1;}
+          void        InitParameters();
+  virtual Int_t       LoadClusters(TTree*);
+          Int_t       LoadClusters(AliESDEvent* esd);
+	  Int_t       LoadTracks(AliESDEvent* esd);
+  virtual Int_t       PropagateBack(AliESDEvent* esd);
+  virtual Int_t       RefitInward(AliESDEvent*) {return -1;}
+  virtual void        UnloadClusters();
+  virtual AliCluster* GetCluster(Int_t) const {return NULL;}
+          void        SetCutEta(Double_t value) {fCutEta=value;}
+	  void        SetCutPhi(Double_t value) {fCutPhi=value;}
+	  void        SetGeometry(AliEMCALGeometry *geom) {fGeom=geom;}
+	  void        SetCutPt(Double_t value)   {fCutPt=value;}
+	  void        SetCutNITS(Double_t value) {fCutNITS=value;}
+	  void        SetCutNTPC(Double_t value) {fCutNTPC=value;}
+	  void        SetStepLength(Float_t length) {fStep=length;}
+	  void        SetTrackCorrectionMode(Option_t *option);
+	  void        SetEMCalSurfaceDistance(Double_t d) {fEMCalSurfaceDistance = d;}
 
-	AliEMCALTracker();
-	AliEMCALTracker(const AliEMCALTracker &t);
-	AliEMCALTracker& operator=(const AliEMCALTracker &source);
+  enum {	kUnmatched = -99999 };
 	
-	virtual ~AliEMCALTracker() {Clear();}
-	
-	virtual void        Clear(Option_t *option="ALL");
-	virtual Int_t       Clusters2Tracks(AliESDEvent*) {return -1;}
-	        void        InitParameters();
-	virtual Int_t       LoadClusters(TTree*);
-	        Int_t       LoadClusters(AliESDEvent* esd);
-	        Int_t       LoadTracks(AliESDEvent* esd);
-	virtual Int_t       PropagateBack(AliESDEvent* esd);
-	virtual Int_t       RefitInward(AliESDEvent*) {return -1;}
-	virtual void        UnloadClusters();
-	virtual AliCluster* GetCluster(Int_t) const {return NULL;}
-	void                SetCutEta(Double_t value) {fCutEta=value;}
-	void                SetCutPhi(Double_t value) {fCutPhi=value;}
-	void                SetGeometry(AliEMCALGeometry *geom) {fGeom=geom;}
-	void                SetCutPt(Double_t value)   {fCutPt=value;}
-	void                SetCutNITS(Double_t value) {fCutNITS=value;}
-	void                SetCutNTPC(Double_t value) {fCutNTPC=value;}
-	void                SetStepLength(Float_t length) {fStep=length;}
-	void                SetTrackCorrectionMode(Option_t *option);
-	void                SetEMCalSurfaceDistance(Double_t d) {fEMCalSurfaceDistance = d;}
-
-	enum {	kUnmatched = -99999 };
-	
-	class  AliEMCALMatchCluster : public TObject
-	{
-	public:
-		AliEMCALMatchCluster(Int_t ID, AliEMCALRecPoint *recPoint);
-		AliEMCALMatchCluster(Int_t ID, AliESDCaloCluster *caloCluster);
-		virtual ~AliEMCALMatchCluster() { }
-		//----------------------------------------------------------------------------
-		Int_t     Index() const {return fIndex;}
-		Double_t  X() const {return fX;}
-		Double_t  Y() const {return fY;} 
-		Double_t  Z() const {return fZ;}
-	private:
-		Int_t     fIndex;  // index of cluster in its native container (ESD or TClonesArray)
-		Double_t  fX;      // global X position
-		Double_t  fY;      // global Y position
-		Double_t  fZ;      // global Z position
-	};
+  class  AliEMCALMatchCluster : public TObject
+  {
+   public:
+    AliEMCALMatchCluster(Int_t ID, AliEMCALRecPoint *recPoint);
+    AliEMCALMatchCluster(Int_t ID, AliESDCaloCluster *caloCluster);
+    virtual ~AliEMCALMatchCluster() { }
+    //----------------------------------------------------------------------------
+    Int_t     Index() const {return fIndex;}
+    Double_t  X() const {return fX;}
+    Double_t  Y() const {return fY;} 
+    Double_t  Z() const {return fZ;}
+   private:
+    Int_t     fIndex;  // index of cluster in its native container (ESD or TClonesArray)
+    Double_t  fX;      // global X position
+    Double_t  fY;      // global Y position
+    Double_t  fZ;      // global Z position
+  };
    
-private:
-	Int_t  FindMatchedCluster(AliESDtrack *track);
-	
-	enum ETrackCorr { 
-		kTrackCorrNone  = 0, // do not correct for energy loss
-		kTrackCorrMMB   = 1, // use MeanMaterialBudget() function to evaluate correction
-	};
+ private:
+  Int_t  FindMatchedCluster(AliESDtrack *track);
+  enum ETrackCorr { 
+    kTrackCorrNone  = 0, // do not correct for energy loss
+    kTrackCorrMMB   = 1, // use MeanMaterialBudget() function to evaluate correction
+  };
 
-	Double_t    fCutPt;           // mimimum pT cut on tracks
-	Double_t    fCutNITS;         // mimimum number of track hits in the ITS
-	Double_t    fCutNTPC;         // mimimum number of track hits in the TPC
+  Double_t    fCutPt;           // mimimum pT cut on tracks
+  Double_t    fCutNITS;         // mimimum number of track hits in the ITS
+  Double_t    fCutNTPC;         // mimimum number of track hits in the TPC
 	
-	Float_t     fStep;            // Length of each step in propagation
-	ETrackCorr  fTrackCorrMode;   // Material budget correction mode
-	Float_t     fEMCalSurfaceDistance; // EMCal surface distance
-	Double_t    fClusterWindow;   // Select clusters in the window to be matched to tracks
-	Double_t    fCutEta;	      // cut on eta difference
-	Double_t    fCutPhi;	      // cut on phi difference
-	Bool_t	    fITSTrackSA;      // If ITS Tracks	
+  Float_t     fStep;            // Length of each step in propagation
+  ETrackCorr  fTrackCorrMode;   // Material budget correction mode
+  Float_t     fEMCalSurfaceDistance; // EMCal surface distance
+  Double_t    fClusterWindow;   // Select clusters in the window to be matched to tracks
+  Double_t    fCutEta;	      // cut on eta difference
+  Double_t    fCutPhi;	      // cut on phi difference
+  Bool_t	    fITSTrackSA;      // If ITS Tracks	
 	
-	TObjArray  *fTracks;          //! collection of tracks
-	TObjArray  *fClusters;        //! collection of EMCAL clusters (ESDCaloCluster or EMCALRecPoint)
+  TObjArray  *fTracks;          //! collection of tracks
+  TObjArray  *fClusters;        //! collection of EMCAL clusters (ESDCaloCluster or EMCALRecPoint)
 	
-	AliEMCALGeometry *fGeom;      //! EMCAL geometry
-	
-	ClassDef(AliEMCALTracker, 7)  // EMCAL "tracker"
+  AliEMCALGeometry *fGeom;      //! EMCAL geometry
+  
+  ClassDef(AliEMCALTracker, 7)  // EMCAL "tracker"
 };
-
 #endif

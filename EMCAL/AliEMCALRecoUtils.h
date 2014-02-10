@@ -46,7 +46,6 @@ public:
   virtual ~AliEMCALRecoUtils() ;  
   
   void     InitParameters();
-  
   void     Print(const Option_t*) const;
 
   //enums
@@ -59,74 +58,54 @@ public:
   //-----------------------------------------------------
   //Position recalculation
   //-----------------------------------------------------
-
   void     RecalculateClusterPosition               (const AliEMCALGeometry *geom, AliVCaloCells* cells, AliVCluster* clu); 
   void     RecalculateClusterPositionFromTowerIndex (const AliEMCALGeometry *geom, AliVCaloCells* cells, AliVCluster* clu); 
   void     RecalculateClusterPositionFromTowerGlobal(const AliEMCALGeometry *geom, AliVCaloCells* cells, AliVCluster* clu); 
-  
   Float_t  GetCellWeight(Float_t eCell, Float_t eCluster) const { if (eCell > 0 && eCluster > 0) return TMath::Max( 0., fW0 + TMath::Log( eCell / eCluster )) ;
-                                                                              else                           return 0.                                                    ; }
-  
-  Float_t  GetDepth(Float_t eCluster, Int_t iParticle, Int_t iSM) const ; 
-  
+                                                                  else                           return 0.                                                    ; }
+  Float_t  GetDepth(Float_t eCluster, Int_t iParticle, Int_t iSM) const; 
   void     GetMaxEnergyCell(const AliEMCALGeometry *geom, AliVCaloCells* cells, const AliVCluster* clu, 
                             Int_t & absId,  Int_t& iSupMod, Int_t& ieta, Int_t& iphi, Bool_t &shared);
   
   Float_t  GetMisalTransShift(Int_t i)       const { if(i < 15 ) { return fMisalTransShift[i] ; }
-                                                           else        { AliInfo(Form("Index %d larger than 15, do nothing\n",i)) ; 
-                                                                         return 0.                  ; } }
-  Float_t* GetMisalTransShiftArray()                     { return fMisalTransShift ; }
-
-  void     SetMisalTransShift(Int_t i, Float_t shift) {
-                                                           if(i < 15 ) { fMisalTransShift[i] = shift ; }
-                                                           else        { AliInfo(Form("Index %d larger than 15, do nothing\n",i)) ; } }
-  void     SetMisalTransShiftArray(Float_t * misal)               { for(Int_t i = 0; i < 15; i++) fMisalTransShift[i] = misal[i]  ; }
-
-  Float_t  GetMisalRotShift(Int_t i)         const { if(i < 15 ) { return fMisalRotShift[i]    ; }
-                                                           else        { AliInfo(Form("Index %d larger than 15, do nothing\n",i)) ; 
-                                                                         return 0.                   ; } }
-  
-  Float_t* GetMisalRotShiftArray()                       { return fMisalRotShift                     ; }
-  
-  void     SetMisalRotShift(Int_t i, Float_t shift) {
-                                                           if(i < 15 ) { fMisalRotShift[i] = shift   ; }
-                                                           else        { AliInfo(Form("Index %d larger than 15, do nothing\n",i)) ; } }
-  
-  void     SetMisalRotShiftArray(Float_t * misal)        { for(Int_t i = 0; i < 15; i++)fMisalRotShift[i] = misal[i] ; }
-  
+                                                     else        { AliInfo(Form("Index %d larger than 15, do nothing\n",i)) ; 
+                                                                   return 0.                  ; } }
+  Float_t* GetMisalTransShiftArray()                  { return fMisalTransShift ; }
+  void     SetMisalTransShift(Int_t i, Float_t shift) { if(i < 15 ) { fMisalTransShift[i] = shift ; }
+                                                        else        { AliInfo(Form("Index %d larger than 15, do nothing\n",i)) ; } }
+  void     SetMisalTransShiftArray(Float_t * misal)   { for(Int_t i = 0; i < 15; i++) fMisalTransShift[i] = misal[i]  ; }
+  Float_t  GetMisalRotShift(Int_t i)         const    { if(i < 15 ) { return fMisalRotShift[i]    ; }
+                                                        else        { AliInfo(Form("Index %d larger than 15, do nothing\n",i)) ; 
+                                                                      return 0.                   ; } }
+  Float_t* GetMisalRotShiftArray()                    { return fMisalRotShift                     ; }
+  void     SetMisalRotShift(Int_t i, Float_t shift)   { if(i < 15 ) { fMisalRotShift[i] = shift   ; }
+                                                        else        { AliInfo(Form("Index %d larger than 15, do nothing\n",i)) ; } }
+  void     SetMisalRotShiftArray(Float_t * misal)     { for(Int_t i = 0; i < 15; i++)fMisalRotShift[i] = misal[i] ; }
   Int_t    GetParticleType()                       const { return  fParticleType    ; }
   void     SetParticleType(Int_t particle)               { fParticleType = particle ; }
-  
   Int_t    GetPositionAlgorithm()                  const { return fPosAlgo          ; }
   void     SetPositionAlgorithm(Int_t alg)               { fPosAlgo = alg           ; }
-  
   Float_t  GetW0()                                 const { return fW0               ; }
   void     SetW0(Float_t w0)                             { fW0  = w0                ; }
 
   //-----------------------------------------------------
   // Non Linearity
   //-----------------------------------------------------
-
   Float_t  CorrectClusterEnergyLinearity(AliVCluster* clu) ;
-  
   Float_t  GetNonLinearityParam(Int_t i)     const { if(i < 7 && i >=0 ){ return fNonLinearityParams[i]  ; }
-                                                   else  { AliInfo(Form("Index %d larger than 6 or negative, do nothing\n",i)) ;
-                                                                       return 0.                     ; } }
-  void     SetNonLinearityParam(Int_t i, Float_t param) {
-                                                           if(i < 7 && i >=0 ){ fNonLinearityParams[i] = param ; }
+                                                     else  { AliInfo(Form("Index %d larger than 6 or negative, do nothing\n",i)) ;
+                                                                         return 0.                     ; } }
+  void     SetNonLinearityParam(Int_t i, Float_t param)  { if(i < 7 && i >=0 ){ fNonLinearityParams[i] = param ; }
                                                            else { AliInfo(Form("Index %d larger than 6 or negative, do nothing\n",i)) ; } }
   void     InitNonLinearityParam();
-
   Int_t    GetNonLinearityFunction() const               { return fNonLinearityFunction    ; }
   void     SetNonLinearityFunction(Int_t fun)            { fNonLinearityFunction = fun     ; InitNonLinearityParam() ; }
-
   void     SetNonLinearityThreshold(Int_t threshold)     { fNonLinearThreshold = threshold ; } //only for Alexie's non linearity correction
   Int_t    GetNonLinearityThreshold()              const { return fNonLinearThreshold      ; }
-//  
+
   //-----------------------------------------------------
   // MC clusters energy smearing
   //-----------------------------------------------------
-  
   Float_t  SmearClusterEnergy(const AliVCluster* clu) ;
   void     SwitchOnClusterEnergySmearing()               { fSmearClusterEnergy = kTRUE         ; }
   void     SwitchOffClusterEnergySmearing()              { fSmearClusterEnergy = kFALSE        ; }
@@ -149,23 +128,19 @@ public:
                                                            if(!fEMCALRecalibrationFactors)InitEMCALRecalibrationFactors() ; }
   void     InitEMCALRecalibrationFactors() ;
   TObjArray* GetEMCALRecalibrationFactorsArray()   const { return fEMCALRecalibrationFactors ; }
-
   TH2F *   GetEMCALChannelRecalibrationFactors(Int_t iSM)     const { return (TH2F*)fEMCALRecalibrationFactors->At(iSM) ; }	
   void     SetEMCALChannelRecalibrationFactors(TObjArray *map)      { fEMCALRecalibrationFactors = map                  ; }
   void     SetEMCALChannelRecalibrationFactors(Int_t iSM , TH2F* h) { fEMCALRecalibrationFactors->AddAt(h,iSM)          ; }
-  
   Float_t  GetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow) const { 
     if(fEMCALRecalibrationFactors) 
       return (Float_t) ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->GetBinContent(iCol,iRow); 
     else return 1 ; } 
-	
   void     SetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow, Double_t c = 1) { 
     if(!fEMCALRecalibrationFactors) InitEMCALRecalibrationFactors() ;
     ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->SetBinContent(iCol,iRow,c) ; }
   
   //Recalibrate channels energy with run dependent corrections
   Bool_t   IsRunDepRecalibrationOn()               const { return fUseRunCorrectionFactors ; }
-
   void     SwitchOffRunDepCorrection()                   { fUseRunCorrectionFactors = kFALSE ; }
   void     SwitchOnRunDepCorrection()                    { fUseRunCorrectionFactors = kTRUE  ; 
                                                            SwitchOnRecalibration()           ; }      
@@ -175,7 +150,7 @@ public:
   Bool_t   IsTimeRecalibrationOn()                 const { return fTimeRecalibration   ; }
   void     SwitchOffTimeRecalibration()                  { fTimeRecalibration = kFALSE ; }
   void     SwitchOnTimeRecalibration()                   { fTimeRecalibration = kTRUE  ; 
-    if(!fEMCALTimeRecalibrationFactors)InitEMCALTimeRecalibrationFactors() ; }
+                                                           if(!fEMCALTimeRecalibrationFactors)InitEMCALTimeRecalibrationFactors() ; }
   void     InitEMCALTimeRecalibrationFactors() ;
   TObjArray* GetEMCALTimeRecalibrationFactorsArray() const { return fEMCALTimeRecalibrationFactors ; }
 
@@ -183,7 +158,6 @@ public:
     if(fEMCALTimeRecalibrationFactors) 
       return (Float_t) ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc))->GetBinContent(absID); 
     else return 0 ; } 
-	
   void     SetEMCALChannelTimeRecalibrationFactor(Int_t bc, Int_t absID, Double_t c = 0) { 
     if(!fEMCALTimeRecalibrationFactors) InitEMCALTimeRecalibrationFactors() ;
     ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc))->SetBinContent(absID,c) ; }  
@@ -195,7 +169,6 @@ public:
   //-----------------------------------------------------
   // Modules fiducial region, remove clusters in borders
   //-----------------------------------------------------
-
   Bool_t   CheckCellFiducialRegion(const AliEMCALGeometry* geom, 
                                    const AliVCluster* cluster, 
                                    AliVCaloCells* cells) ;
@@ -209,54 +182,42 @@ public:
   //-----------------------------------------------------
   // Bad channels
   //-----------------------------------------------------
-
   Bool_t   IsBadChannelsRemovalSwitchedOn()        const { return fRemoveBadChannels       ; }
   void     SwitchOffBadChannelsRemoval()                 { fRemoveBadChannels = kFALSE     ; }
   void     SwitchOnBadChannelsRemoval ()                 { fRemoveBadChannels = kTRUE ; 
                                                            if(!fEMCALBadChannelMap)InitEMCALBadChannelStatusMap() ; }
-	
   Bool_t   IsDistanceToBadChannelRecalculated()    const { return fRecalDistToBadChannels   ; }
   void     SwitchOffDistToBadChannelRecalculation()      { fRecalDistToBadChannels = kFALSE ; }
   void     SwitchOnDistToBadChannelRecalculation()       { fRecalDistToBadChannels = kTRUE  ; 
                                                            if(!fEMCALBadChannelMap)InitEMCALBadChannelStatusMap() ; }
-  
-  TObjArray* GetEMCALBadChannelStatusMapArray()     const { return fEMCALBadChannelMap ; }
+  TObjArray* GetEMCALBadChannelStatusMapArray()    const { return fEMCALBadChannelMap ; }
   void     InitEMCALBadChannelStatusMap() ;
-	
   Int_t    GetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow) const { 
     if(fEMCALBadChannelMap) return (Int_t) ((TH2I*)fEMCALBadChannelMap->At(iSM))->GetBinContent(iCol,iRow); 
     else return 0;}//Channel is ok by default
-	
   void     SetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow, Double_t c = 1) { 
-                                                           if(!fEMCALBadChannelMap)InitEMCALBadChannelStatusMap()               ;
-                                                           ((TH2I*)fEMCALBadChannelMap->At(iSM))->SetBinContent(iCol,iRow,c)    ; }
-	
+    if(!fEMCALBadChannelMap)InitEMCALBadChannelStatusMap()               ;
+    ((TH2I*)fEMCALBadChannelMap->At(iSM))->SetBinContent(iCol,iRow,c)    ; }
   TH2I *   GetEMCALChannelStatusMap(Int_t iSM)     const { return (TH2I*)fEMCALBadChannelMap->At(iSM) ; }
   void     SetEMCALChannelStatusMap(TObjArray *map)      { fEMCALBadChannelMap = map                  ; }
   void     SetEMCALChannelStatusMap(Int_t iSM , TH2I* h) { fEMCALBadChannelMap->AddAt(h,iSM)          ; }
-
   Bool_t   ClusterContainsBadChannel(const AliEMCALGeometry* geom, const UShort_t* cellList, Int_t nCells);
  
   //-----------------------------------------------------
   // Recalculate other cluster parameters
   //-----------------------------------------------------
-
   void     RecalculateClusterDistanceToBadChannel (const AliEMCALGeometry * geom, AliVCaloCells* cells, AliVCluster * cluster);
   void     RecalculateClusterShowerShapeParameters(const AliEMCALGeometry * geom, AliVCaloCells* cells, AliVCluster * cluster);
   void     RecalculateClusterShowerShapeParameters(const AliEMCALGeometry * geom, AliVCaloCells* cells, AliVCluster * cluster,
                                                    Float_t & l0,   Float_t & l1,   
                                                    Float_t & disp, Float_t & dEta, Float_t & dPhi,
                                                    Float_t & sEta, Float_t & sPhi, Float_t & sEtaPhi);
-
   void     RecalculateClusterPID(AliVCluster * cluster);
-
   AliEMCALPIDUtils * GetPIDUtils() { return fPIDUtils;}
-
 
   //----------------------------------------------------
   // Track matching
   //----------------------------------------------------
-
   void     FindMatches(AliVEvent *event, TObjArray * clusterArr=0x0, const AliEMCALGeometry *geom=0x0);
   Int_t    FindMatchedClusterInEvent(const AliESDtrack *track, const AliVEvent *event, 
                                      const AliEMCALGeometry *geom, Float_t &dEta, Float_t &dPhi);
@@ -264,10 +225,8 @@ public:
                                           AliExternalTrackParam *trkParam, 
                                           const TObjArray * clusterArr, 
                                           Float_t &dEta, Float_t &dPhi);
-
   static Bool_t ExtrapolateTrackToEMCalSurface(AliVTrack *track, /*note, on success the call will change the track*/
                                                Double_t emcalR=440, Double_t mass=0.1396, Double_t step=20); 
-  
   static Bool_t ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *trkParam, 
                                                Double_t emcalR, Double_t mass, Double_t step, 
                                                Float_t &eta, Float_t &phi, Float_t &pt);
@@ -279,26 +238,20 @@ public:
                                            Float_t &tmpEta, Float_t &tmpPhi);
   Bool_t        ExtrapolateTrackToCluster (AliExternalTrackParam *trkParam, const AliVCluster *cluster, 
                                            Float_t &tmpEta, Float_t &tmpPhi);
-
   UInt_t   FindMatchedPosForCluster(Int_t clsIndex) const;
   UInt_t   FindMatchedPosForTrack  (Int_t trkIndex) const;
-  
   void     GetMatchedResiduals       (Int_t clsIndex, Float_t &dEta, Float_t &dPhi);
   void     GetMatchedClusterResiduals(Int_t trkIndex, Float_t &dEta, Float_t &dPhi);
   Int_t    GetMatchedTrackIndex(Int_t clsIndex);
   Int_t    GetMatchedClusterIndex(Int_t trkIndex);
-  
   Bool_t   IsClusterMatched(Int_t clsIndex)         const;
   Bool_t   IsTrackMatched  (Int_t trkIndex)         const;
-
   void     SetClusterMatchedToTrack (const AliVEvent *event);
   void     SetTracksMatchedToCluster(const AliVEvent *event);  
-
   void     SwitchOnCutEtaPhiSum()                     { fCutEtaPhiSum      = kTRUE    ; 
                                                         fCutEtaPhiSeparate = kFALSE   ; }
   void     SwitchOnCutEtaPhiSeparate()                { fCutEtaPhiSeparate = kTRUE    ;
                                                         fCutEtaPhiSum      = kFALSE   ; }
-
   Float_t  GetCutR()                            const { return fCutR                  ; }
   Float_t  GetCutEta()                          const { return fCutEta                ; }
   Float_t  GetCutPhi()                          const { return fCutPhi                ; }
@@ -309,40 +262,33 @@ public:
   void     SetClusterWindow(Double_t window)          { fClusterWindow = window       ; }
   void     SetCutZ(Float_t cutZ)                      { printf("Obsolete fucntion of cutZ=%1.1f\n",cutZ) ; } //Obsolete
   void     SetEMCalSurfaceDistance(Double_t d)        { fEMCalSurfaceDistance = d     ; }
-
   Double_t GetMass()                            const { return fMass                  ; }
   Double_t GetStep()                            const { return fStepCluster           ; }
   Double_t GetStepSurface()                     const { return fStepSurface           ; }
   void     SetMass(Double_t mass)                     { fMass = mass                  ; }
   void     SetStep(Double_t step)                     { fStepSurface = step           ; }
   void     SetStepCluster(Double_t step)              { fStepCluster = step           ; }
- 
   void     SetITSTrackSA(Bool_t isITS)                { fITSTrackSA = isITS           ; } //Special Handle of AliExternTrackParam    
   
   // Exotic cells / clusters
-  
   Bool_t   IsExoticCell(Int_t absId, AliVCaloCells* cells, Int_t bc =-1) ;
   void     SwitchOnRejectExoticCell()                 { fRejectExoticCells = kTRUE     ; }
   void     SwitchOffRejectExoticCell()                { fRejectExoticCells = kFALSE    ; } 
   Bool_t   IsRejectExoticCell()                 const { return fRejectExoticCells      ; }
-   
   Float_t  GetECross(Int_t absID, Double_t tcell,
                      AliVCaloCells* cells, Int_t bc);
-  
   Float_t  GetExoticCellFractionCut()           const { return fExoticCellFraction     ; }
   Float_t  GetExoticCellDiffTimeCut()           const { return fExoticCellDiffTime     ; }
   Float_t  GetExoticCellMinAmplitudeCut()       const { return fExoticCellMinAmplitude ; }
-  
   void     SetExoticCellFractionCut(Float_t f)        { fExoticCellFraction     = f    ; }
   void     SetExoticCellDiffTimeCut(Float_t dt)       { fExoticCellDiffTime     = dt   ; }
   void     SetExoticCellMinAmplitudeCut(Float_t ma)   { fExoticCellMinAmplitude = ma   ; }
-  
   Bool_t   IsExoticCluster(const AliVCluster *cluster, AliVCaloCells* cells, Int_t bc=0) ;
   void     SwitchOnRejectExoticCluster()              { fRejectExoticCluster = kTRUE   ;
                                                         fRejectExoticCells   = kTRUE   ; }
   void     SwitchOffRejectExoticCluster()             { fRejectExoticCluster = kFALSE  ; }
   Bool_t   IsRejectExoticCluster()              const { return fRejectExoticCluster    ; }
-  
+
   //Cluster cut
   Bool_t   IsGoodCluster(AliVCluster *cluster, const AliEMCALGeometry *geom, 
                          AliVCaloCells* cells, Int_t bc =-1);
@@ -361,7 +307,7 @@ public:
   void     SwitchOnAODTPCOnlyTracksMatch()           { fAODTPCOnlyTracks        = kTRUE  ; SwitchOffAODHybridTracksMatch()  ; }
   void     SetAODTrackFilterMask( UInt_t mask)       { fAODFilterMask           = mask   ;
                                                        SwitchOffAODTPCOnlyTracksMatch()  ; SwitchOffAODHybridTracksMatch()  ; }
-  
+
   // track quality cut setters
   void     SetMinTrackPt(Double_t pt=0)              { fCutMinTrackPt           = pt   ; }
   void     SetMinNClustersTPC(Int_t min=-1)          { fCutMinNClusterTPC       = min  ; }
@@ -477,11 +423,8 @@ private:
   Bool_t     fCutRequireITSStandAlone;   // Require ITSStandAlone
   Bool_t     fCutRequireITSpureSA; 	 // ITS pure standalone tracks
   
-  
   ClassDef(AliEMCALRecoUtils, 21)
-  
 };
-
 #endif // ALIEMCALRECOUTILS_H
 
 
