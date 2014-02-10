@@ -21,6 +21,7 @@ private:
 
   AliTaskCDBconnect(const AliTaskCDBconnect &other);
   AliTaskCDBconnect& operator=(const AliTaskCDBconnect &other);
+
   void                      InitGRP();
   //
 public:
