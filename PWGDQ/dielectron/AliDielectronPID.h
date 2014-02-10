@@ -27,6 +27,7 @@ class TF1;
 class TList;
 class AliVTrack;
 class TGraph;
+class THnBase;
 class AliPIDResponse;
 class AliDielectronVarManager;
 class AliDielectronVarCuts;
@@ -59,7 +60,11 @@ public:
   void AddCut(DetType det, AliPID::EParticleType type, Double_t nSigmaLow, Double_t nSigmaUp, Double_t min, Double_t max, Bool_t exclude, UInt_t pidBitType,              TF1 * const funSigma);
   void AddCut(DetType det, AliPID::EParticleType type, Double_t nSigmaLow, Double_t nSigmaUp,
   	      AliDielectronVarCuts *varcuts, Bool_t exclude=kFALSE, UInt_t pidBitType=AliDielectronPID::kRequire );
-  
+
+  void AddCut(DetType det, AliPID::EParticleType type, THnBase * const histLow, Double_t nSigmaUp,
+	       Double_t min=0, Double_t max=0, Bool_t exclude=kFALSE,
+	       UInt_t pidBitType=AliDielectronPID::kRequire, Int_t var=-1);
+
   void SetDefaults(Int_t def);
 
   //
@@ -123,8 +128,9 @@ private:
 
   static Double_t GetPIDCorr(const AliVTrack *track, TF1 *fun);
   
+  THnBase* fMapElectronCutLow[kNmaxPID];  //map for the electron lower cut in units of n-sigma widths 1 centered to zero
   Bool_t IsSelectedITS(AliVTrack * const part, Int_t icut);
-  Bool_t IsSelectedTPC(AliVTrack * const part, Int_t icut);
+  Bool_t IsSelectedTPC(AliVTrack * const part, Int_t icut, Double_t *values);
   Bool_t IsSelectedTRD(AliVTrack * const part, Int_t icut);
   Bool_t IsSelectedTRDeleEff(AliVTrack * const part, Int_t icut, AliTRDPIDResponse::ETRDPIDMethod PIDmethod=AliTRDPIDResponse::kLQ1D);
   Bool_t IsSelectedTOF(AliVTrack * const part, Int_t icut);
@@ -133,7 +139,7 @@ private:
   AliDielectronPID(const AliDielectronPID &c);
   AliDielectronPID &operator=(const AliDielectronPID &c);
 
-  ClassDef(AliDielectronPID,5)         // Dielectron PID
+  ClassDef(AliDielectronPID,6)         // Dielectron PID
 };
 
 #endif

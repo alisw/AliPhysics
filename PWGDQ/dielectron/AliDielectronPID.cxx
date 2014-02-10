@@ -28,6 +28,7 @@ Detailed description
 #include <TMath.h>
 #include <TF1.h>
 #include <TGraph.h>
+#include <THnBase.h>
 
 #include <AliVTrack.h>
 #include <AliVCluster.h>
@@ -78,6 +79,7 @@ AliDielectronPID::AliDielectronPID() :
     fSigmaFunUp[icut]=0;
     fFunSigma[icut]=0x0;
     fVarCuts[icut]=0x0;
+    fMapElectronCutLow[icut]=0x0;
   }
 }
 
@@ -106,6 +108,7 @@ AliDielectronPID::AliDielectronPID(const char* name, const char* title) :
     fSigmaFunUp[icut]=0;
     fFunSigma[icut]=0x0;
     fVarCuts[icut]=0x0;
+    fMapElectronCutLow[icut]=0x0;
   }
 }
 
@@ -224,6 +227,21 @@ void AliDielectronPID::AddCut(DetType det, AliPID::EParticleType type, Double_t 
 }
 
 //______________________________________________
+void AliDielectronPID::AddCut(DetType det, AliPID::EParticleType type, THnBase * const histLow, Double_t nSigmaUp,
+                              Double_t min/*=0*/, Double_t max/*=0*/, Bool_t exclude/*=kFALSE*/,
+                              UInt_t pidBitType/*=AliDielectronPID::kRequire*/, Int_t var/*=-1*/)
+{
+  //
+  // cut using a THnBase as a lower cut
+  //
+  if(histLow==0x0){
+    AliError("A valid histogram is required for the lower cut. Not adding the cut!");
+    return;
+  }
+  fMapElectronCutLow[fNcuts]=histLow;
+  AddCut(det,type,0.,nSigmaUp,min,max,exclude,pidBitType,var);
+}
+//______________________________________________
 void AliDielectronPID::AddCut(DetType det, AliPID::EParticleType type, Double_t nSigmaLow, Double_t nSigmaUp,
                               AliDielectronVarCuts *var, Bool_t exclude/*=kFALSE*/,
                               UInt_t pidBitType/*=AliDielectronPID::kRequire*/)
@@ -321,7 +339,7 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
       selected = IsSelectedITS(part,icut);
       break;
     case kTPC:
-      selected = IsSelectedTPC(part,icut);
+      selected = IsSelectedTPC(part,icut,values);
       break;
     case kTRD:
       selected = IsSelectedTRD(part,icut);
@@ -382,7 +400,7 @@ Bool_t AliDielectronPID::IsSelectedITS(AliVTrack * const part, Int_t icut)
 }
 
 //______________________________________________
-Bool_t AliDielectronPID::IsSelectedTPC(AliVTrack * const part, Int_t icut)
+Bool_t AliDielectronPID::IsSelectedTPC(AliVTrack * const part, Int_t icut, Double_t *values)
 {
   //
   // TPC part of the PID check
@@ -392,21 +410,44 @@ Bool_t AliDielectronPID::IsSelectedTPC(AliVTrack * const part, Int_t icut)
   if (fRequirePIDbit[icut]==AliDielectronPID::kRequire&&(pidStatus!=AliPIDResponse::kDetPidOk)) return kFALSE;
   if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&(pidStatus!=AliPIDResponse::kDetPidOk)) return kTRUE;
 
-  Double_t mom=part->GetTPCmomentum();
   
   Float_t numberOfSigmas=fPIDResponse->NumberOfSigmasTPC(part, fPartType[icut]);
 
+  // eta corrections
   if (fPartType[icut]==AliPID::kElectron){
+    // old way 1D
     numberOfSigmas-=fgCorr;
+    // via functions (1-3D)
     numberOfSigmas-=GetCntrdCorr(part);
     numberOfSigmas/=GetWdthCorr(part);
   }
-  
-  // test if we are supposed to use a function for the cut
-  if (fFunUpperCut[icut]) fNsigmaUp[icut] =fFunUpperCut[icut]->Eval(mom);
-  if (fFunLowerCut[icut]) fNsigmaLow[icut]=fFunLowerCut[icut]->Eval(mom);
-  
-  Bool_t selected=((numberOfSigmas>=fNsigmaLow[icut])&&(numberOfSigmas<=fNsigmaUp[icut]))^fExclude[icut];
+
+  // matching of MC and data //
+
+  // test if we are supposed to use a function for the cut (matching via fits)
+  if (fFunUpperCut[icut]) fNsigmaUp[icut] =fFunUpperCut[icut]->Eval(values[AliDielectronVarManager::kPIn]);
+  if (fFunLowerCut[icut]) fNsigmaLow[icut]=fFunLowerCut[icut]->Eval(values[AliDielectronVarManager::kPIn]);
+
+  // test if we are using cut maps (in calibrated units)
+  Double_t lowElectronCut = fNsigmaLow[icut];
+  Double_t upElectronCut  = fNsigmaUp[icut];
+
+  if((fPartType[icut]==AliPID::kElectron) && (fMapElectronCutLow[icut] )) {
+    Double_t *vals = new Double_t[fMapElectronCutLow[icut]->GetNdimensions()];//={-1};
+    // get array of values for the corresponding dimensions using axis names
+    for(Int_t idim=0; idim<fMapElectronCutLow[icut]->GetNdimensions(); idim++) {
+      vals[idim] = values[AliDielectronVarManager::GetValueType(fMapElectronCutLow[icut]->GetAxis(idim)->GetName())];
+    }
+    // find bin for values (w/o creating it in case it is not filled)
+    Long_t bin = fMapElectronCutLow[icut]->GetBin(vals,kFALSE);
+    if(bin>0) lowElectronCut=fMapElectronCutLow[icut]->GetBinContent(bin);
+    else lowElectronCut=100;
+    //printf("low cut %.3f \t for %d dimensional cut map \n",lowElectronCut,fMapElectronCutLow[icut]->GetNdimensions());
+    delete [] vals;
+  }
+
+
+  Bool_t selected=((numberOfSigmas>=lowElectronCut)&&(numberOfSigmas<=upElectronCut))^fExclude[icut];
   return selected;
 }
 
@@ -665,6 +706,7 @@ Double_t AliDielectronPID::GetPIDCorr(const AliVTrack *track, TF1 *fun)
   //
   // return correction value
   //
+  //TODO: think about taking an values array as argument to reduce # var fills
 
   //Fill only event and vparticle values (otherwise we end up in a circle)
   Double_t values[AliDielectronVarManager::kNMaxValues];

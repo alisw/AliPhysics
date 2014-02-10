@@ -257,7 +257,7 @@ TH1F* AliAnalysisTaskRhoVnModulation::BookTH1F(const char* name, const char* x, 
     TString title(name);
     if(c!=-1) { // format centrality dependent histograms accordingly
         name = Form("%s_%i", name, c);
-        title += Form("_%i-%i", fCentralityClasses->At(c), fCentralityClasses->At(1+c));
+        title += Form("_%i-%i", (int)(fCentralityClasses->At(c)), (int)(fCentralityClasses->At((1+c))));
     }
     title += Form(";%s;[counts]", x);
     TH1F* histogram = new TH1F(name, title.Data(), bins, min, max);
@@ -276,7 +276,7 @@ TH2F* AliAnalysisTaskRhoVnModulation::BookTH2F(const char* name, const char* x, 
     TString title(name);
     if(c!=-1) { // format centrality dependent histograms accordingly
         name = Form("%s_%i", name, c);
-        title += Form("_%i-%i", fCentralityClasses->At(c), fCentralityClasses->At(1+c));
+        title += Form("_%i-%i", (int)fCentralityClasses->At(c), (int)(fCentralityClasses->At((1+c))));
     }
     title += Form(";%s;%s", x, y);
     TH2F* histogram = new TH2F(name, title.Data(), binsx, minx, maxx, binsy, miny, maxy);
@@ -292,8 +292,8 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
     fOutputList = new TList();
     fOutputList->SetOwner(kTRUE);
     if(!fCentralityClasses) {   // classes must be defined at this point
-        Int_t c[] = {0, 20, 40, 60, 80, 100};
-        fCentralityClasses = new TArrayI(sizeof(c)/sizeof(c[0]), c);
+        Double_t c[] = {0., 20., 40., 60., 80., 100.};
+        fCentralityClasses = new TArrayD(sizeof(c)/sizeof(c[0]), c);
     }
     // global QA
     fHistCentrality =           BookTH1F("fHistCentrality", "centrality", 102, -2, 100);

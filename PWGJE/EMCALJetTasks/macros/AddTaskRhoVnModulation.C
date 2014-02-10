@@ -22,7 +22,7 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   Bool_t     fillQA             = kTRUE,
   TString    fitOpts            = "WLQI",
   UInt_t     fitType            = AliAnalysisTaskRhoVnModulation::kFourierSeries,
-  TArrayI    *centralities      = 0x0,
+  TArrayD    *centralities      = 0x0,
   TRandom3   *randomizer        = 0x0,
   Double_t   trackptcut         = .15
   )
@@ -87,8 +87,8 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   jetTask->SetRandomConeRadius(jetradius);
   // if centralities haven't been specified use defaults
   if(!centralities) {
-     Int_t c[] = {0, 10, 30, 50, 70, 90};
-     jetTask->SetCentralityClasses(new TArrayI(sizeof(c)/sizeof(c[0]), c));
+     Double_t c[] = {0., 10., 30., 50., 70., 90.};
+     jetTask->SetCentralityClasses(new TArrayD(sizeof(c)/sizeof(c[0]), c));
   }
   // if a randomized hasn't specified use a safe default 
   if(!randomizer) jetTask->SetRandomSeed(new TRandom3(0));

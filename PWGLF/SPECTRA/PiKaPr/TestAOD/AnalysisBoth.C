@@ -368,7 +368,16 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 	
 	GFCorrection(spectra,tcutsdata->GetPtTOFMatching(),options);
 	GFCorrection(spectraLeonardo,tcutsdata->GetPtTOFMatching(),options);
-		TH1F* allch=GetSumAllCh(spectra,mass);
+	
+	Double_t ycut=tcutsdata->GetY();
+	Double_t etacut=tcutsdata->GetEtaMax()-tcutsdata->GetEtaMin();
+	if(etacut<0.00001)
+	{
+		cout<<"using eta window 1.6"<<endl; 
+		etacut=1.6;
+
+	}
+	TH1F* allch=GetSumAllCh(spectra,mass,etacut);
 	lout->Add(allch);	
        	if(options&kuseTOFmatchingcorrection)
 	{	
@@ -389,7 +398,6 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 	if (options&kveretxcorrectionandbadchunkscorr)
 		vertexcorrection=corrbadchunksvtx;
 	cout<<" VTX corr="<<vertexcorrection<<endl;
-	Double_t ycut=tcutsdata->GetY();
 	if(TMath::Abs(ycut)>0.0)
 		vertexcorrection=vertexcorrection/(2.0*ycut);
 	for (int i=0;i<6;i++)
@@ -404,7 +412,7 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 		}
 	}	
 	allch->Scale(vertexcorrection);
-	spectraall->Scale(vertexcorrection/1.6);
+	spectraall->Scale(vertexcorrection/etacut);
 
 	//spectraall->Scale(1.0/1.6);
 	lout->Write("output",TObject::kSingleKey);	
@@ -965,7 +973,7 @@ void GFCorrection(TH1F **Spectra,Float_t tofpt,UInt_t options)
   	  	TFile *fGeanFlukaK= new TFile(fnameGeanFlukaK.Data());
 	  	if (!fGeanFlukaK)
 		{
-			fnameGeanFlukaK="$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD/GFCorrection/correctionForCrossSection.321.root";
+			fnameGeanFlukaK="$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD/correctionForCrossSection.321.root";
 			fGeanFlukaK= new TFile(fnameGeanFlukaK.Data());
 			if (!fGeanFlukaK)
 				return;
@@ -1027,7 +1035,7 @@ void GFCorrection(TH1F **Spectra,Float_t tofpt,UInt_t options)
 	  TFile* fGFProtons = new TFile (fnameGFProtons.Data());
 	  if (!fGFProtons)
 	  { 
-		fnameGFProtons=="$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD/GFCorrection/correctionForCrossSection.root";
+		fnameGFProtons=="$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD/correctionForCrossSection.root";
 		TFile* fGFProtons = new TFile (fnameGFProtons.Data());
 		if (!fGFProtons)
 			return;
@@ -1246,7 +1254,7 @@ Double_t eta2y(Double_t pt, Double_t mass, Double_t eta)
   return TMath::ASinH(pt / mt * TMath::SinH(eta));
 }
 
-TH1* GetSumAllCh(TH1F** spectra, Double_t* mass  )
+TH1* GetSumAllCh(TH1F** spectra, Double_t* mass,Double_t etacut)
 {
 	TH1F* allch=(((TH1F*))spectra[0]->Clone("allCh"));
 	allch->Reset();
@@ -1262,9 +1270,9 @@ TH1* GetSumAllCh(TH1F** spectra, Double_t* mass  )
 				Float_t pt=spectra[i]->GetXaxis()->GetBinCenter(j);
 				Float_t mt2=masstmp*masstmp+pt*pt;		
 				Float_t mt=TMath::Sqrt(mt2);
-				Float_t maxy=eta2y(pt,masstmp,0.8);
+				Float_t maxy=eta2y(pt,masstmp,etacut/2.0);
 				Float_t conver=maxy*(TMath::Sqrt(1-masstmp*masstmp/(mt2*TMath::CosH(maxy)*TMath::CosH(maxy)))+TMath::Sqrt(1-masstmp*masstmp/(mt2*TMath::CosH(0.0)*TMath::CosH(0.0))));
-				conver=conver/1.6;
+				conver=conver/etacut;
 				//cout<<maxy<<" "<<conver<<" "<<masstmp<<""<<spectra[i]->GetName()<<endl;
 				Float_t bincontent=allch->GetBinContent(j);
 				Float_t binerror=allch->GetBinError(j);

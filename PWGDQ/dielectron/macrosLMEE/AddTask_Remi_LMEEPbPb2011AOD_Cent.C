@@ -121,25 +121,25 @@ if (PIDbaseline) {
 
   //create output container
   AliAnalysisDataContainer *coutput1 =
-	mgr->CreateContainer("Remi_LMEEPbPb2011_tree",
+	mgr->CreateContainer("Remi_LMEEPbPb2011Cent_tree",
 		TTree::Class(),
 		AliAnalysisManager::kExchangeContainer,
 		outputFileName);
 
   AliAnalysisDataContainer *cOutputHist1 =
-	mgr->CreateContainer("Remi_LMEEPbPb2011_out",
+	mgr->CreateContainer("Remi_LMEEPbPb2011Cent_out",
 		TList::Class(),
 		AliAnalysisManager::kOutputContainer,
 		outputFileName);
 
   AliAnalysisDataContainer *cOutputHist2 =
-	mgr->CreateContainer("Remi_LMEEPbPb2011_CF",
+	mgr->CreateContainer("Remi_LMEEPbPb2011Cent_CF",
 		TList::Class(),
 		AliAnalysisManager::kOutputContainer,
 		outputFileName);
 
   AliAnalysisDataContainer *cOutputHist3 =
-	mgr->CreateContainer("Remi_EventStatPbPb2011",
+	mgr->CreateContainer("Remi_EventStatPbPb2011Cent",
 		TH1D::Class(),
 		AliAnalysisManager::kOutputContainer,
 		outputFileName);

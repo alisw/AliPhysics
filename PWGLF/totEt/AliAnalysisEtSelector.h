@@ -79,7 +79,12 @@ public:
     virtual Bool_t CutGeometricalAcceptance(const AliESDCaloCluster &/*part*/) { return true; }
     
     // From secondary vertex?
-    virtual Bool_t FromSecondaryInteraction(const TParticle& part, AliStack& stack) const;
+    //virtual Bool_t FromSecondaryInteraction(const TParticle& part, AliStack& stack) const;
+    virtual Bool_t FromSecondaryInteraction(Int_t partID, AliStack& stack) const;
+
+    Int_t GetMother(Int_t partID, AliStack& stack) const;
+    Bool_t IsFromDetectorCover(Int_t partID, AliStack& stack) const;
+    Int_t GetFirstMotherNotFromDetectorCover(Int_t partID, AliStack& stack) const;
     
     // Cluster is in correct detector
     virtual Bool_t IsDetectorCluster(const AliESDCaloCluster &cluster) const = 0;
