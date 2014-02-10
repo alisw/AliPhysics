@@ -463,7 +463,7 @@ fOutput->Add(fphiSpectraasso);
 
 fHistoTPCdEdx = new TH2F("hHistoTPCdEdx", ";p_{T} (GeV/c);dE/dx (au.)",200,0.0,10.0,500, 0., 500.);
 fOutput->Add(fHistoTPCdEdx);
-fHistoTOFbeta = new TH2F(Form("hHistoTOFbeta"), ";p_{T} (GeV/c);v/c",70, 0., 7., 500, 0.1, 1.1);
+fHistoTOFbeta = new TH2F(Form("hHistoTOFbeta"), ";p_{T} (GeV/c);v/c",100, 0., fmaxPt, 500, 0.1, 1.1);
   fOutput->Add(fHistoTOFbeta);
   
    fTPCTOFPion3d=new TH3F ("fTPCTOFpion3d", "fTPCTOFpion3d",100,0., 10., 120,-60.,60.,120,-60.,60);
@@ -1349,7 +1349,7 @@ Float_t dEdx = track->GetTPCsignal();
 
  if(HasTOFPID(track))
 {
-Float_t beta = GetBeta(track);
+Double_t beta = GetBeta(track);
 fHistoTOFbeta->Fill(track->Pt(), beta);
  }
 
@@ -1691,12 +1691,13 @@ if(fSampleType=="pPb" || fSampleType=="PbPb") if (cent_v0 < 0)  return;//for pp 
   fHistoTPCdEdx->Fill(track->Pt(), dEdx);
 
   //fill beta vs Pt plots only for tracks having proper TOF response(much less tracks compared to the no. that pass the filterbit & kinematic cuts)
+  
  if(HasTOFPID(track))
 {
-  Float_t beta = GetBeta(track);
+  Double_t beta = GetBeta(track);
   fHistoTOFbeta->Fill(track->Pt(), beta);
  }
-
+  
 
 //track identification(using nsigma method)
   particletype=GetParticle(track);//*******************************change may be required(It should return only pion,kaon, proton and Spundefined; NOT unidentifed***************be careful)
@@ -2072,7 +2073,7 @@ if(ffilltrigIDassoUNID==kFALSE && ffilltrigIDassoID==kTRUE){
 
   if(!tracksasso && i==j) continue;
 
-   // check if both particles point to the same element (does not occur for mixed events, but if subsets are mixed within the same event)
+   // check if both particles point to the same element (does not occur for mixed events, but if subsets are mixed within the same event,i.e. both Trig and asso TObjArray belongs to the same Pi range but say Trig is Unidentified but asso is identified then the serial no. wise particles are not same and and j==i doesn't aplly)
    // if (tracksasso && trig->IsEqual(asso))  continue;
 
   if (tracksasso && (trig->GetUniqueID()==asso->GetUniqueID())) continue;
@@ -2614,14 +2615,28 @@ Int_t startTimeMask = fPID->GetTOFResponse().GetStartTimeMask(track->P());
 }
 
 //________________________________________________________________________
-Float_t AliTwoParticlePIDCorr :: GetBeta(AliAODTrack *track)
+Double_t AliTwoParticlePIDCorr :: GetBeta(AliAODTrack *track)
 {
   //it is called only when TOF PID is available
+//TOF beta calculation
+  Double_t tofTime=track->GetTOFsignal();
+  
+  Double_t c=TMath::C()*1.E-9;// m/ns
+  Float_t startTime = fPID->GetTOFResponse().GetStartTime(((AliVTrack*)track)->P());//in ps
+  Double_t length= fPID->GetTOFResponse().GetExpectedSignal(track,AliPID::kElectron)*1E-3*c;
+  tofTime -= startTime;      // subtract startTime to the signal
+  Double_t tof= tofTime*1E-3; // ns, average T0 fill subtracted, no info from T0detector 	 
+  tof=tof*c;
+  return length/tof;
+
+
+  /*
   Double_t p = track->P();
   Double_t time=track->GetTOFsignal()-fPID->GetTOFResponse().GetStartTime(p);
   Double_t timei[5];
   track->GetIntegratedTimes(timei);
   return timei[0]/time;
+  */
 }
 //------------------------------------------------------------------------------------------------------
 
