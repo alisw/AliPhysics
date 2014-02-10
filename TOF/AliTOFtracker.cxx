@@ -218,6 +218,8 @@ Int_t AliTOFtracker::PropagateBack(AliESDEvent * const event) {
   if (fNseeds==0 || fNseedsTOF==0) {
     event->SetTOFcluster(1,fClusterESD);
     AliInfo("No seeds to try TOF match");
+    fSeeds->Clear();
+    fTracks->Clear();
     return 0 ;
   }
 
@@ -234,6 +236,8 @@ Int_t AliTOFtracker::PropagateBack(AliESDEvent * const event) {
  
   if (fNTOFmatched==0) {
     AliInfo("No TOF recPoints to be matched with reconstructed tracks");
+    fSeeds->Clear();
+    fTracks->Clear();
     return 0;
   }
 
