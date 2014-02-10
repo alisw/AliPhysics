@@ -341,8 +341,23 @@ void ConfigOCDB(Int_t run){
   if (!array){
     printf("TPC reco param not available");
   }
+  
+  //get the beam type from OCDB to decide which type of reco param we need -
+  //high or low flux
+  entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
+  AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entry->GetObject());  // new GRP entry
+  TString beamType = grpData->GetBeamType();
+  if (beamType==AliGRPObject::GetInvalidString()) {
+    AliError("GRP/GRP/Data entry:  missing value for the beam type ! Using UNKNOWN");
+    beamType = "UNKNOWN";
+  }
   // 0 - Low Flux (pp), 1- High Flux (Pb-Pb)
-  AliTPCRecoParam * tpcRecoParam = (AliTPCRecoParam*)array->At(1);
+  Int_t fluxType=0;
+  if (beamType.Contains("p-p")) {fluxType=0;}
+  if (beamType.Contains("A-A")) {fluxType=1;}
+  AliTPCRecoParam * tpcRecoParam = (AliTPCRecoParam*)array->At(fluxType);
+  printf("beam type: %s, using fluxType=%i\n",beamType.Data(),fluxType);
+  tpcRecoParam->Print();
 
   transform->SetCurrentRecoParam(tpcRecoParam);
   // in CPass1 use a default setting
