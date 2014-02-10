@@ -40,4 +40,4 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  TPCupgradeLinkDef.h)
 
-set ( EINCLUDE  TPC/Base TPC/Rec TPC/Upgrade STEER/STEER STEER/CDB STEER/STEERBase )
+set ( EINCLUDE  TPC/Base TPC/Rec TPC/Upgrade STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase )
