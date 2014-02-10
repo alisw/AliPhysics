@@ -642,35 +642,41 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 	// ----- output data -----
 	
 	TString outputfile = AliAnalysisManager::GetCommonFileName();
-	TString output1name="", output2name="", output3name="", output4name="";;
+	TString output1name="", output2name="", output3name="", output4name="", output5name="";
 	output2name=nameContainer;
 	output3name=nameCorr;
+	output5name= "coutProfDs";
 	if(!isKeepDfromB) {
 		outputfile += ":PWG3_D2H_CFtaskDstoKKpi_CommonFramework";
 		output1name="CFHFchist0_3ProngDstoKKpi_CommonFramework";
 		output3name+="_cOnly";
 		output4name= "CutsDdirect_3ProngDs_CommonFramework";
+		output5name+="_cOnly";
 	}
 	else  if(isKeepDfromBOnly){
 		outputfile += ":PWG3_D2H_CFtaskDstoKKpiKeepDfromBOnly_CommonFramework";
 		output1name="CFHFchist0DfromB_3ProngDstoKKpi_CommonFramework";
 		output3name+="_bOnly";
 		output4name= "CutsDfromB_3ProngDs_CommonFramework";
+		output5name+="_bOnly";
 	}
 	else{
 		outputfile += ":PWG3_D2H_CFtaskDstoKKpiKeepDfromB_CommonFramework";
 		output1name="CFHFchist0allD_3ProngDstoKKpi_CommonFramework";
 		output3name+="_all";
 		output4name= "CutsallD_3ProngDs_CommonFramework";
+		output5name+="_all";
 	}
 
 	outputfile += suffixDecayType.Data();
 	output1name+= suffixDecayType.Data();
 	output4name+= suffixDecayType.Data();
+	output5name+= suffixDecayType.Data();
 	
 	outputfile += suffixName.Data();
 	output1name+= suffixName.Data();
 	output4name+= suffixName.Data();
+	output5name+= suffixName.Data();
 
 	//now comes user's output objects :
 	// output TH1I for event counting
@@ -680,6 +686,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 	// Unfolding - correlation matrix
         AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(output3name, THnSparseD::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
 	AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(output4name, AliRDHFCuts::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
+	// estimators list
+	AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(output5name, TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
 
 	mgr->AddTask(task);
 	
@@ -688,6 +696,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 	mgr->ConnectOutput(task,2,coutput2);
         mgr->ConnectOutput(task,3,coutput3);
 	mgr->ConnectOutput(task,4,coutput4);
+	mgr->ConnectOutput(task,5,coutput5);
 
 	return task;
 }

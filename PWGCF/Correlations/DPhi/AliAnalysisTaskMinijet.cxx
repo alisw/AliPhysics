@@ -1236,7 +1236,10 @@ Double_t AliAnalysisTaskMinijet::ReadEventAOD( vector<Float_t> &ptArray,  vector
         
         Double_t save= track->Pt();
         Double_t d0rphiz[2],covd0[3];
-        Bool_t isDca= track->PropagateToDCA(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField(),9999.,d0rphiz,covd0);
+
+	AliAODTrack* clone = (AliAODTrack*) track->Clone("trk_clone"); //need clone, in order not to change track parameters
+        Bool_t isDca= clone->PropagateToDCA(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField(),9999.,d0rphiz,covd0);
+	delete clone;
         fPropagateDca->Fill(Int_t(isDca));
         if(TMath::Abs(save - track->Pt())>1e-6) Printf("Before pt=%f, After pt=%f",save, track->Pt());
         

@@ -38,7 +38,7 @@ AliEmcalClusterMaker* AddTaskEmcalClusterMaker(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  TString name(Form("EmcalClusterMaker_%s", outClusName));
+  TString name(Form("EmcalClusterMaker_%s_%s", nClusters, outClusName));
   AliEmcalClusterMaker *ecm = new AliEmcalClusterMaker(name, histo);
   ecm->SetOutClusName(outClusName);
   AliEMCALRecoUtils *ru = new AliEMCALRecoUtils;

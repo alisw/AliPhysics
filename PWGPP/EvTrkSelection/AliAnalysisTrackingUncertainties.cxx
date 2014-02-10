@@ -64,7 +64,8 @@ AliAnalysisTrackingUncertainties::AliAnalysisTrackingUncertainties()
     fListHist(0),
     fESDtrackCuts(0),
     fMatchTr(),
-    fMatchChi()
+    fMatchChi(),
+    fExcludeMomFromChi2ITSTPC(0) 
 {
   // default Constructor
   /* fast compilation test
@@ -86,7 +87,8 @@ AliAnalysisTrackingUncertainties::AliAnalysisTrackingUncertainties(const char *n
     fListHist(0),
     fESDtrackCuts(0),
     fMatchTr(),
-    fMatchChi()
+    fMatchChi(),
+    fExcludeMomFromChi2ITSTPC(0) 
 {
   //
   // standard constructur which should be used
@@ -131,20 +133,20 @@ void AliAnalysisTrackingUncertainties::UserCreateOutputObjects()
   //
   // (3.) ITS -> TPC matching histograms
   //
-  Int_t    binsMatch[kNumberOfAxes] = { 10,   50,    20,            18,  6};
-  Double_t minMatch[kNumberOfAxes]  = {  0,  0.1,    -1,             0, -0.5};
-  Double_t maxMatch[kNumberOfAxes]  = {200,   20,    +1, 2*TMath::Pi(),  5.5};
+  //  Int_t    binsMatch[kNumberOfAxes] = { 10,   50,    20,            18,  6};
+  //  Double_t minMatch[kNumberOfAxes]  = {  0,  0.1,    -1,             0, -0.5};
+  //  Double_t maxMatch[kNumberOfAxes]  = {200,   20,    +1, 2*TMath::Pi(),  5.5};
   //
-  TString axisNameMatch[kNumberOfAxes]  = {"matchChi2","pT","eta","phi","pid"};
-  TString axisTitleMatch[kNumberOfAxes] = {"matchChi2","pT","eta","phi","pid"};
+  //  TString axisNameMatch[kNumberOfAxes]  = {"matchChi2","pT","eta","phi","pid"};
+  //  TString axisTitleMatch[kNumberOfAxes] = {"matchChi2","pT","eta","phi","pid"};
   //
-  THnF * hBestMatch = new THnF("hBestMatch","ITS -> TPC matching ",kNumberOfAxes, binsMatch, minMatch, maxMatch);
-  for (Int_t iaxis=0; iaxis<kNumberOfAxes;iaxis++){
-    hBestMatch->GetAxis(iaxis)->SetName(axisNameMatch[iaxis]);
-    hBestMatch->GetAxis(iaxis)->SetTitle(axisTitleMatch[iaxis]);
-  }
-  BinLogAxis(hBestMatch, 1);
-  fListHist->Add(hBestMatch);
+  //  THnF * hBestMatch = new THnF("hBestMatch","ITS -> TPC matching ",kNumberOfAxes, binsMatch, minMatch, maxMatch);
+  //  for (Int_t iaxis=0; iaxis<kNumberOfAxes;iaxis++){
+  //    hBestMatch->GetAxis(iaxis)->SetName(axisNameMatch[iaxis]);
+  // hBestMatch->GetAxis(iaxis)->SetTitle(axisTitleMatch[iaxis]);
+  //  }
+  //  BinLogAxis(hBestMatch, 1);
+  //  fListHist->Add(hBestMatch);
   //
   //
   //
@@ -152,20 +154,41 @@ void AliAnalysisTrackingUncertainties::UserCreateOutputObjects()
   const double ptMax=5;
   //
   TH2F * hNMatch    = new TH2F("hNMatch","N Matches",nbPt,0,ptMax,kMaxMatch+1,-0.5,kMaxMatch+0.5);
+  TH2F * hBestMatch = new TH2F("hBestMatch","Best Match Chi2",nbPt,0,ptMax,2*int(TMath::Max(1.1,kMaxChi2)),0,kMaxChi2); // OB
+  TH2F * hBestMatch_cuts = new TH2F("hBestMatch_cuts","Best Match Chi2",nbPt,0,ptMax,2*int(TMath::Max(1.1,kMaxChi2)),0,kMaxChi2);
   TH2F * hAllMatch  = new TH2F("hAllMatch","All Matches Chi2",nbPt,0,ptMax,2*int(TMath::Max(1.1,kMaxChi2)),0,kMaxChi2);
   TH2F * hAllMatchGlo  = new TH2F("hAllMatchGlo","All Matches Chi2",nbPt,0,ptMax,2*int(TMath::Max(1.1,kMaxChi2)),0,kMaxChi2);
+  TH2F * hPtCorr_ITSTPC = new TH2F("hPtCorr_ITSTPC","PtCorr",nbPt,0,ptMax,nbPt,0,ptMax);
+  TH2F * hdPtRel_ITSTPC = new TH2F("hdPtRel_ITSTPC","dPt/pt",nbPt,0,ptMax,2*nbPt+1,-0.4*ptMax,0.4*ptMax);
+  TH2F * hdInvPtRel_ITSTPC = new TH2F("hdInvPtRel_ITSTPC","pt*dPt^{-1}",nbPt,0,ptMax,2*nbPt+1,-0.4*ptMax,0.4*ptMax);
+  //
   fListHist->Add(hNMatch);
+  fListHist->Add(hBestMatch);
+  fListHist->Add(hBestMatch_cuts);
   fListHist->Add(hAllMatch);
   fListHist->Add(hAllMatchGlo);
+  fListHist->Add(hPtCorr_ITSTPC);
+  fListHist->Add(hdPtRel_ITSTPC);
+  fListHist->Add(hdInvPtRel_ITSTPC);
+  //
   //
   TH2F * hNMatchBg    = new TH2F("hNMatchBg","N Matches",nbPt,0,ptMax,kMaxMatch+1,-0.5,kMaxMatch+0.5);
   TH2F * hBestMatchBg = new TH2F("hBestMatchBg","Best Match Chi2",nbPt,0,ptMax,2*int(TMath::Max(1.1,kMaxChi2)),0,kMaxChi2);
+  TH2F * hBestMatchBg_cuts = new TH2F("hBestMatchBg_cuts","Best Match Chi2",nbPt,0,ptMax,2*int(TMath::Max(1.1,kMaxChi2)),0,kMaxChi2); // OB
   TH2F * hAllMatchBg  = new TH2F("hAllMatchBg","All Matches Chi2",nbPt,0,ptMax,2*int(TMath::Max(1.1,kMaxChi2)),0,kMaxChi2);
   TH2F * hAllMatchGloBg  = new TH2F("hAllMatchGloBg","All Matches Chi2",nbPt,0,ptMax,2*int(TMath::Max(1.1,kMaxChi2)),0,kMaxChi2);
+  TH2F * hdPtRelBg_ITSTPC = new TH2F("hdPtRelBg_ITSTPC","dPt/pt",nbPt,0,ptMax,2*nbPt+1,-0.4*ptMax,0.4*ptMax);
+  TH2F * hdInvPtRelBg_ITSTPC = new TH2F("hdInvPtRelBg_ITSTPC","pt*dPt^{-1}",nbPt,0,ptMax,2*nbPt+1,-0.4*ptMax,0.4*ptMax);
+
+  //cout<<" here 0 : hdPtRelBg_ITSTPC "<<hdPtRelBg_ITSTPC<<" hdInvPtRelBg_ITSTPC "<<hdInvPtRelBg_ITSTPC<<endl;
+
   fListHist->Add(hNMatchBg);
   fListHist->Add(hBestMatchBg);
+  fListHist->Add(hBestMatchBg_cuts);
   fListHist->Add(hAllMatchBg);
   fListHist->Add(hAllMatchGloBg);
+   fListHist->Add(hdPtRelBg_ITSTPC);
+  fListHist->Add(hdInvPtRelBg_ITSTPC);
   //add default track cuts in the output list
   fListHist->Add(fESDtrackCuts);
   //
@@ -264,37 +287,68 @@ void  AliAnalysisTrackingUncertainties::ProcessItsTpcMatching(){
   //
   // initialize histograms
   //
-  TH2F * hNMatch      = (TH2F*) fListHist->FindObject("hNMatch");
-  THnF * hBestMatch   = (THnF*) fListHist->FindObject("hBestMatch");
-  TH2F * hAllMatch    = (TH2F*) fListHist->FindObject("hAllMatch");
-  TH2F * hAllMatchGlo = (TH2F*) fListHist->FindObject("hAllMatchGlo");  
+  TH2F * hNMatch         = (TH2F*) fListHist->FindObject("hNMatch");
+  TH2F * hBestMatch      = (TH2F*) fListHist->FindObject("hBestMatch");
+  TH2F * hBestMatch_cuts = (TH2F*) fListHist->FindObject("hBestMatch_cuts");
+  TH2F * hAllMatch       = (TH2F*) fListHist->FindObject("hAllMatch");
+  TH2F * hAllMatchGlo    = (TH2F*) fListHist->FindObject("hAllMatchGlo");  
+  TH2F * hPtCorr_ITSTPC  = (TH2F*) fListHist->FindObject("hPtCorr_ITSTPC");
+  TH2F * hdPtRel_ITSTPC  = (TH2F*) fListHist->FindObject("hdPtRel_ITSTPC");
+  TH2F * hdInvPtRel_ITSTPC = (TH2F*) fListHist->FindObject("hdInvPtRel_ITSTPC");
+
   //
-  TH2F * hNMatchBg      = (TH2F*) fListHist->FindObject("hNMatchBg");
-  TH2F * hBestMatchBg   = (TH2F*) fListHist->FindObject("hBestMatchBg");
-  TH2F * hAllMatchBg    = (TH2F*) fListHist->FindObject("hAllMatchBg");
-  TH2F * hAllMatchGloBg = (TH2F*) fListHist->FindObject("hAllMatchGloBg");    
+  TH2F * hNMatchBg          = (TH2F*) fListHist->FindObject("hNMatchBg");
+  TH2F * hBestMatchBg       = (TH2F*) fListHist->FindObject("hBestMatchBg");
+  TH2F * hBestMatchBg_cuts  = (TH2F*) fListHist->FindObject("hBestMatchBg_cuts");
+  TH2F * hAllMatchBg        = (TH2F*) fListHist->FindObject("hAllMatchBg");
+  TH2F * hAllMatchGloBg     = (TH2F*) fListHist->FindObject("hAllMatchGloBg");    
+  TH2F * hdPtRelBg_ITSTPC    = (TH2F*) fListHist->FindObject("hdPtRelBg_ITSTPC");
+  TH2F * hdInvPtRelBg_ITSTPC = (TH2F*) fListHist->FindObject("hdInvPtRelBg_ITSTPC");
+
+  //cout<<" here 1: hdPtRelBg_ITSTPC "<<hdPtRelBg_ITSTPC<<" hdInvPtRelBg_ITSTPC "<<hdInvPtRelBg_ITSTPC<<endl;
+
   //
   for (int it=0;it<ntr;it++) {
     AliESDtrack* trSA = fESD->GetTrack(it);
     if (!trSA->IsOn(AliESDtrack::kITSpureSA) || !trSA->IsOn(AliESDtrack::kITSrefit)) continue;
     double pt = trSA->Pt();
+
+    // OB - fiducial eta and pt cuts
+    Double_t etaSA = trSA->Eta();
+    // std::cout<<" etaSA "<<etaSA<<std::endl; // eta range up to +/- 1.4
+
+    Double_t ptSA  = trSA->Pt();
+
+    if(TMath::Abs(etaSA)>0.8) continue;
+
     //
     Int_t nmatch = 0;
-    for (int i=kMaxMatch;i--;) {fMatchChi[i]=0; fMatchTr[i]=0;} // reset array
-    for (int it1=0;it1<ntr;it1++) { 
+    for (int i=kMaxMatch;i--;) {fMatchChi[i]=0; fMatchTr[i]=0;}
+    for (int it1=0;it1<ntr;it1++){
+
+      //std::cout<<" here 0, it1 "<<it1<<" it "<<it<<std::endl;
+
       if (it1==it) continue;
+      
+      //std::cout<<" here 2, it1 "<<it1<<" it "<<it<<std::endl;
+
       AliESDtrack* trESD = fESD->GetTrack(it1);
       if (!trESD->IsOn(AliESDtrack::kTPCrefit)) continue;
-      Match(trSA,trESD, nmatch);
+      
+      //std::cout<<" call match: it1 "<<it1<<" it "<<it<<" nmatch "<<nmatch<<std::endl;
+      Match(trSA,trESD, nmatch, fExcludeMomFromChi2ITSTPC);
+      //std::cout<<" left match: it1 "<<it1<<" it "<<it<<" nmatch "<<nmatch<<std::endl;
     }
     //
+    
+    // std::cout<<" if "<<it<<" filling nmatch "<<nmatch<<" best chi2 "<<fMatchChi[0]<<std::endl;
+    
     hNMatch->Fill(pt,nmatch);
-    if (nmatch>0) { // matched tracks
-      Double_t vecHistMatch[kNumberOfAxes] = {fMatchChi[0], pt, trSA->Eta(), trSA->Phi(), 0};
-      hBestMatch->Fill(vecHistMatch);
-    } else {        // un-matched tracks -> should be in overflow bin
-      Double_t vecHistMatch[kNumberOfAxes] = {9999999., pt, trSA->Eta(), trSA->Phi(), 0};
-      hBestMatch->Fill(vecHistMatch);      
+    if (nmatch>0){
+      hBestMatch->Fill(pt,fMatchChi[0]);
+      hPtCorr_ITSTPC->Fill(pt,fMatchTr[0]->Pt()); 
+      hdPtRel_ITSTPC->Fill(pt,(pt-fMatchTr[0]->Pt())/pt); 
+      hdInvPtRel_ITSTPC->Fill(pt,pt*( 1/pt - (1/fMatchTr[0]->Pt()) )); 
     }
     //
     for (int imt=nmatch;imt--;) {
@@ -308,11 +362,22 @@ void  AliAnalysisTrackingUncertainties::ProcessItsTpcMatching(){
       if (it1==it) continue;
       AliESDtrack* trESD = fESD->GetTrack(it1);
       if (!trESD->IsOn(AliESDtrack::kTPCrefit)) continue;
-      Match(trSA,trESD, nmatch, TMath::Pi());
+      Match(trSA,trESD, nmatch, fExcludeMomFromChi2ITSTPC, TMath::Pi());
     }
     //
     hNMatchBg->Fill(pt,nmatch);
-    if (nmatch>0) hBestMatchBg->Fill(pt,fMatchChi[0]);
+    if (nmatch>0){
+      hBestMatchBg->Fill(pt,fMatchChi[0]);
+      hdPtRelBg_ITSTPC->Fill(pt,(pt-fMatchTr[0]->Pt())/pt); 
+      hdInvPtRelBg_ITSTPC->Fill(pt,pt*( 1/pt - (1/fMatchTr[0]->Pt()) )); 
+    }
+
+    if (nmatch>0 && fESDtrackCuts){
+      if(fESDtrackCuts->AcceptTrack(fMatchTr[0])){
+	hBestMatchBg_cuts->Fill(pt,fMatchChi[0]);
+      }
+    }
+
     for (int imt=nmatch;imt--;) {
       hAllMatchBg->Fill(pt,fMatchChi[imt]);
       if (fMatchTr[imt]->IsOn(AliESDtrack::kITSrefit)) hAllMatchGloBg->Fill(pt,fMatchChi[imt]);
@@ -324,7 +389,8 @@ void  AliAnalysisTrackingUncertainties::ProcessItsTpcMatching(){
 }
 
 
-void AliAnalysisTrackingUncertainties::Match(const AliESDtrack* tr0, const AliESDtrack* tr1, Int_t &nmatch, Double_t rotate) {
+void AliAnalysisTrackingUncertainties::Match(const AliESDtrack* tr0, const AliESDtrack* tr1, Int_t& nmatch, 
+					     Bool_t excludeMom, Double_t rotate) {
   //
   // check if two tracks are matching, possible rotation for combinatoric backgr.
   // 
@@ -344,7 +410,30 @@ void AliAnalysisTrackingUncertainties::Match(const AliESDtrack* tr0, const AliES
   if (!trtpc.Rotate(tr0->GetAlpha())) return;
   if (!trtpc.PropagateTo(tr0->GetX(),bField)) return;
   double chi2 = tr0->GetPredictedChi2(&trtpc);
+
+  //std::cout<<" in Match, nmatch "<<nmatch<<" par[4] before "<<trtpc.GetParameter()[4]<<" chi2 "<<chi2<<endl;
+
+  // OB chi2 excluding pt 
+  if(excludeMom){
+    ((double*)trtpc.GetParameter())[4] = tr0->GetParameter()[4]; // set ITS mom equal TPC mom
+    chi2 = tr0->GetPredictedChi2(&trtpc);
+
+    //std::cout<<" in Match, nmatch "<<nmatch<<" par[4] after "<<trtpc.GetParameter()[4]<<" tr0 mom "<<tr0->GetParameter()[4]
+    //	     <<" chi2 "<<chi2<<std::endl;
+  }
+
+
   if (chi2>kMaxChi2) return;
+
+  // std::cout<<" found good match, tr1 "<<tr1<<" chi2 "<<chi2<<std::endl;
+  // std::cout<<" before: fMatchChi[0]  "<<fMatchChi[0]<<" [1] "<<fMatchChi[1]
+  // 	   <<" [2]  "<<fMatchChi[2]<<" [3] "<<fMatchChi[3]
+  // 	   <<" [4]  "<<fMatchChi[4]<<std::endl; 
+
+  // std::cout<<" before: fMatchTr[0]  "<<fMatchTr[0]<<" [1] "<<fMatchTr[1]
+  // 	   <<" [2]  "<<fMatchTr[2]<<" [3] "<<fMatchTr[3]
+  // 	   <<" [4]  "<<fMatchTr[4]<<std::endl; 
+
   //
   int ins;
   for (ins=0;ins<nmatch;ins++) if (chi2<fMatchChi[ins]) break;

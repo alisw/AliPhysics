@@ -278,10 +278,10 @@ void AliAnalysisTaskPhiEffMc::UserExec(Option_t *)
 	    {
 	      if(partMC->GetNDaughters()==2)
 		{
-		  if(TMath::Abs(((AliAODMCParticle*) arrayMC->At(partMC->GetDaughter(0)))->GetPdgCode()) == 321 && TMath::Abs(((AliAODMCParticle*) arrayMC->At(partMC->GetDaughter(1)))->GetPdgCode()) == 321)
+		  if(TMath::Abs(((AliAODMCParticle*) arrayMC->At(TMath::Abs(partMC->GetDaughter(0))))->GetPdgCode()) == 321 && TMath::Abs(((AliAODMCParticle*) arrayMC->At(TMath::Abs(partMC->GetDaughter(1))))->GetPdgCode()) == 321)
 		    {
-		      AliAODMCParticle *d1 = (AliAODMCParticle*) arrayMC->At(partMC->GetDaughter(0));
-		      AliAODMCParticle *d2 = (AliAODMCParticle*) arrayMC->At(partMC->GetDaughter(1));
+		      AliAODMCParticle *d1 = (AliAODMCParticle*) arrayMC->At(TMath::Abs(partMC->GetDaughter(0)));
+		      AliAODMCParticle *d2 = (AliAODMCParticle*) arrayMC->At(TMath::Abs(partMC->GetDaughter(1)));
 		      if(d1->Charge() > 0) hKcorr->Fill(partMC->Pt(),d1->Pt(),d2->Pt());
 		      else hKcorr->Fill(partMC->Pt(),d2->Pt(),d1->Pt());
 		      TLorentzVector *d3 = (TLorentzVector*)makePhi(d1,d2);
@@ -368,13 +368,13 @@ void AliAnalysisTaskPhiEffMc::UserExec(Option_t *)
 
 	    if(tempMC->GetMother() >= 0)
 	      {
-		if(((AliAODMCParticle*)arrayMC->At(tempMC->GetMother()))->GetPdgCode() == 333)
+		if(((AliAODMCParticle*)arrayMC->At(TMath::Abs(tempMC->GetMother())))->GetPdgCode() == 333)
 		  {
 		    if(tempMC->Charge() > 0)
 		      {
 			for(Int_t k = 0; k < kaonsNegGen->GetEntries(); k++)
 			  {
-			    if(tempMC->GetMother() != ((AliAODMCParticle*)arrayMC->At(((AliVParticle*)kaonsNegGen->UncheckedAt(k))->GetLabel()))->GetMother()) continue;
+			    if(tempMC->GetMother() != (((AliAODMCParticle*)arrayMC->At(TMath::Abs(((AliVParticle*)kaonsNegGen->UncheckedAt(k))->GetLabel())))->GetMother())) continue;
 			    TLorentzVector*c = (TLorentzVector*)makePhi(track,(AliVParticle*)kaonsNegGen->UncheckedAt(k));
 			    Double_t invMass = (c->M2() > 0 ? sqrt(c->M2()) : 0);
 			    if(invMass < 1.11)
@@ -389,7 +389,7 @@ void AliAnalysisTaskPhiEffMc::UserExec(Option_t *)
 		      {
 			for(Int_t k = 0; k < kaonsPosGen->GetEntries(); k++)
 			  {
-			    if(tempMC->GetMother() != ((AliAODMCParticle*)arrayMC->At(((AliVParticle*)kaonsPosGen->UncheckedAt(k))->GetLabel()))->GetMother()) continue;
+			    if(tempMC->GetMother() != (((AliAODMCParticle*)arrayMC->At(TMath::Abs(((AliVParticle*)kaonsPosGen->UncheckedAt(k))->GetLabel())))->GetMother())) continue;
 			    TLorentzVector*c = (TLorentzVector*)makePhi(track,(AliVParticle*)kaonsPosGen->UncheckedAt(k));
 			    Double_t invMass = (c->M2() > 0 ? sqrt(c->M2()) : 0);
 			    if(invMass < 1.11)

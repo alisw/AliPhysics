@@ -38,11 +38,12 @@ const Float_t multmin_20_50 = 20;
 const Float_t multmax_20_50 = 50;
 const Float_t multmin_50_102 = 50;
 const Float_t multmax_50_102 = 102;
+Double_t refMult=9.26; // reference multiplicity for LHC10b pass2 data
 
 
 //----------------------------------------------------
 
-AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const char* cutFile = "./DplustoKpipiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kCheetah, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 411, Char_t isSign = 2, TString multFile="", Bool_t useNchWeight=kFALSE, Bool_t useWeight=kFALSE)
+AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const char* cutFile = "./DplustoKpipiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kCheetah, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 411, Char_t isSign = 2, TString multFile="", Bool_t useNchWeight=kFALSE, Bool_t useWeight=kFALSE, TString estimatorFilename="", Int_t multiplicityEstimator = AliCFTaskVertexingHF::kNtrk10)
 //AliCFContainer *AddTaskCFVertexingHF3Prong(const char* cutFile = "./DplustoKpipiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 411, Char_t isSign = 2)
 {
 	printf("Addig CF task using cuts from file %s\n",cutFile);
@@ -569,6 +570,29 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 		}
 	}
 
+	task->SetMultiplicityEstimator(multiplicityEstimator);
+	if(estimatorFilename.EqualTo("") ) {
+	  printf("Estimator file not provided, multiplicity corrected histograms will not be filled\n");
+	  task->SetUseZvtxCorrectedNtrkEstimator(kFALSE);
+	} else{
+	  const Char_t* periodNames[4] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e"};
+	  TProfile* multEstimatorAvg[4];                       
+	  TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
+	  if(!fileEstimator)  {
+	    AliFatal("File with multiplicity estimator not found"); 
+	    return;
+	  }
+	  for(Int_t ip=0; ip<4; ip++) {
+	    multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));  
+	  }
+	  task->SetUseZvtxCorrectedNtrkEstimator(kTRUE);
+	  task->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
+	  task->SetMultiplVsZProfileLHC10c(multEstimatorAvg[1]);
+	  task->SetMultiplVsZProfileLHC10d(multEstimatorAvg[2]);
+	  task->SetMultiplVsZProfileLHC10e(multEstimatorAvg[3]);
+	  task->SetReferenceMultiplcity(refMult);
+	}
+
 	Printf("***************** CONTAINER SETTINGS *****************");
 	Printf("decay channel = %d",(Int_t)task->GetDecayChannel());
 	Printf("FillFromGenerated = %d",(Int_t)task->GetFillFromGenerated());
@@ -638,30 +662,35 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 	// ----- output data -----
 	
 	TString outputfile = AliAnalysisManager::GetCommonFileName();
-	TString output1name="", output2name="", output3name="", output4name="";
+	TString output1name="", output2name="", output3name="", output4name="", output5name="";
 	output2name=nameContainer;
 	output3name=nameCorr;
+	output5name= "coutProfDp";
 	if(!isKeepDfromB) {
 		outputfile += ":PWG3_D2H_CFtaskDplustoKpipi_Prompt";
 		output1name="CFHFhist_DplustoKpipi_Prompt";
 		output3name+="_Prompt";
 		output4name= "Cuts_DplustoKpipi_Prompt";
+		output5name+="_Prompt";
 	}
 	else  if(isKeepDfromBOnly){
    	        outputfile += ":PWG3_D2H_CFtaskDplustoKpipi_FromB";
 	        output1name="CFHFhist_DplustoKpipi_FromB";
 		output3name+="_FromB";
 		output4name= "Cuts_DplustoKpipi_FromB";
+		output5name+="_FromB";
 	}
 	else{
         	outputfile += ":PWG3_D2H_CFtaskDplustoKpipi_All";
 		output1name="CFHFhist_DplustoKpipi_All";
 		output3name+="_All";
 		output4name= "Cuts_DplustoKpipi_All";
+		output5name+="_All";
 	}
 	outputfile += suffixName.Data();
 	output1name += suffixName.Data();
 	output4name += suffixName.Data();
+	output5name += suffixName.Data();
 
 	//now comes user's output objects :
 	// output TH1I for event counting
@@ -671,6 +700,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 	// Unfolding - correlation matrix
         AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(output3name, THnSparseD::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
 	AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(output4name, AliRDHFCuts::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
+	// estimators list
+	AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(output5name, TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
 
 	mgr->AddTask(task);
 	
@@ -679,6 +710,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 	mgr->ConnectOutput(task,2,coutput2);
         mgr->ConnectOutput(task,3,coutput3);
 	mgr->ConnectOutput(task,4,coutput4);
+	mgr->ConnectOutput(task,5,coutput5);
 
 	return task;
 }

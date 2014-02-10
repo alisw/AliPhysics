@@ -475,7 +475,8 @@ template <typename T> Bool_t AliAnalysisTwoParticleResonanceFlowTask::CheckCentr
        if ((trackAOD->Pt() < .2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > .8) || (trackAOD->GetTPCNcls() < 70) || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.1)) continue;
        Double_t b[2] = {-99., -99.};
        Double_t bCov[3] = {-99., -99., -99.};
-       if (!(trackAOD->PropagateToDCA(event->GetPrimaryVertex(), event->GetMagneticField(), 100., b, bCov))) continue;
+       AliAODTrack copy(*trackAOD);
+       if (!(copy.PropagateToDCA(event->GetPrimaryVertex(), event->GetMagneticField(), 100., b, bCov))) continue;
        if ((TMath::Abs(b[0]) > 0.3) || (TMath::Abs(b[1]) > 0.3)) continue;
        multGlob++;
      } //track loop
@@ -505,7 +506,8 @@ template <typename T> Bool_t AliAnalysisTwoParticleResonanceFlowTask::CheckCentr
        if ((trackAOD->Pt() < .2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > .8) || (trackAOD->GetTPCNcls() < 70) || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.1)) continue;
        Double_t b[2] = {-99., -99.};
        Double_t bCov[3] = {-99., -99., -99.};
-       if (!(trackAOD->PropagateToDCA(event->GetPrimaryVertex(), event->GetMagneticField(), 100., b, bCov))) continue;
+       AliAODTrack copy(*trackAOD);
+       if (!(copy.PropagateToDCA(event->GetPrimaryVertex(), event->GetMagneticField(), 100., b, bCov))) continue;
        if ((TMath::Abs(b[0]) > 0.3) || (TMath::Abs(b[1]) > 0.3)) continue;
        multGlob++;
      } //track loop
@@ -546,12 +548,13 @@ Bool_t AliAnalysisTwoParticleResonanceFlowTask::PassesDCACut(AliAODTrack* track)
     // fDCAConfig[0] < -1 no pt dependence
     // fDCAConfig[0] =  0 do nothing
     // fDCAConfig[0] >  1 pt dependent dca cut
+    AliAODTrack copy(*track);
     if(fIsMC) return kTRUE;
     if( (fDCAConfig[0] < 0.1) && (fDCAConfig[0] > -0.1) ) {
         if(fQA) {
             Double_t b[2] = { -99., -99.};
             Double_t bCov[3] = { -99., -99., -99.};
-            if(!track->PropagateToDCA(fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), 100., b, bCov)) {
+            if(!copy.PropagateToDCA(fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), 100., b, bCov)) {
                 fDCAXYQA->Fill(b[0]);
                 fDCAZQA->Fill(b[1]);
                 fDCAPrim->Fill(track->Pt(), b[0]);
@@ -561,7 +564,7 @@ Bool_t AliAnalysisTwoParticleResonanceFlowTask::PassesDCACut(AliAODTrack* track)
     }
     Double_t b[2] = { -99., -99.};
     Double_t bCov[3] = { -99., -99., -99.};
-    if(!track->PropagateToDCA(fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), 100., b, bCov)) return kFALSE;
+    if(!copy.PropagateToDCA(fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), 100., b, bCov)) return kFALSE;
     if((!fIsMC)&&fQA) fDCAMaterial->Fill(track->Pt(), b[0]);
     if( (fDCAConfig[0] < -.9) && ( (TMath::Abs(b[0]) > fDCAConfig[1]) || (TMath::Abs(b[1]) > fDCAConfig[2])) ) return kFALSE;
     if(fDCAConfig[0] > .9) {

@@ -13,13 +13,15 @@ class AliEmcalParticleMaker : public AliAnalysisTaskEmcal {
   AliEmcalParticleMaker(const char *name);
   virtual ~AliEmcalParticleMaker();
 
-  void ExecOnce();
-  Bool_t Run();
-
-  void SetTracksOutName(const char *name) { fTracksOutName      = name; }
-  void SetClusOutName(const char *name)   { fCaloOutName        = name; }
+  const char *       GetClusOutName()   const           { return fCaloOutName;        }
+  const char *       GetTracksOutName() const           { return fTracksOutName;      }
+  void               SetTracksOutName(const char *name) { fTracksOutName      = name; }
+  void               SetClusOutName(const char *name)   { fCaloOutName        = name; }
 
  protected:  
+  void               ExecOnce();
+  Bool_t             Run();
+
   TString            fTracksOutName;    // name of output track array
   TString            fCaloOutName;      // name of output clusters array
   TClonesArray      *fTracksOut;        //!track array out

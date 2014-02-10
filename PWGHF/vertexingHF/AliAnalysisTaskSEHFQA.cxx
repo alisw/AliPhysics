@@ -516,8 +516,14 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     hname="hd0dau";
     TH1F* hd0dau=new TH1F(hname.Data(),"Impact parameter (rphi) distribution of D daughter tracks;d_{0rphi}[cm];Entries/10^{3} cm",200,-0.1,0.1);
 
+    hname="hd0dauphi";
+    TH2F* hd0dauphi=new TH2F(hname.Data(), "Impact parameter (rphi) distribution of D daughter tracks versus #phi; #phi [rad]; d_{0rphi} [cm]",400,0,6.3,200,-0.1,0.1);
+
     hname="hd0zdau";
     TH1F* hd0zdau=new TH1F(hname.Data(),"Impact parameter (z) distribution of D daughter tracks;d_{0z}[cm];Entries/10^{3} cm",200,-0.1,0.1);
+
+    hname="hd0zdauphi";
+    TH2F* hd0zdauphi=new TH2F(hname.Data(), "Impact parameter (z) distribution of D daughter tracks versus #phi; #phi [rad]; d_{0z} [cm]",400,0,6.3,200,-0.1,0.1);
 
     hname="hd0TracksSPDin";
     TH1F* hd0TracksSPDin=new TH1F(hname.Data(),"Impact parameter (rphi) distribution of AOD tracks kITSrefit, SPDinner; d_{0rphi}[cm];Entries",200,-0.5,0.5);
@@ -695,7 +701,9 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputTrack->Add(hd0TracksFilterBit4);
     fOutputTrack->Add(hd0TracksTPCITSSPDany);
     fOutputTrack->Add(hd0dau);
+    fOutputTrack->Add(hd0dauphi);
     fOutputTrack->Add(hd0zdau);
+    fOutputTrack->Add(hd0zdauphi);
     
 
     if(fReadMC){
@@ -2161,9 +2169,15 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	      } else {
 		((TH1F*)fOutputTrack->FindObject("hptGoodTrFromDaugh"))->Fill(track->Pt());
 		((TH1F*)fOutputTrack->FindObject("hd0dau"))->Fill(d->Getd0Prong(id));
+                Double_t phidaughter = d->PhiProng(id);
+		if(phidaughter<0) phidaughter=2.0*TMath::Pi()+phidaughter;
+		((TH2F*)fOutputTrack->FindObject("hd0dauphi"))->Fill(phidaughter, d->Getd0Prong(id));
 		Double_t d0rphiz[2],covd0[3];
 		Bool_t isDCA=track->PropagateToDCA(aod->GetPrimaryVertex(),aod->GetMagneticField(),9999.,d0rphiz,covd0);
-		if(isDCA) ((TH1F*)fOutputTrack->FindObject("hd0zdau"))->Fill(d0rphiz[1]);
+		if(isDCA){
+		  ((TH1F*)fOutputTrack->FindObject("hd0zdau"))->Fill(d0rphiz[1]);
+		  ((TH2F*)fOutputTrack->FindObject("hd0zdauphi"))->Fill(phidaughter,d0rphiz[1]);
+		}
 	      }
 	    }
 

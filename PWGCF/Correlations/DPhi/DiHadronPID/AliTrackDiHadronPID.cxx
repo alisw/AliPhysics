@@ -279,8 +279,10 @@ Bool_t AliTrackDiHadronPID::CopyDCAInfo() {
 	Double_t PosAtDCA[2] = {-999,-999};
     Double_t covar[3] = {-999,-999,-999};
     //cout<<fAODTrack<<" "<<fAODGlobalTrack<<endl;
-    Bool_t propagate = fAODGlobalTrack->PropagateToDCA(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField(),100.,PosAtDCA,covar);
-    	
+    AliAODTrack* clone = (AliAODTrack*) fAODGlobalTrack->Clone("trk_clone"); //need clone, in order not to change track parameters
+    Bool_t propagate = clone->PropagateToDCA(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField(),100.,PosAtDCA,covar);
+    delete clone;    	
+
     if (propagate) {
     	fDCAxy = PosAtDCA[0];
     	fDCAz = PosAtDCA[1];

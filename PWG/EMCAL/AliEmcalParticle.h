@@ -5,6 +5,7 @@
 
 #include <TLorentzVector.h>
 #include <TMath.h>
+#include <TObjArray.h>
 #include "AliVCluster.h"
 #include "AliVParticle.h"
 #include "AliVTrack.h"
@@ -40,11 +41,18 @@ class AliEmcalParticle: public AliVParticle {
   Int_t             PdgCode()   const { return 0; }
   const Double_t   *PID()       const { return 0; }
 
-  AliVCluster*      GetCluster()           const { return fCluster                                                  ; }
+  void              AddMatchedObj(Int_t id, Double_t d);
+  AliVCluster      *GetCluster()           const { return fCluster                                                  ; }
   Int_t             GetMatchedObjId(UShort_t i = 0)         const { return fNMatched > i ? fMatchedIds[i]  : -1     ; }
   Double_t          GetMatchedObjDistance(UShort_t i = 0)   const { return fNMatched > i ? fMatchedDist[i] : -1     ; }
   UShort_t          GetNumberOfMatchedObj()                 const { return fNMatched                                ; }
-  AliVTrack*        GetTrack()             const { return fTrack                                                    ; }
+  AliVCluster      *GetMatchedCluster(UShort_t i = 0)       const { if (fTrack && fMatchedPtr && (fNMatched > i)) 
+                                                                      return static_cast<AliVCluster*>(fMatchedPtr->At(fMatchedIds[i]));
+                                                                    return 0                                        ; } 
+  AliVTrack        *GetMatchedTrack(UShort_t i = 0)         const { if (fCluster && fMatchedPtr && (fNMatched > i)) 
+                                                                      return static_cast<AliVTrack*>(fMatchedPtr->At(fMatchedIds[i]));
+                                                                    return 0                                        ; } 
+  AliVTrack        *GetTrack()             const { return fTrack                                                    ; }
   Double_t          GetTrackPhiOnEMCal()   const { if (fTrack) return fTrack->GetTrackPhiOnEMCal(); else return -999; }
   Double_t          GetTrackEtaOnEMCal()   const { if (fTrack) return fTrack->GetTrackEtaOnEMCal(); else return -999; }
   Int_t             IdInCollection()       const { return fId                                                       ; }
@@ -55,11 +63,10 @@ class AliEmcalParticle: public AliVParticle {
   Bool_t            IsTrack()              const { return (Bool_t) fTrack   != 0                                    ; }
   Bool_t            IsMC(Int_t minLabel=0) const { if (fTrack) return (TMath::Abs(fTrack->GetLabel()) > minLabel); 
                                                    return (fCluster->GetLabel() > minLabel); }
-
-  void              AddMatchedObj(Int_t id, Double_t d);
   void              ResetMatchedObjects();
   void              SetIdInCollection(Int_t id)          { fId = id                                                                      ; }
   void              SetMatchedObj(Int_t id, Double_t d)  { ResetMatchedObjects(); fMatchedIds[0] = id; fMatchedDist[0] = d; fNMatched = 1; }
+  void              SetMatchedPtr(TObjArray *arr)        { fMatchedPtr = arr; }
 
  protected:
   TLorentzVector   &GetLorentzVector(const Double_t *vertex = 0)  const;
@@ -68,13 +75,14 @@ class AliEmcalParticle: public AliVParticle {
 
   AliVTrack        *fTrack;                       //!track
   AliVCluster      *fCluster;                     //!cluster
-  UShort_t          fMatchedIds[fSizeMatched];    //!ids of matched clusters, ordered from the closest to the farthest
-  Double_t          fMatchedDist[fSizeMatched];   //!distances of matched clusters
+  UShort_t          fMatchedIds[fSizeMatched];    //!ids of matched tracks/clusters, ordered from the closest to the farthest
+  Double_t          fMatchedDist[fSizeMatched];   //!distances of matched tracks/clusters
   UShort_t          fNMatched;                    //!number of matched objects 
   Int_t             fId;                          //!id in original collection
   Double_t          fPhi;                         //!phi
   Double_t          fEta;                         //!eta
   Double_t          fPt;                          //!pt
+  TObjArray        *fMatchedPtr;                  //!pointer to array of matched tracks/clusters
 
   ClassDef(AliEmcalParticle, 1) // Emcal particle class
 };

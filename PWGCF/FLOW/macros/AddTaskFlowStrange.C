@@ -3,6 +3,7 @@ Bool_t SFT_gbReadESD;
 Bool_t SFT_gbReadMC;
 Int_t SFT_gbMatchMC;
 Bool_t SFT_gbAvoidExec;
+Bool_t SFT_gbSkipCentrality;
 Bool_t SFT_gbExtraEventCut;
 TString SFT_gbCentMethod;
 Int_t SFT_gbCentPerMin,SFT_gbCentPerMax;
@@ -36,16 +37,17 @@ TString SFT_gbStamp;
 Int_t SFT_gbRFPFilterBit;
 Double_t SFT_gbRFPminPt;
 Double_t SFT_gbRFPmaxPt;
-Double_t SFT_gbRFPminEta;
-Double_t SFT_gbRFPmaxEta;
+Double_t SFT_gbRFPAminEta;
+Double_t SFT_gbRFPAmaxEta;
+Double_t SFT_gbRFPCminEta;
+Double_t SFT_gbRFPCmaxEta;
 Double_t SFT_gbRFPTPCsignal;
 Double_t SFT_gbRFPmaxIPxy;
 Double_t SFT_gbRFPmaxIPz;
 Int_t SFT_gbRFPTPCncls;
-
+Bool_t SFT_gbAddPitoMCRP;
 Bool_t SFT_gbAllCC;
 Bool_t SFT_gbSkipSelection;
-Bool_t SFT_gbSkipFlow;
 Int_t SFT_gbWhichPsi;
 Bool_t SFT_gbFlowPackage;
 Bool_t SFT_gbShrinkFP;
@@ -74,19 +76,13 @@ Bool_t SFT_gbUntagDaughter;
 Int_t SFT_gbPostMatched;
 Double_t SFT_gbVertexZcut;
 
-void AddTaskFlowStrange(TString configFile, TString alienaddress,
-			Int_t VZECm=0, Int_t VZECM=3, Int_t VZEAm=0, Int_t VZEAM=3) {
+void AddTaskFlowStrange(TString configFile, TString alienaddress, Bool_t skipTerminate=kFALSE) {
   Int_t ret = gSystem->Exec( Form("alien_cp %s/%s .",alienaddress.Data(),configFile.Data()) );
   printf("FlowStrange copying from grid %d\n",ret);
-  AddTaskFlowStrange(configFile,VZECm,VZECM,VZEAm,VZEAM);
+  AddTaskFlowStrange(configFile,skipTerminate);
 }
-void AddTaskFlowStrange(TString configFile,
-			Int_t VZECm=0, Int_t VZECM=3, Int_t VZEAm=0, Int_t VZEAM=3) {
+void AddTaskFlowStrange(TString configFile, Bool_t skipTerminate=kFALSE) {
   SFT_ReadConfig(configFile);
-  SFT_gbV0CRingMin = VZECm;
-  SFT_gbV0CRingMax = VZECM;
-  SFT_gbV0ARingMin = VZEAm;
-  SFT_gbV0ARingMax = VZEAM;
   SFT_gbSuffix = Form("%s%d%d%d%d", SFT_gbSuffix.Data(),
 		      SFT_gbV0CRingMin, SFT_gbV0CRingMax, SFT_gbV0ARingMin, SFT_gbV0ARingMax);
   if(SFT_gbAllCC) {
@@ -104,20 +100,19 @@ void AddTaskFlowStrange(TString configFile,
       centMin[1]=20; centMax[1]=40;
       centMin[2]=40; centMax[2]=60;
       centMin[3]=60; centMax[3]=80;
-    } else {
     }
     TString antSuffix = SFT_gbSuffix;
     for(int cc=0; cc!=ncent; ++cc) {
       SFT_gbCentPerMin = centMin[cc];
       SFT_gbCentPerMax = centMax[cc];
-      SFT_gbSuffix = Form("%s%d%d",antSuffix.Data(),SFT_gbCentPerMin,SFT_gbCentPerMax);
-      AddTaskFlowStrange();
+      SFT_gbSuffix = Form("%s%02d%02d",antSuffix.Data(),SFT_gbCentPerMin,SFT_gbCentPerMax);
+      AddTaskFlowStrange(skipTerminate);
     }
   } else {
-    AddTaskFlowStrange();
+    AddTaskFlowStrange(skipTerminate);
   }
 }
-void AddTaskFlowStrange() {
+void AddTaskFlowStrange(Bool_t skipTerminate) {
   SFT_PrintConfig();
 
   TString fileName = AliAnalysisManager::GetCommonFileName();
@@ -134,10 +129,11 @@ void AddTaskFlowStrange() {
   taskSel->SetPostMatched(SFT_gbPostMatched);
   taskSel->SetReadMC(SFT_gbReadMC);
   taskSel->SetAvoidExec(SFT_gbAvoidExec);
+  taskSel->SetSkipCentralitySelection(SFT_gbSkipCentrality);
   taskSel->SetSkipSelection(SFT_gbSkipSelection);
-  taskSel->SetSkipFlow(SFT_gbSkipFlow);
   taskSel->SetExtraEventRejection(SFT_gbExtraEventCut);
   taskSel->SetCentralityRange(SFT_gbCentMethod,SFT_gbCentPerMin,SFT_gbCentPerMax);
+  taskSel->SetSkipTerminate(skipTerminate);
   if(SFT_gbRunPP) taskSel->Setpp();
   if(SFT_gbRunPA) taskSel->SetpA();
   taskSel->SetDebug(SFT_gbDebug);
@@ -151,13 +147,16 @@ void AddTaskFlowStrange() {
   taskSel->SetRFPFilterBit(SFT_gbRFPFilterBit);
   taskSel->SetRFPMinPt(SFT_gbRFPminPt);
   taskSel->SetRFPMaxPt(SFT_gbRFPmaxPt);
-  taskSel->SetRFPMinEta(SFT_gbRFPminEta);
-  taskSel->SetRFPMaxEta(SFT_gbRFPmaxEta);
+  taskSel->SetRFPAMinEta(SFT_gbRFPAminEta);
+  taskSel->SetRFPAMaxEta(SFT_gbRFPAmaxEta);
+  taskSel->SetRFPCMinEta(SFT_gbRFPCminEta);
+  taskSel->SetRFPCMaxEta(SFT_gbRFPCmaxEta);
   taskSel->SetRFPTPCSignal(SFT_gbRFPTPCsignal);
   taskSel->SetRFPMaxIPxy(SFT_gbRFPmaxIPxy);
   taskSel->SetRFPMaxIPz(SFT_gbRFPmaxIPz);
   taskSel->SetRFPMinTPCCls(SFT_gbRFPTPCncls);
 
+  taskSel->SetAddPiToMCReactionPlane(SFT_gbAddPitoMCRP);
   taskSel->SetDauUnTagProcedure(SFT_gbUntagDaughter);
   taskSel->SetVertexZcut(SFT_gbVertexZcut);
 
@@ -385,71 +384,78 @@ double SFT_MaxMass( int nv0 ) {
 void SFT_PrintConfig() {
   printf("***********************************\n");
   printf("* STRANGE FLOW TASK CONFIGURATION *\n");
-  printf("* SUFFIX  %8s                *\n", SFT_gbSuffix.Data() );
-  printf("* TRIGGER  %8d               *\n", SFT_gbTrigger );
-  printf("* RUNPP  %3d                      *\n", SFT_gbRunPP );
-  printf("* RUNPA  %3d                      *\n", SFT_gbRunPA );
-  printf("* AVOIDEXEC  %3d                  *\n", SFT_gbAvoidExec );
-  printf("* ESD  %3d                        *\n", SFT_gbReadESD );
-  printf("* MC  %3d                         *\n", SFT_gbReadMC );
-  printf("* POSTMATCHED  %3d                *\n", SFT_gbPostMatched );
-  printf("* EXTRAEVENTCUT  %3d              *\n", SFT_gbExtraEventCut );
-  printf("* CENTMETHOD  %8s                 *\n", SFT_gbCentMethod.Data() );
-  printf("* CENTPERMIN  %3d                 *\n", SFT_gbCentPerMin );
-  printf("* CENTPERMAX  %3d                 *\n", SFT_gbCentPerMax );
-  printf("* VERTEXZ  %+9.6f             *\n", SFT_gbVertexZcut );
-  printf("* SPECIE  %3d                     *\n", SFT_gbSpecie );
-  printf("* HOMEMADE  %3d                   *\n", SFT_gbHomemade );
-  printf("* ONLINE  %3d                     *\n", SFT_gbOnline );
-  printf("* MINNCLSTTPC  %3d                *\n", SFT_gbMinNClsTPC );
-  printf("* MINXROWS  %3d                   *\n", SFT_gbMinXRows );
-  printf("* MAXCHI2NCLSTPC  %+9.6f      *\n", SFT_gbMaxChi2PerNClsTPC );
-  printf("* MINXROWSNFCLSTPC  %+9.6f    *\n", SFT_gbMinXRowsOverNClsFTPC );
-  printf("* MINETA  %+9.6f              *\n", SFT_gbMinEta );
-  printf("* MAXETA  %+9.6f              *\n", SFT_gbMaxEta );
-  printf("* MINPT  %+9.6f               *\n", SFT_gbMinPt );
-  printf("* UNTAG  %+9.6f               *\n", SFT_gbUntagDaughter );
-  printf("* MIND0XY  %+9.6f             *\n", SFT_gbMinImpactParameterXY );
-  printf("* MAXSIGMAPID  %+9.6f         *\n", SFT_gbMaxNSigmaPID );
-  printf("* MAXY  %+9.6f                *\n", SFT_gbMaxRapidity );
-  printf("* MAXDCA  %+9.6f              *\n", SFT_gbMaxDCAdaughters );
-  printf("* MINCTP  %+9.6f              *\n", SFT_gbMinCosinePointingAngleXY );
-  printf("* MINQT  %+9.6f               *\n", SFT_gbMinQt );
-  printf("* QTPIE  %+9.6f               *\n", SFT_gbQtPie );
-  printf("* MINRADXY  %+9.6f            *\n", SFT_gbMinRadXY );
-  printf("* MAXDL  %+9.6f               *\n", SFT_gbMaxDecayLength );
-  printf("* D0D0XY  %+9.6f              *\n", SFT_gbMaxProductIPXY );
-  printf("* DEBUG  %3d                      *\n", SFT_gbDebug );
-  printf("* QA  %3d                         *\n", SFT_gbQA );
-  printf("* SKIPSELECTION  %3d              *\n", SFT_gbSkipSelection );
-  printf("* SKIPFLOW  %3d                   *\n", SFT_gbSkipFlow );
-  printf("* USEFP  %3d                      *\n", SFT_gbFlowPackage );
-  printf("* SPVZE  %3d                      *\n", SFT_gbSPVZE );
-  printf("* SPVZEHALF  %3d                  *\n", SFT_gbSPVZEhalf );
-  printf("* SPTPC  %3d                      *\n", SFT_gbSPTPC );
-  printf("* QCTPC  %3d                      *\n", SFT_gbQCTPC );
-  printf("* MCEP  %3d                       *\n", SFT_gbMCEP );
-  printf("* SHRINKFP  %3d                   *\n", SFT_gbShrinkFP );
-  printf("* RFFILTERBIT  %3d                *\n", SFT_gbRFPFilterBit );
-  printf("* RFMINPT  %+9.6f             *\n", SFT_gbRFPminPt );
-  printf("* RFMAXPT  %+9.6f             *\n", SFT_gbRFPmaxPt );
-  printf("* RFMINETA  %+9.6f            *\n", SFT_gbRFPminEta );
-  printf("* RFMAXETA  %+9.6f            *\n", SFT_gbRFPmaxEta );
-  printf("* RFTPCSIGNAL  %+9.6f         *\n", SFT_gbRFPTPCsignal );
-  printf("* RFMAXIPXY  %+9.6f           *\n", SFT_gbRFPmaxIPxy );
-  printf("* RFMAXIPZ  %+9.6f            *\n", SFT_gbRFPmaxIPz );
-  printf("* RFTPCNCLS  %3d                  *\n", SFT_gbRFPTPCncls );
-  printf("* WHICHPSI  %3d                   *\n", SFT_gbWhichPsi );
-  printf("* VZELOAD  %8s            *\n", SFT_gbVZEload.Data() );
-  printf("* VZELINEAR  %3d                  *\n", SFT_gbVZEmb );
-  printf("* VZEPERDISK  %3d                 *\n", SFT_gbVZEpdisk );
-  printf("* VZESAVE  %3d                    *\n", SFT_gbVZEsave );
-  printf("* DAUITS0  %3d                    *\n", SFT_gbDauITS0On );
-  printf("* DAUITS1  %3d                    *\n", SFT_gbDauITS1On );
-  printf("* DAUITS2  %3d                    *\n", SFT_gbDauITS2On );
-  printf("* DAUITS3  %3d                    *\n", SFT_gbDauITS3On );
-  printf("* DAUITS4  %3d                    *\n", SFT_gbDauITS4On );
-  printf("* DAUITS5  %3d                    *\n", SFT_gbDauITS5On );
+  printf("* SUFFIX  %s *\n", SFT_gbSuffix.Data() );
+  printf("* TRIGGER  %d *\n", SFT_gbTrigger );
+  printf("* RUNPP  %d *\n", SFT_gbRunPP );
+  printf("* RUNPA  %d *\n", SFT_gbRunPA );
+  printf("* AVOIDEXEC  %d *\n", SFT_gbAvoidExec );
+  printf("* SKIPCENTRALITY  %d *\n", SFT_gbSkipCentrality );
+  printf("* ESD  %d *\n", SFT_gbReadESD );
+  printf("* MC  %d *\n", SFT_gbReadMC );
+  printf("* ADDPITOMCEP  %d *\n", SFT_gbAddPitoMCRP );
+  printf("* POSTMATCHED  %d *\n", SFT_gbPostMatched );
+  printf("* EXTRAEVENTCUT  %d *\n", SFT_gbExtraEventCut );
+  printf("* CENTMETHOD  %s *\n", SFT_gbCentMethod.Data() );
+  printf("* CENTPERMIN  %d *\n", SFT_gbCentPerMin );
+  printf("* CENTPERMAX  %d *\n", SFT_gbCentPerMax );
+  printf("* VERTEXZ  %f *\n", SFT_gbVertexZcut );
+  printf("* SPECIE  %d *\n", SFT_gbSpecie );
+  printf("* HOMEMADE  %d *\n", SFT_gbHomemade );
+  printf("* ONLINE  %d *\n", SFT_gbOnline );
+  printf("* MINNCLSTTPC  %d *\n", SFT_gbMinNClsTPC );
+  printf("* MINXROWS  %d *\n", SFT_gbMinXRows );
+  printf("* MAXCHI2NCLSTPC  %f *\n", SFT_gbMaxChi2PerNClsTPC );
+  printf("* MINXROWSNFCLSTPC  %f *\n", SFT_gbMinXRowsOverNClsFTPC );
+  printf("* MINETA  %f *\n", SFT_gbMinEta );
+  printf("* MAXETA  %f *\n", SFT_gbMaxEta );
+  printf("* MINPT  %f *\n", SFT_gbMinPt );
+  printf("* UNTAG  %f *\n", SFT_gbUntagDaughter );
+  printf("* MIND0XY  %f *\n", SFT_gbMinImpactParameterXY );
+  printf("* MAXSIGMAPID  %f *\n", SFT_gbMaxNSigmaPID );
+  printf("* MAXY  %f *\n", SFT_gbMaxRapidity );
+  printf("* MAXDCA  %f *\n", SFT_gbMaxDCAdaughters );
+  printf("* MINCTP  %f *\n", SFT_gbMinCosinePointingAngleXY );
+  printf("* MINQT  %f *\n", SFT_gbMinQt );
+  printf("* QTPIE  %f *\n", SFT_gbQtPie );
+  printf("* MINRADXY  %f *\n", SFT_gbMinRadXY );
+  printf("* MAXDL  %f *\n", SFT_gbMaxDecayLength );
+  printf("* D0D0XY  %f *\n", SFT_gbMaxProductIPXY );
+  printf("* DEBUG  %d *\n", SFT_gbDebug );
+  printf("* QA  %d *\n", SFT_gbQA );
+  printf("* SKIPSELECTION  %d *\n", SFT_gbSkipSelection );
+  printf("* USEFP  %d *\n", SFT_gbFlowPackage );
+  printf("* SPVZE  %d *\n", SFT_gbSPVZE );
+  printf("* SPVZEHALF  %d *\n", SFT_gbSPVZEhalf );
+  printf("* SPTPC  %d *\n", SFT_gbSPTPC );
+  printf("* QCTPC  %d *\n", SFT_gbQCTPC );
+  printf("* MCEP  %d *\n", SFT_gbMCEP );
+  printf("* SHRINKFP  %d *\n", SFT_gbShrinkFP );
+  printf("* RFFILTERBIT  %d *\n", SFT_gbRFPFilterBit );
+  printf("* RFMINPT  %f *\n", SFT_gbRFPminPt );
+  printf("* RFMAXPT  %f *\n", SFT_gbRFPmaxPt );
+  printf("* RFCMINETA  %f *\n", SFT_gbRFPCminEta );
+  printf("* RFCMAXETA  %f *\n", SFT_gbRFPCmaxEta );
+  printf("* RFAMINETA  %f *\n", SFT_gbRFPAminEta );
+  printf("* RFAMAXETA  %f *\n", SFT_gbRFPAmaxEta );
+  printf("* RFTPCSIGNAL  %f *\n", SFT_gbRFPTPCsignal );
+  printf("* RFMAXIPXY  %f *\n", SFT_gbRFPmaxIPxy );
+  printf("* RFMAXIPZ  %f *\n", SFT_gbRFPmaxIPz );
+  printf("* RFTPCNCLS  %d *\n", SFT_gbRFPTPCncls );
+  printf("* RFVZEC_RingMin  %d *\n", SFT_gbV0CRingMin );
+  printf("* RFVZEC_RingMax  %d *\n", SFT_gbV0CRingMax );
+  printf("* RFVZEA_RingMin  %d *\n", SFT_gbV0ARingMin );
+  printf("* RFVZEA_RingMax  %d *\n", SFT_gbV0ARingMax );
+  printf("* WHICHPSI  %d *\n", SFT_gbWhichPsi );
+  printf("* VZELOAD  %s *\n", SFT_gbVZEload.Data() );
+  printf("* VZELINEAR  %d *\n", SFT_gbVZEmb );
+  printf("* VZEPERDISK  %d *\n", SFT_gbVZEpdisk );
+  printf("* VZESAVE  %d *\n", SFT_gbVZEsave );
+  printf("* DAUITS0  %d *\n", SFT_gbDauITS0On );
+  printf("* DAUITS1  %d *\n", SFT_gbDauITS1On );
+  printf("* DAUITS2  %d *\n", SFT_gbDauITS2On );
+  printf("* DAUITS3  %d *\n", SFT_gbDauITS3On );
+  printf("* DAUITS4  %d *\n", SFT_gbDauITS4On );
+  printf("* DAUITS5  %d *\n", SFT_gbDauITS5On );
   printf("***********************************\n");
 }
 void SFT_ReadConfig(TString ipf) {
@@ -475,6 +481,8 @@ void SFT_ReadConfig(TString ipf) {
       input >> SFT_gbRunPA;
     } else if(!varname.CompareTo("AVOIDEXEC")) {
       input >> SFT_gbAvoidExec;
+    } else if(!varname.CompareTo("SKIPCENTRALITY")) {
+      input >> SFT_gbSkipCentrality;
     } else if(!varname.CompareTo("ESD")) {
       input >> SFT_gbReadESD;
     } else if(!varname.CompareTo("MC")) {
@@ -533,8 +541,6 @@ void SFT_ReadConfig(TString ipf) {
       input >> SFT_gbQA;
     } else if(!varname.CompareTo("SKIPSELECTION")) {
       input >> SFT_gbSkipSelection;
-    } else if(!varname.CompareTo("SKIPFLOW")) {
-      input >> SFT_gbSkipFlow;
     } else if(!varname.CompareTo("USEFP")) {
       input >> SFT_gbFlowPackage;
     } else if(!varname.CompareTo("SPVZE")) {
@@ -547,6 +553,8 @@ void SFT_ReadConfig(TString ipf) {
       input >> SFT_gbQCTPC;
     } else if(!varname.CompareTo("MCEP")) {
       input >> SFT_gbMCEP;
+    } else if(!varname.CompareTo("ADDPITOMCEP")) {
+      input >> SFT_gbAddPitoMCRP;
     } else if(!varname.CompareTo("SHRINKFP")) {
       input >> SFT_gbShrinkFP;
     } else if(!varname.CompareTo("RFFILTERBIT")) {
@@ -555,10 +563,14 @@ void SFT_ReadConfig(TString ipf) {
       input >> SFT_gbRFPminPt;
     } else if(!varname.CompareTo("RFMAXPT")) {
       input >> SFT_gbRFPmaxPt;
-    } else if(!varname.CompareTo("RFMINETA")) {
-      input >> SFT_gbRFPminEta;
-    } else if(!varname.CompareTo("RFMAXETA")) {
-      input >> SFT_gbRFPmaxEta;
+    } else if(!varname.CompareTo("RFCMINETA")) {
+      input >> SFT_gbRFPCminEta;
+    } else if(!varname.CompareTo("RFCMAXETA")) {
+      input >> SFT_gbRFPCmaxEta;
+    } else if(!varname.CompareTo("RFAMINETA")) {
+      input >> SFT_gbRFPAminEta;
+    } else if(!varname.CompareTo("RFAMAXETA")) {
+      input >> SFT_gbRFPAmaxEta;
     } else if(!varname.CompareTo("RFTPCSIGNAL")) {
       input >> SFT_gbRFPTPCsignal;
     } else if(!varname.CompareTo("RFMAXIPXY")) {
@@ -597,6 +609,14 @@ void SFT_ReadConfig(TString ipf) {
       input >> SFT_gbDauITS4On;
     } else if(!varname.CompareTo("DAUITS5")) {
       input >> SFT_gbDauITS5On;
+    } else if(!varname.CompareTo("RFVZEC_RingMin")) {
+      input >> SFT_gbV0CRingMin;
+    } else if(!varname.CompareTo("RFVZEC_RingMax")) {
+      input >> SFT_gbV0CRingMax;
+    } else if(!varname.CompareTo("RFVZEA_RingMin")) {
+      input >> SFT_gbV0ARingMin;
+    } else if(!varname.CompareTo("RFVZEA_RingMax")) {
+      input >> SFT_gbV0ARingMax;
     } else {
       printf("I dont understand %s\n",varname.Data());
     }
@@ -641,15 +661,20 @@ void SFT_ResetVars() {
   SFT_gbRFPFilterBit=1;
   SFT_gbRFPminPt=0.2;
   SFT_gbRFPmaxPt=5.0;
-  SFT_gbRFPminEta=-0.8;
-  SFT_gbRFPmaxEta=+0.8;
+  SFT_gbRFPCminEta=-0.8;
+  SFT_gbRFPCmaxEta=0.0;
+  SFT_gbRFPAminEta=0.0;
+  SFT_gbRFPAmaxEta=+0.8;
   SFT_gbRFPTPCsignal=10;
   SFT_gbRFPmaxIPxy=2.4;
   SFT_gbRFPmaxIPz=3.2;
   SFT_gbRFPTPCncls=70;
+  SFT_gbV0CRingMin=0;
+  SFT_gbV0CRingMax=3;
+  SFT_gbV0ARingMin=0;
+  SFT_gbV0ARingMax=3;
   SFT_gbAllCC=0;
   SFT_gbSkipSelection=0;
-  SFT_gbSkipFlow=0;
   SFT_gbWhichPsi=2;
   SFT_gbFlowPackage=0;
   SFT_gbSPVZE=0;
@@ -672,4 +697,6 @@ void SFT_ResetVars() {
   SFT_gbDauITS3On=-1;
   SFT_gbDauITS4On=-1;
   SFT_gbDauITS5On=-1;
+  SFT_gbSkipCentrality=kFALSE;
+  SFT_gbAddPitoMCRP=kFALSE;
 }

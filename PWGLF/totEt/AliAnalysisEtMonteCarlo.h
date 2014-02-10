@@ -40,6 +40,11 @@ public:
     void CalcForKaonCorrection(){fCalcForKaonCorrection = kTRUE;}
     void IsData(){fIsMC = kFALSE;}
 
+    void SetNumberOfChargedHadronsMatched(Float_t val){nChargedHadronsMeasured = val;}
+    void SetTotalNumberOfChargedHadrons(Float_t val){nChargedHadronsTotal = val;}
+    Float_t GetNumberOfChargedHadronsMatched(){return nChargedHadronsMeasured;}
+    Float_t GetTotalNumberOfChargedHadrons(){return nChargedHadronsTotal;}
+
 protected:
 
     virtual bool TrackHitsCalorimeter(TParticle *part, Double_t magField=0.5);
@@ -51,10 +56,16 @@ protected:
 
     Int_t PrintFamilyTree(Int_t partIdx, AliStack *stack);
     Int_t PrintMothers(Int_t partIdx, AliStack *stack, Int_t gen);
+    Int_t PrintFamilyTreeShort(Int_t partIdx, AliStack *stack);
+    Int_t PrintMothersShort(Int_t partIdx, AliStack *stack, Int_t gen);
 
 
 
 protected:
+
+    Float_t nChargedHadronsMeasured;
+    Float_t nChargedHadronsTotal;
+
     Bool_t fIsMC;//if we are running over data, we still need this object to exist but we don't want to do anything.
 
     Double_t fImpactParameter; // b(fm), for Hijing; 0 otherwise
@@ -315,13 +326,22 @@ protected:
     TH1F *fHistGammasGenerated;
     TH2F *fHistGammasFoundCent;
     TH2F *fHistGammasFoundOutOfAccCent;
+    TH2F *fHistGammasFoundAltCent;
+    TH2F *fHistGammasFoundOutOfAccAltCent;
     TH2F *fHistGammasGeneratedCent;
+    TH2F *fHistGammasFoundRecoEnergyCent;
+    TH2F *fHistGammasFoundOutOfAccRecoEnergyCent;
     TH1F *fHistChargedTracksCut;
     TH1F *fHistChargedTracksAccepted;
     TH1F *fHistGammasCut;
     TH1F *fHistGammasAccepted;
+    TH2F *fHistChargedTrackDepositsAcceptedVsPt;
+    TH2F *fHistChargedTrackDepositsAllVsPt;
+    TH2F *fHistChargedTrackDepositsAcceptedVsPtEffCorr;
+    TH2F *fHistChargedTrackDepositsAllVsPtEffCorr;
     TH2F *fHistChargedTracksCutMult;
     TH2F *fHistChargedTracksAcceptedMult;
+    TH2F *fHistChargedTracksAcceptedLowPtCentEffCorr;
     TH2F *fHistChargedTracksAcceptedLowPtCent;
     TH2F *fHistChargedTracksAcceptedLowPtCent500MeV;
     TH2F *fHistChargedTracksAcceptedLowPtCentNoAntiProtons;
@@ -348,6 +368,8 @@ protected:
     TH2F *fHistHadronDepositsAllCent;
     TH2F *fHistHadronDepositsAllCent500MeV;
     TH2F *fHistHadronDepositsRecoCent;
+    TH2F *fHistHadronDepositsAllvsECent;
+    TH2F *fHistHadronDepositsRecovsECent;
     TH2F *fHistHadronsAllCent;
     TH3F *fHistMultChVsSignalVsMult;
     TH2F *fHistNeutralRemovedSecondaryEtVsCent;
@@ -367,23 +389,92 @@ protected:
     TH2F *fHistNotNeutronsNumVsCent;
     TH2F *fHistPiKPDepositedVsNch;
     TH2F *fHistPiKPNotTrackMatchedDepositedVsNch;
+
     TH2F *fHistNeutronsDepositedVsNch;
     TH2F *fHistAntiNeutronsDepositedVsNch;
     TH2F *fHistProtonsDepositedVsNch;
     TH2F *fHistAntiProtonsDepositedVsNch;
     TH2F *fHistProtonsNotTrackMatchedDepositedVsNch;
-    TH2F *fHistAntiProtonsNotTrackMatchedDepositedVsNch;
+    TH2F *fHistAntiProtonsNotTrackMatchedDepositedVsNch;//
+    TH2F *fHistNeutronsDepositedVsNcl;
+    TH2F *fHistAntiNeutronsDepositedVsNcl;
+    TH2F *fHistProtonsDepositedVsNcl;
+    TH2F *fHistAntiProtonsDepositedVsNcl;
+    TH2F *fHistProtonsNotTrackMatchedDepositedVsNcl;
+    TH2F *fHistAntiProtonsNotTrackMatchedDepositedVsNcl;
     TH2F *fHistSecondariesVsNch;
     TH2F *fHistSecondariesVsNcl;
     TH2F *fHistSecondariesEffCorrVsNch;
     TH2F *fHistSecondariesEffCorrVsNcl;
     TH2F *fHistSecondariesOutOfAccEffCorrVsNch;
     TH2F *fHistSecondariesDetectorCoverEffCorrVsNch;
+
+
+    TH2F *fHistNeutronsDepositedVsNchNoEffCorr;//filled
+    TH2F *fHistAntiNeutronsDepositedVsNchNoEffCorr;//filled
+    TH2F *fHistProtonsDepositedVsNchNoEffCorr;//filled
+    TH2F *fHistAntiProtonsDepositedVsNchNoEffCorr;//filled
+    TH2F *fHistProtonsNotTrackMatchedDepositedVsNchNoEffCorr;//filled
+    TH2F *fHistAntiProtonsNotTrackMatchedDepositedVsNchNoEffCorr;//filled
+    TH2F *fHistNeutronsDepositedVsNclNoEffCorr;//filled
+    TH2F *fHistAntiNeutronsDepositedVsNclNoEffCorr;//filled
+    TH2F *fHistProtonsDepositedVsNclNoEffCorr;//filled
+    TH2F *fHistAntiProtonsDepositedVsNclNoEffCorr;//filled
+    TH2F *fHistProtonsNotTrackMatchedDepositedVsNclNoEffCorr;//filled
+    TH2F *fHistAntiProtonsNotTrackMatchedDepositedVsNclNoEffCorr;//filled
+
     TH3F *fHistCentVsNchVsNcl;
-    //TH3F *fHistSecondaryPositionInDetector;
+    TH3F *fHistSecondaryPositionInDetector;
+    //TH2F *fHistSecondaryPositionInDetector2D;
     TH2F *fClusterPositionWeird;
     //TH3F *fHistSecondaryPositionInDetectorMultiple;
     TH1F *fSecondaryClusterEnergy; // Distribution of cluster energies
+
+    TH2F *fHistGammaCrossCheck;
+    TH2F *fHistGammaCrossCheckAlt;//includes gammas that did not hit as gammas
+    TH2F *fHistGammaEnergyCrossCheck;
+    TH2F *fHistGammaEnergyCrossCheckAlt;//includes gammas that did not hit as gammas
+    TH2F *fHistNeutronCrossCheck;
+    TH2F *fHistSecondaryCrossCheck;
+    TH2F *fHistHadronCrossCheck;
+    TH2F *fHistKaonCrossCheck;
+
+    TH1F *fHistAllEnergy;//energy of all clusters passing cuts vs centrality
+    TH1F *fHistSignalEnergy;//signal of signal clusters passing cuts vs centrality
+    TH1F *fHistNeutronEnergy;//signal of neutron clusters passing cuts vs centrality
+    TH1F *fHistKaonEnergy;//signal of kaon clusters passing cuts vs centrality
+    TH1F *fHistHadronEnergy;//signal of hadron clusters passing cuts vs centrality
+    TH1F *fHistSecondaryEnergy;//signal of secondary clusters passing cuts vs centrality
+    TH1F *fHistSecondaryChargedEnergy;//signal of secondary clusters passing cuts vs centrality
+    TH1F *fHistSecondaryNeutronEnergy;//signal of secondary clusters passing cuts vs centrality
+    TH1F *fHistSecondaryGammaEnergy;//signal of secondary clusters passing cuts vs centrality
+    TH1F *fHistSecondaryElectronEnergy;//signal of secondary clusters passing cuts vs centrality
+    TH1F *fHistSecondaryOtherEnergy;//signal of secondary clusters passing cuts vs centrality
+    TH1F *fHistSimulatedGammaEnergy;//signal of signal clusters passing cuts vs centrality
+    TH1F *fHistReconstructedGammaEnergy;//signal of signal clusters passing cuts vs centrality
+    TH1F *fHistSimulatedGammaEnergyAboveThreshold;//signal of signal clusters passing cuts vs centrality
+    TH1F *fHistReconstructedSignalEnergy;//signal of signal clusters passing cuts vs centrality
+
+    TH2F *fHistFracSignalVsNClusters;//Fraction of signal vs number of clusters
+    TH2F *fHistFracHadronsVsNClusters;//Fraction of hadrons vs number of clusters
+    TH2F *fHistFracNeutronsVsNClusters;//Fraction of signal vs number of clusters
+    TH2F *fHistFracKaonsVsNClusters;//Fraction of signal vs number of clusters
+    TH2F *fHistFracSecondariesVsNClusters;//Fraction of signal vs number of clusters
+    TH2F *fHistFracSignalVsNMultiplicity;//Fraction of signal vs charged track multiplicity
+    TH2F *fHistFracHadronsVsNMultiplicity;//Fraction of hadrons vs charged track multiplicity
+    TH2F *fHistFracNeutronsVsNMultiplicity;//Fraction of signal vs charged track multiplicity
+    TH2F *fHistFracKaonsVsNMultiplicity;//Fraction of signal vs charged track multiplicity
+    TH2F *fHistFracSecondariesVsNMultiplicity;//Fraction of signal vs charged track multiplicity
+    TH2F *fHistFracSignalVsNMatchedTracks;//Fraction of signal vs number of matched tracks
+    TH2F *fHistFracHadronsVsNMatchedTracks;//Fraction of hadrons vs number of matched tracks
+    TH2F *fHistFracNeutronsVsNMatchedTracks;//Fraction of signal vs number of matched tracks
+    TH2F *fHistFracKaonsVsNMatchedTracks;//Fraction of signal vs number of matched tracks
+    TH2F *fHistFracSecondariesVsNMatchedTracks;//Fraction of signal vs number of matched tracks
+    TH2F *fHistFracSignalVsNTotalTracks;//Fraction of signal vs number of total tracks
+    TH2F *fHistFracHadronsVsNTotalTracks;//Fraction of hadrons vs number of total tracks
+    TH2F *fHistFracNeutronsVsNTotalTracks;//Fraction of signal vs number of total tracks
+    TH2F *fHistFracKaonsVsNTotalTracks;//Fraction of signal vs number of total tracks
+    TH2F *fHistFracSecondariesVsNTotalTracks;//Fraction of signal vs number of total tracks
 
 
 private:
