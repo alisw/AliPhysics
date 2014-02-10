@@ -3727,7 +3727,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
      
       //Transverse distance to vertex
       dx = mcXv-pDaughter0->Xv(); dy = mcYv-pDaughter0->Yv();
-      Float_t lt=TMath::Sqrt(dx*dx + dy*dy);
+      //Float_t lt=TMath::Sqrt(dx*dx + dy*dy);
 
       // K0s
       if (lPdgcodeCurrentPart == kK0Short) {
