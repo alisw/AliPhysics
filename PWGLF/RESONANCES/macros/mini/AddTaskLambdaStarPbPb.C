@@ -132,7 +132,7 @@ AliRsnMiniAnalysisTask * AddTaskLambdaStarPbPb
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    
    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigLambdaStarPbPb.C");
-   if (!ConfigTPCanalysisLStar(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPrCandidate, cutKaCandidate, nsigmaPr, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, aodN)) return 0x0; 
+   if (!ConfigLambdaStarPbPb(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPrCandidate, cutKaCandidate, nsigmaPr, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, aodN)) return 0x0; 
    
    
    //
