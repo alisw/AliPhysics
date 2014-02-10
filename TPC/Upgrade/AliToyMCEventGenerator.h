@@ -5,10 +5,13 @@
 
 class TFile;
 class TTree;
+class TObjArray;
 
 class AliTPCParam;
 class AliTPCCorrection;
 class AliTrackPointArray;
+class AliTrackPoint;
+class AliTPCclusterMI;
 
 class AliToyMCTrack;
 class AliToyMCEvent;
@@ -16,13 +19,18 @@ class AliToyMCEvent;
 class AliToyMCEventGenerator : public TObject {
  public:
    enum EGasType {
-     kNeCO2_9010=0
-  };
+     kNeCO2_9010=0,
+     kNeCO2N2_90105
+   };
 
   enum EEpsilon {
     kEps5=0,
     kEps10,
-    kEps20
+    kEps20,
+    kEps25,
+    kEps30,
+    kEps35,
+    kEps40
   };
 
   enum ECollRate {
@@ -69,34 +77,55 @@ class AliToyMCEventGenerator : public TObject {
 
   void SetIsLaser(Bool_t use) { fIsLaser=use;    }
   Bool_t GetIsLaser() const   { return fIsLaser; }
+
+  void   SetSCListFile(const char* file) { fSCListFile=file;              }
+  const char* GetSCListFile() const      { return fSCListFile.Data();     }
+  void   SetPrereadSCList(Bool_t b)      { fPrereadSCList=b;              }
+  Bool_t GetPrereadSCList() const        { return fPrereadSCList;         }
+  Bool_t HasSCList() const               { return  !fSCListFile.IsNull(); }
+
+  void SetCalculateScaling(Bool_t  val) { fCalculateScaling = val; }
+  Bool_t  GetCalculateScaling() const { return fCalculateScaling; }
+
+  static Float_t GetSCScalingFactor(AliTPCCorrection *corr, AliTPCCorrection *averageCorr, Float_t &chi2);
+  static void SetCorrectionFromFile(TString file, AliTPCCorrection* &corr);
   
  protected:
-  AliTPCParam *fTPCParam;
-  AliToyMCEvent *fEvent;
+  AliTPCParam *fTPCParam;                //! TPC params
+  AliToyMCEvent *fEvent;                 //! Toy event
   
   Bool_t ConnectOutputFile();
   Bool_t CloseOutputFile();
   void FillTree();
-
+  void IterateSC(Int_t ipos=-1);
+  void SetSCScalingFactor();
+  
   UInt_t fCurrentTrack;                  // unique track id within the current event generation
 
   
  private:
   AliToyMCEventGenerator& operator= (const AliToyMCEventGenerator& );
    
-  AliTPCCorrection *fTPCCorrection;
-
-  TString fCorrectionFile;
-  TString fOutputFileName;
-  TFile   *fOutFile;
-  TTree   *fOutTree;
-
-  Bool_t fUseStepCorrection;
-  Bool_t fUseMaterialBudget;
-  Bool_t fIsLaser;
+  AliTPCCorrection *fTPCCorrection;      //! distortion correction
+  AliTPCCorrection *fTPCCorrectionAv;    //! average distortion correction
   
-  ClassDef(AliToyMCEventGenerator, 1)
-     
+  TObjArray   *fSCList;                  //! list with
+  TString fSCListFile;                   // file with a list of space charge files
+  TString fCorrectionFile;               // name of a sinfle SC file
+  TString fOutputFileName;               // name of the output file
+  TFile   *fOutFile;                     //! output file
+  TTree   *fOutTree;                     //! output tree
+
+  Bool_t fUseStepCorrection;             // use integralDz method?
+  Bool_t fUseMaterialBudget;             // use material budget in tracking?
+  Bool_t fIsLaser;                       // is a laser event?
+  Bool_t fPrereadSCList;                 // preread all SC files from the SC list
+  Bool_t fCalculateScaling;              // calculate scaling factor
+
+  void InitSpaceChargeList();
+  
+  ClassDef(AliToyMCEventGenerator, 2)
+  
 };
 
 #endif

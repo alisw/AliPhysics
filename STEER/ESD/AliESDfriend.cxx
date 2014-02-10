@@ -28,23 +28,34 @@ ClassImp(AliESDfriend)
 
 AliESDfriend::AliESDfriend(): TObject(), fTracks("AliESDfriendTrack",1),
   fESDVZEROfriend(NULL),
-  fESDTZEROfriend(NULL)
-
+  fESDTZEROfriend(NULL),
+  fNclustersTPC(),
+  fNclustersTPCused()
 {
  //
  // Default constructor
  //
+  for (Int_t i=0;i<72;i++)
+  {
+    fNclustersTPC[i]=0;
+    fNclustersTPCused[i]=0;
+  }
 }
 
 AliESDfriend::AliESDfriend(const AliESDfriend &f) :
   TObject(f),
   fTracks(f.fTracks),
   fESDVZEROfriend(f.fESDVZEROfriend ? new AliESDVZEROfriend(*f.fESDVZEROfriend) : NULL),
-  fESDTZEROfriend(f.fESDTZEROfriend ? new AliESDTZEROfriend(*f.fESDTZEROfriend) : NULL)
+  fESDTZEROfriend(f.fESDTZEROfriend ? new AliESDTZEROfriend(*f.fESDTZEROfriend) : NULL),
+  fNclustersTPC(),
+  fNclustersTPCused()
 {
  //
  // Copy constructor
  //
+ memcpy(fNclustersTPC,f.fNclustersTPC,sizeof(fNclustersTPC));
+ memcpy(fNclustersTPCused,f.fNclustersTPCused,sizeof(fNclustersTPCused));
+
 }
 
 AliESDfriend& AliESDfriend::operator=(const AliESDfriend& esd)
@@ -61,6 +72,8 @@ AliESDfriend& AliESDfriend::operator=(const AliESDfriend& esd)
     delete fESDTZEROfriend;
     fESDTZEROfriend = new AliESDTZEROfriend(*esd.fESDTZEROfriend);
  
+    memcpy(fNclustersTPC,esd.fNclustersTPC,sizeof(fNclustersTPC));
+    memcpy(fNclustersTPCused,esd.fNclustersTPCused,sizeof(fNclustersTPCused));
  
  
     return *this;

@@ -1985,7 +1985,7 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
             fGridJDL->SetOutputDirectory(Form("#alienfulldir#/../%s",fOutputSingle.Data()), "Output directory");
          else {
             fGridJDL->SetOutputDirectory(Form("%s/#alien_counter_03i#", fGridOutputDir.Data()), "Output directory");
-            fMergingJDL->SetOutputDirectory(fGridOutputDir);         
+//            fMergingJDL->SetOutputDirectory(fGridOutputDir);         
          }   
       } else {
          // One jdl to be submitted with 2 input parameters: data collection name and output dir prefix

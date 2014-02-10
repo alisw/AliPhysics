@@ -38,7 +38,7 @@ void finalPlots(const char* filesEps20, TString saveDir="")
   TString idealDistorted("t1_1_3_130_10.");
   TString distorted("t0_1_0_130_10.");
   TString realTracking("t0_1_2_130_10.");
-  TString realTrackingPreT0("t0_1_4_130_10.");
+//  TString realTrackingPreT0("t0_1_4_130_10.");
   
   SetStyle();
   
@@ -51,7 +51,7 @@ void finalPlots(const char* filesEps20, TString saveDir="")
     return;
   }
 
-  if (/*tEps10->GetListOfFriends()->GetEntries()!=5 ||*/ tEps20->GetListOfFriends()->GetEntries()!=6) {
+  if (/*tEps10->GetListOfFriends()->GetEntries()!=5 ||*/ tEps20->GetListOfFriends()->GetEntries()!=5) {
     printf("ERROR: wrong number of entries in the friends, not default\n");
     return;
   }
@@ -77,9 +77,9 @@ void finalPlots(const char* filesEps20, TString saveDir="")
   drawStr=Form("(%sfTime0-t0)*vDrift",realTracking.Data());
   tEps20->Draw(drawStr+">>hT0resDC","","goff");
 
-  TH1F *hT0resDCPreT0 = new TH1F("hT0resDCPreT0","T0 resolution;(#it{t}_{0}^{seed}-#it{t}_{0}) #upoint #it{v}_{drift};#tracks",100,-50.1,50.1);
-  drawStr=Form("(%sfTime0-t0)*vDrift",realTrackingPreT0.Data());
-  tEps20->Draw(drawStr+">>hT0resDCPreT0","","goff");
+//  TH1F *hT0resDCPreT0 = new TH1F("hT0resDCPreT0","T0 resolution;(#it{t}_{0}^{seed}-#it{t}_{0}) #upoint #it{v}_{drift};#tracks",100,-50.1,50.1);
+//  drawStr=Form("(%sfTime0-t0)*vDrift",realTrackingPreT0.Data());
+//  tEps20->Draw(drawStr+">>hT0resDCPreT0","","goff");
   
   //   hT0resI->Draw();
   //   hT0resD->Draw("same");
@@ -128,7 +128,7 @@ void finalPlots(const char* filesEps20, TString saveDir="")
   
   TCanvas *cYresDistCorrTzeroSeed=GetCanvas("YresDistCorrTzeroSeed","Yres for fully distorted/corrected clusters (Tzero seed)");
   //ideal clusters at the ITS outermost point
-  TH1F *hYresDistCorrTzeroSeed = new TH1F("hYresDistCorrTzeroSeed",";#it{y}_{TPC}-#it{y}_{ITS} (cm);#tracks",100,-.85,0.85);
+  TH1F *hYresDistCorrTzeroSeed = new TH1F("hYresDistCorrTzeroSeed",";#it{y}_{TPC}-#it{y}_{ITS} (cm);#tracks",100,-.85,1.15);
   drawStr=Form("%strackITS2.fP[0]-%stRealITS2.fP[0]",realTracking.Data(),realTracking.Data());
   tEps20->Draw(drawStr+">>hYresDistCorrTzeroSeed","","goff");
   
@@ -157,8 +157,10 @@ void finalPlots(const char* filesEps20, TString saveDir="")
   //
 
   TString titles[5]={"#it{y}_{TPC}-#it{y}_{ITS} (cm)","#it{z}_{TPC}-#it{z}_{ITS} (cm)","sin(#it{#alpha})_{TPC}-sin(#it{#alpha})_{ITS}","tan(#it{#lambda})_{TPC}-tan(#it{#lambda})_{ITS}","1/#it{p}_{T TPC}-1/#it{p}_{T ITS} ((GeV/#it{c})^{-1})"};
-  Double_t min[5]={-.85,-15,-.009,-.005,-.05};
-  Double_t max[5]={ .85, 15, .009, .005, .05};
+  //Double_t min[5]={-.85,-15,-.009,-.005,-.05};
+  //Double_t max[5]={ .85, 15, .009, .005, .05};
+  Double_t min[5]={-.85,-15,-.015,-.005,-.075};
+  Double_t max[5]={1.15, 15, .015, .005, .075};
   TString type[3]={idealUndistorted,idealDistorted,realTracking};
   Int_t colors[3]={kBlack,kGreen-2,kRed};
 
@@ -191,6 +193,27 @@ void finalPlots(const char* filesEps20, TString saveDir="")
   cResParams->cd(6);
   leg->Draw();
   SaveCanvas(cResParams);
+
+  TCanvas *cResRPhi=GetCanvas("ResRPhi","Resolution of rPhi");
+  TLegend *leg2=new TLegend(.12,.7,.48,.95);
+  TObjArray arr;
+  Int_t i=0;
+  for (Int_t it=0; it<3; ++it) {
+    TH1F *hResParams=new TH1F(Form("hResParams_%d_%d",i,it),
+                              Form(";%s;#tracks",titles[i].Data()),
+                              100,min[i],max[i]);
+    drawStr=Form("%strackITS2.fP[%d]-tRealITS2.fP[%d]",type[it].Data(),i,i);
+    tEps20->Draw(drawStr+Form(">>hResParams_%d_%d",i,it),"","goff");
+    hResParams->SetLineColor(colors[it]);
+    arr.Add(hResParams);
+  }
+  leg2->AddEntry(arr.At(0),"no distortions (ideal)","l");
+  leg2->AddEntry(arr.At(1),"distorted/corrected (t_{0})","l");
+  leg2->AddEntry(arr.At(2),"distorted/corrected (t_{0}^{seed})","l");
+  DrawOnTop(cResRPhi,arr,kTRUE);
+  leg2->Draw("same");
+  SaveCanvas(cResRPhi);
+  
 }
 
 
@@ -212,6 +235,7 @@ void SaveCanvas(TCanvas *c)
   if (fSaveDir.IsNull()) return;
   
   c->SaveAs(Form("/tmp/%s.eps",c->GetName()));
+  c->SaveAs(Form("%s/%s.png",fSaveDir.Data(),c->GetName()));
   gSystem->Exec(Form("ps2pdf -dEPSCrop /tmp/%s.eps %s/%s.pdf",c->GetName(),fSaveDir.Data(),c->GetName()));
 }
 
@@ -254,7 +278,7 @@ void SetStyle()
 {
   const Int_t NCont=255;
   //const Int_t NCont=50;
-  
+  TH1::AddDirectory();
   TStyle *st = new TStyle("mystyle","mystyle");
   gROOT->GetStyle("Plain")->Copy((*st));
   st->SetTitleX(0.1);

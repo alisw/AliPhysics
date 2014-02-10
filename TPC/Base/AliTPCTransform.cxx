@@ -319,6 +319,7 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   static Double_t vdcorrectionTime=1;
   static Double_t vdcorrectionTimeGY=0;
   static Double_t time0corrTime=0;
+  static Double_t deltaZcorrTime=0;
   static Int_t    lastStampT=-1;
   //
   if (lastStampT!=(Int_t)fCurrentTimeStamp){
@@ -334,6 +335,13 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
 			       fCurrentRun,
 			       sector%36>=18,
 			       fCurrentRecoParam->GetUseDriftCorrectionTime());	
+      //
+      deltaZcorrTime= AliTPCcalibDB::Instance()->
+	GetVDriftCorrectionDeltaZ(fCurrentTimeStamp, 
+			       fCurrentRun,
+			       sector%36>=18,
+			       0);	
+      
     }
     //
     if(fCurrentRecoParam->GetUseDriftCorrectionGY()>0) {
@@ -407,6 +415,7 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   x[2]-= 3.*param->GetZSigma() + time0corrTime;
   // subtract the time offsets
   x[2] = sign*( param->GetZLength(sector) - x[2]);
+  x[2]-=deltaZcorrTime;   // subtrack time dependent z shift (calibrated together with the drift velocity and T0)
 }
 
 void AliTPCTransform::RotatedGlobal2Global(Int_t sector,Double_t *x) const {

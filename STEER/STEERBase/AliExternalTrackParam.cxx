@@ -507,6 +507,7 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterial
   // "anglecorr" - switch for the angular correction
   // "Bethe" - function calculating the energy loss (GeV/(g/cm^2)) 
   //------------------------------------------------------------------
+
   Double_t bg=GetP()/mass;
   if (mass<0) {
     if (mass<-990) {
@@ -557,6 +558,7 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterialZA
     bg = -2*bg;
   }
   Double_t dEdx=BetheBlochGeant(bg,density,jp1,jp2,exEnergy,zOverA);
+
   if (mass<0) dEdx *= 4;
   return CorrectForMeanMaterialdEdx(xOverX0,xTimesRho,mass,dEdx,anglecorr);
 }
@@ -1810,6 +1812,7 @@ AliExternalTrackParam::GetZAt(Double_t x, Double_t b, Double_t &z) const {
   //---------------------------------------------------------------------
   Double_t dx=x-fX;
   if(TMath::Abs(dx)<=kAlmost0) {z=fP[1]; return kTRUE;}
+
   Double_t crv=GetC(b);
   Double_t x2r = crv*dx;
   Double_t f1=fP[2], f2=f1 + x2r;
@@ -1843,9 +1846,11 @@ AliExternalTrackParam::GetXYZAt(Double_t x, Double_t b, Double_t *r) const {
   //---------------------------------------------------------------------
   Double_t dx=x-fX;
   if(TMath::Abs(dx)<=kAlmost0) return GetXYZ(r);
+
   Double_t crv=GetC(b);
   Double_t x2r = crv*dx;
   Double_t f1=fP[2], f2=f1 + dx*crv;
+
   if (TMath::Abs(f1) >= kAlmost1) return kFALSE;
   if (TMath::Abs(f2) >= kAlmost1) return kFALSE;
   
@@ -1866,6 +1871,7 @@ AliExternalTrackParam::GetXYZAt(Double_t x, Double_t b, Double_t *r) const {
     double rot = 2*TMath::ASin(0.5*chord*crv); // angular difference seen from the circle center
     r[2] = fP[1] + rot/crv*fP[3];
   }
+
   return Local2GlobalPosition(r,fAlpha);
 }
 
@@ -2299,6 +2305,7 @@ void AliExternalTrackParam::CheckCovariance() {
   // This function forces the diagonal elements of the covariance matrix to be positive.
   // In case the diagonal element is bigger than the maximal allowed value, it is set to
   // the limit and the off-diagonal elements that correspond to it are set to zero.
+
   fC[0] = TMath::Abs(fC[0]);
   if (fC[0]>kC0max) {
     double scl = TMath::Sqrt(kC0max/fC[0]);
@@ -2513,7 +2520,6 @@ Bool_t AliExternalTrackParam::GetXatLabR(Double_t r,Double_t &x, Double_t bz, In
   //
   return kTRUE;
 }
-
 //_________________________________________________________
 Bool_t AliExternalTrackParam::GetXYZatR(Double_t xr,Double_t bz, Double_t *xyz, Double_t* alpSect) const
 {
@@ -2651,4 +2657,3 @@ Bool_t AliExternalTrackParam::GetXYZatR(Double_t xr,Double_t bz, Double_t *xyz, 
   return kTRUE;  
   //
 }
-

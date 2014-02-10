@@ -36,6 +36,11 @@
 #include "AliAlignObj.h"
 #include "AliAlignObjParams.h"
 #include "AliLog.h"
+#include "TGraphErrors.h"
+#include "AliTPCcalibDB.h"
+#include "AliMathBase.h"
+
+TObjArray *AliTPCParam::fBBParam = 0;
 
 ClassImp(AliTPCParam)
 
@@ -103,6 +108,15 @@ AliTPCParam::AliTPCParam()
 	     fOmegaTau(0.),
 	     fAttCoef(0.),
 	     fOxyCont(0.),
+             fFpot(0.),
+             fNprim(0.),
+             fNtot(0.),
+             fWmean(0.),
+             fExp(0.),
+             fEend(0.),
+             fBetheBloch(0x0),
+	     fGainSlopesHV(0),   // graph with the gain slope as function of HV - per chamber
+	     fGainSlopesPT(0),   // graph with the gain slope as function of P/T - per chamber
 	     fPadCoupling(0.),
 	     fZeroSup(0),
 	     fNoise(0.),
@@ -137,6 +151,7 @@ AliTPCParam::AliTPCParam()
 
   SetTitle("75x40_100x60_150x60");
   SetDefault();  
+  if (!fBBParam) fBBParam= new TObjArray(1000);
 }
 
 AliTPCParam::~AliTPCParam()
@@ -399,6 +414,12 @@ void AliTPCParam::SetDefault()
   static const  Float_t  kOmegaTau = 0.145;
   static const  Float_t  kAttCoef = 250.;
   static const  Float_t  kOxyCont = 5.e-6;
+  static const  Float_t  kFpot = 22.77e-9;
+  static const  Float_t  kNprim=14.35;
+  static const  Float_t  kNtot=42.66;
+  static const  Float_t  kWmean = 35.97e-9;
+  static const  Float_t  kExp = 2.2;
+  static const  Float_t  kEend = 10.e-6; 
   //
   //electronic default parameters
   //
@@ -484,6 +505,16 @@ void AliTPCParam::SetDefault()
   SetOmegaTau(kOmegaTau);
   SetAttCoef(kAttCoef);
   SetOxyCont(kOxyCont);
+  SetFpot(kFpot);
+  SetNprim(kNprim);
+  SetNtot(kNtot);
+  SetWmean(kWmean);
+  SetExp(kExp);
+  SetEend(kEend);
+  //
+  SetComposition(0.9,0.,0.1,0.,0.,0.);// Ne-CO2 90/10
+  //
+  SetBetheBloch(GetBetheBlochParamAlice());
   //
   //set electronivc parameters  
   //
@@ -518,6 +549,7 @@ void AliTPCParam::SetDefault()
   SetGateDelay(kGateDelay);
   SetL1Delay(kL1Delay);
   SetNTBinsBeforeL1(kNTBinsBeforeL1);
+  SetNominalGainSlopes();
 }
 
           
@@ -851,3 +883,81 @@ Float_t AliTPCParam::GetChamberCenter(Int_t isec, Float_t * center) const
   }
 }
 
+void AliTPCParam::SetNominalGainSlopes(){
+  //
+  // Setting the nominal TPC gain slopes 
+  // Nominal values were obtained as a mena values foe 2010,2011, and 2012 data
+  // Differntial values can be provided per year
+  //
+  Float_t sector[72]={0};
+  Float_t gainHV[72]={0};
+  Float_t gainPT[72]={0};
+  //
+  for (Int_t isec=0; isec<72; isec++){
+    sector[isec]=isec;
+    gainHV[isec]=0.0115;  // change of the Gain dG/G  per 1 Volt  of voltage change(1/V) - it is roughly the same for IROC and OROC
+    gainPT[isec]=2.2;     // change of the Gains dG/G per P/T change ()
+  }
+  fGainSlopesHV = new TGraphErrors(72,sector,gainHV,0,0);
+  fGainSlopesPT = new TGraphErrors(72,sector,gainPT,0,0);
+  fGainSlopesHV->SetName("GainSlopesHV");
+  fGainSlopesPT->SetName("GainSlopesPT");
+}
+
+
+TVectorD * AliTPCParam::GetBetheBlochParamNa49(){
+  //
+  //  Parameters of the BB for the Aleph parametrization AliMathBase::BetheBlochAleph
+  //  Na49 parameters were used as first set of parameters for ALICE simulation
+  //  (see TPC TDR for details)
+  TVectorD v(5);
+  v(0)=0.76176e-1;
+  v(1)=10.632;
+  v(2)=0.13279e-4;
+  v(3)=1.8631;
+  v(4)=1.9479;
+  return new TVectorD(v);
+}
+
+TVectorD * AliTPCParam::GetBetheBlochParamAlice(){
+  //
+  //
+  //  Parameters of the BB for the Aleph parametrization AliMathBase::BetheBlochAleph
+  //  Na49 parameters were used as first set of parameters for ALICE simulation
+  //  Second set was obtained from ALICE 2009-2013 data taking 
+  //  (see TPC TDR for details)
+  //  
+  TVectorD v(5);
+  v[0] = 0.0851148;
+  v[1] = 9.25771;
+  v[2] = 2.6558e-05;
+  v[3] = 2.32742;
+  v[4] = 1.83039;
+  return new TVectorD(v);
+}
+
+
+Double_t  AliTPCParam::BetheBlochAleph(Double_t bg, Int_t type){
+  //
+  //  GetBetheBloch retur values for the parametrs regieter at poition type 
+  //  Used for visualization and comparison purposes
+  TVectorD * paramBB =0;
+  if (type==0) {
+    AliTPCParam* param = AliTPCcalibDB::Instance()->GetParameters();
+    if (param) paramBB=param->GetBetheBlochParameters();
+  } 
+  if (type>0){
+    paramBB = (TVectorD*)fBBParam->At(type);
+  }
+  if (!paramBB) return 0;
+  //
+  return AliMathBase::BetheBlochAleph(bg,(*paramBB)(0),(*paramBB)(1),(*paramBB)(2),(*paramBB)(3),(*paramBB)(4)); 
+}
+
+
+void AliTPCParam::RegisterBBParam(TVectorD* param, Int_t position){
+  //
+  // 
+  //
+  fBBParam->AddAt(param,position);
+}

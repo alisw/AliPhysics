@@ -347,7 +347,7 @@ void AliITSUv0::CreateGeometry() {
     }
     fUpGeom[j]->CreateLayer(dest);
   }
-  delete wrapVols; // delete pointer only, not the volumes
+  delete[] wrapVols; // delete pointer only, not the volumes
   //
 }
 

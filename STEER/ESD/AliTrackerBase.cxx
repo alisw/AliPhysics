@@ -268,7 +268,7 @@ Double_t AliTrackerBase::MeanMaterialBudget(const Double_t *start, const Double_
 
 Bool_t 
 AliTrackerBase::PropagateTrackTo(AliExternalTrackParam *track, Double_t xToGo, 
-				 Double_t mass, Double_t maxStep, Bool_t rotateTo, Double_t maxSnp, Int_t sign, Bool_t addTimeStep){
+				 Double_t mass, Double_t maxStep, Bool_t rotateTo, Double_t maxSnp, Int_t sign, Bool_t addTimeStep, Bool_t correctMaterialBudget){
   //----------------------------------------------------------------
   //
   // Propagates the track to the plane X=xk (cm) using the magnetic field map 
@@ -291,33 +291,38 @@ AliTrackerBase::PropagateTrackTo(AliExternalTrackParam *track, Double_t xToGo,
     track->GetXYZ(xyz0);   //starting global position
 
     Double_t bz=GetBz(xyz0); // getting the local Bz
-
     if (!track->GetXYZAt(x,bz,xyz1)) return kFALSE;   // no prolongation
     xyz1[2]+=kEpsilon; // waiting for bug correction in geo
-
+    
     if (maxSnp>0 && TMath::Abs(track->GetSnpAt(x,bz)) >= maxSnp) return kFALSE;
     if (!track->PropagateTo(x,bz))  return kFALSE;
 
-    MeanMaterialBudget(xyz0,xyz1,param);	
-    Double_t xrho=param[0]*param[4], xx0=param[1];
-    if (sign) {if (sign<0) xrho = -xrho;}  // sign is imposed
-    else { // determine automatically the sign from direction
-      if (dir>0) xrho = -xrho; // outward should be negative
+    if (correctMaterialBudget){
+      MeanMaterialBudget(xyz0,xyz1,param);
+      Double_t xrho=param[0]*param[4], xx0=param[1];
+      if (sign) {if (sign<0) xrho = -xrho;}  // sign is imposed
+      else { // determine automatically the sign from direction
+        if (dir>0) xrho = -xrho; // outward should be negative
+      }
+      //
+      if (!track->CorrectForMeanMaterial(xx0,xrho,mass)) return kFALSE;
     }
-    //
-    if (!track->CorrectForMeanMaterial(xx0,xrho,mass)) return kFALSE;
+    
     if (rotateTo){
       track->GetXYZ(xyz1);   // global position
       Double_t alphan = TMath::ATan2(xyz1[1], xyz1[0]); 
       if (maxSnp>0) {
 	if (TMath::Abs(track->GetSnp()) >= maxSnp) return kFALSE;
+        
 	//
 	Double_t ca=TMath::Cos(alphan-track->GetAlpha()), sa=TMath::Sin(alphan-track->GetAlpha());
 	Double_t sf=track->GetSnp(), cf=TMath::Sqrt((1.-sf)*(1.+sf));
 	Double_t sinNew =  sf*ca - cf*sa;
-	if (TMath::Abs(sinNew) >= maxSnp) return kFALSE;
+        if (TMath::Abs(sinNew) >= maxSnp) return kFALSE;
+        
       }
       if (!track->AliExternalTrackParam::Rotate(alphan)) return kFALSE;
+      
     }
     xpos = track->GetX();
     if (addTimeStep && track->IsStartedTimeIntegral()) {
@@ -332,6 +337,78 @@ AliTrackerBase::PropagateTrackTo(AliExternalTrackParam *track, Double_t xToGo,
     }
   }
   return kTRUE;
+}
+
+Int_t AliTrackerBase::PropagateTrackTo2(AliExternalTrackParam *track, Double_t xToGo,
+                                        Double_t mass, Double_t maxStep, Bool_t rotateTo, Double_t maxSnp, Int_t sign, Bool_t addTimeStep, Bool_t correctMaterialBudget){
+  //----------------------------------------------------------------
+  //
+  // Propagates the track to the plane X=xk (cm) using the magnetic field map
+  // and correcting for the crossed material.
+  //
+  // mass     - mass used in propagation - used for energy loss correction
+  // maxStep  - maximal step for propagation
+  //
+  //  Origin: Marian Ivanov,  Marian.Ivanov@cern.ch
+  //
+  //----------------------------------------------------------------
+  const Double_t kEpsilon = 0.00001;
+  Double_t xpos     = track->GetX();
+  Int_t dir         = (xpos<xToGo) ? 1:-1;
+  //
+  while ( (xToGo-xpos)*dir > kEpsilon){
+    Double_t step = dir*TMath::Min(TMath::Abs(xToGo-xpos), maxStep);
+    Double_t x    = xpos+step;
+    Double_t xyz0[3],xyz1[3],param[7];
+    track->GetXYZ(xyz0);   //starting global position
+    
+    Double_t bz=GetBz(xyz0); // getting the local Bz
+    if (!track->GetXYZAt(x,bz,xyz1)) return -1;   // no prolongation
+    xyz1[2]+=kEpsilon; // waiting for bug correction in geo
+    
+    if (maxSnp>0 && TMath::Abs(track->GetSnpAt(x,bz)) >= maxSnp) return -2;
+    if (!track->PropagateTo(x,bz))  return -3;
+    
+    if (correctMaterialBudget){
+      MeanMaterialBudget(xyz0,xyz1,param);
+      Double_t xrho=param[0]*param[4], xx0=param[1];
+      if (sign) {if (sign<0) xrho = -xrho;}  // sign is imposed
+      else { // determine automatically the sign from direction
+        if (dir>0) xrho = -xrho; // outward should be negative
+      }
+      //
+      if (!track->CorrectForMeanMaterial(xx0,xrho,mass)) return -4;
+    }
+    
+    if (rotateTo){
+      track->GetXYZ(xyz1);   // global position
+      Double_t alphan = TMath::ATan2(xyz1[1], xyz1[0]);
+      if (maxSnp>0) {
+        if (TMath::Abs(track->GetSnp()) >= maxSnp) return -5;
+        
+        //
+        Double_t ca=TMath::Cos(alphan-track->GetAlpha()), sa=TMath::Sin(alphan-track->GetAlpha());
+        Double_t sf=track->GetSnp(), cf=TMath::Sqrt((1.-sf)*(1.+sf));
+        Double_t sinNew =  sf*ca - cf*sa;
+        if (TMath::Abs(sinNew) >= maxSnp) return -6;
+        
+      }
+      if (!track->AliExternalTrackParam::Rotate(alphan)) return -7;
+      
+    }
+    xpos = track->GetX();
+    if (addTimeStep && track->IsStartedTimeIntegral()) {
+      if (!rotateTo) track->GetXYZ(xyz1); // if rotateTo==kTRUE, then xyz1 is already extracted
+      Double_t dX=xyz0[0]-xyz1[0],dY=xyz0[1]-xyz1[1],dZ=xyz0[2]-xyz1[2];
+      Double_t d=TMath::Sqrt(dX*dX + dY*dY + dZ*dZ);
+      if (sign) {if (sign>0) d = -d;}  // step sign is imposed, positive means inward direction
+      else { // determine automatically the sign from direction
+        if (dir<0) d = -d;
+      }
+      track->AddTimeStep(d);
+    }
+  }
+  return 1;
 }
 
 Bool_t 
@@ -487,13 +564,18 @@ Double_t AliTrackerBase::MakeTgl(Double_t x1,Double_t y1,
   // Initial approximation of the tangent of the track dip angle
   //-----------------------------------------------------------------
   //
+  const Double_t kEpsilon =0.00001;
   x2-=x1;
   y2-=y1;
   z2-=z1;
   Double_t d  =  TMath::Sqrt(x2*x2+y2*y2);  // distance  straight line
   if (TMath::Abs(d*c*0.5)>1) return 0;
   Double_t   angle2    = TMath::ASin(d*c*0.5); 
-  angle2  = z2*TMath::Abs(c/(angle2*2.));
+  if (TMath::Abs(angle2)>kEpsilon)  {
+    angle2  = z2*TMath::Abs(c/(angle2*2.));
+  }else{
+    angle2=z2/d;
+  }
   return angle2;
 }
 

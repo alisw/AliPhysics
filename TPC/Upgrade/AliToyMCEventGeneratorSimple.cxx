@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include <TROOT.h>
 #include <TDatabasePDG.h>
 #include <TRandom.h>
 #include <TF1.h>
@@ -80,11 +81,14 @@ AliToyMCEventGeneratorSimple& AliToyMCEventGeneratorSimple::operator = (const Al
 void AliToyMCEventGeneratorSimple::SetParametersToyGen(const Char_t* parfilename/*="files/params.root*/, Double_t vertexMean/*=0*/, Double_t vertexSigma/*=7.*/) {
   fVertexMean = vertexMean;
   fVertexSigma = vertexSigma;
-  fParamFile = new TFile(parfilename, "read");
-  fHPt = (TH1F*) fParamFile->Get("hPt");
-  fHEta = (TH1F*) fParamFile->Get("hEta"); 
-  fHMult = (TH1I*) fParamFile->Get("hMult") ;
+//   fParamFile = new TFile(parfilename, "read");
+  TFile f(parfilename);
+  gROOT->cd();
+  fHPt = (TH1F*) f.Get("hPt");
+  fHEta = (TH1F*) f.Get("hEta");
+  fHMult = (TH1I*) f.Get("hMult") ;
   fHistosSet = kTRUE;
+  f.Close();
  
   
 }
@@ -92,8 +96,11 @@ void AliToyMCEventGeneratorSimple::SetParametersToyGen(const Char_t* parfilename
 AliToyMCEvent* AliToyMCEventGeneratorSimple::Generate(Double_t time)
 {
   //
+  // Generate an event at 'time'
   //
-  //
+
+  // iterate over space charge maps in case they are set
+  IterateSC();
   
   AliToyMCEvent *retEvent = new AliToyMCEvent();
   retEvent->SetT0(time);
@@ -183,6 +190,7 @@ void AliToyMCEventGeneratorSimple::RunSimulation(const Int_t nevents/*=10*/, con
   for (Int_t ievent=0; ievent<nevents; ++ievent){
     printf("Generating event %3d (%.3g)\n",ievent,eventTime);
     fEvent = Generate(eventTime);
+    SetSCScalingFactor();
     FillTree();
     delete fEvent;
     fEvent=0x0;
@@ -371,6 +379,7 @@ void AliToyMCEventGeneratorSimple::RunSimulationBunchTrain(const Int_t nevents/*
     if(equalSpacing)  {
       printf("Generating event %3d (%.3g)\n",nGeneratedEvents,eventTime);
       fEvent = Generate(eventTime);
+      SetSCScalingFactor();
       nGeneratedEvents++;
       FillTree();
       delete fEvent;
@@ -382,6 +391,7 @@ void AliToyMCEventGeneratorSimple::RunSimulationBunchTrain(const Int_t nevents/*
       for(Int_t iColl = 0; iColl<nCollsInCrossing; iColl++){
 	printf("Generating event %3d (%.3g)\n",nGeneratedEvents,eventTime);
 	fEvent = Generate(eventTime);
+        SetSCScalingFactor();
 	nGeneratedEvents++;
 	FillTree();
 	delete fEvent;
@@ -442,8 +452,8 @@ Int_t AliToyMCEventGeneratorSimple::OpenInputAndGetMaxEvents(const Int_t type, c
 
     fInputIndex = 0;
 
-    return fESDTree->GetEntries();
     gRandom->SetSeed();
+    return fESDTree->GetEntries();
    }
 
  
@@ -509,6 +519,9 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::GenerateESD2(Double_t time) {
 
   //test that enough tracks will pass cuts (and that there is tracks at all)
   Bool_t testEvent = kTRUE;
+
+  // iterate over space charge maps in case they are set
+  IterateSC();
   while(fESDTree->GetEvent(fInputIndex) && testEvent) {  
     
     Int_t nPassedCuts = 0;
@@ -569,6 +582,9 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::GenerateLaser(Double_t time)
   //
   // Generate an Event with laser tracks
   //
+
+  // iterate over space charge maps in case they are set
+  IterateSC();
   
   AliToyMCEvent *retEvent = new AliToyMCEvent();
   retEvent->SetEventType(AliToyMCEvent::kLaser);

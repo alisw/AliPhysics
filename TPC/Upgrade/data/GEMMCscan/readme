@@ -1,0 +1,64 @@
+variables in the tree:
+
+[1] result_sim.root
+NeCO2N2_sim
+////////////////
+ET1 : ET1 value
+ET2 : ET2 value
+ET3 : ET3 value
+ET4 : ET4 value
+UGEM1 : GEM1 voltage
+UGEM2 : GEM2 voltage
+UGEM3 : GEM3 voltage
+UGEM4 : GEM4 voltage
+UGEM3overUGEM4 : UGEM3/UGEM4
+Gain : Effective Gain estimated by the multiplication distribution (= Mean_ElectronsTransfer4). 158seeds, 10000 events
+IB: ion back flow (# of ions in the drift/# of electrons in the induction)
+Sigma: Resolution Sigma estimated by the multiplication distribution (= Mean_ElectronsTransfer4). 158seeds, 10000 events
+Mean_ElectronsTransfer1: Mean number of the electrons in transfer1 (calculation started from 1 seed)
+RMSoverMean_ElectronsTransfer1: RMS/Mean of number of the electrons in transfer1
+Mean_ElectronsTransfer2: Mean number of the electrons in transfer2 (calculation started from # of electrons in transfer1)
+RMSoverMean_ElectronsTransfer2: RMS/Mean of number of the electrons in transfer2
+Mean_ElectronsTransfer3: Mean number of the electrons in transfer3 (calculation started from # of electrons in transfer2)
+RMSoverMean_ElectronsTransfer3: RMS/Mean of number of the electrons in transfer3
+Mean_ElectronsTransfer4: Mean number of the electrons in transfer4 (calculation started from # of electrons in transfer3)
+RMSoverMean_ElectronsTransfer4: RMS/Mean of number of the electrons in transfer4
+
+Sigma_Meas : measured Sigma
+IB_Meas : measured IB 
+
+
+[2] out_UGEM1_UGEM2_UGEM3_UGEM4.root
+
+ElectronsInduction : the number of electrons in the induction (calculation started from 1 seed)
+ElectronsGEM1: total electrons created in GEM1 (from 1 seed)
+ElectronsGEM2: total electrons created in GEM2 (from # of electrons in transfer1)
+ElectronsGEM3: total electrons created in GEM3 (from # of electrons in transfer2)
+ElectronsGEM4: total electrons created in GEM4 (from # of electrons in transfer3)
+ElectronsTransfer12: total electrons in transfer1 (from 1 seed + GEM1 amplification)
+ElectronsTransfer23: total electrons in transfer2 (from ElectronsTransfer12 + GEM2 amplification)
+ElectronsTransfer34: total electrons in transfer3 (from ElectronsTransfer23 + GEM3 amplification)
+ElectronsTransfer45: total electrons in transfer4 (from ElectronsTransfer34 + GEM4 amplification)
+ElectronsGEM1Upper: number of electrons absorbed in GEM1 Upper Metal
+ElectronsGEM1Lower: number of electrons absorbed in GEM1 Lower Metal
+ElectronsGEM2Upper: number of electrons absorbed in GEM2 Upper Metal
+ElectronsGEM2Lower: number of electrons absorbed in GEM2 Lower Metal
+ElectronsGEM3Upper: number of electrons absorbed in GEM3 Upper Metal
+ElectronsGEM3Lower: number of electrons absorbed in GEM3 Lower Metal
+ElectronsGEM4Upper: number of electrons absorbed in GEM4 Upper Metal
+ElectronsGEM4Lower: number of electrons absorbed in GEM4 Lower Metal
+
+IonsGEM4 : total ions created at GEM4
+IonsGEM4Drift : number of ions from GEM4 going back the drift space
+IonsGEM3Drift : number of ions from GEM3 going back the drift space
+IonsGEM2Drift : number of ions from GEM2 going back the drift space
+IonsGEM1Drift : number of ions from GEM1 going back the drift space
+
+IonsGEM1Upper : the number of ions absorbed at GEM1 top out of the number of ions created in GEM1
+IonsGEM1Lower : the number of ions absorbed at GEM1 bottom out of the number of ions created in GEM1
+IonsGEM2Upper : the number of ions absorbed at GEM2 top out of the number of ions created in GEM2
+IonsGEM2Lower : the number of ions absorbed at GEM2 bottom out of the number of ions created in GEM2
+IonsGEM3Upper : the number of ions absorbed at GEM3 top out of the number of ions created in GEM3
+IonsGEM3Lower : the number of ions absorbed at GEM3 bottom out of the number of ions created in GEM3
+IonsGEM4Upper : the number of ions absorbed at GEM4 top out of the number of ions created in GEM4
+IonsGEM4Lower : the number of ions absorbed at GEM4 bottom out of the number of ions created in GEM4

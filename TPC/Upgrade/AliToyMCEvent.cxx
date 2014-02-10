@@ -11,6 +11,8 @@ AliToyMCEvent::AliToyMCEvent()
   ,fX(-1000.)
   ,fY(-1000.)
   ,fZ(-1000.)
+  ,fSCscale(-1.)
+  ,fSCscaleChi2(0)
   ,fTracks("AliToyMCTrack")
 {
   fEventNumber = fgEvCounter;
@@ -26,6 +28,8 @@ AliToyMCEvent::AliToyMCEvent(const AliToyMCEvent &event)
   ,fX(event.fX)
   ,fY(event.fY)
   ,fZ(event.fZ)
+  ,fSCscale(event.fSCscale)
+  ,fSCscaleChi2(event.fSCscaleChi2)
   ,fTracks(event.fTracks)
 {
   //

@@ -19,8 +19,8 @@
 // 
 // Subset of  matheamtical functions  not included in the TMath
 //
-
-///////////////////////////////////////////////////////////////////////////
+//
+/////////////////////////////////////////////////////////////////////////
 #include "TMath.h"
 #include "Riostream.h"
 #include "TH1F.h"
@@ -38,7 +38,6 @@
 #include "TCanvas.h"
 #include "TLatex.h"
 #include "TCut.h"
-
 //
 // includes neccessary for test functions
 //
@@ -263,25 +262,37 @@ void TStatToolkit::TruncatedMean(const TH1 * his, TVectorD *param, Float_t down,
   if (verbose)  printf("Mean\t%f\t Sigma2\t%f\n", mean,sigma2);
 }
 
-void TStatToolkit::LTM(TH1F * his, TVectorD *param , Float_t fraction,  Bool_t verbose){
+void TStatToolkit::LTM(TH1 * his, TVectorD *param , Float_t fraction,  Bool_t verbose){
   //
-  // LTM
+  // LTM : Trimmed mean on histogram - Modified version for binned data
   //
+  // Robust statistic to estimate properties of the distribution
+  // See http://en.wikipedia.org/w/index.php?title=Trimmed_estimator&oldid=582847999
+  //
+  // New faster version is under preparation
+  //
+  if (!param) return;
+  (*param)[0]=0;
+  (*param)[1]=0;
+  (*param)[2]=0;  
   Int_t nbins    = his->GetNbinsX();
   Int_t nentries = (Int_t)his->GetEntries();
+  if (nentries<=0) return;
   Double_t *data  = new Double_t[nentries];
   Int_t npoints=0;
   for (Int_t ibin=1;ibin<nbins; ibin++){
-    Float_t entriesI = his->GetBinContent(ibin);
-    Float_t xcenter= his->GetBinCenter(ibin);
+    Double_t entriesI = his->GetBinContent(ibin);
+    //Double_t xcenter= his->GetBinCenter(ibin);
+    Double_t x0 =  his->GetXaxis()->GetBinLowEdge(ibin);
+    Double_t w  =  his->GetXaxis()->GetBinWidth(ibin);
     for (Int_t ic=0; ic<entriesI; ic++){
       if (npoints<nentries){
-	data[npoints]= xcenter;
+	data[npoints]= x0+w*Double_t((ic+0.5)/entriesI);
 	npoints++;
       }
     }
   }
-  Double_t mean, sigma;
+  Double_t mean, sigma;  
   Int_t npoints2=TMath::Min(Int_t(fraction*Float_t(npoints)),npoints-1);
   npoints2=TMath::Max(Int_t(0.5*Float_t(npoints)),npoints2);
   TStatToolkit::EvaluateUni(npoints, data, mean,sigma,npoints2);
@@ -292,6 +303,149 @@ void TStatToolkit::LTM(TH1F * his, TVectorD *param , Float_t fraction,  Bool_t v
     (*param)[2] = sigma;    
   }
 }
+
+
+void TStatToolkit::MedianFilter(TH1 * his1D, Int_t nmedian){
+  //
+  // Algorithm to filter  histogram
+  // author:  marian.ivanov@cern.ch
+  // Details of algorithm:
+  // http://en.wikipedia.org/w/index.php?title=Median_filter&oldid=582191524
+  // Input parameters:
+  //    his1D - input histogam - to be modiefied by Medianfilter
+  //    nmendian - number of bins in median filter
+  //
+  Int_t nbins    = his1D->GetNbinsX();
+  TVectorD vectorH(nbins);
+  for (Int_t ibin=0; ibin<nbins; ibin++) vectorH[ibin]=his1D->GetBinContent(ibin+1);
+  for (Int_t ibin=0; ibin<nbins; ibin++) {
+    Int_t index0=ibin-nmedian;
+    Int_t index1=ibin+nmedian;
+    if (index0<0) {index1+=-index0; index0=0;}
+    if (index1>=nbins) {index0-=index1-nbins+1; index1=nbins-1;}    
+    Double_t value= TMath::Median(index1-index0,&(vectorH.GetMatrixArray()[index0]));
+    his1D->SetBinContent(ibin+1, value);
+  }  
+}
+
+Bool_t TStatToolkit::LTMHisto(TH1 *his1D, TVectorD &params , Float_t fraction){
+  //
+  // LTM : Trimmed mean on histogram - Modified version for binned data
+  // 
+  // Robust statistic to estimate properties of the distribution
+  // To handle binning error special treatment
+  // for definition of unbinned data see:
+  //     http://en.wikipedia.org/w/index.php?title=Trimmed_estimator&oldid=582847999
+  //
+  // Function parameters:
+  //     his1D   - input histogram
+  //     params  - vector with parameters
+  //             - 0 - area
+  //             - 1 - mean
+  //             - 2 - rms 
+  //             - 3 - error estimate of mean
+  //             - 4 - error estimate of RMS
+  //             - 5 - first accepted bin position
+  //             - 6 - last accepted  bin position
+  //
+  Int_t nbins    = his1D->GetNbinsX();
+  Int_t nentries = (Int_t)his1D->GetEntries();
+  const Double_t kEpsilon=0.0000000001;
+
+  if (nentries<=0) return 0;
+  if (fraction>1) fraction=0;
+  if (fraction<0) return 0;
+  TVectorD vectorX(nbins);
+  TVectorD vectorMean(nbins);
+  TVectorD vectorRMS(nbins);
+  Double_t sumCont=0;
+  for (Int_t ibin0=1; ibin0<=nbins; ibin0++) sumCont+=his1D->GetBinContent(ibin0);
+  //
+  Double_t minRMS=his1D->GetRMS()*10000;
+  Int_t maxBin=0;
+  //
+  for (Int_t ibin0=1; ibin0<nbins; ibin0++){
+    Double_t sum0=0, sum1=0, sum2=0;
+    Int_t ibin1=ibin0;
+    for ( ibin1=ibin0; ibin1<nbins; ibin1++){
+      Double_t cont=his1D->GetBinContent(ibin1);
+      Double_t x= his1D->GetBinCenter(ibin1);
+      sum0+=cont;
+      sum1+=cont*x;
+      sum2+=cont*x*x;
+      if ( (ibin0!=ibin1) && sum0>=fraction*sumCont) break;
+    }
+    vectorX[ibin0]=his1D->GetBinCenter(ibin0);
+    if (sum0<fraction*sumCont) continue;
+    //
+    // substract fractions of bin0 and bin1 to keep sum0=fration*sumCont
+    //
+    Double_t diff = sum0-fraction*sumCont;
+    Double_t mean = sum1/sum0;
+    //
+    Double_t x0=his1D->GetBinCenter(ibin0);
+    Double_t x1=his1D->GetBinCenter(ibin1);
+    Double_t y0=his1D->GetBinContent(ibin0);
+    Double_t y1=his1D->GetBinContent(ibin1);
+    //
+    Double_t d = y0+y1-diff;    //enties to keep 
+    Double_t w0=0,w1=0;
+    if (y0<=kEpsilon&&y1>kEpsilon){
+      w1=d/y1;
+    } 
+    if (y1<=kEpsilon&&y0>kEpsilon){
+      w0=d/y0;
+    }
+    if (y0>kEpsilon && y1>kEpsilon && x1>x0  ){
+      w0 = (d*(x1-mean))/((x1-x0)*y0);
+      w1 = (d-y0*w0)/y1;
+      //
+      if (w0>1) {w1+=(w0-1)*y0/y1; w0=1;}
+      if (w1>1) {w0+=(w1-1)*y1/y0; w1=1;}
+    }  
+    if ( (x1>x0) &&TMath::Abs(y0*w0+y1*w1-d)>kEpsilon*sum0){
+      printf(" TStatToolkit::LTMHisto error\n");
+    }
+    sum0-=y0+y1;
+    sum1-=y0*x0;
+    sum1-=y1*x1;
+    sum2-=y0*x0*x0;
+    sum2-=y1*x1*x1;
+    //
+    Double_t xx0=his1D->GetXaxis()->GetBinUpEdge(ibin0)-0.5*w0*his1D->GetBinWidth(ibin0);
+    Double_t xx1=his1D->GetXaxis()->GetBinLowEdge(ibin1)+0.5*w1*his1D->GetBinWidth(ibin1);
+    sum0+=y0*w0+y1*w1;
+    sum1+=y0*w0*xx0;
+    sum1+=y1*w1*xx1;
+    sum2+=y0*w0*xx0*xx0;
+    sum2+=y1*w1*xx1*xx1;
+
+    //
+    // choose the bin with smallest rms
+    //
+    if (sum0>0){
+      vectorMean[ibin0]=sum1/sum0;
+      vectorRMS[ibin0]=TMath::Sqrt(TMath::Abs(sum2/sum0-vectorMean[ibin0]*vectorMean[ibin0]));
+      if (vectorRMS[ibin0]<minRMS){
+	minRMS=vectorRMS[ibin0];
+	params[0]=sum0;
+	params[1]=vectorMean[ibin0];
+	params[2]=vectorRMS[ibin0];
+	params[3]=vectorRMS[ibin0]/TMath::Sqrt(sumCont*fraction);
+	params[4]=0; // what is the formula for error of RMS???
+	params[5]=ibin0;
+	params[6]=ibin1;
+	params[7]=his1D->GetBinCenter(ibin0);
+	params[8]=his1D->GetBinCenter(ibin1);
+	maxBin=ibin0;
+      }
+    }else{
+      break;
+    }
+  }
+  return kTRUE;
+}
+
 
 Double_t  TStatToolkit::FitGaus(TH1* his, TVectorD *param, TMatrixD */*matrix*/, Float_t xmin, Float_t xmax, Bool_t verbose){
   //
@@ -583,7 +737,7 @@ void TStatToolkit::TestGausFit(Int_t nhistos){
   // ROOT gauss fit
   //  nhistos - number of histograms to be used for test
   //
-  TTreeSRedirector *pcstream = new TTreeSRedirector("fitdebug.root");
+  TTreeSRedirector *pcstream = new TTreeSRedirector("fitdebug.root","recreate");
   
   Float_t  *xTrue = new Float_t[nhistos];
   Float_t  *sTrue = new Float_t[nhistos];
@@ -609,7 +763,7 @@ void TStatToolkit::TestGausFit(Int_t nhistos){
     h1f[i]->FillRandom("myg");
   }
   
-  TStopwatch s;
+  TStopwatch s; 
   s.Start();
   //standard gaus fit
   for (Int_t i=0; i<nhistos; i++){
@@ -686,7 +840,7 @@ TGraph2D * TStatToolkit::MakeStat2D(TH3 * his, Int_t delta0, Int_t delta1, Int_t
       if (type==0) stat = projection->GetMean();
       if (type==1) stat = projection->GetRMS();
       if (type==2 || type==3){
-	TVectorD vec(3);
+	TVectorD vec(10);
 	TStatToolkit::LTM((TH1F*)projection,&vec,0.7);
 	if (type==2) stat= vec[1];
 	if (type==3) stat= vec[0];	
@@ -703,45 +857,77 @@ TGraph2D * TStatToolkit::MakeStat2D(TH3 * his, Int_t delta0, Int_t delta1, Int_t
   return graph;
 }
 
-TGraph * TStatToolkit::MakeStat1D(TH3 * his, Int_t delta1, Int_t type){
+TGraphErrors * TStatToolkit::MakeStat1D(TH2 * his, Int_t deltaBin, Double_t fraction, Int_t returnType, Int_t markerStyle, Int_t markerColor){
   //
+  // function to retrieve the "mean and RMS estimate" of 2D histograms
+  //     
+  // Robust statistic to estimate properties of the distribution
+  // See http://en.wikipedia.org/wiki/Trimmed_estimator
   //
-  //
-  // delta - number of bins to integrate
-  // type - 0 - mean value
-
+  // deltaBin - number of bins to integrate (bin+-deltaBin)
+  // fraction - fraction of values for the LTM and for the gauss fit
+  // returnType - 
+  //        0 - mean value
+  //        1 - RMS
+  //        2 - LTM mean
+  //        3 - LTM sigma
+  //        4 - Gaus fit mean  - on LTM range
+  //        5 - Gaus fit sigma - on LTM  range
+  // 
   TAxis * xaxis  = his->GetXaxis();
-  TAxis * yaxis  = his->GetYaxis();
-  //  TAxis * zaxis  = his->GetZaxis();
   Int_t   nbinx  = xaxis->GetNbins();
-  Int_t   nbiny  = yaxis->GetNbins();
   char name[1000];
   Int_t icount=0;
-  TGraph  *graph = new TGraph(nbinx);
+  //
+  TVectorD vecX(nbinx);
+  TVectorD vecXErr(nbinx);
+  TVectorD vecY(nbinx);
+  TVectorD vecYErr(nbinx);
+  //
   TF1 f1("f1","gaus");
-  for (Int_t ix=0; ix<nbinx;ix++){
-    Float_t xcenter = xaxis->GetBinCenter(ix); 
-    //    Float_t ycenter = yaxis->GetBinCenter(iy); 
+  TVectorD vecLTM(10);
+
+  for (Int_t jx=1; jx<=nbinx;jx++){
+    Int_t ix=jx-1;
+    Float_t xcenter = xaxis->GetBinCenter(jx); 
     snprintf(name,1000,"%s_%d",his->GetName(), ix);
-    TH1 *projection = his->ProjectionZ(name,ix-delta1,ix+delta1,0,nbiny);
-    Float_t stat= 0;
-    if (type==0) stat = projection->GetMean();
-    if (type==1) stat = projection->GetRMS();
-    if (type==2 || type==3){
-      TVectorD vec(3);
-	TStatToolkit::LTM((TH1F*)projection,&vec,0.7);
-	if (type==2) stat= vec[1];
-	if (type==3) stat= vec[0];	
+    TH1 *projection = his->ProjectionY(name,TMath::Max(jx-deltaBin,1),TMath::Min(jx+deltaBin,nbinx));
+    Double_t stat= 0;
+    Double_t err =0;
+    TStatToolkit::LTMHisto((TH1F*)projection,vecLTM,fraction);  
+    //
+    if (returnType==0) {
+      stat = projection->GetMean();
+      err  = projection->GetMeanError();
     }
-    if (type==4|| type==5){
-      projection->Fit(&f1);
-      if (type==4) stat= f1.GetParameter(1);
-      if (type==5) stat= f1.GetParameter(2);
+    if (returnType==1) {
+      stat = projection->GetRMS();
+      err = projection->GetRMSError();
     }
-      //printf("%d\t%f\t%f\t%f\n", icount,xcenter, ycenter, stat);
-    graph->SetPoint(icount,xcenter, stat);
+    if (returnType==2 || returnType==3){
+      if (returnType==2) {stat= vecLTM[1];  err =projection->GetRMSError();}
+	if (returnType==3) {stat= vecLTM[2];	 err =projection->GetRMSError();}
+    }
+    if (returnType==4|| returnType==5){
+      projection->Fit(&f1,"QN","QN", vecLTM[7], vecLTM[8]);
+      if (returnType==4) {
+	stat= f1.GetParameter(1);
+	err=f1.GetParError(1);
+      }
+      if (returnType==5) {
+	stat= f1.GetParameter(2);
+	err=f1.GetParError(2);
+      }
+    }
+    vecX[icount]=xcenter;
+    vecY[icount]=stat;
+    vecYErr[icount]=err;
     icount++;
+    delete projection;
   }
+  TGraphErrors  *graph = new TGraphErrors(icount,vecX.GetMatrixArray(), vecY.GetMatrixArray(),0, vecYErr.GetMatrixArray());
+  graph->SetMarkerStyle(markerStyle);
+  graph->SetMarkerColor(markerColor);
   return graph;
 }
 

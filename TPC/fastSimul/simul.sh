@@ -1,32 +1,93 @@
 #!/bin/sh
 
-# 1 argument      - the path to the environment setup
-# 2 argument      - the job ID
-# 3 argument      - number of events in the file
-# 4 argument      - output path
 
-# Example
-# myvar=0
-# $ALICE_ROOT/TPC/fastSimul/simul.sh  /u/miranov/.balice64HEAD0108 $myvar 1000 `pwd`
-# while [ $myvar -ne 100 ] ; do bsub  do something ;  myvar=$(( $myvar + 1 )) ; echo $myvar ; done
-#
-# 1 SETUP given ROOT and ALIROOT
-#
-echo   $1
-source $1
-echo  $ROOTSYS
-which root.exe
-which aliroot
-#
-#  make directory
-#
 
-cd $4
-mkdir $2
-cd $2
-cp ~/rootlogon.C .
-echo Job ID  $2
-echo
-echo PWD `pwd`
+main()
+{
+  #
+  # run in proper action depending on the selection
+  #  
+  if [[ $# -lt 1 ]]; then
+    if [[ ! "$0" =~ "bash" ]]; then
+      echo " Please select action"
+    fi
+    return
+  fi
+  runMode=$1
+  umask 0002
+  shift
+  case $runMode in
+   "runJob") runJob "$@";;
+    "makeEnvLocal") makeEnvLocal "$@";;
+    "makeSubmitRun") makeSubmitRun "$@";;
+   *) 
+   eval "${runMode} $@" 
+   ;;
+  esac
+  return;
+}
 
-command aliroot  -q -b  "$ALICE_ROOT/TPC/fastSimul/simul.C($3)"
+
+
+exampleCase(){
+#
+#  Example case to subit Toy MC jobs
+# 
+   source $ALICE_ROOT/TPCdev/TPC/fastSimul/simul.sh
+   makeEnvLocal
+   makeSubmitRUN 40 100
+   ls `pwd`/MC*/trackerSimul.root >  trackerSimul.list
+
+}
+
+
+
+runJob()
+{
+#runFastMCJob      
+    echo  $ROOTSYS
+    which root.exe
+    which aliroot
+    echo PWD `pwd`
+    ntracks=$1
+    echo Submitting ntracks = $ntracks
+    echo command aliroot  -q -b  "$mcPath/simul.C\($ntracks\)"    
+    command aliroot  -q -b  "$mcPath/simul.C($ntracks)"    
+    return;
+}
+
+
+makeEnvLocal(){
+#
+#
+# Example usage local 
+# jobs to be submitted form the lxb1001 or lxb1002
+#(here we have 80 nodes and user disk)
+# 
+    echo makeEnvLocal
+    export baliceTPC=$HOME/.baliceTPC
+    export mcPath=$ALICE_ROOT/TPC/fastSimul
+    export batchCommand="qsub -cwd  -V "
+}
+
+makeSubmitRUN(){
+#
+# submits jobs
+#   
+    wdir=`pwd`;
+    njobs=$1
+    ntracks=$2
+    for (( job=1; job <= $njobs; job++ ));  do  
+	echo $job;  
+	mkdir $wdir/MC$job
+	cd $wdir/MC$job
+ 	echo $batchCommand    -o  toyMC.log  $mcPath/simul.sh runJob  $ntracks
+ 	$batchCommand    -o  toyMC.log  $mcPath/simul.sh runJob $ntracks
+	cd $wdir
+    done 
+}
+
+
+
+main "$@"
+

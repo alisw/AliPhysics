@@ -39,6 +39,16 @@
 //   WriteChargeDistributionToFile. In there, a $\rho(r,z) = (A-B\,z)/r^2$, 
 //   with slightly different magnitude on the A and C side (due to the muon absorber),
 //   is superpositioned with a few leaking wires at arbitrary positions. 
+//
+//
+//   Marian Ivanov change: 26.06.2013
+//   Usage of the realy 3D space charge map as an optional input
+//   SetInputSpaceCharge map.
+//   In case given map is used 2 2D maps are ignored and  scaling functions  $\rho(r,z) = (A-B\,z)/r^2$, 
+//   will not work
+//
+
+
 // End_Html
 //
 // Begin_Macro(source)
@@ -78,6 +88,7 @@
 #include "TMath.h"
 #include "AliTPCROC.h"
 #include "AliTPCSpaceCharge3D.h"
+#include "AliSysInfo.h"
 
 ClassImp(AliTPCSpaceCharge3D)
 
@@ -92,7 +103,10 @@ AliTPCSpaceCharge3D::AliTPCSpaceCharge3D()
     fSCLookUpPOCsFileNameRPhi(""),
     fSCdensityInRZ(0),
     fSCdensityInRPhiA(0), 
-    fSCdensityInRPhiC(0)
+    fSCdensityInRPhiC(0),
+    fSpaceChargeHistogram3D(0),
+    fSpaceChargeHistogramRPhi(0),
+    fSpaceChargeHistogramRZ(0)
 {
   //
   // default constructor
@@ -141,7 +155,9 @@ AliTPCSpaceCharge3D::~AliTPCSpaceCharge3D() {
   delete fSCdensityInRZ;
   delete fSCdensityInRPhiA;
   delete fSCdensityInRPhiC;
-
+  delete fSpaceChargeHistogram3D;
+  delete fSpaceChargeHistogramRPhi;
+  delete fSpaceChargeHistogramRZ;
 }
 
 
@@ -251,7 +267,7 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
 
   if (fInitLookUp) {
     AliInfo("Lookup table was already initialized!  Doing it again anyway ...");
-    //    return;
+    return;
   }
   
   // ------------------------------------------------------------------------------------------------------
@@ -1014,8 +1030,8 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortionCourse() {
 
     // weights (charge density) at POC position on the A and C side (in C/m^3/e0)
     // note: coordinates are in [cm]
-    Double_t weightA = GetSpaceChargeDensity(r0*100,phi0, z0*100);
-    Double_t weightC = GetSpaceChargeDensity(r0*100,phi0,-z0*100);
+    Double_t weightA = GetSpaceChargeDensity(r0*100,phi0, z0*100,0);
+    Double_t weightC = GetSpaceChargeDensity(r0*100,phi0,-z0*100,0);
   
     // Summing up the vector components according to their weight
 
@@ -1081,8 +1097,8 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortionCourse() {
       
       // weights (charge density) at POC position on the A and C side (in C/m^3/e0)
       // note: coordinates are in [cm]
-      weightA = GetSpaceChargeDensity(r0*100,phi0, z0*100); 
-      weightC = GetSpaceChargeDensity(r0*100,phi0,-z0*100);
+      weightA = GetSpaceChargeDensity(r0*100,phi0, z0*100,0); 
+      weightC = GetSpaceChargeDensity(r0*100,phi0,-z0*100,0);
       
       //     printf("%f %f %f: %e %e\n",r0,phi0,z0,weightA,weightC);
        
@@ -1377,6 +1393,63 @@ void AliTPCSpaceCharge3D::SetSCDataFileName(TString fname) {
   
 }
 
+void     AliTPCSpaceCharge3D::SetInputSpaceCharge(TH3 * hisSpaceCharge3D,  TH2 * hisRPhi, TH2* hisRZ, Double_t norm){
+  //
+  // Use 3D space charge map as an optional input
+  // The layout of the input histogram is assumed to be: (phi,r,z)
+  // Density histogram is expreseed is expected to bin in  C/m^3
+  //
+  // Standard histogram interpolation is used in order to use the density at center of voxel
+  // 
+  //
+  fSpaceChargeHistogram3D = hisSpaceCharge3D;
+  fSpaceChargeHistogramRPhi = hisRPhi;
+  fSpaceChargeHistogramRZ = hisRZ;
+
+  Double_t  r, phi, z ;
+  TMatrixD &scDensityInRZ   =  *fSCdensityInRZ;
+  TMatrixD &scDensityInRPhiA   =  *fSCdensityInRPhiA;
+  TMatrixD &scDensityInRPhiC   =  *fSCdensityInRPhiC;
+  //
+  Double_t rmin=hisSpaceCharge3D->GetYaxis()->GetBinCenter(0);
+  Double_t rmax=hisSpaceCharge3D->GetYaxis()->GetBinUpEdge(hisSpaceCharge3D->GetYaxis()->GetNbins());
+  Double_t zmin=hisSpaceCharge3D->GetZaxis()->GetBinCenter(0);
+  Double_t zmax=hisSpaceCharge3D->GetZaxis()->GetBinCenter(hisSpaceCharge3D->GetZaxis()->GetNbins());
+
+  for ( Int_t k = 0 ; k < kNPhi ; k++ ) {
+    phi = fgkPhiList[k] ;
+    TMatrixF &scDensity   =  *fSCdensityDistribution[k]  ;
+    for ( Int_t j = 0 ; j < kNZ ; j++ ) {
+      z = fgkZList[j] ; 
+      for ( Int_t i = 0 ; i < kNR ; i++ ) { 
+	// Full 3D configuration ...
+	r = fgkRList[i] ;
+	if (r>rmin && r<rmax && z>zmin && z< zmax){	  	  
+	  // partial load in (r,z)
+	  if (k==0) {
+	    if (fSpaceChargeHistogramRZ) scDensityInRZ(i,j) = norm*fSpaceChargeHistogramRZ->Interpolate(r,z) ;
+	  }
+	  // partial load in (r,phi)
+	  if ( (j==0 || j == kNZ/2) && fSpaceChargeHistogramRPhi) {
+	    if (z>0) 
+	      scDensityInRPhiA(i,k) = norm*fSpaceChargeHistogramRPhi->Interpolate(phi,r);  // A side
+	    else 
+	      scDensityInRPhiC(i,k) = norm*fSpaceChargeHistogramRPhi->Interpolate(phi+TMath::TwoPi(),r); // C side
+	  }
+	  
+	  if (z>0) 
+	    scDensity(i,j) = norm*fSpaceChargeHistogram3D->Interpolate(phi,r,z); 
+	  else
+	    scDensity(i,j) = norm*fSpaceChargeHistogram3D->Interpolate(phi,r,z);
+	}
+      }
+    }
+  }
+  
+  fInitLookUp = kFALSE;
+
+}
+
 
 Float_t  AliTPCSpaceCharge3D::GetSpaceChargeDensity(Float_t r, Float_t phi, Float_t z, Int_t mode) {
   //
@@ -1602,4 +1675,161 @@ void AliTPCSpaceCharge3D::Print(const Option_t* option) const {
    
   if (!fInitLookUp) AliError("Lookup table was not initialized! You should do InitSpaceCharge3DDistortion() ...");
 
+} 
+
+
+
+void AliTPCSpaceCharge3D::InitSpaceCharge3DPoisson(Int_t kRows, Int_t kColumns, Int_t kPhiSlices, Int_t kIterations){
+  //
+  // MI extension  - calculate E field
+  //               - inspired by  AliTPCROCVoltError3D::InitROCVoltError3D()
+  // Initialization of the Lookup table which contains the solutions of the 
+  // Dirichlet boundary problem
+  // Calculation of the single 3D-Poisson solver is done just if needed
+  // (see basic lookup tables in header file)
+  //  
+  Int_t kPhiSlicesPerSector = kPhiSlices/18; 
+  //
+  const Int_t   order       =    1  ;  // Linear interpolation = 1, Quadratic = 2  
+  const Float_t gridSizeR   =  (fgkOFCRadius-fgkIFCRadius) / (kRows-1) ;
+  const Float_t gridSizeZ   =  fgkTPCZ0 / (kColumns-1) ;
+  const Float_t gridSizePhi =  TMath::TwoPi() / ( 18.0 * kPhiSlicesPerSector);
+
+  // temporary arrays to create the boundary conditions
+  TMatrixD *arrayofArrayV[kPhiSlices], *arrayofCharge[kPhiSlices] ; 
+  TMatrixD *arrayofEroverEz[kPhiSlices], *arrayofEphioverEz[kPhiSlices], *arrayofDeltaEz[kPhiSlices] ; 
+
+  for ( Int_t k = 0 ; k < kPhiSlices ; k++ ) {
+    arrayofArrayV[k]     =   new TMatrixD(kRows,kColumns) ;
+    arrayofCharge[k]     =   new TMatrixD(kRows,kColumns) ;
+    arrayofEroverEz[k]   =   new TMatrixD(kRows,kColumns) ;
+    arrayofEphioverEz[k] =   new TMatrixD(kRows,kColumns) ;
+    arrayofDeltaEz[k]    =   new TMatrixD(kRows,kColumns) ;
+  }
+  
+  // list of point as used in the poisson relation and the interpolation (during sum up)
+  Double_t  rlist[kRows], zedlist[kColumns] , philist[kPhiSlices];
+  for ( Int_t k = 0 ; k < kPhiSlices ; k++ ) {
+    philist[k] =  gridSizePhi * k;
+    for ( Int_t i = 0 ; i < kRows ; i++ )    {
+      rlist[i] = fgkIFCRadius + i*gridSizeR ;
+      for ( Int_t j = 0 ; j < kColumns ; j++ ) { // Fill Vmatrix with Boundary Conditions
+	zedlist[j]  = j * gridSizeZ ;
+      }
+    }
+  }
+
+  // ==========================================================================
+  // Solve Poisson's equation in 3D cylindrical coordinates by relaxation technique
+  // Allow for different size grid spacing in R and Z directions
+  
+  const Int_t   symmetry = 0;
+ 
+  // Set bondaries and solve Poisson's equation --------------------------
+  
+  if ( !fInitLookUp ) {
+    
+    AliInfo(Form("Solving the poisson equation (~ %d sec)",2*10*(int)(kPhiSlices/10)));
+    
+    for ( Int_t side = 0 ; side < 2 ; side++ ) {  // Solve Poisson3D twice; once for +Z and once for -Z
+      AliSysInfo::AddStamp("RunSide", 1,side,0);
+      for ( Int_t k = 0 ; k < kPhiSlices ; k++ )  {
+	TMatrixD &arrayV    =  *arrayofArrayV[k] ;
+	TMatrixD &charge    =  *arrayofCharge[k] ;
+	
+	//Fill arrays with initial conditions.  V on the boundary and Charge in the volume.
+// 	for ( Int_t i = 0 ; i < kRows ; i++ ) {
+// 	  for ( Int_t j = 0 ; j < kColumns ; j++ ) {  // Fill Vmatrix with Boundary Conditions
+// 	    arrayV(i,j) = 0.0 ; 
+// 	    charge(i,j) = 0.0 ;
+
+// // 	    Float_t radius0 = rlist[i] ;
+// // 	    Float_t phi0    = gridSizePhi * k ;
+	    
+// 	    // To avoid problems at sector boundaries, use an average of +- 1 degree from actual phi location
+// // 	    if ( j == (kColumns-1) ) {
+// // 	      arrayV(i,j) = 0.5*  ( GetROCVoltOffset( side, radius0, phi0+0.02 ) + GetROCVoltOffset( side, radius0, phi0-0.02 ) ) ;
+
+// // 	      if (side==1) // C side
+// // 		arrayV(i,j) = -arrayV(i,j); // minus sign on the C side to allow a consistent usage of global z when setting the boundaries
+// // 	    }
+// 	  }
+// 	}      
+	
+	for ( Int_t i = 1 ; i < kRows-1 ; i++ ) { 
+	  for ( Int_t j = 1 ; j < kColumns-1 ; j++ ) {	    
+	    Float_t radius0 = rlist[i] ;
+	    Float_t phi0    = gridSizePhi * k ;
+	    Double_t z0 = zedlist[j];
+	    if (side==1) z0= -TMath::Abs(zedlist[j]);
+	    arrayV(i,j) = 0.0 ; 
+	    charge(i,j)  =  fSpaceChargeHistogram3D->Interpolate(phi0,radius0,z0);
+	  }
+	}
+      }      
+      AliSysInfo::AddStamp("RunPoisson", 2,side,0);
+      
+      // Solve Poisson's equation in 3D cylindrical coordinates by relaxation technique
+      // Allow for different size grid spacing in R and Z directions
+      
+      //      PoissonRelaxation3D( arrayofArrayV, arrayofCharge, 
+      // 			   arrayofEroverEz, arrayofEphioverEz, arrayofDeltaEz,
+      // 			   kRows, kColumns, kPhiSlices, gridSizePhi, kIterations, 
+      // 			   symmetry , fROCdisplacement) ;
+      PoissonRelaxation3D( arrayofArrayV, arrayofCharge, 
+			   arrayofEroverEz, arrayofEphioverEz, arrayofDeltaEz,
+			   kRows, kColumns, kPhiSlices, gridSizePhi, kIterations, 
+			   symmetry ) ;
+      
+      //Interpolate results onto a custom grid which is used just for these calculations.
+      Double_t  r, phi, z ;
+      for ( Int_t k = 0 ; k < kNPhi ; k++ ) {
+	phi = fgkPhiList[k] ;
+	
+	TMatrixF &erOverEz   =  *fLookUpErOverEz[k]  ;
+	TMatrixF &ephiOverEz =  *fLookUpEphiOverEz[k];
+	TMatrixF &deltaEz    =  *fLookUpDeltaEz[k]   ;
+	
+	for ( Int_t j = 0 ; j < kNZ ; j++ ) {
+
+	  z = TMath::Abs(fgkZList[j]) ;  // Symmetric solution in Z that depends only on ABS(Z)
+  
+	  if ( side == 0 &&  fgkZList[j] < 0 ) continue; // Skip rest of this loop if on the wrong side
+	  if ( side == 1 &&  fgkZList[j] > 0 ) continue; // Skip rest of this loop if on the wrong side
+	  
+	  for ( Int_t i = 0 ; i < kNR ; i++ ) { 
+	    r = fgkRList[i] ;
+
+	    // Interpolate basicLookup tables; once for each rod, then sum the results
+	    erOverEz(i,j)   = Interpolate3DTable(order, r, z, phi, kRows, kColumns, kPhiSlices, 
+						 rlist, zedlist, philist, arrayofEroverEz  );
+	    ephiOverEz(i,j) = Interpolate3DTable(order, r, z, phi, kRows, kColumns, kPhiSlices,
+						 rlist, zedlist, philist, arrayofEphioverEz);
+	    deltaEz(i,j)    = Interpolate3DTable(order, r, z, phi, kRows, kColumns, kPhiSlices,
+						 rlist, zedlist, philist, arrayofDeltaEz  );
+
+	    if (side == 1)  deltaEz(i,j) = -  deltaEz(i,j); // negative coordinate system on C side
+
+	  } // end r loop
+	}// end z loop
+      }// end phi loop
+      AliSysInfo::AddStamp("Interpolate Poisson", 3,side,0);      
+      if ( side == 0 ) AliInfo(" A side done");
+      if ( side == 1 ) AliInfo(" C side done");
+    } // end side loop
+  }
+  
+  // clear the temporary arrays lists
+  for ( Int_t k = 0 ; k < kPhiSlices ; k++ )  {
+    delete arrayofArrayV[k];
+    delete arrayofCharge[k];
+    delete arrayofEroverEz[k];  
+    delete arrayofEphioverEz[k];
+    delete arrayofDeltaEz[k];
+  }
+ 
+
+  fInitLookUp = kTRUE;
+
 }
+

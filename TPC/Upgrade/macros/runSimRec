@@ -7,11 +7,16 @@ SCtype=$4
 nevents=$5
 ntracks=$6
 rate=$7
+gas=$8
 
 if [ "x$rate" == "x" ]; then
   rate=50
 fi
 
+if [ "x$gas" == "x" ]; then
+  gas=0
+fi
+  
 module use /cvmfs/alice.gsi.de/modules
 module purge
 #module load ALICE/${vers}
@@ -21,4 +26,5 @@ module load $mod
 test -d $outDir || mkdir -p $outDir
 cd $outDir
 
-root.exe -l -b -q $ALICE_ROOT/TPC/Upgrade/macros/{loadlibs.C,ConfigOCDB.C} $ALICE_ROOT/TPC/Upgrade/macros/runSimRec.C\($simtype,$SCtype,$nevents,$ntracks,$rate\)
+echo root.exe -l -b -q $ALICE_ROOT/TPC/Upgrade/macros/{loadlibs.C,ConfigOCDB.C} $ALICE_ROOT/TPC/Upgrade/macros/runSimRec.C\($simtype,$SCtype,$nevents,$ntracks,$rate,$gas\)
+root.exe -l -b -q $ALICE_ROOT/TPC/Upgrade/macros/{loadlibs.C,ConfigOCDB.C} $ALICE_ROOT/TPC/Upgrade/macros/runSimRec.C\($simtype,$SCtype,$nevents,$ntracks,$rate,$gas\)

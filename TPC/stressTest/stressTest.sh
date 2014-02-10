@@ -27,6 +27,8 @@ echo _____________________________________________________________
 #
 # Loop over all run*sh macros
 #
+svn status $ALICE_ROOT  > svn.status
+svn diff   $ALICE_ROOT  > svn.diff 
 for tmacro in `ls $ALICE_ROOT/test/*/run*.sh` ; do
 #
 dname=`dirname $tmacro`
@@ -37,8 +39,8 @@ mkdirhier $workdir
 cp $dname/* $workdir/
 cd $workdir
 rm *.root
-echo $submitcommand -oo $workdir/out.log --eo $workdir/err.log $tmacro
-$submitcommand -oo $workdir/out.log -eo $workdir/err.log $tmacro
+echo $submitcommand   $tmacro
+$submitcommand  $tmacro
 cd $outdir;
 done;
 
