@@ -62,13 +62,16 @@ fNProngs(),
 fPDGdaughters(),
 fBranchName(),
 fmyOutput(0),
+fmyOutputF(0),
 fCuts(0),
 fMinMass(),
 fMaxMass(),  
 fJetArrName(0),
 fCandArrName(0),
 fLeadingJetOnly(kFALSE),
-fJetRadius(0)
+fJetRadius(0),
+fCandidateArray(0),
+fSideBandArray(0)
 {
    //
    // Default ctor
@@ -96,7 +99,9 @@ fMaxMass(),
 fJetArrName(0),
 fCandArrName(0),
 fLeadingJetOnly(kFALSE),
-fJetRadius(0)
+fJetRadius(0),
+fCandidateArray(0),
+fSideBandArray(0)
 {
    //
    // Constructor. Initialization of Inputs and Outputs
@@ -199,6 +204,15 @@ void AliAnalysisTaskFlavourFilterAndJetCorrelations::Init(){
 //_______________________________________________________________________________
 
 void AliAnalysisTaskFlavourFilterAndJetCorrelations::UserCreateOutputObjects() { 
+   
+   fCandidateArray = new TClonesArray("AliAODRecoDecayHF",0);
+   fCandidateArray->SetName(Form("fCandidateArray%s%s",fCandArrName.Data(),fUseReco ? "rec" : "gen"));
+   
+   if (fCandidateType==kDstartoKpipi){
+      fSideBandArray = new TClonesArray("AliAODRecoCascadeHF",0); //this is for the DStar only!
+      fSideBandArray->SetName(Form("fSideBandArray%s%s",fCandArrName.Data(),fUseReco ? "rec" : "gen"));
+   }
+   
    // output 
    Info("UserCreateOutputObjects","CreateOutputObjects of task %s\n", GetName());
    fmyOutput = new TList();
@@ -279,13 +293,9 @@ void AliAnalysisTaskFlavourFilterAndJetCorrelations::UserExec(Option_t *)
    
    
    //FILTER D MESONS
-   fCandidateArray = new TClonesArray("AliAODRecoDecayHF",0);
-   fCandidateArray->SetName(Form("fCandidateArray%s%s",fCandArrName.Data(),fUseReco ? "rec" : "gen"));
-   
-   if (fCandidateType==kDstartoKpipi){
-      fSideBandArray = new TClonesArray("AliAODRecoCascadeHF",0); //this is for the DStar only!
-      fSideBandArray->SetName(Form("fSideBandArray%s%s",fCandArrName.Data(),fUseReco ? "rec" : "gen"));
-   }
+
+   fCandidateArray->Clear();
+   fSideBandArray->Clear();
    
    //Histograms
    TH1I* hstatF = (TH1I*)fmyOutputF->FindObject("hstatF");
