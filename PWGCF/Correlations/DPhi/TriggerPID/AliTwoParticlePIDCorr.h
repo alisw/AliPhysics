@@ -93,11 +93,11 @@ class AliTwoParticlePIDCorr : public AliAnalysisTaskSE {
     virtual void     Terminate(Option_t *);
   void		 SetSharedClusterCut(Double_t value) { fSharedClusterCut = value; }
 
-    void SetVertextype(Int_t Vertextype){fVertextype=Vertextype;}
+  void SetVertextype(Int_t Vertextype){fVertextype=Vertextype;}                                                 //Check it every time
     void SetZvtxcut(Double_t zvtxcut) {fzvtxcut=zvtxcut;}
     void SetCustomBinning(TString receivedCustomBinning) { fCustomBinning = receivedCustomBinning; }
     void SetAsymmetricBin(THnSparse *h,Int_t axisno,Double_t *arraybin,Int_t arraybinsize,TString axisTitle); 
-    void SetMaxNofMixingTracks(Int_t MaxNofMixingTracks) {fMaxNofMixingTracks=MaxNofMixingTracks;}
+    void SetMaxNofMixingTracks(Int_t MaxNofMixingTracks) {fMaxNofMixingTracks=MaxNofMixingTracks;}               //Check it every time
   void SetCentralityEstimator(TString CentralityMethod) { fCentralityMethod = CentralityMethod;}
   void SetSampleType(TString SampleType) {fSampleType=SampleType;}
   void SetAnalysisType(TString AnalysisType){fAnalysisType=AnalysisType;}
@@ -321,7 +321,7 @@ fPtTOFPIDmax=PtTOFPIDmax;
   //PID functions
     Bool_t HasTPCPID(AliAODTrack *track) const; // has TPC PID
     Bool_t HasTOFPID(AliAODTrack *track) const; // has TOF PID
-    Float_t GetBeta(AliAODTrack *track);
+    Double_t GetBeta(AliAODTrack *track);
     void CalculateNSigmas(AliAODTrack *track);
     Int_t FindMinNSigma(AliAODTrack *track);
     Bool_t* GetDoubleCounting(AliAODTrack * trk);

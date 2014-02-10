@@ -12,7 +12,6 @@
 // Date    : 16.01.2014
 /* $Id$ */
 
-class TBits;
 class TRefArray;
 
 class AliVCluster;
@@ -29,7 +28,7 @@ class AliPHOSClusterSelectionTask : AliAnalysisTaskSE {
   /* virtual void   Terminate(Option_t *); */
 
   TRefArray* GetPHOSClusters() const;
-  virtual TBits* GetPHOSClustersSelected(const AliPHOSClusterSelection* selection);
+  TRefArray* GetPHOSClustersSelected(const AliPHOSClusterSelection* selection, bool useMap=true, bool addMap=true);
 
   static AliPHOSClusterSelectionTask* GetTask(const char* name = "AliPHOSClusterSelectionTask");
 
@@ -37,7 +36,10 @@ class AliPHOSClusterSelectionTask : AliAnalysisTaskSE {
   AliPHOSClusterSelectionTask(const AliPHOSClusterSelectionTask&); // not implemented
   AliPHOSClusterSelectionTask& operator=(const AliPHOSClusterSelectionTask&); // not implemented
 
+  TRefArray* DeterminePHOSClustersSelected(const AliPHOSClusterSelection* selection);
+
   TRefArray* fClusters;
+  TMap* fSelectionMap; // maps: ClusterSelection -> RefArray of Clusters
 
   // cluster cut variables:
   static const Double_t kMinClusterEnergy;

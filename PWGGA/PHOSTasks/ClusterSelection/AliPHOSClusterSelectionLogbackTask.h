@@ -5,8 +5,8 @@
  * See cxx source for full Copyright notice                               */
 
 // Analysis Task for selecting PHOS clusters for other analysis, with Logback.
-// Allows to access clusters of past events. The clusters of said events are 
-// stored in per-event arrays, and the event-arrays are stored in one 
+// Allows to access clusters of past events. The clusters of said events are
+// stored in per-event arrays, and the event-arrays are stored in one
 // first-in-last-out list per event selection scope. Said scope is defined by
 // AliPHOSEventSelection or (recommended) whatever subclass used in its place.
 //
@@ -15,31 +15,36 @@
 /* $Id$ */
 
 class AliVCluster;
+class TObjArray;
 
 #include "TArrayI.h"
 
-#include "AliAnalysisTaskSE.h"
+#include "AliPHOSClusterSelectionTask.h"
 
 class AliPHOSClusterSelectionLogbackTask : AliPHOSClusterSelectionTask {
  public:
   AliPHOSClusterSelectionLogbackTask(const char* name = "AliPHOSClusterSelectionLogbackTask");
   virtual ~AliPHOSClusterSelectionLogbackTask();
-  
+
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   /* virtual void   Terminate(Option_t *); */
 
-  int GetNClustersBacklog(const AliPHOSEventSelection* eventSelection, int eventBacklogIndex) const; // Number of clusters in the current event
-  AliVCluster* GetClusterBacklog(const int& index, const AliPHOSEventSelection* eventSelection, int eventBacklogIndex) const; // get cluster of index
-  TArrayI GetIndexOfSelectedBacklog(const AliPHOSClusterSelection* selection, const AliPHOSEventSelection& eventSelection, int eventBacklogIndex) const;
-  
-  void AddEventSelectionLogback(const AliPHOSEventSelection* selection);
+  TObjArray* GetPHOSClustersLogback(const AliPHOSEventSelection* eventSelection, UInt_t eventBacklogIndex, const AliPHOSClusterSelection* clusterSelection=0) const;
+
+  void LogEvent(const AliPHOSEventSelection* selection, UInt_t nEventsToLog);
+
+  static AliPHOSClusterSelectionLogbackTask* GetTask(const char* name = "AliPHOSClusterSelectionLogbackTask");
 
  protected:
   AliPHOSClusterSelectionLogbackTask(const AliPHOSClusterSelectionLogbackTask&); // not implemented
   AliPHOSClusterSelectionLogbackTask& operator=(const AliPHOSClusterSelectionLogbackTask&); // not implemented
 
-  
+  TMap* fClusterArrayLists; // Maps: EventSelection -> List, of ObjArray of Clusters
+  TMap* fSelectionArrayMapLists; // Maps: EventSelection -> List, of Cluster Selection Maps
+
+  TMap* fCurrentClusterSelectionMap; // Maps: ClusterSelection -> Selection Bits
+
   ClassDef(AliPHOSClusterSelectionLogbackTask, 1);
 };
 
