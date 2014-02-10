@@ -253,8 +253,8 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     Float_t effHighRawEt = 0;
     Float_t effLowRawEt = 0;
     Float_t uncorrEt = 0;
-    Float_t rawSignal;
-    Float_t effCorrSignal;
+    Float_t rawSignal = 0;
+    Float_t effCorrSignal = 0;
 
     nChargedHadronsMeasured = 0.0;
     nChargedHadronsTotal = 0.0;
