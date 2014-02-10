@@ -770,22 +770,22 @@ void AliThreePionRadii::UserCreateOutputObjects()
   TH3D *fAllMCPionPairs = new TH3D("fAllMCPionPairs","",fMbins,.5,fMbins+.5, 20,0,1, 20,0,0.2);
   if(fMCcase) fOutputList->Add(fAllMCPionPairs);
   //
-  TH3D *fMuonContamSmearedNum2 = new TH3D("fMuonContamSmearedNum2","",2,-0.5,1.5, 20,0,1, 40,0,0.2);
+  TH3D *fMuonContamSmearedNum2 = new TH3D("fMuonContamSmearedNum2","",2,-0.5,1.5, 20,0,1, 100,0,0.5);
   if(fMCcase) fOutputList->Add(fMuonContamSmearedNum2);
-  TH3D *fMuonContamSmearedDen2 = new TH3D("fMuonContamSmearedDen2","",2,-0.5,1.5, 20,0,1, 40,0,0.2);
+  TH3D *fMuonContamSmearedDen2 = new TH3D("fMuonContamSmearedDen2","",2,-0.5,1.5, 20,0,1, 100,0,0.5);
   if(fMCcase) fOutputList->Add(fMuonContamSmearedDen2);
-  TH3D *fMuonContamIdealNum2 = new TH3D("fMuonContamIdealNum2","",2,-0.5,1.5, 20,0,1, 40,0,0.2);
+  TH3D *fMuonContamIdealNum2 = new TH3D("fMuonContamIdealNum2","",2,-0.5,1.5, 20,0,1, 100,0,0.5);
   if(fMCcase) fOutputList->Add(fMuonContamIdealNum2);
-  TH3D *fMuonContamIdealDen2 = new TH3D("fMuonContamIdealDen2","",2,-0.5,1.5, 20,0,1, 40,0,0.2);
+  TH3D *fMuonContamIdealDen2 = new TH3D("fMuonContamIdealDen2","",2,-0.5,1.5, 20,0,1, 100,0,0.5);
   if(fMCcase) fOutputList->Add(fMuonContamIdealDen2);
   //
-  TH3D *fMuonContamSmearedNum3 = new TH3D("fMuonContamSmearedNum3","",2,-0.5,1.5, 2,-0.5,1.5, 20,0,0.2);
+  TH3D *fMuonContamSmearedNum3 = new TH3D("fMuonContamSmearedNum3","",2,-0.5,1.5, 2,-0.5,1.5, 50,0,0.5);
   if(fMCcase) fOutputList->Add(fMuonContamSmearedNum3);
-  TH3D *fMuonContamSmearedDen3 = new TH3D("fMuonContamSmearedDen3","",2,-0.5,1.5, 2,-0.5,1.5, 20,0,0.2);
+  TH3D *fMuonContamSmearedDen3 = new TH3D("fMuonContamSmearedDen3","",2,-0.5,1.5, 2,-0.5,1.5, 50,0,0.5);
   if(fMCcase) fOutputList->Add(fMuonContamSmearedDen3);
-  TH3D *fMuonContamIdealNum3 = new TH3D("fMuonContamIdealNum3","",2,-0.5,1.5, 2,-0.5,1.5, 20,0,0.2);
+  TH3D *fMuonContamIdealNum3 = new TH3D("fMuonContamIdealNum3","",2,-0.5,1.5, 2,-0.5,1.5, 50,0,0.5);
   if(fMCcase) fOutputList->Add(fMuonContamIdealNum3);
-  TH3D *fMuonContamIdealDen3 = new TH3D("fMuonContamIdealDen3","",2,-0.5,1.5, 2,-0.5,1.5, 20,0,0.2);
+  TH3D *fMuonContamIdealDen3 = new TH3D("fMuonContamIdealDen3","",2,-0.5,1.5, 2,-0.5,1.5, 50,0,0.5);
   if(fMCcase) fOutputList->Add(fMuonContamIdealDen3);
   //
   TH1D *fMuonParents = new TH1D("fMuonParents","",500,0.5,500.5);
@@ -797,10 +797,10 @@ void AliThreePionRadii::UserCreateOutputObjects()
   TH1D *fPionCandidates = new TH1D("fPionCandidates","",500,0.5,500.5);
   if(fMCcase) fOutputList->Add(fPionCandidates);
   //  
-  TH3D *fMuonPionK2 = new TH3D("fMuonPionK2","",2,-0.5,1.5, 20,0,1, 40,0,0.2);
-  TH3D *fPionPionK2 = new TH3D("fPionPionK2","",2,-0.5,1.5, 20,0,1, 40,0,0.2);
-  TH3D *fMuonPionK3 = new TH3D("fMuonPionK3","",2,-0.5,1.5, 2,-0.5,1.5, 20,0,0.2);
-  TH3D *fPionPionK3 = new TH3D("fPionPionK3","",2,-0.5,1.5, 2,-0.5,1.5, 20,0,0.2);
+  TH3D *fMuonPionK2 = new TH3D("fMuonPionK2","",2,-0.5,1.5, 20,0,1, 100,0,0.5);
+  TH3D *fPionPionK2 = new TH3D("fPionPionK2","",2,-0.5,1.5, 20,0,1, 100,0,0.5);
+  TH3D *fMuonPionK3 = new TH3D("fMuonPionK3","",2,-0.5,1.5, 2,-0.5,1.5, 50,0,0.5);
+  TH3D *fPionPionK3 = new TH3D("fPionPionK3","",2,-0.5,1.5, 2,-0.5,1.5, 50,0,0.5);
   if(fMCcase) fOutputList->Add(fMuonPionK2);
   if(fMCcase) fOutputList->Add(fPionPionK2);
   if(fMCcase) fOutputList->Add(fMuonPionK3);
@@ -855,6 +855,7 @@ void AliThreePionRadii::UserCreateOutputObjects()
   TH2D *fdNchdEtaResponse = new TH2D("fdNchdEtaResponse","",15,0,15, 15,0,15);
   TH2D *fNpionTrueDist = new TH2D("fNpionTrueDist","",fMbins,.5,fMbins+.5, 3000,0.5,3000.5);
   TH2D *fNchTrueDist = new TH2D("fNchTrueDist","",fMbins,.5,fMbins+.5, 3000,0.5,3000.5);// default Nch mapping
+  TH2D *fNchTrueDistCMS = new TH2D("fNchTrueDistCMS","",fMbins,.5,fMbins+.5, 3000,0.5,3000.5);// default Nch mapping
   TH2D *fNchTrueDistFullPt = new TH2D("fNchTrueDistFullPt","",fMbins,.5,fMbins+.5, 3000,0.5,3000.5);// full Pt Nch range mapping
   TH2D *fNchTrueDistPubMethod = new TH2D("fNchTrueDistPubMethod","",fMbins,.5,fMbins+.5, 3000,0.5,3000.5);// Published pp Nch mapping
   Float_t PubBins[9]={1.,12.,17.,23.,29.,35.,42.,52.,152.};
@@ -863,10 +864,12 @@ void AliThreePionRadii::UserCreateOutputObjects()
   if(fMCcase) fOutputList->Add(fdNchdEtaResponse);
   if(fMCcase) fOutputList->Add(fNpionTrueDist);
   if(fMCcase) fOutputList->Add(fNchTrueDist);
+  if(fMCcase) fOutputList->Add(fNchTrueDistCMS);
   if(fMCcase) fOutputList->Add(fNchTrueDistFullPt);
   if(fMCcase) fOutputList->Add(fNchTrueDistPubMethod);
   if(fMCcase) fOutputList->Add(fAvgRecRate);
   if(fMCcase) fOutputList->Add(fAvgNchTrueDistvsPubMethodBin);
+  
   TH2D *fdCentVsNchdEta = new TH2D("fdCentVsNchdEta","",fMbins,.5,fMbins+.5, 15,0,15);
   if(fPbPbcase) fOutputList->Add(fdCentVsNchdEta);
   
@@ -1069,8 +1072,7 @@ void AliThreePionRadii::UserCreateOutputObjects()
   TH1D *fQDist = new TH1D("fQDist","",200,-.2,.2);
   fOutputList->Add(fQDist);
   
-  
-
+    
   ////////////////////////////////////
   ///////////////////////////////////  
   
@@ -1124,7 +1126,7 @@ void AliThreePionRadii::UserExec(Option_t *)
 
   
   TClonesArray *mcArray = 0x0;
-  Int_t mcNch=0, mcNchFullPt=0, mcNchPubMethod=0;
+  Int_t mcNch=0, mcNchCMS=0, mcNchFullPt=0, mcNchPubMethod=0;
   Int_t mcNpion=0;
   if(fMCcase){
     if(fAODcase){ 
@@ -1139,17 +1141,31 @@ void AliThreePionRadii::UserExec(Option_t *)
 	AliAODMCParticle *mcParticle = (AliAODMCParticle*)mcArray->At(mctrackN);
 	if(!mcParticle) continue;
 	if(mcParticle->Charge()!=-3 && mcParticle->Charge()!=+3) continue;// x3 by convention
-	if(!mcParticle->IsPrimary()) continue;
+	//if(!mcParticle->IsPrimary()) continue;// superfluous when IsPhysicalPrimary() is used
 	if(!mcParticle->IsPhysicalPrimary()) continue;
 	//
-	if(fabs(mcParticle->Eta())>0.8) continue;
 	if(fabs(mcParticle->Eta())<=0.5) mcNchPubMethod++;// Published pp binning
-	mcNchFullPt++;// My binning in full Pt range
+	if(fabs(mcParticle->Eta())<=0.8) mcNchFullPt++;// My binning in full Pt range
+	
 	if(mcParticle->Pt() < 0.16 || mcParticle->Pt() > 1.0) continue;
-	mcNch++;// My binning in my pt range
-	if(abs(mcParticle->GetPdgCode())==211) mcNpion++;
+	
+	//
+	if(mcParticle->P() < 1.0) {
+	  if(fabs(mcParticle->Eta())<=0.8) {
+	    mcNch++;// My binning in my pt range
+	    if(abs(mcParticle->GetPdgCode())==211) mcNpion++;
+	  }
+	}
+	// p-Pb CMS boost counting
+	Double_t newPz = mcParticle->Pz()*cosh(0.465) - mcParticle->E()*sinh(0.465);
+	Double_t newP = sqrt(pow(mcParticle->Pt(),2) + pow(newPz,2));
+	if(newP < 1.0){
+	  Double_t newEta = 0.5 * log( (newP+newPz) / (newP-newPz));
+	  if(TMath::Abs(newEta)<=0.8) {
+	    mcNchCMS++;
+	  }
+	}
       }
-      
     }
   }// fMCcase
   
@@ -1179,8 +1195,10 @@ void AliThreePionRadii::UserExec(Option_t *)
       //cout<<"AOD multiplicity = "<<fAOD->GetNumberOfTracks()<<endl;
     }
     
+    // Pile-up rejection
     AliAnalysisUtils *AnaUtil=new AliAnalysisUtils();
-    if(fAOD->GetRunNumber() >= 195344 && fAOD->GetRunNumber() <= 195873) AnaUtil->SetUseMVPlpSelection(kTRUE);// use Multi-Vertex tool for pPb
+    if(!fPbPbcase) AnaUtil->SetUseMVPlpSelection(kTRUE);// use Multi-Vertex tool for pp and pPb
+    else AnaUtil->SetUseMVPlpSelection(kFALSE);
     Bool_t pileUpCase=AnaUtil->IsPileUpEvent(fAOD); 
     if(pileUpCase) return;
     
@@ -1202,7 +1220,7 @@ void AliThreePionRadii::UserExec(Option_t *)
     }
     ((TH1F*)fOutputList->FindObject("fMultDist2"))->Fill(FBTracks);
 
-    if(fAOD->IsPileupFromSPD()) {/*cout<<"PileUpEvent. Skip Event"<<endl;*/ return;} // Reject Pile-up events
+    //if(fAOD->IsPileupFromSPD()) {/*cout<<"PileUpEvent. Skip Event"<<endl;*/ return;} // Old Pile-up cut
     if(primaryVertexAOD->GetNContributors() < 1) {/*cout<<"Bad Vertex. Skip Event"<<endl;*/ return;}
    
     ((TH1F*)fOutputList->FindObject("fMultDist3"))->Fill(FBTracks);
@@ -1221,7 +1239,6 @@ void AliThreePionRadii::UserExec(Option_t *)
       if(tracklets->GetTheta(trackletN) > 1.0904 && tracklets->GetTheta(trackletN) < 2.0512) trackletMult++;// |eta|<0.5 tracklets
     }
    
-    //cout<<fAOD->GetFiredTriggerClasses()<<endl;
     /////////////////////////////
     // Create Shuffled index list
     Int_t randomIndex[fAOD->GetNumberOfTracks()];
@@ -1313,24 +1330,24 @@ void AliThreePionRadii::UserExec(Option_t *)
       //if(fFilterBit == 7) DoPIDWorkAround=kTRUE;
       if(fMCcase && !fPbPbcase) DoPIDWorkAround=kFALSE;
       if(DoPIDWorkAround==kFALSE && fabs(fPIDResponse->NumberOfSigmasTPC(aodtrack,AliPID::kPion)) < 900) {
-	nSigmaTPC[0]=fabs(fPIDResponse->NumberOfSigmasTPC(aodtrack,AliPID::kElectron));
-	nSigmaTPC[1]=fabs(fPIDResponse->NumberOfSigmasTPC(aodtrack,AliPID::kMuon));
-	nSigmaTPC[2]=fabs(fPIDResponse->NumberOfSigmasTPC(aodtrack,AliPID::kPion));
-	nSigmaTPC[3]=fabs(fPIDResponse->NumberOfSigmasTPC(aodtrack,AliPID::kKaon));
-	nSigmaTPC[4]=fabs(fPIDResponse->NumberOfSigmasTPC(aodtrack,AliPID::kProton));
+	nSigmaTPC[0]=fPIDResponse->NumberOfSigmasTPC(aodtrack,AliPID::kElectron);
+	nSigmaTPC[1]=fPIDResponse->NumberOfSigmasTPC(aodtrack,AliPID::kMuon);
+	nSigmaTPC[2]=fPIDResponse->NumberOfSigmasTPC(aodtrack,AliPID::kPion);
+	nSigmaTPC[3]=fPIDResponse->NumberOfSigmasTPC(aodtrack,AliPID::kKaon);
+	nSigmaTPC[4]=fPIDResponse->NumberOfSigmasTPC(aodtrack,AliPID::kProton);
 	//
-	nSigmaTOF[0]=fabs(fPIDResponse->NumberOfSigmasTOF(aodtrack,AliPID::kElectron));
-	nSigmaTOF[1]=fabs(fPIDResponse->NumberOfSigmasTOF(aodtrack,AliPID::kMuon));
-	nSigmaTOF[2]=fabs(fPIDResponse->NumberOfSigmasTOF(aodtrack,AliPID::kPion));
-	nSigmaTOF[3]=fabs(fPIDResponse->NumberOfSigmasTOF(aodtrack,AliPID::kKaon));
-	nSigmaTOF[4]=fabs(fPIDResponse->NumberOfSigmasTOF(aodtrack,AliPID::kProton));
+	nSigmaTOF[0]=fPIDResponse->NumberOfSigmasTOF(aodtrack,AliPID::kElectron);
+	nSigmaTOF[1]=fPIDResponse->NumberOfSigmasTOF(aodtrack,AliPID::kMuon);
+	nSigmaTOF[2]=fPIDResponse->NumberOfSigmasTOF(aodtrack,AliPID::kPion);
+	nSigmaTOF[3]=fPIDResponse->NumberOfSigmasTOF(aodtrack,AliPID::kKaon);
+	nSigmaTOF[4]=fPIDResponse->NumberOfSigmasTOF(aodtrack,AliPID::kProton);
 	signalTPC = aodtrack->GetTPCsignal();
 	if( (status&AliESDtrack::kTOFpid)!=0 && (status&AliESDtrack::kTIME)!=0 && (status&AliESDtrack::kTOFout)!=0 && (status&AliESDtrack::kTOFmismatch)<=0){// good tof hit
 	  fTempStruct[myTracks].fTOFhit = kTRUE;
 	  signalTOF = aodtrack->GetTOFsignal();
 	  aodtrack->GetIntegratedTimes(integratedTimesTOF);
 	}else fTempStruct[myTracks].fTOFhit = kFALSE;
-
+	
       }else {// FilterBit 7 PID workaround
 	
 	for(Int_t j = 0; j < fAOD->GetNumberOfTracks(); j++) {
@@ -1340,17 +1357,17 @@ void AliThreePionRadii::UserExec(Option_t *)
 	  
 	  UInt_t status2=aodTrack2->GetStatus();
 	  
-	  nSigmaTPC[0]=fabs(fPIDResponse->NumberOfSigmasTPC(aodTrack2,AliPID::kElectron));
-	  nSigmaTPC[1]=fabs(fPIDResponse->NumberOfSigmasTPC(aodTrack2,AliPID::kMuon));
-	  nSigmaTPC[2]=fabs(fPIDResponse->NumberOfSigmasTPC(aodTrack2,AliPID::kPion));
-	  nSigmaTPC[3]=fabs(fPIDResponse->NumberOfSigmasTPC(aodTrack2,AliPID::kKaon));
-	  nSigmaTPC[4]=fabs(fPIDResponse->NumberOfSigmasTPC(aodTrack2,AliPID::kProton));
+	  nSigmaTPC[0]=fPIDResponse->NumberOfSigmasTPC(aodTrack2,AliPID::kElectron);
+	  nSigmaTPC[1]=fPIDResponse->NumberOfSigmasTPC(aodTrack2,AliPID::kMuon);
+	  nSigmaTPC[2]=fPIDResponse->NumberOfSigmasTPC(aodTrack2,AliPID::kPion);
+	  nSigmaTPC[3]=fPIDResponse->NumberOfSigmasTPC(aodTrack2,AliPID::kKaon);
+	  nSigmaTPC[4]=fPIDResponse->NumberOfSigmasTPC(aodTrack2,AliPID::kProton);
 	  //
-	  nSigmaTOF[0]=fabs(fPIDResponse->NumberOfSigmasTOF(aodTrack2,AliPID::kElectron));
-	  nSigmaTOF[1]=fabs(fPIDResponse->NumberOfSigmasTOF(aodTrack2,AliPID::kMuon));
-	  nSigmaTOF[2]=fabs(fPIDResponse->NumberOfSigmasTOF(aodTrack2,AliPID::kPion));
-	  nSigmaTOF[3]=fabs(fPIDResponse->NumberOfSigmasTOF(aodTrack2,AliPID::kKaon));
-	  nSigmaTOF[4]=fabs(fPIDResponse->NumberOfSigmasTOF(aodTrack2,AliPID::kProton));
+	  nSigmaTOF[0]=fPIDResponse->NumberOfSigmasTOF(aodTrack2,AliPID::kElectron);
+	  nSigmaTOF[1]=fPIDResponse->NumberOfSigmasTOF(aodTrack2,AliPID::kMuon);
+	  nSigmaTOF[2]=fPIDResponse->NumberOfSigmasTOF(aodTrack2,AliPID::kPion);
+	  nSigmaTOF[3]=fPIDResponse->NumberOfSigmasTOF(aodTrack2,AliPID::kKaon);
+	  nSigmaTOF[4]=fPIDResponse->NumberOfSigmasTOF(aodTrack2,AliPID::kProton);
 	  signalTPC = aodTrack2->GetTPCsignal();
 	  
 	  if( (status2&AliESDtrack::kTOFpid)!=0 && (status2&AliESDtrack::kTIME)!=0 && (status2&AliESDtrack::kTOFout)!=0 && (status2&AliESDtrack::kTOFmismatch)<=0){// good tof hit
@@ -1372,15 +1389,15 @@ void AliThreePionRadii::UserExec(Option_t *)
 
       // Use TOF if good hit and above threshold
       if(fTempStruct[myTracks].fTOFhit && fTempStruct[myTracks].fMom > fTPCTOFboundry){
-	if(nSigmaTOF[0]<fSigmaCutTOF) fTempStruct[myTracks].fElectron = kTRUE;// Electron candidate
-	if(nSigmaTOF[2]<fSigmaCutTOF) fTempStruct[myTracks].fPion = kTRUE;// Pion candidate
-	if(nSigmaTOF[3]<fSigmaCutTOF) fTempStruct[myTracks].fKaon = kTRUE;// Kaon candidate
-	if(nSigmaTOF[4]<fSigmaCutTOF) fTempStruct[myTracks].fProton = kTRUE;// Proton candidate
+	if(fabs(nSigmaTOF[0])<fSigmaCutTOF) fTempStruct[myTracks].fElectron = kTRUE;// Electron candidate
+	if(fabs(nSigmaTOF[2])<fSigmaCutTOF) fTempStruct[myTracks].fPion = kTRUE;// Pion candidate
+	if(fabs(nSigmaTOF[3])<fSigmaCutTOF) fTempStruct[myTracks].fKaon = kTRUE;// Kaon candidate
+	if(fabs(nSigmaTOF[4])<fSigmaCutTOF) fTempStruct[myTracks].fProton = kTRUE;// Proton candidate
       }else {// TPC info instead
-	if(nSigmaTPC[0]<fSigmaCutTPC) fTempStruct[myTracks].fElectron = kTRUE;// Electron candidate
-	if(nSigmaTPC[2]<fSigmaCutTPC) fTempStruct[myTracks].fPion = kTRUE;// Pion candidate
-	if(nSigmaTPC[3]<fSigmaCutTPC) fTempStruct[myTracks].fKaon = kTRUE;// Kaon candidate
-	if(nSigmaTPC[4]<fSigmaCutTPC) fTempStruct[myTracks].fProton = kTRUE;// Proton candidate
+	if(fabs(nSigmaTPC[0])<fSigmaCutTPC) fTempStruct[myTracks].fElectron = kTRUE;// Electron candidate
+	if(fabs(nSigmaTPC[2])<fSigmaCutTPC) fTempStruct[myTracks].fPion = kTRUE;// Pion candidate
+	if(fabs(nSigmaTPC[3])<fSigmaCutTPC) fTempStruct[myTracks].fKaon = kTRUE;// Kaon candidate
+	if(fabs(nSigmaTPC[4])<fSigmaCutTPC) fTempStruct[myTracks].fProton = kTRUE;// Proton candidate
       }
                
       
@@ -1579,7 +1596,7 @@ void AliThreePionRadii::UserExec(Option_t *)
       ((TH2D*)fOutputList->FindObject("fAvgMultHisto2DV0AplusC"))->Fill(fMbinV0AplusC+1., pionCount);
     }
   }
-
+  
   if(fMbin==-1) {cout<<pionCount<<"  Bad Mbin+++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl; return;}
 
   ((TH1F*)fOutputList->FindObject("fEvents1"))->Fill(fMbin+1);
@@ -1589,6 +1606,7 @@ void AliThreePionRadii::UserExec(Option_t *)
     ((TH2D*)fOutputList->FindObject("fdNchdEtaResponse"))->Fill(pow(trackletMult,1/3.), pow(mcNch,1/3.));
     ((TH2D*)fOutputList->FindObject("fNpionTrueDist"))->Fill(fMbin+1., mcNpion);
     ((TH2D*)fOutputList->FindObject("fNchTrueDist"))->Fill(fMbin+1., mcNch);// default Nch mapping
+    ((TH2D*)fOutputList->FindObject("fNchTrueDistCMS"))->Fill(fMbin+1., mcNchCMS);// p-Pb CMS counting
     ((TH2D*)fOutputList->FindObject("fNchTrueDistFullPt"))->Fill(fMbin+1., mcNchFullPt);// full Pt Nch range mapping
     ((TH2D*)fOutputList->FindObject("fNchTrueDistPubMethod"))->Fill(fMbin+1., mcNchPubMethod);// Published pp Method Nch mapping
     ((TProfile*)fOutputList->FindObject("fAvgNchTrueDistvsPubMethodBin"))->Fill(mcNchPubMethod, mcNch);// Mapping of Published bins to default Nch bins
@@ -1983,7 +2001,7 @@ void AliThreePionRadii::UserExec(Option_t *)
 		
 		Float_t parentQinv12 = GetQinv(0, Pparent1, Pparent2);
 		Float_t WInput = 1.0, muonPionK12=1.0, pionPionK12=1.0;
-		if(parentQinv12 > 0.001 && parentQinv12 < 0.2) {
+		if(parentQinv12 > 0.001 && parentQinv12 < 0.3) {
 		  WInput = MCWeight(ch1,ch2, fRMax, 25, parentQinv12);
 		  muonPionK12 = FSICorrelation2(ch1, ch2, qinv12MC);
 		  pionPionK12 = FSICorrelation2(ch1, ch2, parentQinv12);
@@ -2057,7 +2075,7 @@ void AliThreePionRadii::UserExec(Option_t *)
 		    Float_t parentQinv13 = GetQinv(0, Pparent1, Pparent3);
 		    Float_t parentQinv23 = GetQinv(0, Pparent2, Pparent3);
 		    Float_t parentQ3 = sqrt(pow(parentQinv12,2) + pow(parentQinv13,2) + pow(parentQinv23,2));
-		    if(parentQ3 >= 0.2) continue;
+		    if(parentQ3 >= 0.5) continue;
 		    if(parentQinv12 < 0.001) continue;
 		    if(parentQinv13 < 0.001) continue;
 		    if(parentQinv23 < 0.001) continue;

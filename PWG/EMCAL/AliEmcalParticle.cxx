@@ -17,7 +17,8 @@ AliEmcalParticle::AliEmcalParticle() :
   fId(-1),
   fPhi(0),
   fEta(0),
-  fPt(0)
+  fPt(0),
+  fMatchedPtr(0)
 {
   // Default constructor.
 
@@ -33,7 +34,8 @@ AliEmcalParticle::AliEmcalParticle(TObject *particle, Int_t id, Double_t vx, Dou
   fId(id),
   fPhi(0),
   fEta(0),
-  fPt(0)
+  fPt(0),
+  fMatchedPtr(0)
 {
   // Constructor.
 
@@ -76,7 +78,8 @@ AliEmcalParticle::AliEmcalParticle(const AliEmcalParticle &p) :
   fId(p.fId),
   fPhi(p.fPhi),
   fEta(p.fEta),
-  fPt(p.fPt)
+  fPt(p.fPt),
+  fMatchedPtr(p.fMatchedPtr)
 {
   // Copy constructor.
 
@@ -98,13 +101,14 @@ AliEmcalParticle &AliEmcalParticle::operator=(const AliEmcalParticle &p)
   // Assignment operator.
 
   if (this != &p) {
-    fTrack    = p.fTrack;
-    fCluster  = p.fCluster;
-    fNMatched = p.fNMatched;
-    fId       = p.fId;
-    fPhi      = p.fPhi;
-    fEta      = p.fEta;
-    fPt       = p.fPt;
+    fTrack      = p.fTrack;
+    fCluster    = p.fCluster;
+    fNMatched   = p.fNMatched;
+    fId         = p.fId;
+    fPhi        = p.fPhi;
+    fEta        = p.fEta;
+    fPt         = p.fPt;
+    fMatchedPtr = p.fMatchedPtr;
 
     ResetMatchedObjects();
     memcpy(fMatchedIds,  p.fMatchedIds,  sizeof(UShort_t) * fSizeMatched);

@@ -114,32 +114,32 @@ if (PIDbaseline) {
 	task->AddDielectron(lowmass7);
 	printf("add: %s\n",lowmass7->GetName());
 
-}
-}
+ }
+ }
 
   mgr->AddTask(task);
 
   //create output container
   AliAnalysisDataContainer *coutput1 =
-	mgr->CreateContainer("Remi_LMEEPbPb2011_tree",
+	mgr->CreateContainer("Remi_LMEEPbPb2011SemiCent2_tree",
 		TTree::Class(),
 		AliAnalysisManager::kExchangeContainer,
 		outputFileName);
 
   AliAnalysisDataContainer *cOutputHist1 =
-	mgr->CreateContainer("Remi_LMEEPbPb2011_out",
+	mgr->CreateContainer("Remi_LMEEPbPb2011SemiCent2_out",
 		TList::Class(),
 		AliAnalysisManager::kOutputContainer,
 		outputFileName);
 
   AliAnalysisDataContainer *cOutputHist2 =
-	mgr->CreateContainer("Remi_LMEEPbPb2011_CF",
+	mgr->CreateContainer("Remi_LMEEPbPb2011SemiCent2_CF",
 		TList::Class(),
 		AliAnalysisManager::kOutputContainer,
 		outputFileName);
 
   AliAnalysisDataContainer *cOutputHist3 =
-	mgr->CreateContainer("Remi_EventStatPbPb2011",
+    mgr->CreateContainer("Remi_EventStatPbPb2011SemiCent2",
 		TH1D::Class(),
 		AliAnalysisManager::kOutputContainer,
 		outputFileName);

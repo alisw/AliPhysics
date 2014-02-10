@@ -1,18 +1,18 @@
-AliAnalysisTaskNuclexFilter *AddTaskNuclexFilter( Bool_t onlyMuon = kTRUE,
-						  Bool_t keepAllEvents = kTRUE,
-						  Int_t mcMode = 0,
-						  Int_t nsigmaTrk1 = 3,
-						  Int_t partType1 = 2,
-						  Int_t nsigmaTrk2 = 5, 
-						  Int_t partType2 = 7
-						  )
+AliAnalysisTask *AddTaskNuclexFilter( Bool_t onlyMuon = kTRUE,
+				      Bool_t keepAllEvents = kTRUE,
+				      Int_t mcMode = 0,
+				      Int_t nsigmaTrk1 = 3,
+				      Int_t partType1 = 2,
+				      Int_t nsigmaTrk2 = 5, 
+				      Int_t partType2 = 7
+				      )
 {
 
   //get the current analysis manager
  
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTask_Helium3Pi", "No analysis manager found.");
+    Error("AddTaskNuclexFilter", "No analysis manager found.");
     return 0;
   }
   

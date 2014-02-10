@@ -12,6 +12,7 @@
 #include <TParticle.h>
 #include <TParticlePDG.h>
 #include <TRandom3.h>
+#include <TProfile.h>
 #include "AliAnalysisManager.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALGeometry.h"
@@ -26,22 +27,29 @@
 #include "AliStack.h"
 #include "AliVCluster.h"
 #include "AliVEvent.h"
+#include "AliGenPythiaEventHeader.h"
 
 ClassImp(AliJetEmbeddingFromGenTask)
 
 //________________________________________________________________________
 AliJetEmbeddingFromGenTask::AliJetEmbeddingFromGenTask() : 
   AliJetModelBaseTask("AliJetEmbeddingFromGenTask"),
-  fGen(0)
+  fGen(0),
+  fHistTrials(0),
+  fHistXsection(0),
+  fHistPtHard(0)
 {
   // Default constructor.
   SetSuffix("EmbeddedFromGen");
 }
 
 //________________________________________________________________________
-AliJetEmbeddingFromGenTask::AliJetEmbeddingFromGenTask(const char *name) : 
-  AliJetModelBaseTask(name),
-  fGen(0)
+AliJetEmbeddingFromGenTask::AliJetEmbeddingFromGenTask(const char *name, Bool_t drawqa) :
+  AliJetModelBaseTask(name,drawqa),
+  fGen(0),
+  fHistTrials(0),
+  fHistXsection(0),
+  fHistPtHard(0)
 {
   // Standard constructor.
   SetSuffix("EmbeddedFromGen");
@@ -51,6 +59,32 @@ AliJetEmbeddingFromGenTask::AliJetEmbeddingFromGenTask(const char *name) :
 AliJetEmbeddingFromGenTask::~AliJetEmbeddingFromGenTask()
 {
   // Destructor
+}
+
+//________________________________________________________________________
+void AliJetEmbeddingFromGenTask::UserCreateOutputObjects()
+{
+  // Create user output.
+
+  if (!fQAhistos)
+    return;
+
+  AliJetModelBaseTask::UserCreateOutputObjects();
+
+  fHistTrials = new TH1F("fHistTrials", "fHistTrials", 1, 0, 1);
+  fHistTrials->GetYaxis()->SetTitle("trials");
+  fOutput->Add(fHistTrials);
+
+  fHistXsection = new TProfile("fHistXsection", "fHistXsection", 1, 0, 1);
+  fHistXsection->GetYaxis()->SetTitle("xsection");
+  fOutput->Add(fHistXsection);
+
+  fHistPtHard = new TH1F("fHistPtHard", "fHistPtHard", 500, 0., 500.);
+  fHistPtHard->GetXaxis()->SetTitle("p_{T,hard} (GeV/c)");
+  fHistPtHard->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistPtHard);
+
+  PostData(1, fOutput);
 }
 
 //________________________________________________________________________
@@ -87,9 +121,6 @@ void AliJetEmbeddingFromGenTask::Run()
 {
   // Embed particles.
 
-  if(fOutTracks)
-   fOutTracks->Delete();
-
   if (fCopyArray) 
     CopyTracks();
 
@@ -122,6 +153,29 @@ void AliJetEmbeddingFromGenTask::Run()
       continue;
     if (pt>fPtMax)
       continue;
-    AddTrack(pt, eta, phi,0,0,0,0,0,0,part->GetMass());
+    AddTrack(pt, eta, phi,0,0,0,0,0,0,c,part->GetMass());
+  }
+
+  FillPythiaHistograms();
+}
+
+//________________________________________________________________________
+void AliJetEmbeddingFromGenTask::FillPythiaHistograms() {
+  //Get PYTHIA info: pt-hard, x-section, trials
+
+  if (!fQAhistos)
+    return;
+
+  AliRunLoader *rl = AliRunLoader::Instance();
+  AliGenPythiaEventHeader *genPH = dynamic_cast<AliGenPythiaEventHeader*>(rl->GetHeader()->GenEventHeader());
+  if(genPH) {
+    // Printf("found pythia event header. pThard: %f Trials: %d xsec: %f",genPH->GetPtHard(),genPH->Trials(),genPH->GetXsection());
+    Float_t xsec = genPH->GetXsection();
+    Int_t trials = genPH->Trials();
+    Float_t pthard = genPH->GetPtHard();
+
+    fHistXsection->Fill(0.5,xsec);
+    fHistTrials->Fill(0.5,trials);
+    fHistPtHard->Fill(pthard);
   }
 }

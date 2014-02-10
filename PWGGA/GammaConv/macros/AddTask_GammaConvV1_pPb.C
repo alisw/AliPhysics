@@ -125,12 +125,12 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 		cutarray[ 0] = "8000011002092170008220000000"; mesonCutArray[ 0] = "01621035009000"; //tighten psi pair and qt in 2D
 		cutarray[ 1] = "8000011002092170008260000000"; mesonCutArray[ 1] = "01621035009000"; //tighten psi pair and chi2 in 2D and qt in 2D                      
 		cutarray[ 2] = "8000011002092170008220400000"; mesonCutArray[ 2] = "01621035009000"; //clean cuts
-		cutarray[ 3] = "8000011002092170008260400000"; mesonCutArray[ 3] = "01621035009000"; //clean cuts
+		cutarray[ 3] = "8000011002092170008260400000"; mesonCutArray[ 3] = "01621035009000"; //clean cuts ///New STANDARD CUT
 	} else if (trainConfig == 6) {
 		cutarray[ 0] = "8000012002092170008220000000"; mesonCutArray[ 0] = "01621035009000"; //tighten psi pair and qt in 2D
 		cutarray[ 1] = "8000012002092170008260000000"; mesonCutArray[ 1] = "01621035009000"; //tighten psi pair and chi2 in 2D and qt in 2D                      
 		cutarray[ 2] = "8000012002092170008220400000"; mesonCutArray[ 2] = "01621035009000"; //clean cuts
-		cutarray[ 3] = "8000012002092170008260400000"; mesonCutArray[ 3] = "01621035009000"; //clean cuts
+		cutarray[ 3] = "8000012002092170008260400000"; mesonCutArray[ 3] = "01621035009000"; //clean cuts ///New STANDARD CUT
 	} else if (trainConfig == 7) {
 		cutarray[ 0] = "8000011001092170008260400000"; mesonCutArray[ 0] = "01621035009000";  //new standard eta=0.9 y=0.8  // minR 2.8
 		cutarray[ 1] = "8000011009092170008260400000"; mesonCutArray[ 1] = "01621035009000";  //new standard eta=0.9 y=0.8  //minR 7.5

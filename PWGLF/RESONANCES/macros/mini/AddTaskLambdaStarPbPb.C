@@ -17,46 +17,51 @@
 
 AliRsnMiniAnalysisTask * AddTaskLambdaStarPbPb
 (
-
    Bool_t      isMC = kFALSE,
    Bool_t      isPP = kFALSE,
    Int_t       aodFilterBit = 5,
-
    AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPrCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidKstarPP2010,
-
    AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidKstarPP2010,
-
    Float_t     nsigmaPr = 2.0,
    Float_t     nsigmaKa = 2.0,
    Bool_t      enableMonitor = kTRUE,
    Bool_t      IsMcTrueOnly = kFALSE,
-   Int_t       nmix = 5,
+   UInt_t      triggerMask = AliVEvent::kMB,
+   //Bool_t      is2011PbPb = kFALSE,
+   Int_t       nmix = 0,
    Float_t     maxDiffVzMix = 1.0,
    Float_t     maxDiffMultMix = 10.0,
    Float_t     maxDiffAngleMixDeg = 20.0,
    Int_t       aodN = 0,
    TString     outNameSuffix = ""
-)
+   )
 {  
   //
   // -- INITIALIZATION ----------------------------------------------------------------------------
   // retrieve analysis manager
   //
-
+  
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
-      ::Error("AddTaskLambdaStarPbPb", "No analysis manager to connect to.");
-      return NULL;
+     ::Error("AddTaskLambdaStarPbPb", "No analysis manager to connect to.");
+     return NULL;
    } 
-
+   
    // create the task and configure 
-   TString taskName = Form("TPCLStar%s%s_%i%i", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"), (Int_t)cutPrCandidate,(Int_t)cutKaCandidate );
+   TString taskName = Form("TPCLStar%s%s_%i%i_%s", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"), (Int_t)cutPrCandidate,(Int_t)cutKaCandidate,outNameSuffix.Data()  );
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
    if (!isMC && !isPP){
-
+     
      Printf(Form("========== SETTING USE CENTRALITY PATCH AOD049 : %s", (aodN==49)? "yes" : "no"));
-     //     task->SetUseCentralityPatch(aodN==49);
+         task->SetUseCentralityPatch(aodN==49);
    }
+    //if(is2011PbPb)
+   //task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+   //else
+  
+   task->SelectCollisionCandidates(triggerMask);
+  
+
    if (isPP) 
      task->UseMultiplicity("QUALITY");
    else
@@ -106,13 +111,13 @@ AliRsnMiniAnalysisTask * AddTaskLambdaStarPbPb
      outMult->AddAxis(multID, 100, 0.0, 100.0);
    
    //event plane (only for PbPb)
-   /*Int_t planeID = task->CreateValue(AliRsnMiniValue::kPlaneAngle, kFALSE);
-     AliRsnMiniOutput *outPlane = task->CreateOutput("eventPlane", "HIST", "EVENT");
-     if (!isPP)
+   Int_t planeID = task->CreateValue(AliRsnMiniValue::kPlaneAngle, kFALSE);
+   AliRsnMiniOutput *outPlane = task->CreateOutput("eventPlane", "HIST", "EVENT");
+   if (!isPP)
      outPlane->AddAxis(planeID, 180, 0.0, TMath::Pi());
-   */
-
-
+   
+   
+   
    //
    // -- PAIR CUTS (common to all resonances) ------------------------------------------------------
    //
@@ -126,10 +131,10 @@ AliRsnMiniAnalysisTask * AddTaskLambdaStarPbPb
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    
-     gROOT->LoadMacro("ConfigTPCanalysisLStar.C");
+   gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigLambdaStarPbPb.C");
    if (!ConfigTPCanalysisLStar(task, isMC, isPP, "", cutsPair, aodFilterBit, cutPrCandidate, cutKaCandidate, nsigmaPr, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, aodN)) return 0x0; 
-
-
+   
+   
    //
    // -- CONTAINERS --------------------------------------------------------------------------------
    //

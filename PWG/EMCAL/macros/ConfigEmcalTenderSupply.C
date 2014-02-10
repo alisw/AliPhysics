@@ -1,25 +1,25 @@
 // $Id$
 
 AliEMCALTenderSupply* ConfigEmcalTenderSupply(
-  Bool_t distBC         = kTRUE,   //distance to bad channel
-  Bool_t recalibClus    = kTRUE,   //recalibrate cluster energy
-  Bool_t recalcClusPos  = kTRUE,   //recalculate cluster position
-  Bool_t nonLinearCorr  = kTRUE,   //apply non-linearity
-  Bool_t remExotic      = kTRUE,   //remove exotic cells
-  Bool_t fidRegion      = kFALSE,  //apply fiducial cuts
-  Bool_t calibEnergy    = kTRUE,   //calibrate energy
-  Bool_t calibTime      = kTRUE,   //calibrate timing
-  Bool_t remBC          = kTRUE,   //remove bad channels
-  UInt_t nonLinFunct    = AliEMCALRecoUtils::kBeamTestCorrected,
-  Bool_t reclusterize   = kTRUE,   //reclusterize
-  Float_t seedthresh    = 0.100,   //seed threshold
-  Float_t cellthresh    = 0.050,   //cell threshold
-  UInt_t clusterizer    = AliEMCALRecParam::kClusterizerv2,
-  Bool_t trackMatch     = kTRUE,   //track matching
-  Bool_t updateCellOnly = kFALSE,  //only change if you run your own clusterizer task
-  Float_t timeMin       = 100e-9,  //minimum time of physical signal in a cell/digit (s)
-  Float_t timeMax       = 900e-9,  //maximum time of physical signal in a cell/digit (s)
-  Float_t timeCut       = 900e-9   //maximum time difference between the digits inside EMC cluster (s)
+  const Bool_t distBC         = kFALSE,  //distance to bad channel
+  const Bool_t recalibClus    = kFALSE,  //recalibrate cluster energy
+  const Bool_t recalcClusPos  = kFALSE,  //recalculate cluster position
+  const Bool_t nonLinearCorr  = kFALSE,  //apply non-linearity
+  const Bool_t remExotic      = kFALSE,  //remove exotic cells
+  const Bool_t fidRegion      = kFALSE,  //apply fiducial cuts
+  const Bool_t calibEnergy    = kFALSE,  //calibrate energy
+  const Bool_t calibTime      = kFALSE,  //calibrate timing
+  const Bool_t remBC          = kFALSE,  //remove bad channels
+  const UInt_t nonLinFunct    = AliEMCALRecoUtils::kNoCorrection,
+  const Bool_t reclusterize   = kTRUE,   //reclusterize
+  const Float_t seedthresh    = 0.100,   //seed threshold
+  const Float_t cellthresh    = 0.050,   //cell threshold
+  const UInt_t clusterizer    = AliEMCALRecParam::kClusterizerv1,
+  const Bool_t trackMatch     = kTRUE,   //track matching
+  const Bool_t updateCellOnly = kFALSE,  //only change if you run your own clusterizer task
+  const Float_t timeMin       = -1,      //minimum time of physical signal in a cell/digit (s)
+  const Float_t timeMax       = +1,      //maximum time of physical signal in a cell/digit (s)
+  const Float_t timeCut       =  1       //maximum time difference between the digits inside EMC cluster (s)
 )
 {
   AliEMCALTenderSupply *EMCALSupply = new AliEMCALTenderSupply("EMCALtender");  
@@ -50,24 +50,21 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
   if (remBC) {
     EMCALSupply->SwitchOnClusterBadChannelCheck();
     EMCALSupply->SwitchOnBadCellRemove();
-  }
-  else {
+  } else {
     EMCALSupply->SwitchOffClusterBadChannelCheck();
     EMCALSupply->SwitchOffBadCellRemove();
   }
 
   if (distBC) {
     EMCALSupply->SwitchOnRecalDistBadChannel();
-  }
-  else {
+  } else {
     EMCALSupply->SwitchOffRecalDistBadChannel();
   }
   
   if (recalibClus) {
     EMCALSupply->SwitchOnReCalibrateCluster();
     EMCALSupply->SwitchOnUpdateCell();
-  }
-  else {
+  } else {
     EMCALSupply->SwitchOffReCalibrateCluster();
     EMCALSupply->SwitchOffUpdateCell();
   }
@@ -80,16 +77,14 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
   if (nonLinearCorr) {
     EMCALSupply->SetNonLinearityFunction(nonLinFunct);
     EMCALSupply->SwitchOnNonLinearityCorrection();
-  }
-  else {
+  } else {
     EMCALSupply->SwitchOffNonLinearityCorrection();
   }
   
   if (remExotic) {
     EMCALSupply->SwitchOnExoticCellRemove();
     EMCALSupply->SwitchOnClusterExoticChannelCheck();
-  }
-  else {
+  } else {
     EMCALSupply->SwitchOffExoticCellRemove();
     EMCALSupply->SwitchOffClusterExoticChannelCheck();
   }
@@ -115,8 +110,7 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
     EMCALSupply->SetEtaCut(0.025);
     EMCALSupply->SetPhiCut(0.05);
     EMCALSupply->SwitchOnTrackMatch();
-  }
-  else {
+  } else {
     EMCALSupply->SwitchOffTrackMatch();
   }
   

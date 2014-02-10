@@ -78,25 +78,25 @@ AliAnalysisTask *AddTask_Remi_LMEEPbPb2011AOD_SemiCent1(Char_t* outputFileName="
 
   //create output container
   AliAnalysisDataContainer *coutput1 =
-	mgr->CreateContainer("Remi_LMEEPbPb2011_tree",
+	mgr->CreateContainer("Remi_LMEEPbPb2011SemiCent1_tree",
 		TTree::Class(),
 		AliAnalysisManager::kExchangeContainer,
 		outputFileName);
 
   AliAnalysisDataContainer *cOutputHist1 =
-	mgr->CreateContainer("Remi_LMEEPbPb2011_out",
+	mgr->CreateContainer("Remi_LMEEPbPb2011SemiCent1_out",
 		TList::Class(),
 		AliAnalysisManager::kOutputContainer,
 		outputFileName);
 
   AliAnalysisDataContainer *cOutputHist2 =
-	mgr->CreateContainer("Remi_LMEEPbPb2011_CF",
+	mgr->CreateContainer("Remi_LMEEPbPb2011SemiCent1_CF",
 		TList::Class(),
 		AliAnalysisManager::kOutputContainer,
 		outputFileName);
 
   AliAnalysisDataContainer *cOutputHist3 =
-	mgr->CreateContainer("Remi_EventStatPbPb2011",
+	mgr->CreateContainer("Remi_EventStatPbPb2011SemiCent1",
 		TH1D::Class(),
 		AliAnalysisManager::kOutputContainer,
 		outputFileName);

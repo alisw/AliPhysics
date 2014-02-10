@@ -31,6 +31,7 @@
 #include "AliCFVertexingHFLctoV0bachelor.h"
 #include "AliCFVertexingHF.h"
 #include <TH1F.h>
+#include <TProfile.h>
 
 class TH1I;
 class TParticle ;
@@ -132,6 +133,27 @@ public:
 	void SetUseNchTrackletsWeight(Bool_t useWeight = kTRUE) { fUseNchWeight=useWeight; fUseTrackletsWeight=useWeight; }
 	Bool_t GetUseNchTrackletsWeight() const {return fUseTrackletsWeight;}
 
+	void SetUseZvtxCorrectedNtrkEstimator(Bool_t flag) { fZvtxCorrectedNtrkEstimator=flag; }
+	Bool_t GetUseZvtxCorrectedNtrkEstimator() { return fZvtxCorrectedNtrkEstimator; }
+	void SetMultiplVsZProfileLHC10b(TProfile* hprof){
+	  if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+	  fMultEstimatorAvg[0]=new TProfile(*hprof);
+	}
+	void SetMultiplVsZProfileLHC10c(TProfile* hprof){
+	  if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+	  fMultEstimatorAvg[1]=new TProfile(*hprof);
+	}
+	void SetMultiplVsZProfileLHC10d(TProfile* hprof){
+	  if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
+	  fMultEstimatorAvg[2]=new TProfile(*hprof);
+	}
+	void SetMultiplVsZProfileLHC10e(TProfile* hprof){
+	  if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
+	  fMultEstimatorAvg[3]=new TProfile(*hprof);
+	}
+	TProfile* GetEstimatorHistogram(const AliVEvent* event);
+	void SetReferenceMultiplcity(Double_t rmu){fRefMult=rmu;}
+	
 	void   SetDselection(UShort_t originDselection) {fOriginDselection=originDselection;}
 	UShort_t GetDselection (){return fOriginDselection;}
 	void SetSign(Char_t isSign) {fSign = isSign;}
@@ -192,6 +214,7 @@ protected:
 	AliCFManager   *fCFManager;   //  pointer to the CF manager
 	TH1I *fHistEventsProcessed;   //! simple histo for monitoring the number of events processed
 	THnSparse* fCorrelation;      //  response matrix for unfolding
+	TList  *fListProfiles; //list of profile histos for z-vtx correction
 	Int_t fCountMC;               //  MC particle found
 	Int_t fCountAcc;              //  MC particle found that satisfy acceptance cuts
 	Int_t fCountVertex;       //  Reco particle found that satisfy vertex constrained
@@ -234,9 +257,12 @@ protected:
 	UInt_t fPDGcode; // PDG code
 
 	Int_t fMultiplicityEstimator; // Definition of the multiplicity estimator: kNtrk10=0, kNtrk10to16=1, kVZERO=2
+	TProfile* fMultEstimatorAvg[4]; // TProfile with mult vas. Z per period
+	Double_t fRefMult;   // refrence multiplcity (period b)
+	Bool_t fZvtxCorrectedNtrkEstimator; // flag to use the z-vtx corrected (if not use uncorrected) multiplicity estimator
 	Bool_t fIsPPData; // flag for pp data (not checking centrality)
 
-	ClassDef(AliCFTaskVertexingHF,17); // class for HF corrections as a function of many variables
+	ClassDef(AliCFTaskVertexingHF,18); // class for HF corrections as a function of many variables
 };
 
 #endif
