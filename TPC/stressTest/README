@@ -5,6 +5,9 @@ Content:
 stressTest.sh  - script to submit all scripts fromt $ALICE_ROOT/test directory
 
 To run stressTest:
-$ALICE_ROOT/test/stressTest/stressTest.sh <output dir prefix>  <batch command>
+$ALICE_ROOT/TPC/stressTest/stressTest.sh <output dir prefix>  <batch command>
 e.g:
-$ALICE_ROOT/test/stressTest/stressTest.sh /d/alice12/miranov/streeTest/ "bsub -q proof"
+
+
+$ALICE_ROOT/TPC/stressTest/stressTest.sh `pwd`  "qsub -V -cwd -o out.log"
+

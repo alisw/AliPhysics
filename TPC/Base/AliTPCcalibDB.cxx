@@ -88,6 +88,7 @@
 #include <AliSplineFit.h>
 #include <AliCTPTimeParams.h>
 
+#include "TGraphErrors.h"
 #include "AliTPCcalibDB.h"
 #include "AliTPCdataQA.h"
 #include "AliTPCcalibDButil.h"
@@ -317,7 +318,7 @@ AliTPCcalibDB::~AliTPCcalibDB()
   //
   // destructor
   //
-  
+  delete fIonTailArray; 
   delete fActiveChannelMap;
   delete fGrRunState;
 }
@@ -490,14 +491,15 @@ void AliTPCcalibDB::Update(){
     fPulserData=(TObjArray*)(entry->GetObject());
   }
   
-   //Calibration ION tail data
- //  entry          = GetCDBEntry("TPC/Calib/IonTail");
-//   if (entry){
-//     entry->SetOwner(kTRUE);
-//     fIonTailArray=(TObjArray*)(entry->GetObject());
-//   }
-
-
+  //Calibration ION tail data
+  entry          = GetCDBEntry("TPC/Calib/IonTail");
+  if (entry){
+    delete fIonTailArray; fIonTailArray=NULL;
+    entry->SetOwner(kTRUE);
+     fIonTailArray=(TObjArray*)(entry->GetObject());
+     fIonTailArray->SetOwner(); //own the keys
+  }
+  
   //CE data
   entry          = GetCDBEntry("TPC/Calib/CE");
   if (entry){
@@ -600,7 +602,117 @@ void AliTPCcalibDB::UpdateNonRec(){
 
 }
 
+Bool_t AliTPCcalibDB::GetTailcancelationGraphs(Int_t sector, TGraphErrors ** graphRes, Float_t * indexAmpGraphs){
+ 
+// 
+//   Read OCDB entry object of Iontail (TObjArray of TGraphErrors of TRFs)
+//   Naming of the TRF objects is: "gr_<chamber_type>_<voltage>_<laser_track_angle>_<distance_to_COG>" --> "gr_iroc_1240_1_1" 
+//   
+  
+  Int_t run = fTransform->GetCurrentRunNumber();
+  SetRun(run);
+  Float_t rocVoltage = GetChamberHighVoltage(run,sector, -1);      // Get the voltage from OCDB with a getter (old function)
+//   Float_t rocVoltage=GetChamberHighVoltageMedian(sector);                      // Get the voltage from OCDB, new function from Jens
+ 
+  Int_t nominalVoltage = (sector<36) ? 1240 : 1470 ;     // nominal voltage of 2012 when the TRF functions were produced
 
+  if ( rocVoltage < nominalVoltage/2. || rocVoltage > nominalVoltage*2. )
+  {
+    AliInfo(Form("rocVoltage out of range: roc: %.2f, nominal: %i", rocVoltage, nominalVoltage));
+    return kFALSE;
+  }
+
+  Int_t tempVoltage = 0;                                 
+  Int_t trackAngle  = 4;                                 // (1=first, 2=second, 3=third, 4=first+second, 5=all tracks) note: 3rd is distorted by low freq
+  TString rocType   = (sector<36) ? "iroc" : "oroc";     
+  const Int_t ngraph=fIonTailArray->GetLast();
+  
+  // create array of voltages in order to select the proper TRF with closest voltage  
+  Int_t voltages[ngraph];     // array of voltages
+  for (Int_t i=0; i<ngraph; i++){
+    voltages[i]=0;
+  }
+    
+  // loop over response functions in the TObjarray
+  Int_t nvoltages=0;
+  for (Int_t i=0;i<=ngraph;i++){
+    
+    // read the TRF object name in order to select proper TRF for the given sector
+    TString objname(fIonTailArray->At(i)->GetName());
+    if (!objname.Contains(rocType)) continue;
+
+    TObjArray *objArr = objname.Tokenize("_");
+    
+    // select the roc type (IROC or OROC) and the trackAngle
+    if ( atoi(static_cast<TObjString*>(objArr->At(3))->GetName())==trackAngle )
+    { 
+      // Create the voltage array for proper voltage value selection
+      voltages[nvoltages]=atoi(static_cast<TObjString*>(objArr->At(2))->GetName());
+      nvoltages++;
+    }
+    delete objArr;
+  }
+    
+  // find closest voltage value to ROC voltage (among the TRF' voltage array --> to select proper t.r.f.)
+  Int_t ampIndex     = 0;
+  Int_t diffVoltage  = TMath::Abs(rocVoltage - voltages[0]);
+  for (Int_t k=0;k<ngraph;k++) {
+    if (diffVoltage >= TMath::Abs(rocVoltage-voltages[k]) && voltages[k]!=0)
+      {
+        diffVoltage    = TMath::Abs(rocVoltage-voltages[k]);
+        ampIndex   = k;
+      }     
+  }
+  tempVoltage = voltages[ampIndex];    // use closest voltage to current voltage
+  if (run<140000) tempVoltage = nominalVoltage;    // for 2010 data
+  
+  // assign TGraphErrors   
+  Int_t igraph=0;
+  for (Int_t i=0; i<=ngraph; i++){
+   
+    // read TRFs for TObjArray and select the roc type (IROC or OROC) and the trackAngle
+    TGraphErrors * trfObj = static_cast<TGraphErrors*>(fIonTailArray->At(i));
+    TString objname(trfObj->GetName());
+    if (!objname.Contains(rocType)) continue; //choose ROC type
+    
+    TObjArray *objArr1 = objname.Tokenize("_");
+     
+    // TRF eleminations
+    TObjString* angleString = static_cast<TObjString*>(objArr1->At(3));
+    TObjString* voltageString = static_cast<TObjString*>(objArr1->At(2));
+    //choose angle and voltage
+    if ((atoi(angleString->GetName())==trackAngle) && (atoi(voltageString->GetName())==tempVoltage) )
+    {
+      // Apply Voltage scaling
+      Int_t voltage       = atoi(voltageString->GetName());
+      Double_t voltageScaled = 1;
+      if (rocVoltage>0)  voltageScaled = Double_t(voltage)/Double_t(rocVoltage); // for jens how it can happen that we have clusters at 0 HV ?
+      const Int_t nScaled          = TMath::Nint(voltageScaled*trfObj->GetN())-1; 
+      Double_t x;
+      Double_t y;
+      
+      delete graphRes[igraph];
+      graphRes[igraph]       = new TGraphErrors(nScaled);
+      
+      for (Int_t j=0; j<nScaled; j++){
+        x = TMath::Nint(j*(voltageScaled));
+        y = (j<trfObj->GetN()) ? (1./voltageScaled)*trfObj->GetY()[j] : 0.;
+        graphRes[igraph]->SetPoint(j,x,y);
+      }
+
+      // fill arrays for proper position and amplitude selections
+      TObjString* distanceToCenterOfGravity = static_cast<TObjString*>(objArr1->At(4));
+      indexAmpGraphs[igraph] = (distanceToCenterOfGravity->GetString().Atof())/10.;
+      // smooth voltage scaled graph 
+      for (Int_t m=1; m<nScaled;m++){
+        if (graphRes[igraph]->GetY()[m]==0) graphRes[igraph]->GetY()[m] = graphRes[igraph]->GetY()[m-1];
+      }
+      igraph++;
+    }
+  delete objArr1;
+  }
+  return kTRUE;
+}
 
 void AliTPCcalibDB::CreateObjectList(const Char_t *filename, TObjArray *calibObjects)
 {
@@ -1656,6 +1768,13 @@ void AliTPCcalibDB::UpdateChamberHighVoltageData()
       }
 
       fChamberHVgoodFraction[iROC]=Float_t(ngood)/Float_t(nPointsSampled);
+    } else if (!gr && !sensor->GetFit() ){
+      // This is an exception handling.
+      // It was observed that for some rund in the 2010 data taking no HV info is available
+      //    for some sectors. However they were active. So take care about this
+      fChamberHVmedian[iROC]       = fParam->GetNominalVoltage(iROC);
+      fChamberHVgoodFraction[iROC] = 1.;
+      AliWarning(Form("ROC %d detected without HV Splines and HV graph. Will set median HV to nominal voltage",iROC));
     } else {
       AliError(Form("No Graph or too few points found for HV sensor of ROC %d",iROC));
     }
@@ -2264,6 +2383,35 @@ Double_t AliTPCcalibDB::GetVDriftCorrectionGy(Int_t timeStamp, Int_t run, Int_t 
   return -result/250.; //normalized before
 }
 
+
+Double_t AliTPCcalibDB::GetVDriftCorrectionDeltaZ(Int_t /*timeStamp*/, Int_t run, Int_t /*side*/, Int_t /*mode*/){
+  //
+  // Get deltaZ run/by/run  correction - as fitted together with drift velocity
+  // Value extracted  form the TPC-ITS, mean value is used
+  
+  // Arguments:
+  // mode determines the algorith how to combine the Laser Track, LaserCE or TPC-ITS
+  // timestamp - not used
+  // run       - run number
+  // side      - common for boith sides
+  //
+  if (run<=0 && fTransform) run = fTransform->GetCurrentRunNumber();
+  UpdateRunInformations(run,kFALSE);
+  TObjArray *array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
+  if (!array) return 0;
+  Double_t result=0;
+
+  // use TPC-ITS if present
+  TGraphErrors *gr= (TGraphErrors*)array->FindObject("ALIGN_ITSB_TPC_DELTAZ");
+  if(gr) { 
+    result = TMath::Mean(gr->GetN(), gr->GetY());
+  }
+  return result;
+}
+
+
+
+
 AliTPCCalPad* AliTPCcalibDB::MakeDeadMap(Double_t notInMap, const char* nameMappingFile) {
 //
 //   Read list of active DDLs from OCDB entry
@@ -2382,3 +2530,62 @@ AliTPCCorrection * AliTPCcalibDB::GetTPCComposedCorrectionDelta() const{
   return (AliTPCCorrection *)fComposedCorrectionArray->At(4);  //
 }
 
+Double_t AliTPCcalibDB::GetGainCorrectionHVandPT(Int_t timeStamp, Int_t run, Int_t sector, Int_t deltaCache, Int_t mode){
+  //
+  // Correction for  changes of gain caused by change of the HV and by relative change of the gas density
+  // Function is slow some kind of caching needed
+  // Cache implemented using the static TVectorD
+  //
+  // Input paremeters:
+  //  deltaCache - maximal time differnce above which the cache is recaclulated
+  //  mode       - mode==0 by default return combined correction 
+  //                       actual HV and Pt correction has to be present in the run calibration otherwise it is ignored.
+  //                       (retrun value differnt than 1 only in case calibration present in the OCDB entry CalibTimeGain
+  //               mode==1 return combined correction ( important for calibration pass)
+  //                       (in case thereis  no calibration in  CalibTimeGain, default value from the AliTPCParam (Parameters) is used
+  //                       this mode is used in the CPass0
+  //               mode==2 return HV correction
+  //               mode==3 return P/T correction
+  //  Usage in the simulation/reconstruction
+  //  MC:     Qcorr  = Qorig*GetGainCorrectionHVandPT   ( in AliTPC.cxx ) 
+  //  Rec:    dEdx   = dEdx/GetGainCorrectionHVandPT    ( in aliTPCseed.cxx )
+  //
+  static Float_t gGainCorrection[72];
+  static Float_t gGainCorrectionPT[72];
+  static Float_t gGainCorrectionHV[72];
+  static Int_t    gTimeStamp=-99999999;
+  static Bool_t   hasTimeDependent=kFALSE; 
+  if ( TMath::Abs(timeStamp-gTimeStamp)> deltaCache){    
+    //
+    TGraphErrors * graphGHV = 0;
+    TGraphErrors * graphGPT = 0;
+    TObjArray *timeGainSplines = GetTimeGainSplinesRun(run);
+    if (timeGainSplines){
+      graphGHV  = (TGraphErrors*) timeGainSplines->FindObject("GainSlopesHV");
+      graphGPT  = (TGraphErrors*) timeGainSplines->FindObject("GainSlopesPT");
+      if (graphGHV) hasTimeDependent=kTRUE;
+    }
+    if (!graphGHV) graphGHV = fParam->GetGainSlopesHV();
+    if (!graphGPT) graphGPT = fParam->GetGainSlopesPT();
+    //
+    for (Int_t isec=0; isec<72; isec++){
+      Double_t deltaHV= GetChamberHighVoltage(run,isec, timeStamp) - fParam->GetNominalVoltage(isec);
+      Double_t deltaGHV=0;
+      Double_t deltaGPT=0;
+      if (graphGHV) deltaGHV = graphGHV->GetY()[isec]*deltaHV;
+      if (graphGPT) deltaGPT = graphGPT->GetY()[isec]*GetPTRelative(timeStamp,run,0);
+      gGainCorrection[isec]=(1.+deltaGHV)*(1.+deltaGPT);
+      gGainCorrectionPT[isec]=1+deltaGPT;
+      gGainCorrectionHV[isec]=1+deltaGHV;
+    }    
+    gTimeStamp=timeStamp;
+  }
+  if (mode==0){
+    if (hasTimeDependent) return gGainCorrection[sector];
+    if (!hasTimeDependent) return 1;
+  }
+  if (mode==1) return gGainCorrection[sector];
+  if (mode==2) return gGainCorrectionPT[sector];
+  if (mode==3) return gGainCorrectionHV[sector];
+  return 1;
+}

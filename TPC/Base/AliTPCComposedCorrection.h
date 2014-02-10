@@ -34,7 +34,7 @@ class TTimeStamp;
 
 class AliTPCComposedCorrection : public AliTPCCorrection {
 public:
-  enum CompositionType {kParallel,kQueue};
+  enum CompositionType {kParallel,kQueue, kQueueResidual};
 
   AliTPCComposedCorrection();
   AliTPCComposedCorrection(TCollection *corrections,CompositionType mode);

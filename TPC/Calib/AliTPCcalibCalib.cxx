@@ -208,13 +208,20 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
   // First apply calibration
   //
   //  AliTPCPointCorrection * corr =  AliTPCPointCorrection::Instance();
+  TVectorD vec(5, seed->GetParameter());
   for (Int_t irow=0;irow<159;irow++) {
     AliTPCclusterMI *cluster=seed->GetClusterPointer(irow);
     if (!cluster) continue; 
     AliTPCclusterMI cl0(*cluster);
     Double_t x[3]={cluster->GetRow(),cluster->GetPad(),cluster->GetTimeBin()};
     Int_t i[1]={cluster->GetDetector()};
-
+    AliTPCTrackerPoint * point = seed->GetTrackPoint(irow);
+    Double_t ty=0,tz=0;
+     
+    if (point){
+      ty = TMath::Abs(point->GetAngleY());
+      tz = TMath::Abs(point->GetAngleZ()*TMath::Sqrt(1+ty*ty));      
+    }
     transform->Transform(x,i,0,1);
     //
     // get position correction
@@ -248,7 +255,7 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
 
 
 
-    if (fStreamLevel>2 && streamCounter<20*fStreamLevel ){
+    if (fStreamLevel>2 && gRandom->Rndm()<0.1 ){
       // dump debug info if required
       TTreeSRedirector *cstream = GetDebugStreamer();
       if (cstream){
@@ -263,6 +270,9 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
 	  "cl.="<<cluster<<
 	  "cy="<<dy<<
 	  "cz="<<dz<<
+	  "ty="<<ty<<
+	  "tz="<<tz<<
+	  "vec.="<<&vec<<  //track parameters
 	  "\n";
       }
     }
@@ -441,6 +451,8 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
 	"nclIn="<<nclIn<<
 	"nclOut="<<nclOut<<
 	"ncl="<<ncl<<
+	"seed.="<<seed<<
+	"track.="<<track<<
 	"TrIn0.="<<trackInOld<<
 	"TrOut0.="<<trackOutOld<<
 	"TrIn1.="<<&trackIn<<

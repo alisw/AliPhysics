@@ -5,6 +5,7 @@
 #include <TROOT.h>
 #include <TFile.h>
 #include <TPRegexp.h>
+#include <TVectorF.h>
 
 #include <AliExternalTrackParam.h>
 #include <AliTPCcalibDB.h>
@@ -47,6 +48,11 @@ AliToyMCReconstruction::AliToyMCReconstruction() : TObject()
 , fTime0(-1)
 , fCreateT0seed(kFALSE)
 , fLongT0seed(kTRUE)
+, fFillClusterRes(kFALSE)
+, fUseT0list(kFALSE)
+, fUseZ0list(kFALSE)
+, fForceAlpha(kFALSE)
+, fRecoInfo(-1)
 , fStreamer(0x0)
 , fInputFile(0x0)
 , fTree(0x0)
@@ -60,6 +66,7 @@ AliToyMCReconstruction::AliToyMCReconstruction() : TObject()
 , fAllClusters("AliTPCclusterMI",10000)
 , fMapTrackEvent(10000)
 , fMapTrackTrackInEvent(10000)
+, fHnDelta(0x0)
 , fIsAC(kFALSE)
 {
   //
@@ -89,6 +96,9 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
   ConnectInputFile(file, nmaxEv);
   if (!fTree) return;
 
+  Int_t maxev=fTree->GetEntries();
+  if (nmaxEv>0&&nmaxEv<maxev) maxev=nmaxEv;
+  
   InitStreamer(".debug");
   
   gROOT->cd();
@@ -116,10 +126,26 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
   AliExternalTrackParam trackITS2;
   
   AliExternalTrackParam *dummy;
-  
-  Int_t maxev=fTree->GetEntries();
-  if (nmaxEv>0&&nmaxEv<maxev) maxev=nmaxEv;
 
+  // prepare list of T0s
+  TVectorF t0list(maxev);
+  TVectorF z0list(maxev);
+  if (fUseT0list || fUseZ0list) {
+    for (Int_t iev=0; iev<maxev; ++iev){
+      fTree->GetEvent(iev);
+      const Float_t t0=fEvent->GetT0();
+      const Float_t z0=fEvent->GetZ();
+      t0list[iev]=t0;
+      z0list[iev]=z0;
+    }
+  }
+  
+  // array with cluster residuals
+  TClonesArray *arrClustRes=0x0;
+  if (fFillClusterRes){
+    arrClustRes=new TClonesArray("AliTPCclusterMI",160);
+  }
+  
   const Double_t lastLayerITS = 43.0; // same as in AliToyMCEventGenerator::MakeITSClusters (hard coded)
   const Double_t iFCRadius =  83.5; //radius constants found in AliTPCCorrection.cxx
   const Double_t betweeTPCITS = (lastLayerITS+iFCRadius)/2.; // its track propgated to inner TPC wall
@@ -127,36 +153,68 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
   const Double_t kMaxSnp = 0.85;
   const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
   
+  Double_t lastT0=0;
+
+  // residuals
+  // binning r, phi, z, delta
+  const Int_t nbins=4;
+  Int_t bins[nbins]    = {16, 18*5, 50, 80};
+  Double_t xmin[nbins] = {86. , 0.,           -250., -2.};
+  Double_t xmax[nbins] = {250., 2*TMath::Pi(), 250.,  2.};
+  fHnDelta = new THnF("hn", "hn", nbins, bins, xmin, xmax);
+
+  // fill streamer?
+  Bool_t fillStreamer=(fStreamer!=0x0);
+  if (fRecoInfo>-1 && ((fRecoInfo&kFillNoTrackInfo)==kFillNoTrackInfo)) fillStreamer=kFALSE;
   
   for (Int_t iev=0; iev<maxev; ++iev){
     printf("==============  Processing Event %6d =================\n",iev);
     fTree->GetEvent(iev);
+    
+    Float_t z0=fEvent->GetZ();
+    Float_t t0=fEvent->GetT0();
+
+    // set SC scaling factor
+    fTPCCorrection->SetCorrScaleFactor(fEvent->GetSCscale());
+    
     for (Int_t itr=0; itr<fEvent->GetNumberOfTracks(); ++itr){
 //       printf(" > ======  Processing Track %6d ========  \n",itr);
       const AliToyMCTrack *tr=fEvent->GetTrack(itr);
       tOrig = *tr;
-      // ideal track propagated to ITS reference points
-      tOrigITS  = *tr;
-      tOrigITS1 = *tr;
-      tOrigITS2 = *tr;
+
       // propagate original track to ITS comparison points
-      AliTrackerBase::PropagateTrackTo(&tOrigITS, lastLayerITS,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
-      AliTrackerBase::PropagateTrackTo(&tOrigITS1,betweeTPCITS,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
-      AliTrackerBase::PropagateTrackTo(&tOrigITS2,iFCRadius,   kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+      if (fRecoInfo<0 || (fRecoInfo&kFillITS) ==kFillITS  ) {
+        tOrigITS  = *tr;
+        AliTrackerBase::PropagateTrackTo(&tOrigITS, lastLayerITS,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+        tRealITS  = resetParam;
+      }
+      if (fRecoInfo<0 || (fRecoInfo&kFillITS1)==kFillITS1 ) {
+        tOrigITS1 = *tr;
+        AliTrackerBase::PropagateTrackTo(&tOrigITS1,betweeTPCITS,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+        tRealITS1 = resetParam;
+      }
+      if (fRecoInfo<0 || (fRecoInfo&kFillITS2)==kFillITS2 ) {
+        tOrigITS2 = *tr;
+        AliTrackerBase::PropagateTrackTo(&tOrigITS2,iFCRadius,   kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+        tRealITS2 = resetParam;
+      }
 
       // realistic ITS track propagated to reference points
-      tRealITS  = resetParam;
-      tRealITS1 = resetParam;
-      tRealITS2 = resetParam;
       dummy = GetTrackRefit(tr,kITS);
       if (dummy){
-        tRealITS = *dummy;
-        tRealITS1 = *dummy;
-        tRealITS2 = *dummy;
         // propagate realistic track to ITS comparison points
-        AliTrackerBase::PropagateTrackTo(&tRealITS, lastLayerITS,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
-        AliTrackerBase::PropagateTrackTo(&tRealITS1,betweeTPCITS,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
-        AliTrackerBase::PropagateTrackTo(&tRealITS2,iFCRadius,   kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+        if (fRecoInfo<0 || (fRecoInfo&kFillITS) ==kFillITS  ) {
+          tRealITS = *dummy;
+          AliTrackerBase::PropagateTrackTo(&tRealITS, lastLayerITS,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+        }
+        if (fRecoInfo<0 || (fRecoInfo&kFillITS1)==kFillITS1 ) {
+          tRealITS1 = *dummy;
+          AliTrackerBase::PropagateTrackTo(&tRealITS1,betweeTPCITS,kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+        }
+        if (fRecoInfo<0 || (fRecoInfo&kFillITS2)==kFillITS2 ) {
+          tRealITS2 = *dummy;
+          AliTrackerBase::PropagateTrackTo(&tRealITS2,iFCRadius,   kMass,1,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+        }
         //
         delete dummy;
         dummy=0x0;
@@ -168,13 +226,11 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
       t0seed    = resetParam;
       seed      = resetParam;
       track     = resetParam;
-      trackITS  = resetParam;
-      trackITS1 = resetParam;
-      trackITS2 = resetParam;
       
-      Float_t z0=fEvent->GetZ();
-      Float_t t0=fEvent->GetT0();
-
+      if (fRecoInfo<0 || (fRecoInfo&kFillITS) ==kFillITS  ) trackITS  = resetParam;
+      if (fRecoInfo<0 || (fRecoInfo&kFillITS1)==kFillITS1 ) trackITS1 = resetParam;
+      if (fRecoInfo<0 || (fRecoInfo&kFillITS2)==kFillITS2 ) trackITS2 = resetParam;
+      
       Float_t vDrift=GetVDrift();
       Float_t zLength=GetZLength(0);
 
@@ -194,30 +250,32 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
           t0seed = *dummy;
           delete dummy;
         }
-        
-        // crate real seed using the time 0 from the first seed
-        // set fCreateT0seed now to false to get the seed in z coordinates
+
+        // set the T0 from the seed
+        // in case the match with the real T0 infor is requested, find the
+        //    closes T0 from the list of T0s
         fTime0 = t0seed.GetZ()-zLength/vDrift;
+        if (fUseT0list || fUseZ0list) {
+          fTime0 = FindClosestT0(t0list, z0list, t0seed);
+        }
+        // create real seed using the time 0 from the first seed
+        // set fCreateT0seed now to false to get the seed in z coordinates
         fCreateT0seed = kFALSE;
 //         printf("seed (%.2g)\n",fTime0);
         dummy  = GetSeedFromTrack(tr);
         if (dummy) {
           seed = *dummy;
           delete dummy;
+          dummy=0x0;
 
           // create fitted track
           if (fDoTrackFit){
 //             printf("track\n");
-            dummy = GetFittedTrackFromSeed(tr, &seed);
+            dummy = GetFittedTrackFromSeed(tr, &seed, arrClustRes);
             track = *dummy;
+            dummy=0x0;
             delete dummy;
           }
-
-          // Copy original track and fitted track
-          // for extrapolation to ITS last layer
-          trackITS  = track;
-          trackITS1 = track;
-          trackITS2 = track;
           
           // propagate seed to 0
           AliTrackerBase::PropagateTrackTo(&seed,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
@@ -227,29 +285,39 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
           //
           
           // rotate fitted track to the frame of the original track and propagate to same reference
-          AliTrackerBase::PropagateTrackTo(&trackITS,lastLayerITS,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
-          trackITS.Rotate(tOrigITS.GetAlpha());
-          AliTrackerBase::PropagateTrackTo(&trackITS,lastLayerITS,kMass,1,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
+          if (fRecoInfo<0 || (fRecoInfo&kFillITS) ==kFillITS  ){
+            trackITS  = track;
+            AliTrackerBase::PropagateTrackTo(&trackITS,lastLayerITS,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+            trackITS.Rotate(tOrigITS.GetAlpha());
+            AliTrackerBase::PropagateTrackTo(&trackITS,lastLayerITS,kMass,1,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
+          }
 
           // rotate fitted track to the frame of the original track and propagate to same reference
-          AliTrackerBase::PropagateTrackTo(&trackITS1,betweeTPCITS,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
-          trackITS1.Rotate(tOrigITS1.GetAlpha());
-          AliTrackerBase::PropagateTrackTo(&trackITS1,betweeTPCITS,kMass,1,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
+          if (fRecoInfo<0 || (fRecoInfo&kFillITS1)==kFillITS1 ){
+            trackITS1 = track;
+            AliTrackerBase::PropagateTrackTo(&trackITS1,betweeTPCITS,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+            trackITS1.Rotate(tOrigITS1.GetAlpha());
+            AliTrackerBase::PropagateTrackTo(&trackITS1,betweeTPCITS,kMass,1,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
+          }
 
           // rotate fitted track to the frame of the original track and propagate to same reference
-          AliTrackerBase::PropagateTrackTo(&trackITS2,iFCRadius,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
-          trackITS2.Rotate(tOrigITS2.GetAlpha());
-          AliTrackerBase::PropagateTrackTo(&trackITS2,iFCRadius,kMass,1,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
+          if (fRecoInfo<0 || (fRecoInfo&kFillITS2)==kFillITS2 ){
+            trackITS2 = track;
+            AliTrackerBase::PropagateTrackTo(&trackITS2,iFCRadius,kMass,5,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
+            trackITS2.Rotate(tOrigITS2.GetAlpha());
+            AliTrackerBase::PropagateTrackTo(&trackITS2,iFCRadius,kMass,1,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
+          }
         }
       }
 
       Int_t ctype(fCorrectionType);
-      
-      if (fStreamer) {
+
+      if (fillStreamer){
         (*fStreamer) << "Tracks" <<
         "iev="         << iev             <<
         "z0="          << z0              <<
         "t0="          << t0              <<
+        "lastt0="      << lastT0          <<
         "fTime0="      << fTime0          <<
         "itr="         << itr             <<
         "clsType="     << fClusterType    <<
@@ -262,26 +330,79 @@ void AliToyMCReconstruction::RunReco(const char* file, Int_t nmaxEv)
         "seed.="       << &seed           <<
         
         "tOrig.="      << &tOrig          <<
-        "track.="      << &track          <<
+        "track.="      << &track;
+
+        
         // ITS match
-        "tOrigITS.="   << &tOrigITS       <<
-        "tOrigITS1.="  << &tOrigITS1      <<
-        "tOrigITS2.="  << &tOrigITS2      <<
+        if (fRecoInfo<0 || (fRecoInfo&kFillITS) ==kFillITS  ){
+          (*fStreamer) << "Tracks" <<
+          "tOrigITS.="   << &tOrigITS       <<
+          "tRealITS.="   << &tRealITS       <<
+          "trackITS.="   << &trackITS;
+        }
         
-        "tRealITS.="   << &tRealITS       <<
-        "tRealITS1.="  << &tRealITS1      <<
-        "tRealITS2.="  << &tRealITS2      <<
+        if (fRecoInfo<0 || (fRecoInfo&kFillITS1) ==kFillITS1  ){
+          (*fStreamer) << "Tracks" <<
+          "tOrigITS1.="  << &tOrigITS1      <<
+          "tRealITS1.="  << &tRealITS1      <<
+          "trackITS1.="  << &trackITS1;
+        }
+
+        if (fRecoInfo<0 || (fRecoInfo&kFillITS) ==kFillITS  ){
+          (*fStreamer) << "Tracks" <<
+          "tOrigITS2.="  << &tOrigITS2      <<
+          "tRealITS2.="  << &tRealITS2      <<
+          "trackITS2.="  << &trackITS2;
+        }
+
+        if (arrClustRes) {
+          const Int_t nCl=arrClustRes->GetEntriesFast();
+          // fracktion of outliers from track extrapolation
+          // for 3, 3.5, 4, 4.5 and 5 sigma of the cluster resolution (~1mm)
+          Float_t fracY[5]={0.};
+          Float_t fracZ[5]={0.};
+          
+          for (Int_t icl=0; icl<nCl; ++icl) {
+            AliTPCclusterMI *cl=static_cast<AliTPCclusterMI*>(arrClustRes->At(icl));
+//             const Float_t sigmaY=TMath::Sqrt(cl->GetSigmaY2());
+//             const Float_t sigmaZ=TMath::Sqrt(cl->GetSigmaZ2());
+            for (Int_t inSig=0; inSig<5; ++inSig) {
+              fracY[inSig] += cl->GetY()>(3+inSig*.5)/**sigmaY*/;
+              fracZ[inSig] += cl->GetZ()>(3+inSig*.5)/**sigmaZ*/;
+            }
+          }
+          
+          if (nCl>0) {
+            for (Int_t inSig=0; inSig<5; ++inSig) {
+              fracY[inSig]/=nCl;
+              fracZ[inSig]/=nCl;
+            }
+          }
+          
+          (*fStreamer) << "Tracks" <<
+          "clustRes.=" << arrClustRes;
+          for (Int_t inSig=0; inSig<5; ++inSig) {
+            const char* fracYname=Form("clFracY%02d=", 30+inSig*5);
+            const char* fracZname=Form("clFracZ%02d=", 30+inSig*5);
+            (*fStreamer) << "Tracks" <<
+            fracYname << fracY[inSig] <<
+            fracZname << fracZ[inSig];
+          }
+        }
         
-        "trackITS.="   << &trackITS       <<
-        "trackITS1.="  << &trackITS1      <<
-        "trackITS2.="  << &trackITS2      <<
+        (*fStreamer) << "Tracks" <<
         "\n";
       }
       
       
     }
+    lastT0=t0;
   }
 
+  fStreamer->GetFile()->cd();
+  fHnDelta->Write();
+  
+  delete arrClustRes;
   Cleanup();
 }
 
@@ -1010,9 +1131,13 @@ AliExternalTrackParam* AliToyMCReconstruction::GetSeedFromTrack(const AliToyMCTr
   if (fCreateT0seed&&!fLongT0seed){
     // only propagate to vertex if we don't create a long seed
     // if fTime0 < 0 we assume that we create a seed for the T0 estimate
-    AliTrackerBase::PropagateTrackTo(seed,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,kFALSE);
+    Int_t ret=AliTrackerBase::PropagateTrackTo2(seed,0,kMass,5,kTRUE,kMaxSnp,0,kFALSE,kFALSE);
     if (TMath::Abs(seed->GetX())>3) {
-//       printf("Could not propagate track to 0, %.2f, %.2f, %.2f\n",seed->GetX(),seed->GetAlpha(),seed->Pt());
+//       printf("Could not propagate track to 0, x:%.2f, a:%.2f (%.2f), snp:%.2f (%.2f), pt:%.2f (%.2f), %d\n",seed->GetX(),seed->GetAlpha(),tr->GetAlpha(), seed->GetSnp(), tr->GetSnp(), seed->Pt(), tr->Pt(), ret);
+    }
+    if (fForceAlpha) {
+      seed->Rotate(tr->GetAlpha());
+      AliTrackerBase::PropagateTrackTo2(seed,0,kMass,1.,kFALSE,kMaxSnp,0,kFALSE,kFALSE);
     }
   }
 
@@ -1164,14 +1289,20 @@ void AliToyMCReconstruction::ClusterToSpacePoint(const AliTPCclusterMI *cl, Floa
 }
 
 //____________________________________________________________________________________
-AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliToyMCTrack *tr, const AliExternalTrackParam *seed)
+AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliToyMCTrack *tr, const AliExternalTrackParam *seed, TClonesArray *arrClustRes)
 {
   //
   //
   //
 
+  if (arrClustRes) {
+    arrClustRes->Clear();
+  }
+  
   // create track
   AliExternalTrackParam *track = new AliExternalTrackParam(*seed);
+  // track copy for propagation
+  AliExternalTrackParam trCopy(*tr);
 
   Int_t ncls=(fClusterType == 0)?tr->GetNumberOfSpacePoints():tr->GetNumberOfDistSpacePoints();
 
@@ -1189,6 +1320,9 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
   const Double_t refX = tr->GetX();
   
   const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+
+  // parametrised track resolution
+  Double_t trackRes=gRandom->Gaus();
   
   // loop over all other points and add to the track
   for (Int_t ipoint=ncls-1; ipoint>=0; --ipoint){
@@ -1245,6 +1379,70 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
     if (TMath::Abs(track->GetX())>kMaxR) break;
 //     if (TMath::Abs(track->GetZ())<kZcut)continue;
     //
+
+    // add residuals
+    if (arrClustRes) {
+      TClonesArray &arrDummy=*arrClustRes;
+      AliTPCclusterMI *clRes = new(arrDummy[arrDummy.GetEntriesFast()]) AliTPCclusterMI(*cl);
+      clRes->SetX(prot.GetX());
+      // residuals in terms of sigma cl and track
+      clRes->SetY((track->GetY()-prot.GetY())/( sqrt ( prot.GetCov()[3] + track->GetSigmaY2()) )  );
+      clRes->SetZ((track->GetZ()-prot.GetZ())/( sqrt ( prot.GetCov()[5] + track->GetSigmaZ2()) )  );
+    }
+
+    // fill cluster residuals to ideal track for calibration studies
+    // ideal cluster position
+    // require at least 2 TRD points
+    if (fRecoInfo<0 || (fRecoInfo&kFillDeltas) ==kFillDeltas  ) {
+      trCopy.Rotate(track->GetAlpha());
+      AliTrackerBase::PropagateTrackTo(&trCopy,prot.GetX(),kMass,5,kFALSE,kMaxSnp,0,kFALSE,fUseMaterial);
+      // binning r, phi, z, delta (0=rphi, 1=z)
+      // resolution parametrisation
+      Float_t soneOverPt= trCopy.GetSigned1Pt();
+      Float_t oneOverPt = TMath::Abs(soneOverPt);
+      Float_t radius    = trCopy.GetX();
+      Float_t trackY    = trCopy.GetY();
+      Float_t trackZ    = trCopy.GetZ();
+      Float_t trackPhi  = trCopy.Phi();
+      Float_t alpha     = trCopy.GetAlpha();
+
+      Float_t pointY    = prot.GetY();
+      Float_t pointZ    = prot.GetZ();
+
+      Float_t resRphi   = 0.004390 + oneOverPt*(-0.136403) + oneOverPt*radius*(0.002266) + oneOverPt*radius*radius*(-0.000006);
+
+      Float_t resRphiRandom = resRphi*trackRes;
+      Float_t deviation     = trackY+resRphiRandom-pointY;
+      Short_t    npTRD         = tr->GetNumberOfTRDPoints();
+
+      // rphi residuals
+      Double_t xx[4]={radius, trackPhi, trackZ ,deviation};
+      if (npTRD>=2){
+        fHnDelta->Fill(xx);
+      }
+
+      Short_t event=fTree->GetReadEntry();
+
+      if (fStreamer) {
+        (*fStreamer) << "delta" <<
+        "soneOverPt=" << soneOverPt <<
+        "r="          << radius    <<
+        "trackPhi="   << trackPhi  <<
+        "trackY="     << trackY    <<
+        "trackZ="     << trackZ    <<
+        "alpha="      << alpha     <<
+        "resRphi="    << resRphi   <<
+        "trackRes="   << trackRes  <<
+        "pointY="     << pointY    <<
+        "pointZ="     << pointZ    <<
+        "npTRD="      << npTRD     <<
+        "event="      << event     <<
+        "\n";
+//           "point.="    << &prot     <<
+//           "track.="    << track     <<
+      }
+    }
+    
     Double_t pointPos[2]={0,0};
     Double_t pointCov[3]={0,0,0};
     pointPos[0]=prot.GetY();//local y
@@ -1258,7 +1456,7 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
 
   AliTrackerBase::PropagateTrackTo2(track,refX,kMass,5.,kTRUE,kMaxSnp,0,kFALSE,fUseMaterial);
 
-  if (!fCreateT0seed){
+  if (!fCreateT0seed || fForceAlpha){
     // rotate fittet track to the frame of the original track and propagate to same reference
     track->Rotate(tr->GetAlpha());
   
@@ -1267,7 +1465,6 @@ AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeed(const AliT
   
   return track;
 }
-
 
 //____________________________________________________________________________________
 AliExternalTrackParam* AliToyMCReconstruction::GetFittedTrackFromSeedAllClusters(const AliToyMCTrack *tr, const AliExternalTrackParam *seed, Int_t &nClus)
@@ -1679,19 +1876,28 @@ void AliToyMCReconstruction::InitSpaceCharge()
   // Init the space charge map
   //
 
-  TString filename="$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps5_50kHz_precal.root";
+//   TString filename="$ALICE_ROOT/TPC/Calib/maps/SC_NeCO2_eps5_50kHz_precal.root";
+  TString filename;
   if (fTree) {
     TList *l=fTree->GetUserInfo();
     for (Int_t i=0; i<l->GetEntries(); ++i) {
-      TString s(l->At(i)->GetName());
-      if (s.Contains("SC_")) {
-        filename=s;
-        break;
+      TObject *o=l->At(i);
+      if (o->IsA() == TObjString::Class()){
+        TString s(o->GetName());
+        if (s.Contains("lookup.root")) {
+          filename=s;
+          break;
+        }
       }
     }
   }
 
-  printf("Initialising the space charge map using the file: '%s'\n",filename.Data());
+  if (filename.IsNull()) {
+    AliFatal("No SC map provided in the Userinfo of the simulation tree");
+    return;
+  }
+  
+  AliInfo(Form("Initialising the space charge map using the file: '%s'\n",filename.Data()));
   TFile f(filename.Data());
   fTPCCorrection=(AliTPCCorrection*)f.Get("map");
   
@@ -2476,7 +2682,9 @@ void AliToyMCReconstruction::Cleanup()
   
   delete fEvent;
   fEvent = 0x0;
-  
+
+  delete fHnDelta;
+  fHnDelta=0x0;
 //   delete fTree;
   fTree=0x0;
   
@@ -2922,3 +3130,35 @@ void AliToyMCReconstruction::CopyRieman(const AliRieman &from, AliRieman &to)
   for (Int_t i=0;i<from.GetN();++i) to.AddPoint(from.GetX()[i],from.GetY()[i],from.GetZ()[i],from.GetSy()[i],from.GetSz()[i]);
 }
 
+//____________________________________________________________________________________
+Float_t AliToyMCReconstruction::FindClosestT0(const TVectorF &t0list, const TVectorF &z0list, AliExternalTrackParam &t0seed)
+{
+  //
+  // find closes T0 in a list of T0s
+  //
+
+  Long64_t size=t0list.GetNrows();
+  const Float_t *array=t0list.GetMatrixArray();
+
+  Float_t vDrift=GetVDrift();
+  Float_t zLength=GetZLength(0);
+
+  Float_t sign=(1-2*(t0seed.GetTgl()>0));
+
+  Float_t vtxCorr=0.;
+  Float_t t0=t0seed.GetZ()-zLength/vDrift;
+  
+  Int_t index=0;
+  Float_t minDist=1e20;
+  for (Int_t it0=0; it0<size; ++it0) {
+    if (fUseZ0list) vtxCorr=sign*z0list[it0]/vDrift;
+//     printf("vtxcorr %d: %.2g, %.2g\n",it0, vtxCorr, z0list[it0]);
+    const Float_t dist=TMath::Abs(t0list[it0]-t0-vtxCorr);
+    if (dist<minDist) {
+      index=it0;
+      minDist=dist;
+    }
+  }
+
+  return array[index];
+}

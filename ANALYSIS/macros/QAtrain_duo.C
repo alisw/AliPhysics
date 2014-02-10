@@ -44,7 +44,7 @@ Int_t runNumbers[5] = {158626};
 
 Bool_t doCDBconnect   = 1;
 Bool_t doEventStat    = 1;
-Bool_t doCentrality   = 0;
+Bool_t doCentrality   = 1;
 Bool_t doQAsym        = 1;
 Bool_t doVZERO        = 1;   // there is a 2nd file
 Bool_t doVZEROPbPb    = 1; 
@@ -148,6 +148,7 @@ void LoadLibraries()
   gSystem->Load("libTENDER");
   gSystem->Load("libPWGPP.so");
   gSystem->Load("libAliHLTTrigger.so");
+  gSystem->Load("libPWGTools"); 
 
   if (doEMCAL || doPHOS || doCALO) {
      gSystem->Load("libEMCALUtils");

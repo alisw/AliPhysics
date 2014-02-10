@@ -11,6 +11,7 @@
 
 #include "AliTPCCorrection.h"
 class TH3F;
+class TH3;
 
 class AliTPCSpaceCharge3D : public AliTPCCorrection {
 public:
@@ -42,7 +43,9 @@ public:
   void InitSpaceCharge3DDistortionCourse(); // real 3D but not accurate enough
   void ForceInitSpaceCharge3DDistortion() { fInitLookUp=kFALSE; InitSpaceCharge3DDistortion(); }
 
-  Float_t GetSpaceChargeDensity(Float_t r, Float_t phi, Float_t z, Int_t mode=0);
+  void  InitSpaceCharge3DPoisson(Int_t kRows, Int_t kColumns, Int_t kPhiSlices, Int_t kIterations);
+  void ForceInitSpaceCharge3DPoisson(Int_t kRows, Int_t kColumns, Int_t kPhiSlices, Int_t kIterations) { fInitLookUp=kFALSE; InitSpaceCharge3DPoisson(kRows,kColumns,kPhiSlices,kIterations); }
+  Float_t GetSpaceChargeDensity(Float_t r, Float_t phi, Float_t z, Int_t mode);
   TH2F* CreateHistoSCinXY(Float_t z, Int_t nx=100, Int_t ny=100, Int_t mode=0);
   TH2F* CreateHistoSCinZR(Float_t phi, Int_t nz=100, Int_t nr=100, Int_t mode=0);
 
@@ -50,8 +53,15 @@ public:
   void WriteChargeDistributionToFile(const char* fname = "SC-Alice.root");
 
   virtual void Print(const Option_t* option="") const;
+  // MI - Add the "real" 3D histogram as an optional input (26.06.2013)
+  //
+  void    SetInputSpaceCharge(TH3 * hisSpaceCharge3D, TH2 * hisRPhi, TH2* hisRZ, Double_t norm);
+  void    SetInputSpaceCharge3D(TH3 * hisSpaceCharge3D){fSpaceChargeHistogram3D= hisSpaceCharge3D;}
 
-protected:
+  const TH3 *   GetInputSpaceCharge3D(){return fSpaceChargeHistogram3D;}       // MI add 
+  const TH2 *   GetInputSpaceChargeRPhi(){return fSpaceChargeHistogramRPhi;}       // MI add 
+  const TH2 *   GetInputSpaceChargeRZ(){return fSpaceChargeHistogramRZ;}       // MI add 
+
   virtual void GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]);
 
 private:
@@ -86,7 +96,9 @@ private:
   TMatrixD *fSCdensityInRZ;       // (r,z) space charge distribution
   TMatrixD *fSCdensityInRPhiA;     // (r,phi) space charge distribution
   TMatrixD *fSCdensityInRPhiC;     // (r,phi) space charge distribution
- 
+  TH3 *    fSpaceChargeHistogram3D;      // Histogram with the input space charge histogram - used as an optional input 
+  TH2 *    fSpaceChargeHistogramRPhi;      // Histogram with the input space charge histogram - used as an optional input 
+  TH2 *    fSpaceChargeHistogramRZ;      // Histogram with the input space charge histogram - used as an optional input 
   ClassDef(AliTPCSpaceCharge3D,2); 
 };
 

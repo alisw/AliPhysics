@@ -40,17 +40,24 @@ public:
 
   virtual void GetCorrectionDz(const Float_t x[],const Short_t roc,Float_t dx[], Float_t delta);
   virtual void GetCorrectionIntegralDz(const Float_t x[],const Short_t roc,Float_t dx[], Float_t delta);
-
+  
   // functions to distort a space point
           void DistortPoint (      Float_t x[],const Short_t roc);
           void DistortPointLocal(Float_t x[],const Short_t roc);
           void DistortPoint (const Float_t x[],const Short_t roc,Float_t xp[]);
   virtual void GetDistortion(const Float_t x[],const Short_t roc,Float_t dx[]);
 
+  virtual void GetDistortionDz(const Float_t x[],const Short_t roc,Float_t dx[], Float_t delta);
+  virtual void GetDistortionIntegralDz(const Float_t x[],const Short_t roc,Float_t dx[], Float_t delta);
+  
   // initialization and update functions
   virtual void Init();
   virtual void Update(const TTimeStamp &timeStamp);
 
+  // map scaling
+  virtual void    SetCorrScaleFactor(Float_t /*val*/) { ; }
+  virtual Float_t GetCorrScaleFactor() const { return 1.; }
+  
   // convenience functions
   virtual void Print(Option_t* option="") const;
  
@@ -84,6 +91,11 @@ public:
   //
   static Double_t GetCorrXYZDz(Double_t gx, Double_t gy, Double_t gz, Int_t axisType, Int_t corrType=0,Double_t delta=5);
   static Double_t GetCorrXYZIntegrateZ(Double_t gx, Double_t gy, Double_t gz, Int_t axisType, Int_t corrType=0, Double_t delta=5);
+
+  static Double_t GetDistXYZ(Double_t gx, Double_t gy, Double_t gz, Int_t axisType, Int_t corrType=0);
+  //
+  static Double_t GetDistXYZDz(Double_t gx, Double_t gy, Double_t gz, Int_t axisType, Int_t corrType=0,Double_t delta=5);
+  static Double_t GetDistXYZIntegrateZ(Double_t gx, Double_t gy, Double_t gz, Int_t axisType, Int_t corrType=0, Double_t delta=5);
   
 
 protected:
@@ -158,10 +170,12 @@ protected:
 			    const Int_t rows, const Int_t columns,  const Int_t phislices, 
 			    const Float_t deltaphi, const Int_t iterations, const Int_t summetry,
 			    const Bool_t rocDisplacement = kTRUE); 
-    
+  void   SetIsLocal(Bool_t isLocal){fIsLocal=isLocal;}
+  Bool_t IsLocal() const  { return fIsLocal;}
 protected:
   Double_t fT1;         // tensor term of wt - T1
   Double_t fT2;         // tensor term of wt - T2
+  Bool_t fIsLocal;      // switch to indicate that the distortion is a local vector drphi/dz, dr/dz
   static TObjArray *fgVisualCorrection;  // array of orrection for visualization
 private:
   AliTPCCorrection(const AliTPCCorrection &);               // not implemented
@@ -169,7 +183,7 @@ private:
 
   void InitLookUpfulcrums();   // to initialize the grid of the look up table
 
-  ClassDef(AliTPCCorrection,4);
+  ClassDef(AliTPCCorrection,5);
 };
 
 #endif

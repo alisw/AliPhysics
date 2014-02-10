@@ -7,7 +7,7 @@ void loadlibs(const char *dir=".")
   gSystem->AddIncludePath("-I$ROOTSYS/include");
    Bool_t hasAR=!TString(gSystem->Getenv("ALICE_ROOT")).IsNull();
   // if (hasAR) gSystem->AddIncludePath("-I$ALICE_ROOT/ -I$ALICE_ROOT/include -I$ALICE_ROOT/STEER  -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/RAW");
-   if (hasAR) gSystem->AddIncludePath("-I$ALICE_ROOT/ -I$ALICE_ROOT/include -I$ALICE_ROOT/STEER  -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/TPC/Base -I$ALICE_ROOT/TPC/Rec -I$ALICE_ROOT/TPC/Upgrade -I$ALICE_ROOT/RAW -I$ALICE_ROOT/STEER/STEERBase/ -I$ALICE_ROOT/STEER/ESD/ -I$ALICE_ROOT/HLT/BASE/");
+   if (hasAR) gSystem->AddIncludePath("-I$ALICE_ROOT/ -I$ALICE_ROOT/include -I$ALICE_ROOT/STEER  -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/TPC/Base -I$ALICE_ROOT/TPC/Rec -I$ALICE_ROOT/TPC/Upgrade -I$ALICE_ROOT/RAW -I$ALICE_ROOT/STEER/STEERBase/ -I$ALICE_ROOT/STEER/ESD/ -I$ALICE_ROOT/HLT/BASE/ -I$ALICE_ROOT/STAT");
 
   gSystem->Load("libCore");
   gSystem->Load("libPhysics");

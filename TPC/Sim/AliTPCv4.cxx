@@ -60,6 +60,10 @@ TPC version for the krypton runs (Marek)
 
 using std::ifstream;
 using std::ios_base;
+
+extern "C"{
+  Gas gaspar1_;
+};
 ClassImp(AliTPCv4)
  
 //_____________________________________________________________________________
@@ -76,9 +80,15 @@ AliTPCv4::AliTPCv4(const char *name, const char *title) :
 
   SetBufferSize(128000);
 
+  if(!fTPCParam) {AliFatal("TPC parameters not set");
+      return;
+  }
 
-  if (fTPCParam)
-     fTPCParam->Write(fTPCParam->GetTitle());
+
+  gaspar1_.fpot=fTPCParam->GetFpot();
+  gaspar1_.eend=1.e-6;
+  gaspar1_.eexpo=fTPCParam->GetExp();
+
 }
  
 //_____________________________________________________________________________
@@ -1987,9 +1997,9 @@ void AliTPCv4::StepManager()
   //
   // parameters used for the energy loss calculations
   //
-  const Float_t kprim = 14.35; // number of primary collisions per 1 cm
-  const Float_t kpoti = 20.77e-9; // first ionization potential for Ne/CO2
-  const Float_t kwIon = 35.97e-9; // energy for the ion-electron pair creation 
+   Float_t prim = fTPCParam->GetNprim();
+  Float_t poti = fTPCParam->GetFpot();
+  Float_t wIon = fTPCParam->GetWmean(); 
  
  
   const Float_t kbig = 1.e10;
@@ -2098,7 +2108,7 @@ void AliTPCv4::StepManager()
 
   if(gMC->TrackStep() > 0){ 
 
-    Int_t nel = (Int_t)(((gMC->Edep())-kpoti)/kwIon) + 1;
+    Int_t nel = (Int_t)(((gMC->Edep())-poti)/wIon) + 1;
     nel=TMath::Min(nel,30); // 30 electrons corresponds to 1 keV
     //
     gMC->TrackPosition(p);
@@ -2133,18 +2143,18 @@ void AliTPCv4::StepManager()
   Float_t betaGamma = ptot/gMC->TrackMass();
   
   Int_t pid=gMC->TrackPid();
-  if((pid==kElectron || pid==kPositron) && ptot > 0.002)
-    { 
-      pp = kprim*1.58; // electrons above 20 MeV/c are on the plateau!
-    }
-  else
-    {
-
-      betaGamma = TMath::Max(betaGamma,(Float_t)7.e-3); // protection against too small bg
-      pp=kprim*AliMathBase::BetheBlochAleph(betaGamma); 
-   
-      if(TMath::Abs(charge) > 1.) pp *= (charge*charge);
-    }
+  //  if((pid==kElectron || pid==kPositron) && ptot > 0.002)
+  //     { 
+  //       pp = prim*1.58; // electrons above 20 MeV/c are on the plateau!
+  //     }
+  //   else
+  //     {
+  
+  betaGamma = TMath::Max(betaGamma,(Float_t)7.e-3); // protection against too small bg
+  TVectorD* bbpar = fTPCParam->GetBetheBlochParameters(); //get parametrization from OCDB
+  pp=prim*AliMathBase::BetheBlochAleph(betaGamma,(*bbpar)(0),(*bbpar)(1),(*bbpar)(2),(*bbpar)(3),(*bbpar)(4));    
+  if(TMath::Abs(charge) > 1.) pp *= (charge*charge);
+  //    }
   
   Double_t rnd = gMC->GetRandom()->Rndm();
   

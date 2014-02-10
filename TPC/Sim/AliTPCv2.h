@@ -21,6 +21,7 @@
 #include "AliRun.h"
 #include "AliTPCDigitsArray.h"
 #include "TGeoManager.h"
+#include "AliTPCGen.h"
 class AliTPCv2 : public AliTPC {
 
 public:

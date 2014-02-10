@@ -56,6 +56,9 @@
 
 using std::ifstream;
 using std::ios_base;
+extern "C"{
+  Gas gaspar_;
+};
 ClassImp(AliTPCv2)
  
 //_____________________________________________________________________________
@@ -71,10 +74,14 @@ AliTPCv2::AliTPCv2(const char *name, const char *title) :
 
 
   SetBufferSize(128000);
+  if(!fTPCParam) {AliFatal("TPC parameters not set");
+      return;
+  }
+  gaspar_.fpot=fTPCParam->GetFpot();
+  gaspar_.eend=fTPCParam->GetEend();
+  gaspar_.eexpo=fTPCParam->GetExp();
 
 
-//   if (fTPCParam)
-//      fTPCParam->Write(fTPCParam->GetTitle());
 }
  
 //_____________________________________________________________________________
@@ -2104,7 +2111,7 @@ void AliTPCv2::Init()
   fIDrift=gMC->VolId("TPC_Drift");
   fSecOld=-100; // fake number 
 
-  gMC->SetMaxNStep(-30000); // max. number of steps increased
+  gMC->SetMaxNStep(-120000); // max. number of steps increased
 
   if (fPrimaryIonisation) {
     // for FLUKA
@@ -2134,12 +2141,15 @@ void AliTPCv2::StepManager()
   //
   // parameters used for the energy loss calculations
   //
-  const Float_t kprim = 14.35; // number of primary collisions per 1 cm
-  const Float_t kpoti = 20.77e-9; // first ionization potential for Ne/CO2
-  const Float_t kwIon = 35.97e-9; // energy for the ion-electron pair creation
+  //const Float_t kprim = 14.35; // number of primary collisions per 1 cm
+  //const Float_t kpoti = 20.77e-9; // first ionization potential for Ne/CO2
+  //const Float_t kwIon = 35.97e-9; // energy for the ion-electron pair creation 
   const Float_t kScalewIonG4 = 0.85; // scale factor to tune kwIon for Geant4 
   const Float_t kFanoFactorG4 = 0.7; // parameter for smearing the number of ionizations (nel) using Geant4
   const Int_t   kMaxDistRef =15;     // maximal difference between 2 stored references 
+  Float_t prim = fTPCParam->GetNprim();
+  Float_t poti = fTPCParam->GetFpot();
+  Float_t wIon = fTPCParam->GetWmean();
  
   const Float_t kbig = 1.e10;
 
@@ -2263,23 +2273,23 @@ void AliTPCv2::StepManager()
   if(gMC->TrackStep() > 0) {
     Int_t nel=0;
     if (!fPrimaryIonisation) {
-      nel = (Int_t)(((gMC->Edep())-kpoti)/kwIon) + 1;
+      nel = (Int_t)(((gMC->Edep())-poti)/wIon) + 1;
     }
     else {
       
       /*
       static Double_t deForNextStep = 0.;
       // Geant4 (the meaning of Edep as in Geant3) - wrong
-      //nel = (Int_t)(((gMC->Edep())-kpoti)/kwIon) + 1;
+      //nel = (Int_t)(((gMC->Edep())-poti)/wIon) + 1;
 
       // Geant4 (the meaning of Edep as in Geant3) - NEW
       Double_t eAvailable = gMC->Edep() + deForNextStep;
-      nel = (Int_t)(eAvailable/kwIon);
-      deForNextStep = eAvailable - nel*kwIon;
+      nel = (Int_t)(eAvailable/wIon);
+      deForNextStep = eAvailable - nel*wIon;
       */
 
       //new Geant4-approach
-      Double_t meanIon = gMC->Edep()/(kwIon*kScalewIonG4);
+      Double_t meanIon = gMC->Edep()/(wIon*kScalewIonG4);
       nel = (Int_t) ( kFanoFactorG4*AliMathBase::Gamma(meanIon/kFanoFactorG4)); // smear nel using gamma distr w mean = meanIon and variance = meanIon/kFanoFactorG4
     }
     nel=TMath::Min(nel,300); // 300 electrons corresponds to 10 keV
@@ -2337,18 +2347,18 @@ void AliTPCv2::StepManager()
     Float_t ptot=mom.Rho();
     Float_t betaGamma = ptot/gMC->TrackMass();
 
-    Int_t pid=gMC->TrackPid();
-    if((pid==kElectron || pid==kPositron) && ptot > 0.002)
-      { 
-        pp = kprim*1.58; // electrons above 20 MeV/c are on the plateau!
-      }
-    else
-      {
-
-        betaGamma = TMath::Max(betaGamma,(Float_t)7.e-3); // protection against too small bg
-        pp=kprim*AliMathBase::BetheBlochAleph(betaGamma); 
-   
-    }
+    //Int_t pid=gMC->TrackPid();
+    // if((pid==kElectron || pid==kPositron) && ptot > 0.002)
+    //       { 
+    //         pp = prim*1.58; // electrons above 20 MeV/c are on the plateau!
+    //       }
+    //     else
+    //       {
+    
+    betaGamma = TMath::Max(betaGamma,(Float_t)7.e-3); // protection against too small bg
+    TVectorD *bbpar = fTPCParam->GetBetheBlochParameters(); //get parametrization from OCDB
+    pp=prim*AliMathBase::BetheBlochAleph(betaGamma,(*bbpar)(0),(*bbpar)(1),(*bbpar)(2),(*bbpar)(3),(*bbpar)(4));         
+    //     }
   
     Double_t rnd = gMC->GetRandom()->Rndm();
   

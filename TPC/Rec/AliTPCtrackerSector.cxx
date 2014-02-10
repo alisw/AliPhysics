@@ -30,6 +30,7 @@
 #include <TClonesArray.h>
 #include "AliLog.h"
 #include "AliComplexCluster.h"
+//#include "AliTPCcluster.h"
 #include "AliTPCclusterMI.h"
 #include "AliTPCClustersRow.h"
 #include "AliTPCParam.h"
@@ -144,7 +145,8 @@ AliTPCclusterMI * AliTPCtrackerRow::FindNearest(Double_t y, Double_t z, Double_t
   for (Int_t i=Find(z-roadz); i<fN; i++) {
       AliTPCclusterMI *c=(AliTPCclusterMI*)(fClusters[i]);
       if (c->GetZ() > z+roadz) break;
-      if ( (c->GetY()-y) >  roady ) continue;
+//       if ( (c->GetY()-y) >  roady ) continue; //JW: Why here not abs???
+      if ( TMath::Abs(c->GetY()-y) >  roady ) continue;
       Float_t distance = (c->GetZ()-z)*(c->GetZ()-z)+(c->GetY()-y)*(c->GetY()-y);
       if (maxdistance>distance) {
 	maxdistance = distance;
@@ -201,6 +203,24 @@ void AliTPCtrackerRow::SetFastCluster(Int_t i, Short_t cl){
     fFastCluster[i]=cl;
   }
 }
+
+Int_t  AliTPCtrackerSector::GetNClInSector(Int_t side) 
+{
+  // return number of all clusters in one sector; side =0 for A side and 1 for C side 
+
+  Int_t nclSector=0;
+  Int_t nrows = GetNRows();
+
+  for (Int_t row=0;row<nrows;row++) {
+    AliTPCtrackerRow&  tpcrow = (*this)[row];
+    Int_t ncl =  (side==0)?(tpcrow.GetN1()):(tpcrow.GetN2());
+    nclSector+=ncl;
+  }
+  
+  return nclSector;
+}
+
+
 
 
 Int_t  AliTPCtrackerSector::GetRowNumber(Double_t x) const 
@@ -328,5 +348,46 @@ void AliTPCtrackerSector::InsertCluster(AliTPCclusterMI *cl, Int_t size, const A
       tpcrow->IncrementN2();
     }
   }
+}
+
+//_________________________________________________________________________
+Int_t  AliTPCtrackerSector::GetNClInSector(Int_t side) const
+{
+  //return number of all clusters in one sector; side =0 for A side and 1 for C side 
+
+  Int_t nclSector=0;
+  Int_t nrows = GetNRows();
+
+  for (Int_t row=0;row<nrows;row++) {
+    AliTPCtrackerRow&  tpcrow = (*this)[row];
+    Int_t ncl =  (side==0)?(tpcrow.GetN1()):(tpcrow.GetN2());
+    nclSector+=ncl;
+  }
+
+  return nclSector;
+}
+
+//_________________________________________________________________________
+Int_t  AliTPCtrackerSector::GetNClUsedInSector(Int_t side) const
+{
+  //return number of clusters used in tracking in one sector; side =0 for A side and 1 for C side 
+
+  Int_t nclSector=0;
+  Int_t nrows = GetNRows();
+
+  for (Int_t row=0;row<nrows;row++) {
+    AliTPCtrackerRow&  tpcrow = (*this)[row];
+    Int_t nclusters = (side==0)?tpcrow.GetN1():tpcrow.GetN2();
+    for (Int_t icluster=0; icluster<nclusters; icluster++)
+    {
+      AliTPCclusterMI* cluster = NULL;
+      if (side==0) { cluster=tpcrow.GetCluster1(icluster); }
+      else         { cluster=tpcrow.GetCluster2(icluster); }
+      if (!cluster) continue;
+      if (cluster->IsUsed(1)) nclSector++;
+    }
+  }
+
+  return nclSector;
 }
 
