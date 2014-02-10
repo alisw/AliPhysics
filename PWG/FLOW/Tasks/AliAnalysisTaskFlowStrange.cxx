@@ -92,19 +92,27 @@ AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange() :
   fQAlevel(0),
   fReadESD(kFALSE),
   fReadMC(kFALSE),
+  fAddPiToMCReactionPlane(kTRUE),
   fPostMatched(0),
   fAvoidExec(kFALSE),
   fSkipSelection(kFALSE),
-  fSkipFlow(kFALSE),
-  fSkipDHcorr(kTRUE),
   fUseFP(kFALSE),
   fRunOnpA(kFALSE),
   fRunOnpp(kFALSE),
   fExtraEventRejection(kFALSE),
+  fSkipCentralitySelection(kFALSE),
   fCentMethod("V0MTRK"),
   fCentPerMin(0),
   fCentPerMax(100),
   fThisCent(-1.0),
+  fV0M(0.0),
+  fTRK(0.0),
+  fPriVtxZ(0.0),
+  fSPDVtxZ(0.0),
+  fSPDtracklets(0),
+  fVZETotM(0.0),
+  fRefMultTPC(0),
+  fRefMultHyb(0),
   fVertexZcut(10.0),
   fExcludeTPCEdges(kFALSE),
   fSpecie(0),
@@ -121,8 +129,26 @@ AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange() :
   fVZEAa(0),
   fVZEAb(3),
   fVZEQA(NULL),
+  fHarmonic(2),
   fPsi2(0.0),
   fMCEP(0.0),
+  fQVZEACos(0.0),
+  fQVZEASin(0.0),
+  fQVZECCos(0.0),
+  fQVZECSin(0.0),
+  fQVZEA(0.0),
+  fQVZEC(0.0),
+  fQTPCACos(0.0),
+  fQTPCASin(0.0),
+  fQTPCCCos(0.0),
+  fQTPCCSin(0.0),
+  fQTPC2hCos(0.0),
+  fQTPC2hSin(0.0),
+  fQTPCA(0.0),
+  fQTPCC(0.0),
+  fQTPCA_nTracks(0),
+  fQTPCC_nTracks(0),
+  fSkipTerminate(kTRUE),
   fMassBins(0),
   fMinMass(0.0),
   fMaxMass(0.0),
@@ -131,8 +157,10 @@ AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange() :
   fRFPFilterBit(1),
   fRFPminPt(0.2),
   fRFPmaxPt(5.0),
-  fRFPminEta(-0.8),
-  fRFPmaxEta(+0.8),
+  fRFPAminEta(0.0),
+  fRFPAmaxEta(+0.8),
+  fRFPCminEta(-0.8),
+  fRFPCmaxEta(0.0),
   fRFPTPCsignal(10.0),
   fRFPmaxIPxy(2.4),
   fRFPmaxIPz(3.2),
@@ -187,6 +215,9 @@ AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange() :
   fDaughterITScm(0),
   fDaughterNSigmaPID(0.0),
   fDaughterKinkIndex(0),
+  fDaughterAtSecPhi(0.0),
+  fDaughterAtSecEta(0.0),
+  fDaughterAtSecPt(0.0),
   fDaughterMatchPhi(0.0),
   fDaughterMatchEta(0.0),
   fDaughterMatchPt(0.0),
@@ -204,6 +235,8 @@ AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange() :
   fDaughterMaxNSigmaPID(0.0) {
   //ctor
   for(Int_t i=0; i!=6; ++i) fDaughterITSConfig[i]=-1;
+  for(Int_t i=0; i!=2000; ++i) fQTPCA_fID[i]=-1;
+  for(Int_t i=0; i!=2000; ++i) fQTPCC_fID[i]=-1;
 }
 //=======================================================================
 AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange(const char *name) :
@@ -220,19 +253,27 @@ AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange(const char *name) :
   fQAlevel(0),
   fReadESD(kFALSE),
   fReadMC(kFALSE),
+  fAddPiToMCReactionPlane(kTRUE),
   fPostMatched(0),
   fAvoidExec(kFALSE),
   fSkipSelection(kFALSE),
-  fSkipFlow(kFALSE),
-  fSkipDHcorr(kTRUE),
   fUseFP(kFALSE),
   fRunOnpA(kFALSE),
   fRunOnpp(kFALSE),
   fExtraEventRejection(kFALSE),
+  fSkipCentralitySelection(kFALSE),
   fCentMethod("V0MTRK"),
   fCentPerMin(0),
   fCentPerMax(100),
   fThisCent(-1.0),
+  fV0M(0.0),
+  fTRK(0.0),
+  fPriVtxZ(0.0),
+  fSPDVtxZ(0.0),
+  fSPDtracklets(0),
+  fVZETotM(0.0),
+  fRefMultTPC(0),
+  fRefMultHyb(0),
   fVertexZcut(10.0),
   fExcludeTPCEdges(kFALSE),
   fSpecie(0),
@@ -249,8 +290,26 @@ AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange(const char *name) :
   fVZEAa(0),
   fVZEAb(3),
   fVZEQA(NULL),
+  fHarmonic(2),
   fPsi2(0.0),
   fMCEP(0.0),
+  fQVZEACos(0.0),
+  fQVZEASin(0.0),
+  fQVZECCos(0.0),
+  fQVZECSin(0.0),
+  fQVZEA(0.0),
+  fQVZEC(0.0),
+  fQTPCACos(0.0),
+  fQTPCASin(0.0),
+  fQTPCCCos(0.0),
+  fQTPCCSin(0.0),
+  fQTPC2hCos(0.0),
+  fQTPC2hSin(0.0),
+  fQTPCA(0.0),
+  fQTPCC(0.0),
+  fQTPCA_nTracks(0),
+  fQTPCC_nTracks(0),
+  fSkipTerminate(kTRUE),
   fMassBins(0),
   fMinMass(0.0),
   fMaxMass(0.0),
@@ -259,8 +318,10 @@ AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange(const char *name) :
   fRFPFilterBit(1),
   fRFPminPt(0.2),
   fRFPmaxPt(5.0),
-  fRFPminEta(-0.8),
-  fRFPmaxEta(+0.8),
+  fRFPAminEta(0.0),
+  fRFPAmaxEta(+0.8),
+  fRFPCminEta(-0.8),
+  fRFPCmaxEta(0.0),
   fRFPTPCsignal(10.0),
   fRFPmaxIPxy(2.4),
   fRFPmaxIPz(3.2),
@@ -315,6 +376,9 @@ AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange(const char *name) :
   fDaughterITScm(0),
   fDaughterNSigmaPID(0.0),
   fDaughterKinkIndex(0),
+  fDaughterAtSecPhi(0.0),
+  fDaughterAtSecEta(0.0),
+  fDaughterAtSecPt(0.0),
   fDaughterMatchPhi(0.0),
   fDaughterMatchEta(0.0),
   fDaughterMatchPt(0.0),
@@ -332,6 +396,8 @@ AliAnalysisTaskFlowStrange::AliAnalysisTaskFlowStrange(const char *name) :
   fDaughterMaxNSigmaPID(0.0) {
   //ctor
   for(Int_t i=0; i!=6; ++i) fDaughterITSConfig[i]=-1;
+  for(Int_t i=0; i!=2000; ++i) fQTPCA_fID[i]=-1;
+  for(Int_t i=0; i!=2000; ++i) fQTPCC_fID[i]=-1;
   DefineInput( 0,TChain::Class());
   DefineOutput(1,TList::Class());
   DefineOutput(2,AliFlowEventSimple::Class()); // TPC object
@@ -346,6 +412,15 @@ AliAnalysisTaskFlowStrange::~AliAnalysisTaskFlowStrange() {
   if (fList)       delete fList;
 }
 //=======================================================================
+TList* AliAnalysisTaskFlowStrange::RunTerminateAgain(TList *lst) {
+  fList = lst;
+  fSpecie = Int_t( ((TProfile*)((TList*)fList->FindObject("Event"))->FindObject("Configuration"))->GetBinContent(kSpecie) );
+  fSkipSelection = ((TProfile*)((TList*)fList->FindObject("Event"))->FindObject("Configuration"))->GetBinContent(kSkipSelection);
+  fReadMC = ((TProfile*)((TList*)fList->FindObject("Event"))->FindObject("Configuration"))->GetBinContent(kReadMC);
+  Terminate(NULL);
+  return fList;
+}
+//=======================================================================
 void AliAnalysisTaskFlowStrange::UserCreateOutputObjects() {
   //UserCreateOutputObjects
   fList=new TList();
@@ -357,7 +432,7 @@ void AliAnalysisTaskFlowStrange::UserCreateOutputObjects() {
 
   AliFlowCommonConstants *cc = AliFlowCommonConstants::GetMaster();
   cc->SetNbinsMult(3000); cc->SetMultMin(0);   cc->SetMultMax(30000);
-  cc->SetNbinsPt(200); cc->SetPtMin(0.0);   cc->SetPtMax(20.0);
+  cc->SetNbinsPt(100); cc->SetPtMin(0.0);   cc->SetPtMax(20.0);
   cc->SetNbinsPhi(100);  cc->SetPhiMin(0.0);  cc->SetPhiMax(TMath::TwoPi());
   cc->SetNbinsEta(100);  cc->SetEtaMin(-5.0); cc->SetEtaMax(+5.0);
   cc->SetNbinsQ(100);    cc->SetQMin(0.0);    cc->SetQMax(3.0);
@@ -380,19 +455,18 @@ void AliAnalysisTaskFlowStrange::UserCreateOutputObjects() {
       //			  1.148, 1.158, 1.168};} else {
     }
   }
-
   //loading pid response
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   fPIDResponse = inputHandler->GetPIDResponse();
 
-  fTPCevent = new AliFlowEvent(100);
-  fVZEevent = new AliFlowEvent(100);
-
-  //array of candidates
-  fCandidates = new TObjArray(100);
-  fCandidates->SetOwner();
-
+  if(fUseFP) {
+    fTPCevent = new AliFlowEvent(100);
+    fVZEevent = new AliFlowEvent(100);
+    //array of candidates
+    fCandidates = new TObjArray(100);
+    fCandidates->SetOwner();
+  }
   PostData(1,fList);
   if(fUseFP) { // for connection to the flow package
     PostData(2,fTPCevent);
@@ -416,32 +490,20 @@ void AliAnalysisTaskFlowStrange::AddQAEvents() {
   tH1D->GetXaxis()->SetBinLabel(4,"selected");
   tH1D->GetXaxis()->SetBinLabel(5,"rejectedByLowQw");
   tH1D->GetXaxis()->SetBinLabel(6,"rejectedByErrorLoadVZEcal");
-  tProfile = new TProfile("Configuration","Configuration",20,0,20); tQAEvents->Add(tProfile);
-  tProfile->Fill( 0.5,fCentPerMin,1); tProfile->GetXaxis()->SetBinLabel( 1,"fCentPerMin");
-  tProfile->Fill( 1.5,fCentPerMax,1); tProfile->GetXaxis()->SetBinLabel( 2,"fCentPerMax");
-  tProfile->Fill( 2.5,fDaughterMinEta,1);               tProfile->GetXaxis()->SetBinLabel( 3,"fDaughterMinEta");
-  tProfile->Fill( 3.5,fDaughterMaxEta,1);               tProfile->GetXaxis()->SetBinLabel( 4,"fDaughterMaxEta");
-  tProfile->Fill( 4.5,fDaughterMinPt,1);                tProfile->GetXaxis()->SetBinLabel( 5,"fDaughterMinPt");
-  tProfile->Fill( 5.5,fDaughterMinNClsTPC,1);           tProfile->GetXaxis()->SetBinLabel( 6,"fDaughterMinNClsTPC");
-  tProfile->Fill( 6.5,fDaughterMaxChi2PerNClsTPC,1);    tProfile->GetXaxis()->SetBinLabel( 7,"fDaughterMaxChi2PerNClsTPC");
-  tProfile->Fill( 7.5,fDaughterMinXRowsOverNClsFTPC,1); tProfile->GetXaxis()->SetBinLabel( 8,"fDaughterMinXRowsOverNClsFTPC");
-  tProfile->Fill( 8.5,fDaughterMinImpactParameterXY,1); tProfile->GetXaxis()->SetBinLabel( 9,"fDaughterMinImpactParameterXY");
-  tProfile->Fill( 9.5,fDaughterMaxNSigmaPID,1);         tProfile->GetXaxis()->SetBinLabel(10,"fDaughterMaxNSigmaPID");
-  tProfile->Fill(10.5,fDecayMaxDCAdaughters,1);          tProfile->GetXaxis()->SetBinLabel(11,"fDecayMaxDCAdaughters");
-  tProfile->Fill(11.5,fDecayMinCosinePointingAngleXY,1); tProfile->GetXaxis()->SetBinLabel(12,"fDecayMinCosinePointingAngleXY");
-  tProfile->Fill(12.5,fDecayMinQt,1);                    tProfile->GetXaxis()->SetBinLabel(13,"fDecayMinQt");
-  tProfile->Fill(13.5,fDecayMinRadXY,1);                 tProfile->GetXaxis()->SetBinLabel(14,"fDecayMinRadXY");
-  tProfile->Fill(14.5,fDecayMaxDecayLength,1);           tProfile->GetXaxis()->SetBinLabel(15,"fDecayMaxDecayLength");
-  tProfile->Fill(15.5,fDecayMaxProductIPXY,1);           tProfile->GetXaxis()->SetBinLabel(16,"fDecayMaxProductIPXY");
-  tProfile->Fill(16.5,fDecayMaxRapidity,1);              tProfile->GetXaxis()->SetBinLabel(17,"fDecayMaxRapidity");
-  tProfile->Fill(17.5,fDecayMinEta,1);                   tProfile->GetXaxis()->SetBinLabel(18,"fDecayMinEta");
-  tProfile->Fill(18.5,fDecayMaxEta,1);                   tProfile->GetXaxis()->SetBinLabel(19,"fDecayMaxEta");
-  tProfile->Fill(19.5,fDecayMinPt,1);                    tProfile->GetXaxis()->SetBinLabel(20,"fDecayMinPt");
-
+  tProfile = new TProfile("Configuration","Configuration",10,0.5,10.5); tQAEvents->Add(tProfile);
+  tProfile->Fill(kSpecie,fSpecie,1);
+  tProfile->GetXaxis()->SetBinLabel(kSpecie,"fSpecie");
+  tProfile->Fill(kHarmonic,fHarmonic,1);
+  tProfile->GetXaxis()->SetBinLabel(kHarmonic,"fHarmonic");
+  tProfile->Fill(kReadMC,fReadMC,1);
+  tProfile->GetXaxis()->SetBinLabel(kReadMC,"fReadMC");
+  tProfile->Fill(kSkipSelection,fSkipSelection,1);
+  tProfile->GetXaxis()->SetBinLabel(kSkipSelection,"fSkipSelection");
   tH1D = new TH1D("POI","POIs;multiplicity",800,0,800);         tQAEvents->Add(tH1D);
   tH1D = new TH1D("UNTAG","UNTAG;Untagged Daughters",800,0,800);tQAEvents->Add(tH1D);
   tH1D = new TH1D("RealTime","RealTime;LogT sec",2000,-10,+10); tQAEvents->Add(tH1D);
   fList->Add(tQAEvents);
+  AddEventSpy("EventsRaw");
   AddEventSpy("EventsReached");
   AddEventSpy("EventsSelected");
   AddMakeQSpy();
@@ -453,24 +515,34 @@ void AliAnalysisTaskFlowStrange::AddEventSpy(TString name) {
   TList *tList=new TList();
   tList->SetName(name.Data());
   tList->SetOwner();
-  tH2D = new TH2D("VTXZ","VTXZ;Global||SPD;SPD",60,-25,+25,60,-25,+25); tList->Add( tH2D );
+  tH2D = new TH2D("VTXZ","VTXZ;PriVtxZ;SPDVtxZ",60,-25,+25,60,-25,+25); tList->Add( tH2D );
   tH2D = new TH2D("CCCC","CCCC;V0M;TRK",60,-10,110,60,-10,110);         tList->Add( tH2D );
-  tH2D = new TH2D("REFM","REFM;TPC;GLOBAL",100,0,3000,100,0,3000);      tList->Add( tH2D );
+  tH2D = new TH2D("REFM","REFM;TPC ONLY;HYBRID",100,0,3000,100,0,3000); tList->Add( tH2D );
+  tH2D = new TH2D("SPDVZE","SPDVZE;SPD Tracklets;Total Multiplicity in VZERO",100,0,3500,100,0,25000); tList->Add( tH2D );
   if(fReadMC) {
-    tH1D = new TH1D("MCCC","MCCC;Xsection",100,-10,110); tList->Add( tH1D );
     tH1D = new TH1D("MCEP","MCEP;MCEP",100,-TMath::TwoPi(),TMath::TwoPi()); tList->Add( tH1D );
   }
   fList->Add(tList);
 }
 //=======================================================================
+void AliAnalysisTaskFlowStrange::FillEventSpy(TString name) {
+  ((TH2D*)((TList*)fList->FindObject(name.Data()))->FindObject("VTXZ"))->Fill( fPriVtxZ, fSPDVtxZ );
+  ((TH2D*)((TList*)fList->FindObject(name.Data()))->FindObject("CCCC"))->Fill( fV0M, fTRK );
+  ((TH2D*)((TList*)fList->FindObject(name.Data()))->FindObject("REFM"))->Fill( fRefMultTPC, fRefMultHyb );
+  ((TH2D*)((TList*)fList->FindObject(name.Data()))->FindObject("SPDVZE"))->Fill( fSPDtracklets, fVZETotM );
+  if(fReadMC) {
+    ((TH1D*)((TList*)fList->FindObject(name.Data()))->FindObject("MCEP"))->Fill( fMCEP );
+  }
+}
+//=======================================================================
 void AliAnalysisTaskFlowStrange::AddMakeQSpy() {
-  if(fSkipFlow) return;
   TH1D *tH1D;
   TH2D *tH2D;
   TProfile *tPF1;
   TList *tList=new TList();
   tList->SetName("MakeQSpy");
   tList->SetOwner();
+  fList->Add(tList);
   tH1D = new TH1D("RFPTPC","TPC Refrence Multiplicity;multiplicity",3000,0,3000);     tList->Add( tH1D );
   tH1D = new TH1D("RFPVZE","VZERO Reference Multiplicity;multiplicity",3000,0,30000); tList->Add( tH1D );
   tH1D = new TH1D("QmTPC","TPC Normalized Q vector;|Q|/M",3000,0,1);   tList->Add( tH1D );
@@ -479,94 +551,131 @@ void AliAnalysisTaskFlowStrange::AddMakeQSpy() {
   tH2D = new TH2D("VZEAllPhiEta","VZEall;Phi;Eta",20,0,TMath::TwoPi(),40,-4.0,+6.0);  tList->Add( tH2D );
   tH1D = new TH1D("TPCPSI","TPCPSI;PSI",72,0,TMath::Pi()); tList->Add( tH1D );
   tH1D = new TH1D("TPCPSIA","TPCPSIA;PSIA",72,0,TMath::Pi()); tList->Add( tH1D );
-  tH1D = new TH1D("TPCPSIB","TPCPSIB;PSIB",72,0,TMath::Pi()); tList->Add( tH1D );
+  tH1D = new TH1D("TPCPSIC","TPCPSIC;PSIC",72,0,TMath::Pi()); tList->Add( tH1D );
   tH1D = new TH1D("VZEPSI","VZEPSI;PSI",72,0,TMath::Pi()); tList->Add( tH1D );
   tH1D = new TH1D("VZEPSIA","VZEPSIA;PSIA",72,0,TMath::Pi()); tList->Add( tH1D );
-  tH1D = new TH1D("VZEPSIB","VZEPSIB;PSIB",72,0,TMath::Pi()); tList->Add( tH1D );
-  tPF1 = new TProfile("TPCQ","TPCQ",6,0.5,6.5,"s");
-  tPF1->GetXaxis()->SetBinLabel(1,"Qay"); tPF1->GetXaxis()->SetBinLabel(2,"Qax");
-  tPF1->GetXaxis()->SetBinLabel(3,"Qby"); tPF1->GetXaxis()->SetBinLabel(4,"Qbx");
+  tH1D = new TH1D("VZEPSIC","VZEPSIC;PSIC",72,0,TMath::Pi()); tList->Add( tH1D );
+  tPF1 = new TProfile("TPCQm","TPCQm",6,0.5,6.5); tList->Add( tPF1 );
+  tPF1->GetXaxis()->SetBinLabel(1,"Qcy"); tPF1->GetXaxis()->SetBinLabel(2,"Qcx");
+  tPF1->GetXaxis()->SetBinLabel(3,"Qay"); tPF1->GetXaxis()->SetBinLabel(4,"Qax");
   tPF1->GetXaxis()->SetBinLabel(5,"Qy");  tPF1->GetXaxis()->SetBinLabel(6,"Qx");
-  tList->Add( tPF1 );
-  tPF1 = new TProfile("VZEQ","VZEQ",6,0.5,6.5,"s");
-  tPF1->GetXaxis()->SetBinLabel(1,"Qay"); tPF1->GetXaxis()->SetBinLabel(2,"Qax");
-  tPF1->GetXaxis()->SetBinLabel(3,"Qby"); tPF1->GetXaxis()->SetBinLabel(4,"Qbx");
+  tPF1 = new TProfile("VZEQm","VZEQm",6,0.5,6.5); tList->Add( tPF1 );
+  tPF1->GetXaxis()->SetBinLabel(1,"Qcy"); tPF1->GetXaxis()->SetBinLabel(2,"Qcx");
+  tPF1->GetXaxis()->SetBinLabel(3,"Qay"); tPF1->GetXaxis()->SetBinLabel(4,"Qax");
   tPF1->GetXaxis()->SetBinLabel(5,"Qy");  tPF1->GetXaxis()->SetBinLabel(6,"Qx");
-  tList->Add( tPF1 );
-  
-  fList->Add(tList);
-  if(!fSkipFlow) {
-    tList=new TList(); tList->SetName("TPCRFPall"); tList->SetOwner(); AddTPCRFPSpy(tList); fList->Add(tList);
-    tList=new TList(); tList->SetName("TPCRFPsel"); tList->SetOwner(); AddTPCRFPSpy(tList); fList->Add(tList);
+  tPF1 = new TProfile("QmVZEAQmVZEC","QmVZEAQmVZEC",1,0.5,1.5,"s"); tList->Add( tPF1 );
+  tPF1 = new TProfile("QmVZEASQUARED","QmVZEASQUARED",1,0.5,1.5,"s"); tList->Add( tPF1 );
+  tPF1 = new TProfile("QmVZECSQUARED","QmVZECSQUARED",1,0.5,1.5,"s"); tList->Add( tPF1 );
+  tPF1 = new TProfile("QmTPCQmVZEA","QmTPCQmVZEA",1,0.5,1.5,"s"); tList->Add( tPF1 );
+  tPF1 = new TProfile("QmTPCQmVZEC","QmTPCQmVZEC",1,0.5,1.5,"s"); tList->Add( tPF1 );
+  tH1D = new TH1D("ChiSquaredVZEA","ChiSquaredVZEC",1,0.5,1.5); tList->Add( tH1D );
+  tH1D = new TH1D("ChiSquaredVZEC","ChiSquaredVZEC",1,0.5,1.5); tList->Add( tH1D );
+  if(fReadMC) {
+    tH1D = new TH1D("PSIMCDIFFTPC","PSIMCDIFFTPC;MC-TPC",72,-TMath::TwoPi(),TMath::TwoPi()); tList->Add( tH1D );
+    tH1D = new TH1D("PSIMCDIFFTPCA","PSIMCDIFFTPCA;MC-TPCA",72,-TMath::TwoPi(),TMath::TwoPi()); tList->Add( tH1D );
+    tH1D = new TH1D("PSIMCDIFFTPCC","PSIMCDIFFTPCC;MC-TPCC",72,-TMath::TwoPi(),TMath::TwoPi()); tList->Add( tH1D );
+    tH1D = new TH1D("PSIMCDIFFVZE","PSIMCDIFFVZE;MC-VZE",72,-TMath::TwoPi(),TMath::TwoPi()); tList->Add( tH1D );
+    tH1D = new TH1D("PSIMCDIFFVZEA","PSIMCDIFFVZEA;MC-VZEA",72,-TMath::TwoPi(),TMath::TwoPi()); tList->Add( tH1D );
+    tH1D = new TH1D("PSIMCDIFFVZEC","PSIMCDIFFVZEC;MC-VZEC",72,-TMath::TwoPi(),TMath::TwoPi()); tList->Add( tH1D );
   }
+  tList=new TList(); tList->SetName("TPCRFPall"); tList->SetOwner(); AddTPCRFPSpy(tList); fList->Add(tList);
+  tList=new TList(); tList->SetName("TPCRFPsel"); tList->SetOwner(); AddTPCRFPSpy(tList); fList->Add(tList);
 }
 //=======================================================================
 void AliAnalysisTaskFlowStrange::AddQACandidates() {
   // function to add histogramming for candidates
   if(fSkipSelection) return;
-
   TList *tList;
   TH1D *tH1D;
   TH2D *tH2D;
-  TH3D *tH3D;
 
   //reconstruction
   if(fReadESD) {
-    tList=new TList(); tList->SetName("TrkAll"); tList->SetOwner(); AddTracksSpy(tList); fList->Add(tList);
-    tList=new TList(); tList->SetName("TrkSel"); tList->SetOwner(); AddTracksSpy(tList); fList->Add(tList);
+    tList=new TList(); tList->SetName("ESD_TrkAll"); tList->SetOwner(); AddTrackSpy(tList); fList->Add(tList);
+    tList=new TList(); tList->SetName("ESD_TrkSel"); tList->SetOwner(); AddTrackSpy(tList); fList->Add(tList);
     tH2D = new TH2D("NPAIR", "NPAIR;NPOS;NNEG",1000,0,5000,1000,0,5000); tList->Add(tH2D);
     tH2D = new TH2D("PtIPXY","PtIPXY;Pt;IPxy", 100,0,10,200,-10,+10); tList->Add(tH2D);
   }
-  //candidates
-  tList=new TList(); tList->SetName("RecAll"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
-  tH2D = new TH2D("V0SADC","V0S AFTER DAUGHTER CUTS;V0ALL;V0IMW",100,0,1000,100,0,1000); tList->Add(tH2D);
-  tList=new TList(); tList->SetName("RecSel"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
-  //daughters
-  tList=new TList(); tList->SetName("TrkDau"); tList->SetOwner(); AddTracksSpy(tList); fList->Add(tList);
-  if(!fSkipDHcorr) {
-    //corr
-    tList=new TList(); tList->SetName("DHCORR"); tList->SetOwner(); 
-    tH3D = new TH3D("DPHI","DPHI;dPT;dPHI;dETA", 20, -1, +1, 120, -TMath::TwoPi(), TMath::TwoPi(), 16, -1.6, +1.6 ); tList->Add(tH3D);
-    fList->Add(tList);
-  }
-  if(fQAlevel>1) {
+  //aod prefilter
+  if(fSpecie<10) {
+    //candidates
+    tList=new TList(); tList->SetName("V0SAll"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
+    tH2D = new TH2D("V0SADC","V0S AFTER DAUGHTER CUTS;V0ALL;V0IMW",100,0,1000,100,0,1000); tList->Add(tH2D);
+    tList=new TList(); tList->SetName("V0SSel"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
+    //daughters
+    tList=new TList(); tList->SetName("V0SDau"); tList->SetOwner(); AddTrackSpy(tList); fList->Add(tList);
+    //flow
+    tList=new TList(); tList->SetName("V0SAllVn"); tList->SetOwner(); AddDecayVn(tList); fList->Add(tList);
+    tList=new TList(); tList->SetName("V0SSelVn"); tList->SetOwner(); AddDecayVn(tList); fList->Add(tList);
     // IN-OUT
-    tList=new TList(); tList->SetName("RecAllIP"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
-    tList=new TList(); tList->SetName("RecAllOP"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
-    tList=new TList(); tList->SetName("RecSelIP"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
-    tList=new TList(); tList->SetName("RecSelOP"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
-  }
-  //match
-  if(fReadMC) {
-    tList=new TList(); tList->SetName("STATMC"); tList->SetOwner(); fList->Add(tList);
-    tH1D = new TH1D("Events", "Events",5,0.5,5.5); tList->Add(tH1D);
-    tH1D->GetXaxis()->SetBinLabel(1,"Selected events");
-    tH1D->GetXaxis()->SetBinLabel(2,"Stack found");
-    tH1D->GetXaxis()->SetBinLabel(3,"Daughters in stack");
-    tH1D->GetXaxis()->SetBinLabel(4,"Correspond to decay");
-    tH1D->GetXaxis()->SetBinLabel(5,"Decay has mother");
-
-    tList=new TList(); tList->SetName("RecMth"); tList->SetOwner(); AddCandidatesSpy(tList,true); fList->Add(tList);
-    tList=new TList(); tList->SetName("TrkMth"); tList->SetOwner(); AddTracksSpy(tList,true); fList->Add(tList);
-    tList=new TList(); tList->SetName("RecUNMth"); tList->SetOwner(); AddCandidatesSpy(tList,false); fList->Add(tList);
-    tList=new TList(); tList->SetName("TrkUNMth"); tList->SetOwner(); AddTracksSpy(tList,false); fList->Add(tList);
-
-    tList=new TList(); tList->SetName("NegNegMth"); tList->SetOwner(); AddCandidatesSpy(tList,true); fList->Add(tList);
-    tList=new TList(); tList->SetName("NegPosMth"); tList->SetOwner(); AddCandidatesSpy(tList,true); fList->Add(tList);
-    tList=new TList(); tList->SetName("TrkNegMth"); tList->SetOwner(); AddTracksSpy(tList,true); fList->Add(tList);
-    tList=new TList(); tList->SetName("TrkPosMth"); tList->SetOwner(); AddTracksSpy(tList,true); fList->Add(tList);
-    tList=new TList(); tList->SetName("MthFDW"); tList->SetOwner(); AddCandidatesSpy(tList,true); fList->Add(tList);
-
+    if(fQAlevel>1) {
+      tList=new TList(); tList->SetName("V0SAllIP"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
+      tList=new TList(); tList->SetName("V0SAllOP"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
+      tList=new TList(); tList->SetName("V0SSelIP"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
+      tList=new TList(); tList->SetName("V0SSelOP"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
+    }
+    //match
+    if(fReadMC) {
+      tList=new TList(); tList->SetName("STATMC"); tList->SetOwner(); fList->Add(tList);
+      tH1D = new TH1D("Events", "Events",5,0.5,5.5); tList->Add(tH1D);
+      tH1D->GetXaxis()->SetBinLabel(1,"Selected events");
+      tH1D->GetXaxis()->SetBinLabel(2,"Stack found");
+      tH1D->GetXaxis()->SetBinLabel(3,"Daughters in stack");
+      tH1D->GetXaxis()->SetBinLabel(4,"Correspond to decay");
+      tH1D->GetXaxis()->SetBinLabel(5,"Decay has mother");
+      tList=new TList(); tList->SetName("Mth"); tList->SetOwner(); AddCandidatesSpy(tList,true); fList->Add(tList);
+      tList=new TList(); tList->SetName("MthDau"); tList->SetOwner(); AddTrackSpy(tList,true); fList->Add(tList);
+      tList=new TList(); tList->SetName("MthPosPos"); tList->SetOwner(); AddCandidatesSpy(tList,true); fList->Add(tList);
+      tList=new TList(); tList->SetName("MthNegNeg"); tList->SetOwner(); AddCandidatesSpy(tList,true); fList->Add(tList);
+      tList=new TList(); tList->SetName("MthPosNeg"); tList->SetOwner(); AddCandidatesSpy(tList,true); fList->Add(tList);
+      tList=new TList(); tList->SetName("MthNegDau"); tList->SetOwner(); AddTrackSpy(tList,true); fList->Add(tList);
+      tList=new TList(); tList->SetName("MthPosDau"); tList->SetOwner(); AddTrackSpy(tList,true); fList->Add(tList);
+      tList=new TList(); tList->SetName("MthFeedDown"); tList->SetOwner(); AddCandidatesSpy(tList,true); fList->Add(tList);
+      tList=new TList(); tList->SetName("UnMth"); tList->SetOwner(); AddCandidatesSpy(tList,false); fList->Add(tList);
+      tList=new TList(); tList->SetName("UnMthDau"); tList->SetOwner(); AddTrackSpy(tList,false); fList->Add(tList);
+      tList=new TList(); tList->SetName("V0SMthVn"); tList->SetOwner(); AddDecayVn(tList); fList->Add(tList);
+      tList=new TList(); tList->SetName("V0SMthPosPosVn"); tList->SetOwner(); AddDecayVn(tList); fList->Add(tList);
+      tList=new TList(); tList->SetName("V0SMthNegNegVn"); tList->SetOwner(); AddDecayVn(tList); fList->Add(tList);
+      tList=new TList(); tList->SetName("V0SMthPosNegVn"); tList->SetOwner(); AddDecayVn(tList); fList->Add(tList);
+      tList=new TList(); tList->SetName("V0SUnMthVn"); tList->SetOwner(); AddDecayVn(tList); fList->Add(tList);
+    }
+  } else {
+    //candidates
+    tList=new TList(); tList->SetName("TrkAll"); tList->SetOwner(); AddTrackSpy(tList); fList->Add(tList);
+    tList=new TList(); tList->SetName("TrkSel"); tList->SetOwner(); AddTrackSpy(tList); fList->Add(tList);
+    tList=new TList(); tList->SetName("TrkAllVn"); tList->SetOwner(); AddTrackVn(tList); fList->Add(tList);
+    tList=new TList(); tList->SetName("TrkSelVn"); tList->SetOwner(); AddTrackVn(tList); fList->Add(tList);
+    //match
+    if(fReadMC) {
+      tList=new TList(); tList->SetName("STATMC"); tList->SetOwner(); fList->Add(tList);
+      tH1D = new TH1D("Events", "Events",3,0.5,3.5); tList->Add(tH1D);
+      tH1D->GetXaxis()->SetBinLabel(1,"Selected events");
+      tH1D->GetXaxis()->SetBinLabel(2,"Stack found");
+      tH1D->GetXaxis()->SetBinLabel(3,"Track in stack");
+      tList=new TList(); tList->SetName("Mth"); tList->SetOwner(); AddTrackSpy(tList); fList->Add(tList);
+      tList=new TList(); tList->SetName("MthPos"); tList->SetOwner(); AddTrackSpy(tList); fList->Add(tList);
+      tList=new TList(); tList->SetName("MthNeg"); tList->SetOwner(); AddTrackSpy(tList); fList->Add(tList);
+      tList=new TList(); tList->SetName("MthVn"); tList->SetOwner(); AddTrackVn(tList); fList->Add(tList);
+      tList=new TList(); tList->SetName("MthPosVn"); tList->SetOwner(); AddTrackVn(tList); fList->Add(tList);
+      tList=new TList(); tList->SetName("MthNegVn"); tList->SetOwner(); AddTrackVn(tList); fList->Add(tList);
+    }
   }
   //stack
   if(fReadMC) {
-    tList=new TList(); tList->SetName("GenTru"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
+    //tList=new TList(); tList->SetName("GenTru"); tList->SetOwner(); AddCandidatesSpy(tList); fList->Add(tList);
+    tList=new TList(); tList->SetName("MCTPionGenAcc"); tList->SetOwner(); AddMCParticleSpy(tList); fList->Add(tList);
+    tList=new TList(); tList->SetName("MCTKaonGenAcc"); tList->SetOwner(); AddMCParticleSpy(tList); fList->Add(tList);
     tList=new TList(); tList->SetName("MCTK0sGenAcc"); tList->SetOwner(); AddMCParticleSpy(tList); fList->Add(tList);
+    tList=new TList(); tList->SetName("MCTProtonGenAcc"); tList->SetOwner(); AddMCParticleSpy(tList); fList->Add(tList);
     tList=new TList(); tList->SetName("MCTLdaGenAcc"); tList->SetOwner(); AddMCParticleSpy(tList); fList->Add(tList);
     tList=new TList(); tList->SetName("MCTPhiGenAcc"); tList->SetOwner(); AddMCParticleSpy(tList); fList->Add(tList);
     tList=new TList(); tList->SetName("MCTXiGenAcc");  tList->SetOwner(); AddMCParticleSpy(tList); fList->Add(tList);
+    tList=new TList(); tList->SetName("MCTOmegaGenAcc");  tList->SetOwner(); AddMCParticleSpy(tList); fList->Add(tList);
+    tList=new TList(); tList->SetName("MCTPion"); tList->SetOwner(); AddMCParticleSpy(tList); fList->Add(tList);
+    tList=new TList(); tList->SetName("MCTKaon"); tList->SetOwner(); AddMCParticleSpy(tList); fList->Add(tList);
     tList=new TList(); tList->SetName("MCTK0s"); tList->SetOwner(); AddMCParticleSpy(tList); fList->Add(tList);
     tList=new TList(); tList->SetName("MCTLda"); tList->SetOwner(); AddMCParticleSpy(tList); fList->Add(tList);
+    tList=new TList(); tList->SetName("MCTProton"); tList->SetOwner(); AddMCParticleSpy(tList); fList->Add(tList);
   }
 }
 //=======================================================================
@@ -602,7 +711,9 @@ Bool_t AliAnalysisTaskFlowStrange::CalibrateEvent() {
   return okay;
 }
 //=======================================================================
-Bool_t AliAnalysisTaskFlowStrange::AcceptAAEvent(AliESDEvent *tESD) {
+Bool_t AliAnalysisTaskFlowStrange::AcceptAAEvent(AliESDEvent*) {
+  // ESD reading discontinued: TO BE UPDATED
+  /*
   Double_t acceptEvent=kTRUE;
   Double_t tTPCVtxZ = tESD->GetPrimaryVertexTPC()->GetZ();
   if(tESD->GetPrimaryVertexTPC()->GetNContributors()<=0) return kFALSE;
@@ -630,69 +741,78 @@ Bool_t AliAnalysisTaskFlowStrange::AcceptAAEvent(AliESDEvent *tESD) {
     ((TH2D*)((TList*)fList->FindObject("EventsSelected"))->FindObject("CCCC"))->Fill( cc1, cc2 );
   }
   return acceptEvent;
+  */
+  return kFALSE;
 }
 //=======================================================================
-Bool_t AliAnalysisTaskFlowStrange::AcceptAAEvent(AliAODEvent *tAOD) {
-  Double_t acceptEvent=kTRUE;
-  //=>Pile-up rejection (hardcoded)
-  Double_t tVtxZ = tAOD->GetPrimaryVertex()->GetZ();
-  if(tAOD->GetPrimaryVertex()->GetNContributors()<=0) return kFALSE;
-  Double_t tSPDVtxZ = tAOD->GetPrimaryVertexSPD()->GetZ();
-  if(tAOD->GetPrimaryVertexSPD()->GetNContributors()<=0) return kFALSE;
-  Int_t tpc = RefMultTPC();
-  Int_t glo = RefMultGlobal();
-  if(fExtraEventRejection) {
-    TString name = tAOD->GetPrimaryVertex()->GetTitle();
-    if( !name.Contains("VertexerTracks") ) return kFALSE;
-    if( ( Float_t(tpc) < -40.3+1.22*glo ) || ( Float_t(tpc)>(32.1+1.59*glo) ) ) return kFALSE;
-  }
-  // EventCuts
+Bool_t AliAnalysisTaskFlowStrange::MinimumRequirementsAA(AliAODEvent *tAOD) {
+  fRunNumber = tAOD->GetRunNumber();
   AliCentrality *cent = tAOD->GetHeader()->GetCentralityP();
-  Double_t cc1, cc2;
-  cc1 = cent->GetCentralityPercentile("V0M");
-  cc2 = cent->GetCentralityPercentile("TRK");
+  fV0M = cent->GetCentralityPercentile("V0M");
+  fTRK = cent->GetCentralityPercentile("TRK");
   TString mycent = fCentMethod;
   if(fCentMethod.Contains("V0MTRK")) {
-    acceptEvent = TMath::Abs(cc1-cc2)>5.0?kFALSE:acceptEvent;
     mycent = "V0M";
   }
   fThisCent = cent->GetCentralityPercentile( mycent );
-
-  Double_t xsec=0;
+  fPriVtxZ = tAOD->GetPrimaryVertex()->GetZ();
+  fSPDVtxZ = tAOD->GetPrimaryVertexSPD()->GetZ();
+  fSPDtracklets = tAOD->GetTracklets()->GetNumberOfTracklets();
+  fVZETotM = tAOD->GetVZEROData()->GetMTotV0A() + tAOD->GetVZEROData()->GetMTotV0C();
+  int hyb_fb = 272; // for 2010h::AOD086
+  if(fRunNumber>=166529&&fRunNumber<=170593) {
+    hyb_fb = 768; // for 2011h::AOD145
+  }
+  fRefMultTPC = RefMult(tAOD,128);
+  fRefMultHyb = RefMult(tAOD,hyb_fb);
   if(fReadMC) {
+    fMCEP = -999;
     AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(tAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
-    if (!mcHeader) {
-      return kFALSE;
+    if(mcHeader) {
+      fMCEP = mcHeader->GetReactionPlaneAngle();
+      if(fAddPiToMCReactionPlane) fMCEP += (gRandom->Rndm()>0.5)*TMath::Pi();
     }
-    xsec = mcHeader->GetCrossSection();
-    //fMCEP = mcHeader->GetReactionPlaneAngle();
-    fMCEP = mcHeader->GetReactionPlaneAngle() + (gRandom->Rndm()>0.5)*TMath::Pi();
   }
+  // centrality selection health
+  // cut in Vtx 10 & NContributors
+  if(!fSkipCentralitySelection) if(fThisCent<0||fThisCent>100) return kFALSE;
+  // vtx z position compatibility within 5 mm
+  if(TMath::Abs(fPriVtxZ-fSPDVtxZ)>0.5) return kFALSE;
+  // specific cuts for 2010h
+  if(fRunNumber>=136851&&fRunNumber<=139517) {
+  //if( tpc>400.0+26.0/15.0*hyb ) return kFALSE;
+  //if( mvze>3000.0+22.0/3.0*ntrklets ) return kFALSE;
+  }
+  // specific cuts for 2011h
+  if(fRunNumber>=166529&&fRunNumber<=170593) {
+  //if( tpc>400.0+26.0/15.0*hyb ) return kFALSE;
+  //if( mvze>3000.0+22.0/3.0*ntrklets ) return kFALSE;
+  }
+  return kTRUE;
+}
+//=======================================================================
+Bool_t AliAnalysisTaskFlowStrange::AcceptAAEvent(AliAODEvent *tAOD) {
+  Bool_t minimum = MinimumRequirementsAA(tAOD);
+  FillEventSpy("EventsRaw");
+  if(!minimum) return kFALSE;
 
-  acceptEvent = (fThisCent<fCentPerMin||fThisCent>fCentPerMax)?kFALSE:acceptEvent;
-  acceptEvent = TMath::Abs(tVtxZ-tSPDVtxZ)>0.5?kFALSE:acceptEvent;
-  acceptEvent = TMath::Abs(tVtxZ)>fVertexZcut?kFALSE:acceptEvent;
-  ((TH2D*)((TList*)fList->FindObject("EventsReached"))->FindObject("VTXZ"))->Fill( tVtxZ, tSPDVtxZ );
-  ((TH2D*)((TList*)fList->FindObject("EventsReached"))->FindObject("CCCC"))->Fill( cc1, cc2 );
-  ((TH2D*)((TList*)fList->FindObject("EventsReached"))->FindObject("REFM"))->Fill( tpc, glo );
-  if(fReadMC) {
-    ((TH1D*)((TList*)fList->FindObject("EventsReached"))->FindObject("MCCC"))->Fill( xsec );
-    ((TH1D*)((TList*)fList->FindObject("EventsReached"))->FindObject("MCEP"))->Fill( fMCEP );
+  Double_t acceptEvent=kTRUE;
+  TString mycent = fCentMethod;
+  if(fCentMethod.Contains("V0MTRK")) {
+    acceptEvent = TMath::Abs(fV0M-fTRK)>5.0?kFALSE:acceptEvent;
+    mycent = "V0M";
   }
-  // EndOfCuts
-  if(acceptEvent) {
-    ((TH2D*)((TList*)fList->FindObject("EventsSelected"))->FindObject("VTXZ"))->Fill( tVtxZ, tSPDVtxZ );
-    ((TH2D*)((TList*)fList->FindObject("EventsSelected"))->FindObject("CCCC"))->Fill( cc1, cc2 );
-    ((TH2D*)((TList*)fList->FindObject("EventsSelected"))->FindObject("REFM"))->Fill( tpc, glo );
-    if(fReadMC) {
-      ((TH1D*)((TList*)fList->FindObject("EventsSelected"))->FindObject("MCCC"))->Fill( xsec );
-      ((TH1D*)((TList*)fList->FindObject("EventsSelected"))->FindObject("MCEP"))->Fill( fMCEP );
-    }
-  }
+  if(!fSkipCentralitySelection) acceptEvent = (fThisCent<fCentPerMin||fThisCent>fCentPerMax)?kFALSE:acceptEvent;
+  acceptEvent = TMath::Abs(fPriVtxZ)>fVertexZcut?kFALSE:acceptEvent;
+  // HISTOGRAMMING
+  FillEventSpy("EventsReached");
+  if(acceptEvent) FillEventSpy("EventsSelected");
   return acceptEvent;
 }
 //=======================================================================
-Bool_t AliAnalysisTaskFlowStrange::AcceptPPEvent(AliAODEvent *tAOD) {
+Bool_t AliAnalysisTaskFlowStrange::AcceptPPEvent(AliAODEvent*) {
+  // PP reading discontinued: TO BE UPDATED
+  /*
   Double_t acceptEvent=kTRUE;
   Double_t tVtxZ = tAOD->GetPrimaryVertex()->GetZ();
   if(tAOD->GetPrimaryVertex()->GetNContributors()<=0) return kFALSE;
@@ -716,6 +836,8 @@ Bool_t AliAnalysisTaskFlowStrange::AcceptPPEvent(AliAODEvent *tAOD) {
     ((TH2D*)((TList*)fList->FindObject("EventsSelected"))->FindObject("CCCC"))->Fill( cc1, cc2 );
   }
   return acceptEvent;
+  */
+  return kFALSE;
 }
 //=======================================================================
 Int_t AliAnalysisTaskFlowStrange::GetReferenceMultiplicity() { //toberefined
@@ -732,7 +854,9 @@ Int_t AliAnalysisTaskFlowStrange::GetReferenceMultiplicity() { //toberefined
   return ref;
 }
 //=======================================================================
-Bool_t AliAnalysisTaskFlowStrange::AcceptPAEvent(AliAODEvent *tAOD) {
+Bool_t AliAnalysisTaskFlowStrange::AcceptPAEvent(AliAODEvent*) {
+  // PA reading discontinued: TO BE UPDATED
+  /*
   //if(aod->GetHeader()->GetEventNumberESDFile() == 0) return; //rejecting first chunk NOT NEEDED ANYMORE
   Int_t bc2 = tAOD->GetHeader()->GetIRInt2ClosestInteractionMap();
   if(bc2!=0) return kFALSE;
@@ -778,29 +902,33 @@ Bool_t AliAnalysisTaskFlowStrange::AcceptPAEvent(AliAODEvent *tAOD) {
     ((TH2D*)((TList*)fList->FindObject("EventsSelected"))->FindObject("CCCC"))->Fill( cc1, cc2 );    
   }
   return acceptEvent;
+  */
+  return kFALSE;
 }
 //=======================================================================
 void AliAnalysisTaskFlowStrange::MyUserExec(Option_t *) {
   // MAIN ROUTINE
   TStopwatch tTime;
   tTime.Start();
-  fCandidates->SetLast(-1);
+  if(fDebug) {
+    printf("****************\n");
+    printf("****************\n");
+    printf("**::MyUserExec()\n");
+  }
+  if(fUseFP) fCandidates->SetLast(-1);
   AliESDEvent *tESD=dynamic_cast<AliESDEvent*>(InputEvent());
   AliAODEvent *tAOD=dynamic_cast<AliAODEvent*>(InputEvent());
-  Int_t thisRun = fRunNumber;
+  Int_t prevRun = fRunNumber;
   //=>check event
   Bool_t acceptEvent=kFALSE;
   if(fReadESD) {
     if(!tESD) {ResetContainers(); Publish(); return;}
     acceptEvent = fRunOnpp?kFALSE:fRunOnpA?kFALSE:AcceptAAEvent(tESD);
-    thisRun = tESD->GetRunNumber();
   } else {
     if(!tAOD) {ResetContainers(); Publish(); return;}
     acceptEvent = fRunOnpp?AcceptPPEvent(tAOD):fRunOnpA?AcceptPAEvent(tAOD):AcceptAAEvent(tAOD);
-    thisRun = tAOD->GetRunNumber();
   }
-  if(thisRun!=fRunNumber) {
-    fRunNumber = thisRun;
+  if(prevRun!=fRunNumber) {
     MyNotifyRun();
   }
   ((TH1D*)((TList*)fList->FindObject("Event"))->FindObject("Events"))->Fill(2);
@@ -811,15 +939,15 @@ void AliAnalysisTaskFlowStrange::MyUserExec(Option_t *) {
     ((TH1D*)((TList*)fList->FindObject("Event"))->FindObject("Events"))->Fill(5);
     ResetContainers(); Publish(); return; // issue retrieving callibration
   }
-  if(!fSkipFlow) {
-    MakeQVectors();
-    if(fPsi2<-0.1) {
-      ((TH1D*)((TList*)fList->FindObject("Event"))->FindObject("Events"))->Fill(4);
-      ResetContainers(); Publish(); return;
-    }
+  // loads Q vectors
+  MakeQVectors();
+  if(fPsi2<-0.1) {
+    ((TH1D*)((TList*)fList->FindObject("Event"))->FindObject("Events"))->Fill(4);
+    ResetContainers(); Publish(); return;
   }
-  //=>great, lets do our stuff!
+  //}
   ((TH1D*)((TList*)fList->FindObject("Event"))->FindObject("Events"))->Fill(3);
+  //=>great, lets do our stuff!
   //=>load candidates
   if(!fSkipSelection) {
     if(fReadESD) {
@@ -828,10 +956,7 @@ void AliAnalysisTaskFlowStrange::MyUserExec(Option_t *) {
       if(fSpecie<10) ReadFromAODv0(tAOD);
       else ChargeParticles(tAOD);
     }
-    if(fUseFP) {
-      if(!fSkipDHcorr) MakeDHcorr();
-      AddCandidates();
-    }
+    if(fUseFP) AddCandidates();
     //=>flow
     //=>done
   }
@@ -864,10 +989,10 @@ void AliAnalysisTaskFlowStrange::ReadFromESD(AliESDEvent *tESD) {
     myTrack = (AliESDtrack*) tESD->GetTrack(i);
     if(!myTrack) continue;
     LoadTrack(myTrack);
-    FillTrackSpy("TrkAll");
+    FillTrackSpy("ESD_TrkAll");
     if(!AcceptDaughter()) continue;
-    FillTrackSpy("TrkSel");
-    ((TH2D*)((TList*)fList->FindObject("TrkSel"))->FindObject("PtIPXY" ))->Fill( myTrack->Pt(), fDaughterImpactParameterXY );
+    FillTrackSpy("ESD_TrkSel");
+    ((TH2D*)((TList*)fList->FindObject("ESD_TrkSel"))->FindObject("PtIPXY" ))->Fill( myTrack->Pt(), fDaughterImpactParameterXY );
     if( myTrack->Charge()>0 ) {
       pd0[np] = fDaughterImpactParameterXY;
       plist[np++] = i;
@@ -876,7 +1001,7 @@ void AliAnalysisTaskFlowStrange::ReadFromESD(AliESDEvent *tESD) {
       nlist[nn++] = i;
     }
   }
-  ((TH1D*)((TList*)fList->FindObject("TrkSel"))->FindObject("NPAIR" ))->Fill( np,nn );
+  ((TH1D*)((TList*)fList->FindObject("ESD_TrkSel"))->FindObject("NPAIR" ))->Fill( np,nn );
   const AliESDVertex *vtx = tESD->GetPrimaryVertex();
   AliESDtrack *pT, *nT;
   for(int p=0; p!=np; ++p) {
@@ -929,29 +1054,29 @@ void AliAnalysisTaskFlowStrange::ReadFromESD(AliESDEvent *tESD) {
       if( dDPHI < 0 ) dDPHI += TMath::TwoPi();
       if( dDPHI > TMath::Pi() ) dDPHI = TMath::TwoPi()-dDPHI;
       if(fQAlevel>1) {
-        if( (dDPHI>TMath::PiOver4()) && (dDPHI<3*TMath::PiOver4()) ) FillCandidateSpy("RecAllOP");
-        else FillCandidateSpy("RecAllIP");
+        if( (dDPHI>TMath::PiOver4()) && (dDPHI<3*TMath::PiOver4()) ) FillCandidateSpy("V0SAllOP");
+        else FillCandidateSpy("V0SAllIP");
       }
-      FillCandidateSpy("RecAll");
-      ((TH2D*)((TList*)fList->FindObject("RecAll"))->FindObject("D0PD0N"))->Fill( pd0[p],nd0[n] );
-      ((TH2D*)((TList*)fList->FindObject("RecAll"))->FindObject("XPOSXNEG"))->Fill( xa, xb );
+      FillCandidateSpy("V0SAll");
+      ((TH2D*)((TList*)fList->FindObject("V0SAll"))->FindObject("D0PD0N"))->Fill( pd0[p],nd0[n] );
+      ((TH2D*)((TList*)fList->FindObject("V0SAll"))->FindObject("XPOSXNEG"))->Fill( xa, xb );
       if(!AcceptCandidate()) continue;
       if(fDecayMass<fMinMass) continue;
       if(fDecayMass>fMaxMass) continue;
       // PID missing
       if(fQAlevel>1) {
-        if( (dDPHI>TMath::PiOver4()) && (dDPHI<3*TMath::PiOver4()) ) FillCandidateSpy("RecSelOP");
-        else FillCandidateSpy("RecSelIP");
+        if( (dDPHI>TMath::PiOver4()) && (dDPHI<3*TMath::PiOver4()) ) FillCandidateSpy("V0SSelOP");
+        else FillCandidateSpy("V0SSelIP");
       }
-      FillCandidateSpy("RecSel");
-      ((TH2D*)((TList*)fList->FindObject("RecSel"))->FindObject("D0PD0N"))->Fill( pd0[p],nd0[n] );
-      ((TH2D*)((TList*)fList->FindObject("RecSel"))->FindObject("XPOSXNEG"))->Fill( xa, xb );
+      FillCandidateSpy("V0SSel");
+      ((TH2D*)((TList*)fList->FindObject("V0SSel"))->FindObject("D0PD0N"))->Fill( pd0[p],nd0[n] );
+      ((TH2D*)((TList*)fList->FindObject("V0SSel"))->FindObject("XPOSXNEG"))->Fill( xa, xb );
 
       fDecayIDneg = nT->GetID();
       fDecayIDpos = pT->GetID();
-      MakeTrack();
-      LoadTrack(pT); FillTrackSpy("TrkDau");
-      LoadTrack(nT); FillTrackSpy("TrkDau");
+      if(fUseFP) MakeTrack();
+      LoadTrack(pT); FillTrackSpy("V0SDau");
+      LoadTrack(nT); FillTrackSpy("V0SDau");
 
       //===== BEGIN OF MCMATCH
       if(stack) {
@@ -975,12 +1100,12 @@ void AliAnalysisTaskFlowStrange::ReadFromESD(AliESDEvent *tESD) {
           }
         }
         if(matched) {
-          FillCandidateSpy("RecMth");
-          ((TH2D*)((TList*)fList->FindObject("RecMth"))->FindObject("D0PD0N"))->Fill( pd0[p],nd0[n] );
-          ((TH2D*)((TList*)fList->FindObject("RecMth"))->FindObject("XPOSXNEG"))->Fill( xa, xb );
-          ((TH1D*)((TList*)fList->FindObject("RecMth"))->FindObject("MCOrigin"))->Fill( rOri );
-          LoadTrack(pT); FillTrackSpy("TrkMth");
-          LoadTrack(nT); FillTrackSpy("TrkMth");
+          FillCandidateSpy("Mth");
+          ((TH2D*)((TList*)fList->FindObject("Mth"))->FindObject("D0PD0N"))->Fill( pd0[p],nd0[n] );
+          ((TH2D*)((TList*)fList->FindObject("Mth"))->FindObject("XPOSXNEG"))->Fill( xa, xb );
+          ((TH1D*)((TList*)fList->FindObject("Mth"))->FindObject("MCOrigin"))->Fill( rOri );
+          LoadTrack(pT); FillTrackSpy("MthDau");
+          LoadTrack(nT); FillTrackSpy("MthDau");
         }
       }
       //===== END OF MCMATCH
@@ -990,10 +1115,11 @@ void AliAnalysisTaskFlowStrange::ReadFromESD(AliESDEvent *tESD) {
 //=======================================================================
 void AliAnalysisTaskFlowStrange::ReadStack(TClonesArray* mcArray) {
   if(!mcArray) return;
-  AliAODMCParticle *myMCTrack, *iMCDau, *jMCDau;
+  AliAODMCParticle *myMCTrack;//, *iMCDau, *jMCDau;
   for(int i=0; i!=mcArray->GetEntriesFast(); ++i) {
     myMCTrack = dynamic_cast<AliAODMCParticle*>(mcArray->At( i ));
     if(!myMCTrack) continue;
+    /*
     int tPDG=310;
     if(fSpecie>0) tPDG = 3122;
     if( TMath::Abs(myMCTrack->PdgCode())==tPDG )
@@ -1040,15 +1166,31 @@ void AliAnalysisTaskFlowStrange::ReadStack(TClonesArray* mcArray) {
           if(AcceptCandidate()) FillCandidateSpy("GenTru");
         }
       } // k0/lda with two daughters
+    */
     //==== BEGIN TRACK CUTS
     if(myMCTrack->Eta()<-0.8) continue;
     if(myMCTrack->Eta()>+0.8) continue;
     //==== END TRACK CUTS
     switch( TMath::Abs(myMCTrack->PdgCode()) ) {
+    case (211): //pi
+      FillMCParticleSpy( "MCTPion", myMCTrack );
+      if( myMCTrack->IsPrimary() )
+        FillMCParticleSpy( "MCTPionGenAcc", myMCTrack );
+      break;
+    case (321): //kaon
+      FillMCParticleSpy( "MCTKaon", myMCTrack );
+      if( myMCTrack->IsPrimary() )
+        FillMCParticleSpy( "MCTKaonGenAcc", myMCTrack );
+      break;
     case (310): //k0s
       FillMCParticleSpy( "MCTK0s", myMCTrack );
       if( myMCTrack->IsPrimary() )
         FillMCParticleSpy( "MCTK0sGenAcc", myMCTrack );
+      break;
+    case (2212): //proton
+      FillMCParticleSpy( "MCTProton", myMCTrack );
+      if( myMCTrack->IsPrimary() )
+        FillMCParticleSpy( "MCTProtonGenAcc", myMCTrack );
       break;
     case (3122): //lda
       FillMCParticleSpy( "MCTLda", myMCTrack );
@@ -1063,8 +1205,11 @@ void AliAnalysisTaskFlowStrange::ReadStack(TClonesArray* mcArray) {
       if( myMCTrack->IsPrimary() )
         FillMCParticleSpy( "MCTXiGenAcc", myMCTrack );
       break;
+    case (3334): //omega
+      if( myMCTrack->IsPrimary() )
+        FillMCParticleSpy( "MCTOmegaGenAcc", myMCTrack );
+      break;
     }
-    
   }
 }
 //=======================================================================
@@ -1219,10 +1364,11 @@ void AliAnalysisTaskFlowStrange::ReadFromAODv0(AliAODEvent *tAOD) {
     if( dDPHI < 0 ) dDPHI += TMath::TwoPi();
     if( dDPHI > TMath::Pi() ) dDPHI = TMath::TwoPi()-dDPHI;
     if(fQAlevel>1) {
-      if( (dDPHI>TMath::PiOver4()) && (dDPHI<3*TMath::PiOver4()) ) FillCandidateSpy("RecAllOP");
-      else FillCandidateSpy("RecAllIP");
+      if( (dDPHI>TMath::PiOver4()) && (dDPHI<3*TMath::PiOver4()) ) FillCandidateSpy("V0SAllOP");
+      else FillCandidateSpy("V0SAllIP");
     }
-    FillCandidateSpy("RecAll");
+    FillCandidateSpy("V0SAll");
+    FillDecayVn("V0SAllVn",fDecayMass,fDecayPt,fDecayPhi,fDecayEta,fDecayIDpos,fDecayIDneg);
     if(!AcceptCandidate()) continue;
     //PID for lambda::proton
     if( fSpecie>0 )
@@ -1234,16 +1380,17 @@ void AliAnalysisTaskFlowStrange::ReadFromAODv0(AliAODEvent *tAOD) {
         }
       }
     if(fQAlevel>1) {
-      if( (dDPHI>TMath::PiOver4()) && (dDPHI<3*TMath::PiOver4()) ) FillCandidateSpy("RecSelOP");
-      else FillCandidateSpy("RecSelIP");
+      if( (dDPHI>TMath::PiOver4()) && (dDPHI<3*TMath::PiOver4()) ) FillCandidateSpy("V0SSelOP");
+      else FillCandidateSpy("V0SSelIP");
     }
-    FillCandidateSpy("RecSel");
+    FillCandidateSpy("V0SSel");
+    FillDecayVn("V0SSelVn",fDecayMass,fDecayPt,fDecayPhi,fDecayEta,fDecayIDpos,fDecayIDneg);
     // ============================
     // Posting for FlowAnalysis
     if(!fPostMatched) {
       fDecayIDneg = iT->GetID();
       fDecayIDpos = jT->GetID();
-      MakeTrack();
+      if(fUseFP) MakeTrack();
     }
     // ============================
 
@@ -1251,12 +1398,12 @@ void AliAnalysisTaskFlowStrange::ReadFromAODv0(AliAODEvent *tAOD) {
     ieT.GetDZ(pos[0], pos[1], pos[2], tAOD->GetMagneticField(), ip);
     fDaughterImpactParameterXY = ip[0];
     fDaughterImpactParameterZ = ip[1];
-    FillTrackSpy("TrkDau");
+    FillTrackSpy("V0SDau");
     LoadTrack(&jeT,jT->Chi2perNDF()); 
     jeT.GetDZ(pos[0], pos[1], pos[2], tAOD->GetMagneticField(), ip);
     fDaughterImpactParameterXY = ip[0];
     fDaughterImpactParameterZ = ip[1];
-    FillTrackSpy("TrkDau");
+    FillTrackSpy("V0SDau");
     //===== BEGIN OF MCMATCH
     if(fReadMC) ((TH1D*)((TList*)fList->FindObject("STATMC"))->FindObject("Events"))->Fill( 1 ); // Selected event
     if(mcArray) {
@@ -1308,17 +1455,35 @@ void AliAnalysisTaskFlowStrange::ReadFromAODv0(AliAODEvent *tAOD) {
             } // both have same mother
       }
       if(matched) {
-        FillCandidateSpy("RecMth",true);
+        FillCandidateSpy("Mth",true);
+	FillDecayVn("V0SMthVn",fDecayMass,fDecayPt,fDecayPhi,fDecayEta,fDecayIDpos,fDecayIDneg);
 	if(fPostMatched>0) {
 	  fDecayIDneg = iT->GetID();
 	  fDecayIDpos = jT->GetID();
-	  MakeTrack();
+	  if(fUseFP) MakeTrack();
 	}
 	if(labelpos<0&&labelneg<0) {
-	  FillCandidateSpy("NegNegMth",true);
+	  FillCandidateSpy("MthNegNeg",true);
+	  FillDecayVn("V0SMthNegNegVn",fDecayMass,fDecayPt,fDecayPhi,fDecayEta,fDecayIDpos,fDecayIDneg);
+	} else if(labelpos>0&&labelneg>0) {
+	  FillDecayVn("V0SMthPosPosVn",fDecayMass,fDecayPt,fDecayPhi,fDecayEta,fDecayIDpos,fDecayIDneg);
 	} else if(labelpos*labelneg<0) {
-	  FillCandidateSpy("NegPosMth",true);
+	  FillCandidateSpy("MthPosNeg",true);
+	  FillDecayVn("V0SMthPosNegVn",fDecayMass,fDecayPt,fDecayPhi,fDecayEta,fDecayIDpos,fDecayIDneg);
 	}
+	AliAODVertex *secvtx = myV0->GetSecondaryVtx();
+	Double_t possec[3],covsec[6];
+	secvtx->GetXYZ(possec);
+	secvtx->GetCovarianceMatrix(covsec);
+	const AliESDVertex vSecVtx(possec,covsec,100.,100);
+	AliESDtrack trackAtSecI( iT );
+	trackAtSecI.SetTPCClusterMap( iT->GetTPCClusterMap() );
+	trackAtSecI.SetTPCSharedMap( iT->GetTPCSharedMap() );
+	trackAtSecI.SetTPCPointsF( iT->GetTPCNclsF() );
+	trackAtSecI.PropagateToDCA(&vSecVtx, tAOD->GetMagneticField(), 100);
+	fDaughterAtSecPhi = trackAtSecI.Phi();
+	fDaughterAtSecEta = trackAtSecI.Eta();
+	fDaughterAtSecPt = trackAtSecI.Pt();
         LoadTrack(&ieT,iT->Chi2perNDF());
 	fDaughterMatchPhi=mcpos->Phi();
 	fDaughterMatchEta=mcpos->Eta();
@@ -1326,9 +1491,17 @@ void AliAnalysisTaskFlowStrange::ReadFromAODv0(AliAODEvent *tAOD) {
         ieT.GetDZ(pos[0], pos[1], pos[2], tAOD->GetMagneticField(), ip);
         fDaughterImpactParameterXY = ip[0];
         fDaughterImpactParameterZ = ip[1];
-        FillTrackSpy("TrkMth",true);
-	if(labelpos<0||labelneg<0) FillTrackSpy("TrkNegMth",true);
-	else FillTrackSpy("TrkPosMth",true);
+        FillTrackSpy("MthDau",true);
+	if(labelpos<0||labelneg<0) FillTrackSpy("MthNegDau",true);
+	else FillTrackSpy("MthPosDau",true);
+	AliESDtrack trackAtSecJ( jT );
+	trackAtSecJ.SetTPCClusterMap( jT->GetTPCClusterMap() );
+	trackAtSecJ.SetTPCSharedMap( jT->GetTPCSharedMap() );
+	trackAtSecJ.SetTPCPointsF( jT->GetTPCNclsF() );
+	trackAtSecJ.PropagateToDCA(&vSecVtx, tAOD->GetMagneticField(), 100);
+	fDaughterAtSecPhi = trackAtSecJ.Phi();
+	fDaughterAtSecEta = trackAtSecJ.Eta();
+	fDaughterAtSecPt = trackAtSecJ.Pt();
         LoadTrack(&jeT,jT->Chi2perNDF());
 	fDaughterMatchPhi=mcneg->Phi();
 	fDaughterMatchEta=mcneg->Eta();
@@ -1336,34 +1509,43 @@ void AliAnalysisTaskFlowStrange::ReadFromAODv0(AliAODEvent *tAOD) {
         jeT.GetDZ(pos[0], pos[1], pos[2], tAOD->GetMagneticField(), ip);
         fDaughterImpactParameterXY = ip[0];
         fDaughterImpactParameterZ = ip[1];
-        FillTrackSpy("TrkMth",true);
-	if(labelpos<0||labelneg<0) FillTrackSpy("TrkNegMth",true);
-	else FillTrackSpy("TrkPosMth",true);
+        FillTrackSpy("MthDau",true);
+	if(labelpos<0||labelneg<0) FillTrackSpy("MthNegDau",true);
+	else FillTrackSpy("MthPosDau",true);
       } else {
-        FillCandidateSpy("RecUNMth",false);
+        FillCandidateSpy("UnMth",false);
+	FillDecayVn("V0SUnMthVn",fDecayMass,fDecayPt,fDecayPhi,fDecayEta,fDecayIDpos,fDecayIDneg);
 	if(fPostMatched<0) {
 	  fDecayIDneg = iT->GetID();
 	  fDecayIDpos = jT->GetID();
-	  MakeTrack();
+	  if(fUseFP) MakeTrack();
 	}
         LoadTrack(&ieT,iT->Chi2perNDF());
         ieT.GetDZ(pos[0], pos[1], pos[2], tAOD->GetMagneticField(), ip);
         fDaughterImpactParameterXY = ip[0];
         fDaughterImpactParameterZ = ip[1];
-        FillTrackSpy("TrkUNMth",false);
+        FillTrackSpy("UnMthDau",false);
         LoadTrack(&jeT,jT->Chi2perNDF());
         jeT.GetDZ(pos[0], pos[1], pos[2], tAOD->GetMagneticField(), ip);
         fDaughterImpactParameterXY = ip[0];
         fDaughterImpactParameterZ = ip[1];
-        FillTrackSpy("TrkUNMth",false);
+        FillTrackSpy("UnMthDau",false);
       }
       if(feeddown) {
-        FillCandidateSpy("MthFDW",true);
+        FillCandidateSpy("MthFeedDown",true);
       }
     }
     //===== END OF MCMATCH
   }
-  ((TH2D*)((TList*)fList->FindObject("RecAll"))->FindObject("V0SADC"))->Fill( v0all,v0imw );
+  ((TH2D*)((TList*)fList->FindObject("V0SAll"))->FindObject("V0SADC"))->Fill( v0all,v0imw );
+  QCStoreDecayVn("V0SAllVn");
+  QCStoreDecayVn("V0SSelVn");
+  if(fReadMC) {
+    QCStoreDecayVn("V0SMthVn");
+    QCStoreDecayVn("V0SMthNegNegVn");
+    QCStoreDecayVn("V0SMthPosPosVn");
+    QCStoreDecayVn("V0SMthPosNegVn");
+  }
   return;
 }
 //=======================================================================
@@ -1378,13 +1560,17 @@ Bool_t AliAnalysisTaskFlowStrange::PassesPIDCuts(AliESDtrack *myTrack, AliPID::E
 }
 //=======================================================================
 void AliAnalysisTaskFlowStrange::ChargeParticles(AliAODEvent *tAOD) {
-  //benchmark purposes (for the ultimate measurement for LHC10h see Alex, Francesco)
+  //benchmark purposes
   if(!tAOD) return;
-  // (for the moment) only compatible with SPVZE (no untagging)
+  TClonesArray* mcArray=NULL;
+  if(fReadMC) {
+    mcArray = dynamic_cast<TClonesArray*>(tAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+    ReadStack(mcArray);
+  }
   for(int i=0; i!=tAOD->GetNumberOfTracks(); ++i) {
     AliAODTrack *t = tAOD->GetTrack( i );
     if(!t) continue;
-    if( !t->TestFilterBit(1024) ) continue;
+    if( !t->TestFilterBit(1) ) continue;
     fDecayMass=0.0; // using mass as nsigmas control plot
     if(fPIDResponse) { // PID
       switch(fSpecie) { // TPC PID only
@@ -1401,17 +1587,8 @@ void AliAnalysisTaskFlowStrange::ChargeParticles(AliAODEvent *tAOD) {
     }
     Bool_t pass = kTRUE;
     if( TMath::Abs(fDecayMass) > 3.0 ) pass=kFALSE;
-    if( t->Eta()<-0.8 || t->Eta()>+0.8 ) pass=kFALSE;
+    if( t->Eta()<-0.5 || t->Eta()>+0.5 ) pass=kFALSE;
     if( t->Pt()<0.2 || t->Pt()>20.0 ) pass=kFALSE;
-    if( t->GetTPCsignal()<10.0 ) pass=kFALSE;
-    fDecayPt=t->Pt();
-    fDecayPhi=t->Phi();
-    fDecayEta=t->Eta();
-    fDecayID=t->GetID();
-
-    FillCandidateSpy("RecAll");
-    if(!pass) continue;
-
     AliESDtrack et( t );
     et.SetTPCClusterMap( t->GetTPCClusterMap() );
     et.SetTPCSharedMap( t->GetTPCSharedMap() );
@@ -1424,16 +1601,102 @@ void AliAnalysisTaskFlowStrange::ChargeParticles(AliAODEvent *tAOD) {
     et.GetDZ(pos[0], pos[1], pos[2], tAOD->GetMagneticField(), ip);
     fDaughterImpactParameterXY = ip[0];
     fDaughterImpactParameterZ = ip[1];
-    FillTrackSpy("TrkDau");
-    FillCandidateSpy("RecSel");
 
-    MakeTrack();
+    FillTrackSpy("TrkAll");
+    FillTrackVn("TrkAllVn",t->Pt(),t->Phi(),t->Eta(),t->GetID());
+    if(!pass) continue;
+    FillTrackSpy("TrkSel");
+    FillTrackVn("TrkSelVn",t->Pt(),t->Phi(),t->Eta(),t->GetID());
+    if(fReadMC) {
+      ((TH1D*)((TList*)fList->FindObject("STATMC"))->FindObject("Events"))->Fill( 1 ); // Selected event 
+      if(mcArray) {
+	((TH1D*)((TList*)fList->FindObject("STATMC"))->FindObject("Events"))->Fill( 2 ); // Stack found
+	bool matched = false;
+	Int_t label = t->GetLabel();
+	AliAODMCParticle *mcpar = (AliAODMCParticle*) mcArray->At( TMath::Abs(label) );
+	if( mcpar ) {
+	  ((TH1D*)((TList*)fList->FindObject("STATMC"))->FindObject("Events"))->Fill( 3 ); // Particle in stack
+	  Int_t pdgmcpar = TMath::Abs(mcpar->GetPdgCode());
+	  switch(fSpecie) {
+	  case(kPION):
+	    if(pdgmcpar==211) matched = true;
+	    break;
+	  case(kKAON):
+	    if(pdgmcpar==211) matched = true;
+	    break;
+	  case(kPROTON):
+	    if(pdgmcpar==2212) matched = true;
+	    break;
+	  }
+	  if(!mcpar->IsPrimary()) matched = false;
+	}
+	if(matched) {
+	  FillTrackSpy("Mth");
+	  FillTrackVn("MthVn",t->Pt(),t->Phi(),t->Eta(),t->GetID());
+	  if(label<0) {
+	    FillTrackSpy("MthNeg");
+	    FillTrackVn("MthNegVn",t->Pt(),t->Phi(),t->Eta(),t->GetID());
+	  } else {
+	    FillTrackSpy("MthPos");
+	    FillTrackVn("MthPosVn",t->Pt(),t->Phi(),t->Eta(),t->GetID());
+	  }
+	}
+      }
+    }
+    if(fUseFP) {
+      fDecayPt=t->Pt();
+      fDecayPhi=t->Phi();
+      fDecayEta=t->Eta();
+      fDecayID=t->GetID();
+      MakeTrack();
+    }
+  }
+  QCStoreTrackVn("TrkAllVn");
+  QCStoreTrackVn("TrkSelVn");
+  if(fReadMC) {
+    QCStoreTrackVn("MthVn");
+    QCStoreTrackVn("MthNegVn");
+    QCStoreTrackVn("MthPosVn");
   }
   return;
 }
 //=======================================================================
 void AliAnalysisTaskFlowStrange::Terminate(Option_t *) {
   //terminate
+  if(fSkipTerminate) return;
+  Double_t MeanQaQc = ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("QmVZEAQmVZEC"))->GetBinContent( 1 );
+  Double_t MeanQaQa = ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("QmVZEASQUARED"))->GetBinContent( 1 );
+  Double_t MeanQcQc = ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("QmVZECSQUARED"))->GetBinContent( 1 );
+  Double_t MeanQaQt = ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("QmTPCQmVZEA"))->GetBinContent( 1 );
+  Double_t MeanQcQt = ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("QmTPCQmVZEC"))->GetBinContent( 1 );
+  if(!TMath::AreEqualAbs(MeanQaQt,0,1e-10)&&!TMath::AreEqualAbs(MeanQcQt,0,1e-10)&&!TMath::AreEqualAbs(MeanQaQc,0,1e-10)) {
+    Double_t OneOverChiSquaredVZEA = MeanQaQa*MeanQcQt/MeanQaQc/MeanQaQt-1;
+    Double_t OneOverChiSquaredVZEC = MeanQcQc*MeanQaQt/MeanQaQc/MeanQcQt-1;
+    if(!TMath::AreEqualAbs(OneOverChiSquaredVZEA,0,1e-10)&&!TMath::AreEqualAbs(OneOverChiSquaredVZEC,0,1e-10)) {
+      ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("ChiSquaredVZEA"))->SetBinContent( 1, 1/OneOverChiSquaredVZEA );
+      ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("ChiSquaredVZEC"))->SetBinContent( 1, 1/OneOverChiSquaredVZEC );
+    }
+  }
+  if(fSkipSelection) return;
+  if(fSpecie<10) {
+    ComputeDecayVn("V0SAllVn");
+    ComputeDecayVn("V0SSelVn");
+    if(fReadMC) {
+      ComputeDecayVn("V0SMthVn");
+      ComputeDecayVn("V0SMthPosPosVn");
+      ComputeDecayVn("V0SMthNegNegVn");
+      ComputeDecayVn("V0SMthPosNegVn");
+      ComputeDecayVn("V0SUnMthVn");
+    }
+  } else {
+    ComputeTrackVn("TrkAllVn");
+    ComputeTrackVn("TrkSelVn");
+    if(fReadMC) {
+      ComputeTrackVn("MthVn");
+      ComputeTrackVn("MthPosVn");
+      ComputeTrackVn("MthNegVn");
+    }
+  }
 }
 //=======================================================================
 void AliAnalysisTaskFlowStrange::MakeTrack() {
@@ -1482,8 +1745,7 @@ void AliAnalysisTaskFlowStrange::AddCandidates() {
     cand->SetForPOISelection(kTRUE);
     cand->SetForRPSelection(kFALSE);
     poi++;
-    if(fDebug) printf(" >Checking at candidate %d with %d daughters: mass %f\n",
-                      iCand,cand->GetNDaughters(),cand->Mass());
+    //if(fDebug) printf(" >Checking at candidate %d with %d daughters: mass %f\n",iCand,cand->GetNDaughters(),cand->Mass());
     if(fSpecie<10) { // DECAYS
       // untagging ===>
       if(fDaughterUnTag) {
@@ -1514,6 +1776,7 @@ void AliAnalysisTaskFlowStrange::AddCandidates() {
         if(!iRP->InRPSelection()) continue;
         if(cand->GetID() == iRP->GetID()) {
           if(fDebug) printf("  >charged track (%d) was also found in RP set (adding poi tag)\n",cand->GetID());
+	  iRP->SetMass( cand->Mass() );
           iRP->SetForPOISelection(kTRUE);
           found = kTRUE;
         }
@@ -1539,6 +1802,7 @@ void AliAnalysisTaskFlowStrange::PushBackFlowTrack(AliFlowEvent *flowevent, Doub
   rfp.SetWeight(w);
   rfp.SetForRPSelection(kTRUE);
   rfp.SetForPOISelection(kFALSE);
+  rfp.SetMass(-999);
   rfp.SetID(id);
   flowevent->InsertTrack( &rfp );
 }
@@ -1563,82 +1827,116 @@ void AliAnalysisTaskFlowStrange::MakeQVectors() {
   //computes event plane and updates fPsi2
   //if there is a problem fPsi->-1
   fPsi2=-1;
-  Double_t vzeqax, vzeqay, vzeqaw, vzeqbx, vzeqby, vzeqbw;
-  Double_t tpcqax, tpcqay, tpcqaw, tpcqbx, tpcqby, tpcqbw;
   //=>loading event
-  MakeQVZE(InputEvent(),vzeqax,vzeqay,vzeqaw,vzeqbx,vzeqby,vzeqbw);
-  MakeQTPC(InputEvent(),tpcqax,tpcqay,tpcqaw,tpcqbx,tpcqby,tpcqbw);
-  if(fReadMC) {
+  MakeQVZE(InputEvent());
+  MakeQTPC(InputEvent());
+  if(fUseFP&&fReadMC) {
     fVZEevent->SetMCReactionPlaneAngle( fMCEP );    
     fTPCevent->SetMCReactionPlaneAngle( fMCEP );    
   }
+  if(fDebug) {
+    printf("**::MakeQVectors()");
+    printf("  fQVZEACos %.16f | fQVZEASin %.16f || fQVZEA %.3f | fQVZEC %.3f \n",fQVZEACos, fQVZEASin, fQVZEA, fQVZEC);
+    printf("  nQTPA_nTracks %d | fQTPC_nTracks %d || fQTPCA %.3f | fQTPCC %.3f \n",fQTPCA_nTracks, fQTPCC_nTracks, fQTPCA, fQTPCC);
+    printf("  fQTPCACos %.16f | fQTPCASin %.16f || fQTPC2hCos %.16f | fQTPC2hSin %.16f \n",fQTPCACos, fQTPCASin, fQTPC2hCos, fQTPC2hSin);
+   }
   //=>computing psi
   //VZERO
-  Double_t vqx, vqy;
-  vqx=vqy=0;
-  Double_t psivzea,psivzeb,psivze,vzew;
-  psivzea = ( TMath::Pi()+TMath::ATan2(-vzeqay,-vzeqax) )/2.0;
-  psivzeb = ( TMath::Pi()+TMath::ATan2(-vzeqby,-vzeqbx) )/2.0;
-  vqx = vzeqax + vzeqbx;
-  vqy = vzeqay + vzeqby;
-  vzew = vzeqaw + vzeqbw;
-  psivze = ( TMath::Pi()+TMath::ATan2(-vqy,-vqx) )/2.0;
+  Double_t qvzecos,qvzesin,psivzea,psivzec,psivze,qvze;
+  psivzea = ( TMath::Pi()+TMath::ATan2(-fQVZEASin,-fQVZEACos) )/fHarmonic;
+  psivzec = ( TMath::Pi()+TMath::ATan2(-fQVZECSin,-fQVZECCos) )/fHarmonic;
+  qvzecos = fQVZEACos + fQVZECCos;
+  qvzesin = fQVZEASin + fQVZECSin;
+  qvze = fQVZEA + fQVZEC;
+  psivze = ( TMath::Pi()+TMath::ATan2(-qvzesin,-qvzecos) )/fHarmonic;
   //TPC
-  Double_t tqx, tqy;
-  tqx=tqy=0;
-  Double_t psitpca,psitpcb,psitpc,tpcw;
-  psitpca = ( TMath::Pi()+TMath::ATan2(-tpcqay,-tpcqax) )/2.0;
-  psitpcb = ( TMath::Pi()+TMath::ATan2(-tpcqby,-tpcqbx) )/2.0;
-  tqx = tpcqax + tpcqbx;
-  tqy = tpcqay + tpcqby;
-  tpcw = tpcqaw + tpcqbw;
-  psitpc = ( TMath::Pi()+TMath::ATan2(-tqy,-tqx) )/2.0;
+  Double_t qtpccos,qtpcsin,psitpca,psitpcc,psitpc,qtpc;
+  psitpca = ( TMath::Pi()+TMath::ATan2(-fQTPCASin,-fQTPCACos) )/fHarmonic;
+  psitpcc = ( TMath::Pi()+TMath::ATan2(-fQTPCCSin,-fQTPCCCos) )/fHarmonic;
+  qtpccos = fQTPCACos + fQTPCCCos;
+  qtpcsin = fQTPCASin + fQTPCCSin;
+  qtpc = fQTPCA + fQTPCC;
+  psitpc = ( TMath::Pi()+TMath::ATan2(-qtpcsin,-qtpccos) )/fHarmonic;
   //=>does the event clear?
   switch(fWhichPsi) {
   case(1): //VZERO
-    if( (vzeqaw<2)||(vzeqbw<2) ) return;
+    if(fQVZEA<2||fQVZEC<2) return;
     fPsi2 = psivze;
     break;
   case(2): //TPC
-    if( (tpcqaw<2)||(tpcqbw<2) ) return;
+    if(fQTPCA<2||fQTPCC<2) return;
     fPsi2 = psitpc;
     break;
   }
+  //computing physical Qm vectors
+  Double_t vzec_qmcos = fQVZECCos/fQVZEC;
+  Double_t vzec_qmsin = fQVZECSin/fQVZEC;
+  Double_t vzec_qmnor = TMath::Sqrt( vzec_qmcos*vzec_qmcos + vzec_qmsin*vzec_qmsin );
+  Double_t vzea_qmcos = fQVZEACos/fQVZEA;
+  Double_t vzea_qmsin = fQVZEASin/fQVZEA;
+  Double_t vzea_qmnor = TMath::Sqrt( vzea_qmcos*vzea_qmcos + vzea_qmsin*vzea_qmsin );
+  Double_t vze_qmcos = qvzecos/qvze;
+  Double_t vze_qmsin = qvzesin/qvze;
+  Double_t vze_qmnor = TMath::Sqrt( vze_qmcos*vze_qmcos + vze_qmsin*vze_qmsin );
+  Double_t tpcc_qmcos = fQTPCCCos/fQTPCC;
+  Double_t tpcc_qmsin = fQTPCCSin/fQTPCC;
+  Double_t tpcc_qmnor = TMath::Sqrt( tpcc_qmcos*tpcc_qmcos + tpcc_qmsin*tpcc_qmsin );
+  Double_t tpca_qmcos = fQTPCACos/fQTPCA;
+  Double_t tpca_qmsin = fQTPCASin/fQTPCA;
+  Double_t tpca_qmnor = TMath::Sqrt( tpca_qmcos*tpca_qmcos + tpca_qmsin*tpca_qmsin );
+  Double_t tpc_qmcos = qtpccos/qtpc;
+  Double_t tpc_qmsin = qtpcsin/qtpc;
+  Double_t tpc_qmnor = TMath::Sqrt( tpc_qmcos*tpc_qmcos + tpc_qmsin*tpc_qmsin );
   //=>great! recording
   ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEPSI"))->Fill( psivze );
   ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEPSIA"))->Fill( psivzea );
-  ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEPSIB"))->Fill( psivzeb );
-  ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("RFPVZE"))->Fill( vzew );
-  ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("QmVZE"))->Fill( TMath::Sqrt(vqx*vqx+vqy*vqy)/vzew );
+  ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEPSIC"))->Fill( psivzec );
+  ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("RFPVZE"))->Fill( qvze );
+  ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("QmVZE"))->Fill( vze_qmnor );
   //------
   ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCPSI"))->Fill( psitpc );
   ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCPSIA"))->Fill( psitpca );
-  ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCPSIB"))->Fill( psitpcb );
-  ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("RFPTPC"))->Fill( tpcw );
-  ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("QmTPC"))->Fill( TMath::Sqrt(tqx*tqx+tqy*tqy)/tpcw );
+  ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCPSIC"))->Fill( psitpcc );
+  ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("RFPTPC"))->Fill( qtpc );
+  ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("QmTPC"))->Fill( tpc_qmnor );
   //------
-  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCQ"))->Fill( 1., tpcqay/tpcqaw, tpcqaw );
-  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCQ"))->Fill( 2., tpcqax/tpcqaw, tpcqaw );
-  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCQ"))->Fill( 3., tpcqby/tpcqbw, tpcqbw );
-  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCQ"))->Fill( 4., tpcqbx/tpcqbw, tpcqbw );
-  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCQ"))->Fill( 5., tqy/tpcw, tpcw );
-  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCQ"))->Fill( 6., tqx/tpcw, tpcw );
+  if(fReadMC) {
+    ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("PSIMCDIFFTPC"))->Fill( psitpc-fMCEP );
+    ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("PSIMCDIFFTPCA"))->Fill( psitpca-fMCEP );
+    ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("PSIMCDIFFTPCC"))->Fill( psitpcc-fMCEP );
+    ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("PSIMCDIFFVZE"))->Fill( psivze-fMCEP );
+    ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("PSIMCDIFFVZEA"))->Fill( psivzea-fMCEP );
+    ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("PSIMCDIFFVZEC"))->Fill( psivzec-fMCEP );
+  }
   //------
-  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEQ"))->Fill( 1., vzeqay/vzeqaw, vzeqaw );
-  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEQ"))->Fill( 2., vzeqax/vzeqaw, vzeqaw );
-  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEQ"))->Fill( 3., vzeqby/vzeqbw, vzeqbw );
-  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEQ"))->Fill( 4., vzeqbx/vzeqbw, vzeqbw );
-  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEQ"))->Fill( 5., vqy/vzew, vzew );
-  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEQ"))->Fill( 6., vqx/vzew, vzew );
-
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCQm"))->Fill( 1., tpcc_qmsin, tpcc_qmnor );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCQm"))->Fill( 2., tpcc_qmcos, tpcc_qmnor );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCQm"))->Fill( 3., tpca_qmsin, tpca_qmnor );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCQm"))->Fill( 4., tpca_qmcos, tpca_qmnor );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCQm"))->Fill( 5., tpc_qmsin, tpc_qmnor );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCQm"))->Fill( 6., tpc_qmcos, tpc_qmnor );
+  //------
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEQm"))->Fill( 1., vzec_qmsin, vzec_qmnor );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEQm"))->Fill( 2., vzec_qmcos, vzec_qmnor );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEQm"))->Fill( 3., vzea_qmsin, vzea_qmnor );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEQm"))->Fill( 4., vzea_qmcos, vzea_qmnor );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEQm"))->Fill( 5., vze_qmsin, vze_qmnor );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEQm"))->Fill( 6., vze_qmcos, vze_qmnor );
+  //------
+  Double_t vzeqaqc = vzec_qmcos*vzea_qmcos + vzec_qmsin*vzea_qmsin;
+  Double_t vzeqatpcq = vzea_qmcos*tpc_qmcos + vzea_qmsin*tpc_qmsin;
+  Double_t vzeqctpcq = vzec_qmcos*tpc_qmcos + vzec_qmsin*tpc_qmsin;
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("QmVZEAQmVZEC"))->Fill( 1., vzeqaqc, vze_qmnor );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("QmVZEASQUARED"))->Fill( 1., vzea_qmnor*vzea_qmnor, vze_qmnor );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("QmVZECSQUARED"))->Fill( 1., vzec_qmnor*vzec_qmnor, vze_qmnor );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("QmTPCQmVZEA"))->Fill( 1., vzeqatpcq, vze_qmnor );
+  ((TProfile*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("QmTPCQmVZEC"))->Fill( 1., vzeqctpcq, vze_qmnor );
   return;
 }
 //=======================================================================
-void AliAnalysisTaskFlowStrange::MakeQVZE(AliVEvent *tevent,
-                                          Double_t &qxa,Double_t &qya,Double_t &qwa,
-                                          Double_t &qxb,Double_t &qyb,Double_t &qwb) {
+void AliAnalysisTaskFlowStrange::MakeQVZE(AliVEvent *tevent) {
   //=>cleaning
-  if(fUseFP) fVZEevent->ClearFast();
+  if(fUseFP) fVZEevent->ClearFast(); // flowpackage
   //=>external weights
   Double_t extW[64];
   for(int i=0;i!=64;++i) extW[i]=1;
@@ -1650,6 +1948,10 @@ void AliAnalysisTaskFlowStrange::MakeQVZE(AliVEvent *tevent,
     }
     Int_t ybinmin = fVZEResponse->GetYaxis()->FindBin(minC+1e-6);
     Int_t ybinmax = fVZEResponse->GetYaxis()->FindBin(maxC-1e-6);
+    if(fSkipCentralitySelection) {
+      ybinmin=-1;
+      ybinmax=-1;
+    }
     for(int i=0;i!=64;++i) extW[i] = fVZEResponse->Integral(i+1,i+1,ybinmin,ybinmax)/(maxC-minC);
     //ring-wise normalization
     Double_t ring[8];
@@ -1676,7 +1978,7 @@ void AliAnalysisTaskFlowStrange::MakeQVZE(AliVEvent *tevent,
     //for(int i=0;i!=64;++i) printf(" W = %f \n",extW[i]);
   }
   //=>computing
-  qxa=qya=qwa=qxb=qyb=qwb=0;
+  fQVZEACos=fQVZEASin=fQVZEA=fQVZECCos=fQVZECSin=fQVZEC=0;
   Int_t rfp=0;
   Double_t eta, phi, w;
   //v0c -> qa
@@ -1684,27 +1986,29 @@ void AliAnalysisTaskFlowStrange::MakeQVZE(AliVEvent *tevent,
     eta = -3.45+0.5*(id/8);
     phi = TMath::PiOver4()*(0.5+id%8);
     w = tevent->GetVZEROEqMultiplicity(id)*extW[id];
-    qxa += w*TMath::Cos(2*phi);
-    qya += w*TMath::Sin(2*phi);
-    qwa += w;
+    fQVZECCos += w*TMath::Cos(fHarmonic*phi);
+    fQVZECSin += w*TMath::Sin(fHarmonic*phi);
+    fQVZEC += w;
     ((TH2D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEAllPhiEta"))->Fill( phi, eta, w );
     rfp++;
-    if(fUseFP) PushBackFlowTrack(fVZEevent,0,phi,eta,w,0);
+    if(fUseFP) PushBackFlowTrack(fVZEevent,0,phi,eta,w,0); // flowpackage
   }
   //v0a -> qb
   for(int id=32+fVZEAa*8;id!=40+fVZEAb*8;++id) {
     eta = +4.8-0.6*((id/8)-4);
     phi = TMath::PiOver4()*(0.5+id%8);
     w = tevent->GetVZEROEqMultiplicity(id)*extW[id];
-    qxb += w*TMath::Cos(2*phi);
-    qyb += w*TMath::Sin(2*phi);
-    qwb += w;
+    fQVZEACos += w*TMath::Cos(fHarmonic*phi);
+    fQVZEASin += w*TMath::Sin(fHarmonic*phi);
+    fQVZEA += w;
     ((TH2D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEAllPhiEta"))->Fill( phi, eta, w );
     rfp++;
-    if(fUseFP) PushBackFlowTrack(fVZEevent,0,phi,eta,w,0);
+    if(fUseFP) PushBackFlowTrack(fVZEevent,0,phi,eta,w,0); // flowpackage
   }
-  if(fUseFP) fVZEevent->SetNumberOfRPs(rfp);
-  if(fDebug>0&&fUseFP) printf("Inserted tracks in FlowEventVZE %d ==> %.1f\n",fVZEevent->NumberOfTracks(),qwa+qwb);
+  if(fUseFP) { // flowpackage
+    fVZEevent->SetNumberOfRPs(rfp);
+    if(fDebug>0) printf("Inserted tracks in FlowEventVZE %d ==> %.1f\n",fVZEevent->NumberOfTracks(),fQVZEC+fQVZEA);
+  }
 }
 //=======================================================================
 void AliAnalysisTaskFlowStrange::AddTPCRFPSpy(TList *me) {
@@ -1772,8 +2076,7 @@ Bool_t AliAnalysisTaskFlowStrange::PassesRFPTPCCuts(AliESDtrack *track, Double_t
   ((TH1D*)((TList*)fList->FindObject("TPCRFPall"))->FindObject("ITSRCHI"))->Fill( itsrchi2 );
   if(pt<fRFPminPt) return kFALSE; //0.2
   if(pt>fRFPmaxPt) return kFALSE; //5.0
-  if(eta<fRFPminEta) return kFALSE; //-0.8
-  if(eta>fRFPmaxEta) return kFALSE; //+0.8
+  if(eta<fRFPCminEta||(eta>fRFPCmaxEta&&eta<fRFPAminEta)||eta>fRFPAmaxEta) return kFALSE; // -0.8 0.0 0.0 +0.8
   if(tpcs<fRFPTPCsignal) return kFALSE; //10.0
   if( TMath::Sqrt(ipxy*ipxy/fRFPmaxIPxy/fRFPmaxIPxy+ipz*ipz/fRFPmaxIPz/fRFPmaxIPz)>1 ) return kFALSE; //2.4 3.2
   if(cls<fRFPTPCncls) return kFALSE; //70
@@ -1793,26 +2096,25 @@ Bool_t AliAnalysisTaskFlowStrange::PassesRFPTPCCuts(AliESDtrack *track, Double_t
   return kTRUE;
 }
 //=======================================================================
-void AliAnalysisTaskFlowStrange::MakeQTPC(AliVEvent *tevent,
-                                          Double_t &qxa,Double_t &qya,Double_t &qwa,
-                                          Double_t &qxb,Double_t &qyb,Double_t &qwb) {
+void AliAnalysisTaskFlowStrange::MakeQTPC(AliVEvent *tevent) {
   AliESDEvent *tESD = (AliESDEvent*) (tevent);
   AliAODEvent *tAOD = (AliAODEvent*) (tevent);
   if(fReadESD) {
     if(!tESD) return;
-    MakeQTPC(tESD,qxa,qya,qwa,qxb,qyb,qwb);
+    MakeQTPC(tESD);
   } else {
     if(!tAOD) return;
-    MakeQTPC(tAOD,qxa,qya,qwa,qxb,qyb,qwb);
+    MakeQTPC(tAOD);
   }
 }
 //=======================================================================
-void AliAnalysisTaskFlowStrange::MakeQTPC(AliAODEvent *tAOD,
-                                          Double_t &qxa,Double_t &qya,Double_t &qwa,
-                                          Double_t &qxb,Double_t &qyb,Double_t &qwb) {
+void AliAnalysisTaskFlowStrange::MakeQTPC(AliAODEvent *tAOD) {
   //=>cleaning
-  if(fUseFP) fTPCevent->ClearFast();
-  qxa=qya=qwa=qxb=qyb=qwb=0;
+  if(fUseFP) fTPCevent->ClearFast(); // flowpackage
+  fQTPCACos=fQTPCASin=fQTPCA=fQTPC2hCos=0;
+  fQTPCCCos=fQTPCCSin=fQTPCC=fQTPC2hSin=0;
+  fQTPCA_nTracks = 0;
+  fQTPCC_nTracks = 0;
   Int_t rfp=0;
   Double_t eta, phi, w;
   //=>aod stuff
@@ -1841,30 +2143,36 @@ void AliAnalysisTaskFlowStrange::MakeQTPC(AliAODEvent *tAOD,
     phi = track->Phi();
     eta = track->Eta();
     w = 1;
-    //=>subevents
-    if(eta<0.5*(fRFPminEta+fRFPmaxEta)) {
-      qxa += w*TMath::Cos(2*phi);
-      qya += w*TMath::Sin(2*phi);
-      qwa += w;
+    if(eta<0) {
+      fQTPCCCos += w*TMath::Cos(fHarmonic*phi);
+      fQTPCCSin += w*TMath::Sin(fHarmonic*phi);
+      fQTPCC += w;
+      fQTPCC_fID[fQTPCC_nTracks++] = track->GetID();
     } else {
-      qxb += w*TMath::Cos(2*phi);
-      qyb += w*TMath::Sin(2*phi);
-      qwb += w;
+      fQTPCACos += w*TMath::Cos(fHarmonic*phi);
+      fQTPCASin += w*TMath::Sin(fHarmonic*phi);
+      fQTPCA += w;
+      fQTPCA_fID[fQTPCA_nTracks++] = track->GetID();
     }
-    ((TH2D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCAllPhiEta"))->Fill( phi, eta, w );
+    fQTPC2hCos += w*TMath::Cos(2.0*fHarmonic*phi);
+    fQTPC2hSin += w*TMath::Sin(2.0*fHarmonic*phi);
     rfp++;
-    if(fUseFP) PushBackFlowTrack(fTPCevent,track->Pt(),phi,eta,w,track->GetID());
+    ((TH2D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCAllPhiEta"))->Fill( phi, eta, w );
+    if(fUseFP) PushBackFlowTrack(fTPCevent,track->Pt(),phi,eta,w,track->GetID()); // flow package
   }
-  if(fUseFP) fTPCevent->SetNumberOfRPs(rfp);
-  if(fDebug) printf("Inserted tracks in FlowEventTPC %d ==> %.1f\n",fTPCevent->NumberOfTracks(),qwa+qwb);
+  if(fUseFP) {
+    fTPCevent->SetNumberOfRPs(rfp);
+    if(fDebug) printf("Inserted tracks in FlowEventTPC %d ==> %.1f\n",fTPCevent->NumberOfTracks(),fQTPCA+fQTPCC);
+  }
 }
 //=======================================================================
-void AliAnalysisTaskFlowStrange::MakeQTPC(AliESDEvent *tESD,
-                                          Double_t &qxa,Double_t &qya,Double_t &qwa,
-                                          Double_t &qxb,Double_t &qyb,Double_t &qwb) {
+void AliAnalysisTaskFlowStrange::MakeQTPC(AliESDEvent *tESD) {
   //=>cleaning
-  if(fUseFP) fTPCevent->ClearFast();
-  qxa=qya=qwa=qxb=qyb=qwb=0;
+  if(fUseFP) fTPCevent->ClearFast(); // flow package
+  fQTPCACos=fQTPCASin=fQTPCA=0;
+  fQTPCCCos=fQTPCCSin=fQTPCC=0;
+  fQTPCA_nTracks = 0;
+  fQTPCC_nTracks = 0;
   Int_t rfp=0;
   Double_t eta, phi, w;
   //=>looping
@@ -1881,22 +2189,25 @@ void AliAnalysisTaskFlowStrange::MakeQTPC(AliESDEvent *tESD,
     phi = track->Phi();
     eta = track->Eta();
     w = 1;
-    //=>subevents
     if(eta<0) {
-      qxa += w*TMath::Cos(2*phi);
-      qya += w*TMath::Sin(2*phi);
-      qwa += w;
+      fQTPCCCos += w*TMath::Cos(fHarmonic*phi);
+      fQTPCCSin += w*TMath::Sin(fHarmonic*phi);
+      fQTPCC += w;
+      fQTPCC_fID[fQTPCC_nTracks++] = track->GetID();
     } else {
-      qxb += w*TMath::Cos(2*phi);
-      qyb += w*TMath::Sin(2*phi);
-      qwb += w;
+      fQTPCACos += w*TMath::Cos(fHarmonic*phi);
+      fQTPCASin += w*TMath::Sin(fHarmonic*phi);
+      fQTPCA += w;
+      fQTPCA_fID[fQTPCA_nTracks++] = track->GetID();
     }
-    ((TH2D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCAllPhiEta"))->Fill( phi, eta, w );
     rfp++;
-    if(fUseFP) PushBackFlowTrack(fTPCevent,track->Pt(),phi,eta,w,track->GetID());
+    ((TH2D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCAllPhiEta"))->Fill( phi, eta, w );
+    if(fUseFP) PushBackFlowTrack(fTPCevent,track->Pt(),phi,eta,w,track->GetID()); // flowpackage
   }
-  if(fUseFP) fTPCevent->SetNumberOfRPs(rfp);
-  if(fDebug) printf("Inserted tracks in FlowEventTPC %d ==> %.1f\n",fTPCevent->NumberOfTracks(),qwa+qwb);
+  if(fUseFP) {
+    fTPCevent->SetNumberOfRPs(rfp);
+    if(fDebug) printf("Inserted tracks in FlowEventTPC %d ==> %.1f\n",fTPCevent->NumberOfTracks(),fQTPCA+fQTPCC);
+  }
 }
 //=======================================================================
 void AliAnalysisTaskFlowStrange::AddMCParticleSpy(TList *me) {
@@ -1925,8 +2236,8 @@ void AliAnalysisTaskFlowStrange::FillMCParticleSpy(TString listName, AliAODMCPar
 //=======================================================================
 Double_t AliAnalysisTaskFlowStrange::GetMCDPHI(Double_t phi) {
   Double_t dDPHI = phi - fMCEP;
-  if( dDPHI < 0 ) dDPHI += TMath::TwoPi();
-  if( dDPHI > TMath::Pi() ) dDPHI = TMath::TwoPi()-dDPHI;
+  //if( dDPHI < 0 ) dDPHI += TMath::TwoPi();
+  //if( dDPHI > TMath::Pi() ) dDPHI = TMath::TwoPi()-dDPHI;
   return dDPHI;
 }
 //=======================================================================
@@ -1948,7 +2259,6 @@ void AliAnalysisTaskFlowStrange::AddCandidatesSpy(TList *me,Bool_t res) {
   tH2D = new TH2D("PtRAP",   "PtRAP;Pt;Y",          100,0,20,100,-2.0,+2.0);  me->Add(tH2D);
   tH2D = new TH2D("PtDCA",   "PtDCA;Pt;DCA",        100,0,20,100,0,10);       me->Add(tH2D);
   tH2D = new TH2D("PtCTP",   "PtCTP;Pt;CTP",        100,0,20,100,-1,+1);      me->Add(tH2D);
-  //tH2D = new TH2D("PtCTP",   "PtCTP;Pt;CTP",        100,0,10,100,0.90,+1);    me->Add(tH2D);
   tH2D = new TH2D("PtD0D0",  "PtD0D0;Pt;D0D0",      100,0,20,100,-5,+5);      me->Add(tH2D);
   tH2D = new TH2D("PtRad2",  "PtRad2;Pt;RadXY",     100,0,20,100,0,+50);      me->Add(tH2D);
   tH2D = new TH2D("PtDL",    "PtDL;Pt;DL",          100,0,20,100,0,+50);      me->Add(tH2D);
@@ -2026,7 +2336,7 @@ Bool_t AliAnalysisTaskFlowStrange::AcceptCandidate() {
   return kTRUE;
 }
 //=======================================================================
-void AliAnalysisTaskFlowStrange::AddTracksSpy(TList *me,Bool_t res) {
+void AliAnalysisTaskFlowStrange::AddTrackSpy(TList *me,Bool_t res) {
   TH2D *tH2D;
   tH2D = new TH2D("PHIETA",       "PHIETA;PHI;ETA",               100,0,TMath::TwoPi(),100,-2,2); me->Add(tH2D);
   tH2D = new TH2D("IPXYIPZ",      "IPXYIPZ;IPXY;IPZ",             1000,-20,+20,1000,-20,+20); me->Add(tH2D);
@@ -2045,6 +2355,11 @@ void AliAnalysisTaskFlowStrange::AddTracksSpy(TList *me,Bool_t res) {
   tH2D = new TH2D("NEGTPCNFCLNXR","NEGTPCNFCLNXR;NFCLS;NXR",      170,0,170,170,0,170); me->Add(tH2D);
   tH2D = new TH2D("NEGTPCNCLNFCL","NEGTPCNCLNFCL;NCLS;NFCLS",     170,0,170,170,0,170); me->Add(tH2D);
   tH2D = new TH2D("NEGTPCNCLNSCL","NEGTPCNCLNSCL;NCLS;NSCLS",     170,0,170,170,0,170); me->Add(tH2D);
+
+  if(fReadMC) {
+    TProfile *tPro;
+    tPro = new TProfile("COSNDPHIMC","COSNDPHIMC",100,0,20); me->Add(tPro);
+  }
 
   if(res) {
     tH2D = new TH2D("PHIRes", "PHIRes;PHI;MC-DAT",   72,   0, TMath::TwoPi(),100,-0.12,+0.12); me->Add(tH2D);
@@ -2073,10 +2388,14 @@ void AliAnalysisTaskFlowStrange::FillTrackSpy(TString listName,Bool_t res) {
   ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject( Form("%sTPCNCLNFCL",ch.Data()) ))->Fill( fDaughterNClsTPC, fDaughterNFClsTPC );
   ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject( Form("%sTPCNCLNSCL",ch.Data()) ))->Fill( fDaughterNClsTPC, fDaughterNSClsTPC );
 
+  if(fReadMC) {
+    Double_t cosn = TMath::Cos( fHarmonic*GetMCDPHI(fDaughterPhi) );
+    ((TProfile*)((TList*)fList->FindObject(listName.Data()))->FindObject("COSNDPHIMC" ))->Fill( fDaughterPt, cosn, 1 );
+  }
   if(res) {
-    ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject("PHIRes"))->Fill( fDaughterPhi, fDaughterMatchPhi-fDaughterPhi );
-    ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject("ETARes"))->Fill( fDaughterEta, fDaughterMatchEta-fDaughterEta );
-    ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject("PTRes"))->Fill( fDaughterPt, fDaughterMatchPt-fDaughterPt );
+    ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject("PHIRes"))->Fill( fDaughterPhi, fDaughterMatchPhi-fDaughterAtSecPhi );
+    ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject("ETARes"))->Fill( fDaughterEta, fDaughterMatchEta-fDaughterAtSecEta );
+    ((TH2D*)((TList*)fList->FindObject(listName.Data()))->FindObject("PTRes"))->Fill( fDaughterPt, fDaughterMatchPt-fDaughterAtSecPt );
   }
 }
 //=======================================================================
@@ -2234,7 +2553,7 @@ void AliAnalysisTaskFlowStrange::LoadVZEROResponse() {
   if(fVZEResponse) {
     printf("New VZE calibration: run %d || %s -> Entries %.0f\n",fRunNumber, fVZEResponse->GetTitle(),fVZEResponse->GetEntries());
   } else {
-    printf("VZE calibration: request but not found!!!\n");
+    printf("VZE calibration: requested but not found!!!\n");
   }
 }
 //=======================================================================
@@ -2274,7 +2593,7 @@ void AliAnalysisTaskFlowStrange::AddVZEROResponse() {
   AliVEvent *event = InputEvent();
   if(!event) return;
   Int_t thisrun = event->GetRunNumber();
-  fVZEResponse = new TH2D( Form("%d",thisrun), Form("%d;cell;CC",thisrun), 64,0,64, 100, 0, 100);
+  fVZEResponse = new TH2D( Form("%d",thisrun), Form("%d;cell;CC",thisrun), 64,0,64, 110, -10, 100);
   fList->Add(fVZEResponse);
 }
 //=======================================================================
@@ -2287,6 +2606,22 @@ void AliAnalysisTaskFlowStrange::SaveVZEROResponse() {
     w = event->GetVZEROEqMultiplicity(id);
     fVZEResponse->Fill(id,fThisCent,w);
   }
+}
+//=======================================================================
+Int_t AliAnalysisTaskFlowStrange::RefMult(AliAODEvent *tAOD, Int_t fb) {
+  Int_t found = 0;
+  for(int i=0; i!=tAOD->GetNumberOfTracks(); ++i) {
+    AliAODTrack *t = tAOD->GetTrack( i );
+    if(!t) continue;
+    if( !t->TestFilterBit(fb) ) continue;
+    if( t->Eta()<-0.8 || t->Eta()>+0.8 ) continue;
+    if( t->Pt()<0.2 || t->Pt()>5.0 ) continue;
+    if( t->GetTPCNcls()<70 ) continue;
+    //if( t->GetTPCsignal()<10.0 ) continue;
+    if( t->Chi2perNDF()<0.2 ) continue;
+    ++found;
+  }
+  return found;
 }
 //=======================================================================
 Int_t AliAnalysisTaskFlowStrange::RefMultTPC() {
@@ -2328,29 +2663,1104 @@ Int_t AliAnalysisTaskFlowStrange::RefMultGlobal() {
   return found;
 }
 //=======================================================================
-void AliAnalysisTaskFlowStrange::MakeDHcorr() {
-  // Adds DH corr
-  for(int iCand=0; iCand!=fCandidates->GetEntriesFast(); ++iCand ) {
-    AliFlowCandidateTrack *cand = static_cast<AliFlowCandidateTrack*>(fCandidates->At(iCand));
-    if(!cand) continue;
-    for(int iRPs=0; iRPs!=fTPCevent->NumberOfTracks(); ++iRPs ) {
-      AliFlowTrack *iRP = static_cast<AliFlowTrack*>(fTPCevent->GetTrack( iRPs ));
-      if(!iRP) continue;
-      if(!iRP->InRPSelection()) continue;
-      if(cand->GetID() == iRP->GetID()) continue; //avoid autocorr
-      for(int iDau=0; iDau!=cand->GetNDaughters(); ++iDau) //if it is a decay
-        if(cand->GetIDDaughter(iDau) == iRP->GetID()) continue;
-      //corr
-      Double_t dDPHI = iRP->Phi() - cand->Phi();
-      Double_t dDETA = iRP->Eta() - cand->Eta();
-      Double_t dDPT  = iRP->Pt()  - cand->Pt();
-      ((TH3D*)((TList*)fList->FindObject("DHCORR"))->FindObject("DPHI"))->Fill( dDPT, dDPHI, dDETA );
-      //end of corr
-    }
+void AliAnalysisTaskFlowStrange::ResetContainers() {
+  if(fUseFP) {
+    fTPCevent->ClearFast();
+    fVZEevent->ClearFast();
   }
 }
 //=======================================================================
-void AliAnalysisTaskFlowStrange::ResetContainers() {
-  fTPCevent->ClearFast();
-  fVZEevent->ClearFast();
+void AliAnalysisTaskFlowStrange::AddTrackVn(TList *tList) {
+  TProfile *tProfile;
+  TH1D *tH1D;
+  // ptbins
+  Int_t npt = 29;
+  Double_t ptbin[30] = { 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
+			 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.3, 2.6, 3.0, 3.5,
+			 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 10., 12., 16., 20.};
+  // vze
+  tProfile = new TProfile("SP_uVZEA","u x Q_{VZEA}",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile("SP_uVZEC","u x Q_{VZEC}",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile("SP_VZEAVZEC","Q_{VZEA} x Q_{VZEC}",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile("SP_VZEATPC","Q_{VZEA} x Q_{TPC}",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile("SP_VZECTPC","Q_{VZEC} x Q_{TPC}",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  // error
+  tProfile = new TProfile("SP_uVZEAuVZEC","u x Q_{VZEA} . u x Q_{VZEC}",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile("SP_uVZEAVZEAVZEC","u x Q_{VZEA} . Q_{VZEA} x Q_{VZEC}",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile("SP_uVZECVZEAVZEC","u x Q_{VZEC} . Q_{VZEA} x Q_{VZEC}",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  // tpc
+  tProfile = new TProfile("SP_uTPCA","u x Q_{TPCA}",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile("SP_uTPCC","u x Q_{TPCC}",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile("SP_TPCATPCC","Q_{TPCA} x Q_{TPCC}",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  // error
+  tProfile = new TProfile("SP_uTPCATPCATPCC","u x Q_{TPCA} . Q_{TPCA} x Q_{TPCC}",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile("SP_uTPCCTPCATPCC","u x Q_{TPCC} . Q_{TPCA} x Q_{TPCC}",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  // control
+  tH1D = new TH1D("QC_HistPt_P","HistPt_P",npt,ptbin); tList->Add( tH1D );
+  tH1D = new TH1D("QC_HistPt_Q","HistPt_Q",npt,ptbin); tList->Add( tH1D );
+  // qc
+  tProfile = new TProfile("QC_C2","QC_C2",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile("QC_C4","QC_C4",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile("QC_DC2","QC_DC2",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile("QC_DC4","QC_DC4",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile("QC_C2C4","QC_C2C4",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile("QC_C2DC2","QC_C2DC2",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile("QC_C2DC4","QC_C2DC4",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile("QC_C4DC2","QC_C4DC2",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile("QC_C4DC4","QC_C4DC4",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile("QC_DC2DC4","QC_DC2DC4",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  // qc transient
+  tProfile = new TProfile("QC_pCos","QC_pCos",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile("QC_pSin","QC_pSin",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile("QC_qCos","QC_qCos",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile("QC_qSin","QC_qSin",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile("QC_q2hCos","QC_q2hCos",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile("QC_q2hSin","QC_q2hSin",npt,ptbin,-3,+3,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  // measurements
+  tH1D = new TH1D("SP_vnVZEA","SP_vnVZEA",npt,ptbin); tList->Add( tH1D );
+  tH1D = new TH1D("SP_vnVZEC","SP_vnVZEC",npt,ptbin); tList->Add( tH1D );
+  tH1D = new TH1D("SP_vnTPCA","SP_vnTPCA",npt,ptbin); tList->Add( tH1D );
+  tH1D = new TH1D("SP_vnTPCC","SP_vnTPCC",npt,ptbin); tList->Add( tH1D );
+  tH1D = new TH1D("QC_Cum2","QC_Cum2",npt,ptbin); tList->Add( tH1D );
+  tH1D = new TH1D("QC_Cum4","QC_Cum4",npt,ptbin); tList->Add( tH1D );
+  tH1D = new TH1D("QC_DCum2","QC_DCum2",npt,ptbin); tList->Add( tH1D );
+  tH1D = new TH1D("QC_DCum4","QC_DCum4",npt,ptbin); tList->Add( tH1D );
+  tH1D = new TH1D("SP_vnVZEGA","SP_vnVZEGA",npt,ptbin); tList->Add( tH1D );
+  tH1D = new TH1D("SP_vnVZEWA","SP_vnVZEWA",npt,ptbin); tList->Add( tH1D );
+  tH1D = new TH1D("SP_vnTPCAA","SP_vnTPCAA",npt,ptbin); tList->Add( tH1D );
+  tH1D = new TH1D("QC_vn2","QC_vn2",npt,ptbin); tList->Add( tH1D );
+  tH1D = new TH1D("QC_vn4","QC_vn4",npt,ptbin); tList->Add( tH1D );
+  if(fReadMC) {
+    TH2D *tH2D;
+    tProfile = new TProfile("MC_COSNDPHI","MC_COSNDPHI",npt,ptbin,-3,+3); tList->Add( tProfile );
+    tH2D = new TH2D("MC_COSNDPHI_uQVZEA","MC_COSNDPHI_uQVZEA",100,-1,+1,100,-0.3,+0.3); tList->Add( tH2D );
+    tH2D = new TH2D("MC_COSNDPHI_uQVZEC","MC_COSNDPHI_uQVZEC",100,-1,+1,100,-0.3,+0.3); tList->Add( tH2D );
+    tH2D = new TH2D("MC_COSNDPHI_uQTPCA","MC_COSNDPHI_uQTPCA",100,-1,+1,100,-0.3,+0.3); tList->Add( tH2D );
+    tH2D = new TH2D("MC_COSNDPHI_uQTPCC","MC_COSNDPHI_uQTPCC",100,-1,+1,100,-0.3,+0.3); tList->Add( tH2D );
+  }
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::AddDecayVn(TList *tList) {
+  TProfile2D *tProfile;
+  TH2D *tH2D;
+  // ptbins
+  Int_t npt = 29;
+  Double_t ptbin[30] = { 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
+			 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.3, 2.6, 3.0, 3.5,
+			 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 10., 12., 16., 20.};
+  Int_t nms = 14;
+  Double_t msbin[15] = { 0.400, 0.420, 0.440, 0.460, 0.480,
+			 0.490, 0.495, 0.500, 0.505, 0.510, 
+			 0.520, 0.540, 0.560, 0.580, 0.600};
+  // vze
+  tProfile = new TProfile2D("SP_uVZEA","u x Q_{VZEA}",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile2D("SP_uVZEC","u x Q_{VZEC}",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile2D("SP_VZEAVZEC","Q_{VZEA} x Q_{VZEC}",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile2D("SP_VZEATPC","Q_{VZEA} x Q_{TPC}",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile2D("SP_VZECTPC","Q_{VZEC} x Q_{TPC}",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  // error
+  tProfile = new TProfile2D("SP_uVZEAuVZEC","u x Q_{VZEA} . u x Q_{VZEC}",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile2D("SP_uVZEAVZEAVZEC","u x Q_{VZEA} . Q_{VZEA} x Q_{VZEC}",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile2D("SP_uVZECVZEAVZEC","u x Q_{VZEC} . Q_{VZEA} x Q_{VZEC}",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  // tpc
+  tProfile = new TProfile2D("SP_uTPCA","u x Q_{TPCA}",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile2D("SP_uTPCC","u x Q_{TPCC}",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile2D("SP_TPCATPCC","Q_{TPCA} x Q_{TPCC}",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  // error
+  tProfile = new TProfile2D("SP_uTPCATPCATPCC","u x Q_{TPCA} . Q_{TPCA} x Q_{TPCC}",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile2D("SP_uTPCCTPCATPCC","u x Q_{TPCC} . Q_{TPCA} x Q_{TPCC}",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  // control
+  tH2D = new TH2D("QC_HistPt_P","HistPt_P",npt,ptbin,nms,msbin); tList->Add( tH2D );
+  tH2D = new TH2D("QC_HistPt_Q","HistPt_Q",npt,ptbin,nms,msbin); tList->Add( tH2D );
+  // qc
+  tProfile = new TProfile2D("QC_C2","QC_C2",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile2D("QC_C4","QC_C4",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile2D("QC_DC2","QC_DC2",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile2D("QC_DC4","QC_DC4",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile2D("QC_C2C4","QC_C2C4",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile2D("QC_C2DC2","QC_C2DC2",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile2D("QC_C2DC4","QC_C2DC4",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile2D("QC_C4DC2","QC_C4DC2",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile2D("QC_C4DC4","QC_C4DC4",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile2D("QC_DC2DC4","QC_DC2DC4",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  // qc transient
+  tProfile = new TProfile2D("QC_pCos","QC_pCos",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile2D("QC_pSin","QC_pSin",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile2D("QC_qCos","QC_qCos",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile2D("QC_qSin","QC_qSin",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile2D("QC_q2hCos","QC_q2hCos",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  tProfile = new TProfile2D("QC_q2hSin","QC_q2hSin",npt,ptbin,nms,msbin,"s"); tList->Add( tProfile ); tProfile->Sumw2();
+  // measurements
+  tH2D = new TH2D("SP_vnVZEA","SP_vnVZEA",npt,ptbin,nms,msbin); tList->Add( tH2D );
+  tH2D = new TH2D("SP_vnVZEC","SP_vnVZEC",npt,ptbin,nms,msbin); tList->Add( tH2D );
+  tH2D = new TH2D("SP_vnTPCA","SP_vnTPCA",npt,ptbin,nms,msbin); tList->Add( tH2D );
+  tH2D = new TH2D("SP_vnTPCC","SP_vnTPCC",npt,ptbin,nms,msbin); tList->Add( tH2D );
+  tH2D = new TH2D("QC_Cum2","QC_Cum2",npt,ptbin,nms,msbin); tList->Add( tH2D );
+  tH2D = new TH2D("QC_Cum4","QC_Cum4",npt,ptbin,nms,msbin); tList->Add( tH2D );
+  tH2D = new TH2D("QC_DCum2","QC_DCum2",npt,ptbin,nms,msbin); tList->Add( tH2D );
+  tH2D = new TH2D("QC_DCum4","QC_DCum4",npt,ptbin,nms,msbin); tList->Add( tH2D );
+  tH2D = new TH2D("SP_vnVZEGA","SP_vnVZEGA",npt,ptbin,nms,msbin); tList->Add( tH2D );
+  tH2D = new TH2D("SP_vnVZEWA","SP_vnVZEWA",npt,ptbin,nms,msbin); tList->Add( tH2D );
+  tH2D = new TH2D("SP_vnTPCAA","SP_vnTPCAA",npt,ptbin,nms,msbin); tList->Add( tH2D );
+  tH2D = new TH2D("QC_vn2","QC_vn2",npt,ptbin,nms,msbin); tList->Add( tH2D );
+  tH2D = new TH2D("QC_vn4","QC_vn4",npt,ptbin,nms,msbin); tList->Add( tH2D );
+  if(fReadMC) {
+    tProfile = new TProfile2D("MC_COSNDPHI","MC_COSNDPHI",npt,ptbin,nms,msbin); tList->Add( tProfile );
+  }
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::QCStoreTrackVn(TString name) {
+  // getting transients
+  TProfile *pCos = ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_pCos" ));
+  TProfile *pSin = ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_pSin" ));
+  TProfile *qCos = ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_qCos" ));
+  TProfile *qSin = ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_qSin" ));
+  TProfile *q2hCos = ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_q2hCos" ));
+  TProfile *q2hSin = ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_q2hSin" ));
+  if(fDebug) {
+    printf("**QCStoreTrackVn( %s )\n",name.Data());
+    printf(" Read %.0f entries in p set and %.0f entries in q set\n",pCos->GetEntries(),qCos->GetEntries());
+    printf(" pCos[5] %.16f | pSin[5] %.16f \n", pCos->GetBinContent(5), pSin->GetBinContent(5));
+    printf(" qCos[5] %.16f | qSin[5] %.16f \n", qCos->GetBinContent(5), qSin->GetBinContent(5));
+    printf(" q2hCos[5] %.16f | q2hSin[5] %.16f \n", q2hCos->GetBinContent(5), q2hSin->GetBinContent(5));
+  }
+  // filling {2} and {4} correlator
+  TProfile *c2 = ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_C2" ));
+  TProfile *c4 = ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_C4" ));
+  TProfile *dc2 = ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_DC2" ));
+  TProfile *dc4 = ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_DC4" ));
+  TProfile *c2c4 = ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_C2C4" ));
+  TProfile *c2dc2 = ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_C2DC2" ));
+  TProfile *c2dc4 = ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_C2DC4" ));
+  TProfile *c4dc2 = ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_C4DC2" ));
+  TProfile *c4dc4 = ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_C4DC4" ));
+  TProfile *dc2dc4 = ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_DC2DC4" ));
+  double tpc_qcos = fQTPCACos + fQTPCCCos;
+  double tpc_qsin = fQTPCASin + fQTPCCSin;
+  double tpc_qsqr = tpc_qcos*tpc_qcos + tpc_qsin*tpc_qsin;
+  double tpc_q2hsqr = fQTPC2hCos*fQTPC2hCos + fQTPC2hSin*fQTPC2hSin;
+  double tpc_qmul = fQTPCA + fQTPCC;
+  int n = c2->GetNbinsX();
+  for(int i=1; i!=n+1; ++i) {
+    double mp = pCos->GetBinEntries( i );
+    if( mp<1 ) { if(fDebug>2) printf(" bin %d:: mp (%.16f) < 1!\n",i,mp); continue; }
+    double mm1 = tpc_qmul*(tpc_qmul-1);
+    if( mm1<1e-100 ) { if(fDebug>2) printf(" bin %d:: mm1<1e-100!\n",i); continue; }
+    double mq = qCos->GetBinEntries( i );
+    double mpmmq = mp*tpc_qmul-mq;
+    if( mpmmq<1e-100 )  { if(fDebug>2) printf(" bin %d:: mpmmq<1e-100!\n",i); continue; }
+    double pt = c2->GetBinCenter( i );
+    double pcos = pCos->GetBinContent( i )*mp;
+    double psin = pSin->GetBinContent( i )*mp;
+    double qcos = qCos->GetBinContent( i )*mq;
+    double qsin = qSin->GetBinContent( i )*mq;
+    double q2hcos = q2hCos->GetBinContent( i )*mq;
+    double q2hsin = q2hSin->GetBinContent( i )*mq;
+    double pQ = pcos*tpc_qcos+psin*tpc_qsin;
+    double q2nQnQn = (qcos*tpc_qcos + qsin*tpc_qsin)*tpc_qcos + (qsin*tpc_qcos-qcos*tpc_qsin)*tpc_qsin;
+    double pnQnQ2n = (pcos*tpc_qcos - psin*tpc_qsin)*fQTPC2hCos + (psin*tpc_qcos+pcos*tpc_qsin)*fQTPC2hSin;
+    double tC2 = (tpc_qsqr-tpc_qmul)/mm1;
+    double tDC2 = (pQ-mq)/mpmmq;
+    c2->Fill( pt, tC2, mm1 );
+    dc2->Fill( pt, tDC2, mpmmq );
+    c2dc2->Fill( pt, tC2*tDC2, mm1*mpmmq );
+    double mm1m2m3 = tpc_qmul*(tpc_qmul-1)*(tpc_qmul-2)*(tpc_qmul-3);
+    if(mm1m2m3<1e-100) continue;
+    double mpm3mqm1m2 = (mp*tpc_qmul-3*mq)*(tpc_qmul-1)*(tpc_qmul-2);
+    if(mpm3mqm1m2<1e-100) continue;
+    double req2hqnqn = fQTPC2hCos*(tpc_qcos*tpc_qcos-tpc_qsin*tpc_qsin)+2*fQTPC2hSin*tpc_qcos*tpc_qsin;
+    double tC4 = (tpc_qsqr*tpc_qsqr + tpc_q2hsqr - 2*req2hqnqn - 2*(2*tpc_qsqr*(tpc_qmul-2)-tpc_qmul*(tpc_qmul-3)))/mm1m2m3;
+    double tDC4 = pQ*tpc_qsqr -q2nQnQn -pnQnQ2n -2*(tpc_qmul-1)*pQ -2*mq*(tpc_qsqr-tpc_qmul+3) +6*(qcos*tpc_qcos+qsin*tpc_qsin) +(q2hcos*fQTPC2hCos+q2hsin*fQTPC2hSin);
+    tDC4 /= mpm3mqm1m2;
+    c4->Fill( pt, tC4, mm1m2m3 );
+    dc4->Fill( pt, tDC4, mpm3mqm1m2 );
+    c2c4->Fill( pt, tC2*tC4, mm1*mm1m2m3 );
+    c2dc4->Fill( pt, tC2*tDC4, mm1*mpm3mqm1m2 );
+    c4dc2->Fill( pt, tC4*tDC2, mm1m2m3*mpmmq );
+    c4dc4->Fill( pt, tC4*tDC4, mm1m2m3*mpm3mqm1m2 );
+    dc2dc4->Fill( pt, tDC2*tDC4, mpmmq*mpm3mqm1m2 );
+  }
+  // clean for next event
+  ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_qCos" ))->Reset();
+  ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_qSin" ))->Reset();
+  ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_q2hCos" ))->Reset();
+  ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_q2hSin" ))->Reset();
+  ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_pCos" ))->Reset();
+  ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_pSin" ))->Reset();
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::QCStoreDecayVn(TString name) {
+  // getting transients
+  TProfile2D *pCos = ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_pCos" ));
+  TProfile2D *pSin = ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_pSin" ));
+  TProfile2D *qCos = ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_qCos" ));
+  TProfile2D *qSin = ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_qSin" ));
+  TProfile2D *q2hCos = ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_q2hCos" ));
+  TProfile2D *q2hSin = ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_q2hSin" ));
+  if(fDebug) {
+    printf("**QCStoreTrackVn( %s )\n",name.Data());
+    printf(" Read %.0f entries in p set and %.0f entries in q set\n",pCos->GetEntries(),qCos->GetEntries());
+    printf(" pCos[5][5] %.16f | pSin[5][5] %.16f \n", pCos->GetBinContent(5,5), pSin->GetBinContent(5,5));
+    printf(" qCos[5][5] %.16f | qSin[5][5] %.16f \n", qCos->GetBinContent(5,5), qSin->GetBinContent(5,5));
+    printf(" q2hCos[5][5] %.16f | q2hSin[5][5] %.16f \n", q2hCos->GetBinContent(5,5), q2hSin->GetBinContent(5,5));
+  }
+  // filling {2} and {4} correlator
+  TProfile2D *c2 = ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_C2" ));
+  TProfile2D *c4 = ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_C4" ));
+  TProfile2D *dc2 = ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_DC2" ));
+  TProfile2D *dc4 = ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_DC4" ));
+  TProfile2D *c2c4 = ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_C2C4" ));
+  TProfile2D *c2dc2 = ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_C2DC2" ));
+  TProfile2D *c2dc4 = ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_C2DC4" ));
+  TProfile2D *c4dc2 = ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_C4DC2" ));
+  TProfile2D *c4dc4 = ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_C4DC4" ));
+  TProfile2D *dc2dc4 = ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_DC2DC4" ));
+  double tpc_qcos = fQTPCACos + fQTPCCCos;
+  double tpc_qsin = fQTPCASin + fQTPCCSin;
+  double tpc_qsqr = tpc_qcos*tpc_qcos + tpc_qsin*tpc_qsin;
+  double tpc_q2hsqr = fQTPC2hCos*fQTPC2hCos + fQTPC2hSin*fQTPC2hSin;
+  double tpc_qmul = fQTPCA + fQTPCC;
+  int n = c2->GetNbinsX();
+  int m = c2->GetNbinsY();
+  for(int i=1; i!=n+1; ++i) {
+    double pt = c2->GetXaxis()->GetBinCenter( i );
+    for(int j=1; j!=m+1; ++j) {
+      double ms = c2->GetYaxis()->GetBinCenter( j );
+      int k = pCos->GetBin(i,j);
+      double mp = pCos->GetBinEntries( k );
+      if( mp<1 ) { if(fDebug>2) printf(" bin %d,%d:: mp (%.16f) < 1!\n",i,j,mp); continue; }
+      double mm1 = tpc_qmul*(tpc_qmul-1);
+      if( mm1<1e-100 ) { if(fDebug>2) printf(" bin %d,%d:: mm1<1e-100!\n",i,j); continue; }
+      double mq = qCos->GetBinEntries( k );
+      double mpmmq = mp*tpc_qmul-mq;
+      if( mpmmq<1e-100 )  { if(fDebug>2) printf(" bin %d,%d:: mpmmq<1e-100!\n",i,j); continue; }
+      double pcos = pCos->GetBinContent( i,j )*mp;
+      double psin = pSin->GetBinContent( i,j )*mp;
+      double qcos = qCos->GetBinContent( i,j )*mq;
+      double qsin = qSin->GetBinContent( i,j )*mq;
+      double q2hcos = q2hCos->GetBinContent( i,j )*mq;
+      double q2hsin = q2hSin->GetBinContent( i,j )*mq;
+      double pQ = pcos*tpc_qcos+psin*tpc_qsin;
+      double q2nQnQn = (qcos*tpc_qcos + qsin*tpc_qsin)*tpc_qcos + (qsin*tpc_qcos-qcos*tpc_qsin)*tpc_qsin;
+      double pnQnQ2n = (pcos*tpc_qcos - psin*tpc_qsin)*fQTPC2hCos + (psin*tpc_qcos+pcos*tpc_qsin)*fQTPC2hSin;
+      double tC2 = (tpc_qsqr-tpc_qmul)/mm1;
+      double tDC2 = (pQ-mq)/mpmmq;
+      c2->Fill( pt, ms, tC2, mm1 );
+      dc2->Fill( pt, ms, tDC2, mpmmq );
+      c2dc2->Fill( pt, ms, tC2*tDC2, mm1*mpmmq );
+      double mm1m2m3 = tpc_qmul*(tpc_qmul-1)*(tpc_qmul-2)*(tpc_qmul-3);
+      if(mm1m2m3<1e-100) continue;
+      double mpm3mqm1m2 = (mp*tpc_qmul-3*mq)*(tpc_qmul-1)*(tpc_qmul-2);
+      if(mpm3mqm1m2<1e-100) continue;
+      double req2hqnqn = fQTPC2hCos*(tpc_qcos*tpc_qcos-tpc_qsin*tpc_qsin)+2*fQTPC2hSin*tpc_qcos*tpc_qsin;
+      double tC4 = (tpc_qsqr*tpc_qsqr + tpc_q2hsqr - 2*req2hqnqn - 2*(2*tpc_qsqr*(tpc_qmul-2)-tpc_qmul*(tpc_qmul-3)))/mm1m2m3;
+      double tDC4 = pQ*tpc_qsqr -q2nQnQn -pnQnQ2n -2*(tpc_qmul-1)*pQ -2*mq*(tpc_qsqr-tpc_qmul+3) +6*(qcos*tpc_qcos+qsin*tpc_qsin) +(q2hcos*fQTPC2hCos+q2hsin*fQTPC2hSin);
+      tDC4 /= mpm3mqm1m2;
+      c4->Fill( pt, ms, tC4, mm1m2m3 );
+      dc4->Fill( pt, ms, tDC4, mpm3mqm1m2 );
+      c2c4->Fill( pt, ms, tC2*tC4, mm1*mm1m2m3 );
+      c2dc4->Fill( pt, ms, tC2*tDC4, mm1*mpm3mqm1m2 );
+      c4dc2->Fill( pt, ms, tC4*tDC2, mm1m2m3*mpmmq );
+      c4dc4->Fill( pt, ms, tC4*tDC4, mm1m2m3*mpm3mqm1m2 );
+      dc2dc4->Fill( pt, ms, tDC2*tDC4, mpmmq*mpm3mqm1m2 );
+    }
+  }
+  // clean for next event
+  ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_qCos" ))->Reset();
+  ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_qSin" ))->Reset();
+  ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_q2hCos" ))->Reset();
+  ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_q2hSin" ))->Reset();
+  ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_pCos" ))->Reset();
+  ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_pSin" ))->Reset();
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::FillTrackVn(TString name,Double_t pt,Double_t phi,Double_t eta,Int_t fid) {
+  // reading vze qm
+  Double_t vzec_qmcos = fQVZECCos/fQVZEC;
+  Double_t vzec_qmsin = fQVZECSin/fQVZEC;
+  Double_t vzea_qmcos = fQVZEACos/fQVZEA;
+  Double_t vzea_qmsin = fQVZEASin/fQVZEA;
+  // reading tpc qm
+  Double_t tpcc_qmcos = fQTPCCCos/fQTPCC;
+  Double_t tpcc_qmsin = fQTPCCSin/fQTPCC;
+  Double_t tpca_qmcos = fQTPCACos/fQTPCA;
+  Double_t tpca_qmsin = fQTPCASin/fQTPCA;
+  Double_t qtpc = fQTPCA+fQTPCC;
+  Double_t tpc_qmcos = (fQTPCACos+fQTPCCCos)/qtpc;
+  Double_t tpc_qmsin = (fQTPCASin+fQTPCCSin)/qtpc;
+  // computing u
+  Double_t cosn = TMath::Cos(fHarmonic*phi);
+  Double_t sinn = TMath::Sin(fHarmonic*phi);
+  Double_t cos2n = TMath::Cos(2.0*fHarmonic*phi);
+  Double_t sin2n = TMath::Sin(2.0*fHarmonic*phi);
+  // Scalar Product
+  Double_t uQ, uQa, uQc, qaqc;
+  // filling flow with vze
+  qaqc = (vzea_qmcos*vzec_qmcos + vzea_qmsin*vzec_qmsin);
+  uQa = (cosn*vzea_qmcos + sinn*vzea_qmsin);
+  uQc = (cosn*vzec_qmcos + sinn*vzec_qmsin);
+  Double_t cosmc = TMath::Cos( fHarmonic*GetMCDPHI(phi) );
+  if(fReadMC) {
+    ((TH2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "MC_COSNDPHI_uQVZEA" ))->Fill( cosmc,uQa );
+    ((TH2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "MC_COSNDPHI_uQVZEC" ))->Fill( cosmc,uQc );
+    ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "MC_COSNDPHI" ))->Fill( pt,cosmc );
+  }
+  Double_t qaqt = (vzea_qmcos*tpc_qmcos + vzea_qmsin*tpc_qmsin);
+  Double_t qcqt = (vzec_qmcos*tpc_qmcos + vzec_qmsin*tpc_qmsin);
+  ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uVZEA" ))->Fill( pt,uQa,fQVZEA );
+  ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uVZEC" ))->Fill( pt,uQc,fQVZEC );
+  ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_VZEAVZEC" ))->Fill( pt,qaqc,fQVZEA*fQVZEC );
+  ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_VZEATPC" ))->Fill( pt,qaqt,fQVZEA*qtpc );
+  ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_VZECTPC" ))->Fill( pt,qcqt,fQVZEC*qtpc );
+  // error vze
+  ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uVZEAuVZEC" ))->Fill( pt,uQa*uQc,fQVZEA*fQVZEC );
+  ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uVZEAVZEAVZEC" ))->Fill( pt,uQa*qaqc,fQVZEA*fQVZEA*fQVZEC );
+  ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uVZECVZEAVZEC" ))->Fill( pt,uQc*qaqc,fQVZEC*fQVZEA*fQVZEC );
+  // filling flow with tpc
+  qaqc = (tpca_qmcos*tpcc_qmcos + tpca_qmsin*tpcc_qmsin);
+  if(eta<0) {
+    uQ = (cosn*tpca_qmcos + sinn*tpca_qmsin);
+    ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uTPCA" ))->Fill( pt,uQ,fQTPCA );
+    ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uTPCATPCATPCC" ))->Fill( pt,uQ*qaqc,fQTPCA*fQTPCA*fQTPCC );
+    if(fReadMC) {
+      ((TH2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "MC_COSNDPHI_uQTPCA" ))->Fill( cosmc,uQ );
+    }
+  } else {
+    uQ = (cosn*tpcc_qmcos + sinn*tpcc_qmsin);
+    ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uTPCC" ))->Fill( pt,uQ,fQTPCC );
+    ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uTPCCTPCATPCC" ))->Fill( pt,uQ*qaqc,fQTPCC*fQTPCA*fQTPCC );
+    if(fReadMC) {
+      ((TH2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "MC_COSNDPHI_uQTPCC" ))->Fill( cosmc,uQ );
+    }
+  }
+  ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_TPCATPCC" ))->Fill( pt,qaqc,fQTPCA*fQTPCC );
+  // QC
+  ((TH1D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_HistPt_P" ))->Fill( pt );
+  ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_pCos" ))->Fill( pt, cosn, 1.0 );
+  ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_pSin" ))->Fill( pt, sinn, 1.0 );
+  if(InQTPC(fid)) {
+    ((TH1D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_HistPt_Q" ))->Fill( pt );
+    ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_qCos" ))->Fill( pt, cosn, 1.0 );
+    ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_qSin" ))->Fill( pt, sinn, 1.0 );
+    ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_q2hCos" ))->Fill( pt, cos2n, 1.0 );
+    ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_q2hSin" ))->Fill( pt, sin2n, 1.0 );
+  }
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::FillDecayVn(TString name,Double_t ms,Double_t pt,Double_t phi,Double_t eta,Int_t fid1,Int_t fid2) {
+  // reading vze qm
+  Double_t vzec_qmcos = fQVZECCos/fQVZEC;
+  Double_t vzec_qmsin = fQVZECSin/fQVZEC;
+  Double_t vzea_qmcos = fQVZEACos/fQVZEA;
+  Double_t vzea_qmsin = fQVZEASin/fQVZEA;
+  // reading tpc qm
+  Double_t tpcc_qmcos = fQTPCCCos/fQTPCC;
+  Double_t tpcc_qmsin = fQTPCCSin/fQTPCC;
+  Double_t tpca_qmcos = fQTPCACos/fQTPCA;
+  Double_t tpca_qmsin = fQTPCASin/fQTPCA;
+  Double_t qtpc = fQTPCA+fQTPCC;
+  Double_t tpc_qmcos = (fQTPCACos+fQTPCCCos)/qtpc;
+  Double_t tpc_qmsin = (fQTPCASin+fQTPCCSin)/qtpc;
+  // computing u
+  Double_t cosn = TMath::Cos(fHarmonic*phi);
+  Double_t sinn = TMath::Sin(fHarmonic*phi);
+  Double_t cos2n = TMath::Cos(2.0*fHarmonic*phi);
+  Double_t sin2n = TMath::Sin(2.0*fHarmonic*phi);
+  // Scalar Product
+  Double_t uQ, uQa, uQc, qaqc;
+  // filling flow with vze
+  qaqc = (vzea_qmcos*vzec_qmcos + vzea_qmsin*vzec_qmsin);
+  uQa = (cosn*vzea_qmcos + sinn*vzea_qmsin);
+  uQc = (cosn*vzec_qmcos + sinn*vzec_qmsin);
+  Double_t cosmc = TMath::Cos( fHarmonic*GetMCDPHI(phi) );
+  if(fReadMC) {
+    ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "MC_COSNDPHI" ))->Fill( pt,ms,cosmc );
+  }
+  Double_t qaqt = (vzea_qmcos*tpc_qmcos + vzea_qmsin*tpc_qmsin);
+  Double_t qcqt = (vzec_qmcos*tpc_qmcos + vzec_qmsin*tpc_qmsin);
+  ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uVZEA" ))->Fill( pt,ms,uQa,fQVZEA );
+  ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uVZEC" ))->Fill( pt,ms,uQc,fQVZEC );
+  ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_VZEAVZEC" ))->Fill( pt,ms,qaqc,fQVZEA*fQVZEC );
+  ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_VZEATPC" ))->Fill( pt,ms,qaqt,fQVZEA*qtpc );
+  ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_VZECTPC" ))->Fill( pt,ms,qcqt,fQVZEC*qtpc );
+  // error vze
+  ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uVZEAuVZEC" ))->Fill( pt,ms,uQa*uQc,fQVZEA*fQVZEC );
+  ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uVZEAVZEAVZEC" ))->Fill( pt,ms,uQa*qaqc,fQVZEA*fQVZEA*fQVZEC );
+  ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uVZECVZEAVZEC" ))->Fill( pt,ms,uQc*qaqc,fQVZEC*fQVZEA*fQVZEC );
+  // filling flow with tpc
+  qaqc = (tpca_qmcos*tpcc_qmcos + tpca_qmsin*tpcc_qmsin);
+  if(eta<0) {
+    uQ = (cosn*tpca_qmcos + sinn*tpca_qmsin);
+    ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uTPCA" ))->Fill( pt,ms,uQ,fQTPCA );
+    ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uTPCATPCATPCC" ))->Fill( pt,ms,uQ*qaqc,fQTPCA*fQTPCA*fQTPCC );
+  } else {
+    uQ = (cosn*tpcc_qmcos + sinn*tpcc_qmsin);
+    ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uTPCC" ))->Fill( pt,ms,uQ,fQTPCC );
+    ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uTPCCTPCATPCC" ))->Fill( pt,ms,uQ*qaqc,fQTPCC*fQTPCA*fQTPCC );
+  }
+  ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_TPCATPCC" ))->Fill( pt,ms,qaqc,fQTPCA*fQTPCC );
+  // QC
+  ((TH2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_HistPt_P" ))->Fill( pt,ms );
+  ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_pCos" ))->Fill( pt, ms, cosn, 1.0 );
+  ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_pSin" ))->Fill( pt, ms, sinn, 1.0 );
+  if(InQTPC(fid1)||InQTPC(fid2)) {
+    ((TH2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_HistPt_Q" ))->Fill( pt,ms );
+    ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_qCos" ))->Fill( pt, ms, cosn, 1.0 );
+    ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_qSin" ))->Fill( pt, ms, sinn, 1.0 );
+    ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_q2hCos" ))->Fill( pt, ms, cos2n, 1.0 );
+    ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_q2hSin" ))->Fill( pt, ms, sin2n, 1.0 );
+  }
+}
+//=======================================================================
+Bool_t AliAnalysisTaskFlowStrange::InQTPC(Int_t id) {
+  Bool_t ret = kFALSE;
+  for(int i=0; i!=fQTPCA_nTracks; ++i)
+    if(fQTPCA_fID[i]==id) {
+      ret=kTRUE;
+      break;
+    }
+  if(ret) return kTRUE;
+  for(int i=0; i!=fQTPCC_nTracks; ++i)
+    if(fQTPCC_fID[i]==id) {
+      ret=kTRUE;
+      break;
+    }
+  return ret;
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::ComputeTrackVn(TString name) {
+  TProfile *uQa, *uQc, *qaqc, *uQaqaqc, *uQcqaqc;
+  TArrayD *pasww, *pbsww, *pcsww;
+  //ScalarProducr TPC
+  printf("<<%s>> SP TPC\n",name.Data());
+  uQa  = (TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uTPCA" );
+  uQc  = (TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uTPCC" );
+  qaqc = (TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_TPCATPCC" );
+  uQaqaqc = (TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uTPCATPCATPCC" );
+  uQcqaqc = (TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uTPCCTPCATPCC" );
+  pasww = uQa->GetBinSumw2();
+  pbsww = uQc->GetBinSumw2();
+  pcsww = qaqc->GetBinSumw2();
+  //
+  TH1D *sptpca = (TH1D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_vnTPCA" );
+  TH1D *sptpcc = (TH1D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_vnTPCC" );
+  TH1D *sptpcaa = (TH1D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_vnTPCAA" );
+  //
+  for(Int_t i=1; i!=sptpcaa->GetNbinsX()+1; ++i) {
+    sptpcaa->SetBinContent(i,0);
+    sptpcaa->SetBinError(i,0);
+    sptpca->SetBinContent(i,0);
+    sptpca->SetBinError(i,0);
+    sptpcc->SetBinContent(i,0);
+    sptpcc->SetBinError(i,0);
+    double a = uQa->GetBinContent(i);
+    double b = uQc->GetBinContent(i);
+    double c = qaqc->GetBinContent(i);
+    //if(TMath::AreEqualAbs(a,0,1e-100)) continue;
+    //if(TMath::AreEqualAbs(b,0,1e-100)) continue;
+    if(c<1e-100) continue;
+    // nominal sptpca
+    double vna = a/TMath::Sqrt(c);
+    sptpca->SetBinContent(i,vna);
+    // nominal sptpcc
+    double vnc = b/TMath::Sqrt(c);
+    sptpcc->SetBinContent(i,vnc);
+    // nominal sptpc
+    double vn = (vna + vnc)/2.0;
+    sptpcaa->SetBinContent(i,vn);
+    // errors
+    double asw = uQa->GetBinEntries(i);
+    double bsw = uQc->GetBinEntries(i);
+    double csw = qaqc->GetBinEntries(i);
+    if(asw<1e-100||bsw<1e-100||csw<1e-100) continue;
+    double asww = pasww->At(i);
+    double bsww = pbsww->At(i);
+    double csww = pcsww->At(i);
+    if(asww<1e-100||bsww<1e-100||csww<1e-100) continue;
+    if((1<1e-100+asww/asw/asw)||(1<1e-100+bsww/bsw/bsw)||(1<1e-100+csww/csw/csw)) continue;
+    if(TMath::AreEqualAbs(asww,asw*asw,1e-100)||
+       TMath::AreEqualAbs(bsww,bsw*bsw,1e-100)||
+       TMath::AreEqualAbs(csww,csw*csw,1e-100)) continue;
+    double ac = uQaqaqc->GetBinContent(i);
+    double bc = uQcqaqc->GetBinContent(i);
+    double acsw = uQaqaqc->GetBinEntries(i);
+    double bcsw = uQcqaqc->GetBinEntries(i);
+    double ea = uQa->GetBinError(i)*TMath::Sqrt(asww)/asw/TMath::Sqrt(1-asww/asw/asw);
+    double eb = uQc->GetBinError(i)*TMath::Sqrt(bsww)/bsw/TMath::Sqrt(1-bsww/bsw/bsw);
+    double ec = qaqc->GetBinError(i)*TMath::Sqrt(csww)/csw/TMath::Sqrt(1-csww/csw/csw);
+    //printf("%d >> ea^2 %.16f |||| asww %.16f | asw %.16f | 1-asww/asw/asw %.16f \n", i,ea, asww, asw, 1-asww/asw/asw);
+    //printf("%d >> eb^2 %.16f |||| bsww %.16f | bsw %.16f | 1-bsww/bsw/bsw %.16f \n", i,eb, bsww, bsw, 1-bsww/bsw/bsw);
+    //printf("%d >> ec^2 %.16f |||| csww %.16f | csw %.16f | 1-csww/csw/csw %.16f \n", i,ec, csww, csw, 1-csww/csw/csw);
+    double ebc = (bc-b*c)/(1-bcsw/bsw/csw)*bcsw/bsw/csw;
+    double eac = (ac-a*c)/(1-acsw/asw/csw)*acsw/asw/csw;
+    double evna = 1.0/TMath::Abs(c) * ( ea*ea + vna*vna/TMath::Abs(c)/4.0*ec*ec - vna/TMath::Sqrt(c)*eac );
+    double evnc = 1.0/TMath::Abs(c) * ( eb*eb + vnc*vnc/TMath::Abs(c)/4.0*ec*ec - vnc/TMath::Sqrt(c)*ebc );
+    //printf("%d >> evna^2 %.16f |||| ea %.16f | ec %.16f | eac %.16f | c %.16f\n", i,evna, ea, ec, eac,c);
+    //printf("%d >> evnc^2 %.16f |||| eb %.16f | ec %.16f | ebc %.16f | c %.16f\n", i,evnc, eb, ec, ebc,c);
+    if(evna>1e-100) evna = TMath::Sqrt(evna); else evna=0;
+    if(evnc>1e-100) evnc = TMath::Sqrt(evnc); else evnc=0;
+    sptpca->SetBinError(i,evna);
+    sptpcc->SetBinError(i,evnc);
+    sptpcaa->SetBinError(i,TMath::Sqrt(evna*evna+evnc*evnc)/2.0);
+  }
+  //ScalarProduct VZE
+  printf("<<%s>> SP VZE\n",name.Data());
+  double cvzea2 = ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("ChiSquaredVZEA"))->GetBinContent( 1 );
+  double cvzec2 = ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("ChiSquaredVZEC"))->GetBinContent( 1 );
+  if( TMath::AreEqualAbs(cvzea2+cvzec2,0,1e-100) ) return;
+  uQa  = (TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uVZEA" );
+  uQc  = (TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uVZEC" );
+  qaqc = (TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_VZEAVZEC" );
+  uQaqaqc = (TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uVZEAVZEAVZEC" );
+  uQcqaqc = (TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uVZECVZEAVZEC" );
+  pasww = uQa->GetBinSumw2();
+  pbsww = uQc->GetBinSumw2();
+  pcsww = qaqc->GetBinSumw2();
+  //
+  TProfile *qaqt = (TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_VZEATPC" );
+  TProfile *qcqt = (TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_VZECTPC" );
+  TProfile *uQauQc  = (TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uVZEAuVZEC" );
+  //
+  TH1D *spvzea = (TH1D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_vnVZEA" );
+  TH1D *spvzec = (TH1D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_vnVZEC" );
+  TH1D *spvzega = (TH1D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_vnVZEGA" );
+  TH1D *spvzewa = (TH1D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_vnVZEWA" );
+  for(Int_t i=1; i!=spvzewa->GetNbinsX()+1; ++i) {
+    spvzega->SetBinContent(i,0);
+    spvzega->SetBinError(i,0);
+    spvzewa->SetBinContent(i,0);
+    spvzewa->SetBinError(i,0);
+    spvzea->SetBinContent(i,0);
+    spvzea->SetBinError(i,0);
+    spvzec->SetBinContent(i,0);
+    spvzec->SetBinError(i,0);
+    double a = uQa->GetBinContent(i);
+    double b = uQc->GetBinContent(i);
+    double c = qaqc->GetBinContent(i);
+    double at = qaqt->GetBinContent(i);
+    double bt = qcqt->GetBinContent(i);
+    if(TMath::AreEqualAbs(a,0,1e-100)) continue;
+    if(TMath::AreEqualAbs(b,0,1e-100)) continue;
+    if(TMath::AreEqualAbs(c,0,1e-100)) continue;
+    if(TMath::AreEqualAbs(at,0,1e-100)) continue;
+    if(TMath::AreEqualAbs(bt,0,1e-100)) continue;
+    // nominal spvzea
+    double aa = c*at/bt;
+    if(aa<1e-100) continue;
+    double vna = a/TMath::Sqrt(aa);
+    spvzea->SetBinContent(i,vna);
+    // nominal spvzec
+    double bb = c*bt/at;
+    if(bb<1e-100) continue;
+    double vnc = b/TMath::Sqrt(bb);
+    spvzec->SetBinContent(i,vnc);
+    //nominal spvzewa
+    double vnwa = (cvzea2*vna + cvzec2*vnc) / (cvzea2+cvzec2);
+    spvzewa->SetBinContent(i,vnwa);
+    // nominal spvzega
+    double vnga = a*b/c;
+    if(vnga<1e-100) continue;
+    vnga = TMath::Sqrt(vnga);
+    spvzega->SetBinContent(i,vnga);
+    // errors
+    double asw = uQa->GetBinEntries(i);
+    double bsw = uQc->GetBinEntries(i);
+    double csw = qaqc->GetBinEntries(i);
+    if(asw<1e-100||bsw<1e-100||csw<1e-100) continue;
+    double asww = pasww->At(i);
+    double bsww = pbsww->At(i);
+    double csww = pcsww->At(i);
+    if(asww<1e-100||bsww<1e-100||csww<1e-100) continue;
+    if((1<asww/asw/asw)||(1<bsww/bsw/bsw)||(1<csww/csw/csw)) continue;
+    double ab = uQauQc->GetBinContent(i);
+    double ac = uQaqaqc->GetBinContent(i);
+    double bc = uQcqaqc->GetBinContent(i);
+    double absw = uQauQc->GetBinEntries(i);
+    double acsw = uQaqaqc->GetBinEntries(i);
+    double bcsw = uQcqaqc->GetBinEntries(i);
+    if(TMath::AreEqualAbs(1,absw/asw/bsw,1e-100)||TMath::AreEqualAbs(1,bcsw/bsw/csw,1e-100)||TMath::AreEqualAbs(1,acsw/asw/csw,1e-100)) continue;
+    double ea = uQa->GetBinError(i)*TMath::Sqrt(asww)/asw/TMath::Sqrt(1-asww/asw/asw);
+    double eb = uQc->GetBinError(i)*TMath::Sqrt(bsww)/bsw/TMath::Sqrt(1-bsww/bsw/bsw);
+    double ec = qaqc->GetBinError(i)*TMath::Sqrt(csww)/csw/TMath::Sqrt(1-csww/csw/csw);
+    double eab = (ab-a*b)/(1-absw/asw/bsw)*absw/asw/bsw;
+    double ebc = (bc-b*c)/(1-bcsw/bsw/csw)*bcsw/bsw/csw;
+    double eac = (ac-a*c)/(1-acsw/asw/csw)*acsw/asw/csw;
+    double nc, nec, neac, nebc;
+    nc = c*at/bt;
+    nec = ec*at/bt;
+    neac = eac*at/bt;
+    nebc = ebc*at/bt;
+    double evna = 1.0/TMath::Abs(nc*nc*nc) * ( nc*nc*ea*ea + a*a/4.0*nec*nec - a*TMath::Abs(nc)*neac*neac );
+    nc = c*bt/at;
+    nec = ec*bt/at;
+    neac = eac*bt/at;
+    nebc = ebc*bt/at;
+    double evnc = 1.0/TMath::Abs(nc*nc*nc) * ( nc*nc*eb*eb + b*b/4.0*nec*nec - b*TMath::Abs(nc)*nebc*nebc );
+    if(evna>1e-100) evna = TMath::Sqrt(evna); else evna=0;
+    if(evnc>1e-100) evnc = TMath::Sqrt(evnc); else evnc=0;
+    spvzea->SetBinError(i,evna);
+    spvzec->SetBinError(i,evnc);
+    double evnwa = TMath::Sqrt( cvzea2*cvzea2*evna*evna + cvzec2*cvzec2*evnc*evnc )/(cvzea2+cvzec2);
+    spvzewa->SetBinError(i,evnwa);
+    double evnga = 0.25/c/c * ( TMath::Abs(b*c/a)*ea*ea + TMath::Abs(a*c/b)*eb*eb + TMath::Abs(a*b/c)*ec*ec + 2*c*eab - 2*a*ebc - 2*b*eac );
+    if(evnga>1e-100) evnga = TMath::Sqrt(evnga); else evnga=0;
+    spvzega->SetBinError(i,evnga);
+  }
+  printf("<<%s>> QC TPC\n",name.Data());
+  //Qcumulants
+  TH1D *resC2 = (TH1D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_Cum2" );
+  TH1D *resC4 = (TH1D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_Cum4" );
+  TH1D *resDC2= (TH1D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_DCum2" );
+  TH1D *resDC4= (TH1D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_DCum4" );
+  TH1D *resvn2= (TH1D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_vn2" );
+  TH1D *resvn4= (TH1D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_vn4" );
+  //correlators
+  TProfile *c2 = ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_C2" ));
+  TProfile *c4 = ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_C4" ));
+  TProfile *dc2 = ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_DC2" ));
+  TProfile *dc4 = ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_DC4" ));
+  TProfile *c2c4 = ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_C2C4" ));
+  TProfile *c2dc2 = ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_C2DC2" ));
+  TProfile *c2dc4 = ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_C2DC4" ));
+  TProfile *c4dc2 = ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_C4DC2" ));
+  TProfile *c4dc4 = ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_C4DC4" ));
+  TProfile *dc2dc4 = ((TProfile*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_DC2DC4" ));
+  TArrayD *c2sww = c2->GetBinSumw2();
+  TArrayD *c4sww = c4->GetBinSumw2();
+  TArrayD *dc2sww= dc2->GetBinSumw2();
+  TArrayD *dc4sww= dc4->GetBinSumw2();
+  for(Int_t i=1; i!=resvn2->GetNbinsX()+1; ++i) {
+    // cn{2}
+    double v_c2sw = c2->GetBinEntries(i);
+    if(v_c2sw<1e-100) continue;
+    double v_c2sww = c2sww->At(i);
+    double v_c2 = c2->GetBinContent(i);
+    double e_c2 = TMath::Sqrt(v_c2sww)/v_c2sw*c2->GetBinError(i);
+    double cum2 = v_c2;
+    double ecum2= e_c2;
+    resC2->SetBinContent(i, cum2 );
+    resC2->SetBinError(i, ecum2 );
+    // cn{4}
+    double v_c4sw = c4->GetBinEntries(i);
+    if(v_c4sw<1e-100) continue;
+    double v_c4sww = c4sww->At(i);
+    double v_c4 = c4->GetBinContent(i);
+    double e_c4 = TMath::Sqrt(v_c4sww)/v_c4sw*c4->GetBinError(i);
+    double v_c2c4 = c2c4->GetBinContent(i);
+    double v_c2c4sw = c2c4->GetBinEntries(i);
+    if(TMath::AreEqualAbs(v_c2c4sw/v_c2sw/v_c4sw,1,1e-100)) continue;
+    double covc2c4 = v_c2c4sw/v_c2sw/v_c4sw*(v_c2c4 - v_c2*v_c4)/(1-v_c2c4sw/v_c2sw/v_c4sw);
+    double cum4 = v_c4 - 2*v_c2*v_c2;
+    double ecum4= 16.0*v_c2*v_c2*e_c2*e_c2 + e_c4*e_c4 - 8.0*v_c2*covc2c4;
+    if(ecum4<1e-100) continue;
+    ecum4 = TMath::Sqrt( ecum4 );
+    resC4->SetBinContent(i, cum4 );
+    resC4->SetBinError(i, ecum4 );
+    // dn{2}
+    double v_dc2sw = dc2->GetBinEntries(i);
+    if(v_dc2sw<1) continue;
+    double v_dc2 = dc2->GetBinContent(i);
+    double v_dc2sww = dc2sww->At(i);
+    double e_dc2 = TMath::Sqrt(v_dc2sww)/v_dc2sw*dc2->GetBinError(i);
+    double dcum2 = v_dc2;
+    double edcum2= e_dc2;
+    resDC2->SetBinContent(i, dcum2 );
+    resDC2->SetBinError(i, edcum2 );
+    // v2{2}
+    if(v_c2<1e-100) continue;
+    double dv22 = v_dc2/TMath::Sqrt(v_c2);
+    double v_c2dc2 = c2dc2->GetBinContent(i);
+    double v_c2dc2sw = c2dc2->GetBinEntries(i);
+    if(TMath::AreEqualAbs(v_c2dc2sw/v_c2sw/v_dc2sw,1,1e-100)) continue;
+    double covc2dc2 = v_c2dc2sw/v_c2sw/v_dc2sw*(v_c2dc2 - v_c2*v_dc2)/(1-v_c2dc2sw/v_c2sw/v_dc2sw);
+    double edv22 = 0.25/v_c2/v_c2/v_c2*(v_dc2*v_dc2*e_c2*e_c2 + 4*v_c2*v_c2*e_dc2*e_dc2 - 4*v_c2*v_dc2*covc2dc2);
+    //printf("%d >> dv22 %.16f || edv22^2 %.16f |||| v_c2dc2 %.16f | v_c2dc2sw %.16f | covc2dc2 %.16f \n", i,dv22,edv22,v_c2dc2,v_c2dc2sw,covc2dc2);
+    if(edv22<1e-100) continue;
+    edv22 = TMath::Sqrt(edv22);
+    resvn2->SetBinContent(i,dv22);
+    resvn2->SetBinError(i,edv22);
+    // dn{4}
+    double v_dc4sw = dc4->GetBinEntries(i);
+    if(v_dc4sw<1) continue;
+    double v_dc4 = dc4->GetBinContent(i);
+    double v_dc4sww = dc4sww->At(i);
+    double e_dc4 = TMath::Sqrt(v_dc4sww)/v_dc4sw*dc4->GetBinError(i);
+    double dcum4 = v_dc4 - 2*v_c2*v_dc2;
+    double v_c2dc4 = c2dc4->GetBinContent(i);
+    double v_c2dc4sw = c2dc4->GetBinEntries(i);
+    if(TMath::AreEqualAbs(v_c2dc4sw/v_c2sw/v_dc4sw,1,1e-100)) continue;
+    double covc2dc4 = v_c2dc4sw/v_c2sw/v_dc4sw*(v_c2dc4 - v_c2*v_dc4)/(1-v_c2dc4sw/v_c2sw/v_dc4sw);
+    double v_dc2dc4 = dc2dc4->GetBinContent(i);
+    double v_dc2dc4sw = dc2dc4->GetBinEntries(i);
+    if(TMath::AreEqualAbs(v_dc2dc4sw/v_dc2sw/v_dc4sw,1,1e-100)) continue;
+    double covdc2dc4 = v_dc2dc4sw/v_dc2sw/v_dc4sw*(v_dc2dc4 - v_dc2*v_dc4)/(1-v_dc2dc4sw/v_dc2sw/v_dc4sw);
+    double edcum4= ( +4.0*v_dc2*v_dc2*e_c2*e_c2
+		     +4.0*v_c2*v_c2*e_dc2*e_dc2
+		     +e_dc4*e_dc4
+		     +8.0*v_c2*v_dc2*covc2dc2
+		     -4.0*v_dc2*covc2dc4
+		     -4.0*v_c2*covdc2dc4 );
+    if(edcum4<1e-100) continue;
+    edcum4 = TMath::Sqrt(edcum4);
+    resDC4->SetBinContent(i, dcum4 );
+    resDC4->SetBinError(i, edcum4 );
+    // v2{4}
+    if(cum4>1e-100) continue;
+    double dv24 = -dcum4/TMath::Power(-cum4,0.75);
+    double dterm1 = 2*v_c2*v_c2*v_dc2 - 3*v_c2*v_dc4 + 2*v_c4*v_dc2;
+    double dterm2 = 9.0/16.0*dcum4*dcum4;
+    double dterm3 = 4.0*v_c2*v_c2*cum4*cum4;
+    double dterm4 = cum4*cum4;
+    double dterm5 = -3.0/2.0*dcum4*dterm1;
+    double dterm6 = -4.0*v_c2*cum4*dterm1;
+    double dterm7 = -2.0*cum4*dterm1;
+    double dterm8 = 3.0*v_c2*cum4*dcum4;
+    double dterm9 = 3.0/2.0*cum4*dcum4;
+    double dterm10= 4*v_c2*cum4*cum4;
+    double v_c4dc2 = c4dc2->GetBinContent(i);
+    double v_c4dc2sw = c4dc2->GetBinEntries(i);
+    if(TMath::AreEqualAbs(v_c4dc2sw/v_c4sw/v_dc2sw,1,1e-100)) continue;
+    double covc4dc2 = v_c4dc2sw/v_c4sw/v_dc2sw*(v_c4dc2 - v_c4*v_dc2)/(1-v_c4dc2sw/v_c4sw/v_dc2sw);
+    double v_c4dc4 = c4dc4->GetBinContent(i);
+    double v_c4dc4sw = c4dc4->GetBinEntries(i);
+    if(TMath::AreEqualAbs(v_c4dc4sw/v_c4sw/v_dc4sw,1,1e-100)) continue;
+    double covc4dc4 = v_c4dc4sw/v_c4sw/v_dc4sw*(v_c4dc4 - v_c4*v_dc4)/(1-v_c4dc4sw/v_c4sw/v_dc4sw);
+    double edv24= 1.0/TMath::Power(-cum4,3.5)*(+dterm1*dterm1*e_c2*e_c2
+					       +dterm2*e_c4*e_c4
+					       +dterm3*e_dc2*e_dc2
+					       +dterm4*e_dc4*e_dc4
+					       -dterm5*covc2c4
+					       -dterm6*covc2dc2
+					       +dterm7*covc2dc4
+					       +dterm8*covc4dc2
+					       -dterm9*covc4dc4
+					       -dterm10*covdc2dc4);
+    if(edv24<1e-100) continue;
+    edv24 = TMath::Sqrt(edv24);
+    resvn4->SetBinContent(i,dv24);
+    resvn4->SetBinError(i,edv24);
+  }
+}
+//=======================================================================
+void AliAnalysisTaskFlowStrange::ComputeDecayVn(TString name) {
+  TProfile2D *uQa, *uQc, *qaqc, *uQaqaqc, *uQcqaqc;
+  TArrayD *pasww, *pbsww, *pcsww;
+  //ScalarProducr TPC
+  printf("<<%s>> SP TPC\n",name.Data());
+  uQa  = (TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uTPCA" );
+  uQc  = (TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uTPCC" );
+  qaqc = (TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_TPCATPCC" );
+  uQaqaqc = (TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uTPCATPCATPCC" );
+  uQcqaqc = (TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uTPCCTPCATPCC" );
+  pasww = uQa->GetBinSumw2();
+  pbsww = uQc->GetBinSumw2();
+  pcsww = qaqc->GetBinSumw2();
+  //
+  TH2D *sptpca = (TH2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_vnTPCA" );
+  TH2D *sptpcc = (TH2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_vnTPCC" );
+  TH2D *sptpcaa = (TH2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_vnTPCAA" );
+  //
+  for(Int_t i=1; i!=sptpcaa->GetNbinsX()+1; ++i) {
+    for(Int_t j=1; j!=sptpcaa->GetNbinsY()+1; ++j) {
+      sptpcaa->SetBinContent(i,j,0);
+      sptpcaa->SetBinError(i,j,0);
+      sptpca->SetBinContent(i,j,0);
+      sptpca->SetBinError(i,j,0);
+      sptpcc->SetBinContent(i,j,0);
+      sptpcc->SetBinError(i,j,0);
+      double a = uQa->GetBinContent(i,j);
+      double b = uQc->GetBinContent(i,j);
+      double c = qaqc->GetBinContent(i,j);
+      //if(TMath::AreEqualAbs(a,0,1e-100)) continue;
+      //if(TMath::AreEqualAbs(b,0,1e-100)) continue;
+      if(c<1e-100) continue;
+      // nominal sptpca
+      double vna = a/TMath::Sqrt(c);
+      sptpca->SetBinContent(i,vna);
+      // nominal sptpcc
+      double vnc = b/TMath::Sqrt(c);
+      sptpcc->SetBinContent(i,vnc);
+      // nominal sptpc
+      double vn = (vna + vnc)/2.0;
+      sptpcaa->SetBinContent(i,vn);
+      // errors
+      int k = sptpcaa->GetBin(i,j);
+      double asw = uQa->GetBinEntries(k);
+      double bsw = uQc->GetBinEntries(k);
+      double csw = qaqc->GetBinEntries(k);
+      if(asw<1e-100||bsw<1e-100||csw<1e-100) continue;
+      double asww = pasww->At(k);
+      double bsww = pbsww->At(k);
+      double csww = pcsww->At(k);
+      if(asww<1e-100||bsww<1e-100||csww<1e-100) continue;
+      if((1<1e-100+asww/asw/asw)||(1<1e-100+bsww/bsw/bsw)||(1<1e-100+csww/csw/csw)) continue;
+      if(TMath::AreEqualAbs(asww,asw*asw,1e-100)||
+	 TMath::AreEqualAbs(bsww,bsw*bsw,1e-100)||
+	 TMath::AreEqualAbs(csww,csw*csw,1e-100)) continue;
+      double ac = uQaqaqc->GetBinContent(i,j);
+      double bc = uQcqaqc->GetBinContent(i,j);
+      double acsw = uQaqaqc->GetBinEntries(k);
+      double bcsw = uQcqaqc->GetBinEntries(k);
+      double ea = uQa->GetBinError(i,j)*TMath::Sqrt(asww)/asw/TMath::Sqrt(1-asww/asw/asw);
+      double eb = uQc->GetBinError(i,j)*TMath::Sqrt(bsww)/bsw/TMath::Sqrt(1-bsww/bsw/bsw);
+      double ec = qaqc->GetBinError(i,j)*TMath::Sqrt(csww)/csw/TMath::Sqrt(1-csww/csw/csw);
+      //printf("%d >> ea^2 %.16f |||| asww %.16f | asw %.16f | 1-asww/asw/asw %.16f \n", i,ea, asww, asw, 1-asww/asw/asw);
+      //printf("%d >> eb^2 %.16f |||| bsww %.16f | bsw %.16f | 1-bsww/bsw/bsw %.16f \n", i,eb, bsww, bsw, 1-bsww/bsw/bsw);
+      //printf("%d >> ec^2 %.16f |||| csww %.16f | csw %.16f | 1-csww/csw/csw %.16f \n", i,ec, csww, csw, 1-csww/csw/csw);
+      double ebc = (bc-b*c)/(1-bcsw/bsw/csw)*bcsw/bsw/csw;
+      double eac = (ac-a*c)/(1-acsw/asw/csw)*acsw/asw/csw;
+      double evna = 1.0/TMath::Abs(c) * ( ea*ea + vna*vna/TMath::Abs(c)/4.0*ec*ec - vna/TMath::Sqrt(c)*eac );
+      double evnc = 1.0/TMath::Abs(c) * ( eb*eb + vnc*vnc/TMath::Abs(c)/4.0*ec*ec - vnc/TMath::Sqrt(c)*ebc );
+      //printf("%d >> evna^2 %.16f |||| ea %.16f | ec %.16f | eac %.16f | c %.16f\n", i,evna, ea, ec, eac,c);
+      //printf("%d >> evnc^2 %.16f |||| eb %.16f | ec %.16f | ebc %.16f | c %.16f\n", i,evnc, eb, ec, ebc,c);
+      if(evna>1e-100) evna = TMath::Sqrt(evna); else evna=0;
+      if(evnc>1e-100) evnc = TMath::Sqrt(evnc); else evnc=0;
+      sptpca->SetBinError(i,j,evna);
+      sptpcc->SetBinError(i,j,evnc);
+      sptpcaa->SetBinError(i,j,TMath::Sqrt(evna*evna+evnc*evnc)/2.0);
+    }
+  }
+  //ScalarProduct VZE
+  printf("<<%s>> SP VZE\n",name.Data());
+  double cvzea2 = ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("ChiSquaredVZEA"))->GetBinContent( 1 );
+  double cvzec2 = ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("ChiSquaredVZEC"))->GetBinContent( 1 );
+  if( TMath::AreEqualAbs(cvzea2+cvzec2,0,1e-100) ) return;
+  uQa  = (TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uVZEA" );
+  uQc  = (TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uVZEC" );
+  qaqc = (TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_VZEAVZEC" );
+  uQaqaqc = (TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uVZEAVZEAVZEC" );
+  uQcqaqc = (TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uVZECVZEAVZEC" );
+  pasww = uQa->GetBinSumw2();
+  pbsww = uQc->GetBinSumw2();
+  pcsww = qaqc->GetBinSumw2();
+  //
+  TProfile2D *qaqt = (TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_VZEATPC" );
+  TProfile2D *qcqt = (TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_VZECTPC" );
+  TProfile2D *uQauQc  = (TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_uVZEAuVZEC" );
+  //
+  TH2D *spvzea = (TH2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_vnVZEA" );
+  TH2D *spvzec = (TH2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_vnVZEC" );
+  TH2D *spvzega = (TH2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_vnVZEGA" );
+  TH2D *spvzewa = (TH2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "SP_vnVZEWA" );
+  for(Int_t i=1; i!=spvzewa->GetNbinsX()+1; ++i) {
+    for(Int_t j=1; j!=spvzewa->GetNbinsX()+1; ++j) {
+      spvzega->SetBinContent(i,j,0);
+      spvzega->SetBinError(i,j,0);
+      spvzewa->SetBinContent(i,j,0);
+      spvzewa->SetBinError(i,j,0);
+      spvzea->SetBinContent(i,j,0);
+      spvzea->SetBinError(i,j,0);
+      spvzec->SetBinContent(i,j,0);
+      spvzec->SetBinError(i,j,0);
+      double a = uQa->GetBinContent(i,j);
+      double b = uQc->GetBinContent(i,j);
+      double c = qaqc->GetBinContent(i,j);
+      double at = qaqt->GetBinContent(i,j);
+      double bt = qcqt->GetBinContent(i,j);
+      if(TMath::AreEqualAbs(a,0,1e-100)) continue;
+      if(TMath::AreEqualAbs(b,0,1e-100)) continue;
+      if(TMath::AreEqualAbs(c,0,1e-100)) continue;
+      if(TMath::AreEqualAbs(at,0,1e-100)) continue;
+      if(TMath::AreEqualAbs(bt,0,1e-100)) continue;
+      // nominal spvzea
+      double aa = c*at/bt;
+      if(aa<1e-100) continue;
+      double vna = a/TMath::Sqrt(aa);
+      spvzea->SetBinContent(i,vna);
+      // nominal spvzec
+      double bb = c*bt/at;
+      if(bb<1e-100) continue;
+      double vnc = b/TMath::Sqrt(bb);
+      spvzec->SetBinContent(i,j,vnc);
+      //nominal spvzewa
+      double vnwa = (cvzea2*vna + cvzec2*vnc) / (cvzea2+cvzec2);
+      spvzewa->SetBinContent(i,vnwa);
+      // nominal spvzega
+      double vnga = a*b/c;
+      if(vnga<1e-100) continue;
+      vnga = TMath::Sqrt(vnga);
+      spvzega->SetBinContent(i,j,vnga);
+      // errors
+      int k = spvzea->GetBin(i,j);
+      double asw = uQa->GetBinEntries(k);
+      double bsw = uQc->GetBinEntries(k);
+      double csw = qaqc->GetBinEntries(k);
+      if(asw<1e-100||bsw<1e-100||csw<1e-100) continue;
+      double asww = pasww->At(k);
+      double bsww = pbsww->At(k);
+      double csww = pcsww->At(k);
+      if(asww<1e-100||bsww<1e-100||csww<1e-100) continue;
+      if((1<asww/asw/asw)||(1<bsww/bsw/bsw)||(1<csww/csw/csw)) continue;
+      double ab = uQauQc->GetBinContent(i,j);
+      double ac = uQaqaqc->GetBinContent(i,j);
+      double bc = uQcqaqc->GetBinContent(i,j);
+      double absw = uQauQc->GetBinEntries(k);
+      double acsw = uQaqaqc->GetBinEntries(k);
+      double bcsw = uQcqaqc->GetBinEntries(k);
+      if(TMath::AreEqualAbs(1,absw/asw/bsw,1e-100)||TMath::AreEqualAbs(1,bcsw/bsw/csw,1e-100)||TMath::AreEqualAbs(1,acsw/asw/csw,1e-100)) continue;
+      double ea = uQa->GetBinError(i,j)*TMath::Sqrt(asww)/asw/TMath::Sqrt(1-asww/asw/asw);
+      double eb = uQc->GetBinError(i,j)*TMath::Sqrt(bsww)/bsw/TMath::Sqrt(1-bsww/bsw/bsw);
+      double ec = qaqc->GetBinError(i,j)*TMath::Sqrt(csww)/csw/TMath::Sqrt(1-csww/csw/csw);
+      double eab = (ab-a*b)/(1-absw/asw/bsw)*absw/asw/bsw;
+      double ebc = (bc-b*c)/(1-bcsw/bsw/csw)*bcsw/bsw/csw;
+      double eac = (ac-a*c)/(1-acsw/asw/csw)*acsw/asw/csw;
+      double nc, nec, neac, nebc;
+      nc = c*at/bt;
+      nec = ec*at/bt;
+      neac = eac*at/bt;
+      nebc = ebc*at/bt;
+      double evna = 1.0/TMath::Abs(nc*nc*nc) * ( nc*nc*ea*ea + a*a/4.0*nec*nec - a*TMath::Abs(nc)*neac*neac );
+      nc = c*bt/at;
+      nec = ec*bt/at;
+      neac = eac*bt/at;
+      nebc = ebc*bt/at;
+      double evnc = 1.0/TMath::Abs(nc*nc*nc) * ( nc*nc*eb*eb + b*b/4.0*nec*nec - b*TMath::Abs(nc)*nebc*nebc );
+      if(evna>1e-100) evna = TMath::Sqrt(evna); else evna=0;
+      if(evnc>1e-100) evnc = TMath::Sqrt(evnc); else evnc=0;
+      spvzea->SetBinError(i,j,evna);
+      spvzec->SetBinError(i,j,evnc);
+      double evnwa = TMath::Sqrt( cvzea2*cvzea2*evna*evna + cvzec2*cvzec2*evnc*evnc )/(cvzea2+cvzec2);
+      spvzewa->SetBinError(i,j,evnwa);
+      double evnga = 0.25/c/c * ( TMath::Abs(b*c/a)*ea*ea + TMath::Abs(a*c/b)*eb*eb + TMath::Abs(a*b/c)*ec*ec + 2*c*eab - 2*a*ebc - 2*b*eac );
+      if(evnga>1e-100) evnga = TMath::Sqrt(evnga); else evnga=0;
+      spvzega->SetBinError(i,j,evnga);
+    }
+  }
+  printf("<<%s>> QC TPC\n",name.Data());
+  //Qcumulants
+  TH2D *resC2 = (TH2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_Cum2" );
+  TH2D *resC4 = (TH2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_Cum4" );
+  TH2D *resDC2= (TH2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_DCum2" );
+  TH2D *resDC4= (TH2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_DCum4" );
+  TH2D *resvn2= (TH2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_vn2" );
+  TH2D *resvn4= (TH2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_vn4" );
+  //correlators
+  TProfile2D *c2 = ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_C2" ));
+  TProfile2D *c4 = ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_C4" ));
+  TProfile2D *dc2 = ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_DC2" ));
+  TProfile2D *dc4 = ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_DC4" ));
+  TProfile2D *c2c4 = ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_C2C4" ));
+  TProfile2D *c2dc2 = ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_C2DC2" ));
+  TProfile2D *c2dc4 = ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_C2DC4" ));
+  TProfile2D *c4dc2 = ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_C4DC2" ));
+  TProfile2D *c4dc4 = ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_C4DC4" ));
+  TProfile2D *dc2dc4 = ((TProfile2D*)((TList*)fList->FindObject(name.Data()))->FindObject( "QC_DC2DC4" ));
+  TArrayD *c2sww = c2->GetBinSumw2();
+  TArrayD *c4sww = c4->GetBinSumw2();
+  TArrayD *dc2sww= dc2->GetBinSumw2();
+  TArrayD *dc4sww= dc4->GetBinSumw2();
+  for(Int_t i=1; i!=resvn2->GetNbinsX()+1; ++i) {
+    for(Int_t j=1; j!=resvn2->GetNbinsY()+1; ++j) {
+      // cn{2}
+      int k = c2->GetBin(i,j);
+      double v_c2sw = c2->GetBinEntries(k);
+      if(v_c2sw<1e-100) continue;
+      double v_c2sww = c2sww->At(k);
+      double v_c2 = c2->GetBinContent(i,j);
+      double e_c2 = TMath::Sqrt(v_c2sww)/v_c2sw*c2->GetBinError(i,j);
+      double cum2 = v_c2;
+      double ecum2= e_c2;
+      resC2->SetBinContent(i,j, cum2 );
+      resC2->SetBinError(i,j, ecum2 );
+      // cn{4}
+      double v_c4sw = c4->GetBinEntries(k);
+      if(v_c4sw<1e-100) continue;
+      double v_c4sww = c4sww->At(k);
+      double v_c4 = c4->GetBinContent(i,j);
+      double e_c4 = TMath::Sqrt(v_c4sww)/v_c4sw*c4->GetBinError(i,j);
+      double v_c2c4 = c2c4->GetBinContent(i,j);
+      double v_c2c4sw = c2c4->GetBinEntries(k);
+      if(TMath::AreEqualAbs(v_c2c4sw/v_c2sw/v_c4sw,1,1e-100)) continue;
+      double covc2c4 = v_c2c4sw/v_c2sw/v_c4sw*(v_c2c4 - v_c2*v_c4)/(1-v_c2c4sw/v_c2sw/v_c4sw);
+      double cum4 = v_c4 - 2*v_c2*v_c2;
+      double ecum4= 16.0*v_c2*v_c2*e_c2*e_c2 + e_c4*e_c4 - 8.0*v_c2*covc2c4;
+      if(ecum4<1e-100) continue;
+      ecum4 = TMath::Sqrt( ecum4 );
+      resC4->SetBinContent(i,j, cum4 );
+      resC4->SetBinError(i,j, ecum4 );
+      // dn{2}
+      double v_dc2sw = dc2->GetBinEntries(k);
+      if(v_dc2sw<1) continue;
+      double v_dc2 = dc2->GetBinContent(i,j);
+      double v_dc2sww = dc2sww->At(k);
+      double e_dc2 = TMath::Sqrt(v_dc2sww)/v_dc2sw*dc2->GetBinError(i,j);
+      double dcum2 = v_dc2;
+      double edcum2= e_dc2;
+      resDC2->SetBinContent(i,j, dcum2 );
+      resDC2->SetBinError(i,j, edcum2 );
+      // v2{2}
+      if(v_c2<1e-100) continue;
+      double dv22 = v_dc2/TMath::Sqrt(v_c2);
+      double v_c2dc2 = c2dc2->GetBinContent(i,j);
+      double v_c2dc2sw = c2dc2->GetBinEntries(k);
+      if(TMath::AreEqualAbs(v_c2dc2sw/v_c2sw/v_dc2sw,1,1e-100)) continue;
+      double covc2dc2 = v_c2dc2sw/v_c2sw/v_dc2sw*(v_c2dc2 - v_c2*v_dc2)/(1-v_c2dc2sw/v_c2sw/v_dc2sw);
+      double edv22 = 0.25/v_c2/v_c2/v_c2*(v_dc2*v_dc2*e_c2*e_c2 + 4*v_c2*v_c2*e_dc2*e_dc2 - 4*v_c2*v_dc2*covc2dc2);
+      //printf("%d >> dv22 %.16f || edv22^2 %.16f |||| v_c2dc2 %.16f | v_c2dc2sw %.16f | covc2dc2 %.16f \n", i,dv22,edv22,v_c2dc2,v_c2dc2sw,covc2dc2);
+      if(edv22<1e-100) continue;
+      edv22 = TMath::Sqrt(edv22);
+      resvn2->SetBinContent(i,j,dv22);
+      resvn2->SetBinError(i,j,edv22);
+      // dn{4}
+      double v_dc4sw = dc4->GetBinEntries(k);
+      if(v_dc4sw<1) continue;
+      double v_dc4 = dc4->GetBinContent(i,j);
+      double v_dc4sww = dc4sww->At(k);
+      double e_dc4 = TMath::Sqrt(v_dc4sww)/v_dc4sw*dc4->GetBinError(i,j);
+      double dcum4 = v_dc4 - 2*v_c2*v_dc2;
+      double v_c2dc4 = c2dc4->GetBinContent(i,j);
+      double v_c2dc4sw = c2dc4->GetBinEntries(k);
+      if(TMath::AreEqualAbs(v_c2dc4sw/v_c2sw/v_dc4sw,1,1e-100)) continue;
+      double covc2dc4 = v_c2dc4sw/v_c2sw/v_dc4sw*(v_c2dc4 - v_c2*v_dc4)/(1-v_c2dc4sw/v_c2sw/v_dc4sw);
+      double v_dc2dc4 = dc2dc4->GetBinContent(i,j);
+      double v_dc2dc4sw = dc2dc4->GetBinEntries(k);
+      if(TMath::AreEqualAbs(v_dc2dc4sw/v_dc2sw/v_dc4sw,1,1e-100)) continue;
+      double covdc2dc4 = v_dc2dc4sw/v_dc2sw/v_dc4sw*(v_dc2dc4 - v_dc2*v_dc4)/(1-v_dc2dc4sw/v_dc2sw/v_dc4sw);
+      double edcum4= ( +4.0*v_dc2*v_dc2*e_c2*e_c2
+		       +4.0*v_c2*v_c2*e_dc2*e_dc2
+		       +e_dc4*e_dc4
+		       +8.0*v_c2*v_dc2*covc2dc2
+		       -4.0*v_dc2*covc2dc4
+		       -4.0*v_c2*covdc2dc4 );
+      if(edcum4<1e-100) continue;
+      edcum4 = TMath::Sqrt(edcum4);
+      resDC4->SetBinContent(i,j, dcum4 );
+      resDC4->SetBinError(i,j, edcum4 );
+      // v2{4}
+      if(cum4>1e-100) continue;
+      double dv24 = -dcum4/TMath::Power(-cum4,0.75);
+      double dterm1 = 2*v_c2*v_c2*v_dc2 - 3*v_c2*v_dc4 + 2*v_c4*v_dc2;
+      double dterm2 = 9.0/16.0*dcum4*dcum4;
+      double dterm3 = 4.0*v_c2*v_c2*cum4*cum4;
+      double dterm4 = cum4*cum4;
+      double dterm5 = -3.0/2.0*dcum4*dterm1;
+      double dterm6 = -4.0*v_c2*cum4*dterm1;
+      double dterm7 = -2.0*cum4*dterm1;
+      double dterm8 = 3.0*v_c2*cum4*dcum4;
+      double dterm9 = 3.0/2.0*cum4*dcum4;
+      double dterm10= 4*v_c2*cum4*cum4;
+      double v_c4dc2 = c4dc2->GetBinContent(i,j);
+      double v_c4dc2sw = c4dc2->GetBinEntries(k);
+      if(TMath::AreEqualAbs(v_c4dc2sw/v_c4sw/v_dc2sw,1,1e-100)) continue;
+      double covc4dc2 = v_c4dc2sw/v_c4sw/v_dc2sw*(v_c4dc2 - v_c4*v_dc2)/(1-v_c4dc2sw/v_c4sw/v_dc2sw);
+      double v_c4dc4 = c4dc4->GetBinContent(i,j);
+      double v_c4dc4sw = c4dc4->GetBinEntries(k);
+      if(TMath::AreEqualAbs(v_c4dc4sw/v_c4sw/v_dc4sw,1,1e-100)) continue;
+      double covc4dc4 = v_c4dc4sw/v_c4sw/v_dc4sw*(v_c4dc4 - v_c4*v_dc4)/(1-v_c4dc4sw/v_c4sw/v_dc4sw);
+      double edv24= 1.0/TMath::Power(-cum4,3.5)*(+dterm1*dterm1*e_c2*e_c2
+						 +dterm2*e_c4*e_c4
+						 +dterm3*e_dc2*e_dc2
+						 +dterm4*e_dc4*e_dc4
+						 -dterm5*covc2c4
+						 -dterm6*covc2dc2
+						 +dterm7*covc2dc4
+						 +dterm8*covc4dc2
+						 -dterm9*covc4dc4
+						 -dterm10*covdc2dc4);
+      if(edv24<1e-100) continue;
+      edv24 = TMath::Sqrt(edv24);
+      resvn4->SetBinContent(i,j,dv24);
+      resvn4->SetBinError(i,j,edv24);
+    }
+  }
 }
