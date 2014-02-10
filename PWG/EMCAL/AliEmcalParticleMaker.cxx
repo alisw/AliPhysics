@@ -35,7 +35,6 @@ AliEmcalParticleMaker::AliEmcalParticleMaker(const char *name) :
   fCaloClustersOut(0)
 {
   // Constructor.
-
 }
 
 //________________________________________________________________________
@@ -57,30 +56,13 @@ void AliEmcalParticleMaker::ExecOnce()
   if (!fTracksOutName.IsNull()) {
     fTracksOut = new TClonesArray("AliEmcalParticle");
     fTracksOut->SetName(fTracksOutName);
-
-    if (!(InputEvent()->FindListObject(fTracksOutName))) {
-      InputEvent()->AddObject(fTracksOut);
-    }
-    else {
-      fInitialized = kFALSE;
-      AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fTracksOutName.Data()));
-      return;
-    }
+    AddObjectToEvent(fTracksOut);
   }
 
   if (!fCaloOutName.IsNull()) {
     fCaloClustersOut = new TClonesArray("AliEmcalParticle");
     fCaloClustersOut->SetName(fCaloOutName);
-    
-    // post output in event if not yet present
-    if (!(InputEvent()->FindListObject(fCaloOutName))) {
-      InputEvent()->AddObject(fCaloClustersOut);
-    }
-    else {
-      fInitialized = kFALSE;
-      AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fCaloOutName.Data()));
-      return;
-    }
+    AddObjectToEvent(fCaloClustersOut);    
   }
 }
 
@@ -95,7 +77,9 @@ Bool_t AliEmcalParticleMaker::Run()
     const Int_t Ntracks = fTracks->GetEntries();
     for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
       AliVTrack *track = static_cast<AliVTrack*>(fTracks->At(iTracks));
-      new ((*fTracksOut)[iTracks]) AliEmcalParticle(track, iTracks);
+      AliEmcalParticle *ep = new ((*fTracksOut)[iTracks]) AliEmcalParticle(track, iTracks);
+      if (0&&fCaloClusters)
+	ep->SetMatchedPtr(fCaloClusters);
     }
   }
 
@@ -105,11 +89,12 @@ Bool_t AliEmcalParticleMaker::Run()
     const Int_t Nclusters = fCaloClusters->GetEntries();
     for (Int_t iClusters = 0, iN=0; iClusters < Nclusters; ++iClusters) {
       AliVCluster *cluster = static_cast<AliVCluster*>(fCaloClusters->At(iClusters));
-      /* commented because for simplicity prefer to keep indices aligned (CL)
-        if (!cluster->IsEMCAL())
-        continue;
+      /* Commented because for simplicity prefer to keep indices aligned with clusters (CL)
+        if (!cluster->IsEMCAL()) continue;
       */
-      new ((*fCaloClustersOut)[iN++]) AliEmcalParticle(cluster, iClusters, fVertex[0], fVertex[1], fVertex[2]);
+      AliEmcalParticle *ep = new ((*fCaloClustersOut)[iN++]) AliEmcalParticle(cluster, iClusters, fVertex[0], fVertex[1], fVertex[2]);
+      if (0&&fTracks)
+	ep->SetMatchedPtr(fTracks);
     }
   }
   return kTRUE;

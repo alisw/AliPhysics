@@ -62,6 +62,7 @@ ClassImp(AliAnalysisTaskHadEt)
     AliFatal("Input handler needed");
     return;
   }
+  inputHandler->SetNeedField(); 
 
   //pid response object
   fPIDResponse=inputHandler->GetPIDResponse();
@@ -238,7 +239,9 @@ if (!fESDEvent) {
 
   Int_t eventtype = 	AliPWG0Helper::kInvalidProcess;
   if(fIsSim && fRecAnalysis->DataSet()!=20100) eventtype = (Int_t) AliPWG0Helper::GetEventProcessType(MCEvent()->Header());
-  fRecAnalysis->AnalyseEvent(fESDEvent,eventtype);
+  //only do the analysis if it meets the offline trigger cut
+  if(kIsOfflineV0AND) fRecAnalysis->AnalyseEvent(fESDEvent,eventtype);
+  //else{cout<<"Not analyzing this event!  Does not meet trigger condition!"<<endl;}
   if(fIsSim){
     AliMCEvent* mcEvent = MCEvent();
     if(!mcEvent){  

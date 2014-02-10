@@ -368,6 +368,36 @@ UInt_t AliAnalysisEtSelectorPhos::GetLabel(const AliESDCaloCluster *cluster, Ali
     delete [] Ekin;
 
   } // n>0
-  return  cluster->GetLabelAt(iMax) ; // DS: should this line be inside n>0 check, and return another value if n<=0 ? 
+  UInt_t correctLabel = cluster->GetLabelAt(iMax);
+  correctLabel = GetFirstMotherNotFromDetectorCover(correctLabel,*stack);
+//   //Now we want to see if this particle is really just something that converted in the cover of the detector and if so, override the label
+//   if( stack->IsSecondaryFromMaterial(correctLabel) && correctLabel>0){//if this is flagged as a secondary then we look to see where it really came from
+//     TParticle *hitParticle = stack->Particle(correctLabel);
+//     if(hitParticle){
+//       Bool_t partVtxSecondary = (TMath::Sqrt(hitParticle->Vx()*hitParticle->Vx() + hitParticle->Vy()*hitParticle->Vy()) >400);
+//       if(partVtxSecondary){//at this point we have something which converted near the detector.  Let's find the mother particle
+//  	UInt_t mothIdx = stack->Particle(correctLabel)->GetMother(0);
+//  	if(mothIdx>0){
+//  	  TParticle *mother = stack->Particle(mothIdx);
+//  	  if(mother){
+// 	    partVtxSecondary = (TMath::Sqrt(hitParticle->Vx()*hitParticle->Vx() + hitParticle->Vy()*hitParticle->Vy()) >400);
+// 	    if(!partVtxSecondary) return mothIdx;
+// 	    else{
+// 	    }
+	    // 	    if(AliAnalysisEtSelector::CutGeometricalAcceptance(*mother)){//and the mother is in the acceptance
+	    // 	      if( !(mother->GetPdgCode()==fgPi0Code)){//some of these are decays that just happen this far out
+	    // 		//cout<<"I am declaring that "<<hitParticle->GetName()<<" with a vertex of "<< TMath::Sqrt(hitParticle->Vx()*hitParticle->Vx() + hitParticle->Vy()*hitParticle->Vy()) <<" is actually "<<mother->GetName()<<endl;
+	    // 		//cout<<"ID check "<<mothIdx<<" vs "<<mother->GetUniqueID()<<endl;
+	    // 		//so now we know that the particle originated near the cover and within the acceptance of the detector
+	    // 		return mothIdx;
+	    // 	      }
+	    // 	    }
+//  	  }
+//  	}
+//       }
+      
+//     }
+//   }
+  return  correctLabel ; // DS: should this line be inside n>0 check, and return another value if n<=0 ? 
 
 }

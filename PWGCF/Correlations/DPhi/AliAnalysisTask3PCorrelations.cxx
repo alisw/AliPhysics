@@ -1196,7 +1196,8 @@ void  AliAnalysisTask3PCorrelations::UserExec(Option_t */*option*/)
       {
       // cout << "AliAnalysisTask3PCorrelations::UserExec(Option_t *option) - check vertex  for 1:" << endl;
       // Get the dca information
-      if (t->PropagateToDCA(vertex, _field, 100., b, bCov) )
+      AliAODTrack* clone = (AliAODTrack*) t->Clone("trk_clone"); //need clone, in order not to change track parameters
+      if (clone->PropagateToDCA(vertex, _field, 100., b, bCov) )
         {
         dcaXY = b[0];
         dcaZ  = b[1];
@@ -1206,6 +1207,7 @@ void  AliAnalysisTask3PCorrelations::UserExec(Option_t */*option*/)
         dcaXY = -999999;
         dcaZ  = -999999;
         }
+      delete clone;
       // cout << "1 dcaZ:" << dcaZ << " _dcaZMin:" << _dcaZMin << " _dcaZMax:" << _dcaZMax << endl;
       // cout << "1 dcaXY:" << dcaXY << " _dcaXYMin:" << _dcaXYMin << " _dcaXYMax:" << _dcaXYMax << endl;
       
@@ -1280,7 +1282,8 @@ void  AliAnalysisTask3PCorrelations::UserExec(Option_t */*option*/)
       {
       // Get the dca information
       // cout << "AliAnalysisTask3PCorrelations::UserExec(Option_t *option) - check vertex for 2:" << endl;
-      if (t->PropagateToDCA(vertex, _field, 100., b, bCov) )
+      AliAODTrack* clone = (AliAODTrack*) t->Clone("trk_clone"); //need clone, in order not to change track parameters
+      if (clone->PropagateToDCA(vertex, _field, 100., b, bCov) )
         {
         dcaXY = b[0];
         dcaZ  = b[1];
@@ -1290,6 +1293,7 @@ void  AliAnalysisTask3PCorrelations::UserExec(Option_t */*option*/)
         dcaXY = -999999;
         dcaZ  = -999999;
         }
+      delete clone;
       // cout << "2 dcaZ:" << dcaZ << " _dcaZMin:" << _dcaZMin << " _dcaZMax:" << _dcaZMax << endl;
       // cout << "2 dcaXY:" << dcaXY << " _dcaXYMin:" << _dcaXYMin << " _dcaXYMax:" << _dcaXYMax << endl;
       // skip track if DCA too large
@@ -1369,7 +1373,8 @@ void  AliAnalysisTask3PCorrelations::UserExec(Option_t */*option*/)
       {
       // Get the dca information
       // cout << "AliAnalysisTask3PCorrelations::UserExec(Option_t *option) - check vertex for 2:" << endl;
-      if (t->PropagateToDCA(vertex, _field, 100., b, bCov) )
+      AliAODTrack* clone = (AliAODTrack*) t->Clone("trk_clone"); //need clone, in order not to change track parameters
+      if (clone->PropagateToDCA(vertex, _field, 100., b, bCov) )
         {
         dcaXY = b[0];
         dcaZ  = b[1];
@@ -1379,6 +1384,7 @@ void  AliAnalysisTask3PCorrelations::UserExec(Option_t */*option*/)
         dcaXY = -999999;
         dcaZ  = -999999;
         }
+      delete clone;
       // skip track if DCA too large
       if (dcaZ     >=  _dcaZMin && 
           dcaZ     <   _dcaZMax && 

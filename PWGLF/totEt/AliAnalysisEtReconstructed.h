@@ -37,6 +37,9 @@ public:
 
     /** Create the histograms, must be overloaded if you want to add your own */
     virtual void CreateHistograms();
+
+    Float_t GetNumberOfChargedHadronsMatched(){return nChargedHadronsMeasured;}
+    Float_t GetTotalNumberOfChargedHadrons(){return nChargedHadronsTotal;}
     
     void SetEMinCorrection(const Double_t factor) { fEMinCorrection = factor; }
 
@@ -50,6 +53,8 @@ protected:
     AliAnalysisHadEtCorrections *fCorrections;//corrections needed for hadronic et
 
     Double_t fPidCut; // cut on the pid probability
+    Float_t nChargedHadronsMeasured;
+    Float_t nChargedHadronsTotal;
 
     TH2F *fHistChargedPionEnergyDeposit; /** Energy deposited in calorimeter by charged pions */
     TH2F *fHistProtonEnergyDeposit; /** Energy deposited in calorimeter by protons */
@@ -115,7 +120,15 @@ protected:
     TH2F *fHistPIDProtonsTrackMatchedDepositedVsNcl;
     TH2F *fHistPIDAntiProtonsTrackMatchedDepositedVsNcl;
     TH2F *fHistPiKPTrackMatchedDepositedVsNch;
+    TH2F *fHistPIDProtonsTrackMatchedDepositedVsNchNoEff;
+    TH2F *fHistPIDAntiProtonsTrackMatchedDepositedVsNchNoEff;
+    TH2F *fHistPIDProtonsTrackMatchedDepositedVsNclNoEff;
+    TH2F *fHistPIDAntiProtonsTrackMatchedDepositedVsNclNoEff;
+    TH2F *fHistPiKPTrackMatchedDepositedVsNchNoEff;
     TH3F *fHistCentVsNchVsNclReco;
+
+    TH1F *fHistRawSignalReco;
+    TH1F *fHistEffCorrSignalReco;
 
 private:
 

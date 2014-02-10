@@ -18,7 +18,7 @@ TH1D *PbPb276ITSBkgd();
    Double_t xAxis1[112] = {0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.2, 0.22, 0.24, 0.26, 0.28, 0.3, 0.32, 0.34, 0.36, 0.38, 0.4, 0.42, 0.44, 0.46, 0.48, 0.5, 0.52, 0.54, 0.56, 0.58, 0.6, 0.62, 0.64, 0.66, 0.68, 0.7, 0.72, 0.74, 0.76, 0.78, 0.8, 0.82, 0.84, 0.86, 0.88, 0.9, 0.92, 0.94, 0.96, 0.98, 1, 1.05, 1.1, 1.15, 1.2, 1.25, 1.3, 1.35, 1.4, 1.45, 1.5, 1.55, 1.6, 1.65, 1.7, 1.75, 1.8, 1.85, 1.9, 1.95, 2, 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.2, 4.4, 4.6, 4.8, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 12, 14, 16, 18, 20, 25}; 
    
 
-Float_t CorrNeutral(float ptcut, char *prodname, char *shortprodname, bool ispp = true, bool forSim = true, bool TPC, bool hadronic = false, float etacut = 0.7);
+Float_t CorrNeutral(float ptcut, char *prodname, char *shortprodname, bool ispp = true, bool forSim = true, bool TPC, bool hadronic = false, float etacut = 0.7, int dataset);
 TH1D *GetHistoCorrNeutral(float cut, char *name, bool ispp, bool forSim, int mycase, bool eta, int color, int marker, bool hadronic = false);
 
 Float_t CorrPtCut(float ptcut, char *prodname = "Enter Production Name", char *shortprodname = "EnterProductionName", bool ispp = true, bool forSim = true, int mycase = 0);
@@ -79,7 +79,10 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    char *sim = "ForData";
    if(forSim) sim = "ForSimulations";
    char *system = "PbPb";
-   if(ispp) system = "pp";
+   if(ispp){
+     system = "pp";
+     if(dataset==2013) system = "pPb";
+   }
    sprintf(outfilename,"rootFiles/corrections/corrections.%s.%s.%s.root",shortprodname,system,sim);
    TFile *outfile = new TFile(outfilename,"RECREATE");
    AliAnalysisHadEtCorrections *hadCorrectionEMCAL = new AliAnalysisHadEtCorrections();
@@ -99,7 +102,7 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    hadCorrectionEMCAL->SetAcceptanceCorrectionEMCAL(360.0/60.0);
 
    float ptcut = 0.1;
-   float neutralCorr = CorrNeutral(ptcut,prodname,shortprodname,ispp,forSim,TPC,false,etacut);
+   float neutralCorr = CorrNeutral(ptcut,prodname,shortprodname,ispp,forSim,TPC,false,etacut,dataset);
    hadCorrectionEMCAL->SetNeutralCorrection(neutralCorr);
    //Using error from data, see analysis note for details
    if(ispp){
@@ -111,7 +114,7 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
      hadCorrectionEMCAL->SetNeutralCorrectionHighBound(neutralCorr*(1.0+0.049));
    }
 
-   float hadronicCorr = CorrNeutral(ptcut,prodname,shortprodname,ispp,forSim,TPC,true,etacut);
+   float hadronicCorr = CorrNeutral(ptcut,prodname,shortprodname,ispp,forSim,TPC,true,etacut,dataset);
    hadCorrectionEMCAL->SetNotHadronicCorrection(hadronicCorr);
    if(ispp){
      hadCorrectionEMCAL->SetNotHadronicCorrectionLowBound(hadronicCorr*(1.0-0.008));
@@ -286,6 +289,8 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
      bkgdpcterror = 0.38;
      break;
    case 2010:
+   case 2012:
+   case 2013:
      bkgdpcterror = 0.13;
      break;
    case 20100:
@@ -323,7 +328,7 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    hadCorrectionPHOS->SetAcceptanceCorrectionEMCAL(360.0/60.0);
 
    float ptcut = 0.1;
-   float neutralCorr = CorrNeutral(ptcut,prodname,shortprodname,ispp,forSim,TPC,false,etacut);
+   float neutralCorr = CorrNeutral(ptcut,prodname,shortprodname,ispp,forSim,TPC,false,etacut,dataset);
    hadCorrectionPHOS->SetNeutralCorrection(neutralCorr);
    //Using error from data, see analysis note for details
    if(ispp){
@@ -335,7 +340,7 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
      hadCorrectionPHOS->SetNeutralCorrectionHighBound(neutralCorr*(1.0+0.049));
    }
 
-   float hadronicCorr = CorrNeutral(ptcut,prodname,shortprodname,ispp,forSim,TPC,true,etacut);
+   float hadronicCorr = CorrNeutral(ptcut,prodname,shortprodname,ispp,forSim,TPC,true,etacut,dataset);
    hadCorrectionPHOS->SetNotHadronicCorrection(hadronicCorr);
    if(ispp){
      hadCorrectionPHOS->SetNotHadronicCorrectionLowBound(neutralCorr*(1.0-0.008));
@@ -518,22 +523,17 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
 }
 
 //==================================CorrNeutral==============================================
-Float_t CorrNeutral(float ptcut, char *prodname, char *shortprodname, bool ispp, bool forSim, bool TPC, bool hadronic, float etacut){
+Float_t CorrNeutral(float ptcut, char *prodname, char *shortprodname, bool ispp, bool forSim, bool TPC, bool hadronic, float etacut, int dataset){
   if(!forSim){//for data we have evaluated the neutral correction from ALICE data
     if(hadronic){//for tot et from had et
-      if(ispp){
-	return 1.0/0.571;
-      }
-      else{
-	return 1.0/0.549;
-      }
+      return 0.581;
     }
     else{//for had et only
-      if(ispp){
-	return 1.0/0.736;
+      if(dataset==2009){
+	return 1.0/0.7571;
       }
       else{
-	return 1.0/0.689;
+	return 1.0/0.755;
       }
     }
   }
@@ -1097,7 +1097,7 @@ Float_t CorrNotIDConst(float ptcut, float etacut,char *name, char *prodname, cha
       return 0.996;
     }
     else{
-      return 0.976;
+      return 0.992;
     }
   }
   gStyle->SetOptTitle(0);

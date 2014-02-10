@@ -38,6 +38,9 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
 
   AliEmcalJetTask* jetFinderTaskFull    = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kFULLJETS, ptminTrack, etminClus);
   AliEmcalJetTask* jetFinderTaskCharged = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus);
+  jetFinderTaskFull->SelectCollisionCandidates(AliVEvent::kAny);
+  jetFinderTaskCharged->SelectCollisionCandidates(AliVEvent::kAny);
+
 
   TString strJetsFull = jetFinderTaskFull->GetName();
   TString strJetsCh   = jetFinderTaskCharged->GetName();
@@ -51,7 +54,9 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
     jetFinderKt   = AddTaskEmcalJet(kTracksName, kClusName, kKT, R, kCHARGEDJETS, ptminTrack, etminClus);
     jetFinderKt->SetMinJetPt(0.);
     jetFinderAKt  = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus);
-    
+    jetFinderKt->SelectCollisionCandidates(AliVEvent::kAny);
+    jetFinderAkt->SelectCollisionCandidates(AliVEvent::kAny);
+
     TF1 *fScale = new TF1("fScale","[0]",0.,100.);
     fScale->SetParameter(0,scaleFact);
     TString rhoSparseName = Form("RhoSparseR%03d",(int)(100*R));

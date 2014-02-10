@@ -499,24 +499,29 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   // ----- output data -----
 
   TString outputfile = AliAnalysisManager::GetCommonFileName();
-  TString output1name="", output2name="", output3name="",output4name="";
+  TString output1name="", output2name="", output3name="", output4name="", output5name="";
   output2name=nameContainer;
   output3name=nameCorr;
+  output5name= "coutProfLcV0";
   if (!isKeepDfromB) {
     outputfile += ":PWG3_D2H_CFtaskLctoK0Sp_CommonFramework_"+usercomment;
     output1name="CFHFchist0_CommonFramework_"+usercomment;
     output4name= "Cuts_CommonFramework_"+usercomment;
+    output5name+="_cOnly";
   }
   else  if (isKeepDfromBOnly) {
     outputfile += ":PWG3_D2H_CFtaskLctoK0SpKeepDfromBOnly_CommonFramework_"+usercomment;
     output1name="CFHFchist0DfromB_CommonFramework_"+usercomment;
     output4name= "Cuts_CommonFramework_DfromB_"+usercomment;
+    output5name+="_bOnly";
   }
   else {
     outputfile += ":PWG3_D2H_CFtaskLctoK0SpKeepDfromB_CommonFramework_"+usercomment;
     output1name="CFHFchist0allLc_CommonFramework_"+usercomment;
     output4name= "Cuts_CommonFramework_allLc_"+usercomment;
+    output5name+="_all";
   }
+  output5name+=usercomment;
 
   //now comes user's output objects :
   // output TH1I for event counting
@@ -527,6 +532,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(output3name, THnSparseD::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
   // cuts
   AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(output4name, AliRDHFCuts::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
+  // estimators list
+  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(output5name, TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
 
   mgr->AddTask(task);
 	
@@ -535,6 +542,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   mgr->ConnectOutput(task,2,coutput2);
   mgr->ConnectOutput(task,3,coutput3);
   mgr->ConnectOutput(task,4,coutput4);
+  mgr->ConnectOutput(task,5,coutput5);
   return task;
 
 }

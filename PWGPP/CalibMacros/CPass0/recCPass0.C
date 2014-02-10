@@ -11,6 +11,14 @@
 
 void recCPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocdb="raw://", const char* options="?Trigger=kCalibBarrel")
 {
+
+  if (gSystem->Getenv("ALIROOT_FORCE_COREDUMP"))
+  {
+    printf("ALIROOT_FORCE_COREDUMP set\n");
+    gSystem->ResetSignal(kSigFloatingException);
+    gSystem->ResetSignal(kSigSegmentationViolation);
+  }
+
   // Load some system libs for Grid and monitoring
   // Set the CDB storage location
   AliCDBManager * man = AliCDBManager::Instance();

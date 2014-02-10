@@ -1,10 +1,11 @@
 // $Id$
 
 AliEmcalClusTrackMatcherTask* AddTaskEmcalClusTrackMatcher(
-  const char *nTracks    = "EmcalTracks",
-  const char *nClusters  = "EmcalClusters",
-  Double_t maxDist       = 0.1,
-  Bool_t   createHisto   = kFALSE
+  const char *nTracks          = "EmcalTracks",
+  const char *nClusters        = "EmcalClusters",
+  const Double_t maxDist       = 0.1,
+  const Bool_t modify          = kFALSE, 
+  const Bool_t createHisto     = kFALSE
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -32,6 +33,7 @@ AliEmcalClusTrackMatcherTask* AddTaskEmcalClusTrackMatcher(
   matcher->AddParticleContainer(nTracks);
   matcher->AddParticleContainer(nClusters);
   matcher->SetMaxDistance(maxDist);
+  matcher->SetModifyObjs(modify);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

@@ -200,6 +200,11 @@ Float_t AliAnalysisHadEtCorrections::GetConstantCorrections(Bool_t totEt, Float_
   if(type.Contains("EMCAL")) acceptance = fAcceptanceCorrectionEMCAL;
   if(type.Contains("PHOS")) acceptance = fAcceptanceCorrectionPHOS;
 
+  if(totEt) neutral = fNotHadronicCorrection;
+  else{neutral = fNeutralCorrection;}
+  if(ptcut>0.12){ptcorr = fpTcutCorrectionTPC;}
+  else{ptcorr = fpTcutCorrectionITS;}
+
   if(type.Contains("PiKP")){
     if(ptcut>0.12){ptcorr = fpTcutCorrectionTPC;}
     else{ptcorr = fpTcutCorrectionITS;}
@@ -211,6 +216,7 @@ Float_t AliAnalysisHadEtCorrections::GetConstantCorrections(Bool_t totEt, Float_
       if(ptcut>0.12){ptcorr = ffpTcutCorrectionTPCLow;}
       else{ptcorr = ffpTcutCorrectionITSLow;}
     }
+    neutral = 1.0;
   }
 
   if(type.Contains("High")){//high bound
@@ -229,13 +235,10 @@ Float_t AliAnalysisHadEtCorrections::GetConstantCorrections(Bool_t totEt, Float_
     cout<<"Setting correction factor to "<<correction<<endl;
     return correction;
   }
-
-  if(totEt) neutral = fNotHadronicCorrection;
-  else{neutral = fNeutralCorrection;}
-  if(ptcut>0.12){ptcorr = fpTcutCorrectionTPC;}
-  else{ptcorr = fpTcutCorrectionITS;}
-
+  
+  
   correction = acceptance*neutral*ptcorr;
+  cout<<"correction "<<correction<<" = "<<acceptance<<"*"<<neutral<<"*"<<ptcorr<<endl;
   cout<<"Setting correction factor for ";
   if(totEt) cout<<"total et";
   else{cout<<"hadronic et";}
