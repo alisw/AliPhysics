@@ -21,6 +21,7 @@
 #include "TTree.h"
 #include "TMath.h"
 #include "AliMFTConstants.h"
+#include "TStopwatch.h"
 
 //====================================================================================================================================================
 
@@ -48,15 +49,17 @@ private:
   static const Double_t fCutForAvailableDigits;
   static const Double_t fCutForAttachingDigits;
 
-  TClonesArray *fClustersPerPlane[fNMaxPlanes];    // ![fNPlanes] list of clusters [per plane]
+  TClonesArray *fClustersPerPlane[fNMaxPlanes];    //! [fNPlanes] list of clusters [per plane]
 
-  TClonesArray *fDigitsInCluster;
-  AliMFTDigit *fCurrentDigit;
-  AliMFTCluster *fCurrentCluster;
+  TClonesArray *fDigitsInCluster;                  //!
+  AliMFTDigit *fCurrentDigit;                      //!
+  AliMFTCluster *fCurrentCluster;                  //!
 
-  AliMFTSegmentation *fSegmentation;
-
+  AliMFTSegmentation *fSegmentation;               //!
+ 
   Int_t fNPlanes;
+
+  TStopwatch *sw;                                  //!
 
   AliMFTClusterFinder(const AliMFTClusterFinder &source);
   AliMFTClusterFinder& operator=(const AliMFTClusterFinder &source);

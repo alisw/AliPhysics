@@ -82,8 +82,56 @@ AliMFTCluster::AliMFTCluster(const AliMFTCluster& cluster):
 
   // copy constructor
   for (Int_t iTrack=0; iTrack<fNMaxMCTracks; iTrack++) fMCLabel[iTrack] = (cluster.fMCLabel)[iTrack];
-  fDigitsInCluster = new TClonesArray(*(cluster.fDigitsInCluster));
-  fDigitsInCluster -> SetOwner(kTRUE);
+  printf("checkpoint1 : cluster.fDigitsInCluster = %p\n",cluster.fDigitsInCluster);
+  if (cluster.fDigitsInCluster) {
+    printf("checkpoint2\n");
+    fDigitsInCluster = new TClonesArray(*(cluster.fDigitsInCluster));
+    fDigitsInCluster -> SetOwner(kTRUE);
+  }
+  else {
+    printf("checkpoint3\n");
+    fDigitsInCluster = new TClonesArray("AliMFTDigit", fNMaxDigitsPerCluster);
+    fDigitsInCluster -> SetOwner(kTRUE);
+  }    
+  printf("checkpoint4\n");
+ 
+}
+
+//====================================================================================================================================================
+
+AliMFTCluster::AliMFTCluster(const AliMFTCluster& cluster, const Bool_t copyDigits): 
+  TObject(cluster),
+  fX(cluster.fX), 
+  fY(cluster.fY), 
+  fZ(cluster.fZ),
+  fErrX(cluster.fErrX), 
+  fErrY(cluster.fErrY), 
+  fErrZ(cluster.fErrZ),
+  fNElectrons(cluster.fNElectrons),
+  fNMCTracks(cluster.fNMCTracks),
+  fPlane(cluster.fPlane),
+  fDetElemID(cluster.fDetElemID),
+  fSize(cluster.fSize),
+  fTrackChi2(cluster.fTrackChi2),
+  fLocalChi2(cluster.fLocalChi2),
+  fDigitsInCluster(NULL),
+  fIsClusterEditable(cluster.fIsClusterEditable)
+{
+
+  // copy constructor with option for reading digits
+
+  for (Int_t iTrack=0; iTrack<fNMaxMCTracks; iTrack++) fMCLabel[iTrack] = (cluster.fMCLabel)[iTrack];
+  printf("checkpoint1\n");
+  if (copyDigits) {
+    fDigitsInCluster = new TClonesArray(*(cluster.fDigitsInCluster));
+    fDigitsInCluster -> SetOwner(kTRUE);
+  }
+  else {
+    fDigitsInCluster = new TClonesArray("AliMFTDigit", fNMaxDigitsPerCluster);
+    fDigitsInCluster -> SetOwner(kTRUE);
+  }
+    
+  printf("checkpoint2\n");
  
 }
 

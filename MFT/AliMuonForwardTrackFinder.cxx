@@ -1183,6 +1183,7 @@ Double_t AliMuonForwardTrackFinder::TryOneCluster(const AliMUONTrackParam &track
 void AliMuonForwardTrackFinder::SeparateFrontBackClusters() {
 
   for (Int_t iPlane=0; iPlane<fNPlanesMFT; iPlane++) {
+    printf("Separating front/back clusters\n");
     fMFTClusterArrayFront[iPlane]->Delete();
     fMFTClusterArrayBack[iPlane] ->Delete();
     for (Int_t iCluster=0; iCluster<fMFTClusterArray[iPlane]->GetEntries(); iCluster++) {
