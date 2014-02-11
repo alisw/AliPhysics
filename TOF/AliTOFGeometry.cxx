@@ -393,7 +393,7 @@ Float_t AliTOFGeometry::DistanceToPadPar(Int_t *det, const Float_t * pos, Float_
 
 }
 //_____________________________________________________________________________
-Bool_t AliTOFGeometry::IsInsideThePadPar(Int_t *det, const Float_t * pos) const
+Bool_t AliTOFGeometry::IsInsideThePadPar(Int_t *det, const Float_t * pos)
 {
 //
 // Returns true if space point with coor pos (x,y,z) (cm) falls 
@@ -464,7 +464,7 @@ Bool_t AliTOFGeometry::IsInsideThePadPar(Int_t *det, const Float_t * pos) const
 
 }
 //_____________________________________________________________________________
-Bool_t AliTOFGeometry::IsInsideThePad(TGeoHMatrix *mat, const Float_t * pos, Float_t *dist3d) const
+Bool_t AliTOFGeometry::IsInsideThePad(TGeoHMatrix *mat, const Float_t * pos, Float_t *dist3d)
 {
   //
   // Returns true if space point with coor pos (x,y,z) [cm] falls inside
