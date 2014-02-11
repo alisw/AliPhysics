@@ -15,8 +15,11 @@
 
 #include "TBits.h"
 #include "TRefArray.h"
+#include "TMap.h"
+#include "AliAnalysisManager.h"
 
 #include "AliVCluster.h"
+#include "AliPHOSClusterSelection.h"
 
 // Analysis task to fill histograms with PHOS ESD or AOD clusters and cells
 // Authors : Henrik Qvigstad
@@ -26,7 +29,7 @@
 #include "AliPHOSClusterSelectionTask.h"
 ClassImp(AliPHOSClusterSelectionTask);
 
-AliPHOSClusterSelectionTask::AliPHOSClusterSelectionTask(const char* name = "AliPHOSClusterSelectionTask")
+AliPHOSClusterSelectionTask::AliPHOSClusterSelectionTask(const char* name)
   : AliAnalysisTaskSE(name),
     fClusters(0x0),
     fSelectionMap(0x0)
@@ -56,7 +59,8 @@ void AliPHOSClusterSelectionTask::UserExec(Option_t *option)
 
   // Remove Clusters
   for(int index = 0; index < fClusters->GetEntriesFast(); ++index) { // TODO: check if array is indexed from 0
-    AliVCluster* cluster = (AliVCluster*) fClusters->At(iClu); // TODO: check that fClusters is always compressed
+    AliVCluster* cluster = (AliVCluster*) fClusters->At(index); // TODO: check that fClusters is always compressed
+
 
     if( cluster->E() < kMinClusterEnergy // Low Energy Clusters
 	|| cluster->GetDistanceToBadChannel() < kMinBCDistance // to close to Bad Channel
@@ -66,8 +70,8 @@ void AliPHOSClusterSelectionTask::UserExec(Option_t *option)
       fClusters->RemoveAt(index);
   }
 
-  // Compact array after removel of clusters
-  fClusters->Compact();
+  // Remove empty slots from array after removal of clusters
+  fClusters->Compress();
 
   // initialize fSelectionMap
   if( fSelectionMap )
@@ -76,6 +80,7 @@ void AliPHOSClusterSelectionTask::UserExec(Option_t *option)
     fSelectionMap = new TMap;
     fSelectionMap->SetOwnerValue();
   }
+
 }
 
 TRefArray* AliPHOSClusterSelectionTask::GetPHOSClusters() const
@@ -86,7 +91,7 @@ TRefArray* AliPHOSClusterSelectionTask::GetPHOSClusters() const
   return fClusters;
 }
 
-TRefArray* AliPHOSClusterSelectionTask::GetPHOSClustersSelected(const AliPHOSClusterSelection* selection, bool useMap, bool addMap )
+TRefArray* AliPHOSClusterSelectionTask::GetPHOSClustersSelected( AliPHOSClusterSelection* selection, bool useMap, bool addMap )
 {
   // useMap - Use The Resulting Array of previous selection (stored in map
   // addMap - Add This Selection to the 'map' for use in future calls of this function.
@@ -94,9 +99,10 @@ TRefArray* AliPHOSClusterSelectionTask::GetPHOSClustersSelected(const AliPHOSClu
   if( !fClusters  || !fSelectionMap )
     AliFatal("fCluster not initialized, do not run this function before ::UserExec");
 
+
   if( useMap ) {
     // Check if Selection is already done
-    TRefArray* array = dynamic_selection<TRefArray*> ( fSelectionMap->GetValue(selection) );
+    TRefArray* array = dynamic_cast<TRefArray*> ( fSelectionMap->GetValue(selection) );
     if( array )
       return array;
   }
@@ -105,6 +111,8 @@ TRefArray* AliPHOSClusterSelectionTask::GetPHOSClustersSelected(const AliPHOSClu
   TRefArray* newArray = new TRefArray( * DeterminePHOSClustersSelected(selection) );
   if(addMap)
     fSelectionMap->Add(selection, newArray); // key, value
+
+  return newArray;
 }
 
 TRefArray* AliPHOSClusterSelectionTask::DeterminePHOSClustersSelected(const AliPHOSClusterSelection* selection)
@@ -137,14 +145,14 @@ AliPHOSClusterSelectionTask* AliPHOSClusterSelectionTask::GetTask(const char* na
 
   AliAnalysisManager* analysisManager = dynamic_cast<AliAnalysisManager*>(AliAnalysisManager::GetAnalysisManager());
   if( !analysisManager )
-    AliError("No AnalysisManager");
+    Printf("ERROR: No AnalysisManager");
   AliAnalysisTask* task = analysisManager->GetTask(name);
   if( !task )
-    AliError( Form("No task with name: %s", name) );
+    Printf( Form("ERROR: No task with name: %s", name) );
 
-  AliPHOSClusterSelectionTask* sTask = dynamic_cast<AliAnalysisTask*>(task);
+  AliPHOSClusterSelectionTask* sTask = dynamic_cast<AliPHOSClusterSelectionTask*>(task);
   if( !sTask)
-    AliError( Form("No AliPHOSClusterSelectionTask with name: %s", name) );
+    Printf( Form("ERROR:: No AliPHOSClusterSelectionTask with name: %s", name) );
 
   return sTask;
 }
