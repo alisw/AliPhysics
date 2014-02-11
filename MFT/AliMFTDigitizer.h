@@ -41,8 +41,9 @@ public:
   
 protected:
  
-  static const Int_t fNMaxPlanes   = AliMFTConstants::fNMaxPlanes;             // max number of MFT planes
-  static const Int_t fNMaxMCTracks = AliMFTConstants::fNMaxMCTracksPerDigit;   // max MC tracks sharing a digit  
+  static const Int_t fNMaxPlanes          = AliMFTConstants::fNMaxPlanes;             // max number of MFT planes
+  static const Int_t fNMaxMCTracks        = AliMFTConstants::fNMaxMCTracksPerDigit;   // max MC tracks sharing a digit  
+  static const Int_t fNMaxDetElemPerPlane = AliMFTConstants::fNMaxDetElemPerPlane;
 
   Int_t fNPlanes;    
   

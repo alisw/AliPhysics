@@ -556,6 +556,7 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
   Double_t yEndOfAbsorber = trackParamEndOfAbsorber.GetBendingCoor();
   Double_t rAbsorber      = TMath::Sqrt(xEndOfAbsorber*xEndOfAbsorber + yEndOfAbsorber*yEndOfAbsorber);
   fHistRadiusEndOfAbsorber -> Fill(rAbsorber);
+  track -> SetRAtAbsorberEnd(rAbsorber);
   
   // if the radial distance of the track at the end of the absorber is smaller than a given radius, skip to the next track
   if (rAbsorber < fRAbsorberCut) return 4;

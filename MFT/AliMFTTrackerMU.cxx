@@ -29,7 +29,7 @@
 #include "AliGeomManager.h"
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
-// #include "AliESDMuonGlobalTrack.h"
+#include "AliESDMuonGlobalTrack.h"
 #include "AliMFTTrackerMU.h"
 #include "TMath.h"
 #include "AliRun.h"
@@ -38,6 +38,7 @@
 #include "AliMUONTrack.h"
 #include "AliMUONESDInterface.h"
 #include "AliMuonForwardTrack.h"
+#include "AliMUONConstants.h"
 
 ClassImp(AliMFTTrackerMU)
 
@@ -207,6 +208,14 @@ Int_t AliMFTTrackerMU::Clusters2Tracks(AliESDEvent *event) {
     track -> SetMCLabel(fMUONTrack->GetMCLabel());
     track -> SetMatchTrigger(fMUONTrack->GetMatchTrigger());
 
+    // track parameters linearly extrapolated from the first tracking station to the end of the absorber
+    AliMUONTrackParam trackParamEndOfAbsorber(*((AliMUONTrackParam*)(fMUONTrack->GetTrackParamAtCluster()->First())));
+    AliMUONTrackExtrap::ExtrapToZCov(&trackParamEndOfAbsorber, AliMUONConstants::AbsZEnd());   // absorber extends from -90 to -503 cm
+    Double_t xEndOfAbsorber = trackParamEndOfAbsorber.GetNonBendingCoor();
+    Double_t yEndOfAbsorber = trackParamEndOfAbsorber.GetBendingCoor();
+    Double_t rAbsorber      = TMath::Sqrt(xEndOfAbsorber*xEndOfAbsorber + yEndOfAbsorber*yEndOfAbsorber);
+    track -> SetRAtAbsorberEnd(rAbsorber);
+
     //------------------------- NOW THE CYCLE OVER THE MFT PLANES STARTS ---------------------------------------
 
     for (Int_t iPlane=fNPlanesMFT-1; iPlane>=0; iPlane--) {   /* *** do not reverse the order of this cycle!!! 
@@ -294,17 +303,20 @@ Int_t AliMFTTrackerMU::Clusters2Tracks(AliESDEvent *event) {
       AliDebug(2,"Creating a new Muon Global Track");
       AliESDMuonGlobalTrack *myESDTrack = event->NewMuonGlobalTrack();
       myESDTrack -> SetPxPyPz(newTrack->Px(), newTrack->Py(), newTrack->Pz());
-      myESDTrack -> SetChi2OverNdf(newTrack->GetChi2OverNdf());
-      myESDTrack -> SetCharge(newTrack->GetCharge());
-      myESDTrack -> SetMatchTrigger(newTrack->GetMatchTrigger());
-      myESDTrack -> SetFirstTrackingPoint(newTrack->GetMFTCluster(0)->GetX(), newTrack->GetMFTCluster(0)->GetY(), newTrack->GetMFTCluster(0)->GetZ());
-      myESDTrack -> SetXYAtVertex(newTrack->GetOffsetX(vertex[0], vertex[2]), newTrack->GetOffsetX(vertex[1], vertex[2]));
-      myESDTrack -> SetRAtAbsorberEnd(newTrack->GetRAtAbsorberEnd());
-      myESDTrack -> SetChi2MatchTrigger(esdTrack->GetChi2MatchTrigger());
-      myESDTrack -> SetMuonClusterMap(esdTrack->GetMuonClusterMap());
-      myESDTrack -> SetHitsPatternInTrigCh(esdTrack->GetHitsPatternInTrigCh());
-      myESDTrack -> SetHitsPatternInTrigChTrk(esdTrack->GetHitsPatternInTrigChTrk());
-      myESDTrack -> Connected(esdTrack->IsConnected());
+      
+//       waiting for the commit of the new version of AliESDMuonGlobalTrack...
+
+//       myESDTrack -> SetChi2OverNdf(newTrack->GetChi2OverNdf());
+//       myESDTrack -> SetCharge(newTrack->GetCharge());
+//       myESDTrack -> SetMatchTrigger(newTrack->GetMatchTrigger());
+//       myESDTrack -> SetFirstTrackingPoint(newTrack->GetMFTCluster(0)->GetX(), newTrack->GetMFTCluster(0)->GetY(), newTrack->GetMFTCluster(0)->GetZ());
+//       myESDTrack -> SetXYAtVertex(newTrack->GetOffsetX(vertex[0], vertex[2]), newTrack->GetOffsetX(vertex[1], vertex[2]));
+//       myESDTrack -> SetRAtAbsorberEnd(newTrack->GetRAtAbsorberEnd());
+//       myESDTrack -> SetChi2MatchTrigger(esdTrack->GetChi2MatchTrigger());
+//       myESDTrack -> SetMuonClusterMap(esdTrack->GetMuonClusterMap());
+//       myESDTrack -> SetHitsPatternInTrigCh(esdTrack->GetHitsPatternInTrigCh());
+//       myESDTrack -> SetHitsPatternInTrigChTrk(esdTrack->GetHitsPatternInTrigChTrk());
+//       myESDTrack -> Connected(esdTrack->IsConnected());
 
       //---------------------------------------------------------------------------------
 

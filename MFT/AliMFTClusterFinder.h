@@ -46,6 +46,7 @@ private:
  
   static const Int_t fNMaxDigitsPerCluster = AliMFTConstants::fNMaxDigitsPerCluster;
   static const Int_t fNMaxPlanes = AliMFTConstants::fNMaxPlanes;
+  static const Int_t fNMaxDetElemPerPlane = AliMFTConstants::fNMaxDetElemPerPlane;
   static const Double_t fCutForAvailableDigits;
   static const Double_t fCutForAttachingDigits;
 

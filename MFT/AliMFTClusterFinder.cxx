@@ -168,7 +168,6 @@ void AliMFTClusterFinder::DigitsToClusters(const TObjArray *pDigitList) {
 	    // first iteration over the digits of a specific detection element
 	    currentDetElem = fCurrentDigit->GetDetElemID();
 	    currentDetElemLocal = fSegmentation->GetDetElemLocalID(currentDetElem);
-	    //	    printf("Reading a new detection element: %d\n",currentDetElem);
 	    cycleOverDigits = 0;
 	    myCutForAvailableDigits = fCutForAvailableDigits;
 	  }
@@ -186,11 +185,8 @@ void AliMFTClusterFinder::DigitsToClusters(const TObjArray *pDigitList) {
 
 	isDigAvailableForNewCluster = kTRUE;
 
-	//	AliDebug(2, Form("Check %d: Digit %5d of %5d", cycleOverDigits, iDig, myDigitList->GetEntries()));
-
 	for (Int_t iCluster=0; iCluster<clustersPerDetElem[currentDetElemLocal]->GetEntries(); iCluster++) {
 	  fCurrentCluster = (AliMFTCluster*) clustersPerDetElem[currentDetElemLocal]->At(iCluster);
-	  //	  AliDebug(2, Form("Distance between cluster and digit = %f",fCurrentCluster->GetDistanceFromPixel(fCurrentDigit))); 
 	  if (fCurrentCluster->GetDistanceFromPixel(fCurrentDigit) < fCutForAttachingDigits) { 
 	    fCurrentCluster->AddPixel(fCurrentDigit); 
 	    myDigitList->Remove(fCurrentDigit);
@@ -228,24 +224,11 @@ void AliMFTClusterFinder::DigitsToClusters(const TObjArray *pDigitList) {
       for (Int_t iCluster=0; iCluster<clustersPerDetElem[iDetElem]->GetEntries(); iCluster++) {
 	newCluster = (AliMFTCluster*) (clustersPerDetElem[iDetElem]->At(iCluster));
 	newCluster -> TerminateCluster();
-	//	new ((*fClustersPerPlane[iPlane])[fClustersPerPlane[iPlane]->GetEntries()]) AliMFTCluster(*newCluster);
+	new ((*fClustersPerPlane[iPlane])[fClustersPerPlane[iPlane]->GetEntries()]) AliMFTCluster(*newCluster);
       }
     }
 
     printf("%d Clusters in plane %02d merged in %f seconds\n", fClustersPerPlane[iPlane]->GetEntries(), iPlane, sw->CpuTime());
-
-//     sw->Start();
-//     Double_t centerX=0, centerY=0;
-//     for (Int_t iCluster=0; iCluster<fClustersPerPlane[iPlane]->GetEntries(); iCluster++) {
-//       newCluster = (AliMFTCluster*) (fClustersPerPlane[iPlane]->At(iCluster));
-//       centerX += newCluster-> GetX();
-//       centerY += newCluster-> GetY();
-//     }
-//     centerX /= Double_t(fClustersPerPlane[iPlane]->GetEntries());
-//     centerY /= Double_t(fClustersPerPlane[iPlane]->GetEntries());
-//     Double_t time = sw->CpuTime();
-//     printf("Loop over %d performed in %f seconds. <X> = %f, <Y> = %f\n",fClustersPerPlane[iPlane]->GetEntries(),time,centerX,centerY);
-
 
     for (Int_t iDetElem=0; iDetElem<nDetElem; iDetElem++) {
       clustersPerDetElem[iDetElem] -> Delete();
