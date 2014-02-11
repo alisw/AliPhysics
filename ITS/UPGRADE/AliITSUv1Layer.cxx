@@ -2193,7 +2193,7 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB0(const Double_t xlen,
   Double_t ladderHb           = 0.0890428;
   Double_t ladderl            = 0.025;
   Double_t beamSidePhi        = 65;
-  Double_t bottomBeamAngle    = 56.5;
+  Double_t bottomBeamAngle    = 61.5; //56.5;
 //  Double_t dy                 = ladderSegBoxDH/2;
   Double_t triangleHeight     = ladderHeight - ladderBeamRadius;
   Double_t halfTheta          = TMath::ATan( 0.5*ladderWidth/triangleHeight );
