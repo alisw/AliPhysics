@@ -58,8 +58,8 @@ void AddTasksFlavourJet(const Int_t iCandType = 1 /*0 = D0, 1=Dstar...*/,
    
    // -- D meson selection
   
-   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/FlavourJetTasks/macros/AddTaskSEDmesonsFilterCJ.C");
-   AliAnalysisTaskSEDmesonsFilterCJ *taskDmesonsFilter = AddTaskSEDmesonsFilterCJ(iCandType,sCutFile,bIsMC,bIsReco,sText);
+   gROOT->LoadMacro("AddTaskDFilterAndCorrelationsExch.C");
+
    if(bIsMap) {
       AliAnalysisTaskSEDmesonsFilterCJ *taskMCDmesonsFilter = AddTaskSEDmesonsFilterCJ(iCandType,sCutFile,bIsMC,kFALSE,sText);
    }
@@ -91,7 +91,6 @@ void AddTasksFlavourJet(const Int_t iCandType = 1 /*0 = D0, 1=Dstar...*/,
    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
    //gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJetSample.C");
    
-   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/FlavourJetTasks/macros/AddTaskFlavourJetCorrelations.C");
    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskJetResponseMaker.C");
    
    for (Int_t i=0; i<nRadius; i++) {
@@ -108,26 +107,23 @@ void AddTasksFlavourJet(const Int_t iCandType = 1 /*0 = D0, 1=Dstar...*/,
       	// "AliAnalysisTaskEmcalJetSample");
       //taskjetsample->SelectCollisionCandidates(uTriggerMask);
       
-      //correlation with D meson
+      //Filter and correlation with D meson
       
-      AliAnalysisTaskFlavourJetCorrelations *taskDmesonCJ = AddTaskFlavourJetCorrelations(
-      	 iCandType,
+      AddTaskDFilterAndCorrelationsExch(
+	 iCandType,
       	 sCutFile,
       	 bIsMC,
       	 bIsReco,
+	 "",
       	 taskFJ->GetName(),
-      	 Form("JetR%s",sRadius[i].Data()),
+      	 //Form("JetR%s",sRadius[i].Data()),
       	 iLeading,
       	 leadHadType,
       	 aRadius[i],
       	 dJetPtCut,
       	 acctype
-      	/*percjetareacut=1.*/);
-      
-      taskDmesonCJ->SetName(Form("AliAnalysisTaskSEEmcalJetDmesonsCJ_%s",sRadius[i].Data()));
-      taskDmesonCJ->SetForceBeamType(uBeamType);
-      taskDmesonCJ->SetAnaType(uAnaType);
-      taskDmesonCJ->SetLeadingHadronType(iLeading);
+      	//percjetareacut=1.
+	  );
       
       AliEmcalJetTask *taskMCJ;
       //jet reconstruction for correction map

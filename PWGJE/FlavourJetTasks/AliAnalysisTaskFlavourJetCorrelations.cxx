@@ -68,7 +68,9 @@ fMaxMass(),
 fJetArrName(0),
 fCandArrName(0),
 fLeadingJetOnly(kFALSE),
-fJetRadius(0)
+fJetRadius(0),
+fCandidateArray(0),
+fSideBandArray(0)
 {
    //
    // Default ctor
@@ -95,7 +97,9 @@ fMaxMass(),
 fJetArrName(0),
 fCandArrName(0),
 fLeadingJetOnly(kFALSE),
-fJetRadius(0)
+fJetRadius(0),
+fCandidateArray(0),
+fSideBandArray(0)
 {
    //
    // Constructor. Initialization of Inputs and Outputs
@@ -141,6 +145,9 @@ fJetRadius(0)
    
    if(fCandidateType==kD0toKpi)SetMassLimits(0.15,fPDGmother);
    if(fCandidateType==kDstartoKpipi) SetMassLimits(0.015, fPDGmother);
+   
+   DefineInput(1, TClonesArray::Class());
+   DefineInput(2, TClonesArray::Class());
    
    DefineOutput(1,TList::Class()); // histos
    DefineOutput(2,AliRDHFCuts::Class()); // my cuts
@@ -222,8 +229,6 @@ void AliAnalysisTaskFlavourJetCorrelations::UserExec(Option_t *)
    
    TClonesArray *arrayDStartoD0pi=0;
    TClonesArray *trackArr = 0;
-   TClonesArray *candidatesArr = 0;
-   TClonesArray *sbcandArr = 0;
    
    if (!aodEvent && AODEvent() && IsStandardAOD()) {
       
@@ -269,27 +274,11 @@ void AliAnalysisTaskFlavourJetCorrelations::UserExec(Option_t *)
       return;
    }
    
+    
+   if (!fCandidateArray) fCandidateArray = dynamic_cast<TClonesArray*>(GetInputData(1));
+   if (fCandidateType==1 && !fSideBandArray) fSideBandArray = dynamic_cast<TClonesArray*>(GetInputData(2));
    
-   TString arrname="fCandidateArray";
-   TString candarrname=Form("%s%s%s",arrname.Data(),fCandArrName.Data(),fUseReco ? "rec" : "gen");
-   candidatesArr = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(candarrname));
-   if (!candidatesArr) {
-      Printf("%s array not found",candarrname.Data());
-      InputEvent()->GetList()->ls();
-      return;
-   }
-   //Printf("ncandidates found %d",candidatesArr->GetEntriesFast());
-   
-   TString arrSBname="fSideBandArray";
-   TString sbarrname=Form("%s%s%s",arrSBname.Data(),fCandArrName.Data(),fUseReco ? "rec" : "gen");
-   sbcandArr = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(sbarrname));
-   if (fCandidateType==1 && !sbcandArr) {
-      Printf("%s array not found",sbarrname.Data());
-      InputEvent()->GetList()->ls();
-      return;
-   }
-   //Printf("nSBCand or Bkg found %d",sbcandArr->GetEntriesFast());
-   
+   Printf("ncandidates found %d",fCandidateArray->GetEntriesFast());
    
    //Histograms
    TH1I* hstat=(TH1I*)fmyOutput->FindObject("hstat");
@@ -324,7 +313,7 @@ void AliAnalysisTaskFlavourJetCorrelations::UserExec(Option_t *)
    hstat->Fill(1);
 
    //retrieve charm candidates selected
-   Int_t candidates = candidatesArr->GetEntriesFast();
+   Int_t candidates = fCandidateArray->GetEntriesFast();
   
    //trigger on jets
    
@@ -333,7 +322,7 @@ void AliAnalysisTaskFlavourJetCorrelations::UserExec(Option_t *)
       hstat->Fill(6, candidates);
       hNDPerEvNoJet->Fill(candidates);
       for(Int_t iD=0;iD<candidates;iD++){
-      	 AliVParticle* cand=(AliVParticle*)candidatesArr->At(iD);
+      	 AliVParticle* cand=(AliVParticle*)fCandidateArray->At(iD);
       	 if(!cand) continue;
       	 hptDPerEvNoJet->Fill(cand->Pt());
       
@@ -347,15 +336,23 @@ void AliAnalysisTaskFlavourJetCorrelations::UserExec(Option_t *)
    for(Int_t ic = 0; ic < candidates; ic++) {
       
       // D* candidates
-      AliVParticle* charm=0x0;
-      charm=(AliVParticle*)candidatesArr->At(ic);
+      AliAODRecoDecayHF* charm=0x0;
+      AliAODRecoCascadeHF* dstar=0x0;
+      
+      
+      charm=(AliAODRecoDecayHF*)fCandidateArray->At(ic);
       if(!charm) continue;
+      
+      if(fCandidateType==kDstartoKpipi){ 
+      	 dstar=(AliAODRecoCascadeHF*)fCandidateArray->At(ic);
+      	 if(!dstar) continue;
+      }
+      
       hstat->Fill(2);
       
       Double_t candsparse[4]={charm->Eta(), charm->Phi(), charm->Pt(), 0};
       
       if(fCandidateType==kDstartoKpipi) {
-      	 AliAODRecoCascadeHF* dstar = (AliAODRecoCascadeHF*)charm;
       	 Double_t deltamass= dstar->DeltaInvMass();
       	 candsparse[3]=deltamass;
       	 hnspDstandalone->Fill(candsparse);
@@ -459,7 +456,7 @@ void AliAnalysisTaskFlavourJetCorrelations::UserExec(Option_t *)
       	 
       	 // D* candidates
       	 AliVParticle* charm=0x0;
-      	 charm=(AliVParticle*)candidatesArr->At(ic);
+      	 charm=(AliVParticle*)fCandidateArray->At(ic);
       	 if(!charm) continue;
       	 
       	 
@@ -470,17 +467,17 @@ void AliAnalysisTaskFlavourJetCorrelations::UserExec(Option_t *)
       	 
       }
       //retrieve side band background candidates for Dstar
-      Int_t nsbcand = 0; if(sbcandArr) nsbcand=sbcandArr->GetEntriesFast();
+      Int_t nsbcand = 0; if(fSideBandArray) nsbcand=fSideBandArray->GetEntriesFast();
       
       for(Int_t ib=0;ib<nsbcand;ib++){
       	 if(fCandidateType==kDstartoKpipi && !fUseMCInfo){
-      	    AliAODRecoCascadeHF *sbcand=(AliAODRecoCascadeHF*)sbcandArr->At(ib);
+      	    AliAODRecoCascadeHF *sbcand=(AliAODRecoCascadeHF*)fSideBandArray->At(ib);
       	    if(!sbcand) continue;
       	    SideBandBackground(sbcand,jet);
       	 }
       	 if(fUseMCInfo){
       	    AliAODRecoDecayHF* charmbg = 0x0;
-      	    charmbg=(AliAODRecoDecayHF*)candidatesArr->At(ib);
+      	    charmbg=(AliAODRecoDecayHF*)fCandidateArray->At(ib);
       	    if(!charmbg) continue;
       	    MCBackground(charmbg,jet);
       	 }
