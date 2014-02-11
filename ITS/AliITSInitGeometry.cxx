@@ -120,7 +120,6 @@ AliITSgeom* AliITSInitGeometry::CreateAliITSgeom(){
 
 
   AliITSVersion_t version = kvDefault;
-  Int_t minor = 0;
   TDatime datetime;
   TGeoVolume *itsV = gGeoManager->GetVolume("ITSV");
   if(!itsV){
@@ -868,7 +867,7 @@ Bool_t AliITSInitGeometry::ReadVersionString(const Char_t *str,AliITSVersion_t &
   Int_t n=strlen(str);
   if(n<15) return retcode; // not enough space for numbers
   Int_t m,i;
-  m = sscanf(str,"Major Version= %d",&i);
+  m = sscanf(str,"Major Version= %2d",&i);
   maj = kvDefault;
   if(m>0){
     retcode = kTRUE;
