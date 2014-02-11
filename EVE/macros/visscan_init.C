@@ -82,7 +82,7 @@ void visscan_init(const TString& cdburi = "",
   }
 
   if (gShowMuonRPhi || gShowMuonRhoZ) {
-    TEveUtil::LoadMacro("geom_gentle_muon.C");
+    TEveUtil::LoadMacro("geom_gentle_muon.C+");
     mv->InitGeomGentleMuon(geom_gentle_muon(kFALSE), gShowMuonRPhi, gShowMuonRhoZ, kFALSE);
   }
 
