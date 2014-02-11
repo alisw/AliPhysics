@@ -44,6 +44,8 @@ void DIMUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent
   //Reset ROOT and connect tree file
   gROOT->Reset();
   
+  AliLog::SetClassDebugLevel("AliMCEvent",-1);
+  
   // File for histograms and histogram booking
   TFile *histoFile = new TFile("DiFakes.root", "RECREATE");
   
@@ -71,14 +73,23 @@ void DIMUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent
   
   // load necessary data from OCDB
   AliCDBManager::Instance()->SetDefaultStorage(ocdbPath);
+  AliCDBManager::Instance()->SetSpecificStorage("GRP/GRP/Data","local://.");
   AliCDBManager::Instance()->SetRun(rc.GetRunNumber());
   AliMUONRecoParam* recoParam = AliMUONCDB::LoadRecoParam();
   if (!recoParam) return;
   
   // get sigma cut from recoParam to associate clusters with TrackRefs in case the label are not used
   sigmaCut = (recoParam->ImproveTracks()) ? recoParam->GetSigmaCutForImprovement() : recoParam->GetSigmaCutForTracking();
+  // compute the mask of requested stations from recoParam
+  UInt_t requestedStationMask = 0;
+  for (Int_t i = 0; i < 5; i++) if (recoParam->RequestStation(i)) requestedStationMask |= ( 1 << i );
+  // get from recoParam whether a track need 2 chambers hit in the same station (4 or 5) or not to be reconstructible
+  Bool_t request2ChInSameSt45 = !recoParam->MakeMoreTrackCandidates();
   
   TLorentzVector vMu1, vMu2, vDiMu;
+  Int_t nReconstructiblePairs = 0;
+  Int_t nReconstructedPairs = 0;
+  Int_t nMatchedPairs = 0;
   
   // Loop over ESD events
   FirstEvent = TMath::Max(0, FirstEvent);
@@ -89,6 +100,18 @@ void DIMUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent
     AliMUONVTrackStore* muonTrackStore = rc.ReconstructedTracks(iEvent, kFALSE);
     AliMUONVTrackStore* trackRefStore = rc.TrackRefs(iEvent);
     if (!muonTrackStore || !trackRefStore) continue;
+    
+    // count the number of reconstructible pairs
+    Int_t nMuPlus = 0, nMuMinus = 0;
+    TIter next(trackRefStore->CreateIterator());
+    AliMUONTrack* trackRef;
+    while ( ( trackRef = static_cast<AliMUONTrack*>(next()) ) ) {
+      if (trackRef->IsValid(requestedStationMask, request2ChInSameSt45)) {
+	if (trackRef->GetTrackParamAtVertex()->GetCharge() > 0) nMuPlus++;
+	else nMuMinus++;
+      }
+    }
+    nReconstructiblePairs += nMuPlus*nMuMinus;
     
     // loop over ESD tracks and flag them
     const AliESDEvent* esd = rc.GetESDEvent();
@@ -147,6 +170,8 @@ void DIMUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent
 	Short_t charge2 = muonTrack2->Charge();
 	if (charge1*charge2 > 0) continue;
 	
+	nReconstructedPairs++;
+	
 	// get track info
 	Int_t label2 = muonTrack2->GetLabel();
 	muonTrack2->LorentzP(vMu2);
@@ -171,6 +196,8 @@ void DIMUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent
 	
 	// fill histograms according to labels
 	if (label1 >= 0 && label2 >= 0) {
+	  
+	  nMatchedPairs++;
 	  
 	  hMassM->Fill(mass);
 	  hPM->Fill(p);
@@ -265,6 +292,13 @@ void DIMUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent
   histoFile->Write();
   cDiFakesSummary.Write();
   histoFile->Close();
+  
+  // print results
+  printf("\n");
+  printf("nb of reconstructible OS pairs: %d \n", nReconstructiblePairs);
+  printf("nb of reconstructed OS pairs: %d \n", nReconstructedPairs);
+  printf("nb of reconstructed OS pairs matched with trackRefs: %d \n", nMatchedPairs);
+  printf("\n");
   
 }
 
