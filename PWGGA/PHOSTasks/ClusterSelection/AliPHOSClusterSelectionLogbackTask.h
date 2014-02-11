@@ -21,7 +21,7 @@ class TObjArray;
 
 #include "AliPHOSClusterSelectionTask.h"
 
-class AliPHOSClusterSelectionLogbackTask : AliPHOSClusterSelectionTask {
+class AliPHOSClusterSelectionLogbackTask : public AliPHOSClusterSelectionTask {
  public:
   AliPHOSClusterSelectionLogbackTask(const char* name = "AliPHOSClusterSelectionLogbackTask");
   virtual ~AliPHOSClusterSelectionLogbackTask();
@@ -30,7 +30,7 @@ class AliPHOSClusterSelectionLogbackTask : AliPHOSClusterSelectionTask {
   virtual void   UserExec(Option_t *option);
   /* virtual void   Terminate(Option_t *); */
 
-  TObjArray* GetPHOSClustersLogback(const AliPHOSEventSelection* eventSelection, UInt_t eventBacklogIndex, const AliPHOSClusterSelection* clusterSelection=0) const;
+  TObjArray* GetPHOSClustersLogback(const AliPHOSEventSelection* eventSelection, UInt_t eventLogbackIndex, const AliPHOSClusterSelection* clusterSelection=0) const;
 
   void LogEvent(const AliPHOSEventSelection* selection, UInt_t nEventsToLog);
 
@@ -40,10 +40,8 @@ class AliPHOSClusterSelectionLogbackTask : AliPHOSClusterSelectionTask {
   AliPHOSClusterSelectionLogbackTask(const AliPHOSClusterSelectionLogbackTask&); // not implemented
   AliPHOSClusterSelectionLogbackTask& operator=(const AliPHOSClusterSelectionLogbackTask&); // not implemented
 
-  TMap* fClusterArrayLists; // Maps: EventSelection -> List, of ObjArray of Clusters
-  TMap* fSelectionArrayMapLists; // Maps: EventSelection -> List, of Cluster Selection Maps
-
-  TMap* fCurrentClusterSelectionMap; // Maps: ClusterSelection -> Selection Bits
+  TMap* fMapOfEventLists; // fMapOfEventLists: EventSelection -> EventList, EventList of EventArray in (CluArray, SelMap), SelMap: CluSelection -> CluArray.
+  enum EventArrayIndex { kCluArray, kSelMap, kSize };
 
   ClassDef(AliPHOSClusterSelectionLogbackTask, 1);
 };
