@@ -7,6 +7,6 @@
 
 void visscan_local(const TString& path = ".", Bool_t showHLTESDTree=kFALSE, Bool_t showMuon = kTRUE, Bool_t showTrd = kFALSE)
 {
-  gROOT->ProcessLine(TString::Format(".x visscan_init.C(\"local://$ALICE_ROOT/OCDB\", \"%s\", %d, %d)",
+  gROOT->ProcessLine(TString::Format(".x visscan_init.C(\"local://$ALICE_ROOT/OCDB\", \"%s\", %d, %d, %d)",
 				     path.Data(), showHLTESDTree, showMuon, showTrd));
 }
