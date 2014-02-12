@@ -230,6 +230,7 @@ public:
       fTPCsignalTuned = signal;
   }
   void  SetTPCdEdxInfo(AliTPCdEdxInfo * dEdxInfo); 
+  Double_t  GetdEdxInfo(Int_t regionID, Int_t calibID, Int_t qID,Int_t valueID);
 
   AliTPCdEdxInfo * GetTPCdEdxInfo() const {return fTPCdEdxInfo;}
   Double_t GetTPCsignal() const {return fTPCsignal;}
@@ -440,7 +441,7 @@ public:
   // - set lengt of bit fields fTPCClusterMap and fTPCSharedMap to 0
   static void OnlineMode(bool mode) {fgkOnlineMode=mode;}
   static bool OnlineMode() {return fgkOnlineMode;}
-  Double_t GetLengthInActiveZone(const AliExternalTrackParam  *paramT, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi =0 , TTreeSRedirector * pcstream =0 ) const;
+  static Double_t GetLengthInActiveZone(const AliExternalTrackParam  *paramT, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi =0 , TTreeSRedirector * pcstream =0 );
   Double_t GetLengthInActiveZone( Int_t mode, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi =0 , TTreeSRedirector * pcstream =0 ) const;
 protected:
   

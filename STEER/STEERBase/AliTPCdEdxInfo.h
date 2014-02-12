@@ -3,6 +3,7 @@
 
 class TGraphErrors;
 class TObjArray;
+class AliExternalTrackParam;
 #include <TObject.h>
 
 class AliTPCdEdxInfo : public TObject 
@@ -12,6 +13,7 @@ public:
   AliTPCdEdxInfo(const AliTPCdEdxInfo& source);
   AliTPCdEdxInfo& operator=(const AliTPCdEdxInfo& source);
   Double_t GetWeightedMean(Int_t qType, Int_t wType, Double_t w0, Double_t w1, Double_t w2); 
+  Double_t GetFractionOfClusters(Int_t iregion){ return fTPCsignalNRowRegion[iregion]>0 ? Double_t(fTPCsignalNRegion[iregion])/Double_t(fTPCsignalNRowRegion[iregion]):0;}
   //
   // qTot info
   void     GetTPCSignalRegionInfo(Double_t signal[4], Char_t ncl[3], Char_t nrows[3]) const;
@@ -30,6 +32,8 @@ public:
   
   Double_t GetSignalTot(Int_t index){ return fTPCsignalRegion[index];}
   Double_t GetSignalMax(Int_t index){ return fTPCsignalRegionQmax[index];}
+  Double_t GetNumberOfClusters(Int_t index) {return fTPCsignalNRegion[index%3];}
+  Double_t GetNumberOfCrossedRows(Int_t index) {return fTPCsignalNRowRegion[index%3];}
   //
   Double_t GetTPCsignalShortPad()      const {return fTPCsignalRegion[0];}
   Double_t GetTPCsignalMediumPad()     const {return fTPCsignalRegion[1];}
@@ -41,6 +45,7 @@ public:
   Double_t GetTPCsignalLongPadQmax()   const {return fTPCsignalRegionQmax[2];}
   Double_t GetTPCsignalOROCQmax()      const {return fTPCsignalRegionQmax[3];}
   static void     RegisterSectorCalibration(TGraphErrors* gainSector, Int_t regionID, Int_t calibID);
+  Double_t  GetdEdxInfo(AliExternalTrackParam *param, Int_t regionID, Int_t calibID, Int_t qID, Int_t valueID);
 private: 
 
   Double32_t  fTPCsignalRegion[4]; //[0.,0.,10] TPC dEdx signal in 4 different regions - 0 - IROC, 1- OROC medium, 2 - OROC long, 3- OROC all, (default truncation used)  - for qTot
