@@ -203,6 +203,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         dataType                fDataType;              // datatype 
         collisionType           fCollisionType;         // collision type
         TRandom3*               fRandom;                //-> dont use gRandom to not interfere with other tasks
+        Int_t                   fRunNumber;             //! current runnumber (for QA and jet, track selection)
         Int_t                   fMappedRunNumber;       //! mapped runnumer (for QA)
         Int_t                   fInCentralitySelection; //! centrality bin
         TF1*                    fFitModulation;         //-> modulation fit for rho
@@ -319,7 +320,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         AliAnalysisTaskRhoVnModulation(const AliAnalysisTaskRhoVnModulation&);                  // not implemented
         AliAnalysisTaskRhoVnModulation& operator=(const AliAnalysisTaskRhoVnModulation&);       // not implemented
 
-        ClassDef(AliAnalysisTaskRhoVnModulation, 20);
+        ClassDef(AliAnalysisTaskRhoVnModulation, 21);
 };
 
 #endif
