@@ -2657,3 +2657,69 @@ Bool_t AliExternalTrackParam::GetXYZatR(Double_t xr,Double_t bz, Double_t *xyz, 
   return kTRUE;  
   //
 }
+
+
+Double_t  AliExternalTrackParam::GetParameterAtRadius(Double_t r, Double_t bz, Int_t parType) const
+{
+  //
+  // Get track parameters at the radius of interest.
+  // Given function is aimed to be used to interactivelly (tree->Draw())
+  // access track properties at different radii
+  //
+  // TO BE USED WITH SPECICAL CARE - 
+  //     it is aimed to be used for rough calculation as constant field and  
+  //     no correction for material is used
+  //  
+  // r  - radius of interest
+  // bz - magentic field 
+  // retun values dependens on parType:
+  //    parType = 0  -gx 
+  //    parType = 1  -gy 
+  //    parType = 2  -gz 
+  //
+  //    parType = 3  -pgx 
+  //    parType = 4  -pgy 
+  //    parType = 5  -pgz
+  //
+  //    parType = 6  - r
+  //    parType = 7  - global position phi
+  //    parType = 8  - global direction phi
+  //    parType = 9  - direction phi- positionphi
+  if (parType<0) {
+    parType=-1;
+     return 0;
+  }
+  Double_t xyz[3];
+  Double_t pxyz[3];  
+  Double_t localX=0;
+  Bool_t res = GetXatLabR(r,localX,bz,1);
+  if (!res) {
+    parType=-1;
+    return 0;
+  }
+  //
+  // position parameters
+  // 
+  GetXYZAt(localX,bz,xyz); 
+  if (parType<3)   {
+    return xyz[parType];
+  }
+
+  if (parType==6) return TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
+  if (parType==7) return TMath::ATan2(xyz[1],xyz[0]);
+  //
+  // momenta parameters
+  //
+  GetPxPyPzAt(localX,bz,pxyz); 
+  if (parType==8) return TMath::ATan2(pxyz[1],pxyz[0]);
+  if (parType==9) {
+    Double_t diff = TMath::ATan2(pxyz[1],pxyz[0])-TMath::ATan2(xyz[1],xyz[0]);
+    if (diff>TMath::Pi()) diff-=TMath::TwoPi();
+    if (diff<-TMath::Pi()) diff+=TMath::TwoPi();
+    return diff;
+  }
+  if (parType>=3&&parType<6) {
+    return pxyz[parType%3];
+  }
+  return 0;
+}

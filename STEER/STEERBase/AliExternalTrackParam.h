@@ -213,6 +213,8 @@ class AliExternalTrackParam: public AliVTrack {
   Bool_t GetCovarianceXYZPxPyPz(Double_t cv[21]) const;
   Bool_t GetPxPyPzAt(Double_t x, Double_t b, Double_t p[3]) const;
   Bool_t GetXYZAt(Double_t x, Double_t b, Double_t r[3]) const;
+  Double_t GetParameterAtRadius(Double_t r, Double_t bz, Int_t parType) const;
+
   Bool_t GetYAt(Double_t x,  Double_t b,  Double_t &y) const;
   Bool_t GetZAt(Double_t x,  Double_t b,  Double_t &z) const;
   void Print(Option_t* option = "") const;
