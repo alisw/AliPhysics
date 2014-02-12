@@ -56,7 +56,7 @@ using namespace AliSpectraNameSpaceBoth;
  // };
 
 
-AliSpectraBothHistoManager::AliSpectraBothHistoManager(const char *name,Int_t nrebin): TNamed(name, "AOD Spectra Histo Manager"), fOutputList(0), fNRebin(0)
+AliSpectraBothHistoManager::AliSpectraBothHistoManager(const char *name,Int_t nrebin,Bool_t pidqa): TNamed(name, "AOD Spectra Histo Manager"), fOutputList(0), fNRebin(0)
 {
   // ctor
   fNRebin=nrebin;
@@ -70,8 +70,8 @@ AliSpectraBothHistoManager::AliSpectraBothHistoManager(const char *name,Int_t nr
       if (ihist > kNPtGenHist && ihist <= kNPtGenAllChHist) BookPtGenAllChHistogram(kHistNameBoth[ihist]);  // PT histos
       if (ihist > kNPtGenAllChHist && ihist <= kNPtRecHist) BookPtRecHistogram(kHistNameBoth[ihist]);  // PT histos
       if (ihist > kNPtRecHist && ihist <= kNPtRecAllChHist) BookPtRecAllChHistogram(kHistNameBoth[ihist]);  // PT histos
-      if (ihist > kNPtRecAllChHist && ihist <= kNHistPID) BookPIDHistogram(kHistNameBoth[ihist]);  // PID histos
-      if (ihist > kNHistPID && ihist <= kNHistNSig) BookNSigHistogram(kHistNameBoth[ihist]);  // NSigmaSep histos
+      if (ihist > kNPtRecAllChHist && ihist <= kNHistPID && pidqa) BookPIDHistogram(kHistNameBoth[ihist]);  // PID histos
+      if (ihist > kNHistPID && ihist <= kNHistNSig && pidqa) BookNSigHistogram(kHistNameBoth[ihist]);  // NSigmaSep histos
       if(ihist==kHistGenMulvsRawMul) BookGenMulvsRawMulHistogram(kHistNameBoth[ihist]); 
     }
    
