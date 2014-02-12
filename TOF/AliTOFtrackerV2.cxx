@@ -38,17 +38,18 @@
 #include "AliESDtrack.h"
 #include "AliESDEvent.h"
 #include "AliESDpid.h"
-#include "AliESDTOFcluster.h"
+#include "AliESDTOFCluster.h"
 #include "AliLog.h"
 #include "AliTrackPointArray.h"
 #include "AliCDBManager.h"
 
 #include "AliTOFRecoParam.h"
 #include "AliTOFReconstructor.h"
-#include "AliTOFcluster.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFtrackerV2.h"
 #include "AliTOFtrack.h"
+
+#include "AliESDTOFHit.h"
 
 extern TGeoManager *gGeoManager;
 
@@ -57,7 +58,6 @@ ClassImp(AliTOFtrackerV2)
 //_____________________________________________________________________________
 AliTOFtrackerV2::AliTOFtrackerV2():
   fkRecoParam(0x0),
-  fGeom(0x0),
   fN(0),
   fNseeds(0),
   fNseedsTOF(0),
@@ -65,12 +65,15 @@ AliTOFtrackerV2::AliTOFtrackerV2():
   fnmatch(0),
   fTracks(new TClonesArray("AliTOFtrack")),
   fSeeds(new TObjArray(100)),
-  fClusters(0x0)
+  fClustersESD(new TClonesArray("AliESDTOFCluster")),
+  fHitsESD(new TClonesArray("AliESDTOFHit")),
+  fEvent(0)
 {
   //AliTOFtrackerV2 main Ctor
-
-  // Getting the geometry
-  fGeom = new AliTOFGeometry();
+  for (Int_t ii=0; ii<kMaxCluster; ii++){
+    fClusters[ii]=0x0;
+    fWrittenInPos[ii] = -1;
+  }
 
 }
 //_____________________________________________________________________________
@@ -82,7 +85,6 @@ AliTOFtrackerV2::~AliTOFtrackerV2() {
   if(!(AliCDBManager::Instance()->GetCacheFlag())){
     delete fkRecoParam;
   }
-  delete fGeom; 
   if (fTracks){
     fTracks->Delete();
     delete fTracks;
@@ -94,9 +96,15 @@ AliTOFtrackerV2::~AliTOFtrackerV2() {
     fSeeds=0x0;
   }
 
-  if(fClusters){
-    delete[] fClusters;
-    fClusters = NULL;
+  if (fClustersESD){
+    fClustersESD->Delete();
+    delete fClustersESD;
+    fClustersESD=0x0;
+  }
+  if (fHitsESD){
+    fHitsESD->Delete();
+    delete fHitsESD;
+    fHitsESD=0x0;
   }
 
 }
@@ -118,10 +126,8 @@ Int_t AliTOFtrackerV2::PropagateBack(AliESDEvent * const event) {
 
   //Update the matched ESD tracks
   // needed in case of call of TOF info before of the selection of matching and in case of no clusters available at all
-  if(fN==0)
-    event->SetTOFcluster(1,fClusters); 
-  else
-    event->SetTOFcluster(fN,fClusters);
+
+  fEvent = event;
 
   if (fN==0) {
     AliInfo("No TOF recPoints to be matched with reconstructed tracks");
@@ -141,8 +147,6 @@ Int_t AliTOFtrackerV2::PropagateBack(AliESDEvent * const event) {
 
   fNseeds=0;
   fNseedsTOF=0;
-  fnunmatch=0;
-  fnmatch=0;
 
   Int_t ntrk=event->GetNumberOfTracks();
   fNseeds = ntrk;
@@ -157,129 +161,48 @@ Int_t AliTOFtrackerV2::PropagateBack(AliESDEvent * const event) {
 
   if (fNseeds==0 || fNseedsTOF==0) {
     AliInfo("No seeds to try TOF match");
+    fSeeds->Clear();
+    fTracks->Clear();
+    fClustersESD->Clear();
+    fHitsESD->Clear();
     return 0;
   }
 
   // clusterize before of matching
-  Clusterize();
+  Clusterize(); // fN might change
 
   //Second Step with Looser Matching Criterion
-  MatchTracks();
-
-  AliInfo(Form("Number of matched tracks = %d",fnmatch));
-
-  for (Int_t i=0; i<ntrk; i++) {
-    AliESDtrack *t=event->GetTrack(i);
-    //t->SetESDEvent(event);
-    AliESDtrack *seed =(AliESDtrack*)fSeeds->At(i);
-
-    if ( (seed->GetStatus()&AliESDtrack::kTOFin)!=0 ) {
-      t->SetStatus(AliESDtrack::kTOFin);
-      if ( (seed->GetStatus()&AliESDtrack::kTOFout)!=0 ) {
-	t->SetStatus(AliESDtrack::kTOFout);
-	//t->SetTOFclusterArray(seed->GetNTOFclusters(),seed->GetTOFclusterArray());
-	t->SortTOFcluster();
-
-	// Make attention, please:
-	//      AliESDtrack::fTOFInfo array does not be stored in the AliESDs.root file
-	//      it is there only for a check during the reconstruction step.
-	Float_t info[10]; seed->GetTOFInfo(info);
-	t->SetTOFInfo(info);
-	AliDebug(3,Form(" distance=%f; residual in the pad reference frame: dX=%f, dZ=%f", info[0],info[1],info[2]));
-
-	/*
-	Double_t alphaA = (Double_t)t->GetAlpha();
-	Double_t xA = (Double_t)t->GetX();
-	Double_t yA = (Double_t)t->GetY();
-	Double_t zA = (Double_t)t->GetZ();
-	Double_t p1A = (Double_t)t->GetSnp();
-	Double_t p2A = (Double_t)t->GetTgl();
-	Double_t p3A = (Double_t)t->GetSigned1Pt();
-	const Double_t *covA = (Double_t*)t->GetCovariance();
-
-	// Check done:
-	//       by calling the AliESDtrack::UpdateTrackParams,
-	//       the current track parameters are changed
-	//       and it could cause refit problems.
-	//       We need to update only the following track parameters:
-        //            the track length and expected times.
-	//       Removed AliESDtrack::UpdateTrackParams call
-	//       Called AliESDtrack::SetIntegratedTimes(...) and
-	//       AliESDtrack::SetIntegratedLength() routines.
-
-	AliTOFtrack *track = new AliTOFtrack(*seed);
-	t->UpdateTrackParams(track,AliESDtrack::kTOFout); // to be checked - AdC
-	delete track;
-	Double_t time[AliPID::kSPECIESC]; t->GetIntegratedTimes(time);
-	Double_t alphaB = (Double_t)t->GetAlpha();
-	Double_t xB = (Double_t)t->GetX();
-	Double_t yB = (Double_t)t->GetY();
-	Double_t zB = (Double_t)t->GetZ();
-	Double_t p1B = (Double_t)t->GetSnp();
-	Double_t p2B = (Double_t)t->GetTgl();
-	Double_t p3B = (Double_t)t->GetSigned1Pt();
-	const Double_t *covB = (Double_t*)t->GetCovariance();
-	AliDebug(2,"Track params -now(before)-:");
-	AliDebug(2,Form("    X: %f(%f), Y: %f(%f), Z: %f(%f) --- alpha: %f(%f)",
-			xB,xA,
-			yB,yA,
-			zB,zA,
-			alphaB,alphaA));
-	AliDebug(2,Form("    p1: %f(%f), p2: %f(%f), p3: %f(%f)",
-			p1B,p1A,
-			p2B,p2A,
-			p3B,p3A));
-	AliDebug(2,Form("    cov1: %f(%f), cov2: %f(%f), cov3: %f(%f)"
-			" cov4: %f(%f), cov5: %f(%f), cov6: %f(%f)"
-			" cov7: %f(%f), cov8: %f(%f), cov9: %f(%f)"
-			" cov10: %f(%f), cov11: %f(%f), cov12: %f(%f)"
-			" cov13: %f(%f), cov14: %f(%f), cov15: %f(%f)",
-			covB[0],covA[0],
-			covB[1],covA[1],
-			covB[2],covA[2],
-			covB[3],covA[3],
-			covB[4],covA[4],
-			covB[5],covA[5],
-			covB[6],covA[6],
-			covB[7],covA[7],
-			covB[8],covA[8],
-			covB[9],covA[9],
-			covB[10],covA[10],
-			covB[11],covA[11],
-			covB[12],covA[12],
-			covB[13],covA[13],
-			covB[14],covA[14]
-			));
-	*/
-	Double_t time[AliPID::kSPECIESC]; t->GetIntegratedTimes(time,AliPID::kSPECIESC);
-	AliDebug(2,Form(" TOF params: %6d  %f %f %f %f %f %6d %3d %f",
-			i,
-			t->GetTOFsignalRaw(),t->GetTOFsignal(),t->GetTOFsignalToT(),
-			t->GetTOFsignalDz(),t->GetTOFsignalDx(),t->GetTOFCalChannel(),
-			t->GetTOFcluster(),t->GetIntegratedLength()));
-	AliDebug(2,Form("  %f %f %f %f %f %f %f %f %f",
-			time[0], time[1], time[2], time[3], time[4], time[5], time[6], time[7], time[8]));
-      }
-    }
-  }
+  MatchTracks(); 
   
+  // switch array from ALL to filter for ESD (moving from all fClusterESD to filtered AliESDEvent->GetESDTOFClusters())
+  TClonesArray* esdTOFHitArr = event->GetESDTOFHits();
+  TClonesArray* esdTOFClArr = event->GetESDTOFClusters();
+
+  AliInfo(Form("TOF before the matching: hits = %i and clusters = %i",esdTOFHitArr->GetEntriesFast(),fClustersESD->GetEntriesFast()));
+
+  while(esdTOFHitArr->GetEntriesFast()){ // remove all hits
+    delete esdTOFHitArr->RemoveAt(esdTOFHitArr->GetEntriesFast()-1);
+  }
+  for(Int_t i=0;i < fHitsESD->GetEntriesFast();i++){
+    AliESDTOFHit *hitToStored = (AliESDTOFHit *) fHitsESD->At(i);
+    AliESDTOFHit *hitNew = new ( (*esdTOFHitArr)[esdTOFHitArr->GetEntriesFast()] ) AliESDTOFHit(*hitToStored);
+    hitNew->SetESDTOFClusterIndex(hitToStored->GetESDTOFClusterIndex());
+  }
+
+  AliInfo(Form("TOF after the matching: hits = %i and clusters = %i",esdTOFHitArr->GetEntriesFast(),esdTOFClArr->GetEntriesFast()));
+
+  // Sort tof cluster
+  for (Int_t i=0; i<fNseeds; i++) {
+    AliESDtrack *t =(AliESDtrack*)fSeeds->At(i);
+    if ((t->GetStatus()&AliESDtrack::kTOFout)==0)continue;
+    t->SortTOFcluster();
+  }
+
+
   fSeeds->Clear();
   fTracks->Clear();
-  
-  AliInfo(Form("Number of cluster to be checked = %d",fN));
-  if(fN){
-    Int_t *matchmap = new Int_t[fN];
-    event->SetTOFcluster(fN,fClusters,matchmap);
-    for (Int_t i=0; i<ntrk; i++) { // remapping after TOF matching selection
-      AliESDtrack *t=event->GetTrack(i);
-      t->ReMapTOFcluster(fN,matchmap);
-    }
-
-    delete[] matchmap;
-  }
-  
-  
-
+  fClustersESD->Clear();
+  fHitsESD->Clear();
   return 0;
   
 }
@@ -410,6 +333,9 @@ void AliTOFtrackerV2::MatchTracks() {
   AliDebug(1,Form("Time Walk Correction? : %d",timeWalkCorr));   
 
   //Match ESD tracks to clusters in TOF
+  TClonesArray* TOFClArr = fClustersESD; // use temporary array
+  TClonesArray* esdTOFClArr = fEvent->GetESDTOFClusters();
+  TClonesArray* esdTOFHitArr = fEvent->GetESDTOFHits();
 
   // Get the number of propagation steps
   Int_t nSteps=(Int_t)(detDepth/stepSize);
@@ -420,19 +346,23 @@ void AliTOFtrackerV2::MatchTracks() {
   //PH Arrays (moved outside of the loop)
   Float_t * trackPos[4];
   for (Int_t ii=0; ii<4; ii++) trackPos[ii] = new Float_t[nSteps];
-  Int_t * clind = new Int_t[fN];
-  
+
   // Some init
   const Int_t kNclusterMax = 1000; // related to fN value
   TGeoHMatrix global[kNclusterMax];
+  Int_t clind[kNclusterMax];
+  Bool_t isClusterMatchable[kNclusterMax]; // true if track and cluster were already matched (set to false below upto nc < kNclusterMax)
+
 
   //The matching loop
   for (Int_t iseed=0; iseed<fNseedsTOF; iseed++) {
 
-    for (Int_t ii=0; ii<fN; ii++) clind[ii]=-1;
-    for (Int_t ii=0; ii<kNclusterMax; ii++) global[ii] = 0x0;
     for (Int_t ii=0; ii<4; ii++)
       for (Int_t jj=0; jj<nSteps; jj++) trackPos[ii][jj]=0.;
+
+    for (Int_t ii=0; ii<kNclusterMax; ii++) clind[ii]=-1;
+    for (Int_t ii=0; ii<kNclusterMax; ii++) global[ii] = 0x0;
+    for (Int_t ii=0; ii<kNclusterMax; ii++) isClusterMatchable[ii] = kFALSE;	  	
 
     AliTOFtrack *track =(AliTOFtrack*)fTracks->UncheckedAt(iseed);
     AliESDtrack *t =(AliESDtrack*)fSeeds->At(track->GetSeedIndex());
@@ -471,19 +401,20 @@ void AliTOFtrackerV2::MatchTracks() {
 
     // find the clusters in the window of the track
     Int_t nc=0;
-    for (Int_t k=FindClusterIndex(z-dz); k<fN; k++) {
+    for (Int_t k=FindClusterIndex(z-dz); k<TOFClArr->GetEntriesFast(); k++) {
 
       if (nc>=kNclusterMax) {
  	AliWarning("No more matchable clusters can be stored! Please, increase the corresponding vectors size.");
  	break;
       }
 
-      AliESDTOFcluster *c=&(fClusters[k]);
+      AliESDTOFCluster *c=(AliESDTOFCluster *) TOFClArr->At(k);
       if (c->GetZ() > z+dz) break;
       if (!c->GetStatus()) {
 	AliDebug(1,"Cluster in channel declared bad!");
 	continue; // skip bad channels as declared in OCDB
       }
+
 
       Double_t dph=TMath::Abs(c->GetPhi()-phi);
       if (dph>TMath::Pi()) dph-=2.*TMath::Pi();
@@ -496,12 +427,13 @@ void AliTOFtrackerV2::MatchTracks() {
 
       clind[nc] = k;      
       Char_t path[200];
-      Int_t ind[5]; fGeom->GetVolumeIndices(c->GetTOFchannel(),ind);
-      fGeom->GetVolumePath(ind,path);
+      Int_t ind[5]; AliTOFGeometry::GetVolumeIndices(c->GetTOFchannel(),ind);
+      AliTOFGeometry::GetVolumePath(ind,path);
       gGeoManager->cd(path);
       global[nc] = *gGeoManager->GetCurrentMatrix();
       nc++;
     }
+
 
     if (nc == 0 ) {
       AliDebug(1,Form("No available clusters for the track number %d",iseed));
@@ -573,20 +505,13 @@ void AliTOFtrackerV2::MatchTracks() {
 
     AliDebug(3,Form(" Number of steps done for the track number %d: %d",iseed,nStepsDone));
 
-    Int_t *isClusterMatchable = NULL;
     if(nc){
-      isClusterMatchable = new Int_t[nc];
       for (Int_t i=0; i<nc; i++) isClusterMatchable[i] = kFALSE;	  	
     }
 
     Int_t nfound = 0;
     Bool_t accept = kFALSE;
-    Bool_t isInside = kFALSE;
     for (Int_t istep=0; istep<nStepsDone; istep++) {
-
-      Bool_t gotInsideCluster = kFALSE;
-      Int_t trackInsideCluster = -1;
-
       Float_t ctrackPos[3];     
       ctrackPos[0] = trackPos[0][istep];
       ctrackPos[1] = trackPos[1][istep];
@@ -596,43 +521,23 @@ void AliTOFtrackerV2::MatchTracks() {
 
       Float_t dist3d[3]={0.,0.,0.};
       accept = kFALSE;
-     
+
       for (Int_t i=0; i<nc; i++) {
 
-        // ***** NEW *****
-        /* check whether track was inside another cluster
-         * and in case inhibit this cluster.
-         * this will allow to only go on and add track points for
-         * that cluster where the track got inside first */
-        if (gotInsideCluster && trackInsideCluster != i) {
-	  AliDebug(3,Form(" A - istep=%d ~ %d %d ~ nfound=%d",istep,trackInsideCluster,i,nfound));
-          continue;
-	}
-	AliDebug(3,Form(" B - istep=%d ~ %d %d ~ nfound=%d",istep,trackInsideCluster,i,nfound));
-
-        /* check whether track is inside this cluster */
-	for (Int_t hh=0; hh<3; hh++) dist3d[hh]=0.;
-	isInside = fGeom->IsInsideThePad((TGeoHMatrix*)(&global[i]),ctrackPos,dist3d);
+	AliTOFGeometry::IsInsideThePad((TGeoHMatrix*)(&global[i]),ctrackPos,dist3d);
 
         // ***** NEW *****
         /* if track is inside this cluster set flags which will then
          * inhibit to add track points for the other clusters */
-        if (isInside) {
-          gotInsideCluster = kTRUE;
-          trackInsideCluster = i;
-        }
-
 	Float_t yLoc = dist3d[1];
 	Float_t rLoc = TMath::Sqrt(dist3d[0]*dist3d[0]+dist3d[2]*dist3d[2]);
 	accept = (TMath::Abs(yLoc)<padDepth*0.5 && rLoc<dCut);
 
 	//***** NEW *****
 	/* add point everytime that:
-	 * - the track is inside the cluster
-	 * - the track got inside the cluster, even when it eventually exited the cluster
 	 * - the tracks is within dCut from the cluster
 	 */
-        if (accept || isInside || gotInsideCluster) {
+        if (accept) {
 
 	  Double_t timesCurrent[AliPID::kSPECIESC];
 	  AliDebug(3,Form(" Momentum for track %d -> %f", iseed,t->P()));
@@ -640,24 +545,51 @@ void AliTOFtrackerV2::MatchTracks() {
 	    timesCurrent[j] = timesOr[j] + times[j][istep];
 	  }
 
+
 	  if (TMath::Abs(dist3d[1])<stepSize && !isClusterMatchable[i]) {
 	    isClusterMatchable[i] = kTRUE;
-	    fClusters[clind[i]].Update(t->GetID(),dist3d[1],dist3d[0],dist3d[2],trackPos[3][istep],timesCurrent);//x,y,z -> tracking RF
-	    t->AddTOFcluster(clind[i]);
-	    t->SetStatus(AliESDtrack::kTOFout);
+	    
+	    AliESDTOFCluster *cmatched=(AliESDTOFCluster *) TOFClArr->At(clind[i]);
+
+	    Int_t currentpos = esdTOFClArr->GetEntriesFast(); // position of cluster in ESD
+	    if(fWrittenInPos[clind[i]] != -1){
+	      currentpos = fWrittenInPos[clind[i]];
+	      cmatched = (AliESDTOFCluster *) esdTOFClArr->At(currentpos); // update the new one in the ESDEvent
+	    }
+	    else{ // add as a new cluster in the ESD TClonesArray
+	      AliESDTOFCluster *clnew =  new( (*esdTOFClArr)[currentpos] ) AliESDTOFCluster(*cmatched);
+	      clnew->SetEvent(fEvent);
+	      clnew->SetESDID(currentpos);
+
+	      // remap also TOF hit in the filtered array
+	      for(Int_t ii=0;ii < cmatched->GetNTOFhits();ii++){
+		Int_t index = cmatched->GetHitIndex(ii);
+		AliESDTOFHit *hitOld = (AliESDTOFHit *) esdTOFHitArr->At(index);
+		Int_t index_new = fHitsESD->GetEntriesFast();
+		AliESDTOFHit *hitNew = new( (*fHitsESD)[index_new] ) AliESDTOFHit(*hitOld);
+		hitNew->SetESDTOFClusterIndex(currentpos);
+		clnew->SetHitIndex(ii,index_new);
+	      }
+
+	      fWrittenInPos[clind[i]] = currentpos;
+	      cmatched = clnew; // update the new one added to the ESDEvent
+	    }
+
+	    if(cmatched->GetNMatchableTracks() < AliESDTOFCluster::kMaxMatches){
+	      cmatched->Update(t->GetID(),dist3d[1],dist3d[0],dist3d[2],trackPos[3][istep],timesCurrent);//x,y,z -> tracking RF
+	      t->AddTOFcluster(currentpos);
+	      t->SetStatus(AliESDtrack::kTOFout);
+	    }
 	  }
           AliDebug(2,Form(" dist3dLoc[0] = %f, dist3dLoc[1] = %f, dist3dLoc[2] = %f ",dist3d[0],dist3d[1],dist3d[2]));
 
           nfound++;
-
-	  AliDebug(3,Form(" C - istep=%d ~ %d %d ~ nfound=%d",istep,trackInsideCluster,i,nfound));
         
           // ***** NEW *****
         }//end if accept
         
       } //end for on the clusters
     } //end for on the steps     
-    if(nc) delete[] isClusterMatchable;
 
     for(Int_t isp=0;isp < AliPID::kSPECIESC;isp++){
       delete[] times[isp];
@@ -702,7 +634,6 @@ void AliTOFtrackerV2::MatchTracks() {
   } // loop on fSeeds
 
   for (Int_t ii=0; ii<4; ii++) delete [] trackPos[ii];
-  delete [] clind;
  
 }
 //_________________________________________________________________________
@@ -723,24 +654,22 @@ Int_t AliTOFtrackerV2::LoadClusters(TTree *cTree) {
   branch->SetAddress(&clusters);
 
   cTree->GetEvent(0);
-  fN=clusters->GetEntriesFast();
-  AliInfo(Form("Number of clusters: %d",fN));
+  Int_t ncl =clusters->GetEntriesFast();
+  AliInfo(Form("Number of clusters: %d",ncl));
 
-  if(fClusters){
-    delete[] fClusters;
-    fClusters = NULL;
-  }
+  fN = ncl; // set cluster counter
 
-  if(fN)
-    fClusters = new AliESDTOFcluster[fN];
-  else{
-    fClusters = new AliESDTOFcluster[1];
-    fN = 1;
+  for(Int_t i=0;i < ncl;i++) // reset position of clusters in ESD
+    fWrittenInPos[i] = -1;
+
+  if(ncl==0){
     return 0;
   }
 
-  for (Int_t i=0; i<fN; i++) {
+  for (Int_t i=0; i<ncl; i++) {
     AliTOFcluster *c=(AliTOFcluster*)clusters->UncheckedAt(i);
+
+    /*
     Int_t ind[5];
     ind[0]=c->GetDetInd(0);
     ind[1]=c->GetDetInd(1);
@@ -749,16 +678,9 @@ Int_t AliTOFtrackerV2::LoadClusters(TTree *cTree) {
     ind[4]=c->GetDetInd(4);
     Int_t calindex = AliTOFGeometry::GetIndex(ind);
     Int_t tofLabels[3]={c->GetLabel(0),c->GetLabel(1),c->GetLabel(2)};
-    AliESDTOFcluster esdTOFclus(i,calindex,
-				AliTOFGeometry::TdcBinWidth()*c->GetTDC()/*ps*/,
-				AliTOFGeometry::TdcBinWidth()*c->GetTDCRAW()/*ps*/,
-				AliTOFGeometry::ToTBinWidth()*c->GetToT()*1E-3/*ns*/,
-				tofLabels,
-				c->GetDeltaBC(),c->GetL0L1Latency(),
-				c->GetStatus(),c->GetZ(),c->GetPhi(),c->GetR());
-
-    fClusters[i] = esdTOFclus;
-
+    */
+      
+    fClusters[i] = c;
   }
 
   return 0;
@@ -777,24 +699,28 @@ Int_t AliTOFtrackerV2::FindClusterIndex(Double_t z) const {
   //--------------------------------------------------------------------
   // This function returns the index of the nearest cluster 
   //--------------------------------------------------------------------
-  if (fN==0) return 0;
-  if (z <= fClusters[0].GetZ()) return 0;
-  if (z > fClusters[fN-1].GetZ()) return fN;
-  Int_t b=0, e=fN-1, m=(b+e)/2;
+  TClonesArray* TOFClArr = fClustersESD;; // use temporary array
+  Int_t n = TOFClArr->GetEntriesFast();
+
+  if (n==0) return 0;
+  if (z <= ((AliESDTOFCluster *) TOFClArr->At(0))->GetZ()) return 0;
+  if (z > ((AliESDTOFCluster *) TOFClArr->At(n-1))->GetZ()) return n;
+  Int_t b=0, e=n-1, m=(b+e)/2;
   for (; b<e; m=(b+e)/2) {
-    if (z > fClusters[m].GetZ()) b=m+1;
+    if (z > ((AliESDTOFCluster *) TOFClArr->At(m))->GetZ()) b=m+1;
 
     else e=m; 
   }
   return m;
-}
-
+} 
 //_________________________________________________________________________
 Bool_t AliTOFtrackerV2::GetTrackPoint(Int_t index, AliTrackPoint& p) const
 {
   // Get track space point with index i
   // Coordinates are in the global system
-  AliESDTOFcluster *cl = &(fClusters[index]);
+  TClonesArray* esdTOFClArr = fEvent->GetESDTOFClusters();
+  AliESDTOFCluster *cl = (AliESDTOFCluster *) esdTOFClArr->At(index);
+
   Float_t xyz[3];
   xyz[0] = cl->GetR()*TMath::Cos(cl->GetPhi());
   xyz[1] = cl->GetR()*TMath::Sin(cl->GetPhi());
@@ -802,7 +728,7 @@ Bool_t AliTOFtrackerV2::GetTrackPoint(Int_t index, AliTrackPoint& p) const
   Float_t phiangle = (Int_t(cl->GetPhi()*TMath::RadToDeg()/20.)+0.5)*20.*TMath::DegToRad();
   Float_t sinphi = TMath::Sin(phiangle), cosphi = TMath::Cos(phiangle);
   Int_t tofChannel=cl->GetTOFchannel();
-  Int_t ind[5]; fGeom->GetVolumeIndices(tofChannel,ind);
+  Int_t ind[5]; AliTOFGeometry::GetVolumeIndices(tofChannel,ind);
   Float_t tiltangle = AliTOFGeometry::GetAngles(ind[1],ind[2])*TMath::DegToRad();
   Float_t sinth = TMath::Sin(tiltangle), costh = TMath::Cos(tiltangle);
   Float_t sigmay2 = AliTOFGeometry::XPad()*AliTOFGeometry::XPad()/12.;
@@ -862,19 +788,6 @@ Bool_t AliTOFtrackerV2::GetTrackPoint(Int_t index, AliTrackPoint& p) const
 }
 //_________________________________________________________________________
 
-void AliTOFtrackerV2::FillClusterArray(TObjArray* arr) const
-{
-  //
-  // Returns the TOF cluster array
-  //
-
-  if (fN==0)
-    arr = 0x0;
-  else
-    for (Int_t i=0; i<fN; ++i) arr->Add(&(fClusters[i]));
-
-}
-//_________________________________________________________________________
 Float_t AliTOFtrackerV2::CorrectTimeWalk( Float_t dist, Float_t tof) const {
 
   //dummy, for the moment
@@ -890,40 +803,87 @@ Float_t AliTOFtrackerV2::CorrectTimeWalk( Float_t dist, Float_t tof) const {
 //_________________________________________________________________________
 void AliTOFtrackerV2::Clusterize(){
   Int_t detId[5];
-  for(Int_t i=0; i < fN-1;i++){
-    AliESDTOFcluster *c1=&(fClusters[i]);
+
+  // Load 1 hit in 1 cluster (ESD)
+  TClonesArray* TOFClArr = fClustersESD;// use a temporary copy //fEvent->GetESDTOFClusters();
+  TClonesArray* esdTOFHitArr = fEvent->GetESDTOFHits();
+
+  if(TOFClArr->GetEntriesFast()) TOFClArr->Clear();
+  if(esdTOFHitArr->GetEntriesFast()) esdTOFHitArr->Clear();
+
+  AliESDTOFCluster *c1 = NULL;
+  AliESDTOFCluster *c2 = NULL;
+
+  for(Int_t i=0; i < fN;i++){
+    AliTOFcluster *c = fClusters[i];
+    Int_t ind[5];
+    ind[0]=c->GetDetInd(0);
+    ind[1]=c->GetDetInd(1);
+    ind[2]=c->GetDetInd(2);
+    ind[3]=c->GetDetInd(3);
+    ind[4]=c->GetDetInd(4);
+    Int_t calindex = AliTOFGeometry::GetIndex(ind);
+    Int_t tofLabels[3]={c->GetLabel(0),c->GetLabel(1),c->GetLabel(2)};
+    
+    new ( (*esdTOFHitArr)[i] ) AliESDTOFHit( AliTOFGeometry::TdcBinWidth()*c->GetTDC(),
+                              AliTOFGeometry::TdcBinWidth()*c->GetTDCRAW(),
+                              AliTOFGeometry::ToTBinWidth()*c->GetToT()*1E-3,
+                              calindex,tofLabels,c->GetL0L1Latency(),
+                              c->GetDeltaBC(),i,c->GetZ(),c->GetR(),c->GetPhi() );
+    
+    c1 =  new( (*TOFClArr)[i] ) AliESDTOFCluster(i);
+    c1->SetEvent(fEvent);
+    c1->SetStatus( c->GetStatus() );
+    c1->SetESDID(i);
+    // 
+    // register hits in the cluster
+    c1->AddESDTOFHitIndex(i);
+
+  }
+
+  // start to merge clusters
+  Int_t chan1,chan2,chan3;
+  Int_t strip1,strip2;
+  Int_t iphi,iphi2,iphi3;
+  Int_t ieta,ieta2,ieta3;
+
+  for(Int_t i=0; i < TOFClArr->GetEntriesFast()-1;i++){
+    c1=(AliESDTOFCluster *) TOFClArr->At(i);
     if(!c1->GetStatus()) continue;
 
-    Int_t chan1 = c1->GetTOFchannel();
+    chan1 = c1->GetTOFchannel();
     AliTOFGeometry::GetVolumeIndices(chan1, detId); // Get volume index from channel index
 
-    Int_t ieta = detId[2]/*strip*/*2 + detId[3]/*pad Z*/;
+    ieta = detId[2]/*strip*/*2 + detId[3]/*pad Z*/;
     if(detId[1]/*module*/ == 0) ieta += 0;
     else if(detId[1] == 1) ieta += 38;
     else if(detId[1] == 2) ieta += 76;
     else if(detId[1] == 3) ieta += 106;
     else if(detId[1] == 4) ieta += 144;
-    Int_t iphi = detId[0]/*phi sector*/*48 + detId[4]/*pad x*/;
-    
+    iphi = detId[0]/*phi sector*/*48 + detId[4]/*pad x*/;
 
-    for(Int_t j=i+1; j < fN;j++){
-      AliESDTOFcluster *c2=&(fClusters[j]);
+    strip1 = chan1/96;
+    for(Int_t j=i+1; j < TOFClArr->GetEntriesFast();j++){
+     c2=(AliESDTOFCluster *) TOFClArr->At(j);
       if(!c2->GetStatus()) continue;
 
-      Int_t chan2 = c2->GetTOFchannel();
+      chan2 = c2->GetTOFchannel();
 
       // check if the two TOF hits are in the same strip
-      if(chan1/96 != chan2/96) continue;
+      strip2 = chan2/96;
+      if(strip1 != strip2) continue;
 
       AliTOFGeometry::GetVolumeIndices(chan2, detId); // Get volume index from channel index
-      Int_t ieta2 = detId[2]/*strip*/*2 + detId[3]/*pad Z*/;
+      ieta2 = detId[2]/*strip*/*2 + detId[3]/*pad Z*/;
       if(detId[1]/*module*/ == 0) ieta2 += 0;
       else if(detId[1] == 1) ieta2 += 38;
       else if(detId[1] == 2) ieta2 += 76;
       else if(detId[1] == 3) ieta2 += 106;
       else if(detId[1] == 4) ieta2 += 144;
-      Int_t iphi2 = detId[0]/*phi sector*/*48 + detId[4]/*pad x*/;
+      iphi2 = detId[0]/*phi sector*/*48 + detId[4]/*pad x*/;
       
+      if(ieta2-ieta > 2) j = fN; // because cluster are order along Z so you can skip all the rest, go to the next one ("i+1")
+
       // check if the fired pad are close in space
       if(TMath::Abs(iphi-iphi2)>1 || TMath::Abs(ieta-ieta2)>1) continue;
 
@@ -931,32 +891,49 @@ void AliTOFtrackerV2::Clusterize(){
       if(TMath::Abs(c1->GetTime() - c2->GetTime()) > 500/*in ps*/) continue;
 
       // merge them
-      Int_t label[3] = {c2->GetLabel(0),c2->GetLabel(1),c2->GetLabel(2)};
-      fClusters[i].AddTOFhit(c2->GetClusterIndex(),chan2,c2->GetTime(),c2->GetTimeRaw(),c2->GetTOT(),label,
-                                       c2->GetDeltaBC(),c2->GetL0L1Latency(),1,c2->GetZ(),c2->GetPhi(),c2->GetR());
-      
-      c2->SetStatus(0); // only the merged one should be used
+      MergeClusters(i,j);
+
       j = fN; // cluster "i" merged go to the next one ("i+1")
     }
   }
 
+  // Sort in z after clusterization
+  for(Int_t i=0; i < TOFClArr->GetEntriesFast()-1;i++){
+    c1=(AliESDTOFCluster *) TOFClArr->At(i);
+    for(Int_t j=i+1; j < TOFClArr->GetEntriesFast()-1;j++){
+      c2=(AliESDTOFCluster *) TOFClArr->At(j);
+
+      if(c2->GetZ() < c1->GetZ()){ // exchange position
+	AliESDTOFCluster ctemp(*c2);
+	*c2 = *c1; 
+	c2->SetESDID(i);
+	*c1 = ctemp; 
+	c1->SetESDID(j);
+
+	c1 = c2;	
+      }
+
+      // ID re-setting for hits not needed (done when matching is found)
+    }
+  }
+
   // second step of clusterization
-  for(Int_t i=0; i < fN-1;i++){
-    AliESDTOFcluster *c1=&(fClusters[i]);
+  for(Int_t i=0; i <  TOFClArr->GetEntriesFast()-1;i++){
+    c1=(AliESDTOFCluster *) TOFClArr->At(i);
     if(!c1->GetStatus()) continue;
 
-    Int_t chan1 = c1->GetTOFchannel(0);
+    chan1 = c1->GetTOFchannel(0);
     AliTOFGeometry::GetVolumeIndices(chan1, detId); // Get volume index from channel index
 
-    Int_t ieta = detId[2]/*strip*/*2 + detId[3]/*pad Z*/;
+    ieta = detId[2]/*strip*/*2 + detId[3]/*pad Z*/;
     if(detId[1]/*module*/ == 0) ieta += 0;
     else if(detId[1] == 1) ieta += 38;
     else if(detId[1] == 2) ieta += 76;
     else if(detId[1] == 3) ieta += 106;
     else if(detId[1] == 4) ieta += 144;
-    Int_t iphi = detId[0]/*phi sector*/*48 + detId[4]/*pad x*/;
+    iphi = detId[0]/*phi sector*/*48 + detId[4]/*pad x*/;
 
-    Int_t ieta2,iphi2,chan2=chan1;
+    chan2=chan1;
     if(c1->GetNTOFhits() > 1){
       chan2 = c1->GetTOFchannel(1);
       AliTOFGeometry::GetVolumeIndices(chan2, detId); // Get volume index from channel index
@@ -974,46 +951,119 @@ void AliTOFtrackerV2::Clusterize(){
       ieta2=ieta;
     }
 
-    for(Int_t j=i+1; j < i;j++){
-      AliESDTOFcluster *c2=&(fClusters[j]);
+    // 1 and 2 belong now to the first cluster, 3 to the second one
+    
+    strip1 = chan1/96;
+    for(Int_t j=i+1; j < TOFClArr->GetEntriesFast();j++){
+      c2=(AliESDTOFCluster *) TOFClArr->At(j);
       if(!c2->GetStatus()) continue;
 
-      Int_t chan3 = c2->GetTOFchannel();
+      chan3 = c2->GetTOFchannel();
 
       // check if the two TOF hits are in the same strip
-      if(chan1/96 != chan3/96) continue;
+      strip2 = chan3/96;
+      if(strip1 != strip2) continue;
 
       AliTOFGeometry::GetVolumeIndices(chan3, detId); // Get volume index from channel index
-      Int_t ieta3 = detId[2]/*strip*/*2 + detId[3]/*pad Z*/;
+      ieta3 = detId[2]/*strip*/*2 + detId[3]/*pad Z*/;
       if(detId[1]/*module*/ == 0) ieta3 += 0;
       else if(detId[1] == 1) ieta3 += 38;
       else if(detId[1] == 2) ieta3 += 76;
       else if(detId[1] == 3) ieta3 += 106;
       else if(detId[1] == 4) ieta3 += 144;
-      Int_t iphi3 = detId[0]/*phi sector*/*48 + detId[4]/*pad x*/;
+      iphi3 = detId[0]/*phi sector*/*48 + detId[4]/*pad x*/;
       
+
+      if(ieta3-ieta > 2) j = fN; // because cluster are order along Z so you can skip all the rest, go to the next one ("i+1")
+
       // check if the fired pad are close in space
       if((TMath::Abs(iphi-iphi3)>1 && TMath::Abs(iphi2-iphi3)>1) || (TMath::Abs(ieta-ieta3)>1 && TMath::Abs(ieta2-ieta3)>1)) 
-continue;
+	continue; // double checks
       
       // check if the TOF time are close enough to be merged
       if(TMath::Abs(c1->GetTime() - c2->GetTime()) > 500/*in ps*/) continue;
       
       // merge them
-      Int_t label[3] = {c2->GetLabel(0),c2->GetLabel(1),c2->GetLabel(2)};
-      fClusters[i].AddTOFhit(c2->GetClusterIndex(),chan2,c2->GetTime(),c2->GetTimeRaw(),c2->GetTOT(),label,
-                                       c2->GetDeltaBC(),c2->GetL0L1Latency(),1,c2->GetZ(),c2->GetPhi(),c2->GetR());
+      MergeClusters(i,j);
 
-      if(c2->GetNTOFhits() > 1){ // in case also the second cluster has two hits
-        Int_t label2[3] = {c2->GetLabel(0,1),c2->GetLabel(1,1),c2->GetLabel(2,1)};
-        fClusters[i].AddTOFhit(c2->GetClusterIndex(1),c2->GetTOFchannel(1),c2->GetTime(1),c2->GetTimeRaw(1),
-                                         c2->GetTOT(1),label2,c2->GetDeltaBC(2),c2->GetL0L1Latency(2),1,c2->GetZ(),
-                                         c2->GetPhi(),c2->GetR());
-      }
-
-      c1->SetStatus(0); // only the merged one should be used
       j = fN; // cluster "i" merged go to the next one ("i+1")
     }
   }  
+
+  // Sort in z after clusterization
+  for(Int_t i=0; i < TOFClArr->GetEntriesFast()-1;i++){
+    c1=(AliESDTOFCluster *) TOFClArr->At(i);
+    for(Int_t j=i+1; j < TOFClArr->GetEntriesFast()-1;j++){
+      c2=(AliESDTOFCluster *) TOFClArr->At(j);
+
+      if(c2->GetZ() < c1->GetZ()){ // exchange position
+	AliESDTOFCluster ctemp(*c2);
+	*c2 = *c1; 
+	c2->SetESDID(i);
+	*c1 = ctemp; 
+	c1->SetESDID(j);
+
+	c1 = c2;	
+      }
+
+      // ID re-setting for hits not needed (done when matching is found)
+    }
+  }
 }
 
+void AliTOFtrackerV2::MergeClusters(Int_t i,Int_t j){
+  TClonesArray* TOFClArr = fClustersESD;// use a temporary copy //fEvent->GetESDTOFClusters();
+  TClonesArray* esdTOFHitArr = fEvent->GetESDTOFHits();
+
+  if(i == j){
+    AliInfo("No TOF cluster mergine possible (cannot merge a cluster with itself)");
+    return;
+  }
+
+  if(i > j){ // check right order
+    Int_t k=i;
+    i=j;
+    j=k;
+  }
+
+  Int_t last = TOFClArr->GetEntriesFast()-1;
+
+  if(j > last){
+    AliInfo("No TOF cluster mergine possible (cluster not available)");
+    return;
+  }
+  
+  AliESDTOFCluster *c1 = (AliESDTOFCluster *) TOFClArr->At(i);
+  AliESDTOFCluster *c2 = (AliESDTOFCluster *) TOFClArr->At(j);
+
+  if(c2->GetNMatchableTracks()){
+    AliInfo("No TOF cluster mergine possible (cluster already matched)");
+    return; // cannot merge a cluster already matched
+  }
+
+  Int_t nhit1 = c1->GetNTOFhits();
+  Int_t nhit2 = c2->GetNTOFhits();
+
+  if(nhit1+nhit2 >= AliESDTOFCluster::kMaxHits) 
+    {
+      AliInfo("No TOF cluster mergine possible (too many hits)");
+      return;
+    }
+
+  for(Int_t k=0;k < nhit2;k++){// add hits in c2 to c1
+    c1->AddESDTOFHitIndex(c2->GetHitIndex(k));
+
+    // ID re-setting for hits not needed (done when matching is found)
+  }
+
+  // remove c2 from array
+  delete TOFClArr->RemoveAt(j);
+  if(j != last){
+    AliESDTOFCluster *replace= (AliESDTOFCluster *) TOFClArr->At(last);
+    if (!replace) {AliFatal(Form("NULL pointer for TOF cluster %d",last));}
+    replace->SetESDID(j);
+    new ( (*TOFClArr)[j] ) AliESDTOFCluster(*replace);
+    delete TOFClArr->RemoveAt(last);
+  }
+
+}
