@@ -152,7 +152,9 @@ code="{fTrackTime = new Double32_t[AliPID::kSPECIESC];for(Int_t isp=AliPID::kSPE
 #pragma link C++ class  AliV0vertexer+;
 #pragma link C++ class  AliCascadeVertexer+;
 
-#pragma link C++ class  AliESDTOFcluster+;
+#pragma link C++ class  AliESDTOFHit+;
+#pragma link C++ class  AliESDTOFMatch+;
+#pragma link C++ class  AliESDTOFCluster+;
 
 #pragma link C++ function AliESDUtils::GetCorrV0(const AliESDEvent*,Float_t &);
 #pragma link C++ function AliESDUtils::GetCorrSPD2(Float_t,Float_t);

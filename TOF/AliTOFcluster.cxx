@@ -50,7 +50,8 @@ AliTOFcluster::AliTOFcluster():
   fTdcRAW(0),
   fStatus(kTRUE),
   fDeltaBC(0),
-  fL0L1Latency(0)
+  fL0L1Latency(0),
+  fESDID(-1)
  {
   //
   // default ctor
@@ -80,7 +81,8 @@ AliTOFcluster::AliTOFcluster(UShort_t volId,
   fTdcRAW(par[4]),
   fStatus(status),
   fDeltaBC(par[5]),
-  fL0L1Latency(par[6])
+  fL0L1Latency(par[6]),
+  fESDID(-1)
  {
   //
   // constructor
@@ -109,7 +111,8 @@ AliTOFcluster::AliTOFcluster(const AliTOFcluster & cluster):
   fTdcRAW(cluster.fTdcRAW),
   fStatus(cluster.fStatus),
   fDeltaBC(cluster.fDeltaBC),
-  fL0L1Latency(cluster.fL0L1Latency)
+  fL0L1Latency(cluster.fL0L1Latency),
+  fESDID(-1)
  {
   //
   // copy ctor for AliTOFcluster object
@@ -139,6 +142,7 @@ AliTOFcluster & AliTOFcluster::operator = (const AliTOFcluster & cluster)
   fStatus=cluster.fStatus;
   fDeltaBC=cluster.fDeltaBC;
   fL0L1Latency=cluster.fL0L1Latency;
+  fESDID = -1;
   for (Int_t ii=0; ii<5; ii++)
     fdetIndex[ii] = cluster.fdetIndex[ii];
   return *this;
