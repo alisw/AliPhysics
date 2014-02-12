@@ -55,9 +55,11 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(TString     kTracksName    
   else if (strcmp(type,"EMCAL")==0)
     jetFinderTaskBase = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kFULLJETS, ptminTrack, etminClus,0.005,recombScheme,tag.Data());
   jetFinderTaskBase->SelectCollisionCandidates(AliVEvent::kAny);
+  jetFinderTaskBase->SetMinJetPt(0.);
 
   AliEmcalJetTask* jetFinderTaskTag  = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTag, etminClus,0.005,recombScheme,tag.Data());
   jetFinderTaskTag->SelectCollisionCandidates(AliVEvent::kAny);
+  jetFinderTaskTag->SetMinJetPt(0.);
 
   if(tag.EqualTo("JetPythia")) {
     jetFinderTaskBase->SelectConstituents(TObject::kBitMask, 0);
@@ -209,6 +211,9 @@ AliAnalysisTaskRhoBase *AttachRhoTaskTagger(TString     kPeriod             = "L
   jetFinderAKt  = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,recombScheme,tag.Data());
   jetFinderKt->SelectCollisionCandidates(AliVEvent::kAny);
   jetFinderAKt->SelectCollisionCandidates(AliVEvent::kAny);
+  jetFinderKt->SetMinJetPt(0.);
+  jetFinderAKt->SetMinJetPt(0.);
+
   if(tag.EqualTo("JetPythia")) {
     jetFinderKt->SelectConstituents(TObject::kBitMask, 0);
     jetFinderAKt->SelectConstituents(TObject::kBitMask, 0);
