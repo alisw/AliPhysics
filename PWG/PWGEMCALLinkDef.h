@@ -7,6 +7,7 @@
 #pragma link C++ class AliAnalysisTaskEMCALClusterizeFast+;
 #pragma link C++ class AliAnalysisTaskEmcal+;
 #pragma link C++ class AliClusterContainer+;
+#pragma link C++ class AliEmcalDummyHandler;
 #pragma link C++ class AliEMCALClusterParams+;
 #pragma link C++ class AliEmcalAodTrackFilterTask+;
 #pragma link C++ class AliEmcalClusTrackMatcherTask+;
