@@ -6,6 +6,8 @@
 
 */
 
+Int_t  kmarkes[5]={20,21,24,25,23};
+Int_t  kcolors[5]={1,2,4,3,6};
 
 void simul(Int_t npoints){ 
   //
@@ -66,12 +68,16 @@ void DrawdEdxResolExample(){
   //
   chain->Draw("tr.CookdEdxDmax(0,0.6,1,0,1,0)/tr.CookdEdxDtot(0,0.6,1,0,1,0):tr.fMNprim>>hisQtotMax(10,10,50)","","prof",10000);
   //
-  // 2.) Non linearity due to the tucncation Qtot_{60%}/Qtot 100% 
+  // 2.) Non linearity due to the truncation Qtot_{60%}/Qtot 100% 
   //
   chain->Draw("tr.CookdEdxDtot(0,0.6,1,0,1,0)/tr.CookdEdxDtot(0,0.99,1,0,1,0):tr.fMNprim>>hisQtot60100(10,10,50)","","prof",10000);
   //
+  // 3.) 
   //
-  //
-
+  chain->Draw("tr.CookdEdxDtot(0,0.6,1,0,1,0)/tr.fMNprim:tr.fMNprim>>profQtot60(10,10,50)","","prof",10000);
+  chain->Draw("tr.CookdEdxDtot(0,0.99,1,0,1,0)/tr.fMNprim:tr.fMNprim>>profQtot100(10,10,50)","","profsame",10000);
 
 }
+
+
+

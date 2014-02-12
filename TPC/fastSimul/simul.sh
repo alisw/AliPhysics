@@ -1,7 +1,4 @@
 #!/bin/sh
-
-
-
 main()
 {
   #
@@ -33,9 +30,9 @@ exampleCase(){
 #
 #  Example case to subit Toy MC jobs
 # 
-   source $ALICE_ROOT/TPCdev/TPC/fastSimul/simul.sh
+   source $ALICE_ROOT/TPC/fastSimul/simul.sh
    makeEnvLocal
-   makeSubmitRUN 40 100
+   makeSubmitRUN 80 400
    ls `pwd`/MC*/trackerSimul.root >  trackerSimul.list
 
 }

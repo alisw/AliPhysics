@@ -1,3 +1,4 @@
+
 /*
   gSystem->Load("libSTAT.so");
   .x ~/NimStyle.C
@@ -82,6 +83,7 @@ public:
   static void Simul(const char* simul, Int_t ntracks);
   Double_t  CookdEdxNtot(Double_t f0,Float_t f1);
   Double_t  CookdEdxQtot(Double_t f0,Float_t f1);
+  Double_t  CookdEdxQtotThr(Double_t f0,Float_t f1, Double_t thr, Int_t mode);
   //
   Double_t  CookdEdxDtot(Double_t f0,Float_t f1, Float_t gain,Float_t thr, Float_t noise, Bool_t corr = kTRUE);
   Double_t  CookdEdxDmax(Double_t f0,Float_t f1,Float_t gain,Float_t thr, Float_t noise, Bool_t corr=kTRUE);
@@ -174,6 +176,60 @@ Double_t  AliTPCtrackFast::CookdEdxQtot(Double_t f0,Float_t f1){
   }
   return CookdEdx(fN,amp,f0,f1);
 }
+
+Double_t  AliTPCtrackFast::CookdEdxQtotThr(Double_t f0,Float_t f1, Double_t thr, Int_t mode){
+  //
+  //
+  //
+  Double_t amp[160];
+  Int_t nUsed=0;
+  Int_t nBellow=0;
+  //
+  Double_t minAbove=-1;
+  for (Int_t i=0;i<fN;i++){ 
+    AliTPCclusterFast * cluster = ( AliTPCclusterFast *)((*fCl)[i]);
+    Double_t clQ= cluster->fQtot;
+    if (clQ<thr) {
+      nBellow++;
+      continue;
+    }
+    if (minAbove<0) minAbove=clQ;
+    if (minAbove>clQ) minAbove=clQ;
+  }
+  if (mode==-1) return Double_t(nBellow)/Double_t(fN);
+
+  for (Int_t i=0;i<fN;i++){ 
+    AliTPCclusterFast * cluster = ( AliTPCclusterFast *)((*fCl)[i]);
+    Double_t clQ= cluster->fQtot;
+    if (clQ<thr) nBellow++;
+    if (mode==0){              // mode0 - not threshold
+      amp[nUsed]=clQ;
+      nUsed++;
+    }
+    if (mode==1 && clQ>thr){   // mode1 - skip if bellow
+      amp[nUsed]=clQ;
+      nUsed++;
+    }
+    if (mode==2) {             // mode2 - use 0 if below
+      amp[nUsed]=(clQ>thr)?clQ:0;
+      nUsed++;
+    }
+    if (mode==3) {             // mode3 - use thr if below
+      amp[nUsed]=(clQ>thr)?clQ:thr;
+      nUsed++;
+    }
+    if (mode==4) {             // mode4 - use minimal above threshold if bellow thr
+      amp[nUsed]=(clQ>thr)?clQ:minAbove;
+      nUsed++;
+    }
+  }
+  if (nUsed*(f1-f0)<3) return 0;
+  return CookdEdx(nUsed,amp,f0,f1);
+}
+
+
+
+
 
 Double_t   AliTPCtrackFast::CookdEdxDtot(Double_t f0,Float_t f1, Float_t gain,Float_t thr, Float_t noise, Bool_t doCorr){
   //
@@ -369,7 +425,9 @@ void AliTPCclusterFast::Digitize(){
 	fDigits(2+di,3+dj)+=fac;
       }
   }
-  
+  //
+  //
+  //
 }
 
 
