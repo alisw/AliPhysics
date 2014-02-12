@@ -92,7 +92,7 @@ the AliITS class.
 #include "AliRun.h"
 #include "AliLog.h"
 #include "AliITSdigit.h"
-#include "AliITSUModule.h"
+#include "AliITSUChip.h"
 #include "AliITSUDigitPix.h"
 #include "AliITSsegmentation.h"
 #include "AliITSUSegmentationPix.h"
@@ -120,7 +120,7 @@ AliDetector()
   ,fpSDigits(0)
   ,fSDigits(0)
   ,fDetHits(0)
-  ,fModuleHits(0)
+  ,fChipHits(0)
   ,fDetDigits(0)
   ,fSensMap(0)
   ,fSimModelLr(0)
@@ -147,7 +147,7 @@ AliITSU::AliITSU(const Char_t *title, Int_t nlay) :
   ,fpSDigits(0)
   ,fSDigits(0)
   ,fDetHits(0)
-  ,fModuleHits(0)
+  ,fChipHits(0)
   ,fDetDigits(0)
   ,fSensMap(0)
   ,fSimModelLr(0)
@@ -194,9 +194,9 @@ AliITSU::~AliITSU()
   delete[] fLayerName;  // Array of TStrings
   delete[] fIdSens;
   //
-  int nmod = fGeomTGeo ? fGeomTGeo->GetNModules() : 0;
-  if (fModuleHits) fModuleHits->Delete();
-  delete fModuleHits;
+  int nmod = fGeomTGeo ? fGeomTGeo->GetNChips() : 0;
+  if (fChipHits) fChipHits->Delete();
+  delete fChipHits;
   if(fModA){
     for(Int_t j=0; j<nmod; j++){
       fModA[j]->Delete();
@@ -213,7 +213,7 @@ AliITSU::~AliITSU()
 //______________________________________________________________________
 AliDigitizer* AliITSU::CreateDigitizer(AliDigitizationInput* manager) const
 {
-  // Creates the AliITSDigitizer in a standard way for use via AliModule.
+  // Creates the AliITSDigitizer in a standard way for use via AliChip.
   // This function can not be included in the .h file because of problems
   // with the order of inclusion (recursive).
   // Inputs:
@@ -304,10 +304,10 @@ void AliITSU:: MakeBranchInTreeD(TTree* treeD, const char* file)
   Int_t buffersize = 4000;
   if (!fDetDigits) InitArrays();
   //
-  for (Int_t i=0;i<kNDetTypes;i++) {
+  for (Int_t i=0;i<kNChipTypes;i++) {
     ResetDigits(i);
     TClonesArray* darr = (TClonesArray*)fDetDigits->At(i);
-    AliDetector::MakeBranchInTree(treeD,Form("%sDigits%s",GetName(),fGeomTGeo->GetDetTypeName(i)),
+    AliDetector::MakeBranchInTree(treeD,Form("%sDigits%s",GetName(),fGeomTGeo->GetChipTypeName(i)),
 				  &darr,buffersize,file);
   }
   //
@@ -320,15 +320,15 @@ void AliITSU::InitArrays()
   //
   if(!fLoader) MakeLoader(AliConfig::GetDefaultEventFolderName());
   //  
-  fDetDigits = new TObjArray(kNDetTypes);
-  for (Int_t i=0;i<kNDetTypes;i++) fDetDigits->AddAt(new TClonesArray(GetDigitClassName(i),100),i);
+  fDetDigits = new TObjArray(kNChipTypes);
+  for (Int_t i=0;i<kNChipTypes;i++) fDetDigits->AddAt(new TClonesArray(GetDigitClassName(i),100),i);
   //
   fSDigits = new TClonesArray("AliITSUSDigit",100);
   //
   fDetHits = new TClonesArray("AliITSUHit",100);
   //
-  fModuleHits = new TObjArray(fGeomTGeo->GetNModules());
-  for (int i=0;i<fGeomTGeo->GetNModules();i++) fModuleHits->AddLast( new AliITSUModule(i,fGeomTGeo) );
+  fChipHits = new TObjArray(fGeomTGeo->GetNChips());
+  for (int i=0;i<fGeomTGeo->GetNChips();i++) fChipHits->AddLast( new AliITSUChip(i,fGeomTGeo) );
   //
 }
 
@@ -345,8 +345,8 @@ void AliITSU::SetTreeAddress()
   TTree *treeD = fLoader->TreeD();
   if (treeD) {
     if (!fDetDigits) InitArrays();
-    for (int i=0;i<kNDetTypes;i++) {
-      TString brname = Form("%sDigits%s",GetName(),GetDetTypeName(i));
+    for (int i=0;i<kNChipTypes;i++) {
+      TString brname = Form("%sDigits%s",GetName(),GetChipTypeName(i));
       TBranch* br = treeD->GetBranch(brname.Data());
       if (!br) continue;
       TClonesArray* darr = (TClonesArray*)fDetDigits->At(i);
@@ -377,9 +377,9 @@ void AliITSU::AddHit(Int_t track, Int_t *vol, Float_t *hits)
 }
 
 //______________________________________________________________________
-void AliITSU::FillModules(Int_t bgrev, Option_t *option, const char *filename) 
+void AliITSU::FillChips(Int_t bgrev, Option_t *option, const char *filename) 
 {
-  // fill the modules with the sorted by module hits; add hits from
+  // fill the chips with the sorted by chip hits; add hits from
   // background if option=Add.
   //
   static TTree *trH1=0;                 //Tree with background hits
@@ -400,14 +400,14 @@ void AliITSU::FillModules(Int_t bgrev, Option_t *option, const char *filename)
     char treeName[21];
     snprintf(treeName,20,"TreeH%d",bgrev);
     trH1 = (TTree*)gDirectory->Get(treeName);
-    if (!trH1) Error("FillModules","cannot find Hits Tree for event:%d",bgrev);
+    if (!trH1) Error("FillChips","cannot find Hits Tree for event:%d",bgrev);
     // Set branch addresses
   } // end if addBgr
   
-  FillModules(fLoader->TreeH(),0); // fill from this file's tree.
+  FillChips(fLoader->TreeH(),0); // fill from this file's tree.
   //
   if (addBgr ) {
-    FillModules(trH1,10000000); // Default mask 10M.
+    FillChips(trH1,10000000); // Default mask 10M.
     TTree *fAli=fLoader->GetRunLoader()->TreeK();
     TFile *fileAli=0;
     if (fAli) {
@@ -419,24 +419,24 @@ void AliITSU::FillModules(Int_t bgrev, Option_t *option, const char *filename)
 }
 
 //______________________________________________________________________
-void AliITSU::FillModules(TTree *treeH, Int_t /*mask*/)
+void AliITSU::FillChips(TTree *treeH, Int_t /*mask*/)
 {
-  // fill the modules with the sorted by module hits; 
+  // fill the chips with the sorted by chip hits; 
   // can be called many times to do a merging
   // Inputs:
   //      TTree *treeH  The tree containing the hits to be copied into
-  //                    the modules.
+  //                    the chips.
   //      Int_t mask    The track number mask to indecate which file
   //                    this hits came from.
   //  
   if (treeH == 0x0) { AliError("Tree H  is NULL"); return; }
   //
-  Int_t lay,lad,det,index;
+  Int_t lay,sta,ssta,mod,chip,index;
   AliITSUHit *itsHit=0;
   char branchname[21];
   snprintf(branchname,20,"%s",GetName());
   TBranch *branch = treeH->GetBranch(branchname);
-  if (!branch) {Error("FillModules","%s branch in TreeH not found",branchname); return;} // end if !branch
+  if (!branch) {Error("FillChips","%s branch in TreeH not found",branchname); return;} // end if !branch
   //
   branch->SetAddress(&fHits);
   Int_t nTracks =(Int_t) treeH->GetEntries();
@@ -448,11 +448,11 @@ void AliITSU::FillModules(TTree *treeH, Int_t /*mask*/)
     Int_t nHits = fHits->GetEntriesFast();
     for (h=0; h<nHits; h++){
       itsHit = (AliITSUHit *)fHits->UncheckedAt(h);
-      itsHit->GetDetectorID(lay,lad,det);
-      index = fGeomTGeo->GetModuleIndex(lay,lad,det); // !!! AliITSHit counts indices from 1!
+      itsHit->GetChipID(lay,sta,ssta,mod,chip);
+      index = fGeomTGeo->GetChipIndex(lay,sta,ssta,mod,chip); // !!! AliITSHit counts indices from 1!
       itsHit = new( (*fDetHits)[fDetHits->GetEntriesFast()] ) AliITSUHit(*itsHit);
       itsHit->SetUniqueID(h);
-      GetModule(index)->AddHit(itsHit);
+      GetChip(index)->AddHit(itsHit);
       // do we need to add a mask?
       // itsHit->SetTrack(itsHit->GetTrack()+mask);
     } // end loop over hits 
@@ -460,11 +460,11 @@ void AliITSU::FillModules(TTree *treeH, Int_t /*mask*/)
 }
 
 //______________________________________________________________________
-void AliITSU::ClearModules()
+void AliITSU::ClearChips()
 {
   // clear accumulated hits
-  if (!fModuleHits || !fDetHits) AliFatal("Hits accumulation arrays are not defined");
-  for (int i=fGeomTGeo->GetNModules();i--;) GetModule(i)->Clear();
+  if (!fChipHits || !fDetHits) AliFatal("Hits accumulation arrays are not defined");
+  for (int i=fGeomTGeo->GetNChips();i--;) GetChip(i)->Clear();
   fDetHits->Clear();
 }
 
@@ -498,40 +498,40 @@ void AliITSU::Hits2SDigits(Int_t evNumber,Int_t bgrev,Option_t *option,const cha
   // Inputs:
   //      Int_t evnt       Event to be processed.
   //      Int_t bgrev      Background Hit tree number.
-  //      Int_t nmodules   Not used.
+  //      Int_t nchips   Not used.
   //      Option_t *option String indicating if merging hits or not. To
   //                       merge hits set equal to "Add". Otherwise no
   //                       background hits are considered.
   //      Test_t *filename File name containing the background hits..
   //
   if (!IsSimInitDone()) InitSimulation();
-  FillModules(bgrev,option,filename);
+  FillChips(bgrev,option,filename);
   //
-  Int_t nmodules = fGeomTGeo->GetNModules();
+  Int_t nchips = fGeomTGeo->GetNChips();
   int prevLr = -1;
-  float roPhase=0; // synchronysation type between layers/modules
-  Bool_t randomyzeModules = kFALSE; // do we need to randomize layers
+  float roPhase=0; // synchronysation type between layers/chips
+  Bool_t randomyzeChips = kFALSE; // do we need to randomize layers
   //
-  for(int module=0;module<nmodules;module++) {
-    int lr = fGeomTGeo->GetLayer(module);
+  for(int chip=0;chip<nchips;chip++) {
+    int lr = fGeomTGeo->GetLayer(chip);
     AliITSUSimulation* sim = GetSimulationModel(lr);
-    sim->InitSimulationModule(GetModule(module),evNumber/*,gAlice->GetEvNumber()*/,GetSegmentation(lr),GetResponseParam(lr));
+    sim->InitSimulationChip(GetChip(chip),evNumber/*,gAlice->GetEvNumber()*/,GetSegmentation(lr),GetResponseParam(lr));
     //
     if (prevLr!=lr) { // new layer started)
       roPhase = fSimuParam->GetLrROCycleShift(lr);
-      if (Abs(roPhase)<1.) roPhase = roPhase*sim->GetReadOutCycleLength(); // modules synchronized within layer with this offset
-      else                randomyzeModules = kTRUE;                     // modules have random offset
+      if (Abs(roPhase)<1.) roPhase = roPhase*sim->GetReadOutCycleLength(); // chips synchronized within layer with this offset
+      else                randomyzeChips = kTRUE;                     // chips have random offset
     }
-    if (randomyzeModules) sim->GenerateReadOutCycleOffset();
+    if (randomyzeChips) sim->GenerateReadOutCycleOffset();
     else                  sim->SetReadOutCycleOffset(roPhase);
     //
-    sim->SDigitiseModule();
+    sim->SDigitiseChip();
     fLoader->TreeS()->Fill();      // fills all branches - wasted disk space
     ResetSDigits();
     prevLr = lr;
   } 
   //
-  ClearModules();
+  ClearChips();
   //
   fLoader->TreeS()->GetEntries();
   fLoader->TreeS()->AutoSave();
@@ -576,33 +576,33 @@ void AliITSU::Hits2Digits(Int_t evNumber,Int_t bgrev,Option_t *option,const char
   // Outputs:
   //  
   if (!IsSimInitDone()) InitSimulation();
-  FillModules(bgrev,option,filename);
+  FillChips(bgrev,option,filename);
   // 
-  Int_t nmodules = fGeomTGeo->GetNModules();
+  Int_t nchips = fGeomTGeo->GetNChips();
   int prevLr = -1;
-  float roPhase=0; // synchronysation type between layers/modules
-  Bool_t randomyzeModules = kFALSE; // do we need to randomize layers
+  float roPhase=0; // synchronysation type between layers/chips
+  Bool_t randomyzeChips = kFALSE; // do we need to randomize layers
   //
-  for (Int_t module=0;module<nmodules;module++) {
-    int lr = fGeomTGeo->GetLayer(module);
+  for (Int_t chip=0;chip<nchips;chip++) {
+    int lr = fGeomTGeo->GetLayer(chip);
     AliITSUSimulation* sim = GetSimulationModel(lr);
     //
-    sim->InitSimulationModule(GetModule(module),evNumber/*gAlice->GetEvNumber()*/,GetSegmentation(lr),GetResponseParam(lr));
+    sim->InitSimulationChip(GetChip(chip),evNumber/*gAlice->GetEvNumber()*/,GetSegmentation(lr),GetResponseParam(lr));
     if (prevLr!=lr) { // new layer started)
       roPhase = fSimuParam->GetLrROCycleShift(lr);
-      if (Abs(roPhase)<1.) roPhase = roPhase*sim->GenerateReadOutCycleOffset(); // modules synchronized within layer with this offset
-      else                randomyzeModules = kTRUE;                     // modules have random offset
+      if (Abs(roPhase)<1.) roPhase = roPhase*sim->GenerateReadOutCycleOffset(); // chips synchronized within layer with this offset
+      else                randomyzeChips = kTRUE;                     // chips have random offset
     }
-    if (randomyzeModules) sim->GenerateReadOutCycleOffset();
+    if (randomyzeChips) sim->GenerateReadOutCycleOffset();
     else                  sim->SetReadOutCycleOffset(roPhase);
-    sim->DigitiseModule();
+    sim->DigitiseChip();
     // fills all branches - wasted disk space
     fLoader->TreeD()->Fill(); 
     ResetDigits();
     prevLr = lr;
-  } // end for module
+  } // end for chip
   //
-  ClearModules();
+  ClearChips();
   //
   //    WriteFOSignals(); // Add Fast-OR signals to event (only one object per event)
   fLoader->TreeD()->GetEntries();
@@ -619,7 +619,7 @@ void AliITSU::Hits2FastRecPoints(Int_t bgrev,Option_t *opt,const char *flnm)
   // Inputs:
   //      Int_t evnt       Event to be processed.
   //      Int_t bgrev      Background Hit tree number.
-  //      Option_t *opt    Option passed to FillModules. See FillModules.
+  //      Option_t *opt    Option passed to FillChips. See FillChips.
   //      Test_t *flnm     File name containing the background hits..
   // Outputs:
   //      none.
@@ -627,8 +627,8 @@ void AliITSU::Hits2FastRecPoints(Int_t bgrev,Option_t *opt,const char *flnm)
   //      none.
   if (!IsSimInitDone()) InitSimulation();
   AliITSULoader *pITSloader = (AliITSULoader*)fLoader;
-  Int_t nmodules = fGeomTGeo->GetNModules();
-  FillModules(bgrev,opt,flnm);
+  Int_t nchips = fGeomTGeo->GetNChips();
+  FillChips(bgrev,opt,flnm);
   //
   TTree *lTR = pITSloader->TreeR();
   if(!lTR) {
@@ -639,16 +639,16 @@ void AliITSU::Hits2FastRecPoints(Int_t bgrev,Option_t *opt,const char *flnm)
   TClonesArray* ptarray = new TClonesArray("AliITSRecPoint",1000);
   TBranch* branch = (TBranch*)lTR->Branch("ITSRecPointsF",&ptarray);
   branch->SetAddress(&ptarray);
-  for (int module=0;module<nmodules;module++){
-    int id = fGeomTGeo->GetModuleDetTypeID(module);
+  for (int chip=0;chip<nchips;chip++){
+    int id = fGeomTGeo->GetChipChipTypeID(chip);
     AliITSUSimulation* sim = GetSimulationModel(id);
-    if (!sim) AliFatal(Form("The sim.class for module %d of DetTypeID %d is missing",module,id));
-    sim->CreateFastRecPoints( GetModule(module) ,module,gRandom,ptarray);
+    if (!sim) AliFatal(Form("The sim.class for chip %d of ChipTypeID %d is missing",chip,id));
+    sim->CreateFastRecPoints( GetChip(chip) ,chip,gRandom,ptarray);
     lTR->Fill();
     ptarray->Clear();
-  } // end for module
+  } // end for chip
   //
-  ClearModules();
+  ClearChips();
   fLoader->WriteRecPoints("OVERWRITE");
   delete ptarray;
 }
@@ -660,7 +660,7 @@ Int_t AliITSU::Hits2Clusters(TTree */*hTree*/, TTree */*cTree*/)
   // This function creates ITS clusters
   if (!IsSimInitDone()) InitSimulation();
   Int_t mmax = 0;
-  FillModules(hTree,0);
+  FillChips(hTree,0);
   //
   TClonesArray *points = new TClonesArray("AliITSRecPoint",1000);
   TBranch *branch=cTree->GetBranch("ITSRecPoints");
@@ -670,13 +670,13 @@ Int_t AliITSU::Hits2Clusters(TTree */*hTree*/, TTree */*cTree*/)
   AliITSsimulationFastPoints sim;
   Int_t ncl=0;
   for (Int_t m=0; m<mmax; m++) {
-    sim.CreateFastRecPoints(GetModule(m),m,gRandom,points);      
+    sim.CreateFastRecPoints(GetChip(m),m,gRandom,points);      
     ncl+=points->GetEntriesFast();
     cTree->Fill();
     points->Clear();
   }
   //
-  ClearModules();
+  ClearChips();
   //
   AliDebug(1,Form("Number of found fast clusters : %d",ncl));
   //cTree->Write();
@@ -712,7 +712,7 @@ void AliITSU::CheckLabels(Int_t lab[3]) const //RSDONE
 void AliITSU::ResetDigits() //RSDONE?
 {
   // Reset number of digits and the digits array for the ITS detector.
-  if (fDetDigits) for (int i=kNDetTypes;i--;) ResetDigits(i);
+  if (fDetDigits) for (int i=kNChipTypes;i--;) ResetDigits(i);
   //
 }
 
@@ -727,7 +727,7 @@ void AliITSU::ResetDigits(Int_t branch)
 //______________________________________________________________________
 void AliITSU::AddSumDigit(AliITSUSDigit &sdig)
 {
-  // Adds the module summable digits to the summable digits tree.
+  // Adds the chip summable digits to the summable digits tree.
   new( (*fSDigits)[fSDigits->GetEntriesFast()]) AliITSUSDigit(sdig);
   //  
 }
@@ -743,7 +743,7 @@ void AliITSU::AddSimDigit(Int_t branch, AliITSdigit *d)
   TClonesArray &ldigits = *((TClonesArray*)fDetDigits->At(branch));
   int nd = ldigits.GetEntriesFast();
   switch(branch){
-  case AliITSUGeomTGeo::kDetTypePix:
+  case AliITSUGeomTGeo::kChipTypePix:
     new(ldigits[nd]) AliITSUDigitPix(*((AliITSUDigitPix*)d));
     break;
   default:
@@ -765,14 +765,14 @@ void AliITSU::AddSimDigit(Int_t branch,Float_t /*phys*/,Int_t *digits,Int_t *tra
   //                      containing the track numbers that contributed to
   //                      this digit.
   //      Int_t *hits     Integer array [AliITSdigitS?D::GetNTracks()]
-  //                      containing the hit numbers, from AliITSmodule, that
+  //                      containing the hit numbers, from AliITSchip, that
   //                      contributed to this digit.
   //      Float_t *charge Floating point array of the signals contributed
   //                      to this digit by each track.
   TClonesArray &ldigits = *((TClonesArray*)fDetDigits->At(branch));
   int nd = ldigits.GetEntriesFast();
   switch(branch){
-  case AliITSUGeomTGeo::kDetTypePix:
+  case AliITSUGeomTGeo::kChipTypePix:
     new(ldigits[nd]) AliITSUDigitPix(digits,tracks,hits);
     break;
   default:
@@ -810,7 +810,7 @@ Bool_t AliITSU::Raw2SDigits(AliRawReader* /*rawReader*/)
 AliTriggerDetector* AliITSU::CreateTriggerDetector() const 
 {
   // create an AliITSTrigger object (and set trigger conditions as input)
-  return new AliITSTrigger(fDetTypeSim->GetTriggerConditions());
+  return new AliITSTrigger(fChipTypeSim->GetTriggerConditions());
 }
 */
 
@@ -820,7 +820,7 @@ void AliITSU::WriteFOSignals()
   // This method write FO signals in Digits tree both in Hits2Digits
   // or SDigits2Digits
   AliError("Not ready");
-  //  fDetTypeSim->ProcessNoiseForFastOr();
+  //  fChipTypeSim->ProcessNoiseForFastOr();
 }
 
 //_______________________________________________________________________
@@ -833,28 +833,28 @@ void AliITSU::SDigits2Digits()
   if( !(trees && fSDigits) ) AliFatal("Error: No trees or SDigits.");
   TBranch* brchSDigits = trees->GetBranch(GetName());
   //
-  int nmodules = fGeomTGeo->GetNModules();
+  int nchips = fGeomTGeo->GetNChips();
   int prevLr = -1;
-  float roPhase=0; // synchronysation type between layers/modules
-  Bool_t randomyzeModules = kFALSE; // do we need to randomize layers
+  float roPhase=0; // synchronysation type between layers/chips
+  Bool_t randomyzeChips = kFALSE; // do we need to randomize layers
   //
-  for (int module=0;module<nmodules;module++) {
-    int lr = fGeomTGeo->GetLayer(module);
+  for (int chip=0;chip<nchips;chip++) {
+    int lr = fGeomTGeo->GetLayer(chip);
     AliITSUSimulation* sim = GetSimulationModel(lr);
-    sim->InitSimulationModule(GetModule(module),gAlice->GetEvNumber(),GetSegmentation(lr),GetResponseParam(lr));
+    sim->InitSimulationChip(GetChip(chip),gAlice->GetEvNumber(),GetSegmentation(lr),GetResponseParam(lr));
     //
     if (prevLr!=lr) { // new layer started)
       roPhase = fSimuParam->GetLrROCycleShift(lr);
-      if (Abs(roPhase)<1.) roPhase = roPhase*sim->GenerateReadOutCycleOffset(); // modules synchronized within layer with this offset
-      else                randomyzeModules = kTRUE;                     // modules have random offset
+      if (Abs(roPhase)<1.) roPhase = roPhase*sim->GenerateReadOutCycleOffset(); // chips synchronized within layer with this offset
+      else                randomyzeChips = kTRUE;                     // chips have random offset
     }
-    if (randomyzeModules) sim->GenerateReadOutCycleOffset();
+    if (randomyzeChips) sim->GenerateReadOutCycleOffset();
     else                  sim->SetReadOutCycleOffset(roPhase);
     //
     fSDigits->Clear();
-    brchSDigits->GetEvent(module);
-    sim->AddSDigitsToModule(fSDigits,0);
-    sim->FinishSDigitiseModule();
+    brchSDigits->GetEvent(chip);
+    sim->AddSDigitsToChip(fSDigits,0);
+    sim->FinishSDigitiseChip();
     fLoader->TreeD()->Fill();
     ResetDigits();
     prevLr = lr;
@@ -869,7 +869,7 @@ void AliITSU::SDigits2Digits()
 void AliITSU::InitSimulation()
 {
   // Initialize arrays, segmentations ets, needed for simulation
-  // Equivalent of old AliITSDetTypeSim construction
+  // Equivalent of old AliITSChipTypeSim construction
   //
   if (fSimInitDone) {AliInfo("Already done"); return;}
   //
@@ -890,8 +890,8 @@ void AliITSU::InitSimulation()
     fSimModelLr[i] = 0;
     fSegModelLr[i] = 0;
     fResponseLr[i] = 0;
-    int dType = fGeomTGeo->GetLayerDetTypeID(i);           // fine detector type: class + segmentation
-    int sType = dType/AliITSUGeomTGeo::kMaxSegmPerDetType; // detector simulation class
+    int dType = fGeomTGeo->GetLayerChipTypeID(i);           // fine detector type: class + segmentation
+    int sType = dType/AliITSUGeomTGeo::kMaxSegmPerChipType; // detector simulation class
     //
     // check if the simulation of this sType was already created for preceeding layers
     AliITSUSimulation* simUpg = 0;
@@ -904,7 +904,7 @@ void AliITSU::InitSimulation()
     if (!simUpg) { // need to create simulation for detector class sType
       switch (sType) 
 	{
-	case AliITSUGeomTGeo::kDetTypePix : 
+	case AliITSUGeomTGeo::kChipTypePix : 
 	  simUpg = new AliITSUSimulationPix(fSimuParam,fSensMap); 
 	  break;
 	default: AliFatal(Form("No %d detector type is defined",sType));
@@ -913,10 +913,10 @@ void AliITSU::InitSimulation()
     fSimModelLr[i] = simUpg;
     //
     // add segmentations used in the setup
-    if (!(fSegModelLr[i]=(AliITSsegmentation*)arrSeg[dType])) {AliFatal(Form("Segmentation for DetType#%d is not found",dType)); exit(1);}
+    if (!(fSegModelLr[i]=(AliITSsegmentation*)arrSeg[dType])) {AliFatal(Form("Segmentation for ChipType#%d is not found",dType)); exit(1);}
     //
     // add response function for the detectors of this layer
-    if ( !(fResponseLr[i]=(AliITSUParamList*)fSimuParam->FindRespFunParams(dType)) ) {AliFatal(Form("Response for DetType#%d is not found in SimuParams",dType)); exit(1);}
+    if ( !(fResponseLr[i]=(AliITSUParamList*)fSimuParam->FindRespFunParams(dType)) ) {AliFatal(Form("Response for ChipType#%d is not found in SimuParams",dType)); exit(1);}
   }
   // delete non needed segmentations
   for (int i=fNLayers;i--;) arrSeg.Remove(fSegModelLr[i]);

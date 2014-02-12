@@ -35,8 +35,8 @@ class AliITSURecoLayer : public TNamed
   Int_t              GetID()                       const {return (int)GetUniqueID();}
   Int_t              GetActiveID()                 const {return fActiveID;}
   Int_t              GetNSensors()                 const {return fNSensors;}
-  Int_t              GetNLadders()                 const {return fNLadders;}
-  Int_t              GetNSensInLadder()            const {return fNSensInLadder;}
+  Int_t              GetNStaves()                 const {return fNStaves;}
+  Int_t              GetNSensInStave()            const {return fNSensInStave;}
   Double_t           GetRMin()                     const {return fRMin;}
   Double_t           GetRMax()                     const {return fRMax;}
   Double_t           GetDR()                       const {return fRMax-fRMin;}
@@ -61,7 +61,7 @@ class AliITSURecoLayer : public TNamed
   void               SetMaxStep(Double_t st)             {fMaxStep = st>0 ? st : 0.1;}
   //
   AliITSURecoSens*   GetSensor(Int_t i)            const {return i<0 ? 0:(AliITSURecoSens*)fSensors[i];}
-  AliITSURecoSens*   GetSensor(Int_t ld,Int_t is)  const {return GetSensor(ld*fNSensInLadder+is);}
+  AliITSURecoSens*   GetSensor(Int_t ld,Int_t is)  const {return GetSensor(ld*fNSensInStave+is);}
   AliITSURecoSens*   GetSensorFromID(Int_t i)      const;
   TClonesArray*      GetClusters()                 const {return (TClonesArray*)fClusters;}
   TClonesArray**     GetClustersAddress()                {return (TClonesArray**)&fClusters;}  
@@ -82,19 +82,19 @@ class AliITSURecoLayer : public TNamed
   //
  protected:
   Int_t              fActiveID;  // ID within active layers
-  Int_t              fNSensors;  // N of modules
-  Int_t              fNSensInLadder; // N sensors in the ladder
-  Int_t              fNLadders;  // N ladder
+  Int_t              fNSensors;  // N of chips
+  Int_t              fNSensInStave; // N sensors in the stave
+  Int_t              fNStaves;  // N stave
   Double_t           fR;         // mean R
   Double_t           fRMax;      // max  R
   Double_t           fRMin;      // min  R
   Double_t           fZMax;      // max  Z
   Double_t           fZMin;      // min  Z
-  Double_t*          fPhiLadMax; // max lab phi of the ladder
-  Double_t*          fPhiLadMin; // min lab phi of the ladder
-  Double_t           fPhiOffs;   // offset in phi for 1st ladder
+  Double_t*          fPhiStaMax; // max lab phi of the stave
+  Double_t*          fPhiStaMin; // min lab phi of the stave
+  Double_t           fPhiOffs;   // offset in phi for 1st stave
   Double_t           fSensDZInv; // inverse mean sensor Z span
-  Double_t           fDPhiLadInv;// inverse mean ladder dphi
+  Double_t           fDPhiStaInv;// inverse mean stave dphi
   Double_t           fMaxStep;   // max step in tracking X allowed within layer
   AliITSURecoSens**  fSensors;   // sensors
   AliITSUGeomTGeo*   fITSGeom;   // geometry interface

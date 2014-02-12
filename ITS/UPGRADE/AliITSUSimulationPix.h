@@ -13,7 +13,7 @@
 #include "AliITSUSegmentationPix.h"
 
 class TH1F;
-class AliITSUModule;
+class AliITSUChip;
 class AliITSUSimuParam;
 class AliITSUParamList;
 class TH2;
@@ -43,7 +43,7 @@ public:
         ,kPixSNDisrcCut                      // S/N cut applied at discrimination level
         ,kPixMinElToAdd                      // Min number of electrons to add to sdig
         ,kPixNoiseIsOn                       // Turn Pixel Noise on
-        ,kPixNoiseInAllMod                   // To apply pixel noise in all modules, if not only on ones where there is a hit
+        ,kPixNoiseInAllMod                   // To apply pixel noise in all chips, if not only on ones where there is a hit
 	,kPixNoiseMPV                        // Pixel noise MPV
         ,kPixNoiseSigma                      // Pixel noise sigma
         ,kPixFakeRate                        // Pixel fake rate	
@@ -69,10 +69,10 @@ public:
   AliITSUSimulationPix& operator=(const AliITSUSimulationPix &s);
   void Init();
   //
-  void FinishSDigitiseModule();
-  void DigitiseModule();
+  void FinishSDigitiseChip();
+  void DigitiseChip();
   //
-  void SDigitiseModule();
+  void SDigitiseChip();
   void WriteSDigits();
   void Hits2SDigits();
   void Hits2SDigitsFast();
@@ -85,7 +85,7 @@ public:
   Double_t GetTanLorAngle() const {return fTanLorAng;};
   //
   // For backwards compatibility
-  void SDigitsToDigits(){ FinishSDigitiseModule();}
+  void SDigitsToDigits(){ FinishSDigitiseChip();}
   //  
   Double_t SpreadFunDoubleGauss2D(const Double_t *dtIn);
   Double_t SpreadFunGauss2D(const Double_t *dtIn);

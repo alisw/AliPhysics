@@ -1,21 +1,15 @@
-#ifndef ALIITSUMODULE_H
-#define ALIITSUMODULE_H
+#ifndef ALIITSUCHIP_H
+#define ALIITSUCHIP_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: AliITSUModule.h 53509 2011-12-10 18:55:52Z masera $ */
+/* $Id: AliITSUChip.h 53509 2011-12-10 18:55:52Z masera $ */
 ///////////////////////////////////////////////////////////////////////
 //                                                                   //
-//  Class AliITSUModule                                            //
-//  is a superclass for AliITSUModuleSSD, SPD and SDD.             //
-//  The main function of modules is to simulate DIGITS from          //
+//  Class AliITSUChip                                                //
+//  The main function of chips is to simulate DIGITS from            //
 //  GEANT HITS and produce POINTS from DIGITS                        //
 //  It also make fast simulation without use of DIGITS               //
-//                                                                   //
-//  created by: A.Boucham, W.Peryt, S.Radomski, P.Skowronski         //
-//              R.Barbera, B. Batynia, B. Nilsen                     //
-//  ver. 1.0    CERN, 16.09.1999                                     //
-//  modified for upgrade: ruben.shahoyan@cern.ch                     //
 //                                                                   //
 ///////////////////////////////////////////////////////////////////////
 
@@ -24,18 +18,18 @@
 #include "AliITSUHit.h"
 class AliITSUGeomTGeo;
 
-class AliITSUModule: public TObject {
+class AliITSUChip: public TObject {
 
  public:
-  AliITSUModule();             // default constructor
-  AliITSUModule(Int_t index, AliITSUGeomTGeo* tg);
-  virtual ~AliITSUModule();
+  AliITSUChip();             // default constructor
+  AliITSUChip(Int_t index, AliITSUGeomTGeo* tg);
+  virtual ~AliITSUChip();
   UInt_t     GetIndex()                                 const {return GetUniqueID();}
   void       SetIndex(UInt_t ind)                             {return SetUniqueID(ind);}
   Int_t      GetNHits()                                 const {return fHitsM->GetEntriesFast();}
   TObjArray *GetHits()                                  const {return fHitsM;}
-  AliITSUHit *GetHit(Int_t i)                         const {return (AliITSUHit*)fHitsM->UncheckedAt(i);}
-  void       AddHit(AliITSUHit *hit)                        {fHitsM->AddLast(hit);}
+  AliITSUHit *GetHit(Int_t i)                           const {return (AliITSUHit*)fHitsM->UncheckedAt(i);}
+  void       AddHit(AliITSUHit *hit)                          {fHitsM->AddLast(hit);}
   void       Clear(Option_t* opt=0);
   //
   Bool_t   MedianHitG(AliITSUHit *h1,AliITSUHit *h2,Float_t &x,Float_t &y,Float_t &z);
@@ -52,15 +46,15 @@ class AliITSUModule: public TObject {
   Bool_t   LineSegmentG(Int_t hindex,Double_t &a,Double_t &b,Double_t &c,Double_t &d,Double_t &e,Double_t &f,Double_t &de, Double_t &tof, Int_t &track);
   //
  protected:
-    AliITSUModule(const AliITSUModule &source); 
-    AliITSUModule& operator=(const AliITSUModule &source); 
-    TObjArray            *fHitsM;     // Pointer to list of hits on this module
+    AliITSUChip(const AliITSUChip &source); 
+    AliITSUChip& operator=(const AliITSUChip &source); 
+    TObjArray           *fHitsM;     // Pointer to list of hits on this chip
     AliITSUGeomTGeo    *fGeomTG;    // pointed to geometry
     //
-    ClassDef(AliITSUModule,1) // Copy the hits into a more useful order
+    ClassDef(AliITSUChip,1) // Copy the hits into a more useful order
 };
 
-inline void AliITSUModule::Clear(Option_t *) {fHitsM->Clear();}
+inline void AliITSUChip::Clear(Option_t *) {fHitsM->Clear();}
 
 #endif
 

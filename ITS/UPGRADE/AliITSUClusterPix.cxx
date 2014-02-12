@@ -59,7 +59,7 @@ const TGeoHMatrix*  AliITSUClusterPix::GetTracking2LocalMatrix() const
 //______________________________________________________________________________
 TGeoHMatrix* AliITSUClusterPix::GetMatrix(Bool_t ) const
 {
-  // get module matrix (sensor!)
+  // get chip matrix (sensor!)
   return (TGeoHMatrix*)fgGeom->GetMatrixSens(GetVolumeId());
 }
 

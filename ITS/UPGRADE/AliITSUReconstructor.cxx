@@ -94,8 +94,8 @@ void AliITSUReconstructor::Init()
   //
   for (int ilr=fGeom->GetNLayers();ilr--;) {
     fClusters[ilr] = 0;
-    int tpDet = fGeom->GetLayerDetTypeID(ilr)/AliITSUGeomTGeo::kMaxSegmPerDetType;
-    if (tpDet == AliITSUGeomTGeo::kDetTypePix) {
+    int tpDet = fGeom->GetLayerChipTypeID(ilr)/AliITSUGeomTGeo::kMaxSegmPerChipType;
+    if (tpDet == AliITSUGeomTGeo::kChipTypePix) {
       if (!clusPIX)    clusPIX    = new AliITSUClusterizer();
       fClusterFinders.AddAtAndExpand(clusPIX, ilr);
       fClusters[ilr] = new TClonesArray(AliITSUClusterPix::Class());
@@ -129,8 +129,8 @@ void AliITSUReconstructor::Reconstruct(TTree *digitsTree, TTree *clustersTree) c
   for (int ilr=0;ilr<fGeom->GetNLayers();ilr++) {
     lrBranch[ilr] = 0;
     if (clustersTree) { // do we write clusters tree?
-      int tp = fGeom->GetLayerDetTypeID(ilr)/AliITSUGeomTGeo::kMaxSegmPerDetType;
-      if (tp==AliITSUGeomTGeo::kDetTypePix) {
+      int tp = fGeom->GetLayerChipTypeID(ilr)/AliITSUGeomTGeo::kMaxSegmPerChipType;
+      if (tp==AliITSUGeomTGeo::kChipTypePix) {
 	lrBranch[ilr] = clustersTree->Bronch(Form("ITSRecPoints%d",ilr),"TClonesArray",&fClusters[ilr]);
       }
       else {
@@ -157,8 +157,8 @@ void AliITSUReconstructor::Reconstruct(TTree *digitsTree, TTree *clustersTree) c
     clFinder->SetAllowDiagonalClusterization(recPar->GetAllowDiagonalClusterization(ilr));
     clFinder->PrepareLorentzAngleCorrection(bz);
     //
-    int modF=fGeom->GetFirstModIndex(ilr);
-    int modL=fGeom->GetLastModIndex(ilr)+1;
+    int modF=fGeom->GetFirstChipIndex(ilr);
+    int modL=fGeom->GetLastChipIndex(ilr)+1;
     for (int imod=modF;imod<modL;imod++) {
       digitsTree->GetEntry(imod);   
       int ndig  = digArrPix->GetEntries();
