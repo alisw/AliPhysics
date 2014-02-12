@@ -50,6 +50,9 @@ class AliAnalysisTaskPhiEffMc : public AliAnalysisTaskSE
   void LikeSign(TObjArray* kaonsPos, TObjArray* kaonsNeg, THnSparseF* h, Double_t cent = -1);
   TLorentzVector* makePhi(AliVParticle* p1, AliVParticle* p2);
 
+  void SetPtCut(Double_t ptcut){fPtCut = ptcut;}
+  Double_t GetPtCut(){return fPtCut;}
+
  private:
   
   AliAODEvent           *fAOD;         //! AOD object
@@ -59,10 +62,13 @@ class AliAnalysisTaskPhiEffMc : public AliAnalysisTaskSE
   AliSpectraAODTrackCuts      * fTrackCuts;     // Track Cuts
   AliSpectraAODEventCuts      * fEventCuts;     // Event Cuts
 
+  Double_t fPtCut;  // min pt cut on tracks (pt cut in AliSpectraAODTrackCuts is max pt)
+
   AliAnalysisTaskPhiEffMc(const AliAnalysisTaskPhiEffMc&);
   AliAnalysisTaskPhiEffMc& operator=(const AliAnalysisTaskPhiEffMc&);
   
-  ClassDef(AliAnalysisTaskPhiEffMc, 1);
+  ClassDef(AliAnalysisTaskPhiEffMc, 2);
 };
 
 #endif
+
