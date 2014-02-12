@@ -7,7 +7,7 @@
 
  */
 
-
+  
 
 
 
@@ -37,9 +37,15 @@
 TTree * tree  = 0;
 TTreeSRedirector *pcstream = 0; //new TTreeSRedirector("trend.root");
 //
-
+void filterPIDSelectedTOF( const char * chfinput="highptAll.list");
+void filterPIDSelectedV0( const char * chfinput="highptAll.list");
 
 void filterPIDSelected( const char * chfinput="highptAll.list"){
+  filterPIDSelectedTOF(chfinput);
+  filterPIDSelectedV0(chfinput);
+}
+
+void filterPIDSelectedV0( const char * chfinput){
   //
   // Code to select identified V0 for the PID 
   // As an input chain of filter trees is used
@@ -95,7 +101,7 @@ void filterPIDSelected( const char * chfinput="highptAll.list"){
   // V0 - cuts -PID, 
   //	
   chain->SetAlias("cutDist","sqrt((track0.fIp.fP[0]-track1.fIp.fP[0])**2+(track0.fIp.fP[1]-track1.fIp.fP[1])**2)>3");
-  chain->SetAlias("cutLong","track0.GetTPCClusterInfo(3,1,0)-5*abs(track0.fP[4])>130&&track1.GetTPCClusterInfo(3,1,0)>130-5*abs(track0.fP[4])");
+  chain->SetAlias("cutLong","track0.GetTPCClusterInfo(3,1,0)+5*abs(track0.fP[4])>130&&track1.GetTPCClusterInfo(3,1,0)>130-5*abs(track1.fP[4])");
   chain->SetAlias("cutPID","track0.fTPCsignal>0&&track1.fTPCsignal>0");
   chain->SetAlias("cutResol","sqrt(track0.fC[14]/track0.fP[4])<0.15&&sqrt(track1.fC[14]/track1.fP[4])<0.15");
   chain->SetAlias("cutV0","cutPID&&cutDist&&cutLong&&cutResol");	
@@ -132,6 +138,44 @@ void filterPIDSelected( const char * chfinput="highptAll.list"){
   //
 }
 
+void filterPIDSelectedTOF( const char * chfinput){
+  //
+  // Code to select identified V0 for the PID 
+  // As an input chain of filter trees is used
+   //
+  TTree * chain  = 0;  
+  if (TString(chfinput).Contains(".list")) {
+    chain = AliXRDPROOFtoolkit::MakeChainRandom(chfinput,"highPt",0,1000);
+  }else{
+    TFile * finput= TFile::Open(chfinput);
+    if (!finput) finput= TFile::Open(TString::Format("%s#FilterEvents_Trees.root",finput));
+    chain=(TTree*)finput->Get("highPt");
+  }  
+  chain->SetCacheSize(1000000000);
+  //
+  TDatabasePDG pdg;
+  Double_t massLambda = pdg.GetParticle("Lambda0")->Mass();
+  Double_t massK0 = pdg.GetParticle("K0")->Mass();
+  Double_t massPion = pdg.GetParticle("pi+")->Mass();
+  Double_t massProton = pdg.GetParticle("proton")->Mass();
+  chain->SetAlias("cutLong","esdTrack.GetTPCClusterInfo(3,1,0)+5*abs(esdTrack.fP[4])>130");
+  TFile *fselected  = TFile::Open("TOFSelected.root","recreate");
+
+  TCut cutDeltaProton="abs((esdTrack.fTrackTime[4]-esdTrack.fTrackTime[3]))>400&&abs(esdTrack.fTOFsignalDz<3)";
+  TCut cutDeltaKaon="abs((esdTrack.fTrackTime[3]-esdTrack.fTrackTime[2]))>400&&abs(esdTrack.fTOFsignalDz<3)";
+  TCut cutDeltaPion="abs((esdTrack.fTrackTime[2]-esdTrack.fTrackTime[0]))>200&&abs(esdTrack.fTOFsignalDz<3)";
+
+  TTree * treeEl  = chain->CopyTree(cutDeltaPion+"cutLong&&esdTrack.fTOFr[0]>0.3+max(2*max(esdTrack.fTOFr[1],esdTrack.fTOFr[3]),esdTrack.fTOFr[4])");
+  TTree * treePion  = chain->CopyTree(cutDeltaPion+"cutLong&&esdTrack.fTOFr[2]>0.3+max(max(esdTrack.fTOFr[0],esdTrack.fTOFr[3]),esdTrack.fTOFr[4])");
+  TTree * treeKaon  = chain->CopyTree(cutDeltaKaon+"cutLong&&esdTrack.fTOFr[3]>0.3+max(max(esdTrack.fTOFr[0],2*esdTrack.fTOFr[2]),esdTrack.fTOFr[4])");
+  TTree * treeProton  = chain->CopyTree(cutDeltaProton+"cutLong&&esdTrack.fTOFr[4]>0.3+max(max(esdTrack.fTOFr[0],2*esdTrack.fTOFr[2]),esdTrack.fTOFr[3])");
+  treeEl->Write("treeEl");
+  treePion->Write("treePion");
+  treeKaon->Write("treeKaon");
+  treeProton->Write("treeProton");
+  //
+  fselected->Close();
+}
 
 void FitPIDNCLSelected(){
   //
