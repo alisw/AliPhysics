@@ -1120,7 +1120,7 @@ Bool_t AliAnalysisTaskRhoVnModulation::CorrectRho(Double_t psi2, Double_t psi3)
     // the defaults (-10 < phi < 10) which accept all, are then overwritten
     Double_t lowBound(0.), upBound(TMath::TwoPi());     // bounds for fit
     if(GetParticleContainer()->GetParticlePhiMin() > lowBound) lowBound = GetParticleContainer()->GetParticlePhiMin();
-    if(GetParticleContainer()->GetParticlePhiMax() < upBound) upBound = GetParticleContainer()->GetParticlePhiMin();
+    if(GetParticleContainer()->GetParticlePhiMax() < upBound) upBound = GetParticleContainer()->GetParticlePhiMax();
 
     fHistSwap->Reset();                 // clear the histogram
     TH1F _tempSwap;     // on stack for quick access
