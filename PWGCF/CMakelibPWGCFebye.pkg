@@ -39,6 +39,7 @@ set ( SRCS
     EBYE/BalanceFunctions/AliBalancePsi.cxx 
     EBYE/BalanceFunctions/AliBalanceEventMixing.cxx 
     EBYE/BalanceFunctions/AliBalanceTriggered.cxx 
+    EBYE/BalanceFunctions/AliAnalysisTaskAODFilterBitQA.cxx 
     EBYE/LRC/AliLRCBase.cxx
     EBYE/LRC/AliAnalysisTaskLRC.cxx 
     EBYE/LRC/AliLRCAnalysis.cxx 
