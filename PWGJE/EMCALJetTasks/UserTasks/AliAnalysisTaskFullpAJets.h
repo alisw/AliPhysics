@@ -120,7 +120,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
         void DoNEFQAPlots(Bool_t doNEFAna);
         void DoNEFSignalOnly(Bool_t doNEFSignalOnly);
         void DoNEFAnalysis(Double_t nefCut, Double_t signalCut, TClonesArray *jetList, Int_t *indexJetList, Int_t nIndexJetList, TObjArray *clusterList, TClonesArray *orgClusterList, AliVEvent *event, AliEMCALGeometry *geometry, AliEMCALRecoUtils *recoUtils, AliVCaloCells *cells);
-        void FillMiscJetStats(TClonesArray *jetList, Int_t *indexJetList, Int_t nIndexJetList, TClonesArray *trackList, TClonesArray *clusterList);
+        void FillMiscJetStats(TClonesArray *jetList, Int_t *indexJetList, Int_t nIndexJetList, TClonesArray *trackList, TClonesArray *clusterList, Double_t *vertex);
         
         // Setters
         void SetName(const char *name);
@@ -200,6 +200,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
         TH2F *fhJetConstituentCounts; //!
         TH2F *fhJetTracksCounts; //!
         TH2F *fhJetClustersCounts; //!
+        TH2F *fhJetPtZTrack; //!
+        TH2F *fhJetPtZCluster; //!
         
         // Histograms for Neutral Energy Fraction
         TList *fNEFOutput; //! NEF QA Plots
