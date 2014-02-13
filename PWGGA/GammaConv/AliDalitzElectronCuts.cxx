@@ -1233,11 +1233,12 @@ Bool_t AliDalitzElectronCuts::SetTPCClusterCut(Int_t clsTPCCut)
 		fMinClsTPCToF= 0.6;
 		fUseCorrectedTPCClsInfo=0;
 		break;
-	case 7:  // 70% of findable clusters
-		fMinClsTPC= 70.;  
-		fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
-		fMinClsTPCToF= 0.7;
-		fUseCorrectedTPCClsInfo=0;
+	case 7:  // 60% Changed 2014-02-04 before fMinClsTPC = 0.7 fUseCorrectedTPCClsInfo = 0
+		 // Changed 2014-02-04  before fMinClsTPC = 50.;
+		fMinClsTPCToF = 0.6;
+		fesdTrackCuts->SetMinNCrossedRowsTPC(70);
+		fesdTrackCuts->SetMinNClustersTPC(0);
+		fUseCrossedRows = kTRUE;
 		break;
 	case 8: fMinClsTPC = 0.;  
 		fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
@@ -1297,6 +1298,9 @@ Bool_t AliDalitzElectronCuts::SetEtaCut(Int_t etaCut)
 		break;
 	case 8: fEtaCut = 0.4;
 		fDoEtaCut = kTRUE;
+		break;
+	case 9: fEtaCut = 0.65;
+		fDoEtaCut = kTRUE; 
 		break;
 	default:
 		cout<<"Warning: EtaCut not defined "<<etaCut<<endl;
@@ -1776,6 +1780,16 @@ Bool_t AliDalitzElectronCuts::SetMassCut(Int_t massCut)
                         fMassCutHighPt = 0.035; //GeV/c^2
                         fDoMassCut = kTRUE;
                         break;
+    case 8:             fMassCutPtMin  = 1.0;   //GeV
+                        fMassCutLowPt  = 0.015; //GeV/c^2
+                        fMassCutHighPt = 0.050; //GeV/c^2
+                        fDoMassCut = kTRUE;
+			break;
+    case 9:             fMassCutPtMin  = 1.0;   //GeV
+                        fMassCutLowPt  = 0.025; //GeV/c^2
+                        fMassCutHighPt = 0.035; //GeV/c^2
+                        fDoMassCut = kTRUE;
+			break;
     default:
                         cout<<"Warning: MassCut not defined "<<massCut<<endl;
                         return kFALSE;
