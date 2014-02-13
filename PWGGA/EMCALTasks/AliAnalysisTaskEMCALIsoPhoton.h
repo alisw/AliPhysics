@@ -41,6 +41,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                   GetTrIso(TVector3 vec, Float_t &iso, Float_t &phiband, Float_t &core);
   void                   FillClusHists();
   void                   FillMcHists();
+  void                   FillQA();
   Float_t                GetClusSource(const AliVCluster *cluster);
   void                   FollowGamma();
   void                   GetDaughtersInfo(int firstd, int lastd, int selfid, const char *indputindent);
@@ -88,6 +89,8 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Float_t                fHigherPtCone;          // higher pt inside the cone around the candidate
   Bool_t                 fImportGeometryFromFile;  // Import geometry settings in geometry.root file
   TString                fImportGeometryFilePath;  // path fo geometry.root file
+  Double_t               fMaxPtTrack;           //track with highest pt in event
+  Double_t               fMaxEClus;             //cluster with highest energy in event
 
   
  private:
@@ -119,6 +122,20 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH2F        *fAllIsoNoUeEtMcGamma;       //!all iso distribution (without UE subtraction) vs. Et clus for clusters comming from a MC prompt photon
   TH3F        *fMCDirPhotonPtEtaPhiNoClus; //!pt x eta x phi for prompt photons that didn't produce clusters
   THnSparse   *fHnOutput;                  //!Output matrix with 7 dimensions
+
+  //QA histos
+  TList       *fQAList;           //!output list holding QA histos
+  TH1F        *fNTracks;          //!number of tracks from Array->GetEntries()
+  TH1F        *fEmcNCells;        //!number of emcal cells in the event
+  TH1F        *fEmcNClus;         //!# of emcal clusters
+  TH1F        *fEmcNClusCut;      //!# of clusters in an event with at least 1 clus with E > fECut ("triggered event")
+  TH1F        *fNTracksECut;      //!number of tracks from Array->GetEntries() in "triggered event"
+  TH1F        *fEmcNCellsCut;     //!number of emcal cells in a in "triggered event"
+  TH1F        *fEmcClusE;         //!cluster E spectrum
+  TH1F        *fEmcClusECut;      //!cluster E spectrum in "triggered event"
+  TH1F        *fTrackPt;          //!selected tracks pt
+  TH1F        *fTrackPtCut;       //!selected tracks pt in "triggered event"
+
 
   AliAnalysisTaskEMCALIsoPhoton(const AliAnalysisTaskEMCALIsoPhoton&); // not implemented
   AliAnalysisTaskEMCALIsoPhoton& operator=(const AliAnalysisTaskEMCALIsoPhoton&); // not implemented
