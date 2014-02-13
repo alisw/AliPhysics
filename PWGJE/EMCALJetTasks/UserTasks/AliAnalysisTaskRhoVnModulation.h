@@ -123,6 +123,8 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         void                    SetLocalJetMinMaxEta(Float_t R)                 {fLocalJetMinEta = - 0.9 + R; fLocalJetMaxEta = 0.9 - R; }
         void                    SetLocalJetMinMaxPhi(Float_t min, Float_t max)  {fLocalJetMinPhi = min; fLocalJetMaxEta = max;}
         void                    SetSoftTrackMinMaxPt(Float_t min, Float_t max)  {fSoftTrackMinPt = min; fSoftTrackMaxPt = max;}
+        void                    SetSemiGoodJetMinMaxPhi(Double_t a, Double_t b) {fSemiGoodJetMinPhi = a; fSemiGoodJetMaxPhi = b;}
+        void                    SetSemiGoodTrackMinMaxPhi(Double_t a, Double_t b)       {fSemiGoodTrackMinPhi = a; fSemiGoodTrackMaxPhi = b;}
         // numerical evaluations
         void                    CalculateEventPlaneVZERO(Double_t vzero[2][2]) const;
         void                    CalculateEventPlaneTPC(Double_t* tpc);
@@ -220,6 +222,10 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         Float_t                 fLocalJetMaxPhi;        // local phi cut for jets
         Float_t                 fSoftTrackMinPt;        // min pt for soft tracks
         Float_t                 fSoftTrackMaxPt;        // max pt for soft tracks
+        Double_t                fSemiGoodJetMinPhi;     // min phi for semi good tpc runs
+        Double_t                fSemiGoodJetMaxPhi;     // max phi for semi good tpc runs
+        Double_t                fSemiGoodTrackMinPhi;   // min phi for semi good tpc runs
+        Double_t                fSemiGoodTrackMaxPhi;   // max phi for semi good tpc runs
         // event cuts
         Float_t                 fAbsVertexZ;            // cut on zvertex
         // general qa histograms
