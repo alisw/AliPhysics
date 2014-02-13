@@ -198,7 +198,7 @@ void AddAnalysisTasks(Int_t merge){
   
   if (iESDfilter) {
     //  ESD filter task configuration.
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C");
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/ESDfilter/macros/AddTaskESDFilter.C");
     if (iMUONcopyAOD) {
       printf("Registering delta AOD file\n");
       mgr->RegisterExtraFile("AliAOD.Muons.root");
@@ -320,6 +320,7 @@ Bool_t LoadCommonLibraries()
   success &= LoadLibrary("libOADB.so");
   success &= LoadLibrary("libANALYSISalice.so");
   success &= LoadLibrary("libCORRFW.so");
+  success &= LoadLibrary("libESDfilter.so");
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
   if (success) {
     ::Info("AnalysisTrainNew.C::LoadCommodLibraries", "Load common libraries:    SUCCESS");

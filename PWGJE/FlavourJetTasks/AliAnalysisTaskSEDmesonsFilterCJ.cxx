@@ -60,7 +60,8 @@ fOutput(0),
 fCuts(0),
 fMinMass(0.),
 fMaxMass(0.),
-fCandidateArray(0)
+fCandidateArray(0),
+fSideBandArray(0)
 
 {
    //
@@ -86,7 +87,8 @@ fOutput(0),
 fCuts(cuts),
 fMinMass(0.),
 fMaxMass(0.),
-fCandidateArray(0)
+fCandidateArray(0),
+fSideBandArray(0)
 {
    //
    // Constructor. Initialization of Inputs and Outputs
@@ -137,6 +139,8 @@ fCandidateArray(0)
    
    DefineOutput(1, TList::Class());       // histos
    DefineOutput(2, AliRDHFCuts::Class()); // my cuts
+   DefineOutput(3, TClonesArray::Class()); //array of candidates
+   DefineOutput(4, TClonesArray::Class()); //array of SB candidates
 }
 
 //_______________________________________________________________________________
@@ -152,6 +156,7 @@ AliAnalysisTaskSEDmesonsFilterCJ::~AliAnalysisTaskSEDmesonsFilterCJ()
    if (fOutput) { delete fOutput; fOutput = 0; }
    if (fCuts)   { delete fCuts;   fCuts   = 0; }
    if (fCandidateArray)  { delete fCandidateArray;  fCandidateArray  = 0; }
+   delete fSideBandArray;
    
 }
 
@@ -166,17 +171,19 @@ void AliAnalysisTaskSEDmesonsFilterCJ::Init()
    if(fDebug>1) printf("AnalysisTaskSEDmesonsForJetCorrelations::Init() \n");
    
    switch (fCandidateType) {
-   case 0: {
+   case 0: 
+      {
    	 AliRDHFCutsD0toKpi* copyfCutsDzero = new AliRDHFCutsD0toKpi(*(static_cast<AliRDHFCutsD0toKpi*>(fCuts)));
    	 copyfCutsDzero->SetName("AnalysisCutsDzero");
    	 PostData(2, copyfCutsDzero);  // Post the data
-   } break;
-case 1: {
-      AliRDHFCutsDStartoKpipi* copyfCutsDstar = new AliRDHFCutsDStartoKpipi(*(static_cast<AliRDHFCutsDStartoKpipi*>(fCuts)));
-      copyfCutsDstar->SetName("AnalysisCutsDStar");
-      PostData(2, copyfCutsDstar); // Post the cuts
-} break;
-default: return;
+      } break;
+   case 1: 
+      {
+      	 AliRDHFCutsDStartoKpipi* copyfCutsDstar = new AliRDHFCutsDStartoKpipi(*(static_cast<AliRDHFCutsDStartoKpipi*>(fCuts)));
+      	 copyfCutsDstar->SetName("AnalysisCutsDStar");
+      	 PostData(2, copyfCutsDstar); // Post the cuts
+      } break;
+   default: return;
    }
    
    return;
@@ -195,15 +202,27 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserCreateOutputObjects()
    fOutput = new TList(); fOutput->SetOwner();
    DefineHistoForAnalysis(); // define histograms
    
-   fCandidateArray = new TClonesArray("AliAODRecoDecayHF",0);
-   fCandidateArray->SetName(Form("fCandidateArray%s%s",fCandidateName.Data(),fUseReco ? "rec" : "gen"));
-   
-   if (fCandidateType==kDstartoKpipi){
-      fSideBandArray = new TClonesArray("AliAODRecoCascadeHF",0); //this is for the DStar only!
-      fSideBandArray->SetName(Form("fSideBandArray%s%s",fCandidateName.Data(),fUseReco ? "rec" : "gen"));
+   if (fCandidateType==kD0toKpi){
+      fCandidateArray = new TClonesArray("AliAODRecoDecayHF",0);
+      fSideBandArray = new TClonesArray("AliAODRecoDecayHF",0); 
    }
    
+   if (fCandidateType==kDstartoKpipi) {
+      fCandidateArray = new TClonesArray("AliAODRecoCascadeHF",0);
+      fSideBandArray = new TClonesArray("AliAODRecoCascadeHF",0); 
+   }
+   
+   fCandidateArray->SetOwner();
+   fCandidateArray->SetName(Form("fCandidateArray%s%s",fCandidateName.Data(),fUseReco ? "rec" : "gen"));
+   
+   //this is used for the DStar side bands and MC!
+   fSideBandArray->SetOwner();
+   fSideBandArray->SetName(Form("fSideBandArray%s%s",fCandidateName.Data(),fUseReco ? "rec" : "gen"));
+  
    PostData(1, fOutput);
+   PostData(3, fCandidateArray);
+   PostData(4, fSideBandArray);
+ 
    return;
 }
 
@@ -213,15 +232,6 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
    //
    // user exec
    //
-   
-   // add cadidate branch
-   fCandidateArray->Delete();
-   if (!(InputEvent()->FindListObject(Form("fCandidateArray%s%s",fCandidateName.Data(),fUseReco ? "rec" : "gen")))) InputEvent()->AddObject(fCandidateArray);
-   if (fCandidateType==kDstartoKpipi){
-      fSideBandArray->Delete();
-      if (!(InputEvent()->FindListObject(Form("fSideBandArray%s%s",fCandidateName.Data(),fUseReco ? "rec" : "gen")))) InputEvent()->AddObject(fSideBandArray);
-   }
-   //Printf("Arr names %s, %s",fCandidateArray->GetName(),fSideBandArray->GetName());
    // Load the event
    AliAODEvent *aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
    
@@ -295,6 +305,7 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
    Int_t iSBCand=0;
    Int_t isSelected = 0;
    AliAODRecoDecayHF *charmCand = 0;
+   AliAODRecoCascadeHF *dstar = 0;
    AliAODMCParticle *charmPart = 0;
    Bool_t isMCBkg=kFALSE;
    
@@ -304,15 +315,19 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
    Int_t pdgMeson = 413;
    if (fCandidateType==kD0toKpi) pdgMeson = 421;
    
+   //clear the TClonesArray from the previous event
+   fCandidateArray->Clear();
+   fSideBandArray->Clear();
+   
    for (Int_t icharm=0; icharm<nD; icharm++) {   //loop over D candidates
       charmCand = (AliAODRecoDecayHF*)arrayDStartoD0pi->At(icharm); // D candidates
       if (!charmCand) continue;
       
+      if (fCandidateType==kDstartoKpipi) dstar = (AliAODRecoCascadeHF*)charmCand;
       
       if (fUseMCInfo) { // Look in MC, try to simulate the z
       	 if (fCandidateType==kDstartoKpipi) {
-      	    AliAODRecoCascadeHF *temp = (AliAODRecoCascadeHF*)charmCand;
-      	    mcLabel = temp->MatchToMC(413,421,pdgDgDStartoD0pi,pdgDgD0toKpi,mcArray);
+      	    mcLabel = dstar->MatchToMC(413,421,pdgDgDStartoD0pi,pdgDgD0toKpi,mcArray);
       	 }
       	 
       	 if (fCandidateType==kD0toKpi) 
@@ -338,11 +353,10 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
       	    AliError(Form("Pt %.3f out of bounds",ptD));
       	    continue;
       	 }
-      	 AliAODRecoCascadeHF *temp = (AliAODRecoCascadeHF*)charmCand;
       	 //if data and Dstar from D0 side band
-      	 if (((temp->InvMassD0()<=(mPDGD0-3.*fSigmaD0[bin])) && (temp->InvMassD0()>(mPDGD0-10.*fSigmaD0[bin]))) /*left side band*/||  ((temp->InvMassD0()>=(mPDGD0+3.*fSigmaD0[bin])) && (temp->InvMassD0()<(mPDGD0+10.*fSigmaD0[bin])))/*right side band*/){	
+      	 if (((dstar->InvMassD0()<=(mPDGD0-3.*fSigmaD0[bin])) && (dstar->InvMassD0()>(mPDGD0-10.*fSigmaD0[bin]))) /*left side band*/||  ((dstar->InvMassD0()>=(mPDGD0+3.*fSigmaD0[bin])) && (dstar->InvMassD0()<(mPDGD0+10.*fSigmaD0[bin])))/*right side band*/){	
       	    
-      	    new ((*fSideBandArray)[iSBCand]) AliAODRecoCascadeHF(*temp);
+      	    new ((*fSideBandArray)[iSBCand]) AliAODRecoCascadeHF(*dstar);
       	    iSBCand++;
       	 }
       }
@@ -354,8 +368,14 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
       if(!fUseMCInfo || (fUseMCInfo && !isMCBkg)){
       	 // for data or MC with the requirement fUseReco fill with candidates
       	 if(fUseReco) {
-      	    new ((*fCandidateArray)[iCand]) AliAODRecoDecayHF(*charmCand);
-      	    //Printf("Filling reco");
+      	    if (fCandidateType==kDstartoKpipi){
+      	       new ((*fCandidateArray)[iCand]) AliAODRecoCascadeHF(*dstar);
+      	       AliInfo(Form("Dstar delta mass = %f",dstar->DeltaInvMass()));
+      	    } else{
+      	       new ((*fCandidateArray)[iCand]) AliAODRecoDecayHF(*charmCand);
+      	       //Printf("Filling reco");
+      	    }      	    
+      	    
       	    hstat->Fill(3);
       	 }
       	 // for MC with requirement particle level fill with AliAODMCParticle
@@ -369,7 +389,12 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
       }
       //for MC background fill fSideBandArray (which is instead filled above for DStar in case of data for the side bands candidates)
       else if(fUseReco){
-      	 new ((*fSideBandArray)[iSBCand]) AliAODRecoDecayHF(*charmCand);
+      	 if (fCandidateType==kDstartoKpipi){
+      	    new ((*fSideBandArray)[iSBCand]) AliAODRecoCascadeHF(*dstar);
+      	 }
+      	 if (fCandidateType==kD0toKpi){
+      	    new ((*fSideBandArray)[iSBCand]) AliAODRecoDecayHF(*charmCand);
+      	 }
       	 iSBCand++;
       }
       
@@ -378,8 +403,7 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
       if (fCandidateType==kDstartoKpipi) { //D*->D0pi->Kpipi
       	 
       	 //softpion from D* decay
-      	 AliAODRecoCascadeHF *temp = (AliAODRecoCascadeHF*)charmCand;
-      	 AliAODTrack *track2 = (AliAODTrack*)temp->GetBachelor();  
+      	 AliAODTrack *track2 = (AliAODTrack*)dstar->GetBachelor();  
       	 
       	 // select D* in the D0 window.
       	 // In the cut object window is loose to allow for side bands
@@ -396,8 +420,8 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
       	 
       	 AliInfo(Form("Pt bin %d and sigma D0 %.4f",bin,fSigmaD0[bin]));
       	 //consider the Dstar candidates only if the mass of the D0 is in 3 sigma wrt the PDG value
-      	 if ((temp->InvMassD0()>=(mPDGD0-3.*fSigmaD0[bin])) && (temp->InvMassD0()<=(mPDGD0+3.*fSigmaD0[bin]))) {	
-      	    masses[0] = temp->DeltaInvMass(); //D*
+      	 if ((dstar->InvMassD0()>=(mPDGD0-3.*fSigmaD0[bin])) && (dstar->InvMassD0()<=(mPDGD0+3.*fSigmaD0[bin]))) {	
+      	    masses[0] = dstar->DeltaInvMass(); //D*
       	    masses[1] = 0.; //dummy for D*
       	    
       	    //D*  delta mass
@@ -405,7 +429,7 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
       	    
       	    // D* pt and soft pion pt for good candidates  	      	
       	    Double_t mPDGDstar = TDatabasePDG::Instance()->GetParticle(413)->Mass();
-      	    Double_t invmassDelta = temp->DeltaInvMass();
+      	    Double_t invmassDelta = dstar->DeltaInvMass();
       	    if (TMath::Abs(invmassDelta-(mPDGDstar-mPDGD0))<0.0021) hPtPion->Fill(track2->Pt());
       	 }
       } //Dstar specific
@@ -432,7 +456,11 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
       hstat->Fill(4,nsbcand);
       hnSBCandEv->Fill(nsbcand);
    }
-   
+   Printf("N candidates selected %d, counter = %d",fCandidateArray->GetEntries(), iCand);
+   PostData(1, fOutput);
+   PostData(3, fCandidateArray);
+   PostData(4, fSideBandArray);
+  
    return;
 }
 

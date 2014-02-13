@@ -138,6 +138,12 @@ public:
   void Print(Option_t* opt="") const;
   
 private:
+  
+  /// not implemented on purpose
+  AliAnalysisMuMuCutElementBar(const AliAnalysisMuMuCutElementBar& rhs);
+  /// not implemented on purpose
+  AliAnalysisMuMuCutElementBar& operator=(const AliAnalysisMuMuCutElementBar& rhs);
+
   const AliAnalysisMuMuCutElement* fCutElement; // the cut element we're the negation of
   
   ClassDef(AliAnalysisMuMuCutElementBar,1) // opposite of cut element (i.e. !cutelement)

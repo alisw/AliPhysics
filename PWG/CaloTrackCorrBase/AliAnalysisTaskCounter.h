@@ -23,23 +23,30 @@ class AliAnalysisTaskCounter : public AliAnalysisTaskSE {
   AliAnalysisTaskCounter(const char *name);  
   virtual ~AliAnalysisTaskCounter() ;
   
-  virtual void   UserCreateOutputObjects();  
+  virtual void   UserCreateOutputObjects();
+  
   virtual void   UserExec(Option_t *option);
+  
   virtual void   FinishTaskOutput();
   
-  static  Bool_t PythiaInfoFromFile(TString currFile, Float_t & xsec, Float_t & trials) ;
   virtual Bool_t Notify();
-
-  void    SetTrackMultiplicityEtaCut(Float_t eta) { fTrackMultEtaCut   = eta    ; }  
-  void    SetZVertexCut(Float_t vcut)             { fZVertexCut        = vcut   ; }
   
-  void    AcceptFastCluster()                     { fAcceptFastCluster = kTRUE  ; } 
-  void    RejectFastCluster()                     { fAcceptFastCluster = kFALSE ; }  
-  Bool_t  IsFastClusterAccepted()       const     { return fAcceptFastCluster   ; }   
-  
-  Bool_t  CheckForPrimaryVertex() ;
+  static  Bool_t PythiaInfoFromFile(TString currFile, Float_t & xsec, Float_t & trials) ;
 
- private: 
+  void           SetTrackMultiplicityEtaCut(Float_t eta) { fTrackMultEtaCut   = eta    ; }
+  void           SetZVertexCut(Float_t vcut)             { fZVertexCut        = vcut   ; }
+  
+  void           AcceptFastCluster()                     { fAcceptFastCluster = kTRUE  ; }
+  void           RejectFastCluster()                     { fAcceptFastCluster = kFALSE ; }
+  Bool_t         IsFastClusterAccepted()       const     { return fAcceptFastCluster   ; }
+  
+  Bool_t         CheckForPrimaryVertex() ;
+
+  void           SwitchOnMCCrossSectionCalculation()     { fCheckMCCrossSection = kTRUE  ; }
+  void           SwitchOffMCCrossSectionCalculation()    { fCheckMCCrossSection = kFALSE ; }
+  
+ private:
+  
   Bool_t               fAcceptFastCluster; // Accept events from fast cluster, exclude thiese events for LHC11a
   Float_t              fZVertexCut;        // Z vertex cut  
   Float_t              fTrackMultEtaCut;   // Track multiplicity eta cut  
@@ -48,6 +55,7 @@ class AliAnalysisTaskCounter : public AliAnalysisTaskSE {
   AliESDtrackCuts    * fESDtrackCuts;      // Track cut    
   AliTriggerAnalysis * fTriggerAnalysis;   // Trigger algorithm 
   TString              fCurrFileName;      // current file path name
+  Bool_t               fCheckMCCrossSection; // retrieve from the pyxsec.root file only if requested
   
   //Histograms
   TH1I *  fhNEvents;      //! Events that delivers the analysis frame after different assumptions  
@@ -66,7 +74,7 @@ class AliAnalysisTaskCounter : public AliAnalysisTaskSE {
   AliAnalysisTaskCounter(           const AliAnalysisTaskCounter&); // not implemented  
   AliAnalysisTaskCounter& operator=(const AliAnalysisTaskCounter&); // not implemented
   
-  ClassDef(AliAnalysisTaskCounter, 5);
+  ClassDef(AliAnalysisTaskCounter, 6);
 
 };
 

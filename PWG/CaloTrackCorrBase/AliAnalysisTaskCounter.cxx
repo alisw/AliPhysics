@@ -68,8 +68,8 @@ AliAnalysisTaskCounter::AliAnalysisTaskCounter(const char *name)
   fOutputContainer(0x0),
   fESDtrackCuts(AliESDtrackCuts::GetStandardITSTPCTrackCuts2010()),
   fTriggerAnalysis (new AliTriggerAnalysis),
-  fCurrFileName(0),
-  fhNEvents(0),   
+  fCurrFileName(0), fCheckMCCrossSection(kFALSE),
+  fhNEvents(0),
   fhXVertex(0),    fhYVertex(0),    fhZVertex(0),
   fhXGoodVertex(0),fhYGoodVertex(0),fhZGoodVertex(0),
   fhCentrality(0), fhEventPlaneAngle(0),
@@ -470,6 +470,8 @@ Bool_t AliAnalysisTaskCounter::Notify()
   // and number of trials from pyxsec.root
   //
   
+  if(!fCheckMCCrossSection) return kTRUE;
+
   // Fetch the aod also from the input in,
   // have todo it in notify
   
@@ -520,7 +522,7 @@ Bool_t AliAnalysisTaskCounter::PythiaInfoFromFile(TString file,Float_t & xsec,Fl
   //
   // get the cross section and the trails either from pyxsec.root or from pysec_hists.root
   // This is to called in Notify and should provide the path to the AOD/ESD file
-  
+    
   xsec   = 0;
   trials = 1;
   
