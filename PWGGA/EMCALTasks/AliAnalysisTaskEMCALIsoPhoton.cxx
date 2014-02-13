@@ -630,6 +630,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
       maxE = c->E();
   }
   fNClusHighClusE->Fill(maxE,nclus);
+  fMaxEClus = maxE;
   fNClusEt10->Fill(nclus10);
   fNClusPerPho->Fill(fDirPhoPt,fNClusForDirPho);
 } 
