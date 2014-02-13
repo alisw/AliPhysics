@@ -113,6 +113,8 @@ public:
     kTPCchi2Cl,              // chi2/cl in TPC
     kTPCclsDiff,             // TPC cluster difference
     kTPCclsSegments,         // TPC cluster segments
+    kTPCclsIRO,             // TPC clusters inner read out
+    kTPCclsORO,             // TPC clusters outer read out
     kTrackStatus,            // track status bits
     kFilterBit,              // AOD filter bits
 
@@ -319,6 +321,7 @@ public:
     kMultV0,
     kEqMultV0A,              // equalized VZERO multiplicity
     kEqMultV0C,
+    kEqMultV0,
     kAdcV0A,
     kAdcV0C,
     kAdcV0,
@@ -621,7 +624,7 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kTRDsignal]     = particle->GetTRDsignal();
   values[AliDielectronVarManager::kTPCclsDiff]    = tpcSignalN-tpcNcls;
   values[AliDielectronVarManager::kTPCclsSegments] = 0.0;
-  const UChar_t threshold = 5;
+  UChar_t threshold = 5;
   TBits tpcClusterMap = particle->GetTPCClusterMap();
   UChar_t n=0; UChar_t j=0;
   for(UChar_t i=0; i<8; ++i) {
@@ -629,6 +632,19 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
     for(j=i*20; j<(i+1)*20 && j<159; ++j) n+=tpcClusterMap.TestBitNumber(j);
     if(n>=threshold) values[AliDielectronVarManager::kTPCclsSegments] += 1.0;
   }
+
+  n=0;
+  threshold=0;
+  values[AliDielectronVarManager::kTPCclsIRO]=0.;
+  for(j=0; j<63; ++j) n+=tpcClusterMap.TestBitNumber(j);
+  if(n>=threshold) values[AliDielectronVarManager::kTPCclsIRO] = n;
+  n=0;
+  threshold=0;
+  values[AliDielectronVarManager::kTPCclsORO]=0.;
+  for(j=63; j<159; ++j) n+=tpcClusterMap.TestBitNumber(j);
+  if(n>=threshold) values[AliDielectronVarManager::kTPCclsORO] = n;
+
+  
   values[AliDielectronVarManager::kTrackStatus]   = (Double_t)particle->GetStatus();
   values[AliDielectronVarManager::kFilterBit]     = 0;
   
@@ -819,7 +835,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   values[AliDielectronVarManager::kTRDchi2]       = (particle->GetTRDntrackletsPID()!=0.?particle->GetTRDchi2():-1);
   values[AliDielectronVarManager::kTRDsignal]     = particle->GetTRDsignal();
   values[AliDielectronVarManager::kTPCclsSegments] = 0.0;
-  const UChar_t threshold = 5;
+  UChar_t threshold = 5;
   TBits tpcClusterMap = particle->GetTPCClusterMap();
   UChar_t n=0; UChar_t j=0;
   for(UChar_t i=0; i<8; ++i) {
@@ -827,6 +843,18 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
     for(j=i*20; j<(i+1)*20 && j<159; ++j) n+=tpcClusterMap.TestBitNumber(j);
     if(n>=threshold) values[AliDielectronVarManager::kTPCclsSegments] += 1.0;
   }
+
+  n=0;
+  threshold=0;
+  values[AliDielectronVarManager::kTPCclsIRO]=0.;
+  for(j=0; j<63; ++j) n+=tpcClusterMap.TestBitNumber(j);
+  if(n>=threshold) values[AliDielectronVarManager::kTPCclsIRO] = n;
+  n=0;
+  threshold=0;
+  values[AliDielectronVarManager::kTPCclsORO]=0.;
+  for(j=63; j<159; ++j) n+=tpcClusterMap.TestBitNumber(j);
+  if(n>=threshold) values[AliDielectronVarManager::kTPCclsORO] = n;
+
 
   values[AliDielectronVarManager::kTPCchi2Cl]     = (tpcNcls>0)?particle->Chi2perNDF()*(tpcNcls-5)/tpcNcls:-1.;  // it is stored as normalized to tpcNcls-5 (see AliAnalysisTaskESDfilter)
   values[AliDielectronVarManager::kTrackStatus]   = (Double_t)particle->GetStatus();
@@ -1784,6 +1812,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
     //values[AliDielectronVarManager::kAdcV0C] += vzeroData->GetAdcV0C(i);
   }
   values[AliDielectronVarManager::kMultV0] = values[AliDielectronVarManager::kMultV0A] + values[AliDielectronVarManager::kMultV0C];
+  values[AliDielectronVarManager::kEqMultV0] = values[AliDielectronVarManager::kEqMultV0A] + values[AliDielectronVarManager::kEqMultV0C];
   values[AliDielectronVarManager::kAdcV0] = values[AliDielectronVarManager::kAdcV0A] + values[AliDielectronVarManager::kAdcV0C];
   // VZERO event plane quantities
   Double_t qvec[3]={0.0};
