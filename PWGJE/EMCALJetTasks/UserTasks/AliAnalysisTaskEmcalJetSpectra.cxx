@@ -29,6 +29,8 @@
 #include "AliVCluster.h"
 #include "AliRhoParameter.h"
 #include "AliEmcalParticle.h"
+#include "AliLocalRhoParameter.h"
+#include "AliAnalysisTaskLocalRho.h"
 
 ClassImp(AliAnalysisTaskEmcalJetSpectra)
 
@@ -52,9 +54,12 @@ AliAnalysisTaskEmcalJetSpectra::AliAnalysisTaskEmcalJetSpectra() :
     fHistJetPtvsEP[i]           = 0;
     fHistJetPtvsEPBias[i]       = 0;
     fHistRhovsEP[i]             = 0;
-
+    fHistCorJetPtfromLocalRho[i]= 0;
+    fHistCorJetPtfromGlobalRho[i] = 0;
   }
+  fLocalRhoVal = 0;
   SetMakeGeneralHistograms(kTRUE);
+    
 }
 
 //________________________________________________________________________
@@ -76,7 +81,10 @@ AliAnalysisTaskEmcalJetSpectra::AliAnalysisTaskEmcalJetSpectra(const char *name)
     fHistJetPtvsEP[i]           = 0;
     fHistJetPtvsEPBias[i]       = 0;
     fHistRhovsEP[i]             = 0;
+    fHistCorJetPtfromLocalRho[i]= 0;
+    fHistCorJetPtfromGlobalRho[i] = 0;
    }
+   fLocalRhoVal = 0;
    SetMakeGeneralHistograms(kTRUE);
  }
 
@@ -142,6 +150,16 @@ void AliAnalysisTaskEmcalJetSpectra::UserCreateOutputObjects()
     title = TString(Form("Rho vs EP cent bin %i",i));
     fHistRhovsEP[i] = new TH2F(name,title,500,0,500,400,-2*TMath::Pi(),2*TMath::Pi());
     fOutput->Add(fHistRhovsEP[i]);
+      
+      name = TString(Form("NjetvsCorrJetPtfromLocalRho_%i",i));
+      title = TString(Form("Njets vs Corrected jet pT from Local Rho cent bin %i",i));
+      fHistCorJetPtfromLocalRho[i] = new TH1F(name,title, 500, -250,250);
+      fOutput->Add(fHistCorJetPtfromLocalRho[i]);
+  
+      name = TString(Form("NjetvsCorrJetPtfromGlobalRho_%i",i));
+      title = TString(Form("Njets vs Corrected jet pT from Global Rho cent bin %i",i));
+      fHistCorJetPtfromGlobalRho[i] = new TH1F(name,title, 500, -250,250);
+      fOutput->Add(fHistCorJetPtfromGlobalRho[i]);
   }
 
   
@@ -207,6 +225,13 @@ Bool_t AliAnalysisTaskEmcalJetSpectra::Run()
       continue;
     fHistTrackPt[centbin]->Fill(track->Pt());
   }
+    
+    if(!fLocalRho) {
+        cout<<"name: "<<fLocalRhoName.Data()<<endl;
+        cout<<"found no LocalRho, try to get it from Event based on name"<<endl;
+        fLocalRho = GetLocalRhoFromEvent(fLocalRhoName);
+    }
+
 
   fHistEP0[centbin]->Fill(fEPV0);
   fHistEP0A[centbin]->Fill(fEPV0A);
@@ -239,6 +264,10 @@ Bool_t AliAnalysisTaskEmcalJetSpectra::Run()
      fHistRawJetPtvsTrackPt[centbin]->Fill(jet->Pt(),jet->MaxTrackPt());
      fHistJetPtvsdEP[centbin]->Fill(jetPt,RelativePhi((fEPV0+TMath::Pi()),jet->Phi()));
      fHistJetPtvsEP[centbin]->Fill(jetPt,fEPV0);
+    fLocalRhoVal = fLocalRho->GetLocalVal(jet->Phi(), 0.2);
+      Double_t jetPtLocal = jet->Pt() - jet->Area()*fLocalRhoVal;
+       fHistCorJetPtfromLocalRho[centbin]->Fill(jetPtLocal);
+        fHistCorJetPtfromGlobalRho[centbin]->Fill(jetPt);
      if (jet->MaxTrackPt()>5.0){
        fHistJetPtvsdEPBias[centbin]->Fill(jetPt,RelativePhi((fEPV0+TMath::Pi()),jet->Phi()));
        fHistJetPtvsEPBias[centbin]->Fill(jetPt,fEPV0);
