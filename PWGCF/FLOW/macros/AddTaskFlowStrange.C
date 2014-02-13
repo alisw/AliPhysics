@@ -83,8 +83,6 @@ void AddTaskFlowStrange(TString configFile, TString alienaddress, Bool_t skipTer
 }
 void AddTaskFlowStrange(TString configFile, Bool_t skipTerminate=kFALSE) {
   SFT_ReadConfig(configFile);
-  SFT_gbSuffix = Form("%s%d%d%d%d", SFT_gbSuffix.Data(),
-		      SFT_gbV0CRingMin, SFT_gbV0CRingMax, SFT_gbV0ARingMin, SFT_gbV0ARingMax);
   if(SFT_gbAllCC) {
     int centMin[9] = {00,05,10,20,30,40,50,60,70};
     int centMax[9] = {05,10,20,30,40,50,60,70,80};

@@ -59,6 +59,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"TPCchi2PerCluster",      "#chi^{2}/^{}N_{cls}^{TPC}",                          ""},
   {"TPCclsDiff",             "N_{d#it{E}/d#it{x} points}^{TPC} - N_{cls}^{TPC}",   ""},
   {"TPCclsSegments",         "N_{segments}^{TPC}",                                 ""},
+  {"TPCclsIRO",              "N_{clsIRO}^{TPC}",                                   ""},
+  {"TPCclsORO",              "N_{clsORO}^{TPC}",                                   ""},
   {"TrackStatus",            "TrackStatus",                                        ""},
   {"FilterBit",              "AOD filter bit",                                     ""},
     
@@ -255,6 +257,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"MultV0",                 "multiplicity V0",                                    ""},
   {"EqMultV0A",              "equalized multiplicity V0A",                         ""},
   {"EqMultV0C",              "equalized multiplicity V0C",                         ""},
+  {"EqMultV0",               "equalized multiplicity V0",                          ""},
   {"AdcV0A",                 "AdcV0A",                                             ""},
   {"AdcV0C",                 "AdcV0C",                                             ""},
   {"AdcV0",                  "AdcV0",                                              ""},
