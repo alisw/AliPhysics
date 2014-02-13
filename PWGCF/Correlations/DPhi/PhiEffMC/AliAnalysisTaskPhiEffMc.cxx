@@ -61,7 +61,8 @@ AliAnalysisTaskPhiEffMc::AliAnalysisTaskPhiEffMc(const char *name) : AliAnalysis
   fHelperPID(0x0),
   fTrackCuts(0x0),
   fEventCuts(0x0),
-  fPtCut(0.)
+  fPtCut(0.),
+  fDoPID(kTRUE)
 {
   // Default constructor
   
@@ -306,12 +307,12 @@ void AliAnalysisTaskPhiEffMc::UserExec(Option_t *)
 	  nMc++;
 
 	  Int_t mcID = fHelperPID->GetParticleSpecies(partMC);
-	  if(mcID>3 || mcID < -3) continue;
+	  if(fDoPID && (mcID>3 || mcID < -3)) continue;
 	  // PID ID, pt, y, eta, phi
 	  Double_t varfill2[6] = {(partMC->Charge() > 0 ? mcID+1 : -1*(mcID+1)), partMC->Pt(), partMC->Y(), cent, partMC->Eta(), partMC->Phi()};
 	  hTrackMc->Fill(varfill2);
 
-	  if(mcID == 1)
+	  if(!fDoPID || mcID == 1)
 	    {
 	      if(partMC->Charge() > 0) kaonsPosMc->Add(partMC);
 	      else if(partMC->Charge() < 0) kaonsNegMc->Add(partMC);
@@ -327,7 +328,7 @@ void AliAnalysisTaskPhiEffMc::UserExec(Option_t *)
   //track loop
   for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
     AliAODTrack* track = fAOD->GetTrack(iTracks);
-    if (!fTrackCuts->IsSelected(track,kTRUE)) continue; //track selection (rapidity selection NOT in the standard cuts?)
+    if (!fTrackCuts->IsSelected(track,kTRUE)) continue;
     if(track->Charge()==0) continue;
     if(track->Pt()<fPtCut) continue;
     if(track->Eta()>fTrackCuts->GetEtaMax() || track->Eta()<fTrackCuts->GetEtaMin()) continue;
@@ -335,13 +336,13 @@ void AliAnalysisTaskPhiEffMc::UserExec(Option_t *)
     nReco++;
 
     Int_t dataID=fHelperPID->GetParticleSpecies(track,kTRUE);
-    if(dataID>3 || dataID < -3) continue;
+    if(fDoPID && (dataID>3 || dataID < -3)) continue;
 
     // PID ID, pt, y, eta, phi
     Double_t varfill3[6] = {(track->Charge() > 0 ? dataID+1 : -1*(dataID+1)), track->Pt(), track->Y(), cent, track->Eta(), track->Phi()};
     hTrackReco->Fill(varfill3);
 
-    if(dataID==1)
+    if(!fDoPID || dataID==1)
       {
 	if(track->Charge() > 0) kaonsPosData->Add(track);
 	else if(track->Charge() < 0) kaonsNegData->Add(track);
@@ -358,8 +359,8 @@ void AliAnalysisTaskPhiEffMc::UserExec(Option_t *)
 	  }
 	
 	Int_t genID = fHelperPID->GetParticleSpecies(tempMC);
-	if(genID != dataID) continue;
-	if(genID>3 || genID < -3) continue;
+	if(fDoPID && (genID != dataID)) continue;
+	if(fDoPID && (genID>3 || genID < -3)) continue;
 
 	// PID ID, pt, y, eta, phi
 	Double_t varfill4[6] = {(track->Charge() > 0 ? genID+1 : -1*(genID+1)), track->Pt(), track->Y(), cent, track->Eta(), track->Phi()};
@@ -543,5 +544,4 @@ TLorentzVector* AliAnalysisTaskPhiEffMc::makePhi(AliVParticle* p1, AliVParticle*
   delete b;
   return c;
 }
-
 
