@@ -39,6 +39,7 @@ ClassImp(AliAnalysisTaskEmcalJetMass)
 AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetMass", kTRUE),
   fContainerBase(0),
+  fMinFractionShared(0),
   fh2PtJet1VsLeadPtAllSel(0),
   fh2PtJet1VsLeadPtTagged(0),
   fh2PtVsMassJet1All(0),
@@ -47,6 +48,8 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass() :
   fpPtVsMassJet1Tagged(0),
   fh2MassVsAreaJet1All(0),
   fh2MassVsAreaJet1Tagged(0),
+  fh2MassVsNConstJet1All(0),
+  fh2MassVsNConstJet1Tagged(0),
   fh2EtMassOverEtRSq(0)
 {
   // Default constructor.
@@ -59,6 +62,8 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass() :
   fpPtVsMassJet1Tagged         = new TProfile*[fNcentBins];
   fh2MassVsAreaJet1All         = new TH2F*[fNcentBins];
   fh2MassVsAreaJet1Tagged      = new TH2F*[fNcentBins];
+  fh2MassVsNConstJet1All       = new TH2F*[fNcentBins];
+  fh2MassVsNConstJet1Tagged    = new TH2F*[fNcentBins];
   fh2EtMassOverEtRSq           = new TH2F*[fNcentBins];
 
   for (Int_t i = 0; i < fNcentBins; i++) {
@@ -70,6 +75,8 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass() :
     fpPtVsMassJet1Tagged[i]        = 0;
     fh2MassVsAreaJet1All[i]        = 0;
     fh2MassVsAreaJet1Tagged[i]     = 0;
+    fh2MassVsNConstJet1All[i]      = 0;
+    fh2MassVsNConstJet1Tagged[i]   = 0;
     fh2EtMassOverEtRSq[i]          = 0;
   }
 
@@ -81,6 +88,7 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass() :
 AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass(const char *name) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),  
   fContainerBase(0),
+  fMinFractionShared(0),
   fh2PtJet1VsLeadPtAllSel(0),
   fh2PtJet1VsLeadPtTagged(0),
   fh2PtVsMassJet1All(0),
@@ -89,6 +97,8 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass(const char *name) :
   fpPtVsMassJet1Tagged(0),
   fh2MassVsAreaJet1All(0),
   fh2MassVsAreaJet1Tagged(0),
+  fh2MassVsNConstJet1All(0),
+  fh2MassVsNConstJet1Tagged(0),
   fh2EtMassOverEtRSq(0)
 {
   // Standard constructor.
@@ -101,6 +111,8 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass(const char *name) :
   fpPtVsMassJet1Tagged         = new TProfile*[fNcentBins];
   fh2MassVsAreaJet1All         = new TH2F*[fNcentBins];
   fh2MassVsAreaJet1Tagged      = new TH2F*[fNcentBins];
+  fh2MassVsNConstJet1All       = new TH2F*[fNcentBins];
+  fh2MassVsNConstJet1Tagged    = new TH2F*[fNcentBins];
   fh2EtMassOverEtRSq           = new TH2F*[fNcentBins];
 
   for (Int_t i = 0; i < fNcentBins; i++) {
@@ -112,6 +124,8 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass(const char *name) :
     fpPtVsMassJet1Tagged[i]        = 0;
     fh2MassVsAreaJet1All[i]        = 0;
     fh2MassVsAreaJet1Tagged[i]     = 0;
+    fh2MassVsNConstJet1All[i]      = 0;
+    fh2MassVsNConstJet1Tagged[i]   = 0;
     fh2EtMassOverEtRSq[i]          = 0;
   }
 
@@ -141,6 +155,10 @@ void AliAnalysisTaskEmcalJetMass::UserCreateOutputObjects()
   const Int_t nBinsArea = 100;
   const Double_t minArea = 0.;
   const Double_t maxArea = 1.;
+
+  const Int_t nBinsNConst = 100;
+  const Double_t minNConst = 0.;
+  const Double_t maxNConst = 500.;
 
   TString histName = "";
   TString histTitle = "";
@@ -185,6 +203,16 @@ void AliAnalysisTaskEmcalJetMass::UserCreateOutputObjects()
     fh2MassVsAreaJet1Tagged[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsArea,minArea,maxArea);
     fOutput->Add(fh2MassVsAreaJet1Tagged[i]);
 
+    histName = TString::Format("fh2MassVsNConstJet1All_%d",i);
+    histTitle = TString::Format("%s;#it{M}_{jet1};#it{N}_{constituents}",histName.Data());
+    fh2MassVsNConstJet1All[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsNConst,minNConst,maxNConst);
+    fOutput->Add(fh2MassVsNConstJet1All[i]);
+
+    histName = TString::Format("fh2MassVsNConstJet1Tagged_%d",i);
+    histTitle = TString::Format("%s;#it{M}_{jet1};#it{N}_{constituents}",histName.Data());
+    fh2MassVsNConstJet1Tagged[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsNConst,minNConst,maxNConst);
+    fOutput->Add(fh2MassVsNConstJet1Tagged[i]);
+
     histName = TString::Format("fh2EtMassOverEtRSq_%d",i);
     histTitle = TString::Format("%s;#it{E}_{T};(#it{M}/(#it{E}_{T}#it{R}))^{2}",histName.Data());
     fh2EtMassOverEtRSq[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,100,0.,1.);
@@ -220,32 +248,31 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
 {
   // Fill histograms.
 
-  AliEmcalJet* jet1 = 0;
-  AliEmcalJet* jet2 = 0;
+  AliEmcalJet* jet1 = NULL;
 
   AliJetContainer *jetCont = GetJetContainer(fContainerBase);
   if(jetCont) {
     jetCont->ResetCurrentID();
     while((jet1 = jetCont->GetNextAcceptJet())) {
+      Double_t fraction = jetCont->GetFractionSharedPt(jet1);
+      if(fMinFractionShared>0. && fraction<fMinFractionShared) continue;
+
       Double_t ptJet1 = jet1->Pt() - GetRhoVal(fContainerBase)*jet1->Area();//jetCont->GetJetPtCorr(jetCont->GetCurrentID());//
       fh2PtJet1VsLeadPtAllSel[fCentBin]->Fill(ptJet1,jet1->MaxTrackPt());
       fh2PtVsMassJet1All[fCentBin]->Fill(ptJet1,jet1->M());
       fpPtVsMassJet1All[fCentBin]->Fill(ptJet1,jet1->M());
       fh2MassVsAreaJet1All[fCentBin]->Fill(jet1->M(),jet1->Area());
+      fh2MassVsNConstJet1All[fCentBin]->Fill(jet1->M(),jet1->GetNumberOfConstituents());
       
-      if(jet1->GetTagStatus()<1)
+      if(jet1->GetTagStatus()<1 || !jet1->GetTaggedJet())
 	continue;
-      
-      jet2 = jet1->GetTaggedJet();
-      if(!jet2) continue;
-      
+
       fh2PtJet1VsLeadPtTagged[fCentBin]->Fill(ptJet1,jet1->MaxTrackPt());
       fh2PtVsMassJet1Tagged[fCentBin]->Fill(ptJet1,jet1->M());
       fpPtVsMassJet1Tagged[fCentBin]->Fill(ptJet1,jet1->M());
       fh2MassVsAreaJet1Tagged[fCentBin]->Fill(jet1->M(),jet1->Area());
+      fh2MassVsNConstJet1Tagged[fCentBin]->Fill(jet1->M(),jet1->GetNumberOfConstituents());
       
-      //      Double_t massOverEtR = jet1->M()/(ptJet1*jetCont->GetJetRadius());
-      //      fh2EtMassOverEtRSq[fCentBin]->Fill(ptJet1,massOverEtR*massOverEtR);
       Double_t Et2 = jet1->M()*jet1->M() + jet1->Pt()*jet1->Pt();
       Double_t Et = 0.;    Double_t massOverEtR = 0.;
       if(Et2>0.) Et = TMath::Sqrt(Et2);
@@ -257,7 +284,6 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
 
   return kTRUE;
 }
-
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalJetMass::RetrieveEventObjects() {
