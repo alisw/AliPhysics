@@ -568,7 +568,7 @@ void fit(TH1D *h,Float_t *a,char *opt,char *opt2,Float_t pt){
 
  errI = TMath::Sqrt(errI);
 
- if(signI < 1) signI = 1;
+ if(signI < 0) signI = 0;
  if(backI < 1) backI = 1;
 
  printf("signal(5 sigma) = %f +/- %f(fit) +/- %f(stat)\n",signI,errI*signI,TMath::Sqrt(signI));
