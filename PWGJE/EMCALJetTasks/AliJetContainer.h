@@ -64,6 +64,7 @@ class AliJetContainer : public AliEmcalContainer {
   void                        SetJetTrigger(UInt_t t=AliVEvent::kEMCEJE)           { fJetTrigger     = t                ; }
   void                        ConnectParticleContainer(AliParticleContainer *c)    { fParticleContainer = c             ; }
   void                        ConnectClusterContainer(AliClusterContainer *c)      { fClusterContainer  = c             ; }
+
   AliEmcalJet                *GetLeadingJet(const char* opt="")          ;
   AliEmcalJet                *GetJet(Int_t i)                       const;
   AliEmcalJet                *GetAcceptJet(Int_t i)                 const;
@@ -97,6 +98,7 @@ class AliJetContainer : public AliEmcalContainer {
   void                        SetArray(AliVEvent *event);
   AliParticleContainer       *GetParticleContainer()                         {return fParticleContainer;}
   AliClusterContainer        *GetClusterContainer()                          {return fClusterContainer;}
+  Double_t                    GetFractionSharedPt(AliEmcalJet *jet) const;
 
  protected:
   JetAcceptanceType           fJetAcceptanceType;    //  acceptance type
@@ -125,7 +127,6 @@ class AliJetContainer : public AliEmcalContainer {
   UInt_t                      fJetTrigger;           //  jet trigger
   AliParticleContainer       *fParticleContainer;    //  particle container (jet constituents)
   AliClusterContainer        *fClusterContainer;     //  cluster container (jet constituents)
-
   AliRhoParameter            *fRho;                  //! event rho for these jets
   AliLocalRhoParameter       *fLocalRho;             //! event local rho for these jets
   AliEMCALGeometry           *fGeom;                 //! emcal geometry
@@ -135,7 +136,7 @@ class AliJetContainer : public AliEmcalContainer {
   AliJetContainer(const AliJetContainer& obj); // copy constructor
   AliJetContainer& operator=(const AliJetContainer& other); // assignment
 
-  ClassDef(AliJetContainer,6);
+  ClassDef(AliJetContainer,7);
 
 };
 

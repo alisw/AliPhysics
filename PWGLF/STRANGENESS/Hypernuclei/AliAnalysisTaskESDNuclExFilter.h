@@ -75,26 +75,26 @@ class AliAnalysisTaskESDNuclExFilter : public AliAnalysisTaskSE
   ClassDef(AliAnalysisTaskESDNuclExFilter, 5); // Analysis task for standard ESD filtering
 };
  
-class AliAnalysisNonMuonTrackCuts : public AliAnalysisCuts
-{
-public:
-  AliAnalysisNonMuonTrackCuts();
-  virtual ~AliAnalysisNonMuonTrackCuts() {}
-  virtual Bool_t IsSelected(TObject* obj);
-  virtual Bool_t IsSelected(TList*   /* list */ ) { return kTRUE; }
+/* class AliAnalysisNonMuonTrackCuts : public AliAnalysisCuts */
+/* { */
+/* public: */
+/*   AliAnalysisNonMuonTrackCuts(); */
+/*   virtual ~AliAnalysisNonMuonTrackCuts() {} */
+/*   /\* virtual Bool_t IsSelected(TObject* obj); *\/ */
+/*   /\* virtual Bool_t IsSelected(TList*   /\\* list *\\/ ) { return kTRUE; } *\/ */
 
-  ClassDef(AliAnalysisNonMuonTrackCuts,1); // Select muon spectrometer tracks
-};
+/*   ClassDef(AliAnalysisNonMuonTrackCuts,1); // Select muon spectrometer tracks */
+/* }; */
 
-class AliAnalysisNonPrimaryVertices : public AliAnalysisCuts
-{
-public:
-  AliAnalysisNonPrimaryVertices();
-  virtual ~AliAnalysisNonPrimaryVertices() {}
-  virtual Bool_t IsSelected(TObject* obj);
-  virtual Bool_t IsSelected(TList*   /* list */ ) { return kTRUE; }
+/* class AliAnalysisNonPrimaryVertices : public AliAnalysisCuts */
+/* { */
+/* public: */
+/*   AliAnalysisNonPrimaryVertices(); */
+/*   virtual ~AliAnalysisNonPrimaryVertices() {} */
+/*   /\* virtual Bool_t IsSelected(TObject* obj); *\/ */
+/*   /\* virtual Bool_t IsSelected(TList*   /\\* list *\\/ ) { return kTRUE; } *\/ */
   
-  ClassDef(AliAnalysisNonPrimaryVertices,1); // Select primary vertices
-};
+/*   ClassDef(AliAnalysisNonPrimaryVertices,1); // Select primary vertices */
+/* }; */
 
 #endif

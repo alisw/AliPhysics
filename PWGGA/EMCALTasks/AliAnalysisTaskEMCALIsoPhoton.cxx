@@ -71,6 +71,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fHigherPtCone(0),
   fImportGeometryFromFile(0),
   fImportGeometryFilePath(""),
+  fMaxPtTrack(0),
+  fMaxEClus(0),
   fESD(0),
   fAOD(0),
   fMCEvent(0),
@@ -96,7 +98,18 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fAllIsoEtMcGamma(0),
   fAllIsoNoUeEtMcGamma(0),
   fMCDirPhotonPtEtaPhiNoClus(0),
-  fHnOutput(0)
+  fHnOutput(0),
+  fQAList(0),
+  fNTracks(0),     
+  fEmcNCells(0),   
+  fEmcNClus(0),    
+  fEmcNClusCut(0), 
+  fNTracksECut(0), 
+  fEmcNCellsCut(0),
+  fEmcClusE(0),    
+  fEmcClusECut(0), 
+  fTrackPt(0),     
+  fTrackPtCut(0)   
 {
   // Default constructor.
   for(Int_t i = 0; i < 12;    i++)  fGeomMatrix[i] =  0;
@@ -132,6 +145,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fHigherPtCone(0),
   fImportGeometryFromFile(0),
   fImportGeometryFilePath(""),
+  fMaxPtTrack(0),
+  fMaxEClus(0),
   fESD(0),
   fAOD(0),
   fMCEvent(0),
@@ -157,7 +172,18 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fAllIsoEtMcGamma(0),
   fAllIsoNoUeEtMcGamma(0),
   fMCDirPhotonPtEtaPhiNoClus(0),
-  fHnOutput(0)
+  fHnOutput(0),
+  fQAList(0),
+  fNTracks(0),     
+  fEmcNCells(0),   
+  fEmcNClus(0),    
+  fEmcNClusCut(0), 
+  fNTracksECut(0), 
+  fEmcNCellsCut(0),
+  fEmcClusE(0),    
+  fEmcClusECut(0), 
+  fTrackPt(0),     
+  fTrackPtCut(0)   
 {
   // Constructor
 
@@ -167,6 +193,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   // Output slot #0 id reserved by the base class for AOD
   // Output slot #1 writes into a TH1 container
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
 }
 
 //________________________________________________________________________
@@ -260,9 +287,44 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fHnOutput =  new THnSparseF("fHnOutput","Output matrix: E_{T},M02,CeIso,TrIso,AllIso, CeIsoNoUESub, AllIsoNoUESub, d#phi_{trk},d#eta_{trk},#eta_{clus},#phi_{clus},T_{max},mult,mc-p_{T}^{#gamma}", ndims, bins, xmin, xmax);
   fOutputList->Add(fHnOutput);
 
+  //QA outputs
+  fQAList = new TList();
+  fQAList->SetOwner();// Container cleans up all histos (avoids leaks in merging) 
 
+  fNTracks = new TH1F("hNTracks","# of selected tracks;n-tracks;counts",120,-0.5,119.5);
+  fNTracks->Sumw2();
+  fQAList->Add(fNTracks);
+
+  fEmcNCells = new TH1F("fEmcNCells",";n/event;count",120,-0.5,119.5);  
+  fEmcNCells->Sumw2();
+  fQAList->Add(fEmcNCells);
+  fEmcNClus = new TH1F("fEmcNClus",";n/event;count",120,-0.5,119.5);    
+  fEmcNClus->Sumw2();
+  fQAList->Add(fEmcNClus);
+  fEmcNClusCut = new TH1F("fEmcNClusCut",";n/event;count",120,-0.5,119.5); 
+  fEmcNClusCut->Sumw2();
+  fQAList->Add(fEmcNClusCut);
+  fNTracksECut = new TH1F("fNTracksECut",";n/event;count",120,-0.5,119.5); 
+  fNTracksECut->Sumw2();
+  fQAList->Add(fNTracksECut);
+  fEmcNCellsCut = new TH1F("fEmcNCellsCut",";n/event;count",120,-0.5,119.5);
+  fEmcNCellsCut->Sumw2();
+  fQAList->Add(fEmcNCellsCut);
+  fEmcClusE = new TH1F("fEmcClusE",";GeV;",100,-0.25,49.75);    
+  fEmcClusE->Sumw2();
+  fQAList->Add(fEmcClusE);
+  fEmcClusECut = new TH1F("fEmcClusECut",";GeV;",100,-0.25,49.75); 
+  fEmcClusECut->Sumw2();
+  fQAList->Add(fEmcClusECut);
+  fTrackPt = new TH1F("fTrackPt",";GeV;",100,-0.25,49.75);     
+  fTrackPt->Sumw2();
+  fQAList->Add(fTrackPt);
+  fTrackPtCut = new TH1F("fTrackPtCut",";GeV;",100,-0.25,49.75);   
+  fTrackPtCut->Sumw2();
+  fQAList->Add(fTrackPtCut);
 
   PostData(1, fOutputList);
+  PostData(2, fQAList);
 }
 
 //________________________________________________________________________
@@ -376,10 +438,15 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
     AliESDtrack *esdTrack = dynamic_cast<AliESDtrack*>(track);
     if (esdTrack && fPrTrCuts && fPrTrCuts->IsSelected(track)){
       fSelPrimTracks->Add(track);
+      /*if(fTrackMaxPt<track->Pt())
+	fTrackMaxPt = track->Pt();*/
       //printf("pt,eta,phi:%1.1f,%1.1f,%1.1f \n",track->Pt(),track->Eta(), track->Phi());
     }
-    else if(aodTrack)
+    else if(aodTrack){
       fSelPrimTracks->Add(track);
+      /*if(fTrackMaxPt<track->Pt())
+	fTrackMaxPt = track->Pt();*/
+    }
   }
 
   TObjArray *matEMCAL=(TObjArray*)fOADBContainer->GetObject(runnumber,"EmcalMatrices");
@@ -441,12 +508,16 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
   FillMcHists();
   if(fDebug)
     printf("passed calling of FillMcHists\n");
+  FillQA();
+  if(fDebug)
+    printf("passed calling of FillQA\n");
   /*if(fESD)
     fESDClusters->Clear();*/
   fSelPrimTracks->Clear();
   fNClusForDirPho = 0;
 
   PostData(1, fOutputList);
+  PostData(2, fQAList);
 }      
 
 //________________________________________________________________________
@@ -559,6 +630,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
       maxE = c->E();
   }
   fNClusHighClusE->Fill(maxE,nclus);
+  fMaxEClus = maxE;
   fNClusEt10->Fill(nclus10);
   fNClusPerPho->Fill(fDirPhoPt,fNClusForDirPho);
 } 
@@ -930,6 +1002,40 @@ Float_t AliAnalysisTaskEMCALIsoPhoton::GetMcPtSumInCone(Float_t etaclus, Float_t
     ptsum += mcp->Pt();
   }
   return ptsum;
+}
+//________________________________________________________________________
+void AliAnalysisTaskEMCALIsoPhoton::FillQA() 
+{
+  if(!fSelPrimTracks)
+    return;
+  const int ntracks = fSelPrimTracks->GetEntriesFast();
+  const int ncells = fESDCells->GetNumberOfCells();
+  const Int_t nclus = fESDClusters->GetEntries();
+
+  fNTracks->Fill(ntracks);
+  fEmcNCells->Fill(ncells);
+  fEmcNClus->Fill(nclus);
+  if(fMaxEClus>fECut){
+    fNTracksECut->Fill(ntracks);
+    fEmcNCellsCut->Fill(ncells);
+    fEmcNClusCut->Fill(nclus);
+  }
+  for(int it=0;it<ntracks;it++){
+    AliVTrack *t = (AliVTrack*)fSelPrimTracks->At(it);
+    if(!t)
+      continue;
+    fTrackPt->Fill(t->Pt());
+    if(fMaxEClus>fECut)
+      fTrackPtCut->Fill(t->Pt());
+  }
+  for(int ic=0;ic<nclus;ic++){
+    AliVCluster *c = (AliVCluster*)fESDClusters->At(ic);
+    if(!c)
+      continue;
+    fEmcClusE->Fill(c->E());
+    if(fMaxEClus>fECut)
+      fEmcClusECut->Fill(c->E());
+  }
 }
 //________________________________________________________________________
 void AliAnalysisTaskEMCALIsoPhoton::Terminate(Option_t *) 
