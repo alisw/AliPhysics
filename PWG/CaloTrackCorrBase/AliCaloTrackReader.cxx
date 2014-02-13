@@ -2464,97 +2464,97 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
   //                              clusMax, idclusMax, eMax,tofMax, badClMax, badCeMax,exoMax);
   
   //Redo matching but open cuts
-//  if(!fIsTriggerMatch && fTriggerClusterId >= 0)
-//  {
-//    // Open time patch time
-//    TArrayI patchOpen = GetTriggerPatches(7,10);
-//    
-//    
-//    Int_t patchAbsIdOpenTime = -1;
-//    for(Int_t iabsId =0; iabsId < patchOpen.GetSize(); iabsId++)
-//    {
-//      Int_t absIDCell[4];
-//      patchAbsIdOpenTime = patchOpen.At(iabsId);
-//      GetCaloUtils()->GetEMCALGeometry()->GetCellIndexFromFastORIndex(patchAbsIdOpenTime, absIDCell);
-//      //if(tof > 75 ) printf("E %2.2f TOF %2.2f Trigger patch %d, cells : %d, %d, %d, %d\n",
-//      //                     clus->E(),tof,patches.At(iabsId), absIDCell[0],absIDCell[1],absIDCell[2],absIDCell[3]);
-//      
-//      for(Int_t ipatch = 0; ipatch < 4; ipatch++)
-//      {
-//        if(absIdMaxMax == absIDCell[ipatch])
-//        {
-//          fIsTriggerMatchOpenCut[0] = kTRUE;
-//          break;
-//        }
-//      }// cell patch loop
-//    }// trigger patch loop
-//    
-//    // Check neighbour patches
-//    Int_t patchAbsId = -1;
-//    Int_t globalCol  = -1;
-//    Int_t globalRow  = -1;
-//    GetCaloUtils()->GetEMCALGeometry()->GetFastORIndexFromCellIndex(absIdMaxMax, patchAbsId);
-//    GetCaloUtils()->GetEMCALGeometry()->GetPositionInEMCALFromAbsFastORIndex(patchAbsId,globalCol,globalRow);
-//    
-//    // Check patches with strict time cut
-//    Int_t patchAbsIdNeigh = -1;
-//    for(Int_t icol = globalCol-1; icol <= globalCol+1; icol++)
-//    {
-//      if(icol < 0 || icol > 47) continue;
-//      
-//      for(Int_t irow = globalRow; irow <= globalRow+1; irow++)
-//      {
-//        if(irow < 0 || irow > 63) continue;
-//        
-//        GetCaloUtils()->GetEMCALGeometry()->GetAbsFastORIndexFromPositionInEMCAL(icol, irow, patchAbsIdNeigh);
-//        
-//        if ( patchAbsIdNeigh < 0 ) continue;
-//        
-//        for(Int_t iabsId =0; iabsId < patches.GetSize(); iabsId++)
-//        {
-//          if(patchAbsIdNeigh == patches.At(iabsId))
-//          {
-//            fIsTriggerMatchOpenCut[1] = kTRUE;
-//            break;
-//          }
-//        }// trigger patch loop
-//        
-//      }// row
-//    }// col
-//    
-//    // Check patches with open time cut
-//    Int_t patchAbsIdNeighOpenTime = -1;
-//    for(Int_t icol = globalCol-1; icol <= globalCol+1; icol++)
-//    {
-//      if(icol < 0 || icol > 47) continue;
-//      
-//      for(Int_t irow = globalRow; irow <= globalRow+1; irow++)
-//      {
-//        if(irow < 0 || irow > 63) continue;
-//        
-//        GetCaloUtils()->GetEMCALGeometry()->GetAbsFastORIndexFromPositionInEMCAL(icol, irow, patchAbsIdNeighOpenTime);
-//        
-//        if ( patchAbsIdNeighOpenTime < 0 ) continue;
-//        
-//        for(Int_t iabsId =0; iabsId < patchOpen.GetSize(); iabsId++)
-//        {
-//          if(patchAbsIdNeighOpenTime == patchOpen.At(iabsId))
-//          {
-//            fIsTriggerMatchOpenCut[2] = kTRUE;
-//            break;
-//          }
-//        }// trigger patch loop
-//        
-//      }// row
-//    }// col
-//    
-//    //    printf("No match, new match: Open time %d-%d, open Neigh %d-%d, both open %d-%d\n",fIsTriggerMatchOpenCut[0],patchAbsIdOpenTime,
-//    //           fIsTriggerMatchOpenCut[1],patchAbsIdNeigh,
-//    //           fIsTriggerMatchOpenCut[2],patchAbsIdNeighOpenTime);
-//    
-//    patchOpen.Reset();
-//    
-//  }// No trigger match found
+  if(!fIsTriggerMatch && fTriggerClusterId >= 0)
+  {
+    // Open time patch time
+    TArrayI patchOpen = GetTriggerPatches(7,10);
+    
+    
+    Int_t patchAbsIdOpenTime = -1;
+    for(Int_t iabsId =0; iabsId < patchOpen.GetSize(); iabsId++)
+    {
+      Int_t absIDCell[4];
+      patchAbsIdOpenTime = patchOpen.At(iabsId);
+      GetCaloUtils()->GetEMCALGeometry()->GetCellIndexFromFastORIndex(patchAbsIdOpenTime, absIDCell);
+      //if(tof > 75 ) printf("E %2.2f TOF %2.2f Trigger patch %d, cells : %d, %d, %d, %d\n",
+      //                     clus->E(),tof,patches.At(iabsId), absIDCell[0],absIDCell[1],absIDCell[2],absIDCell[3]);
+      
+      for(Int_t ipatch = 0; ipatch < 4; ipatch++)
+      {
+        if(absIdMaxMax == absIDCell[ipatch])
+        {
+          fIsTriggerMatchOpenCut[0] = kTRUE;
+          break;
+        }
+      }// cell patch loop
+    }// trigger patch loop
+    
+    // Check neighbour patches
+    Int_t patchAbsId = -1;
+    Int_t globalCol  = -1;
+    Int_t globalRow  = -1;
+    GetCaloUtils()->GetEMCALGeometry()->GetFastORIndexFromCellIndex(absIdMaxMax, patchAbsId);
+    GetCaloUtils()->GetEMCALGeometry()->GetPositionInEMCALFromAbsFastORIndex(patchAbsId,globalCol,globalRow);
+    
+    // Check patches with strict time cut
+    Int_t patchAbsIdNeigh = -1;
+    for(Int_t icol = globalCol-1; icol <= globalCol+1; icol++)
+    {
+      if(icol < 0 || icol > 47) continue;
+      
+      for(Int_t irow = globalRow; irow <= globalRow+1; irow++)
+      {
+        if(irow < 0 || irow > 63) continue;
+        
+        GetCaloUtils()->GetEMCALGeometry()->GetAbsFastORIndexFromPositionInEMCAL(icol, irow, patchAbsIdNeigh);
+        
+        if ( patchAbsIdNeigh < 0 ) continue;
+        
+        for(Int_t iabsId =0; iabsId < patches.GetSize(); iabsId++)
+        {
+          if(patchAbsIdNeigh == patches.At(iabsId))
+          {
+            fIsTriggerMatchOpenCut[1] = kTRUE;
+            break;
+          }
+        }// trigger patch loop
+        
+      }// row
+    }// col
+    
+    // Check patches with open time cut
+    Int_t patchAbsIdNeighOpenTime = -1;
+    for(Int_t icol = globalCol-1; icol <= globalCol+1; icol++)
+    {
+      if(icol < 0 || icol > 47) continue;
+      
+      for(Int_t irow = globalRow; irow <= globalRow+1; irow++)
+      {
+        if(irow < 0 || irow > 63) continue;
+        
+        GetCaloUtils()->GetEMCALGeometry()->GetAbsFastORIndexFromPositionInEMCAL(icol, irow, patchAbsIdNeighOpenTime);
+        
+        if ( patchAbsIdNeighOpenTime < 0 ) continue;
+        
+        for(Int_t iabsId =0; iabsId < patchOpen.GetSize(); iabsId++)
+        {
+          if(patchAbsIdNeighOpenTime == patchOpen.At(iabsId))
+          {
+            fIsTriggerMatchOpenCut[2] = kTRUE;
+            break;
+          }
+        }// trigger patch loop
+        
+      }// row
+    }// col
+    
+    //    printf("No match, new match: Open time %d-%d, open Neigh %d-%d, both open %d-%d\n",fIsTriggerMatchOpenCut[0],patchAbsIdOpenTime,
+    //           fIsTriggerMatchOpenCut[1],patchAbsIdNeigh,
+    //           fIsTriggerMatchOpenCut[2],patchAbsIdNeighOpenTime);
+    
+    patchOpen.Reset();
+    
+  }// No trigger match found
   //printf("Trigger BC %d, Id %d, Index %d\n",fTriggerClusterBC,fTriggerClusterId,fTriggerClusterIndex);
   
 }
