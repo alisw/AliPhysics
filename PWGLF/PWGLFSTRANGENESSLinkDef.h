@@ -33,5 +33,9 @@
 #pragma link C++ class AliAnalysisTaskHdibaryonLPpi+;
 #pragma link C++ class AliAnalysisTaskHelium3Pi+;
 #pragma link C++ class AliAnalysisTaskHelium3PiMC+;
+#pragma link C++ class AliAODRecoDecayLF+;
+#pragma link C++ class AliAODRecoDecayLF2Prong+;
+#pragma link C++ class AliAODNuclExReplicator+;
+#pragma link C++ class AliAnalysisTaskESDNuclExFilter+;
 
 #endif
