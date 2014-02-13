@@ -19,13 +19,13 @@
 //
 // This replicator is in charge of replicating the nuclei primary vertices
 // tracks identified as nuclei with Z>=2, secondary vertices in form of 
-// AliAODRecoDecayHF2Prong and their daughter tracks.
+// AliAODRecoDecayLF2Prong and their daughter tracks.
 // These informations are stored into a reduced AODs (AliAOD.NuclEx.root) 
 // 
 // The vertices are filtered so that only the primary vertices make it
 // to the output aods.
 //
-// The secondary vertices are recreated here, as a AliAODRecoDecayHF2Prong
+// The secondary vertices are recreated here, as a AliAODRecoDecayLF2Prong
 // plus cuts that select secondary vericesoutside the primary vertex
 
 // Authors: S. Bufalino (stefania.bufalino@cern.ch)
@@ -45,7 +45,7 @@ class AliAODRecoDecay;
 #include "AliAODTZERO.h"
 #include "AliAODTrack.h"
 #include "AliAODVZERO.h"
-#include "AliAnalysisCuts.h"
+//#include "AliAnalysisCuts.h"
 #include "TF1.h"
 #include "AliExternalTrackParam.h"
 #include "AliESDv0.h"
@@ -57,8 +57,8 @@ class AliAODRecoDecay;
 #include "TObjArray.h"
 #include "AliAnalysisFilter.h"
 #include "AliAODRecoDecay.h"
-#include "AliAODRecoDecayHF.h"
-#include "AliAODRecoDecayHF2Prong.h"
+#include "AliAODRecoDecayLF.h"
+#include "AliAODRecoDecayLF2Prong.h"
 
 #include <TFile.h>
 #include <TDatabasePDG.h>
@@ -75,7 +75,7 @@ class AliAODRecoDecay;
 #include "AliESDtrackCuts.h"
 #include "AliAODEvent.h"
 #include "AliAnalysisFilter.h"
-#include "AliAnalysisVertexingHF.h"
+//#include "AliAnalysisVertexingLF.h"
 #include "AliAnalysisManager.h"
 #include "AliAODNuclExReplicator.h"
 #include "TH1.h"
@@ -89,8 +89,8 @@ ClassImp(AliAODNuclExReplicator)
 
 //_____________________________________________________________________________
 AliAODNuclExReplicator::AliAODNuclExReplicator(const char* name, const char* title,
-					       AliAnalysisCuts* trackCut,
-					       AliAnalysisCuts* vertexCut,
+					       // AliAnalysisCuts* trackCut,
+					       // AliAnalysisCuts* vertexCut,
 					       Int_t mcMode, 
 					       Int_t nsigmaTrk1, Int_t partType1,
 					       Int_t nsigmaTrk2, Int_t partType2
@@ -104,9 +104,11 @@ AliAODNuclExReplicator::AliAODNuclExReplicator(const char* name, const char* tit
   fDNmin(),
   fDPmin(), 
   fHeader(0x0),
-  fVertexCut(vertexCut), fVertices(0x0), 
+//fVertexCut(vertexCut), 
+  fVertices(0x0), 
   fNuclei(0x0),
-  fTrackCut(trackCut), fSecondaryVerices(0x0), 
+//  fTrackCut(trackCut), 
+  fSecondaryVerices(0x0), 
   fDaughterTracks(0x0),
   fList(0x0),
   fMCParticles(0x0),
@@ -133,8 +135,8 @@ AliAODNuclExReplicator::AliAODNuclExReplicator(const char* name, const char* tit
 AliAODNuclExReplicator::~AliAODNuclExReplicator()
 {
   // destructor
-  delete fTrackCut;
-  delete fVertexCut;
+  // delete fTrackCut;
+  // delete fVertexCut;
   delete fList;
 }
 
@@ -380,7 +382,7 @@ TList* AliAODNuclExReplicator::GetList() const
 	}
       
       
-      fSecondaryVerices = new TClonesArray("AliAODRecoDecayHF2Prong",30);
+      fSecondaryVerices = new TClonesArray("AliAODRecoDecayLF2Prong",30);
       fSecondaryVerices->SetName("SecondaryVertices");    
     
       fVertices = new TClonesArray("AliAODVertex",2);
@@ -432,6 +434,8 @@ void AliAODNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
 
   printf("Execute NuclEx Replicator\n");
 
+  //---------------------------------
+
   if (fReplicateHeader)
     {
       *fHeader = *(source.GetHeader());
@@ -444,6 +448,8 @@ void AliAODNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
   fSecondaryVerices->Clear("C");
 
   fDaughterTracks->Clear("C");
+  
+  //----------------------------------
 
   //  cout<<"Centrality AOD source: "<<source.GetHeader()->GetCentrality()<<endl;
 
@@ -454,7 +460,7 @@ void AliAODNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
   Int_t input(0);
   Double_t xdummy,ydummy;
 
-  AliAODRecoDecayHF2Prong *io2Prong  = 0;
+  AliAODRecoDecayLF2Prong *io2Prong  = 0;
 
   TObjArray *twoTrackArray    = new TObjArray(2);
   Double_t dispersion;
@@ -498,8 +504,8 @@ void AliAODNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
   
   //-------------------------------------------------------------
 
-  //AliAODRecoDecayHF   *rd = 0;
-  AliAODRecoDecayHF2Prong*rd = 0;
+  //AliAODRecoDecayLF   *rd = 0;
+  AliAODRecoDecayLF2Prong*rd = 0;
   
 
   if(vtx->GetNContributors()<1) {
@@ -661,7 +667,7 @@ void AliAODNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
       //      cout<<"if CPA \npr0: "<<io2Prong->GetProngID(0)<<" pr1: "<<io2Prong->GetProngID(1)<<" pr2"<<io2Prong->GetProngID(2)<<endl;
       // cout<<"pointing angle "<<io2Prong->CosPointingAngle()<<endl;
       
-      rd =  new((*fSecondaryVerices)[nsv++]) AliAODRecoDecayHF2Prong(*io2Prong);
+      rd =  new((*fSecondaryVerices)[nsv++]) AliAODRecoDecayLF2Prong(*io2Prong);
 
       cout<<"QUELLO CHE SALVo \npr0: "<<rd->GetProngID(0)<<" pr1: "<<rd->GetProngID(1)<<" pr2"<<rd->GetProngID(2)<<endl;
 
@@ -696,7 +702,11 @@ void AliAODNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
   
   while ( ( v = static_cast<AliAODVertex*>(nextV()) ) )
     {
-      if ( !fVertexCut || fVertexCut->IsSelected(v) ) 
+      if (  v->GetType() == AliAODVertex::kPrimary     ||
+	    v->GetType() == AliAODVertex::kMainSPD     ||
+	    v->GetType() == AliAODVertex::kPileupSPD   ||
+	    v->GetType() == AliAODVertex::kPileupTracks||
+	    v->GetType() == AliAODVertex::kMainTPC  ) 
 	{
 	  AliAODVertex* tmp = v->CloneWithoutRefs();
 	  AliAODVertex* copiedVertex = new((*fVertices)[nvertices++]) AliAODVertex(*tmp);
@@ -813,7 +823,7 @@ AliAODVertex *AliAODNuclExReplicator::ReconstructSecondaryVertex(TObjArray *trkA
 
 //-----------------------------------------------------------------------------
 
-AliAODRecoDecayHF2Prong* AliAODNuclExReplicator::Make2Prong(TObjArray *twoTrackArray,const AliAODEvent &evento,
+AliAODRecoDecayLF2Prong* AliAODNuclExReplicator::Make2Prong(TObjArray *twoTrackArray,const AliAODEvent &evento,
 							   AliAODVertex *secVert,Double_t dca)
 
 
@@ -825,7 +835,7 @@ AliAODRecoDecayHF2Prong* AliAODNuclExReplicator::Make2Prong(TObjArray *twoTrackA
   charge[0]=1; //it was -1 //Ramona
   charge[1]=2;
       
-  // From AliAnalysisVertexingHF.cxx Method:Make2Prongs
+  // From AliAnalysisVertexingLF.cxx Method:Make2Prongs
   
   fBzkG = evento.GetMagneticField();
       
@@ -874,9 +884,9 @@ AliAODRecoDecayHF2Prong* AliAODNuclExReplicator::Make2Prong(TObjArray *twoTrackA
   d0[1] = d0z0[0];
   d0err[1] = TMath::Sqrt(TMath::Abs(covd0z0[0]));
   
-  // create the object AliAODRecoDecayHF2Prong
-  //  AliAODRecoDecayHF2Prong *the2Prong = new AliAODRecoDecayHF2Prong(secVert,px,py,pz,d0,d0err,dcap1n1);
-  AliAODRecoDecayHF2Prong *the2Prong = new AliAODRecoDecayHF2Prong(secVert,px,py,pz,d0,d0err,dca);
+  // create the object AliAODRecoDecayLF2Prong
+  //  AliAODRecoDecayLF2Prong *the2Prong = new AliAODRecoDecayLF2Prong(secVert,px,py,pz,d0,d0err,dcap1n1);
+  AliAODRecoDecayLF2Prong *the2Prong = new AliAODRecoDecayLF2Prong(secVert,px,py,pz,d0,d0err,dca);
   the2Prong->SetOwnPrimaryVtx(primVertexAOD);
   
   //  the2Prong->SetProngIDs(2,{-999,999});
@@ -939,7 +949,7 @@ void AliAODNuclExReplicator::AddDaughterRefs(AliAODVertex *v,
 }
 //----------------------------------------------------------------------------
 	
-void AliAODNuclExReplicator::AddRefs(AliAODVertex *v,AliAODRecoDecayHF *rd,
+void AliAODNuclExReplicator::AddRefs(AliAODVertex *v,AliAODRecoDecayLF *rd,
 				    const AliAODEvent &event,
 				    const TObjArray *trkArray) const
 
