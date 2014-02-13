@@ -574,7 +574,7 @@ void fit(TH1D *h,Float_t *a,char *opt,char *opt2,Float_t pt){
  Float_t sigma = 0.0044;//TMath::Abs(ftmp->GetParameter(2));
 
  Float_t signI = ftmp2->Integral(mean-10*sigma,mean+10*sigma)/h->GetBinWidth(1);
- if(signI < 1) signI = 1;
+ if(signI < 0) signI = 0;
 
  Float_t backI = ftmp3->Integral(mean-3*sigma,mean+3*sigma)/h->GetBinWidth(1);
  if(backI < 1) backI = 1;

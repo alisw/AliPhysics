@@ -39,6 +39,11 @@ class AliAnalysisTaskEmcalJetTagger : public AliAnalysisTaskEmcalJet {
   void SetJetTaggingType(JetTaggingType t)                      { fJetTaggingType = t;}
   void SetJetTaggingMethod(JetTaggingMethod m)                  { fJetTaggingMethod = m;}
 
+  void SetMinFractionShared(Double_t f)                         { fMinFractionShared = f; }
+
+  //Getters
+  Double_t GetFractionSharedPt(const AliEmcalJet *jet1, const AliEmcalJet *jet2) const;
+
  protected:
   Bool_t                              RetrieveEventObjects();
   Bool_t                              Run();
@@ -48,9 +53,8 @@ class AliAnalysisTaskEmcalJetTagger : public AliAnalysisTaskEmcalJet {
   Double_t GetDeltaPhi(const AliEmcalJet* jet1, const AliEmcalJet* jet2);
   Double_t GetDeltaPhi(Double_t phi1,Double_t phi2);
   Double_t GetDeltaR(const AliEmcalJet* jet1, const AliEmcalJet* jet2) const;
-  Double_t GetFractionSharedPt(const AliEmcalJet *jet1, const AliEmcalJet *jet2) const;
 
-  void     MatchJetsGeo(Int_t c1 = -1, Int_t c2 = -1, Int_t iDebug = 0, Float_t maxDist = 0.3, Int_t type = 2);
+  void     MatchJetsGeo(Int_t c1 = -1, Int_t c2 = -1, Int_t iDebug = 0, Float_t maxDist = 0.3, Int_t type = 2, Bool_t bReset = kTRUE);
   void     ResetTagging(const Int_t c);
   
   JetTaggingType                      fJetTaggingType;             // jet matching type
@@ -58,11 +62,14 @@ class AliAnalysisTaskEmcalJetTagger : public AliAnalysisTaskEmcalJet {
 
   Int_t                               fContainerBase;              // jets to be tagged
   Int_t                               fContainerTag;               // jets used for tagging
+
+  Double_t                            fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
   
  private:
   Bool_t            fMatchingDone;                // flag to indicate if matching is done or not
   TH3F            **fh3PtJet1VsDeltaEtaDeltaPhi;  //!pt jet 1 vs deta vs dphi
   TH2F            **fh2PtJet1VsDeltaR;            //!pt jet 1 vs dR
+  TH2F            **fh2PtJet2VsFraction;          //!pt jet 1 vs shared fraction
   
   TH2F            **fh2PtJet1VsLeadPtAllSel;      //!all jets after std selection
   TH2F            **fh2PtJet1VsLeadPtTagged;      //!tagged jets
@@ -75,7 +82,7 @@ class AliAnalysisTaskEmcalJetTagger : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetTagger(const AliAnalysisTaskEmcalJetTagger&);            // not implemented
   AliAnalysisTaskEmcalJetTagger &operator=(const AliAnalysisTaskEmcalJetTagger&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetTagger, 2)
+  ClassDef(AliAnalysisTaskEmcalJetTagger, 3)
 };
 #endif
 

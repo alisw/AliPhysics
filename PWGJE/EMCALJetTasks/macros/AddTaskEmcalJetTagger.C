@@ -28,7 +28,8 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(TString     kTracksName    
 						     TString     kEmcalTriggers      = "",
 						     TString     kPeriod             = "LHC11h",
 						     Int_t       recombScheme        = 0,
-						     TString     tag                 = "Jet"
+						     TString     tag1                = "Jet",
+						     TString     tag2                = ""
 						     ) {
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -49,23 +50,25 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(TString     kTracksName    
   // #### Add necessary jet finder tasks
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
 
+  if(tag2.IsNull()) tag2=tag1;
+
   AliEmcalJetTask* jetFinderTaskBase = 0x0;
   if (strcmp(type,"TPC")==0)
-    jetFinderTaskBase = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,recombScheme,tag.Data());
+    jetFinderTaskBase = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,recombScheme,tag1.Data());
   else if (strcmp(type,"EMCAL")==0)
-    jetFinderTaskBase = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kFULLJETS, ptminTrack, etminClus,0.005,recombScheme,tag.Data());
+    jetFinderTaskBase = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kFULLJETS, ptminTrack, etminClus,0.005,recombScheme,tag1.Data());
   jetFinderTaskBase->SelectCollisionCandidates(AliVEvent::kAny);
   jetFinderTaskBase->SetMinJetPt(0.);
 
-  AliEmcalJetTask* jetFinderTaskTag  = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTag, etminClus,0.005,recombScheme,tag.Data());
+  AliEmcalJetTask* jetFinderTaskTag  = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTag, etminClus,0.005,recombScheme,tag2.Data());
   jetFinderTaskTag->SelectCollisionCandidates(AliVEvent::kAny);
   jetFinderTaskTag->SetMinJetPt(0.);
 
-  if(tag.EqualTo("JetPythia")) {
+  if(tag1.EqualTo("JetPythia"))
     jetFinderTaskBase->SelectConstituents(TObject::kBitMask, 0);
+  if(tag2.EqualTo("JetPythia"))
     jetFinderTaskTag->SelectConstituents(TObject::kBitMask, 0);
-  }
-
+  
   TString strJetsBase = jetFinderTaskBase->GetName();
   TString strJetsTag  = jetFinderTaskTag->GetName();
 
@@ -74,7 +77,7 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(TString     kTracksName    
   TString rhoNameBase = "";
   TString rhoNameTag  = "";
   if(rhoType==1) {
-    rhoTaskBase = AttachRhoTaskTagger(kPeriod,kTracksName,kClusName,R,ptminTrack,etminClus,recombScheme,tag);
+    rhoTaskBase = AttachRhoTaskTagger(kPeriod,kTracksName,kClusName,R,ptminTrack,etminClus,recombScheme,tag1);
     if(rhoTaskBase) {
       rhoTaskBase->SetCentralityEstimator(CentEst);  
       rhoTaskBase->SelectCollisionCandidates(AliVEvent::kAny);
@@ -84,7 +87,7 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(TString     kTracksName    
 	rhoNameBase = rhoTaskBase->GetOutRhoScaledName();
     }
     if(rhoTaskTag) {
-      rhoTaskTag = AttachRhoTaskTagger(kPeriod,kTracksName,kClusName,R,ptminTag,0.,recombScheme,tag);
+      rhoTaskTag = AttachRhoTaskTagger(kPeriod,kTracksName,kClusName,R,ptminTag,0.,recombScheme,tag2);
       rhoTaskTag->SetCentralityEstimator(CentEst); 
       rhoTaskTag->SelectCollisionCandidates(AliVEvent::kAny);
       rhoNameTag  = rhoTaskTag->GetOutRhoName();
@@ -159,7 +162,6 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(const char * njetsBase,
     jetContBase->SetRhoName(nrhoBase);
     jetContBase->ConnectParticleContainer(trackCont);
     jetContBase->ConnectClusterContainer(clusterCont);
-    jetContBase->SetZLeadingCut(0.98,0.98);
   }
 
   AliJetContainer *jetContTag = task->AddJetContainer(njetsTag,"TPC",R);
@@ -190,6 +192,7 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(const char * njetsBase,
   return task;  
 }
 
+//Attach rho task
 AliAnalysisTaskRhoBase *AttachRhoTaskTagger(TString     kPeriod             = "LHC13b",
 					    TString     kTracksName         = "PicoTracks", 
 					    TString     kClusName           = "caloClustersCorr",

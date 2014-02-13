@@ -739,6 +739,8 @@ void AliAnalysisTaskK0sBayes::Analyze(AliAODEvent* aodEvent)
     }
 
     // use sigmaTOF instead of sigmaComb
+    nSigmaTOFRef = TMath::Abs(nSigmaTOFRef);
+
     if(tofMatch1){
       nSigmaComb = nSigmaTOF;
       nSigmaCombRef = nSigmaTOFRef;
