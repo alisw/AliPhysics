@@ -10,7 +10,6 @@
 // class for cuts on AOD reconstructed Lc-> V0 + bachelor
 //***********************************************************
 
-#include "AliAODPidHF.h"
 #include "AliRDHFCuts.h"
 
 class AliRDHFCutsLctoV0 : public AliRDHFCuts
@@ -27,7 +26,9 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   kTOFandTPC=0,
   kTOForTPCveto=1,
   kTOFandTPCasym1=2,
-  kTOFandTPCasym2=3
+  kTOFandTPCasym2=3,
+  kTPClowTOFhigh=4,
+  kTPClowTOFintermediateTOForTPChigh=5
  };
 
   AliRDHFCutsLctoV0(const char* name="CutsLctoV0", Short_t v0channel=0);
@@ -60,23 +61,17 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
 
   Int_t GetV0Type();
 
+  void SetHighPtCut(Float_t highPtCut) {fHighPtCut=highPtCut;};
+  Float_t GetHighPtCut() const {return fHighPtCut;};
+
+  void SetLowPtCut(Float_t lowPtCut) {fLowPtCut=lowPtCut;};
+  Float_t GetLowPtCut() const {return fLowPtCut;};
+
   virtual void SetStandardCutsPP2010();
   virtual void SetStandardCutsPbPb2010();
   virtual void SetStandardCutsPbPb2011();
 
   virtual Bool_t IsInFiducialAcceptance(Double_t pt,Double_t y) const;
-
-  void SetPidV0pos(AliAODPidHF* pidV0pos) {
-    if (fPidHFV0pos) delete fPidHFV0pos;
-    fPidHFV0pos = new AliAODPidHF(*pidV0pos);
-  }
-  void SetPidV0neg(AliAODPidHF* pidV0neg) {
-    if (fPidHFV0neg) delete fPidHFV0neg;
-    fPidHFV0neg = new AliAODPidHF(*pidV0neg);
-  }
-
-  AliAODPidHF * GetPidV0pos() { return fPidHFV0pos; }
-  AliAODPidHF * GetPidV0neg() { return fPidHFV0neg; }
 
   void AddTrackCutsV0daughters(AliESDtrackCuts* v0daug)
   { delete fV0daughtersCuts; fV0daughtersCuts = new AliESDtrackCuts(*v0daug); }
@@ -85,20 +80,20 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   virtual void PrintAll() const;
  protected:
 
-  void CheckPID(AliAODTrack *bachelor, AliAODTrack *v0Neg, AliAODTrack *v0Pos,
-		Bool_t &isBachelorID1, Bool_t &isV0NegID2, Bool_t &isV0PosID4);
+  void CheckPID(AliAODTrack *bachelor, AliAODTrack * /*v0Neg*/, AliAODTrack * /*v0Pos*/,
+		Bool_t &isBachelorID1, Bool_t &isBachelorID2, Bool_t &isBachelorID4);
 
  private:
 
   Int_t fPidSelectionFlag;
-  AliAODPidHF *fPidHFV0pos;
-  AliAODPidHF *fPidHFV0neg;
   AliESDtrackCuts *fV0daughtersCuts; // cuts for v0 daughters (AOD converted to ESD on the flight!)
   Float_t     fV0Type; // V0 type -- should be defined as in AliRDHFCuts.h
+  Float_t fHighPtCut;  // high pT cut separation for proton identification
+  Float_t fLowPtCut;   // low pT cut separation for proton identification
 
   //UShort_t fV0channel;
 
-  ClassDef(AliRDHFCutsLctoV0,4);  // class for cuts on AOD reconstructed Lc->V0+bachelor
+  ClassDef(AliRDHFCutsLctoV0,5);  // class for cuts on AOD reconstructed Lc->V0+bachelor
 };
 
 #endif

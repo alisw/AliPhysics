@@ -58,14 +58,24 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   //  Set if calculation considers asymmetric uncertainties or not 
   Bool_t asym = true;
 
-  // Set the meson and decay
-  // (only D0 -> K pi, D+--> K pi pi & D* --> D0 pi & D+s -->KKpi implemented here)
+  // Set the meson/baryon and decay
+  // (only D0 -> K pi, D+--> K pi pi, D* --> D0 pi, D+s -->KKpi, Lc+ --> pKpi & Lc+ --> pK0S implemented here)
   Bool_t isD0Kpi = true;
   Bool_t isDplusKpipi = false;
   Bool_t isDstarD0pi = false;
   Bool_t isDsKKpi = false;
   Bool_t isLctopKpi = false;
-  if (isD0Kpi && isDplusKpipi && isDstarD0pi && isDsKKpi) {
+  Bool_t isLcK0Sp = false;
+
+  Int_t shouldBeOne=0;
+  if(isD0Kpi) shouldBeOne++;
+  if(isDplusKpipi) shouldBeOne++;
+  if(isDstarD0pi) shouldBeOne++;
+  if(isDsKKpi) shouldBeOne++;
+  if(isLctopKpi) shouldBeOne++;
+  if(isLcK0Sp) shouldBeOne++;
+  
+  if (shouldBeOne!=1) {
     cout << "Sorry, can not deal with more than one correction at the same time"<<endl;
     return;
   }
@@ -195,6 +205,15 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     hDirectMCptMin = (TH1D*)mcfile->Get("hLcpkpipred_min");
     hFeedDownMCptMax = (TH1D*)mcfile->Get("hLcpkpifromBpred_max_corr");
     hFeedDownMCptMin = (TH1D*)mcfile->Get("hLcpkpifromBpred_min_corr");
+  }
+  else if (isLcK0Sp){
+    decay = 6;
+    hDirectMCpt = (TH1D*)mcfile->Get("hLcK0sppred_central");
+    hFeedDownMCpt = (TH1D*)mcfile->Get("hLcK0spfromBpred_central_corr");
+    hDirectMCptMax = (TH1D*)mcfile->Get("hLcK0sppred_max");
+    hDirectMCptMin = (TH1D*)mcfile->Get("hLcK0sppred_min");
+    hFeedDownMCptMax = (TH1D*)mcfile->Get("hLcK0spfromBpred_max_corr");
+    hFeedDownMCptMin = (TH1D*)mcfile->Get("hLcK0spfromBpred_min_corr");
   }
   //
   hDirectMCpt->SetNameTitle("hDirectMCpt","direct MC spectra");
@@ -362,6 +381,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   cout << "   ended the calculation, getting the histograms back " << endl;
 
   // Set the systematics externally
+  
   Bool_t combineFeedDown = true;
   AliHFSystErr *systematics = new AliHFSystErr();
   if( cc==kpp276 ) {

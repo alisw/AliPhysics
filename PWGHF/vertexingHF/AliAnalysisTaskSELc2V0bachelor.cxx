@@ -66,8 +66,6 @@
 #include "AliAnalysisTaskSELc2V0bachelor.h"
 #include "AliNormalizationCounter.h"
 #include "AliAODPidHF.h"
-#include "AliPIDResponse.h"
-#include "AliTOFPIDResponse.h"
 #include "AliInputEventHandler.h"
 #include "AliESDtrackCuts.h"
 #include "AliNeutralTrackParam.h"
@@ -84,7 +82,6 @@ AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor() : AliAnalysisTa
   fOutputAll(0),
   fOutputPIDBach(0),
   fCEvents(0),
-  fPIDResponse(0),
   fIsK0SAnalysis(kFALSE),
   fCounter(0),
   fAnalCuts(0),
@@ -111,7 +108,6 @@ AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor(const Char_t* nam
   fOutputAll(0),
   fOutputPIDBach(0),
   fCEvents(0),
-  fPIDResponse(0),
   fIsK0SAnalysis(kFALSE),
   fCounter(0),
   fAnalCuts(analCuts),
@@ -162,10 +158,6 @@ AliAnalysisTaskSELc2V0bachelor::~AliAnalysisTaskSELc2V0bachelor() {
   if (fOutputPIDBach) {
     delete fOutputPIDBach;
     fOutputPIDBach = 0;
-  }
-
-  if (fPIDResponse) {
-    delete  fPIDResponse;
   }
 
   if (fCounter) {
@@ -278,6 +270,14 @@ void AliAnalysisTaskSELc2V0bachelor::UserExec(Option_t *)
       return;
     }
     fCEvents->Fill(5); // in case of MC events
+
+    Double_t zMCVertex = mcHeader->GetVtxZ();
+    if (TMath::Abs(zMCVertex) > fAnalCuts->GetMaxVtxZ()) {
+      AliDebug(2,Form("Event rejected: abs(zVtxMC)=%f > fAnalCuts->GetMaxVtxZ()=%f",zMCVertex,fAnalCuts->GetMaxVtxZ()));
+      return;
+    } else {
+      fCEvents->Fill(17); // in case of MC events
+    }
   }
 
   fCounter->StoreEvent(aodEvent,fAnalCuts,fUseMCInfo); // it is very important that it stays BEFORE any other event selection
@@ -351,19 +351,6 @@ void AliAnalysisTaskSELc2V0bachelor::Terminate(Option_t*)
 void AliAnalysisTaskSELc2V0bachelor::UserCreateOutputObjects() { 
   // output
   AliInfo(Form("CreateOutputObjects of task %s\n", GetName()));
-  
-  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
-  fPIDResponse = inputHandler->GetPIDResponse();
-
-  if (fAnalCuts->GetIsUsePID()){
-    fAnalCuts->GetPidHF()->SetPidResponse(fPIDResponse);
-    fAnalCuts->GetPidV0pos()->SetPidResponse(fPIDResponse);
-    fAnalCuts->GetPidV0neg()->SetPidResponse(fPIDResponse);
-    fAnalCuts->GetPidHF()->SetOldPid(kFALSE);
-    fAnalCuts->GetPidV0pos()->SetOldPid(kFALSE);
-    fAnalCuts->GetPidV0neg()->SetOldPid(kFALSE);
-  }
 
   fOutput = new TList();
   fOutput->SetOwner();
@@ -429,6 +416,12 @@ void AliAnalysisTaskSELc2V0bachelor::MakeAnalysisForLc2prK0S(TClonesArray *array
       continue;
     }
 
+    Bool_t unsetvtx=kFALSE;
+    if (!lcK0Spr->GetOwnPrimaryVtx()) {
+      lcK0Spr->SetOwnPrimaryVtx(fVtx1);
+      unsetvtx=kTRUE;
+    }
+
     if (!lcK0Spr->GetSecondaryVtx()) {
       AliInfo("No secondary vertex"); // it will be done in AliRDHFCutsLctoV0::IsSelected
       continue;
@@ -488,7 +481,7 @@ void AliAnalysisTaskSELc2V0bachelor::MakeAnalysisForLc2prK0S(TClonesArray *array
 	  isLc = 1;
 	}
       } else {
-	AliDebug(2,Form("No candidate (cascade number %d -total cascade number = %d -)", iLctopK0S,nCascades));
+	AliDebug(2,Form("No MC candidate (cascade number %d -total cascade number = %d -)", iLctopK0S,nCascades));
 	pdgCode=-1;
       }
     }
@@ -496,6 +489,9 @@ void AliAnalysisTaskSELc2V0bachelor::MakeAnalysisForLc2prK0S(TClonesArray *array
     FillLc2pK0Sspectrum(lcK0Spr, isLc,
 			nSelectedAnal, cutsAnal,
 			mcArray);
+
+    if (unsetvtx) lcK0Spr->UnsetOwnPrimaryVtx();
+
   }
 
   AliDebug(2, Form("Found %d Reco particles that are Lc!!", nSelectedAnal));
@@ -532,9 +528,9 @@ void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *pa
 
   if (fAdditionalChecks) CheckCandidatesAtDifferentLevels(part,cutsAnal);
 
-  if ( !( ( (cutsAnal->IsSelected(part,AliRDHFCuts::kTracks))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) ) return;
-
   if ( !(cutsAnal->IsInFiducialAcceptance(part->Pt(),part->Y(4122))) ) return;
+
+  if ( !( ( (cutsAnal->IsSelected(part,AliRDHFCuts::kTracks))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) ) return;
 
   if ( ( ( (cutsAnal->IsSelected(part,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) ) nSelectedAnal++;
 
@@ -1532,7 +1528,21 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
   Int_t isDp2K0Spi=0, isDs2K0SK=0;
   Int_t mcLabel2 = -1;
   Int_t mcLabel3 = -1;
+  Double_t ptCandByMC = 0.;//fmcPartCandidate->Pt();
+  Double_t yCandByMC  = 0.;//fmcPartCandidate->Y() ;
   if (fUseMCInfo) {
+    if (isLc) {
+      Int_t pdgCand0 = 4122;
+      Int_t pdgDgLctoV0bachelor0[2]={2212,310};
+      Int_t pdgDgV0toDaughters0[2]={211,211};
+      Int_t mcLabelLc2pK0S = part->MatchToMC(pdgCand0,pdgDgLctoV0bachelor0[1],pdgDgLctoV0bachelor0,pdgDgV0toDaughters0,mcArray,kTRUE);
+      AliAODMCParticle *lambdaCpartMC = (AliAODMCParticle*)mcArray->At(mcLabelLc2pK0S);
+      if (lambdaCpartMC) {
+	ptCandByMC = lambdaCpartMC->Pt();
+	yCandByMC  = lambdaCpartMC->Y() ;
+      }
+    }
+
     Int_t pdgCand = 4122;
     Int_t pdgDgLctoV0bachelor[2]={211,3122};
     Int_t pdgDgV0toDaughters[2]={2212,211};
@@ -1540,6 +1550,11 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
     if (mcLabel!=-1) {
       if (bachelor->Charge()==-1) isLc2LBarpi=1;
       if (bachelor->Charge()==+1) isLc2Lpi=1;
+      AliAODMCParticle *lambdaCpartMC = (AliAODMCParticle*)mcArray->At(mcLabel);
+      if (lambdaCpartMC) {
+	ptCandByMC = lambdaCpartMC->Pt();
+	yCandByMC  = lambdaCpartMC->Y() ;
+      }
     }
 
     Int_t pdgCand2 = 411; // D+ -> pi+ K0S
@@ -1550,11 +1565,30 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
     pdgDgV0toDaughters[1]=211;
     mcLabel2 = part->MatchToMC(pdgCand2,pdgDgCand2[1],pdgDgCand2,pdgDgV0toDaughters,mcArray,kTRUE);
     mcLabel3 = part->MatchToMC(pdgCand3,pdgDgCand3[1],pdgDgCand3,pdgDgV0toDaughters,mcArray,kTRUE);
-    if (mcLabel2!=-1) isDp2K0Spi=1;
-    if (mcLabel3!=-1) isDs2K0SK=1;
+    if (mcLabel2!=-1) {
+      isDp2K0Spi=1;
+      AliAODMCParticle *lambdaCpartMC = (AliAODMCParticle*)mcArray->At(mcLabel2);
+      if (lambdaCpartMC) {
+	ptCandByMC = lambdaCpartMC->Pt();
+	yCandByMC  = lambdaCpartMC->Y() ;
+      }
+    }
+    if (mcLabel3!=-1) {
+      isDs2K0SK=1;
+      AliAODMCParticle *lambdaCpartMC = (AliAODMCParticle*)mcArray->At(mcLabel3);
+      if (lambdaCpartMC) {
+	ptCandByMC = lambdaCpartMC->Pt();
+	yCandByMC  = lambdaCpartMC->Y() ;
+      }
+    }
   }
 
   Int_t isLcByMC = isLc+isLc2LBarpi*2+isLc2Lpi*4+isDp2K0Spi*8+isDs2K0SK*16;
+
+  Bool_t isMCparticleInFiducialAcceptance = kTRUE;
+  if (isLc || isLc2LBarpi || isLc2Lpi || isDp2K0Spi || isDs2K0SK) {
+    isMCparticleInFiducialAcceptance = cutsAnal->IsInFiducialAcceptance(ptCandByMC,yCandByMC);
+  }
 
   Int_t isK0S = 0;
   Int_t isLambda = 0;
@@ -1785,6 +1819,18 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
   fCandidateVariables[77]=v0part->Y(310);
   fCandidateVariables[78]=pzVtxBachelor;
   fCandidateVariables[79]=v0part->Pz();
+  fCandidateVariables[80]=bachelor->Charge();
+  fCandidateVariables[81]=isMCparticleInFiducialAcceptance;
+  if (fUseMCInfo) {
+    if (bachelor->GetLabel()!=-1) {
+      AliAODMCParticle *partBachelor = dynamic_cast<AliAODMCParticle*>(mcArray->At(TMath::Abs(bachelor->GetLabel())));
+      fCandidateVariables[82]=partBachelor->GetPdgCode();
+    } else {
+      fCandidateVariables[82]=0;
+    }
+  } else {
+    fCandidateVariables[82]=-1;
+  }
 
   //fCandidateVariables[65] = bachelor->Px();
   //fCandidateVariables[66] = bachelor->Py();
@@ -1823,7 +1869,7 @@ void AliAnalysisTaskSELc2V0bachelor::DefineTreeVariables() {
 
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   fVariablesTree = new TTree(nameoutput,"Candidates variables tree");
-  Int_t nVar = 80;
+  Int_t nVar = 83;
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
   fCandidateVariableNames[ 0]="isLcByMC";
@@ -1906,6 +1952,9 @@ void AliAnalysisTaskSELc2V0bachelor::DefineTreeVariables() {
   fCandidateVariableNames[77]="yV0";
   fCandidateVariableNames[78]="pzVtxBachelorGood";
   fCandidateVariableNames[79]="pzVtxV0";
+  fCandidateVariableNames[80]="bachelorCharge";
+  fCandidateVariableNames[81]="isMCparticleInFiducialAcceptance";
+  fCandidateVariableNames[82]="pdgCodeBachelor";
 
   //fCandidateVariableNames[65]="bachelorPx";
   //fCandidateVariableNames[66]="bachelorPy";
@@ -1944,7 +1993,7 @@ void  AliAnalysisTaskSELc2V0bachelor::DefineGeneralHistograms() {
   // This is to define general histograms
   //
 
-  fCEvents = new TH1F("fCEvents","conter",17,0,17);
+  fCEvents = new TH1F("fCEvents","conter",18,0,18);
   fCEvents->SetStats(kTRUE);
   fCEvents->GetXaxis()->SetBinLabel(1,"X1");
   fCEvents->GetXaxis()->SetBinLabel(2,"Analyzed events");
@@ -1963,6 +2012,7 @@ void  AliAnalysisTaskSELc2V0bachelor::DefineGeneralHistograms() {
   fCEvents->GetXaxis()->SetBinLabel(15,Form("zVtx<=%2.0fcm",fAnalCuts->GetMaxVtxZ()));
   fCEvents->GetXaxis()->SetBinLabel(16,"!IsEventSelected");
   fCEvents->GetXaxis()->SetBinLabel(17,"triggerMask!=kAnyINT || triggerClass!=CINT1");
+  fCEvents->GetXaxis()->SetBinLabel(18,Form("zVtxMC<=%2.0fcm",fAnalCuts->GetMaxVtxZ()));
   //fCEvents->GetXaxis()->SetTitle("");
   fCEvents->GetYaxis()->SetTitle("counts");
 
@@ -2340,3 +2390,56 @@ Double_t AliAnalysisTaskSELc2V0bachelor::Det(Double_t a00,Double_t a01,Double_t 
   return  a00*Det(a11,a12,a21,a22)-a01*Det(a10,a12,a20,a22)+a02*Det(a10,a11,a20,a21);
 }
 
+//----------------------------------------------------------------------------
+Int_t AliAnalysisTaskSELc2V0bachelor::MatchToMClabelC(AliAODRecoCascadeHF *candidate,
+						      TClonesArray *mcArray)
+{
+  //
+  // Check if this candidate is matched to a MC signal  Lc -> p K0S + X
+  // If no, return -1
+  // If yes, return label (>=0) of the AliAODMCParticle
+  // 
+
+  AliAODv0 *theV0 = dynamic_cast<AliAODv0*>(candidate->Getv0()); // the V0
+  AliVTrack *trk = dynamic_cast<AliVTrack*>(candidate->GetBachelor()); // the bachelor
+  if (!trk || !theV0) return -1;
+
+  if (trk->GetLabel()==-1) return -1;
+  Int_t bachLabels = TMath::Abs(trk->GetLabel());
+  AliAODMCParticle*bachelorMC = dynamic_cast<AliAODMCParticle*>(mcArray->At(bachLabels));
+  if (!bachelorMC) return -1;
+  if (TMath::Abs(bachelorMC->GetPdgCode())!=2212) return -1;
+  Int_t indexMotherBach = bachelorMC->GetMother();
+  if (indexMotherBach==-1) return -1;
+
+  Int_t pdgDg2prong[2] = {211,211};
+  Int_t lab2Prong = theV0->MatchToMC(310,mcArray,2,pdgDg2prong); // the V0
+  if(lab2Prong<0) return -1;
+  AliAODMCParticle*partK0S = dynamic_cast<AliAODMCParticle*>(mcArray->At(lab2Prong));
+  if (!partK0S) return -1;
+  Int_t indexMotherK0S = partK0S->GetMother();
+  if (indexMotherK0S==-1) return -1;
+  AliAODMCParticle*partK0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(indexMotherK0S));
+  if (!partK0) return -1;
+  Int_t indexMotherK0 = partK0->GetMother();
+  if (indexMotherK0==-1) return -1;
+
+  if (indexMotherBach!=indexMotherK0) return -1; // p e K0S sono fratelli
+
+  AliAODMCParticle*partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(indexMotherK0));
+  if (!partLc) return -1;
+  Int_t ndg2 = partLc->GetDaughter(1)-partLc->GetDaughter(0)+1;
+  if (ndg2==2) return -1;
+
+  Char_t stringaCheck[100];
+  sprintf(stringaCheck,">>>>>>>> %d -> ",partLc->GetPdgCode());
+  for(Int_t ii=0; ii<ndg2; ii++) {
+    AliAODMCParticle* partDau=(AliAODMCParticle*)(mcArray->At(partLc->GetDaughter(0)+ii));
+    sprintf(stringaCheck," %s %d",stringaCheck,partDau->GetPdgCode());
+  }
+  printf("%s \n",stringaCheck);
+
+  return indexMotherBach;
+
+}
+//-----------------------------------------------------------------------------
