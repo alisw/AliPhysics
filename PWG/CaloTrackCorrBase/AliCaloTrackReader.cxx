@@ -277,6 +277,136 @@ Bool_t  AliCaloTrackReader::RejectEventWithTriggerBit()
   
 }
 
+//_____________________________________________
+Bool_t AliCaloTrackReader::CheckEventTriggers()
+{
+  // Do different selection of the event
+  // depending on trigger name, event type, goodness of the EMCal trigger ...
+  
+  //-----------------------------------------------------------
+  // Reject events depending on the trigger name and event type
+  //-----------------------------------------------------------
+  
+  Int_t eventType = 0;
+  if(fInputEvent->GetHeader())
+  eventType = ((AliVHeader*)fInputEvent->GetHeader())->GetEventType();
+  
+  if( fFiredTriggerClassName  !="" && !fAnaLED)
+  {
+    //printf("Event type %d\n",eventType);
+    if(eventType!=7)
+    return kFALSE; //Only physics event, do not use for simulated events!!!
+    
+    if(fDebug > 0)
+      printf("AliCaloTrackReader::CheckEventTriggers() - FiredTriggerClass <%s>, selected class <%s>, compare name %d\n",
+             GetFiredTriggerClasses().Data(),fFiredTriggerClassName.Data(), GetFiredTriggerClasses().Contains(fFiredTriggerClassName));
+    
+    if( !GetFiredTriggerClasses().Contains(fFiredTriggerClassName) ) return kFALSE;
+    else if(fDebug > 0) printf("AliCaloTrackReader::CheckEventTriggers() - Accepted triggered event\n");
+  }
+  else if(fAnaLED)
+  {
+    //	  kStartOfRun =       1,    // START_OF_RUN
+    //	  kEndOfRun =         2,    // END_OF_RUN
+    //	  kStartOfRunFiles =  3,    // START_OF_RUN_FILES
+    //	  kEndOfRunFiles =    4,    // END_OF_RUN_FILES
+    //	  kStartOfBurst =     5,    // START_OF_BURST
+    //	  kEndOfBurst =       6,    // END_OF_BURST
+    //	  kPhysicsEvent =     7,    // PHYSICS_EVENT
+    //	  kCalibrationEvent = 8,    // CALIBRATION_EVENT
+    //	  kFormatError =      9,    // EVENT_FORMAT_ERROR
+    //	  kStartOfData =      10,   // START_OF_DATA
+    //	  kEndOfData =        11,   // END_OF_DATA
+    //	  kSystemSoftwareTriggerEvent   = 12, // SYSTEM_SOFTWARE_TRIGGER_EVENT
+    //	  kDetectorSoftwareTriggerEvent = 13  // DETECTOR_SOFTWARE_TRIGGER_EVENT
+    
+	  if(eventType!=7 && fDebug > 1 )printf("AliCaloTrackReader::CheckEventTriggers() - DO LED, Event Type <%d>, 8 Calibration \n",  eventType);
+	  if(eventType!=8)return kFALSE;
+  }
+  
+  if(fDebug > 0) printf("AliCaloTrackReader::CheckEventTriggers() - Pass Trigger name rejection \n");
+
+  //-------------------------------------------------------------------------------------
+  // Reject or accept events depending on the trigger bit
+  //-------------------------------------------------------------------------------------
+  
+  Bool_t okA = AcceptEventWithTriggerBit();
+  Bool_t okR = RejectEventWithTriggerBit();
+  
+  //printf("AliCaloTrackReader::FillInputEvent() - Accept event? %d, Reject event %d? \n",okA,okR);
+  
+  if(!okA || !okR) return kFALSE;
+  
+  if(fDebug > 0) printf("AliCaloTrackReader::CheckEventTriggers() - Pass event bit rejection \n");
+  
+  //----------------------------------------------------------------------
+  // Do not count events that were likely triggered by an exotic cluster
+  // or out BC cluster
+  //----------------------------------------------------------------------
+  
+  // Set a bit with the event kind, MB, L0, L1 ...
+  SetEventTriggerBit();
+  
+  if( IsEventEMCALL1() || IsEventEMCALL0()  )
+  {
+    // Reject triggered events when there is coincidence on both EMCal trigger thresholds,
+    // but the requested trigger is the low trigger threshold
+    // This can be done with AcceptEventWithTriggerBit() and RejectEventWithTriggerBit(),
+    // but let's fix it here for the moment
+    if(IsEventEMCALL1Jet1  () && IsEventEMCALL1Jet2  () && fFiredTriggerClassName.Contains("EJ2")) return kFALSE;
+    if(IsEventEMCALL1Gamma1() && IsEventEMCALL1Gamma2() && fFiredTriggerClassName.Contains("EG2")) return kFALSE;
+    
+    //Get Patches that triggered
+    TArrayI patches = GetTriggerPatches(fTriggerPatchTimeWindow[0],fTriggerPatchTimeWindow[1]);
+    
+    MatchTriggerCluster(patches);
+    
+    patches.Reset();
+    
+    // If requested, remove badly triggeed events, but only when the EMCal trigger bit is set
+    if(fRemoveBadTriggerEvents)
+    {
+      if(fDebug > 0)
+      printf("AliCaloTrackReader::CheckEventTriggers() - ACCEPT triggered event? \n exotic? %d - bad cell %d - bad Max cell %d - BC %d  - Matched %d\n",
+             fIsExoticEvent,fIsBadCellEvent, fIsBadMaxCellEvent, fTriggerClusterBC,fIsTriggerMatch);
+      if     (fIsExoticEvent)         return kFALSE;
+      else if(fIsBadCellEvent)        return kFALSE;
+      else if(fRemoveUnMatchedTriggers && !fIsTriggerMatch) return kFALSE ;
+      else if(fTriggerClusterBC != 0) return kFALSE;
+      if(fDebug > 0) printf("\t *** YES for %s\n",GetFiredTriggerClasses().Data());
+    }
+    
+    if(fDebug > 0)
+    printf("AliCaloTrackReader::CheckEventTriggers() - Pass EMCal triggered event rejection \n");
+  }
+  
+  //-------------------------------------------------------------------------------------
+  //Select events only fired by a certain trigger configuration if it is provided
+  //-------------------------------------------------------------------------------------
+  if (GetFiredTriggerClasses().Contains("FAST")  && !GetFiredTriggerClasses().Contains("ALL") && !fAcceptFastCluster)
+  {
+    if(fDebug > 0)  printf("AliCaloTrackReader::CheckEventTriggers() - Do not count events from fast cluster, trigger name %s\n",fFiredTriggerClassName.Data());
+    return kFALSE;
+  }
+  
+  //-------------------------------------------------------------------------------------
+  // Reject event if large clusters with large energy
+  // Use only for LHC11a data for the moment, and if input is clusterizer V1 or V1+unfolding
+  // If clusterzer NxN or V2 it does not help
+  //-------------------------------------------------------------------------------------
+  Int_t run = fInputEvent->GetRunNumber();
+  if( fRemoveLEDEvents && run > 146857  && run < 146861 )
+  {
+    Bool_t reject = RejectLEDEvents();
+
+    if(reject) return kFALSE;
+    
+    if(fDebug > 0) printf("AliCaloTrackReader::CheckEventTriggers() - Pass LED event rejection \n");
+
+  }// Remove LED events
+  
+  return kTRUE;
+}
 
 //________________________________________________
 Bool_t AliCaloTrackReader::ComparePtHardAndJetPt()
@@ -974,87 +1104,13 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     return kFALSE;
   }
   
-  //Select events only fired by a certain trigger configuration if it is provided
-  Int_t eventType = 0;
-  if(fInputEvent->GetHeader())
-    eventType = ((AliVHeader*)fInputEvent->GetHeader())->GetEventType();
+  Bool_t accept = CheckEventTriggers();
+  if(!accept) return kFALSE;
   
-  if (GetFiredTriggerClasses().Contains("FAST")  && !GetFiredTriggerClasses().Contains("ALL") && !fAcceptFastCluster)
-  {
-    if(fDebug > 0)  printf("AliCaloTrackReader::FillInputEvent - Do not count events from fast cluster, trigger name %s\n",fFiredTriggerClassName.Data());
-    return kFALSE;
-  }
-  
-  //-------------------------------------------------------------------------------------
-  // Reject event if large clusters with large energy
-  // Use only for LHC11a data for the moment, and if input is clusterizer V1 or V1+unfolding
-  // If clusterzer NxN or V2 it does not help
-  //-------------------------------------------------------------------------------------
-  Int_t run = fInputEvent->GetRunNumber();
-  if( fRemoveLEDEvents && run > 146857  && run < 146861 )
-  {
-    Bool_t reject = RejectLEDEvents();
-    if(reject) return kFALSE;
-  }// Remove LED events
-  
-  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass LED event rejection \n");
-  
-  //-------------------------------------------------------------------------------------
-  // Reject or accept events depending on the trigger bit
-  //-------------------------------------------------------------------------------------
-  
-  //printf("AliCaloTrackReader::FillInputEvent() - FiredTriggerClass <%s>\n", GetFiredTriggerClasses().Data());
-  
-  Bool_t okA = AcceptEventWithTriggerBit();
-  Bool_t okR = RejectEventWithTriggerBit();
-
-  //printf("AliCaloTrackReader::FillInputEvent() - Accept event? %d, Reject event %d? \n",okA,okR);
-  
-  if(!okA || !okR) return kFALSE;
-  
-  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass event bit rejection \n");
-
-  
-  //-----------------------------------------------------------
-  // Reject events depending on the trigger name and event type
-  //-----------------------------------------------------------
-  if( fFiredTriggerClassName  !="" && !fAnaLED)
-  {
-    //printf("Event type %d\n",eventType);
-    if(eventType!=7)
-      return kFALSE; //Only physics event, do not use for simulated events!!!
-    
-    if(fDebug > 0)
-      printf("AliCaloTrackReader::FillInputEvent() - FiredTriggerClass <%s>, selected class <%s>, compare name %d\n",
-             GetFiredTriggerClasses().Data(),fFiredTriggerClassName.Data(), GetFiredTriggerClasses().Contains(fFiredTriggerClassName));
-    
-    if( !GetFiredTriggerClasses().Contains(fFiredTriggerClassName) ) return kFALSE;
-    else if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Accepted triggered event\n");
-  }
-  else if(fAnaLED)
-  {
-    //	  kStartOfRun =       1,    // START_OF_RUN
-    //	  kEndOfRun =         2,    // END_OF_RUN
-    //	  kStartOfRunFiles =  3,    // START_OF_RUN_FILES
-    //	  kEndOfRunFiles =    4,    // END_OF_RUN_FILES
-    //	  kStartOfBurst =     5,    // START_OF_BURST
-    //	  kEndOfBurst =       6,    // END_OF_BURST
-    //	  kPhysicsEvent =     7,    // PHYSICS_EVENT
-    //	  kCalibrationEvent = 8,    // CALIBRATION_EVENT
-    //	  kFormatError =      9,    // EVENT_FORMAT_ERROR
-    //	  kStartOfData =      10,   // START_OF_DATA
-    //	  kEndOfData =        11,   // END_OF_DATA
-    //	  kSystemSoftwareTriggerEvent   = 12, // SYSTEM_SOFTWARE_TRIGGER_EVENT
-    //	  kDetectorSoftwareTriggerEvent = 13  // DETECTOR_SOFTWARE_TRIGGER_EVENT
-    
-	  if(eventType!=7 && fDebug > 1 )printf("AliCaloTrackReader::FillInputEvent() - DO LED, Event Type <%d>, 8 Calibration \n",  eventType);
-	  if(eventType!=8)return kFALSE;
-  }
-  
-  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass Trigger name rejection \n");
-
-  
-  //In case of analysis of events with jets, skip those with jet pt > 5 pt hard
+  //---------------------------------------------------------------------------
+  // In case of analysis of events with jets, skip those with jet pt > 5 pt hard
+  // To be used on for MC data in pT hard bins
+  //---------------------------------------------------------------------------
   if(fComparePtHardAndJetPt)
   {
     if(!ComparePtHardAndJetPt()) return kFALSE ;
@@ -1166,45 +1222,6 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass uninteresting triggered events rejection in case of mixing analysis \n");
 
   
-  //----------------------------------------------------------------------
-  // Do not count events that were likely triggered by an exotic cluster
-  // or out BC cluster
-  //----------------------------------------------------------------------
-  
-  // Set a bit with the event kind, MB, L0, L1 ...
-  SetEventTriggerBit();
-	
-  if( IsEventEMCALL1() || IsEventEMCALL0()  )
-  {
-    //Get Patches that triggered
-    TArrayI patches = GetTriggerPatches(fTriggerPatchTimeWindow[0],fTriggerPatchTimeWindow[1]);
-    
-    MatchTriggerCluster(patches);
-
-    patches.Reset();
-
-    // If requested, remove badly triggeed events, but only when the EMCal trigger bit is set
-    if(fRemoveBadTriggerEvents)
-    {
-      if(fDebug > 0)
-        printf("AliCaloTrackReader::FillInputEvent() - ACCEPT triggered event? \n exotic? %d - bad cell %d - bad Max cell %d - BC %d  - Matched %d\n",
-                              fIsExoticEvent,fIsBadCellEvent, fIsBadMaxCellEvent, fTriggerClusterBC,fIsTriggerMatch);
-      if     (fIsExoticEvent)         return kFALSE;
-      else if(fIsBadCellEvent)        return kFALSE;
-      else if(fRemoveUnMatchedTriggers && !fIsTriggerMatch) return kFALSE ;
-      else if(fTriggerClusterBC != 0) return kFALSE;
-      if(fDebug > 0) printf("\t *** YES\n");
-    }
-    
-    if(fDebug > 0)
-      printf("AliCaloTrackReader::FillInputEvent()-Pass EMCal triggered event rejection \n");
-  }
-  else if(!IsEventEMCALL1Jet() && !IsEventMinimumBias() && !IsEventCentral() && !IsEventSemiCentral())
-  {
-    // In case there was a EG1&&EG2, it is selected as EG1, reject when requesting EG2
-    return kFALSE;
-  }
-  
   // Get the main vertex BC, in case not available
   // it is calculated in FillCTS checking the BC of tracks
   // with DCA small (if cut applied, if open)
@@ -1244,7 +1261,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   if(fFillPHOS)
     FillInputPHOS();
   
-  FillInputVZERO();
+  //FillInputVZERO();
   
   //one specified jet branch
   if(fFillInputNonStandardJetBranch)
@@ -2009,12 +2026,12 @@ void AliCaloTrackReader::FillInputVZERO()
       fV0Mul[1] += (Int_t)v0->GetMultiplicityV0A(i);
     }
     if(fDebug > 0)
-      printf("V0: ADC (%d,%d), Multiplicity (%d,%d) \n",fV0ADC[0],fV0ADC[1],fV0Mul[0],fV0Mul[1]);
+      printf("AliCaloTrackReader::FillInputVZERO() - ADC (%d,%d), Multiplicity (%d,%d) \n",fV0ADC[0],fV0ADC[1],fV0Mul[0],fV0Mul[1]);
   }
   else
   {
     if(fDebug > 0)
-      printf("Cannot retrieve V0 ESD! Run w/ null V0 charges\n ");
+      printf("AliCaloTrackReader::FillInputVZERO() - Cannot retrieve V0 ESD! Run w/ null V0 charges\n ");
   }
 }
 
@@ -2140,20 +2157,21 @@ TArrayI AliCaloTrackReader::GetTriggerPatches(Int_t tmin, Int_t tmax )
   
   // get object pointer
   AliVCaloTrigger *caloTrigger = GetInputEvent()->GetCaloTrigger( "EMCAL" );
-  
+
   //printf("CaloTrigger Entries %d\n",caloTrigger->GetEntries() );
+  
   // class is not empty
   if( caloTrigger->GetEntries() > 0 )
   {
     // must reset before usage, or the class will fail
     caloTrigger->Reset();
-    
+
     // go throuth the trigger channels
     while( caloTrigger->Next() )
     {
       // get position in global 2x2 tower coordinates
       caloTrigger->GetPosition( globCol, globRow );
-      
+
       //L0
       if(IsEventEMCALL0())
       {
@@ -2167,8 +2185,8 @@ TArrayI AliCaloTrackReader::GetTriggerPatches(Int_t tmin, Int_t tmax )
         
         // get timing array
         caloTrigger->GetL0Times( trigtimes );
-        
         //printf("Get L0 patch : n times %d - trigger time window %d - %d\n",ntimes, tmin,tmax);
+        
         // go through the array
         for( i = 0; i < ntimes; i++ )
         {
@@ -2189,16 +2207,23 @@ TArrayI AliCaloTrackReader::GetTriggerPatches(Int_t tmin, Int_t tmax )
         Int_t bit = 0;
         caloTrigger->GetTriggerBits(bit);
         
-        Bool_t isEGA = ((bit >> fBitEGA) & 0x1) && IsEventEMCALL1Gamma() ;
-        Bool_t isEJE = ((bit >> fBitEJE) & 0x1) && IsEventEMCALL1Jet  () ;
+        Int_t sum = 0;
+        caloTrigger->GetL1TimeSum(sum);
+
+        Bool_t isEGA1 = ((bit >> fBitEGA  ) & 0x1) && IsEventEMCALL1Gamma1() ;
+        Bool_t isEGA2 = ((bit >> fBitEGA+1) & 0x1) && IsEventEMCALL1Gamma2() ;
+        Bool_t isEJE1 = ((bit >> fBitEJE  ) & 0x1) && IsEventEMCALL1Jet1  () ;
+        Bool_t isEJE2 = ((bit >> fBitEJE+1) & 0x1) && IsEventEMCALL1Jet2  () ;
         
-        if(!isEGA && !isEJE) continue;
-        
-        //printf("**** Get L1 Patch: EGA %d, EJE %d\n",isEGA,isEJE);
+        if(!isEGA1 && !isEJE1 && !isEGA2 && !isEJE2) continue;
         
         Int_t patchsize = -1;
-        if      (isEGA) patchsize =  2;
-        else if (isEJE) patchsize = 16;
+        if      (isEGA1 || isEGA2) patchsize =  2;
+        else if (isEJE1 || isEJE2) patchsize = 16;
+        
+        //printf("**** Get L1 Patch: Bit %x, sum %d, patchsize %d, EGA1 %d, EGA2 %d, EJE1 %d, EJE2 %d, EGA bit %d, EJE bit %d, Trigger Gamma %d, Trigger Jet %d\n",
+        //       bit,sum,patchsize,isEGA1,isEGA2,isEJE1,isEJE2,fBitEGA,fBitEJE,IsEventEMCALL1Gamma(),IsEventEMCALL1Jet());
+
         
         // add 2x2 (EGA) or 16x16 (EJE) patches
         for(Int_t irow=0; irow < patchsize; irow++)
@@ -2215,10 +2240,12 @@ TArrayI AliCaloTrackReader::GetTriggerPatches(Int_t tmin, Int_t tmax )
       } // L1
       
     } // trigger iterator
-  } // go thorough triggers
+  } // go through triggers
   
-  //printf("N patches %d, test %d,first %d, last %d\n",patches.GetSize(), nPatch, patches.At(0), patches.At(patches.GetSize()-1));
-  
+  if(patches.GetSize()<=0) printf("AliCaloTrackReader::GetTriggerPatches() - No patch found! for triggers: %s and selected <%s>\n",
+                                  GetFiredTriggerClasses().Data(),fFiredTriggerClassName.Data());
+  //else                     printf(">>>>> N patches %d, test %d,first %d, last %d\n",patches.GetSize(), nPatch, patches.At(0), patches.At(patches.GetSize()-1));
+                 
   return patches;
 }
 
@@ -2361,7 +2388,7 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
       nOfHighECl++;
     
     // Find match to trigger
-    if(fTriggerPatchClusterMatch)
+    if(fTriggerPatchClusterMatch && nPatch>0)
     {
       for(Int_t iabsId =0; iabsId < nPatch; iabsId++)
       {
@@ -2437,97 +2464,97 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
   //                              clusMax, idclusMax, eMax,tofMax, badClMax, badCeMax,exoMax);
   
   //Redo matching but open cuts
-  if(!fIsTriggerMatch && fTriggerClusterId >= 0)
-  {
-    // Open time patch time
-    TArrayI patchOpen = GetTriggerPatches(7,10);
-    
-    
-    Int_t patchAbsIdOpenTime = -1;
-    for(Int_t iabsId =0; iabsId < patchOpen.GetSize(); iabsId++)
-    {
-      Int_t absIDCell[4];
-      patchAbsIdOpenTime = patchOpen.At(iabsId);
-      GetCaloUtils()->GetEMCALGeometry()->GetCellIndexFromFastORIndex(patchAbsIdOpenTime, absIDCell);
-      //if(tof > 75 ) printf("E %2.2f TOF %2.2f Trigger patch %d, cells : %d, %d, %d, %d\n",
-      //                     clus->E(),tof,patches.At(iabsId), absIDCell[0],absIDCell[1],absIDCell[2],absIDCell[3]);
-      
-      for(Int_t ipatch = 0; ipatch < 4; ipatch++)
-      {
-        if(absIdMaxMax == absIDCell[ipatch])
-        {
-          fIsTriggerMatchOpenCut[0] = kTRUE;
-          break;
-        }
-      }// cell patch loop
-    }// trigger patch loop
-    
-    // Check neighbour patches
-    Int_t patchAbsId = -1;
-    Int_t globalCol  = -1;
-    Int_t globalRow  = -1;
-    GetCaloUtils()->GetEMCALGeometry()->GetFastORIndexFromCellIndex(absIdMaxMax, patchAbsId);
-    GetCaloUtils()->GetEMCALGeometry()->GetPositionInEMCALFromAbsFastORIndex(patchAbsId,globalCol,globalRow);
-    
-    // Check patches with strict time cut
-    Int_t patchAbsIdNeigh = -1;
-    for(Int_t icol = globalCol-1; icol <= globalCol+1; icol++)
-    {
-      if(icol < 0 || icol > 47) continue;
-      
-      for(Int_t irow = globalRow; irow <= globalRow+1; irow++)
-      {
-        if(irow < 0 || irow > 63) continue;
-        
-        GetCaloUtils()->GetEMCALGeometry()->GetAbsFastORIndexFromPositionInEMCAL(icol, irow, patchAbsIdNeigh);
-        
-        if ( patchAbsIdNeigh < 0 ) continue;
-        
-        for(Int_t iabsId =0; iabsId < patches.GetSize(); iabsId++)
-        {
-          if(patchAbsIdNeigh == patches.At(iabsId))
-          {
-            fIsTriggerMatchOpenCut[1] = kTRUE;
-            break;
-          }
-        }// trigger patch loop
-        
-      }// row
-    }// col
-    
-    // Check patches with open time cut
-    Int_t patchAbsIdNeighOpenTime = -1;
-    for(Int_t icol = globalCol-1; icol <= globalCol+1; icol++)
-    {
-      if(icol < 0 || icol > 47) continue;
-      
-      for(Int_t irow = globalRow; irow <= globalRow+1; irow++)
-      {
-        if(irow < 0 || irow > 63) continue;
-        
-        GetCaloUtils()->GetEMCALGeometry()->GetAbsFastORIndexFromPositionInEMCAL(icol, irow, patchAbsIdNeighOpenTime);
-        
-        if ( patchAbsIdNeighOpenTime < 0 ) continue;
-        
-        for(Int_t iabsId =0; iabsId < patchOpen.GetSize(); iabsId++)
-        {
-          if(patchAbsIdNeighOpenTime == patchOpen.At(iabsId))
-          {
-            fIsTriggerMatchOpenCut[2] = kTRUE;
-            break;
-          }
-        }// trigger patch loop
-        
-      }// row
-    }// col
-    
-    //    printf("No match, new match: Open time %d-%d, open Neigh %d-%d, both open %d-%d\n",fIsTriggerMatchOpenCut[0],patchAbsIdOpenTime,
-    //           fIsTriggerMatchOpenCut[1],patchAbsIdNeigh,
-    //           fIsTriggerMatchOpenCut[2],patchAbsIdNeighOpenTime);
-    
-    patchOpen.Reset();
-    
-  }// No trigger match found
+//  if(!fIsTriggerMatch && fTriggerClusterId >= 0)
+//  {
+//    // Open time patch time
+//    TArrayI patchOpen = GetTriggerPatches(7,10);
+//    
+//    
+//    Int_t patchAbsIdOpenTime = -1;
+//    for(Int_t iabsId =0; iabsId < patchOpen.GetSize(); iabsId++)
+//    {
+//      Int_t absIDCell[4];
+//      patchAbsIdOpenTime = patchOpen.At(iabsId);
+//      GetCaloUtils()->GetEMCALGeometry()->GetCellIndexFromFastORIndex(patchAbsIdOpenTime, absIDCell);
+//      //if(tof > 75 ) printf("E %2.2f TOF %2.2f Trigger patch %d, cells : %d, %d, %d, %d\n",
+//      //                     clus->E(),tof,patches.At(iabsId), absIDCell[0],absIDCell[1],absIDCell[2],absIDCell[3]);
+//      
+//      for(Int_t ipatch = 0; ipatch < 4; ipatch++)
+//      {
+//        if(absIdMaxMax == absIDCell[ipatch])
+//        {
+//          fIsTriggerMatchOpenCut[0] = kTRUE;
+//          break;
+//        }
+//      }// cell patch loop
+//    }// trigger patch loop
+//    
+//    // Check neighbour patches
+//    Int_t patchAbsId = -1;
+//    Int_t globalCol  = -1;
+//    Int_t globalRow  = -1;
+//    GetCaloUtils()->GetEMCALGeometry()->GetFastORIndexFromCellIndex(absIdMaxMax, patchAbsId);
+//    GetCaloUtils()->GetEMCALGeometry()->GetPositionInEMCALFromAbsFastORIndex(patchAbsId,globalCol,globalRow);
+//    
+//    // Check patches with strict time cut
+//    Int_t patchAbsIdNeigh = -1;
+//    for(Int_t icol = globalCol-1; icol <= globalCol+1; icol++)
+//    {
+//      if(icol < 0 || icol > 47) continue;
+//      
+//      for(Int_t irow = globalRow; irow <= globalRow+1; irow++)
+//      {
+//        if(irow < 0 || irow > 63) continue;
+//        
+//        GetCaloUtils()->GetEMCALGeometry()->GetAbsFastORIndexFromPositionInEMCAL(icol, irow, patchAbsIdNeigh);
+//        
+//        if ( patchAbsIdNeigh < 0 ) continue;
+//        
+//        for(Int_t iabsId =0; iabsId < patches.GetSize(); iabsId++)
+//        {
+//          if(patchAbsIdNeigh == patches.At(iabsId))
+//          {
+//            fIsTriggerMatchOpenCut[1] = kTRUE;
+//            break;
+//          }
+//        }// trigger patch loop
+//        
+//      }// row
+//    }// col
+//    
+//    // Check patches with open time cut
+//    Int_t patchAbsIdNeighOpenTime = -1;
+//    for(Int_t icol = globalCol-1; icol <= globalCol+1; icol++)
+//    {
+//      if(icol < 0 || icol > 47) continue;
+//      
+//      for(Int_t irow = globalRow; irow <= globalRow+1; irow++)
+//      {
+//        if(irow < 0 || irow > 63) continue;
+//        
+//        GetCaloUtils()->GetEMCALGeometry()->GetAbsFastORIndexFromPositionInEMCAL(icol, irow, patchAbsIdNeighOpenTime);
+//        
+//        if ( patchAbsIdNeighOpenTime < 0 ) continue;
+//        
+//        for(Int_t iabsId =0; iabsId < patchOpen.GetSize(); iabsId++)
+//        {
+//          if(patchAbsIdNeighOpenTime == patchOpen.At(iabsId))
+//          {
+//            fIsTriggerMatchOpenCut[2] = kTRUE;
+//            break;
+//          }
+//        }// trigger patch loop
+//        
+//      }// row
+//    }// col
+//    
+//    //    printf("No match, new match: Open time %d-%d, open Neigh %d-%d, both open %d-%d\n",fIsTriggerMatchOpenCut[0],patchAbsIdOpenTime,
+//    //           fIsTriggerMatchOpenCut[1],patchAbsIdNeigh,
+//    //           fIsTriggerMatchOpenCut[2],patchAbsIdNeighOpenTime);
+//    
+//    patchOpen.Reset();
+//    
+//  }// No trigger match found
   //printf("Trigger BC %d, Id %d, Index %d\n",fTriggerClusterBC,fTriggerClusterId,fTriggerClusterIndex);
   
 }
@@ -2685,7 +2712,8 @@ void AliCaloTrackReader::SetEventTriggerBit()
   fEventTrigEMCALL1Jet2   = kFALSE;
   
   if(fDebug > 0)
-    printf("AliCaloTrackReader::SetEventTriggerBit() - Select trigger mask bit %d - Trigger Event %s\n",fEventTriggerMask,GetFiredTriggerClasses().Data());
+    printf("AliCaloTrackReader::SetEventTriggerBit() - Select trigger mask bit %d - Trigger Event %s - Select <%s>\n",
+           fEventTriggerMask,GetFiredTriggerClasses().Data(),fFiredTriggerClassName.Data());
   
   if(fEventTriggerMask <=0 )// in case no mask set
   {
@@ -2748,32 +2776,28 @@ void AliCaloTrackReader::SetEventTriggerBit()
 	  if     ( fEventTriggerMask & AliVEvent::kEMCEGA      )
     {
       //printf("EGA trigger bit\n");
-      if     (GetFiredTriggerClasses().Contains("EG1" ) ||
-              GetFiredTriggerClasses().Contains("EGA" )    )
+      if     (GetFiredTriggerClasses().Contains("EG"))
       {
-				fEventTrigEMCALL1Gamma1 = kTRUE;
-        if( GetFiredTriggerClasses().Contains("EG1" ) && !fFiredTriggerClassName.Contains("EG1") ) fEventTrigEMCALL1Gamma1 = kFALSE;
-      }
-      else if(GetFiredTriggerClasses().Contains("EG2" ))
-      {
-        fEventTrigEMCALL1Gamma2 = kTRUE;
-        if(!fFiredTriggerClassName.Contains("EG2") ) fEventTrigEMCALL1Gamma2 = kFALSE;
+        if     (GetFiredTriggerClasses().Contains("EGA")) fEventTrigEMCALL1Gamma1 = kTRUE;
+        else
+        {
+          if(GetFiredTriggerClasses().Contains("EG1")) fEventTrigEMCALL1Gamma1 = kTRUE;
+          if(GetFiredTriggerClasses().Contains("EG2")) fEventTrigEMCALL1Gamma2 = kTRUE;
+        }
       }
     }
 	  // EMC L1 Jet
 	  else if( fEventTriggerMask & AliVEvent::kEMCEJE      )
     {
-      //printf("EJE trigger bit\n");
-      if     (GetFiredTriggerClasses().Contains("EJ1" )||
-              GetFiredTriggerClasses().Contains("EJE" )  )
+      //printf("EGA trigger bit\n");
+      if     (GetFiredTriggerClasses().Contains("EJ"))
       {
-        fEventTrigEMCALL1Jet1 = kTRUE;
-        if( GetFiredTriggerClasses().Contains("EJ1" ) && !fFiredTriggerClassName.Contains("EJ1") ) fEventTrigEMCALL1Jet1 = kFALSE;
-      }
-      else if(GetFiredTriggerClasses().Contains("EJ2" ))
-      {
-        fEventTrigEMCALL1Jet2 = kTRUE;
-        if( !fFiredTriggerClassName.Contains("EJ2") ) fEventTrigEMCALL1Jet2 = kFALSE;
+        if     (GetFiredTriggerClasses().Contains("EJE")) fEventTrigEMCALL1Jet1 = kTRUE;
+        else
+        {
+          if(GetFiredTriggerClasses().Contains("EJ1")) fEventTrigEMCALL1Jet1 = kTRUE;
+          if(GetFiredTriggerClasses().Contains("EJ2")) fEventTrigEMCALL1Jet2 = kTRUE;
+        }
       }
     }
 		// EMC L0
@@ -2814,7 +2838,8 @@ void AliCaloTrackReader::SetEventTriggerBit()
   
   if(fBitEGA == 0 && fBitEJE ==0)
   {
-    // Init the trigger bit once, correct depending on version
+    // Init the trigger bit once, correct depending on AliESDAODCaloTrigger header version
+    // Old values
     fBitEGA = 4;
     fBitEJE = 5;
     
@@ -2825,13 +2850,18 @@ void AliCaloTrackReader::SetEventTriggerBit()
     if(clist)
     {
       TStreamerInfo *cinfo = (TStreamerInfo*)clist->FindObject("AliESDCaloTrigger");
-      if(!cinfo)     cinfo = (TStreamerInfo*)clist->FindObject("AliAODCaloTrigger");
-      
+      Int_t verid = 5; // newer ESD header version
+      if(!cinfo)
+      {
+        cinfo = (TStreamerInfo*)clist->FindObject("AliAODCaloTrigger");
+        verid = 2; // newer AOD header version
+      }
       if(cinfo)
 	    {
 	      Int_t classversionid = cinfo->GetClassVersion();
+	      //printf("********* Header class version %d *********** \n",classversionid);
 	      
-	      if (classversionid >= 5)
+        if (classversionid >= verid)
         {
           fBitEGA = 6;
           fBitEJE = 8;
