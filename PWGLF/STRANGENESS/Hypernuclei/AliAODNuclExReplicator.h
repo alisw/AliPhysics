@@ -21,7 +21,7 @@
 //         
 // Based on AliAODMuonReplicator.h (L. Aphecetche (Subatech))
 
-class AliAnalysisCuts;
+//class AliAnalysisCuts;
 class TClonesArray;
 class AliAODMCHeader;
 class AliAODVZERO;
@@ -32,8 +32,8 @@ class TArrayI;
 class AliAODv0;  
 class TRefArray;
 class AliAODRecoDecay;
-class AliAODRecoDecayHF;
-class AliAODRecoDecayHF2Prong;
+class AliAODRecoDecayLF;
+class AliAODRecoDecayLF2Prong;
 class AliVertexerTracks;
 class AliAODHeader;
 
@@ -47,21 +47,20 @@ class AliAODv0;
 
 class TH1F;
 
-// TODO add new constructor for the 3 prong case (it will write an AliAODRecoDecayHF3Prong
+// TODO add new constructor for the 3 prong case (it will write an AliAODRecoDecayLF3Prong
 
 class AliAODNuclExReplicator : public AliAODBranchReplicator
 {
  public:
   
   AliAODNuclExReplicator(const char* name="AliAODNuclExReplicator", 
-			const char* title="Branch Replicator for muon related branches",
-			AliAnalysisCuts* trackCut=0x0,
-			AliAnalysisCuts* vertexCut=0x0,
-			Int_t mcMode=0,
-			Int_t nsigmaTrk1=3, Int_t partType1 = 2,
-			Int_t nsigmaTrk2=3, Int_t partType2 = 7
-			);
-  
+			 const char* title="Branch Replicator for muon related branches",
+			 /* AliAnalysisCuts* trackCut=0x0, */
+			 /* AliAnalysisCuts* vertexCut=0x0, */
+			 Int_t mcMode=0,
+			 Int_t nsigmaTrk1=3, Int_t partType1 = 2,
+			 Int_t nsigmaTrk2=3, Int_t partType2 = 7
+			 ); 
   //  Int_t partType; // 0 = e; 1 = mu; 2 = pi; 3 = K; 4= p; 5 = d; 6 =t ; 7 = 3He; 8=4He;
 
   virtual ~AliAODNuclExReplicator();
@@ -95,12 +94,12 @@ class AliAODNuclExReplicator : public AliAODBranchReplicator
   
   mutable AliAODHeader* fHeader; //! internal header object
   
-  AliAnalysisCuts* fVertexCut; // decides which vertices to keep
+  //  AliAnalysisCuts* fVertexCut; // decides which vertices to keep
   mutable TClonesArray* fVertices; //! internal array of vertices
   
   mutable TClonesArray* fNuclei; //! internal array of nuclei tracks
   
-  AliAnalysisCuts* fTrackCut; // decides which tracks to keep
+  //  AliAnalysisCuts* fTrackCut; // decides which tracks to keep
   mutable TClonesArray* fSecondaryVerices; //! internal array of secondary vertices canditates
    
   mutable TClonesArray* fDaughterTracks; //! internal SV daughter tracks
@@ -134,17 +133,17 @@ class AliAODNuclExReplicator : public AliAODBranchReplicator
   
   AliAODVertex* ReconstructSecondaryVertex(TObjArray *trkArray,Double_t &dispersion,Bool_t useTRefArray=kTRUE) const;
   
-  AliAODRecoDecayHF2Prong* Make2Prong(TObjArray *twoTrackArray,const AliAODEvent &evento,
+  AliAODRecoDecayLF2Prong* Make2Prong(TObjArray *twoTrackArray,const AliAODEvent &evento,
   				      AliAODVertex *secVert,Double_t dca);
 
-  /* AliAODRecoDecayHF2Prong* Make2Prong(TObjArray *twoTrackArray,AliAODEvent *evento, */
+  /* AliAODRecoDecayLF2Prong* Make2Prong(TObjArray *twoTrackArray,AliAODEvent *evento, */
   /* 				      AliAODVertex *secVert,Double_t dca); */
   
 
   void AddDaughterRefs(AliAODVertex *v, const AliAODEvent &event, const TObjArray *trkArray) const;
   /* void AddDaughterRefs(AliAODVertex *v, AliAODEvent *event, const TObjArray *trkArray) const; */
-  void AddRefs(AliAODVertex *v,AliAODRecoDecayHF *rd, const AliAODEvent &event, const TObjArray *trkArray) const;
-  /* void AddRefs(AliAODVertex *v,AliAODRecoDecayHF *rd, AliAODEvent *event, const TObjArray *trkArray) const; */
+  void AddRefs(AliAODVertex *v,AliAODRecoDecayLF *rd, const AliAODEvent &event, const TObjArray *trkArray) const;
+  /* void AddRefs(AliAODVertex *v,AliAODRecoDecayLF *rd, AliAODEvent *event, const TObjArray *trkArray) const; */
 
  private:
 
