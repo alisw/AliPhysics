@@ -43,7 +43,10 @@
 
 #include "AliESDVZERO.h"
 #include "AliESDTrdTrack.h"
-#include "AliESDTOFcluster.h"
+#include "AliESDTOFCluster.h"
+#include "AliESDTOFHit.h"
+#include "AliESDTOFMatch.h"
+
 
 
 class AliESDfriend;
@@ -114,6 +117,9 @@ public:
                        kESDAD,
 		       kTOFHeader,
                        kCosmicTracks,
+		       kTOFclusters,
+		       kTOFhit,
+		       kTOFmatch,
 		       kESDListN
   };
 
@@ -295,10 +301,14 @@ public:
   AliTOFHeader *GetTOFHeader() const {return fTOFHeader;}
   Float_t GetEventTimeSpread() const {if (fTOFHeader) return fTOFHeader->GetT0spread(); else return 0.;}
   Float_t GetTOFTimeResolution() const {if (fTOFHeader) return fTOFHeader->GetTOFResolution(); else return 0.;}
-  TObjArray *GetTOFcluster() const {return fTOFcluster;}
-  void SetTOFcluster(Int_t ntofclusters,AliESDTOFcluster *cluster,Int_t *mapping=NULL);
-  void SetTOFcluster(Int_t ntofclusters,AliESDTOFcluster *cluster[],Int_t *mapping=NULL);
-  Int_t GetNTOFclusters() const {return fNTOFclusters;}
+
+  TClonesArray *GetESDTOFClusters() const {return fESDTOFClusters;}
+  TClonesArray *GetESDTOFHits() const {return fESDTOFHits;}
+  TClonesArray *GetESDTOFMatches() const {return fESDTOFMatchess;}
+
+  void SetTOFcluster(Int_t ntofclusters,AliESDTOFCluster *cluster,Int_t *mapping=NULL);
+  void SetTOFcluster(Int_t ntofclusters,AliESDTOFCluster *cluster[],Int_t *mapping=NULL);
+  Int_t GetNTOFclusters() const {return fESDTOFClusters ? fESDTOFClusters->GetEntriesFast() : 0;}
 
   void SetMultiplicity(const AliMultiplicity *mul);
 
@@ -559,6 +569,9 @@ protected:
   AliESDCaloCells *fEMCALCells;     //! EMCAL cell info
   AliESDCaloCells *fPHOSCells;     //! PHOS cell info
   TClonesArray *fCosmicTracks;     //! Tracks created by cosmics finder
+  TClonesArray *fESDTOFClusters;    //! TOF clusters
+  TClonesArray *fESDTOFHits;        //! TOF hits (used for clusters)
+  TClonesArray *fESDTOFMatchess;      //! TOF matching info (with the reference to tracks)
   TClonesArray *fErrorLogs;        //! Raw-data reading error messages
  
   Bool_t fOldMuonStructure;        //! Flag if reading ESD with old MUON structure
@@ -582,10 +595,7 @@ protected:
   UInt_t fDAQDetectorPattern; // Detector pattern from DAQ: bit 0 is SPD, bit 4 is TPC, etc. See event.h
   UInt_t fDAQAttributes; // Third word of attributes from DAQ: bit 7 corresponds to HLT decision 
 
-  Int_t fNTOFclusters;     //! N TOF clusters matchable
-  TObjArray *fTOFcluster; //! TOF clusters
-
-  ClassDef(AliESDEvent,21)  //ESDEvent class 
+  ClassDef(AliESDEvent,22)  //ESDEvent class 
 };
 #endif 
 

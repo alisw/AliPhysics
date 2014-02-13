@@ -129,11 +129,11 @@ void CreateITSUv1()
     if (idLr>=kNLrInner) {
       nChipsPerStaveLr *= nChipsPerModule;
       ITS->DefineLayer(idLr, phi0, rLr, nChipsPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, 
-		       thick, seg->Dy(), seg->GetDetTypeID(),kBuildLevel);
+		       thick, seg->Dy(), seg->GetChipTypeID(),kBuildLevel);
       printf("Add Lr%d: R=%6.2f DZ:%6.2f Staves:%3d NMod/Stave:%3d\n",idLr,rLr,nChipsPerStaveLr*seg->Dz(),nStaveLr,nModPerStaveLr);
     } else {
       ITS->DefineLayerTurbo(idLr, phi0, rLr, nChipsPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, 
-			  seg->Dx(), turbo, thick, seg->Dy(), seg->GetDetTypeID());
+			  seg->Dx(), turbo, thick, seg->Dy(), seg->GetChipTypeID());
       printf("Add Lr%d: R=%6.2f DZ:%6.2f Turbo:%+6.2f Staves:%3d NMod/Stave:%3d\n",idLr,rLr,nChipsPerStaveLr*seg->Dz(),turbo,nStaveLr,nModPerStaveLr);
     }
     //

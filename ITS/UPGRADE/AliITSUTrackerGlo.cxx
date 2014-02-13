@@ -1444,7 +1444,7 @@ void AliITSUTrackerGlo::UpdateESDTrack(AliITSUTrackHyp* hyp,Int_t flag)
   }
   //
   esdTr->SetITSLabel(hyp->GetITSLabel());
-  // transfer module indices
+  // transfer chip indices
   // TODO
 }
 

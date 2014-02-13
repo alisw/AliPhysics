@@ -124,7 +124,7 @@ void CreateITSUv0()
     if (nStaveLr<0) nStaveLr = getNStaves(seg,kTilt,rLr,kMinOvl); // calculate automatically
     nModPerStaveLr =  TMath::Nint(tdr5dat[idLr][kNModPerStave]);
     ITS->DefineLayerTurbo(idLr, phi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, 
-			  seg->Dx(), turbo, thick, seg->Dy(), seg->GetDetTypeID());
+			  seg->Dx(), turbo, thick, seg->Dy(), seg->GetChipTypeID());
     printf("Add Lr%d: R=%6.2f DZ:%6.2f Turbo:%+6.2f Staves:%3d NMod/Stave:%3d\n",idLr,rLr,nModPerStaveLr*seg->Dz(),turbo,nStaveLr,nModPerStaveLr);
     //
   }

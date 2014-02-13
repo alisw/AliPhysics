@@ -581,9 +581,6 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   for (i=0;i<10;i++) {fTOFInfo[i]=0;}
   for (i=0;i<12;i++) {fITSModule[i]=-1;}
 
-  // Set the ID
-  SetID(track->GetID());
-
   // Set ITS cluster map
   fITSClusterMap=track->GetITSClusterMap();
   fITSSharedMap=0;
@@ -650,6 +647,10 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   SetLabel(track->GetLabel());
   // Set the status
   SetStatus(track->GetStatus());
+  //
+  // Set the ID
+  SetID(track->GetID());
+  //
 }
 
 //_______________________________________________________________________
@@ -1844,8 +1845,8 @@ void AliESDtrack::GetIntegratedTimes(Double_t *times, Int_t nspec) const
   // get integrated time for requested N species
   if (nspec<1) return;
   if(fNtofClusters>0 && GetESDEvent()){
-    TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
-    AliESDTOFcluster *tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[0]);
+    TClonesArray *tofclArray = GetESDEvent()->GetESDTOFClusters();
+    AliESDTOFCluster *tofcl = (AliESDTOFCluster *) tofclArray->At(fTOFcluster[0]);
     //
     for(int i=tofcl->GetNMatchableTracks();i--;){
       if(tofcl->GetTrackIndex(i) == GetID()) {
@@ -1864,12 +1865,13 @@ void AliESDtrack::GetIntegratedTimes(Double_t *times, Int_t nspec) const
     for (int i=AliPID::kSPECIESC; i--;) times[i]=0.0;
   //
 }
+
 //_______________________________________________________________________
 Double_t AliESDtrack::GetIntegratedLength() const{
   Int_t index = -1;
   if(fNtofClusters>0 && GetESDEvent()){
-    TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
-    AliESDTOFcluster *tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[0]);
+    TClonesArray *tofclArray = GetESDEvent()->GetESDTOFClusters();
+    AliESDTOFCluster *tofcl = (AliESDTOFCluster *) tofclArray->At(fTOFcluster[0]);
 
     for(Int_t i=0;i < tofcl->GetNMatchableTracks();i++){
       if(tofcl->GetTrackIndex(i) == GetID()) index = i;
@@ -2373,8 +2375,8 @@ void AliESDtrack::GetTOFpid(Double_t *p) const {
 void AliESDtrack::GetTOFLabel(Int_t *p) const {
   // Gets (in TOF)
   if(fNtofClusters>0){
-    TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
-    AliESDTOFcluster *tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[0]);
+    TClonesArray *tofclArray = GetESDEvent()->GetESDTOFClusters();
+    AliESDTOFCluster *tofcl = (AliESDTOFCluster *) tofclArray->At(fTOFcluster[0]);
 
     for (Int_t i=0; i<3; i++) p[i]=tofcl->GetLabel(i);
   }
@@ -2966,6 +2968,7 @@ Double_t AliESDtrack::GetMassForTracking() const
   return (fPIDForTracking==AliPID::kHe3 || fPIDForTracking==AliPID::kAlpha) ? -m : m;
 }
 
+
 void    AliESDtrack::SetTOFclusterArray(Int_t ncluster,Int_t *TOFcluster){
   AliInfo("Method has to be implemented!");
 //   fNtofClusters=ncluster;
@@ -2984,7 +2987,69 @@ void    AliESDtrack::SetTOFclusterArray(Int_t ncluster,Int_t *TOFcluster){
 //     fTOFcluster = 0;
 }
 
-void    AliESDtrack::AddTOFcluster(Int_t icl){
+//____________________________________________
+void  AliESDtrack::SuppressTOFMatches()
+{
+  // remove reference to this track from TOF clusters
+  if (!fNtofClusters || !GetESDEvent()) return;
+  TClonesArray *tofclArray = GetESDEvent()->GetESDTOFClusters();
+  for (;fNtofClusters--;) {
+    AliESDTOFCluster* clTOF = (AliESDTOFCluster*)tofclArray->At(fTOFcluster[fNtofClusters]);
+    clTOF->SuppressMatchedTrack(GetID());
+    if (!clTOF->GetNMatchableTracks()) { // remove this cluster
+      int last = tofclArray->GetEntriesFast()-1;
+      AliESDTOFCluster* clTOFL = (AliESDTOFCluster*)tofclArray->At(last);
+      if (last != fTOFcluster[fNtofClusters]) {
+	*clTOF = *clTOFL; // move last cluster to the place of eliminated one
+	// fix the references on this cluster
+	clTOF->FixSelfReferences(last,fTOFcluster[fNtofClusters]);
+      }
+      tofclArray->RemoveAt(last);
+    }
+  }
+}
+
+//____________________________________________
+void  AliESDtrack::ReplaceTOFTrackID(int oldID, int newID)
+{
+  // replace the ID in TOF clusters references to this track
+  if (!fNtofClusters || !GetESDEvent()) return;
+  TClonesArray *tofclArray = GetESDEvent()->GetESDTOFClusters();
+  for (int it=fNtofClusters;it--;) {
+    AliESDTOFCluster* clTOF = (AliESDTOFCluster*)tofclArray->At(fTOFcluster[it]);
+    clTOF->ReplaceMatchedTrackID(oldID,newID);
+  }
+}
+
+//____________________________________________
+void  AliESDtrack::ReplaceTOFClusterID(int oldID, int newID)
+{
+  // replace the referenc on TOF cluster oldID by newID
+  if (!fNtofClusters || !GetESDEvent()) return;
+  for (int it=fNtofClusters;it--;) {
+    if (fTOFcluster[it] == oldID) {
+      fTOFcluster[it] = newID;
+      return;
+    }
+  }
+}
+
+//____________________________________________
+void  AliESDtrack::ReplaceTOFMatchID(int oldID, int newID)
+{
+  // replace in the ESDTOFCluster associated with this track the id of the corresponding
+  // ESDTOFMatch from oldID to newID
+  if (!fNtofClusters || !GetESDEvent()) return;
+  TClonesArray *tofclArray = GetESDEvent()->GetESDTOFClusters();
+  for (int it=fNtofClusters;it--;) {
+    AliESDTOFCluster* clTOF = (AliESDTOFCluster*)tofclArray->At(fTOFcluster[it]);
+    clTOF->ReplaceMatchID(oldID,newID);
+  }
+}
+
+//____________________________________________
+void AliESDtrack::AddTOFcluster(Int_t icl)
+{
   fNtofClusters++;
   
   Int_t *old = fTOFcluster;
@@ -3000,10 +3065,12 @@ void    AliESDtrack::AddTOFcluster(Int_t icl){
  
 }
 
-Double_t AliESDtrack::GetTOFsignal() const {
+//____________________________________________
+Double_t AliESDtrack::GetTOFsignal() const 
+{
   if(fNtofClusters>0 && GetESDEvent()){
-    TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
-    AliESDTOFcluster *tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[0]);
+    TClonesArray *tofclArray = GetESDEvent()->GetESDTOFClusters();
+    AliESDTOFCluster *tofcl = (AliESDTOFCluster *) tofclArray->At(fTOFcluster[0]);
 
     return tofcl->GetTime();
   }
@@ -3012,11 +3079,12 @@ Double_t AliESDtrack::GetTOFsignal() const {
   return fTOFsignal;
 }
 
+//____________________________________________
 Double_t AliESDtrack::GetTOFsignalToT() const 
 {
   if(fNtofClusters>0 && GetESDEvent()){
-    TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
-    AliESDTOFcluster *tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[0]);
+    TClonesArray *tofclArray = GetESDEvent()->GetESDTOFClusters();
+    AliESDTOFCluster *tofcl = (AliESDTOFCluster *) tofclArray->At(fTOFcluster[0]);
 
     return tofcl->GetTOT();
   }
@@ -3025,11 +3093,12 @@ Double_t AliESDtrack::GetTOFsignalToT() const
   return fTOFsignalToT;
 }
 
+//____________________________________________
 Double_t AliESDtrack::GetTOFsignalRaw() const 
 {
   if(fNtofClusters>0 && GetESDEvent()){
-    TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
-    AliESDTOFcluster *tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[0]);
+    TClonesArray *tofclArray = GetESDEvent()->GetESDTOFClusters();
+    AliESDTOFCluster *tofcl = (AliESDTOFCluster *) tofclArray->At(fTOFcluster[0]);
 
     return tofcl->GetTimeRaw();
   }
@@ -3038,15 +3107,16 @@ Double_t AliESDtrack::GetTOFsignalRaw() const
   return fTOFsignalRaw;
 }
 
+//____________________________________________
 Double_t AliESDtrack::GetTOFsignalDz() const 
 {
 
-  AliESDTOFcluster *tofcl;
+  AliESDTOFCluster *tofcl;
 
   Int_t index = -1;
   if(fNtofClusters>0 && GetESDEvent()){
-    TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
-    tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[0]);
+    TClonesArray *tofclArray = GetESDEvent()->GetESDTOFClusters();
+    tofcl = (AliESDTOFCluster *) tofclArray->At(fTOFcluster[0]);
 
     for(Int_t i=0;i < tofcl->GetNMatchableTracks();i++){
       if(tofcl->GetTrackIndex(i) == GetID()) index = i;
@@ -3060,14 +3130,15 @@ Double_t AliESDtrack::GetTOFsignalDz() const
   return fTOFsignalDz;
 }
 
+//____________________________________________
 Double_t AliESDtrack::GetTOFsignalDx() const 
 {
-  AliESDTOFcluster *tofcl;
+  AliESDTOFCluster *tofcl;
 
   Int_t index = -1;
   if(fNtofClusters>0 && GetESDEvent()){
-    TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
-    tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[0]);
+    TClonesArray *tofclArray = GetESDEvent()->GetESDTOFClusters();
+    tofcl = (AliESDTOFCluster *) tofclArray->At(fTOFcluster[0]);
     for(Int_t i=0;i < tofcl->GetNMatchableTracks();i++){
       if(tofcl->GetTrackIndex(i) == GetID()) index = i;
     }
@@ -3079,11 +3150,12 @@ Double_t AliESDtrack::GetTOFsignalDx() const
   return fTOFsignalDx;
 }
 
+//____________________________________________
 Short_t  AliESDtrack::GetTOFDeltaBC() const 
 {
   if(fNtofClusters>0 && GetESDEvent()){
-    TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
-    AliESDTOFcluster *tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[0]);
+    TClonesArray *tofclArray = GetESDEvent()->GetESDTOFClusters();
+    AliESDTOFCluster *tofcl = (AliESDTOFCluster *) tofclArray->At(fTOFcluster[0]);
     return tofcl->GetDeltaBC();
   }
   else if(fNtofClusters>0) AliInfo("No AliESDEvent available here!\n");
@@ -3091,11 +3163,12 @@ Short_t  AliESDtrack::GetTOFDeltaBC() const
   return fTOFdeltaBC;
 }
 
+//____________________________________________
 Short_t  AliESDtrack::GetTOFL0L1() const 
 {
   if(fNtofClusters>0 && GetESDEvent()){
-    TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
-    AliESDTOFcluster *tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[0]);
+    TClonesArray *tofclArray = GetESDEvent()->GetESDTOFClusters();
+    AliESDTOFCluster *tofcl = (AliESDTOFCluster *) tofclArray->At(fTOFcluster[0]);
 
     return tofcl->GetL0L1Latency();
   }
@@ -3104,11 +3177,12 @@ Short_t  AliESDtrack::GetTOFL0L1() const
   return fTOFl0l1;
 }
 
+//____________________________________________
 Int_t   AliESDtrack::GetTOFCalChannel() const 
 {
   if(fNtofClusters>0 && GetESDEvent()){
-    TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
-    AliESDTOFcluster *tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[0]);
+    TClonesArray *tofclArray = GetESDEvent()->GetESDTOFClusters();
+    AliESDTOFCluster *tofcl = (AliESDTOFCluster *) tofclArray->At(fTOFcluster[0]);
 
     return tofcl->GetTOFchannel();
   }
@@ -3117,11 +3191,12 @@ Int_t   AliESDtrack::GetTOFCalChannel() const
   return fTOFCalChannel;
 }
 
+//____________________________________________
 Int_t   AliESDtrack::GetTOFcluster() const 
 {
   if(fNtofClusters>0 && GetESDEvent()){
-    TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
-    AliESDTOFcluster *tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[0]);
+    TClonesArray *tofclArray = GetESDEvent()->GetESDTOFClusters();
+    AliESDTOFCluster *tofcl = (AliESDTOFCluster *) tofclArray->At(fTOFcluster[0]);
 
     return tofcl->GetClusterIndex();
   }
@@ -3130,15 +3205,17 @@ Int_t   AliESDtrack::GetTOFcluster() const
   return fTOFindex;
 }
 
+//____________________________________________
 Int_t   AliESDtrack::GetTOFclusterN() const
 {
   return fNtofClusters;
 }
 
+//____________________________________________
 Bool_t  AliESDtrack::IsTOFHitAlreadyMatched() const{
   if(fNtofClusters>0 && GetESDEvent()){
-    TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
-    AliESDTOFcluster *tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[0]);
+    TClonesArray *tofclArray = GetESDEvent()->GetESDTOFClusters();
+    AliESDTOFCluster *tofcl = (AliESDTOFCluster *) tofclArray->At(fTOFcluster[0]);
 
     if (tofcl->GetNMatchableTracks() > 1)
       return kTRUE;
@@ -3148,6 +3225,7 @@ Bool_t  AliESDtrack::IsTOFHitAlreadyMatched() const{
   return kFALSE;
 }
 
+//____________________________________________
 void AliESDtrack::ReMapTOFcluster(Int_t ncl,Int_t *mapping){
   for(Int_t i=0;i<fNtofClusters;i++){
     if(fTOFcluster[i]<ncl && fTOFcluster[i]>-1)
@@ -3157,12 +3235,13 @@ void AliESDtrack::ReMapTOFcluster(Int_t ncl,Int_t *mapping){
   }
 }
 
+//____________________________________________
 void AliESDtrack::SortTOFcluster(){
-  TObjArray *tofclArray = GetESDEvent()->GetTOFcluster();
+  TClonesArray *tofclArray = GetESDEvent()->GetESDTOFClusters();
 
   for(Int_t i=0;i<fNtofClusters-1;i++){
     for(Int_t j=i+1;j<fNtofClusters;j++){
-      AliESDTOFcluster *tofcl = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[i]);
+      AliESDTOFCluster *tofcl = (AliESDTOFCluster *) tofclArray->At(fTOFcluster[i]);
       Int_t index1 = -1;
       for(Int_t it=0;it < tofcl->GetNMatchableTracks();it++){
          if(tofcl->GetTrackIndex(it) == GetID()) index1 = it;
@@ -3175,7 +3254,7 @@ void AliESDtrack::SortTOFcluster(){
       timedist1 *= 0.03; // in cm
       Double_t radius1 = tofcl->GetDx(index1)*tofcl->GetDx(index1) + tofcl->GetDz(index1)*tofcl->GetDz(index1) + timedist1*timedist1;
 
-      AliESDTOFcluster *tofcl2 = (AliESDTOFcluster *) tofclArray->At(fTOFcluster[j]);
+      AliESDTOFCluster *tofcl2 = (AliESDTOFCluster *) tofclArray->At(fTOFcluster[j]);
       Int_t index2 = -1;
       for(Int_t it=0;it < tofcl2->GetNMatchableTracks();it++){
          if(tofcl2->GetTrackIndex(it) == GetID()) index2 = it;
@@ -3199,6 +3278,16 @@ void AliESDtrack::SortTOFcluster(){
   }
 }
 
+//____________________________________________
 const AliTOFHeader* AliESDtrack::GetTOFHeader() const {
   return fESDEvent->GetTOFHeader();
+}
+
+
+//___________________________________________
+void AliESDtrack::SetID(Short_t id) 
+{
+  // set track ID taking care about dependencies
+  if (fNtofClusters) ReplaceTOFTrackID(fID,id); 
+  fID=id;
 }

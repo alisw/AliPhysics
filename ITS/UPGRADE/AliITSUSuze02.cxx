@@ -8,15 +8,12 @@
 //  
 //*******************************************************************
 
-using std::cout;
-using std::endl;
-
 ClassImp(AliITSUSuze02)
 
 AliITSUSuze02::AliITSUSuze02(Int_t Nrows, Int_t Ncols):
-  fNRowsModule(Nrows),
-  fNColsModule(Ncols),
-  fModule(new TMatrixF(Nrows,Ncols)), 
+  fNRowsChip(Nrows),
+  fNColsChip(Ncols),
+  fChip(new TMatrixF(Nrows,Ncols)), 
   fTestColumnSize(2),
   fTestRowSize(2),
   fNWindowsPer32colsMax(0),
@@ -26,7 +23,7 @@ AliITSUSuze02::AliITSUSuze02(Int_t Nrows, Int_t Ncols):
   fNEncodedWindows(0),
   fNDigitsLost(0),
   fNLostWindows(0),
-  fDataSizePerModule(0),
+  fDataSizePerChip(0),
   fNWindowsPer32colsMin(0),
   fNWindowsPerHalfFSBBMin(0),
   fNWindowsPerFSBBMin(0)
@@ -37,9 +34,9 @@ AliITSUSuze02::AliITSUSuze02(Int_t Nrows, Int_t Ncols):
 }  
   
 AliITSUSuze02::AliITSUSuze02(const AliITSUSuze02& suze): 
-  fNRowsModule(suze.fNRowsModule),
-  fNColsModule(suze.fNColsModule),
-  fModule(new TMatrixF(*suze.fModule)), 
+  fNRowsChip(suze.fNRowsChip),
+  fNColsChip(suze.fNColsChip),
+  fChip(new TMatrixF(*suze.fChip)), 
   fTestColumnSize(suze.fTestColumnSize),
   fTestRowSize(suze.fTestRowSize),
   fNWindowsPer32colsMax(suze.fNWindowsPer32colsMax),
@@ -49,7 +46,7 @@ AliITSUSuze02::AliITSUSuze02(const AliITSUSuze02& suze):
   fNEncodedWindows(suze.fNEncodedWindows),
   fNDigitsLost(suze.fNDigitsLost),
   fNLostWindows(suze.fNLostWindows),
-  fDataSizePerModule(suze.fDataSizePerModule),
+  fDataSizePerChip(suze.fDataSizePerChip),
   fNWindowsPer32colsMin(suze.fNWindowsPer32colsMin),
   fNWindowsPerHalfFSBBMin(suze.fNWindowsPerHalfFSBBMin),
   fNWindowsPerFSBBMin(suze.fNWindowsPerFSBBMin)
@@ -59,9 +56,9 @@ AliITSUSuze02::AliITSUSuze02(const AliITSUSuze02& suze):
 AliITSUSuze02 &AliITSUSuze02::operator=(const AliITSUSuze02& suze) {
   if (&suze == this) return *this;
 
-  fNRowsModule = suze.fNRowsModule;
-  fNColsModule = suze.fNColsModule;
-  fModule = new TMatrixF(*suze.fModule);  
+  fNRowsChip = suze.fNRowsChip;
+  fNColsChip = suze.fNColsChip;
+  fChip = new TMatrixF(*suze.fChip);  
   fTestColumnSize = suze.fTestColumnSize;
   fTestRowSize = suze.fTestRowSize;
   fNWindowsPer32colsMax = suze.fNWindowsPer32colsMax;
@@ -71,7 +68,7 @@ AliITSUSuze02 &AliITSUSuze02::operator=(const AliITSUSuze02& suze) {
   fNEncodedWindows = suze.fNEncodedWindows;
   fNDigitsLost = suze.fNDigitsLost;
   fNLostWindows = suze.fNLostWindows;
-  fDataSizePerModule = suze.fDataSizePerModule;
+  fDataSizePerChip = suze.fDataSizePerChip;
   fNWindowsPer32colsMin = suze.fNWindowsPer32colsMin;
   fNWindowsPerHalfFSBBMin = suze.fNWindowsPerHalfFSBBMin;
   fNWindowsPerFSBBMin = suze.fNWindowsPerFSBBMin;
@@ -80,7 +77,7 @@ AliITSUSuze02 &AliITSUSuze02::operator=(const AliITSUSuze02& suze) {
 }
 
 AliITSUSuze02::~AliITSUSuze02() {
-  if(fModule) delete fModule;
+  if(fChip) delete fChip;
 }
 
 void AliITSUSuze02::SetEncodingWindowSize(Int_t Wrows, Int_t Wcols){
@@ -95,17 +92,17 @@ void AliITSUSuze02::SetQuotas(Int_t q32, Int_t qHalfFSBB, Int_t qFSBB){
 }
 
 void AliITSUSuze02::AddDigit(Int_t row, Int_t col){
-  (*fModule)(row,col)++;
+  (*fChip)(row,col)++;
 }
 
 //void AliITSUSuze02::Process(Bool_t Verbose){  
 void AliITSUSuze02::Process(TH1F* OverflowCodes, TH1F* NDigitsPerEncodingWindowDist, Bool_t Verbose) {
 
   //cout<<"Processing"<<endl;
-  //fModule->Print(); 
+  //fChip->Print(); 
   
-  Int_t NRowsFSBB=fNRowsModule;
-  Int_t NColsFSBB=fNColsModule/kNumberOfFSBB;
+  Int_t NRowsFSBB=fNRowsChip;
+  Int_t NColsFSBB=fNColsChip/kNumberOfFSBB;
   TMatrixF FSBB(NRowsFSBB,NColsFSBB);
   
   Int_t NRowsSuperLine=fTestColumnSize;
@@ -153,10 +150,10 @@ void AliITSUSuze02::Process(TH1F* OverflowCodes, TH1F* NDigitsPerEncodingWindowD
   fNDigitsEncoded=0;
   fNLostWindows=0;
   fNDigitsLost=0;
-  fDataSizePerModule=0;    
+  fDataSizePerChip=0;    
   
   for(Int_t FSBBindex=0; FSBBindex<kNumberOfFSBB; FSBBindex++){
-    FSBB=fModule->GetSub(0,NRowsFSBB-1,FSBBindex*NColsFSBB,(FSBBindex+1)*NColsFSBB-1);
+    FSBB=fChip->GetSub(0,NRowsFSBB-1,FSBBindex*NColsFSBB,(FSBBindex+1)*NColsFSBB-1);
     SuperLineDown=FSBB.GetSub(0,NRowsSuperLine-1,0,NColsSuperLine-1);
     for(Int_t SuperLineX2StartRow=0; SuperLineX2StartRow<NRowsFSBB; SuperLineX2StartRow+=NRowsSuperLine){
       if(nWindowsPerFSBB<fNWindowsPerFSBBMin) {fNWindowsPerFSBBMin=nWindowsPerFSBB;} //saving the lowest number of remaining windows
@@ -284,7 +281,7 @@ void AliITSUSuze02::Process(TH1F* OverflowCodes, TH1F* NDigitsPerEncodingWindowD
             }
           }
         }
-        fDataSizePerModule+=(DataSizePerSuperLineX2+DataSizePerSuperLineX2Header);
+        fDataSizePerChip+=(DataSizePerSuperLineX2+DataSizePerSuperLineX2Header);
       }
     }
   }
@@ -300,14 +297,14 @@ void AliITSUSuze02::GetResults(){
 /*
 void AliITSUSuze02::InitHistos(){
   fOverflowCodes = new TH1F("OverflowCodes","Overflow codes",8,0,8);
-  if(fNRowsModule*fNColsModule){
-    fNDigitsPerEncodingWindowDist = new TH1F("nDigitsPerEncodingWindowPerModule","nDigitsPerEncodingWindowPerModule",fTestColumnSize*fTestRowSize,1,fTestColumnSize*fTestRowSize+1);
+  if(fNRowsChip*fNColsChip){
+    fNDigitsPerEncodingWindowDist = new TH1F("nDigitsPerEncodingWindowPerChip","nDigitsPerEncodingWindowPerChip",fTestColumnSize*fTestRowSize,1,fTestColumnSize*fTestRowSize+1);
   }
   else{
     printf("Run AliITSUSuze02::SetEncodingWindowSize first\n");
   }
 }
 */
-void AliITSUSuze02::ResetModule(){
-  fModule->Zero();
+void AliITSUSuze02::ResetChip(){
+  fChip->Zero();
 }

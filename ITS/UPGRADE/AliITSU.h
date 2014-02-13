@@ -10,10 +10,9 @@
 ////////////////////////////////////////////////////////////////////////
 
 
-#include <TObjArray.h> // used in inline function GetModule.
+#include <TObjArray.h> // used in inline function GetChip.
 #include "AliDetector.h"
 #include "AliITSTrigger.h"
-#include "AliITSDetTypeSim.h"
 #include "AliITSUGeomTGeo.h"
 
 class TString;
@@ -21,7 +20,7 @@ class TTree;
 class AliITSUSDigit;
 class AliITSUSimulation;
 class AliITSsegmentation;
-class AliITSUModule;
+class AliITSUChip;
 class AliITSCalibration;
 class AliITSUHit;
 class AliITSdigit;
@@ -35,7 +34,7 @@ class AliITSU : public AliDetector {
  public:
   //
   // number detector types
-  enum {kNDetTypes = AliITSUGeomTGeo::kNDetTypes};
+  enum {kNChipTypes = AliITSUGeomTGeo::kNChipTypes};
   //
   //================= Standard Classes ===============================
   AliITSU();  // Default creator.
@@ -54,11 +53,11 @@ class AliITSU : public AliDetector {
   
   // ITS geometry functions From Simulation
   AliITSUGeomTGeo* GetITSGeomTGeo() const {return fGeomTGeo;}
-  //RS  AliITSgeom* GetITSgeom() const {return fDetTypeSim->GetITSgeom();}
-  //RS  void   SetITSgeom(AliITSgeom *geom) {fDetTypeSim->SetITSgeom(geom);}
-  // return pointer to the array of modules
+  //RS  AliITSgeom* GetITSgeom() const {return fChipTypeSim->GetITSgeom();}
+  //RS  void   SetITSgeom(AliITSgeom *geom) {fChipTypeSim->SetITSgeom(geom);}
+  // return pointer to the array of chips
   
-  AliITSUModule   * GetModule(Int_t index) {return (AliITSUModule*)fModuleHits->UncheckedAt(index);}
+  AliITSUChip   * GetChip(Int_t index) {return (AliITSUChip*)fChipHits->UncheckedAt(index);}
   AliITSUSimuParam* GetSimuParam() const {return fSimuParam;}
     
   //================ Necessary general Classes =======================
@@ -74,10 +73,10 @@ class AliITSU : public AliDetector {
   virtual AliITSUParamList*    GetResponseParam(Int_t lr)     {return (AliITSUParamList*)fResponseLr[lr];}
   //=================== Hits =========================================
   virtual void StepManager() {} // See Step Manager for specific geometry.
-  //------------ sort hits by module for Digitisation ----------------
-  virtual void FillModules(Int_t bgrev, Option_t *opt, const char *filename); 
-  virtual void FillModules(TTree *treeH, Int_t mask = 0);
-  virtual void ClearModules();
+  //------------ sort hits by chip for Digitisation ----------------
+  virtual void FillChips(Int_t bgrev, Option_t *opt, const char *filename); 
+  virtual void FillChips(TTree *treeH, Int_t mask = 0);
+  virtual void ClearChips();
   virtual void AddHit(Int_t track, Int_t *vol, Float_t *hits);
   void         InitSimulation();
   //
@@ -120,8 +119,8 @@ class AliITSU : public AliDetector {
 
  protected:
   void        InitArrays();
-  const char* GetDigitClassName(Int_t i) {return Form("AliITSUDigit%s",AliITSUGeomTGeo::GetDetTypeName(i));}
-  const char* GetDetTypeName(Int_t i) {return AliITSUGeomTGeo::GetDetTypeName(i);}
+  const char* GetDigitClassName(Int_t i) {return Form("AliITSUDigit%s",AliITSUGeomTGeo::GetChipTypeName(i));}
+  const char* GetChipTypeName(Int_t i) {return AliITSUGeomTGeo::GetChipTypeName(i);}
   
  protected:
   //================== Data Members ==================================
@@ -132,11 +131,11 @@ class AliITSU : public AliDetector {
   Bool_t                fTiming;         // flag to turn on/off timers.
   AliITSUGeomTGeo*      fGeomTGeo;       //  access to geometry details
   AliITSUSimuParam*     fSimuParam;      //!simulation parameters
-  TClonesArray**        fModA;           //! Used by Raw2SDigits (one TC per module)
+  TClonesArray**        fModA;           //! Used by Raw2SDigits (one TC per chip)
   TClonesArray*         fpSDigits;       //! Branch address to build SD from raw data 
   TClonesArray*         fSDigits;        //! Branch address to build SD
   TClonesArray*         fDetHits;        //! array of full detector hits
-  TObjArray*            fModuleHits;     //! module's hits container in (pointers on the fDetHits)
+  TObjArray*            fChipHits;       //! chip's hits container in (pointers on the fDetHits)
   TObjArray*            fDetDigits;      //! AliDetector has TClonesArray fDigits, avoid same name
   AliITSUSensMap*       fSensMap;        //! sensor map for digitization
   //

@@ -64,7 +64,7 @@ public AliITSsegmentation {
   virtual void PrintDefaultParameters() const {AliWarning("No def. parameters defined as const static data members");}
   virtual void Print(Option_t* option = "") const;
   //
-  virtual Int_t                    GetDetTypeID()              const {return GetUniqueID();}
+  virtual Int_t                    GetChipTypeID()              const {return GetUniqueID();}
   //
   void         SetDiodShiftMatrix(Int_t nrow,Int_t ncol, const Float_t *shiftX, const Float_t *shiftZ);
   void         SetDiodShiftMatrix(Int_t nrow,Int_t ncol, const Double_t *shiftX, const Double_t *shiftZ);
@@ -93,7 +93,7 @@ public AliITSsegmentation {
     Float_t fPitchZLftCol;    // Z pitch of left column of each chip
     Float_t fPitchZRgtCol;    // Z pitch of right column of each chip
     Float_t fChipDZ;          // aux: chip size along Z
-    Int_t   fNChips;          // number of chips per module
+    Int_t   fNChips;          // number of chips per chip
     Int_t   fNColPerChip;     // number of columns per chip
     Int_t   fNRow;            // number of rows
     Int_t   fNCol;            // number of columns (total)

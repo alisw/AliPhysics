@@ -105,7 +105,7 @@ class AliITSUClusterizer : public TObject
   //
  protected:
   //
-  Int_t fVolID;                             // Volume id (module index)
+  Int_t fVolID;                             // Volume id (chip index)
   Bool_t fAllowDiagonalClusterization;      // allow clusters with pixels having common corners only
   const AliITSUSegmentationPix* fSegm;      // Segmentation or local coord calc.
   const AliITSURecoParam*       fRecoParam; // reco params

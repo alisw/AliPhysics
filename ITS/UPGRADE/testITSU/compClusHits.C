@@ -245,7 +245,7 @@ void compClusHits(int nev=-1)
 	  AliITSUHit *pHit=0;
 	  for (int ih=nh;ih--;) {
 	    AliITSUHit* tHit = (AliITSUHit*)htArr->At(ih);
-	    if (tHit->GetModule()!=modID) continue;
+	    if (tHit->GetChip()!=modID) continue;
 	    pHit = tHit;
 	    break;
 	  }

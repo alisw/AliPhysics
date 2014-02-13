@@ -20,7 +20,7 @@ void readDigits(int nev=-1,int evStart=0)
   AliITSUGeomTGeo* gm = new AliITSUGeomTGeo(kTRUE,kTRUE);
   //
   Int_t nLayers = gm->GetNLayers();
-  Int_t nModules = gm->GetNModules();
+  Int_t nChips = gm->GetNChips();
   Int_t nbins=100;
   Int_t xmin=0;
   Int_t xmax=50000;//00*1e-09;
@@ -66,17 +66,17 @@ void readDigits(int nev=-1,int evStart=0)
     if (sDigTree) sDigTree->SetBranchAddress("ITS",&sDigArr);
     digTree->SetBranchAddress("ITSDigitsPix",&digArr);
 
-    for (int imod=0;imod<nModules;imod++) {
+    for (int imod=0;imod<nChips;imod++) {
       if (sDigTree) sDigTree->GetEntry(imod);
       digTree->GetEntry(imod);      
-      int detType = gm->GetModuleDetTypeID(imod);
+      int detType = gm->GetChipChipTypeID(imod);
       AliITSUSegmentationPix* segm = (AliITSUSegmentationPix*)gm->GetSegmentationByID(detType);
-      int lay,lad,det;
+      int lay,sta,det;
       int nsdig = sDigArr->GetEntries();
       int ndig  = digArr->GetEntries();
       if (ndig<1) continue;
-      gm->GetModuleId(imod, lay,lad,det);
-      printf("\nModule %3d: (det %2d in ladder %2d of Layer %d) |NSDigits: %4d NDigits: %4d\n",imod,det,lad,lay,nsdig,ndig);
+      gm->GetChipId(imod, lay,sta,det);
+      printf("\nChip %3d: (det %2d in stave %2d of Layer %d) |NSDigits: %4d NDigits: %4d\n",imod,det,sta,lay,nsdig,ndig);
       //
       for (int isdig=0;isdig<nsdig;isdig++) {
 	AliITSUSDigit *pSdig = (AliITSUSDigit*)sDigArr->At(isdig);

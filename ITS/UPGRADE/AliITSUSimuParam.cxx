@@ -301,7 +301,7 @@ Double_t AliITSUSimuParam::ApplyPixBaselineAndNoise(UInt_t mod) const
   // generate random noise 
   double base,noise;
   if (mod>=fNPix) {
-    if (fNPix>0) {AliFatal(Form("Wrong module %d, NPidUpg=%d",mod,fNPix));}
+    if (fNPix>0) {AliFatal(Form("Wrong chip %d, NPidUpg=%d",mod,fNPix));}
     base = fPixBaselineDef;
     noise = fPixNoiseDef;
   }
@@ -318,7 +318,7 @@ Double_t AliITSUSimuParam::CalcProbNoiseOverThreshold(UInt_t mod) const
   // calculate probability of noise exceeding the threshold
   double base,noise,thresh;
   if (mod>=fNPix) {
-    if (fNPix>0) {AliFatal(Form("Wrong module %d, NPidUpg=%d",mod,fNPix));}
+    if (fNPix>0) {AliFatal(Form("Wrong chip %d, NPidUpg=%d",mod,fNPix));}
     base   = fPixBaselineDef;
     noise  = fPixNoiseDef;
     thresh = fPixThreshDef;
@@ -356,7 +356,7 @@ void AliITSUSimuParam::SetPixThreshold(Double_t thresh, Double_t sigma, int mod)
     }
   }
   else if (mod>=(int)fNPix) {
-    if (fNPix>0) {AliFatal(Form("Wrong module %d, NPidUpg=%d",mod,fNPix));}
+    if (fNPix>0) {AliFatal(Form("Wrong chip %d, NPidUpg=%d",mod,fNPix));}
     fPixThreshDef = thresh;
     fPixThrSigmaDef  = sigma;
   }
@@ -372,7 +372,7 @@ Double_t AliITSUSimuParam::GetPixThreshold(UInt_t mod) const
 {
   // obtain threshold
   if (mod>=fNPix) {
-    if (fNPix>0) {AliFatal(Form("Wrong module %d, NPidUpg=%d",mod,fNPix));}
+    if (fNPix>0) {AliFatal(Form("Wrong chip %d, NPidUpg=%d",mod,fNPix));}
     return fPixThreshDef;
   }
   else return fPixThresh[mod];
@@ -383,7 +383,7 @@ void AliITSUSimuParam::GetPixThreshold(UInt_t mod, Double_t &thresh, Double_t &s
 {
   // obtain thresholds
   if (mod>=fNPix) {
-    if (fNPix>0) {AliFatal(Form("Wrong module %d, NPidUpg=%d",mod,fNPix));}
+    if (fNPix>0) {AliFatal(Form("Wrong chip %d, NPidUpg=%d",mod,fNPix));}
     thresh = fPixThreshDef;
     sigma  = fPixThrSigmaDef;
   }
@@ -402,7 +402,7 @@ void AliITSUSimuParam::SetPixBiasVoltage(Double_t val, int mod)
     for (int i=fNPix;i--;) fPixBiasVoltage[i] = val;
   }
   else if (mod>=(int)fNPix) {
-    if (fNPix>0) {AliFatal(Form("Wrong module %d, NPidUpg=%d",mod,fNPix));}
+    if (fNPix>0) {AliFatal(Form("Wrong chip %d, NPidUpg=%d",mod,fNPix));}
     fPixBiasVoltageDef = val;
   }
   else fPixBiasVoltage[mod] = val;
@@ -414,7 +414,7 @@ Double_t AliITSUSimuParam::GetPixBiasVoltage(UInt_t mod) const
 {
   // obtain threshold
   if (mod>=fNPix) {
-    if (fNPix>0) {AliFatal(Form("Wrong module %d, NPidUpg=%d",mod,fNPix));}
+    if (fNPix>0) {AliFatal(Form("Wrong chip %d, NPidUpg=%d",mod,fNPix));}
     return fPixBiasVoltageDef;
   }
   else return fPixBiasVoltage[mod];
@@ -433,7 +433,7 @@ void AliITSUSimuParam::SetPixNoise(Double_t noise, Double_t baseline, int mod)
     }
   }
   else if (mod>=(int)fNPix) {
-    if (fNPix>0) {AliFatal(Form("Wrong module %d, NPidUpg=%d",mod,fNPix));}
+    if (fNPix>0) {AliFatal(Form("Wrong chip %d, NPidUpg=%d",mod,fNPix));}
     fPixNoiseDef = noise;
     fPixBaselineDef  = baseline;
   }
@@ -449,7 +449,7 @@ void AliITSUSimuParam::GetPixNoise(UInt_t mod, Double_t &noise, Double_t &baseli
 {
   // obtain noise
   if (mod>=fNPix) {
-    if (fNPix>0) {AliFatal(Form("Wrong module %d, NPidUpg=%d",mod,fNPix));}
+    if (fNPix>0) {AliFatal(Form("Wrong chip %d, NPidUpg=%d",mod,fNPix));}
     noise     = fPixNoiseDef;
     baseline  = fPixBaselineDef;
   }
