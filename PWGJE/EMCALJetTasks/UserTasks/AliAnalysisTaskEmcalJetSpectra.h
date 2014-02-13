@@ -7,6 +7,7 @@
 class TH1F;
 class TH2F;
 class THnSparse;
+//class AliLocalRhoParameter;
 
 #include "AliAnalysisTaskEmcalJet.h"
 
@@ -15,6 +16,7 @@ class AliAnalysisTaskEmcalJetSpectra : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetSpectra();
   AliAnalysisTaskEmcalJetSpectra(const char *name);
   virtual ~AliAnalysisTaskEmcalJetSpectra() {}
+ 
   
   
   virtual void           UserCreateOutputObjects();
@@ -23,6 +25,8 @@ class AliAnalysisTaskEmcalJetSpectra : public AliAnalysisTaskEmcalJet {
   Bool_t                 Run();
   virtual Int_t          GetCentBin(Double_t cent) const;
   Float_t                RelativePhi(Double_t mphi,Double_t vphi) const;
+  Float_t                RelativeEPJET(Double_t jetAng, Double_t EPAng) const;
+  Double_t		fLocalRhoVal;
 
  private:
   TH2F                  *fHistRhovsCent; //!
@@ -39,6 +43,8 @@ class AliAnalysisTaskEmcalJetSpectra : public AliAnalysisTaskEmcalJet {
   TH2F                  *fHistJetPtvsEP[6];//!
   TH2F                  *fHistJetPtvsEPBias[6];//!
   TH2F                  *fHistRhovsEP[6]; //!
+  TH1F                  *fHistCorJetPtfromLocalRho[6]; //!
+  TH1F                  *fHistCorJetPtfromGlobalRho[6]; //!
 
 
 

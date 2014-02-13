@@ -1,4 +1,4 @@
-AliAnalysisTaskPhiEffMc* AddTaskPhiEffMc(Bool_t mc=kFALSE){
+AliAnalysisTaskPhiEffMc* AddTaskPhiEffMc(Bool_t mc=kFALSE,TString foldername){
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) 
@@ -25,6 +25,9 @@ AliAnalysisTaskPhiEffMc* AddTaskPhiEffMc(Bool_t mc=kFALSE){
   AliAnalysisTaskPhiEffMc *task = new AliAnalysisTaskPhiEffMc("PhiEffMc");
   
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
+  outputFileName += ":";
+  outputFileName += foldername;
+
   cout<<"-------------- outputFileName:  "<<outputFileName<<endl;
   
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();      

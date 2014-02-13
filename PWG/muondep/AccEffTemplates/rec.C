@@ -29,7 +29,6 @@ void rec(int dset=0)
   
   // MUON Tracker Residual Alignment
   reco.SetSpecificStorage("MUON/Align/Data","alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
-reco.SetSpecificStorage("MUON/Calib/RejectList","alien://folder=/alice/cern.ch/user/l/laphecet/OCDB");
   
   reco.Run();
 }

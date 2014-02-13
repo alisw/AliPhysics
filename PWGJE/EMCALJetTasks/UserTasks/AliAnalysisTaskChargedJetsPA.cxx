@@ -113,6 +113,7 @@ void AliAnalysisTaskChargedJetsPA::Init()
       AddHistogram2D<TH2D>("hJetProfile70GeV", "Jet profile, cone p_{T}/jet p_{T} vs. jet radius, jet p_{T} > 70 GeV", "", 12, 0, 0.6,200, 0., 2., "Cone radius","dN^{Jets}/dR", "Ratio");
     }
     // ######## Jet stuff
+    AddHistogram2D<TH2D>("hJetPtConstituentPt", "Jet constituents p_{T} distribution", "", 500, -50., 200., 500, -50., 200, "p_{T} (GeV/c)","jet p_{T} (GeV/c)","dN^{Tracks}/dp_{T}");
     AddHistogram2D<TH2D>("hJetConstituentPt", "Jet constituents p_{T} distribution", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Tracks}/dp_{T}");
     AddHistogram1D<TH1D>("hJetCountAll", "Number of Jets", "", 200, 0., 200., "N jets","dN^{Events}/dN^{Jets}");
     AddHistogram1D<TH1D>("hJetCountAccepted", "Number of accepted Jets", "", 200, 0., 200., "N jets","dN^{Events}/dN^{Jets}");
@@ -1702,6 +1703,7 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
           Double_t highestTrackPt = 0.0;
           for(Int_t j=0; j<tmpJet->GetNumberOfTracks(); j++)
           {
+            FillHistogram("hJetPtConstituentPt", tmpJet->TrackAt(j, fTrackArray)->Pt(), tmpJet->Pt());
             FillHistogram("hJetConstituentPt", tmpJet->TrackAt(j, fTrackArray)->Pt(), centralityPercentile);
             // Find the lowest pT of a track in the jet
             if (tmpJet->TrackAt(j, fTrackArray)->Pt() < lowestTrackPt)

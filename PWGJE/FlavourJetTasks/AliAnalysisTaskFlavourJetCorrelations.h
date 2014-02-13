@@ -120,8 +120,10 @@ class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet
   TString fCandArrName;          // string which correspond to the candidate type
   Bool_t fLeadingJetOnly;        // use only the leading jet in the event to make the correlations
   Double_t fJetRadius;           // jet radius (filled from the JetContainer)
+  TClonesArray *fCandidateArray;   //! contains candidates selected by AliRDHFCuts
+  TClonesArray *fSideBandArray;    //! contains candidates selected by AliRDHFCuts::IsSelected(kTracks), to be used for side bands (DStar case only!!)
 
-  ClassDef(AliAnalysisTaskFlavourJetCorrelations,2); // class for charm-jet correlations
+  ClassDef(AliAnalysisTaskFlavourJetCorrelations,2); // class for charm-jet CorrelationsExch
 };
 
 #endif
