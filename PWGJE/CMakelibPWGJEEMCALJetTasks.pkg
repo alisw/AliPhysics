@@ -55,6 +55,7 @@ set ( SRCS
  EMCALJetTasks/AliJetTriggerSelectionTask.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskCLQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskChargedJetsPA.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskDeltaPtJEmb.cxx	
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalBadCells.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalDiJetBase.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalDiJetAna.cxx
