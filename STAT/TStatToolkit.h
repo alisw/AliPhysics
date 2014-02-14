@@ -81,7 +81,7 @@ class TStatToolkit : public TObject
   //
   // TTree function for robust draw
   //
-  static void DrawHistogram(TTree * tree, const char* drawCommand, const char* cuts = "1", const char* hname = "histo", const char* htitle = "histo", Int_t nsigma = 4, Float_t fraction = 0.75);
+  static TH1* DrawHistogram(TTree * tree, const char* drawCommand, const char* cuts = "1", const char* hname = "histo", const char* htitle = "histo", Int_t nsigma = 4, Float_t fraction = 0.75);
   //
   // TestFunctions:
   //
