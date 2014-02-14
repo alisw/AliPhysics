@@ -1,5 +1,8 @@
 
 /*
+  
+
+
   gSystem->Load("libSTAT.so");
   .x ~/NimStyle.C
  
@@ -83,12 +86,13 @@ public:
   static void Simul(const char* simul, Int_t ntracks);
   Double_t  CookdEdxNtot(Double_t f0,Float_t f1);
   Double_t  CookdEdxQtot(Double_t f0,Float_t f1);
+  Double_t  CookdEdxNtotThr(Double_t f0,Float_t f1, Double_t thr, Int_t mode);
   Double_t  CookdEdxQtotThr(Double_t f0,Float_t f1, Double_t thr, Int_t mode);
   //
-  Double_t  CookdEdxDtot(Double_t f0,Float_t f1, Float_t gain,Float_t thr, Float_t noise, Bool_t corr = kTRUE);
-  Double_t  CookdEdxDmax(Double_t f0,Float_t f1,Float_t gain,Float_t thr, Float_t noise, Bool_t corr=kTRUE);
+  Double_t  CookdEdxDtot(Double_t f0,Float_t f1, Float_t gain,Float_t thr, Float_t noise, Bool_t corr, Int_t mode);
+  Double_t  CookdEdxDmax(Double_t f0,Float_t f1,Float_t gain,Float_t thr, Float_t noise, Bool_t corr, Int_t mode);
   //
-  Double_t  CookdEdx(Int_t npoints, Double_t *amp, Double_t f0,Float_t f1);
+  Double_t  CookdEdx(Int_t npoints, Double_t *amp, Double_t f0,Float_t f1, Int_t mode);
   //
   Float_t fMNprim;     // mean number of primary electrons
   Float_t fAngleY;     // y angle - tan(y)
@@ -159,30 +163,85 @@ void AliTPCtrackFast::MakeTrack(){
 
 Double_t  AliTPCtrackFast::CookdEdxNtot(Double_t f0,Float_t f1){
   //
+  //    Double_t  CookdEdxNtot(Double_t f0,Float_t f1);   //  dEdx_{hit}  reconstructed meen number of  electrons
+  //
   Double_t amp[160];
   for (Int_t i=0;i<fN;i++){ 
     AliTPCclusterFast * cluster = ( AliTPCclusterFast *)((*fCl)[i]);
     amp[i]=cluster->fNtot;
   }
-  return CookdEdx(fN,amp,f0,f1);
+  return CookdEdx(fN,amp,f0,f1,0);
 }
 
 Double_t  AliTPCtrackFast::CookdEdxQtot(Double_t f0,Float_t f1){
+  //
+  //     dEdx_{Q} reconstructed mean number of electronsxGain
   //
   Double_t amp[160];
   for (Int_t i=0;i<fN;i++){ 
     AliTPCclusterFast * cluster = ( AliTPCclusterFast *)((*fCl)[i]);
     amp[i]=cluster->fQtot;
   }
-  return CookdEdx(fN,amp,f0,f1);
+  return CookdEdx(fN,amp,f0,f1,0);
 }
+
+
+Double_t  AliTPCtrackFast::CookdEdxNtotThr(Double_t f0,Float_t f1, Double_t thr, Int_t mode){
+  //
+  //   dEdx_{hit}  reconstructed mean number of  electrons 
+  //     thr  = threshold in terms of the number of electrons
+  //     mode = algorithm to deal with trhesold values replacing
+  //
+  Double_t amp[160];
+  Int_t nBellow=0;
+  //
+  Double_t minAbove=-1;
+  for (Int_t i=0;i<fN;i++){ 
+    AliTPCclusterFast * cluster = ( AliTPCclusterFast *)((*fCl)[i]);
+    Double_t clQ= cluster->fNtot;
+    if (clQ<thr) {
+      nBellow++;
+      continue;
+    }
+    if (minAbove<0) minAbove=clQ;
+    if (minAbove>clQ) minAbove=clQ;
+  }
+  //
+  if (mode==-1) return Double_t(nBellow)/Double_t(fN);
+
+  for (Int_t i=0;i<fN;i++){ 
+    AliTPCclusterFast * cluster = ( AliTPCclusterFast *)((*fCl)[i]);
+    Double_t clQ= cluster->fNtot;
+    //
+    if (mode==0)  amp[i]=clQ;              // mode0 - not threshold  - keep default
+    //
+    //
+    if (mode==1 && clQ>thr) amp[i]=clQ;    // mode1 - skip if bellow 
+    if (mode==1 && clQ<thr) amp[i]=0;      // mode1 - skip if bellow 
+    //
+    //
+    if (mode==2 && clQ>thr) amp[i]=clQ;    // mode2 - use 0 if below
+    if (mode==2 && clQ<thr) amp[i]=0;      // mode2 - use 0 if below
+    //
+    //
+    if (mode==3)  amp[i]=(clQ>thr)?clQ:thr; // mode3 - use thr if below
+    if (mode==4)  amp[i]=(clQ>thr)?clQ:minAbove; // mode4 -  use minimal above threshold if bellow thr
+  }
+  return CookdEdx(fN,amp,f0,f1, mode);
+}
+
+
 
 Double_t  AliTPCtrackFast::CookdEdxQtotThr(Double_t f0,Float_t f1, Double_t thr, Int_t mode){
   //
   //
+  //   dEdx_{Q}  reconstructed mean number of  electrons xgain
+  //     thr  = threshold in terms of the number of electrons
+  //     mode = algorithm to deal with trhesold values replacing
+  //
+
   //
   Double_t amp[160];
-  Int_t nUsed=0;
   Int_t nBellow=0;
   //
   Double_t minAbove=-1;
@@ -196,93 +255,129 @@ Double_t  AliTPCtrackFast::CookdEdxQtotThr(Double_t f0,Float_t f1, Double_t thr,
     if (minAbove<0) minAbove=clQ;
     if (minAbove>clQ) minAbove=clQ;
   }
+  //
   if (mode==-1) return Double_t(nBellow)/Double_t(fN);
 
   for (Int_t i=0;i<fN;i++){ 
     AliTPCclusterFast * cluster = ( AliTPCclusterFast *)((*fCl)[i]);
     Double_t clQ= cluster->fQtot;
-    if (clQ<thr) nBellow++;
-    if (mode==0){              // mode0 - not threshold
-      amp[nUsed]=clQ;
-      nUsed++;
-    }
-    if (mode==1 && clQ>thr){   // mode1 - skip if bellow
-      amp[nUsed]=clQ;
-      nUsed++;
-    }
-    if (mode==2) {             // mode2 - use 0 if below
-      amp[nUsed]=(clQ>thr)?clQ:0;
-      nUsed++;
-    }
-    if (mode==3) {             // mode3 - use thr if below
-      amp[nUsed]=(clQ>thr)?clQ:thr;
-      nUsed++;
-    }
-    if (mode==4) {             // mode4 - use minimal above threshold if bellow thr
-      amp[nUsed]=(clQ>thr)?clQ:minAbove;
-      nUsed++;
-    }
+    //
+    if (mode==0)  amp[i]=clQ;              // mode0 - not threshold  - keep default
+    //
+    //
+    if (mode==1 && clQ>thr) amp[i]=clQ;    // mode1 - skip if bellow 
+    if (mode==1 && clQ<thr) amp[i]=0;      // mode1 - skip if bellow 
+    //
+    //
+    if (mode==2 && clQ>thr) amp[i]=clQ;    // mode2 - use 0 if below
+    if (mode==2 && clQ<thr) amp[i]=0;      // mode2 - use 0 if below
+    //
+    //
+    if (mode==3)  amp[i]=(clQ>thr)?clQ:thr; // mode3 - use thr if below
+    if (mode==4)  amp[i]=(clQ>thr)?clQ:minAbove; // mode4 -  use minimal above threshold if bellow thr
   }
-  if (nUsed*(f1-f0)<3) return 0;
-  return CookdEdx(nUsed,amp,f0,f1);
+  return CookdEdx(fN,amp,f0,f1, mode);
 }
 
 
 
 
 
-Double_t   AliTPCtrackFast::CookdEdxDtot(Double_t f0,Float_t f1, Float_t gain,Float_t thr, Float_t noise, Bool_t doCorr){
+Double_t   AliTPCtrackFast::CookdEdxDtot(Double_t f0,Float_t f1, Float_t gain,Float_t thr, Float_t noise, Bool_t doCorr, Int_t mode){
   //
-  //
+  // total charge in the cluster (sum of the pad x time matrix ), hits were digitized before, but additional 
+  // actions can be specified by switches  // dEdx_{Qtot}
   //
   Double_t amp[160];
-  Int_t over=0;
+  Double_t minAmp=-1;
+  //
   for (Int_t i=0;i<fN;i++){ 
     AliTPCclusterFast * cluster = ( AliTPCclusterFast *)((*fCl)[i]);
-    Float_t camp = cluster->GetQtot(gain,thr,noise);
-    if (camp==0) continue;
+    Float_t camp = 0;
+    if (mode==0) camp = cluster->GetQtot(gain,0,noise);
+    else
+      camp = cluster->GetQtot(gain,thr,noise);
     Float_t corr =  1;
     if (doCorr) corr = cluster->GetQtotCorr(0.5,0.5,gain,thr);
-    amp[over]=camp/corr;
-    over++;
+    camp/=corr;
+    amp[i]=camp;
+    if (camp>0){
+      if (minAmp <0) minAmp=camp;
+      if (minAmp >camp) minAmp=camp;
+    }
   }
-  return CookdEdx(over,amp,f0,f1);
-
+  if (mode==3) for (Int_t i=0;i<fN;i++) if (amp[i]<=0) amp[i]=thr;
+  if (mode==4) for (Int_t i=0;i<fN;i++) if (amp[i]<=0) amp[i]=minAmp;
+  return CookdEdx(fN,amp,f0,f1, mode);
 }
 
-Double_t   AliTPCtrackFast::CookdEdxDmax(Double_t f0,Float_t f1, Float_t gain,Float_t thr, Float_t noise, Bool_t doCorr){
+
+
+Double_t   AliTPCtrackFast::CookdEdxDmax(Double_t f0,Float_t f1, Float_t gain,Float_t thr, Float_t noise, Bool_t doCorr, Int_t mode){
   //
-  //
+  // maximal charge in the cluster (maximal amplitude in the digit matrix), hits were digitized before, 
+  // but additional actions can be specified by switches  
   //
   Double_t amp[160];
-  Int_t over=0;
+  Double_t minAmp=-1;
+  //
   for (Int_t i=0;i<fN;i++){ 
     AliTPCclusterFast * cluster = ( AliTPCclusterFast *)((*fCl)[i]);
-    Float_t camp = cluster->GetQmax(gain,thr,noise);
-    if (camp==0) continue;    
+    Float_t camp = 0;
+    if (mode==0) camp =  cluster->GetQmax(gain,0,noise);
+    else
+      camp =  cluster->GetQmax(gain,thr,noise);
     Float_t corr =  1;
     if (doCorr) corr = cluster->GetQmaxCorr(0.5,0.5);
-    amp[over]=camp/corr;
-    over++;
+    camp/=corr;
+    amp[i]=camp;
+    if (camp>0){
+      if (minAmp <0) minAmp=camp;
+      if (minAmp >camp) minAmp=camp;
+    }
   }
-  return CookdEdx(over,amp,f0,f1);
-
+  if (mode==3) for (Int_t i=0;i<fN;i++) if (amp[i]<=0) amp[i]=thr;
+  if (mode==4) for (Int_t i=0;i<fN;i++) if (amp[i]<=0) amp[i]=minAmp;
+  return CookdEdx(fN,amp,f0,f1, mode);
 }
 
 
-Double_t  AliTPCtrackFast::CookdEdx(Int_t npoints, Double_t *amp,Double_t f0,Float_t f1){
+Double_t  AliTPCtrackFast::CookdEdx(Int_t npoints, Double_t *amp,Double_t f0,Float_t f1, Int_t mode){
   //
+  // Calculate truncated mean
+  //   npoints   - number of points in array
+  //   amp       - array with points
+  //   f0-f1     - truncation range
+  //   mode      - specify handling of the 0 clusters, actual handling - filling of amplitude defiend in algorithm above
+  //      mode =  0     - accept everything
+  //      mode =  1     - do not count 0 amplitudes
+  //      mode =  2     - use 0 amplitude as it is 
+  //      mode =  3     - use amplitude as it is (in above function amp. replace by the thr)
+  //      mode =  4     - use amplitude as it is (in above function amp. replace by the minimal amplitude)
   //
+
+  //
+  // 0. sorted the array of amplitudes
   //
   Int_t index[160];
   TMath::Sort(npoints,amp,index,kFALSE);
+  //
+  // 1.) Calculate truncated mean from the selected range of the array (ranking statistic )
+  //     dependening on the mode 0 amplitude can be skipped
   Float_t sum0=0, sum1=0,sum2=0;
+  Int_t   accepted=0;
+
   for (Int_t i=0;i<npoints;i++){
-    if (i<npoints*f0) continue;
-    if (i>npoints*f1) continue;
+    //
+    if (mode==1 && amp[index[i]]==0) {
+      continue;
+    }
+    if (accepted<npoints*f0) continue;
+    if (accepted>npoints*f1) continue;
     sum0++;
     sum1+= amp[index[i]];
     sum2+= amp[index[i]];
+    accepted++;
   }
   if (sum0<=0) return 0;
   return sum1/sum0;
