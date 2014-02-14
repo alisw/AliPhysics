@@ -38,7 +38,7 @@ AliPHOSClusterSelection::AliPHOSClusterSelection()
   : fMinChargedParticleTrackDistance(-1.), 
     fNotUnfolded(false),
     fMaxDispR2(-1.),
-    fIsCore(-1.),
+    fIsCore(false),
     fMaxTOF(-1.)
 {
   // Defaults to the most lenient selection allowable
@@ -126,7 +126,7 @@ Bool_t AliPHOSClusterSelection::IsSelectedDisp(AliVCluster* cluster) const
     return true;
   else{
     Double_t m02 = 0.,m20 = 0.;
-    if(fIsCore<0){//No core calculation
+    if(!fIsCore){//No core calculation
       m02 = cluster->GetM02();
       m20 = cluster->GetM20();
       return AliPHOSClusterSelection::TestLambda(cluster->E(),m20,m02) ;
@@ -390,7 +390,7 @@ Bool_t AliPHOSClusterSelection::TestLambda(Double_t pt,Double_t l1,Double_t l2) 
   //Tuned using pp data 
   //copied from Pi0FlowTask
   Double_t l2Mean, l1Mean, l2Sigma, l1Sigma, c, R2;
-  if(fIsCore<0){
+  if(! fIsCore ){
     l2Mean  = 1.53126+9.50835e+06/(1.+1.08728e+07*pt+1.73420e+06*pt*pt) ;
     l1Mean  = 1.12365+0.123770*TMath::Exp(-pt*0.246551)+5.30000e-03*pt ;
     l2Sigma = 6.48260e-02+7.60261e+10/(1.+1.53012e+11*pt+5.01265e+05*pt*pt)+9.00000e-03*pt;
