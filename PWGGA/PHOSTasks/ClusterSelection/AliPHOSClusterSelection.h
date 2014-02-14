@@ -60,7 +60,7 @@ class AliPHOSClusterSelection : public TObject {
   Float_t fMinChargedParticleTrackDistance; // CPV, Charged Particle Veto
   Bool_t fNotUnfolded; // if true, rejects Unfolded Clusters
   Float_t fMaxDispR2; // dispersion cut
-  Float_t fIsCore; // If true, core radius disp is calculated
+  Bool_t fIsCore; // If true, core radius disp is calculated
   Float_t fMaxTOF; // TOF cut
 
   AliVEvent* GetCurrentEvent() const;
