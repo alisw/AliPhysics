@@ -180,7 +180,7 @@ Bool_t AliTRDonlineTrackMatching::StackToTrack(const AliExternalTrackParam *trac
   layersWithTracklet = 0;
 
   UInt_t stackHits[fgkTrdStacks];
-  Double_t x[3];
+  Double_t x[3] = { 0. };
   memset(stackHits, 0, fgkTrdStacks*sizeof(UInt_t));
 
 #ifdef TRD_TM_DEBUG
@@ -189,16 +189,17 @@ Bool_t AliTRDonlineTrackMatching::StackToTrack(const AliExternalTrackParam *trac
 
   Double_t r = fgkSaveInnerRadius;
   while (r < fgkSaveOuterRadius){
-    track->GetXYZAt(r, magFieldinKiloGauss, x);
-    stack = EstimateStack(x);
-    if (stack >= 0){
-      stackHits[stack]++;
-      if (stackHits[stack] > 16) // experimental
-	break;
+    if (track->GetXYZAt(r, magFieldinKiloGauss, x)) {
+      stack = EstimateStack(x);
+      if (stack >= 0){
+	stackHits[stack]++;
+	if (stackHits[stack] > 16) // experimental
+	  break;
 #ifdef TRD_TM_DEBUG
-      printf(" r=%.3fcm  %.2f/%.2f  -  %d hits for stack %d  S%02d-%d   (mag=%.1f)\n",
-	     r, x[0], x[1], stackHits[stack], stack, stack/5, stack%5, magFieldinKiloGauss);
+	printf(" r=%.3fcm  %.2f/%.2f  -  %d hits for stack %d  S%02d-%d   (mag=%.1f)\n",
+	       r, x[0], x[1], stackHits[stack], stack, stack/5, stack%5, magFieldinKiloGauss);
 #endif
+      }
     }
     r += 1.;
   }
