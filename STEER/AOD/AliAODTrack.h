@@ -332,6 +332,9 @@ class AliAODTrack : public AliVTrack {
   Int_t     GetNumberOfTRDslices() const { return fDetPid?fDetPid->GetTRDnSlices():0; }
   void      GetHMPIDpid(Double_t */*p*/) const { return; } // TODO: To be implemented properly with the new HMPID object
 
+  void SetMFTClusterPattern(ULong_t mftClusterPattern) { fMFTClusterPattern = mftClusterPattern; }   // AU
+  ULong_t GetMFTClusterPattern() { return fMFTClusterPattern; }                                      // AU
+
   const AliAODEvent* GetAODEvent() const {return fAODEvent;}
   virtual const AliVEvent* GetEvent() const {return (AliVEvent*)fAODEvent;}
   void SetAODEvent(const AliAODEvent* ptr){fAODEvent = ptr;}
@@ -403,8 +406,11 @@ class AliAODTrack : public AliVTrack {
   Double_t GetChi2MatchTrigger() const  { return fChi2MatchTrigger;}
   void     SetChi2MatchTrigger(Double_t Chi2MatchTrigger) {fChi2MatchTrigger = Chi2MatchTrigger; }
   Bool_t   HitsMuonChamber(Int_t MuonChamber, Int_t cathode = -1) const;  // Check if track hits Muon chambers
-  Bool_t   IsMuonTrack() const { return (GetMUONClusterMap()>0) ? kTRUE : kFALSE; }
+  Bool_t   IsMuonTrack() const { return ( (GetMUONClusterMap()>0) && !fIsMuonGlobalTrack ) ? kTRUE : kFALSE; }
   
+  Bool_t   IsMuonGlobalTrack() const { return fIsMuonGlobalTrack; }                                     // AU
+  void     SetIsMuonGlobalTrack(Bool_t isMuonGlobalTrack) { fIsMuonGlobalTrack = isMuonGlobalTrack; }   // AU
+
   void     Connected(Bool_t flag) {flag ? SETBIT(fITSMuonClusterMap,26) : CLRBIT(fITSMuonClusterMap,26);}
   Bool_t   IsConnected() const {return TESTBIT(fITSMuonClusterMap,26);}
 
@@ -469,12 +475,16 @@ class AliAODTrack : public AliVTrack {
   Double_t      fTrackEtaOnEMCal;   // eta of track after being propagated to the EMCal surface (default r = 440 cm)
   Double_t      fTrackPtOnEMCal;    // pt of track after being propagated to the EMCal surface (default r = 440 cm)
 
+  Bool_t fIsMuonGlobalTrack;        // True if the track is built from the combination of MUON and MFT clusters     // AU
+
   Double_t      fTPCsignalTuned;    //! TPC signal tuned on data when using MC
   Double_t      fTOFsignalTuned;    //! TOF signal tuned on data when using MC
 
+  ULong_t fMFTClusterPattern;       // Tells us which MFT clusters are contained in the track, and which one is a good one (if MC)  // AU
+
   const AliAODEvent* fAODEvent;     //! pointer back to the event the track belongs to
 
-  ClassDef(AliAODTrack, 23);
+  ClassDef(AliAODTrack, 24);
 };
 
 inline Bool_t  AliAODTrack::IsPrimaryCandidate() const

@@ -200,7 +200,13 @@ Int_t AliMFTTrackerMU::Clusters2Tracks(AliESDEvent *event) {
     if (fMUONTrack) delete fMUONTrack;
     fMUONTrack = new AliMUONTrack();
 
-    AliMUONESDInterface::ESDToMUON(*esdTrack, *fMUONTrack, kTRUE);     // last arguments should be kTRUE or kFALSE??
+    AliMUONESDInterface::ESDToMUON(*esdTrack, *fMUONTrack, kFALSE);
+
+    if (!fMUONTrack->GetTrackParamAtCluster()->First()) {
+      AliInfo("Skipping track, no parameters available!!!");
+      iTrack++;
+      continue;
+    }
 
     // the track we are going to build, starting from fMUONTrack and adding the MFT clusters
     AliMuonForwardTrack *track = new ((*fCandidateTracks)[0]) AliMuonForwardTrack();
@@ -306,17 +312,20 @@ Int_t AliMFTTrackerMU::Clusters2Tracks(AliESDEvent *event) {
       
 //       waiting for the commit of the new version of AliESDMuonGlobalTrack...
 
-//       myESDTrack -> SetChi2OverNdf(newTrack->GetChi2OverNdf());
-//       myESDTrack -> SetCharge(newTrack->GetCharge());
-//       myESDTrack -> SetMatchTrigger(newTrack->GetMatchTrigger());
-//       myESDTrack -> SetFirstTrackingPoint(newTrack->GetMFTCluster(0)->GetX(), newTrack->GetMFTCluster(0)->GetY(), newTrack->GetMFTCluster(0)->GetZ());
-//       myESDTrack -> SetXYAtVertex(newTrack->GetOffsetX(vertex[0], vertex[2]), newTrack->GetOffsetX(vertex[1], vertex[2]));
-//       myESDTrack -> SetRAtAbsorberEnd(newTrack->GetRAtAbsorberEnd());
-//       myESDTrack -> SetChi2MatchTrigger(esdTrack->GetChi2MatchTrigger());
-//       myESDTrack -> SetMuonClusterMap(esdTrack->GetMuonClusterMap());
-//       myESDTrack -> SetHitsPatternInTrigCh(esdTrack->GetHitsPatternInTrigCh());
-//       myESDTrack -> SetHitsPatternInTrigChTrk(esdTrack->GetHitsPatternInTrigChTrk());
-//       myESDTrack -> Connected(esdTrack->IsConnected());
+      myESDTrack -> SetLabel(newTrack->GetMCLabel());
+      myESDTrack -> SetChi2OverNdf(newTrack->GetChi2OverNdf());
+      myESDTrack -> SetCharge(newTrack->GetCharge());
+      myESDTrack -> SetMatchTrigger(newTrack->GetMatchTrigger());
+      myESDTrack -> SetNMFTClusters(newTrack->GetNMFTClusters());
+      myESDTrack -> SetNWrongMFTClustersMC(newTrack->GetNWrongClustersMC());
+      myESDTrack -> SetFirstTrackingPoint(newTrack->GetMFTCluster(0)->GetX(), newTrack->GetMFTCluster(0)->GetY(), newTrack->GetMFTCluster(0)->GetZ());
+      myESDTrack -> SetXYAtVertex(newTrack->GetOffsetX(vertex[0], vertex[2]), newTrack->GetOffsetX(vertex[1], vertex[2]));
+      myESDTrack -> SetRAtAbsorberEnd(newTrack->GetRAtAbsorberEnd());
+      myESDTrack -> SetChi2MatchTrigger(esdTrack->GetChi2MatchTrigger());
+      myESDTrack -> SetMuonClusterMap(esdTrack->GetMuonClusterMap());
+      myESDTrack -> SetHitsPatternInTrigCh(esdTrack->GetHitsPatternInTrigCh());
+      myESDTrack -> SetHitsPatternInTrigChTrk(esdTrack->GetHitsPatternInTrigChTrk());
+      myESDTrack -> Connected(esdTrack->IsConnected());
 
       //---------------------------------------------------------------------------------
 

@@ -633,6 +633,39 @@ Int_t AliAODEvent::GetNumberOfMuonTracks() const
 }
 
 //______________________________________________________________________________
+Int_t AliAODEvent::GetMuonGlobalTracks(TRefArray *muonGlobalTracks) const           // AU
+{
+  // fills the provided TRefArray with all found muon global tracks
+
+  muonGlobalTracks->Clear();
+
+  AliAODTrack *track = 0;
+  for (Int_t iTrack = 0; iTrack < GetNTracks(); iTrack++) {
+    track = GetTrack(iTrack);
+    if (track->IsMuonGlobalTrack()) {
+      muonGlobalTracks->Add(track);
+    }
+  }
+  
+  return muonGlobalTracks->GetEntriesFast();
+}
+
+
+//______________________________________________________________________________
+Int_t AliAODEvent::GetNumberOfMuonGlobalTracks() const                                    // AU
+{
+  // get number of muon global tracks
+  Int_t nMuonGlobalTracks=0;
+  for (Int_t iTrack = 0; iTrack < GetNTracks(); iTrack++) {
+    if ((GetTrack(iTrack))->IsMuonGlobalTrack()) {
+       nMuonGlobalTracks++;
+    }
+  }
+  
+  return nMuonGlobalTracks;
+}
+
+//______________________________________________________________________________
 void AliAODEvent::ReadFromTree(TTree *tree, Option_t* opt /*= ""*/)
 {
     // Connects aod event to tree
