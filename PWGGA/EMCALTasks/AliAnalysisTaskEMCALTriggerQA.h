@@ -1,7 +1,13 @@
 #ifndef ALIANALYSISTASKEMCALTRIGGERQA_H
 #define ALIANALYSISTASKEMCALTRIGGERQA_H
 
-// $Id$
+//------------------------------------------------------------------------//
+//  Fill histograms with basic QA information for EMCAL offline trigger   //
+//  Author: Nicolas Arbor (LPSC-Grenoble), Rachid Guernane (LPSC-Grenoble)//
+//          Gustavo Conesa Balbastre  (LPSC-Grenoble)                     //
+//                                                                        //
+//  $Id$ //
+//------------------------------------------------------------------------//
 
 //--- Root ---
 class TList;
@@ -25,15 +31,35 @@ public:
   
   virtual ~AliAnalysisTaskEMCALTriggerQA() { ; }     // destructor
   
+  void   ClusterAnalysis();
+  
+  void   FillCellMaps();
+  
+  void   FillTriggerPatchMaps(TString triggerclasses);
+  
   void   FillClusterHistograms(Int_t triggerNumber, Bool_t maxCluster,
                                Float_t e,Float_t eta,Float_t phi,
                                Float_t ietamax,Float_t iphimax,
                                Float_t centrality, Float_t v0AC);
   
+  void   FillCorrelationHistograms();
+  
+  void   FillEventCounterHistogram();
+  
+  void   FillL1GammaPatchHistograms();
+  
+  void   FillL1JetPatchHistograms();
+  
+  void   FillMapHistograms();
+  
+  void   FillV0Histograms();
+  
   void   Init() ;
 
   void   InitHistogramArrays() ;
 
+  void   InitCellPatchMaps();
+  
   void   LocalInit()                     { Init()                       ; }
 
   void   UserCreateOutputObjects();    
@@ -45,6 +71,8 @@ public:
   
   void   SetEtaPhiEnMin(Float_t en)      { fEtaPhiEnMin       = en      ; }
 
+  void   SetTriggerEventBit(TString list) ;
+  
   // OADB and geometry settings
   
   void   InitGeometry();
@@ -85,6 +113,24 @@ private:
   
   Float_t           fEtaPhiEnMin;     //  Min energy for Eta/Phi histograms   
   
+  Int_t             fSTUTotal;        // Sum of STU time sums
+  Float_t           fTRUTotal;        // Sum of TRU amplitudes
+  Float_t           fV0Trigger;       // V0 signal from trigger
+  Float_t           fV0A;             // V0 A signal
+  Float_t           fV0C;             // V0 C signal
+  
+  // Event by event trigger recognition bit
+  Bool_t            fEventMB   ;      // Bit for MB events
+  Bool_t            fEventL0   ;      // Bit for L0 events
+  Bool_t            fEventL1G  ;      // Bit for L1 Gamma 1 events
+  Bool_t            fEventL1G2 ;      // Bit for L1 Gamma 2 events
+  Bool_t            fEventL1J  ;      // Bit for L1 Jet 1 events
+  Bool_t            fEventL1J2 ;      // Bit for L1 JEt 2 events
+  Bool_t            fEventCen  ;      // Bit for Central events
+  Bool_t            fEventSem  ;      // Bit for Semi Central events
+  
+  // Histograms
+  
   TH1F             *fhNEvents;        //! Number of selected events
   TH2F             *fhFORAmp;         //! FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column
   TH2F             *fhFORAmpL1G;      //! FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column, with L1 Gamma trigger event
@@ -116,8 +162,8 @@ private:
   TH1F             *fhL1GPatchAllFakeE;       //! Energy distrib of FOR forfake events, all patch energy
   TH1F             *fhL1GPatchFakeE;          //! Energy distrib of FOR for fake events, all patch energy
   TH1F             *fhL1GPatchNotFakeE;       //! Energy distrib of FOR for non fake events, all patch energy
-  TH2F             *fhnpatchFake;             //! number of fake patchs per event vs. if all were fakes or not
-  TH2F             *fhnpatchNotFake;          //! number of non fake patchs per events vs. if all were fakes or not
+  TH2F             *fhNPatchFake;             //! number of fake patchs per event vs. if all were fakes or not
+  TH2F             *fhNPatchNotFake;          //! number of non fake patchs per events vs. if all were fakes or not
   
   TH2F             *fhL1JPatch;       //! FOR with L1 Jet patch associated
   TH2F             *fhL1J2Patch;      //! FOR with L1 Jet patch associated
@@ -192,12 +238,27 @@ private:
   static const int  fgkFALTROCols = AliEMCALGeoParams::fgkEMCALCols; // total number of fake altro columns in EMCAL 
   // (ALTRO channels in one SM times 2 SM divided by 2 per FALTRO)
   
+  // cell, patch maps
+  Double_t fMapCell     [fgkFALTRORows][fgkFALTROCols]; // Cell map
+  Double_t fMapCellL1G  [fgkFALTRORows][fgkFALTROCols]; // Cell map for L1G
+  Double_t fMapCellL1G2 [fgkFALTRORows][fgkFALTROCols]; // Cell map for L1G2
+  Double_t fMapCellL1J  [fgkFALTRORows][fgkFALTROCols]; // Cell map for L1J
+  Double_t fMapCellL1J2 [fgkFALTRORows][fgkFALTROCols]; // Cell map for L1J2
+  Double_t fMapTrigL0   [fgkFALTRORows][fgkFALTROCols]; // Patch map for L0
+  Double_t fMapTrigL1   [fgkFALTRORows][fgkFALTROCols]; // Patch map for L1
+  Double_t fMapTrigL0L1G[fgkFALTRORows][fgkFALTROCols]; // Patch map for L0L1G
+  Double_t fMapTrigL0L1J[fgkFALTRORows][fgkFALTROCols]; // Patch map for L0L1J
+  Double_t fMapTrigL1G  [fgkFALTRORows][fgkFALTROCols]; // Patch map for L1G
+  Double_t fMapTrigL1G2 [fgkFALTRORows][fgkFALTROCols]; // Patch map for L1G2
+  Double_t fMapTrigL1J  [fgkFALTRORows][fgkFALTROCols]; // Patch map for L1J
+  Double_t fMapTrigL1J2 [fgkFALTRORows][fgkFALTROCols]; // Patch map for L1J2
+
   
   AliAnalysisTaskEMCALTriggerQA           (const AliAnalysisTaskEMCALTriggerQA&); // not implemented
   
   AliAnalysisTaskEMCALTriggerQA& operator=(const AliAnalysisTaskEMCALTriggerQA&); // not implemented
   
-  ClassDef(AliAnalysisTaskEMCALTriggerQA, 11);   
+  ClassDef(AliAnalysisTaskEMCALTriggerQA, 12);
 };
 
 #endif 
