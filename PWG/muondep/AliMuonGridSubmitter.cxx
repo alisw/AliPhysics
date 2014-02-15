@@ -53,7 +53,7 @@
 #include "Riostream.h"
 
 //______________________________________________________________________________
-AliMuonGridSubmitter::AliMuonGridSubmitter(AliMuonGridSubmitter::EJobType jobType)
+AliMuonGridSubmitter::AliMuonGridSubmitter(AliMuonGridSubmitter::EJobType jobType, Bool_t localOnly)
 : TObject(),
 fInternalMap(0x0),
 fVars(0x0),
@@ -65,7 +65,7 @@ fRunList()
 {
   // ctor
   
-  if (!gGrid)
+  if (!gGrid && !localOnly)
   {
     TGrid::Connect("alien://");
     if ( !gGrid )
@@ -111,6 +111,19 @@ void AliMuonGridSubmitter::AddToTemplateFileList(const char* filename)
   {
     a->Add(new TObjString(filename));
     UpdateLocalFileList();
+  }
+}
+
+//______________________________________________________________________________
+void AliMuonGridSubmitter::AddToLocalFileList(const char* filename)
+{
+  // add a file to the list of local files
+  
+  TObjArray* a = LocalFileList();
+  
+  if ( !a->FindObject(filename) )
+  {
+    a->Add(new TObjString(filename));
   }
 }
 
@@ -911,11 +924,7 @@ void AliMuonGridSubmitter::UpdateLocalFileList()
   
   while ( ( s = static_cast<TObjString*>(next())) )
   {
-    TObjArray* local = LocalFileList();
-    if ( !local->FindObject(s->String()))
-    {
-      local->Add(new TObjString(*s));
-    }
+    AddToLocalFileList(s->String().Data());
   }
 }
 
