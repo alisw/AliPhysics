@@ -200,44 +200,45 @@ void AliAnalysisTaskEMCALTriggerQA::FillClusterHistograms(Int_t triggerNumber, B
                                                           Float_t ieta, Float_t iphi,
                                                           Float_t centrality, Float_t v0AC)
 {
-  //Fill normal cluster related histograms depending on the trigger selection
+  //Fill normal cluster related histograms depending on the trigger type selection
+  // (10 options, MB, L0, L1 Gamma ... defined in enum triggerType)
 	
   if(!max)
   {
-    fhClus[triggerNumber]      ->Fill(e);
-    fhClusCen[triggerNumber]   ->Fill(e,centrality);
-    fhClusV0[triggerNumber]    ->Fill(e,v0AC);
-    fhClusEta[triggerNumber]   ->Fill(e,eta);
-    fhClusPhi[triggerNumber]   ->Fill(e,phi);
+    fhClus   [triggerNumber]->Fill(e);
+    fhClusCen[triggerNumber]->Fill(e,centrality);
+    fhClusV0 [triggerNumber]->Fill(e,v0AC);
+    fhClusEta[triggerNumber]->Fill(e,eta);
+    fhClusPhi[triggerNumber]->Fill(e,phi);
 		
     if(e > fEtaPhiEnMin)
     {
-      fhClusEtaPhiHigh[triggerNumber]        ->Fill( eta, phi);
-      fhClusEtaPhiHighCellMax[triggerNumber] ->Fill(ieta,iphi);
+      fhClusEtaPhiHigh       [triggerNumber]->Fill( eta, phi);
+      fhClusEtaPhiHighCellMax[triggerNumber]->Fill(ieta,iphi);
     }
     else
     {
-      fhClusEtaPhiLow[triggerNumber]         ->Fill( eta, phi);
-      fhClusEtaPhiLowCellMax[triggerNumber]  ->Fill(ieta,iphi);
+      fhClusEtaPhiLow       [triggerNumber]->Fill( eta, phi);
+      fhClusEtaPhiLowCellMax[triggerNumber]->Fill(ieta,iphi);
     }
   }
   else
   {
-    fhClusMax[triggerNumber]      ->Fill(e);
-    fhClusCenMax[triggerNumber]   ->Fill(e,centrality);
-    fhClusV0Max[triggerNumber]    ->Fill(e,v0AC);
-    fhClusEtaMax[triggerNumber]   ->Fill(e,eta);
-    fhClusPhiMax[triggerNumber]   ->Fill(e,phi);
+    fhClusMax   [triggerNumber]->Fill(e);
+    fhClusCenMax[triggerNumber]->Fill(e,centrality);
+    fhClusV0Max [triggerNumber]->Fill(e,v0AC);
+    fhClusEtaMax[triggerNumber]->Fill(e,eta);
+    fhClusPhiMax[triggerNumber]->Fill(e,phi);
 		
     if(e > fEtaPhiEnMin)
     {
-      fhClusEtaPhiHighCluMax[triggerNumber]        ->Fill( eta, phi);
-      fhClusEtaPhiHighCellMaxCluMax[triggerNumber] ->Fill(ieta,iphi);
+      fhClusEtaPhiHighCluMax       [triggerNumber]->Fill( eta, phi);
+      fhClusEtaPhiHighCellMaxCluMax[triggerNumber]->Fill(ieta,iphi);
     }
     else
     {
-      fhClusEtaPhiLowCluMax[triggerNumber]         ->Fill( eta, phi);
-      fhClusEtaPhiLowCellMaxCluMax[triggerNumber]  ->Fill(ieta,iphi);
+      fhClusEtaPhiLowCluMax       [triggerNumber]->Fill( eta, phi);
+      fhClusEtaPhiLowCellMaxCluMax[triggerNumber]->Fill(ieta,iphi);
     }
   }
 }
@@ -274,13 +275,18 @@ void AliAnalysisTaskEMCALTriggerQA::InitGeometry()
   if(clist)
   {
     TStreamerInfo *cinfo = (TStreamerInfo*)clist->FindObject("AliESDCaloTrigger");
-    if(!cinfo)     cinfo = (TStreamerInfo*)clist->FindObject("AliAODCaloTrigger");
-    
+    Int_t verid = 5; // newer ESD header version
+    if(!cinfo)
+    {
+      cinfo = (TStreamerInfo*)clist->FindObject("AliAODCaloTrigger");
+      verid = 2; // newer AOD header version
+    }
     if(cinfo)
     {
       Int_t classversionid = cinfo->GetClassVersion();
+      //printf("********* Header class version %d *********** \n",classversionid);
       
-      if (classversionid >= 5)
+      if (classversionid >= verid)
       {
         fBitEGA = 6;
         fBitEJE = 8;
@@ -311,26 +317,25 @@ void AliAnalysisTaskEMCALTriggerQA::InitGeometry()
 //_______________________________________________________
 void AliAnalysisTaskEMCALTriggerQA::InitHistogramArrays()
 {
-	
   //Histograms array initialization
   
   for (Int_t i = 0; i < 10; i++)
   {
-    fhV0[i] = 0;
-    fhClus[i]=0;                   fhClusMax[i]=0;
-    fhClusCen[i]=0;                fhClusCenMax[i]=0;
-    fhClusV0[i]=0;                 fhClusV0Max[i]=0;
-    fhClusEta[i]=0;                fhClusEtaMax[i]=0;
-    fhClusPhi[i]=0;                fhClusPhiMax[i]=0;
-    fhClusEtaPhiHigh[i]=0;         fhClusEtaPhiHighCluMax[i]=0;
-    fhClusEtaPhiHighCellMax[i]=0;  fhClusEtaPhiHighCellMaxCluMax[i]=0;
-    fhClusEtaPhiLow[i]=0;          fhClusEtaPhiLowCluMax[i]=0;
-    fhClusEtaPhiLowCellMax[i]=0;   fhClusEtaPhiLowCellMaxCluMax[i]=0;
-    if(i<3){ fhClusMBPure[i]=0;   fhClusMaxMBPure[i]=0;}
+    fhV0     [i] = 0;
+    fhClus   [i] = 0;              fhClusMax   [i] = 0;
+    fhClusCen[i] = 0;              fhClusCenMax[i] = 0;
+    fhClusV0 [i] = 0;              fhClusV0Max [i] = 0;
+    fhClusEta[i] = 0;              fhClusEtaMax[i] = 0;
+    fhClusPhi[i] = 0;              fhClusPhiMax[i] = 0;
+    
+    fhClusEtaPhiHigh       [i] = 0;  fhClusEtaPhiHighCluMax       [i] = 0;
+    fhClusEtaPhiHighCellMax[i] = 0;  fhClusEtaPhiHighCellMaxCluMax[i] = 0;
+    fhClusEtaPhiLow        [i] = 0;  fhClusEtaPhiLowCluMax        [i] = 0;
+    fhClusEtaPhiLowCellMax [i] = 0;  fhClusEtaPhiLowCellMaxCluMax [i] = 0;
+    
+    if(i<3){ fhClusMBPure[i] = 0;   fhClusMaxMBPure[i] = 0; }
   }
-  
 }
-
 
 //___________________________________________________________
 void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
@@ -374,7 +379,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhFORAmpL1G ->SetZTitle("Amplitude");
 	
   fhFORAmpL1G2  = new TH2F("hFORAmpL1G2", "FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column, with L1G2 trigger condition",
-			   fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+                           fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhFORAmpL1G2 ->SetXTitle("Index #eta (columnns)");
   fhFORAmpL1G2 ->SetYTitle("Index #phi (rows)");
   fhFORAmpL1G2 ->SetZTitle("Amplitude");
@@ -386,11 +391,11 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhFORAmpL1J ->SetZTitle("Amplitude");
 	
   fhFORAmpL1J2  = new TH2F("hFORAmpL1J2", "FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column, with L1J2 trigger condition",
-			   fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+                           fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhFORAmpL1J2 ->SetXTitle("Index #eta (columnns)");
   fhFORAmpL1J2 ->SetYTitle("Index #phi (rows)");
   fhFORAmpL1J2 ->SetZTitle("Amplitude");
-
+  
   
   fhL0Amp      = new TH2F("hL0Amp","FALTRO signal per Row and Column",
                           fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
@@ -425,7 +430,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhL1GAmp    ->SetZTitle("Amplitude");
 	
   fhL1G2Amp     = new TH2F("hL1G2Amp","STU signal per Row and Column for L1 Gamma2",
-			   fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+                           fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhL1G2Amp    ->SetXTitle("Index #eta (columnns)");
   fhL1G2Amp    ->SetYTitle("Index #phi (rows)");
   fhL1G2Amp    ->SetZTitle("Amplitude");
@@ -437,13 +442,13 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhL1JAmp    ->SetZTitle("Amplitude");
 	
   fhL1J2Amp     = new TH2F("hL1J2Amp","STU signal per Row and Column for L1 Jet2",
-			   fgkFALTROCols/4,0,fgkFALTROCols,fgkFALTRORows/4,0,fgkFALTRORows);
+                           fgkFALTROCols/4,0,fgkFALTROCols,fgkFALTRORows/4,0,fgkFALTRORows);
   fhL1J2Amp    ->SetXTitle("Index #eta (columnns)");
   fhL1J2Amp    ->SetYTitle("Index #phi (rows)");
   fhL1J2Amp    ->SetZTitle("Amplitude");
 	
   fhL1FOREnergy     = new TH2F("hL1FOREnergy","FOR index vs FOR energy",
-			       fgkFALTROCols*fgkFALTRORows,0,fgkFALTROCols*fgkFALTRORows,200,0,200);
+                               fgkFALTROCols*fgkFALTRORows,0,fgkFALTROCols*fgkFALTRORows,200,0,200);
   fhL1FOREnergy    ->SetXTitle("Index FOR");
   fhL1FOREnergy    ->SetYTitle("Energy (ADC)");
   
@@ -460,83 +465,83 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhL1GPatch  ->SetZTitle("counts");
 	
   fhL1G2Patch   = new TH2F("hL1G2Patch","FOR with associated L1 Gamma2 Patch",
-			   fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+                           fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhL1G2Patch  ->SetXTitle("Index #eta (columnns)");
   fhL1G2Patch  ->SetYTitle("Index #phi (rows)");
   fhL1G2Patch  ->SetZTitle("counts");
   
   fhL1GPatchNotFake   = new TH2F("hL1GPatchNotFake","FOR with L1 Gamma Patch associated to energetic cells",
-				 fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+                                 fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhL1GPatchNotFake  ->SetXTitle("Index #eta (columnns)");
   fhL1GPatchNotFake  ->SetYTitle("Index #phi (rows)");
   fhL1GPatchNotFake  ->SetZTitle("counts");
 	
   fhL1GPatchFake   = new TH2F("hL1GPatchFake","FOR without L1 Gamma Patch associated to energetic cells",
-			      fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+                              fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhL1GPatchFake  ->SetXTitle("Index #eta (columnns)");
   fhL1GPatchFake  ->SetYTitle("Index #phi (rows)");
   fhL1GPatchFake  ->SetZTitle("counts");
 	
 	
   fhL1GPatchNotAllFake   = new TH2F("hL1GPatchNotAllFake","FOR with one L1 Gamma Patch associated to an energetic cell",
-				    fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+                                    fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhL1GPatchNotAllFake  ->SetXTitle("Index #eta (columnns)");
   fhL1GPatchNotAllFake  ->SetYTitle("Index #phi (rows)");
   fhL1GPatchNotAllFake  ->SetZTitle("counts");
 	
   fhL1GPatchAllFake   = new TH2F("hL1GPatchAllFake","FOR without any L1 Gamma Patch associated to an energetic cell",
-				 fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+                                 fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhL1GPatchAllFake  ->SetXTitle("Index #eta (columnns)");
   fhL1GPatchAllFake  ->SetYTitle("Index #phi (rows)");
   fhL1GPatchAllFake  ->SetZTitle("counts");
 	
   fhL1GPatchAllFakeMax   = new TH2F("hL1GPatchAllFakeMax","FOR with L1 Gamma Patch Max not associated to an energetic cell",
-				    fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+                                    fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhL1GPatchAllFakeMax  ->SetXTitle("Index #eta (columnns)");
   fhL1GPatchAllFakeMax  ->SetYTitle("Index #phi (rows)");
   fhL1GPatchAllFakeMax  ->SetZTitle("counts");
 	
   fhL1GPatchNotAllFakeMax   = new TH2F("hL1GPatchNotAllFakeMax","FOR with one L1 Gamma Patch Max associated to an energetic cell",
-				       fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+                                       fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhL1GPatchNotAllFakeMax  ->SetXTitle("Index #eta (columnns)");
   fhL1GPatchNotAllFakeMax  ->SetYTitle("Index #phi (rows)");
   fhL1GPatchNotAllFakeMax  ->SetZTitle("counts");
 	
 	fhL1GPatchNotAllFakeMaxE   = new TH1F("hL1GPatchNotAllFakeMaxE","Energy distribution of FOR in events with L1 Gamma Patch Max associated to an energetic cell",
-					      fNBinsClusterE,0,fMaxClusterE);
+                                        fNBinsClusterE,0,fMaxClusterE);
 	fhL1GPatchNotAllFakeMaxE ->SetXTitle("Energy (GeV)");
   
 	
   fhL1GPatchAllFakeMaxE   = new TH1F("hL1GPatchAllFakeMaxE","Energy distribution of FOR in events with L1 Gamma Patch Max not associated to an energetic cell",
-				     fNBinsClusterE,0,fMaxClusterE);
+                                     fNBinsClusterE,0,fMaxClusterE);
 	fhL1GPatchAllFakeMaxE ->SetXTitle("Energy (GeV)");
   
   fhL1GPatchNotAllFakeE   = new TH1F("hL1GPatchNotAllFakeE","Energy distribution of FOR in events with L1 Gamma Patch not associated to an energetic cell",
-				     fNBinsClusterE,0,fMaxClusterE);
+                                     fNBinsClusterE,0,fMaxClusterE);
 	fhL1GPatchNotAllFakeE ->SetXTitle("Energy (GeV)");
 	
   fhL1GPatchAllFakeE   = new TH1F("hL1GPatchAllFakeE","Energy distribution of FOR in events with L1 Gamma Patch  associated to an energetic cell",
-				  fNBinsClusterE,0,fMaxClusterE);
+                                  fNBinsClusterE,0,fMaxClusterE);
 	fhL1GPatchAllFakeE ->SetXTitle("Energy (GeV)");
 	
 	
   fhL1GPatchFakeE   = new TH1F("hL1GPatchFakeE","Energy distribution of FOR with L1 Gamma Patch not associated to an energetic cell",
-			       fNBinsClusterE,0,fMaxClusterE);
+                               fNBinsClusterE,0,fMaxClusterE);
 	fhL1GPatchFakeE ->SetXTitle("Energy (GeV)");
 	
   fhL1GPatchNotFakeE   = new TH1F("hL1GPatchNotFakeE","Energy distribution of FOR with L1 Gamma Patch  associated to an energetic cell",
-				  fNBinsClusterE,0,fMaxClusterE);
+                                  fNBinsClusterE,0,fMaxClusterE);
 	fhL1GPatchNotFakeE ->SetXTitle("Energy (GeV)");
 	
   fhnpatchFake   = new TH2F("hnpatchFake","number of fake patchs vs. all patchs are fake",
-			    3,0,3, 2880,0,2880);
+                            3,0,3, 2880,0,2880);
   fhnpatchFake  ->SetYTitle("number of fake patchs");
   fhnpatchFake  ->SetXTitle("all fake event");
   fhnpatchFake  ->SetZTitle("counts");
 	
 	
   fhnpatchNotFake   = new TH2F("hnpatchNotFake","number of Not fake patchs vs. all patchs are fake",
-			       3, 0, 3, 2000,0,2000);
+                               3, 0, 3, 2000,0,2000);
   fhnpatchNotFake  ->SetYTitle("number of Not fake patchs");
   fhnpatchNotFake  ->SetXTitle("all fake event");
   fhnpatchNotFake  ->SetZTitle("counts");
@@ -549,7 +554,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhL1JPatch  ->SetZTitle("counts");
 	
   fhL1J2Patch   = new TH2F("hL1J2Patch","FOR with associated L1 Jet2 Patch",
-			   fgkFALTROCols/4,0,fgkFALTROCols,fgkFALTRORows/4,0,fgkFALTRORows);
+                           fgkFALTROCols/4,0,fgkFALTROCols,fgkFALTRORows/4,0,fgkFALTRORows);
   fhL1J2Patch  ->SetXTitle("Index #eta (columnns)");
   fhL1J2Patch  ->SetYTitle("Index #phi (rows)");
   fhL1J2Patch  ->SetZTitle("counts");
@@ -598,7 +603,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhL1GPatchMax  ->SetZTitle("counts");
 	
   fhL1G2PatchMax   = new TH2F("hL1G2PatchMax","FOR of max amplitude patch with associated L1 Gamma2 Patch",
-			      fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+                              fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhL1G2PatchMax  ->SetXTitle("Index #eta (columnns)");
   fhL1G2PatchMax  ->SetYTitle("Index #phi (rows)");
   fhL1G2PatchMax  ->SetZTitle("counts");
@@ -610,7 +615,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhL1JPatchMax  ->SetZTitle("counts");
 	
   fhL1J2PatchMax   = new TH2F("hL1JPatchMax","FOR of max amplitude patch with associated L1 Jet2 Patch",
-			      fgkFALTROCols/4,0,fgkFALTROCols,fgkFALTRORows/4,0,fgkFALTRORows);
+                              fgkFALTROCols/4,0,fgkFALTROCols,fgkFALTRORows/4,0,fgkFALTRORows);
   fhL1J2PatchMax  ->SetXTitle("Index #eta (columnns)");
   fhL1J2PatchMax  ->SetYTitle("Index #phi (rows)");
   fhL1J2PatchMax  ->SetZTitle("counts");
@@ -684,7 +689,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
 		
     fhClusMaxMBPure[i]  = new TH1F(Form("hClusMax%sPure",hName[j].Data()),
                                    Form("maximum energy cluster per event for %s, no other EMCAL trigger on",hTitle[j].Data()),
-				   fNBinsClusterE,0,fMaxClusterE);
+                                   fNBinsClusterE,0,fMaxClusterE);
     fhClusMaxMBPure[i] ->SetXTitle("Energy (GeV)");
     fOutputList->Add(fhClusMaxMBPure[i]);
   }
@@ -692,8 +697,8 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   for(Int_t i=0; i < 10; i++)
   {
     fhV0[i] = new TH1F(Form("hV0%s",hName[i].Data()),
-		       Form("V0 distribution for %s",hTitle[i].Data()),
-		       fNBinsV0Signal,0,fMaxV0Signal);
+                       Form("V0 distribution for %s",hTitle[i].Data()),
+                       fNBinsV0Signal,0,fMaxV0Signal);
     fhV0[i]->SetXTitle("V0");
     fOutputList->Add(fhV0[i] );
 		
@@ -838,8 +843,8 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   }
   
   PostData(1, fOutputList);
-  
 }
+
 //______________________________________________________
 void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
 {
@@ -955,31 +960,27 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   Double_t emcalCell     [fgkFALTRORows][fgkFALTROCols], emcalCellL1G  [fgkFALTRORows][fgkFALTROCols],emcalCellL1G2 [fgkFALTRORows][fgkFALTROCols];
   Double_t emcalCellL1J  [fgkFALTRORows][fgkFALTROCols], emcalCellL1J2 [fgkFALTRORows][fgkFALTROCols],emcalTrigL0   [fgkFALTRORows][fgkFALTROCols];
   Double_t emcalTrigL0L1G[fgkFALTRORows][fgkFALTROCols], emcalTrigL0L1J[fgkFALTRORows][fgkFALTROCols];
-  Double_t emcalTrigL1G  [fgkFALTRORows][fgkFALTROCols], emcalTrigL1G2 [fgkFALTRORows][fgkFALTROCols],emcalTrigL1J  [fgkFALTRORows][fgkFALTROCols], emcalTrigL1J2 [fgkFALTRORows][fgkFALTROCols],emcalTrigL1  [fgkFALTRORows][fgkFALTROCols];
-  //Double_t emcalPatchL0  [fgkFALTRORows][fgkFALTROCols], emcalPatchL1G [fgkFALTRORows][fgkFALTROCols],emcalPatchL1G2[fgkFALTRORows][fgkFALTROCols], emcalPatchL1J[fgkFALTRORows][fgkFALTROCols], emcalPatchL1J2[fgkFALTRORows][fgkFALTROCols];
+  Double_t emcalTrigL1G  [fgkFALTRORows][fgkFALTROCols], emcalTrigL1G2 [fgkFALTRORows][fgkFALTROCols];
+  Double_t emcalTrigL1J  [fgkFALTRORows][fgkFALTROCols], emcalTrigL1J2 [fgkFALTRORows][fgkFALTROCols],emcalTrigL1  [fgkFALTRORows][fgkFALTROCols];
+ 
   
   for (Int_t i = 0; i < fgkFALTRORows; i++)
   {
     for (Int_t j = 0; j < fgkFALTROCols; j++)
     {
-      emcalTrigL0[i][j]    = 0.;
+      emcalTrigL0   [i][j] = 0.;
       emcalTrigL0L1G[i][j] = 0.;
       emcalTrigL0L1J[i][j] = 0.;
-      emcalTrigL1G[i][j]   = 0.;
-      emcalTrigL1G2[i][j]  = 0.;
-      emcalTrigL1J[i][j]   = 0.;
-      emcalTrigL1J2[i][j]  = 0.;
-      emcalTrigL1[i][j]    = 0.;
-      emcalCell[i][j]      = 0.;
-      emcalCellL1G[i][j]   = 0.;
-      emcalCellL1G2[i][j]  = 0.;
-      emcalCellL1J[i][j]   = 0.;
-      emcalCellL1J2[i][j]  = 0.;
-//      emcalPatchL0[i][j]   = 0.;
-//      emcalPatchL1G[i][j]  = 0.;
-//      emcalPatchL1G2[i][j] = 0.;
-//      emcalPatchL1J[i][j]  = 0.;
-//      emcalPatchL1J2[i][j] = 0.;
+      emcalTrigL1G  [i][j] = 0.;
+      emcalTrigL1G2 [i][j] = 0.;
+      emcalTrigL1J  [i][j] = 0.;
+      emcalTrigL1J2 [i][j] = 0.;
+      emcalTrigL1   [i][j] = 0.;
+      emcalCell     [i][j] = 0.;
+      emcalCellL1G  [i][j] = 0.;
+      emcalCellL1G2 [i][j] = 0.;
+      emcalCellL1J  [i][j] = 0.;
+      emcalCellL1J2 [i][j] = 0.;
     }
   }
   
@@ -1018,7 +1019,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
         continue;
       }
       
-      // ici c'est l'amplitude de chaque cellule
+      // here it is the amplitude for each cell
       emcalCell[int(posY/2)][int(posX/2)] += amp;
       
       if(bL1G) 
@@ -1048,7 +1049,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   AliVCaloTrigger& trg= * (event->GetCaloTrigger("EMCAL"));
   
   Int_t    nL0Patch = 0 ;
-  Int_t    nL1Patch = 0 ;
+  //Int_t    nL1Patch = 0 ;
   Double_t totSTU   = 0.;
   Double_t totTRU   = 0.;
   
@@ -1082,12 +1083,12 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       for (int itime = 0; itime < nTimes; itime++)
       {
          if (l0Times[itime] > 7 && l0Times[itime] < 10) l0fired = 1;
+        // time bin too open? restrict to time bin 8-9?
       }
 			
       if (l0fired)
       {
          nL0Patch += nTimes;
-         //emcalPatchL0[posY][posX] = 1.;
          fhL0Patch->Fill(posX,posY);
       }
 			
@@ -1101,30 +1102,43 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       totSTU += ts;
       // cout << "ts =" <<ts<<endl;
 			
-      //L1-Gamma
-      if ((bit >> fBitEGA) & 0x1)
+      //L1
+      Bool_t isEGA1 = ((bit >> fBitEGA  ) & 0x1) && bL1G  ;
+      Bool_t isEGA2 = ((bit >> fBitEGA+1) & 0x1) && bL1G2 ;
+      Bool_t isEJE1 = ((bit >> fBitEJE  ) & 0x1) && bL1J  ;
+      Bool_t isEJE2 = ((bit >> fBitEJE+1) & 0x1) && bL1J2 ;
+      
+      //if(isEGA1 || isEGA2 || isEJE1 || isEJE2) nL1Patch++;
+      //if(isEJE1 || isEJE2) printf("Jet STU patch %d, time sum %d, posX %d , posY %d\n",nL1Patch,ts,posX, posY);
+
+      //   L1-Gamma
+      
+      if (isEGA1)
       {
-//	cout << "(bit >> fBitEGA) & 0x1"<<endl;
-        nL1Patch ++;
-        //emcalPatchL1G[posY][posX] = 1.;
-        if( bL1G  ) fhL1GPatch ->Fill(posX,posY);
-        if( bL1G2 ) fhL1G2Patch->Fill(posX,posY);
-        if (ts > 0 && bL1G)  emcalTrigL1G [posY][posX] = ts;
-        if (ts > 0 && bL1G2) emcalTrigL1G2[posY][posX] = ts;
+        fhL1GPatch ->Fill(posX,posY);
+        if (ts > 0)  emcalTrigL1G [posY][posX] = ts;
       }
-			      
-      //L1-Jet
-      if (bit >> fBitEJE & 0x1)
+
+      if (isEGA2)
       {
-        nL1Patch ++;
-        //emcalPatchL1J[posY][posX] = 1.;
-        if( bL1J  ) fhL1JPatch ->Fill(posX,posY);
-        if( bL1J2 ) fhL1J2Patch->Fill(posX,posY);
-        if (ts > 0 && bL1J ) emcalTrigL1J [posY][posX] = ts;
-        if (ts > 0 && bL1J2) emcalTrigL1J2[posY][posX] = ts;
+        fhL1G2Patch->Fill(posX,posY);
+        if (ts > 0) emcalTrigL1G2[posY][posX] = ts;
+      }
+      
+      //    L1-Jet
+      if (isEJE1)
+      {
+        fhL1JPatch ->Fill(posX,posY);
+        if (ts > 0) emcalTrigL1J [posY][posX] = ts;
         
-        //printf("Jet STU patch %d, time sum %d, posX %d , posY %d\n",nL1Patch,ts,posX, posY);   
       }
+      
+      if (isEJE2)
+      {
+        fhL1J2Patch->Fill(posX,posY);
+        if (ts > 0) emcalTrigL1J2[posY][posX] = ts;
+      }
+
     }
   }
 	
@@ -1339,7 +1353,6 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       fhL0AmpL1G  ->Fill( j, i, emcalTrigL0L1G[i][j]);
       fhL0AmpL1J  ->Fill( j, i, emcalTrigL0L1J[i][j]);
       fhL1Amp     ->Fill( j, i, emcalTrigL1   [i][j]);
-      //if(emcalTrigL1   [i][j]>0)
       
       fhL1FOREnergy->Fill(i+fgkFALTRORows*j,  emcalTrigL1   [i][j]);
       fhL1GAmp    ->Fill( j, i, emcalTrigL1G  [i][j]);
@@ -1492,14 +1505,14 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   
   if( bL0  ) FillClusterHistograms(kL0Trig         ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,v0A+v0C);
   if( bL1G ) FillClusterHistograms(kL1GammaTrig    ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,v0A+v0C);
-  if( bL1G2)FillClusterHistograms(kL1GammaTrig2    ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,v0A+v0C);
+  if( bL1G2) FillClusterHistograms(kL1GammaTrig2   ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,v0A+v0C);
   if( bL1J ) FillClusterHistograms(kL1JetTrig      ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,v0A+v0C);
-  if( bL1J2)FillClusterHistograms(kL1JetTrig2      ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,v0A+v0C);
+  if( bL1J2) FillClusterHistograms(kL1JetTrig2     ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,v0A+v0C);
   
   if( bL1G && !bL1J )
-    FillClusterHistograms       (kL1GammaOnlyTrig,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,v0A+v0C);
+    FillClusterHistograms         (kL1GammaOnlyTrig,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,v0A+v0C);
   if( bL1J && !bL1G )
-    FillClusterHistograms       (kL1JetOnlyTrig  ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,v0A+v0C);
+    FillClusterHistograms         (kL1JetOnlyTrig  ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,v0A+v0C);
   
   if( bMB  && !bL1G && !bL1J && !bL0  ) fhClusMaxMBPure[0]  ->Fill(emax);
   if( bCen && !bL1G && !bL1J && !bL0  ) fhClusMaxMBPure[1]  ->Fill(emax);
