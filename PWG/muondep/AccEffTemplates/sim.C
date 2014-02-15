@@ -1,5 +1,9 @@
 void sim(Int_t nev=100) 
-{  
+{
+  if ( VAR_PURELY_LOCAL) {
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1, AliMagF::k5kG));
+  }
+
   AliSimulation simulator;
   simulator.SetTriggerConfig("MUON");
   simulator.SetRunQA("MUON:ALL");
@@ -8,21 +12,24 @@ void sim(Int_t nev=100)
   simulator.SetMakeSDigits("MUON");
   simulator.SetMakeDigits("MUON");// ITS"); // ITS needed to propagate the simulated vertex
 //  simulator.SetMakeDigitsFromHits("ITS"); // ITS needed to propagate the simulated vertex
-  
-  // raw OCDB
-//  simulator.SetDefaultStorage("alien://folder=/alice/data/2011/OCDB?cacheFold=/local/cdb");
+
   simulator.SetDefaultStorage(VAR_OCDB_PATH);
   
   if ( VAR_OCDB_SNAPSHOT )
   {
     simulator.SetCDBSnapshotMode("OCDB_sim.root");
   }
-  // MUON Tracker
-  simulator.SetSpecificStorage("MUON/Align/Data","alien://folder=/alice/simulation/2008/v4-15-Release/Ideal");
   
-  // Vertex and Mag.field from OCDB
-//  simulator.UseVertexFromCDB();
-  simulator.UseMagFieldFromGRP();
+  if ( ! VAR_PURELY_LOCAL ) {
+    
+    // MUON Tracker
+    simulator.SetSpecificStorage("MUON/Align/Data","alien://folder=/alice/simulation/2008/v4-15-Release/Ideal");
+  
+    // Mag.field from OCDB
+    simulator.UseMagFieldFromGRP();
+
+    //  simulator.UseVertexFromCDB();  
+  }
   
   // The rest
   TStopwatch timer;
