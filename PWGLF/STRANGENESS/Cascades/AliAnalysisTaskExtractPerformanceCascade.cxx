@@ -138,6 +138,7 @@ AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCasca
    fTreeCascVarMultiplicitySPD(0),
    fTreeCascVarMultiplicityMC(0),
    fTreeCascVarDistOverTotMom(0),
+   fTreeCascVarIsPhysicalPrimary(0),
    fTreeCascVarPID(0),
    fTreeCascVarPIDBachelor(0),
    fTreeCascVarPIDNegative(0),
@@ -367,6 +368,7 @@ AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCasca
    fTreeCascVarMultiplicitySPD(0),
    fTreeCascVarMultiplicityMC(0),
    fTreeCascVarDistOverTotMom(0),
+   fTreeCascVarIsPhysicalPrimary(0),
    fTreeCascVarPID(0),
    fTreeCascVarPIDBachelor(0),
    fTreeCascVarPIDNegative(0),
@@ -658,6 +660,7 @@ void AliAnalysisTaskExtractPerformanceCascade::UserCreateOutputObjects()
 //-----------DECAY-LENGTH-INFO--------------------
 /*25*/		fTreeCascade->Branch("fTreeCascVarDistOverTotMom",&fTreeCascVarDistOverTotMom,"fTreeCascVarDistOverTotMom/F");
 //-----------MC-PID-------------------------------
+/*25bis*/ fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimary",&fTreeCascVarIsPhysicalPrimary,"fTreeCascVarIsPhysicalPrimary/I");
 /*26*/		fTreeCascade->Branch("fTreeCascVarPID",&fTreeCascVarPID,"fTreeCascVarPID/I");
 /*27*/		fTreeCascade->Branch("fTreeCascVarPIDBachelor",&fTreeCascVarPIDBachelor,"fTreeCascVarPIDBachelor/I");
 /*28*/    fTreeCascade->Branch("fTreeCascVarPIDNegative",&fTreeCascVarPIDNegative,"fTreeCascVarPIDNegative/I");
@@ -2340,7 +2343,7 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
 	Int_t lPID_BachMother = 0;
 	Int_t lPID_NegMother = 0;
 	Int_t lPID_PosMother = 0;
-
+  fTreeCascVarIsPhysicalPrimary = 0; // 0: not defined, any candidate may have this
 
 	  fTreeCascVarPIDPositive = 0;
 	  fTreeCascVarPIDNegative = 0;
@@ -2416,6 +2419,9 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
 	  if(lPID_BachMother==lPID_NegMother && lPID_BachMother==lPID_PosMother){ 
 		  lPDGCodeCascade = lPID_BachMother; 
       lXiTransvMomMC = mcMotherBach->Pt();
+      if( lMCstack->IsPhysicalPrimary       (lblMotherBach) ) fTreeCascVarIsPhysicalPrimary = 1; //Is Primary!
+      if( lMCstack->IsSecondaryFromWeakDecay(lblMotherBach) ) fTreeCascVarIsPhysicalPrimary = 2; //Weak Decay!
+      if( lMCstack->IsSecondaryFromMaterial (lblMotherBach) ) fTreeCascVarIsPhysicalPrimary = 3; //From Material!
       if ( (mcMotherBach->Energy() + mcMotherBach->Pz()) / (mcMotherBach->Energy() - mcMotherBach->Pz() +1.e-13) !=0 ){
         lRapMC = 0.5*TMath::Log( (mcMotherBach->Energy() + mcMotherBach->Pz()) / (mcMotherBach->Energy() - mcMotherBach->Pz() +1.e-13) );
       }
