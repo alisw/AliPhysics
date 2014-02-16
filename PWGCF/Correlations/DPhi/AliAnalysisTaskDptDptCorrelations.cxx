@@ -896,7 +896,7 @@ void  AliAnalysisTaskDptDptCorrelations::createHistograms()
   name = "m4"; _m4      = createHisto1D(name,name,_nBins_M4, _min_M4, _max_M4, _title_m4, _title_counts);
   name = "m5"; _m5      = createHisto1D(name,name,_nBins_M5, _min_M5, _max_M5, _title_m5, _title_counts);
   name = "m6"; _m6      = createHisto1D(name,name,_nBins_M6, _min_M6, _max_M6, _title_m6, _title_counts);
-  name = "zV"; _vertexZ = createHisto1D(name,name,1200, -12, 12, "z-Vertex (cm)", _title_counts);
+  name = "zV"; _vertexZ = createHisto1D(name,name,120, -12, 12, "z-Vertex (cm)", _title_counts);
   
 
   name = "Eta";     _etadis   = createHisto1F(name,name, 200, -1.0, 1.0, "#eta","counts");
@@ -1074,9 +1074,9 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
   float vertexX  = -999;
   float vertexY  = -999;
   float vertexZ  = -999;
-  float vertexXY = -999;
-  float dcaZ     = -999;
-  float dcaXY    = -999;
+  //float vertexXY = -999;
+  //float dcaZ     = -999;
+  //float dcaXY    = -999;
   float centrality = -999;
   
   if(fAODEvent)
@@ -1124,26 +1124,29 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
       _eventAccounting->Fill(2);// count all events with right centrality
       
       // filter on z and xy vertex
-      vertex = (AliAODVertex*) fAODEvent->GetPrimaryVertexSPD();
-      if (!vertex || vertex->GetNContributors()<1)
+      vertex = (AliAODVertex*) fAODEvent->GetPrimaryVertex();
+      // Double_t V[2];
+      //vertex->GetXYZ(V);      
+
+      if(vertex)
 	{
-	  vertexZ  = -999;
-	  vertexXY = -999;
-	  AliInfo("AliAnalysisTaskDptDptCorrelations::UserExec(Option_t *option) - No valid vertex object or poor vertex");
+	  Double32_t fCov[6];
+	  vertex->GetCovarianceMatrix(fCov);
+	  if(vertex->GetNContributors() > 0)
+	    {
+	      if(fCov[5] != 0)
+		{
+		  vertexX = vertex->GetX();
+		  vertexY = vertex->GetY();
+		  vertexZ = vertex->GetZ();
+		  
+		  if(TMath::Abs(vertexZ) > 10)
+		    {
+		      return;
+		    } // Z-Vertex Cut  
+		}
+	    }
 	}
-      else
-	{ 
-	  vertexX = vertex->GetX();
-	  vertexY = vertex->GetY();
-	  vertexZ = vertex->GetZ();
-	  vertexXY = sqrt(vertexX*vertexX+vertexY*vertexY);
-	}
-      if (!vertex ||
-	  vertexZ  < _vertexZMin  || 
-	  vertexZ  > _vertexZMax  ||
-	  vertexXY < _vertexXYMin || 
-	  vertexXY > _vertexXYMax)
-	return;
       
       _vertexZ->Fill(vertexZ);
       
@@ -1184,7 +1187,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  }
 	  
 	  bitOK  = t->TestFilterBit(_trackFilterBit);
-	  if (!bitOK) continue; //128bit
+	  if (!bitOK) continue; //128bit or 272bit
 	  	  
 	  Int_t gID = t->GetID();
 	  newAodTrack = gID >= 0 ?t : fAODEvent->GetTrack(trackMap->GetValue(-1-gID));
@@ -1197,8 +1200,8 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  py     = t->Py();
 	  pz     = t->Pz();
 	  eta    = t->Eta();
-	  dcaXY = t->DCA(); 
-	  dcaZ  = t->ZAtDCA();  
+	  //dcaXY = t->DCA(); 
+	  //dcaZ  = t->ZAtDCA();  
 	  
 	  Double_t nsigmaelectron = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kElectron));
 	  Double_t nsigmapion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kPion));
@@ -1214,44 +1217,26 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  
 	  if(charge == 0) continue;
 	  
-	  /*if (newAodTrack->PropagateToDCA(vertex, _field, 100., b, bCov))
-	    {
-	      AliAODTrack* clone = (AliAODTrack*)newAodTrack->Clone("trk_clone");
-	      if (clone->PropagateToDCA(vertex, _field, 100., b, bCov))
-		{
-		  dcaXY = b[0];
-		  dcaZ = b[1];
-		}
-	      else{
-		dcaXY = -999999;
-		dcaZ = -999999;
-	      }
-	      delete clone;
-	      }*/
-
-
 	  // Kinematics cuts used                                                                                        
-	  if( pt < _min_pt_1 || pt > _max_pt_1)      continue;
-	  if( eta < _min_eta_1 || eta > _max_eta_1)  continue;
+	  if( pt < _min_pt_1 || pt > _max_pt_1) continue;
+	  if( eta < _min_eta_1 || eta > _max_eta_1) continue;
 	  
-	  
-	  /*Double_t pos[3];
+	  Double_t pos[3];
+	  newAodTrack->GetXYZ(pos);
 
-	  // if not constrained track the DCA is stored as position (at the vertex)
-	  if(!t->GetXYZ(pos)){
-	    dcaXY = TMath::Sign(1.0,pos[0])*TMath::Sqrt(pos[0]*pos[0]+pos[1]*pos[1]);
-	    dcaZ  = pos[2];
-	    }*/
-
-	 	  
-	  if (dcaZ     <  _dcaZMin ||
-	      dcaZ     >  _dcaZMax ||
-	      dcaXY    <  _dcaXYMin ||
-	      dcaXY    >  _dcaXYMax
-	      )continue; 
+	  Double_t DCAX = pos[0] - vertexX;
+	  Double_t DCAY = pos[1] - vertexY;
+	  Double_t DCAZ = pos[2] - vertexZ;
+	  	 	  
+	  if (DCAZ     <  _dcaZMin || 
+	      DCAZ     >  _dcaZMax ||
+	      DCAX     <  _dcaXYMin ||
+	      DCAX     >  _dcaXYMax ||
+	      DCAY     <  _dcaXYMin ||
+	      DCAY     >  _dcaXYMax) continue; 
 	  //==== QA ===========================
-	  _dcaz->Fill(dcaZ);
-	  _dcaxy->Fill(dcaXY);
+	  _dcaz->Fill(DCAZ);
+	  _dcaxy->Fill(DCAX);
 	  _etadis->Fill(eta);
 	  _phidis->Fill(phi);
 	  //===================================
