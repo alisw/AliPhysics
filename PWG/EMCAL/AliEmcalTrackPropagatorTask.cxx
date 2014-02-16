@@ -107,7 +107,7 @@ void AliEmcalTrackPropagatorTask::UserExec(Option_t *)
     if (esdev)
       fTracksOut = new TClonesArray("AliESDTrack");
     else 
-      fTracksOut = new TClonesArray("AliESDTrack");
+      fTracksOut = new TClonesArray("AliAODTrack");
     fTracksOut->SetName(fTracksOutName);
     InputEvent()->AddObject(fTracksOut);
   }

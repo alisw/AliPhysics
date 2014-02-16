@@ -4,7 +4,7 @@ AliEmcalTrackPropagatorTask* AddTaskEmcalTrackPropagator(
   const char *nameIn       = 0,
   const char *nameOut      = 0,
   const Bool_t onlyifnot   = kTRUE,
-  const Double_t d         = 440,
+  const Double_t d         = 440
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
