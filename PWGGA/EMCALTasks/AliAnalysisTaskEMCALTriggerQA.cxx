@@ -345,10 +345,10 @@ void AliAnalysisTaskEMCALTriggerQA::FillTriggerPatchMaps(TString triggerclasses)
       // cout << "ts =" <<ts<<endl;
 			
       //L1
-      Bool_t isEGA1 = ((bit >> fBitEGA  ) & 0x1) && fEventL1G  ;
-      Bool_t isEGA2 = ((bit >> fBitEGA+1) & 0x1) && fEventL1G2 ;
-      Bool_t isEJE1 = ((bit >> fBitEJE  ) & 0x1) && fEventL1J  ;
-      Bool_t isEJE2 = ((bit >> fBitEJE+1) & 0x1) && fEventL1J2 ;
+      Bool_t isEGA1 = ((bit >>  fBitEGA   ) & 0x1) && fEventL1G  ;
+      Bool_t isEGA2 = ((bit >> (fBitEGA+1)) & 0x1) && fEventL1G2 ;
+      Bool_t isEJE1 = ((bit >>  fBitEJE   ) & 0x1) && fEventL1J  ;
+      Bool_t isEJE2 = ((bit >> (fBitEJE+1)) & 0x1) && fEventL1J2 ;
       
       //if(isEGA1 || isEGA2 || isEJE1 || isEJE2) nL1Patch++;
       //if(isEJE1 || isEJE2) printf("Jet STU patch %d, time sum %d, posX %d , posY %d\n",nL1Patch,ts,posX, posY);
