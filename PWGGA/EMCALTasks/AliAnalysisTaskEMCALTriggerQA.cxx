@@ -251,31 +251,34 @@ void AliAnalysisTaskEMCALTriggerQA::FillCellMaps()
       posX = (nSupMod % 2) ? ieta + AliEMCALGeoParams::fgkEMCALCols : ieta;
       posY = iphi + AliEMCALGeoParams::fgkEMCALRows * int(nSupMod / 2);
       
-      if(int(posX/2) > fgkFALTROCols || int(posY/2) > fgkFALTRORows )
+      Int_t indexX = Int_t(posX/2);
+      Int_t indexY = Int_t(posY/2);
+      
+      if(indexX > fgkFALTROCols || indexY > fgkFALTRORows )
       {
         if(DebugLevel() > 0) printf("AliAnalysisTaskEMCALTriggerQA::UserExec() - Wrong Position (x,y) = (%d,%d)\n",posX,posY);
         continue;
       }
       
       // here it is the amplitude for each cell
-      fMapCell[int(posY/2)][int(posX/2)] += amp;
+      fMapCell[indexY][indexX] += amp;
       
       if(fEventL1G)
       {
-        fMapCellL1G[int(posY/2)][int(posX/2)] += amp;
-        //printf("L1G cell[%i,%i] amp=%f\n",int(posY/2),int(posX/2),fMapCellL1G[int(posY/2)][int(posX/2)]);
+        fMapCellL1G[indexY][indexX] += amp;
+        //printf("L1G cell[%i,%i] amp=%f\n",indexY,indexX,fMapCellL1G[indexY][indexX]);
       }
       
       if(fEventL1G2)
       {
-        fMapCellL1G2[int(posY/2)][int(posX/2)] += amp;
-        //printf("L1G2 cell[%i,%i] amp=%f\n",int(posY/2),int(posX/2),fMapCellL1G2[int(posY/2)][int(posX/2)]);
+        fMapCellL1G2[indexY][indexX] += amp;
+        //printf("L1G2 cell[%i,%i] amp=%f\n",indexY,indexX,fMapCellL1G2[indexY][indexX]);
       }
 			
-      if(fEventL1J)  fMapCellL1J [int(posY/2)][int(posX/2)] += amp;
-      if(fEventL1J2) fMapCellL1J2[int(posY/2)][int(posX/2)] += amp;
+      if(fEventL1J)  fMapCellL1J [indexY][indexX] += amp;
+      if(fEventL1J2) fMapCellL1J2[indexY][indexX] += amp;
 			
-      //printf("cell[%i,%i] amp=%f\n",int(posY/2),int(posX/2),fMapCell[int(posY/2)][int(posX/2)]);
+      //printf("cell[%i,%i] amp=%f\n",indexY,indexX,fMapCell[indexY][indexX]);
 			
     }
   }
@@ -665,33 +668,41 @@ void AliAnalysisTaskEMCALTriggerQA::FillL1GammaPatchHistograms()
   
   // Study fakes  - Make it more understandable!!!
   
-  Int_t areAllFakes=2;
-  Int_t numberpatchNotFake=0; Int_t numberpatchFake=0;
+  Int_t    areAllFakes        = 2;
+  Int_t    numberpatchNotFake = 0;
+  Int_t    numberpatchFake    = 0;
 
-  Int_t threshold =10;// 10 GeV !it's not GeV it's ADC !!
-  //  bool isFake=kTRUE;
-  bool enoughE=kFALSE;
-  Double_t patchMax = 0;
-  Int_t colMax = -1;
-  Int_t rowMax = -1;
+  Int_t    threshold = 10;// 10 GeV !it's not GeV it's ADC !!
+  Bool_t   enoughE   = kFALSE;
+  Double_t patchMax  = 0;
+  Int_t    colMax    = -1;
+  Int_t    rowMax    = -1;
+  Int_t    shiftCol  = -1;
+  Int_t    shiftRow  = -1;
   
   // loop on patchs
-  for (Int_t posx = 0; posx < 47; posx++)
+  for (Int_t posx = 0; posx < fgkFALTROCols; posx++)
   {
-    for (Int_t posy = 0; posy < 59; posy++)
+    for (Int_t posy = 0; posy < fgkFALTRORows; posy++)
     {
-      Double_t patchEnergy=0;
+      Double_t patchEnergy = 0;
       
-      if(fMapTrigL1G[posy][posx]>0)
+      if(fMapTrigL1G[posy][posx] > 0)
       {
-        for(Int_t irow=0;irow<2;irow++)
-        for(Int_t icol=0;icol<2;icol++)
+        for(Int_t irow = 0; irow < 2; irow++)
         {
-          // loop on cells
-          //	    printf("cell[%i,%i]=%f\n",posy+icol,posx+irow, fMapCellL1G[posy+icol][posx+irow]);
-          patchEnergy += fMapCellL1G[posy+icol][posx+irow] ;
-          
-          if( fMapCellL1G[posy+icol][posx+irow] >threshold/2) enoughE=kTRUE;
+          for(Int_t icol = 0; icol < 2; icol++)
+          {
+            // loop on cells
+            shiftCol = posx+icol;
+            shiftRow = posy+irow;
+            
+            //	    printf("cell[%i,%i]=%f\n",posy+icol,posx+irow, fMapCellL1G[posy+icol][posx+irow]);
+            if(shiftRow < fgkFALTRORows && shiftCol < fgkFALTROCols)
+              patchEnergy += fMapCellL1G[shiftRow][shiftCol] ;
+            
+            if( fMapCellL1G[shiftRow][shiftCol] >threshold/2) enoughE = kTRUE;
+          }
         }
         
         if (patchEnergy > patchMax)
@@ -706,13 +717,13 @@ void AliAnalysisTaskEMCALTriggerQA::FillL1GammaPatchHistograms()
           numberpatchNotFake++;
           fhL1GPatchNotFake ->Fill(posx,posy);
           fhL1GPatchNotFakeE->Fill(patchEnergy);
-          areAllFakes=1;
+          areAllFakes = 1;
         }
         else
         {
           numberpatchFake++;
-          areAllFakes=0;
-          fhL1GPatchFake->Fill(posx,posy);
+          areAllFakes = 0;
+          fhL1GPatchFake ->Fill(posx,posy);
           fhL1GPatchFakeE->Fill(patchEnergy);
         }
       }
@@ -722,30 +733,38 @@ void AliAnalysisTaskEMCALTriggerQA::FillL1GammaPatchHistograms()
   fhNPatchNotFake->Fill(areAllFakes,numberpatchNotFake);
   fhNPatchFake   ->Fill(areAllFakes,numberpatchFake);
   
-  if(areAllFakes==0)
+  if(areAllFakes == 0)
   {
     // loop on patchs
-    for (Int_t col = 0; col < 47; col++)
+    for (Int_t col = 0; col < fgkFALTROCols; col++)
     {
-      for (Int_t row = 0; row < 59; row++)
+      for (Int_t row = 0; row < fgkFALTRORows; row++)
       {
-        if(fMapTrigL1G[row][col]>0)
+        if(fMapTrigL1G[row][col] > 0)
         {
           //	cout <<"checking fMapTrigL1G[row][col]"<<fMapTrigL1G[row][col]<<endl;
           fhL1GPatchAllFake->Fill(col,row);
           
-          double patchEnergy=0;
-          for(Int_t irow=0;irow<2;irow++)
-          for(Int_t icol=0;icol<2;icol++)
-          patchEnergy += fMapCellL1G[col+icol][row+irow] ;
-          
+          Double_t patchEnergy=0;
+          for(Int_t irow = 0; irow < 2; irow++)
+          {
+            for(Int_t icol = 0; icol < 2; icol++)
+            {
+              shiftCol = col+icol;
+              shiftRow = row+irow;
+              
+              if(shiftRow < fgkFALTRORows && shiftCol < fgkFALTROCols)
+                patchEnergy += fMapCellL1G[shiftRow][shiftCol] ;
+
+            }
+          }
           fhL1GPatchAllFakeE->Fill(patchEnergy);
         }
       }
     }
     //  cout << "row max"<<rowMax<<" colmax"<<colMax<< " fMapTrigL1G[rowMax][colMax]"<< fMapTrigL1G[rowMax][colMax]<<endl;
     
-    if(fMapTrigL1G[rowMax][colMax]>0)
+    if(fMapTrigL1G[rowMax][colMax] > 0)
     {
       //  printf("\npatch max [%i,%i] = %f\n",rowMax,colMax,patchMax);
       fhL1GPatchAllFakeMax ->Fill(colMax,rowMax);
@@ -755,26 +774,34 @@ void AliAnalysisTaskEMCALTriggerQA::FillL1GammaPatchHistograms()
   else
   {
     // loop on patches
-    for (Int_t col = 0; col < 47; col++)
-    for (Int_t row = 0; row < 59; row++)
+    for (Int_t col = 0; col < fgkFALTROCols; col++)
     {
-      if(fMapTrigL1G[row][col]>0)
+      for (Int_t row = 0; row < fgkFALTRORows; row++)
       {
-        fhL1GPatchNotAllFake->Fill(col,row);
-        
-        double patchEnergy=0;
-        for(Int_t irow=0;irow<2;irow++)
-        for(Int_t icol=0;icol<2;icol++)
+        if(fMapTrigL1G[row][col] > 0)
         {
-          patchEnergy += fMapCellL1G[col+icol][row+irow] ;
+          fhL1GPatchNotAllFake->Fill(col,row);
+          
+          Double_t patchEnergy = 0;
+          for(Int_t irow = 0; irow < 2; irow++)
+          {
+            for(Int_t icol = 0; icol < 2; icol++)
+            {
+              shiftCol = col+icol;
+              shiftRow = row+irow;
+              
+              if(shiftRow < fgkFALTRORows && shiftCol < fgkFALTROCols)
+                patchEnergy += fMapCellL1G[shiftRow][shiftCol] ;
+            }
+          }
+          
+          fhL1GPatchNotAllFakeE->Fill(patchEnergy);
+          
         }
-        
-        fhL1GPatchNotAllFakeE->Fill(patchEnergy);
-        
       }
     }
     
-    if(fMapTrigL1G[rowMax][colMax]>0)
+    if(fMapTrigL1G[rowMax][colMax] > 0 )
     {
       fhL1GPatchNotAllFakeMax ->Fill(colMax,rowMax);
       fhL1GPatchNotAllFakeMaxE->Fill(patchMax);
@@ -782,8 +809,8 @@ void AliAnalysisTaskEMCALTriggerQA::FillL1GammaPatchHistograms()
   }
   
   fhGPMaxVV0TT->Fill(fV0Trigger, patchMax);
-  if( fEventL1G ) fhL1GPatchMax ->Fill(colMax,rowMax);
-  if( fEventL1G2 )fhL1G2PatchMax->Fill(colMax,rowMax);
+  if( fEventL1G )  fhL1GPatchMax ->Fill(colMax,rowMax);
+  if( fEventL1G2 ) fhL1G2PatchMax->Fill(colMax,rowMax);
   
 }
 
@@ -792,10 +819,11 @@ void AliAnalysisTaskEMCALTriggerQA::FillL1JetPatchHistograms()
 {
   // L1 Jet
   
-  Double_t patchMax = 0;
-  Int_t colMax = -1;
-  Int_t rowMax = -1;
-  Int_t col,row=0;
+  Double_t patchMax =  0;
+  Int_t    colMax   = -1;
+  Int_t    rowMax   = -1;
+  Int_t    col, row =  0;
+  
   for (Int_t i = 0; i < 9; i++)
   {
     for (Int_t j = 0; j < 12; j++)
@@ -822,8 +850,8 @@ void AliAnalysisTaskEMCALTriggerQA::FillL1JetPatchHistograms()
   }
   
   fhJPMaxVV0TT->Fill(fV0Trigger, patchMax);
-  if( fEventL1J ) fhL1JPatchMax ->Fill(colMax,rowMax);
-  if( fEventL1J2 )fhL1J2PatchMax->Fill(colMax,rowMax);
+  if( fEventL1J )  fhL1JPatchMax ->Fill(colMax,rowMax);
+  if( fEventL1J2 ) fhL1J2PatchMax->Fill(colMax,rowMax);
   
 }
 
@@ -1258,14 +1286,14 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
                                   fNBinsClusterE,0,fMaxClusterE);
 	fhL1GPatchNotFakeE ->SetXTitle("Energy (GeV)");
 	
-  fhNPatchFake   = new TH2F("hnpatchFake","number of fake patchs vs. all patchs are fake",
+  fhNPatchFake   = new TH2F("hNPatchFake","number of fake patchs vs. all patchs are fake",
                             3,0,3, 2880,0,2880);
   fhNPatchFake  ->SetYTitle("number of fake patchs");
   fhNPatchFake  ->SetXTitle("all fake event");
   fhNPatchFake  ->SetZTitle("counts");
 	
 	
-  fhNPatchNotFake   = new TH2F("hnpatchNotFake","number of Not fake patchs vs. all patchs are fake",
+  fhNPatchNotFake   = new TH2F("hNPatchNotFake","number of Not fake patchs vs. all patchs are fake",
                                3, 0, 3, 2000,0,2000);
   fhNPatchNotFake  ->SetYTitle("number of Not fake patchs");
   fhNPatchNotFake  ->SetXTitle("all fake event");
