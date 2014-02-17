@@ -198,53 +198,63 @@ AliPHOSClusterSelection* AliPHOSClusterSelection::SetMaxTOF(Float_t maxTOF)
 
 TString AliPHOSClusterSelection::ToString() const
 {
-  // returns a string an quasi-unique string for whatever selection 
+  // returns a string an quasi-unique string for whatever selection
   // parameters the instance contains. The uniqueness of the string
   // is limited by the precision given in the formatting of the string.
   // Take care that the precision is sufficient for your needs.
 
-  return TString::Format("%.1f_%i_%.1f_%.1f_%.1f",
-			 fMinChargedParticleTrackDistance,
-			 fNotUnfolded,
-			 fMaxDispR2,
-			 fMaxTOF
-			 );
+  TString string ="v1";
+  string+=Form("_%.2f", fMinChargedParticleTrackDistance);
+  string+=Form("_%i", fNotUnfolded);
+  string+=Form("_%.2f", fMaxDispR2);
+  string+=Form("_%i", fIsCore);
+  string+=Form("_%.2f", fMaxTOF);
+  return string;
 }
 
 
 Float_t AliPHOSClusterSelection::GetMinChargedParticleTrackDistance(const TString& string)
 {
-  TString * s =&(static_cast<TObjString*>(string.Tokenize("_")->At(0))->String());
-  Float_t flt= s->Atof();
-  //delete s; //s is defined in the stack, no delete necessary
+  TObjArray* array = string.Tokenize("_");
+  TObjString* objString = (TObjString*) array->At(kMinChargedParticleTrackDistance);
+  Float_t flt = objString->String().Atof();
+  delete array;
   return flt;
 }
 
 Bool_t AliPHOSClusterSelection::GetUnfolded(const TString& string)
 {
-  TString * s =&(static_cast<TObjString*>(string.Tokenize("_")->At(1))->String());
-  Bool_t bl = s->Atoi(); 
-  return bl;
+  TObjArray* array = string.Tokenize("_");
+  TObjString* objString = (TObjString*) array->At(kNotUnfolded);
+  Float_t flt = objString->String().Atoi();
+  delete array;
+  return flt;
 }
 
 Float_t AliPHOSClusterSelection::GetMaxDispR2(const TString& string)
 {
-  TString * s =&(static_cast<TObjString*>(string.Tokenize("_")->At(2))->String());
-  Float_t flt = s->Atof(); 
+  TObjArray* array = string.Tokenize("_");
+  TObjString* objString = (TObjString*) array->At(kMaxDispR2);
+  Float_t flt = objString->String().Atof();
+  delete array;
   return flt;
 }
 
 Bool_t AliPHOSClusterSelection::GetIsCore(const TString& string)
 {
-  TString * s =&(static_cast<TObjString*>(string.Tokenize("_")->At(3))->String());
-  Bool_t blt = s->Atoi(); 
-  return blt;
+  TObjArray* array = string.Tokenize("_");
+  TObjString* objString = (TObjString*) array->At(kIsCore);
+  Float_t flt = objString->String().Atoi();
+  delete array;
+  return flt;
 }
 
 Float_t AliPHOSClusterSelection::GetMaxTOF(const TString& string)
 {
-  TString * s =&(static_cast<TObjString*>(string.Tokenize("_")->At(4))->String());
-  Float_t flt = s->Atof(); 
+  TObjArray* array = string.Tokenize("_");
+  TObjString* objString = (TObjString*) array->At(kMaxTOF);
+  Float_t flt = objString->String().Atof();
+  delete array;
   return flt;
 }
 
