@@ -275,18 +275,6 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
       if(jet1->GetTagStatus()<1 || !jet1->GetTaggedJet())
 	continue;
 
-      AliEmcalJet *jetGen = jet1->ClosestJet();
-
-      Printf("AA jet");
-      Printf("jet 4-vector: %f,%f,%f,%f",jet1->Px(),jet1->Py(),jet1->Pz(),jet1->E());
-      Printf("pT: %f  pTcorr: %f  M: %f",jet1->Pt(),ptJet1,jet1->M());
-      Printf("eta: %f  phi: %f",jet1->Eta(),jet1->Phi());
-      if(jetGen) {
-	Printf("gen jet");
-	Printf("jet 4-vector: %f,%f,%f,%f",jetGen->Px(),jetGen->Py(),jetGen->Pz(),jetGen->E());
-	Printf("pT: %f  M: %f",jetGen->Pt(),jetGen->M());
-	Printf("eta: %f  phi: %f",jetGen->Eta(),jetGen->Phi());
-      }
       fh2PtJet1VsLeadPtTagged[fCentBin]->Fill(ptJet1,jet1->MaxTrackPt());
       fh2PtVsMassJet1Tagged[fCentBin]->Fill(ptJet1,jet1->M());
       fpPtVsMassJet1Tagged[fCentBin]->Fill(ptJet1,jet1->M());
@@ -299,6 +287,21 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
       if((Et*jetCont->GetJetRadius())>0.) 
 	massOverEtR = jet1->M()/(Et*jetCont->GetJetRadius());
       fh2EtMassOverEtRSq[fCentBin]->Fill(Et,massOverEtR*massOverEtR);
+
+      //check if matched gen level jet exists and do analysis
+      AliEmcalJet *jetGen = jet1->ClosestJet();
+
+      Printf("AA jet");
+      Printf("jet 4-vector: %f,%f,%f,%f",jet1->Px(),jet1->Py(),jet1->Pz(),jet1->E());
+      Printf("pT: %f  pTcorr: %f  M: %f",jet1->Pt(),ptJet1,jet1->M());
+      Printf("eta: %f  phi: %f",jet1->Eta(),jet1->Phi());
+      if(jetGen) {
+	Printf("gen jet");
+	Printf("jet 4-vector: %f,%f,%f,%f",jetGen->Px(),jetGen->Py(),jetGen->Pz(),jetGen->E());
+	Printf("pT: %f  M: %f",jetGen->Pt(),jetGen->M());
+	Printf("eta: %f  phi: %f",jetGen->Eta(),jetGen->Phi());
+      }
+
     }
   }
 
