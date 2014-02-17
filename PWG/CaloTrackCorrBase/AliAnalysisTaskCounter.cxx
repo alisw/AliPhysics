@@ -89,7 +89,7 @@ AliAnalysisTaskCounter::AliAnalysisTaskCounter()
     fOutputContainer(0x0),
     fESDtrackCuts(AliESDtrackCuts::GetStandardITSTPCTrackCuts2010()),
     fTriggerAnalysis (new AliTriggerAnalysis),
-    fCurrFileName(0),
+    fCurrFileName(0), fCheckMCCrossSection(kFALSE),
     fhNEvents(0),
     fhXVertex(0),    fhYVertex(0),    fhZVertex(0),
     fhXGoodVertex(0),fhYGoodVertex(0),fhZGoodVertex(0),
