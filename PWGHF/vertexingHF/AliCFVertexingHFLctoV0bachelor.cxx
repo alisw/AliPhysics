@@ -914,7 +914,7 @@ Bool_t AliCFVertexingHFLctoV0bachelor::FillVectorFromMCarray(AliAODMCParticle *m
   AliAODMCParticle *mcPartV0DaughterNeg = dynamic_cast<AliAODMCParticle*>(fmcArray->At(fLabelArray[2]));
   AliAODMCParticle *mcPartDaughterV0 = 0x0;
 
-  if(!mcPartV0DaughterPos && !mcPartV0DaughterNeg) return bGenValues;
+  if(!mcPartV0DaughterPos || !mcPartV0DaughterNeg) return bGenValues;
 
   if (TMath::Abs(mcPartDaughterK0->GetPdgCode())==311) {
     Int_t daughterK0 = mcPartDaughterK0->GetDaughter(0);

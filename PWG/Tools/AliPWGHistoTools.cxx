@@ -17,7 +17,9 @@
 #include "TVirtualFitter.h"
 #include "TMinuit.h"
 #include "AliLog.h"
+#include "TSpline.h"
 #include <iostream>
+#include "TGraphAsymmErrors.h"
 
 using namespace std;
 
@@ -957,37 +959,58 @@ TGraphErrors * AliPWGHistoTools::DivideGraphByFunc(const TGraphErrors * g, const
 
 }
 
-TGraphErrors * AliPWGHistoTools::Divide2Graphs(const TGraphErrors * g1, const TGraphErrors * g2){ 
+TGraphErrors * AliPWGHistoTools::Divide2Graphs(const TGraph * g1, const TGraph * g2, Int_t strategy){ 
 
-  // Divides g1/g2, looks for point with very close centers
-  Int_t ipoint=0;
+  // Divides g1/g2, 
+  // 2 strategies are possible: 
+  // - strategy = 0 looks for point with very close centers (also propagates error in this case)
+  // - strategy = 1 Loop over all points from g1 (xi,yi), interpolates the TGraphs with a spline and computes the ratio as yi / SplineG2(xi)
+
   TGraphErrors * gRatio = new TGraphErrors();
-  Int_t npoint1 = g1->GetN();
-  Int_t npoint2 = g2->GetN();
-  for(Int_t ipoint1 = 0; ipoint1 < npoint1; ipoint1++){
-    Double_t x1 = g1->GetX()[ipoint1];
-    for(Int_t ipoint2 = 0; ipoint2 < npoint2; ipoint2++){
-      Double_t x2 = g2->GetX()[ipoint2];
-      if((TMath::Abs(x1-x2)/(x1+x2)*2)<0.01) {
-	Double_t ratio   = g2->GetY()[ipoint2]  ? g1->GetY()[ipoint1]/g2->GetY()[ipoint2] : 0;
-	Double_t eratio  = 0;
-	if(g1->InheritsFrom("TGraphErrors") && g2->InheritsFrom("TGraphErrors")) {
-	  eratio = g2->GetY()[ipoint2]  ? 
-	    TMath::Sqrt(g1->GetEY()[ipoint1]*g1->GetEY()[ipoint1]/g1->GetY()[ipoint1]/g1->GetY()[ipoint1] + 
-			g2->GetEY()[ipoint2]/g2->GetY()[ipoint2]/g2->GetY()[ipoint2] ) * ratio
-	    : 0;
+
+  if(strategy == 0) {
+    Int_t ipoint=0;
+    Int_t npoint1 = g1->GetN();
+    Int_t npoint2 = g2->GetN();
+    for(Int_t ipoint1 = 0; ipoint1 < npoint1; ipoint1++){
+      Double_t x1 = g1->GetX()[ipoint1];
+      for(Int_t ipoint2 = 0; ipoint2 < npoint2; ipoint2++){
+	Double_t x2 = g2->GetX()[ipoint2];
+	if((TMath::Abs(x1-x2)/(x1+x2)*2)<0.01) {
+	  Double_t ratio   = g2->GetY()[ipoint2]  ? g1->GetY()[ipoint1]/g2->GetY()[ipoint2] : 0;
+	  Double_t eratio  = 0;
+	  if(g1->InheritsFrom("TGraphErrors") && g2->InheritsFrom("TGraphErrors")) {
+	    eratio = g2->GetY()[ipoint2]  ? 
+	      TMath::Sqrt(g1->GetEY()[ipoint1]*g1->GetEY()[ipoint1]/g1->GetY()[ipoint1]/g1->GetY()[ipoint1] + 
+			  g2->GetEY()[ipoint2]/g2->GetY()[ipoint2]/g2->GetY()[ipoint2] ) * ratio
+	      : 0;
+	  }
+	  gRatio->SetPoint     (ipoint, x1, ratio);
+	  gRatio->SetPointError(ipoint, 0, eratio);
+	  ipoint++;
+	  cout << ipoint << " [" << x1 << "] " <<  g1->GetY()[ipoint1] << "/" << g2->GetY()[ipoint2] << " = " << ratio <<"+-"<<eratio<< endl;
+	  
+	  //    cout << x << " " << g->GetY()[ipoint] << " " << f->Eval(x) << endl;
 	}
-	gRatio->SetPoint     (ipoint, x1, ratio);
-	gRatio->SetPointError(ipoint, 0, eratio);
-	ipoint++;
-	cout << ipoint << " [" << x1 << "] " <<  g1->GetY()[ipoint1] << "/" << g2->GetY()[ipoint2] << " = " << ratio <<"+-"<<eratio<< endl;
 	
-    //    cout << x << " " << g->GetY()[ipoint] << " " << f->Eval(x) << endl;
       }
-    
     }
   }
-  gRatio->SetMarkerStyle(20);
+  else if (strategy == 1) {
+    TSpline3 * splG2 = new TSpline3("fGraphSplG2",g2);
+    Int_t npoint1 = g1->GetN();
+    for(Int_t ipoint1 = 0; ipoint1 < npoint1; ipoint1++){
+      Double_t x1    = g1->GetX()[ipoint1];
+      Double_t y1    = g1->GetY()[ipoint1];
+      Double_t ratio = y1/splG2->Eval(x1);
+      gRatio->SetPoint(ipoint1, x1, ratio);
+
+    }
+    delete splG2;
+  }
+  else Printf("AliPWGHistoTools::Divide2Graphs(): Invalid strategy [%d]", strategy);
+
+    gRatio->SetMarkerStyle(20);
   //gRatio->Print();
   return gRatio;
 
@@ -1424,3 +1447,34 @@ Double_t AliPWGHistoTools::GetdMtdEta(TH1 *hData, TF1 * fExtrapolation, Double_t
 
 
 
+
+void AliPWGHistoTools::ScaleGraph(TGraph * g1, Double_t scale) {
+
+  // Scale a grh by the factor scale. If g1 is a TGraph(Asym)Error, errors are also scaled
+
+  if(!g1) return;
+  Bool_t isErrors  = TString(g1->ClassName()) == "TGraphErrors";
+  Bool_t isAErrors = TString(g1->ClassName()) == "TGraphAsymmErrors";
+
+  Int_t npoint = g1->GetN();
+  for (Int_t ipoint = 0; ipoint<npoint; ipoint++) {
+    Double_t x = g1->GetX()[ipoint];
+    Double_t y = g1->GetY()[ipoint];
+    Double_t val = y*scale;
+    g1->SetPoint(ipoint, x, val);
+    //    if it is  aclass with errors, also scale those
+    if (isAErrors) {
+      Double_t errxlow  = g1->GetEXlow() [ipoint];      
+      Double_t errxhigh = g1->GetEXhigh()[ipoint];      
+      Double_t errylow  = g1->GetEYlow() [ipoint]*scale;      
+      Double_t erryhigh = g1->GetEYhigh()[ipoint]*scale;      
+      ((TGraphAsymmErrors*)g1)->SetPointError(ipoint, errxlow, errxhigh, errylow, erryhigh);     
+    }
+    else if (isErrors) {
+      Double_t erry = g1->GetEY()[ipoint]*scale;
+      ((TGraphErrors*)g1)->SetPointError(ipoint, g1->GetEX()[ipoint], erry);
+    }
+  }
+
+
+}

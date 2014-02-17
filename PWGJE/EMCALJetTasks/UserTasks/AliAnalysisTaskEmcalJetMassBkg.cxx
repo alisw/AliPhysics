@@ -229,6 +229,10 @@ void AliAnalysisTaskEmcalJetMassBkg::UserCreateOutputObjects()
   const Double_t minPt = -50.;
   const Double_t maxPt = 200.;
 
+  const Int_t nBinsM  = 150;
+  const Double_t minM = -50.;
+  const Double_t maxM = 100.;
+
   const Int_t nBinsEta  = 100;
   const Double_t minEta = -1.;
   const Double_t maxEta =  1.;
@@ -241,64 +245,64 @@ void AliAnalysisTaskEmcalJetMassBkg::UserCreateOutputObjects()
   const Double_t minMult = 0.;
   const Double_t maxMult = 4000.;
 
-  fh2CentVsMassRC = new TH2F("fh2CentVsMassRC","fh2CentVsMassRC;cent;#it{M}_{RC}",nBinsCent,minCent,maxCent,nBinsPt,minPt,maxPt);
+  fh2CentVsMassRC = new TH2F("fh2CentVsMassRC","fh2CentVsMassRC;cent;#it{M}_{RC}",nBinsCent,minCent,maxCent,nBinsM,minM,maxM);
   fOutput->Add(fh2CentVsMassRC);  
 
-  fh2CentVsMassRCExLJ = new TH2F("fh2CentVsMassRCExLJ","fh2CentVsMassRCExLJ;cent;#it{M}_{RC}",nBinsCent,minCent,maxCent,nBinsPt,minPt,maxPt);
+  fh2CentVsMassRCExLJ = new TH2F("fh2CentVsMassRCExLJ","fh2CentVsMassRCExLJ;cent;#it{M}_{RC}",nBinsCent,minCent,maxCent,nBinsM,minM,maxM);
   fOutput->Add(fh2CentVsMassRCExLJ);  
 
-  fh2CentVsMassPerpConeLJ = new TH2F("fh2CentVsMassPerpConeLJ","fh2CentVsMassPerpConeLJ;cent;#it{M}_{RC}",nBinsCent,minCent,maxCent,nBinsPt,minPt,maxPt);
+  fh2CentVsMassPerpConeLJ = new TH2F("fh2CentVsMassPerpConeLJ","fh2CentVsMassPerpConeLJ;cent;#it{M}_{RC}",nBinsCent,minCent,maxCent,nBinsM,minM,maxM);
   fOutput->Add(fh2CentVsMassPerpConeLJ);  
 
-  fh2CentVsMassPerpConeTJ = new TH2F("fh2CentVsMassPerpConeTJ","fh2CentVsMassPerpConeTJ;cent;#it{M}_{RC}",nBinsCent,minCent,maxCent,nBinsPt,minPt,maxPt);
+  fh2CentVsMassPerpConeTJ = new TH2F("fh2CentVsMassPerpConeTJ","fh2CentVsMassPerpConeTJ;cent;#it{M}_{RC}",nBinsCent,minCent,maxCent,nBinsM,minM,maxM);
   fOutput->Add(fh2CentVsMassPerpConeTJ); 
 
-  fh2MultVsMassRC = new TH2F("fh2MultVsMassRC","fh2MultVsMassRC;#it{N}_{track};#it{M}_{RC}",nBinsMult,minMult,maxMult,nBinsPt,minPt,maxPt);
+  fh2MultVsMassRC = new TH2F("fh2MultVsMassRC","fh2MultVsMassRC;#it{N}_{track};#it{M}_{RC}",nBinsMult,minMult,maxMult,nBinsM,minM,maxM);
   fOutput->Add(fh2MultVsMassRC);  
 
-  fh2MultVsMassRCExLJ = new TH2F("fh2MultVsMassRCExLJ","fh2MultVsMassRCExLJ;#it{N}_{track};#it{M}_{RC}",nBinsMult,minMult,maxMult,nBinsPt,minPt,maxPt);
+  fh2MultVsMassRCExLJ = new TH2F("fh2MultVsMassRCExLJ","fh2MultVsMassRCExLJ;#it{N}_{track};#it{M}_{RC}",nBinsMult,minMult,maxMult,nBinsM,minM,maxM);
   fOutput->Add(fh2MultVsMassRCExLJ);  
 
-  fh2MultVsMassPerpConeLJ = new TH2F("fh2MultVsMassPerpConeLJ","fh2MultVsMassPerpConeLJ;#it{N}_{track};#it{M}_{RC}",nBinsMult,minMult,maxMult,nBinsPt,minPt,maxPt);
+  fh2MultVsMassPerpConeLJ = new TH2F("fh2MultVsMassPerpConeLJ","fh2MultVsMassPerpConeLJ;#it{N}_{track};#it{M}_{RC}",nBinsMult,minMult,maxMult,nBinsM,minM,maxM);
   fOutput->Add(fh2MultVsMassPerpConeLJ);  
 
-  fh2MultVsMassPerpConeTJ = new TH2F("fh2MultVsMassPerpConeTJ","fh2MultVsMassPerpConeTJ;#it{N}_{track};#it{M}_{RC}",nBinsMult,minMult,maxMult,nBinsPt,minPt,maxPt);
+  fh2MultVsMassPerpConeTJ = new TH2F("fh2MultVsMassPerpConeTJ","fh2MultVsMassPerpConeTJ;#it{N}_{track};#it{M}_{RC}",nBinsMult,minMult,maxMult,nBinsM,minM,maxM);
   fOutput->Add(fh2MultVsMassPerpConeTJ); 
 
-  fh2CentVsMedianMassRC = new TH2F("fh2CentVsMedianMassRC","fh2CentVsMedianMassRC;cent;#it{M}_{RC}",nBinsCent,minCent,maxCent,nBinsPt,minPt,maxPt);
+  fh2CentVsMedianMassRC = new TH2F("fh2CentVsMedianMassRC","fh2CentVsMedianMassRC;cent;#it{M}_{RC}",nBinsCent,minCent,maxCent,nBinsM,minM,maxM);
   fOutput->Add(fh2CentVsMedianMassRC);  
 
-  fh2CentVsMedianMassRCExLJ = new TH2F("fh2CentVsMedianMassRCExLJ","fh2CentVsMedianMassRCExLJ;cent;#it{M}_{RC}",nBinsCent,minCent,maxCent,nBinsPt,minPt,maxPt);
+  fh2CentVsMedianMassRCExLJ = new TH2F("fh2CentVsMedianMassRCExLJ","fh2CentVsMedianMassRCExLJ;cent;#it{M}_{RC}",nBinsCent,minCent,maxCent,nBinsM,minM,maxM);
   fOutput->Add(fh2CentVsMedianMassRCExLJ);  
 
-  fh2MultVsMedianMassRC = new TH2F("fh2MultVsMedianMassRC","fh2MultVsMedianMassRC;#it{N}_{track};#it{M}_{RC}",nBinsMult,minMult,maxMult,nBinsPt,minPt,maxPt);
+  fh2MultVsMedianMassRC = new TH2F("fh2MultVsMedianMassRC","fh2MultVsMedianMassRC;#it{N}_{track};#it{M}_{RC}",nBinsMult,minMult,maxMult,nBinsM,minM,maxM);
   fOutput->Add(fh2MultVsMedianMassRC);  
 
-  fh2MultVsMedianMassRCExLJ = new TH2F("fh2MultVsMedianMassRCExLJ","fh2MultVsMedianMassRCExLJ;#it{N}_{track};#it{M}_{RC}",nBinsMult,minMult,maxMult,nBinsPt,minPt,maxPt);
+  fh2MultVsMedianMassRCExLJ = new TH2F("fh2MultVsMedianMassRCExLJ","fh2MultVsMedianMassRCExLJ;#it{N}_{track};#it{M}_{RC}",nBinsMult,minMult,maxMult,nBinsM,minM,maxM);
   fOutput->Add(fh2MultVsMedianMassRCExLJ);  
 
-  fh2CentVsMeanMassRC = new TH2F("fh2CentVsMeanMassRC","fh2CentVsMeanMassRC;cent;#it{M}_{RC}",nBinsCent,minCent,maxCent,nBinsPt,minPt,maxPt);
+  fh2CentVsMeanMassRC = new TH2F("fh2CentVsMeanMassRC","fh2CentVsMeanMassRC;cent;#it{M}_{RC}",nBinsCent,minCent,maxCent,nBinsM,minM,maxM);
   fOutput->Add(fh2CentVsMeanMassRC);  
 
-  fh2CentVsMeanMassRCExLJ = new TH2F("fh2CentVsMeanMassRCExLJ","fh2CentVsMeanMassRCExLJ;cent;#it{M}_{RC}",nBinsCent,minCent,maxCent,nBinsPt,minPt,maxPt);
+  fh2CentVsMeanMassRCExLJ = new TH2F("fh2CentVsMeanMassRCExLJ","fh2CentVsMeanMassRCExLJ;cent;#it{M}_{RC}",nBinsCent,minCent,maxCent,nBinsM,minM,maxM);
   fOutput->Add(fh2CentVsMeanMassRCExLJ);  
 
-  fh2MultVsMeanMassRC = new TH2F("fh2MultVsMeanMassRC","fh2MultVsMeanMassRC;#it{N}_{track};#it{M}_{RC}",nBinsMult,minMult,maxMult,nBinsPt,minPt,maxPt);
+  fh2MultVsMeanMassRC = new TH2F("fh2MultVsMeanMassRC","fh2MultVsMeanMassRC;#it{N}_{track};#it{M}_{RC}",nBinsMult,minMult,maxMult,nBinsM,minM,maxM);
   fOutput->Add(fh2MultVsMeanMassRC);  
 
-  fh2MultVsMeanMassRCExLJ = new TH2F("fh2MultVsMeanMassRCExLJ","fh2MultVsMeanMassRCExLJ;#it{N}_{track};#it{M}_{RC}",nBinsMult,minMult,maxMult,nBinsPt,minPt,maxPt);
+  fh2MultVsMeanMassRCExLJ = new TH2F("fh2MultVsMeanMassRCExLJ","fh2MultVsMeanMassRCExLJ;#it{N}_{track};#it{M}_{RC}",nBinsMult,minMult,maxMult,nBinsM,minM,maxM);
   fOutput->Add(fh2MultVsMeanMassRCExLJ);  
 
-  fh2CentVsMedianMassPerAreaRC = new TH2F("fh2CentVsMedianMassPerAreaRC","fh2CentVsMedianMassPerAreaRC;cent;#it{M}_{RC}/A",nBinsCent,minCent,maxCent,nBinsPt,minPt,maxPt);
+  fh2CentVsMedianMassPerAreaRC = new TH2F("fh2CentVsMedianMassPerAreaRC","fh2CentVsMedianMassPerAreaRC;cent;#it{M}_{RC}/A",nBinsCent,minCent,maxCent,nBinsM,minM,maxM);
   fOutput->Add(fh2CentVsMedianMassPerAreaRC);  
 
-  fh2CentVsMedianMassPerAreaRCExLJ = new TH2F("fh2CentVsMedianMassPerAreaRCExLJ","fh2CentVsMedianMassPerAreaRCExLJ;cent;#it{M}_{RC}/A",nBinsCent,minCent,maxCent,nBinsPt,minPt,maxPt);
+  fh2CentVsMedianMassPerAreaRCExLJ = new TH2F("fh2CentVsMedianMassPerAreaRCExLJ","fh2CentVsMedianMassPerAreaRCExLJ;cent;#it{M}_{RC}/A",nBinsCent,minCent,maxCent,nBinsM,minM,maxM);
   fOutput->Add(fh2CentVsMedianMassPerAreaRCExLJ);  
 
-  fh2MultVsMedianMassPerAreaRC = new TH2F("fh2MultVsMedianMassPerAreaRC","fh2MultVsMedianMassPerAreaRC;#it{N}_{track};#it{M}_{RC}/A",nBinsMult,minMult,maxMult,nBinsPt,minPt,maxPt);
+  fh2MultVsMedianMassPerAreaRC = new TH2F("fh2MultVsMedianMassPerAreaRC","fh2MultVsMedianMassPerAreaRC;#it{N}_{track};#it{M}_{RC}/A",nBinsMult,minMult,maxMult,nBinsM,minM,maxM);
   fOutput->Add(fh2MultVsMedianMassPerAreaRC);  
 
-  fh2MultVsMedianMassPerAreaRCExLJ = new TH2F("fh2MultVsMedianMassPerAreaRCExLJ","fh2MultVsMedianMassPerAreaRCExLJ;#it{N}_{track};#it{M}_{RC}/A",nBinsMult,minMult,maxMult,nBinsPt,minPt,maxPt);
+  fh2MultVsMedianMassPerAreaRCExLJ = new TH2F("fh2MultVsMedianMassPerAreaRCExLJ","fh2MultVsMedianMassPerAreaRCExLJ;#it{N}_{track};#it{M}_{RC}/A",nBinsMult,minMult,maxMult,nBinsM,minM,maxM);
   fOutput->Add(fh2MultVsMedianMassPerAreaRCExLJ);  
 
   TString histName = "";
@@ -306,7 +310,7 @@ void AliAnalysisTaskEmcalJetMassBkg::UserCreateOutputObjects()
   for (Int_t i = 0; i < fNcentBins; i++) {
     histName = TString::Format("fh2PtVsMassRC_%d",i);
     histTitle = TString::Format("%s;#it{p}_{T,RC};#it{M}_{RC}",histName.Data());
-    fh2PtVsMassRC[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsPt,minPt,maxPt);
+    fh2PtVsMassRC[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsM,minM,maxM);
     fOutput->Add(fh2PtVsMassRC[i]);
 
     histName = TString::Format("fh2PtVsMassRCExLJDPhi_%d",i);
@@ -316,32 +320,32 @@ void AliAnalysisTaskEmcalJetMassBkg::UserCreateOutputObjects()
 
     histName = TString::Format("fh2PtVsMassPerpConeLJ_%d",i);
     histTitle = TString::Format("%s;#it{p}_{T,PerpConeLJ};#it{M}_{PerpConeLJ}",histName.Data());
-    fh2PtVsMassPerpConeLJ[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsPt,minPt,maxPt);
+    fh2PtVsMassPerpConeLJ[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsM,minM,maxM);
     fOutput->Add(fh2PtVsMassPerpConeLJ[i]);
 
     histName = TString::Format("fh2PtVsMassPerpConeTJ_%d",i);
     histTitle = TString::Format("%s;#it{p}_{T,PerpConeTJ};#it{M}_{PerpConeTJ}",histName.Data());
-    fh2PtVsMassPerpConeTJ[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsPt,minPt,maxPt);
+    fh2PtVsMassPerpConeTJ[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsM,minM,maxM);
     fOutput->Add(fh2PtVsMassPerpConeTJ[i]);
 
     histName = TString::Format("fh2EtaVsMassRC_%d",i);
     histTitle = TString::Format("%s;#eta_{RC};#it{M}_{RC}",histName.Data());
-    fh2EtaVsMassRC[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsEta,minEta,maxEta,nBinsPt,minPt,maxPt);
+    fh2EtaVsMassRC[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsEta,minEta,maxEta,nBinsM,minM,maxM);
     fOutput->Add(fh2EtaVsMassRC[i]);
 
     histName = TString::Format("fh2EtaVsMassRCExLJ_%d",i);
     histTitle = TString::Format("%s;#eta_{RC};#it{M}_{RC}",histName.Data());
-    fh2EtaVsMassRCExLJ[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsEta,minEta,maxEta,nBinsPt,minPt,maxPt);
+    fh2EtaVsMassRCExLJ[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsEta,minEta,maxEta,nBinsM,minM,maxM);
     fOutput->Add(fh2EtaVsMassRCExLJ[i]);
 
     histName = TString::Format("fh2EtaVsMassPerpConeLJ_%d",i);
     histTitle = TString::Format("%s;#eta_{PerpConeLJ};#it{M}_{PerpConeLJ}",histName.Data());
-    fh2EtaVsMassPerpConeLJ[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsEta,minEta,maxEta,nBinsPt,minPt,maxPt);
+    fh2EtaVsMassPerpConeLJ[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsEta,minEta,maxEta,nBinsM,minM,maxM);
     fOutput->Add(fh2EtaVsMassPerpConeLJ[i]);
 
     histName = TString::Format("fh2EtaVsMassPerpConeTJ_%d",i);
     histTitle = TString::Format("%s;#eta_{PerpConeTJ};#it{M}_{PerpConeTJ}",histName.Data());
-    fh2EtaVsMassPerpConeTJ[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsEta,minEta,maxEta,nBinsPt,minPt,maxPt);
+    fh2EtaVsMassPerpConeTJ[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsEta,minEta,maxEta,nBinsM,minM,maxM);
     fOutput->Add(fh2EtaVsMassPerpConeTJ[i]);
 
     histName = TString::Format("fpPtVsMassRC_%d",i);

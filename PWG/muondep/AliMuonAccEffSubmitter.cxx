@@ -77,8 +77,8 @@ namespace
 ClassImp(AliMuonAccEffSubmitter)
 
 //______________________________________________________________________________
-AliMuonAccEffSubmitter::AliMuonAccEffSubmitter(const char* generator)
-: AliMuonGridSubmitter(AliMuonGridSubmitter::kAccEff),
+AliMuonAccEffSubmitter::AliMuonAccEffSubmitter(const char* generator, Bool_t localOnly)
+: AliMuonGridSubmitter(AliMuonGridSubmitter::kAccEff,localOnly),
 fRatio(-1.0),
 fFixedNofEvents(10000),
 fMaxEventsPerChunk(5000),
@@ -92,12 +92,20 @@ fUseAODMerging(kFALSE)
 {
   // ctor
   
-  SetOCDBPath("raw://");
+  TString ocdbPath("raw://");
+  
+  if (localOnly) {
+    ocdbPath = "local://$ALICE_ROOT/OCDB";
+  }
+  
+  SetOCDBPath(ocdbPath.Data());
   
   SetLocalDirectory("Snapshot",LocalDir());
   
-  SetVar("VAR_OCDB_PATH","\"raw://\"");
+  SetVar("VAR_OCDB_PATH",Form("\"%s\"",ocdbPath.Data()));
 
+  SetVar("VAR_GENPARAM_INCLUDE","AliGenMUONLib.h");
+  SetVar("VAR_GENPARAM_NPART","1");
   SetVar("VAR_GENPARAM_GENLIB_TYPE","AliGenMUONlib::kJpsi");
   SetVar("VAR_GENPARAM_GENLIB_PARNAME","\"pPb 5.03\"");
 
@@ -129,6 +137,8 @@ fUseAODMerging(kFALSE)
   SetVar("VAR_GENPARAMCUSTOMSINGLE_Y_P2","0.141776");
   SetVar("VAR_GENPARAMCUSTOMSINGLE_Y_P3","0.0130173");
 
+  SetVar("VAR_PURELY_LOCAL",Form("%d",localOnly));
+  
   UseOCDBSnapshots(fUseOCDBSnapshots);
   
   SetGenerator(generator);
@@ -375,8 +385,8 @@ Bool_t AliMuonAccEffSubmitter::MakeOCDBSnapshots()
       }
     }
     
-    LocalFileList()->Add(new TObjString(ocdbSim));
-    LocalFileList()->Add(new TObjString(ocdbRec));
+    AddToLocalFileList(ocdbSim);
+    AddToLocalFileList(ocdbRec);
   }
   
   return ok;
@@ -579,6 +589,8 @@ Bool_t AliMuonAccEffSubmitter::Run(const char* mode)
   /// FULL : all of the above (requires all of the above)
   ///
   /// TEST : as SUBMIT, but in dry mode (does not actually submit the jobs)
+  ///
+  /// LOCALTEST : completely local test (including execution)
   
   if (!IsValid()) return kFALSE;
   
@@ -633,6 +645,16 @@ Bool_t AliMuonAccEffSubmitter::Run(const char* mode)
   if( smode == "SUBMIT" )
   {
     return (Submit(kFALSE)>0);
+  }
+  
+  if ( smode == "LOCALTEST" )
+  {
+    Bool_t ok = Run("LOCAL");
+    if ( ok )
+    {
+      ok = LocalTest();
+    }
+    return ok;
   }
   
   return kFALSE;
@@ -731,6 +753,40 @@ void AliMuonAccEffSubmitter::MakeNofEventsFixed(Int_t nevents)
   SetMapKeyValue("ReferenceTrigger","");
 }
 
+//______________________________________________________________________________
+Int_t AliMuonAccEffSubmitter::LocalTest()
+{
+  /// Generate a local macro (simrun.sh) to execute locally a full scale test
+  /// Can only be used with a fixed number of events (and runnumber is fixed to zero)
+  
+  if ( fRatio > 0 )
+  {
+    AliError("Can only work in local test with a fixed number of events");
+    return 0;
+  }
+  
+  if ( fFixedNofEvents <= 0 )
+  {
+    AliError("Please fix the number of input events using MakeNofEventsFixed()");
+    return 0;
+  }
+
+  std::cout << "Generating script to execute : ./simrun.sh" << std::endl;
+
+  std::ofstream out("simrun.sh");
+  
+  out << "#!/bin/bash" << std::endl;
+//  root.exe -b -q simrun.C  --run <x> --chunk <y> --event <n>
+  out << "root.exe -b -q simrun.C --run 0 --event " << fFixedNofEvents << std::endl;
+ 
+  gSystem->Exec("chmod +x simrun.sh");
+  
+  std::cout << "Executing the script : ./simrun.sh" << std::endl;
+
+  gSystem->Exec("./simrun.sh");
+  
+  return 1;
+}
 
 //______________________________________________________________________________
 Int_t AliMuonAccEffSubmitter::Submit(Bool_t dryRun)
@@ -906,10 +962,7 @@ void AliMuonAccEffSubmitter::UpdateLocalFileList(Bool_t clearSnapshots)
       
       if ( !gSystem->AccessPathName(snapshot.Data()) )
       {
-        if ( !LocalFileList()->FindObject(snapshot.Data()) )
-        {
-          LocalFileList()->Add(new TObjString(snapshot));
-        }
+        AddToLocalFileList(snapshot);
       }
     }
   }

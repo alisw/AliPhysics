@@ -144,7 +144,7 @@ void AliAnalysisTaskMuonCuts::MyUserCreateOutputObjects()
       AddObjectToCollection(histo);
 
       histoName = GetHistoName(kDCAVsPCheck, itheta, isrc);
-      histo = new TH2F(histoName.Data(), histoName.Data(), 100, 0., 800., 100, 0., 200.);
+      histo = new TH2F(histoName.Data(), histoName.Data(), 100, 0., 800., 400, 0., 200.);
       histo->SetXTitle("p (GeV/c)");
       histo->SetYTitle("DCA (cm)");
       AddObjectToCollection(histo);
@@ -307,8 +307,10 @@ void AliAnalysisTaskMuonCuts::Terminate(Option_t *) {
     }
   }
   delete optArray;
+  
+  fMuonTrackCuts->Print("param");
 
-  Int_t srcColors[kNtrackSources] = {kBlack, kRed, kSpring, kTeal, kBlue, kViolet, kMagenta, kOrange};
+  Int_t srcColors[kNtrackSources] = {kBlack, kRed, kSpring, kTeal, kBlue, kViolet, kMagenta, kOrange, kGray};
 
   TCanvas* can = 0x0;
   Int_t xshift = 100;
@@ -442,7 +444,7 @@ void AliAnalysisTaskMuonCuts::Terminate(Option_t *) {
   fitFunc->SetParNames("Norm", "Mean", "Sigma");
   gStyle->SetOptFit(1111);
   Double_t xMinFit[2] = {0., 0.};
-  Double_t xMaxFit[2] = {320., 150.}; // {360., 180.};
+  Double_t xMaxFit[2] = {260., 150.}; //{320., 150.}; // {360., 180.};
   printf("\nSigma p x DCA:\n");
   Double_t averageSigmaPdca[kNtrackSources*kNthetaAbs] = {0.};
   for ( Int_t itheta=0; itheta<kNthetaAbs; ++itheta ) {
@@ -522,28 +524,6 @@ void AliAnalysisTaskMuonCuts::Terminate(Option_t *) {
         printf("  %s %s: Sigma = %g +- %g  (chi2/%i = %g)\n",  fThetaAbsKeys->At(itheta)->GetName(), fSrcKeys->At(isrc)->GetName(), trendFit->GetParameter(0), trendFit->GetParError(0), trendFit->GetNDF(), trendFit->GetChisquare()/((Double_t)trendFit->GetNDF()));
       }
       leg->AddEntry(sigmaVsP, fSrcKeys->At(isrc)->GetName(), "lp");
-
-      // Plot 2D function for check!
-      histoPattern = GetHistoName(kPDCAVsPCheck, itheta, isrc);
-      TH2* histoCheck = (TH2*)GetSum(physSel, trigClassName, centralityRange, histoPattern);
-      if ( ! histoCheck ) histoCheck = histo; // needed for old data
-      currName = histoCheck->GetName();
-      currName.Append("_plotCut");
-      TCanvas* pdcaVsPcan = new TCanvas(currName.Data(), currName.Data(), igroup1*xshift,(igroup2+1)*yshift,600,600);
-      pdcaVsPcan->SetLogz();
-      pdcaVsPcan->SetRightMargin(0.12);
-      histoCheck->Draw("COLZ");
-
-      for ( Int_t icut=0; icut<nShowFuncs; ++icut ) {
-        currName = Form("%s_cutFunc%i", histoCheck->GetName(), icut);
-        TF1* cutFunction = new TF1(currName.Data(),cutFormula.Data(), pMinCut, pMaxCut);
-        cutParam[icut][0] = sigmaMeasCut[itheta];
-        cutParam[icut][1] = nSigmaCut;
-        cutFunction->SetParameters(cutParam[icut]);
-        cutFunction->SetLineWidth(2);
-        cutFunction->SetLineColor(cutColor[icut]);
-        cutFunction->Draw("same");
-      } // loop on cut func
     } // loop on src
     can->cd(itheta+1);
     leg->Draw("same");
@@ -566,33 +546,37 @@ void AliAnalysisTaskMuonCuts::Terminate(Option_t *) {
   printf("\n");
 
   igroup2++;
-  for ( Int_t itheta=0; itheta<kNthetaAbs; ++itheta ) {
-    for ( Int_t isrc=0; isrc<kNtrackSources; ++isrc ) {
-      histoPattern = GetHistoName(kDCAVsPCheck, itheta, isrc);
-      TH2* histoCheck = (TH2*)GetSum(physSel, trigClassName, centralityRange, histoPattern);
-      if ( ! histoCheck ) continue;
-      currName = histoCheck->GetName();
-      currName.Append("_plotCut");
-      TCanvas* pdcaVsPcan = new TCanvas(currName.Data(), currName.Data(), igroup1*xshift,(igroup2+1)*yshift,600,600);
-      pdcaVsPcan->SetRightMargin(0.12);
-      pdcaVsPcan->SetLogz();
-      histoCheck->Draw("COLZ");
-
-      for ( Int_t icut=0; icut<nShowFuncs; ++icut ) {
+  for ( Int_t icheck=0; icheck<2; icheck++ ) {
+    Int_t hDraw = ( icheck == 0 ) ? kPDCAVsPCheck : kDCAVsPCheck;
+    for ( Int_t itheta=0; itheta<kNthetaAbs; ++itheta ) {
+      for ( Int_t isrc=0; isrc<kNtrackSources; ++isrc ) {
+        histoPattern = GetHistoName(hDraw, itheta, isrc);
+        TH2* histoCheck = (TH2*)GetSum(physSel, trigClassName, centralityRange, histoPattern);
+        if ( ! histoCheck ) continue;
         currName = histoCheck->GetName();
-        currName.Append(Form("_cutFunc%i",icut));
-        TString currFormula = cutFormula;
-        currFormula.Append("/x");
-        TF1* cutFunction = new TF1(currName.Data(),currFormula.Data(), pMinCut, pMaxCut);
-        cutParam[icut][0] = sigmaMeasCut[itheta];
-        cutParam[icut][1] = nSigmaCut;
-        cutFunction->SetParameters(cutParam[icut]);
-        cutFunction->SetLineWidth(2);
-        cutFunction->SetLineColor(cutColor[icut]);
-        cutFunction->Draw("same");
-      } // loop on cut functions
-    } // loop on src
-  } //loop on theta
+        currName.Append("_plotCut");
+        TCanvas* pdcaVsPcan = new TCanvas(currName.Data(), currName.Data(), igroup1*xshift,(igroup2+icheck)*yshift,600,600);
+        pdcaVsPcan->SetRightMargin(0.12);
+        pdcaVsPcan->SetLogy();
+        pdcaVsPcan->SetLogz();
+        histoCheck->Draw("COLZ");
+
+        for ( Int_t icut=0; icut<nShowFuncs; ++icut ) {
+          currName = histoCheck->GetName();
+          currName.Append(Form("_cutFunc%i",icut));
+          TString currFormula = cutFormula;
+          if ( icheck == 1 ) currFormula.Append("/x");
+          TF1* cutFunction = new TF1(currName.Data(),currFormula.Data(), pMinCut, pMaxCut);
+          cutParam[icut][0] = sigmaMeasCut[itheta];
+          cutParam[icut][1] = nSigmaCut;
+          cutFunction->SetParameters(cutParam[icut]);
+          cutFunction->SetLineWidth(2);
+          cutFunction->SetLineColor(cutColor[icut]);
+          cutFunction->Draw("same");
+        } // loop on cut functions
+      } // loop on src
+    } //loop on theta
+  } // loop on check
 
 
   ///////////////////////////
@@ -733,7 +717,24 @@ void AliAnalysisTaskMuonCuts::Terminate(Option_t *) {
           currName.Append("_ratio");
           TH1* histoRatio = (TH1*)projectHisto->Clone(currName.Data());
           histoRatio->Sumw2();
-          histoRatio->Divide(refCutHisto);
+          TH1* auxNum = projectHisto;
+          TH1* auxDen = refCutHisto;
+          Bool_t mustInvert = kFALSE;
+          if ( auxNum->Integral()>auxDen->Integral() ) {
+            auxNum = refCutHisto;
+            auxDen = projectHisto;
+            mustInvert = kTRUE;
+          }
+          histoRatio->Divide(auxNum,auxDen,1.,1.,"B");
+          if ( mustInvert ) {
+            TH1* auxHistoOne = static_cast<TH1*>(histoRatio->Clone("auxHistoOne"));
+            for ( Int_t ibin=1; ibin<=auxHistoOne->GetXaxis()->GetNbins(); ibin++ ) {
+              auxHistoOne->SetBinContent(ibin,1.);
+              auxHistoOne->SetBinError(ibin,0.);
+            }
+            histoRatio->Divide(auxHistoOne,histoRatio);
+            delete auxHistoOne;
+          }
           histoRatio->SetTitle("");
           histoRatio->GetYaxis()->SetTitle(legTitle.Data());
           histoRatio->GetXaxis()->SetLabelSize(0.04/fracOfHeight);
@@ -757,7 +758,7 @@ void AliAnalysisTaskMuonCuts::Terminate(Option_t *) {
 
   igroup1++;
   igroup2=0;
-  Double_t ptMin[] = {0., 2., 4., 15.};
+  Double_t ptMin[] = {0., 2., 4., 15., 60.};
   Int_t nPtMins = sizeof(ptMin)/sizeof(ptMin[0]);
   for ( Int_t iptmin=0; iptmin<nPtMins; ++iptmin) {
     for ( Int_t isrc=0; isrc<kNtrackSources; ++isrc ) {

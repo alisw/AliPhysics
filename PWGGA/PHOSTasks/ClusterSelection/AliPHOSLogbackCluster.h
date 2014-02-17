@@ -29,6 +29,8 @@ class AliPHOSLogbackCluster : public TObject {
   AliPHOSLogbackCluster(const AliPHOSLogbackCluster& clus); 
   AliPHOSLogbackCluster& operator=(const AliPHOSLogbackCluster& clus);
 
+  AliPHOSGeometry* GetGeometry();
+  
   Double_t fE;
   Double_t fCoreE;
   Double_t fPosition[3];

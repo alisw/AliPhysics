@@ -21,6 +21,10 @@ class TFormula;
 //class AliAnalysisUtils;
 class LRCParticlePID;
 class AliVParticle;
+class AliCFContainer;
+class AliCFGridSparse;
+class THnBase;
+class AliTHn;
 
 
 #include <TObject.h> //LRCParticlePID is a derived class from"TObject"
@@ -34,6 +38,8 @@ class AliVParticle;
 #include "AliVParticle.h"
 #include "TParticle.h"
 #include "AliLog.h"
+#include "AliTHn.h"
+
 
 
 #ifndef ALIANALYSISTASKSE_H
@@ -52,9 +58,10 @@ namespace AliPIDNameSpace {
     
   enum AliDetectorType
   {
-    TPC = 0,
-    TOF,
-    NDetectors
+    fITS = 0,
+    fTPC,
+    fTOF,
+    fNDetectors
   };
   
   
@@ -96,7 +103,6 @@ class AliTwoParticlePIDCorr : public AliAnalysisTaskSE {
   void SetVertextype(Int_t Vertextype){fVertextype=Vertextype;}                                                 //Check it every time
     void SetZvtxcut(Double_t zvtxcut) {fzvtxcut=zvtxcut;}
     void SetCustomBinning(TString receivedCustomBinning) { fCustomBinning = receivedCustomBinning; }
-    void SetAsymmetricBin(THnSparse *h,Int_t axisno,Double_t *arraybin,Int_t arraybinsize,TString axisTitle); 
     void SetMaxNofMixingTracks(Int_t MaxNofMixingTracks) {fMaxNofMixingTracks=MaxNofMixingTracks;}               //Check it every time
   void SetCentralityEstimator(TString CentralityMethod) { fCentralityMethod = CentralityMethod;}
   void SetSampleType(TString SampleType) {fSampleType=SampleType;}
@@ -119,6 +125,8 @@ class AliTwoParticlePIDCorr : public AliAnalysisTaskSE {
     fAssociatedSpecies=AssociatedSpecies;
     fcontainPIDasso=containPIDasso;
   }
+
+ void SetFIllPIDQAHistos(Bool_t FIllPIDQAHistos){fFIllPIDQAHistos=FIllPIDQAHistos;}
   // void SetRejectPileUp(Bool_t rejectPileUp) {frejectPileUp=rejectPileUp;}
   void SetKinematicCuts(Float_t minPt, Float_t maxPt,Float_t mineta,Float_t maxeta)
   {
@@ -195,6 +203,8 @@ fPtTOFPIDmax=PtTOFPIDmax;
  private:
  //histograms
     TList *fOutput;        //! Output list
+    TList *fOutputList;        //! Output list
+
     TString    fCentralityMethod;     // Method to determine centrality
     TString    fSampleType;     // pp,p-Pb,Pb-Pb
     Int_t    fnTracksVertex;        // QA tracks pointing to principal vertex
@@ -261,6 +271,9 @@ fPtTOFPIDmax=PtTOFPIDmax;
     TH2F *fPioncont;//!
     TH2F *fKaoncont;//!
     TH2F *fProtoncont;//!
+    TH2F *fEventno;//!
+    TH2F *fEventnobaryon;//!
+    TH2F *fEventnomeson;//!
 
     TH2D* fCentralityCorrelation;  //! centrality vs multiplicity
 
@@ -281,17 +294,16 @@ fPtTOFPIDmax=PtTOFPIDmax;
     // TH3F *fHistocentNSigmaTPC;//! nsigma TPC
     // TH3F *fHistocentNSigmaTOF;//! nsigma TOF 
     
-    THnSparse *fCorrelatonTruthPrimary;//!
-    THnSparse *fCorrelatonTruthPrimarymix;//!
-    THnSparse *fTHnCorrUNID;//!
-    THnSparse *fTHnCorrUNIDmix;//!
-    THnSparse *fTHnCorrID;//!
-    THnSparse *fTHnCorrIDmix;//!
-    THnSparse *fTHnCorrIDUNID;//!
-    THnSparse *fTHnCorrIDUNIDmix;//!
-    THnSparse *fTHnTrigcount;//!
-    THnSparse *fTHnTrigcountMCTruthPrim;//!
-
+    AliTHn *fCorrelatonTruthPrimary;//!
+    AliTHn *fCorrelatonTruthPrimarymix;//!
+    AliTHn *fTHnCorrUNID;//!
+    AliTHn *fTHnCorrUNIDmix;//!
+    AliTHn *fTHnCorrID;//!
+    AliTHn *fTHnCorrIDmix;//!
+    AliTHn *fTHnCorrIDUNID;//!
+    AliTHn *fTHnCorrIDUNIDmix;//!
+    AliTHn *fTHnTrigcount;//!
+    AliTHn *fTHnTrigcountMCTruthPrim;//!
     
     TH1F *fHistQA[16]; //!
      
@@ -322,12 +334,13 @@ fPtTOFPIDmax=PtTOFPIDmax;
     Bool_t HasTPCPID(AliAODTrack *track) const; // has TPC PID
     Bool_t HasTOFPID(AliAODTrack *track) const; // has TOF PID
     Double_t GetBeta(AliAODTrack *track);
-    void CalculateNSigmas(AliAODTrack *track);
-    Int_t FindMinNSigma(AliAODTrack *track);
-    Bool_t* GetDoubleCounting(AliAODTrack * trk);
-    Int_t GetParticle(AliAODTrack * trk);  
-   
-   
+    void CalculateNSigmas(AliAODTrack *track, Bool_t FIllQAHistos);
+    Int_t FindMinNSigma(AliAODTrack *track, Bool_t FIllQAHistos);
+    Bool_t* GetDoubleCounting(AliAODTrack * trk, Bool_t FIllQAHistos);
+    Int_t GetParticle(AliAODTrack * trk, Bool_t FIllQAHistos);  
+ 
+     TH2F* GetHistogram2D(const char * name);//return histogram "name" from fOutputList
+
      	   
    Float_t twoTrackEfficiencyCutValue;
   //Pid objects
@@ -337,6 +350,7 @@ fPtTOFPIDmax=PtTOFPIDmax;
   Float_t fPtTOFPIDmax; //uper pt bound for the TOCTOF combined circular pid
   Bool_t fRequestTOFPID;//if true returns kSpUndefined if the TOF signal is missing
   PIDType fPIDType; // PID type  Double_t fNSigmaPID; // number of sigma for PID cut
+  Bool_t fFIllPIDQAHistos; //Switch for filling the nSigma histos
   Double_t fNSigmaPID; // number of sigma for PID cut
   Bool_t fUseExclusiveNSigma;//if true returns the identity only if no double counting(i.e not in the overlap area)
   Bool_t fRemoveTracksT0Fill;//if true remove tracks for which only StartTime from To-Fill is available (worst resolution)

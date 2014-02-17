@@ -76,7 +76,9 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
   fh3PatchADCEnergyEtaPhiCenterJ2(0),
   fh3PatchADCEnergyEtaPhiCenterJ1J2(0),
   fh2CellEnergyVsTime(0),
-  fh3EClusELeadingCellVsTime(0)
+  fh3EClusELeadingCellVsTime(0),
+  fh3JetReacCent(0),
+  fh2FullJetCent(0)
 {
   // Default constructor.
 
@@ -128,7 +130,9 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
   fh3PatchADCEnergyEtaPhiCenterJ2(0),
   fh3PatchADCEnergyEtaPhiCenterJ1J2(0),
   fh2CellEnergyVsTime(0),
-  fh3EClusELeadingCellVsTime(0)
+  fh3EClusELeadingCellVsTime(0),
+  fh3JetReacCent(0),
+  fh2FullJetCent(0)
 {
   // Standard constructor.
 
@@ -139,6 +143,11 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
 AliAnalysisTaskEmcalJetTriggerQA::~AliAnalysisTaskEmcalJetTriggerQA()
 {
   // Destructor.
+  if (fOutput) {
+    delete fOutput;  // delete output object list
+    fOutput = 0;
+  }
+
 }
 
 //________________________________________________________________________
@@ -224,6 +233,18 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   fHistRhovsCentCharged->GetXaxis()->SetTitle("Centrality (%)");
   fHistRhovsCentCharged->GetYaxis()->SetTitle("#rho_{ch} (GeV/c * rad^{-1})");
   fOutput->Add(fHistRhovsCentCharged);
+    
+  Int_t fgkNCentBins = 20;
+  Float_t kMinCent   = 0.;
+  Float_t kMaxCent   = 100.;
+  Double_t *binsCent = new Double_t[fgkNCentBins+1];
+  for(Int_t i=0; i<=fgkNCentBins; i++) binsCent[i]=(Double_t)kMinCent + (kMaxCent-kMinCent)/fgkNCentBins*(Double_t)i ;
+    
+  Int_t fgkNdEPBins = 18*8;
+  Float_t kMindEP   = 0.;
+  Float_t kMaxdEP   = 1.*TMath::Pi()/2.;
+  Double_t *binsdEP = new Double_t[fgkNdEPBins+1];
+  for(Int_t i=0; i<=fgkNdEPBins; i++) binsdEP[i]=(Double_t)kMindEP + (kMaxdEP-kMindEP)/fgkNdEPBins*(Double_t)i ;
 
   Int_t fgkNPtBins = 200;
   Float_t kMinPt   = -50.;
@@ -402,6 +423,12 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
 
   fh3EClusELeadingCellVsTime = new TH3F("fh3EClusELeadingCellVsTime","fh3EClusELeadingCellVsTime;E_{cluster};E_{leading cell};time_{leading cell}",fgkNEnBins,binsEn,fgkNEnBins,binsEn,fgkNTimeBins,binsTime);
   fOutput->Add(fh3EClusELeadingCellVsTime);
+    
+  fh3JetReacCent = new TH3F("fh3JetReacCent","fh3JetReacCent;E_{Jet};Centrality;dEP",fgkNEnBins,binsEn,fgkNCentBins,binsCent,fgkNdEPBins,binsdEP);
+  fOutput->Add(fh3JetReacCent);
+    
+  fh2FullJetCent = new TH2F("fh2FullJetCent","fh2FullJetCent;Centrality;dEP",fgkNCentBins,binsCent,fgkNdEPBins,binsdEP);
+  fOutput->Add(fh2FullJetCent);
 
 
   // =========== Switch on Sumw2 for all histos ===========
@@ -429,6 +456,8 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 
+  if(binsCent)              delete [] binsCent;
+  if(binsdEP)               delete [] binsdEP;
   if(binsEn)                delete [] binsEn;
   if(binsPt)                delete [] binsPt;
   if(binsPhi)               delete [] binsPhi;
@@ -527,6 +556,13 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
 	continue; //jet not selected
       
       Double_t jetPt = jet->Pt() - GetRhoVal(fContainerFull)*jet->Area();
+      Double_t jetPhi = jet->Phi();
+      Double_t dEPJetFull = -500.0;
+      dEPJetFull = RelativeEP(jetPhi , fEPV0);
+        
+      fh3JetReacCent->Fill(jet->E(),fCent,dEPJetFull);
+      fh2FullJetCent->Fill(fCent,dEPJetFull);
+      
       if(jetPt>ptLeadJet1) ptLeadJet1=jetPt;
       fh3PtEtaPhiJetFull->Fill(jetPt,jet->Eta(),jet->Phi());
       fh3PtEtaAreaJetFull->Fill(jetPt,jet->Eta(),jet->Area());
@@ -753,3 +789,31 @@ Double_t AliAnalysisTaskEmcalJetTriggerQA::GetECross(Int_t absID) const {
 
   return ecross;
 }
+
+//_________________________________________________________________________
+Float_t AliAnalysisTaskEmcalJetTriggerQA:: RelativeEP(Double_t objAng, Double_t EPAng) const
+{ // function to calculate angle between object and EP in the 1st quadrant (0,Pi/2)
+    Double_t dphi = (EPAng - objAng);
+    
+    // ran into trouble with a few dEP<-Pi so trying this...
+    if( dphi<-1*TMath::Pi() ){
+        dphi = dphi + 1*TMath::Pi();
+    }
+    
+    if( dphi>1*TMath::Pi()){
+        dphi = dphi - 1*TMath::Pi();
+    }
+     
+    if( (dphi>0) && (dphi<1*TMath::Pi()/2) ){
+        // Do nothing! we are in quadrant 1
+    }else if( (dphi>1*TMath::Pi()/2) && (dphi<1*TMath::Pi()) ){
+        dphi = 1*TMath::Pi() - dphi;
+    }else if( (dphi<0) && (dphi>-1*TMath::Pi()/2) ){
+        dphi = fabs(dphi);
+    }else if( (dphi<-1*TMath::Pi()/2) && (dphi>-1*TMath::Pi()) ){
+        dphi = dphi + 1*TMath::Pi();
+    }
+    
+    return dphi;   // dphi in [0, Pi/2]
+}
+
