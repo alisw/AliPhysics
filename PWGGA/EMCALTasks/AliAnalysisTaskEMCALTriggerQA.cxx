@@ -483,7 +483,10 @@ void AliAnalysisTaskEMCALTriggerQA::ClusterAnalysis()
     if( fEventL1G2) FillClusterHistograms(kL1GammaTrig2   ,kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);
     if( fEventL1J ) FillClusterHistograms(kL1JetTrig      ,kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);
     if( fEventL1J2) FillClusterHistograms(kL1JetTrig2     ,kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);
-    
+
+    if( fEventL1G2 && !fEventL1G) FillClusterHistograms(kL1Gamma2OnlyGammaTrig,kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);
+    if( fEventL1J2 && !fEventL1J) FillClusterHistograms(kL1Jet2OnlyJetTrig    ,kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);
+
     if( fEventL1G && !fEventL1J )
     FillClusterHistograms       (kL1GammaOnlyTrig,kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);
     if( fEventL1J && !fEventL1G )
@@ -506,7 +509,10 @@ void AliAnalysisTaskEMCALTriggerQA::ClusterAnalysis()
   if( fEventL1G2) FillClusterHistograms(kL1GammaTrig2   ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,fV0A+fV0C);
   if( fEventL1J ) FillClusterHistograms(kL1JetTrig      ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,fV0A+fV0C);
   if( fEventL1J2) FillClusterHistograms(kL1JetTrig2     ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,fV0A+fV0C);
-  
+
+  if( fEventL1G2 && !fEventL1G) FillClusterHistograms(kL1Gamma2OnlyGammaTrig,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,fV0A+fV0C);
+  if( fEventL1J2 && !fEventL1J) FillClusterHistograms(kL1Jet2OnlyJetTrig    ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,fV0A+fV0C);
+
   if( fEventL1G && !fEventL1J )
   FillClusterHistograms         (kL1GammaOnlyTrig,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,fV0A+fV0C);
   if( fEventL1J && !fEventL1G )
@@ -647,14 +653,24 @@ void AliAnalysisTaskEMCALTriggerQA::FillEventCounterHistogram()
     if(fEventCen || fEventSem) fhNEvents->Fill(16.5);
   }
 	
-  if( fEventL1G2 )fhNEvents->Fill(6.5);
-  if( fEventL1J2 )fhNEvents->Fill(8.5);
+  if( fEventL1G2 )
+  {
+    fhNEvents->Fill(6.5);
+    if( !fEventL1G ) fhNEvents->Fill(18.5);
+    
+  }
   
   if( fEventL1J )
   {
     fhNEvents->Fill(7.5);
     if(!fEventL1G)  fhNEvents->Fill(10.5);
     if(fEventCen || fEventSem) fhNEvents->Fill(17.5);
+  }
+  
+  if( fEventL1J2 )
+  {
+    fhNEvents->Fill(8.5);
+    if( !fEventL1J ) fhNEvents->Fill(19.5);
   }
   
   if(fEventL1J && fEventL1G) fhNEvents->Fill(11.5);
@@ -915,9 +931,10 @@ void AliAnalysisTaskEMCALTriggerQA::FillV0Histograms()
     if( fEventL0  )  fhV0[kL0Trig]         ->Fill(fV0A+fV0C);
     if( fEventCen )  fhV0[kCentralTrig]    ->Fill(fV0A+fV0C);
     if( fEventSem )  fhV0[kSemiCentralTrig]->Fill(fV0A+fV0C);
-    if( fEventL1G && !fEventL1J)  fhV0[kL1GammaOnlyTrig]->Fill(fV0A+fV0C);
-    if( fEventL1J && !fEventL1G)  fhV0[kL1JetOnlyTrig]  ->Fill(fV0A+fV0C);
-    
+    if( fEventL1G  && !fEventL1J) fhV0[kL1GammaOnlyTrig]      ->Fill(fV0A+fV0C);
+    if( fEventL1J  && !fEventL1G) fhV0[kL1JetOnlyTrig]        ->Fill(fV0A+fV0C);
+    if( fEventL1G2 && !fEventL1G) fhV0[kL1Gamma2OnlyGammaTrig]->Fill(fV0A+fV0C);
+    if( fEventL1J2 && !fEventL1J) fhV0[kL1Jet2OnlyJetTrig]    ->Fill(fV0A+fV0C);
     //if(nL0Patch!=0 || nL1Patch!=0) printf("total TRU %f, total STU %f, V0C+V0A %f; nL0 %d, nL1 %d \n",
     //       fTRUTotal,fSTUTotal,fV0A+fV0C,nL0Patch,nL1Patch);
   }
@@ -1025,7 +1042,7 @@ void AliAnalysisTaskEMCALTriggerQA::InitHistogramArrays()
 {
   //Histograms array initialization
   
-  for (Int_t i = 0; i < 10; i++)
+  for (Int_t i = 0; i < fgkTriggerCombi; i++)
   {
     fhV0     [i] = 0;
     fhClus   [i] = 0;              fhClusMax   [i] = 0;
@@ -1098,27 +1115,29 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fOutputList  = new TList;
   fOutputList ->SetOwner(kTRUE);
   
-  fhNEvents    = new TH1F("hNEvents","Number of selected events",18,0,18);
+  fhNEvents    = new TH1F("hNEvents","Number of selected events",20,0,20);
   fhNEvents   ->SetYTitle("N events");
   fhNEvents   ->GetXaxis()->SetBinLabel(1 ,"All");
   fhNEvents   ->GetXaxis()->SetBinLabel(2 ,"MB");
   fhNEvents   ->GetXaxis()->SetBinLabel(3 ,"Central Pb");
   fhNEvents   ->GetXaxis()->SetBinLabel(4 ,"SemiCentral Pb");
   fhNEvents   ->GetXaxis()->SetBinLabel(5 ,"L0");
-  fhNEvents   ->GetXaxis()->SetBinLabel(6 ,"L1-G");
+  fhNEvents   ->GetXaxis()->SetBinLabel(6 ,"L1-G1");
   fhNEvents   ->GetXaxis()->SetBinLabel(7 ,"L1-G2");
-  fhNEvents   ->GetXaxis()->SetBinLabel(8 ,"L1-J");
+  fhNEvents   ->GetXaxis()->SetBinLabel(8 ,"L1-J1");
   fhNEvents   ->GetXaxis()->SetBinLabel(9 ,"L1-J2");
-  fhNEvents   ->GetXaxis()->SetBinLabel(10 ,"L1-G & !L1-J");
-  fhNEvents   ->GetXaxis()->SetBinLabel(11 ,"L1-J & !L1-G");
-  fhNEvents   ->GetXaxis()->SetBinLabel(12 ,"L1-J & L1-G");
+  fhNEvents   ->GetXaxis()->SetBinLabel(10 ,"L1-G1 & !L1-J1");
+  fhNEvents   ->GetXaxis()->SetBinLabel(11 ,"L1-J1 & !L1-G1");
+  fhNEvents   ->GetXaxis()->SetBinLabel(12 ,"L1-J1 & L1-G1");
   fhNEvents   ->GetXaxis()->SetBinLabel(13 ,"MB & !L1 & !L0");
   fhNEvents   ->GetXaxis()->SetBinLabel(14,"L0 & !MB");
-  fhNEvents   ->GetXaxis()->SetBinLabel(15,"L1-G & !MB");
-  fhNEvents   ->GetXaxis()->SetBinLabel(16,"L1-J & !MB");
-  fhNEvents   ->GetXaxis()->SetBinLabel(17,"L1-G & (Cen | Semi)");
-  fhNEvents   ->GetXaxis()->SetBinLabel(18,"L1-J & (Cen | Semi)");
-  
+  fhNEvents   ->GetXaxis()->SetBinLabel(15,"L1-G1 & !MB");
+  fhNEvents   ->GetXaxis()->SetBinLabel(16,"L1-J1 & !MB");
+  fhNEvents   ->GetXaxis()->SetBinLabel(17,"L1-G1 & (Cen | Semi)");
+  fhNEvents   ->GetXaxis()->SetBinLabel(18,"L1-J1 & (Cen | Semi)");
+  fhNEvents   ->GetXaxis()->SetBinLabel(19,"L1-G2 & !L1-G1");
+  fhNEvents   ->GetXaxis()->SetBinLabel(20,"L1-J2 & !L1-J1");
+
   fhFORAmp     = new TH2F("hFORAmp", "FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column",
                           fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhFORAmp    ->SetXTitle("Index #eta (columnns)");
@@ -1425,9 +1444,11 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fOutputList->Add(fhL1J2PatchMax);
   
   // Cluster histograms, E
-  TString hName [] = {"MB","L0","L1G","L1G2","L1J","L1J2","L1GOnly","L1JOnly","Central","SemiCentral"};
-  TString hTitle [] = {"MB trigger","L0 trigger","L1 Gamma trigger","L1 Gamma2 trigger","L1 Jet trigger","L1 Jet2 trigger",
-    "L1 Gamma trigger and not L1 Jet","L1 Jet trigger and not L1 Gamma","Central trigger","SemiCentral trigger"};
+  TString hName  [] = {"MB","L0","L1G1","L1G2","L1J1","L1J2","L1G1NoL1J1","L1J1NoLG1","L1G2NoL1G1","L1J2NoL1J1","Central","SemiCentral"};
+  TString hTitle [] = {"MB trigger","L0 trigger","L1 Gamma1 trigger","L1 Gamma2 trigger","L1 Jet1 trigger","L1 Jet2 trigger",
+                       "L1 Gamma1 trigger and not L1 Jet1"  ,"L1 Jet1 trigger and not L1 Gamma1",
+                       "L1 Gamma2 trigger and not L1 Gamma1","L1 Jet2 trigger and not L1 Jet1",
+                        "Central trigger","SemiCentral trigger"};
 	
   for(Int_t i=0; i < 3; i++)
   {
@@ -1447,7 +1468,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
     fOutputList->Add(fhClusMaxMBPure[i]);
   }
   
-  for(Int_t i=0; i < 10; i++)
+  for(Int_t i=0; i < fgkTriggerCombi; i++)
   {
     fhV0[i] = new TH1F(Form("hV0%s",hName[i].Data()),
                        Form("V0 distribution for %s",hTitle[i].Data()),
