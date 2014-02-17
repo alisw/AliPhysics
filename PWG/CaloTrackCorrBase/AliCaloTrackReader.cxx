@@ -2210,10 +2210,10 @@ TArrayI AliCaloTrackReader::GetTriggerPatches(Int_t tmin, Int_t tmax )
         Int_t sum = 0;
         caloTrigger->GetL1TimeSum(sum);
 
-        Bool_t isEGA1 = ((bit >> fBitEGA  ) & 0x1) && IsEventEMCALL1Gamma1() ;
-        Bool_t isEGA2 = ((bit >> fBitEGA+1) & 0x1) && IsEventEMCALL1Gamma2() ;
-        Bool_t isEJE1 = ((bit >> fBitEJE  ) & 0x1) && IsEventEMCALL1Jet1  () ;
-        Bool_t isEJE2 = ((bit >> fBitEJE+1) & 0x1) && IsEventEMCALL1Jet2  () ;
+        Bool_t isEGA1 = ((bit >>  fBitEGA   ) & 0x1) && IsEventEMCALL1Gamma1() ;
+        Bool_t isEGA2 = ((bit >> (fBitEGA+1)) & 0x1) && IsEventEMCALL1Gamma2() ;
+        Bool_t isEJE1 = ((bit >>  fBitEJE   ) & 0x1) && IsEventEMCALL1Jet1  () ;
+        Bool_t isEJE2 = ((bit >> (fBitEJE+1)) & 0x1) && IsEventEMCALL1Jet2  () ;
         
         if(!isEGA1 && !isEJE1 && !isEGA2 && !isEJE2) continue;
         
