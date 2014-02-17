@@ -58,11 +58,9 @@ void AddTasksFlavourJet(const Int_t iCandType = 1 /*0 = D0, 1=Dstar...*/,
    
    // -- D meson selection
   
-   gROOT->LoadMacro("AddTaskDFilterAndCorrelationsExch.C");
+   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/FlavourJetTasks/macros/AddTaskDFilterAndCorrelations.C");
 
-   if(bIsMap) {
-      AliAnalysisTaskSEDmesonsFilterCJ *taskMCDmesonsFilter = AddTaskSEDmesonsFilterCJ(iCandType,sCutFile,bIsMC,kFALSE,sText);
-   }
+
    // EMCal framework
    // -- Physics selection task
    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPhysicsSelection.C");
@@ -109,7 +107,7 @@ void AddTasksFlavourJet(const Int_t iCandType = 1 /*0 = D0, 1=Dstar...*/,
       
       //Filter and correlation with D meson
       
-      AddTaskDFilterAndCorrelationsExch(
+      AddTaskDFilterAndCorrelations(
 	 iCandType,
       	 sCutFile,
       	 bIsMC,
@@ -128,39 +126,34 @@ void AddTasksFlavourJet(const Int_t iCandType = 1 /*0 = D0, 1=Dstar...*/,
       AliEmcalJetTask *taskMCJ;
       //jet reconstruction for correction map
       if(bIsMap){ 
-      	 taskMCJ = AddTaskEmcalJet(sInputTrkMC.Data(),sUsedClus.Data(),iJetAlgo,aRadius[i],
-      	    iJetType);
+	taskMCJ = AddTaskEmcalJet(sInputTrkMC.Data(),sUsedClus.Data(),iJetAlgo,aRadius[i], iJetType);
+
+	AddTaskDFilterAndCorrelations(
+				      iCandType,
+				      sCutFile,
+				      bIsMC,
+				      kFALSE,
+				      sText,
+				      taskFJ->GetName(),
+				      iLeading,
+				      leadHadType,
+				      aRadius[i],
+				      dJetPtCut,
+				      acctype
+				      //percjetareacut=1.
+				      );
+
       	 
-      	 AliAnalysisTaskFlavourJetCorrelations *taskMCDmesonCJ = AddTaskFlavourJetCorrelations(
-      	    iCandType,
-      	    sCutFile,
-      	    kTRUE,
-      	    kFALSE,
-      	    taskMCJ->GetName(),
-      	    Form("JetR%s",sRadius[i].Data()),
-      	    iLeading,
-      	    leadHadType,
-      	    aRadius[i],
-      	    dJetPtCut,
-      	    acctype
-      	    /*percjetareacut=1.*/);
-      	 
-      	 taskMCDmesonCJ->SetName(Form("AliAnalysisTaskSEEmcalJetMCDmesonsCJ_%s",sRadius[i].Data()));
-      	 taskMCDmesonCJ->SetForceBeamType(uBeamType);
-      	 taskMCDmesonCJ->SetAnaType(uAnaType);
-      	 taskMCDmesonCJ->SetLeadingHadronType(iLeading);
-      	 //  taskDmesonCJ->SelectCollisionCandidates(uTriggerMask);
-      	 
-      	 // definition of correction map
-      	 Int_t tag=0;
-      	 if(iCandType == 0) tag=AliEmcalJet::kD0;
-      	 if(iCandType == 1) tag=AliEmcalJet::kDStar;
-      	 Printf("************** tag = %d", tag&0x1);
-      	 AliJetResponseMaker* taskResp=AddTaskJetResponseMaker(
-      	    sUsedTrks.Data(),sUsedClus.Data(),taskFJ->GetName(),"",aRadius[i],
-      	    sInputTrkMC.Data(),"",taskMCJ->GetName(),"",aRadius[i],dJetPtCut,dJetAreaCut,5,0,AliJetResponseMaker::kGeometrical, 0.25,0.25,"TPC",-999,-999,-999,"AliJetResponseMaker", kFALSE, 0, -10,10, tag );
-      	 taskResp->SetMinJetMCPt(0); //added to bypass a return not needed (feature of PrepareJetTask)
-      	 //taskResp->SetHistoType(1);
+	// definition of correction map
+	Int_t tag=0;
+	if(iCandType == 0) tag=AliEmcalJet::kD0;
+	if(iCandType == 1) tag=AliEmcalJet::kDStar;
+	Printf("************** tag = %d", tag&0x1);
+	AliJetResponseMaker* taskResp=AddTaskJetResponseMaker(
+							      sUsedTrks.Data(),sUsedClus.Data(),taskFJ->GetName(),"",aRadius[i],
+							      sInputTrkMC.Data(),"",taskMCJ->GetName(),"",aRadius[i],dJetPtCut,dJetAreaCut,5,0,AliJetResponseMaker::kGeometrical, 0.25,0.25,"TPC",-999,-999,-999,"AliJetResponseMaker", kFALSE, 0, -10,10, tag );
+	taskResp->SetMinJetMCPt(0); //added to bypass a return not needed (feature of PrepareJetTask)
+	//taskResp->SetHistoType(1);
       	 
       }
    }

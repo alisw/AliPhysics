@@ -1,7 +1,13 @@
 #ifndef ALIANALYSISTASKEMCALTRIGGERQA_H
 #define ALIANALYSISTASKEMCALTRIGGERQA_H
 
-// $Id$
+//------------------------------------------------------------------------//
+//  Fill histograms with basic QA information for EMCAL offline trigger   //
+//  Author: Nicolas Arbor (LPSC-Grenoble), Rachid Guernane (LPSC-Grenoble)//
+//          Gustavo Conesa Balbastre  (LPSC-Grenoble)                     //
+//                                                                        //
+//  $Id$ //
+//------------------------------------------------------------------------//
 
 //--- Root ---
 class TList;
@@ -25,15 +31,35 @@ public:
   
   virtual ~AliAnalysisTaskEMCALTriggerQA() { ; }     // destructor
   
+  void   ClusterAnalysis();
+  
+  void   FillCellMaps();
+  
+  void   FillTriggerPatchMaps(TString triggerclasses);
+  
   void   FillClusterHistograms(Int_t triggerNumber, Bool_t maxCluster,
                                Float_t e,Float_t eta,Float_t phi,
                                Float_t ietamax,Float_t iphimax,
                                Float_t centrality, Float_t v0AC);
   
+  void   FillCorrelationHistograms();
+  
+  void   FillEventCounterHistogram();
+  
+  void   FillL1GammaPatchHistograms();
+  
+  void   FillL1JetPatchHistograms();
+  
+  void   FillMapHistograms();
+  
+  void   FillV0Histograms();
+  
   void   Init() ;
 
   void   InitHistogramArrays() ;
 
+  void   InitCellPatchMaps();
+  
   void   LocalInit()                     { Init()                       ; }
 
   void   UserCreateOutputObjects();    
@@ -45,6 +71,8 @@ public:
   
   void   SetEtaPhiEnMin(Float_t en)      { fEtaPhiEnMin       = en      ; }
 
+  void   SetTriggerEventBit(TString list) ;
+  
   // OADB and geometry settings
   
   void   InitGeometry();
@@ -85,12 +113,30 @@ private:
   
   Float_t           fEtaPhiEnMin;     //  Min energy for Eta/Phi histograms   
   
+  Int_t             fSTUTotal;        // Sum of STU time sums
+  Float_t           fTRUTotal;        // Sum of TRU amplitudes
+  Float_t           fV0Trigger;       // V0 signal from trigger
+  Float_t           fV0A;             // V0 A signal
+  Float_t           fV0C;             // V0 C signal
+  
+  // Event by event trigger recognition bit
+  Bool_t            fEventMB   ;      // Bit for MB events
+  Bool_t            fEventL0   ;      // Bit for L0 events
+  Bool_t            fEventL1G  ;      // Bit for L1 Gamma 1 events
+  Bool_t            fEventL1G2 ;      // Bit for L1 Gamma 2 events
+  Bool_t            fEventL1J  ;      // Bit for L1 Jet 1 events
+  Bool_t            fEventL1J2 ;      // Bit for L1 JEt 2 events
+  Bool_t            fEventCen  ;      // Bit for Central events
+  Bool_t            fEventSem  ;      // Bit for Semi Central events
+  
+  // Histograms
+  
   TH1F             *fhNEvents;        //! Number of selected events
   TH2F             *fhFORAmp;         //! FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column
   TH2F             *fhFORAmpL1G;      //! FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column, with L1 Gamma trigger event
-  TH2F             *fhFORAmpL1G2;      //! FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column, with L1 Gamma2 trigger event
+  TH2F             *fhFORAmpL1G2;     //! FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column, with L1 Gamma2 trigger event
   TH2F             *fhFORAmpL1J;      //! FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column, with L1 Jet trigger event
-  TH2F             *fhFORAmpL1J2;      //! FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column, with L1 Jet2 trigger event
+  TH2F             *fhFORAmpL1J2;     //! FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column, with L1 Jet2 trigger event
   TH2F             *fhL0Amp;          //! FALTRO signal per Row and Column for FOR involves L0 patch
   TH2F             *fhL0AmpL1G;       //! FALTRO signal per Row and Column for FOR involves L0 patch, with L1G trigger event
   TH2F             *fhL0AmpL1J;       //! FALTRO signal per Row and Column for FOR involves L0 patch, with L1J trigger event
@@ -98,28 +144,29 @@ private:
   TH2F             *fhL1GAmp;         //! STU signal per Row and Column for FOR position of L1 Gamma patch (top-left)
   TH2F             *fhL1G2Amp;        //! STU signal per Row and Column for FOR position of L1 Gamma2 patch (top-left)
   TH2F             *fhL1JAmp;         //! STU signal per Row and Column for FOR position of L1 Jet patch (top-left)
-  TH2F             *fhL1J2Amp;         //! STU signal per Row and Column for FOR position of L1 Jet2 patch (top-left)
-  TH2F             *fhL1FOREnergy;         //! STU signal per Row and Column for FOR position vs FOR energy
-  TH2F             *fhL0Patch;        //! FOR with L0 patch associated
-  TH2F             *fhL1GPatch;       //! FOR with L1 Gamma patch associated
-  TH2F             *fhL1G2Patch;       //! FOR with L1 Gamma patch associated
-  TH2F             *fhL1GPatchNotFake;       //! FOR with L1 Gamma patch associated but no energy in the related cells
-  TH2F             *fhL1GPatchFake;       //! FOR with L1 Gamma patch associated
-  TH2F             *fhL1GPatchNotAllFake;       //! FOR with at least 1 L1 Gamma patch associated that has energy in the related celles : not a fake event
-  TH2F             *fhL1GPatchAllFake;       //! FOR without any L1 Gamma patch associated with energy in the related cells: fake patch
-  TH2F             *fhL1GPatchNotAllFakeMax;       //! FOR with at least one L1 Gamma patch associated with energy in the related cell, maximal energy patch : not fake events
-  TH2F             *fhL1GPatchAllFakeMax;       //! FOR without any L1 Gamma patch associated with energy in the related cell, maximal energy patch : fake events
-  TH1F             *fhL1GPatchNotAllFakeMaxE;       //! Energy distrib of FOR for non fake events, patch of maximal energy
-  TH1F             *fhL1GPatchAllFakeMaxE;       //! Energy distrib FOR for fake events, patch of maximal energy
-  TH1F             *fhL1GPatchNotAllFakeE;	
-  TH1F             *fhL1GPatchAllFakeE;
-  TH1F             *fhL1GPatchFakeE;
-  TH1F             *fhL1GPatchNotFakeE;
-  TH2F             *fhnpatchFake; //! number of fake patchs per event vs. if all were fakes or not
-  TH2F             *fhnpatchNotFake; //! number of non fake patchs per events vs. if all were fakes or not
+  TH2F             *fhL1J2Amp;        //! STU signal per Row and Column for FOR position of L1 Jet2 patch (top-left)
+  TH2F             *fhL1FOREnergy;    //! STU signal per Row and Column for FOR position vs FOR energy
+  
+  TH2F             *fhL0Patch;                //! FOR with L0 patch associated
+  TH2F             *fhL1GPatch;               //! FOR with L1 Gamma patch associated
+  TH2F             *fhL1G2Patch;              //! FOR with L1 Gamma patch associated
+  TH2F             *fhL1GPatchNotFake;        //! FOR with L1 Gamma patch associated but no energy in the related cells
+  TH2F             *fhL1GPatchFake;           //! FOR with L1 Gamma patch associated
+  TH2F             *fhL1GPatchNotAllFake;     //! FOR with at least 1 L1 Gamma patch associated that has energy in the related celles : not a fake event
+  TH2F             *fhL1GPatchAllFake;        //! FOR without any L1 Gamma patch associated with energy in the related cells: fake patch
+  TH2F             *fhL1GPatchNotAllFakeMax;  //! FOR with at least one L1 Gamma patch associated with energy in the related cell, maximal energy patch : not fake events
+  TH2F             *fhL1GPatchAllFakeMax;     //! FOR without any L1 Gamma patch associated with energy in the related cell, maximal energy patch : fake events
+  TH1F             *fhL1GPatchNotAllFakeMaxE; //! Energy distrib of FOR for non fake events, patch of maximal energy
+  TH1F             *fhL1GPatchAllFakeMaxE;    //! Energy distrib FOR for fake events, patch of maximal energy
+  TH1F             *fhL1GPatchNotAllFakeE;	  //! Energy distrib of FOR for non fake events, all patch energy
+  TH1F             *fhL1GPatchAllFakeE;       //! Energy distrib of FOR forfake events, all patch energy
+  TH1F             *fhL1GPatchFakeE;          //! Energy distrib of FOR for fake events, all patch energy
+  TH1F             *fhL1GPatchNotFakeE;       //! Energy distrib of FOR for non fake events, all patch energy
+  TH2F             *fhNPatchFake;             //! number of fake patchs per event vs. if all were fakes or not
+  TH2F             *fhNPatchNotFake;          //! number of non fake patchs per events vs. if all were fakes or not
   
   TH2F             *fhL1JPatch;       //! FOR with L1 Jet patch associated
-  TH2F             *fhL1J2Patch;       //! FOR with L1 Jet patch associated
+  TH2F             *fhL1J2Patch;      //! FOR with L1 Jet patch associated
   TH2F             *fhFEESTU;         //! Correlation FEE vs STU
   TH2F             *fhTRUSTU;         //! Correlation TRU vs STU
   TH2I             *fhV0STU;          //! Total signal STU vs V0C+V0S
@@ -129,17 +176,17 @@ private:
   TProfile2D       *fhFORMeanAmp;     //! Mean FastOR(FEE) signal per Row and Column
   TProfile2D       *fhL0MeanAmp;      //! Mean FastOR(TRU) signal per Row and Column
   TProfile2D       *fhL1MeanAmp;      //! Mean FastOR(STU) signal per Row and Column
-  TH1F             *fhV0[10];          //! V0 distribution for a triggered event
+  TH1F             *fhV0[10];         //! V0 distribution for a triggered event
   TH2F             *fhL1GPatchMax;    //! FOR of max. amplitude patch with L1 Gamma patch associated
-  TH2F             *fhL1G2PatchMax;    //! FOR of max. amplitude patch with L1 Gamma patch associated
+  TH2F             *fhL1G2PatchMax;   //! FOR of max. amplitude patch with L1 Gamma patch associated
   TH2F             *fhL1JPatchMax;    //! FOR of max. amplitude patch with L1 Jet patch associated  
-  TH2F             *fhL1J2PatchMax;    //! FOR of max. amplitude patch with L1 Jet patch associated  
+  TH2F             *fhL1J2PatchMax;   //! FOR of max. amplitude patch with L1 Jet patch associated
   
   // Cluster vs trigger histograms
   enum triggerType{kMBTrig = 0, kL0Trig = 1, kL1GammaTrig = 2, kL1GammaTrig2 = 3, kL1JetTrig = 4, kL1JetTrig2 = 5, kL1GammaOnlyTrig = 6, kL1JetOnlyTrig = 7, kCentralTrig = 8, kSemiCentralTrig = 9 };
   
-  TH1F             *fhClusMBPure[3];      //! Clusters E distribution for pure MB trigger  
-  TH1F             *fhClusMaxMBPure[3];   //! Maximum E Cluster per event distribution for pure MB trigger
+  TH1F             *fhClusMBPure[3];       //! Clusters E distribution for pure MB trigger
+  TH1F             *fhClusMaxMBPure[3];    //! Maximum E Cluster per event distribution for pure MB trigger
   
   TH1F             *fhClus[10];            //! Clusters E distribution for a trigger
   TH1F             *fhClusMax[10];         //! Maximum E Cluster per event distribution for MB trigger
@@ -191,12 +238,27 @@ private:
   static const int  fgkFALTROCols = AliEMCALGeoParams::fgkEMCALCols; // total number of fake altro columns in EMCAL 
   // (ALTRO channels in one SM times 2 SM divided by 2 per FALTRO)
   
+  // cell, patch maps
+  Double_t fMapCell     [fgkFALTRORows][fgkFALTROCols]; // Cell map
+  Double_t fMapCellL1G  [fgkFALTRORows][fgkFALTROCols]; // Cell map for L1G
+  Double_t fMapCellL1G2 [fgkFALTRORows][fgkFALTROCols]; // Cell map for L1G2
+  Double_t fMapCellL1J  [fgkFALTRORows][fgkFALTROCols]; // Cell map for L1J
+  Double_t fMapCellL1J2 [fgkFALTRORows][fgkFALTROCols]; // Cell map for L1J2
+  Double_t fMapTrigL0   [fgkFALTRORows][fgkFALTROCols]; // Patch map for L0
+  Double_t fMapTrigL1   [fgkFALTRORows][fgkFALTROCols]; // Patch map for L1
+  Double_t fMapTrigL0L1G[fgkFALTRORows][fgkFALTROCols]; // Patch map for L0L1G
+  Double_t fMapTrigL0L1J[fgkFALTRORows][fgkFALTROCols]; // Patch map for L0L1J
+  Double_t fMapTrigL1G  [fgkFALTRORows][fgkFALTROCols]; // Patch map for L1G
+  Double_t fMapTrigL1G2 [fgkFALTRORows][fgkFALTROCols]; // Patch map for L1G2
+  Double_t fMapTrigL1J  [fgkFALTRORows][fgkFALTROCols]; // Patch map for L1J
+  Double_t fMapTrigL1J2 [fgkFALTRORows][fgkFALTROCols]; // Patch map for L1J2
+
   
   AliAnalysisTaskEMCALTriggerQA           (const AliAnalysisTaskEMCALTriggerQA&); // not implemented
   
   AliAnalysisTaskEMCALTriggerQA& operator=(const AliAnalysisTaskEMCALTriggerQA&); // not implemented
   
-  ClassDef(AliAnalysisTaskEMCALTriggerQA, 11);   
+  ClassDef(AliAnalysisTaskEMCALTriggerQA, 12);
 };
 
 #endif 

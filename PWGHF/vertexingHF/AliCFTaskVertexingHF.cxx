@@ -1153,22 +1153,25 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
     } else if (fDecayChannel==22) {
       //nvarToPlot = 16;
       titles = new TString[nvarToPlot];
-      titles[0]="pT_Lc (GeV/c)";
-      titles[1]="rapidity";
-      titles[2]="phi (rad)";
-      titles[3]="cosPAV0";
-      titles[4]="onTheFlyStatusV0";
+      titles[0]="p_{T}(#Lambda_{c}) [GeV/c]";
+      titles[1]="y(#Lambda_{c})";
+      titles[2]="#varphi(#Lambda_{c}) [rad]";
+      titles[3]="onTheFlyStatusV0";
+      titles[4]="z_{vtx} [cm]";
       titles[5]="centrality";
       titles[6]="fake";
       titles[7]="multiplicity";
-      titles[8]="pT_bachelor (GeV/c)";
-      titles[9]="pT_V0pos (GeV/c)";
-      titles[10]="pT_V0neg (GeV/c)";
-      titles[11]="invMassV0 (GeV/c2)";
-      titles[12]="dcaV0 (nSigma)";
-      titles[13]="c#tauV0 (#mum)";
-      titles[14]="c#tau (#mum)";
-      titles[15]="cosPA";
+      //titles[8]="pT(bachelor) [GeV/c]";
+      titles[8]="p(bachelor) [GeV/c]";
+      titles[9]="p_{T}(V0) [GeV/c]";
+      titles[10]="y(V0)";
+      titles[11]="#varphi(V0) [rad]";
+      titles[12]="m_{inv}(#pi^{+}#pi^{+}) [GeV/c^{2}]";
+      titles[13]="dcaV0 (nSigma)";
+      titles[14]="cosine pointing angle (V0)";
+      titles[15]="cosine pointing angle (#Lambda_{c})";
+      //titles[16]="c#tauV0 (#mum)";
+      //titles[17]="c#tau (#mum)";
     } else {
       //nvarToPlot = 12;
       titles = new TString[nvarToPlot];
@@ -1190,11 +1193,11 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
     //nvarToPlot = 8;
     titles = new TString[nvarToPlot];
     if (fDecayChannel==22) {
-      titles[0]="pT_candidate (GeV/c)";
-      titles[1]="rapidity";
-      titles[2]="phi (rad)";
-      titles[3]="cosPAV0";
-      titles[4]="onTheFlyStatusV0";
+      titles[0]="p_{T}(#Lambda_{c}) [GeV/c]";
+      titles[1]="y(#Lambda_{c})";
+      titles[2]="#varphi(#Lambda_{c}) [rad]";
+      titles[3]="onTheFlyStatusV0";
+      titles[4]="z_{vtx} [cm]";
       titles[5]="centrality";
       titles[6]="fake";
       titles[7]="multiplicity";
@@ -1319,23 +1322,6 @@ void AliCFTaskVertexingHF::UserCreateOutputObjects()
   //TO BE SET BEFORE THE EXECUTION OF THE TASK
   //
   Info("UserCreateOutputObjects","CreateOutputObjects of task %s\n", GetName());
-	
-  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
-  AliPIDResponse *localPIDResponse = (AliPIDResponse*)inputHandler->GetPIDResponse();
-
-  if (fCuts->GetIsUsePID() && fDecayChannel==22) {
-	  
-    fCuts->GetPidHF()->SetPidResponse(localPIDResponse);
-    fCuts->GetPidHF()->SetOldPid(kFALSE);
-    AliRDHFCutsLctoV0* lcv0Cuts=dynamic_cast<AliRDHFCutsLctoV0*>(fCuts);
-    if(lcv0Cuts){
-      lcv0Cuts->GetPidV0pos()->SetPidResponse(localPIDResponse);
-      lcv0Cuts->GetPidV0neg()->SetPidResponse(localPIDResponse);
-      lcv0Cuts->GetPidV0pos()->SetOldPid(kFALSE);
-      lcv0Cuts->GetPidV0neg()->SetOldPid(kFALSE);
-    }
-  }
 
   //slot #1
   OpenFile(1);

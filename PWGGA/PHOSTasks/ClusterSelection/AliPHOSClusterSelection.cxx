@@ -207,7 +207,6 @@ TString AliPHOSClusterSelection::ToString() const
 			 fMinChargedParticleTrackDistance,
 			 fNotUnfolded,
 			 fMaxDispR2,
-			 fCoreRadius,
 			 fMaxTOF
 			 );
 }

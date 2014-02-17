@@ -124,6 +124,7 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
   
   Int_t   fTreeCascVarMultiplicityMC;         //!
   Float_t fTreeCascVarDistOverTotMom;       //!
+  Int_t   fTreeCascVarIsPhysicalPrimary; //!
   Int_t   fTreeCascVarPID;         //!
   Int_t   fTreeCascVarPIDBachelor; //!  
   Int_t   fTreeCascVarPIDNegative; //!

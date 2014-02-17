@@ -24,12 +24,12 @@
 #include "AliAODEvent.h"
 #include "AliPID.h"
 #include "AliAODTrack.h"
-#include "AliPIDResponse.h"
-#include "AliTPCPIDResponse.h"
 #include "AliRDHFCutsLctoV0.h"
 #include "AliNormalizationCounter.h"
 
 class TH1F;
+class TClonesArray;
+class AliAODRecoCascade;
 
 class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE 
 {
@@ -73,6 +73,8 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   void SetUseOnTheFlyV0(Bool_t a) { fUseOnTheFlyV0=a; }
   Bool_t GetUseOnTheFlyV0() { return fUseOnTheFlyV0; }
 
+  Int_t MatchToMClabelC(AliAODRecoCascadeHF *candidate,TClonesArray *mcArray);
+
  private:
   
   void CheckEventSelection(AliAODEvent *aodEvent);
@@ -90,7 +92,7 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   void DefineGeneralHistograms();
   void DefineAnalysisHistograms();
   void DefineK0SHistos();
-  void  FillAnalysisHistograms(AliAODRecoCascadeHF *part, Bool_t isBachelorID, TString appendthis);
+  void FillAnalysisHistograms(AliAODRecoCascadeHF *part, Bool_t isBachelorID, TString appendthis);
 
   AliAnalysisTaskSELc2V0bachelor(const AliAnalysisTaskSELc2V0bachelor &source);
   AliAnalysisTaskSELc2V0bachelor& operator=(const AliAnalysisTaskSELc2V0bachelor& source); 
@@ -112,7 +114,6 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   TList *fOutputPIDBach;      // User output slot 5 // histos with PID on Bachelor
 
   TH1F *fCEvents;                    // Histogram to check selected events
-  AliPIDResponse *fPIDResponse;      //! PID response object
   Bool_t fIsK0SAnalysis;             // switch between Lpi and K0Sp
   AliNormalizationCounter *fCounter; // AliNormalizationCounter on output slot 2
   AliRDHFCutsLctoV0 *fAnalCuts;      // Cuts - sent to output slot 3
@@ -127,7 +128,7 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   Float_t fBzkG;                      // magnetic field value [kG]
   Bool_t fAdditionalChecks;           // flag to fill additional histograms
 
-  ClassDef(AliAnalysisTaskSELc2V0bachelor,4); // class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelor,5); // class for Lc->p K0
 };
 
 #endif

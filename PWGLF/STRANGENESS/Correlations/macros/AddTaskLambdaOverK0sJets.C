@@ -17,7 +17,7 @@ AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      =
   Bool_t   usePID      = kFALSE;
   Float_t  nSigmaPID   = 3.0;
   Float_t  dcaDaug     = 1.0;
-  FLoat_t  dca2PrmVtx  = 0.095;  // tighter cut
+  Float_t  dca2PrmVtx  = 0.095;  // tighter cut
   Float_t  nclsDaug    = 50;     // looser cut
 
 

@@ -152,6 +152,10 @@ void AliAnalysisTaskEmcalJetMass::UserCreateOutputObjects()
   const Double_t minPt = -50.;
   const Double_t maxPt = 200.;
 
+  const Int_t nBinsM  = 150;
+  const Double_t minM = -50.;
+  const Double_t maxM = 100.;
+
   const Int_t nBinsArea = 100;
   const Double_t minArea = 0.;
   const Double_t maxArea = 1.;
@@ -175,37 +179,37 @@ void AliAnalysisTaskEmcalJetMass::UserCreateOutputObjects()
 
     histName = TString::Format("fh2PtVsMassJet1All_%d",i);
     histTitle = TString::Format("%s;#it{p}_{T,jet1};#it{M}_{jet1}",histName.Data());
-    fh2PtVsMassJet1All[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsPt,minPt,maxPt);
+    fh2PtVsMassJet1All[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsM,minM,maxM);
     fOutput->Add(fh2PtVsMassJet1All[i]);
 
     histName = TString::Format("fh2PtVsMassJet1Tagged_%d",i);
     histTitle = TString::Format("%s;#it{p}_{T,jet1};#it{M}_{jet1}",histName.Data());
-    fh2PtVsMassJet1Tagged[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsPt,minPt,maxPt);
+    fh2PtVsMassJet1Tagged[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsM,minM,maxM);
     fOutput->Add(fh2PtVsMassJet1Tagged[i]);
 
     histName = TString::Format("fpPtVsMassJet1All_%d",i);
     histTitle = TString::Format("%s;#it{p}_{T,jet1};Avg #it{M}_{jet1}",histName.Data());
-    fpPtVsMassJet1All[i] = new TProfile(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt);
+    fpPtVsMassJet1All[i] = new TProfile(histName.Data(),histTitle.Data(),nBinsM,minM,maxM);
     fOutput->Add(fpPtVsMassJet1All[i]);
 
     histName = TString::Format("fpPtVsMassJet1Tagged_%d",i);
     histTitle = TString::Format("%s;#it{p}_{T,jet1};Avg #it{M}_{jet1}",histName.Data());
-    fpPtVsMassJet1Tagged[i] = new TProfile(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt);
+    fpPtVsMassJet1Tagged[i] = new TProfile(histName.Data(),histTitle.Data(),nBinsM,minM,maxM);
     fOutput->Add(fpPtVsMassJet1Tagged[i]);
 
     histName = TString::Format("fh2MassVsAreaJet1All_%d",i);
     histTitle = TString::Format("%s;#it{M}_{jet1};#it{A}",histName.Data());
-    fh2MassVsAreaJet1All[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsArea,minArea,maxArea);
+    fh2MassVsAreaJet1All[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsM,minM,maxM,nBinsArea,minArea,maxArea);
     fOutput->Add(fh2MassVsAreaJet1All[i]);
 
     histName = TString::Format("fh2MassVsAreaJet1Tagged_%d",i);
     histTitle = TString::Format("%s;#it{M}_{jet1};#it{A}",histName.Data());
-    fh2MassVsAreaJet1Tagged[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsArea,minArea,maxArea);
+    fh2MassVsAreaJet1Tagged[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsM,minM,maxM,nBinsArea,minArea,maxArea);
     fOutput->Add(fh2MassVsAreaJet1Tagged[i]);
 
     histName = TString::Format("fh2MassVsNConstJet1All_%d",i);
     histTitle = TString::Format("%s;#it{M}_{jet1};#it{N}_{constituents}",histName.Data());
-    fh2MassVsNConstJet1All[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsNConst,minNConst,maxNConst);
+    fh2MassVsNConstJet1All[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsM,minM,maxM,nBinsNConst,minNConst,maxNConst);
     fOutput->Add(fh2MassVsNConstJet1All[i]);
 
     histName = TString::Format("fh2MassVsNConstJet1Tagged_%d",i);

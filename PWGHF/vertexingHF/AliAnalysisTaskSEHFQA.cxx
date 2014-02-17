@@ -1063,23 +1063,6 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputFlowObs->Add(hCentVsMultRPS);
   }
 
-  /*
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
-  AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
-  if (fCuts->GetIsUsePID() && fDecayChannel==kLambdactoV0) {
-    fCuts->GetPidHF()->SetPidResponse(pidResp);
-    AliRDHFCutsLctoV0* lccuts=dynamic_cast<AliRDHFCutsLctoV0*>(fCuts);
-    if(lccuts){
-      lccuts->GetPidV0pos()->SetPidResponse(pidResp);
-      lccuts->GetPidV0neg()->SetPidResponse(pidResp);
-      fCuts->GetPidHF()->SetOldPid(kFALSE);
-      lccuts->GetPidV0pos()->SetOldPid(kFALSE);
-      lccuts->GetPidV0neg()->SetOldPid(kFALSE);
-    }
-  }
-  */
-
   // Post the data
   PostData(1,fNEntries);
 

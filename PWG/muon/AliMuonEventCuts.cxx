@@ -842,9 +842,14 @@ void AliMuonEventCuts::Print(Option_t* option) const
     printf(" *** Muon event filter mask: *** \n");
     printf("  0x%x\n", filterMask);
     if ( filterMask & kPhysicsSelected ) printf("  Pass physics selection 0x%x\n", fPhysicsSelectionMask);
-    if ( filterMask & kSelectedCentrality ) printf(  "%g < centrality < %g\n", fCentralityClasses->GetXmin(), fCentralityClasses->GetXmax() );
+    if ( filterMask & kSelectedCentrality ) printf(  "%g < centrality (%s) < %g\n", fCentralityClasses->GetXmin(), GetCentralityEstimator().Data(), fCentralityClasses->GetXmax() );
     if ( filterMask & kSelectedTrig )    printf("  Has selected trigger classes\n");
     if ( filterMask & kGoodVertex )      printf("  SPD vertex with %i contributors && %g < Vz < %g\n", GetVertexMinNContributors(), GetVertexVzMin(), GetVertexVzMax());
+    printf(" ******************** \n");
+  }
+  if ( sopt.Contains("param") ) {
+    printf(" *** Muon event parameters: *** \n");
+    printf("  Centrality estimator: %s\n", GetCentralityEstimator().Data());
     printf(" ******************** \n");
   }
 }
