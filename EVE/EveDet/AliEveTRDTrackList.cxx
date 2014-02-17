@@ -78,8 +78,8 @@
 #include <EveDet/AliEveTRDTrackList.h>
 #include <EveDet/AliEveTRDTrackListEditor.h>
 
-#include <../PWGPP/TRD/AliTRDrecoTask.h>
-#include <../PWGPP/TRD/AliTRDpwgppHelper.h>
+// #include <../PWGPP/TRD/AliTRDrecoTask.h>
+// #include <../PWGPP/TRD/AliTRDpwgppHelper.h>
 
 ClassImp(AliEveTRDTrackList)
 TFile *AliEveTRDTrackList::fgData(NULL);
@@ -267,40 +267,40 @@ void AliEveTRDTrackList::AddStandardContent()
   // use the return value of AddMacro (NOT_EXIST_ERROR is returned, if file does not exist)
   // (-> You can also check for other return values (see AddMacro(...)))
 
-  const Char_t *libs[] = {"libANALYSIS.so", "libANALYSISalice.so", "libCORRFW", "libTENDER.so", "libPWGPP.so"};
-  Int_t nlibs = static_cast<Int_t>(sizeof(libs)/sizeof(Char_t *));
-  for(Int_t ilib=0; ilib<nlibs; ilib++){
-    if(gSystem->Load(libs[ilib]) >= 0) continue;
-    AliError(Form("Fail loading %s.", libs[ilib]));
-    return;
-  }
-
-  const Char_t *taskClassName[] = {"AliTRDcheckDET", "AliTRDresolution"};
-  AliTRDrecoTask *task(NULL);
-  TList *fPlots(NULL);
-  for(Int_t it=0; it<2; it++){
-    TClass c(taskClassName[it]);
-    task = (AliTRDrecoTask*)c.New();
-    task->InitFunctorList();
-    task->SetMCdata(kFALSE);
-    if(!(fPlots = task->GetPlotFunctors())){
-      AliWarning(Form("No Track functors defined for task \"%s\"", taskClassName[it]));
-      delete task;
-      continue;
-    }
-    if(!(task->Histos())){
-      AliWarning(Form("No Ref Histograms defined for task \"%s\"", taskClassName[it]));
-      delete task;
-      continue;
-    }
-
-    // export task to CINT and add functions
-    gROOT->ProcessLine(Form("%s* %s = (%s*)%p;", taskClassName[it], task->GetName(), taskClassName[it], (void*)task));
-    TIter iter(fPlots); TMethodCall *m(NULL);
-    while((m = dynamic_cast<TMethodCall*>(iter()))){
-      AddMacroFast("", Form("%s->%s", task->GetName(), m->GetMethodName()), kSingleTrackHisto);
-    }
-  }
+//   const Char_t *libs[] = {"libANALYSIS.so", "libANALYSISalice.so", "libCORRFW", "libTENDER.so", "libPWGPP.so"};
+//   Int_t nlibs = static_cast<Int_t>(sizeof(libs)/sizeof(Char_t *));
+//   for(Int_t ilib=0; ilib<nlibs; ilib++){
+//     if(gSystem->Load(libs[ilib]) >= 0) continue;
+//     AliError(Form("Fail loading %s.", libs[ilib]));
+//     return;
+//   }
+// 
+//   const Char_t *taskClassName[] = {"AliTRDcheckDET", "AliTRDresolution"};
+//   AliTRDrecoTask *task(NULL);
+//   TList *fPlots(NULL);
+//   for(Int_t it=0; it<2; it++){
+//     TClass c(taskClassName[it]);
+//     task = (AliTRDrecoTask*)c.New();
+//     task->InitFunctorList();
+//     task->SetMCdata(kFALSE);
+//     if(!(fPlots = task->GetPlotFunctors())){
+//       AliWarning(Form("No Track functors defined for task \"%s\"", taskClassName[it]));
+//       delete task;
+//       continue;
+//     }
+//     if(!(task->Histos())){
+//       AliWarning(Form("No Ref Histograms defined for task \"%s\"", taskClassName[it]));
+//       delete task;
+//       continue;
+//     }
+// 
+//     // export task to CINT and add functions
+//     gROOT->ProcessLine(Form("%s* %s = (%s*)%p;", taskClassName[it], task->GetName(), taskClassName[it], (void*)task));
+//     TIter iter(fPlots); TMethodCall *m(NULL);
+//     while((m = dynamic_cast<TMethodCall*>(iter()))){
+//       AddMacroFast("", Form("%s->%s", task->GetName(), m->GetMethodName()), kSingleTrackHisto);
+//     }
+//   }
 }
 
 

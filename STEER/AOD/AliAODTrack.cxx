@@ -66,8 +66,10 @@ AliAODTrack::AliAODTrack() :
   fTrackPhiOnEMCal(-999),
   fTrackEtaOnEMCal(-999),
   fTrackPtOnEMCal(-999),
+  fIsMuonGlobalTrack(kFALSE),    // AU
   fTPCsignalTuned(0),
   fTOFsignalTuned(99999),
+  fMFTClusterPattern(0),         // AU
   fAODEvent(NULL)
 {
   // default constructor
@@ -125,8 +127,10 @@ AliAODTrack::AliAODTrack(Short_t id,
   fTrackPhiOnEMCal(-999),
   fTrackEtaOnEMCal(-999),
   fTrackPtOnEMCal(-999),
+  fIsMuonGlobalTrack(kFALSE),    // AU
   fTPCsignalTuned(0),
   fTOFsignalTuned(99999),
+  fMFTClusterPattern(0),         // AU
   fAODEvent(NULL)
 {
   // constructor
@@ -188,8 +192,10 @@ AliAODTrack::AliAODTrack(Short_t id,
   fTrackPhiOnEMCal(-999),
   fTrackEtaOnEMCal(-999),
   fTrackPtOnEMCal(-999),
+  fIsMuonGlobalTrack(kFALSE),    // AU
   fTPCsignalTuned(0),
   fTOFsignalTuned(99999),
+  fMFTClusterPattern(0),         // AU
   fAODEvent(NULL)
 {
   // constructor
@@ -248,8 +254,10 @@ AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
   fTrackPhiOnEMCal(trk.fTrackPhiOnEMCal),
   fTrackEtaOnEMCal(trk.fTrackEtaOnEMCal),
   fTrackPtOnEMCal(trk.fTrackPtOnEMCal),
+  fIsMuonGlobalTrack(trk.fIsMuonGlobalTrack),    // AU
   fTPCsignalTuned(trk.fTPCsignalTuned),
   fTOFsignalTuned(trk.fTOFsignalTuned),
+  fMFTClusterPattern(trk.fMFTClusterPattern),    // AU
   fAODEvent(trk.fAODEvent)
 {
   // Copy constructor
@@ -303,9 +311,11 @@ AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
     fTrackPhiOnEMCal   = trk.fTrackPhiOnEMCal;
     fTrackEtaOnEMCal   = trk.fTrackEtaOnEMCal;
     fTrackPtOnEMCal    = trk.fTrackPtOnEMCal;
+    fIsMuonGlobalTrack = trk.fIsMuonGlobalTrack;     // AU
     fTPCsignalTuned    = trk.fTPCsignalTuned;
     fTOFsignalTuned    = trk.fTOFsignalTuned;
-
+    fMFTClusterPattern = trk.fMFTClusterPattern;     // AU
+    
     delete fCovMatrix;
     if(trk.fCovMatrix) fCovMatrix=new AliAODRedCov<6>(*trk.fCovMatrix);
     else fCovMatrix=NULL;

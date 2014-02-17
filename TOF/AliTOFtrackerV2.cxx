@@ -1013,7 +1013,7 @@ void AliTOFtrackerV2::Clusterize(){
 
 void AliTOFtrackerV2::MergeClusters(Int_t i,Int_t j){
   TClonesArray* TOFClArr = fClustersESD;// use a temporary copy //fEvent->GetESDTOFClusters();
-  TClonesArray* esdTOFHitArr = fEvent->GetESDTOFHits();
+  //  TClonesArray* esdTOFHitArr = fEvent->GetESDTOFHits();
 
   if(i == j){
     AliInfo("No TOF cluster mergine possible (cannot merge a cluster with itself)");

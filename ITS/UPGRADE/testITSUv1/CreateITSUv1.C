@@ -104,7 +104,7 @@ void CreateITSUv1()
   //
   const int kNWrapVol = 3;
   const double wrpRMin[kNWrapVol]  = { 2.1, 15.0, 32.0};
-  const double wrpRMax[kNWrapVol]  = { 7.0, 27.0, 43.0};
+  const double wrpRMax[kNWrapVol]  = { 7.0, 27.0+2.5, 43.0+1.5};
   const double wrpZSpan[kNWrapVol] = {28.0, 96.0, 158.0};
   ITS->SetNWrapVolumes(kNWrapVol); // define wrapper volumes for layers
   for (int iw=0;iw<kNWrapVol;iw++) ITS->DefineWrapVolume(iw,wrpRMin[iw],wrpRMax[iw],wrpZSpan[iw]);

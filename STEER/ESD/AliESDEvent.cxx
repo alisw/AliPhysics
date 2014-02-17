@@ -2289,7 +2289,7 @@ void AliESDEvent::SetTOFcluster(Int_t ntofclusters,AliESDTOFCluster *cluster,Int
 
   if(mapping){
     AliInfo(Form("TOF cluster before of matching = %i , after = %i\n",ntofclusters,fESDTOFClusters->GetEntriesFast()));
-    Int_t hitnewpos[20000];
+    Int_t hitnewpos[20000]={0};
     Int_t nhitOriginal = fESDTOFHits->GetEntries();
     for(Int_t i=0;i < fESDTOFHits->GetEntries();i++){
       if(goodhit[i]){
@@ -2369,7 +2369,7 @@ void AliESDEvent::SetTOFcluster(Int_t ntofclusters,AliESDTOFCluster *cluster[],I
 
   if(mapping){
     AliInfo(Form("TOF cluster before of matching = %i , after = %i\n",ntofclusters,fESDTOFClusters->GetEntriesFast()));
-    Int_t hitnewpos[20000];
+    Int_t hitnewpos[20000]={0};
     Int_t nhitOriginal = fESDTOFHits->GetEntries();
     for(Int_t i=0;i < fESDTOFHits->GetEntries();i++){
       if(goodhit[i]){
