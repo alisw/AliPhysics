@@ -176,44 +176,52 @@ private:
   TProfile2D       *fhFORMeanAmp;     //! Mean FastOR(FEE) signal per Row and Column
   TProfile2D       *fhL0MeanAmp;      //! Mean FastOR(TRU) signal per Row and Column
   TProfile2D       *fhL1MeanAmp;      //! Mean FastOR(STU) signal per Row and Column
-  TH1F             *fhV0[10];         //! V0 distribution for a triggered event
   TH2F             *fhL1GPatchMax;    //! FOR of max. amplitude patch with L1 Gamma patch associated
   TH2F             *fhL1G2PatchMax;   //! FOR of max. amplitude patch with L1 Gamma patch associated
   TH2F             *fhL1JPatchMax;    //! FOR of max. amplitude patch with L1 Jet patch associated  
   TH2F             *fhL1J2PatchMax;   //! FOR of max. amplitude patch with L1 Jet patch associated
   
   // Cluster vs trigger histograms
-  enum triggerType{kMBTrig = 0, kL0Trig = 1, kL1GammaTrig = 2, kL1GammaTrig2 = 3, kL1JetTrig = 4, kL1JetTrig2 = 5, kL1GammaOnlyTrig = 6, kL1JetOnlyTrig = 7, kCentralTrig = 8, kSemiCentralTrig = 9 };
+  enum triggerType{ kMBTrig                = 0,  kL0Trig            = 1,
+                    kL1GammaTrig           = 2,  kL1GammaTrig2      = 3,
+                    kL1JetTrig             = 4,  kL1JetTrig2        = 5,
+                    kL1GammaOnlyTrig       = 6,  kL1JetOnlyTrig     = 7,
+                    kL1Gamma2OnlyGammaTrig = 8,  kL1Jet2OnlyJetTrig = 9,
+                    kCentralTrig           = 10, kSemiCentralTrig   = 11 };
   
   TH1F             *fhClusMBPure[3];       //! Clusters E distribution for pure MB trigger
   TH1F             *fhClusMaxMBPure[3];    //! Maximum E Cluster per event distribution for pure MB trigger
   
-  TH1F             *fhClus[10];            //! Clusters E distribution for a trigger
-  TH1F             *fhClusMax[10];         //! Maximum E Cluster per event distribution for MB trigger
-
-  TH2F             *fhClusCen[10];         //! Clusters Centrality vs E distribution for a trigger
-  TH2F             *fhClusCenMax[10];      //! Maximum E Cluster  vs Centrality per event distribution for a trigger
+  static const int  fgkTriggerCombi = 12;   // total number of trigger combinations defined above
   
-  TH2F             *fhClusV0[10];          //! Clusters V0 vs E distribution for a trigger
-  TH2F             *fhClusV0Max[10];       //! Maximum E Cluster  vs Centrality per event distribution for a trigger
+  TH1F             *fhClus   [fgkTriggerCombi];                     //! Clusters E distribution for a trigger
+  TH1F             *fhClusMax[fgkTriggerCombi];                     //! Maximum E Cluster per event distribution for MB trigger
 
-  TH2F             *fhClusEta[10];         //! Clusters eta vs E distribution for a trigger
-  TH2F             *fhClusEtaMax[10];      //! Maximum E Cluster  vs Eta per event distribution for a trigger
+  TH2F             *fhClusCen   [fgkTriggerCombi];                  //! Clusters Centrality vs E distribution for a trigger
+  TH2F             *fhClusCenMax[fgkTriggerCombi];                  //! Maximum E Cluster  vs Centrality per event distribution for a trigger
+  
+  TH2F             *fhClusV0   [fgkTriggerCombi];                   //! Clusters V0 vs E distribution for a trigger
+  TH2F             *fhClusV0Max[fgkTriggerCombi];                   //! Maximum E Cluster  vs Centrality per event distribution for a trigger
 
-  TH2F             *fhClusPhi[10];         //! Clusters Phi vs E distribution for a trigger
-  TH2F             *fhClusPhiMax[10];      //! Maximum E Cluster  vs Phi per event distribution for a trigger
+  TH2F             *fhClusEta   [fgkTriggerCombi];                  //! Clusters eta vs E distribution for a trigger
+  TH2F             *fhClusEtaMax[fgkTriggerCombi];                  //! Maximum E Cluster  vs Eta per event distribution for a trigger
 
-  TH2F             *fhClusEtaPhiHigh[10];               //! Clusters eta vs phi distribution for a trigger, energy above 10 GeV
-  TH2F             *fhClusEtaPhiHighCluMax[10];         //! Maximum E Cluster, Phi vs Eta per event distribution for a trigger, energy above 10 GeV
+  TH2F             *fhClusPhi   [fgkTriggerCombi];                   //! Clusters Phi vs E distribution for a trigger
+  TH2F             *fhClusPhiMax[fgkTriggerCombi];                   //! Maximum E Cluster  vs Phi per event distribution for a trigger
+
+  TH2F             *fhClusEtaPhiHigh      [fgkTriggerCombi];         //! Clusters eta vs phi distribution for a trigger, energy above 10 GeV
+  TH2F             *fhClusEtaPhiHighCluMax[fgkTriggerCombi];         //! Maximum E Cluster, Phi vs Eta per event distribution for a trigger, energy above 10 GeV
  
-  TH2F             *fhClusEtaPhiHighCellMax[10];        //! Clusters maximum energy cell index eta vs phi distribution for MB trigger, energy above 10 GeV
-  TH2F             *fhClusEtaPhiHighCellMaxCluMax[10];  //! Maximum E Cluster, maximum energy cell index Phi vs Eta per event distribution for MB trigger, energy above 10 GeV
+  TH2F             *fhClusEtaPhiHighCellMax      [fgkTriggerCombi];  //! Clusters maximum energy cell index eta vs phi distribution for MB trigger, energy above 10 GeV
+  TH2F             *fhClusEtaPhiHighCellMaxCluMax[fgkTriggerCombi];  //! Maximum E Cluster, maximum energy cell index Phi vs Eta per event distribution for MB trigger, energy above 10 GeV
  
-  TH2F             *fhClusEtaPhiLow[10];                //! Clusters eta vs phi distribution for MB trigger, energy below 10 GeV
-  TH2F             *fhClusEtaPhiLowCluMax[10];          //! Maximum E Cluster, Phi vs Eta per event distribution for MB trigger, energy below 10 GeV
+  TH2F             *fhClusEtaPhiLow      [fgkTriggerCombi];          //! Clusters eta vs phi distribution for MB trigger, energy below 10 GeV
+  TH2F             *fhClusEtaPhiLowCluMax[fgkTriggerCombi];          //! Maximum E Cluster, Phi vs Eta per event distribution for MB trigger, energy below 10 GeV
  
-  TH2F             *fhClusEtaPhiLowCellMax[10];         //! Clusters maximum energy cell index eta vs phi distribution for MB trigger, energy below 10 GeV
-  TH2F             *fhClusEtaPhiLowCellMaxCluMax[10];   //! Maximum E Cluster, maximum energy cell index Phi vs Eta per event distribution for MB trigger, energy below 10 GeV
+  TH2F             *fhClusEtaPhiLowCellMax      [fgkTriggerCombi];   //! Clusters maximum energy cell index eta vs phi distribution for MB trigger, energy below 10 GeV
+  TH2F             *fhClusEtaPhiLowCellMaxCluMax[fgkTriggerCombi];   //! Maximum E Cluster, maximum energy cell index Phi vs Eta per event distribution for MB trigger, energy below 10 GeV
+
+  TH1F             *fhV0[fgkTriggerCombi];//! V0 distribution for a triggered event
 
   // Histograms bins
   
