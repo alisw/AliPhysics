@@ -803,9 +803,7 @@ Float_t AliAnalysisTaskEmcalJetTriggerQA:: RelativeEP(Double_t objAng, Double_t 
     if( dphi>1*TMath::Pi()){
         dphi = dphi - 1*TMath::Pi();
     }
-    
-    
-    
+     
     if( (dphi>0) && (dphi<1*TMath::Pi()/2) ){
         // Do nothing! we are in quadrant 1
     }else if( (dphi>1*TMath::Pi()/2) && (dphi<1*TMath::Pi()) ){
@@ -815,10 +813,6 @@ Float_t AliAnalysisTaskEmcalJetTriggerQA:: RelativeEP(Double_t objAng, Double_t 
     }else if( (dphi<-1*TMath::Pi()/2) && (dphi>-1*TMath::Pi()) ){
         dphi = dphi + 1*TMath::Pi();
     }
-    
-    // test
-    if( dphi < 0 || dphi > TMath::Pi()/2 )
-        cout<<"dphi:  "<<dphi<<endl;
     
     return dphi;   // dphi in [0, Pi/2]
 }
