@@ -25,7 +25,7 @@ class AliAnalysisTaskEmcalJetSpectra : public AliAnalysisTaskEmcalJet {
   virtual Int_t          GetCentBin(Double_t cent) const;
   Float_t                RelativePhi(Double_t mphi,Double_t vphi) const;
   Float_t                RelativeEPJET(Double_t jetAng, Double_t EPAng) const;
-  Double_t		fLocalRhoVal;
+  Double_t	         fLocalRhoVal;
 
  private:
   TH2F                  *fHistRhovsCent; //!

@@ -37,6 +37,7 @@ ClassImp(AliAnalysisTaskEmcalJetSpectra)
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetSpectra::AliAnalysisTaskEmcalJetSpectra() : 
   AliAnalysisTaskEmcalJet("spectra",kFALSE), 
+  fLocalRhoVal(0),
   fHistRhovsCent(0),
   fHistNjetvsCent(0),
   fHistGLvsLOCrho(0),
@@ -77,7 +78,7 @@ AliAnalysisTaskEmcalJetSpectra::AliAnalysisTaskEmcalJetSpectra() :
     fHistCorJetPtEPcentGL[i]    = 0;
 
   }
-  fLocalRhoVal = 0;
+
   SetMakeGeneralHistograms(kTRUE);
     
 }
@@ -85,6 +86,7 @@ AliAnalysisTaskEmcalJetSpectra::AliAnalysisTaskEmcalJetSpectra() :
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetSpectra::AliAnalysisTaskEmcalJetSpectra(const char *name) :
   AliAnalysisTaskEmcalJet(name,kTRUE),
+  fLocalRhoVal(0),
   fHistRhovsCent(0),
   fHistNjetvsCent(0),
   fHistGLvsLOCrho(0),
@@ -124,7 +126,7 @@ AliAnalysisTaskEmcalJetSpectra::AliAnalysisTaskEmcalJetSpectra(const char *name)
     fHistCorJetPtEPcentGL[i]    = 0;
 
    }
-   fLocalRhoVal = 0;
+  
    SetMakeGeneralHistograms(kTRUE);
  }
 
