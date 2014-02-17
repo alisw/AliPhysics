@@ -63,8 +63,8 @@ AliAnalysisTaskSE *AddTaskEMCALTenderUsingDatasetDef(
     reclusterize = kTRUE;
     seedthresh = 0.3;
     cellthresh = 0.05;
-    timeMin = 485e-9; //no timing calib available
-    timeMax = 685e-9;
+    timeMin = -50e-9;
+    timeMax =  50e-9;
     timeCut =  1e6;
   }
   else if(period == "lhc13b" || period == "lhc13c" || period == "lhc13d" || period == "lhc13e" || period == "lhc13f" || period == "lhc13g" || 

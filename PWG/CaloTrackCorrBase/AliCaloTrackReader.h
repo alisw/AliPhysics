@@ -282,6 +282,8 @@ public:
   TArrayI          GetTriggerPatches(Int_t tmin, Int_t tmax);
   void             MatchTriggerCluster(TArrayI patches);
 
+  Bool_t           CheckEventTriggers();
+  
   Bool_t           IsExoticEvent()                         { return fIsExoticEvent           ; }  
   Bool_t           IsBadCellTriggerEvent()                 { return fIsBadCellEvent          ; }
   Bool_t           IsBadMaxCellTriggerEvent()              { return fIsBadMaxCellEvent       ; }

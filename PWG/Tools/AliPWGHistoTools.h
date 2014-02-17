@@ -20,6 +20,7 @@ class TF1;
 class TH1D;
 class TH1F;
 class TGraphErrors;
+class TGraph;
 #endif
 
 
@@ -79,8 +80,10 @@ public:
   static TH1F * DivideHistosDifferentBins(const TH1F* h1, const TH1F* h2);
   static Double_t DoIntegral(TH1* h, Int_t binx1, Int_t binx2, Int_t biny1, Int_t biny2, Int_t binz1, Int_t binz2, Double_t & error ,
 		      Option_t *option, Bool_t doError) ;
-  static TGraphErrors * Divide2Graphs(const TGraphErrors * g1, const TGraphErrors * g2);
+  static TGraphErrors * Divide2Graphs(const TGraph * g1, const TGraph * g2, Int_t strategy);
   static TGraphErrors * Add2Graphs(const TGraphErrors * g1, const TGraphErrors * g2);
+  static void ScaleGraph (TGraph * g1, Double_t scale);
+
 
   static Double_t dMtdptFunction(Double_t *x, Double_t *p) ;
   static Double_t GetdMtdEta(TH1 *hData, TF1 * fExtrapolation, Double_t mass) ;

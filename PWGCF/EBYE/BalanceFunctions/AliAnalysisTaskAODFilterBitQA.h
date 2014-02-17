@@ -34,8 +34,8 @@ class AliAnalysisTaskAODFilterBitQA : public AliAnalysisTaskSE {
 
   TH2D* fHistTrackStats;//QA histogram for track filter bit statistics vs. centrality
   TH3D* fHistKinematics[gBitMax];//QA histograms for kinematics (eta, phi, pT) for different filter bits
-  TH2D* fHistDCA[gBitMax];//QA histograms for DCA (xy,z) for different filter bits
-  TH2D* fHistDCAprop[gBitMax];//QA histograms for DCA (xy,z) for different filter bits after PropagateToDCA
+  TH2D* fHistDCAconstrained[gBitMax];//QA histograms for DCA (xy,z) for different filter bits for constrained tracks (stored in DCA methods)
+  TH3D* fHistDCAglobal[gBitMax];//QA histograms for DCA (xy,z) for different filter bits for global tracks (stored in Position methods)
   TH2D* fHistChiClus[gBitMax];//QA histograms for Chi2 and number of TPC clusters for different filter bits
 
 
