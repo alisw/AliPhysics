@@ -36,6 +36,7 @@
 #include "AliAODEvent.h"
 #include "AliVVertex.h"
 #include "AliCentrality.h"
+#include "AliAnalysisUtils.h"
 
 #include "AliAnalysisMuonUtility.h"
 
@@ -51,6 +52,7 @@ AliMuonEventCuts::AliMuonEventCuts() :
   fVertexMinNContributors(0),
   fVertexVzMin(0.),
   fVertexVzMax(0.),
+  fCheckMask(0),
   fDefaultTrigClassPatterns(""),
   fSelectedTrigPattern(0x0),
   fRejectedTrigPattern(0x0),
@@ -59,6 +61,7 @@ AliMuonEventCuts::AliMuonEventCuts() :
   fTrigInputsMap(0x0),
   fAllSelectedTrigClasses(0x0),
   fCentralityClasses(0x0),
+  fAnalysisUtils(0x0),
   fEventTriggerMask(0),
   fSelectedTrigClassesInEvent(0x0)
 {
@@ -72,6 +75,7 @@ AliAnalysisCuts(name, title),
   fVertexMinNContributors(0),
   fVertexVzMin(0.),
   fVertexVzMax(0.),
+  fCheckMask(0xFFFF),
   fDefaultTrigClassPatterns(""),
   fSelectedTrigPattern(new TObjArray()),
   fRejectedTrigPattern(new TObjArray()),
@@ -80,6 +84,7 @@ AliAnalysisCuts(name, title),
   fTrigInputsMap(new THashList()),
   fAllSelectedTrigClasses(new THashList()),
   fCentralityClasses(0x0),
+  fAnalysisUtils(0x0),
   fEventTriggerMask(0),
   fSelectedTrigClassesInEvent(new TObjArray())
 {
@@ -90,6 +95,7 @@ AliAnalysisCuts(name, title),
   SetTrigClassLevels();
   SetDefaultTrigInputsMap();
   SetCentralityClasses();
+  fAnalysisUtils = new AliAnalysisUtils();
   fAllSelectedTrigClasses->SetOwner();
   fSelectedTrigClassesInEvent->SetOwner();
 }
@@ -101,6 +107,7 @@ AliMuonEventCuts::AliMuonEventCuts(const AliMuonEventCuts& obj) :
   fVertexMinNContributors(obj.fVertexMinNContributors),
   fVertexVzMin(obj.fVertexVzMin),
   fVertexVzMax(obj.fVertexVzMax),
+  fCheckMask(obj.fCheckMask),
   fDefaultTrigClassPatterns(obj.fDefaultTrigClassPatterns),
   fSelectedTrigPattern(obj.fSelectedTrigPattern),
   fRejectedTrigPattern(obj.fRejectedTrigPattern),
@@ -109,6 +116,7 @@ AliMuonEventCuts::AliMuonEventCuts(const AliMuonEventCuts& obj) :
   fTrigInputsMap(obj.fTrigInputsMap),
   fAllSelectedTrigClasses(obj.fAllSelectedTrigClasses),
   fCentralityClasses(obj.fCentralityClasses),
+  fAnalysisUtils(obj.fAnalysisUtils),
   fEventTriggerMask(obj.fEventTriggerMask),
   fSelectedTrigClassesInEvent(obj.fSelectedTrigClassesInEvent)
 {
@@ -126,6 +134,7 @@ AliMuonEventCuts& AliMuonEventCuts::operator=(const AliMuonEventCuts& obj)
     fVertexMinNContributors = obj.fVertexMinNContributors,
     fVertexVzMin = obj.fVertexVzMin;
     fVertexVzMax = obj.fVertexVzMax;
+    fCheckMask = obj.fCheckMask;
     fDefaultTrigClassPatterns = obj.fDefaultTrigClassPatterns;
     fSelectedTrigPattern = obj.fSelectedTrigPattern;
     fRejectedTrigPattern = obj.fRejectedTrigPattern;
@@ -134,6 +143,7 @@ AliMuonEventCuts& AliMuonEventCuts::operator=(const AliMuonEventCuts& obj)
     fTrigInputsMap = obj.fTrigInputsMap;
     fAllSelectedTrigClasses = obj.fAllSelectedTrigClasses;
     fCentralityClasses = obj.fCentralityClasses;
+    fAnalysisUtils = obj.fAnalysisUtils;
     fEventTriggerMask = obj.fEventTriggerMask;
     fSelectedTrigClassesInEvent = obj.fSelectedTrigClassesInEvent;
   }
@@ -153,6 +163,7 @@ AliMuonEventCuts::~AliMuonEventCuts()
   delete fAllSelectedTrigClasses;
   delete fSelectedTrigClassesInEvent;
   delete fCentralityClasses;
+  delete fAnalysisUtils;
 }
 
 //________________________________________________________________________
@@ -175,9 +186,13 @@ UInt_t AliMuonEventCuts::GetSelectionMask( const TObject* obj )
   
   UInt_t selectionMask = 0;
   
+  UInt_t checkMask = fCheckMask | GetFilterMask();
+  
   const AliInputEventHandler* inputHandler = static_cast<const AliInputEventHandler*> ( obj );
   
-  if ( const_cast<AliInputEventHandler*>(inputHandler)->IsEventSelected() & fPhysicsSelectionMask ) selectionMask |= kPhysicsSelected;
+  if ( checkMask & kPhysicsSelected ) {
+    if ( const_cast<AliInputEventHandler*>(inputHandler)->IsEventSelected() & fPhysicsSelectionMask ) selectionMask |= kPhysicsSelected;
+  }
   
   const AliVEvent* event = inputHandler->GetEvent();
   
@@ -188,12 +203,25 @@ UInt_t AliMuonEventCuts::GetSelectionMask( const TObject* obj )
   
   if ( fSelectedTrigClassesInEvent->GetEntries() > 0 ) selectionMask |= kSelectedTrig;
   
-  AliVVertex* vertex = AliAnalysisMuonUtility::GetVertexSPD(event);
-  if ( vertex->GetNContributors() >= GetVertexMinNContributors() && 
+  if ( checkMask & kGoodVertex ) {
+    AliVVertex* vertex = AliAnalysisMuonUtility::GetVertexSPD(event);
+    if ( vertex->GetNContributors() >= GetVertexMinNContributors() &&
       vertex->GetZ() >= GetVertexVzMin() && vertex->GetZ() <= GetVertexVzMax() ) selectionMask |= kGoodVertex;
+  }
   
-  AliDebug(1, Form("Selection mask 0x%x\n", selectionMask));
+  if ( checkMask & kNoPileup ) {
+    if ( ! fAnalysisUtils->IsPileUpEvent(const_cast<AliVEvent*>(event)) ) selectionMask |= kNoPileup;
+    //  // Uncomment to use settings for pPb
+    //  if ( fRejectPileup ) {
+    //    Int_t nTracklets = ( event.IsA() == AliESDEvent::Class() ) ? static_cast<AliESDEvent*>(event)->GetMultiplicity()->GetNumberOfTracklets() : static_cast<AliAODEvent*>(event)->GetTracklets()->GetNumberOfTracklets();
+    //    Int_t nContrib = ( nTracklets < 40 ) ? 3 : 5;
+    //    Double_t dist = 0.8;
+    //    Bool_t isPielup = ( event.IsA() == AliESDEvent::Class() ) ? static_cast<AliESDEvent*>(event)->IsPileupFromSPD(nContrib,dist) : static_cast<AliAODEvent*>(event)->IsPileupFromSPD(nContrib,dist);
+    //    if ( isPielup ) return;
+    //  }
+  }
 
+  AliDebug(1, Form("Selection mask 0x%x\n", selectionMask));
   return selectionMask;
 }
 
@@ -843,8 +871,9 @@ void AliMuonEventCuts::Print(Option_t* option) const
     printf("  0x%x\n", filterMask);
     if ( filterMask & kPhysicsSelected ) printf("  Pass physics selection 0x%x\n", fPhysicsSelectionMask);
     if ( filterMask & kSelectedCentrality ) printf(  "%g < centrality (%s) < %g\n", fCentralityClasses->GetXmin(), GetCentralityEstimator().Data(), fCentralityClasses->GetXmax() );
-    if ( filterMask & kSelectedTrig )    printf("  Has selected trigger classes\n");
-    if ( filterMask & kGoodVertex )      printf("  SPD vertex with %i contributors && %g < Vz < %g\n", GetVertexMinNContributors(), GetVertexVzMin(), GetVertexVzMax());
+    if ( filterMask & kSelectedTrig ) printf("  Has selected trigger classes\n");
+    if ( filterMask & kGoodVertex ) printf("  SPD vertex with %i contributors && %g < Vz < %g\n", GetVertexMinNContributors(), GetVertexVzMin(), GetVertexVzMax());
+    if ( filterMask & kNoPileup ) printf("  Reject pileup with SPD\n");
     printf(" ******************** \n");
   }
   if ( sopt.Contains("param") ) {
