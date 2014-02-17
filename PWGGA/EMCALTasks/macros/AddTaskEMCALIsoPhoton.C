@@ -59,6 +59,7 @@ AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(containername.Data(), 
 							    TList::Class(),AliAnalysisManager::kOutputContainer,
 							    Form("%s", AliAnalysisManager::GetCommonFileName()));
+
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(containernameQA.Data(), 
 							    TList::Class(),AliAnalysisManager::kOutputContainer,
 							    Form("%s", AliAnalysisManager::GetCommonFileName()));
