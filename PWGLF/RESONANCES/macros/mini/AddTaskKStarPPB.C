@@ -16,8 +16,9 @@ enum eventCutSet { kOld = -1,
 		   kPileUpMV, //=2
 		   kPileUpSPD3, //=3		      
 		   kDefaultVtx8, //=4
-		   kDefaultVtx5 //=5                    
-                 };
+		   kDefaultVtx5, //=5                    
+		   kMCEvtDefault //=6
+};
 
 enum eventMixConfig { kDisabled = -1,
 		      kMixDefault,//=0 //10 events, Dvz = 1cm, DC = 10
@@ -90,7 +91,12 @@ AliRsnMiniAnalysisTask * AddTaskKStarPPB
   
   if (evtCutSetID==eventCutSet::kDefaultVtx5){
     vtxZcut = 5.0; //cm
-  } 
+  }
+  
+  if (evtCutSetID==eventCutSet::kMCEvtDefault) {
+    rmFirstEvtChunk = kFALSE;
+    rejectPileUp = kFALSE;
+  }
   
   //-------------------------------------------
   //pair cuts
