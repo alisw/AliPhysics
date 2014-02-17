@@ -350,6 +350,14 @@ void  AliAnalysisTrackingUncertainties::ProcessItsTpcMatching(){
       hdPtRel_ITSTPC->Fill(pt,(pt-fMatchTr[0]->Pt())/pt); 
       hdInvPtRel_ITSTPC->Fill(pt,pt*( 1/pt - (1/fMatchTr[0]->Pt()) )); 
     }
+    
+    if (nmatch>0 && fESDtrackCuts){
+      
+      if(fESDtrackCuts->AcceptTrack(fMatchTr[0])){
+	hBestMatch_cuts->Fill(pt,fMatchChi[0]);
+      }
+    }
+    
     //
     for (int imt=nmatch;imt--;) {
       hAllMatch->Fill(pt,fMatchChi[imt]);

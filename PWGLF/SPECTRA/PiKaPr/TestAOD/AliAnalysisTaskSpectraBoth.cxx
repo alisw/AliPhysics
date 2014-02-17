@@ -346,7 +346,7 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 						if(indexMoth>=0)
 						{
 					  		AliAODMCParticle* moth = (AliAODMCParticle*) arrayMC->At(indexMoth);
-							if(!moth)
+							if(moth)
 					  			motherpdg=TMath::Abs(moth->GetPdgCode());
 						}
 					}

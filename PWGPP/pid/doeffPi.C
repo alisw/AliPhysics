@@ -44,7 +44,7 @@ Int_t parplotted = 2;
 
 Bool_t isMC = kFALSE; // don't change this (is set automatically)
 Bool_t selectTrue = kTRUE; // put it to true to remove background (only for MC)
-Bool_t keepTrue = kFALSE; // put it to false to fit only background (only for MC)
+Bool_t keepTrue = kTRUE; // put it to false to fit only background (only for MC)
 
 Bool_t kGoodMatch = kFALSE; // to check good matching
 
@@ -514,6 +514,8 @@ void fit(TH1D *h,Float_t *a,char *opt,char *opt2,Float_t pt){
    fall->FixParameter(5,0);
    fall->FixParameter(6,0);
  }
+   fall->FixParameter(6,0);
+
 
  char namenew[100];
  sprintf(namenew,"%s_%i",h->GetName(),Int_t(gRandom->Rndm()*10000));

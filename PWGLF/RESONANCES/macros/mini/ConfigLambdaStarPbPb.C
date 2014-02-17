@@ -95,7 +95,7 @@ Bool_t ConfigLambdaStarPbPb
     //out->AddAxis(resID, 200, -0.02, 0.02);
     
     // axis Y: transverse momentum
-    out->AddAxis(ptID, 100, 0.0, 10.0);
+    out->AddAxis(ptID, 500, 0.0, 50.0);
     
     // axis Z: centrality-multiplicity
     if (!isPP)

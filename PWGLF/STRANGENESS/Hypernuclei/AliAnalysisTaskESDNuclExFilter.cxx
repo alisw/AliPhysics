@@ -135,6 +135,7 @@ AliAnalysisTaskESDNuclExFilter::AliAnalysisTaskESDNuclExFilter(Bool_t onlyMuon, 
   fnSigmaTrk2(nsigmaTrk2),
   fpartType1(partType1),
   fpartType2(partType2),
+  murep(0x0),
   fPIDResponse(0)
 {
   // Default constructor
@@ -152,7 +153,7 @@ AliAnalysisTaskESDNuclExFilter::AliAnalysisTaskESDNuclExFilter(const char* name,
   fnSigmaTrk2(nsigmaTrk2),
   fpartType1(partType1),
   fpartType2(partType2),
-  murep(0),
+  murep(0x0),
   fPIDResponse(0)
 {
   // Constructor
@@ -330,14 +331,7 @@ void AliAnalysisTaskESDNuclExFilter::ConvertESDtoAOD()
   //cout<<"========================> CONVERT ESD TO AOD <============================="<<endl;
 
   
-  AliVEvent *event = InputEvent();
-  //cout<<"VEvent: "<<event<<endl;
   AliAODEvent *lAODevent=(AliAODEvent*)InputEvent();
-  //cout<<"AOD Event: "<<event<<endl;
-  AliAODHeader* header =lAODevent->GetHeader();
-  //cout<<"header :"<<header<<endl;
-  Int_t jTracks =  lAODevent->GetNumberOfTracks();
-  //cout<<"n jtracks :"<<jTracks<<endl;
 
   // Read primary vertex from AOD event 
   // AliAODVertex *primary = *(AODEvent()->GetPrimaryVertex());

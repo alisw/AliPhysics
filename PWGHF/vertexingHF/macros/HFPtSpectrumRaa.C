@@ -609,7 +609,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     Double_t minFdSyst = 0., maxFdSyst = 0.;
     if ( ElossHypo == ElossCentral[ hABbin ] ) {
 
-      cout <<endl<<">>>>>>>>>>> tete >>>>>>>>>>>>>>"<<endl<<endl;
+      //      cout <<endl<<">>>>>>>>>>> tete >>>>>>>>>>>>>>"<<endl<<endl;
 
       //
       // Data stat uncertainty
@@ -772,7 +772,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     //
     if( RaaCharm>0 && ElossHypo >= MinHypo && ElossHypo <=MaxHypo && RaaBeauty<=MaxRb ) {
 
-      cout <<endl<<">>>>>>>>>>> tetuu >>>>>>>>>>>>>>"<<endl<<endl;
+      //      cout <<endl<<">>>>>>>>>>> tetuu >>>>>>>>>>>>>>"<<endl<<endl;
       Double_t Ehigh =  ElossMax[ hABbin ] ;
       Double_t Elow =  ElossMin[ hABbin ] ;
       if ( RaaCharm > Ehigh ) ElossMax[ hABbin ] = RaaCharm ;

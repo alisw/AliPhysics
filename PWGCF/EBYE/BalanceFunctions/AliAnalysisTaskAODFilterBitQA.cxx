@@ -23,8 +23,8 @@ AliAnalysisTaskAODFilterBitQA::AliAnalysisTaskAODFilterBitQA(const char *name)
 
   for(Int_t iTrackBit = 0; iTrackBit < gBitMax; iTrackBit++){
     fHistKinematics[iTrackBit] = NULL;
-    fHistDCA[iTrackBit]        = NULL;
-    fHistDCAprop[iTrackBit]    = NULL;
+    fHistDCAconstrained[iTrackBit] = NULL;
+    fHistDCAglobal[iTrackBit]  = NULL;
     fHistChiClus[iTrackBit]    = NULL;
   }
   
@@ -61,12 +61,12 @@ void AliAnalysisTaskAODFilterBitQA::UserCreateOutputObjects() {
 
   for(Int_t iTrackBit = 0; iTrackBit < gBitMax; iTrackBit++){
     fHistKinematics[iTrackBit] = new TH3D(Form("Bit%d_Kinematics",iTrackBit),Form("Bit%d_Kinematics;#eta;#varphi (rad);p_{T} (GeV/c)",iTrackBit),100,-1.0,1.0,100,0,TMath::Pi()*2,100,0,10);
-    fHistDCA[iTrackBit]        = new TH2D(Form("Bit%d_DCA",iTrackBit),Form("Bit%d_DCA;DCA XY [AODtrack] (cm);DCA Z [AODtrack] (cm)",iTrackBit),100,-5.0,5.0,220,-11.0,11.0);
-    fHistDCAprop[iTrackBit]    = new TH2D(Form("Bit%d_DCAprop",iTrackBit),Form("Bit%d_DCAprop;DCA XY [Propagated] (cm);DCA Z [Propagated] (cm)",iTrackBit),100,-5.0,5.0,220,-11.0,11.0);
+    fHistDCAconstrained[iTrackBit] = new TH2D(Form("Bit%d_DCAconstrained",iTrackBit),Form("Bit%d_DCAconstrained;DCA XY [Constrained] (cm);DCA Z [Constrained] (cm)",iTrackBit),100,-5.0,5.0,100,-5.0,5.0);
+    fHistDCAglobal[iTrackBit]  = new TH3D(Form("Bit%d_DCAglobal",iTrackBit),Form("Bit%d_DCAglobal;DCA X [Global] (cm);DCA Y [Global] (cm);DCA Z [Global] (cm)",iTrackBit),100,-5.0,5.0,100,-5.0,5.0,100,-5.0,5.0);
     fHistChiClus[iTrackBit]    = new TH2D(Form("Bit%d_ChiClus",iTrackBit),Form("Bit%d_ChiClus;#chi^{2} [Fit];N_{clus} [TPC]",iTrackBit),100,-1.0,5.0,160,0,160.0);
     fListQA->Add(fHistKinematics[iTrackBit]);
-    fListQA->Add(fHistDCA[iTrackBit]);
-    fListQA->Add(fHistDCAprop[iTrackBit]);
+    fListQA->Add(fHistDCAconstrained[iTrackBit]);
+    fListQA->Add(fHistDCAglobal[iTrackBit]);
     fListQA->Add(fHistChiClus[iTrackBit]);
   }
 
@@ -173,18 +173,19 @@ void AliAnalysisTaskAODFilterBitQA::GetAcceptedTracks(AliVEvent *event, Double_t
   Double_t vY;
   Double_t vPhi;
   Double_t vPt;
-  Double_t vDCAxy;
-  Double_t vDCAz; 
-  Double_t vDCApropxy;
-  Double_t vDCApropz;
+  Double_t vDCAconstrainedxy;
+  Double_t vDCAconstrainedz; 
+  Double_t vDCAglobalx;
+  Double_t vDCAglobaly;
+  Double_t vDCAglobalz;
   Double_t vChi2;
   Double_t vClus;
 
-  //for propagation to DCA
+  Double_t pos[3];
+  Double_t v[3];
+
   const AliVVertex *vertex = event->GetPrimaryVertex();
-  Double_t field = event->GetMagneticField();
-  Double_t b[2];
-  Double_t bCov[3];
+  vertex->GetXYZ(v);
 
   // Loop over tracks in event
   for (Int_t iTracks = 0; iTracks < event->GetNumberOfTracks(); iTracks++) {
@@ -200,32 +201,26 @@ void AliAnalysisTaskAODFilterBitQA::GetAcceptedTracks(AliVEvent *event, Double_t
     vY      = aodTrack->Y();
     vPhi    = aodTrack->Phi();// * TMath::RadToDeg();
     vPt     = aodTrack->Pt();
-    vDCAxy  = aodTrack->DCA();     
-    vDCAz   = aodTrack->ZAtDCA();   
+    vDCAconstrainedxy  = aodTrack->DCA();     
+    vDCAconstrainedz   = aodTrack->ZAtDCA();   
     vChi2   = aodTrack->Chi2perNDF(); 
     vClus   = aodTrack->GetTPCNcls(); 
 
-    // propagate again to DCA, use copy to propagate (in order not to overwrite track parameters)
-    AliAODTrack copy(*aodTrack);
-    if (copy.PropagateToDCA(vertex, field, 100., b, bCov) )
-      {
-        vDCApropxy = b[0];
-        vDCApropz  = b[1];
-      } 
-    else
-      {
-	vDCApropxy = -999999;
-	vDCApropz  = -999999;
-      }
+    // if not constrained track the position is stored (primary vertex to be subtracted)
+    aodTrack->GetXYZ(pos);
+    vDCAglobalx  = pos[0] - v[0];
+    vDCAglobaly  = pos[1] - v[1];
+    vDCAglobalz  = pos[2] - v[2];
     
+
     // AOD track cuts
     for(Int_t iTrackBit = 0; iTrackBit < gBitMax; iTrackBit++){
       fHistTrackStats->Fill(gCentrality,iTrackBit,aodTrack->TestFilterBit(1<<iTrackBit));
       
       if(aodTrack->TestFilterBit(1<<iTrackBit)){
 	fHistKinematics[iTrackBit]->Fill(vEta,vPhi,vPt);
-	fHistDCA[iTrackBit]->Fill(vDCAxy,vDCAz);
-	fHistDCAprop[iTrackBit]->Fill(vDCApropxy,vDCApropz);
+	fHistDCAconstrained[iTrackBit]->Fill(vDCAconstrainedxy,vDCAconstrainedz);
+	fHistDCAglobal[iTrackBit]->Fill(vDCAglobalx,vDCAglobaly,vDCAglobalz);
 	fHistChiClus[iTrackBit]->Fill(vChi2,vClus);
       }
       

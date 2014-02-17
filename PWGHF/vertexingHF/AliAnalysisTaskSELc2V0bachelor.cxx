@@ -1822,11 +1822,10 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
   fCandidateVariables[80]=bachelor->Charge();
   fCandidateVariables[81]=isMCparticleInFiducialAcceptance;
   if (fUseMCInfo) {
+    fCandidateVariables[82]=0;
     if (bachelor->GetLabel()!=-1) {
       AliAODMCParticle *partBachelor = dynamic_cast<AliAODMCParticle*>(mcArray->At(TMath::Abs(bachelor->GetLabel())));
-      fCandidateVariables[82]=partBachelor->GetPdgCode();
-    } else {
-      fCandidateVariables[82]=0;
+      if(partBachelor) fCandidateVariables[82]=partBachelor->GetPdgCode();
     }
   } else {
     fCandidateVariables[82]=-1;
@@ -2431,13 +2430,12 @@ Int_t AliAnalysisTaskSELc2V0bachelor::MatchToMClabelC(AliAODRecoCascadeHF *candi
   Int_t ndg2 = partLc->GetDaughter(1)-partLc->GetDaughter(0)+1;
   if (ndg2==2) return -1;
 
-  Char_t stringaCheck[100];
-  sprintf(stringaCheck,">>>>>>>> %d -> ",partLc->GetPdgCode());
+  TString stringaCheck = Form(">>>>>>>> %d -> ",partLc->GetPdgCode());
   for(Int_t ii=0; ii<ndg2; ii++) {
     AliAODMCParticle* partDau=(AliAODMCParticle*)(mcArray->At(partLc->GetDaughter(0)+ii));
-    sprintf(stringaCheck," %s %d",stringaCheck,partDau->GetPdgCode());
+    stringaCheck.Append(Form("  %d",partDau->GetPdgCode()));
   }
-  printf("%s \n",stringaCheck);
+  printf("%s \n",stringaCheck.Data());
 
   return indexMotherBach;
 

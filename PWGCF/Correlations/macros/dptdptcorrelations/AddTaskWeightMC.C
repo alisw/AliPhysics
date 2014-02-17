@@ -26,7 +26,7 @@ AliDptDptInMC *AddTaskWeightMC
  TString anadata               = "MCAOD",
  Bool_t NoResonances           = kTRUE,
  Bool_t NoElectron             = kTRUE,
- const char* taskname          = "NoWeakDecay")
+ const char* taskname          = "MCTruth")
   
 {
   
@@ -46,7 +46,7 @@ AliDptDptInMC *AddTaskWeightMC
       if (centralityMethod == 4)
 	{
 	  
-	  minCentrality[0] = 10.0; maxCentrality[0] = 20.0; 
+	  minCentrality[0] = 0.0; maxCentrality[0] = 10.0; 
 	  minCentrality[1] = 30.0; maxCentrality[1] = 40.;
 	  minCentrality[2] = 60.; maxCentrality[2] = 70.;
 	  

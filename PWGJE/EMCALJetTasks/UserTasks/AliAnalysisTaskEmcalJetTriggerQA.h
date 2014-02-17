@@ -10,6 +10,9 @@ class TArrayI;
 
 #include <TRef.h>
 #include <TBits.h>
+#include <TMath.h>
+
+#include <AliVEvent.h>
 
 #include "AliAnalysisTaskEmcalJet.h"
 
@@ -44,7 +47,8 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
  protected:
   Bool_t                      FillHistograms()   ;
   Bool_t                      Run()              ;
-
+  Float_t                     RelativeEP(Double_t objAng, Double_t EPAng) const;
+    
   Bool_t                      TestFilterBit(Int_t trigBit, UInt_t bitJetTrig) const {return (Bool_t) ((trigBit & bitJetTrig) != 0);}
 
 
@@ -94,7 +98,9 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
   TH2F  *fh2CellEnergyVsTime;               //! emcal cell energy vs time
   TH3F  *fh3EClusELeadingCellVsTime;        //! cluster energy vs energy of leading cell in cluster vs time of the leading cell
 
-
+  TH3F  *fh3JetReacCent;
+  TH2F  *fh2FullJetCent;
+    
   AliAnalysisTaskEmcalJetTriggerQA(const AliAnalysisTaskEmcalJetTriggerQA&);            // not implemented
   AliAnalysisTaskEmcalJetTriggerQA &operator=(const AliAnalysisTaskEmcalJetTriggerQA&); // not implemented
 

@@ -331,9 +331,10 @@ void AliAnalysisTaskEmcalJetTagger::MatchJetsGeo(Int_t c1, Int_t c2,
 
   static TArrayS iFlag(nJets1*nJets2);
   if(iFlag.GetSize()<(nJets1*nJets2)){
-    iFlag.Set(nJets1*nJets1+1);
+    iFlag.Set(nJets1*nJets2+1);
   }
   iFlag.Reset(0);
+
 
   AliJetContainer *cont2 = GetJetContainer(c2);
 

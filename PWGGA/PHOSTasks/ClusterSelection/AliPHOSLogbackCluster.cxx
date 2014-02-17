@@ -15,7 +15,9 @@
 
 /* $Id$ */
 
+#include "AliLog.h"
 #include "AliPHOSLogbackCluster.h"
+#include <AliPHOSGeometry.h>
 
 ClassImp(AliPHOSLogbackCluster)
 
@@ -46,5 +48,37 @@ TLorentzVector AliPHOSLogbackCluster::GetMomentum(Double_t * vertex)
   
   Double_t r = TMath::Sqrt(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2]   ) ; 
     
-  return TLorentzVector( fEnergy*pos[0]/r,  fEnergy*pos[1]/r,  fEnergy*pos[2]/r,  fEnergy) ;
+  return TLorentzVector( fE*pos[0]/r,  fE*pos[1]/r,  fE*pos[2]/r,  fE) ;
+}
+
+
+AliPHOSGeometry* AliPHOSLogbackCluster::GetGeometry()
+{
+  // Gets Geometry, from OADB
+  
+  static AliPHOSGeometry* sGeometry = 0x0;
+  
+  //Init geometry
+  if(!sGeometry){
+    AliOADBContainer geomContainer("phosGeo_AliPHOSLogbackCluster");
+    geomContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
+    TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(fRunNumber,"PHOSRotationMatrixes");
+    sGeometry =  AliPHOSGeometry::GetInstance("IHEP") ;
+    for(Int_t mod=0; mod<5; mod++) {
+      if(!matrixes->At(mod)) {
+	// Please note that not all modules are present as of 2014
+	// 	if( fDebug )
+	// 	  AliInfo(Form("No PHOS Matrix for mod:%d, geo=%p\n", mod, sGeometry));
+	AliDebug(2, Form("No PHOS Matrix for mod:%d, geo=%p\n", mod, sGeometry) );
+	continue;
+      }
+      else {
+	sGeometry->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod) ;
+	if( fDebug >1 )
+	  AliInfo(Form("Adding PHOS Matrix for mod:%d, geo=%p\n", mod, sGeometry));
+      }
+    }
+  }
+  
+  return sGeometry;
 }
