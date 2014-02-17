@@ -163,7 +163,7 @@ class AliAnalysisTaskEtaToPiPlPiMiGamma: public AliAnalysisTaskSE
 		Bool_t fDoMesonQA;
 		Bool_t fIsFromMBHeader;
 		Bool_t fIsMC;
-
+		Bool_t fIsGammaEtaCand;
 	private:
 		AliAnalysisTaskEtaToPiPlPiMiGamma( const AliAnalysisTaskEtaToPiPlPiMiGamma& ); // Not implemented
 		AliAnalysisTaskEtaToPiPlPiMiGamma& operator=( const AliAnalysisTaskEtaToPiPlPiMiGamma& ); // Not implemented
