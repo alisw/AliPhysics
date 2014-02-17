@@ -224,8 +224,8 @@ AliRsnMiniAnalysisTask * AddTaskKStarPPB
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    //   
-   gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigTOFanalysisKStar.C");
-   if (!ConfigTOFanalysisKStar(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, useMixLS, signedPdg, monitorOpt.Data(), yaxisvar)) return 0x0;
+   gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigKStarPPB.C");
+   if (!ConfigKStarPPB(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, useMixLS, signedPdg, monitorOpt.Data(), yaxisvar)) return 0x0;
    
    
    //
