@@ -454,10 +454,10 @@ AliCaloTrackReader * ConfigureReader()
   //reader->SwitchOffTriggerClusterTimeRecal() ;
 
   reader->SetTriggerPatchTimeWindow(8,9); // L0
-  if     (kRunNumber < 146861) reader->SetEventTriggerThreshold(3.);
-  else if(kRunNumber < 154000) reader->SetEventTriggerThreshold(4.);
-  else if(kRunNumber < 165000) reader->SetEventTriggerThreshold(5.5);
-  else                         reader->SetEventTriggerThreshold(8); // CAREFUL!
+  if     (kRunNumber < 146861) reader->SetEventTriggerL0Threshold(3.);
+  else if(kRunNumber < 154000) reader->SetEventTriggerL0Threshold(4.);
+  else if(kRunNumber < 165000) reader->SetEventTriggerL0Threshold(5.5);
+
   //redefine for other periods, triggers
 
   //if(!kUseKinematics) reader->SetFiredTriggerClassName("CEMC7EGA-B-NOPF-CENTNOTRD"); // L1 Gamma

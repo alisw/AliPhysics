@@ -112,7 +112,7 @@ fEMCALClustersListName(""),  fZvtxCut(0.),
 fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(kTRUE),
 //Trigger rejection
 fRemoveBadTriggerEvents(0),  fTriggerPatchClusterMatch(0),
-fTriggerPatchTimeWindow(),   fTriggerEventThreshold(0),
+fTriggerPatchTimeWindow(),   fTriggerL0EventThreshold(0),     fTriggerL1EventThreshold(0),
 fTriggerClusterBC(0),        fTriggerClusterIndex(0),         fTriggerClusterId(0),
 fIsExoticEvent(0),           fIsBadCellEvent(0),              fIsBadMaxCellEvent(0),
 fIsTriggerMatch(0),          fIsTriggerMatchOpenCut(),
@@ -857,10 +857,10 @@ void AliCaloTrackReader::InitParameters()
   fTriggerPatchTimeWindow[0] = 8;
   fTriggerPatchTimeWindow[1] = 9;
   
-  fTriggerClusterBC      = -10000 ;
-  fTriggerEventThreshold =  2.;
-  fTriggerClusterIndex   = -1;
-  fTriggerClusterId      = -1;
+  fTriggerClusterBC        = -10000 ;
+  fTriggerL0EventThreshold =  2.;
+  fTriggerClusterIndex     = -1;
+  fTriggerClusterId        = -1;
   
   //Jets
   fInputNonStandardJetBranchName = "jets";
@@ -2160,6 +2160,18 @@ TArrayI AliCaloTrackReader::GetTriggerPatches(Int_t tmin, Int_t tmax )
   // get object pointer
   AliVCaloTrigger *caloTrigger = GetInputEvent()->GetCaloTrigger( "EMCAL" );
 
+  // Recover the threshold of the event that triggered, only possible for L1
+  if     (IsEventEMCALL1Gamma1()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(1);
+  else if(IsEventEMCALL1Gamma2()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(3);
+  else if(IsEventEMCALL1Jet1  ()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(0);
+  else if(IsEventEMCALL1Jet2  ()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(2);
+  
+//  printf("L1 trigger Threshold Jet1 %f, Gamma1 %f, Jet2 %f, Gamma2 %f\n",
+//         0.07874*caloTrigger->GetL1Threshold(0),
+//         0.07874*caloTrigger->GetL1Threshold(1),
+//         0.07874*caloTrigger->GetL1Threshold(2),
+//         0.07874*caloTrigger->GetL1Threshold(3));
+  
   //printf("CaloTrigger Entries %d\n",caloTrigger->GetEntries() );
   
   // class is not empty
@@ -2313,8 +2325,12 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
   Int_t   absIdMaxMax = -1;
   
   Int_t   nOfHighECl  = 0 ;
-	
-  Float_t minE = fTriggerEventThreshold / 2.;
+  
+  Float_t triggerThreshold = fTriggerL1EventThreshold;
+  if(IsEventEMCALL0()) triggerThreshold = fTriggerL0EventThreshold;
+  
+  Float_t minE = triggerThreshold / 2.;
+
   // This method is not really suitable for JET trigger
   // but in case, reduce the energy cut since we do not trigger on high energy particle
   if(IsEventEMCALL1Jet() || minE < 1) minE = 1;
