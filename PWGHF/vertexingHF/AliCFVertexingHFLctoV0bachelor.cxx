@@ -692,7 +692,7 @@ Bool_t AliCFVertexingHFLctoV0bachelor::SetLabelArray()
   
   if (fmcPartCandidate->GetNDaughters()!=2) {
     AliDebug(2, Form("The MC particle have %d daughters (not 2), skipping!!",fmcPartCandidate->GetNDaughters()));
-    fmcPartCandidate->Print();
+    //    fmcPartCandidate->Print();
     return checkCD;
   }
 
