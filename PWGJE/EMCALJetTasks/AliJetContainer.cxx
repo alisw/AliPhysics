@@ -45,6 +45,7 @@ AliJetContainer::AliJetContainer():
   fNLeadingJets(1),
   fJetBitMap(0),
   fJetTrigger(0),
+  fTagStatus(-1),
   fParticleContainer(0),
   fClusterContainer(0),
   fRho(0),
@@ -84,6 +85,7 @@ AliJetContainer::AliJetContainer(const char *name):
   fNLeadingJets(1),
   fJetBitMap(0),
   fJetTrigger(0),
+  fTagStatus(-1),
   fParticleContainer(0),
   fClusterContainer(0),
   fRho(0),
@@ -336,6 +338,9 @@ Bool_t AliJetContainer::AcceptJet(AliEmcalJet *jet) const
    
    if (fFlavourSelection != 0 && !jet->TestFlavourTag(fFlavourSelection))
       return kFALSE;
+
+   if(fTagStatus>-1 && jet->GetTagStatus()!=fTagStatus)
+     return kFALSE;
    
    Double_t jetPhi = jet->Phi();
    Double_t jetEta = jet->Eta();
