@@ -295,7 +295,8 @@ void  AliPHOSClusterSelection::EvalCoreLambdas(AliVCluster  * clu, AliVCaloCells
 { 
   //calculate dispecrsion of the cluster in the circle with radius distanceCut around the maximum
   //Copied from pi0flowtask
-  Int_t fRunNumber;
+  AliVEvent* vevent = AliPHOSClusterSelection::GetCurrentEvent();
+  Int_t runNumber = vevent->GetRunNumber();
   const Double32_t * elist = clu->GetCellsAmplitudeFraction() ;  
   // Calculates the center of gravity in the local PHOS-module coordinates
   Float_t wtot = 0;
@@ -312,18 +313,9 @@ void  AliPHOSClusterSelection::EvalCoreLambdas(AliVCluster  * clu, AliVCaloCells
     Float_t zi=0. ;
     Int_t absId = clu->GetCellAbsId(iDigit) ;
 
-
-    AliESDEvent* EventESD = dynamic_cast<AliESDEvent*> (AliPHOSClusterSelection::GetCurrentEvent());//dynamic cast to test for ESD or AOD
-
-    AliAODEvent* EventAOD = dynamic_cast<AliAODEvent*> (AliPHOSClusterSelection::GetCurrentEvent());
-    if(EventESD)
-      fRunNumber = EventESD->GetRunNumber() ;
-    if(EventAOD)
-      fRunNumber = EventESD->GetRunNumber() ;
-
     AliOADBContainer geomContainer("phosGeo");//Initialize Geometry
     geomContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
-    TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(fRunNumber,"PHOSRotationMatrixes");
+    TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(runNumber,"PHOSRotationMatrixes");
     AliPHOSGeometry * fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP") ;
     for(Int_t mod=0; mod<5; mod++) {
       if(!matrixes->At(mod)) {
