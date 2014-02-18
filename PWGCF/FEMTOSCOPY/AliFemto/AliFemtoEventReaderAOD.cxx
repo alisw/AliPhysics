@@ -853,23 +853,27 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack,
   tAodTrack->GetCovMatrix(covmat);
 
   if (!fDCAglobalTrack) {
-    double impact[2];
-    double covimpact[3];
 
-    AliAODTrack* trk_clone = (AliAODTrack*)tAodTrack->Clone("trk_clone");
-    // if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
-    // if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
-    if (!trk_clone->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
-      //cout << "sth went wrong with dca propagation" << endl;
-      tFemtoTrack->SetImpactD(-1000.0);
-      tFemtoTrack->SetImpactZ(-1000.0);
+      tFemtoTrack->SetImpactD(tAodTrack->DCA());
+      tFemtoTrack->SetImpactZ(tAodTrack->ZAtDCA());
 
-    }
-    else {
-      tFemtoTrack->SetImpactD(impact[0]);
-      tFemtoTrack->SetImpactZ(impact[1]);
-    }
-    delete trk_clone;
+    // double impact[2];
+    // double covimpact[3];
+
+    // AliAODTrack* trk_clone = (AliAODTrack*)tAodTrack->Clone("trk_clone");
+    // // if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
+    // // if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
+    // if (!trk_clone->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
+    //   //cout << "sth went wrong with dca propagation" << endl;
+    //   tFemtoTrack->SetImpactD(-1000.0);
+    //   tFemtoTrack->SetImpactZ(-1000.0);
+
+    // }
+    // else {
+    //   tFemtoTrack->SetImpactD(impact[0]);
+    //   tFemtoTrack->SetImpactZ(impact[1]);
+    // }
+    // delete trk_clone;
 
   }
 
