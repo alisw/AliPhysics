@@ -69,7 +69,8 @@ class AliDAQ: public TObject {
   static const char *OnlineName(Int_t detectorID);
 
   enum {
-    kNDetectors = 22,    // Number of detectors
+ //   kNDetectors = 22,    // Number of detectors
+    kNDetectors = 23,    // Number of detectors //alla
     kHLTId = 30          // HLT detector index
   };
 
@@ -78,7 +79,7 @@ class AliDAQ: public TObject {
 		     kPHOS = 0x0080, kCPV = 0x0100, kPMD = 0x0200, kMUONTRK = 0x0400,
 		     kMUONTRG = 0x0800, kMUON = 0x0c00, kFMD = 0x1000, kT0 = 0x2000, kVZERO = 0x4000,
 		     kZDC = 0x8000, kACORDE = 0x10000, kTRG = 0x20000, kEMCAL = 0x40000,
-		     kDAQTEST = 0x80000, kMFT = 0x100000, kHLT = 0x40000000 };
+		     kDAQTEST = 0x80000, kMFT = 0x100000, kHLT = 0x40000000, kFIT = 0x80000000};
 
  private:
 

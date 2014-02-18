@@ -164,4 +164,6 @@ code="{fTrackTime = new Double32_t[AliPID::kSPECIESC];for(Int_t isp=AliPID::kSPE
 #pragma link C++ function operator-(const AliFMDMap&,const AliFMDMap&);
   
 #pragma link C++ class  AliESDMuonGlobalTrack+;  
+
+#pragma link C++ class  AliESDFIT+;  
 #endif
