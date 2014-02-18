@@ -206,7 +206,7 @@ private:
   time_t          fTimeEnd;            // EOR time-stamp
   
   //QA stuff
-  static const Int_t   fgkNDetectors = 17 ;             // number of detectors    + AD
+  static const Int_t   fgkNDetectors = 18 ;             // number of detectors   +FIT // alla
   static const char *  fgkDetectorName[fgkNDetectors] ; // names of detectors
   TString              fQADetectors ;                   // list of detectors to be QA'ed 	
   TString              fQATasks ;                       // list of QA tasks to be performed	
