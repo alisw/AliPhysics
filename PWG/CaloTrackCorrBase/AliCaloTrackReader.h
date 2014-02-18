@@ -284,18 +284,19 @@ public:
 
   Bool_t           CheckEventTriggers();
   
-  Bool_t           IsExoticEvent()                         { return fIsExoticEvent           ; }  
-  Bool_t           IsBadCellTriggerEvent()                 { return fIsBadCellEvent          ; }
-  Bool_t           IsBadMaxCellTriggerEvent()              { return fIsBadMaxCellEvent       ; }
-  Bool_t           IsTriggerMatched()                      { return fIsTriggerMatch          ; }
-  Bool_t           IsTriggerMatchedOpenCuts(Int_t i)       { return fIsTriggerMatchOpenCut[i]; }
+  Bool_t           IsExoticEvent()                   const { return fIsExoticEvent           ; }
+  Bool_t           IsBadCellTriggerEvent()           const { return fIsBadCellEvent          ; }
+  Bool_t           IsBadMaxCellTriggerEvent()        const { return fIsBadMaxCellEvent       ; }
+  Bool_t           IsTriggerMatched()                const { return fIsTriggerMatch          ; }
+  Bool_t           IsTriggerMatchedOpenCuts(Int_t i) const { return fIsTriggerMatchOpenCut[i]; }
   
-  Int_t            GetTriggerClusterBC()                   { return fTriggerClusterBC        ; }
-  Int_t            GetTriggerClusterIndex()                { return fTriggerClusterIndex     ; }
-  Int_t            GetTriggerClusterId()                   { return fTriggerClusterId        ; }
+  Int_t            GetTriggerClusterBC()             const { return fTriggerClusterBC        ; }
+  Int_t            GetTriggerClusterIndex()          const { return fTriggerClusterIndex     ; }
+  Int_t            GetTriggerClusterId()             const { return fTriggerClusterId        ; }
   
-  Float_t          GetEventTriggerThreshold()              { return fTriggerEventThreshold   ; }
-  void             SetEventTriggerThreshold(Float_t tr)    { fTriggerEventThreshold   = tr   ; }
+  Float_t          GetEventTriggerL0Threshold()      const { return fTriggerL0EventThreshold ; }
+  void             SetEventTriggerL0Threshold(Float_t tr)  { fTriggerL0EventThreshold   = tr ; }
+  Float_t          GetEventTriggerL1Threshold()      const { return fTriggerL1EventThreshold ; }
 
   void             SetTriggerPatchTimeWindow(Int_t min, Int_t max) { fTriggerPatchTimeWindow[0] = min ;
                                                                      fTriggerPatchTimeWindow[1] = max ; }
@@ -728,7 +729,8 @@ public:
   Bool_t           fRemoveBadTriggerEvents;      // Remove triggered events because trigger was exotic, bad, or out of BC
   Bool_t           fTriggerPatchClusterMatch;    // Search for the trigger patch and check if associated cluster was the trigger
   Int_t            fTriggerPatchTimeWindow[2];   // Trigger patch selection window
-  Float_t          fTriggerEventThreshold;       // Threshold to look for triggered events
+  Float_t          fTriggerL0EventThreshold;     // L0 Threshold to look for triggered events, set outside
+  Float_t          fTriggerL1EventThreshold;     // L1 Threshold to look for triggered events, set in data
   Int_t            fTriggerClusterBC;            // Event triggered by a cluster in BC -5 0 to 5
   Int_t            fTriggerClusterIndex;         // Index in clusters array of trigger cluster
   Int_t            fTriggerClusterId;            // Id of trigger cluster (cluster->GetID())
@@ -797,7 +799,7 @@ public:
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,66)
+  ClassDef(AliCaloTrackReader,67)
   
 } ;
 
