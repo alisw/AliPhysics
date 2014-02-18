@@ -574,8 +574,6 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   // Vertex method //
   ///////////////////
   if ( ! furtherOpt.Contains("VERTEX") ) return;
-  Int_t firstMother = ( isMC ) ? 0 : kUnidentified;
-  Int_t lastMother = ( isMC ) ? kNtrackSources - 1 : kUnidentified;
   igroup1++;
   TH1* eventVertex = (TH1*)GetSum(physSel, minBiasTrig, centralityRange, "hIpVtx");
   if ( ! eventVertex ) return;
@@ -659,7 +657,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
         delete auxHisto;
       }
     }
-    SetSparseRange(gridSparse, kHvarMotherType, "", firstMother+1, lastMother+1, "USEBIN");
+    SetSparseRange(gridSparse, kHvarMotherType, "", firstPtBin, lastSrcBin, "USEBIN");
     Int_t currDraw = 0;
     
     for ( Int_t ibinpt=0; ibinpt<=ptAxis->GetNbins(); ++ibinpt ) {
@@ -729,7 +727,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
       fitFunc->DrawCopy("same");
       currDraw++;
     } // loop on pt bins
-    SetSparseRange(gridSparse, kHvarMotherType, "", firstMother+1, lastMother+1, "USEBIN");
+    SetSparseRange(gridSparse, kHvarMotherType, "", firstSrcBin, lastSrcBin, "USEBIN");
     currName = Form("recoPt_%s",fThetaAbsKeys->At(itheta)->GetName());
     can = new TCanvas(currName.Data(),currName.Data(),(igroup1+1)*xshift,igroup2*yshift,600,600);
     TLegend* leg = new TLegend(0.6, 0.6, 0.8, 0.8);
