@@ -83,6 +83,15 @@ public:
   
   void   SwitchOnEMCALOADB()             { fAccessOADB        = kTRUE   ; }
   void   SwitchOffEMCALOADB()            { fAccessOADB        = kFALSE  ; }
+
+  void   SwitchOnMCData()                { fMCData            = kTRUE   ; }
+  void   SwitchOffMCData()               { fMCData            = kFALSE  ; }
+
+  void   SwitchOnV0SignalHistograms()    { fFillV0SigHisto    = kTRUE   ; }
+  void   SwitchOffV0SignalHistograms()   { fFillV0SigHisto    = kFALSE  ; }
+  
+  void   SwitchOnClusterAcceptanceHistograms()  { fFillClusAcceptHisto = kTRUE   ; }
+  void   SwitchOffClusterAcceptanceHistograms() { fFillClusAcceptHisto = kFALSE  ; }
   
   void   SetOADBFilePath(TString path)   { fOADBFilePath      = path    ; }
   
@@ -119,6 +128,10 @@ private:
   Float_t           fV0A;             // V0 A signal
   Float_t           fV0C;             // V0 C signal
   
+  Bool_t            fFillV0SigHisto;  // V0 signal creation and fill
+  Bool_t            fFillClusAcceptHisto; // Fill eta/phi distributions
+  Bool_t            fMCData;          //  Simulation On/Off
+
   // Event by event trigger recognition bit
   Bool_t            fEventMB   ;      // Bit for MB events
   Bool_t            fEventL0   ;      // Bit for L0 events
@@ -209,17 +222,17 @@ private:
   TH2F             *fhClusPhi   [fgkTriggerCombi];                   //! Clusters Phi vs E distribution for a trigger
   TH2F             *fhClusPhiMax[fgkTriggerCombi];                   //! Maximum E Cluster  vs Phi per event distribution for a trigger
 
-  TH2F             *fhClusEtaPhiHigh      [fgkTriggerCombi];         //! Clusters eta vs phi distribution for a trigger, energy above 10 GeV
-  TH2F             *fhClusEtaPhiHighCluMax[fgkTriggerCombi];         //! Maximum E Cluster, Phi vs Eta per event distribution for a trigger, energy above 10 GeV
+  TH2F             *fhClusEtaPhiHigh      [fgkTriggerCombi];         //! Clusters eta vs phi distribution for a trigger, energy above fEtaPhiEnMin GeV
+  TH2F             *fhClusEtaPhiHighCluMax[fgkTriggerCombi];         //! Maximum E Cluster, Phi vs Eta per event distribution for a trigger, energy above fEtaPhiEnMin GeV
  
-  TH2F             *fhClusEtaPhiHighCellMax      [fgkTriggerCombi];  //! Clusters maximum energy cell index eta vs phi distribution for MB trigger, energy above 10 GeV
-  TH2F             *fhClusEtaPhiHighCellMaxCluMax[fgkTriggerCombi];  //! Maximum E Cluster, maximum energy cell index Phi vs Eta per event distribution for MB trigger, energy above 10 GeV
+  TH2F             *fhClusEtaPhiHighCellMax      [fgkTriggerCombi];  //! Clusters maximum energy cell index eta vs phi distribution for a trigger, energy above fEtaPhiEnMin GeV
+  TH2F             *fhClusEtaPhiHighCellMaxCluMax[fgkTriggerCombi];  //! Maximum E Cluster, maximum energy cell index Phi vs Eta per event distribution for MB trigger, energy above fEtaPhiEnMin GeV
  
-  TH2F             *fhClusEtaPhiLow      [fgkTriggerCombi];          //! Clusters eta vs phi distribution for MB trigger, energy below 10 GeV
-  TH2F             *fhClusEtaPhiLowCluMax[fgkTriggerCombi];          //! Maximum E Cluster, Phi vs Eta per event distribution for MB trigger, energy below 10 GeV
+  TH2F             *fhClusEtaPhiLow      [fgkTriggerCombi];          //! Clusters eta vs phi distribution for a trigger, energy below fEtaPhiEnMin GeV
+  TH2F             *fhClusEtaPhiLowCluMax[fgkTriggerCombi];          //! Maximum E Cluster, Phi vs Eta per event distribution for MB trigger, energy below fEtaPhiEnMin GeV
  
-  TH2F             *fhClusEtaPhiLowCellMax      [fgkTriggerCombi];   //! Clusters maximum energy cell index eta vs phi distribution for MB trigger, energy below 10 GeV
-  TH2F             *fhClusEtaPhiLowCellMaxCluMax[fgkTriggerCombi];   //! Maximum E Cluster, maximum energy cell index Phi vs Eta per event distribution for MB trigger, energy below 10 GeV
+  TH2F             *fhClusEtaPhiLowCellMax      [fgkTriggerCombi];   //! Clusters maximum energy cell index eta vs phi distribution for a trigger, energy below fEtaPhiEnMin GeV
+  TH2F             *fhClusEtaPhiLowCellMaxCluMax[fgkTriggerCombi];   //! Maximum E Cluster, maximum energy cell index Phi vs Eta per event distribution for MB trigger, energy below fEtaPhiEnMin GeV
 
   TH1F             *fhV0[fgkTriggerCombi];//! V0 distribution for a triggered event
 
@@ -266,7 +279,7 @@ private:
   
   AliAnalysisTaskEMCALTriggerQA& operator=(const AliAnalysisTaskEMCALTriggerQA&); // not implemented
   
-  ClassDef(AliAnalysisTaskEMCALTriggerQA, 12);
+  ClassDef(AliAnalysisTaskEMCALTriggerQA, 13);
 };
 
 #endif 
