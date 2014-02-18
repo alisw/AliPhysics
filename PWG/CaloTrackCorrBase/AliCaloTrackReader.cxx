@@ -2856,7 +2856,7 @@ void AliCaloTrackReader::SetEventTriggerBit()
       if(!cinfo)
       {
         cinfo = (TStreamerInfo*)clist->FindObject("AliAODCaloTrigger");
-        verid = 2; // newer AOD header version
+        verid = 3; // newer AOD header version
       }
       if(cinfo)
 	    {
