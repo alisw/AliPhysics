@@ -63,6 +63,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fEvent(0x0),
   fESD(0x0),
   fVtx(0x0),
+  fVtxAOD(0x0),
   fTrackCuts(0x0), 
   fTrackCutsITSLoose(0x0), 
   fTrackCutsTPConly(0x0), 
@@ -167,6 +168,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fEvent(0x0),
   fESD(0x0),
   fVtx(0x0),
+  fVtxAOD(0x0),
   fTrackCuts(0x0),
   fTrackCutsITSLoose(0x0), 
   fTrackCutsTPConly(0x0), 
@@ -792,15 +794,15 @@ Bool_t AliPWG4HighPtTrackQA::SelectEvent() {
     }
   }
   else if(fDataType==kAOD&&dynamic_cast<AliAODEvent*>(fEvent)) {
-    const AliAODVertex *vtx = ((AliAODEvent*)fEvent)->GetPrimaryVertexSPD();
-    if(!vtx) {
+    fVtxAOD = ((AliAODEvent*)fEvent)->GetPrimaryVertex();
+    if(!fVtxAOD) {
       fNEventReject->Fill("noVTX",1);
       selectEvent = kFALSE;
       return selectEvent;
     }
     
     // Need vertex cut
-    if(vtx->GetNContributors()<2) {
+    if(fVtxAOD->GetNContributors()<2) {
       fNEventReject->Fill("NCont<2",1);
       selectEvent = kFALSE;
       return selectEvent;
@@ -808,7 +810,7 @@ Bool_t AliPWG4HighPtTrackQA::SelectEvent() {
     
     //Check if z-vertex < 10 cm
     double primVtx[3];
-    vtx->GetXYZ(primVtx);
+    fVtxAOD->GetXYZ(primVtx);
     if(TMath::Sqrt(primVtx[0]*primVtx[0] + primVtx[1]*primVtx[1])>1. || TMath::Abs(primVtx[2]>10.)){
       fNEventReject->Fill("ZVTX>10",1);
       selectEvent = kFALSE;
@@ -1254,8 +1256,21 @@ void AliPWG4HighPtTrackQA::DoAnalysisAOD() {
     fVariables->SetAt(aodtrack->Pt(),0);
     fVariables->SetAt(aodtrack->Phi(),1);
     fVariables->SetAt(aodtrack->Eta(),2);
-    fVariables->SetAt(aodtrack->DCA(),3);
-    fVariables->SetAt(aodtrack->ZAtDCA(),4);
+
+    Double_t dca[2] = {0.,0.};
+    if(aodtrack->IsGlobalConstrained()) {
+      dca[0] = aodtrack->DCA();
+      dca[1] = aodtrack->ZAtDCA();
+    } else {
+      Double_t v[3]   = {0};
+      Double_t pos[3] = {0};
+      fVtxAOD->GetXYZ(v);
+      aodtrack->GetXYZ(pos);
+      dca[0] = pos[0] - v[0];
+      dca[1] = pos[1] - v[1];
+    }
+    fVariables->SetAt(dca[0],3);
+    fVariables->SetAt(dca[1],4);
     fVariables->SetAt((float)aodtrack->GetTPCNcls(),5);
     fVariables->SetAt((float)aodtrack->GetITSNcls(),6);
     fVariables->SetAt(aodtrack->Chi2perNDF(),7);

@@ -35,6 +35,7 @@ class AliVEvent;
 class AliESDEvent;
 class AliESDtrackCuts;
 class AliESDVertex;
+class AliAODVertex;
 class AliAODTrack;
 class AliESDtrack;
 
@@ -105,6 +106,7 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   AliVEvent   *fEvent;            //! AliVEvent object
   AliESDEvent *fESD;              //! ESD object
   const AliESDVertex   *fVtx;     //! vertex object
+  const AliAODVertex   *fVtxAOD;  //! vertex object AOD
 
   AliESDtrackCuts *fTrackCuts;         // TrackCuts
   AliESDtrackCuts *fTrackCutsITSLoose; // Loose ITS track cuts
@@ -242,6 +244,6 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
 
   TList *fHistList; //! List of Histograms
  
-  ClassDef(AliPWG4HighPtTrackQA,6) 
+  ClassDef(AliPWG4HighPtTrackQA,7) 
 };
 #endif
