@@ -133,7 +133,7 @@ fFillInputNonStandardJetBranch(kFALSE),
 fNonStandardJets(new TClonesArray("AliAODJet",100)),fInputNonStandardJetBranchName("jets"),
 fFillInputBackgroundJetBranch(kFALSE), 
 fBackgroundJets(0x0),fInputBackgroundJetBranchName("jets"),
-fAcceptEventsWithBit(0),     fRejectEventsWithBit(0)
+fAcceptEventsWithBit(0),     fRejectEventsWithBit(0), fRejectEMCalTriggerEventsWith2Tresholds(0)
 {
   //Ctor
   
@@ -349,12 +349,14 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   
   if( IsEventEMCALL1() || IsEventEMCALL0()  )
   {
-    // Reject triggered events when there is coincidence on both EMCal trigger thresholds,
-    // but the requested trigger is the low trigger threshold
-    // This can be done with AcceptEventWithTriggerBit() and RejectEventWithTriggerBit(),
-    // but let's fix it here for the moment
-    if(IsEventEMCALL1Jet1  () && IsEventEMCALL1Jet2  () && fFiredTriggerClassName.Contains("EJ2")) return kFALSE;
-    if(IsEventEMCALL1Gamma1() && IsEventEMCALL1Gamma2() && fFiredTriggerClassName.Contains("EG2")) return kFALSE;
+
+    if(fRejectEMCalTriggerEventsWith2Tresholds)
+    {
+      // Reject triggered events when there is coincidence on both EMCal trigger thresholds,
+      // but the requested trigger is the low trigger threshold
+      if(IsEventEMCALL1Jet1  () && IsEventEMCALL1Jet2  () && fFiredTriggerClassName.Contains("EJ2")) return kFALSE;
+      if(IsEventEMCALL1Gamma1() && IsEventEMCALL1Gamma2() && fFiredTriggerClassName.Contains("EG2")) return kFALSE;
+    }
     
     //Get Patches that triggered
     TArrayI patches = GetTriggerPatches(fTriggerPatchTimeWindow[0],fTriggerPatchTimeWindow[1]);
