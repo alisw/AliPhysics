@@ -1207,7 +1207,7 @@ void  THijing::SetMDME(Int_t key1, Int_t key2, Int_t   parm)
   
 }
 
-void  THijing::SetBRAT(Int_t key, Int_t   parm)
+void  THijing::SetBRAT(Int_t key, Float_t   parm)
 {
   // Set value of array MDME
   if ( key < 1 || key > 2000) {
