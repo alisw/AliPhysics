@@ -1237,13 +1237,6 @@ void AliPWG4HighPtTrackQA::DoAnalysisAOD() {
   for (Int_t iTrack = 0; iTrack < fEvent->GetNumberOfTracks(); iTrack++) {
 
     AliAODTrack *aodtrack = aod->GetTrack(iTrack);
-    //    if(aodtrack->GetFilterMap()>128 && aodtrack->GetFilterMap()<1333)
-    //      Printf("filterMask = %d",aodtrack->GetFilterMap());
-    //    if(aodtrack->IsHybridGlobalConstrainedGlobal()) {
-      // Printf("hybrid filterMask = %d",aodtrack->GetFilterMap());
-    //      if(aodtrack->IsGlobalConstrained())
-    //	Printf("global constrained filterMask = %d",aodtrack->GetFilterMap());
-    //    }
     if( !aodtrack->TestFilterMask(fFilterMask) ) {
       fh1NTracksReject->Fill("noHybridTrack",1);
       continue;
@@ -1261,14 +1254,8 @@ void AliPWG4HighPtTrackQA::DoAnalysisAOD() {
     fVariables->SetAt(aodtrack->Pt(),0);
     fVariables->SetAt(aodtrack->Phi(),1);
     fVariables->SetAt(aodtrack->Eta(),2);
-
-    Double_t dca[2] = {1e6,1e6};
-    Double_t covar[3] = {1e6,1e6,1e6};
-    if(aodtrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),100.,dca,covar)) {
-      fVariables->SetAt(dca[0],3);
-      fVariables->SetAt(dca[1],4);
-    }
-
+    fVariables->SetAt(aodtrack->DCA(),3);
+    fVariables->SetAt(aodtrack->ZAtDCA(),4);
     fVariables->SetAt((float)aodtrack->GetTPCNcls(),5);
     fVariables->SetAt((float)aodtrack->GetITSNcls(),6);
     fVariables->SetAt(aodtrack->Chi2perNDF(),7);
@@ -1315,9 +1302,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisAOD() {
     fPtAll->Fill(fVariables->At(0));
 
     FillHistograms();
-
   }
-
 }
 
 //________________________________________________________________________
