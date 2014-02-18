@@ -45,6 +45,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalJetHadEPpid+;
 #pragma link C++ class AliAnalysisTaskEmcalJetMass+;
 #pragma link C++ class AliAnalysisTaskEmcalJetMassBkg+;
+#pragma link C++ class AliAnalysisTaskEmcalJetMassResponse+;
 #pragma link C++ class AliAnalysisTaskEmcalJetPatchTriggerQA+;
 #pragma link C++ class AliAnalysisTaskEmcalJetSample+;
 #pragma link C++ class AliAnalysisTaskEmcalJetSpectra+;
