@@ -35,12 +35,8 @@
 #include "AliCentrality.h"
 
 #include "AliVEvent.h"
-//#include "AliVVZERO.h"
 #include "AliVCaloTrigger.h"
-
-//#include "AliESDEvent.h"
 #include "AliESDVZERO.h"
-//#include "AliESDCaloTrigger.h"
 
 #include "AliEMCALGeometry.h"
 #include "AliEMCALRecoUtils.h"
@@ -58,9 +54,11 @@ fOutputList(0),            fRecoUtils(0x0),
 fGeoSet(0),                fGeometry(0),         fGeoName(""),
 fOADBSet(kFALSE),          fAccessOADB(kTRUE),   fOADBFilePath(""),
 fBitEGA(0),                fBitEJE(0),
-fEtaPhiEnMin(10.),
+fEtaPhiEnMin(3.),
 fSTUTotal(0),              fTRUTotal(0),
 fV0Trigger(0),             fV0A(0),              fV0C(0),
+fFillV0SigHisto(1),        fFillClusAcceptHisto(0),
+fMCData(kFALSE),
 fEventMB   (0),            fEventL0   (0),
 fEventL1G  (0),            fEventL1G2 (0),
 fEventL1J  (0),            fEventL1J2 (0),
@@ -115,9 +113,10 @@ fOutputList(0),            fRecoUtils(0x0),
 fGeoSet(0),                fGeometry(0),         fGeoName(""),
 fOADBSet(kFALSE),          fAccessOADB(kTRUE),   fOADBFilePath(""),
 fBitEGA(0),                fBitEJE(0),
-fEtaPhiEnMin(10.),
+fEtaPhiEnMin(3.),
 fSTUTotal(0),              fTRUTotal(0),
 fV0Trigger(0),             fV0A(0),              fV0C(0),
+fFillV0SigHisto(1),        fFillClusAcceptHisto(0),
 fEventMB   (0),            fEventL0   (0),
 fEventL1G  (0),            fEventL1G2 (0),
 fEventL1J  (0),            fEventL1J2 (0),
@@ -303,7 +302,7 @@ void AliAnalysisTaskEMCALTriggerQA::FillTriggerPatchMaps(TString triggerclasses)
   
   trg.Reset();
   // loop on FASTOR
-	
+	 
   while (trg.Next())
   {
     trg.GetPosition(posX,posY);
@@ -324,11 +323,10 @@ void AliAnalysisTaskEMCALTriggerQA::FillTriggerPatchMaps(TString triggerclasses)
       if(triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD") || triggerclasses.Contains("CPBI2EJE") || triggerclasses.Contains("CPBI2EJ1")) fMapTrigL0L1J[posY][posX] += ampL0;
       fTRUTotal += ampL0;
       
-      int l0fired = 0;
-      for (int itime = 0; itime < nTimes; itime++)
+      Int_t l0fired = 0;
+      for (Int_t itime = 0; itime < nTimes; itime++)
       {
         if (l0Times[itime] > 7 && l0Times[itime] < 10) l0fired = 1;
-        // time bin too open? restrict to time bin 8-9?
       }
 			
       if (l0fired)
@@ -346,7 +344,7 @@ void AliAnalysisTaskEMCALTriggerQA::FillTriggerPatchMaps(TString triggerclasses)
       if (ts > 0) fMapTrigL1[posY][posX] = ts;
       fSTUTotal += ts;
       // cout << "ts =" <<ts<<endl;
-			
+
       //L1
       Bool_t isEGA1 = ((bit >>  fBitEGA   ) & 0x1) && fEventL1G  ;
       Bool_t isEGA2 = ((bit >> (fBitEGA+1)) & 0x1) && fEventL1G2 ;
@@ -386,13 +384,14 @@ void AliAnalysisTaskEMCALTriggerQA::FillTriggerPatchMaps(TString triggerclasses)
       
     }
   }
-	
-  if (!nL0Patch)
-  {
-    fEventL0 = kFALSE;
-    if (!triggerclasses.Contains("CPBI2")) fEventL1G = fEventL1G2 = fEventL1J = fEventL1J2 = kFALSE; // pp running
-  }
-	
+ 
+//  // NOT SURE WHY THIS LINE, COMMENT IF NOT CLUSTER HISTO NOT FILLED FOR LHC13
+//  if (!nL0Patch)
+//  {
+//    fEventL0 = kFALSE;
+//    if (!triggerclasses.Contains("CPBI2")) fEventL1G = fEventL1G2 = fEventL1J = fEventL1J2 = kFALSE; // pp running
+//  }
+	 
   if(fTRUTotal > fMaxTRUSignal && DebugLevel() > 0) printf("AliAnalysisTaskEMCALTriggerQA::FillTriggerPatchMaps() - Large fTRUTotal %f\n",fTRUTotal);
   if(fSTUTotal > fMaxSTUSignal && DebugLevel() > 0) printf("AliAnalysisTaskEMCALTriggerQA::FillTriggerPatchMaps() - Large fSTUTotal %d\n",fSTUTotal);
 	
@@ -402,6 +401,12 @@ void AliAnalysisTaskEMCALTriggerQA::FillTriggerPatchMaps(TString triggerclasses)
 void AliAnalysisTaskEMCALTriggerQA::ClusterAnalysis()
 {
   // Loop on clusters and fill corresponding histograms
+  
+  // Not interesting in case of data analysis, REVISE in future
+  if(fMCData) return ;
+  
+  // Init OADB
+  if(fAccessOADB) AccessOADB(); // only once
   
   //Get Vertex
   Double_t v[3] = {0,0,0};
@@ -434,6 +439,9 @@ void AliAnalysisTaskEMCALTriggerQA::ClusterAnalysis()
   Float_t centrality = -1;
   if(InputEvent()->GetCentrality()) centrality = InputEvent()->GetCentrality()->GetCentralityPercentile("V0M");
   
+  //if(!fEventMB) printf("MB : %d; L0 : %d; L1-Gam1 : %d; L1-Gam2 : %d; L1-Jet1 : %d; L1-Jet2 : %d; Central : %d; SemiCentral : %d \n",
+	//       fEventMB,fEventL0,fEventL1G,fEventL1G2,fEventL1J,fEventL1J2,fEventCen,fEventSem);
+  
   for(Int_t icalo = 0; icalo < nCaloClusters; icalo++)
   {
     AliVCluster *clus = (AliVCluster*) (caloClus->At(icalo));
@@ -441,7 +449,7 @@ void AliAnalysisTaskEMCALTriggerQA::ClusterAnalysis()
     if(!clus->IsEMCAL()) continue;
     
     if(!fRecoUtils->IsGoodCluster(clus,fGeometry,InputEvent()->GetEMCALCells(),InputEvent()->GetBunchCrossNumber()))
-    continue;
+      continue;
     
     if(clus->GetNCells() < 2) continue ; // Avoid 1 cell clusters, noisy, exotic.
     
@@ -458,7 +466,7 @@ void AliAnalysisTaskEMCALTriggerQA::ClusterAnalysis()
     iphi/=2;
     
     if(ieta > fgkFALTROCols || iphi > fgkFALTRORows )
-    printf("AliAnalysisTaskEMCALTriggerQA::UserExec() - Wrong Position (x,y) = (%d,%d)\n",ieta,iphi);
+      printf("AliAnalysisTaskEMCALTriggerQA::UserExec() - Wrong Position (x,y) = (%d,%d)\n",ieta,iphi);
     
     e   = clus->E();
     eta = mom.Eta();
@@ -537,38 +545,52 @@ void AliAnalysisTaskEMCALTriggerQA::FillClusterHistograms(Int_t triggerNumber, B
   {
     fhClus   [triggerNumber]->Fill(e);
     fhClusCen[triggerNumber]->Fill(e,centrality);
-    fhClusV0 [triggerNumber]->Fill(e,fV0AC);
-    fhClusEta[triggerNumber]->Fill(e,eta);
-    fhClusPhi[triggerNumber]->Fill(e,phi);
-		
-    if(e > fEtaPhiEnMin)
+    if(fFillV0SigHisto) fhClusV0 [triggerNumber]->Fill(e,fV0AC);
+    
+    if(!fFillClusAcceptHisto)
     {
-      fhClusEtaPhiHigh       [triggerNumber]->Fill( eta, phi);
-      fhClusEtaPhiHighCellMax[triggerNumber]->Fill(ieta,iphi);
+      // just fill 2
+      if(e > fEtaPhiEnMin) fhClusEtaPhiHigh[triggerNumber]->Fill( eta, phi);
+      else                 fhClusEtaPhiLow [triggerNumber]->Fill( eta, phi);
     }
     else
     {
-      fhClusEtaPhiLow       [triggerNumber]->Fill( eta, phi);
-      fhClusEtaPhiLowCellMax[triggerNumber]->Fill(ieta,iphi);
+      fhClusEta[triggerNumber]->Fill(e,eta);
+      fhClusPhi[triggerNumber]->Fill(e,phi);
+      
+      if(e > fEtaPhiEnMin)
+      {
+        fhClusEtaPhiHigh       [triggerNumber]->Fill( eta, phi);
+        fhClusEtaPhiHighCellMax[triggerNumber]->Fill(ieta,iphi);
+      }
+      else
+      {
+        fhClusEtaPhiLow       [triggerNumber]->Fill( eta, phi);
+        fhClusEtaPhiLowCellMax[triggerNumber]->Fill(ieta,iphi);
+      }
     }
   }
   else
   {
     fhClusMax   [triggerNumber]->Fill(e);
     fhClusCenMax[triggerNumber]->Fill(e,centrality);
-    fhClusV0Max [triggerNumber]->Fill(e,fV0AC);
-    fhClusEtaMax[triggerNumber]->Fill(e,eta);
-    fhClusPhiMax[triggerNumber]->Fill(e,phi);
-		
-    if(e > fEtaPhiEnMin)
+    if(fFillV0SigHisto) fhClusV0Max [triggerNumber]->Fill(e,fV0AC);
+    
+    if(fFillClusAcceptHisto)
     {
-      fhClusEtaPhiHighCluMax       [triggerNumber]->Fill( eta, phi);
-      fhClusEtaPhiHighCellMaxCluMax[triggerNumber]->Fill(ieta,iphi);
-    }
-    else
-    {
-      fhClusEtaPhiLowCluMax       [triggerNumber]->Fill( eta, phi);
-      fhClusEtaPhiLowCellMaxCluMax[triggerNumber]->Fill(ieta,iphi);
+      fhClusEtaMax[triggerNumber]->Fill(e,eta);
+      fhClusPhiMax[triggerNumber]->Fill(e,phi);
+      
+      if(e > fEtaPhiEnMin)
+      {
+        fhClusEtaPhiHighCluMax       [triggerNumber]->Fill( eta, phi);
+        fhClusEtaPhiHighCellMaxCluMax[triggerNumber]->Fill(ieta,iphi);
+      }
+      else
+      {
+        fhClusEtaPhiLowCluMax       [triggerNumber]->Fill( eta, phi);
+        fhClusEtaPhiLowCellMaxCluMax[triggerNumber]->Fill(ieta,iphi);
+      }
     }
   }
 }
@@ -688,7 +710,7 @@ void AliAnalysisTaskEMCALTriggerQA::FillL1GammaPatchHistograms()
   Int_t    numberpatchNotFake = 0;
   Int_t    numberpatchFake    = 0;
 
-  Int_t    threshold = 10;// 10 GeV !it's not GeV it's ADC !!
+  Int_t    threshold = 10;// it's not GeV it's ADC !!
   Bool_t   enoughE   = kFALSE;
   Double_t patchMax  = 0;
   Int_t    colMax    = -1;
@@ -907,6 +929,7 @@ void AliAnalysisTaskEMCALTriggerQA::FillV0Histograms()
 {
   //V0 analysis, only for ESDs
   
+  
   AliESDVZERO* eventV0 = dynamic_cast<AliESDVZERO*> (InputEvent()->GetVZEROData());
   
   if(eventV0)
@@ -917,11 +940,14 @@ void AliAnalysisTaskEMCALTriggerQA::FillV0Histograms()
       fV0A += eventV0->GetAdcV0A(i);
     }
     
-    if (fSTUTotal != 0)
+    if (fSTUTotal != 0 && fFillV0SigHisto)
     {
       fhV0STU->Fill(fV0A+fV0C,fSTUTotal);
       if( fV0A+fV0C > fMaxV0Signal && DebugLevel() > 0) printf("AliAnalysisTaskEMCALTriggerQA::UserExec() - Large fV0A+fV0C %f\n",fV0A+fV0C);
     }
+    
+    // Not interesting in case of data analysis, REVISE in future
+    if(fMCData || !fFillV0SigHisto) return ;
     
     if( fEventL1G )  fhV0[kL1GammaTrig]    ->Fill(fV0A+fV0C);
     if( fEventL1G2 ) fhV0[kL1GammaTrig2]   ->Fill(fV0A+fV0C);
@@ -994,7 +1020,7 @@ void AliAnalysisTaskEMCALTriggerQA::InitGeometry()
   TFile* file = AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile();
 	
   const TList *clist = file->GetStreamerInfoCache();
-  
+ 
   if(clist)
   {
     TStreamerInfo *cinfo = (TStreamerInfo*)clist->FindObject("AliESDCaloTrigger");
@@ -1002,7 +1028,7 @@ void AliAnalysisTaskEMCALTriggerQA::InitGeometry()
     if(!cinfo)
     {
       cinfo = (TStreamerInfo*)clist->FindObject("AliAODCaloTrigger");
-      verid = 2; // newer AOD header version
+      verid = 3; // newer AOD header version
     }
     if(cinfo)
     {
@@ -1080,6 +1106,8 @@ void AliAnalysisTaskEMCALTriggerQA::SetTriggerEventBit( TString triggerclasses)
      (triggerclasses.Contains("-B-")  || triggerclasses.Contains("-I-"))       &&
 		 triggerclasses.Contains("-NOPF-ALLNOTRD") )   fEventMB  = kTRUE;
   
+  if(fMCData && triggerclasses.Contains("MB")) fEventMB = kTRUE;
+  
   // EMC triggered event? Which type?
   if( triggerclasses.Contains("-B-") || triggerclasses.Contains("-S-") || triggerclasses.Contains("-I-") )
   {
@@ -1102,8 +1130,8 @@ void AliAnalysisTaskEMCALTriggerQA::SetTriggerEventBit( TString triggerclasses)
   if     (triggerclasses.Contains("CCENT_R2-B-NOPF-ALLNOTRD")) fEventCen = kTRUE;
   else if(triggerclasses.Contains("CSEMI_R1-B-NOPF-ALLNOTRD")) fEventSem = kTRUE;
 
-  //  printf("MB : %d; L0 : %d; L1-Gam : %d; L1-Jet : %d; Central : %d; SemiCentral : %d; Trigger Names : %s \n ",
-	//       fEventMB,fEventL0,fEventL1G,fEventL1J,fEventCen,fEventSem,triggerclasses.Data());
+  //printf("MB : %d; L0 : %d; L1-Gam1 : %d; L1-Gam2 : %d; L1-Jet1 : %d; L1-Jet2 : %d; Central : %d; SemiCentral : %d; Trigger Names : %s \n ",
+	//       fEventMB,fEventL0,fEventL1G,fEventL1G2,fEventL1J,fEventL1J2,fEventCen,fEventSem,triggerclasses.Data());
   
 }
 
@@ -1144,7 +1172,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhFORAmp    ->SetYTitle("Index #phi (rows)");
   fhFORAmp    ->SetZTitle("Amplitude");
   
-  fhFORAmpL1G  = new TH2F("hFORAmpL1G", "FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column, with L1G trigger condition",
+  fhFORAmpL1G  = new TH2F("hFORAmpL1G1", "FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column, with L1G1 trigger condition",
                           fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhFORAmpL1G ->SetXTitle("Index #eta (columnns)");
   fhFORAmpL1G ->SetYTitle("Index #phi (rows)");
@@ -1156,7 +1184,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhFORAmpL1G2 ->SetYTitle("Index #phi (rows)");
   fhFORAmpL1G2 ->SetZTitle("Amplitude");
   
-  fhFORAmpL1J  = new TH2F("hFORAmpL1J", "FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column, with L1J trigger condition",
+  fhFORAmpL1J  = new TH2F("hFORAmpL1J1", "FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column, with L1J1 trigger condition",
                           fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhFORAmpL1J ->SetXTitle("Index #eta (columnns)");
   fhFORAmpL1J ->SetYTitle("Index #phi (rows)");
@@ -1195,7 +1223,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhL1Amp     ->SetYTitle("Index #phi (rows)");
   fhL1Amp     ->SetZTitle("Amplitude");
   
-  fhL1GAmp     = new TH2F("hL1GAmp","STU signal per Row and Column for L1 Gamma",
+  fhL1GAmp     = new TH2F("hL1G1Amp","STU signal per Row and Column for L1 Gamma1",
                           fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhL1GAmp    ->SetXTitle("Index #eta (columnns)");
   fhL1GAmp    ->SetYTitle("Index #phi (rows)");
@@ -1207,7 +1235,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhL1G2Amp    ->SetYTitle("Index #phi (rows)");
   fhL1G2Amp    ->SetZTitle("Amplitude");
   
-  fhL1JAmp     = new TH2F("hL1JAmp","STU signal per Row and Column for L1 Jet",
+  fhL1JAmp     = new TH2F("hL1J1Amp","STU signal per Row and Column for L1 Jet1",
                           fgkFALTROCols/4,0,fgkFALTROCols,fgkFALTRORows/4,0,fgkFALTRORows);
   fhL1JAmp    ->SetXTitle("Index #eta (columnns)");
   fhL1JAmp    ->SetYTitle("Index #phi (rows)");
@@ -1230,7 +1258,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhL0Patch   ->SetYTitle("Index #phi (rows)");
   fhL0Patch   ->SetZTitle("counts");
   
-  fhL1GPatch   = new TH2F("hL1GPatch","FOR with associated L1 Gamma Patch",
+  fhL1GPatch   = new TH2F("hL1G1Patch","FOR with associated L1 Gamma Patch1",
                           fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhL1GPatch  ->SetXTitle("Index #eta (columnns)");
   fhL1GPatch  ->SetYTitle("Index #phi (rows)");
@@ -1242,66 +1270,66 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhL1G2Patch  ->SetYTitle("Index #phi (rows)");
   fhL1G2Patch  ->SetZTitle("counts");
   
-  fhL1GPatchNotFake   = new TH2F("hL1GPatchNotFake","FOR with L1 Gamma Patch associated to energetic cells",
+  fhL1GPatchNotFake   = new TH2F("hL1G1PatchNotFake","FOR with L1 Gamma1 Patch associated to energetic cells",
                                  fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhL1GPatchNotFake  ->SetXTitle("Index #eta (columnns)");
   fhL1GPatchNotFake  ->SetYTitle("Index #phi (rows)");
   fhL1GPatchNotFake  ->SetZTitle("counts");
 	
-  fhL1GPatchFake   = new TH2F("hL1GPatchFake","FOR without L1 Gamma Patch associated to energetic cells",
+  fhL1GPatchFake   = new TH2F("hL1G1PatchFake","FOR without L1 Gamma1 Patch associated to energetic cells",
                               fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhL1GPatchFake  ->SetXTitle("Index #eta (columnns)");
   fhL1GPatchFake  ->SetYTitle("Index #phi (rows)");
   fhL1GPatchFake  ->SetZTitle("counts");
 	
 	
-  fhL1GPatchNotAllFake   = new TH2F("hL1GPatchNotAllFake","FOR with one L1 Gamma Patch associated to an energetic cell",
+  fhL1GPatchNotAllFake   = new TH2F("hL1G1PatchNotAllFake","FOR with one L1 Gamma1 Patch associated to an energetic cell",
                                     fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhL1GPatchNotAllFake  ->SetXTitle("Index #eta (columnns)");
   fhL1GPatchNotAllFake  ->SetYTitle("Index #phi (rows)");
   fhL1GPatchNotAllFake  ->SetZTitle("counts");
 	
-  fhL1GPatchAllFake   = new TH2F("hL1GPatchAllFake","FOR without any L1 Gamma Patch associated to an energetic cell",
+  fhL1GPatchAllFake   = new TH2F("hL1G1PatchAllFake","FOR without any L1 Gamma1 Patch associated to an energetic cell",
                                  fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhL1GPatchAllFake  ->SetXTitle("Index #eta (columnns)");
   fhL1GPatchAllFake  ->SetYTitle("Index #phi (rows)");
   fhL1GPatchAllFake  ->SetZTitle("counts");
 	
-  fhL1GPatchAllFakeMax   = new TH2F("hL1GPatchAllFakeMax","FOR with L1 Gamma Patch Max not associated to an energetic cell",
+  fhL1GPatchAllFakeMax   = new TH2F("hL1G1PatchAllFakeMax","FOR with L1 Gamma1 Patch Max not associated to an energetic cell",
                                     fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhL1GPatchAllFakeMax  ->SetXTitle("Index #eta (columnns)");
   fhL1GPatchAllFakeMax  ->SetYTitle("Index #phi (rows)");
   fhL1GPatchAllFakeMax  ->SetZTitle("counts");
 	
-  fhL1GPatchNotAllFakeMax   = new TH2F("hL1GPatchNotAllFakeMax","FOR with one L1 Gamma Patch Max associated to an energetic cell",
+  fhL1GPatchNotAllFakeMax   = new TH2F("hL1G1PatchNotAllFakeMax","FOR with one L1 Gamma1 Patch Max associated to an energetic cell",
                                        fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhL1GPatchNotAllFakeMax  ->SetXTitle("Index #eta (columnns)");
   fhL1GPatchNotAllFakeMax  ->SetYTitle("Index #phi (rows)");
   fhL1GPatchNotAllFakeMax  ->SetZTitle("counts");
 	
-	fhL1GPatchNotAllFakeMaxE   = new TH1F("hL1GPatchNotAllFakeMaxE","Energy distribution of FOR in events with L1 Gamma Patch Max associated to an energetic cell",
+	fhL1GPatchNotAllFakeMaxE   = new TH1F("hL1G1PatchNotAllFakeMaxE","Energy distribution of FOR in events with L1 Gamma1 Patch Max associated to an energetic cell",
                                         fNBinsClusterE,0,fMaxClusterE);
 	fhL1GPatchNotAllFakeMaxE ->SetXTitle("Energy (GeV)");
   
 	
-  fhL1GPatchAllFakeMaxE   = new TH1F("hL1GPatchAllFakeMaxE","Energy distribution of FOR in events with L1 Gamma Patch Max not associated to an energetic cell",
+  fhL1GPatchAllFakeMaxE   = new TH1F("hL1G1PatchAllFakeMaxE","Energy distribution of FOR in events with L1 Gamma1 Patch Max not associated to an energetic cell",
                                      fNBinsClusterE,0,fMaxClusterE);
 	fhL1GPatchAllFakeMaxE ->SetXTitle("Energy (GeV)");
   
-  fhL1GPatchNotAllFakeE   = new TH1F("hL1GPatchNotAllFakeE","Energy distribution of FOR in events with L1 Gamma Patch not associated to an energetic cell",
+  fhL1GPatchNotAllFakeE   = new TH1F("hL1G1PatchNotAllFakeE","Energy distribution of FOR in events with L1 Gamma1 Patch not associated to an energetic cell",
                                      fNBinsClusterE,0,fMaxClusterE);
 	fhL1GPatchNotAllFakeE ->SetXTitle("Energy (GeV)");
 	
-  fhL1GPatchAllFakeE   = new TH1F("hL1GPatchAllFakeE","Energy distribution of FOR in events with L1 Gamma Patch  associated to an energetic cell",
+  fhL1GPatchAllFakeE   = new TH1F("hL1G1PatchAllFakeE","Energy distribution of FOR in events with L1 Gamma1 Patch  associated to an energetic cell",
                                   fNBinsClusterE,0,fMaxClusterE);
 	fhL1GPatchAllFakeE ->SetXTitle("Energy (GeV)");
 	
 	
-  fhL1GPatchFakeE   = new TH1F("hL1GPatchFakeE","Energy distribution of FOR with L1 Gamma Patch not associated to an energetic cell",
+  fhL1GPatchFakeE   = new TH1F("hL1G1PatchFakeE","Energy distribution of FOR with L1 Gamma1 Patch not associated to an energetic cell",
                                fNBinsClusterE,0,fMaxClusterE);
 	fhL1GPatchFakeE ->SetXTitle("Energy (GeV)");
 	
-  fhL1GPatchNotFakeE   = new TH1F("hL1GPatchNotFakeE","Energy distribution of FOR with L1 Gamma Patch  associated to an energetic cell",
+  fhL1GPatchNotFakeE   = new TH1F("hL1G1PatchNotFakeE","Energy distribution of FOR with L1 Gamma1 Patch  associated to an energetic cell",
                                   fNBinsClusterE,0,fMaxClusterE);
 	fhL1GPatchNotFakeE ->SetXTitle("Energy (GeV)");
 	
@@ -1319,7 +1347,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhNPatchNotFake  ->SetZTitle("counts");
 	
 	
-  fhL1JPatch   = new TH2F("hL1JPatch","FOR with associated L1 Jet Patch",
+  fhL1JPatch   = new TH2F("hL1J1Patch","FOR with associated L1 Jet1 Patch",
                           fgkFALTROCols/4,0,fgkFALTROCols,fgkFALTRORows/4,0,fgkFALTRORows);
   fhL1JPatch  ->SetXTitle("Index #eta (columnns)");
   fhL1JPatch  ->SetYTitle("Index #phi (rows)");
@@ -1331,12 +1359,14 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhL1J2Patch  ->SetYTitle("Index #phi (rows)");
   fhL1J2Patch  ->SetZTitle("counts");
   
-  fhV0STU      = new TH2I("hV0STU","Total signal STU vs V0C+V0S",
-                          fNBinsV0Signal,0,fMaxV0Signal,fNBinsSTUSignal,0,fMaxSTUSignal);
-  fhV0STU     ->SetXTitle("Signal V0C+V0A");
-  fhV0STU     ->SetYTitle("Total signal STU");
-  fhV0STU     ->SetZTitle("counts");
-  
+  if(fFillV0SigHisto)
+  {
+    fhV0STU      = new TH2I("hV0STU","Total signal STU vs V0C+V0S",
+                            fNBinsV0Signal,0,fMaxV0Signal,fNBinsSTUSignal,0,fMaxSTUSignal);
+    fhV0STU     ->SetXTitle("Signal V0C+V0A");
+    fhV0STU     ->SetYTitle("Total signal STU");
+    fhV0STU     ->SetZTitle("counts");
+  }
   
   fhFEESTU     = new TH2F("hFEESTU","STU / FEE vs channel", fNBinsSTUFEERatio,0,fMaxSTUFEERatio,30,0,30);
   fhFEESTU    ->SetXTitle("STU/FEE signal");
@@ -1368,7 +1398,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhL1MeanAmp->SetXTitle("Index #eta");
   fhL1MeanAmp->SetYTitle("Index #phi");
   
-  fhL1GPatchMax   = new TH2F("hL1GPatchMax","FOR of max amplitude patch with associated L1 Gamma Patch",
+  fhL1GPatchMax   = new TH2F("hL1G1PatchMax","FOR of max amplitude patch with associated L1 Gamma1 Patch",
                              fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhL1GPatchMax  ->SetXTitle("Index #eta (columnns)");
   fhL1GPatchMax  ->SetYTitle("Index #phi (rows)");
@@ -1380,13 +1410,13 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhL1G2PatchMax  ->SetYTitle("Index #phi (rows)");
   fhL1G2PatchMax  ->SetZTitle("counts");
   
-  fhL1JPatchMax   = new TH2F("hL1JPatchMax","FOR of max amplitude patch with associated L1 Jet Patch",
+  fhL1JPatchMax   = new TH2F("hL1J1PatchMax","FOR of max amplitude patch with associated L1 Jet1 Patch",
                              fgkFALTROCols/4,0,fgkFALTROCols,fgkFALTRORows/4,0,fgkFALTRORows);
   fhL1JPatchMax  ->SetXTitle("Index #eta (columnns)");
   fhL1JPatchMax  ->SetYTitle("Index #phi (rows)");
   fhL1JPatchMax  ->SetZTitle("counts");
 	
-  fhL1J2PatchMax   = new TH2F("hL1JPatchMax","FOR of max amplitude patch with associated L1 Jet2 Patch",
+  fhL1J2PatchMax   = new TH2F("hL1J2PatchMax","FOR of max amplitude patch with associated L1 Jet2 Patch",
                               fgkFALTROCols/4,0,fgkFALTROCols,fgkFALTRORows/4,0,fgkFALTRORows);
   fhL1J2PatchMax  ->SetXTitle("Index #eta (columnns)");
   fhL1J2PatchMax  ->SetYTitle("Index #phi (rows)");
@@ -1443,6 +1473,12 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fOutputList->Add(fhL1JPatchMax);
   fOutputList->Add(fhL1J2PatchMax);
   
+  if(fMCData)
+  {
+    PostData(1, fOutputList);
+    return;
+  }
+  
   // Cluster histograms, E
   TString hName  [] = {"MB","L0","L1G1","L1G2","L1J1","L1J2","L1G1NoL1J1","L1J1NoLG1","L1G2NoL1G1","L1J2NoL1J1","Central","SemiCentral"};
   TString hTitle [] = {"MB trigger","L0 trigger","L1 Gamma1 trigger","L1 Gamma2 trigger","L1 Jet1 trigger","L1 Jet2 trigger",
@@ -1470,12 +1506,15 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   
   for(Int_t i=0; i < fgkTriggerCombi; i++)
   {
-    fhV0[i] = new TH1F(Form("hV0%s",hName[i].Data()),
-                       Form("V0 distribution for %s",hTitle[i].Data()),
-                       fNBinsV0Signal,0,fMaxV0Signal);
-    fhV0[i]->SetXTitle("V0");
-    fOutputList->Add(fhV0[i] );
-		
+    if(fFillV0SigHisto)
+    {
+      fhV0[i] = new TH1F(Form("hV0%s",hName[i].Data()),
+                         Form("V0 distribution for %s",hTitle[i].Data()),
+                         fNBinsV0Signal,0,fMaxV0Signal);
+      fhV0[i]->SetXTitle("V0");
+      fOutputList->Add(fhV0[i] );
+		}
+    
     fhClus[i]    = new TH1F(Form("hClus%s",hName[i].Data()),
                             Form("clusters E distribution for %s",hTitle[i].Data()),
                             fNBinsClusterE,0,fMaxClusterE);
@@ -1506,114 +1545,124 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
     
     // Cluster histograms, E vs V0
     
-    fhClusV0[i]    = new TH2F(Form("hClusV0%s",hName[i].Data()),
-                              Form("clusters E distribution vs V0 for %s",hTitle[i].Data()),
-                              fNBinsClusterE,0,fMaxClusterE,fNBinsV0Signal,0,fMaxV0Signal);
-    fhClusV0[i]   ->SetXTitle("Energy (GeV)");
-    fhClusV0[i]   ->SetYTitle("V0");
-    fOutputList->Add(fhClusV0[i]);
+    if(fFillV0SigHisto)
+    {
+      fhClusV0[i]    = new TH2F(Form("hClusV0%s",hName[i].Data()),
+                                Form("clusters E distribution vs V0 for %s",hTitle[i].Data()),
+                                fNBinsClusterE,0,fMaxClusterE,fNBinsV0Signal,0,fMaxV0Signal);
+      fhClusV0[i]   ->SetXTitle("Energy (GeV)");
+      fhClusV0[i]   ->SetYTitle("V0");
+      fOutputList->Add(fhClusV0[i]);
+      
+      fhClusV0Max[i] = new TH2F(Form("hClusV0Max%s",hName[i].Data()),
+                                Form("maximum energy cluster per event vs V0 for %s",hTitle[i].Data()),
+                                fNBinsClusterE,0,fMaxClusterE,fNBinsV0Signal,0,fMaxV0Signal);
+      fhClusV0Max[i]->SetXTitle("Energy (GeV)");
+      fhClusV0Max[i]->SetYTitle("V0");
+      fOutputList->Add(fhClusV0Max[i]);
+    }
     
-    fhClusV0Max[i] = new TH2F(Form("hClusV0Max%s",hName[i].Data()),
-                              Form("maximum energy cluster per event vs V0 for %s",hTitle[i].Data()),
-                              fNBinsClusterE,0,fMaxClusterE,fNBinsV0Signal,0,fMaxV0Signal);
-    fhClusV0Max[i]->SetXTitle("Energy (GeV)");
-    fhClusV0Max[i]->SetYTitle("V0");
-    fOutputList->Add(fhClusV0Max[i]);
+    // Cluster acceptance histograms
+    Float_t etamin =-0.7;
+    Float_t etamax = 0.7;
+    Int_t neta     = 140;
     
-    // Cluster histograms, E vs Pseudorapidity
-    Float_t etamin =-0.8;
-    Float_t etamax = 0.8;
-    Int_t neta     = 160;
-    fhClusEta[i]    = new TH2F(Form("hClusEta%s",hName[i].Data()),
-                               Form("clusters distribution vs #eta for %s",hTitle[i].Data()),
-                               fNBinsClusterE,0,fMaxClusterE,neta, etamin, etamax);
-    fhClusEta[i]   ->SetXTitle("Energy (GeV)");
-    fhClusEta[i]   ->SetYTitle("#eta");
-    fOutputList->Add(fhClusEta[i]);
-    
-    fhClusEtaMax[i] = new TH2F(Form("hClusEtaMax%s",hName[i].Data()),
-                               Form("maximum energy cluster per event vs #eta for %s",hTitle[i].Data()),
-                               fNBinsClusterE,0,fMaxClusterE,neta, etamin, etamax);
-    fhClusEtaMax[i]->SetXTitle("Energy (GeV)");
-    fhClusEtaMax[i]->SetYTitle("#eta");
-    fOutputList->Add(fhClusEtaMax[i]);
-    
-    // Cluster histograms, E vs Azimuthal angle
     Float_t phimin = 80. *TMath::DegToRad();
     Float_t phimax = 190.*TMath::DegToRad();
     Int_t   nphi   = 110;
     
-    fhClusPhi[i]    = new TH2F(Form("hClusPhi%s",hName[i].Data()),
-                               Form("clusters distribution vs #phi for %s",hTitle[i].Data()),
-                               fNBinsClusterE,0,fMaxClusterE,nphi, phimin, phimax);
-    fhClusPhi[i]   ->SetXTitle("Energy (GeV)");
-    fhClusPhi[i]   ->SetYTitle("#phi (rad)");
-    fOutputList->Add(fhClusPhi[i]);
-    
-    fhClusPhiMax[i] = new TH2F(Form("hClusPhiMax%s",hName[i].Data()),
-                               Form("maximum energy cluster per event vs #phi for %s",hTitle[i].Data()),
-                               fNBinsClusterE,0,fMaxClusterE,nphi, phimin, phimax);
-    fhClusPhiMax[i]->SetXTitle("Energy (GeV)");
-    fhClusPhiMax[i]->SetYTitle("#phi (rad)");
-    fOutputList->Add(fhClusPhiMax[i]);
-    
     // Cluster histograms, Pseudorapidity vs Azimuthal angle
     
     fhClusEtaPhiHigh[i]    = new TH2F(Form("hClusEtaPhiHigh%s",hName[i].Data()),
-                                      Form("clusters distribution #eta vs #phi for %s, E > 10 GeV",hTitle[i].Data()),
+                                      Form("clusters distribution #eta vs #phi for %s, E > %1.1f GeV",hTitle[i].Data(),fEtaPhiEnMin),
                                       neta, etamin, etamax,nphi, phimin, phimax);
     fhClusEtaPhiHigh[i]   ->SetXTitle("#eta");
     fhClusEtaPhiHigh[i]   ->SetYTitle("#phi (rad)");
     fOutputList->Add(fhClusEtaPhiHigh[i]);
     
-    fhClusEtaPhiHighCluMax[i] = new TH2F(Form("hClusEtaPhiHighCluMax%s",hName[i].Data()),
-                                         Form("maximum energy cluster per event #eta  vs #phi for %s, E > 10 GeV",hTitle[i].Data()),
-                                         neta, etamin, etamax,nphi, phimin, phimax);
-    fhClusEtaPhiHighCluMax[i]->SetXTitle("#eta");
-    fhClusEtaPhiHighCluMax[i]->SetYTitle("#phi (rad)");
-    fOutputList->Add(fhClusEtaPhiHighCluMax[i]);
-    
     fhClusEtaPhiLow[i]    = new TH2F(Form("hClusEtaPhiLow%s",hName[i].Data()),
-                                     Form("clusters distribution #eta vs #phi for %s, E < 10 GeV",hTitle[i].Data()),
+                                     Form("clusters distribution #eta vs #phi for %s, E < %1.1f GeV",hTitle[i].Data(),fEtaPhiEnMin),
                                      neta, etamin, etamax,nphi, phimin, phimax);
     fhClusEtaPhiLow[i]   ->SetXTitle("#eta");
     fhClusEtaPhiLow[i]   ->SetYTitle("#phi (rad)");
     fOutputList->Add(fhClusEtaPhiLow[i]);
-    
-    fhClusEtaPhiLowCluMax[i] = new TH2F(Form("hClusEtaPhiLowCluMax%s",hName[i].Data()),
-                                        Form("maximum energy cluster per event #eta  vs #phi for %s, E < 10 GeV",hTitle[i].Data()),
-                                        neta, etamin, etamax,nphi, phimin, phimax);
-    fhClusEtaPhiLowCluMax[i]->SetXTitle("#eta");
-    fhClusEtaPhiLowCluMax[i]->SetYTitle("#phi (rad)");
-    fOutputList->Add(fhClusEtaPhiLowCluMax[i]);
-    
-    fhClusEtaPhiHighCellMax[i]    = new TH2F(Form("hClusEtaPhiHighCellMax%s",hName[i].Data()),
-                                             Form("Cluster hit map in calorimeter (max cell), column vs row for %s, E > 10 GeV",hTitle[i].Data()),
-                                             fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-    fhClusEtaPhiHighCellMax[i]   ->SetXTitle("Index #eta (columnns)");
-    fhClusEtaPhiHighCellMax[i]   ->SetYTitle("Index #phi (rows)");
-    fOutputList->Add(fhClusEtaPhiHighCellMax[i]);
-    
-    fhClusEtaPhiHighCellMaxCluMax[i] = new TH2F(Form("hClusEtaPhiHighCellMaxCluMax%s",hName[i].Data()),
-                                                Form("Max E cluster hit map in calorimeter (max cell), column vs row  for %s, E > 10 GeV",
-                                                     hTitle[i].Data()),fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-    fhClusEtaPhiHighCellMaxCluMax[i]->SetXTitle("Index #eta (columnns)");
-    fhClusEtaPhiHighCellMaxCluMax[i]->SetYTitle("Index #phi (rows)");
-    fOutputList->Add(fhClusEtaPhiHighCellMaxCluMax[i]);
-    
-    fhClusEtaPhiLowCellMax[i]    = new TH2F(Form("hClusEtaPhiLowCellMax%s",hName[i].Data()),
-                                            Form("Cluster hit map in calorimeter (max cell), column vs row for %s, E < 10 GeV",hTitle[i].Data()),
-                                            fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-    fhClusEtaPhiLowCellMax[i]   ->SetXTitle("Index #eta (columnns)");
-    fhClusEtaPhiLowCellMax[i]   ->SetYTitle("#phi (rad)");
-    fOutputList->Add(fhClusEtaPhiLowCellMax[i]);
-    
-    fhClusEtaPhiLowCellMaxCluMax[i] = new TH2F(Form("hClusEtaPhiLowCellMaxCluMax%s",hName[i].Data()),
-                                               Form("Max E cluster hit map in calorimeter (max cell), column vs row  for %s, E < 10 GeV",
-                                                    hTitle[i].Data()),fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-    fhClusEtaPhiLowCellMaxCluMax[i]->SetXTitle("Index #eta (columnns)");
-    fhClusEtaPhiLowCellMaxCluMax[i]->SetYTitle("#phi (rad)");
-    fOutputList->Add(fhClusEtaPhiLowCellMaxCluMax[i]);
+
+    if(fFillClusAcceptHisto)
+    {
+      fhClusEtaPhiHighCluMax[i] = new TH2F(Form("hClusEtaPhiHighCluMax%s",hName[i].Data()),
+                                           Form("maximum energy cluster per event #eta  vs #phi for %s, E > %1.1f GeV",hTitle[i].Data(),fEtaPhiEnMin),
+                                           neta, etamin, etamax,nphi, phimin, phimax);
+      fhClusEtaPhiHighCluMax[i]->SetXTitle("#eta");
+      fhClusEtaPhiHighCluMax[i]->SetYTitle("#phi (rad)");
+      fOutputList->Add(fhClusEtaPhiHighCluMax[i]);
+      
+      fhClusEtaPhiLowCluMax[i] = new TH2F(Form("hClusEtaPhiLowCluMax%s",hName[i].Data()),
+                                          Form("maximum energy cluster per event #eta  vs #phi for %s, E < %1.1f GeV",hTitle[i].Data(),fEtaPhiEnMin),
+                                          neta, etamin, etamax,nphi, phimin, phimax);
+      fhClusEtaPhiLowCluMax[i]->SetXTitle("#eta");
+      fhClusEtaPhiLowCluMax[i]->SetYTitle("#phi (rad)");
+      fOutputList->Add(fhClusEtaPhiLowCluMax[i]);
+      
+      fhClusEtaPhiHighCellMax[i]    = new TH2F(Form("hClusEtaPhiHighCellMax%s",hName[i].Data()),
+                                               Form("Cluster hit map in calorimeter (max cell), column vs row for %s, E > %1.1f GeV",hTitle[i].Data(),fEtaPhiEnMin),
+                                               fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+      fhClusEtaPhiHighCellMax[i]   ->SetXTitle("Index #eta (columnns)");
+      fhClusEtaPhiHighCellMax[i]   ->SetYTitle("Index #phi (rows)");
+      fOutputList->Add(fhClusEtaPhiHighCellMax[i]);
+      
+      fhClusEtaPhiHighCellMaxCluMax[i] = new TH2F(Form("hClusEtaPhiHighCellMaxCluMax%s",hName[i].Data()),
+                                                  Form("Max E cluster hit map in calorimeter (max cell), column vs row  for %s, E > %1.1f GeV",
+                                                       hTitle[i].Data(),fEtaPhiEnMin),fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+      fhClusEtaPhiHighCellMaxCluMax[i]->SetXTitle("Index #eta (columnns)");
+      fhClusEtaPhiHighCellMaxCluMax[i]->SetYTitle("Index #phi (rows)");
+      fOutputList->Add(fhClusEtaPhiHighCellMaxCluMax[i]);
+      
+      fhClusEtaPhiLowCellMax[i]    = new TH2F(Form("hClusEtaPhiLowCellMax%s",hName[i].Data()),
+                                              Form("Cluster hit map in calorimeter (max cell), column vs row for %s, E < %1.1f GeV",hTitle[i].Data(),fEtaPhiEnMin),
+                                              fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+      fhClusEtaPhiLowCellMax[i]   ->SetXTitle("Index #eta (columnns)");
+      fhClusEtaPhiLowCellMax[i]   ->SetYTitle("#phi (rad)");
+      fOutputList->Add(fhClusEtaPhiLowCellMax[i]);
+      
+      fhClusEtaPhiLowCellMaxCluMax[i] = new TH2F(Form("hClusEtaPhiLowCellMaxCluMax%s",hName[i].Data()),
+                                                 Form("Max E cluster hit map in calorimeter (max cell), column vs row  for %s, E < %1.1f GeV",
+                                                      hTitle[i].Data(),fEtaPhiEnMin),fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+      fhClusEtaPhiLowCellMaxCluMax[i]->SetXTitle("Index #eta (columnns)");
+      fhClusEtaPhiLowCellMaxCluMax[i]->SetYTitle("#phi (rad)");
+      fOutputList->Add(fhClusEtaPhiLowCellMaxCluMax[i]);
+      
+      // Cluster histograms, E vs Pseudorapidity
+      
+      fhClusEta[i]    = new TH2F(Form("hClusEta%s",hName[i].Data()),
+                                 Form("clusters distribution vs #eta for %s",hTitle[i].Data()),
+                                 fNBinsClusterE,0,fMaxClusterE,neta, etamin, etamax);
+      fhClusEta[i]   ->SetXTitle("Energy (GeV)");
+      fhClusEta[i]   ->SetYTitle("#eta");
+      fOutputList->Add(fhClusEta[i]);
+      
+      fhClusEtaMax[i] = new TH2F(Form("hClusEtaMax%s",hName[i].Data()),
+                                 Form("maximum energy cluster per event vs #eta for %s",hTitle[i].Data()),
+                                 fNBinsClusterE,0,fMaxClusterE,neta, etamin, etamax);
+      fhClusEtaMax[i]->SetXTitle("Energy (GeV)");
+      fhClusEtaMax[i]->SetYTitle("#eta");
+      fOutputList->Add(fhClusEtaMax[i]);
+      
+      // Cluster histograms, E vs Azimuthal angle
+      
+      fhClusPhi[i]    = new TH2F(Form("hClusPhi%s",hName[i].Data()),
+                                 Form("clusters distribution vs #phi for %s",hTitle[i].Data()),
+                                 fNBinsClusterE,0,fMaxClusterE,nphi, phimin, phimax);
+      fhClusPhi[i]   ->SetXTitle("Energy (GeV)");
+      fhClusPhi[i]   ->SetYTitle("#phi (rad)");
+      fOutputList->Add(fhClusPhi[i]);
+      
+      fhClusPhiMax[i] = new TH2F(Form("hClusPhiMax%s",hName[i].Data()),
+                                 Form("maximum energy cluster per event vs #phi for %s",hTitle[i].Data()),
+                                 fNBinsClusterE,0,fMaxClusterE,nphi, phimin, phimax);
+      fhClusPhiMax[i]->SetXTitle("Energy (GeV)");
+      fhClusPhiMax[i]->SetYTitle("#phi (rad)");
+      fOutputList->Add(fhClusPhiMax[i]);
+    }
   }
   
   PostData(1, fOutputList);
@@ -1632,29 +1681,47 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
     return;
   }
   
-  InitGeometry(); // only once, must be done before OADB, geo OADB accessed here
-  
-  if(fAccessOADB) AccessOADB(); // only once
-  
-  InitCellPatchMaps();   //init to 0 map for cells and patches
+  ////////////////////////////////////////////////
+  // Execute task on physics events with triggers
   
   //trigger configuration
   TString triggerclasses = event->GetFiredTriggerClasses();
   
+  // event type
   Int_t eventType = ((AliVHeader*)event->GetHeader())->GetEventType();
-  //std::cout << "trigger = " << triggerclasses << std::endl;
-
-  // physics events eventType=7, select only those
-  if(triggerclasses=="" || eventType != 7) return;
   
+  if(!fMCData)
+  {
+    // physics events eventType=7, select only those
+    if(triggerclasses=="" || eventType != 7) return;
+  }
+  
+  //printf("Event Type %d; Trigger classes: %s\n",eventType,triggerclasses.Data());
+  
+  // Check what trigger we had
   SetTriggerEventBit(triggerclasses);
-		
+  
+  if(!fEventMB && !fEventL0 && !fEventL1G && !fEventL1G2 && !fEventL1J && ! fEventL1J2 && !fEventCen && !fEventSem) return;
+  
+  ////////////////////////////
+  // Init geometry, OADB, maps
+  
+  InitGeometry(); // only once, must be done before OADB, geo OADB accessed here
+  
+  InitCellPatchMaps();   //init to 0 map for cells and patches
+  
+  ///////////////////
+  // Do the analysis
+  
   FillEventCounterHistogram();
   
   FillCellMaps();
   
   FillTriggerPatchMaps(triggerclasses);
   
+  //if(!fEventMB)printf("MB : %d; L0 : %d; L1-Gam1 : %d; L1-Gam2 : %d; L1-Jet1 : %d; L1-Jet2 : %d; Central : %d; SemiCentral : %d; Trigger Names : %s \n",
+  //                    fEventMB,fEventL0,fEventL1G,fEventL1G2,fEventL1J,fEventL1J2,fEventCen,fEventSem,triggerclasses.Data());
+
   FillMapHistograms();
   
   FillV0Histograms();
