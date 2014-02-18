@@ -14,7 +14,7 @@ void PrintBadChannels(char * file = "$ALICE_ROOT/OCDB/EMCAL/Calib/Pedestals/Run0
   
   printf("MAP entries %d\n",map.GetEntries());
   
-  AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1");
+  AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM");
   
   Int_t nbadTotal  = 0;
   Int_t nhotTotal  = 0;

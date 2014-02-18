@@ -1,4 +1,4 @@
-void MakeEMCALResMisAlignment(TString geoname = "EMCAL_COMPLETE12SMV1"){
+void MakeEMCALResMisAlignment(TString geoname = "EMCAL_COMPLETE12SMV1_DCAL_8SM"){
   // Create TClonesArray of residual misalignment objects for EMCAL
   //
   const char* macroname = "MakeEMCALResMisAlignment.C";
@@ -43,8 +43,11 @@ void MakeEMCALResMisAlignment(TString geoname = "EMCAL_COMPLETE12SMV1"){
 
   Double_t dx, dy, dz, dpsi, dtheta, dphi;
 
-  const TString basepath = "EMCAL/FullSupermodule";
+  const TString fbasepath = "EMCAL/FullSupermodule";
   const TString hbasepath = "EMCAL/HalfSupermodule";
+  const TString tbasepath = "EMCAL/OneThrdSupermodule";
+  const TString dbasepath = "EMCAL/DCALSupermodule";
+  const TString debasepath= "EMCAL/DCALExtensionSM";
   TString pathstr;
 
   Int_t iIndex=0; // let all modules have index=0 in a layer with no LUT
@@ -52,7 +55,6 @@ void MakeEMCALResMisAlignment(TString geoname = "EMCAL_COMPLETE12SMV1"){
   UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iIndex);
 
   Int_t i;
-  Int_t j=0;
 
   // RS = local
   // sigma translation = 1mm
@@ -61,28 +63,21 @@ void MakeEMCALResMisAlignment(TString geoname = "EMCAL_COMPLETE12SMV1"){
   Double_t sigmatr = 0.05; // max shift in cm w.r.t. local RS
   Double_t sigmarot = 0.1; // max rot in degrees w.r.t. local RS
 
-  for(i=0; i<10; i++){
+  Int_t nSM = emcalGeom->GetEMCGeometry()->GetNumberOfSuperModules();
+  for(i=0; i<nSM; i++){
     dx = rnd->Gaus(0.,sigmatr);
     dy = rnd->Gaus(0.,sigmatr);
     dz = rnd->Gaus(0.,sigmatr);
     dpsi = rnd->Gaus(0.,sigmarot);
     dtheta = rnd->Gaus(0.,sigmarot);
     dphi = rnd->Gaus(0.,sigmarot);
-    pathstr=basepath;
+    if(     emcalGeom->GetSMType(i) == kEMCAL_Standard) pathstr=fbasepath;
+    else if(emcalGeom->GetSMType(i) == kEMCAL_Half    ) pathstr=hbasepath;
+    else if(emcalGeom->GetSMType(i) == kEMCAL_3rd     ) pathstr=tbasepath;
+    else if(emcalGeom->GetSMType(i) == kDCAL_Standard ) pathstr=dbasepath;
+    else if(emcalGeom->GetSMType(i) == kDCAL_Ext      ) pathstr=debasepath;
     pathstr+=(i+1);
-    new(alobj[j++]) AliAlignObjParams(pathstr, volid, dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
-  }
-
-  for(i=0; i<2; i++){
-    dx = rnd->Gaus(0.,sigmatr);
-    dy = rnd->Gaus(0.,sigmatr);
-    dz = rnd->Gaus(0.,sigmatr);
-    dpsi = rnd->Gaus(0.,sigmarot);
-    dtheta = rnd->Gaus(0.,sigmarot);
-    dphi = rnd->Gaus(0.,sigmarot);
-    pathstr=hbasepath;
-    pathstr+=(i+1);
-    new(alobj[j++]) AliAlignObjParams(pathstr, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+    new(alobj[i]) AliAlignObjParams(pathstr, volid, dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
   }
 
   if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){

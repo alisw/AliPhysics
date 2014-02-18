@@ -91,7 +91,7 @@ public:
 	
   enum {kNTriggerClasses = 50};
   enum {kNPHOSMatrix = 5};
-  enum {kNEMCALMatrix = 12};
+  enum {kNEMCALMatrix = 22};
   enum {kT0spreadSize = 4};
   //
   Double_t   GetMeanIntensity(int beam,int btp)     const 

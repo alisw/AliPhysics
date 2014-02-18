@@ -1,4 +1,4 @@
-void MakeEMCALZeroMisAlignment(TString geoname = "EMCAL_COMPLETE12SMV1"){
+void MakeEMCALZeroMisAlignment(TString geoname = "EMCAL_COMPLETE12SMV1_DCAL_8SM"){
   // Create TClonesArray of zero misalignment objects for EMCAL
   //
   const char* macroname = "MakeEMCALZeroMisAlignment.C";

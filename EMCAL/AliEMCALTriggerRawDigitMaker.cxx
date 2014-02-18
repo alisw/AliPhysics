@@ -87,8 +87,9 @@ fTriggerData(0x0)
   fRawAnalyzer =  (AliCaloRawAnalyzerFakeALTRO*)AliCaloRawAnalyzerFactory::CreateAnalyzer(kFakeAltro);
 
   fDCSConfig = AliEMCALTriggerDCSConfigDB::Instance();
-  
-  for (Int_t i=0; i<3072; i++) fRawDigitIndex[i] = -1;
+
+  Int_t nRawDigits = fGeometry->GetNTotalTRU() * 96;  
+  for (Int_t i=0; i<nRawDigits; i++) fRawDigitIndex[i] = -1;
 }	
 
 //_______________
@@ -374,7 +375,8 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 		{
 			if (AliDebugLevel()) printf("| STU => TRU raw data are there!\n");
 			
-			for (Int_t i = 0; i < 32; i++)
+			Int_t nTRU = fGeometry->GetNTotalTRU();
+			for (Int_t i = 0; i < nTRU; i++)
 			{
 				iTRU = fGeometry->GetTRUIndexFromSTUIndex(i);
 				
@@ -537,7 +539,8 @@ void AliEMCALTriggerRawDigitMaker::Reset()
 {
 	// Reset
 	
-	for (Int_t i = 0; i < 3072; i++) fRawDigitIndex[i] = -1;
+	Int_t nRawDigits = fGeometry->GetNTotalTRU() * 96;  
+	for (Int_t i = 0; i < nRawDigits; i++) fRawDigitIndex[i] = -1;
 }
 
 

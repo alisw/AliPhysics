@@ -53,7 +53,7 @@ Int_t AliGeomManager::fgLayerSize[kLastLayer - kFirstLayer] = {
   5, 5,     // PHOS,CPV
   7,        // HMPID ??
   1,         // MUON ??
-  12        // EMCAL
+  22        // EMCAL and DCAL
 };
 
 const char* AliGeomManager::fgLayerName[kLastLayer - kFirstLayer] = {
@@ -562,18 +562,21 @@ Bool_t AliGeomManager::CheckSymNamesLUT(const char* /*detsToBeChecked*/)
 
   // Check over the ten EMCAL full supermodules and the two EMCAL half supermodules
   TString emcalSM;
-  TString baseEmcalSM("ALIC_1/XEN1_1/SM");
+  TString baseEmcalSM("ALIC_1/XEN1_1/");
   Bool_t emcalActive=kFALSE;
-  Bool_t emcalSMs[12] = {kFALSE};
-  for(Int_t sm=0; sm<12; sm++)
+  Bool_t emcalSMs[22] = {kFALSE};
+  for(Int_t sm=0; sm<22; sm++)
   {
     emcalSM=baseEmcalSM;
     if(sm<10){
-	emcalSM += "OD_";
-	emcalSM += (sm+1);
-    }else{
-	emcalSM += "10_";
-	emcalSM += (sm-9);
+      emcalSM += "SMOD_";
+      emcalSM += (sm+1);
+    }else if(sm/2 == 5){
+      emcalSM += "SM10_";
+      emcalSM += (sm-9);
+    }else if(sm > 11){
+      emcalSM += "DCSM_";
+      emcalSM += (sm-11);
     }
     if(fgGeometry->CheckPath(emcalSM.Data()))
     {
@@ -1103,15 +1106,18 @@ Bool_t AliGeomManager::CheckSymNamesLUT(const char* /*detsToBeChecked*/)
     TString str = "EMCAL/FullSupermodule";
     modnum=0;
 
-    for (Int_t iModule=1; iModule <= 12; iModule++) {
-      if(!emcalSMs[iModule-1]) continue;
+    for (Int_t iModule=0; iModule < 22; iModule++) {
+      if(!emcalSMs[iModule]) continue;
       symname = str;
-      symname += iModule;
-      if(iModule >10) {
+      symname += iModule+1;
+      if(iModule/2 == 5) {// 10,11
 	symname = "EMCAL/HalfSupermodule";
-	symname += iModule-10;
+	symname += iModule-9;
+      }else if(iModule > 11) {// 12 ~ 21
+        symname = "EMCAL/DCALSupermodule";
+        symname += iModule-11;
       }
-      modnum = iModule-1;
+      modnum = iModule;
       uid = LayerToVolUID(kEMCAL,modnum);
       pne = fgGeometry->GetAlignableEntryByUID(uid);
       if(!pne)

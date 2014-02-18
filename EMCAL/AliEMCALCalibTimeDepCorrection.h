@@ -57,11 +57,11 @@ class AliEMCALCalibTimeDepCorrection : public TObject {
  
   // Read and Write txt I/O methods are normally not used, but are useful for 
   // filling the object before it is saved in OCDB 
-  void ReadTextInfo(Int_t nSM, const TString &txtFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
-  void WriteTextInfo(const TString &txtFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
-  void ReadRootInfo(const TString &rootFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
-  void ReadTreeInfo(TTree *treeGlob, TTree *treeCorr, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
-  void WriteRootInfo(const TString &rootFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
+  void ReadTextInfo(Int_t nSM, const TString &txtFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 22 SuperModules
+  void WriteTextInfo(const TString &txtFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 22 SuperModules
+  void ReadRootInfo(const TString &rootFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 22 SuperModules
+  void ReadTreeInfo(TTree *treeGlob, TTree *treeCorr, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 22 SuperModules
+  void WriteRootInfo(const TString &rootFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 22 SuperModules
 
   virtual ~AliEMCALCalibTimeDepCorrection();
 

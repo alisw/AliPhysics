@@ -21,7 +21,7 @@
 //*-- It is the one to use if you do want to produce outputs in TREEH 
 //*--                  
 //*-- Author : Alexei Pavlinov (WSU)
-
+//           : Adapted for DCAL by M.L. Wang CCNU Wuhan & Subatech Oct-23-2012
 // This Class not stores information on all particles prior to EMCAL entry - in order to facilitate analysis.
 // This is done by setting fIShunt =2, and flagging all parents of particles entering the EMCAL.
 
@@ -133,8 +133,6 @@ void AliEMCALv2::StepManager(void){
   static int supModuleNumber=-1, moduleNumber=-1, yNumber=-1, xNumber=-1, absid=-1;
   static int keyGeom=1;  //real TRD1 geometry
   static const char *vn = "SCMX"; // Apr 13, 2006 - only TRD1 case now
-  static int nSMOP[7]={1,3,5,7,9,11}; // 30-mar-05
-  static int nSMON[7]={2,4,6,8,10,12};
   static Float_t depositedEnergy=0.0; 
 
   if(keyGeom == 0) {
@@ -175,7 +173,7 @@ void AliEMCALv2::StepManager(void){
 	  //TParticle *part=gAlice->GetMCApp()->Particle(parent);
 	  parent=tracknumber;
 	  part=gAlice->GetMCApp()->Particle(parent);
-	  while (parent != -1 && fGeometry->IsInEMCAL(part->Vx(),part->Vy(),part->Vz())) {
+	  while (parent != -1 && fGeometry->IsInEMCALOrDCAL(part->Vx(),part->Vy(),part->Vz())) {
 	    parent=part->GetFirstMother();
 	    if (parent!=-1) 
 	      part=gAlice->GetMCApp()->Particle(parent);
@@ -219,8 +217,17 @@ void AliEMCALv2::StepManager(void){
         gMC->CurrentVolOffID(3, moduleNumber);
         gMC->CurrentVolOffID(1, yNumber);
         gMC->CurrentVolOffID(0, xNumber); // really x number now
-        if(strcmp(gMC->CurrentVolOffName(4),"SM10")==0) supModuleNumber += 10; // 13-oct-05
-        if(strcmp(gMC->CurrentVolOffName(4),"SM3rd")==0) supModuleNumber += 10; // 1-feb-12
+        Int_t CurrentSMType = 0;
+        if(strcmp(gMC->CurrentVolOffName(4),"SMOD")==0)  CurrentSMType = AliEMCALGeometry::kEMCAL_Standard ;
+        else if(strcmp(gMC->CurrentVolOffName(4),"SM10")==0)  CurrentSMType = AliEMCALGeometry::kEMCAL_Half ;
+        else if(strcmp(gMC->CurrentVolOffName(4),"SM3rd")==0) CurrentSMType = AliEMCALGeometry::kEMCAL_3rd  ;
+        else if(strcmp(gMC->CurrentVolOffName(4),"DCSM")==0)  CurrentSMType = AliEMCALGeometry::kDCAL_Standard ;
+        else if(strcmp(gMC->CurrentVolOffName(4),"DCEXT")==0) CurrentSMType = AliEMCALGeometry::kDCAL_Ext   ;
+        else AliError("Unkown SM Type!!");
+
+        Int_t preSM = 0;
+        while( fGeometry->GetSMType(preSM) != CurrentSMType ) preSM++;
+        supModuleNumber += preSM;
 	// Nov 10,2006
         if(strcmp(gMC->CurrentVolOffName(0),vn) != 0) { // 3X3 case
           if     (strcmp(gMC->CurrentVolOffName(0),"SCX1")==0) xNumber=1;
@@ -233,8 +240,8 @@ void AliEMCALv2::StepManager(void){
         gMC->CurrentVolOffID(4, moduleNumber);
         gMC->CurrentVolOffID(1, yNumber);
         gMC->CurrentVolOffID(0, xNumber);
-        if     (strcmp(gMC->CurrentVolOffName(5),"SMOP")==0) supModuleNumber = nSMOP[supModuleNumber-1];
-        else if(strcmp(gMC->CurrentVolOffName(5),"SMON")==0) supModuleNumber = nSMON[supModuleNumber-1];
+        if     (strcmp(gMC->CurrentVolOffName(5),"SMOP")==0) supModuleNumber = 2*(supModuleNumber-1)+1;
+        else if(strcmp(gMC->CurrentVolOffName(5),"SMON")==0) supModuleNumber = 2*(supModuleNumber-1)+2;
         else   assert(0); // something wrong
       }
 		
@@ -248,12 +255,14 @@ void AliEMCALv2::StepManager(void){
       Int_t smType   = 1;
       fGeometry->GetCellPhiEtaIndexInSModule(smNumber,moduleNumber-1,yNumber-1,xNumber-1, iphi, ieta);
       if (smNumber%2 == 0) {
-	ieta = ((fGeometry->GetCentersOfCellsEtaDir()).GetSize()-1)-ieta;// 47-ieta, revert the ordering on A side in order to keep convention.
-      }
-      else {  
-	if(smNumber >= 10 && strcmp(gMC->CurrentVolOffName(4),"SM10")==0) smType = 2 ; //half supermodule. previous design/idea
-	if(smNumber >= 10 && strcmp(gMC->CurrentVolOffName(4),"SM3rd")==0) smType = 3 ; //one third (installed in 2012) supermodule
-	iphi= ((fGeometry->GetCentersOfCellsPhiDir()).GetSize()/smType-1)-iphi;//23-iphi, revert the ordering on C side in order to keep convention.
+	if(strcmp(gMC->CurrentVolOffName(4),"DCSM")==0) smType = 3; //DCal supermodule. previous design/idea
+        else smType = 2;
+	ieta = ((fGeometry->GetCentersOfCellsEtaDir()).GetSize()* 2/smType -1)-ieta;// 47/31-ieta, revert the ordering on A side in order to keep convention.
+      } else {  
+	if(strcmp(gMC->CurrentVolOffName(4),"SM10")==0) smType = 2 ; //half supermodule. previous design/idea
+	if(strcmp(gMC->CurrentVolOffName(4),"SM3rd")==0) smType = 3 ; //one third (installed in 2012) supermodule
+	if(strcmp(gMC->CurrentVolOffName(4),"DCEXT")==0) smType = 3 ; //one third (installed in 2012) supermodule
+	iphi= ((fGeometry->GetCentersOfCellsPhiDir()).GetSize()/smType-1)-iphi;// 23/7-iphi, revert the ordering on C side in order to keep convention.
       }
       
       //Once we know the indexes, calculate the absolute ID
