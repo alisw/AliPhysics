@@ -17,5 +17,6 @@
 #pragma link C++ class AliHMPIDTenderSupply+;
 #pragma link C++ class AliT0TenderSupply+;
 #pragma link C++ class AliTrackFixTenderSupply+;
+#pragma link C++ class AliAnalysisTaskVZEROEqFactorTask+;
 
 #endif

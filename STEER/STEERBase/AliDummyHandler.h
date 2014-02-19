@@ -26,13 +26,13 @@ class AliDummyHandler : public AliInputEventHandler {
     AliVEvent           *GetEvent()        const {return fEvent;}
 
  protected:
-    AliVEvent    *fEvent;         //! Pointer to the event
+    AliVEvent    *fEvent;         // Pointer to the event
 
  private:
     AliDummyHandler(const AliDummyHandler& handler);             
     AliDummyHandler& operator=(const AliDummyHandler& handler);  
 
-    ClassDef(AliDummyHandler, 2);
+    ClassDef(AliDummyHandler, 3);
 };
 
 #endif

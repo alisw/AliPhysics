@@ -19,75 +19,75 @@
 
 class AliCDBId: public TObject {
 
-public:
+  public:
 
-	AliCDBId();
+    AliCDBId();
 
-	AliCDBId(const AliCDBId& other);
+    AliCDBId(const AliCDBId& other);
 
-	AliCDBId(const AliCDBPath& path, const AliCDBRunRange& runRange,
-		Int_t version = -1, Int_t subVersion = -1);
+    AliCDBId(const AliCDBPath& path, const AliCDBRunRange& runRange,
+        Int_t version = -1, Int_t subVersion = -1);
 
-	AliCDBId(const AliCDBPath& path, 
-		Int_t firstRun , Int_t lastRun , Int_t verison = -1, 
-		Int_t subVersion = -1); 
+    AliCDBId(const AliCDBPath& path, 
+        Int_t firstRun , Int_t lastRun , Int_t verison = -1, 
+        Int_t subVersion = -1); 
 
-	static AliCDBId* MakeFromString(const TString& idString); 		
-		
-	virtual ~AliCDBId();
+    static AliCDBId* MakeFromString(const TString& idString); 		
 
-	const AliCDBPath& 	GetAliCDBPath() const {return fPath;}
-	const TString& 		GetPath() const {return fPath.GetPath();}
-	const TString 		GetPathLevel(Int_t i) const {return fPath.GetLevel(i);}
-	Bool_t 			IsWildcard() const {return fPath.IsWildcard();}
+    virtual ~AliCDBId();
 
-	void 	SetPath(const char* path) {fPath.SetPath(path);}
+    const AliCDBPath& 	GetAliCDBPath() const {return fPath;}
+    const TString& 		GetPath() const {return fPath.GetPath();}
+    const TString 		GetPathLevel(Int_t i) const {return fPath.GetLevel(i);}
+    Bool_t 			IsWildcard() const {return fPath.IsWildcard();}
 
-	const 		AliCDBRunRange& GetAliCDBRunRange() const {return fRunRange;}
-	AliCDBRunRange& GetAliCDBRunRange() {return fRunRange;}
-	Int_t 		GetFirstRun() const {return fRunRange.GetFirstRun();}
-	Int_t 		GetLastRun() const {return fRunRange.GetLastRun();}
-	void 		SetFirstRun(Int_t firstRun) {fRunRange.SetFirstRun(firstRun);}
-	void 		SetLastRun(Int_t lastRun) {fRunRange.SetLastRun(lastRun);}
-	void 		SetRunRange(Int_t firstRun, Int_t lastRun)
-			{fRunRange.SetRunRange(firstRun, lastRun);}
+    void 	SetPath(const char* path) {fPath.SetPath(path);}
 
-
-	Bool_t 	IsAnyRange() const {return fRunRange.IsAnyRange();}
+    const 		AliCDBRunRange& GetAliCDBRunRange() const {return fRunRange;}
+    AliCDBRunRange& GetAliCDBRunRange() {return fRunRange;}
+    Int_t 		GetFirstRun() const {return fRunRange.GetFirstRun();}
+    Int_t 		GetLastRun() const {return fRunRange.GetLastRun();}
+    void 		SetFirstRun(Int_t firstRun) {fRunRange.SetFirstRun(firstRun);}
+    void 		SetLastRun(Int_t lastRun) {fRunRange.SetLastRun(lastRun);}
+    void 		SetRunRange(Int_t firstRun, Int_t lastRun)
+    {fRunRange.SetRunRange(firstRun, lastRun);}
 
 
-	Int_t 	GetVersion() const {return fVersion;}
-	Int_t 	GetSubVersion() const {return fSubVersion;}
-	void 	SetVersion(Int_t version) {fVersion = version;}
-	void 	SetSubVersion(Int_t subVersion) {fSubVersion = subVersion;}
+    Bool_t 	IsAnyRange() const {return fRunRange.IsAnyRange();}
 
-	const TString& 	GetLastStorage() const {return fLastStorage;}
-	void 		SetLastStorage(TString& lastStorage){fLastStorage = lastStorage;}
 
-	Bool_t IsValid() const; 
-	Bool_t IsSpecified() const {return !(IsWildcard() || IsAnyRange());}
+    Int_t 	GetVersion() const {return fVersion;}
+    Int_t 	GetSubVersion() const {return fSubVersion;}
+    void 	SetVersion(Int_t version) {fVersion = version;}
+    void 	SetSubVersion(Int_t subVersion) {fSubVersion = subVersion;}
 
-	Bool_t HasVersion() const {return fVersion >= 0;}
-	Bool_t HasSubVersion() const {return fSubVersion >= 0;}
+    const TString& 	GetLastStorage() const {return fLastStorage;}
+    void 		SetLastStorage(TString& lastStorage){fLastStorage = lastStorage;}
 
-	Bool_t Comprises(const AliCDBId& other) const
-		{return fPath.Comprises(other.fPath)
-		         && fRunRange.Comprises(other.fRunRange);}
+    Bool_t IsValid() const; 
+    Bool_t IsSpecified() const {return !(IsWildcard() || IsAnyRange());}
 
-	virtual Bool_t IsEqual(const TObject *obj) const;
+    Bool_t HasVersion() const {return fVersion >= 0;}
+    Bool_t HasSubVersion() const {return fSubVersion >= 0;}
 
-	TString ToString() const;
-	void Print(Option_t* option="") const;
+    Bool_t Comprises(const AliCDBId& other) const
+    {return fPath.Comprises(other.fPath)
+      && fRunRange.Comprises(other.fRunRange);}
 
-private:
+    virtual Bool_t IsEqual(const TObject *obj) const;
 
-	AliCDBPath fPath;		// path	
-	AliCDBRunRange fRunRange;	// run range
-	Int_t fVersion;			// version
-	Int_t fSubVersion;		// subversion
-	TString fLastStorage;		// previous storage place (new, grid, local, dump)
+    TString ToString() const;
+    void Print(Option_t* option="") const;
 
-	ClassDef(AliCDBId, 1);
+  private:
+
+    AliCDBPath fPath;		// path	
+    AliCDBRunRange fRunRange;	// run range
+    Int_t fVersion;			// version
+    Int_t fSubVersion;		// subversion
+    TString fLastStorage;		// previous storage place (new, grid, local, dump)
+
+    ClassDef(AliCDBId, 1);
 };
 
 #endif

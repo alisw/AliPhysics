@@ -26,25 +26,25 @@ class AliPreprocessor : public TNamed
 {
   public:
 
-	enum { kDAQ = 0, kDCS, kHLT, kDQM };
+    enum { kDAQ = 0, kDCS, kHLT, kDQM };
 
     AliPreprocessor(const char* detector, AliShuttleInterface* shuttle);
     virtual ~AliPreprocessor();
 
     virtual void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);
     virtual UInt_t Process(TMap* dcsAliasMap) = 0;
-   
+
     virtual Bool_t ProcessDCS() { return kTRUE; }
     Bool_t ProcessRunType();
-  
+
   protected:
     Bool_t Store(const char* pathLevel2, const char* pathLevel3, TObject* object,
-    		AliCDBMetaData* metaData, Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
+        AliCDBMetaData* metaData, Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
     Bool_t StoreReferenceData(const char* pathLevel2, const char* pathLevel3, TObject* object,
-    		AliCDBMetaData* metaData);
+        AliCDBMetaData* metaData);
     Bool_t StoreReferenceFile(const char* localFile, const char* gridFileName);
     Bool_t StoreRunMetadataFile(const char* localFile, const char* gridFileName);
-    
+
     const char* GetFile(Int_t system, const char* id, const char* source);
     TList* GetFileSources(Int_t system, const char* id = 0);
     const char* GetForeignFile(const char* detector, Int_t system, const char* id, const char* source);
@@ -61,7 +61,7 @@ class AliPreprocessor : public TNamed
     void Log(const char* message, UInt_t level=3);
     UInt_t GetStartTimeDCSQuery();
     UInt_t GetEndTimeDCSQuery();
-    
+
     void AddRunType(const char* runType);
 
     void SendToML(const char*);
@@ -75,7 +75,7 @@ class AliPreprocessor : public TNamed
     AliPreprocessor(const AliPreprocessor & source);
     AliPreprocessor & operator=(const AliPreprocessor & source);
     AliShuttleInterface* fShuttle;   // link to Shuttle
-    
+
     TList fRunTypes;    // list of run types that are processed by this preprocessor
 
     ClassDef(AliPreprocessor, 0);

@@ -455,7 +455,7 @@ void AliESDTOFCluster::FixSelfReferences(int oldID, int newID)
   }
   for (int it=fNTOFhits;it--;) {
     AliESDTOFHit* hit = GetTOFHit(it);
-    hit->SetESDTOFClusterIndex(newID);
+    if (hit) hit->SetESDTOFClusterIndex(newID);
   }
   //
 }

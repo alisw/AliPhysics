@@ -1733,23 +1733,6 @@ Bool_t AliGeomManager::ApplyAlignObjsToGeom(const char* fileName, const char* cl
 }
 
 //_____________________________________________________________________________
-Bool_t AliGeomManager::ApplyAlignObjsToGeom(AliCDBParam* param, AliCDBId& Id)
-{
-  // read collection of alignment objects (AliAlignObj derived) saved
-  // in the TClonesArray ClArrayName in the AliCDBEntry identified by
-  // param (to get the AliCDBStorage) and Id; apply the alignment objects
-  // to the geometry
-  //
-
-  AliCDBStorage* storage = AliCDBManager::Instance()->GetStorage(param);
-  AliCDBEntry* entry = storage->Get(Id);
-  TClonesArray* alignObjArray = ((TClonesArray*) entry->GetObject());
-
-  return ApplyAlignObjsToGeom(*alignObjArray);
-
-}
-
-//_____________________________________________________________________________
 Bool_t AliGeomManager::ApplyAlignObjsToGeom(const char* uri, const char* path, Int_t runnum, Int_t version, Int_t sversion)
 {
   // read collection of alignment objects (AliAlignObj derived) saved
@@ -1758,10 +1741,12 @@ Bool_t AliGeomManager::ApplyAlignObjsToGeom(const char* uri, const char* path, I
   // to the geometry
   //
 
-  AliCDBParam* param = AliCDBManager::Instance()->CreateParameter(uri);
+  AliCDBStorage* storage = AliCDBManager::Instance()->GetStorage(uri);
   AliCDBId id(path, runnum, runnum, version, sversion);
+  AliCDBEntry* entry = storage->Get(id);
+  TClonesArray* alignObjArray = dynamic_cast<TClonesArray*>(entry->GetObject());
 
-  return ApplyAlignObjsToGeom(param, id);
+  return ApplyAlignObjsToGeom(*alignObjArray);
 
 }
 

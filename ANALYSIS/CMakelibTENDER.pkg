@@ -37,4 +37,4 @@ set ( DHDR  TenderLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE  ANALYSIS ANALYSIS/Tender STEER/STEERBase)
+set ( EINCLUDE  CORRFW ANALYSIS ANALYSIS/Tender STEER/STEERBase)
