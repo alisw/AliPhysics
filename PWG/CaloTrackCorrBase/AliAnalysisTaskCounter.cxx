@@ -408,35 +408,59 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
 //____________________________________________________
 Bool_t AliAnalysisTaskCounter::CheckForPrimaryVertex()
 {
-  //Check if the vertex was well reconstructed, copy from V0Reader of conversion group
-  //It only works for ESDs
+  //Check if the vertex was well reconstructed, copy of conversion group
   
-  AliESDEvent * event = dynamic_cast<AliESDEvent*> (InputEvent());
-  if(!event) return 1;
+  AliESDEvent * esdevent = dynamic_cast<AliESDEvent*> (InputEvent());
+  AliAODEvent * aodevent = dynamic_cast<AliAODEvent*> (InputEvent());
   
-  if(event->GetPrimaryVertexTracks()->GetNContributors() > 0) 
+  if(esdevent)
   {
-    return 1;
-  }
-  
-  if(event->GetPrimaryVertexTracks()->GetNContributors() < 1) 
-  {
-    // SPD vertex
-    if(event->GetPrimaryVertexSPD()->GetNContributors() > 0) 
+    if(esdevent->GetPrimaryVertex()->GetNContributors() > 0)
     {
-      //cout<<"spd vertex type::"<< fESDEvent->GetPrimaryVertex()->GetName() << endl;
-      return 1;
-      
+      return kTRUE;
     }
-    if(event->GetPrimaryVertexSPD()->GetNContributors() < 1) 
+    
+    if(esdevent->GetPrimaryVertex()->GetNContributors() < 1)
     {
-      //      cout<<"bad vertex type::"<< fESDEvent->GetPrimaryVertex()->GetName() << endl;
-      return 0;
+      // SPD vertex
+      if(esdevent->GetPrimaryVertexSPD()->GetNContributors() > 0)
+      {
+        return kTRUE;
+        
+      }
+      if(esdevent->GetPrimaryVertexSPD()->GetNContributors() < 1)
+      {
+        return kFALSE;
+      }
     }
   }
+  else if(aodevent)
+  {    
+    if (aodevent->GetPrimaryVertex() != NULL)
+    {
+      if(aodevent->GetPrimaryVertex()->GetNContributors() > 0)
+      {
+        return kTRUE;
+      }
+    }
+    
+    if(aodevent->GetPrimaryVertexSPD() != NULL)
+    {
+      if(aodevent->GetPrimaryVertexSPD()->GetNContributors() > 0)
+      {
+        return kTRUE;
+      }
+      else
+      {
+        AliWarning(Form("Number of contributors from bad vertex type:: %s",aodevent->GetPrimaryVertex()->GetName()));
+        return kFALSE;
+      }
+    }
+  }
+  else return kTRUE;
   
-  return 0;
-  //return fInputEvent->GetPrimaryVertex()->GetNContributors()>0;
+  return kFALSE;
+
 }
 
 
