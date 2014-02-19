@@ -2114,32 +2114,59 @@ void AliCaloTrackReader::FillInputBackgroundJets()
 //________________________________________________
 Bool_t AliCaloTrackReader::CheckForPrimaryVertex()
 {
-  //Check if the vertex was well reconstructed, copy from V0Reader of conversion group
-  //Only for ESDs ...
+  //Check if the vertex was well reconstructed, copy of conversion group
   
-  AliESDEvent * event = dynamic_cast<AliESDEvent*> (fInputEvent);
-  if(!event) return kTRUE;
-  
-  if(event->GetPrimaryVertexTracks()->GetNContributors() > 0)
+  if(fDataType==kESD)
   {
-    return kTRUE;
-  }
-  
-  if(event->GetPrimaryVertexTracks()->GetNContributors() < 1)
-  {
-    // SPD vertex
-    if(event->GetPrimaryVertexSPD()->GetNContributors() > 0)
+    AliESDEvent * esdevent = dynamic_cast<AliESDEvent*> (fInputEvent);
+    if(!esdevent) return kFALSE;
+    
+    if(esdevent->GetPrimaryVertex()->GetNContributors() > 0)
     {
-      //cout<<"spd vertex type::"<< fESDEvent->GetPrimaryVertex()->GetName() << endl;
       return kTRUE;
-      
     }
-    if(event->GetPrimaryVertexSPD()->GetNContributors() < 1)
+    
+    if(esdevent->GetPrimaryVertex()->GetNContributors() < 1)
     {
-      //      cout<<"bad vertex type::"<< event->GetPrimaryVertex()->GetName() << endl;
-      return kFALSE;
+      // SPD vertex
+      if(esdevent->GetPrimaryVertexSPD()->GetNContributors() > 0)
+      {
+        return kTRUE;
+        
+      }
+      if(esdevent->GetPrimaryVertexSPD()->GetNContributors() < 1)
+      {
+        return kFALSE;
+      }
     }
   }
+  else if(fDataType==kAOD)
+  {
+    AliAODEvent * aodevent = dynamic_cast<AliAODEvent*>(fInputEvent);
+    if(!aodevent) return kFALSE;
+    
+    if (aodevent->GetPrimaryVertex() != NULL)
+    {
+      if(aodevent->GetPrimaryVertex()->GetNContributors() > 0)
+      {
+        return kTRUE;
+      }
+    }
+    
+    if(aodevent->GetPrimaryVertexSPD() != NULL)
+    {
+      if(aodevent->GetPrimaryVertexSPD()->GetNContributors() > 0)
+      {
+        return kTRUE;
+      }
+      else
+      {
+        AliWarning(Form("Number of contributors from bad vertex type:: %s",aodevent->GetPrimaryVertex()->GetName()));
+        return kFALSE;
+      }
+    }
+  }
+  else return kTRUE;
   
   return kFALSE;
   
