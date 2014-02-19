@@ -429,7 +429,7 @@ void AliCDBManager::AlienToCvmfsUri(TString& uriString) const {
       TString mcFolder = entryValue(re_MCFolder);
       if ( !rawFolder.IsNull() ){
         entryValue.Replace(0, 6, "/cvmfs/alice.cern.ch/calibration");
-        entryValue.Replace(entryValue.Length()-4, entryValue.Length(), "");
+        //entryValue.Replace(entryValue.Length()-4, entryValue.Length(), "");
       } else if ( !mcFolder.IsNull() ){
         entryValue.Replace(0,36,"/cvmfs/alice.cern.ch/calibration/MC");
       } else {
@@ -502,18 +502,14 @@ AliCDBStorage* AliCDBManager::GetStorage(const AliCDBParam* param) {
       if(fRun >= 0) {
         if( aStorage->GetType() == "alien" || aStorage->GetType() == "local" )
           aStorage->QueryCDB(fRun);
-        //} else {
-        //	AliDebug(2,
-        //		"Skipping query for valid files, it is used only in grid...");
-        //}
-    }
+      }
     return aStorage;
+    }
   }
-}
 
-AliError(Form("Failed to activate requested storage! Check URI: %s", param->GetURI().Data()));
+  AliError(Form("Failed to activate requested storage! Check URI: %s", param->GetURI().Data()));
 
-return NULL;
+  return NULL;
 }
 
 //_____________________________________________________________________________
@@ -1658,7 +1654,7 @@ void AliCDBManager::QueryCDB() {
     if(aPar) {
       AliDebug(2,Form("Querying specific storage %s",aCalibType->GetName()));
       AliCDBStorage *aStorage = GetStorage(aPar);
-      if(aStorage->GetType() == "alien"){
+      if(aStorage->GetType() == "alien" || aStorage->GetType() == "local"){
         aStorage->QueryCDB(fRun,aCalibType->GetName());
       } else {
         AliDebug(2,
