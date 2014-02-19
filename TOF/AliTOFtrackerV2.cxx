@@ -576,7 +576,8 @@ void AliTOFtrackerV2::MatchTracks() {
 	    }
 
 	    if(cmatched->GetNMatchableTracks() < AliESDTOFCluster::kMaxMatches){
-	      cmatched->Update(t->GetID(),dist3d[1],dist3d[0],dist3d[2],trackPos[3][istep],timesCurrent);//x,y,z -> tracking RF
+	      printf("dist3d = %f,%f,%f\n",dist3d[0],dist3d[1],dist3d[2]);
+	      cmatched->Update(t->GetID(),dist3d[0],dist3d[1],dist3d[2],trackPos[3][istep],timesCurrent);//x,y,z -> tracking RF
 	      t->AddTOFcluster(currentpos);
 	      t->SetStatus(AliESDtrack::kTOFout);
 	    }

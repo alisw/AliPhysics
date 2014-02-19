@@ -824,7 +824,7 @@ void AliTOFtracker::MatchTracks( Int_t mLastStep){
 	    }
 	    //
 	    AliESDTOFCluster* esdTOFCl = GetESDTOFCluster(clind[i]); 
-	    if(!esdTOFCl->Update(t->GetID(),dist3d[1],dist3d[0],dist3d[2],trackPos[3][istep],time))//x,y,z -> tracking RF
+	    if(!esdTOFCl->Update(t->GetID(),dist3d[0],dist3d[1],dist3d[2],trackPos[3][istep],time))//x,y,z -> tracking RF
 	      t->AddTOFcluster(esdTOFCl->GetESDID());
 	  }
 
