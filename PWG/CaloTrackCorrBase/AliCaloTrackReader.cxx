@@ -112,7 +112,8 @@ fEMCALClustersListName(""),  fZvtxCut(0.),
 fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(kTRUE),
 //Trigger rejection
 fRemoveBadTriggerEvents(0),  fTriggerPatchClusterMatch(0),
-fTriggerPatchTimeWindow(),   fTriggerL0EventThreshold(0),     fTriggerL1EventThreshold(0),
+fTriggerPatchTimeWindow(),   fTriggerL0EventThreshold(0),
+fTriggerL1EventThreshold(0), fTriggerL1EventThresholdFix(0),
 fTriggerClusterBC(0),        fTriggerClusterIndex(0),         fTriggerClusterId(0),
 fIsExoticEvent(0),           fIsBadCellEvent(0),              fIsBadMaxCellEvent(0),
 fIsTriggerMatch(0),          fIsTriggerMatchOpenCut(),
@@ -368,7 +369,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
     // If requested, remove badly triggeed events, but only when the EMCal trigger bit is set
     if(fRemoveBadTriggerEvents)
     {
-      if(fDebug > 0)
+     if(fDebug > 0)
       printf("AliCaloTrackReader::CheckEventTriggers() - ACCEPT triggered event? \n exotic? %d - bad cell %d - bad Max cell %d - BC %d  - Matched %d\n",
              fIsExoticEvent,fIsBadCellEvent, fIsBadMaxCellEvent, fTriggerClusterBC,fIsTriggerMatch);
       if     (fIsExoticEvent)         return kFALSE;
@@ -378,8 +379,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
       if(fDebug > 0) printf("\t *** YES for %s\n",GetFiredTriggerClasses().Data());
     }
     
-    if(fDebug > 0)
-    printf("AliCaloTrackReader::CheckEventTriggers() - Pass EMCal triggered event rejection \n");
+    if(fDebug > 0) printf("AliCaloTrackReader::CheckEventTriggers() - Pass EMCal triggered event rejection \n");
   }
   
   //-------------------------------------------------------------------------------------
@@ -859,6 +859,7 @@ void AliCaloTrackReader::InitParameters()
   
   fTriggerClusterBC        = -10000 ;
   fTriggerL0EventThreshold =  2.;
+  fTriggerL1EventThreshold =  4.;
   fTriggerClusterIndex     = -1;
   fTriggerClusterId        = -1;
   
@@ -2161,17 +2162,37 @@ TArrayI AliCaloTrackReader::GetTriggerPatches(Int_t tmin, Int_t tmax )
   AliVCaloTrigger *caloTrigger = GetInputEvent()->GetCaloTrigger( "EMCAL" );
 
   // Recover the threshold of the event that triggered, only possible for L1
-  if     (IsEventEMCALL1Gamma1()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(1);
-  else if(IsEventEMCALL1Gamma2()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(3);
-  else if(IsEventEMCALL1Jet1  ()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(0);
-  else if(IsEventEMCALL1Jet2  ()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(2);
-  
-//  printf("L1 trigger Threshold Jet1 %f, Gamma1 %f, Jet2 %f, Gamma2 %f\n",
-//         0.07874*caloTrigger->GetL1Threshold(0),
-//         0.07874*caloTrigger->GetL1Threshold(1),
-//         0.07874*caloTrigger->GetL1Threshold(2),
-//         0.07874*caloTrigger->GetL1Threshold(3));
-  
+  if(!fTriggerL1EventThresholdFix)
+  {
+    if(fBitEGA==6)
+    {
+      if     (IsEventEMCALL1Gamma1()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(1);
+      else if(IsEventEMCALL1Gamma2()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(3);
+      else if(IsEventEMCALL1Jet1  ()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(0);
+      else if(IsEventEMCALL1Jet2  ()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(2);
+      
+//      printf("L1 trigger Threshold Jet1 %f, Gamma1 %f, Jet2 %f, Gamma2 %f\n",
+//             0.07874*caloTrigger->GetL1Threshold(0),
+//             0.07874*caloTrigger->GetL1Threshold(1),
+//             0.07874*caloTrigger->GetL1Threshold(2),
+//             0.07874*caloTrigger->GetL1Threshold(3));
+    }
+    else
+    {
+      // Old AOD data format, in such case, order of thresholds different!!!
+      if     (IsEventEMCALL1Gamma1()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(0);
+      else if(IsEventEMCALL1Gamma2()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(2);
+      else if(IsEventEMCALL1Jet1  ()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(1);
+      else if(IsEventEMCALL1Jet2  ()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(3);
+      
+//      printf("L1 trigger Threshold Jet1 %f, Gamma1 %f, Jet2 %f, Gamma2 %f\n",
+//             0.07874*caloTrigger->GetL1Threshold(1),
+//             0.07874*caloTrigger->GetL1Threshold(0),
+//             0.07874*caloTrigger->GetL1Threshold(3),
+//             0.07874*caloTrigger->GetL1Threshold(2));
+    }
+  }
+
   //printf("CaloTrigger Entries %d\n",caloTrigger->GetEntries() );
   
   // class is not empty
@@ -2223,11 +2244,14 @@ TArrayI AliCaloTrackReader::GetTriggerPatches(Int_t tmin, Int_t tmax )
         
         Int_t sum = 0;
         caloTrigger->GetL1TimeSum(sum);
-
+        //fBitEGA-=2;
         Bool_t isEGA1 = ((bit >>  fBitEGA   ) & 0x1) && IsEventEMCALL1Gamma1() ;
         Bool_t isEGA2 = ((bit >> (fBitEGA+1)) & 0x1) && IsEventEMCALL1Gamma2() ;
         Bool_t isEJE1 = ((bit >>  fBitEJE   ) & 0x1) && IsEventEMCALL1Jet1  () ;
         Bool_t isEJE2 = ((bit >> (fBitEJE+1)) & 0x1) && IsEventEMCALL1Jet2  () ;
+        
+        //if((bit>> fBitEGA   )&0x1) printf("Trig Bit %d - bit %d - EG1 %d - EG2 %d\n",fBitEGA  ,bit,IsEventEMCALL1Gamma1(),IsEventEMCALL1Gamma2());
+        //if((bit>>(fBitEGA+1))&0x1) printf("Trig Bit %d - bit %d - EG1 %d - EG2 %d\n",fBitEGA+1,bit,IsEventEMCALL1Gamma1(),IsEventEMCALL1Gamma2());
         
         if(!isEGA1 && !isEJE1 && !isEGA2 && !isEJE2) continue;
         
@@ -2328,7 +2352,7 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
   
   Float_t triggerThreshold = fTriggerL1EventThreshold;
   if(IsEventEMCALL0()) triggerThreshold = fTriggerL0EventThreshold;
-  
+  //printf("Threshold %f\n",triggerThreshold);
   Float_t minE = triggerThreshold / 2.;
 
   // This method is not really suitable for JET trigger
@@ -2874,6 +2898,7 @@ void AliCaloTrackReader::SetEventTriggerBit()
         cinfo = (TStreamerInfo*)clist->FindObject("AliAODCaloTrigger");
         verid = 3; // newer AOD header version
       }
+      
       if(cinfo)
 	    {
 	      Int_t classversionid = cinfo->GetClassVersion();
