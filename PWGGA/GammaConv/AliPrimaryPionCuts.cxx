@@ -55,6 +55,7 @@ const char* AliPrimaryPionCuts::fgkCutNames[AliPrimaryPionCuts::kNCuts] = {
 	"kPiDedxSigmaITSCut",
 	"kPiDedxSigmaTPCCut",
 	"kPiTOFSigmaCut",
+	"kMassCut"
 };
 
 //________________________________________________________________________
@@ -80,6 +81,8 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 	fUseCorrectedTPCClsInfo(kFALSE),
 	fUseTOFpid(kFALSE),
 	fRequireTOF(kFALSE),
+	fDoMassCut(kFALSE),
+	fMassCut(10),
 	fDoWeights(kFALSE),
 	fCutString(NULL),
 	fHistCutIndex(NULL),
@@ -564,6 +567,12 @@ Bool_t AliPrimaryPionCuts::SetCut(cutIds cutID, const Int_t value) {
 				UpdateCutString();
 				return kTRUE;
 			} else return kFALSE;
+		case kMassCut:
+			if( SetMassCut(value)) {
+				fCuts[kMassCut] = value;
+				UpdateCutString();
+				return kTRUE;
+			} else return kFALSE;
 		case kNCuts:
 			cout << "Error:: Cut id out of range"<< endl;
 			return kFALSE;
@@ -947,6 +956,41 @@ Bool_t AliPrimaryPionCuts::SetTOFPionPIDCut(Int_t TOFelectronPID){
     return kTRUE;
 }
 
+///________________________________________________________________________
+Bool_t AliPrimaryPionCuts::SetMassCut(Int_t massCut){
+    // Set Cut
+	switch(massCut){ 
+		case 0: // no cut
+			fDoMassCut = kFALSE;
+			fMassCut = 10;
+			break;
+		case 1: // cut at 1 GeV/c^2
+			fDoMassCut = kTRUE;
+			fMassCut = 1;
+			break;
+		case 2: // cut at 0.7 GeV/c^2
+			fDoMassCut = kTRUE;
+			fMassCut = 0.7;
+			break;
+		case 3: // cut at 0.6 GeV/c^2
+			fDoMassCut = kTRUE;
+			fMassCut = 0.6;
+			break;
+		case 4: // cut at eta mass
+			fDoMassCut = kTRUE;
+			fMassCut = 0.547853;
+			break;
+		case 5: // cut at 0.5 GeV/c^2
+			fDoMassCut = kTRUE;
+			fMassCut = 0.5;
+			break;
+		default:
+			cout<<"Warning: MassCut not defined "<<massCut<<endl;
+		return kFALSE;
+    } 
+    return kTRUE;
+}
+
 
 ///________________________________________________________________________
 TString AliPrimaryPionCuts::GetCutNumber(){
@@ -963,7 +1007,7 @@ TString AliPrimaryPionCuts::GetCutNumber(){
 AliPrimaryPionCuts* AliPrimaryPionCuts::GetStandardCuts2010PbPb(){
     //Create and return standard 2010 PbPb cuts
     AliPrimaryPionCuts *cuts=new AliPrimaryPionCuts("StandardCuts2010PbPb","StandardCuts2010PbPb");
-    if(!cuts->InitializeCutsFromCutString("9069640364102")){
+    if(!cuts->InitializeCutsFromCutString("000000400")){
 		cout<<"Warning: Initialization of Standardcuts2010PbPb failed"<<endl;	
 	}
     return cuts;
@@ -974,7 +1018,7 @@ AliPrimaryPionCuts* AliPrimaryPionCuts::GetStandardCuts2010pp(){
     //Create and return standard 2010 PbPb cuts
     AliPrimaryPionCuts *cuts=new AliPrimaryPionCuts("StandardCuts2010pp","StandardCuts2010pp");
                                           
-    if(!cuts->InitializeCutsFromCutString("9069640364102")){
+    if(!cuts->InitializeCutsFromCutString("000000400")){
 		cout<<"Warning: Initialization of Standardcuts2010pp failed"<<endl;
 	}
     return cuts;

@@ -610,11 +610,11 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     ptmc = GetClusSource(c);
     outputValues[0] = Et;
     outputValues[1] = c->GetM02();
-    outputValues[2] = ceiso-Et/*cecore*/-ceisoue;
+    outputValues[2] = ceiso/*cecore*/-ceisoue;
     outputValues[3] = triso-trisoue;
-    outputValues[4] = alliso-Et/*cecore*/-allisoue - trcore;
-    outputValues[5] = ceiso-Et;
-    outputValues[6] = alliso-Et - trcore;
+    outputValues[4] = alliso/*cecore*/-allisoue - trcore;
+    outputValues[5] = ceiso;
+    outputValues[6] = alliso - trcore;
     outputValues[7] = c->GetTrackDx();
     outputValues[8] = c->GetTrackDz();
     outputValues[9] = clsVec.Eta();
@@ -640,22 +640,35 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
 {
   // Get cell isolation.
   AliVCaloCells *cells = fESDCells;
-  if (!cells)
+  if (!cells){
     cells = fAODCells;
-  if (!cells)
+    if(fDebug)
+      printf("ESD cells empty...");
+  }
+  if (!cells){
+     if(fDebug)
+      printf("  and AOD cells are empty  as well!!!\n"); 
     return;
+  }
 
-  const Int_t ncells = cells->GetNumberOfCells();
+  TObjArray *clusters = fESDClusters;
+  if (!clusters)
+    clusters = fAODClusters;
+  if (!clusters)
+    return;
+  
+
+  const Int_t nclus = clusters->GetEntries();
+  //const Int_t ncells = cells->GetNumberOfCells();
   Float_t totiso=0;
   Float_t totband=0;
   Float_t totcore=0;
   Float_t etacl = vec.Eta();
   Float_t phicl = vec.Phi();
-  Float_t thetacl = vec.Theta();
   Float_t maxtcl = cells->GetCellTime(maxid);
   if(phicl<0)
     phicl+=TMath::TwoPi();
-  Int_t absid = -1;
+  /*Int_t absid = -1;
   Float_t eta=-1, phi=-1;  
   for(int icell=0;icell<ncells;icell++){
     absid = TMath::Abs(cells->GetCellNumber(icell));
@@ -668,26 +681,48 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
     fGeom->EtaPhiFromIndex(absid,eta,phi);
     Float_t dphi = TMath::Abs(phi-phicl);
     Float_t deta = TMath::Abs(eta-etacl);
+    Float_t R = TMath::Sqrt(deta*deta + dphi*dphi);*/
+  for(int ic=0;ic<nclus;ic++){
+    AliVCluster *c = static_cast<AliVCluster*>(clusters->At(ic));
+    if(!c)
+      continue;
+    if(!c->IsEMCAL())
+      continue;
+    Short_t id;
+    Double_t Emax = GetMaxCellEnergy( c, id);
+    Double_t maxct = cells->GetCellTime(id);
+    if(TMath::Abs(maxtcl-maxct)>2.5e-9)
+      continue;
+    Float_t clsPos[3] = {0,0,0};
+    c->GetPosition(clsPos);
+    TVector3 cv(clsPos);
+    Double_t Et = c->E()*TMath::Sin(cv.Theta());
+    Float_t dphi = TMath::Abs(cv.Phi()-phicl);
+    Float_t deta = TMath::Abs(cv.Eta()-etacl);
     Float_t R = TMath::Sqrt(deta*deta + dphi*dphi);
-    Float_t etcell = cells->GetCellAmplitude(absid)*TMath::Sin(thetacl);
+    if(R<0.007)
+      continue;
+    Double_t matchedpt =  GetTrackMatchedPt(c->GetTrackMatchedIndex());
+    Double_t nEt = TMath::Max(Et-matchedpt, 0.0);
+    if(nEt<0)
+      printf("nEt=%1.1f\n",nEt);
     if(R<fIsoConeR){
-      totiso += etcell;
+      totiso += nEt;
       if(R<0.04)
-	totcore += etcell;
+	totcore += nEt;
     }
     else{
       if(dphi>fIsoConeR)
 	continue;
       if(deta<fIsoConeR)
 	continue;
-      totband += cells->GetCellAmplitude(absid)*TMath::Sin(thetacl);
+      totband += nEt;
     }
   }
   iso = totiso;
   phiband = totband;
   core = totcore;
 } 
-
 //________________________________________________________________________
 void AliAnalysisTaskEMCALIsoPhoton::GetTrIso(TVector3 vec, Float_t &iso, Float_t &phiband, Float_t &core)
 {
@@ -1036,6 +1071,32 @@ void AliAnalysisTaskEMCALIsoPhoton::FillQA()
     if(fMaxEClus>fECut)
       fEmcClusECut->Fill(c->E());
   }
+}
+//________________________________________________________________________
+Double_t AliAnalysisTaskEMCALIsoPhoton::GetTrackMatchedPt(Int_t matchIndex)
+{
+  Double_t pt = 0;
+  if(!fTracks)
+    return pt;
+  if(matchIndex<0 || matchIndex>fTracks->GetEntries()){
+    if(fDebug)
+      printf("track-matched index out of track array range!!!\n");
+    return pt;
+  }
+  AliVTrack* track = static_cast<AliVTrack*>(fTracks->At(matchIndex));
+  if(!track){
+    if(fDebug)
+      printf("track-matched pointer does not exist!!!\n");
+    return pt;
+  }
+  if(fESD){
+    if(!fPrTrCuts)
+      return pt;
+    if(!fPrTrCuts->IsSelected(track))
+      return pt;
+    pt = track->Pt();
+  }
+  return pt;
 }
 //________________________________________________________________________
 void AliAnalysisTaskEMCALIsoPhoton::Terminate(Option_t *) 

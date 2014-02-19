@@ -692,7 +692,7 @@ Bool_t AliCFVertexingHFLctoV0bachelor::SetLabelArray()
   
   if (fmcPartCandidate->GetNDaughters()!=2) {
     AliDebug(2, Form("The MC particle have %d daughters (not 2), skipping!!",fmcPartCandidate->GetNDaughters()));
-    fmcPartCandidate->Print();
+    //    fmcPartCandidate->Print();
     return checkCD;
   }
 
@@ -914,7 +914,7 @@ Bool_t AliCFVertexingHFLctoV0bachelor::FillVectorFromMCarray(AliAODMCParticle *m
   AliAODMCParticle *mcPartV0DaughterNeg = dynamic_cast<AliAODMCParticle*>(fmcArray->At(fLabelArray[2]));
   AliAODMCParticle *mcPartDaughterV0 = 0x0;
 
-  if(!mcPartV0DaughterPos && !mcPartV0DaughterNeg) return bGenValues;
+  if(!mcPartV0DaughterPos || !mcPartV0DaughterNeg) return bGenValues;
 
   if (TMath::Abs(mcPartDaughterK0->GetPdgCode())==311) {
     Int_t daughterK0 = mcPartDaughterK0->GetDaughter(0);

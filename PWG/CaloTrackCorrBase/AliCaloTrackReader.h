@@ -284,18 +284,19 @@ public:
 
   Bool_t           CheckEventTriggers();
   
-  Bool_t           IsExoticEvent()                         { return fIsExoticEvent           ; }  
-  Bool_t           IsBadCellTriggerEvent()                 { return fIsBadCellEvent          ; }
-  Bool_t           IsBadMaxCellTriggerEvent()              { return fIsBadMaxCellEvent       ; }
-  Bool_t           IsTriggerMatched()                      { return fIsTriggerMatch          ; }
-  Bool_t           IsTriggerMatchedOpenCuts(Int_t i)       { return fIsTriggerMatchOpenCut[i]; }
+  Bool_t           IsExoticEvent()                   const { return fIsExoticEvent           ; }
+  Bool_t           IsBadCellTriggerEvent()           const { return fIsBadCellEvent          ; }
+  Bool_t           IsBadMaxCellTriggerEvent()        const { return fIsBadMaxCellEvent       ; }
+  Bool_t           IsTriggerMatched()                const { return fIsTriggerMatch          ; }
+  Bool_t           IsTriggerMatchedOpenCuts(Int_t i) const { return fIsTriggerMatchOpenCut[i]; }
   
-  Int_t            GetTriggerClusterBC()                   { return fTriggerClusterBC        ; }
-  Int_t            GetTriggerClusterIndex()                { return fTriggerClusterIndex     ; }
-  Int_t            GetTriggerClusterId()                   { return fTriggerClusterId        ; }
+  Int_t            GetTriggerClusterBC()             const { return fTriggerClusterBC        ; }
+  Int_t            GetTriggerClusterIndex()          const { return fTriggerClusterIndex     ; }
+  Int_t            GetTriggerClusterId()             const { return fTriggerClusterId        ; }
   
-  Float_t          GetEventTriggerThreshold()              { return fTriggerEventThreshold   ; }
-  void             SetEventTriggerThreshold(Float_t tr)    { fTriggerEventThreshold   = tr   ; }
+  Float_t          GetEventTriggerL0Threshold()      const { return fTriggerL0EventThreshold ; }
+  void             SetEventTriggerL0Threshold(Float_t tr)  { fTriggerL0EventThreshold   = tr ; }
+  Float_t          GetEventTriggerL1Threshold()      const { return fTriggerL1EventThreshold ; }
 
   void             SetTriggerPatchTimeWindow(Int_t min, Int_t max) { fTriggerPatchTimeWindow[0] = min ;
                                                                      fTriggerPatchTimeWindow[1] = max ; }
@@ -332,6 +333,8 @@ public:
   Bool_t           IsEventEMCALL1Jet()               const { return (fEventTrigEMCALL1Jet1   || fEventTrigEMCALL1Jet2  ) ; }
 	Bool_t           IsEventEMCALL1()                  const { return (IsEventEMCALL1Gamma()   || IsEventEMCALL1Jet()    ) ; }
 	
+  void             SwitchOnEMCALEventRejectionWith2Thresholds()  { fRejectEMCalTriggerEventsWith2Tresholds = kTRUE  ; }
+  void             SwitchOffEMCALEventRejectionWith2Thresholds() { fRejectEMCalTriggerEventsWith2Tresholds = kFALSE ; }
 	
   void             SwitchOnEventSelection()                { fDoEventSelection      = kTRUE  ; }
   void             SwitchOffEventSelection()               { fDoEventSelection      = kFALSE ; }
@@ -726,7 +729,8 @@ public:
   Bool_t           fRemoveBadTriggerEvents;      // Remove triggered events because trigger was exotic, bad, or out of BC
   Bool_t           fTriggerPatchClusterMatch;    // Search for the trigger patch and check if associated cluster was the trigger
   Int_t            fTriggerPatchTimeWindow[2];   // Trigger patch selection window
-  Float_t          fTriggerEventThreshold;       // Threshold to look for triggered events
+  Float_t          fTriggerL0EventThreshold;     // L0 Threshold to look for triggered events, set outside
+  Float_t          fTriggerL1EventThreshold;     // L1 Threshold to look for triggered events, set in data
   Int_t            fTriggerClusterBC;            // Event triggered by a cluster in BC -5 0 to 5
   Int_t            fTriggerClusterIndex;         // Index in clusters array of trigger cluster
   Int_t            fTriggerClusterId;            // Id of trigger cluster (cluster->GetID())
@@ -790,10 +794,12 @@ public:
   TArrayI          fAcceptEventsWithBit;           // Accept events if trigger bit is on
   TArrayI          fRejectEventsWithBit;           // Reject events if trigger bit is on
 
+  Bool_t           fRejectEMCalTriggerEventsWith2Tresholds; // Reject events EG2 also triggered by EG1 or EJ2 also triggered by EJ1
+  
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,65)
+  ClassDef(AliCaloTrackReader,67)
   
 } ;
 

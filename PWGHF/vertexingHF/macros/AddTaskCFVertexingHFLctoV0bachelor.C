@@ -8,7 +8,7 @@ const Double_t ymax  =  1.2 ;
 
 const Double_t zmin   = -15.;
 const Double_t zmax   =  15.;
-const Float_t centmin =-999.;
+const Float_t centmin = 0.;
 const Float_t centmax = 100.;
 const Float_t fakemin = -0.5;
 const Float_t fakemax =  2.5;
@@ -215,7 +215,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   // centrality
   Double_t *binLimcent=new Double_t[iBin[icent]+1];
   binLimcent[0]=centmin;
-  for(Int_t i=1; i<=iBin[icent]; i++) binLimcent[i]=centmax/iBin[icent]*(Double_t)(i-1);
+  for(Int_t i=1; i<=iBin[icent]; i++) binLimcent[i]=centmin + (centmax-centmin)/iBin[icent]*(Double_t)i;
 
   // fake
   Double_t *binLimfake=new Double_t[iBin[ifake]+1];

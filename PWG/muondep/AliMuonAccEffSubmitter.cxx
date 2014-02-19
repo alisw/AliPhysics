@@ -285,7 +285,7 @@ Bool_t AliMuonAccEffSubmitter::GenerateRunJDL(const char* name) const
   
   TObjArray files;
   files.SetOwner(kTRUE);
-  TIter next(TemplateFileList());
+  TIter next(LocalFileList());
   TObjString* file;
   
   while ( ( file = static_cast<TObjString*>(next())) )

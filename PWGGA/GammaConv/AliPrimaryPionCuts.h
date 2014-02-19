@@ -46,6 +46,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 		kPidedxSigmaITSCut,
 		kPidedxSigmaTPCCut,
 		kPiTOFSigmaPID,
+		kMassCut,
 		kNCuts
 	};
 
@@ -108,11 +109,14 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	Bool_t SetDCACut(Int_t dcaCut);
 	void SetEtaShift(Double_t etaShift){fEtaShift = etaShift;}
 	Bool_t SetTOFPionPIDCut(Int_t TOFelectronPID);
+	Bool_t SetMassCut(Int_t massCut);
+	Double_t GetMassCut(){return fMassCut;}
 	
 	// Request Flags
 	Double_t GetEtaCut(){ return  fEtaCut;}
 	Double_t GetNFindableClustersTPC(AliESDtrack* lTrack);
 	Bool_t   DoWeights(){return fDoWeights;}
+	Bool_t 	 DoMassCut(){return fDoMassCut;}
 	
 	protected:
 
@@ -138,7 +142,10 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	Bool_t   fUseCorrectedTPCClsInfo; // flag to use corrected tpc cl info
 	Bool_t   fUseTOFpid; // flag to use tof pid
 	Bool_t   fRequireTOF; //flg to analyze only tracks with TOF signal
+	Bool_t   fDoMassCut;
+	Double_t fMassCut;	
 	Bool_t   fDoWeights;
+	
 
 
 	// Histograms
@@ -166,7 +173,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	AliPrimaryPionCuts& operator=(const AliPrimaryPionCuts&); // not implemented
 
 
-	ClassDef(AliPrimaryPionCuts,2)
+	ClassDef(AliPrimaryPionCuts,3)
 };
 
 #endif
