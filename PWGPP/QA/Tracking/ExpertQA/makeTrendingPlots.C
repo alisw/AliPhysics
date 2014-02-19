@@ -1,154 +1,152 @@
-
 void SetGraphProperties( TGraphErrors *gr, const char *title, const char *yAxisTitle, Int_t color, Int_t mStyle, Float_t mSize);
 void DrawAndSave( TGraphErrors *gr, const char *name );
 
-makeTrendingPlots( const char *TrendingFile ){
-
-
+makeTrendingPlots( const char *TrendingFile )
+{
   TFile *f = TFile::Open(TrendingFile);
   if(!f){ std::cout << "ERROR! No Trendingfile given!" <<std::endl; return; }
 
   TTree *tree = (TTree*) f->Get("TrendingTree");
   if(!tree){ std::cout << "ERROR! No Tree available!" <<std::endl; return; }
 
-//TGraph* MakeGraphSparse(TTree* tree, const char* expr = "Entry", const char* cut = "1", Int_t mstyle = 25, Int_t mcolor = 1, Float_t msize = -1, Float_t offset = 0.0)
+  //TGraph* MakeGraphSparse(TTree* tree, const char* expr = "Entry", const char* cut = "1", Int_t mstyle = 25, Int_t mcolor = 1, Float_t msize = -1, Float_t offset = 0.0)
 
-// K0 Res
+  // K0 Res
   // shift
   TGraphErrors *grK0shiftResPosHigh1pt = TStatToolkit::MakeGraphSparse( tree, "shiftK0sResPosHigh1pt:run:eShiftK0sResPosHigh1pt","shiftK0sResPosHigh1pt>-900" );
-    SetGraphProperties(grK0shiftResPosHigh1pt,"K0 shift resolution (positive tracks, 1pt = 1)","K0 shift resolution",1,20,.6);
+  SetGraphProperties(grK0shiftResPosHigh1pt,"K0 shift resolution (positive tracks, 1pt = 1)","K0 shift resolution",1,20,.6);
   TGraphErrors *grK0shiftResNegHigh1pt = TStatToolkit::MakeGraphSparse( tree, "shiftK0sResNegHigh1pt:run:eShiftK0sResNegHigh1pt","shiftK0sResNegHigh1pt>-900" );
-    SetGraphProperties(grK0shiftResNegHigh1pt,"K0 shift resolution (negative tracks, 1pt = 1)","K0 shift resolution",1,20,.6);
+  SetGraphProperties(grK0shiftResNegHigh1pt,"K0 shift resolution (negative tracks, 1pt = 1)","K0 shift resolution",1,20,.6);
   TGraphErrors *grK0shiftResPosLow1pt  = TStatToolkit::MakeGraphSparse( tree, "shiftK0sResPosLow1pt:run:eShiftK0sResPosLow1pt"  ,"shiftK0sResPosLow1pt>-900" );
-    SetGraphProperties(grK0shiftResPosLow1pt,"K0 shift resolution (positive tracks, 1pt = 0)","K0 shift resolution",1,20,.6);
+  SetGraphProperties(grK0shiftResPosLow1pt,"K0 shift resolution (positive tracks, 1pt = 0)","K0 shift resolution",1,20,.6);
   TGraphErrors *grK0shiftResNegLow1pt  = TStatToolkit::MakeGraphSparse( tree, "shiftK0sResNegLow1pt:run:eShiftK0sResNegLow1pt"  ,"shiftK0sResNegLow1pt>-900" );
-    SetGraphProperties(grK0shiftResNegLow1pt,"K0 shift resolution (negative tracks, 1pt = 0)","K0 shift resolution",1,20,.6);
+  SetGraphProperties(grK0shiftResNegLow1pt,"K0 shift resolution (negative tracks, 1pt = 0)","K0 shift resolution",1,20,.6);
   // sigma
   TGraphErrors *grK0sigmaResPosHigh1pt = TStatToolkit::MakeGraphSparse( tree, "sigmaK0sResPosHigh1pt:run:eSigmaK0sResPosHigh1pt","sigmaK0sResPosHigh1pt>-900" );
-    SetGraphProperties(grK0sigmaResPosHigh1pt,"K0 sigma resolution (positive tracks, 1pt = 1)","K0 sigma resolution",1,20,.6);
+  SetGraphProperties(grK0sigmaResPosHigh1pt,"K0 sigma resolution (positive tracks, 1pt = 1)","K0 sigma resolution",1,20,.6);
   TGraphErrors *grK0sigmaResNegHigh1pt = TStatToolkit::MakeGraphSparse( tree, "sigmaK0sResNegHigh1pt:run:eSigmaK0sResNegHigh1pt","sigmaK0sResNegHigh1pt>-900" );
-    SetGraphProperties(grK0sigmaResNegHigh1pt,"K0 sigma resolution (negative tracks, 1pt = 1)","K0 sigma resolution",1,20,.6);
+  SetGraphProperties(grK0sigmaResNegHigh1pt,"K0 sigma resolution (negative tracks, 1pt = 1)","K0 sigma resolution",1,20,.6);
   TGraphErrors *grK0sigmaResPosLow1pt  = TStatToolkit::MakeGraphSparse( tree, "sigmaK0sResPosLow1pt:run:eSigmaK0sResPosLow1pt"  ,"sigmaK0sResPosLow1pt>-900" );
-    SetGraphProperties(grK0sigmaResPosLow1pt,"K0 sigma resolution (positive tracks, 1pt = 0)","K0 sigma resolution",1,20,.6);
+  SetGraphProperties(grK0sigmaResPosLow1pt,"K0 sigma resolution (positive tracks, 1pt = 0)","K0 sigma resolution",1,20,.6);
   TGraphErrors *grK0sigmaResNegLow1pt  = TStatToolkit::MakeGraphSparse( tree, "sigmaK0sResNegLow1pt:run:eSigmaK0sResNegLow1pt"  ,"sigmaK0sResNegLow1pt>-900" );
-    SetGraphProperties(grK0sigmaResNegLow1pt,"K0 sigma resolution (negative tracks, 1pt = 0)","K0 sigma resolution",1,20,.6);
-// K0 Pull
+  SetGraphProperties(grK0sigmaResNegLow1pt,"K0 sigma resolution (negative tracks, 1pt = 0)","K0 sigma resolution",1,20,.6);
+  // K0 Pull
   // shift
   TGraphErrors *grK0shiftPullPosHigh1pt = TStatToolkit::MakeGraphSparse( tree, "shiftK0sPullPosHigh1pt:run:eShiftK0sPullPosHigh1pt","shiftK0sPullPosHigh1pt>-900" );
-    SetGraphProperties(grK0shiftPullPosHigh1pt,"K0 shift pull (positive tracks, 1pt = 1)","K0 shift pull",1,20,.6);
+  SetGraphProperties(grK0shiftPullPosHigh1pt,"K0 shift pull (positive tracks, 1pt = 1)","K0 shift pull",1,20,.6);
   TGraphErrors *grK0shiftPullNegHigh1pt = TStatToolkit::MakeGraphSparse( tree, "shiftK0sPullNegHigh1pt:run:eShiftK0sPullNegHigh1pt","shiftK0sPullNegHigh1pt>-900" );
-    SetGraphProperties(grK0shiftPullNegHigh1pt,"K0 shift pull (negative tracks, 1pt = 1)","K0 shift pull",1,20,.6);
+  SetGraphProperties(grK0shiftPullNegHigh1pt,"K0 shift pull (negative tracks, 1pt = 1)","K0 shift pull",1,20,.6);
   TGraphErrors *grK0shiftPullPosLow1pt  = TStatToolkit::MakeGraphSparse( tree, "shiftK0sPullPosLow1pt:run:eShiftK0sPullPosLow1pt"  ,"shiftK0sPullPosLow1pt>-900" );
-    SetGraphProperties(grK0shiftPullPosLow1pt,"K0 shift pull (positive tracks, 1pt = 0)","K0 shift pull",1,20,.6);
+  SetGraphProperties(grK0shiftPullPosLow1pt,"K0 shift pull (positive tracks, 1pt = 0)","K0 shift pull",1,20,.6);
   TGraphErrors *grK0shiftPullNegLow1pt  = TStatToolkit::MakeGraphSparse( tree, "shiftK0sPullNegLow1pt:run:eShiftK0sPullNegLow1pt"  ,"shiftK0sPullNegLow1pt>-900" );
-    SetGraphProperties(grK0shiftPullNegLow1pt,"K0 shift pull (negative tracks, 1pt = 0)","K0 shift pull",1,20,.6);
+  SetGraphProperties(grK0shiftPullNegLow1pt,"K0 shift pull (negative tracks, 1pt = 0)","K0 shift pull",1,20,.6);
   // sigma
   TGraphErrors *grK0sigmaPullPosHigh1pt = TStatToolkit::MakeGraphSparse( tree, "sigmaK0sPullPosHigh1pt:run:eSigmaK0sPullPosHigh1pt","sigmaK0sPullPosHigh1pt>-900" );
-    SetGraphProperties(grK0sigmaPullPosHigh1pt,"K0 sigma pull (positive tracks, 1pt = 1)","K0 sigma pull",1,20,.6);
+  SetGraphProperties(grK0sigmaPullPosHigh1pt,"K0 sigma pull (positive tracks, 1pt = 1)","K0 sigma pull",1,20,.6);
   TGraphErrors *grK0sigmaPullNegHigh1pt = TStatToolkit::MakeGraphSparse( tree, "sigmaK0sPullNegHigh1pt:run:eSigmaK0sPullNegHigh1pt","sigmaK0sPullNegHigh1pt>-900" );
-    SetGraphProperties(grK0sigmaPullNegHigh1pt,"K0 sigma pull (negative tracks, 1pt = 1)","K0 sigma pull",1,20,.6);
+  SetGraphProperties(grK0sigmaPullNegHigh1pt,"K0 sigma pull (negative tracks, 1pt = 1)","K0 sigma pull",1,20,.6);
   TGraphErrors *grK0sigmaPullPosLow1pt  = TStatToolkit::MakeGraphSparse( tree, "sigmaK0sPullPosLow1pt:run:eSigmaK0sPullPosLow1pt"  ,"sigmaK0sPullPosLow1pt>-900" );
-    SetGraphProperties(grK0sigmaPullPosLow1pt,"K0 sigma pull (positive tracks, 1pt = 0)","K0 sigma pull",1,20,.6);
+  SetGraphProperties(grK0sigmaPullPosLow1pt,"K0 sigma pull (positive tracks, 1pt = 0)","K0 sigma pull",1,20,.6);
   TGraphErrors *grK0sigmaPullNegLow1pt  = TStatToolkit::MakeGraphSparse( tree, "sigmaK0sPullNegLow1pt:run:eSigmaK0sPullNegLow1pt"  ,"sigmaK0sPullNegLow1pt>-900" );
-    SetGraphProperties(grK0sigmaPullNegLow1pt,"K0 sigma pull (negative tracks, 1pt = 0)","K0 sigma pull",1,20,.6);
+  SetGraphProperties(grK0sigmaPullNegLow1pt,"K0 sigma pull (negative tracks, 1pt = 0)","K0 sigma pull",1,20,.6);
 
-//DCAr Res
+  //DCAr Res
   // TPC+ITS combined
   TGraphErrors *grDCArResCombinedLow1pt   = TStatToolkit::MakeGraphSparse( tree, "dcaRresCombinedLow1pt:run:edcaRresCombinedLow1pt","dcaRresCombinedLow1pt>-900" );
-    SetGraphProperties(grDCArResCombinedLow1pt,"DCAr res (TPC+ITS combined tracking, 1pt = 0)","DCAr res",1,20,.6);
+  SetGraphProperties(grDCArResCombinedLow1pt,"DCAr res (TPC+ITS combined tracking, 1pt = 0)","DCAr res",1,20,.6);
   TGraphErrors *grDCArResCombinedHigh1pt  = TStatToolkit::MakeGraphSparse( tree, "dcaRresCombinedHigh1pt:run:edcaRresCombinedHigh1pt","dcaRresCombinedHigh1pt>-900" );
-    SetGraphProperties(grDCArResCombinedHigh1pt,"DCAr res (TPC+ITS combined tracking, 1pt = 1)","DCAr res",1,20,.6);
+  SetGraphProperties(grDCArResCombinedHigh1pt,"DCAr res (TPC+ITS combined tracking, 1pt = 1)","DCAr res",1,20,.6);
   // TPC only
   TGraphErrors *grDCArResTPCAsideLow1pt   = TStatToolkit::MakeGraphSparse( tree, "dcaRresTPCAsideLow1pt:run:edcaRresTPCAsideLow1pt","dcaRresTPCAsideLow1pt>-900" );
-    SetGraphProperties(grDCArResTPCAsideLow1pt,"DCAr res (TPC only tracking Aside, 1pt = 0)","DCAr res",1,20,.6);
+  SetGraphProperties(grDCArResTPCAsideLow1pt,"DCAr res (TPC only tracking Aside, 1pt = 0)","DCAr res",1,20,.6);
   TGraphErrors *grDCArResTPCAsideHigh1pt  = TStatToolkit::MakeGraphSparse( tree, "dcaRresTPCAsideHigh1pt:run:edcaRresTPCAsideHigh1pt","dcaRresTPCAsideHigh1pt>-900" );
-    SetGraphProperties(grDCArResTPCAsideHigh1pt,"DCAr res (TPC only tracking Aside, 1pt = 1)","DCAr res",1,20,.6);
+  SetGraphProperties(grDCArResTPCAsideHigh1pt,"DCAr res (TPC only tracking Aside, 1pt = 1)","DCAr res",1,20,.6);
   TGraphErrors *grDCArResTPCCsideLow1pt   = TStatToolkit::MakeGraphSparse( tree, "dcaRresTPCCsideLow1pt:run:edcaRresTPCCsideLow1pt","dcaRresTPCCsideLow1pt>-900" );
-    SetGraphProperties(grDCArResTPCCsideLow1pt,"DCAr res (TPC only tracking Cside, 1pt = 0)","DCAr res",1,20,.6);
+  SetGraphProperties(grDCArResTPCCsideLow1pt,"DCAr res (TPC only tracking Cside, 1pt = 0)","DCAr res",1,20,.6);
   TGraphErrors *grDCArResTPCCsideHigh1pt  = TStatToolkit::MakeGraphSparse( tree, "dcaRresTPCCsideHigh1pt:run:edcaRresTPCCsideHigh1pt","dcaRresTPCCsideHigh1pt>-900" );
-    SetGraphProperties(grDCArResTPCCsideHigh1pt,"DCAr res (TPC only tracking Cside, 1pt = 1)","DCAr res",1,20,.6);
-//DCAr Pull
+  SetGraphProperties(grDCArResTPCCsideHigh1pt,"DCAr res (TPC only tracking Cside, 1pt = 1)","DCAr res",1,20,.6);
+  //DCAr Pull
   // TPC+ITS combined
   TGraphErrors *grDCArPullCombinedLow1pt  = TStatToolkit::MakeGraphSparse( tree, "dcaRpullCombinedLow1pt:run:edcaRpullCombinedLow1pt","dcaRpullCombinedLow1pt>-900" );
-    SetGraphProperties(grDCArPullCombinedLow1pt,"DCAr pull (TPC+ITS combined tracking, 1pt = 0)","DCAr pull",1,20,.6);
+  SetGraphProperties(grDCArPullCombinedLow1pt,"DCAr pull (TPC+ITS combined tracking, 1pt = 0)","DCAr pull",1,20,.6);
   TGraphErrors *grDCArPullCombinedHigh1pt = TStatToolkit::MakeGraphSparse( tree, "dcaRpullCombinedHigh1pt:run:edcaRpullCombinedHigh1pt","dcaRpullCombinedHigh1pt>-900" );
-    SetGraphProperties(grDCArPullCombinedHigh1pt,"DCAr pull (TPC+ITS combined tracking, 1pt = 1)","DCAr pull",1,20,.6);
+  SetGraphProperties(grDCArPullCombinedHigh1pt,"DCAr pull (TPC+ITS combined tracking, 1pt = 1)","DCAr pull",1,20,.6);
   // TPC only
   TGraphErrors *grDCArPullTPCAsideLow1pt  = TStatToolkit::MakeGraphSparse( tree, "dcaRpullTPCAsideLow1pt:run:edcaRpullTPCAsideLow1pt","dcaRpullTPCAsideLow1pt>-900" );
-    SetGraphProperties(grDCArPullTPCAsideLow1pt,"DCAr pull (TPC only tracking Aside, 1pt = 0)","DCAr pull",1,20,.6);
+  SetGraphProperties(grDCArPullTPCAsideLow1pt,"DCAr pull (TPC only tracking Aside, 1pt = 0)","DCAr pull",1,20,.6);
   TGraphErrors *grDCArPullTPCAsideHigh1pt = TStatToolkit::MakeGraphSparse( tree, "dcaRpullTPCAsideHigh1pt:run:edcaRpullTPCAsideHigh1pt","dcaRpullTPCAsideHigh1pt>-900" );
-    SetGraphProperties(grDCArPullTPCAsideHigh1pt,"DCAr pull (TPC only tracking Aside, 1pt = 1)","DCAr pull",1,20,.6);
+  SetGraphProperties(grDCArPullTPCAsideHigh1pt,"DCAr pull (TPC only tracking Aside, 1pt = 1)","DCAr pull",1,20,.6);
   TGraphErrors *grDCArPullTPCCsideLow1pt  = TStatToolkit::MakeGraphSparse( tree, "dcaRpullTPCCsideLow1pt:run:edcaRpullTPCCsideLow1pt","dcaRpullTPCCsideLow1pt>-900" );
-    SetGraphProperties(grDCArPullTPCCsideLow1pt,"DCAr pull (TPC only tracking Cside, 1pt = 0)","DCAr pull",1,20,.6);
+  SetGraphProperties(grDCArPullTPCCsideLow1pt,"DCAr pull (TPC only tracking Cside, 1pt = 0)","DCAr pull",1,20,.6);
   TGraphErrors *grDCArPullTPCCsideHigh1pt = TStatToolkit::MakeGraphSparse( tree, "dcaRpullTPCCsideHigh1pt:run:edcaRpullTPCCsideHigh1pt","dcaRpullTPCCsideHigh1pt>-900" );
-    SetGraphProperties(grDCArPullTPCCsideHigh1pt,"DCAr pull (TPC only tracking Cside, 1pt = 1)","DCAr pull",1,20,.6);
+  SetGraphProperties(grDCArPullTPCCsideHigh1pt,"DCAr pull (TPC only tracking Cside, 1pt = 1)","DCAr pull",1,20,.6);
 
-//qoverpt Shift
- // Sin part
+  //qoverpt Shift
+  // Sin part
   //Aside
   TGraphErrors *grqptShiftCombinedSinAside  = TStatToolkit::MakeGraphSparse( tree, "qptShiftCombinedSinAside:run:eqptShiftCombinedSinAside","qptShiftCombinedSinAside>-900" );
-    SetGraphProperties(grqptShiftCombinedSinAside,"qpt shift sin part combined tracking Aside","sin part",1,20,.6);
+  SetGraphProperties(grqptShiftCombinedSinAside,"qpt shift sin part combined tracking Aside","sin part",1,20,.6);
   TGraphErrors *grqptShiftTPCconstSinAside  = TStatToolkit::MakeGraphSparse( tree, "qptShiftTPCconstSinAside:run:eqptShiftTPCconstSinAside","qptShiftTPCconstSinAside>-900" );
-    SetGraphProperties(grqptShiftTPCconstSinAside,"qpt shift sin part TPCconstrained Aside","sin part",1,20,.6);
+  SetGraphProperties(grqptShiftTPCconstSinAside,"qpt shift sin part TPCconstrained Aside","sin part",1,20,.6);
   TGraphErrors *grqptShiftTPConlySinAside   = TStatToolkit::MakeGraphSparse( tree, "qptShiftTPConlySinAside:run:eqptShiftTPConlySinAside","qptShiftTPConlySinAside>-900" );
-    SetGraphProperties(grqptShiftTPConlySinAside,"qpt shift sin part TPConly Aside","sin part",1,20,.6);
-      //Cside
+  SetGraphProperties(grqptShiftTPConlySinAside,"qpt shift sin part TPConly Aside","sin part",1,20,.6);
+  //Cside
   TGraphErrors *grqptShiftCombinedSinCside  = TStatToolkit::MakeGraphSparse( tree, "qptShiftCombinedSinCside:run:eqptShiftCombinedSinCside","qptShiftCombinedSinCside>-900" );
-    SetGraphProperties(grqptShiftCombinedSinCside,"qpt shift sin part combined tracking Cside","sin part",1,20,.6);
+  SetGraphProperties(grqptShiftCombinedSinCside,"qpt shift sin part combined tracking Cside","sin part",1,20,.6);
   TGraphErrors *grqptShiftTPCconstSinCside  = TStatToolkit::MakeGraphSparse( tree, "qptShiftTPCconstSinCside:run:eqptShiftTPCconstSinCside","qptShiftTPCconstSinCside>-900" );
-    SetGraphProperties(grqptShiftTPCconstSinCside,"qpt shift sin part TPCconstrained Cside","sin part",1,20,.6);
+  SetGraphProperties(grqptShiftTPCconstSinCside,"qpt shift sin part TPCconstrained Cside","sin part",1,20,.6);
   TGraphErrors *grqptShiftTPConlySinCside   = TStatToolkit::MakeGraphSparse( tree, "qptShiftTPConlySinCside:run:eqptShiftTPConlySinCside","qptShiftTPConlySinCside>-900" );
-    SetGraphProperties(grqptShiftTPConlySinAside,"qpt shift sin part TPConly Aside","sin part",1,20,.6);
- // Cos part
+  SetGraphProperties(grqptShiftTPConlySinAside,"qpt shift sin part TPConly Aside","sin part",1,20,.6);
+  // Cos part
   //Aside
   TGraphErrors *grqptShiftCombinedCosAside  = TStatToolkit::MakeGraphSparse( tree, "qptShiftCombinedCosAside:run:eqptShiftCombinedCosAside","qptShiftCombinedCosAside>-900" );
-    SetGraphProperties(grqptShiftCombinedCosAside,"qpt shift cos part combined tracking Aside","cos part",1,20,.6);
+  SetGraphProperties(grqptShiftCombinedCosAside,"qpt shift cos part combined tracking Aside","cos part",1,20,.6);
   TGraphErrors *grqptShiftTPCconstCosAside  = TStatToolkit::MakeGraphSparse( tree, "qptShiftTPCconstCosAside:run:eqptShiftTPCconstCosAside","qptShiftTPCconstCosAside>-900" );
-    SetGraphProperties(grqptShiftTPCconstCosAside,"qpt shift cos part TPCconstrained Aside","cos part",1,20,.6);
+  SetGraphProperties(grqptShiftTPCconstCosAside,"qpt shift cos part TPCconstrained Aside","cos part",1,20,.6);
   TGraphErrors *grqptShiftTPConlyCosAside   = TStatToolkit::MakeGraphSparse( tree, "qptShiftTPConlyCosAside:run:eqptShiftTPConlyCosAside","qptShiftTPConlyCosAside>-900" );
-    SetGraphProperties(grqptShiftTPConlyCosAside,"qpt shift cos part TPConly Aside","cos part",1,20,.6);
-      //Cside
+  SetGraphProperties(grqptShiftTPConlyCosAside,"qpt shift cos part TPConly Aside","cos part",1,20,.6);
+  //Cside
   TGraphErrors *grqptShiftCombinedCosCside  = TStatToolkit::MakeGraphSparse( tree, "qptShiftCombinedCosCside:run:eqptShiftCombinedCosCside","qptShiftCombinedCosCside>-900" );
-    SetGraphProperties(grqptShiftCombinedCosCside,"qpt shift cos part combined tracking Cside","cos part",1,20,.6);
+  SetGraphProperties(grqptShiftCombinedCosCside,"qpt shift cos part combined tracking Cside","cos part",1,20,.6);
   TGraphErrors *grqptShiftTPCconstCosCside  = TStatToolkit::MakeGraphSparse( tree, "qptShiftTPCconstCosCside:run:eqptShiftTPCconstCosCside","qptShiftTPCconstCosCside>-900" );
-    SetGraphProperties(grqptShiftTPCconstCosCside,"qpt shift cos part TPCconstrained Cside","cos part",1,20,.6);
+  SetGraphProperties(grqptShiftTPCconstCosCside,"qpt shift cos part TPCconstrained Cside","cos part",1,20,.6);
   TGraphErrors *grqptShiftTPConlyCosCside   = TStatToolkit::MakeGraphSparse( tree, "qptShiftTPConlyCosCside:run:eqptShiftTPConlyCosCside","qptShiftTPConlyCosCside>-900" );
-    SetGraphProperties(grqptShiftTPConlyCosCside,"qpt shift cos part TPConly Cside","cos part",1,20,.6);
+  SetGraphProperties(grqptShiftTPConlyCosCside,"qpt shift cos part TPConly Cside","cos part",1,20,.6);
 
   //delta Phi
-    // res
-      //Aside
-    TGraphErrors *grdPhiResTPCAsideLow1pt  = TStatToolkit::MakeGraphSparse( tree, "dPhiResTPCAsideLow1pt:run:edPhiResTPCAsideLow1pt","dPhiResTPCAsideLow1pt>-900" );
-      SetGraphProperties(grdPhiResTPCAsideLow1pt,"delta Phi resolution (Aside, 1pt = 0)","phi res",1,20,.6);
-    TGraphErrors *grdPhiResTPCAsideHigh1pt = TStatToolkit::MakeGraphSparse( tree, "dPhiResTPCAsideHigh1pt:run:edPhiResTPCAsideHigh1pt","dPhiResTPCAsideHigh1pt>-900" );
-      SetGraphProperties(grdPhiResTPCAsideHigh1pt,"delta Phi resolution (Aside, 1pt = 1)","phi res",1,20,.6);
-      //Cside
-    TGraphErrors *grdPhiResTPCCsideLow1pt  = TStatToolkit::MakeGraphSparse( tree, "dPhiResTPCCsideLow1pt:run:edPhiResTPCCsideLow1pt","dPhiResTPCCsideLow1pt>-900" );
-      SetGraphProperties(grdPhiResTPCCsideLow1pt,"delta Phi resolution (Cside, 1pt = 0)","phi res",1,20,.6);
-    TGraphErrors *grdPhiResTPCCsideHigh1pt = TStatToolkit::MakeGraphSparse( tree, "dPhiResTPCCsideHigh1pt:run:edPhiResTPCCsideHigh1pt","dPhiResTPCCsideHigh1pt>-900" );
-      SetGraphProperties(grdPhiResTPCCsideHigh1pt,"delta Phi resolution (Cside, 1pt = 1)","phi res",1,20,.6);
-    // pull
-      //Aside
-    TGraphErrors *grdPhiPullTPCAsideLow1pt  = TStatToolkit::MakeGraphSparse( tree, "dPhiPullTPCAsideLow1pt:run:edPhiPullTPCAsideLow1pt","dPhiPullTPCAsideLow1pt>-900" );
-      SetGraphProperties(grdPhiPullTPCAsideLow1pt,"delta Phi pull (Aside, 1pt = 0)","phi pull",1,20,.6);
-    TGraphErrors *grdPhiPullTPCAsideHigh1pt = TStatToolkit::MakeGraphSparse( tree, "dPhiPullTPCAsideHigh1pt:run:edPhiPullTPCAsideHigh1pt","dPhiPullTPCAsideHigh1pt>-900" );
-      SetGraphProperties(grdPhiPullTPCAsideHigh1pt,"delta Phi pull (Aside, 1pt = 1)","phi pull",1,20,.6);
-      //Cside
-    TGraphErrors *grdPhiPullTPCCsideLow1pt  = TStatToolkit::MakeGraphSparse( tree, "dPhiPullTPCCsideLow1pt:run:edPhiPullTPCCsideLow1pt","dPhiPullTPCCsideLow1pt>-900" );
-      SetGraphProperties(grdPhiPullTPCCsideLow1pt,"delta Phi pull (Cside, 1pt = 0)","phi pull",1,20,.6);
-    TGraphErrors *grdPhiPullTPCCsideHigh1pt = TStatToolkit::MakeGraphSparse( tree, "dPhiPullTPCCsideHigh1pt:run:edPhiPullTPCCsideHigh1pt","dPhiPullTPCCsideHigh1pt>-900" );
-      SetGraphProperties(grdPhiPullTPCCsideHigh1pt,"delta Phi pull (Cside, 1pt = 1)","phi pull",1,20,.6);
+  // res
+  //Aside
+  TGraphErrors *grdPhiResTPCAsideLow1pt  = TStatToolkit::MakeGraphSparse( tree, "dPhiResTPCAsideLow1pt:run:edPhiResTPCAsideLow1pt","dPhiResTPCAsideLow1pt>-900" );
+  SetGraphProperties(grdPhiResTPCAsideLow1pt,"delta Phi resolution (Aside, 1pt = 0)","phi res",1,20,.6);
+  TGraphErrors *grdPhiResTPCAsideHigh1pt = TStatToolkit::MakeGraphSparse( tree, "dPhiResTPCAsideHigh1pt:run:edPhiResTPCAsideHigh1pt","dPhiResTPCAsideHigh1pt>-900" );
+  SetGraphProperties(grdPhiResTPCAsideHigh1pt,"delta Phi resolution (Aside, 1pt = 1)","phi res",1,20,.6);
+  //Cside
+  TGraphErrors *grdPhiResTPCCsideLow1pt  = TStatToolkit::MakeGraphSparse( tree, "dPhiResTPCCsideLow1pt:run:edPhiResTPCCsideLow1pt","dPhiResTPCCsideLow1pt>-900" );
+  SetGraphProperties(grdPhiResTPCCsideLow1pt,"delta Phi resolution (Cside, 1pt = 0)","phi res",1,20,.6);
+  TGraphErrors *grdPhiResTPCCsideHigh1pt = TStatToolkit::MakeGraphSparse( tree, "dPhiResTPCCsideHigh1pt:run:edPhiResTPCCsideHigh1pt","dPhiResTPCCsideHigh1pt>-900" );
+  SetGraphProperties(grdPhiResTPCCsideHigh1pt,"delta Phi resolution (Cside, 1pt = 1)","phi res",1,20,.6);
+  // pull
+  //Aside
+  TGraphErrors *grdPhiPullTPCAsideLow1pt  = TStatToolkit::MakeGraphSparse( tree, "dPhiPullTPCAsideLow1pt:run:edPhiPullTPCAsideLow1pt","dPhiPullTPCAsideLow1pt>-900" );
+  SetGraphProperties(grdPhiPullTPCAsideLow1pt,"delta Phi pull (Aside, 1pt = 0)","phi pull",1,20,.6);
+  TGraphErrors *grdPhiPullTPCAsideHigh1pt = TStatToolkit::MakeGraphSparse( tree, "dPhiPullTPCAsideHigh1pt:run:edPhiPullTPCAsideHigh1pt","dPhiPullTPCAsideHigh1pt>-900" );
+  SetGraphProperties(grdPhiPullTPCAsideHigh1pt,"delta Phi pull (Aside, 1pt = 1)","phi pull",1,20,.6);
+  //Cside
+  TGraphErrors *grdPhiPullTPCCsideLow1pt  = TStatToolkit::MakeGraphSparse( tree, "dPhiPullTPCCsideLow1pt:run:edPhiPullTPCCsideLow1pt","dPhiPullTPCCsideLow1pt>-900" );
+  SetGraphProperties(grdPhiPullTPCCsideLow1pt,"delta Phi pull (Cside, 1pt = 0)","phi pull",1,20,.6);
+  TGraphErrors *grdPhiPullTPCCsideHigh1pt = TStatToolkit::MakeGraphSparse( tree, "dPhiPullTPCCsideHigh1pt:run:edPhiPullTPCCsideHigh1pt","dPhiPullTPCCsideHigh1pt>-900" );
+  SetGraphProperties(grdPhiPullTPCCsideHigh1pt,"delta Phi pull (Cside, 1pt = 1)","phi pull",1,20,.6);
 
   // TPCITS matching Efficiency
-    TGraphErrors *grEfficiencyLowPt   = TStatToolkit::MakeGraphSparse( tree, "EfficiencyLowPt:run:eEfficiencyLowPt","EfficiencyLowPt>-900" );
-      SetGraphProperties(grEfficiencyLowPt,"TPCITS matching Efficiency (p_{T} < 1 GeV)","Efficiency",1,20,.6);
-      grEfficiencyLowPt->GetYaxis()->SetRangeUser(0.,1.1);
-    TGraphErrors *grEfficiencyHighPt  = TStatToolkit::MakeGraphSparse( tree, "EfficiencyHighPt:run:eEfficiencyHighPt","EfficiencyHighPt>-900" );
-      SetGraphProperties(grEfficiencyHighPt,"TPCITS matching Efficiency (p_{T} > 4 GeV)","Efficiency",1,20,.6);
-      grEfficiencyHighPt->GetYaxis()->SetRangeUser(0.,1.1);
+  TGraphErrors *grEfficiencyLowPt   = TStatToolkit::MakeGraphSparse( tree, "EfficiencyLowPt:run:eEfficiencyLowPt","EfficiencyLowPt>-900" );
+  SetGraphProperties(grEfficiencyLowPt,"TPCITS matching Efficiency (p_{T} < 1 GeV)","Efficiency",1,20,.6);
+  grEfficiencyLowPt->GetYaxis()->SetRangeUser(0.,1.1);
+  TGraphErrors *grEfficiencyHighPt  = TStatToolkit::MakeGraphSparse( tree, "EfficiencyHighPt:run:eEfficiencyHighPt","EfficiencyHighPt>-900" );
+  SetGraphProperties(grEfficiencyHighPt,"TPCITS matching Efficiency (p_{T} > 4 GeV)","Efficiency",1,20,.6);
+  grEfficiencyHighPt->GetYaxis()->SetRangeUser(0.,1.1);
 
 
- 
+
   if(grK0shiftResPosHigh1pt     ) DrawAndSave( grK0shiftResPosHigh1pt,     "K0shiftResPosHigh1pt"    );
   if(grK0shiftResNegHigh1pt     ) DrawAndSave( grK0shiftResNegHigh1pt,     "K0shiftResNegHigh1pt"    );
   if(grK0shiftResPosLow1pt      ) DrawAndSave( grK0shiftResPosLow1pt,      "K0shiftResPosLow1pt"     );
@@ -218,13 +216,14 @@ void DrawAndSave( TGraphErrors *gr, const char *name ){
 
   TCanvas *can = new TCanvas("can","testing",1200,800);
   can->cd();
-  
+
   gr->Draw("ap");
- 
-  gSystem->Exec("if [ ! -d ./TrendingPlots ] ; then mkdir -p TrendingPlots ; fi");
- 
-  can->SaveAs( Form("./TrendingPlots/%s.png", name) );
-  
+
+  //gSystem->Exec("if [ ! -d ./TrendingPlots ] ; then mkdir -p TrendingPlots ; fi");
+
+  //can->SaveAs( Form("./TrendingPlots/%s.png", name) );
+  can->SaveAs( Form("%s.png", name) );
+
   delete can;
 
 }

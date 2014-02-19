@@ -1,10 +1,9 @@
-makePlots( const char *ch, const char *codeDir ){
+makePlots(const char *inputFile)
+{
+  gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+  //gROOT->LoadMacro("$ALICE_ROOT/PWGPP/QA/Tracking/ExpertQA/AliHighPtTreeAnalysis.cxx++");
+  gROOT->LoadMacro("AliHighPtTreeAnalysis.cxx++");
 
-//  gSystem->Load("/hera/alice/tbroeker/testground/trackDump/highPt/AliHighPtTreeAnalysis_C.so");
-  gSystem->Load(Form("%s/AliHighPtTreeAnalysis_C.so",codeDir));
-
-  AliHighPtTreeAnalysis *a = new AliHighPtTreeAnalysis( ch );
-
-     a->Loop();
-
+  AliHighPtTreeAnalysis *a = new AliHighPtTreeAnalysis( inputFile );
+  a->Loop();
 }
