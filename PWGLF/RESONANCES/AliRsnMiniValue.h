@@ -38,6 +38,9 @@ public:
       kSecondDaughterPt, //pt of the second daughter of the pair
       kFirstDaughterP,   //p of the first daughter of the pair
       kSecondDaughterP,  //p of the second daughter of the pair
+      kDCAproduct,    // product of the daughter's dca to PV (same in AliRsnValuePair)
+      kFirstDaughterDCA,  //DCA to PV of the first daughter of the pair
+      kSecondDaughterDCA, //DCA to PV of the second daughter of the pair
       kTypes          // -- general limit ----------------------------------------------------------
    };
 
