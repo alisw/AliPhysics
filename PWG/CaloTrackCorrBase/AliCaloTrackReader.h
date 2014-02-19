@@ -297,7 +297,10 @@ public:
   Float_t          GetEventTriggerL0Threshold()      const { return fTriggerL0EventThreshold ; }
   void             SetEventTriggerL0Threshold(Float_t tr)  { fTriggerL0EventThreshold   = tr ; }
   Float_t          GetEventTriggerL1Threshold()      const { return fTriggerL1EventThreshold ; }
+  void             SetEventTriggerL1Threshold(Float_t tr)  { fTriggerL1EventThreshold   = tr ; fTriggerL1EventThresholdFix = kTRUE; }
 
+  void             SetEventTriggerL1Bit(Int_t ega, Int_t eje) { fBitEGA   = ega ; fBitEJE = eje; }
+  
   void             SetTriggerPatchTimeWindow(Int_t min, Int_t max) { fTriggerPatchTimeWindow[0] = min ;
                                                                      fTriggerPatchTimeWindow[1] = max ; }
   
@@ -729,8 +732,11 @@ public:
   Bool_t           fRemoveBadTriggerEvents;      // Remove triggered events because trigger was exotic, bad, or out of BC
   Bool_t           fTriggerPatchClusterMatch;    // Search for the trigger patch and check if associated cluster was the trigger
   Int_t            fTriggerPatchTimeWindow[2];   // Trigger patch selection window
+  
   Float_t          fTriggerL0EventThreshold;     // L0 Threshold to look for triggered events, set outside
   Float_t          fTriggerL1EventThreshold;     // L1 Threshold to look for triggered events, set in data
+  Bool_t           fTriggerL1EventThresholdFix;  // L1 Threshold is fix and set outside
+  
   Int_t            fTriggerClusterBC;            // Event triggered by a cluster in BC -5 0 to 5
   Int_t            fTriggerClusterIndex;         // Index in clusters array of trigger cluster
   Int_t            fTriggerClusterId;            // Id of trigger cluster (cluster->GetID())
