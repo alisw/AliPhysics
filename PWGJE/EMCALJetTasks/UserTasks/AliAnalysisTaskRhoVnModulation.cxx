@@ -1342,7 +1342,7 @@ Bool_t AliAnalysisTaskRhoVnModulation::PassesCuts(AliVEvent* event)
     if(fTracks->GetEntries() < 1) return kFALSE;
     if(fRunNumber != InputEvent()->GetRunNumber()) {
         fRunNumber = InputEvent()->GetRunNumber();        // set the current run number
-        if(fDebug > 0 ) printf(Form("> NEW RUNNNUMBER DETECTED: %i <\n", fRunNumber));
+        if(fDebug > 0 ) printf("> NEW RUNNNUMBER DETECTED: %i <\n", fRunNumber);
         // determine the run number to see if the track and jet cuts should be refreshed for semi-good TPC runs
         Int_t semiGoodTPCruns[] = {169975, 169981, 170038, 170040, 170083, 170084, 170085, 170088, 170089, 170091, 170152, 170155, 170159, 170163, 170193, 170195, 170203, 170204, 170205, 170228, 170230, 170264, 170268, 170269, 170270, 170306, 170308, 170309};
         for(Int_t i(0); i < (int)(sizeof(semiGoodTPCruns)/sizeof(semiGoodTPCruns[0])); i++) {

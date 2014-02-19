@@ -11,6 +11,7 @@ class TArrayI;
 class TString;
 class TObjString;
 class TObjArray;
+class AliAnalysisUtils;
 
 class AliMuonEventCuts : public AliAnalysisCuts
 {
@@ -20,7 +21,8 @@ class AliMuonEventCuts : public AliAnalysisCuts
     kPhysicsSelected = BIT(0),
     kSelectedCentrality = BIT(1),
     kSelectedTrig = BIT(2),
-    kGoodVertex = BIT(3)
+    kGoodVertex = BIT(3),
+    kNoPileup = BIT(4)
   };
   
   AliMuonEventCuts();
@@ -36,6 +38,9 @@ class AliMuonEventCuts : public AliAnalysisCuts
   
   void SetDefaultFilterMask();
   void SetDefaultParameters();
+  
+  /// Skip tests which are not active in the filter mask
+  void SkipTestsNonInFilterMask ( UInt_t skipMask = 0xFFFF) { fCheckMask = ~skipMask; }
   
   // Handle trigger
   void SetTrigClassPatterns ( const TString trigPattern );
@@ -76,6 +81,9 @@ class AliMuonEventCuts : public AliAnalysisCuts
   Double_t GetVertexVzMin () const { return fVertexVzMin; }
   /// Get Vtx vz max
   Double_t GetVertexVzMax () const { return fVertexVzMax; }
+  
+  /// Return pointer to analysis utils (to configure cuts)
+  AliAnalysisUtils* GetAnalysisUtils ( ) { return fAnalysisUtils; }
 
   void Print ( Option_t* option = "" ) const;
 
@@ -95,6 +103,8 @@ class AliMuonEventCuts : public AliAnalysisCuts
   Double_t fVertexVzMin;          ///< SPD vertex Vz min
   Double_t fVertexVzMax;          ///< SPD vertex Vz max
   
+  UInt_t fCheckMask;              ///< Mask telling which cuts to check (by default check filter mask)
+  
   TString fDefaultTrigClassPatterns; ///< Default trigger class patterns
   TObjArray* fSelectedTrigPattern; ///< List of triggers to be kept
   TObjArray* fRejectedTrigPattern; ///< List of triggers to be rejected
@@ -103,13 +113,14 @@ class AliMuonEventCuts : public AliAnalysisCuts
   TList* fTrigInputsMap;       ///< Trigger inputs map
   TList* fAllSelectedTrigClasses;  ///< List of all selected trigger classes found
   TAxis* fCentralityClasses;   ///< Centrality classes
+  AliAnalysisUtils* fAnalysisUtils;    ///< Analysis utility
   
   private:
   ULong64_t fEventTriggerMask; //!< Fired trigger mask in the event
   TObjArray* fSelectedTrigClassesInEvent; //!< list of selected trigger classes in current event
   enum {kComboSimple, kComboFormula, kComboAND, kComboOR}; //!< Trigger combination types
   
-  ClassDef(AliMuonEventCuts, 4); // Class for muon event filters
+  ClassDef(AliMuonEventCuts, 5); // Class for muon event filters
 };
 
 #endif

@@ -89,7 +89,7 @@ class AliFlowEventSimple: public TObject {
   void TagSubeventsInEta(Double_t etaMinA, Double_t etaMaxA, Double_t etaMinB, Double_t etaMaxB );
   void TagSubeventsByCharge();
   void TagRP(const AliFlowTrackSimpleCuts* cuts );
-  void TagPOI(const AliFlowTrackSimpleCuts* cuts, Int_t poiType=0);
+  void TagPOI(const AliFlowTrackSimpleCuts* cuts, Int_t poiType=1);
   void CloneTracks(Int_t n);
   void AddV1( Double_t v1 );
   void AddV2( Double_t v2 );

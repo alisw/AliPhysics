@@ -1479,14 +1479,18 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       trigCount2->Count(Form("triggerType:HighMult/Run:%d",runNumber));
     }
     if(evSelMask & AliVEvent::kSPI7){
-      hTrigC->Fill(20.,centrality);
-      hTrigM->Fill(20.,multiplicity);
-      trigCount2->Count(Form("triggerType:SPI7/Run:%d",runNumber));
+      if(trigClass.Contains("CSPI7")) {
+	hTrigC->Fill(20.,centrality);
+	hTrigM->Fill(20.,multiplicity);
+	trigCount2->Count(Form("triggerType:SPI7/Run:%d",runNumber));
+      }
     }
     if(evSelMask & AliVEvent::kSPI){
-      hTrigC->Fill(21.,centrality);
-      hTrigM->Fill(21.,multiplicity);
-      if(trigClass.Contains("CSPI8")) trigCount2->Count(Form("triggerType:SPI8/Run:%d",runNumber));
+      if(trigClass.Contains("CSPI8")) {
+	hTrigC->Fill(21.,centrality);
+	hTrigM->Fill(21.,multiplicity);
+        trigCount2->Count(Form("triggerType:SPI8/Run:%d",runNumber));
+      }
     }
     if(evSelMask & (AliVEvent::kDG5 | AliVEvent::kZED)){
       hTrigC->Fill(22.,centrality);
@@ -1637,12 +1641,16 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       hTrigS->Fill(19.,centrality);
       hTrigSM->Fill(19.,multiplicity);}
     if(evSelMask & AliVEvent::kSPI7){
-      hTrigS->Fill(20.,centrality);
-      hTrigSM->Fill(20.,multiplicity);
+      if(trigClass.Contains("CSPI7")) {
+	hTrigS->Fill(20.,centrality);
+	hTrigSM->Fill(20.,multiplicity);
+      }
     }
     if(evSelMask & AliVEvent::kSPI){
-      hTrigS->Fill(21.,centrality);
-      hTrigSM->Fill(21.,multiplicity);
+      if(trigClass.Contains("CSPI8")) {
+	hTrigS->Fill(21.,centrality);
+	hTrigSM->Fill(21.,multiplicity);
+      }
     }
     if(evSelMask & (AliVEvent::kDG5 | AliVEvent::kZED)){
       hTrigS->Fill(22.,centrality);

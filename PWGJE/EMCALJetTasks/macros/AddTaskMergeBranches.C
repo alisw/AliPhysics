@@ -1,6 +1,6 @@
 // $Id$
 
-AliJetModelMergeBranches* AddTaskMergeBrances(
+AliJetModelMergeBranches* AddTaskMergeBranches(
   const char     *tracksName1   = "Tracks",
   const char     *tracksName2   = "Tracks2",
   const char     *suffix        = "Emb",

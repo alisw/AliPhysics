@@ -37,8 +37,15 @@ ClassImp(AliAnalysisTaskEmcalJetSpectra)
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetSpectra::AliAnalysisTaskEmcalJetSpectra() : 
   AliAnalysisTaskEmcalJet("spectra",kFALSE), 
+  fLocalRhoVal(0),
   fHistRhovsCent(0),
-  fHistNjetvsCent(0)
+  fHistNjetvsCent(0),
+  fHistGLvsLOCrho(0),
+  fHistRhovsdEPLOC(0), fHistRhovsdEPGL(0),
+  fHistJetPtvsdEPLOC(0), fHistJetPtvsdEPGL(0),
+  fHistRhovsEPLOC(0), fHistRhovsEPGL(0),
+  fHistJetPtvsEPLOC(0), fHistJetPtvsEPGL(0),
+  fHistCorJetPt(0), fHistCorJetPtGL(0)
 {
   // Default constructor.
   for (Int_t i = 0;i<6;++i){
@@ -56,8 +63,22 @@ AliAnalysisTaskEmcalJetSpectra::AliAnalysisTaskEmcalJetSpectra() :
     fHistRhovsEP[i]             = 0;
     fHistCorJetPtfromLocalRho[i]= 0;
     fHistCorJetPtfromGlobalRho[i] = 0;
+
+    fHistCorJetPtfromLocalRhoIN[i]  = 0;
+    fHistCorJetPtfromLocalRhoOUT[i] = 0;
+    fHistCorJetPtfromGlobalRhoIN[i] = 0;
+    fHistCorJetPtfromGlobalRhoOUT[i]= 0;
+    fHistRhodEPcentLOC[i]       = 0;
+    fHistRhodEPcentGL[i]        = 0;
+    fHistCorJetPtdEPcentLOC[i]  = 0;
+    fHistCorJetPtdEPcentGL[i]   = 0;
+    fHistRhoEPcentLOC[i]        = 0;
+    fHistRhoEPcentGL[i]         = 0;
+    fHistCorJetPtEPcentLOC[i]   = 0;
+    fHistCorJetPtEPcentGL[i]    = 0;
+
   }
-  fLocalRhoVal = 0;
+
   SetMakeGeneralHistograms(kTRUE);
     
 }
@@ -65,8 +86,15 @@ AliAnalysisTaskEmcalJetSpectra::AliAnalysisTaskEmcalJetSpectra() :
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetSpectra::AliAnalysisTaskEmcalJetSpectra(const char *name) :
   AliAnalysisTaskEmcalJet(name,kTRUE),
+  fLocalRhoVal(0),
   fHistRhovsCent(0),
-  fHistNjetvsCent(0)
+  fHistNjetvsCent(0),
+  fHistGLvsLOCrho(0),
+  fHistRhovsdEPLOC(0), fHistRhovsdEPGL(0),
+  fHistJetPtvsdEPLOC(0), fHistJetPtvsdEPGL(0),
+  fHistRhovsEPLOC(0), fHistRhovsEPGL(0),
+  fHistJetPtvsEPLOC(0), fHistJetPtvsEPGL(0),
+  fHistCorJetPt(0), fHistCorJetPtGL(0)
  { 
    for (Int_t i = 0;i<6;++i){
     fHistJetPtvsTrackPt[i]      = 0;
@@ -83,20 +111,49 @@ AliAnalysisTaskEmcalJetSpectra::AliAnalysisTaskEmcalJetSpectra(const char *name)
     fHistRhovsEP[i]             = 0;
     fHistCorJetPtfromLocalRho[i]= 0;
     fHistCorJetPtfromGlobalRho[i] = 0;
+
+    fHistCorJetPtfromLocalRhoIN[i]  = 0;
+    fHistCorJetPtfromLocalRhoOUT[i] = 0;
+    fHistCorJetPtfromGlobalRhoIN[i] = 0;
+    fHistCorJetPtfromGlobalRhoOUT[i]= 0;
+    fHistRhodEPcentLOC[i]       = 0;
+    fHistRhodEPcentGL[i]        = 0;
+    fHistCorJetPtdEPcentLOC[i]  = 0;
+    fHistCorJetPtdEPcentGL[i]   = 0;
+    fHistRhoEPcentLOC[i]        = 0;
+    fHistRhoEPcentGL[i]         = 0;
+    fHistCorJetPtEPcentLOC[i]   = 0;
+    fHistCorJetPtEPcentGL[i]    = 0;
+
    }
-   fLocalRhoVal = 0;
+  
    SetMakeGeneralHistograms(kTRUE);
  }
 
 //________________________________________________________________________
 void AliAnalysisTaskEmcalJetSpectra::UserCreateOutputObjects()
 {
-  if (! fCreateHisto)
-    return;
+
+  if (! fCreateHisto) return;
+
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   fHistRhovsCent             = new TH2F("RhovsCent",              "RhovsCent",             100, 0.0, 100.0, 500, 0, 500);
   fHistNjetvsCent            = new TH2F("NjetvsCent",             "NjetvsCent",            100, 0.0, 100.0, 100, 0, 100);
+
+  fHistGLvsLOCrho            = new TH2F("GLvsLOCrho", "GLvsLOCrho", 400, 0.0, 400.0, 400, 0.0, 400.0);
+
+  fHistRhovsdEPLOC           = new TH2F("RhovsdEPLOC", "RhovsdEPLOC",400,0,400, 144,-1*TMath::Pi(),1*TMath::Pi());
+  fHistRhovsdEPGL            = new TH2F("RhovsdEPGL", "RhovsdEPGL",400,0,400, 144,-1*TMath::Pi(),1*TMath::Pi());
+  fHistJetPtvsdEPLOC         = new TH2F("JetPtvsdEPLOC", "JetPtvsdEPLOC", 500, -250, 250, 144,-1*TMath::Pi(),1*TMath::Pi());
+  fHistJetPtvsdEPGL          = new TH2F("JetPtvsdEPGL", "JetPtvsdEPGL", 500, -250, 250, 144,-1*TMath::Pi(),1*TMath::Pi()); 
+  fHistRhovsEPLOC            = new TH2F("RhovsEPLOC", "RhovsEPLOC",400,0,400, 144,-1*TMath::Pi(),1*TMath::Pi());
+  fHistRhovsEPGL             = new TH2F("RhovsEPGL", "RhovsEPGL",400,0,400, 144,-1*TMath::Pi(),1*TMath::Pi());
+  fHistJetPtvsEPLOC          = new TH2F("JetPtvsEPLOC", "JetPtvsEPLOC", 500, -250, 250, 144,-1*TMath::Pi(),1*TMath::Pi());
+  fHistJetPtvsEPGL           = new TH2F("JetPtvsEPGL", "JetPtvsEPGL", 500, -250, 250, 144,-1*TMath::Pi(),1*TMath::Pi());
+
+  fHistCorJetPtGL            = new TH1F("NjetvsCorrJetPtGL", "NjetvsCorrJetPtGL", 500, -250, 250);
+  fHistCorJetPt              = new TH1F("NjetvsCorrJetPt", "NjetvsCorrJetPt", 500, -250, 250);
 
   TString name;
   TString title;
@@ -160,12 +217,90 @@ void AliAnalysisTaskEmcalJetSpectra::UserCreateOutputObjects()
       title = TString(Form("Njets vs Corrected jet pT from Global Rho cent bin %i",i));
       fHistCorJetPtfromGlobalRho[i] = new TH1F(name,title, 500, -250,250);
       fOutput->Add(fHistCorJetPtfromGlobalRho[i]);
+
+      name = TString(Form("NjetvsCorrJetPtfromGlobalRhoIN_%i",i));
+      title = TString(Form("Njets vs Corrected jet pT from Global Rho IN PLANE cent bin %i",i));
+      fHistCorJetPtfromGlobalRhoIN[i] = new TH1F(name,title, 500, -250,250);
+      fOutput->Add(fHistCorJetPtfromGlobalRhoIN[i]);
+
+      name = TString(Form("NjetvsCorrJetPtfromGlobalRhoOUT_%i",i));
+      title = TString(Form("Njets vs Corrected jet pT from Global Rho OUT PLANE cent bin %i",i));
+      fHistCorJetPtfromGlobalRhoOUT[i] = new TH1F(name,title, 500, -250, 250);
+      fOutput->Add(fHistCorJetPtfromGlobalRhoOUT[i]);
+
+      name = TString(Form("RhovsdEPcentGLOBAL_%i",i));
+      title = TString(Form("Rho vs delta Event Plane angle for Global Rho cent bin %i",i));
+      fHistRhodEPcentGL[i] = new TH2F(name,title,400,0,400, 144,-1*TMath::Pi(),1*TMath::Pi());
+      fOutput->Add(fHistRhodEPcentGL[i]);
+
+      name = TString(Form("JePtvsdEPcentGLOBAL_%i",i));
+      title = TString(Form("Jet Pt vs delta Event Plane angle for Global Rho cent bin %i",i));
+      fHistCorJetPtdEPcentGL[i] = new TH2F(name,title, 500, -250, 250, 144,-1*TMath::Pi(),1*TMath::Pi());
+      fOutput->Add(fHistCorJetPtdEPcentGL[i]);
+
+    name = TString(Form("NjetvsCorrJetPtfromLocalRhoIN_%i",i));
+    title = TString(Form("Njets vs Corrected jet pT from Local Rho IN PLANE cent bin %i",i));
+    fHistCorJetPtfromLocalRhoIN[i] = new TH1F(name,title, 500, -250, 250);
+    fOutput->Add(fHistCorJetPtfromLocalRhoIN[i]);
+
+    name = TString(Form("NjetvsCorrJetPtfromLocalRhoOUT_%i",i));
+    title = TString(Form("Njets vs Corrected jet pT from Local Rho OUT PLANE cent bin %i",i));
+    fHistCorJetPtfromLocalRhoOUT[i] = new TH1F(name,title, 500, -250, 250);
+    fOutput->Add(fHistCorJetPtfromLocalRhoOUT[i]);
+
+    name = TString(Form("RhovsdEPcentLOCAL_%i",i));
+    title = TString(Form("Rho vs delta Event Plane angle for Local Rho cent bin %i",i));
+    fHistRhodEPcentLOC[i] = new TH2F(name,title,400,0,400, 144,-1*TMath::Pi(),1*TMath::Pi());
+    fOutput->Add(fHistRhodEPcentLOC[i]);
+
+    name = TString(Form("JetPtvsdEPcentLOCAL_%i",i));
+    title = TString(Form("Jet Pt vs delta Event Plane angle for Local Rho cent bin %i",i));
+    fHistCorJetPtdEPcentLOC[i] = new TH2F(name,title, 500, -250, 250, 144,-1*TMath::Pi(),1*TMath::Pi());
+    fOutput->Add(fHistCorJetPtdEPcentLOC[i]);
+
+
+      name = TString(Form("RhovsEPcentGLOBAL_%i",i));
+      title = TString(Form("Rho vs Event Plane angle for Global Rho cent bin %i",i));
+      fHistRhoEPcentGL[i] = new TH2F(name,title,400,0,400, 144,-1*TMath::Pi(),1*TMath::Pi());
+      fOutput->Add(fHistRhoEPcentGL[i]);
+
+    name = TString(Form("RhovsEPcentLOCAL_%i",i));
+    title = TString(Form("Rho vs Event Plane angle for Local Rho cent bin %i",i));
+    fHistRhoEPcentLOC[i] = new TH2F(name,title,400,0,400, 144,-1*TMath::Pi(),1*TMath::Pi());
+    fOutput->Add(fHistRhoEPcentLOC[i]);
+
+    name = TString(Form("JetPtvsEPcentLOCAL_%i",i));
+    title = TString(Form("Jet Pt vs Event Plane angle for Local Rho cent bin %i",i));
+    fHistCorJetPtEPcentLOC[i] = new TH2F(name,title, 500, -250, 250, 144,-1*TMath::Pi(),1*TMath::Pi());
+    fOutput->Add(fHistCorJetPtEPcentLOC[i]);
+
+
+      name = TString(Form("JetPtvsEPcentGLOBAL_%i",i));
+      title = TString(Form("Jet Pt vs Event Plane angle for Global Rho cent bin %i",i));
+      fHistCorJetPtEPcentGL[i] = new TH2F(name,title, 500, -250, 250, 144,-1*TMath::Pi(),1*TMath::Pi());
+      fOutput->Add(fHistCorJetPtEPcentGL[i]);
+
   }
 
   
   fOutput->Add(fHistRhovsCent);
   fOutput->Add(fHistNjetvsCent);
-  
+
+  fOutput->Add(fHistGLvsLOCrho);
+
+  fOutput->Add(fHistRhovsdEPLOC);
+  fOutput->Add(fHistRhovsdEPGL);
+  fOutput->Add(fHistJetPtvsdEPLOC);
+  fOutput->Add(fHistJetPtvsdEPGL);
+
+  fOutput->Add(fHistRhovsEPLOC);
+  fOutput->Add(fHistJetPtvsEPLOC);
+
+  fOutput->Add(fHistCorJetPtGL);
+  fOutput->Add(fHistCorJetPt);
+  fOutput->Add(fHistRhovsEPGL);
+  fOutput->Add(fHistJetPtvsEPGL);
+
    PostData(1, fOutput);
 }
 
@@ -227,8 +362,7 @@ Bool_t AliAnalysisTaskEmcalJetSpectra::Run()
   }
     
     if(!fLocalRho) {
-        cout<<"name: "<<fLocalRhoName.Data()<<endl;
-        cout<<"found no LocalRho, try to get it from Event based on name"<<endl;
+        AliWarning(Form("%s: No LocalRho object found, attempting to get it from Event based on name!",GetName()));
         fLocalRho = GetLocalRhoFromEvent(fLocalRhoName);
     }
 
@@ -264,20 +398,89 @@ Bool_t AliAnalysisTaskEmcalJetSpectra::Run()
      fHistRawJetPtvsTrackPt[centbin]->Fill(jet->Pt(),jet->MaxTrackPt());
      fHistJetPtvsdEP[centbin]->Fill(jetPt,RelativePhi((fEPV0+TMath::Pi()),jet->Phi()));
      fHistJetPtvsEP[centbin]->Fill(jetPt,fEPV0);
-    fLocalRhoVal = fLocalRho->GetLocalVal(jet->Phi(), 0.2);
-      Double_t jetPtLocal = jet->Pt() - jet->Area()*fLocalRhoVal;
-       fHistCorJetPtfromLocalRho[centbin]->Fill(jetPtLocal);
-        fHistCorJetPtfromGlobalRho[centbin]->Fill(jetPt);
+
+     // get local rho value
+     fLocalRhoVal = fLocalRho->GetLocalVal(jet->Phi(), 0.2);
+     Double_t jetPtLocal = jet->Pt() - jet->Area()*fLocalRhoVal;
+
+     // calculate relative angle between jet and event plane       
+     Float_t dEP = -500;              // initialize angle between jet and event plane
+     dEP = RelativeEPJET(jet->Phi(),fEPV0);
+
+     fHistCorJetPtfromLocalRho[centbin]->Fill(jetPtLocal);
+     fHistCorJetPtfromGlobalRho[centbin]->Fill(jetPt);
+
+     fHistRhodEPcentLOC[centbin]->Fill(fLocalRhoVal,dEP);
+ 
+     fHistRhovsdEPLOC->Fill(fLocalRhoVal,dEP);
+     fHistJetPtvsdEPLOC->Fill(jetPtLocal,dEP);
+
+     fHistRhoEPcentGL[centbin]->Fill(fRhoVal,fEPV0);
+     fHistRhoEPcentLOC[centbin]->Fill(fLocalRhoVal,fEPV0);
+
+     fHistCorJetPtEPcentGL[centbin]->Fill(jetPt,fEPV0);
+     fHistCorJetPtEPcentLOC[centbin]->Fill(jetPt,fEPV0);
+
+     fHistRhovsEPGL->Fill(fRhoVal,fEPV0);
+     fHistRhovsEPLOC->Fill(fLocalRhoVal,fEPV0);
+     fHistJetPtvsEPGL->Fill(jetPt,fEPV0);
+     fHistJetPtvsEPLOC->Fill(jetPtLocal,fEPV0);
+
+     fHistCorJetPt->Fill(jetPtLocal);
+     fHistCorJetPtGL->Fill(jetPt);
+
+     fHistGLvsLOCrho->Fill(fRhoVal,fLocalRhoVal);
+
+     // apply max track bias
      if (jet->MaxTrackPt()>5.0){
        fHistJetPtvsdEPBias[centbin]->Fill(jetPt,RelativePhi((fEPV0+TMath::Pi()),jet->Phi()));
        fHistJetPtvsEPBias[centbin]->Fill(jetPt,fEPV0);
      }
-  }
   
+     // in plane and out of plane histo's
+     if( dEP>0 && dEP<=(TMath::Pi()/6) ){
+        // we are IN plane, lets fill some histo's
+        fHistCorJetPtfromLocalRhoIN[centbin]->Fill(jetPtLocal);
+        fHistCorJetPtfromGlobalRhoIN[centbin]->Fill(jetPt);
+     }else if( dEP>(TMath::Pi()/3) && dEP<=(TMath::Pi()/2) ){
+        // we are OUT of PLANE, lets fill some histo's
+        fHistCorJetPtfromLocalRhoOUT[centbin]->Fill(jetPtLocal);
+        fHistCorJetPtfromGlobalRhoOUT[centbin]->Fill(jetPt);
+     }
+
+  }
+
   fHistNjetvsCent->Fill(fCent,NjetAcc);
   return kTRUE;
 }      
 
+
+//_________________________________________________________________________
+Float_t AliAnalysisTaskEmcalJetSpectra:: RelativeEPJET(Double_t jetAng, Double_t EPAng) const
+{ // function to calculate angle between jet and EP in the 1st quadrant (0,Pi/2)
+  Double_t dphi = (EPAng - jetAng);
+    
+  // ran into trouble with a few dEP<-Pi so trying this...
+  if( dphi<-1*TMath::Pi() ){
+    dphi = dphi + 1*TMath::Pi();
+  }
+
+  if( (dphi>0) && (dphi<1*TMath::Pi()/2) ){
+    // Do nothing! we are in quadrant 1
+  }else if( (dphi>1*TMath::Pi()/2) && (dphi<1*TMath::Pi()) ){
+    dphi = 1*TMath::Pi() - dphi;
+  }else if( (dphi<0) && (dphi>-1*TMath::Pi()/2) ){
+    dphi = fabs(dphi);
+  }else if( (dphi<-1*TMath::Pi()/2) && (dphi>-1*TMath::Pi()) ){
+    dphi = dphi + 1*TMath::Pi();
+  }
+
+  // test
+  if( dphi < 0 || dphi > TMath::Pi()/2 )
+    AliWarning(Form("%s: dPHI is outside of restricted range: [0,Pi/2]",GetName()));
+
+  return dphi;   // dphi in [0, Pi/2]
+}
 
 
 

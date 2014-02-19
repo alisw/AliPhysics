@@ -787,13 +787,13 @@ Bool_t AliAnalysisTaskFlowStrange::MinimumRequirementsAA(AliAODEvent *tAOD) {
   if(fExtraEventRejection) {
     // specific cuts for 2010h (AOD086)
     if(fRunNumber>=136851&&fRunNumber<=139517) {
-      if(fVZETotM/fSPDtracklets<4.0) return kFALSE;
-      if(fVZETotM/fSPDtracklets>9.0) return kFALSE;
+      if(fRefMultTPC>1.118*fRefMultHyb+100) return kFALSE;
+      if(fRefMultTPC<1.118*fRefMultHyb-100) return kFALSE;
     }
     // specific cuts for 2011h (AOD145)
     if(fRunNumber>=166529&&fRunNumber<=170593) {
-      if(fVZETotM/fSPDtracklets<4.0) return kFALSE;
-      if(fVZETotM/fSPDtracklets>9.0) return kFALSE;
+      if(fRefMultTPC>1.205*fRefMultHyb+100) return kFALSE;
+      if(fRefMultTPC<1.205*fRefMultHyb-100) return kFALSE;
     }
   }
   return kTRUE;

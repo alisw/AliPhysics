@@ -21,7 +21,7 @@ const Int_t nDie=arrNames->GetEntriesFast();
        Bool_t kRot = 0;
        Bool_t kEff = 0;
 
-AliDielectron* Config_mkoehler_lowmassMC(Int_t cutDefinition=1)
+AliDielectron* Config_mkoehler_lowmassMC(Int_t cutDefinition=1, Bool_t isAOD = kFALSE)
 {
   //
   // Setup the instance of AliDielectron

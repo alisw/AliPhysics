@@ -519,10 +519,9 @@ void AliAODNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
     }
   }
   
-  Double_t xPrimaryVertex=0.,yPrimaryVertex=0.,zPrimaryVertex=0.;
+  Double_t xPrimaryVertex=0.,yPrimaryVertex=0.;
   xPrimaryVertex=vtx->GetX();
   yPrimaryVertex=vtx->GetY();
-  zPrimaryVertex=vtx->GetZ();  
   
   fBzkG=source.GetMagneticField();
   fVertexerTracks=new AliVertexerTracks(fBzkG);
@@ -750,7 +749,7 @@ void AliAODNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
   if(fV1) { delete fV1; fV1=NULL; }
   //cout<<"Delete 5"<<  endl;
   if(fAODMap) { delete [] fAODMap; fAODMap=NULL; }
-  delete indices;
+  delete []indices;
   //cout<<"Delete 6"<<  endl;
   delete fVertexerTracks;
 
@@ -877,6 +876,12 @@ AliAODRecoDecayLF2Prong* AliAODNuclExReplicator::Make2Prong(TObjArray *twoTrackA
   if(!primVertexAOD) return 0x0;
       
   Double_t d0z0[2],covd0z0[3];
+
+  d0z0[0] = -999.;
+  d0z0[1] = -999.;
+  covd0z0[0] = -999.;
+  covd0z0[1] = -999.;
+  covd0z0[2] = -999.;
 
   d0[0] = d0z0[0];
   d0err[0] = TMath::Sqrt(TMath::Abs(covd0z0[0]));

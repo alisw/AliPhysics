@@ -44,6 +44,7 @@ const Double_t kZero = 1.e-7; // Avoid problems when comparing to 0.
 //_____________________________________________________________________________
 void SetMyStyle()
 {
+  /// Set graphic style
   gStyle->SetCanvasColor(10);
   gStyle->SetFrameFillColor(10);
   gStyle->SetStatColor(10);
@@ -70,6 +71,7 @@ void SetMyStyle()
 //_____________________________________________________________________________
 void SetRunAxisRange ( TAxis* axis )
 {
+  /// Set axis range
   for ( Int_t ibin=1; ibin<=axis->GetNbins(); ibin++ ) {
     TString binLabel = axis->GetBinLabel(ibin);
     if ( ! binLabel.IsNull()) continue;
@@ -81,13 +83,14 @@ void SetRunAxisRange ( TAxis* axis )
 //_____________________________________________________________________________
 Int_t GetRunNumber(TString filePath)
 {
+  /// Get run number from file path
   TObjArray* array = filePath.Tokenize("/");
   array->SetOwner();
   TString auxString = "";
   Int_t runNum = -1;
   for ( Int_t ientry=0; ientry<array->GetEntries(); ientry++ ) {
     auxString = array->At(ientry)->GetName();
-    if ( auxString.BeginsWith("000") ) {
+    if ( auxString.IsDigit() && auxString.Length()>=6 && auxString.Length()<=9 ) {
       runNum = auxString.Atoi();
       break;
     }
@@ -107,8 +110,34 @@ Int_t GetRunNumber(TString filePath)
 }
 
 //_____________________________________________________________________________
+Bool_t ChangeFilenames ( TObjArray &fileNameArray )
+{
+  /// Use custom output
+  /// We used to perform the QA on the MTR chamber efficiency
+  /// but since it is obtained form tracks matching with the tracker
+  /// it is not that good for QA since we are dependent on the tracker status.
+  /// In recent versions, the task also calculates the efficiency from all trigger tracks
+  /// (including ghosts). Analyse this output instead.
+  for ( Int_t ifile=0; ifile<fileNameArray.GetEntries(); ifile++ ) {
+    TObjString* currObjString = static_cast<TObjString*>(fileNameArray.At(ifile));
+    TString currFile = currObjString->GetString();
+    TString dirName = gSystem->DirName(currFile.Data());
+    TString fileName = gSystem->BaseName(currFile.Data());
+    Int_t runNum = GetRunNumber(fileName);
+    TString newFilename = Form("%s/terminateRuns/%i/trigChEff_ANY_Apt_allTrig.root",dirName.Data(),runNum);
+    if ( ! gSystem->AccessPathName(newFilename.Data()) ) {
+      printf("New output not found. Use the standard efficiency instead\n");
+      return kFALSE;
+    }
+    currObjString->SetString(newFilename);
+  }
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
 Double_t* GetProdErr(Double_t* effErr, Int_t exclude, Int_t nFactors = kNch)
 {
+  /// Error of product
   Double_t prod = 1.;
   Double_t relErr = 0., relProdErrSquare = 0.;
   for ( Int_t iprod=0; iprod<nFactors; iprod++ ) {
@@ -129,6 +158,7 @@ Double_t* GetProdErr(Double_t* effErr, Int_t exclude, Int_t nFactors = kNch)
 //_____________________________________________________________________________
 Double_t* GetConditionalEffErr(Double_t* effErr1, Double_t* effErr2, Double_t* effErrBoth, Int_t exclude = -1)
 {
+  /// Error on conditional efficiency
   Double_t* effErr = new Double_t[2*kNch];
   for ( Int_t ich=0; ich<kNch; ich++ ) {
     if ( ich == exclude ) {
@@ -156,6 +186,7 @@ Double_t* GetConditionalEffErr(Double_t* effErr1, Double_t* effErr2, Double_t* e
 //_____________________________________________________________________________
 Double_t* GetBinomial(Double_t* effErr1, Double_t* effErr2 = 0x0, Double_t* effErrBoth = 0x0)
 {
+  /// Binomial error
   Double_t effProd[4];
   Double_t defaultEffErr[2] = {1.,0.};
   Double_t* auxBinomial = 0x0;
@@ -201,6 +232,7 @@ Double_t* GetBinomial(Double_t* effErr1, Double_t* effErr2 = 0x0, Double_t* effE
 //_____________________________________________________________________________
 TH1* GetHisto(TString histoName, TFile* file, TList* histoList)
 {
+  /// Get histogram
   TH1* histo = 0x0;
   if ( histoList )
     histo = (TH1*)histoList->FindObject(histoName.Data());
@@ -213,6 +245,7 @@ TH1* GetHisto(TString histoName, TFile* file, TList* histoList)
 //_____________________________________________________________________________
 Int_t GetEffIndex ( Int_t iel, Int_t icount, Int_t ich = -1 )
 {
+  /// Get efficienct histogram index
   if ( iel == 0 ) return icount;
   return 3 + 4*3*(iel-1) + 3*ich + icount;
 }
@@ -220,6 +253,7 @@ Int_t GetEffIndex ( Int_t iel, Int_t icount, Int_t ich = -1 )
 //_____________________________________________________________________________
 TList* GetOCDBList ( )
 {
+  /// Get list of CDB objetcs
   TString storageType = AliCDBManager::Instance()->GetDefaultStorage()->GetType();
   Bool_t isGrid = storageType.Contains("alien");
   TString baseFolder = AliCDBManager::Instance()->GetDefaultStorage()->GetBaseFolder();
@@ -252,6 +286,7 @@ TList* GetOCDBList ( )
 //_____________________________________________________________________________
 Bool_t IsOCDBChanged ( Int_t currRun, Int_t previousRun, TList* fileList )
 {
+  /// Check if the OCDB object is changed w.r.t. the previous run
   if ( ! fileList ) return kTRUE;
   for ( Int_t ifile=0; ifile<fileList->GetEntries(); ifile++ ) {
     TString filename = static_cast<TObjString*>(fileList->At(ifile))->GetString();
@@ -270,6 +305,7 @@ Bool_t IsOCDBChanged ( Int_t currRun, Int_t previousRun, TList* fileList )
 //_____________________________________________________________________________
 void TrigEffTrending(TObjArray runNumArray, TObjArray fileNameArray, TList& outCanList, TList& outList)
 {
+  /// Get the efficiency vs. run number
   TString elementName[3] = { "Chamber", "RPC", "Board" };
   TString countTypeName[4] = { "allTracks", "bendPlane", "nonBendPlane", "bothPlanes" };
 
@@ -457,7 +493,7 @@ void TrigEffTrending(TObjArray runNumArray, TObjArray fileNameArray, TList& outC
 //_____________________________________________________________________________
 void MaskTrending ( TObjArray runNumArray, TString defaultStorage, TList& outCanList, TList& outList )
 {
- 
+  /// Get the masks vs. run number
   if ( defaultStorage.Contains("alien://") || defaultStorage.Contains("raw://") ) {
     if ( ! gGrid ) TGrid::Connect("alien://");
     if ( ! gGrid ) {
@@ -559,6 +595,7 @@ void MaskTrending ( TObjArray runNumArray, TString defaultStorage, TList& outCan
 //_____________________________________________________________________________
 Bool_t CheckPattern ( TString trigName, TObjArray* keepArray, TObjArray* rejectArray )
 {
+  /// Check pattern
   for ( Int_t ipat=0; ipat<rejectArray->GetEntries(); ++ipat ) {
     if ( trigName.Contains(rejectArray->At(ipat)->GetName() ) ) return kFALSE;
   } // loop on reject pattern
@@ -573,7 +610,7 @@ Bool_t CheckPattern ( TString trigName, TObjArray* keepArray, TObjArray* rejectA
 //_____________________________________________________________________________
 TObjArray* BuildListOfTrigger ( const TObjArray* triggerArray, TString keepPattern = "", TString rejectPattern="OTHER,TRUE,PHI,ANY,EMC,-ACE-,-ABCE-,WU,MUP,SPI,SHM" )
 {
-
+  /// Build list of trigger classes
   TObjArray* selectedList = new TObjArray();
   selectedList->SetOwner();
   TObjArray* rejectArray = rejectPattern.Tokenize(",");
@@ -594,7 +631,7 @@ TObjArray* BuildListOfTrigger ( const TObjArray* triggerArray, TString keepPatte
 //_____________________________________________________________________________
 TString FindCorrespondingTrigger ( TString checkTrigger, TObjArray* triggerArray )
 {
-
+  /// Find trigger from pattern
   TString foundName = "";
   for ( Int_t iTrig = 0; iTrig < triggerArray->GetEntries(); iTrig++ ){
     TString currTrigName = ((TObjString*)triggerArray->At(iTrig))->GetName();
@@ -615,7 +652,7 @@ TString FindCorrespondingTrigger ( TString checkTrigger, TObjArray* triggerArray
 //_____________________________________________________________________________
 void ScalerTrending ( TObjArray runNumArray, TString mergedFileName, TString defaultStorage, TList& outCanList, TList& outList )
 {
-
+  /// Get the scalers vs. run number
   if ( defaultStorage.Contains("alien://") || defaultStorage.Contains("raw://") ) {
     if ( ! gGrid ) TGrid::Connect("alien://");
     if ( ! gGrid ) {
@@ -854,6 +891,7 @@ void ScalerTrending ( TObjArray runNumArray, TString mergedFileName, TString def
 //_____________________________________________________________________________
 void trigEffQA(TString fileListName, TString outFilename = "", TString defaultStorage = "raw://", Bool_t doScalers = kFALSE)
 {
+  /// Main function
   ifstream inFile(fileListName.Data());
   TObjArray fileNameArray, runNumArray;
   fileNameArray.SetOwner();
@@ -877,8 +915,13 @@ void trigEffQA(TString fileListName, TString outFilename = "", TString defaultSt
   
   runNumArray.Sort();
   
+  // Instead of using the efficiency stored in the QA output
+  // search for the new efficiency produced with trigger tracks only
+  TObjArray tmpArray = fileNameArray;
+  TObjArray* finalFileNameArray =  ChangeFilenames(tmpArray) ? &tmpArray : &fileNameArray;
+  
   TList outCanList, outList;
-  TrigEffTrending(runNumArray, fileNameArray, outCanList, outList);
+  TrigEffTrending(runNumArray, *finalFileNameArray, outCanList, outList);
   if ( ! defaultStorage.IsNull() ) MaskTrending(runNumArray, defaultStorage, outCanList, outList);
   if ( ! defaultStorage.IsNull() && doScalers ) ScalerTrending(runNumArray, "QAresults_Merged.root", defaultStorage, outCanList, outList);
   

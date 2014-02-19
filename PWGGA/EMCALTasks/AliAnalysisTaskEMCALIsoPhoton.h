@@ -39,6 +39,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Double_t               GetCrossEnergy(const AliVCluster *cluster, Short_t &idmax);
   Double_t               GetMaxCellEnergy(const AliVCluster *cluster, Short_t &id) const; 
   void                   GetTrIso(TVector3 vec, Float_t &iso, Float_t &phiband, Float_t &core);
+  Double_t               GetTrackMatchedPt(Int_t matchIndex);
   void                   FillClusHists();
   void                   FillMcHists();
   void                   FillQA();

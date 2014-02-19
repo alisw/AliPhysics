@@ -356,12 +356,17 @@ void AliAnalysisTaskUpcPsi2s::RunAODtrig()
   Double_t percentile = centrality->GetCentralityPercentileUnchecked("V0M");
   //Double_t percentile = centrality->GetCentralityPercentile("V0M");
   
-  if(((selectionMask & AliVEvent::kMB) == AliVEvent::kMB) && percentile<80 && percentile>0) fHistMBTriggersPerRun->Fill(fRunNum);
-  
-  if(((selectionMask & AliVEvent::kCentral) == AliVEvent::kCentral) && percentile<6 && percentile>0) fHistCentralTriggersPerRun->Fill(fRunNum);
-
-  if(((selectionMask & AliVEvent::kSemiCentral) == AliVEvent::kSemiCentral) && percentile<50 && percentile>15) fHistSemiCentralTriggersPerRun->Fill(fRunNum);
-
+  if( ((selectionMask & AliVEvent::kMB) == AliVEvent::kMB) || 
+      ((selectionMask & AliVEvent::kSemiCentral) == AliVEvent::kSemiCentral) || 
+      ((selectionMask & AliVEvent::kCentral) == AliVEvent::kCentral) ){
+      
+      if(percentile<80 && percentile>0) fHistMBTriggersPerRun->Fill(fRunNum);
+      if(percentile<6 && percentile>0 && (trigger.Contains("CVHN_R2-B"))) fHistCentralTriggersPerRun->Fill(fRunNum);
+      if(percentile<50 && percentile>15 && (trigger.Contains("CVLN_B2-B"))) fHistSemiCentralTriggersPerRun->Fill(fRunNum);
+      if(percentile<50 && percentile>15 && (trigger.Contains("CVLN_R1-B"))) fHistSemiCentralTriggersPerRun->Fill(fRunNum);
+      
+      }
+    
 PostData(3, fListTrig);
 
 }
@@ -658,6 +663,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
     AliAODTrack *trk = aod->GetTrack(itr);
     if( !trk ) continue;
+    if(!(trk->TestFilterBit(1<<0)))continue;
 
       if(!(trk->GetStatus() & AliAODTrack::kTPCrefit) ) continue;
       if(!(trk->GetStatus() & AliAODTrack::kITSrefit) ) continue;
@@ -747,6 +753,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
     AliAODTrack *trk = aod->GetTrack(itr);
     if( !trk ) continue;
+    if(!(trk->TestFilterBit(1<<0)))continue;
 
       if(!(trk->GetStatus() & AliAODTrack::kTPCrefit) ) continue;
       if(!(trk->GetStatus() & AliAODTrack::kITSrefit) ) continue;
