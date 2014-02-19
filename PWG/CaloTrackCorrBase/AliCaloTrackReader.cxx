@@ -1132,7 +1132,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   if(!GetMixedEvent() && TMath::Abs(fVertex[0][2]) > fZvtxCut) return kFALSE;
   
   //------------------------------------------------------
-  //Event rejection depending on vertex, pileup, v0and
+  //Event rejection depending on time stamp
   //------------------------------------------------------
   if(fDataType==kESD && fTimeStampEventSelect)
   {
@@ -1184,7 +1184,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
       //else bV0AND = //FIXME FOR AODs
       if(!bV0AND) return kFALSE;
     }
-  }// Event selection/AliceSoft/AliRoot/trunk/PWG/CaloTrackCorrBase/AliCaloTrackReader.h
+  }// Event selection
   
   if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass Pile-Up, V0AND event rejection \n");
 
