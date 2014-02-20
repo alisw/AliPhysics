@@ -456,7 +456,7 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
       hstat->Fill(4,nsbcand);
       hnSBCandEv->Fill(nsbcand);
    }
-   Printf("N candidates selected %d, counter = %d",fCandidateArray->GetEntries(), iCand);
+   //Printf("N candidates selected %d, counter = %d",fCandidateArray->GetEntries(), iCand);
    PostData(1, fOutput);
    PostData(3, fCandidateArray);
    PostData(4, fSideBandArray);
