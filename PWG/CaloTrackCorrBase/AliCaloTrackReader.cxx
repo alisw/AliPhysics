@@ -118,7 +118,7 @@ fTriggerClusterBC(0),        fTriggerClusterIndex(0),         fTriggerClusterId(
 fIsExoticEvent(0),           fIsBadCellEvent(0),              fIsBadMaxCellEvent(0),
 fIsTriggerMatch(0),          fIsTriggerMatchOpenCut(),
 fTriggerClusterTimeRecal(kTRUE), fRemoveUnMatchedTriggers(kTRUE),
-fDoEventSelection(kFALSE),   fDoV0ANDEventSelection(kFALSE),
+fDoPileUpEventRejection(kFALSE), fDoV0ANDEventSelection(kFALSE),
 fDoVertexBCEventSelection(kFALSE),
 fDoRejectNoTrackEvents(kFALSE),
 fUseEventsWithPrimaryVertex(kFALSE),
@@ -1114,6 +1114,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   // In case of analysis of events with jets, skip those with jet pt > 5 pt hard
   // To be used on for MC data in pT hard bins
   //---------------------------------------------------------------------------
+  
   if(fComparePtHardAndJetPt)
   {
     if(!ComparePtHardAndJetPt()) return kFALSE ;
@@ -1126,14 +1127,10 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   
   if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass Pt Hard rejection \n");
   
-  //Fill Vertex array
-  FillVertexArray();
-  //Reject events with Z vertex too large, only for SE analysis, if not, cut on the analysis code
-  if(!GetMixedEvent() && TMath::Abs(fVertex[0][2]) > fZvtxCut) return kFALSE;
+  //------------------------------------------------------
+  // Event rejection depending on time stamp
+  //------------------------------------------------------
   
-  //------------------------------------------------------
-  //Event rejection depending on time stamp
-  //------------------------------------------------------
   if(fDataType==kESD && fTimeStampEventSelect)
   {
     AliESDEvent* esd = dynamic_cast<AliESDEvent*> (fInputEvent);
@@ -1152,8 +1149,14 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass Time Stamp rejection \n");
   
   //------------------------------------------------------
-  //Event rejection depending on vertex, pileup, v0and
+  // Event rejection depending on vertex, pileup, v0and
   //------------------------------------------------------
+  
+  //Fill Vertex array
+  FillVertexArray();
+  
+  //Reject events with Z vertex too large, only for SE analysis, if not, cut on the analysis code
+  if(!GetMixedEvent() && TMath::Abs(fVertex[0][2]) > fZvtxCut) return kFALSE;
   
   if(fUseEventsWithPrimaryVertex)
   {
@@ -1167,7 +1170,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   
   //printf("Reader : IsPileUp %d, Multi %d\n",IsPileUpFromSPD(),fInputEvent->IsPileupFromSPDInMultBins());
   
-  if(fDoEventSelection)
+  if(fDoPileUpEventRejection)
   {
     // Do not analyze events with pileup
     Bool_t bPileup = IsPileUpFromSPD();
@@ -1175,34 +1178,40 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     //printf("pile-up %d, %d, %2.2f, %2.2f, %2.2f, %2.2f\n",bPileup, (Int_t) fPileUpParamSPD[0], fPileUpParamSPD[1], fPileUpParamSPD[2], fPileUpParamSPD[3], fPileUpParamSPD[4]);
     if(bPileup) return kFALSE;
     
-    if(fDoV0ANDEventSelection)
-    {
-      Bool_t bV0AND = kTRUE;
-      AliESDEvent* esd = dynamic_cast<AliESDEvent*> (fInputEvent);
-      if(esd)
-        bV0AND = fTriggerAnalysis->IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0AND);
-      //else bV0AND = //FIXME FOR AODs
-      if(!bV0AND) return kFALSE;
-    }
-  }// Event selection
+    if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Pass Pile-Up event rejection \n");
+  }
   
-  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass Pile-Up, V0AND event rejection \n");
+  if(fDoV0ANDEventSelection)
+  {
+    Bool_t bV0AND = kTRUE;
+    AliESDEvent* esd = dynamic_cast<AliESDEvent*> (fInputEvent);
+    if(esd)
+    bV0AND = fTriggerAnalysis->IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0AND);
+    //else bV0AND = //FIXME FOR AODs
+    if(!bV0AND) return kFALSE;
+
+    if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Pass V0AND event rejection \n");
+  }
 
   //------------------------------------------------------
+  // Check if there is a centrality value, PbPb analysis,
+  // and if a centrality bin selection is requested
+  //------------------------------------------------------
   
-  //Check if there is a centrality value, PbPb analysis, and if a centrality bin selection is requested
   //If we need a centrality bin, we select only those events in the corresponding bin.
   if(GetCentrality() && fCentralityBin[0]>=0 && fCentralityBin[1]>=0 && fCentralityOpt==100)
   {
     Int_t cen = GetEventCentrality();
     if(cen > fCentralityBin[1] || cen < fCentralityBin[0]) return kFALSE; //reject events out of bin.
+    
+    if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Pass centrality rejection \n");
   }
   
-  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass centrality rejection \n");
 
-  
-  //Fill the arrays with cluster/tracks/cells data
-  
+  //-----------------------------------------------------------------
+  // In case of mixing analysis, select here the trigger of the event
+  //-----------------------------------------------------------------
+
   if(!fEventTriggerAtSE)
   {
     // In case of mixing analysis, accept MB events, not only Trigger
@@ -1220,37 +1229,43 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     if(!isTrigger && !isMB) return kFALSE;
     
     //printf("Selected triggered event : %s\n",GetFiredTriggerClasses().Data());
+    if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Pass uninteresting triggered events rejection in case of mixing analysis \n");
   }
   
-  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass uninteresting triggered events rejection in case of mixing analysis \n");
-
+  //---------------------------------------------------------------------------
+  // In case of MC analysis, set the range of interest in the MC particles list
+  // The particle selection is done inside the FillInputDetector() methods
+  //---------------------------------------------------------------------------
+  if(fAcceptOnlyHIJINGLabels) SetGeneratorMinMaxParticles();
+  
+  //printf("N min %d, N max %d\n",fNMCProducedMin,fNMCProducedMax);
+  
+  //-----------------------------------------------
+  // Fill the arrays with cluster/tracks/cells data
+  //-----------------------------------------------
   
   // Get the main vertex BC, in case not available
   // it is calculated in FillCTS checking the BC of tracks
   // with DCA small (if cut applied, if open)
-  fVertexBC=fInputEvent->GetPrimaryVertex()->GetBC();
-  
-  if(fAcceptOnlyHIJINGLabels) SetGeneratorMinMaxParticles();
-  
-  //printf("N min %d, N max %d\n",fNMCProducedMin,fNMCProducedMax);
+  fVertexBC = fInputEvent->GetPrimaryVertex()->GetBC();
   
   if(fFillCTS)
   {
     FillInputCTS();
     //Accept events with at least one track
     if(fTrackMult == 0 && fDoRejectNoTrackEvents) return kFALSE ;
+    
+    if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Pass rejection of null track events \n");
   }
   
-  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass rejection of null track events \n");
 
-  
   if(fDoVertexBCEventSelection)
   {
     if(fVertexBC!=0 && fVertexBC!=AliVTrack::kTOFBCNA) return kFALSE ;
+    
+    if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Pass rejection of events with vertex at BC!=0 \n");
   }
   
-  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass rejection of events with vertex at BC!=0 \n");
-
   
   if(fFillEMCALCells)
     FillInputEMCALCells();
@@ -1264,7 +1279,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   if(fFillPHOS)
     FillInputPHOS();
   
-  //FillInputVZERO();
+  FillInputVZERO();
   
   //one specified jet branch
   if(fFillInputNonStandardJetBranch)
@@ -1272,7 +1287,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   if(fFillInputBackgroundJetBranch)
     FillInputBackgroundJets();
 
-  
+  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Event accepted for analysis \n");
+
   return kTRUE ;
 }
 
