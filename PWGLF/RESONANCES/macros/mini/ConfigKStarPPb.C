@@ -25,9 +25,9 @@ Bool_t ConfigKStarPPb
     Float_t                nsigmaKa = 2.0,
     Bool_t                 enableMonitor = kTRUE,
     Bool_t                 IsMcTrueOnly = kFALSE,
-    Bool_t                 useMixLS = 0,
-    Int_t                  signedPdg = 313,
     TString                monitorOpt = "",
+    Bool_t                 useMixLS = 0,
+    Bool_t                 checkReflex = 0,
     AliRsnMiniValue::EType yaxisVar = AliRsnMiniValue::kPt
 )
 {
@@ -86,16 +86,16 @@ Bool_t ConfigKStarPPb
   // [2] = like ++
   // [3] = like --
 
-  Bool_t  use     [12] = { !IsMcTrueOnly,  !IsMcTrueOnly,  !IsMcTrueOnly,  !IsMcTrueOnly ,  !IsMcTrueOnly, !IsMcTrueOnly,  isMC   ,   isMC   ,  isMC   ,   isMC , useMixLS, useMixLS  };
-  Bool_t  useIM   [12] = { 1       ,  1       ,  1       ,  1       ,  1      ,  1      ,  1      ,   1      ,  0      ,   0 , 1    , 1     };
-  TString name    [12] = {"UnlikePM", "UnlikeMP", "MixingPM", "MixingMP", "LikePP", "LikeMM", "TruesPM",  "TruesMP", "ResPM"  ,  "ResMP",  "MixingPP",  "MixingMM"  };
-  TString comp    [12] = {"PAIR"   , "PAIR"   , "MIX"    , "MIX"    , "PAIR"  , "PAIR"  , "TRUE"  ,  "TRUE"  , "TRUE"  ,  "TRUE", "MIX","MIX"};
-  //TString output  [10] = {"HIST"   , "HIST"   , "HIST"   , "HIST"   , "HIST"  , "HIST"  , "HIST"  ,  "HIST"  , "HIST"  ,  "HIST"  };
-  TString output  [12] = {"SPARSE"   , "SPARSE"   , "SPARSE"   , "SPARSE"   , "SPARSE"  , "SPARSE"  , "SPARSE"  ,  "SPARSE"  , "SPARSE"  ,  "SPARSE", "SPARSE"  ,  "SPARSE"};
-  Char_t  charge1 [12] = {'+'      , '-'      , '+'      , '-'      , '+'     , '-'     , '+'     ,  '-'     , '+'     ,  '-'  , '+' , '-'};
-  Char_t  charge2 [12] = {'-'      , '+'      , '-'      , '+'      , '+'     , '-'     , '-'     ,  '+'     , '-'     ,  '+'  ,'+' , '-'   };
-  Int_t   cutID1  [12] = { iCutK   ,  iCutK   ,  iCutK   ,  iCutK   ,  iCutK  ,  iCutK  ,  iCutK  ,   iCutK  ,  iCutK  ,   iCutK , iCutK, iCutK };
-  Int_t   cutID2  [12] = { iCutPi  ,  iCutPi  ,  iCutPi  ,  iCutPi  ,  iCutPi ,  iCutPi ,  iCutPi ,   iCutPi ,  iCutPi ,   iCutPi, iCutPi, iCutPi };
+  Bool_t  use     [12] = {!IsMcTrueOnly,!IsMcTrueOnly,!IsMcTrueOnly,!IsMcTrueOnly,!IsMcTrueOnly,!IsMcTrueOnly ,isMC,isMC,isMC,isMC, useMixLS , useMixLS    };
+  Bool_t  useIM   [12] = { 1        , 1         ,  1       ,  1       ,  1      ,  1      ,  1      ,  1      ,  0      , 0      , 1         , 1           };
+  TString name    [12] = {"UnlikePM", "UnlikeMP","MixingPM","MixingMP", "LikePP", "LikeMM","TruesPM","TruesMP", "ResPM" ,"ResMP" , "MixingPP", "MixingMM"  };
+  TString comp    [12] = {"PAIR"    , "PAIR"    , "MIX"    , "MIX"    , "PAIR"  , "PAIR"  , "TRUE"  , "TRUE"  , "TRUE"  ,"TRUE"  , "MIX"     , "MIX"       };
+  TString output  [12] = {"SPARSE"  , "SPARSE"  , "SPARSE" , "SPARSE" , "SPARSE", "SPARSE", "SPARSE","SPARSE" , "SPARSE","SPARSE", "SPARSE"  , "SPARSE"    };
+  Int_t   pdgCode [12] = {313       , 313       , 313      , 313      , 313     , 313     , 313     , -313    ,  313    , -313   ,  313      , 313         };
+  Char_t  charge1 [12] = {'+'       , '-'       , '+'      , '-'      , '+'     , '-'     , '+'     ,  '-'    , '+'     , '-'    , '+'       , '-'         };
+  Char_t  charge2 [12] = {'-'       , '+'       , '-'      , '+'      , '+'     , '-'     , '-'     ,  '+'    , '-'     , '+'    , '+'       , '-'         };
+  Int_t   cutID1  [12] = { iCutK    ,  iCutK    ,  iCutK   ,  iCutK   ,  iCutK  ,  iCutK  ,  iCutK  ,   iCutK ,  iCutK  , iCutK  , iCutK     , iCutK       };
+  Int_t   cutID2  [12] = { iCutPi   ,  iCutPi   ,  iCutPi  ,  iCutPi  ,  iCutPi ,  iCutPi ,  iCutPi ,   iCutPi,  iCutPi , iCutPi , iCutPi    , iCutPi      };
   
   for (Int_t i = 0; i < 12; i++) {
     if (!use[i]) continue;
@@ -106,7 +106,7 @@ Bool_t ConfigKStarPPb
     out->SetDaughter(1, AliRsnDaughter::kPion);
     out->SetCharge(0, charge1[i]);
     out->SetCharge(1, charge2[i]);
-    out->SetMotherPDG(signedPdg);
+    out->SetMotherPDG(pdgCode[i]);
     out->SetMotherMass(0.89594);
     out->SetPairCuts(cutsPair);
 
@@ -136,24 +136,20 @@ Bool_t ConfigKStarPPb
       out->AddAxis(centID, 100, 0.0, 100.0);
     else 
       out->AddAxis(centID, 400, 0.0, 400.0);
-    
     // axis W: pseudorapidity
     // out->AddAxis(etaID, 20, -1.0, 1.0);
     // axis J: rapidity
     // out->AddAxis(yID, 10, -0.5, 0.5);
-    
   }   
   
   if (isMC){   
-    // create output
-    AliRsnMiniOutput *outm = task->CreateOutput(Form("kstar_Mother%s", suffix), "SPARSE", "MOTHER");
+    //get mothers for K* PDG = 313
+    AliRsnMiniOutput *outm = task->CreateOutput(Form("Ks_Mother%s", suffix), "SPARSE", "MOTHER");
     outm->SetDaughter(0, AliRsnDaughter::kKaon);
     outm->SetDaughter(1, AliRsnDaughter::kPion);
-    outm->SetMotherPDG(signedPdg);
+    outm->SetMotherPDG(313);
     outm->SetMotherMass(0.89594);
-    // pair cuts
     outm->SetPairCuts(cutsPair);
-    // binnings
     outm->AddAxis(imID, 90, 0.6, 1.5);
     outm->AddAxis(ptID, 200, 0.0, 20.0);
     if (!isPP){
@@ -161,8 +157,86 @@ Bool_t ConfigKStarPPb
     }   else    { 
       outm->AddAxis(centID, 400, 0.0, 400.0);
     }
-  }
-  return kTRUE;
+    
+    //get mothers for antiK* PDG = -313
+    AliRsnMiniOutput *outam = task->CreateOutput(Form("antiKs_Mother%s", suffix), "SPARSE", "MOTHER");
+    outam->SetDaughter(0, AliRsnDaughter::kKaon);
+    outam->SetDaughter(1, AliRsnDaughter::kPion);
+    outam->SetMotherPDG(-313);
+    outam->SetMotherMass(0.89594);
+    outam->SetPairCuts(cutsPair);
+    outam->AddAxis(imID, 90, 0.6, 1.5);
+    outam->AddAxis(ptID, 200, 0.0, 20.0);
+    if (!isPP){
+      outam->AddAxis(centID, 100, 0.0, 100.0);
+    }   else    { 
+      outam->AddAxis(centID, 400, 0.0, 400.0);
+    }
+    
+    //get phase space of the decay from mothers
+    AliRsnMiniOutput *outps = task->CreateOutput(Form("Ks_phaseSpace%s", suffix), "HIST", "TRUE");
+    outps->SetDaughter(0, AliRsnDaughter::kKaon);
+    outps->SetDaughter(1, AliRsnDaughter::kPion);
+    outps->SetCutID(0, iCutK);
+    outps->SetCutID(1, iCutPi);
+    outps->SetMotherPDG(313);
+    outps->SetMotherMass(0.89594);
+    outps->SetPairCuts(cutsPair);
+    outps->AddAxis(fdpt, 50, 0.0, 5.0);
+    outps->AddAxis(sdpt, 50, 0.0, 5.0);
+    outps->AddAxis(ptID, 100, 0.0, 10.0);
+    
+    AliRsnMiniOutput *outaps = task->CreateOutput(Form("antiKs_phaseSpace%s", suffix), "HIST", "TRUE");
+    outaps->SetDaughter(0, AliRsnDaughter::kKaon);
+    outaps->SetDaughter(1, AliRsnDaughter::kPion);
+    outaps->SetCutID(0, iCutK);
+    outaps->SetCutID(1, iCutPi);
+    outaps->SetMotherPDG(-313);
+    outaps->SetMotherMass(0.89594);
+    outaps->SetPairCuts(cutsPair);
+    outaps->AddAxis(fdpt, 50, 0.0, 5.0);
+    outaps->AddAxis(sdpt, 50, 0.0, 5.0);
+    outaps->AddAxis(ptID, 100, 0.0, 10.0);
+   
+    //get reflections
+    if (checkReflex) { 
+
+      AliRsnMiniOutput *outreflex = task->CreateOutput(Form("Ks_reflex%s", suffix), "SPARSE", "TRUE");
+      outreflex->SetDaughter(0, AliRsnDaughter::kKaon);
+      outreflex->SetDaughter(1, AliRsnDaughter::kPion);
+      outreflex->SetCutID(0, iCutPi);
+      outreflex->SetCutID(1, iCutK);
+      outreflex->SetMotherPDG(313);
+      outreflex->SetMotherMass(0.89594);
+      outreflex->SetPairCuts(cutsPair);
+      outreflex->AddAxis(imID, 90, 0.6, 1.5);
+      outreflex->AddAxis(ptID, 200, 0.0, 20.0);
+      if (!isPP){
+	outreflex->AddAxis(centID, 100, 0.0, 100.0);
+      }   else    { 
+	outreflex->AddAxis(centID, 400, 0.0, 400.0);
+      }
+      
+      AliRsnMiniOutput *outareflex = task->CreateOutput(Form("antiKs_reflex%s", suffix), "SPARSE", "TRUE");
+      outareflex->SetDaughter(0, AliRsnDaughter::kKaon);
+      outareflex->SetDaughter(1, AliRsnDaughter::kPion);
+      outareflex->SetCutID(0, iCutPi);
+      outareflex->SetCutID(1, iCutK);
+      outareflex->SetMotherPDG(-313);
+      outareflex->SetMotherMass(0.89594);
+      outareflex->SetPairCuts(cutsPair);
+      outareflex->AddAxis(imID, 90, 0.6, 1.5);
+      outareflex->AddAxis(ptID, 100, 0.0, 10.0);
+      if (!isPP){
+	outareflex->AddAxis(centID, 100, 0.0, 100.0);
+      }   else    { 
+	outareflex->AddAxis(centID, 400, 0.0, 400.0);
+      }
+
+    }//end reflections
+  }//end MC
+  
+   return kTRUE;
 }
 
 //-------------------------------------------------------  

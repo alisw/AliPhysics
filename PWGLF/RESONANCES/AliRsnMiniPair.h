@@ -9,21 +9,24 @@
 
 #include <TObject.h>
 #include <TLorentzVector.h>
+#include "TClonesArray.h"
+#include "AliRsnListOutput.h"
 
+class AliRsnListOutput;
 class AliRsnMiniParticle;
 
 class AliRsnMiniPair : public TObject {
 public:
 
-   AliRsnMiniPair() : fMother(-1), fMotherPDG(0) { }
-
+   AliRsnMiniPair() : fDCA1(0), fDCA2(0), fMother(-1), fMotherPDG(0), fNsisters(-1) { }
+  
    Int_t          &Mother()    {return fMother;}
    Int_t          &MotherPDG() {return fMotherPDG;}
-   void            Fill(AliRsnMiniParticle *p1, AliRsnMiniParticle *p2, Double_t m1, Double_t m2, Double_t refMass);
-   void            FillRef(Double_t mass);
-   void            InvertP(Bool_t first);
+   void           Fill(AliRsnMiniParticle *p1, AliRsnMiniParticle *p2, Double_t m1, Double_t m2, Double_t refMass);
+   void           FillRef(Double_t mass);
+   void           InvertP(Bool_t first);
 
-   Int_t           ID(Bool_t mc) const {if (mc) return 1; else return 0;}
+   Int_t          ID(Bool_t mc) const {if (mc) return 1; else return 0;}
 
    TLorentzVector &P1 (Bool_t mc) {return fP1 [ID(mc)];}
    TLorentzVector &P2 (Bool_t mc) {return fP2 [ID(mc)];}
@@ -41,9 +44,13 @@ public:
    Double_t        PtRatio(Bool_t mc)        const;
    Double_t        DipAngle(Bool_t mc)       const;
    Double_t        CosThetaStar(Bool_t mc);
-   Double_t        DaughterPt(Int_t daughterId, Bool_t mc); 
+   Double_t        DaughterPt(Int_t daughterId, Bool_t mc);
+   Double_t        DaughterDCA(Int_t daughterId); 
+   Double_t        DCAProduct();                                                   
    void            DaughterPxPyPz(Int_t daughterId, Bool_t mc, Double_t *pxpypz); 
-      
+   Short_t         Nsisters()  {return fNsisters;}
+   void            SetNsisters(Short_t value)  {fNsisters=value;}
+
  private:
    
    TLorentzVector fP1 [2];    // 1st daughter momentum
@@ -51,10 +58,14 @@ public:
    TLorentzVector fSum[2];    // sum of momenta
    TLorentzVector fRef[2];    // same as 'fSum' but with nominal resonance mass
    
+   Double_t       fDCA1;      // 1st daughter DCA
+   Double_t       fDCA2;      // 2nd daughter DCA 
+   
    Int_t          fMother;    // label of mothers (when common)
    Int_t          fMotherPDG; // PDG code of mother (when common)
+   Short_t        fNsisters;  // total number of mother's daughters in the MC stack
    
-   ClassDef(AliRsnMiniPair,1)
+   ClassDef(AliRsnMiniPair,2)
      };
 
 #endif

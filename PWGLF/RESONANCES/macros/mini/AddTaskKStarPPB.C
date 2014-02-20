@@ -43,11 +43,11 @@ AliRsnMiniAnalysisTask * AddTaskKStarPPB
  Float_t     nsigmaKa = 2.0,
  Bool_t      enableMonitor = kTRUE,
  Bool_t      IsMcTrueOnly = kFALSE,
- Int_t       signedPdg = 313,
  TString     monitorOpt = "",
  Bool_t      useMixLS = 0,
+ Bool_t      checkReflex = 0,
  AliRsnMiniValue::EType yaxisvar = AliRsnMiniValue::kPt
- )
+)
 {  
 
   
@@ -231,7 +231,7 @@ AliRsnMiniAnalysisTask * AddTaskKStarPPB
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    //   
    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigKStarPPb.C");
-   if (!ConfigKStarPPb(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly, useMixLS, signedPdg, monitorOpt.Data(), yaxisvar)) return 0x0;
+   if (!ConfigKStarPPb(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly,  monitorOpt.Data(), useMixLS, isMC&checkReflex, yaxisvar)) return 0x0;
    
    
    //

@@ -78,7 +78,9 @@ public:
   void   InitGeometry();
   
   void   SetGeometryName(TString name)   { fGeoName           = name    ; }   
-  
+  void   SetEventTriggerL1Bit(Int_t ega, Int_t eje)
+                                         { fBitEGA   = ega ; fBitEJE = eje; }
+
   void   AccessOADB() ;
   
   void   SwitchOnEMCALOADB()             { fAccessOADB        = kTRUE   ; }

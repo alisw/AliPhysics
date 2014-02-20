@@ -36,8 +36,10 @@ public:
    void      SetPtRange(Double_t a, Double_t b)        {fPt[0] = TMath::Min(a, b); fPt[1] = TMath::Max(a, b);}
    void      SetEtaRange(Double_t a, Double_t b)       {fEta[0] = TMath::Min(a, b); fEta[1] = TMath::Max(a, b);}
 
-   void      SetDCARPtFormula(const char *formula)     {fDCARptFormula = formula; fDCARfixed = kFALSE;}
-   void      SetDCARmax(Double_t value)                {fDCARmax = value; fDCARptFormula = ""; fDCARfixed = kTRUE;}
+   void      SetDCARPtFormula(const char *formula)     {fDCARptFormula = formula; fDCARmaxfixed = kFALSE;}
+   void      SetDCARPtFormulaMin(const char *formula)  {fDCARptFormulaMin = formula; fDCARminfixed = kFALSE;}
+   void      SetDCARmax(Double_t value)                {fDCARmax = value; fDCARptFormula = ""; fDCARmaxfixed = kTRUE;}
+   void      SetDCARmin(Double_t value)                {fDCARmin = value; fDCARptFormulaMin = ""; fDCARminfixed = kTRUE;}
    void      SetDCAZPtFormula(const char *formula)     {fDCAZptFormula = formula; fDCAZfixed = kFALSE;}
    void      SetDCAZmax(Double_t value)                {fDCAZmax = value; fDCAZptFormula = ""; fDCAZfixed = kTRUE;}
 
@@ -79,9 +81,12 @@ protected:
    Double_t   fEta[2];                 // eta range
    Bool_t     fRejectKinkDaughters;    // switch to kTRUE if daughters of kinks must be rejected
 
-   Bool_t     fDCARfixed;              // flag to switch between fixed and pt-dependent DCA cut
-   TString    fDCARptFormula;          // expression to compute transverse DCA sigma w.r. to pt
+   Bool_t     fDCARmaxfixed;           // flag to switch between fixed and pt-dependent DCA cut (maximum)
+   Bool_t     fDCARminfixed;           // flag to switch between fixed and pt-dependent DCA cut (minimum)
+   TString    fDCARptFormula;          // expression to compute transverse DCA sigma w.r. to pt (maximum)
+   TString    fDCARptFormulaMin;       // expression to compute transverse DCA sigma w.r. to pt (minimum)
    Double_t   fDCARmax;                // maximum value for transverse DCA
+   Double_t   fDCARmin;                // minimum value for transverse DCA
 
    Bool_t     fDCAZfixed;              // flag to switch between fixed and pt-dependent DCA cut
    TString    fDCAZptFormula;          // expression to compute longitudinal DCA sigma w.r. to pt
@@ -105,6 +110,6 @@ protected:
    Bool_t     fCheckOnlyFilterBit;     // check only the filter bit
    AliESDtrackCuts *fESDtrackCuts;     // pointer to AliESDtrackCuts object
 
-   ClassDef(AliRsnCutTrackQuality, 3)
+   ClassDef(AliRsnCutTrackQuality, 4)
 };
 #endif

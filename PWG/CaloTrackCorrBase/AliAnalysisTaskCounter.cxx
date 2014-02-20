@@ -22,7 +22,7 @@
 // 2: passes vertex cut
 // 3: passes track number cut, tracks for eta < 0.8
 // 4: 3 && 2
-// 5: pass VAND
+// 5: pass V0AND
 // 6: 5 && 2
 // 7: 5 && 3
 // 8: 5 && 3 && 2
@@ -48,7 +48,7 @@
 #include <TClonesArray.h>
 #include <TGeoGlobalMagField.h>
 #include "AliAODHeader.h"
-#include "AliTriggerAnalysis.h"
+//#include "AliTriggerAnalysis.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliESDtrackCuts.h"
@@ -67,7 +67,7 @@ AliAnalysisTaskCounter::AliAnalysisTaskCounter(const char *name)
   fAvgTrials(-1),
   fOutputContainer(0x0),
   fESDtrackCuts(AliESDtrackCuts::GetStandardITSTPCTrackCuts2010()),
-  fTriggerAnalysis (new AliTriggerAnalysis),
+  //fTriggerAnalysis (new AliTriggerAnalysis),
   fCurrFileName(0), fCheckMCCrossSection(kFALSE),
   fhNEvents(0),
   fhXVertex(0),    fhYVertex(0),    fhZVertex(0),
@@ -88,7 +88,7 @@ AliAnalysisTaskCounter::AliAnalysisTaskCounter()
     fAvgTrials(-1),
     fOutputContainer(0x0),
     fESDtrackCuts(AliESDtrackCuts::GetStandardITSTPCTrackCuts2010()),
-    fTriggerAnalysis (new AliTriggerAnalysis),
+    //fTriggerAnalysis (new AliTriggerAnalysis),
     fCurrFileName(0), fCheckMCCrossSection(kFALSE),
     fhNEvents(0),
     fhXVertex(0),    fhYVertex(0),    fhZVertex(0),
@@ -114,7 +114,7 @@ AliAnalysisTaskCounter::~AliAnalysisTaskCounter()
   }
   
   if(fESDtrackCuts)    delete fESDtrackCuts;
-  if(fTriggerAnalysis) delete fTriggerAnalysis;
+  //if(fTriggerAnalysis) delete fTriggerAnalysis;
   
 }
 
@@ -290,7 +290,9 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
   // V0AND
   //---------------------------------
   
-  if(esdevent) bV0AND = fTriggerAnalysis->IsOfflineTriggerFired(esdevent, AliTriggerAnalysis::kV0AND);
+  //if(esdevent) bV0AND = fTriggerAnalysis->IsOfflineTriggerFired(esdevent, AliTriggerAnalysis::kV0AND);
+  AliVVZERO* v0 = fInputEvent->GetVZEROData();
+  bV0AND = ((v0->GetV0ADecision()==1) && (v0->GetV0CDecision()==1));
   
   if(bV0AND)
   {
@@ -408,35 +410,59 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
 //____________________________________________________
 Bool_t AliAnalysisTaskCounter::CheckForPrimaryVertex()
 {
-  //Check if the vertex was well reconstructed, copy from V0Reader of conversion group
-  //It only works for ESDs
+  //Check if the vertex was well reconstructed, copy of conversion group
   
-  AliESDEvent * event = dynamic_cast<AliESDEvent*> (InputEvent());
-  if(!event) return 1;
+  AliESDEvent * esdevent = dynamic_cast<AliESDEvent*> (InputEvent());
+  AliAODEvent * aodevent = dynamic_cast<AliAODEvent*> (InputEvent());
   
-  if(event->GetPrimaryVertexTracks()->GetNContributors() > 0) 
+  if(esdevent)
   {
-    return 1;
-  }
-  
-  if(event->GetPrimaryVertexTracks()->GetNContributors() < 1) 
-  {
-    // SPD vertex
-    if(event->GetPrimaryVertexSPD()->GetNContributors() > 0) 
+    if(esdevent->GetPrimaryVertex()->GetNContributors() > 0)
     {
-      //cout<<"spd vertex type::"<< fESDEvent->GetPrimaryVertex()->GetName() << endl;
-      return 1;
-      
+      return kTRUE;
     }
-    if(event->GetPrimaryVertexSPD()->GetNContributors() < 1) 
+    
+    if(esdevent->GetPrimaryVertex()->GetNContributors() < 1)
     {
-      //      cout<<"bad vertex type::"<< fESDEvent->GetPrimaryVertex()->GetName() << endl;
-      return 0;
+      // SPD vertex
+      if(esdevent->GetPrimaryVertexSPD()->GetNContributors() > 0)
+      {
+        return kTRUE;
+        
+      }
+      if(esdevent->GetPrimaryVertexSPD()->GetNContributors() < 1)
+      {
+        return kFALSE;
+      }
     }
   }
+  else if(aodevent)
+  {    
+    if (aodevent->GetPrimaryVertex() != NULL)
+    {
+      if(aodevent->GetPrimaryVertex()->GetNContributors() > 0)
+      {
+        return kTRUE;
+      }
+    }
+    
+    if(aodevent->GetPrimaryVertexSPD() != NULL)
+    {
+      if(aodevent->GetPrimaryVertexSPD()->GetNContributors() > 0)
+      {
+        return kTRUE;
+      }
+      else
+      {
+        AliWarning(Form("Number of contributors from bad vertex type:: %s",aodevent->GetPrimaryVertex()->GetName()));
+        return kFALSE;
+      }
+    }
+  }
+  else return kTRUE;
   
-  return 0;
-  //return fInputEvent->GetPrimaryVertex()->GetNContributors()>0;
+  return kFALSE;
+
 }
 
 
