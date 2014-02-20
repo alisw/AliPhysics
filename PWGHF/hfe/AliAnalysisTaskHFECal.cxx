@@ -212,6 +212,8 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fIncRecoMaxE(0)
   ,fPhoRecoMaxE(0)
   ,fSamRecoMaxE(0) 
+  ,fPhoVertexReco0(0)
+  ,fPhoVertexReco1(0)
   //,fnSigEtaCorr(NULL)
 {
   //Named constructor
@@ -356,6 +358,8 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fIncRecoMaxE(0)
   ,fPhoRecoMaxE(0)
   ,fSamRecoMaxE(0)
+  ,fPhoVertexReco0(0)
+  ,fPhoVertexReco1(0)
   //,fnSigEtaCorr(NULL)
 {
 	//Default constructor
@@ -558,6 +562,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     double mcMompT = 0.0;
     //double mcGrandMompT = 0.0;
     double mcWeight = -10.0;
+    double conv_proR = -1.0;
 
     int iHijing = 1;
     int mcLabel = -1;
@@ -576,6 +581,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 	       TParticle* particle = stack->Particle(label);
 	       int mcpid = particle->GetPdgCode();
 	       mcpT = particle->Pt();
+               conv_proR = particle->R();
 	       //printf("MCpid = %d",mcpid);
 	       if(particle->GetFirstMother()>-1)
 	       {
@@ -977,13 +983,16 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
                   if(fFlagPhotonicElec) fPhoElecPtMCM20_pi0e->Fill(phoval,mcWeight);
                   if(fFlagConvinatElec) fSameElecPtMCM20_pi0e->Fill(phoval,mcWeight);
                  }
+               // --- eta
                if(mcOrgEta)
                  {
                   fIncpTMCM20pho_eta->Fill(phoval,mcWeight);    
                   if(fFlagPhotonicElec) fPhoElecPtMCM20_eta->Fill(phoval,mcWeight);
                   if(fFlagConvinatElec) fSameElecPtMCM20_eta->Fill(phoval,mcWeight);
                  }
-               // --- eta
+                // check production vertex
+                fPhoVertexReco0->Fill(pt,conv_proR);
+                if(fFlagPhotonicElec) fPhoVertexReco1->Fill(pt,conv_proR);
               }
            }
         } 
@@ -1450,6 +1459,12 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
 
   fSamRecoMaxE = new TH2D("fSamRecoMaxE","Same",10,0,100,100,0,500);
   fOutputList->Add(fSamRecoMaxE);
+
+  fPhoVertexReco0 = new TH2D("fPhoVertexReco0","photon production Vertex in ele sample",40,0,20,200,0,40);
+  fOutputList->Add(fPhoVertexReco0);
+
+  fPhoVertexReco1 = new TH2D("fPhoVertexReco1","photon production Vertex mass selection",40,0,20,200,0,40);
+  fOutputList->Add(fPhoVertexReco1);
 
   PostData(1,fOutputList);
 }
