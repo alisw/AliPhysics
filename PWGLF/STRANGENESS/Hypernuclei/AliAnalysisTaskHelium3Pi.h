@@ -12,9 +12,9 @@ class TH1F;
 class TH2F;
 class TH3F;
 class TNtuple;
-class AliESDcascade;
-//class AliCascadeVertexer; 
 
+#include <AliPIDResponse.h>
+#include "AliESDtrackCuts.h"
 #include "TString.h"
 
 #include "AliAnalysisTaskSE.h"
@@ -35,12 +35,17 @@ class AliAnalysisTaskHelium3Pi : public AliAnalysisTaskSE {
   
   Double_t BetheBloch(Double_t bg,Double_t Charge,Bool_t isPbPb);
 
+  Bool_t IsTrackAccepted(AliVTrack *track);
   
- private:
+  private:
   
   TString fAnalysisType;	     //! "ESD" or "AOD" analysis type	
   
+
   Short_t fCollidingSystems;	     //! 0 = pp collisions or 1 = AA collisions
+  
+  AliESDtrackCuts *fESDtrackCuts; 
+
   TString fDataType;		     //! "REAL" or "SIM" data type	
   TList	*fListHistCascade;	     //! List of Cascade histograms
   TH1F *fHistEventMultiplicity;
@@ -68,6 +73,7 @@ class AliAnalysisTaskHelium3Pi : public AliAnalysisTaskSE {
 
   static const Int_t fgNrot;
  
+  AliPIDResponse *fPIDResponse;     //! pointer to PID response
 
   AliAnalysisTaskHelium3Pi(const AliAnalysisTaskHelium3Pi&);            // not implemented
   AliAnalysisTaskHelium3Pi& operator=(const AliAnalysisTaskHelium3Pi&); // not implemented
