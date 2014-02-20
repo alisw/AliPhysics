@@ -476,18 +476,18 @@ AliCaloTrackReader * ConfigureReader()
   else
     reader->SwitchOnEventTriggerAtSE();  
   
-  reader->SetZvertexCut(10.);                // Open cut
+  reader->SetZvertexCut(10.);               // Open cut
   reader->SwitchOnPrimaryVertexSelection(); // and besides primary vertex
 
   if(kEventSelection)
   {
-    reader->SwitchOnEventSelection();         // remove pileup by default
-    reader->SwitchOnV0ANDSelection() ;        // and besides v0 AND
+    reader->SwitchOnEventPileUpRejection(); // remove pileup by default
+    reader->SwitchOnV0ANDSelection() ;      // and besides v0 AND
   }
   else 
   {
-    reader->SwitchOffEventSelection();         // remove pileup by default
-    reader->SwitchOffV0ANDSelection() ;        // and besides v0 AND
+    reader->SwitchOffPileUpEventRejection();// remove pileup by default
+    reader->SwitchOffV0ANDSelection() ;     // and besides v0 AND
   }
     
   if(kCollisions=="PbPb") 

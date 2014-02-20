@@ -341,13 +341,13 @@ AliCaloTrackReader * ConfigureReader()
   
   if(kEventSelection)
   {
-    reader->SwitchOnEventSelection();         // remove pileup by default
+    reader->SwitchOnPileUpEventRejection();   // remove pileup by default
     reader->SwitchOnV0ANDSelection() ;        // and besides v0 AND
   }
   else 
   {
-    reader->SwitchOffEventSelection();         // remove pileup by default
-    reader->SwitchOffV0ANDSelection() ;        // and besides v0 AND
+    reader->SwitchOffPileUpEventRejection();  // remove pileup by default
+    reader->SwitchOffV0ANDSelection() ;       // and besides v0 AND
   }
     
   if(kCollisions=="PbPb") 
