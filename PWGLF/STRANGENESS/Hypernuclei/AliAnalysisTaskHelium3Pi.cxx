@@ -60,6 +60,7 @@ class AliCascadeVertexer;
 #include <TDatime.h>
 #include <TRandom3.h>
 #include <TLorentzVector.h>
+//#include <AliVTrack.h>
 
 const Int_t AliAnalysisTaskHelium3Pi::fgNrot = 15;
 
@@ -70,6 +71,7 @@ AliAnalysisTaskHelium3Pi::AliAnalysisTaskHelium3Pi()
 : AliAnalysisTaskSE(),
   fAnalysisType("ESD"), 
   fCollidingSystems(0), 
+  fESDtrackCuts(0),
   fDataType("REAL"),
   fListHistCascade(0), 
   fHistEventMultiplicity(0),         
@@ -92,7 +94,8 @@ AliAnalysisTaskHelium3Pi::AliAnalysisTaskHelium3Pi()
   fBetavsTPCsignalNeg(0),  
   fHelium3TOF(0),   
   fNtuple1(0),
-  fNtuple4(0)
+  fNtuple4(0),
+  fPIDResponse(0)
 
 {
   // Dummy Constructor 
@@ -100,32 +103,34 @@ AliAnalysisTaskHelium3Pi::AliAnalysisTaskHelium3Pi()
 
 //________________________________________________________________________
 AliAnalysisTaskHelium3Pi::AliAnalysisTaskHelium3Pi(const char *name) 
-  : AliAnalysisTaskSE(name), 
-    fAnalysisType("ESD"), 
-    fCollidingSystems(0), 
-    fDataType("REAL"),
-    fListHistCascade(0), 
-    fHistEventMultiplicity(0),    
-    fHistTrackMultiplicity(0),            
-    fHistTrackMultiplicityCent(0),      
-    fHistTrackMultiplicitySemiCent(0),  
-    fHistTrackMultiplicityMB(0),        
-    fHistTrackMultiplicityPVCent(0),      
-    fHistTrackMultiplicityPVSemiCent(0),  
-    fHistTrackMultiplicityPVMB(0),        
-    fHistMult(0),
-    fhBB(0),    
-    fhTOF(0),   
-    fhMassTOF(0),
-    fhBBPions(0),
-    fhBBHe(0),   
-    fhNaPos(0),  
-    fhNaNeg(0),  
-    fBetavsTPCsignalPos(0),  
-    fBetavsTPCsignalNeg(0),  
-    fHelium3TOF(0),                       
-    fNtuple1(0),
-    fNtuple4(0)  
+: AliAnalysisTaskSE(name), 
+  fAnalysisType("ESD"), 
+  fCollidingSystems(0), 
+  fESDtrackCuts(0),
+  fDataType("REAL"),
+  fListHistCascade(0), 
+  fHistEventMultiplicity(0),    
+  fHistTrackMultiplicity(0),            
+  fHistTrackMultiplicityCent(0),      
+  fHistTrackMultiplicitySemiCent(0),  
+  fHistTrackMultiplicityMB(0),        
+  fHistTrackMultiplicityPVCent(0),      
+  fHistTrackMultiplicityPVSemiCent(0),  
+  fHistTrackMultiplicityPVMB(0),        
+  fHistMult(0),
+  fhBB(0),    
+  fhTOF(0),   
+  fhMassTOF(0),
+  fhBBPions(0),
+  fhBBHe(0),   
+  fhNaPos(0),  
+  fhNaNeg(0),  
+  fBetavsTPCsignalPos(0),  
+  fBetavsTPCsignalNeg(0),  
+  fHelium3TOF(0),                       
+  fNtuple1(0),
+  fNtuple4(0),
+  fPIDResponse(0)  
   
 {
   // Define input and output slots here
@@ -134,6 +139,21 @@ AliAnalysisTaskHelium3Pi::AliAnalysisTaskHelium3Pi(const char *name)
   // Output slot #0 writes into a TList container (Cascade)
 
   DefineOutput(1, TList::Class());
+
+  // Int_t    minclsTPC=60;
+  // Double_t maxchi2perTPCcl=5.;
+  
+  fESDtrackCuts = new AliESDtrackCuts("fESDtrackCuts");
+  fESDtrackCuts->SetRequireITSStandAlone(kFALSE);
+  fESDtrackCuts->SetRequireITSPureStandAlone(kFALSE);
+      
+  fESDtrackCuts->SetRequireTPCRefit(kTRUE);
+  fESDtrackCuts->SetAcceptKinkDaughters(kFALSE);
+  // fESDtrackCuts->SetMinNClustersTPC(minclsTPC);
+  // fESDtrackCuts->SetMaxChi2PerClusterTPC(maxchi2perTPCcl);
+  fESDtrackCuts->SetMinNClustersTPC(60);
+  fESDtrackCuts->SetMaxChi2PerClusterTPC(5);
+  
 }
 //_______________________________________________________
 AliAnalysisTaskHelium3Pi::~AliAnalysisTaskHelium3Pi() 
@@ -143,7 +163,8 @@ AliAnalysisTaskHelium3Pi::~AliAnalysisTaskHelium3Pi()
     delete fListHistCascade;
     fListHistCascade = 0;
   }
-
+  
+  if (fESDtrackCuts) delete fESDtrackCuts;
 }
 //=================DEFINITION BETHE BLOCH==============================
 
@@ -186,7 +207,37 @@ Double_t AliAnalysisTaskHelium3Pi::BetheBloch(Double_t betaGamma,Double_t charge
   return out;
  
 }
+//___________________________________________
 
+Bool_t AliAnalysisTaskHelium3Pi::IsTrackAccepted(AliVTrack *track){
+
+  Bool_t testTrackCuts = kFALSE;
+
+  Int_t    minclsTPC=60;
+  Double_t maxchi2perTPCcl=5.;
+  
+  AliESDtrackCuts *fEsdTrackCuts = new AliESDtrackCuts("esdtrackCuts");
+  fEsdTrackCuts->SetRequireITSStandAlone(kFALSE);
+  fEsdTrackCuts->SetRequireITSPureStandAlone(kFALSE);
+    
+  fEsdTrackCuts->SetRequireTPCRefit(kTRUE);
+  fEsdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+  fEsdTrackCuts->SetMinNClustersTPC(minclsTPC);
+  fEsdTrackCuts->SetMaxChi2PerClusterTPC(maxchi2perTPCcl);
+
+  AliESDtrack *esdtrack = static_cast<AliESDtrack *>(track);
+ 
+  //if (fESDtrackCuts->AcceptTrack(esdtrack)) testTrackCuts = kTRUE;
+  if (fEsdTrackCuts->AcceptTrack(esdtrack)) testTrackCuts = kTRUE;
+  
+  // Bool_t IsTrackAccepted =  fEsdTrackCuts->AcceptTrack(fEsdTrackCuts);
+  // if (IsTrackAccepted) 
+  //   return kTRUE;
+  return testTrackCuts;
+
+  delete fEsdTrackCuts;
+  
+}
 //==================DEFINITION OF OUTPUT OBJECTS==============================
 
 void AliAnalysisTaskHelium3Pi::UserCreateOutputObjects()
@@ -300,14 +351,14 @@ void AliAnalysisTaskHelium3Pi::UserCreateOutputObjects()
   }
   
   if(! fhNaPos ){
-    fhNaPos = new TH2F( "fhNaPos" , "Distribution Pos" , 500,0,5,500,-2,2);
+    fhNaPos = new TH2F( "fhNaPos" , "Distribution Pos" , 500,0,5,500,-10,10);
     fhNaPos->GetXaxis()->SetTitle("p/z (GeV/#it{c})");
     fhNaPos->GetYaxis()->SetTitle("(TPCSignal-bbtheo)/bbtheo (He)");
     fListHistCascade->Add(fhNaPos);
   }
   
   if(! fhNaNeg ){
-    fhNaNeg = new TH2F( "fhNaNeg" , "Distribution Neg" , 500,0,5,500,-2,2);
+    fhNaNeg = new TH2F( "fhNaNeg" , "Distribution Neg" , 500,0,5,500,-10,10);
     fhNaNeg->GetXaxis()->SetTitle("p/z (GeV/#it{c})");
     fhNaNeg->GetYaxis()->SetTitle("(TPCSignal-bbtheo)/bbtheo (He)");
     fListHistCascade->Add(fhNaNeg);
@@ -335,7 +386,7 @@ void AliAnalysisTaskHelium3Pi::UserCreateOutputObjects()
   }
   
   if(! fNtuple1 ) {
-    fNtuple1 = new TNtuple("fNtuple1","Ntuple1","runNumber:bunchcross:orbit:period:eventtype:TrackNumber:percentile:xPrimaryVertex:yPrimaryVertex:zPrimaryVertex:xSecondaryVertex:ySecondaryVertex:zSecondaryVertex:dcaTracks:CosPointingAngle:DCAV0toPrimaryVertex:HeSign:HepInTPC:HeTPCsignal:DcaHeToPrimVertex:HeEta:momHex:momHey:momHez:momHeAtSVx:momHeAtSVy:momHeAtSVz:HeTPCNcls:HeimpactXY:HeimpactZ:HeITSClusterMap:IsHeITSRefit:PionSign:PionpInTPC:PionTPCsignal:DcaPionToPrimVertex:PionEta:momPionx:momPiony:momPionz:momNegPionAtSVx:momNegPionAtSVy:momNegPionAtSVz:PionTPCNcls:PionimpactXY:PionimpactZ:PionITSClusterMap:IsPiITSRefit:xn:xp");
+    fNtuple1 = new TNtuple("fNtuple1","Ntuple1","runNumber:bunchcross:orbit:period:eventtype:TrackNumber:percentile:xPrimaryVertex:yPrimaryVertex:zPrimaryVertex:xSecondaryVertex:ySecondaryVertex:zSecondaryVertex:dcaTracks:CosPointingAngle:DCAV0toPrimaryVertex:HeSign:HepInTPC:HeTPCsignal:DcaHeToPrimVertex:HeEta:momHex:momHey:momHez:momHeAtSVx:momHeAtSVy:momHeAtSVz:HeTPCNcls:HeimpactXY:HeimpactZ:HeITSClusterMap:IsHeITSRefit:PionSign:PionpInTPC:PionTPCsignal:DcaPionToPrimVertex:PionEta:momPionx:momPiony:momPionz:momNegPionAtSVx:momNegPionAtSVy:momNegPionAtSVz:PionTPCNcls:PionimpactXY:PionimpactZ:PionITSClusterMap:IsPiITSRefit:xn:xp:chi2He:chi2Pi");
     
     fListHistCascade->Add(fNtuple1);
   }
@@ -350,7 +401,6 @@ void AliAnalysisTaskHelium3Pi::UserCreateOutputObjects()
 }// end UserCreateOutputObjects
 
 
-
 //====================== USER EXEC ========================
 
 void AliAnalysisTaskHelium3Pi::UserExec(Option_t *) 
@@ -360,36 +410,34 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
   //!*********************!//
   //!  Define variables   !//
   //!*********************!//
-  Float_t vett1[50];
-  for(Int_t i=0;i<50;i++) vett1[i]=0;
+
+  Float_t vett1[52];
+  for(Int_t i=0;i<52;i++) vett1[i]=0;
 
   Float_t vett4[40];
   for(Int_t i=0;i<40;i++) vett4[i]=0;
   
-  Double_t ITSsample[4];
-  for(Int_t i=0;i<4;i++)ITSsample[i]=0;
-
-  Double_t  pinTPC=0.,poutTPC=0.,TPCSignal=0.;
+  Double_t pinTPC=0.,poutTPC=0.,TPCSignal=0.;
   Double_t xPrimaryVertex=0.,yPrimaryVertex=0.,zPrimaryVertex=0.;
   Double_t massTOF=0.,timeTOF=0.,trackLenghtTOF=0.,betaTOF=0.;
 
   ULong_t  status=0;
-  ULong_t  statusT=0;
+  //  ULong_t  statusT=0;
   ULong_t  statusPi=0;
 
-  Bool_t   isTPC=kFALSE,isTOF=kFALSE,isTOFHe=kFALSE,IsHeITSRefit=kFALSE,isTOFPi=kFALSE,IsPiITSRefit=kFALSE ;
+  Bool_t   isTPC=kFALSE,isTOF=kFALSE,IsHeITSRefit=kFALSE,IsPiITSRefit=kFALSE ;
 
   Float_t nSigmaNegPion=0.;
-  Float_t nSigmaNegPion1=0.;
-  Float_t nSigmaNegPion2=0.;
+  // Float_t nSigmaNegPion1=0.;
+  // Float_t nSigmaNegPion2=0.;
 
   Double_t cutNSigma = 3;
-  Double_t bbtheoM=0.,bbtheoP=0.,bbtheo=0.;
+  Double_t bbtheoM=0.,bbtheo=0.;
   Double_t zNathashaNeg=0;
   Double_t zNathashaPos=0;
   Double_t fPos[3]={0.,0.,0.};
   Double_t runNumber=0.;
-  Double_t evNumber=0.;
+  //  Double_t evNumber=0.;
 
   Double_t BCNumber=0.;
   Double_t OrbitNumber=0.;
@@ -451,6 +499,14 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
   fHistTrackMultiplicity->Fill(TrackNumber,percentile); //tracce per evento
 
   //****************************************
+  
+  // PID
+  
+  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+  fPIDResponse=inputHandler->GetPIDResponse(); // data member di tipo "const AliPIDResponse *fPIDResponse;"
+
+  //===========================================
 
   Int_t eventtype=-99;
   
@@ -533,36 +589,38 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
     
     Float_t impactXY=-999, impactZ=-999;
     Float_t impactXYpi=-999, impactZpi=-999;
-    
+
+    Bool_t testTrackCuts = kFALSE;
+
     //!   SELECTIONS:
     //! - No ITSpureSA
     //! - ITSrefit
     //! - TPCrefit
     //! - ITSmap !=0
     
-    // ******************* Track Cuts Definitions ********************//
+    // // ******************* Track Cuts Definitions ********************//
   
-    //! ITS
+    // //! ITS
 
-    AliESDtrackCuts* esdtrackCutsITS = new AliESDtrackCuts("esdtrackCutsITS");
-    esdtrackCutsITS->SetRequireITSStandAlone(kFALSE);
-    esdtrackCutsITS->SetRequireITSPureStandAlone(kFALSE);
+    // AliESDtrackCuts* esdtrackCutsITS = new AliESDtrackCuts("esdtrackCutsITS");
+    // esdtrackCutsITS->SetRequireITSStandAlone(kFALSE);
+    // esdtrackCutsITS->SetRequireITSPureStandAlone(kFALSE);
     
-    //! TPC
+    // //! TPC
     
-    Int_t    minclsTPC=60;
-    Double_t maxchi2perTPCcl=5.;
+    // Int_t    minclsTPC=60;
+    // Double_t maxchi2perTPCcl=5.;
     
-    AliESDtrackCuts* esdtrackCutsTPC = new AliESDtrackCuts("esdtrackCutsTPC");
-    esdtrackCutsTPC->SetRequireTPCRefit(kTRUE);
-    esdtrackCutsTPC->SetAcceptKinkDaughters(kFALSE);
-    esdtrackCutsTPC->SetMinNClustersTPC(minclsTPC);
-    esdtrackCutsTPC->SetMaxChi2PerClusterTPC(maxchi2perTPCcl);
+    // AliESDtrackCuts* esdtrackCutsTPC = new AliESDtrackCuts("esdtrackCutsTPC");
+    // esdtrackCutsTPC->SetRequireTPCRefit(kTRUE);
+    // esdtrackCutsTPC->SetAcceptKinkDaughters(kFALSE);
+    // esdtrackCutsTPC->SetMinNClustersTPC(minclsTPC);
+    // esdtrackCutsTPC->SetMaxChi2PerClusterTPC(maxchi2perTPCcl);
     
-    //*********************************************+
+    // //*********************************************+
     
     runNumber = lESDevent->GetRunNumber();
-    evNumber  = lESDevent->GetEventNumberInFile();
+    //    evNumber  = lESDevent->GetEventNumberInFile();
     
     BCNumber    = lESDevent->GetBunchCrossNumber();
     OrbitNumber = lESDevent->GetOrbitNumber();
@@ -570,35 +628,37 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
     
     //*************************************************************
     
-    TF1 *foPion=new TF1("foPion", "[0]*([1]*TMath::Power(TMath::Sqrt(1 + (x/0.13957)*(x/0.13957))/(x/0.13957) , [3]) - 1 - TMath::Power(TMath::Sqrt(1 + (x/0.13957)*(x/0.13957))/(x/0.13957) , [3])*TMath::Log([2] + 1/TMath::Power((x/0.13957), [4])))",0.01,20);
-    foPion->SetParameters(4.1,8.98482806165147636e+00,1.54000000000000005e-05,2.30445734159456084e+00,2.25624744086878559e+00);
-    
-    //--------------------------------------------
-    
     for (Int_t j=0; j<TrackNumber; j++) { //loop on tracks
       
       AliESDtrack *esdtrack=lESDevent->GetTrack(j);
-      
+      //      AliVTrack*  esdtrack= (AliVTrack *) fEvent->GetTrack(iT);
+
+     
       if(!esdtrack) { 
 	AliError(Form("ERROR: Could not retrieve esdtrack %d",j)); 
 	continue; 
       }
       
+      testTrackCuts = IsTrackAccepted(esdtrack);
+      if(testTrackCuts == kFALSE)continue;
+
+      //      cout<<"Is ttrack accepted: "<<(testTrackCuts)<<endl;
+      //      if(IsTrackAccepted(esdtrack)==kFALSE)continue;
+
       // ************** Track cuts ****************
       
       status  = (ULong_t)esdtrack->GetStatus();
       
       isTPC   = (((status) & AliESDtrack::kTPCin)  != 0);
       isTOF   = ((((status) & AliESDtrack::kTOFout) != 0) && (((status) & AliESDtrack::kTIME) != 0));
-      
-      Bool_t IsTrackAcceptedTPC =  esdtrackCutsTPC->AcceptTrack(esdtrack);
-      Bool_t IsTrackAcceptedITS =  esdtrackCutsITS->AcceptTrack(esdtrack);
-      
-      if (!(IsTrackAcceptedTPC && IsTrackAcceptedITS)) continue;
+
+      // if (!IsTrackAccepted(esdtrack))continue;
+      // Bool_t IsTrackAcceptedTPC =  esdtrackCutsTPC->AcceptTrack(esdtrack);
+      // Bool_t IsTrackAcceptedITS =  esdtrackCutsITS->AcceptTrack(esdtrack);
+      // if (!(IsTrackAcceptedTPC && IsTrackAcceptedITS)) continue;
       
       UInt_t mapITS=esdtrack->GetITSClusterMap();
-      //    if(mapITS==0) continue;
-      
+            
       //----------------------------------------------
       
       //****** Cuts from  AliV0Vertex.cxx *************
@@ -612,14 +672,16 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
       TPCSignal=esdtrack->GetTPCsignal(); 
       
       if (TPCSignal<10)continue;
+      if (TPCSignal>1000)continue;
       
       if(!isTPC)continue;
-      
       if(!esdtrack->GetTPCInnerParam())continue;
       
       AliExternalTrackParam trackIn(*esdtrack->GetInnerParam()); 
-      pinTPC = trackIn.GetP(); 
+      pinTPC= trackIn.GetP(); 
       
+      //pinTPC= esdtrack->GetTPCMomentum();
+
       poutTPC=pinTPC;
       
       fHistMult->Fill(0);
@@ -655,52 +717,55 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
       
       //pass2
       
-      bbtheo =BetheBloch((2*pinTPC)/3.,2,kTRUE);    //! OK
-      bbtheoM=(1 - 0.08*5)*bbtheo;                  //! OK 
-      bbtheoP=(1 + 0.08*5)*bbtheo;                  //! OK
+      // bbtheo =BetheBloch((2*pinTPC)/3.,2,kTRUE);    //! OK
+      // bbtheoM=(1 - 0.08*5)*bbtheo;                  //! OK 
+      // bbtheoP=(1 + 0.08*5)*bbtheo;                  //! OK
+      
+
+      bbtheo = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)0,esdtrack,(AliPID::EParticleType) 7);
       
       fHistMult->Fill(2);
       
       if(esdtrack->GetSign()<0){
-	zNathashaNeg=(TPCSignal-bbtheo)/bbtheo;
+	zNathashaNeg=bbtheo;//(TPCSignal-bbtheo)/bbtheo;
+	//	cout<<"BBtheo 1 :"<<zNathashaNeg<<endl;
 	fhNaNeg->Fill(pinTPC,zNathashaNeg); 
       }
       
       if(esdtrack->GetSign() > 0.){
-	zNathashaPos=(TPCSignal-bbtheo)/bbtheo;
+       	zNathashaPos=bbtheo;//(TPCSignal-bbtheo)/bbtheo;
 	fhNaPos->Fill(pinTPC,zNathashaPos); 
       }
       
-      nSigmaNegPion1 = TMath::Abs((TPCSignal - foPion->Eval(pinTPC))/foPion->Eval(pinTPC))/0.07; 
-      nSigmaNegPion2 = TMath::Abs((TPCSignal - foPion->Eval(pinTPC))/foPion->Eval(pinTPC))/0.04; 
-      
-      if(pinTPC<0.6)
-	nSigmaNegPion=nSigmaNegPion1;
-      if(pinTPC>=0.6)
-	nSigmaNegPion=nSigmaNegPion2;
+      nSigmaNegPion=TMath::Abs(fPIDResponse->NumberOfSigmasTPC(esdtrack,(AliPID::EParticleType) 2));
+      //2 is pion
       
       if ( (nSigmaNegPion < cutNSigma)){ 
 	
+	//	cout<<"Nsigma pi: "<<nSigmaNegPion<<endl;
+	
 	fhBBPions->Fill(pinTPC*esdtrack->GetSign(),TPCSignal);
 	
-	if(pinTPC<3){
+	if(pinTPC<3.){
 	  PionsTPC[nPionsTPC++]=j;
 	}
       }
+    
+      //      nSigmaNegPion=(fPIDResponse->NumberOfSigmasTPC(esdtrack,(AliPID::EParticleType) 2));
       
-      if( TPCSignal > bbtheoM ) {
+      bbtheoM = (fPIDResponse->NumberOfSigmasTPC(esdtrack,(AliPID::EParticleType) 7));
+      
+      //      if( TPCSignal > bbtheoM ) {
+      if( bbtheoM > -3.) {
 	
 	if(pinTPC>0.6){
 	  
 	  fhBBHe->Fill(pinTPC*esdtrack->GetSign(),TPCSignal);
 	  HeTPC[nHeTPC++]=j;
 	  
-	  
 	  Bool_t isHeITSrefit=((status) & (AliESDtrack::kITSrefit));
 	  
 	  esdtrack->GetImpactParameters(impactXY, impactZ);
-	  esdtrack->GetITSdEdxSamples(ITSsample);
-	  
 	  
 	  Int_t  fIdxInt[200]; //dummy array
 	  Int_t nClustersTPC = esdtrack->GetTPCclusters(fIdxInt);
@@ -780,7 +845,7 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
       PionTrack=lESDevent->GetTrack(PionIdx);
       
       statusPi = (ULong_t)PionTrack->GetStatus();
-      isTOFPi  = ((((statusPi) & (AliESDtrack::kTOFout)) != 0) && (((statusPi) & (AliESDtrack::kTIME)) != 0));
+      //      isTOFPi  = ((((statusPi) & (AliESDtrack::kTOFout)) != 0) && (((statusPi) & (AliESDtrack::kTIME)) != 0));
       IsPiITSRefit = ((statusPi) & (AliESDtrack::kITSrefit)); 
       
       if (PionTrack) 
@@ -796,8 +861,8 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
 	
 	HeTrack=lESDevent->GetTrack(HeIdx);
 	
-	statusT= (ULong_t)HeTrack->GetStatus();
-	isTOFHe   = (((statusT & AliESDtrack::kTOFout) != 0) && ((statusT & AliESDtrack::kTIME) != 0));
+	//	statusT= (ULong_t)HeTrack->GetStatus();
+	//	isTOFHe   = (((statusT & AliESDtrack::kTOFout) != 0) && ((statusT & AliESDtrack::kTIME) != 0));
 	IsHeITSRefit = (status & AliESDtrack::kITSrefit); 
 	
 	if (HeTrack) 
@@ -876,20 +941,25 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
 	vPion.SetXYZM(momPionVettAt[0],momPionVettAt[1],momPionVettAt[2],PionMass);       
 	vSum=vHelium+vPion;
 	
-	if(vSum.M()>3.1)continue;
+	if(vSum.M()>3.2)
+	  continue;
+
+	Int_t  fIdxInt[200]; //dummy array
+	Int_t nClustersTPCHe = HeTrack->GetTPCclusters(fIdxInt);
+	Int_t nClustersTPCPi = PionTrack->GetTPCclusters(fIdxInt);
 	
 	//----------------------------------------------------------------------//
 	
-	vett1[0]=(Float_t)runNumber;
-	vett1[1]=(Float_t)BCNumber;
-	vett1[2]=(Float_t)OrbitNumber;
-	vett1[3]=(Float_t)PeriodNumber;
-	vett1[4]=(Float_t)eventtype;
-	vett1[5]=(Float_t)TrackNumber;
-	vett1[6]=(Float_t)percentile;
-	vett1[7]=(Float_t)xPrimaryVertex; //PRIMARY
-	vett1[8]=(Float_t)yPrimaryVertex;
-	vett1[9]=(Float_t)zPrimaryVertex;
+	vett1[0] =(Float_t)runNumber;
+	vett1[1] =(Float_t)BCNumber;
+	vett1[2] =(Float_t)OrbitNumber;
+	vett1[3] =(Float_t)PeriodNumber;
+	vett1[4] =(Float_t)eventtype;
+	vett1[5] =(Float_t)TrackNumber;
+	vett1[6] =(Float_t)percentile;
+	vett1[7] =(Float_t)xPrimaryVertex; //PRIMARY
+	vett1[8] =(Float_t)yPrimaryVertex;
+	vett1[9] =(Float_t)zPrimaryVertex;
 	vett1[10]=(Float_t)fPos[0]; //SECONDARY
 	vett1[11]=(Float_t)fPos[1];
 	vett1[12]=(Float_t)fPos[2];
@@ -930,9 +1000,11 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
 	vett1[47]=(Float_t)IsPiITSRefit;
 	vett1[48]=(Float_t)xn;
 	vett1[49]=(Float_t)xp;
-	
+	vett1[50]=(Float_t)HeTrack->GetTPCchi2()/(Float_t)(nClustersTPCHe);
+	vett1[51]=(Float_t)PionTrack->GetTPCchi2()/(Float_t)(nClustersTPCPi);
+
 	fNtuple1->Fill(vett1);  
-	
+	vertex.Delete();
       }// positive TPC
       
     } //negative tpc

@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_Helium3Pi(){
+AliAnalysisTask *AddTask_Helium3Pi(TString name="name"){
 
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -9,10 +9,10 @@ AliAnalysisTask *AddTask_Helium3Pi(){
   
   //========= Add task to the ANALYSIS manager =====
 
-  AliAnalysisTaskSE *taskHelium3Pi = new AliAnalysisTaskHelium3Pi("Helium3Pi_task");
-
+  AliAnalysisTaskHelium3Pi *taskHelium3Pi = new AliAnalysisTaskHelium3Pi(name);
+   
   mgr->AddTask(taskHelium3Pi);
-
+  
   //================================================
   //              data containers
   //================================================
