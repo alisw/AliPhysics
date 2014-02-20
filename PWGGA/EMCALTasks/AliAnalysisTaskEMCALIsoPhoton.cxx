@@ -73,6 +73,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fImportGeometryFilePath(""),
   fMaxPtTrack(0),
   fMaxEClus(0),
+  fNCells50(0),
   fESD(0),
   fAOD(0),
   fMCEvent(0),
@@ -147,6 +148,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fImportGeometryFilePath(""),
   fMaxPtTrack(0),
   fMaxEClus(0),
+  fNCells50(0),
   fESD(0),
   fAOD(0),
   fMCEvent(0),
@@ -499,6 +501,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
     if(fDebug)
       std::cout<<"ERROR: NO MC EVENT!!!!!!\n";
   }
+  LoopOnCells();
   FollowGamma();
   if(fDebug)
     printf("passed calling of FollowGamma\n");
@@ -515,6 +518,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
     fESDClusters->Clear();*/
   fSelPrimTracks->Clear();
   fNClusForDirPho = 0;
+  fNCells50 = 0;
 
   PostData(1, fOutputList);
   PostData(2, fQAList);
@@ -1044,7 +1048,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillQA()
   if(!fSelPrimTracks)
     return;
   const int ntracks = fSelPrimTracks->GetEntriesFast();
-  const int ncells = fESDCells->GetNumberOfCells();
+  const int ncells = fNCells50;//fESDCells->GetNumberOfCells();
   const Int_t nclus = fESDClusters->GetEntries();
 
   fNTracks->Fill(ntracks);
@@ -1097,6 +1101,24 @@ Double_t AliAnalysisTaskEMCALIsoPhoton::GetTrackMatchedPt(Int_t matchIndex)
     pt = track->Pt();
   }
   return pt;
+}
+//________________________________________________________________________
+void AliAnalysisTaskEMCALIsoPhoton::LoopOnCells()
+{
+  AliVCaloCells *cells = 0;
+  cells = fESDCells;
+  if (!cells)
+    cells = fAODCells;
+  if(!cells)
+    return;
+  Int_t ncells = cells->GetNumberOfCells();
+  for (Int_t i=0; i<ncells; i++) {
+    Short_t absid = TMath::Abs(cells->GetCellNumber(i));
+    Double_t e = cells->GetCellAmplitude(absid);
+    if(e>0.05)
+      fNCells50++;
+  }
+
 }
 //________________________________________________________________________
 void AliAnalysisTaskEMCALIsoPhoton::Terminate(Option_t *) 
