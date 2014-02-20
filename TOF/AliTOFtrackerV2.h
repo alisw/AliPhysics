@@ -70,7 +70,6 @@ private:
  Int_t fnunmatch;       // Unmatched tracks
  Int_t fnmatch;         // Total matched tracks
 
- TClonesArray* fTracks; //! pointer to the TClonesArray with TOF tracks
  TObjArray* fSeeds;  //! pointer to the TObjArray with ESD tracks
  AliTOFcluster    *fClusters[kMaxCluster];     //! pointers to the TOF cluster
  TClonesArray     *fClustersESD;  //! base line for ESD clusters
@@ -78,6 +77,10 @@ private:
  Int_t            fWrittenInPos[kMaxCluster]; //! the position where the cluster is already written
  
  AliESDEvent      *fEvent;    //! pointer to the event
+
+ Int_t fNsteps;                         //! number of propagation steps
+ Double_t *fTimesAr[AliPID::kSPECIESC]; //! array to compute expected times for each propagation step
+ Float_t  *fTrackPos[4];                //! array to compute pos for each propation step
 
  ClassDef(AliTOFtrackerV2, 2) // TOF tracker 
 };
