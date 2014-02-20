@@ -12,7 +12,7 @@
 class TH1F;
 class TList;
 class AliESDtrackCuts;
-class AliTriggerAnalysis;
+//class AliTriggerAnalysis;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -53,7 +53,7 @@ class AliAnalysisTaskCounter : public AliAnalysisTaskSE {
   Float_t              fAvgTrials;         // avg trials
   TList*               fOutputContainer;   //! Histogram container  
   AliESDtrackCuts    * fESDtrackCuts;      // Track cut    
-  AliTriggerAnalysis * fTriggerAnalysis;   // Trigger algorithm 
+  //AliTriggerAnalysis * fTriggerAnalysis;   // Trigger algorithm
   TString              fCurrFileName;      // current file path name
   Bool_t               fCheckMCCrossSection; // retrieve from the pyxsec.root file only if requested
   
