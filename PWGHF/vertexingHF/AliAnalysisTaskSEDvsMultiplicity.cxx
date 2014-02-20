@@ -101,6 +101,7 @@ AliAnalysisTaskSE(),
   fUseNchWeight(kFALSE),
   fHistoMCNch(0),
   fHistoMeasNch(0),
+  fNMultEstimatorProfiles(4),
   fRefMult(9.26),
   fPdgMeson(411),
   fMultiplicityEstimator(kNtrk10),
@@ -112,7 +113,7 @@ AliAnalysisTaskSE(),
 }
 
 //________________________________________________________________________
-AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *name, Int_t pdgMeson,AliRDHFCuts *cuts):
+AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *name, Int_t pdgMeson,AliRDHFCuts *cuts, Bool_t switchPPb):
   AliAnalysisTaskSE(name),
   fOutput(0),
   fListCuts(0),
@@ -155,12 +156,13 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fHigherImpPar(2000.),
   fReadMC(kFALSE),
   fMCOption(0),
-  fisPPbData(kFALSE),
+  fisPPbData(switchPPb),
   fUseBit(kTRUE),
   fSubtractTrackletsFromDau(kFALSE),
   fUseNchWeight(kFALSE),
   fHistoMCNch(0),
   fHistoMeasNch(0),
+  fNMultEstimatorProfiles((switchPPb) ? 2 : 4),
   fRefMult(9.26),
   fPdgMeson(pdgMeson),
   fMultiplicityEstimator(kNtrk10),
@@ -169,6 +171,7 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   // 
   // Standard constructor
   //
+ 
   for(Int_t i=0; i<5; i++) fHistMassPtImpPar[i]=0;
   for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
   if(fPdgMeson==413){
@@ -201,7 +204,10 @@ AliAnalysisTaskSEDvsMultiplicity::~AliAnalysisTaskSEDvsMultiplicity()
   delete fRDCutsAnalysis;
   delete fCounter;
   delete fCounterU;
-  for(Int_t i=0; i<4; i++) delete fMultEstimatorAvg[i];
+  for(Int_t i=0; i<4; i++) {
+      if (fMultEstimatorAvg[i]) delete fMultEstimatorAvg[i];
+  }
+  
   for(Int_t i=0; i<5; i++){
     delete fHistMassPtImpPar[i];
   }
@@ -257,8 +263,12 @@ void AliAnalysisTaskSEDvsMultiplicity::Init(){
   
   fListProfiles = new TList();
   fListProfiles->SetOwner();
-  TString period[4]={"LHC10b","LHC10c","LHC10d","LHC10e"};
-  for(Int_t i=0; i<4; i++){
+  TString period[4];
+  
+  if (fNMultEstimatorProfiles == 2) {period[0]="LHC13b"; period[1]="LHC13c";}
+  else {period[0]="LHC10b"; period[1]="LHC10c"; period[2]="LHC10d"; period[3]="LHC10e";}
+ 
+  for(Int_t i=0; i<fNMultEstimatorProfiles; i++){
     if(fMultEstimatorAvg[i]){
       TProfile* hprof=new TProfile(*fMultEstimatorAvg[i]);
       hprof->SetName(Form("ProfileTrkVsZvtx%s\n",period[i].Data()));
@@ -895,12 +905,21 @@ TProfile* AliAnalysisTaskSEDvsMultiplicity::GetEstimatorHistogram(const AliVEven
   //
 
   Int_t runNo  = event->GetRunNumber();
-  Int_t period = -1;   // 0-LHC10b, 1-LHC10c, 2-LHC10d, 3-LHC10e
-  if(runNo>114930 && runNo<117223) period = 0;
-  if(runNo>119158 && runNo<120830) period = 1;
-  if(runNo>122373 && runNo<126438) period = 2;
-  if(runNo>127711 && runNo<130841) period = 3;
-  if(period<0 || period>3) return 0;
+  Int_t period = -1;   // pp: 0-LHC10b, 1-LHC10c, 2-LHC10d, 3-LHC10e
+                       // pPb: 0-LHC13b, 1-LHC13c
+  if (fisPPbData) {
+      if (runNo>195343 && runNo<195484) period = 0;
+      if (runNo>195528 && runNo<195678) period = 1;
+      if (period < 0 || period > 1) return 0;
+  } 
+   else {
+      if(runNo>114930 && runNo<117223) period = 0;
+      if(runNo>119158 && runNo<120830) period = 1;
+      if(runNo>122373 && runNo<126438) period = 2;
+      if(runNo>127711 && runNo<130841) period = 3;
+      if(period<0 || period>3) return 0;
+     
+} 
 
   return fMultEstimatorAvg[period];
 }
