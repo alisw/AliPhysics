@@ -339,9 +339,9 @@ public:
   void             SwitchOnEMCALEventRejectionWith2Thresholds()  { fRejectEMCalTriggerEventsWith2Tresholds = kTRUE  ; }
   void             SwitchOffEMCALEventRejectionWith2Thresholds() { fRejectEMCalTriggerEventsWith2Tresholds = kFALSE ; }
 	
-  void             SwitchOnEventSelection()                { fDoEventSelection      = kTRUE  ; }
-  void             SwitchOffEventSelection()               { fDoEventSelection      = kFALSE ; }
-  Bool_t           IsEventSelectionDone()            const { return fDoEventSelection        ; }
+  void             SwitchOnPileUpEventRejection()          { fDoPileUpEventRejection= kTRUE  ; }
+  void             SwitchOffPileUpEventRejection()         { fDoPileUpEventRejection= kFALSE ; }
+  Bool_t           IsPileUpEventRejectionDone()      const { return fDoPileUpEventRejection  ; }
   
   void             SwitchOnV0ANDSelection()                { fDoV0ANDEventSelection = kTRUE  ; }
   void             SwitchOffV0ANDSelection()               { fDoV0ANDEventSelection = kFALSE ; }
@@ -749,8 +749,8 @@ public:
   Bool_t           fRemoveUnMatchedTriggers;     // Analyze events where trigger patch and cluster where found or not
   
   
-  Bool_t           fDoEventSelection;            // Select events depending on V0, pileup, vertex well reconstructed, at least 1 track ...
-  Bool_t           fDoV0ANDEventSelection;       // Select events depending on V0, fDoEventSelection should be on
+  Bool_t           fDoPileUpEventRejection;      // Select pile-up events by SPD
+  Bool_t           fDoV0ANDEventSelection;       // Select events depending on V0AND
   Bool_t           fDoVertexBCEventSelection;    // Select events with vertex on BC=0 or -100
   Bool_t           fDoRejectNoTrackEvents;       // Reject events with no selected tracks in event
   Bool_t           fUseEventsWithPrimaryVertex ; // Select events with primary vertex
