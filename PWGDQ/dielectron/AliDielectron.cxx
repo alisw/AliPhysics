@@ -1393,7 +1393,10 @@ void AliDielectron::SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary, 
   fun->GetHistogram()->GetXaxis()->SetUniqueID(varx);
   fun->GetHistogram()->GetYaxis()->SetUniqueID(vary);
   fun->GetHistogram()->GetZaxis()->SetUniqueID(varz);
-  fPostPIDCntrdCorr=fun;
+  // clone temporare histogram since otherwise it will not be streamed to file!
+  TString key = Form("cntrd%d%d%d",varx,vary,varz);
+  fPostPIDCntrdCorr = (TH1*)fun->GetHistogram()->Clone(key.Data());
+  fPostPIDCntrdCorr->GetListOfFunctions()->AddAt(fun,0);
 }
 //______________________________________________
 void AliDielectron::SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary, UInt_t varz)
@@ -1401,8 +1404,12 @@ void AliDielectron::SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary, UIn
   fun->GetHistogram()->GetXaxis()->SetUniqueID(varx);
   fun->GetHistogram()->GetYaxis()->SetUniqueID(vary);
   fun->GetHistogram()->GetZaxis()->SetUniqueID(varz);
-  fPostPIDWdthCorr=fun;
+  // clone temporare histogram since otherwise it will not be streamed to file!
+  TString key = Form("wdth%d%d%d",varx,vary,varz);
+  fPostPIDWdthCorr = (TH1*)fun->GetHistogram()->Clone(key.Data());
+  fPostPIDWdthCorr->GetListOfFunctions()->AddAt(fun,0);
 }
+
 //______________________________________________
 THnBase* AliDielectron::InitEffMap(TString filename)
 {
@@ -1416,6 +1423,6 @@ THnBase* AliDielectron::InitEffMap(TString filename)
   if(!hFnd || !hGen) return 0x0;
 
   hFnd->Divide(hGen);
-  printf("[I] AliDielectron::InitLegEffMap efficiency maps %s loaded! \n",filename.Data());
+  printf("[I] AliDielectron::InitEffMap efficiency maps %s with %d dimensions loaded! \n",filename.Data(),hFnd->GetNdimensions());
   return ((THnBase*) hFnd->Clone("effMap"));
 }
