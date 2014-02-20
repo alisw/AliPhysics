@@ -151,8 +151,15 @@ class AliAnalysisTaskToyModel : public TObject {
   void SetUseJets() {fUseJets = kTRUE;}
 
   // Local charge conservation (LCC)
-  void SetUseLCC() {fUseLCC = kTRUE;}
+  void SetUseLCC() {fUseLCC = kTRUE;}//default values for sigma (pt=0.1,eta=0.5,phi=0.5)
 
+  void SetUseLCC(Double_t sigmaPt, Double_t sigmaEta, Double_t sigmaPhi) {
+    fUseLCC   = kTRUE;
+    fSigmaPt  = sigmaPt; 
+    fSigmaEta = sigmaEta; 
+    fSigmaPhi = sigmaPhi; 
+  }
+  
   //============Toy model: List of setters============//
 
  private:
@@ -287,6 +294,9 @@ class AliAnalysisTaskToyModel : public TObject {
   TF1 *fPtAssoc;//pt of associated
 
   Bool_t fUseLCC;//Usage of Local Charge Conservation
+  Double_t fSigmaPt;//sigma for LCC spread in pT
+  Double_t fSigmaEta;//sigma for LCC spread in Eta
+  Double_t fSigmaPhi;//sigma for LCC spread in Phi
 
   AliAnalysisTaskToyModel(const AliAnalysisTaskToyModel&); // not implemented
   AliAnalysisTaskToyModel& operator=(const AliAnalysisTaskToyModel&); // not implemented
