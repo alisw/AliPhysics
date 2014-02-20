@@ -33,7 +33,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    Int_t       nmix = 5,
    Double_t    minYlab =  -0.5,
    Double_t    maxYlab =  0.5,
-   Double_t    dcaProduct = 1E-4,
+   Double_t    dcaProduct = -1E-4,
    Float_t     maxDiffVzMix = 1.0,
    Float_t     maxDiffMultMix = 10.0,
    Float_t     maxDiffAngleMixDeg = 20.0,
@@ -55,7 +55,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    } 
 
    // create the task and configure 
-   TString taskName = Form("D0%s%s_%.1f_%d_%.1f_%.1f_%.1f_%.1f_%.1f_%.4f_%.5f", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"), cutV, NTPCcluster, nsigmaTPCPi, nsigmaTPCKa, nsigmaTOFPi, nsigmaTOFKa, trackDCAcutMax, trackDCAcutMin, dcaProduct);
+   TString taskName = Form("D0%s%s_%.1f_%d_%.1f_%.1f_%.1f_%.1f_%.1f_%.4f_%.5f_%.2f", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"), cutV, NTPCcluster, nsigmaTPCPi, nsigmaTPCKa, nsigmaTOFPi, nsigmaTOFKa, trackDCAcutMax, trackDCAcutMin, dcaProduct, minpt);
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
    if (!isMC && !isPP){
      Printf(Form("========== SETTING USE CENTRALITY PATCH AOD049 : %s", (aodN==49)? "yes" : "no"));
@@ -147,12 +147,13 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    cutsPairY->ShowCuts();
    cutsPairY->PrintSetInfo();
    
-   AliRsnCutSet *cutsPairDCAp = new AliRsnCutSet("pairCutsDCAp", AliRsnTarget::kMother);
+   /*AliRsnCutSet *cutsPairDCAp = new AliRsnCutSet("pairCutsDCAp", AliRsnTarget::kMother);
    cutsPairDCAp->AddCut(cutDCAproduct);
    cutsPairDCAp->UseMonitor(kTRUE);
    cutsPairDCAp->SetCutScheme("setPairD0_DCAp");
    cutsPairDCAp->ShowCuts();
-   cutsPairDCAp->PrintSetInfo();
+   cutsPairDCAp->PrintSetInfo();*/
+  
    
    
    //
@@ -163,7 +164,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
        Printf("========================== MC analysis - PID cuts not used");
    } else 
      Printf("========================== DATA analysis - PID cuts used");
-   if (!ConfigD0(task, isPP, isMC, nsigmaTPCPi, nsigmaTPCKa, nsigmaTOFPi, nsigmaTOFKa, aodFilterBit, trackDCAcutMax, trackDCAcutMin, NTPCcluster, minpt, "", cutsPairY, cutsPairDCAp)) return 0x0;
+   if (!ConfigD0(task, isPP, isMC, nsigmaTPCPi, nsigmaTPCKa, nsigmaTOFPi, nsigmaTOFKa, aodFilterBit, trackDCAcutMax, trackDCAcutMin, NTPCcluster, minpt, "", cutsPairY)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------

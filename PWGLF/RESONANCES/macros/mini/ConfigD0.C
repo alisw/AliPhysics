@@ -23,8 +23,7 @@ Bool_t ConfigD0
    Int_t           	   NTPCcluster = 70,
    Double_t                minpt = 0.15, 
    const char      	  *suffix,
-   AliRsnCutSet           *cutsPairY,
-   AliRsnCutSet           *cutsPairDCAp
+   AliRsnCutSet           *cutsPairY
 )
 {
    // manage suffix
@@ -156,7 +155,6 @@ Bool_t ConfigD0
       out->SetMotherMass(mass[i]);
       // pair cuts
       out->SetPairCuts(cutsPairY);
-      out->SetPairCuts(cutsPairDCAp);
 
       // axis X: invmass (or resolution)
       if (useIM[i]) 
@@ -167,26 +165,26 @@ Bool_t ConfigD0
       out->AddAxis(ptID, 100, 0.0, 10.0);
       
       // axiz Z: rapidity
-      out->AddAxis(yID, 100, -1, 1);
+      //out->AddAxis(yID, 100, -1, 1);
       
       // more axis: daughter's dca product
-      out->AddAxis(dcapID, 2000, -0.001, 0.001);
+      out->AddAxis(dcapID, 100, -0.001, 0);
       
-      out->AddAxis(daug1ptID, 1500, 0.0, 15.0);
+      //out->AddAxis(daug1ptID, 150, 0.0, 15.0);
      
-      out->AddAxis(daug2ptID, 1500, 0.0, 15.0);
+      //out->AddAxis(daug2ptID, 150, 0.0, 15.0);
       
-      out->AddAxis(daug1dcaID, 1000, -1.0, 1.0);
+      //out->AddAxis(daug1dcaID, 200, -1.0, 1.0);
       
-      out->AddAxis(daug2dcaID, 1000, -1.0, 1.0);
+      //out->AddAxis(daug2dcaID, 200, -1.0, 1.0);
       
       
       if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
    }
    
    
-   AddMonitorOutput_PairY(cutsPairY->GetMonitorOutput());
-   AddMonitorOutput_PairDCAProduct(cutsPairDCAp->GetMonitorOutput());
+   /*AddMonitorOutput_PairY(cutsPairY->GetMonitorOutput());
+   AddMonitorOutput_PairDCAProduct(cutsPairDCAp->GetMonitorOutput());*/
    
    AddMonitorOutput_PionEta(cutSetPi->GetMonitorOutput());
    AddMonitorOutput_PionY(cutSetPi->GetMonitorOutput());
@@ -222,7 +220,7 @@ Bool_t ConfigD0
    // binnings
    out->AddAxis(imID, 800, 1.4, 2.2);
    out->AddAxis(ptID, 100, 0.0, 10.0);
-   out->AddAxis(yID, 100, -1, 1);
+   //out->AddAxis(yID, 100, -1, 1);
 
    if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
    
@@ -238,7 +236,7 @@ Bool_t ConfigD0
    // binnings
    out->AddAxis(imID, 800, 1.4, 2.2);
    out->AddAxis(ptID, 100, 0.0, 10.0);
-   out->AddAxis(yID, 100, -1, 1);
+   //out->AddAxis(yID, 100, -1, 1);
 
    if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
    
@@ -248,7 +246,7 @@ Bool_t ConfigD0
    return kTRUE;
 }
 
-void AddMonitorOutput_PairY(TObjArray *mon=0,TString opt="",AliRsnLoopPair *pairy=0)
+/*void AddMonitorOutput_PairY(TObjArray *mon=0,TString opt="",AliRsnLoopPair *pairy=0)
 {
 
    // Pair Y
@@ -280,7 +278,7 @@ void AddMonitorOutput_PairDCAProduct(TObjArray *mon=0,TString opt="",AliRsnLoopP
    if (mon) mon->Add(outMonitorPairDCAProduct);
    if (pairdcaproduct) pairdcaproduct->AddOutput(outMonitorPairDCAProduct);
   
-}
+}*/
 
 
 void AddMonitorOutput_PionEta(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *peta=0)
