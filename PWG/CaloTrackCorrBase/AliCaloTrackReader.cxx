@@ -42,7 +42,7 @@
 #include "AliMixedEvent.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
-#include "AliTriggerAnalysis.h"
+//#include "AliTriggerAnalysis.h"
 #include "AliESDVZERO.h"
 #include "AliVCaloCells.h"
 #include "AliAnalysisManager.h"
@@ -122,7 +122,8 @@ fDoPileUpEventRejection(kFALSE), fDoV0ANDEventSelection(kFALSE),
 fDoVertexBCEventSelection(kFALSE),
 fDoRejectNoTrackEvents(kFALSE),
 fUseEventsWithPrimaryVertex(kFALSE),
-fTriggerAnalysis (0x0),      fTimeStampEventSelect(0),
+//fTriggerAnalysis (0x0),
+fTimeStampEventSelect(0),
 fTimeStampEventFracMin(0),   fTimeStampEventFracMax(0),
 fTimeStampRunMin(0),         fTimeStampRunMax(0),
 fNPileUpClusters(-1),        fNNonPileUpClusters(-1),         fNPileUpClustersCut(3),
@@ -188,7 +189,7 @@ AliCaloTrackReader::~AliCaloTrackReader()
   
   delete fESDtrackCuts;
   delete fESDtrackComplementaryCuts;
-  delete fTriggerAnalysis;
+  //delete fTriggerAnalysis;
   
   if(fNonStandardJets)
   {
@@ -826,7 +827,7 @@ void AliCaloTrackReader::InitParameters()
   fCTSTracks       = new TObjArray();
   fEMCALClusters   = new TObjArray();
   fPHOSClusters    = new TObjArray();
-  fTriggerAnalysis = new AliTriggerAnalysis;
+  //fTriggerAnalysis = new AliTriggerAnalysis;
   fAODBranchList   = new TList ;
   
   fPileUpParamSPD[0] = 3   ; fPileUpParamSPD[1] = 0.8 ;
@@ -1107,6 +1108,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     return kFALSE;
   }
   
+  // Select the event depending on the trigger type and other event characteristics
+  // like the goodness of the EMCal trigger
   Bool_t accept = CheckEventTriggers();
   if(!accept) return kFALSE;
   
@@ -1183,13 +1186,17 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   
   if(fDoV0ANDEventSelection)
   {
-    Bool_t bV0AND = kTRUE;
-    AliESDEvent* esd = dynamic_cast<AliESDEvent*> (fInputEvent);
-    if(esd)
-    bV0AND = fTriggerAnalysis->IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0AND);
-    //else bV0AND = //FIXME FOR AODs
-    if(!bV0AND) return kFALSE;
+    AliVVZERO* v0 = fInputEvent->GetVZEROData();
 
+    Bool_t bV0AND = ((v0->GetV0ADecision()==1) && (v0->GetV0CDecision()==1));
+    //bV0AND = fTriggerAnalysis->IsOfflineTriggerFired((AliESDEvent*)fInputEvent, AliTriggerAnalysis::kV0AND);
+    //printf("V0AND event? %d\n",bV0AND);
+
+    if(!bV0AND)
+    {
+      printf("AliCaloTrackReader::FillInputEvent() - Reject event by V0AND\n");
+      return kFALSE;
+    }
     if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Pass V0AND event rejection \n");
   }
 
@@ -1206,7 +1213,6 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     
     if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Pass centrality rejection \n");
   }
-  
 
   //-----------------------------------------------------------------
   // In case of mixing analysis, select here the trigger of the event
@@ -1258,14 +1264,12 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Pass rejection of null track events \n");
   }
   
-
   if(fDoVertexBCEventSelection)
   {
     if(fVertexBC!=0 && fVertexBC!=AliVTrack::kTOFBCNA) return kFALSE ;
     
     if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Pass rejection of events with vertex at BC!=0 \n");
   }
-  
   
   if(fFillEMCALCells)
     FillInputEMCALCells();
