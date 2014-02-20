@@ -128,7 +128,7 @@ void AliEMCALRawUtils::Digits2Raw()
     return;
   }
   
-  static const Int_t nDDL = 12*2; // 12 SM hardcoded for now. Buffers allocated dynamically, when needed, so just need an upper limit here
+  static const Int_t nDDL = 22*2; // 22 SM for DCal hardcoded for now. Buffers allocated dynamically, when needed, so just need an upper limit here  
   AliAltroBuffer* buffers[nDDL];
   for (Int_t i=0; i < nDDL; i++)
     buffers[i] = 0;
@@ -137,59 +137,52 @@ void AliEMCALRawUtils::Digits2Raw()
   TArrayI adcValuesHigh( TIMEBINS );
   
   // loop over digits (assume ordered digits)
-  for (Int_t iDigit = 0; iDigit < digits->GetEntries(); iDigit++) 
-    {
-      AliEMCALDigit* digit = dynamic_cast<AliEMCALDigit *>(digits->At(iDigit)) ;
-      if(!digit)
-	{
-	  AliFatal("NULL Digit");
-	}
-      else
-	{
-	  if (digit->GetAmplitude() <  AliEMCALRawResponse::GetRawFormatThreshold() ) 
-	    {
-	      continue;
-	    }
-	  //get cell indices
-	  Int_t nSM = 0;
-	  Int_t nIphi = 0;
-	  Int_t nIeta = 0;
-	  Int_t iphi = 0;
-	  Int_t ieta = 0;
-	  Int_t nModule = 0;
-	  fGeom->GetCellIndex(digit->GetId(), nSM, nModule, nIphi, nIeta);
-	  fGeom->GetCellPhiEtaIndexInSModule(nSM, nModule, nIphi, nIeta,iphi, ieta) ;
+  for (Int_t iDigit = 0; iDigit < digits->GetEntries(); iDigit++) {
+    AliEMCALDigit* digit = dynamic_cast<AliEMCALDigit *>(digits->At(iDigit)) ;
+    if(!digit) {
+      AliFatal("NULL Digit");
+    } else {
+      if (digit->GetAmplitude() <  AliEMCALRawResponse::GetRawFormatThreshold() ) {
+        continue;
+      }
+      //get cell indices
+      Int_t nSM = 0;
+      Int_t nIphi = 0;
+      Int_t nIeta = 0;
+      Int_t iphi = 0;
+      Int_t ieta = 0;
+      Int_t nModule = 0;
+      fGeom->GetCellIndex(digit->GetId(), nSM, nModule, nIphi, nIeta);
+      fGeom->GetCellPhiEtaIndexInSModule(nSM, nModule, nIphi, nIeta,iphi, ieta) ;
+    
+      //Check which is the RCU, 0 or 1, of the cell.
+      Int_t iRCU = -111;
+      if (0<=iphi&&iphi<8) iRCU=0; // first cable row
+      else if (8<=iphi&&iphi<16 && 0<=ieta&&ieta<24) iRCU=0; // first half; 
+      else if(8<=iphi&&iphi<16 && 24<=ieta&&ieta<48) iRCU=1; // second half; 
+      //second cable row
+      else if(16<=iphi&&iphi<24) iRCU=1; // third cable row
       
-	  //Check which is the RCU, 0 or 1, of the cell.
-	  Int_t iRCU = -111;
-	  if (0<=iphi&&iphi<8) iRCU=0; // first cable row
-	  else if (8<=iphi&&iphi<16 && 0<=ieta&&ieta<24) iRCU=0; // first half; 
-	  else if(8<=iphi&&iphi<16 && 24<=ieta&&ieta<48) iRCU=1; // second half; 
-	  //second cable row
-	  else if(16<=iphi&&iphi<24) iRCU=1; // third cable row
-	  
-	  if (nSM%2==1) iRCU = 1 - iRCU; // swap for odd=C side, to allow us to cable both sides the same
-	  
-	  if (iRCU<0) 
-	    Fatal("Digits2Raw()","Non-existent RCU number: %d", iRCU);
+      if (nSM%2==1) iRCU = 1 - iRCU; // swap for odd=C side, to allow us to cable both sides the same
       
-	  //Which DDL?
-	  Int_t iDDL = NRCUSPERMODULE*nSM + iRCU;
-	  if (iDDL < 0 || iDDL >= nDDL){
-	    Fatal("Digits2Raw()","Non-existent DDL board number: %d", iDDL);
-	  }
-	  else{
-	    if (buffers[iDDL] == 0) 
-	      {      
-		// open new file and write dummy header
-		TString fileName = AliDAQ::DdlFileName("EMCAL",iDDL);
-		//Select mapping file RCU0A, RCU0C, RCU1A, RCU1C
+      if (iRCU<0) 
+        Fatal("Digits2Raw()","Non-existent RCU number: %d", iRCU);
+    
+      //Which DDL?
+      Int_t iDDL = NRCUSPERMODULE*nSM + iRCU;
+      if (iDDL < 0 || iDDL >= nDDL){
+        Fatal("Digits2Raw()","Non-existent DDL board number: %d", iDDL);
+      } else {
+        if (buffers[iDDL] == 0) {      
+          // open new file and write dummy header
+          TString fileName = AliDAQ::DdlFileName("EMCAL",iDDL);
+          //Select mapping file RCU0A, RCU0C, RCU1A, RCU1C
           Int_t iRCUside=iRCU+(nSM%2)*2;
           //iRCU=0 and even (0) SM -> RCU0A.data   0
           //iRCU=1 and even (0) SM -> RCU1A.data   1
           //iRCU=0 and odd  (1) SM -> RCU0C.data   2
           //iRCU=1 and odd  (1) SM -> RCU1C.data   3
-	  buffers[iDDL] = new AliAltroBuffer(fileName.Data(),fMapping[iRCUside]);
+          buffers[iDDL] = new AliAltroBuffer(fileName.Data(),fMapping[iRCUside]);
           buffers[iDDL]->WriteDataHeader(kTRUE, kFALSE);  //Dummy;
         }
         
@@ -202,10 +195,10 @@ void AliEMCALRawUtils::Digits2Raw()
           buffers[iDDL]->WriteTrailer(3, ieta, iphi, nSM);  // trailer
           // calculate the time response function
         } else {
-          Bool_t lowgain = AliEMCALRawResponse::RawSampledResponse(digit->GetTimeR(), digit->GetAmplitude(), 
-								   adcValuesHigh.GetArray(), adcValuesLow.GetArray()) ; 
-	  
-	  if (lowgain) 
+          Bool_t lowgain = AliEMCALRawResponse::RawSampledResponse(digit->GetTimeR(), digit->GetAmplitude(),
+                                                                   adcValuesHigh.GetArray(), adcValuesLow.GetArray()) ; 
+      
+          if (lowgain) 
             buffers[iDDL]->WriteChannel(ieta, iphi, 0, TIMEBINS, adcValuesLow.GetArray(),  AliEMCALRawResponse::GetRawFormatThreshold()  );
           else 
             buffers[iDDL]->WriteChannel(ieta,iphi, 1, TIMEBINS, adcValuesHigh.GetArray(),  AliEMCALRawResponse::GetRawFormatThreshold()  );

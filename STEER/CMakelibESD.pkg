@@ -73,6 +73,8 @@ set ( SRCS
     ESD/AliESDTOFHit.cxx
     ESD/AliESDTOFMatch.cxx
     ESD/AliESDTOFCluster.cxx
+    ESD/AliESDFIT.cxx
+    
     )
 
 string( REPLACE ".cxx" ".h" HDRS "${SRCS}")

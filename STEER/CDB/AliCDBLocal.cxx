@@ -938,9 +938,16 @@ void AliCDBLocal::QueryValidCVMFSFiles(TString& cvmfsOcdbTag) {
   TString uri(GetURI());
   uri.Remove(TString::kTrailing, '/');
   TObjArray * osArr = uri.Tokenize('/');
-  TObjString* mcdata_os = dynamic_cast<TObjString*>(osArr->At(osArr->GetEntries()-2));
+  TObjString* mcdata_os = dynamic_cast<TObjString*>(osArr->At(osArr->GetEntries()-3));
+  TObjString* yeartype_os = 0;
   TString mcdata = mcdata_os->GetString();
-  TObjString* yeartype_os = dynamic_cast<TObjString*>(osArr->At(osArr->GetEntries()-1));
+  if( mcdata == TString("data")) {
+    yeartype_os = dynamic_cast<TObjString*>(osArr->At(osArr->GetEntries()-2));
+  } else {
+    mcdata_os = dynamic_cast<TObjString*>(osArr->At(osArr->GetEntries()-2));
+    yeartype_os = dynamic_cast<TObjString*>(osArr->At(osArr->GetEntries()-1));
+  }
+  mcdata = mcdata_os->GetString();
   TString yeartype = yeartype_os->GetString();
   command += mcdata;
   command += '/';
@@ -975,8 +982,16 @@ void AliCDBLocal::QueryValidCVMFSFiles(TString& cvmfsOcdbTag) {
   }
   TString filepath;
   while (filepath.ReadLine(*file)) {
+    // skip line in case it is not a root file path
+    if(! filepath.EndsWith(".root")) {
+      continue;
+    }
     //extract three-level path and basename
     TObjArray *tokens = filepath.Tokenize('/');
+    if (tokens->GetEntries() < 5) {
+      AliError(Form("\"%s\" is not a valid cvmfs path for an OCDB object", filepath.Data()));
+      continue;
+    }
     TObjString *baseNameOstr = (TObjString*) tokens->At(tokens->GetEntries()-1);
     TString baseName(baseNameOstr->String());
     TObjString *l0oStr = (TObjString*) tokens->At(tokens->GetEntries()-4);

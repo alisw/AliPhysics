@@ -51,7 +51,7 @@ class AliEMCALHistoUtilities: public TNamed {
   static void Titles(TH1 *hid=0, const char *titx="",const char *tity="");
   static TList* CreateProjectionsX(TList *l=0, const Int_t ind=2, const Char_t* name="prox");
 
-  static TLatex *Lat(const char *text="", Float_t x=0.0,Float_t y=0.0, Int_t align=12, Float_t tsize=0.05, short tcolor = 1); 
+  static TLatex *Lat(const char *text="", Float_t x=0.0,Float_t y=0.0, Int_t align=22, Float_t tsize=0.05, short tcolor = 1); 
   static TGraph *DrawGraph(Int_t n=4, Double_t *x=0, Double_t *y=0, Int_t markerColor=4,  
   Int_t markerStyle=4, const char* opt="", const char* tit="", const char* xTit="  jet E_{t}  ",
   const char* yTit="", Int_t ifun=0, const char *optFit="W+", const char *fun="");

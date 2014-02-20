@@ -58,11 +58,11 @@ public:
 
   // Read and Write txt I/O methods are normally not used, but are useful for 
   // filling the object before it is saved in OCDB 
-  void ReadTextBiasAPDInfo(Int_t nSM, const TString &txtFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
-  void WriteTextBiasAPDInfo(const TString &txtFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
-  void ReadRootBiasAPDInfo(const TString &rootFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
-  void ReadTreeBiasAPDInfo(TTree *tree, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
-  void WriteRootBiasAPDInfo(const TString &rootFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
+  void ReadTextBiasAPDInfo(Int_t nSM, const TString &txtFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 22 SuperModules
+  void WriteTextBiasAPDInfo(const TString &txtFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 22 SuperModules
+  void ReadRootBiasAPDInfo(const TString &rootFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 22 SuperModules
+  void ReadTreeBiasAPDInfo(TTree *tree, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 22 SuperModules
+  void WriteRootBiasAPDInfo(const TString &rootFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 22 SuperModules
 
   virtual ~AliEMCALBiasAPD();
 

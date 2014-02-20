@@ -1089,82 +1089,6 @@ AliMUONCDB::WriteToCDB(TObject* object, const char* calibpath, Int_t startRun, I
 }
 
 //_____________________________________________________________________________
-Int_t 
-AliMUONCDB::MakeNeighbourStore(AliMUONVStore& neighbourStore)
-{
-  /// Fill the neighbours store with, for each channel, a TObjArray of its
-  /// neighbouring pads (including itself)
-  
-  AliCodeTimerAutoGeneral("",0);
-  
-  if (!AliMUONCDB::CheckMapping()) return 0;
-  
-  AliInfoGeneral("AliMUONCDB", "Generating NeighbourStore. This will take a while. Please be patient.");
-  
-  Int_t nchannels(0);
-  
-  TObjArray tmp;
-
-  Int_t detElemId;
-  Int_t manuId;
-  
-  AliMpManuIterator it;
-  
-  while ( it.Next(detElemId,manuId) )
-  {
-    const AliMpVSegmentation* seg = 
-      AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId);
-    
-    AliMUONVCalibParam* calibParam = static_cast<AliMUONVCalibParam*>(neighbourStore.FindObject(detElemId,manuId));
-    if (!calibParam)
-    {
-      Int_t dimension(11);
-      Int_t size(AliMpConstants::ManuNofChannels());
-      Int_t defaultValue(-1);
-      Int_t packingFactor(size);
-      
-      calibParam = new AliMUONCalibParamNI(dimension,size,detElemId,manuId,defaultValue,packingFactor);
-      Bool_t ok = neighbourStore.Add(calibParam);
-      if (!ok)
-      {
-        AliErrorGeneral("AliMUONCDB", Form("Could not set DetElemId=%d manuId=%d",detElemId,manuId));
-        return -1;
-      }      
-    }
-    
-    for ( Int_t manuChannel = 0; manuChannel < AliMpConstants::ManuNofChannels(); ++manuChannel )
-    {
-      AliMpPad pad = seg->PadByLocation(manuId,manuChannel,kFALSE);
-      
-      if (pad.IsValid()) 
-      {
-        ++nchannels;
-
-        seg->GetNeighbours(pad,tmp,true,true);
-        Int_t nofPadNeighbours = tmp.GetEntriesFast();
-            
-        for ( Int_t i = 0; i < nofPadNeighbours; ++i )
-        {
-          AliMpPad* p = static_cast<AliMpPad*>(tmp.UncheckedAt(i));
-          Int_t x;
-//          Bool_t ok =
-              calibParam->PackValues(p->GetManuId(),p->GetManuChannel(),x);
-//          if (!ok)
-//          {
-//            AliError("Could not pack value. Something is seriously wrong. Please check");
-//            StdoutToAliError(pad->Print(););
-//            return -1;
-//          }
-          calibParam->SetValueAsInt(manuChannel,i,x);
-        }
-      }
-    }
-    }
-  
-  return nchannels;
-}
-
-//_____________________________________________________________________________
 void
 AliMUONCDB::WriteLocalTriggerMasks(Int_t startRun, Int_t endRun)
 {  
@@ -1241,22 +1165,6 @@ AliMUONCDB::WriteTriggerEfficiency(Int_t startRun, Int_t endRun)
     WriteToCDB("MUON/Calib/TriggerEfficiency",eff,startRun,endRun,true);
   }
   delete eff;
-}
-
-//_____________________________________________________________________________
-void 
-AliMUONCDB::WriteNeighbours(Int_t startRun, Int_t endRun)
-{
-  /// Write neighbours to OCDB
-  
-  AliMUONVStore* neighbours = Create2DMap();
-  Int_t ngenerated = MakeNeighbourStore(*neighbours);
-  AliInfoGeneral("AliMUONCDB", Form("Ngenerated = %d",ngenerated));
-  if (ngenerated>0)
-  {
-    WriteToCDB("MUON/Calib/Neighbours",neighbours,startRun,endRun,true);
-  }
-  delete neighbours;
 }
 
 //_____________________________________________________________________________
@@ -1447,7 +1355,6 @@ AliMUONCDB::WriteTracker(Bool_t defaultValues, Int_t startRun, Int_t endRun)
   WritePedestals(defaultValues,startRun,endRun);
   WriteGains(defaultValues,startRun,endRun);
   WriteCapacitances(defaultValues,startRun,endRun);
-  WriteNeighbours(startRun,endRun);
   WriteOccupancyMap(defaultValues,startRun,endRun);
   WriteRejectList(defaultValues,startRun,endRun);
   WriteConfig(startRun,endRun);

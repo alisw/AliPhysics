@@ -186,7 +186,7 @@ class AliAODHeader : public AliVHeader {
   TString GetESDFileName() const  {return fESDFileName;}
   void Clear(Option_t* = "");
   enum {kNPHOSMatrix = 5};
-  enum {kNEMCALMatrix = 12};
+  enum {kNEMCALMatrix = 22}; 
   enum {kT0SpreadSize = 4};
 
   void           SetVZEROEqFactors(const Float_t* factors) {

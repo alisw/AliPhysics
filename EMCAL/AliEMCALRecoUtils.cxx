@@ -380,22 +380,22 @@ Bool_t AliEMCALRecoUtils::CheckCellFiducialRegion(const AliEMCALGeometry* geom,
   }
   
   //Check rows/phi
-  if (iSM < 10) {
-    if (iphi >= fNCellsFromEMCALBorder && iphi < 24-fNCellsFromEMCALBorder) okrow =kTRUE; 
-  } else if (iSM >=10 && ( ( geom->GetEMCGeometry()->GetGeoName()).Contains("12SMV1"))) {
-    if (iphi >= fNCellsFromEMCALBorder && iphi < 8-fNCellsFromEMCALBorder) okrow =kTRUE; //1/3 sm case
-  } else {
-    if (iphi >= fNCellsFromEMCALBorder && iphi < 12-fNCellsFromEMCALBorder) okrow =kTRUE; // half SM case
-  }
+  Int_t iPhiLast = 24;
+   if( geom->GetSMType(iSM) == AliEMCALGeometry::kEMCAL_Half ) iPhiLast /= 2;
+   else if (  geom->GetSMType(iSM) == AliEMCALGeometry::kEMCAL_3rd ) iPhiLast /= 3;// 1/3 sm case
   
+  if(iphi >= fNCellsFromEMCALBorder && iphi < iPhiLast - fNCellsFromEMCALBorder) okrow = kTRUE; 
+
   //Check columns/eta
-  if (!fNoEMCALBorderAtEta0) {
-    if (ieta  > fNCellsFromEMCALBorder && ieta < 48-fNCellsFromEMCALBorder) okcol =kTRUE; 
+  Int_t iEtaLast = 48;
+  if(!fNoEMCALBorderAtEta0 || geom->IsDCALSM(iSM)) {// conside inner border
+     if(  geom->GetSMType(iSM) == AliEMCALGeometry::kDCAL_Standard )  iEtaLast = iEtaLast*2/3;        
+     if(ieta  > fNCellsFromEMCALBorder && ieta < iEtaLast-fNCellsFromEMCALBorder) okcol = kTRUE;  
   } else {
     if (iSM%2==0) {
-      if (ieta >= fNCellsFromEMCALBorder)     okcol = kTRUE;  
+     if (ieta >= fNCellsFromEMCALBorder)     okcol = kTRUE;  
     } else {
-      if (ieta <  48-fNCellsFromEMCALBorder)  okcol = kTRUE;  
+     if(ieta <  iEtaLast-fNCellsFromEMCALBorder)  okcol = kTRUE; 
     }
   }//eta 0 not checked
   

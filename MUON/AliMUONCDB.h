@@ -39,8 +39,6 @@ namespace AliMUONCDB
   AliMUONRecoParam* LoadRecoParam();
   TClonesArray* LoadAlignmentData();
   
-  Int_t MakeNeighbourStore(AliMUONVStore& neighbourStore);
-
   Int_t MakeHVStore(TMap& aliasMap, Bool_t defaultValues);
   Int_t MakeTriggerDCSStore(TMap& aliasMap, Bool_t defaultValues);
   Int_t MakePedestalStore(AliMUONVStore& pedestalStore, Bool_t defaultValues);
@@ -82,7 +80,6 @@ namespace AliMUONCDB
   void WriteTrigger(Bool_t defaultValues=kTRUE, Int_t startRun=0,Int_t endRun=AliCDBRunRange::Infinity());
   void WriteTracker(Bool_t defaultValues=kTRUE, Int_t startRun=0,Int_t endRun=AliCDBRunRange::Infinity());
   
-  void WriteNeighbours(Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
   void WriteHV(Bool_t defaultValues, Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity());
   void WritePedestals(Bool_t defaultValues, Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity());
   void WriteGains(Bool_t defaultValues, Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity());
