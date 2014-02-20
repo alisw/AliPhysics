@@ -42,7 +42,7 @@
 #include "AliMixedEvent.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
-#include "AliTriggerAnalysis.h"
+//#include "AliTriggerAnalysis.h"
 #include "AliESDVZERO.h"
 #include "AliVCaloCells.h"
 #include "AliAnalysisManager.h"
@@ -112,16 +112,18 @@ fEMCALClustersListName(""),  fZvtxCut(0.),
 fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(kTRUE),
 //Trigger rejection
 fRemoveBadTriggerEvents(0),  fTriggerPatchClusterMatch(0),
-fTriggerPatchTimeWindow(),   fTriggerL0EventThreshold(0),     fTriggerL1EventThreshold(0),
+fTriggerPatchTimeWindow(),   fTriggerL0EventThreshold(0),
+fTriggerL1EventThreshold(0), fTriggerL1EventThresholdFix(0),
 fTriggerClusterBC(0),        fTriggerClusterIndex(0),         fTriggerClusterId(0),
 fIsExoticEvent(0),           fIsBadCellEvent(0),              fIsBadMaxCellEvent(0),
 fIsTriggerMatch(0),          fIsTriggerMatchOpenCut(),
 fTriggerClusterTimeRecal(kTRUE), fRemoveUnMatchedTriggers(kTRUE),
-fDoEventSelection(kFALSE),   fDoV0ANDEventSelection(kFALSE),
+fDoPileUpEventRejection(kFALSE), fDoV0ANDEventSelection(kFALSE),
 fDoVertexBCEventSelection(kFALSE),
 fDoRejectNoTrackEvents(kFALSE),
 fUseEventsWithPrimaryVertex(kFALSE),
-fTriggerAnalysis (0x0),      fTimeStampEventSelect(0),
+//fTriggerAnalysis (0x0),
+fTimeStampEventSelect(0),
 fTimeStampEventFracMin(0),   fTimeStampEventFracMax(0),
 fTimeStampRunMin(0),         fTimeStampRunMax(0),
 fNPileUpClusters(-1),        fNNonPileUpClusters(-1),         fNPileUpClustersCut(3),
@@ -187,7 +189,7 @@ AliCaloTrackReader::~AliCaloTrackReader()
   
   delete fESDtrackCuts;
   delete fESDtrackComplementaryCuts;
-  delete fTriggerAnalysis;
+  //delete fTriggerAnalysis;
   
   if(fNonStandardJets)
   {
@@ -368,7 +370,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
     // If requested, remove badly triggeed events, but only when the EMCal trigger bit is set
     if(fRemoveBadTriggerEvents)
     {
-      if(fDebug > 0)
+     if(fDebug > 0)
       printf("AliCaloTrackReader::CheckEventTriggers() - ACCEPT triggered event? \n exotic? %d - bad cell %d - bad Max cell %d - BC %d  - Matched %d\n",
              fIsExoticEvent,fIsBadCellEvent, fIsBadMaxCellEvent, fTriggerClusterBC,fIsTriggerMatch);
       if     (fIsExoticEvent)         return kFALSE;
@@ -378,8 +380,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
       if(fDebug > 0) printf("\t *** YES for %s\n",GetFiredTriggerClasses().Data());
     }
     
-    if(fDebug > 0)
-    printf("AliCaloTrackReader::CheckEventTriggers() - Pass EMCal triggered event rejection \n");
+    if(fDebug > 0) printf("AliCaloTrackReader::CheckEventTriggers() - Pass EMCal triggered event rejection \n");
   }
   
   //-------------------------------------------------------------------------------------
@@ -826,7 +827,7 @@ void AliCaloTrackReader::InitParameters()
   fCTSTracks       = new TObjArray();
   fEMCALClusters   = new TObjArray();
   fPHOSClusters    = new TObjArray();
-  fTriggerAnalysis = new AliTriggerAnalysis;
+  //fTriggerAnalysis = new AliTriggerAnalysis;
   fAODBranchList   = new TList ;
   
   fPileUpParamSPD[0] = 3   ; fPileUpParamSPD[1] = 0.8 ;
@@ -859,6 +860,7 @@ void AliCaloTrackReader::InitParameters()
   
   fTriggerClusterBC        = -10000 ;
   fTriggerL0EventThreshold =  2.;
+  fTriggerL1EventThreshold =  4.;
   fTriggerClusterIndex     = -1;
   fTriggerClusterId        = -1;
   
@@ -1106,6 +1108,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     return kFALSE;
   }
   
+  // Select the event depending on the trigger type and other event characteristics
+  // like the goodness of the EMCal trigger
   Bool_t accept = CheckEventTriggers();
   if(!accept) return kFALSE;
   
@@ -1113,6 +1117,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   // In case of analysis of events with jets, skip those with jet pt > 5 pt hard
   // To be used on for MC data in pT hard bins
   //---------------------------------------------------------------------------
+  
   if(fComparePtHardAndJetPt)
   {
     if(!ComparePtHardAndJetPt()) return kFALSE ;
@@ -1125,14 +1130,10 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   
   if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass Pt Hard rejection \n");
   
-  //Fill Vertex array
-  FillVertexArray();
-  //Reject events with Z vertex too large, only for SE analysis, if not, cut on the analysis code
-  if(!GetMixedEvent() && TMath::Abs(fVertex[0][2]) > fZvtxCut) return kFALSE;
+  //------------------------------------------------------
+  // Event rejection depending on time stamp
+  //------------------------------------------------------
   
-  //------------------------------------------------------
-  //Event rejection depending on vertex, pileup, v0and
-  //------------------------------------------------------
   if(fDataType==kESD && fTimeStampEventSelect)
   {
     AliESDEvent* esd = dynamic_cast<AliESDEvent*> (fInputEvent);
@@ -1151,8 +1152,14 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass Time Stamp rejection \n");
   
   //------------------------------------------------------
-  //Event rejection depending on vertex, pileup, v0and
+  // Event rejection depending on vertex, pileup, v0and
   //------------------------------------------------------
+  
+  //Fill Vertex array
+  FillVertexArray();
+  
+  //Reject events with Z vertex too large, only for SE analysis, if not, cut on the analysis code
+  if(!GetMixedEvent() && TMath::Abs(fVertex[0][2]) > fZvtxCut) return kFALSE;
   
   if(fUseEventsWithPrimaryVertex)
   {
@@ -1166,7 +1173,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   
   //printf("Reader : IsPileUp %d, Multi %d\n",IsPileUpFromSPD(),fInputEvent->IsPileupFromSPDInMultBins());
   
-  if(fDoEventSelection)
+  if(fDoPileUpEventRejection)
   {
     // Do not analyze events with pileup
     Bool_t bPileup = IsPileUpFromSPD();
@@ -1174,34 +1181,43 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     //printf("pile-up %d, %d, %2.2f, %2.2f, %2.2f, %2.2f\n",bPileup, (Int_t) fPileUpParamSPD[0], fPileUpParamSPD[1], fPileUpParamSPD[2], fPileUpParamSPD[3], fPileUpParamSPD[4]);
     if(bPileup) return kFALSE;
     
-    if(fDoV0ANDEventSelection)
-    {
-      Bool_t bV0AND = kTRUE;
-      AliESDEvent* esd = dynamic_cast<AliESDEvent*> (fInputEvent);
-      if(esd)
-        bV0AND = fTriggerAnalysis->IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0AND);
-      //else bV0AND = //FIXME FOR AODs
-      if(!bV0AND) return kFALSE;
-    }
-  }// Event selection/AliceSoft/AliRoot/trunk/PWG/CaloTrackCorrBase/AliCaloTrackReader.h
+    if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Pass Pile-Up event rejection \n");
+  }
   
-  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass Pile-Up, V0AND event rejection \n");
+  if(fDoV0ANDEventSelection)
+  {
+    AliVVZERO* v0 = fInputEvent->GetVZEROData();
+
+    Bool_t bV0AND = ((v0->GetV0ADecision()==1) && (v0->GetV0CDecision()==1));
+    //bV0AND = fTriggerAnalysis->IsOfflineTriggerFired((AliESDEvent*)fInputEvent, AliTriggerAnalysis::kV0AND);
+    //printf("V0AND event? %d\n",bV0AND);
+
+    if(!bV0AND)
+    {
+      printf("AliCaloTrackReader::FillInputEvent() - Reject event by V0AND\n");
+      return kFALSE;
+    }
+    if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Pass V0AND event rejection \n");
+  }
 
   //------------------------------------------------------
+  // Check if there is a centrality value, PbPb analysis,
+  // and if a centrality bin selection is requested
+  //------------------------------------------------------
   
-  //Check if there is a centrality value, PbPb analysis, and if a centrality bin selection is requested
   //If we need a centrality bin, we select only those events in the corresponding bin.
   if(GetCentrality() && fCentralityBin[0]>=0 && fCentralityBin[1]>=0 && fCentralityOpt==100)
   {
     Int_t cen = GetEventCentrality();
     if(cen > fCentralityBin[1] || cen < fCentralityBin[0]) return kFALSE; //reject events out of bin.
+    
+    if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Pass centrality rejection \n");
   }
-  
-  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass centrality rejection \n");
 
-  
-  //Fill the arrays with cluster/tracks/cells data
-  
+  //-----------------------------------------------------------------
+  // In case of mixing analysis, select here the trigger of the event
+  //-----------------------------------------------------------------
+
   if(!fEventTriggerAtSE)
   {
     // In case of mixing analysis, accept MB events, not only Trigger
@@ -1219,37 +1235,41 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     if(!isTrigger && !isMB) return kFALSE;
     
     //printf("Selected triggered event : %s\n",GetFiredTriggerClasses().Data());
+    if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Pass uninteresting triggered events rejection in case of mixing analysis \n");
   }
   
-  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass uninteresting triggered events rejection in case of mixing analysis \n");
-
+  //---------------------------------------------------------------------------
+  // In case of MC analysis, set the range of interest in the MC particles list
+  // The particle selection is done inside the FillInputDetector() methods
+  //---------------------------------------------------------------------------
+  if(fAcceptOnlyHIJINGLabels) SetGeneratorMinMaxParticles();
+  
+  //printf("N min %d, N max %d\n",fNMCProducedMin,fNMCProducedMax);
+  
+  //-----------------------------------------------
+  // Fill the arrays with cluster/tracks/cells data
+  //-----------------------------------------------
   
   // Get the main vertex BC, in case not available
   // it is calculated in FillCTS checking the BC of tracks
   // with DCA small (if cut applied, if open)
-  fVertexBC=fInputEvent->GetPrimaryVertex()->GetBC();
-  
-  if(fAcceptOnlyHIJINGLabels) SetGeneratorMinMaxParticles();
-  
-  //printf("N min %d, N max %d\n",fNMCProducedMin,fNMCProducedMax);
+  fVertexBC = fInputEvent->GetPrimaryVertex()->GetBC();
   
   if(fFillCTS)
   {
     FillInputCTS();
     //Accept events with at least one track
     if(fTrackMult == 0 && fDoRejectNoTrackEvents) return kFALSE ;
+    
+    if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Pass rejection of null track events \n");
   }
-  
-  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass rejection of null track events \n");
-
   
   if(fDoVertexBCEventSelection)
   {
     if(fVertexBC!=0 && fVertexBC!=AliVTrack::kTOFBCNA) return kFALSE ;
+    
+    if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Pass rejection of events with vertex at BC!=0 \n");
   }
-  
-  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass rejection of events with vertex at BC!=0 \n");
-
   
   if(fFillEMCALCells)
     FillInputEMCALCells();
@@ -1263,7 +1283,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   if(fFillPHOS)
     FillInputPHOS();
   
-  //FillInputVZERO();
+  FillInputVZERO();
   
   //one specified jet branch
   if(fFillInputNonStandardJetBranch)
@@ -1271,7 +1291,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   if(fFillInputBackgroundJetBranch)
     FillInputBackgroundJets();
 
-  
+  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Event accepted for analysis \n");
+
   return kTRUE ;
 }
 
@@ -2113,32 +2134,59 @@ void AliCaloTrackReader::FillInputBackgroundJets()
 //________________________________________________
 Bool_t AliCaloTrackReader::CheckForPrimaryVertex()
 {
-  //Check if the vertex was well reconstructed, copy from V0Reader of conversion group
-  //Only for ESDs ...
+  //Check if the vertex was well reconstructed, copy of conversion group
   
-  AliESDEvent * event = dynamic_cast<AliESDEvent*> (fInputEvent);
-  if(!event) return kTRUE;
-  
-  if(event->GetPrimaryVertexTracks()->GetNContributors() > 0)
+  if(fDataType==kESD)
   {
-    return kTRUE;
-  }
-  
-  if(event->GetPrimaryVertexTracks()->GetNContributors() < 1)
-  {
-    // SPD vertex
-    if(event->GetPrimaryVertexSPD()->GetNContributors() > 0)
+    AliESDEvent * esdevent = dynamic_cast<AliESDEvent*> (fInputEvent);
+    if(!esdevent) return kFALSE;
+    
+    if(esdevent->GetPrimaryVertex()->GetNContributors() > 0)
     {
-      //cout<<"spd vertex type::"<< fESDEvent->GetPrimaryVertex()->GetName() << endl;
       return kTRUE;
-      
     }
-    if(event->GetPrimaryVertexSPD()->GetNContributors() < 1)
+    
+    if(esdevent->GetPrimaryVertex()->GetNContributors() < 1)
     {
-      //      cout<<"bad vertex type::"<< event->GetPrimaryVertex()->GetName() << endl;
-      return kFALSE;
+      // SPD vertex
+      if(esdevent->GetPrimaryVertexSPD()->GetNContributors() > 0)
+      {
+        return kTRUE;
+        
+      }
+      if(esdevent->GetPrimaryVertexSPD()->GetNContributors() < 1)
+      {
+        return kFALSE;
+      }
     }
   }
+  else if(fDataType==kAOD)
+  {
+    AliAODEvent * aodevent = dynamic_cast<AliAODEvent*>(fInputEvent);
+    if(!aodevent) return kFALSE;
+    
+    if (aodevent->GetPrimaryVertex() != NULL)
+    {
+      if(aodevent->GetPrimaryVertex()->GetNContributors() > 0)
+      {
+        return kTRUE;
+      }
+    }
+    
+    if(aodevent->GetPrimaryVertexSPD() != NULL)
+    {
+      if(aodevent->GetPrimaryVertexSPD()->GetNContributors() > 0)
+      {
+        return kTRUE;
+      }
+      else
+      {
+        AliWarning(Form("Number of contributors from bad vertex type:: %s",aodevent->GetPrimaryVertex()->GetName()));
+        return kFALSE;
+      }
+    }
+  }
+  else return kTRUE;
   
   return kFALSE;
   
@@ -2161,17 +2209,37 @@ TArrayI AliCaloTrackReader::GetTriggerPatches(Int_t tmin, Int_t tmax )
   AliVCaloTrigger *caloTrigger = GetInputEvent()->GetCaloTrigger( "EMCAL" );
 
   // Recover the threshold of the event that triggered, only possible for L1
-  if     (IsEventEMCALL1Gamma1()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(1);
-  else if(IsEventEMCALL1Gamma2()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(3);
-  else if(IsEventEMCALL1Jet1  ()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(0);
-  else if(IsEventEMCALL1Jet2  ()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(2);
-  
-//  printf("L1 trigger Threshold Jet1 %f, Gamma1 %f, Jet2 %f, Gamma2 %f\n",
-//         0.07874*caloTrigger->GetL1Threshold(0),
-//         0.07874*caloTrigger->GetL1Threshold(1),
-//         0.07874*caloTrigger->GetL1Threshold(2),
-//         0.07874*caloTrigger->GetL1Threshold(3));
-  
+  if(!fTriggerL1EventThresholdFix)
+  {
+    if(fBitEGA==6)
+    {
+      if     (IsEventEMCALL1Gamma1()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(1);
+      else if(IsEventEMCALL1Gamma2()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(3);
+      else if(IsEventEMCALL1Jet1  ()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(0);
+      else if(IsEventEMCALL1Jet2  ()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(2);
+      
+//      printf("L1 trigger Threshold Jet1 %f, Gamma1 %f, Jet2 %f, Gamma2 %f\n",
+//             0.07874*caloTrigger->GetL1Threshold(0),
+//             0.07874*caloTrigger->GetL1Threshold(1),
+//             0.07874*caloTrigger->GetL1Threshold(2),
+//             0.07874*caloTrigger->GetL1Threshold(3));
+    }
+    else
+    {
+      // Old AOD data format, in such case, order of thresholds different!!!
+      if     (IsEventEMCALL1Gamma1()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(0);
+      else if(IsEventEMCALL1Gamma2()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(2);
+      else if(IsEventEMCALL1Jet1  ()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(1);
+      else if(IsEventEMCALL1Jet2  ()) fTriggerL1EventThreshold =  0.07874*caloTrigger->GetL1Threshold(3);
+      
+//      printf("L1 trigger Threshold Jet1 %f, Gamma1 %f, Jet2 %f, Gamma2 %f\n",
+//             0.07874*caloTrigger->GetL1Threshold(1),
+//             0.07874*caloTrigger->GetL1Threshold(0),
+//             0.07874*caloTrigger->GetL1Threshold(3),
+//             0.07874*caloTrigger->GetL1Threshold(2));
+    }
+  }
+
   //printf("CaloTrigger Entries %d\n",caloTrigger->GetEntries() );
   
   // class is not empty
@@ -2223,11 +2291,14 @@ TArrayI AliCaloTrackReader::GetTriggerPatches(Int_t tmin, Int_t tmax )
         
         Int_t sum = 0;
         caloTrigger->GetL1TimeSum(sum);
-
+        //fBitEGA-=2;
         Bool_t isEGA1 = ((bit >>  fBitEGA   ) & 0x1) && IsEventEMCALL1Gamma1() ;
         Bool_t isEGA2 = ((bit >> (fBitEGA+1)) & 0x1) && IsEventEMCALL1Gamma2() ;
         Bool_t isEJE1 = ((bit >>  fBitEJE   ) & 0x1) && IsEventEMCALL1Jet1  () ;
         Bool_t isEJE2 = ((bit >> (fBitEJE+1)) & 0x1) && IsEventEMCALL1Jet2  () ;
+        
+        //if((bit>> fBitEGA   )&0x1) printf("Trig Bit %d - bit %d - EG1 %d - EG2 %d\n",fBitEGA  ,bit,IsEventEMCALL1Gamma1(),IsEventEMCALL1Gamma2());
+        //if((bit>>(fBitEGA+1))&0x1) printf("Trig Bit %d - bit %d - EG1 %d - EG2 %d\n",fBitEGA+1,bit,IsEventEMCALL1Gamma1(),IsEventEMCALL1Gamma2());
         
         if(!isEGA1 && !isEJE1 && !isEGA2 && !isEJE2) continue;
         
@@ -2328,7 +2399,7 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
   
   Float_t triggerThreshold = fTriggerL1EventThreshold;
   if(IsEventEMCALL0()) triggerThreshold = fTriggerL0EventThreshold;
-  
+  //printf("Threshold %f\n",triggerThreshold);
   Float_t minE = triggerThreshold / 2.;
 
   // This method is not really suitable for JET trigger
@@ -2874,6 +2945,7 @@ void AliCaloTrackReader::SetEventTriggerBit()
         cinfo = (TStreamerInfo*)clist->FindObject("AliAODCaloTrigger");
         verid = 3; // newer AOD header version
       }
+      
       if(cinfo)
 	    {
 	      Int_t classversionid = cinfo->GetClassVersion();

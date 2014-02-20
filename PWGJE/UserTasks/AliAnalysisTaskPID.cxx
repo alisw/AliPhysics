@@ -1047,7 +1047,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
       if (mcTrack && fMC->IsPhysicalPrimary(TMath::Abs(label))) {
         // AliMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
         Double_t valuePtRes[kPtResNumAxes] = { -1, mcTrack->Pt(), track->Pt(), mcTrack->Charge() / 3., centralityPercentile };
-        fPtResolution[mcID]->Fill(valuePtRes);
+        FillPtResolution(mcID, valuePtRes);
       }
     }
     
@@ -2147,7 +2147,7 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   
   // Momenta
   //Double_t p = track->GetP();
-  //Double_t pTPC = track->GetTPCmomentum();
+  const Double_t pTPC = track->GetTPCmomentum();
   Double_t pT = track->Pt();
   
   Double_t z = -1, xi = -1;
@@ -2160,12 +2160,22 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   Double_t dEdxTPC = fPIDResponse->IsTunedOnData() ? fPIDResponse->GetTPCsignalTunedOnData(track) : track->GetTPCsignal();
   
   if (dEdxTPC <= 0) {
-    Printf("Skipping track with strange dEdx value: dEdx %f, pTPC %f, eta %f, ncl %d\n", track->GetTPCsignal(), track->GetTPCmomentum(),
+    Printf("Skipping track with strange dEdx value: dEdx %f, pTPC %f, eta %f, ncl %d\n", track->GetTPCsignal(), pTPC,
            track->Eta(), track->GetTPCsignalN());
     return kFALSE;
   }
   
+  // Completely remove tracks from light nuclei defined by el and pr <dEdx> as function of pT.
+  // A very loose cut to be sure not to throw away electrons and/or protons
+  Double_t nSigmaPr = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+  Double_t nSigmaEl = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
   
+  if ((pTPC >= 0.3 && (nSigmaPr > 10 && nSigmaEl > 10)) ||
+      (pTPC <  0.3 && (nSigmaPr > 15 && nSigmaEl > 15))) {
+    Printf("Skipping track which seems to be a light nuclei: dEdx %f, pTPC %f, pT %f, eta %f, ncl %d, nSigmaPr %f, nSigmaEl %f\n",
+           track->GetTPCsignal(), pTPC, pT, track->Eta(), track->GetTPCsignalN(), nSigmaPr, nSigmaEl);
+    return kFALSE;
+  }
   
   
   Double_t dEdxEl, dEdxKa, dEdxPi, dEdxMu, dEdxPr;
@@ -2188,7 +2198,6 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
         (TMath::Abs(fSystematicScalingSplinesAboveThreshold - 1.0) > fgkEpsilon)) {
        
       // Tune turn-on of correction for pions (not so relevant for the other species, since at very large momenta)
-      const Double_t pTPC = track->GetTPCmomentum();
       Double_t bg = 0;
       Double_t scaleFactor = 1.;
       Double_t usedSystematicScalingSplines = 1.;
@@ -2249,7 +2258,6 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
       Double_t usedSystematicScalingEtaCorrection = fSystematicScalingEtaCorrectionHighMomenta;
       
       if (TMath::Abs(fSystematicScalingEtaCorrectionHighMomenta - fSystematicScalingEtaCorrectionLowMomenta) > fgkEpsilon) {
-        const Double_t pTPC = track->GetTPCmomentum();
         const Double_t fractionHighMomentumScaleFactor = 0.5 * (1. + TMath::Erf((pTPC - fSystematicScalingEtaCorrectionMomentumThr) / 0.1));
         usedSystematicScalingEtaCorrection = fSystematicScalingEtaCorrectionLowMomenta * (1 - fractionHighMomentumScaleFactor)
                                              + fSystematicScalingEtaCorrectionHighMomenta * fractionHighMomentumScaleFactor;
@@ -2455,6 +2463,7 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   if(fDebug > 2)
     printf("File: %s, Line: %d: ProcessTrack -> Compute probabilities\n", (char*)__FILE__, __LINE__);
   
+  
   // Use probabilities to weigh the response generation for the different species.
   // Also determine the most probable particle type.
   Double_t prob[AliPID::kSPECIESC];
@@ -2463,38 +2472,105 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
 
   fPIDcombined->ComputeProbabilities(track, fPIDResponse, prob);
   
-  // Bug: One can set the number of species for PIDcombined, but PIDcombined will call PIDresponse, which writes without testing
-  // the probs for kSPECIESC (including light nuclei) into the array.
-  // In this case, when only kSPECIES are considered, the probabilities have to be rescaled!
-  for (Int_t i = AliPID::kSPECIES; i < AliPID::kSPECIESC; i++)
-    prob[i] = 0;
-  
-  // If muons are not to be taken into account, just set their probability to zero and normalise the remaining probabilities
+  // If muons are not to be taken into account, just set their probability to zero and normalise the remaining probabilities later
   if (!fTakeIntoAccountMuons)
     prob[AliPID::kMuon] = 0;
   
-  Double_t probSum = 0.;
-  for (Int_t i = 0; i < AliPID::kSPECIES; i++)
-    probSum += prob[i];
+  // Priors might cause problems in case of mismatches, i.e. mismatch particles will be identified as pions.
+  // Can be easily caught for low p_TPC by just setting pion (and muon) probs to zero, if dEdx is larger than
+  // expected dEdx of electrons and kaons
+  if (pTPC < 1. && dEdxTPC > dEdxEl && dEdxTPC > dEdxKa) {
+    prob[AliPID::kMuon] = 0;
+    prob[AliPID::kPion] = 0;
+  }
   
-  if (probSum > 0) {
+  
+  // Bug: One can set the number of species for PIDcombined, but PIDcombined will call PIDresponse, which writes without testing
+  // the probs for kSPECIESC (including light nuclei) into the array.
+  // In this case, when only kSPECIES are considered, the probabilities have to be rescaled!
+  
+  // Exceptions:
+  // 1. If the most probable PID is a light nucleus and above expected dEdx + 5 sigma of el to be sure not to mix up things in the
+  //    high-pT region (also contribution there completely negligable!)
+  // 2. If dEdx is larger than the expected dEdx + 5 sigma of el and pr, it is most likely a light nucleus
+  //    (if dEdx is more than 5 sigma away from expectation, flat TPC probs are set... and the light nuclei splines are not
+  //     too accurate)
+  // In these cases:
+  // The highest expected dEdx is either for pr or for el. Assign 100% probability to the species with highest expected dEdx then.
+  // In all other cases: Throw away light nuclei probs and rescale other probs to 100%.
+  
+  // Find most probable species for the ID 
+  Int_t maxIndex = TMath::LocMax(AliPID::kSPECIESC, prob);
+
+  if ((prob[maxIndex] > 0 && maxIndex >= AliPID::kSPECIES && dEdxTPC > dEdxEl + 5. * sigmaEl) ||
+      (dEdxTPC > dEdxEl + 5. * sigmaEl && dEdxTPC > dEdxPr + 5. * sigmaPr)) {
+    for (Int_t i = 0; i < AliPID::kSPECIESC; i++)
+      prob[i] = 0;
+    
+    if (dEdxEl > dEdxPr) {
+      prob[AliPID::kElectron] = 1.;
+      maxIndex = AliPID::kElectron;
+    }
+    else {
+      prob[AliPID::kProton] = 1.;
+      maxIndex = AliPID::kProton;
+    }
+  }
+  else {
+    for (Int_t i = AliPID::kSPECIES; i < AliPID::kSPECIESC; i++)
+      prob[i] = 0;
+    
+    Double_t probSum = 0.;
     for (Int_t i = 0; i < AliPID::kSPECIES; i++)
-      prob[i] /= probSum;
+      probSum += prob[i];
+    
+    if (probSum > 0) {
+      for (Int_t i = 0; i < AliPID::kSPECIES; i++)
+        prob[i] /= probSum;
+    }
+    
+    // If all probabilities are equal (should only happen if no priors are used), set most probable PID to pion
+    // because LocMax returns just the first maximal value (i.e. AliPID::kElectron)
+    if (TMath::Abs(prob[maxIndex] - 1. / AliPID::kSPECIES) < 1e-5)
+      maxIndex = AliPID::kPion;
+    
+    // In all other cases, the maximum remains untouched from the scaling (and is < AliPID::kSPECIES by construction)
   }
   
   if (!isMC) {
-    // If there is no MC information, take the most probable species for the ID
-    Float_t max = 0.;
-    Int_t maxIndex = -1;
-    for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
-      if (prob[i] > max) {
-        max = prob[i];
-        maxIndex = i;
-      }
+    // Clean up the most probable PID for low momenta (not an issue for the probabilities, since fractions small,
+    // but to get clean (and nice looking) templates (if most probable PID is used instead of generated responses), it should be done).
+    // Problem: If more than 5 sigma away (and since priors also included), most probable PID for dEdx around protons could be pions.
+    // Idea: Only clean selection for K and p possible. So, just take for the most probable PID the probs from TPC only calculated
+    // by hand without restriction to 5 sigma and without priors. This will not affect the template generation, but afterwards one
+    // can replace the K and p templates with the most probable PID distributions, so all other species templates remain the same.
+    // I.e. it doesn't hurt if the most probable PID is distributed incorrectly between el, pi, mu.
+    Bool_t maxIndexSetManually = kFALSE;
+    
+    if (pTPC < 1.) {
+      Double_t probManualTPC[AliPID::kSPECIES];
+       for (Int_t i = 0; i < AliPID::kSPECIES; i++)
+        probManualTPC[i] = 0;
+      
+      probManualTPC[AliPID::kElectron] = TMath::Exp(-0.5*(dEdxTPC-dEdxEl)*(dEdxTPC-dEdxEl)/(sigmaEl*sigmaEl))/sigmaEl;
+      // Muons are not important here, just ignore and save processing time
+      probManualTPC[AliPID::kMuon] = 0.;//TMath::Exp(-0.5*(dEdxTPC-dEdxMu)*(dEdxTPC-dEdxMu)/(sigmaMu*sigmaMu))/sigmaMu;
+      probManualTPC[AliPID::kPion] = TMath::Exp(-0.5*(dEdxTPC-dEdxPi)*(dEdxTPC-dEdxPi)/(sigmaPi*sigmaPi))/sigmaPi;
+      probManualTPC[AliPID::kKaon] = TMath::Exp(-0.5*(dEdxTPC-dEdxKa)*(dEdxTPC-dEdxKa)/(sigmaKa*sigmaKa))/sigmaKa;
+      probManualTPC[AliPID::kProton] = TMath::Exp(-0.5*(dEdxTPC-dEdxPr)*(dEdxTPC-dEdxPr)/(sigmaPr*sigmaPr))/sigmaPr;
+      
+      const Int_t maxIndexManualTPC = TMath::LocMax(AliPID::kSPECIES, probManualTPC);
+      // Should always be > 0, but in case the dEdx is far off such that the machine accuracy sets every prob to zero,
+      // better take the "old" result
+      if (probManualTPC[maxIndexManualTPC] > 0.)
+        maxIndex = maxIndexManualTPC;
+      
+      maxIndexSetManually = kTRUE;
     }
-          
+    
+    
     // Translate from AliPID numbering to numbering of this class
-    if (max > 0) {
+    if (prob[maxIndex] > 0 || maxIndexSetManually) {
       if (maxIndex == AliPID::kElectron)
         binMC = 0;
       else if (maxIndex == AliPID::kKaon)

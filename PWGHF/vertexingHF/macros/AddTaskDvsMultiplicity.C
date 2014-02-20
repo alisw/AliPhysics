@@ -68,8 +68,7 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
     Name="DStar";
   }
 
-
-  AliAnalysisTaskSEDvsMultiplicity *dMultTask = new AliAnalysisTaskSEDvsMultiplicity("dMultAnalysis",pdgMeson,analysiscuts);
+  AliAnalysisTaskSEDvsMultiplicity *dMultTask = new AliAnalysisTaskSEDvsMultiplicity("dMultAnalysis",pdgMeson,analysiscuts,isPPbData);
   dMultTask->SetReadMC(readMC);  
   dMultTask->SetDebugLevel(0);
   dMultTask->SetUseBit(kTRUE);
@@ -99,21 +98,41 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
   if(estimatorFilename.EqualTo("") ) {
     printf("Estimator file not provided, multiplcity corrected histograms will not be filled\n");
   } else{
-    const Char_t* periodNames[4] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e"};
-    TProfile* multEstimatorAvg[4];                       
-    TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
-    if(!fileEstimator)  {
-      AliFatal("File with multiplicity estimator not found\n"); 
-      return;
-    }
-    for(Int_t ip=0; ip<4; ip++) {
-      multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));  
-    }
-    dMultTask->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
-    dMultTask->SetMultiplVsZProfileLHC10c(multEstimatorAvg[1]);
-    dMultTask->SetMultiplVsZProfileLHC10d(multEstimatorAvg[2]);
-    dMultTask->SetMultiplVsZProfileLHC10e(multEstimatorAvg[3]);
-    dMultTask->SetReferenceMultiplcity(refMult);
+         if ( isPPbData) {    //Only use two profiles if pPb
+            const Char_t* periodNames[2] = {"LHC13b", "LHC13c"};
+            TProfile* multEstimatorAvg[2];                       
+            TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
+            if(!fileEstimator)  {
+               AliFatal("File with multiplicity estimator not found\n"); 
+               return;
+            }
+            
+            for(Int_t ip=0; ip<2; ip++) {
+               multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));  
+            }
+            dMultTask->SetMultiplVsZProfileLHC13b(multEstimatorAvg[0]);
+            dMultTask->SetMultiplVsZProfileLHC13c(multEstimatorAvg[1]);
+            dMultTask->SetReferenceMultiplcity(refMult);
+            
+         }
+         else {
+            const Char_t* periodNames[4] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e"};
+            TProfile* multEstimatorAvg[4];                       
+            TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
+            if(!fileEstimator)  {
+               AliFatal("File with multiplicity estimator not found\n"); 
+               return;
+            }
+            
+            for(Int_t ip=0; ip<4; ip++) {
+               multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));  
+            }
+            dMultTask->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
+            dMultTask->SetMultiplVsZProfileLHC10c(multEstimatorAvg[1]);
+            dMultTask->SetMultiplVsZProfileLHC10d(multEstimatorAvg[2]);
+            dMultTask->SetMultiplVsZProfileLHC10e(multEstimatorAvg[3]);
+            dMultTask->SetReferenceMultiplcity(refMult);
+   }
   }
   mgr->AddTask(dMultTask);
   

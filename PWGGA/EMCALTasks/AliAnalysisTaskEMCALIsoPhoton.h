@@ -47,6 +47,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                   FollowGamma();
   void                   GetDaughtersInfo(int firstd, int lastd, int selfid, const char *indputindent);
   Float_t                GetMcPtSumInCone(Float_t etaclus, Float_t phiclus, Float_t R);
+  void                   LoopOnCells();
   void                   SetExotCut(Double_t c)                 { fExoticCut          = c;       }
   void                   SetGeoName(const char *n)              { fGeoName            = n;       }
   void                   SetIsoConeR(Double_t r)                { fIsoConeR           = r;       }
@@ -62,6 +63,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
                                            TString pa = "")     { fImportGeometryFromFile = im ; 
                                                                   fImportGeometryFilePath = pa ; }    
   
+
  protected:
   TObjArray             *fESDClusters;           //!pointer to EMCal clusters
   TObjArray             *fAODClusters;           //!pointer to EMCal clusters
@@ -90,8 +92,9 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Float_t                fHigherPtCone;          // higher pt inside the cone around the candidate
   Bool_t                 fImportGeometryFromFile;  // Import geometry settings in geometry.root file
   TString                fImportGeometryFilePath;  // path fo geometry.root file
-  Double_t               fMaxPtTrack;           //track with highest pt in event
-  Double_t               fMaxEClus;             //cluster with highest energy in event
+  Double_t               fMaxPtTrack;            //track with highest pt in event
+  Double_t               fMaxEClus;              //cluster with highest energy in event
+  Int_t                  fNCells50;              // variable to keep the number of cells with E>50 MeV
 
   
  private:

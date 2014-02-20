@@ -9,7 +9,8 @@
 #include <TDatabasePDG.h>
 #include <TParticlePDG.h>
 
-#include "AliRsnDaughter.h"
+#include "AliAODEvent.h"
+#include "AliRsnEvent.h"
 #include "AliRsnMiniParticle.h"
 
 ClassImp(AliRsnMiniParticle)
@@ -22,6 +23,7 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
 //
 
    // reset what could not be initialized
+   fDCA = 0.0;  //typically used for D0 analysis
    fPDG = 0;
    fMother = -1;
    fMotherPDG = 0;
@@ -52,8 +54,24 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
       fMother = daughter->GetMother();
       fMotherPDG = daughter->GetMotherPDG();
    }
+   
+   AliRsnEvent *event = (AliRsnEvent *) daughter->GetOwnerEvent();
+   if (event && event->IsAOD()){
+     AliAODTrack *track = (AliAODTrack*) daughter->Ref2AODtrack();   
+     AliAODEvent *aodEvent = (AliAODEvent*) event->GetRefAOD();
+     if (track && aodEvent) {
+       AliVVertex *vertex = (AliVVertex*) aodEvent->GetPrimaryVertex();
+       Double_t b[2], cov[3]; 
+       if (vertex) {
+	 track->PropagateToDCA(vertex, aodEvent->GetMagneticField(), kVeryBig, b, cov); 
+	 fDCA = b[0];
+       }
+     }
+   } else {
+     AliWarning("DCA not implemented for ESDs");
+   }
+   
 }
-
 
 //__________________________________________________________________________________________________
 Double_t AliRsnMiniParticle::Mass()

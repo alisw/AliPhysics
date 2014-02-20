@@ -1227,16 +1227,15 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  Double_t DCAX = pos[0] - vertexX;
 	  Double_t DCAY = pos[1] - vertexY;
 	  Double_t DCAZ = pos[2] - vertexZ;
-	  	 	  
+	  	
+	  Double_t DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
+ 	  
 	  if (DCAZ     <  _dcaZMin || 
 	      DCAZ     >  _dcaZMax ||
-	      DCAX     <  _dcaXYMin ||
-	      DCAX     >  _dcaXYMax ||
-	      DCAY     <  _dcaXYMin ||
-	      DCAY     >  _dcaXYMax) continue; 
+	      DCAXY    >  _dcaXYMax ) continue; 
 	  //==== QA ===========================
 	  _dcaz->Fill(DCAZ);
-	  _dcaxy->Fill(DCAX);
+	  _dcaxy->Fill(DCAXY);
 	  _etadis->Fill(eta);
 	  _phidis->Fill(phi);
 	  //===================================

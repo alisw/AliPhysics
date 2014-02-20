@@ -80,7 +80,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
     reader->SwitchOnTriggerPatchMatching();
     reader->SwitchOffBadTriggerEventsRemoval();
     reader->SetTriggerPatchTimeWindow(8,9);
-    reader->SetEventTriggerThreshold(2.);
+    //reader->SetEventTriggerL0Threshold(2.);
   }
   
   if(kPrintSettings) reader->Print("");
