@@ -275,10 +275,13 @@ void AliAnalysisTaskFlavourJetCorrelations::UserExec(Option_t *)
    }
    
     
-   if (!fCandidateArray) fCandidateArray = dynamic_cast<TClonesArray*>(GetInputData(1));
-   if (fCandidateType==1 && !fSideBandArray) fSideBandArray = dynamic_cast<TClonesArray*>(GetInputData(2));
-   
-   Printf("ncandidates found %d",fCandidateArray->GetEntriesFast());
+   fCandidateArray = dynamic_cast<TClonesArray*>(GetInputData(1));
+   if (!fCandidateArray) return;
+   if (fCandidateType==1) {
+      fSideBandArray = dynamic_cast<TClonesArray*>(GetInputData(2));
+      if (!fSideBandArray) return;
+   }
+   //Printf("ncandidates found %d",fCandidateArray->GetEntriesFast());
    
    //Histograms
    TH1I* hstat=(TH1I*)fmyOutput->FindObject("hstat");
