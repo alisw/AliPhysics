@@ -32,7 +32,7 @@ class AliMixedEvent;
 class AliAODMCHeader;
 class AliESDtrackCuts;
 class AliCentrality;
-class AliTriggerAnalysis;
+//class AliTriggerAnalysis;
 class AliEventplane;
 class AliVCluster;
 
@@ -754,7 +754,7 @@ public:
   Bool_t           fDoVertexBCEventSelection;    // Select events with vertex on BC=0 or -100
   Bool_t           fDoRejectNoTrackEvents;       // Reject events with no selected tracks in event
   Bool_t           fUseEventsWithPrimaryVertex ; // Select events with primary vertex
-  AliTriggerAnalysis* fTriggerAnalysis;          // Access to trigger selection algorithm for V0AND calculation
+  //AliTriggerAnalysis* fTriggerAnalysis;          // Access to trigger selection algorithm for V0AND calculation
   
   Bool_t           fTimeStampEventSelect;        // Select events within a fraction of data taking time
   Float_t          fTimeStampEventFracMin;       // Minimum value of time stamp fraction event
