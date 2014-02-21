@@ -86,7 +86,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fSelectCell(kFALSE),    fSelectCellMinE(0),         fSelectCellMinFrac(0)
 , fRejectBelowThreshold(kFALSE)
 , fRemoveLEDEvents(kTRUE),fRemoveExoticEvents(kFALSE)
-, fImportGeometryFromFile(kFALSE), fImportGeometryFilePath("") 
+, fImportGeometryFromFile(kTRUE), fImportGeometryFilePath("")
 , fOADBSet(kFALSE),       fAccessOADB(kTRUE),         fOADBFilePath("")
 , fCentralityClass(""),   fSelectEMCALEvent(0)
 , fEMCALEnergyCut(0.),    fEMCALNcellsCut (0)
@@ -127,7 +127,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fSelectCell(kFALSE),      fSelectCellMinE(0),         fSelectCellMinFrac(0)
 , fRejectBelowThreshold(kFALSE)
 , fRemoveLEDEvents(kTRUE),  fRemoveExoticEvents(kFALSE)
-, fImportGeometryFromFile(kFALSE), fImportGeometryFilePath("")
+, fImportGeometryFromFile(kTRUE), fImportGeometryFilePath("")
 , fOADBSet(kFALSE),         fAccessOADB(kTRUE),        fOADBFilePath("")
 , fCentralityClass(""),     fSelectEMCALEvent(0)
 , fEMCALEnergyCut(0.),      fEMCALNcellsCut (0)
@@ -1095,15 +1095,7 @@ void AliAnalysisTaskEMCALClusterize::Init()
     fCentralityBin[0] = clus->fCentralityBin[0];
     fCentralityBin[1] = clus->fCentralityBin[1];
   }
-  
-  // Init geometry, I do not like much to do it like this ...
-  if(fImportGeometryFromFile && !gGeoManager) 
-  {
-    if (fImportGeometryFilePath == "") fImportGeometryFilePath = "$ALICE_ROOT/OADB/EMCAL/geometry_2011.root" ; // "$ALICE_ROOT/EVE/alice-data/default_geo.root"
-    printf("AliAnalysisTaskEMCALClusterize::Init() - Import %s\n",fImportGeometryFilePath.Data());
-    TGeoManager::Import(fImportGeometryFilePath) ; 
-  }
-  
+
 }  
 
 //_______________________________________________________
@@ -1189,11 +1181,28 @@ void AliAnalysisTaskEMCALClusterize::InitGeometry()
       if     (runnumber < 140000) fGeomName = "EMCAL_FIRSTYEARV1";
       else if(runnumber < 171000) fGeomName = "EMCAL_COMPLETEV1";
       else                        fGeomName = "EMCAL_COMPLETE12SMV1";  
-      printf("AliAnalysisTaskEMCALClusterize::InitGeometry() - Set EMCAL geometry name to <%s> for run %d\n",fGeomName.Data(),runnumber);
+      printf("AliAnalysisTaskEMCALClusterize::InitGeometry() - Set EMCAL geometry name to <%s> for run %d\n",
+             fGeomName.Data(),runnumber);
     }
     
 		fGeom = AliEMCALGeometry::GetInstance(fGeomName);
     
+    // Init geometry, I do not like much to do it like this ...
+    if(fImportGeometryFromFile && !gGeoManager)
+    {
+      if(fImportGeometryFilePath=="") // If not specified, set location depending on run number
+      {
+        // "$ALICE_ROOT/EVE/alice-data/default_geo.root"
+        if     (runnumber <  140000 &&
+                runnumber >= 100000) fImportGeometryFilePath = "$ALICE_ROOT/OADB/EMCAL/geometry_2010.root";
+        if     (runnumber >= 140000 &&
+                runnumber <  171000) fImportGeometryFilePath = "$ALICE_ROOT/OADB/EMCAL/geometry_2011.root";
+        else                         fImportGeometryFilePath = "$ALICE_ROOT/OADB/EMCAL/geometry_2012.root"; // 2012-2013
+      }
+      printf("AliAnalysisTaskEMCALClusterize::InitGeometry() - Import %s\n",fImportGeometryFilePath.Data());
+      TGeoManager::Import(fImportGeometryFilePath) ;
+    }
+
 		if(fDebug > 0)
     {
 			printf("AliAnalysisTaskEMCALClusterize::InitGeometry(run=%d)",runnumber);
