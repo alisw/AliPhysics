@@ -8,6 +8,7 @@
 #include <TH2F.h>
 #include <TH3F.h>
 #include <THnSparse.h>
+#include <TF1.h>
 #include <TList.h>
 #include <TLorentzVector.h>
 #include <TProfile.h>
@@ -40,24 +41,39 @@ AliAnalysisTaskEmcalJetMassResponse::AliAnalysisTaskEmcalJetMassResponse() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetMassResponse", kTRUE),
   fContainerBase(0),
   fMinFractionShared(0),
-  fJetMassAvg(0),
+  f1JetMassAvg(0),
+  fh2PtJet1DeltaMNoSub(0),
+  fh2PtJet2DeltaMNoSub(0),
+  fh3PtJet1DeltaPtDeltaMCheat(0),
+  fh3PtJet2DeltaPtDeltaMCheat(0),
   fh3PtJet1DeltaPtDeltaM(0),
   fh3PtJet2DeltaPtDeltaM(0),
   fh3PtJet1MJet1MJet2(0),
-  fh3PtJet2MJet1MJet2(0)
+  fh3PtJet2MJet1MJet2(0),
+  fh2PtJet1DeltaPtVecSub(0)
 {
   // Default constructor.
 
+  fh2PtJet1DeltaMNoSub         = new TH2F*[fNcentBins];
+  fh2PtJet2DeltaMNoSub         = new TH2F*[fNcentBins];
+  fh3PtJet1DeltaPtDeltaMCheat  = new TH3F*[fNcentBins];
+  fh3PtJet2DeltaPtDeltaMCheat  = new TH3F*[fNcentBins];
   fh3PtJet1DeltaPtDeltaM       = new TH3F*[fNcentBins];
   fh3PtJet2DeltaPtDeltaM       = new TH3F*[fNcentBins];
   fh3PtJet1MJet1MJet2          = new TH3F*[fNcentBins];
   fh3PtJet2MJet1MJet2          = new TH3F*[fNcentBins];
+  fh2PtJet1DeltaPtVecSub       = new TH2F*[fNcentBins];
  
   for (Int_t i = 0; i < fNcentBins; i++) {
-    fh3PtJet1DeltaPtDeltaM[i]     = 0; 
-    fh3PtJet2DeltaPtDeltaM[i]     = 0;
-    fh3PtJet1MJet1MJet2[i]        = 0;
-    fh3PtJet2MJet1MJet2[i]        = 0;
+    fh2PtJet1DeltaMNoSub[i]        = 0;
+    fh2PtJet2DeltaMNoSub[i]        = 0;
+    fh3PtJet1DeltaPtDeltaMCheat[i] = 0;
+    fh3PtJet2DeltaPtDeltaMCheat[i] = 0;
+    fh3PtJet1DeltaPtDeltaM[i]      = 0; 
+    fh3PtJet2DeltaPtDeltaM[i]      = 0;
+    fh3PtJet1MJet1MJet2[i]         = 0;
+    fh3PtJet2MJet1MJet2[i]         = 0;
+    fh2PtJet1DeltaPtVecSub[i]      = 0;
   }
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -67,24 +83,39 @@ AliAnalysisTaskEmcalJetMassResponse::AliAnalysisTaskEmcalJetMassResponse(const c
   AliAnalysisTaskEmcalJet(name, kTRUE),  
   fContainerBase(0),
   fMinFractionShared(0),
-  fJetMassAvg(0),
+  f1JetMassAvg(0),
+  fh2PtJet1DeltaMNoSub(0),
+  fh2PtJet2DeltaMNoSub(0),
+  fh3PtJet1DeltaPtDeltaMCheat(0),
+  fh3PtJet2DeltaPtDeltaMCheat(0),
   fh3PtJet1DeltaPtDeltaM(0),
   fh3PtJet2DeltaPtDeltaM(0),
   fh3PtJet1MJet1MJet2(0),
-  fh3PtJet2MJet1MJet2(0)
+  fh3PtJet2MJet1MJet2(0),
+  fh2PtJet1DeltaPtVecSub(0)
 {
   // Standard constructor.
 
+  fh2PtJet1DeltaMNoSub         = new TH2F*[fNcentBins];
+  fh2PtJet2DeltaMNoSub         = new TH2F*[fNcentBins];
+  fh3PtJet1DeltaPtDeltaMCheat  = new TH3F*[fNcentBins];
+  fh3PtJet2DeltaPtDeltaMCheat  = new TH3F*[fNcentBins];
   fh3PtJet1DeltaPtDeltaM       = new TH3F*[fNcentBins];
   fh3PtJet2DeltaPtDeltaM       = new TH3F*[fNcentBins];
   fh3PtJet1MJet1MJet2          = new TH3F*[fNcentBins];
   fh3PtJet2MJet1MJet2          = new TH3F*[fNcentBins];
+  fh2PtJet1DeltaPtVecSub       = new TH2F*[fNcentBins];
  
   for (Int_t i = 0; i < fNcentBins; i++) {
-    fh3PtJet1DeltaPtDeltaM[i]     = 0; 
-    fh3PtJet2DeltaPtDeltaM[i]     = 0; 
-    fh3PtJet1MJet1MJet2[i]        = 0;
-    fh3PtJet2MJet1MJet2[i]        = 0;
+    fh2PtJet1DeltaMNoSub[i]        = 0;
+    fh2PtJet2DeltaMNoSub[i]        = 0;
+    fh3PtJet1DeltaPtDeltaMCheat[i] = 0;
+    fh3PtJet2DeltaPtDeltaMCheat[i] = 0;
+    fh3PtJet1DeltaPtDeltaM[i]      = 0; 
+    fh3PtJet2DeltaPtDeltaM[i]      = 0;
+    fh3PtJet1MJet1MJet2[i]         = 0;
+    fh3PtJet2MJet1MJet2[i]         = 0;
+    fh2PtJet1DeltaPtVecSub[i]      = 0;
   }
 
   SetMakeGeneralHistograms(kTRUE);
@@ -106,25 +137,37 @@ void AliAnalysisTaskEmcalJetMassResponse::UserCreateOutputObjects()
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
-  const Int_t nBinsPt  = 250;
+  const Int_t nBinsPt  = 200;
   const Double_t minPt = -50.;
-  const Double_t maxPt = 200.;
+  const Double_t maxPt = 150.;
 
   const Int_t nBinsM  = 150;
   const Double_t minM = -50.;
   const Double_t maxM = 100.;
 
-  // const Int_t nBinsArea = 100;
-  // const Double_t minArea = 0.;
-  // const Double_t maxArea = 1.;
-
-  // const Int_t nBinsNConst = 100;
-  // const Double_t minNConst = 0.;
-  // const Double_t maxNConst = 500.;
-
   TString histName = "";
   TString histTitle = "";
   for (Int_t i = 0; i < fNcentBins; i++) {
+    histName = TString::Format("fh2PtJet1DeltaMNoSub_%d",i);
+    histTitle = TString::Format("%s;#it{p}_{T,jet1};#delta#it{M}_{jet}",histName.Data());
+    fh2PtJet1DeltaMNoSub[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsM,minM,maxM);
+    fOutput->Add(fh2PtJet1DeltaMNoSub[i]);
+
+    histName = TString::Format("fh2PtJet2DeltaMNoSub_%d",i);
+    histTitle = TString::Format("%s;#it{p}_{T,jet1};#delta#it{M}_{jet}",histName.Data());
+    fh2PtJet2DeltaMNoSub[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsM,minM,maxM);
+    fOutput->Add(fh2PtJet2DeltaMNoSub[i]);
+
+    histName = TString::Format("fh3PtJet1DeltaPtDeltaMCheat_%d",i);
+    histTitle = TString::Format("%s;#it{p}_{T,jet1};#delta#it{p}_{T};#delta#it{M}_{jet}",histName.Data());
+    fh3PtJet1DeltaPtDeltaMCheat[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsPt,minPt,maxPt,nBinsM,minM,maxM);
+    fOutput->Add(fh3PtJet1DeltaPtDeltaMCheat[i]);
+
+    histName = TString::Format("fh3PtJet2DeltaPtDeltaMCheat_%d",i);
+    histTitle = TString::Format("%s;#it{p}_{T,jet1};#delta#it{p}_{T};#delta#it{M}_{jet}",histName.Data());
+    fh3PtJet2DeltaPtDeltaMCheat[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsPt,minPt,maxPt,nBinsM,minM,maxM);
+    fOutput->Add(fh3PtJet2DeltaPtDeltaMCheat[i]);
+
     histName = TString::Format("fh3PtJet1DeltaPtDeltaM_%d",i);
     histTitle = TString::Format("%s;#it{p}_{T,jet1};#delta#it{p}_{T};#delta#it{M}_{jet}",histName.Data());
     fh3PtJet1DeltaPtDeltaM[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsPt,minPt,maxPt,nBinsM,minM,maxM);
@@ -144,6 +187,11 @@ void AliAnalysisTaskEmcalJetMassResponse::UserCreateOutputObjects()
     histTitle = TString::Format("%s;#it{p}_{T,jet2};#it{M}_{jet1};#it{M}_{jet2}",histName.Data());
     fh3PtJet2MJet1MJet2[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsM,minM,maxM,nBinsM,minM,maxM);
     fOutput->Add(fh3PtJet2MJet1MJet2[i]);
+
+    histName = TString::Format("fh2PtJet1DeltaPtVecSub_%d",i);
+    histTitle = TString::Format("%s;#it{p}_{T,jet1};#delta#it{p}_{T}",histName.Data());
+    fh2PtJet1DeltaPtVecSub[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsPt,minPt,maxPt);
+    fOutput->Add(fh2PtJet1DeltaPtVecSub[i]);
   }
 
   // =========== Switch on Sumw2 for all histos ===========
@@ -197,11 +245,18 @@ Bool_t AliAnalysisTaskEmcalJetMassResponse::FillHistograms()
       Double_t deltaPt = ptJet1 - ptJet2;
       Double_t deltaM  = massJet1 - massJet2;
 
+      fh2PtJet1DeltaMNoSub[fCentBin]->Fill(ptJet1,jet1->M()-jet2->M());
+      fh2PtJet2DeltaMNoSub[fCentBin]->Fill(ptJet2,jet1->M()-jet2->M());
+
       fh3PtJet1DeltaPtDeltaM[fCentBin]->Fill(ptJet1,deltaPt,deltaM);
       fh3PtJet2DeltaPtDeltaM[fCentBin]->Fill(ptJet2,deltaPt,deltaM);
 
       fh3PtJet1MJet1MJet2[fCentBin]->Fill(ptJet1,massJet1,massJet2);
       fh3PtJet2MJet1MJet2[fCentBin]->Fill(ptJet2,massJet1,massJet2);
+
+      TLorentzVector vpC = GetSubtractedVectorCheat(jet1);
+      fh3PtJet1DeltaPtDeltaMCheat[fCentBin]->Fill(vpC.Perp(),vpC.Perp()-jet2->Pt(),vpC.M()-jet2->M());
+      fh3PtJet2DeltaPtDeltaMCheat[fCentBin]->Fill(ptJet2,vpC.Perp()-jet2->Pt(),vpC.M()-jet2->M());
     }
   }
 
@@ -209,22 +264,53 @@ Bool_t AliAnalysisTaskEmcalJetMassResponse::FillHistograms()
 }
 
 //________________________________________________________________________
+TLorentzVector AliAnalysisTaskEmcalJetMassResponse::GetSubtractedVector(AliEmcalJet *jet) {
+  //get subtracted vector
+  TLorentzVector vpS;
+  if(f1JetMassAvg) {
+    Double_t pt = jet->Pt() - GetRhoVal(fContainerBase)*jet->Area();
+    TLorentzVector vpB; vpB.SetPtEtaPhiE(GetRhoVal(fContainerBase)*jet->Area(),0.,0.,f1JetMassAvg->Eval(pt));
+    TLorentzVector vpAAboost; vpAAboost.SetPtEtaPhiM(jet->Pt(),0.,0.,jet->M());
+    TLorentzVector vpSboost = vpAAboost - vpB;
+    vpS.SetPtEtaPhiM(vpSboost.Perp(),jet->Eta(),jet->Phi(),vpSboost.M());
+  }
+  return vpS;
+}
+
+//________________________________________________________________________
+TLorentzVector AliAnalysisTaskEmcalJetMassResponse::GetSubtractedVectorCheat(AliEmcalJet *jet) {
+  //get subtracted vector taking pT and mass difference from MC match
+  TLorentzVector vpS;
+  AliEmcalJet *jet2 = jet->ClosestJet();
+  if(jet2) {
+    TLorentzVector vpAAboost; vpAAboost.SetPtEtaPhiM(jet->Pt(),0.,0.,jet->M());
+    TLorentzVector vpPPboost; vpPPboost.SetPtEtaPhiM(jet2->Pt(),0.,0.,jet2->M());
+    Double_t dpt = vpAAboost.Perp()-vpPPboost.Perp();
+    /*
+      Double_t dm = vpAAboost.M() - vpPPboost.M();
+      Double_t dE = TMath::Sqrt(dpt*dpt + dm*dm);
+    */
+    Double_t dE = vpAAboost.E()-vpPPboost.E();
+    TLorentzVector vpB; vpB.SetPtEtaPhiE(dpt,0.,0.,dE);
+    TLorentzVector vpSboost = vpAAboost - vpB;
+    vpS.SetPtEtaPhiM(vpSboost.Perp(),jet->Eta(),jet->Phi(),vpSboost.M());
+  }
+  return vpS;
+}
+
+//________________________________________________________________________
 Double_t AliAnalysisTaskEmcalJetMassResponse::GetJetMass(AliEmcalJet *jet) {
 
-  Double_t subM = jet->M() - fJetMassAvg;
-  // Double_t scale = deltaM / jet->M();
-
-  // Double_t mt2 = jet->E()*jet->E() - jet->Pt()*jet->Pt();
-  // Double_t et2 = jet->M()*jet->M() + jet->Pt()*jet->Pt();
-
-  // Double_t pxScale = jet->Px()*scale;
-  // Double_t pyScale = jet->Py()*scale;
-  // Double_t pzScale = jet->Pz()*scale;
+  if(f1JetMassAvg) {
+    TLorentzVector vpS = GetSubtractedVector(jet);
   
-  // Printf("scaled jet 4-vector: %f-%f-%f-%f",pxScale,pyScale,pzScale);
+    AliEmcalJet *jet2 = jet->ClosestJet();
+    if(jet2) fh2PtJet1DeltaPtVecSub[fCentBin]->Fill(vpS.Perp(),vpS.Perp()-jet2->Pt());
 
-  return subM;
-
+    return vpS.M();
+  }
+  else
+    return jet->M();
 }
 
 //________________________________________________________________________
