@@ -6,12 +6,18 @@ main()
     echo "  - optionalStuff overrides config file, e.g.:"
     echo "       $0 configFile inputList=somefile.list outputDirectory='${PWD}'/output"
     exit 1
-  [[ ! -f $1 ]] && echo "argument not a file" && exit 1
+  fi
+  [[ ! -f $1 ]] && echo "argument not a file" && exit 1  
+
  
   configFile=${1}
   shift 1
 
-  
+  [[ -z $ALICE_ROOT ]] && source $alirootEnv
+  [[ -z $ALICE_ROOT ]] && echo "ALICE_ROOT not defined" && exit 1
+
+  ocdbregex='raw://'
+  [[ ${ocdbStorage} =~ ${ocdbregex} ]] && alien-token-init
 
   updateQA ${configFile} $@
 }
@@ -25,12 +31,16 @@ updateQA()
   shift 1
   parseConfig $configFile $@
 
+  dateString=$(date +%Y-%m-%d-%H-%M)
+  echo "Start time QA process: $dateString"
+
   #logging
   mkdir -p $logDirectory
   [[ ! -d $logDirectory ]] && echo "no log dir $logDirectory" && exit 1
-  logFile="$logDirectory/${0##*/}.$dateString.log"
+  logFile="$logDirectory/${0##*/}.${dateString}.log"
   touch ${logFile}
   [[ ! -f ${logFile} ]] && echo "cannot write logfile $logfile" && exit 1
+  echo "logFile = $logFile"
   exec &>${logFile}
 
   #check lock
@@ -49,12 +59,6 @@ updateQA()
   fi
   cd ${workingDirectory}
 
-  [[ -z $ALICE_ROOT ]] && source $alirootEnv
-  [[ -z $ALICE_ROOT ]] && echo "ALICE_ROOT not defined" && exit 1
-
-  dateString=$(date +%Y-%m-%d-%H-%M)
-  echo "Start time QA process: $dateString"
-
   ################################################################
   #ze detector loop
   for detectorScript in $ALICE_ROOT/PWGPP/QA/detectorQAscripts/*; do
@@ -71,9 +75,9 @@ updateQA()
     cd ${tmpRunDir}
 
     tmpPrefix=${tmpRunDir}/${outputDir}
-    echo outputDir=$outputDir
-    echo tmpPrefix=$tmpPrefix
-    echo detector=$detector
+    echo "running QA for ${detector}"
+    echo "  outputDir=$outputDir"
+    echo "  tmpPrefix=$tmpPrefix"
     
     unset -f runLevelQA
     unset -f periodLevelQA
@@ -86,14 +90,14 @@ updateQA()
       guessRunData ${qaFile}
 
       runDir=${tmpPrefix}/${dataType}/${year}/${period}/${pass}/000${runNumber}
-      echo runDir=$runDir
       mkdir -p ${runDir}
       cd ${runDir}
 
       #handle the case of a zip archive
       [[ "$qaFile" =~ .*.zip$ ]] && qaFile="${qaFile}#QAresults.root"
       
-      runLevelQA ${qaFile}
+      echo running ${detector} runLevelQA for run ${runNumber} from ${qaFile}
+      runLevelQA ${qaFile} &> runLevelQA.log
 
       cd ${tmpRunDir}
     
@@ -102,37 +106,49 @@ updateQA()
     #################################################################
     #cache which productions were (re)done
     arrOfTouchedProductions=( $(/bin/ls -d ${tmpPrefix}/*/*/*/*) )
-    echo arrOfTouchedProductions=${arrOfTouchedProductions[@]}
-    
+    echo "list of processed productions:"
+    echo "    ${arrOfTouchedProductions[@]}"
+    echo
     #################################################################
     #(re)do the merging/trending in the final destination
     for tmpProductionDir in ${arrOfTouchedProductions[@]}; do
     
-      echo productionDir=${outputDir}/${tmpProductionDir#${tmpPrefix}}
       productionDir=${outputDir}/${tmpProductionDir#${tmpPrefix}}
       
       echo mkdir -p ${productionDir}
       mkdir -p ${productionDir}
       if [[ ! -d ${productionDir} ]]; then 
-        echo "cannot make productionDir $productionDir" && return 1
+        echo "cannot make productionDir $productionDir" && continue
       fi
       
-      echo mv -f ${tmpProductionDir}/* ${productionDir}
-      mv -f ${tmpProductionDir}/* ${productionDir}
+      #move to final destination
+      for dir in ${tmpProductionDir}/*; do
+        oldRunDir=${outputDir}/${dir#${tmpPrefix}}
+        if [[ -d ${oldRunDir} ]]; then
+          echo "removing old run: rm -rf ${oldRunDir}"
+          rm -rf ${oldRunDir}
+        fi
+        echo "moving output to final destination"
+        echo mv -f ${dir} ${productionDir}
+        mv -f ${dir} ${productionDir}
+      done
     
       guessRunData "${productionDir}/dummyName"
 
       cd ${productionDir}
 
+      rm -f trending.root
       hadd trending.root 000*/trending.root
 
-      periodLevelQA trending.root
+      echo running ${detector} periodLevelQA for production ${period}/${pass}
+      periodLevelQA trending.root &> periodLevelQA.log
       
       cd ${tmpRunDir}
     
     done
 
     cd ${workingDirectory}
+    echo cleaning up: rm -rf ${tmpRunDir}
     rm -rf ${tmpRunDir}
   done
 
