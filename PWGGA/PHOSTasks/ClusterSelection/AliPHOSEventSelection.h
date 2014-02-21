@@ -5,10 +5,10 @@
  * See cxx source for full Copyright notice                               */
 
 // Class for selection of PHOS events, create a sub-class inheriting from
-// this class to customize your event selection logback using 
+// this class to customize your event selection logback using
 // AliPHOSClusterSelectionLogbackTask
 //
-// Uses IsEqual() to identify scope of Event selection!!! (Map from 
+// Uses IsEqual() to identify scope of Event selection!!! (Map from
 // EventSelection to Event cluster array)
 //
 // Authors : Henrik Qvigstad
@@ -22,15 +22,15 @@ class AliAODCaloEvent;
 
 #include "TObject.h"
 
-class AliPHOSEventSelection : TObject {
+class AliPHOSEventSelection : public TObject {
  public:
   AliPHOSEventSelection();
   virtual ~AliPHOSEventSelection();
-  
+
   virtual Bool_t  IsEqual(const TObject* obj) const; // recommended: reimplement
   virtual ULong_t Hash() const;
-    
-  
+
+
  protected:
   AliPHOSEventSelection(const AliPHOSEventSelection&); // not implemented
   AliPHOSEventSelection& operator=(const AliPHOSEventSelection&); // not implemented
