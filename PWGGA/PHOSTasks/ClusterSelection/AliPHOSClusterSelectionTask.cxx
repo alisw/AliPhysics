@@ -49,6 +49,8 @@ void AliPHOSClusterSelectionTask::UserCreateOutputObjects()
 
 void AliPHOSClusterSelectionTask::UserExec(Option_t *option)
 {
+  (void)(option); // To make the compiler not give a warning.
+  
   AliVEvent* event = InputEvent();
   if( ! event )
     AliError("No Event");
