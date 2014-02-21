@@ -15,20 +15,32 @@ runQA()
   shift 1
   parseConfig $configFile $@
 
-  #be paranoid and make workingDirectory a full path
+  #logging
+  mkdir -p $logDirectory
+  [[ ! -d $logDirectory ]] && echo "no log dir $logDirectory" && exit 1
+  logFile="$logDirectory/${0##*/}.$dateString.log"
+  touch ${logFile}
+  [[ ! -f ${logFile} ]] && echo "cannot write logfile $logfile" && exit 1
+  exec &>${logFile}
+
+  #check lock
+  lockFile=${logDirectory}/runQA.lock
+  [[ -f ${lockFile} ]] && echo "lock ${lockFile} exists!" && exit 1
+  touch ${lockFile}
+  [[ ! -f ${lockFile} ]] && echo "cannot lock $lockFile" && exit 1
+  
+  #be paranoid and make some full paths
+  inputList=$(readlink -f ${inputList})
   workingDirectory=$(readlink -f ${workingDirectory})
+  mkdir -p ${workingDirectory}
+  if [[ ! -d ${workingDirectory} ]]; then
+    echo "working dir $workingDirectory does not exist and cannot be created"
+    return 1
+  fi
   cd ${workingDirectory}
 
   [[ -z $ALICE_ROOT ]] && source $alirootEnv
   [[ -z $ALICE_ROOT ]] && echo "ALICE_ROOT not defined" && exit 1
-
-  mkdir -p $logDirectory
-  [[ ! -d $logDirectory ]] && echo "no log dir $logDirectory" && exit 1
-
-  logFile="$logDirectory/${0##*/}.$dateString.log"
-  touch $logFile
-  [[ ! -f $logFile ]] && echo "cannot write logfile $logfile" && exit 1
-  exec 1>$logFile 2>&1
 
   dateString=$(date +%Y-%m-%d-%H-%M)
   echo "Start time QA process: $dateString"
@@ -39,7 +51,14 @@ runQA()
     detector=${detectorScript%.sh}
     detector=${detector##*/}
     outputDir=$(substituteDetectorName ${detector} ${outputDirectory})
-    tmpPrefix=${workingDirectory}/runDir/${outputDir}
+    tmpRunDir=${workingDirectory}/tmpQArunDir${detector}
+    if ! mkdir -p ${tmpRunDir}; then
+      echo "cannot create the temp dir $tmpRunDir"
+      continue
+    fi
+    cd ${tmpRunDir}
+
+    tmpPrefix=${tmpRunDir}/${outputDir}
     echo outputDir=$outputDir
     echo tmpPrefix=$tmpPrefix
     echo detector=$detector
@@ -63,7 +82,7 @@ runQA()
       
       runLevelQA ${qaFile}
 
-      cd ${workingDirectory}
+      cd ${tmpRunDir}
     
     done < ${inputList}
 
@@ -81,11 +100,14 @@ runQA()
       
       echo mkdir -p ${productionDir}
       mkdir -p ${productionDir}
+      if [[ ! -d ${productionDir} ]]; then 
+        echo "cannot make productionDir $productionDir" && return 1
+      fi
       
-      echo ln -s ${tmpProductionDir}/* ${productionDir}
-      ln -s ${tmpProductionDir}/* ${productionDir}
+      echo mv -f ${tmpProductionDir}/* ${productionDir}
+      mv -f ${tmpProductionDir}/* ${productionDir}
     
-      guessRunData "${tmpProductionDir}/dummyName"
+      guessRunData "${productionDir}/dummyName"
 
       cd ${productionDir}
 
@@ -93,12 +115,16 @@ runQA()
 
       periodLevelQA trending.root
       
-      cd ${workingDirectory}
+      cd ${tmpRunDir}
     
     done
 
+    cd ${workingDirectory}
+    rm -rf ${tmpRunDir}
   done
 
+  #remove lock
+  rm -f ${lockFile}
 }
 
 parseConfig()
