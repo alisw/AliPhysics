@@ -1,16 +1,26 @@
 #!/bin/bash
 main()
 {
-  runQA $@
+  if [[ -z $1 ]]; then
+    echo "Usage: $0 configFile [optionalStuff]"
+    echo "  - optionalStuff overrides config file, e.g.:"
+    echo "       $0 configFile inputList=somefile.list outputDirectory='${PWD}'/output"
+    exit 1
+  [[ ! -f $1 ]] && echo "argument not a file" && exit 1
+ 
+  configFile=${1}
+  shift 1
+
+  
+
+  updateQA ${configFile} $@
 }
 
-runQA()
+updateQA()
 {
+  #this guy takes config file as only positional argument
+  #optional stugg allowerd to override config
   umask 0002
-  dateString=$(date +%Y-%m-%d-%H-%M)
-  [[ -z $1 ]] && echo "Usage: $0 configFile" && exit 1
-  [[ ! -f $1 ]] && echo "argument not a file" && exit 1
-  
   configFile=${1}
   shift 1
   parseConfig $configFile $@
@@ -45,6 +55,8 @@ runQA()
   dateString=$(date +%Y-%m-%d-%H-%M)
   echo "Start time QA process: $dateString"
 
+  ################################################################
+  #ze detector loop
   for detectorScript in $ALICE_ROOT/PWGPP/QA/detectorQAscripts/*; do
 
     [[ ! ${detectorScript} =~ .*\.sh ]] && continue
@@ -78,6 +90,7 @@ runQA()
       mkdir -p ${runDir}
       cd ${runDir}
 
+      #handle the case of a zip archive
       [[ "$qaFile" =~ .*.zip$ ]] && qaFile="${qaFile}#QAresults.root"
       
       runLevelQA ${qaFile}
@@ -179,6 +192,15 @@ guessRunData()
   done
   [[ -z ${legoTrainRunNumber} ]] && pass=${path[$((dirDepth-1))]}
   [[ "${dataType}" =~ ^sim$ ]] && pass="passMC" && runNumber=${shortRunNumber}
+  
+  if [[ -z ${dataType} || -z ${year} || -z ${period} || -z ${runNumber}} || -z ${pass} ]];
+  then
+    #error condition
+    return 1
+  else
+    #ALL OK
+    return 0
+  fi
 }
 
 substituteDetectorName()
