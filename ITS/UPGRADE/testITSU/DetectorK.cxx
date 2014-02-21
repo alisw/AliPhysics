@@ -2256,7 +2256,7 @@ Double_t* DetectorK::PrepareEffFakeKombinations(TMatrixD *probKomb, TMatrixD *pr
     }
 
   }
-  Double_t *probs = new Double_t(2);
+  Double_t *probs = new Double_t[2];
   probs[0] = probEff; probs[1] = probFake;
   return probs;
 
