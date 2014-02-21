@@ -5,19 +5,22 @@ main()
     echo "Usage: $0 configFile [optionalStuff]"
     echo "  - optionalStuff overrides config file, e.g.:"
     echo "       $0 configFile inputList=somefile.list outputDirectory='${PWD}'/output"
-    exit 1
+    return 1
   fi
-  [[ ! -f $1 ]] && echo "argument not a file" && exit 1  
-
+  [[ ! -f $1 ]] && echo "argument not a file" && return 1  
  
   configFile=${1}
   shift 1
+  parseConfig ${configFile} $@
 
-  [[ -z $ALICE_ROOT ]] && source $alirootEnv
-  [[ -z $ALICE_ROOT ]] && echo "ALICE_ROOT not defined" && exit 1
+  [[ -z $ALICE_ROOT ]] && source ${alirootEnv}
+  [[ -z $ALICE_ROOT ]] && echo "ALICE_ROOT not defined" && return 1
 
   ocdbregex='raw://'
-  [[ ${ocdbStorage} =~ ${ocdbregex} ]] && alien-token-init
+  if [[ ${ocdbStorage} =~ ${ocdbregex} ]]; then
+    
+    alien-token-init
+  fi
 
   updateQA ${configFile} $@
 }
@@ -36,18 +39,18 @@ updateQA()
 
   #logging
   mkdir -p $logDirectory
-  [[ ! -d $logDirectory ]] && echo "no log dir $logDirectory" && exit 1
+  [[ ! -d $logDirectory ]] && echo "no log dir $logDirectory" && return 1
   logFile="$logDirectory/${0##*/}.${dateString}.log"
   touch ${logFile}
-  [[ ! -f ${logFile} ]] && echo "cannot write logfile $logfile" && exit 1
+  [[ ! -f ${logFile} ]] && echo "cannot write logfile $logfile" && return 1
   echo "logFile = $logFile"
   exec &>${logFile}
 
   #check lock
   lockFile=${logDirectory}/runQA.lock
-  [[ -f ${lockFile} ]] && echo "lock ${lockFile} exists!" && exit 1
+  [[ -f ${lockFile} ]] && echo "lock ${lockFile} exists!" && return 1
   touch ${lockFile}
-  [[ ! -f ${lockFile} ]] && echo "cannot lock $lockFile" && exit 1
+  [[ ! -f ${lockFile} ]] && echo "cannot lock $lockFile" && return 1
   
   #be paranoid and make some full paths
   inputList=$(readlink -f ${inputList})
@@ -63,9 +66,23 @@ updateQA()
   #ze detector loop
   for detectorScript in $ALICE_ROOT/PWGPP/QA/detectorQAscripts/*; do
 
+    echo
     [[ ! ${detectorScript} =~ .*\.sh ]] && continue
     detector=${detectorScript%.sh}
     detector=${detector##*/}
+    
+    #skip if excluded
+    skipDetector=0
+    for excluded in ${excludeDetectors}; do
+      if [[ ${detector} =~ ${excluded} ]]; then
+        echo "${detector} is excluded in config, skipping..."
+        skipDetector=1
+        break
+      fi
+    done
+    [[ ${skipDetector} -eq 1 ]] && continue
+
+    logSummary=${logDirectory}/summary-${detector}-${dateString}.log
     outputDir=$(substituteDetectorName ${detector} ${outputDirectory})
     tmpRunDir=${workingDirectory}/tmpQArunDir${detector}
     if ! mkdir -p ${tmpRunDir}; then
@@ -86,7 +103,8 @@ updateQA()
     #################################################################
     #produce the QA and trending tree for each file (run)
     while read qaFile; do
-    
+      echo
+
       guessRunData ${qaFile}
 
       runDir=${tmpPrefix}/${dataType}/${year}/${period}/${pass}/000${runNumber}
@@ -112,48 +130,187 @@ updateQA()
     #################################################################
     #(re)do the merging/trending in the final destination
     for tmpProductionDir in ${arrOfTouchedProductions[@]}; do
+      echo
+      echo "running period level stuff in ${tmpProductionDir}"
     
       productionDir=${outputDir}/${tmpProductionDir#${tmpPrefix}}
-      
-      echo mkdir -p ${productionDir}
+
       mkdir -p ${productionDir}
       if [[ ! -d ${productionDir} ]]; then 
         echo "cannot make productionDir $productionDir" && continue
       fi
+      cd ${productionDir}
       
       #move to final destination
       for dir in ${tmpProductionDir}/*; do
         oldRunDir=${outputDir}/${dir#${tmpPrefix}}
+        guessRunData "${dir}/dummyName"
+
+        #before moving - VALIDATE!!!
+        if ! validate ${dir}; then continue; fi
+
+        #summarizeLogs ${dir} >> ${logSummary}
+        #logStatus=$?
+        #if [[ ${logStatus} -ne 0 ]]; then 
+        #  echo "WARNING: run not validated: ${dir}"
+        #  planB=1
+        #  continue
+        #fi
+
         if [[ -d ${oldRunDir} ]]; then
-          echo "removing old run: rm -rf ${oldRunDir}"
+          echo "removing old ${period}/${pass}/${runNumber}"
           rm -rf ${oldRunDir}
         fi
-        echo "moving output to final destination"
-        echo mv -f ${dir} ${productionDir}
+        echo "moving new ${runNumber} to ${productionDir}"
         mv -f ${dir} ${productionDir}
       done
     
-      guessRunData "${productionDir}/dummyName"
-
-      cd ${productionDir}
-
-      rm -f trending.root
-      hadd trending.root 000*/trending.root
-
       echo running ${detector} periodLevelQA for production ${period}/${pass}
-      periodLevelQA trending.root &> periodLevelQA.log
+      rm -f trending.root
+      hadd trending.root 000*/trending.root &> periodLevelQA.log
+      periodLevelQA trending.root &>> periodLevelQA.log
       
+      if ! validate ${PWD}; then continue; fi
+      #summarizeLogs ${PWD} >> ${logSummary}
+      #logStatus=$?
+      #if [[ ${logStatus} -ne 0 ]]; then 
+      #  echo "WARNING: period ${period} not validated: ${dir}"
+      #  planB=1
+      #  continue
+      #fi
+
       cd ${tmpRunDir}
     
     done
 
     cd ${workingDirectory}
-    echo cleaning up: rm -rf ${tmpRunDir}
-    rm -rf ${tmpRunDir}
+
+    if [[ -z ${planB} ]]; then
+      echo removing ${tmpRunDir}
+      rm -rf ${tmpRunDir}
+    else
+      executePlanB
+    fi
   done
 
   #remove lock
   rm -f ${lockFile}
+}
+
+executePlanB()
+{
+  #in case of emergency
+  if [[ -n ${MAILTO} ]]; then 
+    echo
+    echo "trouble detected, sending email to ${MAILTO}"
+
+    cat ${logSummary} | mail -s "qa in need of assistance" ${MAILTO}
+  fi
+}
+
+validate()
+{
+  summarizeLogs ${1} >> ${logSummary}
+  logStatus=$?
+  if [[ ${logStatus} -ne 0 ]]; then 
+    echo "WARNING not validated: ${1}"
+    planB=1
+    return 1
+  fi
+  return 0
+}
+
+summarizeLogs()
+{
+  local dir=$1
+  [[ -z ${dir} ]] && dir=${PWD}
+
+  #print a summary of logs
+  logFiles=(
+      "*.log"
+      "stdout"
+      "stderr"
+  )
+
+  #check logs
+  local logstatus=0
+  for log in ${dir}/${logFiles[*]}; do
+    finallog=${PWD%/}/${log}
+    [[ ! -f ${log} ]] && continue
+    errorSummary=$(validateLog ${log})
+    validationStatus=$?
+    [[ validationStatus -ne 0 ]] && logstatus=1
+    if [[ ${validationStatus} -eq 0 ]]; then 
+      #in pretend mode randomly report an error in rec.log some cases
+      if [[ -n ${pretend} && "${log}" == "rec.log" ]]; then
+        [[ $(( ${RANDOM}%2 )) -ge 1 ]] && echo "${finallog} BAD random error" || echo "${finallog} OK"
+      else
+        echo "${finallog} OK"
+      fi
+    elif [[ ${validationStatus} -eq 1 ]]; then
+      echo "${finallog} BAD ${errorSummary}"
+    elif [[ ${validationStatus} -eq 2 ]]; then
+      echo "${finallog} OK MWAH ${errorSummary}"
+    fi
+  done
+
+  #report core files
+  while read x; do
+    echo ${x}
+    chmod 644 ${x}
+    gdb --batch --quiet -ex "bt" -ex "quit" aliroot ${x} > stacktrace_${x//\//_}.log
+  done < <(/bin/ls ${PWD}/*/core 2>/dev/null; /bin/ls ${PWD}/core 2>/dev/null)
+
+  return ${logstatus}
+}
+
+validateLog()
+{
+  log=${1}
+  errorConditions=(
+            'There was a crash'
+            'floating'
+            'error while loading shared libraries'
+            'std::bad_alloc'
+            's_err_syswatch_'
+            'Thread [0-9]* (Thread'
+            'AliFatal'
+            'core dumped'
+            '\.C.*error:.*\.h: No such file'
+            'segmentation'
+  )
+
+  warningConditions=(
+            'This is serious'
+  )
+
+  local logstatus=0
+  local errorSummary=""
+  local warningSummary=""
+
+  for ((i=0; i<${#errorConditions[@]};i++)); do
+    local tmp=$(grep -m1 -e "${errorConditions[${i}]}" ${log})
+    [[ -n ${tmp} ]] && tmp+=" : "
+    errorSummary+=${tmp}
+  done
+
+  for ((i=0; i<${#warningConditions[@]};i++)); do
+    local tmp=$(grep -m1 -e "${warningConditions[${i}]}" ${log})
+    [[ -n ${tmp} ]] && tmp+=" : "
+    warningSummary+=${tmp}
+  done
+
+  if [[ -n ${errorSummary} ]]; then 
+    echo "${errorSummary}"
+    return 1
+  fi
+
+  if [[ -n ${warningSummary} ]]; then
+    echo "${warningSummary}"
+    return 2
+  fi
+
+  return 0
 }
 
 parseConfig()
