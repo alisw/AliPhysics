@@ -5,7 +5,7 @@
 #  $dataType     e.g. data or sim
 #  $year         e.g. 2011
 #  $period       e.g. LHC13g
-#  $runNumer     e.g. 169123
+#  $runNumber     e.g. 169123
 #  $pass         e.g. cpass1,pass1,passMC
 
 runLevelQA()
@@ -26,6 +26,8 @@ periodLevelQA()
   #runs in the production dir: ...../LHCXXx/passX/
   #the running dir contains all the run sub directories
   #named like 000123123 with the outputs of runLevelQA
+
+  
 
   #aliroot...
 }
