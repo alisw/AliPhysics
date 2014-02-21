@@ -104,6 +104,12 @@ AliFlowAnalysisWithMultiparticleCorrelations::AliFlowAnalysisWithMultiparticleCo
  fDiffCorrelationsList(NULL),
  fDiffCorrelationsFlagsPro(NULL),
  fCalculateDiffCorrelations(kFALSE),
+ fCalculateDiffCos(kTRUE),
+ fCalculateDiffSin(kFALSE),
+ fCalculateDiffCorrelationsVsPt(kTRUE),
+ fUseDefaultBinning(kTRUE),
+ fnDiffBins(-44),
+ fRangesDiffBins(NULL),
  fDiffBinNo(-1)
  {
   // Constructor.  
@@ -124,6 +130,7 @@ AliFlowAnalysisWithMultiparticleCorrelations::AliFlowAnalysisWithMultiparticleCo
   this->InitializeArraysForWeights();
   this->InitializeArraysForQcumulants();
   this->InitializeArraysForDiffCorrelations(); 
+  this->InitializeArraysForNestedLoops(); 
 
  } // end of AliFlowAnalysisWithMultiparticleCorrelations::AliFlowAnalysisWithMultiparticleCorrelations()
  
@@ -167,7 +174,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::Init()
  this->BookEverythingForNestedLoops();
  this->BookEverythingForStandardCandles();
  this->BookEverythingForQcumulants();
- this->BookEverythingForDiffCorrelations();
+ this->BookEverythingForDiffCorrelations(); return; // _11
 
  // d) Set all flags:
  // ... 
@@ -390,7 +397,11 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateStandardCandles()
     break; 
    }
   } // for(Int_t b4p=1;b4p<=nBins4p;b4p++)
-  if(TMath::Abs(dCosn1n2n2n1) < 1.e-44){Fatal(sMethodName.Data(),"TMath::Abs(dCosn1n2n2n1) < 1.e-44 !!!!");}
+  if(TMath::Abs(dCosn1n2n2n1) < 1.e-44)
+  {
+   cout<<Form("labeln1n2n2n1 = %s",labeln1n2n2n1.Data())<<endl;
+   Warning(sMethodName.Data(),"TMath::Abs(dCosn1n2n2n1) < 1.e-44 !!!!");
+  }
 
   // Access <<Cos(-n1,n1)>> and <<Cos(-n2,n2)>>:
   for(Int_t b2p=1;b2p<=nBins2p;b2p++)
@@ -409,8 +420,16 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateStandardCandles()
    }
    if(TMath::Abs(dCosn1n1) > 0. && TMath::Abs(dCosn2n2) > 0.){break;} // found 'em both!
   } // for(Int_t b2p=1;b2p<=nBins2p;b2p++)
-  if(TMath::Abs(dCosn1n1) < 1.e-44){Fatal(sMethodName.Data(),"TMath::Abs(dCosn1n1) < 1.e-44 !!!!");}
-  if(TMath::Abs(dCosn2n2) < 1.e-44){Fatal(sMethodName.Data(),"TMath::Abs(dCosn2n2) < 1.e-44 !!!!");}
+  if(TMath::Abs(dCosn1n1) < 1.e-44)
+  {
+   cout<<Form("labeln1n1 = %s",labeln1n1.Data())<<endl;
+   Warning(sMethodName.Data(),"TMath::Abs(dCosn1n1) < 1.e-44 !!!!");
+  }
+  if(TMath::Abs(dCosn2n2) < 1.e-44)
+  {
+   cout<<Form("labeln2n2 = %s",labeln2n2.Data())<<endl;
+   Warning(sMethodName.Data(),"TMath::Abs(dCosn2n2) < 1.e-44 !!!!");
+  }
 
   // Calculate standard candles:
   dSCn1n2n2n1 = dCosn1n2n2n1-dCosn1n1*dCosn2n2;
@@ -512,6 +531,18 @@ void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForDiffCorrel
 
 //=======================================================================================================================
 
+void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForNestedLoops()
+{
+ // Initialize all arrays for nested loops.  
+
+ fCrossCheckDiffCSCOBN[0] = 0; // cos/sin
+ fCrossCheckDiffCSCOBN[1] = 2; // correlator order
+ fCrossCheckDiffCSCOBN[2] = 4; // bin number
+
+} // void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForNestedLoops()
+
+//=======================================================================================================================
+
 void AliFlowAnalysisWithMultiparticleCorrelations::CalculateCorrelations(AliFlowEventSimple *anEvent)
 {
  // Calculate multi-particle correlations from Q-vector components.
@@ -581,6 +612,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateDiffCorrelations(Ali
  } // for(Int_t cs=0;cs<2;cs++) // [0=cos,1=sin]
 
  // TBI: The lines below are genuine, most delicious, spaghetti ever... To be reimplemented (one day).
+ if(fCalculateDiffCos)
+ {
  for(Int_t b=1;b<=nBins;b++)
  {
   fDiffBinNo = b-1;
@@ -600,6 +633,30 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateDiffCorrelations(Ali
   Double_t w4 = den4; // TBI add support for other options for the weight
   if(den4>0.){fDiffCorrelationsPro[0][3]->Fill(fDiffCorrelationsPro[0][3]->GetBinCenter(b),num4/den4,w4);} 
  } // for(Int_t b=1;b<=nBins;b++)
+ }
+ // TBI: The lines below are genuine, most delicious, spaghetti ever... To be reimplemented (one day).
+ if(fCalculateDiffSin)
+ {
+ for(Int_t b=1;b<=nBins;b++)
+ {
+  fDiffBinNo = b-1;
+  // <2'>:  
+  Double_t num2 = TwoDiff(fDiffHarmonics[1][0],fDiffHarmonics[1][1]).Im();
+  Double_t den2 = TwoDiff(0,0).Re();
+  Double_t w2 = den2; // TBI add support for other options for the weight
+  if(den2>0.){fDiffCorrelationsPro[1][1]->Fill(fDiffCorrelationsPro[1][1]->GetBinCenter(b),num2/den2,w2);} 
+  // <3'>:  
+  Double_t num3 = ThreeDiff(fDiffHarmonics[2][0],fDiffHarmonics[2][1],fDiffHarmonics[2][2]).Im();
+  Double_t den3 = ThreeDiff(0,0,0).Re();
+  Double_t w3 = den3; // TBI add support for other options for the weight
+  if(den3>0.){fDiffCorrelationsPro[1][2]->Fill(fDiffCorrelationsPro[1][2]->GetBinCenter(b),num3/den3,w3);} 
+  // <4'>:  
+  Double_t num4 = FourDiff(fDiffHarmonics[3][0],fDiffHarmonics[3][1],fDiffHarmonics[3][2],fDiffHarmonics[3][3]).Im();
+  Double_t den4 = FourDiff(0,0,0,0).Re();
+  Double_t w4 = den4; // TBI add support for other options for the weight
+  if(den4>0.){fDiffCorrelationsPro[1][3]->Fill(fDiffCorrelationsPro[1][3]->GetBinCenter(b),num4/den4,w4);} 
+ } // for(Int_t b=1;b<=nBins;b++)
+ }
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::CalculateDiffCorrelations(AliFlowEventSimple *anEvent)
 
@@ -735,8 +792,15 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateProductsOfCorrelatio
    if(TMath::Abs(denX) > 0. && TMath::Abs(denY) > 0.)
    {
     profile2D->Fill(bx-0.5,by-0.5,(numX/denX)*(numY/denY),wX*wY);
-   } 
-   else{Fatal(sMethodName.Data(),"if(TMath::Abs(denX) > 0. && TMath::Abs(denY) > 0.)");}
+   } else
+     {
+      cout<<endl; 
+      cout<<"Cannot calculate product for:"<<endl;    
+      cout<<Form("binLabelX = %s",binLabelX)<<endl;
+      cout<<Form("binLabelY = %s",binLabelY)<<endl;
+      cout<<Form("anEvent->GetNumberOfRPs() = %d",anEvent->GetNumberOfRPs())<<endl; 
+      Fatal(sMethodName.Data(),"if(TMath::Abs(denX) > 0. && TMath::Abs(denY) > 0.)");
+     } // else
   } // for(Int_t by=1;by<bx;by++)
  } // for(Int_t bx=2;bx<=nBins;bx++)
 
@@ -1407,10 +1471,17 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckDiffWithNestedLoops
  Double_t dPsi1=0.,dPhi2=0.,dPhi3=0.,dPhi4=0.; 
  Double_t wPsi1=1.,wPhi2=1.,wPhi3=1.,wPhi4=1.; 
 
- // TBI reiplement lines below in a more civilised manner:
- Bool_t bCrossCheck2p = kTRUE;
+ Int_t cs = fCrossCheckDiffCSCOBN[0]; // cos/sin
+
+ // TBI reimplement lines below in a more civilised manner:
+ Bool_t bCrossCheck2p = kFALSE;
  Bool_t bCrossCheck3p = kFALSE;
  Bool_t bCrossCheck4p = kFALSE;
+
+ if(fCrossCheckDiffCSCOBN[1] == 2){bCrossCheck2p = kTRUE;}
+ else if(fCrossCheckDiffCSCOBN[1] == 3){bCrossCheck3p = kTRUE;}
+ else if(fCrossCheckDiffCSCOBN[1] == 4){bCrossCheck4p = kTRUE;}
+
  if(Int_t(bCrossCheck2p + bCrossCheck3p + bCrossCheck4p) > 1)
  {
   Fatal(sMethodName.Data(),"Int_t(bCrossCheck2p + bCrossCheck3p + bCrossCheck4p) > 1");
@@ -1419,18 +1490,24 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckDiffWithNestedLoops
  {
   Fatal(sMethodName.Data(),"!(bCrossCheck2p || bCrossCheck3p || bCrossCheck4p)");
  }
- Int_t nDiffBinNo=4;
- Double_t dPt=0.;
-
+ Int_t nDiffBinNo = fCrossCheckDiffCSCOBN[2];
+ Double_t dPt = 0., dEta = 0.;
 
  // <2'>:
- for(Int_t i1=0;i1<nPrim;i1++) // Loop over particles in a differential bin _55
+ for(Int_t i1=0;i1<nPrim;i1++) // Loop over particles in a differential bin 
  {
   aftsTrack=anEvent->GetTrack(i1);
   if(!(aftsTrack->InPOISelection())){continue;}
   dPsi1=aftsTrack->Phi();
-  dPt=aftsTrack->Pt();
-  if(fDiffCorrelationsPro[0][1]->FindBin(dPt) != nDiffBinNo){continue;} // TBI spaghetti again 
+  if(fCalculateDiffCorrelationsVsPt)
+  {
+   dPt=aftsTrack->Pt();
+   if(fDiffCorrelationsPro[0][1]->FindBin(dPt) != nDiffBinNo){continue;} // TBI spaghetti again 
+  } else 
+    {
+     dEta=aftsTrack->Eta();
+     if(fDiffCorrelationsPro[0][1]->FindBin(dEta) != nDiffBinNo){continue;} // TBI spaghetti again 
+    }
   if(fUseWeights[1][0]){wPsi1=Weight(dPsi1,"POI","phi");}
   for(Int_t i2=0;i2<nPrim;i2++) // Loop over particles in an event
   {
@@ -1440,7 +1517,13 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckDiffWithNestedLoops
    dPhi2=aftsTrack->Phi();
    if(fUseWeights[0][0]){wPhi2=Weight(dPhi2,"RP","phi");}
    // Fill profiles:
-   if(bCrossCheck2p){fNestedLoopsDiffResultsPro->Fill(0.5,TMath::Cos(fDiffHarmonics[1][0]*dPsi1+fDiffHarmonics[1][1]*dPhi2),wPsi1*wPhi2);}  
+   if(bCrossCheck2p)
+   {
+    if(fCrossCheckDiffCSCOBN[0] == 0)
+    {
+     fNestedLoopsDiffResultsPro->Fill(0.5,TMath::Cos(fDiffHarmonics[1][0]*dPsi1+fDiffHarmonics[1][1]*dPhi2),wPsi1*wPhi2);
+    } else {fNestedLoopsDiffResultsPro->Fill(0.5,TMath::Sin(fDiffHarmonics[1][0]*dPsi1+fDiffHarmonics[1][1]*dPhi2),wPsi1*wPhi2);}
+   } // if(bCrossCheck2p) 
   } // for(Int_t i2=0;i2<nPrim;i2++)
  } // for(Int_t i1=0;i1<nPrim;i1++)
 
@@ -1450,8 +1533,15 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckDiffWithNestedLoops
   aftsTrack=anEvent->GetTrack(i1);
   if(!(aftsTrack->InPOISelection())){continue;}
   dPsi1=aftsTrack->Phi();
-  dPt=aftsTrack->Pt();
-  if(fDiffCorrelationsPro[0][1]->FindBin(dPt) != nDiffBinNo){continue;} // TBI spaghetti again 
+  if(fCalculateDiffCorrelationsVsPt)
+  {
+   dPt=aftsTrack->Pt();
+   if(fDiffCorrelationsPro[0][1]->FindBin(dPt) != nDiffBinNo){continue;} // TBI spaghetti again 
+  } else 
+    {
+     dEta=aftsTrack->Eta();
+     if(fDiffCorrelationsPro[0][1]->FindBin(dEta) != nDiffBinNo){continue;} // TBI spaghetti again 
+    }
   if(fUseWeights[1][0]){wPsi1=Weight(dPsi1,"POI","phi");}
   for(Int_t i2=0;i2<nPrim;i2++) // Loop over particles in an event
   {
@@ -1468,7 +1558,13 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckDiffWithNestedLoops
     dPhi3=aftsTrack->Phi();
     if(fUseWeights[0][0]){wPhi3=Weight(dPhi3,"RP","phi");}
     // Fill the profiles:
-    if(bCrossCheck3p){fNestedLoopsDiffResultsPro->Fill(0.5,TMath::Cos(fDiffHarmonics[2][0]*dPsi1+fDiffHarmonics[2][1]*dPhi2+fDiffHarmonics[2][2]*dPhi3),wPsi1*wPhi2*wPhi3);  }
+    if(bCrossCheck3p)
+    {
+     if(fCrossCheckDiffCSCOBN[0] == 0)
+     {
+      fNestedLoopsDiffResultsPro->Fill(0.5,TMath::Cos(fDiffHarmonics[2][0]*dPsi1+fDiffHarmonics[2][1]*dPhi2+fDiffHarmonics[2][2]*dPhi3),wPsi1*wPhi2*wPhi3);  
+     } else {fNestedLoopsDiffResultsPro->Fill(0.5,TMath::Sin(fDiffHarmonics[2][0]*dPsi1+fDiffHarmonics[2][1]*dPhi2+fDiffHarmonics[2][2]*dPhi3),wPsi1*wPhi2*wPhi3);}
+    } // if(bCrossCheck3p)
    } // end of for(Int_t i3=0;i3<nPrim;i3++)  
   } // for(Int_t i2=0;i2<nPrim;i2++)
  } // for(Int_t i1=0;i1<nPrim;i1++)
@@ -1479,8 +1575,15 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckDiffWithNestedLoops
   aftsTrack=anEvent->GetTrack(i1);
   if(!(aftsTrack->InPOISelection())){continue;}
   dPsi1=aftsTrack->Phi();
-  dPt=aftsTrack->Pt();
-  if(fDiffCorrelationsPro[0][1]->FindBin(dPt) != nDiffBinNo){continue;} // TBI spaghetti again 
+  if(fCalculateDiffCorrelationsVsPt)
+  {
+   dPt=aftsTrack->Pt();
+   if(fDiffCorrelationsPro[0][1]->FindBin(dPt) != nDiffBinNo){continue;} // TBI spaghetti again 
+  } else 
+    {
+     dEta=aftsTrack->Eta();
+     if(fDiffCorrelationsPro[0][1]->FindBin(dEta) != nDiffBinNo){continue;} // TBI spaghetti again 
+    }
   if(fUseWeights[1][0]){wPsi1=Weight(dPsi1,"POI","phi");}
   for(Int_t i2=0;i2<nPrim;i2++) // Loop over particles in an event
   {
@@ -1504,7 +1607,13 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckDiffWithNestedLoops
      dPhi4=aftsTrack->Phi();
      if(fUseWeights[0][0]){wPhi4=Weight(dPhi4,"RP","phi");}
      // Fill the profiles:
-     if(bCrossCheck4p){fNestedLoopsDiffResultsPro->Fill(0.5,TMath::Cos(fDiffHarmonics[3][0]*dPsi1+fDiffHarmonics[3][1]*dPhi2+fDiffHarmonics[3][2]*dPhi3+fDiffHarmonics[3][3]*dPhi4),wPsi1*wPhi2*wPhi3*wPhi4);}
+     if(bCrossCheck4p)
+     {
+      if(fCrossCheckDiffCSCOBN[0] == 0)
+      {
+       fNestedLoopsDiffResultsPro->Fill(0.5,TMath::Cos(fDiffHarmonics[3][0]*dPsi1+fDiffHarmonics[3][1]*dPhi2+fDiffHarmonics[3][2]*dPhi3+fDiffHarmonics[3][3]*dPhi4),wPsi1*wPhi2*wPhi3*wPhi4);
+      } else {fNestedLoopsDiffResultsPro->Fill(0.5,TMath::Sin(fDiffHarmonics[3][0]*dPsi1+fDiffHarmonics[3][1]*dPhi2+fDiffHarmonics[3][2]*dPhi3+fDiffHarmonics[3][3]*dPhi4),wPsi1*wPhi2*wPhi3*wPhi4);} 
+     } // if(bCrossCheck4p)
     } // end of for(Int_t i4=0;i4<nPrim;i4++) 
    } // end of for(Int_t i3=0;i3<nPrim;i3++)  
   } // for(Int_t i2=0;i2<nPrim;i2++)
@@ -1514,19 +1623,19 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckDiffWithNestedLoops
  // 2-p:
  if(bCrossCheck2p)
  {
-  printf("\n  2-p => Q-vector:     %.12f",fDiffCorrelationsPro[0][1]->GetBinContent(nDiffBinNo));
+  printf("\n  2-p => Q-vector:     %.12f",fDiffCorrelationsPro[cs][1]->GetBinContent(nDiffBinNo));
   printf("\n  2-p => Nested loops: %.12f\n",fNestedLoopsDiffResultsPro->GetBinContent(1));
  }
  // 3-p:
  if(bCrossCheck3p)
  {
-  printf("\n  3-p => Q-vector:     %.12f",fDiffCorrelationsPro[0][2]->GetBinContent(nDiffBinNo));
+  printf("\n  3-p => Q-vector:     %.12f",fDiffCorrelationsPro[cs][2]->GetBinContent(nDiffBinNo));
   printf("\n  3-p => Nested loops: %.12f\n",fNestedLoopsDiffResultsPro->GetBinContent(1));
  } 
  // 4-p:
  if(bCrossCheck4p)
  {
-  printf("\n  4-p => Q-vector:     %.12f",fDiffCorrelationsPro[0][3]->GetBinContent(nDiffBinNo));
+  printf("\n  4-p => Q-vector:     %.12f",fDiffCorrelationsPro[cs][3]->GetBinContent(nDiffBinNo));
   printf("\n  4-p => Nested loops: %.12f\n",fNestedLoopsDiffResultsPro->GetBinContent(1));
  }
 
@@ -1550,6 +1659,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::FillQvector(AliFlowEventSimpl
   if(!(pTrack->InRPSelection() || pTrack->InPOISelection())){printf("\n AAAARGH: pTrack is neither RP nor POI !!!!"); continue;}
   if(pTrack->InRPSelection()) // fill Q-vector components only with reference particles
   {
+   wPhi = 1.; wPt = 1.; wEta = 1.; wToPowerP = 1.; // TBI this shall go somewhere else, for performance sake
+
    // Access kinematic variables for RP and corresponding weights:
    dPhi = pTrack->Phi(); // azimuthal angle
    if(fUseWeights[0][0]){wPhi = Weight(dPhi,"RP","phi");} // corresponding phi weight
@@ -1586,7 +1697,14 @@ void AliFlowAnalysisWithMultiparticleCorrelations::FillQvector(AliFlowEventSimpl
    dEta = pTrack->Eta();
    if(fUseWeights[1][2]){wEta = Weight(dEta,"POI","eta");} // corresponding eta weight
    // Determine bin:
-   Int_t binNo = fDiffCorrelationsPro[0][0]->FindBin(dPt); // TBI: hardwired [0][0] and dPt
+   Int_t binNo = -44;
+   if(fCalculateDiffCorrelationsVsPt)
+   { 
+    binNo = fDiffCorrelationsPro[0][0]->FindBin(dPt); // TBI: hardwired [0][0]
+   } else
+     {
+      binNo = fDiffCorrelationsPro[0][0]->FindBin(dEta); // TBI: hardwired [0][0]
+     }
    // Calculate p-vector components:
    for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
    {
@@ -1598,8 +1716,22 @@ void AliFlowAnalysisWithMultiparticleCorrelations::FillQvector(AliFlowEventSimpl
      if(pTrack->InRPSelection()) 
      {
       // Fill q-vector components:
+      wPhi = 1.; wPt = 1.; wEta = 1.; wToPowerP = 1.; // TBI this shall go somewhere else, for performance sake
+
+      if(fUseWeights[0][0]){wPhi = Weight(dPhi,"RP","phi");} // corresponding phi weight
+      //if(dPhi < 0.){dPhi += TMath::TwoPi();} TBI
+      //if(dPhi > TMath::TwoPi()){dPhi -= TMath::TwoPi();} TBI
+      if(fUseWeights[0][1]){wPt = Weight(dPt,"RP","pt");} // corresponding pT weight
+      if(fUseWeights[0][2]){wEta = Weight(dEta,"RP","eta");} // corresponding eta weight
+      if(fUseWeights[1][0]){wPhi = Weight(dPhi,"POI","phi");} // corresponding phi weight
+      //if(dPhi < 0.){dPhi += TMath::TwoPi();} TBI
+      //if(dPhi > TMath::TwoPi()){dPhi -= TMath::TwoPi();} TBI
+      if(fUseWeights[1][1]){wPt = Weight(dPt,"POI","pt");} // corresponding pT weight
+      if(fUseWeights[1][2]){wEta = Weight(dEta,"POI","eta");} // corresponding eta weight
+      if(fUseWeights[0][0]||fUseWeights[0][1]||fUseWeights[0][2]||fUseWeights[1][0]||fUseWeights[1][1]||fUseWeights[1][2]){wToPowerP = pow(wPhi*wPt*wEta,wp);} 
       fqvector[binNo-1][h][wp] += TComplex(wToPowerP*TMath::Cos(h*dPhi),wToPowerP*TMath::Sin(h*dPhi));
      } // if(pTrack->InRPSelection()) 
+
     } // for(Int_t wp=0;wp<fMaxCorrelator+1;wp++)
    } // for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
   } // if(pTrack->InPOISelection()) 
@@ -1618,7 +1750,9 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckSettings()
  // b) Few cross-checks for flags for correlations;
  // c) 'Standard candles';
  // d) Q-cumulants;
- // e) Weights.
+ // e) Weights;
+ // f) Differential correlations;
+ // g) Nested loops.
 
  TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckSettings()";
 
@@ -1659,6 +1793,10 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckSettings()
  {
   Fatal(sMethodName.Data(),"fCalculateStandardCandles && fCalculateOnlySin");
  }
+ if(fCalculateStandardCandles && fDontGoBeyond < 3)
+ {
+  Fatal(sMethodName.Data(),"fCalculateStandardCandles && fDontGoBeyond < 3");
+ }
 
  // d) Q-cumulants:
  if(fCalculateQcumulants && !fCalculateCorrelations)
@@ -1692,6 +1830,26 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckSettings()
     Fatal(sMethodName.Data(),"fUseWeights[rp][ppe] && !fWeightsHist[rp][ppe], rp = %d, ppe = %d",rp,ppe);
    }
   }
+ }
+
+ // f) Differential correlations:
+ if(fCalculateDiffCorrelations && !fUseDefaultBinning && (fnDiffBins < 1 || !fRangesDiffBins))
+ {
+  Fatal(sMethodName.Data(),"fCalculateDiffCorrelations && !fUseDefaultBinning && (fnDiffBins < 1 || !fRangesDiffBins)"); 
+ }
+ if(fCalculateDiffCorrelations && !(fCalculateDiffCos || fCalculateDiffSin))
+ {
+  Fatal(sMethodName.Data(),"fCalculateDiffCorrelations && !(fCalculateDiffCos || fCalculateDiffSin)"); 
+ }
+
+ // g) Nested loops:
+ if(fCrossCheckDiffWithNestedLoops && (1 == fCrossCheckDiffCSCOBN[0] && !fCalculateDiffSin))
+ {
+  Fatal(sMethodName.Data(),"fCrossCheckDiffWithNestedLoops && (1 == fCrossCheckDiffCSCOBN[0] && !CalculateDiffSin)"); 
+ }
+ if(fCrossCheckDiffWithNestedLoops && (0 == fCrossCheckDiffCSCOBN[0] && !fCalculateDiffCos))
+ {
+  Fatal(sMethodName.Data(),"fCrossCheckDiffWithNestedLoops && (0 == fCrossCheckDiffCSCOBN[0] && !CalculateDiffCos)"); 
  }
 
 } // end of void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckSettings()
@@ -2266,7 +2424,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForDiffCorrelat
  TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForDiffCorrelations()";
 
  // a) Book the profile holding all the flags for differential correlations:
- fDiffCorrelationsFlagsPro = new TProfile("fDiffCorrelationsFlagsPro","Flags for differential correlations",1,0,1);
+ fDiffCorrelationsFlagsPro = new TProfile("fDiffCorrelationsFlagsPro","Flags for differential correlations",5,0,5);
  fDiffCorrelationsFlagsPro->SetTickLength(-0.01,"Y");
  fDiffCorrelationsFlagsPro->SetMarkerStyle(25);
  fDiffCorrelationsFlagsPro->SetLabelSize(0.03);
@@ -2275,13 +2433,14 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForDiffCorrelat
  fDiffCorrelationsFlagsPro->SetFillColor(kGray);
  fDiffCorrelationsFlagsPro->SetLineColor(kBlack);
  fDiffCorrelationsFlagsPro->GetXaxis()->SetBinLabel(1,"fCalculateDiffCorrelations"); fDiffCorrelationsFlagsPro->Fill(0.5,fCalculateDiffCorrelations); 
+ fDiffCorrelationsFlagsPro->GetXaxis()->SetBinLabel(2,"fCalculateDiffCos"); fDiffCorrelationsFlagsPro->Fill(1.5,fCalculateDiffCos); 
+ fDiffCorrelationsFlagsPro->GetXaxis()->SetBinLabel(3,"fCalculateDiffSin"); fDiffCorrelationsFlagsPro->Fill(2.5,fCalculateDiffSin); 
+ fDiffCorrelationsFlagsPro->GetXaxis()->SetBinLabel(4,"fCalculateDiffCorrelationsVsPt"); fDiffCorrelationsFlagsPro->Fill(3.5,fCalculateDiffCorrelationsVsPt); 
+ fDiffCorrelationsFlagsPro->GetXaxis()->SetBinLabel(5,"fUseDefaultBinning"); fDiffCorrelationsFlagsPro->Fill(4.5,fUseDefaultBinning); 
  fDiffCorrelationsList->Add(fDiffCorrelationsFlagsPro);
 
  // b) Book TProfile *fDiffCorrelationsPro[2][4] ([0=cos,1=sin][1p,2p,3p,4p]):
  Bool_t fDiffStore[2][4] = {{0,1,1,1},{0,0,0,0}}; // store or not TBI promote to data member, and implement setter perhaps  
- Int_t nBinsPt = 100; // TBI
- Double_t dPtMin = 0.; // TBI
- Double_t dPtMax = 10.; // TBI
  Int_t markerColor[2] = {kRed,kGreen};
  Int_t markerStyle[2] = {kFullSquare,kOpenSquare};
  TString sCosSin[2] = {"Cos","Sin"};
@@ -2292,17 +2451,54 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForDiffCorrelat
 
  for(Int_t cs=0;cs<2;cs++) // [0=cos,1=sin]
  {
+  if(!fCalculateDiffCos && 0==cs){continue;}
+  if(!fCalculateDiffSin && 1==cs){continue;}
+
   for(Int_t c=0;c<4;c++) // [1p,2p,3p,4p]
   {
-   fDiffCorrelationsPro[cs][c] = new TProfile(Form("%s, %dp, %s",sCosSin[cs].Data(),c+1,"pt"),
-                                              Form("%s(%s)",sCosSin[cs].Data(),sLabel[c].Data()),
-                                              nBinsPt,dPtMin,dPtMax);
-   fDiffCorrelationsPro[cs][c]->Sumw2();
-   fDiffCorrelationsPro[cs][c]->SetStats(kFALSE);
-   fDiffCorrelationsPro[cs][c]->SetMarkerColor(markerColor[cs]);
-   fDiffCorrelationsPro[cs][c]->SetMarkerStyle(markerStyle[cs]);
-   fDiffCorrelationsPro[cs][c]->GetXaxis()->SetTitle("p_{T}");
-   if(fDiffStore[cs][c]){fDiffCorrelationsList->Add(fDiffCorrelationsPro[cs][c]);}
+   if(fCalculateDiffCorrelationsVsPt)
+   {
+    if(fUseDefaultBinning)
+    {
+     // vs pt, default binning:  
+     fDiffCorrelationsPro[cs][c] = new TProfile(Form("%s, %dp, %s",sCosSin[cs].Data(),c+1,"pt"),
+                                                Form("%s(%s)",sCosSin[cs].Data(),sLabel[c].Data()),
+                                                100,0.,10.);
+    } else // if(fUseDefaultBinning)
+      {
+       // vs pt, non-default binning:
+       fDiffCorrelationsPro[cs][c] = new TProfile(Form("%s, %dp, %s",sCosSin[cs].Data(),c+1,"pt"),
+                                                  Form("%s(%s)",sCosSin[cs].Data(),sLabel[c].Data()),
+                                                  fnDiffBins,fRangesDiffBins);
+      }// else // if(fUseDefaultBinning) 
+      fDiffCorrelationsPro[cs][c]->Sumw2();
+      fDiffCorrelationsPro[cs][c]->SetStats(kFALSE);
+      fDiffCorrelationsPro[cs][c]->SetMarkerColor(markerColor[cs]);
+      fDiffCorrelationsPro[cs][c]->SetMarkerStyle(markerStyle[cs]);
+      fDiffCorrelationsPro[cs][c]->GetXaxis()->SetTitle("p_{T}");
+      if(fDiffStore[cs][c]){fDiffCorrelationsList->Add(fDiffCorrelationsPro[cs][c]);}
+   } else // if(fCalculateDiffCorrelationsVsPt)
+     {
+      if(fUseDefaultBinning)
+      {
+       // vs eta, default binning:
+       fDiffCorrelationsPro[cs][c] = new TProfile(Form("%s, %dp, %s",sCosSin[cs].Data(),c+1,"eta"),
+                                                  Form("%s(%s)",sCosSin[cs].Data(),sLabel[c].Data()),
+                                                  100,-1.,1.);
+      } else // if(fUseDefaultBinning)
+        {
+         // vs eta, non-default binning:
+         fDiffCorrelationsPro[cs][c] = new TProfile(Form("%s, %dp, %s",sCosSin[cs].Data(),c+1,"eta"),
+                                                    Form("%s(%s)",sCosSin[cs].Data(),sLabel[c].Data()),
+                                                    fnDiffBins,fRangesDiffBins);
+        } // else // if(fUseDefaultBinning)
+        fDiffCorrelationsPro[cs][c]->Sumw2();
+        fDiffCorrelationsPro[cs][c]->SetStats(kFALSE);
+        fDiffCorrelationsPro[cs][c]->SetMarkerColor(markerColor[cs]);
+        fDiffCorrelationsPro[cs][c]->SetMarkerStyle(markerStyle[cs]);
+        fDiffCorrelationsPro[cs][c]->GetXaxis()->SetTitle("#eta");
+        if(fDiffStore[cs][c]){fDiffCorrelationsList->Add(fDiffCorrelationsPro[cs][c]);}
+     } // else // if(fCalculateDiffCorrelationsVsPt)
   } // for(Int_t c=0;c<4;c++) // [1p,2p,3p,4p]
  } // for(Int_t cs=0;cs<2;cs++) // [0=cos,1=sin]
 
@@ -2956,7 +3152,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForDiffCorrelation
 
  if(!fCalculateDiffCorrelations){return;} 
 
- // d) Get pointers to TProfile *fDiffCorrelationsPro[2][4]: _77
+
+ // d) Get pointers to TProfile *fDiffCorrelationsPro[2][4]: // TBI
  /*
  TString sCosSin[2] = {"Cos","Sin"}; 
  for(Int_t cs=0;cs<2;cs++)
@@ -3432,15 +3629,29 @@ Bool_t AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckInternalFlags(Ali
 {
  // Cross-check in this method wether "anEvent" passes internal flags. 
 
- // a) Cross-check min. and max. number of RPs. 
- // b) Cross-check... 
+ // a) Cross-check min. and max. number of RPs; 
+ // b) Cross-check exact number of RPs. 
 
  Bool_t bPassesInternalFlags = kTRUE;
 
  // a) Cross-check min. and max. number of RPs: 
- fMinNoRPs <= anEvent->GetNumberOfRPs() && anEvent->GetNumberOfRPs() < fMaxNoRPs ? 1 : bPassesInternalFlags = kFALSE; // TBI can I leave 1 like this? 
+ if(-44 != fMinNoRPs)
+ {
+  fMinNoRPs <= anEvent->GetNumberOfRPs() ? 1 : bPassesInternalFlags = kFALSE; 
+  if(!bPassesInternalFlags){return bPassesInternalFlags;}
+ }
+ if(-44 != fMaxNoRPs)
+ {
+  anEvent->GetNumberOfRPs() < fMaxNoRPs ? 1 : bPassesInternalFlags = kFALSE;  
+  if(!bPassesInternalFlags){return bPassesInternalFlags;}
+ }
 
- // ...
+ // b) Cross-check exact number of RPs:
+ if(-44 != fExactNoRPs)
+ {
+  anEvent->GetNumberOfRPs() == fExactNoRPs ? 1 : bPassesInternalFlags = kFALSE;  
+  if(!bPassesInternalFlags){return bPassesInternalFlags;}
+ }
 
  return bPassesInternalFlags; 
 
@@ -3503,7 +3714,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::DumpPointsForDurham(TH1D *h)
   x = h->GetBinCenter(p);
   y = h->GetBinContent(p);
   yErr = h->GetBinError(p); 
-  //printf("%f  %f  +-%f\n",x,y,yErr); _33
+  //printf("%f  %f  +-%f\n",x,y,yErr); 
   printf("%e  %e  +-%e\n",x,y,yErr); 
  } // end of for(Int_t p=0;p<nPoints;p++)
  cout<<endl;
@@ -3615,7 +3826,14 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForQcumulants()
                                          Form("Cos(-%d,-%d,%d,%d)",n,n,n,n),
                                          Form("Cos(-%d,-%d,-%d,%d,%d,%d)",n,n,n,n,n,n),
                                          Form("Cos(-%d,-%d,-%d,-%d,%d,%d,%d,%d)",n,n,n,n,n,n,n,n)}; 
- Int_t nBins2D = nCorrelations;
+ Int_t nBins2D = (Int_t)TMath::Floor(fDontGoBeyond/2.);
+ if(fDontGoBeyond > 8){nBins2D = 4;}
+ if(nBins2D < 1 || nBins2D > 4)
+ {
+  cout<<Form("nBins2D = %d",nBins2D)<<endl;
+  cout<<Form("fDontGoBeyond = %d",fDontGoBeyond)<<endl;
+  Fatal(sMethodName.Data(),"nBins2D < 1 || nBins2D > 4");
+ }
  fProductsQCPro = new TProfile2D("fProductsQCPro","Products of correlations",nBins2D,0.,nBins2D,nBins2D,0.,nBins2D);
  fProductsQCPro->SetStats(kFALSE);
  fProductsQCPro->Sumw2();
