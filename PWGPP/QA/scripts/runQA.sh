@@ -66,7 +66,6 @@ updateQA()
   #ze detector loop
   for detectorScript in $ALICE_ROOT/PWGPP/QA/detectorQAscripts/*; do
 
-    echo
     [[ ! ${detectorScript} =~ .*\.sh ]] && continue
     detector=${detectorScript%.sh}
     detector=${detector##*/}
@@ -92,6 +91,8 @@ updateQA()
     cd ${tmpRunDir}
 
     tmpPrefix=${tmpRunDir}/${outputDir}
+    echo
+    echo "##############################################"
     echo "running QA for ${detector}"
     echo "  outputDir=$outputDir"
     echo "  tmpPrefix=$tmpPrefix"
@@ -186,6 +187,7 @@ updateQA()
     cd ${workingDirectory}
 
     if [[ -z ${planB} ]]; then
+      echo
       echo removing ${tmpRunDir}
       rm -rf ${tmpRunDir}
     else
