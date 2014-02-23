@@ -301,7 +301,7 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
     nMultBins = 375;
     lastMultBin = 374.5;
   }
-  if(fMultiplicityEstimator==kVZERO) {
+  if(fMultiplicityEstimator==kVZERO || fMultiplicityEstimator==kVZEROA) {
     nMultBins = 400;
     lastMultBin = 799.5;
   }
