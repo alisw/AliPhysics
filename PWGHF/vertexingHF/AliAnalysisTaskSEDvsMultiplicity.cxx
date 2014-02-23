@@ -101,7 +101,6 @@ AliAnalysisTaskSE(),
   fUseNchWeight(kFALSE),
   fHistoMCNch(0),
   fHistoMeasNch(0),
-  fNMultEstimatorProfiles(4),
   fRefMult(9.26),
   fPdgMeson(411),
   fMultiplicityEstimator(kNtrk10),
@@ -162,7 +161,6 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fUseNchWeight(kFALSE),
   fHistoMCNch(0),
   fHistoMeasNch(0),
-  fNMultEstimatorProfiles((switchPPb) ? 2 : 4),
   fRefMult(9.26),
   fPdgMeson(pdgMeson),
   fMultiplicityEstimator(kNtrk10),
@@ -264,11 +262,11 @@ void AliAnalysisTaskSEDvsMultiplicity::Init(){
   fListProfiles = new TList();
   fListProfiles->SetOwner();
   TString period[4];
+  Int_t nProfiles=4;
+  if (fisPPbData) {period[0]="LHC13b"; period[1]="LHC13c"; nProfiles = 2;}
+  else {period[0]="LHC10b"; period[1]="LHC10c"; period[2]="LHC10d"; period[3]="LHC10e"; nProfiles = 4;}
   
-  if (fNMultEstimatorProfiles == 2) {period[0]="LHC13b"; period[1]="LHC13c";}
-  else {period[0]="LHC10b"; period[1]="LHC10c"; period[2]="LHC10d"; period[3]="LHC10e";}
- 
-  for(Int_t i=0; i<fNMultEstimatorProfiles; i++){
+  for(Int_t i=0; i<nProfiles; i++){
     if(fMultEstimatorAvg[i]){
       TProfile* hprof=new TProfile(*fMultEstimatorAvg[i]);
       hprof->SetName(Form("ProfileTrkVsZvtx%s\n",period[i].Data()));
