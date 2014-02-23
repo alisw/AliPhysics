@@ -100,10 +100,10 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   void SetSubtractTrackletsFromDaughters(Bool_t opt){fSubtractTrackletsFromDau=opt;}
   Int_t CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const;
 
-  enum { kNtrk10=0, kNtrk10to16=1, kVZERO=2 };
+  enum { kNtrk10=0, kNtrk10to16=1, kVZERO=2, kNtrk03=3, kNtrk05=4, kVZEROA=5 };
   void SetMultiplicityEstimator(Int_t value){ fMultiplicityEstimator=value; }
   Int_t GetMultiplicityEstimator(){ return fMultiplicityEstimator; }
-  enum { kEta10=0, kEta10to16=1, kEtaVZERO=2 };
+  enum { kEta10=0, kEta10to16=1, kEtaVZERO=2, kEta03=3, kEta05=5, kEtaVZEROA=5 };
   void SetMCPrimariesEstimator(Int_t value){ fMCPrimariesEstimator=value; }
   Int_t GetMCPrimariesEstimator(){ return fMCPrimariesEstimator; }
 
@@ -132,6 +132,8 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   TH1F *fHistNEvents;     //!hist. for No. of events
 
   TH2F* fHistNtrEta16vsNtrEta1; //!hist. for Ntracklets in eta<1.6 vs. eta<1.
+  TH2F* fHistNtrEta05vsNtrEta1; //!hist. for Ntracklets in eta<0.5 vs. eta<1.
+  TH2F* fHistNtrEta03vsNtrEta1; //!hist. for Ntracklets in eta<0.3 vs. eta<1.
   TH2F* fHistNtrCorrEta1vsNtrRawEta1; //!hist. for Ntracklets in eta<1 with and w/o corrections 
   TH2F* fHistNtrVsZvtx; //!  hist of ntracklets vs Zvertex
   TH2F* fHistNtrCorrVsZvtx; //!  hist of ntracklets vs Zvertex

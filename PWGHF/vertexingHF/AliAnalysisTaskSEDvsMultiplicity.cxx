@@ -60,6 +60,8 @@ AliAnalysisTaskSE(),
   fListProfiles(0),
   fHistNEvents(0),
   fHistNtrEta16vsNtrEta1(0),
+  fHistNtrEta05vsNtrEta1(0),
+  fHistNtrEta03vsNtrEta1(0),
   fHistNtrCorrEta1vsNtrRawEta1(0),
   fHistNtrVsZvtx(0),
   fHistNtrCorrVsZvtx(0),
@@ -120,6 +122,8 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fListProfiles(0),
   fHistNEvents(0),
   fHistNtrEta16vsNtrEta1(0),
+  fHistNtrEta05vsNtrEta1(0),
+  fHistNtrEta03vsNtrEta1(0),
   fHistNtrCorrEta1vsNtrRawEta1(0),
   fHistNtrVsZvtx(0),
   fHistNtrCorrVsZvtx(0),
@@ -309,6 +313,8 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   fHistNtrCorrEvWithCand = new TH1F("hNtrCorrEvWithCand", "Tracklets multiplicity for events with D candidates; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin);// Total multiplicity
   fHistNtrCorrEvWithD = new TH1F("hNtrCorrEvWithD", "Tracklets multiplicity for events with D in mass region ; Tracklets ; Entries",nMultBins,firstMultBin,lastMultBin); // 
   fHistNtrEta16vsNtrEta1 = new TH2F("hNtrEta16vsNtrEta1","Uncorrected Eta1.6 vs Eta1.0; Ntracklets #eta<1.0; Ntracklets #eta<1.6",nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin); //eta 1.6 vs eta 1.0 histogram 
+  fHistNtrEta05vsNtrEta1 = new TH2F("hNtrEta05vsNtrEta1","Uncorrected Eta0.5 vs Eta1.0; Ntracklets #eta<1.0; Ntracklets #eta<0.5",nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin); //eta 0.5 vs eta 1.0 histogram 
+  fHistNtrEta03vsNtrEta1 = new TH2F("hNtrEta03vsNtrEta1","Uncorrected Eta0.3 vs Eta1.0; Ntracklets #eta<1.0; Ntracklets #eta<0.3",nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin); //eta 0.3 vs eta 1.0 histogram 
   fHistNtrCorrEta1vsNtrRawEta1 = new TH2F("hNtrCorrEta1vsNtrRawEta1","Corrected Eta1 vs Eta1.0; Ntracklets #eta<1.0 corrected; Ntracklets #eta<1",nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin); //eta 1.6 vs eta 1.0 histogram 
   fHistNtrVsZvtx = new TH2F("hNtrVsZvtx","Ntracklet vs VtxZ; VtxZ;N_{tracklet};",300,-15,15,nMultBins,firstMultBin,lastMultBin); // 
   fHistNtrCorrVsZvtx = new TH2F("hNtrCorrVsZvtx","Ntracklet vs VtxZ; VtxZ;N_{tracklet};",300,-15,15,nMultBins,firstMultBin,lastMultBin); // 
@@ -340,6 +346,8 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   fOutput->Add(fHistNtrCorrEvWithCand);
   fOutput->Add(fHistNtrCorrEvWithD);
   fOutput->Add(fHistNtrEta16vsNtrEta1);
+  fOutput->Add(fHistNtrEta05vsNtrEta1);
+  fOutput->Add(fHistNtrEta03vsNtrEta1);
   fOutput->Add(fHistNtrCorrEta1vsNtrRawEta1);
   fOutput->Add(fHistNtrVsZvtx);
   fOutput->Add(fHistNtrCorrVsZvtx);
@@ -489,15 +497,24 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
   if(!aod->GetPrimaryVertex()||TMath::Abs(aod->GetMagneticField())<0.001) return;
 
   Int_t countTreta1=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.);
-  Int_t countTr=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.6,1.6);
+  Int_t countTreta03=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-0.3,0.3);
+  Int_t countTreta05=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-0.5,0.5);
+  Int_t countTreta16=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.6,1.6);
 
   Int_t vzeroMult=0;
+  Int_t vzeroMultA=0;
   AliAODVZERO *vzeroAOD = (AliAODVZERO*)aod->GetVZEROData();
-  if(vzeroAOD) vzeroMult = vzeroAOD->GetMTotV0A() +  vzeroAOD->GetMTotV0C();
+  if(vzeroAOD) {
+    vzeroMult = vzeroAOD->GetMTotV0A() +  vzeroAOD->GetMTotV0C();
+    vzeroMultA = vzeroAOD->GetMTotV0A();
+  }
 
   Int_t countMult = countTreta1;
-  if(fMultiplicityEstimator==kNtrk10to16) { countMult = countTr - countTreta1; }
+  if(fMultiplicityEstimator==kNtrk03) { countMult = countTreta03; }
+  if(fMultiplicityEstimator==kNtrk05) { countMult = countTreta05; }
+  if(fMultiplicityEstimator==kNtrk10to16) { countMult = countTreta16 - countTreta1; }
   if(fMultiplicityEstimator==kVZERO) { countMult = vzeroMult; }
+  if(fMultiplicityEstimator==kVZEROA) { countMult = vzeroMultA; }
 
 
   fCounterU->StoreEvent(aod,fRDCutsAnalysis,fReadMC,countMult);
@@ -529,7 +546,9 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
   
   
   if(!isEvSel)return;
-  fHistNtrEta16vsNtrEta1->Fill(countTreta1,countTr);
+  fHistNtrEta16vsNtrEta1->Fill(countTreta1,countTreta16);
+  fHistNtrEta05vsNtrEta1->Fill(countTreta1,countTreta05);
+  fHistNtrEta03vsNtrEta1->Fill(countTreta1,countTreta03);
   fHistNtrCorrEta1vsNtrRawEta1->Fill(countTreta1,countTreta1corr);
   if(vtx1){
     fHistNtrVsZvtx->Fill(vtx1->GetZ(),countMult);
@@ -578,24 +597,42 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     // Now recompute the variables in case another MC estimator is considered
     Int_t nChargedMCEta10 = nChargedMC;
     Int_t nChargedMCEta16 = AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,-1.6,1.6);
+    Int_t nChargedMCEta05 = AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,-0.5,0.5);
+    Int_t nChargedMCEta03 = AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,-0.3,0.3);
     Int_t nChargedMCEtam37tm17 = AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,-3.7,-1.7);
     Int_t nChargedMCEta28t51 = AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,2.8,5.1);
     Int_t nChargedMCPrimaryEta10 = nChargedMCPrimary;
     Int_t nChargedMCPrimaryEta16 = AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(arrayMC,-1.6,1.6);
+    Int_t nChargedMCPrimaryEta05 = AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(arrayMC,-0.5,0.5);
+    Int_t nChargedMCPrimaryEta03 = AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(arrayMC,-0.3,0.3);
     Int_t nChargedMCPrimaryEtam37tm17 = AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(arrayMC,-3.7,-1.7);
     Int_t nChargedMCPrimaryEta28t51 = AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(arrayMC,2.8,5.1);
     Int_t nChargedMCPhysicalPrimaryEta10 = nChargedMCPhysicalPrimary;
     Int_t nChargedMCPhysicalPrimaryEta16 = AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(arrayMC,-1.6,1.6);
+    Int_t nChargedMCPhysicalPrimaryEta05 = AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(arrayMC,-0.5,0.5);
+    Int_t nChargedMCPhysicalPrimaryEta03 = AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(arrayMC,-0.3,0.3);
     Int_t nChargedMCPhysicalPrimaryEtam37tm17 = AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(arrayMC,-3.7,-1.7);
     Int_t nChargedMCPhysicalPrimaryEta28t51 = AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(arrayMC,2.8,5.1);
     if(fMCPrimariesEstimator==kEta10to16){
       nChargedMC = nChargedMCEta16 - nChargedMCEta10;
       nChargedMCPrimary = nChargedMCPrimaryEta16 - nChargedMCPrimaryEta10;
       nChargedMCPhysicalPrimary = nChargedMCPhysicalPrimaryEta16 - nChargedMCPhysicalPrimaryEta10;
+    } else if(fMCPrimariesEstimator==kEta05){
+      nChargedMC = nChargedMCEta05;
+      nChargedMCPrimary = nChargedMCPrimaryEta05;
+      nChargedMCPhysicalPrimary = nChargedMCPhysicalPrimaryEta05;
+    } else if(fMCPrimariesEstimator==kEta03){
+      nChargedMC = nChargedMCEta03;
+      nChargedMCPrimary = nChargedMCPrimaryEta03;
+      nChargedMCPhysicalPrimary = nChargedMCPhysicalPrimaryEta03;
     } else if(fMCPrimariesEstimator==kEtaVZERO){
       nChargedMC = nChargedMCEtam37tm17 + nChargedMCEta28t51;
       nChargedMCPrimary = nChargedMCPrimaryEtam37tm17 + nChargedMCPrimaryEta28t51;
       nChargedMCPhysicalPrimary = nChargedMCPhysicalPrimaryEtam37tm17 + nChargedMCPhysicalPrimaryEta28t51;
+    } else if(fMCPrimariesEstimator==kEtaVZEROA){
+      nChargedMC = nChargedMCEta28t51;
+      nChargedMCPrimary = nChargedMCPrimaryEta28t51;
+      nChargedMCPhysicalPrimary = nChargedMCPhysicalPrimaryEta28t51;
     }
 
     // Here fill the MC correlation plots
