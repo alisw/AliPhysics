@@ -58,12 +58,9 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   void SetMCOption(Int_t option=0){ fMCOption = option; }
   void SetIsPPbData(Bool_t flag=kTRUE){ 
     fisPPbData=flag;
-    if(flag) fNMultEstimatorProfiles = 2;
   }
   void SetUseBit(Bool_t use=kTRUE){fUseBit=use;}
   void SetDoImpactParameterHistos(Bool_t doImp=kTRUE){fDoImpPar=doImp;}
-
-  void SetNMultEstimatorProfiles(Int_t n = 4) {fNMultEstimatorProfiles = n;}
 
   void SetMultiplVsZProfileLHC10b(TProfile* hprof){
     if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
@@ -188,7 +185,6 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   TH1F* fHistoMCNch;    // weight histogram for the MC on the generated multiplicity
   TH1F* fHistoMeasNch;  //! weight histogram on the true measured multiplicity
   
-  Int_t fNMultEstimatorProfiles;  //Number of multiplicity estimators (= number of periods: 4 for pp, 2 for pPb)
   TProfile* fMultEstimatorAvg[4]; //TProfile with mult vs. Z per period
   Double_t fRefMult;   // refrence multiplcity (period b)
   Int_t fPdgMeson;   // pdg code of analyzed meson
@@ -196,7 +192,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   Int_t fMultiplicityEstimator; // Definition of the multiplicity estimator: kNtrk10=0, kNtrk10to16=1, kVZERO=2
   Int_t fMCPrimariesEstimator;  // Definition of the primaries estimator eta range: |eta|<1.0=0, -1.6<|eta|<1.0=1, VZEROrange=2 
   
-  ClassDef(AliAnalysisTaskSEDvsMultiplicity,9); // D vs. mult task
+  ClassDef(AliAnalysisTaskSEDvsMultiplicity,10); // D vs. mult task
 };
 
 #endif
