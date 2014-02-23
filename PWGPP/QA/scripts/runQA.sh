@@ -2,37 +2,50 @@
 main()
 {
   if [[ -z $1 ]]; then
-    echo "Usage: $0 configFile [optionalStuff]"
-    echo "  - optionalStuff overrides config file, e.g.:"
-    echo "       $0 configFile inputList=somefile.list outputDirectory='${PWD}'/output"
+    echo "Usage: "
+    echo "  ${0##*/} option=value [option=value]"
+    echo "  at least one option, either inputFile or configFile should be specified,"
+    echo "  options override config file (if any), e.g.:"
+    echo "  ${0##*/} configFile=runQA.config inputList=file.list outputDirectory=%det"
     return 1
   fi
-  [[ ! -f $1 ]] && echo "argument not a file" && return 1  
  
-  configFile=${1}
-  shift 1
-  parseConfig ${configFile} $@
+  if ! parseConfig $@; then
+    ${0}
+    return 1
+  fi
 
   [[ -z $ALICE_ROOT ]] && source ${alirootEnv}
   [[ -z $ALICE_ROOT ]] && echo "ALICE_ROOT not defined" && return 1
 
   ocdbregex='raw://'
   if [[ ${ocdbStorage} =~ ${ocdbregex} ]]; then
-    
     alien-token-init
   fi
 
-  updateQA ${configFile} $@
+  updateQA $@
 }
 
 updateQA()
 {
-  #this guy takes config file as only positional argument
-  #optional stugg allowerd to override config
   umask 0002
-  configFile=${1}
-  shift 1
-  parseConfig $configFile $@
+  parseConfig $@
+
+  #be paranoid and make some full paths
+  inputList=$(readlink -f ${inputList})
+  [[ ! -f ${inputList} ]] && echo "no input list: ${inputList}" && return 1
+  workingDirectory=$(readlink -f ${workingDirectory})
+  mkdir -p ${workingDirectory}
+  if [[ ! -d ${workingDirectory} ]]; then
+    echo "working dir $workingDirectory does not exist and cannot be created"
+    return 1
+  fi
+  cd ${workingDirectory}
+
+  echo JOB config:
+  echo inputList=$inputList
+  echo outputDirectory=$outputDirectory
+  echo
 
   dateString=$(date +%Y-%m-%d-%H-%M)
   echo "Start time QA process: $dateString"
@@ -52,16 +65,6 @@ updateQA()
   touch ${lockFile}
   [[ ! -f ${lockFile} ]] && echo "cannot lock $lockFile" && return 1
   
-  #be paranoid and make some full paths
-  inputList=$(readlink -f ${inputList})
-  workingDirectory=$(readlink -f ${workingDirectory})
-  mkdir -p ${workingDirectory}
-  if [[ ! -d ${workingDirectory} ]]; then
-    echo "working dir $workingDirectory does not exist and cannot be created"
-    return 1
-  fi
-  cd ${workingDirectory}
-
   ################################################################
   #ze detector loop
   for detectorScript in $ALICE_ROOT/PWGPP/QA/detectorQAscripts/*; do
@@ -106,7 +109,10 @@ updateQA()
     while read qaFile; do
       echo
 
-      guessRunData ${qaFile}
+      if ! guessRunData ${qaFile}; then
+        echo "could not guess run data from ${qaFile}"
+        continue
+      fi
 
       runDir=${tmpPrefix}/${dataType}/${year}/${period}/${pass}/000${runNumber}
       mkdir -p ${runDir}
@@ -145,7 +151,10 @@ updateQA()
       #move to final destination
       for dir in ${tmpProductionDir}/*; do
         oldRunDir=${outputDir}/${dir#${tmpPrefix}}
-        guessRunData "${dir}/dummyName"
+        if ! guessRunData "${dir}/dummyName"; then
+          echo "could not guess run data from ${dir}"
+          continue
+        fi
 
         #before moving - VALIDATE!!!
         if ! validate ${dir}; then continue; fi
@@ -317,20 +326,47 @@ validateLog()
 
 parseConfig()
 {
-  configFile=${1}
-  shift
+  #config file
+  configFile=""
+  #where to search for qa files
+  inputList=file.list
+  #working directory
+  workingDirectory="${PWD}"
+  #where to place the final qa plots
+  #outputDirectory="/afs/cern.ch/work/a/aliqa%det/www/"
+  outputDirectory="${workingDirectory}/%DET"
+  #filter out detector option
+  excludeDetectors="EXAMPLE"
+  #logs
+  logDirectory=${workingDirectory}/logs
+  #set aliroot
+  #alirootEnv="/home/mkrzewic/alisoft/balice_master.sh"
+  #OCDB storage
+  #ocdbStorage="raw://"
+  #email to
+  #MAILTO="fbellini@cern.ch"
 
-  #first, source the config file
-  if [ -f ${configFile} ]; then
-    source ${configFile}
-  else
-    echo "config file ${configFile} not found!, skipping..."
-  fi
+  #first, check if the config file is configured
+  #is yes - source it so that other options can override it
+  #if any
+  for opt in $@; do
+    if [[ ${opt} =~ configFile=.* ]]; then
+      eval "${opt}"
+      configFile=$(readlink -f ${configFile})
+      source "${configFile}"
+      break
+    fi
+  done
 
   #then, parse the options as they override the options from file
   while [[ -n ${1} ]]; do
     local var=${1#--}
-    eval "${var}"
+    if [[ ${var} =~ .*=.* ]]; then
+      eval "${var}"
+    else
+      echo "badly formatted option ${var}, should be: option=value, stopping..."
+      return 1
+    fi
     shift
   done
 }
