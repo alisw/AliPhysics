@@ -129,7 +129,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fMultiplicityEstimator(kNtrk10),
   fRefMult(9.26),
   fZvtxCorrectedNtrkEstimator(kFALSE),
-  fIsPPData(kFALSE)
+  fIsPPData(kFALSE),
+  fIsPPbData(kFALSE)
 {
   //
   //Default ctor
@@ -186,7 +187,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fMultiplicityEstimator(kNtrk10),
   fRefMult(9.26),
   fZvtxCorrectedNtrkEstimator(kFALSE),
-  fIsPPData(kFALSE)
+  fIsPPData(kFALSE),
+  fIsPPbData(kFALSE)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -274,7 +276,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   fMultiplicityEstimator(c.fMultiplicityEstimator),
   fRefMult(c.fRefMult),
   fZvtxCorrectedNtrkEstimator(c.fZvtxCorrectedNtrkEstimator),
-  fIsPPData(c.fIsPPData)
+  fIsPPData(c.fIsPPData),
+  fIsPPbData(c.fIsPPbData)
 {
   //
   // Copy Constructor
@@ -442,8 +445,18 @@ void AliCFTaskVertexingHF::Init()
 
   fListProfiles = new TList();
   fListProfiles->SetOwner();
-  TString period[4]={"LHC10b","LHC10c","LHC10d","LHC10e"};
-  for(Int_t i=0; i<4; i++){
+  TString period[4];
+  Int_t nProfiles=4;
+  
+  if (fIsPPbData) { //if pPb, use only two estimator histos
+     period[0] = "LHC13b"; period[1] = "LHC13c";
+     nProfiles = 2;
+  } else {        // else assume pp (four histos for LHC10)
+     period[0] = "LHC10b"; period[1] = "LHC10c"; period[2] = "LHC10d"; period[3] = "LHC10e";
+     nProfiles = 4;
+  }
+
+  for(Int_t i=0; i<nProfiles; i++){
     if(fMultEstimatorAvg[i]){
       TProfile* hprof=new TProfile(*fMultEstimatorAvg[i]);
       hprof->SetName(Form("ProfileTrkVsZvtx%s\n",period[i].Data()));
@@ -1570,12 +1583,19 @@ TProfile* AliCFTaskVertexingHF::GetEstimatorHistogram(const AliVEvent* event){
   //
 
   Int_t runNo  = event->GetRunNumber();
-  Int_t period = -1;   // 0-LHC10b, 1-LHC10c, 2-LHC10d, 3-LHC10e
-  if(runNo>114930 && runNo<117223) period = 0;
-  if(runNo>119158 && runNo<120830) period = 1;
-  if(runNo>122373 && runNo<126438) period = 2;
-  if(runNo>127711 && runNo<130841) period = 3;
-  if(period<0 || period>3) return 0;
+  Int_t period = -1;   // pp: 0-LHC10b, 1-LHC10c, 2-LHC10d, 3-LHC10e
+                       //pPb: 0-LHC13b, 1-LHC13c
 
+  if (fIsPPbData) {    // setting run numbers for LHC13 if pPb
+      if (runNo>195343 && runNo<195484) period = 0;
+      if (runNo>195528 && runNo<195678) period = 1;
+  } else {     //else assume pp                       
+      if(runNo>114930 && runNo<117223) period = 0;
+      if(runNo>119158 && runNo<120830) period = 1;
+      if(runNo>122373 && runNo<126438) period = 2;
+      if(runNo>127711 && runNo<130841) period = 3;
+      if(period<0 || period>3) return 0;
+  }
+  
   return fMultEstimatorAvg[period];
 }
