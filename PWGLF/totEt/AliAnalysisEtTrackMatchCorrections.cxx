@@ -16,7 +16,7 @@ AliAnalysisEtTrackMatchCorrections::AliAnalysisEtTrackMatchCorrections() : TName
     ,fMeanSecondary(0)
 								      // ,fNeutronCorrection(0)
 {
-  //fNeutronCorrection[] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  //fNeutronCorrection = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
   for(int i=0;i<20;i++){
     fNeutronCorrection[i] = 0.0;
     fHadronCorrection[i] = 0.0;
@@ -36,7 +36,8 @@ AliAnalysisEtTrackMatchCorrections::AliAnalysisEtTrackMatchCorrections(const TSt
 																				,fMeanNeutral(meanNeutral)
 																				,fMeanGamma(meanGammas)
 																				,fMeanSecondary(meanSecondary)
-{}
+{
+}
 
 //! Copy constructor
 AliAnalysisEtTrackMatchCorrections::AliAnalysisEtTrackMatchCorrections(const AliAnalysisEtTrackMatchCorrections &obj) : TNamed(obj)
@@ -50,7 +51,14 @@ AliAnalysisEtTrackMatchCorrections::AliAnalysisEtTrackMatchCorrections(const Ali
     ,fMeanGamma(obj.fMeanGamma)
     ,fMeanSecondary(obj.fMeanSecondary)
     
-{}
+{
+  for(int i=0;i<20;i++){
+    fNeutronCorrection[i] = obj.fNeutronCorrection[i];
+    fHadronCorrection[i] = obj.fHadronCorrection[i];
+    fKaonCorrection[i] = obj.fKaonCorrection[i];
+    fSecondaryCorrection[i] = obj.fSecondaryCorrection[i];
+  }
+}
 
 //! Destructor
 AliAnalysisEtTrackMatchCorrections::~AliAnalysisEtTrackMatchCorrections()
