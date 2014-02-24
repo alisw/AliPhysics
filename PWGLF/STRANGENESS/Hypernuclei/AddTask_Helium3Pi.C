@@ -17,14 +17,19 @@ AliAnalysisTask *AddTask_Helium3Pi(TString name="name"){
   //              data containers
   //================================================
   //            find input container
- 
+
   AliAnalysisDataContainer *cinput   = mgr->GetCommonInputContainer();
   
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("Helium3Pi_tree", TTree::Class(), AliAnalysisManager::kOutputContainer, "He3Pi.Ntuple.root");  
+  TString outputFileName = AliAnalysisManager::GetCommonFileName();
+  //AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("Helium3Pi_tree", TTree::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");  
+  //AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("Helium3Pi_tree", TTree::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");  
+ 
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("Helium3PiTree", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+   
 
   //           connect containers
   mgr->ConnectInput  (taskHelium3Pi,  0, cinput );
   mgr->ConnectOutput (taskHelium3Pi,  1, coutput1);
-  
+
   return taskHelium3Pi;
 }

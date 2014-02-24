@@ -262,49 +262,49 @@ void AliAnalysisTaskHelium3Pi::UserCreateOutputObjects()
   }
 
   if(! fHistTrackMultiplicity ){
-    fHistTrackMultiplicity   = new TH2F( "fHistTrackMultiplicity" , "Nb of Tracks", 25000,0, 25000,105,-1,104);
+    fHistTrackMultiplicity   = new TH2F( "fHistTrackMultiplicity" , "Nb of Tracks", 25000,0, 25000,210,-1,104);
     fHistTrackMultiplicity->GetXaxis()->SetTitle("Number of tracks");
     fHistTrackMultiplicity->GetYaxis()->SetTitle("Percentile");
     fListHistCascade->Add(fHistTrackMultiplicity);
   } 
 
   if(! fHistTrackMultiplicityCent ){
-    fHistTrackMultiplicityCent   = new TH2F( "fHistTrackMultiplicityCent", "Nb of Tracks Central Events", 25000,0, 25000,105,-1,104 );
+    fHistTrackMultiplicityCent   = new TH2F( "fHistTrackMultiplicityCent", "Nb of Tracks Central Events", 25000,0, 25000,210,-1,104 );
     fHistTrackMultiplicityCent->GetXaxis()->SetTitle("Number of tracks");
     fHistTrackMultiplicityCent->GetYaxis()->SetTitle("Percentile");
     fListHistCascade->Add(fHistTrackMultiplicityCent);
   } 
 
   if(! fHistTrackMultiplicitySemiCent ){
-    fHistTrackMultiplicitySemiCent   = new TH2F( "fHistTrackMultiplicitySemiCent" , "Nb of Tracks SemiCentral Events", 25000,0, 25000 ,105,-1,104);
+    fHistTrackMultiplicitySemiCent   = new TH2F( "fHistTrackMultiplicitySemiCent" , "Nb of Tracks SemiCentral Events", 25000,0, 25000 ,210,-1,104);
     fHistTrackMultiplicitySemiCent->GetXaxis()->SetTitle("Number of tracks");
     fHistTrackMultiplicitySemiCent->GetYaxis()->SetTitle("Percentile");
     fListHistCascade->Add(fHistTrackMultiplicitySemiCent);
   } 
  
   if(! fHistTrackMultiplicityMB ){
-    fHistTrackMultiplicityMB   = new TH2F( "fHistTrackMultiplicityMB" , "Nb of Tracks MBral Events", 25000,0, 25000,105,-1,104 );
+    fHistTrackMultiplicityMB   = new TH2F( "fHistTrackMultiplicityMB" , "Nb of Tracks MBral Events", 25000,0, 25000,210,-1,104 );
     fHistTrackMultiplicityMB->GetXaxis()->SetTitle("Number of tracks");
     fHistTrackMultiplicityMB->GetYaxis()->SetTitle("Percentile");
     fListHistCascade->Add(fHistTrackMultiplicityMB);
   } 
 
   if(! fHistTrackMultiplicityPVCent ){
-    fHistTrackMultiplicityPVCent   = new TH2F( "fHistTrackMultiplicityPVCent" , "Nb of Tracks Central Events", 25000,0, 25000,105,-1,104 );
+    fHistTrackMultiplicityPVCent   = new TH2F( "fHistTrackMultiplicityPVCent" , "Nb of Tracks Central Events", 25000,0, 25000,210,-1,104 );
     fHistTrackMultiplicityPVCent->GetXaxis()->SetTitle("Number of tracks");
     fHistTrackMultiplicityPVCent->GetYaxis()->SetTitle("Percentile");
     fListHistCascade->Add(fHistTrackMultiplicityPVCent);
   } 
 
   if(! fHistTrackMultiplicityPVSemiCent ){
-    fHistTrackMultiplicityPVSemiCent   = new TH2F( "fHistTrackMultiplicityPVSemiCent" , "Nb of Tracks SemiCentral Events", 25000,0, 25000 ,105,-1,104);
+    fHistTrackMultiplicityPVSemiCent   = new TH2F( "fHistTrackMultiplicityPVSemiCent" , "Nb of Tracks SemiCentral Events", 25000,0, 25000 ,210,-1,104);
     fHistTrackMultiplicityPVSemiCent->GetXaxis()->SetTitle("Number of tracks");
     fHistTrackMultiplicityPVSemiCent->GetYaxis()->SetTitle("Percentile");
     fListHistCascade->Add(fHistTrackMultiplicityPVSemiCent);
   } 
  
   if(! fHistTrackMultiplicityPVMB ){
-    fHistTrackMultiplicityPVMB   = new TH2F( "fHistTrackMultiplicityPVMB" , "Nb of Tracks MBral Events", 25000,0, 25000,105,-1,104 );
+    fHistTrackMultiplicityPVMB   = new TH2F( "fHistTrackMultiplicityPVMB" , "Nb of Tracks MBral Events", 25000,0, 25000,210,-1,104 );
     fHistTrackMultiplicityPVMB->GetXaxis()->SetTitle("Number of tracks");
     fHistTrackMultiplicityPVMB->GetYaxis()->SetTitle("Percentile");
     fListHistCascade->Add(fHistTrackMultiplicityPVMB);
