@@ -86,14 +86,14 @@ updateQA()
 
     logSummary=${logDirectory}/summary-${detector}-${dateString}.log
     outputDir=$(substituteDetectorName ${detector} ${outputDirectory})
-    tmpRunDir=${workingDirectory}/tmpQAtmpRunDir${detector}
-    if ! mkdir -p ${tmpRunDir}; then
-      echo "cannot create the temp dir $tmpRunDir"
+    tmpDetectorRunDir=${workingDirectory}/tmpQAtmpRunDir${detector}
+    if ! mkdir -p ${tmpDetectorRunDir}; then
+      echo "cannot create the temp dir $tmpDetectorRunDir"
       continue
     fi
-    cd ${tmpRunDir}
+    cd ${tmpDetectorRunDir}
 
-    tmpPrefix=${tmpRunDir}/${outputDir}
+    tmpPrefix=${tmpDetectorRunDir}/${outputDir}
     echo
     echo "##############################################"
     echo "running QA for ${detector}"
@@ -128,7 +128,7 @@ updateQA()
       echo running ${detector} runLevelQA for run ${runNumber} from ${qaFile}
       runLevelQA ${qaFile} &> runLevelQA.log
 
-      cd ${tmpRunDir}
+      cd ${tmpDetectorRunDir}
     
     done < ${inputList}
 
@@ -173,12 +173,16 @@ updateQA()
     
       echo running ${detector} periodLevelQA for production ${period}/${pass}
       rm -f trending.root
-      hadd trending.root 000*/trending.root &> periodLevelQA.log
-      periodLevelQA trending.root &>> periodLevelQA.log
       
+      #merge trending files if any
+      if /bin/ls 000*/trending.root &>/dev/null; then
+        hadd trending.root 000*/trending.root &> periodLevelQA.log
+        periodLevelQA trending.root &>> periodLevelQA.log
+      fi
+
       if ! validate ${PWD}; then continue; fi
 
-      cd ${tmpRunDir}
+      cd ${tmpDetectorRunDir}
     
     done
 
@@ -186,8 +190,8 @@ updateQA()
 
     if [[ -z ${planB} ]]; then
       echo
-      echo removing ${tmpRunDir}
-      rm -rf ${tmpRunDir}
+      echo removing ${tmpDetectorRunDir}
+      rm -rf ${tmpDetectorRunDir}
     else
       executePlanB
     fi
