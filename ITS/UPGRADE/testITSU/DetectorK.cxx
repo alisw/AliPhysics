@@ -1574,8 +1574,8 @@ TGraph * DetectorK::GetGraphRecoEfficiency(Int_t particle,Int_t color, Int_t lin
   Double_t lambda = TMath::Pi()/2.0 - 2.0*TMath::ATan(TMath::Exp(-1*fAvgRapidity)); 
   
   Double_t particleEfficiency[kNptBins]; // with chosen particle mass
-  Double_t kaonEfficiency[kNptBins], pionEfficiency[kNptBins], d0efficiency[kNptBins]; 
-  Double_t partEfficiency[2][400];
+  Double_t kaonEfficiency[kNptBins]={0}, pionEfficiency[kNptBins]={0}, d0efficiency[kNptBins]={0}; 
+  Double_t partEfficiency[2][400]={{0}};
   
   if (particle != 0) {
     // resulting Pion and Kaon efficiency scaled with overall efficiency
