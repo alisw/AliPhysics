@@ -1,15 +1,16 @@
 #include <Riostream.h>
+#include <TBranch.h>
+#include <TClonesArray.h>
 #include <TMath.h>
 #include <TString.h>
-#include <TClonesArray.h>
-#include <TSystem.h>
+#include <TTree.h>
 #include "AliESDVertex.h"
+#include "AliITSUClusterLines.h"
 #include "AliITSUClusterPix.h"
 #include "AliITSUVertexer.h"
+#include "AliLog.h"
 #include "AliStrLine.h"
 #include "AliVertexerTracks.h"
-#include "AliITSUClusterLines.h"
-#include "AliLog.h"
 
 using TMath::Abs;
 using TMath::Sqrt;
@@ -161,15 +162,21 @@ void AliITSUVertexer::FindVerticesForCurrentEvent() {
 }
 
 //______________________________________________________________________
-AliESDVertex* AliITSUVertexer::FindVertexForCurrentEvent(TTree *)
+AliESDVertex* AliITSUVertexer::FindVertexForCurrentEvent(TTree *cluTree)
 {
-  Double_t startPos[3]={GetNominalPos()[0],GetNominalPos()[1],GetNominalPos()[2]};
-  Double_t startCov[6]={GetNominalCov()[0],GetNominalCov()[1],GetNominalCov()[2],
-			GetNominalCov()[3],GetNominalCov()[4],GetNominalCov()[5]};
-  AliESDVertex* vtx = new AliESDVertex(startPos,startCov,99999.,-2);
-  AliInfo("Creating dummy vertex from the mean vertex");
-  vtx->Print();
-  return vtx;
+// Reconstruction of all the primary vertices in the event. It returns the vertex with the highest number of contributors.  
+  Reset();
+  for(Int_t i=0;i<3;++i) {
+    TBranch* br = cluTree->GetBranch(Form("ITSRecPoints%d",i));
+    if (!br) return NULL;
+    br->SetAddress(&fClusters[i]);
+  }    
+  cluTree->GetEntry(0);
+  
+  SortClusters();
+
+  FindVerticesForCurrentEvent();
+  return &fVertices[0];
 }  
 
 //_____________________________________________________________________________________________
@@ -553,25 +560,27 @@ void AliITSUVertexer::FindTracklets() {
 }
  
 //___________________________________________________________________________
-void AliITSUVertexer::SetClusters(TClonesArray *clr, const UShort_t i) { 
+void AliITSUVertexer::SortClusters() { 
   // Reading of the clusters on the first three layer of the upgraded ITS
-  fClusters[i]=clr;
-  Int_t nocl=clr->GetEntriesFast();
-  if(nocl==0) {
-    fClusterPhi[i]=new Double_t[1];
-    fClusterPhi[i][0]=-999999;
-    fClusterIndex[i]=new Int_t[1];
-    fClusterIndex[i][0]=0;
-  } else {
-    fClusterPhi[i]=new Double_t[nocl];
-    fClusterIndex[i]=new Int_t[nocl];
-    for(Int_t k=0;k<nocl;++k) {
-      AliITSUClusterPix* cl=(AliITSUClusterPix*)clr->At(k);
-      Double_t pt[3]; 
-      cl->GetGlobalXYZ(pt);
-      fClusterPhi[i][k]=ATan2(pt[1],pt[0]);
+  for(Int_t i=0;i<3;++i) {
+    TClonesArray *clr=fClusters[i];
+    Int_t nocl=clr->GetEntriesFast();
+    if(nocl==0) {
+      fClusterPhi[i]=new Double_t[1];
+      fClusterPhi[i][0]=-999999;
+      fClusterIndex[i]=new Int_t[1];
+      fClusterIndex[i][0]=0;
+    } else {
+      fClusterPhi[i]=new Double_t[nocl];
+      fClusterIndex[i]=new Int_t[nocl];
+      for(Int_t k=0;k<nocl;++k) {
+	AliITSUClusterPix* cl=(AliITSUClusterPix*)clr->At(k);
+	Double_t pt[3]; 
+	cl->GetGlobalXYZ(pt);
+	fClusterPhi[i][k]=ATan2(pt[1],pt[0]);
+      }
+      BubbleLow(nocl,fClusterPhi[i],fClusterIndex[i]);
     }
-    BubbleLow(nocl,fClusterPhi[i],fClusterIndex[i]);
   }
 }
 
