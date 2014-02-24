@@ -332,7 +332,8 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   //-----------------------------------------------------------------
   // In case of mixing analysis, select here the trigger of the event
   //-----------------------------------------------------------------
-  
+  UInt_t isTrigger = kFALSE;
+  UInt_t isMB      = kFALSE;
   if(!fEventTriggerAtSE)
   {
     // In case of mixing analysis, accept MB events, not only Trigger
@@ -344,8 +345,8 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
     
     if(!inputHandler) return kFALSE ;  // to content coverity
     
-    UInt_t isTrigger = inputHandler->IsEventSelected() & fEventTriggerMask;
-    UInt_t isMB      = inputHandler->IsEventSelected() & fMixEventTriggerMask;
+    isTrigger = inputHandler->IsEventSelected() & fEventTriggerMask;
+    isMB      = inputHandler->IsEventSelected() & fMixEventTriggerMask;
     
     if(!isTrigger && !isMB) return kFALSE;
     
@@ -373,6 +374,9 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   
   // Set a bit with the event kind, MB, L0, L1 ...
   SetEventTriggerBit();
+  
+  // In case of Mixing, avoid checking the triggers in the min bias events
+  if(!fEventTriggerAtSE && (isMB && !isTrigger)) return kTRUE;
   
   if( IsEventEMCALL1() || IsEventEMCALL0()  )
   {
