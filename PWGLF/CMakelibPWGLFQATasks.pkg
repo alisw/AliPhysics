@@ -28,7 +28,6 @@
 
 set ( SRCS  
   QATasks/AliAnalysisTaskQAHighPtDeDx.cxx
-  QATasks/AliQAProdMultistrange.cxx
   QATasks/AliAnalysisTaskQAV0.cxx
   QATasks/AliAnalysisTaskQAV0AOD.cxx
   QATasks/AliAnalysisTaskQAMultistrange.cxx
