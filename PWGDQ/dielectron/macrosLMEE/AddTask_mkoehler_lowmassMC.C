@@ -14,8 +14,11 @@ AliAnalysisTask *AddTask_mkoehler_lowmassMC(Bool_t hasMC_aod = kFALSE){
 
   //Do we have an MC handler?
   Bool_t hasMC=(mgr->GetMCtruthEventHandler()!=0x0);
-  
+
+
+  TString configBasePath("$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/");
   TString configFile("Config_mkoehler_lowmassMC.C");
+  TString configFilePath(configBasePath+configFile);
   Bool_t isAOD=0;
 
   //create task and add it to the manager
@@ -23,9 +26,9 @@ AliAnalysisTask *AddTask_mkoehler_lowmassMC(Bool_t hasMC_aod = kFALSE){
   mgr->AddTask(task);
   
   //load dielectron configuration file
-  TString checkconfig="Config_mkoehler_lowmassMC";
+  TString checkconfig="Config_mkoehler_lowmassMC.C";
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(checkconfig.Data()))
-    gROOT->LoadMacro(configFile.Data());
+    gROOT->LoadMacro(configFilePath.Data());
   
   
     //Add event filter
