@@ -62,7 +62,8 @@ AliFemtoEventReaderESDChainKine::AliFemtoEventReaderESDChainKine():
   fIsPidOwner(0),
   fMagFieldSign(0),
   fReadV0(0),
-  isKaonAnalysis(kFALSE)
+  isKaonAnalysis(kFALSE),
+  fOnlyPrimaries(kFALSE)
 
 {
   //constructor with 0 parameters , look at default settings
@@ -88,7 +89,9 @@ AliFemtoEventReaderESDChainKine::AliFemtoEventReaderESDChainKine(const AliFemtoE
   fIsPidOwner(0),
   fMagFieldSign(0),
   fReadV0(0),
-  isKaonAnalysis(kFALSE)
+  isKaonAnalysis(kFALSE),
+  fOnlyPrimaries(kFALSE)
+
 
 {
   // Copy constructor
@@ -108,6 +111,7 @@ AliFemtoEventReaderESDChainKine::AliFemtoEventReaderESDChainKine(const AliFemtoE
   fMagFieldSign = aReader.fMagFieldSign;
   fReadV0 = aReader.fReadV0;
   isKaonAnalysis = aReader.isKaonAnalysis;
+  fOnlyPrimaries = aReader.fOnlyPrimaries;
 
 }
 //__________________
@@ -139,6 +143,7 @@ AliFemtoEventReaderESDChainKine& AliFemtoEventReaderESDChainKine::operator=(cons
   fMagFieldSign = aReader.fMagFieldSign;
   fReadV0 = aReader.fReadV0;
   isKaonAnalysis = aReader.isKaonAnalysis;
+  fOnlyPrimaries = aReader.fOnlyPrimaries;
 
   return *this;
 }
@@ -692,6 +697,12 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 	fpz *= 1e13;
 	fpt *= 1e13;
 
+
+  if (fOnlyPrimaries && !fStack->IsPhysicalPrimary(TMath::Abs(esdtrack->GetLabel()))){
+    delete trackCopy;
+    continue;
+  }
+
 	// fillDCA
 
 	if (TMath::Abs(impact[0]) > 0.001) {
@@ -1124,6 +1135,11 @@ void AliFemtoEventReaderESDChainKine::SetReadV0(bool a)
 void AliFemtoEventReaderESDChainKine::SetKaonAnalysis(Bool_t a)
 {
   isKaonAnalysis = a;
+}
+
+void AliFemtoEventReaderESDChainKine::SetOnlyPrimaries(Bool_t a)
+{
+  fOnlyPrimaries = a;
 }
 
 void AliFemtoEventReaderESDChainKine::CopyESDtoFemtoV0(AliESDv0 *tESDv0, AliFemtoV0 *tFemtoV0, AliESDEvent *tESDevent)
