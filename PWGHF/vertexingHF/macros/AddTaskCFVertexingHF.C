@@ -627,29 +627,56 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	    return 0x0;
 	  }
 	}
-
+	
+	if(isPPbData) { 
+	  task->SetIsPPbData(kTRUE); 
+	}
+   
 	if(estimatorFilename.EqualTo("") ) {
 	  printf("Estimator file not provided, multiplicity corrected histograms will not be filled\n");
 	  task->SetUseZvtxCorrectedNtrkEstimator(kFALSE);
 	} else{
-	  const Char_t* periodNames[4] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e"};
-	  TProfile* multEstimatorAvg[4];                       
+
 	  TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
 	  if(!fileEstimator)  {
 	    AliFatal("File with multiplicity estimator not found"); 
 	    return;
 	  }
-	  for(Int_t ip=0; ip<4; ip++) {
-	    multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));  
-	  }
-	  task->SetUseZvtxCorrectedNtrkEstimator(kTRUE);
-	  task->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
-	  task->SetMultiplVsZProfileLHC10c(multEstimatorAvg[1]);
-	  task->SetMultiplVsZProfileLHC10d(multEstimatorAvg[2]);
-	  task->SetMultiplVsZProfileLHC10e(multEstimatorAvg[3]);
-	  task->SetReferenceMultiplcity(refMult);
-	}
 
+	  task->SetUseZvtxCorrectedNtrkEstimator(kTRUE);
+	  task->SetReferenceMultiplcity(refMult);
+
+	  if (isPPbData) {     //Use LHC13 periods for mult correction if pPb data
+            const Char_t* periodNames[2] = {"LHC13b", "LHC13c"};
+            TProfile* multEstimatorAvg[2];
+            for(Int_t ip=0; ip<2; ip++) {
+	      multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));
+	      if (!multEstimatorAvg[ip]) {
+		AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
+		return;
+	      }
+            }
+            task->SetMultiplVsZProfileLHC13b(multEstimatorAvg[0]);
+            task->SetMultiplVsZProfileLHC13c(multEstimatorAvg[1]);
+	  }
+	  else {
+	    const Char_t* periodNames[4] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e"};   //else, assume pp (LHC10)
+            TProfile* multEstimatorAvg[4];
+            for(Int_t ip=0; ip<4; ip++) {
+	      multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));
+	      if (!multEstimatorAvg[ip]) {
+		AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
+		return;
+	      }
+            }
+            task->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
+            task->SetMultiplVsZProfileLHC10c(multEstimatorAvg[1]);
+            task->SetMultiplVsZProfileLHC10d(multEstimatorAvg[2]);
+            task->SetMultiplVsZProfileLHC10e(multEstimatorAvg[3]);
+	  }
+
+	}
+	
 
 	Printf("***************** CONTAINER SETTINGS *****************");	
 	Printf("decay channel = %d",(Int_t)task->GetDecayChannel());
