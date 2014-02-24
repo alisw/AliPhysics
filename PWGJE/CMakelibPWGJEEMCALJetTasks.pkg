@@ -62,6 +62,7 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalDiJetResponse.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHMEC.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHadCorQA.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHadEPpid.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetMass.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetMassBkg.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetPatchTriggerQA.cxx
@@ -70,7 +71,6 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetTagger.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetTriggerQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalTriggerInfoQA.cxx
- EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHadEPpid.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskFullpAJets.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskFullppJet.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskHJetEmbed.cxx
