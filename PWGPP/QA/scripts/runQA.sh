@@ -4,7 +4,7 @@ main()
   if [[ -z $1 ]]; then
     echo "Usage: "
     echo "  ${0##*/} option=value [option=value]"
-    echo "  at least one option, either inputFile or configFile should be specified,"
+    echo "  at least one option, either inputList or configFile should be specified,"
     echo "  options override config file (if any), e.g.:"
     echo "  ${0##*/} configFile=runQA.config inputList=file.list outputDirectory=%det"
     return 1
@@ -86,7 +86,7 @@ updateQA()
 
     logSummary=${logDirectory}/summary-${detector}-${dateString}.log
     outputDir=$(substituteDetectorName ${detector} ${outputDirectory})
-    tmpRunDir=${workingDirectory}/tmpQArunDir${detector}
+    tmpRunDir=${workingDirectory}/tmpQAtmpRunDir${detector}
     if ! mkdir -p ${tmpRunDir}; then
       echo "cannot create the temp dir $tmpRunDir"
       continue
@@ -106,6 +106,8 @@ updateQA()
 
     #################################################################
     #produce the QA and trending tree for each file (run)
+    unset arrOfTouchedProductions
+    declare -A arrOfTouchedProductions
     while read qaFile; do
       echo
 
@@ -114,9 +116,11 @@ updateQA()
         continue
       fi
 
-      runDir=${tmpPrefix}/${dataType}/${year}/${period}/${pass}/000${runNumber}
-      mkdir -p ${runDir}
-      cd ${runDir}
+      tmpProductionDir=${tmpPrefix}/${dataType}/${year}/${period}/${pass}
+      arrOfTouchedProductions[${tmpProductionDir}]=1
+      tmpRunDir=${tmpProductionDir}/000${runNumber}
+      mkdir -p ${tmpRunDir}
+      cd ${tmpRunDir}
 
       #handle the case of a zip archive
       [[ "$qaFile" =~ .*.zip$ ]] && qaFile="${qaFile}#QAresults.root"
@@ -130,13 +134,13 @@ updateQA()
 
     #################################################################
     #cache which productions were (re)done
-    arrOfTouchedProductions=( $(/bin/ls -d ${tmpPrefix}/*/*/*/*) )
     echo "list of processed productions:"
-    echo "    ${arrOfTouchedProductions[@]}"
+    echo "    ${!arrOfTouchedProductions[@]}"
     echo
+
     #################################################################
     #(re)do the merging/trending in the final destination
-    for tmpProductionDir in ${arrOfTouchedProductions[@]}; do
+    for tmpProductionDir in ${!arrOfTouchedProductions[@]}; do
       echo
       echo "running period level stuff in ${tmpProductionDir}"
     
@@ -159,14 +163,6 @@ updateQA()
         #before moving - VALIDATE!!!
         if ! validate ${dir}; then continue; fi
 
-        #summarizeLogs ${dir} >> ${logSummary}
-        #logStatus=$?
-        #if [[ ${logStatus} -ne 0 ]]; then 
-        #  echo "WARNING: run not validated: ${dir}"
-        #  planB=1
-        #  continue
-        #fi
-
         if [[ -d ${oldRunDir} ]]; then
           echo "removing old ${period}/${pass}/${runNumber}"
           rm -rf ${oldRunDir}
@@ -181,13 +177,6 @@ updateQA()
       periodLevelQA trending.root &>> periodLevelQA.log
       
       if ! validate ${PWD}; then continue; fi
-      #summarizeLogs ${PWD} >> ${logSummary}
-      #logStatus=$?
-      #if [[ ${logStatus} -ne 0 ]]; then 
-      #  echo "WARNING: period ${period} not validated: ${dir}"
-      #  planB=1
-      #  continue
-      #fi
 
       cd ${tmpRunDir}
     
@@ -234,7 +223,7 @@ validate()
 summarizeLogs()
 {
   local dir=$1
-  [[ -z ${dir} ]] && dir=${PWD}
+  [[ ! -d ${dir} ]] && dir=${PWD}
 
   #print a summary of logs
   logFiles=(
@@ -404,7 +393,8 @@ guessRunData()
   [[ -z ${legoTrainRunNumber} ]] && pass=${path[$((dirDepth-1))]}
   [[ "${dataType}" =~ ^sim$ ]] && pass="passMC" && runNumber=${shortRunNumber}
   
-  if [[ -z ${dataType} || -z ${year} || -z ${period} || -z ${runNumber}} || -z ${pass} ]];
+  #if [[ -z ${dataType} || -z ${year} || -z ${period} || -z ${runNumber}} || -z ${pass} ]];
+  if [[ -z ${runNumber}} ]];
   then
     #error condition
     return 1
