@@ -404,7 +404,10 @@ Double_t AliHFEpidTPC::GetP(const AliVParticle *track, AliHFEpidObject::Analysis
     // ESD analysis: Use Inner Params for the momentum estimate
     const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track);
     if(esdtrack) p = esdtrack->GetInnerParam() ? esdtrack->GetInnerParam()->GetP() : esdtrack->P();
-  } else { 
+  }
+
+  if(anatype == AliHFEpidObject::kAODanalysis)
+  {
     // AOD analysis: Use TPC momentum stored in the AliAODpid object
     const AliAODTrack *aodtrack = dynamic_cast<const AliAODTrack *>(track);
     if(aodtrack) p = aodtrack->GetDetPid() ? aodtrack->GetDetPid()->GetTPCmomentum() : aodtrack->P();

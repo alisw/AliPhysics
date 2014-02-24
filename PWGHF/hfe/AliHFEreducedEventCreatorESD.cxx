@@ -103,6 +103,7 @@ AliHFEreducedEventCreatorESD::AliHFEreducedEventCreatorESD(const char *name):
   fTPCpid = new AliHFEpidTPC("QAtpcPID");
   fAnalysisUtils = new AliAnalysisUtils;
   fTRDTriggerAnalysis = new AliTRDTriggerAnalysis();
+  fTRDTriggerAnalysis->SetRequireMatchElectron(kTRUE); 
   DefineOutput(1, TTree::Class());
 }
 
@@ -238,8 +239,8 @@ void AliHFEreducedEventCreatorESD::UserExec(Option_t *){
   if(trigger & AliVEvent::kEMCEJE) fHFEevent->SetEMCALTrigger();
 
   fTRDTriggerAnalysis->CalcTriggers(event);
-  if(fTRDTriggerAnalysis->IsFired(AliTRDTriggerAnalysis::kHSE)) fHFEevent->SetTRDSETrigger();
-  if(fTRDTriggerAnalysis->IsFired(AliTRDTriggerAnalysis::kHQU)) fHFEevent->SetTRDDQTrigger();
+  if(fTRDTriggerAnalysis->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHSE)) fHFEevent->SetTRDSETrigger();
+  if(fTRDTriggerAnalysis->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHQU)) fHFEevent->SetTRDDQTrigger();
 
   // Get Primary Vertex
   const AliVVertex *vertex = fInputEvent->GetPrimaryVertex();
