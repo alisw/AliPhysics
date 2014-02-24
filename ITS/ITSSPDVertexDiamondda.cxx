@@ -40,6 +40,7 @@ extern "C" {
 #include "AliRawReaderDate.h"
 #include "AliCDBManager.h"
 #include "AliITSMeanVertexer.h"
+#include <cstdlib>
 
 int main(int argc, char **argv) {
 
