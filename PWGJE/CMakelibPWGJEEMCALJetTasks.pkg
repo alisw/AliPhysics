@@ -70,6 +70,7 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetTagger.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetTriggerQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalTriggerInfoQA.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHadEPpid.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskFullpAJets.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskFullppJet.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskHJetEmbed.cxx
