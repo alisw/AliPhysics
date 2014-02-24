@@ -107,10 +107,14 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fEmcNClusCut(0), 
   fNTracksECut(0), 
   fEmcNCellsCut(0),
-  fEmcClusE(0),    
-  fEmcClusECut(0), 
-  fTrackPt(0),     
-  fTrackPtCut(0)   
+  fEmcClusEPhi(0),    
+  fEmcClusEPhiCut(0), 
+  fEmcClusEEta(0),    
+  fEmcClusEEtaCut(0), 
+  fTrackPtPhi(0),     
+  fTrackPtPhiCut(0),   
+  fTrackPtEta(0),     
+  fTrackPtEtaCut(0)   
 {
   // Default constructor.
   for(Int_t i = 0; i < 12;    i++)  fGeomMatrix[i] =  0;
@@ -182,10 +186,14 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fEmcNClusCut(0), 
   fNTracksECut(0), 
   fEmcNCellsCut(0),
-  fEmcClusE(0),    
-  fEmcClusECut(0), 
-  fTrackPt(0),     
-  fTrackPtCut(0)   
+  fEmcClusEPhi(0),    
+  fEmcClusEPhiCut(0), 
+  fEmcClusEEta(0),    
+  fEmcClusEEtaCut(0), 
+  fTrackPtPhi(0),     
+  fTrackPtPhiCut(0),   
+  fTrackPtEta(0),     
+  fTrackPtEtaCut(0)   
 {
   // Constructor
 
@@ -312,18 +320,30 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fEmcNCellsCut = new TH1F("fEmcNCellsCut",";n/event;count",120,-0.5,119.5);
   fEmcNCellsCut->Sumw2();
   fQAList->Add(fEmcNCellsCut);
-  fEmcClusE = new TH1F("fEmcClusE",";GeV;",100,-0.25,49.75);    
-  fEmcClusE->Sumw2();
-  fQAList->Add(fEmcClusE);
-  fEmcClusECut = new TH1F("fEmcClusECut",";GeV;",100,-0.25,49.75); 
-  fEmcClusECut->Sumw2();
-  fQAList->Add(fEmcClusECut);
-  fTrackPt = new TH1F("fTrackPt",";GeV;",100,-0.25,49.75);     
-  fTrackPt->Sumw2();
-  fQAList->Add(fTrackPt);
-  fTrackPtCut = new TH1F("fTrackPtCut",";GeV;",100,-0.25,49.75);   
-  fTrackPtCut->Sumw2();
-  fQAList->Add(fTrackPtCut);
+  fEmcClusEPhi = new TH2F("fEmcClusEPhi",";GeV;#phi",100,-0.25,49.75,63,0,6.3);    
+  fEmcClusEPhi->Sumw2();
+  fQAList->Add(fEmcClusEPhi);
+  fEmcClusEPhiCut = new TH2F("fEmcClusEPhiCut",";GeV;#phi",100,-0.25,49.75,63,0,6.3); 
+  fEmcClusEPhiCut->Sumw2();
+  fQAList->Add(fEmcClusEPhiCut);
+  fEmcClusEEta = new TH2F("fEmcClusEEta",";GeV;#eta",100,-0.25,49.75,19,-0.9,0.9);    
+  fEmcClusEEta->Sumw2();
+  fQAList->Add(fEmcClusEEta);
+  fEmcClusEEtaCut = new TH2F("fEmcClusEEtaCut",";GeV;#eta",100,-0.25,49.75,18,-0.9,0.9); 
+  fEmcClusEEtaCut->Sumw2();
+  fQAList->Add(fEmcClusEEtaCut);
+  fTrackPtPhi = new TH2F("fTrackPtPhi",";p_{T} [GeV/c];#phi",100,-0.25,49.75,63,0,6.3);     
+  fTrackPtPhi->Sumw2();
+  fQAList->Add(fTrackPtPhi);
+  fTrackPtPhiCut = new TH2F("fTrackPtPhiCut",";p_{T} [GeV/c];#phi",100,-0.25,49.75,63,0,6.3);     
+  fTrackPtPhiCut->Sumw2();
+  fQAList->Add(fTrackPtPhiCut);
+  fTrackPtEta = new TH2F("fTrackPtEta",";p_{T} [GeV/c];#eta",100,-0.25,49.75,18,-0.9,0.9);     
+  fTrackPtEta->Sumw2();
+  fQAList->Add(fTrackPtEta);
+  fTrackPtEtaCut = new TH2F("fTrackPtEtaCut",";p_{T} [GeV/c];#eta",100,-0.25,49.75,18,-0.9,0.9);     
+  fTrackPtEtaCut->Sumw2();
+  fQAList->Add(fTrackPtEtaCut);
 
   PostData(1, fOutputList);
   PostData(2, fQAList);
@@ -1063,17 +1083,28 @@ void AliAnalysisTaskEMCALIsoPhoton::FillQA()
     AliVTrack *t = (AliVTrack*)fSelPrimTracks->At(it);
     if(!t)
       continue;
-    fTrackPt->Fill(t->Pt());
-    if(fMaxEClus>fECut)
-      fTrackPtCut->Fill(t->Pt());
+    fTrackPtPhi->Fill(t->Pt(),t->Phi());
+    fTrackPtEta->Fill(t->Pt(),t->Eta());
+    if(fMaxEClus>fECut){
+      fTrackPtPhiCut->Fill(t->Pt(), t->Phi());
+      fTrackPtEtaCut->Fill(t->Pt(), t->Eta());
+    }
   }
   for(int ic=0;ic<nclus;ic++){
     AliVCluster *c = (AliVCluster*)fESDClusters->At(ic);
     if(!c)
       continue;
-    fEmcClusE->Fill(c->E());
-    if(fMaxEClus>fECut)
-      fEmcClusECut->Fill(c->E());
+    Float_t clsPos[3] = {0,0,0};
+    c->GetPosition(clsPos);
+    TVector3 clsVec(clsPos);
+    Double_t cphi = clsVec.Phi();
+    Double_t ceta = clsVec.Eta();
+    fEmcClusEPhi->Fill(c->E(), cphi);
+    fEmcClusEEta->Fill(c->E(), ceta);
+    if(fMaxEClus>fECut){
+      fEmcClusEPhiCut->Fill(c->E(), cphi);
+      fEmcClusEEtaCut->Fill(c->E(), ceta);
+    }
   }
 }
 //________________________________________________________________________
