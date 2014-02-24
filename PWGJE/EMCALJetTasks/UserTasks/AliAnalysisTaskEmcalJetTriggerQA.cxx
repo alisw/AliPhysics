@@ -36,8 +36,6 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetTriggerQA", kTRUE),
   fDebug(kFALSE),
   fTriggerClass(""),
-  fBitJ1((1<<8)),
-  fBitJ2((1<<11)),
   fContainerFull(0),
   fContainerCharged(1),
   fMaxPatchEnergy(0),
@@ -49,6 +47,8 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
   fh3PtEtaPhiTracks(0),
   fh3PtEtaPhiTracksOnEmcal(0),
   fh3PtEtaPhiTracksProp(0),
+  fh2CentPtJetFull(0),
+  fh2CentPtJetCharged(0),
   fh3PtEtaPhiJetFull(0),
   fh3PtEtaPhiJetCharged(0),
   fh2NJetsPtFull(0),
@@ -90,8 +90,6 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fDebug(kFALSE),
   fTriggerClass(""),
-  fBitJ1((1<<8)),
-  fBitJ2((1<<11)),
   fContainerFull(0),
   fContainerCharged(1),
   fMaxPatchEnergy(0),
@@ -103,6 +101,8 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
   fh3PtEtaPhiTracks(0),
   fh3PtEtaPhiTracksOnEmcal(0),
   fh3PtEtaPhiTracksProp(0),
+  fh2CentPtJetFull(0),
+  fh2CentPtJetCharged(0),
   fh3PtEtaPhiJetFull(0),
   fh3PtEtaPhiJetCharged(0),
   fh2NJetsPtFull(0),
@@ -168,7 +168,6 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::SelectEvent() {
     }
 
     TString firedTrigClass = InputEvent()->GetFiredTriggerClasses();
-
     if(fTriggerClass.Contains(trigType1.Data()) && fTriggerClass.Contains(trigType2.Data())) { //if events with J1&&J2 are requested
       if(!firedTrigClass.Contains(trigType1.Data()) || !firedTrigClass.Contains(trigType2.Data()) ) //check if both are fired
         return kFALSE;
@@ -180,15 +179,13 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::SelectEvent() {
 	return kFALSE;
     }
   }
-
   fhNEvents->Fill(1.5);
 
   return kTRUE;
-
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEmcalJetTriggerQA::FindTriggerPatch() {
+void AliAnalysisTaskEmcalJetTriggerQA::FillTriggerPatchHistos() {
 
   //Fill trigger patch histos for main trigger
 
@@ -234,9 +231,9 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   fHistRhovsCentCharged->GetYaxis()->SetTitle("#rho_{ch} (GeV/c * rad^{-1})");
   fOutput->Add(fHistRhovsCentCharged);
     
-  Int_t fgkNCentBins = 20;
+  Int_t fgkNCentBins = 21;
   Float_t kMinCent   = 0.;
-  Float_t kMaxCent   = 100.;
+  Float_t kMaxCent   = 105.;
   Double_t *binsCent = new Double_t[fgkNCentBins+1];
   for(Int_t i=0; i<=fgkNCentBins; i++) binsCent[i]=(Double_t)kMinCent + (kMaxCent-kMinCent)/fgkNCentBins*(Double_t)i ;
     
@@ -340,6 +337,12 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
 
   fh3PtEtaPhiTracksProp = new TH3F("fh3PtEtaPhiTracksProp","fh3PtEtaPhiTracksProp;#it{p}_{T}^{track};#eta;#varphi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PtEtaPhiTracksProp);
+
+  fh2CentPtJetFull = new TH2F("fh2CentPtJetFull","fh2CentPtJetFull;cent;#it{p}_{T}^{jet}",fgkNCentBins,binsCent,fgkNPtBins,binsPt);
+  fOutput->Add(fh2CentPtJetFull);
+
+  fh2CentPtJetCharged = new TH2F("fh2CentPtJetCharged","fh2CentPtJetCharged;cent;#it{p}_{T}^{jet}",fgkNCentBins,binsCent,fgkNPtBins,binsPt);
+  fOutput->Add(fh2CentPtJetCharged);
 
   fh3PtEtaPhiJetFull = new TH3F("fh3PtEtaPhiJetFull","fh3PtEtaPhiJetFull;#it{p}_{T}^{jet};#eta;#varphi",fgkNPtBins,binsPt,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PtEtaPhiJetFull);
@@ -499,7 +502,6 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
   AliClusterContainer  *clusCont = GetClusterContainer(0);
   if (clusCont) {
     Int_t nclusters = clusCont->GetNClusters();
-    TString arrName = clusCont->GetArrayName();
     for (Int_t ic = 0; ic < nclusters; ic++) {
       AliVCluster *cluster = static_cast<AliVCluster*>(clusCont->GetCluster(ic));
       if (!cluster) {
@@ -522,7 +524,7 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
     }
   }
 
-  //cells
+  //Cells
   if(fCaloCells) {
     const Short_t nCells   = fCaloCells->GetNumberOfCells();
 
@@ -554,19 +556,19 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
       AliEmcalJet* jet = GetAcceptJetFromArray(ij,fContainerFull);
       if (!jet)
 	continue; //jet not selected
-      
+
       Double_t jetPt = jet->Pt() - GetRhoVal(fContainerFull)*jet->Area();
-      Double_t jetPhi = jet->Phi();
-      Double_t dEPJetFull = -500.0;
-      dEPJetFull = RelativeEP(jetPhi , fEPV0);
-        
+      if(jetPt>ptLeadJet1) ptLeadJet1=jetPt;
+
+      Double_t dEPJetFull = RelativeEP(jet->Phi() , fEPV0);
       fh3JetReacCent->Fill(jet->E(),fCent,dEPJetFull);
       fh2FullJetCent->Fill(fCent,dEPJetFull);
       
-      if(jetPt>ptLeadJet1) ptLeadJet1=jetPt;
+      fh2CentPtJetFull->Fill(fCent,jetPt);
+      fh2CentPtJetCharged->Fill(fCent,jetPt);
       fh3PtEtaPhiJetFull->Fill(jetPt,jet->Eta(),jet->Phi());
       fh3PtEtaAreaJetFull->Fill(jetPt,jet->Eta(),jet->Area());
-      
+
       //count jets above certain pT threshold
       Int_t ptbin = fh2NJetsPtFull->GetYaxis()->FindBin(jetPt);
       for(Int_t iptbin = ptbin; iptbin<=fh2NJetsPtFull->GetNbinsY(); iptbin++)
@@ -574,7 +576,6 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
       
       fh2PtNConstituentsCharged->Fill(jetPt,jet->GetNumberOfTracks());
       fh2PtNConstituents->Fill(jetPt,jet->GetNumberOfConstituents());
-
       fh2PtNEF->Fill(jetPt,jet->NEF());
       fh3NEFEtaPhi->Fill(jet->NEF(),jet->Eta(),jet->Phi());
       fh2NEFNConstituentsCharged->Fill(jet->NEF(),jet->GetNumberOfTracks());
@@ -672,7 +673,7 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::Run()
     return kFALSE;
   
   if(fTriggerPatchInfo) 
-    FindTriggerPatch();
+    FillTriggerPatchHistos();
 
   return kTRUE;  // If return kFALSE FillHistogram() will NOT be executed.
 }
@@ -791,29 +792,26 @@ Double_t AliAnalysisTaskEmcalJetTriggerQA::GetECross(Int_t absID) const {
 }
 
 //_________________________________________________________________________
-Float_t AliAnalysisTaskEmcalJetTriggerQA:: RelativeEP(Double_t objAng, Double_t EPAng) const
-{ // function to calculate angle between object and EP in the 1st quadrant (0,Pi/2)
-    Double_t dphi = (EPAng - objAng);
-    
-    // ran into trouble with a few dEP<-Pi so trying this...
-    if( dphi<-1*TMath::Pi() ){
-        dphi = dphi + 1*TMath::Pi();
-    }
-    
-    if( dphi>1*TMath::Pi()){
-        dphi = dphi - 1*TMath::Pi();
-    }
-     
-    if( (dphi>0) && (dphi<1*TMath::Pi()/2) ){
-        // Do nothing! we are in quadrant 1
-    }else if( (dphi>1*TMath::Pi()/2) && (dphi<1*TMath::Pi()) ){
-        dphi = 1*TMath::Pi() - dphi;
-    }else if( (dphi<0) && (dphi>-1*TMath::Pi()/2) ){
-        dphi = fabs(dphi);
-    }else if( (dphi<-1*TMath::Pi()/2) && (dphi>-1*TMath::Pi()) ){
-        dphi = dphi + 1*TMath::Pi();
-    }
-    
-    return dphi;   // dphi in [0, Pi/2]
-}
+Float_t AliAnalysisTaskEmcalJetTriggerQA::RelativeEP(Double_t objAng, Double_t EPAng) const
+{
+  // function to calculate angle between object and EP in the 1st quadrant (0,Pi/2)
+  Double_t dphi = EPAng - objAng;
 
+  // ran into trouble with a few dEP<-Pi so trying this...
+  if( dphi<-1*TMath::Pi() )
+    dphi = dphi + 1*TMath::Pi();
+  if( dphi>1*TMath::Pi())
+    dphi = dphi - 1*TMath::Pi();
+
+  if( (dphi>0) && (dphi<1*TMath::Pi()/2) ){
+    // Do nothing! we are in quadrant 1
+  }else if( (dphi>1*TMath::Pi()/2) && (dphi<1*TMath::Pi()) ){
+    dphi = 1*TMath::Pi() - dphi;
+  }else if( (dphi<0) && (dphi>-1*TMath::Pi()/2) ){
+    dphi = fabs(dphi);
+  }else if( (dphi<-1*TMath::Pi()/2) && (dphi>-1*TMath::Pi()) ){
+    dphi = dphi + 1*TMath::Pi();
+  }
+
+  return dphi;   // dphi in [0, Pi/2]
+}

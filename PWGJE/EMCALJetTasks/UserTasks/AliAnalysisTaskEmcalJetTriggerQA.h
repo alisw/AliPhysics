@@ -27,7 +27,7 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
   void                        Terminate(Option_t *option);
 
   Bool_t                      SelectEvent();              //decides if event is used for analysis
-  void                        FindTriggerPatch();
+  void                        FillTriggerPatchHistos();
 
   //Setters
   void SetDebug(Int_t d)                    { fDebug = d;}
@@ -48,17 +48,13 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
   Bool_t                      FillHistograms()   ;
   Bool_t                      Run()              ;
   Float_t                     RelativeEP(Double_t objAng, Double_t EPAng) const;
-    
   Bool_t                      TestFilterBit(Int_t trigBit, UInt_t bitJetTrig) const {return (Bool_t) ((trigBit & bitJetTrig) != 0);}
 
-
  private:
-  Bool_t             fDebug;                 //  debug level
+  Bool_t             fDebug;                 // debug level
   TString            fTriggerClass;          // trigger class to analyze EJ1 or EJ2    
-  UInt_t             fBitJ1;                 // trigger bit of EJE1
-  UInt_t             fBitJ2;                 // trigger bit of EJE2
-  Int_t              fContainerFull;         //  number of container with full jets DET
-  Int_t              fContainerCharged;      //  number of container with charged jets DET
+  Int_t              fContainerFull;         // number of container with full jets DET
+  Int_t              fContainerCharged;      // number of container with charged jets DET
   Double_t           fMaxPatchEnergy;        // energy of patch with largest energy
   Int_t              fTriggerType;           // trigger type
   Int_t              fNFastOR;               // size of trigger patch fNFastORxfNFastOR
@@ -69,6 +65,8 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
   TH3F  *fh3PtEtaPhiTracks;                 //! pt,eta,phi of tracks
   TH3F  *fh3PtEtaPhiTracksOnEmcal;          //! pt,eta,phi of tracks
   TH3F  *fh3PtEtaPhiTracksProp;             //! pt,eta,phi of tracks
+  TH2F  *fh2CentPtJetFull;                  //! cent, pt of full jets
+  TH2F  *fh2CentPtJetCharged;               //! cent, pt of charged jets
   TH3F  *fh3PtEtaPhiJetFull;                //! pt,eta,phi of full jets
   TH3F  *fh3PtEtaPhiJetCharged;             //! pt,eta,phi of charged jets
   TH2F  *fh2NJetsPtFull;                    //! NJets per event vs pT,jet
@@ -97,13 +95,12 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
   TH3F  *fh3PatchADCEnergyEtaPhiCenterJ1J2; //! patch ADC energy vs eta, phi at center of patch, low + high threshold
   TH2F  *fh2CellEnergyVsTime;               //! emcal cell energy vs time
   TH3F  *fh3EClusELeadingCellVsTime;        //! cluster energy vs energy of leading cell in cluster vs time of the leading cell
-
-  TH3F  *fh3JetReacCent;
-  TH2F  *fh2FullJetCent;
+  TH3F  *fh3JetReacCent;                    //! jet energy vs cent vs dphi(jet,event plane)
+  TH2F  *fh2FullJetCent;                    //! cent vs dphi(jet,event plane)
     
   AliAnalysisTaskEmcalJetTriggerQA(const AliAnalysisTaskEmcalJetTriggerQA&);            // not implemented
   AliAnalysisTaskEmcalJetTriggerQA &operator=(const AliAnalysisTaskEmcalJetTriggerQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetTriggerQA, 9)
+  ClassDef(AliAnalysisTaskEmcalJetTriggerQA, 10)
 };
 #endif
