@@ -254,10 +254,7 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
 {
   // Fill histograms.
 
-  AliInfo(Form("%s",GetName()));
-
   AliEmcalJet* jet1 = NULL;
-
   AliJetContainer *jetCont = GetJetContainer(fContainerBase);
   if(jetCont) {
     jetCont->ResetCurrentID();
@@ -265,7 +262,7 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
       Double_t fraction = jetCont->GetFractionSharedPt(jet1);
       if(fMinFractionShared>0. && fraction<fMinFractionShared) continue;
 
-      Double_t ptJet1 = jet1->Pt() - GetRhoVal(fContainerBase)*jet1->Area();//jetCont->GetJetPtCorr(jetCont->GetCurrentID());//
+      Double_t ptJet1 = jet1->Pt() - GetRhoVal(fContainerBase)*jet1->Area();
       fh2PtJet1VsLeadPtAllSel[fCentBin]->Fill(ptJet1,jet1->MaxTrackPt());
       fh2PtVsMassJet1All[fCentBin]->Fill(ptJet1,jet1->M());
       fpPtVsMassJet1All[fCentBin]->Fill(ptJet1,jet1->M());
@@ -287,43 +284,16 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
       if((Et*jetCont->GetJetRadius())>0.) 
 	massOverEtR = jet1->M()/(Et*jetCont->GetJetRadius());
       fh2EtMassOverEtRSq[fCentBin]->Fill(Et,massOverEtR*massOverEtR);
-
-      //check if matched gen level jet exists and do analysis
-      AliEmcalJet *jetGen = jet1->ClosestJet();
-
-      Printf("AA jet");
-      Printf("jet 4-vector: %f,%f,%f,%f",jet1->Px(),jet1->Py(),jet1->Pz(),jet1->E());
-      Printf("pT: %f  pTcorr: %f  M: %f",jet1->Pt(),ptJet1,jet1->M());
-      Printf("eta: %f  phi: %f",jet1->Eta(),jet1->Phi());
-      if(jetGen) {
-	Printf("gen jet");
-	Printf("jet 4-vector: %f,%f,%f,%f",jetGen->Px(),jetGen->Py(),jetGen->Pz(),jetGen->E());
-	Printf("pT: %f  M: %f",jetGen->Pt(),jetGen->M());
-	Printf("eta: %f  phi: %f",jetGen->Eta(),jetGen->Phi());
-      }
-
     }
   }
-
+  
   return kTRUE;
 }
 
 //________________________________________________________________________
 Double_t AliAnalysisTaskEmcalJetMass::GetJetMass(AliEmcalJet *jet) {
-
-  Double_t deltaM = jet->M() - fJetMassAvg;
-  Double_t scale = deltaM / jet->M();
-
-  Double_t mt2 = jet->E()*jet->E() - jet->Pt()*jet->Pt();
-  Double_t et2 = jet->M()*jet->M() + jet->Pt()*jet->Pt();
-
-  Double_t pxScale = jet->Px()*scale;
-  Double_t pyScale = jet->Py()*scale;
-  Double_t pzScale = jet->Pz()*scale;
-  
-  // Printf("scaled jet 4-vector: %f-%f-%f-%f",pxScale,pyScale,pzScale);
-
-  return deltaM;
+  //calc subtracted jet mass, not implemented
+  return jet->M();
 
 }
 

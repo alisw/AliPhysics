@@ -223,10 +223,7 @@ Bool_t AliAnalysisTaskEmcalJetMassResponse::FillHistograms()
 {
   // Fill histograms.
 
-  AliInfo(Form("%s",GetName()));
-
   AliEmcalJet* jet1 = NULL;
-
   AliJetContainer *jetCont = GetJetContainer(fContainerBase);
   if(jetCont) {
     jetCont->ResetCurrentID();
