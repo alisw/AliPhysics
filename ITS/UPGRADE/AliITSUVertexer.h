@@ -24,19 +24,15 @@ class AliITSUVertexer : public AliVertexer {
   // Public methods
   virtual AliESDVertex* GetAllVertices(Int_t& nVert) const { nVert=fNoVertices; return (AliESDVertex*)&fVertices[0]; };
   virtual AliESDVertex* FindVertexForCurrentEvent(TTree *); 
-  void FindVerticesForCurrentEvent();
   virtual void PrintStatus() const;
-  void Reset();
 
   // Getters
-  UInt_t GetNoLines() const { return fNoLines; }
+  UInt_t   GetNoLines()       const { return fNoLines;    }
   UShort_t GetNumOfVertices() const { return fNoVertices; }
-  
 
   // Setters
-  void SetClusters(TClonesArray *clr, const UShort_t i);
   void SetPhiCut(const Double_t phicut) { fPhiCut=phicut; }
-  void SetZCut(const Double_t zcut) { fZCut=zcut; }
+  void SetZCut(const Double_t zcut)     { fZCut=zcut; }
 
   #ifdef MC_CHECK
   // Debug + MC truth
@@ -55,8 +51,11 @@ class AliITSUVertexer : public AliVertexer {
   void Clusterize(UInt_t l1, UInt_t l2, Bool_t weight=kFALSE);
   void ComputeClusterCentroid(UInt_t cl);
   void FindTracklets();
+  void FindVerticesForCurrentEvent();
   Int_t MatchPoints(UShort_t layer, Double_t anchor, Double_t *p0=0x0, Double_t *p1=0x0);
   void MoveLabels(Short_t start, Short_t end);
+  void Reset();
+  void SortClusters();
 
   // Data members
   Int_t fClusterContribCut;
