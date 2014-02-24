@@ -96,7 +96,6 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
   TH2F  *fh2CellEnergyVsTime;               //! emcal cell energy vs time
   TH3F  *fh3EClusELeadingCellVsTime;        //! cluster energy vs energy of leading cell in cluster vs time of the leading cell
   TH3F  *fh3JetReacCent;                    //! jet energy vs cent vs dphi(jet,event plane)
-  TH2F  *fh2FullJetCent;                    //! cent vs dphi(jet,event plane)
     
   AliAnalysisTaskEmcalJetTriggerQA(const AliAnalysisTaskEmcalJetTriggerQA&);            // not implemented
   AliAnalysisTaskEmcalJetTriggerQA &operator=(const AliAnalysisTaskEmcalJetTriggerQA&); // not implemented

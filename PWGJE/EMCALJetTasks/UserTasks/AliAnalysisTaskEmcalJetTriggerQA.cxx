@@ -77,8 +77,7 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
   fh3PatchADCEnergyEtaPhiCenterJ1J2(0),
   fh2CellEnergyVsTime(0),
   fh3EClusELeadingCellVsTime(0),
-  fh3JetReacCent(0),
-  fh2FullJetCent(0)
+  fh3JetReacCent(0)
 {
   // Default constructor.
 
@@ -131,8 +130,7 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
   fh3PatchADCEnergyEtaPhiCenterJ1J2(0),
   fh2CellEnergyVsTime(0),
   fh3EClusELeadingCellVsTime(0),
-  fh3JetReacCent(0),
-  fh2FullJetCent(0)
+  fh3JetReacCent(0)
 {
   // Standard constructor.
 
@@ -236,6 +234,8 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   Float_t kMaxCent   = 105.;
   Double_t *binsCent = new Double_t[fgkNCentBins+1];
   for(Int_t i=0; i<=fgkNCentBins; i++) binsCent[i]=(Double_t)kMinCent + (kMaxCent-kMinCent)/fgkNCentBins*(Double_t)i ;
+  binsCent[fgkNCentBins-1] = 100.5;
+  binsCent[fgkNCentBins] = 101.5;
     
   Int_t fgkNdEPBins = 18*8;
   Float_t kMindEP   = 0.;
@@ -430,10 +430,6 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   fh3JetReacCent = new TH3F("fh3JetReacCent","fh3JetReacCent;E_{Jet};Centrality;dEP",fgkNEnBins,binsEn,fgkNCentBins,binsCent,fgkNdEPBins,binsdEP);
   fOutput->Add(fh3JetReacCent);
     
-  fh2FullJetCent = new TH2F("fh2FullJetCent","fh2FullJetCent;Centrality;dEP",fgkNCentBins,binsCent,fgkNdEPBins,binsdEP);
-  fOutput->Add(fh2FullJetCent);
-
-
   // =========== Switch on Sumw2 for all histos ===========
   for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
     TH1 *h1 = dynamic_cast<TH1*>(fOutput->At(i));
@@ -562,10 +558,8 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
 
       Double_t dEPJetFull = RelativeEP(jet->Phi() , fEPV0);
       fh3JetReacCent->Fill(jet->E(),fCent,dEPJetFull);
-      fh2FullJetCent->Fill(fCent,dEPJetFull);
       
       fh2CentPtJetFull->Fill(fCent,jetPt);
-      fh2CentPtJetCharged->Fill(fCent,jetPt);
       fh3PtEtaPhiJetFull->Fill(jetPt,jet->Eta(),jet->Phi());
       fh3PtEtaAreaJetFull->Fill(jetPt,jet->Eta(),jet->Area());
 
@@ -629,6 +623,7 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
 
       Double_t jetPt = jet->Pt() - GetRhoVal(fContainerCharged)*jet->Area();
       if(jetPt>ptLeadJet2) ptLeadJet2=jetPt;
+      fh2CentPtJetCharged->Fill(fCent,jetPt);
       fh3PtEtaPhiJetCharged->Fill(jetPt,jet->Eta(),jet->Phi());
       fh3PtEtaAreaJetCharged->Fill(jetPt,jet->Eta(),jet->Area());
 
