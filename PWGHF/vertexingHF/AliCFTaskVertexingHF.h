@@ -100,7 +100,7 @@ public:
 	// CORRECTION FRAMEWORK RELATED FUNCTIONS
 	void           SetCFManager(AliCFManager* io) {fCFManager = io;}   // global correction manager
 	AliCFManager * GetCFManager()                 {return fCFManager;} // get corr manager
-	
+
 	// Setters (and getters) for the config macro
 	void    SetFillFromGenerated(Bool_t flag) {fFillFromGenerated = flag;}
 	Bool_t  GetFillFromGenerated() const {return fFillFromGenerated;}
@@ -129,6 +129,7 @@ public:
 	void SetMultiplicityEstimator(Int_t value){ fMultiplicityEstimator=value; }
 	Int_t GetMultiplicityEstimator(){ return fMultiplicityEstimator; }
 	void SetIsPPData(Bool_t flag){ fIsPPData = flag; }
+	void SetIsPPbData(Bool_t flag){ fIsPPbData = flag; }
 
 	void SetUseNchTrackletsWeight(Bool_t useWeight = kTRUE) { fUseNchWeight=useWeight; fUseTrackletsWeight=useWeight; }
 	Bool_t GetUseNchTrackletsWeight() const {return fUseTrackletsWeight;}
@@ -151,6 +152,17 @@ public:
 	  if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
 	  fMultEstimatorAvg[3]=new TProfile(*hprof);
 	}
+	
+	void SetMultiplVsZProfileLHC13b(TProfile* hprof){
+	  if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+	  fMultEstimatorAvg[0]=new TProfile(*hprof);
+	}
+	void SetMultiplVsZProfileLHC13c(TProfile* hprof){
+	  if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+	  fMultEstimatorAvg[1]=new TProfile(*hprof);
+	}
+
+
 	TProfile* GetEstimatorHistogram(const AliVEvent* event);
 	void SetReferenceMultiplcity(Double_t rmu){fRefMult=rmu;}
 	
@@ -261,8 +273,9 @@ protected:
 	Double_t fRefMult;   // refrence multiplcity (period b)
 	Bool_t fZvtxCorrectedNtrkEstimator; // flag to use the z-vtx corrected (if not use uncorrected) multiplicity estimator
 	Bool_t fIsPPData; // flag for pp data (not checking centrality)
-
-	ClassDef(AliCFTaskVertexingHF,18); // class for HF corrections as a function of many variables
+	Bool_t fIsPPbData; // flag for pPb data (used for multiplicity corrections)
+   
+	ClassDef(AliCFTaskVertexingHF,19); // class for HF corrections as a function of many variables
 };
 
 #endif

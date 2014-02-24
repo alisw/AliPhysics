@@ -68,7 +68,13 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
  fCalculateQcumulants(kFALSE),
  fHarmonicQC(2),
  fPropagateErrorQC(kTRUE),
- fCalculateDiffCorrelations(kFALSE)
+ fCalculateDiffCorrelations(kFALSE),
+ fCalculateDiffCos(kTRUE),
+ fCalculateDiffSin(kFALSE),
+ fCalculateDiffCorrelationsVsPt(kTRUE),
+ fUseDefaultBinning(kTRUE),
+ fnDiffBins(-44),
+ fRangesDiffBins(NULL)
  {
   // Constructor.
  
@@ -95,7 +101,11 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
     fWeightsHist[rp][ppe] = NULL; 
    }
   }
- 
+  // For nested loops arrays:
+  fCrossCheckDiffCSCOBN[0] = 0; // cos/sin
+  fCrossCheckDiffCSCOBN[1] = 2; // correlator order
+  fCrossCheckDiffCSCOBN[2] = 4; // bin number 
+
 } // AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelations(const char *name, Bool_t useParticleWeights): 
 
 //================================================================================================================
@@ -134,7 +144,13 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
  fCalculateQcumulants(kFALSE),
  fHarmonicQC(0),
  fPropagateErrorQC(kFALSE),
- fCalculateDiffCorrelations(kFALSE)
+ fCalculateDiffCorrelations(kFALSE),
+ fCalculateDiffCos(kTRUE),
+ fCalculateDiffSin(kFALSE),
+ fCalculateDiffCorrelationsVsPt(kTRUE),
+ fUseDefaultBinning(kTRUE),
+ fnDiffBins(-44),
+ fRangesDiffBins(NULL)
  {
   // Dummy constructor.
  
@@ -149,6 +165,10 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
     fWeightsHist[rp][ppe] = NULL; 
    }
   }
+  // For nested loops arrays:
+  fCrossCheckDiffCSCOBN[0] = 0; // cos/sin
+  fCrossCheckDiffCSCOBN[1] = 2; // correlator order
+  fCrossCheckDiffCSCOBN[2] = 4; // bin number 
 
 } // AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelations():
 
@@ -188,12 +208,20 @@ void AliAnalysisTaskMultiparticleCorrelations::UserCreateOutputObjects()
  fMPC->SetCalculateEbECumulants(fCalculateEbECumulants);
  fMPC->SetCrossCheckWithNestedLoops(fCrossCheckWithNestedLoops);
  fMPC->SetCrossCheckDiffWithNestedLoops(fCrossCheckDiffWithNestedLoops);
+ fMPC->SetCrossCheckDiffCSCOBN(fCrossCheckDiffCSCOBN[0],fCrossCheckDiffCSCOBN[1],fCrossCheckDiffCSCOBN[2]);  
  fMPC->SetCalculateStandardCandles(fCalculateStandardCandles);
  fMPC->SetPropagateErrorSC(fPropagateErrorSC);
  fMPC->SetCalculateQcumulants(fCalculateQcumulants);
  fMPC->SetHarmonicQC(fHarmonicQC);
  fMPC->SetPropagateErrorQC(fPropagateErrorQC);
  fMPC->SetCalculateDiffCorrelations(fCalculateDiffCorrelations);
+ fMPC->SetCalculateDiffCos(fCalculateDiffCos);
+ fMPC->SetCalculateDiffSin(fCalculateDiffSin);
+ fMPC->SetCalculateDiffCorrelationsVsPt(fCalculateDiffCorrelationsVsPt);
+ fMPC->SetUseDefaultBinning(fUseDefaultBinning);
+ fMPC->SetnDiffBins(fnDiffBins);
+ fMPC->SetRangesDiffBins(fRangesDiffBins);
+
  // Weights:
  TString type[2] = {"RP","POI"};
  TString variable[3] = {"phi","pt","eta"};

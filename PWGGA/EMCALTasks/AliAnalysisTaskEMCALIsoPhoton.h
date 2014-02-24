@@ -135,10 +135,14 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH1F        *fEmcNClusCut;      //!# of clusters in an event with at least 1 clus with E > fECut ("triggered event")
   TH1F        *fNTracksECut;      //!number of tracks from Array->GetEntries() in "triggered event"
   TH1F        *fEmcNCellsCut;     //!number of emcal cells in a in "triggered event"
-  TH1F        *fEmcClusE;         //!cluster E spectrum
-  TH1F        *fEmcClusECut;      //!cluster E spectrum in "triggered event"
-  TH1F        *fTrackPt;          //!selected tracks pt
-  TH1F        *fTrackPtCut;       //!selected tracks pt in "triggered event"
+  TH2F        *fEmcClusEPhi;      //!cluster E spectrum vs. phi
+  TH2F        *fEmcClusEPhiCut;   //!cluster E spectrum vs. phi in "triggered event"
+  TH2F        *fEmcClusEEta;      //!cluster E spectrum vs. eta
+  TH2F        *fEmcClusEEtaCut;   //!cluster E spectrum vs. eta in "triggered event"
+  TH2F        *fTrackPtPhi;       //!selected tracks pt vs. phi
+  TH2F        *fTrackPtPhiCut;    //!selected tracks pt vs. phi in "triggered event"
+  TH2F        *fTrackPtEta;       //!selected tracks pt vs. eta
+  TH2F        *fTrackPtEtaCut;    //!selected tracks pt vs. eta in "triggered event"
 
 
   AliAnalysisTaskEMCALIsoPhoton(const AliAnalysisTaskEMCALIsoPhoton&); // not implemented

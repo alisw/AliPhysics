@@ -126,14 +126,17 @@ void AliAnalysisTaskCounter::UserCreateOutputObjects()
   
   fOutputContainer = new TList();
   
-  fh1Xsec = new TH1F("hXsec","xsec from pyxsec.root",1,0,1);
-  fh1Xsec->GetXaxis()->SetBinLabel(1,"<#sigma>");
-  fOutputContainer->Add(fh1Xsec);
+  if(fCheckMCCrossSection)
+  {
+    fh1Xsec = new TH1F("hXsec","xsec from pyxsec.root",1,0,1);
+    fh1Xsec->GetXaxis()->SetBinLabel(1,"<#sigma>");
+    fOutputContainer->Add(fh1Xsec);
+    
+    fh1Trials = new TH1F("hTrials","trials root file",1,0,1);
+    fh1Trials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
+    fOutputContainer->Add(fh1Trials);
+  }
   
-  fh1Trials = new TH1F("hTrials","trials root file",1,0,1);
-  fh1Trials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
-  fOutputContainer->Add(fh1Trials);
-
   fhZVertex     = new TH1F("hZVertex", " Z vertex distribution"   , 200 , -50 , 50  ) ;
   fhZVertex->SetXTitle("v_{z} (cm)");
   fOutputContainer->Add(fhZVertex);
@@ -167,7 +170,7 @@ void AliAnalysisTaskCounter::UserCreateOutputObjects()
   fOutputContainer->Add(fhEventPlaneAngle) ;
   
   fhNEvents = new TH1I("hNEvents", "Number of analyzed events", 21, 0, 21) ;
-  fhNEvents->SetXTitle("Selection");
+  //fhNEvents->SetXTitle("Selection");
   fhNEvents->SetYTitle("# events");
   fhNEvents->GetXaxis()->SetBinLabel(1 ,"1  = PS");
   fhNEvents->GetXaxis()->SetBinLabel(2 ,"2  = 1  & ESD");
@@ -190,7 +193,7 @@ void AliAnalysisTaskCounter::UserCreateOutputObjects()
   fhNEvents->GetXaxis()->SetBinLabel(18,"18 = Reject EMCAL 1");
   fhNEvents->GetXaxis()->SetBinLabel(19,"19 = 18 & 2");
   fhNEvents->GetXaxis()->SetBinLabel(20,"20 = Reject EMCAL 2");
-  fhNEvents->GetXaxis()->SetBinLabel(21,"20 = 20 & 2");
+  fhNEvents->GetXaxis()->SetBinLabel(21,"21 = 20 & 2");
 
   fOutputContainer->Add(fhNEvents);
 

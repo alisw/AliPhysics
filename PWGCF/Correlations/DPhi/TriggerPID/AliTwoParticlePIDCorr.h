@@ -152,6 +152,11 @@ class AliTwoParticlePIDCorr : public AliAnalysisTaskSE {
     ffillhistQAReco=fillhistQAReco;
     ffillhistQATruth=fillhistQATruth;
   }
+  void SetPtordering(Bool_t PtOrderDataReco,Bool_t PtOrderMCTruth)
+  {
+    fPtOrderDataReco=PtOrderDataReco;
+    fPtOrderMCTruth=PtOrderMCTruth;
+  }
   void Setselectprimarydatareco(Bool_t onlyprimarydatareco) {fonlyprimarydatareco=onlyprimarydatareco;}
   void SetselectprimaryTruth(Bool_t selectprimaryTruth) {fselectprimaryTruth=selectprimaryTruth;}
   void SetCombinedNSigmaCut(Double_t NSigmaPID) {fNSigmaPID=NSigmaPID;}
@@ -221,6 +226,7 @@ fPtTOFPIDmax=PtTOFPIDmax;
     Bool_t ffilltrigIDassoIDMCTRUTH;
     Int_t fMaxNofMixingTracks;
     Bool_t fPtOrderMCTruth;
+    Bool_t fPtOrderDataReco;
     Bool_t fTriggerSpeciesSelection;
     Bool_t fAssociatedSpeciesSelection;
     Int_t fTriggerSpecies;
@@ -274,6 +280,7 @@ fPtTOFPIDmax=PtTOFPIDmax;
     TH2F *fEventno;//!
     TH2F *fEventnobaryon;//!
     TH2F *fEventnomeson;//!
+    TH2F *fhistJetTrigestimate;//!
 
     TH2D* fCentralityCorrelation;  //! centrality vs multiplicity
 
@@ -368,7 +375,7 @@ fPtTOFPIDmax=PtTOFPIDmax;
     Bool_t fRemoveDuplicates;// remove particles with the same label (double reconstruction)
     Bool_t fapplyTrigefficiency;//if kTRUE then eff correction calculation starts
     Bool_t fapplyAssoefficiency;//if kTRUE then eff correction calculation starts
-    Bool_t ffillefficiency;//if kTRUE then THNsparses used for eff. calculation are filled up
+    Bool_t ffillefficiency;  //if kTRUE then THNsparses used for eff. calculation are filled up
     Bool_t fmesoneffrequired;
     Bool_t fkaonprotoneffrequired;
     //  AliAnalysisUtils*     fAnalysisUtils;      // points to class with common analysis utilities
