@@ -41,6 +41,7 @@ AliFlowAnalysisWithMultiparticleCorrelations::AliFlowAnalysisWithMultiparticleCo
  fMinNoRPs(-44),
  fMaxNoRPs(-44),
  fExactNoRPs(-44),
+ fPropagateError(kTRUE),
  // 1.) Control histograms:
  fControlHistogramsList(NULL),
  fControlHistogramsFlagsPro(NULL),
@@ -174,7 +175,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::Init()
  this->BookEverythingForNestedLoops();
  this->BookEverythingForStandardCandles();
  this->BookEverythingForQcumulants();
- this->BookEverythingForDiffCorrelations(); return; // _11
+ this->BookEverythingForDiffCorrelations(); 
 
  // d) Set all flags:
  // ... 
@@ -364,7 +365,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateStandardCandles()
   // Standard candle:
   Double_t dSCn1n2n2n1 = 0.; // SC(-n1,-n2,n2,n1)
   Double_t dSCn1n2n2n1Err = 0.; // SC(-n1,-n2,n2,n1) stat. error
-
+  fPropagateError = kTRUE;
+ 
   // Correlations:
   Double_t dCosn1n2n2n1 = 0.; // <<Cos(-n1,-n2,n2,n1)>>
   Double_t dCosn1n2n2n1Err = 0.; // <<Cos(-n1,-n2,n2,n1)>> stat. error
@@ -456,11 +458,20 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateStandardCandles()
   if(dSCn1n2n2n1ErrSquared > 0.)
   {
    dSCn1n2n2n1Err = pow(dSCn1n2n2n1ErrSquared,0.5);
-  } else{Warning(sMethodName.Data(),"dSCn1n2n2n1ErrSquared > 0. is not satisfied for %s !!!!",labeln1n2n2n1.ReplaceAll("Cos","SC").Data());}
+  } else
+    {
+     Warning(sMethodName.Data(),"dSCn1n2n2n1ErrSquared > 0. is not satisfied for %s !!!!",labeln1n2n2n1.ReplaceAll("Cos","SC").Data());
+     fPropagateError = kFALSE;
+    }
 
   // Store the final stat. error:
-  fStandardCandlesHist->SetBinError(b,dSCn1n2n2n1Err);
+  if(fPropagateError)
+  {
+   fStandardCandlesHist->SetBinError(b,dSCn1n2n2n1Err);
+  }
  } // for(Int_t b=1;b<=nBins;b++)
+
+ fPropagateError = kTRUE;
 
  return; 
 
@@ -2881,6 +2892,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::GetOutputHistograms(TList *hi
  fMinNoRPs = (Int_t)fInternalFlagsPro->GetBinContent(2);
  fMaxNoRPs = (Int_t)fInternalFlagsPro->GetBinContent(3);
  fExactNoRPs = (Int_t)fInternalFlagsPro->GetBinContent(4);
+ fPropagateError = (Bool_t)fInternalFlagsPro->GetBinContent(5);
 
  // c) Get pointers for control histograms:
  this->GetPointersForControlHistograms(); 
@@ -3240,7 +3252,14 @@ TComplex AliFlowAnalysisWithMultiparticleCorrelations::p(Int_t n, Int_t wp)
 TComplex AliFlowAnalysisWithMultiparticleCorrelations::q(Int_t n, Int_t wp)
 {
  // Using the fact that q{-n,p} = q{n,p}^*.
- 
+
+ // When weights are used for RPs and not for POIs, and vice versa, some gymnastics is required here:
+ // TBI rethink and reimplement the lines below:
+ Int_t nUseWeightsForRP = (Int_t)(fUseWeights[0][0] || fUseWeights[0][1] || fUseWeights[0][2]); 
+ Int_t nUseWeightsForPOI = (Int_t)(fUseWeights[1][0] || fUseWeights[1][1] || fUseWeights[1][2]); 
+ if(nUseWeightsForPOI == 1 && nUseWeightsForRP == 0){wp=1;}
+ else if(nUseWeightsForPOI == 0 && nUseWeightsForRP == 1){wp-=1;}
+
  if(n>=0){return fqvector[fDiffBinNo][n][wp];} 
  return TComplex::Conjugate(fqvector[fDiffBinNo][-n][wp]);
 
@@ -3484,7 +3503,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForWeights()
  // Book all objects for calculations with weights. 
 
  // a) Book profile to hold all flags for weights;
- // b) Store histograms holding phi, pt and eta weights. 
+ // b) Store histograms holding phi, pt and eta weights.
     
  // a) Book profile to hold all flags for weights:
  fWeightsFlagsPro = new TProfile("fWeightsFlagsPro","0 = weight not used, 1 = weight used ",6,0,6);
@@ -3610,7 +3629,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForBase()
 {
  // Book all base objects. 
 
- fInternalFlagsPro = new TProfile("fInternalFlagsPro","Internal flags and settings",4,0,4);
+ fInternalFlagsPro = new TProfile("fInternalFlagsPro","Internal flags and settings",5,0,5);
  fInternalFlagsPro->SetLabelSize(0.05);
  fInternalFlagsPro->SetStats(kFALSE);
  fInternalFlagsPro->SetFillColor(kGray);
@@ -3619,6 +3638,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForBase()
  fInternalFlagsPro->GetXaxis()->SetBinLabel(2,"fMinNoRPs"); fInternalFlagsPro->Fill(1.5,fMinNoRPs);  
  fInternalFlagsPro->GetXaxis()->SetBinLabel(3,"fMaxNoRPs"); fInternalFlagsPro->Fill(2.5,fMaxNoRPs); 
  fInternalFlagsPro->GetXaxis()->SetBinLabel(4,"fExactNoRPs"); fInternalFlagsPro->Fill(3.5,fExactNoRPs);  
+ fInternalFlagsPro->GetXaxis()->SetBinLabel(5,"fPropagateError"); fInternalFlagsPro->Fill(4.5,fPropagateError);  
+
  fHistList->Add(fInternalFlagsPro); 
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForBase()
@@ -3854,6 +3875,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateQcumulants()
 
  TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::CalculateQcumulants()";
 
+ fPropagateError = kTRUE;
  Int_t n = fHarmonicQC;
  fQcumulantsHist->SetTitle(Form("Q-cumulants (n = %d)",n));
 
@@ -3963,7 +3985,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateQcumulants()
  if(qc4ErrorSquared > 0. && !(fDontGoBeyond < 4))
  {
   qc4Error = pow(qc4ErrorSquared,0.5);
- } else{Warning(sMethodName.Data(),"Statistical error of QC{4} is imaginary !!!!");}
+ } else{Warning(sMethodName.Data(),"Statistical error of QC{4} is imaginary !!!!"); fPropagateError = kFALSE;}
                                            
  // Statistical error of QC{6}:              
  qc6ErrorSquared = 81.*pow(4.*pow(two,2.)-four,2.)*pow(twoError,2.)
@@ -3975,7 +3997,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateQcumulants()
  if(qc6ErrorSquared > 0. && !(fDontGoBeyond < 6))
  {
   qc6Error = pow(qc6ErrorSquared,0.5);
- } else{Warning(sMethodName.Data(),"Statistical error of QC{6} is imaginary !!!!");}
+ } else{Warning(sMethodName.Data(),"Statistical error of QC{6} is imaginary !!!!"); fPropagateError = kFALSE;}
 
  // Statistical error of QC{8}:              
  qc8ErrorSquared = 256.*pow(36.*pow(two,3.)-18.*four*two+six,2.)*pow(twoError,2.)
@@ -3991,7 +4013,9 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateQcumulants()
  if(qc8ErrorSquared > 0. && !(fDontGoBeyond < 8))
  {
   qc8Error = pow(qc8ErrorSquared,0.5);
- } else{Warning(sMethodName.Data(),"Statistical error of QC{8} is imaginary !!!!");}
+ } else{Warning(sMethodName.Data(),"Statistical error of QC{8} is imaginary !!!!"); fPropagateError = kFALSE;}
+
+ if(!fPropagateError){fPropagateError = kTRUE; return;}
 
  // Store the statistical errors for Q-cumulants:
  if(TMath::Abs(qc2)>0.)
@@ -4177,11 +4201,21 @@ Double_t AliFlowAnalysisWithMultiparticleCorrelations::Covariance(const char *x,
   } // if(sBinLabel.EqualTo(x))
   if(sBinLabel.EqualTo("")){break;}
  } // for(Int_t b=1;b<=nbx;b++)
- if(TMath::Abs(dx)<1.e-44){Fatal(sMethodName.Data(),"TMath::Abs(dx)<1.e-44, %s",x);} 
- if(TMath::Abs(wx)<1.e-44){Fatal(sMethodName.Data(),"TMath::Abs(wx)<1.e-44, %s",x);}
+ if(TMath::Abs(dx)<1.e-44)
+ {
+  Warning(sMethodName.Data(),"TMath::Abs(dx)<1.e-44, %s",x);
+  fPropagateError = kFALSE;
+  return wCov;
+ } 
+ if(TMath::Abs(wx)<1.e-44)
+ {
+  Warning(sMethodName.Data(),"TMath::Abs(wx)<1.e-44, %s",x);
+  fPropagateError = kFALSE;
+  return wCov;
+ }
 
  // y:
- Double_t dy = 0.; // <<y>>
+ Double_t dy = 0.; // <<y>> 
  Double_t wy = 0.; // \sum w_y
  Int_t nby = fCorrelationsPro[csy][cy]->GetNbinsX();
  for(Int_t b=1;b<=nby;b++)
@@ -4196,8 +4230,18 @@ Double_t AliFlowAnalysisWithMultiparticleCorrelations::Covariance(const char *x,
   } // if(sBinLabel.EqualTo(y))
   if(sBinLabel.EqualTo("")){break;}
  } // for(Int_t b=1;b<=nby;b++)
- if(TMath::Abs(dy)<1.e-44){Fatal(sMethodName.Data(),"TMath::Abs(dy)<1.e-44, %s",y);}
- if(TMath::Abs(wy)<1.e-44){Fatal(sMethodName.Data(),"TMath::Abs(wy)<1.e-44, %s",y);} 
+ if(TMath::Abs(dy)<1.e-44)
+ {
+  Warning(sMethodName.Data(),"TMath::Abs(dy)<1.e-44, %s",y);
+  fPropagateError = kFALSE;
+  return wCov; 
+ }
+ if(TMath::Abs(wy)<1.e-44)
+ {
+  Warning(sMethodName.Data(),"TMath::Abs(wy)<1.e-44, %s",y);
+  fPropagateError = kFALSE;
+  return wCov; 
+ } 
 
  // Product: 
  Double_t dxy = 0.; // <<xy>>
@@ -4237,8 +4281,18 @@ Double_t AliFlowAnalysisWithMultiparticleCorrelations::Covariance(const char *x,
   dxy = profile2D->GetBinContent(profile2D->GetBin(gby,gbx));
   wxy = profile2D->GetBinEntries(profile2D->GetBin(gby,gbx));
  } else{Fatal(sMethodName.Data(),"gbx==gby, %s, %s",x,y);}
- if(TMath::Abs(dxy)<1.e-44){Fatal(sMethodName.Data(),"TMath::Abs(dxy)<1.e-44, %s, %s",x,y);} 
- if(TMath::Abs(wxy)<1.e-44){Fatal(sMethodName.Data(),"TMath::Abs(wxy)<1.e-44, %s, %s",x,y);} 
+ if(TMath::Abs(dxy)<1.e-44)
+ {
+  Warning(sMethodName.Data(),"TMath::Abs(dxy)<1.e-44, %s, %s",x,y);
+  fPropagateError = kFALSE;
+  return wCov; 
+ } 
+ if(TMath::Abs(wxy)<1.e-44)
+ {
+  Warning(sMethodName.Data(),"TMath::Abs(wxy)<1.e-44, %s, %s",x,y);
+  fPropagateError = kFALSE;
+  return wCov; 
+ } 
 
  // Finally:
  if(bUnbiasedEstimator)
@@ -4246,18 +4300,38 @@ Double_t AliFlowAnalysisWithMultiparticleCorrelations::Covariance(const char *x,
   Double_t num = dxy-dx*dy; // numerator of Eq. (C.12) on page 131 of my thesis
   Double_t den = 1.-wxy/(wx*wy); // denominator of Eq. (C.12) on page 131 of my thesis 
   Double_t pre = wxy/(wx*wy); // prefactor
-  if(TMath::Abs(den)<1.e-44){Fatal(sMethodName.Data(),"TMath::Abs(den)<1.e-44, %s, %s",x,y);}
+  if(TMath::Abs(den)<1.e-44)
+  {
+   Warning(sMethodName.Data(),"TMath::Abs(den)<1.e-44, %s, %s",x,y);
+   fPropagateError = kFALSE;
+   return wCov; 
+  }
   wCov = pre*num/den;  
-  if(TMath::Abs(wCov)<1.e-44){Fatal(sMethodName.Data(),"TMath::Abs(wCov)<1.e-44, %s, %s",x,y);}
+  if(TMath::Abs(wCov)<1.e-44)
+  {
+   Warning(sMethodName.Data(),"TMath::Abs(wCov)<1.e-44, %s, %s",x,y);
+   fPropagateError = kFALSE;
+   return wCov; 
+  }
  } else
    {
     // TBI check if this is a correct formula for the biased estimator
     Double_t num = dxy-dx*dy; // numerator of Eq. (C.12) on page 131 of my thesis
     Double_t den = 1.; 
     Double_t pre = wxy/(wx*wy); // prefactor
-    if(TMath::Abs(den)<1.e-44){Fatal(sMethodName.Data(),"TMath::Abs(den)<1.e-44, %s, %s",x,y);}
+    if(TMath::Abs(den)<1.e-44)
+    {
+     Warning(sMethodName.Data(),"TMath::Abs(den)<1.e-44, %s, %s",x,y);
+     fPropagateError = kFALSE;
+     return wCov; 
+    }
     wCov = pre*num/den;  
-    if(TMath::Abs(wCov)<1.e-44){Fatal(sMethodName.Data(),"TMath::Abs(wCov)<1.e-44, %s, %s",x,y);}
+    if(TMath::Abs(wCov)<1.e-44)
+    {
+     Warning(sMethodName.Data(),"TMath::Abs(wCov)<1.e-44, %s, %s",x,y);
+     fPropagateError = kFALSE;
+     return wCov; 
+    }
    } 
 
  return wCov;
