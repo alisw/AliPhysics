@@ -295,6 +295,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   Int_t fMinNoRPs;             // minimum number of RPs required for the analysis 
   Int_t fMaxNoRPs;             // maximum number of RPs allowed for the analysis 
   Int_t fExactNoRPs;           // exact (randomly shuffled) number of RPs selected for the analysis 
+  Bool_t fPropagateError;      // prevent error propagation if something strange happens during calculations 
 
   // 1.) Control histograms:  
   TList *fControlHistogramsList;        // list to hold all 'control histograms' objects
