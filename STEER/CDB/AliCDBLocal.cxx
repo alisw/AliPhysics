@@ -245,7 +245,8 @@ AliCDBId* AliCDBLocal::GetId(const AliCDBId& query) {
   // look for filename matching query (called by GetEntryId)
 
   // if querying for fRun and not specifying a version, look in the fValidFileIds list
-  if(query.GetFirstRun() == fRun && !query.HasVersion()) {
+  if(!AliCDBManager::Instance()->GetCvmfsOcdbTag().IsNull() && query.GetFirstRun() == fRun && !query.HasVersion()) {
+  //if(query.GetFirstRun() == fRun && !query.HasVersion()) {
     // get id from fValidFileIds
     TIter iter(&fValidFileIds);
 
@@ -253,10 +254,13 @@ AliCDBId* AliCDBLocal::GetId(const AliCDBId& query) {
     AliCDBId* result=0;
 
     while((anIdPtr = dynamic_cast<AliCDBId*> (iter.Next()))){
-      if(anIdPtr->GetPath() != query.GetPath()) continue;
-      result = anIdPtr;
+      if(anIdPtr->GetPath() == query.GetPath()){
+        result = anIdPtr;
+        break;
+      }
     }
-    return result;
+    if (result)
+      return dynamic_cast<AliCDBId*> (result->Clone());
   }
 
   // otherwise browse in the local filesystem CDB storage
@@ -977,8 +981,6 @@ void AliCDBLocal::QueryValidCVMFSFiles(TString& cvmfsOcdbTag) {
   ifstream *file = new ifstream(runValidFile.Data());
   if (!*file) {
     AliFatal(Form("Error opening file \"%s\"!", runValidFile.Data()));
-    file->close();
-    delete file;
   }
   TString filepath;
   while (filepath.ReadLine(*file)) {

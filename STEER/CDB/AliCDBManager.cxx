@@ -745,8 +745,6 @@ void AliCDBManager::SetDefaultStorageFromRun(Int_t run) {
     ifstream *file = new ifstream(inoutFile.Data());
     if (!*file) {
       AliFatal(Form("Error opening file \"%s\"!", inoutFile.Data()));
-      file->close();
-      delete file;
     }
     TString lhcPeriod;
     TObjArray* oStringsArray = 0;
@@ -848,7 +846,6 @@ void AliCDBManager::SetSpecificStorage(const char* calibType, const AliCDBParam*
     AliError("Please activate a default storage first!");
     return;
   }
-
 
   AliCDBPath aPath(calibType);
   if(!aPath.IsValid()){
@@ -1655,7 +1652,7 @@ void AliCDBManager::QueryCDB() {
       AliDebug(2,Form("Querying specific storage %s",aCalibType->GetName()));
       AliCDBStorage *aStorage = GetStorage(aPar);
       if(aStorage->GetType() == "alien" || aStorage->GetType() == "local"){
-        aStorage->QueryCDB(fRun,aCalibType->GetName());
+        aStorage->QueryCDB(fRun, aCalibType->GetName());
       } else {
         AliDebug(2,
             "Skipping query for valid files, it is used only in grid...");
