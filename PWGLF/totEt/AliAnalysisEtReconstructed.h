@@ -86,6 +86,7 @@ protected:
     TH3F *fHistMatchedTracksEvspTvsCent;   //For measuring hadron deposits
     TH3F *fHistMatchedTracksEvspTvsCentEffCorr;   //For measuring hadron deposits
     TH3F *fHistMatchedTracksEvspTvsCentEffTMCorr;   //For measuring hadron deposits
+    TH3F *fHistPeripheralMatchedTracksEvspTvsCentEffTMCorr;   //For measuring hadron deposits - uses peripheral bins and different centralities' efficiences
     TH3F *fHistMatchedTracksEvspTvsCentEffTMCorr500MeV;   //For measuring hadron deposits
     TH2F *fHistFoundHadronsvsCent;   //For measuring hadron deposits
     TH2F *fHistNotFoundHadronsvsCent;   //For measuring hadron deposits
