@@ -1766,52 +1766,37 @@ AliAnalysisTaskPID::TOFpidInfo AliAnalysisTaskPID::GetTOFType(const AliVTrack* t
     return kNoTOFinfo;
   
   Double_t nsigma[kNumTOFspecies + 1] = { -999., -999., -999., -999. };
-  const Int_t kTOFelectron = kTOFproton + 1;
   nsigma[kTOFpion]   = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion);
   nsigma[kTOFkaon]   = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon);
   nsigma[kTOFproton] = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton);
-  nsigma[kTOFelectron] = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kElectron);
   
   Double_t inclusion = -999;
   Double_t exclusion = -999;
   
   if (tofMode == 0) {
-    inclusion = 1.;
-    exclusion = 2.;
-  }
-  else if (tofMode == 1) { // default
-    inclusion = 1.;
+    inclusion = 3.;
     exclusion = 2.5;
   }
+  else if (tofMode == 1) { // default
+    inclusion = 3.;
+    exclusion = 3.;
+  }
   else if (tofMode == 2) {
-    inclusion = 1.5;
-    exclusion = 2.;
+    inclusion = 3.;
+    exclusion = 3.5;
   }
   else {
     Printf("ERROR: Bad TOF mode: %d!", tofMode);
     return kNoTOFinfo;
   }
   
-  // Smaller exclusion cut for electron band in order not to sacrifise too much TOF pions,
-  // but still have a reasonably small electron contamination
-  Double_t exclusionForEl = 1.5;
-  
-  // Exclusion cut on electrons for pions because the precision of pions is good and
-  // the contamination of electron can not be ignored (although effect on pions is small
-  // due to overall small electron fraction, the contamination would completely bias the
-  // electron fraction).
-  // The electron exclsuion cut is also applied to kaons and protons for consistency, but
-  // there should be no effect. This is because there is already the exclusion cut on pions 
-  // and pions and electrons completely overlap in the region, where electrons and pions
-  // fall inside the inclusion cut of kaons/protons.
-  if (TMath::Abs(nsigma[kTOFpion]) < inclusion && TMath::Abs(nsigma[kTOFkaon]) > exclusion && TMath::Abs(nsigma[kTOFproton]) > exclusion
-      && TMath::Abs(nsigma[kTOFelectron]) > exclusionForEl)
+  // Do not cut on nSigma electron because this would also remove pions in a large pT range.
+  // The electron contamination of the pion sample can be treated by TPC dEdx fits afterwards.
+  if (TMath::Abs(nsigma[kTOFpion]) < inclusion && TMath::Abs(nsigma[kTOFkaon]) > exclusion && TMath::Abs(nsigma[kTOFproton]) > exclusion)
     return kTOFpion;
-  if (TMath::Abs(nsigma[kTOFpion]) > exclusion && TMath::Abs(nsigma[kTOFkaon]) < inclusion && TMath::Abs(nsigma[kTOFproton]) > exclusion
-      && TMath::Abs(nsigma[kTOFelectron]) > exclusionForEl)
+  if (TMath::Abs(nsigma[kTOFpion]) > exclusion && TMath::Abs(nsigma[kTOFkaon]) < inclusion && TMath::Abs(nsigma[kTOFproton]) > exclusion)
     return kTOFkaon;
-  if (TMath::Abs(nsigma[kTOFpion]) > exclusion && TMath::Abs(nsigma[kTOFkaon]) > exclusion && TMath::Abs(nsigma[kTOFproton]) < inclusion
-      && TMath::Abs(nsigma[kTOFelectron]) > exclusionForEl)
+  if (TMath::Abs(nsigma[kTOFpion]) > exclusion && TMath::Abs(nsigma[kTOFkaon]) > exclusion && TMath::Abs(nsigma[kTOFproton]) < inclusion)
     return kTOFproton;
   
   // There are no TOF electrons selected because the purity is rather bad, even for small momenta
