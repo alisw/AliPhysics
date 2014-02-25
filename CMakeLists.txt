@@ -386,7 +386,7 @@ COMMAND ar t ${RAWDatabaseALIB} | xargs rm
 COMMAND ar t ${MDCALIB} | xargs rm 
 COMMAND ar t ${ESDALIB} | xargs rm 
 COMMAND ar t ${STEERBaseALIB} | xargs rm 
-COMMAND ${CMAKE_CXX_COMPILER} ${LDFLAGS} -o ${BINPATH}/alimdca ${LIBPATH}/alimdccxxo.a ${LIBPATH}/libAliMDC.a ${ROOTALIBDIR}/libRoot.a ${ROOTALIBDIR}/libfreetype.a ${ROOTALIBDIR}/libpcre.a ${ROOTALIBDIR}/liblzma.a -pthread -ldl -lz
+COMMAND ${CMAKE_CXX_COMPILER} ${LDFLAGS} -o ${BINPATH}/alimdca ${LIBPATH}/alimdccxxo.a ${LIBPATH}/libAliMDC.a ${ROOTALIBDIR}/libRoot.a ${ROOTALIBDIR}/libfreetype.a ${ROOTALIBDIR}/libpcre.a ${ROOTALIBDIR}/liblzma.a -pthread -lssl -ldl -lz
 COMMAND @echo "Target alimdc-static made"
 )
 

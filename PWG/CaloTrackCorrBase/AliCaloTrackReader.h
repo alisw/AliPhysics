@@ -145,8 +145,13 @@ public:
   void             SetTrackTimeCut(Double_t a, Double_t b) { fTrackTimeCutMin = a ;
                                                              fTrackTimeCutMax = b          ; } // ns
   
-  void             SwitchOnUseTrackTimeCut()               { fUseTrackTimeCut = kTRUE      ; }
+  void             SwitchOnUseTrackTimeCut()               { fUseTrackTimeCut = kTRUE      ;  fAccessTrackTOF  = kTRUE ; }
   void             SwitchOffUseTrackTimeCut()              { fUseTrackTimeCut = kFALSE     ; }
+
+  void             SwitchOnAccessTrackTimeCut()            { fAccessTrackTOF  = kTRUE      ; }
+  void             SwitchOffAccessTrackTimeCut()           { fAccessTrackTOF  = kFALSE     ; }
+  Bool_t           IsAccessToTrackTimeOn()           const { return fAccessTrackTOF        ; }
+
   
   Double_t         GetEMCALTimeCutMin()              const { return fEMCALTimeCutMin       ; }
   Double_t         GetEMCALTimeCutMax()              const { return fEMCALTimeCutMax       ; }	
@@ -406,7 +411,7 @@ public:
 
   Int_t            GetVertexBC(const AliVVertex * vtx);
   Int_t            GetVertexBC()                  const    { return fVertexBC              ; }
-  void             SwitchOnRecalculateVertexBC()           { fRecalculateVertexBC = kTRUE  ; }
+  void             SwitchOnRecalculateVertexBC()           { fRecalculateVertexBC = kTRUE  ; fAccessTrackTOF  = kTRUE ; }
   void             SwitchOffRecalculateVertexBC()          { fRecalculateVertexBC = kFALSE ; }
   
   // Track selection
@@ -636,6 +641,7 @@ public:
   Bool_t           fUseEMCALTimeCut;           // Do time cut selection
   Bool_t           fUseParamTimeCut;           // Use simple or parametrized time cut
   Bool_t           fUseTrackTimeCut;           // Do time cut selection
+  Bool_t           fAccessTrackTOF;            // Access the track TOF, in case of problems when accessing GetTOFBunchCrossing
   Double_t         fEMCALTimeCutMin;           // Remove clusters/cells with time smaller than this value, in ns
   Double_t         fEMCALTimeCutMax;           // Remove clusters/cells with time larger than this value, in ns
   Float_t          fEMCALParamTimeCutMin[4];   // Remove clusters/cells with time smaller than parametrized value, in ns

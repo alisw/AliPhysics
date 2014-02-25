@@ -54,6 +54,10 @@ AliAnalysisTaskEmcalJetMassBkg::AliAnalysisTaskEmcalJetMassBkg() :
   fh2PtVsMassRCExLJDPhi(0),
   fh2PtVsMassPerpConeLJ(0),
   fh2PtVsMassPerpConeTJ(0),
+  fh2PtVsERC(0),
+  fh2PtVsERCExLJDPhi(0),
+  fh2PtVsEPerpConeLJ(0),
+  fh2PtVsEPerpConeTJ(0),
   fpPtVsMassRC(0),
   fpPtVsMassRCExLJ(0),
   fpPtVsMassPerpConeLJ(0),
@@ -90,6 +94,11 @@ AliAnalysisTaskEmcalJetMassBkg::AliAnalysisTaskEmcalJetMassBkg() :
   fh2PtVsMassPerpConeLJ    = new TH2F*[fNcentBins];
   fh2PtVsMassPerpConeTJ    = new TH2F*[fNcentBins];
 
+  fh2PtVsERC               = new TH2F*[fNcentBins];
+  fh2PtVsERCExLJDPhi       = new TH3F*[fNcentBins];
+  fh2PtVsEPerpConeLJ       = new TH2F*[fNcentBins];
+  fh2PtVsEPerpConeTJ       = new TH2F*[fNcentBins];
+
   fpPtVsMassRC             = new TProfile*[fNcentBins];
   fpPtVsMassRCExLJ         = new TProfile*[fNcentBins];
   fpPtVsMassPerpConeLJ     = new TProfile*[fNcentBins];
@@ -105,6 +114,11 @@ AliAnalysisTaskEmcalJetMassBkg::AliAnalysisTaskEmcalJetMassBkg() :
     fh2PtVsMassRCExLJDPhi[i]     = 0;
     fh2PtVsMassPerpConeLJ[i]     = 0;
     fh2PtVsMassPerpConeTJ[i]     = 0;
+
+    fh2PtVsERC[i]                = 0;
+    fh2PtVsERCExLJDPhi[i]        = 0;
+    fh2PtVsEPerpConeLJ[i]        = 0;
+    fh2PtVsEPerpConeTJ[i]        = 0;
 
     fpPtVsMassRC[i]              = 0;
     fpPtVsMassRCExLJ[i]          = 0;
@@ -139,6 +153,10 @@ AliAnalysisTaskEmcalJetMassBkg::AliAnalysisTaskEmcalJetMassBkg(const char *name)
   fh2PtVsMassRCExLJDPhi(0),
   fh2PtVsMassPerpConeLJ(0),
   fh2PtVsMassPerpConeTJ(0),
+  fh2PtVsERC(0),
+  fh2PtVsERCExLJDPhi(0),
+  fh2PtVsEPerpConeLJ(0),
+  fh2PtVsEPerpConeTJ(0),
   fpPtVsMassRC(0),
   fpPtVsMassRCExLJ(0),
   fpPtVsMassPerpConeLJ(0),
@@ -175,6 +193,11 @@ AliAnalysisTaskEmcalJetMassBkg::AliAnalysisTaskEmcalJetMassBkg(const char *name)
   fh2PtVsMassPerpConeLJ    = new TH2F*[fNcentBins];
   fh2PtVsMassPerpConeTJ    = new TH2F*[fNcentBins];
 
+  fh2PtVsERC               = new TH2F*[fNcentBins];
+  fh2PtVsERCExLJDPhi       = new TH3F*[fNcentBins];
+  fh2PtVsEPerpConeLJ       = new TH2F*[fNcentBins];
+  fh2PtVsEPerpConeTJ       = new TH2F*[fNcentBins];
+
   fpPtVsMassRC             = new TProfile*[fNcentBins];
   fpPtVsMassRCExLJ         = new TProfile*[fNcentBins];
   fpPtVsMassPerpConeLJ     = new TProfile*[fNcentBins];
@@ -190,6 +213,11 @@ AliAnalysisTaskEmcalJetMassBkg::AliAnalysisTaskEmcalJetMassBkg(const char *name)
     fh2PtVsMassRCExLJDPhi[i]     = 0;
     fh2PtVsMassPerpConeLJ[i]     = 0;
     fh2PtVsMassPerpConeTJ[i]     = 0;
+
+    fh2PtVsERC[i]                = 0;
+    fh2PtVsERCExLJDPhi[i]        = 0;
+    fh2PtVsEPerpConeLJ[i]        = 0;
+    fh2PtVsEPerpConeTJ[i]        = 0;
 
     fpPtVsMassRC[i]              = 0;
     fpPtVsMassRCExLJ[i]          = 0;
@@ -228,6 +256,10 @@ void AliAnalysisTaskEmcalJetMassBkg::UserCreateOutputObjects()
   const Int_t nBinsPt  = 250;
   const Double_t minPt = -50.;
   const Double_t maxPt = 200.;
+
+  const Int_t nBinsE  = 250;
+  const Double_t minE = -50.;
+  const Double_t maxE = 200.;
 
   const Int_t nBinsM  = 150;
   const Double_t minM = -50.;
@@ -327,7 +359,27 @@ void AliAnalysisTaskEmcalJetMassBkg::UserCreateOutputObjects()
     histTitle = TString::Format("%s;#it{p}_{T,PerpConeTJ};#it{M}_{PerpConeTJ}",histName.Data());
     fh2PtVsMassPerpConeTJ[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsM,minM,maxM);
     fOutput->Add(fh2PtVsMassPerpConeTJ[i]);
+    //
+    histName = TString::Format("fh2PtVsERC_%d",i);
+    histTitle = TString::Format("%s;#it{p}_{T,RC};#it{M}_{RC}",histName.Data());
+    fh2PtVsERC[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsE,minE,maxE);
+    fOutput->Add(fh2PtVsERC[i]);
 
+    histName = TString::Format("fh2PtVsERCExLJDPhi_%d",i);
+    histTitle = TString::Format("%s;#it{p}_{T,RC};#it{M}_{RC}",histName.Data());
+    fh2PtVsERCExLJDPhi[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsPt,minPt,maxPt,72,-0.5*TMath::Pi(),1.5*TMath::Pi());
+    fOutput->Add(fh2PtVsERCExLJDPhi[i]);
+
+    histName = TString::Format("fh2PtVsEPerpConeLJ_%d",i);
+    histTitle = TString::Format("%s;#it{p}_{T,PerpConeLJ};#it{M}_{PerpConeLJ}",histName.Data());
+    fh2PtVsEPerpConeLJ[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsE,minE,maxE);
+    fOutput->Add(fh2PtVsEPerpConeLJ[i]);
+
+    histName = TString::Format("fh2PtVsEPerpConeTJ_%d",i);
+    histTitle = TString::Format("%s;#it{p}_{T,PerpConeTJ};#it{M}_{PerpConeTJ}",histName.Data());
+    fh2PtVsEPerpConeTJ[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsE,minE,maxE);
+    fOutput->Add(fh2PtVsEPerpConeTJ[i]);
+    //
     histName = TString::Format("fh2EtaVsMassRC_%d",i);
     histTitle = TString::Format("%s;#eta_{RC};#it{M}_{RC}",histName.Data());
     fh2EtaVsMassRC[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsEta,minEta,maxEta,nBinsM,minM,maxM);
@@ -414,6 +466,7 @@ Bool_t AliAnalysisTaskEmcalJetMassBkg::FillHistograms()
   Float_t RCeta = 0;
   Float_t RCphi = 0;
   Float_t RCmass = 0.;  
+  Float_t RCE = 0.;  
 
   static Double_t massvecRC[999];
   static Double_t massPerAreavecRC[999];
@@ -432,8 +485,10 @@ Bool_t AliAnalysisTaskEmcalJetMassBkg::FillHistograms()
     RCphi = 0;
     GetRandomCone(lvRC,RCpt, RCeta, RCphi, fTracksCont, fCaloClustersCont, 0);
     RCmass = lvRC.M();
+    RCE = lvRC.E();
     if (RCpt > 0) {
       fh2PtVsMassRC[fCentBin]->Fill(RCpt - rho*rcArea,RCmass);
+      fh2PtVsERC[fCentBin]->Fill(RCpt - rho*rcArea,RCE);
       fpPtVsMassRC[fCentBin]->Fill(RCpt - rho*rcArea,RCmass);
       fh2EtaVsMassRC[fCentBin]->Fill(RCeta,RCmass);
       fh2CentVsMassRC->Fill(fCent,RCmass);
@@ -452,11 +507,13 @@ Bool_t AliAnalysisTaskEmcalJetMassBkg::FillHistograms()
       RCphi = 0;
       GetRandomCone(lvRC,RCpt, RCeta, RCphi, fTracksCont, fCaloClustersCont, jet);
       RCmass = lvRC.M();
+      RCE = lvRC.E();
       if (RCpt > 0 && jet) {
 	Float_t dphi = RCphi - jet->Phi();
 	if (dphi > 1.5*TMath::Pi()) dphi -= TMath::Pi() * 2;
 	if (dphi < -0.5*TMath::Pi()) dphi += TMath::Pi() * 2;
 	fh2PtVsMassRCExLJDPhi[fCentBin]->Fill(RCpt - rho*rcArea,RCmass,dphi);
+	fh2PtVsERCExLJDPhi[fCentBin]->Fill(RCpt - rho*rcArea,RCE,dphi);
 	fpPtVsMassRCExLJ[fCentBin]->Fill(RCpt - rho*rcArea,RCmass);
 	fh2EtaVsMassRCExLJ[fCentBin]->Fill(RCeta,RCmass);
 	fh2CentVsMassRCExLJ->Fill(fCent,RCmass);
@@ -506,12 +563,15 @@ Bool_t AliAnalysisTaskEmcalJetMassBkg::FillHistograms()
     Float_t PCpt = 0;
     Float_t PCeta = 0;
     Float_t PCphi = 0;
-    Float_t PCmass = 0.;  
+    Float_t PCmass = 0.;
+    Float_t PCE = 0.;
     if(jet) {
       GetPerpCone(lvPC,PCpt, PCeta, PCphi, fTracksCont, fCaloClustersCont, jet);
       PCmass = lvPC.M();
+      PCE = lvPC.E();
       if(PCpt>0.) {
 	fh2PtVsMassPerpConeLJ[fCentBin]->Fill(PCpt-rho*rcArea,PCmass);
+	fh2PtVsEPerpConeLJ[fCentBin]->Fill(PCpt-rho*rcArea,PCE);
 	fpPtVsMassPerpConeLJ[fCentBin]->Fill(PCpt-rho*rcArea,PCmass);
 	fh2EtaVsMassPerpConeLJ[fCentBin]->Fill(PCeta,PCmass);
 	fh2CentVsMassPerpConeLJ->Fill(fCent,PCmass);
@@ -532,8 +592,10 @@ Bool_t AliAnalysisTaskEmcalJetMassBkg::FillHistograms()
       PCphi = 0;
       GetPerpCone(lvPC,PCpt, PCeta, PCphi, fTracksCont, fCaloClustersCont, jet);
       PCmass = lvPC.M();
+      PCE = lvPC.E();
       if(PCpt>0.) {
 	fh2PtVsMassPerpConeTJ[fCentBin]->Fill(PCpt-rho*rcArea,PCmass);
+	fh2PtVsEPerpConeTJ[fCentBin]->Fill(PCpt-rho*rcArea,PCE);
 	fpPtVsMassPerpConeTJ[fCentBin]->Fill(PCpt-rho*rcArea,PCmass);
 	fh2EtaVsMassPerpConeTJ[fCentBin]->Fill(PCeta,PCmass);
 	fh2CentVsMassPerpConeTJ->Fill(fCent,PCmass);

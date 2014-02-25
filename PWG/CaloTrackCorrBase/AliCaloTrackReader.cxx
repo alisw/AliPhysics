@@ -74,7 +74,8 @@ fComparePtHardAndJetPt(0),   fPtHardAndJetPtFactor(0),
 fComparePtHardAndClusterPt(0),fPtHardAndClusterPtFactor(0),
 fCTSPtMin(0),                fEMCALPtMin(0),                  fPHOSPtMin(0),
 fCTSPtMax(0),                fEMCALPtMax(0),                  fPHOSPtMax(0),
-fUseEMCALTimeCut(1),         fUseParamTimeCut(0),             fUseTrackTimeCut(0),
+fUseEMCALTimeCut(1),         fUseParamTimeCut(0),
+fUseTrackTimeCut(0),         fAccessTrackTOF(0),
 fEMCALTimeCutMin(-10000),    fEMCALTimeCutMax(10000),
 fEMCALParamTimeCutMin(),     fEMCALParamTimeCutMax(),
 fTrackTimeCutMin(-10000),    fTrackTimeCutMax(10000),
@@ -328,6 +329,31 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   
   if(fDebug > 0) printf("AliCaloTrackReader::CheckEventTriggers() - Pass Trigger name rejection \n");
 
+  //-----------------------------------------------------------------
+  // In case of mixing analysis, select here the trigger of the event
+  //-----------------------------------------------------------------
+  UInt_t isTrigger = kFALSE;
+  UInt_t isMB      = kFALSE;
+  if(!fEventTriggerAtSE)
+  {
+    // In case of mixing analysis, accept MB events, not only Trigger
+    // Track and cluster arrays filled for MB in order to create the pool in the corresponding analysis
+    // via de method in the base class FillMixedEventPool()
+    
+    AliAnalysisManager *manager = AliAnalysisManager::GetAnalysisManager();
+    AliInputEventHandler *inputHandler = dynamic_cast<AliInputEventHandler*>(manager->GetInputEventHandler());
+    
+    if(!inputHandler) return kFALSE ;  // to content coverity
+    
+    isTrigger = inputHandler->IsEventSelected() & fEventTriggerMask;
+    isMB      = inputHandler->IsEventSelected() & fMixEventTriggerMask;
+    
+    if(!isTrigger && !isMB) return kFALSE;
+    
+    //printf("Selected triggered event : %s\n",GetFiredTriggerClasses().Data());
+    if(fDebug > 0) printf("AliCaloTrackReader::CheckEventTriggers() - Pass uninteresting triggered events rejection in case of mixing analysis \n");
+  }
+
   //-------------------------------------------------------------------------------------
   // Reject or accept events depending on the trigger bit
   //-------------------------------------------------------------------------------------
@@ -349,9 +375,11 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   // Set a bit with the event kind, MB, L0, L1 ...
   SetEventTriggerBit();
   
+  // In case of Mixing, avoid checking the triggers in the min bias events
+  if(!fEventTriggerAtSE && (isMB && !isTrigger)) return kTRUE;
+  
   if( IsEventEMCALL1() || IsEventEMCALL0()  )
   {
-
     if(fRejectEMCalTriggerEventsWith2Tresholds)
     {
       // Reject triggered events when there is coincidence on both EMCal trigger thresholds,
@@ -1108,10 +1136,16 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     return kFALSE;
   }
   
-  // Select the event depending on the trigger type and other event characteristics
+  //-----------------------------------------------
+  // Select the event depending on the trigger type
+  // and other event characteristics
   // like the goodness of the EMCal trigger
+  //-----------------------------------------------
+  
   Bool_t accept = CheckEventTriggers();
   if(!accept) return kFALSE;
+  
+  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Pass Event trigger selection \n");
   
   //---------------------------------------------------------------------------
   // In case of analysis of events with jets, skip those with jet pt > 5 pt hard
@@ -1121,14 +1155,14 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   if(fComparePtHardAndJetPt)
   {
     if(!ComparePtHardAndJetPt()) return kFALSE ;
+    if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Pass Pt Hard - Jet rejection \n");
   }
   
   if(fComparePtHardAndClusterPt)
   {
     if(!ComparePtHardAndClusterPt()) return kFALSE ;
+    if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Pass Pt Hard - Cluster rejection \n");
   }
-  
-  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass Pt Hard rejection \n");
   
   //------------------------------------------------------
   // Event rejection depending on time stamp
@@ -1146,16 +1180,13 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
       
       if(timeStampFrac < fTimeStampEventFracMin || timeStampFrac > fTimeStampEventFracMax) return kFALSE;
     }
-    //printf("\t accept time stamp\n");
+    if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Pass Time Stamp rejection \n");
   }
-  
-  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass Time Stamp rejection \n");
   
   //------------------------------------------------------
   // Event rejection depending on vertex, pileup, v0and
   //------------------------------------------------------
   
-  //Fill Vertex array
   FillVertexArray();
   
   //Reject events with Z vertex too large, only for SE analysis, if not, cut on the analysis code
@@ -1169,7 +1200,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
         TMath::Abs(fVertex[0][2] ) < 1.e-6    ) return kFALSE;
   }
   
-  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent()-Pass primary vertex rejection \n");
+  if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Pass primary vertex rejection \n");
   
   //printf("Reader : IsPileUp %d, Multi %d\n",IsPileUpFromSPD(),fInputEvent->IsPileupFromSPDInMultBins());
   
@@ -1213,30 +1244,6 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     
     if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Pass centrality rejection \n");
   }
-
-  //-----------------------------------------------------------------
-  // In case of mixing analysis, select here the trigger of the event
-  //-----------------------------------------------------------------
-
-  if(!fEventTriggerAtSE)
-  {
-    // In case of mixing analysis, accept MB events, not only Trigger
-    // Track and cluster arrays filled for MB in order to create the pool in the corresponding analysis
-    // via de method in the base class FillMixedEventPool()
-    
-    AliAnalysisManager *manager = AliAnalysisManager::GetAnalysisManager();
-    AliInputEventHandler *inputHandler = dynamic_cast<AliInputEventHandler*>(manager->GetInputEventHandler());
-    
-    if(!inputHandler) return kFALSE ;  // to content coverity
-    
-    UInt_t isTrigger = inputHandler->IsEventSelected() & fEventTriggerMask;
-    UInt_t isMB      = inputHandler->IsEventSelected() & fMixEventTriggerMask;
-    
-    if(!isTrigger && !isMB) return kFALSE;
-    
-    //printf("Selected triggered event : %s\n",GetFiredTriggerClasses().Data());
-    if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Pass uninteresting triggered events rejection in case of mixing analysis \n");
-  }
   
   //---------------------------------------------------------------------------
   // In case of MC analysis, set the range of interest in the MC particles list
@@ -1246,14 +1253,15 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   
   //printf("N min %d, N max %d\n",fNMCProducedMin,fNMCProducedMax);
   
+  //-------------------------------------------------------
+  // Get the main vertex BC, in case not available
+  // it is calculated in FillCTS checking the BC of tracks
+  //------------------------------------------------------
+  fVertexBC = fInputEvent->GetPrimaryVertex()->GetBC();
+  
   //-----------------------------------------------
   // Fill the arrays with cluster/tracks/cells data
   //-----------------------------------------------
-  
-  // Get the main vertex BC, in case not available
-  // it is calculated in FillCTS checking the BC of tracks
-  // with DCA small (if cut applied, if open)
-  fVertexBC = fInputEvent->GetPrimaryVertex()->GetBC();
   
   if(fFillCTS)
   {
@@ -1266,7 +1274,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   
   if(fDoVertexBCEventSelection)
   {
-    if(fVertexBC!=0 && fVertexBC!=AliVTrack::kTOFBCNA) return kFALSE ;
+    if(fVertexBC != 0 && fVertexBC != AliVTrack::kTOFBCNA) return kFALSE ;
     
     if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Pass rejection of events with vertex at BC!=0 \n");
   }
@@ -1466,7 +1474,7 @@ void AliCaloTrackReader::FillInputCTS()
   }
   
   Bool_t   bc0  = kFALSE;
-  if(fRecalculateVertexBC) fVertexBC=AliVTrack::kTOFBCNA;
+  if(fRecalculateVertexBC) fVertexBC = AliVTrack::kTOFBCNA;
   
   for (Int_t itrack =  0; itrack <  nTracks; itrack++)
   {////////////// track loop
@@ -1589,19 +1597,40 @@ void AliCaloTrackReader::FillInputCTS()
       
     } // AOD
     
-    TLorentzVector momentum(pTrack[0],pTrack[1],pTrack[2],0);
-    
+    // TOF cuts
     Bool_t okTOF  = ( (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ) ;
     Double_t tof  = -1000;
     Int_t trackBC = -1000 ;
     
-    if(okTOF)
+    if(fAccessTrackTOF)
     {
-      trackBC = track->GetTOFBunchCrossing(bz);
-      SetTrackEventBC(trackBC+9);
-      
-      tof = track->GetTOFsignal()*1e-3;
+      if(okTOF)
+      {
+        trackBC = track->GetTOFBunchCrossing(bz);
+        SetTrackEventBC(trackBC+9);
+        
+        tof = track->GetTOFsignal()*1e-3;
+        
+        //After selecting tracks with small DCA, pointing to vertex, set vertex BC depeding on tracks BC
+        if(fRecalculateVertexBC)
+        {
+          if     (trackBC != 0 && trackBC != AliVTrack::kTOFBCNA) fVertexBC = trackBC;
+          else if(trackBC == 0)                                   bc0       = kTRUE;
+        }
+        
+        //In any case, the time should to be larger than the fixed window ...
+        if( fUseTrackTimeCut && (trackBC !=0 || tof < fTrackTimeCutMin  || tof > fTrackTimeCutMax) )
+        {
+          //printf("Remove track time %f and bc = %d\n",tof,trackBC);
+          continue ;
+        }
+        //else printf("Accept track time %f and bc = %d\n",tof,trackBC);
+      }
     }
+    
+    TLorentzVector momentum(pTrack[0],pTrack[1],pTrack[2],0);
+    
+    // DCA cuts
     
     if(fUseTrackDCACut)
     {
@@ -1614,39 +1643,19 @@ void AliCaloTrackReader::FillInputCTS()
         if( okDCA) okDCA = AcceptDCA(momentum.Pt(),dca[0]);
         if(!okDCA)
         {
-          //printf("AliCaloTrackReader::FillInputCTS() - Reject track pt %2.2f, dca_xy %2.4f, BC %d\n",momentum.Pt(),dca[0],trackBC);
+          //printf("AliCaloTrackReader::FillInputCTS() - Reject track pt %2.2f, dca_xy %2.4f\n",momentum.Pt(),dca[0]);
           continue ;
         }
       }
     }// DCA cuts
     
-    if(okTOF)
-    {
-      //SetTrackEventBCcut(bc);
-      SetTrackEventBCcut(trackBC+9);
-      
-      //After selecting tracks with small DCA, pointing to vertex, set vertex BC depeding on tracks BC
-      if(fRecalculateVertexBC)
-      {
-        if     (trackBC !=0 && trackBC != AliVTrack::kTOFBCNA) fVertexBC = trackBC;
-        else if(trackBC == 0)                                  bc0 = kTRUE;
-      }
-      
-      //In any case, the time should to be larger than the fixed window ...
-      if( fUseTrackTimeCut && (trackBC!=0 || tof < fTrackTimeCutMin  || tof > fTrackTimeCutMax) )
-      {
-        //printf("Remove track time %f and bc = %d\n",tof,trackBC);
-        continue ;
-      }
-      //else printf("Accept track time %f and bc = %d\n",tof,trackBC);
-      
-    }
-
     //Count the tracks in eta < 0.9
-    //printf("Eta %f cut  %f\n",TMath::Abs(track->Eta()),fTrackMultEtaCut);
     if(TMath::Abs(track->Eta())< fTrackMultEtaCut) fTrackMult++;
     
     if(fCTSPtMin > momentum.Pt() || fCTSPtMax < momentum.Pt()) continue ;
+    
+    // Check effect of cuts on track BC
+    if(fAccessTrackTOF && okTOF) SetTrackEventBCcut(trackBC+9);
     
     if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"CTS")) continue;
     
@@ -1662,12 +1671,11 @@ void AliCaloTrackReader::FillInputCTS()
     
   }// track loop
 	
-  if(fVertexBC ==0 || fVertexBC == AliVTrack::kTOFBCNA)
+  if( fRecalculateVertexBC && (fVertexBC == 0 || fVertexBC == AliVTrack::kTOFBCNA))
   {
     if( bc0 ) fVertexBC = 0 ;
     else      fVertexBC = AliVTrack::kTOFBCNA ;
   }
-  
   
   if(fDebug > 1)
     printf("AliCaloTrackReader::FillInputCTS()   - aod entries %d, input tracks %d, pass status %d, multipliticy %d\n", fCTSTracks->GetEntriesFast(), nTracks, nstatus, fTrackMult);//fCTSTracksNormalInputEntries);

@@ -43,16 +43,14 @@ class AliJetContainer : public AliEmcalContainer {
   void                        SetRunNumber(Int_t r)                                { fRunNumber = r;                      }
   void                        SetJetEtaLimits(Float_t min, Float_t max)            { fJetMinEta = min, fJetMaxEta = max ; }
   void                        SetJetPhiLimits(Float_t min, Float_t max)            { fJetMinPhi = min, fJetMaxPhi = max ; }
+  void                        SetJetPtCut(Float_t cut)                             { fJetPtCut       = cut              ; }
+  void                        SetJetRadius(Float_t r)                              { fJetRadius      = r                ; } 
   void                        SetJetAreaCut(Float_t cut)                           { fJetAreaCut     = cut              ; }
   void                        SetPercAreaCut(Float_t p)                            { if(fJetRadius==0.) AliWarning("JetRadius not set. Area cut will be 0"); 
                                                                                      fJetAreaCut = p*TMath::Pi()*fJetRadius*fJetRadius; }
+  void                        SetAreaEmcCut(Double_t a = 0.99)                     { fAreaEmcCut     = a                ; }
   void                        SetZLeadingCut(Float_t zemc, Float_t zch)            { fZLeadingEmcCut = zemc; fZLeadingChCut = zch ; }
   void                        SetNEFCut(Float_t min = 0., Float_t max = 1.)        { fNEFMinCut = min; fNEFMaxCut = max;  }
-  void                        SetAreaEmcCut(Double_t a = 0.99)                     { fAreaEmcCut     = a                ; }
-  void                        SetJetPtCut(Float_t cut)                             { fJetPtCut       = cut              ; }
-  void                        SetJetRadius(Float_t r)                              { fJetRadius      = r                ; } 
-  virtual void                SetRhoName(const char *n)                            { fRhoName        = n                ; }
-  virtual void                SetLocalRhoName(const char *n)                       { fLocalRhoName   = n                ; }
   void                        SetFlavourCut(Int_t myflavour)                       { fFlavourSelection = myflavour;}
   void                        SetMaxClusterPt(Float_t b)                           { fMaxClusterPt   = b                ; }
   void                        SetMaxTrackPt(Float_t b)                             { fMaxTrackPt     = b                ; }
@@ -62,6 +60,10 @@ class AliJetContainer : public AliEmcalContainer {
   void                        SetLeadingHadronType(Int_t t)                        { fLeadingHadronType = t             ; }
   void                        SetJetBitMap(UInt_t m)                               { fJetBitMap      = m                ; }
   void                        SetJetTrigger(UInt_t t=AliVEvent::kEMCEJE)           { fJetTrigger     = t                ; }
+  void                        SetTagStatus(Int_t i)                                { fTagStatus      = i                ; }
+
+  virtual void                SetRhoName(const char *n)                            { fRhoName        = n                ; }
+  virtual void                SetLocalRhoName(const char *n)                       { fLocalRhoName   = n                ; }
   void                        ConnectParticleContainer(AliParticleContainer *c)    { fParticleContainer = c             ; }
   void                        ConnectClusterContainer(AliClusterContainer *c)      { fClusterContainer  = c             ; }
 
@@ -125,6 +127,7 @@ class AliJetContainer : public AliEmcalContainer {
   Int_t                       fNLeadingJets;         //  how many jets are to be considered the leading jet(s)
   UInt_t                      fJetBitMap;            //  bit map of accepted jets
   UInt_t                      fJetTrigger;           //  jet trigger
+  Int_t                       fTagStatus;            //  jet tag status
   AliParticleContainer       *fParticleContainer;    //  particle container (jet constituents)
   AliClusterContainer        *fClusterContainer;     //  cluster container (jet constituents)
   AliRhoParameter            *fRho;                  //! event rho for these jets
@@ -136,7 +139,7 @@ class AliJetContainer : public AliEmcalContainer {
   AliJetContainer(const AliJetContainer& obj); // copy constructor
   AliJetContainer& operator=(const AliJetContainer& other); // assignment
 
-  ClassDef(AliJetContainer,7);
+  ClassDef(AliJetContainer,8);
 
 };
 

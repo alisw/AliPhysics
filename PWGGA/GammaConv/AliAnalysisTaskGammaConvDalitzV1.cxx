@@ -517,8 +517,6 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
    hESDDalitzPositronAfterTPCdEdxVsPhi = new TH2F*[fnCuts];
    hESDMotherPhi                   = new TH1F*[fnCuts];
    hESDEposEnegPsiPairDPhi         = new TH2F*[fnCuts];
-   hESDEposEnegInvMassPt           = new TH2F*[fnCuts];
-   hESDEposEnegLikeSignBackInvMassPt = new TH2F*[fnCuts];
    hESDConvGammaZR                 = new TH2F*[fnCuts];
    
    }
@@ -528,6 +526,8 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
    hESDMotherInvMassPt             = new TH2F*[fnCuts];
    
    if(fDoChicAnalysis) {
+   hESDEposEnegInvMassPt             = new TH2F*[fnCuts];
+   hESDEposEnegLikeSignBackInvMassPt = new TH2F*[fnCuts];  
    hESDPi0MotherInvMassPt          = new TH2F*[fnCuts];
    hESDPi0MotherDiffInvMassPt      = new TH2F*[fnCuts];
    hESDPi0MotherDiffLimInvMassPt   = new TH2F*[fnCuts];
@@ -633,7 +633,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
         
       
         
-      hESDConvGammaZR[iCut]= new TH2F("ESD_ConvGamma_ConversionPoint_ZR","ESD_ConvGamma_ConversionPoint_ZR",1200,-150,150,480,0,120);
+      hESDConvGammaZR[iCut]= new TH2F("ESD_ConvGamma_ConversionPoint_ZR","ESD_ConvGamma_ConversionPoint_ZR",600,-150,150,240,0,120);
       fQAFolder[iCut]->Add(hESDConvGammaZR[iCut]);
      
       hESDDalitzElectronAfterPt[iCut] = new TH1F("ESD_DalitzElectron_After_Pt","ESD_DalitzElectron_After_Pt",1000,0,25);
@@ -713,11 +713,11 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
       hESDEposEnegPsiPairDPhi[iCut] = new TH2F("ESD_EposEneg_PsiPair_DPhi","ESD_EposEneg_PsiPair_DPhi", 100, -1.0,1.0,100,-1.0,1.0 );
       fQAFolder[iCut]->Add(hESDEposEnegPsiPairDPhi[iCut]);
 
-      hESDEposEnegInvMassPt[iCut] = new TH2F("ESD_EposEneg_InvMassPt","ESD_EposEneg_InvMassPt",5000,0.,5.,100,0.,10.);
-      fQAFolder[iCut]->Add(hESDEposEnegInvMassPt[iCut]);
+      //hESDEposEnegInvMassPt[iCut] = new TH2F("ESD_EposEneg_InvMassPt","ESD_EposEneg_InvMassPt",5000,0.,5.,100,0.,10.);
+      //fQAFolder[iCut]->Add(hESDEposEnegInvMassPt[iCut]);
       
-      hESDEposEnegLikeSignBackInvMassPt[iCut]  = new TH2F("ESD_EposEneg_LikeSignBack_InvMassPt","ESD_EposEneg_LikeSignBack_InvMassPt",5000,0.,5.,100,0.,10.);
-      fQAFolder[iCut]->Add(hESDEposEnegLikeSignBackInvMassPt[iCut]);
+      //hESDEposEnegLikeSignBackInvMassPt[iCut]  = new TH2F("ESD_EposEneg_LikeSignBack_InvMassPt","ESD_EposEneg_LikeSignBack_InvMassPt",5000,0.,5.,100,0.,10.);
+      //fQAFolder[iCut]->Add(hESDEposEnegLikeSignBackInvMassPt[iCut]);
       
       
       TAxis *AxisAfter = hESDDalitzElectronAfterTPCdEdxVsP[iCut]->GetXaxis(); 
@@ -767,6 +767,14 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 
       hESDPi0MotherDiffLimInvMassPt[iCut] = new TH2F("ESD_Pi0Mother_DiffLimInvMass_Pt","ESD_Pi0Mother_DiffLimInvMass_Pt",2000,0,2,250,0,25);
       fESDList[iCut]->Add(hESDPi0MotherDiffLimInvMassPt[iCut]);
+      
+      hESDEposEnegInvMassPt[iCut] = new TH2F("ESD_EposEneg_InvMassPt","ESD_EposEneg_InvMassPt",5000,0.,5.,100,0.,10.);
+      fESDList[iCut]->Add(hESDEposEnegInvMassPt[iCut]);
+      
+      hESDEposEnegLikeSignBackInvMassPt[iCut]  = new TH2F("ESD_EposEneg_LikeSignBack_InvMassPt","ESD_EposEneg_LikeSignBack_InvMassPt",5000,0.,5.,100,0.,10.);
+      fESDList[iCut]->Add(hESDEposEnegLikeSignBackInvMassPt[iCut]);
+      
+      
       
       }
 
@@ -1673,12 +1681,9 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessElectronCandidates(){
 	 
       
 	 
-	 if ( fDoMesonQA ) {
+	 if( fDoMesonQA ) hESDEposEnegPsiPairDPhi[fiCut]->Fill(deltaPhi,psiPair);   	 
+	 if( fDoChicAnalysis ) hESDEposEnegInvMassPt[fiCut]->Fill(vphoton->GetMass(),vphoton->Pt());
 	   
-         hESDEposEnegPsiPairDPhi[fiCut]->Fill(deltaPhi,psiPair);   
-         hESDEposEnegInvMassPt[fiCut]->Fill(vphoton->GetMass(),vphoton->Pt());
-			 
-	 }
 				 
 	 if( ! fDoChicAnalysis ) {
 	
@@ -1717,7 +1722,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessElectronCandidates(){
  
    //Computing mixing event
    
-   if(  fDoMesonQA ) {
+   if(  fDoChicAnalysis ) {
 
       for(UInt_t i = 0; i < lGoodElectronIndex.size(); i++){
          
@@ -1793,6 +1798,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessElectronCandidates(){
 
    }
 }
+
 
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvDalitzV1::CalculatePi0DalitzCandidates(){

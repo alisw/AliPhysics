@@ -117,6 +117,7 @@ fEtaPhiEnMin(3.),
 fSTUTotal(0),              fTRUTotal(0),
 fV0Trigger(0),             fV0A(0),              fV0C(0),
 fFillV0SigHisto(1),        fFillClusAcceptHisto(0),
+fMCData(kFALSE),
 fEventMB   (0),            fEventL0   (0),
 fEventL1G  (0),            fEventL1G2 (0),
 fEventL1J  (0),            fEventL1J2 (0),
@@ -253,9 +254,10 @@ void AliAnalysisTaskEMCALTriggerQA::FillCellMaps()
       Int_t indexX = Int_t(posX/2);
       Int_t indexY = Int_t(posY/2);
       
-      if(indexX > fgkFALTROCols || indexY > fgkFALTRORows )
+      if(indexX >= fgkFALTROCols || indexY >= fgkFALTRORows )
       {
-        if(DebugLevel() > 0) printf("AliAnalysisTaskEMCALTriggerQA::UserExec() - Wrong Position (x,y) = (%d,%d)\n",posX,posY);
+        if(DebugLevel() > 0) printf("AliAnalysisTaskEMCALTriggerQA::UserExec() - Wrong Position (x,y) = (%d,%d)\n",
+                                    posX,posY);
         continue;
       }
       
@@ -737,9 +739,11 @@ void AliAnalysisTaskEMCALTriggerQA::FillL1GammaPatchHistograms()
             
             //	    printf("cell[%i,%i]=%f\n",posy+icol,posx+irow, fMapCellL1G[posy+icol][posx+irow]);
             if(shiftRow < fgkFALTRORows && shiftCol < fgkFALTROCols)
+            {
               patchEnergy += fMapCellL1G[shiftRow][shiftCol] ;
             
-            if( fMapCellL1G[shiftRow][shiftCol] >threshold/2) enoughE = kTRUE;
+              if( fMapCellL1G[shiftRow][shiftCol] > threshold/2 ) enoughE = kTRUE;
+            }
           }
         }
         
