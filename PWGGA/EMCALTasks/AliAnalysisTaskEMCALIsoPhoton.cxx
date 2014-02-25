@@ -713,7 +713,7 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
     if(!c->IsEMCAL())
       continue;
     Short_t id;
-    Double_t Emax = GetMaxCellEnergy( c, id);
+    GetMaxCellEnergy( c, id);
     Double_t maxct = cells->GetCellTime(id);
     if(TMath::Abs(maxtcl-maxct)>2.5e-9)
       continue;
