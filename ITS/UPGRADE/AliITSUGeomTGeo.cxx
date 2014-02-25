@@ -103,6 +103,7 @@ AliITSUGeomTGeo::AliITSUGeomTGeo(const AliITSUGeomTGeo &src)
   if (fNLayers) {
     fNStaves   = new Int_t[fNLayers];
     fNSubStaves= new Int_t[fNLayers];
+    fNModules  = new Int_t[fNLayers];
     fNChipsPerModule = new Int_t[fNLayers];
     fLrChipType  = new Int_t[fNLayers];
     fLastChipIndex   = new Int_t[fNLayers];
