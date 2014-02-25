@@ -1583,19 +1583,20 @@ TProfile* AliCFTaskVertexingHF::GetEstimatorHistogram(const AliVEvent* event){
   //
 
   Int_t runNo  = event->GetRunNumber();
-  Int_t period = -1;   // pp: 0-LHC10b, 1-LHC10c, 2-LHC10d, 3-LHC10e
-                       //pPb: 0-LHC13b, 1-LHC13c
+  Int_t period = -1;   // pp:  0-LHC10b, 1-LHC10c, 2-LHC10d, 3-LHC10e
+                       // pPb: 0-LHC13b, 1-LHC13c
 
   if (fIsPPbData) {    // setting run numbers for LHC13 if pPb
       if (runNo>195343 && runNo<195484) period = 0;
       if (runNo>195528 && runNo<195678) period = 1;
-  } else {     //else assume pp                       
+      if (period<0 || period>1) return 0;
+  } else {             //else assume pp 2010                 
       if(runNo>114930 && runNo<117223) period = 0;
       if(runNo>119158 && runNo<120830) period = 1;
       if(runNo>122373 && runNo<126438) period = 2;
       if(runNo>127711 && runNo<130841) period = 3;
       if(period<0 || period>3) return 0;
   }
-  
+
   return fMultEstimatorAvg[period];
 }
