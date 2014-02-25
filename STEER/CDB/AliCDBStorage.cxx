@@ -436,16 +436,24 @@ void AliCDBStorage::QueryCDB(Int_t run, const char* pathFilter,
   AliInfo(Form("Querying files valid for run %d and path \"%s\" into CDB storage  \"%s://%s\"",
         fRun, pathFilter, fType.Data(), fBaseFolder.Data()));
 
-  // Clear fValidFileIds list (it cannot be filled twice!
-  AliDebug(2, "Clearing list of CDB Id's previously loaded");
-  fValidFileIds.Clear();
+  // In fValidFileIds, clear id for the same 3level path, if any
+  AliDebug(3, Form("Clearing list of CDB Id's previously loaded for path \"%s\"", pathFilter));
+  AliCDBPath filter(pathFilter);
+  for (Int_t i=0; i<fValidFileIds.GetEntries(); ++i) {
+    AliCDBId *rmMe = dynamic_cast<AliCDBId*>(fValidFileIds.At(i));
+    AliCDBPath rmPath = rmMe->GetAliCDBPath();
+    if (filter.Comprises(rmPath)) {
+      AliDebug(3,Form("Removing id \"%s\" matching: \"%s\"", rmPath.GetPath().Data(), pathFilter));
+      delete fValidFileIds.RemoveAt(i);
+    }
+  }
 
   if(fMetaDataFilter) {delete fMetaDataFilter; fMetaDataFilter=0;}
   if(md) fMetaDataFilter = dynamic_cast<AliCDBMetaData*> (md->Clone());
 
   QueryValidFiles();
 
-  AliInfo(Form("%d valid files found!", fValidFileIds.GetEntriesFast()));
+  AliInfo(Form("%d valid files found!", fValidFileIds.GetEntries()));
 
 }
 

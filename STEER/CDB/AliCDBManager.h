@@ -132,6 +132,7 @@ class AliCDBManager: public TObject {
     Int_t GetStartRunLHCPeriod();
     Int_t GetEndRunLHCPeriod();
     TString GetLHCPeriod();
+    TString GetCvmfsOcdbTag() const {return fCvmfsOcdb;}
 
     Bool_t DiffObjects(const char *cdbFile1, const char *cdbFile2) const;
 
