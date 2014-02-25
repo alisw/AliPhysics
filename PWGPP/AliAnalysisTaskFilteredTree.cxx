@@ -634,10 +634,10 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
     Int_t ir2 = 0;
 
     //
-    Double_t vert[3] = {0}; 
-    vert[0] = vtxESD->GetXv();
-    vert[1] = vtxESD->GetYv();
-    vert[2] = vtxESD->GetZv();
+    //Double_t vert[3] = {0}; 
+    //vert[0] = vtxESD->GetXv();
+    //vert[1] = vtxESD->GetYv();
+    //vert[2] = vtxESD->GetZv();
     Int_t mult = vtxESD->GetNContributors();
     Int_t multSPD = vtxSPD->GetNContributors();
     Int_t multTPC = vtxTPC->GetNContributors();
@@ -1385,17 +1385,25 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       //Double_t vtxY=vtxESD->GetY();
       //Double_t vtxZ=vtxESD->GetZ();
 
-      AliESDVertex* pvtxESD = (AliESDVertex*)vtxESD->Clone();
-      AliESDtrack* ptrack=(AliESDtrack*)track->Clone();
-      AliExternalTrackParam* ptpcInnerC = (AliExternalTrackParam*)tpcInnerC->Clone();
-      AliExternalTrackParam* ptrackInnerC = (AliExternalTrackParam*)trackInnerC->Clone();
-      AliExternalTrackParam* ptrackInnerC2 = (AliExternalTrackParam*)trackInnerC2->Clone();
-      AliExternalTrackParam* pouterITSc = (AliExternalTrackParam*)outerITSc->Clone();
-      AliExternalTrackParam* ptrackInnerC3 = (AliExternalTrackParam*)trackInnerC3->Clone();
+      //AliESDVertex* pvtxESD = (AliESDVertex*)vtxESD->Clone();
+      //AliESDtrack* ptrack=(AliESDtrack*)track->Clone();
+      //AliExternalTrackParam* ptpcInnerC = (AliExternalTrackParam*)tpcInnerC->Clone();
+      //AliExternalTrackParam* ptrackInnerC = (AliExternalTrackParam*)trackInnerC->Clone();
+      //AliExternalTrackParam* ptrackInnerC2 = (AliExternalTrackParam*)trackInnerC2->Clone();
+      //AliExternalTrackParam* pouterITSc = (AliExternalTrackParam*)outerITSc->Clone();
+      //AliExternalTrackParam* ptrackInnerC3 = (AliExternalTrackParam*)trackInnerC3->Clone();
+      //AliESDVertex* pvtxESD = new AliESDVertex(*vtxESD);
+      //AliESDtrack* ptrack= new AliESDtrack(*track);
+      //AliExternalTrackParam* ptpcInnerC = new AliExternalTrackParam(*tpcInnerC);
+      //AliExternalTrackParam* ptrackInnerC = new AliExternalTrackParam(*trackInnerC);
+      //AliExternalTrackParam* ptrackInnerC2 = new AliExternalTrackParam(*trackInnerC2);
+      //AliExternalTrackParam* pouterITSc =  new AliExternalTrackParam(*outerITSc);
+      //AliExternalTrackParam* ptrackInnerC3 = new AliExternalTrackParam(*trackInnerC3);
+
       Int_t ntracks = esdEvent->GetNumberOfTracks();
       
       // fill histograms
-      FillHistograms(ptrack, ptpcInnerC, centralityF, (Double_t)chi2(0,0));
+      FillHistograms(track, tpcInnerC, centralityF, (Double_t)chi2(0,0));
 
       if(fTreeSRedirector && dumpToTree && fFillTree) 
       {
@@ -1407,7 +1415,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	  "evtNumberInFile="<<evtNumberInFile<<    // event number
 	  "triggerClass="<<&triggerClass<<         // trigger class as a string
 	  "Bz="<<bz<<                              // solenoid magnetic field in the z direction (in kGaus)
-	  "vtxESD.="<<pvtxESD<<                    // vertexer ESD tracks (can be biased by TPC pileup tracks)
+	  "vtxESD.="<<vtxESD<<                    // vertexer ESD tracks (can be biased by TPC pileup tracks)
 	  //"vtxESDx="<<vtxX<<
 	  //"vtxESDy="<<vtxY<<
 	  //"vtxESDz="<<vtxZ<<
@@ -1423,12 +1431,12 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	  "ntracksTPC="<<ntracksTPC<<               // total number of the TPC tracks which were refitted
 	  "ntracksITS="<<ntracksITS<<               // total number of the ITS tracks which were refitted
 	  //
-	  "esdTrack.="<<ptrack<<                  // esdTrack as used in the physical analysis
-	  "extTPCInnerC.="<<ptpcInnerC<<          // ??? 
-	  "extInnerParamC.="<<ptrackInnerC<<      // ???
-	  "extInnerParam.="<<ptrackInnerC2<<      // ???
-	  "extOuterITS.="<<pouterITSc<<           // ???
-	  "extInnerParamRef.="<<ptrackInnerC3<<   // ???
+	  "esdTrack.="<<track<<                  // esdTrack as used in the physical analysis
+	  "extTPCInnerC.="<<tpcInnerC<<          // ??? 
+	  "extInnerParamC.="<<trackInnerC<<      // ???
+	  "extInnerParam.="<<trackInnerC2<<      // ???
+	  "extOuterITS.="<<outerITSc<<           // ???
+	  "extInnerParamRef.="<<trackInnerC3<<   // ???
 	  "chi2TPCInnerC="<<chi2(0,0)<<           // chi2   of tracks ???
 	  "chi2InnerC="<<chi2trackC(0,0)<<        // chi2s  of tracks TPCinner to the combined
 	  "chi2OuterITS="<<chi2OuterITS(0,0)<<    // chi2s  of tracks TPC at inner wall to the ITSout
@@ -1482,14 +1490,6 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
         AliInfo("writing tree highPt");
         (*fTreeSRedirector)<<"highPt"<<"\n";
       }
-
-      delete pvtxESD;
-      delete ptrack;
-      delete ptpcInnerC;
-      delete ptrackInnerC;
-      delete ptrackInnerC2;
-      delete pouterITSc;
-      delete ptrackInnerC3;
 
       ////////////////////
       //delete the dummy objects we might have created.

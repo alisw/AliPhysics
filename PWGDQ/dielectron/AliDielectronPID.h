@@ -84,11 +84,9 @@ public:
   static TGraph *GetCorrGraphdEdx()  { return fgdEdxRunCorr; }
 
   static void SetEtaCorrFunction(TF1 *fun) {fgFunEtaCorr=fun;}
-  static void SetCentroidCorrFunction(TF1 *fun) { fgFunCntrdCorr=fun; }
-  static void SetWidthCorrFunction(TF1 *fun) { fgFunWdthCorr=fun; }
+  static void SetCentroidCorrFunction(TH1 *fun) { fgFunCntrdCorr=fun; }
+  static void SetWidthCorrFunction(TH1 *fun) { fgFunWdthCorr=fun; }
   static TF1* GetEtaCorrFunction() { return fgFunEtaCorr; }
-  static TF1* GetCentroidCorrFunction() { return fgFunCntrdCorr; }
-  static TF1* GetWidthCorrFunction() { return fgFunWdthCorr; }
 
   static Double_t GetEtaCorr(const AliVTrack *track);
   static Double_t GetCntrdCorr(const AliVTrack *track) { return (fgFunCntrdCorr ? GetPIDCorr(track,fgFunCntrdCorr) : 0.0); }
@@ -122,11 +120,11 @@ private:
   static Double_t fgCorrdEdx;     //!dEdx correction value for current run. Set if fgFitCorr is set and SetCorrVal(run)
                                   // was called
   static TF1    *fgFunEtaCorr;    //function for eta correction of electron sigma
-  static TF1    *fgFunCntrdCorr;  //function for correction of electron sigma (centroid)
-  static TF1    *fgFunWdthCorr;   //function for correction of electron sigma (width)
+  static TH1    *fgFunCntrdCorr;  //function for correction of electron sigma (centroid)
+  static TH1    *fgFunWdthCorr;   //function for correction of electron sigma (width)
   static TGraph *fgdEdxRunCorr;   //run by run correction for dEdx
 
-  static Double_t GetPIDCorr(const AliVTrack *track, TF1 *fun);
+  static Double_t GetPIDCorr(const AliVTrack *track, TH1 *hist);
   
   THnBase* fMapElectronCutLow[kNmaxPID];  //map for the electron lower cut in units of n-sigma widths 1 centered to zero
   Bool_t IsSelectedITS(AliVTrack * const part, Int_t icut);

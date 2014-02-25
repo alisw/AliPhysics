@@ -40,6 +40,7 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetMass", kTRUE),
   fContainerBase(0),
   fMinFractionShared(0),
+  fJetMassAvg(0),
   fh2PtJet1VsLeadPtAllSel(0),
   fh2PtJet1VsLeadPtTagged(0),
   fh2PtVsMassJet1All(0),
@@ -89,6 +90,7 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),  
   fContainerBase(0),
   fMinFractionShared(0),
+  fJetMassAvg(0),
   fh2PtJet1VsLeadPtAllSel(0),
   fh2PtJet1VsLeadPtTagged(0),
   fh2PtVsMassJet1All(0),
@@ -253,7 +255,6 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
   // Fill histograms.
 
   AliEmcalJet* jet1 = NULL;
-
   AliJetContainer *jetCont = GetJetContainer(fContainerBase);
   if(jetCont) {
     jetCont->ResetCurrentID();
@@ -261,7 +262,7 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
       Double_t fraction = jetCont->GetFractionSharedPt(jet1);
       if(fMinFractionShared>0. && fraction<fMinFractionShared) continue;
 
-      Double_t ptJet1 = jet1->Pt() - GetRhoVal(fContainerBase)*jet1->Area();//jetCont->GetJetPtCorr(jetCont->GetCurrentID());//
+      Double_t ptJet1 = jet1->Pt() - GetRhoVal(fContainerBase)*jet1->Area();
       fh2PtJet1VsLeadPtAllSel[fCentBin]->Fill(ptJet1,jet1->MaxTrackPt());
       fh2PtVsMassJet1All[fCentBin]->Fill(ptJet1,jet1->M());
       fpPtVsMassJet1All[fCentBin]->Fill(ptJet1,jet1->M());
@@ -285,8 +286,15 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
       fh2EtMassOverEtRSq[fCentBin]->Fill(Et,massOverEtR*massOverEtR);
     }
   }
-
+  
   return kTRUE;
+}
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskEmcalJetMass::GetJetMass(AliEmcalJet *jet) {
+  //calc subtracted jet mass, not implemented
+  return jet->M();
+
 }
 
 //________________________________________________________________________

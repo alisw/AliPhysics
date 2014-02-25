@@ -14,6 +14,7 @@
 #include "AliForwardFlowTaskQC.h"
 #include "AliForwardFlowWeights.h"
 class TGraph;
+class AliAODMCHeader;
 
 /**
  * Calculate the flow in the forward regions using the Q cumulants method
@@ -109,6 +110,16 @@ protected:
    * Finalize analysis
    */
   void Finalize();
+    /**
+   * Check AODevent object for trigger, vertex and centrality
+   * uses aod header if object is null
+   * returns true if event is OK
+   *
+   * @param aodfm AliAODForwardMult object
+   * 
+   * @return Bool_t 
+   */
+  virtual Bool_t CheckEvent(const AliAODForwardMult* aodfm);
   /**
    * Check trigger from AODForwardMult object
    * returns true if B trigger is present
@@ -154,6 +165,7 @@ protected:
   TList                 fBinsForwardTR;   //  List with FMDTR VertexBin objects
   TList                 fBinsCentralTR;   //  List with SPDTR VertexBin objects
   TList                 fBinsMC;          //  List with MC VertexBin objects
+  AliAODMCHeader*       fAODMCHeader;     //  MC header object
   TH2D                  fHistdNdedpMC;    //  d^2N/detadphi MC particles histogram
   TH2D*                 fHistFMDMCCorr;   //  Diagnostics for mult. corr. between FMD and MC
   TH2D*                 fHistSPDMCCorr;   //  Diagnostics for mult. corr. between SPD and MC
@@ -165,7 +177,7 @@ protected:
   Int_t                 fAddType;         //  Add flow type #
   Int_t                 fAddOrder;        //  Add flow order
 
-  ClassDef(AliForwardMCFlowTaskQC, 4); // FMD MC analysis task 
+  ClassDef(AliForwardMCFlowTaskQC, 5); // FMD MC analysis task 
 };
  
 #endif

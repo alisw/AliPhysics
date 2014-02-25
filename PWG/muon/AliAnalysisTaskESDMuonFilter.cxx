@@ -384,8 +384,8 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
   Int_t nMuonGlobalTrack[100];
   itsClusMap = 0;
   
-  for (Int_t iMuon=0; iMuon<100; iMuon++) nMuonGlobalTrack[iMuon]=0;    // position of the i-th muon track in the tracks array of the AOD event
-  
+  for (Int_t iMuon=0; iMuon<100; iMuon++) nMuonGlobalTrack[iMuon]=0;    // position of the i-th muon track in the tracks array of the AOD event  
+
   for (Int_t nMuTrack=0; nMuTrack<nMuGlobalTracks; ++nMuTrack) {
 
     esdMuGlobalTrack = esd->GetMuonGlobalTrack(nMuTrack);
@@ -396,10 +396,10 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
     
     // Track selection
     if (fTrackFilter) {
-     	selectInfo = fTrackFilter->IsSelected(esdMuGlobalTrack);
-     	if (!selectInfo) {
-     	  continue;
-     	}  
+      selectInfo = fTrackFilter->IsSelected(esdMuGlobalTrack);
+      if (!selectInfo) {
+	continue;
+      }  
     }
     
     p[0] = esdMuGlobalTrack->Px(); 
@@ -419,17 +419,18 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
                                                   0x0,                             // covariance matrix
                                                   esdMuGlobalTrack->Charge(),      // charge
                                                   itsClusMap,                      // ITSClusterMap
-                                                  primary,                         // primary vertex
+                                                  primary,                         // origin vertex
                                                   kFALSE,                          // used for vertex fit?
                                                   kFALSE,                          // used for primary vertex fit?
                                                   AliAODTrack::kPrimary,           // track type
-                                                  selectInfo); 
-    
+                                                  selectInfo);
+
     Double_t xyAtVertex[2] = {0};
     esdMuGlobalTrack -> GetXYAtVertex(xyAtVertex);
     
     aodTrack->SetIsMuonGlobalTrack(kTRUE);
 
+    aodTrack->SetMFTClusterPattern(esdMuGlobalTrack->GetMFTClusterPattern());
     aodTrack->SetXYAtDCA(xyAtVertex[0], xyAtVertex[1]);
     aodTrack->SetPxPyPzAtDCA(p[0], p[1], p[2]);
     aodTrack->SetRAtAbsorberEnd(esdMuGlobalTrack->GetRAtAbsorberEnd());
@@ -453,7 +454,7 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
     nMuonGlobalTrack[nGlobalMuons] = jTracks-1;
     ++nGlobalMuons;
   }
-  
+
   if (nGlobalMuons >= 2) { 
     for (Int_t i=0; i<nGlobalMuons; i++) {
       Int_t index0 = nMuonGlobalTrack[i];

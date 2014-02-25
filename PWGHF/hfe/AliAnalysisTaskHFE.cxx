@@ -556,6 +556,7 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
     fTaggedTrackAnalysis = new AliHFEtaggedTrackAnalysis(Form("taggedTrackAnalysis%s", GetName()));
     fTaggedTrackAnalysis->SetCuts(fTaggedTrackCuts);
     fTaggedTrackAnalysis->SetClean(fCleanTaggedTrack);
+    if(IsAODanalysis()) fTaggedTrackAnalysis->SetAOD(); 
     AliHFEvarManager *varManager = fTaggedTrackAnalysis->GetVarManager();
     TObjArray *array = fVarManager->GetVariables();
     Int_t nvars = array->GetEntriesFast();

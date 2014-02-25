@@ -16,6 +16,8 @@ AliAnalysisTask*  AddAliTwoParticlePIDCorrTask(TString  SampleType="pPb",//pp,pP
      QAContainername.Append(SampleType);
      QAContainername.Append("_");
      QAContainername.Append(AnalysisType);
+     QAContainername.Append("_");
+     QAContainername.Append("debojit");
 
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================

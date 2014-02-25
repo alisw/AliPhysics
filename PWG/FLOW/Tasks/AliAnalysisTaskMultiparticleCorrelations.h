@@ -91,7 +91,13 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   Bool_t GetCrossCheckWithNestedLoops() const {return this->fCrossCheckWithNestedLoops;};
   void SetCrossCheckDiffWithNestedLoops(Bool_t const ccdwnl) {this->fCrossCheckDiffWithNestedLoops = ccdwnl;};
   Bool_t GetCrossCheckDiffWithNestedLoops() const {return this->fCrossCheckDiffWithNestedLoops;};
-  
+  void SetCrossCheckDiffCSCOBN(Int_t const cs, Int_t const co, Int_t const bn)  
+  {
+   this->fCrossCheckDiffCSCOBN[0] = cs; // cos/sin
+   this->fCrossCheckDiffCSCOBN[1] = co; // correlator order [1p,2p,3p,4p]
+   this->fCrossCheckDiffCSCOBN[2] = bn; // bin number
+  };
+
   // 'Standard candles':
   void SetCalculateStandardCandles(Bool_t const csc) {this->fCalculateStandardCandles = csc;};
   Bool_t GetCalculateStandardCandles() const {return this->fCalculateStandardCandles;};
@@ -109,6 +115,19 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   // Differential correlations:
   void SetCalculateDiffCorrelations(Bool_t const cdc) {this->fCalculateDiffCorrelations = cdc;};
   Bool_t GetCalculateDiffCorrelations() const {return this->fCalculateDiffCorrelations;};
+  void SetDiffHarmonics(Int_t order, Int_t *harmonics); // see implementation in .cxx file 
+  void SetCalculateDiffCos(Bool_t const cdc) {this->fCalculateDiffCos = cdc;};
+  Bool_t GetCalculateDiffCos() const {return this->fCalculateDiffCos;};
+  void SetCalculateDiffSin(Bool_t const cds) {this->fCalculateDiffSin = cds;};
+  Bool_t GetCalculateDiffSin() const {return this->fCalculateDiffSin;};
+  void SetCalculateDiffCorrelationsVsPt(Bool_t const cdcvspt) {this->fCalculateDiffCorrelationsVsPt = cdcvspt;};
+  Bool_t GetCalculateDiffCorrelationsVsPt() const {return this->fCalculateDiffCorrelationsVsPt;};
+  void SetUseDefaultBinning(Bool_t const udb) {this->fUseDefaultBinning = udb;};
+  Bool_t GetUseDefaultBinning() const {return this->fUseDefaultBinning;};
+  void SetnDiffBins(Int_t const ndb) {this->fnDiffBins = ndb;};
+  Int_t GetnDiffBins() const {return this->fnDiffBins;};
+  void SetRangesDiffBins(Double_t* const rdb) {this->fRangesDiffBins = rdb;};
+  Double_t* GetRangesDiffBins() const {return this->fRangesDiffBins;};
 
  private:
   AliAnalysisTaskMultiparticleCorrelations(const AliAnalysisTaskMultiparticleCorrelations& aatqc);
@@ -157,6 +176,7 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   // Nested loops:
   Bool_t fCrossCheckWithNestedLoops;     // cross-check results with nested loops
   Bool_t fCrossCheckDiffWithNestedLoops; // cross-check differential correlators with nested loops
+  Int_t fCrossCheckDiffCSCOBN[3];        // [0=cos,1=sin][1p,2p,...,4p][binNo]
 
   // 'Standard candles':
   Bool_t fCalculateStandardCandles; // calculate and store 'standard candles'
@@ -168,8 +188,14 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   Bool_t fPropagateErrorQC;    // propagate and store error for Q-cumulants
 
   // Differential correlations:
-  Bool_t fCalculateDiffCorrelations; // calculate and store differential correlations
-  
+  Bool_t fCalculateDiffCorrelations;     // calculate and store differential correlations
+  Bool_t fCalculateDiffCos;              // calculate and store differential cosine correlations (kTRUE by default)
+  Bool_t fCalculateDiffSin;              // calculate and store differential sinus correlations (kFALSE by default)
+  Bool_t fCalculateDiffCorrelationsVsPt; // calculate differential correlations vs pt (default), or vs eta
+  Bool_t fUseDefaultBinning;             // use default binning in pt or in eta
+  Int_t fnDiffBins;                      // number of differential bins in pt or in eta (when non-default binning is used)
+  Double_t *fRangesDiffBins;             // ranges for differential bins in pt or in eta (when non-default binning is used)
+
   ClassDef(AliAnalysisTaskMultiparticleCorrelations,1); 
 
 };

@@ -98,7 +98,8 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr() // All data members should be ini
   ffilltrigIDassoID(kFALSE),
   ffilltrigIDassoIDMCTRUTH(kFALSE),
   fMaxNofMixingTracks(50000),
-  fPtOrderMCTruth(kFALSE),
+  fPtOrderMCTruth(kTRUE),
+ fPtOrderDataReco(kTRUE),
   fTriggerSpeciesSelection(kFALSE),
   fAssociatedSpeciesSelection(kFALSE),
   fTriggerSpecies(SpPion),
@@ -152,6 +153,7 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr() // All data members should be ini
   fEventno(0),
   fEventnobaryon(0),
   fEventnomeson(0),
+ fhistJetTrigestimate(0),
   fCentralityCorrelation(0x0),
   fHistoTPCdEdx(0x0),
   fHistoTOFbeta(0x0),
@@ -252,7 +254,8 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr(const char *name) // All data membe
   ffilltrigIDassoID(kFALSE),
   ffilltrigIDassoIDMCTRUTH(kFALSE),
   fMaxNofMixingTracks(50000),
-  fPtOrderMCTruth(kFALSE),
+  fPtOrderMCTruth(kTRUE),
+  fPtOrderDataReco(kTRUE),
   fTriggerSpeciesSelection(kFALSE),
   fAssociatedSpeciesSelection(kFALSE),
   fTriggerSpecies(SpPion),
@@ -306,6 +309,7 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr(const char *name) // All data membe
   fEventno(0),
   fEventnobaryon(0),
   fEventnomeson(0),
+   fhistJetTrigestimate(0),
   fCentralityCorrelation(0x0),
   fHistoTPCdEdx(0x0),
   fHistoTOFbeta(0x0),
@@ -892,6 +896,9 @@ fEventnomeson=new TH2F("fEventnomeson","fEventnomeson",iBinPair[0], dBinsPair[0]
  fEventnomeson->GetXaxis()->SetTitle("Centrality");
  fEventnomeson->GetYaxis()->SetTitle("Z_Vtx");
 fOutput->Add(fEventnomeson);
+
+fhistJetTrigestimate=new TH2F("fhistJetTrigestimate","fhistJetTrigestimate",iBinPair[0],dBinsPair[0],6,-0.5,5.5);
+fOutput->Add(fhistJetTrigestimate);
 
 
 //Mixing
@@ -1663,14 +1670,14 @@ for(Int_t i=0;i<tracksID->GetEntriesFast();i++)
  //same event delte-eta, delta-phi plot
 if(tracksUNID && tracksUNID->GetEntriesFast()>0)//hadron triggered correlation
   {//same event calculation starts
-    if(ffilltrigassoUNID) Fillcorrelation(tracksUNID,0,cent_v0,zvtx,weghtval,bSign,kTRUE,kTRUE,kFALSE,"trigassoUNID");//mixcase=kFALSE (hadron-hadron correlation)
-    if(tracksID && tracksID->GetEntriesFast()>0 && ffilltrigUNIDassoID)  Fillcorrelation(tracksUNID,tracksID,cent_v0,zvtx,weghtval,bSign,kFALSE,kTRUE,kFALSE,"trigUNIDassoID");//mixcase=kFALSE (hadron-ID correlation)
+    if(ffilltrigassoUNID) Fillcorrelation(tracksUNID,0,cent_v0,zvtx,weghtval,bSign,fPtOrderDataReco,kTRUE,kFALSE,"trigassoUNID");//mixcase=kFALSE (hadron-hadron correlation)
+    if(tracksID && tracksID->GetEntriesFast()>0 && ffilltrigUNIDassoID)  Fillcorrelation(tracksUNID,tracksID,cent_v0,zvtx,weghtval,bSign,fPtOrderDataReco,kTRUE,kFALSE,"trigUNIDassoID");//mixcase=kFALSE (hadron-ID correlation)
   }
 
 if(tracksID && tracksID->GetEntriesFast()>0)//ID triggered correlation
   {//same event calculation starts
-    if(tracksUNID && tracksUNID->GetEntriesFast()>0 && ffilltrigIDassoUNID)  Fillcorrelation(tracksID,tracksUNID,cent_v0,zvtx,weghtval,bSign,kFALSE,kTRUE,kFALSE,"trigIDassoUNID");//mixcase=kFALSE (ID-hadron correlation)
-    if(ffilltrigIDassoID)   Fillcorrelation(tracksID,0,cent_v0,zvtx,weghtval,bSign,kFALSE,kTRUE,kFALSE,"trigIDassoID");//mixcase=kFALSE (ID-ID correlation)
+    if(tracksUNID && tracksUNID->GetEntriesFast()>0 && ffilltrigIDassoUNID)  Fillcorrelation(tracksID,tracksUNID,cent_v0,zvtx,weghtval,bSign,fPtOrderDataReco,kTRUE,kFALSE,"trigIDassoUNID");//mixcase=kFALSE (ID-hadron correlation)
+    if(ffilltrigIDassoID)   Fillcorrelation(tracksID,0,cent_v0,zvtx,weghtval,bSign,fPtOrderDataReco,kTRUE,kFALSE,"trigIDassoID");//mixcase=kFALSE (ID-ID correlation)
   }
 
 //still in  main event loop
@@ -1685,9 +1692,9 @@ if (pool && pool->IsReady())
  TObjArray* bgTracks = pool->GetEvent(jMix);
   if(!bgTracks) continue;
   if(ffilltrigassoUNID && tracksUNID && tracksUNID->GetEntriesFast()>0)//*******************************hadron trggered mixing
-    Fillcorrelation(tracksUNID,bgTracks,cent_v0,zvtx,nmix1,bSign,kTRUE,kTRUE,kTRUE,"trigassoUNID");//mixcase=kTRUE
+    Fillcorrelation(tracksUNID,bgTracks,cent_v0,zvtx,nmix1,bSign,fPtOrderDataReco,kTRUE,kTRUE,"trigassoUNID");//mixcase=kTRUE
  if(ffilltrigIDassoUNID && tracksID && tracksID->GetEntriesFast()>0)//***********************************ID trggered mixing
-   Fillcorrelation(tracksID,bgTracks,cent_v0,zvtx,nmix1,bSign,kFALSE,kTRUE,kTRUE,"trigIDassoUNID");//mixcase=kTRUE 
+   Fillcorrelation(tracksID,bgTracks,cent_v0,zvtx,nmix1,bSign,fPtOrderDataReco,kTRUE,kTRUE,"trigIDassoUNID");//mixcase=kTRUE 
    }// pool event loop ends mixing case
 
 } //if pool->IsReady() condition ends mixing case
@@ -1707,9 +1714,9 @@ for (Int_t jMix=0; jMix<pool1->GetCurrentNEvents(); jMix++)
  TObjArray* bgTracks2 = pool1->GetEvent(jMix);
   if(!bgTracks2) continue;
 if(ffilltrigUNIDassoID && tracksUNID && tracksUNID->GetEntriesFast()>0)
-  Fillcorrelation(tracksUNID,bgTracks2,cent_v0,zvtx,nmix2,bSign,kFALSE,kTRUE,kTRUE,"trigUNIDassoID");//mixcase=kTRUE  
+  Fillcorrelation(tracksUNID,bgTracks2,cent_v0,zvtx,nmix2,bSign,fPtOrderDataReco,kTRUE,kTRUE,"trigUNIDassoID");//mixcase=kTRUE  
 if(ffilltrigIDassoID && tracksID && tracksID->GetEntriesFast()>0)
-  Fillcorrelation(tracksID,bgTracks2,cent_v0,zvtx,nmix2,bSign,kFALSE,kTRUE,kTRUE,"trigIDassoID");//mixcase=kTRUE
+  Fillcorrelation(tracksID,bgTracks2,cent_v0,zvtx,nmix2,bSign,fPtOrderDataReco,kTRUE,kTRUE,"trigIDassoID");//mixcase=kTRUE
 
    }// pool event loop ends mixing case
 } //if pool1->IsReady() condition ends mixing case
@@ -1862,6 +1869,10 @@ if(fSampleType=="pPb" || fSampleType=="PbPb") if (cent_v0 < 0)  return;//for pp 
 
     eventno++;
 
+    Bool_t fTrigPtmin1=kFALSE;
+    Bool_t fTrigPtmin2=kFALSE;
+    Bool_t fTrigPtJet=kFALSE;
+
  for (Int_t itrk = 0; itrk < aod->GetNumberOfTracks(); itrk++) 
 { //track loop starts for TObjArray(containing track and event information) filling; used for correlation function calculation 
   AliAODTrack* track = dynamic_cast<AliAODTrack*>(aod->GetTrack(itrk));
@@ -1884,6 +1895,11 @@ if(fSampleType=="pPb" || fSampleType=="PbPb") if (cent_v0 < 0)  return;//for pp 
 
  //tag all particles as unidentified that passed filterbit & kinematic cuts 
  particletype=unidentified;
+
+
+ if(track->Pt()>=fminPtTrig) fTrigPtmin1=kTRUE;
+ if(track->Pt()>=(fminPtTrig+0.5)) fTrigPtmin2=kTRUE;
+ if(track->Pt()>=fmaxPtTrig) fTrigPtJet=kTRUE;
 
 
  if (fSampleType=="pp") cent_v0=15.0;//integrated over multiplicity [i.e each track has multiplicity 15.0](so put any fixed value for each track so that practically means there is only one bin in multiplicityi.e multiplicity intregated out )**************Important for efficiency related issues
@@ -1968,6 +1984,10 @@ if(trackscount<1.0){
   return;
  }
 
+ if (fTrigPtmin1) fhistJetTrigestimate->Fill(cent_v0,0.0);
+ if (fTrigPtmin2) fhistJetTrigestimate->Fill(cent_v0,2.0);
+ if (fTrigPtJet) fhistJetTrigestimate->Fill(cent_v0,4.0);
+
  Float_t weightval=1.0;
 
 
@@ -2007,14 +2027,14 @@ for(Int_t i=0;i<tracksID->GetEntriesFast();i++)
 
 if(tracksUNID && tracksUNID->GetEntriesFast()>0)//hadron triggered correlation
   {//same event calculation starts
-    if(ffilltrigassoUNID) Fillcorrelation(tracksUNID,0,cent_v0,zvtx,weightval,bSign,kTRUE,kTRUE,kFALSE,"trigassoUNID");//mixcase=kFALSE (hadron-hadron correlation)
-    if(tracksID && tracksID->GetEntriesFast()>0 && ffilltrigUNIDassoID)  Fillcorrelation(tracksUNID,tracksID,cent_v0,zvtx,weightval,bSign,kFALSE,kTRUE,kFALSE,"trigUNIDassoID");//mixcase=kFALSE (hadron-ID correlation)
+    if(ffilltrigassoUNID) Fillcorrelation(tracksUNID,0,cent_v0,zvtx,weightval,bSign,fPtOrderDataReco,kTRUE,kFALSE,"trigassoUNID");//mixcase=kFALSE (hadron-hadron correlation)
+    if(tracksID && tracksID->GetEntriesFast()>0 && ffilltrigUNIDassoID)  Fillcorrelation(tracksUNID,tracksID,cent_v0,zvtx,weightval,bSign,fPtOrderDataReco,kTRUE,kFALSE,"trigUNIDassoID");//mixcase=kFALSE (hadron-ID correlation)
   }
 
 if(tracksID && tracksID->GetEntriesFast()>0)//ID triggered correlation
   {//same event calculation starts
-    if(tracksUNID && tracksUNID->GetEntriesFast()>0 && ffilltrigIDassoUNID)  Fillcorrelation(tracksID,tracksUNID,cent_v0,zvtx,weightval,bSign,kFALSE,kTRUE,kFALSE,"trigIDassoUNID");//mixcase=kFALSE (ID-hadron correlation)
-    if(ffilltrigIDassoID)   Fillcorrelation(tracksID,0,cent_v0,zvtx,weightval,bSign,kFALSE,kTRUE,kFALSE,"trigIDassoID");//mixcase=kFALSE (ID-ID correlation)
+    if(tracksUNID && tracksUNID->GetEntriesFast()>0 && ffilltrigIDassoUNID)  Fillcorrelation(tracksID,tracksUNID,cent_v0,zvtx,weightval,bSign,fPtOrderDataReco,kTRUE,kFALSE,"trigIDassoUNID");//mixcase=kFALSE (ID-hadron correlation)
+    if(ffilltrigIDassoID)   Fillcorrelation(tracksID,0,cent_v0,zvtx,weightval,bSign,fPtOrderDataReco,kTRUE,kFALSE,"trigIDassoID");//mixcase=kFALSE (ID-ID correlation)
   }
 
 //still in  main event loop
@@ -2031,9 +2051,9 @@ if (pool && pool->IsReady())
  TObjArray* bgTracks = pool->GetEvent(jMix);
   if(!bgTracks) continue;
   if(ffilltrigassoUNID && tracksUNID && tracksUNID->GetEntriesFast()>0)//*******************************hadron trggered mixing
-    Fillcorrelation(tracksUNID,bgTracks,cent_v0,zvtx,nmix1,bSign,kTRUE,kTRUE,kTRUE,"trigassoUNID");//mixcase=kTRUE
+    Fillcorrelation(tracksUNID,bgTracks,cent_v0,zvtx,nmix1,bSign,fPtOrderDataReco,kTRUE,kTRUE,"trigassoUNID");//mixcase=kTRUE
  if(ffilltrigIDassoUNID && tracksID && tracksID->GetEntriesFast()>0)//***********************************ID trggered mixing
-   Fillcorrelation(tracksID,bgTracks,cent_v0,zvtx,nmix1,bSign,kFALSE,kTRUE,kTRUE,"trigIDassoUNID");//mixcase=kTRUE 
+   Fillcorrelation(tracksID,bgTracks,cent_v0,zvtx,nmix1,bSign,fPtOrderDataReco,kTRUE,kTRUE,"trigIDassoUNID");//mixcase=kTRUE 
    }// pool event loop ends mixing case
 
 } //if pool->IsReady() condition ends mixing case
@@ -2054,9 +2074,9 @@ for (Int_t jMix=0; jMix<pool1->GetCurrentNEvents(); jMix++)
  TObjArray* bgTracks2 = pool1->GetEvent(jMix);
   if(!bgTracks2) continue;
 if(ffilltrigUNIDassoID && tracksUNID && tracksUNID->GetEntriesFast()>0)
-  Fillcorrelation(tracksUNID,bgTracks2,cent_v0,zvtx,nmix2,bSign,kFALSE,kTRUE,kTRUE,"trigUNIDassoID");//mixcase=kTRUE  
+  Fillcorrelation(tracksUNID,bgTracks2,cent_v0,zvtx,nmix2,bSign,fPtOrderDataReco,kTRUE,kTRUE,"trigUNIDassoID");//mixcase=kTRUE  
 if(ffilltrigIDassoID && tracksID && tracksID->GetEntriesFast()>0)
-  Fillcorrelation(tracksID,bgTracks2,cent_v0,zvtx,nmix2,bSign,kFALSE,kTRUE,kTRUE,"trigIDassoID");//mixcase=kTRUE
+  Fillcorrelation(tracksID,bgTracks2,cent_v0,zvtx,nmix2,bSign,fPtOrderDataReco,kTRUE,kTRUE,"trigIDassoID");//mixcase=kTRUE
 
    }// pool event loop ends mixing case
 } //if pool1->IsReady() condition ends mixing case
@@ -2306,7 +2326,7 @@ if(ffilltrigIDassoUNID==kFALSE && ffilltrigIDassoID==kTRUE){
     //to avoid overflow qnd underflow
  if(asso->Pt()<fminPtAsso || asso->Pt()>fmaxPtAsso) continue;//***********************Important
 
- if(fmaxPtAsso==fminPtTrig) {if(asso->Pt()==fminPtTrig) continue;}//******************Think about it!
+ //if(fmaxPtAsso==fminPtTrig) {if(asso->Pt()==fminPtTrig) continue;}//******************Think about it!
 
   if(!tracksasso && j==i) continue;
 

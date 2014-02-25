@@ -24,17 +24,21 @@ class AliAnalysisTaskEmcalJetMass : public AliAnalysisTaskEmcalJet {
   void                                Terminate(Option_t *option);
 
   //Setters
-  void SetJetContainerBase(Int_t c)                             { fContainerBase = c       ; }
+  void SetJetContainerBase(Int_t c)                             { fContainerBase     = c   ; }
   void SetMinFractionShared(Double_t f)                         { fMinFractionShared = f   ; }
+  void SetJetMassAverage(Double_t m)                            { fJetMassAvg        = m   ; }
 
  protected:
   Bool_t                              RetrieveEventObjects();
   Bool_t                              Run();
   Bool_t                              FillHistograms();
 
+  Double_t                            GetJetMass(AliEmcalJet *jet);
+
   Int_t                               fContainerBase;              // jets to be analyzed
   Double_t                            fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
-  
+  Double_t                            fJetMassAvg;                 // average jet mass
+
   TH2F            **fh2PtJet1VsLeadPtAllSel;      //!all jets after std selection vs leading track pt
   TH2F            **fh2PtJet1VsLeadPtTagged;      //!tagged jets vs leading track pt
   TH2F            **fh2PtVsMassJet1All;           //!pT vs mass of all jets

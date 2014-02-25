@@ -61,7 +61,9 @@
 #include "TProfile.h"
 #include <TPDGCode.h>
 #include "AliOADBContainer.h"
-
+#include "AliAODInputHandler.h"
+#include "AliESDInputHandler.h"
+#include "AliAODMCParticle.h"
 
 #include "AliAnalysisTaskPi0Flow.h"
 #include "AliAnalysisTaskPi0FlowMC.h"
@@ -78,7 +80,7 @@ const Double_t AliAnalysisTaskPi0FlowMC::kRCut = 1.;
 
 AliAnalysisTaskPi0FlowMC::AliAnalysisTaskPi0FlowMC(const char* name, AliAnalysisTaskPi0Flow::Period period)
 : AliAnalysisTaskPi0Flow(name, period),
-  fStack(0x0)
+  fStack(0x0),fMcArray(0x0)
 {
 }
 
@@ -236,7 +238,7 @@ void AliAnalysisTaskPi0FlowMC::UserCreateOutputObjects()
  
    for(Int_t itype=0; itype<nTypes; itype++){
      for(Int_t iPID=0; iPID<nPID; iPID++){
-       for(Int_t cen=0; cen<5; cen++){
+       for(Int_t cen=0; cen < fCentEdges.GetSize()-1; cen++){
          fOutputContainer->Add(new TH1F(Form("%s_%s_cen%d",partTypes[itype],cPID[iPID],cen),"Cluster parents",nPt,ptMin,ptMax));
        }
      }
@@ -248,6 +250,7 @@ void AliAnalysisTaskPi0FlowMC::UserCreateOutputObjects()
 void AliAnalysisTaskPi0FlowMC::UserExec(Option_t* option)
 {
   fStack = GetMCStack();
+  fMcArray = GetMCArray();
   
   AliAnalysisTaskPi0Flow::UserExec(option);
 }
@@ -269,7 +272,7 @@ void AliAnalysisTaskPi0FlowMC::SelectPhotonClusters()
   for (Int_t i1=0; i1<fCaloPhotonsPHOS->GetEntriesFast(); i1++) {
     AliCaloPhoton * photon = (AliCaloPhoton*)fCaloPhotonsPHOS->At(i1);
     Int_t primary = photon->GetPrimary();
-    TParticle* p = fStack->Particle(primary);
+    TParticle* p = GetParticle(primary);
     if(p->R() >kRCut) {
       if(p->GetPdgCode()==11 || p->GetPdgCode()==-11) continue;
       else { fCaloPhotonsPHOS->Remove(photon); fCaloPhotonsPHOS->Compress(); }
@@ -939,24 +942,32 @@ void AliAnalysisTaskPi0FlowMC::FillMCHist(){
   //---------First pi0/eta-----------------------------
   char partName[10] ;
   char hkey[55] ;
-
-  if(!fStack) return ;
-  for(Int_t i=0;i<fStack->GetNtrack();i++){
-     TParticle* particle =  fStack->Particle(i);
+  Int_t ntrack = 0;
+  
+  if(fEventESD && fStack){
+    ntrack = fStack->GetNtrack();
+  }
+  
+  if(fEventAOD && fMcArray){
+    ntrack = fMcArray->GetEntriesFast(); 
+  }
+  
+  for(Int_t i=0;i<ntrack;i++){
+    TParticle* particle = GetParticle(i);
+      
     if(particle->GetPdgCode() == kPi0)
       snprintf(partName,10,"pi0") ;
     else
       if(particle->GetPdgCode() == kEta)
-        snprintf(partName,10,"eta") ;
+	snprintf(partName,10,"eta") ;
       else
-        if(particle->GetPdgCode() == kGamma)
-           snprintf(partName,10,"gamma") ;
+	if(particle->GetPdgCode() == kGamma)
+	  snprintf(partName,10,"gamma") ;
 	else
 	  if(particle->GetPdgCode() == 310)
 	    snprintf(partName,10,"K0S") ;
 	  else
 	    continue ;
-
     //Primary particle
     Double_t r=particle->R() ;
     Double_t pt = particle->Pt() ;
@@ -969,13 +980,13 @@ void AliAnalysisTaskPi0FlowMC::FillMCHist(){
     Double_t phi=particle->Phi() ;
     while(phi<0.)phi+=TMath::TwoPi() ;
     while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
-
+    
     Double_t phig = 180./TMath::Pi()*phi; // phi in deg
     
     //Total number of pi0 with creation radius <1 cm
     Double_t weight = PrimaryParticleWeight(particle) ;  
     snprintf(hkey,55,"hMC_all_%s_cen%d",partName,fCentBin) ;
- 
+    
     FillHistogram(hkey,pt,weight) ;
     
     if(TMath::Abs(particle->Y())<0.135 && phig>260. && phig<320.){
@@ -984,13 +995,15 @@ void AliAnalysisTaskPi0FlowMC::FillMCHist(){
       
       snprintf(hkey,55,"hMC_rap_%s_cen%d",partName,fCentBin) ;
       FillHistogram(hkey,particle->Y(),weight) ;
-    
+      
       snprintf(hkey,55,"hMC_phi_%s_cen%d",partName,fCentBin) ;
       FillHistogram(hkey,phi,weight) ;
-    }
-
-  }
+    }  
+  }   
+  
 }
+ 
+
 
 //________________________________________________________________________
 void AliAnalysisTaskPi0FlowMC::FillSecondaries(){
@@ -1000,8 +1013,19 @@ void AliAnalysisTaskPi0FlowMC::FillSecondaries(){
   //with proper weight
   if( fDebug )
     AliInfo("start");
-  for(Int_t i=0; i<fStack->GetNtrack(); i++){
-    TParticle * p = fStack->Particle(i) ;
+
+  Int_t ntrack = 0;
+  if(fEventESD && fStack){
+    ntrack = fStack->GetNtrack();
+  }
+  if(fEventAOD && fMcArray){
+    ntrack = fMcArray->GetEntriesFast(); 
+  }
+  if(ntrack < 0){
+  for(Int_t i=0; i<ntrack; i++){
+      TParticle* p = GetParticle(i);
+    
+    
     if(p->R()>kRCut)
       continue ;
     if( TMath::Abs(p->Pt())<1.e-6 )
@@ -1056,8 +1080,8 @@ void AliAnalysisTaskPi0FlowMC::FillSecondaries(){
   if(fDebug)
     AliInfo("Origins of secondary pi0s");
   //Origins of secondary pi0s
-  for(Int_t i=0; i<fStack->GetNtrack(); i++){
-    TParticle * p = fStack->Particle(i) ;
+  for(Int_t i=0; i<ntrack; i++){
+    TParticle* p = GetParticle(i);
     if(p->GetPdgCode()!=111)
       continue ;
     FillHistogram("Vertex",p->Pt(),p->R());
@@ -1085,7 +1109,7 @@ void AliAnalysisTaskPi0FlowMC::FillSecondaries(){
       FillHistogram(Form("hParentAll_cen%d",fCentBin),p12.M(),p12.Pt(),w) ;
       Int_t prim=FindCommonParent(ph1->GetPrimary(),ph2->GetPrimary()) ;
       if(prim>-1){
-        TParticle * particle = (TParticle *)fStack->Particle(prim);
+        TParticle * particle = GetParticle(prim);
         FillHistogram("hMass_R",p12.M(),p12.Pt(),TMath::Sqrt(particle->R()*particle->R()+particle->Vz()*particle->Vz())) ;
 		
 	
@@ -1119,7 +1143,9 @@ void AliAnalysisTaskPi0FlowMC::FillSecondaries(){
             FillHistogram(Form("hParentPi0NoPrim_cen%d",fCentBin),p12.M(),p12.Pt(),w) ;
 	  }
 	  else{
-    	    Int_t primPdgCode=fStack->Particle(primPi0)->GetPdgCode() ;
+    	    Int_t primPdgCode = 0;
+	    if(fEventESD) primPdgCode=fStack->Particle(primPi0)->GetPdgCode() ;
+	    if(fEventAOD) primPdgCode=((TParticle *)fMcArray->At(primPi0))->GetPdgCode();
             switch(primPdgCode){
             case 221: FillHistogram(Form("hParentPi0Eta_cen%d",fCentBin),p12.M(),p12.Pt(),w) ; //eta
 	              break ;
@@ -1155,17 +1181,18 @@ void AliAnalysisTaskPi0FlowMC::FillSecondaries(){
   
   //Now look at photon contaiminations
   for (Int_t i1=0; i1<inPHOS-1; i1++) {
+  
     AliCaloPhoton * ph1=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i1) ;
     Int_t iprim = ph1->GetPrimary() ;
     if(iprim<0)
       FillAllHistograms(Form("hGammaNoPrim_cen%d",fCentBin),ph1) ; //
     else{
       //Find primary at vertex
-      TParticle * primPHOS = fStack->Particle(iprim) ;
+      TParticle * primPHOS = GetParticle(iprim);
       Int_t iprimV=primPHOS->GetFirstMother();
       TParticle * primVtx = primPHOS ;
       while((iprimV>-1) && primVtx->R()>kRCut){
-	primVtx = fStack->Particle(iprimV) ;
+	primVtx = GetParticle(iprimV);
         iprimV=primVtx->GetFirstMother();
       }
     
@@ -1266,6 +1293,8 @@ void AliAnalysisTaskPi0FlowMC::FillSecondaries(){
     }
   
   }//single photons
+  }
+  
 }
 
 //_____________________________________________________________________________
@@ -1315,16 +1344,58 @@ AliStack* AliAnalysisTaskPi0FlowMC::GetMCStack()
 {
   fStack = 0;
   AliVEventHandler* eventHandler = AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler();
+  
   if(eventHandler){
     AliMCEventHandler* mcEventHandler = dynamic_cast<AliMCEventHandler*> (eventHandler);
-    if( mcEventHandler)
+    if( mcEventHandler) {
       fStack = static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent()->Stack();
+      if( ! fStack ) AliError("Could not get MC Stack!");
+    }
   }
   
-  if( ! fStack )
-    AliError("Could not get MC Stack!");
   return fStack;
 }
+
+TClonesArray* AliAnalysisTaskPi0FlowMC::GetMCArray()
+{
+  fMcArray = 0;
+  AliAODInputHandler* aodHandler=dynamic_cast<AliAODInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  
+  if (aodHandler){
+    AliAODEvent *aod=aodHandler->GetEvent();
+    if (aod) {
+      fMcArray = dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
+      if (!fMcArray) AliError("Could not retrieve MC array!");
+    }
+  }
+  
+  return fMcArray;
+}
+
+TParticle* AliAnalysisTaskPi0FlowMC::GetParticle(Int_t particlepos)
+{//Returns particle at given position for both ESD and AOD
+
+  if(fEventAOD){
+    if(!fMcArray){
+      AliError("MC array is not initialized, run GetMCArray() first!");
+      return 0;
+    }
+    return (TParticle *) fMcArray->At(particlepos);
+  }
+  else if(fEventESD){
+    if(!fStack){
+      AliError("MC stack is not initialized, run GetMcStack() first!");
+      return 0;
+    } 
+    return fStack->Particle(particlepos);
+  }
+  else{
+    AliError("The Event is neither ESD or AOD!");
+    return 0;
+  }
+}
+
+
 
 Int_t AliAnalysisTaskPi0FlowMC::FindPrimary(AliVCluster*clu,  Bool_t&sure){
   //Finds primary and estimates if it unique one?
@@ -1332,7 +1403,7 @@ Int_t AliAnalysisTaskPi0FlowMC::FindPrimary(AliVCluster*clu,  Bool_t&sure){
   const Double_t emFraction=0.9; //part of energy of cluster to be assigned to EM particle
   Int_t n=clu->GetNLabels() ;
   for(Int_t i=0;  i<n;  i++){
-    TParticle*  p=  fStack->Particle(clu->GetLabelAt(i)) ;
+    TParticle*  p=  GetParticle(clu->GetLabelAt(i)) ;
     Int_t pdg = p->GetPdgCode() ;
     if(pdg==22  ||  pdg==11 || pdg == -11){
       if(p->Energy()>emFraction*clu->E()){
@@ -1344,7 +1415,7 @@ Int_t AliAnalysisTaskPi0FlowMC::FindPrimary(AliVCluster*clu,  Bool_t&sure){
 
   Double_t*  Ekin=  new  Double_t[n] ;
   for(Int_t i=0;  i<n;  i++){
-    TParticle*  p=  fStack->Particle(clu->GetLabelAt(i)) ;
+    TParticle*  p=  GetParticle(clu->GetLabelAt(i)) ;
     Ekin[i]=p->P() ;  // estimate of kinetic energy
     if(p->GetPdgCode()==-2212  ||  p->GetPdgCode()==-2112){
       Ekin[i]+=1.8  ;  //due to annihilation
@@ -1371,9 +1442,12 @@ Int_t AliAnalysisTaskPi0FlowMC::FindPrimary(AliVCluster*clu,  Bool_t&sure){
 Int_t AliAnalysisTaskPi0FlowMC::FindCommonParent(Int_t iPart, Int_t jPart){
   //check if there is a common parent for particles i and j
   // -1: no common parent or wrong iPart/jPart
+  Int_t ntrack = 0;
+  if(fEventESD&&fStack  ) ntrack = fStack->GetNtrack();
+  if(fEventAOD&&fMcArray) ntrack = fMcArray->GetEntriesFast();
   
-  if(iPart==-1 || iPart>=fStack->GetNtrack() || 
-     jPart==-1 || jPart>=fStack->GetNtrack()) return -1;
+  if(iPart==-1 || iPart>=ntrack || 
+     jPart==-1 || jPart>=ntrack) return -1;
   
   Int_t iprim1=iPart;
   while(iprim1>-1){  
@@ -1381,9 +1455,9 @@ Int_t AliAnalysisTaskPi0FlowMC::FindCommonParent(Int_t iPart, Int_t jPart){
      while(iprim2>-1){
        if(iprim1==iprim2)
 	 return iprim1 ;
-       iprim2=((TParticle *)fStack->Particle(iprim2))->GetFirstMother();
+       iprim2=((TParticle *)GetParticle(iprim2))->GetFirstMother();
      }
-     iprim1=((TParticle *)fStack->Particle(iprim1))->GetFirstMother();
+     iprim1=((TParticle *)GetParticle(iprim1))->GetFirstMother();
   }
   return -1;
 }
@@ -1391,12 +1465,14 @@ Int_t AliAnalysisTaskPi0FlowMC::FindCommonParent(Int_t iPart, Int_t jPart){
 Bool_t AliAnalysisTaskPi0FlowMC::HaveParent(Int_t iPart, Int_t pdgParent){
   //check if there is a common parent for particles i and j
   // -1: no common parent or wrong iPart/jPart
-  
-  if(iPart==-1 || iPart>=fStack->GetNtrack()) return -1;
+  Int_t ntrack = 0;
+  if(fEventESD&&fStack  ) ntrack = fStack->GetNtrack();
+  if(fEventAOD&&fMcArray) ntrack = fMcArray->GetEntriesFast();
+  if(iPart==-1 || iPart>=ntrack) return -1;
   
   Int_t iprim1=iPart;
   while(iprim1>-1){  
-    TParticle * tmp = fStack->Particle(iprim1) ;
+    TParticle * tmp = GetParticle(iprim1) ;
     if(tmp->GetPdgCode()==pdgParent)
       return kTRUE ;
     iprim1=tmp->GetFirstMother();
