@@ -38,6 +38,8 @@ public:
   void SetClusterTreeAddress(TTree *treeCluster);
   void CreateClusters();
 
+  void ApplyMisalignment(Bool_t applyMisalignment) { fApplyMisalignment = applyMisalignment; }
+
   void DigitsToClusters(const TObjArray *pDigitList);
 
   void StartEvent();
@@ -49,6 +51,7 @@ private:
   static const Int_t fNMaxDetElemPerPlane = AliMFTConstants::fNMaxDetElemPerPlane;
   static const Double_t fCutForAvailableDigits;
   static const Double_t fCutForAttachingDigits;
+  static const Double_t fMisalignmentMagnitude;
 
   TClonesArray *fClustersPerPlane[fNMaxPlanes];    //! [fNPlanes] list of clusters [per plane]
 
@@ -60,7 +63,9 @@ private:
  
   Int_t fNPlanes;
 
-  TStopwatch *sw;                                  //!
+  Bool_t fApplyMisalignment;                       // For MC, waiting for OCDB...
+
+  TStopwatch *fStopWatch;                          //!
 
   AliMFTClusterFinder(const AliMFTClusterFinder &source);
   AliMFTClusterFinder& operator=(const AliMFTClusterFinder &source);

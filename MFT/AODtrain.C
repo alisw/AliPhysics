@@ -3,6 +3,7 @@
 Int_t       runOnData          = 0;       // Set to 1 if processing real data
 Int_t       iCollision         = 0;       // 0=pp, 1=Pb-Pb
 //==============================================================================
+Bool_t      doCDBconnect        = kFALSE;
 Bool_t      usePhysicsSelection = kTRUE; // use physics selection
 Bool_t      useTender           = kFALSE; // use tender wagon
 Bool_t      useCentrality       = kTRUE; // centrality
@@ -43,6 +44,8 @@ Bool_t LoadCommonLibraries();
 Bool_t LoadAnalysisLibraries();
 Bool_t LoadLibrary(const char *);
 TChain *CreateChain();
+const char *cdbPath = "raw://";
+Int_t run_number = 0;
 
 //______________________________________________________________________________
 void AODtrain(Int_t merge=0)
@@ -92,6 +95,7 @@ void AODtrain(Int_t merge=0)
    // Create input handler (input container created automatically)
    // ESD input handler
    AliESDInputHandler *esdHandler = new AliESDInputHandler();
+   esdHandler->SetNeedField();
    mgr->SetInputEventHandler(esdHandler);       
    // Monte Carlo handler
    if (useMC) {
@@ -109,7 +113,7 @@ void AODtrain(Int_t merge=0)
    // Debugging if needed
    if (useDBG) mgr->SetDebugLevel(3);
 
-   AddAnalysisTasks(merge);
+   AddAnalysisTasks(merge, cdbPath);
    if (merge) {
       AODmerge();
       mgr->InitAnalysis();
@@ -133,7 +137,7 @@ void AODtrain(Int_t merge=0)
 }                                                                                                                                          
                                                                                                                                             
 //______________________________________________________________________________                                                           
-void AddAnalysisTasks(Int_t merge){                                                                                                                                          
+void AddAnalysisTasks(Int_t merge, const char *cdb_location){                                                                                                                                          
   // Add all analysis task wagons to the train                                                                                               
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();                                                                     
 
@@ -147,6 +151,17 @@ void AddAnalysisTasks(Int_t merge){
       AliAnalysisTaskSE *tender = AddTaskTender(useV0tender);
 //      tender->SetDebugLevel(2);
    }
+
+  // CDB connection
+  //
+  if (doCDBconnect && !useTender) {
+    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskCDBconnect.C");
+    AliTaskCDBconnect *taskCDB = AddTaskCDBconnect(cdb_location, run_number);
+    if (!taskCDB) return;
+    AliCDBManager *cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage(cdb_location);
+//    taskCDB->SetRunNumber(run_number);
+  }    
 
    if (usePhysicsSelection) {
    // Physics selection task
@@ -171,7 +186,7 @@ void AddAnalysisTasks(Int_t merge){
 	
    if (iESDfilter) {
       //  ESD filter task configuration.
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C");	
+      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/ESDfilter/macros/AddTaskESDFilter.C");	
       if (iMUONcopyAOD) {
          printf("Registering delta AOD file\n");
          mgr->RegisterExtraFile("AliAOD.Muons.root");
@@ -279,7 +294,8 @@ void AddAnalysisTasks(Int_t merge){
 //______________________________________________________________________________
 Bool_t LoadCommonLibraries()
 {
-// Load common analysis libraries.
+
+  // Load common analysis libraries.
    if (!gSystem->Getenv("ALICE_ROOT")) {
       ::Error("AnalysisTrainNew.C::LoadCommonLibraries", "Analysis train requires that analysis libraries are compiled with a local AliRoot"); 
       return kFALSE;
@@ -292,6 +308,7 @@ Bool_t LoadCommonLibraries()
    success &= LoadLibrary("libANALYSIS.so");
    success &= LoadLibrary("libOADB.so");
    success &= LoadLibrary("libANALYSISalice.so");
+   success &= LoadLibrary("libESDfilter.so");
    success &= LoadLibrary("libCORRFW.so");
    gROOT->ProcessLine(".include $ALICE_ROOT/include");
    if (success) {
@@ -307,46 +324,52 @@ Bool_t LoadCommonLibraries()
 //______________________________________________________________________________
 Bool_t LoadAnalysisLibraries()
 {
-// Load common analysis libraries.
-   if (useTender) {
-      if (!LoadLibrary("TENDER") ||
-          !LoadLibrary("TENDERSupplies")) return kFALSE;
-   }       
-   if (iESDfilter || iPWGMuonTrain) {
-      if (!LoadLibrary("PWGmuon")) return kFALSE;
-   }   
-   if (iESDMCLabelAddition) {
-     if (!LoadLibrary("PWGmuondep")) return kFALSE;
-   }
-   // JETAN
-   if (iJETAN) {
-      if (!LoadLibrary("JETAN")) return kFALSE;
-   }
-   if (iJETANdelta) {
-      if (!LoadLibrary("JETAN") ||
-          !LoadLibrary("CGAL") ||
-          !LoadLibrary("fastjet") ||
-          !LoadLibrary("siscone") ||
-          !LoadLibrary("SISConePlugin") ||
-          !LoadLibrary("FASTJETAN")) return kFALSE;
-   }     
-   // PWG3 Vertexing HF
-   if (iPWGHFvertexing || iPWGHFd2h) {
-      if (!LoadLibrary("PWGflowBase") ||
-          !LoadLibrary("PWGflowTasks") ||
-          !LoadLibrary("PWGHFvertexingHF")) return kFALSE;
-   }    
- //    if (iPWGHFvertexing || iPWG3d2h) {
- //     if (!LoadLibrary("PWG3base") ||
- //         !LoadLibrary("PWGHFvertexingHF")) return kFALSE;
- //  }   
-   // PWG3 dielectron
-   if (iPWGDQJPSIfilter) {
-      if (!LoadLibrary("PWGDQdielectron")) return kFALSE;
-   }   
-   
-   ::Info("AnalysisTrainNew.C::LoadAnalysisLibraries", "Load other libraries:   SUCCESS");
-   return kTRUE;
+
+  // Load common analysis libraries.
+  if (useTender || doCDBconnect) {
+    if (!LoadLibrary("TENDER") ||
+	!LoadLibrary("TENDERSupplies")) return kFALSE;
+  }       
+  // CDBconnect
+  if (doCDBconnect && !useTender) {
+    if (!LoadLibrary("PWGPP")) return kFALSE;
+  }
+  
+  if (iESDfilter || iPWGMuonTrain) {
+    if (!LoadLibrary("PWGmuon")) return kFALSE;
+  }   
+  if (iESDMCLabelAddition) {
+    if (!LoadLibrary("PWGmuondep")) return kFALSE;
+  }
+  // JETAN
+  if (iJETAN) {
+    if (!LoadLibrary("JETAN")) return kFALSE;
+  }
+  if (iJETANdelta) {
+    if (!LoadLibrary("JETAN") ||
+	!LoadLibrary("CGAL") ||
+	!LoadLibrary("fastjet") ||
+	!LoadLibrary("siscone") ||
+	!LoadLibrary("SISConePlugin") ||
+	!LoadLibrary("FASTJETAN")) return kFALSE;
+  }     
+  // PWG3 Vertexing HF
+  if (iPWGHFvertexing || iPWGHFd2h) {
+    if (!LoadLibrary("PWGflowBase") ||
+	!LoadLibrary("PWGflowTasks") ||
+	!LoadLibrary("PWGHFvertexingHF")) return kFALSE;
+  }    
+  //    if (iPWGHFvertexing || iPWG3d2h) {
+  //     if (!LoadLibrary("PWG3base") ||
+  //         !LoadLibrary("PWGHFvertexingHF")) return kFALSE;
+  //  }   
+  // PWG3 dielectron
+  if (iPWGDQJPSIfilter) {
+    if (!LoadLibrary("PWGDQdielectron")) return kFALSE;
+  }   
+  
+  ::Info("AnalysisTrainNew.C::LoadAnalysisLibraries", "Load other libraries:   SUCCESS");
+  return kTRUE;
 }
 
 //______________________________________________________________________________

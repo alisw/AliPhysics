@@ -11,5 +11,6 @@
 #pragma link C++ class  AliMFTSegmentation+;
 #pragma link C++ class  AliMFTDigit+;
 #pragma link C++ class  AliMFTCluster+;
+#pragma link C++ class  AliMFTSupport;
 
 #endif

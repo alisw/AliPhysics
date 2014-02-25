@@ -46,4 +46,15 @@ const Double_t AliMFTConstants::fWidthChip = 1.0;
 
 const Double_t AliMFTConstants::fPrecisionPointOfClosestApproach = 10.e-4;  // 10 micron
 
+const Double_t AliMFTConstants::fZEvalKinem = 0.;
+
+const Double_t AliMFTConstants::fXVertexTolerance = 500.e-4;    // 500 micron
+const Double_t AliMFTConstants::fYVertexTolerance = 500.e-4;    // 500 micron
+
+const Double_t AliMFTConstants::fPrimaryVertexResX = 5.e-4;   // 5 micron
+const Double_t AliMFTConstants::fPrimaryVertexResY = 5.e-4;   // 5 micron
+const Double_t AliMFTConstants::fPrimaryVertexResZ = 5.e-4;   // 5 micron
+
+const Double_t AliMFTConstants::fMisalignmentMagnitude = 15.e-4;    // 15 micron
+
 //====================================================================================================================================================

@@ -31,10 +31,11 @@
 #include "TMath.h"
 #include "AliMFTConstants.h"
 #include "AliMFTClusterFinder.h"
+#include "TRandom.h"
 
 const Double_t AliMFTClusterFinder::fCutForAvailableDigits = AliMFTConstants::fCutForAvailableDigits;
 const Double_t AliMFTClusterFinder::fCutForAttachingDigits = AliMFTConstants::fCutForAttachingDigits;
-
+const Double_t AliMFTClusterFinder::fMisalignmentMagnitude = AliMFTConstants::fMisalignmentMagnitude;
 
 ClassImp(AliMFTClusterFinder)
 
@@ -47,7 +48,8 @@ AliMFTClusterFinder::AliMFTClusterFinder() :
   fCurrentCluster(0),
   fSegmentation(0),
   fNPlanes(0),
-  sw(0)
+  fApplyMisalignment(kFALSE),
+  fStopWatch(0)
 {
 
   // Default constructor
@@ -55,8 +57,8 @@ AliMFTClusterFinder::AliMFTClusterFinder() :
   for (Int_t iPlane=0; iPlane<fNMaxPlanes; iPlane++) fClustersPerPlane[iPlane] = NULL;
   fDigitsInCluster = new TClonesArray("AliMFTDigit", fNMaxDigitsPerCluster);
   fDigitsInCluster -> SetOwner(kTRUE);
-  sw = new TStopwatch();
-  sw -> Reset();
+  fStopWatch = new TStopwatch();
+  fStopWatch -> Reset();
 
 }
 
@@ -72,7 +74,7 @@ AliMFTClusterFinder::~AliMFTClusterFinder() {
   if (fDigitsInCluster) fDigitsInCluster->Delete(); delete fDigitsInCluster; fDigitsInCluster = NULL;
   delete fSegmentation; fSegmentation=NULL;
 
-  delete sw;
+  delete fStopWatch;
   
   AliDebug(1, "... done!");
   
@@ -128,8 +130,8 @@ void AliMFTClusterFinder::DigitsToClusters(const TObjArray *pDigitList) {
   AliInfo("Starting Clusterization for MFT");
   AliDebug(1, Form("nPlanes = %d", fNPlanes));
 
-  if (!sw) sw = new TStopwatch();
-  sw -> Reset();
+  if (!fStopWatch) fStopWatch = new TStopwatch();
+  fStopWatch -> Reset();
 
   StartEvent(); 
   Bool_t isDigAvailableForNewCluster = kTRUE;
@@ -155,7 +157,7 @@ void AliMFTClusterFinder::DigitsToClusters(const TObjArray *pDigitList) {
     Int_t currentDetElemLocal = -1;
     Bool_t areThereSkippedDigits = kFALSE;
 
-    sw -> Start();
+    fStopWatch -> Start();
 
     while (myDigitList->GetEntries()) {
 
@@ -212,23 +214,33 @@ void AliMFTClusterFinder::DigitsToClusters(const TObjArray *pDigitList) {
 
     }   // no more digits to check in current plane!
 
-    sw -> Print("m");
+    fStopWatch -> Print("m");
 
-    printf("Plane %d: clusters found in %f seconds\n",iPlane,sw->CpuTime());
-    sw->Start();
+    printf("Plane %d: clusters found in %f seconds\n",iPlane,fStopWatch->CpuTime());
+    fStopWatch->Start();
 
     // Now we merge the cluster lists coming from each detection element, to build the cluster list of the plane
+
+    Double_t misalignmentPhi = 2.*TMath::Pi()*gRandom->Rndm();
+    Double_t misalignmentX   = fMisalignmentMagnitude*TMath::Cos(misalignmentPhi);
+    Double_t misalignmentY   = fMisalignmentMagnitude*TMath::Sin(misalignmentPhi);
 
     AliMFTCluster *newCluster = NULL;
     for (Int_t iDetElem=0; iDetElem<nDetElem; iDetElem++) {
       for (Int_t iCluster=0; iCluster<clustersPerDetElem[iDetElem]->GetEntries(); iCluster++) {
 	newCluster = (AliMFTCluster*) (clustersPerDetElem[iDetElem]->At(iCluster));
 	newCluster -> TerminateCluster();
+	if (fApplyMisalignment) {
+	  newCluster -> SetClusterEditable(kTRUE);
+	  newCluster -> SetX(newCluster->GetX()+misalignmentX);
+	  newCluster -> SetY(newCluster->GetY()+misalignmentY);
+	  newCluster -> SetClusterEditable(kFALSE);
+	}
 	new ((*fClustersPerPlane[iPlane])[fClustersPerPlane[iPlane]->GetEntries()]) AliMFTCluster(*newCluster);
       }
     }
 
-    printf("%d Clusters in plane %02d merged in %f seconds\n", fClustersPerPlane[iPlane]->GetEntries(), iPlane, sw->CpuTime());
+    printf("%d Clusters in plane %02d merged in %f seconds\n", fClustersPerPlane[iPlane]->GetEntries(), iPlane, fStopWatch->CpuTime());
 
     for (Int_t iDetElem=0; iDetElem<nDetElem; iDetElem++) {
       clustersPerDetElem[iDetElem] -> Delete();
