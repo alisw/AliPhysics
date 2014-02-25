@@ -1006,7 +1006,8 @@ void AliAnalysisTaskPi0FlowMC::FillMCHist(){
 
 
 //________________________________________________________________________
-void AliAnalysisTaskPi0FlowMC::FillSecondaries(){
+void AliAnalysisTaskPi0FlowMC::FillSecondaries()
+{
   //Sort secondaires
   
   //Fill spectra of primary particles 
@@ -1021,10 +1022,8 @@ void AliAnalysisTaskPi0FlowMC::FillSecondaries(){
   if(fEventAOD && fMcArray){
     ntrack = fMcArray->GetEntriesFast(); 
   }
-  if(ntrack < 0){
   for(Int_t i=0; i<ntrack; i++){
-      TParticle* p = GetParticle(i);
-    
+    TParticle* p = GetParticle(i);
     
     if(p->R()>kRCut)
       continue ;
@@ -1034,48 +1033,48 @@ void AliAnalysisTaskPi0FlowMC::FillSecondaries(){
       continue ;
     Double_t w = PrimaryParticleWeight(p) ;  
     Int_t primPdgCode=p->GetPdgCode() ;
-      switch(primPdgCode){
-	case  kGamma: FillHistogram(Form("hPrimPhot_cen%d",fCentBin),p->Pt(),w); 
-	          break ;
-	case  kElectron: 
-	case -kElectron: 
-	          FillHistogram(Form("hPrimEl_cen%d",fCentBin),p->Pt(),w); 
-	          break ;
-	case  kPi0: 
-	          FillHistogram(Form("hPrimPi0_cen%d",fCentBin),p->Pt(),w); 
-	          break ;
-	case  kEta: 
-	          FillHistogram(Form("hPrimEta_cen%d",fCentBin),p->Pt(),w); 
-	          break ;
-	case  kPiPlus: 
-	case  kPiMinus: 
-	          FillHistogram(Form("hPrimPipm_cen%d",fCentBin),p->Pt(),w); 
-	          break ;		  
-	case  kProton:  //p 
-	          FillHistogram(Form("hPrimP_cen%d",fCentBin),p->Pt(),w); 
-	          break ;		  
-	case kProtonBar:  //pbar
-	          FillHistogram(Form("hPrimPbar_cen%d",fCentBin),p->Pt(),w); 
-	          break ;		  
-	case  kNeutron:  //n 
-	          FillHistogram(Form("hPrimN_cen%d",fCentBin),p->Pt(),w); 
-	          break ;		  
-	case  kNeutronBar:  //nbar
-	          FillHistogram(Form("hPrimNbar_cen%d",fCentBin),p->Pt(),w); 
-	          break ;
-	case  310:  //nbar
-	          FillHistogram(Form("hPrimK0S_cen%d",fCentBin),p->Pt(),w); 
-	          break ;
-	case  130:  //nbar
-	          FillHistogram(Form("hPrimK0L_cen%d",fCentBin),p->Pt(),w); 
-	          break ;
-	case  321:  //K+
-	case -321:  //K-
-	          FillHistogram(Form("hPrimKpm_cen%d",fCentBin),p->Pt(),w); 
-	          break ;
-	default:	   //other
-	          FillHistogram(Form("hPrimOther_cen%d",fCentBin),p->Pt(),w);    
-      }
+    switch(primPdgCode){
+    case  kGamma: FillHistogram(Form("hPrimPhot_cen%d",fCentBin),p->Pt(),w); 
+      break ;
+    case  kElectron: 
+    case -kElectron: 
+      FillHistogram(Form("hPrimEl_cen%d",fCentBin),p->Pt(),w); 
+      break ;
+    case  kPi0: 
+      FillHistogram(Form("hPrimPi0_cen%d",fCentBin),p->Pt(),w); 
+      break ;
+    case  kEta: 
+      FillHistogram(Form("hPrimEta_cen%d",fCentBin),p->Pt(),w); 
+      break ;
+    case  kPiPlus: 
+    case  kPiMinus: 
+      FillHistogram(Form("hPrimPipm_cen%d",fCentBin),p->Pt(),w); 
+      break ;		  
+    case  kProton:  //p 
+      FillHistogram(Form("hPrimP_cen%d",fCentBin),p->Pt(),w); 
+      break ;		  
+    case kProtonBar:  //pbar
+      FillHistogram(Form("hPrimPbar_cen%d",fCentBin),p->Pt(),w); 
+      break ;		  
+    case  kNeutron:  //n 
+      FillHistogram(Form("hPrimN_cen%d",fCentBin),p->Pt(),w); 
+      break ;		  
+    case  kNeutronBar:  //nbar
+      FillHistogram(Form("hPrimNbar_cen%d",fCentBin),p->Pt(),w); 
+      break ;
+    case  310:  //nbar
+      FillHistogram(Form("hPrimK0S_cen%d",fCentBin),p->Pt(),w); 
+      break ;
+    case  130:  //nbar
+      FillHistogram(Form("hPrimK0L_cen%d",fCentBin),p->Pt(),w); 
+      break ;
+    case  321:  //K+
+    case -321:  //K-
+      FillHistogram(Form("hPrimKpm_cen%d",fCentBin),p->Pt(),w); 
+      break ;
+    default:	   //other
+      FillHistogram(Form("hPrimOther_cen%d",fCentBin),p->Pt(),w);    
+    }
   }
   if(fDebug)
     AliInfo("Origins of secondary pi0s");
@@ -1148,29 +1147,29 @@ void AliAnalysisTaskPi0FlowMC::FillSecondaries(){
 	    if(fEventAOD) primPdgCode=((TParticle *)fMcArray->At(primPi0))->GetPdgCode();
             switch(primPdgCode){
             case 221: FillHistogram(Form("hParentPi0Eta_cen%d",fCentBin),p12.M(),p12.Pt(),w) ; //eta
-	              break ;
+	      break ;
             case 223: FillHistogram(Form("hParentPi0Omega_cen%d",fCentBin),p12.M(),p12.Pt(),w) ; //omega
-	              break ;
+	      break ;
 	    case  211:  //pi+-
 	    case -211: FillHistogram(Form("hParentPi0Pipm_cen%d",fCentBin),p12.M(),p12.Pt(),w) ; //
-	              break ;
+	      break ;
 	    case  321:  //K+-
 	    case -321: FillHistogram(Form("hParentPi0Kpm_cen%d",fCentBin),p12.M(),p12.Pt(),w) ; //
-	              break ;
+	      break ;
 	    case 310: FillHistogram(Form("hParentPi0Ks_cen%d",fCentBin),p12.M(),p12.Pt(),w) ; // K0S
-	              break ;
+	      break ;
 	    case 130: FillHistogram(Form("hParentPi0Kl_cen%d",fCentBin),p12.M(),p12.Pt(),w) ; // K0L
-	              break ;
+	      break ;
 	    case  2212:  //p 
 	    case  2112:  //n 
-		      FillHistogram(Form("hParentPi0pn_cen%d",fCentBin),p12.M(),p12.Pt(),w) ; // pn
-	              break ;
+	      FillHistogram(Form("hParentPi0pn_cen%d",fCentBin),p12.M(),p12.Pt(),w) ; // pn
+	      break ;
 	    case -2212:  //pbar
 	    case -2112:  //nbar
-		      FillHistogram(Form("hParentPi0antipn_cen%d",fCentBin),p12.M(),p12.Pt(),w) ; // pn
-	              break ;
+	      FillHistogram(Form("hParentPi0antipn_cen%d",fCentBin),p12.M(),p12.Pt(),w) ; // pn
+	      break ;
 	    default:	   //other
-		      FillHistogram(Form("hParentPi0Other_cen%d",fCentBin),p12.M(),p12.Pt(),w) ; //
+	      FillHistogram(Form("hParentPi0Other_cen%d",fCentBin),p12.M(),p12.Pt(),w) ; //
 	    }//switch	  
           }//pi0 with primary
         }//common parent - pi0
@@ -1199,101 +1198,100 @@ void AliAnalysisTaskPi0FlowMC::FillSecondaries(){
       //photon
       Int_t primPdgCode=primVtx->GetPdgCode() ;
       switch(primPdgCode){
-	case  22: FillAllHistograms("hGammaPhot",ph1); 
-	          break ;
-	case  11: 
-	case -11: 
-	          FillAllHistograms("hGammaEl",ph1); 
-	          break ;
-	case  111: 
-	          FillAllHistograms("hGammaPi0",ph1); 
-	          break ;
-	case  221: 
-	          FillAllHistograms("hGammaEta",ph1); 
-	          break ;
-        case 223: FillAllHistograms("hGammaOmega",ph1) ; //omega
-	          break ;
-	case  211: 
-	case -211: 
-	          FillAllHistograms("hGammaPipm",ph1); 
-		  //Find particle entered PHOS
-		  if(primVtx == primPHOS)
-	            FillAllHistograms("hGammaPipmDirect",ph1); 
-		  else{
-                    Int_t primPdgPHOS=primPHOS->GetPdgCode() ;
-		    if(primPdgPHOS==22){
-	               FillAllHistograms("hGammaPipmGamma",ph1); 
-		       FillHistogram("hPipmGammaConvR",ph1->Pt(),primPHOS->R());
- 		       FillHistogram("hPipmGammaConvRZ",primPHOS->Vz(),primPHOS->R());
- 	               break ;		  
-		    }
-		    if(TMath::Abs(primPdgPHOS)==11){
-	               FillAllHistograms("hGammaPipmEl",ph1); 
-		       FillHistogram("hPipmElConvR",ph1->Pt(),primPHOS->R());
-	               break ;		  
-		    }
-		    if(TMath::Abs(primPdgPHOS)==2212){
-	               FillAllHistograms("hGammaPipmp",ph1); 
-		       FillHistogram("hPipmNConvR",ph1->Pt(),primPHOS->R());
-	               break ;		  
-		    }
-		    if(TMath::Abs(primPdgPHOS)==2112){
-	               FillAllHistograms("hGammaPipmn",ph1); 
-		       FillHistogram("hPipmNConvR",ph1->Pt(),primPHOS->R());
-	               break ;		  
-		    }
-	            FillAllHistograms("hGammaPipmOther",ph1); 
-		    FillHistogram("hPipmOtherConvR",ph1->Pt(),primPHOS->R());		    
-		  }
-	          break ;		  
-	case  2212:  //p 
-	          FillAllHistograms("hGammaP",ph1); 
-	          break ;		  
-	case -2212:  //pbar
-	          FillAllHistograms("hGammaPbar",ph1); 
-	          break ;		  
-	case  2112:  //n 
-	          FillAllHistograms("hGammaN",ph1); 
-	          break ;		  
-	case -2112:  //nbar
-		  FillAllHistograms("hGammaNbar",ph1) ; // pn
-	          break ;
-	case  310:  //nbar
-		  FillAllHistograms("hGammaK0S",ph1) ; // pn
-	          break ;
-	case  130:  //nbar
-		  FillAllHistograms("hGammaK0L",ph1) ; // pn
-	          break ;
-	case  321:  //K+
-	case -321:  //K-
-		  FillAllHistograms("hGammaKpm",ph1) ; // pn
-	          break ;
-        case -323: 
-        case  323: 
-        case -313: 
-        case  313: FillAllHistograms("hGammaKstar",ph1) ; // K*(892)
-	          break ;
+      case  22: FillAllHistograms("hGammaPhot",ph1); 
+	break ;
+      case  11: 
+      case -11: 
+	FillAllHistograms("hGammaEl",ph1); 
+	break ;
+      case  111: 
+	FillAllHistograms("hGammaPi0",ph1); 
+	break ;
+      case  221: 
+	FillAllHistograms("hGammaEta",ph1); 
+	break ;
+      case 223: FillAllHistograms("hGammaOmega",ph1) ; //omega
+	break ;
+      case  211: 
+      case -211: 
+	FillAllHistograms("hGammaPipm",ph1); 
+	//Find particle entered PHOS
+	if(primVtx == primPHOS)
+	  FillAllHistograms("hGammaPipmDirect",ph1); 
+	else{
+	  Int_t primPdgPHOS=primPHOS->GetPdgCode() ;
+	  if(primPdgPHOS==22){
+	    FillAllHistograms("hGammaPipmGamma",ph1); 
+	    FillHistogram("hPipmGammaConvR",ph1->Pt(),primPHOS->R());
+	    FillHistogram("hPipmGammaConvRZ",primPHOS->Vz(),primPHOS->R());
+	    break ;		  
+	  }
+	  if(TMath::Abs(primPdgPHOS)==11){
+	    FillAllHistograms("hGammaPipmEl",ph1); 
+	    FillHistogram("hPipmElConvR",ph1->Pt(),primPHOS->R());
+	    break ;		  
+	  }
+	  if(TMath::Abs(primPdgPHOS)==2212){
+	    FillAllHistograms("hGammaPipmp",ph1); 
+	    FillHistogram("hPipmNConvR",ph1->Pt(),primPHOS->R());
+	    break ;		  
+	  }
+	  if(TMath::Abs(primPdgPHOS)==2112){
+	    FillAllHistograms("hGammaPipmn",ph1); 
+	    FillHistogram("hPipmNConvR",ph1->Pt(),primPHOS->R());
+	    break ;		  
+	  }
+	  FillAllHistograms("hGammaPipmOther",ph1); 
+	  FillHistogram("hPipmOtherConvR",ph1->Pt(),primPHOS->R());		    
+	}
+	break ;		  
+      case  2212:  //p 
+	FillAllHistograms("hGammaP",ph1); 
+	break ;		  
+      case -2212:  //pbar
+	FillAllHistograms("hGammaPbar",ph1); 
+	break ;		  
+      case  2112:  //n 
+	FillAllHistograms("hGammaN",ph1); 
+	break ;		  
+      case -2112:  //nbar
+	FillAllHistograms("hGammaNbar",ph1) ; // pn
+	break ;
+      case  310:  //nbar
+	FillAllHistograms("hGammaK0S",ph1) ; // pn
+	break ;
+      case  130:  //nbar
+	FillAllHistograms("hGammaK0L",ph1) ; // pn
+	break ;
+      case  321:  //K+
+      case -321:  //K-
+	FillAllHistograms("hGammaKpm",ph1) ; // pn
+	break ;
+      case -323: 
+      case  323: 
+      case -313: 
+      case  313: FillAllHistograms("hGammaKstar",ph1) ; // K*(892)
+	break ;
 		  
-	case -2224 : //Deltas
-	case  2224 : //Deltas
-	case -2214 : //Deltas
-	case  2214 : //Deltas
-	case -2114 : //Deltas
-	case  2114 : //Deltas
-	case -1114 : //Deltas
-	case  1114 : //Deltas
-	          FillAllHistograms("hGammaDelta",ph1) ; // pn
-	          break ;		  
-	default:	   //other
-	    if(primVtx->GetPDG()->Charge())
-	      FillAllHistograms("hGammaOtherCharged",ph1) ; //
-            else
-	      FillAllHistograms("hGammaOtherNeutral",ph1) ; //
+      case -2224 : //Deltas
+      case  2224 : //Deltas
+      case -2214 : //Deltas
+      case  2214 : //Deltas
+      case -2114 : //Deltas
+      case  2114 : //Deltas
+      case -1114 : //Deltas
+      case  1114 : //Deltas
+	FillAllHistograms("hGammaDelta",ph1) ; // pn
+	break ;		  
+      default:	   //other
+	if(primVtx->GetPDG()->Charge())
+	  FillAllHistograms("hGammaOtherCharged",ph1) ; //
+	else
+	  FillAllHistograms("hGammaOtherNeutral",ph1) ; //
       }
     }
   
   }//single photons
-  }
   
 }
 
