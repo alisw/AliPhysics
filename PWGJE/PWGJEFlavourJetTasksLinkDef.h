@@ -8,6 +8,5 @@
 
 #pragma link C++ class AliAnalysisTaskSEDmesonsFilterCJ+;
 #pragma link C++ class AliAnalysisTaskFlavourJetCorrelations+;
-#pragma link C++ class AliAnalysisTaskFlavourFilterAndJetCorrelations+;
 
 #endif
