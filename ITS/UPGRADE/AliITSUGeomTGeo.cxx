@@ -102,6 +102,7 @@ AliITSUGeomTGeo::AliITSUGeomTGeo(const AliITSUGeomTGeo &src)
   // copy c-tor
   if (fNLayers) {
     fNStaves   = new Int_t[fNLayers];
+    fNSubStaves= new Int_t[fNLayers];
     fNChipsPerModule = new Int_t[fNLayers];
     fLrChipType  = new Int_t[fNLayers];
     fLastChipIndex   = new Int_t[fNLayers];
