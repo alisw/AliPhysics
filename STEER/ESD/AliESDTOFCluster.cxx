@@ -130,7 +130,8 @@ Int_t AliESDTOFCluster::Update(Int_t trackIndex,Float_t dX,Float_t dY,Float_t dZ
   TClonesArray *matchAr = event->GetESDTOFMatches();
   int ntr = matchAr->GetEntriesFast();
   new((*matchAr)[ntr]) AliESDTOFMatch(trackIndex,expTimes,dX,dY,dZ,length);
-  fMatchIndex[fNmatchableTracks++] = ntr;
+  int nmt = fNmatchableTracks++;
+  fMatchIndex[nmt] = ntr;
   //
   return 0;
   //
@@ -141,7 +142,8 @@ void AliESDTOFCluster::AddESDTOFHitIndex(Int_t hitID)
 {
   // register new hit in the cluster
   if(fNTOFhits >= kMaxHits) return;
-  fHitIndex[fNTOFhits++] = hitID; // add the hit to the array
+  int nth = fNTOFhits++;
+  fHitIndex[nth] = hitID; // add the hit to the array
 }
 
 //_________________________________________________________________________
@@ -155,7 +157,8 @@ void AliESDTOFCluster::AddTOFhit(AliESDTOFHit *hit)
   int nh = hitAr->GetEntriesFast();
   new((*hitAr)[nh]) AliESDTOFHit(*hit);
   //   hitN->SetIndex(nh); // RS: why do we need this
-  fHitIndex[fNTOFhits++] = nh;
+  int nth = fNTOFhits++;
+  fHitIndex[nth] = nh;
   //
 }
 
@@ -391,7 +394,7 @@ void AliESDTOFCluster::SuppressMatchedTrack(Int_t id)
     TClonesArray* arrClus = ((AliESDEvent *)GetEvent())->GetESDTOFClusters();
     int last = arrHits->GetEntriesFast()-1;
     for (;fNTOFhits--;) { // remove hits
-      int hID = fHitIndex[fNTOFhits];
+      int hID = fHitIndex[int(fNTOFhits)];
       AliESDTOFHit* hit = (AliESDTOFHit*)arrHits->At(hID);
       AliESDTOFHit* hitL = (AliESDTOFHit*)arrHits->At(last);
       if (hID!=last) {
