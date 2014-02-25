@@ -41,6 +41,7 @@ extern "C" {
 #include <TObjArray.h>
 #include <TObjString.h>
 #include <TString.h>
+#include <cstdlib>
 
 
 int main(int argc, char **argv) {

@@ -42,7 +42,7 @@ endif
 ifeq ($(PLATFORM),macosx)
 ROOTLIBDIR     := $(shell $(RC) --libdir)
 ifeq ($(PACKAGE),ANALYSIS)
-   PACKLDFLAGS = $(STEERBase_LIBS) $(ESD_LIBS) $(AOD_LIBS) -L$(ROOTLIBDIR)
+   PACKLDFLAGS = $(STEERBase_LIBS) $(ESD_LIBS) $(AOD_LIBS) -L$(ROOTLIBDIR) -lXMLParser
 endif
 ifeq ($(PACKAGE),ANALYSISalice) 
    PACKLDFLAGS = $(STEERBase_LIBS) $(ESD_LIBS) $(AOD_LIBS) $(ANALYSIS_LIBS) $(OADB_LIBS) -L$(ROOTLIBDIR) -lXMLIO -lEG -lTreePlayer

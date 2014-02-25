@@ -66,6 +66,10 @@ AliESDMuonGlobalTrack::AliESDMuonGlobalTrack():
 
   //  Default constructor
 
+  fProdVertexXYZ[0]=0;
+  fProdVertexXYZ[1]=0;
+  fProdVertexXYZ[2]=0;
+
 }
 
 //====================================================================================================================================================
@@ -105,6 +109,10 @@ AliESDMuonGlobalTrack::AliESDMuonGlobalTrack(Double_t px, Double_t py, Double_t 
 
   SetPxPyPz(px, py, pz);
 
+  fProdVertexXYZ[0]=0;
+  fProdVertexXYZ[1]=0;
+  fProdVertexXYZ[2]=0;
+
 }
 
 //====================================================================================================================================================
@@ -142,6 +150,10 @@ AliESDMuonGlobalTrack::AliESDMuonGlobalTrack(const AliESDMuonGlobalTrack& muonTr
 
   // Copy constructor
   
+  fProdVertexXYZ[0]=muonTrack.fProdVertexXYZ[0];
+  fProdVertexXYZ[1]=muonTrack.fProdVertexXYZ[1];
+  fProdVertexXYZ[2]=muonTrack.fProdVertexXYZ[2];
+
 }
 
 //====================================================================================================================================================
@@ -182,6 +194,10 @@ AliESDMuonGlobalTrack& AliESDMuonGlobalTrack::operator=(const AliESDMuonGlobalTr
   fLoCircuit              = muonTrack.fLoCircuit;
   fIsConnected            = muonTrack.fIsConnected;
   fESDEvent               = muonTrack.fESDEvent;
+
+  fProdVertexXYZ[0]=muonTrack.fProdVertexXYZ[0];
+  fProdVertexXYZ[1]=muonTrack.fProdVertexXYZ[1];
+  fProdVertexXYZ[2]=muonTrack.fProdVertexXYZ[2];
 
   return *this;
 

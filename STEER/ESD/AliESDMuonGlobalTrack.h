@@ -17,6 +17,8 @@
 #include "TDatabasePDG.h"
 #include "TArrayI.h"
 #include "TLorentzVector.h"
+#include "AliESDVertex.h"
+#include "TRef.h"
 
 #include "AliVParticle.h"
 
@@ -123,6 +125,9 @@ public:
   // Return the corresponding MC track number
   Int_t GetLabel() const { return fLabel; }
 
+  void SetProdVertexXYZ(Double_t x, Double_t y, Double_t z) { fProdVertexXYZ[0]=x; fProdVertexXYZ[1]=y; fProdVertexXYZ[2]=z; }
+  void GetProdVertexXYZ(Double_t *vertex) { vertex[0]=fProdVertexXYZ[0]; vertex[1]=fProdVertexXYZ[1]; vertex[2]=fProdVertexXYZ[2]; }
+
   AliESDEvent* GetESDEvent() const { return fESDEvent; }
   void         SetESDEvent(AliESDEvent* evt) { fESDEvent = evt; }  
   
@@ -154,9 +159,11 @@ protected:
   Int_t    fLoCircuit;
   Bool_t   fIsConnected;
   
+  Double_t fProdVertexXYZ[3];       // vertex of origin
+
   AliESDEvent *fESDEvent;           //! Pointer back to event to which the track belongs
   
-  ClassDef(AliESDMuonGlobalTrack,2) // MUON+MFT ESD track class 
+  ClassDef(AliESDMuonGlobalTrack,3) // MUON+MFT ESD track class 
 
 };
 

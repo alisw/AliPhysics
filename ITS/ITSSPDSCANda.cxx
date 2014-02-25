@@ -46,6 +46,7 @@ extern "C" {
 #include <TObjString.h>
 #include <TString.h>
 #include <TFitter.h>
+#include <cstdlib>
 
 int main(int argc, char **argv) {
   if (argc<2) {
