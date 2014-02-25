@@ -164,7 +164,7 @@ updateQA()
         if ! validate ${dir}; then continue; fi
 
         if [[ -d ${oldRunDir} ]]; then
-          echo "removing old ${period}/${pass}/${runNumber}"
+          echo "removing old ${oldRunDir}"
           rm -rf ${oldRunDir}
         fi
         echo "moving new ${runNumber} to ${productionDir}"
