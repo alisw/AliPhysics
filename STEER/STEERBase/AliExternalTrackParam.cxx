@@ -181,6 +181,7 @@ AliExternalTrackParam::AliExternalTrackParam(Double_t xyz[3],Double_t pxpypz[3],
   Set(xyz,pxpypz,cv,sign);
 }
 
+/*
 //_____________________________________________________________________________
 void AliExternalTrackParam::Set(Double_t xyz[3],Double_t pxpypz[3],
 				Double_t cv[21],Short_t sign) 
@@ -236,6 +237,7 @@ void AliExternalTrackParam::Set(Double_t xyz[3],Double_t pxpypz[3],
   ver.RotateZ(-fAlpha);
   mom.RotateZ(-fAlpha);
 
+  //
   // x of the reference plane
   fX = ver.X();
 
@@ -246,18 +248,19 @@ void AliExternalTrackParam::Set(Double_t xyz[3],Double_t pxpypz[3],
   fP[2] = TMath::Sin(mom.Phi());
   fP[3] = mom.Pz()/mom.Pt();
   fP[4] = TMath::Sign(1/mom.Pt(),charge);
-
+  //
+  if      (TMath::Abs( 1-fP[2]) < 3*kSafe) fP[2] = 1.- 3*kSafe; //Protection
+  else if (TMath::Abs(-1-fP[2]) < 3*kSafe) fP[2] =-1.+ 3*kSafe; //Protection
+  //
   // Covariance matrix (formulas to be simplified)
-
-  if      (TMath::Abs( 1-fP[2]) < kSafe) fP[2] = 1.- kSafe; //Protection
-  else if (TMath::Abs(-1-fP[2]) < kSafe) fP[2] =-1.+ kSafe; //Protection
-
   Double_t pt=1./TMath::Abs(fP[4]);
-  Double_t r=TMath::Sqrt((1.-fP[2])*(1.+fP[2]));
-
+  // avoid alpha+phi being to close to +-pi/2 in the cov.matrix evaluation
+  double fp2 = fP[2];
+  Double_t r=TMath::Sqrt((1.-fp2)*(1.+fp2));
+  //
   Double_t m00=-sn;// m10=cs;
-  Double_t m23=-pt*(sn + fP[2]*cs/r), m43=-pt*pt*(r*cs - fP[2]*sn);
-  Double_t m24= pt*(cs - fP[2]*sn/r), m44=-pt*pt*(r*sn + fP[2]*cs);
+  Double_t m23=-pt*(sn + fp2*cs/r), m43=-pt*pt*(r*cs - fp2*sn);
+  Double_t m24= pt*(cs - fp2*sn/r), m44=-pt*pt*(r*sn + fp2*cs);
   Double_t m35=pt, m45=-pt*pt*fP[3];
 
   m43*=GetSign();
@@ -268,7 +271,7 @@ void AliExternalTrackParam::Set(Double_t xyz[3],Double_t pxpypz[3],
   Double_t a1=cv[13]-cv[9]*(m23*m44+m43*m24)/m23/m43;
   Double_t a2=m23*m24-m23*(m23*m44+m43*m24)/m43;
   Double_t a3=m43*m44-m43*(m23*m44+m43*m24)/m23;
-  Double_t a4=cv[14]-2.*cv[9]*m24*m44/m23/m43;
+  Double_t a4=cv[14]+2.*cv[9]; //cv[14]-2.*cv[9]*m24*m44/m23/m43;
   Double_t a5=m24*m24-2.*m24*m44*m23/m43;
   Double_t a6=m44*m44-2.*m24*m44*m43/m23;
 
@@ -294,6 +297,168 @@ void AliExternalTrackParam::Set(Double_t xyz[3],Double_t pxpypz[3],
   fC[13] = b1/b3-b2*fC[8]/b3;
   fC[9 ] = TMath::Abs((cv[20]-fC[14]*(m45*m45)-fC[13]*2.*m35*m45)/(m35*m35));
 
+  CheckCovariance();
+
+  return;
+}
+*/
+
+//_____________________________________________________________________________
+void AliExternalTrackParam::Set(Double_t xyz[3],Double_t pxpypz[3],
+				Double_t cv[21],Short_t sign) 
+{
+  //
+  // create external track parameters from the global parameters
+  // x,y,z,px,py,pz and their 6x6 covariance matrix
+  // A.Dainese 10.10.08
+
+  // Calculate alpha: the rotation angle of the corresponding local system.
+  //
+  // For global radial position inside the beam pipe, alpha is the
+  // azimuthal angle of the momentum projected on (x,y).
+  //
+  // For global radial position outside the ITS, alpha is the
+  // azimuthal angle of the centre of the TPC sector in which the point
+  // xyz lies
+  //
+  const double kSafe = 1e-5;
+  Double_t radPos2 = xyz[0]*xyz[0]+xyz[1]*xyz[1];  
+  Double_t radMax  = 45.; // approximately ITS outer radius
+  if (radPos2 < radMax*radMax) { // inside the ITS     
+     fAlpha = TMath::ATan2(pxpypz[1],pxpypz[0]);
+  } else { // outside the ITS
+     Float_t phiPos = TMath::Pi()+TMath::ATan2(-xyz[1], -xyz[0]);
+     fAlpha = 
+     TMath::DegToRad()*(20*((((Int_t)(phiPos*TMath::RadToDeg()))/20))+10);
+  }
+  //
+  Double_t cs=TMath::Cos(fAlpha), sn=TMath::Sin(fAlpha);
+  // protection:  avoid alpha being too close to 0 or +-pi/2
+  if (TMath::Abs(sn)<2*kSafe) {
+    if (fAlpha>0) fAlpha += fAlpha< TMath::Pi()/2. ?  2*kSafe : -2*kSafe;
+    else          fAlpha += fAlpha>-TMath::Pi()/2. ? -2*kSafe :  2*kSafe;
+    cs=TMath::Cos(fAlpha);
+    sn=TMath::Sin(fAlpha);
+  }
+  else if (TMath::Abs(cs)<2*kSafe) {
+    if (fAlpha>0) fAlpha += fAlpha> TMath::Pi()/2. ? 2*kSafe : -2*kSafe;
+    else          fAlpha += fAlpha>-TMath::Pi()/2. ? 2*kSafe : -2*kSafe;
+    cs=TMath::Cos(fAlpha);
+    sn=TMath::Sin(fAlpha);
+  }
+  // Get the vertex of origin and the momentum
+  TVector3 ver(xyz[0],xyz[1],xyz[2]);
+  TVector3 mom(pxpypz[0],pxpypz[1],pxpypz[2]);
+  //
+  // Rotate to the local coordinate system
+  ver.RotateZ(-fAlpha);
+  mom.RotateZ(-fAlpha);
+
+  //
+  // x of the reference plane
+  fX = ver.X();
+
+  Double_t charge = (Double_t)sign;
+
+  fP[0] = ver.Y();
+  fP[1] = ver.Z();
+  fP[2] = TMath::Sin(mom.Phi());
+  fP[3] = mom.Pz()/mom.Pt();
+  fP[4] = TMath::Sign(1/mom.Pt(),charge);
+  //
+  if      (TMath::Abs( 1-fP[2]) < kSafe) fP[2] = 1.- kSafe; //Protection
+  else if (TMath::Abs(-1-fP[2]) < kSafe) fP[2] =-1.+ kSafe; //Protection
+  //
+  // Covariance matrix (formulas to be simplified)
+  Double_t pt=1./TMath::Abs(fP[4]);
+  Double_t r=TMath::Sqrt((1.-fP[2])*(1.+fP[2]));
+  //
+  Double_t cv34 = TMath::Sqrt(cv[3 ]*cv[3 ]+cv[4 ]*cv[4 ]);
+  //
+  Int_t special = 0;
+  double sgcheck = r*sn + fP[2]*cs;
+  if (TMath::Abs(sgcheck)>=1-kSafe) { // special case: lab phi is +-pi/2
+    special = 1;
+    sgcheck = TMath::Sign(1.0,sgcheck);
+  }
+  else if (TMath::Abs(sgcheck)<kSafe) {
+    sgcheck = TMath::Sign(1.0,cs);
+    special = 2;   // special case: lab phi is 0
+  }
+  //
+  fC[0 ] = cv[0 ]+cv[2 ];  
+  fC[1 ] = TMath::Sign(cv34,-cv[3 ]*sn); 
+  fC[2 ] = cv[5 ]; 
+  //
+  if (special==1) {
+    double pti = 1./pt;
+    double pti2 = pti*pti;
+    int q = GetSign();
+    fC[3 ] = cv[6]*pti;
+    fC[4 ] = -sgcheck*cv[8]*r*pti;
+    fC[5 ] = TMath::Abs(cv[9]*r*r*pti2);
+    fC[6 ] = (cv[10]*fP[3]-sgcheck*cv[15])*pti/r;
+    fC[7 ] = (cv[17]-sgcheck*cv[12]*fP[3])*pti;
+    fC[8 ] = (-sgcheck*cv[18]+cv[13]*fP[3])*r*pti2;
+    fC[9 ] = TMath::Abs( cv[20]-2*sgcheck*cv[19]*fP[3]+cv[14]*fP[3]*fP[3])*pti2;
+    fC[10] = cv[10]*pti2/r*q;
+    fC[11] = -sgcheck*cv[12]*pti2*q;
+    fC[12] = cv[13]*r*pti*pti2*q;
+    fC[13] = (-sgcheck*cv[19]+cv[14]*fP[3])*r*pti2*pti;
+    fC[14] = TMath::Abs(cv[14]*pti2*pti2);
+  } else if (special==2) {
+    double pti = 1./pt;
+    double pti2 = pti*pti;
+    int q = GetSign();
+    fC[3 ] = -cv[10]*pti*cs/sn;
+    fC[4 ] = cv[12]*cs*pti;
+    fC[5 ] = TMath::Abs(cv[14]*cs*cs*pti2);
+    fC[6 ] = (sgcheck*cv[6]*fP[3]-cv[15])*pti/sn;
+    fC[7 ] = (cv[17]-sgcheck*cv[8]*fP[3])*pti;
+    fC[8 ] = (cv[19]-sgcheck*cv[13]*fP[3])*cs*pti2;
+    fC[9 ] = TMath::Abs( cv[20]-2*sgcheck*cv[18]*fP[3]+cv[9]*fP[3]*fP[3])*pti2;
+    fC[10] = sgcheck*cv[6]*pti2/sn*q;
+    fC[11] = -sgcheck*cv[8]*pti2*q;
+    fC[12] = -sgcheck*cv[13]*cs*pti*pti2*q;
+    fC[13] = (-sgcheck*cv[18]+cv[9]*fP[3])*pti2*pti*q;
+    fC[14] = TMath::Abs(cv[9]*pti2*pti2);
+  }
+  else {
+    Double_t m00=-sn;// m10=cs;
+    Double_t m23=-pt*(sn + fP[2]*cs/r), m43=-pt*pt*(r*cs - fP[2]*sn);
+    Double_t m24= pt*(cs - fP[2]*sn/r), m44=-pt*pt*(r*sn + fP[2]*cs);
+    Double_t m35=pt, m45=-pt*pt*fP[3];
+    //
+    m43*=GetSign();
+    m44*=GetSign();
+    m45*=GetSign();
+    //
+    Double_t a1=cv[13]-cv[9]*(m23*m44+m43*m24)/m23/m43;
+    Double_t a2=m23*m24-m23*(m23*m44+m43*m24)/m43;
+    Double_t a3=m43*m44-m43*(m23*m44+m43*m24)/m23;
+    Double_t a4=cv[14]+2.*cv[9]; //cv[14]-2.*cv[9]*m24*m44/m23/m43;
+    Double_t a5=m24*m24-2.*m24*m44*m23/m43;
+    Double_t a6=m44*m44-2.*m24*m44*m43/m23;
+    //    
+    fC[3 ] = (cv[10]*m43-cv[6]*m44)/(m24*m43-m23*m44)/m00; 
+    fC[10] = (cv[6]/m00-fC[3 ]*m23)/m43; 
+    fC[6 ] = (cv[15]/m00-fC[10]*m45)/m35; 
+    fC[4 ] = (cv[12]*m43-cv[8]*m44)/(m24*m43-m23*m44); 
+    fC[11] = (cv[8]-fC[4]*m23)/m43; 
+    fC[7 ] = cv[17]/m35-fC[11]*m45/m35; 
+    fC[5 ] = TMath::Abs((a4*a3-a6*a1)/(a5*a3-a6*a2));
+    fC[14] = TMath::Abs((a1-a2*fC[5])/a3);
+    fC[12] = (cv[9]-fC[5]*m23*m23-fC[14]*m43*m43)/m23/m43;
+    Double_t b1=cv[18]-fC[12]*m23*m45-fC[14]*m43*m45;
+    Double_t b2=m23*m35;
+    Double_t b3=m43*m35;
+    Double_t b4=cv[19]-fC[12]*m24*m45-fC[14]*m44*m45;
+    Double_t b5=m24*m35;
+    Double_t b6=m44*m35;
+    fC[8 ] = (b4-b6*b1/b3)/(b5-b6*b2/b3);
+    fC[13] = b1/b3-b2*fC[8]/b3;
+    fC[9 ] = TMath::Abs((cv[20]-fC[14]*(m45*m45)-fC[13]*2.*m35*m45)/(m35*m35));
+  }
   CheckCovariance();
 
   return;
