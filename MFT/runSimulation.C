@@ -10,13 +10,18 @@ void runSimulation(Int_t seed,
   simulator->SetTriggerConfig("MUON");
   simulator->SetMakeDigits("MUON MFT");
   simulator->SetMakeSDigits("MUON MFT");
-  simulator->SetRunQA("DetectorList:ActionList");
+  simulator->SetRunQA(":");
   simulator->SetRunHLT("");
 
-  // MUON Tracker -> local:///$OCDB should reflect the content of alien://folder=/alice
-  simulator->SetDefaultStorage("alien://folder=/alice/simulation/2008/v4-15-Release/Ideal");
-  simulator->SetSpecificStorage("MUON/Align/Data", "alien://folder=/alice/simulation/2008/v4-15-Release/Ideal");
-  simulator->SetSpecificStorage("MFT/Align/Data",  "alien://folder=/alice/cern.ch/user/a/auras/OCDB/");
+  gRandom->SetSeed(seed);
+
+  // MUON Tracker
+  simulator->SetSpecificStorage("MUON/Align/Data",  "local:///gridgroup/ALICE/auras/upgrade/simulations/OCDB/simulation/2008/v4-15-Release/Ideal");
+  simulator->SetSpecificStorage("MUON/Calib/RecoParam", "alien://folder=/alice/cern.ch/user/a/auras/OCDB/");
+  simulator->SetSpecificStorage("MFT/Align/Data",       "alien://folder=/alice/cern.ch/user/a/auras/OCDB/");
+  simulator->SetSpecificStorage("MFT/Calib/RecoParam",  "alien://folder=/alice/cern.ch/user/a/auras/OCDB/");
+
+  simulator->UseMagFieldFromGRP();
 
   // The rest
   TStopwatch timer;

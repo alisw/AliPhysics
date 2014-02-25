@@ -36,11 +36,7 @@ void runReconstruction(Int_t seed, const Char_t *recOptions) {
   reco->SetSpecificStorage("MFT/Align/Data",       "alien://folder=/alice/cern.ch/user/a/auras/OCDB/");
   reco->SetSpecificStorage("MFT/Calib/RecoParam",  "alien://folder=/alice/cern.ch/user/a/auras/OCDB/");
 
-  reco->SetRunReconstruction("MUON MFT");
-  reco->SetRunLocalReconstruction("MUON MFT");
   reco->SetOption("MUON MFT",recOptions);
-  //  reco->SetRunQA("DetectorList:ActionList");
-  //  reco->SetQAWriteExpert(AliQAv1::kMUON);
 
   reco->SetWriteESDfriend(kFALSE);
   reco->SetStopOnError(kFALSE);

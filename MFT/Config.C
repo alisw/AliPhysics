@@ -51,7 +51,8 @@ enum PDCProc_t {kGenBox,
 		kPythiaPerugia0BtoJpsi2mu, 
 		kHijing, 
 		kHijing2500,
-		kHijing2500Cocktail};
+		kHijing2500Cocktail,
+		kCocktailSignals};
 
 const Char_t* pprRunName[] = {"kGenBox",
 			      "kGenMuonLMR",
@@ -64,7 +65,8 @@ const Char_t* pprRunName[] = {"kGenBox",
 			      "kPythiaPerugia0BtoJpsi2mu", 
 			      "kHijing", 
 			      "kHijing2500", 
-			      "kHijing2500Cocktail"};
+			      "kHijing2500Cocktail",
+			      "kCocktailSignals"};
 
 enum Mag_t { kNoField, k5kG, kFieldMax };
 
@@ -73,8 +75,8 @@ const Char_t* pprField[] = { "kNoField", "k5kG", "kFieldMax" };
 void LoadLibs();
 
 // ----------------------- Generator, field, beam energy,... ------------------------------------------------------------
-static PDCProc_t     proc     = kGenBox;
-static PDCProc_t     signal   = kGenBox;    // only in case kHijing2500Cocktail is the proc
+static PDCProc_t     proc     = kGenParamJpsi;
+static PDCProc_t     signal   = kGenParamJpsi;    // only in case kHijing2500Cocktail is the proc
 static Mag_t         mag      = k5kG;
 static Float_t       energy   = 5500.; // energy in CMS
 static Float_t       bMin     = 0.;
@@ -161,6 +163,7 @@ void Config() {
   else if (proc == kGenCorrHF)                 gener = GenCorrHF();
   else if (proc == kGenPionKaon)               gener = GenParamPionKaon();
   else if (proc == kPythiaPerugia0BtoJpsi2mu)  gener = MbPythiaTunePerugia0BtoJpsi2mu();
+  else if (proc == kCocktailSignals)           gener = CocktailSignals();
 
   // Size of the interaction diamond
   Float_t sigmaz  = 5.4 / TMath::Sqrt(2.);     // [cm]
@@ -171,8 +174,9 @@ void Config() {
 
   printf("\n \n Diamond size x-y: %10.3e z: %10.3e\n \n", sigmaxy, sigmaz);
     
-//   gener->SetSigma(sigmaxy, sigmaxy, sigmaz);      // Sigma in (X,Y,Z) (cm) on IP position
-//   gener->SetVertexSmear(kPerEvent);
+  gener->SetOrigin(0,0,0);
+  gener->SetSigma(sigmaxy, sigmaxy, sigmaz);      // Sigma in (X,Y,Z) (cm) on IP position
+  gener->SetVertexSmear(kPerEvent);
   gener->Init();
 
   printf("\n \n Comment: %s \n \n", comment.Data());
@@ -215,7 +219,7 @@ void Config() {
   if (iDIPO)      AliDIPO   *DIPO   = new AliDIPOv3("DIPO", "Dipole version 3");
   if (iHALL)      AliHALL   *HALL   = new AliHALLv3("HALL", "Alice Hall");
   if (iSHIL)      AliSHIL   *SHIL   = new AliSHILv3("SHIL", "Shielding Version 3");
-  if (iITS)       AliITS    *ITS    = new AliITSv11("ITS","ITS v11");
+  if (iITS)       gROOT->ProcessLine(".x $ALICE_ROOT/ITS/UPGRADE/testITSU/CreateITSU.C");
   if (iTPC)       AliTPC    *TPC    = new AliTPCv2("TPC", "Default");
   if (iTOF)       AliTOF    *TOF    = new AliTOFv6T0("TOF", "normal TOF");
   if (iHMPID)     AliHMPID  *HMPID  = new AliHMPIDv3("HMPID", "normal HMPID");
@@ -263,12 +267,13 @@ void Config() {
 
 AliGenerator* GenBox() {
 
-  AliGenBox *gener = new AliGenBox(2);
-  gener->SetMomentumRange(10.0, 10.1);
+  AliGenBox *gener = new AliGenBox(10);
+  gener->SetMomentumRange(4, 50);
   gener->SetPhiRange(0., 360.);         
-  gener->SetThetaRange(171.0,178.0);
-  gener->SetPart(kMuonMinus);           // Muons
-  gener->SetOrigin(0., 0., 0.);         // vertex position
+  gener->SetThetaRange(170.0,178.0);
+  Bool_t isMuPlus = gRandom->Integer(2);
+  if (isMuPlus) gener->SetPart(kMuonPlus);           // Muons
+  else          gener->SetPart(kMuonMinus);          // Muons
   
   return gener;
   
@@ -284,8 +289,6 @@ AliGenerator* GenMuonLMR() {
   gener->SetYRange(-4.5, -2.0);
   gener->SetChildThetaRange(171.0,178.0);
   gener->SetChildMomentumRange(4.0, 999.);
-  gener->SetOrigin(0.0, 0.0, 0.0);             // vertex position
-  gener->SetSigma(0.0, 0.0, 0.0);              // vertex position smearing
   enum {kEta2Body, kEtaDalitz, kRho2Body, kOmega2Body, kOmegaDalitz, kPhi2Body, kEtaPrimeDalitz, kPionLMR, kKaonLMR}; 
   gener->GenerateSingleProcess(kOmega2Body, 10);
   gener->SetCutOnChild(1);
@@ -304,9 +307,7 @@ AliGenerator* GenParamJpsi() {
   gener->SetYRange(-4.0, -2.5);
   gener->SetPhiRange(0., 360.);
   gener->SetChildThetaRange(171.0,177.0);
-  gener->SetChildMomentumRange(5.0, 999.);
-  gener->SetOrigin(0.0, 0.0, 0.0);          // vertex position
-  gener->SetSigma(0.0, 0.0, 0.0);           // Sigma in (X,Y,Z) (cm) on IP position
+  gener->SetChildMomentumRange(4.0, 999.);
   gener->SetForceDecay(kDiMuon);
   gener->SetTrackingFlag(1);
   gener->SetCutOnChild(1);
@@ -323,8 +324,6 @@ AliGenerator* GenParamPionKaon() {
   gener->SetPtRange(0, 5.);
   gener->SetPhiRange(0., 360.);
   gener->SetYRange(-10., 0.);
-  gener->SetOrigin(0.0, 0.0, 0.0);  // vertex position
-  gener->SetSigma(0.0, 0.0, 0.0);   // vertex position smearing
   //  gener->SetCutOnChild(1);
 
   return gener;
@@ -342,7 +341,6 @@ AliGenerator* GenCorrHF() {
   gener->SetCutOnChild(1);          // 1/0 means cuts on children enable/disable
   gener->SetChildThetaRange(171.0,178.0);
   gener->SetChildMomentumRange(4.0, 999.);
-  gener->SetOrigin(0,0,0);          //vertex position    
   gener->SetForceDecay(kSemiMuonic);
   gener->SetTrackingFlag(1);
   gener->Init();
@@ -404,7 +402,6 @@ AliGenerator* MbPythiaTunePerugia0Jpsi2mu() {
   jpsi->SetPtRange(0.,999.);
   jpsi->SetYRange(-1.0, 1.0);
   jpsi->SetPhiRange(0.,360.);
-  jpsi->SetOrigin(0,0,0);
   jpsi->SetForceDecay(kDiMuon);
   return jpsi;
 
@@ -449,8 +446,6 @@ AliGenerator* HijingParam() {
   gener->SetMomentumRange(0,999);
   gener->SetPhiRange(0,360);
   gener->SetThetaRange(171, 179);
-  gener->SetOrigin(0,0,0);        // vertex position
-  gener->SetSigma(0,0,0);         // Sigma in (X,Y,Z) (cm) on IP position
   gGener = gener;
   
   return gener;
@@ -535,6 +530,48 @@ AliGenerator* Hijing2500Cocktail() {
 
 //====================================================================================================================================================
 
+AliGenerator* CocktailSignals() {
+  
+  comment = comment.Append("Cocktail of various signals");
+
+  AliGenCocktail *cocktail = new AliGenCocktail();
+
+  // 1) Dummy generation of positive pions, to keep memory of the production vertex
+  AliGenBox *dummyPionPos = new AliGenBox(20);
+  dummyPionPos->SetYRange(-0.5, 0.5);
+  dummyPionPos->SetPtRange(1., 10.);
+  dummyPionPos->SetPart(211);
+  cocktail->AddGenerator(dummyPionPos,"dummyPionPos",1);
+
+  // 2) Dummy generation of negative pions, to keep memory of the production vertex
+  AliGenBox *dummyPionNeg = new AliGenBox(20);
+  dummyPionNeg->SetYRange(-0.5, 0.5);
+  dummyPionNeg->SetPtRange(1., 10.);
+  dummyPionNeg->SetPart(-211);
+  cocktail->AddGenerator(dummyPionNeg,"dummyPionNeg",1);
+
+  // 3) Generator for the custom signal
+  AliGenerator* signalGen = 0x0;      
+  if      (signal == kPythia6)                   signalGen = MbPythia(); 
+  else if (signal == kPythiaPerugia0)            signalGen = MbPythiaTunePerugia0();
+  else if (signal == kHijing)                    signalGen = Hijing();	
+  else if (signal == kHijing2500)                signalGen = Hijing2500();	
+  else if (signal == kGenBox)                    signalGen = GenBox();
+  else if (signal == kGenMuonLMR)                signalGen = GenMuonLMR();
+  else if (signal == kGenParamJpsi)              signalGen = GenParamJpsi();
+  else if (signal == kGenCorrHF)                 signalGen = GenCorrHF();
+  else if (signal == kGenPionKaon)               signalGen = GenParamPionKaon();
+  else if (signal == kPythiaPerugia0BtoJpsi2mu)  signalGen = MbPythiaTunePerugia0BtoJpsi2mu();
+  cocktail->AddGenerator(signalGen, "signal", 1);
+
+  cocktail->SetTrackingFlag(1);
+
+  return cocktail;
+
+}
+
+//====================================================================================================================================================
+
 AliGenerator* QEDGeneratorPbPb() {
   
   AliGenEpEmv1 *generQED = new AliGenEpEmv1();
@@ -543,7 +580,7 @@ AliGenerator* QEDGeneratorPbPb() {
   generQED->SetTarget ("A", 208, 82);
   generQED->SetYRange(-8.5, 0.);
   generQED->SetPtRange(0.4e-3, 1.0); // Set pt limits (GeV) for e+-
-  generQED->SetDebug(0);            // Set debug level (0 = silent)
+  generQED->SetDebug(0);             // Set debug level (0 = silent)
 
 }
 
@@ -570,7 +607,10 @@ void LoadLibs() {
   } 
   
   gSystem->Load("libgeant321");
-  
+
+  gSystem->Load("libITSUpgradeBase.so");
+  gSystem->Load("libITSUpgradeSim.so");
+   
 #endif
 
 }
