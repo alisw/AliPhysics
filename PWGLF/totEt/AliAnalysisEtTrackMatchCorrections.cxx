@@ -37,6 +37,12 @@ AliAnalysisEtTrackMatchCorrections::AliAnalysisEtTrackMatchCorrections(const TSt
 																				,fMeanGamma(meanGammas)
 																				,fMeanSecondary(meanSecondary)
 {
+  for(int i=0;i<20;i++){
+    fNeutronCorrection[i] = 0.0;
+    fHadronCorrection[i] = 0.0;
+    fKaonCorrection[i] = 0.0;
+    fSecondaryCorrection[i] = 0.0;
+  }
 }
 
 //! Copy constructor
