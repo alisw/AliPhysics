@@ -4,15 +4,30 @@ AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFast(
   const char* clusName  = "",
   UInt_t inputCellType  = AliAnalysisTaskEMCALClusterizeFast::kFEEData,
   UInt_t clusterizer    = AliEMCALRecParam::kClusterizerv2,
-  Bool_t nonLinearCorr  = kFALSE, 
-  UInt_t nonLinFunct    = AliEMCALRecoUtils::kBeamTestCorrected,
-  Bool_t calcDistToBC   = kFALSE, 
-  Bool_t remBC          = kFALSE,
-  Bool_t remExotic      = kFALSE,
-  Bool_t fidRegion      = kFALSE,
-  Bool_t updateCells    = kFALSE,
-  Bool_t trackMatch     = kFALSE,
-  Double_t minE         = 0.05
+  Double_t seedE        = 0.1,
+  Double_t cellE        = 0.05,
+  Bool_t calcDistToBC   = kFALSE) {
+
+  return AddTaskClusterizerFast(taskname,cellsName,clusName,inputCellType,clusterizer,kFALSE,0,calcDistToBC,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,cellE,seedE);
+
+}
+
+AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFast(
+  const char* taskname  = "ClusterizerFast",
+  const char* cellsName = "",
+  const char* clusName  = "",
+  UInt_t inputCellType  = AliAnalysisTaskEMCALClusterizeFast::kFEEData,
+  UInt_t clusterizer    = AliEMCALRecParam::kClusterizerv2,
+  Bool_t nonLinearCorr  = kFALSE,                                   //MV: remove
+  UInt_t nonLinFunct    = AliEMCALRecoUtils::kBeamTestCorrected,    //MV: remove
+  Bool_t calcDistToBC   = kFALSE,                                   //MV: keep?
+  Bool_t remBC          = kFALSE,                                   //MV: remove
+  Bool_t remExotic      = kFALSE,                                   //MV: remove
+  Bool_t fidRegion      = kFALSE,                                   //MV: keep?
+  Bool_t updateCells    = kFALSE,                                   //MV: remove
+  Bool_t trackMatch     = kFALSE,                                   //MV: remove
+  Double_t cellE         = 0.05,                                    //minimum energy for cells to be clustered
+  Double_t seedE         = 0.1                                      //minimum energy for seed
 ) 
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -25,7 +40,11 @@ AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFast(
 
   AliEMCALRecParam *recparam = task->GetRecParam();
   recparam->SetClusterizerFlag(clusterizer);
-  recparam->SetMinECut(minE);
+  recparam->SetMinECut(cellE);
+  recparam->SetClusteringThreshold(seedE);
+  recparam->SetW0(4.5);
+  if (clusterizer == AliEMCALRecParam::kClusterizerNxN) //MV: copied from tender. please check
+    recparam->SetNxM(3,3);
 
   AliEMCALRecoUtils *recoUtils = new AliEMCALRecoUtils();
   recoUtils->SetNonLinearityFunction(nonLinFunct);
