@@ -727,11 +727,11 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
    Double_t pi=TMath::Pi(), philims2[2];
    philims2[0]=-pi*1./2.;
    philims2[1]=pi*3./2.;
-   const Int_t nAxis=6;   
-   const Int_t nbinsSparse[nAxis]={nbinsz,nbinsphi,nbinsptjet,nbinsptD,nbinsmass,2};
-   const Double_t minSparse[nAxis]={zlims[0],philims2[0],ptjetlims[0],ptDlims[0],fMinMass,-0.5};
-   const Double_t maxSparse[nAxis]={zlims[1],philims2[1],ptjetlims[1],ptDlims[1],fMaxMass, 1.5};
-   THnSparseF *hsDphiz=new THnSparseF("hsDphiz","Z and #Delta#phi vs p_{T}^{jet}, p_{T}^{D}, mass and IsSB", nAxis, nbinsSparse, minSparse, maxSparse);
+   const Int_t nAxis=7;   
+   const Int_t nbinsSparse[nAxis]={nbinsz,nbinsphi,nbinsptjet,nbinsptD,nbinsmass,2, 2};
+   const Double_t minSparse[nAxis]={zlims[0],philims2[0],ptjetlims[0],ptDlims[0],fMinMass,-0.5, -0.5};
+   const Double_t maxSparse[nAxis]={zlims[1],philims2[1],ptjetlims[1],ptDlims[1],fMaxMass, 1.5, 1.5};
+   THnSparseF *hsDphiz=new THnSparseF("hsDphiz","Z and #Delta#phi vs p_{T}^{jet}, p_{T}^{D}, mass. For SB or not and within the jet cone or not", nAxis, nbinsSparse, minSparse, maxSparse);
    hsDphiz->Sumw2();
    
    fmyOutput->Add(hsDphiz);
@@ -787,7 +787,7 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsD0JetCorr(AliAODRecoDe
    
    TH3F* hPtJetWithD=(TH3F*)fmyOutput->FindObject("hPtJetWithD");
    THnSparseF* hsDphiz=(THnSparseF*)fmyOutput->FindObject("hsDphiz");
-   Double_t point[6]={z,dPhi,ptj,ptD,masses[0],0};
+   Double_t point[7]={z,dPhi,ptj,ptD,masses[0],0, deltaR<fJetRadius ? 1 : 0};
    
    Int_t isselected=fCuts->IsSelected(candidate,AliRDHFCuts::kAll,aodEvent);
    if(isselected==1 || isselected==3) {
@@ -822,9 +822,9 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsDstarJetCorr(AliAODRec
    
    TH3F* hPtJetWithD=(TH3F*)fmyOutput->FindObject("hPtJetWithD");
    THnSparseF* hsDphiz=(THnSparseF*)fmyOutput->FindObject("hsDphiz");
-   Int_t isSB=IsDzeroSideBand(dstar);
+   Int_t isSB=0;//IsDzeroSideBand(dstar);
    
-   Double_t point[6]={z,dPhi,ptj,ptD,deltamass,isSB};
+   Double_t point[7]={z,dPhi,ptj,ptD,deltamass,isSB, deltaR<fJetRadius ? 1 : 0};
 
    if(deltaR<fJetRadius) hPtJetWithD->Fill(ptj,deltamass,ptD);
    
@@ -840,7 +840,7 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsMCGenDJetCorr(Double_t
    Double_t pdgmass=0;
    TH3F* hPtJetWithD=(TH3F*)fmyOutput->FindObject("hPtJetWithD");
    THnSparseF* hsDphiz=(THnSparseF*)fmyOutput->FindObject("hsDphiz");
-   Double_t point[6]={z,dPhi,ptjet,ptD,pdgmass,0};
+   Double_t point[7]={z,dPhi,ptjet,ptD,pdgmass,0, deltaR<fJetRadius ? 1 : 0};
 
    if(fCandidateType==kD0toKpi) pdgmass=TDatabasePDG::Instance()->GetParticle(421)->Mass();
    if(fCandidateType==kDstartoKpipi) pdgmass=TDatabasePDG::Instance()->GetParticle(413)->Mass()-TDatabasePDG::Instance()->GetParticle(421)->Mass();
@@ -884,9 +884,11 @@ void AliAnalysisTaskFlavourJetCorrelations::SideBandBackground(AliAODRecoCascade
    //  has a width of ~5 sigmas. Two band needed  for opening angle considerations   
    TH2F* hDiffSideBand=(TH2F*)fmyOutput->FindObject("hDiffSideBand");
    TH3F* hPtJetWithDsb=(TH3F*)fmyOutput->FindObject("hPtJetWithDsb");
+   THnSparseF* hsDphiz=(THnSparseF*)fmyOutput->FindObject("hsDphiz");
    
    Double_t deltaM=candDstar->DeltaInvMass(); 
    //Printf("Inv mass = %f between %f and %f or %f and %f?",invM, sixSigmal,fourSigmal,fourSigmar,sixSigmar);
+   Double_t z=Z(candDstar,jet);
    Double_t ptD=candDstar->Pt();
    Double_t ptjet=jet->Pt();
    Double_t dPhi=jet->Phi()-candDstar->Phi();
@@ -894,12 +896,13 @@ void AliAnalysisTaskFlavourJetCorrelations::SideBandBackground(AliAODRecoCascade
    if(dPhi>TMath::Pi())dPhi = dPhi - 2.*TMath::Pi();
    if(dPhi<(-1.*TMath::Pi()))dPhi = dPhi + 2.*TMath::Pi();
    
-   Int_t isSideBand=IsDzeroSideBand(candDstar);
+   Int_t isSideBand=1;//IsDzeroSideBand(candDstar);
+   Double_t point[7]={z,dPhi,ptjet,ptD,deltaM,isSideBand, deltaR<fJetRadius ? 1 : 0};
    //fill the background histogram with the side bands or when looking at MC with the real background
    if(isSideBand==1){
       hDiffSideBand->Fill(deltaM,ptD); // M(Kpipi)-M(Kpi) side band background    
       //hdeltaPhiDjaB->Fill(deltaM,ptD,dPhi);
-      
+      hsDphiz->Fill(point,1.);
       if(deltaR<fJetRadius){  // evaluate in the near side	
       	 //hzptDB->Fill(Z(candDstar,jet),deltaM,ptD);
       	 hPtJetWithDsb->Fill(ptjet,deltaM,ptD);
