@@ -302,6 +302,15 @@ Int_t AliTPCtracker::UpdateTrack(AliTPCseed * track, Int_t accept){
     //  new(larr[ihelix]) AliHelix(*track) ;    
     //}
   }
+  if (AliTPCReconstructor::StreamLevel()>0) {
+    Int_t event = (fEvent==NULL)? 0: fEvent->GetEventNumberInFile();
+    AliExternalTrackParam param(*track);
+    TTreeSRedirector &cstream = *fDebugStreamer;
+    cstream<<"Update"<<
+      "cl.="<<c<<
+      "track.="<<&param<<
+      "\n";
+  }
   track->SetNoCluster(0);
   return track->Update(c,chi2,i);
 }
@@ -2973,8 +2982,9 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
   PropagateForward2(fSeeds);
   RemoveUsed2(fSeeds,0.4,0.4,20);
 
-  TObjArray arraySeed(fSeeds->GetEntries());
-  for (Int_t i=0;i<fSeeds->GetEntries();i++) {
+  Int_t entriesSeed=fSeeds->GetEntries();
+  TObjArray arraySeed(entriesSeed);
+  for (Int_t i=0;i<entriesSeed;i++) {
     arraySeed.AddAt(fSeeds->At(i),i);    
   }
   SignShared(&arraySeed);

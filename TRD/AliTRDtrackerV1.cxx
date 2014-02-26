@@ -624,6 +624,24 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
     Double_t cov[3]; tracklet->GetCovAt(x, cov);
     Double_t p[2] = { tracklet->GetY(), tracklet->GetZ()};
     Double_t chi2 = ((AliExternalTrackParam)t).GetPredictedChi2(p, cov);
+    if(fkRecoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 1){
+      Int_t eventNumber = AliTRDtrackerDebug::GetEventNumber();
+      TTreeSRedirector &cstreamer = *fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
+      AliExternalTrackParam param0(t);
+      AliExternalTrackParam param1(t);
+      param1.Update(p, cov);
+      TVectorD vcov(3,cov);
+      TVectorD vpar(3,p);
+      cstreamer << "FollowProlongationInfo"
+		<< "EventNumber="	<< eventNumber
+		<< "iplane="<<iplane
+		<< "vcov.="<<&vcov
+	        << "vpar.="<<&vpar
+		<< "tracklet.="      << tracklet
+		<< "param0.="		<< &param0
+		<< "param1.="		<< &param1
+		<< "\n";
+    }
     if (chi2 < 1e+10 && ((AliExternalTrackParam&)t).Update(p, cov)){ 
       // Register info to track
       t.SetNumberOfClusters();
