@@ -42,16 +42,16 @@ void DrawAnaCaloTrackQA(TString listName = "Pi0IM_GammaTrackCorr_EMCAL_default",
   gStyle->SetTitleFontSize(0.06);
 
   //Plot basic Calorimeter QA
-  //CaloQA();
+  CaloQA();
 
   //Plot basic Track QA
-  //TrackQA();
+  TrackQA();
 
   //Plot basic Pi0 QA
-  //Pi0QA();
+  Pi0QA();
 
   //Plot basic correlation QA
-  //CorrelationQA();
+  CorrelationQA();
   
   // MC basic QA plots, cluster origins (only if it run on MC)
   MCQA();
