@@ -1137,7 +1137,7 @@ void AliAnalysisTaskPi0FlowMC::FillSecondaries()
 	    continue ;
 	  }
 	  //Common particle pi0, created off-vertex
-  	  Int_t primPi0=particle->GetFirstMother();
+  	  Int_t primPi0=(fEventESD ? particle->GetFirstMother() : ((AliAODMCParticle*)particle)->GetMother());
 	  if(primPi0==-1){
             FillHistogram(Form("hParentPi0NoPrim_cen%d",fCentBin),p12.M(),p12.Pt(),w) ;
 	  }
@@ -1188,11 +1188,11 @@ void AliAnalysisTaskPi0FlowMC::FillSecondaries()
     else{
       //Find primary at vertex
       TParticle * primPHOS = GetParticle(iprim);
-      Int_t iprimV=primPHOS->GetFirstMother();
+      Int_t iprimV=(fEventESD ? primPHOS->GetFirstMother() : ((AliAODMCParticle*)primPHOS)->GetMother());
       TParticle * primVtx = primPHOS ;
       while((iprimV>-1) && primVtx->R()>kRCut){
 	primVtx = GetParticle(iprimV);
-        iprimV=primVtx->GetFirstMother();
+        iprimV=(fEventESD ? primVtx->GetFirstMother() : ((AliAODMCParticle*)primVtx)->GetMother());
       }
     
       //photon
@@ -1398,22 +1398,26 @@ TParticle* AliAnalysisTaskPi0FlowMC::GetParticle(Int_t particlepos)
 Int_t AliAnalysisTaskPi0FlowMC::FindPrimary(AliVCluster*clu,  Bool_t&sure){
   //Finds primary and estimates if it unique one?
   //First check can it be photon/electron
+
   const Double_t emFraction=0.9; //part of energy of cluster to be assigned to EM particle
-  Int_t n=clu->GetNLabels() ;
+  Int_t n=(fEventESD ? ((AliESDCaloCluster*)clu)->GetNLabels() : ((AliAODCluster*)clu)->GetNLabels());
+
   for(Int_t i=0;  i<n;  i++){
-    TParticle*  p=  GetParticle(clu->GetLabelAt(i)) ;
+    Int_t label = (fEventESD ? ((AliESDCaloCluster*)clu)->GetLabelAt(i) : ((AliAODCluster*)clu)->GetLabelAt(i));
+    TParticle*  p=  GetParticle(label) ;
     Int_t pdg = p->GetPdgCode() ;
     if(pdg==22  ||  pdg==11 || pdg == -11){
       if(p->Energy()>emFraction*clu->E()){
 	sure=kTRUE ;
-	return clu->GetLabelAt(i);
+	return label;
       }
     }
   }
 
   Double_t*  Ekin=  new  Double_t[n] ;
+
   for(Int_t i=0;  i<n;  i++){
-    TParticle*  p=  GetParticle(clu->GetLabelAt(i)) ;
+    TParticle*  p=  GetParticle((fEventESD ? ((AliESDCaloCluster*)clu)->GetLabelAt(i) : ((AliAODCluster*)clu)->GetLabelAt(i))) ;
     Ekin[i]=p->P() ;  // estimate of kinetic energy
     if(p->GetPdgCode()==-2212  ||  p->GetPdgCode()==-2112){
       Ekin[i]+=1.8  ;  //due to annihilation
@@ -1433,7 +1437,7 @@ Int_t AliAnalysisTaskPi0FlowMC::FindPrimary(AliVCluster*clu,  Bool_t&sure){
   else
     sure=kTRUE;
   delete[]  Ekin;
-  return  clu->GetLabelAt(iMax) ;
+  return  (fEventESD ? ((AliESDCaloCluster*)clu)->GetLabelAt(iMax) : ((AliAODCluster*)clu)->GetLabelAt(iMax));
 }
 
 //________________________________________________________________________
@@ -1453,9 +1457,9 @@ Int_t AliAnalysisTaskPi0FlowMC::FindCommonParent(Int_t iPart, Int_t jPart){
      while(iprim2>-1){
        if(iprim1==iprim2)
 	 return iprim1 ;
-       iprim2=((TParticle *)GetParticle(iprim2))->GetFirstMother();
+       iprim2=(fEventESD ? (((TParticle*)GetParticle(iprim2))->GetFirstMother()) : (((AliAODMCParticle*)GetParticle(iprim2))->GetMother()));
      }
-     iprim1=((TParticle *)GetParticle(iprim1))->GetFirstMother();
+     iprim1= (fEventESD ? (((TParticle*)GetParticle(iprim1))->GetFirstMother()) : (((AliAODMCParticle*)GetParticle(iprim1))->GetMother()));
   }
   return -1;
 }
@@ -1473,7 +1477,7 @@ Bool_t AliAnalysisTaskPi0FlowMC::HaveParent(Int_t iPart, Int_t pdgParent){
     TParticle * tmp = GetParticle(iprim1) ;
     if(tmp->GetPdgCode()==pdgParent)
       return kTRUE ;
-    iprim1=tmp->GetFirstMother();
+    iprim1=(fEventESD ? tmp->GetFirstMother() : ((AliAODMCParticle*)tmp)->GetMother());
   }
   return kFALSE;
 }

@@ -22,6 +22,7 @@
 #include "AliStack.h"
 #include "TParticle.h"
 #include "AliCaloPhoton.h"
+#include "AliAODMCParticle.h"
 
 #include "AliAnalysisTaskPi0FlowMCHijing.h"
 
@@ -40,22 +41,25 @@ AliAnalysisTaskPi0FlowMCHijing::~AliAnalysisTaskPi0FlowMCHijing()
 Double_t AliAnalysisTaskPi0FlowMCHijing::PrimaryWeight(Int_t primary)
 {
   //Check who is the primary and introduce weight to correct primary spectrum
-  
-  if(primary<0 || primary>=fStack->GetNtrack())
+  Int_t ntrack=0;
+  if(fEventESD&&fStack){ntrack = fStack->GetNtrack();}
+  if(fEventAOD&&fMcArray){ntrack = fMcArray->GetEntriesFast();}
+  if(primary<0 || primary>=ntrack)
     return 1 ;
   //trace primaries up to IP
-  TParticle* particle =  fStack->Particle(primary);
+  TParticle* particle=GetParticle(primary);
+  
   Double_t r=particle->R() ;
-  Int_t mother = particle->GetFirstMother() ;
+  Int_t mother = (fEventESD ? particle->GetFirstMother() : ((AliAODMCParticle*)particle)->GetMother());
   while(mother>-1){
     if(r<1. && particle->GetPdgCode()==111)
       break ;
-    particle =  fStack->Particle(mother);
-    mother = particle->GetFirstMother() ;
+    particle =  GetParticle(mother);
+    mother = (fEventESD ? particle->GetFirstMother() : ((AliAODMCParticle*)particle)->GetMother());
     r=particle->R() ;
   }
-
-  return TMath::Max(0.,PrimaryParticleWeight(particle)) ;
+  
+  return TMath::Max(0.,PrimaryParticleWeight(particle)) ;  
 }
 
 
