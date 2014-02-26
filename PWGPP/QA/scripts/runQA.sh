@@ -128,6 +128,11 @@ updateQA()
       echo running ${detector} runLevelQA for run ${runNumber} from ${qaFile}
       runLevelQA ${qaFile} &> runLevelQA.log
 
+      #perform some default actions:
+      #if trending.root not created, create a default one
+      if [[ ! -f trending.root ]]; then
+        aliroot -b -q -l "$ALICE_ROOT/PWGPP/macros/simpleTrending.C(\"${qaFile}\",${runNumber},\"${detector}\",\"trending.root\",\"trending\",\"recreate\")" &>> runLevelQA.log
+      fi
       cd ${tmpDetectorRunDir}
     
     done < ${inputList}
