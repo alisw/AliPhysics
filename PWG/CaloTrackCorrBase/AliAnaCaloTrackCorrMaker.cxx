@@ -986,7 +986,7 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(Int_t iEntry, const char * currentFi
     if(!fReader->IsEventTriggerAtSEOn() && isMBTrigger)
     {
       ana->FillEventMixPool();
-      continue; // pool filled do not try to fill AODs or histograms
+      if(!isTrigger) continue; // pool filled do not try to fill AODs or histograms if trigger is not MB
     }
     
     //Make analysis, create aods in aod branch and in some cases fill histograms
