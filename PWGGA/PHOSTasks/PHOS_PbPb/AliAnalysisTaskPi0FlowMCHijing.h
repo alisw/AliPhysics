@@ -18,7 +18,10 @@ public:
   virtual ~AliAnalysisTaskPi0FlowMCHijing();
 
 protected: // member functions:
-  AliAnalysisTaskPi0FlowMCHijing(const AliAnalysisTaskPi0FlowMC&); // not implemented
+  
+
+  
+  AliAnalysisTaskPi0FlowMCHijing(const AliAnalysisTaskPi0FlowMCHijing&); // not implemented
   AliAnalysisTaskPi0FlowMCHijing& operator=(const AliAnalysisTaskPi0FlowMC&); // not implemented
 
   virtual Double_t PrimaryWeight(Int_t primary);
