@@ -48,6 +48,12 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   Bool_t GetFillMultDistributionsHist() const {return this->fFillMultDistributionsHist;};
   void SetFillMultCorrelationsHist(Bool_t const mch) {this->fFillMultCorrelationsHist = mch;};
   Bool_t GetFillMultCorrelationsHist() const {return this->fFillMultCorrelationsHist;};
+  void SetnBins(const char *type, const char *variable, const Int_t nBins); // .cxx
+  void SetMin(const char *type, const char *variable, const Double_t min); // .cxx
+  void SetMax(const char *type, const char *variable, const Double_t max); // .cxx
+  void SetnBinsMult(const char *type, const Int_t nBinsMult); // .cxx
+  void SetMinMult(const char *type, const Double_t minMult); // .cxx
+  void SetMaxMult(const char *type, const Double_t maxMult); // .cxx
 
   // Q-vectors:
   void SetCalculateQvector(Bool_t const cqv) {this->fCalculateQvector = cqv;};
@@ -148,6 +154,12 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   Bool_t fFillKinematicsHist;        // fill or not fKinematicsHist[2][3]
   Bool_t fFillMultDistributionsHist; // fill or not TH1D *fMultDistributionsHist[3]    
   Bool_t fFillMultCorrelationsHist;  // fill or not TH2D *fMultCorrelationsHist[3] 
+  Int_t fnBins[2][3];                   // [RP,POI][phi,pt,eta], corresponds to fKinematicsHist[2][3]
+  Double_t fMin[2][3];                  // [RP,POI][phi,pt,eta], corresponds to fKinematicsHist[2][3]
+  Double_t fMax[2][3];                  // [RP,POI][phi,pt,eta], corresponds to fKinematicsHist[2][3]
+  Int_t fnBinsMult[3];                  // [RP,POI,REF], corresponds to fMultDistributionsHist[3]   
+  Double_t fMinMult[3];                 // [RP,POI,REF], corresponds to fMultDistributionsHist[3]   
+  Double_t fMaxMult[3];                 // [RP,POI,REF], corresponds to fMultDistributionsHist[3]  
 
   // Q-vectors:
   Bool_t fCalculateQvector;      // to calculate or not to calculate Q-vector components, that's a Boolean...
