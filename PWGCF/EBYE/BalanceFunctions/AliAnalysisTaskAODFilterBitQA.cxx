@@ -7,6 +7,11 @@
 #include "AliAODTrack.h"
 #include "AliLog.h"
 
+#include "AliAnalysisTaskSE.h"
+#include "AliMCEvent.h"
+#include "AliAODMCParticle.h"
+
+
 
 #include "AliAnalysisTaskAODFilterBitQA.h"
 
@@ -18,14 +23,25 @@ ClassImp(AliAnalysisTaskAODFilterBitQA)
 //________________________________________________________________________
 AliAnalysisTaskAODFilterBitQA::AliAnalysisTaskAODFilterBitQA(const char *name) 
   : AliAnalysisTaskSE(name),
+  fArrayMC(0x0),
+  fListQA(0x0),
+  fillOnlySecondaries(kFALSE),
+  fCentralityPercentileMin(0.),
+  fCentralityPercentileMax(80.), 
+  fPtMin(0),
+  fPtMax(1000),
+  fEtaMin(-10),
+  fEtaMax(10),
   fHistTrackStats(0)
 {
 
-  for(Int_t iTrackBit = 0; iTrackBit < gBitMax; iTrackBit++){
-    fHistKinematics[iTrackBit] = NULL;
-    fHistDCAconstrained[iTrackBit] = NULL;
-    fHistDCAglobal[iTrackBit]  = NULL;
-    fHistChiClus[iTrackBit]    = NULL;
+  for(Int_t iCharge = 0; iCharge < gNCharge; iCharge++){
+    for(Int_t iTrackBit = 0; iTrackBit < gBitMax; iTrackBit++){
+      fHistKinematics[iCharge][iTrackBit] = NULL;
+      fHistDCAconstrained[iCharge][iTrackBit] = NULL;
+      fHistDCAglobal[iCharge][iTrackBit]  = NULL;
+      fHistChiClus[iCharge][iTrackBit]    = NULL;
+    }
   }
   
   DefineInput(0, TChain::Class());
@@ -59,15 +75,19 @@ void AliAnalysisTaskAODFilterBitQA::UserCreateOutputObjects() {
   fHistTrackStats = new TH2D("fHistTrackStats","Track statistics;Centrality;TrackFilterBit;N_{events}",100,0,100,gBitMax,0,gBitMax);
   fListQA->Add(fHistTrackStats);
 
-  for(Int_t iTrackBit = 0; iTrackBit < gBitMax; iTrackBit++){
-    fHistKinematics[iTrackBit] = new TH3D(Form("Bit%d_Kinematics",iTrackBit),Form("Bit%d_Kinematics;#eta;#varphi (rad);p_{T} (GeV/c)",iTrackBit),100,-1.0,1.0,100,0,TMath::Pi()*2,100,0,10);
-    fHistDCAconstrained[iTrackBit] = new TH2D(Form("Bit%d_DCAconstrained",iTrackBit),Form("Bit%d_DCAconstrained;DCA XY [Constrained] (cm);DCA Z [Constrained] (cm)",iTrackBit),100,-5.0,5.0,100,-5.0,5.0);
-    fHistDCAglobal[iTrackBit]  = new TH3D(Form("Bit%d_DCAglobal",iTrackBit),Form("Bit%d_DCAglobal;DCA X [Global] (cm);DCA Y [Global] (cm);DCA Z [Global] (cm)",iTrackBit),100,-5.0,5.0,100,-5.0,5.0,100,-5.0,5.0);
-    fHistChiClus[iTrackBit]    = new TH2D(Form("Bit%d_ChiClus",iTrackBit),Form("Bit%d_ChiClus;#chi^{2} [Fit];N_{clus} [TPC]",iTrackBit),100,-1.0,5.0,160,0,160.0);
-    fListQA->Add(fHistKinematics[iTrackBit]);
-    fListQA->Add(fHistDCAconstrained[iTrackBit]);
-    fListQA->Add(fHistDCAglobal[iTrackBit]);
-    fListQA->Add(fHistChiClus[iTrackBit]);
+  TString sCharge[gNCharge] = {"Plus","Minus"};
+  
+  for(Int_t iCharge = 0; iCharge < gNCharge; iCharge++){
+    for(Int_t iTrackBit = 0; iTrackBit < gBitMax; iTrackBit++){
+      fHistKinematics[iCharge][iTrackBit] = new TH3D(Form("Bit%d_%s_Kinematics",iTrackBit,sCharge[iCharge].Data()),Form("Bit%d_%s_Kinematics;#eta;#varphi (rad);p_{T} (GeV/c)",iTrackBit,sCharge[iCharge].Data()),100,-1.0,1.0,100,0,TMath::Pi()*2,100,0,10);
+      fHistDCAconstrained[iCharge][iTrackBit] = new TH2D(Form("Bit%d_%s_DCAconstrained",iTrackBit,sCharge[iCharge].Data()),Form("Bit%d_%s_DCAconstrained;DCA XY [Constrained] (cm);DCA Z [Constrained] (cm)",iTrackBit,sCharge[iCharge].Data()),100,-5.0,5.0,100,-5.0,5.0);
+      fHistDCAglobal[iCharge][iTrackBit]  = new TH3D(Form("Bit%d_%s_DCAglobal",iTrackBit,sCharge[iCharge].Data()),Form("Bit%d_%s_DCAglobal;DCA X [Global] (cm);DCA Y [Global] (cm);DCA Z [Global] (cm)",iTrackBit,sCharge[iCharge].Data()),100,-5.0,5.0,100,-5.0,5.0,100,-5.0,5.0);
+fHistChiClus[iCharge][iTrackBit]    = new TH2D(Form("Bit%d_%s_ChiClus",iTrackBit,sCharge[iCharge].Data()),Form("Bit%d_%s_ChiClus;#chi^{2} [Fit];N_{clus} [TPC]",iTrackBit,sCharge[iCharge].Data()),100,-1.0,5.0,160,0,160.0);
+      fListQA->Add(fHistKinematics[iCharge][iTrackBit]);
+      fListQA->Add(fHistDCAconstrained[iCharge][iTrackBit]);
+      fListQA->Add(fHistDCAglobal[iCharge][iTrackBit]);
+      fListQA->Add(fHistChiClus[iCharge][iTrackBit]);
+    }
   }
 
   // Post output data.
@@ -88,8 +108,9 @@ void AliAnalysisTaskAODFilterBitQA::UserExec(Option_t *) {
     return;
   }
 
-  
-
+  // MC information (set if available)
+  fArrayMC = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));   
+    
   // check event cuts
   Double_t lMultiplicityVar = -1;
   if((lMultiplicityVar = IsEventAccepted(event)) < 0){ 
@@ -123,8 +144,6 @@ Double_t AliAnalysisTaskAODFilterBitQA::IsEventAccepted(AliVEvent *event){
   // Checks the Event cuts
 
   // still hard coded
-  Double_t fCentralityPercentileMin = 0.;
-  Double_t fCentralityPercentileMax = 80.;  
   Double_t fVxMax = 0.5;
   Double_t fVyMax = 0.5;
   Double_t fVzMax = 10.0;
@@ -195,6 +214,16 @@ void AliAnalysisTaskAODFilterBitQA::GetAcceptedTracks(AliVEvent *event, Double_t
       continue;
     }
 
+    // get MC information (if available)
+    if(fArrayMC && fillOnlySecondaries){
+      
+      Int_t label = aodTrack->GetLabel();
+      AliAODMCParticle *mcTrack = (AliAODMCParticle *)fArrayMC->At(TMath::Abs(label));
+
+      if(mcTrack->IsPhysicalPrimary())
+	continue;      
+    }
+
     // track parameters
     vCharge = aodTrack->Charge();
     vEta    = aodTrack->Eta();
@@ -206,22 +235,40 @@ void AliAnalysisTaskAODFilterBitQA::GetAcceptedTracks(AliVEvent *event, Double_t
     vChi2   = aodTrack->Chi2perNDF(); 
     vClus   = aodTrack->GetTPCNcls(); 
 
+    // kinematic cuts
+    if( vPt > fPtMax || vPt < fPtMin )
+      continue;
+    if( vEta > fEtaMax || vEta < fEtaMin )
+      continue;
+
     // if not constrained track the position is stored (primary vertex to be subtracted)
     aodTrack->GetXYZ(pos);
     vDCAglobalx  = pos[0] - v[0];
     vDCAglobaly  = pos[1] - v[1];
     vDCAglobalz  = pos[2] - v[2];
     
+    // fill for separately for positive and negative charges
+    Int_t iCharge = -1;
+    // positive 
+    if(aodTrack->Charge() > 0)
+      iCharge = 0;
+    else if(aodTrack->Charge() < 0)
+      iCharge = 1;
+    else{
+      AliError("Charge==0?");
+      iCharge = -1;
+    }
+
 
     // AOD track cuts
     for(Int_t iTrackBit = 0; iTrackBit < gBitMax; iTrackBit++){
       fHistTrackStats->Fill(gCentrality,iTrackBit,aodTrack->TestFilterBit(1<<iTrackBit));
       
       if(aodTrack->TestFilterBit(1<<iTrackBit)){
-	fHistKinematics[iTrackBit]->Fill(vEta,vPhi,vPt);
-	fHistDCAconstrained[iTrackBit]->Fill(vDCAconstrainedxy,vDCAconstrainedz);
-	fHistDCAglobal[iTrackBit]->Fill(vDCAglobalx,vDCAglobaly,vDCAglobalz);
-	fHistChiClus[iTrackBit]->Fill(vChi2,vClus);
+	fHistKinematics[iCharge][iTrackBit]->Fill(vEta,vPhi,vPt);
+	fHistDCAconstrained[iCharge][iTrackBit]->Fill(vDCAconstrainedxy,vDCAconstrainedz);
+	fHistDCAglobal[iCharge][iTrackBit]->Fill(vDCAglobalx,vDCAglobaly,vDCAglobalz);
+	fHistChiClus[iCharge][iTrackBit]->Fill(vChi2,vClus);
       }
       
     }//bit loop
