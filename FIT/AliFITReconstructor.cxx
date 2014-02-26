@@ -39,7 +39,8 @@ ClassImp(AliFITReconstructor)
 
 AliFITReconstructor:: AliFITReconstructor(): AliReconstructor(),
 					     fESD(NULL),
-					     fESDFIT(NULL)
+					     fESDFIT(NULL),
+					     fDigits(NULL)
 
 {
  
@@ -103,7 +104,7 @@ void AliFITReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTr
 }
 
  //____________________________________________________________
-void AliFITReconstructor::FillESD(TTree *digitsTree, TTree *clustersTree, AliESDEvent *pESD) const
+void AliFITReconstructor::FillESD(TTree *digitsTree, TTree * /*clustersTree*/, AliESDEvent *pESD) const
 {
   
   /***************************************************
@@ -118,9 +119,9 @@ void AliFITReconstructor::FillESD(TTree *digitsTree, TTree *clustersTree, AliESD
   
   Float_t channelWidth = 24.4;  
   Float_t c = 0.0299792458; // cm/ps
-  Float_t currentVertex=0, shift=0;
+  Float_t currentVertex, shift=0;
   Int_t ncont=-1;
-  /*  const AliESDVertex* vertex = pESD->GetPrimaryVertex();
+   const AliESDVertex* vertex = pESD->GetPrimaryVertex();
   if (!vertex)        vertex = pESD->GetPrimaryVertexSPD();
   if (!vertex)        vertex = pESD->GetPrimaryVertexTPC();
   if (!vertex)        vertex = pESD->GetVertex();
@@ -136,7 +137,7 @@ void AliFITReconstructor::FillESD(TTree *digitsTree, TTree *clustersTree, AliESD
     }
   } //vertex
 
-  */
+ 
   // FIT digits reconstruction
   
   if (!digitsTree) {

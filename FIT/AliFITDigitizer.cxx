@@ -148,8 +148,6 @@ void AliFITDigitizer::DigitizeHits()
   Int_t timeCFD, timeLED, timeQT1, timeQT0;
 
   Int_t threshold = 0; //photoelectrons
-  Int_t ph2Mip = 200;    
-  Float_t mip2qtc=0.005; 
   Float_t channelWidth = 24.4 ; 
   Int_t pmt, mcp, volume, qt; 
   //eqailized distance from IP
