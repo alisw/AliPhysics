@@ -23,7 +23,7 @@ void sim(Int_t nev=100)
   if ( ! VAR_PURELY_LOCAL ) {
     
     // MUON Tracker
-    simulator.SetSpecificStorage("MUON/Align/Data","alien://folder=/alice/simulation/2008/v4-15-Release/Ideal");
+    simulator.SetSpecificStorage("MUON/Align/Data",VAR_SIM_ALIGNDATA);
   
     // Mag.field from OCDB
     simulator.UseMagFieldFromGRP();
