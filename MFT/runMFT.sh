@@ -4,9 +4,9 @@ date
 NEVENTS=10   # Number of events to be simulated
 SIMCONFIG="Config.C"   # default simulation configuration file
 CURDIR=`pwd`
-echo $CURDIR
+echo 'current directory:' $CURDIR
 OUTDIR=${CURDIR}/test
-echo $OUTDIR
+echo 'working directory:' $OUTDIR
 mkdir $OUTDIR
 RUN=169099  # run number for OCDB access
 SEED=12345  # random number generator seed should be used
@@ -14,13 +14,16 @@ SIMDIR="generated" # sub-directory where to move simulated files prior to reco
 # Copy *ALL* the macros we need in the output directory, not to mess
 # with our source dir in any way.
 cp $ALICE_ROOT/MFT/.rootrc \
-   $ALICE_ROOT/Config.C \
+   $ALICE_ROOT/MFT/Config.C \
    $ALICE_ROOT/MFT/rootlogon.C \
-   $ALICE_ROOT/runReconstruction.C \
-   $ALICE_ROOT/runSimulation.C \
+   $ALICE_ROOT/MFT/runReconstruction.C \
+   $ALICE_ROOT/MFT/runSimulation.C \
    $ALICE_ROOT/MFT/AliMFTClusterQA.C \
    $ALICE_ROOT/MFT/AliMFTGeometry.root \
-   $ALICE_ROOT/AODtrain.C \
+   $ALICE_ROOT/MFT/AODtrain.C \
+   $ALICE_ROOT/MFT/RunAnalysisTaskMFTExample.C \
+   $ALICE_ROOT/MFT/AliAnalysisTaskMFTExample.h \
+   $ALICE_ROOT/MFT/AliAnalysisTaskMFTExample.cxx \
    $OUTDIR 
 cd $OUTDIR
 
@@ -59,6 +62,16 @@ aliroot -l -b -q AliMFTClusterQA.C\(\) >$OUTDIR/mftClusterQA.out 2>$OUTDIR/mftCl
 echo "Creating AODs  ..."
 echo aliroot -l -b -q AODtrain.C
 aliroot -l -b -q AODtrain.C >$OUTDIR/AODLog.out 2>$OUTDIR/AODLog.err
+
+###############################################################################
+# 
+# Performing analysis
+#
+###############################################################################
+  
+echo "Performing analysis  ..."
+echo aliroot -l -b -q RunAnalysisTaskMFTExample.C
+aliroot -l -b -q RunAnalysisTaskMFTExample.C >$OUTDIR/analysisLog.out 2>$OUTDIR/analysisLog.err
 
 echo "Finished"  
 echo "... see results in $OUTDIR"

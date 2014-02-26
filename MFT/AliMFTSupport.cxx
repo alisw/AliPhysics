@@ -174,9 +174,10 @@ Bool_t AliMFTSupport::RefitAODDimuonWithCommonVertex(AliAODDimuon *dimuon, Doubl
 
   Double_t massMu = TDatabasePDG::Instance()->GetParticle("mu-")->Mass();
 
-  Double_t energy = TMath::Sqrt(massMu*massMu + pTot[0]*pTot[0] + pTot[1]*pTot[1] + pTot[2]*pTot[2]); 
+  Double_t energy0 = TMath::Sqrt(massMu*massMu + param0->Px()*param0->Px() + param0->Py()*param0->Py() + param0->Pz()*param0->Pz());
+  Double_t energy1 = TMath::Sqrt(massMu*massMu + param1->Px()*param1->Px() + param1->Py()*param1->Py() + param1->Pz()*param1->Pz());
 
-  kinem.SetPxPyPzE(pTot[0], pTot[1], pTot[2], energy);
+  kinem.SetPxPyPzE(pTot[0], pTot[1], pTot[2], energy0+energy1);
 
   return kTRUE;
 

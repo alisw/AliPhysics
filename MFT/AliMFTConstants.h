@@ -29,9 +29,6 @@ public:
 
   static const Double_t fElossPerElectron;
 
-  // minimum radial distance of the MFT sensors. To be carefully coordinated with fActiveSuperposition
-  static const Double_t fRadiusMin;  ///<
-	 
   // superposition between the active elements tasselling the MFT planes, for having a full acceptance coverage even in case of 10 degrees inclined tracks
   static const Double_t fActiveSuperposition;  ///<
                                                 
