@@ -439,7 +439,7 @@ void AliCDBStorage::QueryCDB(Int_t run, const char* pathFilter,
   // In fValidFileIds, clear id for the same 3level path, if any
   AliDebug(3, Form("Clearing list of CDB Id's previously loaded for path \"%s\"", pathFilter));
   AliCDBPath filter(pathFilter);
-  for (Int_t i=0; i<fValidFileIds.GetEntries(); ++i) {
+  for (Int_t i=fValidFileIds.GetEntries()-1; i>=0; --i) {
     AliCDBId *rmMe = dynamic_cast<AliCDBId*>(fValidFileIds.At(i));
     AliCDBPath rmPath = rmMe->GetAliCDBPath();
     if (filter.Comprises(rmPath)) {
