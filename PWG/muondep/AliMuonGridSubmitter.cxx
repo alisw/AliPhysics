@@ -651,6 +651,7 @@ void AliMuonGridSubmitter::Print(Option_t* /*opt*/) const
     {
       std::cout << fRunList[i] << " ";
     }
+    std::cout << std::endl;
   }
   
   TIter nextVar(fVars);
