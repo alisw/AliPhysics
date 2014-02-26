@@ -122,7 +122,7 @@ void AliEmcalClusterMaker::ExecOnce()
 //________________________________________________________________________
 Bool_t AliEmcalClusterMaker::Run() 
 {
-  // Run the hadronic correction
+  // Run the cluster maker
 
   // delete output
   fOutClusters->Delete();
