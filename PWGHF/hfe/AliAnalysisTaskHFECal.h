@@ -189,6 +189,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
  THnSparseD 		*fSameElecPtMC_eta_TPC;	        //! Same inclusive ele pt
  TH1D                   *CheckNclust;  
  TH1D                   *CheckNits;  
+ TH2D                   *CheckDCA;  
  THnSparseD             *Hpi0pTcheck; 
  THnSparseD             *HETApTcheck; 
  TH2D                   *HphopTcheck; 

@@ -193,6 +193,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fSameElecPtMC_eta_TPC(0)
   ,CheckNclust(0)
   ,CheckNits(0)
+  ,CheckDCA(0)
   ,Hpi0pTcheck(0)
   ,HETApTcheck(0)
   ,HphopTcheck(0)
@@ -341,6 +342,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fSameElecPtMC_eta_TPC(0)
   ,CheckNclust(0)
   ,CheckNits(0)
+  ,CheckDCA(0)
   ,Hpi0pTcheck(0)
   ,HETApTcheck(0)
   ,HphopTcheck(0)
@@ -735,6 +737,10 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     mom = track->P();
     phi = track->Phi();
     eta = track->Eta();
+    float dca_xy;
+    float dca_z;
+    track->GetImpactParameters(dca_xy,dca_z);
+
     dEdx = track->GetTPCsignal();
     fTPCnSigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(track, AliPID::kElectron) : 1000;
 
@@ -793,7 +799,6 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 		  double valdedx[16];
 		  valdedx[0] = pt; valdedx[1] = nITS; valdedx[2] = phi; valdedx[3] = eta; valdedx[4] = fTPCnSigma;
 		  valdedx[5] = eop; valdedx[6] = rmatch; valdedx[7] = ncells,  valdedx[8] = nmatch; valdedx[9] = m20; valdedx[10] = mcpT;
-		  //valdedx[11] = cent; valdedx[12] = dEdx; valdedx[13] = oppstatus; valdedx[14] = nTPCcl;
 		  valdedx[11] = cent; valdedx[12] = dEdx; valdedx[13] = eoporg; valdedx[14] = nTPCcl;
                   valdedx[15] = mcele;
                   fEleInfo->Fill(valdedx);
@@ -822,6 +827,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
    
     CheckNclust->Fill(nTPCcl); 
     CheckNits->Fill(nITS); 
+    CheckDCA->Fill(dca_xy,dca_z); 
     // check production vertex of photons
     if(mcPho)fPhoVertexReco1->Fill(pt,conv_proR);
 
@@ -1076,6 +1082,7 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fCuts->SetTOFPIDStep(kFALSE);
   fCuts->SetPtRange(2, 50);
   fCuts->SetMaxImpactParam(3.,3.);
+  fCuts->SetProductionVertex(0,50,0,50);
 
   //--------Initialize correction Framework and Cuts
   fCFM = new AliCFManager;
@@ -1379,6 +1386,9 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
 
   CheckNits = new TH1D("CheckNits","ITS cluster check",8,-0.5,7.5);
   fOutputList->Add(CheckNits);
+
+  CheckDCA = new TH2D("CheckDCA","DCA check",200,-5,5,200,-5,5);
+  fOutputList->Add(CheckDCA);
   /*
   Hpi0pTcheck = new TH2D("Hpi0pTcheck","Pi0 pT from Hijing",100,0,50,3,-0.5,2.5);
   fOutputList->Add(Hpi0pTcheck);
@@ -1470,16 +1480,16 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fSamRecoMaxE = new TH2D("fSamRecoMaxE","Same",10,0,100,100,0,500);
   fOutputList->Add(fSamRecoMaxE);
 
-  fPhoVertexReco0 = new TH2D("fPhoVertexReco0","photon production Vertex",40,0,20,200,0,40);
+  fPhoVertexReco0 = new TH2D("fPhoVertexReco0","photon production Vertex",40,0,20,250,0,50);
   fOutputList->Add(fPhoVertexReco0);
 
-  fPhoVertexReco1 = new TH2D("fPhoVertexReco1","photon production Vertex a.f. track cuts",40,0,20,200,0,40);
+  fPhoVertexReco1 = new TH2D("fPhoVertexReco1","photon production Vertex a.f. track cuts",40,0,20,250,0,50);
   fOutputList->Add(fPhoVertexReco1);
 
-  fPhoVertexReco2 = new TH2D("fPhoVertexReco2","photon production Vertex in ele selection",40,0,20,200,0,40);
+  fPhoVertexReco2 = new TH2D("fPhoVertexReco2","photon production Vertex in ele selection",40,0,20,250,0,50);
   fOutputList->Add(fPhoVertexReco2);
 
-  fPhoVertexReco3 = new TH2D("fPhoVertexReco3","photon production Vertex mass selection",40,0,20,200,0,40);
+  fPhoVertexReco3 = new TH2D("fPhoVertexReco3","photon production Vertex mass selection",40,0,20,250,0,50);
   fOutputList->Add(fPhoVertexReco3);
 
   PostData(1,fOutputList);
