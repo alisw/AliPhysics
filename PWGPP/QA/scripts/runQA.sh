@@ -124,6 +124,7 @@ updateQA()
 
       #handle the case of a zip archive
       [[ "$qaFile" =~ .*.zip$ ]] && qaFile="${qaFile}#QAresults.root"
+      [[ "$qaFile" =~ .*.zip$ ]] && highPtTree="${qaFile}#FilterEvents_Trees.root"
       
       echo running ${detector} runLevelQA for run ${runNumber} from ${qaFile}
       runLevelQA ${qaFile} &> runLevelQA.log
