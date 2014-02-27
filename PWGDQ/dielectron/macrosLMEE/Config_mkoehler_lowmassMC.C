@@ -36,7 +36,7 @@ AliDielectron* Config_mkoehler_lowmassMC(Int_t cutDefinition=1, Bool_t isAOD = k
     new AliDielectron(Form("%s",name.Data()),
                       Form("Track cuts: %s",name.Data()));
   
-  diele->SetHasMC(hasMC);
+  die->SetHasMC(hasMC);
 
 
 
