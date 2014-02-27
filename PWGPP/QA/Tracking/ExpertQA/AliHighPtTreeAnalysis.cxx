@@ -732,6 +732,11 @@ void AliHighPtTreeAnalysis::MakePhiFits(){
   TF1 * fFun = new TF1("fFun","[0]*TMath::Gaus(x,[1],[2])",-0.5,0.5);
   if(!fFun) return;
 
+  if (!hphiPull_vs_phi_pT_Aside || !hphiPull_vs_phi_pT_Cside)
+  {
+    printf ("WARNING: !hphiPull_vs_phi_pT_Aside || !hphiPull_vs_phi_pT_Cside\n");
+    return;
+  }
   TH3D *h1phiPull = (TH3D*) hphiPull_vs_phi_pT_Aside->Clone();
   TH3D *h2phiPull = (TH3D*) hphiPull_vs_phi_pT_Cside->Clone();
   if(!h1phiPull) return;
@@ -1306,6 +1311,11 @@ void AliHighPtTreeAnalysis::MakePowerFit(Int_t entries){
     if (itype==2) phis1ptThetaAlpha=phis1ptThetaAlphaComb;
     if (itype==0) phis1ptThetaAlpha=phis1ptThetaAlphaTPC;
     if (itype==1) phis1ptThetaAlpha=phis1ptThetaAlphaTPCC;
+    if (!phis1ptThetaAlpha) 
+    {
+      printf("WARNING: phis1ptThetaAlpha in NULL, continuing\n");
+      continue;
+    }
     //
     gStyle->SetOptTitle(1);
     gStyle->SetOptFit(1);
@@ -3252,7 +3262,7 @@ Bool_t AliHighPtTreeAnalysis::GetK0TrendFitFunction(TF1 *fLinearFitK0sShift, TF1
 }
 
 AliHighPtTreeAnalysis::AliHighPtTreeAnalysis( ) :
-  fChain(0),fV0Chain(0),fApplyCorrections(kFALSE),fMakePlots(kTRUE),fV0s(kFALSE),fZipIn(kFALSE),fMakeFitPerfomancePlots(kFALSE),fCorrectionAside(0),fCorrectionCside(0),fCorrectionAsideTPCInner(0),fCorrectionCsideTPCInner(0),
+  fChain(0),fV0Chain(0),fApplyCorrections(kFALSE),fMakePlots(kTRUE),fV0s(kFALSE),fMakeFitPerfomancePlots(kFALSE),fCorrectionAside(0),fCorrectionCside(0),fCorrectionAsideTPCInner(0),fCorrectionCsideTPCInner(0),
   fCorrectionAsideTPCInnerC(0),fCorrectionCsideTPCInnerC(0),fNtracks_TPCLowPt(0),fNtracks_TPCHighPt(0),fNtracks_TPCITSLowPt(0),fNtracks_TPCITSHighPt(0),fPeriodName(0),
   fPeriod(kFALSE),hasMC(0),pTcut(3.),fBfield(0),fileName(0),runNumber(0),runNumberInt(0),mult(0),triggerClass(0),Bz(0),BzInt(0),vtxESD(0),
   esdTrack(0),particle(0),extTPCInnerC(0),extInnerParamC(0),extInnerParam(0),extInnerParamRef(0),chi2TPCInnerC(0),chi2InnerC(0),v0(0),v0track0(0),v0track1(0),hPulldcaRTPConly_vs_eta_1pT(0),
@@ -3276,7 +3286,6 @@ AliHighPtTreeAnalysis::AliHighPtTreeAnalysis( TString file ) :
   fApplyCorrections(kFALSE),
   fMakePlots(kTRUE),
   fV0s(kFALSE),
-  fZipIn(kFALSE),
   fMakeFitPerfomancePlots(kFALSE),
   fCorrectionAside(0),
   fCorrectionCside(0),
@@ -3360,52 +3369,35 @@ AliHighPtTreeAnalysis::AliHighPtTreeAnalysis( TString file ) :
 {
   // if parameter tree is not specified (or zero), connect the file
   // used to generate this class and read the Tree.
-  //   if (tree == 0) {
-  TString V0file(0);
-
   if( file == 0 ){
     std::cout << "You have to specify the Input file" << std::endl;
     exit(1);
   }
-  if( file.Contains(".zip") ){
-    //file += "#FilterEvents_Trees.root"; //taken care of by the steering script
-    fZipIn = kTRUE;
-  }
-  else{
-    V0file = file.Copy();
-    V0file.Replace(V0file.Length() - 11, 11, "V0s.root",8);
-  }
-
 
   TTree *tree = NULL;
   TTree *V0tree = NULL;
-  if(fZipIn){
-    TFile *f = TFile::Open(file);
-    if (!f) return;
-    f->GetObject("highPt",tree);
-    f->GetObject("V0s",V0tree);  
-    if (V0tree) {if(V0tree->GetEntries() > 1) fV0s = kTRUE;}
-    // if(!V0tree || V0tree->GetEntries() < 1) V0log
-  }
-  if(!fZipIn){
-    TFile *f   = TFile::Open(file);
-    if(f) f->GetObject("highPt",tree);
-    TFile *fV0 = TFile::Open(V0file);
-    if(fV0) fV0->GetObject("V0s",V0tree);
-    if(V0tree) fV0s = kTRUE;
-  }
+  
+  TFile *f = TFile::Open(file);
+  if (!f) return;
+  f->GetObject("highPt",tree);
+  f->GetObject("V0s",V0tree);  
+  
+  Bool_t highPtTreeOK=kFALSE;
+  Bool_t V0sTreeOK=kFALSE;
+  if (V0tree) { if(V0tree->GetEntries() > 1) V0sTreeOK = kTRUE;}
+  if (tree)   { if(tree->GetEntries() > 1)   highPtTreeOK = kTRUE;}
 
   //   fMakePlots = kTRUE;
-  if(tree)   
+  if(highPtTreeOK)   
   {
     Init(tree);
   } 
-  else printf("tree highPt not found!\n");
-  if(V0tree) 
+  else printf("tree highPt not found or empty!\n");
+  if(V0sTreeOK) 
   {
     InitV0tree(V0tree);
   }
-  else printf("tree V0s not found!\n");
+  else printf("tree V0s not found or empty!\n");
 }
 
 AliHighPtTreeAnalysis::~AliHighPtTreeAnalysis()
@@ -3446,6 +3438,7 @@ void AliHighPtTreeAnalysis::InitV0tree(TTree *tree)
   // Set branch addresses and branch pointers
 
   if(!tree) return;
+  fV0s=kTRUE;
   fV0Chain = tree;
 
   fV0Chain->SetBranchAddress("v0.", &v0);
