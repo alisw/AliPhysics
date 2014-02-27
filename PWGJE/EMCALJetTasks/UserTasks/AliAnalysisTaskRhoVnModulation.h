@@ -27,6 +27,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
     public:
          // enumerators
         enum fitModulationType  { kNoFit, kV2, kV3, kCombined, kFourierSeries, kIntegratedFlow, kQC2, kQC4 }; // fit type
+        enum fitGoodnessTest    { kChi2ROOT, kChi2Poisson, kKolmogorov, kKolmogorovTOY, kLinearFit };
         enum collisionType      { kPbPb, kPythia };                     // collision type
         enum qcRecovery         { kFixedRho, kNegativeVn, kTryFit };    // how to deal with negative cn value for qcn value
         enum runModeType        { kLocal, kGrid };                      // run mode type
@@ -61,8 +62,26 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
             return -999; }
         // note that the cdf of the chisquare distribution is the normalized lower incomplete gamma function
         /* inline */    Double_t ChiSquareCDF(Int_t ndf, Double_t x) const { return TMath::Gamma(ndf/2., x/2.); }
+        /* inline */    Double_t ChiSquare(TH1& histo, TF1* func) const {
+            // evaluate the chi2 using a poissonian error estimate on bins
+            Double_t chi2(0.);
+            for(Int_t i(0); i < histo.GetXaxis()->GetNbins(); i++) {
+                if(histo.GetBinContent(i+1) <= 0.) continue;
+                chi2 += TMath::Power((histo.GetBinContent(i+1)-func->Eval(histo.GetXaxis()->GetBinCenter(1+i))), 2)/histo.GetBinContent(i+1);
+            }
+           return chi2;
+        }
+        /* inline*/ Double_t KolmogorovTest(TH1F& histo, TF1* func) const {
+            // return the probability from a Kolmogorov test
+            TH1F test(histo);       // stack copy of test statistic
+            for(Int_t i(0); i < test.GetXaxis()->GetNbins(); i++) test.SetBinContent(i+1, func->Eval(test.GetXaxis()->GetBinCenter(1+i)));
+            if(fFitGoodnessTest == kKolmogorovTOY) return histo.TH1::KolmogorovTest((&test), "X");
+            return histo.TH1::KolmogorovTest((&test));
+        }
+ 
         // setters - analysis setup
         void                    SetDebugMode(Int_t d)                           {fDebug = d;}
+        void                    SetRunToyMC(Bool_t t)                           {fRunToyMC = t; }
         void                    SetAttachToEvent(Bool_t b)                      {fAttachToEvent = b;}
         void                    SetSemiCentralInclusive(Bool_t b)               {fSemiCentralInclusive = b;}
         void                    SetFillHistograms(Bool_t b)                     {fFillHistograms = b;}
@@ -86,11 +105,14 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         void                    SetUseControlFit(Bool_t c);
         void                    SetModulationFitMinMaxP(Float_t m, Float_t n)   {fMinPvalue = m; fMaxPvalue = n; }
         void                    SetModulationFitType(fitModulationType type)    {fFitModulationType = type; }
+        void                    SetGoodnessTest(fitGoodnessTest test)           {fFitGoodnessTest = test; }
         void                    SetQCnRecoveryType(qcRecovery type)             {fQCRecovery = type; }
         void                    SetModulationFitOptions(TString opt)            {fFitModulationOptions = opt; }
         void                    SetReferenceDetector(detectorType type)         {fDetectorType = type; }
         void                    SetCollisionType(collisionType type)            {fCollisionType = type; }
-        void                    SetUsePtWeight(Bool_t w)                        {fUsePtWeight = w; }
+        void                    SetUsePtWeight(Bool_t w)                        {
+            fUsePtWeight = w; 
+            if(!fUsePtWeight) fUsePtWeightErrorPropagation = kFALSE; }
         void                    SetUsePtWeightErrorPropagation(Bool_t w)        {fUsePtWeightErrorPropagation = w; }
         void                    SetRunModeType(runModeType type)                {fRunModeType = type; }
         void                    SetAbsVertexZ(Float_t v)                        {fAbsVertexZ = v; }
@@ -174,6 +196,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
     private:
         // analysis flags and settings
         Int_t                   fDebug;                 // debug level (0 none, 1 fcn calls, 2 verbose)
+        Bool_t                  fRunToyMC;              // run toy mc for fit routine
         Bool_t                  fLocalInit;             //! is the analysis initialized?
         Bool_t                  fAttachToEvent;         // attach local rho to the event
         Bool_t                  fSemiCentralInclusive;  // semi central inclusive event selection
@@ -196,6 +219,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         Int_t                   fNAcceptedTracks;       //! number of accepted tracks
         Int_t                   fNAcceptedTracksQCn;    //! accepted tracks for QCn
         fitModulationType       fFitModulationType;     // fit modulation type
+        fitGoodnessTest         fFitGoodnessTest;       // fit goodness test type
         qcRecovery              fQCRecovery;            // recovery type for e-by-e qc method
         Bool_t                  fUsePtWeight;           // use dptdphi instead of dndphi
         Bool_t                  fUsePtWeightErrorPropagation;   // recalculate the bin errors in case of pt weighting 
@@ -233,8 +257,9 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         TH1F*                   fHistVertexz;           //! accepted verte
         TH2F*                   fHistRunnumbersPhi;     //! run numbers averaged phi
         TH2F*                   fHistRunnumbersEta;     //! run numbers averaged eta
-        TH1F*                   fHistPvaluePDF;         //! pdf value of chisquare p
+        TH1F*                   fHistPvalueCDFROOT;     //! pdf value of chisquare p
         TH1F*                   fHistPvalueCDF;         //! cdf value of chisquare p
+        TH1F*                   fHistKolmogorovTest;    //! KolmogorovTest value
         TH2F*                   fHistRhoStatusCent;     //! status of rho as function of centrality
         // general settings
         Float_t                 fMinDisanceRCtoLJ;      // min distance between rc and leading jet
