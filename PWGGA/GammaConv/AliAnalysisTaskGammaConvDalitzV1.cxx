@@ -1480,11 +1480,20 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessElectronCandidates(){
    for(UInt_t i = 0; i < fSelectorElectronIndex.size(); i++){
     AliESDtrack* electronCandidate = fESDEvent->GetTrack(fSelectorElectronIndex[i]);
     if(! ((AliDalitzElectronCuts*)fCutElectronArray->At(fiCut))->ElectronIsSelected(electronCandidate) ) continue;
-	lGoodElectronIndexPrev.push_back(   fSelectorElectronIndex[i] );
-	hESDDalitzElectronPt[fiCut]->Fill(electronCandidate->Pt());
-        hESDDalitzElectronPhi[fiCut]->Fill(electronCandidate->Phi());
+    
+	
 	  if( fMCEvent ) {
+	    
 	  Int_t labelelectron = TMath::Abs( electronCandidate->GetLabel() );
+	  Int_t isMCFromMBHeader = -1;
+	  if(((AliConversionCuts*)fCutGammaArray->At(fiCut))->GetSignalRejection() != 0) {
+            isMCFromMBHeader
+            = ((AliConversionCuts*)fCutGammaArray->At(fiCut))->IsParticleFromBGEvent(labelelectron,fMCStack,fInputEvent);
+          if(isMCFromMBHeader == 0 && ((AliConversionCuts*)fCutGammaArray->At(fiCut))->GetSignalRejection() != 3) continue;
+          //if(isMCFromMBHeader != 2) mcIsFromMB = kFALSE;
+          }    
+    
+    
 	    if( labelelectron < fMCStack->GetNtrack() ){
 	      TParticle* electron = fMCStack->Particle(labelelectron);
 		if( electron->GetPdgCode() ==  11 ){
@@ -1505,18 +1514,32 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessElectronCandidates(){
 		}
 	    }
 	}
+	
+	lGoodElectronIndexPrev.push_back(   fSelectorElectronIndex[i] );
+	hESDDalitzElectronPt[fiCut]->Fill(electronCandidate->Pt());
+        hESDDalitzElectronPhi[fiCut]->Fill(electronCandidate->Phi());
+	
    }
 
    for(UInt_t i = 0; i < fSelectorPositronIndex.size(); i++){
 
       AliESDtrack* positronCandidate = fESDEvent->GetTrack( fSelectorPositronIndex[i] );
       if(! ((AliDalitzElectronCuts*)fCutElectronArray->At(fiCut))->ElectronIsSelected(positronCandidate) ) continue;
-	lGoodPositronIndexPrev.push_back(   fSelectorPositronIndex[i]  );
-        hESDDalitzPositronPt[fiCut]->Fill( positronCandidate->Pt() );
-	hESDDalitzPositronPhi[fiCut]->Fill( positronCandidate->Phi() );
+       
       
         if( fMCEvent ) {
+	  
 	  Int_t labelpositron = TMath::Abs( positronCandidate->GetLabel() );
+	  
+	   Int_t isMCFromMBHeader = -1;
+	  
+	  if(((AliConversionCuts*)fCutGammaArray->At(fiCut))->GetSignalRejection() != 0) {
+            isMCFromMBHeader
+            = ((AliConversionCuts*)fCutGammaArray->At(fiCut))->IsParticleFromBGEvent(labelpositron,fMCStack,fInputEvent);
+          if(isMCFromMBHeader == 0 && ((AliConversionCuts*)fCutGammaArray->At(fiCut))->GetSignalRejection() != 3) continue;
+          //if(isMCFromMBHeader != 2) mcIsFromMB = kFALSE;
+          }  
+	  
 	  if( labelpositron < fMCStack->GetNtrack() ) {
 	    TParticle* positron = fMCStack->Particle(labelpositron);
             if( positron->GetPdgCode() ==  -11 ){
@@ -1537,6 +1560,9 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessElectronCandidates(){
             }
           }
         }
+        lGoodPositronIndexPrev.push_back( fSelectorPositronIndex[i] );
+        hESDDalitzPositronPt[fiCut]->Fill( positronCandidate->Pt() );
+	hESDDalitzPositronPhi[fiCut]->Fill( positronCandidate->Phi() );
     }
 
 
