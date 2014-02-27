@@ -144,7 +144,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	const Int_t nbinmult_20_50 = 15; //bins in multiplicity between 20 and 50
 	const Int_t nbinmult_50_80 = 10; //bins in multiplicity between 50 and 100
 	const Int_t nbinmult_80_100 = 4; //bins in multiplicity between 50 and 100
-	const Int_t nbinmult_100_400 = 12; // Only on pPb bins in multiplicity between 100 and 400
+	const Int_t nbinmult_100_400 = 6; // Only on pPb bins in multiplicity between 100 and 400
 	if(isPPbData) nbinmult += nbinmult_100_400;
 
 	//the sensitive variables, their indices
