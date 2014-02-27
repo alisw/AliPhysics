@@ -237,7 +237,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fTrMultDist = new TH1F("fTrMultDist","track multiplicity;tracks/event;#events",200,0.5,200.5);
   fOutputList->Add(fTrMultDist);
 
-  fMCDirPhotonPtEtaPhi = new TH3F("hMCDirPhotonPtEtaPhi","photon (gq->#gammaq) p_{T}, #eta, #phi;GeV/c;#eta;#phi",1000,0,100,154,-0.77,0.77,130,1.38,3.20);
+  fMCDirPhotonPtEtaPhi = new TH3F("hMCDirPhotonPtEtaPhi","photon (gq->#gammaq) p_{T}, #eta, #phi;GeV/c;#eta;#phi",101,-1.5,99.5,154,-0.77,0.77,130,1.38,3.20);
   fMCDirPhotonPtEtaPhi->Sumw2();
   fOutputList->Add(fMCDirPhotonPtEtaPhi);
 
