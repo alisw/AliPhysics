@@ -72,8 +72,8 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s()
     fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
     fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),
-    fListTrig(0),fHistUpcTriggersPerRun(0),fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0),
-    fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
+    fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),
+    fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0), fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
     fListHist(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),
     fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0)
 
@@ -94,8 +94,8 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s(const char *name)
     fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
     fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),
-    fListTrig(0),fHistUpcTriggersPerRun(0),fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0),
-    fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
+    fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),
+    fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0), fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
     fListHist(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),
     fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0)
 
@@ -246,22 +246,28 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fListTrig = new TList();
   fListTrig ->SetOwner();
   
-  fHistUpcTriggersPerRun = new TH1D("fHistUpcTriggersPerRun", "fHistUpcTriggersPerRun", 3000, 167000.5, 170000.5);
-  fListTrig->Add(fHistUpcTriggersPerRun);
+  fHistCcup4TriggersPerRun = new TH1D("fHistCcup4TriggersPerRun", "fHistCcup4TriggersPerRun", 33000, 167000.5, 200000.5);
+  fListTrig->Add(fHistCcup4TriggersPerRun);
   
-  fHistZedTriggersPerRun = new TH1D("fHistZedTriggersPerRun", "fHistZedTriggersPerRun", 3000, 167000.5, 170000.5);
+  fHistCcup7TriggersPerRun = new TH1D("fHistCcup7TriggersPerRun", "fHistCcup7TriggersPerRun", 33000, 167000.5, 200000.5);
+  fListTrig->Add(fHistCcup7TriggersPerRun);
+  
+  fHistCcup2TriggersPerRun = new TH1D("fHistCcup2TriggersPerRun", "fHistCcup2TriggersPerRun", 33000, 167000.5, 200000.5);
+  fListTrig->Add(fHistCcup2TriggersPerRun);
+  
+  fHistZedTriggersPerRun = new TH1D("fHistZedTriggersPerRun", "fHistZedTriggersPerRun", 33000, 167000.5, 200000.5);
   fListTrig->Add(fHistZedTriggersPerRun);
 
-  fHistCvlnTriggersPerRun = new TH1D("fHistCvlnTriggersPerRun", "fHistCvlnTriggersPerRun", 3000, 167000.5, 170000.5);
+  fHistCvlnTriggersPerRun = new TH1D("fHistCvlnTriggersPerRun", "fHistCvlnTriggersPerRun", 33000, 167000.5, 200000.5);
   fListTrig->Add(fHistCvlnTriggersPerRun);
   
-  fHistMBTriggersPerRun = new TH1D("fHistMBTriggersPerRun", "fHistMBTriggersPerRun", 3000, 167000.5, 170000.5);
+  fHistMBTriggersPerRun = new TH1D("fHistMBTriggersPerRun", "fHistMBTriggersPerRun", 33000, 167000.5, 200000.5);
   fListTrig->Add(fHistMBTriggersPerRun);
   
-  fHistCentralTriggersPerRun = new TH1D("fHistCentralTriggersPerRun", "fHistCentralTriggersPerRun", 3000, 167000.5, 170000.5);
+  fHistCentralTriggersPerRun = new TH1D("fHistCentralTriggersPerRun", "fHistCentralTriggersPerRun", 33000, 167000.5, 200000.5);
   fListTrig->Add(fHistCentralTriggersPerRun);
   
-  fHistSemiCentralTriggersPerRun = new TH1D("fHistSemiCentralTriggersPerRun", "fHistSemiCentralTriggersPerRun", 3000, 167000.5, 170000.5);
+  fHistSemiCentralTriggersPerRun = new TH1D("fHistSemiCentralTriggersPerRun", "fHistSemiCentralTriggersPerRun", 33000, 167000.5, 200000.5);
   fListTrig->Add(fHistSemiCentralTriggersPerRun);
   
   fListHist = new TList();
@@ -341,7 +347,9 @@ void AliAnalysisTaskUpcPsi2s::RunAODtrig()
   //Trigger
   TString trigger = aod->GetFiredTriggerClasses();
   
-  if(trigger.Contains("CCUP4-B")) fHistUpcTriggersPerRun->Fill(fRunNum); //Upc triggers
+  if(trigger.Contains("CCUP4-B")) fHistCcup4TriggersPerRun->Fill(fRunNum); //CCUP4 triggers
+  if(trigger.Contains("CCUP7-B")) fHistCcup7TriggersPerRun->Fill(fRunNum); //CCUP7 triggers
+  if(trigger.Contains("CCUP2-B")) fHistCcup2TriggersPerRun->Fill(fRunNum); //CCUP2 triggers
   
   if(trigger.Contains("CVLN_B2-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - synchronously downscaled
   if(trigger.Contains("CVLN_R1-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - randomly downscaled
@@ -358,7 +366,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtrig()
   
   if(((selectionMask & AliVEvent::kMB) == AliVEvent::kMB) && percentile<=80 && percentile>=0) fHistMBTriggersPerRun->Fill(fRunNum);
   
-  if(((selectionMask & AliVEvent::kCentral) == AliVEvent::kCentral) && percentile<=6 && percentile>=0) fHistCentralTriggersPerRun->Fill(fRunNum);
+  if(((selectionMask & AliVEvent::kCentral) == AliVEvent::kCentral) && percentile<=6 && percentile>=0 && (trigger.Contains("CVHN_R2-B"))) fHistCentralTriggersPerRun->Fill(fRunNum);
 
   if(((selectionMask & AliVEvent::kSemiCentral) == AliVEvent::kSemiCentral) && percentile<=50 && percentile>=15) fHistSemiCentralTriggersPerRun->Fill(fRunNum);
     
@@ -854,7 +862,9 @@ void AliAnalysisTaskUpcPsi2s::RunESDtrig()
   //Trigger
   TString trigger = esd->GetFiredTriggerClasses();
   
-  if(trigger.Contains("CCUP4-B")) fHistUpcTriggersPerRun->Fill(fRunNum); //Upc triggers
+  if(trigger.Contains("CCUP4-B")) fHistCcup4TriggersPerRun->Fill(fRunNum); //CCUP4 triggers
+  if(trigger.Contains("CCUP7-B")) fHistCcup7TriggersPerRun->Fill(fRunNum); //CCUP7 triggers
+  if(trigger.Contains("CCUP2-B")) fHistCcup2TriggersPerRun->Fill(fRunNum); //CCUP2 triggers
   
   if(trigger.Contains("CVLN_B2-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - synchronously downscaled
   if(trigger.Contains("CVLN_R1-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - randomly downscaled
@@ -870,7 +880,7 @@ void AliAnalysisTaskUpcPsi2s::RunESDtrig()
   
   if(((selectionMask & AliVEvent::kMB) == AliVEvent::kMB) && percentile<=80 && percentile>=0) fHistMBTriggersPerRun->Fill(fRunNum);
   
-  if(((selectionMask & AliVEvent::kCentral) == AliVEvent::kCentral) && percentile<=6 && percentile>=0) fHistCentralTriggersPerRun->Fill(fRunNum);
+  if(((selectionMask & AliVEvent::kCentral) == AliVEvent::kCentral) && percentile<=6 && percentile>=0 && (trigger.Contains("CVHN_R2-B"))) fHistCentralTriggersPerRun->Fill(fRunNum);
 
   if(((selectionMask & AliVEvent::kSemiCentral) == AliVEvent::kSemiCentral) && percentile<=50 && percentile>=15) fHistSemiCentralTriggersPerRun->Fill(fRunNum);
 
