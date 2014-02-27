@@ -119,6 +119,7 @@ const char *AliRsnMiniValue::TypeName(EType type)
       case kDCAproduct:   return "DaughterDCAproduct";
       case kFirstDaughterDCA: return "FirstDaughterDCA";
       case kSecondDaughterDCA: return "SecondDaughterDCA";
+      case kNSisters:     return "NumberOfSisters";
       default:            return "Undefined";
    }
 }
@@ -209,6 +210,8 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
          return pair->DaughterDCA(0);
       case kSecondDaughterDCA:
          return pair->DaughterDCA(1);
+      case kNSisters:
+         return pair->NSisters();
       default:
          AliError("Invalid value type");
          return 1E20;

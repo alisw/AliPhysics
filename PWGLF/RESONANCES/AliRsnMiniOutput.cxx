@@ -21,6 +21,7 @@
 #include "AliRsnMiniParticle.h"
 #include "AliRsnMiniPair.h"
 #include "AliRsnMiniEvent.h"
+#include "AliAODEvent.h"
 
 #include "AliLog.h"
 #include "AliRsnCutSet.h"
@@ -45,6 +46,8 @@ AliRsnMiniOutput::AliRsnMiniOutput() :
    fList(0x0),
    fSel1(0),
    fSel2(0),
+   fMaxNSisters(-1),
+   fCheckP(kFALSE),
    fCheckHistRange(kTRUE)
 {
 //
@@ -71,6 +74,8 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, EOutputType type, EComputat
    fList(0x0),
    fSel1(0),
    fSel2(0),
+   fMaxNSisters(-1),
+   fCheckP(kFALSE),
    fCheckHistRange(kTRUE)
 {
 //
@@ -97,6 +102,8 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, const char *outType, const 
    fList(0x0),
    fSel1(0),
    fSel2(0),
+   fMaxNSisters(-1),
+   fCheckP(kFALSE),
    fCheckHistRange(kTRUE)
 {
 //
@@ -169,6 +176,8 @@ AliRsnMiniOutput::AliRsnMiniOutput(const AliRsnMiniOutput &copy) :
    fList(copy.fList),
    fSel1(0),
    fSel2(0),
+   fMaxNSisters(-1),
+   fCheckP(kFALSE),
    fCheckHistRange(copy.fCheckHistRange)
 {
 //
@@ -210,6 +219,8 @@ AliRsnMiniOutput &AliRsnMiniOutput::operator=(const AliRsnMiniOutput &copy)
 
    fSel1.Set(0);
    fSel2.Set(0);
+   fMaxNSisters = copy.fMaxNSisters;
+   fCheckP = copy.fCheckP;
    fCheckHistRange = copy.fCheckHistRange;
 
    return (*this);
@@ -496,6 +507,7 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
             if (p2->PDGAbs() == AliRsnDaughter::SpeciesPDG(fDaughter[0]) && p1->PDGAbs() == AliRsnDaughter::SpeciesPDG(fDaughter[1]))
                decayMatch = kTRUE;
             if (!decayMatch) continue;
+	    if( (fMaxNSisters>0) && (p1->NTotSisters()==p2->NTotSisters()) && (p1->NTotSisters()>fMaxNSisters)) continue;
          }
          // check pair against cuts
          if (fPairCuts) {

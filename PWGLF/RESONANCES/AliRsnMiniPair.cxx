@@ -30,6 +30,9 @@ void AliRsnMiniPair::Fill
       fSum[i] = fP1[i] + fP2[i];
       fRef[i].SetXYZM(fSum[i].X(), fSum[i].Y(), fSum[i].Z(), refMass);
    }
+
+   fNSisters=-1;
+   if (p1->NTotSisters()==p2->NTotSisters()) fNSisters = p1->NTotSisters();
 }
 
 //__________________________________________________________________________________________________
