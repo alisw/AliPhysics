@@ -1117,7 +1117,7 @@ void AliHFSystErr::InitDplustoKpipi2013pPb0100(){
   AliInfo(" Settings for D+ --> K pi pi, p-Pb collisions at 5.023 TeV"); 
 
   fNorm = new TH1F("fNorm","fNorm",24,0,24);
-  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.00); // 
+  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.02); // 
   
   fBR = new TH1F("fBR","fBR",20,0,24);
   for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.021); // 2.1% PDG2010
@@ -1128,43 +1128,41 @@ void AliHFSystErr::InitDplustoKpipi2013pPb0100(){
   
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
-  fRawYield->SetBinContent(1,1);
-  fRawYield->SetBinContent(2,1);
-  fRawYield->SetBinContent(3,0.06);
-  fRawYield->SetBinContent(4,0.12);
+  fRawYield->SetBinContent(1,0.);
+  fRawYield->SetBinContent(2,0.1);
+  fRawYield->SetBinContent(3,0.08);
+  fRawYield->SetBinContent(4,0.05);
   fRawYield->SetBinContent(5,0.05);
-  fRawYield->SetBinContent(6,0.04);
-  fRawYield->SetBinContent(7,0.04);
-  fRawYield->SetBinContent(8,0.04);
-  for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.07);
-  for(Int_t i=13;i<=16;i++) fRawYield->SetBinContent(i,0.17);
-  for(Int_t i=17;i<=24;i++) fRawYield->SetBinContent(i,0.14);
+  fRawYield->SetBinContent(6,0.05);
+  fRawYield->SetBinContent(7,0.05);
+  fRawYield->SetBinContent(8,0.05);
+  for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.05);
+  for(Int_t i=13;i<=16;i++) fRawYield->SetBinContent(i,0.08);
+  for(Int_t i=17;i<=24;i++) fRawYield->SetBinContent(i,0.08);
 
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
-  fCutsEff->SetBinContent(1,1);
-  fCutsEff->SetBinContent(2,1);
-  fCutsEff->SetBinContent(3,0.07);
-  fCutsEff->SetBinContent(4,0.04);
-  fCutsEff->SetBinContent(5,0.04);
-  fCutsEff->SetBinContent(6,0.08);
-  fCutsEff->SetBinContent(7,0.08);
-  fCutsEff->SetBinContent(8,0.08);
-  for(Int_t i=9;i<=12;i++) fCutsEff->SetBinContent(i,0.08);
-  for(Int_t i=13;i<=16;i++) fCutsEff->SetBinContent(i,0.08);
-  for(Int_t i=17;i<=24;i++) fCutsEff->SetBinContent(i,0.1); 
+  fCutsEff->SetBinContent(1,0.);
+  fCutsEff->SetBinContent(2,0.1);
+  fCutsEff->SetBinContent(3,0.1);
+  fCutsEff->SetBinContent(4,0.06);
+  fCutsEff->SetBinContent(5,0.06);
+  fCutsEff->SetBinContent(6,0.06);
+  fCutsEff->SetBinContent(7,0.05);
+  fCutsEff->SetBinContent(8,0.05);
+  for(Int_t i=9;i<=12;i++) fCutsEff->SetBinContent(i,0.05);
+  for(Int_t i=13;i<=16;i++) fCutsEff->SetBinContent(i,0.05);
+  for(Int_t i=17;i<=24;i++) fCutsEff->SetBinContent(i,0.05);
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0,24);
   fPIDEff->SetBinContent(1,1);
-  fPIDEff->SetBinContent(2,1);
-  for(Int_t i=3;i<=12;i++) fPIDEff->SetBinContent(i,0.0); //
-  for(Int_t i=13;i<=24;i++) fPIDEff->SetBinContent(i,0.05); // 5%
+  fPIDEff->SetBinContent(2,0.1);
+  for(Int_t i=3;i<=24;i++) fPIDEff->SetBinContent(i,0.0); //
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
-  for(Int_t i=1;i<=12;i++) fMCPtShape->SetBinContent(i,0.02);
-  for(Int_t i=13;i<=24;i++) fMCPtShape->SetBinContent(i,0.04);
+  for(Int_t i=1;i<=24;i++) fMCPtShape->SetBinContent(i,0.0);
 
   // particle-antiparticle
   /*
@@ -1570,10 +1568,7 @@ void AliHFSystErr::InitDstartoD0pi2013pPb0100(){
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0,24);
-  fPIDEff->SetBinContent(1,0.0);
-  fPIDEff->SetBinContent(2,0.05);
-  for(Int_t i=3;i<=12;i++) fPIDEff->SetBinContent(i,0.00);
-  for(Int_t i=12;i<=24;i++) fPIDEff->SetBinContent(i,0.05);
+  for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.00);
 
   // MC dN/dpt  
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
