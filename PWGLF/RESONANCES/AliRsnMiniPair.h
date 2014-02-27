@@ -18,7 +18,7 @@ class AliRsnMiniParticle;
 class AliRsnMiniPair : public TObject {
 public:
 
-   AliRsnMiniPair() : fDCA1(0), fDCA2(0), fMother(-1), fMotherPDG(0), fNsisters(-1) { }
+   AliRsnMiniPair() : fDCA1(0), fDCA2(0), fMother(-1), fMotherPDG(0), fNSisters(-1) { }
   
    Int_t          &Mother()    {return fMother;}
    Int_t          &MotherPDG() {return fMotherPDG;}
@@ -48,8 +48,7 @@ public:
    Double_t        DaughterDCA(Int_t daughterId); 
    Double_t        DCAProduct();                                                   
    void            DaughterPxPyPz(Int_t daughterId, Bool_t mc, Double_t *pxpypz); 
-   Short_t         Nsisters()  {return fNsisters;}
-   void            SetNsisters(Short_t value)  {fNsisters=value;}
+   Short_t         NSisters()  {return fNSisters;}
 
  private:
    
@@ -63,7 +62,7 @@ public:
    
    Int_t          fMother;    // label of mothers (when common)
    Int_t          fMotherPDG; // PDG code of mother (when common)
-   Short_t        fNsisters;  // total number of mother's daughters in the MC stack
+   Short_t        fNSisters;  // total number of mother's daughters in the MC stack
    
    ClassDef(AliRsnMiniPair,2)
      };
