@@ -30,6 +30,9 @@ void AliRsnMiniPair::Fill
       fSum[i] = fP1[i] + fP2[i];
       fRef[i].SetXYZM(fSum[i].X(), fSum[i].Y(), fSum[i].Z(), refMass);
    }
+
+   fNSisters=-1;
+   if (p1->NTotSisters()==p2->NTotSisters()) fNSisters = p1->NTotSisters();
 }
 
 //__________________________________________________________________________________________________
@@ -79,8 +82,8 @@ void AliRsnMiniPair::InvertP(Bool_t first)
 
    Int_t i;
    for (i = 0; i < 2; i++) {
-      if (first) fP1[i].Vect() *= -1.0;
-      else       fP2[i].Vect() *= -1.0;
+      if (first) fP1[i].SetVect(fP1[i].Vect() *= -1.0);
+      else       fP2[i].SetVect(fP2[i].Vect() *= -1.0);
       fSum[i] = fP1[i] + fP2[i];
       fRef[i].SetXYZM(fSum[i].X(), fSum[i].Y(), fSum[i].Z(), fRef[i].M());
    }

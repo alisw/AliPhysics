@@ -11,6 +11,7 @@
 
 #include "AliAODEvent.h"
 #include "AliRsnEvent.h"
+#include "AliRsnMiniEvent.h"
 #include "AliRsnMiniParticle.h"
 
 ClassImp(AliRsnMiniParticle)
@@ -27,6 +28,7 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
    fPDG = 0;
    fMother = -1;
    fMotherPDG = 0;
+   fNTotSisters = -1;
    fCutBits = 0x0;
    fPsim[0] = fPrec[0] = fPsim[1] = fPrec[1] = fPsim[2] = fPrec[2] = 0.0;
 
@@ -56,7 +58,12 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
    }
    
    AliRsnEvent *event = (AliRsnEvent *) daughter->GetOwnerEvent();
-   if (event && event->IsAOD()){
+   if (!event) {
+     AliWarning("Invalid reference event: cannot copy DCA nor Nsisters.");
+     return;
+   }
+   if (event->IsAOD()){
+     // DCA to Primary Vertex for AOD
      AliAODTrack *track = (AliAODTrack*) daughter->Ref2AODtrack();   
      AliAODEvent *aodEvent = (AliAODEvent*) event->GetRefAOD();
      if (track && aodEvent) {
@@ -67,10 +74,32 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
 	 fDCA = b[0];
        }
      }
+     // Number of Daughters from MC
+     if (event->GetRefMC()) {
+       TClonesArray * list = event->GetAODList();
+       AliAODMCParticle *part = (AliAODMCParticle *)list->At(fMother);
+       if (part) fNTotSisters = part->GetNDaughters();
+     }
    } else {
-     AliWarning("DCA not implemented for ESDs");
+     if (event->IsESD()){
+       //DCA to Primary Vertex for ESD
+       AliESDtrack *track = (AliESDtrack*) daughter->Ref2ESDtrack();   
+       AliESDEvent *esdEvent = (AliESDEvent*) event->GetRefESD();
+       if (track && esdEvent) {
+	 AliVVertex *vertex = (AliVVertex*) esdEvent->GetPrimaryVertex();
+	 Double_t b[2], cov[3]; 
+	 if (vertex) {
+	   track->PropagateToDCA(vertex, esdEvent->GetMagneticField(), kVeryBig, b, cov); 
+	   fDCA = b[0];
+	 }
+       }
+       // Number of Daughters from MC 
+       if (event->GetRefMC()) {
+	 AliMCParticle *part = (AliMCParticle *)event->GetRefMC()->GetTrack(fMother);
+	 if(part)fNTotSisters = part->Particle()->GetNDaughters();
+       }
+     }
    }
-   
 }
 
 //__________________________________________________________________________________________________
