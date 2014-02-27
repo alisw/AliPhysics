@@ -72,7 +72,7 @@ void runFilteringTask( const char* esdList,
 
 
     gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskFilteredTree.C");
-    AliAnalysisTaskFilteredTree* task = (AliAnalysisTaskFilteredTree*)AddTaskFilteredTree("Filtered.root");
+    AliAnalysisTaskFilteredTree* task = (AliAnalysisTaskFilteredTree*)AddTaskFilteredTree("FilterEvents_Trees.root");
     task->SetLowPtTrackDownscaligF(scalingTracks);
     task->SetLowPtV0DownscaligF(scalingV0);
 
