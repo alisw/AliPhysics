@@ -188,17 +188,22 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
 	
 }  else if( trainConfig == 2 ) {  // No eta shift |Y| < 0.8
   
-	ConvCutarray[0] = "8000012032093603007200000000"; ElecCutarray[0] = "9047540023910262371"; MesonCutarray[0] = "01033035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 +  |Y| < 0.6 and |Gamma_eta| < 0.65 and |e+_eta| < 0.65 and |e-_eta| < 0.65 
+	ConvCutarray[0] = "8000011032093603007200000000"; ElecCutarray[0] = "9047540023910262371"; MesonCutarray[0] = "01033035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 +  |Y| < 0.6 and |Gamma_eta| < 0.65 and |e+_eta| < 0.65 and |e-_eta| < 0.65 
 	
 }  else if( trainConfig == 3 ) {  // No eta shift |Y| < 0.8
   
-	ConvCutarray[0] = "8000012042093603007200000000"; ElecCutarray[0] = "9047540023510262371"; MesonCutarray[0] = "01032035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 +  |Y| < 0.7 and |Gamma_eta| < 0.75 and |e+_eta| < 0.75 and |e-_eta| < 0.75
+	ConvCutarray[0] = "8000011042093603007200000000"; ElecCutarray[0] = "9047540023510262371"; MesonCutarray[0] = "01032035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 +  |Y| < 0.7 and |Gamma_eta| < 0.75 and |e+_eta| < 0.75 and |e-_eta| < 0.75
 
 }  else if( trainConfig == 4 ) {  // No eta shift  |Y| < 0.8
   
-	ConvCutarray[0] = "8000012012093603007200000000"; ElecCutarray[0] = "9047540023610262371"; MesonCutarray[0] = "01034035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 +  |Y| < 0.5 and |Gamma_eta| < 0.60 and |e+_eta| < 0.60 and |e-_eta| < 0.60  
+	ConvCutarray[0] = "8000011012093603007200000000"; ElecCutarray[0] = "9047540023610262371"; MesonCutarray[0] = "01034035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 +  |Y| < 0.5 and |Gamma_eta| < 0.60 and |e+_eta| < 0.60 and |e-_eta| < 0.60  
     
-}  
+} else if ( trainConfig == 5 ) {
+
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540023310262331"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011
+
+
+} 
 
 
 
@@ -230,7 +235,7 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
             return 0;
       } else {
 
-	  if (  ( trainConfig >= 1 && trainConfig <= 4 )   ){
+	  if (  ( trainConfig >= 1 && trainConfig <= 5 )   ){
 	    
 	    if (doWeighting){
 	      if (generatorName.CompareTo("DPMJET")==0){

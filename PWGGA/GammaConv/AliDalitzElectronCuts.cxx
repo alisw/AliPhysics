@@ -115,9 +115,11 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
     fBKGMethod(0),
     fnumberOfRotationEventsForBG(0),
     fDoMassCut(kFALSE),
+    fDoMassMinCut(kFALSE),
     fMassCutLowPt(999.),
     fMassCutHighPt(999.),
     fMassCutPtMin(-100.0),
+    fMassMinCut(-999.),
     fDoWeights(kFALSE),
     fCutString(NULL),
     hCutIndex(NULL),
@@ -167,6 +169,8 @@ AliDalitzElectronCuts::~AliDalitzElectronCuts() {
 void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut,TString cutNumber){
 
     // Initialize Cut Histograms for QA (only initialized and filled if function is called)
+
+     TH1::AddDirectory(kFALSE);
 
      TString cutName = "";
     
@@ -332,7 +336,8 @@ void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut,TStrin
     }
     delete [] newBins;
 
-        
+    TH1::AddDirectory(kTRUE);        
+
     // Event Cuts and Info
 }
 
@@ -1764,63 +1769,88 @@ Bool_t AliDalitzElectronCuts::SetMassCut(Int_t massCut)
                         fMassCutPtMin  = -999.; //GeV
                         fMassCutLowPt  =  999.; //GeV/c^2
                         fMassCutHighPt =  999.; //GeV/c^2
+                        fMassMinCut = -999;
                         fDoMassCut = kFALSE;   
+			fDoMassMinCut = kFALSE;
                         break;
     case 1:
                         //fMassCut = 0.135;             //GeV/c^2
                         fMassCutPtMin  = -999.; //GeV
                         fMassCutLowPt  = 0.135; //GeV/c^2
                         fMassCutHighPt = 0.135; //GeV/c^2
+                        fMassMinCut = -999;
                         fDoMassCut = kTRUE;
+			fDoMassMinCut = kFALSE;
                         break; 
     case 2:
                         //fMassCut = 0.100;     //GeV/c^2
                         fMassCutPtMin  = -999.; //GeV
                         fMassCutLowPt  = 0.100; //GeV/c^2
                         fMassCutHighPt = 0.100; //GeV/c^2
+                        fMassMinCut = -999;
                         fDoMassCut = kTRUE;
+			fDoMassMinCut = kFALSE;
                         break;
     case 3:
-                        //fMassCut = 0.075;     //GeV/c^2
+                        /*fMassCut = 0.075;     //GeV/c^2 Changed from Feb 25
                         fMassCutPtMin  = -999.; //GeV
                         fMassCutLowPt  = 0.075; //GeV/c^2
                         fMassCutHighPt = 0.075; //GeV/c^2
                         fDoMassCut = kTRUE;
+			fDoMassMinCut = kFALSE;*/
+			fMassCutPtMin  = 1.0;   //GeV
+                        fMassCutLowPt  = 0.015; //GeV/c^2
+                        fMassCutHighPt = 0.035; //GeV/c^2
+                        fMassMinCut    = 0.002;
+                        fDoMassCut = kTRUE;
+			fDoMassMinCut = kTRUE;
                         break;
     case 4:
                         //fMassCut = 0.050;     //GeV/c^2
                         fMassCutPtMin  = -999.; //GeV
                         fMassCutLowPt  = 0.050; //GeV/c^2
                         fMassCutHighPt = 0.050; //GeV/c^2
+                        fMassMinCut = -999;
                         fDoMassCut = kTRUE;
+			fDoMassMinCut = kFALSE;
                         break;
     case 5:
                         
                         fMassCutPtMin  = -999.; //GeV
                         fMassCutLowPt  = 0.035; //GeV/c^2
                         fMassCutHighPt = 0.035; //GeV/c^2
+                        fMassMinCut = -999;
                         fDoMassCut = kTRUE;
+			fDoMassMinCut = kFALSE;
                         break;
     case 6:
                         fMassCutPtMin  = -999.; //GeV
                         fMassCutLowPt  = 0.015; //GeV/c^2
                         fMassCutHighPt = 0.015; //GeV/c^2
+                        fMassMinCut = -999;
                         fDoMassCut = kTRUE;
+			fDoMassMinCut = kFALSE;
                         break;
     case 7:             fMassCutPtMin  = 1.0;   //GeV
                         fMassCutLowPt  = 0.015; //GeV/c^2
                         fMassCutHighPt = 0.035; //GeV/c^2
+                        fMassMinCut = -999;
                         fDoMassCut = kTRUE;
+			fDoMassMinCut = kFALSE;
                         break;
     case 8:             fMassCutPtMin  = 1.0;   //GeV
                         fMassCutLowPt  = 0.015; //GeV/c^2
                         fMassCutHighPt = 0.050; //GeV/c^2
+                        fMassMinCut = -999;
                         fDoMassCut = kTRUE;
+			fDoMassMinCut = kFALSE;
 			break;
     case 9:             fMassCutPtMin  = 1.0;   //GeV
                         fMassCutLowPt  = 0.025; //GeV/c^2
                         fMassCutHighPt = 0.035; //GeV/c^2
+                        fMassMinCut = -999;
                         fDoMassCut = kTRUE;
+			fDoMassMinCut = kFALSE;
 			break;
     default:
                         cout<<"Warning: MassCut not defined "<<massCut<<endl;
