@@ -85,6 +85,11 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
   void SetCascVertexerCascadeMaxRadius     ( Double_t lParameter ){ fCascadeVertexerSels[7] = lParameter; }  
 //---------------------------------------------------------------------------------------
 
+//---------------------------------------------------------------------------------------
+  //Bachelor and Pion Swapping Check
+  void SetCheckSwapping ( Bool_t lCheckSwapping = kTRUE) { fkCheckSwapping = lCheckSwapping; }
+//---------------------------------------------------------------------------------------
+
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
         // your data member object is created on the worker nodes and streaming is not needed.
@@ -110,6 +115,8 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
   Bool_t    fkRunVertexers;           // if true, re-run vertexer with loose cuts. CARE MUST BE TAKEN in PbPb!
   Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
   Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
+  //Meson Swapping Check Switch
+  Bool_t fkCheckSwapping; // if true, will perform association with mesons switched (in ADDITION to reg. association)  
   
 	//Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
 	//Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related
@@ -154,6 +161,7 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
   Float_t fTreeCascVarDistOverTotMom;       //!
   Int_t   fTreeCascVarIsPhysicalPrimary; //!
   Int_t   fTreeCascVarPID;         //!
+  Int_t   fTreeCascVarPIDSwapped;  //!
   Int_t   fTreeCascVarPIDBachelor; //!  
   Int_t   fTreeCascVarPIDNegative; //!
   Int_t   fTreeCascVarPIDPositive; //!

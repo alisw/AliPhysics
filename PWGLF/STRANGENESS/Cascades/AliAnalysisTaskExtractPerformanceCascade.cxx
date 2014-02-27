@@ -104,6 +104,7 @@ AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCasca
    fkpAVertexSelection( kFALSE ),
    fEtaRefMult ( 0.5 ),
    fkRunVertexers ( kFALSE ),
+   fkCheckSwapping( kFALSE ),
 //------------------------------------------------
 // Tree Variables
 //------------------------------------------------
@@ -141,6 +142,7 @@ AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCasca
    fTreeCascVarDistOverTotMom(0),
    fTreeCascVarIsPhysicalPrimary(0),
    fTreeCascVarPID(0),
+   fTreeCascVarPIDSwapped(0),
    fTreeCascVarPIDBachelor(0),
    fTreeCascVarPIDNegative(0),
    fTreeCascVarPIDPositive(0),
@@ -335,6 +337,7 @@ AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCasca
    fkpAVertexSelection( kFALSE ),
    fEtaRefMult ( 0.5 ),
    fkRunVertexers ( kFALSE ),
+   fkCheckSwapping( kFALSE ),
 //------------------------------------------------
 // Tree Variables
 //------------------------------------------------
@@ -372,6 +375,7 @@ AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCasca
    fTreeCascVarDistOverTotMom(0),
    fTreeCascVarIsPhysicalPrimary(0),
    fTreeCascVarPID(0),
+   fTreeCascVarPIDSwapped(0),
    fTreeCascVarPIDBachelor(0),
    fTreeCascVarPIDNegative(0),
    fTreeCascVarPIDPositive(0),
@@ -664,6 +668,7 @@ void AliAnalysisTaskExtractPerformanceCascade::UserCreateOutputObjects()
 //-----------MC-PID-------------------------------
 /*25bis*/ fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimary",&fTreeCascVarIsPhysicalPrimary,"fTreeCascVarIsPhysicalPrimary/I");
 /*26*/		fTreeCascade->Branch("fTreeCascVarPID",&fTreeCascVarPID,"fTreeCascVarPID/I");
+/*26*/		fTreeCascade->Branch("fTreeCascVarPIDSwapped",&fTreeCascVarPIDSwapped,"fTreeCascVarPIDSwapped/I");
 /*27*/		fTreeCascade->Branch("fTreeCascVarPIDBachelor",&fTreeCascVarPIDBachelor,"fTreeCascVarPIDBachelor/I");
 /*28*/    fTreeCascade->Branch("fTreeCascVarPIDNegative",&fTreeCascVarPIDNegative,"fTreeCascVarPIDNegative/I");
 /*29*/    fTreeCascade->Branch("fTreeCascVarPIDPositive",&fTreeCascVarPIDPositive,"fTreeCascVarPIDPositive/I");
@@ -2432,9 +2437,102 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
 
   }}}}}}} //Ends all conditionals above...
 
-  //----------------------------------------
-  // Regular MC ASSOCIATION ENDS HERE
-  //----------------------------------------
+//----------------------------------------
+// Regular MC ASSOCIATION ENDS HERE
+//----------------------------------------
+
+//----------------------------------------
+// Swapped MC Association Starts Here 
+//----------------------------------------
+
+  fTreeCascVarPIDSwapped = 0; //Nothing
+  if ( fkCheckSwapping ) { //on/off switch if not needed or otherwise broken
+
+	  Int_t lPID_BachMotherSwapped = 0;
+	  Int_t lPID_NegMotherSwapped = 0;
+  	Int_t lPID_PosMotherSwapped = 0;
+
+	  Int_t lblPosV0DghterSwapped = (Int_t) TMath::Abs( pTrackXi->GetLabel() );  
+		  // Abs value = needed ! question of quality track association ...
+	  Int_t lblNegV0DghterSwapped = (Int_t) TMath::Abs( nTrackXi->GetLabel() );
+	  Int_t lblBachSwapped        = (Int_t) TMath::Abs( bachTrackXi->GetLabel() );
+
+    //This is SWAPPED association: swap like-sign particles
+    TParticle* mcPosV0DghterSwapped = 0x0;
+    TParticle* mcNegV0DghterSwapped = 0x0;
+    TParticle* mcBachSwapped        = 0x0;
+
+    //Swapping Case 1: XiMinus/OmegaMinus swapped: exchange negative V0 daughter with bachelor
+    if( lChargeXi == -1 ){ 
+      mcPosV0DghterSwapped = lMCstack->Particle( lblPosV0DghterSwapped );
+      mcNegV0DghterSwapped = lMCstack->Particle( lblBachSwapped        );
+      mcBachSwapped        = lMCstack->Particle( lblNegV0DghterSwapped );	
+    }
+    //Swapping Case 2: XiPlus/OmegaPlus swapped: exchange positive V0 daughter with bachelor
+    if( lChargeXi ==  1 ){ 
+      mcPosV0DghterSwapped = lMCstack->Particle( lblBachSwapped        );
+      mcNegV0DghterSwapped = lMCstack->Particle( lblNegV0DghterSwapped );
+      mcBachSwapped        = lMCstack->Particle( lblPosV0DghterSwapped );	
+    }
+	
+    //fTreeCascVarPosTransMomMC = mcPosV0Dghter->Pt();
+    //fTreeCascVarNegTransMomMC = mcNegV0Dghter->Pt();
+
+	  //fTreeCascVarPIDPositive = mcPosV0Dghter -> GetPdgCode();
+	  //fTreeCascVarPIDNegative = mcNegV0Dghter -> GetPdgCode();
+	  //fTreeCascVarPIDBachelor = mcBach->GetPdgCode();
+
+	  // - Step 4.2 : level of the Xi daughters
+		
+	  Int_t lblMotherPosV0DghterSwapped = mcPosV0DghterSwapped->GetFirstMother() ; 
+	  Int_t lblMotherNegV0DghterSwapped = mcNegV0DghterSwapped->GetFirstMother();
+	
+	  //Rather uncivilized: Open brackets for each 'continue'
+	  if(! (lblMotherPosV0DghterSwapped != lblMotherNegV0DghterSwapped) ) { // same mother
+	  if(! (lblMotherPosV0DghterSwapped < 0) ) { // mother != primary (!= -1)
+	  if(! (lblMotherNegV0DghterSwapped < 0) ) {
+					
+		// mothers = Lambda candidate ... a priori
+	
+	  TParticle* mcMotherPosV0DghterSwapped = lMCstack->Particle( lblMotherPosV0DghterSwapped );
+	  TParticle* mcMotherNegV0DghterSwapped = lMCstack->Particle( lblMotherNegV0DghterSwapped );
+			
+	  // - Step 4.3 : level of Xi candidate
+	
+	  Int_t lblGdMotherPosV0DghterSwapped =   mcMotherPosV0DghterSwapped->GetFirstMother() ;
+	  Int_t lblGdMotherNegV0DghterSwapped =   mcMotherNegV0DghterSwapped->GetFirstMother() ;
+				
+		if(! (lblGdMotherPosV0DghterSwapped != lblGdMotherNegV0DghterSwapped) ) {
+		if(! (lblGdMotherPosV0DghterSwapped < 0) ) { // primary lambda ...
+		if(! (lblGdMotherNegV0DghterSwapped < 0) ) { // primary lambda ...
+
+		  // Gd mothers = Xi candidate ... a priori
+	
+	  TParticle* mcGdMotherPosV0DghterSwapped = lMCstack->Particle( lblGdMotherPosV0DghterSwapped );
+	  TParticle* mcGdMotherNegV0DghterSwapped = lMCstack->Particle( lblGdMotherNegV0DghterSwapped );
+					
+	  Int_t lblMotherBachSwapped = (Int_t) TMath::Abs( mcBachSwapped->GetFirstMother()  );
+	
+  //		if( lblMotherBach != lblGdMotherPosV0Dghter ) continue; //same mother for bach and V0 daughters
+		  if(!(lblMotherBachSwapped != lblGdMotherPosV0DghterSwapped)) { //same mother for bach and V0 daughters
+	
+	  TParticle* mcMotherBachSwapped = lMCstack->Particle( lblMotherBachSwapped );
+	
+    lPID_BachMotherSwapped = mcMotherBachSwapped->GetPdgCode();
+	  lPID_NegMotherSwapped = mcGdMotherPosV0DghterSwapped->GetPdgCode();
+	  lPID_PosMotherSwapped = mcGdMotherNegV0DghterSwapped->GetPdgCode();
+   
+	  if(lPID_BachMotherSwapped==lPID_NegMotherSwapped && lPID_BachMotherSwapped==lPID_PosMotherSwapped){ 
+		  fTreeCascVarPIDSwapped = lPID_BachMotherSwapped; //there!
+	  }
+
+  }}}}}}} //Ends all conditionals above...
+
+  }
+//----------------------------------------
+// Regular MC ASSOCIATION ENDS HERE
+//----------------------------------------
+
 
   //------------------------------------------------
   // Set Variables for adding to tree
