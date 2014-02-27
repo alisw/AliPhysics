@@ -135,12 +135,12 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 		cutarray[ 0] = "8000011001092170008260400000"; mesonCutArray[ 0] = "01621035009000";  //new standard eta=0.9 y=0.8  // minR 2.8
 		cutarray[ 1] = "8000011009092170008260400000"; mesonCutArray[ 1] = "01621035009000";  //new standard eta=0.9 y=0.8  //minR 7.5
 		cutarray[ 2] = "8000011002792170008260400000"; mesonCutArray[ 2] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0. GeV/c
-		cutarray[ 3] = "8000011002012170008260400000"; mesonCutArray[ 3] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
+		cutarray[ 3] = "8000011002192170008260400000"; mesonCutArray[ 3] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
 	} else if (trainConfig == 8) {
 		cutarray[ 0] = "8000012001092170008260400000"; mesonCutArray[ 0] = "01621035009000";  //new standard eta=0.9 y=0.8  // minR 2.8
 		cutarray[ 1] = "8000012009092170008260400000"; mesonCutArray[ 1] = "01621035009000";  //new standard eta=0.9 y=0.8  //minR 7.5
 		cutarray[ 2] = "8000012002792170008260400000"; mesonCutArray[ 2] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0. GeV/c
-		cutarray[ 3] = "8000012002012170008260400000"; mesonCutArray[ 3] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
+		cutarray[ 3] = "8000012002192170008260400000"; mesonCutArray[ 3] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
 	} else if (trainConfig == 9) {
 		cutarray[ 0] = "8000011002082170008260400000"; mesonCutArray[ 0] = "01621035009000";  //new standard eta=0.9 y=0.8 //TPC Cluster 0.35
 		cutarray[ 1] = "8000011002062170008260400000"; mesonCutArray[ 1] = "01621035009000";  //new standard eta=0.9 y=0.8 //TPC Cluster 0.7      
@@ -209,7 +209,7 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 	} else if (trainConfig == 22) {
 		cutarray[ 0] = "8000012002092170008260400000"; mesonCutArray[ 0] = "02621035009000";  //new standard eta=0.9 y=0.8 // BG track multiplicity
 		cutarray[ 1] = "8000012002092170008260400000"; mesonCutArray[ 1] = "01621035000000";  //new standard eta=0.9 y=0.8 //no MCP smearing      
-		cutarray[ 2] = "8000012002093172003290000000"; mesonCutArray[ 2] = "01621035000000";  //old standard eta=0.9 y=0.8 
+		cutarray[ 2] = "8000012002093172003290000000"; mesonCutArray[ 2] = "01621035009000";  //old standard eta=0.9 y=0.8 
 		cutarray[ 3] = "8000012002092170008260400000"; mesonCutArray[ 3] = "01621035008000";  //new standard eta=0.9 y=0.8 // fPSigSmearingCte=0.014;
 	} else if (trainConfig == 23){
 		cutarray[ 0] = "8020011032092170008260400000"; mesonCutArray[ 0] = "01623035009000"; //New STANDARD CUT |eta| < 0.65, |y| < 0.6
@@ -245,12 +245,12 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 		cutarray[ 0] = "8020011001092170008260400000"; mesonCutArray[ 0] = "01621035009000";  //new standard eta=0.9 y=0.8  // minR 2.8
 		cutarray[ 1] = "8020011009092170008260400000"; mesonCutArray[ 1] = "01621035009000";  //new standard eta=0.9 y=0.8  //minR 7.5
 		cutarray[ 2] = "8020011002792170008260400000"; mesonCutArray[ 2] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0. GeV/c
-		cutarray[ 3] = "8020011002012170008260400000"; mesonCutArray[ 3] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
+		cutarray[ 3] = "8020011002192170008260400000"; mesonCutArray[ 3] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
 	} else if (trainConfig == 30) {
 		cutarray[ 0] = "8020012001092170008260400000"; mesonCutArray[ 0] = "01621035009000";  //new standard eta=0.9 y=0.8  // minR 2.8
 		cutarray[ 1] = "8020012009092170008260400000"; mesonCutArray[ 1] = "01621035009000";  //new standard eta=0.9 y=0.8  //minR 7.5
 		cutarray[ 2] = "8020012002792170008260400000"; mesonCutArray[ 2] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0. GeV/c
-		cutarray[ 3] = "8020012002012170008260400000"; mesonCutArray[ 3] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
+		cutarray[ 3] = "8020012002192170008260400000"; mesonCutArray[ 3] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
 	} else if (trainConfig == 31) {
 		cutarray[ 0] = "8020011002082170008260400000"; mesonCutArray[ 0] = "01621035009000";  //new standard eta=0.9 y=0.8 //TPC Cluster 0.35
 		cutarray[ 1] = "8020011002062170008260400000"; mesonCutArray[ 1] = "01621035009000";  //new standard eta=0.9 y=0.8 //TPC Cluster 0.7      
@@ -319,7 +319,7 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 	} else if (trainConfig == 44) {
 		cutarray[ 0] = "8020012002092170008260400000"; mesonCutArray[ 0] = "02621035009000";  //new standard eta=0.9 y=0.8 // BG track multiplicity
 		cutarray[ 1] = "8020012002092170008260400000"; mesonCutArray[ 1] = "01621035000000";  //new standard eta=0.9 y=0.8 //no MCP smearing      
-		cutarray[ 2] = "8020012002093172003290000000"; mesonCutArray[ 2] = "01621035000000";  //old standard eta=0.9 y=0.8 
+		cutarray[ 2] = "8020012002093172003290000000"; mesonCutArray[ 2] = "01621035009000";  //old standard eta=0.9 y=0.8 
 		cutarray[ 3] = "8020012002092170008260400000"; mesonCutArray[ 3] = "01621035008000";  //new standard eta=0.9 y=0.8 // fPSigSmearingCte=0.014;
 	} else if (trainConfig == 45){
 		cutarray[ 0] = "8240011032092170008260400000"; mesonCutArray[ 0] = "01623035009000"; //New STANDARD CUT |eta| < 0.65, |y| < 0.6
@@ -355,12 +355,12 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 		cutarray[ 0] = "8240011001092170008260400000"; mesonCutArray[ 0] = "01621035009000";  //new standard eta=0.9 y=0.8  // minR 2.8
 		cutarray[ 1] = "8240011009092170008260400000"; mesonCutArray[ 1] = "01621035009000";  //new standard eta=0.9 y=0.8  //minR 7.5
 		cutarray[ 2] = "8240011002792170008260400000"; mesonCutArray[ 2] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0. GeV/c
-		cutarray[ 3] = "8240011002012170008260400000"; mesonCutArray[ 3] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
+		cutarray[ 3] = "8240011002192170008260400000"; mesonCutArray[ 3] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
 	} else if (trainConfig == 52) {
 		cutarray[ 0] = "8240012001092170008260400000"; mesonCutArray[ 0] = "01621035009000";  //new standard eta=0.9 y=0.8  // minR 2.8
 		cutarray[ 1] = "8240012009092170008260400000"; mesonCutArray[ 1] = "01621035009000";  //new standard eta=0.9 y=0.8  //minR 7.5
 		cutarray[ 2] = "8240012002792170008260400000"; mesonCutArray[ 2] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0. GeV/c
-		cutarray[ 3] = "8240012002012170008260400000"; mesonCutArray[ 3] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
+		cutarray[ 3] = "8240012002192170008260400000"; mesonCutArray[ 3] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
 	} else if (trainConfig == 53) {
 		cutarray[ 0] = "8240011002082170008260400000"; mesonCutArray[ 0] = "01621035009000";  //new standard eta=0.9 y=0.8 //TPC Cluster 0.35
 		cutarray[ 1] = "8240011002062170008260400000"; mesonCutArray[ 1] = "01621035009000";  //new standard eta=0.9 y=0.8 //TPC Cluster 0.7      
@@ -429,7 +429,7 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 	} else if (trainConfig == 66) {
 		cutarray[ 0] = "8240012002092170008260400000"; mesonCutArray[ 0] = "02621035009000";  //new standard eta=0.9 y=0.8 // BG track multiplicity
 		cutarray[ 1] = "8240012002092170008260400000"; mesonCutArray[ 1] = "01621035000000";  //new standard eta=0.9 y=0.8 //no MCP smearing      
-		cutarray[ 2] = "8240012002093172003290000000"; mesonCutArray[ 2] = "01621035000000";  //old standard eta=0.9 y=0.8 
+		cutarray[ 2] = "8240012002093172003290000000"; mesonCutArray[ 2] = "01621035009000";  //old standard eta=0.9 y=0.8 
 		cutarray[ 3] = "8240012002092170008260400000"; mesonCutArray[ 3] = "01621035008000";  //new standard eta=0.9 y=0.8 // fPSigSmearingCte=0.014;
 	} else if (trainConfig == 67){
 		cutarray[ 0] = "8460011032092170008260400000"; mesonCutArray[ 0] = "01623035009000"; //New STANDARD CUT |eta| < 0.65, |y| < 0.6
@@ -465,12 +465,12 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 		cutarray[ 0] = "8460011001092170008260400000"; mesonCutArray[ 0] = "01621035009000";  //new standard eta=0.9 y=0.8  // minR 2.8
 		cutarray[ 1] = "8460011009092170008260400000"; mesonCutArray[ 1] = "01621035009000";  //new standard eta=0.9 y=0.8  //minR 7.5
 		cutarray[ 2] = "8460011002792170008260400000"; mesonCutArray[ 2] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0. GeV/c
-		cutarray[ 3] = "8460011002012170008260400000"; mesonCutArray[ 3] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
+		cutarray[ 3] = "8460011002192170008260400000"; mesonCutArray[ 3] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
 	} else if (trainConfig == 74) {
 		cutarray[ 0] = "8460012001092170008260400000"; mesonCutArray[ 0] = "01621035009000";  //new standard eta=0.9 y=0.8  // minR 2.8
 		cutarray[ 1] = "8460012009092170008260400000"; mesonCutArray[ 1] = "01621035009000";  //new standard eta=0.9 y=0.8  //minR 7.5
 		cutarray[ 2] = "8460012002792170008260400000"; mesonCutArray[ 2] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0. GeV/c
-		cutarray[ 3] = "8460012002012170008260400000"; mesonCutArray[ 3] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
+		cutarray[ 3] = "8460012002192170008260400000"; mesonCutArray[ 3] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
 	} else if (trainConfig == 75) {
 		cutarray[ 0] = "8460011002082170008260400000"; mesonCutArray[ 0] = "01621035009000";  //new standard eta=0.9 y=0.8 //TPC Cluster 0.35
 		cutarray[ 1] = "8460011002062170008260400000"; mesonCutArray[ 1] = "01621035009000";  //new standard eta=0.9 y=0.8 //TPC Cluster 0.7      
@@ -539,7 +539,7 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 	} else if (trainConfig == 88) {
 		cutarray[ 0] = "8460012002092170008260400000"; mesonCutArray[ 0] = "02621035009000";  //new standard eta=0.9 y=0.8 // BG track multiplicity
 		cutarray[ 1] = "8460012002092170008260400000"; mesonCutArray[ 1] = "01621035000000";  //new standard eta=0.9 y=0.8 //no MCP smearing      
-		cutarray[ 2] = "8460012002093172003290000000"; mesonCutArray[ 2] = "01621035000000";  //old standard eta=0.9 y=0.8 
+		cutarray[ 2] = "8460012002093172003290000000"; mesonCutArray[ 2] = "01621035009000";  //old standard eta=0.9 y=0.8 
 		cutarray[ 3] = "8460012002092170008260400000"; mesonCutArray[ 3] = "01621035008000";  //new standard eta=0.9 y=0.8 // fPSigSmearingCte=0.014;	
 	} else if (trainConfig == 89){
 		cutarray[ 0] = "8680011032092170008260400000"; mesonCutArray[ 0] = "01623035009000"; //New STANDARD CUT |eta| < 0.65, |y| < 0.6
@@ -575,12 +575,12 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 		cutarray[ 0] = "8680011001092170008260400000"; mesonCutArray[ 0] = "01621035009000";  //new standard eta=0.9 y=0.8  // minR 2.8
 		cutarray[ 1] = "8680011009092170008260400000"; mesonCutArray[ 1] = "01621035009000";  //new standard eta=0.9 y=0.8  //minR 7.5
 		cutarray[ 2] = "8680011002792170008260400000"; mesonCutArray[ 2] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0. GeV/c
-		cutarray[ 3] = "8680011002012170008260400000"; mesonCutArray[ 3] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
+		cutarray[ 3] = "8680011002192170008260400000"; mesonCutArray[ 3] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
 	} else if (trainConfig == 96) {
 		cutarray[ 0] = "8680012001092170008260400000"; mesonCutArray[ 0] = "01621035009000";  //new standard eta=0.9 y=0.8  // minR 2.8
 		cutarray[ 1] = "8680012009092170008260400000"; mesonCutArray[ 1] = "01621035009000";  //new standard eta=0.9 y=0.8  //minR 7.5
 		cutarray[ 2] = "8680012002792170008260400000"; mesonCutArray[ 2] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0. GeV/c
-		cutarray[ 3] = "8680012002012170008260400000"; mesonCutArray[ 3] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
+		cutarray[ 3] = "8680012002192170008260400000"; mesonCutArray[ 3] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
 	} else if (trainConfig == 97) {
 		cutarray[ 0] = "8680011002082170008260400000"; mesonCutArray[ 0] = "01621035009000";  //new standard eta=0.9 y=0.8 //TPC Cluster 0.35
 		cutarray[ 1] = "8680011002062170008260400000"; mesonCutArray[ 1] = "01621035009000";  //new standard eta=0.9 y=0.8 //TPC Cluster 0.7      
@@ -649,7 +649,7 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 	} else if (trainConfig == 110) {
 		cutarray[ 0] = "8680012002092170008260400000"; mesonCutArray[ 0] = "02621035009000";  //new standard eta=0.9 y=0.8 // BG track multiplicity
 		cutarray[ 1] = "8680012002092170008260400000"; mesonCutArray[ 1] = "01621035000000";  //new standard eta=0.9 y=0.8 //no MCP smearing      
-		cutarray[ 2] = "8680012002093172003290000000"; mesonCutArray[ 2] = "01621035000000";  //old standard eta=0.9 y=0.8 
+		cutarray[ 2] = "8680012002093172003290000000"; mesonCutArray[ 2] = "01621035009000";  //old standard eta=0.9 y=0.8 
 		cutarray[ 3] = "8680012002092170008260400000"; mesonCutArray[ 3] = "01621035008000";  //new standard eta=0.9 y=0.8 // fPSigSmearingCte=0.014;	
 	} else if (trainConfig == 111){
 		cutarray[ 0] = "8600011032092170008260400000"; mesonCutArray[ 0] = "01623035009000"; //New STANDARD CUT |eta| < 0.65, |y| < 0.6
@@ -685,12 +685,12 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 		cutarray[ 0] = "8600011001092170008260400000"; mesonCutArray[ 0] = "01621035009000";  //new standard eta=0.9 y=0.8  // minR 2.8
 		cutarray[ 1] = "8600011009092170008260400000"; mesonCutArray[ 1] = "01621035009000";  //new standard eta=0.9 y=0.8  //minR 7.5
 		cutarray[ 2] = "8600011002792170008260400000"; mesonCutArray[ 2] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0. GeV/c
-		cutarray[ 3] = "8600011002012170008260400000"; mesonCutArray[ 3] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
+		cutarray[ 3] = "8600011002192170008260400000"; mesonCutArray[ 3] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
 	} else if (trainConfig == 118) {
 		cutarray[ 0] = "8600012001092170008260400000"; mesonCutArray[ 0] = "01621035009000";  //new standard eta=0.9 y=0.8  // minR 2.8
 		cutarray[ 1] = "8600012009092170008260400000"; mesonCutArray[ 1] = "01621035009000";  //new standard eta=0.9 y=0.8  //minR 7.5
 		cutarray[ 2] = "8600012002792170008260400000"; mesonCutArray[ 2] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0. GeV/c
-		cutarray[ 3] = "8600012002012170008260400000"; mesonCutArray[ 3] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
+		cutarray[ 3] = "8600012002192170008260400000"; mesonCutArray[ 3] = "01621035009000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
 	} else if (trainConfig == 119) {
 		cutarray[ 0] = "8600011002082170008260400000"; mesonCutArray[ 0] = "01621035009000";  //new standard eta=0.9 y=0.8 //TPC Cluster 0.35
 		cutarray[ 1] = "8600011002062170008260400000"; mesonCutArray[ 1] = "01621035009000";  //new standard eta=0.9 y=0.8 //TPC Cluster 0.7      
@@ -759,7 +759,7 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 	} else if (trainConfig == 132) {
 		cutarray[ 0] = "8600012002092170008260400000"; mesonCutArray[ 0] = "02621035009000";  //new standard eta=0.9 y=0.8 // BG track multiplicity
 		cutarray[ 1] = "8600012002092170008260400000"; mesonCutArray[ 1] = "01621035000000";  //new standard eta=0.9 y=0.8 //no MCP smearing      
-		cutarray[ 2] = "8600012002093172003290000000"; mesonCutArray[ 2] = "01621035000000";  //old standard eta=0.9 y=0.8 
+		cutarray[ 2] = "8600012002093172003290000000"; mesonCutArray[ 2] = "01621035009000";  //old standard eta=0.9 y=0.8 
 		cutarray[ 3] = "8600012002092170008260400000"; mesonCutArray[ 3] = "01621035008000";  //new standard eta=0.9 y=0.8 // fPSigSmearingCte=0.014;	
 	} else if (trainConfig == 133) {
 		cutarray[ 0] = "8000011032092170008260400000"; mesonCutArray[ 0] = "01623035000000"; //New STANDARD CUT |eta| < 0.65, |y| < 0.6
@@ -785,12 +785,12 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 		cutarray[ 0] = "8000011001092170008260400000"; mesonCutArray[ 0] = "01621035000000";  //new standard eta=0.9 y=0.8  // minR 2.8
 		cutarray[ 1] = "8000011009092170008260400000"; mesonCutArray[ 1] = "01621035000000";  //new standard eta=0.9 y=0.8  //minR 7.5
 		cutarray[ 2] = "8000011002792170008260400000"; mesonCutArray[ 2] = "01621035000000";  //new standard eta=0.9 y=0.8  //single pT 0. GeV/c
-		cutarray[ 3] = "8000011002012170008260400000"; mesonCutArray[ 3] = "01621035000000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
+		cutarray[ 3] = "8000011002192170008260400000"; mesonCutArray[ 3] = "01621035000000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
 	} else if (trainConfig == 138) {
 		cutarray[ 0] = "8000012001092170008260400000"; mesonCutArray[ 0] = "01621035000000";  //new standard eta=0.9 y=0.8  // minR 2.8
 		cutarray[ 1] = "8000012009092170008260400000"; mesonCutArray[ 1] = "01621035000000";  //new standard eta=0.9 y=0.8  //minR 7.5
 		cutarray[ 2] = "8000012002792170008260400000"; mesonCutArray[ 2] = "01621035000000";  //new standard eta=0.9 y=0.8  //single pT 0. GeV/c
-		cutarray[ 3] = "8000012002012170008260400000"; mesonCutArray[ 3] = "01621035000000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
+		cutarray[ 3] = "8000012002192170008260400000"; mesonCutArray[ 3] = "01621035000000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
 	} else if (trainConfig == 139) {
 		cutarray[ 0] = "8000011002082170008260400000"; mesonCutArray[ 0] = "01621035000000";  //new standard eta=0.9 y=0.8 //TPC Cluster 0.35
 		cutarray[ 1] = "8000011002062170008260400000"; mesonCutArray[ 1] = "01621035000000";  //new standard eta=0.9 y=0.8 //TPC Cluster 0.7      
@@ -860,7 +860,7 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 		cutarray[ 0] = "8000012002092170008260400000"; mesonCutArray[ 0] = "02621035000000";  //new standard eta=0.9 y=0.8 // BG track multiplicity
 		cutarray[ 1] = "8000012002092170008260400000"; mesonCutArray[ 1] = "01621035000000";  //new standard eta=0.9 y=0.8 //no MCP smearing      
 		cutarray[ 2] = "8000012002093172003290000000"; mesonCutArray[ 2] = "01621035000000";  //old standard eta=0.9 y=0.8 
-		cutarray[ 3] = "8000012002092170008260400000"; mesonCutArray[ 3] = "01621035000000";  //new standard eta=0.9 y=0.8 // fPSigSmearingCte=0.014;
+		cutarray[ 3] = "8000012002092170008260400000"; mesonCutArray[ 3] = "01621035008000";  //new standard eta=0.9 y=0.8 // fPSigSmearingCte=0.014;
 	} else if (trainConfig == 153) {
 		cutarray[ 0] = "8020011032092170008260400000"; mesonCutArray[ 0] = "01623035000000"; //New STANDARD CUT |eta| < 0.65, |y| < 0.6
 		cutarray[ 1] = "8020011042092170008260400000"; mesonCutArray[ 1] = "01622035000000"; //New STANDARD CUT |eta| < 0.75, |y| < 0.7
@@ -885,12 +885,12 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 		cutarray[ 0] = "8020011001092170008260400000"; mesonCutArray[ 0] = "01621035000000";  //new standard eta=0.9 y=0.8  // minR 2.8
 		cutarray[ 1] = "8020011009092170008260400000"; mesonCutArray[ 1] = "01621035000000";  //new standard eta=0.9 y=0.8  //minR 7.5
 		cutarray[ 2] = "8020011002792170008260400000"; mesonCutArray[ 2] = "01621035000000";  //new standard eta=0.9 y=0.8  //single pT 0. GeV/c
-		cutarray[ 3] = "8020011002012170008260400000"; mesonCutArray[ 3] = "01621035000000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
+		cutarray[ 3] = "8020011002192170008260400000"; mesonCutArray[ 3] = "01621035000000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
 	} else if (trainConfig == 158) {
 		cutarray[ 0] = "8020012001092170008260400000"; mesonCutArray[ 0] = "01621035000000";  //new standard eta=0.9 y=0.8  // minR 2.8
 		cutarray[ 1] = "8020012009092170008260400000"; mesonCutArray[ 1] = "01621035000000";  //new standard eta=0.9 y=0.8  //minR 7.5
 		cutarray[ 2] = "8020012002792170008260400000"; mesonCutArray[ 2] = "01621035000000";  //new standard eta=0.9 y=0.8  //single pT 0. GeV/c
-		cutarray[ 3] = "8020012002012170008260400000"; mesonCutArray[ 3] = "01621035000000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
+		cutarray[ 3] = "8020012002192170008260400000"; mesonCutArray[ 3] = "01621035000000";  //new standard eta=0.9 y=0.8  //single pT 0.1 GeV/c
 	} else if (trainConfig == 159) {
 		cutarray[ 0] = "8020011002082170008260400000"; mesonCutArray[ 0] = "01621035000000";  //new standard eta=0.9 y=0.8 //TPC Cluster 0.35
 		cutarray[ 1] = "8020011002062170008260400000"; mesonCutArray[ 1] = "01621035000000";  //new standard eta=0.9 y=0.8 //TPC Cluster 0.7      
@@ -960,7 +960,7 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 		cutarray[ 0] = "8020012002092170008260400000"; mesonCutArray[ 0] = "02621035000000";  //new standard eta=0.9 y=0.8 // BG track multiplicity
 		cutarray[ 1] = "8020012002092170008260400000"; mesonCutArray[ 1] = "01621035000000";  //new standard eta=0.9 y=0.8 //no MCP smearing      
 		cutarray[ 2] = "8020012002093172003290000000"; mesonCutArray[ 2] = "01621035000000";  //old standard eta=0.9 y=0.8 
-		cutarray[ 3] = "8020012002092170008260400000"; mesonCutArray[ 3] = "01621035000000";  //new standard eta=0.9 y=0.8 // fPSigSmearingCte=0.014;		
+		cutarray[ 3] = "8020012002092170008260400000"; mesonCutArray[ 3] = "01621035008000";  //new standard eta=0.9 y=0.8 // fPSigSmearingCte=0.014;		
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
