@@ -30,6 +30,10 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    Int_t       NTPCcluster = 70,
    Double_t    minpt = 0.15,
    TString     triggerMask = AliVEvent::kMB,
+   Short_t     maxSisters = 2,
+   Bool_t      checkP = kTRUE,
+   Bool_t      minDCAcutFixed = kFALSE,
+   Bool_t      maxDCAcutFixed = kFALSE,
    Int_t       nmix = 5,
    Double_t    minYlab =  -0.5,
    Double_t    maxYlab =  0.5,
@@ -63,6 +67,11 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    }
 
    task->SelectCollisionCandidates(trigger);
+   task->SetMaxNDaughters(maxSisters);
+   task->SetCheckMomentumConservation(checkP);
+   
+   ::Info("AddAnalysisTaskD0", Form("Maximum numbers of daughters allowed (-1 means cut not applied): %i",maxSisters));
+   ::Info("AddAnalysisTaskD0", Form("Are we checking the momentum conservation?: %s", checkP? "yes" : "no"));
 
 
    if (isPP) 
@@ -147,24 +156,25 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    cutsPairY->ShowCuts();
    cutsPairY->PrintSetInfo();
    
-   /*AliRsnCutSet *cutsPairDCAp = new AliRsnCutSet("pairCutsDCAp", AliRsnTarget::kMother);
-   cutsPairDCAp->AddCut(cutDCAproduct);
-   cutsPairDCAp->UseMonitor(kTRUE);
-   cutsPairDCAp->SetCutScheme("setPairD0_DCAp");
-   cutsPairDCAp->ShowCuts();
-   cutsPairDCAp->PrintSetInfo();*/
+   AliRsnCutSet *cutsPair = new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
+   cutsPair->AddCut(cutY);
+   cutsPair->AddCut(cutDCAproduct);
+   cutsPair->UseMonitor(kTRUE);
+   cutsPair->SetCutScheme(Form("%s&%s", cutY->GetName(), cutDCAproduct->GetName()));
+   cutsPair->ShowCuts();
+   cutsPair->PrintSetInfo();
   
-   
+ 
    
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigD0.C");
 
    if (isMC) {
-       Printf("========================== MC analysis - PID cuts not used");
+       Printf("========================== MC analysis - PID cuts used");
    } else 
      Printf("========================== DATA analysis - PID cuts used");
-   if (!ConfigD0(task, isPP, isMC, nsigmaTPCPi, nsigmaTPCKa, nsigmaTOFPi, nsigmaTOFKa, aodFilterBit, trackDCAcutMax, trackDCAcutMin, NTPCcluster, minpt, "", cutsPairY)) return 0x0;
+   if (!ConfigD0(task, isPP, isMC, nsigmaTPCPi, nsigmaTPCKa, nsigmaTOFPi, nsigmaTOFKa, aodFilterBit, trackDCAcutMax, trackDCAcutMin, NTPCcluster, minpt, maxSisters, checkP,  minDCAcutFixed, maxDCAcutFixed, "", cutsPairY, cutsPair)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------
