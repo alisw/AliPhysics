@@ -48,9 +48,12 @@ public:
    void                SetMaxDiffAngle(Double_t val)      {fMaxDiffAngle = val;}
    void                SetEventCuts(AliRsnCutSet *cuts)   {fEventCuts    = cuts;}
    void                SetMixPrintRefresh(Int_t n)        {fMixPrintRefresh = n;}
+   void                SetMaxNDaughters(Short_t n)        {fMaxNDaughters = n;}
+   void                SetCheckMomentumConservation(Bool_t checkP) {fCheckP = checkP;}
    Int_t               AddTrackCuts(AliRsnCutSet *cuts);
    TClonesArray       *Outputs()                          {return &fHistograms;}
    TClonesArray       *Values()                           {return &fValues;}
+   Short_t             GetMaxNDaughters()                 {return fMaxNDaughters;}
    void                SetEventQAHist(TString type,TH2F *histo);
    void                UseBigOutput(Bool_t b=kTRUE) { fBigOutput = b; }
 
@@ -108,8 +111,10 @@ private:
    AliRsnMiniEvent     *fMiniEvent;       //! mini-event cursor
    Bool_t               fBigOutput;       // flag if open file for output list
    Int_t                fMixPrintRefresh; // how often info in mixing part is printed
+   Short_t              fMaxNDaughters;   // maximum number of allowed mother's daughter
+   Bool_t               fCheckP;          // flag to set in order to check the momentum conservation for mothers
 
-   ClassDef(AliRsnMiniAnalysisTask, 6);   // AliRsnMiniAnalysisTask
+   ClassDef(AliRsnMiniAnalysisTask, 7);   // AliRsnMiniAnalysisTask
 };
 
 
