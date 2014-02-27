@@ -258,8 +258,13 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         TH2F*                   fHistRunnumbersPhi;     //! run numbers averaged phi
         TH2F*                   fHistRunnumbersEta;     //! run numbers averaged eta
         TH1F*                   fHistPvalueCDFROOT;     //! pdf value of chisquare p
+        TH2F*                   fHistPvalueCDFROOTCent; //! p value versus centrlaity from root
+        TH2F*                   fHistChi2ROOTCent;      //! reduced chi2 from ROOT, centrality correlation
         TH1F*                   fHistPvalueCDF;         //! cdf value of chisquare p
+        TH2F*                   fHistPvalueCDFCent;     //! p value vs centrality
+        TH2F*                   fHistChi2Cent;          //! reduced chi2, centrlaity correlation
         TH1F*                   fHistKolmogorovTest;    //! KolmogorovTest value
+        TH2F*                   fHistKolmogorovTestCent;//! KolmogorovTest value, centrality correlation
         TH2F*                   fHistRhoStatusCent;     //! status of rho as function of centrality
         // general settings
         Float_t                 fMinDisanceRCtoLJ;      // min distance between rc and leading jet
@@ -351,7 +356,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         AliAnalysisTaskRhoVnModulation(const AliAnalysisTaskRhoVnModulation&);                  // not implemented
         AliAnalysisTaskRhoVnModulation& operator=(const AliAnalysisTaskRhoVnModulation&);       // not implemented
 
-        ClassDef(AliAnalysisTaskRhoVnModulation, 21);
+        ClassDef(AliAnalysisTaskRhoVnModulation, 22);
 };
 
 #endif
