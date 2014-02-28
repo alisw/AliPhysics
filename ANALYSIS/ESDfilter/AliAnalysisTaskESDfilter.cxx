@@ -2314,6 +2314,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD()
     delete fESDpid;
     fESDpid = 0x0;
   }
+  AODEvent()->ConnectTracks();
 }
 
 //______________________________________________________________________________
