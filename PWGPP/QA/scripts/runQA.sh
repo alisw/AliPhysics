@@ -74,15 +74,10 @@ updateQA()
     detector=${detector##*/}
     
     #skip if excluded
-    skipDetector=0
-    for excluded in ${excludeDetectors}; do
-      if [[ ${detector} =~ ${excluded} ]]; then
-        echo "${detector} is excluded in config, skipping..."
-        skipDetector=1
-        break
-      fi
-    done
-    [[ ${skipDetector} -eq 1 ]] && continue
+    if [[ "${excludeDetectors}" =~ ${detector} ]]; then
+      echo "${detector} is excluded in config, skipping..."
+      continue
+    fi
 
     logSummary=${logDirectory}/summary-${detector}-${dateString}.log
     outputDir=$(substituteDetectorName ${detector} ${outputDirectory})

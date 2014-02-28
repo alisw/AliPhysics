@@ -260,11 +260,14 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         TH1F*                   fHistPvalueCDFROOT;     //! pdf value of chisquare p
         TH2F*                   fHistPvalueCDFROOTCent; //! p value versus centrlaity from root
         TH2F*                   fHistChi2ROOTCent;      //! reduced chi2 from ROOT, centrality correlation
+        TH2F*                   fHistPChi2Root;         //! correlation p value and reduced chi2
         TH1F*                   fHistPvalueCDF;         //! cdf value of chisquare p
         TH2F*                   fHistPvalueCDFCent;     //! p value vs centrality
         TH2F*                   fHistChi2Cent;          //! reduced chi2, centrlaity correlation
+        TH2F*                   fHistPChi2;             //! correlation p value and reduced chi2
         TH1F*                   fHistKolmogorovTest;    //! KolmogorovTest value
         TH2F*                   fHistKolmogorovTestCent;//! KolmogorovTest value, centrality correlation
+        TH2F*                   fHistPKolmogorov;       //! p value vs kolmogorov value
         TH2F*                   fHistRhoStatusCent;     //! status of rho as function of centrality
         // general settings
         Float_t                 fMinDisanceRCtoLJ;      // min distance between rc and leading jet
