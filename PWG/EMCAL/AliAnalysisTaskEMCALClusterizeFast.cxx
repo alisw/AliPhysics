@@ -859,9 +859,9 @@ void AliAnalysisTaskEMCALClusterizeFast::Init()
   if (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv1)
     fClusterizer = new AliEMCALClusterizerv1(fGeom);
   else if (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerNxN) {
-   AliEMCALClusterizerNxN *clusterizer = new AliEMCALClusterizerNxN(fGeom);
-   clusterizer->SetNRowDiff(fRecParam->GetNRowDiff());
-   clusterizer->SetNColDiff(fRecParam->GetNColDiff());
+    AliEMCALClusterizerNxN *clusterizer = new AliEMCALClusterizerNxN(fGeom);
+    clusterizer->SetNRowDiff(fRecParam->GetNRowDiff()); //MV: already done in AliEMCALClusterizer::InitParameters
+    clusterizer->SetNColDiff(fRecParam->GetNColDiff()); //MV: already done in AliEMCALClusterizer::InitParameters
     fClusterizer = clusterizer;
   } 
   else if (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv2) 
