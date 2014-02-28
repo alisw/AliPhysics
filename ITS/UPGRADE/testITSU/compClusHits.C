@@ -190,7 +190,7 @@ void compClusHits(int nev=-1)
 	int modID = cl->GetVolumeId();
 	
 	//------------ check if this is a split cluster
-	int sInL = modID - gm->GetFirstModIndex(ilr);
+	int sInL = modID - gm->GetFirstChipIndex(ilr);
 	if (!cl->TestBit(kSplCheck)) {
 	  cl->SetBit(kSplCheck);
 	  // check if there is no other cluster with same label on this module
