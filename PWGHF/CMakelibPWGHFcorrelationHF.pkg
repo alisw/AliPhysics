@@ -44,6 +44,7 @@ set ( CLASS_HDRS
     AliAnalysisTaskSED0Correlations.h
     AliAnalysisTaskSEDplusCorrelations.h
     AliAnalysisTaskSEmcCorr.h	
+    AliAnalysisTaskSEHFCJqa.h	
     )
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )
