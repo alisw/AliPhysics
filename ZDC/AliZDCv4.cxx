@@ -2254,12 +2254,12 @@ void AliZDCv4::StepManager()
   // Routine called at every step in the Zero Degree Calorimeters
   //
   Int_t   j, vol[2]={0,0}, ibeta=0, ialfa=0, ibe=0, nphe=0;
-  Float_t hits[13], x[3], xdet[3]={999.,999.,999.}, um[3], ud[3];
+  Float_t hits[14], x[3], xdet[3]={999.,999.,999.}, um[3], ud[3];
   Float_t destep=0., be=0., out=0.;
   Double_t s[3], p[4];
   const char *knamed;
   //
-  for(j=0;j<13;j++) hits[j]=-999.;
+  for(j=0;j<14;j++) hits[j]=-999.;
   //
   // --- This part is for no shower developement in beam pipe, TDI, VColl
   // If particle interacts with beam pipe, TDI, VColl -> return
@@ -2466,6 +2466,7 @@ void AliZDCv4::StepManager()
       //
       hits[12] = 1.0e09*gMC->TrackTime(); // in ns!
       //printf("\t TrackTime = %f\n", hits[12]);
+      hits[13] = part->Eta();
 
       AddHit(curTrackN, vol, hits);
 
