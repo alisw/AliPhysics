@@ -507,7 +507,10 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
             if (p2->PDGAbs() == AliRsnDaughter::SpeciesPDG(fDaughter[0]) && p1->PDGAbs() == AliRsnDaughter::SpeciesPDG(fDaughter[1]))
                decayMatch = kTRUE;
             if (!decayMatch) continue;
-	    if( (fMaxNSisters>0) && (p1->NTotSisters()==p2->NTotSisters()) && (p1->NTotSisters()>fMaxNSisters)) continue;
+	    if ( (fMaxNSisters>0) && (p1->NTotSisters()==p2->NTotSisters()) && (p1->NTotSisters()>fMaxNSisters)) continue;
+	    if ( fCheckP &&(TMath::Abs(fPair.PmotherX()-(p1->Px(1)+p2->Px(1)))/(TMath::Abs(fPair.PmotherX())+1.e-13)) > 0.00001 && 	  
+		          (TMath::Abs(fPair.PmotherY()-(p1->Py(1)+p2->Py(1)))/(TMath::Abs(fPair.PmotherY())+1.e-13)) > 0.00001 &&
+     			  (TMath::Abs(fPair.PmotherZ()-(p1->Pz(1)+p2->Pz(1)))/(TMath::Abs(fPair.PmotherZ())+1.e-13)) > 0.00001 ) continue;
          }
          // check pair against cuts
          if (fPairCuts) {
