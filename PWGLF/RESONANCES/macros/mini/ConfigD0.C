@@ -135,19 +135,19 @@ Bool_t ConfigD0
    // [1] = mixing
    // [2] = like ++
    // [3] = like --
-   Bool_t   use     [10] = { 1       ,  1       ,  1       ,  1       ,  1	  ,  1        ,  1	  ,  1        ,  1	 ,  1	    };
-   Bool_t   useIM   [10] = { 1       ,  1       ,  1       ,  1       ,  1	  ,  1        ,  1	  ,  1        ,  1	 ,  1	    };
-   TString  name    [10] = {"Unlike1", "Unlike2", "Mixing1", "Mixing2", "RotateK1", "RotateP1", "RotateK2", "RotateP2", "LikePP" , "LikeMM" };
-   TString  comp    [10] = {"PAIR"   , "PAIR"   , "MIX"    , "MIX"    , "ROTATE1" , "ROTATE2" , "ROTATE1" , "ROTATE2" , "PAIR"   , "PAIR"   };
-   TString  output  [10] = {"SPARSE" , "SPARSE" , "SPARSE" , "SPARSE" , "SPARSE"  , "SPARSE"  , "SPARSE"  , "SPARSE"  , "SPARSE" , "SPARSE" };
-   Char_t   charge1 [10] = {'+'      , '-'      , '+'      , '-'      , '+'	  , '+'       , '-'	  , '-'       , '+'	 , '-'      };
-   Char_t   charge2 [10] = {'-'      , '+'      , '-'      , '+'      , '-'	  , '-'       , '+'	  , '+'       , '+'	 , '-'      };
-   Int_t    cutID1  [10] = { iCutK   ,  iCutK   ,  iCutK   ,  iCutK   ,  iCutK    ,  iCutK    ,  iCutK    ,  iCutK    ,  iCutK   ,  iCutK   };
-   Int_t    cutID2  [10] = { iCutPi  ,  iCutPi  ,  iCutPi  ,  iCutPi  ,  iCutPi   ,  iCutPi   ,  iCutPi   ,  iCutPi   ,  iCutPi  ,  iCutPi  };
-   Int_t    ipdg    [10] = { 421     , -421     ,  421     , -421     ,  421	  ,  421      , -421	  , -421      ,  421	 , -421     };
-   Double_t mass    [10] = { 1.86486 ,  1.86486 ,  1.86486 ,  1.86486 ,  1.86486  ,  1.86486  ,  1.86486  ,  1.86486  ,  1.86486 ,  1.86486 };
+   Bool_t   use     [8] = { 1	   ,  1       ,  1	 ,  1	    ,  1	,  1	    ,  1       ,  1	  };
+   Bool_t   useIM   [8] = { 1	   ,  1       ,  1	 ,  1	    ,  1	,  1	    ,  1       ,  1	  };
+   TString  name    [8] = {"Unlike1", "Unlike2", "Mixing1", "Mixing2", "RotateK1", "RotateK2", "LikePP" , "LikeMM" };
+   TString  comp    [8] = {"PAIR"   , "PAIR"   , "MIX"	 , "MIX"    , "ROTATE1" , "ROTATE1" , "PAIR"   , "PAIR"   };
+   TString  output  [8] = {"SPARSE" , "SPARSE" , "SPARSE" , "SPARSE" , "SPARSE"  , "SPARSE"  , "SPARSE" , "SPARSE" };
+   Char_t   charge1 [8] = {'+'	   , '-'      , '+'	 , '-'      , '+'	, '-'	    , '+'      , '-'	  };
+   Char_t   charge2 [8] = {'-'	   , '+'      , '-'	 , '+'      , '-'	, '+'	    , '+'      , '-'	  };
+   Int_t    cutID1  [8] = { iCutK   ,  iCutK   ,  iCutK   ,  iCutK   ,  iCutK	,  iCutK    ,  iCutK   ,  iCutK   };
+   Int_t    cutID2  [8] = { iCutPi  ,  iCutPi  ,  iCutPi  ,  iCutPi  ,  iCutPi	,  iCutPi   ,  iCutPi  ,  iCutPi  };
+   Int_t    ipdg    [8] = { 421     , -421     ,  421	 , -421     ,  421	, -421      ,  421     , -421	  };
+   Double_t mass    [8] = { 1.86486 ,  1.86486 ,  1.86486 ,  1.86486 ,  1.86486  ,  1.86486  ,  1.86486 ,  1.86486 };
    
-   for (Int_t i = 0; i < 10; i++) {
+   for (Int_t i = 0; i < 8; i++) {
       if (!use[i]) continue;
       
       // create output
@@ -170,7 +170,7 @@ Bool_t ConfigD0
       //else
       //   out->AddAxis(resID, 200, -0.02, 0.02);
       // axis Y: transverse momentum
-      out->AddAxis(ptID, 100, 0.0, 10.0);
+      out->AddAxis(ptID, 150, 0.0, 15.0);
       
       // axiz Z: rapidity
       //out->AddAxis(yID, 100, -1, 1);
@@ -224,8 +224,8 @@ Bool_t ConfigD0
    out->SetMaxNSisters(maxSisters);
    out->SetCheckMomentumConservation(checkP);
    // binnings
-   out->AddAxis(imID, 3000, 0., 3.);
-   out->AddAxis(ptID, 100, 0.0, 10.0);
+   out->AddAxis(imID, 800, 1.4, 2.2);
+   out->AddAxis(ptID, 150, 0.0, 15.0);
    //out->AddAxis(yID, 100, -1, 1);
    //out->AddAxis(dcapID, 100, -0.001, 0.001);
    //out->AddAxis(nsistID, 10, 0, 5);
@@ -248,8 +248,8 @@ Bool_t ConfigD0
    out->SetMaxNSisters(maxSisters);
    out->SetCheckMomentumConservation(checkP);
    // binnings
-   out->AddAxis(imID,3000, 0., 3.);
-   out->AddAxis(ptID, 100, 0.0, 10.0);
+   out->AddAxis(imID, 800, 1.4, 2.2);
+   out->AddAxis(ptID, 150, 0.0, 15.0);
    //out->AddAxis(yID, 100, -1, 1);
    //out->AddAxis(dcapID, 100, -0.001, 0.001);
    //out->AddAxis(nsistID, 10, 0, 5);
@@ -275,8 +275,8 @@ Bool_t ConfigD0
    out->SetMaxNSisters(maxSisters);
    out->SetCheckMomentumConservation(checkP);
    // binnings
-   out->AddAxis(resID, 1000, -0.1, 0.1);
-   out->AddAxis(ptID, 100, 0.0, 10.0);
+   out->AddAxis(resID, 200, -0.02, 0.02);
+   out->AddAxis(ptID, 150, 0.0, 15.0);
    //out->AddAxis(yID, 100, -1, 1);
    //out->AddAxis(dcapID, 100, -0.001, 0.001);
    //out->AddAxis(nsistID, 10, 0, 5);
@@ -297,8 +297,8 @@ Bool_t ConfigD0
    out->SetMaxNSisters(maxSisters);
    out->SetCheckMomentumConservation(checkP);
    // binnings
-   out->AddAxis(resID, 1000, -0.1, 0.1);
-   out->AddAxis(ptID, 100, 0.0, 10.0);
+   out->AddAxis(resID, 200, -0.02, 0.02);
+   out->AddAxis(ptID, 150, 0.0, 15.0);
    //out->AddAxis(yID, 100, -1, 1);
    //out->AddAxis(dcapID, 100, -0.001, 0.001);
    //out->AddAxis(nsistID, 10, 0, 5);
@@ -320,8 +320,8 @@ Bool_t ConfigD0
    // pair cuts
    out->SetPairCuts(cutsPairY);
    // binnings
-   out->AddAxis(imID, 3000, 0.0, 3.0);
-   out->AddAxis(ptID, 100, 0.0, 10.0);
+   out->AddAxis(imID, 800, 1.4, 2.2);
+   out->AddAxis(ptID, 150, 0.0, 15.0);
    //out->AddAxis(yID, 100, -1, 1);
 
    if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
@@ -336,8 +336,8 @@ Bool_t ConfigD0
    // pair cuts
    out->SetPairCuts(cutsPairY);
    // binnings
-   out->AddAxis(imID, 3000, 0, 3.0);
-   out->AddAxis(ptID, 100, 0.0, 10.0);
+   out->AddAxis(imID, 800, 1.4, 2.2);
+   out->AddAxis(ptID, 150, 0.0, 15.0);
    //out->AddAxis(yID, 100, -1, 1);
 
    if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);

@@ -30,7 +30,7 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
    fMotherPDG = 0;
    fNTotSisters = -1;
    fCutBits = 0x0;
-   fPsim[0] = fPrec[0] = fPsim[1] = fPrec[1] = fPsim[2] = fPrec[2] = 0.0;
+   fPsim[0] = fPrec[0] = fPmother[0] = fPsim[1] = fPrec[1] = fPmother[1] = fPsim[2] = fPrec[2] = fPmother[2] = 0.0;
 
    // charge
    if (daughter->IsPos())
@@ -74,11 +74,16 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
 	 fDCA = b[0];
        }
      }
-     // Number of Daughters from MC
+     // Number of Daughters from MC and Momentum of the Mother
      if (event->GetRefMC()) {
        TClonesArray * list = event->GetAODList();
        AliAODMCParticle *part = (AliAODMCParticle *)list->At(fMother);
-       if (part) fNTotSisters = part->GetNDaughters();
+       if (part) {
+	 fNTotSisters = part->GetNDaughters();
+	 fPmother[0]  = part->Px();
+	 fPmother[1]  = part->Py();
+	 fPmother[2]  = part->Pz();
+       }
      }
    } else {
      if (event->IsESD()){
@@ -93,10 +98,15 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
 	   fDCA = b[0];
 	 }
        }
-       // Number of Daughters from MC 
+       // Number of Daughters from MC and Momentum of the Mother
        if (event->GetRefMC()) {
 	 AliMCParticle *part = (AliMCParticle *)event->GetRefMC()->GetTrack(fMother);
-	 if(part)fNTotSisters = part->Particle()->GetNDaughters();
+	 if(part){
+	   fNTotSisters = part->Particle()->GetNDaughters();
+	   fPmother[0]  = part->Px();
+	   fPmother[1]  = part->Py();
+	   fPmother[2]  = part->Pz();
+	 }
        }
      }
    }

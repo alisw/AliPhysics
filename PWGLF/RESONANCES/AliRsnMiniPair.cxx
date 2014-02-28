@@ -20,9 +20,15 @@ void AliRsnMiniPair::Fill
    fDCA2 = p2->DCA();  
 
    fMother = -1;
+   fPmother[0] = -1.0;
+   fPmother[1] = -1.0;
+   fPmother[2] = -1.0;
    if (p1->Mother() == p2->Mother()) {
       fMother = p1->Mother();
       fMotherPDG = p1->MotherPDG();
+      fPmother[0] = p1->PmotherX();
+      fPmother[1] = p1->PmotherY();
+      fPmother[2] = p1->PmotherZ();
    }
 
    Int_t i;
