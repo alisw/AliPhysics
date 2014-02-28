@@ -75,6 +75,7 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
   fh3PatchADCEnergyEtaPhiCenterJ1(0),
   fh3PatchADCEnergyEtaPhiCenterJ2(0),
   fh3PatchADCEnergyEtaPhiCenterJ1J2(0),
+  fh3EEtaPhiCell(0),
   fh2CellEnergyVsTime(0),
   fh3EClusELeadingCellVsTime(0),
   fh3JetReacCent(0)
@@ -128,6 +129,7 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
   fh3PatchADCEnergyEtaPhiCenterJ1(0),
   fh3PatchADCEnergyEtaPhiCenterJ2(0),
   fh3PatchADCEnergyEtaPhiCenterJ1J2(0),
+  fh3EEtaPhiCell(0),
   fh2CellEnergyVsTime(0),
   fh3EClusELeadingCellVsTime(0),
   fh3JetReacCent(0)
@@ -421,6 +423,9 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   fh3PatchADCEnergyEtaPhiCenterJ1J2 = new TH3F("fh3PatchADCEnergyEtaPhiCenterJ1J2","fh3PatchADCEnergyEtaPhiCenterJ1J2;E_{ADC,patch};#eta;#phi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PatchADCEnergyEtaPhiCenterJ1J2);
 
+  fh3EEtaPhiCell = new TH3F("fh3EEtaPhiCell","fh3EEtaPhiCell;E_{clus};#eta;#phi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fOutput->Add(fh3EEtaPhiCell);
+
   fh2CellEnergyVsTime = new TH2F("fh2CellEnergyVsTime","fh2CellEnergyVsTime;E_{cell};time",fgkNEnBins,binsEn,fgkNTimeBins,binsTime);
   fOutput->Add(fh2CellEnergyVsTime);
 
@@ -528,9 +533,17 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
       Short_t cellId = fCaloCells->GetCellNumber(iCell);
       Double_t cellE = fCaloCells->GetCellAmplitude(cellId);
       Double_t cellT = fCaloCells->GetCellTime(cellId);
+      TVector3 pos;
+      fGeom->GetGlobal(cellId, pos);
+      TLorentzVector lv(pos,cellE);
+      Double_t cellEta = lv.Eta();
+      Double_t cellPhi = lv.Phi();
+      if(cellPhi<0.) cellPhi+=TMath::TwoPi();
+      if(cellPhi>TMath::TwoPi()) cellPhi-=TMath::TwoPi();
 
       AliDebug(2,Form("cell energy = %f  time = %f",cellE,cellT*1e9));
       fh2CellEnergyVsTime->Fill(cellE,cellT*1e9);
+      fh3EEtaPhiCell->Fill(cellE,cellEta,cellPhi);
     }
   }
 
