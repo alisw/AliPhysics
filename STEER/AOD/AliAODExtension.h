@@ -31,7 +31,8 @@ public:
   
   enum EAliAODExtensionFlags {
     kFilteredAOD      = BIT(14),
-    kDropUnspecifiedBranches = BIT(15)
+    kDropUnspecifiedBranches = BIT(15),
+    kToMerge          = BIT(16)
   };
   
   AliAODExtension();
@@ -47,9 +48,11 @@ public:
   Bool_t               Init(Option_t *option);
   Bool_t               IsFilteredAOD() const     {return TObject::TestBit(kFilteredAOD);}
   Bool_t               IsEventSelected() const   {return fSelected;}
+  Bool_t               IsToMerge() const         {return TObject::TestBit(kToMerge);}
   void                 SelectEvent(Bool_t flag=kTRUE)  {fSelected = flag;}
   void                 SetEvent(AliAODEvent* event);
   void                 SetOutputFileName(const char* fname) {TNamed::SetName(fname);}
+  void                 SetToMerge(Bool_t flag)   {TObject::SetBit(kToMerge,flag);}
   void                 SetTreeBuffSize(Long64_t sz=30000000) {fTreeBuffSize = sz;}
   Bool_t               TerminateIO();
   
