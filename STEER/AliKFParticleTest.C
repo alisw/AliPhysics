@@ -154,7 +154,6 @@ void RunV0(  AliESDEvent *event )
 
   for (Int_t iTr=0; iTr<nESDTracks; iTr++)
     {   
-      Printf("tracj %d", iTr);
       TESDTrackInfo &info = ESDTrackInfo[iTr];
       info.fOK = 0;
       info.fPrimUsedFlag = 0;
@@ -293,8 +292,7 @@ void RunV0(  AliESDEvent *event )
 
 
 
-//Int_t AliKFParticleTest(Int_t n1=0,Int_t n2=1000,char *dire="/d/alice10/sma/my_v4-05-Release/pp/"){
-Int_t AliKFParticleTest(Int_t n1=993,Int_t n2=999,char *dire="~/SOFT/AliRoot_git/AliRoot_20140223/test/genkine/TestKF/Events/"){
+Int_t AliKFParticleTest(Int_t n1=0,Int_t n2=1000,char *dire="/d/alice10/sma/my_v4-05-Release/pp/"){
   //* Main macro
     
   //  LOOP  OVER  SERIES  OF  DIRECTORIES
