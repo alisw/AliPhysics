@@ -1030,6 +1030,7 @@ Bool_t AliAnalysisTaskRhoVnModulation::CorrectRho(Double_t psi2, Double_t psi3)
     //      in all cases, a cut can be made on the p-value of the chi-squared value of the fit
     //      and a check can be performed to see if rho has no negative local minimum
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    Int_t freeParams(2);                // free parameters of the fit (for NDF) 
     switch (fFitModulationType) {       // for approaches where no fitting is required
         case kQC2 : {
             fFitModulation->FixParameter(4, psi2); 
@@ -1189,17 +1190,22 @@ Bool_t AliAnalysisTaskRhoVnModulation::CorrectRho(Double_t psi2, Double_t psi3)
 
     fFitModulation->SetParameter(0, fLocalRho->GetVal());
     switch (fFitModulationType) {
-        case kNoFit : { fFitModulation->FixParameter(0, fLocalRho->GetVal() ); 
+        case kNoFit : { 
+            fFitModulation->FixParameter(0, fLocalRho->GetVal() ); 
+            freeParams = 0;
         } break;
         case kV2 : { 
             fFitModulation->FixParameter(4, psi2); 
+            freeParams = 1;
         } break;
         case kV3 : { 
             fFitModulation->FixParameter(4, psi3); 
+            freeParams = 1;
         } break;
         case kCombined : {
             fFitModulation->FixParameter(4, psi2); 
             fFitModulation->FixParameter(6, psi3);
+            freeParams = 2;
         } break;
         case kFourierSeries : {
             // in this approach, an explicit calculation will be made of vn = sqrt(xn^2+yn^2)
@@ -1239,8 +1245,10 @@ Bool_t AliAnalysisTaskRhoVnModulation::CorrectRho(Double_t psi2, Double_t psi3)
     _tempSwap.Fit(fFitModulation, fFitModulationOptions.Data(), "", lowBound, upBound);
     // the quality of the fit is evaluated from 1 - the cdf of the chi square distribution
     // three methods are available, all with their drawbacks. all are stored, one is selected to do the cut
-    Double_t CDF(1.-ChiSquareCDF(fFitModulation->GetNDF(), ChiSquare(_tempSwap, fFitModulation)));
-    Double_t CDFROOT(1.-ChiSquareCDF(fFitModulation->GetNDF(), fFitModulation->GetChisquare()));
+    Int_t NDF(_tempSwap.GetXaxis()->GetNbins()-freeParams);
+    if(NDF == 0) return kFALSE;
+    Double_t CDF(1.-ChiSquareCDF(NDF, ChiSquare(_tempSwap, fFitModulation)));
+    Double_t CDFROOT(1.-ChiSquareCDF(NDF, fFitModulation->GetChisquare()));
     Double_t CDFKolmogorov(KolmogorovTest(_tempSwap, fFitModulation));
     // fill the values and centrality correlation (redundant but easy on the eyes)
     fHistPvalueCDF->Fill(CDF);
@@ -1248,11 +1256,11 @@ Bool_t AliAnalysisTaskRhoVnModulation::CorrectRho(Double_t psi2, Double_t psi3)
     fHistPvalueCDFROOT->Fill(CDFROOT);
     fHistPvalueCDFROOTCent->Fill(fCent, CDFROOT);
     fHistKolmogorovTest->Fill(CDFKolmogorov);
-    fHistChi2ROOTCent->Fill(fCent, fFitModulation->GetChisquare()/((float)fFitModulation->GetNDF()));
-    fHistChi2Cent->Fill(fCent, ChiSquare(_tempSwap, fFitModulation)/((float)fFitModulation->GetNDF()));
+    fHistChi2ROOTCent->Fill(fCent, fFitModulation->GetChisquare()/((float)NDF));
+    fHistChi2Cent->Fill(fCent, ChiSquare(_tempSwap, fFitModulation)/((float)NDF));
     fHistKolmogorovTestCent->Fill(fCent, CDFKolmogorov);
-    fHistPChi2Root->Fill(CDFROOT, fFitModulation->GetChisquare()/((float)fFitModulation->GetNDF()));
-    fHistPChi2->Fill(CDF, ChiSquare(_tempSwap, fFitModulation)/((float)fFitModulation->GetNDF()));
+    fHistPChi2Root->Fill(CDFROOT, fFitModulation->GetChisquare()/((float)NDF));
+    fHistPChi2->Fill(CDF, ChiSquare(_tempSwap, fFitModulation)/((float)NDF));
     fHistPKolmogorov->Fill(CDF, CDFKolmogorov);
 
     // variable CDF is used for making cuts, so we fill it with the selected p-value
