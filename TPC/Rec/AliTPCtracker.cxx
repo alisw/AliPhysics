@@ -3240,6 +3240,7 @@ void AliTPCtracker::ReadSeeds(const AliESDEvent *const event, Int_t direction)
 
     }
     if (((status&AliESDtrack::kITSout)==0)&&(direction==1)) seed->ResetCovariance(10.); 
+    //RS    if ( direction ==2 &&(status & AliESDtrack::kTRDrefit) == 0 ) seed->ResetCovariance(10.);
     if ( direction ==2 &&(status & AliESDtrack::kTRDrefit) == 0 ) seed->ResetCovariance(10.);
     //if ( direction ==2 && ((status & AliESDtrack::kTPCout) == 0) ) {
     //  fSeeds->AddAt(0,i);
@@ -7914,6 +7915,7 @@ Bool_t AliTPCtracker::IsFindable(AliTPCseed & track){
 
 void AliTPCtracker::AddCovariance(AliTPCseed * seed){
   //
+  return;
   // Adding systematic error estimate to the covariance matrix
   //                !!!! the systematic error for element 4 is in 1/GeV 
   // 03.03.2012     MI changed in respect to the previous versions

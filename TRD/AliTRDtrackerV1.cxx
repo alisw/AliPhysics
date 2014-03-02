@@ -582,6 +582,7 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
       AliDebug(1, Form("Tracklet Det[%d] !OK", tracklet->GetDetector()));
       continue;
     }
+    tracklet->FitRobust();
     Double_t x  = tracklet->GetX();//GetX0();
     // reject tracklets which are not considered for inward refit
     if(x > t.GetX()+AliTRDReconstructor::GetMaxStep()) continue;
@@ -624,6 +625,10 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
     Double_t cov[3]; tracklet->GetCovAt(x, cov);
     Double_t p[2] = { tracklet->GetY(), tracklet->GetZ()};
     Double_t chi2 = ((AliExternalTrackParam)t).GetPredictedChi2(p, cov);
+    AliInfo(Form("Pl:%d X:%+e : %+e P: %+e %+e Cov:%+e %+e %+e -> dXY: %+e %+e | chi2:%.2f pT:%.2f alp:%.3f",
+		 iplane,x,t.GetX(),p[0],p[1],cov[0],cov[1],cov[2],
+		 p[0]-t.GetY(),p[1]-t.GetZ(),
+		 chi2,t.Pt(),t.GetAlpha()));
     if (chi2 < 1e+10 && ((AliExternalTrackParam&)t).Update(p, cov)){ 
       // Register info to track
       t.SetNumberOfClusters();

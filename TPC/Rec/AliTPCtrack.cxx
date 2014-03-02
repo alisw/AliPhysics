@@ -158,7 +158,7 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t, TTreeSRedirector *pcstream) :
   const AliExternalTrackParam  *tpcin = t.GetInnerParam();
   const AliExternalTrackParam  *tpc=(tpcout)?tpcout:tpcin;
   if (!tpc) tpc=&param;
-  Bool_t isOK=recoParam->GetUseOuterDetectors();
+  Bool_t isOK=kTRUE;// RS recoParam->GetUseOuterDetectors();
   if (param.GetCovariance()[0]>kmaxC[0]*kmaxC[0]) isOK=kFALSE;
   if (param.GetCovariance()[2]>kmaxC[1]*kmaxC[1]) isOK=kFALSE;
   if (param.GetCovariance()[5]>kmaxC[2]*kmaxC[2]) isOK=kFALSE;
