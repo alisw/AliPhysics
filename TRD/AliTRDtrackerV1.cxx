@@ -582,6 +582,7 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
       AliDebug(1, Form("Tracklet Det[%d] !OK", tracklet->GetDetector()));
       continue;
     }
+    tracklet->FitRobust();
     Double_t x  = tracklet->GetX();//GetX0();
     // reject tracklets which are not considered for inward refit
     if(x > t.GetX()+AliTRDReconstructor::GetMaxStep()) continue;

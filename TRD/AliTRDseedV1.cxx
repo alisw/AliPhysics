@@ -850,13 +850,14 @@ void AliTRDseedV1::GetCovAt(Double_t x, Double_t *cov) const
   //GetPadLength()*GetPadLength()/12.;
 
   // insert systematic uncertainties
+  /* //RS
   if(fkReconstructor){
     Double_t sys[15]; memset(sys, 0, 15*sizeof(Double_t));
     fkReconstructor->GetRecoParam()->GetSysCovMatrix(sys);
     sy2 += sys[0];
     sz2 += sys[1];
   }
-
+  */
   // rotate covariance matrix if no RC
   if(!IsRowCross()){
     Double_t t2 = GetTilt()*GetTilt();
@@ -2072,7 +2073,7 @@ Bool_t AliTRDseedV1::FitRobust(Bool_t chg)
     if(!attach){ 
       AliWarning("No usable AttachClusters calib object.");
     } else { 
-      kScalePulls = attach->GetScaleCov();//*lyScaler;
+      // kScalePulls = attach->GetScaleCov();//*lyScaler;
     }
     // Retrieve chamber status
     SetChmbGood(calibration->IsChamberGood(fDet));

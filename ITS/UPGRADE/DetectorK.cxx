@@ -1844,12 +1844,12 @@ void DetectorK::MakeAliceCurrent(Int_t AlignResiduals, Bool_t flagTPC) {
     
   } else if (AlignResiduals==2) {
     
-    // tracking errors ... PLUS ... module misalignment
+    // tracking errors ... PLUS ... chip misalignment
     
     // itsRecoParam->SetClusterMisalErrorYBOn(0.0010,0.0030,0.0500,0.0500,0.0020,0.0020);  // [cm]
     // itsRecoParam->SetClusterMisalErrorZBOn(0.0050,0.0050,0.0050,0.0050,0.1000,0.1000);
     
-    //  the ITS modules are misalignment with small gaussian smearings with
+    //  the ITS chips are misalignment with small gaussian smearings with
     //  sigmarphi ~ 8, 10, 10 micron in SPD, SDD, SSD
     
     AddLayer((char*)"spd1", 3.9, 0.0114, TMath::Sqrt(0.0012*0.0012+0.0010*0.0010+0.0008*0.0008), 
@@ -1867,7 +1867,7 @@ void DetectorK::MakeAliceCurrent(Int_t AlignResiduals, Bool_t flagTPC) {
 
   } else {
       
-      //  the ITS modules are misalignment with small gaussian smearings with
+      //  the ITS chips are misalignment with small gaussian smearings with
       //  sigmarphi ~ 8, 10, 10 micron in SPD, SDD, SSD
       //  unknown in Z ????
 
