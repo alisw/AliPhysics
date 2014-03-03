@@ -125,7 +125,7 @@ Bool_t ChangeFilenames ( TObjArray &fileNameArray )
     TString fileName = gSystem->BaseName(currFile.Data());
     Int_t runNum = GetRunNumber(fileName);
     TString newFilename = Form("%s/terminateRuns/%i/trigChEff_ANY_Apt_allTrig.root",dirName.Data(),runNum);
-    if ( ! gSystem->AccessPathName(newFilename.Data()) ) {
+    if ( gSystem->AccessPathName(newFilename.Data()) ) {
       printf("New output not found. Use the standard efficiency instead\n");
       return kFALSE;
     }
