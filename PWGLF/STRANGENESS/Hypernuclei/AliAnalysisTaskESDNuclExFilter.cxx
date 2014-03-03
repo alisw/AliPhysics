@@ -211,7 +211,7 @@ void AliAnalysisTaskESDNuclExFilter::PrintTask(Option_t *option, Int_t indent) c
 }
 
 //______________________________________________________________________________
-void AliAnalysisTaskESDNuclExFilter::AddFilteredAOD(const char* aodfilename, const char* title)
+void AliAnalysisTaskESDNuclExFilter::AddFilteredAOD(const char* aodfilename, const char* title, Bool_t toMerge)
 {
   
   //cout<<"Entro ne ADDFILTETEDAOD"<<endl;
@@ -219,7 +219,7 @@ void AliAnalysisTaskESDNuclExFilter::AddFilteredAOD(const char* aodfilename, con
   AliAODHandler *aodH = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
   if (!aodH) Fatal("UserCreateOutputObjects", "No AOD handler");
   //cout<<"Add Filterd AOD "<<aodH->AddFilteredAOD(aodfilename,title)<<endl;
-  AliAODExtension* ext = aodH->AddFilteredAOD(aodfilename,title);
+  AliAODExtension* ext = aodH->AddFilteredAOD(aodfilename,title,toMerge);
   //cout<<"Handle inside add filterAOD: "<<aodH<<endl;
   //cout<<"########### ext: "<<ext<<endl;
   
@@ -282,7 +282,7 @@ void AliAnalysisTaskESDNuclExFilter::Init()
   //cout<<"%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Sono in INIT"<<endl;
   // Initialization
   if(fEnableMuonAOD) 
-    AddFilteredAOD("AliAOD.NuclEx.root", "MuonEvents");
+    AddFilteredAOD("AliAOD.NuclEx.root", "NuclexFilteredEvents",kTRUE);
   //cout<<"Fine INIT"<<endl;
   //  if(fEnableDimuonAOD) AddFilteredAOD("AliAOD.Dimuons.root", "DimuonEvents");    
 }
