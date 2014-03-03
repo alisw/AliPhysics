@@ -202,7 +202,18 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
 
 	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540023310262331"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011
 
-
+} else if ( trainConfig == 6 ) {  // No eta shift |Y| < 0.8
+	
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540023310264371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011
+	
+} else if ( trainConfig == 7 ) {
+  
+	ConvCutarray[0] = "8000012002093603007200000000"; ElecCutarray[0] = "9047540023310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011
+	
+} else if ( trainConfig == 8 ) {  // No eta shift |Y| < 0.8
+	
+	ConvCutarray[0] = "8000012002093603007200000000"; ElecCutarray[0] = "9047540023310264371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011
+	
 } 
 
 
@@ -235,7 +246,7 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
             return 0;
       } else {
 
-	  if (  ( trainConfig >= 1 && trainConfig <= 5 )   ){
+	  if (  ( trainConfig >= 1 && trainConfig <= 6 )   ){
 	    
 	    if (doWeighting){
 	      if (generatorName.CompareTo("DPMJET")==0){
@@ -244,7 +255,17 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
                analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_MBV0A", "Eta_Hijing_LHC13e7_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
 	      }
 	    }
+	  } else if ( trainConfig >= 7 && trainConfig <= 8  ){
+	    
+    	    if (doWeighting){
+	      analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
+	    }
 	  }
+
+	  
+	  
+	  
+	  
 	  if (doEtaShiftIndCuts) {
 	  
 	      analysisCuts[i]->DoEtaShift(doEtaShiftIndCuts);

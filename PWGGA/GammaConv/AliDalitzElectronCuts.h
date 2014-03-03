@@ -174,7 +174,8 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Double_t fEtaCut; //eta cutç
   Double_t fEtaShift;
   Bool_t   fDoEtaCut;
-  Double_t fPtCut;
+  Double_t fPtMinCut;
+  Double_t fPtMaxCut;
   Double_t fRadiusCut; // radius cut
   Double_t fPsiPairCut;
   Double_t fDeltaPhiCutMin;
