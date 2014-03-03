@@ -28,6 +28,7 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS 
+TRD/AliTRDTriggerAnalysis.cxx
 TRD/AliAnalysisTaskTRDtriggerCheck.cxx
 TRD/AliAnalysisTaskTRDgtuSim.cxx
 )
