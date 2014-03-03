@@ -6,7 +6,7 @@
 //
 //=============================================================================
 
-AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName="ConfigFemtoAnalysis.C", TString containerName="femtolist", TString configMacroParameters="" )
+AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName="PWGCF/FEMTOSCOPY/macros/Train/AshutoshPionFemtoscopy/ConfigFemtoAnalysis.C", TString containerName="femtolist", TString configMacroParameters="" )
 {
 // Creates a proton analysis task and adds it to the analysis manager.
   
