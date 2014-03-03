@@ -432,7 +432,7 @@ void AliAODNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
   
   //--------------------------------------------------------
 
-  printf("Execute NuclEx Replicator\n");
+  //  printf("Execute NuclEx Replicator\n");
 
   //---------------------------------
 
@@ -668,7 +668,7 @@ void AliAODNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
       
       rd =  new((*fSecondaryVerices)[nsv++]) AliAODRecoDecayLF2Prong(*io2Prong);
 
-      cout<<"QUELLO CHE SALVo \npr0: "<<rd->GetProngID(0)<<" pr1: "<<rd->GetProngID(1)<<" pr2"<<rd->GetProngID(2)<<endl;
+      //      cout<<"QUELLO CHE SALVo \npr0: "<<rd->GetProngID(0)<<" pr1: "<<rd->GetProngID(1)<<" pr2"<<rd->GetProngID(2)<<endl;
 
       // rd->SetSecondaryVtx(vertexp1n1);
       // vertexp1n1->SetParent(rd);
@@ -723,7 +723,7 @@ void AliAODNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
 	}
     }
   
-  printf("....Done NuclEx Replicator...\n");
+  //  printf("....Done NuclEx Replicator...\n");
   
   AliDebug(1,Form("input mu tracks=%d tracks=%d vertices=%d nnuclei=%d",
                   input,fSecondaryVerices->GetEntries(),fVertices->GetEntries(),fNuclei->GetEntries())); 

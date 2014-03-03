@@ -54,7 +54,7 @@ class AliAnalysisTaskESDNuclExFilter : public AliAnalysisTaskSE
  private:
     AliAnalysisTaskESDNuclExFilter(const AliAnalysisTaskESDNuclExFilter&);
     AliAnalysisTaskESDNuclExFilter& operator=(const AliAnalysisTaskESDNuclExFilter&);
-    void AddFilteredAOD(const char* aodfilename, const char* title);
+    void AddFilteredAOD(const char* aodfilename, const char* title, Bool_t toMerge);
 
     AliAnalysisFilter* fTrackFilter; //  Track Filter
     Bool_t fEnableMuonAOD; // flag for enabling Muon AOD production
