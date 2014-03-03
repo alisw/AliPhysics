@@ -76,7 +76,8 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
     fEtaCut(0.9),
     fEtaShift(0.0),
     fDoEtaCut(kFALSE),
-    fPtCut(0.0),
+    fPtMinCut(0.0),
+    fPtMaxCut(9999),
     fRadiusCut(1000.0),
     fPsiPairCut(0.45),
     fDeltaPhiCutMin(0.),
@@ -464,7 +465,7 @@ Bool_t AliDalitzElectronCuts::TrackIsSelected(AliESDtrack* lTrack) {
    }
    
    
-   if( lTrack->Pt() < fPtCut ) {
+   if( lTrack->Pt() < fPtMinCut || lTrack->Pt() > fPtMaxCut ) {
      
 	return kFALSE;
 	
@@ -1354,16 +1355,24 @@ Bool_t AliDalitzElectronCuts::SetPtCut(Int_t ptCut)
   
 	switch(ptCut){
 	  
-	case 0: fPtCut = 0.075;		
+	case 0: fPtMinCut = 0.075;
+		fPtMaxCut = 9999;
 		break;
 	case 1:	 // 0.1
-		fPtCut	= 0.1; 	
+		fPtMinCut  = 0.1; 	
+		fPtMaxCut  = 9999;
 		break;
 	case 2:	 // 0.125 GeV
-		fPtCut	= 0.125;		
+		fPtMinCut = 0.125;		
+		fPtMaxCut = 9999;
 		break;
 	case 3: // 0.15 GeV
-		fPtCut	= 0.15;
+		fPtMinCut = 0.15;
+		fPtMaxCut = 9999;
+		break;
+		// 0.5 - 0.7 
+	case 4: fPtMinCut = 0.5;
+		fPtMaxCut = 0.7;
 		break;
 	default:
 		cout<<"Warning: PtCut not defined "<<ptCut<<endl;
