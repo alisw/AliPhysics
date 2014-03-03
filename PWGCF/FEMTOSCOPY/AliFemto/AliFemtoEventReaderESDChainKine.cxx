@@ -645,8 +645,6 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
     trackCopy->SetTPCsignalS(esdtrack->GetTPCsignalSigma());
     trackCopy->SetTPCsignal(esdtrack->GetTPCsignal());
 
-    cout << "TPC signal = " << esdtrack->GetTPCsignal() << endl;
-
     trackCopy->SetTPCClusterMap(esdtrack->GetTPCClusterMap());
     trackCopy->SetTPCSharedMap(esdtrack->GetTPCSharedMap());
 
