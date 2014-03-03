@@ -21,6 +21,7 @@
 #include <THashList.h>
 #include <TVectorDfwd.h>
 #include <THnBase.h>
+#include <TBits.h>
 
 class TH1;
 class TString;
@@ -156,6 +157,7 @@ public:
 
   void SetList(TList * const list) { fList=list; }
   TList *GetList() const { return fList; }
+	TBits *GetUsedVars() const { return fUsedVars; }
 
   void AddClass(const char* histClass);
 
@@ -189,8 +191,10 @@ private:
 
   void FillVarArray(TObject *obj, UInt_t *valType);
 
+  
   THashList fHistoList;             //-> list of histograms
   TList    *fList;                  //! List of list of histograms
+	TBits     *fUsedVars;            // list of used variables
 
   TString *fReservedWords;          //! list of reserved words
   void UserHistogramReservedWords(const char* histClass, const TObject *hist, UInt_t valTypes);
@@ -205,7 +209,7 @@ private:
   AliDielectronHistos(const AliDielectronHistos &hist);
   AliDielectronHistos& operator = (const AliDielectronHistos &hist);
 
-  ClassDef(AliDielectronHistos,2)
+  ClassDef(AliDielectronHistos,3)
 };
 
 #endif

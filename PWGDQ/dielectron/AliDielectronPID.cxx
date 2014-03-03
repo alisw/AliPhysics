@@ -57,6 +57,7 @@ TGraph  *AliDielectronPID::fgdEdxRunCorr=0x0;
 
 AliDielectronPID::AliDielectronPID() :
   AliAnalysisCuts(),
+  fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
   fNcuts(0),
   fPIDResponse(0x0)
 {
@@ -86,6 +87,7 @@ AliDielectronPID::AliDielectronPID() :
 //______________________________________________
 AliDielectronPID::AliDielectronPID(const char* name, const char* title) :
   AliAnalysisCuts(name, title),
+  fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
   fNcuts(0),
   fPIDResponse(0x0)
 {
@@ -118,6 +120,7 @@ AliDielectronPID::~AliDielectronPID()
   //
   // Default Destructor
   //
+  if (fUsedVars) delete fUsedVars;
 }
 
 //______________________________________________
@@ -149,7 +152,9 @@ void AliDielectronPID::AddCut(DetType det, AliPID::EParticleType type, Double_t 
   fmax[fNcuts]=max;
   fExclude[fNcuts]=exclude;
   fRequirePIDbit[fNcuts]=pidBitType;
-  fActiveCuts[fNcuts]=(var==-1 ? AliDielectronVarManager::kP : var);
+  if(var==-1) var=AliDielectronVarManager::kP; // set default
+  fActiveCuts[fNcuts]=var;
+  fUsedVars->SetBitNumber(var,kTRUE);
 
   AliDebug(1,Form("Add PID cut %d: sigma [% .1f,% .1f] \t cut [% .1f,% .f] \t var %d->%s \n",
 		  fNcuts,nSigmaLow,nSigmaUp,min,max,fActiveCuts[fNcuts],AliDielectronVarManager::GetValueName(fActiveCuts[fNcuts])));
@@ -306,6 +311,7 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
   
   //Fill values
   Double_t values[AliDielectronVarManager::kNMaxValues];
+  AliDielectronVarManager::SetFillMap(fUsedVars);
   AliDielectronVarManager::Fill(track,values);
 
   Bool_t selected=kFALSE;

@@ -19,6 +19,8 @@
 //#                                                           #
 //#############################################################
 
+#include <TBits.h>
+
 #include <AliPID.h>
 #include <AliAnalysisCuts.h>
 #include <AliTRDPIDResponse.h>
@@ -95,6 +97,7 @@ public:
 private:
   enum {kNmaxPID=30};
 
+  TBits     *fUsedVars;            // list of used variables
   DetType  fDetType[kNmaxPID];    //detector type of nsigma cut
   AliPID::EParticleType fPartType[kNmaxPID]; //particle type
   Float_t  fNsigmaLow[kNmaxPID];  //lower nsigma bound
@@ -137,7 +140,7 @@ private:
   AliDielectronPID(const AliDielectronPID &c);
   AliDielectronPID &operator=(const AliDielectronPID &c);
 
-  ClassDef(AliDielectronPID,6)         // Dielectron PID
+  ClassDef(AliDielectronPID,7)         // Dielectron PID
 };
 
 #endif

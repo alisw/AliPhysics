@@ -15,6 +15,7 @@
 
 #include <TNamed.h>
 #include <TObjArray.h>
+#include <TBits.h>
 
 #include "AliDielectronVarManager.h"
 #include "AliDielectronHistos.h"
@@ -94,6 +95,8 @@ public:
   Bool_t GetStepForMCGenerated() const   { return fStepGenerated; }
 
 private:
+  TBits     *fUsedVars;             // list of used variables
+
   TObjArray fArrPairType;           //-> array of pair types
   EPairType fPairType;              // which pair combinations to include
   TObjArray* fSignalsMC;            //! array of MC signals to be studied
@@ -112,7 +115,7 @@ private:
   AliDielectronHF &operator=(const AliDielectronHF &c);
 
   
-  ClassDef(AliDielectronHF,3)         // Dielectron HF
+  ClassDef(AliDielectronHF,4)         // Dielectron HF
 };
 
 
