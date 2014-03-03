@@ -60,6 +60,7 @@ AliDielectronHistos::AliDielectronHistos() :
   TNamed("AliDielectronHistos","Dielectron Histogram Container"),
   fHistoList(),
   fList(0x0),
+  fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
   fReservedWords(new TString)
 {
   //
@@ -75,6 +76,7 @@ AliDielectronHistos::AliDielectronHistos(const char* name, const char* title) :
   TNamed(name, title),
   fHistoList(),
   fList(0x0),
+  fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
   fReservedWords(new TString)
 {
   //
@@ -91,6 +93,7 @@ AliDielectronHistos::~AliDielectronHistos()
   // Destructor
   //
   fHistoList.Clear();
+  if (fUsedVars) delete fUsedVars;
   if (fList) fList->Clear();
   delete fReservedWords;
 }
@@ -243,6 +246,10 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
     StoreVariables(hist, valType);
     hist->SetUniqueID(valTypeW); // store weighting variable
 
+    // store which variables are used
+    for(Int_t i=0; i<4; i++)   fUsedVars->SetBitNumber(valType[i],kTRUE);
+    fUsedVars->SetBitNumber(valTypeW,kTRUE);
+
     // adapt the name and title of the histogram in case they are empty
     AdaptNameTitle(hist, histClass);
 
@@ -303,6 +310,10 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
     valType[0]=valTypeX;     valType[1]=valTypeY;     valType[2]=valTypeP;
     StoreVariables(hist, valType);
     hist->SetUniqueID(valTypeW); // store weighting variable
+
+    // store which variables are used
+    for(Int_t i=0; i<4; i++)   fUsedVars->SetBitNumber(valType[i],kTRUE);
+    fUsedVars->SetBitNumber(valTypeW,kTRUE);
 
     // adapt the name and title of the histogram in case they are empty
     AdaptNameTitle(hist, histClass);
@@ -370,6 +381,10 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
     StoreVariables(hist, valType);
     hist->SetUniqueID(valTypeW); // store weighting variable
 
+    // store which variables are used
+    for(Int_t i=0; i<4; i++)   fUsedVars->SetBitNumber(valType[i],kTRUE);
+    fUsedVars->SetBitNumber(valTypeW,kTRUE);
+
     // adapt the name and title of the histogram in case they are empty
     AdaptNameTitle(hist, histClass);
 
@@ -412,6 +427,10 @@ void AliDielectronHistos::UserHistogram(const char* histClass, Int_t ndim, Int_t
     // store variales in axes
     StoreVariables(hist, vars);
     hist->SetUniqueID(valTypeW); // store weighting variable
+
+    // store which variables are used
+    for(Int_t i=0; i<20; i++)   fUsedVars->SetBitNumber(vars[i],kTRUE);
+    fUsedVars->SetBitNumber(valTypeW,kTRUE);
 
     Bool_t isReserved=fReservedWords->Contains(histClass);
     if (isReserved)
@@ -464,6 +483,10 @@ void AliDielectronHistos::UserHistogram(const char* histClass, Int_t ndim, TObjA
     StoreVariables(hist, vars);
     hist->SetUniqueID(valTypeW); // store weighting variable
 
+    // store which variables are used
+    for(Int_t i=0; i<20; i++)   fUsedVars->SetBitNumber(vars[i],kTRUE);
+    fUsedVars->SetBitNumber(valTypeW,kTRUE);
+
     Bool_t isReserved=fReservedWords->Contains(histClass);
     if (isReserved)
       UserHistogramReservedWords(histClass, hist, 999);
@@ -498,6 +521,10 @@ void AliDielectronHistos::UserSparse(const char* histClass, Int_t ndim, Int_t *b
     // store variales in axes
     StoreVariables(hist, vars);
     hist->SetUniqueID(valTypeW); // store weighting variable
+
+    // store which variables are used
+    for(Int_t i=0; i<20; i++)   fUsedVars->SetBitNumber(vars[i],kTRUE);
+    fUsedVars->SetBitNumber(valTypeW,kTRUE);
 
     Bool_t isReserved=fReservedWords->Contains(histClass);
     if (isReserved)
@@ -547,6 +574,10 @@ void AliDielectronHistos::UserSparse(const char* histClass, Int_t ndim, TObjArra
     // store variales in axes
     StoreVariables(hist, vars);
     hist->SetUniqueID(valTypeW); // store weighting variable
+
+    // store which variables are used
+    for(Int_t i=0; i<20; i++)   fUsedVars->SetBitNumber(vars[i],kTRUE);
+    fUsedVars->SetBitNumber(valTypeW,kTRUE);
 
     Bool_t isReserved=fReservedWords->Contains(histClass);
     if (isReserved)
