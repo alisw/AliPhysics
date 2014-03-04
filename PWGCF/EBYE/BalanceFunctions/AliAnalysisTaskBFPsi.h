@@ -330,19 +330,10 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   Double_t fPtMin;//only used for AODs
   Double_t fPtMax;//only used for AODs
-  Double_t fPtMinForCorrections;//only used for AODs
-  Double_t fPtMaxForCorrections;//only used for AODs
-  Double_t fPtBinForCorrections; //=================================correction
   Double_t fEtaMin;//only used for AODs
   Double_t fEtaMax;//only used for AODs
-  Double_t fEtaMinForCorrections;//only used for AODs
-  Double_t fEtaMaxForCorrections;//only used for AODs
-  Double_t fEtaBinForCorrections; //=================================correction
-  Double_t fPhiMin; //=================================correction 
-  Double_t fPhiMax; //=================================correction
-  Double_t fPhiMinForCorrections;//only used for AODs
-  Double_t fPhiMaxForCorrections;//only used for AODs
-  Double_t fPhiBinForCorrections; //=================================correction
+  Double_t fPhiMin;//only used for AODs
+  Double_t fPhiMax;//only used for AODs 
 
   Double_t fDCAxyCut;//only used for AODs
   Double_t fDCAzCut;//only used for AODs

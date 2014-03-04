@@ -158,19 +158,10 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fnAODtrackCutBit(128),
   fPtMin(0.3),
   fPtMax(1.5),
-  fPtMinForCorrections(0.3),//=================================correction
-  fPtMaxForCorrections(1.5),//=================================correction
-  fPtBinForCorrections(36), //=================================correction
   fEtaMin(-0.8),
   fEtaMax(-0.8),
-  fEtaMinForCorrections(-0.8),//=================================correction
-  fEtaMaxForCorrections(0.8),//=================================correction
-  fEtaBinForCorrections(16), //=================================correction
   fPhiMin(0.),
   fPhiMax(360.),
-  fPhiMinForCorrections(0.),//=================================correction
-  fPhiMaxForCorrections(360.),//=================================correction
-  fPhiBinForCorrections(100), //=================================correction
   fDCAxyCut(-1),
   fDCAzCut(-1),
   fTPCchi2Cut(-1),
@@ -660,20 +651,6 @@ void AliAnalysisTaskBFPsi::SetInputCorrection(TString filename,
       return; 
     }
   }//loop over centralities: ONLY the PbPb case is covered
-
-  if(fHistCorrectionPlus[0]){
-    fEtaMinForCorrections = fHistCorrectionPlus[0]->GetXaxis()->GetXmin();
-    fEtaMaxForCorrections = fHistCorrectionPlus[0]->GetXaxis()->GetXmax();
-    fEtaBinForCorrections = fHistCorrectionPlus[0]->GetNbinsX();
-    
-    fPtMinForCorrections = fHistCorrectionPlus[0]->GetYaxis()->GetXmin();
-    fPtMaxForCorrections = fHistCorrectionPlus[0]->GetYaxis()->GetXmax();
-    fPtBinForCorrections = fHistCorrectionPlus[0]->GetNbinsY();
-    
-    fPhiMinForCorrections = fHistCorrectionPlus[0]->GetZaxis()->GetXmin();
-    fPhiMaxForCorrections = fHistCorrectionPlus[0]->GetZaxis()->GetXmax();
-    fPhiBinForCorrections = fHistCorrectionPlus[0]->GetNbinsZ();
-  }
 }
 
 //________________________________________________________________________
@@ -1264,28 +1241,8 @@ Double_t AliAnalysisTaskBFPsi::GetTrackbyTrackCorrectionMatrix( Double_t vEta,
   // -- Get efficiency correction of particle dependent on (eta, phi, pt, charge, centrality) 
 
   Double_t correction = 1.;
-  Int_t binEta = 0, binPt = 0, binPhi = 0;
-
-  //Printf("EtaMAx: %lf - EtaMin: %lf - EtaBin: %lf", fEtaMaxForCorrections,fEtaMinForCorrections,fEtaBinForCorrections);
-  if(fEtaBinForCorrections != 0) {
-    Double_t widthEta = (fEtaMaxForCorrections - fEtaMinForCorrections)/fEtaBinForCorrections;
-    if(fEtaMaxForCorrections != fEtaMinForCorrections) 
-      binEta = (Int_t)((vEta-fEtaMinForCorrections)/widthEta)+1;
-  }
-
-  if(fPtBinForCorrections != 0) {
-    Double_t widthPt = (fPtMaxForCorrections - fPtMinForCorrections)/fPtBinForCorrections;
-    if(fPtMaxForCorrections != fPtMinForCorrections) 
-      binPt = (Int_t)((vPt-fPtMinForCorrections)/widthPt) + 1;
-  }
- 
-  if(fPhiBinForCorrections != 0) {
-    Double_t widthPhi = (fPhiMaxForCorrections - fPhiMinForCorrections)/fPhiBinForCorrections;
-    if(fPhiMaxForCorrections != fPhiMinForCorrections) 
-      binPhi = (Int_t)((vPhi-fPhiMinForCorrections)/widthPhi)+ 1;
-  }
-
   Int_t gCentralityInt = -1;
+
   for (Int_t i=0; i<fCentralityArrayBinsForCorrections-1; i++){
     if((fCentralityArrayForCorrections[i] <= gCentrality)&&(gCentrality <= fCentralityArrayForCorrections[i+1])){
       gCentralityInt = i;
@@ -1303,12 +1260,12 @@ Double_t AliAnalysisTaskBFPsi::GetTrackbyTrackCorrectionMatrix( Double_t vEta,
     
     if(fHistCorrectionPlus[gCentralityInt]){
       if (vCharge > 0) {
-	correction = fHistCorrectionPlus[gCentralityInt]->GetBinContent(fHistCorrectionPlus[gCentralityInt]->GetBin(binEta, binPt, binPhi));
+	correction = fHistCorrectionPlus[gCentralityInt]->GetBinContent(fHistCorrectionPlus[gCentralityInt]->FindBin(vEta,vPt,vPhi));
 	//Printf("CORRECTIONplus: %.2f | Centrality %d",correction,gCentralityInt);  
       }
       if (vCharge < 0) {
-	correction = fHistCorrectionMinus[gCentralityInt]->GetBinContent(fHistCorrectionMinus[gCentralityInt]->GetBin(binEta, binPt, binPhi));
-	//Printf("CORRECTIONminus: %.2f | Centrality %d",correction,gCentralityInt);
+	correction = fHistCorrectionPlus[gCentralityInt]->GetBinContent(fHistCorrectionMinus[gCentralityInt]->FindBin(vEta,vPt,vPhi));
+	//Printf("CORRECTIONminus: %.2f | Centrality %d",correction,gCentralityInt); 
       }
     }
     else {
