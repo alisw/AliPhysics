@@ -16,7 +16,6 @@ main()
     return 1
   fi
 
-  [[ -z $ALICE_ROOT ]] && source ${alirootEnv}
   [[ -z $ALICE_ROOT ]] && echo "ALICE_ROOT not defined" && return 1
 
   ocdbregex='raw://'
@@ -33,10 +32,10 @@ updateQA()
   parseConfig $@
 
   #be paranoid and make some full paths
-  inputList=$(readlink -f ${inputList})
   [[ ! -f ${inputList} ]] && echo "no input list: ${inputList}" && return 1
-  workingDirectory=$(readlink -f ${workingDirectory})
+  inputList=$(get_realpath ${inputList})
   mkdir -p ${workingDirectory}
+  workingDirectory=$(workingDirectory=${workingDirectory%/}; cd ${workingDirectory%/*}; echo "${PWD}/${workingDirectory##*/}")
   if [[ ! -d ${workingDirectory} ]]; then
     echo "working dir $workingDirectory does not exist and cannot be created"
     return 1
@@ -353,7 +352,7 @@ parseConfig()
   for opt in $@; do
     if [[ ${opt} =~ configFile=.* ]]; then
       eval "${opt}"
-      configFile=$(readlink -f ${configFile})
+      [[ ! -f ${configFile} ]] && echo "configFile ${configFile} not found, exiting..." && return 1
       source "${configFile}"
       break
     fi
@@ -422,6 +421,31 @@ substituteDetectorName()
   local dir=$2
   [[ ${dir} =~ \%det ]] && det=${det,,} && echo ${dir/\%det/${det}}
   [[ ${dir} =~ \%DET ]] && det=${det} && echo ${dir/\%DET/${det}}
+}
+
+get_realpath() 
+{
+  if [[ -f "$1" ]]
+  then
+    # file *must* exist
+    if cd "$(echo "${1%/*}")" &>/dev/null
+    then
+      # file *may* not be local
+      # exception is ./file.ext
+      # try 'cd .; cd -;' *works!*
+      local tmppwd="$PWD"
+      cd - &>/dev/null
+    else
+      # file *must* be local
+      local tmppwd="$PWD"
+    fi
+  else
+    # file *cannot* exist
+    return 1 # failure
+  fi
+  # reassemble realpath
+  echo "$tmppwd"/"${1##*/}"
+  return 0 # success
 }
 
 main $@
