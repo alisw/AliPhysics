@@ -4,7 +4,8 @@ main()
   if [[ -z $1 ]]; then
     echo "Usage: "
     echo "  ${0##*/} option=value [option=value]"
-    echo "  at least one option, either inputList or configFile should be specified,"
+    echo "  at least inputList should be specified, or configFile containing it:"
+    echo "  ${0##*/} inputList=file.list"
     echo "  options override config file (if any), e.g.:"
     echo "  ${0##*/} configFile=runQA.config inputList=file.list outputDirectory=%det"
     return 1
@@ -76,6 +77,12 @@ updateQA()
     #skip if excluded
     if [[ "${excludeDetectors}" =~ ${detector} ]]; then
       echo "${detector} is excluded in config, skipping..."
+      continue
+    fi
+
+    #if includeDetectors set, only process thoe detectors specified there
+    if [[ -n ${includeDetectors} && ! "${includeDetectors}" =~ ${detector} ]]; then
+      echo "${detector} not included in includeDetectors, skipping..."
       continue
     fi
 
