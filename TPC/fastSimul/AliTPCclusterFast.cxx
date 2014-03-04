@@ -366,6 +366,8 @@ Double_t  AliTPCtrackFast::CookdEdx(Int_t npoints, Double_t *amp,Double_t f0,Flo
   //     dependening on the mode 0 amplitude can be skipped
   Float_t sum0=0, sum1=0,sum2=0;
   Int_t   accepted=0;
+  Int_t above=0;
+  for (Int_t i=0;i<npoints;i++) if  (amp[index[i]]>0) above++;
 
   for (Int_t i=0;i<npoints;i++){
     //
@@ -379,6 +381,7 @@ Double_t  AliTPCtrackFast::CookdEdx(Int_t npoints, Double_t *amp,Double_t f0,Flo
     sum2+= amp[index[i]];
     accepted++;
   }
+  if (mode==-1) return 1-Double_t(above)/Double_t(npoints);
   if (sum0<=0) return 0;
   return sum1/sum0;
 }
@@ -391,12 +394,14 @@ void AliTPCtrackFast::Simul(const char* fname, Int_t ntracks){
   TTreeSRedirector cstream(fname,"recreate");
   for (Int_t itr=0; itr<ntracks; itr++){
     //
-    fast.fMNprim=(5+50*gRandom->Rndm());
+    fast.fMNprim=(10.+50*gRandom->Rndm());
+    if (gRandom->Rndm()>0.25) fast.fMNprim=1./(0.0001+gRandom->Rndm()*0.1);
+
     fast.fDiff =0.01 +0.35*gRandom->Rndm();
     //
     fast.fAngleY   = 4.0*(gRandom->Rndm()-0.5);
     fast.fAngleZ   = 4.0*(gRandom->Rndm()-0.5);
-    fast.fN  = TMath::Nint(80.+gRandom->Rndm()*80.);
+    fast.fN  = 160;
     fast.MakeTrack();
     if (itr%100==0) printf("%d\n",itr);
     cstream<<"simulTrack"<<
