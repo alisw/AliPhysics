@@ -26,6 +26,7 @@ Bool_t ConfigD0
    Bool_t                  checkP = kTRUE,
    Bool_t                  minDCAcutFixed = kFALSE,
    Bool_t                  maxDCAcutFixed = kFALSE,
+   Bool_t                  ptdepPIDcut = kFALSE,
    const char      	  *suffix,
    AliRsnCutSet           *cutsPairY,
    AliRsnCutSet           *cutsPair
@@ -51,6 +52,7 @@ Bool_t ConfigD0
    AliRsnCutDaughterD0 *cutPi = new AliRsnCutDaughterD0("cutPionForD0", AliPID::kPion);
    cutPi->SetTPCPionPIDCut(nsigmaTPCPi);
    cutPi->SetTOFPionPIDCut(nsigmaTOFPi);
+   cutPi->SetPtDependentPIDCut(ptdepPIDcut);
    AliRsnCutTrackQuality *cutQuality = (AliRsnCutTrackQuality*) cutPi->CutQuality();
    cutQuality->SetCheckOnlyFilterBit(kFALSE);
    cutQuality->SetAODTestFilterBit(aodFilterBit);
@@ -83,7 +85,8 @@ Bool_t ConfigD0
    // integrated kaon cut
    AliRsnCutDaughterD0 *cutK = new AliRsnCutDaughterD0("cutKaonForD0", AliPID::kKaon);
    cutK->SetTPCKaonPIDCut(nsigmaTPCKa);
-   cutK->SetTOFKaonPIDCut(nsigmaTOFKa);	
+   cutK->SetTOFKaonPIDCut(nsigmaTOFKa);
+   cutK->SetPtDependentPIDCut(ptdepPIDcut);	
    AliRsnCutTrackQuality *cutQuality = (AliRsnCutTrackQuality*) cutK->CutQuality();
    cutQuality->SetCheckOnlyFilterBit(kFALSE);
    cutQuality->SetAODTestFilterBit(aodFilterBit);
@@ -465,7 +468,7 @@ void AddMonitorOutput_PionNTPC(TObjArray *mon=0,TString opt="",AliRsnLoopDaughte
 
    // add outputs to loop
    if (mon) mon->Add(outMonitorPionNTPC);
-   if (piNTPC) pNTPC->AddOutput(outMonitorPionNTPC);
+   if (piNTPC) piNTPC->AddOutput(outMonitorPionNTPC);
   
 }
 
