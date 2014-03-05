@@ -56,11 +56,11 @@ class AliITSUGeomTGeo : public TObject {
   //
   Int_t  GetNChips()                                                    const {return fNChips;}
   Int_t  GetNChipsPerModule(Int_t lay)                                  const {return fNChipsPerModule[lay];}
-  Int_t  GetNChipsPerSubStave(Int_t lay)                                const {return fNChipsPerSubStave[lay];}
+  Int_t  GetNChipsPerHalfStave(Int_t lay)                               const {return fNChipsPerHalfStave[lay];}
   Int_t  GetNChipsPerStave(Int_t lay)                                   const {return fNChipsPerStave[lay];}
   Int_t  GetNChipsPerLayer(Int_t lay)                                   const {return fNChipsPerLayer[lay];}
   Int_t  GetNModules(Int_t lay)                                         const {return fNModules[lay];}
-  Int_t  GetNSubStaves(Int_t lay)                                       const {return fNSubStaves[lay];}
+  Int_t  GetNHalfStaves(Int_t lay)                                      const {return fNHalfStaves[lay];}
   Int_t  GetNStaves(Int_t lay)                                          const {return fNStaves[lay];}
   Int_t  GetNLayers()                                                   const {return fNLayers;}
   
@@ -71,11 +71,11 @@ class AliITSUGeomTGeo : public TObject {
   Bool_t GetChipId(Int_t index,Int_t &lay,Int_t &sta,Int_t &ssta,Int_t &mod,Int_t &chip)        const;
   Int_t  GetLayer(Int_t index)                                          const;
   Int_t  GetStave(Int_t index)                                          const;
-  Int_t  GetSubStave(Int_t index)                                       const;
+  Int_t  GetHalfStave(Int_t index)                                      const;
   Int_t  GetModule(Int_t index)                                         const;
   Int_t  GetChipIdInLayer(Int_t index)                                  const;
   Int_t  GetChipIdInStave(Int_t index)                                  const;
-  Int_t  GetChipIdInSubStave(Int_t index)                               const;
+  Int_t  GetChipIdInHalfStave(Int_t index)                              const;
   Int_t  GetChipIdInModule(Int_t index)                                 const;
   //
   Int_t  GetLastChipIndex(Int_t lay)                                       const {return fLastChipIndex[lay];}
@@ -130,7 +130,7 @@ class AliITSUGeomTGeo : public TObject {
   static const char* GetITSLayerPattern()                               {return fgITSLrName.Data();}
   static const char* GetITSWrapVolPattern()                             {return fgITSWrapVolName.Data();}
   static const char* GetITSStavePattern()                               {return fgITSStaveName.Data();}
-  static const char* GetITSSubStavePattern()                            {return fgITSSubStaveName.Data();}
+  static const char* GetITSHalfStavePattern()                           {return fgITSHalfStaveName.Data();}
   static const char* GetITSModulePattern()                              {return fgITSModuleName.Data();}
   static const char* GetITSChipPattern()                                {return fgITSChipName.Data();}
   static const char* GetITSSensorPattern()                              {return fgITSSensName.Data();}
@@ -141,7 +141,7 @@ class AliITSUGeomTGeo : public TObject {
   static void        SetITSLayerPattern(const char* nm)                 {fgITSLrName = nm;}
   static void        SetITSWrapVolPattern(const char* nm)               {fgITSWrapVolName = nm;}
   static void        SetITSStavePattern(const char* nm)                 {fgITSStaveName = nm;}
-  static void        SetITSSubStavePattern(const char* nm)              {fgITSSubStaveName = nm;}
+  static void        SetITSHalfStavePattern(const char* nm)             {fgITSHalfStaveName = nm;}
   static void        SetITSModulePattern(const char* nm)                {fgITSModuleName = nm;}
   static void        SetITSChipPattern(const char* nm)                  {fgITSChipName = nm;}
   static void        SetITSSensorPattern(const char* nm)                {fgITSSensName = nm;}
@@ -152,7 +152,7 @@ class AliITSUGeomTGeo : public TObject {
   static const char *ComposeSymNameITS();
   static const char *ComposeSymNameLayer(Int_t lr);
   static const char *ComposeSymNameStave(Int_t lr, Int_t sta);
-  static const char *ComposeSymNameSubStave(Int_t lr, Int_t sta, Int_t ssta);
+  static const char *ComposeSymNameHalfStave(Int_t lr, Int_t sta, Int_t ssta);
   static const char *ComposeSymNameModule(Int_t lr, Int_t sta, Int_t ssta, Int_t mod);
   static const char *ComposeSymNameChip(Int_t lr, Int_t sta, Int_t ssta, Int_t mod, Int_t chip);
   //
@@ -169,7 +169,7 @@ class AliITSUGeomTGeo : public TObject {
   TGeoPNEntry* GetPNEntry(Int_t index)                            const;
   Int_t        ExtractNChipsPerModule(Int_t lay)                  const;
   Int_t        ExtractNumberOfStaves(Int_t lay)                   const;
-  Int_t        ExtractNumberOfSubStaves(Int_t lay)                const;
+  Int_t        ExtractNumberOfHalfStaves(Int_t lay)               const;
   Int_t        ExtractNumberOfModules(Int_t lay)                  const;
   Int_t        ExtractLayerChipType(Int_t lay)                    const;
   Int_t        ExtractNumberOfLayers();
@@ -182,10 +182,10 @@ class AliITSUGeomTGeo : public TObject {
   Int_t  fNLayers;             // number of layers
   Int_t  fNChips;              // The total number of chips
   Int_t *fNStaves;             //[fNLayers] Array of the number of staves/layer(layer)
-  Int_t *fNSubStaves;          //[fNLayers] Array of the number of substaves/stave(layer)
+  Int_t *fNHalfStaves;         //[fNLayers] Array of the number of substaves/stave(layer)
   Int_t *fNModules;            //[fNLayers] Array of the number of modules/substave(layer)
   Int_t *fNChipsPerModule;     //[fNLayers] Array of the number of chips per module (group of chips on the substaves)
-  Int_t *fNChipsPerSubStave;   //[fNLayers] Array of the number of chips per substave
+  Int_t *fNChipsPerHalfStave;  //[fNLayers] Array of the number of chips per substave
   Int_t *fNChipsPerStave;      //[fNLayers] Array of the number of chips per stave
   Int_t *fNChipsPerLayer;      //[fNLayers] Array of the number of chips per stave
 
@@ -202,7 +202,7 @@ class AliITSUGeomTGeo : public TObject {
   static TString  fgITSVolName;             // ITS mother volume name
   static TString  fgITSLrName;              // ITS Layer name
   static TString  fgITSStaveName;           // ITS Stave name 
-  static TString  fgITSSubStaveName;        // ITS SubStave name 
+  static TString  fgITSHalfStaveName;       // ITS HalfStave name 
   static TString  fgITSModuleName;          // ITS Module name 
   static TString  fgITSChipName;            // ITS Chip name 
   static TString  fgITSSensName;            // ITS Sensor name 
