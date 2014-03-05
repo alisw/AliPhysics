@@ -47,9 +47,9 @@ class AliITSUv1 : public AliITSU {
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
   virtual void   DefineLayer(Int_t nlay,Double_t phi0,Double_t r,Double_t zlen,Int_t nstav,
-			     Int_t nmod, Double_t lthick=0.,Double_t dthick=0.,UInt_t detType=0, Int_t buildFlag=0);
+			     Int_t nunit, Double_t lthick=0.,Double_t dthick=0.,UInt_t detType=0, Int_t buildFlag=0);
   virtual void   DefineLayerTurbo(Int_t nlay,Double_t phi0,Double_t r,Double_t zlen,Int_t nstav,
-				  Int_t nmod,Double_t width,Double_t tilt,
+				  Int_t nunit,Double_t width,Double_t tilt,
 				  Double_t lthick = 0.,Double_t dthick = 0.,UInt_t detType=0, Int_t buildFlag=0);
   virtual void   GetLayerParameters(Int_t nlay, Double_t &phi0,Double_t &r, Double_t &zlen,
 				    Int_t &nstav, Int_t &nmod,
@@ -85,12 +85,12 @@ class AliITSUv1 : public AliITSU {
   Double_t *fLayRadii;       // Vector of layer radii
   Double_t *fLayZLength;     // Vector of layer length along Z
   Int_t    *fStavPerLay;     // Vector of number of staves per layer
-  Int_t    *fModPerStav;     // Vector of number of chips per stave
-  Double_t *fStaThick;       // Vector of stave thicknesses
-  Double_t *fStaWidth;       // Vector of stave width (only used for turbo)
-  Double_t *fStaTilt;        // Vector of stave tilt (only used for turbo)
+  Int_t    *fUnitPerStave;   // Vector of number of "units" per stave
+  Double_t *fStaveThick;     // Vector of stave thicknesses
+  Double_t *fStaveWidth;     // Vector of stave width (only used for turbo)
+  Double_t *fStaveTilt;      // Vector of stave tilt (only used for turbo)
   Double_t *fDetThick;       // Vector of detector thicknesses
-  UInt_t   *fChipTypeID;      // Vector of detector type id
+  UInt_t   *fChipTypeID;     // Vector of detector type id
   Int_t    *fBuildLevel;     // Vector of Material Budget Studies
   //  
   AliITSUv1Layer **fUpGeom; //! Geometry
