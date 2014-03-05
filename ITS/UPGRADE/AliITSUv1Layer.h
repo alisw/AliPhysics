@@ -27,6 +27,9 @@ class TGeoVolume;
 
 class AliITSUv1Layer : public AliITSv11Geometry {
   public:
+  enum {kStave,kHalfStave,kModule,kChip,kNHLevels};
+
+  public:
     AliITSUv1Layer();
     AliITSUv1Layer(Int_t debug);
     AliITSUv1Layer(Int_t lay, Int_t debug);
@@ -42,18 +45,24 @@ class AliITSUv1Layer : public AliITSv11Geometry {
     Double_t  GetStaveWidth() const {return fStaveWidth;};
     Double_t  GetSensorThick() const {return fSensorThick;};
     Double_t  GetNStaves()    const {return fNStaves;};
-    Double_t  GetNChips()    const {return fNChips;};
+    Double_t  GetNChips()      const {return fNChips;};
     Double_t  GetRadius()      const {return fLayRadius;};
     Double_t  GetPhi0()        const {return fPhi0;};
     Double_t  GetZLength()     const {return fZLength;};
-    Int_t     GetChipType()     const {return fChipTypeID;}
+    Int_t     GetChipType()    const {return fChipTypeID;}
+    //
+    Int_t     GetNStavesPerParent()     const {return fHierarchy[kStave];}
+    Int_t     GetNHalfStavesPerParent() const {return fHierarchy[kHalfStave];}
+    Int_t     GetNModulesPerParent()    const {return fHierarchy[kModule];}
+    Int_t     GetNChipsPerParent()      const {return fHierarchy[kChip];}
+    //
     AliITSUv1::AliITSUModel_t GetStaveModel() const {return fStaveModel;}
     //
     void      SetStaveThick(Double_t t)      {fStaveThick = t;};
     void      SetStaveTilt(Double_t t);
     void      SetStaveWidth(Double_t w);
     void      SetSensorThick(Double_t t)     {fSensorThick = t;};
-    void      SetNStaves(Int_t n)            {fNStaves = n;};
+    void      SetNStaves(Int_t n)            {fHierarchy[kStave] = fNStaves = n;};
     void      SetNUnits(Int_t u);
     void      SetRadius(Double_t r)          {fLayRadius = r;};
     void      SetPhi0(Double_t phi)          {fPhi0 = phi;}
@@ -110,8 +119,10 @@ class AliITSUv1Layer : public AliITSv11Geometry {
     Double_t  fStaveWidth;  // Stave width (for turbo layers only)
     Double_t  fStaveTilt;   // Stave tilt angle (for turbo layers only) in degrees
     Int_t     fNStaves;     // Number of staves in this layer
-    Int_t     fNModules;    // Number of modules per half stave (OB only)
-    Int_t     fNChips;      // IB: N. chips per stave - OB: N. chips per module
+    Int_t     fNModules;    // Number of modules per container if defined (HalfStave, Stave, whatever is container)
+    Int_t     fNChips;      // N. chips per container (module, HalfStave, Stave, whatever is container)
+    Int_t     fHierarchy[kNHLevels]; // array to query number of staves, hstaves, modules, chips per its parent volume
+    //    
     UInt_t    fChipTypeID;  // detector type id
     Bool_t    fIsTurbo;     // True if this layer is a "turbo" layer
     Int_t     fBuildLevel;  // Used for material studies

@@ -44,6 +44,12 @@ class AliITSUv1 : public AliITSU {
   virtual       ~AliITSUv1() ;
   virtual void   SetNWrapVolumes(Int_t n);
   virtual void   AddAlignableVolumes() const;
+  void           AddAlignableVolumesLayer(int lr, TString& parent,Int_t &lastUID) const;
+  void           AddAlignableVolumesStave(int lr, int st, TString& parent,Int_t &lastUID) const;
+  void           AddAlignableVolumesHalfStave(int lr, int st, int sst, TString& parent,Int_t &lastUID) const;
+  void           AddAlignableVolumesModule(int lr, int st, int sst, int md, TString& parent,Int_t &lastUID) const;
+  void           AddAlignableVolumesChip(int lr, int st, int sst, int md, int ch, TString& parent,Int_t &lastUID) const;
+
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
   virtual void   DefineLayer(Int_t nlay,Double_t phi0,Double_t r,Double_t zlen,Int_t nstav,
@@ -80,6 +86,7 @@ class AliITSUv1 : public AliITSU {
   Double_t* fWrapRMin;       // min radius of wrapper volume
   Double_t* fWrapRMax;       // max radius of wrapper volume
   Double_t* fWrapZSpan;      // Z span of wrapper volume
+  Int_t*    fLay2WrapV;      // id of wrapper layer to which layer belongs (-1 if not wrapped)
   Bool_t   *fLayTurbo;       // True for "turbo" layers
   Double_t *fLayPhi0;        // Vector of layer's 1st stave phi in lab
   Double_t *fLayRadii;       // Vector of layer radii

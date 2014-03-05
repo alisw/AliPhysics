@@ -109,6 +109,7 @@ AliITSUv1Layer::AliITSUv1Layer():
 {
   //
   // Standard constructor
+  for (int i=kNHLevels;i--;) fHierarchy[i] = 0;
   //
 }
 
@@ -133,6 +134,7 @@ AliITSUv1Layer::AliITSUv1Layer(Int_t debug):
 {
   //
   // Constructor setting debugging level
+  for (int i=kNHLevels;i--;) fHierarchy[i] = 0;
   //
 }
 
@@ -157,6 +159,7 @@ AliITSUv1Layer::AliITSUv1Layer(Int_t lay, Int_t debug):
 {
   //
   // Constructor setting layer number and debugging level
+  for (int i=kNHLevels;i--;) fHierarchy[i] = 0;
   //
 }
 
@@ -182,6 +185,7 @@ AliITSUv1Layer::AliITSUv1Layer(Int_t lay, Bool_t turbo, Int_t debug):
   //
   // Constructor setting layer number and debugging level
   // for a "turbo" layer (i.e. where staves overlap in phi)
+  for (int i=kNHLevels;i--;) fHierarchy[i] = 0;
   //
 }
 
@@ -206,6 +210,7 @@ AliITSUv1Layer::AliITSUv1Layer(const AliITSUv1Layer &s):
 {
   //
   // Copy constructor
+  for (int i=kNHLevels;i--;) fHierarchy[i] = s.fHierarchy[i];
   //
 }
 
@@ -232,7 +237,8 @@ AliITSUv1Layer& AliITSUv1Layer::operator=(const AliITSUv1Layer &s)
   fChipTypeID  = s.fChipTypeID;
   fBuildLevel  = s.fBuildLevel;
   fStaveModel  = s.fStaveModel;
-
+  for (int i=kNHLevels;i--;) fHierarchy[i] = s.fHierarchy[i];
+  //
   return *this;
 }
 
@@ -462,6 +468,7 @@ TGeoVolume* AliITSUv1Layer::CreateStave(const TGeoManager * /*mgr*/){
       ypos = 0.021;  // Remove small overlap - M.S: 21may13
       zpos = -stave->GetDZ() + j*2*zmod + zmod;
       staveVol->AddNode(chipVol, j, new TGeoTranslation(xpos, ypos, zpos));
+      fHierarchy[kChip]++;
     }
  
   // put mechanical stave structure, only inner barrel up to now
@@ -479,6 +486,7 @@ TGeoVolume* AliITSUv1Layer::CreateStave(const TGeoManager * /*mgr*/){
 	ypos = 0.021;  // Remove small overlap - M.S: 21may13
 	zpos = -stave->GetDZ() + j*2*zmod + zmod;
 	staveVol->AddNode(chipVol, j, new TGeoTranslation(xpos, ypos, zpos));
+	fHierarchy[kModule]++;
       }
     } else { // (if fStaveModel) Create new stave struct as in TDR
       chipVol = CreateStaveOuterB(xLenO);
@@ -487,7 +495,7 @@ TGeoVolume* AliITSUv1Layer::CreateStave(const TGeoManager * /*mgr*/){
 	   - fgkOBHalfStaveXOverlap/2;
       staveVol->AddNode(chipVol, 0, new TGeoTranslation(-xpos, 2.5, 0));
       staveVol->AddNode(chipVol, 1, new TGeoTranslation( xpos, 2.5+fgkOBHalfStaveYTrans, 0));
-
+      fHierarchy[kHalfStave] = 2; // RS 
       mechStaveVol = CreateSpaceFrameOuterB(xLenO); 
       if (mechStaveVol)
 	staveVol->AddNode(mechStaveVol, 1,
@@ -2093,6 +2101,7 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB1(const TGeoManager *mgr){
   for (Int_t j=0; j<fNChips; j++) {
     zpos = -zlen + j*(2*zmod + fgkOBModuleGap) + zmod;
     halfStaveVol->AddNode(moduleVol, j, new TGeoTranslation(0, ypos, zpos));
+    fHierarchy[kModule]++;
   }
 
   ypos -= (ymod + coldPlate->GetDY());
@@ -2611,6 +2620,7 @@ TGeoVolume* AliITSUv1Layer::CreateModuleOuterB(const TGeoManager *mgr){
       zpos = -module->GetDZ() + chip->GetDZ() + k*(2*chip->GetDZ() + zGap);
       modVol->AddNode(chipVol, 2*k  , new TGeoTranslation( xpos, ypos, zpos));
       modVol->AddNode(chipVol, 2*k+1, new TGeoTranslation(-xpos, ypos, zpos));
+      fHierarchy[kChip]+=2;
     }
 
   ypos += (chip->GetDY() + flexAl->GetDY());

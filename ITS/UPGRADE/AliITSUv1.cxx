@@ -65,6 +65,7 @@ AliITSUv1::AliITSUv1()
   ,fWrapRMin(0)
   ,fWrapRMax(0)
   ,fWrapZSpan(0)
+  ,fLay2WrapV(0)
   ,fLayTurbo(0)
   ,fLayPhi0(0)
   ,fLayRadii(0)
@@ -97,6 +98,7 @@ AliITSUv1::AliITSUv1(const char *title,const Int_t nlay)
   ,fWrapRMin(0)
   ,fWrapRMax(0)
   ,fWrapZSpan(0)
+  ,fLay2WrapV(0)
   ,fLayTurbo(0)
   ,fLayPhi0(0)
   ,fLayRadii(0)
@@ -181,10 +183,12 @@ AliITSUv1::~AliITSUv1() {
   delete [] fWrapRMin;
   delete [] fWrapRMax;
   delete [] fWrapZSpan;
+  delete [] fLay2WrapV;
 }
 
 //______________________________________________________________________
-void AliITSUv1::AddAlignableVolumes() const{
+void AliITSUv1::AddAlignableVolumes() const
+{
   // Creates entries for alignable volumes associating the symbolic volume
   // name with the corresponding volume path.
   // 
@@ -193,53 +197,113 @@ void AliITSUv1::AddAlignableVolumes() const{
   // system
   // For this, this function has to run before the misalignment because we
   // are using the ideal positions in the AliITSgeom object.
-  // Inputs:
-  //   none.
-  // Outputs:
-  //   none.
-  // Return:
-  //   none.
-  /*
   AliInfo("Add ITS alignable volumes");
 
   if (!gGeoManager) { AliFatal("TGeoManager doesn't exist !"); return;  }
-  TString pth;
   //
-  pth = Form("ALIC_1/%s_2",AliITSUGeomTGeo::GetITSVolPattern());
-  // RS: to be checked with MS
-  if( !gGeoManager->SetAlignableEntry(AliITSUGeomTGeo::ComposeSymNameITS(),pth.Data()) )
-    AliFatal(Form("Unable to set alignable entry ! %s :: %s","ITS",pth.Data()));    
+  TString path = Form("ALIC_1/%s_2",AliITSUGeomTGeo::GetITSVolPattern());
+  TString sname = AliITSUGeomTGeo::ComposeSymNameITS();
   //
-  int modNum = 0;
+  AliDebug(1,Form("%s <-> %s",sname.Data(),path.Data()));
+  if( !gGeoManager->SetAlignableEntry(sname.Data(),path.Data()) )
+    AliFatal(Form("Unable to set alignable entry ! %s %s",sname.Data(),path.Data()));    
   //
-  for (int lr=0; lr<fNLayers; lr++) {
+  int lastUID = 0;
+  for (int lr=0; lr<fNLayers; lr++) AddAlignableVolumesLayer(lr,path,lastUID);
+  //
+}
+
+//______________________________________________________________________
+void AliITSUv1::AddAlignableVolumesLayer(int lr, TString& parent,Int_t &lastUID) const
+{
+  // add alignable volumes for layer and its daughters
+  //
+  TString wrpV = fLay2WrapV[lr]!=-1 ? Form("%s%d_1/",AliITSUGeomTGeo::GetITSWrapVolPattern(),fLay2WrapV[lr]) : "";
+  TString path = Form("%s/%s%s%d_1",parent.Data(),wrpV.Data(),AliITSUGeomTGeo::GetITSLayerPattern(),lr);
+  TString sname = AliITSUGeomTGeo::ComposeSymNameLayer(lr);
+  AliDebug(1,Form("Add %s <-> %s", sname.Data(),path.Data()));
+  if ( !gGeoManager->SetAlignableEntry(sname.Data(),path.Data()) ) 
+    AliFatal(Form("Unable to set alignable entry ! %s : %s",sname.Data(),path.Data()));
+  //
+  const AliITSUv1Layer* lrobj = fUpGeom[lr];
+  int nstaves = lrobj->GetNStavesPerParent();
+  for (int st=0; st<nstaves; st++) AddAlignableVolumesStave(lr,st,path,lastUID);
+  //
+}
+    
+//______________________________________________________________________
+void AliITSUv1::AddAlignableVolumesStave(int lr, int st, TString& parent, Int_t &lastUID) const
+{
+  // add alignable volumes for stave and its daughters
+  //
+  TString path = Form("%s/%s%d_%d",parent.Data(),AliITSUGeomTGeo::GetITSStavePattern(),lr,st);
+  TString sname = AliITSUGeomTGeo::ComposeSymNameStave(lr,st);
+  AliDebug(1,Form("Add %s <-> %s", sname.Data(),path.Data()));
+  if ( !gGeoManager->SetAlignableEntry(sname.Data(),path.Data()) ) 
+    AliFatal(Form("Unable to set alignable entry ! %s : %s",sname.Data(),path.Data()));
+  //
+  const AliITSUv1Layer* lrobj = fUpGeom[lr];
+  int nsstave = lrobj->GetNHalfStavesPerParent();
+  int start = nsstave>0 ? 0:-1;
+  //
+  for (int sst=start; sst<nsstave; sst++) AddAlignableVolumesHalfStave(lr,st,sst,path,lastUID);
+}
+
+//______________________________________________________________________
+void AliITSUv1::AddAlignableVolumesHalfStave(int lr, int st, int sst, TString& parent, Int_t &lastUID) const
+{
+  // add alignable volumes for halfstave (if any) and its daughters
+  //
+  TString path = parent;
+  if (sst>=0) {
+    path = Form("%s/%s%d_%d",parent.Data(),AliITSUGeomTGeo::GetITSHalfStavePattern(),lr,sst);
+    TString sname = AliITSUGeomTGeo::ComposeSymNameHalfStave(lr,st,sst);
+    AliDebug(1,Form("Add %s <-> %s", sname.Data(),path.Data()));
+    if ( !gGeoManager->SetAlignableEntry(sname.Data(),path.Data()) ) 
+      AliFatal(Form("Unable to set alignable entry ! %s : %s",sname.Data(),path.Data()));
     //
-    pth = Form("ALIC_1/%s_2/%s%d_1",AliITSUGeomTGeo::GetITSVolPattern(),AliITSUGeomTGeo::GetITSLayerPattern(),lr);
-    //printf("SetAlignable: %s %s\n",snm.Data(),pth.Data());
-    gGeoManager->SetAlignableEntry(AliITSUGeomTGeo::ComposeSymNameLayer(lr),pth.Data());
+  }
+  const AliITSUv1Layer* lrobj = fUpGeom[lr];
+  int nmodules = lrobj->GetNModulesPerParent();
+  int start = nmodules>0 ? 0:-1;
+  //
+  for (int md=start; md<nmodules; md++) AddAlignableVolumesModule(lr,st,sst,md,path,lastUID);
+}
+
+//______________________________________________________________________
+void AliITSUv1::AddAlignableVolumesModule(int lr, int st, int sst, int md, TString& parent, Int_t &lastUID) const
+{
+  // add alignable volumes for module (if any) and its daughters
+  //
+  TString path = parent;
+  if (md>=0) {
+    path = Form("%s/%s%d_%d",parent.Data(),AliITSUGeomTGeo::GetITSModulePattern(),lr,md);
+    TString sname = AliITSUGeomTGeo::ComposeSymNameModule(lr,st,sst,md);
+    AliDebug(1,Form("Add %s <-> %s", sname.Data(),path.Data()));
+    if ( !gGeoManager->SetAlignableEntry(sname.Data(),path.Data()) ) 
+      AliFatal(Form("Unable to set alignable entry ! %s : %s",sname.Data(),path.Data()));
     //
-    for (int ld=0; ld<fStavPerLay[lr]; ld++) {
-      //
-      TString pthL = Form("%s/%s%d_%d",pth.Data(),AliITSUGeomTGeo::GetITSStavePattern(),lr,ld);
-      //printf("SetAlignable: %s %s\n",snmL.Data(),pthL.Data());
-      gGeoManager->SetAlignableEntry(AliITSUGeomTGeo::ComposeSymNameStave(lr,ld),pthL.Data());
-      //
-      for (int md=0; md<fUnitPerStave[lr]; md++) {
-	//
-	TString pthM = Form("%s/%s%d_%d",pthL.Data(),AliITSUGeomTGeo::GetITSChipPattern(),lr,md);
-	//
-	// RS: Attention, this is a hack: AliGeomManager cannot accomodate all ITSU chips w/o
-	// conflicts with TPC. For this reason we define the UID of the chip to be simply its ID
-	//	int modUID = AliGeomManager::LayerToVolUID(lr+1,modNum++); // here modNum would be chip within the layer
-	int modUID = AliITSUGeomTGeo::ChipVolUID( modNum++ );
-	// 
-	gGeoManager->SetAlignableEntry(AliITSUGeomTGeo::ComposeSymNameChip(lr,ld,md),pthM.Data(),modUID);
-	//
-      }
-    }
   }
   //
-  */
+  const AliITSUv1Layer* lrobj = fUpGeom[lr];
+  int nchips = lrobj->GetNChipsPerParent();
+  //
+  for (int ic=0; ic<nchips; ic++) AddAlignableVolumesChip(lr,st,sst,md,ic,path,lastUID);
+}  
+
+//______________________________________________________________________
+void AliITSUv1::AddAlignableVolumesChip(int lr, int st, int sst, int md, int ch, TString& parent, Int_t &lastUID) const
+{
+  // add alignable volumes for chip
+  //
+  TString path = Form("%s/%s%d_%d",parent.Data(),AliITSUGeomTGeo::GetITSChipPattern(),lr,ch);
+  TString sname = AliITSUGeomTGeo::ComposeSymNameChip(lr,st,sst,md,ch);
+  int modUID = AliITSUGeomTGeo::ChipVolUID( lastUID++ );
+  //
+  AliDebug(1,Form("Add %s <-> %s : ID=%d", sname.Data(),path.Data(),modUID));
+  if ( !gGeoManager->SetAlignableEntry(sname,path.Data(),modUID) )
+    AliFatal(Form("Unable to set alignable entry ! %s : %s | %d",sname.Data(),path.Data(),modUID));
+  //
 }
 
 //______________________________________________________________________
@@ -315,9 +379,12 @@ void AliITSUv1::CreateGeometry() {
     }
   }
   //
+  fLay2WrapV = new Int_t[fNLayers];
+
   // Now create the actual geometry
   for (Int_t j=0; j<fNLayers; j++) {
     TGeoVolume* dest = vITSV;
+    fLay2WrapV[j] = -1;
     //
     if (fLayTurbo[j]) {
       fUpGeom[j] = new AliITSUv1Layer(j,kTRUE,kFALSE);
@@ -348,6 +415,7 @@ void AliITSUv1::CreateGeometry() {
 	if (fLayZLength[j]>=fWrapZSpan[iw]) AliFatal(Form("ZSpan %.3f of wrapper volume %d is less than ZSpan %.3f of layer %d",
 							  fWrapZSpan[iw],iw,fLayZLength[j],j));
 	dest = wrapVols[iw];
+	fLay2WrapV[j] = iw;
 	break;
       }
     }
