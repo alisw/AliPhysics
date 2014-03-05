@@ -41,10 +41,10 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
   if (IsOnGrid) TGrid::Connect("alien://");
   TFile * fin = TFile::Open(qafilename,"r");
   if (!fin) {
-    printf("ERROR: QA output not found. Exiting with status -1\n");
+    Printf("ERROR: QA output not found. Exiting...\n");
     return -1;
   } else {
-    printf("INFO: QA output file %s open. \n",fin->GetName());
+    Printf("INFO: QA output file %s open. \n",fin->GetName());
   }
   
   //access histograms lists
@@ -56,29 +56,32 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
   char negListName[15]="cNegativeTOFqa";
   
   TDirectoryFile * tofQAdir=(TDirectoryFile*)fin->Get(tofQAdirName);
+  if (!tofQAdir) {
+    Printf("ERROR: TOF QA directory not present in input file.\n");
+    return -1;
+  }
   TList * generalList=(TList*)tofQAdir->Get(genListName);
   TList  *timeZeroList=(TList*)tofQAdir->Get(t0ListName);
   TList  *pidList=(TList*)tofQAdir->Get(pidListName);
   TList  *posList=(TList*)tofQAdir->Get(posListName);
   TList  *negList=(TList*)tofQAdir->Get(negListName);
   
-  if (!generalList) printf("WARNING: general QA histograms absent or not accessible\n");
-  if (!timeZeroList) printf("WARNING: timeZero QA histograms absent or not accessible\n");
-  if (!pidList) printf("WARNING: PID QA histograms absent or not accessible\n");
-  if (!posList) printf("WARNING: general QA histograms for positive tracks absent or not accessible\n");
-  if (!negList) printf("WARNING: general QA histograms for negative tracks absent or not accessible\n");
+  if (!generalList) Printf("WARNING: general QA histograms absent or not accessible\n");
+  if (!timeZeroList) Printf("WARNING: timeZero QA histograms absent or not accessible\n");
+  if (!pidList) Printf("WARNING: PID QA histograms absent or not accessible\n");
+  if (!posList) Printf("WARNING: general QA histograms for positive tracks absent or not accessible\n");
+  if (!negList) Printf("WARNING: general QA histograms for negative tracks absent or not accessible\n");
   
   if ( (!generalList) && (!timeZeroList) && (!pidList) ){
     printf("ERROR: no QA available \n");
-    return 1;
+    return -1;
   }
-   
-  Printf("==============  Getting post-analysis info for run %i ===============\n",runNumber);
+  
+  Printf(":::: Getting post-analysis info for run %i",runNumber);
   TFile * trendFile = new TFile(treePostFileName,"recreate");
 
   Double_t avTime=-9999., peakTime=-9999., spreadTime=-9999., peakTimeErr=-9999., spreadTimeErr=-9999., negTimeRatio=-9999.,
-    avRawTime=-9999., peakRawTime=-9999., spreadRawTime=-9999., peakRawTimeErr=-9999., spreadRawTimeErr=-9999., 
-    avTot=-9999., peakTot=-9999.,spreadTot=-9999.,  peakTotErr=-9999.,spreadTotErr=-9999.,
+    avRawTime=-9999., peakRawTime=-9999., spreadRawTime=-9999., peakRawTimeErr=-9999., spreadRawTimeErr=-9999., avTot=-9999., peakTot=-9999.,spreadTot=-9999.,  peakTotErr=-9999.,spreadTotErr=-9999.,
     orphansRatio=-9999., avL=-9999., negLratio=-9999.,
     effPt1=-9999., effPt2=-9999., matchEffLinFit1Gev=-9999.,matchEffLinFit1GevErr=-9999.;
   
@@ -245,10 +248,10 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
   char negLengthTxt[200];
   if (hL->GetEntries()>0){
     avL=hL->GetMean();
-    negLRatio=(hL->Integral(1,750))/((Float_t) hL->GetEntries()) ;
+    negLratio=(hL->Integral(1,750))/((Float_t) hL->GetEntries()) ;
   }
   MakeUpHisto(hL, "matched tracks", 1, kBlue+2);
-  sprintf(negLengthTxt,"trk with L<350cm /matched = %4.2f%%", negLRatio*100.);
+  sprintf(negLengthTxt,"trk with L<350cm /matched = %4.2f%%", negLratio*100.);
   TPaveText *tLength = new TPaveText(0.15,0.83,0.65,0.87, "NDC");
   tLength->SetBorderSize(0);
   tLength->SetTextSize(0.04);
