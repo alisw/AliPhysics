@@ -22,6 +22,7 @@ ClassImp(AliParticleYield)
 const char * AliParticleYield::kStatusString[] = {"Published", "Preliminary", "Final, but not published", "May change"} ;
 const char * AliParticleYield::kSystemString[] = {"pp", "p-Pb", "Pb-Pb"} ;
 Int_t AliParticleYield::fSignificantDigits = 3;
+Float_t AliParticleYield::fEpsilon = 0.000000000000000001;
 
 AliParticleYield::AliParticleYield() :
 TObject(),
@@ -123,7 +124,7 @@ TClonesArray * AliParticleYield::GetEntriesMatchingSelection(TTree * tree, TStri
   TEventList *elist = (TEventList*)gDirectory->Get("particlelist");
   Int_t npart = elist->GetN();
   for(Int_t ipart = 0; ipart < npart; ipart++){
-    std::cout << ipart << " " << elist->GetEntry(ipart) << std::endl;
+    //    std::cout << ipart << " " << elist->GetEntry(ipart) << std::endl;
     tree->GetEntry(elist->GetEntry(ipart));
     new((*arr)[ipart]) AliParticleYield(*part);// We need to clone part, because it is overwritten by the next read
   }
@@ -151,6 +152,10 @@ TClonesArray * AliParticleYield::ReadFromASCIIFile(const char * fileName, const 
 
   TClonesArray * arr = new TClonesArray ("AliParticleYield");
   ifstream filestream (fileName);
+  if(!filestream.is_open()) {
+    Printf("Cannot open file %s\n", fileName);
+    exit(1);
+  }
   TString line;
   Int_t ipart = 0;
   while (line.ReadLine(filestream) ) {
@@ -216,11 +221,15 @@ TClonesArray * AliParticleYield::ReadFromASCIIFile(const char * fileName, const 
     tag   = tag.Strip(TString::kTrailing, ' ');
     
     // add to array
-    new ((*arr)[ipart])  AliParticleYield(pdg,system,sqrts,yield,stat,syst,norm,ymin,ymax,status,type,centr,issum,tag);
-    ((AliParticleYield*)arr->At(ipart))->SetPartName(name); // Check name and PDG code consistency
-    ((AliParticleYield*)arr->At(ipart))->SetPdgCode2(pdg2); // Set second PDG code in case of ratios
-    ((AliParticleYield*)arr->At(ipart))->CheckTypeConsistency();
-    ipart ++;
+    AliParticleYield * part = new  AliParticleYield(pdg,system,sqrts,yield,stat,syst,norm,ymin,ymax,status,type,centr,issum,tag);
+    part->SetPartName(name); // Check name and PDG code consistency   
+    part->SetPdgCode2(pdg2); // Set second PDG code in case of ratios 
+    part->CheckTypeConsistency();                                     
+    if(!part->CheckForDuplicates(arr)) {
+      new ((*arr)[ipart++]) AliParticleYield(*part); 
+    }
+      //    delete part;
+
   }
 
 
@@ -449,3 +458,81 @@ void AliParticleYield::Print (Option_t *) const {
   Printf("Normalizaion uncertainty: %f", fNormError);
 }
 
+Bool_t AliParticleYield::operator==(const AliParticleYield& rhs) {
+  // Check if the two particles are identical
+
+  Bool_t isEqual = 
+    (fPdgCode         == rhs.fPdgCode         ) &&
+    (fPdgCode2        == rhs.fPdgCode2        ) &&
+    (fPartName        == rhs.fPartName        ) &&
+    (fCollisionSystem == rhs.fCollisionSystem ) &&
+    Compare2Floats(fSqrtS,rhs.fSqrtS          ) &&
+    Compare2Floats(fYield,rhs.fYield          ) &&
+    Compare2Floats(fStatError,rhs.fStatError  ) &&
+    Compare2Floats(fSystError,rhs.fSystError  ) &&
+    Compare2Floats(fNormError,rhs.fNormError  ) &&
+    Compare2Floats(fYMin,rhs.fYMin            ) &&
+    Compare2Floats(fYMax,rhs.fYMax            ) &&
+    (fStatus          == rhs.fStatus          ) &&
+    (fMeasurementType == rhs.fMeasurementType ) &&
+    (fCentr           == rhs.fCentr           ) &&
+    (fIsSum           == rhs.fIsSum           ) &&
+    (fTag             == rhs.fTag             ) ;
+  
+  return isEqual;
+  
+}
+Bool_t AliParticleYield::IsTheSameMeasurement(AliParticleYield &rhs) {
+
+  // Check the two particles represent the same measurement (independently of the values)
+  Bool_t isEqual = 
+    (fPdgCode         == rhs.fPdgCode         ) &&
+    (fPdgCode2        == rhs.fPdgCode2        ) &&
+    (fCollisionSystem == rhs.fCollisionSystem ) &&
+    Compare2Floats(fSqrtS,rhs.fSqrtS          ) &&
+    Compare2Floats(fYMin,rhs.fYMin            ) &&
+    Compare2Floats(fYMax,rhs.fYMax            ) &&
+    (fStatus          == rhs.fStatus          ) &&
+    (fCentr           == rhs.fCentr           ) &&
+    (fIsSum           == rhs.fIsSum           ) &&
+    (fTag             == rhs.fTag             ) ;
+  
+  return isEqual;
+
+
+}
+
+Bool_t AliParticleYield::CheckForDuplicates(TClonesArray * arr) {
+
+  // loop over all elements on the array and check for duplicates
+  TIter iter(arr);
+  AliParticleYield * part = 0;
+  Bool_t isDuplicate = kFALSE;
+
+  while ((part = (AliParticleYield*) iter.Next())) {
+    if (IsTheSameMeasurement(*part)){
+      AliWarning("Duplicated measurement found");
+      isDuplicate = kTRUE;
+      if (!((*this) == (*part))) {
+	part->Print();
+	Print();
+	AliFatal("The 2 particles are different!");
+      }
+    }
+  }
+  return isDuplicate;
+
+} 
+ 
+Bool_t AliParticleYield::Compare2Floats(Float_t a, Float_t b) {
+  // just a simple helper for the comparison methods
+  if(!a) {
+    if(!b) return kTRUE; // They are both 0;
+    return kFALSE;// return here to avoid division by 0
+  }
+  Bool_t areEqual = (TMath::Abs((a - b)/a) < fEpsilon); // If the relative difference is < epsilon, returns true
+  if(!areEqual) {
+    Printf("Warning: %f and %f are different", a,b); 
+  }
+  return areEqual;
+}
