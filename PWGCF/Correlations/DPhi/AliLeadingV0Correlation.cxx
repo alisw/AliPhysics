@@ -1123,7 +1123,7 @@ void AliLeadingV0Correlation::FillCorrelationMixing(Double_t MultipOrCentMix,
 	Double_t  counterMix=0;
 	
 	AliEventPool* pool = fPoolMgr->GetEventPool(MultipOrCentMix, pvxMix);
-	if (!pool) AliFatal(Form("No pool found for centrality = %f, zVtx = %f", MultipOrCentMix, pvxMix));return;
+	if (!pool) AliFatal(Form("No pool found for centrality = %f, zVtx = %f", MultipOrCentMix, pvxMix));
 	
     if (pool->IsReady() || pool->NTracksInPool() > fPoolMinNTracks  || pool->GetCurrentNEvents() > fMinEventsToMix)
 	{
