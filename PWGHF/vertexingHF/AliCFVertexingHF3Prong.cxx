@@ -523,6 +523,9 @@ Bool_t AliCFVertexingHF3Prong::CheckMCChannelDecay() const
 
 
   Int_t daughter[3];
+  Double_t sumPxDau=0.;
+  Double_t sumPyDau=0.;
+  Double_t sumPzDau=0.;
 
   Int_t nDau=fmcPartCandidate->GetNDaughters();
   Int_t labelFirstDau = fmcPartCandidate->GetDaughter(0);
@@ -542,6 +545,9 @@ Bool_t AliCFVertexingHF3Prong::CheckMCChannelDecay() const
 	return checkCD;
       }
       daughter[iDau]=TMath::Abs(part->GetPdgCode());
+      sumPxDau+=part->Px();
+      sumPyDau+=part->Py();
+      sumPzDau+=part->Pz();
     }
   }else if(nDau==2){
     if(fDecay==kDstoKKpi && fGenDsOption==kCountNonResonant) return checkCD;
@@ -557,6 +563,9 @@ Bool_t AliCFVertexingHF3Prong::CheckMCChannelDecay() const
       if(pdgCode==211 || pdgCode==321 || pdgCode==2212){
 	if(nDauFound>=3) return checkCD;
 	daughter[nDauFound]=pdgCode;
+	sumPxDau+=part->Px();
+	sumPyDau+=part->Py();
+	sumPzDau+=part->Pz();
 	nDauFound++;
       }else{
 	if(fDecay==kDstoKKpi && fGenDsOption!=3){
@@ -577,6 +586,9 @@ Bool_t AliCFVertexingHF3Prong::CheckMCChannelDecay() const
 	  Int_t pdgCodeDR=TMath::Abs(partDR->GetPdgCode());
 	  if(nDauFound>=3) return checkCD;
 	  daughter[nDauFound]=pdgCodeDR;
+	  sumPxDau+=partDR->Px();
+	  sumPyDau+=partDR->Py();
+	  sumPzDau+=partDR->Pz();
 	  nDauFound++;
 	}
       }
@@ -600,6 +612,16 @@ Bool_t AliCFVertexingHF3Prong::CheckMCChannelDecay() const
     }
   }
   
+  Double_t pxMother=fmcPartCandidate->Px();
+  Double_t pyMother=fmcPartCandidate->Py();
+  Double_t pzMother=fmcPartCandidate->Pz();
+  if(TMath::Abs(pxMother-sumPxDau)/(TMath::Abs(pxMother)+1.e-13)>0.00001 ||
+     TMath::Abs(pyMother-sumPyDau)/(TMath::Abs(pyMother)+1.e-13)>0.00001 ||
+     TMath::Abs(pzMother-sumPzDau)/(TMath::Abs(pzMother)+1.e-13)>0.00001){
+    AliDebug(2, "Momentum conservation violated, skipping!!");
+    return checkCD;  
+  }
+
   checkCD = kTRUE;
   return checkCD;
   
