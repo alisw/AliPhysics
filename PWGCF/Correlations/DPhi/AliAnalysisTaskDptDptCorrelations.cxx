@@ -948,7 +948,7 @@ void  AliAnalysisTaskDptDptCorrelations::createHistograms()
     name = s2PtNNwName+pair_12_Name + vsM;    _s2PtNNw_12_vsM       = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPtN_12);       
     name = s2NPtNwName+pair_12_Name + vsM;    _s2NPtNw_12_vsM       = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgNSumPt_12);     
     
-    name = "mInv";     _invMass     = createHisto1F(name,name, 500, 0.44, 0.56, "M_{inv}","counts"); 
+    name = "mInv";     _invMass     = createHisto1F(name,name, 50, 0.41, 0.55, "M_{inv}","counts"); 
     name = "mInvElec"; _invMassElec = createHisto1F(name,name, 500, 0., 1.000, "M_{inv}","counts"); 
     }
   
